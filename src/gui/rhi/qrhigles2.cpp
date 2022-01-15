@@ -4207,7 +4207,7 @@ void QRhiGles2::registerUniformIfActive(const QShaderDescription::BlockVariable 
                                         int binding,
                                         int baseOffset,
                                         GLuint program,
-                                        QSet<int> *activeUniformLocations,
+                                        QDuplicateTracker<int, 256> *activeUniformLocations,
                                         QGles2UniformDescriptionVector *dst)
 {
     if (var.type == QShaderDescription::Struct) {
@@ -4224,8 +4224,7 @@ void QRhiGles2::registerUniformIfActive(const QShaderDescription::BlockVariable 
     // that is not the case, it won't break anything, but we'll generate
     // unnecessary glUniform* calls then.
     uniform.glslLocation = f->glGetUniformLocation(program, name.constData());
-    if (uniform.glslLocation >= 0 && !activeUniformLocations->contains(uniform.glslLocation)) {
-        activeUniformLocations->insert(uniform.glslLocation);
+    if (uniform.glslLocation >= 0 && !activeUniformLocations->hasSeen(uniform.glslLocation)) {
         if (var.arrayDims.count() > 1) {
             qWarning("Array '%s' has more than one dimension. This is not supported.",
                      var.name.constData());
@@ -4241,7 +4240,7 @@ void QRhiGles2::registerUniformIfActive(const QShaderDescription::BlockVariable 
 
 void QRhiGles2::gatherUniforms(GLuint program,
                                const QShaderDescription::UniformBlock &ub,
-                               QSet<int> *activeUniformLocations,
+                               QDuplicateTracker<int, 256> *activeUniformLocations,
                                QGles2UniformDescriptionVector *dst)
 {
     QByteArray prefix = ub.structName + '.';
@@ -5342,7 +5341,7 @@ bool QGles2GraphicsPipeline::create()
     // Use the same work area for the vertex & fragment stages, thus ensuring
     // that we will not do superfluous glUniform calls for uniforms that are
     // present in both shaders.
-    QSet<int> activeUniformLocations;
+    QDuplicateTracker<int, 256> activeUniformLocations;
 
     for (const QShaderDescription::UniformBlock &ub : vsDesc.uniformBlocks())
         rhiD->gatherUniforms(program, ub, &activeUniformLocations, &uniforms);
@@ -5446,7 +5445,7 @@ bool QGles2ComputePipeline::create()
         }
     }
 
-    QSet<int> activeUniformLocations;
+    QDuplicateTracker<int, 256> activeUniformLocations;
     for (const QShaderDescription::UniformBlock &ub : csDesc.uniformBlocks())
         rhiD->gatherUniforms(program, ub, &activeUniformLocations, &uniforms);
     for (const QShaderDescription::InOutVariable &v : csDesc.combinedImageSamplers())
