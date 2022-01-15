@@ -3541,16 +3541,13 @@ void tst_QtJson::fromToVariantConversions_data()
     QTest::newRow("NaN")      << QVariant(qQNaN()) << QJsonValue(QJsonValue::Null)
                               << QVariant::fromValue(nullptr);
 
-    const qulonglong ulongValue = (1ul << 63) + 1;
-    const double uLongToDouble = ulongValue;
-    qint64 n;
-    if (convertDoubleTo(uLongToDouble, &n)) {
-        QTest::newRow("ulonglong") << QVariant(ulongValue) << QJsonValue(uLongToDouble)
-                                   << QVariant(n);
-    } else {
-        QTest::newRow("ulonglong") << QVariant(ulongValue) << QJsonValue(uLongToDouble)
-                                   << QVariant(uLongToDouble);
-    }
+    static_assert(std::numeric_limits<double>::digits <= 63,
+            "double is too big on this platform, this test would fail");
+    constexpr quint64 Threshold = Q_UINT64_C(1) << 63;
+    const qulonglong ulongValue = qulonglong(Threshold) + 1;
+    const double uLongToDouble = Threshold;
+    QTest::newRow("ulonglong") << QVariant(ulongValue) << QJsonValue(uLongToDouble)
+                               << QVariant(uLongToDouble);
 }
 
 void tst_QtJson::fromToVariantConversions()
