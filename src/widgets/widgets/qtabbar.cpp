@@ -1718,6 +1718,9 @@ bool QTabBar::event(QEvent *event)
             update(d->hoverRect);
         d->hoverIndex = -1;
         d->hoverRect = QRect();
+#if QT_CONFIG(wheelevent)
+        d->accumulatedAngleDelta = QPoint();
+#endif
         return true;
     }
 #if QT_CONFIG(tooltip)
@@ -2421,8 +2424,17 @@ void QTabBar::wheelEvent(QWheelEvent *event)
                 }
             }
         } else {
-            const int delta = wheelVertical ? event->angleDelta().y() : event->angleDelta().x();
-            const int offset = delta > 0 ? -1 : 1;
+            d->accumulatedAngleDelta += event->angleDelta();
+            const int xSteps = d->accumulatedAngleDelta.x() / QWheelEvent::DefaultDeltasPerStep;
+            const int ySteps = d->accumulatedAngleDelta.y() / QWheelEvent::DefaultDeltasPerStep;
+            int offset = 0;
+            if (xSteps > 0 || ySteps > 0) {
+                offset = -1;
+                d->accumulatedAngleDelta = QPoint();
+            } else if (xSteps < 0 || ySteps < 0) {
+                offset = 1;
+                d->accumulatedAngleDelta = QPoint();
+            }
             const int oldCurrentIndex = d->currentIndex;
             d->setCurrentNextEnabledIndex(offset);
             if (oldCurrentIndex != d->currentIndex) {
