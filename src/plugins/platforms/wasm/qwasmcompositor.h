@@ -42,6 +42,8 @@
 #include <QPointingDevice>
 
 #include <emscripten/html5.h>
+#include <emscripten/emscripten.h>
+#include <emscripten/bind.h>
 
 QT_BEGIN_NAMESPACE
 

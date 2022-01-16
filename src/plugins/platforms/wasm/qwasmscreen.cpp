@@ -65,6 +65,9 @@ QWasmScreen::QWasmScreen(const emscripten::val &canvas)
     // Set contenteditable so that the canvas gets clipboard events,
     // then hide the resulting focus frame, and reset the cursor.
     m_canvas.set("contentEditable", std::string("true"));
+    // set inputmode to none to stop mobile keyboard opening
+    // when user clicks  anywhere on the canvas.
+    m_canvas.set("inputmode", std::string("none"));
     style.set("outline", std::string("0px solid transparent"));
     style.set("caret-color", std::string("transparent"));
     style.set("cursor", std::string("default"));

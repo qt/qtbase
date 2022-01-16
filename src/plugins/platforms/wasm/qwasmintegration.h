@@ -42,6 +42,9 @@
 #include <emscripten/html5.h>
 #include <emscripten/val.h>
 
+#include "qwasminputcontext.h"
+#include <private/qstdweb_p.h>
+
 QT_BEGIN_NAMESPACE
 
 class QWasmEventTranslator;
@@ -58,6 +61,14 @@ class QWasmIntegration : public QObject, public QPlatformIntegration
 {
     Q_OBJECT
 public:
+    enum Platform {
+        GenericPlatform,
+        MacOSPlatform,
+        WindowsPlatform,
+        LinuxPlatform,
+        AndroidPlatform
+    };
+
     QWasmIntegration();
     ~QWasmIntegration();
 
@@ -80,7 +91,7 @@ public:
     QPlatformInputContext *inputContext() const override;
 
     QWasmClipboard *getWasmClipboard() { return m_clipboard; }
-
+    QWasmInputContext *getWasmInputContext() { return m_platformInputContext; }
     static QWasmIntegration *get() { return s_instance; }
 
     void addScreen(const emscripten::val &canvas);
@@ -91,6 +102,9 @@ public:
     void removeBackingStore(QWindow* window);
     static quint64 getTimestamp();
 
+    Platform platform;
+    int touchPoints;
+
 private:
     mutable QWasmFontDatabase *m_fontDb;
     mutable QWasmServices *m_desktopServices;
@@ -100,6 +114,8 @@ private:
     qreal m_fontDpi = -1;
     mutable QScopedPointer<QPlatformInputContext> m_inputContext;
     static QWasmIntegration *s_instance;
+
+    mutable QWasmInputContext *m_platformInputContext = nullptr;
 };
 
 QT_END_NAMESPACE

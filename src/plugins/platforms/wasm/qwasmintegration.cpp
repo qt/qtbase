@@ -106,6 +106,22 @@ QWasmIntegration::QWasmIntegration()
 {
     s_instance = this;
 
+   touchPoints = emscripten::val::global("navigator")["maxTouchPoints"].as<int>();
+    // The Platform Detect: expand coverage as needed
+    platform = GenericPlatform;
+    emscripten::val rawPlatform = emscripten::val::global("navigator")["platform"];
+
+    if (rawPlatform.call<bool>("includes", emscripten::val("Mac")))
+        platform = MacOSPlatform;
+    if (rawPlatform.call<bool>("includes", emscripten::val("Win32")))
+        platform = WindowsPlatform;
+    if (rawPlatform.call<bool>("includes", emscripten::val("Linux"))) {
+        platform = LinuxPlatform;
+        emscripten::val uAgent = emscripten::val::global("navigator")["userAgent"];
+        if (uAgent.call<bool>("includes", emscripten::val("Android")))
+            platform = AndroidPlatform;
+    }
+
     // We expect that qtloader.js has populated Module.qtCanvasElements with one or more canvases.
     emscripten::val qtCanvaseElements = val::module_property("qtCanvasElements");
     emscripten::val canvas = val::module_property("canvas"); // TODO: remove for Qt 6.0
@@ -156,6 +172,8 @@ QWasmIntegration::~QWasmIntegration()
 
     delete m_fontDb;
     delete m_desktopServices;
+    if (m_platformInputContext)
+        delete m_platformInputContext;
 
     for (const auto &canvasAndScreen : m_screens)
         QWindowSystemInterface::handleScreenRemoved(canvasAndScreen.second);
@@ -210,9 +228,14 @@ QPlatformOpenGLContext *QWasmIntegration::createPlatformOpenGLContext(QOpenGLCon
 
 void QWasmIntegration::initialize()
 {
+    if (touchPoints < 1) // only touchscreen need inputcontexts
+        return;
+
     QString icStr = QPlatformInputContextFactory::requested();
     if (!icStr.isNull())
         m_inputContext.reset(QPlatformInputContextFactory::create(icStr));
+    else
+        m_inputContext.reset(new QWasmInputContext());
 }
 
 QPlatformInputContext *QWasmIntegration::inputContext() const

@@ -67,11 +67,11 @@ public:
     void setStickyDeadKey(const EmscriptenKeyboardEvent *keyEvent);
 
     void setIsMac(bool is_mac) {g_usePlatformMacSpecifics = is_mac;};
+    bool g_usePlatformMacSpecifics = false;
 
 Q_SIGNALS:
     void getWindowAt(const QPoint &point, QWindow **window);
 private:
-    bool g_usePlatformMacSpecifics = false;
     static Qt::Key translateDeadKey(Qt::Key deadKey, Qt::Key accentBaseKey, bool is_mac = false);
 
 private:

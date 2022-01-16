@@ -26,6 +26,7 @@ qt_internal_add_plugin(QWasmIntegrationPlugin
         qwasmstylepixmaps_p.h
         qwasmtheme.cpp qwasmtheme.h
         qwasmwindow.cpp qwasmwindow.h
+        qwasminputcontext.cpp qwasminputcontext.h
     DEFINES
         QT_EGL_NO_X11
         QT_NO_FOREACH

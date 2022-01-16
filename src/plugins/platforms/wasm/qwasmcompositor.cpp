@@ -160,17 +160,9 @@ void QWasmCompositor::initEventHandlers()
 {
     QByteArray canvasSelector = "#" + screen()->canvasId().toUtf8();
 
-    // The Platform Detect: expand coverage and move as needed
-    enum Platform {
-        GenericPlatform,
-        MacOSPlatform
-    };
-    Platform platform = Platform(emscripten::val::global("navigator")["platform"]
-                                         .call<bool>("includes", emscripten::val("Mac")));
-
-    eventTranslator->setIsMac(platform == MacOSPlatform);
-
-    if (platform == MacOSPlatform) {
+    eventTranslator->g_usePlatformMacSpecifics
+    = (QWasmIntegration::get()->platform == QWasmIntegration::MacOSPlatform);
+    if (QWasmIntegration::get()->platform == QWasmIntegration::MacOSPlatform) {
         g_useNaturalScrolling = false; // make this !default on macOS
 
         if (!emscripten::val::global("window")["safari"].isUndefined()) {
@@ -1299,11 +1291,13 @@ int QWasmCompositor::handleTouch(int eventType, const EmscriptenTouchEvent *touc
 
     QFlags<Qt::KeyboardModifier> keyModifier = eventTranslator->translateTouchEventModifier(touchEvent);
 
-    bool accepted = QWindowSystemInterface::handleTouchEvent<QWindowSystemInterface::SynchronousDelivery>(
-            window2, QWasmIntegration::getTimestamp(), touchDevice, touchPointList, keyModifier);
+    bool accepted = false;
 
     if (eventType == EMSCRIPTEN_EVENT_TOUCHCANCEL)
         accepted = QWindowSystemInterface::handleTouchCancelEvent(window2, QWasmIntegration::getTimestamp(), touchDevice, keyModifier);
+    else
+        accepted = QWindowSystemInterface::handleTouchEvent<QWindowSystemInterface::SynchronousDelivery>(
+                window2, QWasmIntegration::getTimestamp(), touchDevice, touchPointList, keyModifier);
 
     return static_cast<int>(accepted);
 }
