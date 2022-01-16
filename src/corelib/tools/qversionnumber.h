@@ -141,12 +141,15 @@ class QVersionNumber
             else
                 pointer_segments = new QList<int>(std::move(seg));
         }
-        SegmentStorage(std::initializer_list<int> args)
+        explicit SegmentStorage(std::initializer_list<int> args)
+            : SegmentStorage(args.begin(), args.end()) {}
+
+        explicit SegmentStorage(const int *first, const int *last)
         {
-            if (dataFitsInline(std::data(args), args.size())) {
-                setInlineData(std::data(args), args.size());
+            if (dataFitsInline(first, last - first)) {
+                setInlineData(first, last - first);
             } else {
-                pointer_segments = new QList<int>(args);
+                pointer_segments = new QList<int>(first, last);
             }
         }
 
@@ -232,6 +235,11 @@ public:
 
     inline QVersionNumber(std::initializer_list<int> args)
         : m_segments(args)
+    {}
+
+    template <qsizetype N>
+    explicit QVersionNumber(const QVarLengthArray<int, N> &sec)
+        : m_segments(sec.begin(), sec.end())
     {}
 
     inline explicit QVersionNumber(int maj)

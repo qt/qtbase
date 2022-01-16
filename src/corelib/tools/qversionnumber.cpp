@@ -120,6 +120,13 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn template <qsizetype N> QVersionNumber::QVersionNumber(const QVarLengthArray<int, N> &seg)
+    \since 6.4
+
+    Constructs a version number from the list of numbers contained in \a seg.
+*/
+
+/*!
     \fn bool QVersionNumber::isNull() const
 
     Returns \c true if there are zero numerical segments, otherwise returns
@@ -421,7 +428,13 @@ QString QVersionNumber::toString() const
 
 static QVersionNumber from_string(QLatin1String string, qsizetype *suffixIndex)
 {
-    QList<int> seg;
+    // 32 should be more than enough, and, crucially, it means we're allocating
+    // not more (and often less) often when compared with direct QList usage
+    // for all possible segment counts (under the constraint that we don't want
+    // to keep more capacity around for the lifetime of the resulting
+    // QVersionNumber than required), esp. in the common case where the inline
+    // storage can be used.
+    QVarLengthArray<int, 32> seg;
 
     const char *start = string.begin();
     const char *end = start;
@@ -441,7 +454,7 @@ static QVersionNumber from_string(QLatin1String string, qsizetype *suffixIndex)
     if (suffixIndex)
         *suffixIndex = lastGoodEnd - string.begin();
 
-    return QVersionNumber(std::move(seg));
+    return QVersionNumber(seg);
 }
 
 static QVersionNumber from_string(q_no_char8_t::QUtf8StringView string, qsizetype *suffixIndex)
