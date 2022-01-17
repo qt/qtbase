@@ -199,19 +199,32 @@ bool QRhiD3D11::create(QRhi::Flags flags)
 
     dxgiFactory = createDXGIFactory2();
     if (dxgiFactory != nullptr) {
-        hasDxgi2 = true;
         supportsFlipDiscardSwapchain = !qEnvironmentVariableIntValue("QT_D3D_NO_FLIP");
     } else {
         dxgiFactory = createDXGIFactory1();
-        hasDxgi2 = false;
         supportsFlipDiscardSwapchain = false;
     }
 
     if (dxgiFactory == nullptr)
         return false;
 
-    qCDebug(QRHI_LOG_INFO, "DXGI 1.2 = %s, FLIP_DISCARD swapchain supported = %s",
-            hasDxgi2 ? "true" : "false", supportsFlipDiscardSwapchain ? "true" : "false");
+    supportsAllowTearing = false;
+    if (supportsFlipDiscardSwapchain) {
+        // For a FLIP_DISCARD swapchain Present(0, 0) is not necessarily
+        // sufficient to get non-blocking behavior, try using ALLOW_TEARING
+        // when available.
+        IDXGIFactory5 *factory5 = nullptr;
+        if (SUCCEEDED(dxgiFactory->QueryInterface(IID_IDXGIFactory5, reinterpret_cast<void **>(&factory5)))) {
+            BOOL allowTearing = false;
+            if (SUCCEEDED(factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing))))
+                supportsAllowTearing = allowTearing;
+            factory5->Release();
+        }
+    }
+
+    qCDebug(QRHI_LOG_INFO, "FLIP_DISCARD swapchain supported = %s, ALLOW_TEARING supported = %s",
+            supportsFlipDiscardSwapchain ? "true" : "false",
+            supportsAllowTearing ? "true" : "false");
 
     if (!importedDeviceAndContext) {
         IDXGIAdapter1 *adapter;
@@ -1145,7 +1158,9 @@ QRhi::FrameOpResult QRhiD3D11::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
     QRHI_PROF_F(endSwapChainFrame(swapChain, swapChainD->frameCount + 1));
 
     if (!flags.testFlag(QRhi::SkipPresent)) {
-        const UINT presentFlags = 0;
+        UINT presentFlags = 0;
+        if (swapChainD->swapInterval == 0 && (swapChainD->swapChainFlags & DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING))
+            presentFlags |= DXGI_PRESENT_ALLOW_TEARING;
         HRESULT hr = swapChainD->swapChain->Present(swapChainD->swapInterval, presentFlags);
         if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET) {
             qWarning("Device loss detected in Present()");
@@ -4489,25 +4504,34 @@ bool QD3D11SwapChain::createOrResize()
     const DXGI_FORMAT srgbAdjustedFormat = m_flags.testFlag(sRGB) ?
                 DXGI_FORMAT_R8G8B8A8_UNORM_SRGB : DXGI_FORMAT_R8G8B8A8_UNORM;
 
-    const UINT swapChainFlags = 0;
-
     QRHI_RES_RHI(QRhiD3D11);
-    bool useFlipDiscard = rhiD->hasDxgi2 && rhiD->supportsFlipDiscardSwapchain;
+    bool useFlipDiscard = rhiD->supportsFlipDiscardSwapchain;
+
+    // Take a shortcut for alpha: whatever the platform plugin does to enable
+    // transparency for our QWindow will be sufficient on the legacy (DISCARD)
+    // path. For FLIP_DISCARD we'd need to use DirectComposition (create a
+    // IDCompositionDevice/Target/Visual), avoid that for now. (this though
+    // means HDR and semi-transparent windows cannot be combined)
+    if (m_flags.testFlag(SurfaceHasPreMulAlpha) || m_flags.testFlag(SurfaceHasNonPreMulAlpha)) {
+        useFlipDiscard = false;
+        if (window->requestedFormat().alphaBufferSize() <= 0)
+            qWarning("Swapchain says surface has alpha but the window has no alphaBufferSize set. "
+                     "This may lead to problems.");
+    }
+
+    swapInterval = m_flags.testFlag(QRhiSwapChain::NoVSync) ? 0 : 1;
+    swapChainFlags = 0;
+
+    // A non-flip swapchain can do Present(0) as expected without
+    // ALLOW_TEARING, and ALLOW_TEARING is not compatible with it at all so the
+    // flag must not be set then. Whereas for flip-discard we should use it, if
+    // supported, to get better results for 'unthrottled' presentation.
+    if (swapInterval == 0 && useFlipDiscard && rhiD->supportsAllowTearing)
+        swapChainFlags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+
     if (!swapChain) {
         HWND hwnd = reinterpret_cast<HWND>(window->winId());
         sampleDesc = rhiD->effectiveSampleCount(m_sampleCount);
-
-        // Take a shortcut for alpha: our QWindow is OpenGLSurface so whatever
-        // the platform plugin does to enable transparency for OpenGL window
-        // will be sufficient for us too on the legacy (DISCARD) path. For
-        // FLIP_DISCARD we'd need to use DirectComposition (create a
-        // IDCompositionDevice/Target/Visual), avoid that for now.
-        if (m_flags.testFlag(SurfaceHasPreMulAlpha) || m_flags.testFlag(SurfaceHasNonPreMulAlpha)) {
-            useFlipDiscard = false;
-            if (window->requestedFormat().alphaBufferSize() <= 0)
-                qWarning("Swapchain says surface has alpha but the window has no alphaBufferSize set. "
-                         "This may lead to problems.");
-        }
 
         HRESULT hr;
         if (useFlipDiscard) {
@@ -4538,9 +4562,9 @@ bool QD3D11SwapChain::createOrResize()
             if (SUCCEEDED(hr))
                 swapChain = sc1;
         } else {
-            // Windows 7 for instance. Use DISCARD mode. Regardless, keep on
-            // using our manual resolve for symmetry with the FLIP_DISCARD code
-            // path when MSAA is requested.
+            // Fallback: use DISCARD mode. Regardless, keep on using our manual
+            // resolve for symmetry with the FLIP_DISCARD code path when MSAA
+            // is requested. This has no HDR support.
 
             DXGI_SWAP_CHAIN_DESC desc;
             memset(&desc, 0, sizeof(desc));
@@ -4636,7 +4660,6 @@ bool QD3D11SwapChain::createOrResize()
     currentFrameSlot = 0;
     frameCount = 0;
     ds = m_depthStencil ? QRHI_RES(QD3D11RenderBuffer, m_depthStencil) : nullptr;
-    swapInterval = m_flags.testFlag(QRhiSwapChain::NoVSync) ? 0 : 1;
 
     QD3D11ReferenceRenderTarget *rtD = QRHI_RES(QD3D11ReferenceRenderTarget, &rt);
     rtD->d.rp = QRHI_RES(QD3D11RenderPassDescriptor, m_renderPassDesc);

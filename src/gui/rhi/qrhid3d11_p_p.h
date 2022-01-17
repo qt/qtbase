@@ -57,7 +57,7 @@
 #include <QWindow>
 
 #include <d3d11_1.h>
-#include <dxgi1_3.h>
+#include <dxgi1_5.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -573,6 +573,7 @@ struct QD3D11SwapChain : public QRhiSwapChain
     QD3D11CommandBuffer cb;
     DXGI_FORMAT colorFormat;
     IDXGISwapChain *swapChain = nullptr;
+    UINT swapChainFlags = 0;
     static const int BUFFER_COUNT = 2;
     ID3D11Texture2D *backBufferTex;
     ID3D11RenderTargetView *backBufferRtv;
@@ -723,8 +724,8 @@ public:
     LUID adapterLuid = {};
     ID3DUserDefinedAnnotation *annotations = nullptr;
     IDXGIFactory1 *dxgiFactory = nullptr;
-    bool hasDxgi2 = false;
     bool supportsFlipDiscardSwapchain = false;
+    bool supportsAllowTearing = false;
     bool deviceLost = false;
     QRhiD3D11NativeHandles nativeHandlesStruct;
     QRhiDriverInfo driverInfoStruct;
