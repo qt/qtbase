@@ -206,10 +206,14 @@ private:
     friend class QtPrivate::FailureHandler;
 #endif
 
+    template<class T>
+    friend class QPromise;
+
 protected:
     void setContinuation(std::function<void(const QFutureInterfaceBase &)> func);
     void setContinuation(std::function<void(const QFutureInterfaceBase &)> func,
                          QFutureInterfaceBasePrivate *continuationFutureData);
+    void cleanContinuation();
     void runContinuation() const;
 
     void setLaunchAsync(bool value);

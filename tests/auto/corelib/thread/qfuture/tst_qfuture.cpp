@@ -176,7 +176,7 @@ private slots:
     void rejectPendingResultOverwrite();
 
     void createReadyFutures();
-
+    void continuationsDontLeak();
 private:
     using size_type = std::vector<int>::size_type;
 
@@ -3776,6 +3776,66 @@ void tst_QFuture::createReadyFutures()
         QVERIFY(caught);
     }
 #endif
+}
+
+struct InstanceCounter
+{
+    InstanceCounter() { ++count; }
+    InstanceCounter(const InstanceCounter &) { ++count; }
+    ~InstanceCounter() { --count; }
+    static int count;
+};
+int InstanceCounter::count = 0;
+
+void tst_QFuture::continuationsDontLeak()
+{
+    {
+        // QFuture isn't started and isn't finished (has no state)
+        QPromise<InstanceCounter> promise;
+        auto future = promise.future();
+
+        bool continuationIsRun = false;
+        future.then([future, &continuationIsRun](InstanceCounter) { continuationIsRun = true; });
+
+        promise.addResult(InstanceCounter {});
+
+        QVERIFY(!continuationIsRun);
+    }
+    QCOMPARE(InstanceCounter::count, 0);
+
+    {
+        // QFuture is started, but not finished
+        QPromise<InstanceCounter> promise;
+        auto future = promise.future();
+
+        bool continuationIsRun = false;
+        future.then([future, &continuationIsRun](InstanceCounter) { continuationIsRun = true; });
+
+        promise.start();
+        promise.addResult(InstanceCounter {});
+
+        QVERIFY(!continuationIsRun);
+    }
+    QCOMPARE(InstanceCounter::count, 0);
+
+    {
+        // QFuture is started and finished, the continuation is run
+        QPromise<InstanceCounter> promise;
+        auto future = promise.future();
+
+        bool continuationIsRun = false;
+        future.then([future, &continuationIsRun](InstanceCounter) {
+            QVERIFY(future.isFinished());
+            continuationIsRun = true;
+        });
+
+        promise.start();
+        promise.addResult(InstanceCounter {});
+        promise.finish();
+
+        QVERIFY(continuationIsRun);
+    }
+    QCOMPARE(InstanceCounter::count, 0);
 }
 
 QTEST_MAIN(tst_QFuture)
