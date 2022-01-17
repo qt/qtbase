@@ -57,12 +57,6 @@ extern const QString PI_GitBranch;
 class PlatformInfo : public QMap<QString, QString>
 {
 public:
-    PlatformInfo();
-    PlatformInfo(const PlatformInfo &other);
-    ~PlatformInfo()
-    {}
-    PlatformInfo &operator=(const PlatformInfo &other);
-
     static PlatformInfo localHostInfo();
 
     void addOverride(const QString& key, const QString& value);
@@ -72,7 +66,7 @@ public:
 
 private:
     QStringList orides;
-    bool adHoc;
+    bool adHoc = true;
     friend QDataStream & operator<< (QDataStream &stream, const PlatformInfo &pi);
     friend QDataStream & operator>> (QDataStream &stream, PlatformInfo& pi);
 };
