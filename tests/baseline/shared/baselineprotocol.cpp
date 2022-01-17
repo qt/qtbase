@@ -53,11 +53,6 @@ const QString PI_QtBuildMode(QLS("QtBuildMode"));
 const QString PI_GitCommit(QLS("GitCommit"));
 const QString PI_GitBranch(QLS("GitBranch"));
 
-PlatformInfo::PlatformInfo()
-    : QMap<QString, QString>(), adHoc(true)
-{
-}
-
 PlatformInfo PlatformInfo::localHostInfo()
 {
     PlatformInfo pi;
@@ -102,23 +97,6 @@ PlatformInfo PlatformInfo::localHostInfo()
         pi.insert(PI_GitBranch, gb);
 
     return pi;
-}
-
-
-PlatformInfo::PlatformInfo(const PlatformInfo &other)
-    : QMap<QString, QString>(other)
-{
-    orides = other.orides;
-    adHoc = other.adHoc;
-}
-
-
-PlatformInfo &PlatformInfo::operator=(const PlatformInfo &other)
-{
-    QMap<QString, QString>::operator=(other);
-    orides = other.orides;
-    adHoc = other.adHoc;
-    return *this;
 }
 
 
