@@ -69,6 +69,7 @@
 #endif
 
 #include <errno.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -935,7 +936,11 @@ bool QProcessPrivate::startDetached(qint64 *pid)
 {
     QByteArray encodedWorkingDirectory = QFile::encodeName(workingDirectory);
 
+#ifdef PIPE_BUF
     static_assert(PIPE_BUF >= sizeof(ChildError));
+#else
+    static_assert(_POSIX_PIPE_BUF >= sizeof(ChildError));
+#endif
     ChildError childStatus = { 0, {} };
 
     AutoPipe startedPipe, pidPipe;
