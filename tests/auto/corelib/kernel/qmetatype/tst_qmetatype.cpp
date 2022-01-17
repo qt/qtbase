@@ -417,9 +417,6 @@ protected:
             const QByteArray name = "Bar" + QByteArray::number(i) + postFix;
             const char *nm = name.constData();
             int tp = qRegisterMetaType<Bar>(nm);
-#if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
-            pthread_yield();
-#endif
             QMetaType info(tp);
             if (!info.isValid()) {
                 ++failureCount;
