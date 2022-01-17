@@ -727,6 +727,7 @@ static_assert((!QMetaTypeId2<QMetaType::Type>::IsBuiltIn));
 void tst_QMetaType::create_data()
 {
     QTest::addColumn<int>("type");
+    QTest::newRow("unknown-type") << int(QMetaType::UnknownType);
 #define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
     QTest::newRow(QMetaType::typeName(QMetaType::MetaTypeName)) << int(QMetaType::MetaTypeName);
 FOR_EACH_CORE_METATYPE(ADD_METATYPE_TEST_ROW)
@@ -770,6 +771,10 @@ void tst_QMetaType::create()
         static TypeTestFunction get(int type)
         {
             switch (type) {
+            case QMetaType::UnknownType:
+                return []() {
+                    QCOMPARE(QMetaType().create(), nullptr);
+                };
 #define RETURN_CREATE_FUNCTION(MetaTypeName, MetaTypeId, RealType) \
             case QMetaType::MetaTypeName: \
             return testCreateHelper<QMetaType::MetaTypeName>;
@@ -821,6 +826,11 @@ void tst_QMetaType::createCopy()
         static TypeTestFunction get(int type)
         {
             switch (type) {
+            case QMetaType::UnknownType:
+                return []() {
+                    char buf[1];
+                    QCOMPARE(QMetaType().create(&buf), nullptr);
+                };
 #define RETURN_CREATE_COPY_FUNCTION(MetaTypeName, MetaTypeId, RealType) \
             case QMetaType::MetaTypeName: \
             return testCreateCopyHelper<QMetaType::MetaTypeName>;
@@ -1170,6 +1180,11 @@ void tst_QMetaType::construct()
         static TypeTestFunction get(int type)
         {
             switch (type) {
+            case QMetaType::UnknownType:
+                return []() {
+                    char buf[1];
+                    QCOMPARE(QMetaType().construct(&buf), nullptr);
+                };
 #define RETURN_CONSTRUCT_FUNCTION(MetaTypeName, MetaTypeId, RealType) \
             case QMetaType::MetaTypeName: \
             return testConstructHelper<QMetaType::MetaTypeName>;
@@ -1333,6 +1348,11 @@ void tst_QMetaType::constructCopy()
         static TypeTestFunction get(int type)
         {
             switch (type) {
+            case QMetaType::UnknownType:
+                return []() {
+                    char buf[1], buf2[1];
+                    QCOMPARE(QMetaType().construct(&buf, &buf2), nullptr);
+                };
 #define RETURN_CONSTRUCT_COPY_FUNCTION(MetaTypeName, MetaTypeId, RealType) \
             case QMetaType::MetaTypeName: \
             return testConstructCopyHelper<QMetaType::MetaTypeName>;
@@ -1881,6 +1901,8 @@ void tst_QMetaType::saveAndLoadBuiltin_data()
     QTest::addColumn<int>("type");
     QTest::addColumn<bool>("isStreamable");
 
+    QTest::newRow("unknown-type") << int(QMetaType::UnknownType) << false;
+
 #define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
     QTest::newRow(#RealType) << MetaTypeId << bool(StreamingTraits<RealType>::isStreamable);
     QT_FOR_EACH_STATIC_TYPE(ADD_METATYPE_TEST_ROW)
@@ -2005,6 +2027,7 @@ void tst_QMetaType::metaObject_data()
     QTest::addColumn<bool>("isGadgetPtr");
     QTest::addColumn<bool>("isQObjectPtr");
 
+    QTest::newRow("unknown-type") << int(QMetaType::UnknownType) << static_cast<const QMetaObject *>(0) << false << false << false;
     QTest::newRow("QObject") << int(QMetaType::QObjectStar) << &QObject::staticMetaObject << false << false << true;
     QTest::newRow("QFile*") << ::qMetaTypeId<QFile*>() << &QFile::staticMetaObject << false << false << true;
     QTest::newRow("MyObject*") << ::qMetaTypeId<MyObject*>() << &MyObject::staticMetaObject << false << false << true;
