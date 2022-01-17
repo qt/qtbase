@@ -741,12 +741,11 @@ static void testCreateHelper()
     QMetaType info(ID);
     void *actual1 = QMetaType::create(ID);
     void *actual2 = info.create();
-    if (DefaultValueTraits<ID>::IsInitialized) {
-        Type *expected = DefaultValueFactory<ID>::create();
-        QCOMPARE(*static_cast<Type *>(actual1), *expected);
-        QCOMPARE(*static_cast<Type *>(actual2), *expected);
-        delete expected;
-    }
+    Type *expected = DefaultValueFactory<ID>::create();
+    QCOMPARE(*static_cast<Type *>(actual1), *expected);
+    QCOMPARE(*static_cast<Type *>(actual2), *expected);
+    delete expected;
+
     QMetaType::destroy(ID, actual1);
     info.destroy(actual2);
 }
@@ -755,9 +754,6 @@ template<>
 void testCreateHelper<QMetaType::Void>()
 {
     void *actual = QMetaType::create(QMetaType::Void);
-    if (DefaultValueTraits<QMetaType::Void>::IsInitialized) {
-        QVERIFY(DefaultValueFactory<QMetaType::Void>::create());
-    }
     QMetaType::destroy(QMetaType::Void, actual);
 }
 
@@ -1138,12 +1134,10 @@ static void testConstructHelper()
     void *actual2 = info.construct(storage2, /*copy=*/0);
     QCOMPARE(actual1, storage1);
     QCOMPARE(actual2, storage2);
-    if (DefaultValueTraits<ID>::IsInitialized) {
-        Type *expected = DefaultValueFactory<ID>::create();
-        QCOMPARE(*static_cast<Type *>(actual1), *expected);
-        QCOMPARE(*static_cast<Type *>(actual2), *expected);
-        delete expected;
-    }
+    Type *expected = DefaultValueFactory<ID>::create();
+    QCOMPARE(*static_cast<Type *>(actual1), *expected);
+    QCOMPARE(*static_cast<Type *>(actual2), *expected);
+    delete expected;
     QMetaType::destruct(ID, actual1);
     qFreeAligned(storage1);
     info.destruct(actual2);
@@ -1163,9 +1157,6 @@ void testConstructHelper<QMetaType::Void>()
     void *storage = 0;
     void *actual = QMetaType::construct(QMetaType::Void, storage, /*copy=*/0);
     QCOMPARE(actual, storage);
-    if (DefaultValueTraits<QMetaType::Void>::IsInitialized) {
-        QVERIFY(DefaultValueFactory<QMetaType::Void>::create());
-    }
     QMetaType::destruct(QMetaType::Void, actual);
     qFreeAligned(storage);
 

@@ -61,14 +61,14 @@ template <int ID>
 struct DefaultValueFactory
 {
     typedef typename MetaEnumToType<ID>::Type Type;
-    static Type *create() { return new Type; }
+    static Type *create() { return new Type(); }
 };
 
 template <>
 struct DefaultValueFactory<QMetaType::Void>
 {
     typedef MetaEnumToType<QMetaType::Void>::Type Type;
-    static Type *create() { return 0; }
+    static Type *create() { return nullptr; }
 };
 
 template <int ID>
@@ -78,14 +78,6 @@ struct DefaultValueTraits
     // initialized; e.g. QCOMPARE(*(new T), *(new T)) should succeed
     enum { IsInitialized = true };
 };
-
-#define DEFINE_NON_INITIALIZED_DEFAULT_VALUE_TRAITS(MetaTypeName, MetaTypeId, RealType) \
-template<> struct DefaultValueTraits<QMetaType::MetaTypeName> { \
-    enum { IsInitialized = false }; \
-};
-// Primitive types (int et al) aren't initialized
-FOR_EACH_PRIMITIVE_METATYPE(DEFINE_NON_INITIALIZED_DEFAULT_VALUE_TRAITS)
-#undef DEFINE_NON_INITIALIZED_DEFAULT_VALUE_TRAITS
 
 template <int ID>
 struct TestValueFactory {};
