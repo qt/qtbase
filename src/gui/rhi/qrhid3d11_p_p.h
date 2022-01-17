@@ -576,6 +576,7 @@ struct QD3D11SwapChain : public QRhiSwapChain
     DXGI_FORMAT colorFormat;
     DXGI_FORMAT srgbAdjustedColorFormat;
     IDXGISwapChain *swapChain = nullptr;
+    UINT swapChainFlags = 0;
     static const int BUFFER_COUNT = 2;
     ID3D11Texture2D *backBufferTex;
     ID3D11RenderTargetView *backBufferRtv;
@@ -727,8 +728,8 @@ public:
     ID3DUserDefinedAnnotation *annotations = nullptr;
     IDXGIAdapter1 *activeAdapter = nullptr;
     IDXGIFactory1 *dxgiFactory = nullptr;
-    bool hasDxgi2 = false;
     bool supportsFlipDiscardSwapchain = false;
+    bool supportsAllowTearing = false;
     bool deviceLost = false;
     QRhiD3D11NativeHandles nativeHandlesStruct;
     QRhiDriverInfo driverInfoStruct;
