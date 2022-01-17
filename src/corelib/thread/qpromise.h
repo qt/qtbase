@@ -66,12 +66,16 @@ public:
     {
         const int state = d.loadState();
         // If QFutureInterface has no state, there is nothing to be done
-        if (state == static_cast<int>(QFutureInterfaceBase::State::NoState))
+        if (state == static_cast<int>(QFutureInterfaceBase::State::NoState)) {
+            d.cleanContinuation();
             return;
+        }
         // Otherwise, if computation is not finished at this point, cancel
         // potential waits
-        if (!(state & QFutureInterfaceBase::State::Finished))
+        if (!(state & QFutureInterfaceBase::State::Finished)) {
             d.cancelAndFinish(); // cancel and finalize the state
+            d.cleanContinuation();
+        }
     }
 
     // Core QPromise APIs
