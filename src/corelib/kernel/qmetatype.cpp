@@ -764,7 +764,7 @@ QPartialOrdering QMetaType::compare(const void *lhs, const void *rhs) const
 {
     if (!lhs || !rhs)
         return QPartialOrdering::Unordered;
-    if (d_ptr->flags & QMetaType::IsPointer)
+    if (d_ptr && d_ptr->flags & QMetaType::IsPointer)
         return threeWayCompare(*reinterpret_cast<const void * const *>(lhs),
                                *reinterpret_cast<const void * const *>(rhs));
     if (d_ptr && d_ptr->lessThan) {

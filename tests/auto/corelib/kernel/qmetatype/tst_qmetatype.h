@@ -104,6 +104,8 @@ private slots:
     void typedConstruct();
     void constructCopy_data();
     void constructCopy();
+    void selfCompare_data();
+    void selfCompare();
     void typedefs();
     void registerType();
     void isRegistered_data();
