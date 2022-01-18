@@ -1,0 +1,24 @@
+From 426c2d7e32bc2f252e9d3323f633ac73222a7afc Mon Sep 17 00:00:00 2001
+From: Samuli Piippo <samuli.piippo@qt.io>
+Date: Thu, 20 Jan 2022 09:04:54 +0200
+Subject: [PATCH] Catch2: Fix console width for Qt tests
+
+Disabled by Qt so that test failures are not line-broken
+---
+ tests/auto/testlib/selftests/catch_p_p.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/tests/auto/testlib/selftests/catch_p_p.h b/tests/auto/testlib/selftests/catch_p_p.h
+index db1fed3b98..26bb41f4f0 100644
+--- a/tests/auto/testlib/selftests/catch_p_p.h
++++ b/tests/auto/testlib/selftests/catch_p_p.h
+@@ -8413,7 +8413,9 @@ namespace Catch {
+ #define CATCH_TEMP_CLARA_CONFIG_CONSOLE_WIDTH CATCH_CLARA_TEXTFLOW_CONFIG_CONSOLE_WIDTH
+ #undef CATCH_CLARA_TEXTFLOW_CONFIG_CONSOLE_WIDTH
+ #endif
++#if 0 // Disabled by Qt so that test failures are not line-broken
+ #define CATCH_CLARA_TEXTFLOW_CONFIG_CONSOLE_WIDTH CATCH_CONFIG_CONSOLE_WIDTH-1
++#endif
+ 
+ #ifdef __clang__
+ #pragma clang diagnostic push
