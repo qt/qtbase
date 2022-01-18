@@ -65,6 +65,8 @@ public:
 
 private slots:
     void initTestCase();
+    void cleanup();
+
     void registerTimer();
 
     /* void registerSocketNotifier(); */ // Not implemented here, see tst_QSocketNotifier instead
@@ -109,6 +111,12 @@ void tst_QEventDispatcher::initTestCase()
     while (!elapsedTimer.hasExpired(CoarseTimerInterval) && eventDispatcher->processEvents(QEventLoop::AllEvents)) {
             ;
     }
+}
+
+// consume pending posted events to avoid impact on the next test function
+void tst_QEventDispatcher::cleanup()
+{
+    eventDispatcher->processEvents(QEventLoop::AllEvents);
 }
 
 class TimerManager {
