@@ -30,6 +30,7 @@
 
 #include <qexception.h>
 #include <qfuture.h>
+#include <qpromise.h>
 #include <qsemaphore.h>
 
 class tst_QFuture : public QObject
