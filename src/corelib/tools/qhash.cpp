@@ -516,21 +516,9 @@ static uint siphash(const uint8_t *in, uint inlen, uint seed, uint seed2)
 QT_FUNCTION_TARGET(AES)
 static size_t aeshash(const uchar *p, size_t len, size_t seed, size_t seed2) noexcept
 {
-    __m128i key;
-    if (sizeof(size_t) == 8) {
-#ifdef Q_PROCESSOR_X86_64
-        __m128i mseed = _mm_cvtsi64_si128(seed);
-        key = _mm_insert_epi64(mseed, seed2, 1);
-#endif
-    } else {
-        __m128i mseed = _mm_cvtsi32_si128(int(seed));
-        key = _mm_insert_epi32(mseed, int(seed2), 1);
-        key = _mm_unpacklo_epi64(key, key);
-    }
-
     // This is inspired by the algorithm in the Go language. See:
-    // https://github.com/golang/go/blob/894abb5f680c040777f17f9f8ee5a5ab3a03cb94/src/runtime/asm_386.s#L902
-    // https://github.com/golang/go/blob/894abb5f680c040777f17f9f8ee5a5ab3a03cb94/src/runtime/asm_amd64.s#L903
+    // https://github.com/golang/go/blob/01b6cf09fc9f272d9db3d30b4c93982f4911d120/src/runtime/asm_amd64.s#L1105
+    // https://github.com/golang/go/blob/01b6cf09fc9f272d9db3d30b4c93982f4911d120/src/runtime/asm_386.s#L908
     //
     // Even though we're using the AESENC instruction from the CPU, this code
     // is not encryption and this routine makes no claim to be
@@ -548,50 +536,64 @@ static size_t aeshash(const uchar *p, size_t len, size_t seed, size_t seed2) noe
         state0 = _mm_aesenc_si128(state0, state0);
     };
 
-    __m128i state0 = key;
+    // hash twice 16 bytes, running 2 scramble rounds of AES on itself
+    const auto hash2x16bytes = [](__m128i &state0, __m128i &state1, const __m128i *src0,
+            const __m128i *src1) QT_FUNCTION_TARGET(AES) {
+        __m128i data0 = _mm_loadu_si128(src0);
+        __m128i data1 = _mm_loadu_si128(src1);
+        state0 = _mm_xor_si128(data0, state0);
+        state1 = _mm_xor_si128(data1, state1);
+        state0 = _mm_aesenc_si128(state0, state0);
+        state1 = _mm_aesenc_si128(state1, state1);
+        state0 = _mm_aesenc_si128(state0, state0);
+        state1 = _mm_aesenc_si128(state1, state1);
+    };
+
+    __m128i mseed, mseed2;
+    if (sizeof(size_t) == 8) {
+#ifdef Q_PROCESSOR_X86_64
+        mseed = _mm_cvtsi64_si128(seed);
+        mseed2 = _mm_set1_epi64x(seed2);
+#endif
+    } else {
+        mseed = _mm_cvtsi32_si128(int(seed));
+        mseed2 = _mm_set1_epi32(int(seed2));
+    }
+
+    // mseed (epi16) = [ seed, seed >> 16, seed >> 32, seed >> 48, len, 0, 0, 0 ]
+    mseed = _mm_insert_epi16(mseed, short(seed), 4);
+    // mseed (epi16) = [ seed, seed >> 16, seed >> 32, seed >> 48, len, len, len, len ]
+    mseed = _mm_shufflehi_epi16(mseed, 0);
+
+    // merge with the process-global seed
+    __m128i key = _mm_xor_si128(mseed, mseed2);
+
+    // scramble the key
+    __m128i state0 = _mm_aesenc_si128(key, key);
+
     auto src = reinterpret_cast<const __m128i *>(p);
+    if (len >= sizeof(__m128i)) {
+        // unlike the Go code, we don't have more per-process seed
+        __m128i state1 = _mm_aesenc_si128(state0, mseed2);
 
-    if (len < 16)
-        goto lt16;
-    if (len < 32)
-        goto lt32;
-
-    // rounds of 32 bytes
-    {
-        // Make state1 = ~state0:
-        __m128i one = _mm_cmpeq_epi64(key, key);
-        __m128i state1 = _mm_xor_si128(state0, one);
-
-        // do simplified rounds of 32 bytes: unlike the Go code, we only
-        // scramble twice and we keep 256 bits of state
         const auto srcend = reinterpret_cast<const __m128i *>(p + len);
-        while (src + 2 <= srcend) {
-            __m128i data0 = _mm_loadu_si128(src);
-            __m128i data1 = _mm_loadu_si128(src + 1);
-            state0 = _mm_xor_si128(data0, state0);
-            state1 = _mm_xor_si128(data1, state1);
-            state0 = _mm_aesenc_si128(state0, state0);
-            state1 = _mm_aesenc_si128(state1, state1);
-            state0 = _mm_aesenc_si128(state0, state0);
-            state1 = _mm_aesenc_si128(state1, state1);
-            src += 2;
+
+        // main loop: scramble two 16-byte blocks
+        for ( ; src + 2 < srcend; src += 2)
+            hash2x16bytes(state0, state1, src, src + 1);
+
+        if (src + 1 < srcend) {
+            // epilogue: between 16 and 31 bytes
+            hash2x16bytes(state0, state1, src, srcend - 1);
+        } else if (src != srcend) {
+            // epilogue: between 1 and 16 bytes, overlap with the end
+            __m128i data = _mm_loadu_si128(srcend - 1);
+            hash16bytes(state0, data);
         }
+
+        // combine results:
         state0 = _mm_xor_si128(state0, state1);
-    }
-    len &= 0x1f;
-
-    // do we still have 16 or more bytes?
-    if (len & 0x10) {
-lt32:
-        __m128i data = _mm_loadu_si128(src);
-        hash16bytes(state0, data);
-        ++src;
-    }
-    len &= 0xf;
-
-lt16:
-    if (len) {
-        // load the last chunk of data
+    } else if (len) {
         // We're going to load 16 bytes and mask zero the part we don't care
         // (the hash of a short string is different from the hash of a longer
         // including NULLs at the end because the length is in the key)
