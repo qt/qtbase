@@ -53,6 +53,62 @@ class QMainWindow;
 class QTextEdit;
 QT_END_NAMESPACE
 
+class TestEdit : public QTextEdit
+{
+    Q_OBJECT
+public:
+    TestEdit(QWidget *parent, const char *name)
+        : QTextEdit(parent)
+    {
+        setObjectName(name);
+    }
+
+protected:
+    bool event(QEvent *e) override
+    {
+        // Make testedit allow any Ctrl+Key as shortcut
+        if (e->type() == QEvent::ShortcutOverride) {
+            QKeyEvent *ke = static_cast<QKeyEvent*>(e);
+            if (ke->modifiers() == Qt::ControlModifier
+                && ke->key() > Qt::Key_Any
+                && ke->key() < Qt::Key_ydiaeresis) {
+                ke->ignore();
+                return true;
+            }
+        }
+
+        // If keypress not processed as normal, check for
+        // Ctrl+Key event, and input custom string for
+        // result comparison.
+        if (e->type() == QEvent::KeyPress) {
+            QKeyEvent *ke = static_cast<QKeyEvent*>(e);
+            if (ke->modifiers() && ke->key() > Qt::Key_Any
+                && ke->key() < Qt::Key_ydiaeresis) {
+                const QChar c = QLatin1Char(char(ke->key()));
+                if (ke->modifiers() == Qt::ControlModifier)
+                    insertPlainText(QLatin1String("<Ctrl+") + c + QLatin1Char('>'));
+                else if (ke->modifiers() == Qt::AltModifier)
+                    insertPlainText(QLatin1String("<Alt+") + c + QLatin1Char('>'));
+                else if (ke->modifiers() == Qt::ShiftModifier)
+                    insertPlainText(QLatin1String("<Shift+") + c + QLatin1Char('>'));
+                return true;
+            }
+        }
+        return QTextEdit::event(e);
+    }
+};
+
+class MainWindow : public QMainWindow
+{
+public:
+    MainWindow();
+
+    TestEdit *testEdit() const { return m_testEdit; }
+
+private:
+    TestEdit *m_testEdit;
+};
+
 class tst_QShortcut : public QObject
 {
     Q_OBJECT
@@ -143,62 +199,7 @@ protected:
     void testElement();
 
     Result ambigResult;
-};
-
-class TestEdit : public QTextEdit
-{
-    Q_OBJECT
-public:
-    TestEdit(QWidget *parent, const char *name)
-        : QTextEdit(parent)
-    {
-        setObjectName(name);
-    }
-
-protected:
-    bool event(QEvent *e) override
-    {
-        // Make testedit allow any Ctrl+Key as shortcut
-        if (e->type() == QEvent::ShortcutOverride) {
-            QKeyEvent *ke = static_cast<QKeyEvent*>(e);
-            if (ke->modifiers() == Qt::ControlModifier
-                && ke->key() > Qt::Key_Any
-                && ke->key() < Qt::Key_ydiaeresis) {
-                ke->ignore();
-                return true;
-            }
-        }
-
-        // If keypress not processed as normal, check for
-        // Ctrl+Key event, and input custom string for
-        // result comparison.
-        if (e->type() == QEvent::KeyPress) {
-            QKeyEvent *ke = static_cast<QKeyEvent*>(e);
-            if (ke->modifiers() && ke->key() > Qt::Key_Any
-                && ke->key() < Qt::Key_ydiaeresis) {
-                const QChar c = QLatin1Char(char(ke->key()));
-                if (ke->modifiers() == Qt::ControlModifier)
-                    insertPlainText(QLatin1String("<Ctrl+") + c + QLatin1Char('>'));
-                else if (ke->modifiers() == Qt::AltModifier)
-                    insertPlainText(QLatin1String("<Alt+") + c + QLatin1Char('>'));
-                else if (ke->modifiers() == Qt::ShiftModifier)
-                    insertPlainText(QLatin1String("<Shift+") + c + QLatin1Char('>'));
-                return true;
-            }
-        }
-        return QTextEdit::event(e);
-    }
-};
-
-class MainWindow : public QMainWindow
-{
-public:
-    MainWindow();
-
-    TestEdit *testEdit() const { return m_testEdit; }
-
-private:
-    TestEdit *m_testEdit;
+    QScopedPointer<MainWindow> mainWindow;
 };
 
 MainWindow::MainWindow()
@@ -1276,8 +1277,6 @@ void tst_QShortcut::testElement()
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
-    static QScopedPointer<MainWindow> mainW;
-
     currentResult = NoResult;
     QFETCH(tst_QShortcut::Action, action);
     QFETCH(tst_QShortcut::Widget, testWidget);
@@ -1294,29 +1293,29 @@ void tst_QShortcut::testElement()
 
     auto mainWindowDeleter = qScopeGuard([&]{
         if (action == TestEnd)
-            mainW.reset();
+            mainWindow.reset();
     });
 
-    if (mainW.isNull())
-        mainW.reset(new MainWindow);
-    mainW->setWindowTitle(QTest::currentTestFunction());
-    mainW->show();
-    mainW->activateWindow();
+    if (mainWindow.isNull())
+        mainWindow.reset(new MainWindow);
+    mainWindow->setWindowTitle(QTest::currentTestFunction());
+    mainWindow->show();
+    mainWindow->activateWindow();
     // Don't use QVERIFY here; the data function uses QEXPECT_FAIL,
     // which would result in an XPASS failure.
-    if (!QTest::qWaitForWindowActive(mainW.data()))
+    if (!QTest::qWaitForWindowActive(mainWindow.data()))
         QVERIFY(false);
 
     switch (action) {
     case ClearAll:
-        qDeleteAll(mainW->findChildren<QShortcut *>());
+        qDeleteAll(mainWindow->findChildren<QShortcut *>());
         break;
     case SetupAccel:
-        setupShortcut(mainW.data(), txt, testWidget, txt.isEmpty()
+        setupShortcut(mainWindow.data(), txt, testWidget, txt.isEmpty()
                       ? QKeySequence(k1, k2, k3, k4) : QKeySequence::fromString(txt));
         break;
     case TestAccel:
-        sendKeyEvents(mainW.data(), k1, char16_t(c1), k2, char16_t(c2), k3, char16_t(c3), k4, char16_t(c4));
+        sendKeyEvents(mainWindow.data(), k1, char16_t(c1), k2, char16_t(c2), k3, char16_t(c3), k4, char16_t(c4));
         QCOMPARE(currentResult, result);
         break;
     case TestEnd:
