@@ -512,11 +512,13 @@ QDBusMessage QDBusMessage::createErrorReply(const QString &name, const QString &
 }
 
 /*!
-   \fn QDBusMessage QDBusMessage::createReply(const QVariant &argument) const
-
     Constructs a new DBus message representing a reply, with the
     given \a argument.
 */
+QDBusMessage QDBusMessage::createReply(const QVariant &argument) const
+{
+    return createReply(QList{argument});
+}
 
 /*!
     \fn QDBusMessage QDBusMessage::createErrorReply(const QDBusError &error) const
