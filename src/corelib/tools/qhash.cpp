@@ -564,8 +564,8 @@ static size_t aeshash(const uchar *p, size_t len, size_t seed, size_t seed2) noe
 
         // do simplified rounds of 32 bytes: unlike the Go code, we only
         // scramble twice and we keep 256 bits of state
-        const auto srcend = src + (len / 32);
-        while (src < srcend) {
+        const auto srcend = reinterpret_cast<const __m128i *>(p + len);
+        while (src + 2 <= srcend) {
             __m128i data0 = _mm_loadu_si128(src);
             __m128i data1 = _mm_loadu_si128(src + 1);
             state0 = _mm_xor_si128(data0, state0);
