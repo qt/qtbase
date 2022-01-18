@@ -54,7 +54,16 @@
 #include "private/qglobal_p.h"
 
 #include <QtCore/qoperatingsystemversion.h>
+
+#ifdef Q_OS_MACOS
 struct mach_header;
+typedef int kern_return_t;
+typedef mach_port_t io_object_t;
+extern "C" {
+kern_return_t IOObjectRetain(io_object_t object);
+kern_return_t IOObjectRelease(io_object_t object);
+}
+#endif
 
 #ifndef __IMAGECAPTURE__
 #  define __IMAGECAPTURE__
@@ -104,7 +113,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(NSObject);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSString);
 
 QT_BEGIN_NAMESPACE
-template <typename T, typename U, U (*RetainFunction)(U), void (*ReleaseFunction)(U)>
+template <typename T, typename U, auto RetainFunction, auto ReleaseFunction>
 class QAppleRefCounted
 {
 public:
@@ -171,6 +180,14 @@ public:
         return QCFType<T>(t);
     }
 };
+
+#ifdef Q_OS_MACOS
+template <typename T>
+class QIOType : public QAppleRefCounted<T, io_object_t, IOObjectRetain, IOObjectRelease>
+{
+    using QAppleRefCounted<T, io_object_t, IOObjectRetain, IOObjectRelease>::QAppleRefCounted;
+};
+#endif
 
 class Q_CORE_EXPORT QCFString : public QCFType<CFStringRef>
 {
