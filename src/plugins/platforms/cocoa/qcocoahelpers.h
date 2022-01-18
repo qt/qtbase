@@ -226,19 +226,6 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSPanelContentsWrapper);
 
 // -------------------------------------------------------------------------
 
-// QAppleRefCounted expects the retain function to return the object
-io_object_t q_IOObjectRetain(io_object_t obj);
-// QAppleRefCounted expects the release function to return void
-void q_IOObjectRelease(io_object_t obj);
-
-template <typename T>
-class QIOType : public QAppleRefCounted<T, io_object_t, q_IOObjectRetain, q_IOObjectRelease>
-{
-    using QAppleRefCounted<T, io_object_t, q_IOObjectRetain, q_IOObjectRelease>::QAppleRefCounted;
-};
-
-// -------------------------------------------------------------------------
-
 // Depending on the ABI of the platform, we may need to use objc_msgSendSuper_stret:
 // - http://www.sealiesoftware.com/blog/archive/2008/10/30/objc_explain_objc_msgSend_stret.html
 // - https://lists.apple.com/archives/cocoa-dev/2008/Feb/msg02338.html
