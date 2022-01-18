@@ -597,10 +597,11 @@ lt16:
         // including NULLs at the end because the length is in the key)
         // WARNING: this may produce valgrind warnings, but it's safe
 
+        constexpr quintptr PageSize = 4096;
         __m128i data;
 
-        if (Q_LIKELY(quintptr(src + 1) & 0xff0)) {
-            // same page, we definitely can't fault:
+        if ((quintptr(src) & (PageSize / 2)) == 0) {
+            // lower half of the page:
             // load all 16 bytes and mask off the bytes past the end of the source
             static const qint8 maskarray[] = {
                 -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -610,15 +611,14 @@ lt16:
             data = _mm_loadu_si128(src);
             data = _mm_and_si128(data, mask);
         } else {
-            // too close to the end of the page, it could fault:
+            // upper half of the page:
             // load 16 bytes ending at the data end, then shuffle them to the beginning
             static const qint8 shufflecontrol[] = {
                 1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15,
                 -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
             };
             __m128i control = _mm_loadu_si128(reinterpret_cast<const __m128i *>(shufflecontrol + 15 - len));
-            p = reinterpret_cast<const uchar *>(src - 1);
-            data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(p + len));
+            data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(p + len) - 1);
             data = _mm_shuffle_epi8(data, control);
         }
 
