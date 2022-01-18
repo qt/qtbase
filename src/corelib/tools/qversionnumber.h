@@ -494,7 +494,7 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QTypeRevision &revision);
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QVersionNumber)
-Q_DECLARE_METATYPE(QTypeRevision)
+QT_DECL_METATYPE_EXTERN(QVersionNumber, Q_CORE_EXPORT)
+QT_DECL_METATYPE_EXTERN(QTypeRevision, Q_CORE_EXPORT)
 
 #endif // QVERSIONNUMBER_H

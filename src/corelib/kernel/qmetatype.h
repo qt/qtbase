@@ -1257,18 +1257,35 @@ int qRegisterNormalizedMetaTypeImplementation(const QT_PREPEND_NAMESPACE(QByteAr
 // This primary template calls the -Implementation, like all other specialisations should.
 // But the split allows to
 // - in a header:
-//   - declare, but not define, a specialization of this template
-//   - add an explicit instantiation declaration (extern template ...)
+//   - define a specialization of this template calling an out-of-line function
+//     (QT_DECL_METATYPE_EXTERN{,_TAGGED})
 // - in the .cpp file:
-//   - define the specialization to call the -Implementation
-//   - add an explicit instantiation definition
-// This prevents the compiler from taking the leeway for inline functions in
-// [temp.explicit]/13 Note 4
+//   - define the out-of-line wrapper to call the -Implementation
+//     (QT_IMPL_METATYPE_EXTERN{,_TAGGED})
+// The _TAGGED variants let you choose a tag (must be a C identifier) to disambiguate
+// the out-of-line function; the non-_TAGGED variants use the passed class name as tag.
 template <typename T>
 int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normalizedTypeName)
 {
     return qRegisterNormalizedMetaTypeImplementation<T>(normalizedTypeName);
 }
+
+#define QT_DECL_METATYPE_EXTERN_TAGGED(TYPE, TAG, EXPORT) \
+    QT_BEGIN_NAMESPACE \
+    EXPORT int qRegisterNormalizedMetaType_ ## TAG (const QByteArray &); \
+    template <> inline int qRegisterNormalizedMetaType< TYPE >(const QByteArray &name) \
+    { return qRegisterNormalizedMetaType_ ## TAG (name); } \
+    QT_END_NAMESPACE \
+    Q_DECLARE_METATYPE(TYPE) \
+    /* end */
+#define QT_IMPL_METATYPE_EXTERN_TAGGED(TYPE, TAG) \
+    int qRegisterNormalizedMetaType_ ## TAG (const QByteArray &name) \
+    { return qRegisterNormalizedMetaTypeImplementation< TYPE >(name); } \
+    /* end */
+#define QT_DECL_METATYPE_EXTERN(TYPE, EXPORT) \
+    QT_DECL_METATYPE_EXTERN_TAGGED(TYPE, TYPE, EXPORT)
+#define QT_IMPL_METATYPE_EXTERN(TYPE) \
+    QT_IMPL_METATYPE_EXTERN_TAGGED(TYPE, TYPE)
 
 template <typename T>
 int qRegisterMetaType(const char *typeName)
@@ -2521,6 +2538,7 @@ constexpr const QtPrivate::QMetaTypeInterface *const qt_incomplete_metaTypeArray
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QtMetaTypePrivate::QPairVariantInterfaceImpl)
+QT_DECL_METATYPE_EXTERN_TAGGED(QtMetaTypePrivate::QPairVariantInterfaceImpl,
+                               QPairVariantInterfaceImpl, Q_CORE_EXPORT)
 
 #endif // QMETATYPE_H

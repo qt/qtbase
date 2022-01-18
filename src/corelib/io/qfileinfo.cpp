@@ -46,6 +46,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN(QFileInfo)
+
 QString QFileInfoPrivate::getFileName(QAbstractFileEngine::FileName name) const
 {
     if (cache_enabled && !fileNames[(int)name].isNull())

@@ -140,7 +140,7 @@ Q_DBUS_EXPORT QDebug operator<<(QDebug, const QDBusError &);
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QDBusError)
+QT_DECL_METATYPE_EXTERN(QDBusError, Q_DBUS_EXPORT)
 #else
 QT_BEGIN_NAMESPACE
 class Q_DBUS_EXPORT QDBusError {}; // dummy class for moc

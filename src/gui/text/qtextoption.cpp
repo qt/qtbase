@@ -43,6 +43,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN_TAGGED(QTextOption::Tab, QTextOption_Tab)
+
 struct QTextOptionPrivate
 {
     QList<QTextOption::Tab> tabStops;

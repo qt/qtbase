@@ -177,6 +177,8 @@ Cpp.ignoredirectives    += \
                           Q_CLASSINFO \
                           Q_DECLARE_INTERFACE \
                           Q_DECLARE_METATYPE \
+                          QT_DECL_METATYPE_EXTERN \
+                          QT_IMPL_METATYPE_EXTERN \
                           Q_DECLARE_OPERATORS_FOR_FLAGS \
                           Q_DECLARE_PRIVATE \
                           Q_DECLARE_PRIVATE_D \

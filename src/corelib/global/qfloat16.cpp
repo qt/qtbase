@@ -44,6 +44,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN(qfloat16)
+
 /*!
     \class qfloat16
     \keyword 16-bit Floating Point Support

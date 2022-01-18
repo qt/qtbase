@@ -537,12 +537,8 @@ inline Qt::ItemFlags QModelIndex::flags() const
 inline size_t qHash(const QModelIndex &index, size_t seed = 0) noexcept
 { return size_t((size_t(index.row()) << 4) + size_t(index.column()) + index.internalId()) ^ seed; }
 
-Q_CORE_EXPORT int qRegisterNormalizedMetaType_QList_QModelIndex(const QByteArray &name);
-template <> inline int qRegisterNormalizedMetaType<QList<QModelIndex>>(const QByteArray &name)
-{ return qRegisterNormalizedMetaType_QList_QModelIndex(name); }
-
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QModelIndexList)
+QT_DECL_METATYPE_EXTERN(QModelIndexList, Q_CORE_EXPORT)
 
 #endif // QABSTRACTITEMMODEL_H

@@ -48,6 +48,8 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_DBUS
 
+QT_IMPL_METATYPE_EXTERN(QDBusUnixFileDescriptor)
+
 /*!
     \class QDBusUnixFileDescriptor
     \inmodule QtDBus

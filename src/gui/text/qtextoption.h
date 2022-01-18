@@ -151,6 +151,6 @@ inline void QTextOption::setTabStopDistance(qreal atabStop)
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE( QTextOption::Tab )
+QT_DECL_METATYPE_EXTERN_TAGGED(QTextOption::Tab, QTextOption_Tab, Q_GUI_EXPORT)
 
 #endif // QTEXTOPTION_H

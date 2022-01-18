@@ -57,6 +57,9 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN(QVersionNumber)
+QT_IMPL_METATYPE_EXTERN(QTypeRevision)
+
 /*!
     \class QVersionNumber
     \inmodule QtCore

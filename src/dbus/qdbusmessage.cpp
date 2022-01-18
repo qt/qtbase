@@ -56,6 +56,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN(QDBusMessage)
+
 static_assert(QDBusMessage::InvalidMessage == DBUS_MESSAGE_TYPE_INVALID);
 static_assert(QDBusMessage::MethodCallMessage == DBUS_MESSAGE_TYPE_METHOD_CALL);
 static_assert(QDBusMessage::ReplyMessage == DBUS_MESSAGE_TYPE_METHOD_RETURN);
