@@ -538,11 +538,19 @@ bool Continuation<Function, ResultType, ParentResultType>::execute()
 template<class Function>
 struct ContinuationWrapper
 {
-    ContinuationWrapper(Function &&f) : function(QSharedPointer<Function>::create(std::move(f))) { }
-    void operator()(const QFutureInterfaceBase &parentData) { (*function)(parentData); }
+    ContinuationWrapper(Function &&f) : function(std::move(f)) { }
+    ContinuationWrapper(const ContinuationWrapper &other)
+        : function(std::move(const_cast<ContinuationWrapper &>(other).function))
+    {
+        Q_ASSERT_X(false, "QFuture", "Continuation shouldn't be copied");
+    }
+    ContinuationWrapper(ContinuationWrapper &&other) = default;
+    ContinuationWrapper &operator=(ContinuationWrapper &&) = default;
+
+    void operator()(const QFutureInterfaceBase &parentData) { function(parentData); }
 
 private:
-    QSharedPointer<Function> function;
+    Function function;
 };
 
 template<typename Function, typename ResultType, typename ParentResultType>
