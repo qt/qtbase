@@ -837,7 +837,7 @@ void QFutureInterfaceBasePrivate::setState(QFutureInterfaceBase::State newState)
 
 void QFutureInterfaceBase::setContinuation(std::function<void(const QFutureInterfaceBase &)> func)
 {
-    setContinuation(func, nullptr);
+    setContinuation(std::move(func), nullptr);
 }
 
 void QFutureInterfaceBase::setContinuation(std::function<void(const QFutureInterfaceBase &)> func,
