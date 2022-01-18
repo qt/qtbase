@@ -77,7 +77,7 @@ info2.size();               // returns 56201
 QFileInfo info1("C:\\Users\\Bob\\untabify.lnk");
 info1.isSymLink();          // returns true
 info1.absoluteFilePath();   // returns "C:/Users/Bob/untabify.lnk"
-info1.size();               // returns 743
+info1.size();               // returns 63942
 info1.symLinkTarget();      // returns "C:/Pretty++/untabify"
 
 QFileInfo info2(info1.symLinkTarget());
