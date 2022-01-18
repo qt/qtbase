@@ -1040,13 +1040,13 @@ struct WhenAllContext
         futures[index] = std::forward<T>(future);
         Q_ASSERT(count > 0);
         if (--count <= 0) {
-            promise.reportResult(futures);
-            promise.reportFinished();
+            promise.addResult(futures);
+            promise.finish();
         }
     }
 
     QAtomicInteger<qsizetype> count;
-    QFutureInterface<ResultFutures> promise;
+    QPromise<ResultFutures> promise;
     ResultFutures futures;
 };
 
@@ -1059,13 +1059,13 @@ struct WhenAnyContext
     void checkForCompletion(qsizetype, T &&result)
     {
         if (!ready.fetchAndStoreRelaxed(true)) {
-            promise.reportResult(std::forward<T>(result));
-            promise.reportFinished();
+            promise.addResult(std::forward<T>(result));
+            promise.finish();
         }
     }
 
     QAtomicInt ready = false;
-    QFutureInterface<ResultType> promise;
+    QPromise<ResultType> promise;
 };
 
 template<qsizetype Index, typename ContextType, typename... Ts>
@@ -1100,7 +1100,7 @@ QFuture<OutputSequence> whenAllImpl(InputIt first, InputIt last)
 
     auto context = QSharedPointer<QtPrivate::WhenAllContext<OutputSequence>>::create(size);
     context->futures.resize(size);
-    context->promise.reportStarted();
+    context->promise.start();
 
     qsizetype idx = 0;
     for (auto it = first; it != last; ++it, ++idx) {
@@ -1119,7 +1119,7 @@ QFuture<OutputSequence> whenAllImpl(Futures &&... futures)
     constexpr qsizetype size = sizeof...(Futures);
     auto context = QSharedPointer<QtPrivate::WhenAllContext<OutputSequence>>::create(size);
     context->futures.resize(size);
-    context->promise.reportStarted();
+    context->promise.start();
 
     QtPrivate::addCompletionHandlers(context, std::make_tuple(std::forward<Futures>(futures)...));
 
@@ -1140,7 +1140,7 @@ QFuture<QtFuture::WhenAnyResult<typename Future<ValueType>::type>> whenAnyImpl(I
     }
 
     auto context = QSharedPointer<QtPrivate::WhenAnyContext<ResultType>>::create();
-    context->promise.reportStarted();
+    context->promise.start();
 
     qsizetype idx = 0;
     for (auto it = first; it != last; ++it, ++idx) {
@@ -1159,7 +1159,7 @@ QFuture<std::variant<std::decay_t<Futures>...>> whenAnyImpl(Futures &&... future
     using ResultType = std::variant<std::decay_t<Futures>...>;
 
     auto context = QSharedPointer<QtPrivate::WhenAnyContext<ResultType>>::create();
-    context->promise.reportStarted();
+    context->promise.start();
 
     QtPrivate::addCompletionHandlers(context, std::make_tuple(std::forward<Futures>(futures)...));
 
