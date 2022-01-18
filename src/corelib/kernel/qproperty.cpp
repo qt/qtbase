@@ -267,6 +267,11 @@ void Qt::endPropertyUpdateGroup()
     }
 }
 
+// check everything stored in QPropertyBindingPrivate's union is trivially destructible
+// (though the compiler would also complain if that weren't the case)
+static_assert(std::is_trivially_destructible_v<QPropertyBindingSourceLocation>);
+static_assert(std::is_trivially_destructible_v<std::byte[sizeof(QPropertyBindingSourceLocation)]>);
+
 QPropertyBindingPrivate::~QPropertyBindingPrivate()
 {
     if (firstObserver)
