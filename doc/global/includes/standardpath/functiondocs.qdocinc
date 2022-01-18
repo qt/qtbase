@@ -55,6 +55,9 @@
     Returns the absolute file path to the executable, or an empty
     string if not found.
 
+    If the given \n executableName is an absolute path pointing to
+    an executable its clean path is returned.
+
 //! [findExecutable]
 
 //! [locate]
