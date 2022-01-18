@@ -24,6 +24,9 @@ if(ANDROID OR INTEGRITY)
         "test.json"
         "test2.json"
         "test3.json"
+        "simple.duplicates.json"
+        "test.duplicates.json"
+        "test3.duplicates.json"
     )
 
     qt_internal_add_resource(tst_json "json"

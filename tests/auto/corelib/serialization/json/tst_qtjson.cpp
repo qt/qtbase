@@ -175,6 +175,8 @@ private Q_SLOTS:
     void fromToVariantConversions();
 
     void testIteratorComparison();
+
+    void noLeakOnNameClash_data();
     void noLeakOnNameClash();
 
 private:
@@ -3647,22 +3649,48 @@ void tst_QtJson::testIteratorComparison()
     QVERIFY(t.end() > t.begin());
 }
 
+void tst_QtJson::noLeakOnNameClash_data()
+{
+    QTest::addColumn<QString>("fileName");
+    QTest::addColumn<QByteArray>("result");
+    QTest::addRow("simple")
+            << QStringLiteral("simple.duplicates.json")
+            << QByteArray(R"({"": 0})");
+    QTest::addRow("test")
+            << QStringLiteral("test.duplicates.json")
+            << QByteArray(R"([
+                    "JSON Test Pattern pass1", {"a": ["array with 1 element"]}, {}, [], -42, true,
+                    false, null, {"a": "A key can be any string"}, 0.5, 98.6, 99.44, 1066, 10, 1,
+                    0.1, 1, 2, 2, "rosebud", {"a": "bar"}, {"a": {"a": 2000}}, {"a": {"a": 2000}},
+                    {"a": {"a": 2000}}, {"a": {"a": 2000}}
+                ])");
+    QTest::addRow("test3")
+            << QStringLiteral("test3.duplicates.json")
+            << QByteArray(R"({"a": [{"a": "212 555-1234"}, {"a": "646 555-4567"}]})");
+}
+
 void tst_QtJson::noLeakOnNameClash()
 {
-    QJsonDocument doc = QJsonDocument::fromJson("{\"\":{\"\":0},\"\":0}");
-    QVERIFY(!doc.isNull());
-    const QJsonObject obj = doc.object();
+    QFETCH(QString, fileName);
+    QFETCH(QByteArray, result);
 
-    // Removed the duplicate key.
-    QCOMPARE(obj.length(), 1);
+    QFile file(testDataDir + u'/' + fileName);
+    QVERIFY(file.open(QFile::ReadOnly));
+    QByteArray testJson = file.readAll();
+    QVERIFY(!testJson.isEmpty());
 
-    // Retained the last of the duplicates.
-    const QJsonValue val = obj.begin().value();
-    QVERIFY(val.isDouble());
-    QCOMPARE(val.toDouble(), 0.0);
+    QJsonParseError error;
+
+    // Retains the last one of each set of duplicate keys.
+    QJsonDocument doc = QJsonDocument::fromJson(testJson, &error);
+    QVERIFY2(!doc.isNull(), qPrintable(error.errorString()));
+    QJsonDocument expected = QJsonDocument::fromJson(result, &error);
+    QVERIFY2(!expected.isNull(), qPrintable(error.errorString()));
+
+    QCOMPARE(doc, expected);
 
     // It should not leak.
-    // In particular it should not forget to deref the container for the inner object.
+    // In particular it should not forget to deref the container for the inner objects.
 }
 
 QTEST_MAIN(tst_QtJson)

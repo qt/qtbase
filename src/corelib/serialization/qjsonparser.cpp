@@ -389,12 +389,24 @@ static Iterator customAssigningUniqueLast(Iterator first, Iterator last,
     if (first == last)
         return last;
 
-    Iterator result = first;
+    // After adjacent_find, we know that *first and *(first+1) compare equal,
+    // and that first+1 != last.
+    Iterator result = first++;
+    Q_ASSERT(compare(*result, *first));
+    assign(*result, *first);
+    Q_ASSERT(first != last);
+
     while (++first != last) {
         if (!compare(*result, *first))
             ++result;
-        if (result != first)
-            assign(*result, *first);
+
+        // Due to adjacent_find above, we know that we've at least eliminated one element.
+        // Therefore we have to move each further element across the gap.
+        Q_ASSERT(result != first);
+
+        // We have to overwrite each element we want to eliminate, to deref() the container.
+        // Therefore we don't try to optimize the number of assignments here.
+        assign(*result, *first);
     }
 
     return ++result;
