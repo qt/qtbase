@@ -120,6 +120,6 @@ Q_CORE_EXPORT QDebug operator<<(QDebug debug, const QStorageInfo &);
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QStorageInfo)
+QT_DECL_METATYPE_EXTERN(QStorageInfo, Q_CORE_EXPORT)
 
 #endif // QSTORAGEINFO_H

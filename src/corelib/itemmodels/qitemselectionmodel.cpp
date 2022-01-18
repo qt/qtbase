@@ -50,6 +50,9 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN(QItemSelectionRange)
+QT_IMPL_METATYPE_EXTERN(QItemSelection)
+
 /*!
     \class QItemSelectionRange
     \inmodule QtCore

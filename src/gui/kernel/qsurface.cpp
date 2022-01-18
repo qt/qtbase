@@ -44,6 +44,7 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN_TAGGED(QSurface*, QSurface_ptr)
 
 /*!
     \class QSurface

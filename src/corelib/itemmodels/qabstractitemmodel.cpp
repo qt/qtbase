@@ -60,8 +60,7 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcCheckIndex, "qt.core.qabstractitemmodel.checkindex")
 
-int qRegisterNormalizedMetaType_QList_QModelIndex(const QByteArray &name)
-{ return qRegisterNormalizedMetaTypeImplementation<QList<QModelIndex>>(name); }
+QT_IMPL_METATYPE_EXTERN(QModelIndexList)
 
 QPersistentModelIndexData *QPersistentModelIndexData::create(const QModelIndex &index)
 {

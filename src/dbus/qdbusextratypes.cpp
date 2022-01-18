@@ -44,6 +44,10 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN(QDBusVariant)
+QT_IMPL_METATYPE_EXTERN(QDBusObjectPath)
+QT_IMPL_METATYPE_EXTERN(QDBusSignature)
+
 void QDBusObjectPath::doCheck()
 {
     if (!QDBusUtil::isValidObjectPath(m_path)) {

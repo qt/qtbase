@@ -212,6 +212,6 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QFileInfo &);
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QFileInfo)
+QT_DECL_METATYPE_EXTERN(QFileInfo, Q_CORE_EXPORT)
 
 #endif // QFILEINFO_H

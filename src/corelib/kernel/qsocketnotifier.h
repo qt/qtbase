@@ -137,7 +137,8 @@ private:
 };
 
 QT_END_NAMESPACE
-Q_DECLARE_METATYPE(QSocketNotifier::Type)
-Q_DECLARE_METATYPE(QSocketDescriptor)
+
+QT_DECL_METATYPE_EXTERN_TAGGED(QSocketNotifier::Type, QSocketNotifier_Type, Q_CORE_EXPORT)
+QT_DECL_METATYPE_EXTERN(QSocketDescriptor, Q_CORE_EXPORT)
 
 #endif // QSOCKETNOTIFIER_H

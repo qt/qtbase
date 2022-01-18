@@ -53,6 +53,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN(QDBusError)
+
 static constexpr const auto errorMessages = qOffsetStringArray(
     "NoError",
     "other",

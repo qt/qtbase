@@ -367,7 +367,7 @@ inline auto qHypot(qfloat16 x, qfloat16 y, qfloat16 z)
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(qfloat16)
+QT_DECL_METATYPE_EXTERN(qfloat16, Q_CORE_EXPORT)
 
 namespace std {
 template<>

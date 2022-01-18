@@ -189,9 +189,9 @@ inline bool operator==(const QDBusVariant &v1, const QDBusVariant &v2)
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QDBusVariant)
-Q_DECLARE_METATYPE(QDBusObjectPath)
-Q_DECLARE_METATYPE(QDBusSignature)
+QT_DECL_METATYPE_EXTERN(QDBusVariant, Q_DBUS_EXPORT)
+QT_DECL_METATYPE_EXTERN(QDBusObjectPath, Q_DBUS_EXPORT)
+QT_DECL_METATYPE_EXTERN(QDBusSignature, Q_DBUS_EXPORT)
 
 #endif // QT_NO_DBUS
 #endif

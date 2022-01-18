@@ -238,7 +238,7 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QItemSelectionRange &);
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QItemSelectionRange)
-Q_DECLARE_METATYPE(QItemSelection)
+QT_DECL_METATYPE_EXTERN(QItemSelectionRange, Q_CORE_EXPORT)
+QT_DECL_METATYPE_EXTERN(QItemSelection, Q_CORE_EXPORT)
 
 #endif // QITEMSELECTIONMODEL_H

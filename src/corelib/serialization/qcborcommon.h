@@ -151,7 +151,7 @@ enum class QCborNegativeInteger : quint64 {};
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QCborTag)
+QT_DECL_METATYPE_EXTERN(QCborTag, Q_CORE_EXPORT)
 
 // To avoid changing namespace we need to reinstate defines, even though our .cpp
 // will then have to remove them again.
