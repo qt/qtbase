@@ -48,7 +48,7 @@ function(qt_print_build_instructions)
     endif()
     message("\nTo configure and build other Qt modules, you can use the following convenience script:
         ${local_install_prefix}/${INSTALL_BINDIR}/${configure_module_command}")
-    message("\nIf reconfiguration fails for some reason, try to remove 'CMakeCache.txt' \
+    message("\nIf reconfiguration fails for some reason, try removing 'CMakeCache.txt' \
 from the build directory \n")
 endfunction()
 
