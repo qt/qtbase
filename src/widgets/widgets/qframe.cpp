@@ -44,6 +44,7 @@
 #include "qpainter.h"
 #include "qstyle.h"
 #include "qstyleoption.h"
+#include "qstylepainter.h"
 #include "qapplication.h"
 
 #include "qframe_p.h"
@@ -511,8 +512,8 @@ QSize QFrame::sizeHint() const
 
 void QFrame::paintEvent(QPaintEvent *)
 {
-    QPainter paint(this);
-    drawFrame(&paint);
+    QStylePainter p(this);
+    drawFrame(&p);
 }
 
 /*!

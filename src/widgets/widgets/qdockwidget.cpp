@@ -219,7 +219,7 @@ void QDockWidgetTitleButton::leaveEvent(QEvent *event)
 
 void QDockWidgetTitleButton::paintEvent(QPaintEvent *)
 {
-    QPainter p(this);
+    QStylePainter p(this);
 
     QStyleOptionToolButton opt;
     opt.initFrom(this);
@@ -232,7 +232,7 @@ void QDockWidgetTitleButton::paintEvent(QPaintEvent *)
             opt.state |= QStyle::State_On;
         if (isDown())
             opt.state |= QStyle::State_Sunken;
-        style()->drawPrimitive(QStyle::PE_PanelButtonTool, &opt, &p, this);
+        p.drawPrimitive(QStyle::PE_PanelButtonTool, opt);
     } else if (isDown() || isChecked()) {
         // no frame, but the icon might have explicit pixmaps for QIcon::On
         opt.state |= QStyle::State_On | QStyle::State_Sunken;
@@ -244,7 +244,7 @@ void QDockWidgetTitleButton::paintEvent(QPaintEvent *)
     opt.features = QStyleOptionToolButton::None;
     opt.arrowType = Qt::NoArrow;
     opt.iconSize = dockButtonIconSize();
-    style()->drawComplexControl(QStyle::CC_ToolButton, &opt, &p, this);
+    p.drawComplexControl(QStyle::CC_ToolButton, opt);
 }
 
 /******************************************************************************

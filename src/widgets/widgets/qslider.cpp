@@ -46,6 +46,7 @@
 #include "qpainter.h"
 #include "qstyle.h"
 #include "qstyleoption.h"
+#include "qstylepainter.h"
 #include "private/qapplication_p.h"
 #include "private/qabstractslider_p.h"
 #include "qdebug.h"
@@ -317,7 +318,7 @@ QSlider::~QSlider()
 void QSlider::paintEvent(QPaintEvent *)
 {
     Q_D(QSlider);
-    QPainter p(this);
+    QStylePainter p(this);
     QStyleOptionSlider opt;
     initStyleOption(&opt);
 
@@ -325,7 +326,7 @@ void QSlider::paintEvent(QPaintEvent *)
     if (d->tickPosition != NoTicks)
         opt.subControls |= QStyle::SC_SliderTickmarks;
 
-    style()->drawComplexControl(QStyle::CC_Slider, &opt, &p, this);
+    p.drawComplexControl(QStyle::CC_Slider, opt);
 }
 
 /*!

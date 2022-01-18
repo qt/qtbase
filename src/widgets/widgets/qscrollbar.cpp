@@ -44,6 +44,7 @@
 #include "qscrollbar.h"
 #include "qstyle.h"
 #include "qstyleoption.h"
+#include "qstylepainter.h"
 #if QT_CONFIG(menu)
 #include "qmenu.h"
 #endif
@@ -525,7 +526,7 @@ void QScrollBar::wheelEvent(QWheelEvent *event)
 void QScrollBar::paintEvent(QPaintEvent *)
 {
     Q_D(QScrollBar);
-    QPainter p(this);
+    QStylePainter p(this);
     QStyleOptionSlider opt;
     initStyleOption(&opt);
     opt.subControls = QStyle::SC_All;
@@ -536,7 +537,7 @@ void QScrollBar::paintEvent(QPaintEvent *)
     } else {
         opt.activeSubControls = (QStyle::SubControl)d->hoverControl;
     }
-    style()->drawComplexControl(QStyle::CC_ScrollBar, &opt, &p, this);
+    p.drawComplexControl(QStyle::CC_ScrollBar, opt);
 }
 
 /*!

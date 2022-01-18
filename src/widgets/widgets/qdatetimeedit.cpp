@@ -51,6 +51,7 @@
 #include <qlayout.h>
 #include <qset.h>
 #include <qstyle.h>
+#include <qstylepainter.h>
 #if QT_CONFIG(timezone)
 #include <QTimeZone>
 #endif
@@ -2441,8 +2442,8 @@ void QDateTimeEdit::paintEvent(QPaintEvent *event)
         optCombo.state &= ~QStyle::State_Enabled;
     }
 
-    QPainter p(this);
-    style()->drawComplexControl(QStyle::CC_ComboBox, &optCombo, &p, this);
+    QStylePainter p(this);
+    p.drawComplexControl(QStyle::CC_ComboBox, optCombo);
 }
 
 int QDateTimeEditPrivate::absoluteIndex(QDateTimeEdit::Section s, int index) const
