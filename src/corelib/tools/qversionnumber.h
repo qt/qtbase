@@ -96,13 +96,15 @@ class QVersionNumber
             if (dataFitsInline(seg.data(), seg.size()))
                 setInlineData(seg.data(), seg.size());
             else
-                pointer_segments = new QList<int>(seg);
+                setListData(seg);
         }
+
+        Q_CORE_EXPORT void setListData(const QList<int> &seg);
 
         SegmentStorage(const SegmentStorage &other)
         {
             if (other.isUsingPointer())
-                pointer_segments = new QList<int>(*other.pointer_segments);
+                setListData(*other.pointer_segments);
             else
                 dummy = other.dummy;
         }
@@ -112,7 +114,7 @@ class QVersionNumber
             if (isUsingPointer() && other.isUsingPointer()) {
                 *pointer_segments = *other.pointer_segments;
             } else if (other.isUsingPointer()) {
-                pointer_segments = new QList<int>(*other.pointer_segments);
+                setListData(*other.pointer_segments);
             } else {
                 if (isUsingPointer())
                     delete pointer_segments;
@@ -139,8 +141,11 @@ class QVersionNumber
             if (dataFitsInline(std::as_const(seg).data(), seg.size()))
                 setInlineData(std::as_const(seg).data(), seg.size());
             else
-                pointer_segments = new QList<int>(std::move(seg));
+                setListData(std::move(seg));
         }
+
+        Q_CORE_EXPORT void setListData(QList<int> &&seg);
+
         explicit SegmentStorage(std::initializer_list<int> args)
             : SegmentStorage(args.begin(), args.end()) {}
 
@@ -149,9 +154,11 @@ class QVersionNumber
             if (dataFitsInline(first, last - first)) {
                 setInlineData(first, last - first);
             } else {
-                pointer_segments = new QList<int>(first, last);
+                setListData(first, last);
             }
         }
+
+        Q_CORE_EXPORT void setListData(const int *first, const int *last);
 
         ~SegmentStorage() { if (isUsingPointer()) delete pointer_segments; }
 
@@ -167,13 +174,7 @@ class QVersionNumber
             inline_segments[InlineSegmentMarker] = qint8(1 + 2 * len);
         }
 
-        void resize(qsizetype len)
-        {
-            if (isUsingPointer())
-                pointer_segments->resize(len);
-            else
-                setInlineSize(len);
-        }
+        Q_CORE_EXPORT void resize(qsizetype len);
 
         int at(qsizetype index) const
         {

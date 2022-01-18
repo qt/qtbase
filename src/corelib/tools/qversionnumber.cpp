@@ -481,6 +481,29 @@ QVersionNumber QVersionNumber::fromString(QAnyStringView string, qsizetype *suff
     return string.visit([=] (auto string) { return from_string(string, suffixIndex); });
 }
 
+void QVersionNumber::SegmentStorage::setListData(const QList<int> &seg)
+{
+    pointer_segments = new QList<int>(seg);
+}
+
+void QVersionNumber::SegmentStorage::setListData(QList<int> &&seg)
+{
+    pointer_segments = new QList<int>(std::move(seg));
+}
+
+void QVersionNumber::SegmentStorage::setListData(const int *first, const int *last)
+{
+    pointer_segments = new QList<int>(first, last);
+}
+
+void QVersionNumber::SegmentStorage::resize(qsizetype len)
+{
+    if (isUsingPointer())
+        pointer_segments->resize(len);
+    else
+        setInlineSize(len);
+}
+
 void QVersionNumber::SegmentStorage::setVector(int len, int maj, int min, int mic)
 {
     pointer_segments = new QList<int>;
