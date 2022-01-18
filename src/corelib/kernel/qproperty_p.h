@@ -254,9 +254,8 @@ protected:
        is stored somewhere else. To make efficient use of the space, we instead provide a scratch space
        for QQmlPropertyBinding (which stores further binding information there).
        Anything stored in the union must be trivially destructible.
+       (checked in qproperty.cpp)
     */
-    static_assert(std::is_trivially_destructible_v<QPropertyBindingSourceLocation>);
-    static_assert(std::is_trivially_destructible_v<std::byte[sizeof(QPropertyBindingSourceLocation)]>);
     using DeclarativeErrorCallback = void(*)(QPropertyBindingPrivate *);
     union {
         QPropertyBindingSourceLocation location;
