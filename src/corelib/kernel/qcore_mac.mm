@@ -58,6 +58,7 @@
 
 #include <qdebug.h>
 
+#include "qendian.h"
 #include "qhash.h"
 #include "qpair.h"
 #include "qmutex.h"
@@ -375,6 +376,38 @@ bool qt_mac_runningUnderRosetta()
     if (sysctlbyname("sysctl.proc_translated", &translated, &size, nullptr, 0) == 0)
         return translated;
     return false;
+}
+
+std::optional<uint32_t> qt_mac_sipConfiguration()
+{
+    static auto configuration = []() -> std::optional<uint32_t> {
+        QIOType<io_registry_entry_t> nvram = IORegistryEntryFromPath(kIOMasterPortDefault, "IODeviceTree:/options");
+        if (!nvram) {
+            qWarning("Failed to locate NVRAM entry in IO registry");
+            return {};
+        }
+
+        QCFType<CFTypeRef> csrConfig = IORegistryEntryCreateCFProperty(nvram,
+            CFSTR("csr-active-config"), kCFAllocatorDefault, IOOptionBits{});
+        if (!csrConfig) {
+            qWarning("Failed to locate SIP config in NVRAM");
+            return {};
+        }
+
+        if (auto type = CFGetTypeID(csrConfig); type != CFDataGetTypeID()) {
+            qWarning() << "Unexpected SIP config type" << CFCopyTypeIDDescription(type);
+            return {};
+        }
+
+        QByteArray data = QByteArray::fromRawCFData(csrConfig.as<CFDataRef>());
+        if (data.size() != sizeof(uint32_t)) {
+            qWarning() << "Unexpected SIP config size" << data.size();
+            return {};
+        }
+
+        return qFromLittleEndian<uint32_t>(data.constData());
+    }();
+    return configuration;
 }
 #endif
 
