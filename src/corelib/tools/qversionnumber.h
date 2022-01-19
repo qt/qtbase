@@ -136,8 +136,8 @@ class QVersionNumber
 
         explicit SegmentStorage(QList<int> &&seg)
         {
-            if (dataFitsInline(seg.begin(), seg.size()))
-                setInlineData(seg.begin(), seg.size());
+            if (dataFitsInline(seg.cbegin(), seg.size()))
+                setInlineData(seg.cbegin(), seg.size());
             else
                 pointer_segments = new QList<int>(std::move(seg));
         }
