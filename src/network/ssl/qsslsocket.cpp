@@ -3118,12 +3118,7 @@ QTlsBackend *QSslSocketPrivate::tlsBackendInUse()
         return nullptr;
     }
 
-    tlsBackend = QTlsBackend::findBackend(activeBackendName);
-    QObject::connect(tlsBackend, &QObject::destroyed, [] {
-        const QMutexLocker locker(&backendMutex);
-        tlsBackend = nullptr;
-    });
-    return tlsBackend;
+    return tlsBackend = QTlsBackend::findBackend(activeBackendName);
 }
 
 /*!

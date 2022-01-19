@@ -52,7 +52,6 @@
 
 #include <QtCore/private/qfactoryloader_p.h>
 
-#include "QtCore/qapplicationstatic.h"
 #include <QtCore/qbytearray.h>
 #include <QtCore/qmutex.h>
 
@@ -61,8 +60,8 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_APPLICATION_STATIC(QFactoryLoader, loader, QTlsBackend_iid,
-                     QStringLiteral("/tls"))
+Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
+                          (QTlsBackend_iid, QStringLiteral("/tls")))
 
 namespace {
 
@@ -93,7 +92,7 @@ public:
 
         static QBasicMutex mutex;
         const QMutexLocker locker(&mutex);
-        if (backends.size())
+        if (loaded)
             return true;
 
 #if QT_CONFIG(library)
@@ -103,7 +102,7 @@ public:
         while (loader->instance(index))
             ++index;
 
-        return true;
+        return loaded = true;
     }
 
     QList<QString> backendNames()
@@ -140,6 +139,7 @@ public:
 private:
     std::vector<QTlsBackend *> backends;
     QMutex collectionMutex;
+    bool loaded = false;
 };
 
 } // Unnamed namespace
@@ -202,10 +202,6 @@ QTlsBackend::QTlsBackend()
 {
     if (backends())
         backends->addBackend(this);
-
-    connect(QCoreApplication::instance(), &QCoreApplication::destroyed, this, [this] {
-        delete this;
-    });
 }
 
 /*!
