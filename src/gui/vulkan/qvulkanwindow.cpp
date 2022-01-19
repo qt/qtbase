@@ -195,6 +195,23 @@ Q_LOGGING_CATEGORY(lcGuiVk, "qt.vulkan")
   \note QVulkanWindow does not expose device layers since this functionality
   has been deprecated since version 1.0.13 of the Vulkan API.
 
+  \section1 Layers, device features, and extensions
+
+  To enable instance layers, call QVulkanInstance::setLayers() before creating
+  the QVulkanInstance. To query what instance layer are available, call
+  QVulkanInstance::supportedLayers().
+
+  To enable device extensions, call setDeviceExtensions() early on when setting
+  up the QVulkanWindow. To query what device extensions are available, call
+  supportedDeviceExtensions().
+
+  Specifying an unsupported layer or extension is handled gracefully: this will
+  not fail instance or device creation, but the layer or extension request is
+  rather ignored.
+
+  When it comes to device features, QVulkanWindow enables all Vulkan 1.0
+  features that are reported as supported from vkGetPhysicalDeviceFeatures().
+
   \sa QVulkanInstance, QWindow
  */
 
@@ -711,6 +728,12 @@ void QVulkanWindowPrivate::init()
     devInfo.pQueueCreateInfos = queueInfo.constData();
     devInfo.enabledExtensionCount = devExts.count();
     devInfo.ppEnabledExtensionNames = devExts.constData();
+
+    // Enable all 1.0 features.
+    VkPhysicalDeviceFeatures features;
+    memset(&features, 0, sizeof(features));
+    f->vkGetPhysicalDeviceFeatures(physDev, &features);
+    devInfo.pEnabledFeatures = &features;
 
     // Device layers are not supported by QVulkanWindow since that's an already deprecated
     // API. However, have a workaround for systems with older API and layers (f.ex. L4T
