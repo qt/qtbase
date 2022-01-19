@@ -72,7 +72,7 @@ public:
     QUnhandledException(QUnhandledException &&other) noexcept;
     QUnhandledException(const QUnhandledException &other) noexcept;
 
-    void swap(QUnhandledException &other) noexcept { qSwap(d, other.d); }
+    void swap(QUnhandledException &other) noexcept { d.swap(other.d); }
 
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QUnhandledException)
     QUnhandledException &operator=(const QUnhandledException &other) noexcept;

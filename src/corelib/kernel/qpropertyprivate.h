@@ -121,7 +121,7 @@ public:
     bool operator!() const noexcept { return d == nullptr; }
 
     void swap(QPropertyBindingPrivatePtr &other) noexcept
-    { qSwap(d, other.d); }
+    { qt_ptr_swap(d, other.d); }
 
     friend bool operator==(const QPropertyBindingPrivatePtr &p1, const QPropertyBindingPrivatePtr &p2) noexcept
     { return p1.d == p2.d; }

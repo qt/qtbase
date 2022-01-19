@@ -124,7 +124,7 @@ public:
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QDir)
 
     void swap(QDir &other) noexcept
-    { qSwap(d_ptr, other.d_ptr); }
+    { d_ptr.swap(other.d_ptr); }
 
     void setPath(const QString &path);
 #ifdef Q_CLANG_QDOC

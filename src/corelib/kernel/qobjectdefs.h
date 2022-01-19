@@ -463,7 +463,7 @@ public:
 
     Connection(Connection &&other) noexcept : d_ptr(qExchange(other.d_ptr, nullptr)) {}
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(Connection)
-    void swap(Connection &other) noexcept { qSwap(d_ptr, other.d_ptr); }
+    void swap(Connection &other) noexcept { qt_ptr_swap(d_ptr, other.d_ptr); }
 };
 
 inline void swap(QMetaObject::Connection &lhs, QMetaObject::Connection &rhs) noexcept

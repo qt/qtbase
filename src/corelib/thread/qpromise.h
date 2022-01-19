@@ -108,7 +108,7 @@ public:
 
     void swap(QPromise<T> &other) noexcept
     {
-        qSwap(this->d, other.d);
+        d.swap(other.d);
     }
 
 #if defined(Q_CLANG_QDOC)  // documentation-only simplified signatures

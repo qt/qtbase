@@ -508,8 +508,8 @@ private:
 
     void internalSwap(QSharedPointer &other) noexcept
     {
-        qSwap(d, other.d);
-        qSwap(this->value, other.value);
+        qt_ptr_swap(d, other.d);
+        qt_ptr_swap(this->value, other.value);
     }
 
 #if defined(Q_NO_TEMPLATE_FRIENDS)
@@ -542,8 +542,8 @@ public:
             }
         }
 
-        qSwap(d, o);
-        qSwap(this->value, actual);
+        qt_ptr_swap(d, o);
+        qt_ptr_swap(this->value, actual);
         if (!d || d->strongref.loadRelaxed() == 0)
             this->value = nullptr;
 
@@ -596,8 +596,8 @@ public:
 
     void swap(QWeakPointer &other) noexcept
     {
-        qSwap(this->d, other.d);
-        qSwap(this->value, other.value);
+        qt_ptr_swap(this->d, other.d);
+        qt_ptr_swap(this->value, other.value);
     }
 
     inline QWeakPointer(const QSharedPointer<T> &o) : d(o.d), value(o.data())

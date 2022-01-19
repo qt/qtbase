@@ -176,7 +176,7 @@ public:
 
     void swap(QCborArray &other) noexcept
     {
-        qSwap(d, other.d);
+        d.swap(other.d);
     }
 
     QCborValue toCborValue() const { return *this; }

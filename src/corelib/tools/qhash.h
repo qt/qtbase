@@ -824,7 +824,7 @@ public:
             insert(f->first, f->second);
     }
 #endif
-    void swap(QHash &other) noexcept { qSwap(d, other.d); }
+    void swap(QHash &other) noexcept { qt_ptr_swap(d, other.d); }
 
 #ifndef Q_CLANG_QDOC
     template <typename AKey = Key, typename AT = T>
@@ -1317,7 +1317,12 @@ public:
     {
         unite(std::move(other));
     }
-    void swap(QMultiHash &other) noexcept { qSwap(d, other.d); qSwap(m_size, other.m_size); }
+
+    void swap(QMultiHash &other) noexcept
+    {
+        qt_ptr_swap(d, other.d);
+        std::swap(m_size, other.m_size);
+    }
 
 #ifndef Q_CLANG_QDOC
     template <typename AKey = Key, typename AT = T>

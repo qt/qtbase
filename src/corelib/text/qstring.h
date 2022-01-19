@@ -406,7 +406,7 @@ public:
     inline QString(QString &&other) noexcept
     { qSwap(d, other.d); }
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QString)
-    inline void swap(QString &other) noexcept { qSwap(d, other.d); }
+    void swap(QString &other) noexcept { d.swap(other.d); }
     inline qsizetype size() const { return d.size; }
     inline qsizetype count() const { return d.size; }
     inline qsizetype length() const { return d.size; }

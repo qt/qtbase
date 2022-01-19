@@ -178,7 +178,7 @@ public:
 
     void swap(QCborMap &other) noexcept
     {
-        qSwap(d, other.d);
+        d.swap(other.d);
     }
 
     QCborValue toCborValue() const { return *this; }

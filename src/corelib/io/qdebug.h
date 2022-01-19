@@ -104,7 +104,7 @@ public:
     inline QDebug &operator=(const QDebug &other);
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QDebug)
     ~QDebug();
-    inline void swap(QDebug &other) noexcept { qSwap(stream, other.stream); }
+    void swap(QDebug &other) noexcept { qt_ptr_swap(stream, other.stream); }
 
     QDebug &resetFormat();
 

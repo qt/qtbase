@@ -124,7 +124,7 @@ public:
     { qSwap(d, other.d); }
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QByteArray)
     inline void swap(QByteArray &other) noexcept
-    { qSwap(d, other.d); }
+    { d.swap(other.d); }
 
     inline bool isEmpty() const;
     void resize(qsizetype size);
@@ -644,8 +644,8 @@ public:
 
     void swap(QByteArray::FromBase64Result &other) noexcept
     {
-        qSwap(decoded, other.decoded);
-        qSwap(decodingStatus, other.decodingStatus);
+        decoded.swap(other.decoded);
+        std::swap(decodingStatus, other.decodingStatus);
     }
 
     explicit operator bool() const noexcept { return decodingStatus == QByteArray::Base64DecodingStatus::Ok; }

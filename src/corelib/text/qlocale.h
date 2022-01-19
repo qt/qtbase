@@ -933,7 +933,7 @@ public:
     QLocale &operator=(const QLocale &other);
     ~QLocale();
 
-    void swap(QLocale &other) noexcept { qSwap(d, other.d); }
+    void swap(QLocale &other) noexcept { d.swap(other.d); }
 
     Language language() const;
     Script script() const;

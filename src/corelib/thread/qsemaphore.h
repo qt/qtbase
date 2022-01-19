@@ -93,8 +93,8 @@ public:
 
     void swap(QSemaphoreReleaser &other) noexcept
     {
-        qSwap(m_sem, other.m_sem);
-        qSwap(m_n, other.m_n);
+        qt_ptr_swap(m_sem, other.m_sem);
+        std::swap(m_n, other.m_n);
     }
 
     QSemaphore *semaphore() const noexcept

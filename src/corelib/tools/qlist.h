@@ -299,7 +299,7 @@ public:
 
     // compiler-generated special member functions are fine!
 
-    void swap(QList<T> &other) noexcept { qSwap(d, other.d); }
+    void swap(QList &other) noexcept { d.swap(other.d); }
 
 #ifndef Q_CLANG_QDOC
     template <typename U = T>

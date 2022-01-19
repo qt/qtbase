@@ -87,7 +87,7 @@ public:
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QCollator)
 
     void swap(QCollator &other) noexcept
-    { qSwap(d, other.d); }
+    { qt_ptr_swap(d, other.d); }
 
     void setLocale(const QLocale &locale);
     QLocale locale() const;
