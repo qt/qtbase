@@ -68,9 +68,10 @@ set(wasm_support_files
     qtlogo.svg
 )
 
+qt_path_join(destination ${QT_INSTALL_DIR} "plugins/platforms")
 qt_copy_or_install(FILES
     ${wasm_support_files}
-    DESTINATION "${CMAKE_INSTALL_PREFIX}/plugins/platforms"
+    DESTINATION "${destination}"
 )
 # Need to copy the support files to the build dir in a top-level prefix build
 # So _qt_internal_wasm_add_target_helpers finds them.
