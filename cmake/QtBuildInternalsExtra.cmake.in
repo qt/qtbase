@@ -105,5 +105,42 @@ if(NOT DEFINED QT_MAX_NEW_POLICY_CMAKE_VERSION)
     set(QT_MAX_NEW_POLICY_CMAKE_VERSION "@max_new_policy_version@")
 endif()
 
+get_property(__qt_internal_extras_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+
+# We want the same build type to be used when configuring all Qt repos or standalone
+# tests or single tests.
+# To do that, we need to force-set the CMAKE_BUILD_TYPE cache var because CMake itself
+# initializes it with the value of CMAKE_BUILD_TYPE_INIT at the start of project
+# configuration, so we need to override it.
+# Note the value of CMAKE_BUILD_TYPE_INIT is different based on the platform, most
+# Linux and macOS platforms will have it empty, but Windows platforms will have a value.
+#
+# We can't reliably differentiate between a value set on the command line by the user
+# and one set by CMake, so we use a few heuristics:
+# 1) When using a qt.toolchain.cmake file, we rely on the toolchain file to tell us
+#    if a value was set by the user at initial configure time. On a 2nd run there will
+#    always be a value in the cache, but at that point we've already set it to whatever it needs
+#    to be.
+# 2) If a toolchain file is not used, we rely on the value of the CMake internal
+#    CMAKE_BUILD_TYPE_INIT variable.
+#    This won't work reliably on Windows where CMAKE_BUILD_TYPE_INIT is non-empty.
+#
+# Both cases won't handle an empty "" config set by the user, but we claim that's an
+# unsupported config when building Qt.
+#
+# Allow an opt out when QT_NO_FORCE_SET_CMAKE_BUILD_TYPE is set.
+# Finally, don't set the variable if a multi-config generator is used. This can happen
+# when qtbase is built with a single config, but a test is built with a multi-config generator.
+function(qt_internal_force_set_cmake_build_type_conditionally value)
+    # STREQUAL check needs to be expanded variables because an undefined var is not equal to an
+    # empty defined var.
+    if("${CMAKE_BUILD_TYPE}" STREQUAL "${CMAKE_BUILD_TYPE_INIT}"
+        AND NOT __qt_toolchain_cmake_build_type_before_project_call
+        AND NOT QT_NO_FORCE_SET_CMAKE_BUILD_TYPE
+        AND NOT __qt_internal_extras_is_multi_config)
+        set(CMAKE_BUILD_TYPE "${value}" CACHE STRING "Choose the type of build." FORCE)
+    endif()
+endfunction()
+
 # Extra set of exported variables
 @QT_EXTRA_BUILD_INTERNALS_VARS@
