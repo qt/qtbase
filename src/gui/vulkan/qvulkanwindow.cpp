@@ -2020,7 +2020,7 @@ void QVulkanWindowPrivate::endFrame()
     // order to circumvent driver frame callbacks
     inst->presentAboutToBeQueued(q);
 
-    err = vkQueuePresentKHR(gfxQueue, &presInfo);
+    err = vkQueuePresentKHR(presQueue, &presInfo);
     if (err != VK_SUCCESS) {
         if (err == VK_ERROR_OUT_OF_DATE_KHR) {
             recreateSwapChain();
