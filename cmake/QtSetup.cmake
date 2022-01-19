@@ -35,6 +35,8 @@ elseif(CMAKE_CONFIGURATION_TYPES)
         message(STATUS
             "Default build configuration set to '${CMAKE_NINJA_MULTI_DEFAULT_BUILD_TYPE}'.")
     endif()
+else()
+    message(STATUS "CMAKE_BUILD_TYPE was set to: '${CMAKE_BUILD_TYPE}'")
 endif()
 
 # Appends a 'debug postfix' to library targets (not executables)
