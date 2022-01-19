@@ -113,6 +113,9 @@ public:
     QVulkanInfoVector<QVulkanExtension> supportedDeviceExtensions();
     void setDeviceExtensions(const QByteArrayList &extensions);
 
+    typedef std::function<void(VkPhysicalDeviceFeatures &)> EnabledFeaturesModifier;
+    void setEnabledFeaturesModifier(const EnabledFeaturesModifier &modifier);
+
     void setPreferredColorFormats(const QList<VkFormat> &formats);
 
     QList<int> supportedSampleCounts();

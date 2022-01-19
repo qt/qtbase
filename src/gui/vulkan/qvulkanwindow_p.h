@@ -103,6 +103,7 @@ public:
     QList<VkFormat> requestedColorFormats;
     VkSampleCountFlagBits sampleCount = VK_SAMPLE_COUNT_1_BIT;
     QVulkanWindow::QueueCreateInfoModifier queueCreateInfoModifier;
+    QVulkanWindow::EnabledFeaturesModifier enabledFeaturesModifier;
 
     VkDevice dev = VK_NULL_HANDLE;
     QVulkanDeviceFunctions *devFuncs;

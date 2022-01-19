@@ -211,6 +211,11 @@ Q_LOGGING_CATEGORY(lcGuiVk, "qt.vulkan")
 
   When it comes to device features, QVulkanWindow enables all Vulkan 1.0
   features that are reported as supported from vkGetPhysicalDeviceFeatures().
+  This is always not sufficient, and therefore full control over the
+  VkPhysicalDeviceFeatures used for device creation is possible too by
+  registering a callback function with setEnabledFeaturesModifier(). When set,
+  the callback function is invoked, letting it alter the
+  VkPhysicalDeviceFeatures, instead of enabling only the 1.0 features.
 
   \sa QVulkanInstance, QWindow
  */
@@ -729,10 +734,14 @@ void QVulkanWindowPrivate::init()
     devInfo.enabledExtensionCount = devExts.count();
     devInfo.ppEnabledExtensionNames = devExts.constData();
 
-    // Enable all 1.0 features.
     VkPhysicalDeviceFeatures features;
     memset(&features, 0, sizeof(features));
-    f->vkGetPhysicalDeviceFeatures(physDev, &features);
+    if (enabledFeaturesModifier) {
+        enabledFeaturesModifier(features);
+    } else {
+        // Enable all 1.0 features.
+        f->vkGetPhysicalDeviceFeatures(physDev, &features);
+    }
     devInfo.pEnabledFeatures = &features;
 
     // Device layers are not supported by QVulkanWindow since that's an already deprecated
@@ -1634,6 +1643,41 @@ void QVulkanWindow::setQueueCreateInfoModifier(const QueueCreateInfoModifier &mo
     d->queueCreateInfoModifier = modifier;
 }
 
+/*!
+    \typedef QVulkanWindow::EnabledFeaturesModifier
+
+    A function that is called during graphics initialization to alter the
+    VkPhysicalDeviceFeatures that is passed in when creating a Vulkan device
+    object.
+
+    By default QVulkanWindow enables all Vulkan 1.0 features the physical
+    device reports as supported. That is not always sufficient when working
+    with Vulkan 1.1 or 1.2 features and extensions. Hence this callback
+    mechanism.
+
+    The VkPhysicalDeviceFeatures reference passed in is all zeroed out at the
+    point when the function is invoked. It is up to the function to change
+    members to true, or set up \c pNext chains as it sees fit.
+
+    \note When setting up \c pNext chains, make sure the referenced objects
+    have a long enough lifetime, for example by storing them as member
+    variables in the QVulkanWindow subclass.
+
+    \sa setEnabledFeaturesModifier()
+ */
+
+/*!
+    Sets the enabled device features modification function \a modifier.
+
+    \sa EnabledFeaturesModifier
+
+    \since 6.4
+ */
+void QVulkanWindow::setEnabledFeaturesModifier(const EnabledFeaturesModifier &modifier)
+{
+    Q_D(QVulkanWindow);
+    d->enabledFeaturesModifier = modifier;
+}
 
 /*!
     Returns true if this window has successfully initialized all Vulkan
