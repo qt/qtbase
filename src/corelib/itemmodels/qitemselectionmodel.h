@@ -60,8 +60,8 @@ public:
 
     void swap(QItemSelectionRange &other) noexcept
     {
-        qSwap(tl, other.tl);
-        qSwap(br, other.br);
+        tl.swap(other.tl);
+        br.swap(other.br);
     }
 
     inline int top() const { return tl.row(); }

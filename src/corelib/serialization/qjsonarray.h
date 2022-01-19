@@ -101,7 +101,7 @@ public:
 
     void swap(QJsonArray &other) noexcept
     {
-        qSwap(a, other.a);
+        a.swap(other.a);
     }
 
     class const_iterator;

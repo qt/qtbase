@@ -64,8 +64,8 @@ class QCache
         }
         Value &operator=(Value &&other) noexcept
         {
-            qSwap(t, other.t);
-            qSwap(cost, other.cost);
+            qt_ptr_swap(t, other.t);
+            std::swap(cost, other.cost);
             return *this;
         }
         ~Value() { delete t; }

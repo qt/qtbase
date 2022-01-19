@@ -1177,6 +1177,15 @@ constexpr void qSwap(T &value1, T &value2)
     swap(value1, value2);
 }
 
+// pure compile-time micro-optimization for our own headers, so not documented:
+template <typename T>
+constexpr inline void qt_ptr_swap(T* &lhs, T* &rhs) noexcept
+{
+    T *tmp = lhs;
+    lhs = rhs;
+    rhs = tmp;
+}
+
 QT_WARNING_POP
 
 Q_CORE_EXPORT void *qMallocAligned(size_t size, size_t alignment) Q_ALLOC_SIZE(1);

@@ -70,7 +70,7 @@ public:
     explicit QDeadlineTimer(qint64 msecs, Qt::TimerType type = Qt::CoarseTimer) noexcept;
 
     void swap(QDeadlineTimer &other) noexcept
-    { qSwap(t1, other.t1); qSwap(t2, other.t2); qSwap(type, other.type); }
+    { std::swap(t1, other.t1); std::swap(t2, other.t2); std::swap(type, other.type); }
 
     constexpr bool isForever() const noexcept
     { return t1 == (std::numeric_limits<qint64>::max)(); }

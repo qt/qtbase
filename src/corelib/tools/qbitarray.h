@@ -62,7 +62,7 @@ public:
     inline QBitArray(QBitArray &&other) noexcept : d(std::move(other.d)) {}
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QBitArray)
 
-    inline void swap(QBitArray &other) noexcept { qSwap(d, other.d); }
+    void swap(QBitArray &other) noexcept { d.swap(other.d); }
 
     inline qsizetype size() const { return (d.size() << 3) - *d.constData(); }
     inline qsizetype count() const { return (d.size() << 3) - *d.constData(); }

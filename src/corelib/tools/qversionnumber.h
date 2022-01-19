@@ -131,7 +131,7 @@ class QVersionNumber
 
         void swap(SegmentStorage &other) noexcept
         {
-            qSwap(dummy, other.dummy);
+            std::swap(dummy, other.dummy);
         }
 
         explicit SegmentStorage(QList<int> &&seg)

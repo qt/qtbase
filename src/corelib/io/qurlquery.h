@@ -74,7 +74,7 @@ public:
     bool operator!=(const QUrlQuery &other) const
     { return !(*this == other); }
 
-    void swap(QUrlQuery &other) noexcept { qSwap(d, other.d); }
+    void swap(QUrlQuery &other) noexcept { d.swap(other.d); }
 
     bool isEmpty() const;
     bool isDetached() const;

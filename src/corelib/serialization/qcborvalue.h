@@ -187,9 +187,9 @@ public:
 
     void swap(QCborValue &other) noexcept
     {
-        qSwap(n, other.n);
-        qSwap(container, other.container);
-        qSwap(t, other.t);
+        std::swap(n, other.n);
+        qt_ptr_swap(container, other.container);
+        std::swap(t, other.t);
     }
 
     Type type() const           { return t; }

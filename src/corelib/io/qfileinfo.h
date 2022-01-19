@@ -91,7 +91,7 @@ public:
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QFileInfo)
 
     void swap(QFileInfo &other) noexcept
-    { qSwap(d_ptr, other.d_ptr); }
+    { d_ptr.swap(other.d_ptr); }
 
     bool operator==(const QFileInfo &fileinfo) const;
     inline bool operator!=(const QFileInfo &fileinfo) const { return !(operator==(fileinfo)); }

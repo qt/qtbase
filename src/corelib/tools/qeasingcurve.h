@@ -81,7 +81,7 @@ public:
     QEasingCurve(QEasingCurve &&other) noexcept : d_ptr(other.d_ptr) { other.d_ptr = nullptr; }
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QEasingCurve)
 
-    void swap(QEasingCurve &other) noexcept { qSwap(d_ptr, other.d_ptr); }
+    void swap(QEasingCurve &other) noexcept { qt_ptr_swap(d_ptr, other.d_ptr); }
 
     bool operator==(const QEasingCurve &other) const;
     inline bool operator!=(const QEasingCurve &other) const
