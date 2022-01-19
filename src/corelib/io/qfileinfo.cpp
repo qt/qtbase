@@ -1091,6 +1091,8 @@ bool QFileInfo::isBundle() const
 
     \note If the symlink points to a non existing file, exists() returns
      false.
+    \note If this QFileInfo object is given a path ending in a slash, isSymLink()
+     returns false.
 
     \sa isFile(), isDir(), symLinkTarget()
 */
