@@ -196,6 +196,12 @@ if(__qt_toolchain_host_path_required AND
         "the location of your host Qt installation lib/cmake directory.")
 endif()
 
+# Store initial build type (if any is specified) to be read by QtBuildInternals.cmake when building
+# a Qt repo, standalone tests or a single test.
+if(DEFINED CACHE{CMAKE_BUILD_TYPE})
+    set(__qt_toolchain_cmake_build_type_before_project_call "${CMAKE_BUILD_TYPE}")
+endif()
+
 # Compile tests only see a restricted set of variables.
 # All cache variables, this toolchain file uses, must be made available to project-based
 # try_compile tests because this toolchain file will be included there too.
