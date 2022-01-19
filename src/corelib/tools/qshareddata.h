@@ -125,7 +125,7 @@ public:
     bool operator!() const noexcept { return d == nullptr; }
 
     void swap(QSharedDataPointer &other) noexcept
-    { qSwap(d, other.d); }
+    { qt_ptr_swap(d, other.d); }
 
 #define DECLARE_COMPARE_SET(T1, A1, T2, A2) \
     friend bool operator<(T1, T2) noexcept \
@@ -222,7 +222,7 @@ public:
     bool operator!() const noexcept { return d == nullptr; }
 
     void swap(QExplicitlySharedDataPointer &other) noexcept
-    { qSwap(d, other.d); }
+    { qt_ptr_swap(d, other.d); }
 
     DECLARE_COMPARE_SET(const QExplicitlySharedDataPointer &p1, p1.d, const QExplicitlySharedDataPointer &p2, p2.d)
     DECLARE_COMPARE_SET(const QExplicitlySharedDataPointer &p1, p1.d, const T *ptr, ptr)

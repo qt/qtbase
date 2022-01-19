@@ -173,7 +173,7 @@ public:
     QT_DEPRECATED_VERSION_X_6_2("Use std::unique_ptr instead of QScopedPointer.")
     void swap(QScopedPointer<T, Cleanup> &other) noexcept
     {
-        qSwap(d, other.d);
+        qt_ptr_swap(d, other.d);
     }
 #endif
 

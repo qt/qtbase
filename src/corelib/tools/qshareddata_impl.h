@@ -138,7 +138,7 @@ public:
 
     constexpr void swap(QExplicitlySharedDataPointerV2 &other) noexcept
     {
-        qSwap(d, other.d);
+        qt_ptr_swap(d, other.d);
     }
 
     // important change from QExplicitlySharedDataPointer: deep const

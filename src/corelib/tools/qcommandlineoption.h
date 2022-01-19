@@ -75,7 +75,7 @@ public:
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QCommandLineOption)
 
     void swap(QCommandLineOption &other) noexcept
-    { qSwap(d, other.d); }
+    { d.swap(other.d); }
 
     QStringList names() const;
 

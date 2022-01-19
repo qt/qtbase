@@ -63,7 +63,7 @@ public:
 
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QBasicTimer)
 
-    void swap(QBasicTimer &other) noexcept { qSwap(id, other.id); }
+    void swap(QBasicTimer &other) noexcept { std::swap(id, other.id); }
 
     bool isActive() const noexcept { return id != 0; }
     int timerId() const noexcept { return id; }

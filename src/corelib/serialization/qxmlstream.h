@@ -58,12 +58,12 @@ public:
     QXmlString(QStringPrivate &&d) : m_string(std::move(d)) {}
     QXmlString(const QString &s) : m_string(s.data_ptr()) {}
     QXmlString & operator=(const QString &s) { m_string = s.data_ptr(); return *this; }
-    QXmlString & operator=(QString &&s) { qSwap(m_string, s.data_ptr()); return *this; }
+    QXmlString & operator=(QString &&s) { m_string.swap(s.data_ptr()); return *this; }
     inline constexpr QXmlString() {}
 
     void swap(QXmlString &other) noexcept
     {
-        qSwap(m_string, other.m_string);
+        m_string.swap(other.m_string);
     }
 
     inline operator QStringView() const { return QStringView(m_string.data(), m_string.size); }

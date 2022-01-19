@@ -74,7 +74,7 @@ public:
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QProcessEnvironment)
     QProcessEnvironment &operator=(const QProcessEnvironment &other);
 
-    void swap(QProcessEnvironment &other) noexcept { qSwap(d, other.d); }
+    void swap(QProcessEnvironment &other) noexcept { d.swap(other.d); }
 
     bool operator==(const QProcessEnvironment &other) const;
     inline bool operator!=(const QProcessEnvironment &other) const

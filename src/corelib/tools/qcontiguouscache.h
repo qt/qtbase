@@ -97,7 +97,7 @@ public:
 
     QContiguousCache<T> &operator=(const QContiguousCache<T> &other);
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QContiguousCache)
-    inline void swap(QContiguousCache<T> &other) noexcept { qSwap(d, other.d); }
+    void swap(QContiguousCache &other) noexcept { qt_ptr_swap(d, other.d); }
 
 #ifndef Q_CLANG_QDOC
     template <typename U = T>

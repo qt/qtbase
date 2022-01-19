@@ -149,9 +149,9 @@ public:
 
     void swap(QArrayDataPointer &other) noexcept
     {
-        qSwap(d, other.d);
-        qSwap(ptr, other.ptr);
-        qSwap(size, other.size);
+        qt_ptr_swap(d, other.d);
+        qt_ptr_swap(ptr, other.ptr);
+        std::swap(size, other.size);
     }
 
     void clear() noexcept(std::is_nothrow_destructible<T>::value)

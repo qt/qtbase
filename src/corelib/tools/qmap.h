@@ -238,7 +238,7 @@ public:
 
     void swap(QMap<Key, T> &other) noexcept
     {
-        qSwap(d, other.d);
+        d.swap(other.d);
     }
 
     QMap(std::initializer_list<std::pair<Key, T>> list)
@@ -849,7 +849,7 @@ public:
 
     void swap(QMultiMap<Key, T> &other) noexcept
     {
-        qSwap(d, other.d);
+        d.swap(other.d);
     }
 
     explicit QMultiMap(const QMap<Key, T> &other)

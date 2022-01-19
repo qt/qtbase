@@ -74,7 +74,7 @@ public:
 
     void swap(QJsonObject &other) noexcept
     {
-        qSwap(o, other.o);
+        o.swap(other.o);
     }
 
     static QJsonObject fromVariantMap(const QVariantMap &map);

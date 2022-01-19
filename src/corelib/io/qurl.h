@@ -192,7 +192,7 @@ public:
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QUrl)
     ~QUrl();
 
-    inline void swap(QUrl &other) noexcept { qSwap(d, other.d); }
+    void swap(QUrl &other) noexcept { qt_ptr_swap(d, other.d); }
 
     void setUrl(const QString &url, ParsingMode mode = TolerantMode);
     QString url(FormattingOptions options = FormattingOptions(PrettyDecoded)) const;
