@@ -393,7 +393,7 @@ public:
 };
 
 template <class T>
-inline void qSwap(QArrayDataPointer<T> &p1, QArrayDataPointer<T> &p2) noexcept
+inline void swap(QArrayDataPointer<T> &p1, QArrayDataPointer<T> &p2) noexcept
 {
     p1.swap(p2);
 }
