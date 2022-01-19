@@ -145,7 +145,7 @@ The following is a list of such meta-data defined by Qt:
 
 \table
 \header
-    \li meta-data name
+    \li Meta-data Name
     \li Description
 \row
     \target android.app.lib_name
@@ -199,11 +199,23 @@ The following is a list of such meta-data defined by Qt:
         by the app.
         For more information, see
         \l {QNativeInterface::}{QAndroidApplication::hideSplashScreen()}.
+\endtable
+
+\section2 Application Specific Meta-data
+
+Some meta-data attributes are application-wide, and should be placed under
+the \c <application> section:
+
+\table
+\header
+    \li Meta-data Name
+    \li Description
 \row
     \target android.app.system_libs_prefix
     \li android.app.system_libs_prefix
     \li Specifies a custom system library path to use for library loading lookup.
-        This is necessary when running as a system app.
+        This is necessary when using Qt libraries installed outside an app's
+        default native (JNI) library directory.
         The default value is \c {/system/lib/}.
 \endtable
 
@@ -216,7 +228,6 @@ The main ones are:
     \li \l {android.app.lib_name}
     \li \l {android.app.background_running}
     \li \l {android.app.arguments}
-    \li \l {android.app.system_libs_prefix}
 \endlist
 
 \section2 Qt Permissions and Features

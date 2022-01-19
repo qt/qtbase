@@ -214,6 +214,10 @@ function(qt6_android_generate_deployment_settings target)
     _qt_internal_add_android_deployment_multi_value_property(file_contents "android-extra-libs"
         ${target} "_qt_android_native_extra_libs" )
 
+    # Alternative path to Qt libraries on target device
+    _qt_internal_add_android_deployment_property(file_contents "android-system-libs-prefix"
+        ${target} "QT_ANDROID_SYSTEM_LIBS_PREFIX")
+
     # package source dir
     _qt_internal_add_android_deployment_property(file_contents "android-package-source-directory"
         ${target} "_qt_android_native_package_source_dir")
@@ -233,6 +237,10 @@ function(qt6_android_generate_deployment_settings target)
     # target SDK version
     _qt_internal_add_android_deployment_property(file_contents "android-target-sdk-version"
         ${target} "QT_ANDROID_TARGET_SDK_VERSION")
+
+    # should Qt shared libs be excluded from deployment
+    _qt_internal_add_android_deployment_property(file_contents "android-no-deploy-qt-libs"
+        ${target} "QT_ANDROID_NO_DEPLOY_QT_LIBS")
 
     # App binary
     string(APPEND file_contents

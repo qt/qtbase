@@ -72,6 +72,32 @@
             \li \c{--deployment <mechanism>}
             \li Specify this to pick a different deployment mechanism than the
                 default.
+                \list
+                    \li \c Bundled: includes all the app's dependencies inside
+                        the APK.
+                    \li \c Unbundled: excludes native libraries from the APK.
+                        The libraries are expected to be present on the target
+                        device. The location can be provided either by setting
+                        the property
+                        \l{cmake-target-property-QT_ANDROID_SYSTEM_LIBS_PREFIX}{QT_ANDROID_SYSTEM_LIBS_PREFIX}
+                        in your CMake project file, or by defining the path as
+                        meta-data in
+                        \l {Qt Android Manifest File Configuration}{AndroidManifest.xml}:
+                        \badcode
+                        <application>
+                            <meta-data
+                                android:name="system_libs_prefix"
+                                android:value="path/to/libraries/"/>
+                        </application>
+                        \endcode
+                        If no path is provided, \c /system/lib/ is used as the
+                        default path.
+                        \note \c Unbundled deployment does not support
+                            incremental builds.
+                        \note \c Unbundled deployment not supported when
+                            deploying as AAB.
+                \endlist
+                Default is \c Bundled deployment.
         \row
             \li \c{--install}
             \li Specify this to install the finished package on the target device

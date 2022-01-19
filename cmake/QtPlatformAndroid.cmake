@@ -163,6 +163,24 @@ define_property(TARGET
         "This variable points to the path of the deployment settings JSON file, which holds properties required by androiddeployqt to package the Android app."
 )
 
+define_property(TARGET
+    PROPERTY
+        QT_ANDROID_SYSTEM_LIBS_PREFIX
+    BRIEF_DOCS
+        "This variable is used to specify a path to Qt libraries on the target device in Android."
+    FULL_DOCS
+        "This variable can be used to provide a custom system library path to use for library loading lookup on Android. This is necessary when using Qt libraries installed outside an app's default native (JNI) library directory."
+)
+
+define_property(TARGET
+    PROPERTY
+        QT_ANDROID_NO_DEPLOY_QT_LIBS
+    BRIEF_DOCS
+        "This variable is used to control whether Qt libraries should be deployed inside the APK on Android."
+    FULL_DOCS
+        "This variable can be used to exclude Qt shared libraries from being packaged inside the APK when deploying on Android. Not supported when deploying as Android Application Bundle."
+)
+
 # Returns test execution arguments for Android targets
 function(qt_internal_android_test_arguments target out_test_runner out_test_arguments)
     set(${out_test_runner} "${QT_HOST_PATH}/${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_BINDIR}/androidtestrunner" PARENT_SCOPE)

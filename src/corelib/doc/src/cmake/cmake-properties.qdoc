@@ -297,6 +297,45 @@ and overwritten by that command.
 */
 
 /*!
+\page cmake-target-property-QT_ANDROID_SYSTEM_LIBS_PREFIX.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_ANDROID_SYSTEM_LIBS_PREFIX
+\target cmake-target-property-QT_ANDROID_SYSTEM_LIBS_PREFIX
+
+\summary {Specifies the location of Qt libraries on the target device.}
+
+\preliminarycmakeproperty
+\cmakepropertyandroidonly
+
+This property can be set to provide a path to Qt libraries on the target device,
+when those libraries are installed outside app's native (JNI) library directory.
+*/
+
+/*!
+\page cmake-target-property-QT_ANDROID_NO_DEPLOY_QT_LIBS.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_ANDROID_NO_DEPLOY_QT_LIBS
+\target cmake-target-property-QT_ANDROID_NO_DEPLOY_QT_LIBS
+
+\summary {Whether Qt shared libraries are packaged in the APK on Android.}
+
+\preliminarycmakeproperty
+\cmakepropertyandroidonly
+
+This property can be set to not package Qt shared libraries inside the APK when
+deploying the target. Use
+\l{cmake-target-property-QT_ANDROID_SYSTEM_LIBS_PREFIX}{QT_ANDROID_SYSTEM_LIBS_PREFIX}
+to provide a path to where those libraries will be located on the target device
+instead.
+
+\note Only supported when deploying as an APK.
+*/
+
+/*!
 \page cmake-target-property-qt_no_entrypoint.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore

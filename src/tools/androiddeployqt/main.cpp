@@ -101,7 +101,8 @@ struct Options
 
     enum DeploymentMechanism
     {
-        Bundled
+        Bundled,
+        Unbundled
     };
 
     enum TriState {
@@ -167,6 +168,7 @@ struct Options
 
     // Package information
     DeploymentMechanism deploymentMechanism;
+    QString systemLibsPath;
     QString packageName;
     QStringList extraLibs;
     QHash<QString, QStringList> archExtraLibs;
@@ -337,7 +339,6 @@ void deleteMissingFiles(const Options &options, const QDir &srcDir, const QDir &
     fflush(stdout);
 }
 
-
 Options parseOptions()
 {
     Options options;
@@ -383,6 +384,9 @@ Options parseOptions()
                 QString deploymentMechanism = arguments.at(++i);
                 if (deploymentMechanism.compare("bundled"_L1, Qt::CaseInsensitive) == 0) {
                     options.deploymentMechanism = Options::Bundled;
+                } else if (deploymentMechanism.compare("unbundled"_L1,
+                                                       Qt::CaseInsensitive) == 0) {
+                    options.deploymentMechanism = Options::Unbundled;
                 } else {
                     fprintf(stderr, "Unrecognized deployment mechanism: %s\n", qPrintable(deploymentMechanism));
                     options.helpRequested = true;
@@ -540,7 +544,9 @@ void printHelp()
                     "       directory will be used if nothing else is specified.\n"
                     "\n"
                     "    --deployment <mechanism>: Supported deployment mechanisms:\n"
-                    "       bundled (default): Include Qt files in stand-alone package.\n"
+                    "       bundled (default): Includes Qt files in stand-alone package.\n"
+                    "       unbundled: Assumes native libraries are present on the device\n"
+                    "       and does not include them in the APK.\n"
                     "\n"
                     "    --aab: Build an Android App Bundle.\n"
                     "\n"
@@ -796,6 +802,16 @@ QString packageNameFromAndroidManifest(const QString &androidManifestPath)
     return {};
 }
 
+bool parseCmakeBoolean(const QJsonValue &value)
+{
+    const QString stringValue = value.toString();
+    return (stringValue.compare(QString::fromUtf8("true"), Qt::CaseInsensitive)
+                 || stringValue.compare(QString::fromUtf8("on"), Qt::CaseInsensitive)
+                 || stringValue.compare(QString::fromUtf8("yes"), Qt::CaseInsensitive)
+                 || stringValue.compare(QString::fromUtf8("y"), Qt::CaseInsensitive)
+                 || stringValue.toInt() > 0);
+}
+
 bool readInputFile(Options *options)
 {
     QFile file(options->inputFileName);
@@ -1023,6 +1039,22 @@ bool readInputFile(Options *options)
     }
 
     {
+        const QJsonValue systemLibsPath =
+                jsonObject.value("android-system-libs-prefix"_L1);
+        if (!systemLibsPath.isUndefined())
+            options->systemLibsPath = systemLibsPath.toString();
+    }
+
+    {
+        const QJsonValue noDeploy = jsonObject.value("android-no-deploy-qt-libs"_L1);
+        if (!noDeploy.isUndefined()) {
+            bool useUnbundled = parseCmakeBoolean(noDeploy);
+            options->deploymentMechanism = useUnbundled ? Options::Unbundled :
+                                                          Options::Bundled;
+        }
+    }
+
+    {
         const QJsonValue stdcppPath = jsonObject.value("stdcpp-path"_L1);
         if (stdcppPath.isUndefined()) {
             fprintf(stderr, "No stdcpp-path defined in json file.\n");
@@ -1137,6 +1169,11 @@ bool readInputFile(Options *options)
     return true;
 }
 
+bool isDeployment(const Options *options, Options::DeploymentMechanism deployment)
+{
+    return options->deploymentMechanism == deployment;
+}
+
 bool copyFiles(const QDir &sourceDirectory, const QDir &destinationDirectory, const Options &options, bool forceOverwrite = false)
 {
     const QFileInfoList entries = sourceDirectory.entryInfoList(QDir::NoDotAndDotDot | QDir::Files | QDir::Dirs);
@@ -1249,8 +1286,16 @@ bool copyAndroidExtraLibs(Options *options)
     if (options->extraLibs.isEmpty())
         return true;
 
-    if (options->verbose)
-        fprintf(stdout, "Copying %zd external libraries to package.\n", size_t(options->extraLibs.size()));
+    if (options->verbose) {
+        switch (options->deploymentMechanism) {
+        case Options::Bundled:
+            fprintf(stdout, "Copying %zd external libraries to package.\n", size_t(options->extraLibs.size()));
+            break;
+        case Options::Unbundled:
+            fprintf(stdout, "Skip copying of external libraries.\n");
+            break;
+        };
+    }
 
     for (const QString &extraLib : options->extraLibs) {
         QFileInfo extraLibInfo(extraLib);
@@ -1274,8 +1319,10 @@ bool copyAndroidExtraLibs(Options *options)
                                 + u'/'
                                 + extraLibInfo.fileName());
 
-        if (!copyFileIfNewer(extraLib, destinationFile, *options))
+        if (isDeployment(options, Options::Bundled)
+                && !copyFileIfNewer(extraLib, destinationFile, *options)) {
             return false;
+        }
         options->archExtraLibs[options->currentArchitecture] += extraLib;
     }
 
@@ -1323,8 +1370,10 @@ bool copyAndroidExtraResources(Options *options)
             if (!resourceFile.endsWith(".so"_L1)) {
                 destinationFile = assetsDir + resourceFile;
             } else {
-                if (!checkArchitecture(*options, originFile))
+                if (isDeployment(options, Options::Unbundled)
+                                 || !checkArchitecture(*options, originFile)) {
                     continue;
+                }
                 destinationFile = libsDir + resourceFile;
                 options->archExtraPlugins[options->currentArchitecture] += resourceFile;
             }
@@ -1487,11 +1536,12 @@ bool updateLibsXml(Options *options)
     const QString initClasses = options->initClasses.join(u':');
     replacements[QStringLiteral("<!-- %%INSERT_INIT_CLASSES%% -->")] = initClasses;
 
-    // Bundle and use libs from the apk because currently we don't have a way avoid
-    // duplicating them.
-    replacements[QStringLiteral("<!-- %%BUNDLE_LOCAL_QT_LIBS%% -->")] = "1"_L1;
+    // Set BUNDLE_LOCAL_QT_LIBS based on the deployment used
+    replacements[QStringLiteral("<!-- %%BUNDLE_LOCAL_QT_LIBS%% -->")]
+            = isDeployment(options, Options::Unbundled) ? "0"_L1 : "1"_L1;
     replacements[QStringLiteral("<!-- %%USE_LOCAL_QT_LIBS%% -->")] = "1"_L1;
-
+    replacements[QStringLiteral("<!-- %%SYSTEM_LIBS_PREFIX%% -->")] =
+            isDeployment(options, Options::Unbundled) ? options->systemLibsPath : QStringLiteral("");
 
     if (!updateFile(fileName, replacements))
         return false;
@@ -1735,7 +1785,7 @@ bool readAndroidDependencyXml(Options *options,
                 } else if (reader.name() == "jar"_L1) {
                     int bundling = reader.attributes().value("bundling"_L1).toInt();
                     QString fileName = QDir::cleanPath(reader.attributes().value("file"_L1).toString());
-                    if (bundling == (options->deploymentMechanism == Options::Bundled)) {
+                    if (bundling) {
                         QtDependency dependency(fileName, absoluteFilePath(options, fileName));
                         if (!usedDependencies->contains(dependency.absolutePath)) {
                             options->qtDependencies[options->currentArchitecture].append(dependency);
@@ -2322,6 +2372,10 @@ bool copyQtFiles(Options *options)
         case Options::Bundled:
             fprintf(stdout, "Copying %zd dependencies from Qt into package.\n", size_t(options->qtDependencies[options->currentArchitecture].size()));
             break;
+        case Options::Unbundled:
+            fprintf(stdout, "Copying dependencies from Qt into the package build folder,"
+                            "skipping native libraries.\n");
+            break;
         };
     }
 
@@ -2336,8 +2390,8 @@ bool copyQtFiles(Options *options)
     for (const QtDependency &qtDependency : qAsConst(options->qtDependencies[options->currentArchitecture])) {
         QString sourceFileName = qtDependency.absolutePath;
         QString destinationFileName;
-
-        if (qtDependency.relativePath.endsWith(".so"_L1)) {
+        bool isSharedLibrary = qtDependency.relativePath.endsWith(".so"_L1);
+        if (isSharedLibrary) {
             QString garbledFileName;
             if (QDir::fromNativeSeparators(qtDependency.relativePath).startsWith("lib/"_L1)) {
                 garbledFileName = qtDependency.relativePath.mid(sizeof("lib/") - 1);
@@ -2371,13 +2425,12 @@ bool copyQtFiles(Options *options)
             continue;
         }
 
-        if (options->deploymentMechanism == Options::Bundled
+        if ((isDeployment(options, Options::Bundled) || !isSharedLibrary)
                 && !copyFileIfNewer(sourceFileName,
                                     options->outputDirectory + u'/' + destinationFileName,
                                     *options)) {
             return false;
         }
-
         options->bundledFiles[options->currentArchitecture] += qMakePair(destinationFileName, qtDependency.relativePath);
     }
 
@@ -2709,6 +2762,8 @@ bool copyPackage(const Options &options)
 
 bool copyStdCpp(Options *options)
 {
+    if (isDeployment(options, Options::Unbundled))
+        return true;
     if (options->verbose)
         fprintf(stdout, "Copying STL library\n");
 
@@ -3115,9 +3170,16 @@ int main(int argc, char *argv[])
             if (Q_UNLIKELY(options.timing))
                 fprintf(stdout, "[TIMING] %lld ns: Copied GNU STL\n", options.timer.nsecsElapsed());
         }
-
-        if (!containsApplicationBinary(&options))
+        // If Unbundled deployment is used, remove app lib as we don't want it packaged inside the APK
+        if (options.deploymentMechanism == Options::Unbundled) {
+            QString appLibPath = "%1/libs/%2/lib%3_%2.so"_L1.
+                    arg(options.outputDirectory,
+                        options.currentArchitecture,
+                        options.applicationBinary);
+            QFile::remove(appLibPath);
+        } else if (!containsApplicationBinary(&options)) {
             return CannotFindApplicationBinary;
+        }
 
         if (Q_UNLIKELY(options.timing))
             fprintf(stdout, "[TIMING] %lld ns: Checked for application binary\n", options.timer.nsecsElapsed());
@@ -3140,7 +3202,6 @@ int main(int argc, char *argv[])
             return CannotUpdateAndroidFiles;
         return 0;
     }
-
 
     if (options.build) {
         if (!copyAndroidSources(options))
