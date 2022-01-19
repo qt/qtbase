@@ -212,7 +212,14 @@ static void stackTrace()
     if (debuggerPresent() || hasSystemCrashReporter())
         return;
 
-#if defined(Q_OS_LINUX) || (defined(Q_OS_MACOS) && !defined(Q_PROCESSOR_ARM_64))
+#if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
+
+#if defined(Q_OS_MACOS)
+    #define CSR_ALLOW_UNRESTRICTED_FS (1 << 1)
+    std::optional<uint32_t> sipConfiguration = qt_mac_sipConfiguration();
+    if (!sipConfiguration || !(*sipConfiguration & CSR_ALLOW_UNRESTRICTED_FS))
+        return; // LLDB will fail to provide a valid stack trace
+#endif
 
     const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
     const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
