@@ -203,9 +203,11 @@ QTlsBackend::QTlsBackend()
     if (backends())
         backends->addBackend(this);
 
-    connect(QCoreApplication::instance(), &QCoreApplication::destroyed, this, [this] {
-        delete this;
-    });
+    if (QCoreApplication::instance()) {
+        connect(QCoreApplication::instance(), &QCoreApplication::destroyed, this, [this] {
+            delete this;
+        });
+    }
 }
 
 /*!
