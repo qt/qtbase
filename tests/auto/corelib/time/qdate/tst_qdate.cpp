@@ -557,9 +557,9 @@ void tst_QDate::startOfDay_endOfDay_fixed_data()
     using Bounds = std::numeric_limits<qint64>;
     const QDateTime
         first(QDateTime::fromMSecsSinceEpoch(Bounds::min() + 1, Qt::UTC)),
-        start32sign(QDateTime::fromMSecsSinceEpoch(-0x80000000L * kilo, Qt::UTC)),
-        end32sign(QDateTime::fromMSecsSinceEpoch(0x80000000L * kilo, Qt::UTC)),
-        end32unsign(QDateTime::fromMSecsSinceEpoch(0x100000000L * kilo, Qt::UTC)),
+        start32sign(QDateTime::fromMSecsSinceEpoch(Q_INT64_C(-0x80000000) * kilo, Qt::UTC)),
+        end32sign(QDateTime::fromMSecsSinceEpoch(Q_INT64_C(0x80000000) * kilo, Qt::UTC)),
+        end32unsign(QDateTime::fromMSecsSinceEpoch(Q_INT64_C(0x100000000) * kilo, Qt::UTC)),
         last(QDateTime::fromMSecsSinceEpoch(Bounds::max(), Qt::UTC));
 
     const struct {
