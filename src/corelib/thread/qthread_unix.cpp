@@ -710,7 +710,9 @@ void QThread::start(Priority priority)
     else
         pthread_attr_setthreadname(&attr, objectName().toLocal8Bit());
 #else
-    d->objectName = objectName();
+    // avoid interacting with the binding system
+    d->objectName = d->extraData ? d->extraData->objectName.valueBypassingBindings()
+                                 : QString();
 #endif
 
     pthread_t threadId;
