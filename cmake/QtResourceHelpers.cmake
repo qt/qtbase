@@ -6,7 +6,7 @@ function(qt_internal_add_resource target resourceName)
         return()
     endif()
 
-    qt_parse_all_arguments(arg "qt_add_resource" "" "PREFIX;LANG;BASE" "FILES" ${ARGN})
+    qt_parse_all_arguments(arg "qt_add_resource" "" "PREFIX;LANG;BASE;OUTPUT_TARGETS" "FILES" ${ARGN})
 
     _qt_internal_process_resource(${target} ${resourceName}
         PREFIX "${arg_PREFIX}"
@@ -29,6 +29,10 @@ function(qt_internal_add_resource target resourceName)
         qt_internal_install_resource_pdb_files("${out_targets}")
         qt_internal_record_rcc_object_files("${target}" "${out_targets}"
                                             INSTALL_DIRECTORY "${INSTALL_LIBDIR}")
+   endif()
+
+   if (arg_OUTPUT_TARGETS)
+       set(${arg_OUTPUT_TARGETS} "${out_targets}" PARENT_SCOPE)
    endif()
 endfunction()
 
