@@ -996,7 +996,7 @@ QChar *QUtf16::convertToUnicode(QChar *out, QByteArrayView in, QStringConverter:
         endian = (QSysInfo::ByteOrder == QSysInfo::BigEndian) ? BigEndianness : LittleEndianness;
     }
 
-    int nPairs = (end - chars) >> 1;
+    qsizetype nPairs = (end - chars) >> 1;
     if (endian == BigEndianness)
         qFromBigEndian<ushort>(chars, nPairs, out);
     else
@@ -1022,7 +1022,7 @@ QChar *QUtf16::convertToUnicode(QChar *out, QByteArrayView in, QStringConverter:
 QByteArray QUtf32::convertFromUnicode(QStringView in, QStringConverter::State *state, DataEndianness endian)
 {
     bool writeBom = !(state->internalState & HeaderDone) && state->flags & QStringConverter::Flag::WriteBom;
-    int length =  4*in.size();
+    qsizetype length =  4*in.size();
     if (writeBom)
         length += 4;
     QByteArray ba(length, Qt::Uninitialized);
@@ -1142,7 +1142,7 @@ QChar *QUtf32::convertToUnicode(QChar *out, QByteArrayView in, QStringConverter:
     if (state->flags & QStringConverter::Flag::ConvertInitialBom)
         headerdone = true;
 
-    int num = state->remainingChars;
+    qsizetype num = state->remainingChars;
     state->remainingChars = 0;
 
     if (!headerdone || endian == DetectEndianness || num) {
@@ -1212,8 +1212,8 @@ static QString convertToUnicodeCharByChar(QByteArrayView in, QStringConverter::S
     if (!chars || !length)
         return QString();
 
-    int copyLocation = 0;
-    int extra = 2;
+    qsizetype copyLocation = 0;
+    qsizetype extra = 2;
     if (state && state->remainingChars) {
         copyLocation = state->remainingChars;
         extra += copyLocation;
@@ -1474,7 +1474,7 @@ static char *toLatin1(char *out, QStringView in, QStringConverter::State *state)
         state = nullptr;
 
     const char replacement = (state && state->flags & QStringConverter::Flag::ConvertInvalidToNull) ? 0 : '?';
-    int invalid = 0;
+    qsizetype invalid = 0;
     for (qsizetype i = 0; i < in.length(); ++i) {
         if (in[i] > QChar(0xff)) {
             *out = replacement;
@@ -1810,7 +1810,7 @@ std::optional<QStringConverter::Encoding> QStringConverter::encodingForHtml(QByt
         return encoding;
 
     QByteArray header = data.first(qMin(data.size(), qsizetype(1024))).toByteArray().toLower();
-    int pos = header.indexOf("meta ");
+    qsizetype pos = header.indexOf("meta ");
     if (pos != -1) {
         pos = header.indexOf("charset=", pos);
         if (pos != -1) {
@@ -1818,14 +1818,14 @@ std::optional<QStringConverter::Encoding> QStringConverter::encodingForHtml(QByt
             if (pos < header.size() && (header.at(pos) == '\"' || header.at(pos) == '\''))
                 ++pos;
 
-            int pos2 = pos;
+            qsizetype pos2 = pos;
             // The attribute can be closed with either """, "'", ">" or "/",
             // none of which are valid charset characters.
             while (++pos2 < header.size()) {
                 char ch = header.at(pos2);
                 if (ch == '\"' || ch == '\'' || ch == '>' || ch == '/') {
                     QByteArray name = header.mid(pos, pos2 - pos);
-                    int colon = name.indexOf(':');
+                    qsizetype colon = name.indexOf(':');
                     if (colon > 0)
                         name = name.left(colon);
                     name = name.simplified();
