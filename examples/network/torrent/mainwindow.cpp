@@ -90,7 +90,7 @@ public:
         // Set up a QStyleOptionProgressBar to precisely mimic the
         // environment of a progress bar.
         QStyleOptionProgressBar progressBarOption;
-        progressBarOption.state = QStyle::State_Enabled;
+        progressBarOption.state |= QStyle::State_Enabled;
         progressBarOption.direction = QApplication::layoutDirection();
         progressBarOption.rect = option.rect;
         progressBarOption.fontMetrics = QFontMetrics(QApplication::font());
