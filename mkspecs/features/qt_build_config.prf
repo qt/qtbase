@@ -112,7 +112,7 @@ unix: CONFIG += explicitlib
 macos: CONFIG += testcase_no_bundle
 
 # Override MinGW's definition in _mingw.h
-mingw: DEFINES += WINVER=0x0601 _WIN32_WINNT=0x0601
+mingw: DEFINES += WINVER=0x0A00 _WIN32_WINNT=0x0A00
 
 defineTest(qtBuildPart) {
     bp = $$eval($$upper($$section(_QMAKE_CONF_, /, -2, -2))_BUILD_PARTS)
