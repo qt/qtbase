@@ -3800,7 +3800,6 @@ def write_example(
         f"project({binary_name} LANGUAGES CXX)\n\n"
         "set(CMAKE_INCLUDE_CURRENT_DIR ON)\n\n"
         "set(CMAKE_AUTOMOC ON)\n"
-        "set(CMAKE_AUTORCC ON)\n"
         "set(CMAKE_AUTOUIC ON)\n\n"
         "if(NOT DEFINED INSTALL_EXAMPLESDIR)\n"
         '  set(INSTALL_EXAMPLESDIR "examples")\n'
