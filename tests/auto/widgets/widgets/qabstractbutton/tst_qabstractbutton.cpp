@@ -514,11 +514,34 @@ void tst_QAbstractButton::setShortcut()
 
 void tst_QAbstractButton::animateClick()
 {
-    testWidget->animateClick();
-    QVERIFY( testWidget->isDown() );
-    qApp->processEvents();
-    QVERIFY( testWidget->isDown() );
-    QTRY_VERIFY( !testWidget->isDown() );
+    MyButton button;
+    QSignalSpy pressedSpy(&button, &QAbstractButton::pressed);
+    QSignalSpy releasedSpy(&button, &QAbstractButton::released);
+    QSignalSpy clickedSpy(&button, &QAbstractButton::clicked);
+
+    QElapsedTimer elapsed;
+    elapsed.start();
+    button.animateClick();
+
+    QVERIFY(button.isDown());
+    QCOMPARE(pressedSpy.count(), 1);
+    QCOMPARE(releasedSpy.count(), 0);
+    QCOMPARE(clickedSpy.count(), 0);
+    qApp->processEvents(QEventLoop::AllEvents, 10);
+    // QAbstractButton starts a 100ms timer which performs the click. If it
+    // took more than 100ms to get here, then the button might no longer be down.
+    if (elapsed.elapsed() < 100) {
+        QVERIFY(button.isDown());
+        QCOMPARE(pressedSpy.count(), 1);
+        QCOMPARE(releasedSpy.count(), 0);
+        QCOMPARE(clickedSpy.count(), 0);
+    }
+    QTRY_VERIFY(!button.isDown());
+    // but once the button has been clicked, it must have taken at least 100ms
+    QVERIFY(elapsed.elapsed() >= 100);
+    QCOMPARE(pressedSpy.count(), 1);
+    QCOMPARE(releasedSpy.count(), 1);
+    QCOMPARE(clickedSpy.count(), 1);
 }
 
 #if QT_CONFIG(shortcut)
