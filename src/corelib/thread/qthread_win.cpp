@@ -420,7 +420,9 @@ void QThread::start(Priority priority)
     if (d->running)
         return;
 
-    d->objectName = objectName();
+    // avoid interacting with the binding system
+    d->objectName = d->extraData ? d->extraData->objectName.valueBypassingBindings()
+                                 : QString();
     d->running = true;
     d->finished = false;
     d->exited = false;
