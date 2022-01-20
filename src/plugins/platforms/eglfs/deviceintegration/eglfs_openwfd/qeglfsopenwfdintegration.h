@@ -51,6 +51,7 @@ class QEglFSOpenWFDIntegration : public QEglFSDeviceIntegration
 {
 public:
     void platformInit() override;
+    void platformDestroy() override;
     QSize screenSize() const override;
     EGLNativeWindowType createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format) override;
     void destroyNativeWindow(EGLNativeWindowType window) override;
@@ -62,6 +63,7 @@ private:
     EGLNativeDisplayType mNativeDisplay;
     WFDDevice mDevice;
     WFDPort mPort;
+    WFDPipeline mPipeline;
 };
 
 QT_END_NAMESPACE
