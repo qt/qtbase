@@ -183,6 +183,12 @@ struct QPropertyProxyBindingData
 namespace QtPrivate {
 struct BindingEvaluationState;
 
+/*  used in BindingFunctionVTable::createFor; on all other compilers, void would work, but on
+    MSVC this causes C2182 when compiling in C++20 mode. As we only need to provide some default
+    value which gets ignored, we introduce this dummy type.
+*/
+struct MSVCWorkAround {};
+
 struct BindingFunctionVTable
 {
     using CallFn = bool(*)(QMetaType, QUntypedPropertyData *, void *);
@@ -193,7 +199,7 @@ struct BindingFunctionVTable
     const MoveCtrFn moveConstruct;
     const qsizetype size;
 
-    template<typename Callable, typename PropertyType=void>
+    template<typename Callable, typename PropertyType=MSVCWorkAround>
     static constexpr BindingFunctionVTable createFor()
     {
         static_assert (alignof(Callable) <= alignof(std::max_align_t), "Bindings do not support overaligned functors!");
@@ -204,7 +210,7 @@ struct BindingFunctionVTable
                     static_assert (std::is_invocable_r_v<bool, Callable, QMetaType, QUntypedPropertyData *> );
                     auto untypedEvaluationFunction = static_cast<Callable *>(f);
                     return std::invoke(*untypedEvaluationFunction, metaType, dataPtr);
-                } else if constexpr (!std::is_same_v<PropertyType, void>) { // check for void to workaround MSVC issue
+                } else if constexpr (!std::is_same_v<PropertyType, MSVCWorkAround>) {
                     Q_UNUSED(metaType);
                     QPropertyData<PropertyType> *propertyPtr = static_cast<QPropertyData<PropertyType> *>(dataPtr);
                     // That is allowed by POSIX even if Callable is a function pointer
@@ -231,7 +237,7 @@ struct BindingFunctionVTable
     }
 };
 
-template<typename Callable, typename PropertyType=void>
+template<typename Callable, typename PropertyType=MSVCWorkAround>
 inline constexpr BindingFunctionVTable bindingFunctionVTable = BindingFunctionVTable::createFor<Callable, PropertyType>();
 
 
