@@ -154,23 +154,23 @@ EGLNativeWindowType QEglFSOpenWFDIntegration::createNativeWindow(QPlatformWindow
     if (!ok)
         pipelineId = pipelineIds[0];
 
-    WFDPipeline pipeline = wfdCreatePipeline(mDevice, pipelineId, nullptr);
-    if (WFD_INVALID_HANDLE == pipeline)
+    mPipeline = wfdCreatePipeline(mDevice, pipelineId, nullptr);
+    if (WFD_INVALID_HANDLE == mPipeline)
         qFatal("Failed to create wfd pipeline");
 
-    wfdSetPipelineAttribi(mDevice, pipeline, WFD_PIPELINE_TRANSPARENCY_ENABLE,
+    wfdSetPipelineAttribi(mDevice, mPipeline, WFD_PIPELINE_TRANSPARENCY_ENABLE,
                           (WFD_TRANSPARENCY_SOURCE_ALPHA|WFD_TRANSPARENCY_GLOBAL_ALPHA));
 
     WFDErrorCode eError = wfdGetError(mDevice);
     if (WFD_ERROR_NONE != eError)
         qFatal("Failed to set WFD_PIPELINE_TRANSPARENCY_ENABLE");
 
-    wfdSetPipelineAttribi(mDevice, pipeline, WFD_PIPELINE_GLOBAL_ALPHA, 255);
+    wfdSetPipelineAttribi(mDevice, mPipeline, WFD_PIPELINE_GLOBAL_ALPHA, 255);
     eError = wfdGetError(mDevice);
     if (WFD_ERROR_NONE != eError)
         qFatal("Failed to set WFD_PIPELINE_GLOBAL_ALPHA");
 
-    wfdBindPipelineToPort(mDevice, mPort, pipeline);
+    wfdBindPipelineToPort(mDevice, mPort, mPipeline);
     eError = wfdGetError(mDevice);
     if (WFD_ERROR_NONE != eError)
         qFatal("Failed to bind port to pipeline");
@@ -190,7 +190,7 @@ EGLNativeWindowType QEglFSOpenWFDIntegration::createNativeWindow(QPlatformWindow
         if (WFD_INVALID_HANDLE == wfdEglImages[i])
             qFatal("Failed to create WDFEGLImages");
 
-        source[i] = wfdCreateSourceFromImage(mDevice, pipeline, eglImageHandles[i], nullptr);
+        source[i] = wfdCreateSourceFromImage(mDevice, mPipeline, eglImageHandles[i], nullptr);
         if (WFD_INVALID_HANDLE == source[i])
             qFatal("Failed to create source from EGLImage");
     }
@@ -208,14 +208,13 @@ EGLNativeWindowType QEglFSOpenWFDIntegration::createNativeWindow(QPlatformWindow
 
     nativeWindow->dev = mDevice;
     nativeWindow->port = mPort;
-    nativeWindow->pipeline = pipeline;
+    nativeWindow->pipeline = mPipeline;
     nativeWindow->numBuffers = MAX_NUM_OF_WFD_BUFFERS;
 
     for (int i = 0; i < MAX_NUM_OF_WFD_BUFFERS; i++) {
         nativeWindow->buffers[i].image  = wfdEglImages[i];
         nativeWindow->buffers[i].source = source[i];
     }
-
     return (EGLNativeWindowType)nativeWindow;
 }
 
@@ -231,7 +230,16 @@ QSurfaceFormat QEglFSOpenWFDIntegration::surfaceFormatFor(const QSurfaceFormat &
 
 void QEglFSOpenWFDIntegration::destroyNativeWindow(EGLNativeWindowType window)
 {
+    wfdDestroyPipeline(mDevice, mPipeline);
     free((void*)window);
+}
+
+void QEglFSOpenWFDIntegration::platformDestroy()
+{
+    wfdDestroyPort(mDevice, mPort);
+    WFDErrorCode error = wfdDestroyDevice(mDevice);
+    if (error != WFD_ERROR_NONE)
+        qWarning() << "Failed to release wfd device! Error = " << error;
 }
 
 QT_END_NAMESPACE

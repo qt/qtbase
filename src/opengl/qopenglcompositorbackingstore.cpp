@@ -95,18 +95,20 @@ QOpenGLCompositorBackingStore::~QOpenGLCompositorBackingStore()
         QScopedPointer<QOffscreenSurface> tempSurface;
         if (!ctx) {
             ctx = QOpenGLCompositor::instance()->context();
-            tempSurface.reset(new QOffscreenSurface);
-            tempSurface->setFormat(ctx->format());
-            tempSurface->create();
-            ctx->makeCurrent(tempSurface.data());
+            if (ctx) {
+                tempSurface.reset(new QOffscreenSurface);
+                tempSurface->setFormat(ctx->format());
+                tempSurface->create();
+                ctx->makeCurrent(tempSurface.data());
+            }
         }
 
-        if (m_bsTextureContext && ctx->shareGroup() == m_bsTextureContext->shareGroup())
+        if (m_bsTextureContext && ctx && ctx->shareGroup() == m_bsTextureContext->shareGroup())
             glDeleteTextures(1, &m_bsTexture);
         else
             qWarning("QOpenGLCompositorBackingStore: Texture is not valid in the current context");
 
-        if (tempSurface)
+        if (tempSurface && ctx)
             ctx->doneCurrent();
     }
 
