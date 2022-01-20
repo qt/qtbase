@@ -57,12 +57,12 @@ public:
       : m_top(top), m_left(left), m_bottom(bottom), m_right(right)
     {}
 
-    friend inline bool operator==(const QTableWidgetSelectionRange &lhs,
-                                  const QTableWidgetSelectionRange &rhs)
+    friend bool operator==(const QTableWidgetSelectionRange &lhs,
+                           const QTableWidgetSelectionRange &rhs) noexcept
     { return lhs.m_top == rhs.m_top && lhs.m_left == rhs.m_left
           && lhs.m_bottom == rhs.m_bottom && lhs.m_right == rhs.m_right; };
-    friend inline bool operator!=(const QTableWidgetSelectionRange &lhs,
-                                  const QTableWidgetSelectionRange &rhs)
+    friend bool operator!=(const QTableWidgetSelectionRange &lhs,
+                           const QTableWidgetSelectionRange &rhs) noexcept
     { return !(lhs == rhs); }
 
     inline int topRow() const { return m_top; }
