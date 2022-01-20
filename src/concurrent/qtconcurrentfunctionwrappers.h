@@ -142,24 +142,17 @@ struct ReduceResultType<T(C::*)(U) noexcept>
 };
 
 template<class T, class Enable = void>
-struct hasCallOperator : std::false_type
-{
-};
+inline constexpr bool hasCallOperator_v = false;
 
 template<class T>
-struct hasCallOperator<T, std::void_t<decltype(&T::operator())>> : std::true_type
-{
-};
+inline constexpr bool hasCallOperator_v<T, std::void_t<decltype(&T::operator())>> = true;
 
 template<class T, class Enable = void>
-struct isIterator : std::false_type
-{
-};
+inline constexpr bool isIterator_v = false;
 
 template<class T>
-struct isIterator<T, std::void_t<typename std::iterator_traits<T>::value_type>> : std::true_type
-{
-};
+inline constexpr bool isIterator_v<T, std::void_t<typename std::iterator_traits<T>::value_type>> =
+        true;
 
 template <class Callable, class Sequence>
 using isInvocable = std::is_invocable<Callable, typename std::decay_t<Sequence>::value_type>;
@@ -180,7 +173,7 @@ struct ReduceResultTypeHelper<Callable,
 template <class Callable>
 struct ReduceResultTypeHelper<Callable,
         typename std::enable_if_t<!std::is_function_v<std::remove_pointer_t<std::decay_t<Callable>>>
-                                  && hasCallOperator<std::decay_t<Callable>>::value>>
+                                  && hasCallOperator_v<std::decay_t<Callable>>>>
 {
     using type = std::decay_t<typename QtPrivate::ArgResolver<Callable>::First>;
 };
