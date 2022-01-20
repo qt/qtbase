@@ -560,7 +560,12 @@ void tst_qfloat16::properties()
     QVERIFY(Bounds::has_infinity);
     QVERIFY(Bounds::has_quiet_NaN);
     QVERIFY(Bounds::has_signaling_NaN);
+#if !defined(Q_CC_GHS)
     QCOMPARE(Bounds::has_denorm, std::denorm_present);
+#else
+    // For GHS compiler the "denorm_indeterminite" is the expected return value.
+    QCOMPARE(Bounds::has_denorm, std::denorm_indeterminate);
+#endif // Q_CC_GHS
     QCOMPARE(Bounds::round_style, std::round_to_nearest);
     QCOMPARE(Bounds::radix, 2);
     // Untested: has_denorm_loss
