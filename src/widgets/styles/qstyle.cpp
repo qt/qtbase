@@ -2018,7 +2018,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value SH_Table_AlwaysDrawLeftTopGridLines
            Determines if the far left and top grid lines are drawn in a table or
            not when the header is hidden. Defaults to false.
-           This enum value has been introduced in Qt 6.2.
+           This enum value has been introduced in Qt 6.3.
 
     \sa styleHint()
 */
