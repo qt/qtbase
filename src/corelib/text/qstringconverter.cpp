@@ -1809,10 +1809,13 @@ std::optional<QStringConverter::Encoding> QStringConverter::encodingForHtml(QByt
         // trust the initial BOM
         return encoding;
 
+    static constexpr auto metaSearcher = qMakeStaticByteArrayMatcher("meta ");
+    static constexpr auto charsetSearcher = qMakeStaticByteArrayMatcher("charset=");
+
     QByteArray header = data.first(qMin(data.size(), qsizetype(1024))).toByteArray().toLower();
-    qsizetype pos = header.indexOf("meta ");
+    qsizetype pos = metaSearcher.indexIn(header);
     if (pos != -1) {
-        pos = header.indexOf("charset=", pos);
+        pos = charsetSearcher.indexIn(header, pos);
         if (pos != -1) {
             pos += int(qstrlen("charset="));
             if (pos < header.size() && (header.at(pos) == '\"' || header.at(pos) == '\''))
