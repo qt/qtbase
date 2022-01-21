@@ -10553,8 +10553,8 @@ qsizetype QtPrivate::findString(QLatin1String haystack, qsizetype from, QLatin1S
         return from;
 
     if (cs == Qt::CaseSensitive) {
-        const QByteArrayMatcher matcher(needle.data(), needle.size());
-        return matcher.indexIn(haystack.data(), haystack.size(), from);
+        const QByteArrayMatcher matcher(needle);
+        return matcher.indexIn(haystack, from);
     }
 
     // If the needle is sufficiently small we simply iteratively search through
