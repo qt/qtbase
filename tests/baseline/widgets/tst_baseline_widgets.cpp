@@ -354,6 +354,7 @@ void tst_Widgets::tst_QRadioButton()
     QBoxLayout box(QBoxLayout::TopToBottom);
     box.addWidget(&button1);
     box.addWidget(&button2);
+    testWindow()->setLayout(&box);
     takeStandardSnapshots();
 
     const QPoint clickTarget = button1.rect().center();
