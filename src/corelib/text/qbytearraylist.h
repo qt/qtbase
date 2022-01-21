@@ -80,9 +80,7 @@ public:
     using QListSpecialMethodsBase<QByteArray>::lastIndexOf;
     using QListSpecialMethodsBase<QByteArray>::contains;
 
-    inline QByteArray join() const
-    { return join(QByteArrayView{}); }
-    inline QByteArray join(QByteArrayView sep) const // ### Qt 7: merge with the () overload
+    QByteArray join(QByteArrayView sep = {}) const
     {
         return QtPrivate::QByteArrayList_join(self(), sep);
     }
