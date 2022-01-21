@@ -48,11 +48,45 @@ class tst_QByteArrayMatcher : public QObject
     Q_OBJECT
 
 private slots:
+    void overloads();
     void interface();
     void indexIn();
     void staticByteArrayMatcher();
     void haystacksWithMoreThan4GiBWork();
 };
+
+void tst_QByteArrayMatcher::overloads()
+{
+    QByteArray hello = QByteArrayLiteral("hello");
+    QByteArray hello2 = hello.repeated(2);
+    {
+        QByteArrayMatcher m("hello");
+        QCOMPARE(m.pattern(), "hello");
+        QCOMPARE(m.indexIn("hello"), 0);
+    }
+    {
+        QByteArrayMatcher m("hello", qsizetype(3));
+        QCOMPARE(m.pattern(), "hel");
+        QCOMPARE(m.indexIn("hellohello", qsizetype(2)), -1); // haystack is "he", not: from is 2
+        QCOMPARE(m.indexIn("hellohello", qsizetype(3)), 0); // haystack is "hel", not: from is 3
+    }
+    {
+        QByteArrayMatcher m(hello);
+        QCOMPARE(m.pattern(), "hello");
+        QCOMPARE(m.indexIn(hello), 0);
+        QCOMPARE(m.indexIn(hello2, qsizetype(1)), hello.size());
+    }
+    {
+        QStaticByteArrayMatcher m("hel");
+        QCOMPARE(m.pattern(), "hel");
+        QCOMPARE(m.indexIn("hello"), qsizetype(0));
+        QCOMPARE(m.indexIn("hellohello", qsizetype(2)), -1); // haystack is "he", not: from is 2
+        QCOMPARE(m.indexIn("hellohello", qsizetype(3)), 0); // haystack is "hel", not: from is 3
+        QCOMPARE(m.indexIn(hello), 0);
+        QCOMPARE(m.indexIn(hello2, qsizetype(2)), hello.size()); // from is 2
+        QCOMPARE(m.indexIn(hello2, qsizetype(3)), hello.size()); // from is 3
+    }
+}
 
 void tst_QByteArrayMatcher::interface()
 {

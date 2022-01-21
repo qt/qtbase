@@ -206,21 +206,6 @@ void QByteArrayMatcher::setPattern(const QByteArray &pattern)
 }
 
 /*!
-    Searches the byte array \a ba, from byte position \a from (default
-    0, i.e. from the first byte), for the byte array pattern() that
-    was set in the constructor or in the most recent call to
-    setPattern(). Returns the position where the pattern() matched in
-    \a ba, or -1 if no match was found.
-*/
-qsizetype QByteArrayMatcher::indexIn(const QByteArray &ba, qsizetype from) const
-{
-    if (from < 0)
-        from = 0;
-    return bm_find(reinterpret_cast<const uchar *>(ba.constData()), ba.size(), from,
-                   p.p, p.l, p.q_skiptable);
-}
-
-/*!
     Searches the char string \a str, which has length \a len, from
     byte position \a from (default 0, i.e. from the first byte), for
     the byte array pattern() that was set in the constructor or in the
@@ -246,6 +231,13 @@ qsizetype QByteArrayMatcher::indexIn(const char *str, qsizetype len, qsizetype f
     setPattern(). Returns the position where the pattern() matched in
     \a data, or -1 if no match was found.
 */
+qsizetype QByteArrayMatcher::indexIn(QByteArrayView data, qsizetype from) const
+{
+    if (from < 0)
+        from = 0;
+    return bm_find(reinterpret_cast<const uchar *>(data.data()), data.size(), from,
+                   p.p, p.l, p.q_skiptable);
+}
 
 /*!
     \fn QByteArray QByteArrayMatcher::pattern() const
