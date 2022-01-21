@@ -348,8 +348,7 @@ qsizetype qFindByteArray(
     QByteArray::indexOf(), in particular if repeated matching takes place.
 
     Unlike QByteArrayMatcher, this class calculates the internal
-    representation at \e{compile-time}, if your compiler supports
-    C++14-level \c{constexpr} (C++11 is not sufficient), so it can
+    representation at \e{compile-time}, so it can
     even benefit if you are doing one-off byte array matches.
 
     Create the QStaticByteArrayMatcher by calling qMakeStaticByteArrayMatcher(),
@@ -364,11 +363,6 @@ qsizetype qFindByteArray(
 
     Since this class is designed to do all the up-front calculations at compile-time,
     it does not offer a setPattern() method.
-
-    \note Qt detects the necessary C++14 compiler support by way of the feature
-    test recommendations from
-    \l{https://isocpp.org/std/standing-documents/sd-6-sg10-feature-test-recommendations}
-    {C++ Committee's Standing Document 6}.
 
     \sa QByteArrayMatcher, QStringMatcher
 */
