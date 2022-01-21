@@ -29,7 +29,7 @@
 
 #include <QtCore/QCoreApplication>
 
-#if QT_CONFIG(process)
+QT_REQUIRE_CONFIG(process);
 
 #if QT_CONFIG(temporaryfile)
 #  define USE_DIFF
@@ -1216,15 +1216,10 @@ SCENARIO("Test output of the loggers is as expected")
     }
 }
 
-#endif // QT_CONFIG(process)
-
 // ----------------------- Entrypoint -----------------------
 
 int main(int argc, char **argv)
 {
-#if !QT_CONFIG(process)
-    return 0;
-#else
     std::vector<const char*> args(argv, argv + argc);
 
     static auto kRebaseArgument = "--rebase";
@@ -1272,6 +1267,5 @@ int main(int argc, char **argv)
     }
 
     return result;
-#endif
 }
 
