@@ -99,15 +99,20 @@ class QStaticByteArrayMatcherBase
         uchar data[256];
     } m_skiptable;
 protected:
-    explicit constexpr QStaticByteArrayMatcherBase(const char *pattern, uint n) noexcept
+    explicit constexpr QStaticByteArrayMatcherBase(const char *pattern, size_t n) noexcept
         : m_skiptable(generate(pattern, n)) {}
     // compiler-generated copy/more ctors/assignment operators are ok!
     // compiler-generated dtor is ok!
 
+#if QT_REMOVED_SINCE(6, 3) && QT_POINTER_SIZE != 4
     Q_CORE_EXPORT int indexOfIn(const char *needle, uint nlen, const char *haystack, int hlen, int from) const noexcept;
+#endif
+    Q_CORE_EXPORT qsizetype indexOfIn(const char *needle, size_t nlen,
+                                      const char *haystack, qsizetype hlen,
+                                      qsizetype from) const noexcept;
 
 private:
-    static constexpr Skiptable generate(const char *pattern, uint n) noexcept
+    static constexpr Skiptable generate(const char *pattern, size_t n) noexcept
     {
         const auto uchar_max = (std::numeric_limits<uchar>::max)();
         uchar max = n > uchar_max ? uchar_max : uchar(n);
@@ -143,7 +148,7 @@ private:
     }
 };
 
-template <uint N>
+template <size_t N>
 class QStaticByteArrayMatcher : QStaticByteArrayMatcherBase
 {
     char m_pattern[N];
@@ -153,19 +158,19 @@ public:
     explicit constexpr QStaticByteArrayMatcher(const char (&patternToMatch)[N]) noexcept
         : QStaticByteArrayMatcherBase(patternToMatch, N - 1), m_pattern()
     {
-        for (uint i = 0; i < N; ++i)
+        for (size_t i = 0; i < N; ++i)
             m_pattern[i] = patternToMatch[i];
     }
 
-    int indexIn(const QByteArray &haystack, int from = 0) const noexcept
+    qsizetype indexIn(const QByteArray &haystack, qsizetype from = 0) const noexcept
     { return this->indexOfIn(m_pattern, N - 1, haystack.data(), haystack.size(), from); }
-    int indexIn(const char *haystack, int hlen, int from = 0) const noexcept
+    qsizetype indexIn(const char *haystack, qsizetype hlen, qsizetype from = 0) const noexcept
     { return this->indexOfIn(m_pattern, N - 1, haystack, hlen, from); }
 
-    QByteArray pattern() const { return QByteArray(m_pattern, int(N - 1)); }
+    QByteArray pattern() const { return QByteArray(m_pattern, qsizetype(N - 1)); }
 };
 
-template <uint N>
+template <size_t N>
 constexpr QStaticByteArrayMatcher<N> qMakeStaticByteArrayMatcher(const char (&pattern)[N]) noexcept
 { return QStaticByteArrayMatcher<N>(pattern); }
 
