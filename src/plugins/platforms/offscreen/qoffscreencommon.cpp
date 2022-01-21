@@ -42,6 +42,7 @@
 #include "qoffscreenwindow.h"
 
 
+#include <QtGui/QPainter>
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 
@@ -116,22 +117,25 @@ QPixmap QOffscreenScreen::grabWindow(WId id, int x, int y, int width, int height
 {
     QRect rect(x, y, width, height);
 
-    QOffscreenWindow *window = QOffscreenWindow::windowForWinId(id);
-    if (!window || window->window()->type() == Qt::Desktop) {
+    // id == 0 -> grab the screen, so all windows intersecting rect
+    if (!id) {
+        if (width == -1)
+            rect.setWidth(m_geometry.width());
+        if (height == -1)
+            rect.setHeight(m_geometry.height());
+        QPixmap screenImage(rect.size());
+        QPainter painter(&screenImage);
+        painter.translate(-x, -y);
         const QWindowList wl = QGuiApplication::topLevelWindows();
-        QWindow *containing = nullptr;
         for (QWindow *w : wl) {
-            if (w->type() != Qt::Desktop && w->isExposed() && w->geometry().contains(rect)) {
-                containing = w;
-                break;
+            if (w->isExposed() && w->geometry().intersects(rect)) {
+                QOffscreenBackingStore *store = QOffscreenBackingStore::backingStoreForWinId(w->winId());
+                const QImage windowImage = store ? store->toImage() : QImage();
+                if (!windowImage.isNull())
+                    painter.drawImage(w->position(), windowImage);
             }
         }
-
-        if (!containing)
-            return QPixmap();
-
-        id = containing->winId();
-        rect = rect.translated(-containing->geometry().topLeft());
+        return screenImage;
     }
 
     QOffscreenBackingStore *store = QOffscreenBackingStore::backingStoreForWinId(id);

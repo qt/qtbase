@@ -205,9 +205,6 @@ void tst_QScreen::orientationChange()
 
 void tst_QScreen::grabWindow_data()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("offscreen"), Qt::CaseInsensitive))
-        QSKIP("Offscreen: Screen grabbing not implemented.");
-
     QTest::addColumn<int>("screenIndex");
     QTest::addColumn<QByteArray>("screenName");
     QTest::addColumn<bool>("grabWindow");
