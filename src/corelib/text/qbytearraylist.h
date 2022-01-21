@@ -86,7 +86,7 @@ public:
     }
     Q_WEAK_OVERLOAD
     inline QByteArray join(const QByteArray &sep) const
-    { return join(QByteArrayView{sep}); }
+    { return join(qToByteArrayViewIgnoringNull(sep)); }
     inline QByteArray join(char sep) const
     { return join({&sep, 1}); }
 };
