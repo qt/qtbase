@@ -45,7 +45,7 @@
 #include "qpainterpath.h"
 #include "qpainterpath_p.h"
 #include "qvariant.h"
-#include <qmath.h>
+#include "qmath_p.h"
 #include <qnumeric.h>
 
 #include <private/qbezier_p.h>
@@ -1487,12 +1487,12 @@ QRegion QTransform::map(const QRegion &r) const
         QRegion res;
         if (m11() < 0 || m22() < 0) {
             for (const QRect &rect : r)
-                res += mapRect(QRectF(rect)).toRect();
+                res += qt_mapFillRect(QRectF(rect), *this);
         } else {
             QVarLengthArray<QRect, 32> rects;
             rects.reserve(r.rectCount());
             for (const QRect &rect : r) {
-                QRect nr = mapRect(QRectF(rect)).toRect();
+                QRect nr = qt_mapFillRect(QRectF(rect), *this);
                 if (!nr.isEmpty())
                     rects.append(nr);
             }

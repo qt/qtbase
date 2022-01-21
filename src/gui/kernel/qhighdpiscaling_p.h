@@ -219,10 +219,9 @@ inline QRegion scale(const QRegion &region, qreal scaleFactor, QPoint origin = Q
     if (!QHighDpiScaling::isActive())
         return region;
 
-    QRegion scaled;
-    for (const QRect &rect : region)
-        scaled += scale(QRectF(rect), scaleFactor, origin).toRect();
-    return scaled;
+    QRegion scaled = region.translated(-origin);
+    scaled = QTransform::fromScale(scaleFactor, scaleFactor).map(scaled);
+    return scaled.translated(origin);
 }
 
 template <typename T>
