@@ -194,10 +194,16 @@ static DWRITE_MEASURING_MODE renderModeToMeasureMode(DWRITE_RENDERING_MODE rende
     }
 }
 
-static DWRITE_RENDERING_MODE hintingPreferenceToRenderingMode(QFont::HintingPreference hintingPreference)
+static DWRITE_RENDERING_MODE hintingPreferenceToRenderingMode(const QFontDef &fontDef)
 {
-    if (QHighDpiScaling::isActive() && hintingPreference == QFont::PreferDefaultHinting)
-        hintingPreference = QFont::PreferVerticalHinting;
+    QFont::HintingPreference hintingPreference = QFont::HintingPreference(fontDef.hintingPreference);
+    if (QHighDpiScaling::isActive() && hintingPreference == QFont::PreferDefaultHinting) {
+        // Microsoft documentation recommends using asymmetric rendering for small fonts
+        // at pixel size 16 and less, and symmetric for larger fonts.
+        hintingPreference = fontDef.pixelSize > 16.0
+                ? QFont::PreferNoHinting
+                : QFont::PreferVerticalHinting;
+    }
 
     switch (hintingPreference) {
     case QFont::PreferNoHinting:
@@ -507,7 +513,7 @@ void QWindowsFontEngineDirectWrite::recalcAdvances(QGlyphLayout *glyphs, QFontEn
     QVarLengthArray<DWRITE_GLYPH_METRICS> glyphMetrics(glyphIndices.size());
 
     HRESULT hr;
-    DWRITE_RENDERING_MODE renderMode = hintingPreferenceToRenderingMode(QFont::HintingPreference(fontDef.hintingPreference));
+    DWRITE_RENDERING_MODE renderMode = hintingPreferenceToRenderingMode(fontDef);
     if (renderMode == DWRITE_RENDERING_MODE_GDI_CLASSIC || renderMode == DWRITE_RENDERING_MODE_GDI_NATURAL) {
         hr = m_directWriteFontFace->GetGdiCompatibleGlyphMetrics(float(fontDef.pixelSize),
                                                                  1.0f,
@@ -686,8 +692,7 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
     transform.m21 = xform.m21();
     transform.m22 = xform.m22();
 
-    DWRITE_RENDERING_MODE renderMode =
-            hintingPreferenceToRenderingMode(QFont::HintingPreference(fontDef.hintingPreference));
+    DWRITE_RENDERING_MODE renderMode = hintingPreferenceToRenderingMode(fontDef);
     DWRITE_MEASURING_MODE measureMode =
             renderModeToMeasureMode(renderMode);
 
@@ -993,8 +998,7 @@ glyph_metrics_t QWindowsFontEngineDirectWrite::alphaMapBoundingBox(glyph_t glyph
     transform.m21 = matrix.m21();
     transform.m22 = matrix.m22();
 
-    DWRITE_RENDERING_MODE renderMode =
-            hintingPreferenceToRenderingMode(QFont::HintingPreference(fontDef.hintingPreference));
+    DWRITE_RENDERING_MODE renderMode = hintingPreferenceToRenderingMode(fontDef);
     DWRITE_MEASURING_MODE measureMode = renderModeToMeasureMode(renderMode);
 
     IDWriteGlyphRunAnalysis *glyphAnalysis = NULL;
