@@ -136,7 +136,8 @@ public:
     ResultIteratorBase resultAt(int index) const;
     bool contains(int index) const;
     int count() const;
-    // ### Qt 7: 'virtual' isn't required, can be removed
+    // ### Qt 7: 'virtual' isn't required, can be removed, along with renaming
+    // the class to ResultStore and changing the members below to be private.
     virtual ~ResultStoreBase();
 
 protected:
