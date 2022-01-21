@@ -395,7 +395,7 @@ qsizetype qFindByteArray(
 */
 
 /*!
-    \fn template <uint N> int QStaticByteArrayMatcher<N>::indexIn(const char *haystack, int hlen, int from = 0) const
+    \fn template <size_t N> qsizetype QStaticByteArrayMatcher<N>::indexIn(const char *haystack, qsizetype hlen, qsizetype from = 0) const
 
     Searches the char string \a haystack, which has length \a hlen, from
     byte position \a from (default 0, i.e. from the first byte), for
@@ -405,7 +405,7 @@ qsizetype qFindByteArray(
 */
 
 /*!
-    \fn template <uint N> int QStaticByteArrayMatcher<N>::indexIn(const QByteArray &haystack, int from = 0) const
+    \fn template <size_t N> qsizetype QStaticByteArrayMatcher<N>::indexIn(const QByteArray &haystack, qsizetype from = 0) const
 
     Searches the char string \a haystack, from byte position \a from
     (default 0, i.e. from the first byte), for the byte array pattern()
@@ -415,7 +415,7 @@ qsizetype qFindByteArray(
 */
 
 /*!
-    \fn template <uint N> QByteArray QStaticByteArrayMatcher<N>::pattern() const
+    \fn template <size_t N> QByteArray QStaticByteArrayMatcher<N>::pattern() const
 
     Returns the byte array pattern that this byte array matcher will
     search for.
@@ -426,7 +426,7 @@ qsizetype qFindByteArray(
 /*!
     \internal
 */
-int QStaticByteArrayMatcherBase::indexOfIn(const char *needle, uint nlen, const char *haystack, int hlen, int from) const noexcept
+qsizetype QStaticByteArrayMatcherBase::indexOfIn(const char *needle, size_t nlen, const char *haystack, qsizetype hlen, qsizetype from) const noexcept
 {
     if (from < 0)
         from = 0;
@@ -435,12 +435,12 @@ int QStaticByteArrayMatcherBase::indexOfIn(const char *needle, uint nlen, const 
 }
 
 /*!
-    \fn template <uint N> QStaticByteArrayMatcher<N>::QStaticByteArrayMatcher(const char (&pattern)[N])
+    \fn template <size_t N> QStaticByteArrayMatcher<N>::QStaticByteArrayMatcher(const char (&pattern)[N])
     \internal
 */
 
 /*!
-    \fn template <uint N> QStaticByteArrayMatcher qMakeStaticByteArrayMatcher(const char (&pattern)[N])
+    \fn template <size_t N> QStaticByteArrayMatcher qMakeStaticByteArrayMatcher(const char (&pattern)[N])
     \since 5.9
     \relates QStaticByteArrayMatcher
 

@@ -31,6 +31,13 @@
 
 #include <qbytearraymatcher.h>
 
+#include <numeric>
+#include <string>
+
+#if QT_CONFIG(cxx11_future)
+# include <thread>
+#endif
+
 // COM interface
 #if defined(Q_OS_WIN) && defined(interface)
 #    undef interface
@@ -44,6 +51,7 @@ private slots:
     void interface();
     void indexIn();
     void staticByteArrayMatcher();
+    void haystacksWithMoreThan4GiBWork();
 };
 
 void tst_QByteArrayMatcher::interface()
@@ -205,6 +213,72 @@ void tst_QByteArrayMatcher::staticByteArrayMatcher()
         QCOMPARE(smatcher.indexIn(QByteArray(LONG_STRING__64 "x" LONG_STRING_256)),  65);
         QCOMPARE(smatcher.indexIn(QByteArray(LONG_STRING_128 "x" LONG_STRING_256)), 129);
     }
+
+}
+
+void tst_QByteArrayMatcher::haystacksWithMoreThan4GiBWork()
+{
+#if QT_POINTER_SIZE > 4
+    // use a large needle to trigger long skips in the Boyer-Moore algorithm
+    // (to speed up the test)
+    constexpr std::string_view needle = LONG_STRING_256;
+
+    //
+    // GIVEN: a haystack with more than 4 GiB of data
+    //
+
+    // don't use QByteArray because freeSpaceAtEnd() may break reserve()
+    // semantics and a realloc is the last thing we need here
+    std::string large;
+    QElapsedTimer timer;
+    timer.start();
+    constexpr size_t GiB = 1024 * 1024 * 1024;
+    constexpr size_t BaseSize = 4 * GiB + 1;
+    try {
+        large.reserve(BaseSize + needle.size());
+        large.resize(BaseSize, '\0');
+        large.append(needle);
+    } catch (const std::bad_alloc &) {
+        QSKIP("Could not allocate 4GiB plus a couple hundred bytes of RAM.");
+    }
+    QCOMPARE(large.size(), BaseSize + needle.size());
+    qDebug("created dataset in %lld ms", timer.elapsed());
+
+# if QT_CONFIG(cxx11_future)
+    using MaybeThread = std::thread;
+# else
+    struct MaybeThread {
+        std::function<void()> func;
+        void join() { func(); }
+    };
+# endif
+
+    //
+    // WHEN: trying to match an occurrence past the 4GiB mark
+    //
+
+    qsizetype dynamicResult, staticResult;
+
+    auto t = MaybeThread{[&]{
+        QByteArrayMatcher m(needle);
+        dynamicResult = m.indexIn(large);
+    }};
+    {
+        static_assert(needle == LONG_STRING_256); // need a string literal in the following line:
+        QStaticByteArrayMatcher m(LONG_STRING_256);
+        staticResult = m.indexIn(large.data(), large.size());
+    }
+    t.join();
+
+    //
+    // THEN: the result index is not trucated
+    //
+
+    QCOMPARE(staticResult, qsizetype(BaseSize));
+    QCOMPARE(dynamicResult, qsizetype(BaseSize));
+#else
+    QSKIP("This test is 64-bit only.");
+#endif
 
 }
 

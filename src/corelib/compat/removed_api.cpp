@@ -62,6 +62,19 @@ int QMetaType::id() const
 
 #if QT_REMOVED_SINCE(6, 3)
 
+#include "qbytearraymatcher.h"
+
+# if QT_POINTER_SIZE != 4
+
+int QStaticByteArrayMatcherBase::indexOfIn(const char *h, uint hl, const char *n, int nl, int from) const noexcept
+{
+    qsizetype r = indexOfIn(h, size_t(hl), n, qsizetype(nl), qsizetype(from));
+    Q_ASSERT(r == int(r));
+    return r;
+}
+
+# endif // QT_POINTER_SIZE != 4
+
 #include "tools/qcryptographichash.h"
 
 void QCryptographicHash::addData(const QByteArray &data)
