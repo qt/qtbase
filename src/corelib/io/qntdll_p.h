@@ -68,7 +68,7 @@ typedef struct _FILE_FS_SECTOR_SIZE_INFORMATION {
     ULONG ByteOffsetForPartitionAlignment;
 } FILE_FS_SECTOR_SIZE_INFORMATION, *PFILE_FS_SECTOR_SIZE_INFORMATION;
 
-#if !defined(Q_CC_CLANG) && !defined(Q_CC_MINGW)
+#if !defined(Q_CC_MINGW)
 // keep the following enumeration as is, taken from
 // https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ne-wdm-_fsinfoclass
 // Unfortunately we can't include the wdm.h header, so we duplicate the code here.
