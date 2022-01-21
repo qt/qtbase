@@ -52,11 +52,26 @@
 //
 
 #include <qmath.h>
+#include <qtransform.h>
 
 QT_BEGIN_NAMESPACE
 
 static const qreal Q_PI   = qreal(M_PI);     // pi
 static const qreal Q_MM_PER_INCH = 25.4;
+
+inline QRect qt_mapFillRect(const QRectF &rect, const QTransform &xf)
+{
+    // Only for xf <= scaling or 90 degree rotations
+    Q_ASSERT(xf.type() <= QTransform::TxScale
+             || (xf.type() == QTransform::TxRotate && qFuzzyIsNull(xf.m11()) && qFuzzyIsNull(xf.m22())));
+    // Transform the corners instead of the rect to avoid hitting numerical accuracy limit
+    // when transforming topleft and size separately and adding afterwards,
+    // as that can sometimes be slightly off around the .5 point, leading to wrong rounding
+    QPoint pt1 = xf.map(rect.topLeft()).toPoint();
+    QPoint pt2 = xf.map(rect.bottomRight()).toPoint();
+    // Normalize and adjust for the QRect vs. QRectF bottomright
+    return QRect::span(pt1, pt2).adjusted(0, 0, -1, -1);
+}
 
 QT_END_NAMESPACE
 

@@ -49,7 +49,7 @@
 #include <qpainterpath.h>
 #include <qdebug.h>
 #include <qbitmap.h>
-#include <qmath.h>
+#include "qmath_p.h"
 #include <qrandom.h>
 
 //   #include <private/qdatabuffer_p.h>
@@ -1194,7 +1194,7 @@ void QRasterPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 #endif
             const qreal *points = path.points();
             QRectF r(points[0], points[1], points[4]-points[0], points[5]-points[1]);
-            if (setClipRectInDeviceCoords(s->matrix.mapRect(r).toAlignedRect(), op))
+            if (setClipRectInDeviceCoords(qt_mapFillRect(r, s->matrix), op))
                 return;
         }
     }
@@ -1254,7 +1254,7 @@ void QRasterPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
         QPaintEngineEx::clip(rect, op);
         return;
 
-    } else if (!setClipRectInDeviceCoords(s->matrix.mapRect(QRectF(rect)).toRect(), op)) {
+    } else if (!setClipRectInDeviceCoords(qt_mapFillRect(rect, s->matrix), op)) {
         QPaintEngineEx::clip(rect, op);
         return;
     }

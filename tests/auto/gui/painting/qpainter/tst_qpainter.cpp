@@ -69,6 +69,9 @@ Q_OBJECT
 public:
     tst_QPainter();
 
+    enum ClipType { ClipRect, ClipRectF, ClipRegionSingle, ClipRegionMulti, ClipPathR, ClipPath };
+    Q_ENUM(ClipType);
+
 private slots:
     void cleanupTestCase();
     void getSetCheck();
@@ -155,6 +158,8 @@ private slots:
 
     void clipBoundingRect();
     void transformedClip();
+    void scaledClipConsistency_data();
+    void scaledClipConsistency();
 
     void setOpacity_data();
     void setOpacity();
@@ -1749,10 +1754,11 @@ void tst_QPainter::setClipRect()
 
 /*
     Verify that the clipping works correctly.
-    The red outline should be covered by the blue rect on top and left,
-    while it should be clipped on the right and bottom and thus the red outline be visible
+    Just like fillRect, cliprect should snap rightwards and downwards in case of .5 coordinates.
+    The red outline should be covered by the blue rect on top,
+    while it should be clipped on the other edges and thus the red outline be visible
 
-    See: QTBUG-83229
+    See: QTBUG-83229, modified by QTBUG-100329
 */
 void tst_QPainter::clipRect()
 {
@@ -1778,7 +1784,7 @@ void tst_QPainter::clipRect()
     p.end();
 
     QCOMPARE(image.pixelColor(clipRect.left() + 1, clipRect.top()), QColor(Qt::blue));
-    QCOMPARE(image.pixelColor(clipRect.left(), clipRect.top() + 1), QColor(Qt::blue));
+    QCOMPARE(image.pixelColor(clipRect.left(), clipRect.top() + 1), QColor(Qt::red));
     QCOMPARE(image.pixelColor(clipRect.left() + 1, clipRect.bottom()), QColor(Qt::red));
     QCOMPARE(image.pixelColor(clipRect.right(), clipRect.top() + 1), QColor(Qt::red));
 }
@@ -4577,6 +4583,96 @@ void tst_QPainter::transformedClip()
         p.setClipPath(path);
         p.fillRect(img2.rect(), Qt::white);
         QCOMPARE(img, img2);
+    }
+}
+
+void tst_QPainter::scaledClipConsistency_data()
+{
+    QTest::addColumn<ClipType>("clipType");
+
+    QTest::newRow("clipRect") << ClipRect;
+    QTest::newRow("clipRectF") << ClipRectF;
+    QTest::newRow("clipRegionSingle") << ClipRegionSingle;
+    QTest::newRow("clipRegionMulti") << ClipRegionMulti;
+    QTest::newRow("clipPathR") << ClipPathR;
+    QTest::newRow("clipPath") << ClipPath;
+}
+
+void tst_QPainter::scaledClipConsistency()
+{
+    QFETCH(ClipType, clipType);
+
+    const QList<QRect> clipRects = {
+        // Varying odd and even coordinates and width/height
+        QRect(1, 1, 7, 8),
+        QRect(8, 0, 8, 9),
+        QRect(0, 9, 8, 7),
+        QRect(8, 9, 8, 7),
+    };
+    // Assert that these are edge to edge:
+    QPointF center = QRectF(clipRects[0]).bottomRight();
+    Q_ASSERT(QRectF(clipRects[1]).bottomLeft() == center);
+    Q_ASSERT(QRectF(clipRects[2]).topRight() == center);
+    Q_ASSERT(QRectF(clipRects[3]).topLeft() == center);
+
+    QRegion multiRegion;
+    for (const QRect &clipRect : clipRects)
+        multiRegion += clipRect;
+
+    QColor fillColor(Qt::black);
+    fillColor.setAlphaF(0.5);
+
+    for (int i = 100; i <= 300; i++) {
+        qreal dpr = qreal(i) / 100.0;
+        QImage img(QSize(16, 16) * dpr, QImage::Format_RGB32);
+        img.fill(Qt::white);
+        img.setDevicePixelRatio(dpr);
+
+        for (const QRect &clipRect : clipRects) {
+            QPainter p(&img);
+            switch (clipType) {
+            case ClipRect:
+                p.setClipRect(clipRect);
+                break;
+            case ClipRectF:
+                p.setClipRect(QRectF(clipRect));
+                break;
+            case ClipRegionSingle:
+                p.setClipRegion(QRegion(clipRect));
+                break;
+            case ClipRegionMulti:
+                p.setClipRegion(multiRegion);
+                break;
+            case ClipPath:
+                p.rotate(0.001); // Avoid the path being optimized to a rectf
+                Q_FALLTHROUGH();
+            case ClipPathR: {
+                QPainterPath path;
+                path.addRect(clipRect); // Will be recognized and converted back to a rectf
+                p.setClipPath(path);
+                break;
+            }
+            default:
+                Q_ASSERT(false);
+                break;
+            }
+            p.fillRect(p.window(), fillColor);
+            if (clipType == ClipRegionMulti)
+                break; // once is enough, we're not using the clipRect anyway
+        }
+
+        int qtWidth = img.width() / 4;
+        int qtHeight = img.height() / 4;
+        QPoint imgCenter = img.rect().center();
+        const QRgb targetColor = img.pixel(qtWidth, qtHeight);
+
+        // Test that there are no gaps or overlaps where the cliprects meet
+        for (int offset = -2; offset <= 2; offset++) {
+            QCOMPARE(img.pixel(imgCenter.x() + offset, qtHeight), targetColor);
+            QCOMPARE(img.pixel(imgCenter.x() + offset, img.height() - qtHeight), targetColor);
+            QCOMPARE(img.pixel(qtWidth, imgCenter.y() + offset), targetColor);
+            QCOMPARE(img.pixel(img.width() - qtWidth, imgCenter.y() + offset), targetColor);
+        }
     }
 }
 
