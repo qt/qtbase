@@ -1695,10 +1695,11 @@ void tst_QOpenGL::nullTextureInitializtion()
 
 /*
     Verify that the clipping works correctly.
-    The red outline should be covered by the blue rect on top and left,
-    while it should be clipped on the right and bottom and thus the red outline be visible
+    Just like fillRect, cliprect should snap rightwards and downwards in case of .5 coordinates.
+    The red outline should be covered by the blue rect on top,
+    while it should be clipped on the other edges and thus the red outline be visible
 
-    See: QTBUG-83229
+    See: QTBUG-83229, modified by QTBUG-100329
 */
 void tst_QOpenGL::clipRect()
 {
@@ -1754,7 +1755,7 @@ void tst_QOpenGL::clipRect()
     QCOMPARE(fb.size(), size);
 
     QCOMPARE(fb.pixelColor(clipRect.left() + 1, clipRect.top()), QColor(Qt::blue));
-    QCOMPARE(fb.pixelColor(clipRect.left(), clipRect.top() + 1), QColor(Qt::blue));
+    QCOMPARE(fb.pixelColor(clipRect.left(), clipRect.top() + 1), QColor(Qt::red));
     QCOMPARE(fb.pixelColor(clipRect.left() + 1, clipRect.bottom()), QColor(Qt::red));
 
     // Enable this once QTBUG-85286 is fixed
