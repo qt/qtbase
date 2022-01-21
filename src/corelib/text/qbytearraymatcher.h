@@ -140,6 +140,7 @@ template <uint N>
 class QStaticByteArrayMatcher : QStaticByteArrayMatcherBase
 {
     char m_pattern[N];
+    // N includes the terminating '\0'!
     static_assert(N > 2, "QStaticByteArrayMatcher makes no sense for finding a single-char pattern");
 public:
     explicit constexpr QStaticByteArrayMatcher(const char (&patternToMatch)[N]) noexcept
