@@ -929,6 +929,11 @@ def _set_up_py_parsing_nicer_debug_output(pp):
 
         return wrapper_function
 
-    pp._defaultStartDebugAction = increase_indent(pp._defaultStartDebugAction)
-    pp._defaultSuccessDebugAction = decrease_indent(pp._defaultSuccessDebugAction)
-    pp._defaultExceptionDebugAction = decrease_indent(pp._defaultExceptionDebugAction)
+    if hasattr(pp, "_defaultStartDebugAction"):
+        pp._defaultStartDebugAction = increase_indent(pp._defaultStartDebugAction)
+        pp._defaultSuccessDebugAction = decrease_indent(pp._defaultSuccessDebugAction)
+        pp._defaultExceptionDebugAction = decrease_indent(pp._defaultExceptionDebugAction)
+    elif hasattr(pp.core, "_default_start_debug_action"):
+        pp.core._default_start_debug_action = increase_indent(pp.core._default_start_debug_action)
+        pp.core._default_success_debug_action = decrease_indent(pp.core._default_success_debug_action)
+        pp.core._default_exception_debug_action = decrease_indent(pp.core._default_exception_debug_action)
