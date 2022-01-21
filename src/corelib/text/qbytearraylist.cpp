@@ -103,12 +103,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QByteArray QByteArrayList::join() const
-
-    Joins all the byte arrays into a single byte array.
-*/
-
-/*!
     \fn QByteArray QByteArrayList::join(const QByteArray &separator) const
 
     Joins all the byte arrays into a single byte array with each
@@ -120,7 +114,7 @@ QT_BEGIN_NAMESPACE
     \since 6.3
 
     Joins all the byte arrays into a single byte array with each
-    element separated by the given \a separator.
+    element separated by the given \a separator, if any.
 */
 
 /*!
