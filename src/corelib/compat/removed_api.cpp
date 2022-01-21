@@ -75,6 +75,11 @@ int QStaticByteArrayMatcherBase::indexOfIn(const char *h, uint hl, const char *n
 
 # endif // QT_POINTER_SIZE != 4
 
+qsizetype QByteArrayMatcher::indexIn(const QByteArray &ba, qsizetype from) const
+{
+    return indexIn(QByteArrayView{ba}, from); // ba.isNull() may be significant, so don't ignore it!
+}
+
 #include "tools/qcryptographichash.h"
 
 void QCryptographicHash::addData(const QByteArray &data)

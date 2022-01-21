@@ -65,12 +65,15 @@ public:
 
     void setPattern(const QByteArray &pattern);
 
+#if QT_REMOVED_SINCE(6, 3)
     qsizetype indexIn(const QByteArray &ba, qsizetype from = 0) const;
+#else
+    Q_WEAK_OVERLOAD
+    qsizetype indexIn(const QByteArray &ba, qsizetype from = 0) const
+    { return indexIn(QByteArrayView{ba}, from); }
+#endif
     qsizetype indexIn(const char *str, qsizetype len, qsizetype from = 0) const;
-    qsizetype indexIn(QByteArrayView data, qsizetype from = 0) const
-    {
-        return indexIn(data.data(), data.size(), from);
-    }
+    qsizetype indexIn(QByteArrayView data, qsizetype from = 0) const;
     inline QByteArray pattern() const
     {
         if (q_pattern.isNull())
@@ -162,10 +165,13 @@ public:
             m_pattern[i] = patternToMatch[i];
     }
 
+    Q_WEAK_OVERLOAD
     qsizetype indexIn(const QByteArray &haystack, qsizetype from = 0) const noexcept
     { return this->indexOfIn(m_pattern, N - 1, haystack.data(), haystack.size(), from); }
     qsizetype indexIn(const char *haystack, qsizetype hlen, qsizetype from = 0) const noexcept
     { return this->indexOfIn(m_pattern, N - 1, haystack, hlen, from); }
+    qsizetype indexIn(QByteArrayView haystack, qsizetype from = 0) const noexcept
+    { return this->indexOfIn(m_pattern, N - 1, haystack.data(), haystack.size(), from); }
 
     QByteArray pattern() const { return QByteArray(m_pattern, qsizetype(N - 1)); }
 };
