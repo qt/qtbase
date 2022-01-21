@@ -105,7 +105,7 @@ protected:
     explicit constexpr QStaticByteArrayMatcherBase(const char *pattern, size_t n) noexcept
         : m_skiptable(generate(pattern, n)) {}
     // compiler-generated copy/more ctors/assignment operators are ok!
-    // compiler-generated dtor is ok!
+    ~QStaticByteArrayMatcherBase() = default;
 
 #if QT_REMOVED_SINCE(6, 3) && QT_POINTER_SIZE != 4
     Q_CORE_EXPORT int indexOfIn(const char *needle, uint nlen, const char *haystack, int hlen, int from) const noexcept;
