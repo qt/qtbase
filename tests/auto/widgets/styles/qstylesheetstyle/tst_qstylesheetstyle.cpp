@@ -1206,20 +1206,31 @@ void tst_QStyleSheetStyle::tabAlignment()
 
 void tst_QStyleSheetStyle::tabFont_data()
 {
-    QTest::addColumn<int>("pixelSize");
+    QTest::addColumn<QFont>("tabFont");
     QTest::addColumn<QTabWidget::TabPosition>("tabPosition");
+    QTest::addColumn<bool>("closable");
 
-    QTest::newRow("medium, horizontal") << 24 << QTabWidget::North;
-    QTest::newRow("large, vertical") << 36 << QTabWidget::West;
+    QFont medium;
+    medium.setPixelSize(24);
+    QFont large;
+    large.setPixelSize(36);
+    QFont bold;
+    bold.setBold(true);
+
+    QTest::newRow("medium, horizontal") << medium << QTabWidget::North << false;
+    QTest::newRow("large, vertical") << large << QTabWidget::West << false;
+    QTest::newRow("bold, horizontal, closable") << bold << QTabWidget::North << true;
+    QTest::newRow("bold, vertical, closable") << bold << QTabWidget::West << true;
 }
-
-#include <QApplication>
 
 void tst_QStyleSheetStyle::tabFont()
 {
-    QFETCH(int, pixelSize);
+    QFETCH(QFont, tabFont);
     QFETCH(QTabWidget::TabPosition, tabPosition);
+    QFETCH(bool, closable);
     const bool vertical = tabPosition == QTabWidget::West || tabPosition == QTabWidget::East;
+    const QString tab0Text("Tab title");
+    const QString tab1Text("Very Long Tab title");
 
     // macOS style centers tabs and messes up the test
     QWindowsStyle windowsStyle;
@@ -1228,18 +1239,22 @@ void tst_QStyleSheetStyle::tabFont()
     topLevel.setWindowTitle(QTest::currentTestFunction());
     QTabWidget tabWidget;
     tabWidget.setStyle(&windowsStyle);
-    tabWidget.addTab(new QWidget,"Tab title");
     tabWidget.setTabPosition(tabPosition);
+    tabWidget.addTab(new QWidget, tab0Text);
+    tabWidget.addTab(new QWidget, tab1Text);
     QTabWidget styledWidget;
     styledWidget.setStyle(&windowsStyle);
     styledWidget.setTabPosition(tabPosition);
-    styledWidget.addTab(new QWidget,"Tab title");
+    styledWidget.addTab(new QWidget, tab0Text);
+    styledWidget.addTab(new QWidget, tab1Text);
 
     QTabBar *bar = tabWidget.tabBar();
     QTabBar *styledBar = styledWidget.tabBar();
     QVERIFY(bar && styledBar);
     bar->setStyle(&windowsStyle);
+    bar->setTabsClosable(closable);
     styledBar->setStyle(&windowsStyle);
+    styledBar->setTabsClosable(closable);
 
     QBoxLayout box(vertical ? QBoxLayout::LeftToRight : QBoxLayout::TopToBottom);
     box.addWidget(&tabWidget);
@@ -1251,22 +1266,36 @@ void tst_QStyleSheetStyle::tabFont()
     topLevel.show();
     QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
 
+    const QFont defaultFont = tabWidget.font();
+    if (QFontMetrics(defaultFont).size(Qt::TextShowMnemonic, tab0Text).width() >=
+        QFontMetrics(tabFont).size(Qt::TextShowMnemonic, tab0Text).width()) {
+        QSKIP("The used font is not larger when bold");
+    }
+
     const QRect defaultRect = bar->tabRect(0);
     QCOMPARE(styledBar->tabRect(0), defaultRect);
 
-    QFont font;
-    font.setPointSize(pixelSize);
-    tabWidget.setFont(font);
-
+    tabWidget.setFont(tabFont);
     const QRect rectWithFont = bar->tabRect(0);
     if (vertical)
         QVERIFY(rectWithFont.height() > defaultRect.height());
     else
         QVERIFY(rectWithFont.width() > defaultRect.width());
 
-    styledWidget.setStyleSheet(QString("QTabBar { font-size: %1pt; }").arg(pixelSize));
+    QString styleSheet = "QTabBar::tab:first {";
+    if (tabFont.pixelSize() != -1)
+        styleSheet += QString(" font-size: %1px;").arg(tabFont.pixelSize());
+    if (tabFont.bold())
+        styleSheet += " font-weight: bold;";
+    styleSheet += "}";
+
+    styledWidget.setStyleSheet(styleSheet);
     const QRect rectWithStyle = styledBar->tabRect(0);
-    QCOMPARE(rectWithStyle.size(), rectWithFont.size());
+
+    if (vertical)
+        QCOMPARE(rectWithStyle.height(), rectWithFont.height());
+    else
+        QCOMPARE(rectWithStyle.width(), rectWithFont.width());
 }
 
 void tst_QStyleSheetStyle::attributesList()

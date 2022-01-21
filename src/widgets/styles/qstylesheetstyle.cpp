@@ -5415,13 +5415,25 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
             if (subRule.hasBox() || !subRule.hasNativeBorder())
                 sz = csz + QSize(vertical ? 0 : spaceForIcon, vertical ? spaceForIcon : 0);
             if (subRule.hasFont) {
-                QFont ruleFont = subRule.font.resolve(w->font());
-                QFontMetrics fm(ruleFont);
-                const QSize textSize = fm.size(Qt::TextShowMnemonic, text)
-                                     + QSize(pixelMetric(PM_TabBarTabHSpace, opt, w),
-                                             pixelMetric(PM_TabBarTabVSpace, opt, w));
-                sz = sz.expandedTo(vertical ? textSize.transposed() : textSize);
+                // first we remove the space needed for the text using the default font
+                const QSize oldTextSize = opt->fontMetrics.size(Qt::TextShowMnemonic, text);
+                (vertical ? sz.rheight() : sz.rwidth()) -= oldTextSize.width();
+
+                // then we add the space needed when using the rule font to the relevant
+                // dimension, and constraint the other dimension to the maximum to make
+                // sure we don't grow, but also don't clip icons or buttons.
+                const QFont ruleFont = subRule.font.resolve(w->font());
+                const QFontMetrics fm(ruleFont);
+                const QSize textSize = fm.size(Qt::TextShowMnemonic, text);
+                if (vertical) {
+                    sz.rheight() += textSize.width();
+                    sz.rwidth() = qMax(textSize.height(), sz.width());
+                } else {
+                    sz.rwidth() += textSize.width();
+                    sz.rheight() = qMax(textSize.height(), sz.height());
+                }
             }
+
             return subRule.boxSize(subRule.adjustSize(sz));
         }
         sz = subRule.adjustSize(csz);
