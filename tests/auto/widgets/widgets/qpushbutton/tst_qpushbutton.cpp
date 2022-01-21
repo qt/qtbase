@@ -60,7 +60,6 @@ private slots:
     void setDown();
     void popupCrash();
     void isChecked();
-    void animateClick();
     void toggle();
     void clicked();
     void touchTap();
@@ -359,20 +358,6 @@ void tst_QPushButton::setAccel()
 }
 
 #endif // QT_CONFIG(shortcut)
-
-void tst_QPushButton::animateClick()
-{
-    QVERIFY( !testWidget->isDown() );
-    testWidget->animateClick();
-    QVERIFY( testWidget->isDown() );
-    QTest::qWait( 200 );
-    QVERIFY( !testWidget->isDown() );
-
-    QVERIFY( click_count == 1 );
-    QVERIFY( press_count == 1 );
-    QVERIFY( release_count == 1 );
-    QVERIFY( toggle_count == 0 );
-}
 
 void tst_QPushButton::clicked()
 {
