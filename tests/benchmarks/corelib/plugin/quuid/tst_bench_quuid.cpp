@@ -55,7 +55,7 @@ private slots:
 void tst_QUuid::createUuid()
 {
     QBENCHMARK {
-        QUuid::createUuid();
+        [[maybe_unused]] auto r = QUuid::createUuid();
     }
 }
 
@@ -70,7 +70,7 @@ void tst_QUuid::toString()
 {
     QUuid uuid = QUuid::createUuid();
     QBENCHMARK {
-        uuid.toString();
+        [[maybe_unused]] auto r = uuid.toString();
     }
 }
 
@@ -86,7 +86,7 @@ void tst_QUuid::toByteArray()
 {
     QUuid uuid = QUuid::createUuid();
     QBENCHMARK {
-        uuid.toByteArray();
+        [[maybe_unused]] auto r = uuid.toByteArray();
     }
 }
 
@@ -102,7 +102,7 @@ void tst_QUuid::toRfc4122()
 {
     QUuid uuid = QUuid::createUuid();
     QBENCHMARK {
-        uuid.toRfc4122();
+        [[maybe_unused]] auto r = uuid.toRfc4122();
     }
 }
 
@@ -168,7 +168,7 @@ void tst_QUuid::isNull()
 {
     QUuid uuid = QUuid();
     QBENCHMARK {
-        uuid.isNull();
+        [[maybe_unused]] auto r = uuid.isNull();
     }
 }
 
@@ -178,7 +178,7 @@ void tst_QUuid::operatorLess()
     uuid1 = QUuid::createUuid();
     uuid2 = QUuid::createUuid();
     QBENCHMARK {
-        uuid1 < uuid2;
+        [[maybe_unused]] auto r = uuid1 < uuid2;
     }
 }
 
@@ -188,7 +188,7 @@ void tst_QUuid::operatorMore()
     uuid1 = QUuid::createUuid();
     uuid2 = QUuid::createUuid();
     QBENCHMARK {
-        uuid1 > uuid2;
+        [[maybe_unused]] auto r = uuid1 > uuid2;
     }
 }
 
