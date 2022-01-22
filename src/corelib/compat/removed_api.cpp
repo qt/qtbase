@@ -108,10 +108,12 @@ QUuid QUuid::fromRfc4122(const QByteArray &bytes)
 
 #include "qbytearraylist.h"
 
+# if QT_POINTER_SIZE != 4
 QByteArray QtPrivate::QByteArrayList_join(const QByteArrayList *that, const char *sep, int seplen)
 {
-    return QByteArrayList_join(that, {sep, seplen});
+    return QByteArrayList_join(that, sep, qsizetype(seplen));
 }
+# endif
 
 // #include <qotherheader.h>
 // // implement removed functions from qotherheader.h
