@@ -188,7 +188,7 @@ void tst_QUrl::equality()
         QUrl url("pics/avatar.png");
         QUrl url2("pics/avatar2.png");
         QBENCHMARK {
-            url == url2;
+            [[maybe_unused]] auto r = url == url2;
         }
     }
 }
