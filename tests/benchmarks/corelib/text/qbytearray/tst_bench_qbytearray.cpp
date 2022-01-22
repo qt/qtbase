@@ -91,7 +91,7 @@ void tst_QByteArray::append()
     }
 }
 
-static QByteArray decNext(QByteArray &&big)
+static QByteArray decNext(QByteArray big)
 {
     // Increments a decimal digit-string (ignoring sign, so decrements if
     // negative); only intended for taking a boundary value just out of range,
