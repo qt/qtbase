@@ -335,7 +335,7 @@ void tst_QTransform::operatorMultiplyEqualScalar()
     QFETCH(QTransform, transform);
     QTransform x = transform;
     QBENCHMARK {
-        x * 3;
+        x *= 3;
     }
 }
 
