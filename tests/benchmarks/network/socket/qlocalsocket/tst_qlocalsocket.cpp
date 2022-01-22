@@ -200,8 +200,7 @@ void tst_QLocalSocket::dataExchange()
     qint64 totalReceived = 0;
     QElapsedTimer timer;
 
-    connect(&factory, &SocketFactory::bytesReceived,
-            [&totalReceived, &timer, timeToTest, &factory, &eventLoop](int channel, qint64 bytes) {
+    connect(&factory, &SocketFactory::bytesReceived, [&](int channel, qint64 bytes) {
         Q_UNUSED(channel);
 
         totalReceived += bytes;
