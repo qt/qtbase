@@ -44,9 +44,11 @@ class tst_QFlatMap : public QObject
 {
     Q_OBJECT
 private slots:
+#ifdef QFLATMAP_TEMPORARILY_REMOVED
     void constructing();
     void constAccess();
     void insertion();
+#endif
     void insertRValuesAndLValues();
     void removal();
     void extraction();
@@ -63,6 +65,7 @@ private:
     void transparency_impl();
 };
 
+#ifdef QFLATMAP_TEMPORARILY_REMOVED
 void tst_QFlatMap::constructing()
 {
     using Map = QFlatMap<int, QByteArray>;
@@ -164,9 +167,11 @@ void tst_QFlatMap::insertion()
     QCOMPARE(m.value("narf").data(), "NARFFFFFF");
     QCOMPARE(m.value("gnampf").data(), "GNAMPF");
 }
+#endif
 
 void tst_QFlatMap::insertRValuesAndLValues()
 {
+#ifdef QFLATMAP_TEMPORARILY_REMOVED
     using Map = QFlatMap<QByteArray, QByteArray>;
     const QByteArray foo = QByteArrayLiteral("foo");
     const QByteArray bar = QByteArrayLiteral("bar");
@@ -199,6 +204,7 @@ void tst_QFlatMap::insertRValuesAndLValues()
     }
 
 #undef lvalue
+#endif
 }
 
 void tst_QFlatMap::extraction()
@@ -206,7 +212,7 @@ void tst_QFlatMap::extraction()
     using Map = QFlatMap<int, QByteArray>;
     Map::key_container_type expectedKeys = { 1, 2, 3 };
     Map::mapped_container_type expectedValues = { "een", "twee", "dree" };
-    Map m(expectedKeys, expectedValues);
+    Map m(Qt::OrderedUniqueRange, expectedKeys, expectedValues);
     auto keys = m.keys();
     auto values = m.values();
     QCOMPARE(keys, expectedKeys);
@@ -219,7 +225,7 @@ void tst_QFlatMap::extraction()
 void tst_QFlatMap::iterators()
 {
     using Map = QFlatMap<int, QByteArray>;
-    auto m = Map{ { 1, "foo" }, { 2, "bar" }, { 3, "baz" } };
+    auto m = Map{ Qt::OrderedUniqueRange, { { 1, "foo" }, { 2, "bar" }, { 3, "baz" } } };
     {
         // forward / backward
         Map::iterator a = m.begin();
@@ -365,6 +371,7 @@ void tst_QFlatMap::iterators()
 
 void tst_QFlatMap::removal()
 {
+#ifdef QFLATMAP_TEMPORARILY_REMOVED
     using Map = QFlatMap<int, QByteArray>;
     Map m({ { 2, "bar" }, { 3, "baz" }, { 1, "foo" } });
     QCOMPARE(m.value(2).data(), "bar");
@@ -387,10 +394,12 @@ void tst_QFlatMap::removal()
     it = m.erase(it);
     QCOMPARE(it.key(), 2);
     QVERIFY(!m.contains(1));
+#endif
 }
 
 void tst_QFlatMap::statefulComparator()
 {
+#ifdef QFLATMAP_TEMPORARILY_REMOVED
     struct CountingCompare {
         mutable int count = 0;
 
@@ -408,6 +417,7 @@ void tst_QFlatMap::statefulComparator()
     QCOMPARE(m2.key_comp().count, m1.key_comp().count);
     m2.insert(m1.begin(), m1.end());
     QVERIFY(m2.key_comp().count > m1.key_comp().count);
+#endif
 }
 
 void tst_QFlatMap::transparency_using()
@@ -439,6 +449,7 @@ void tst_QFlatMap::transparency_struct()
 template <typename StringViewCompare>
 void tst_QFlatMap::transparency_impl()
 {
+#ifdef QFLATMAP_TEMPORARILY_REMOVED
     using Map = QFlatMap<QString, QString, StringViewCompare>;
     auto m = Map{ { "one", "een" }, { "two", "twee" }, { "three", "dree" } };
 
@@ -462,6 +473,7 @@ void tst_QFlatMap::transparency_impl()
     QVERIFY(m.contains(QLatin1String("one")));
     QVERIFY(m.remove(QAnyStringView(u8"one")));
     QVERIFY(!m.contains(QLatin1String("one")));
+#endif
 }
 
 void tst_QFlatMap::try_emplace_and_insert_or_assign()
@@ -608,6 +620,7 @@ void tst_QFlatMap::try_emplace_and_insert_or_assign()
 
 void tst_QFlatMap::viewIterators()
 {
+#ifdef QFLATMAP_TEMPORARILY_REMOVED
     using Map = QFlatMap<QByteArray, QByteArray>;
     Map m({ { "yksi", "een"}, { "kaksi", "twee" }, { "kolme", "dree" } });
     {
@@ -652,13 +665,14 @@ void tst_QFlatMap::viewIterators()
         it--;
         QCOMPARE(*it, "dree");
     }
+#endif
 }
 
 void tst_QFlatMap::varLengthArray()
 {
     using Map = QVarLengthFlatMap<int, QByteArray, 1024>;
-    Map m{ { 2, "twee" } };
-    m.insert(1, "een");
+    Map m(Qt::OrderedUniqueRange, { { 2, "twee" } });
+    m.insert_or_assign(1, "een");
     m.remove(1);
     QVERIFY(!m.isEmpty());
     m.remove(2);

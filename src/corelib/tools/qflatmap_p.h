@@ -430,6 +430,7 @@ private:
 public:
     QFlatMap() = default;
 
+#ifdef QFLATMAP_TEMPORARILY_REMOVED
     explicit QFlatMap(const key_container_type &keys, const mapped_container_type &values)
         : c{keys, values}
     {
@@ -465,6 +466,7 @@ public:
         initWithRange(first, last);
         ensureOrderedUnique();
     }
+#endif
 
     explicit QFlatMap(Qt::OrderedUniqueRange_t, const key_container_type &keys,
                       const mapped_container_type &values)
@@ -506,6 +508,7 @@ public:
     {
     }
 
+#ifdef QFLATMAP_TEMPORARILY_REMOVED
     explicit QFlatMap(const key_container_type &keys, const mapped_container_type &values,
                       const Compare &compare)
         : value_compare(compare), c{keys, values}
@@ -546,6 +549,7 @@ public:
         initWithRange(first, last);
         ensureOrderedUnique();
     }
+#endif
 
     explicit QFlatMap(Qt::OrderedUniqueRange_t, const key_container_type &keys,
                       const mapped_container_type &values, const Compare &compare)
@@ -685,6 +689,7 @@ public:
         return value(key);
     }
 
+#ifdef QFLATMAP_TEMPORARILY_REMOVED
     std::pair<iterator, bool> insert(const Key &key, const T &value)
     {
         return insert_or_assign(key, value);
@@ -704,6 +709,7 @@ public:
     {
         return insert_or_assign(std::move(key), std::move(value));
     }
+#endif
 
     template <typename...Args>
     std::pair<iterator, bool> try_emplace(const Key &key, Args&&...args)
@@ -747,6 +753,7 @@ public:
         return r;
     }
 
+#ifdef QFLATMAP_TEMPORARILY_REMOVED
     template <class InputIt, is_compatible_iterator<InputIt> = nullptr>
     void insert(InputIt first, InputIt last)
     {
@@ -772,6 +779,7 @@ public:
     {
         insertOrderedUniqueRange(first, last);
     }
+#endif
 
     iterator begin() { return { &c, 0 }; }
     const_iterator begin() const { return { &c, 0 }; }
