@@ -138,15 +138,15 @@ static qsizetype QByteArrayList_joinedSize(const QByteArrayList *that, qsizetype
     return totalLength;
 }
 
-QByteArray QtPrivate::QByteArrayList_join(const QByteArrayList *that, QByteArrayView sep)
+QByteArray QtPrivate::QByteArrayList_join(const QByteArrayList *that, const char *sep, qsizetype seplen)
 {
     QByteArray res;
-    if (const qsizetype joinedSize = QByteArrayList_joinedSize(that, sep.size()))
+    if (const qsizetype joinedSize = QByteArrayList_joinedSize(that, seplen))
         res.reserve(joinedSize); // don't call reserve(0) - it allocates one byte for the NUL
     const qsizetype size = that->size();
     for (qsizetype i = 0; i < size; ++i) {
         if (i)
-            res.append(sep);
+            res.append(sep, seplen);
         res += that->at(i);
     }
     return res;
