@@ -2240,10 +2240,16 @@ void tst_QByteArray::toUpperLower()
     QFETCH(QByteArray, input);
     QFETCH(QByteArray, upper);
     QFETCH(QByteArray, lower);
+    QVERIFY(upper.isUpper());
+    QVERIFY(lower.isLower());
     QCOMPARE(lower.toLower(), lower);
+    QVERIFY(lower.toLower().isLower());
     QCOMPARE(upper.toUpper(), upper);
+    QVERIFY(upper.toUpper().isUpper());
     QCOMPARE(input.toUpper(), upper);
+    QVERIFY(input.toUpper().isUpper());
     QCOMPARE(input.toLower(), lower);
+    QVERIFY(input.toLower().isLower());
 
     QByteArray copy = input;
     QCOMPARE(std::move(copy).toUpper(), upper);
@@ -2272,12 +2278,12 @@ void tst_QByteArray::toUpperLower()
 
 void tst_QByteArray::isUpper()
 {
-    QVERIFY(!QByteArray().isUpper());
-    QVERIFY(!QByteArray("").isUpper());
+    QVERIFY(QByteArray().isUpper());
+    QVERIFY(QByteArray("").isUpper());
     QVERIFY(QByteArray("TEXT").isUpper());
-    QVERIFY(!QByteArray("\xD0\xDE").isUpper()); // non-ASCII is neither upper nor lower
-    QVERIFY(!QByteArray("\xD7").isUpper());
-    QVERIFY(!QByteArray("\xDF").isUpper());
+    QVERIFY(QByteArray("\xD0\xDE").isUpper());
+    QVERIFY(QByteArray("\xD7").isUpper());
+    QVERIFY(QByteArray("\xDF").isUpper());
     QVERIFY(!QByteArray("text").isUpper());
     QVERIFY(!QByteArray("Text").isUpper());
     QVERIFY(!QByteArray("tExt").isUpper());
@@ -2287,19 +2293,19 @@ void tst_QByteArray::isUpper()
     QVERIFY(!QByteArray("teXT").isUpper());
     QVERIFY(!QByteArray("tEXt").isUpper());
     QVERIFY(!QByteArray("tExT").isUpper());
-    QVERIFY(!QByteArray("@ABYZ[").isUpper());
+    QVERIFY(QByteArray("@ABYZ[").isUpper());
     QVERIFY(!QByteArray("@abyz[").isUpper());
-    QVERIFY(!QByteArray("`ABYZ{").isUpper());
+    QVERIFY(QByteArray("`ABYZ{").isUpper());
     QVERIFY(!QByteArray("`abyz{").isUpper());
 }
 
 void tst_QByteArray::isLower()
 {
-    QVERIFY(!QByteArray().isLower());
-    QVERIFY(!QByteArray("").isLower());
+    QVERIFY(QByteArray().isLower());
+    QVERIFY(QByteArray("").isLower());
     QVERIFY(QByteArray("text").isLower());
-    QVERIFY(!QByteArray("\xE0\xFF").isLower()); // non-ASCII is neither upper nor lower
-    QVERIFY(!QByteArray("\xF7").isLower());
+    QVERIFY(QByteArray("\xE0\xFF").isLower());
+    QVERIFY(QByteArray("\xF7").isLower());
     QVERIFY(!QByteArray("Text").isLower());
     QVERIFY(!QByteArray("tExt").isLower());
     QVERIFY(!QByteArray("teXt").isLower());
@@ -2310,9 +2316,9 @@ void tst_QByteArray::isLower()
     QVERIFY(!QByteArray("tExT").isLower());
     QVERIFY(!QByteArray("TEXT").isLower());
     QVERIFY(!QByteArray("@ABYZ[").isLower());
-    QVERIFY(!QByteArray("@abyz[").isLower());
+    QVERIFY(QByteArray("@abyz[").isLower());
     QVERIFY(!QByteArray("`ABYZ{").isLower());
-    QVERIFY(!QByteArray("`abyz{").isLower());
+    QVERIFY(QByteArray("`abyz{").isLower());
 }
 
 void tst_QByteArray::macTypes()
