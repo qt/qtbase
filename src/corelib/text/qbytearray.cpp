@@ -63,6 +63,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <algorithm>
+
 #define IS_RAW_DATA(d) ((d)->flags() & QArrayData::RawDataType)
 
 QT_BEGIN_NAMESPACE
@@ -2734,28 +2736,6 @@ static constexpr inline bool isUpperCaseAscii(char c)
     return c >= 'A' && c <= 'Z';
 }
 
-/*!
-    Returns \c true if this byte array contains only ASCII uppercase letters,
-    otherwise returns \c false.
-    \since 5.12
-
-    \sa isLower(), toUpper()
-*/
-bool QByteArray::isUpper() const
-{
-    if (isEmpty())
-        return false;
-
-    const char *d = data();
-
-    for (qsizetype i = 0, max = size(); i < max; ++i) {
-        if (!isUpperCaseAscii(d[i]))
-            return false;
-    }
-
-    return true;
-}
-
 /*
     Returns true if \a c is an lowercase ASCII letter.
  */
@@ -2765,25 +2745,35 @@ static constexpr inline bool isLowerCaseAscii(char c)
 }
 
 /*!
-    Returns \c true if this byte array contains only lowercase ASCII letters,
-    otherwise returns \c false.
+    Returns \c true if this byte array is uppercase, that is, if
+    it's identical to its toUpper() folding.
+
+    Note that this does \e not mean that the byte array only contains
+    uppercase letters; only that it contains no ASCII lowercase letters.
+
+    \since 5.12
+
+    \sa isLower(), toUpper()
+*/
+bool QByteArray::isUpper() const
+{
+    return std::none_of(begin(), end(), isLowerCaseAscii);
+}
+
+/*!
+    Returns \c true if this byte array is lowercase, that is, if
+    it's identical to its toLower() folding.
+
+    Note that this does \e not mean that the byte array only contains
+    lowercase letters; only that it contains no ASCII uppercase letters.
+
     \since 5.12
 
     \sa isUpper(), toLower()
  */
 bool QByteArray::isLower() const
 {
-    if (isEmpty())
-        return false;
-
-    const char *d = data();
-
-    for (qsizetype i = 0, max = size(); i < max; ++i) {
-        if (!isLowerCaseAscii(d[i]))
-            return false;
-    }
-
-    return true;
+    return std::none_of(begin(), end(), isUpperCaseAscii);
 }
 
 /*!
