@@ -490,6 +490,7 @@ struct TrivialHashType {
 };
 quint64 qHash(TrivialHashType t, size_t seed = 0)
 {
+    Q_UNUSED(seed);
     return t.hash;
 }
 
