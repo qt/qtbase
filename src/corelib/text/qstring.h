@@ -118,8 +118,6 @@ public:
     { return isEmpty() ? -1 : front() == c ? int(size() > 1) : uchar(m_data[0]) - c.unicode(); }
     [[nodiscard]] int compare(QChar c, Qt::CaseSensitivity cs) const noexcept
     { return QtPrivate::compareStrings(*this, QStringView(&c, 1), cs); }
-    [[nodiscard]] int compare(QLatin1Char c, Qt::CaseSensitivity cs) const noexcept
-    { char ch = c.toLatin1(); return QtPrivate::compareStrings(*this, QLatin1String(&ch, 1), cs); }
 
     [[nodiscard]] bool startsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::startsWith(*this, s, cs); }
@@ -129,8 +127,6 @@ public:
     { return !isEmpty() && front() == c; }
     [[nodiscard]] inline bool startsWith(QChar c, Qt::CaseSensitivity cs) const noexcept
     { return QtPrivate::startsWith(*this, QStringView(&c, 1), cs); }
-    [[nodiscard]] inline bool startsWith(QLatin1Char c, Qt::CaseSensitivity cs) const noexcept
-    { char ch = c.toLatin1(); return QtPrivate::startsWith(*this, QLatin1String(&ch, 1), cs); }
 
     [[nodiscard]] bool endsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::endsWith(*this, s, cs); }
@@ -140,8 +136,6 @@ public:
     { return !isEmpty() && back() == c; }
     [[nodiscard]] inline bool endsWith(QChar c, Qt::CaseSensitivity cs) const noexcept
     { return QtPrivate::endsWith(*this, QStringView(&c, 1), cs); }
-    [[nodiscard]] inline bool endsWith(QLatin1Char c, Qt::CaseSensitivity cs) const noexcept
-    { char ch = c.toLatin1(); return QtPrivate::endsWith(*this, QLatin1String(&ch, 1), cs); }
 
     [[nodiscard]] qsizetype indexOf(QStringView s, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::findString(*this, from, s, cs); }
@@ -149,8 +143,6 @@ public:
     { return QtPrivate::findString(*this, from, s, cs); }
     [[nodiscard]] qsizetype indexOf(QChar c, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::findString(*this, from, QStringView(&c, 1), cs); }
-    [[nodiscard]] qsizetype indexOf(QLatin1Char c, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
-    { char ch = c.toLatin1(); return QtPrivate::findString(*this, from, QLatin1String(&ch, 1), cs); }
 
     [[nodiscard]] bool contains(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return indexOf(s, 0, cs) != -1; }
@@ -158,8 +150,6 @@ public:
     { return indexOf(s, 0, cs) != -1; }
     [[nodiscard]] inline bool contains(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return indexOf(QStringView(&c, 1), 0, cs) != -1; }
-    [[nodiscard]] inline bool contains(QLatin1Char c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
-    { char ch = c.toLatin1(); return indexOf(QLatin1String(&ch, 1), 0, cs) != -1; }
 
     [[nodiscard]] qsizetype lastIndexOf(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return lastIndexOf(s, size(), cs); }
@@ -173,10 +163,6 @@ public:
     { return lastIndexOf(c, -1, cs); }
     [[nodiscard]] qsizetype lastIndexOf(QChar c, qsizetype from, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::lastIndexOf(*this, from, QStringView(&c, 1), cs); }
-    [[nodiscard]] qsizetype lastIndexOf(QLatin1Char c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
-    { return lastIndexOf(c, -1, cs); }
-    [[nodiscard]] qsizetype lastIndexOf(QLatin1Char c, qsizetype from, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
-    { char ch = c.toLatin1(); return QtPrivate::lastIndexOf(*this, from, QLatin1String(&ch, 1), cs); }
 
     using value_type = const char;
     using reference = value_type&;

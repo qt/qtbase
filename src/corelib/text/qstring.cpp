@@ -9328,12 +9328,6 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \sa operator==(), operator<(), operator>()
 */
 
-/*!
-    \fn int QLatin1String::compare(QLatin1Char ch, Qt::CaseSensitivity cs) const
-    \since 6.3
-    \overload
-*/
-
 
 /*!
     \fn bool QLatin1String::startsWith(QStringView str, Qt::CaseSensitivity cs) const
@@ -9353,12 +9347,6 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     otherwise the search is case-insensitive.
 
     \sa endsWith()
-*/
-
-/*!
-    \fn bool QLatin1String::startsWith(QLatin1Char ch, Qt::CaseSensitivity cs) const
-    \since 6.3
-    \overload
 */
 
 /*!
@@ -9382,12 +9370,6 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 
 /*!
-    \fn bool QLatin1String::endsWith(QLatin1Char ch, Qt::CaseSensitivity cs) const
-    \since 6.3
-    \overload
-*/
-
-/*!
     \fn qsizetype QLatin1String::indexOf(QStringView str, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
     \fn qsizetype QLatin1String::indexOf(QLatin1String l1, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
     \fn qsizetype QLatin1String::indexOf(QChar c, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
@@ -9408,12 +9390,6 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 
 /*!
-    \fn qsizetype QLatin1String::indexOf(QLatin1Char ch, qsizetype from, Qt::CaseSensitivity cs) const
-    \since 6.3
-    \overload
-*/
-
-/*!
     \fn bool QLatin1String::contains(QStringView str, Qt::CaseSensitivity cs) const
     \fn bool QLatin1String::contains(QLatin1String l1, Qt::CaseSensitivity cs) const
     \fn bool QLatin1String::contains(QChar c, Qt::CaseSensitivity cs) const
@@ -9428,12 +9404,6 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 
     \sa indexOf(), QStringView::contains(), QStringView::indexOf(),
     QString::indexOf()
-*/
-
-/*!
-    \fn bool QLatin1String::contains(QLatin1Char ch, Qt::CaseSensitivity cs) const
-    \since 6.3
-    \overload
 */
 
 /*!
@@ -9481,7 +9451,6 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 
 /*!
     \fn qsizetype QLatin1String::lastIndexOf(QChar ch, Qt::CaseSensitivity cs) const
-    \fn qsizetype QLatin1String::lastIndexOf(QLatin1Char ch, qsizetype from, Qt::CaseSensitivity cs) const
     \since 6.3
     \overload
 */
