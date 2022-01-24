@@ -29,6 +29,7 @@
 
 #include "makefiledeps.h"
 #include "option.h"
+#include <qfile.h>
 #include <qdir.h>
 #include <qdatetime.h>
 #include <qfileinfo.h>
@@ -40,16 +41,8 @@
 # include <io.h>
 #endif
 #include <qdebug.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <time.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <limits.h>
-#if defined(_MSC_VER) && _MSC_VER >= 1400
-#include <share.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -515,28 +508,17 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
 
     const QMakeLocalFileName sourceFile = fixPathForFile(file->file, true);
 
-    struct stat fst;
     char *buffer = nullptr;
     int buffer_len = 0;
     {
-        int fd;
-#if defined(_MSC_VER) && _MSC_VER >= 1400
-        if (_sopen_s(&fd, sourceFile.local().toLatin1().constData(),
-            _O_RDONLY, _SH_DENYNO, _S_IREAD) != 0)
-            fd = -1;
-#else
-        fd = open(sourceFile.local().toLatin1().constData(), O_RDONLY);
-#endif
-        if (fd == -1 || fstat(fd, &fst) || S_ISDIR(fst.st_mode)) {
-            if (fd != -1)
-                QT_CLOSE(fd);
+        QFile f(sourceFile.local());
+        if (!f.open(QIODevice::ReadOnly))
             return false;
-        }
-        buffer = getBuffer(fst.st_size);
+        const qint64 fs = f.size();
+        buffer = getBuffer(fs);
         for(int have_read = 0;
-            (have_read = QT_READ(fd, buffer + buffer_len, fst.st_size - buffer_len));
+            (have_read = f.read(buffer + buffer_len, fs - buffer_len));
             buffer_len += have_read) ;
-        QT_CLOSE(fd);
     }
     if(!buffer)
         return false;
@@ -901,25 +883,13 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
     int buffer_len = 0;
     char *buffer = nullptr;
     {
-        struct stat fst;
-        int fd;
-#if defined(_MSC_VER) && _MSC_VER >= 1400
-        if (_sopen_s(&fd, fixPathForFile(file->file, true).local().toLocal8Bit().constData(),
-            _O_RDONLY, _SH_DENYNO, _S_IREAD) != 0)
-            fd = -1;
-#else
-        fd = open(fixPathForFile(file->file, true).local().toLocal8Bit().constData(), O_RDONLY);
-#endif
-        if (fd == -1 || fstat(fd, &fst) || S_ISDIR(fst.st_mode)) {
-            if (fd != -1)
-                QT_CLOSE(fd);
+        QFile f(fixPathForFile(file->file, true).local());
+        if (!f.open(QIODevice::ReadOnly))
             return false; //shouldn't happen
-        }
-        buffer = getBuffer(fst.st_size);
-        while (int have_read = QT_READ(fd, buffer + buffer_len, fst.st_size - buffer_len))
+        const qint64 fs = f.size();
+        buffer = getBuffer(fs);
+        while (int have_read = f.read(buffer + buffer_len, fs - buffer_len))
             buffer_len += have_read;
-
-        QT_CLOSE(fd);
     }
 
     debug_msg(2, "findMocs: %s", file->file.local().toLatin1().constData());
