@@ -32,9 +32,14 @@
 
 using namespace QtPrivate;
 
-struct ResultStoreInt : ResultStoreBase
+class IntResultsCleaner
 {
-    ~ResultStoreInt() { clear<int>(); }
+public:
+    IntResultsCleaner(QtPrivate::ResultStoreBase &s) : store(s) { }
+    ~IntResultsCleaner() { store.clear<int>(); }
+
+private:
+    QtPrivate::ResultStoreBase &store;
 };
 
 class tst_QtConcurrentResultStore : public QObject
@@ -87,7 +92,9 @@ void tst_QtConcurrentResultStore::iterators()
         QCOMPARE(store.resultAt(1), store.end());
     }
     {
-        ResultStoreInt storebase;
+        QtPrivate::ResultStoreBase storebase;
+        IntResultsCleaner cleanGuard(storebase);
+
         storebase.addResult(-1, &int0); // note to self: adding a pointer to the stack here is ok since
         storebase.addResult(1, &int1);  // ResultStoreBase does not take ownership, only ResultStore<> does.
         ResultIteratorBase it = storebase.begin();
@@ -110,7 +117,9 @@ void tst_QtConcurrentResultStore::addResult()
 {
     {
         // test addResult return value
-        ResultStoreInt store;
+        QtPrivate::ResultStoreBase store;
+        IntResultsCleaner cleanGuard(store);
+
         store.setFilterMode(true);
 
         QCOMPARE(store.addResult(0, &int0), 0);
@@ -156,7 +165,9 @@ void tst_QtConcurrentResultStore::addResult()
 
 void tst_QtConcurrentResultStore::addResults()
 {
-    ResultStoreInt store;
+    QtPrivate::ResultStoreBase store;
+    IntResultsCleaner cleanGuard(store);
+
     store.addResults(-1, &vec0);
     store.addResults(-1, &vec1);
     ResultIteratorBase it = store.begin();
@@ -189,7 +200,9 @@ void tst_QtConcurrentResultStore::addResults()
 
 void tst_QtConcurrentResultStore::resultIndex()
 {
-    ResultStoreInt store;
+    QtPrivate::ResultStoreBase store;
+    IntResultsCleaner cleanGuard(store);
+
     store.addResult(-1, &int0);
     store.addResults(-1, &vec0);
     store.addResult(-1, &int1);
@@ -222,7 +235,9 @@ void tst_QtConcurrentResultStore::resultIndex()
 void tst_QtConcurrentResultStore::resultAt()
 {
     {
-        ResultStoreInt store;
+        QtPrivate::ResultStoreBase store;
+        IntResultsCleaner cleanGuard(store);
+
         store.addResult(-1, &int0);
         store.addResults(-1, &vec0);
         store.addResult(200, &int1);
@@ -233,7 +248,9 @@ void tst_QtConcurrentResultStore::resultAt()
         QCOMPARE(store.resultAt(200).value<int>(), int1);
     }
     {
-        ResultStoreInt store;
+        QtPrivate::ResultStoreBase store;
+        IntResultsCleaner cleanGuard(store);
+
         store.addResult(1, &int1);
         store.addResult(0, &int0);
         store.addResult(-1, &int2);
@@ -247,7 +264,9 @@ void tst_QtConcurrentResultStore::resultAt()
 void tst_QtConcurrentResultStore::contains()
 {
     {
-        ResultStoreInt store;
+        QtPrivate::ResultStoreBase store;
+        IntResultsCleaner cleanGuard(store);
+
         QCOMPARE(store.contains(0), false);
         QCOMPARE(store.contains(1), false);
         QCOMPARE(store.contains(INT_MAX), false);
@@ -259,7 +278,9 @@ void tst_QtConcurrentResultStore::contains()
         QVERIFY(store.contains(int2));
     }
     {
-        ResultStoreInt store;
+        QtPrivate::ResultStoreBase store;
+        IntResultsCleaner cleanGuard(store);
+
         store.addResult(1, &int0);
         store.addResult(3, &int0);
         store.addResults(6, &vec0);
@@ -274,7 +295,9 @@ void tst_QtConcurrentResultStore::contains()
     }
 
     {
-        ResultStoreInt store;
+        QtPrivate::ResultStoreBase store;
+        IntResultsCleaner cleanGuard(store);
+
         store.setFilterMode(true);
         store.addResult(1, &int0);
         store.addResult(3, &int0);
@@ -302,7 +325,9 @@ void tst_QtConcurrentResultStore::contains()
         QCOMPARE(store.contains(7), false);
     }
     {
-        ResultStoreInt store;
+        QtPrivate::ResultStoreBase store;
+        IntResultsCleaner cleanGuard(store);
+
         store.setFilterMode(true);
         store.addCanceledResult(0);
         QCOMPARE(store.contains(0), false);
@@ -316,7 +341,9 @@ void tst_QtConcurrentResultStore::contains()
 void tst_QtConcurrentResultStore::filterMode()
 {
     // Test filter mode, where "gaps" in the result array aren't allowed.
-    ResultStoreInt store;
+    QtPrivate::ResultStoreBase store;
+    IntResultsCleaner cleanGuard(store);
+
     QCOMPARE(store.filterMode(), false);
     store.setFilterMode(true);
     QVERIFY(store.filterMode());
@@ -361,7 +388,9 @@ void tst_QtConcurrentResultStore::filterMode()
 void tst_QtConcurrentResultStore::addCanceledResult()
 {
     // test canceled results
-    ResultStoreInt store;
+    QtPrivate::ResultStoreBase store;
+    IntResultsCleaner cleanGuard(store);
+
     store.setFilterMode(true);
 
     store.addResult(0, &int0);
@@ -401,7 +430,9 @@ void tst_QtConcurrentResultStore::count()
     {
         // test resultCount in non-filtered mode. It should always be possible
         // to iterate through the results 0 to resultCount.
-        ResultStoreInt store;
+        QtPrivate::ResultStoreBase store;
+        IntResultsCleaner cleanGuard(store);
+
         store.addResult(0, &int0);
 
         QCOMPARE(store.count(), 1);
@@ -415,7 +446,9 @@ void tst_QtConcurrentResultStore::count()
     }
 
     {
-        ResultStoreInt store;
+        QtPrivate::ResultStoreBase store;
+        IntResultsCleaner cleanGuard(store);
+
         store.addResult(2, &int0);
         QCOMPARE(store.count(), 0);
 
@@ -427,7 +460,9 @@ void tst_QtConcurrentResultStore::count()
     }
 
     {
-        ResultStoreInt store;
+        QtPrivate::ResultStoreBase store;
+        IntResultsCleaner cleanGuard(store);
+
         store.addResults(2, &vec1);
         QCOMPARE(store.count(), 0);
 
@@ -439,7 +474,9 @@ void tst_QtConcurrentResultStore::count()
     }
 
     {
-        ResultStoreInt store;
+        QtPrivate::ResultStoreBase store;
+        IntResultsCleaner cleanGuard(store);
+
         store.addResults(2, &vec1);
         QCOMPARE(store.count(), 0);
 
@@ -447,7 +484,9 @@ void tst_QtConcurrentResultStore::count()
         QCOMPARE(store.count(), 4);
     }
     {
-        ResultStoreInt store;
+        QtPrivate::ResultStoreBase store;
+        IntResultsCleaner cleanGuard(store);
+
         store.addResults(3, &vec1);
         QCOMPARE(store.count(), 0);
 
@@ -459,7 +498,9 @@ void tst_QtConcurrentResultStore::count()
     }
 
     {
-        ResultStoreInt store;
+        QtPrivate::ResultStoreBase store;
+        IntResultsCleaner cleanGuard(store);
+
         store.setFilterMode(true);
         store.addResults(3, &vec1);
         QCOMPARE(store.count(), 0);
@@ -472,7 +513,9 @@ void tst_QtConcurrentResultStore::count()
     }
 
     {
-        ResultStoreInt store;
+        QtPrivate::ResultStoreBase store;
+        IntResultsCleaner cleanGuard(store);
+
         store.setFilterMode(true);
         store.addResults(3, &vec1);
         QCOMPARE(store.count(), 0);
@@ -482,7 +525,9 @@ void tst_QtConcurrentResultStore::count()
     }
 
     {
-        ResultStoreInt store;
+        QtPrivate::ResultStoreBase store;
+        IntResultsCleaner cleanGuard(store);
+
         store.setFilterMode(true);
         store.addResults(3, &vec1);
         QCOMPARE(store.count(), 0);
@@ -535,11 +580,6 @@ struct CountedObject
 
 size_t CountedObject::liveCount = 0;
 
-struct ResultStoreCountedObject : ResultStoreBase
-{
-    ~ResultStoreCountedObject() { clear<CountedObject>(); }
-};
-
 void tst_QtConcurrentResultStore::pendingResultsDoNotLeak_data()
 {
     QTest::addColumn<bool>("filterMode");
@@ -553,7 +593,9 @@ void tst_QtConcurrentResultStore::pendingResultsDoNotLeak()
     QFETCH(bool, filterMode);
     CountedObject::LeakChecker leakChecker; Q_UNUSED(leakChecker)
 
-    ResultStoreCountedObject store;
+    QtPrivate::ResultStoreBase store;
+    auto cleanGaurd = qScopeGuard([&] { store.clear<CountedObject>(); });
+
     store.setFilterMode(filterMode);
 
     // lvalue
