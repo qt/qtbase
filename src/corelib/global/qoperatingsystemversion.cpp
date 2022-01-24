@@ -253,12 +253,6 @@ int QOperatingSystemVersionBase::compare(QOperatingSystemVersionBase v1,
     return compareVersionComponents(v1.m_major, v2.m_major);
 }
 
-int QOperatingSystemVersion::compare(const QOperatingSystemVersion &v1,
-                                     const QOperatingSystemVersion &v2)
-{
-    return QOperatingSystemVersionBase::compare(v1, v2);
-}
-
 /*!
     \fn QVersionNumber QOperatingSystemVersion::version() const
 

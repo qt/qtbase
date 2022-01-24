@@ -265,9 +265,11 @@ public:
 private:
     QOperatingSystemVersion() = default;
 
+#if QT_REMOVED_SINCE(6, 3)
     // ### Qt 7: Remove. It's only here for backwards compat with previous inline calls.
     [[maybe_unused]] static int compare(const QOperatingSystemVersion &v1,
                                         const QOperatingSystemVersion &v2);
+#endif
 };
 Q_DECLARE_TYPEINFO(QOperatingSystemVersion, Q_PRIMITIVE_TYPE);
 
