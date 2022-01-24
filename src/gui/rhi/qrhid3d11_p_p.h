@@ -724,8 +724,9 @@ public:
     LUID adapterLuid = {};
     ID3DUserDefinedAnnotation *annotations = nullptr;
     IDXGIFactory1 *dxgiFactory = nullptr;
-    bool supportsFlipDiscardSwapchain = false;
+    bool supportsFlipSwapchain = false;
     bool supportsAllowTearing = false;
+    bool forceFlipDiscard = false;
     bool deviceLost = false;
     QRhiD3D11NativeHandles nativeHandlesStruct;
     QRhiDriverInfo driverInfoStruct;
