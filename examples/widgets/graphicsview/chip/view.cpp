@@ -65,9 +65,9 @@ void GraphicsView::wheelEvent(QWheelEvent *e)
 {
     if (e->modifiers() & Qt::ControlModifier) {
         if (e->angleDelta().y() > 0)
-            view->zoomIn(6);
+            view->zoomInBy(6);
         else
-            view->zoomOut(6);
+            view->zoomOutBy(6);
         e->accept();
     } else {
         QGraphicsView::wheelEvent(e);
@@ -253,12 +253,22 @@ void View::print()
 #endif
 }
 
-void View::zoomIn(int level)
+void View::zoomIn()
+{
+    zoomSlider->setValue(zoomSlider->value() + 1);
+}
+
+void View::zoomOut()
+{
+    zoomSlider->setValue(zoomSlider->value() - 1);
+}
+
+void View::zoomInBy(int level)
 {
     zoomSlider->setValue(zoomSlider->value() + level);
 }
 
-void View::zoomOut(int level)
+void View::zoomOutBy(int level)
 {
     zoomSlider->setValue(zoomSlider->value() - level);
 }
