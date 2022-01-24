@@ -22,6 +22,7 @@ find_package(Qt6 COMPONENTS OpenGL)
 find_package(Qt6 COMPONENTS OpenGLWidgets)
 
 qt_add_executable(threadedqopenglwidget
+    renderer.cpp renderer.h
     glwidget.cpp glwidget.h
     main.cpp
     mainwindow.cpp mainwindow.h
