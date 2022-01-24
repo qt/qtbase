@@ -99,6 +99,7 @@ public:
         } else {
             promise.reportCanceled();
             promise.reportFinished();
+            delete this;
         }
         return theFuture;
     }
