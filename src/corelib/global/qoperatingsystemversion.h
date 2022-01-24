@@ -201,7 +201,7 @@ public:
     static constexpr QOperatingSystemVersionBase MacOSHighSierra { QOperatingSystemVersionBase::MacOS, 10, 13 };
     static constexpr QOperatingSystemVersionBase MacOSMojave { QOperatingSystemVersionBase::MacOS, 10, 14 };
     static constexpr QOperatingSystemVersionBase MacOSCatalina { QOperatingSystemVersionBase::MacOS, 10, 15 };
-#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_11_0)
+#if !defined(Q_OS_DARWIN) || QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_11_0)
     static constexpr QOperatingSystemVersionBase MacOSBigSur = { QOperatingSystemVersionBase::MacOS, 11, 0 };
     static constexpr QOperatingSystemVersionBase MacOSMonterey = { QOperatingSystemVersionBase::MacOS, 12, 0 };
 #else // ### Qt 7: Verify the assumption
