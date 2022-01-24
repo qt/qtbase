@@ -50,8 +50,8 @@
 QT_BEGIN_NAMESPACE
 
 /*
-  Direct3D 11 backend. Provides a double-buffered flip model (FLIP_DISCARD)
-  swapchain. Textures and "static" buffers are USAGE_DEFAULT, leaving it to
+  Direct3D 11 backend. Provides a double-buffered flip model swapchain.
+  Textures and "static" buffers are USAGE_DEFAULT, leaving it to
   UpdateSubResource to upload the data in any way it sees fit. "Dynamic"
   buffers are USAGE_DYNAMIC and updating is done by mapping with WRITE_DISCARD.
   (so here QRhiBuffer keeps a copy of the buffer contents and all of it is
@@ -202,18 +202,19 @@ bool QRhiD3D11::create(QRhi::Flags flags)
 
     dxgiFactory = createDXGIFactory2();
     if (dxgiFactory != nullptr) {
-        supportsFlipDiscardSwapchain = !qEnvironmentVariableIntValue("QT_D3D_NO_FLIP");
+        supportsFlipSwapchain = !qEnvironmentVariableIntValue("QT_D3D_NO_FLIP");
     } else {
         dxgiFactory = createDXGIFactory1();
-        supportsFlipDiscardSwapchain = false;
+        supportsFlipSwapchain = false;
     }
 
     if (dxgiFactory == nullptr)
         return false;
 
     supportsAllowTearing = false;
-    if (supportsFlipDiscardSwapchain) {
-        // For a FLIP_DISCARD swapchain Present(0, 0) is not necessarily
+    forceFlipDiscard = false;
+    if (supportsFlipSwapchain) {
+        // For a FLIP_* swapchain Present(0, 0) is not necessarily
         // sufficient to get non-blocking behavior, try using ALLOW_TEARING
         // when available.
         IDXGIFactory5 *factory5 = nullptr;
@@ -223,11 +224,17 @@ bool QRhiD3D11::create(QRhi::Flags flags)
                 supportsAllowTearing = allowTearing;
             factory5->Release();
         }
+        // if we default to FLIP_SEQUENTIAL, have a way to request FLIP_DISCARD
+        forceFlipDiscard = qEnvironmentVariableIntValue("QT_D3D_FLIP_DISCARD");
     }
 
-    qCDebug(QRHI_LOG_INFO, "FLIP_DISCARD swapchain supported = %s, ALLOW_TEARING supported = %s",
-            supportsFlipDiscardSwapchain ? "true" : "false",
+    qCDebug(QRHI_LOG_INFO, "FLIP_* swapchain supported = %s, ALLOW_TEARING supported = %s",
+            supportsFlipSwapchain ? "true" : "false",
             supportsAllowTearing ? "true" : "false");
+
+    qCDebug(QRHI_LOG_INFO, "Default swap effect: %s",
+            supportsFlipSwapchain ? (forceFlipDiscard ? "FLIP_DISCARD" : "FLIP_SEQUENTIAL")
+                                  : "DISCARD");
 
     if (!importedDeviceAndContext) {
         IDXGIAdapter1 *adapter;
@@ -4584,15 +4591,15 @@ bool QD3D11SwapChain::createOrResize()
         return false;
 
     QRHI_RES_RHI(QRhiD3D11);
-    bool useFlipDiscard = rhiD->supportsFlipDiscardSwapchain;
+    bool useFlipModel = rhiD->supportsFlipSwapchain;
 
     // Take a shortcut for alpha: whatever the platform plugin does to enable
     // transparency for our QWindow will be sufficient on the legacy (DISCARD)
-    // path. For FLIP_DISCARD we'd need to use DirectComposition (create a
+    // path. For FLIP_* we'd need to use DirectComposition (create a
     // IDCompositionDevice/Target/Visual), avoid that for now. (this though
     // means HDR and semi-transparent windows cannot be combined)
     if (m_flags.testFlag(SurfaceHasPreMulAlpha) || m_flags.testFlag(SurfaceHasNonPreMulAlpha)) {
-        useFlipDiscard = false;
+        useFlipModel = false;
         if (window->requestedFormat().alphaBufferSize() <= 0)
             qWarning("Swapchain says surface has alpha but the window has no alphaBufferSize set. "
                      "This may lead to problems.");
@@ -4603,9 +4610,9 @@ bool QD3D11SwapChain::createOrResize()
 
     // A non-flip swapchain can do Present(0) as expected without
     // ALLOW_TEARING, and ALLOW_TEARING is not compatible with it at all so the
-    // flag must not be set then. Whereas for flip-discard we should use it, if
+    // flag must not be set then. Whereas for flip we should use it, if
     // supported, to get better results for 'unthrottled' presentation.
-    if (swapInterval == 0 && useFlipDiscard && rhiD->supportsAllowTearing)
+    if (swapInterval == 0 && useFlipModel && rhiD->supportsAllowTearing)
         swapChainFlags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
     if (!swapChain) {
@@ -4615,7 +4622,7 @@ bool QD3D11SwapChain::createOrResize()
         srgbAdjustedColorFormat = m_flags.testFlag(sRGB) ? DEFAULT_SRGB_FORMAT : DEFAULT_FORMAT;
 
         HRESULT hr;
-        if (useFlipDiscard) {
+        if (useFlipModel) {
             DXGI_COLOR_SPACE_TYPE hdrColorSpace = DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709; // SDR
             DXGI_OUTPUT_DESC1 hdrOutputDesc;
             if (outputDesc1ForWindow(m_window, rhiD->activeAdapter, &hdrOutputDesc) && m_format != SDR) {
@@ -4644,11 +4651,11 @@ bool QD3D11SwapChain::createOrResize()
                 }
             }
 
-            // We use FLIP_DISCARD which implies a buffer count of 2 (as opposed to the
-            // old DISCARD with back buffer count == 1). This makes no difference for
-            // the rest of the stuff except that automatic MSAA is unsupported and
-            // needs to be implemented via a custom multisample render target and an
-            // explicit resolve.
+            // We use a FLIP model swapchain which implies a buffer count of 2
+            // (as opposed to the old DISCARD with back buffer count == 1).
+            // This makes no difference for the rest of the stuff except that
+            // automatic MSAA is unsupported and needs to be implemented via a
+            // custom multisample render target and an explicit resolve.
 
             DXGI_SWAP_CHAIN_DESC1 desc;
             memset(&desc, 0, sizeof(desc));
@@ -4658,8 +4665,22 @@ bool QD3D11SwapChain::createOrResize()
             desc.SampleDesc.Count = 1;
             desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
             desc.BufferCount = BUFFER_COUNT;
-            desc.Scaling = DXGI_SCALING_STRETCH;
-            desc.SwapEffect = DXGI_SWAP_EFFECT(4); // DXGI_SWAP_EFFECT_FLIP_DISCARD
+
+            // Normally we'd want FLIP_DISCARD, but that comes with the default
+            // SCALING_STRETCH, as SCALING_NONE is documented to be only
+            // available for FLIP_SEQUENTIAl. The problem with stretch is that
+            // Qt Quick and similar apps typically running in resizable windows
+            // will not like how that looks in practice: the content will
+            // appear to be "jumping" around during a window resize. So choose
+            // sequential/none by default.
+            if (rhiD->forceFlipDiscard) {
+                desc.Scaling = DXGI_SCALING_STRETCH;
+                desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+            } else {
+                desc.Scaling = DXGI_SCALING_NONE;
+                desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+            }
+
             // Do not bother with AlphaMode, if won't work unless we go through
             // DirectComposition. Instead, we just take the other (DISCARD)
             // path for now when alpha is requested.
@@ -4694,8 +4715,8 @@ bool QD3D11SwapChain::createOrResize()
             }
         } else {
             // Fallback: use DISCARD mode. Regardless, keep on using our manual
-            // resolve for symmetry with the FLIP_DISCARD code path when MSAA
-            // is requested. This has no HDR support.
+            // resolve for symmetry with the FLIP_* code path when MSAA is
+            // requested. This has no HDR support.
 
             DXGI_SWAP_CHAIN_DESC desc;
             memset(&desc, 0, sizeof(desc));
@@ -4721,7 +4742,7 @@ bool QD3D11SwapChain::createOrResize()
         rhiD->dxgiFactory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
     } else {
         releaseBuffers();
-        const UINT count = useFlipDiscard ? BUFFER_COUNT : 1;
+        const UINT count = useFlipModel ? BUFFER_COUNT : 1;
         HRESULT hr = swapChain->ResizeBuffers(count, UINT(pixelSize.width()), UINT(pixelSize.height()),
                                               colorFormat, swapChainFlags);
         if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET) {
@@ -4734,7 +4755,7 @@ bool QD3D11SwapChain::createOrResize()
         }
     }
 
-    // This looks odd (for FLIP_DISCARD, esp. compared with backends for Vulkan
+    // This looks odd (for FLIP_*, esp. compared with backends for Vulkan
     // & co.) but the backbuffer is always at index 0, with magic underneath.
     // Some explanation from
     // https://docs.microsoft.com/en-us/windows/win32/direct3ddxgi/dxgi-1-4-improvements
