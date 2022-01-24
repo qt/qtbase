@@ -2929,6 +2929,18 @@ QRhiResource::Type QRhiRenderTarget::resourceType() const
     \fn QSize QRhiRenderTarget::pixelSize() const
 
     \return the size in pixels.
+
+    Valid only after create() has been called successfully. Until then the
+    result is a default-constructed QSize.
+
+    With QRhiTextureRenderTarget the returned size is the size of the
+    associated attachments at the time of create(), in practice the size of the
+    first color attachment, or the depth/stencil buffer if there are no color
+    attachments. If the associated textures or renderbuffers are resized and
+    rebuilt afterwards, then pixelSize() performs an implicit call to create()
+    in order to rebuild the underlying data structures. This implicit check is
+    similar to what QRhiCommandBuffer::beginPass() does, and ensures that the
+    returned size is always up-to-date.
  */
 
 /*!

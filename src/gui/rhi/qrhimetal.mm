@@ -3183,6 +3183,9 @@ bool QMetalTextureRenderTarget::create()
 
 QSize QMetalTextureRenderTarget::pixelSize() const
 {
+    if (!QRhiRenderTargetAttachmentTracker::isUpToDate<QMetalTexture, QMetalRenderBuffer>(m_desc, d->currentResIdList))
+        const_cast<QMetalTextureRenderTarget *>(this)->create();
+
     return d->pixelSize;
 }
 

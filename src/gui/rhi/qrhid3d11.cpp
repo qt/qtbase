@@ -3631,6 +3631,9 @@ bool QD3D11TextureRenderTarget::create()
 
 QSize QD3D11TextureRenderTarget::pixelSize() const
 {
+    if (!QRhiRenderTargetAttachmentTracker::isUpToDate<QD3D11Texture, QD3D11RenderBuffer>(m_desc, d.currentResIdList))
+        const_cast<QD3D11TextureRenderTarget *>(this)->create();
+
     return d.pixelSize;
 }
 

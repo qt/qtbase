@@ -3828,33 +3828,51 @@ void tst_QRhi::textureRenderTargetAutoRebuild()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
 
-    QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, QSize(512, 512), 1, QRhiTexture::RenderTarget));
-    QVERIFY(texture->create());
-    QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ { texture.data() } }));
-    QScopedPointer<QRhiRenderPassDescriptor> rp(rt->newCompatibleRenderPassDescriptor());
-    rt->setRenderPassDescriptor(rp.data());
-    QVERIFY(rt->create());
+    // case 1: beginPass's implicit create()
+    {
+        QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, QSize(512, 512), 1, QRhiTexture::RenderTarget));
+        QVERIFY(texture->create());
+        QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ { texture.data() } }));
+        QScopedPointer<QRhiRenderPassDescriptor> rp(rt->newCompatibleRenderPassDescriptor());
+        rt->setRenderPassDescriptor(rp.data());
+        QVERIFY(rt->create());
 
-    QRhiCommandBuffer *cb = nullptr;
-    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
-    QVERIFY(cb);
-    cb->beginPass(rt.data(), Qt::red, { 1.0f, 0 });
-    cb->endPass();
-    rhi->endOffscreenFrame();
+        QRhiCommandBuffer *cb = nullptr;
+        QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+        QVERIFY(cb);
+        cb->beginPass(rt.data(), Qt::red, { 1.0f, 0 });
+        cb->endPass();
+        rhi->endOffscreenFrame();
 
-    texture->setPixelSize(QSize(256, 256));
-    QVERIFY(texture->create());
-    QCOMPARE(texture->pixelSize(), QSize(256, 256));
-    // rt still has the old size and knows nothing about texture's underlying native texture resource possibly changing
-    QCOMPARE(rt->pixelSize(), QSize(512, 512));
+        texture->setPixelSize(QSize(256, 256));
+        QVERIFY(texture->create());
+        QCOMPARE(texture->pixelSize(), QSize(256, 256));
 
-    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
-    QVERIFY(cb);
-    // no rt->create() but beginPass() does it implicitly for us
-    cb->beginPass(rt.data(), Qt::red, { 1.0f, 0 });
-    QCOMPARE(rt->pixelSize(), QSize(256, 256));
-    cb->endPass();
-    rhi->endOffscreenFrame();
+        QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+        QVERIFY(cb);
+        // no rt->create() but beginPass() does it implicitly for us
+        cb->beginPass(rt.data(), Qt::red, { 1.0f, 0 });
+        QCOMPARE(rt->pixelSize(), QSize(256, 256));
+        cb->endPass();
+        rhi->endOffscreenFrame();
+    }
+
+    // case 2: pixelSize's implicit create()
+    {
+        QSize sz(512, 512);
+        QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, sz, 1, QRhiTexture::RenderTarget));
+        QVERIFY(texture->create());
+        QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ { texture.data() } }));
+        QScopedPointer<QRhiRenderPassDescriptor> rp(rt->newCompatibleRenderPassDescriptor());
+        rt->setRenderPassDescriptor(rp.data());
+        QVERIFY(rt->create());
+        QCOMPARE(rt->pixelSize(), sz);
+
+        sz = QSize(256, 256);
+        texture->setPixelSize(sz);
+        QVERIFY(texture->create());
+        QCOMPARE(rt->pixelSize(), sz);
+    }
 }
 
 void tst_QRhi::srbLayoutCompatibility_data()

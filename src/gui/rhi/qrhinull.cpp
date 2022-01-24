@@ -860,6 +860,9 @@ bool QNullTextureRenderTarget::create()
 
 QSize QNullTextureRenderTarget::pixelSize() const
 {
+    if (!QRhiRenderTargetAttachmentTracker::isUpToDate<QNullTexture, QNullRenderBuffer>(m_desc, d.currentResIdList))
+        const_cast<QNullTextureRenderTarget *>(this)->create();
+
     return d.pixelSize;
 }
 
