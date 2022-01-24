@@ -133,6 +133,14 @@ QByteArray QtPrivate::QByteArrayList_join(const QByteArrayList *that, const char
 }
 # endif
 
+#include "qoperatingsystemversion.h"
+
+int QOperatingSystemVersion::compare(const QOperatingSystemVersion &v1,
+                                     const QOperatingSystemVersion &v2)
+{
+    return QOperatingSystemVersionBase::compare(v1, v2);
+}
+
 #endif // QT_REMOVED_SINCE(6, 3)
 
 #if QT_REMOVED_SINCE(6, 4)
