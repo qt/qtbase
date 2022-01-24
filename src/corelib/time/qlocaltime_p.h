@@ -22,6 +22,16 @@ QT_BEGIN_NAMESPACE
 
 // Packaging system time_t functions
 namespace QLocalTime {
+#ifndef QT_BOOTSTRAPPED
+// Support for V4's Date implelenentation.
+// Each returns offset from UTC in seconds (or 0 if unknown).
+// V4 shall need to multiply by 1000.
+// Offset is -ve East of Greenwich, +ve west of Greenwich.
+// Add it to UTC seconds since epoch to get local seconds since nominal local epoch.
+Q_CORE_EXPORT int getCurrentStandardUtcOffset();
+Q_CORE_EXPORT int getUtcOffset(qint64 atMSecsSinceEpoch);
+#endif // QT_BOOTSTRAPPED
+
 // Support for QDateTime
 QDateTimePrivate::ZoneState utcToLocal(qint64 utcMillis);
 QString localTimeAbbbreviationAt(qint64 local, QDateTimePrivate::DaylightStatus dst);

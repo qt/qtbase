@@ -232,6 +232,52 @@ int QDateTimeParser::startsWithLocalTimeZone(QStringView name)
 
 namespace QLocalTime {
 
+#ifndef QT_BOOTSTRAPPED
+// Even if local time is currently in DST, this returns the standard time offset
+// (in seconds) nominally in effect at present:
+int getCurrentStandardUtcOffset()
+{
+#ifdef Q_OS_WIN
+    TIME_ZONE_INFORMATION tzInfo;
+    GetTimeZoneInformation(&tzInfo);
+    return -tzInfo.Bias * 60;
+#else
+    qTzSet();
+    const time_t curr = time(nullptr);
+    /* Set t to the UTC represntation of curr; the time whose local standard
+       time representation coincides with that differs from curr by local time's
+       standard offset.  Note that gmtime() leaves the tm_isdst flag set to 0,
+       so mktime() will, even if local time is currently using DST, return the
+       time since epoch at which local standard time would have the same
+       representation as UTC's representation of curr. The fact that mktime()
+       also flips tm_isdst and updates the time fields to the DST-equivalent
+       time needn't concern us here; all that matters is that it returns the
+       time after epoch at which standard time's representation would have
+       matched UTC's, had it been in effect.
+    */
+#  if defined(_POSIX_THREAD_SAFE_FUNCTIONS)
+    struct tm t;
+    if (gmtime_r(&curr, &t))
+        return curr - qMkTime(&t);
+#  else
+    if (struct tm *tp = gmtime(&curr)) {
+        struct tm t = *tp; // Copy it quick, hopefully before it can get stomped
+        return curr - qMkTime(&t);
+    }
+#  endif
+    // We can't tell, presume UTC.
+    return 0;
+#endif // Platform choice
+}
+
+// This is local time's offset (in seconds), at the specified time, including
+// any DST part.
+int getUtcOffset(qint64 atMSecsSinceEpoch)
+{
+    return QDateTimePrivate::expressUtcAsLocal(atMSecsSinceEpoch).offset;
+}
+#endif // QT_BOOTSTRAPPED
+
 // Calls the platform variant of localtime() for the given utcMillis, and
 // returns the local milliseconds, offset from UTC and DST status.
 QDateTimePrivate::ZoneState utcToLocal(qint64 utcMillis)
