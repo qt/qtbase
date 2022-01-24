@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -268,6 +268,12 @@ private slots:
 
     void ibaseArray_data() { generic_data("QIBASE"); }
     void ibaseArray();
+
+    // Double addDatabase() with same name leaves system in a state that breaks
+    // invalidQuery() if run later (but only on 6.2, not 6.3 or later - no idea
+    // why); so put this one last !
+    void prematureExec_data() { generic_data(); }
+    void prematureExec();
 
 private:
     // returns all database connections
@@ -2876,6 +2882,36 @@ void tst_QSqlQuery::execErrorRecovery()
 
     q.addBindValue( 2 ); // this should work again
     QVERIFY_SQL( q, exec() );
+}
+
+void tst_QSqlQuery::prematureExec()
+{
+    QFETCH(QString, dbName);
+    // We only want the engine name, for addDatabase():
+    int cut = dbName.indexOf(QChar('@'));
+    if (cut < 0)
+        QSKIP("Failed to parse database type out of name");
+    dbName.truncate(cut);
+    cut = dbName.indexOf(QChar('_'));
+    if (cut >= 0)
+        dbName = dbName.sliced(cut + 1);
+
+    auto db = QSqlDatabase::addDatabase(dbName);
+    auto teardown = qScopeGuard([dbName]() { QSqlDatabase::removeDatabase(dbName); });
+    QSqlQuery q(db);
+
+    QTest::ignoreMessage(QtWarningMsg,
+                         "QSqlDatabasePrivate::removeDatabase: connection "
+                         "'qt_sql_default_connection' is still in use, all "
+                         "queries will cease to work.");
+    QTest::ignoreMessage(QtWarningMsg,
+                         "QSqlDatabasePrivate::addDatabase: duplicate connection name "
+                         "'qt_sql_default_connection', old connection removed.");
+    auto otherDb = QSqlDatabase::addDatabase(dbName);
+
+    QTest::ignoreMessage(QtWarningMsg, "QSqlQuery::exec: called before driver has been set up");
+    // QTBUG-100037: shouldn't crash !
+    QVERIFY(!q.exec("select stuff from TheVoid"));
 }
 
 void tst_QSqlQuery::lastInsertId()
