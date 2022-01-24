@@ -41,13 +41,20 @@
 #define QPROMISE_H
 
 #include <QtCore/qglobal.h>
-#include <QtCore/qfuture.h>
+#include <QtCore/qfutureinterface.h>
 
 #include <utility>
 
 QT_REQUIRE_CONFIG(future);
 
 QT_BEGIN_NAMESPACE
+
+namespace QtPrivate {
+
+template<class T, class U>
+using EnableIfSameOrConvertible = std::enable_if_t<std::is_convertible_v<T, U>>;
+
+} // namespace QtPrivate
 
 template<typename T>
 class QPromise
