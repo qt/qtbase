@@ -122,7 +122,7 @@ public:
     }
 };
 
-class Q_CORE_EXPORT ResultStoreBase
+class Q_CORE_EXPORT ResultStoreBase final
 {
 public:
     ResultStoreBase();
