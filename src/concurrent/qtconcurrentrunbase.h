@@ -89,6 +89,7 @@ public:
         } else {
             this->reportCanceled();
             this->reportFinished();
+            delete this;
         }
         return theFuture;
     }

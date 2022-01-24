@@ -53,6 +53,7 @@ private slots:
     void functor();
     void lambda();
     void nullThreadPool();
+    void nullThreadPoolNoLeak();
 };
 
 void light()
@@ -744,6 +745,28 @@ void tst_QtConcurrentRun::nullThreadPool()
     future.waitForFinished();
     QVERIFY(future.isCanceled());
     QVERIFY(!isInvoked);
+}
+
+struct LifetimeChecker
+{
+    LifetimeChecker() { ++count; }
+    LifetimeChecker(const LifetimeChecker &) { ++count; }
+    ~LifetimeChecker() { --count; }
+
+    void operator()() { }
+
+    static std::atomic<int> count;
+};
+std::atomic<int> LifetimeChecker::count{ 0 };
+
+void tst_QtConcurrentRun::nullThreadPoolNoLeak()
+{
+    {
+        QThreadPool *pool = nullptr;
+        auto future = run(pool, LifetimeChecker());
+        future.waitForFinished();
+    }
+    QCOMPARE(LifetimeChecker::count, 0);
 }
 
 QTEST_MAIN(tst_QtConcurrentRun)
