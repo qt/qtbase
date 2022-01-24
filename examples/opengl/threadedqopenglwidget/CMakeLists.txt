@@ -12,6 +12,7 @@ set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/opengl/threadedqopenglwidget")
 find_package(Qt6 REQUIRED COMPONENTS Core Gui OpenGL OpenGLWidgets Widgets)
 
 qt_add_executable(threadedqopenglwidget
+    renderer.cpp renderer.h
     glwidget.cpp glwidget.h
     main.cpp
     mainwindow.cpp mainwindow.h

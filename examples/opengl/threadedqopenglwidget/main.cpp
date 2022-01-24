@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -51,8 +51,10 @@
 #include <QApplication>
 #include <QMainWindow>
 #include <QScreen>
+#include <QShortcut>
 #include <QSurfaceFormat>
 #include <QOpenGLContext>
+#include <QOpenGLFunctions>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
 #include "mainwindow.h"
@@ -95,6 +97,8 @@ int main( int argc, char ** argv )
     topLevelGlWidget.resize(200, 200);
     topLevelGlWidget.move(pos);
     topLevelGlWidget.show();
+    auto *closeShortcut = new QShortcut(Qt::CTRL | Qt::Key_Q, &a, QApplication::closeAllWindows);
+    closeShortcut->setContext(Qt::ApplicationShortcut);
 
     const QString glInfo = getGlString(topLevelGlWidget.context()->functions(), GL_VENDOR)
         + QLatin1Char('/') + getGlString(topLevelGlWidget.context()->functions(), GL_RENDERER);
