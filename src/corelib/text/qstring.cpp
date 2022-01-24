@@ -10591,7 +10591,7 @@ qsizetype QtPrivate::findString(QLatin1String haystack, qsizetype from, QLatin1S
         return -1;
     }
 
-#if QT_CONFIG(cxx17_bm_searcher)
+#ifdef __cpp_lib_boyer_moore_searcher
     const auto ciHasher = [](char a) { return latin1Lower[uchar(a)]; };
     const auto ciEqual = [](char a, char b) {
         return latin1Lower[uchar(a)] == latin1Lower[uchar(b)];

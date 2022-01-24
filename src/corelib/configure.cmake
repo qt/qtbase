@@ -156,28 +156,6 @@ std::mt19937 mt(0);
 }
 ")
 
-# cxx17_bm_searcher
-qt_config_compile_test(cxx17_bm_searcher
-    LABEL "C++17 boyer_moore_searcher"
-    CODE
-"#include <algorithm>
-#include <functional>
-
-int main(void)
-{
-    /* BEGIN TEST: */
-const char haystack[] = \"hello\";
-const char needle[] = \"e\";
-const auto it =
-std::search(haystack + 0, haystack + std::size(haystack),
-std::boyer_moore_searcher(needle + 0, needle + std::size(needle)));
-(void)it;
-    /* END TEST: */
-    return 0;
-}
-"# FIXME: qmake: CONFIG += c++17
-)
-
 # cxx17_filesystem
 qt_config_compile_test(cxx17_filesystem
     LABEL "C++17 <filesystem>"
@@ -540,10 +518,6 @@ qt_feature("system-doubleconversion" PRIVATE
 qt_feature("cxx11_future" PUBLIC
     LABEL "C++11 <future>"
     CONDITION TEST_cxx11_future
-)
-qt_feature("cxx17_bm_searcher" PRIVATE
-    LABEL "C++17 boyer_moore_searcher"
-    CONDITION TEST_cxx17_bm_searcher
 )
 qt_feature("cxx17_filesystem" PUBLIC
     LABEL "C++17 <filesystem>"
