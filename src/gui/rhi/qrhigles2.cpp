@@ -5177,6 +5177,9 @@ bool QGles2TextureRenderTarget::create()
 
 QSize QGles2TextureRenderTarget::pixelSize() const
 {
+    if (!QRhiRenderTargetAttachmentTracker::isUpToDate<QGles2Texture, QGles2RenderBuffer>(m_desc, d.currentResIdList))
+        const_cast<QGles2TextureRenderTarget *>(this)->create();
+
     return d.pixelSize;
 }
 

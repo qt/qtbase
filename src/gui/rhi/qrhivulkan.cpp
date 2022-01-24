@@ -6585,6 +6585,9 @@ bool QVkTextureRenderTarget::create()
 
 QSize QVkTextureRenderTarget::pixelSize() const
 {
+    if (!QRhiRenderTargetAttachmentTracker::isUpToDate<QVkTexture, QVkRenderBuffer>(m_desc, d.currentResIdList))
+        const_cast<QVkTextureRenderTarget *>(this)->create();
+
     return d.pixelSize;
 }
 
