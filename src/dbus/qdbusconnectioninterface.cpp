@@ -442,4 +442,6 @@ void QDBusConnectionInterface::disconnectNotify(const QMetaMethod &signal)
 
 QT_END_NAMESPACE
 
+#include "moc_qdbusconnectioninterface.cpp"
+
 #endif // QT_NO_DBUS

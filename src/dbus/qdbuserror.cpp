@@ -354,6 +354,8 @@ QDebug operator<<(QDebug dbg, const QDBusError &msg)
 
 QT_END_NAMESPACE
 
+#include "moc_qdbuserror.cpp"
+
 #endif // QT_NO_DBUS
 
 /*

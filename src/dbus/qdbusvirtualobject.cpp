@@ -60,6 +60,7 @@ QDBusVirtualObject::~QDBusVirtualObject()
 
 QT_END_NAMESPACE
 
+#include "moc_qdbusvirtualobject.cpp"
 
 /*!
     \class QDBusVirtualObject

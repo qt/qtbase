@@ -1254,6 +1254,10 @@ QByteArray QDBusConnection::localMachineId()
 
 QT_END_NAMESPACE
 
+#include "moc_qdbusconnection_p.cpp"
+#include "moc_qdbusconnection.cpp"
+#include "moc_qdbusconnectionmanager_p.cpp"
+
 #ifdef Q_OS_WIN
 #  include <qt_windows.h>
 
