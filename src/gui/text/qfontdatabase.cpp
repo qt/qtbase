@@ -2635,3 +2635,5 @@ Q_GUI_EXPORT QStringList qt_sort_families_by_writing_system(QChar::Script script
 
 QT_END_NAMESPACE
 
+#include "moc_qfontdatabase.cpp"
+

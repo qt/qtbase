@@ -1337,3 +1337,5 @@ void QTextTable::setFormat(const QTextTableFormat &format)
 */
 
 QT_END_NAMESPACE
+
+#include "moc_qtexttable.cpp"

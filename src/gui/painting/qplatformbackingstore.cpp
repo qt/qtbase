@@ -398,3 +398,5 @@ void QPlatformBackingStore::graphicsDeviceReportedLost()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qplatformbackingstore.cpp"

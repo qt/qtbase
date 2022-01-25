@@ -852,3 +852,5 @@ Q_GUI_EXPORT QDebug operator<<(QDebug debug, const QScreen *screen)
 #endif // !QT_NO_DEBUG_STREAM
 
 QT_END_NAMESPACE
+
+#include "moc_qscreen.cpp"

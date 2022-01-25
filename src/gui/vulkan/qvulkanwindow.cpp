@@ -2797,3 +2797,5 @@ QMatrix4x4 QVulkanWindow::clipCorrectionMatrix()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qvulkanwindow.cpp"

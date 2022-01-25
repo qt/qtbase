@@ -236,4 +236,6 @@ void QSpiApplicationAdaptor::notifyKeyboardListenerError(const QDBusError& error
 
 QT_END_NAMESPACE
 
+#include "moc_qspiapplicationadaptor_p.cpp"
+
 #endif //QT_NO_ACCESSIBILITY

@@ -306,3 +306,5 @@ QPlatformMenu *QDBusPlatformMenu::createSubMenu() const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qdbusplatformmenu_p.cpp"

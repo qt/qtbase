@@ -415,3 +415,5 @@ QDebug operator<<(QDebug debug, const QInputDevice *device)
 #endif // !QT_NO_DEBUG_STREAM
 
 QT_END_NAMESPACE
+
+#include "moc_qinputdevice.cpp"

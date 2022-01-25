@@ -308,3 +308,5 @@ void QTextList::add(const QTextBlock &block)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qtextlist.cpp"

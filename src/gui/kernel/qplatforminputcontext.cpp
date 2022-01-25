@@ -377,3 +377,5 @@ QRectF QPlatformInputContext::keyboardRectangle()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qplatforminputcontext.cpp"

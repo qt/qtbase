@@ -235,3 +235,5 @@ QByteArray QInternalMimeData::renderDataHelper(const QString &mimeType, const QM
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qinternalmimedata_p.cpp"

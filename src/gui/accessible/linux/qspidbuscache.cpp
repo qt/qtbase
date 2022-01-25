@@ -90,4 +90,6 @@ QSpiAccessibleCacheArray QSpiDBusCache::GetItems()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qspidbuscache_p.cpp"
 #endif //QT_NO_ACCESSIBILITY

@@ -94,3 +94,5 @@ QGenericPlugin::~QGenericPlugin()
 */
 
 QT_END_NAMESPACE
+
+#include "moc_qgenericplugin.cpp"

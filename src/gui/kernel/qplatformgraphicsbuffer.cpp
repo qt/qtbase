@@ -270,3 +270,5 @@ QPlatformGraphicsBuffer::Origin QPlatformGraphicsBuffer::origin() const
 */
 
 QT_END_NAMESPACE
+
+#include "moc_qplatformgraphicsbuffer.cpp"
