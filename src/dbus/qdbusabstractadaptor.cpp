@@ -449,4 +449,6 @@ void QDBusAdaptorConnector::relaySignal(QObject * _t1, const QMetaObject * _t2, 
 
 QT_END_NAMESPACE
 
+#include "moc_qdbusabstractadaptor.cpp"
+
 #endif // QT_NO_DBUS
