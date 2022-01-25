@@ -928,7 +928,7 @@ public:
 
     QLocale();
 #if QT_STRINGVIEW_LEVEL < 2
-    explicit QLocale(const QString &name) : QLocale(qToStringViewIgnoringNull(name)) {}
+    explicit QLocale(const QString &name);
 #endif
     explicit QLocale(QStringView name);
     QLocale(Language language, Territory territory);

@@ -1022,9 +1022,9 @@ QLocale::QLocale(QStringView name)
 
 #if QT_STRINGVIEW_LEVEL < 2
 /*!
-    \fn QLocale::QLocale(const QString &name)
     \overload
 */
+QLocale::QLocale(const QString &name) : QLocale(qToStringViewIgnoringNull(name)) {}
 #endif
 
 /*!
