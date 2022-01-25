@@ -1409,3 +1409,4 @@ void QWidgetPrivate::invalidateBackingStore_resizeHelper(const QPoint &oldPos, c
 QT_END_NAMESPACE
 
 #include "qwidgetrepaintmanager.moc"
+#include "moc_qwidgetrepaintmanager_p.cpp"
