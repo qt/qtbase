@@ -545,6 +545,8 @@ void QDBusPendingCallWatcher::waitForFinished()
 }
 QT_END_NAMESPACE
 
+#include "moc_qdbuspendingcall_p.cpp"
+
 #endif // QT_NO_DBUS
 
 #include "moc_qdbuspendingcall.cpp"
