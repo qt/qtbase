@@ -174,7 +174,7 @@ Q_SIGNALS:
 #endif
 
 Q_SIGNALS:
-    void socketConnecting();
+    void socketStartedConnecting();
     void requestSent();
     void readyRead();
     void finished();

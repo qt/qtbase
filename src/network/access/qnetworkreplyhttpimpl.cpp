@@ -878,8 +878,8 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
         QObject::connect(delegate, SIGNAL(downloadFinished()),
                 q, SLOT(replyFinished()),
                 Qt::QueuedConnection);
-        QObject::connect(delegate, &QHttpThreadDelegate::socketConnecting,
-                q, &QNetworkReply::socketConnecting, Qt::QueuedConnection);
+        QObject::connect(delegate, &QHttpThreadDelegate::socketStartedConnecting,
+                q, &QNetworkReply::socketStartedConnecting, Qt::QueuedConnection);
         QObject::connect(delegate, &QHttpThreadDelegate::requestSent,
                 q, &QNetworkReply::requestSent, Qt::QueuedConnection);
         connect(delegate, &QHttpThreadDelegate::downloadMetaData, this,

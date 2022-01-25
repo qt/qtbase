@@ -322,7 +322,7 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
 */
 
 /*!
-    \fn void QNetworkReply::socketConnecting()
+    \fn void QNetworkReply::socketStartedConnecting()
     \since 6.3
 
     This signal is emitted 0 or more times, when the socket
@@ -339,7 +339,7 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     This signal is emitted 1 or more times when the request was
     sent. Useful for custom progress or timeout handling.
 
-    \sa metaDataChanged(), socketConnecting()
+    \sa metaDataChanged(), socketStartedConnecting()
 */
 
 /*!

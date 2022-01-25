@@ -9561,7 +9561,7 @@ void tst_QNetworkReply::moreActivitySignals()
     url.setPort(server.serverPort());
     QNetworkRequest request(url);
     QNetworkReplyPtr reply(manager.get(request));
-    QSignalSpy spy1(reply.data(), SIGNAL(socketConnecting()));
+    QSignalSpy spy1(reply.data(), SIGNAL(socketStartedConnecting()));
     QSignalSpy spy2(reply.data(), SIGNAL(requestSent()));
     QSignalSpy spy3(reply.data(), SIGNAL(metaDataChanged()));
     QSignalSpy spy4(reply.data(), SIGNAL(finished()));
@@ -9574,7 +9574,7 @@ void tst_QNetworkReply::moreActivitySignals()
     spy4.wait();
     QCOMPARE(spy4.count(), 1);
     QVERIFY(reply->error() == QNetworkReply::NoError);
-    // Second request will not send socketConnecting because of keep-alive, so don't check it.
+    // Second request will not send socketStartedConnecting because of keep-alive, so don't check it.
     QNetworkReplyPtr secondreply(manager.get(request));
     QSignalSpy secondspy2(secondreply.data(), SIGNAL(requestSent()));
     QSignalSpy secondspy3(secondreply.data(), SIGNAL(metaDataChanged()));
