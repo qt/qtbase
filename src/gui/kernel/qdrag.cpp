@@ -392,3 +392,5 @@ void QDrag::cancel()
 */
 
 QT_END_NAMESPACE
+
+#include "moc_qdrag.cpp"

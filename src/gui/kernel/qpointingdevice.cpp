@@ -808,3 +808,5 @@ size_t qHash(QPointingDeviceUniqueId key, size_t seed) noexcept
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qpointingdevice.cpp"

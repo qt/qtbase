@@ -900,3 +900,5 @@ QDebug operator<<(QDebug dbg, const QSurfaceFormat &f)
 #endif
 
 QT_END_NAMESPACE
+
+#include "moc_qsurfaceformat.cpp"

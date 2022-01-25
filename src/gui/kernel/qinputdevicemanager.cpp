@@ -120,3 +120,5 @@ void QInputDeviceManager::setKeyboardModifiers(Qt::KeyboardModifiers mods)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qinputdevicemanager_p.cpp"

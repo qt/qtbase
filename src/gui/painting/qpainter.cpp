@@ -8168,3 +8168,5 @@ void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivat
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qpainter.cpp"

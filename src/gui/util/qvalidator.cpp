@@ -1067,4 +1067,6 @@ void QRegularExpressionValidatorPrivate::setRegularExpression(const QRegularExpr
 
 QT_END_NAMESPACE
 
+#include "moc_qvalidator.cpp"
+
 #endif // QT_NO_VALIDATOR

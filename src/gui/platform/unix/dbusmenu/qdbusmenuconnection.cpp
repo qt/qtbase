@@ -144,3 +144,5 @@ void QDBusMenuConnection::unregisterTrayIcon(QDBusTrayIcon *item)
 #endif // QT_NO_SYSTEMTRAYICON
 
 QT_END_NAMESPACE
+
+#include "moc_qdbusmenuconnection_p.cpp"

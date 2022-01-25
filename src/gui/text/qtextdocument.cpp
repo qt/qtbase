@@ -3552,3 +3552,5 @@ QList<QTextFormat> QTextDocument::allFormats() const
 */
 
 QT_END_NAMESPACE
+
+#include "moc_qtextdocument.cpp"

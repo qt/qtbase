@@ -2487,4 +2487,6 @@ bool AtSpiAdaptor::tableInterface(QAccessibleInterface *interface, const QString
 }
 
 QT_END_NAMESPACE
+
+#include "moc_atspiadaptor_p.cpp"
 #endif //QT_NO_ACCESSIBILITY

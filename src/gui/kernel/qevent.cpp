@@ -4872,3 +4872,5 @@ QMutableSinglePointEvent::~QMutableSinglePointEvent()
     = default;
 
 QT_END_NAMESPACE
+
+#include "moc_qevent.cpp"

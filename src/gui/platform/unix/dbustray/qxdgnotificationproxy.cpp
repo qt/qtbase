@@ -51,3 +51,5 @@ QXdgNotificationInterface::~QXdgNotificationInterface()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qxdgnotificationproxy_p.cpp"

@@ -186,4 +186,6 @@ void QStatusNotifierItemAdaptor::SecondaryActivate(int x, int y)
 
 QT_END_NAMESPACE
 
+#include "moc_qstatusnotifieritemadaptor_p.cpp"
+
 #endif // QT_NO_SYSTEMTRAYICON
