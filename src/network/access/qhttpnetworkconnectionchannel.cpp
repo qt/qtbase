@@ -358,9 +358,9 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
 
         QHttpNetworkReply *potentialReply = connection->d_func()->predictNextRequestsReply();
         if (potentialReply) {
-            QMetaObject::invokeMethod(potentialReply, "socketConnecting", Qt::QueuedConnection);
+            QMetaObject::invokeMethod(potentialReply, "socketStartedConnecting", Qt::QueuedConnection);
         } else if (h2RequestsToSend.count() > 0) {
-            QMetaObject::invokeMethod(h2RequestsToSend.values().at(0).second, "socketConnecting", Qt::QueuedConnection);
+            QMetaObject::invokeMethod(h2RequestsToSend.values().at(0).second, "socketStartedConnecting", Qt::QueuedConnection);
         }
 
 #ifndef QT_NO_NETWORKPROXY

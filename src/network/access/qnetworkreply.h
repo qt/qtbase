@@ -154,7 +154,7 @@ public Q_SLOTS:
     virtual void ignoreSslErrors();
 
 Q_SIGNALS:
-    void socketConnecting();
+    void socketStartedConnecting();
     void requestSent();
     void metaDataChanged();
     void finished();

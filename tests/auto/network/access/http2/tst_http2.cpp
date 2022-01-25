@@ -933,7 +933,7 @@ void tst_Http2::moreActivitySignals()
     QSharedPointer<QNetworkReply> reply(manager->get(request));
     nRequests = 1;
     connect(reply.data(), &QNetworkReply::finished, this, &tst_Http2::replyFinished);
-    QSignalSpy spy1(reply.data(), SIGNAL(socketConnecting()));
+    QSignalSpy spy1(reply.data(), SIGNAL(socketStartedConnecting()));
     QSignalSpy spy2(reply.data(), SIGNAL(requestSent()));
     QSignalSpy spy3(reply.data(), SIGNAL(metaDataChanged()));
     // Since we're using self-signed certificates,
