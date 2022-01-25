@@ -1632,3 +1632,7 @@ QStringList QCalendar::availableCalendars()
 }
 
 QT_END_NAMESPACE
+
+#ifndef QT_BOOTSTRAPPED
+#include "moc_qcalendar.cpp"
+#endif
