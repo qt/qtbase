@@ -1114,3 +1114,5 @@ QDebug operator<<(QDebug dbg, const QColorSpace &colorSpace)
 #endif
 
 QT_END_NAMESPACE
+
+#include "moc_qcolorspace.cpp"

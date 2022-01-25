@@ -62,3 +62,5 @@ QDBusMenuRegistrarInterface::~QDBusMenuRegistrarInterface()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qdbusmenuregistrarproxy_p.cpp"

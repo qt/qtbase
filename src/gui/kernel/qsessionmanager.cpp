@@ -420,4 +420,6 @@ void QSessionManager::requestPhase2()
 
 QT_END_NAMESPACE
 
+#include "moc_qsessionmanager.cpp"
+
 #endif // QT_NO_SESSIONMANAGER

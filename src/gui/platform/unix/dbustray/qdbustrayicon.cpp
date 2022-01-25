@@ -370,4 +370,6 @@ bool QDBusTrayIcon::isSystemTrayAvailable() const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qdbustrayicon_p.cpp"
 #endif //QT_NO_SYSTEMTRAYICON

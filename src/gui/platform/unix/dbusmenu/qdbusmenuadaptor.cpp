@@ -163,3 +163,5 @@ QDBusVariant QDBusMenuAdaptor::GetProperty(int id, const QString &name)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qdbusmenuadaptor_p.cpp"

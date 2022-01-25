@@ -333,4 +333,6 @@ bool QPdfWriter::newPage()
 
 QT_END_NAMESPACE
 
+#include "moc_qpdfwriter.cpp"
+
 #endif // QT_NO_PDF

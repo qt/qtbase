@@ -124,3 +124,5 @@ bool QPAEventDispatcherGlib::processEvents(QEventLoop::ProcessEventsFlags flags)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qeventdispatcher_glib_p.cpp"

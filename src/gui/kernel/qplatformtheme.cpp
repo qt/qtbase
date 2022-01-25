@@ -790,3 +790,5 @@ unsigned QPlatformThemePrivate::currentKeyPlatforms()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qplatformtheme.cpp"

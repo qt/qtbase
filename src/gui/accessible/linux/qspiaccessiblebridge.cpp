@@ -300,4 +300,6 @@ RoleNames QSpiAccessibleBridge::namesForRole(QAccessible::Role role)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qspiaccessiblebridge_p.cpp"
 #endif //QT_NO_ACCESSIBILITY

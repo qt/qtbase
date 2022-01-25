@@ -3350,3 +3350,5 @@ QDebug operator<<(QDebug stream, const QFont &font)
 #endif
 
 QT_END_NAMESPACE
+
+#include "moc_qfont.cpp"

@@ -649,3 +649,5 @@ void QMutableEventPoint::setTimestamp(const ulong t)
 */
 
 QT_END_NAMESPACE
+
+#include "moc_qeventpoint.cpp"

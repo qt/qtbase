@@ -89,4 +89,6 @@ QAccessiblePlugin::~QAccessiblePlugin()
 
 QT_END_NAMESPACE
 
+#include "moc_qaccessibleplugin.cpp"
+
 #endif // QT_NO_ACCESSIBILITY

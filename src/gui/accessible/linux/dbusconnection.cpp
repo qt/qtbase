@@ -170,3 +170,5 @@ QDBusConnection DBusConnection::connection() const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_dbusconnection_p.cpp"

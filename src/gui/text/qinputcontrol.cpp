@@ -140,3 +140,5 @@ bool QInputControl::isCommonTextEditShortcut(const QKeyEvent *ke)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qinputcontrol_p.cpp"

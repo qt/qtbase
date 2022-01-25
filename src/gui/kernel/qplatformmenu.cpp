@@ -92,3 +92,5 @@ QPlatformMenu *QPlatformMenuBar::createMenu() const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qplatformmenu.cpp"

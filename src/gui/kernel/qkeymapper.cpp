@@ -148,3 +148,5 @@ void *QKeyMapper::resolveInterface(const char *name, int revision) const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qkeymapper_p.cpp"

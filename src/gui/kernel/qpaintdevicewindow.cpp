@@ -229,3 +229,5 @@ QPaintEngine *QPaintDeviceWindow::paintEngine() const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qpaintdevicewindow.cpp"

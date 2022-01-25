@@ -227,3 +227,5 @@ void QTextImageHandler::drawObject(QPainter *p, const QRectF &rect, QTextDocumen
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qtextimagehandler_p.cpp"

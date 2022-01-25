@@ -360,3 +360,5 @@ bool QActionGroup::isVisible() const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qactiongroup.cpp"
