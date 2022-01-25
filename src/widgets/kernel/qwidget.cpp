@@ -13054,4 +13054,4 @@ QDebug operator<<(QDebug debug, const QWidget *widget)
 QT_END_NAMESPACE
 
 #include "moc_qwidget.cpp"
-
+#include "moc_qwidget_p.cpp"
