@@ -5657,3 +5657,5 @@ QMap<QString, QString> qt_getImageTextFromDescription(const QString &description
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qimage.cpp"

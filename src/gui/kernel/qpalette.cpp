@@ -1234,3 +1234,5 @@ QDebug operator<<(QDebug dbg, const QPalette &p)
 #endif
 
 QT_END_NAMESPACE
+
+#include "moc_qpalette.cpp"

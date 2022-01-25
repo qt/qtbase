@@ -751,3 +751,5 @@ bool QPlatformBackingStore::scroll(const QRegion &area, int dx, int dy)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qplatformbackingstore.cpp"

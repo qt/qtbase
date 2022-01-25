@@ -65,3 +65,5 @@ QPlatformIntegration *QPlatformIntegrationPlugin::create(const QString &key, con
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qplatformintegrationplugin.cpp"

@@ -51,3 +51,5 @@ QPlatformInputContextPlugin::~QPlatformInputContextPlugin()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qplatforminputcontextplugin_p.cpp"

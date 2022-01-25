@@ -3929,3 +3929,5 @@ QDebug operator<<(QDebug dbg, const QTextFormat &f)
 #endif
 
 QT_END_NAMESPACE
+
+#include "moc_qtextformat.cpp"

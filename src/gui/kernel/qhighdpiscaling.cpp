@@ -726,3 +726,5 @@ QHighDpiScaling::ScaleAndOrigin QHighDpiScaling::scaleAndOrigin(const QWindow *w
 
 #endif //QT_NO_HIGHDPISCALING
 QT_END_NAMESPACE
+
+#include "moc_qhighdpiscaling_p.cpp"

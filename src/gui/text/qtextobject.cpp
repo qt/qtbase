@@ -1863,3 +1863,5 @@ QString QTextFragment::text() const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qtextobject.cpp"

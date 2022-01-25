@@ -489,4 +489,6 @@ QT_WARNING_POP
 
 QT_END_NAMESPACE
 
+#include "moc_qpdfwriter.cpp"
+
 #endif // QT_NO_PDF
