@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2013 John Layt <jlayt@kde.org>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -97,8 +97,8 @@ QDate msecsToDate(qint64 msecs)
     }
 
     if (msecs < 0) {
-        qint64 ds = MSECS_PER_DAY - msecs - 1;
-        jd -= ds / MSECS_PER_DAY;
+        Q_ASSERT(msecs > -MSECS_PER_DAY);
+        --jd;
     }
 
     return QDate::fromJulianDay(jd);
