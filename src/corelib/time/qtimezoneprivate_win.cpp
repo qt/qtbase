@@ -73,6 +73,22 @@ static const wchar_t currTzRegPath[] = LR"(SYSTEM\CurrentControlSet\Control\Time
 constexpr qint64 MSECS_PER_DAY = 86400000LL;
 constexpr qint64 JULIAN_DAY_FOR_EPOCH = 2440588LL; // result of julianDayFromDate(1970, 1, 1)
 
+/* Ignore any claims of DST before 1900.
+
+   Daylight-Saving time adjustments were first proposed in 1895 (George Vernon
+   Hudson in New Zealand) and 1905 (William Willett in the UK) and first adopted
+   in 1908 (one town in Ontario, Canada) and 1916 (Germany).  Since MS's data
+   tends to pretend the rules in force in 1970ish (or later) had always been in
+   effect, which presents difficulties for the code that selects correct data
+   (for a time close to the earliest we can represent), always ignore any claims
+   a first rule may make of DST before 1900.
+
+   See:
+   * https://www.timeanddate.com/time/dst/history.html
+   * https://en.wikipedia.org/wiki/Daylight_saving_time#History
+*/
+constexpr int FIRST_DST_YEAR = 1900;
+
 // Copied from MSDN, see above for link
 typedef struct _REG_TZI_FORMAT
 {
@@ -606,7 +622,11 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::data(qint64 forMSecsSinceEpoch) cons
                     : yearEndOffset(rule, prior);
                 const TransitionTimePair pair(rule, year, newYearOffset);
                 bool isDst = false;
-                if (pair.std != invalidMSecs() && pair.std <= forMSecsSinceEpoch) {
+                if (!ruleIndex && year < FIRST_DST_YEAR) {
+                    // We're before the invention of DST and have no earlier
+                    // rule that might give better data on this year, so just
+                    // extrapolate standard time (modulo fakery) backwards.
+                } else if (pair.std != invalidMSecs() && pair.std <= forMSecsSinceEpoch) {
                     isDst = pair.std < pair.dst && pair.dst <= forMSecsSinceEpoch;
                 } else if (pair.dst != invalidMSecs() && pair.dst <= forMSecsSinceEpoch) {
                     isDst = true;
