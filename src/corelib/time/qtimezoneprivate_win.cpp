@@ -412,7 +412,7 @@ QLocale::Territory userTerritory()
                        : QLocale::AnyTerritory;
 }
 
-// Index of last rule in rules with .startYear <= year:
+// Index of last rule in rules with .startYear <= year, or 0 if none satisfies that:
 int ruleIndexForYear(const QList<QWinTimeZonePrivate::QWinTransitionRule> &rules, int year)
 {
     if (rules.last().startYear <= year)
@@ -671,8 +671,17 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::nextTransition(qint64 afterMSecsSinc
         const QWinTransitionRule &rule = m_tranRules.at(ruleIndex);
         // Does this rule's period include any transition at all ?
         if (rule.standardTimeRule.wMonth > 0 || rule.daylightTimeRule.wMonth > 0) {
-            if (year < rule.startYear)
-                year = rule.startYear; // Seek first transition in this rule.
+            if (year < rule.startYear) {
+                Q_ASSERT(ruleIndex == 0);
+                // Find first transition in this first rule.
+                // Initial guess: first rule starts in standard time.
+                TransitionTimePair pair(rule, rule.startYear, rule.standardTimeBias);
+                // Year starts in daylightTimeRule iff it has a valid transition
+                // out of DST before it has a transition into it.
+                if (pair.std != invalidMSecs() && pair.std < pair.dst)
+                    return ruleToData(rule, pair.dst, QTimeZone::DaylightTime, pair.fakesDst());
+                return ruleToData(rule, pair.std, QTimeZone::StandardTime, pair.fakesDst());
+            }
             const int endYear = ruleIndex + 1 < m_tranRules.count()
                 ? qMin(m_tranRules.at(ruleIndex + 1).startYear, year + 2) : (year + 2);
             int prior = year == 1 ? -1 : year - 1; // No year 0.
