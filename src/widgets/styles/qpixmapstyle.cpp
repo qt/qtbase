@@ -1230,3 +1230,5 @@ QSize QPixmapStylePrivate::computeSize(const QPixmapStyleDescriptor &desc, int w
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qpixmapstyle_p.cpp"
