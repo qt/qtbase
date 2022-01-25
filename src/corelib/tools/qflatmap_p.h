@@ -78,6 +78,19 @@ QT_BEGIN_NAMESPACE
       QFlatMap<float, int, std::less<float>, std::vector<float>, std::vector<int>>
 */
 
+// Qt 6.4:
+// - removed QFlatMap API which was incompatible with STL semantics
+// - will be released with said API disabled, to catch any out-of-tree users
+// - also allows opting in to the new API using QFLATMAP_ENABLE_STL_COMPATIBLE_INSERT
+// Qt 6.5
+// - will make QFLATMAP_ENABLE_STL_COMPATIBLE_INSERT the default:
+
+#ifndef QFLATMAP_ENABLE_STL_COMPATIBLE_INSERT
+# if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+#  define QFLATMAP_ENABLE_STL_COMPATIBLE_INSERT
+# endif
+#endif
+
 namespace Qt {
 
 struct OrderedUniqueRange_t {};
@@ -431,7 +444,7 @@ private:
 public:
     QFlatMap() = default;
 
-#ifdef QFLATMAP_TEMPORARILY_REMOVED
+#ifdef QFLATMAP_ENABLE_STL_COMPATIBLE_INSERT
     explicit QFlatMap(const key_container_type &keys, const mapped_container_type &values)
         : c{keys, values}
     {
@@ -509,7 +522,7 @@ public:
     {
     }
 
-#ifdef QFLATMAP_TEMPORARILY_REMOVED
+#ifdef QFLATMAP_ENABLE_STL_COMPATIBLE_INSERT
     explicit QFlatMap(const key_container_type &keys, const mapped_container_type &values,
                       const Compare &compare)
         : value_compare(compare), c{keys, values}
@@ -690,25 +703,25 @@ public:
         return value(key);
     }
 
-#ifdef QFLATMAP_TEMPORARILY_REMOVED
+#ifdef QFLATMAP_ENABLE_STL_COMPATIBLE_INSERT
     std::pair<iterator, bool> insert(const Key &key, const T &value)
     {
-        return insert_or_assign(key, value);
+        return try_emplace(key, value);
     }
 
     std::pair<iterator, bool> insert(Key &&key, const T &value)
     {
-        return insert_or_assign(std::move(key), value);
+        return try_emplace(std::move(key), value);
     }
 
     std::pair<iterator, bool> insert(const Key &key, T &&value)
     {
-        return insert_or_assign(key, std::move(value));
+        return try_emplace(key, std::move(value));
     }
 
     std::pair<iterator, bool> insert(Key &&key, T &&value)
     {
-        return insert_or_assign(std::move(key), std::move(value));
+        return try_emplace(std::move(key), std::move(value));
     }
 #endif
 
@@ -754,7 +767,7 @@ public:
         return r;
     }
 
-#ifdef QFLATMAP_TEMPORARILY_REMOVED
+#ifdef QFLATMAP_ENABLE_STL_COMPATIBLE_INSERT
     template <class InputIt, is_compatible_iterator<InputIt> = nullptr>
     void insert(InputIt first, InputIt last)
     {
@@ -1078,24 +1091,39 @@ private:
 
     void makeUnique()
     {
-        if (c.keys.size() < 2)
+        // std::unique, but over two ranges
+        auto equivalent = [this](const auto &lhs, const auto &rhs) {
+            return !key_compare::operator()(lhs, rhs) && !key_compare::operator()(rhs, lhs);
+        };
+        const auto kb = c.keys.begin();
+        const auto ke = c.keys.end();
+        auto k = std::adjacent_find(kb, ke, equivalent);
+        if (k == ke)
             return;
-        auto k = std::end(c.keys) - 1;
-        auto i = k - 1;
-        for (;;) {
-            if (key_compare::operator()(*i, *k) || key_compare::operator()(*k, *i)) {
-                if (i == std::begin(c.keys))
-                    break;
-                --i;
-                --k;
-            } else {
-                c.values.erase(std::begin(c.values) + std::distance(std::begin(c.keys), i));
-                i = c.keys.erase(i);
-                if (i == std::begin(c.keys))
-                    break;
-                k = i + 1;
+
+        // equivalent keys found, we need to do actual work:
+        auto v = std::next(c.values.begin(), std::distance(kb, k));
+
+        auto kdest = k;
+        auto vdest = v;
+
+        ++k;
+        ++v;
+
+        // Loop Invariants:
+        //
+        // - [keys.begin(), kdest] and [values.begin(), vdest] are unique
+        // - k is not keys.end(), v is not values.end()
+        // - [next(k), keys.end()[ and [next(v), values.end()[ still need to be checked
+        while ((++v, ++k) != ke) {
+            if (!equivalent(*kdest, *k)) {
+                *++kdest = std::move(*k);
+                *++vdest = std::move(*v);
             }
         }
+
+        c.keys.erase(std::next(kdest), ke);
+        c.values.erase(std::next(vdest), c.values.end());
     }
 
     containers c;
