@@ -10504,6 +10504,11 @@ qsizetype QtPrivate::findString(QLatin1String haystack, qsizetype from, QStringV
     if (!QtPrivate::isLatin1(needle)) // won't find non-L1 UTF-16 needles in a L1 haystack!
         return -1;
 
+    if (needle.size() == 1) {
+        const char n = needle.front().toLatin1();
+        return QtPrivate::findString(haystack, from, QLatin1String(&n, 1), cs);
+    }
+
     QVarLengthArray<char> s(needle.size());
     qt_to_latin1_unchecked(reinterpret_cast<uchar *>(s.data()), needle.utf16(), needle.size());
     return QtPrivate::findString(haystack, from, QLatin1String(s.data(), s.size()), cs);
@@ -10522,6 +10527,14 @@ qsizetype QtPrivate::findString(QLatin1String haystack, qsizetype from, QLatin1S
         return from;
 
     if (cs == Qt::CaseSensitive) {
+
+        if (needle.size() == 1) {
+            Q_ASSUME(haystack.data() != nullptr); // see size check above
+            if (auto it = memchr(haystack.data() + from, needle.front().toLatin1(), adjustedSize))
+                return static_cast<const char *>(it) - haystack.data();
+            return -1;
+        }
+
         const QByteArrayMatcher matcher(needle);
         return matcher.indexIn(haystack, from);
     }
