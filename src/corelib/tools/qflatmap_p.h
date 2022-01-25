@@ -191,7 +191,7 @@ public:
         {
 
             iterator r = *this;
-            i++;
+            ++*this;
             return r;
         }
 
@@ -204,7 +204,7 @@ public:
         iterator operator--(int)
         {
             iterator r = *this;
-            i--;
+            --*this;
             return r;
         }
 
@@ -328,7 +328,7 @@ public:
         {
 
             const_iterator r = *this;
-            i++;
+            ++*this;
             return r;
         }
 
@@ -341,7 +341,7 @@ public:
         const_iterator operator--(int)
         {
             const_iterator r = *this;
-            i--;
+            --*this;
             return r;
         }
 
