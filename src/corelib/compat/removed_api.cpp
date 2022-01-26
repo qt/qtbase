@@ -145,6 +145,14 @@ int QOperatingSystemVersion::compare(const QOperatingSystemVersion &v1,
 
 #if QT_REMOVED_SINCE(6, 4)
 
+#include "qcalendar.h"
+
+QCalendar::QCalendar(QStringView name)
+    : QCalendar(QAnyStringView{name}) {}
+
+QCalendar::QCalendar(QLatin1String name)
+    : QCalendar(QAnyStringView{name}) {}
+
 #include "qversionnumber.h"
 
 QT_WARNING_PUSH

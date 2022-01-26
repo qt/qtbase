@@ -146,10 +146,11 @@ public:
 
     explicit QCalendar(); // Gregorian, optimised
     explicit QCalendar(System system);
-    // ### Qt 7: remove
+#if QT_REMOVED_SINCE(6, 4)
     explicit QCalendar(QLatin1String name);
-    // ### Qt 7: use QAnyStringView
     explicit QCalendar(QStringView name);
+#endif
+    explicit QCalendar(QAnyStringView name);
     explicit QCalendar(SystemId id);
 
     // QCalendar is a trivially copyable value type.

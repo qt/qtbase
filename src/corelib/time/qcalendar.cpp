@@ -1169,8 +1169,7 @@ const QCalendarBackend *QCalendarBackend::gregorian()
 /*!
     \fn QCalendar::QCalendar()
     \fn QCalendar::QCalendar(QCalendar::System system)
-    \fn QCalendar::QCalendar(QLatin1String name)
-    \fn QCalendar::QCalendar(QStringView name)
+    \fn QCalendar::QCalendar(QAnyStringView name)
 
     Constructs a calendar object.
 
@@ -1179,6 +1178,9 @@ const QCalendarBackend *QCalendarBackend::gregorian()
     or Latin 1). Construction by name may depend on an instance of the given
     calendar being constructed by other means first. With no argument, the
     default constructor returns the Gregorian calendar.
+
+    \note In Qt versions before 6.4, the constructor by \a name accepted only
+    QStringView and QLatin1String, not QAnyStringView.
 
     \sa QCalendar, System, isValid()
 */
@@ -1213,13 +1215,7 @@ QCalendar::QCalendar(QCalendar::SystemId id)
     Q_ASSERT(!d_ptr || d_ptr->calendarId().index() == id.index());
 }
 
-QCalendar::QCalendar(QLatin1String name)
-    : d_ptr(QCalendarBackend::fromName(name))
-{
-    Q_ASSERT(!d_ptr || d_ptr->calendarId().isValid());
-}
-
-QCalendar::QCalendar(QStringView name)
+QCalendar::QCalendar(QAnyStringView name)
     : d_ptr(QCalendarBackend::fromName(name))
 {
     Q_ASSERT(!d_ptr || d_ptr->calendarId().isValid());
