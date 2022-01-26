@@ -5493,6 +5493,19 @@ static inline VkStencilOp toVkStencilOp(QRhiGraphicsPipeline::StencilOp op)
     }
 }
 
+static inline VkPolygonMode toVkPolygonMode(QRhiGraphicsPipeline::PolygonMode mode)
+{
+    switch (mode) {
+    case QRhiGraphicsPipeline::Fill:
+        return VK_POLYGON_MODE_FILL;
+    case QRhiGraphicsPipeline::Line:
+        return VK_POLYGON_MODE_LINE;
+    default:
+        Q_UNREACHABLE();
+        return VK_POLYGON_MODE_FILL;
+    }
+}
+
 static inline void fillVkStencilOpState(VkStencilOpState *dst, const QRhiGraphicsPipeline::StencilOpState &src)
 {
     dst->failOp = toVkStencilOp(src.failOp);
@@ -7009,6 +7022,7 @@ bool QVkGraphicsPipeline::create()
         rastInfo.depthBiasSlopeFactor = m_slopeScaledDepthBias;
     }
     rastInfo.lineWidth = rhiD->caps.wideLines ? m_lineWidth : 1.0f;
+    rastInfo.polygonMode = toVkPolygonMode(m_polygonMode);
     pipelineInfo.pRasterizationState = &rastInfo;
 
     VkPipelineMultisampleStateCreateInfo msInfo;

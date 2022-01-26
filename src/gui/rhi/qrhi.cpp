@@ -4256,6 +4256,20 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
  */
 
 /*!
+    \enum QRhiGraphicsPipeline::PolygonMode
+    \brief Specifies the polygon rasterization mode
+
+    Polygon Mode (Triangle Fill Mode in Metal, Fill Mode in D3D) specifies
+    the fill mode used when rasterizing polygons.  Polygons may be drawn as
+    solids (Fill), or as a wire mesh (Line).
+
+    \note OpenGL ES does not support Polygon Mode
+
+    \value Fill The interior of the polygon is filled (default)
+    \value Line Boundary edges of the polygon are drawn as line segments.
+ */
+
+/*!
     \class QRhiGraphicsPipeline::TargetBlend
     \internal
     \inmodule QtGui

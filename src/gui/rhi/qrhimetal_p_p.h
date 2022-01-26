@@ -303,6 +303,7 @@ struct QMetalCommandBuffer : public QRhiCommandBuffer
     quint32 currentIndexOffset;
     QRhiCommandBuffer::IndexFormat currentIndexFormat;
     int currentCullMode;
+    int currentTriangleFillMode;
     int currentFrontFaceWinding;
     QPair<float, float> currentDepthBiasValues;
 

@@ -1223,6 +1223,11 @@ public:
         CompareOp compareOp = Always;
     };
 
+    enum PolygonMode {
+        Fill,
+        Line
+    };
+
     QRhiResource::Type resourceType() const override;
 
     Flags flags() const { return m_flags; }
@@ -1305,6 +1310,9 @@ public:
     int patchControlPointCount() const { return m_patchControlPointCount; }
     void setPatchControlPointCount(int count) { m_patchControlPointCount = count; }
 
+    PolygonMode polygonMode() const {return m_polygonMode; }
+    void setPolygonMode(PolygonMode mode) {m_polygonMode = mode; }
+
     virtual bool create() = 0;
 
 protected:
@@ -1327,6 +1335,7 @@ protected:
     int m_depthBias = 0;
     float m_slopeScaledDepthBias = 0.0f;
     int m_patchControlPointCount = 3;
+    PolygonMode m_polygonMode = Fill;
     QVarLengthArray<QRhiShaderStage, 4> m_shaderStages;
     QRhiVertexInputLayout m_vertexInputLayout;
     QRhiShaderResourceBindings *m_shaderResourceBindings = nullptr;

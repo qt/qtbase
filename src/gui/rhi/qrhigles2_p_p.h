@@ -603,6 +603,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
         float polyOffsetUnits;
         float lineWidth;
         int cpCount;
+        GLenum polygonMode;
         void reset() { valid = false; }
         struct {
             // not part of QRhiGraphicsPipeline but used by setGraphicsPipeline()
@@ -918,6 +919,7 @@ public:
     QOpenGLContext *maybeShareContext = nullptr;
     mutable bool needsMakeCurrentDueToSwap = false;
     QOpenGLExtensions *f = nullptr;
+    void (QOPENGLF_APIENTRYP glPolygonMode) (GLenum, GLenum) = nullptr;
     uint vao = 0;
     struct Caps {
         Caps()

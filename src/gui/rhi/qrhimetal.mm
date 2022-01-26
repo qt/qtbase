@@ -307,6 +307,7 @@ struct QMetalGraphicsPipelineData
     MTLPrimitiveType primitiveType;
     MTLWinding winding;
     MTLCullMode cullMode;
+    MTLTriangleFillMode triangleFillMode;
     float depthBias;
     float slopeScaledDepthBias;
     QMetalShader vs;
@@ -1063,6 +1064,10 @@ void QRhiMetal::setGraphicsPipeline(QRhiCommandBuffer *cb, QRhiGraphicsPipeline 
         if (cbD->currentCullMode == -1 || psD->d->cullMode != uint(cbD->currentCullMode)) {
             [cbD->d->currentRenderPassEncoder setCullMode: psD->d->cullMode];
             cbD->currentCullMode = int(psD->d->cullMode);
+        }
+        if (cbD->currentTriangleFillMode == -1 || psD->d->triangleFillMode != uint(cbD->currentTriangleFillMode)) {
+            [cbD->d->currentRenderPassEncoder setTriangleFillMode: psD->d->triangleFillMode];
+            cbD->currentTriangleFillMode = int(psD->d->triangleFillMode);
         }
         if (cbD->currentFrontFaceWinding == -1 || psD->d->winding != uint(cbD->currentFrontFaceWinding)) {
             [cbD->d->currentRenderPassEncoder setFrontFacingWinding: psD->d->winding];
@@ -3498,6 +3503,19 @@ static inline MTLCullMode toMetalCullMode(QRhiGraphicsPipeline::CullMode c)
     }
 }
 
+static inline MTLTriangleFillMode toMetalTriangleFillMode(QRhiGraphicsPipeline::PolygonMode mode)
+{
+    switch (mode) {
+    case QRhiGraphicsPipeline::Fill:
+        return MTLTriangleFillModeFill;
+    case QRhiGraphicsPipeline::Line:
+        return MTLTriangleFillModeLines;
+    default:
+        Q_UNREACHABLE();
+        return MTLTriangleFillModeFill;
+    }
+}
+
 id<MTLLibrary> QRhiMetalData::createMetalLib(const QShader &shader, QShader::Variant shaderVariant,
                                              QString *error, QByteArray *entryPoint, QShaderKey *activeKey)
 {
@@ -3754,6 +3772,7 @@ bool QMetalGraphicsPipeline::create()
     d->primitiveType = toMetalPrimitiveType(m_topology);
     d->winding = m_frontFace == CCW ? MTLWindingCounterClockwise : MTLWindingClockwise;
     d->cullMode = toMetalCullMode(m_cullMode);
+    d->triangleFillMode = toMetalTriangleFillMode(m_polygonMode);
     d->depthBias = float(m_depthBias);
     d->slopeScaledDepthBias = m_slopeScaledDepthBias;
 
@@ -3902,6 +3921,7 @@ void QMetalCommandBuffer::resetPerPassCachedState()
     currentIndexOffset = 0;
     currentIndexFormat = QRhiCommandBuffer::IndexUInt16;
     currentCullMode = -1;
+    currentTriangleFillMode = -1;
     currentFrontFaceWinding = -1;
     currentDepthBiasValues = { 0.0f, 0.0f };
 

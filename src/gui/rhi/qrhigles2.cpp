@@ -454,6 +454,14 @@ QT_BEGIN_NAMESPACE
 #define GL_PATCH_VERTICES                 0x8E72
 #endif
 
+#ifndef GL_LINE
+#define GL_LINE                           0x1B01
+#endif
+
+#ifndef GL_FILL
+#define GL_FILL                           0x1B02
+#endif
+
 #ifndef GL_PATCHES
 #define GL_PATCHES                        0x000E
 #endif
@@ -661,6 +669,8 @@ bool QRhiGles2::create(QRhi::Flags flags)
         return false;
 
     f = static_cast<QOpenGLExtensions *>(ctx->extraFunctions());
+    glPolygonMode = reinterpret_cast<void(QOPENGLF_APIENTRYP)(GLenum, GLenum)>(
+            ctx->getProcAddress(QByteArrayLiteral("glPolygonMode")));
 
     const char *vendor = reinterpret_cast<const char *>(f->glGetString(GL_VENDOR));
     const char *renderer = reinterpret_cast<const char *>(f->glGetString(GL_RENDERER));
@@ -2506,6 +2516,19 @@ static inline GLenum toGlStencilOp(QRhiGraphicsPipeline::StencilOp op)
     }
 }
 
+static inline GLenum toGlPolygonMode(QRhiGraphicsPipeline::PolygonMode mode)
+{
+    switch (mode) {
+    case QRhiGraphicsPipeline::PolygonMode::Fill:
+        return GL_FILL;
+    case QRhiGraphicsPipeline::PolygonMode::Line:
+        return GL_LINE;
+    default:
+        Q_UNREACHABLE();
+        return GL_FILL;
+    }
+}
+
 static inline GLenum toGlMinFilter(QRhiSampler::Filter f, QRhiSampler::Filter m)
 {
     switch (f) {
@@ -3316,6 +3339,12 @@ void QRhiGles2::executeBindGraphicsPipeline(QGles2CommandBuffer *cbD, QGles2Grap
     if (forceUpdate || frontFace != state.frontFace) {
         state.frontFace = frontFace;
         f->glFrontFace(frontFace);
+    }
+
+    const GLenum polygonMode = toGlPolygonMode(psD->m_polygonMode);
+    if (glPolygonMode && (forceUpdate || polygonMode != state.polygonMode)) {
+        state.polygonMode = polygonMode;
+        glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
     }
 
     if (!psD->m_targetBlends.isEmpty()) {

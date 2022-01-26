@@ -3783,6 +3783,19 @@ static inline D3D11_CULL_MODE toD3DCullMode(QRhiGraphicsPipeline::CullMode c)
     }
 }
 
+static inline D3D11_FILL_MODE toD3DFillMode(QRhiGraphicsPipeline::PolygonMode mode)
+{
+    switch (mode) {
+    case QRhiGraphicsPipeline::Fill:
+        return D3D11_FILL_SOLID;
+    case QRhiGraphicsPipeline::Line:
+        return D3D11_FILL_WIREFRAME;
+    default:
+        Q_UNREACHABLE();
+        return D3D11_FILL_SOLID;
+    }
+}
+
 static inline D3D11_COMPARISON_FUNC toD3DCompareOp(QRhiGraphicsPipeline::CompareOp op)
 {
     switch (op) {
@@ -4072,7 +4085,7 @@ bool QD3D11GraphicsPipeline::create()
 
     D3D11_RASTERIZER_DESC rastDesc;
     memset(&rastDesc, 0, sizeof(rastDesc));
-    rastDesc.FillMode = D3D11_FILL_SOLID;
+    rastDesc.FillMode = toD3DFillMode(m_polygonMode);
     rastDesc.CullMode = toD3DCullMode(m_cullMode);
     rastDesc.FrontCounterClockwise = m_frontFace == CCW;
     rastDesc.DepthBias = m_depthBias;
