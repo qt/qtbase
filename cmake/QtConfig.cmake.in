@@ -134,6 +134,7 @@ endif()
 foreach(module ${@INSTALL_CMAKE_NAMESPACE@_FIND_COMPONENTS})
     if(NOT "${QT_HOST_PATH}" STREQUAL ""
        AND "${module}" MATCHES "Tools$"
+       AND NOT "${module}" MATCHES "UiTools$"
        AND NOT "${module}" MATCHES "ShaderTools$"
        AND NOT "${module}" MATCHES "^Tools$"
        AND NOT QT_NO_FIND_HOST_TOOLS_PATH_MANIPULATION)
