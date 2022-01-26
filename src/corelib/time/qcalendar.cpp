@@ -379,8 +379,9 @@ const QCalendarBackend *QCalendarRegistry::fromName(QAnyStringView name)
 {
     ensurePopulated();
 
+    const QString nameU16 = name.toString();
     QReadLocker locker(&lock);
-    return byName.value(name.toString(), nullptr);
+    return byName.value(nameU16, nullptr);
 }
 
 /*
