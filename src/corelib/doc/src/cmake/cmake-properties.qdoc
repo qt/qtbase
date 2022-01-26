@@ -45,6 +45,7 @@ target properties:
 
 \brief Overrides the Qt dependencies added to the target's deployment.
 
+\cmakepropertysince 6.0
 \preliminarycmakeproperty
 \cmakepropertyandroidonly
 
@@ -75,6 +76,7 @@ is listed before its dependencies, it will fail to load on some devices.
 
 \summary {Extra libraries to deploy with the target.}
 
+\cmakepropertysince 6.0
 \preliminarycmakeproperty
 \cmakepropertyandroidonly
 
@@ -96,6 +98,7 @@ to enable OpenSSL in your application. For more information, see
 
 \summary {Extra Qt plugins to deploy with the target.}
 
+\cmakepropertysince 6.0
 \preliminarycmakeproperty
 \cmakepropertyandroidonly
 
@@ -126,6 +129,7 @@ mangling is applied to the plugin library.
 
 \summary {Minimum Android SDK version.}
 
+\cmakepropertysince 6.1
 \preliminarycmakeproperty
 \cmakepropertyandroidonly
 
@@ -144,6 +148,7 @@ Specifies the minimum Android API level for the target.
 
 \summary {Path to a custom Android package template.}
 
+\cmakepropertysince 6.0
 \preliminarycmakeproperty
 \cmakepropertyandroidonly
 
@@ -176,6 +181,7 @@ then place this directly into the directory specified by this variable.
 
 \summary {Android target SDK version.}
 
+\cmakepropertysince 6.1
 \preliminarycmakeproperty
 \cmakepropertyandroidonly
 
@@ -194,6 +200,7 @@ Specifies the target Android API level for the target.
 
 \summary {Internal Android app version.}
 
+\cmakepropertysince 6.1
 \preliminarycmakeproperty
 \cmakepropertyandroidonly
 
@@ -215,6 +222,7 @@ For more information, see \l{Android: App Versioning}{Android App Versioning}.
 
 \summary {Human-readable Android app version.}
 
+\cmakepropertysince 6.1
 \preliminarycmakeproperty
 \cmakepropertyandroidonly
 
@@ -236,6 +244,7 @@ For more information, see \l{Android: App Versioning}{Android App Versioning}.
 
 \summary {Overrides the location of the application's qml directory.}
 
+\cmakepropertysince 6.1
 \preliminarycmakeproperty
 
 This property is currently only used when generating a deployment settings file
@@ -256,6 +265,7 @@ will be used instead.
 
 \summary {Specifies a list of directories to search for QML imports.}
 
+\cmakepropertysince 6.0
 \preliminarycmakeproperty
 
 This property is currently only used when generating a deployment settings file
@@ -277,6 +287,7 @@ For application-specific QML imports, use
 
 \summary {Specifies the location of a target's generated deployment settings file.}
 
+\cmakepropertysince 6.0
 \preliminarycmakeproperty
 \cmakepropertyandroidonly
 
@@ -296,6 +307,7 @@ and overwritten by that command.
 
 \summary {Specifies to inhibit linking against Qt's entrypoint lib.}
 
+\cmakepropertysince 6.1
 \preliminarycmakeproperty
 
 On certain platforms, Qt applications link against Qt's entrypoint lib by default.
@@ -314,6 +326,7 @@ On targets that must provide their own entry point, set the property \c qt_no_en
 
 \summary {Specifies the default Qt resource prefix.}
 
+\cmakepropertysince 6.0
 \preliminarycmakeproperty
 
 When using \l{qt6_add_resources}{qt_add_resources} without a \c PREFIX

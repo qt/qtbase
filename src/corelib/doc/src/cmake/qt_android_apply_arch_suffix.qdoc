@@ -36,6 +36,7 @@
 
 \include cmake-find-package-core.qdocinc
 
+\cmakecommandsince 6.0
 \preliminarycmakecommand
 \cmakecommandandroidonly
 
