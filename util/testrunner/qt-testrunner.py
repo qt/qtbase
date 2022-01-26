@@ -79,6 +79,7 @@ import argparse
 import subprocess
 import os
 import traceback
+import time
 import timeit
 import xml.etree.ElementTree as ET
 import logging as L
@@ -241,6 +242,10 @@ def run_test(arg_list: List[str], **kwargs):
 
     return proc
 
+def unique_filename(test_basename: str) -> str:
+    timestamp = round(time.time() * 1000)
+    return f"{test_basename}-{timestamp}.xml"
+
 # Returns tuple: (exit_code, xml_logfile)
 def run_full_test(test_basename, testargs: List[str], output_dir: str,
                   no_extra_args=False, dryrun=False,
@@ -253,7 +258,8 @@ def run_full_test(test_basename, testargs: List[str], output_dir: str,
     # Append arguments to write log to qtestlib XML file,
     # and text to stdout.
     if not no_extra_args:
-        results_files.append(os.path.join(output_dir, test_basename + ".xml"))
+        results_files.append(
+            os.path.join(output_dir, unique_filename(test_basename)))
         output_testargs.extend(["-o", results_files[0] + ",xml"])
         output_testargs.extend(["-o", "-,txt"])
 
@@ -263,7 +269,8 @@ def run_full_test(test_basename, testargs: List[str], output_dir: str,
     return (proc.returncode, results_files[0] if results_files else None)
 
 
-def rerun_failed_testcase(testargs: List[str], what_failed: WhatFailed,
+def rerun_failed_testcase(test_basename, testargs: List[str], output_dir: str,
+                          what_failed: WhatFailed,
                           max_repeats, passes_needed,
                           dryrun=False, timeout=None) -> bool:
     """Run a specific function:tag of a test, until it passes enough times, or
@@ -276,13 +283,20 @@ def rerun_failed_testcase(testargs: List[str], what_failed: WhatFailed,
     if what_failed.tag:
         failed_arg += ":" + what_failed.tag
 
+
     n_passes = 0
     for i in range(max_repeats):
+        # For the individual testcase re-runs, we log to file since Coin needs
+        # to parse it. That is the reason we use unique filename every time.
+        output_args = [
+            "-o", os.path.join(output_dir, unique_filename(test_basename)) + ",xml",
+            "-o", "-,txt"]
         L.info("Re-running testcase: %s", failed_arg)
         if i < max_repeats - 1:
-            proc = run_test(testargs + [failed_arg], timeout=timeout)
+            proc = run_test(testargs + output_args + [failed_arg],
+                            timeout=timeout)
         else:                                                   # last re-run
-            proc = run_test(testargs + VERBOSE_ARGS + [failed_arg],
+            proc = run_test(testargs + output_args + VERBOSE_ARGS + [failed_arg],
                             timeout=timeout,
                             env={**os.environ, **VERBOSE_ENV})
         if proc.returncode == 0:
@@ -356,8 +370,8 @@ def main():
 
     for what_failed in failed_functions:
         try:
-            ret = rerun_failed_testcase(args.testargs, what_failed,
-                                        args.max_repeats, args.passes_needed,
+            ret = rerun_failed_testcase(args.test_basename, args.testargs, args.log_dir,
+                                        what_failed, args.max_repeats, args.passes_needed,
                                         dryrun=args.dry_run, timeout=args.timeout)
         except Exception as e:
             L.exception("The test executable CRASHed uncontrollably!"
