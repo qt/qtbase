@@ -63,7 +63,8 @@ the \c{apk} build target, which will be created if it doesn't already exist.
 This can be disabled by setting the \c{QT_NO_GLOBAL_APK_TARGET} variable to true.
 
 \sa {qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()},
-    {qt6_finalize_target}{qt_finalize_target()}
+    {qt6_finalize_target}{qt_finalize_target()},
+    {qt6_finalize_project}{qt_finalize_project()}
 
 \section1 Example
 
