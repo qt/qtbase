@@ -85,7 +85,10 @@ for you as a convenience.
 After a target is created, further processing or \e{finalization} steps are
 commonly needed. The steps to perform depend on the platform and on various
 properties of the target. The finalization processing is implemented by the
-\l{qt6_finalize_target}{qt_finalize_target()} command.
+\l{qt6_finalize_target}{qt_finalize_target()} command. You might need to also
+call the \l{qt6_finalize_project}{qt_finalize_project()} command at the end
+of top-level CMakeLists.txt to correctly resolve the dependencies between
+project targets.
 
 Finalization can occur either as part of this call or be deferred to sometime
 after this command returns (but it should still be in the same directory scope).
@@ -102,7 +105,8 @@ not be needed unless the project has to support CMake 3.18 or earlier.
 
 \sa {qt6_finalize_target}{qt_finalize_target()},
     {qt6_set_finalizer_mode}{qt_set_finalizer_mode()},
-    {qt6_add_library}{qt_add_library()}
+    {qt6_add_library}{qt_add_library()},
+    {qt6_finalize_project}{qt_finalize_project()}
 
 \section1 Examples
 
@@ -120,4 +124,6 @@ support using CMake versions earlier than 3.19, we take over responsibility
 for finalizing the target by adding the \c{MANUAL_FINALIZATION} keyword.
 
 \snippet cmake-macros/examples.cmake qt_add_executable_deferred
+
+\include cmake-android-qt-finalize-project-warning.cmake
 */

@@ -57,3 +57,16 @@ qt_finalize_target(complexapp)
 qt_android_generate_deployment_settings(myapp)
 qt_android_add_apk_target(myapp)
 #! [qt_android_deploy_basic]
+
+#! [qt_finalize_project_manual]
+cmake_minimum_required(VERSIONS 3.16)
+
+project(MyProject LANGUAGES CXX)
+
+find_package(Qt6 REQUIRED COMPONENTS Core)
+
+qt_add_executable(MyApp main.cpp)
+add_subdirectory(mylib)
+
+qt_finalize_project()
+#! [qt_finalize_project_manual]
