@@ -54,8 +54,8 @@ call, normally in the top level \c{CMakeLists.txt} file and before any targets
 have been defined. It does the following things:
 
 \list
-\li The standard CMake variables \c{CMAKE_AUTOMOC}, \c{CMAKE_AUTOUIC} and
-    \c{CMAKE_AUTORCC} are set to true if they are not already defined.
+\li The standard CMake variables \c{CMAKE_AUTOMOC} and \c{CMAKE_AUTOUIC}
+    are set to true if they are not already defined.
     This enables all Qt-related autogen features by default for subsequently
     created targets in the current directory scope and below.
 \li CMake's \l{GNUInstallDirs} module is automatically included. This defines
