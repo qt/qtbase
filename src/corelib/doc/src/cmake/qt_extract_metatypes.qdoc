@@ -34,6 +34,7 @@
 
 \summary {Extracts metatypes from a Qt target and generates an associated metatypes.json file.}
 
+\cmakecommandsince 6.0
 \preliminarycmakecommand
 
 \section1 Synopsis
