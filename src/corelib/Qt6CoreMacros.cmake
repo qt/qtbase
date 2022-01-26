@@ -2521,7 +2521,7 @@ macro(qt6_standard_project_setup)
 
         # Turn these on by default, unless they are already set. Projects can
         # always turn off any they really don't want after we return.
-        foreach(auto_set IN ITEMS MOC UIC RCC)
+        foreach(auto_set IN ITEMS MOC UIC)
             if(NOT DEFINED CMAKE_AUTO${auto_set})
                 set(CMAKE_AUTO${auto_set} TRUE)
             endif()
