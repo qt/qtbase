@@ -250,6 +250,7 @@ For more information, see \l{Android: App Versioning}{Android App Versioning}.
 
 By setting the \c{QT_ANDROID_ABIS} property for a target, it's possible to control
 the list of ABIs that the single target packages are supposed to be built for.
+\include cmake-android-supported-abis.qdocinc
 
 \sa{cmake-variable-QT_ANDROID_ABIS}{QT_ANDROID_ABIS}, {QT_ANDROID_BUILD_ALL_ABIS}
 */
