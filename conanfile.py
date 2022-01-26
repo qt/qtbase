@@ -323,7 +323,7 @@ class QtOptionParser:
         ret: List[Optional[str]] = []
         for option_name, option_value in conan_options.items():
             if option_name == "cmake_args_qtbase" and self.is_used_option(
-                conan_options, option_value
+                conan_options, option_name
             ):
                 ret = [ret for ret in option_value.strip(r" '\"").split()]
         return ret
