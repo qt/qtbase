@@ -43,6 +43,7 @@
 
 \include cmake-deploy-var-usage.qdocinc
 
+\cmakevariablesince 6.3
 \preliminarycmakevariable
 
 \c{QT_DEPLOY_PREFIX} provides the base directory of the deployment. The other
@@ -80,6 +81,7 @@ variables.
 
 \include cmake-deploy-var-usage.qdocinc
 
+\cmakevariablesince 6.3
 \preliminarycmakevariable
 
 Projects should use \c QT_DEPLOY_BIN_DIR in their deploy scripts instead of
@@ -117,6 +119,7 @@ should not be used for that scenario.
 
 \include cmake-deploy-var-usage.qdocinc
 
+\cmakevariablesince 6.3
 \preliminarycmakevariable
 
 Projects should use \c QT_DEPLOY_LIB_DIR in their deploy scripts instead of
@@ -150,6 +153,7 @@ should not be used for that scenario.
 
 \include cmake-deploy-var-usage.qdocinc
 
+\cmakevariablesince 6.3
 \preliminarycmakevariable
 
 Projects should use \c QT_DEPLOY_PLUGINS_DIR in their deploy scripts instead of
@@ -178,6 +182,7 @@ bundle contents.
 
 \include cmake-deploy-var-usage.qdocinc
 
+\cmakevariablesince 6.3
 \preliminarycmakevariable
 
 Projects should use \c QT_DEPLOY_QML_DIR in their deploy scripts instead of

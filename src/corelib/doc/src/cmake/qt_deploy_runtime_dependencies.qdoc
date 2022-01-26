@@ -40,6 +40,7 @@ Unlike most other CMake commands provided by Qt, \c{qt_deploy_runtime_dependenci
 can only be called from a deployment script. It cannot be called directly by the
 project during the configure stage.
 
+\cmakecommandsince 6.3
 \preliminarycmakecommand
 
 \section1 Synopsis

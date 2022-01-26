@@ -34,6 +34,7 @@
 
 \summary {Customizes aspects of a target's finalization.}
 
+\cmakecommandsince 6.3
 \preliminarycmakecommand
 
 \section1 Synopsis

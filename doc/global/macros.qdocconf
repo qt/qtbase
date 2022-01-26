@@ -74,6 +74,10 @@ macro.preliminarycmakecommand  = "\\note This command is in technology preview a
 macro.preliminarycmakevariable = "\\note This variable is in technology preview and may change in future releases."
 macro.preliminarycmakeproperty = "\\note This property is in technology preview and may change in future releases."
 
+macro.cmakecommandsince = "\n\nThis command was introduced in Qt \1.\n\n"
+macro.cmakevariablesince = "\n\nThis variable was introduced in Qt \1.\n\n"
+macro.cmakepropertysince = "\n\nThis property was introduced in Qt \1.\n\n"
+
 macro.cmakecommandandroidonly  = "\\note This command should only be called if targeting the Android platform."
 macro.cmakepropertyandroidonly = "\\note This property is used only if targeting the Android platform."
 macro.cmakevariableandroidonly = "\\note This variable is used only if targeting the Android platform."

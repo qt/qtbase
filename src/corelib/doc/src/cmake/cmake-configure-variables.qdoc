@@ -55,6 +55,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 
 \summary {Android-specific architecture of the host system.}
 
+\cmakevariablesince 6.0
 \preliminarycmakevariable
 \cmakevariableandroidonly
 
@@ -74,6 +75,7 @@ part of the deployment settings for a target.
 
 \summary {Location of the Android SDK.}
 
+\cmakevariablesince 6.0
 \preliminarycmakevariable
 \cmakevariableandroidonly
 
@@ -93,6 +95,7 @@ It is written out as part of the deployment settings for a target.
 
 \summary {List of arguments to pass to Android applications.}
 
+\cmakevariablesince 6.0
 \preliminarycmakevariable
 \cmakevariableandroidonly
 
@@ -112,6 +115,7 @@ out as part of the deployment settings for a target.
 
 \summary {Enables building multi-ABI packages using the autodetected Qt for Android SDK list.}
 
+\cmakevariablesince 6.3
 \preliminarycmakevariable
 \cmakevariableandroidonly
 
@@ -144,6 +148,7 @@ The variable is set to FALSE by default.
 
 \summary {List of ABIs that the project packages are built for.}
 
+\cmakevariablesince 6.3
 \preliminarycmakevariable
 \cmakevariableandroidonly
 
@@ -169,6 +174,7 @@ QT_ANDROID_ABIS logic.
 
 \summary {Set of variables to specify the path to Qt for Android for the corresponding ABI.}
 
+\cmakevariablesince 6.3
 \preliminarycmakevariable
 \cmakevariableandroidonly
 
@@ -188,6 +194,7 @@ The list of supported ABIs can be found in the \c{QT_ANDROID_ABIS} variable docu
 
 \summary {Location of the host Qt installation when cross-compiling.}
 
+\cmakevariablesince 6.0
 \preliminarycmakevariable
 
 When cross-compiling, this must be set to the install location of Qt for the host
@@ -205,6 +212,8 @@ platform. It is used to locate tools to be run on the host (\l{moc}, \l{rcc},
 
 \summary {Disables providing a fallback team ID during target finalization on iOS.}
 
+\cmakevariablesince 6.1
+
 When finalizing an executable target on iOS,
 \l{qt6_finalize_target}{qt_finalize_target()} will populate the target's
 \c XCODE_ATTRIBUTE_DEVELOPMENT_TEAM property if it hasn't been set.
@@ -220,6 +229,8 @@ Set \c QT_NO_SET_XCODE_DEVELOPMENT_TEAM_ID to true if you want to prevent this.
 \target cmake-variable-QT_NO_SET_XCODE_BUNDLE_IDENTIFIER
 
 \summary {Disables providing a fallback app bundle ID during target finalization on iOS.}
+
+\cmakevariablesince 6.1
 
 When finalizing an executable target on iOS,
 \l{qt6_finalize_target}{qt_finalize_target()} will populate the target's
@@ -238,6 +249,7 @@ Set \c QT_NO_SET_XCODE_BUNDLE_IDENTIFIER to true if you want to prevent this.
 
 \summary {Enables verbose mode of deployment tools}
 
+\cmakevariablesince 6.3
 \preliminarycmakevariable
 
 Enables verbose mode of the \l androiddeployqt deployment tool when it is called
@@ -258,6 +270,7 @@ must be set before the first \c{find_package(Qt6)} call to have that effect.
 
 \summary {Name of the file to include for setting up deployment support.}
 
+\cmakevariablesince 6.3
 \preliminarycmakevariable
 
 This variable is set by the Core package. It is intended to be used as the first
@@ -282,6 +295,7 @@ an application, along with its runtime dependencies:
 
 \summary {Prevents subsequent calls to qt_standard_project_setup() from making any changes.}
 
+\cmakevariablesince 6.3
 \preliminarycmakevariable
 
 The \l{qt6_standard_project_setup}{qt_standard_project_setup()} command is
@@ -295,4 +309,3 @@ methods provided by CMake.
 
 \sa {qt6_standard_project_setup}{qt_standard_project_setup()}
 */
-

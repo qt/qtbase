@@ -51,6 +51,8 @@ description file.}
 
 \include cmake-find-package-dbus.qdocinc
 
+\cmakecommandsince 6.0
+
 \section1 Synopsis
 
 \badcode
@@ -117,6 +119,8 @@ description files.}
 
 \include cmake-find-package-dbus.qdocinc
 
+\cmakecommandsince 6.0
+
 \section1 Synopsis
 
 \badcode
@@ -175,6 +179,8 @@ arguments:
 
 \include cmake-find-package-dbus.qdocinc
 
+\cmakecommandsince 6.0
+
 \section1 Synopsis
 
 \badcode
@@ -211,6 +217,8 @@ arguments to the tool can be set after \c{OPTIONS}.
 \summary {Generates an adaptor class for a D-Bus interface.}
 
 \include cmake-find-package-dbus.qdocinc
+
+\cmakecommandsince 6.0
 
 \section1 Synopsis
 
