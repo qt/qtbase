@@ -123,9 +123,7 @@ int QCollator::compare(QStringView s1, QStringView s2) const
                             reinterpret_cast<const UChar *>(s2.data()), s2.size());
     }
 
-    return QString::compare_helper(s1.data(), s1.size(),
-                                   s2.data(), s2.size(),
-                                   d->caseSensitivity);
+    return QtPrivate::compareStrings(s1, s2, d->caseSensitivity);
 }
 
 QCollatorSortKey QCollator::sortKey(const QString &string) const
