@@ -1129,7 +1129,6 @@ private:
     void replace_helper(size_t *indices, qsizetype nIndices, qsizetype blen, const QChar *after, qsizetype alen);
     friend class QStringView;
     friend class QByteArray;
-    friend class QCollator;
     friend struct QAbstractConcatenable;
 
     template <typename T> static
