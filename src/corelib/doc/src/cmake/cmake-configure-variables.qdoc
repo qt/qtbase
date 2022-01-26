@@ -122,6 +122,7 @@ out as part of the deployment settings for a target.
 The option automatically detects available ABIs of Qt for Android and uses them to
 build a package. The automatic detection expects the default directory structure
 supplied by the Qt installer, with the corresponding naming of the directories.
+\include cmake-android-supported-abis.qdocinc
 The typical directory structure looks as below:
 \badcode
 /path/to/Qt/6.x.x
@@ -152,13 +153,13 @@ The variable is set to FALSE by default.
 \preliminarycmakevariable
 \cmakevariableandroidonly
 
-This variable specifies a list of ABIs to be used to build the project packages. The
-supported ABIs: \c{armeabi-v7a, arm64-v8a, x86, x86_64}. Each ABI should have the
-corresponding Qt for Android either installed or user-built. It's possible to
-specify the path to the Qt for Android ABI using the corresponding
-\c{QT_PATH_ANDROID_ABI_<ABI>} variable.
+This variable specifies a list of ABIs to be used to build the project packages.
+\include cmake-android-supported-abis.qdocinc
+Each ABI should have the corresponding Qt for Android either installed or
+user-built. It's possible to specify the path to the Qt for Android ABI using
+the corresponding \c{QT_PATH_ANDROID_ABI_<ABI>} variable.
 
-\note: \c{QT_ANDROID_BUILD_ALL_ABIS} has the higher priority and ignores the
+\note \c{QT_ANDROID_BUILD_ALL_ABIS} has the higher priority and ignores the
 QT_ANDROID_ABIS logic.
 
 \sa{QT_PATH_ANDROID_ABI_<ABI>}, {QT_ANDROID_BUILD_ALL_ABIS}
@@ -179,7 +180,7 @@ QT_ANDROID_ABIS logic.
 \cmakevariableandroidonly
 
 Each variable can be used to specify the path to Qt for Android for the corresponding ABI.
-The list of supported ABIs can be found in the \c{QT_ANDROID_ABIS} variable documentation.
+\include cmake-android-supported-abis.qdocinc
 
 \sa{cmake-variable-QT_ANDROID_ABIS}{QT_ANDROID_ABIS}
 */
