@@ -308,9 +308,11 @@ function(qt6_android_add_apk_target target)
     endif()
 
     # Make global apk and aab targets depend on the current apk target.
+    if(TARGET aab)
+        add_dependencies(aab ${target}_make_aab)
+    endif()
     if(TARGET apk)
         add_dependencies(apk ${target}_make_apk)
-        add_dependencies(aab ${target}_make_aab)
         _qt_internal_create_global_apk_all_target_if_needed()
     endif()
 
