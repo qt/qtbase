@@ -1101,7 +1101,7 @@ private:
                               Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
     static int compare_helper(const QChar *data1, qsizetype length1,
                               const char *data2, qsizetype length2,
-                              Qt::CaseSensitivity cs = Qt::CaseSensitive);
+                              Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
     static int localeAwareCompare_helper(const QChar *data1, qsizetype length1,
                                          const QChar *data2, qsizetype length2);
     static QString toLower_helper(const QString &str);
