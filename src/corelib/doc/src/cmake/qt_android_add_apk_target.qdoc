@@ -50,17 +50,20 @@ qt_android_add_apk_target(target)
 
 \section1 Description
 
-The \c{<target>_make_apk} custom target created by this command takes an Android
-deployment settings file and generates an APK by running \c{androiddeployqt}.
+The \c{<target>_make_apk} and \c{<target>_make_aab} custom targets created by
+this command take an Android deployment settings file and generate APK and
+AAB respectively by running \c{androiddeployqt}.
 The location of the settings file is taken from the \c{target}'s
 \c{QT_ANDROID_DEPLOYMENT_SETTINGS_FILE} property. This file is typically created by
 \l{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}.
-The \c{.apk} file will be generated in an \c{android-build} subdirectory below
-the CMake build directory of the \c{target}.
+The respective Android package will be generated in an \c{android-build}
+subdirectory below the CMake build directory of the \c{target}.
 
-The \c{<target>_make_apk} target will be automatically added as a dependency of
-the \c{apk} build target, which will be created if it doesn't already exist.
-This can be disabled by setting the \c{QT_NO_GLOBAL_APK_TARGET} variable to true.
+The \c{<target>_make_apk} and \c{<target>_make_aab} targets will be
+automatically added as dependencies of the \c{apk} and \c{aab} build targets
+respectively, which will be created automatically. Creating of the \c{apk} and
+\c{aab} targets can be disabled by setting the \c{QT_NO_GLOBAL_APK_TARGET} and
+\c{QT_NO_GLOBAL_AAB_TARGET} variables to \c{TRUE}.
 
 \sa {qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()},
     {qt6_finalize_target}{qt_finalize_target()}
@@ -69,7 +72,7 @@ This can be disabled by setting the \c{QT_NO_GLOBAL_APK_TARGET} variable to true
 
 \snippet cmake-macros/examples.cmake qt_android_deploy_basic
 
-The above commands define the build targets \c{myapp_make_apk} and \c{apk},
-which can be used to generate just the \c{myapp} APK or all APKs in the project
-respectively.
+The above commands define the \c{myapp_make_apk}, \c{myapp_make_aab}, \c{apk},
+and \c{aab} build targets which can be used to generate just the
+\c{myapp} packages or all APKs and AABs in the project respectively.
 */
