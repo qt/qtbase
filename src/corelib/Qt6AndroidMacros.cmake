@@ -17,6 +17,35 @@ function(_qt_internal_android_get_sdk_build_tools_revision out_var)
     set(${out_var} "${android_build_tools_latest}" PARENT_SCOPE)
 endfunction()
 
+# The function appends to the 'out_var' a 'json_property' that contains the 'tool' path. If 'tool'
+# target or its IMPORTED_LOCATION are not found the function displays warning, but is not failing
+# at the project configuring phase.
+function(_qt_internal_add_tool_to_android_deployment_settings out_var tool json_property target)
+    unset(tool_binary_path)
+    __qt_internal_get_tool_imported_location(tool_binary_path ${tool})
+    if("${tool_binary_path}" STREQUAL "")
+        # Fallback search for the tool in host bin and host libexec directories
+        find_program(tool_binary_path
+            NAMES ${tool} ${tool}.exe
+            PATHS
+                "${QT_HOST_PATH}/${QT6_HOST_INFO_BINDIR}"
+                "${QT_HOST_PATH}/${QT6_HOST_INFO_LIBEXECDIR}"
+            NO_DEFAULT_PATH
+        )
+        if(NOT tool_binary_path)
+            message(WARNING "Unable to locate ${tool}. Android package deployment of ${target}"
+            " target can be incomplete. Make sure the host Qt has ${tool} installed.")
+            return()
+        endif()
+    endif()
+
+    file(TO_CMAKE_PATH "${tool_binary_path}" tool_binary_path)
+    string(APPEND ${out_var}
+        "   \"${json_property}\" : \"${tool_binary_path}\",\n")
+
+    set(${out_var} "${${out_var}}" PARENT_SCOPE)
+endfunction()
+
 # Generate the deployment settings json file for a cmake target.
 function(qt6_android_generate_deployment_settings target)
     # Information extracted from mkspecs/features/android/android_deployment_settings.prf
@@ -241,13 +270,7 @@ function(qt6_android_generate_deployment_settings target)
         "   \"qml-importscanner-binary\" : \"${qml_importscanner_binary_path_native}\",\n")
 
     # Override rcc binary path
-    set(rcc_binary_path "${QT_HOST_PATH}/${QT6_HOST_INFO_LIBEXECDIR}/rcc")
-    if (WIN32)
-        string(APPEND rcc_binary_path ".exe")
-    endif()
-    file(TO_CMAKE_PATH "${rcc_binary_path}" rcc_binary_path_native)
-    string(APPEND file_contents
-        "   \"rcc-binary\" : \"${rcc_binary_path_native}\",\n")
+    _qt_internal_add_tool_to_android_deployment_settings(file_contents rcc "rcc-binary" "${target}")
 
     # Extra prefix paths
     foreach(prefix IN LISTS CMAKE_FIND_ROOT_PATH)
