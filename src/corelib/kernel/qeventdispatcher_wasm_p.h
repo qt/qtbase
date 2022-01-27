@@ -50,7 +50,9 @@ public:
     void interrupt() override;
     void wakeUp() override;
 
-protected:
+    static void socketSelect(int timeout, int socket, bool waitForRead, bool waitForWrite,
+                            bool *selectForRead, bool *selectForWrite, bool *socketDisconnect);
+                        protected:
     virtual void processWindowSystemEvents(QEventLoop::ProcessEventsFlags flags);
 
 private:
@@ -69,14 +71,19 @@ private:
     void updateNativeTimer();
     static void callProcessTimers(void *eventDispatcher);
 
-    void setEmscriptenSocketCallbacks();
-    void clearEmscriptenSocketCallbacks();
+    static void setEmscriptenSocketCallbacks();
+    static void clearEmscriptenSocketCallbacks();
     static void socketError(int fd, int err, const char* msg, void *context);
     static void socketOpen(int fd, void *context);
     static void socketListen(int fd, void *context);
     static void socketConnection(int fd, void *context);
     static void socketMessage(int fd, void *context);
     static void socketClose(int fd, void *context);
+
+    static void setSocketState(int socket, bool setReadyRead, bool setReadyWrite);
+    static void clearSocketState(int socket);
+    void waitForSocketState(int timeout, int socket, bool checkRead, bool checkWrite,
+                            bool *selectForRead, bool *selectForWrite, bool *socketDisconnect);
 
     static void run(std::function<void(void)> fn);
     static void runAsync(std::function<void(void)> fn);
@@ -107,6 +114,15 @@ private:
 #endif
 
     static std::multimap<int, QSocketNotifier *> g_socketNotifiers;
+
+    struct SocketReadyState {
+        QEventDispatcherWasm *waiter = nullptr;
+        bool waitForReadyRead = false;
+        bool waitForReadyWrite = false;
+        bool readyRead = false;
+        bool readyWrite = false;
+    };
+    static std::map<int, SocketReadyState> g_socketState;
 };
 
 #endif // QEVENTDISPATCHER_WASM_P_H

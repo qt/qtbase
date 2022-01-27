@@ -11,6 +11,9 @@
 #include "qvarlengtharray.h"
 #include "qnetworkinterface.h"
 #include "qendian.h"
+#ifdef Q_OS_WASM
+#include <private/qeventdispatcher_wasm_p.h>
+#endif
 #include <time.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -1353,6 +1356,8 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) co
     return nativeSelect(timeout, selectForRead, !selectForRead, &dummy, &dummy);
 }
 
+#ifndef Q_OS_WASM
+
 int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool checkWrite,
                        bool *selectForRead, bool *selectForWrite) const
 {
@@ -1382,5 +1387,25 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool c
 
     return ret;
 }
+
+#else
+
+int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool checkWrite,
+                        bool *selectForRead, bool *selectForWrite) const
+{
+    *selectForRead = checkRead;
+    *selectForWrite = checkWrite;
+    bool socketDisconnect = false;
+    QEventDispatcherWasm::socketSelect(timeout, socketDescriptor, checkRead, checkWrite,selectForRead, selectForWrite, &socketDisconnect);
+
+    // The disconnect/close handling code in QAbstractsScket::canReadNotification()
+    // does not detect remote disconnect properly; do that here as a workardound.
+    if (socketDisconnect)
+        receiver->closeNotification();
+
+    return 1;
+}
+
+#endif // Q_OS_WASM
 
 QT_END_NAMESPACE
