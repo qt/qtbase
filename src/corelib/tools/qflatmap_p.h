@@ -651,22 +651,12 @@ public:
 
     T &operator[](const Key &key)
     {
-        auto it = lower_bound(key);
-        if (it == end() || key_compare::operator()(key, it.key())) {
-            c.keys.insert(toKeysIterator(it), key);
-            return *c.values.insert(toValuesIterator(it), T());
-        }
-        return it.value();
+        return try_emplace(key).first.value();
     }
 
     T &operator[](Key &&key)
     {
-        auto it = lower_bound(key);
-        if (it == end() || key_compare::operator()(key, it.key())) {
-            c.keys.insert(toKeysIterator(it), key);
-            return *c.values.insert(toValuesIterator(it), T());
-        }
-        return it.value();
+        return try_emplace(std::move(key)).first.value();
     }
 
     T operator[](const Key &key) const
