@@ -4622,6 +4622,8 @@ void QAbstractItemViewPrivate::selectAll(QItemSelectionModel::SelectionFlags com
 {
     if (!selectionModel)
         return;
+    if (!model->hasChildren(root))
+        return;
 
     QItemSelection selection;
     QModelIndex tl = model->index(0, 0, root);
