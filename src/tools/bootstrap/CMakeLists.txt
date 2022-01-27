@@ -94,7 +94,6 @@ qt_internal_extend_target(Bootstrap
         ../../corelib/tools/qringbuffer.cpp
         ../../corelib/tools/qsize.cpp
         ../../corelib/tools/qversionnumber.cpp
-        ../../xml/dom/qdom.cpp
     DEFINES
         HAVE_CONFIG_H
         QT_TYPESAFE_FLAGS
@@ -113,7 +112,6 @@ qt_internal_extend_target(Bootstrap
         ../../3rdparty/tinycbor/src
     PUBLIC_INCLUDE_DIRECTORIES  # special case
         $<TARGET_PROPERTY:Core,INCLUDE_DIRECTORIES> # special case
-        $<TARGET_PROPERTY:Xml,INCLUDE_DIRECTORIES> # special case
     PUBLIC_LIBRARIES  # special case
         Qt::Platform # special case
 )
