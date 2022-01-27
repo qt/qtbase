@@ -273,10 +273,10 @@ public:
 
     Q_REQUIRED_RESULT Q_CORE_EXPORT QString toString() const;
 #if QT_STRINGVIEW_LEVEL < 2
-    Q_REQUIRED_RESULT Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(const QString &string, int *suffixIndex = nullptr);
+    Q_REQUIRED_RESULT Q_CORE_EXPORT static QVersionNumber fromString(const QString &string, int *suffixIndex = nullptr);
 #endif
-    Q_REQUIRED_RESULT Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(QLatin1String string, int *suffixIndex = nullptr);
-    Q_REQUIRED_RESULT Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(QStringView string, int *suffixIndex = nullptr);
+    Q_REQUIRED_RESULT Q_CORE_EXPORT static QVersionNumber fromString(QLatin1String string, int *suffixIndex = nullptr);
+    Q_REQUIRED_RESULT Q_CORE_EXPORT static QVersionNumber fromString(QStringView string, int *suffixIndex = nullptr);
 
 private:
 #ifndef QT_NO_DATASTREAM
