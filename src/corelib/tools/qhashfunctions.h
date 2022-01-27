@@ -76,7 +76,7 @@ struct QHashSeed
     constexpr QHashSeed(size_t d = 0) : data(d) {}
     constexpr operator size_t() const noexcept { return data; }
 
-    static Q_CORE_EXPORT QHashSeed globalSeed() noexcept Q_DECL_PURE_FUNCTION;
+    static Q_CORE_EXPORT QHashSeed globalSeed() noexcept;
     static Q_CORE_EXPORT void setDeterministicGlobalSeed();
     static Q_CORE_EXPORT void resetRandomGlobalSeed();
 private:
