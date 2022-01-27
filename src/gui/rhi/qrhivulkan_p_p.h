@@ -891,6 +891,7 @@ public:
         bool texture3DSliceAs2D = false;
         bool tessellation = false;
         bool vulkan11OrHigher = false;
+        bool geometryShader = false;
     } caps;
 
     VkPipelineCache pipelineCache = VK_NULL_HANDLE;

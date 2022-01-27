@@ -466,6 +466,10 @@ QT_BEGIN_NAMESPACE
 #define GL_PATCHES                        0x000E
 #endif
 
+#ifndef GL_GEOMETRY_SHADER
+#define GL_GEOMETRY_SHADER                0x8DD9
+#endif
+
 /*!
     Constructs a new QRhiGles2InitParams.
 
@@ -867,6 +871,11 @@ bool QRhiGles2::create(QRhi::Flags flags)
     else
         caps.tessellation = caps.ctxMajor >= 4; // 4.0
 
+    if (caps.gles)
+        caps.geometryShader = caps.ctxMajor > 3 || (caps.ctxMajor == 3 && caps.ctxMinor >= 2); // ES 3.2
+    else
+        caps.geometryShader = caps.ctxMajor > 3 || (caps.ctxMajor == 3 && caps.ctxMinor >= 2); // 3.2
+
     if (caps.ctxMajor >= 3) { // 3.0 or ES 3.0
         GLint maxArraySize = 0;
         f->glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &maxArraySize);
@@ -1266,6 +1275,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return caps.maxTextureArraySize > 0;
     case QRhi::Tessellation:
         return caps.tessellation;
+    case QRhi::GeometryShader:
+        return caps.geometryShader;
     default:
         Q_UNREACHABLE();
         return false;
@@ -4238,6 +4249,8 @@ static inline GLenum toGlShaderType(QRhiShaderStage::Type type)
         return GL_TESS_CONTROL_SHADER;
     case QRhiShaderStage::TessellationEvaluation:
         return GL_TESS_EVALUATION_SHADER;
+    case QRhiShaderStage::Geometry:
+        return GL_GEOMETRY_SHADER;
     case QRhiShaderStage::Fragment:
         return GL_FRAGMENT_SHADER;
     case QRhiShaderStage::Compute:
@@ -4519,6 +4532,8 @@ static inline QShader::Stage toShaderStage(QRhiShaderStage::Type type)
         return QShader::TessellationControlStage;
     case QRhiShaderStage::TessellationEvaluation:
         return QShader::TessellationEvaluationStage;
+    case QRhiShaderStage::Geometry:
+        return QShader::GeometryStage;
     case QRhiShaderStage::Fragment:
         return QShader::FragmentStage;
     case QRhiShaderStage::Compute:
@@ -5447,6 +5462,7 @@ static inline bool isGraphicsStage(const QRhiShaderStage &shaderStage)
     return t == QRhiShaderStage::Vertex
             || t == QRhiShaderStage::TessellationControl
             || t == QRhiShaderStage::TessellationEvaluation
+            || t == QRhiShaderStage::Geometry
             || t == QRhiShaderStage::Fragment;
 }
 
@@ -5469,8 +5485,9 @@ bool QGles2GraphicsPipeline::create()
 
     enum {
         VtxIdx = 0,
-        TEIdx,
         TCIdx,
+        TEIdx,
+        GeomIdx,
         FragIdx,
         LastIdx
     };
@@ -5482,6 +5499,8 @@ bool QGles2GraphicsPipeline::create()
             return TCIdx;
         case QRhiShaderStage::TessellationEvaluation:
             return TEIdx;
+        case QRhiShaderStage::Geometry:
+            return GeomIdx;
         case QRhiShaderStage::Fragment:
             return FragIdx;
         default:

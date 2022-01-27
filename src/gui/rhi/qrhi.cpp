@@ -711,6 +711,15 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     the way hull shaders are structured, whereas Metal uses a somewhat
     different tessellation pipeline than others), and therefore no guarantees
     can be given for a universal solution for now.
+
+    \value GeometryShader Indicates that the geometry shader stage is
+    supported. When supported, a geometry shader can be specified in the
+    QRhiShaderStage list. \b{Geometry Shaders are considered an experimental
+    feature in QRhi and can only be expected to be supported with Vulkan,
+    OpenGL (3.2+) and OpenGL ES (3.2+) for the time being}, assuming the
+    implementation reports it as supported at run time. Geometry shaders have
+    portability issues between APIs, and therefore no guarantees can be given
+    for a universal solution for now.
  */
 
 /*!
@@ -1470,6 +1479,9 @@ QDebug operator<<(QDebug dbg, const QRhiVertexInputLayout &v)
 
     \value Compute Compute stage. Must be used only when the QRhi::Compute
     feature is supported.
+
+    \value Geometry Geometry stage. Must be used only when the
+    QRhi::GeometryShader feature is supported.
  */
 
 /*!
@@ -3269,6 +3281,7 @@ void QRhiImplementation::updateLayoutDesc(QRhiShaderResourceBindings *srb)
     \value TessellationEvaluationStage Tessellation evaluation (domain shader) stage
     \value FragmentStage Fragment (pixel shader) stage
     \value ComputeStage Compute stage
+    \value GeometryStage Geometry stage
  */
 
 /*!
@@ -7454,6 +7467,8 @@ QRhiPassResourceTracker::BufferStage QRhiPassResourceTracker::toPassTrackerBuffe
         return QRhiPassResourceTracker::BufFragmentStage;
     if (stages.testFlag(QRhiShaderResourceBinding::ComputeStage))
         return QRhiPassResourceTracker::BufComputeStage;
+    if (stages.testFlag(QRhiShaderResourceBinding::GeometryStage))
+        return QRhiPassResourceTracker::BufGeometryStage;
 
     Q_UNREACHABLE();
     return QRhiPassResourceTracker::BufVertexStage;
@@ -7472,6 +7487,8 @@ QRhiPassResourceTracker::TextureStage QRhiPassResourceTracker::toPassTrackerText
         return QRhiPassResourceTracker::TexFragmentStage;
     if (stages.testFlag(QRhiShaderResourceBinding::ComputeStage))
         return QRhiPassResourceTracker::TexComputeStage;
+    if (stages.testFlag(QRhiShaderResourceBinding::GeometryStage))
+        return QRhiPassResourceTracker::TexGeometryStage;
 
     Q_UNREACHABLE();
     return QRhiPassResourceTracker::TexVertexStage;

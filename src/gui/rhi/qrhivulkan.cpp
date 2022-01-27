@@ -633,6 +633,8 @@ bool QRhiVulkan::create(QRhi::Flags flags)
             features.textureCompressionASTC_LDR = VK_TRUE;
         if (physDevFeatures.textureCompressionBC)
             features.textureCompressionBC = VK_TRUE;
+        if (physDevFeatures.geometryShader)
+            features.geometryShader = VK_TRUE;
         devInfo.pEnabledFeatures = &features;
 
         VkResult err = f->vkCreateDevice(physDev, &devInfo, nullptr, &dev);
@@ -696,6 +698,7 @@ bool QRhiVulkan::create(QRhi::Flags flags)
     caps.texture3DSliceAs2D = caps.vulkan11OrHigher;
 
     caps.tessellation = physDevFeatures.tessellationShader;
+    caps.geometryShader = physDevFeatures.geometryShader;
 
     if (!importedAllocator) {
         VmaVulkanFunctions afuncs;
@@ -3987,6 +3990,8 @@ static inline VkPipelineStageFlags toVkPipelineStage(QRhiPassResourceTracker::Bu
         return VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     case QRhiPassResourceTracker::BufComputeStage:
         return VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+    case QRhiPassResourceTracker::BufGeometryStage:
+        return VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT;
     default:
         Q_UNREACHABLE();
         break;
@@ -4061,6 +4066,8 @@ static inline VkPipelineStageFlags toVkPipelineStage(QRhiPassResourceTracker::Te
         return VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
     case QRhiPassResourceTracker::TexComputeStage:
         return VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+    case QRhiPassResourceTracker::TexGeometryStage:
+        return VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT;
     default:
         Q_UNREACHABLE();
         break;
@@ -4317,6 +4324,8 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::Tessellation:
         return caps.tessellation;
+    case QRhi::GeometryShader:
+        return caps.geometryShader;
     default:
         Q_UNREACHABLE();
         return false;
@@ -5267,6 +5276,8 @@ static inline VkShaderStageFlagBits toVkShaderStage(QRhiShaderStage::Type type)
         return VK_SHADER_STAGE_FRAGMENT_BIT;
     case QRhiShaderStage::Compute:
         return VK_SHADER_STAGE_COMPUTE_BIT;
+    case QRhiShaderStage::Geometry:
+        return VK_SHADER_STAGE_GEOMETRY_BIT;
     default:
         Q_UNREACHABLE();
         return VK_SHADER_STAGE_VERTEX_BIT;
@@ -5559,6 +5570,8 @@ static inline VkShaderStageFlags toVkShaderStageFlags(QRhiShaderResourceBinding:
         s |= VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
     if (stage.testFlag(QRhiShaderResourceBinding::TessellationEvaluationStage))
         s |= VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+    if (stage.testFlag(QRhiShaderResourceBinding::GeometryStage))
+        s |= VK_SHADER_STAGE_GEOMETRY_BIT;
     return VkShaderStageFlags(s);
 }
 

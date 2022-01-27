@@ -968,7 +968,8 @@ public:
               screenSpaceDerivatives(false),
               programBinary(false),
               texture3D(false),
-              tessellation(false)
+              tessellation(false),
+              geometryShader(false)
         { }
         int ctxMajor;
         int ctxMinor;
@@ -1018,6 +1019,7 @@ public:
         uint programBinary : 1;
         uint texture3D : 1;
         uint tessellation : 1;
+        uint geometryShader : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QSet<GLint> supportedCompressedFormats;

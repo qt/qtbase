@@ -297,6 +297,7 @@ public:
         Vertex,
         TessellationControl,
         TessellationEvaluation,
+        Geometry,
         Fragment,
         Compute
     };
@@ -351,8 +352,9 @@ public:
         VertexStage = 1 << 0,
         TessellationControlStage = 1 << 1,
         TessellationEvaluationStage = 1 << 2,
-        FragmentStage = 1 << 3,
-        ComputeStage = 1 << 4
+        GeometryStage = 1 << 3,
+        FragmentStage = 1 << 4,
+        ComputeStage = 1 << 5
     };
     Q_DECLARE_FLAGS(StageFlags, StageFlag)
 
@@ -1673,7 +1675,8 @@ public:
         ThreeDimensionalTextures,
         RenderTo3DTextureSlice,
         TextureArrays,
-        Tessellation
+        Tessellation,
+        GeometryShader
     };
 
     enum BeginFrameFlag {

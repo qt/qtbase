@@ -613,7 +613,8 @@ public:
         BufTCStage,
         BufTEStage,
         BufFragmentStage,
-        BufComputeStage
+        BufComputeStage,
+        BufGeometryStage
     };
 
     enum BufferAccess {
@@ -635,7 +636,8 @@ public:
         TexFragmentStage,
         TexColorOutputStage,
         TexDepthOutputStage,
-        TexComputeStage
+        TexComputeStage,
+        TexGeometryStage
     };
 
     enum TextureAccess {

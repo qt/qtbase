@@ -565,6 +565,8 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::Tessellation:
         return false;
+    case QRhi::GeometryShader:
+        return false;
     default:
         Q_UNREACHABLE();
         return false;
