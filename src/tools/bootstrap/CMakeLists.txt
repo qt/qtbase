@@ -88,11 +88,7 @@ qt_internal_extend_target(Bootstrap
         ../../corelib/tools/qcommandlineparser.cpp
         ../../corelib/tools/qcryptographichash.cpp
         ../../corelib/tools/qhash.cpp
-        ../../corelib/tools/qline.cpp
-        ../../corelib/tools/qpoint.cpp
-        ../../corelib/tools/qrect.cpp
         ../../corelib/tools/qringbuffer.cpp
-        ../../corelib/tools/qsize.cpp
         ../../corelib/tools/qversionnumber.cpp
     DEFINES
         HAVE_CONFIG_H
