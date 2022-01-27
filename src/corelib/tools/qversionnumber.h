@@ -283,7 +283,7 @@ public:
     [[nodiscard]] Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber commonPrefix(const QVersionNumber &v1, const QVersionNumber &v2);
 
     [[nodiscard]] Q_CORE_EXPORT QString toString() const;
-    [[nodiscard]] Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(QAnyStringView string, qsizetype *suffixIndex = nullptr);
+    [[nodiscard]] Q_CORE_EXPORT static QVersionNumber fromString(QAnyStringView string, qsizetype *suffixIndex = nullptr);
 
 #if QT_DEPRECATED_SINCE(6, 4) && QT_POINTER_SIZE != 4
     Q_WEAK_OVERLOAD
@@ -305,9 +305,9 @@ public:
 #endif
 
 #if QT_REMOVED_SINCE(6, 4)
-    [[nodiscard]] Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(const QString &string, int *suffixIndex);
-    [[nodiscard]] Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(QLatin1String string, int *suffixIndex);
-    [[nodiscard]] Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(QStringView string, int *suffixIndex);
+    [[nodiscard]] Q_CORE_EXPORT static QVersionNumber fromString(const QString &string, int *suffixIndex);
+    [[nodiscard]] Q_CORE_EXPORT static QVersionNumber fromString(QLatin1String string, int *suffixIndex);
+    [[nodiscard]] Q_CORE_EXPORT static QVersionNumber fromString(QStringView string, int *suffixIndex);
 #endif
 
     [[nodiscard]] friend bool operator> (const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
