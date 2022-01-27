@@ -196,6 +196,10 @@ class Test_testrunner(unittest.TestCase):
         proc = self.run2()
         # TODO verify that one func was re-run and passed but the other failed.
         self.assertEqual(proc.returncode, 2)
+    def test_initTestCase_fail_crash(self):
+        self.prepare_env(run_list=["initTestCase,always_pass"])
+        proc = self.run2()
+        self.assertEqual(proc.returncode, 3)
 
     # If no XML file is found by qt-testrunner, it is usually considered a
     # CRASH and the whole test is re-run. But when the return code is zero, it
@@ -231,6 +235,8 @@ class Test_testrunner(unittest.TestCase):
 #   + The "always_crash" test has failed. qt-testrunner should exit(2).
 #   + The "fail_then_pass:2" test failed. qt-testrunner should exit(0).
 #   + The "fail_then_pass:5" test failed. qt-testrunner should exit(2).
+#   + The "initTestCase" failed which is listed as NO_RERUN thus
+#                                         qt-testrunner should exit(3).
 class Test_testrunner_with_xml_logfile(unittest.TestCase):
     # Runs before every single test function, creating a unique temp file.
     def setUp(self):
@@ -287,6 +293,10 @@ class Test_testrunner_with_xml_logfile(unittest.TestCase):
         matches = re.findall(r"(PASS|FAIL!).*\n.*Test process exited with code",
                              proc.stdout.decode())
         self.assertEqual(len(matches), 4)
+    def test_initTestCase_fail_crash(self):
+        write_xml_log(self.xml_file, failure="initTestCase")
+        proc = run_testrunner(self.xml_file)
+        self.assertEqual(proc.returncode, 3)
 
 
 if __name__ == "__main__":

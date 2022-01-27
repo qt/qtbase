@@ -64,9 +64,9 @@
 #   0: PASS. Either no test failed, or failed initially but passed
 #      in the re-runs (FLAKY PASS).
 #   1: Some unexpected error of this script.
-#   2: FAIL! for at least one test, even after the re-runs.
+#   2: FAIL! for at least one test, even after the individual re-runs.
 #   3: CRASH! for the test executable even after re-running it once.
-
+#        Or when we can't re-run individual functions for any reason.
 
 
 import sys
@@ -98,6 +98,10 @@ VERBOSE_ARGS = ["-v2", "-maxwarnings", "0"]
 VERBOSE_ENV = {
     "QT_LOGGING_RULES": "*=true",
     "QT_MESSAGE_PATTERN": "[%{time process} %{if-debug}D%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] %{category} %{file}:%{line} %{function}()  -  %{message}",
+}
+# The following special function names can not re-run individually.
+NO_RERUN_FUNCTIONS = {
+    "initTestCase", "init", "cleanup", "cleanupTestCase"
 }
 
 
@@ -300,39 +304,49 @@ def main():
     args = parse_args()
     n_full_runs = 1 if args.parse_xml_testlog else 2
 
-    for i in range(n_full_runs):
+    for i in range(n_full_runs + 1):
+
+        if 0 < i < n_full_runs:
+            L.info("Will re-run the full test executable")
+        elif i == n_full_runs:    # Failed on the final run
+            L.error("Full test run failed repeatedly, aborting!")
+            sys.exit(3)
+
         try:
-            if i != 0:
-                L.info("Re-running the full test!")
-            if args.parse_xml_testlog:
-                retcode = 1    # pretend the test returned error
-                results_file = args.parse_xml_testlog
-            else:
+            failed_functions = []
+            if args.parse_xml_testlog:      # do not run test, just parse file
+                failed_functions = parse_log(args.parse_xml_testlog)
+                # Pretend the test returned correct exit code
+                retcode = len(failed_functions)
+            else:                                # normal invocation, run test
                 (retcode, results_file) = \
                     run_full_test(args.test_basename, args.testargs, args.log_dir,
                                   args.no_extra_args, args.dry_run, args.timeout,
                                   args.specific_extra_args)
-                if retcode == 0:
-                    sys.exit(0)    # PASS
+                if retcode != 0 and results_file:
+                    failed_functions = parse_log(results_file)
 
-            failed_functions = parse_log(results_file)
+            if retcode == 0:
+                sys.exit(0)    # PASS
 
-            if not args.parse_xml_testlog:
-                assert len(failed_functions) > 0, \
-                    "The XML test log should contain at least one failure!" \
-                    " Did the test CRASH right after all its testcases PASSed?"
+            if len(failed_functions) == 0:
+                L.info("No failures listed in the XML test log!"
+                       " Did the test CRASH right after all its testcases PASSed?")
+                continue
 
-            break    # go to re-running individual failed testcases
+            cant_rerun = [ f.func for f in failed_functions if f.func in NO_RERUN_FUNCTIONS ]
+            if cant_rerun:
+                L.info(f"Failure detected in the special test function '{cant_rerun[0]}'"
+                       " which can not be re-run individually")
+                continue
+
+            assert len(failed_functions) > 0  and  retcode != 0
+            break    # all is fine, goto re-running individual failed testcases
 
         except Exception as e:
             L.exception("The test executable CRASHed uncontrollably!"
                         " Details about where we caught the problem:",
                         exc_info=e)
-            if i < n_full_runs - 1:
-                L.info("Will re-run the full test executable")
-            else:    # Failed on the final run
-                L.error("Full test run failed repeatedly, aborting!")
-                sys.exit(3)
 
     if args.max_repeats == 0:
         sys.exit(2)          # Some tests failed but no re-runs were asked

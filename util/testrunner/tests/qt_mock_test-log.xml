@@ -5,6 +5,10 @@
     <QtBuild>MOCK</QtBuild>
     <QTestVersion>6.3.0</QTestVersion>
   </Environment>
+  <TestFunction name="initTestCase">
+    <Incident type="{{initTestCase_result}}" file="" line="0" />
+    <Duration msecs="0.00004"/>
+  </TestFunction>
   <TestFunction name="always_pass">
     <Incident type="{{always_pass_result}}" file="" line="0" />
     <Duration msecs="0.71704"/>

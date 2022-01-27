@@ -127,7 +127,9 @@ def log_test(testcase, result,
 
 # Return the exit code
 def run_test(testname):
-    if   testname == "always_pass":
+    if   testname == "initTestCase":
+        exit_code = 1              # specifically test that initTestCase fails
+    elif testname == "always_pass":
         exit_code = 0
     elif testname == "always_fail":
         exit_code = 1
