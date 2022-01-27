@@ -50,7 +50,6 @@ qt_internal_extend_target(Bootstrap
         ../../corelib/kernel/qmetacontainer.cpp
         ../../corelib/kernel/qmetatype.cpp
         ../../corelib/kernel/qsystemerror.cpp
-        ../../corelib/kernel/qsystemsemaphore.cpp
         ../../corelib/kernel/qvariant.cpp
         ../../corelib/plugin/quuid.cpp
         ../../corelib/serialization/qcborcommon.cpp
@@ -135,9 +134,6 @@ qt_internal_extend_target(Bootstrap CONDITION UNIX
         ../../corelib/io/qfilesystemiterator_unix.cpp
         ../../corelib/io/qfsfileengine_unix.cpp
         ../../corelib/kernel/qcore_unix.cpp
-        ../../corelib/kernel/qsystemsemaphore_posix.cpp
-        ../../corelib/kernel/qsystemsemaphore_systemv.cpp
-        ../../corelib/kernel/qsystemsemaphore_unix.cpp
 )
 
 qt_internal_extend_target(Bootstrap CONDITION WIN32
@@ -148,7 +144,6 @@ qt_internal_extend_target(Bootstrap CONDITION WIN32
         ../../corelib/io/qfsfileengine_win.cpp
         ../../corelib/io/qstandardpaths_win.cpp
         ../../corelib/kernel/qcoreapplication_win.cpp
-        ../../corelib/kernel/qsystemsemaphore_win.cpp
         ../../corelib/kernel/qwinregistry.cpp
         ../../corelib/plugin/qsystemlibrary.cpp
     PUBLIC_LIBRARIES
