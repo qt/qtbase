@@ -109,12 +109,15 @@ static Option::QMAKE_MODE default_mode(QString progname)
     return Option::QMAKE_GENERATE_MAKEFILE;
 }
 
-static QString detectProjectFile(const QString &path)
+static QString detectProjectFile(const QString &path, QString *singleProFileCandidate = nullptr)
 {
     QString ret;
     QDir dir(path);
-    if(dir.exists(dir.dirName() + Option::pro_ext)) {
-        ret = dir.filePath(dir.dirName()) + Option::pro_ext;
+    const QString candidate = dir.filePath(dir.dirName() + Option::pro_ext);
+    if (singleProFileCandidate)
+        *singleProFileCandidate = candidate;
+    if (QFile::exists(candidate)) {
+        ret = candidate;
     } else { //last try..
         QStringList profiles = dir.entryList(QStringList("*" + Option::pro_ext));
         if(profiles.count() == 1)
@@ -287,11 +290,20 @@ Option::parseCommandLine(QStringList &args, QMakeCmdLineParserState &state)
                     if(Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE ||
                        Option::qmake_mode == Option::QMAKE_GENERATE_PRL) {
                         if(fi.isDir()) {
-                            QString proj = detectProjectFile(arg);
-                            if (!proj.isNull())
-                                arg = proj;
+                            QString singleProFileCandidate;
+                            QString proj = detectProjectFile(arg, &singleProFileCandidate);
+                            if (proj.isNull()) {
+                                fprintf(stderr, "***Cannot detect .pro file in directory '%s'.\n\n"
+                                        "QMake expects the file '%s' "
+                                        "or exactly one .pro file in the given directory.\n",
+                                        qUtf8Printable(arg),
+                                        qUtf8Printable(singleProFileCandidate));
+                                return Option::QMAKE_CMDLINE_ERROR;
+                            }
+                            Option::mkfile::project_files.append(proj);
+                        } else {
+                            Option::mkfile::project_files.append(arg);
                         }
-                        Option::mkfile::project_files.append(arg);
                     } else if(Option::qmake_mode == Option::QMAKE_GENERATE_PROJECT) {
                         Option::projfile::project_dirs.append(arg);
                     } else {
