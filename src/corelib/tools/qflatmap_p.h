@@ -607,13 +607,19 @@ public:
 
     bool remove(const Key &key)
     {
-        auto it = binary_find(key);
+        return do_remove(binary_find(key));
+    }
+
+private:
+    bool do_remove(iterator it)
+    {
         if (it != end()) {
             erase(it);
             return true;
         }
         return false;
     }
+public:
 
     iterator erase(iterator it)
     {
@@ -623,7 +629,12 @@ public:
 
     T take(const Key &key)
     {
-        auto it = binary_find(key);
+        return do_take(binary_find(key));
+    }
+
+private:
+    T do_take(iterator it)
+    {
         if (it != end()) {
             T result = std::move(it.value());
             erase(it);
@@ -631,6 +642,7 @@ public:
         }
         return {};
     }
+public:
 
     bool contains(const Key &key) const
     {
