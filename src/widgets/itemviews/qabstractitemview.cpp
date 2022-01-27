@@ -1169,12 +1169,20 @@ QModelIndex QAbstractItemView::rootIndex() const
 void QAbstractItemView::selectAll()
 {
     Q_D(QAbstractItemView);
-    SelectionMode mode = d->selectionMode;
-    if (mode == MultiSelection || mode == ExtendedSelection)
+    const SelectionMode mode = d->selectionMode;
+    switch (mode) {
+    case MultiSelection:
+    case ExtendedSelection:
         d->selectAll(QItemSelectionModel::ClearAndSelect
-                     |d->selectionBehaviorFlags());
-    else if (mode != SingleSelection)
+                     | d->selectionBehaviorFlags());
+        break;
+    case NoSelection:
+    case ContiguousSelection:
         d->selectAll(selectionCommand(d->model->index(0, 0, d->root)));
+        break;
+    case SingleSelection:
+        break;
+    }
 }
 
 /*!
