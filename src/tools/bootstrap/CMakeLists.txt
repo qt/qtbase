@@ -49,7 +49,6 @@ qt_internal_extend_target(Bootstrap
         ../../corelib/kernel/qiterable.cpp
         ../../corelib/kernel/qmetacontainer.cpp
         ../../corelib/kernel/qmetatype.cpp
-        ../../corelib/kernel/qsharedmemory.cpp
         ../../corelib/kernel/qsystemerror.cpp
         ../../corelib/kernel/qsystemsemaphore.cpp
         ../../corelib/kernel/qvariant.cpp
@@ -136,9 +135,6 @@ qt_internal_extend_target(Bootstrap CONDITION UNIX
         ../../corelib/io/qfilesystemiterator_unix.cpp
         ../../corelib/io/qfsfileengine_unix.cpp
         ../../corelib/kernel/qcore_unix.cpp
-        ../../corelib/kernel/qsharedmemory_posix.cpp
-        ../../corelib/kernel/qsharedmemory_systemv.cpp
-        ../../corelib/kernel/qsharedmemory_unix.cpp
         ../../corelib/kernel/qsystemsemaphore_posix.cpp
         ../../corelib/kernel/qsystemsemaphore_systemv.cpp
         ../../corelib/kernel/qsystemsemaphore_unix.cpp
@@ -152,7 +148,6 @@ qt_internal_extend_target(Bootstrap CONDITION WIN32
         ../../corelib/io/qfsfileengine_win.cpp
         ../../corelib/io/qstandardpaths_win.cpp
         ../../corelib/kernel/qcoreapplication_win.cpp
-        ../../corelib/kernel/qsharedmemory_win.cpp
         ../../corelib/kernel/qsystemsemaphore_win.cpp
         ../../corelib/kernel/qwinregistry.cpp
         ../../corelib/plugin/qsystemlibrary.cpp
