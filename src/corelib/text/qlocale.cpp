@@ -65,6 +65,7 @@ QT_WARNING_DISABLE_GCC("-Wfree-nonheap-object") // false positive tracking
 #include "qdatetime.h"
 #include "qstringlist.h"
 #include "qvariant.h"
+#include "qvarlengtharray.h"
 #include "qstringbuilder.h"
 #include "private/qnumeric_p.h"
 #include <cmath>
@@ -502,7 +503,7 @@ int QLocaleData::findLocaleIndex(QLocaleId lid)
     int index = findLocaleIndexById(likelyId);
     if (index >= 0)
         return index;
-    QList<QLocaleId> tried;
+    QVarLengthArray<QLocaleId, 6> tried;
     tried.push_back(likelyId);
 
 #define CheckCandidate(id) do { \
