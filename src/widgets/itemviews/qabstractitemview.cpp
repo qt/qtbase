@@ -1178,7 +1178,8 @@ void QAbstractItemView::selectAll()
         break;
     case NoSelection:
     case ContiguousSelection:
-        d->selectAll(selectionCommand(d->model->index(0, 0, d->root)));
+        if (d->model->hasChildren(d->root))
+            d->selectAll(selectionCommand(d->model->index(0, 0, d->root)));
         break;
     case SingleSelection:
         break;
