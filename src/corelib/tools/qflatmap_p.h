@@ -111,8 +111,6 @@ class QFlatMap : private QFlatMapValueCompare<Key, T, Compare>
 {
     static_assert(std::is_nothrow_destructible_v<T>, "Types with throwing destructors are not supported in Qt containers.");
 
-    using full_map_t = QFlatMap<Key, T, Compare, KeyContainer, MappedContainer>;
-
     template <class U>
     class mock_pointer
     {
@@ -274,7 +272,7 @@ public:
     private:
         containers *c = nullptr;
         size_type i = 0;
-        friend full_map_t;
+        friend QFlatMap;
     };
 
     class const_iterator
@@ -411,7 +409,7 @@ public:
     private:
         const containers *c = nullptr;
         size_type i = 0;
-        friend full_map_t;
+        friend QFlatMap;
     };
 
 private:
@@ -819,14 +817,14 @@ public:
 
     iterator lower_bound(const Key &key)
     {
-        auto cit = const_cast<const full_map_t *>(this)->lower_bound(key);
+        auto cit = std::as_const(*this).lower_bound(key);
         return { &c, cit.i };
     }
 
     template <class X, class Y = Compare, is_marked_transparent<Y> = nullptr>
     iterator lower_bound(const X &key)
     {
-        auto cit = const_cast<const full_map_t *>(this)->lower_bound(key);
+        auto cit = std::as_const(*this).lower_bound(key);
         return { &c, cit.i };
     }
 
@@ -909,7 +907,7 @@ private:
     class IndexedKeyComparator
     {
     public:
-        IndexedKeyComparator(const full_map_t *am)
+        IndexedKeyComparator(const QFlatMap *am)
             : m(am)
         {
         }
@@ -920,7 +918,7 @@ private:
         }
 
     private:
-        const full_map_t *m;
+        const QFlatMap *m;
     };
 
     template <class InputIt>
@@ -943,7 +941,7 @@ private:
 
     iterator binary_find(const Key &key)
     {
-        return { &c, const_cast<const full_map_t *>(this)->binary_find(key).i };
+        return { &c, std::as_const(*this).binary_find(key).i };
     }
 
     const_iterator binary_find(const Key &key) const
