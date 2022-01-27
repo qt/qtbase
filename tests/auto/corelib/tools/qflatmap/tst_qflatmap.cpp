@@ -410,7 +410,7 @@ void tst_QFlatMap::transparency()
     struct StringViewCompare
     {
         using is_transparent = void;
-        bool operator()(const QStringView &lhs, const QStringView &rhs) const
+        bool operator()(QAnyStringView lhs, QAnyStringView rhs) const
         {
             return lhs < rhs;
         }
@@ -424,8 +424,21 @@ void tst_QFlatMap::transparency()
     const QStringView sv2{numbers.constData() + 4, 3};
     const QStringView sv3{numbers.constData() + 8, 5};
     QCOMPARE(m.lower_bound(sv1).value(), "een");
+    QCOMPARE(m.value(sv1), "een");
     QCOMPARE(m.lower_bound(sv2).value(), "twee");
+    QCOMPARE(m.value(sv2), "twee");
     QCOMPARE(m.lower_bound(sv3).value(), "dree");
+    QCOMPARE(m.value(sv3), "dree");
+
+    QVERIFY(m.contains(sv2));
+    auto twee = m.take(sv2);
+    static_assert(std::is_same_v<decltype(twee), QString>);
+    QCOMPARE(twee, "twee");
+    QVERIFY(!m.contains(sv2));
+
+    QVERIFY(m.contains(QLatin1String("one")));
+    QVERIFY(m.remove(QAnyStringView(u8"one")));
+    QVERIFY(!m.contains(QLatin1String("one")));
 }
 
 void tst_QFlatMap::try_emplace_and_insert_or_assign()
