@@ -202,20 +202,21 @@ class Test_testrunner(unittest.TestCase):
         self.assertEqual(proc.returncode, 3)
 
     # If no XML file is found by qt-testrunner, it is usually considered a
-    # CRASH and the whole test is re-run. But when the return code is zero, it
-    # doesn't care about XML file and passes anyway.
-    def test_no_xml_log_written_pass(self):
+    # CRASH and the whole test is re-run. Even when the return code is zero.
+    # It is a PASS only if the test is not capable of XML output (see no_extra_args, TODO test it).
+    def test_no_xml_log_written_pass_crash(self):
         del self.env["QT_MOCK_TEST_XML_TEMPLATE_FILE"]
         self.prepare_env(run_list=["always_pass"])
         proc = self.run2()
-        self.assertEqual(proc.returncode, 0)
+        self.assertEqual(proc.returncode, 3)
     # On the 2nd iteration of the full test, both of the tests pass.
-    def test_no_xml_log_written_fail_then_pass(self):
+    # Still it's a CRASH because no XML file was found.
+    def test_no_xml_log_written_fail_then_pass_crash(self):
         del self.env["QT_MOCK_TEST_XML_TEMPLATE_FILE"]
         self.prepare_env(run_list=["always_pass,fail_then_pass:1"])
         proc = self.run2()
         # TODO verify that the whole test has run twice.
-        self.assertEqual(proc.returncode, 0)
+        self.assertEqual(proc.returncode, 3)
     # Even after 2 iterations of the full test we still get failures but no XML file,
     # and this is considered a CRASH.
     def test_no_xml_log_written_crash(self):
@@ -223,6 +224,24 @@ class Test_testrunner(unittest.TestCase):
         self.prepare_env(run_list=["fail_then_pass:2"])
         proc = self.run2()
         self.assertEqual(proc.returncode, 3)
+
+    # If a test returns success but XML contains failures, it's a CRASH.
+    def test_wrong_xml_log_written_1_crash(self):
+        logfile = os.path.join(TEMPDIR.name, os.path.basename(mock_test) + ".xml")
+        write_xml_log(logfile, failure="always_fail")
+        del self.env["QT_MOCK_TEST_XML_TEMPLATE_FILE"]
+        self.prepare_env(run_list=["always_pass"])
+        proc = self.run2()
+        self.assertEqual(proc.returncode, 3)
+    # If a test returns failure but XML contains only pass, it's a CRASH.
+    def test_wrong_xml_log_written_2_crash(self):
+        logfile = os.path.join(TEMPDIR.name, os.path.basename(mock_test) + ".xml")
+        write_xml_log(logfile)
+        del self.env["QT_MOCK_TEST_XML_TEMPLATE_FILE"]
+        self.prepare_env(run_list=["always_fail"])
+        proc = self.run2()
+        self.assertEqual(proc.returncode, 3)
+
 
 # Test qt-testrunner script with an existing XML log file:
 #   qt-testrunner.py qt_mock_test.py --parse-xml-testlog file.xml

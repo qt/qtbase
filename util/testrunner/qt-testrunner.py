@@ -344,21 +344,25 @@ def main():
                     run_full_test(args.test_basename, args.testargs, args.log_dir,
                                   args.no_extra_args, args.dry_run, args.timeout,
                                   args.specific_extra_args)
-                if retcode != 0 and results_file:
+                if results_file:
                     failed_functions = parse_log(results_file)
 
             if retcode == 0:
+                if failed_functions:
+                    L.warning("The test executable returned success but the logfile"
+                             f" contains FAIL for function: {failed_functions[0].func}")
+                    continue
                 sys.exit(0)    # PASS
 
             if len(failed_functions) == 0:
-                L.info("No failures listed in the XML test log!"
-                       " Did the test CRASH right after all its testcases PASSed?")
+                L.warning("No failures listed in the XML test log!"
+                          " Did the test CRASH right after all its testcases PASSed?")
                 continue
 
             cant_rerun = [ f.func for f in failed_functions if f.func in NO_RERUN_FUNCTIONS ]
             if cant_rerun:
-                L.info(f"Failure detected in the special test function '{cant_rerun[0]}'"
-                       " which can not be re-run individually")
+                L.warning(f"Failure detected in the special test function '{cant_rerun[0]}'"
+                          " which can not be re-run individually")
                 continue
 
             assert len(failed_functions) > 0  and  retcode != 0
