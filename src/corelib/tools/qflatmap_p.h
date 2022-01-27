@@ -610,17 +610,6 @@ public:
         return do_remove(binary_find(key));
     }
 
-private:
-    bool do_remove(iterator it)
-    {
-        if (it != end()) {
-            erase(it);
-            return true;
-        }
-        return false;
-    }
-public:
-
     iterator erase(iterator it)
     {
         c.values.erase(toValuesIterator(it));
@@ -631,18 +620,6 @@ public:
     {
         return do_take(binary_find(key));
     }
-
-private:
-    T do_take(iterator it)
-    {
-        if (it != end()) {
-            T result = std::move(it.value());
-            erase(it);
-            return result;
-        }
-        return {};
-    }
-public:
 
     bool contains(const Key &key) const
     {
@@ -832,6 +809,25 @@ public:
     }
 
 private:
+    bool do_remove(iterator it)
+    {
+        if (it != end()) {
+            erase(it);
+            return true;
+        }
+        return false;
+    }
+
+    T do_take(iterator it)
+    {
+        if (it != end()) {
+            T result = std::move(it.value());
+            erase(it);
+            return result;
+        }
+        return {};
+    }
+
     template <class InputIt, is_compatible_iterator<InputIt> = nullptr>
     void initWithRange(InputIt first, InputIt last)
     {
