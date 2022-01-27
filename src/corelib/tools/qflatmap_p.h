@@ -609,8 +609,7 @@ public:
     {
         auto it = binary_find(key);
         if (it != end()) {
-            c.keys.erase(toKeysIterator(it));
-            c.values.erase(toValuesIterator(it));
+            erase(it);
             return true;
         }
         return false;
