@@ -41,10 +41,7 @@
 #define QTXMLGLOBAL_H
 
 #include <QtCore/qglobal.h>
-#ifndef QT_BOOTSTRAPPED
-#  include <QtXml/qtxml-config.h>
-#endif
-
+#include <QtXml/qtxml-config.h>
 #include <QtXml/qtxmlexports.h>
 
 #endif // QTXMLGLOBAL_H

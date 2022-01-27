@@ -64,9 +64,6 @@ qt_internal_extend_target(Bootstrap
         ../../corelib/serialization/qjsonvalue.cpp
         ../../corelib/serialization/qjsonwriter.cpp
         ../../corelib/serialization/qtextstream.cpp
-        ../../corelib/serialization/qxmlstream.cpp
-        ../../corelib/serialization/qxmlstreamgrammar.cpp
-        ../../corelib/serialization/qxmlutils.cpp
         ../../corelib/text/qbytearray.cpp
         ../../corelib/text/qbytearraylist.cpp
         ../../corelib/text/qbytearraymatcher.cpp

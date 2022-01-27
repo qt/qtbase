@@ -49,20 +49,7 @@
 #include <qstack.h>
 #include <qbuffer.h>
 #include <qscopeguard.h>
-#ifndef QT_BOOTSTRAPPED
 #include <qcoreapplication.h>
-#else
-// This specialization of Q_DECLARE_TR_FUNCTIONS is not in qcoreapplication.h,
-// because that header depends on QObject being available, which is not the
-// case for most bootstrapped applications.
-#define Q_DECLARE_TR_FUNCTIONS(context) \
-public: \
-    static inline QString tr(const char *sourceText, const char *comment = nullptr) \
-        { Q_UNUSED(comment); return QString::fromUtf8(sourceText); } \
-    static inline QString tr(const char *sourceText, const char*, int) \
-        { return QString::fromUtf8(sourceText); } \
-private:
-#endif
 
 #include <iterator>
 #include "qxmlstream_p.h"
