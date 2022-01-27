@@ -3417,15 +3417,39 @@ void QAbstractItemView::rowsAboutToBeRemoved(const QModelIndex &parent, int star
         } else {
             int row = end + 1;
             QModelIndex next;
-            do { // find the next visible and enabled item
+            const int rowCount = d->model->rowCount(parent);
+            bool found = false;
+            // find the next visible and enabled item
+            while (row < rowCount && !found) {
                 next = d->model->index(row++, current.column(), current.parent());
-            } while (next.isValid() && (isIndexHidden(next) || !d->isIndexEnabled(next)));
-            if (row > d->model->rowCount(parent)) {
-                row = start - 1;
-                do { // find the previous visible and enabled item
-                    next = d->model->index(row--, current.column(), current.parent());
-                } while (next.isValid() && (isIndexHidden(next) || !d->isIndexEnabled(next)));
+#ifdef QT_DEBUG
+                if (!next.isValid()) {
+                    qWarning("Model unexpectedly returned an invalid index");
+                    break;
+                }
+#endif
+                if (!isIndexHidden(next) && d->isIndexEnabled(next)) {
+                    found = true;
+                    break;
+                }
             }
+
+            if (!found) {
+                row = start - 1;
+                // find the previous visible and enabled item
+                while (row >= 0) {
+                    next = d->model->index(row--, current.column(), current.parent());
+#ifdef QT_DEBUG
+                    if (!next.isValid()) {
+                        qWarning("Model unexpectedly returned an invalid index");
+                        break;
+                    }
+#endif
+                    if (!isIndexHidden(next) && d->isIndexEnabled(next))
+                        break;
+                }
+            }
+
             setCurrentIndex(next);
         }
     }
@@ -3503,9 +3527,19 @@ void QAbstractItemViewPrivate::_q_columnsAboutToBeRemoved(const QModelIndex &par
         } else {
             int column = end;
             QModelIndex next;
-            do { // find the next visible and enabled item
+            const int columnCount = model->columnCount(current.parent());
+            // find the next visible and enabled item
+            while (column < columnCount) {
                 next = model->index(current.row(), column++, current.parent());
-            } while (next.isValid() && (q->isIndexHidden(next) || !isIndexEnabled(next)));
+#ifdef QT_DEBUG
+                if (!next.isValid()) {
+                    qWarning("Model unexpectedly returned an invalid index");
+                    break;
+                }
+#endif
+                if (!q->isIndexHidden(next) && isIndexEnabled(next))
+                    break;
+            }
             q->setCurrentIndex(next);
         }
     }
