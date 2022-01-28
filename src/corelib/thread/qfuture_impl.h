@@ -267,17 +267,6 @@ template<class Class, class Callable>
 using EnableIfInvocable = std::enable_if_t<
         QtPrivate::ArgResolver<Callable>::template CanInvokeWithArgs<Class, Callable>>;
 
-template<class>
-struct isTuple : std::false_type
-{
-};
-template<class... T>
-struct isTuple<std::tuple<T...>> : std::true_type
-{
-};
-template<class T>
-inline constexpr bool isTupleV = isTuple<T>::value;
-
 template<typename Function, typename ResultType, typename ParentResultType>
 class Continuation
 {
@@ -854,7 +843,7 @@ static QFuture<ArgsType<Signal>> connect(Sender *sender, Signal signal)
                     QObject::disconnect(connections->second);
                     promise.reportFinished();
                 });
-    } else if constexpr (QtPrivate::isTupleV<ArgsType>) {
+    } else if constexpr (QtPrivate::ArgResolver<Signal>::HasExtraArgs) {
         connections->first = QObject::connect(sender, signal, sender,
                                               [promise, connections](auto... values) mutable {
                                                   QObject::disconnect(connections->first);
