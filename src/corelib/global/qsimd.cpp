@@ -370,8 +370,8 @@ static quint64 adjustedXcr0(quint64 xcr0)
 
 static quint64 detectProcessorFeatures()
 {
-    static const quint64 AllAVX2 = CpuFeatureAVX2 | AllAVX512;
-    static const quint64 AllAVX = CpuFeatureAVX | AllAVX2;
+    static const quint64 AllAVX = AllAVX512 | CpuFeatureAVX | CpuFeatureAVX2 | CpuFeatureF16C
+            | CpuFeatureFMA | CpuFeatureVAES;
 
     quint64 features = 0;
     int cpuidLevel = maxBasicCpuidSupported();

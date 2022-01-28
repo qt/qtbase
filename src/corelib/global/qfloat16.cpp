@@ -194,9 +194,9 @@ int qfloat16::fpClassify() const noexcept
 #if QT_COMPILER_SUPPORTS(F16C)
 static inline bool hasFastF16()
 {
-    // All processors with F16C also support AVX, but YMM registers
-    // might not be supported by the OS, or they might be disabled.
-    return qCpuHasFeature(F16C) && qCpuHasFeature(AVX);
+    // qsimd.cpp:detectProcessorFeatures() turns off this feature if AVX
+    // state-saving is not enabled by the OS
+    return qCpuHasFeature(F16C);
 }
 
 QT_FUNCTION_TARGET(F16C)
