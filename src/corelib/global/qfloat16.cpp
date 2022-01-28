@@ -202,32 +202,80 @@ static inline bool hasFastF16()
 QT_FUNCTION_TARGET(F16C)
 static void qFloatToFloat16_fast(quint16 *out, const float *in, qsizetype len) noexcept
 {
+    constexpr qsizetype Step = sizeof(__m256i) / sizeof(float);
+    constexpr qsizetype HalfStep = sizeof(__m128i) / sizeof(float);
     qsizetype i = 0;
-    int epilog_i;
-    for (; i < len - 7; i += 8)
-        _mm_storeu_si128((__m128i *)(out + i), _mm256_cvtps_ph(_mm256_loadu_ps(in + i), 0));
-    if (i < len - 3) {
-        _mm_storel_epi64((__m128i *)(out + i), _mm_cvtps_ph(_mm_loadu_ps(in + i), 0));
-        i += 4;
+
+    if (len >= Step) {
+        auto convertOneChunk = [=](qsizetype offset) QT_FUNCTION_TARGET(F16C) {
+            __m256 f32 = _mm256_loadu_ps(in + offset);
+            __m128i f16 = _mm256_cvtps_ph(f32, _MM_FROUND_TO_NEAREST_INT);
+            _mm_storeu_si128(reinterpret_cast<__m128i *>(out + offset), f16);
+        };
+
+        // main loop: convert Step (8) floats per iteration
+        for ( ; i + Step < len; i += Step)
+            convertOneChunk(i);
+
+        // epilogue: convert the last chunk, possibly overlapping with the last
+        // iteration of the loop
+        return convertOneChunk(len - Step);
     }
+
+    if (len >= HalfStep) {
+        auto convertOneChunk = [=](qsizetype offset) QT_FUNCTION_TARGET(F16C) {
+            __m128 f32 = _mm_loadu_ps(in + offset);
+            __m128i f16 = _mm_cvtps_ph(f32, _MM_FROUND_TO_NEAREST_INT);
+            _mm_storel_epi64(reinterpret_cast<__m128i *>(out + offset), f16);
+        };
+
+        // two conversions, possibly overlapping
+        convertOneChunk(0);
+        return convertOneChunk(len - HalfStep);
+    }
+
     // Inlining "qfloat16::qfloat16(float f)":
-    for (epilog_i = 0; i < len && epilog_i < 3; ++i, ++epilog_i)
+    for ( ; i < len; ++i)
         out[i] = _mm_extract_epi16(_mm_cvtps_ph(_mm_set_ss(in[i]), 0), 0);
 }
 
 QT_FUNCTION_TARGET(F16C)
 static void qFloatFromFloat16_fast(float *out, const quint16 *in, qsizetype len) noexcept
 {
+    constexpr qsizetype Step = sizeof(__m256i) / sizeof(float);
+    constexpr qsizetype HalfStep = sizeof(__m128i) / sizeof(float);
     qsizetype i = 0;
-    int epilog_i;
-    for (; i < len - 7; i += 8)
-        _mm256_storeu_ps(out + i, _mm256_cvtph_ps(_mm_loadu_si128((const __m128i *)(in + i))));
-    if (i < len - 3) {
-        _mm_storeu_ps(out + i, _mm_cvtph_ps(_mm_loadl_epi64((const __m128i *)(in + i))));
-        i += 4;
+
+    if (len >= Step) {
+        auto convertOneChunk = [=](qsizetype offset) QT_FUNCTION_TARGET(F16C) {
+            __m128i f16 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(in + offset));
+            __m256 f32 = _mm256_cvtph_ps(f16);
+            _mm256_storeu_ps(out + offset, f32);
+        };
+
+        // main loop: convert Step (8) floats per iteration
+        for ( ; i + Step < len; i += Step)
+            convertOneChunk(i);
+
+        // epilogue: convert the last chunk, possibly overlapping with the last
+        // iteration of the loop
+        return convertOneChunk(len - Step);
     }
+
+    if (len >= HalfStep) {
+        auto convertOneChunk = [=](qsizetype offset) QT_FUNCTION_TARGET(F16C) {
+            __m128i f16 = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(in + offset));
+            __m128 f32 = _mm_cvtph_ps(f16);
+            _mm_storeu_ps(out + offset, f32);
+        };
+
+        // two conversions, possibly overlapping
+        convertOneChunk(0);
+        return convertOneChunk(len - HalfStep);
+    }
+
     // Inlining "qfloat16::operator float()":
-    for (epilog_i = 0; i < len && epilog_i < 3; ++i, ++epilog_i)
+    for ( ; i < len; ++i)
         out[i] = _mm_cvtss_f32(_mm_cvtph_ps(_mm_cvtsi32_si128(in[i])));
 }
 
