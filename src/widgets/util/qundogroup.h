@@ -37,6 +37,11 @@
 **
 ****************************************************************************/
 
+#if 0
+// syncqt: header is already part of QtGui/QtGui
+#pragma qt_no_master_include
+#endif
+
 #include <QtGui/QUndoGroup>
 
 QT_BEGIN_NAMESPACE
