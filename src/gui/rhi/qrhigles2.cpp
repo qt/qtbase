@@ -4486,6 +4486,10 @@ static inline QShader::Stage toShaderStage(QRhiShaderStage::Type type)
     switch (type) {
     case QRhiShaderStage::Vertex:
         return QShader::VertexStage;
+    case QRhiShaderStage::TessellationControl:
+        return QShader::TessellationControlStage;
+    case QRhiShaderStage::TessellationEvaluation:
+        return QShader::TessellationEvaluationStage;
     case QRhiShaderStage::Fragment:
         return QShader::FragmentStage;
     case QRhiShaderStage::Compute:

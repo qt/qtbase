@@ -704,13 +704,13 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     \l{QRhiGraphicsPipeline::setPatchControlPointCount()}{setPatchControlPointCount()},
     and shaders for tessellation control and evaluation can be specified in the
     QRhiShaderStage list. \b{Tessellation is considered an experimental feature
-    in QRhi and can only be expected to be supported with Vulkan for the time
-    being}, assuming the Vulkan implementation reports it as supported at run
-    time. Tessellation shaders have portability issues between APIs (for
-    example, translating GLSL/SPIR-V to HLSL is problematic due to the way hull
-    shaders are structured, whereas Metal uses a somewhat different
-    tessellation pipeline than others), and therefore no guarantees can be
-    given for a universal solution for now.
+    in QRhi and can only be expected to be supported with Vulkan, OpenGL and
+    OpenGL ES for the time being}, assuming the implementation reports it as
+    supported at run time. Tessellation shaders have portability issues between
+    APIs (for example, translating GLSL/SPIR-V to HLSL is problematic due to
+    the way hull shaders are structured, whereas Metal uses a somewhat
+    different tessellation pipeline than others), and therefore no guarantees
+    can be given for a universal solution for now.
  */
 
 /*!
