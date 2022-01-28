@@ -527,7 +527,7 @@ void tst_QTimeZone::specificTransition_data()
     QTest::addColumn<QDate>("stop");
     QTest::addColumn<int>("count");
     QTest::addColumn<QDateTime>("atUtc");
-    // In minutes:
+    // In seconds:
     QTest::addColumn<int>("offset");
     QTest::addColumn<int>("stdoff");
     QTest::addColumn<int>("dstoff");
@@ -544,7 +544,7 @@ void tst_QTimeZone::specificTransition_data()
     {
         QTest::newRow("Moscow/2014") // From original bug-report
             << QByteArray("Europe/Moscow")
-            << QDate(2011, 4, 1) << QDate(2017, 12,31) << 1
+            << QDate(2011, 4, 1) << QDate(2021, 12, 31) << 1
             << QDateTime(QDate(2014, 10, 26), QTime(2, 0, 0),
                          Qt::OffsetFromUTC, 4 * 3600).toUTC()
             << 3 * 3600 << 3 * 3600 << 0;
