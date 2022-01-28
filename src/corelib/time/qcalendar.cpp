@@ -449,10 +449,15 @@ const QCalendarBackend *QCalendarRegistry::fromEnum(QCalendar::System system)
 QStringList QCalendarRegistry::backendNames(const QCalendarBackend *backend)
 {
     QStringList l;
+    l.reserve(byName.size()); // too large, but never really large, so ok
 
-    QHashIterator<CalendarName, QCalendarBackend *> i(byName);
-    while (i.findNext(const_cast<QCalendarBackend *>(backend)))
-        l.push_back(i.key());
+    // same as byName.keys(backend), except for
+    // - the missing const on mapped_type and
+    // - CalendarName != QString as the key_type
+    for (auto it = byName.cbegin(), end = byName.cend(); it != end; ++it) {
+        if (it.value() == backend)
+            l.push_back(it.key());
+    }
 
     return l;
 }
