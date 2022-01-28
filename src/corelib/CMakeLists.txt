@@ -35,6 +35,10 @@ qt_internal_add_module(Core
     NO_GENERATE_METATYPES # metatypes are extracted manually below
     EXCEPTIONS
     SOURCES
+        # Keep qsimd.cpp first so its global static runs first
+        global/qsimd.cpp global/qsimd.h global/qsimd_p.h
+
+        # Keep the rest alphabetical
         compat/removed_api.cpp
         global/archdetect.cpp
         global/qcompare_impl.h
@@ -56,7 +60,6 @@ qt_internal_add_module(Core
         global/qoperatingsystemversion.cpp global/qoperatingsystemversion.h global/qoperatingsystemversion_p.h
         global/qprocessordetection.h
         global/qrandom.cpp global/qrandom.h global/qrandom_p.h
-        global/qsimd.cpp global/qsimd.h global/qsimd_p.h
         global/qsysinfo.h
         global/qsystemdetection.h
         global/qtnamespacemacros.h

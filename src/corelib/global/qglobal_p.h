@@ -68,6 +68,25 @@
 
 QT_BEGIN_NAMESPACE
 
+#if defined(Q_CC_MSVC)
+#  define QT_SUPPORTS_INIT_PRIORITY     1
+// warning C4075: initializers put in unrecognized initialization area
+#  define Q_DECL_INIT_PRIORITY(nn)      \
+    __pragma(warning(disable: 4075)) \
+    __pragma(init_seg(".CRT$QT" QT_STRINGIFY(nn))) Q_DECL_UNUSED
+#elif defined(Q_OS_WIN) || defined(Q_OF_ELF)
+#  define QT_SUPPORTS_INIT_PRIORITY     1
+// priorities 0 to 1000 are reserved to the runtime;
+// we use above 2000 in case someone REALLY needs to go before us
+#  define Q_DECL_INIT_PRIORITY(nn)      __attribute__((init_priority(2000 + nn), used))
+#elif defined(QT_SHARED)
+// it doesn't support this exactly, but we can work around it
+#  define QT_SUPPORTS_INIT_PRIORITY     -1
+#  define Q_DECL_INIT_PRIORITY(nn)      Q_DECL_UNUSED
+#else
+#  define QT_SUPPORTS_INIT_PRIORITY     0
+#endif
+
 // These behave as if they consult the environment, so need to share its locking:
 Q_CORE_EXPORT void qTzSet();
 Q_CORE_EXPORT time_t qMkTime(struct tm *when);

@@ -337,9 +337,6 @@ enum CPUFeatures {
     CpuFeatureDSP           = 2,
     CpuFeatureDSPR2         = 4,
 #endif
-
-    // used only to indicate that the CPU detection was initialised
-    QSimdInitialized        = 1
 };
 
 static const quint64 qCompilerCpuFeatures = 0
@@ -381,9 +378,9 @@ static inline qsizetype qRandomCpu(void *, qsizetype) noexcept
 static inline quint64 qCpuFeatures()
 {
     quint64 features = qt_cpu_features[0].loadRelaxed();
-    if (Q_UNLIKELY(features == 0)) {
-        features = qDetectCpuFeatures();
-        Q_ASSUME(features != 0);
+    if constexpr (!QT_SUPPORTS_INIT_PRIORITY) {
+        if (Q_UNLIKELY(features == 0))
+            features = qDetectCpuFeatures();
     }
     return features;
 }
