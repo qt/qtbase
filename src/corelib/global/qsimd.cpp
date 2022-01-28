@@ -55,6 +55,8 @@
 #  include "../testlib/3rdparty/valgrind_p.h"
 #endif
 
+#define QT_FUNCTION_TARGET_BASELINE
+
 #if defined(Q_OS_WIN)
 #  if !defined(Q_CC_GNU)
 #    include <intrin.h>
@@ -197,12 +199,24 @@ static inline quint64 detectProcessorFeatures()
 
 #ifdef Q_PROCESSOR_X86_32
 # define PICreg "%%ebx"
+# define X86_BASELINE   "i386"
 #else
 # define PICreg "%%rbx"
+# define X86_BASELINE   "x86-64"
+#endif
+
+#if defined(Q_CC_GNU)
+// lower the target for functions in this file
+#  undef QT_FUNCTION_TARGET_BASELINE
+#  define QT_FUNCTION_TARGET_BASELINE               __attribute__((target("arch=" X86_BASELINE)))
+#  define QT_FUNCTION_TARGET_STRING_BASELINE_RDRND      \
+    "arch=" X86_BASELINE                                \
+    "," QT_FUNCTION_TARGET_STRING_RDRND
 #endif
 
 static bool checkRdrndWorks() noexcept;
 
+QT_FUNCTION_TARGET_BASELINE
 static int maxBasicCpuidSupported()
 {
 #if defined(Q_CC_EMSCRIPTEN)
@@ -250,6 +264,7 @@ static int maxBasicCpuidSupported()
 #endif
 }
 
+QT_FUNCTION_TARGET_BASELINE
 static void cpuidFeatures01(uint &ecx, uint &edx)
 {
 #if defined(Q_CC_GNU) && !defined(Q_CC_EMSCRIPTEN)
@@ -279,6 +294,7 @@ static void cpuidFeatures01(uint &ecx, uint &edx)
 inline void __cpuidex(int info[4], int, __int64) { memset(info, 0, 4*sizeof(int));}
 #endif
 
+QT_FUNCTION_TARGET_BASELINE
 static void cpuidFeatures07_00(uint &ebx, uint &ecx, uint &edx)
 {
 #if defined(Q_CC_GNU) && !defined(Q_CC_EMSCRIPTEN)
@@ -312,6 +328,7 @@ static void cpuidFeatures07_00(uint &ebx, uint &ecx, uint &edx)
 #endif
 }
 
+QT_FUNCTION_TARGET_BASELINE
 #if defined(Q_OS_WIN) && !(defined(Q_CC_GNU) || defined(Q_CC_GHS))
 // fallback overload in case this intrinsic does not exist: unsigned __int64 _xgetbv(unsigned int);
 inline quint64 _xgetbv(__int64) { return 0; }
@@ -349,6 +366,7 @@ enum XCR0Flags {
     AVX512State     = AVXState | OpMask | ZMM0_15Hi256 | ZMM16_31
 };
 
+QT_FUNCTION_TARGET_BASELINE
 static quint64 adjustedXcr0(quint64 xcr0)
 {
     /*
@@ -374,6 +392,7 @@ static quint64 adjustedXcr0(quint64 xcr0)
     return xcr0;
 }
 
+QT_FUNCTION_TARGET_BASELINE
 static quint64 detectProcessorFeatures()
 {
     static const quint64 AllAVX = AllAVX512 | CpuFeatureAVX | CpuFeatureAVX2 | CpuFeatureF16C
@@ -589,6 +608,7 @@ static const quint64 minFeature = qCompilerCpuFeatures;
 static constexpr auto SimdInitialized = QCpuFeatureType(1) << (sizeof(QCpuFeatureType) * 8 - 1);
 QBasicAtomicInteger<QCpuFeatureType> qt_cpu_features[1] = { 0 };
 
+QT_FUNCTION_TARGET_BASELINE
 quint64 qDetectCpuFeatures()
 {
     auto minFeatureTest = minFeature;
@@ -638,6 +658,7 @@ quint64 qDetectCpuFeatures()
     return f;
 }
 
+QT_FUNCTION_TARGET_BASELINE
 void qDumpCPUFeatures()
 {
     quint64 features = detectProcessorFeatures() & ~SimdInitialized;
@@ -730,7 +751,8 @@ out:
     return ptr;
 }
 
-static QT_FUNCTION_TARGET(RDRND) Q_DECL_COLD_FUNCTION bool checkRdrndWorks() noexcept
+QT_FUNCTION_TARGET(BASELINE_RDRND) Q_DECL_COLD_FUNCTION
+static bool checkRdrndWorks() noexcept
 {
     /*
      * Some AMD CPUs (e.g. AMD A4-6250J and AMD Ryzen 3000-series) have a
