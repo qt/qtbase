@@ -50,6 +50,7 @@
 #include "qislamiccivilcalendar_p.h"
 #endif
 
+#include <private/qflatmap_p.h>
 #include "qatomic.h"
 #include "qdatetime.h"
 #include "qcalendarmath_p.h"
@@ -62,22 +63,15 @@ QT_BEGIN_NAMESPACE
 
 namespace {
 
-struct CalendarName : public QString
-{
-    CalendarName(const QString &name) : QString(name) {}
+struct CaseInsensitiveAnyStringViewLessThan {
+    struct is_transparent {};
+    bool operator()(QAnyStringView lhs, QAnyStringView rhs) const
+    {
+        return QAnyStringView::compare(lhs, rhs, Qt::CaseInsensitive) < 0;
+    }
 };
 
-inline bool operator==(const CalendarName &u, const CalendarName &v)
-{
-    return u.compare(v, Qt::CaseInsensitive) == 0;
-}
-
-inline size_t qHash(const CalendarName &key, size_t seed = 0) noexcept
-{
-    return qHash(key.toLower(), seed);
-}
-
-} // anonymous namespace
+} // unnamed namespace
 
 namespace QtPrivate {
 
@@ -88,6 +82,8 @@ namespace QtPrivate {
 class QCalendarRegistry
 {
     Q_DISABLE_COPY_MOVE(QCalendarRegistry); // This is a singleton.
+
+    static constexpr qsizetype ExpectedNumberOfBackends = qsizetype(QCalendar::System::Last) + 1;
 
     /*
         Lock protecting the registry from concurrent modification.
@@ -108,7 +104,12 @@ class QCalendarRegistry
         Each backend may be registered with several names associated with it.
         The names are case-insensitive.
     */
-    QHash<CalendarName, QCalendarBackend *> byName;
+    QFlatMap<
+        QString, QCalendarBackend *,
+        CaseInsensitiveAnyStringViewLessThan,
+        QStringList,
+        std::vector<QCalendarBackend *>
+    > byName;
 
     /*
         Pointer to the Gregorian backend for faster lockless access to it.
@@ -138,7 +139,11 @@ class QCalendarRegistry
                                  QCalendar::System system);
 
 public:
-    QCalendarRegistry() { byId.resize(int(QCalendar::System::Last) + 1); }
+    QCalendarRegistry()
+    {
+        byId.resize(ExpectedNumberOfBackends);
+        byName.reserve(ExpectedNumberOfBackends * 2); // assume one alias on average
+    }
 
     ~QCalendarRegistry();
 
@@ -339,12 +344,11 @@ void QCalendarRegistry::registerBackendLockHeld(QCalendarBackend *backend, const
 
     // Register any names.
     for (const auto &name : names) {
-        if (byName.contains(name)) {
+        auto [it, inserted] = byName.try_emplace(name, backend);
+        if (!inserted) {
             Q_ASSERT(system == QCalendar::System::User);
             qWarning("Cannot register name %ls (already in use) for %ls",
                      qUtf16Printable(name), qUtf16Printable(backend->name()));
-        } else {
-            byName[name] = backend;
         }
     }
 }
@@ -362,7 +366,7 @@ QStringList QCalendarRegistry::availableCalendars()
     ensurePopulated();
 
     QReadLocker locker(&lock);
-    return QStringList(byName.keyBegin(), byName.keyEnd());
+    return byName.keys();
 }
 
 /*
@@ -378,9 +382,8 @@ const QCalendarBackend *QCalendarRegistry::fromName(QAnyStringView name)
 {
     ensurePopulated();
 
-    const QString nameU16 = name.toString();
     QReadLocker locker(&lock);
-    return byName.value(nameU16, nullptr);
+    return byName.value(name, nullptr);
 }
 
 /*
@@ -450,12 +453,9 @@ QStringList QCalendarRegistry::backendNames(const QCalendarBackend *backend)
     QStringList l;
     l.reserve(byName.size()); // too large, but never really large, so ok
 
-    // same as byName.keys(backend), except for
-    // - the missing const on mapped_type and
-    // - CalendarName != QString as the key_type
-    for (auto it = byName.cbegin(), end = byName.cend(); it != end; ++it) {
-        if (it.value() == backend)
-            l.push_back(it.key());
+    for (const auto &[key, value] : byName) {
+        if (value == backend)
+            l.push_back(key);
     }
 
     return l;
