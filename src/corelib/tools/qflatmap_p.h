@@ -417,7 +417,7 @@ private:
     struct is_marked_transparent_type : std::false_type { };
 
     template <class X>
-    struct is_marked_transparent_type<X, typename X::is_transparent> : std::true_type { };
+    struct is_marked_transparent_type<X, std::void_t<typename X::is_transparent>> : std::true_type { };
 
     template <class X>
     using is_marked_transparent = typename std::enable_if<
