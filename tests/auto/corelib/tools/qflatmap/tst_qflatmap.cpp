@@ -52,10 +52,15 @@ private slots:
     void extraction();
     void iterators();
     void statefulComparator();
-    void transparency();
+    void transparency_using();
+    void transparency_struct();
     void try_emplace_and_insert_or_assign();
     void viewIterators();
     void varLengthArray();
+
+private:
+    template <typename Compare>
+    void transparency_impl();
 };
 
 void tst_QFlatMap::constructing()
@@ -405,7 +410,7 @@ void tst_QFlatMap::statefulComparator()
     QVERIFY(m2.key_comp().count > m1.key_comp().count);
 }
 
-void tst_QFlatMap::transparency()
+void tst_QFlatMap::transparency_using()
 {
     struct StringViewCompare
     {
@@ -415,7 +420,25 @@ void tst_QFlatMap::transparency()
             return lhs < rhs;
         }
     };
+    transparency_impl<StringViewCompare>();
+}
 
+void tst_QFlatMap::transparency_struct()
+{
+    struct StringViewCompare
+    {
+        struct is_transparent {};
+        bool operator()(QAnyStringView lhs, QAnyStringView rhs) const
+        {
+            return lhs < rhs;
+        }
+    };
+    transparency_impl<StringViewCompare>();
+}
+
+template <typename StringViewCompare>
+void tst_QFlatMap::transparency_impl()
+{
     using Map = QFlatMap<QString, QString, StringViewCompare>;
     auto m = Map{ { "one", "een" }, { "two", "twee" }, { "three", "dree" } };
 
