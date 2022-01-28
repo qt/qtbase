@@ -170,6 +170,7 @@ static QString searchStringOrError(QCommandLineParser *parser)
 
 int main(int argc, char **argv)
 {
+    QString qtconfManualPath;
     QCoreApplication app(argc, argv);
     app.setApplicationVersion(QTPATHS_VERSION_STR);
 
@@ -267,7 +268,8 @@ int main(int argc, char **argv)
 
 #if QT_CONFIG(settings)
     if (parser.isSet(qtconf)) {
-        QLibraryInfoPrivate::qtconfManualPath = parser.value(qtconf);
+        qtconfManualPath = parser.value(qtconf);
+        QLibraryInfoPrivate::qtconfManualPath = &qtconfManualPath;
     }
 #endif
 
