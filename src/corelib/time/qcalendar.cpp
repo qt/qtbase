@@ -55,7 +55,6 @@
 #include "qcalendarmath_p.h"
 #include <qhash.h>
 #include <qreadwritelock.h>
-#include <qdebug.h>
 
 #include <vector>
 
@@ -342,8 +341,8 @@ void QCalendarRegistry::registerBackendLockHeld(QCalendarBackend *backend, const
     for (const auto &name : names) {
         if (byName.contains(name)) {
             Q_ASSERT(system == QCalendar::System::User);
-            qWarning() << "Cannot register name" << name << "(already in use) for"
-                       << backend->name();
+            qWarning("Cannot register name %ls (already in use) for %ls",
+                     qUtf16Printable(name), qUtf16Printable(backend->name()));
         } else {
             byName[name] = backend;
         }
