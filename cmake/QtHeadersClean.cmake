@@ -147,7 +147,7 @@ function(qt_internal_add_headers_clean_target
         # Use strict mode C++20, with no GNU extensions (see -pedantic-errors above).
         list(APPEND hcleanFLAGS -std=c++2a)
 
-        set(cxx_flags ${CMAKE_CXX_FLAGS})
+        separate_arguments(cxx_flags NATIVE_COMMAND ${CMAKE_CXX_FLAGS})
 
         if(APPLE AND CMAKE_OSX_SYSROOT)
             list(APPEND cxx_flags "${CMAKE_CXX_SYSROOT_FLAG}" "${CMAKE_OSX_SYSROOT}")
