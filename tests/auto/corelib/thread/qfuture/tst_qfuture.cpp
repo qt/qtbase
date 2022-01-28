@@ -64,6 +64,23 @@ public:
     {
         emit multipleArgs(value1, value2, value3);
     }
+    void emitTupleArgSignal(const std::tuple<int, double, QString> &t) { emit tupleArgSignal(t); }
+    void emitMultiArgsWithTupleSignal1(int value, const std::tuple<int, double, QString> &t)
+    {
+        emit multiArgsWithTupleSignal1(value, t);
+    }
+    void emitMultiArgsWithTupleSignal2(const std::tuple<int, double, QString> &t, int value)
+    {
+        emit multiArgsWithTupleSignal2(t, value);
+    }
+    void emitMultiArgsWithPairSignal1(int value, const std::pair<int, double> &p)
+    {
+        emit multiArgsWithPairSignal1(value, p);
+    }
+    void emitMultiArgsWithPairSignal2(const std::pair<int, double> &p, int value)
+    {
+        emit multiArgsWithPairSignal2(p, value);
+    }
 
     void emitNoArgPrivateSignal() { emit noArgPrivateSignal(QPrivateSignal()); }
     void emitIntArgPrivateSignal(int value) { emit intArgPrivateSignal(value, QPrivateSignal()); }
@@ -71,17 +88,51 @@ public:
     {
         emit multiArgsPrivateSignal(value1, value2, value3, QPrivateSignal());
     }
+    void emitTupleArgPrivateSignal(const std::tuple<int, double, QString> &t)
+    {
+        emit tupleArgPrivateSignal(t, QPrivateSignal());
+    }
+    void emitMultiArgsWithTuplePrivateSignal1(int value, const std::tuple<int, double, QString> &t)
+    {
+        emit multiArgsWithTuplePrivateSignal1(value, t, QPrivateSignal());
+    }
+    void emitMultiArgsWithTuplePrivateSignal2(const std::tuple<int, double, QString> &t, int value)
+    {
+        emit multiArgsWithTuplePrivateSignal2(t, value, QPrivateSignal());
+    }
+    void emitMultiArgsWithPairPrivateSignal1(int value, const std::pair<int, double> &p)
+    {
+        emit multiArgsWithPairPrivateSignal1(value, p, QPrivateSignal());
+    }
+    void emitMultiArgsWithPairPrivateSignal2(const std::pair<int, double> &p, int value)
+    {
+        emit multiArgsWithPairPrivateSignal2(p, value, QPrivateSignal());
+    }
 
 signals:
     void noArgSignal();
     void intArgSignal(int value);
     void constRefArg(const QString &value);
     void multipleArgs(int value1, double value2, const QString &value3);
+    void tupleArgSignal(const std::tuple<int, double, QString> &t);
+    void multiArgsWithTupleSignal1(int value, const std::tuple<int, double, QString> &t);
+    void multiArgsWithTupleSignal2(const std::tuple<int, double, QString> &t, int value);
+    void multiArgsWithPairSignal1(int value, const std::pair<int, double> &p);
+    void multiArgsWithPairSignal2(const std::pair<int, double> &p, int value);
 
     // Private signals
     void noArgPrivateSignal(QPrivateSignal);
     void intArgPrivateSignal(int value, QPrivateSignal);
     void multiArgsPrivateSignal(int value1, double value2, const QString &value3, QPrivateSignal);
+    void tupleArgPrivateSignal(const std::tuple<int, double, QString> &t, QPrivateSignal);
+    void multiArgsWithTuplePrivateSignal1(int value, const std::tuple<int, double, QString> &t,
+                                          QPrivateSignal);
+    void multiArgsWithTuplePrivateSignal2(const std::tuple<int, double, QString> &t, int value,
+                                          QPrivateSignal);
+    void multiArgsWithPairPrivateSignal1(int value, const std::pair<int, double> &p,
+                                         QPrivateSignal);
+    void multiArgsWithPairPrivateSignal2(const std::pair<int, double> &p, int value,
+                                         QPrivateSignal);
 };
 
 class LambdaThread : public QThread
@@ -3492,6 +3543,16 @@ void tst_QFuture::canceledFutureIsNotValid()
 
 void tst_QFuture::signalConnect()
 {
+    const int intValue = 42;
+    const double doubleValue = 42.5;
+    const QString stringValue = "42";
+
+    using TupleType = std::tuple<int, double, QString>;
+    const TupleType tuple(intValue, doubleValue, stringValue);
+
+    using PairType = std::pair<int, double>;
+    const PairType pair(intValue, doubleValue);
+
     // No arg
     {
         SenderObject sender;
@@ -3525,16 +3586,66 @@ void tst_QFuture::signalConnect()
     // Multiple args
     {
         SenderObject sender;
-        using TupleArgs = std::tuple<int, double, QString>;
         auto future =
-                QtFuture::connect(&sender, &SenderObject::multipleArgs).then([](TupleArgs values) {
+                QtFuture::connect(&sender, &SenderObject::multipleArgs).then([](TupleType values) {
                     return values;
                 });
-        sender.emitMultipleArgs(42, 42.5, "42");
+        sender.emitMultipleArgs(intValue, doubleValue, stringValue);
         auto result = future.result();
-        QCOMPARE(std::get<0>(result), 42);
-        QCOMPARE(std::get<1>(result), 42.5);
-        QCOMPARE(std::get<2>(result), "42");
+        QCOMPARE(result, tuple);
+    }
+
+    // Single std::tuple arg
+    {
+        SenderObject sender;
+        QFuture<TupleType> future = QtFuture::connect(&sender, &SenderObject::tupleArgSignal);
+        sender.emitTupleArgSignal(tuple);
+        auto result = future.result();
+        QCOMPARE(result, tuple);
+    }
+
+    // Multi-args signal(int, std::tuple)
+    {
+        SenderObject sender;
+        QFuture<std::tuple<int, TupleType>> future =
+                QtFuture::connect(&sender, &SenderObject::multiArgsWithTupleSignal1);
+        sender.emitMultiArgsWithTupleSignal1(142, tuple);
+        const auto [v, t] = future.result();
+        QCOMPARE(v, 142);
+        QCOMPARE(t, tuple);
+    }
+
+    // Multi-args signal(std::tuple, int)
+    {
+        SenderObject sender;
+        QFuture<std::tuple<TupleType, int>> future =
+                QtFuture::connect(&sender, &SenderObject::multiArgsWithTupleSignal2);
+        sender.emitMultiArgsWithTupleSignal2(tuple, 142);
+        const auto [t, v] = future.result();
+        QCOMPARE(v, 142);
+        QCOMPARE(t, tuple);
+    }
+
+    // Multi-args signal(int, std::pair)
+    {
+        SenderObject sender;
+        QFuture<std::tuple<int, PairType>> future =
+                QtFuture::connect(&sender, &SenderObject::multiArgsWithPairSignal1);
+        sender.emitMultiArgsWithPairSignal1(142, pair);
+        const auto [v, p] = future.result();
+        QCOMPARE(v, 142);
+        QCOMPARE(p, pair);
+    }
+
+    // Multi-args signal(std::pair, int)
+    {
+        SenderObject sender;
+        QFuture<std::tuple<PairType, int>> future =
+                QtFuture::connect(&sender, &SenderObject::multiArgsWithPairSignal2);
+        sender.emitMultiArgsWithPairSignal2(pair, 142);
+        const auto [p, v] = future.result();
+        QCOMPARE(v, 142);
+        QCOMPARE(p, pair);
     }
 
     // No arg private signal
@@ -3562,12 +3673,64 @@ void tst_QFuture::signalConnect()
     {
         SenderObject sender;
         auto future = QtFuture::connect(&sender, &SenderObject::multiArgsPrivateSignal)
-                              .then([](std::tuple<int, double, QString> values) { return values; });
-        sender.emitMultiArgsPrivateSignal(42, 42.5, "42");
-        const auto [i, d, s] = future.result();
-        QCOMPARE(i, 42);
-        QCOMPARE(d, 42.5);
-        QCOMPARE(s, "42");
+                              .then([](TupleType values) { return values; });
+        sender.emitMultiArgsPrivateSignal(intValue, doubleValue, stringValue);
+        auto result = future.result();
+        QCOMPARE(result, tuple);
+    }
+
+    // Single std::tuple arg private signal
+    {
+        SenderObject sender;
+        QFuture<TupleType> future =
+                QtFuture::connect(&sender, &SenderObject::tupleArgPrivateSignal);
+        sender.emitTupleArgPrivateSignal(tuple);
+        auto result = future.result();
+        QCOMPARE(result, tuple);
+    }
+
+    // Multi-args private signal(int, std::tuple)
+    {
+        SenderObject sender;
+        QFuture<std::tuple<int, TupleType>> future =
+                QtFuture::connect(&sender, &SenderObject::multiArgsWithTuplePrivateSignal1);
+        sender.emitMultiArgsWithTuplePrivateSignal1(142, tuple);
+        const auto [v, t] = future.result();
+        QCOMPARE(v, 142);
+        QCOMPARE(t, tuple);
+    }
+
+    // Multi-args private signal(std::tuple, int)
+    {
+        SenderObject sender;
+        QFuture<std::tuple<TupleType, int>> future =
+                QtFuture::connect(&sender, &SenderObject::multiArgsWithTuplePrivateSignal2);
+        sender.emitMultiArgsWithTuplePrivateSignal2(tuple, 142);
+        const auto [t, v] = future.result();
+        QCOMPARE(v, 142);
+        QCOMPARE(t, tuple);
+    }
+
+    // Multi-args private signal(int, std::pair)
+    {
+        SenderObject sender;
+        QFuture<std::tuple<int, PairType>> future =
+                QtFuture::connect(&sender, &SenderObject::multiArgsWithPairPrivateSignal1);
+        sender.emitMultiArgsWithPairPrivateSignal1(142, pair);
+        const auto [v, p] = future.result();
+        QCOMPARE(v, 142);
+        QCOMPARE(p, pair);
+    }
+
+    // Multi-args private signal(std::pair, int)
+    {
+        SenderObject sender;
+        QFuture<std::tuple<PairType, int>> future =
+                QtFuture::connect(&sender, &SenderObject::multiArgsWithPairPrivateSignal2);
+        sender.emitMultiArgsWithPairPrivateSignal2(pair, 142);
+        const auto [p, v] = future.result();
+        QCOMPARE(v, 142);
+        QCOMPARE(p, pair);
     }
 
     // Sender destroyed
