@@ -208,7 +208,10 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
             sendEventForVirtualViewId(viewId,
                     AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED);
         }
-        invalidateVirtualViewId(viewId);
+        // When the object is hidden, we need to notify its parent about
+        // content change, not the hidden object itself
+        final int parentId = QtNativeAccessibility.parentId(viewId);
+        invalidateVirtualViewId(parentId);
     }
 
     public void notifyObjectFocus(int viewId)
