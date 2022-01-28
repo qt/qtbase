@@ -246,10 +246,12 @@ asm(
 #    define __haswell__       1
 #  endif
 
+QT_BEGIN_NAMESPACE
+static const quint64 qCompilerCpuFeatures = _compilerCpuFeatures;
+
 // This constant does not include all CPU features found in a Haswell, only
 // those that we'd have optimized code for.
 // Note: must use Q_CONSTEXPR here, as this file may be compiled in C mode.
-QT_BEGIN_NAMESPACE
 static const quint64 CpuFeatureArchHaswell    = 0
         | CpuFeatureSSE2
         | CpuFeatureSSE3

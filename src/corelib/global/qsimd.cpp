@@ -350,22 +350,6 @@ static void xgetbv(uint in, uint &eax, uint &edx)
 #endif
 }
 
-// Flags from the XCR0 state register
-enum XCR0Flags {
-    X87             = 1 << 0,
-    XMM0_15         = 1 << 1,
-    YMM0_15Hi128    = 1 << 2,
-    BNDRegs         = 1 << 3,
-    BNDCSR          = 1 << 4,
-    OpMask          = 1 << 5,
-    ZMM0_15Hi256    = 1 << 6,
-    ZMM16_31        = 1 << 7,
-
-    SSEState        = XMM0_15,
-    AVXState        = XMM0_15 | YMM0_15Hi128,
-    AVX512State     = AVXState | OpMask | ZMM0_15Hi256 | ZMM16_31
-};
-
 QT_FUNCTION_TARGET_BASELINE
 static quint64 adjustedXcr0(quint64 xcr0)
 {
@@ -386,7 +370,7 @@ static quint64 adjustedXcr0(quint64 xcr0)
     constexpr quintptr cpu_capabilities64 = commpage + 0x10;
     quint64 capab = *reinterpret_cast<quint64 *>(cpu_capabilities64);
     if (capab & kHasAVX512F)
-        xcr0 |= AVX512State;
+        xcr0 |= XSave_Avx512State;
 #endif
 
     return xcr0;
@@ -395,9 +379,6 @@ static quint64 adjustedXcr0(quint64 xcr0)
 QT_FUNCTION_TARGET_BASELINE
 static quint64 detectProcessorFeatures()
 {
-    static const quint64 AllAVX = AllAVX512 | CpuFeatureAVX | CpuFeatureAVX2 | CpuFeatureF16C
-            | CpuFeatureFMA | CpuFeatureVAES;
-
     quint64 features = 0;
     int cpuidLevel = maxBasicCpuidSupported();
 #if Q_PROCESSOR_X86 < 5
@@ -408,38 +389,35 @@ static quint64 detectProcessorFeatures()
 #endif
 
     uint results[X86CpuidMaxLeaf] = {};
-    cpuidFeatures01(results[Leaf1ECX], results[Leaf1EDX]);
+    cpuidFeatures01(results[Leaf01ECX], results[Leaf01EDX]);
     if (cpuidLevel >= 7)
-        cpuidFeatures07_00(results[Leaf7_0EBX], results[Leaf7_0ECX], results[Leaf7_0EDX]);
+        cpuidFeatures07_00(results[Leaf07_00EBX], results[Leaf07_00ECX], results[Leaf07_00EDX]);
 
     // populate our feature list
-    for (uint i = 0; i < sizeof(x86_locators) / sizeof(x86_locators[0]); ++i) {
+    for (uint i = 0; i < std::size(x86_locators); ++i) {
         uint word = x86_locators[i] / 32;
         uint bit = 1U << (x86_locators[i] % 32);
-        quint64 feature = Q_UINT64_C(1) << (i + 1);
+        quint64 feature = Q_UINT64_C(1) << i;
         if (results[word] & bit)
             features |= feature;
     }
 
     // now check the AVX state
     quint64 xcr0 = 0;
-    if (results[Leaf1ECX] & (1u << 27)) {
+    if (results[Leaf01ECX] & (1u << 27)) {
         // XGETBV enabled
         uint xgetbvA = 0, xgetbvD = 0;
         xgetbv(0, xgetbvA, xgetbvD);
 
         xcr0 = xgetbvA;
-        if (sizeof(XCR0Flags) > sizeof(xgetbvA))
+        if (sizeof(XSaveBits) > sizeof(xgetbvA))
             xcr0 |= quint64(xgetbvD) << 32;
         xcr0 = adjustedXcr0(xcr0);
     }
 
-    if ((xcr0 & AVXState) != AVXState) {
-        // support for YMM registers is disabled, disable all AVX
-        features &= ~AllAVX;
-    } else if ((xcr0 & AVX512State) != AVX512State) {
-        // support for ZMM registers or mask registers is disabled, disable all AVX512
-        features &= ~AllAVX512;
+    for (auto req : xsave_requirements) {
+        if ((xcr0 & req.xsave_state) != req.xsave_state)
+            features &= ~req.cpu_features;
     }
 
     if (features & CpuFeatureRDRND && !checkRdrndWorks())
