@@ -269,7 +269,7 @@ public:
 
     Q_REQUIRED_RESULT Q_CORE_EXPORT static int compare(const QVersionNumber &v1, const QVersionNumber &v2) noexcept;
 
-    Q_REQUIRED_RESULT Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber commonPrefix(const QVersionNumber &v1, const QVersionNumber &v2);
+    Q_REQUIRED_RESULT Q_CORE_EXPORT static QVersionNumber commonPrefix(const QVersionNumber &v1, const QVersionNumber &v2);
 
     Q_REQUIRED_RESULT Q_CORE_EXPORT QString toString() const;
 #if QT_STRINGVIEW_LEVEL < 2
