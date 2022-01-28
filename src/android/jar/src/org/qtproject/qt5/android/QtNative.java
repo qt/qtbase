@@ -103,6 +103,7 @@ public class QtNative
     private static int m_displayMetricsScreenHeightPixels = 0;
     private static int m_displayMetricsDesktopWidthPixels = 0;
     private static int m_displayMetricsDesktopHeightPixels = 0;
+    private static float m_displayMetricsRefreshRate = 60;
     private static double m_displayMetricsXDpi = .0;
     private static double m_displayMetricsYDpi = .0;
     private static double m_displayMetricsScaledDensity = 1.0;
@@ -613,7 +614,8 @@ public class QtNative
                                       m_displayMetricsXDpi,
                                       m_displayMetricsYDpi,
                                       m_displayMetricsScaledDensity,
-                                      m_displayMetricsDensity);
+                                      m_displayMetricsDensity,
+                                      m_displayMetricsRefreshRate);
                 }
             });
             m_qtThread.post(new Runnable() {
@@ -635,7 +637,8 @@ public class QtNative
                                                     double XDpi,
                                                     double YDpi,
                                                     double scaledDensity,
-                                                    double density)
+                                                    double density,
+                                                    float refreshRate)
     {
         /* Fix buggy dpi report */
         if (XDpi < android.util.DisplayMetrics.DENSITY_LOW)
@@ -645,14 +648,9 @@ public class QtNative
 
         synchronized (m_mainActivityMutex) {
             if (m_started) {
-                setDisplayMetrics(screenWidthPixels,
-                                  screenHeightPixels,
-                                  desktopWidthPixels,
-                                  desktopHeightPixels,
-                                  XDpi,
-                                  YDpi,
-                                  scaledDensity,
-                                  density);
+                setDisplayMetrics(screenWidthPixels, screenHeightPixels, desktopWidthPixels,
+                                  desktopHeightPixels, XDpi, YDpi, scaledDensity, density,
+                                  refreshRate);
             } else {
                 m_displayMetricsScreenWidthPixels = screenWidthPixels;
                 m_displayMetricsScreenHeightPixels = screenHeightPixels;
@@ -662,6 +660,7 @@ public class QtNative
                 m_displayMetricsYDpi = YDpi;
                 m_displayMetricsScaledDensity = scaledDensity;
                 m_displayMetricsDensity = density;
+                m_displayMetricsRefreshRate = refreshRate;
             }
         }
     }
@@ -1340,8 +1339,10 @@ public class QtNative
                                                 double XDpi,
                                                 double YDpi,
                                                 double scaledDensity,
-                                                double density);
+                                                double density,
+                                                float refreshRate);
     public static native void handleOrientationChanged(int newRotation, int nativeOrientation);
+    public static native void handleRefreshRateChanged(float refreshRate);
     // screen methods
 
     // pointer methods

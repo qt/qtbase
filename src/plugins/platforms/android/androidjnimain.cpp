@@ -655,7 +655,7 @@ static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
                             jint widthPixels, jint heightPixels,
                             jint desktopWidthPixels, jint desktopHeightPixels,
                             jdouble xdpi, jdouble ydpi,
-                            jdouble scaledDensity, jdouble density)
+                            jdouble scaledDensity, jdouble density, jfloat refreshRate)
 {
     // Android does not give us the correct screen size for immersive mode, but
     // the surface does have the right size
@@ -681,6 +681,7 @@ static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
                                                         qRound(double(heightPixels) / ydpi * 25.4));
         m_androidPlatformIntegration->setScreenSize(widthPixels, heightPixels);
         m_androidPlatformIntegration->setDesktopSize(desktopWidthPixels, desktopHeightPixels);
+        m_androidPlatformIntegration->setRefreshRate(refreshRate);
     }
 }
 
@@ -781,6 +782,12 @@ static void handleOrientationChanged(JNIEnv */*env*/, jobject /*thiz*/, jint new
     }
 }
 
+static void handleRefreshRateChanged(JNIEnv */*env*/, jclass /*cls*/, jfloat refreshRate)
+{
+    if (m_androidPlatformIntegration)
+        m_androidPlatformIntegration->setRefreshRate(refreshRate);
+}
+
 static void onActivityResult(JNIEnv */*env*/, jclass /*cls*/,
                              jint requestCode,
                              jint resultCode,
@@ -806,14 +813,15 @@ static JNINativeMethod methods[] = {
     {"quitQtCoreApplication", "()V", (void *)quitQtCoreApplication},
     {"terminateQt", "()V", (void *)terminateQt},
     {"waitForServiceSetup", "()V", (void *)waitForServiceSetup},
-    {"setDisplayMetrics", "(IIIIDDDD)V", (void *)setDisplayMetrics},
+    {"setDisplayMetrics", "(IIIIDDDDF)V", (void *)setDisplayMetrics},
     {"setSurface", "(ILjava/lang/Object;II)V", (void *)setSurface},
     {"updateWindow", "()V", (void *)updateWindow},
     {"updateApplicationState", "(I)V", (void *)updateApplicationState},
     {"handleOrientationChanged", "(II)V", (void *)handleOrientationChanged},
     {"onActivityResult", "(IILandroid/content/Intent;)V", (void *)onActivityResult},
     {"onNewIntent", "(Landroid/content/Intent;)V", (void *)onNewIntent},
-    {"onBind", "(Landroid/content/Intent;)Landroid/os/IBinder;", (void *)onBind}
+    {"onBind", "(Landroid/content/Intent;)Landroid/os/IBinder;", (void *)onBind},
+    {"handleRefreshRateChanged", "(F)V", (void *)handleRefreshRateChanged}
 };
 
 #define FIND_AND_CHECK_CLASS(CLASS_NAME) \

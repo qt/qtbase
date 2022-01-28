@@ -494,6 +494,12 @@ void QAndroidPlatformIntegration::setScreenSize(int width, int height)
         QMetaObject::invokeMethod(m_primaryScreen, "setSize", Qt::AutoConnection, Q_ARG(QSize, QSize(width, height)));
 }
 
+void QAndroidPlatformIntegration::setRefreshRate(qreal refreshRate)
+{
+    if (m_primaryScreen)
+        QMetaObject::invokeMethod(m_primaryScreen, "setRefreshRate", Qt::AutoConnection,
+                                  Q_ARG(qreal, refreshRate));
+}
 #if QT_CONFIG(vulkan)
 
 QPlatformVulkanInstance *QAndroidPlatformIntegration::createPlatformVulkanInstance(QVulkanInstance *instance) const

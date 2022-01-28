@@ -69,6 +69,7 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.Display;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -677,8 +678,13 @@ public class QtActivityDelegate
 
             @Override
             public void onDisplayChanged(int displayId) {
-                m_currentRotation = m_activity.getWindowManager().getDefaultDisplay().getRotation();
+                Display display = (Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
+                        ? m_activity.getWindowManager().getDefaultDisplay()
+                        : m_activity.getDisplay();
+                m_currentRotation = display.getRotation();
                 QtNative.handleOrientationChanged(m_currentRotation, m_nativeOrientation);
+                float refreshRate = display.getRefreshRate();
+                QtNative.handleRefreshRateChanged(refreshRate);
             }
 
             @Override
@@ -808,6 +814,11 @@ public class QtActivityDelegate
 
         QtNative.handleOrientationChanged(rotation, m_nativeOrientation);
         m_currentRotation = rotation;
+
+        float refreshRate = (Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
+                ? m_activity.getWindowManager().getDefaultDisplay().getRefreshRate()
+                : m_activity.getDisplay().getRefreshRate();
+        QtNative.handleRefreshRateChanged(refreshRate);
 
         m_layout.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
             @Override

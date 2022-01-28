@@ -96,6 +96,7 @@ public:
     virtual void setDesktopSize(int width, int height);
     virtual void setDisplayMetrics(int width, int height);
     void setScreenSize(int width, int height);
+    void setRefreshRate(qreal refreshRate);
     bool isVirtualDesktop() { return true; }
 
     QPlatformFontDatabase *fontDatabase() const override;

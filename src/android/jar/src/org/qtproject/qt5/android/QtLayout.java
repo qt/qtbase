@@ -42,8 +42,10 @@ package org.qtproject.qt5.android;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -70,9 +72,13 @@ public class QtLayout extends ViewGroup
     protected void onSizeChanged (int w, int h, int oldw, int oldh)
     {
         DisplayMetrics metrics = new DisplayMetrics();
-        ((Activity) getContext()).getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        Display display = (Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
+                ? ((Activity)getContext()).getWindowManager().getDefaultDisplay()
+                : ((Activity)getContext()).getDisplay();
+        display.getMetrics(metrics);
         QtNative.setApplicationDisplayMetrics(metrics.widthPixels, metrics.heightPixels, w, h,
-                                              metrics.xdpi, metrics.ydpi, metrics.scaledDensity, metrics.density);
+                                              metrics.xdpi, metrics.ydpi, metrics.scaledDensity,
+                                              metrics.density, display.getRefreshRate());
         if (m_startApplicationRunnable != null) {
             m_startApplicationRunnable.run();
             m_startApplicationRunnable = null;
