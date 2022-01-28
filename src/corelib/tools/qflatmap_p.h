@@ -607,13 +607,13 @@ public:
 
     bool remove(const Key &key)
     {
-        return do_remove(binary_find(key));
+        return do_remove(find(key));
     }
 
     template <class X, class Y = Compare, is_marked_transparent<Y> = nullptr>
     bool remove(const X &key)
     {
-        return do_remove(binary_find(key));
+        return do_remove(find(key));
     }
 
     iterator erase(iterator it)
@@ -624,49 +624,49 @@ public:
 
     T take(const Key &key)
     {
-        return do_take(binary_find(key));
+        return do_take(find(key));
     }
 
     template <class X, class Y = Compare, is_marked_transparent<Y> = nullptr>
     T take(const X &key)
     {
-        return do_take(binary_find(key));
+        return do_take(find(key));
     }
 
     bool contains(const Key &key) const
     {
-        return binary_find(key) != end();
+        return find(key) != end();
     }
 
     template <class X, class Y = Compare, is_marked_transparent<Y> = nullptr>
     bool contains(const X &key) const
     {
-        return binary_find(key) != end();
+        return find(key) != end();
     }
 
     T value(const Key &key, const T &defaultValue) const
     {
-        auto it = binary_find(key);
+        auto it = find(key);
         return it == end() ? defaultValue : it.value();
     }
 
     template <class X, class Y = Compare, is_marked_transparent<Y> = nullptr>
     T value(const X &key, const T &defaultValue) const
     {
-        auto it = binary_find(key);
+        auto it = find(key);
         return it == end() ? defaultValue : it.value();
     }
 
     T value(const Key &key) const
     {
-        auto it = binary_find(key);
+        auto it = find(key);
         return it == end() ? T() : it.value();
     }
 
     template <class X, class Y = Compare, is_marked_transparent<Y> = nullptr>
     T value(const X &key) const
     {
-        auto it = binary_find(key);
+        auto it = find(key);
         return it == end() ? T() : it.value();
     }
 
@@ -820,26 +820,38 @@ public:
         return fromKeysIterator(std::lower_bound(c.keys.begin(), c.keys.end(), key, key_comp()));
     }
 
-    iterator find(const key_type &k)
+    iterator find(const Key &key)
     {
-        return binary_find(k);
+        return { &c, std::as_const(*this).find(key).i };
     }
 
     template <class X, class Y = Compare, is_marked_transparent<Y> = nullptr>
     iterator find(const X &key)
     {
-        return binary_find(key);
+        return { &c, std::as_const(*this).find(key).i };
     }
 
-    const_iterator find(const key_type &k) const
+    const_iterator find(const Key &key) const
     {
-        return binary_find(k);
+        auto it = lower_bound(key);
+        if (it != end()) {
+            if (!key_compare::operator()(key, it.key()))
+                return it;
+            it = end();
+        }
+        return it;
     }
 
     template <class X, class Y = Compare, is_marked_transparent<Y> = nullptr>
     const_iterator find(const X &key) const
     {
-        return binary_find(key);
+        auto it = lower_bound(key);
+        if (it != end()) {
+            if (!key_compare::operator()(key, it.key()))
+                return it;
+            it = end();
+        }
+        return it;
     }
 
     key_compare key_comp() const noexcept
@@ -949,40 +961,6 @@ private:
         std::inplace_merge(p.begin(), p.begin() + s, p.end(), IndexedKeyComparator(this));
         applyPermutation(p);
         makeUnique();
-    }
-
-    iterator binary_find(const Key &key)
-    {
-        return { &c, std::as_const(*this).binary_find(key).i };
-    }
-
-    template <class X, class Y = Compare, is_marked_transparent<Y> = nullptr>
-    iterator binary_find(const X &key)
-    {
-        return { &c, std::as_const(*this).binary_find(key).i };
-    }
-
-    const_iterator binary_find(const Key &key) const
-    {
-        auto it = lower_bound(key);
-        if (it != end()) {
-            if (!key_compare::operator()(key, it.key()))
-                return it;
-            it = end();
-        }
-        return it;
-    }
-
-    template <class X, class Y = Compare, is_marked_transparent<Y> = nullptr>
-    const_iterator binary_find(const X &key) const
-    {
-        auto it = lower_bound(key);
-        if (it != end()) {
-            if (!key_compare::operator()(key, it.key()))
-                return it;
-            it = end();
-        }
-        return it;
     }
 
     void ensureOrderedUnique()
