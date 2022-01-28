@@ -1,17 +1,20 @@
 find_package(PkgConfig QUIET)
 pkg_check_modules(PC_GSSAPI QUIET krb5-gssapi)
+if (NOT PC_GSSAPI_FOUND)
+    pkg_check_modules(PC_GSSAPI QUIET mit-krb5-gssapi)
+endif()
 
 find_path(GSSAPI_INCLUDE_DIRS
           NAMES gssapi/gssapi.h
           HINTS ${PC_GSSAPI_INCLUDEDIR}
-          PATH_SUFFIXES gssapi)
+)
 
 find_library(GSSAPI_LIBRARIES
              NAMES
              GSS # framework
              gss # solaris
              gssapi_krb5
-             HINTS ${PC_GSSAPILIBDIR}
+             HINTS ${PC_GSSAPI_LIBDIR}
 )
 
 include(FindPackageHandleStandardArgs)
