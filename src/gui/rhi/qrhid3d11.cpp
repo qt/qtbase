@@ -214,7 +214,7 @@ bool QRhiD3D11::create(QRhi::Flags flags)
         // sufficient to get non-blocking behavior, try using ALLOW_TEARING
         // when available.
         IDXGIFactory5 *factory5 = nullptr;
-        if (SUCCEEDED(dxgiFactory->QueryInterface(IID_IDXGIFactory5, reinterpret_cast<void **>(&factory5)))) {
+        if (SUCCEEDED(dxgiFactory->QueryInterface(__uuidof(IDXGIFactory5), reinterpret_cast<void **>(&factory5)))) {
             BOOL allowTearing = false;
             if (SUCCEEDED(factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing))))
                 supportsAllowTearing = allowTearing;
