@@ -67,7 +67,7 @@ public:
 #if QT_CONFIG(settings)
     static QSettings *configuration();
     static void reload();
-    static QString qtconfManualPath;
+    static const QString *qtconfManualPath;
 #endif
 
     struct LocationInfo

@@ -208,7 +208,8 @@ Option::parseCommandLine(QStringList &args, QMakeCmdLineParserState &state)
                 fprintf(stderr, "***Option %s requires a parameter\n", qPrintable(args.at(x - 1)));
                 return Option::QMAKE_CMDLINE_SHOW_USAGE | Option::QMAKE_CMDLINE_ERROR;
             }
-            QLibraryInfoPrivate::qtconfManualPath = globals->qtconf;
+            if (!globals->qtconf.isEmpty())
+                QLibraryInfoPrivate::qtconfManualPath = &globals->qtconf;
             if (cmdRet == QMakeGlobals::ArgumentsOk)
                 break;
             Q_ASSERT(cmdRet == QMakeGlobals::ArgumentUnknown);
