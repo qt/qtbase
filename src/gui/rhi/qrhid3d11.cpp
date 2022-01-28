@@ -141,7 +141,7 @@ QRhiD3D11::QRhiD3D11(QRhiD3D11InitParams *params, QRhiD3D11NativeHandles *import
         if (importParams->dev && importParams->context) {
             dev = reinterpret_cast<ID3D11Device *>(importParams->dev);
             ID3D11DeviceContext *ctx = reinterpret_cast<ID3D11DeviceContext *>(importParams->context);
-            if (SUCCEEDED(ctx->QueryInterface(IID_ID3D11DeviceContext1, reinterpret_cast<void **>(&context)))) {
+            if (SUCCEEDED(ctx->QueryInterface(__uuidof(ID3D11DeviceContext1), reinterpret_cast<void **>(&context)))) {
                 // get rid of the ref added by QueryInterface
                 ctx->Release();
                 importedDeviceAndContext = true;
@@ -173,7 +173,7 @@ inline Int aligned(Int v, Int byteAlign)
 static IDXGIFactory1 *createDXGIFactory2()
 {
     IDXGIFactory1 *result = nullptr;
-    const HRESULT hr = CreateDXGIFactory2(0, IID_IDXGIFactory2, reinterpret_cast<void **>(&result));
+    const HRESULT hr = CreateDXGIFactory2(0, __uuidof(IDXGIFactory2), reinterpret_cast<void **>(&result));
     if (FAILED(hr)) {
         qWarning("CreateDXGIFactory2() failed to create DXGI factory: %s", qPrintable(comErrorMessage(hr)));
         result = nullptr;
@@ -184,7 +184,7 @@ static IDXGIFactory1 *createDXGIFactory2()
 static IDXGIFactory1 *createDXGIFactory1()
 {
     IDXGIFactory1 *result = nullptr;
-    const HRESULT hr = CreateDXGIFactory1(IID_IDXGIFactory1, reinterpret_cast<void **>(&result));
+    const HRESULT hr = CreateDXGIFactory1(__uuidof(IDXGIFactory1), reinterpret_cast<void **>(&result));
     if (FAILED(hr)) {
         qWarning("CreateDXGIFactory1() failed to create DXGI factory: %s", qPrintable(comErrorMessage(hr)));
         result = nullptr;
@@ -319,7 +319,7 @@ bool QRhiD3D11::create(QRhi::Flags flags)
             qWarning("Failed to create D3D11 device and context: %s", qPrintable(comErrorMessage(hr)));
             return false;
         }
-        if (SUCCEEDED(ctx->QueryInterface(IID_ID3D11DeviceContext1, reinterpret_cast<void **>(&context)))) {
+        if (SUCCEEDED(ctx->QueryInterface(__uuidof(ID3D11DeviceContext1), reinterpret_cast<void **>(&context)))) {
             ctx->Release();
         } else {
             qWarning("ID3D11DeviceContext1 not supported");
@@ -329,7 +329,7 @@ bool QRhiD3D11::create(QRhi::Flags flags)
         Q_ASSERT(dev && context);
         featureLevel = dev->GetFeatureLevel();
         IDXGIDevice *dxgiDev = nullptr;
-        if (SUCCEEDED(dev->QueryInterface(IID_IDXGIDevice, reinterpret_cast<void **>(&dxgiDev)))) {
+        if (SUCCEEDED(dev->QueryInterface(__uuidof(IDXGIDevice), reinterpret_cast<void **>(&dxgiDev)))) {
             IDXGIAdapter *adapter = nullptr;
             if (SUCCEEDED(dxgiDev->GetAdapter(&adapter))) {
                 DXGI_ADAPTER_DESC desc;
@@ -345,7 +345,7 @@ bool QRhiD3D11::create(QRhi::Flags flags)
         qCDebug(QRHI_LOG_INFO, "Using imported device %p", dev);
     }
 
-    if (FAILED(context->QueryInterface(IID_ID3DUserDefinedAnnotation, reinterpret_cast<void **>(&annotations))))
+    if (FAILED(context->QueryInterface(__uuidof(ID3DUserDefinedAnnotation), reinterpret_cast<void **>(&annotations))))
         annotations = nullptr;
 
     deviceLost = false;
@@ -409,7 +409,7 @@ void QRhiD3D11::reportLiveObjects(ID3D11Device *device)
 {
     // this works only when params.enableDebugLayer was true
     ID3D11Debug *debug;
-    if (SUCCEEDED(device->QueryInterface(IID_ID3D11Debug, reinterpret_cast<void **>(&debug)))) {
+    if (SUCCEEDED(device->QueryInterface(__uuidof(ID3D11Debug), reinterpret_cast<void **>(&debug)))) {
         debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
         debug->Release();
     }
@@ -4682,7 +4682,7 @@ bool QD3D11SwapChain::createOrResize()
                 swapChain = sc1;
                 if (m_format != SDR) {
                     IDXGISwapChain3 *sc3 = nullptr;
-                    if (SUCCEEDED(sc1->QueryInterface(IID_IDXGISwapChain3, reinterpret_cast<void **>(&sc3)))) {
+                    if (SUCCEEDED(sc1->QueryInterface(__uuidof(IDXGISwapChain3), reinterpret_cast<void **>(&sc3)))) {
                         hr = sc3->SetColorSpace1(hdrColorSpace);
                         if (FAILED(hr))
                             qWarning("Failed to set color space on swapchain: %s", qPrintable(comErrorMessage(hr)));
@@ -4748,7 +4748,7 @@ bool QD3D11SwapChain::createOrResize()
     // swapchain."
 
     // So just query index 0 once (per resize) and be done with it.
-    HRESULT hr = swapChain->GetBuffer(0, IID_ID3D11Texture2D, reinterpret_cast<void **>(&backBufferTex));
+    HRESULT hr = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void **>(&backBufferTex));
     if (FAILED(hr)) {
         qWarning("Failed to query swapchain backbuffer: %s", qPrintable(comErrorMessage(hr)));
         return false;
