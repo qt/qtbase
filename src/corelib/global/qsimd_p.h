@@ -250,7 +250,6 @@ asm(
 //
 // macOS's fat binaries support the "x86_64h" sub-architecture and the GNU libc
 // ELF loader also supports a "haswell/" subdir (e.g., /usr/lib/haswell).
-#  define QT_FUNCTION_TARGET_STRING_ARCH_HASWELL    "arch=haswell"
 #  define ARCH_HASWELL_MACROS       (__AVX2__ + __BMI__ + __BMI2__ + __F16C__ + __FMA__ + __LZCNT__)
 #  if ARCH_HASWELL_MACROS != 0
 #    if ARCH_HASWELL_MACROS != 6

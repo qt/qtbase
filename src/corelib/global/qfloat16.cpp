@@ -200,20 +200,13 @@ static inline bool hasFastF16()
 }
 
 #if QT_COMPILER_SUPPORTS_HERE(AVX512VL) && QT_COMPILER_SUPPORTS_HERE(AVX512BW)
-#define QT_FUNCTION_TARGET_STRING_AVX512VLBW    \
-    QT_FUNCTION_TARGET_STRING_AVX512VL ","      \
-    QT_FUNCTION_TARGET_STRING_AVX512BW ","      \
-    QT_FUNCTION_TARGET_STRING_F16C ","          \
-    QT_FUNCTION_TARGET_STRING_BMI2          /* BMI2 for BZHI */
-
 static bool hasFastF16Avx256()
 {
     // 256-bit AVX512 don't have a performance penalty (see qstring.cpp for more info)
-    constexpr quint64 CpuFeatureAVX512VLBW = CpuFeatureAVX512BW | CpuFeatureAVX512VL;
-    return qCpuHasFeature(AVX512VLBW);
+    return qCpuHasFeature(ArchSkylakeAvx512);
 }
 
-static QT_FUNCTION_TARGET(AVX512VLBW)
+static QT_FUNCTION_TARGET(ARCH_SKYLAKE_AVX512)
 void qFloatToFloat16_tail_avx256(quint16 *out, const float *in, qsizetype len) noexcept
 {
     __mmask16 mask = _bzhi_u32(-1, len);
@@ -222,7 +215,7 @@ void qFloatToFloat16_tail_avx256(quint16 *out, const float *in, qsizetype len) n
     _mm_mask_storeu_epi16(out, mask, f16);
 };
 
-static QT_FUNCTION_TARGET(AVX512VLBW)
+static QT_FUNCTION_TARGET(ARCH_SKYLAKE_AVX512)
 void qFloatFromFloat16_tail_avx256(float *out, const quint16 *in, qsizetype len) noexcept
 {
     __mmask16 mask = _bzhi_u32(-1, len);

@@ -28,6 +28,7 @@ open(FH, '<', $input_conf_file) or die $!;
 
 my $i = 0;
 my @features;
+my %feature_ids;
 my @architecture_names;
 my %architectures;
 my @xsaveStates;
@@ -58,7 +59,7 @@ while (<FH>) {
         @basefeatures = @{$architectures{$based}->{allfeatures}} if $based ne "<>";
         @extrafeatures = @{$architectures{$arch}{features}} if defined($architectures{$arch});
         @extrafeatures = (@extrafeatures, split(',', $f));
-        my @allfeatures = sort (@basefeatures, @extrafeatures);
+        my @allfeatures = sort { $feature_ids{$a} <=> $feature_ids{$b} } (@basefeatures, @extrafeatures);
 
         $architectures{$arch} = {
             name => $arch,
@@ -91,6 +92,7 @@ while (<FH>) {
         $id =~ s/[^A-Z0-9_]/_/g;
         push @features,
         { name => $name, depends => $depends, id => $id, bit => $bit, leaf => $function, comment => $comment };
+        $feature_ids{$name} = $i;
         ++$i;
         die("Too many features to fit a 64-bit integer") if $i > 64;
     }
@@ -126,12 +128,6 @@ for (my $i = 0; $i < scalar @features; ++$i) {
 
     # Feature
     printf "#define cpu_feature_%-31s (UINT64_C(1) << %d)\n", lc($feature->{id}), $i;
-
-    # Feature string names for Clang and GCC
-    my $str = $feature->{name} . ',' . $feature->{depends};
-    $str =~ s/,$//;
-    printf "#define QT_FUNCTION_TARGET_STRING_%-17s \"%s\"\n",
-        $feature->{id}, $str;
 }
 
 # Print the architecture list
@@ -158,6 +154,33 @@ for (@architecture_names) {
         }
     }
     print ")";
+}
+
+print "\n// __attribute__ target strings for GCC and Clang";
+for (my $i = 0; $i < scalar @features; ++$i) {
+    my $feature = $features[$i];
+    my $str = $feature->{name} . ',' . $feature->{depends};
+    $str =~ s/,$//;
+    printf "#define QT_FUNCTION_TARGET_STRING_%-17s \"%s\"\n",
+        $feature->{id}, $str;
+}
+for (@architecture_names) {
+    my $arch = $architectures{$_};
+    my $base = $arch->{base};
+    my $featurestr = "";
+    if ($base ne "<>") {
+        $featurestr = "QT_FUNCTION_TARGET_STRING_ARCH_" . uc($base);
+    }
+
+    my @features = @{$arch->{features}};
+    #@features = map { defined($feature_ids{$_}) ? $_ : () } @features;
+    if (scalar @features) {
+        $featurestr .= ' ",' if length $featurestr;
+        $featurestr .= '"' unless length $featurestr;
+        $featurestr .= join(',', @features);
+        $featurestr .= '"';
+    }
+    printf "#define QT_FUNCTION_TARGET_STRING_ARCH_%-12s %s\n", uc($arch->{id}), $featurestr;
 }
 
 print q{

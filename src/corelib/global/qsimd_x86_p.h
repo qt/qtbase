@@ -46,81 +46,47 @@
 
 // in CPUID Leaf 1, EDX:
 #define cpu_feature_sse2                            (UINT64_C(1) << 0)
-#define QT_FUNCTION_TARGET_STRING_SSE2              "sse2"
 
 // in CPUID Leaf 1, ECX:
 #define cpu_feature_sse3                            (UINT64_C(1) << 1)
-#define QT_FUNCTION_TARGET_STRING_SSE3              "sse3"
 #define cpu_feature_ssse3                           (UINT64_C(1) << 2)
-#define QT_FUNCTION_TARGET_STRING_SSSE3             "ssse3"
 #define cpu_feature_fma                             (UINT64_C(1) << 3)
-#define QT_FUNCTION_TARGET_STRING_FMA               "fma"
 #define cpu_feature_sse4_1                          (UINT64_C(1) << 4)
-#define QT_FUNCTION_TARGET_STRING_SSE4_1            "sse4.1"
 #define cpu_feature_sse4_2                          (UINT64_C(1) << 5)
-#define QT_FUNCTION_TARGET_STRING_SSE4_2            "sse4.2"
 #define cpu_feature_movbe                           (UINT64_C(1) << 6)
-#define QT_FUNCTION_TARGET_STRING_MOVBE             "movbe"
 #define cpu_feature_popcnt                          (UINT64_C(1) << 7)
-#define QT_FUNCTION_TARGET_STRING_POPCNT            "popcnt"
 #define cpu_feature_aes                             (UINT64_C(1) << 8)
-#define QT_FUNCTION_TARGET_STRING_AES               "aes,sse4.2"
 #define cpu_feature_avx                             (UINT64_C(1) << 9)
-#define QT_FUNCTION_TARGET_STRING_AVX               "avx"
 #define cpu_feature_f16c                            (UINT64_C(1) << 10)
-#define QT_FUNCTION_TARGET_STRING_F16C              "f16c,avx"
 #define cpu_feature_rdrnd                           (UINT64_C(1) << 11)
-#define QT_FUNCTION_TARGET_STRING_RDRND             "rdrnd"
 
 // in CPUID Leaf 7, Sub-leaf 0, EBX:
 #define cpu_feature_bmi                             (UINT64_C(1) << 12)
-#define QT_FUNCTION_TARGET_STRING_BMI               "bmi"
 #define cpu_feature_avx2                            (UINT64_C(1) << 13)
-#define QT_FUNCTION_TARGET_STRING_AVX2              "avx2,avx"
 #define cpu_feature_bmi2                            (UINT64_C(1) << 14)
-#define QT_FUNCTION_TARGET_STRING_BMI2              "bmi2"
 #define cpu_feature_avx512f                         (UINT64_C(1) << 15)
-#define QT_FUNCTION_TARGET_STRING_AVX512F           "avx512f,avx"
 #define cpu_feature_avx512dq                        (UINT64_C(1) << 16)
-#define QT_FUNCTION_TARGET_STRING_AVX512DQ          "avx512dq,avx512f"
 #define cpu_feature_rdseed                          (UINT64_C(1) << 17)
-#define QT_FUNCTION_TARGET_STRING_RDSEED            "rdseed"
 #define cpu_feature_avx512ifma                      (UINT64_C(1) << 18)
-#define QT_FUNCTION_TARGET_STRING_AVX512IFMA        "avx512ifma,avx512f"
 #define cpu_feature_avx512cd                        (UINT64_C(1) << 19)
-#define QT_FUNCTION_TARGET_STRING_AVX512CD          "avx512cd,avx512f"
 #define cpu_feature_sha                             (UINT64_C(1) << 20)
-#define QT_FUNCTION_TARGET_STRING_SHA               "sha"
 #define cpu_feature_avx512bw                        (UINT64_C(1) << 21)
-#define QT_FUNCTION_TARGET_STRING_AVX512BW          "avx512bw,avx512f"
 #define cpu_feature_avx512vl                        (UINT64_C(1) << 22)
-#define QT_FUNCTION_TARGET_STRING_AVX512VL          "avx512vl,avx512f"
 
 // in CPUID Leaf 7, Sub-leaf 0, ECX:
 #define cpu_feature_avx512vbmi                      (UINT64_C(1) << 23)
-#define QT_FUNCTION_TARGET_STRING_AVX512VBMI        "avx512vbmi,avx512f"
 #define cpu_feature_avx512vbmi2                     (UINT64_C(1) << 24)
-#define QT_FUNCTION_TARGET_STRING_AVX512VBMI2       "avx512vbmi2,avx512f"
 #define cpu_feature_shstk                           (UINT64_C(1) << 25)
-#define QT_FUNCTION_TARGET_STRING_SHSTK             "shstk"
 #define cpu_feature_gfni                            (UINT64_C(1) << 26)
-#define QT_FUNCTION_TARGET_STRING_GFNI              "gfni"
 #define cpu_feature_vaes                            (UINT64_C(1) << 27)
-#define QT_FUNCTION_TARGET_STRING_VAES              "vaes,avx2,avx,aes"
 #define cpu_feature_avx512vnni                      (UINT64_C(1) << 28)
-#define QT_FUNCTION_TARGET_STRING_AVX512VNNI        "avx512vnni,avx512f"
 #define cpu_feature_avx512bitalg                    (UINT64_C(1) << 29)
-#define QT_FUNCTION_TARGET_STRING_AVX512BITALG      "avx512bitalg,avx512f"
 #define cpu_feature_avx512vpopcntdq                 (UINT64_C(1) << 30)
-#define QT_FUNCTION_TARGET_STRING_AVX512VPOPCNTDQ   "avx512vpopcntdq,avx512f"
 
 // in CPUID Leaf 7, Sub-leaf 0, EDX:
 #define cpu_feature_hybrid                          (UINT64_C(1) << 31)
-#define QT_FUNCTION_TARGET_STRING_HYBRID            "hybrid"
 #define cpu_feature_ibt                             (UINT64_C(1) << 32)
-#define QT_FUNCTION_TARGET_STRING_IBT               "ibt"
 #define cpu_feature_avx512fp16                      (UINT64_C(1) << 33)
-#define QT_FUNCTION_TARGET_STRING_AVX512FP16        "avx512fp16,avx512f,f16c"
 
 // CPU architectures
 #define cpu_x86_64              (0 \
@@ -203,6 +169,83 @@
 #define cpu_silvermont          (cpu_slm)
 #define cpu_goldmont            (cpu_glm)
 #define cpu_tremont             (cpu_tnt)
+
+// __attribute__ target strings for GCC and Clang
+#define QT_FUNCTION_TARGET_STRING_SSE2              "sse2"
+#define QT_FUNCTION_TARGET_STRING_SSE3              "sse3"
+#define QT_FUNCTION_TARGET_STRING_SSSE3             "ssse3"
+#define QT_FUNCTION_TARGET_STRING_FMA               "fma"
+#define QT_FUNCTION_TARGET_STRING_SSE4_1            "sse4.1"
+#define QT_FUNCTION_TARGET_STRING_SSE4_2            "sse4.2"
+#define QT_FUNCTION_TARGET_STRING_MOVBE             "movbe"
+#define QT_FUNCTION_TARGET_STRING_POPCNT            "popcnt"
+#define QT_FUNCTION_TARGET_STRING_AES               "aes,sse4.2"
+#define QT_FUNCTION_TARGET_STRING_AVX               "avx"
+#define QT_FUNCTION_TARGET_STRING_F16C              "f16c,avx"
+#define QT_FUNCTION_TARGET_STRING_RDRND             "rdrnd"
+#define QT_FUNCTION_TARGET_STRING_BMI               "bmi"
+#define QT_FUNCTION_TARGET_STRING_AVX2              "avx2,avx"
+#define QT_FUNCTION_TARGET_STRING_BMI2              "bmi2"
+#define QT_FUNCTION_TARGET_STRING_AVX512F           "avx512f,avx"
+#define QT_FUNCTION_TARGET_STRING_AVX512DQ          "avx512dq,avx512f"
+#define QT_FUNCTION_TARGET_STRING_RDSEED            "rdseed"
+#define QT_FUNCTION_TARGET_STRING_AVX512IFMA        "avx512ifma,avx512f"
+#define QT_FUNCTION_TARGET_STRING_AVX512CD          "avx512cd,avx512f"
+#define QT_FUNCTION_TARGET_STRING_SHA               "sha"
+#define QT_FUNCTION_TARGET_STRING_AVX512BW          "avx512bw,avx512f"
+#define QT_FUNCTION_TARGET_STRING_AVX512VL          "avx512vl,avx512f"
+#define QT_FUNCTION_TARGET_STRING_AVX512VBMI        "avx512vbmi,avx512f"
+#define QT_FUNCTION_TARGET_STRING_AVX512VBMI2       "avx512vbmi2,avx512f"
+#define QT_FUNCTION_TARGET_STRING_SHSTK             "shstk"
+#define QT_FUNCTION_TARGET_STRING_GFNI              "gfni"
+#define QT_FUNCTION_TARGET_STRING_VAES              "vaes,avx2,avx,aes"
+#define QT_FUNCTION_TARGET_STRING_AVX512VNNI        "avx512vnni,avx512f"
+#define QT_FUNCTION_TARGET_STRING_AVX512BITALG      "avx512bitalg,avx512f"
+#define QT_FUNCTION_TARGET_STRING_AVX512VPOPCNTDQ   "avx512vpopcntdq,avx512f"
+#define QT_FUNCTION_TARGET_STRING_HYBRID            "hybrid"
+#define QT_FUNCTION_TARGET_STRING_IBT               "ibt"
+#define QT_FUNCTION_TARGET_STRING_AVX512FP16        "avx512fp16,avx512f,f16c"
+#define QT_FUNCTION_TARGET_STRING_ARCH_X86_64       "sse2"
+#define QT_FUNCTION_TARGET_STRING_ARCH_CORE2        QT_FUNCTION_TARGET_STRING_ARCH_X86_64 ",sse3,ssse3,cx16"
+#define QT_FUNCTION_TARGET_STRING_ARCH_NHM          QT_FUNCTION_TARGET_STRING_ARCH_CORE2 ",sse4.1,sse4.2,popcnt"
+#define QT_FUNCTION_TARGET_STRING_ARCH_WSM          QT_FUNCTION_TARGET_STRING_ARCH_NHM
+#define QT_FUNCTION_TARGET_STRING_ARCH_SNB          QT_FUNCTION_TARGET_STRING_ARCH_WSM ",avx"
+#define QT_FUNCTION_TARGET_STRING_ARCH_IVB          QT_FUNCTION_TARGET_STRING_ARCH_SNB ",f16c,rdrnd,fsgsbase"
+#define QT_FUNCTION_TARGET_STRING_ARCH_HSW          QT_FUNCTION_TARGET_STRING_ARCH_IVB ",avx2,fma,bmi,bmi2,lzcnt,movbe"
+#define QT_FUNCTION_TARGET_STRING_ARCH_BDW          QT_FUNCTION_TARGET_STRING_ARCH_HSW ",adx,rdseed"
+#define QT_FUNCTION_TARGET_STRING_ARCH_BDX          QT_FUNCTION_TARGET_STRING_ARCH_BDW
+#define QT_FUNCTION_TARGET_STRING_ARCH_SKL          QT_FUNCTION_TARGET_STRING_ARCH_BDW ",xsavec,xsaves"
+#define QT_FUNCTION_TARGET_STRING_ARCH_ADL          QT_FUNCTION_TARGET_STRING_ARCH_SKL ",avxvnni,gfni,vaes,vpclmulqdq,serialize,shstk,cldemote,movdiri,movdir64b,ibt,waitpkg,keylocker"
+#define QT_FUNCTION_TARGET_STRING_ARCH_SKX          QT_FUNCTION_TARGET_STRING_ARCH_SKL ",avx512f,avx512dq,avx512cd,avx512bw,avx512vl"
+#define QT_FUNCTION_TARGET_STRING_ARCH_CLX          QT_FUNCTION_TARGET_STRING_ARCH_SKX ",avx512vnni"
+#define QT_FUNCTION_TARGET_STRING_ARCH_CPX          QT_FUNCTION_TARGET_STRING_ARCH_CLX ",avx512bf16"
+#define QT_FUNCTION_TARGET_STRING_ARCH_CNL          QT_FUNCTION_TARGET_STRING_ARCH_SKX ",avx512ifma,avx512vbmi"
+#define QT_FUNCTION_TARGET_STRING_ARCH_ICL          QT_FUNCTION_TARGET_STRING_ARCH_CNL ",avx512vbmi2,gfni,vaes,vpclmulqdq,avx512vnni,avx512bitalg,avx512vpopcntdq"
+#define QT_FUNCTION_TARGET_STRING_ARCH_ICX          QT_FUNCTION_TARGET_STRING_ARCH_ICL ",pconfig"
+#define QT_FUNCTION_TARGET_STRING_ARCH_TGL          QT_FUNCTION_TARGET_STRING_ARCH_ICL ",avx512vp2intersect,shstk,,movdiri,movdir64b,ibt,keylocker"
+#define QT_FUNCTION_TARGET_STRING_ARCH_SPR          QT_FUNCTION_TARGET_STRING_ARCH_TGL ",avx512bf16,amxtile,amxbf16,amxint8,avxvnni,cldemote,pconfig,waitpkg,serialize,tsxldtrk,uintr"
+#define QT_FUNCTION_TARGET_STRING_ARCH_SLM          QT_FUNCTION_TARGET_STRING_ARCH_WSM ",rdrnd,movbe"
+#define QT_FUNCTION_TARGET_STRING_ARCH_GLM          QT_FUNCTION_TARGET_STRING_ARCH_SLM ",fsgsbase,rdseed,lzcnt,xsavec,xsaves"
+#define QT_FUNCTION_TARGET_STRING_ARCH_TNT          QT_FUNCTION_TARGET_STRING_ARCH_GLM ",clwb,gfni,cldemote,waitpkg,movdiri,movdir64b"
+#define QT_FUNCTION_TARGET_STRING_ARCH_NEHALEM      QT_FUNCTION_TARGET_STRING_ARCH_NHM
+#define QT_FUNCTION_TARGET_STRING_ARCH_WESTMERE     QT_FUNCTION_TARGET_STRING_ARCH_WSM
+#define QT_FUNCTION_TARGET_STRING_ARCH_SANDYBRIDGE  QT_FUNCTION_TARGET_STRING_ARCH_SNB
+#define QT_FUNCTION_TARGET_STRING_ARCH_IVYBRIDGE    QT_FUNCTION_TARGET_STRING_ARCH_IVB
+#define QT_FUNCTION_TARGET_STRING_ARCH_HASWELL      QT_FUNCTION_TARGET_STRING_ARCH_HSW
+#define QT_FUNCTION_TARGET_STRING_ARCH_BROADWELL    QT_FUNCTION_TARGET_STRING_ARCH_BDW
+#define QT_FUNCTION_TARGET_STRING_ARCH_SKYLAKE      QT_FUNCTION_TARGET_STRING_ARCH_SKL
+#define QT_FUNCTION_TARGET_STRING_ARCH_SKYLAKE_AVX512 QT_FUNCTION_TARGET_STRING_ARCH_SKX
+#define QT_FUNCTION_TARGET_STRING_ARCH_CASCADELAKE  QT_FUNCTION_TARGET_STRING_ARCH_CLX
+#define QT_FUNCTION_TARGET_STRING_ARCH_COOPERLAKE   QT_FUNCTION_TARGET_STRING_ARCH_CPX
+#define QT_FUNCTION_TARGET_STRING_ARCH_CANNONLAKE   QT_FUNCTION_TARGET_STRING_ARCH_CNL
+#define QT_FUNCTION_TARGET_STRING_ARCH_ICELAKE_CLIENT QT_FUNCTION_TARGET_STRING_ARCH_ICL
+#define QT_FUNCTION_TARGET_STRING_ARCH_ICELAKE_SERVER QT_FUNCTION_TARGET_STRING_ARCH_ICX
+#define QT_FUNCTION_TARGET_STRING_ARCH_ALDERLAKE    QT_FUNCTION_TARGET_STRING_ARCH_ADL
+#define QT_FUNCTION_TARGET_STRING_ARCH_SAPPHIRERAPIDS QT_FUNCTION_TARGET_STRING_ARCH_SPR
+#define QT_FUNCTION_TARGET_STRING_ARCH_TIGERLAKE    QT_FUNCTION_TARGET_STRING_ARCH_TGL
+#define QT_FUNCTION_TARGET_STRING_ARCH_SILVERMONT   QT_FUNCTION_TARGET_STRING_ARCH_SLM
+#define QT_FUNCTION_TARGET_STRING_ARCH_GOLDMONT     QT_FUNCTION_TARGET_STRING_ARCH_GLM
+#define QT_FUNCTION_TARGET_STRING_ARCH_TREMONT      QT_FUNCTION_TARGET_STRING_ARCH_TNT
 
 static const uint64_t _compilerCpuFeatures = 0
 #ifdef __SSE2__
