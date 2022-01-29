@@ -510,6 +510,7 @@ static uint siphash(const uint8_t *in, uint inlen, uint seed, uint seed2)
 #if QT_COMPILER_SUPPORTS_HERE(AES) && QT_COMPILER_SUPPORTS_HERE(SSE4_2) && \
     !defined(QHASH_AES_SANITIZER_BUILD)
 #  define AESHASH
+#  define QT_FUNCTION_TARGET_STRING_AES_AVX2    "avx2,aes"
 #  define QT_FUNCTION_TARGET_STRING_AES_AVX512          \
     QT_FUNCTION_TARGET_STRING_ARCH_SKYLAKE_AVX512 ","   \
     QT_FUNCTION_TARGET_STRING_AES
@@ -572,6 +573,8 @@ namespace {
         __m128i mseed2;
         AESHashSeed(size_t seed, size_t seed2) QT_FUNCTION_TARGET(AES);
         __m128i state1() const QT_FUNCTION_TARGET(AES);
+        __m256i state0_256() const QT_FUNCTION_TARGET(AES_AVX2)
+        { return _mm256_set_m128i(state1(), state0); }
     };
 } // unnamed namespace
 
@@ -673,11 +676,11 @@ aeshash128_ge32(__m128i state0, __m128i state1, const __m128i *src, const __m128
 
 #  if QT_COMPILER_SUPPORTS_HERE(VAES)
 static size_t QT_FUNCTION_TARGET(ARCH_ICL) QT_VECTORCALL
-aeshash256_lt32_avx256(__m128i state0_128, __m128i state1_128, const uchar *p, size_t len)
+aeshash256_lt32_avx256(__m256i state0, const uchar *p, size_t len)
 {
+    __m128i state0_128 = _mm256_castsi256_si128(state0);
     if (len) {
         __mmask32 mask = _bzhi_u32(-1, len);
-        __m256i state0 = _mm256_set_m128i(state1_128, state0_128);
         __m256i data = _mm256_maskz_loadu_epi8(mask, p);
         __m128i data0 = _mm256_castsi256_si128(data);
         if (len >= sizeof(__m128i)) {
@@ -699,7 +702,7 @@ aeshash256_lt32_avx256(__m128i state0_128, __m128i state1_128, const uchar *p, s
 }
 
 static size_t QT_FUNCTION_TARGET(VAES) QT_VECTORCALL
-aeshash256_ge32(__m128i state0_128, __m128i state1_128, const uchar *p, size_t len)
+aeshash256_ge32(__m256i state0, const uchar *p, size_t len)
 {
     static const auto hash32bytes = [](__m256i &state0, __m256i data) QT_FUNCTION_TARGET(VAES) {
         state0 = _mm256_xor_si256(state0, data);
@@ -724,7 +727,6 @@ aeshash256_ge32(__m128i state0_128, __m128i state1_128, const uchar *p, size_t l
     auto src = reinterpret_cast<const __m256i *>(p);
     const auto srcend = reinterpret_cast<const __m256i *>(p + len);
 
-    __m256i state0 = _mm256_set_m128i(state1_128, state0_128);
     __m256i state1 = _mm256_aesenc_epi128(state0, mm256_set1_epz(len));
 
     // main loop: scramble two 32-byte blocks
@@ -748,44 +750,60 @@ aeshash256_ge32(__m128i state0_128, __m128i state1_128, const uchar *p, size_t l
     __m128i high = _mm256_extracti128_si256(state0, 1);
     return mm_cvtsi128_sz(_mm_xor_si128(low, high));
 }
-#  else
-static size_t QT_VECTORCALL aeshash256_lt32_avx256(__m256i state0, const uchar *p, size_t len)
-{
-    Q_UNREACHABLE();
-    return 0;
-}
 
-static size_t QT_VECTORCALL aeshash256_ge32(__m128i, __m128i, const uchar *, size_t)
-{
-    Q_UNREACHABLE();
-    return 0;
-}
-#  endif // VAES
-
-QT_FUNCTION_TARGET(AES)
-static size_t aeshash(const uchar *p, size_t len, size_t seed, size_t seed2) noexcept
+static size_t QT_FUNCTION_TARGET(VAES)
+aeshash256(const uchar *p, size_t len, size_t seed, size_t seed2) noexcept
 {
     AESHashSeed state(seed, seed2);
-    bool useOpMaskLoad = qCpuHasFeature(AVX512VL);
-    bool useVaes = false;
-#  if QT_COMPILER_SUPPORTS_HERE(VAES)
-    useVaes = qCpuHasFeature(VAES);
-#  endif
-
     auto src = reinterpret_cast<const __m128i *>(p);
     const auto srcend = reinterpret_cast<const __m128i *>(p + len);
 
-    if (len <= sizeof(__m256i)) {
-        if (useOpMaskLoad && useVaes)
-            return aeshash256_lt32_avx256(state.state0, state.state1(), p, len);
-        if (len >= sizeof(__m128i))
-            return aeshash128_16to32(state.state0, state.state1(), src, srcend);
+    if (len < sizeof(__m128i))
         return aeshash128_lt16(state.state0, p, len);
-    }
 
-    if (useVaes)
-        return aeshash256_ge32(state.state0, state.state1(), p, len);
+    if (len <= sizeof(__m256i))
+        return aeshash128_16to32(state.state0, state.state1(), src, srcend);
+
+    return aeshash256_ge32(state.state0_256(), p, len);
+}
+
+static size_t QT_FUNCTION_TARGET(VAES_AVX512)
+aeshash256_avx256(const uchar *p, size_t len, size_t seed, size_t seed2) noexcept
+{
+    AESHashSeed state(seed, seed2);
+    if (len <= sizeof(__m256i))
+        return aeshash256_lt32_avx256(state.state0_256(), p, len);
+
+    return aeshash256_ge32(state.state0_256(), p, len);
+}
+#  endif // VAES
+
+static size_t QT_FUNCTION_TARGET(VAES)
+aeshash128(const uchar *p, size_t len, size_t seed, size_t seed2) noexcept
+{
+    AESHashSeed state(seed, seed2);
+    auto src = reinterpret_cast<const __m128i *>(p);
+    const auto srcend = reinterpret_cast<const __m128i *>(p + len);
+
+    if (len < sizeof(__m128i))
+        return aeshash128_lt16(state.state0, p, len);
+
+    if (len <= sizeof(__m256i))
+        return aeshash128_16to32(state.state0, state.state1(), src, srcend);
+
     return aeshash128_ge32(state.state0, state.state1(), src, srcend);
+}
+
+static size_t aeshash(const uchar *p, size_t len, size_t seed, size_t seed2) noexcept
+{
+#  if QT_COMPILER_SUPPORTS_HERE(VAES)
+    if (qCpuHasFeature(VAES)) {
+        if (qCpuHasFeature(AVX512VL))
+            return aeshash256_avx256(p, len, seed, seed2);
+        return aeshash256(p, len, seed, seed2);
+    }
+#  endif
+    return aeshash128(p, len, seed, seed2);
 }
 #endif // x86 AESNI
 
