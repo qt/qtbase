@@ -364,7 +364,7 @@ QLibraryScanResult QCoffPeParser::parse(QByteArrayView data, QString *errMsg)
         return {};
 
     QByteArrayView stringTable;
-    if (auto optional = findStringTable(data, ntHeaders, error); optional)
+    if (auto optional = findStringTable(data, ntHeaders, error))
         stringTable = *optional;
     else
         return {};
