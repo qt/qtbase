@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2021 The Qt Company Ltd.
-** Copyright (C) 2020 Intel Corporation.
+** Copyright (C) 2022 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -150,6 +150,8 @@ private slots:
     void startStopStartStopBuffers();
     void processEventsInAReadyReadSlot_data();
     void processEventsInAReadyReadSlot();
+    void startFromCurrentWorkingDir_data();
+    void startFromCurrentWorkingDir();
 
     // keep these at the end, since they use lots of processes and sometimes
     // caused obscure failures to occur in tests that followed them (esp. on the Mac)
@@ -2730,6 +2732,95 @@ void tst_QProcess::finishProcessBeforeReadingDone_deprecated()
 }
 
 #endif
+
+enum class ChdirMode {
+    None = 0,
+    InParent,
+    InChild
+};
+Q_DECLARE_METATYPE(ChdirMode)
+
+void tst_QProcess::startFromCurrentWorkingDir_data()
+{
+    qRegisterMetaType<ChdirMode>();
+    QTest::addColumn<QString>("programPrefix");
+    QTest::addColumn<ChdirMode>("chdirMode");
+    QTest::addColumn<bool>("success");
+
+    constexpr bool IsWindows = true
+#ifdef Q_OS_UNIX
+            && false
+#endif
+            ;
+
+    // baseline: trying to execute the directory, this can't possibly succeed!
+    QTest::newRow("plain-same-cwd") << QString() << ChdirMode::None << false;
+
+    // cross-platform behavior: neither OS searches the setWorkingDirectory()
+    // dir without "./"
+    QTest::newRow("plain-child-chdir") << QString() << ChdirMode::InChild << false;
+
+    // cross-platform behavior: both OSes search the parent's CWD with "./"
+    QTest::newRow("prefixed-parent-chdir") << "./" << ChdirMode::InParent << true;
+
+    // opposite behaviors: Windows searches the parent's CWD and Unix searches
+    // the child's with "./"
+    QTest::newRow("prefixed-child-chdir") << "./" << ChdirMode::InChild << !IsWindows;
+
+    // Windows searches the parent's CWD without "./"
+    QTest::newRow("plain-parent-chdir") << QString() << ChdirMode::InParent << IsWindows;
+}
+
+void tst_QProcess::startFromCurrentWorkingDir()
+{
+    QFETCH(QString, programPrefix);
+    QFETCH(ChdirMode, chdirMode);
+    QFETCH(bool, success);
+
+    QProcess process;
+    qRegisterMetaType<QProcess::ProcessError>();
+    QSignalSpy errorSpy(&process, &QProcess::errorOccurred);
+    QVERIFY(errorSpy.isValid());
+
+    // both the dir name and the executable name
+    const QString target = QStringLiteral("testProcessNormal");
+    process.setProgram(programPrefix + target);
+
+#ifdef Q_OS_UNIX
+    // Reset PATH, to be sure it doesn't contain . or the empty path.
+    // We can't do this on Windows because DLLs are searched in PATH
+    // and Windows always searches "." anyway.
+    auto restoreEnv = qScopeGuard([old = qgetenv("PATH")] {
+        qputenv("PATH", old);
+    });
+    qputenv("PATH", "/");
+#endif
+
+    switch (chdirMode) {
+    case ChdirMode::InParent: {
+        auto restoreCwd = qScopeGuard([old = QDir::currentPath()] {
+            QDir::setCurrent(old);
+        });
+        QVERIFY(QDir::setCurrent(target));
+        process.start();
+        break;
+    }
+    case ChdirMode::InChild:
+        process.setWorkingDirectory(target);
+        Q_FALLTHROUGH();
+    case ChdirMode::None:
+        process.start();
+        break;
+    }
+
+    QCOMPARE(process.waitForStarted(), success);
+    QCOMPARE(errorSpy.count(), int(!success));
+    if (success) {
+        QVERIFY(process.waitForFinished());
+    } else {
+        QCOMPARE(process.error(), QProcess::FailedToStart);
+    }
+}
 
 QTEST_MAIN(tst_QProcess)
 #include "tst_qprocess.moc"

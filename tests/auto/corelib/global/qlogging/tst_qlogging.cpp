@@ -34,6 +34,8 @@
 #endif
 #include <QtTest/QTest>
 
+#include <QtCore/QScopeGuard>
+
 class tst_qmessagehandler : public QObject
 {
     Q_OBJECT
@@ -819,7 +821,17 @@ void tst_qmessagehandler::qMessagePattern()
     QFETCH(QList<QByteArray>, expected);
 
     QProcess process;
-#ifndef Q_OS_ANDROID
+
+    // Add the executable's directory to path so that we can find the test helper next to it
+    // in a cross-platform way. We must do this because the CWD is not pointing to this directory
+    // in debug-and-release builds.
+    QByteArray path = qgetenv("PATH");
+    qputenv("PATH",
+            path + QDir::listSeparator().toLatin1()
+                    + QCoreApplication::applicationDirPath().toLocal8Bit());
+    auto restore = qScopeGuard([&] { qputenv("PATH", path); });
+
+#if !defined(Q_OS_ANDROID)
     const QString appExe(QLatin1String("helper"));
 #else
     const QString appExe(QCoreApplication::applicationDirPath() + QLatin1String("/libhelper.so"));
@@ -869,8 +881,12 @@ void tst_qmessagehandler::setMessagePattern()
     //
 
     QProcess process;
-#ifndef Q_OS_ANDROID
+#ifdef Q_OS_WIN
+    // On Windows the CWD is not the same directory as the helper, so we cannot use "./"
+    // Instead we rely on CreateProcess to find the executable.
     const QString appExe(QLatin1String("helper"));
+#elif !defined(Q_OS_ANDROID)
+    const QString appExe(QLatin1String("./helper"));
 #else
     const QString appExe(QCoreApplication::applicationDirPath() + QLatin1String("/libhelper.so"));
 #endif

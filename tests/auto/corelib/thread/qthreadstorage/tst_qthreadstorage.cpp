@@ -309,7 +309,18 @@ void tst_QThreadStorage::crashOnExit()
     QSKIP("No qprocess support", SkipAll);
 #else
     QString errorMessage;
-    QVERIFY2(runCrashOnExit("crashOnExit_helper", &errorMessage),
+
+    // Add the executable's directory to path so that we can find the test helper next to it
+    // in a cross-platform way. We must do this because the CWD is not pointing to this directory
+    // in debug-and-release builds.
+    QByteArray path = qgetenv("PATH");
+    qputenv("PATH",
+            path + QDir::listSeparator().toLatin1()
+                    + QCoreApplication::applicationDirPath().toLocal8Bit());
+    auto restore = qScopeGuard([&] { qputenv("PATH", path); });
+
+    QString binary = QStringLiteral("crashOnExit_helper");
+    QVERIFY2(runCrashOnExit(binary, &errorMessage),
              qPrintable(errorMessage));
 #endif
 }

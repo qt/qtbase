@@ -2099,6 +2099,15 @@ void tst_QTextCodec::toLocal8Bit()
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
+    // Add the executable's directory to path so that we can find the test helper next to it
+    // in a cross-platform way. We must do this because the CWD is not pointing to this directory
+    // in debug-and-release builds.
+    QByteArray path = qgetenv("PATH");
+    qputenv("PATH",
+            path + QDir::listSeparator().toLatin1()
+                    + QCoreApplication::applicationDirPath().toLocal8Bit());
+    auto restore = qScopeGuard([&] { qputenv("PATH", path); });
+
     QProcess process;
     process.start("echo_helper");
     QString string(QChar(0x410));
