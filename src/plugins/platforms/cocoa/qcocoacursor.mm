@@ -45,6 +45,15 @@
 
 #include <QtGui/QBitmap>
 
+#if !defined(QT_APPLE_NO_PRIVATE_APIS)
+@interface NSCursor()
++ (id)_windowResizeNorthWestSouthEastCursor;
++ (id)_windowResizeNorthEastSouthWestCursor;
++ (id)_windowResizeNorthSouthCursor;
++ (id)_windowResizeEastWestCursor;
+@end
+#endif // QT_APPLE_NO_PRIVATE_APIS
+
 QT_BEGIN_NAMESPACE
 
 QCocoaCursor::QCocoaCursor()
@@ -116,7 +125,7 @@ NSCursor *QCocoaCursor::convertCursor(QCursor *cursor)
         return nil;
 
     const Qt::CursorShape newShape = cursor->shape();
-    NSCursor *cocoaCursor;
+    NSCursor *cocoaCursor = nil;
 
     // Check for a suitable built-in NSCursor first:
     switch (newShape) {
@@ -157,7 +166,29 @@ NSCursor *QCocoaCursor::convertCursor(QCursor *cursor)
     case Qt::DragLinkCursor:
         cocoaCursor = [NSCursor dragLinkCursor];
         break;
-    default : {
+#if !defined(QT_APPLE_NO_PRIVATE_APIS)
+    case Qt::SizeVerCursor:
+        if ([NSCursor respondsToSelector:@selector(_windowResizeNorthSouthCursor)])
+            cocoaCursor = [NSCursor _windowResizeNorthSouthCursor];
+        break;
+    case Qt::SizeHorCursor:
+        if ([NSCursor respondsToSelector:@selector(_windowResizeEastWestCursor)])
+            cocoaCursor = [NSCursor _windowResizeEastWestCursor];
+        break;
+    case Qt::SizeBDiagCursor:
+        if ([NSCursor respondsToSelector:@selector(_windowResizeNorthEastSouthWestCursor)])
+            cocoaCursor = [NSCursor _windowResizeNorthEastSouthWestCursor];
+        break;
+    case Qt::SizeFDiagCursor:
+        if ([NSCursor respondsToSelector:@selector(_windowResizeNorthWestSouthEastCursor)])
+            cocoaCursor = [NSCursor _windowResizeNorthWestSouthEastCursor];
+        break;
+#endif // QT_APPLE_NO_PRIVATE_APIS
+    default:
+        break;
+    }
+
+    if (!cocoaCursor) {
         // No suitable OS cursor exist, use cursors provided
         // by Qt for the rest. Check for a cached cursor:
         cocoaCursor = m_cursors.value(newShape);
@@ -172,8 +203,6 @@ NSCursor *QCocoaCursor::convertCursor(QCursor *cursor)
 
             m_cursors.insert(newShape, cocoaCursor);
         }
-
-        break; }
     }
     return cocoaCursor;
 }
