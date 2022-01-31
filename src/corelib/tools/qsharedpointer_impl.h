@@ -575,7 +575,7 @@ public:
     explicit operator bool() const noexcept { return !isNull(); }
     bool operator !() const noexcept { return isNull(); }
 
-    inline QWeakPointer() noexcept : d(nullptr), value(nullptr) { }
+    constexpr QWeakPointer() noexcept : d(nullptr), value(nullptr) { }
     inline ~QWeakPointer() { if (d && !d->weakref.deref()) delete d; }
 
     QWeakPointer(const QWeakPointer &other) noexcept : d(other.d), value(other.value)
