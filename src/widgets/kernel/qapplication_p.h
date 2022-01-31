@@ -86,7 +86,7 @@ class QPointingDevice;
 class QGestureManager;
 #endif
 
-extern Q_GUI_EXPORT bool qt_is_gui_used;
+extern Q_GUI_EXPORT bool qt_is_tty_app;
 #ifndef QT_NO_CLIPBOARD
 extern QClipboard *qt_clipboard;
 #endif

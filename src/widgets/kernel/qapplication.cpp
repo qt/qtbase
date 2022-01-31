@@ -388,7 +388,7 @@ void QApplicationPrivate::process_cmdline()
         styleOverride = QString::fromLocal8Bit(qgetenv("QT_STYLE_OVERRIDE"));
 
     // process platform-indep command line
-    if (!qt_is_gui_used || !argc)
+    if (qt_is_tty_app || !argc)
         return;
 
     int i, j;
@@ -496,7 +496,7 @@ void QApplicationPrivate::init()
 
     initResources();
 
-    qt_is_gui_used = (application_type != QApplicationPrivate::Tty);
+    qt_is_tty_app = (application_type == QApplicationPrivate::Tty);
     process_cmdline();
 
     // Must be called before initialize()
@@ -559,7 +559,7 @@ void QApplicationPrivate::initialize()
     if (qEnvironmentVariableIntValue("QT_USE_NATIVE_WINDOWS") > 0)
         QCoreApplication::setAttribute(Qt::AA_NativeWindows);
 
-    if (qt_is_gui_used)
+    if (!qt_is_tty_app)
         initializeMultitouch();
 
     if (QGuiApplication::desktopSettingsAware())
@@ -719,7 +719,7 @@ QApplication::~QApplication()
     QApplicationPrivate::app_style = nullptr;
 
 #if QT_CONFIG(draganddrop)
-    if (qt_is_gui_used)
+    if (!qt_is_tty_app)
         delete QDragManager::self();
 #endif
 

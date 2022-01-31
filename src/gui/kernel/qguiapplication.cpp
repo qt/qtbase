@@ -138,7 +138,7 @@ QT_BEGIN_NAMESPACE
     }
 
 Q_CORE_EXPORT void qt_call_post_routines();
-Q_GUI_EXPORT bool qt_is_gui_used = true;
+Q_GUI_EXPORT bool qt_is_tty_app = false;
 
 Qt::MouseButtons QGuiApplicationPrivate::mouse_buttons = Qt::NoButton;
 Qt::KeyboardModifiers QGuiApplicationPrivate::modifier_buttons = Qt::NoModifier;

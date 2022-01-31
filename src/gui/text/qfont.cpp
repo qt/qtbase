@@ -136,14 +136,14 @@ bool QFontDef::exactMatch(const QFontDef &other) const
        );
 }
 
-extern bool qt_is_gui_used;
+extern bool qt_is_tty_app;
 
 Q_GUI_EXPORT int qt_defaultDpiX()
 {
     if (QCoreApplication::instance()->testAttribute(Qt::AA_Use96Dpi))
         return 96;
 
-    if (!qt_is_gui_used)
+    if (qt_is_tty_app)
         return 75;
 
     if (const QScreen *screen = QGuiApplication::primaryScreen())
@@ -158,7 +158,7 @@ Q_GUI_EXPORT int qt_defaultDpiY()
     if (QCoreApplication::instance()->testAttribute(Qt::AA_Use96Dpi))
         return 96;
 
-    if (!qt_is_gui_used)
+    if (qt_is_tty_app)
         return 75;
 
     if (const QScreen *screen = QGuiApplication::primaryScreen())
