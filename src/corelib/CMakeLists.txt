@@ -35,8 +35,10 @@ qt_internal_add_module(Core
     NO_GENERATE_METATYPES # metatypes are extracted manually below
     EXCEPTIONS
     SOURCES
-        # Keep qsimd.cpp first so its global static runs first
+        # Keep these .cpp files in the first and in the order they are so their
+        # static initialization order is retained
         global/qsimd.cpp global/qsimd.h global/qsimd_p.h
+        tools/qhash.cpp tools/qhash.h
 
         # Keep the rest alphabetical
         compat/removed_api.cpp
@@ -226,7 +228,6 @@ qt_internal_add_module(Core
         tools/qduplicatetracker_p.h
         tools/qflatmap_p.h
         tools/qfreelist.cpp tools/qfreelist_p.h
-        tools/qhash.cpp tools/qhash.h
         tools/qhashfunctions.h
         tools/qiterator.h
         tools/qline.cpp tools/qline.h

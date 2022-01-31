@@ -66,10 +66,16 @@
 #ifndef QT_BOOTSTRAPPED
 #include <qcoreapplication.h>
 #include <qrandom.h>
+#include <private/qlocale_tools_p.h>
 #endif // QT_BOOTSTRAPPED
 
 #include <array>
 #include <limits.h>
+
+#if defined(QT_NO_DEBUG) && !defined(NDEBUG)
+#  define NDEBUG
+#endif
+#include <assert.h>
 
 #ifdef Q_CC_GNU
 #  define Q_DECL_HOT_FUNCTION       __attribute__((hot))
@@ -89,7 +95,11 @@ struct HashSeedStorage
     static constexpr int SeedCount = 2;
     QBasicAtomicInteger<quintptr> seeds[SeedCount] = { Q_BASIC_ATOMIC_INITIALIZER(0), Q_BASIC_ATOMIC_INITIALIZER(0) };
 
+#if !QT_SUPPORTS_INIT_PRIORITY || defined(QT_BOOTSTRAPPED)
     constexpr HashSeedStorage() = default;
+#else
+    HashSeedStorage() { initialize(0); }
+#endif
 
     enum State {
         OverriddenByEnvironment = -1,
@@ -126,19 +136,24 @@ struct HashSeedStorage
 
 private:
     Q_DECL_COLD_FUNCTION Q_NEVER_INLINE StateResult initialize(int which) noexcept;
-    [[maybe_unused]] static void ensureConstexprConstructibility()
-    {
-        static_assert(std::is_trivially_destructible_v<HashSeedStorage>);
-        static constexpr HashSeedStorage dummy {};
-        Q_UNUSED(dummy);
-    }
 };
 
 [[maybe_unused]] HashSeedStorage::StateResult HashSeedStorage::initialize(int which) noexcept
 {
     StateResult result = { 0, OverriddenByEnvironment };
-    bool ok;
-    int seed = qEnvironmentVariableIntValue("QT_HASH_SEED", &ok);
+#ifdef QT_BOOTSTRAPPED
+    Q_UNUSED(which);
+    Q_UNREACHABLE();
+#else
+    // can't use qEnvironmentVariableIntValue (reentrancy)
+    const char *seedstr = getenv("QT_HASH_SEED");
+    const char *endptr = nullptr;
+    bool ok = false;
+    int seed;
+    if (seedstr)
+        seed = qstrntoll(seedstr, strlen(seedstr), &endptr, 10, &ok);
+    if (ok && endptr != seedstr + strlen(seedstr))
+        ok = false;
     if (ok) {
         if (seed) {
             // can't use qWarning here (reentrancy)
@@ -158,6 +173,7 @@ private:
             result.requestedSeed = x.data[i];
     }
     result.state = JustInitialized;
+#endif
     return result;
 }
 
@@ -166,14 +182,15 @@ inline HashSeedStorage::StateResult HashSeedStorage::state(int which)
     constexpr quintptr BadSeed = quintptr(Q_UINT64_C(0x5555'5555'5555'5555));
     StateResult result = { BadSeed, AlreadyInitialized };
 
-#ifndef QT_BOOTSTRAPPED
+#if defined(QT_BOOTSTRAPPED)
+    result = { 0, OverriddenByEnvironment };
+#elif !QT_SUPPORTS_INIT_PRIORITY
+    // dynamic initialization
     static auto once = [&]() {
         result = initialize(which);
         return true;
     }();
     Q_UNUSED(once);
-#else
-    result = { 0, OverriddenByEnvironment };
 #endif
 
     if (result.state == AlreadyInitialized && which >= 0)
@@ -185,6 +202,9 @@ inline HashSeedStorage::StateResult HashSeedStorage::state(int which)
 /*
     The QHash seed itself.
 */
+#ifdef Q_DECL_INIT_PRIORITY
+Q_DECL_INIT_PRIORITY(05)
+#endif
 static HashSeedStorage qt_qhash_seed;
 
 /*
