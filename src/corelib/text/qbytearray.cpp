@@ -929,8 +929,8 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
     comparison is limited to ASCII. Non-ASCII characters are treated as
     caseless, since their case depends on encoding. This affects functions that
     support a case insensitive option or that change the case of their
-    arguments. Functions that this affects include contains(), indexOf(),
-    lastIndexOf(), isLower(), isUpper(), toLower() and toUpper().
+    arguments. Functions that this affects include compare(), isLower(),
+    isUpper(), toLower() and toUpper().
 
     This issue does not apply to \l{QString}s since they represent characters
     using Unicode.
