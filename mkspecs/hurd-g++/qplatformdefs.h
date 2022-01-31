@@ -78,6 +78,7 @@
 #include <sys/wait.h>
 #include <netinet/in.h>
 
+#define QT_USE_XOPEN_LFS_EXTENSIONS
 #include "../common/posix/qplatformdefs.h"
 
 #if defined(_XOPEN_SOURCE) && (_XOPEN_SOURCE >= 500)
