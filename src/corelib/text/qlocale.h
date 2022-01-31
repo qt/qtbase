@@ -892,6 +892,7 @@ public:
 
     QLocale();
 #if QT_STRINGVIEW_LEVEL < 2
+    QT_CORE_INLINE_SINCE(6, 4)
     explicit QLocale(const QString &name);
 #endif
     explicit QLocale(QStringView name);
@@ -1132,6 +1133,11 @@ private:
 Q_DECLARE_SHARED(QLocale)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QLocale::NumberOptions)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QLocale::LanguageCodeTypes)
+
+#if QT_CORE_INLINE_IMPL_SINCE(6, 4)
+QLocale::QLocale(const QString &name)
+    : QLocale(qToStringViewIgnoringNull(name)) {}
+#endif
 
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QLocale &);
