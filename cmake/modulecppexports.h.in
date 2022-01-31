@@ -16,6 +16,20 @@
 #  define Q_@module_define_infix@_EXPORT
 #endif
 
+#if !defined(QT_BUILD_@module_define_infix@_LIB) || defined(QT_STATIC)
+/* outside library → inline decl + defi */
+#  define QT_@module_define_infix@_INLINE_SINCE(major, minor) inline
+#  define QT_@module_define_infix@_INLINE_IMPL_SINCE(major, minor) 1
+#elif defined(QT_@module_define_infix@_BUILD_REMOVED_API)
+/* inside library, inside removed_api.cpp → non-inline decl, defi */
+#  define QT_@module_define_infix@_INLINE_SINCE(major, minor) /* not inline */
+#  define QT_@module_define_infix@_INLINE_IMPL_SINCE(major, minor) 1
+#else
+/* inside library, outside removed_api.cpp → non-inline decl, no defi */
+#  define QT_@module_define_infix@_INLINE_SINCE(major, minor) /* not inline */
+#  define QT_@module_define_infix@_INLINE_IMPL_SINCE(major, minor) 0
+#endif
+
 #ifdef QT_@module_define_infix@_BUILD_REMOVED_API
 #  define QT_@module_define_infix@_REMOVED_SINCE(major, minor) QT_DEPRECATED_SINCE(major, minor)
 #else

@@ -189,6 +189,7 @@ void QObject::setObjectName(const QString &name)
     setObjectName<void>(name);
 }
 
+#include "qlocale.h" // uses QT_CORE_INLINE_SINCE
 
 #include "qsettings.h"
 
