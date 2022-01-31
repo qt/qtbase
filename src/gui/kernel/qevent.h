@@ -281,9 +281,15 @@ class Q_GUI_EXPORT QHoverEvent : public QSinglePointEvent
 {
     Q_EVENT_DISABLE_COPY(QHoverEvent);
 public:
+    QHoverEvent(Type type, const QPointF &pos, const QPointF &globalPos, const QPointF &oldPos,
+                Qt::KeyboardModifiers modifiers = Qt::NoModifier,
+                const QPointingDevice *device = QPointingDevice::primaryPointingDevice());
+#if QT_DEPRECATED_SINCE(6, 3)
+    QT_DEPRECATED_VERSION_X_6_3("Use the other constructor")
     QHoverEvent(Type type, const QPointF &pos, const QPointF &oldPos,
                 Qt::KeyboardModifiers modifiers = Qt::NoModifier,
                 const QPointingDevice *device = QPointingDevice::primaryPointingDevice());
+#endif
     ~QHoverEvent();
 
     QHoverEvent *clone() const override { return new QHoverEvent(*this); }

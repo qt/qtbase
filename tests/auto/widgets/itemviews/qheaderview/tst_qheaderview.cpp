@@ -1511,11 +1511,11 @@ void tst_QHeaderView::testEvent()
 void protected_QHeaderView::testEvent()
 {
     // No crashy please
-    QHoverEvent enterEvent(QEvent::HoverEnter, QPoint(), QPoint());
+    QHoverEvent enterEvent(QEvent::HoverEnter, QPoint(), QPoint(), QPoint());
     event(&enterEvent);
-    QHoverEvent eventLeave(QEvent::HoverLeave, QPoint(), QPoint());
+    QHoverEvent eventLeave(QEvent::HoverLeave, QPoint(), QPoint(), QPoint());
     event(&eventLeave);
-    QHoverEvent eventMove(QEvent::HoverMove, QPoint(), QPoint());
+    QHoverEvent eventMove(QEvent::HoverMove, QPoint(), QPoint(), QPoint());
     event(&eventMove);
 }
 

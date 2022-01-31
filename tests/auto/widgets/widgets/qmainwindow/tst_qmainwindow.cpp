@@ -1859,11 +1859,11 @@ void tst_QMainWindow::setCursor()
     QVERIFY(QTest::qWaitForWindowActive(&mw));
     QCOMPARE(cur.shape(), mw.cursor().shape());
 
-    QHoverEvent enterE(QEvent::HoverEnter, QPoint(10,10), QPoint());
+    QHoverEvent enterE(QEvent::HoverEnter, QPoint(10,10), QPoint(), QPoint());
     mw.event(&enterE);
     QCOMPARE(cur.shape(), mw.cursor().shape());
 
-    QHoverEvent leaveE(QEvent::HoverLeave, QPoint(), QPoint());
+    QHoverEvent leaveE(QEvent::HoverLeave, QPoint(), QPoint(), QPoint());
     mw.event(&leaveE);
     QCOMPARE(cur.shape(), mw.cursor().shape());
 }
