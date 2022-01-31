@@ -771,21 +771,35 @@ void tst_ContainerApiSymmetry::erase_if_impl() const
     auto c = make<Container>(7); // {1, 2, 3, 4, 5, 6, 7}
     QCOMPARE(c.size(), S(7));
 
-    auto result = erase_if(c, [](V i) { return Conv::toInt(i) % 2 == 0; });
+    decltype(c.size()) oldSize, count;
+
+    oldSize = c.size();
+    count = 0;
+    auto result = erase_if(c, [&](V i) { ++count; return Conv::toInt(i) % 2 == 0; });
     QCOMPARE(result, S(3));
     QCOMPARE(c.size(), S(4));
+    QCOMPARE(count, oldSize);
 
-    result = erase_if(c, [](V i) { return Conv::toInt(i) % 123 == 0; });
+    oldSize = c.size();
+    count = 0;
+    result = erase_if(c, [&](V i) { ++count; return Conv::toInt(i) % 123 == 0; });
     QCOMPARE(result, S(0));
     QCOMPARE(c.size(), S(4));
+    QCOMPARE(count, oldSize);
 
-    result = erase_if(c, [](V i) { return Conv::toInt(i) % 3 == 0; });
+    oldSize = c.size();
+    count = 0;
+    result = erase_if(c, [&](V i) { ++count; return Conv::toInt(i) % 3 == 0; });
     QCOMPARE(result, S(1));
     QCOMPARE(c.size(), S(3));
+    QCOMPARE(count, oldSize);
 
-    result = erase_if(c, [](V i) { return Conv::toInt(i) % 2 == 1; });
+    oldSize = c.size();
+    count = 0;
+    result = erase_if(c, [&](V i) { ++count; return Conv::toInt(i) % 2 == 1; });
     QCOMPARE(result, S(3));
     QCOMPARE(c.size(), S(0));
+    QCOMPARE(count, oldSize);
 }
 
 template <typename Container>
