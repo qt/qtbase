@@ -73,10 +73,7 @@ function(qt_internal_set_warnings_are_errors_flags target)
 endfunction()
 
 # The function adds a global 'definition' to the platform internal targets and the target
-# property-based switch to disable the definition. The following command disables the definition for
-# a specific target:
-#     set_target_properties(<target> PROPERTIES QT_INTERNAL_UNDEF_<definition> TRUE)
-# where 'QT_INTERNAL_UNDEF_<definition>' might be customized using the UNDEF_PROPERTY_NAME option.
+# property-based switch to disable the definition.
 # Arguments:
 #     VALUE optional value that the definition will take.
 #     SCOPE the list of scopes the definition needs to be set for. If the SCOPE is not specified the
@@ -87,10 +84,9 @@ endfunction()
 #            TOOL - set the definition for all Qt tools
 #            APP - set the definition for all Qt applications
 #        TODO: Add a tests specific platform target and the definition scope for it.
-#     UNDEF_PROPERTY_NAME customizes the name of the target property to avoid adding the definition.
 function(qt_internal_add_global_definition definition)
     set(optional_args)
-    set(single_value_args VALUE UNDEF_PROPERTY_NAME)
+    set(single_value_args VALUE)
     set(multi_value_args SCOPE)
     cmake_parse_arguments(args
         "${optional_args}"
@@ -105,9 +101,6 @@ function(qt_internal_add_global_definition definition)
     set(scope_APP PlatformAppInternal)
 
     set(undef_property_name "QT_INTERNAL_UNDEF_${definition}")
-    if(DEFINED arg_UNDEF_PROPERTY_NAME)
-        set(undef_property_name "${arg_UNDEF_PROPERTY_NAME}")
-    endif()
 
     if(DEFINED arg_VALUE)
         set(definition "${definition}=${arg_VALUE}")

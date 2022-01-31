@@ -16,5 +16,4 @@ qt_internal_extend_target(tst_qfuture CONDITION MSVC
         /bigobj
 )
 
-set_target_properties(tst_qfuture PROPERTIES
-    QT_INTERNAL_UNDEF_QT_NO_JAVA_STYLE_ITERATORS TRUE)
+qt_internal_undefine_global_definition(tst_qfuture QT_NO_JAVA_STYLE_ITERATORS)
