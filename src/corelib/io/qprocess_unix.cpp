@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2020 The Qt Company Ltd.
-** Copyright (C) 2021 Intel Corporation.
+** Copyright (C) 2022 Intel Corporation.
 ** Copyright (C) 2021 Alex Trotsenko.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -438,9 +438,10 @@ static QString resolveExecutable(const QString &program)
 #endif
 
     if (!program.contains(QLatin1Char('/'))) {
-        QString exeFilePath = QStandardPaths::findExecutable(program);
-        if (!exeFilePath.isEmpty())
-            return exeFilePath;
+        // findExecutable() returns its argument if it's an absolute path,
+        // otherwise it searches $PATH; returns empty if not found (we handle
+        // that case much later)
+        return QStandardPaths::findExecutable(program);
     }
     return program;
 }

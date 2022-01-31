@@ -1530,7 +1530,7 @@ void tst_QApplication::desktopSettingsAware()
     environment += QLatin1String("QT_MAC_DISABLE_FOREGROUND_APPLICATION_TRANSFORM=1");
     testProcess.setEnvironment(environment);
 #endif
-    testProcess.start("desktopsettingsaware_helper");
+    testProcess.start("./desktopsettingsaware_helper");
     QVERIFY2(testProcess.waitForStarted(),
              qPrintable(QString::fromLatin1("Cannot start 'desktopsettingsaware_helper': %1").arg(testProcess.errorString())));
     QVERIFY(testProcess.waitForFinished(10000));
@@ -2470,7 +2470,7 @@ void tst_QApplication::qtbug_12673()
 #if QT_CONFIG(process)
     QProcess testProcess;
     QStringList arguments;
-    testProcess.start("modal_helper", arguments);
+    testProcess.start("./modal_helper", arguments);
     QVERIFY2(testProcess.waitForStarted(),
              qPrintable(QString::fromLatin1("Cannot start 'modal_helper': %1").arg(testProcess.errorString())));
     QVERIFY(testProcess.waitForFinished(20000));
