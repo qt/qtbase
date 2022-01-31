@@ -51,7 +51,7 @@
 #include <wrl/wrappers/corewrappers.h>
 #include <comdef.h>
 
-#if defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
+#if QT_CONFIG(cpp_winrt) && !defined(Q_CC_CLANG)
 #define SUPPORTS_WINRT 1
 #endif
 
