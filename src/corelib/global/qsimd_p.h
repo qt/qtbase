@@ -357,11 +357,12 @@ static const quint64 qCompilerCpuFeatures = 0
         ;
 #endif
 
-#ifdef Q_ATOMIC_INT64_IS_SUPPORTED
-extern Q_CORE_EXPORT QBasicAtomicInteger<quint64> qt_cpu_features[1];
+#ifdef Q_PROCESSOR_X86
+using QCpuFeatureType = quint64;
 #else
-extern Q_CORE_EXPORT QBasicAtomicInteger<unsigned> qt_cpu_features[2];
+using QCpuFeatureType = unsigned;
 #endif
+extern Q_CORE_EXPORT QBasicAtomicInteger<QCpuFeatureType> qt_cpu_features[1];
 Q_CORE_EXPORT quint64 qDetectCpuFeatures();
 
 #if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND) && !defined(QT_BOOTSTRAPPED)
@@ -376,9 +377,6 @@ static inline qsizetype qRandomCpu(void *, qsizetype) noexcept
 static inline quint64 qCpuFeatures()
 {
     quint64 features = qt_cpu_features[0].loadRelaxed();
-#ifndef Q_ATOMIC_INT64_IS_SUPPORTED
-    features |= quint64(qt_cpu_features[1].loadRelaxed()) << 32;
-#endif
     if (Q_UNLIKELY(features == 0)) {
         features = qDetectCpuFeatures();
         Q_ASSUME(features != 0);

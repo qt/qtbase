@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2019 Intel Corporation.
+** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -583,11 +583,7 @@ static const int features_count = (sizeof features_indices) / (sizeof features_i
 // record what CPU features were enabled by default in this Qt build
 static const quint64 minFeature = qCompilerCpuFeatures;
 
-#ifdef Q_ATOMIC_INT64_IS_SUPPORTED
-Q_CORE_EXPORT QBasicAtomicInteger<quint64> qt_cpu_features[1] = { Q_BASIC_ATOMIC_INITIALIZER(0) };
-#else
-Q_CORE_EXPORT QBasicAtomicInteger<unsigned> qt_cpu_features[2] = { Q_BASIC_ATOMIC_INITIALIZER(0), Q_BASIC_ATOMIC_INITIALIZER(0) };
-#endif
+QBasicAtomicInteger<QCpuFeatureType> qt_cpu_features[1] = { 0 };
 
 quint64 qDetectCpuFeatures()
 {
@@ -626,9 +622,6 @@ quint64 qDetectCpuFeatures()
     }
 
     qt_cpu_features[0].storeRelaxed(f | quint32(QSimdInitialized));
-#ifndef Q_ATOMIC_INT64_IS_SUPPORTED
-    qt_cpu_features[1].storeRelaxed(f >> 32);
-#endif
     return f;
 }
 
