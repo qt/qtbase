@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2016 by Southwest Research Institute (R)
 ** Contact: http://www.qt-project.org/legal
 **
@@ -275,8 +275,12 @@ inline qfloat16::qfloat16(float f) noexcept
         if (mantissa) // keep nan from truncating to inf
             mantissa = qMax(1U << shift, mantissa);
     } else {
-        // round half to even
+        // Round half to even. First round up by adding one in the most
+        // significant bit we'll be discarding:
         mantissa += round;
+        // If the last bit we'll be keeping is now set, but all later bits are
+        // clear, we were at half and shouldn't have rounded up; decrement will
+        // clear this last kept bit. Any later set bit hides the decrement.
         if (mantissa & (1 << shift))
             --mantissa;
     }
