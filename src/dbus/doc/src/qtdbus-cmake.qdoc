@@ -266,3 +266,64 @@ argument.
 
 \snippet cmake/examples.cmake qt_add_dbus_adaptor
 */
+
+/*!
+\group cmake-source-file-properties-qtdbus
+\title CMake Source File Properties in Qt6 DBus
+
+\l{CMake Commands in Qt6 DBus}{CMake Commands} know about the following CMake
+source file properties:
+
+\sa{CMake Property Reference}
+*/
+
+/*!
+\page cmake-source-file-property-CLASSNAME.html
+\ingroup cmake-source-file-properties-qtdbus
+
+\title CLASSNAME
+\target cmake-source-file-property-CLASSNAME
+
+\summary {Overrides the default interface class name.}
+
+\cmakepropertysince 5.0
+
+When this property is set, the generated C++ class name is overridden
+with the provided property value.
+
+\sa{qt6_add_dbus_interface}{qt_add_dbus_interface}
+*/
+
+/*!
+\page cmake-source-file-property-INCLUDE.html
+\ingroup cmake-source-file-properties-qtdbus
+
+\title INCLUDE
+\target cmake-source-file-property-INCLUDE
+
+\summary {Adds an include path.}
+
+\cmakepropertysince 5.0
+
+When this property is set, an #include "path" is added
+to the generated C++ file.
+
+\sa{qt6_add_dbus_interface}{qt_add_dbus_interface}
+*/
+
+/*!
+\page cmake-source-file-property-NO_NAMESPACE.html
+\ingroup cmake-source-file-properties-qtdbus
+
+\title NO_NAMESPACE
+\target cmake-source-file-property-NO_NAMESPACE
+
+\summary {Disables generation of a namespaced name.}
+
+\cmakepropertysince 5.0
+
+When this property is set, the generated C++ class will not contain a namespaced alias.
+
+\sa{qt6_add_dbus_interface}{qt_add_dbus_interface}
+*/
+
