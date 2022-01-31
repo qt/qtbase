@@ -31,7 +31,8 @@ public:
         Stateless = 0x1,
         ConvertInvalidToNull = 0x2,
         WriteBom = 0x4,
-        ConvertInitialBom = 0x8
+        ConvertInitialBom = 0x8,
+        UsesIcu = 0x10,
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
@@ -39,6 +40,7 @@ public:
         constexpr State(Flags f = Flag::Default) noexcept
             : flags(f), state_data{0, 0, 0, 0} {}
         ~State() { clear(); }
+
         State(State &&other) noexcept
             : flags(other.flags),
               remainingChars(other.remainingChars),
@@ -59,6 +61,7 @@ public:
             return *this;
         }
         Q_CORE_EXPORT void clear() noexcept;
+        Q_CORE_EXPORT void reset() noexcept;
 
         Flags flags;
         int internalState = 0;
@@ -102,7 +105,8 @@ public:
         Stateless = 0x1,
         ConvertInvalidToNull = 0x2,
         WriteBom = 0x4,
-        ConvertInitialBom = 0x8
+        ConvertInitialBom = 0x8,
+        UsesIcu = 0x10,
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 #endif
@@ -130,7 +134,8 @@ protected:
     constexpr explicit QStringConverter(const Interface *i) noexcept
         : iface(i)
     {}
-    Q_CORE_EXPORT explicit QStringConverter(const char *name, Flags f) noexcept;
+    Q_CORE_EXPORT explicit QStringConverter(const char *name, Flags f);
+
 
     ~QStringConverter() = default;
 
@@ -142,12 +147,11 @@ public:
 
     void resetState() noexcept
     {
-        state.clear();
+        state.reset();
     }
     bool hasError() const noexcept { return state.invalidChars != 0; }
 
-    const char *name() const noexcept
-    { return isValid() ? iface->name : nullptr; }
+    Q_CORE_EXPORT const char *name() const noexcept;
 
     Q_CORE_EXPORT static std::optional<Encoding> encodingForName(const char *name) noexcept;
     Q_CORE_EXPORT static const char *nameForEncoding(Encoding e);
