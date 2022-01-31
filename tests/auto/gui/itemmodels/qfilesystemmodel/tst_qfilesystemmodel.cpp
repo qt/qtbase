@@ -261,10 +261,14 @@ void tst_QFileSystemModel::readOnly()
     QModelIndex root = model->setRootPath(flatDirTestPath);
 
     QTRY_VERIFY(model->rowCount(root) > 0);
+
+    // ItemIsEditable should change, ItemNeverHasChildren should not change
     QVERIFY(!(model->flags(model->index(fileName)) & Qt::ItemIsEditable));
+    QVERIFY(model->flags(model->index(fileName)) & Qt::ItemNeverHasChildren);
     model->setReadOnly(false);
     QCOMPARE(model->isReadOnly(), false);
     QVERIFY(model->flags(model->index(fileName)) & Qt::ItemIsEditable);
+    QVERIFY(model->flags(model->index(fileName)) & Qt::ItemNeverHasChildren);
 }
 
 class CustomFileIconProvider : public QFileIconProvider

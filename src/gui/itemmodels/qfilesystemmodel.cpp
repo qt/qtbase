@@ -987,14 +987,15 @@ Qt::ItemFlags QFileSystemModel::flags(const QModelIndex &index) const
     }
 
     flags |= Qt::ItemIsDragEnabled;
+
+    if (!indexNode->isDir())
+        flags |= Qt::ItemNeverHasChildren;
     if (d->readOnly)
         return flags;
     if ((index.column() == 0) && indexNode->permissions() & QFile::WriteUser) {
         flags |= Qt::ItemIsEditable;
         if (indexNode->isDir())
             flags |= Qt::ItemIsDropEnabled;
-        else
-            flags |= Qt::ItemNeverHasChildren;
     }
     return flags;
 }
