@@ -9,5 +9,4 @@ qt_internal_add_test(tst_qmap
         tst_qmap.cpp
 )
 
-set_target_properties(tst_qmap PROPERTIES
-    QT_INTERNAL_UNDEF_QT_NO_JAVA_STYLE_ITERATORS TRUE)
+qt_internal_undefine_global_definition(tst_qmap QT_NO_JAVA_STYLE_ITERATORS)
