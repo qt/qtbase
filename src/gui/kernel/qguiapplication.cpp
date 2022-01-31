@@ -145,79 +145,79 @@ QT_BEGIN_NAMESPACE
 Q_CORE_EXPORT void qt_call_post_routines();
 Q_GUI_EXPORT bool qt_is_tty_app = false;
 
-Qt::MouseButtons QGuiApplicationPrivate::mouse_buttons = Qt::NoButton;
-Qt::KeyboardModifiers QGuiApplicationPrivate::modifier_buttons = Qt::NoModifier;
+Q_CONSTINIT Qt::MouseButtons QGuiApplicationPrivate::mouse_buttons = Qt::NoButton;
+Q_CONSTINIT Qt::KeyboardModifiers QGuiApplicationPrivate::modifier_buttons = Qt::NoModifier;
 
-QGuiApplicationPrivate::QLastCursorPosition QGuiApplicationPrivate::lastCursorPosition;
+Q_CONSTINIT QGuiApplicationPrivate::QLastCursorPosition QGuiApplicationPrivate::lastCursorPosition;
 
-QWindow *QGuiApplicationPrivate::currentMouseWindow = nullptr;
+Q_CONSTINIT QWindow *QGuiApplicationPrivate::currentMouseWindow = nullptr;
 
-QString QGuiApplicationPrivate::styleOverride;
+Q_CONSTINIT QString QGuiApplicationPrivate::styleOverride;
 
-Qt::ApplicationState QGuiApplicationPrivate::applicationState = Qt::ApplicationInactive;
+Q_CONSTINIT Qt::ApplicationState QGuiApplicationPrivate::applicationState = Qt::ApplicationInactive;
 
-Qt::HighDpiScaleFactorRoundingPolicy QGuiApplicationPrivate::highDpiScaleFactorRoundingPolicy =
+Q_CONSTINIT Qt::HighDpiScaleFactorRoundingPolicy QGuiApplicationPrivate::highDpiScaleFactorRoundingPolicy =
     Qt::HighDpiScaleFactorRoundingPolicy::PassThrough;
 
-QPointer<QWindow> QGuiApplicationPrivate::currentDragWindow;
+Q_CONSTINIT QPointer<QWindow> QGuiApplicationPrivate::currentDragWindow;
 
-QList<QGuiApplicationPrivate::TabletPointData> QGuiApplicationPrivate::tabletDevicePoints; // TODO remove
+Q_CONSTINIT QList<QGuiApplicationPrivate::TabletPointData> QGuiApplicationPrivate::tabletDevicePoints; // TODO remove
 
-QPlatformIntegration *QGuiApplicationPrivate::platform_integration = nullptr;
-QPlatformTheme *QGuiApplicationPrivate::platform_theme = nullptr;
+Q_CONSTINIT QPlatformIntegration *QGuiApplicationPrivate::platform_integration = nullptr;
+Q_CONSTINIT QPlatformTheme *QGuiApplicationPrivate::platform_theme = nullptr;
 
-QList<QObject *> QGuiApplicationPrivate::generic_plugin_list;
+Q_CONSTINIT QList<QObject *> QGuiApplicationPrivate::generic_plugin_list;
 
 enum ApplicationResourceFlags
 {
     ApplicationFontExplicitlySet = 0x2
 };
 
-static unsigned applicationResourceFlags = 0;
+Q_CONSTINIT static unsigned applicationResourceFlags = 0;
 
-QIcon *QGuiApplicationPrivate::app_icon = nullptr;
+Q_CONSTINIT QIcon *QGuiApplicationPrivate::app_icon = nullptr;
 
-QString *QGuiApplicationPrivate::platform_name = nullptr;
-QString *QGuiApplicationPrivate::displayName = nullptr;
-QString *QGuiApplicationPrivate::desktopFileName = nullptr;
+Q_CONSTINIT QString *QGuiApplicationPrivate::platform_name = nullptr;
+Q_CONSTINIT QString *QGuiApplicationPrivate::displayName = nullptr;
+Q_CONSTINIT QString *QGuiApplicationPrivate::desktopFileName = nullptr;
 
-QPalette *QGuiApplicationPrivate::app_pal = nullptr;        // default application palette
+Q_CONSTINIT QPalette *QGuiApplicationPrivate::app_pal = nullptr;        // default application palette
 
-Qt::MouseButton QGuiApplicationPrivate::mousePressButton = Qt::NoButton;
+Q_CONSTINIT Qt::MouseButton QGuiApplicationPrivate::mousePressButton = Qt::NoButton;
 
-static int mouseDoubleClickDistance = 0;
-static int touchDoubleTapDistance = 0;
+Q_CONSTINIT static int mouseDoubleClickDistance = 0;
+Q_CONSTINIT static int touchDoubleTapDistance = 0;
 
-QWindow *QGuiApplicationPrivate::currentMousePressWindow = nullptr;
+Q_CONSTINIT QWindow *QGuiApplicationPrivate::currentMousePressWindow = nullptr;
 
-static Qt::LayoutDirection layout_direction = Qt::LayoutDirectionAuto;
-static Qt::LayoutDirection effective_layout_direction = Qt::LeftToRight;
-static bool force_reverse = false;
+Q_CONSTINIT static Qt::LayoutDirection layout_direction = Qt::LayoutDirectionAuto;
+Q_CONSTINIT static Qt::LayoutDirection effective_layout_direction = Qt::LeftToRight;
+Q_CONSTINIT static bool force_reverse = false;
 
-QGuiApplicationPrivate *QGuiApplicationPrivate::self = nullptr;
-int QGuiApplicationPrivate::m_fakeMouseSourcePointId = -1;
+Q_CONSTINIT QGuiApplicationPrivate *QGuiApplicationPrivate::self = nullptr;
+Q_CONSTINIT int QGuiApplicationPrivate::m_fakeMouseSourcePointId = -1;
 
 #ifndef QT_NO_CLIPBOARD
-QClipboard *QGuiApplicationPrivate::qt_clipboard = nullptr;
+Q_CONSTINIT QClipboard *QGuiApplicationPrivate::qt_clipboard = nullptr;
 #endif
 
-QList<QScreen *> QGuiApplicationPrivate::screen_list;
+Q_CONSTINIT QList<QScreen *> QGuiApplicationPrivate::screen_list;
 
-QWindowList QGuiApplicationPrivate::window_list;
-QWindow *QGuiApplicationPrivate::focus_window = nullptr;
+Q_CONSTINIT QWindowList QGuiApplicationPrivate::window_list;
+Q_CONSTINIT QWindow *QGuiApplicationPrivate::focus_window = nullptr;
 
-static QBasicMutex applicationFontMutex;
-QFont *QGuiApplicationPrivate::app_font = nullptr;
-QStyleHints *QGuiApplicationPrivate::styleHints = nullptr;
-bool QGuiApplicationPrivate::obey_desktop_settings = true;
+Q_CONSTINIT static QBasicMutex applicationFontMutex;
+Q_CONSTINIT QFont *QGuiApplicationPrivate::app_font = nullptr;
+Q_CONSTINIT QStyleHints *QGuiApplicationPrivate::styleHints = nullptr;
+Q_CONSTINIT bool QGuiApplicationPrivate::obey_desktop_settings = true;
 
-QInputDeviceManager *QGuiApplicationPrivate::m_inputDeviceManager = nullptr;
+Q_CONSTINIT QInputDeviceManager *QGuiApplicationPrivate::m_inputDeviceManager = nullptr;
 
-qreal QGuiApplicationPrivate::m_maxDevicePixelRatio = 0.0;
+Q_CONSTINIT qreal QGuiApplicationPrivate::m_maxDevicePixelRatio = 0.0;
 
-static qreal fontSmoothingGamma = 1.7;
+Q_CONSTINIT static qreal fontSmoothingGamma = 1.7;
 
-bool QGuiApplicationPrivate::quitOnLastWindowClosed = true;
+Q_CONSTINIT bool QGuiApplicationPrivate::quitOnLastWindowClosed = true;
 
 extern void qRegisterGuiVariant();
 #if QT_CONFIG(animation)

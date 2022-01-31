@@ -67,7 +67,7 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 
 #if QT_CONFIG(icu)
-static QBasicMutex s_icu_mutex;
+Q_CONSTINIT static QBasicMutex s_icu_mutex;
 #endif
 
 /*

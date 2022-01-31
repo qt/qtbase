@@ -79,8 +79,8 @@ bool qdbus_loadLibDBus()
         return false;
 #endif
 
-    static bool triedToLoadLibrary = false;
-    static QBasicMutex mutex;
+    Q_CONSTINIT static bool triedToLoadLibrary = false;
+    Q_CONSTINIT static QBasicMutex mutex;
     const auto locker = qt_scoped_lock(mutex);
 
     QLibrary *&lib = qdbus_libdbus;

@@ -63,7 +63,7 @@ template <typename QGS> union Holder
     using PlainType = std::remove_cv_t<Type>;
 
     static constexpr bool ConstructionIsNoexcept = noexcept(QGS::innerFunction(nullptr));
-    static inline QBasicAtomicInteger<qint8> guard = { QtGlobalStatic::Uninitialized };
+    Q_CONSTINIT static inline QBasicAtomicInteger<qint8> guard = { QtGlobalStatic::Uninitialized };
 
     // union's sole member
     PlainType storage;
@@ -144,7 +144,7 @@ protected:
             new (pointer) QGS_Type ARGS;                                    \
         }                                                                   \
     }; }                                                                    \
-    static QGlobalStatic<QtGlobalStatic::Holder<Q_QGS_ ## NAME>> NAME;      \
+    Q_CONSTINIT static QGlobalStatic<QtGlobalStatic::Holder<Q_QGS_ ## NAME>> NAME; \
     QT_WARNING_POP
     /**/
 

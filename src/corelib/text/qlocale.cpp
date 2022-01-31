@@ -792,7 +792,7 @@ static const QLocaleData *systemData()
       one thread.
     */
     {
-        static QBasicMutex systemDataMutex;
+        Q_CONSTINIT static QBasicMutex systemDataMutex;
         systemDataMutex.lock();
         if (systemLocaleData.m_language_id == 0)
             updateSystemPrivate();

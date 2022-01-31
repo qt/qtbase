@@ -124,7 +124,7 @@ bool QNetworkInformationPrivate::initializeList()
         return false;
     if (!dataHolder())
         return false;
-    static QBasicMutex mutex;
+    Q_CONSTINIT static QBasicMutex mutex;
     QMutexLocker initLocker(&mutex);
 
 #if QT_CONFIG(library)

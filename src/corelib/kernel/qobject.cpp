@@ -149,7 +149,7 @@ static int *queuedConnectionTypes(const QArgumentType *argumentTypes, int argc)
     return types.release();
 }
 
-static QBasicMutex _q_ObjectMutexPool[131];
+Q_CONSTINIT static QBasicMutex _q_ObjectMutexPool[131];
 
 /**
  * \internal

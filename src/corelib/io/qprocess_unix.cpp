@@ -424,7 +424,7 @@ static QString resolveExecutable(const QString &program)
         {
             // CFBundle is not reentrant, since CFBundleCreate might return a reference
             // to a cached bundle object. Protect the bundle calls with a mutex lock.
-            static QBasicMutex cfbundleMutex;
+            Q_CONSTINIT static QBasicMutex cfbundleMutex;
             const auto locker = qt_scoped_lock(cfbundleMutex);
             QCFType<CFBundleRef> bundle = CFBundleCreate(0, url);
             // 'executableURL' can be either relative or absolute ...

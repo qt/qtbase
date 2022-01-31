@@ -186,7 +186,7 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
     QByteArray suffix;
 
 #ifndef QT_NO_IMAGEFORMATPLUGIN
-    static QBasicMutex mutex;
+    Q_CONSTINIT static QBasicMutex mutex;
     const auto locker = qt_scoped_lock(mutex);
 
     typedef QMultiMap<int, QString> PluginKeyMap;

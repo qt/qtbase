@@ -132,7 +132,7 @@ Q_GLOBAL_STATIC(ConfFileCache, unusedCacheFunc)
 Q_GLOBAL_STATIC(PathHash, pathHashFunc)
 Q_GLOBAL_STATIC(CustomFormatVector, customFormatVectorFunc)
 
-static QBasicMutex settingsGlobalMutex;
+Q_CONSTINIT static QBasicMutex settingsGlobalMutex;
 
 static QSettings::Format globalDefaultFormat = QSettings::NativeFormat;
 

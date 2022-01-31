@@ -265,8 +265,8 @@ typedef QList<QtStartUpFunction> QStartUpFuncList;
 Q_GLOBAL_STATIC(QStartUpFuncList, preRList)
 typedef QList<QtCleanUpFunction> QVFuncList;
 Q_GLOBAL_STATIC(QVFuncList, postRList)
-static QBasicMutex globalRoutinesMutex;
-static bool preRoutinesCalled = false;
+Q_CONSTINIT static QBasicMutex globalRoutinesMutex;
+Q_CONSTINIT static bool preRoutinesCalled = false;
 
 /*!
     \internal

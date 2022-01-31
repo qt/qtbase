@@ -1165,6 +1165,16 @@ constexpr std::underlying_type_t<Enum> qToUnderlying(Enum e) noexcept
 #define Q_IMPLICIT
 #endif
 
+#ifdef __cpp_constinit
+# define Q_CONSTINIT constinit
+#elif defined(__has_cpp_attribute) && __has_cpp_attribute(clang::require_constant_initialization)
+# define Q_CONSTINIT [[clang::require_constant_initialization]]
+#elif defined(Q_CC_GNU) && Q_CC_GNU >= 1000
+# define Q_CONSTINIT __constinit
+#else
+# define Q_CONSTINIT
+#endif
+
 template <typename T> inline T *qGetPtrHelper(T *ptr) noexcept { return ptr; }
 template <typename Ptr> inline auto qGetPtrHelper(Ptr &ptr) noexcept -> decltype(ptr.get())
 { static_assert(noexcept(ptr.get()), "Smart d pointers for Q_DECLARE_PRIVATE must have noexcept get()"); return ptr.get(); }

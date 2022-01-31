@@ -354,9 +354,9 @@ private:
     LibraryMap libraryMap;
 };
 
-static QBasicMutex qt_library_mutex;
-static QLibraryStore *qt_library_data = nullptr;
-static bool qt_library_data_once;
+Q_CONSTINIT static QBasicMutex qt_library_mutex;
+Q_CONSTINIT static QLibraryStore *qt_library_data = nullptr;
+Q_CONSTINIT static bool qt_library_data_once;
 
 QLibraryStore::~QLibraryStore()
 {

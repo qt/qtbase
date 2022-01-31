@@ -1574,7 +1574,7 @@ static PSecurityFunctionTableW pSecurityFunctionTable = nullptr;
 
 static bool q_SSPI_library_load()
 {
-    static QBasicMutex mutex;
+    Q_CONSTINIT static QBasicMutex mutex;
     QMutexLocker l(&mutex);
 
     if (pSecurityFunctionTable == nullptr)

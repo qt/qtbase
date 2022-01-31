@@ -3344,7 +3344,7 @@ Q_CORE_EXPORT Q_DECL_CONST_FUNCTION unsigned int qt_int_sqrt(unsigned int n)
 
 // In the C runtime on all platforms access to the environment is not thread-safe. We
 // add thread-safety for the Qt wrappers.
-static QBasicMutex environmentMutex;
+Q_CONSTINIT static QBasicMutex environmentMutex;
 
 /*
   Wraps tzset(), which accesses the environment, so should only be called while
@@ -4112,6 +4112,33 @@ bool qunsetenv(const char *varName)
     \snippet code/src_corelib_global_qglobal.cpp qunlikely
 
     \sa Q_LIKELY()
+*/
+
+/*!
+    \macro Q_CONSTINIT
+    \relates <QtGlobal>
+    \since 6.4
+
+    \brief Enforces constant initialization when supported by the compiler.
+
+    If the compiler supports the C++20 \c{constinit} keyword, Clang's
+    \c{[[clang::require_constant_initialization]]} or GCC's \c{__constinit},
+    then this macro expands to the first one of these that is available,
+    otherwise it expands to nothing.
+
+    Variables marked as \c{constinit} cause a compile-error if their
+    initialization would have to be performed at runtime.
+
+    For constants, you can use \c{constexpr} since C++11, but \c{constexpr}
+    makes variables \c{const}, too, whereas \c{constinit} ensures constant
+    initialization, but doesn't make the variable \c{const}:
+
+    \table
+    \header \li Keyword       \li Added \li immutable \li constant-initialized
+    \row    \li \c{const}     \li C++98 \li yes       \li not required
+    \row    \li \c{constexpr} \li C++11 \li yes       \li required
+    \row    \li \c{constinit} \li C++20 \li no        \li required
+    \endtable
 */
 
 /*!

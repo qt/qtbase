@@ -58,7 +58,7 @@ using namespace Qt::StringLiterals;
 static const char env_override[] = "QT_NO_BUILTIN_SELECTORS";
 
 Q_GLOBAL_STATIC(QFileSelectorSharedData, sharedData);
-static QBasicMutex sharedDataMutex;
+Q_CONSTINIT static QBasicMutex sharedDataMutex;
 
 QFileSelectorPrivate::QFileSelectorPrivate()
     : QObjectPrivate()

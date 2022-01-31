@@ -404,7 +404,7 @@ QBindable<QEasingCurve> QVariantAnimation::bindableEasingCurve()
 
 typedef QList<QVariantAnimation::Interpolator> QInterpolatorVector;
 Q_GLOBAL_STATIC(QInterpolatorVector, registeredInterpolators)
-static QBasicMutex registeredInterpolatorsMutex;
+Q_CONSTINIT static QBasicMutex registeredInterpolatorsMutex;
 
 /*!
     \fn template <typename T> void qRegisterAnimationInterpolator(QVariant (*func)(const T &from, const T &to, qreal progress))

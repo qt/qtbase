@@ -144,8 +144,8 @@ static int registerComplexDBusType(const QByteArray &typeName)
         {}
     };
 
-    static QBasicMutex mutex;
-    static struct Hash : QHash<QByteArray, QMetaType>
+    Q_CONSTINIT static QBasicMutex mutex;
+    Q_CONSTINIT static struct Hash : QHash<QByteArray, QMetaType>
     {
         ~Hash()
         {

@@ -264,7 +264,7 @@ QString QInputDevice::seatName() const
 
 using InputDevicesList = QList<const QInputDevice *>;
 Q_GLOBAL_STATIC(InputDevicesList, deviceList)
-static QBasicMutex devicesMutex;
+Q_CONSTINIT static QBasicMutex devicesMutex;
 
 /*!
     Returns a list of all registered input devices (keyboards and pointing devices).

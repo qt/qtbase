@@ -68,7 +68,7 @@ void qtsDebug(const char *fmt, ...)
 #  define DEBUG_MSG if (false)qDebug
 #endif
 
-static QBasicMutex destructorsMutex;
+Q_CONSTINIT static QBasicMutex destructorsMutex;
 typedef QList<void (*)(void *)> DestructorMap;
 Q_GLOBAL_STATIC(DestructorMap, destructors)
 

@@ -91,7 +91,7 @@ public:
         if (!loader())
             return false;
 
-        static QBasicMutex mutex;
+        Q_CONSTINIT static QBasicMutex mutex;
         const QMutexLocker locker(&mutex);
         if (backends.size())
             return true;

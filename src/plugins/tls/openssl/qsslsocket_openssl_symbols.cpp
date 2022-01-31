@@ -868,9 +868,9 @@ static LoadedOpenSsl loadOpenSsl()
 }
 #endif
 
-static QBasicMutex symbolResolveMutex;
-static QBasicAtomicInt symbolsResolved = Q_BASIC_ATOMIC_INITIALIZER(false);
-static bool triedToResolveSymbols = false;
+Q_CONSTINIT static QBasicMutex symbolResolveMutex;
+Q_CONSTINIT static QBasicAtomicInt symbolsResolved = Q_BASIC_ATOMIC_INITIALIZER(false);
+Q_CONSTINIT static bool triedToResolveSymbols = false;
 
 bool q_resolveOpenSslSymbols()
 {

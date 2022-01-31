@@ -1714,7 +1714,7 @@ QNetworkRequest QNetworkAccessManagerPrivate::prepareMultipart(const QNetworkReq
 */
 void QNetworkAccessManagerPrivate::ensureBackendPluginsLoaded()
 {
-    static QBasicMutex mutex;
+    Q_CONSTINIT static QBasicMutex mutex;
     std::unique_lock locker(mutex);
     if (!loader())
         return;

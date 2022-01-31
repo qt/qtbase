@@ -501,8 +501,8 @@ QThreadPool::~QThreadPool()
 */
 QThreadPool *QThreadPool::globalInstance()
 {
-    static QPointer<QThreadPool> theInstance;
-    static QBasicMutex theMutex;
+    Q_CONSTINIT static QPointer<QThreadPool> theInstance;
+    Q_CONSTINIT static QBasicMutex theMutex;
 
     const QMutexLocker locker(&theMutex);
     if (theInstance.isNull() && !QCoreApplication::closingDown())

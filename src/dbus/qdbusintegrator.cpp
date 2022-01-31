@@ -1991,14 +1991,14 @@ public:
 #if defined(QT_NO_DEBUG)
         // when in a release build, we default these to off.
         // this means that we only affect code that explicitly enables the warning.
-        static int mainThreadWarningAmount = -1;
-        static int otherThreadWarningAmount = -1;
+        Q_CONSTINIT static int mainThreadWarningAmount = -1;
+        Q_CONSTINIT static int otherThreadWarningAmount = -1;
 #else
-        static int mainThreadWarningAmount = 200;
-        static int otherThreadWarningAmount = 500;
+        Q_CONSTINIT static int mainThreadWarningAmount = 200;
+        Q_CONSTINIT static int otherThreadWarningAmount = 500;
 #endif
-        static bool initializedAmounts = false;
-        static QBasicMutex initializeMutex;
+        Q_CONSTINIT static bool initializedAmounts = false;
+        Q_CONSTINIT static QBasicMutex initializeMutex;
         auto locker = qt_unique_lock(initializeMutex);
 
         if (!initializedAmounts) {

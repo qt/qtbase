@@ -47,8 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
-static QBasicMutex qAppExiting;
-static bool dispatcherOwnerDestructing = false;
+Q_CONSTINIT static QBasicMutex qAppExiting;
+Q_CONSTINIT static bool dispatcherOwnerDestructing = false;
 
 /*!
     \class QXcbEventQueue

@@ -296,7 +296,7 @@ QEventDispatcherGlibPrivate::QEventDispatcherGlibPrivate(GMainContext *context)
 {
 #if GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION < 32
     if (qEnvironmentVariableIsEmpty("QT_NO_THREADED_GLIB")) {
-        static QBasicMutex mutex;
+        Q_CONSTINIT static QBasicMutex mutex;
         QMutexLocker locker(&mutex);
         if (!g_thread_supported())
             g_thread_init(NULL);

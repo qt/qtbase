@@ -1096,7 +1096,7 @@ struct QMessagePattern
 Q_DECLARE_TYPEINFO(QMessagePattern::BacktraceParams, Q_RELOCATABLE_TYPE);
 #endif
 
-QBasicMutex QMessagePattern::mutex;
+Q_CONSTINIT QBasicMutex QMessagePattern::mutex;
 
 QMessagePattern::QMessagePattern()
 {
@@ -1750,7 +1750,7 @@ static bool android_default_message_handler(QtMsgType type,
 static void win_outputDebugString_helper(const QString &message)
 {
     const qsizetype maxOutputStringLength = 32766;
-    static QBasicMutex m;
+    Q_CONSTINIT static QBasicMutex m;
     auto locker = qt_unique_lock(m);
     // fast path: Avoid string copies if one output is enough
     if (message.length() <= maxOutputStringLength) {
@@ -1827,7 +1827,7 @@ static void stderr_message_handler(QtMsgType type, const QMessageLogContext &con
 #ifdef Q_OS_WASM
     // Prevent thread cross-talk, which causes Emscripten to log
     // non-valid UTF-8. FIXME: remove once we upgrade to emsdk > 2.0.30
-    static QBasicMutex m;
+    Q_CONSTINIT static QBasicMutex m;
     auto locker = qt_unique_lock(m);
 #endif
 
