@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -79,6 +79,12 @@
     around longer than the function promises to keep the referenced data alive.
     If in doubt, obtain a strong reference to the data by calling toByteArray() to convert
     the QByteArrayView into a QByteArray.
+
+    The methods supported by QByteArrayView reflect those of \l QByteArray. In
+    particular, to the limited degree that it ascribes semantics (such as
+    character case, spacing, digits of numbers) to the character data viewed, it
+    uses the C locale and ASCII encoding. See \l {C locale and ASCII functions}
+    for details and the limitations on these methods.
 
     \section1 Compatible Byte Types
 
