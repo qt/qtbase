@@ -2759,32 +2759,30 @@ void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
 
     // This block fixes QTBUG-8361, QTBUG-4362: Frameless/title-less windows shouldn't cover the
     // taskbar when maximized
-    if ((testFlag(WithinMaximize) || window()->windowStates().testFlag(Qt::WindowMinimized))
-        && (m_data.flags.testFlag(Qt::FramelessWindowHint)
-            || (m_data.flags.testFlag(Qt::CustomizeWindowHint) && !m_data.flags.testFlag(Qt::WindowTitleHint)))) {
-        const QScreen *screen = window()->screen();
-
-        // Documentation of MINMAXINFO states that it will only work for the primary screen
-        if (screen && screen == QGuiApplication::primaryScreen()) {
-            const QRect availableGeometry = QHighDpi::toNativePixels(screen->availableGeometry(), screen);
+    if (m_data.flags.testFlag(Qt::FramelessWindowHint)
+        || (m_data.flags.testFlag(Qt::CustomizeWindowHint) && !m_data.flags.testFlag(Qt::WindowTitleHint))) {
+        if (QPlatformScreen *currentScreen = screen()) {
+            const QRect geometry = currentScreen->geometry();
+            const QRect availableGeometry = currentScreen->availableGeometry();
             mmi->ptMaxSize.y = availableGeometry.height();
 
             // Width, because you can have the taskbar on the sides too.
             mmi->ptMaxSize.x = availableGeometry.width();
 
             // If you have the taskbar on top, or on the left you don't want it at (0,0):
-            mmi->ptMaxPosition.x = availableGeometry.x();
-            mmi->ptMaxPosition.y = availableGeometry.y();
+            QPoint availablePositionDiff = geometry.topLeft() - availableGeometry.topLeft();
+            mmi->ptMaxPosition.x = availablePositionDiff.x();
+            mmi->ptMaxPosition.y = availablePositionDiff.y();
             if (!m_data.flags.testFlag(Qt::FramelessWindowHint)) {
-                const int borderWidth = getBorderWidth(screen->handle());
+                const int borderWidth = getBorderWidth(currentScreen);
                 mmi->ptMaxSize.x += borderWidth * 2;
                 mmi->ptMaxSize.y += borderWidth * 2;
                 mmi->ptMaxTrackSize = mmi->ptMaxSize;
                 mmi->ptMaxPosition.x -= borderWidth;
                 mmi->ptMaxPosition.y -= borderWidth;
             }
-        } else if (!screen){
-            qWarning("window()->screen() returned a null screen");
+        } else {
+            qWarning("screen() returned a null screen");
         }
     }
 
