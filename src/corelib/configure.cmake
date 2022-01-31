@@ -460,6 +460,21 @@ closelog();
 }
 ")
 
+# cpp_winrt
+qt_config_compile_test(cpp_winrt
+    LABEL "cpp/winrt"
+    LIBRARIES
+        runtimeobject
+    CODE
+"// Including winrt/base.h causes an error in some configurations (Windows 10 SDK + c++20)
+#   include <winrt/base.h>
+
+int main(void)
+{
+    return 0;
+}
+")
+
 # xlocalescanprint
 qt_config_compile_test(xlocalescanprint
     LABEL "xlocale.h (or equivalents)"
@@ -706,6 +721,11 @@ qt_feature("xmlstream" PUBLIC
     LABEL "XML Streaming APIs"
     PURPOSE "Provides a simple streaming API for XML."
 )
+qt_feature("cpp-winrt" PRIVATE
+    LABEL "cpp/winrt base"
+    PURPOSE "basic cpp/winrt language projection support"
+    CONDITION WIN32 AND TEST_cpp_winrt
+)
 qt_feature_definition("xmlstream" "QT_NO_XMLSTREAM" NEGATE VALUE "1")
 qt_feature("xmlstreamreader" PUBLIC
     SECTION "Kernel"
@@ -924,6 +944,7 @@ qt_configure_add_summary_entry(ARGS "glib")
 qt_configure_add_summary_entry(ARGS "icu")
 qt_configure_add_summary_entry(ARGS "system-libb2")
 qt_configure_add_summary_entry(ARGS "mimetype-database")
+qt_configure_add_summary_entry(ARGS "cpp-winrt")
 qt_configure_add_summary_entry(
     TYPE "firstAvailableFeature"
     ARGS "etw lttng"
@@ -969,4 +990,9 @@ qt_configure_add_report_entry(
     TYPE ERROR
     MESSAGE "Qt requires poll(), ppoll(), poll_ts() or select() on this platform"
     CONDITION ( UNIX OR INTEGRITY ) AND ( NOT QT_FEATURE_poll_ppoll ) AND ( NOT QT_FEATURE_poll_pollts ) AND ( NOT QT_FEATURE_poll_poll ) AND ( NOT QT_FEATURE_poll_select )
+)
+qt_configure_add_report_entry(
+    TYPE WARNING
+    MESSAGE "Basic cpp/winrt support missing. Some features might not be available."
+    CONDITION MSVC AND NOT QT_FEATURE_cpp_winrt
 )
