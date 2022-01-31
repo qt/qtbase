@@ -1069,6 +1069,27 @@ Qt::MouseEventFlags QMouseEvent::flags() const
     QEvent::HoverLeave, or QEvent::HoverMove.
 
     The \a pos is the current mouse cursor's position relative to the
+    receiving widget, \a oldPos is its previous such position, and
+    \a globalPos is the mouse position in absolute coordinates.
+    \a modifiers hold the state of all keyboard modifiers at the time
+    of the event.
+*/
+QHoverEvent::QHoverEvent(Type type, const QPointF &pos, const QPointF &globalPos, const QPointF &oldPos,
+                         Qt::KeyboardModifiers modifiers, const QPointingDevice *device)
+    : QSinglePointEvent(type, device, pos, pos, globalPos, Qt::NoButton, Qt::NoButton, modifiers), m_oldPos(oldPos)
+{
+}
+
+#if QT_DEPRECATED_SINCE(6, 3)
+/*!
+    \deprecated [6.3] Use the other constructor instead (global position is required).
+
+    Constructs a hover event object originating from \a device.
+
+    The \a type parameter must be QEvent::HoverEnter,
+    QEvent::HoverLeave, or QEvent::HoverMove.
+
+    The \a pos is the current mouse cursor's position relative to the
     receiving widget, while \a oldPos is its previous such position.
     \a modifiers hold the state of all keyboard modifiers at the time
     of the event.
@@ -1078,6 +1099,7 @@ QHoverEvent::QHoverEvent(Type type, const QPointF &pos, const QPointF &oldPos,
     : QSinglePointEvent(type, device, pos, pos, pos, Qt::NoButton, Qt::NoButton, modifiers), m_oldPos(oldPos)
 {
 }
+#endif
 
 /*!
     \internal

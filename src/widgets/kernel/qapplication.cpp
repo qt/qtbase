@@ -2073,7 +2073,7 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave, con
             if (w->testAttribute(Qt::WA_Hover) &&
                 (!QApplication::activePopupWidget() || QApplication::activePopupWidget() == w->window())) {
                 Q_ASSERT(instance());
-                QHoverEvent he(QEvent::HoverLeave, QPoint(-1, -1), w->mapFromGlobal(QApplicationPrivate::instance()->hoverGlobalPos),
+                QHoverEvent he(QEvent::HoverLeave, QPointF(-1, -1), globalPosF, w->mapFromGlobal(globalPosF),
                                QGuiApplication::keyboardModifiers());
                 qApp->d_func()->notify_helper(w, &he);
             }
@@ -2081,19 +2081,19 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave, con
     }
     if (!enterList.isEmpty()) {
         // Guard against QGuiApplicationPrivate::lastCursorPosition initialized to qInf(), qInf().
-        const QPoint globalPos = qIsInf(globalPosF.x())
-            ? QPoint(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX)
-            : globalPosF.toPoint();
-        const QPoint windowPos = qAsConst(enterList).back()->window()->mapFromGlobal(globalPos);
+        const QPointF globalPos = qIsInf(globalPosF.x())
+            ? QPointF(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX)
+            : globalPosF;
+        const QPointF windowPos = qAsConst(enterList).back()->window()->mapFromGlobal(globalPos);
         for (auto it = enterList.crbegin(), end = enterList.crend(); it != end; ++it) {
             auto *w = *it;
             if (!QApplication::activeModalWidget() || QApplicationPrivate::tryModalHelper(w, nullptr)) {
                 const QPointF localPos = w->mapFromGlobal(globalPos);
-                QEnterEvent enterEvent(localPos, windowPos, globalPosF);
+                QEnterEvent enterEvent(localPos, windowPos, globalPos);
                 QCoreApplication::sendEvent(w, &enterEvent);
                 if (w->testAttribute(Qt::WA_Hover) &&
                         (!QApplication::activePopupWidget() || QApplication::activePopupWidget() == w->window())) {
-                    QHoverEvent he(QEvent::HoverEnter, localPos, QPoint(-1, -1),
+                    QHoverEvent he(QEvent::HoverEnter, localPos, QPointF(-1, -1), globalPos,
                                    QGuiApplication::keyboardModifiers());
                     qApp->d_func()->notify_helper(w, &he);
                 }
@@ -2843,11 +2843,11 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 
                 w = static_cast<QWidget *>(receiver);
                 relpos = mouse->position().toPoint();
-                QPoint diff = relpos - w->mapFromGlobal(d->hoverGlobalPos);
+                QPoint diff = relpos - w->mapFromGlobal(mouse->globalPosition().toPoint());
                 while (w) {
                     if (w->testAttribute(Qt::WA_Hover) &&
                         (!QApplication::activePopupWidget() || QApplication::activePopupWidget() == w->window())) {
-                        QHoverEvent he(QEvent::HoverMove, relpos, relpos - diff, mouse->modifiers());
+                        QHoverEvent he(QEvent::HoverMove, relpos, mouse->globalPosition(), relpos - diff, mouse->modifiers());
                         d->notify_helper(w, &he);
                     }
                     if (w->isWindow() || w->testAttribute(Qt::WA_NoMousePropagation))
