@@ -4,10 +4,13 @@
 
 #include <QTest>
 
+#include <QtCore/private/qglobal_p.h>
 #include <qstringconverter.h>
 #include <qthreadpool.h>
 
 #include <array>
+
+using namespace Qt::StringLiterals;
 
 static constexpr bool IsBigEndian = QSysInfo::ByteOrder == QSysInfo::BigEndian;
 enum CodecLimitation {
@@ -28,8 +31,6 @@ static constexpr bool localeIsUtf8()
     return true;
 }
 #endif
-
-using namespace Qt::StringLiterals;
 
 struct Codec
 {
@@ -128,6 +129,21 @@ private slots:
     void convertUtf8CharByChar();
     void roundtrip_data();
     void roundtrip();
+
+#if QT_CONFIG(icu)
+    void roundtripIcu_data();
+    void roundtripIcu();
+    void icuInvalidCharacter_data();
+    void icuInvalidCharacter();
+    void icuEncodeEdgeCases_data();
+    void icuEncodeEdgeCases();
+    void icuUsableAfterMove();
+    void charByCharConsistency_data();
+    void charByCharConsistency();
+    void byteByByteConsistency_data();
+    void byteByByteConsistency();
+    void statefulPieceWise();
+#endif
 
     void flagF7808080() const;
 
@@ -410,6 +426,257 @@ void tst_QStringConverter::roundtrip()
     decoded = back2.decode(out2.encode(uniString));
     QCOMPARE(decoded, uniString);
 }
+
+#if QT_CONFIG(icu)
+
+void tst_QStringConverter::roundtripIcu_data()
+{
+    QTest::addColumn<QString>("original");
+    QTest::addColumn<QByteArray>("codec");
+
+    QTest::addRow("shift_jis") << u"古池や　蛙飛び込む　水の音"_s << QByteArray("shift_jis");
+    QTest::addRow("UTF7") << u"Übermäßig: čçö"_s << QByteArray("UTF-7");
+}
+
+void tst_QStringConverter::roundtripIcu()
+{
+    QFETCH(QString, original);
+    QFETCH(QByteArray, codec);
+    QStringEncoder fromUtf16(codec);
+    if (!fromUtf16.isValid())
+        QSKIP("Unsupported codec");
+    QStringDecoder toUtf16(codec);
+    QByteArray asShiftJIS = fromUtf16(original);
+    QString roundTripped = toUtf16(asShiftJIS);
+    QCOMPARE(roundTripped, original);
+}
+
+void tst_QStringConverter::icuEncodeEdgeCases_data()
+{
+    QTest::addColumn<QString>("source");
+    QTest::addColumn<QByteArray>("expected") ;
+    QTest::addColumn<QByteArray>("codec");
+
+    QTest::addRow("empty") << QString() << QByteArray() << QByteArray("ISO-2022-CN");
+    QTest::addRow("BOMonly") << QString(QChar(QChar::ByteOrderMark)) << QByteArray() << QByteArray("ISO-2022-CN");
+    QTest::addRow("1to6") << u"좋"_s << QByteArray::fromHex("1b2428434141") << QByteArray("ISO-2022-JP-2");
+    QTest::addRow("1to7") << u"漢"_s << QByteArray::fromHex("1b2429470e6947") << QByteArray("ISO-2022-CN");
+    QTest::addRow("1to8") << u"墎"_s << QByteArray::fromHex("1b242a481b4e4949")  << QByteArray("ISO-2022-CN");
+    QTest::addRow("utf7") << u"Übergröße"_s << QByteArray("+ANw-bergr+APYA3w-e") << QByteArray("UTF-7");
+}
+
+void tst_QStringConverter::icuEncodeEdgeCases()
+{
+    QFETCH(QString, source);
+    QFETCH(QByteArray, expected);
+    QFETCH(QByteArray, codec);
+    QStringEncoder encoder(codec);
+    if (!encoder.isValid())
+        QSKIP("Unsupported codec");
+    QVERIFY(encoder.isValid());
+    QByteArray encoded = encoder.encode(source);
+    QCOMPARE(encoded, expected);
+}
+
+void tst_QStringConverter::charByCharConsistency_data()
+{
+    QTest::addColumn<QStringView>("source");
+    QTest::addColumn<QByteArray>("codec");
+
+    auto addRow = [](const TestString &s) {
+        QTest::addRow("%s_shift_jis", s.description) << s.utf16 << QByteArray("shift_jis");
+        QTest::addRow("%s_EUC-CN", s.description) << s.utf16 << QByteArray("EUC-CN");
+    };
+
+    for (const TestString &s : testStrings) {
+        if (s.utf16.isEmpty())
+            continue;
+        addRow(s);
+    }
+}
+
+void tst_QStringConverter::charByCharConsistency()
+{
+    QFETCH(QStringView, source);
+    QFETCH(QByteArray, codec);
+
+    {
+        QStringEncoder encoder(codec);
+        if (!encoder.isValid())
+            QSKIP("Unsupported codec");
+
+        QByteArray fullyConverted = encoder.encode(source);
+        encoder.resetState();
+        QByteArray stepByStepConverted;
+        for (const auto& codeUnit: source) {
+            stepByStepConverted += encoder.encode(codeUnit);
+        }
+        QCOMPARE(stepByStepConverted, fullyConverted);
+    }
+
+    {
+        QStringEncoder encoder(codec, QStringConverter::Flag::ConvertInvalidToNull);
+
+        QByteArray fullyConverted = encoder.encode(source);
+        encoder.resetState();
+        QByteArray stepByStepConverted;
+        for (const auto& codeUnit: source) {
+            stepByStepConverted += encoder.encode(codeUnit);
+        }
+        QCOMPARE(stepByStepConverted, fullyConverted);
+    }
+}
+
+void tst_QStringConverter::byteByByteConsistency_data()
+{
+    QTest::addColumn<QByteArray>("source");
+    QTest::addColumn<QByteArray>("codec");
+
+    QTest::addRow("plain_ascii_utf7") << QByteArray("Hello, world!") << QByteArray("UTF-7");
+    QFile eucKr(":/euc_kr.txt");
+    if (eucKr.open(QFile::ReadOnly))
+        QTest::addRow("euc_kr_storing_jp") << eucKr.readAll() << QByteArray("EUC-KR");
+    QTest::addRow("incomplete_euc_jp") << QByteArrayLiteral("test\x8Ftest") << QByteArray("EUC-JP");
+}
+
+void tst_QStringConverter::byteByByteConsistency()
+{
+    QFETCH(QByteArray, source);
+    QFETCH(QByteArray, codec);
+
+    {
+        QStringDecoder decoder(codec);
+        if (!decoder.isValid())
+            QSKIP("Unsupported codec");
+
+        QString fullyConverted = decoder.decode(source);
+        decoder.resetState();
+        QString stepByStepConverted;
+        for (const auto& byte: source) {
+            QByteArray singleChar;
+            singleChar.append(byte);
+            stepByStepConverted += decoder.decode(singleChar);
+        }
+        QCOMPARE(stepByStepConverted, fullyConverted);
+    }
+
+    {
+        QStringDecoder decoder(codec, QStringConverter::Flag::ConvertInvalidToNull);
+        if (!decoder.isValid())
+            QSKIP("Unsupported codec");
+
+        QString fullyConverted = decoder.decode(source);
+        decoder.resetState();
+        QString stepByStepConverted;
+        for (const auto& byte: source) {
+            QByteArray singleChar;
+            singleChar.append(byte);
+            stepByStepConverted += decoder.decode(singleChar);
+        }
+        QCOMPARE(stepByStepConverted, fullyConverted);
+    }
+}
+
+void tst_QStringConverter::statefulPieceWise()
+{
+    QStringDecoder decoder("HZ");
+    if (!decoder.isValid())
+        QSKIP("Unsupported codec");
+    QString start = decoder.decode("pure ASCII");
+    QCOMPARE(start, u"pure ASCII");
+    QString shifted = decoder.decode("~{");
+    // shift out changes the state, but won't create any output
+    QCOMPARE(shifted, "");
+    QString continuation = decoder.decode("\x42\x43");
+    QCOMPARE(continuation, "旅");
+    decoder.resetState();
+    // after resetting the state we're in N0 again
+    QString afterReset = decoder.decode("\x42\x43");
+    QCOMPARE(afterReset, "BC");
+}
+
+void tst_QStringConverter::icuUsableAfterMove()
+{
+    {
+        QStringDecoder decoder("EUC-JP");
+        QVERIFY(decoder.isValid());
+        QString partial = decoder.decode("Test\x8E");
+        QCOMPARE(partial, u"Test"_s);
+        QStringDecoder moved(std::move(decoder));
+        QString complete = partial + moved.decode("\xA1Test");
+        QCOMPARE(complete, u"Test\uFF61Test"_s);
+    }
+    {
+        QStringEncoder encoder("Big5");
+        QVERIFY(encoder.isValid());
+        QByteArray encoded = encoder.encode("hello"_L1);
+        QCOMPARE(encoded, "hello");
+        QStringEncoder moved(std::move(encoder));
+        encoded = moved.encode("bye");
+        QCOMPARE(encoded, "bye");
+    }
+}
+
+void tst_QStringConverter::icuInvalidCharacter_data()
+{
+    QTest::addColumn<QString>("string");
+    QTest::addColumn<QByteArray>("bytearray");
+    QTest::addColumn<QByteArray>("codec");
+    QTest::addColumn<QStringConverter::Flags>("flags");
+    QTest::addColumn<bool>("shouldDecode");
+
+    using Flags = QStringConverter::Flags;
+    using Flag = QStringConverter::Flag;
+    QTest::addRow("encode")
+            << u"Test👪Test"_s
+            << QByteArrayLiteral("\xE3\x85\xA2\xA3\x3F\xE3\x85\xA2\xA3")
+            << QByteArray("IBM-037") << Flags(Flag::Default)
+            << false;
+    QTest::addRow("encode_null")
+            << u"Test👪Test"_s
+            << QByteArrayLiteral("\xE3\x85\xA2\xA3\0\xE3\x85\xA2\xA3")
+            << QByteArray("IBM-037") << Flags(Flag::ConvertInvalidToNull)
+            << false;
+    QTest::addRow("decode_incomplete_EUC-JP")
+            << u"test"_s
+            << QByteArrayLiteral("test\x8F")
+            << QByteArray("EUC-JP") << Flags(Flag::Stateless)
+            << true;
+    QTest::addRow("decode_invalid_EUC-JP_sequence")
+            << u"test\0test"_s
+            << QByteArrayLiteral("test\x8Ftest")
+            << QByteArray("EUC-JP") << Flags(Flag::ConvertInvalidToNull)
+            << true;
+    QTest::addRow("encode_incomplete_surrogate")
+            << u"test"_s + QChar::highSurrogate(0x11136)
+            << QByteArray("test")
+            << QByteArray("EUC-JP") << Flags(Flag::Stateless)
+            << false;
+}
+
+void tst_QStringConverter::icuInvalidCharacter()
+{
+    QFETCH(QString, string);
+    QFETCH(QByteArray, bytearray);
+    QFETCH(QByteArray, codec);
+    QFETCH(QStringConverter::Flags, flags);
+    QFETCH(bool, shouldDecode);
+    if (shouldDecode) {
+        QStringDecoder decoder(codec.data(), flags);
+        QVERIFY(decoder.isValid());
+        QString decoded = decoder.decode(bytearray);
+        QVERIFY(decoder.hasError());
+        QCOMPARE(decoded, string);
+    } else {
+        QStringEncoder encoder(codec.data(), flags);
+        QVERIFY(encoder.isValid());
+        QByteArray encoded = encoder.encode(string);
+        QVERIFY(encoder.hasError());
+        QCOMPARE(encoded, bytearray);
+    }
+}
+
+#endif
 
 void tst_QStringConverter::flagF7808080() const
 {

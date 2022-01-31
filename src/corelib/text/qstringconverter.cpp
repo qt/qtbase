@@ -11,6 +11,13 @@
 #include "private/qtools_p.h"
 #include "qbytearraymatcher.h"
 
+#if QT_CONFIG(icu)
+#include <unicode/ucnv.h>
+#include <unicode/ucnv_cb.h>
+#include <unicode/ucnv_err.h>
+#include <unicode/ustring.h>
+#endif
+
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
 #ifndef QT_BOOTSTRAPPED
@@ -1373,6 +1380,21 @@ void QStringConverter::State::clear() noexcept
     internalState = 0;
 }
 
+void QStringConverter::State::reset() noexcept
+{
+    if (flags & Flag::UsesIcu) {
+#if QT_CONFIG(icu)
+        UConverter *converter = static_cast<UConverter *>(d[0]);
+        if (converter)
+            ucnv_reset(converter);
+#else
+        Q_UNREACHABLE();
+#endif
+    } else {
+        clear();
+    }
+}
+
 static QChar *fromUtf16(QChar *out, QByteArrayView in, QStringConverter::State *state)
 {
     return QUtf16::convertToUnicode(out, in, state, DetectEndianness);
@@ -1594,6 +1616,7 @@ static qsizetype toLatin1Len(qsizetype l) { return l + 1; }
     \value Stateless Ignore possible converter states between different function calls
            to encode or decode strings. This will also cause the QStringConverter to raise an error if an incomplete
            sequence of data is encountered.
+    \omitvalue UsesIcu
 */
 
 /*!
@@ -1665,15 +1688,263 @@ static bool nameMatch(const char *a, const char *b)
     \internal
 */
 
+
+#if QT_CONFIG(icu)
+// only derives from QStringConverter to get access to protected types
+struct QStringConverterICU : QStringConverter
+{
+    static void clear_function(QStringConverterBase::State *state) noexcept
+    {
+        ucnv_close(static_cast<UConverter *>(state->d[0]));
+        state->d[0] = nullptr;
+    }
+
+    static void ensureConverter(QStringConverter::State *state)
+    {
+        // old code might reset the state via clear instead of reset
+        // in that case, the converter has been closed, and we have to reopen it
+        if (state->d[0] == nullptr)
+            state->d[0] = createConverterForName(static_cast<const char *>(state->d[1]), state);
+    }
+
+    static QChar *toUtf16(QChar *out, QByteArrayView in, QStringConverter::State *state)
+    {
+        ensureConverter(state);
+
+        auto icu_conv = static_cast<UConverter *>(state->d[0]);
+        UErrorCode err = U_ZERO_ERROR;
+        auto source = in.data();
+        auto sourceLimit = in.data() + in.size();
+
+        qsizetype length = toLen(in.size());
+
+        UChar *target = reinterpret_cast<UChar *>(out);
+        auto targetLimit = target + length;
+        // We explicitly clean up anyway, so no need to set flush to true,
+        // which would just reset the converter.
+        UBool flush = false;
+
+        // If the QStringConverter was moved, the state that we used as a context is stale now.
+        UConverterToUCallback action;
+        const void *context;
+        ucnv_getToUCallBack(icu_conv, &action, &context);
+        if (context != state)
+             ucnv_setToUCallBack(icu_conv, action, &state, nullptr, nullptr, &err);
+
+        ucnv_toUnicode(icu_conv, &target, targetLimit, &source, sourceLimit, nullptr, flush, &err);
+        // We did reserve enough space:
+        Q_ASSERT(err != U_BUFFER_OVERFLOW_ERROR);
+        if (state->flags.testFlag(QStringConverter::Flag::Stateless)) {
+            if (auto leftOver = ucnv_toUCountPending(icu_conv, &err)) {
+                ucnv_reset(icu_conv);
+                state->invalidChars += leftOver;
+            }
+        }
+        return reinterpret_cast<QChar *>(target);
+    }
+
+    static char *fromUtf16(char *out, QStringView in, QStringConverter::State *state)
+    {
+        ensureConverter(state);
+        auto icu_conv = static_cast<UConverter *>(state->d[0]);
+        UErrorCode err = U_ZERO_ERROR;
+        auto source = reinterpret_cast<const UChar *>(in.data());
+        auto sourceLimit = reinterpret_cast<const UChar *>(in.data() + in.size());
+
+        qsizetype length = UCNV_GET_MAX_BYTES_FOR_STRING(in.length(), ucnv_getMaxCharSize(icu_conv));
+
+        char *target = out;
+        char *targetLimit = out + length;
+        UBool flush = false;
+
+        // If the QStringConverter was moved, the state that we used as a context is stale now.
+        UConverterFromUCallback action;
+        const void *context;
+        ucnv_getFromUCallBack(icu_conv, &action, &context);
+        if (context != state)
+             ucnv_setFromUCallBack(icu_conv, action, &state, nullptr, nullptr, &err);
+
+        ucnv_fromUnicode(icu_conv, &target, targetLimit, &source, sourceLimit, nullptr, flush, &err);
+        // We did reserve enough space:
+        Q_ASSERT(err != U_BUFFER_OVERFLOW_ERROR);
+        if (state->flags.testFlag(QStringConverter::Flag::Stateless)) {
+            if (auto leftOver = ucnv_fromUCountPending(icu_conv, &err)) {
+                ucnv_reset(icu_conv);
+                state->invalidChars += leftOver;
+            }
+        }
+        return target;
+    }
+
+    Q_DISABLE_COPY_MOVE(QStringConverterICU)
+
+    template<qsizetype X>
+    static qsizetype fromLen(qsizetype inLength)
+    {
+        return X * inLength * sizeof(UChar);
+    }
+
+    static qsizetype toLen(qsizetype inLength)
+    {
+
+        /* Assumption: each input char might map to a different codepoint
+           Each codepoint can take up to 4 bytes == 2 QChar
+           We can ignore reserving space for a BOM, as only UTF encodings use one
+           and those are not handled by the ICU converter.
+         */
+        return 2 * inLength;
+    }
+
+    static constexpr QStringConverter::Interface forLength[] = {
+        {"icu, recompile if you see this", QStringConverterICU::toUtf16, QStringConverterICU::toLen, QStringConverterICU::fromUtf16, QStringConverterICU::fromLen<1>},
+        {"icu, recompile if you see this", QStringConverterICU::toUtf16, QStringConverterICU::toLen, QStringConverterICU::fromUtf16, QStringConverterICU::fromLen<2>},
+        {"icu, recompile if you see this", QStringConverterICU::toUtf16, QStringConverterICU::toLen, QStringConverterICU::fromUtf16, QStringConverterICU::fromLen<3>},
+        {"icu, recompile if you see this", QStringConverterICU::toUtf16, QStringConverterICU::toLen, QStringConverterICU::fromUtf16, QStringConverterICU::fromLen<4>},
+        {"icu, recompile if you see this", QStringConverterICU::toUtf16, QStringConverterICU::toLen, QStringConverterICU::fromUtf16, QStringConverterICU::fromLen<5>},
+        {"icu, recompile if you see this", QStringConverterICU::toUtf16, QStringConverterICU::toLen, QStringConverterICU::fromUtf16, QStringConverterICU::fromLen<6>},
+        {"icu, recompile if you see this", QStringConverterICU::toUtf16, QStringConverterICU::toLen, QStringConverterICU::fromUtf16, QStringConverterICU::fromLen<7>},
+        {"icu, recompile if you see this", QStringConverterICU::toUtf16, QStringConverterICU::toLen, QStringConverterICU::fromUtf16, QStringConverterICU::fromLen<8>}
+    };
+
+    static UConverter *createConverterForName(const char *name, const State *state)
+    {
+        Q_ASSERT(name);
+        Q_ASSERT(state);
+        UErrorCode status = U_ZERO_ERROR;
+        UConverter *conv = ucnv_open(name, &status);
+        if (status != U_ZERO_ERROR && status != U_AMBIGUOUS_ALIAS_WARNING) {
+            ucnv_close(conv);
+            return nullptr;
+        }
+
+        if (state->flags.testFlag(Flag::ConvertInvalidToNull)) {
+            UErrorCode error = U_ZERO_ERROR;
+
+            auto nullToSubstituter = [](const void *context, UConverterToUnicodeArgs *toUArgs,
+                                        const char *, int32_t length,
+                                        UConverterCallbackReason reason, UErrorCode *err) {
+                if (reason <= UCNV_IRREGULAR) {
+                    *err = U_ZERO_ERROR;
+                    UChar c = '\0';
+                    ucnv_cbToUWriteUChars(toUArgs, &c, 1, 0, err);
+                    // Recover outer scope's state (which isn't const) from context:
+                    auto state = const_cast<State *>(static_cast<const State *>(context));
+                    state->invalidChars += length;
+                }
+            };
+            ucnv_setToUCallBack(conv, nullToSubstituter, state, nullptr, nullptr, &error);
+
+            auto nullFromSubstituter = [](const void *context, UConverterFromUnicodeArgs *fromUArgs,
+                                          const UChar *, int32_t length,
+                                          UChar32, UConverterCallbackReason reason, UErrorCode *err) {
+                if (reason <= UCNV_IRREGULAR) {
+                    *err = U_ZERO_ERROR;
+                    const UChar replacement[] = { 0 };
+                    const UChar *stringBegin = std::begin(replacement);
+                    ucnv_cbFromUWriteUChars(fromUArgs, &stringBegin, std::end(replacement), 0, err);
+                    // Recover outer scope's state (which isn't const) from context:
+                    auto state = const_cast<State *>(static_cast<const State *>(context));
+                    state->invalidChars += length;
+                }
+            };
+            ucnv_setFromUCallBack(conv, nullFromSubstituter, state, nullptr, nullptr, &error);
+        } else {
+            UErrorCode error = U_ZERO_ERROR;
+
+            auto qmarkToSubstituter = [](const void *context, UConverterToUnicodeArgs *toUArgs,
+                                         const char *codeUnits,int32_t length,
+                                         UConverterCallbackReason reason, UErrorCode *err) {
+                if (reason <= UCNV_IRREGULAR) {
+                    // Recover outer scope's state (which isn't const) from context:
+                    auto state = const_cast<State *>(static_cast<const State *>(context));
+                    state->invalidChars += length;
+                }
+                // use existing ICU callback for logic
+                UCNV_TO_U_CALLBACK_SUBSTITUTE(nullptr, toUArgs, codeUnits, length, reason, err);
+
+            };
+            ucnv_setToUCallBack(conv, qmarkToSubstituter, state, nullptr, nullptr, &error);
+
+            auto qmarkFromSubstituter = [](const void *context, UConverterFromUnicodeArgs *fromUArgs,
+                                           const UChar *codeUnits, int32_t length,
+                                           UChar32 codePoint, UConverterCallbackReason reason, UErrorCode *err) {
+                if (reason <= UCNV_IRREGULAR) {
+                    // Recover outer scope's state (which isn't const) from context:
+                    auto state = const_cast<State *>(static_cast<const State *>(context));
+                    state->invalidChars += length;
+                }
+                // use existing ICU callback for logic
+                UCNV_FROM_U_CALLBACK_SUBSTITUTE(nullptr, fromUArgs, codeUnits, length,
+                                                codePoint, reason, err);
+            };
+            ucnv_setFromUCallBack(conv, qmarkFromSubstituter, state, nullptr, nullptr, &error);
+        }
+        return conv;
+    }
+
+    static const QStringConverter::Interface *make_icu_converter(
+            QStringConverterBase::State *state,
+            const char *name)
+    {
+        UErrorCode status = U_ZERO_ERROR;
+        UConverter *conv = createConverterForName(name, state);
+        if (!conv)
+            return nullptr;
+
+        const char *icuName = ucnv_getName(conv, &status);
+        // ucnv_getStandardName returns a name which is owned by the library
+        // we can thus store it in the state without worrying aobut its lifetime
+        const char *persistentName = ucnv_getStandardName(icuName, "MIME", &status);
+        if (U_FAILURE(status) || !persistentName) {
+             status = U_ZERO_ERROR;
+             persistentName = ucnv_getStandardName(icuName, "IANA", &status);
+        }
+        state->d[1] = const_cast<char *>(persistentName);
+        state->d[0] = conv;
+        state->flags |= QStringConverterBase::Flag::UsesIcu;
+        qsizetype maxCharSize = ucnv_getMaxCharSize(conv);
+        state->clearFn = QStringConverterICU::clear_function;
+        if (maxCharSize > 8 || maxCharSize < 1) {
+            qWarning("Encountered unexpected codec \"%s\" which requires >8x space", name);
+            return nullptr;
+        } else {
+            return &forLength[maxCharSize - 1];
+        }
+
+    }
+
+};
+#endif
+
 /*!
     \internal
 */
-QStringConverter::QStringConverter(const char *name, Flags f) noexcept
+QStringConverter::QStringConverter(const char *name, Flags f)
     : iface(nullptr), state(f)
 {
     auto e = encodingForName(name);
     if (e)
         iface = encodingInterfaces + int(e.value());
+#if QT_CONFIG(icu)
+    else
+        iface = QStringConverterICU::make_icu_converter(&state, name);
+#endif
+}
+
+
+const char *QStringConverter::name() const noexcept
+{
+    if (!iface)
+        return nullptr;
+    if (state.flags & QStringConverter::Flag::UsesIcu) {
+#if QT_CONFIG(icu)
+        return static_cast<const char*>(state.d[1]);
+#else
+        return nullptr;
+#endif
+    } else {
+        return iface->name;
+    }
 }
 
 /*!
@@ -1711,8 +1982,12 @@ QStringConverter::QStringConverter(const char *name, Flags f) noexcept
 */
 
 /*!
-    Returns an optional encoding for \a name. The optional is empty if the name could
-    not get converted to a valid encoding.
+    Convert \a name to the corresponding \l Encoding member, if there is one.
+
+    If the \a name is not the name of a codec listed in the Encoding enumeration,
+    \c{std::nullopt} is returned. Such a name may, none the less, be accepted by
+    the QStringConverter constructor when Qt is built with ICU, if ICU provides a
+    converter with the given name.
 */
 std::optional<QStringConverter::Encoding> QStringConverter::encodingForName(const char *name) noexcept
 {
