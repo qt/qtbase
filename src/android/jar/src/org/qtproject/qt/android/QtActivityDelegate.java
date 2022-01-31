@@ -907,11 +907,11 @@ public class QtActivityDelegate
         m_accessibilityDelegate.notifyLocationChange();
     }
 
-    public void notifyObjectHide(int viewId)
+    public void notifyObjectHide(int viewId, int parentId)
     {
         if (m_accessibilityDelegate == null)
             return;
-        m_accessibilityDelegate.notifyObjectHide(viewId);
+        m_accessibilityDelegate.notifyObjectHide(viewId, parentId);
     }
 
     public void notifyObjectFocus(int viewId)

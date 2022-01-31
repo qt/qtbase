@@ -113,9 +113,13 @@ namespace QtAndroidAccessibility
         QtAndroid::notifyAccessibilityLocationChange();
     }
 
+    static jint parentId(JNIEnv *, jobject, jint objectId); // forward declaration
+
     void notifyObjectHide(uint accessibilityObjectId)
     {
-        QtAndroid::notifyObjectHide(accessibilityObjectId);
+        jobject unused {};
+        const auto parentObjectId = parentId(nullptr, unused, accessibilityObjectId);
+        QtAndroid::notifyObjectHide(accessibilityObjectId, parentObjectId);
     }
 
     void notifyObjectFocus(uint accessibilityObjectId)
