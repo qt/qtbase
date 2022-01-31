@@ -90,7 +90,7 @@ public:
     void clear();
 
     using QWidget::addAction;
-#if QT_REMOVED_SINCE(6, 3)
+#if QT_WIDGETS_REMOVED_SINCE(6, 3)
     QAction *addAction(const QString &text);
     QAction *addAction(const QIcon &icon, const QString &text);
     QAction *addAction(const QString &text, const QObject *receiver, const char* member);

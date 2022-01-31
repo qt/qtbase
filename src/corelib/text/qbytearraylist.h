@@ -58,7 +58,7 @@ typedef QMutableListIterator<QByteArray> QMutableByteArrayListIterator;
 #ifndef Q_CLANG_QDOC
 
 namespace QtPrivate {
-#if QT_REMOVED_SINCE(6, 3) && QT_POINTER_SIZE != 4
+#if QT_CORE_REMOVED_SINCE(6, 3) && QT_POINTER_SIZE != 4
     QByteArray Q_CORE_EXPORT QByteArrayList_join(const QByteArrayList *that, const char *separator, int separatorLength);
 #endif
     QByteArray Q_CORE_EXPORT QByteArrayList_join(const QByteArrayList *that, const char *sep, qsizetype len);

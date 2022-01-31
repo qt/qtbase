@@ -37,13 +37,13 @@
 **
 ****************************************************************************/
 
-#define QT_BUILD_REMOVED_API
+#define QT_WIDGETS_BUILD_REMOVED_API
 
-#include "qglobal.h"
+#include "qtwidgetsglobal.h"
 
 QT_USE_NAMESPACE
 
-#if QT_REMOVED_SINCE(6, 3)
+#if QT_WIDGETS_REMOVED_SINCE(6, 3)
 
 #include "qmenu.h"
 
@@ -111,4 +111,4 @@ QAction *QMenuBar::addAction(const QString &text, const QObject *receiver, const
 // #include <qotherheader.h>
 // // implement removed functions from qotherheader.h
 
-#endif // QT_REMOVED_SINCE(6, 3)
+#endif // QT_WIDGETS_REMOVED_SINCE(6, 3)

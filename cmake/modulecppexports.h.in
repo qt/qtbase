@@ -52,4 +52,10 @@
 #  define Q_@module_define_infix@_EXPORT
 #endif
 
+#ifdef QT_@module_define_infix@_BUILD_REMOVED_API
+#define QT_@module_define_infix@_REMOVED_SINCE(major, minor) QT_DEPRECATED_SINCE(major, minor)
+#else
+#define QT_@module_define_infix@_REMOVED_SINCE(major, minor) 0
+#endif
+
 #endif // @header_base_name_upper@_H

@@ -65,7 +65,7 @@ public:
 
     void setPattern(const QByteArray &pattern);
 
-#if QT_REMOVED_SINCE(6, 3)
+#if QT_CORE_REMOVED_SINCE(6, 3)
     qsizetype indexIn(const QByteArray &ba, qsizetype from = 0) const;
 #else
     Q_WEAK_OVERLOAD
@@ -107,7 +107,7 @@ protected:
     // compiler-generated copy/more ctors/assignment operators are ok!
     ~QStaticByteArrayMatcherBase() = default;
 
-#if QT_REMOVED_SINCE(6, 3) && QT_POINTER_SIZE != 4
+#if QT_CORE_REMOVED_SINCE(6, 3) && QT_POINTER_SIZE != 4
     Q_CORE_EXPORT int indexOfIn(const char *needle, uint nlen, const char *haystack, int hlen, int from) const noexcept;
 #endif
     Q_CORE_EXPORT qsizetype indexOfIn(const char *needle, size_t nlen,

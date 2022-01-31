@@ -146,7 +146,7 @@ public:
 
     explicit QCalendar(); // Gregorian, optimised
     explicit QCalendar(System system);
-#if QT_REMOVED_SINCE(6, 4)
+#if QT_CORE_REMOVED_SINCE(6, 4)
     explicit QCalendar(QLatin1String name);
     explicit QCalendar(QStringView name);
 #endif
