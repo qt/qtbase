@@ -3030,10 +3030,10 @@ QRasterPaintEnginePrivate::getPenFunc(const QRectF &rect,
 static QPair<int, int> visibleGlyphRange(const QRectF &clip, QFontEngine *fontEngine,
                                          glyph_t *glyphs, QFixedPoint *positions, int numGlyphs)
 {
-    QFixed clipLeft = QFixed::fromReal(clip.left());
-    QFixed clipRight = QFixed::fromReal(clip.right());
-    QFixed clipTop = QFixed::fromReal(clip.top());
-    QFixed clipBottom = QFixed::fromReal(clip.bottom());
+    QFixed clipLeft = QFixed::fromReal(clip.left() - 1);
+    QFixed clipRight = QFixed::fromReal(clip.right() + 1);
+    QFixed clipTop = QFixed::fromReal(clip.top() - 1);
+    QFixed clipBottom = QFixed::fromReal(clip.bottom() + 1);
 
     int first = 0;
     while (first < numGlyphs) {
@@ -3516,7 +3516,7 @@ QRasterPaintEngine::ClipType QRasterPaintEngine::clipType() const
     \internal
     Returns the bounding rect of the currently set clip.
 */
-QRect QRasterPaintEngine::clipBoundingRect() const
+QRectF QRasterPaintEngine::clipBoundingRect() const
 {
     Q_D(const QRasterPaintEngine);
 
@@ -3528,7 +3528,7 @@ QRect QRasterPaintEngine::clipBoundingRect() const
     if (clip->hasRectClip)
         return clip->clipRect;
 
-    return QRect(clip->xmin, clip->ymin, clip->xmax - clip->xmin, clip->ymax - clip->ymin);
+    return QRectF(clip->xmin, clip->ymin, clip->xmax - clip->xmin, clip->ymax - clip->ymin);
 }
 
 void QRasterPaintEnginePrivate::initializeRasterizer(QSpanData *data)

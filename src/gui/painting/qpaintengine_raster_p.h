@@ -204,7 +204,7 @@ public:
         ComplexClip
     };
     ClipType clipType() const;
-    QRect clipBoundingRect() const;
+    QRectF clipBoundingRect() const;
 
 #ifdef Q_OS_WIN
     void setDC(HDC hdc);
