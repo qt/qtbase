@@ -691,7 +691,10 @@ bool QSinglePointEvent::isEndEvent() const
     QCursor::pos()
 */
 
+#if QT_DEPRECATED_SINCE(6, 4)
 /*!
+    \deprecated [6.4] Use another constructor instead (global position is required).
+
     Constructs a mouse event object originating from \a device.
 
     The \a type parameter must be one of QEvent::MouseButtonPress,
@@ -722,6 +725,7 @@ QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, Qt::MouseButton but
                         button, buttons, modifiers)
 {
 }
+#endif
 
 /*!
     Constructs a mouse event object originating from \a device.
@@ -2014,7 +2018,11 @@ QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos, const QPo
 QContextMenuEvent::~QContextMenuEvent()
 {
 }
+
+#if QT_DEPRECATED_SINCE(6, 4)
 /*!
+    \deprecated [6.4] Use the other constructor instead (global position is required).
+
     Constructs a context menu event object with the accept parameter
     flag set to false.
 
@@ -2035,6 +2043,7 @@ QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos)
     m_globalPos = QCursor::pos();
 #endif
 }
+#endif
 
 /*!
     \fn const QPoint &QContextMenuEvent::pos() const

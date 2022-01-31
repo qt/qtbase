@@ -4231,7 +4231,8 @@ void tst_QWidget::testDeletionInEventHandlers()
     w = new Widget;
     w->show();
     w->deleteThis = true;
-    QMouseEvent me(QEvent::MouseButtonRelease, QPoint(1, 1), Qt::LeftButton, Qt::LeftButton, Qt::KeyboardModifiers());
+    QMouseEvent me(QEvent::MouseButtonRelease, QPoint(1, 1), w->mapToGlobal(QPoint(1, 1)),
+                   Qt::LeftButton, Qt::LeftButton, Qt::KeyboardModifiers());
     qApp->notify(w, &me);
     QVERIFY(w.isNull());
     delete w;
@@ -4270,7 +4271,8 @@ void tst_QWidget::testDeletionInEventHandlers()
     w->setMouseTracking(true);
     w->show();
     w->deleteThis = true;
-    QMouseEvent me2 = QMouseEvent(QEvent::MouseMove, QPoint(0, 0), Qt::NoButton, Qt::NoButton, Qt::NoModifier);
+    QMouseEvent me2 = QMouseEvent(QEvent::MouseMove, QPoint(0, 0), w->mapToGlobal(QPoint(0, 0)),
+                                  Qt::NoButton, Qt::NoButton, Qt::NoModifier);
     QApplication::sendEvent(w, &me2);
     QVERIFY(w.isNull());
     delete w;

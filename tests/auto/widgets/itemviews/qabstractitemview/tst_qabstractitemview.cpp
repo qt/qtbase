@@ -730,8 +730,8 @@ void tst_QAbstractItemView::persistentEditorFocus()
     const QPoint p(5, 5);
     for (QSpinBox *sb : list) {
         QTRY_VERIFY(sb->isVisible());
-        QMouseEvent mouseEvent(QEvent::MouseButtonPress, p, Qt::LeftButton,
-                               Qt::LeftButton, Qt::NoModifier);
+        QMouseEvent mouseEvent(QEvent::MouseButtonPress, p, sb->mapToGlobal(p),
+                               Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
         QCoreApplication::sendEvent(sb, &mouseEvent);
         if (!QApplication::focusWidget())
             QSKIP("Some window managers don't handle focus that well");
@@ -1480,7 +1480,8 @@ void tst_QAbstractItemView::shiftSelectionAfterRubberbandSelection()
     // The mouse move event has to be created manually because the QTest framework does not
     // contain a function for mouse moves with buttons pressed
     QTest::mousePress(view.viewport(), Qt::LeftButton, Qt::NoModifier, pressPos);
-    QMouseEvent moveEvent(QEvent::MouseMove, releasePos, Qt::NoButton, Qt::LeftButton, Qt::NoModifier);
+    QMouseEvent moveEvent(QEvent::MouseMove, releasePos, view.viewport()->mapToGlobal(releasePos),
+                          Qt::NoButton, Qt::LeftButton, Qt::NoModifier);
     bool moveEventReceived = qApp->notify(view.viewport(), &moveEvent);
     QVERIFY(moveEventReceived);
     QTest::mouseRelease(view.viewport(), Qt::LeftButton, Qt::NoModifier, releasePos);
@@ -1503,7 +1504,8 @@ void tst_QAbstractItemView::shiftSelectionAfterRubberbandSelection()
 
     // Repeat the same steps as above, but with a Shift-Arrow selection
     QTest::mousePress(view.viewport(), Qt::LeftButton, Qt::NoModifier, pressPos);
-    QMouseEvent moveEvent2(QEvent::MouseMove, releasePos, Qt::NoButton, Qt::LeftButton, Qt::NoModifier);
+    QMouseEvent moveEvent2(QEvent::MouseMove, releasePos, view.viewport()->mapToGlobal(releasePos),
+                           Qt::NoButton, Qt::LeftButton, Qt::NoModifier);
     moveEventReceived = qApp->notify(view.viewport(), &moveEvent2);
     QVERIFY(moveEventReceived);
     QTest::mouseRelease(view.viewport(), Qt::LeftButton, Qt::NoModifier, releasePos);
@@ -1553,7 +1555,8 @@ void tst_QAbstractItemView::ctrlRubberbandSelection()
     QPoint pressPos = view.visualRect(index1).topLeft() - QPoint(1, 1);
     QPoint releasePos = view.visualRect(index2).bottomRight() + QPoint(1, 1);
     QTest::mousePress(view.viewport(), Qt::LeftButton, Qt::ControlModifier, pressPos);
-    QMouseEvent moveEvent(QEvent::MouseMove, releasePos, Qt::NoButton, Qt::LeftButton, Qt::ControlModifier);
+    QMouseEvent moveEvent(QEvent::MouseMove, releasePos, view.viewport()->mapToGlobal(releasePos),
+                          Qt::NoButton, Qt::LeftButton, Qt::ControlModifier);
     bool moveEventReceived = qApp->notify(view.viewport(), &moveEvent);
     QVERIFY(moveEventReceived);
     QTest::mouseRelease(view.viewport(), Qt::LeftButton, Qt::ControlModifier, releasePos);
@@ -2658,8 +2661,8 @@ void tst_QAbstractItemView::dragSelectAfterNewPress()
     const QPoint releasePos = view.visualRect(index5).center();
     // The mouse move event has to be created manually because the QTest framework does not
     // contain a function for mouse moves with buttons pressed
-    QMouseEvent moveEvent2(QEvent::MouseMove, releasePos, Qt::NoButton, Qt::LeftButton,
-                           Qt::ShiftModifier);
+    QMouseEvent moveEvent2(QEvent::MouseMove, releasePos, view.viewport()->mapToGlobal(releasePos),
+                           Qt::NoButton, Qt::LeftButton, Qt::ShiftModifier);
     const bool moveEventReceived = qApp->notify(view.viewport(), &moveEvent2);
     QVERIFY(moveEventReceived);
     QTest::mouseRelease(view.viewport(), Qt::LeftButton, Qt::ShiftModifier, releasePos);
@@ -2755,7 +2758,7 @@ void tst_QAbstractItemView::dragWithSecondClick()
     const QPoint dragTo = view->visualRect(index1).center()
                         + QPoint(2 * QApplication::startDragDistance(),
                                  2 * QApplication::startDragDistance());
-    QMouseEvent mouseMoveEvent(QEvent::MouseMove, dragTo,
+    QMouseEvent mouseMoveEvent(QEvent::MouseMove, dragTo, view->viewport()->mapToGlobal(dragTo),
                             Qt::NoButton, Qt::LeftButton, Qt::NoModifier);
     QVERIFY(QApplication::sendEvent(view->viewport(), &mouseMoveEvent));
     // twice since the view will first enter dragging state, then start the drag
@@ -3066,7 +3069,8 @@ void tst_QAbstractItemView::mouseSelection()
             break;
         case SelectionEvent::Move: {
                 QMouseEvent mouseMoveEvent(QEvent::MouseMove, targetPoint,
-                                Qt::NoButton, buttonDown, event.keyboardModifiers);
+                                           view->viewport()->mapToGlobal(targetPoint),
+                                           Qt::NoButton, buttonDown, event.keyboardModifiers);
                 QApplication::sendEvent(view->viewport(), &mouseMoveEvent);
             }
             break;
@@ -3315,7 +3319,8 @@ void tst_QAbstractItemView::selectionAutoScrolling()
     }
 
     QTest::mousePress(listview.viewport(), Qt::LeftButton, Qt::NoModifier, pressPoint);
-    QMouseEvent mmEvent(QEvent::MouseMove, dragPoint, Qt::NoButton, Qt::LeftButton, Qt::NoModifier);
+    QMouseEvent mmEvent(QEvent::MouseMove, dragPoint, listview.viewport()->mapToGlobal(dragPoint),
+                        Qt::NoButton, Qt::LeftButton, Qt::NoModifier);
     QApplication::sendEvent(listview.viewport(), &mmEvent); // QTest::mouseMove is useless
 
     // check that we scrolled to the end

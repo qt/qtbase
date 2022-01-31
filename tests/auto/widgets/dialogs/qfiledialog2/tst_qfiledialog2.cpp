@@ -333,7 +333,7 @@ static bool openContextMenu(QFileDialog &fd)
     MenuCloser closer(&fd);
     QObject::connect(&timer, &QTimer::timeout, &closer, &MenuCloser::close);
     timer.start();
-    QContextMenuEvent cme(QContextMenuEvent::Mouse, QPoint(10, 10));
+    QContextMenuEvent cme(QContextMenuEvent::Mouse, QPoint(10, 10), list->viewport()->mapToGlobal(QPoint(10, 10)));
     qApp->sendEvent(list->viewport(), &cme); // blocks until menu is closed again.
     return true;
 }

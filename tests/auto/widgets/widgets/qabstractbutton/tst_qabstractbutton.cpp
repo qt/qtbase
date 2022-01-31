@@ -619,9 +619,9 @@ void tst_QAbstractButton::mouseReleased() // QTBUG-53244
 
     QPointF posOutOfWidget = QPointF(30, 30);
     QMouseEvent me(QEvent::MouseMove,
-                     posOutOfWidget, Qt::NoButton,
-                     Qt::MouseButtons(Qt::LeftButton),
-                     Qt::NoModifier); // mouse press and move
+                   posOutOfWidget, button.mapToGlobal(posOutOfWidget),
+                   Qt::NoButton, Qt::MouseButtons(Qt::LeftButton),
+                   Qt::NoModifier); // mouse press and move
 
     qApp->sendEvent(&button, &me);
     // should emit released signal once mouse is dragging out of boundary

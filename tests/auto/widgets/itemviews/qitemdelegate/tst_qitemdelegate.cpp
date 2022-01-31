@@ -1245,7 +1245,7 @@ void tst_QItemDelegate::editorEvent()
     QPoint pos = inCheck ? qApp->style()->subElementRect(QStyle::SE_ItemViewItemCheckIndicator, &option, 0).center() + QPoint(checkMargin, 0) : QPoint(200,200);
 
     QEvent *event = new QMouseEvent((QEvent::Type)type,
-                                    pos,
+                                    pos, pos,
                                     (Qt::MouseButton)button,
                                     (Qt::MouseButton)button,
                                     Qt::NoModifier);

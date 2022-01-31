@@ -743,8 +743,9 @@ void tst_QGraphicsView::dragMode_scrollHand()
             int verticalScrollBarValue = view.verticalScrollBar()->value();
             {
                 // Press
-                QMouseEvent event(QEvent::MouseButtonPress,
-                                  view.viewport()->rect().center(),
+                auto pos = view.viewport()->rect().center();
+                QMouseEvent event(QEvent::MouseButtonPress, pos,
+                                  view.viewport()->mapToGlobal(pos),
                                   Qt::LeftButton, Qt::LeftButton, {});
                 event.setAccepted(true);
                 QApplication::sendEvent(view.viewport(), &event);
@@ -760,8 +761,9 @@ void tst_QGraphicsView::dragMode_scrollHand()
 #endif
                 {
                     // Move
-                    QMouseEvent event(QEvent::MouseMove,
-                                      view.viewport()->rect().center() + QPoint(10, 0),
+                    auto pos = view.viewport()->rect().center() + QPoint(10, 0);
+                    QMouseEvent event(QEvent::MouseMove, pos,
+                                      view.viewport()->mapToGlobal(pos),
                                       Qt::LeftButton, Qt::LeftButton, {});
                     event.setAccepted(true);
                     QApplication::sendEvent(view.viewport(), &event);
@@ -772,8 +774,9 @@ void tst_QGraphicsView::dragMode_scrollHand()
                 QCOMPARE(view.verticalScrollBar()->value(), verticalScrollBarValue);
                 {
                     // Move
-                    QMouseEvent event(QEvent::MouseMove,
-                                      view.viewport()->rect().center() + QPoint(10, 10),
+                    auto pos = view.viewport()->rect().center() + QPoint(10, 10);
+                    QMouseEvent event(QEvent::MouseMove, pos,
+                                      view.viewport()->mapToGlobal(pos),
                                       Qt::LeftButton, Qt::LeftButton, {});
                     event.setAccepted(true);
                     QApplication::sendEvent(view.viewport(), &event);
@@ -786,8 +789,9 @@ void tst_QGraphicsView::dragMode_scrollHand()
 
             {
                 // Release
-                QMouseEvent event(QEvent::MouseButtonRelease,
-                                  view.viewport()->rect().center() + QPoint(10, 10),
+                auto pos = view.viewport()->rect().center() + QPoint(10, 10);
+                QMouseEvent event(QEvent::MouseButtonRelease, pos,
+                                  view.viewport()->mapToGlobal(pos),
                                   Qt::LeftButton, Qt::LeftButton, {});
                 event.setAccepted(true);
                 QApplication::sendEvent(view.viewport(), &event);
@@ -808,15 +812,17 @@ void tst_QGraphicsView::dragMode_scrollHand()
             // Check that a click will still unselect the item.
             {
                 // Press
-                QMouseEvent event(QEvent::MouseButtonPress,
-                                  view.viewport()->rect().center() + QPoint(10, 10),
+                auto pos = view.viewport()->rect().center() + QPoint(10, 10);
+                QMouseEvent event(QEvent::MouseButtonPress, pos,
+                                  view.viewport()->mapToGlobal(pos),
                                   Qt::LeftButton, Qt::LeftButton, {});
                 QApplication::sendEvent(view.viewport(), &event);
             }
             {
                 // Release
-                QMouseEvent event(QEvent::MouseButtonRelease,
-                                  view.viewport()->rect().center() + QPoint(10, 10),
+                auto pos = view.viewport()->rect().center() + QPoint(10, 10);
+                QMouseEvent event(QEvent::MouseButtonRelease, pos,
+                                  view.viewport()->mapToGlobal(pos),
                                   Qt::LeftButton, Qt::LeftButton, {});
                 QApplication::sendEvent(view.viewport(), &event);
             }
@@ -865,8 +871,9 @@ void tst_QGraphicsView::dragMode_rubberBand()
         int verticalScrollBarValue = view.verticalScrollBar()->value();
         {
             // Press
-            QMouseEvent event(QEvent::MouseButtonPress,
-                              view.viewport()->rect().center(),
+            auto pos = view.viewport()->rect().center();
+            QMouseEvent event(QEvent::MouseButtonPress, pos,
+                              view.viewport()->mapToGlobal(pos),
                               Qt::LeftButton, Qt::LeftButton, {});
             event.setAccepted(true);
             QApplication::sendEvent(view.viewport(), &event);
@@ -880,8 +887,9 @@ void tst_QGraphicsView::dragMode_rubberBand()
 
         {
             // Move
-            QMouseEvent event(QEvent::MouseMove,
-                              view.viewport()->rect().center() + QPoint(100, 0),
+            auto pos = view.viewport()->rect().center() + QPoint(100, 0);
+            QMouseEvent event(QEvent::MouseMove, pos,
+                              view.viewport()->mapToGlobal(pos),
                               Qt::LeftButton, Qt::LeftButton, {});
             event.setAccepted(true);
             QApplication::sendEvent(view.viewport(), &event);
@@ -895,8 +903,9 @@ void tst_QGraphicsView::dragMode_rubberBand()
 
         {
             // Move
-            QMouseEvent event(QEvent::MouseMove,
-                              view.viewport()->rect().center() + QPoint(100, 100),
+            auto pos = view.viewport()->rect().center() + QPoint(100, 100);
+            QMouseEvent event(QEvent::MouseMove, pos,
+                              view.viewport()->mapToGlobal(pos),
                               Qt::LeftButton, Qt::LeftButton, {});
             event.setAccepted(true);
             QApplication::sendEvent(view.viewport(), &event);
@@ -907,8 +916,9 @@ void tst_QGraphicsView::dragMode_rubberBand()
 
         {
             // Release
-            QMouseEvent event(QEvent::MouseButtonRelease,
-                              view.viewport()->rect().center() + QPoint(100, 100),
+            auto pos = view.viewport()->rect().center() + QPoint(100, 100);
+            QMouseEvent event(QEvent::MouseButtonRelease, pos,
+                              view.viewport()->mapToGlobal(pos),
                               Qt::LeftButton, Qt::LeftButton, {});
             event.setAccepted(true);
             QApplication::sendEvent(view.viewport(), &event);
@@ -3295,7 +3305,8 @@ void tst_QGraphicsView::task186827_deleteReplayedItem()
 
     QCOMPARE(view.mouseMoves, 0);
     {
-        QMouseEvent event(QEvent::MouseMove, view.mapFromScene(25, 25), Qt::NoButton, {}, {});
+        auto pos = view.mapFromScene(25, 25);
+        QMouseEvent event(QEvent::MouseMove, pos, view.viewport()->mapToGlobal(pos), Qt::NoButton, {}, {});
         QApplication::sendEvent(view.viewport(), &event);
     }
     QCOMPARE(view.mouseMoves, 1);
@@ -3303,7 +3314,8 @@ void tst_QGraphicsView::task186827_deleteReplayedItem()
     QTRY_COMPARE(view.mouseMoves, 1);
     QTest::qWait(25);
     {
-        QMouseEvent event(QEvent::MouseMove, view.mapFromScene(25, 25), Qt::NoButton, {}, {});
+        auto pos = view.mapFromScene(25, 25);
+        QMouseEvent event(QEvent::MouseMove, pos, view.viewport()->mapToGlobal(pos), Qt::NoButton, {}, {});
         QApplication::sendEvent(view.viewport(), &event);
     }
     QCOMPARE(view.mouseMoves, 2);
@@ -3349,8 +3361,10 @@ void tst_QGraphicsView::task210599_unsetDragWhileDragging()
     // Enable and do a drag
     {
         view.setDragMode(QGraphicsView::ScrollHandDrag);
-        QMouseEvent press(QEvent::MouseButtonPress, origPos, Qt::LeftButton, {}, {});
-        QMouseEvent move(QEvent::MouseMove, step1Pos, Qt::LeftButton, {}, {});
+        QMouseEvent press(QEvent::MouseButtonPress, origPos,
+                          view.viewport()->mapToGlobal(origPos), Qt::LeftButton, {}, {});
+        QMouseEvent move(QEvent::MouseMove, step1Pos,
+                         view.viewport()->mapToGlobal(step1Pos), Qt::LeftButton, {}, {});
         QApplication::sendEvent(view.viewport(), &press);
         QApplication::sendEvent(view.viewport(), &move);
     }
@@ -3358,7 +3372,8 @@ void tst_QGraphicsView::task210599_unsetDragWhileDragging()
     // unset drag and release mouse, inverse order
     {
         view.setDragMode(QGraphicsView::NoDrag);
-        QMouseEvent release(QEvent::MouseButtonRelease, step1Pos, Qt::LeftButton, {}, {});
+        QMouseEvent release(QEvent::MouseButtonRelease, step1Pos,
+                            view.viewport()->mapToGlobal(step1Pos), Qt::LeftButton, {}, {});
         QApplication::sendEvent(view.viewport(), &release);
     }
 
@@ -3367,7 +3382,8 @@ void tst_QGraphicsView::task210599_unsetDragWhileDragging()
     // reset drag, and move mouse without holding button down.
     {
         view.setDragMode(QGraphicsView::ScrollHandDrag);
-        QMouseEvent move(QEvent::MouseMove, step2Pos, Qt::LeftButton, {}, {});
+        QMouseEvent move(QEvent::MouseMove, step2Pos,
+                         view.viewport()->mapToGlobal(step2Pos), Qt::LeftButton, {}, {});
         QApplication::sendEvent(view.viewport(), &move);
     }
 
@@ -3871,8 +3887,9 @@ void tst_QGraphicsView::mouseTracking2()
 
     EventSpy spy(&scene, QEvent::GraphicsSceneMouseMove);
     QCOMPARE(spy.count(), 0);
-    QMouseEvent event(QEvent::MouseMove,view.viewport()->rect().center(), Qt::NoButton,
-                      Qt::MouseButtons(Qt::NoButton), {});
+    auto pos = view.viewport()->rect().center();
+    QMouseEvent event(QEvent::MouseMove, pos, view.viewport()->mapToGlobal(pos),
+                      Qt::NoButton, Qt::MouseButtons(Qt::NoButton), {});
     QApplication::sendEvent(view.viewport(), &event);
     QCOMPARE(spy.count(), 1);
 }

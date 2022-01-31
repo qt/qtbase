@@ -4355,15 +4355,18 @@ void tst_QTableView::task191545_dragSelectRows()
         QHeaderView *vHeader = table.verticalHeader();
         QWidget *vHeaderVp = vHeader->viewport();
         QPoint rowPos(cellRect.center());
-        QMouseEvent rowPressEvent(QEvent::MouseButtonPress, rowPos, Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
+        QMouseEvent rowPressEvent(QEvent::MouseButtonPress, rowPos, rowPos, vHeaderVp->mapToGlobal(rowPos),
+                                  Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
         QCoreApplication::sendEvent(vHeaderVp, &rowPressEvent);
 
         for (int i = 0; i < 4; ++i) {
             rowPos.setY(rowPos.y() + cellRect.height());
-            QMouseEvent moveEvent(QEvent::MouseMove, rowPos, Qt::NoButton, Qt::LeftButton, Qt::ControlModifier);
+            QMouseEvent moveEvent(QEvent::MouseMove, rowPos, rowPos, vHeaderVp->mapToGlobal(rowPos),
+                                  Qt::NoButton, Qt::LeftButton, Qt::ControlModifier);
             QCoreApplication::sendEvent(vHeaderVp, &moveEvent);
         }
-        QMouseEvent rowReleaseEvent(QEvent::MouseButtonRelease, rowPos, Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
+        QMouseEvent rowReleaseEvent(QEvent::MouseButtonRelease, rowPos, vHeaderVp->mapToGlobal(rowPos),
+                                    Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
         QCoreApplication::sendEvent(vHeaderVp, &rowReleaseEvent);
 
         for (int i = 0; i < 4; ++i) {
@@ -4377,15 +4380,18 @@ void tst_QTableView::task191545_dragSelectRows()
         QHeaderView *hHeader = table.horizontalHeader();
         QWidget *hHeaderVp = hHeader->viewport();
         QPoint colPos((cellRect.left() + cellRect.right()) / 2, 5);
-        QMouseEvent colPressEvent(QEvent::MouseButtonPress, colPos, Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
+        QMouseEvent colPressEvent(QEvent::MouseButtonPress, colPos, hHeaderVp->mapToGlobal(colPos),
+                                  Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
         QCoreApplication::sendEvent(hHeaderVp, &colPressEvent);
 
         for (int i = 0; i < 4; ++i) {
             colPos.setX(colPos.x() + cellRect.width());
-            QMouseEvent moveEvent(QEvent::MouseMove, colPos, Qt::NoButton, Qt::LeftButton, Qt::ControlModifier);
+            QMouseEvent moveEvent(QEvent::MouseMove, colPos, hHeaderVp->mapToGlobal(colPos),
+                                  Qt::NoButton, Qt::LeftButton, Qt::ControlModifier);
             QCoreApplication::sendEvent(hHeaderVp, &moveEvent);
         }
-        QMouseEvent colReleaseEvent(QEvent::MouseButtonRelease, colPos, Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
+        QMouseEvent colReleaseEvent(QEvent::MouseButtonRelease, colPos, hHeaderVp->mapToGlobal(colPos),
+                                    Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
         QCoreApplication::sendEvent(hHeaderVp, &colReleaseEvent);
 
         for (int i = 0; i < 4; ++i) {
@@ -4398,16 +4404,19 @@ void tst_QTableView::task191545_dragSelectRows()
         QRect cellRect = table.visualRect(model.index(2, 2));
         QWidget *tableVp = table.viewport();
         QPoint cellPos = cellRect.center();
-        QMouseEvent cellPressEvent(QEvent::MouseButtonPress, cellPos, Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
+        QMouseEvent cellPressEvent(QEvent::MouseButtonPress, cellPos, tableVp->mapToGlobal(cellPos),
+                                   Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
         QCoreApplication::sendEvent(tableVp, &cellPressEvent);
 
         for (int i = 0; i < 6; ++i) {
             cellPos.setX(cellPos.x() + cellRect.width());
             cellPos.setY(cellPos.y() + cellRect.height());
-            QMouseEvent moveEvent(QEvent::MouseMove, cellPos, Qt::NoButton, Qt::LeftButton, Qt::ControlModifier);
+            QMouseEvent moveEvent(QEvent::MouseMove, cellPos, tableVp->mapToGlobal(cellPos),
+                                  Qt::NoButton, Qt::LeftButton, Qt::ControlModifier);
             QCoreApplication::sendEvent(tableVp, &moveEvent);
         }
-        QMouseEvent cellReleaseEvent(QEvent::MouseButtonRelease, cellPos, Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
+        QMouseEvent cellReleaseEvent(QEvent::MouseButtonRelease, cellPos, tableVp->mapToGlobal(cellPos),
+                                     Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
         QCoreApplication::sendEvent(tableVp, &cellReleaseEvent);
 
         for (int i = 0; i < 6; ++i) {
@@ -4422,16 +4431,19 @@ void tst_QTableView::task191545_dragSelectRows()
         QRect cellRect = table.visualRect(model.index(3, 3));
         QWidget *tableVp = table.viewport();
         QPoint cellPos = cellRect.center();
-        QMouseEvent cellPressEvent(QEvent::MouseButtonPress, cellPos, Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
+        QMouseEvent cellPressEvent(QEvent::MouseButtonPress, cellPos, tableVp->mapToGlobal(cellPos),
+                                   Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
         QCoreApplication::sendEvent(tableVp, &cellPressEvent);
 
         for (int i = 0; i < 6; ++i) {
             cellPos.setX(cellPos.x() + cellRect.width());
             cellPos.setY(cellPos.y() + cellRect.height());
-            QMouseEvent moveEvent(QEvent::MouseMove, cellPos, Qt::NoButton, Qt::LeftButton, Qt::ControlModifier);
+            QMouseEvent moveEvent(QEvent::MouseMove, cellPos, tableVp->mapToGlobal(cellPos),
+                                  Qt::NoButton, Qt::LeftButton, Qt::ControlModifier);
             QCoreApplication::sendEvent(tableVp, &moveEvent);
         }
-        QMouseEvent cellReleaseEvent(QEvent::MouseButtonRelease, cellPos, Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
+        QMouseEvent cellReleaseEvent(QEvent::MouseButtonRelease, cellPos, tableVp->mapToGlobal(cellPos),
+                                     Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
         QCoreApplication::sendEvent(tableVp, &cellReleaseEvent);
 
         QTest::qWait(200);
@@ -4795,7 +4807,8 @@ public:
     {
         return QTableView::selectionCommand(index, shiftPressed ? &mouseEvent : nullptr);
     }
-    QMouseEvent mouseEvent = QMouseEvent(QEvent::MouseButtonPress, QPointF(), Qt::LeftButton, Qt::LeftButton, Qt::ShiftModifier);
+    QMouseEvent mouseEvent = QMouseEvent(QEvent::MouseButtonPress, QPointF(), QPointF(),
+                                         Qt::LeftButton, Qt::LeftButton, Qt::ShiftModifier);
     bool shiftPressed = false;
 };
 

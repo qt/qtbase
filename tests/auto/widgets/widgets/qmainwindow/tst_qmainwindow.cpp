@@ -68,13 +68,13 @@ public:
     }
     void timerEvent(QTimerEvent*) override
     {
-        QCoreApplication::postEvent(m_tb, new QMouseEvent(QEvent::MouseButtonPress, QPoint(6, 7), Qt::LeftButton, {}, {}));
-        QCoreApplication::postEvent(m_tb, new QMouseEvent(QEvent::MouseMove, QPoint(7, 8), Qt::LeftButton, Qt::LeftButton, {}));
-        QCoreApplication::postEvent(m_tb, new QMouseEvent(QEvent::MouseMove, QPoint(27, 23), Qt::LeftButton, Qt::LeftButton, {}));
-        QCoreApplication::postEvent(m_tb, new QMouseEvent(QEvent::MouseMove, QPoint(30, 27), Qt::LeftButton, Qt::LeftButton, {}));
-        QCoreApplication::postEvent(m_tb, new QMouseEvent(QEvent::MouseMove, QPoint(162, 109), Qt::LeftButton, Qt::LeftButton, {}));
-        QCoreApplication::postEvent(m_tb, new QMouseEvent(QEvent::MouseMove, QPoint(10, 4), Qt::LeftButton, Qt::LeftButton, {}));
-        QCoreApplication::postEvent(m_tb, new QMouseEvent(QEvent::MouseButtonRelease, QPoint(9, 4), Qt::LeftButton, {}, {}));
+        QCoreApplication::postEvent(m_tb, new QMouseEvent(QEvent::MouseButtonPress, QPoint(6, 7), m_tb->mapToGlobal(QPoint(6, 7)), Qt::LeftButton, {}, {}));
+        QCoreApplication::postEvent(m_tb, new QMouseEvent(QEvent::MouseMove, QPoint(7, 8), m_tb->mapToGlobal(QPoint(7, 8)), Qt::LeftButton, Qt::LeftButton, {}));
+        QCoreApplication::postEvent(m_tb, new QMouseEvent(QEvent::MouseMove, QPoint(27, 23), m_tb->mapToGlobal(QPoint(27, 23)), Qt::LeftButton, Qt::LeftButton, {}));
+        QCoreApplication::postEvent(m_tb, new QMouseEvent(QEvent::MouseMove, QPoint(30, 27), m_tb->mapToGlobal(QPoint(30, 27)), Qt::LeftButton, Qt::LeftButton, {}));
+        QCoreApplication::postEvent(m_tb, new QMouseEvent(QEvent::MouseMove, QPoint(162, 109), m_tb->mapToGlobal(QPoint(162, 109)), Qt::LeftButton, Qt::LeftButton, {}));
+        QCoreApplication::postEvent(m_tb, new QMouseEvent(QEvent::MouseMove, QPoint(10, 4), m_tb->mapToGlobal(QPoint(10, 4)), Qt::LeftButton, Qt::LeftButton, {}));
+        QCoreApplication::postEvent(m_tb, new QMouseEvent(QEvent::MouseButtonRelease, QPoint(9, 4), m_tb->mapToGlobal(QPoint(6, 7)), Qt::LeftButton, {}, {}));
     }
 };
 
@@ -92,8 +92,8 @@ public:
 
     void timerEvent(QTimerEvent*) override
     {
-        QCoreApplication::postEvent(m_w, new QMouseEvent(QEvent::MouseButtonPress, QPoint(230, 370), Qt::LeftButton, {}, {}));
-        QCoreApplication::postEvent(m_w, new QMouseEvent(QEvent::MouseButtonRelease, QPoint(230, 370), Qt::LeftButton, {}, {}));
+        QCoreApplication::postEvent(m_w, new QMouseEvent(QEvent::MouseButtonPress, QPoint(230, 370), m_w->mapToGlobal(QPoint(230, 370)), Qt::LeftButton, {}, {}));
+        QCoreApplication::postEvent(m_w, new QMouseEvent(QEvent::MouseButtonRelease, QPoint(230, 370), m_w->mapToGlobal(QPoint(230, 370)), Qt::LeftButton, {}, {}));
     }
 };
 

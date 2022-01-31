@@ -1865,7 +1865,7 @@ void tst_QApplication::focusMouseClick()
     // front most widget has Qt::TabFocus, parent widget accepts clicks as well
     // now send a mouse button press event and check what happens with the focus
     // it should be given to the parent widget
-    QMouseEvent ev(QEvent::MouseButtonPress, QPointF(), Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+    QMouseEvent ev(QEvent::MouseButtonPress, QPointF(), w.mapToGlobal(QPointF()), Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
     QSpontaneKeyEvent::setSpontaneous(&ev);
     QVERIFY(ev.spontaneous());
     qApp->notify(&w2, &ev);

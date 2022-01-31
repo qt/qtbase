@@ -2297,7 +2297,8 @@ void tst_QTextEdit::taskQTBUG_7902_contextMenuCrash()
     w->connect(&ti, SIGNAL(timeout()), w, SLOT(deleteLater()));
     ti.start(200);
 
-    QContextMenuEvent *cme = new QContextMenuEvent(QContextMenuEvent::Mouse, w->rect().center());
+    QContextMenuEvent *cme = new QContextMenuEvent(QContextMenuEvent::Mouse, w->rect().center(),
+                                                   w->viewport()->mapToGlobal(w->rect().center()));
     qApp->postEvent(w->viewport(), cme);
 
     QTest::qWait(300);

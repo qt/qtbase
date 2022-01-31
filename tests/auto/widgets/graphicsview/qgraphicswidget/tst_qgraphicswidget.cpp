@@ -2962,11 +2962,9 @@ void tst_QGraphicsWidget::respectHFW()
         view->grabMouse();
         // move both mouse cursor and set correct event in order to emulate resize
         QTest::mouseMove(view->viewport(), view->mapFromScene(60, 30), 200);
-        QMouseEvent e = QMouseEvent(QEvent::MouseMove,
-                      view->mapFromScene(60, 20),
-                      Qt::NoButton,
-                      Qt::LeftButton,
-                      Qt::NoModifier);
+        auto pos = view->mapFromScene(60, 20);
+        QMouseEvent e(QEvent::MouseMove, pos, view->mapToGlobal(pos),
+                      Qt::NoButton, Qt::LeftButton, Qt::NoModifier);
         QApplication::sendEvent(view->viewport(), &e);
         view->releaseMouse();
     }

@@ -575,7 +575,8 @@ void tst_QLabel::taskQTBUG_7902_contextMenuCrash()
     w->connect(&ti, SIGNAL(timeout()), w, SLOT(deleteLater()));
     ti.start(300);
 
-    QContextMenuEvent *cme = new QContextMenuEvent(QContextMenuEvent::Mouse, w->rect().center());
+    QContextMenuEvent *cme = new QContextMenuEvent(QContextMenuEvent::Mouse, w->rect().center(),
+                                                   w->mapToGlobal(w->rect().center()));
     qApp->postEvent(w, cme);
 
     QTest::qWait(350);

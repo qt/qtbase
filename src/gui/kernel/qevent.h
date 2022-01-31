@@ -231,9 +231,12 @@ class Q_GUI_EXPORT QMouseEvent : public QSinglePointEvent
 {
     Q_EVENT_DISABLE_COPY(QMouseEvent);
 public:
+#if QT_DEPRECATED_SINCE(6, 4)
+    QT_DEPRECATED_VERSION_X_6_4("Use another constructor")
     QMouseEvent(Type type, const QPointF &localPos, Qt::MouseButton button,
                 Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers,
                 const QPointingDevice *device = QPointingDevice::primaryPointingDevice());
+#endif
     QMouseEvent(Type type, const QPointF &localPos, const QPointF &globalPos,
                 Qt::MouseButton button, Qt::MouseButtons buttons,
                 Qt::KeyboardModifiers modifiers,
@@ -669,7 +672,10 @@ public:
 
     QContextMenuEvent(Reason reason, const QPoint &pos, const QPoint &globalPos,
                       Qt::KeyboardModifiers modifiers = Qt::NoModifier);
+#if QT_DEPRECATED_SINCE(6, 4)
+    QT_DEPRECATED_VERSION_X_6_4("Use the other constructor")
     QContextMenuEvent(Reason reason, const QPoint &pos);
+#endif
     ~QContextMenuEvent();
 
     QContextMenuEvent *clone() const override { return new QContextMenuEvent(*this); }

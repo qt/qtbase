@@ -4960,6 +4960,7 @@ void tst_QGraphicsScene::taskQTBUG_85088_previewTextfailWhenLostFocus()
 
     // focusItem will lose focus
     QMouseEvent pressEvent(QEvent::MouseButtonPress, QPointF(0, 0),
+                           view.viewport()->mapToGlobal(QPointF()),
                            Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
     QApplication::sendEvent(view.viewport(), &pressEvent);
 

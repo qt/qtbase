@@ -5362,8 +5362,9 @@ void tst_QGraphicsItem::deleteItemInEventHandlers()
 
 #ifndef QT_NO_CONTEXTMENU
         if (!HarakiriItem::dead) {
-            QContextMenuEvent event(QContextMenuEvent::Other,
-                                    view.mapFromScene(item->scenePos()));
+            auto viewPos = view.mapFromScene(item->scenePos());
+            QContextMenuEvent event(QContextMenuEvent::Other, viewPos,
+                                    view.mapToGlobal(viewPos));
             QCoreApplication::sendEvent(view.viewport(), &event);
         }
 #endif // QT_NO_CONTEXTMENU

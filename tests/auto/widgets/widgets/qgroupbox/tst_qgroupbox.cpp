@@ -614,7 +614,8 @@ void tst_QGroupBox::task_QTBUG_15519_propagateMouseEvents()
 void tst_QGroupBox::sendMouseMoveEvent(QWidget *widget, const QPoint &localPos)
 {
     // Send a MouseMove event without actually moving the pointer
-    QMouseEvent event(QEvent::MouseMove, localPos, Qt::NoButton, Qt::NoButton, Qt::NoModifier);
+    QMouseEvent event(QEvent::MouseMove, localPos, widget->mapToGlobal(localPos),
+                      Qt::NoButton, Qt::NoButton, Qt::NoModifier);
     QApplication::sendEvent(widget, &event);
 }
 
