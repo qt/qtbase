@@ -100,7 +100,7 @@ public:
     explicit QUuid(QAnyStringView string) noexcept
         : QUuid{fromString(string)} {}
     static QUuid fromString(QAnyStringView string) noexcept;
-#if QT_REMOVED_SINCE(6, 3)
+#if QT_CORE_REMOVED_SINCE(6, 3)
     explicit QUuid(const QString &);
     static QUuid fromString(QStringView string) noexcept;
     static QUuid fromString(QLatin1String string) noexcept;
@@ -110,7 +110,7 @@ public:
     QString toString(StringFormat mode = WithBraces) const;
     QByteArray toByteArray(StringFormat mode = WithBraces) const;
     QByteArray toRfc4122() const;
-#if QT_REMOVED_SINCE(6, 3)
+#if QT_CORE_REMOVED_SINCE(6, 3)
     static QUuid fromRfc4122(const QByteArray &);
 #endif
     static QUuid fromRfc4122(QByteArrayView) noexcept;

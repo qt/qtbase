@@ -445,7 +445,7 @@ public:
 
     bool isValid() const;
     bool isRegistered() const;
-#if QT_REMOVED_SINCE(6, 1) || defined(Q_QDOC)
+#if QT_CORE_REMOVED_SINCE(6, 1) || defined(Q_QDOC)
     int id() const;
 #else
     // ### Qt 7: Remove traces of out of line version

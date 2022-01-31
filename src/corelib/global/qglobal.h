@@ -447,42 +447,6 @@ typedef double qreal;
 #define QT_DEPRECATED_VERSION_5(minor)      QT_DEPRECATED_VERSION_5_##minor
 #define QT_DEPRECATED_VERSION(major, minor) QT_DEPRECATED_VERSION_##major##_##minor
 
-/*
-    QT_REMOVED_SINCE(major, minor) evaluates as true if the Qt version is greater than
-    the deprecation point specified \e and QT_BUILD_REMOVED_API is defined.
-
-    Use it to remove functions from the API, but not the ABI, by moving their definitions
-    into the module's \c{removed_api/} subdir and defining QT_BUILD_REMOVED_API.
-
-    Example:
-
-        // header
-        #if QT_REMOVED_SINCE(6, 3)
-            void removedFunction(); // function removed since Qt 6.3
-        #endif
-
-        // implementation
-        // ... moved from here ...
-
-        // removed_api/some.cpp
-        #define QT_BUILD_REMOVED_API
-        #include <QtCore/qglobal.h>
-
-        #include <someheader.h>
-
-        #if QT_REMOVED_SINCE(6, 3)
-        void removedFunction() { newFunction(); }
-        #endif
-
-    The function is now removed from the API, but remains in the ABI until
-    the deprecation point moves past 6.3.
-*/
-#ifdef QT_BUILD_REMOVED_API
-#define QT_REMOVED_SINCE(major, minor) QT_DEPRECATED_SINCE(major, minor)
-#else
-#define QT_REMOVED_SINCE(major, minor) 0
-#endif
-
 #ifdef __cplusplus
 // A tag to help mark stuff deprecated (cf. QStringViewLiteral)
 namespace QtPrivate {

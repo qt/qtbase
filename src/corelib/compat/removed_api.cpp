@@ -37,13 +37,13 @@
 **
 ****************************************************************************/
 
-#define QT_BUILD_REMOVED_API
+#define QT_CORE_BUILD_REMOVED_API
 
 #include "qglobal.h"
 
 QT_USE_NAMESPACE
 
-#if QT_REMOVED_SINCE(6, 1)
+#if QT_CORE_REMOVED_SINCE(6, 1)
 
 #include "qmetatype.h"
 
@@ -58,9 +58,9 @@ int QMetaType::id() const
     return 0;
 }
 
-#endif // QT_REMOVED_SINCE(6, 1)
+#endif // QT_CORE_REMOVED_SINCE(6, 1)
 
-#if QT_REMOVED_SINCE(6, 3)
+#if QT_CORE_REMOVED_SINCE(6, 3)
 
 #include "qbytearraymatcher.h"
 
@@ -144,4 +144,4 @@ int QOperatingSystemVersion::compare(const QOperatingSystemVersion &v1,
 // #include <qotherheader.h>
 // // implement removed functions from qotherheader.h
 
-#endif // QT_REMOVED_SINCE(6, 3)
+#endif // QT_CORE_REMOVED_SINCE(6, 3)
