@@ -974,13 +974,13 @@ public class QtNative
         });
     }
 
-    private static void notifyObjectHide(final int viewId)
+    private static void notifyObjectHide(final int viewId, final int parentId)
     {
         runAction(new Runnable() {
             @Override
             public void run() {
                 if (m_activityDelegate != null) {
-                    m_activityDelegate.notifyObjectHide(viewId);
+                    m_activityDelegate.notifyObjectHide(viewId, parentId);
                 }
             }
         });
