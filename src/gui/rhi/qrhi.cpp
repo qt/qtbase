@@ -3907,9 +3907,7 @@ bool operator==(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBind
             return false;
         break;
     case QRhiShaderResourceBinding::ImageLoad:
-        Q_FALLTHROUGH();
     case QRhiShaderResourceBinding::ImageStore:
-        Q_FALLTHROUGH();
     case QRhiShaderResourceBinding::ImageLoadStore:
         if (da->u.simage.tex != db->u.simage.tex
                 || da->u.simage.level != db->u.simage.level)
@@ -3918,9 +3916,7 @@ bool operator==(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBind
         }
         break;
     case QRhiShaderResourceBinding::BufferLoad:
-        Q_FALLTHROUGH();
     case QRhiShaderResourceBinding::BufferStore:
-        Q_FALLTHROUGH();
     case QRhiShaderResourceBinding::BufferLoadStore:
         if (da->u.sbuf.buf != db->u.sbuf.buf
                 || da->u.sbuf.offset != db->u.sbuf.offset
@@ -3972,20 +3968,14 @@ size_t qHash(const QRhiShaderResourceBinding &b, size_t seed) noexcept
         h ^= qHash(reinterpret_cast<quintptr>(d->u.stex.texSamplers[0].sampler));
         break;
     case QRhiShaderResourceBinding::ImageLoad:
-        Q_FALLTHROUGH();
     case QRhiShaderResourceBinding::ImageStore:
-        Q_FALLTHROUGH();
     case QRhiShaderResourceBinding::ImageLoadStore:
         h ^= qHash(reinterpret_cast<quintptr>(d->u.simage.tex));
         break;
     case QRhiShaderResourceBinding::BufferLoad:
-        Q_FALLTHROUGH();
     case QRhiShaderResourceBinding::BufferStore:
-        Q_FALLTHROUGH();
     case QRhiShaderResourceBinding::BufferLoadStore:
         h ^= qHash(reinterpret_cast<quintptr>(d->u.sbuf.buf));
-        break;
-    default:
         break;
     }
     return h;
@@ -4769,8 +4759,6 @@ QDebug operator<<(QDebug dbg, const QRhiSwapChainHdrInfo &info)
     case QRhiSwapChainHdrInfo::ColorComponentValue:
         dbg.nospace() << " maxColorComponentValue=" << info.limits.colorComponentValue.maxColorComponentValue;
         break;
-    default:
-        break;
     }
     dbg.nospace() << ')';
     return dbg;
@@ -4913,10 +4901,9 @@ static const char *resourceTypeStr(QRhiResource *res)
         return "ComputePipeline";
     case QRhiResource::CommandBuffer:
         return "CommandBuffer";
-    default:
-        Q_UNREACHABLE();
-        break;
     }
+
+    Q_UNREACHABLE();
     return "";
 }
 
@@ -5233,9 +5220,7 @@ bool QRhiImplementation::sanityCheckShaderResourceBindings(QRhiShaderResourceBin
             }
             break;
         case QRhiShaderResourceBinding::ImageLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageLoadStore:
             if (!bindingSeen[binding]) {
                 bindingSeen[binding] = true;
@@ -5245,9 +5230,7 @@ bool QRhiImplementation::sanityCheckShaderResourceBindings(QRhiShaderResourceBin
             }
             break;
         case QRhiShaderResourceBinding::BufferLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferLoadStore:
             if (!bindingSeen[binding]) {
                 bindingSeen[binding] = true;
@@ -5351,8 +5334,6 @@ QRhi *QRhi::create(Implementation impl, QRhiInitParams *params, Flags flags, QRh
         qWarning("This platform has no Metal support");
         break;
 #endif
-    default:
-        break;
     }
 
     if (r->d) {
@@ -5400,9 +5381,10 @@ const char *QRhi::backendName() const
         return "D3D11";
     case QRhi::Metal:
         return "Metal";
-    default:
-        return "Unknown";
     }
+
+    Q_UNREACHABLE();
+    return nullptr;
 }
 
 /*!
@@ -5453,9 +5435,10 @@ static inline const char *deviceTypeStr(QRhiDriverInfo::DeviceType type)
         return "Virtual";
     case QRhiDriverInfo::CpuDevice:
         return "Cpu";
-    default:
-        return "";
     }
+
+    Q_UNREACHABLE();
+    return nullptr;
 }
 QDebug operator<<(QDebug dbg, const QRhiDriverInfo &info)
 {

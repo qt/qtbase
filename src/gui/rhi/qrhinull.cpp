@@ -169,10 +169,10 @@ int QRhiNull::resourceLimit(QRhi::ResourceLimit limit) const
         return 32;
     case QRhi::MaxVertexOutputs:
         return 32;
-    default:
-        Q_UNREACHABLE();
-        return 0;
     }
+
+    Q_UNREACHABLE();
+    return 0;
 }
 
 const QRhiNativeHandles *QRhiNull::nativeHandles()
