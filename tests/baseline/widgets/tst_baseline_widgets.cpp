@@ -65,6 +65,9 @@ private slots:
 
     void tst_QTabBar_data();
     void tst_QTabBar();
+
+    void tst_QTabWidget_data();
+    void tst_QTabWidget();
 };
 
 void tst_Widgets::tst_QSlider_data()
@@ -527,6 +530,88 @@ void tst_Widgets::tst_QTabBar()
             QTest::mouseRelease(button,Qt::MouseButton::LeftButton,
                                 Qt::KeyboardModifiers(), clickTarget,0);
             QBASELINE_CHECK_DEFERRED(takeSnapshot(), "releaseCloseFirstTab");
+        }
+    }
+}
+
+void tst_Widgets::tst_QTabWidget_data()
+{
+    QTest::addColumn<QTabWidget::TabPosition>("tabPosition");
+    QTest::addColumn<int>("numberTabs");
+    QTest::addColumn<QString>("tabText");
+    QTest::addColumn<int>("fixedWidth");
+    QTest::addColumn<bool>("isClosable");
+    QTest::addColumn<bool>("isDocumentMode");
+
+    // fixedWidth <0 will be interpreted as variable width
+    QTest::newRow("North_3_variableWidthDocMode") << QTabWidget::North << 3 << "This is a tab text" << -1 << false << true;
+    QTest::newRow("East_3_variableWidth") << QTabWidget::East << 3 << "This is a tab text" << -1 << false << false;
+    QTest::newRow("West_3_variableWidthDocMode") << QTabWidget::West << 3 << "This is a tab text" << -1 << false << true;
+    QTest::newRow("South_3_variableWidth") << QTabWidget::South << 3 << "This is a tab text" << -1 << true << false;
+    QTest::newRow("North_20_fixedWidthDocMode") << QTabWidget::North << 20
+                                         << "This is a very long text to actually force wrapping!" << 100 << true << true;
+    QTest::newRow("South_20_variableWidth") << QTabWidget::South << 20
+                                         << "This is a very long text to actually force wrapping!" << -1 << false << false;
+}
+
+void tst_Widgets::tst_QTabWidget()
+{
+    QFETCH(QTabWidget::TabPosition, tabPosition);
+    QFETCH(int, numberTabs);
+    QFETCH(QString, tabText);
+    QFETCH(int, fixedWidth);
+    QFETCH(bool, isClosable);
+    QFETCH(bool, isDocumentMode);
+
+    QTabWidget tabWidget (testWindow());
+    if (fixedWidth > 0)
+        tabWidget.setFixedWidth(fixedWidth);
+    tabWidget.setTabPosition(tabPosition);
+    tabWidget.setTabsClosable(isClosable);
+    tabWidget.setDocumentMode(isDocumentMode);
+
+    for (int i = 0; i < numberTabs; ++i) {
+        QLabel *tabLabel = new QLabel("Tab number " + QString::number(i) + "\n" + tabText, &tabWidget);
+        QBoxLayout *tabBox = new QBoxLayout(QBoxLayout::TopToBottom,&tabWidget);
+        tabBox->addWidget(tabLabel);
+        tabWidget.insertTab(i,tabLabel,"Tab_" + QString::number(i));
+        tabWidget.setCurrentIndex(i);
+        tabWidget.currentWidget()->setLayout(tabBox);
+    }
+
+    tabWidget.setCurrentIndex(0);
+    QBoxLayout box(QBoxLayout::LeftToRight, testWindow());
+    box.addWidget(&tabWidget);
+    testWindow()->setLayout(&box);
+    takeStandardSnapshots();
+
+    // press/release on second tab if it exists
+    if (numberTabs > 1) {
+        const QPoint clickTarget = tabWidget.tabBar()->tabRect(1).center();
+        QTest::mousePress(tabWidget.tabBar(),Qt::MouseButton::LeftButton,Qt::KeyboardModifiers(), clickTarget,0);
+        QBASELINE_CHECK_DEFERRED(takeSnapshot(), "pressSecondTab");
+        QTest::mouseRelease(tabWidget.tabBar(),Qt::MouseButton::LeftButton, Qt::KeyboardModifiers(), clickTarget,0);
+        QVERIFY(tabWidget.currentIndex() == 1);
+    }
+
+    // test press/release on close button
+    if (isClosable) {
+
+        // CloseButton is either left or right
+        QWidget *leftButton = tabWidget.tabBar()->tabButton(tabWidget.currentIndex(),QTabBar::ButtonPosition::LeftSide);
+        QWidget *rightButton = tabWidget.tabBar()->tabButton(tabWidget.currentIndex(),QTabBar::ButtonPosition::RightSide);
+        QAbstractButton *button = qobject_cast<QAbstractButton*>(leftButton);
+        if (button == nullptr)
+            button = qobject_cast<QAbstractButton*>(rightButton);
+
+        if (button != nullptr) {
+            const QPoint clickTarget = button->rect().center();
+            QTest::mousePress(button,Qt::MouseButton::LeftButton,
+                              Qt::KeyboardModifiers(), clickTarget,0);
+            QBASELINE_CHECK_DEFERRED(takeSnapshot(), "pressCloseTab");
+            QTest::mouseRelease(button,Qt::MouseButton::LeftButton,
+                                Qt::KeyboardModifiers(), clickTarget,0);
+            QBASELINE_CHECK_DEFERRED(takeSnapshot(), "releaseCloseTab");
         }
     }
 }
