@@ -284,22 +284,49 @@ using IfIsNotSame =
 template<typename T, typename U>
 using IfIsNotConvertible = typename std::enable_if<!std::is_convertible<T, U>::value, bool>::type;
 
-template <typename Container, typename T>
-auto sequential_erase(Container &c, const T &t)
+template <typename Container, typename Predicate>
+auto sequential_erase_if(Container &c, Predicate &pred)
 {
-    // avoid a detach in case there is nothing to remove
+    // This is remove_if() modified to perform the find_if step on
+    // const_iterators to avoid shared container detaches if nothing needs to
+    // be removed. We cannot run remove_if after find_if: doing so would apply
+    // the predicate to the first matching element twice!
+
     const auto cbegin = c.cbegin();
     const auto cend = c.cend();
-    const auto t_it = std::find(cbegin, cend, t);
+    const auto t_it = std::find_if(cbegin, cend, pred);
     auto result = std::distance(cbegin, t_it);
     if (result == c.size())
         return result - result; // `0` of the right type
 
+    // now detach:
     const auto e = c.end();
-    const auto it = std::remove(std::next(c.begin(), result), e, t);
-    result = std::distance(it, e);
-    c.erase(it, e);
+
+    auto it = std::next(c.begin(), result);
+    auto dest = it;
+
+    // Loop Invariants:
+    // - it != e
+    // - [next(it), e[ still to be checked
+    // - [c.begin(), dest[ are result
+    while (++it != e) {
+        if (!pred(*it)) {
+            *dest = std::move(*it);
+            ++dest;
+        }
+    }
+
+    result = std::distance(dest, e);
+    c.erase(dest, e);
     return result;
+}
+
+template <typename Container, typename T>
+auto sequential_erase(Container &c, const T &t)
+{
+    // use the equivalence relation from http://eel.is/c++draft/list.erasure#1
+    auto cmp = [&](auto &e) { return e == t; };
+    return sequential_erase_if(c, cmp); // can't pass rvalues!
 }
 
 template <typename Container, typename T>
@@ -319,24 +346,6 @@ auto sequential_erase_one(Container &c, const T &t)
         return false;
     c.erase(it);
     return true;
-}
-
-template <typename Container, typename Predicate>
-auto sequential_erase_if(Container &c, Predicate &pred)
-{
-    // avoid a detach in case there is nothing to remove
-    const auto cbegin = c.cbegin();
-    const auto cend = c.cend();
-    const auto t_it = std::find_if(cbegin, cend, pred);
-    auto result = std::distance(cbegin, t_it);
-    if (result == c.size())
-        return result - result; // `0` of the right type
-
-    const auto e = c.end();
-    const auto it = std::remove_if(std::next(c.begin(), result), e, pred);
-    result = std::distance(it, e);
-    c.erase(it, e);
-    return result;
 }
 
 template <typename T, typename Predicate>
