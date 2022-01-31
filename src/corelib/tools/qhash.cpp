@@ -192,7 +192,7 @@ static HashSeedStorage qt_qhash_seed;
  * Austin Appleby. See http://murmurhash.googlepages.com/
  */
 #if QT_POINTER_SIZE == 4
-
+Q_NEVER_INLINE Q_DECL_HOT_FUNCTION
 static inline uint murmurhash(const void *key, uint len, uint seed) noexcept
 {
     // 'm' and 'r' are mixing constants generated offline.
@@ -250,7 +250,7 @@ static inline uint murmurhash(const void *key, uint len, uint seed) noexcept
 }
 
 #else
-
+Q_NEVER_INLINE Q_DECL_HOT_FUNCTION
 static inline uint64_t murmurhash(const void *key, uint64_t len, uint64_t seed) noexcept
 {
     const uint64_t m = 0xc6a4a7935bd1e995ULL;
@@ -329,7 +329,7 @@ static inline uint64_t murmurhash(const void *key, uint64_t len, uint64_t seed) 
     v2 = ROTL(v2, 32);                                                         \
   } while (0)
 
-
+Q_NEVER_INLINE Q_DECL_HOT_FUNCTION
 static uint64_t siphash(const uint8_t *in, uint64_t inlen, uint64_t seed, uint64_t seed2)
 {
     /* "somepseudorandomlygeneratedbytes" */
@@ -434,7 +434,7 @@ static uint64_t siphash(const uint8_t *in, uint64_t inlen, uint64_t seed, uint64
     v2 = ROTL(v2, 16);                                                         \
   } while (0)
 
-
+Q_NEVER_INLINE Q_DECL_HOT_FUNCTION
 static uint siphash(const uint8_t *in, uint inlen, uint seed, uint seed2)
 {
     /* "somepseudorandomlygeneratedbytes" */
@@ -793,6 +793,7 @@ size_t qHashBits(const void *p, size_t size, size_t seed) noexcept
 # endif
         return aeshash(reinterpret_cast<const uchar *>(p), size, seed, seed2);
 #endif
+
     if (size <= QT_POINTER_SIZE)
         return murmurhash(p, size, seed);
 
