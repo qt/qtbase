@@ -9,5 +9,4 @@ qt_internal_add_test(tst_qhash
         tst_qhash.cpp
 )
 
-set_target_properties(tst_qhash PROPERTIES
-    QT_INTERNAL_UNDEF_QT_NO_JAVA_STYLE_ITERATORS TRUE)
+qt_internal_undefine_global_definition(tst_qhash QT_NO_JAVA_STYLE_ITERATORS)

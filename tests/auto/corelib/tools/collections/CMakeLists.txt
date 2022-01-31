@@ -9,5 +9,4 @@ qt_internal_add_test(tst_collections
         tst_collections.cpp
 )
 
-set_target_properties(tst_collections PROPERTIES
-    QT_INTERNAL_UNDEF_QT_NO_JAVA_STYLE_ITERATORS TRUE)
+qt_internal_undefine_global_definition(tst_collections QT_NO_JAVA_STYLE_ITERATORS)
