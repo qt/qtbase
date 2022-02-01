@@ -1104,16 +1104,13 @@ public:
     };
     Q_DECLARE_FLAGS(LanguageCodeTypes, LanguageCodeType)
 
-#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+#if QT_REMOVED_SINCE(6, 3)
     static QString languageToCode(Language language);
-    static QString languageToCode(Language language, LanguageCodeTypes codeTypes);
     static Language codeToLanguage(QStringView languageCode) noexcept;
-    static Language codeToLanguage(QStringView languageCode, LanguageCodeTypes codeTypes) noexcept;
-#else
+#endif
     static QString languageToCode(Language language, LanguageCodeTypes codeTypes = AnyLanguageCode);
     static Language codeToLanguage(QStringView languageCode,
                                    LanguageCodeTypes codeTypes = AnyLanguageCode) noexcept;
-#endif
     static QString territoryToCode(Territory territory);
     static Territory codeToTerritory(QStringView territoryCode) noexcept;
 #if QT_DEPRECATED_SINCE(6, 6)
