@@ -41,12 +41,10 @@ class tst_QSqlQuery : public QObject
 
 public:
     tst_QSqlQuery();
-    virtual ~tst_QSqlQuery();
 
 public slots:
     void initTestCase();
     void cleanupTestCase();
-    void init();
     void cleanup();
 
 private slots:
@@ -289,10 +287,6 @@ tst_QSqlQuery::tst_QSqlQuery()
     qtest = qTableName("qtest", __FILE__, static_qtest_db);
 }
 
-tst_QSqlQuery::~tst_QSqlQuery()
-{
-}
-
 void tst_QSqlQuery::initTestCase()
 {
     QVERIFY(dbs.open());
@@ -315,10 +309,6 @@ void tst_QSqlQuery::cleanupTestCase()
     }
 
     dbs.close();
-}
-
-void tst_QSqlQuery::init()
-{
 }
 
 void tst_QSqlQuery::cleanup()
