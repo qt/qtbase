@@ -269,6 +269,13 @@ void tst_QLine::testLength()
     QCOMPARE(l.length(), qreal(length));
 
     l.setLength(lengthToSet);
+
+    if constexpr (std::numeric_limits<double>::has_denorm != std::denorm_present) {
+        if (qstrcmp(QTest::currentDataTag(), "[tiny,tiny]->|2| (-tiny/2,-tiny/2)") == 0
+            || qstrcmp(QTest::currentDataTag(), "[4e-323,5e-324]|1892|") == 0) {
+            QSKIP("Skipping 'denorm' as this type lacks denormals on this system");
+        }
+    }
     // Scaling tiny values up to big can be imprecise: don't try to test vx, vy
     if (length > 0 && qFuzzyIsNull(length)) {
         QVERIFY(l.length() > lengthToSet / 2 && l.length() < lengthToSet * 2);

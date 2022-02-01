@@ -402,6 +402,11 @@ void tst_QNumeric::distance()
     QFETCH(F, from);
     QFETCH(F, stop);
     QFETCH(Count, expectedDistance);
+    if constexpr (std::numeric_limits<F>::has_denorm != std::denorm_present) {
+        if (qstrcmp(QTest::currentDataTag(), "denormal") == 0) {
+            QSKIP("Skipping 'denorm' as this type lacks denormals on this system");
+        }
+    }
     QCOMPARE(qFloatDistance(from, stop), expectedDistance);
     QCOMPARE(qFloatDistance(stop, from), expectedDistance);
 }
