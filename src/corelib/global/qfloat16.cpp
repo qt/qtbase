@@ -191,7 +191,7 @@ int qfloat16::fpClassify() const noexcept
     exactness is stronger the smaller the numbers are.
  */
 
-#if QT_COMPILER_SUPPORTS(F16C)
+#if QT_COMPILER_SUPPORTS_HERE(F16C)
 #define QT_FUNCTION_TARGET_STRING_AVX512VLBW    \
     QT_FUNCTION_TARGET_STRING_AVX512VL ","      \
     QT_FUNCTION_TARGET_STRING_AVX512BW ","      \
