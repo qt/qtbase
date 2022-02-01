@@ -860,6 +860,7 @@ void tst_QSqlQuery::storedProceduresIBase()
                             "  x = 42; "
                             "  y = 'Hello Anders'; "
                             "END" ) );
+    const auto tidier = qScopeGuard([&]() { q.exec("drop procedure " + procName); });
 
     QVERIFY_SQL(q, prepare("execute procedure " + procName));
     QVERIFY_SQL( q, exec() );
@@ -877,8 +878,6 @@ void tst_QSqlQuery::storedProceduresIBase()
 
     // the second next shall fail
     QVERIFY( !q.next() );
-
-    q.exec("drop procedure " + procName);
 }
 
 void tst_QSqlQuery::outValuesDB2()
@@ -1800,7 +1799,7 @@ void tst_QSqlQuery::writeNull()
     };
 
     for (const auto &nullableType : nullableTypes.keys()) {
-        auto tableGuard = qScopeGuard([&]{
+        const auto tableGuard = qScopeGuard([&]{
             q.exec("drop table " + tableName);
         });
         const QVariant nonNullValue = nullableTypes.value(nullableType);
@@ -1947,7 +1946,10 @@ void tst_QSqlQuery::precision()
     if (dbType == QSqlDriver::Interbase)
         QSKIP("DB unable to store high precision");
 
-    const auto oldPrecision = db.driver()->numericalPrecisionPolicy();
+    const auto tidier = qScopeGuard([db, oldPrecision = db.driver()->numericalPrecisionPolicy()]() {
+        db.driver()->setNumericalPrecisionPolicy(oldPrecision);
+    });
+
     db.driver()->setNumericalPrecisionPolicy(QSql::HighPrecision);
     const QString qtest_precision(qTableName("qtest_precision", __FILE__, db));
     static const QLatin1String precStr("1.2345678901234567891");
@@ -1981,7 +1983,6 @@ void tst_QSqlQuery::precision()
             }
         }
     } // SQLITE scope
-    db.driver()->setNumericalPrecisionPolicy(oldPrecision);
 }
 
 void tst_QSqlQuery::nullResult()
@@ -2884,6 +2885,8 @@ void tst_QSqlQuery::prematureExec()
     if (cut >= 0)
         dbName = dbName.sliced(cut + 1);
 
+    const auto tidier = qScopeGuard([dbName]() { QSqlDatabase::removeDatabase(dbName); });
+    // Note: destruction of db needs to happen before we call removeDatabase.
     auto db = QSqlDatabase::addDatabase(dbName);
     QSqlQuery q(db);
 
@@ -3031,6 +3034,10 @@ void tst_QSqlQuery::psql_specialFloatValues()
 void tst_QSqlQuery::queryOnInvalidDatabase()
 {
     {
+        const auto tidier = qScopeGuard([]() {
+            QSqlDatabase::removeDatabase("invalidConnection");
+        });
+        // Note: destruction of db needs to happen before we call removeDatabase.
         QTest::ignoreMessage( QtWarningMsg, "QSqlDatabase: INVALID driver not loaded" );
         QSqlDatabase db = QSqlDatabase::addDatabase( "INVALID", "invalidConnection" );
         QVERIFY2( db.lastError().isValid(),
@@ -3041,8 +3048,6 @@ void tst_QSqlQuery::queryOnInvalidDatabase()
         QVERIFY2( query.lastError().isValid(),
                   qPrintable( QString( "query.lastError().isValid() should be true!" ) ) );
     }
-
-    QSqlDatabase::removeDatabase( "invalidConnection" );
 
     {
         QSqlDatabase db = QSqlDatabase::database( "this connection does not exist" );
@@ -3157,11 +3162,16 @@ void tst_QSqlQuery::sqlite_finish()
         QSKIP( "This test requires a database on the filesystem, not in-memory");
 
     {
+        const auto tidier = qScopeGuard([]() {
+            QSqlDatabase::removeDatabase("sqlite_finish_sqlite");
+        });
+        // Note: destruction of db2 needs to happen before we call removeDatabase.
         QSqlDatabase db2 = QSqlDatabase::addDatabase( "QSQLITE", "sqlite_finish_sqlite" );
         db2.setDatabaseName( db.databaseName() );
         QVERIFY_SQL( db2, open() );
 
         const QString tableName(qTableName("qtest_lockedtable", __FILE__, db));
+        const auto wrapup = qScopeGuard([&]() { tst_Databases::safeDropTable(db, tableName); });
         QSqlQuery q( db );
 
         tst_Databases::safeDropTable( db, tableName );
@@ -3182,11 +3192,7 @@ void tst_QSqlQuery::sqlite_finish()
         q.finish();
         QVERIFY_SQL( q2, exec( "DELETE FROM " + tableName + " WHERE pk_id=2" ) );
         QCOMPARE( q2.numRowsAffected(), 1 );
-
-        tst_Databases::safeDropTable( db, tableName );
     }
-
-    QSqlDatabase::removeDatabase( "sqlite_finish_sqlite" );
 }
 
 void tst_QSqlQuery::nextResult()
@@ -3301,10 +3307,12 @@ void tst_QSqlQuery::nextResult()
     // Stored procedure with multiple result sets
     const QString procName(qTableName("proc_more_res", __FILE__, db));
 
-    if (dbType == QSqlDriver::PostgreSQL)
-        q.exec(QString("DROP FUNCTION %1(refcursor, refcursor);").arg(procName));
-    else
-        q.exec(QString("DROP PROCEDURE %1;").arg(procName));
+    auto dropProc = [&]() {
+        q.exec(QLatin1String(dbType == QSqlDriver::PostgreSQL
+                             ? "DROP FUNCTION %1(refcursor, refcursor);"
+                             : "DROP PROCEDURE %1;").arg(procName));
+    };
+    dropProc(); // to make sure it's not there before we start
 
     if (dbType == QSqlDriver::MySqlServer)
         QVERIFY_SQL( q, exec( QString( "CREATE PROCEDURE %1()"
@@ -3337,6 +3345,8 @@ void tst_QSqlQuery::nextResult()
                                          "\nAS"
                                          "\nSELECT id, text FROM %2"
                                          "\nSELECT empty, num, text, id FROM %3" ).arg( procName ).arg( tableName ).arg( tableName ) ) );
+
+    const auto tidier = qScopeGuard(dropProc);
 
     if (dbType == QSqlDriver::MySqlServer || dbType == QSqlDriver::DB2) {
         q.setForwardOnly( true );
@@ -3399,13 +3409,7 @@ void tst_QSqlQuery::nextResult()
     }
 
     QVERIFY( !q.nextResult() );
-
     QVERIFY( !q.isActive() );
-
-    if (dbType == QSqlDriver::PostgreSQL)
-        q.exec(QString("DROP FUNCTION %1(refcursor, refcursor);").arg(procName));
-    else
-        q.exec(QString("DROP PROCEDURE %1;").arg(procName));
 }
 
 
@@ -3583,13 +3587,14 @@ void tst_QSqlQuery::task_250026()
 void tst_QSqlQuery::crashQueryOnCloseDatabase()
 {
     for (const auto &dbName : qAsConst(dbs.dbNames)) {
+        const auto tidier = qScopeGuard([]() { QSqlDatabase::removeDatabase("crashTest"); });
+        // Note: destruction of clonedDb needs to happen before we call removeDatabase.
         QSqlDatabase clonedDb = QSqlDatabase::cloneDatabase(
               QSqlDatabase::database(dbName), "crashTest");
         qDebug() << "Testing crash in sqlquery dtor for driver" << clonedDb.driverName();
         QVERIFY(clonedDb.open());
         QSqlQuery q(clonedDb);
         clonedDb.close();
-        QSqlDatabase::removeDatabase("crashTest");
     }
 }
 
