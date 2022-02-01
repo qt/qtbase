@@ -402,7 +402,7 @@ void QWidgetWindow::handleEnterLeaveEvent(QEvent *event)
         QWindowSystemInterfacePrivate::EnterEvent *systemEvent =
             static_cast<QWindowSystemInterfacePrivate::EnterEvent *>
             (QWindowSystemInterfacePrivate::peekWindowSystemEvent(QWindowSystemInterfacePrivate::Enter));
-        const QPointF globalPosF = systemEvent ? systemEvent->globalPos : QGuiApplicationPrivate::lastCursorPosition;
+        const QPointF globalPosF = systemEvent ? systemEvent->globalPos : QPointF(QGuiApplicationPrivate::lastCursorPosition);
         if (systemEvent) {
             if (QWidgetWindow *enterWindow = qobject_cast<QWidgetWindow *>(systemEvent->enter))
             {
