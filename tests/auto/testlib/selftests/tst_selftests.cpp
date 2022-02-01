@@ -220,6 +220,8 @@ bool compareOutput(const QString &logger, const QString &subdir,
             continue;
         if (actualLineBA.endsWith(" : failure location"))
             continue;
+        if (actualLineBA.endsWith(" : message location"))
+            continue;
 
         if (actualLineBA.startsWith("Config: Using QtTest library") // Text build string
             || actualLineBA.startsWith("    <QtBuild") // XML, Light XML build string
