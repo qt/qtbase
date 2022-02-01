@@ -7337,7 +7337,7 @@ void tst_QObject::checkArgumentsForNarrowing()
     // GCC, GHS and clang don't implement this properly yet:
     // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99625
     // https://bugs.llvm.org/show_bug.cgi?id=49676
-#if defined(Q_CC_MSVC) // at least since VS2017
+#if defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)  // at least since VS2017
     struct ConstructibleFromInt {
         /* implicit */ ConstructibleFromInt(int) {}
     };
