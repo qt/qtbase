@@ -44,6 +44,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QObject;
+
 namespace QtAndroidAccessibility
 {
     void initialize();
@@ -52,6 +54,7 @@ namespace QtAndroidAccessibility
     void notifyLocationChange();
     void notifyObjectHide(uint accessibilityObjectId);
     void notifyObjectFocus(uint accessibilityObjectId);
+    void createAccessibilityContextObject(QObject *parent);
 }
 
 QT_END_NAMESPACE

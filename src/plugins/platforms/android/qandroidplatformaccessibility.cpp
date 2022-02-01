@@ -69,4 +69,10 @@ void QAndroidPlatformAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *
     }
 }
 
+void QAndroidPlatformAccessibility::setRootObject(QObject *obj)
+{
+    QPlatformAccessibility::setRootObject(obj);
+    QtAndroidAccessibility::createAccessibilityContextObject(obj);
+}
+
 QT_END_NAMESPACE
