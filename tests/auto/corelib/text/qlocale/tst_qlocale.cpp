@@ -998,9 +998,23 @@ void tst_QLocale::stringToFloat()
     QLocale locale(locale_name);
     QCOMPARE(locale.name(), locale_name);
 
+    if constexpr (std::numeric_limits<float>::has_denorm != std::denorm_present) {
+        if (qstrcmp(QTest::currentDataTag(), "C float -min") == 0
+                || qstrcmp(QTest::currentDataTag(), "C float min") == 0)
+            QSKIP("Skipping 'denorm' as this type lacks denormals on this system");
+    }
     bool ok;
     float f = locale.toFloat(num_str, &ok);
     QCOMPARE(ok, good);
+
+    if constexpr (std::numeric_limits<double>::has_denorm != std::denorm_present) {
+        if (qstrcmp(QTest::currentDataTag(), "C double min") == 0
+                || qstrcmp(QTest::currentDataTag(), "C double -min") == 0
+                || qstrcmp(QTest::currentDataTag(), "C tiny") == 0
+                || qstrcmp(QTest::currentDataTag(), "C -tiny") == 0) {
+            QSKIP("Skipping 'denorm' as this type lacks denormals on this system");
+        }
+    }
 
     {
         // Make sure result is independent of locale:
