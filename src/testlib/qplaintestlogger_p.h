@@ -78,7 +78,12 @@ public:
                     const char *file = nullptr, int line = 0) override;
 
 private:
-    void printMessage(const char *type, const char *msg, const char *file = nullptr, int line = 0);
+    enum class MessageSource {
+        Incident,
+        Other,
+    };
+    void printMessage(MessageSource source, const char *type, const char *msg,
+                      const char *file = nullptr, int line = 0);
     void outputMessage(const char *str);
     void printBenchmarkResult(const QBenchmarkResult &result);
 };
