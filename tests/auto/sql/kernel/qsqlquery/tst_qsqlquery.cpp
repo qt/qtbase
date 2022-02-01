@@ -494,49 +494,47 @@ void tst_QSqlQuery::char1SelectUnicode()
     if (dbType == QSqlDriver::DB2)
         QSKIP("Needs someone with more Unicode knowledge than I have to fix");
 
-    if ( db.driver()->hasFeature( QSqlDriver::Unicode ) ) {
-        QString uniStr( QChar(0x0915) ); // DEVANAGARI LETTER KA
-        QSqlQuery q( db );
-        QLatin1String createQuery;
-        const QString char1SelectUnicode(qTableName("char1SU", __FILE__, db));
+    if (!db.driver()->hasFeature(QSqlDriver::Unicode))
+        QSKIP("Database not unicode capable");
 
-        switch (dbType) {
-        case QSqlDriver::MSSqlServer:
-            createQuery = QLatin1String("create table %1(id nchar(1))");
-            break;
-        case QSqlDriver::DB2:
-        case QSqlDriver::Oracle:
-        case QSqlDriver::PostgreSQL:
-            createQuery = QLatin1String("create table %1 (id char(3))");
-            break;
-        case QSqlDriver::Interbase:
-            createQuery = QLatin1String("create table %1 (id char(1) character set unicode_fss)");
-            break;
-        case QSqlDriver::MySqlServer:
-            createQuery =
-                QLatin1String("create table %1 (id char(1)) default character set 'utf8'");
-            break;
-        default:
-            createQuery = QLatin1String("create table %1 (id char(1))");
-            break;
-        }
+    QString uniStr(QChar(0x0915)); // DEVANAGARI LETTER KA
+    QSqlQuery q(db);
+    QLatin1String createQuery;
+    const QString char1SelectUnicode(qTableName("char1SU", __FILE__, db));
 
-        QVERIFY_SQL(q, exec(createQuery.arg(char1SelectUnicode)));
-        QVERIFY_SQL(q, prepare(QLatin1String("insert into %1 values(?)").arg(char1SelectUnicode)));
-
-        q.bindValue( 0, uniStr );
-        QVERIFY_SQL( q, exec() );
-        QVERIFY_SQL( q, exec( "select * from " + char1SelectUnicode ) );
-
-        QVERIFY( q.next() );
-        if ( !q.value( 0 ).toString().isEmpty() )
-            QCOMPARE( q.value( 0 ).toString()[ 0 ].unicode(), uniStr[0].unicode() );
-
-        QCOMPARE( q.value( 0 ).toString().trimmed(), uniStr );
-        QVERIFY( !q.next() );
+    switch (dbType) {
+    case QSqlDriver::MSSqlServer:
+        createQuery = QLatin1String("create table %1(id nchar(1))");
+        break;
+    case QSqlDriver::DB2:
+    case QSqlDriver::Oracle:
+    case QSqlDriver::PostgreSQL:
+        createQuery = QLatin1String("create table %1 (id char(3))");
+        break;
+    case QSqlDriver::Interbase:
+        createQuery = QLatin1String("create table %1 (id char(1) character set unicode_fss)");
+        break;
+    case QSqlDriver::MySqlServer:
+        createQuery = QLatin1String("create table %1 (id char(1)) default character set 'utf8'");
+        break;
+    default:
+        createQuery = QLatin1String("create table %1 (id char(1))");
+        break;
     }
-    else
-        QSKIP( "Database not unicode capable");
+
+    QVERIFY_SQL(q, exec(createQuery.arg(char1SelectUnicode)));
+    QVERIFY_SQL(q, prepare(QLatin1String("insert into %1 values(?)").arg(char1SelectUnicode)));
+
+    q.bindValue(0, uniStr);
+    QVERIFY_SQL(q, exec());
+    QVERIFY_SQL(q, exec("select * from " + char1SelectUnicode));
+
+    QVERIFY(q.next());
+    if (!q.value(0).toString().isEmpty())
+        QCOMPARE(q.value(0).toString()[0].unicode(), uniStr[0].unicode());
+
+    QCOMPARE(q.value(0).toString().trimmed(), uniStr);
+    QVERIFY(!q.next());
 }
 
 void tst_QSqlQuery::oraRowId()
