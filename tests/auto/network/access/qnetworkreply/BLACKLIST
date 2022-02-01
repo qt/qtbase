@@ -59,6 +59,8 @@ macos
 macos
 [putToHttpsSynchronous]
 osx
+[putWithServerClosingConnectionImmediately]
+windows-10
 [putWithRateLimiting]
 macos
 [qtbug13431replyThrottling]
