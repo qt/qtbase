@@ -1430,17 +1430,6 @@ QString QLocale::languageToCode(Language language, LanguageCodeTypes codeTypes)
     return QLocalePrivate::languageToCode(language, codeTypes);
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
-/*!
-    \overload
-    \since 6.1
-*/
-QString QLocale::languageToCode(Language language)
-{
-    return QLocalePrivate::languageToCode(language);
-}
-#endif
-
 /*!
     Returns the QLocale::Language enum corresponding to the two- or three-letter
     \a languageCode, as defined in the ISO 639 standards.
@@ -1460,17 +1449,6 @@ QLocale::Language QLocale::codeToLanguage(QStringView languageCode,
 {
     return QLocalePrivate::codeToLanguage(languageCode, codeTypes);
 }
-
-#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
-/*!
-    \overload
-    \since 6.1
-*/
-QLocale::Language QLocale::codeToLanguage(QStringView languageCode) noexcept
-{
-    return QLocalePrivate::codeToLanguage(languageCode);
-}
-#endif
 
 /*!
     \since 6.2

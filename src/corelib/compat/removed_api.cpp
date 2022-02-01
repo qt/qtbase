@@ -133,6 +133,18 @@ QByteArray QtPrivate::QByteArrayList_join(const QByteArrayList *that, const char
 }
 # endif
 
+#include "qlocale.h"
+
+QString QLocale::languageToCode(Language language)
+{
+    return languageToCode(language, QLocale::AnyLanguageCode);
+}
+
+QLocale::Language QLocale::codeToLanguage(QStringView languageCode) noexcept
+{
+    return codeToLanguage(languageCode, QLocale::AnyLanguageCode);
+}
+
 #include "qoperatingsystemversion.h"
 
 int QOperatingSystemVersion::compare(const QOperatingSystemVersion &v1,
