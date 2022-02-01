@@ -502,6 +502,9 @@ qt_feature("appstore-compliant" PUBLIC
     PURPOSE "Disables code that is not allowed in platform app stores"
     AUTODETECT UIKIT OR ANDROID
 )
+if(APPLE)
+    qt_feature_definition("appstore-compliant" "QT_APPLE_NO_PRIVATE_APIS")
+endif()
 qt_feature("simulator_and_device" PUBLIC
     LABEL "Build for both simulator and device"
     CONDITION UIKIT AND NOT QT_UIKIT_SDK
