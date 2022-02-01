@@ -53,8 +53,11 @@ namespace QTestPrivate {
         to start with a clean slate and prevents the "previous restore failed"
         dialog from showing if there was a test crash.
     */
-    void disableWindowRestore() {
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"ApplePersistenceIgnoreState"];
+    void disableWindowRestore()
+    {
+        [NSUserDefaults.standardUserDefaults registerDefaults:@{
+            @"ApplePersistenceIgnoreState" : @YES
+        }];
     }
 
     bool macCrashReporterWillShowDialog()
