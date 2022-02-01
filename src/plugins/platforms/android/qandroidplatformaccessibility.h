@@ -52,6 +52,7 @@ public:
     ~QAndroidPlatformAccessibility();
 
     void notifyAccessibilityUpdate(QAccessibleEvent *event) override;
+    void setRootObject(QObject *obj) override;
 };
 
 QT_END_NAMESPACE
