@@ -318,7 +318,6 @@ void tst_QSqlQuery::cleanup()
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
-    const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
     if ( QTest::currentTestFunction() == QLatin1String( "numRowsAffected" )
             || QTest::currentTestFunction() == QLatin1String( "transactions" )
             || QTest::currentTestFunction() == QLatin1String( "size" )
@@ -327,8 +326,9 @@ void tst_QSqlQuery::cleanup()
         populateTestTables( db );
     }
 
-    if (QTest::currentTestFailed() && (dbType == QSqlDriver::Oracle || db.driverName().startsWith("QODBC"))) {
-        //since Oracle ODBC totally craps out on error, we init again
+    if (QTest::currentTestFailed() && (tst_Databases::getDatabaseType(db) == QSqlDriver::Oracle
+                                       || db.driverName().startsWith("QODBC"))) {
+        // Since Oracle ODBC totally craps out on error, we init again:
         db.close();
         db.open();
     }
@@ -476,8 +476,7 @@ void tst_QSqlQuery::char1Select()
         QVERIFY_SQL(q, exec(QLatin1String("insert into %1 values ('a')").arg(tbl)));
         QVERIFY_SQL(q, exec("select * from " + tbl));
         QVERIFY( q.next() );
-        QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
-        if (dbType == QSqlDriver::Interbase)
+        if (tst_Databases::getDatabaseType(db) == QSqlDriver::Interbase)
             QCOMPARE(q.value(0).toString().left(1), u"a");
         else
             QCOMPARE(q.value(0).toString(), u"a");
@@ -585,7 +584,8 @@ void tst_QSqlQuery::mysql_outValues()
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
-    const QString hello(qTableName("hello", __FILE__, db)), qtestproc(qTableName("qtestproc", __FILE__, db));
+    const QString hello(qTableName("hello", __FILE__, db));
+    const QString qtestproc(qTableName("qtestproc", __FILE__, db));
 
     QSqlQuery q( db );
 
@@ -1004,8 +1004,8 @@ void tst_QSqlQuery::outValues()
 
 void tst_QSqlQuery::blob()
 {
-    static const int BLOBSIZE = 1024 * 10;
-    static const int BLOBCOUNT = 2;
+    constexpr int BLOBSIZE = 1024 * 10;
+    constexpr int BLOBCOUNT = 2;
 
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );
@@ -1015,7 +1015,7 @@ void tst_QSqlQuery::blob()
         QSKIP( "DBMS not BLOB capable");
 
     //don' make it too big otherwise sybase and mysql will complain
-    QByteArray ba( BLOBSIZE, 0 );
+    QByteArray ba(BLOBSIZE, Qt::Uninitialized);
 
     for (int i = 0; i < ba.size(); ++i)
         ba[i] = i % 256;
@@ -1141,8 +1141,7 @@ void tst_QSqlQuery::record()
     QCOMPARE(q.record().fieldName(0).toLower(), u"id");
     QCOMPARE( q.value( 0 ).toInt(), 2 );
 
-    const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
-    if (dbType == QSqlDriver::Oracle)
+    if (tst_Databases::getDatabaseType(db) == QSqlDriver::Oracle)
         QSKIP("Getting the tablename is not supported in Oracle");
     const auto lowerQTest = qtest.toLower();
     for (int i = 0; i < 3; ++i)
@@ -1580,8 +1579,6 @@ void tst_QSqlQuery::forwardOnlyMultipleResultSet()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
-
     if (!db.driver()->hasFeature(QSqlDriver::MultipleResultSets))
         QSKIP("DBMS doesn't support multiple result sets");
 
@@ -1610,8 +1607,10 @@ void tst_QSqlQuery::forwardOnlyMultipleResultSet()
     QCOMPARE(record.count(), 2);
     QCOMPARE(record.indexOf("id"), 0);
     QCOMPARE(record.indexOf("t_varchar"), 1);
-    if (dbType != QSqlDriver::PostgreSQL) {  // tableName() is not available in forward-only mode of QPSQL
-        QCOMPARE(record.field(0).tableName(), qtest);  // BUG: This fails for Microsoft SQL Server 2016 (QODBC), need fix
+    // tableName() is not available in forward-only mode of QPSQL
+    if (tst_Databases::getDatabaseType(db) != QSqlDriver::PostgreSQL) {
+        // BUG: This fails for Microsoft SQL Server 2016 (QODBC), need fix:
+        QCOMPARE(record.field(0).tableName(), qtest);
         QCOMPARE(record.field(1).tableName(), qtest);
     }
 
@@ -2168,7 +2167,8 @@ void tst_QSqlQuery::joins()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
     const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
-    const QString qtestj1(qTableName("qtestj1", __FILE__, db)), qtestj2(qTableName("qtestj2", __FILE__, db));
+    const QString qtestj1(qTableName("qtestj1", __FILE__, db));
+    const QString qtestj2(qTableName("qtestj2", __FILE__, db));
 
     if (dbType == QSqlDriver::Oracle || dbType == QSqlDriver::Sybase
             || dbType == QSqlDriver::Interbase || db.driverName().startsWith("QODBC")) {
@@ -2603,9 +2603,7 @@ void tst_QSqlQuery::sqlServerLongStrings()
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
-
-    QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
-    if (dbType != QSqlDriver::MSSqlServer)
+    if (tst_Databases::getDatabaseType(db) != QSqlDriver::MSSqlServer)
         QSKIP( "SQL Server specific test");
 
     QSqlQuery q( db );
@@ -3027,9 +3025,7 @@ void tst_QSqlQuery::lastInsertId()
         QVERIFY_SQL(q, exec(QLatin1String("insert into %1 values (41, 'VarChar41', 'Char41')")
                             .arg(qtest)));
     }
-    QVariant v = q.lastInsertId();
-
-    QVERIFY( v.isValid() );
+    QVERIFY(q.lastInsertId().isValid());
 }
 
 void tst_QSqlQuery::lastQuery()
@@ -3650,21 +3646,21 @@ void tst_QSqlQuery::task_217003()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
     QSqlQuery q( db );
-    const QString Planet(qTableName( "Planet", __FILE__, db));
+    const QString planets = qTableName("Planet", __FILE__, db);
 
-    q.exec("drop table " + Planet);
-    QVERIFY_SQL(q, exec(QLatin1String("create table %1 (Name varchar(20))").arg(Planet)));
-    QVERIFY_SQL(q, exec(QLatin1String("insert into %1 VALUES ('Mercury')").arg(Planet)));
-    QVERIFY_SQL(q, exec(QLatin1String("insert into %1 VALUES ('Venus')").arg(Planet)));
-    QVERIFY_SQL(q, exec(QLatin1String("insert into %1 VALUES ('Earth')").arg(Planet)));
-    QVERIFY_SQL(q, exec(QLatin1String("insert into %1 VALUES ('Mars')").arg(Planet)));
+    q.exec("drop table " + planets);
+    QVERIFY_SQL(q, exec(QLatin1String("create table %1 (Name varchar(20))").arg(planets)));
+    QVERIFY_SQL(q, exec(QLatin1String("insert into %1 VALUES ('Mercury')").arg(planets)));
+    QVERIFY_SQL(q, exec(QLatin1String("insert into %1 VALUES ('Venus')").arg(planets)));
+    QVERIFY_SQL(q, exec(QLatin1String("insert into %1 VALUES ('Earth')").arg(planets)));
+    QVERIFY_SQL(q, exec(QLatin1String("insert into %1 VALUES ('Mars')").arg(planets)));
 
-    QVERIFY_SQL( q, exec( "SELECT Name FROM " + Planet ) );
+    QVERIFY_SQL(q, exec("SELECT Name FROM " + planets));
     QVERIFY_SQL( q, seek( 3 ) );
     QCOMPARE(q.value(0).toString(), u"Mars");
     QVERIFY_SQL( q, seek( 1 ) );
     QCOMPARE(q.value(0).toString(), u"Venus");
-    QVERIFY_SQL( q, exec( "SELECT Name FROM " + Planet ) );
+    QVERIFY_SQL(q, exec("SELECT Name FROM " + planets));
     QVERIFY_SQL( q, seek( 3 ) );
     QCOMPARE(q.value(0).toString(), u"Mars");
     QVERIFY_SQL( q, seek( 0 ) );
@@ -3783,11 +3779,11 @@ void tst_QSqlQuery::sqlServerReturn0()
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
-    QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
-    if (dbType != QSqlDriver::MSSqlServer)
+    if (tst_Databases::getDatabaseType(db) != QSqlDriver::MSSqlServer)
         QSKIP("SQL Server specific test");
 
-    const QString tableName(qTableName("test141895", __FILE__, db)), procName(qTableName("test141895_proc", __FILE__, db));
+    const QString tableName(qTableName("test141895", __FILE__, db));
+    const QString procName(qTableName("test141895_proc", __FILE__, db));
     QSqlQuery q( db );
     q.exec("DROP TABLE " + tableName);
     q.exec("DROP PROCEDURE " + procName);
@@ -3829,24 +3825,23 @@ void tst_QSqlQuery::QTBUG_551()
                                       " END p;\n"
                                       "END %1;").arg(pkgname)));
 
-    QVariantList inLst, outLst, res_outLst;
-
     q.prepare(QLatin1String("begin %1.p(:inp, :outp); end;").arg(pkgname));
 
-    QString StVal;
-    StVal.reserve(60);
+    QString text;
+    text.reserve(60);
 
     // loading arrays
-    for (int Cnt=0; Cnt < 3; Cnt++) {
-        inLst << Cnt;
-        outLst << StVal;
+    QVariantList inLst, outLst;
+    for (int count = 0; count < 3; ++count) {
+        inLst << count;
+        outLst << text;
     }
 
     q.bindValue(":inp", inLst);
     q.bindValue(":outp", outLst, QSql::Out);
 
     QVERIFY_SQL(q, execBatch(QSqlQuery::ValuesAsColumns) );
-    res_outLst = qvariant_cast<QVariantList>(q.boundValues().at(1));
+    const auto res_outLst = qvariant_cast<QVariantList>(q.boundValues().at(1));
 
     QCOMPARE(res_outLst[0].toString(), QLatin1String("1. Value is 0"));
     QCOMPARE(res_outLst[1].toString(), QLatin1String("2. Value is 1"));
@@ -3984,8 +3979,7 @@ void tst_QSqlQuery::QTBUG_6618()
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
-    QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
-    if (dbType != QSqlDriver::MSSqlServer)
+    if (tst_Databases::getDatabaseType(db) != QSqlDriver::MSSqlServer)
         QSKIP("SQL Server specific test");
 
     QSqlQuery q(db);
@@ -4009,7 +4003,8 @@ void tst_QSqlQuery::QTBUG_6852()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
     QSqlQuery q(db);
-    const QString tableName(qTableName("bug6852", __FILE__, db)), procName(qTableName("bug6852_proc", __FILE__, db));
+    const QString tableName(qTableName("bug6852", __FILE__, db));
+    const QString procName(qTableName("bug6852_proc", __FILE__, db));
 
     QVERIFY_SQL(q, exec("DROP PROCEDURE IF EXISTS " + procName));
     QVERIFY_SQL(q, exec(QLatin1String("CREATE TABLE %1(\n"
@@ -4499,9 +4494,7 @@ void tst_QSqlQuery::sqlite_constraint()
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
-
-    QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
-    if (dbType != QSqlDriver::SQLite)
+    if (tst_Databases::getDatabaseType(db) != QSqlDriver::SQLite)
         QSKIP("Sqlite3 specific test");
 
     QSqlQuery q(db);
@@ -4759,7 +4752,7 @@ void runIntegralTypesMysqlTest(QSqlDatabase &db, const QString &tableName,
                                const T max = std::numeric_limits<T>::max())
 {
     // insert some values
-    const int steps = 20;
+    constexpr int steps = 20;
     const T increment = (max / steps - min / steps);
     QList<T> values;
     values.reserve(steps);
@@ -4795,9 +4788,10 @@ void tst_QSqlQuery::integralTypesMysql()
 
 void tst_QSqlQuery::QTBUG_57138()
 {
-    QDateTime utc = QDateTime(QDate(2150, 1, 5), QTime(14, 0, 0, 123), Qt::UTC);
-    QDateTime localtime = QDateTime(QDate(2150, 1, 5), QTime(14, 0, 0, 123), Qt::LocalTime);
-    QDateTime tzoffset = QDateTime(QDate(2150, 1, 5), QTime(14, 0, 0, 123), Qt::OffsetFromUTC, 3600);
+    const QDateTime utc = QDateTime(QDate(2150, 1, 5), QTime(14, 0, 0, 123), Qt::UTC);
+    const QDateTime localtime = QDateTime(QDate(2150, 1, 5), QTime(14, 0, 0, 123), Qt::LocalTime);
+    const QDateTime tzoffset = QDateTime(QDate(2150, 1, 5), QTime(14, 0, 0, 123),
+                                         Qt::OffsetFromUTC, 3600);
 
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
@@ -4949,9 +4943,7 @@ void tst_QSqlQuery::dateTime()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-
-    QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
-    if (dbType != QSqlDriver::Oracle)
+    if (tst_Databases::getDatabaseType(db) != QSqlDriver::Oracle)
         QSKIP("Implemented only for Oracle");
 
     QFETCH(QString, tableName);
