@@ -485,23 +485,31 @@ void tst_QSqlQuery::char1SelectUnicode()
     if ( db.driver()->hasFeature( QSqlDriver::Unicode ) ) {
         QString uniStr( QChar(0x0915) ); // DEVANAGARI LETTER KA
         QSqlQuery q( db );
-        QString createQuery;
+        QLatin1String createQuery;
         const QString char1SelectUnicode(qTableName("char1SU", __FILE__, db));
 
-        if (dbType == QSqlDriver::MSSqlServer)
-            createQuery = "create table " + char1SelectUnicode + "(id nchar(1))";
-        else if (dbType == QSqlDriver::DB2 || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::PostgreSQL)
-            createQuery = "create table " + char1SelectUnicode + " (id char(3))";
-        else if (dbType == QSqlDriver::Interbase)
-            createQuery = "create table " + char1SelectUnicode +
-                          " (id char(1) character set unicode_fss)";
-        else if (dbType == QSqlDriver::MySqlServer)
-            createQuery = "create table " + char1SelectUnicode + " (id char(1)) "
-                          "default character set 'utf8'";
-        else
-            createQuery = "create table " + char1SelectUnicode + " (id char(1))";
+        switch (dbType) {
+        case QSqlDriver::MSSqlServer:
+            createQuery = QLatin1String("create table %1(id nchar(1))");
+            break;
+        case QSqlDriver::DB2:
+        case QSqlDriver::Oracle:
+        case QSqlDriver::PostgreSQL:
+            createQuery = QLatin1String("create table %1 (id char(3))");
+            break;
+        case QSqlDriver::Interbase:
+            createQuery = QLatin1String("create table %1 (id char(1) character set unicode_fss)");
+            break;
+        case QSqlDriver::MySqlServer:
+            createQuery =
+                QLatin1String("create table %1 (id char(1)) default character set 'utf8'");
+            break;
+        default:
+            createQuery = QLatin1String("create table %1 (id char(1))");
+            break;
+        }
 
-        QVERIFY_SQL( q, exec( createQuery ) );
+        QVERIFY_SQL(q, exec(createQuery.arg(char1SelectUnicode)));
 
         QVERIFY_SQL( q, prepare( "insert into " + char1SelectUnicode + " values(?)" ) );
 
@@ -929,30 +937,38 @@ void tst_QSqlQuery::outValues()
     QSqlQuery q( db );
 
     q.setForwardOnly( true );
-    QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
-    if (dbType == QSqlDriver::Oracle) {
-        QVERIFY_SQL( q, exec( "create or replace procedure " + tst_outValues + "(x out int) is\n"
+    QLatin1String creator, caller;
+    switch (tst_Databases::getDatabaseType(db)) {
+    case QSqlDriver::Oracle:
+        creator = QLatin1String("create or replace procedure %1(x out int) is\n"
                                 "begin\n"
                                 "    x := 42;\n"
-                                "end;\n" ) );
-        QVERIFY( q.prepare( "call " + tst_outValues + "(?)" ) );
-    } else if (dbType == QSqlDriver::DB2) {
-        q.exec( "drop procedure " + tst_outValues ); //non-fatal
-        QVERIFY_SQL( q, exec( "CREATE PROCEDURE " + tst_outValues + " (OUT x int)\n"
+                                "end;\n");
+        caller = QLatin1String("call %1(?)");
+        break;
+    case QSqlDriver::DB2:
+        q.exec("drop procedure " + tst_outValues); // non-fatal
+        creator = QLatin1String("CREATE PROCEDURE %1 (OUT x int)\n"
                                 "LANGUAGE SQL\n"
                                 "P1: BEGIN\n"
                                 " SET x = 42;\n"
-                                "END P1" ) );
-        QVERIFY( q.prepare( "call " + tst_outValues + "(?)" ) );
-    } else if (dbType == QSqlDriver::MSSqlServer) {
-        q.exec( "drop procedure " + tst_outValues );  //non-fatal
-        QVERIFY_SQL( q, exec( "create procedure " + tst_outValues + " (@x int out) as\n"
+                                "END P1");
+        caller = QLatin1String("call %1(?)");
+        break;
+    case QSqlDriver::MSSqlServer:
+        q.exec("drop procedure " + tst_outValues);  // non-fatal
+        creator = QLatin1String("create procedure %1 (@x int out) as\n"
                                 "begin\n"
                                 "    set @x = 42\n"
-                                "end\n" ) );
-        QVERIFY( q.prepare( "{call " + tst_outValues + "(?)}" ) );
-    } else
-        QSKIP( "Don't know how to create a stored procedure for this database server, please fix this test");
+                                "end\n");
+        caller = QLatin1String("{call %1(?)}");
+        break;
+    default:
+        QSKIP("Don't know how to create a stored procedure for this database server, "
+              "please fix this test");
+    }
+    QVERIFY_SQL(q, exec(creator.arg(tst_outValues)));
+    QVERIFY(q.prepare(caller.arg(tst_outValues)));
 
     q.addBindValue( 0, QSql::Out );
 
@@ -2181,20 +2197,33 @@ void tst_QSqlQuery::prepare_bind_exec()
         bool useUnicode = db.driver()->hasFeature( QSqlDriver::Unicode );
 
         QSqlQuery q( db );
-        QString createQuery;
+        QLatin1String createQuery;
         QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
         if (dbType == QSqlDriver::PostgreSQL)
             QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
 
-        if (dbType == QSqlDriver::MSSqlServer || dbType == QSqlDriver::Sybase)
-            createQuery = "create table " + qtest_prepare + " (id int primary key, name nvarchar(200) null, name2 nvarchar(200) null)";
-        else if (dbType == QSqlDriver::MySqlServer && useUnicode)
-            createQuery = "create table " + qtest_prepare + " (id int not null primary key, name varchar(200) character set utf8, name2 varchar(200) character set utf8)";
-        else
-            createQuery = "create table " + qtest_prepare + " (id int not null primary key, name varchar(200), name2 varchar(200))";
+        switch (dbType) {
+        case QSqlDriver::MSSqlServer:
+        case QSqlDriver::Sybase:
+            createQuery = QLatin1String("create table %1 (id int primary key, "
+                                        "name nvarchar(200) null, name2 nvarchar(200) null)");
+            break;
+        case QSqlDriver::MySqlServer:
+            if (useUnicode) {
+                createQuery = QLatin1String("create table %1 (id int not null primary key, "
+                                            "name varchar(200) character set utf8, "
+                                            "name2 varchar(200) character set utf8)");
+                break;
+            }
+            Q_FALLTHROUGH();
+        default:
+            createQuery = QLatin1String("create table %1 (id int not null primary key, "
+                                        "name varchar(200), name2 varchar(200))");
+            break;
+        }
 
         q.exec("drop table " + qtest_prepare);
-        QVERIFY_SQL( q, exec( createQuery ) );
+        QVERIFY_SQL(q, exec(createQuery.arg(qtest_prepare)));
 
         QVERIFY( q.prepare( "insert into " + qtest_prepare + " (id, name) values (:id, :name)" ) );
         int i;
@@ -3316,54 +3345,70 @@ void tst_QSqlQuery::nextResult()
     };
     dropProc(); // to make sure it's not there before we start
 
-    if (dbType == QSqlDriver::MySqlServer)
-        QVERIFY_SQL( q, exec( QString( "CREATE PROCEDURE %1()"
-                                         "\nBEGIN"
-                                         "\nSELECT id, text FROM %2;"
-                                         "\nSELECT empty, num, text, id FROM %3;"
-                                         "\nEND" ).arg( procName ).arg( tableName ).arg( tableName ) ) );
-    else if (dbType == QSqlDriver::DB2)
-        QVERIFY_SQL( q, exec( QString( "CREATE PROCEDURE %1()"
-                                         "\nRESULT SETS 2"
-                                         "\nLANGUAGE SQL"
-                                         "\np1:BEGIN"
-                                         "\nDECLARE cursor1 CURSOR WITH RETURN FOR SELECT id, text FROM %2;"
-                                         "\nDECLARE cursor2 CURSOR WITH RETURN FOR SELECT empty, num, text, id FROM %3;"
-                                         "\nOPEN cursor1;"
-                                         "\nOPEN cursor2;"
-                                         "\nEND p1" ).arg( procName ).arg( tableName ).arg( tableName ) ) );
-    else if (dbType == QSqlDriver::PostgreSQL)
-        QVERIFY_SQL(q, exec(QString("CREATE FUNCTION %1(ref1 refcursor, ref2 refcursor)"
-                                    "\nRETURNS SETOF refcursor AS $$"
-                                    "\nBEGIN"
-                                    "\nOPEN ref1 FOR SELECT id, text FROM %2;"
-                                    "\nRETURN NEXT ref1;"
-                                    "\nOPEN ref2 FOR SELECT empty, num, text, id FROM %2;"
-                                    "\nRETURN NEXT ref2;"
-                                    "\nEND;"
-                                    "\n$$ LANGUAGE plpgsql").arg(procName).arg(tableName)));
-    else
-        QVERIFY_SQL( q, exec( QString( "CREATE PROCEDURE %1"
-                                         "\nAS"
-                                         "\nSELECT id, text FROM %2"
-                                         "\nSELECT empty, num, text, id FROM %3" ).arg( procName ).arg( tableName ).arg( tableName ) ) );
-
+    QLatin1String creator;
+    switch (dbType) {
+    case QSqlDriver::MySqlServer:
+        creator = QLatin1String("CREATE PROCEDURE %1()\n"
+                                "BEGIN\n"
+                                " SELECT id, text FROM %2;\n"
+                                " SELECT empty, num, text, id FROM %2;\n"
+                                "END");
+        break;
+    case QSqlDriver::DB2:
+        creator = QLatin1String("CREATE PROCEDURE %1()\n"
+                                "RESULT SETS 2\n"
+                                "LANGUAGE SQL\n"
+                                "p1:BEGIN\n"
+                                " DECLARE cursor1 CURSOR WITH RETURN FOR "
+                                  "SELECT id, text FROM %2;\n"
+                                " DECLARE cursor2 CURSOR WITH RETURN FOR "
+                                  "SELECT empty, num, text, id FROM %2;\n"
+                                " OPEN cursor1;\n"
+                                " OPEN cursor2;\n"
+                                "END p1");
+        break;
+    case QSqlDriver::PostgreSQL:
+        creator = QLatin1String("CREATE FUNCTION %1(ref1 refcursor, ref2 refcursor)\n"
+                                "RETURNS SETOF refcursor AS $$\n"
+                                "BEGIN\n"
+                                " OPEN ref1 FOR SELECT id, text FROM %2;\n"
+                                " RETURN NEXT ref1;\n"
+                                " OPEN ref2 FOR SELECT empty, num, text, id FROM %2;\n"
+                                " RETURN NEXT ref2;\n"
+                                "END;\n"
+                                "$$ LANGUAGE plpgsql");
+        break;
+    default:
+        creator = QLatin1String("CREATE PROCEDURE %1\n"
+                                "AS\n"
+                                "SELECT id, text FROM %2\n"
+                                "SELECT empty, num, text, id FROM %2");
+        break;
+    }
+    QVERIFY_SQL(q, exec(creator.arg(procName, tableName)));
     const auto tidier = qScopeGuard(dropProc);
 
-    if (dbType == QSqlDriver::MySqlServer || dbType == QSqlDriver::DB2) {
-        q.setForwardOnly( true );
-        QVERIFY_SQL( q, exec( QString( "CALL %1()" ).arg( procName ) ) );
-    } else if (dbType == QSqlDriver::PostgreSQL) {
+    QLatin1String caller;
+    switch (dbType) {
+    case QSqlDriver::MySqlServer:
+    case QSqlDriver::DB2:
+        q.setForwardOnly(true);
+        caller = QLatin1String("CALL %1()");
+        break;
+    case QSqlDriver::PostgreSQL:
         // Returning multiple result sets from PostgreSQL stored procedure:
         // http://sqlines.com/postgresql/how-to/return_result_set_from_stored_procedure
-        QVERIFY_SQL(q, exec(QString("BEGIN;"
-                                    "SELECT %1('cur1', 'cur2');"
-                                    "FETCH ALL IN cur1;"
-                                    "FETCH ALL IN cur2;"
-                                    "COMMIT;").arg(procName)));
-    } else {
-        QVERIFY_SQL( q, exec( QString( "EXEC %1" ).arg( procName ) ) );
+        caller = QLatin1String("BEGIN;"
+                               " SELECT %1('cur1', 'cur2');"
+                               " FETCH ALL IN cur1;"
+                               " FETCH ALL IN cur2;"
+                               "COMMIT;");
+        break;
+    default:
+        caller = QLatin1String("EXEC %1");
+        break;
     }
+    QVERIFY_SQL(q, exec(caller.arg(procName)));
 
     if (dbType == QSqlDriver::PostgreSQL) {
         // First result set - start of transaction
@@ -3501,25 +3546,27 @@ void tst_QSqlQuery::timeStampParsing()
     const QString tableName(qTableName("timeStampParsing", __FILE__, db));
     tst_Databases::safeDropTable(db, tableName);
     QSqlQuery q(db);
-    QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
-    if (dbType == QSqlDriver::PostgreSQL) {
-        QVERIFY_SQL(q, exec(QStringLiteral("CREATE TABLE ") + tableName + QStringLiteral("("
-                            "id serial NOT NULL, "
-                            "datefield timestamp, primary key(id));")));
-    } else if (dbType == QSqlDriver::MySqlServer) {
-        QVERIFY_SQL(q, exec(QStringLiteral("CREATE TABLE ") + tableName + QStringLiteral("("
-                            "id integer NOT NULL AUTO_INCREMENT,"
-                            "datefield timestamp, primary key(id));")));
-    } else if (dbType == QSqlDriver::Interbase) {
+    QLatin1String creator;
+    switch (tst_Databases::getDatabaseType(db)) {
+    case QSqlDriver::PostgreSQL:
+        creator = QLatin1String("CREATE TABLE %1(id serial NOT NULL, "
+                                "datefield timestamp, primary key(id));");
+        break;
+    case QSqlDriver::MySqlServer:
+        creator = QLatin1String("CREATE TABLE %1(id integer NOT NULL AUTO_INCREMENT, "
+                                "datefield timestamp, primary key(id));");
+        break;
+    case QSqlDriver::Interbase:
         // Since there is no auto-increment feature in Interbase we allow it to be null
-        QVERIFY_SQL(q, exec(QStringLiteral("CREATE TABLE ") + tableName + QStringLiteral("("
-                            "id integer,"
-                            "datefield timestamp);")));
-    } else {
-        QVERIFY_SQL(q, exec(QStringLiteral("CREATE TABLE ") + tableName + QStringLiteral("("
-                            "\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT,"
-                            "\"datefield\" timestamp);")));
+        creator = QLatin1String("CREATE TABLE %1(id integer, datefield timestamp);");
+        break;
+    default:
+        creator = QLatin1String("CREATE TABLE %1("
+                                "\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "
+                                "\"datefield\" timestamp);");
+        break;
     }
+    QVERIFY_SQL(q, exec(creator.arg(tableName)));
     QVERIFY_SQL(q, exec(
                     QStringLiteral("INSERT INTO ") + tableName + QStringLiteral(" (datefield) VALUES (current_timestamp);"
                     )));
