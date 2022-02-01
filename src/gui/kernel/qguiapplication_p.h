@@ -60,6 +60,7 @@
 
 #include <QtCore/qnativeinterface.h>
 #include <QtCore/private/qnativeinterface_p.h>
+#include <QtCore/private/qnumeric_p.h>
 #include <QtCore/private/qthread_p.h>
 
 #include <qpa/qwindowsysteminterface.h>
@@ -227,7 +228,19 @@ public:
     virtual bool closeAllPopups() { return false; }
 
     static Qt::MouseButton mousePressButton;
-    static QPointF lastCursorPosition;
+    static struct QLastCursorPosition {
+        constexpr inline QLastCursorPosition() noexcept : thePoint(qt_inf(), qt_inf()) {}
+        constexpr inline Q_IMPLICIT QLastCursorPosition(QPointF p) noexcept : thePoint(p) {}
+        constexpr inline Q_IMPLICIT operator QPointF() const noexcept { return thePoint; }
+        constexpr inline qreal x() const noexcept{ return thePoint.x(); }
+        constexpr inline qreal y() const noexcept{ return thePoint.y(); }
+        Q_GUI_EXPORT QPoint toPoint() const noexcept;
+
+        constexpr void reset() noexcept { *this = QLastCursorPosition{}; }
+
+    private:
+        QPointF thePoint;
+    } lastCursorPosition;
     static QWindow *currentMouseWindow;
     static QWindow *currentMousePressWindow;
     static Qt::ApplicationState applicationState;

@@ -130,6 +130,7 @@
 #include <qtgui_tracepoints_p.h>
 
 #include <ctype.h>
+#include <limits>
 
 QT_BEGIN_NAMESPACE
 
@@ -147,7 +148,7 @@ Q_GUI_EXPORT bool qt_is_tty_app = false;
 Qt::MouseButtons QGuiApplicationPrivate::mouse_buttons = Qt::NoButton;
 Qt::KeyboardModifiers QGuiApplicationPrivate::modifier_buttons = Qt::NoModifier;
 
-QPointF QGuiApplicationPrivate::lastCursorPosition(qt_inf(), qt_inf());
+QGuiApplicationPrivate::QLastCursorPosition QGuiApplicationPrivate::lastCursorPosition;
 
 QWindow *QGuiApplicationPrivate::currentMouseWindow = nullptr;
 
@@ -711,7 +712,7 @@ QGuiApplication::~QGuiApplication()
     QGuiApplicationPrivate::desktopFileName = nullptr;
     QGuiApplicationPrivate::mouse_buttons = Qt::NoButton;
     QGuiApplicationPrivate::modifier_buttons = Qt::NoModifier;
-    QGuiApplicationPrivate::lastCursorPosition = {qreal(qInf()), qreal(qInf())};
+    QGuiApplicationPrivate::lastCursorPosition.reset();
     QGuiApplicationPrivate::currentMousePressWindow = QGuiApplicationPrivate::currentMouseWindow = nullptr;
     QGuiApplicationPrivate::applicationState = Qt::ApplicationInactive;
     QGuiApplicationPrivate::currentDragWindow = nullptr;
@@ -4142,6 +4143,14 @@ QPixmap QGuiApplicationPrivate::getPixmapCursor(Qt::CursorShape cshape)
 {
     Q_UNUSED(cshape);
     return QPixmap();
+}
+
+QPoint QGuiApplicationPrivate::QLastCursorPosition::toPoint() const noexcept
+{
+    // Guard against the default initialization of qInf() (avoid UB or SIGFPE in conversion).
+    if (Q_UNLIKELY(qIsInf(thePoint.x())))
+        return QPoint(std::numeric_limits<int>::max(), std::numeric_limits<int>::max());
+    return thePoint.toPoint();
 }
 
 void QGuiApplicationPrivate::notifyThemeChanged()
