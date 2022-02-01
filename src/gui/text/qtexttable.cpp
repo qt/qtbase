@@ -415,7 +415,7 @@ void QTextTablePrivate::fragmentRemoved(QChar type, uint fragment)
         return;
     if (type == QTextBeginningOfFrame) {
         Q_ASSERT(cells.indexOf(int(fragment)) != -1);
-        cells.removeAll(fragment);
+        cells.removeAll(int(fragment));
         if (fragment_start == fragment && cells.size()) {
             fragment_start = cells.at(0);
         }
