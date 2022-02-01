@@ -191,7 +191,7 @@ int qfloat16::fpClassify() const noexcept
     exactness is stronger the smaller the numbers are.
  */
 
-#if QT_COMPILER_SUPPORTS(F16C)
+#if QT_COMPILER_SUPPORTS_HERE(F16C)
 static inline bool hasFastF16()
 {
     // qsimd.cpp:detectProcessorFeatures() turns off this feature if AVX
