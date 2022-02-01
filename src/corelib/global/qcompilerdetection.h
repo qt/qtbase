@@ -626,7 +626,7 @@
 #  endif
 #endif
 
-#if defined(Q_CC_CLANG) && !defined(Q_CC_INTEL) && !defined(Q_CC_MSVC)
+#if defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
 /* General C++ features */
 #  define Q_COMPILER_RESTRICTED_VLA
 #  if __has_feature(attribute_deprecated_with_message)
@@ -785,14 +785,11 @@
 #    endif
 #  endif
 
-#endif // Q_CC_CLANG &&  !Q_CC_INTEL && !Q_CC_MSVC
-
-#if defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
 #  ifndef Q_DECL_UNUSED
 #    define Q_DECL_UNUSED __attribute__((__unused__))
 #  endif
 #  define Q_DECL_UNUSED_MEMBER Q_DECL_UNUSED
-#endif
+#endif //  defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
 
 #if defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && !defined(Q_CC_CLANG)
 #  define Q_COMPILER_RESTRICTED_VLA
@@ -897,7 +894,7 @@
 #  endif
 #endif
 
-#if defined(Q_CC_MSVC)
+#if defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
 #  if defined(__cplusplus)
        /* C++11 features supported in VC8 = VC2005: */
 #      define Q_COMPILER_VARIADIC_MACROS
@@ -955,7 +952,7 @@
 #      define Q_COMPILER_CONSTEXPR
 #    endif
 #  endif /* __cplusplus */
-#endif /* Q_CC_MSVC */
+#endif // defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
 
 #ifdef Q_COMPILER_UNICODE_STRINGS
 #  define Q_STDLIB_UNICODE_STRINGS
