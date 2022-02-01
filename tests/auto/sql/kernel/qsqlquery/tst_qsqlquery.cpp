@@ -3045,21 +3045,18 @@ void tst_QSqlQuery::queryOnInvalidDatabase()
                              QRegularExpression("QSqlDatabase: available drivers: "));
 #endif
         QSqlDatabase db = QSqlDatabase::addDatabase( "INVALID", "invalidConnection" );
-        QVERIFY2( db.lastError().isValid(),
-                  qPrintable( QString( "db.lastError().isValid() should be true!" ) ) );
+        QVERIFY(db.lastError().isValid());
 
         QTest::ignoreMessage( QtWarningMsg, "QSqlQuery::exec: database not open" );
         QSqlQuery query( "SELECT 1 AS ID", db );
-        QVERIFY2( query.lastError().isValid(),
-                  qPrintable( QString( "query.lastError().isValid() should be true!" ) ) );
+        QVERIFY(query.lastError().isValid());
     }
 
     {
         QSqlDatabase db = QSqlDatabase::database( "this connection does not exist" );
         QTest::ignoreMessage( QtWarningMsg, "QSqlQuery::exec: database not open" );
         QSqlQuery query( "SELECT 1 AS ID", db );
-        QVERIFY2( query.lastError().isValid(),
-                  qPrintable( QString( "query.lastError().isValid() should be true!" ) ) );
+        QVERIFY(query.lastError().isValid());
     }
 }
 
@@ -3091,8 +3088,8 @@ void tst_QSqlQuery::createQueryOnClosedDatabase()
     QCOMPARE( q.value( 2 ).toString().trimmed(), QLatin1String( "Char1" ) );
 
     db.close();
-    QVERIFY2( !q.exec( QString( "select * from %1 where id = 1" ).arg( qtest ) ),
-              qPrintable( QString( "This can't happen! The query should not have been executed!" ) ) );
+    QVERIFY2(!q.exec(QLatin1String("select * from %1 where id = 1").arg(qtest)),
+             "This can't happen! The query should not have been executed!");
 }
 
 void tst_QSqlQuery::reExecutePreparedForwardOnlyQuery()
