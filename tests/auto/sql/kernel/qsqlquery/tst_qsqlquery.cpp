@@ -225,9 +225,9 @@ private slots:
     void QTBUG_21884_data() { generic_data("QSQLITE"); }
     void QTBUG_21884();
     void QTBUG_16967_data() { generic_data("QSQLITE"); }
-    void QTBUG_16967(); //clean close
+    void QTBUG_16967(); // clean close
     void QTBUG_23895_data() { generic_data("QSQLITE"); }
-    void QTBUG_23895(); //sqlite boolean type
+    void QTBUG_23895(); // sqlite boolean type
     void QTBUG_14904_data() { generic_data("QSQLITE"); }
     void QTBUG_14904();
 
@@ -334,7 +334,7 @@ void tst_QSqlQuery::cleanup()
     }
 }
 
-void tst_QSqlQuery::generic_data(const QString& engine)
+void tst_QSqlQuery::generic_data(const QString &engine)
 {
     if (dbs.fillTestTable(engine))
         return;
@@ -400,7 +400,7 @@ void tst_QSqlQuery::dropTestTables(QSqlDatabase db)
         db.exec("DROP PROCEDURE " + qTableName("test141895_proc", __FILE__, db));
 
     if (dbType == QSqlDriver::MySqlServer)
-        db.exec("DROP PROCEDURE IF EXISTS "+ qTableName("bug6852_proc", __FILE__, db));
+        db.exec("DROP PROCEDURE IF EXISTS " + qTableName("bug6852_proc", __FILE__, db));
 
     tst_Databases::safeDropTables(db, tablenames);
 
@@ -1365,7 +1365,7 @@ void tst_QSqlQuery::last()
 
     QCOMPARE(q.at(), QSql::AfterLastRow);
     QVERIFY(q.last());
-    QSet<int> validReturns(QSet<int>() << -1 << i-1);
+    QSet<int> validReturns(QSet<int>() << -1 << i - 1);
     QVERIFY(validReturns.contains(q.at()));
 
     QSqlQuery q2("select * from " + qtest, db);
@@ -1644,7 +1644,7 @@ void tst_QSqlQuery::forwardOnlyMultipleResultSet()
     int index = 0;
     while (q.next()) {
         QCOMPARE(q.at(), index);
-        QCOMPARE(q.value(0).toInt(), index+1);
+        QCOMPARE(q.value(0).toInt(), index + 1);
         ++index;
     }
     QCOMPARE(q.at(), QSql::AfterLastRow);
@@ -1874,7 +1874,7 @@ void tst_QSqlQuery::writeNull()
         // value as well (and make sure that the default value is also destroyed again,
         // which is clumsy to do using std::unique_ptr with a custom deleter, so use another
         // scope guard).
-        void* defaultData = nullableMetaType.create();
+        void *defaultData = nullableMetaType.create();
         const auto defaultTypeDeleter = qScopeGuard([&]{ nullableMetaType.destroy(defaultData); });
         const QVariant nullValueVariant(nullableMetaType, defaultData);
         QVERIFY(!nullValueVariant.isNull());
@@ -3652,17 +3652,17 @@ void tst_QSqlQuery::task_233829()
 
     QSqlQuery q(db);
     const QString tableName(qTableName("task_233829", __FILE__, db));
-    QVERIFY_SQL(q,exec(QLatin1String(
-                           "CREATE TABLE %1(dbl1 double precision,dbl2 double precision) "
-                           "without oids;").arg(tableName)));
+    QVERIFY_SQL(q, exec(QLatin1String(
+                            "CREATE TABLE %1(dbl1 double precision,dbl2 double precision) "
+                            "without oids;").arg(tableName)));
     const QString queryString =
         QLatin1String("INSERT INTO %1(dbl1, dbl2) VALUES(?,?)").arg(tableName);
 
     const double nan = qQNaN();
-    QVERIFY_SQL(q,prepare(queryString));
+    QVERIFY_SQL(q, prepare(queryString));
     q.bindValue(0, nan);
     q.bindValue(1, nan);
-    QVERIFY_SQL(q,exec());
+    QVERIFY_SQL(q, exec());
 }
 
 void tst_QSqlQuery::QTBUG_12477()
@@ -3860,14 +3860,14 @@ void tst_QSqlQuery::QTBUG_5251()
     QVERIFY_SQL(q, exec(QLatin1String("CREATE TABLE %1 (t TIME)").arg(timetest)));
     QVERIFY_SQL(q, exec(QLatin1String("INSERT INTO VALUES ('1:2:3.666')").arg(timetest)));
 
-    QSqlTableModel timetestModel(0,db);
+    QSqlTableModel timetestModel(0, db);
     timetestModel.setEditStrategy(QSqlTableModel::OnManualSubmit);
     timetestModel.setTable(timetest);
     QVERIFY_SQL(timetestModel, select());
 
     QCOMPARE(timetestModel.record(0).field(0).value().toTime().toString("HH:mm:ss.zzz"),
              u"01:02:03.666");
-    QVERIFY_SQL(timetestModel,setData(timetestModel.index(0, 0), QTime(0,12,34,500)));
+    QVERIFY_SQL(timetestModel, setData(timetestModel.index(0, 0), QTime(0, 12, 34, 500)));
     QCOMPARE(timetestModel.record(0).field(0).value().toTime().toString("HH:mm:ss.zzz"),
              u"00:12:34.500");
     QVERIFY_SQL(timetestModel, submitAll());
@@ -3920,8 +3920,8 @@ void tst_QSqlQuery::QTBUG_6618()
     q.exec("drop procedure " + procedureName);  // non-fatal
     QString errorString;
     for (int i = 0; i < 110; ++i)
-        errorString+="reallylong";
-    errorString+=" error";
+        errorString += "reallylong";
+    errorString += " error";
     QVERIFY_SQL(q, exec(QLatin1String("create procedure %1 as\n"
                                       "begin\n"
                                       "    raiserror('%2', 16, 1)\n"
@@ -3979,7 +3979,7 @@ void tst_QSqlQuery::QTBUG_5765()
     QVERIFY_SQL(q, exec());
     q.bindValue(":VALUE", 123);
     QVERIFY_SQL(q, exec());
-    QString sql="select testval from "+tableName;
+    QString sql = "select testval from " + tableName;
     QVERIFY_SQL(q, exec(sql));
     QVERIFY_SQL(q, next());
     QCOMPARE(q.value(0).toInt(), 1);
@@ -4121,7 +4121,7 @@ void tst_QSqlQuery::QTBUG_23895()
     q.addBindValue(false);
     QVERIFY_SQL(q, exec());
 
-    QString sql="select * from " + tableName;
+    QString sql = "select * from " + tableName;
     QVERIFY_SQL(q, exec(sql));
     QVERIFY_SQL(q, next());
 
@@ -4174,7 +4174,7 @@ void tst_QSqlQuery::QTBUG_14904()
     q.addBindValue(true);
     QVERIFY_SQL(q, exec());
 
-    QString sql="select val1 AS value1 from " + tableName;
+    QString sql = "select val1 AS value1 from " + tableName;
     QVERIFY_SQL(q, exec(sql));
     QVERIFY_SQL(q, next());
 
@@ -4182,7 +4182,7 @@ void tst_QSqlQuery::QTBUG_14904()
     QCOMPARE(q.record().field(0).metaType().id(), QMetaType::Bool);
     QVERIFY(q.value(0).toBool());
 
-    sql="select val1 AS 'value.one' from " + tableName;
+    sql = "select val1 AS 'value.one' from " + tableName;
     QVERIFY_SQL(q, exec(sql));
     QVERIFY_SQL(q, next());
     QCOMPARE(q.record().indexOf("value.one"), 0);  // Was -1 before bug fix.
@@ -4433,7 +4433,7 @@ void tst_QSqlQuery::sqlite_constraint()
                                       "  SELECT RAISE(ABORT, 'Raised Abort successfully');\n"
                                       "END;").arg(trigger, qtest)));
 
-    QVERIFY(!q.exec("DELETE FROM "+qtest));
+    QVERIFY(!q.exec("DELETE FROM " + qtest));
     QCOMPARE(q.lastError().databaseText(), QLatin1String("Raised Abort successfully"));
 }
 
