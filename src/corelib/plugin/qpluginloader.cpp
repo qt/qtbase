@@ -108,6 +108,8 @@ QT_BEGIN_NAMESPACE
     \sa QLibrary, {Plug & Paint Example}
 */
 
+static constexpr QLibrary::LoadHints defaultLoadHints = QLibrary::PreventUnloadHint;
+
 /*!
     Constructs a plugin loader with the given \a parent.
 */
@@ -131,7 +133,7 @@ QPluginLoader::QPluginLoader(const QString &fileName, QObject *parent)
     : QObject(parent), d(nullptr), did_load(false)
 {
     setFileName(fileName);
-    setLoadHints(QLibrary::PreventUnloadHint);
+    setLoadHints(defaultLoadHints);
 }
 
 /*!
@@ -327,7 +329,7 @@ static QString locatePlugin(const QString& fileName)
 void QPluginLoader::setFileName(const QString &fileName)
 {
 #if defined(QT_SHARED)
-    QLibrary::LoadHints lh = QLibrary::PreventUnloadHint;
+    QLibrary::LoadHints lh = defaultLoadHints;
     if (d) {
         lh = d->loadHints();
         d->release();
@@ -389,7 +391,12 @@ void QPluginLoader::setLoadHints(QLibrary::LoadHints loadHints)
 
 QLibrary::LoadHints QPluginLoader::loadHints() const
 {
-    return d ? d->loadHints() : QLibrary::LoadHints();
+    // Not having a d-pointer means that the user hasn't called
+    // setLoadHints() / setFileName() yet. In setFileName() we will
+    // then force defaultLoadHints on loading, so we must return them
+    // from here as well.
+
+    return d ? d->loadHints() : defaultLoadHints;
 }
 
 #endif // QT_CONFIG(library)
