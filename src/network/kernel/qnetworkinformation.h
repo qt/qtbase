@@ -100,7 +100,7 @@ public:
     bool supports(Features features) const;
     Features supportedFeatures() const;
 
-    static bool load();
+    static bool loadDefaultBackend();
     static bool load(QStringView backend);
     static bool load(Features features);
     static QStringList availableBackends();

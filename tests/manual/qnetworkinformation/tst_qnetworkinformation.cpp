@@ -47,7 +47,7 @@ int main(int argc, char **argv)
 #endif
 
     // Use the platform-default:
-    if (!QNetworkInformation::load()) {
+    if (!QNetworkInformation::loadDefaultBackend()) {
         qWarning("Failed to load any backend");
         qDebug() << "Backends available:" << QNetworkInformation::availableBackends().join(", ");
         return -1;

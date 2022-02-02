@@ -105,7 +105,7 @@ void testDetectRouteDisrupted()
     QTextStream writer(stdout);
 
     {
-        if (!QNetworkInformation::load()) {
+        if (!QNetworkInformation::loadDefaultBackend()) {
             writer << "Error: Failed to start";
             return;
         }
