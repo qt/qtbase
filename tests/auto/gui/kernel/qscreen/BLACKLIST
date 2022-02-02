@@ -1,3 +1,5 @@
 # QTBUG-87390
 [grabWindow]
 android
+# QTBUG-100412
+windows-10
