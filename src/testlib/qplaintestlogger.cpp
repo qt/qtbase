@@ -235,7 +235,7 @@ void QPlainTestLogger::printMessage(MessageSource source, const char *type, cons
 
     QTestCharBuffer messagePrefix;
 
-    QTestCharBuffer failureLocation;
+    QTestCharBuffer messageLocation;
 #ifdef Q_OS_WIN
     constexpr const char *INCIDENT_LOCATION_STR = "\n%s(%d) : failure location";
     constexpr const char *OTHER_LOCATION_STR = "\n%s(%d) : message location";
@@ -247,10 +247,10 @@ void QPlainTestLogger::printMessage(MessageSource source, const char *type, cons
     if (file) {
         switch (source) {
         case MessageSource::Incident:
-            QTest::qt_asprintf(&failureLocation, INCIDENT_LOCATION_STR, file, line);
+            QTest::qt_asprintf(&messageLocation, INCIDENT_LOCATION_STR, file, line);
             break;
         case MessageSource::Other:
-            QTest::qt_asprintf(&failureLocation, OTHER_LOCATION_STR, file, line);
+            QTest::qt_asprintf(&messageLocation, OTHER_LOCATION_STR, file, line);
             break;
         }
     }
@@ -259,7 +259,7 @@ void QPlainTestLogger::printMessage(MessageSource source, const char *type, cons
     QTestCharBuffer testIdentifier;
     QTestPrivate::generateTestIdentifier(&testIdentifier);
     QTest::qt_asprintf(&messagePrefix, "%s: %s%s%s%s\n",
-                       type, testIdentifier.data(), msgFiller, msg, failureLocation.data());
+                       type, testIdentifier.data(), msgFiller, msg, messageLocation.data());
 
     // In colored mode, printf above stripped our nonprintable control characters.
     // Put them back.
