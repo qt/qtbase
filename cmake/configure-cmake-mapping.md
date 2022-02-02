@@ -95,7 +95,7 @@ The following table describes the mapping of configure options to CMake argument
 | -android-style-assets                 | -DFEATURE_android_style_assets=ON                 |                                                                 |
 | -android-javac-source                 | -DQT_ANDROID_JAVAC_SOURCE=7                       | Set the javac build source version.                             |
 | -android-javac-target                 | -DQT_ANDROID_JAVAC_TARGET=7                       | Set the javac build target version.                             |
-| -skip <repo>                          | -DBUILD_<repo>=OFF                                |                                                                 |
+| -skip <repo>,...,<repo_n>             | -DBUILD_<repo>=OFF                                |                                                                 |
 | -make <part>                          | -DQT_BUILD_TESTS=ON                               | A way to turn on tools explicitly is missing. If tests/examples |
 |                                       | -DQT_BUILD_EXAMPLES=ON                            | are enabled, you can disable their building as part of the      |
 |                                       |                                                   | 'all' target by also passing -DQT_BUILD_TESTS_BY_DEFAULT=OFF or |
