@@ -153,6 +153,18 @@ int QOperatingSystemVersion::compare(const QOperatingSystemVersion &v1,
     return QOperatingSystemVersionBase::compare(v1, v2);
 }
 
+#include "qurl.h"
+
+QString QUrl::fromAce(const QByteArray &domain)
+{
+    return fromAce(domain, {});
+}
+
+QByteArray QUrl::toAce(const QString &domain)
+{
+    return toAce(domain, {});
+}
+
 // #include <qotherheader.h>
 // // implement removed functions from qotherheader.h
 
