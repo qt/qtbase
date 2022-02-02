@@ -56,6 +56,7 @@
 #include <QtCore/qoperatingsystemversion.h>
 
 #ifdef Q_OS_MACOS
+#include <mach/port.h>
 struct mach_header;
 typedef int kern_return_t;
 typedef mach_port_t io_object_t;
