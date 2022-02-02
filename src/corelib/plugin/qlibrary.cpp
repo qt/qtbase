@@ -210,8 +210,16 @@ static QLibraryScanResult qt_find_pattern(const char *s, qsizetype s_len, QStrin
 #elif defined(Q_OS_WIN)
     return QCoffPeParser::parse({s, s_len}, errMsg);
 #endif
-    QByteArrayView pattern = QPluginMetaData::MagicString;
-    static const QByteArrayMatcher matcher(pattern.toByteArray());
+    static constexpr auto matcher = [] {
+        // QPluginMetaData::MagicString is not NUL-terminated, but
+        // qMakeStaticByteArrayMatcher requires its argument to be, so
+        // duplicate here, but statically check we didn't mess up:
+        constexpr auto &pattern = "QTMETADATA !";
+        constexpr auto magic = std::string_view(QPluginMetaData::MagicString,
+                                                sizeof(QPluginMetaData::MagicString));
+        static_assert(pattern == magic);
+        return qMakeStaticByteArrayMatcher(pattern);
+    }();
     qsizetype i = matcher.indexIn(s, s_len);
     if (i < 0) {
         *errMsg = QLibrary::tr("'%1' is not a Qt plugin").arg(*errMsg);
