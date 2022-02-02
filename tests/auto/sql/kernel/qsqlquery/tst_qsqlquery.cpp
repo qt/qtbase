@@ -1762,6 +1762,7 @@ void tst_QSqlQuery::isNull()
 
     // For a non existent field, it should be returning true.
     QVERIFY(q.isNull(2));
+    QTest::ignoreMessage(QtWarningMsg, "QSqlQuery::isNull: unknown field name 'unknown'");
     QVERIFY(q.isNull("unknown"));
 }
 
@@ -3039,6 +3040,10 @@ void tst_QSqlQuery::queryOnInvalidDatabase()
         });
         // Note: destruction of db needs to happen before we call removeDatabase.
         QTest::ignoreMessage( QtWarningMsg, "QSqlDatabase: INVALID driver not loaded" );
+#if QT_CONFIG(regularexpression)
+        QTest::ignoreMessage(QtWarningMsg,
+                             QRegularExpression("QSqlDatabase: available drivers: "));
+#endif
         QSqlDatabase db = QSqlDatabase::addDatabase( "INVALID", "invalidConnection" );
         QVERIFY2( db.lastError().isValid(),
                   qPrintable( QString( "db.lastError().isValid() should be true!" ) ) );
