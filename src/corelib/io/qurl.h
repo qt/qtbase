@@ -287,15 +287,12 @@ public:
     };
     Q_DECLARE_FLAGS(AceProcessingOptions, AceProcessingOption)
 
-#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
-    static QString fromAce(const QByteArray &, AceProcessingOptions options = {});
-    static QByteArray toAce(const QString &, AceProcessingOptions options = {});
-#else
+#if QT_CORE_REMOVED_SINCE(6, 3)
     static QString fromAce(const QByteArray &);
     static QByteArray toAce(const QString &);
-    static QString fromAce(const QByteArray &, AceProcessingOptions options);
-    static QByteArray toAce(const QString &, AceProcessingOptions options);
 #endif
+    static QString fromAce(const QByteArray &domain, AceProcessingOptions options = {});
+    static QByteArray toAce(const QString &domain, AceProcessingOptions options = {});
 
     static QStringList idnWhitelist();
     static QStringList toStringList(const QList<QUrl> &uris, FormattingOptions options = FormattingOptions(PrettyDecoded));

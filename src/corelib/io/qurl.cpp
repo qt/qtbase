@@ -3061,17 +3061,6 @@ QString QUrl::fromAce(const QByteArray &domain, QUrl::AceProcessingOptions optio
                      ForbidLeadingDot /*FIXME: make configurable*/, options);
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
-/*!
-    \since 4.2
-    \overload
-*/
-QString QUrl::fromAce(const QByteArray &domain)
-{
-    return fromAce(domain, {});
-}
-#endif
-
 /*!
     \since 6.3
 
@@ -3094,17 +3083,6 @@ QByteArray QUrl::toAce(const QString &domain, AceProcessingOptions options)
     return qt_ACE_do(domain, ToAceOnly, ForbidLeadingDot /*FIXME: make configurable*/, options)
             .toLatin1();
 }
-
-#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
-/*!
-    \since 4.2
-    \overload
-*/
-QByteArray QUrl::toAce(const QString &domain)
-{
-    return toAce(domain, {});
-}
-#endif
 
 /*!
     \internal
