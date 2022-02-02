@@ -662,9 +662,9 @@ QNetworkInformation::Features QNetworkInformation::supportedFeatures() const
     Returns \c true if it managed to load the backend or if it was already
     loaded. Returns \c false otherwise.
 
-    \sa instance
+    \sa instance(), load()
 */
-bool QNetworkInformation::load()
+bool QNetworkInformation::loadDefaultBackend()
 {
     int index = -1;
 #ifdef Q_OS_WIN
