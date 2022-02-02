@@ -167,6 +167,11 @@ Build environment:
 
 Component selection:
 
+  -submodules <repo>[,<repo>] ... Build the listed repositories and those they
+                         depend on rather than all checked-out repositories.
+                         The list should be separated with commas, e.g.
+                         -submodules qtsvg,qtnetworkauth
+                         [default is to build all checked out repositories]
   -skip <repo>[,<repo>]  Exclude one or more entire repositories from the
                          build. The list should be separated with commas.
                          e.g. -skip qtimageformats,qtsvg
