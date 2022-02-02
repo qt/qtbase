@@ -70,8 +70,6 @@ private slots:
     void query_exec();
     void execErrorRecovery_data() { generic_data(); }
     void execErrorRecovery();
-    void prematureExec_data() { generic_data(); }
-    void prematureExec();
     void first_data() { generic_data(); }
     void first();
     void next_data() { generic_data(); }
@@ -271,6 +269,10 @@ private slots:
     void ibaseArray_data() { generic_data("QIBASE"); }
     void ibaseArray();
 
+    // Double addDatabase() with same name leaves system in a state that breaks
+    // invalidQuery() if run later; so put this one last !
+    void prematureExec_data() { generic_data(); }
+    void prematureExec();
 private:
     // returns all database connections
     void generic_data(const QString &engine=QString());
