@@ -245,10 +245,19 @@ void tst_QPluginLoader::loadHints()
     QSKIP("This test requires Qt to create shared libraries.");
 #endif
     QPluginLoader loader;
-    QCOMPARE(loader.loadHints(), QLibrary::LoadHints{});   //Do not crash
+    QCOMPARE(loader.loadHints(), QLibrary::PreventUnloadHint);   //Do not crash
     loader.setLoadHints(QLibrary::ResolveAllSymbolsHint);
+    QCOMPARE(loader.loadHints(), QLibrary::ResolveAllSymbolsHint);
     loader.setFileName( sys_qualifiedLibraryName("theplugin"));     //a plugin
     QCOMPARE(loader.loadHints(), QLibrary::ResolveAllSymbolsHint);
+
+    QPluginLoader loader2;
+    QCOMPARE(loader2.loadHints(), QLibrary::PreventUnloadHint);
+    loader2.setFileName(sys_qualifiedLibraryName("theplugin"));
+    QCOMPARE(loader2.loadHints(), QLibrary::PreventUnloadHint);
+
+    QPluginLoader loader3(sys_qualifiedLibraryName("theplugin"));
+    QCOMPARE(loader3.loadHints(), QLibrary::PreventUnloadHint);
 }
 
 void tst_QPluginLoader::deleteinstanceOnUnload()
