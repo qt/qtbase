@@ -564,147 +564,147 @@ std::array<uint, 3> QShaderDescription::computeShaderLocalSize() const
     return d->localSize;
 }
 
-static struct TypeTab {
-    QString k;
+static const struct TypeTab {
+    const char k[20];
     QShaderDescription::VariableType v;
 } typeTab[] = {
-    { QLatin1String("float"), QShaderDescription::Float },
-    { QLatin1String("vec2"), QShaderDescription::Vec2 },
-    { QLatin1String("vec3"), QShaderDescription::Vec3 },
-    { QLatin1String("vec4"), QShaderDescription::Vec4 },
-    { QLatin1String("mat2"), QShaderDescription::Mat2 },
-    { QLatin1String("mat3"), QShaderDescription::Mat3 },
-    { QLatin1String("mat4"), QShaderDescription::Mat4 },
+    { "float", QShaderDescription::Float },
+    { "vec2", QShaderDescription::Vec2 },
+    { "vec3", QShaderDescription::Vec3 },
+    { "vec4", QShaderDescription::Vec4 },
+    { "mat2", QShaderDescription::Mat2 },
+    { "mat3", QShaderDescription::Mat3 },
+    { "mat4", QShaderDescription::Mat4 },
 
-    { QLatin1String("struct"), QShaderDescription::Struct },
+    { "struct", QShaderDescription::Struct },
 
-    { QLatin1String("sampler1D"), QShaderDescription::Sampler1D },
-    { QLatin1String("sampler2D"), QShaderDescription::Sampler2D },
-    { QLatin1String("sampler2DMS"), QShaderDescription::Sampler2DMS },
-    { QLatin1String("sampler3D"), QShaderDescription::Sampler3D },
-    { QLatin1String("samplerCube"), QShaderDescription::SamplerCube },
-    { QLatin1String("sampler1DArray"), QShaderDescription::Sampler1DArray },
-    { QLatin1String("sampler2DArray"), QShaderDescription::Sampler2DArray },
-    { QLatin1String("sampler2DMSArray"), QShaderDescription::Sampler2DMSArray },
-    { QLatin1String("sampler3DArray"), QShaderDescription::Sampler3DArray },
-    { QLatin1String("samplerCubeArray"), QShaderDescription::SamplerCubeArray },
-    { QLatin1String("samplerRect"), QShaderDescription::SamplerRect },
-    { QLatin1String("samplerBuffer"), QShaderDescription::SamplerBuffer },
-    { QLatin1String("samplerExternalOES"), QShaderDescription::SamplerExternalOES },
-    { QLatin1String("sampler"), QShaderDescription::Sampler },
+    { "sampler1D", QShaderDescription::Sampler1D },
+    { "sampler2D", QShaderDescription::Sampler2D },
+    { "sampler2DMS", QShaderDescription::Sampler2DMS },
+    { "sampler3D", QShaderDescription::Sampler3D },
+    { "samplerCube", QShaderDescription::SamplerCube },
+    { "sampler1DArray", QShaderDescription::Sampler1DArray },
+    { "sampler2DArray", QShaderDescription::Sampler2DArray },
+    { "sampler2DMSArray", QShaderDescription::Sampler2DMSArray },
+    { "sampler3DArray", QShaderDescription::Sampler3DArray },
+    { "samplerCubeArray", QShaderDescription::SamplerCubeArray },
+    { "samplerRect", QShaderDescription::SamplerRect },
+    { "samplerBuffer", QShaderDescription::SamplerBuffer },
+    { "samplerExternalOES", QShaderDescription::SamplerExternalOES },
+    { "sampler", QShaderDescription::Sampler },
 
-    { QLatin1String("mat2x3"), QShaderDescription::Mat2x3 },
-    { QLatin1String("mat2x4"), QShaderDescription::Mat2x4 },
-    { QLatin1String("mat3x2"), QShaderDescription::Mat3x2 },
-    { QLatin1String("mat3x4"), QShaderDescription::Mat3x4 },
-    { QLatin1String("mat4x2"), QShaderDescription::Mat4x2 },
-    { QLatin1String("mat4x3"), QShaderDescription::Mat4x3 },
+    { "mat2x3", QShaderDescription::Mat2x3 },
+    { "mat2x4", QShaderDescription::Mat2x4 },
+    { "mat3x2", QShaderDescription::Mat3x2 },
+    { "mat3x4", QShaderDescription::Mat3x4 },
+    { "mat4x2", QShaderDescription::Mat4x2 },
+    { "mat4x3", QShaderDescription::Mat4x3 },
 
-    { QLatin1String("int"), QShaderDescription::Int },
-    { QLatin1String("ivec2"), QShaderDescription::Int2 },
-    { QLatin1String("ivec3"), QShaderDescription::Int3 },
-    { QLatin1String("ivec4"), QShaderDescription::Int4 },
+    { "int", QShaderDescription::Int },
+    { "ivec2", QShaderDescription::Int2 },
+    { "ivec3", QShaderDescription::Int3 },
+    { "ivec4", QShaderDescription::Int4 },
 
-    { QLatin1String("uint"), QShaderDescription::Uint },
-    { QLatin1String("uvec2"), QShaderDescription::Uint2 },
-    { QLatin1String("uvec3"), QShaderDescription::Uint3 },
-    { QLatin1String("uvec4"), QShaderDescription::Uint4 },
+    { "uint", QShaderDescription::Uint },
+    { "uvec2", QShaderDescription::Uint2 },
+    { "uvec3", QShaderDescription::Uint3 },
+    { "uvec4", QShaderDescription::Uint4 },
 
-    { QLatin1String("bool"), QShaderDescription::Bool },
-    { QLatin1String("bvec2"), QShaderDescription::Bool2 },
-    { QLatin1String("bvec3"), QShaderDescription::Bool3 },
-    { QLatin1String("bvec4"), QShaderDescription::Bool4 },
+    { "bool", QShaderDescription::Bool },
+    { "bvec2", QShaderDescription::Bool2 },
+    { "bvec3", QShaderDescription::Bool3 },
+    { "bvec4", QShaderDescription::Bool4 },
 
-    { QLatin1String("double"), QShaderDescription::Double },
-    { QLatin1String("dvec2"), QShaderDescription::Double2 },
-    { QLatin1String("dvec3"), QShaderDescription::Double3 },
-    { QLatin1String("dvec4"), QShaderDescription::Double4 },
-    { QLatin1String("dmat2"), QShaderDescription::DMat2 },
-    { QLatin1String("dmat3"), QShaderDescription::DMat3 },
-    { QLatin1String("dmat4"), QShaderDescription::DMat4 },
-    { QLatin1String("dmat2x3"), QShaderDescription::DMat2x3 },
-    { QLatin1String("dmat2x4"), QShaderDescription::DMat2x4 },
-    { QLatin1String("dmat3x2"), QShaderDescription::DMat3x2 },
-    { QLatin1String("dmat3x4"), QShaderDescription::DMat3x4 },
-    { QLatin1String("dmat4x2"), QShaderDescription::DMat4x2 },
-    { QLatin1String("dmat4x3"), QShaderDescription::DMat4x3 },
+    { "double", QShaderDescription::Double },
+    { "dvec2", QShaderDescription::Double2 },
+    { "dvec3", QShaderDescription::Double3 },
+    { "dvec4", QShaderDescription::Double4 },
+    { "dmat2", QShaderDescription::DMat2 },
+    { "dmat3", QShaderDescription::DMat3 },
+    { "dmat4", QShaderDescription::DMat4 },
+    { "dmat2x3", QShaderDescription::DMat2x3 },
+    { "dmat2x4", QShaderDescription::DMat2x4 },
+    { "dmat3x2", QShaderDescription::DMat3x2 },
+    { "dmat3x4", QShaderDescription::DMat3x4 },
+    { "dmat4x2", QShaderDescription::DMat4x2 },
+    { "dmat4x3", QShaderDescription::DMat4x3 },
 
-    { QLatin1String("image1D"), QShaderDescription::Image1D },
-    { QLatin1String("image2D"), QShaderDescription::Image2D },
-    { QLatin1String("image2DMS"), QShaderDescription::Image2DMS },
-    { QLatin1String("image3D"), QShaderDescription::Image3D },
-    { QLatin1String("imageCube"), QShaderDescription::ImageCube },
-    { QLatin1String("image1DArray"), QShaderDescription::Image1DArray },
-    { QLatin1String("image2DArray"), QShaderDescription::Image2DArray },
-    { QLatin1String("image2DMSArray"), QShaderDescription::Image2DMSArray },
-    { QLatin1String("image3DArray"), QShaderDescription::Image3DArray },
-    { QLatin1String("imageCubeArray"), QShaderDescription::ImageCubeArray },
-    { QLatin1String("imageRect"), QShaderDescription::ImageRect },
-    { QLatin1String("imageBuffer"), QShaderDescription::ImageBuffer }
+    { "image1D", QShaderDescription::Image1D },
+    { "image2D", QShaderDescription::Image2D },
+    { "image2DMS", QShaderDescription::Image2DMS },
+    { "image3D", QShaderDescription::Image3D },
+    { "imageCube", QShaderDescription::ImageCube },
+    { "image1DArray", QShaderDescription::Image1DArray },
+    { "image2DArray", QShaderDescription::Image2DArray },
+    { "image2DMSArray", QShaderDescription::Image2DMSArray },
+    { "image3DArray", QShaderDescription::Image3DArray },
+    { "imageCubeArray", QShaderDescription::ImageCubeArray },
+    { "imageRect", QShaderDescription::ImageRect },
+    { "imageBuffer", QShaderDescription::ImageBuffer }
 };
 
-static QString typeStr(const QShaderDescription::VariableType &t)
+static QLatin1String typeStr(const QShaderDescription::VariableType &t)
 {
     for (size_t i = 0; i < sizeof(typeTab) / sizeof(TypeTab); ++i) {
         if (typeTab[i].v == t)
-            return typeTab[i].k;
+            return QLatin1String(typeTab[i].k);
     }
-    return QString();
+    return QLatin1String();
 }
 
-static struct ImageFormatTab {
-    QString k;
+static const struct ImageFormatTab {
+    const char k[15];
     QShaderDescription::ImageFormat v;
 } imageFormatTab[] {
-    { QLatin1String("unknown"), QShaderDescription::ImageFormatUnknown },
-    { QLatin1String("rgba32f"), QShaderDescription::ImageFormatRgba32f },
-    { QLatin1String("rgba16"), QShaderDescription::ImageFormatRgba16f },
-    { QLatin1String("r32f"), QShaderDescription::ImageFormatR32f },
-    { QLatin1String("rgba8"), QShaderDescription::ImageFormatRgba8 },
-    { QLatin1String("rgba8_snorm"), QShaderDescription::ImageFormatRgba8Snorm },
-    { QLatin1String("rg32f"), QShaderDescription::ImageFormatRg32f },
-    { QLatin1String("rg16f"), QShaderDescription::ImageFormatRg16f },
-    { QLatin1String("r11f_g11f_b10f"), QShaderDescription::ImageFormatR11fG11fB10f },
-    { QLatin1String("r16f"), QShaderDescription::ImageFormatR16f },
-    { QLatin1String("rgba16"), QShaderDescription::ImageFormatRgba16 },
-    { QLatin1String("rgb10_a2"), QShaderDescription::ImageFormatRgb10A2 },
-    { QLatin1String("rg16"), QShaderDescription::ImageFormatRg16 },
-    { QLatin1String("rg8"), QShaderDescription::ImageFormatRg8 },
-    { QLatin1String("r16"), QShaderDescription::ImageFormatR16 },
-    { QLatin1String("r8"), QShaderDescription::ImageFormatR8 },
-    { QLatin1String("rgba16_snorm"), QShaderDescription::ImageFormatRgba16Snorm },
-    { QLatin1String("rg16_snorm"), QShaderDescription::ImageFormatRg16Snorm },
-    { QLatin1String("rg8_snorm"), QShaderDescription::ImageFormatRg8Snorm },
-    { QLatin1String("r16_snorm"), QShaderDescription::ImageFormatR16Snorm },
-    { QLatin1String("r8_snorm"), QShaderDescription::ImageFormatR8Snorm },
-    { QLatin1String("rgba32i"), QShaderDescription::ImageFormatRgba32i },
-    { QLatin1String("rgba16i"), QShaderDescription::ImageFormatRgba16i },
-    { QLatin1String("rgba8i"), QShaderDescription::ImageFormatRgba8i },
-    { QLatin1String("r32i"), QShaderDescription::ImageFormatR32i },
-    { QLatin1String("rg32i"), QShaderDescription::ImageFormatRg32i },
-    { QLatin1String("rg16i"), QShaderDescription::ImageFormatRg16i },
-    { QLatin1String("rg8i"), QShaderDescription::ImageFormatRg8i },
-    { QLatin1String("r16i"), QShaderDescription::ImageFormatR16i },
-    { QLatin1String("r8i"), QShaderDescription::ImageFormatR8i },
-    { QLatin1String("rgba32ui"), QShaderDescription::ImageFormatRgba32ui },
-    { QLatin1String("rgba16ui"), QShaderDescription::ImageFormatRgba16ui },
-    { QLatin1String("rgba8ui"), QShaderDescription::ImageFormatRgba8ui },
-    { QLatin1String("r32ui"), QShaderDescription::ImageFormatR32ui },
-    { QLatin1String("rgb10_a2ui"), QShaderDescription::ImageFormatRgb10a2ui },
-    { QLatin1String("rg32ui"), QShaderDescription::ImageFormatRg32ui },
-    { QLatin1String("rg16ui"), QShaderDescription::ImageFormatRg16ui },
-    { QLatin1String("rg8ui"), QShaderDescription::ImageFormatRg8ui },
-    { QLatin1String("r16ui"), QShaderDescription::ImageFormatR16ui },
-    { QLatin1String("r8ui"), QShaderDescription::ImageFormatR8ui }
+    { "unknown", QShaderDescription::ImageFormatUnknown },
+    { "rgba32f", QShaderDescription::ImageFormatRgba32f },
+    { "rgba16", QShaderDescription::ImageFormatRgba16f },
+    { "r32f", QShaderDescription::ImageFormatR32f },
+    { "rgba8", QShaderDescription::ImageFormatRgba8 },
+    { "rgba8_snorm", QShaderDescription::ImageFormatRgba8Snorm },
+    { "rg32f", QShaderDescription::ImageFormatRg32f },
+    { "rg16f", QShaderDescription::ImageFormatRg16f },
+    { "r11f_g11f_b10f", QShaderDescription::ImageFormatR11fG11fB10f },
+    { "r16f", QShaderDescription::ImageFormatR16f },
+    { "rgba16", QShaderDescription::ImageFormatRgba16 },
+    { "rgb10_a2", QShaderDescription::ImageFormatRgb10A2 },
+    { "rg16", QShaderDescription::ImageFormatRg16 },
+    { "rg8", QShaderDescription::ImageFormatRg8 },
+    { "r16", QShaderDescription::ImageFormatR16 },
+    { "r8", QShaderDescription::ImageFormatR8 },
+    { "rgba16_snorm", QShaderDescription::ImageFormatRgba16Snorm },
+    { "rg16_snorm", QShaderDescription::ImageFormatRg16Snorm },
+    { "rg8_snorm", QShaderDescription::ImageFormatRg8Snorm },
+    { "r16_snorm", QShaderDescription::ImageFormatR16Snorm },
+    { "r8_snorm", QShaderDescription::ImageFormatR8Snorm },
+    { "rgba32i", QShaderDescription::ImageFormatRgba32i },
+    { "rgba16i", QShaderDescription::ImageFormatRgba16i },
+    { "rgba8i", QShaderDescription::ImageFormatRgba8i },
+    { "r32i", QShaderDescription::ImageFormatR32i },
+    { "rg32i", QShaderDescription::ImageFormatRg32i },
+    { "rg16i", QShaderDescription::ImageFormatRg16i },
+    { "rg8i", QShaderDescription::ImageFormatRg8i },
+    { "r16i", QShaderDescription::ImageFormatR16i },
+    { "r8i", QShaderDescription::ImageFormatR8i },
+    { "rgba32ui", QShaderDescription::ImageFormatRgba32ui },
+    { "rgba16ui", QShaderDescription::ImageFormatRgba16ui },
+    { "rgba8ui", QShaderDescription::ImageFormatRgba8ui },
+    { "r32ui", QShaderDescription::ImageFormatR32ui },
+    { "rgb10_a2ui", QShaderDescription::ImageFormatRgb10a2ui },
+    { "rg32ui", QShaderDescription::ImageFormatRg32ui },
+    { "rg16ui", QShaderDescription::ImageFormatRg16ui },
+    { "rg8ui", QShaderDescription::ImageFormatRg8ui },
+    { "r16ui", QShaderDescription::ImageFormatR16ui },
+    { "r8ui", QShaderDescription::ImageFormatR8ui }
 };
 
-static QString imageFormatStr(const QShaderDescription::ImageFormat &f)
+static QLatin1String imageFormatStr(const QShaderDescription::ImageFormat &f)
 {
     for (size_t i = 0; i < sizeof(imageFormatTab) / sizeof(ImageFormatTab); ++i) {
         if (imageFormatTab[i].v == f)
-            return imageFormatTab[i].k;
+            return QLatin1String(imageFormatTab[i].k);
     }
-    return QString();
+    return QLatin1String();
 }
 
 #ifndef QT_NO_DEBUG_STREAM
