@@ -444,15 +444,22 @@ qint64 QBuffer::writeData(const char *data, qint64 len)
 }
 
 #ifndef QT_NO_QOBJECT
+static bool is_tracked_signal(const QMetaMethod &signal)
+{
+    // dynamic initialization: minimize the number of guard variables:
+    static const struct {
+        QMetaMethod readyReadSignal = QMetaMethod::fromSignal(&QBuffer::readyRead);
+        QMetaMethod bytesWrittenSignal = QMetaMethod::fromSignal(&QBuffer::bytesWritten);
+    } sigs;
+    return signal == sigs.readyReadSignal || signal == sigs.bytesWrittenSignal;
+}
 /*!
     \reimp
     \internal
 */
 void QBuffer::connectNotify(const QMetaMethod &signal)
 {
-    static const QMetaMethod readyReadSignal = QMetaMethod::fromSignal(&QBuffer::readyRead);
-    static const QMetaMethod bytesWrittenSignal = QMetaMethod::fromSignal(&QBuffer::bytesWritten);
-    if (signal == readyReadSignal || signal == bytesWrittenSignal)
+    if (is_tracked_signal(signal))
         d_func()->signalConnectionCount++;
 }
 
@@ -463,9 +470,7 @@ void QBuffer::connectNotify(const QMetaMethod &signal)
 void QBuffer::disconnectNotify(const QMetaMethod &signal)
 {
     if (signal.isValid()) {
-        static const QMetaMethod readyReadSignal = QMetaMethod::fromSignal(&QBuffer::readyRead);
-        static const QMetaMethod bytesWrittenSignal = QMetaMethod::fromSignal(&QBuffer::bytesWritten);
-        if (signal == readyReadSignal || signal == bytesWrittenSignal)
+        if (is_tracked_signal(signal))
             d_func()->signalConnectionCount--;
     } else {
         d_func()->signalConnectionCount = 0;
