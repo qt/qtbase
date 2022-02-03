@@ -270,7 +270,10 @@ QLibraryInfo::QLibraryInfo()
 #else
 #  define SHARED_STRING " static"
 #endif
-#define QT_BUILD_STR "Qt " QT_VERSION_STR " (" ARCH_FULL SHARED_STRING DEBUG_STRING " build; by " COMPILER_STRING ")"
+static const char *qt_build_string() noexcept
+{
+    return "Qt " QT_VERSION_STR " (" ARCH_FULL SHARED_STRING DEBUG_STRING " build; by " COMPILER_STRING ")";
+}
 
 /*!
   Returns a string describing how this version of Qt was built.
@@ -282,7 +285,7 @@ QLibraryInfo::QLibraryInfo()
 
 const char *QLibraryInfo::build() noexcept
 {
-    return QT_BUILD_STR;
+    return qt_build_string();
 }
 
 /*!
@@ -741,13 +744,14 @@ extern const char qt_core_interpreter[] __attribute__((section(".interp")))
 extern "C" void qt_core_boilerplate() __attribute__((force_align_arg_pointer));
 void qt_core_boilerplate()
 {
-    printf("This is the QtCore library version " QT_BUILD_STR "\n"
+    printf("This is the QtCore library version %s\n"
            "Copyright (C) 2016 The Qt Company Ltd.\n"
            "Contact: http://www.qt.io/licensing/\n"
            "\n"
            "Installation prefix: %s\n"
            "Library path:        %s\n"
            "Plugin path:         %s\n",
+           QT_PREPEND_NAMESPACE(qt_build_string)(),
            QT_CONFIGURE_PREFIX_PATH,
            qt_configure_strs[QT_PREPEND_NAMESPACE(QLibraryInfo)::LibrariesPath - 1],
            qt_configure_strs[QT_PREPEND_NAMESPACE(QLibraryInfo)::PluginsPath - 1]);
