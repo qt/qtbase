@@ -1182,6 +1182,7 @@ void QDashStroker::processCurrentSubpath()
         // Check if the entire line should be clipped away or simplified
         bool clipIt = clipping && !lineIntersectsRect(prev, e, clip_tl, clip_br);
         bool skipDashing = elen * invSumLength > repetitionLimit();
+        int maxDashes = dashCount;
         if (skipDashing || clipIt) {
             // Cut away full dash sequences.
             elen -= std::floor(elen * invSumLength) * sumLength;
@@ -1196,7 +1197,7 @@ void QDashStroker::processCurrentSubpath()
                     pos = estop; // move pos to next path element
                     done = true;
                 } else { // Dash is on this line
-                    pos = dpos + estart;
+                    pos = --maxDashes > 0 ? dpos + estart : estop;
                     done = pos >= estop;
                     if (++idash >= dashCount)
                         idash = 0;
