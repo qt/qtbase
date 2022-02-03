@@ -176,7 +176,15 @@ enable_testing()
 option(QT_BUILD_EXAMPLES "Build Qt examples" OFF)
 option(QT_BUILD_EXAMPLES_BY_DEFAULT "Should examples be built as part of the default 'all' target." ON)
 
-option(QT_BUILD_EXAMPLES_AS_EXTERNAL "Should examples be built as ExternalProjects." ON)
+# FIXME: Support prefix builds as well QTBUG-96232
+if(QT_WILL_INSTALL)
+    set(_qt_build_examples_as_external OFF)
+else()
+    set(_qt_build_examples_as_external ON)
+endif()
+option(QT_BUILD_EXAMPLES_AS_EXTERNAL "Should examples be built as ExternalProjects."
+       ${_qt_build_examples_as_external})
+unset(_qt_build_examples_as_external)
 
 option(QT_BUILD_MANUAL_TESTS "Build Qt manual tests" OFF)
 option(QT_BUILD_MINIMAL_STATIC_TESTS "Build minimal subset of tests for static Qt builds" OFF)
