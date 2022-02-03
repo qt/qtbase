@@ -251,6 +251,11 @@ set(CMAKE_INSTALL_RPATH "" CACHE STRING "RPATH for installed binaries")
 # link against QtCore.
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
+# Ensure that GNUInstallDirs's CMAKE_INSTALL_LIBDIR points to the same lib dir that Qt was
+# configured with. Currently this is important for QML plugins, which embed an rpath based
+# on that value.
+set(CMAKE_INSTALL_LIBDIR "${INSTALL_LIBDIR}")
+
 function(qt_setup_tool_path_command)
     if(NOT CMAKE_HOST_WIN32)
         return()
