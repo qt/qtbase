@@ -81,11 +81,30 @@ private slots:
     void tst_QTabWidget_data();
     void tst_QTabWidget();
 
+    void tst_QListView_data();
+    void tst_QListView();
+
+    void tst_QTableView_data();
+    void tst_QTableView();
+
+    void tst_QTreeView_data();
+    void tst_QTreeView();
+
+    void tst_QLineEdit_data();
+    void tst_QLineEdit();
+
 private:
 
     // Abstract SpinBox test for QSpinBox, QDoubleSpinBox, QDateTimeEdit, QDateEdit, QTimeEdit
     void tst_SpinBox_data();
     void tst_SpinBox(QAbstractSpinBox* spinBox);
+
+    // 78 standard icons from 6.3
+    const int numberStandardIcons = 78;
+
+    // recursive methods for QTreeView population
+    void tst_QTreeView_populateTree(QStandardItem* node, int height, int itemsPerNode, bool hasIcon);
+    QStandardItem* tst_QTreeView_populateItem(int height, int number, bool hasIcon);
 };
 
 void tst_Widgets::tst_QSlider_data()
@@ -720,6 +739,337 @@ void tst_Widgets::tst_QTabWidget()
             QBASELINE_CHECK_DEFERRED(takeSnapshot(), "releaseCloseTab");
         }
     }
+}
+
+void tst_Widgets::tst_QListView_data()
+{
+    QTest::addColumn<QListView::ViewMode>("viewMode");
+    QTest::addColumn<bool>("isWrapping");
+    QTest::addColumn<bool>("hasWordWrap");
+    QTest::addColumn<int>("numberItems");
+    QTest::addColumn<QSize>("fixedSize");
+
+
+    // QSize() will be interpreted as variable size
+    QTest::newRow("ListModeWrappingNoWordWrapFixed_10") <<
+                  QListView::ListMode << true << false << 10 << QSize(100, 500);
+    QTest::newRow("ListModeNoWrappingNoWordWrapVariable_20") <<
+                  QListView::ListMode << false << true << 20 << QSize();
+    QTest::newRow("ListModeNoWrappingWordWrapVariable_30") <<
+                  QListView::ListMode << false << true << 30 << QSize();
+    QTest::newRow("IconModeNoWrappingNoWordWrapFixed_10") <<
+                  QListView::IconMode << false << false << 10 << QSize(100, 500);
+    QTest::newRow("IconModeWrappingNoWordWrapVariable_20") <<
+                  QListView::IconMode << true << false << 20 << QSize();
+    QTest::newRow("IconModeWrappingWordWrapVariable_30") <<
+                  QListView::IconMode << true << true << 30 << QSize(100, 500);
+}
+void tst_Widgets::tst_QListView()
+{
+    QFETCH(QListView::ViewMode,viewMode);
+    QFETCH(bool,isWrapping);
+    QFETCH(bool,hasWordWrap);
+    QFETCH(int,numberItems);
+    QFETCH(QSize,fixedSize);
+
+    QListView listView;
+    listView.setViewMode(viewMode);
+    listView.setWrapping(isWrapping);
+    listView.setWordWrap(hasWordWrap);
+    if (fixedSize.isValid())
+        listView.setFixedSize(fixedSize);
+
+    QStandardItemModel model(0,1,testWindow());
+
+    // Populate model, add standard icons if required
+    const QString itemText = hasWordWrap ? "This is a long text for word wrapping Item_"
+                                         : "ListItem_";
+    int icon = 0;
+    for (int i = 0; i < numberItems; ++i) {
+        QStandardItem *item;
+        if (viewMode == QListView::IconMode) {
+            item = new QStandardItem(QApplication::style()->standardIcon
+                   (static_cast<QStyle::StandardPixmap>(icon)), itemText + QString::number(i));
+            icon = (icon + 1) % numberStandardIcons;
+        } else {
+            item = new QStandardItem(itemText + QString::number(i));
+        }
+        model.appendRow(item);
+    }
+
+    listView.setModel(&model);
+    QBoxLayout layout(QBoxLayout::LeftToRight, testWindow());
+    layout.addWidget(&listView);
+    testWindow()->setLayout(&layout);
+    takeStandardSnapshots();
+
+    // click on first item
+    QPoint clickTarget = listView.visualRect(model.index(0,0)).center();
+    QTest::mouseClick(listView.viewport(),Qt::MouseButton::LeftButton,
+                      Qt::KeyboardModifiers(), clickTarget,0);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "clickFirstItem");
+
+    // click on scond item
+    if (numberItems > 1) {
+        clickTarget = listView.visualRect(model.index(1,0)).center();
+        QTest::mouseClick(listView.viewport(),Qt::MouseButton::LeftButton,
+                            Qt::KeyboardModifiers(), clickTarget,0);
+        QBASELINE_CHECK_DEFERRED(takeSnapshot(), "clickSecondItem");
+    }
+
+    // Hide first row
+    listView.setRowHidden(0,true);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "hideFirstItem");
+}
+
+void tst_Widgets::tst_QTableView_data()
+{
+    QTest::addColumn<bool>("hasHeader");
+    QTest::addColumn<bool>("hasRowNumbers");
+    QTest::addColumn<bool>("hasWordWrap");
+    QTest::addColumn<int>("numberRows");
+    QTest::addColumn<int>("numberColumns");
+    QTest::addColumn<int>("iconColumn");
+    QTest::addColumn<QSize>("fixedSize");
+
+    // QSize() => variable size; iconColumn -1 => no icon
+    QTest::newRow("HeaderRowNumWordWrapFixed_10") << true << true << true << 10 << 3 << -1 << QSize(500, 100);
+    QTest::newRow("HeaderVariable_20") << true << false << false << 20 << 4 << 1 << QSize();
+    QTest::newRow("HeaderFixed_20") << true << false << false << 20 << 4 << 1 << QSize(500, 700);
+}
+
+void tst_Widgets::tst_QTableView()
+{
+    QFETCH(bool, hasHeader);
+    QFETCH(bool, hasRowNumbers);
+    QFETCH(bool, hasWordWrap);
+    QFETCH(int, numberRows);
+    QFETCH(int, numberColumns);
+    QFETCH(int, iconColumn);
+    QFETCH(QSize, fixedSize);
+
+    // Populate model
+    int icon = 0;
+    QStandardItemModel model(numberRows, numberColumns, testWindow());
+
+    if (hasHeader) {
+        for (int i = 0; i < numberColumns; ++i)
+            model.setHorizontalHeaderItem(i, new QStandardItem("Header_" + QString::number(i)));
+    }
+
+    const QString wrap = hasWordWrap ? "\n long text to wrap words" : "" ;
+    for (int row = 0; row < numberRows; ++row) {
+        for (int column = 0; column < numberColumns; ++column) {
+            QStandardItem *item;
+            const QString itemText = QString::number(row) + "/" + QString::number(column) + wrap;
+            if (iconColumn == column) {
+                item = new QStandardItem(QApplication::style()->standardIcon
+                           (static_cast<QStyle::StandardPixmap>(icon)),itemText);
+
+                icon = (icon + 1) % numberStandardIcons;
+            } else {
+                item = new QStandardItem(itemText);
+            }
+            model.setItem(row,column,item);
+        }
+        if (hasRowNumbers)
+            model.setVerticalHeaderItem(row, new QStandardItem(QString::number(row)));
+    }
+
+    QTableView tableView(testWindow());
+    tableView.setWordWrap(hasWordWrap);
+    if (fixedSize.isValid())
+        tableView.setFixedSize(fixedSize);
+
+    QBoxLayout layout(QBoxLayout::LeftToRight, testWindow());
+    tableView.setModel(&model);
+    layout.addWidget(&tableView);
+
+    takeStandardSnapshots();
+
+    // Hide grid
+    tableView.setShowGrid(false);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "hideGrid");
+    tableView.setShowGrid(true);
+
+    // click item 0,0
+    QPoint clickTarget = tableView.visualRect(model.index(0,0)).center();
+    QTest::mouseClick(tableView.viewport(),Qt::MouseButton::LeftButton,
+                      Qt::KeyboardModifiers(), clickTarget,0);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "clickFirstItem");
+
+    // click item 0,1 if it exists
+    if (numberColumns > 1) {
+        clickTarget = tableView.visualRect(model.index(0,1)).center();
+        QTest::mouseClick(tableView.viewport(),Qt::MouseButton::LeftButton,
+                          Qt::KeyboardModifiers(), clickTarget,0);
+        QBASELINE_CHECK_DEFERRED(takeSnapshot(), "clickSecondItem");
+    }
+
+    tableView.clearSelection();
+
+    // Hide first row and column
+    tableView.setRowHidden(0, true);
+    tableView.setColumnHidden(0, true);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "hideFirstRowColumn");
+    tableView.setRowHidden(0, false);
+    tableView.setColumnHidden(0, false);
+
+    // Select first row
+    tableView.selectRow(0);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "selectFirstRow");
+
+    // Select first column
+    tableView.selectColumn(0);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "selectFirstColumn");
+}
+
+void tst_Widgets::tst_QTreeView_data()
+{
+    QTest::addColumn<bool>("showHeader");
+    QTest::addColumn<bool>("hasIcons");
+    QTest::addColumn<QSize>("fixedSize");
+    QTest::addColumn<int>("treeHeight");
+    QTest::addColumn<int>("itemsPerNode");
+
+    // QSize() => variable size
+    QTest::newRow("HeaderIcons_4_3") << true << true << QSize() << 3 << 2;
+    QTest::newRow("NoHeaderNoIcons_4_4") << false << false << QSize(100, 350) << 3 << 2;
+}
+
+void tst_Widgets::tst_QTreeView()
+{
+    QFETCH(bool, showHeader);
+    QFETCH(bool, hasIcons);
+    QFETCH(QSize, fixedSize);
+    QFETCH(int, treeHeight);
+    QFETCH(int, itemsPerNode);
+    QVERIFY(treeHeight > 0 && itemsPerNode > 0);
+
+    QTreeView treeView(testWindow());
+    fixedSize.isValid()  ? treeView.setFixedSize(fixedSize)
+                         : treeView.setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
+
+    QStandardItemModel model(&treeView);
+    showHeader ? model.setHorizontalHeaderItem(0, new QStandardItem("TreeHeader"))
+               : treeView.setHeaderHidden(true);
+
+    // Populate tree model
+    for (int i = 0; i < itemsPerNode; ++i) {
+        QStandardItem* root = tst_QTreeView_populateItem(treeHeight, i, hasIcons);
+        tst_QTreeView_populateTree(root,treeHeight - 1,itemsPerNode, hasIcons);
+        model.appendRow(root);
+    }
+
+    treeView.setModel(&model);
+    QBoxLayout layout(QBoxLayout::LeftToRight, testWindow());
+    layout.addWidget(&treeView);
+    testWindow()->setLayout(&layout);
+
+    treeView.expandAll();
+    treeView.resizeColumnToContents(0);
+    takeStandardSnapshots();
+
+    // Partly expand if possible
+    if (treeHeight > 1) {
+        treeView.expandToDepth(1);
+        QBASELINE_CHECK_DEFERRED(takeSnapshot(), "partlyExpanded");
+    }
+
+    // Click on first node
+    QPoint clickTarget = treeView.visualRect(model.index(0, 0)).center();
+    QTest::mouseClick(treeView.viewport(),Qt::MouseButton::LeftButton,
+                      Qt::KeyboardModifiers(), clickTarget, 0);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "clickFirstNode");
+
+    // Hide first row
+    treeView.setRowHidden(0, model.index(0, 0), true);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "hideFirstRow");
+    treeView.setRowHidden(0, model.index(0, 0), false);
+
+    // Click on second row if it exists
+    if (itemsPerNode > 1) {
+        clickTarget = treeView.visualRect(model.index(1, 0)).center();
+        QTest::mouseClick(treeView.viewport(), Qt::MouseButton::LeftButton,
+                          Qt::KeyboardModifiers(), clickTarget, 0);
+        QBASELINE_CHECK_DEFERRED(takeSnapshot(), "clickSecondNode");
+    }
+}
+
+void tst_Widgets::tst_QTreeView_populateTree(QStandardItem* node, int height, int itemsPerNode, bool hasIcon)
+{
+    QList<QStandardItem*> items;
+    for (int i = 0; i < itemsPerNode; ++i) {
+        if (height == 0) {
+            items.append(tst_QTreeView_populateItem(height, i, hasIcon));
+        } else {
+            QStandardItem* item = tst_QTreeView_populateItem(height, i, hasIcon);
+            tst_QTreeView_populateTree(item, height - 1, itemsPerNode, hasIcon);
+            items.append(item);
+        }
+    }
+    return node->appendColumn(items);
+}
+
+QStandardItem* tst_Widgets::tst_QTreeView_populateItem(int height, int number, bool hasIcon)
+{
+    static int icon = 0;
+    static int itemCount = 0;
+
+    QStandardItem* item;
+    const QString itemText = QString("%1/%2/%3").arg(height).arg(number).arg(itemCount);
+    ++itemCount;
+
+    if (hasIcon) {
+        item = new QStandardItem(QApplication::style()->standardIcon
+               (static_cast<QStyle::StandardPixmap>(icon)), itemText);
+
+        icon = (icon + 1) % numberStandardIcons;
+    } else {
+        item = new QStandardItem(itemText);
+    }
+    return item;
+}
+
+void tst_Widgets::tst_QLineEdit_data()
+{
+    QTest::addColumn<bool>("hasFrame");
+    QTest::addColumn<QLineEdit::EchoMode>("echoMode");
+    QTest::addColumn<QString>("placeHolderText");
+    QTest::addColumn<QString>("text");
+
+    QTest::newRow("framePassword") << true << QLineEdit::Password << "password" << "secret";
+    QTest::newRow("noFrameCleartext") << false << QLineEdit::Normal << "text" << "this is a text";
+}
+
+void tst_Widgets::tst_QLineEdit()
+{
+    QFETCH(const bool, hasFrame);
+    QFETCH(const QLineEdit::EchoMode, echoMode);
+    QFETCH(const QString, placeHolderText);
+    QFETCH(const QString, text);
+
+    QLineEdit lineEdit(testWindow());
+    lineEdit.setFrame(hasFrame);
+    lineEdit.setEchoMode(echoMode);
+    lineEdit.setPlaceholderText(placeHolderText);
+
+    QHBoxLayout layout;
+    layout.addWidget(&lineEdit);
+    testWindow()->setLayout(&layout);
+    takeStandardSnapshots();
+
+    lineEdit.setText(text);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "setText");
+
+    lineEdit.setAlignment(Qt::AlignRight);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "alignedRight");
+
+    lineEdit.setAlignment(Qt::AlignCenter);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "alignedCenter");
+
+    lineEdit.setSelection(0,text.length());
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "textSelected");
 }
 
 #define main _realmain
