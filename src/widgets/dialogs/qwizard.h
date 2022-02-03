@@ -181,6 +181,7 @@ Q_SIGNALS:
 public Q_SLOTS:
     void back();
     void next();
+    void setCurrentId(int id);
     void restart();
 
 protected:

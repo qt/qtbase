@@ -3142,6 +3142,42 @@ void QWizard::next()
 }
 
 /*!
+    Sets currentId to \a id, without visiting the pages between currentId and \a id.
+
+    Returns without page change, if
+    \list
+    \li wizard holds no pages
+    \li current page is invalid
+    \li given page equals currentId()
+    \li given page is out of range
+    \endlist
+
+    Note: If pages have been forward skipped and \a id is 0, page visiting history
+    will be deleted
+*/
+
+void QWizard::setCurrentId(int id)
+{
+    Q_D(QWizard);
+
+    if (d->current == -1)
+        return;
+
+    if (currentId() == id)
+        return;
+
+    if (!validateCurrentPage())
+        return;
+
+    if (id < 0 || Q_UNLIKELY(!d->pageMap.contains(id))) {
+        qWarning("QWizard::setCurrentId: No such page: %d", id);
+        return;
+    }
+
+    d->switchToPage(id, (id < currentId()) ? QWizardPrivate::Backward : QWizardPrivate::Forward);
+}
+
+/*!
     Restarts the wizard at the start page. This function is called automatically when the
     wizard is shown.
 
