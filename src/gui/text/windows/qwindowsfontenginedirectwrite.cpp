@@ -696,16 +696,37 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
     DWRITE_MEASURING_MODE measureMode =
             renderModeToMeasureMode(renderMode);
 
+    DWRITE_GRID_FIT_MODE gridFitMode = fontDef.hintingPreference == QFont::PreferNoHinting
+            ? DWRITE_GRID_FIT_MODE_DISABLED
+            : DWRITE_GRID_FIT_MODE_DEFAULT;
+
+    IDWriteFactory2 *factory2 = nullptr;
+    HRESULT hr = m_fontEngineData->directWriteFactory->QueryInterface(__uuidof(IDWriteFactory2),
+                                                                      reinterpret_cast<void **>(&factory2));
     IDWriteGlyphRunAnalysis *glyphAnalysis = NULL;
-    HRESULT hr = m_fontEngineData->directWriteFactory->CreateGlyphRunAnalysis(
-                &glyphRun,
-                1.0f,
-                &transform,
-                renderMode,
-                measureMode,
-                0.0, 0.0,
-                &glyphAnalysis
-                );
+    if (!SUCCEEDED(hr)) {
+        qErrnoWarning(hr, "%s: Failed to query IDWriteFactory2 interface.", __FUNCTION__);
+        hr = m_fontEngineData->directWriteFactory->CreateGlyphRunAnalysis(
+                    &glyphRun,
+                    1.0f,
+                    &transform,
+                    renderMode,
+                    measureMode,
+                    0.0, 0.0,
+                    &glyphAnalysis
+                    );
+    } else {
+        hr = factory2->CreateGlyphRunAnalysis(
+                    &glyphRun,
+                    &transform,
+                    renderMode,
+                    measureMode,
+                    gridFitMode,
+                    DWRITE_TEXT_ANTIALIAS_MODE_CLEARTYPE,
+                    0.0, 0.0,
+                    &glyphAnalysis
+                    );
+    }
 
     if (SUCCEEDED(hr)) {
         RECT rect;
@@ -726,10 +747,7 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
         QImage image;
         HRESULT hr = DWRITE_E_NOCOLOR;
         IDWriteColorGlyphRunEnumerator *enumerator = 0;
-        IDWriteFactory2 *factory2 = nullptr;
-        if (glyphFormat == QFontEngine::Format_ARGB
-                && SUCCEEDED(m_fontEngineData->directWriteFactory->QueryInterface(__uuidof(IDWriteFactory2),
-                                                                                  reinterpret_cast<void **>(&factory2)))) {
+        if (glyphFormat == QFontEngine::Format_ARGB && factory2 != nullptr) {
             hr = factory2->TranslateColorGlyphRun(0.0f,
                                                   0.0f,
                                                   &glyphRun,
@@ -757,15 +775,17 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
                 }
 
                 IDWriteGlyphRunAnalysis *colorGlyphsAnalysis = NULL;
-                hr = m_fontEngineData->directWriteFactory->CreateGlyphRunAnalysis(
-                            &colorGlyphRun->glyphRun,
-                            1.0f,
+                hr = factory2->CreateGlyphRunAnalysis(
+                            &glyphRun,
                             &transform,
                             renderMode,
                             measureMode,
+                            gridFitMode,
+                            DWRITE_TEXT_ANTIALIAS_MODE_CLEARTYPE,
                             0.0, 0.0,
                             &colorGlyphsAnalysis
                             );
+
                 if (FAILED(hr)) {
                     qErrnoWarning(hr, "%s: CreateGlyphRunAnalysis failed for color run", __FUNCTION__);
                     break;
@@ -1000,17 +1020,37 @@ glyph_metrics_t QWindowsFontEngineDirectWrite::alphaMapBoundingBox(glyph_t glyph
 
     DWRITE_RENDERING_MODE renderMode = hintingPreferenceToRenderingMode(fontDef);
     DWRITE_MEASURING_MODE measureMode = renderModeToMeasureMode(renderMode);
+    DWRITE_GRID_FIT_MODE gridFitMode = fontDef.hintingPreference == QFont::PreferNoHinting
+            ? DWRITE_GRID_FIT_MODE_DISABLED
+            : DWRITE_GRID_FIT_MODE_DEFAULT;
+
+    IDWriteFactory2 *factory2 = nullptr;
+    HRESULT hr = m_fontEngineData->directWriteFactory->QueryInterface(__uuidof(IDWriteFactory2),
+                                                                      reinterpret_cast<void **>(&factory2));
 
     IDWriteGlyphRunAnalysis *glyphAnalysis = NULL;
-    HRESULT hr = m_fontEngineData->directWriteFactory->CreateGlyphRunAnalysis(
-                &glyphRun,
-                1.0f,
-                &transform,
-                renderMode,
-                measureMode,
-                0.0, 0.0,
-                &glyphAnalysis
-                );
+    if (SUCCEEDED(hr)) {
+        hr = factory2->CreateGlyphRunAnalysis(
+                    &glyphRun,
+                    &transform,
+                    renderMode,
+                    measureMode,
+                    gridFitMode,
+                    DWRITE_TEXT_ANTIALIAS_MODE_CLEARTYPE,
+                    0.0, 0.0,
+                    &glyphAnalysis
+                    );
+    } else {
+        hr = m_fontEngineData->directWriteFactory->CreateGlyphRunAnalysis(
+                    &glyphRun,
+                    1.0f,
+                    &transform,
+                    renderMode,
+                    measureMode,
+                    0.0, 0.0,
+                    &glyphAnalysis
+                    );
+    }
 
     if (SUCCEEDED(hr)) {
         RECT rect;
