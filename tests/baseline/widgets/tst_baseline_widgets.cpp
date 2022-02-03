@@ -51,6 +51,18 @@ private slots:
     void tst_QSpinBox_data();
     void tst_QSpinBox();
 
+    void tst_QDoubleSpinBox_data();
+    void tst_QDoubleSpinBox();
+
+    void tst_QDateTimeEdit_data();
+    void tst_QDateTimeEdit();
+
+    void tst_QTimeEdit_data();
+    void tst_QTimeEdit();
+
+    void tst_QDateEdit_data();
+    void tst_QDateEdit();
+
     void tst_QDial_data();
     void tst_QDial();
 
@@ -68,6 +80,12 @@ private slots:
 
     void tst_QTabWidget_data();
     void tst_QTabWidget();
+
+private:
+
+    // Abstract SpinBox test for QSpinBox, QDoubleSpinBox, QDateTimeEdit, QDateEdit, QTimeEdit
+    void tst_SpinBox_data();
+    void tst_SpinBox(QAbstractSpinBox* spinBox);
 };
 
 void tst_Widgets::tst_QSlider_data()
@@ -198,38 +216,126 @@ void tst_Widgets::tst_QProgressBar()
     takeStandardSnapshots();
 }
 
-void tst_Widgets::tst_QSpinBox_data()
+void tst_Widgets::tst_SpinBox_data()
 {
     QTest::addColumn<QAbstractSpinBox::ButtonSymbols>("buttons");
 
-    QTest::addRow("NoButtons") << QSpinBox::NoButtons;
-    QTest::addRow("UpDownArrows") << QSpinBox::UpDownArrows;
-    QTest::addRow("PlusMinus") << QSpinBox::PlusMinus;
+    QTest::addRow("NoButtons") << QAbstractSpinBox::NoButtons;
+    QTest::addRow("UpDownArrows") << QAbstractSpinBox::UpDownArrows;
+    QTest::addRow("PlusMinus") << QAbstractSpinBox::PlusMinus;
+}
+
+void tst_Widgets::tst_SpinBox(QAbstractSpinBox *spinBox)
+{
+    QFETCH(const QAbstractSpinBox::ButtonSymbols, buttons);
+
+    spinBox->setButtonSymbols(buttons);
+    spinBox->setMinimumWidth(200);
+
+    QVBoxLayout layout;
+    layout.addWidget(spinBox);
+    testWindow()->setLayout(&layout);
+
+    takeStandardSnapshots();
+
+    spinBox->setAlignment(Qt::AlignHCenter);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "alignCenter");
+
+    spinBox->setAlignment(Qt::AlignRight);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "alignRight");
+
+    // Press / release up button
+    QStyleOptionSpinBox styleOption;
+    styleOption.initFrom(spinBox);
+    QPoint clickTarget = spinBox->style()->subControlRect(QStyle::CC_SpinBox,&styleOption,
+                                                 QStyle::SC_SpinBoxUp,spinBox).center();
+
+    QTest::mousePress(spinBox, Qt::LeftButton, Qt::KeyboardModifiers(), clickTarget);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "upPressed");
+    QTest::mouseRelease(spinBox, Qt::LeftButton, Qt::KeyboardModifiers(), clickTarget);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "upReleased");
+
+    // Press / release down button
+    clickTarget = spinBox->style()->subControlRect(QStyle::CC_SpinBox,&styleOption,
+                                           QStyle::SC_SpinBoxDown,spinBox).center();
+
+    QTest::mousePress(spinBox, Qt::LeftButton, Qt::KeyboardModifiers(), clickTarget);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "downPressed");
+    QTest::mouseRelease(spinBox, Qt::LeftButton, Qt::KeyboardModifiers(), clickTarget);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "downReleased");
+}
+
+void tst_Widgets::tst_QSpinBox_data()
+{
+    tst_SpinBox_data();
 }
 
 void tst_Widgets::tst_QSpinBox()
 {
-    QFETCH(const QSpinBox::ButtonSymbols, buttons);
+    QSpinBox spinBox;
+    tst_SpinBox(&spinBox);
+}
 
-    QSpinBox *spinBox = new QSpinBox;
-    spinBox->setButtonSymbols(buttons);
-    spinBox->setMinimumWidth(200);
+void tst_Widgets::tst_QDoubleSpinBox_data()
+{
+    tst_SpinBox_data();
+}
 
-    QVBoxLayout *layout = new QVBoxLayout;
-    layout->addWidget(spinBox);
+void tst_Widgets::tst_QDoubleSpinBox()
+{
+    QDoubleSpinBox spinBox;
+    tst_SpinBox(&spinBox);
+}
 
-    testWindow()->setLayout(layout);
+void tst_Widgets::tst_QDateTimeEdit_data()
+{
+    tst_SpinBox_data();
+}
 
-    takeStandardSnapshots();
+void tst_Widgets::tst_QDateTimeEdit()
+{
+    QDateTimeEdit edit;
+    tst_SpinBox(&edit);
 
-    // Left is default alignment:
-    QBASELINE_CHECK(takeSnapshot(), "align_left");
+    // show calendar popup
+    QStyleOptionSpinBox styleOption;
+    styleOption.initFrom(&edit);
+    const QRect buttonUp = edit.style()->subControlRect(QStyle::CC_SpinBox,&styleOption,
+                                                        QStyle::SC_SpinBoxUp,&edit);
 
-    spinBox->setAlignment(Qt::AlignHCenter);
-    QBASELINE_CHECK(takeSnapshot(), "align_center");
+    // no rect for popup button => use bottom center of up-button
+    QPoint clickTarget = buttonUp.center();
+    clickTarget.setY(buttonUp.bottomLeft().y());
+    edit.setCalendarPopup(true);
+    QTest::mouseClick(&edit, Qt::LeftButton, Qt::KeyboardModifiers(), clickTarget);
+    QCalendarWidget* calendar = edit.calendarWidget();
+    QVERIFY(calendar);
+    QVBoxLayout layout;
+    layout.addWidget(calendar);
+    testWindow()->setLayout(&layout);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "showCalendar");
+}
 
-    spinBox->setAlignment(Qt::AlignRight);
-    QBASELINE_CHECK(takeSnapshot(), "align_right");
+void tst_Widgets::tst_QTimeEdit_data()
+{
+    tst_SpinBox_data();
+}
+
+void tst_Widgets::tst_QTimeEdit()
+{
+    QTimeEdit edit;
+    tst_SpinBox(&edit);
+}
+
+void tst_Widgets::tst_QDateEdit_data()
+{
+    tst_SpinBox_data();
+}
+
+void tst_Widgets::tst_QDateEdit()
+{
+    QDateEdit edit;
+    tst_SpinBox(&edit);
 }
 
 void tst_Widgets::tst_QDial_data()
