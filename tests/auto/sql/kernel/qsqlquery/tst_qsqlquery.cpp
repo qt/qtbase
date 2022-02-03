@@ -291,8 +291,8 @@ void tst_QSqlQuery::initTestCase()
 {
     QVERIFY(dbs.open());
 
-    for ( QStringList::ConstIterator it = dbs.dbNames.begin(); it != dbs.dbNames.end(); ++it ) {
-        QSqlDatabase db = QSqlDatabase::database(( *it ) );
+    for (const QString &name : std::as_const(dbs.dbNames)) {
+        QSqlDatabase db = QSqlDatabase::database(name);
         CHECK_DATABASE( db );
         dropTestTables( db ); //in case of leftovers
         createTestTables( db );
@@ -302,8 +302,8 @@ void tst_QSqlQuery::initTestCase()
 
 void tst_QSqlQuery::cleanupTestCase()
 {
-    for ( QStringList::ConstIterator it = dbs.dbNames.begin(); it != dbs.dbNames.end(); ++it ) {
-        QSqlDatabase db = QSqlDatabase::database(( *it ) );
+    for (const QString &name : std::as_const(dbs.dbNames)) {
+        QSqlDatabase db = QSqlDatabase::database(name);
         CHECK_DATABASE( db );
         dropTestTables( db );
     }
@@ -2232,7 +2232,7 @@ void tst_QSqlQuery::prepare_bind_exec()
             q.bindValue( ":name", values[i] );
             q.bindValue( ":id", i );
             QVERIFY_SQL( q, exec() );
-            QVariantList m = q.boundValues();
+            const QVariantList m = q.boundValues();
             QCOMPARE(m.count(), qsizetype(2));
             QCOMPARE(m.at(0).toInt(), i);
             QCOMPARE(m.at(1).toString(), values[i]);
@@ -2725,8 +2725,7 @@ void tst_QSqlQuery::QTBUG_43874()
     QVERIFY_SQL(q, prepare("INSERT INTO " + tableName + " (id) VALUES (?)"));
 
     for (int i = 0; i < 2; ++i) {
-        QVariantList ids;
-        ids << i;
+        const QVariantList ids = { i };
         q.addBindValue(ids);
         QVERIFY_SQL(q, execBatch());
     }
@@ -2787,14 +2786,11 @@ void tst_QSqlQuery::oraArrayBind()
                             "END set_table; "
                             "END ora_array_test; " ) );
 
-    QVariantList list;
-
-    list << QString( "lorem" ) << QString( "ipsum" ) << QString( "dolor" ) << QString( "sit" ) << QString( "amet" );
+    QVariantList list = { u"lorem"_qs, u"ipsum"_qs, u"dolor"_qs, u"sit"_qs, u"amet"_qs };
 
     QVERIFY_SQL( q, prepare( "BEGIN "
                                "ora_array_test.set_table(?); "
                                "END;" ) );
-
     q.bindValue( 0, list, QSql::In );
 
     QVERIFY_SQL( q, execBatch( QSqlQuery::ValuesAsColumns ) );
@@ -2804,14 +2800,13 @@ void tst_QSqlQuery::oraArrayBind()
                                "END;" ) );
 
     list.clear();
-
-    list << QString( 64,' ' ) << QString( 64,' ' ) << QString( 64,' ' ) << QString( 64,' ' ) << QString( 64,' ' );
+    list.resize(5, QString(64, ' '));
 
     q.bindValue( 0, list, QSql::Out );
 
     QVERIFY_SQL( q, execBatch( QSqlQuery::ValuesAsColumns ) );
 
-    QVariantList out_list = q.boundValue( 0 ).toList();
+    const QVariantList out_list = q.boundValue( 0 ).toList();
 
     QCOMPARE( out_list.at( 0 ).toString(), QString( "lorem" ) );
 
@@ -3041,15 +3036,16 @@ void tst_QSqlQuery::psql_specialFloatValues()
     QVERIFY_SQL( query, exec("create table " + tableName + " (value float)" ) );
     QVERIFY_SQL(query, prepare("insert into " + tableName + " values(:value)") );
 
-    QVariantList data;
-    data << QVariant(double(42.42))
-         << QVariant(std::numeric_limits<double>::quiet_NaN())
-         << QVariant(std::numeric_limits<double>::infinity())
-         << QVariant(float(42.42))
-         << QVariant(std::numeric_limits<float>::quiet_NaN())
-         << QVariant(std::numeric_limits<float>::infinity());
+    const QVariant data[] = {
+        QVariant(double(42.42)),
+        QVariant(std::numeric_limits<double>::quiet_NaN()),
+        QVariant(std::numeric_limits<double>::infinity()),
+        QVariant(float(42.42)),
+        QVariant(std::numeric_limits<float>::quiet_NaN()),
+        QVariant(std::numeric_limits<float>::infinity()),
+    };
 
-    foreach (const QVariant &v, data) {
+    for (const QVariant &v : data) {
         query.bindValue(":value", v);
         QVERIFY_SQL( query, exec() );
     }
@@ -3248,9 +3244,7 @@ void tst_QSqlQuery::nextResult()
 
     QVERIFY_SQL( q, exec( "INSERT INTO " + tableName + " VALUES(4, 'four', 4.4, '');" ) );
 
-    QStringList tstStrings;
-
-    tstStrings << "one" << "two" << "three" << "four";
+    const QString tstStrings[] = { u"one"_qs, u"two"_qs, u"three"_qs, u"four"_qs };
 
     // Query that returns only one result set, nothing special about this
     QVERIFY_SQL( q, exec( QString( "SELECT * FROM %1;" ).arg( tableName ) ) );
@@ -3314,7 +3308,7 @@ void tst_QSqlQuery::nextResult()
     for ( int i = 0; i < 3; i++ ) {
         QVERIFY_SQL( q, next() );
         QCOMPARE( q.value( 0 ).toInt(), 1+i );
-        QCOMPARE( q.value( 1 ).toString(), tstStrings.at( i ) );
+        QCOMPARE( q.value( 1 ).toString(), tstStrings[i]);
         QCOMPARE( q.value( 2 ).toDouble(), 1.1*( i+1 ) );
         QVERIFY( q.value( 3 ).toString().isEmpty() );
     }
@@ -3427,7 +3421,7 @@ void tst_QSqlQuery::nextResult()
     for ( int i = 0; i < 4; i++ ) {
         QVERIFY_SQL( q, next() );
         QCOMPARE( q.value( 0 ).toInt(), i+1 );
-        QCOMPARE( q.value( 1 ).toString(), tstStrings.at( i ) );
+        QCOMPARE( q.value( 1 ).toString(), tstStrings[i]);
     }
 
     QVERIFY_SQL( q, nextResult() );
@@ -3438,7 +3432,7 @@ void tst_QSqlQuery::nextResult()
         QVERIFY_SQL( q, next() );
         QCOMPARE( q.value( 0 ).toString(), QString( "Yatta!" ) );
         QCOMPARE( q.value( 1 ).toDouble(), 1.1*( 1+i ) );
-        QCOMPARE( q.value( 2 ).toString(), tstStrings.at( i ) );
+        QCOMPARE( q.value( 2 ).toString(), tstStrings[i]);
         QCOMPARE( q.value( 3 ).toInt(), 1+i );
     }
 
@@ -3795,12 +3789,8 @@ void tst_QSqlQuery::QTBUG_12186()
     query.prepare("INSERT INTO person (col1, col2, col3, col4, col5, col6, col7, col8, col9, col10, col11, col12, col13, col14, col15, col16, col17, col18) "
                   "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-    QList<QVariant> values;
-
-    for (int i = 0; i < 18; ++i)
-        values << i;
-
-    foreach (QVariant v, values)
+    const QList<QVariant> values = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
+    for (const QVariant &v : values)
         query.bindValue(v.toInt(), v);
 
     QCOMPARE(query.boundValues(), values);
@@ -4011,33 +4001,38 @@ void tst_QSqlQuery::QTBUG_21884()
     CHECK_DATABASE(db);
 
     QSqlQuery q(db);
-
-    QStringList stList;
     QString tableName(qTableName("bug21884", __FILE__, db));
-    stList << "create table " + tableName + "(id integer primary key, note string)";
-    stList << "select * from " + tableName + QLatin1Char(';');
-    stList << "select * from " + tableName + ";  \t\n\r";
-    stList << "drop table " + tableName;
 
+    {
+        const QString good[] = {
+            "create table " + tableName + "(id integer primary key, note string)",
+            "select * from " + tableName + QLatin1Char(';'),
+            "select * from " + tableName + ";  \t\n\r",
+            "drop table " + tableName
+        };
 
-    foreach (const QString& st, stList) {
-        QVERIFY_SQL(q, exec(st));
+        for (const QString &st : good)
+            QVERIFY_SQL(q, exec(st));
+
+        for (const QString &st : good) {
+            QVERIFY_SQL(q, prepare(st));
+            QVERIFY_SQL(q, exec());
+        }
     }
 
-    foreach (const QString& st, stList) {
-        QVERIFY_SQL(q, prepare(st));
-        QVERIFY_SQL(q, exec());
-    }
+    {
+        const QString bad[] = {
+            "create table " + tableName + "(id integer primary key); select * from " + tableName,
+            "create table " + tableName + "(id integer primary key); syntax error!;",
+            "create table " + tableName + "(id integer primary key);;",
+            "create table " + tableName + "(id integer primary key);\'\"\a\b\b\v"
+        };
 
-    stList.clear();
-    stList << "create table " + tableName + "(id integer primary key); select * from " + tableName;
-    stList << "create table " + tableName + "(id integer primary key); syntax error!;";
-    stList << "create table " + tableName + "(id integer primary key);;";
-    stList << "create table " + tableName + "(id integer primary key);\'\"\a\b\b\v";
-
-    foreach (const QString&st , stList) {
-        QVERIFY2(!q.prepare(st), qPrintable(QString("the statement is expected to fail! ") + st));
-        QVERIFY2(!q.exec(st), qPrintable(QString("the statement is expected to fail! ") + st));
+        QLatin1String shouldFail("the statement is expected to fail! %1");
+        for (const QString &st : bad) {
+            QVERIFY2(!q.prepare(st), qPrintable(shouldFail.arg(st)));
+            QVERIFY2(!q.exec(st), qPrintable(shouldFail.arg(st)));
+        }
     }
 }
 
@@ -4265,7 +4260,8 @@ void tst_QSqlQuery::QTBUG_36211()
 void tst_QSqlQuery::QTBUG_53969()
 {
     QFETCH( QString, dbName );
-    QList<int> values = QList<int>() << 10 << 20 << 127 << 128 << 1, tableValues;
+    const QList<int> values = { 10, 20, 127, 128, 1 };
+    QList<int> tableValues;
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
     tableValues.reserve(values.size());
@@ -4280,9 +4276,8 @@ void tst_QSqlQuery::QTBUG_53969()
 
         QVERIFY_SQL(q, prepare("INSERT INTO " + tableName + " (test_number) VALUES (:value)"));
 
-        QList<int>::iterator begin = values.begin(), end = values.end(), it;
-        for (it = begin; it != end; ++it) {
-            q.bindValue(":value", *it);
+        for (int value : values) {
+            q.bindValue(":value", value);
             QVERIFY_SQL(q, exec());
         }
 
@@ -4294,7 +4289,7 @@ void tst_QSqlQuery::QTBUG_53969()
             tableValues.push_back(q.value(0).toUInt(&ok));
             QVERIFY(ok);
         }
-        QCOMPARE(values, tableValues);
+        QCOMPARE(tableValues, values);
     }
 }
 
@@ -4329,25 +4324,16 @@ void tst_QSqlQuery::oraOCINumber()
     QVERIFY_SQL( q, exec( "create table " + qtest_oraOCINumber +
                             " (col1 number(20), col2 number(20))" ) );
     QVERIFY(q.prepare("insert into " + qtest_oraOCINumber + " values (?, ?)"));
-    QVariantList col1Values;
-    QVariantList col2Values;
-    col1Values << (qulonglong)(1)
-               << (qulonglong)(0)
-               << (qulonglong)(INT_MAX)
-               << (qulonglong)(UINT_MAX)
-               << (qulonglong)(LONG_MAX)
-               << (qulonglong)(ULONG_MAX)
-               << (qulonglong)(LLONG_MAX)
-               << (qulonglong)(ULLONG_MAX);
 
-    col2Values << (qlonglong)(1)
-               << (qlonglong)(0)
-               << (qlonglong)(-1)
-               << (qlonglong)(LONG_MAX)
-               << (qlonglong)(LONG_MIN)
-               << (qlonglong)(ULONG_MAX)
-               << (qlonglong)(LLONG_MAX)
-               << (qlonglong)(LLONG_MIN);
+    const QVariantList col1Values = {
+        qulonglong(1), qulonglong(0), qulonglong(INT_MAX), qulonglong(UINT_MAX),
+        qulonglong(LONG_MAX), qulonglong(ULONG_MAX), qulonglong(LLONG_MAX),
+        qulonglong(ULLONG_MAX)
+    };
+    const QVariantList col2Values = {
+        qlonglong(1), qlonglong(0), qlonglong(-1), qlonglong(LONG_MAX), qlonglong(LONG_MIN),
+        qlonglong(ULONG_MAX), qlonglong(LLONG_MAX), qlonglong(LLONG_MIN)
+    };
 
     q.addBindValue(col1Values);
     q.addBindValue(col2Values);
@@ -4939,16 +4925,20 @@ void tst_QSqlQuery::mysql_timeType()
     QVERIFY_SQL(qry, exec("create table " + tableName + " (t time(6))"));
 
     // MySQL will convert days into hours and add them together so 17 days 11 hours becomes 419 hours
-    const QStringList timeData = { "-838:59:59.000000", "-123:45:56.789", "000:00:00.0", "123:45:56.789",
-        "838:59:59.000000", "15:50", "12", "1213", "0 1:2:3", "17 11:22:33" };
-    const QStringList resultTimeData = { "-838:59:59.000000", "-123:45:56.789000", "00:00:00.000000",
-        "123:45:56.789000", "838:59:59.000000", "15:50:00.000000", "00:00:12.000000", "00:12:13.000000",
-        "01:02:03.000000", "419:22:33.000000" };
+    const QString timeData[] = {
+        u"-838:59:59.000000"_qs, u"-123:45:56.789"_qs, u"000:00:00.0"_qs, u"123:45:56.789"_qs,
+        u"838:59:59.000000"_qs, u"15:50"_qs, u"12"_qs, u"1213"_qs, u"0 1:2:3"_qs, u"17 11:22:33"_qs
+    };
+    const QString resultTimeData[] =  {
+        u"-838:59:59.000000"_qs, u"-123:45:56.789000"_qs, u"00:00:00.000000"_qs,
+        u"123:45:56.789000"_qs, u"838:59:59.000000"_qs, u"15:50:00.000000"_qs,
+        u"00:00:12.000000"_qs, u"00:12:13.000000"_qs, u"01:02:03.000000"_qs, u"419:22:33.000000"_qs
+    };
     for (const QString &time : timeData)
         QVERIFY_SQL(qry, exec("insert into " + tableName + " (t) VALUES ('" + time + "')"));
 
     QVERIFY_SQL(qry, exec("select * from " + tableName));
-    for (const QString &time : qAsConst(resultTimeData)) {
+    for (const QString &time : resultTimeData) {
         QVERIFY(qry.next());
         QCOMPARE(qry.value(0).toString(), time);
     }
@@ -4966,7 +4956,9 @@ void tst_QSqlQuery::mysql_timeType()
     }
 
     QVERIFY_SQL(qry, exec("delete from " + tableName));
-    const QList<QTime> qTimeBasedData = { QTime(), QTime(1, 2, 3, 4), QTime(0, 0, 0, 0), QTime(23,59,59,999) };
+    const QTime qTimeBasedData[] = {
+        QTime(), QTime(1, 2, 3, 4), QTime(0, 0, 0, 0), QTime(23, 59, 59, 999)
+    };
     for (const QTime &time : qTimeBasedData) {
         QVERIFY_SQL(qry, prepare("insert into " + tableName + " (t) VALUES (:time)"));
         qry.bindValue(0, time);
