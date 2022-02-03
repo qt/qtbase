@@ -2173,13 +2173,12 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     QPointF localPoint = e->localPos;
     bool doubleClick = false;
     auto persistentEPD = devPriv->pointById(0);
-    const auto &persistentPoint = persistentEPD->eventPoint;
 
     if (mouseMove) {
         QGuiApplicationPrivate::lastCursorPosition = globalPoint;
         const auto doubleClickDistance = (e->device && e->device->type() == QInputDevice::DeviceType::Mouse ?
                     mouseDoubleClickDistance : touchDoubleTapDistance);
-        const auto pressPos = persistentPoint.globalPressPosition();
+        const auto pressPos = persistentEPD->eventPoint.globalPressPosition();
         if (qAbs(globalPoint.x() - pressPos.x()) > doubleClickDistance ||
             qAbs(globalPoint.y() - pressPos.y()) > doubleClickDistance)
             mousePressButton = Qt::NoButton;
@@ -2187,7 +2186,8 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         mouse_buttons = e->buttons;
         if (mousePress) {
             ulong doubleClickInterval = static_cast<ulong>(QGuiApplication::styleHints()->mouseDoubleClickInterval());
-            doubleClick = e->timestamp - persistentPoint.pressTimestamp() < doubleClickInterval && button == mousePressButton;
+            doubleClick = e->timestamp - persistentEPD->eventPoint.pressTimestamp()
+                        < doubleClickInterval && button == mousePressButton;
             mousePressButton = button;
         }
     }
@@ -2231,9 +2231,11 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
 #endif
 
     QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, e->buttons, e->modifiers, e->source, device);
+    Q_ASSERT(devPriv->pointById(0) == persistentEPD); // we don't expect reallocation in QPlatformCursor::pointerEvenmt()
     // restore globalLastPosition to avoid invalidating the velocity calculations,
     // because the QPlatformCursor mouse event above was in native coordinates
     QMutableEventPoint::setGlobalLastPosition(persistentEPD->eventPoint, lastGlobalPosition);
+    persistentEPD = nullptr; // incoming and synth events can cause reallocation during delivery, so don't use this again
     // ev now contains a detached copy of the QEventPoint from QPointingDevicePrivate::activePoints
     ev.setTimestamp(e->timestamp);
     if (window->d_func()->blockedByModalWindow && !qApp->d_func()->popupActive()) {
@@ -2290,8 +2292,10 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         }
     }
     if (type == QEvent::MouseButtonRelease && e->buttons == Qt::NoButton) {
-        ev.setExclusiveGrabber(persistentPoint, nullptr);
-        ev.clearPassiveGrabbers(persistentPoint);
+        if (auto *persistentEPD = devPriv->queryPointById(0)) {
+            ev.setExclusiveGrabber(persistentEPD->eventPoint, nullptr);
+            ev.clearPassiveGrabbers(persistentEPD->eventPoint);
+        }
     }
 }
 
