@@ -9540,27 +9540,36 @@ void tst_QNetworkReply::moreActivitySignals_data()
 {
     QTest::addColumn<QUrl>("url");
     QTest::addColumn<bool>("useipv6");
-    QTest::addRow("local4") << QUrl("http://127.0.0.1") << false;
-    QTest::addRow("local6") << QUrl("http://[::1]") << true;
+    QTest::addColumn<bool>("postWithData");
+    QTest::addRow("local4") << QUrl("http://127.0.0.1") << false << false;
+    QTest::addRow("local6") << QUrl("http://[::1]") << true << false;
     if (qEnvironmentVariable("QTEST_ENVIRONMENT").split(' ').contains("ci")) {
         // On CI server
-        QTest::addRow("localDns") << QUrl("http://localhost") << false; // will find v6
+        QTest::addRow("localDns") << QUrl("http://localhost") << false << false; // will find v6
     } else {
         // For manual testing
-        QTest::addRow("localDns4") << QUrl("http://localhost") << true; // will find both v4 and v6
-        QTest::addRow("localDns6") << QUrl("http://localhost") << false; // will find both v4 and v6
+        QTest::addRow("localDns4") << QUrl("http://localhost") << true << false; // will find both v4 and v6
+        QTest::addRow("localDns6") << QUrl("http://localhost") << false << false; // will find both v4 and v6
     }
+    QTest::addRow("post-with-data") << QUrl("http://[::1]") << true << true;
 }
 
 void tst_QNetworkReply::moreActivitySignals()
 {
     QFETCH(QUrl, url);
     QFETCH(bool, useipv6);
+    QFETCH(bool, postWithData);
     MiniHttpServer server(tst_QNetworkReply::httpEmpty200Response, false, nullptr/*thread*/, useipv6);
     server.doClose = false;
     url.setPort(server.serverPort());
     QNetworkRequest request(url);
-    QNetworkReplyPtr reply(manager.get(request));
+    QNetworkReplyPtr reply;
+    if (postWithData) {
+        request.setRawHeader("Content-Type", "text/plain");
+        reply.reset(manager.post(request, "Hello, world!"));
+    } else {
+        reply.reset(manager.get(request));
+    }
     QSignalSpy spy1(reply.data(), SIGNAL(socketStartedConnecting()));
     QSignalSpy spy2(reply.data(), SIGNAL(requestSent()));
     QSignalSpy spy3(reply.data(), SIGNAL(metaDataChanged()));
@@ -9575,7 +9584,13 @@ void tst_QNetworkReply::moreActivitySignals()
     QCOMPARE(spy4.count(), 1);
     QVERIFY(reply->error() == QNetworkReply::NoError);
     // Second request will not send socketStartedConnecting because of keep-alive, so don't check it.
-    QNetworkReplyPtr secondreply(manager.get(request));
+    QNetworkReplyPtr secondreply;
+    if (postWithData) {
+        request.setRawHeader("Content-Type", "text/plain");
+        secondreply.reset(manager.post(request, "Hello, world!"));
+    } else {
+        secondreply.reset(manager.get(request));
+    }
     QSignalSpy secondspy2(secondreply.data(), SIGNAL(requestSent()));
     QSignalSpy secondspy3(secondreply.data(), SIGNAL(metaDataChanged()));
     QSignalSpy secondspy4(secondreply.data(), SIGNAL(finished()));

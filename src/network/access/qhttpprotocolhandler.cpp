@@ -319,7 +319,6 @@ bool QHttpProtocolHandler::sendRequest()
 #else
         m_header = QHttpNetworkRequestPrivate::header(m_channel->request, false);
 #endif
-        QMetaObject::invokeMethod(m_reply, "requestSent", Qt::QueuedConnection);
 
         // flushing is dangerous (QSslSocket calls transmit which might read or error)
 //        m_socket->flush();
@@ -335,6 +334,7 @@ bool QHttpProtocolHandler::sendRequest()
         } else {
             // no data to send: just send the HTTP headers
             m_socket->write(qExchange(m_header, {}));
+            QMetaObject::invokeMethod(m_reply, "requestSent", Qt::QueuedConnection);
             m_channel->state = QHttpNetworkConnectionChannel::WaitingState; // now wait for response
             sendRequest(); //recurse
         }
@@ -409,6 +409,7 @@ bool QHttpProtocolHandler::sendRequest()
                     currentWriteSize = m_socket->write(qExchange(m_header, {}));
                     if (currentWriteSize != -1)
                         currentWriteSize -= headerSize;
+                    QMetaObject::invokeMethod(m_reply, "requestSent", Qt::QueuedConnection);
                 }
                 if (currentWriteSize == -1 || currentWriteSize != currentReadSize) {
                     // socket broke down
