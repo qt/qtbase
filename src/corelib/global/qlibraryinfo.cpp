@@ -291,7 +291,7 @@ const char *QLibraryInfo::build() noexcept
     false if it was built in release mode.
 */
 bool
-QLibraryInfo::isDebugBuild()
+QLibraryInfo::isDebugBuild() noexcept
 {
 #ifdef QT_DEBUG
     return true;

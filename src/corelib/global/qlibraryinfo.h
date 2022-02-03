@@ -51,7 +51,7 @@ class Q_CORE_EXPORT QLibraryInfo
 public:
     static const char *build() noexcept;
 
-    static bool isDebugBuild();
+    static bool isDebugBuild() noexcept Q_DECL_CONST_FUNCTION;
 
 #ifndef QT_BOOTSTRAPPED
     static QVersionNumber version() noexcept Q_DECL_CONST_FUNCTION;
