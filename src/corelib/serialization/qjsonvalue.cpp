@@ -1072,6 +1072,44 @@ QJsonValue QJsonValueRef::toValue() const
 {
     return concrete(*this);
 }
+#else
+QJsonValueRef QJsonValueRef::operator[](qsizetype key)
+{
+    if (d->elements.at(index).type != QCborValue::Array)
+        d->replaceAt(index, QCborValue::Array);
+
+    auto &e = d->elements[index];
+    e.container = QCborContainerPrivate::grow(e.container, key);    // detaches
+    e.flags |= QtCbor::Element::IsContainer;
+
+    return QJsonValueRef(e.container, key, false);
+}
+
+QJsonValueRef QJsonValueRef::operator[](QAnyStringView key)
+{
+    // must go through QJsonObject because some of the machinery is non-static
+    // member or file-static in qjsonobject.cpp
+    QJsonObject o = QJsonPrivate::Value::fromTrustedCbor(d->valueAt(index)).toObject();
+    QJsonValueRef ret = key.visit([&](auto v) {
+        if constexpr (std::is_same_v<decltype(v), QUtf8StringView>)
+            return o[QString::fromUtf8(v)];
+        else
+            return o[v];
+    });
+
+    // ### did the QJsonObject::operator[] above detach?
+    QCborContainerPrivate *x = o.o.take();
+    Q_ASSERT(x->ref.loadRelaxed() == 1);
+
+    auto &e = d->elements[index];
+    if (e.flags & QtCbor::Element::IsContainer && e.container != x)
+        o.o.reset(e.container);     // might not an object!
+
+    e.flags |= QtCbor::Element::IsContainer;
+    e.container = x;
+
+    return ret;
+}
 #endif
 
 size_t qHash(const QJsonValue &value, size_t seed)

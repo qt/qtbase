@@ -229,6 +229,10 @@ protected:
     quint64 is_object : 1;
     quint64 index : 63;
 #else
+    constexpr QJsonValueConstRef(QCborContainerPrivate *d, size_t index, bool is_object)
+        : d(d), is_object(is_object), index(index)
+    {}
+
     // implemented in qjsonarray.h & qjsonobject.h, to get their d
     QJsonValueConstRef(QJsonArray *array, qsizetype idx);
     QJsonValueConstRef(QJsonObject *object, qsizetype idx);
@@ -296,6 +300,9 @@ private:
     QJsonValue toValue() const;
 #else
     using QJsonValueConstRef::operator[];
+    Q_CORE_EXPORT QJsonValueRef operator[](QAnyStringView key);
+    Q_CORE_EXPORT QJsonValueRef operator[](qsizetype i);
+
 private:
     using QJsonValueConstRef::QJsonValueConstRef;
 #endif // < Qt 7
