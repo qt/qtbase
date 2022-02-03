@@ -48,6 +48,7 @@
 #define EDID_DESCRIPTOR_PRODUCT_NAME 0xfc
 #define EDID_DESCRIPTOR_SERIAL_NUMBER 0xff
 
+#define EDID_DATA_BLOCK_COUNT 4
 #define EDID_OFFSET_DATA_BLOCKS 0x36
 #define EDID_OFFSET_LAST_BLOCK 0x6c
 #define EDID_OFFSET_PNP_ID 0x08
@@ -138,7 +139,7 @@ bool QEdidParser::parse(const QByteArray &blob)
         serialNumber = QString();
 
     // Parse EDID data
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < EDID_DATA_BLOCK_COUNT; ++i) {
         const uint offset = EDID_OFFSET_DATA_BLOCKS + i * 18;
 
         if (data[offset] != 0 || data[offset + 1] != 0 || data[offset + 2] != 0)
