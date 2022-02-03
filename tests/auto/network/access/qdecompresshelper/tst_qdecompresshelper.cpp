@@ -435,6 +435,9 @@ void tst_QDecompressHelper::bigZlib()
 #if QT_POINTER_SIZE < 8
     QSKIP("This cannot be tested on 32-bit systems");
 #else
+#ifndef QT_NO_EXCEPTIONS
+    try {
+#endif
     // ZLib uses unsigned integers as their size type internally which creates some special
     // cases in the internal code that should be tested!
     QFile file(":/5GiB.txt.inflate");
@@ -454,6 +457,11 @@ void tst_QDecompressHelper::bigZlib()
     std::unique_ptr<char[]> output(new char[expected]);
     qsizetype size = helper.read(output.get(), expected);
     QCOMPARE(size, expected);
+#ifndef QT_NO_EXCEPTIONS
+    } catch (const std::bad_alloc &) {
+        QSKIP("Encountered most likely OOM.");
+    }
+#endif
 #endif
 }
 
