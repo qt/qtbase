@@ -208,7 +208,9 @@ Cpp.ignoredirectives    += \
                           QT_WARNING_DISABLE_INTEL \
                           QT_WARNING_DISABLE_MSVC \
                           Q_ATTRIBUTE_FORMAT_PRINTF \
-                          Q_MV_IOS
+                          Q_MV_IOS                  \
+                          QT6_ONLY                  \
+                          QT7_ONLY
 
 # Qt 6: Remove
 falsehoods              += \
