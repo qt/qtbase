@@ -107,6 +107,24 @@
 #define QT_CONFIG(feature) (1/QT_FEATURE_##feature == 1)
 #define QT_REQUIRE_CONFIG(feature) Q_STATIC_ASSERT_X(QT_FEATURE_##feature == 1, "Required feature " #feature " for file " __FILE__ " not available.")
 
+/*
+   helper macros to make some simple code work active in Qt 6 or Qt 7 only,
+   like:
+     struct QT6_ONLY(Q_CORE_EXPORT) QTrivialClass
+     {
+         void QT7_ONLY(Q_CORE_EXPORT) void operate();
+     }
+*/
+#if QT_VERSION_MAJOR == 7
+#  define QT7_ONLY(...)         __VA_ARGS__
+#  define QT6_ONLY(...)
+#elif QT_VERSION_MAJOR == 6
+#  define QT7_ONLY(...)
+#  define QT6_ONLY(...)         __VA_ARGS__
+#else
+#  error Qt major version not 6 or 7
+#endif
+
 /* These two macros makes it possible to turn the builtin line expander into a
  * string literal. */
 #define QT_STRINGIFY2(x) #x
