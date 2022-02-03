@@ -944,8 +944,6 @@ function(qt_internal_add_example_external_project subdir)
         set(arg_NAME "${arg_NAME}-${short_hash}")
     endif()
 
-    # TODO: Fix 'prefix Qt' example builds not to rely on CMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH
-    #       for finding Qt packages when cross-compiling.
     # TODO: Fix example builds when using Conan / install prefixes are different for each repo.
     if(QT_SUPERBUILD OR QtBase_BINARY_DIR)
         # When doing a top-level build or when building qtbase,
@@ -963,27 +961,28 @@ function(qt_internal_add_example_external_project subdir)
         # for all repos except the one that is currently built. For the repo that is currently
         # built, we pick up the Config files from the current repo build dir instead.
         # For non-prefix builds, there's only one prefix, the main build dir.
+        # Both are handled by this assignment.
         set(qt_prefixes "${QT_BUILD_DIR}")
+
+        # Appending to QT_ADDITIONAL_PACKAGES_PREFIX_PATH helps find Qt6 components in
+        # non-qtbase prefix builds because we use NO_DEFAULT_PATH in find_package calls.
+        # It also handles the cross-compiling scenario where we need to adjust both the root path
+        # and prefixes, with the prefixes containing lib/cmake. This leverages the infrastructure
+        # previously added for Conan.
+        list(APPEND QT_ADDITIONAL_PACKAGES_PREFIX_PATH ${qt_prefixes})
+
+        # In a prefix build, look up all repo Config files in the install prefix,
+        # except for the current repo, which will look in the build dir (handled above).
         if(QT_WILL_INSTALL)
             list(APPEND qt_prefixes "${QT6_INSTALL_PREFIX}")
-
-            # Appending to QT_EXAMPLES_CMAKE_PREFIX_PATH helps find Qt6 components in
-            # non-qtbase prefix builds because we use NO_DEFAULT_PATH in find_package calls.
-            set(QT_EXAMPLES_CMAKE_PREFIX_PATH "${qt_prefixes}")
         endif()
     endif()
 
     set(vars_to_pass_if_defined)
     set(var_defs)
     if(QT_HOST_PATH OR CMAKE_CROSSCOMPILING)
-        # Android NDK forces CMAKE_FIND_ROOT_PATH_MODE_PACKAGE to ONLY, so we
-        # can't rely on this setting here making it through to the example
-        # project.
-        # TODO: Remove CMAKE_FIND_ROOT_PATH_MODE_PACKAGE once cross-compiling examples uses
-        # CMAKE_FIND_ROOT_PATH + CMAKE_PREFIX_PATH instead.
         list(APPEND var_defs
             -DCMAKE_TOOLCHAIN_FILE:FILEPATH=${qt_cmake_dir}/qt.toolchain.cmake
-            -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE:STRING=BOTH
         )
     else()
         list(PREPEND CMAKE_PREFIX_PATH ${qt_prefixes})
@@ -1027,8 +1026,8 @@ function(qt_internal_add_example_external_project subdir)
         CMAKE_CONFIGURATION_TYPES:STRING
         CMAKE_PREFIX_PATH:STRING
         QT_EXAMPLES_CMAKE_PREFIX_PATH:STRING
+        QT_ADDITIONAL_PACKAGES_PREFIX_PATH:STRING
         CMAKE_FIND_ROOT_PATH:STRING
-        CMAKE_FIND_ROOT_PATH_MODE_PACKAGE:STRING
         BUILD_SHARED_LIBS:BOOL
         CMAKE_OSX_ARCHITECTURES:STRING
         CMAKE_OSX_DEPLOYMENT_TARGET:STRING
