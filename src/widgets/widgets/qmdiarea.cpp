@@ -2318,7 +2318,14 @@ void QMdiArea::resizeEvent(QResizeEvent *resizeEvent)
     foreach (QMdiSubWindow *child, d->childWindows) {
         if (sanityCheck(child, "QMdiArea::resizeEvent") && child->isMaximized()
                 && child->size() != resizeEvent->size()) {
-            child->resize(resizeEvent->size());
+            auto realSize = resizeEvent->size();
+            const auto minSizeHint = child->minimumSizeHint();
+            // QMdiSubWindow is no tlw so minimumSize() is not set by the layout manager
+            // and therefore we have to take care by ourself that we're not getting smaller
+            // than allowed
+            if (minSizeHint.isValid())
+                realSize = realSize.expandedTo(minSizeHint);
+            child->resize(realSize);
             if (!hasMaximizedSubWindow)
                 hasMaximizedSubWindow = true;
         }

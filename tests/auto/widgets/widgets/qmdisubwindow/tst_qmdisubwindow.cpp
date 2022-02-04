@@ -45,6 +45,7 @@
 #include <QStyleOptionTitleBar>
 #include <QPushButton>
 #include <QScreen>
+#include <QScrollBar>
 #include <QSizeGrip>
 #include <QSignalSpy>
 #include <QList>
@@ -221,6 +222,7 @@ private slots:
     void styleChange();
     void testFullScreenState();
     void testRemoveBaseWidget();
+    void testRespectMinimumSize();
 };
 
 void tst_QMdiSubWindow::initTestCase()
@@ -2161,6 +2163,36 @@ void tst_QMdiSubWindow::testRemoveBaseWidget()
     QCOMPARE(widget2->parent(), widget1);
 
     delete widget1;
+}
+
+void tst_QMdiSubWindow::testRespectMinimumSize()  // QTBUG-100494
+{
+    QMdiArea mdiArea;
+    mdiArea.resize(400, 400);
+    mdiArea.setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    mdiArea.setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+    auto vlay = new QVBoxLayout;
+    vlay->addWidget(new QPushButton(QLatin1String("btn1-1")));
+    vlay->addSpacerItem(new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding));
+    vlay->addWidget(new QPushButton(QLatin1String("btn1-2")));
+    auto w1 = new QWidget;
+    w1->setLayout(vlay);
+    w1->resize(300, 200);
+    w1->setMinimumSize(200, 150);
+    auto sw = new QMdiSubWindow;
+    sw->setWidget(w1);
+    sw->resize(w1->size());
+    mdiArea.addSubWindow(sw);
+    sw->showMaximized();
+
+    mdiArea.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
+    QVERIFY(!mdiArea.horizontalScrollBar()->isVisible());
+    QVERIFY(!mdiArea.verticalScrollBar()->isVisible());
+    mdiArea.resize(150, 100);
+    QTRY_VERIFY(mdiArea.horizontalScrollBar()->isVisible());
+    QTRY_VERIFY(mdiArea.verticalScrollBar()->isVisible());
 }
 
 QTEST_MAIN(tst_QMdiSubWindow)
