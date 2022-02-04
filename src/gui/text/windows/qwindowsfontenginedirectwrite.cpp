@@ -776,7 +776,7 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
 
                 IDWriteGlyphRunAnalysis *colorGlyphsAnalysis = NULL;
                 hr = factory2->CreateGlyphRunAnalysis(
-                            &glyphRun,
+                            &colorGlyphRun->glyphRun,
                             &transform,
                             renderMode,
                             measureMode,
