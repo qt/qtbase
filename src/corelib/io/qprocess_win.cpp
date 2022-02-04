@@ -399,15 +399,15 @@ static QString qt_create_commandline(const QString &program, const QStringList &
         args = programName + QLatin1Char(' ');
     }
 
-    for (int i=0; i<arguments.size(); ++i) {
+    for (qsizetype i = 0; i < arguments.size(); ++i) {
         QString tmp = arguments.at(i);
         // Quotes are escaped and their preceding backslashes are doubled.
-        int index = tmp.indexOf(QLatin1Char('"'));
+        qsizetype index = tmp.indexOf(QLatin1Char('"'));
         while (index >= 0) {
             // Escape quote
             tmp.insert(index++, QLatin1Char('\\'));
             // Double preceding backslashes (ignoring the one we just inserted)
-            for (int i = index - 2 ; i >= 0 && tmp.at(i) == QLatin1Char('\\') ; --i) {
+            for (qsizetype i = index - 2 ; i >= 0 && tmp.at(i) == QLatin1Char('\\') ; --i) {
                 tmp.insert(i, QLatin1Char('\\'));
                 index++;
             }
@@ -417,7 +417,7 @@ static QString qt_create_commandline(const QString &program, const QStringList &
             // The argument must not end with a \ since this would be interpreted
             // as escaping the quote -- rather put the \ behind the quote: e.g.
             // rather use "foo"\ than "foo\"
-            int i = tmp.length();
+            qsizetype i = tmp.length();
             while (i > 0 && tmp.at(i - 1) == QLatin1Char('\\'))
                 --i;
             tmp.insert(i, QLatin1Char('"'));
