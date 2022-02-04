@@ -30,7 +30,7 @@
     \title Qt Network
     \brief Provides networking capabilities
 
-    The \l{Qt Network} module provides a set of APIs for programming
+    The Qt Network module provides a set of APIs for programming
     applications that use TCP/IP. Operations such as requests, cookies, and
     sending data over HTTP are handled by various C++ classes.
 
