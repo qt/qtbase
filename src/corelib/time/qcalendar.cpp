@@ -453,10 +453,16 @@ QStringList QCalendarRegistry::backendNames(const QCalendarBackend *backend)
     QStringList l;
     l.reserve(byName.size()); // too large, but never really large, so ok
 
+    QT_WARNING_PUSH
+    // Clang complains about the reference still causing a copy. The reference is idiomatic, but
+    // runs afoul of QFlatMap's iterators which return a pair of references instead of a reference
+    // to pair. Suppress the warning, because `const auto [key, value]` would look wrong.
+    QT_WARNING_DISABLE_CLANG("-Wrange-loop-analysis")
     for (const auto &[key, value] : byName) {
         if (value == backend)
             l.push_back(key);
     }
+    QT_WARNING_POP
 
     return l;
 }
