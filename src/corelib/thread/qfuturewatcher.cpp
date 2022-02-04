@@ -615,7 +615,7 @@ QT_WARNING_POP
     following signals will, if applicable, be emitted in the given order:
     started(), progressRangeChanged(), progressValueChanged(),
     progressTextChanged(), resultsReadyAt(), resultReadyAt(), suspending(),
-    suspended(), canceled() finished(). Of these, resultsReadyAt() and
+    suspended(), canceled(), and finished(). Of these, resultsReadyAt() and
     resultReadyAt() may be emitted several times to cover all available
     results. progressValueChanged() and progressTextChanged() will only be
     emitted once for the latest available progress value and text.
