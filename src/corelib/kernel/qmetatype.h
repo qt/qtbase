@@ -46,8 +46,6 @@
 #include <QtCore/qatomic.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qcompare.h>
-#include <QtCore/qvarlengtharray.h>
-#include <QtCore/qrefcount.h>
 #include <QtCore/qscopeguard.h>
 #include <QtCore/qdatastream.h>
 #include <QtCore/qiterable.h>
