@@ -271,6 +271,8 @@ void tst_QRhi::create()
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
 
     if (rhi) {
+        QVERIFY(QRhi::probe(impl, initParams));
+
         qDebug() << rhi->driverInfo();
 
         QCOMPARE(rhi->backend(), impl);

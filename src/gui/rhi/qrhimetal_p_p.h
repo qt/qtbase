@@ -351,6 +351,8 @@ public:
     QRhiMetal(QRhiMetalInitParams *params, QRhiMetalNativeHandles *importDevice = nullptr);
     ~QRhiMetal();
 
+    static bool probe(QRhiMetalInitParams *params);
+
     bool create(QRhi::Flags flags) override;
     void destroy() override;
 

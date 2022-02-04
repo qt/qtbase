@@ -363,6 +363,17 @@ inline Int aligned(Int v, Int byteAlign)
     return (v + byteAlign - 1) & ~(byteAlign - 1);
 }
 
+bool QRhiMetal::probe(QRhiMetalInitParams *params)
+{
+    Q_UNUSED(params);
+    id<MTLDevice> dev = MTLCreateSystemDefaultDevice();
+    if (dev) {
+        [dev release];
+        return true;
+    }
+    return false;
+}
+
 bool QRhiMetal::create(QRhi::Flags flags)
 {
     Q_UNUSED(flags);

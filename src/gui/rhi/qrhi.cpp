@@ -5288,6 +5288,20 @@ QRhi::~QRhi()
     subclasses of QRhiInitParams, such as, QRhiVulkanInitParams,
     QRhiMetalInitParams, QRhiD3D11InitParams, QRhiGles2InitParams. See these
     classes for examples on creating a QRhi.
+
+    QRhi by design does not implement any fallback logic: if the specified API
+    cannot be initialized, create() will fail, with warnings printed on the
+    debug output by the backends. The clients of QRhi, for example Qt Quick,
+    may however provide additional logic that allow falling back to an API
+    different than what was requested, depending on the platform. If the
+    intention is just to test if initialization would succeed when calling
+    create() at later point, it is preferable to use probe() instead of
+    create(), because with some backends probing can be implemented in a more
+    lightweight manner as opposed to create(), which performs full
+    initialization of the infrastructure and is wasteful if that QRhi instance
+    is then thrown immediately away.
+
+    \sa probe()
  */
 QRhi *QRhi::create(Implementation impl, QRhiInitParams *params, Flags flags, QRhiNativeHandles *importDevice)
 {
@@ -5355,6 +5369,40 @@ QRhi *QRhi::create(Implementation impl, QRhiInitParams *params, Flags flags, QRh
     }
 
     return nullptr;
+}
+
+/*!
+    \return true if create() can be expected to succeed when called the given
+    \a impl and \a params.
+
+    For some backends this is equivalent to calling create(), checking its
+    return value, and then destroying the resulting QRhi.
+
+    For others, in particular with Metal, there may be a specific probing
+    implementation, which allows testing in a more lightweight manner without
+    polluting the debug output with warnings upon failures.
+
+    \sa create()
+ */
+bool QRhi::probe(QRhi::Implementation impl, QRhiInitParams *params)
+{
+    bool ok = false;
+
+    // The only place currently where this makes sense is Metal, where the API
+    // is simple enough so that a special probing function - doing nothing but
+    // a MTLCreateSystemDefaultDevice - is reasonable. Elsewhere, just call
+    // create() and then drop the result.
+
+    if (impl == Metal) {
+#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+        ok = QRhiMetal::probe(static_cast<QRhiMetalInitParams *>(params));
+#endif
+    } else {
+        QRhi *rhi = create(impl, params);
+        ok = rhi != nullptr;
+        delete rhi;
+    }
+    return ok;
 }
 
 /*!

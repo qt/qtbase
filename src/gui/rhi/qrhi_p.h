@@ -1711,6 +1711,7 @@ public:
                         QRhiInitParams *params,
                         Flags flags = {},
                         QRhiNativeHandles *importDevice = nullptr);
+    static bool probe(Implementation impl, QRhiInitParams *params);
 
     Implementation backend() const;
     const char *backendName() const;
