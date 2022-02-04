@@ -458,7 +458,7 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_egl
 
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_accessibility
     SOURCES
-        accessible/qaccessible.cpp accessible/qaccessible.h
+        accessible/qaccessible.cpp accessible/qaccessible.h accessible/qaccessible_base.h
         accessible/qaccessiblebridge.cpp accessible/qaccessiblebridge.h
         accessible/qaccessiblebridgeutils.cpp accessible/qaccessiblebridgeutils_p.h
         accessible/qaccessiblecache.cpp accessible/qaccessiblecache_p.h

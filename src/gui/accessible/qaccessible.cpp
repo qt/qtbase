@@ -3003,3 +3003,4 @@ QAccessibleHyperlinkInterface::~QAccessibleHyperlinkInterface()
 
 QT_END_NAMESPACE
 
+#include "moc_qaccessible_base.cpp"
