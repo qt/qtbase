@@ -287,7 +287,7 @@ public:
     };
     Q_DECLARE_FLAGS(AceProcessingOptions, AceProcessingOption)
 
-#if QT_REMOVED_SINCE(6, 3)
+#if QT_CORE_REMOVED_SINCE(6, 3)
     static QString fromAce(const QByteArray &);
     static QByteArray toAce(const QString &);
 #endif

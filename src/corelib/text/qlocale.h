@@ -1104,7 +1104,7 @@ public:
     };
     Q_DECLARE_FLAGS(LanguageCodeTypes, LanguageCodeType)
 
-#if QT_REMOVED_SINCE(6, 3)
+#if QT_CORE_REMOVED_SINCE(6, 3)
     static QString languageToCode(Language language);
     static Language codeToLanguage(QStringView languageCode) noexcept;
 #endif
