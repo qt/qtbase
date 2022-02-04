@@ -899,6 +899,19 @@ function(qt_internal_add_example_external_project subdir)
 
     if(NOT arg_NAME)
         set(arg_NAME "${subdir}")
+
+        # qtdeclarative has calls like qt_internal_add_example(imagine/automotive)
+        # so passing a nested subdirectory. Custom targets (and thus ExternalProjects) can't contain
+        # slashes, so extract the last part of the path to be used as a name.
+        if(arg_NAME MATCHES "/")
+            string(REPLACE "/" ";" exploded_path "${arg_NAME}")
+            list(POP_BACK exploded_path last_dir)
+            if(NOT last_dir)
+                message(FATAL_ERROR "Example subdirectory must have a name.")
+            else()
+                set(arg_NAME "${last_dir}")
+            endif()
+        endif()
     endif()
 
     # Likely a clash with an example subdir ExternalProject custom target of the same name.
