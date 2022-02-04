@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
-#include <QtGui/qaccessible.h>
 
 #ifndef QACCESSIBLEWIDGETFACTORY_H
 #define QACCESSIBLEWIDGETFACTORY_H
@@ -55,6 +54,10 @@
 //
 
 QT_BEGIN_NAMESPACE
+
+class QObject;
+class QAccessibleInterface;
+class QString;
 
 QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *object);
 

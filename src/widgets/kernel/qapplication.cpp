@@ -84,6 +84,9 @@
 #if QT_CONFIG(whatsthis)
 #include <QtWidgets/QWhatsThis>
 #endif
+#ifndef QT_NO_ACCESSIBILITY
+#include <QtGui/qaccessible_base.h>
+#endif
 
 #include "private/qkeymapper_p.h"
 #include "private/qaccessiblewidgetfactory_p.h"
