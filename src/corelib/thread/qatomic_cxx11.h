@@ -278,13 +278,27 @@ template <typename X> struct QAtomicOps
     template <typename T>
     static inline bool ref(std::atomic<T> &_q_value)
     {
-        return ++_q_value != 0;
+        /* Conceptually, we want to
+         *    return ++_q_value != 0;
+         * However, that would be sequentially consistent, and thus stronger
+         * than what we need. Based on
+         * http://eel.is/c++draft/atomics.types.memop#6, we know that
+         * pre-increment is equivalent to fetch_add(1) + 1. Unlike
+         * pre-increment, fetch_add takes a memory order argument, so we can get
+         * the desired acquire-release semantics.
+         * One last gotcha is that fetch_add(1) + 1 would need to be converted
+         * back to T, because it's susceptible to integer promotion. To sidestep
+         * this issue and to avoid UB on signed overflow, we rewrite the
+         * expression to:
+         */
+        return _q_value.fetch_add(1, std::memory_order_acq_rel) != T(-1);
     }
 
     template <typename T>
     static inline bool deref(std::atomic<T> &_q_value) noexcept
     {
-        return --_q_value != 0;
+        // compare with ref
+        return _q_value.fetch_sub(1, std::memory_order_acq_rel) != T(1);
     }
 
     static inline bool isTestAndSetNative() noexcept
