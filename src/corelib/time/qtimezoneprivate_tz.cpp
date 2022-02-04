@@ -1245,7 +1245,7 @@ QList<QByteArray> QTzTimeZonePrivate::availableTimeZoneIds(QLocale::Territory te
 // Getting the system zone's ID:
 
 namespace {
-class ZoneNameReader : public QObject
+class ZoneNameReader
 {
 public:
     QByteArray name()
@@ -1298,7 +1298,7 @@ private:
     {
         static constexpr unsigned long bad = ~0ul;
         unsigned long m_dev, m_ino;
-        StatIdent() : m_dev(bad), m_ino(bad) {}
+        constexpr StatIdent() : m_dev(bad), m_ino(bad) {}
         StatIdent(const QT_STATBUF &data) : m_dev(data.st_dev), m_ino(data.st_ino) {}
         bool isValid() { return m_dev != bad || m_ino != bad; }
         bool operator==(const StatIdent &other)
