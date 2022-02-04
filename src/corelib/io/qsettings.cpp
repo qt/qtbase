@@ -48,6 +48,7 @@
 #include "qfileinfo.h"
 #include "qmutex.h"
 #include "private/qlocking_p.h"
+#include "private/qtools_p.h"
 #include "qlibraryinfo.h"
 #include "qtemporaryfile.h"
 #include "qstandardpaths.h"
@@ -515,8 +516,6 @@ QVariant QSettingsPrivate::stringToVariant(const QString &s)
     return QVariant(s);
 }
 
-static const char hexDigits[] = "0123456789ABCDEF";
-
 void QSettingsPrivate::iniEscapedKey(const QString &key, QByteArray &result)
 {
     result.reserve(result.length() + key.length() * 3 / 2);
@@ -530,13 +529,13 @@ void QSettingsPrivate::iniEscapedKey(const QString &key, QByteArray &result)
             result += (char)ch;
         } else if (ch <= 0xFF) {
             result += '%';
-            result += hexDigits[ch / 16];
-            result += hexDigits[ch % 16];
+            result += QtMiscUtils::toHexUpper(ch / 16);
+            result += QtMiscUtils::toHexUpper(ch % 16);
         } else {
             result += "%U";
             QByteArray hexCode;
             for (int i = 0; i < 4; ++i) {
-                hexCode.prepend(hexDigits[ch % 16]);
+                hexCode.prepend(QtMiscUtils::toHexUpper(ch % 16));
                 ch >>= 4;
             }
             result += hexCode;
@@ -834,7 +833,7 @@ StHexEscape:
         ch -= 'a' - 'A';
     if ((ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'F')) {
         escapeVal <<= 4;
-        escapeVal += strchr(hexDigits, ch) - hexDigits;
+        escapeVal += QtMiscUtils::fromHex(ch);
         ++i;
         goto StHexEscape;
     } else {
