@@ -791,51 +791,53 @@ QDebug operator<<(QDebug dbg, const QShaderDescription::StorageBlock &blk)
 }
 #endif
 
-static const QString nameKey = QLatin1String("name");
-static const QString typeKey = QLatin1String("type");
-static const QString locationKey = QLatin1String("location");
-static const QString bindingKey = QLatin1String("binding");
-static const QString setKey = QLatin1String("set");
-static const QString imageFormatKey = QLatin1String("imageFormat");
-static const QString imageFlagsKey = QLatin1String("imageFlags");
-static const QString offsetKey = QLatin1String("offset");
-static const QString arrayDimsKey = QLatin1String("arrayDims");
-static const QString arrayStrideKey = QLatin1String("arrayStride");
-static const QString matrixStrideKey = QLatin1String("matrixStride");
-static const QString matrixRowMajorKey = QLatin1String("matrixRowMajor");
-static const QString structMembersKey = QLatin1String("structMembers");
-static const QString membersKey = QLatin1String("members");
-static const QString inputsKey = QLatin1String("inputs");
-static const QString outputsKey = QLatin1String("outputs");
-static const QString uniformBlocksKey = QLatin1String("uniformBlocks");
-static const QString blockNameKey = QLatin1String("blockName");
-static const QString structNameKey = QLatin1String("structName");
-static const QString instanceNameKey = QLatin1String("instanceName");
-static const QString sizeKey = QLatin1String("size");
-static const QString knownSizeKey = QLatin1String("knownSize");
-static const QString pushConstantBlocksKey = QLatin1String("pushConstantBlocks");
-static const QString storageBlocksKey = QLatin1String("storageBlocks");
-static const QString combinedImageSamplersKey = QLatin1String("combinedImageSamplers");
-static const QString storageImagesKey = QLatin1String("storageImages");
-static const QString localSizeKey = QLatin1String("localSize");
+#define JSON_KEY(key) static constexpr QLatin1String key ## Key() noexcept { return QLatin1String( #key ); }
+JSON_KEY(name)
+JSON_KEY(type)
+JSON_KEY(location)
+JSON_KEY(binding)
+JSON_KEY(set)
+JSON_KEY(imageFormat)
+JSON_KEY(imageFlags)
+JSON_KEY(offset)
+JSON_KEY(arrayDims)
+JSON_KEY(arrayStride)
+JSON_KEY(matrixStride)
+JSON_KEY(matrixRowMajor)
+JSON_KEY(structMembers)
+JSON_KEY(members)
+JSON_KEY(inputs)
+JSON_KEY(outputs)
+JSON_KEY(uniformBlocks)
+JSON_KEY(blockName)
+JSON_KEY(structName)
+JSON_KEY(instanceName)
+JSON_KEY(size)
+JSON_KEY(knownSize)
+JSON_KEY(pushConstantBlocks)
+JSON_KEY(storageBlocks)
+JSON_KEY(combinedImageSamplers)
+JSON_KEY(storageImages)
+JSON_KEY(localSize)
+#undef JSON_KEY
 
 static void addDeco(QJsonObject *obj, const QShaderDescription::InOutVariable &v)
 {
     if (v.location >= 0)
-        (*obj)[locationKey] = v.location;
+        (*obj)[locationKey()] = v.location;
     if (v.binding >= 0)
-        (*obj)[bindingKey] = v.binding;
+        (*obj)[bindingKey()] = v.binding;
     if (v.descriptorSet >= 0)
-        (*obj)[setKey] = v.descriptorSet;
+        (*obj)[setKey()] = v.descriptorSet;
     if (v.imageFormat != QShaderDescription::ImageFormatUnknown)
-        (*obj)[imageFormatKey] = imageFormatStr(v.imageFormat);
+        (*obj)[imageFormatKey()] = imageFormatStr(v.imageFormat);
     if (v.imageFlags)
-        (*obj)[imageFlagsKey] = int(v.imageFlags);
+        (*obj)[imageFlagsKey()] = int(v.imageFlags);
     if (!v.arrayDims.isEmpty()) {
         QJsonArray dimArr;
         for (int dim : v.arrayDims)
             dimArr.append(dim);
-        (*obj)[arrayDimsKey] = dimArr;
+        (*obj)[arrayDimsKey()] = dimArr;
     }
 }
 
@@ -854,8 +856,8 @@ static void serializeDecorations(QDataStream *stream, const QShaderDescription::
 static QJsonObject inOutObject(const QShaderDescription::InOutVariable &v)
 {
     QJsonObject obj;
-    obj[nameKey] = QString::fromUtf8(v.name);
-    obj[typeKey] = typeStr(v.type);
+    obj[nameKey()] = QString::fromUtf8(v.name);
+    obj[typeKey()] = typeStr(v.type);
     addDeco(&obj, v);
     return obj;
 }
@@ -870,27 +872,27 @@ static void serializeInOutVar(QDataStream *stream, const QShaderDescription::InO
 static QJsonObject blockMemberObject(const QShaderDescription::BlockVariable &v)
 {
     QJsonObject obj;
-    obj[nameKey] = QString::fromUtf8(v.name);
-    obj[typeKey] = typeStr(v.type);
-    obj[offsetKey] = v.offset;
-    obj[sizeKey] = v.size;
+    obj[nameKey()] = QString::fromUtf8(v.name);
+    obj[typeKey()] = typeStr(v.type);
+    obj[offsetKey()] = v.offset;
+    obj[sizeKey()] = v.size;
     if (!v.arrayDims.isEmpty()) {
         QJsonArray dimArr;
         for (int dim : v.arrayDims)
             dimArr.append(dim);
-        obj[arrayDimsKey] = dimArr;
+        obj[arrayDimsKey()] = dimArr;
     }
     if (v.arrayStride)
-        obj[arrayStrideKey] = v.arrayStride;
+        obj[arrayStrideKey()] = v.arrayStride;
     if (v.matrixStride)
-        obj[matrixStrideKey] = v.matrixStride;
+        obj[matrixStrideKey()] = v.matrixStride;
     if (v.matrixIsRowMajor)
-        obj[matrixRowMajorKey] = true;
+        obj[matrixRowMajorKey()] = true;
     if (!v.structMembers.isEmpty()) {
         QJsonArray arr;
         for (const QShaderDescription::BlockVariable &sv : v.structMembers)
             arr.append(blockMemberObject(sv));
-        obj[structMembersKey] = arr;
+        obj[structMembersKey()] = arr;
     }
     return obj;
 }
@@ -920,92 +922,92 @@ QJsonDocument QShaderDescriptionPrivate::makeDoc()
     for (const QShaderDescription::InOutVariable &v : qAsConst(inVars))
         jinputs.append(inOutObject(v));
     if (!jinputs.isEmpty())
-        root[inputsKey] = jinputs;
+        root[inputsKey()] = jinputs;
 
     QJsonArray joutputs;
     for (const QShaderDescription::InOutVariable &v : qAsConst(outVars))
         joutputs.append(inOutObject(v));
     if (!joutputs.isEmpty())
-        root[outputsKey] = joutputs;
+        root[outputsKey()] = joutputs;
 
     QJsonArray juniformBlocks;
     for (const QShaderDescription::UniformBlock &b : uniformBlocks) {
         QJsonObject juniformBlock;
-        juniformBlock[blockNameKey] = QString::fromUtf8(b.blockName);
-        juniformBlock[structNameKey] = QString::fromUtf8(b.structName);
-        juniformBlock[sizeKey] = b.size;
+        juniformBlock[blockNameKey()] = QString::fromUtf8(b.blockName);
+        juniformBlock[structNameKey()] = QString::fromUtf8(b.structName);
+        juniformBlock[sizeKey()] = b.size;
         if (b.binding >= 0)
-            juniformBlock[bindingKey] = b.binding;
+            juniformBlock[bindingKey()] = b.binding;
         if (b.descriptorSet >= 0)
-            juniformBlock[setKey] = b.descriptorSet;
+            juniformBlock[setKey()] = b.descriptorSet;
         QJsonArray members;
         for (const QShaderDescription::BlockVariable &v : b.members)
             members.append(blockMemberObject(v));
-        juniformBlock[membersKey] = members;
+        juniformBlock[membersKey()] = members;
         juniformBlocks.append(juniformBlock);
     }
     if (!juniformBlocks.isEmpty())
-        root[uniformBlocksKey] = juniformBlocks;
+        root[uniformBlocksKey()] = juniformBlocks;
 
     QJsonArray jpushConstantBlocks;
     for (const QShaderDescription::PushConstantBlock &b : pushConstantBlocks) {
         QJsonObject jpushConstantBlock;
-        jpushConstantBlock[nameKey] = QString::fromUtf8(b.name);
-        jpushConstantBlock[sizeKey] = b.size;
+        jpushConstantBlock[nameKey()] = QString::fromUtf8(b.name);
+        jpushConstantBlock[sizeKey()] = b.size;
         QJsonArray members;
         for (const QShaderDescription::BlockVariable &v : b.members)
             members.append(blockMemberObject(v));
-        jpushConstantBlock[membersKey] = members;
+        jpushConstantBlock[membersKey()] = members;
         jpushConstantBlocks.append(jpushConstantBlock);
     }
     if (!jpushConstantBlocks.isEmpty())
-        root[pushConstantBlocksKey] = jpushConstantBlocks;
+        root[pushConstantBlocksKey()] = jpushConstantBlocks;
 
     QJsonArray jstorageBlocks;
     for (const QShaderDescription::StorageBlock &b : storageBlocks) {
         QJsonObject jstorageBlock;
-        jstorageBlock[blockNameKey] = QString::fromUtf8(b.blockName);
-        jstorageBlock[instanceNameKey] = QString::fromUtf8(b.instanceName);
-        jstorageBlock[knownSizeKey] = b.knownSize;
+        jstorageBlock[blockNameKey()] = QString::fromUtf8(b.blockName);
+        jstorageBlock[instanceNameKey()] = QString::fromUtf8(b.instanceName);
+        jstorageBlock[knownSizeKey()] = b.knownSize;
         if (b.binding >= 0)
-            jstorageBlock[bindingKey] = b.binding;
+            jstorageBlock[bindingKey()] = b.binding;
         if (b.descriptorSet >= 0)
-            jstorageBlock[setKey] = b.descriptorSet;
+            jstorageBlock[setKey()] = b.descriptorSet;
         QJsonArray members;
         for (const QShaderDescription::BlockVariable &v : b.members)
             members.append(blockMemberObject(v));
-        jstorageBlock[membersKey] = members;
+        jstorageBlock[membersKey()] = members;
         jstorageBlocks.append(jstorageBlock);
     }
     if (!jstorageBlocks.isEmpty())
-        root[storageBlocksKey] = jstorageBlocks;
+        root[storageBlocksKey()] = jstorageBlocks;
 
     QJsonArray jcombinedSamplers;
     for (const QShaderDescription::InOutVariable &v : qAsConst(combinedImageSamplers)) {
         QJsonObject sampler;
-        sampler[nameKey] = QString::fromUtf8(v.name);
-        sampler[typeKey] = typeStr(v.type);
+        sampler[nameKey()] = QString::fromUtf8(v.name);
+        sampler[typeKey()] = typeStr(v.type);
         addDeco(&sampler, v);
         jcombinedSamplers.append(sampler);
     }
     if (!jcombinedSamplers.isEmpty())
-        root[combinedImageSamplersKey] = jcombinedSamplers;
+        root[combinedImageSamplersKey()] = jcombinedSamplers;
 
     QJsonArray jstorageImages;
     for (const QShaderDescription::InOutVariable &v : qAsConst(storageImages)) {
         QJsonObject image;
-        image[nameKey] = QString::fromUtf8(v.name);
-        image[typeKey] = typeStr(v.type);
+        image[nameKey()] = QString::fromUtf8(v.name);
+        image[typeKey()] = typeStr(v.type);
         addDeco(&image, v);
         jstorageImages.append(image);
     }
     if (!jstorageImages.isEmpty())
-        root[storageImagesKey] = jstorageImages;
+        root[storageImagesKey()] = jstorageImages;
 
     QJsonArray jlocalSize;
     for (int i = 0; i < 3; ++i)
         jlocalSize.append(QJsonValue(int(localSize[i])));
-    root[localSizeKey] = jlocalSize;
+    root[localSizeKey()] = jlocalSize;
 
     return QJsonDocument(root);
 }
