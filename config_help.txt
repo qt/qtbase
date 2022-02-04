@@ -110,7 +110,7 @@ Build options:
                          for example, -sanitize address cannot be combined with
                          -sanitize thread.
 
-  -c++std <edition> .... Select C++ standard <edition> [c++20/c++17/c++14/c++11]
+  -c++std <edition> .... Select C++ standard <edition> [c++2b/c++20/c++17/c++14/c++11]
 
   -sse2 ................ Use SSE2 instructions [auto]
   -sse3/-ssse3/-sse4.1/-sse4.2/-avx/-avx2/-avx512

@@ -177,6 +177,25 @@ int main(void)
     CXX_STANDARD 20
 )
 
+qt_config_compile_test(cxx2b
+    LABEL "C++2b support"
+    CODE
+"#if __cplusplus > 202002L
+// Compiler claims to support C++2B, trust it
+#else
+#  error __cplusplus must be > 202002L (the value for C++20)
+#endif
+
+int main(void)
+{
+    /* BEGIN TEST: */
+    /* END TEST: */
+    return 0;
+}
+"
+    CXX_STANDARD 23
+)
+
 # precompile_header
 qt_config_compile_test(precompile_header
     LABEL "precompiled header support"
@@ -642,6 +661,11 @@ qt_feature("c++2b" PUBLIC
     AUTODETECT OFF
 )
 qt_feature_config("c++2b" QMAKE_PUBLIC_QT_CONFIG)
+qt_feature("c++2b" PUBLIC
+    LABEL "C++2b"
+    AUTODETECT FALSE
+    CONDITION QT_FEATURE_cxx20 AND (CMAKE_VERSION VERSION_GREATER_EQUAL "3.20") AND TEST_cxx2b
+)
 qt_feature("c89"
     LABEL "C89"
 )
@@ -1061,7 +1085,7 @@ qt_configure_add_summary_entry(
 )
 qt_configure_add_summary_entry(
     TYPE "firstAvailableFeature"
-    ARGS "c++20 c++17 c++14 c++11"
+    ARGS "c++2b c++20 c++17 c++14 c++11"
     MESSAGE "Using C++ standard"
 )
 qt_configure_add_summary_entry(
