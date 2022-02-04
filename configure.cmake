@@ -819,12 +819,6 @@ qt_feature("shani" PRIVATE
 )
 qt_feature_definition("shani" "QT_COMPILER_SUPPORTS_SHA" VALUE "1")
 qt_feature_config("shani" QMAKE_PRIVATE_CONFIG)
-qt_feature("simdAlways"
-    LABEL "Intrinsics without compiler architecture option"
-    CONDITION ( ( ( TEST_architecture_arch STREQUAL i386 ) OR ( TEST_architecture_arch STREQUAL x86_64 ) ) AND ON ) OR ( TEST_architecture_arch STREQUAL arm64 )
-)
-qt_feature_definition("simdAlways" "QT_COMPILER_SUPPORTS_SIMD_ALWAYS" VALUE "1")
-qt_feature_config("simdAlways" QMAKE_PRIVATE_CONFIG)
 qt_feature("mips_dsp" PRIVATE
     LABEL "DSP"
     CONDITION ( TEST_architecture_arch STREQUAL mips ) AND TEST_arch_${TEST_architecture_arch}_subarch_dsp
@@ -1078,10 +1072,6 @@ qt_configure_add_summary_entry(
     ARGS "aesni f16c rdrnd shani"
     MESSAGE "Other x86"
     CONDITION ( ( TEST_architecture_arch STREQUAL i386 ) OR ( TEST_architecture_arch STREQUAL x86_64 ) )
-)
-qt_configure_add_summary_entry(
-    ARGS "simdAlways"
-    CONDITION ( ( TEST_architecture_arch STREQUAL i386 ) OR ( TEST_architecture_arch STREQUAL x86_64 ) OR ( TEST_architecture_arch STREQUAL arm64 ) ) AND NOT MSVC
 )
 qt_configure_add_summary_entry(
     TYPE "featureList"

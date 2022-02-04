@@ -103,6 +103,9 @@
  *   sub-arch. Only inside such functions is the use of the intrisics
  *   guaranteed to work. This is useful with runtime detection (see below).
  *
+ * The distinction between QT_COMPILER_SUPPORTS and QT_COMPILER_SUPPORTS_HERE is
+ * historical: GCC 4.8 needed the distinction.
+ *
  * Runtime detection of a CPU sub-architecture can be done with the
  * qCpuHasFeature(XXX) function. There are two strategies for generating
  * optimized code like that:
@@ -145,7 +148,7 @@
 
 #define QT_COMPILER_SUPPORTS(x)     (QT_COMPILER_SUPPORTS_ ## x - 0)
 
-#if defined(Q_PROCESSOR_ARM) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS)
+#if defined(Q_PROCESSOR_ARM)
 #  define QT_COMPILER_SUPPORTS_HERE(x)    ((__ARM_FEATURE_ ## x) || (__ ## x ## __) || QT_COMPILER_SUPPORTS(x))
 #  if defined(Q_CC_GNU)
      /* GCC requires attributes for a function */
@@ -162,7 +165,7 @@
 #  if !defined(__MIPS_DSPR2__) && defined(__mips_dspr2) && defined(Q_PROCESSOR_MIPS_32)
 #    define __MIPS_DSPR2__
 #  endif
-#elif defined(Q_PROCESSOR_X86) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS)
+#elif defined(Q_PROCESSOR_X86)
 #  if defined(Q_CC_CLANG) && defined(Q_CC_MSVC)
 #    define QT_COMPILER_SUPPORTS_HERE(x)    (__ ## x ## __)
 #  else
