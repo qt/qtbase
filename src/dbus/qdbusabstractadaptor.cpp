@@ -58,13 +58,13 @@
 
 QT_BEGIN_NAMESPACE
 
-static int cachedRelaySlotMethodIndex = -1;
+static int cachedRelaySlotMethodIndex = 0;
 
 int QDBusAdaptorConnector::relaySlotMethodIndex()
 {
-    if (cachedRelaySlotMethodIndex == -1) {
+    if (cachedRelaySlotMethodIndex == 0) {
         cachedRelaySlotMethodIndex = staticMetaObject.indexOfMethod("relaySlot()");
-        Q_ASSERT(cachedRelaySlotMethodIndex != -1);
+        Q_ASSERT(cachedRelaySlotMethodIndex != 0); // 0 should be deleteLater() or destroyed()
     }
     return cachedRelaySlotMethodIndex;
 }
