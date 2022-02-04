@@ -401,7 +401,7 @@ void QPointerEvent::setExclusiveGrabber(const QEventPoint &point, QObject *exclu
     Returns the list of objects that have been requested to receive all
     future update events and the release event containing the given \a point.
 
-    It's mainly for use in Qt Quick at this time.
+    It's only for use by \l {Qt Quick Input Handlers}.
 
     \sa QPointerEvent::addPassiveGrabber()
 */
@@ -421,7 +421,7 @@ QList<QPointer<QObject> > QPointerEvent::passiveGrabbers(const QEventPoint &poin
     future update events and the release event containing the given \a point,
     regardless where else those events may be delivered.
 
-    It's mainly for use in Qt Quick at this time.
+    It's only for use by \l {Qt Quick Input Handlers}.
 
     Returns \c false if \a grabber was already added, \c true otherwise.
 */
@@ -436,7 +436,7 @@ bool QPointerEvent::addPassiveGrabber(const QEventPoint &point, QObject *grabber
     Removes the passive \a grabber from the given \a point if it was previously added.
     Returns \c true if it had been a passive grabber before, \c false if not.
 
-    It's mainly for use in Qt Quick at this time.
+    It's only for use by \l {Qt Quick Input Handlers}.
 
     \sa QPointerEvent::addPassiveGrabber()
 */
@@ -450,7 +450,7 @@ bool QPointerEvent::removePassiveGrabber(const QEventPoint &point, QObject *grab
 /*!
     Removes all passive grabbers from the given \a point.
 
-    It's mainly for use in Qt Quick at this time.
+    It's only for use by \l {Qt Quick Input Handlers}.
 
     \sa QPointerEvent::addPassiveGrabber()
 */
