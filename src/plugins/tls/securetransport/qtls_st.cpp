@@ -287,7 +287,7 @@ OSStatus TlsCryptographSecureTransport::ReadCallback(TlsCryptographSecureTranspo
         return errSecIO;
     }
 
-    const OSStatus err = (size_t(bytes) < *dataLength) ? errSSLWouldBlock : errSecSuccess;
+    const OSStatus err = (size_t(bytes) < *dataLength) ? OSStatus(errSSLWouldBlock) : OSStatus(errSecSuccess);
     *dataLength = bytes;
 
     return err;
@@ -313,7 +313,7 @@ OSStatus TlsCryptographSecureTransport::WriteCallback(TlsCryptographSecureTransp
         return errSecIO;
     }
 
-    const OSStatus err = (size_t(bytes) < *dataLength) ? errSSLWouldBlock : errSecSuccess;
+    const OSStatus err = (size_t(bytes) < *dataLength) ? OSStatus(errSSLWouldBlock) : OSStatus(errSecSuccess);
     *dataLength = bytes;
 
     return err;
