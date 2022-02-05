@@ -230,13 +230,13 @@ static QString displayName(CGDirectDisplayID displayID)
         NSDictionary *info = [(__bridge NSDictionary*)IODisplayCreateInfoDictionary(
             display, kIODisplayOnlyPreferredName) autorelease];
 
-        if ([[info objectForKey:@kDisplayVendorID] longValue] != CGDisplayVendorNumber(displayID))
+        if ([[info objectForKey:@kDisplayVendorID] unsignedIntValue] != CGDisplayVendorNumber(displayID))
             continue;
 
-        if ([[info objectForKey:@kDisplayProductID] longValue] != CGDisplayModelNumber(displayID))
+        if ([[info objectForKey:@kDisplayProductID] unsignedIntValue] != CGDisplayModelNumber(displayID))
             continue;
 
-        if ([[info objectForKey:@kDisplaySerialNumber] longValue] != CGDisplaySerialNumber(displayID))
+        if ([[info objectForKey:@kDisplaySerialNumber] unsignedIntValue] != CGDisplaySerialNumber(displayID))
             continue;
 
         NSDictionary *localizedNames = [info objectForKey:@kDisplayProductName];
