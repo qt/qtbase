@@ -37,7 +37,7 @@
 #if __cplusplus >= 202002L && (!defined(_GLIBCXX_RELEASE) || _GLIBCXX_RELEASE >= 11)
 #  if __has_include(<concepts>)
 #    include <concepts>
-#    if defined(__cpp_concepts)
+#    if defined(__cpp_lib_concepts) && __cpp_lib_concepts >= 202002L
        static_assert(std::contiguous_iterator<QList<int>::iterator>);
        static_assert(std::contiguous_iterator<QList<int>::const_iterator>);
 #    endif
