@@ -192,13 +192,20 @@ void tst_QScrollBar::QTBUG_42871()
     QMouseEvent mousePressEvent(QEvent::MouseButtonPress, pressPoint, globalPressPoint,
                                 Qt::LeftButton, Qt::LeftButton, {});
     QApplication::sendEvent(&scrollBarWidget, &mousePressEvent);
+    QElapsedTimer timer;
+    timer.start();
     QTest::qWait(1);
     QMouseEvent mouseReleaseEvent(QEvent::MouseButtonRelease, pressPoint, globalPressPoint,
                                   Qt::LeftButton, Qt::LeftButton, {});
     QApplication::sendEvent(&scrollBarWidget, &mouseReleaseEvent);
+    if (timer.elapsed() > 40) {
+        // took too long, we need to tolerate auto-repeat
+        if (myHandler.updatesCount > 1)
+            QEXPECT_FAIL("", "Took too long to process events, repeat timer fired", Continue);
+    }
     // Check that the action was triggered once.
     QCOMPARE(myHandler.updatesCount, 1);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.count(), myHandler.updatesCount);
 }
 
 QTEST_MAIN(tst_QScrollBar)
