@@ -58,22 +58,22 @@ CGBitmapInfo qt_mac_bitmapInfoForImage(const QImage &image)
     CGBitmapInfo bitmapInfo = kCGImageAlphaNone;
     switch (image.format()) {
     case QImage::Format_ARGB32:
-        bitmapInfo = kCGImageAlphaFirst | kCGBitmapByteOrder32Host;
+        bitmapInfo = CGBitmapInfo(kCGImageAlphaFirst) | kCGBitmapByteOrder32Host;
         break;
     case QImage::Format_RGB32:
-        bitmapInfo = kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Host;
+        bitmapInfo = CGBitmapInfo(kCGImageAlphaNoneSkipFirst) | kCGBitmapByteOrder32Host;
         break;
     case QImage::Format_RGBA8888_Premultiplied:
-        bitmapInfo = kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big;
+        bitmapInfo = CGBitmapInfo(kCGImageAlphaPremultipliedLast) | kCGBitmapByteOrder32Big;
         break;
     case QImage::Format_RGBA8888:
-        bitmapInfo = kCGImageAlphaLast | kCGBitmapByteOrder32Big;
+        bitmapInfo = CGBitmapInfo(kCGImageAlphaLast) | kCGBitmapByteOrder32Big;
         break;
     case QImage::Format_RGBX8888:
-        bitmapInfo = kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Big;
+        bitmapInfo = CGBitmapInfo(kCGImageAlphaNoneSkipLast) | kCGBitmapByteOrder32Big;
         break;
     case QImage::Format_ARGB32_Premultiplied:
-        bitmapInfo = kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host;
+        bitmapInfo = CGBitmapInfo(kCGImageAlphaPremultipliedFirst) | kCGBitmapByteOrder32Host;
         break;
     default: break;
     }
