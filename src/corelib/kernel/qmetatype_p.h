@@ -56,67 +56,6 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QModulesPrivate {
-enum Names { Core, Gui, Widgets, Unknown, ModulesCount /* ModulesCount has to be at the end */ };
-
-template <typename T>
-class QTypeModuleInfo
-{
-public:
-    enum Module : bool {
-        IsCore = false,
-        IsWidget = false,
-        IsGui = false,
-        IsUnknown = true
-    };
-};
-
-#define QT_ASSIGN_TYPE_TO_MODULE(TYPE, MODULE) \
-template<> \
-class QTypeModuleInfo<TYPE > \
-{ \
-public: \
-    enum Module : bool { \
-        IsCore = (((MODULE) == (QModulesPrivate::Core))), \
-        IsWidget = (((MODULE) == (QModulesPrivate::Widgets))), \
-        IsGui = (((MODULE) == (QModulesPrivate::Gui))), \
-        IsUnknown = !(IsCore || IsWidget || IsGui) \
-    }; \
-    static inline int module() { return MODULE; } \
-    static_assert((IsUnknown && !(IsCore || IsWidget || IsGui)) \
-                 || (IsCore && !(IsUnknown || IsWidget || IsGui)) \
-                 || (IsWidget && !(IsUnknown || IsCore || IsGui)) \
-                 || (IsGui && !(IsUnknown || IsCore || IsWidget))); \
-};
-
-
-#define QT_DECLARE_CORE_MODULE_TYPES_ITER(TypeName, TypeId, Name) \
-    QT_ASSIGN_TYPE_TO_MODULE(Name, QModulesPrivate::Core)
-#define QT_DECLARE_GUI_MODULE_TYPES_ITER(TypeName, TypeId, Name) \
-    QT_ASSIGN_TYPE_TO_MODULE(Name, QModulesPrivate::Gui)
-#define QT_DECLARE_WIDGETS_MODULE_TYPES_ITER(TypeName, TypeId, Name) \
-    QT_ASSIGN_TYPE_TO_MODULE(Name, QModulesPrivate::Widgets)
-
-QT_WARNING_PUSH
-#if defined(Q_CC_CLANG) && Q_CC_CLANG >= 900
-QT_WARNING_DISABLE_CLANG("-Wconstant-logical-operand")
-#endif
-
-QT_FOR_EACH_STATIC_PRIMITIVE_TYPE(QT_DECLARE_CORE_MODULE_TYPES_ITER)
-QT_FOR_EACH_STATIC_PRIMITIVE_POINTER(QT_DECLARE_CORE_MODULE_TYPES_ITER)
-QT_FOR_EACH_STATIC_CORE_CLASS(QT_DECLARE_CORE_MODULE_TYPES_ITER)
-QT_FOR_EACH_STATIC_CORE_POINTER(QT_DECLARE_CORE_MODULE_TYPES_ITER)
-QT_FOR_EACH_STATIC_CORE_TEMPLATE(QT_DECLARE_CORE_MODULE_TYPES_ITER)
-QT_FOR_EACH_STATIC_GUI_CLASS(QT_DECLARE_GUI_MODULE_TYPES_ITER)
-QT_FOR_EACH_STATIC_WIDGETS_CLASS(QT_DECLARE_WIDGETS_MODULE_TYPES_ITER)
-
-QT_WARNING_POP
-} // namespace QModulesPrivate
-
-#undef QT_DECLARE_CORE_MODULE_TYPES_ITER
-#undef QT_DECLARE_GUI_MODULE_TYPES_ITER
-#undef QT_DECLARE_WIDGETS_MODULE_TYPES_ITER
-
 #define QMETATYPE_CONVERTER(To, From, assign_and_return) \
     case makePair(QMetaType::To, QMetaType::From): \
         if (onlyCheck) \

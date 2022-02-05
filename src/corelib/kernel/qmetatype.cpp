@@ -100,12 +100,6 @@ QT_BEGIN_NAMESPACE
 QT_IMPL_METATYPE_EXTERN_TAGGED(QtMetaTypePrivate::QPairVariantInterfaceImpl, QPairVariantInterfaceImpl)
 
 namespace {
-struct DefinedTypesFilter {
-    template<typename T>
-    struct Acceptor {
-        static const bool IsAccepted = QtMetaTypePrivate::TypeDefinition<T>::IsAvailable && QModulesPrivate::QTypeModuleInfo<T>::IsCore;
-    };
-};
 
 struct QMetaTypeCustomRegistry
 {
