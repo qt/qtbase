@@ -59,17 +59,6 @@ QT_BEGIN_NAMESPACE
 namespace QModulesPrivate {
 enum Names { Core, Gui, Widgets, Unknown, ModulesCount /* ModulesCount has to be at the end */ };
 
-static inline int moduleForType(const uint typeId)
-{
-    if (typeId <= QMetaType::LastCoreType)
-        return Core;
-    if (typeId >= QMetaType::FirstGuiType && typeId <= QMetaType::LastGuiType)
-        return Gui;
-    if (typeId >= QMetaType::FirstWidgetsType && typeId <= QMetaType::LastWidgetsType)
-        return Widgets;
-    return Unknown;
-}
-
 template <typename T>
 class QTypeModuleInfo
 {
