@@ -47,7 +47,7 @@
 #include <unordered_set>
 #include <unordered_map>
 
-#if __cplusplus >= 202002L && defined(__cpp_lib_erase_if)
+#if defined(__cpp_lib_erase_if) && __cpp_lib_erase_if >= 202002L
 #  define STDLIB_HAS_UNIFORM_ERASURE
 #endif
 
