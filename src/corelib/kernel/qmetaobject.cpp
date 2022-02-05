@@ -3160,19 +3160,20 @@ bool QMetaProperty::isAlias() const
     return (data.flags() & Alias);
 }
 
+#if QT_DEPRECATED_SINCE(6, 4)
 /*!
     \internal
+    Historically:
     Executes metacall with QMetaObject::RegisterPropertyMetaType flag.
     Returns id of registered type or QMetaType::UnknownType if a type
     could not be registered for any reason.
+    Obsolete since Qt 6
 */
 int QMetaProperty::registerPropertyType() const
 {
-    int registerResult = -1;
-    void *argv[] = { &registerResult };
-    mobj->static_metacall(QMetaObject::RegisterPropertyMetaType, data.index(mobj), argv);
-    return registerResult == -1 ? QMetaType::UnknownType : registerResult;
+    return typeId();
 }
+#endif
 
 QMetaProperty::QMetaProperty(const QMetaObject *mobj, int index)
     : mobj(mobj),

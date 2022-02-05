@@ -1040,6 +1040,7 @@ void Generator::generateMetacall()
 }
 
 
+// ### Qt 7 (6.x?): remove
 QMultiMap<QByteArray, int> Generator::automaticPropertyMetaTypesHelper()
 {
     QMultiMap<QByteArray, int> automaticPropertyMetaTypes;

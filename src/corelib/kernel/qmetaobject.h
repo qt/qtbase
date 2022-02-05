@@ -332,7 +332,10 @@ public:
     inline const QMetaObject *enclosingMetaObject() const { return mobj; }
 
 private:
+#if QT_DEPRECATED_SINCE(6, 4)
+    QT_DEPRECATED_VERSION_X_6_4("obsolete, simply returns typeId()")
     int registerPropertyType() const;
+#endif
 
     struct Data {
         enum { Size = 5 };
