@@ -112,7 +112,7 @@ struct Q_CORE_EXPORT QPropertyBindingSourceLocation
     quint32 column = 0;
     QPropertyBindingSourceLocation() = default;
 #ifdef QT_PROPERTY_COLLECT_BINDING_LOCATION
-    QPropertyBindingSourceLocation(const QT_SOURCE_LOCATION_NAMESPACE::source_location &cppLocation)
+    constexpr QPropertyBindingSourceLocation(const QT_SOURCE_LOCATION_NAMESPACE::source_location &cppLocation)
     {
         fileName = cppLocation.file_name();
         functionName = cppLocation.function_name();
