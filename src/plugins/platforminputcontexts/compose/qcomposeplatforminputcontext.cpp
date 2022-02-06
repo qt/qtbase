@@ -39,6 +39,7 @@
 #include "qcomposeplatforminputcontext.h"
 
 #include <QtCore/QCoreApplication>
+#include <QtCore/qvarlengtharray.h>
 #include <QtGui/QKeyEvent>
 #include <QtGui/QGuiApplication>
 

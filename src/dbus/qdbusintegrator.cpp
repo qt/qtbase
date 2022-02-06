@@ -50,6 +50,7 @@
 #include <qtimer.h>
 #include <qthread.h>
 #include <private/qlocking_p.h>
+#include <QtCore/qset.h>
 
 #include "qdbusargument.h"
 #include "qdbusconnection_p.h"

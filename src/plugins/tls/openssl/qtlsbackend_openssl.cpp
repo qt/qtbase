@@ -57,6 +57,7 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qmutex.h>
 #include <QtCore/qscopeguard.h>
+#include <QtCore/qset.h>
 
 #include "qopenssl_p.h"
 

@@ -42,6 +42,8 @@
 #include <QtGui/QGuiApplication>
 #include <qpa/qwindowsysteminterface.h>
 
+#include <QtCore/qhash.h>
+#include <QtCore/qbytearray.h>
 #include <QtCore/QDebug>
 #include <QtCore/QMetaEnum>
 #include <QtCore/QSocketNotifier>

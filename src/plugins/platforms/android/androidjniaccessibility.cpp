@@ -51,6 +51,7 @@
 #include <QtCore/QJniObject>
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtCore/QObject>
+#include <QtCore/qvarlengtharray.h>
 
 static const char m_qtTag[] = "Qt A11Y";
 static const char m_classErrorMsg[] = "Can't find class \"%s\"";

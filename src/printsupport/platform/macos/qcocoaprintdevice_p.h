@@ -56,6 +56,7 @@
 
 #ifndef QT_NO_PRINTER
 
+#include <QtCore/qhash.h>
 #include <ApplicationServices/ApplicationServices.h>
 
 #include <QtPrintSupport/qtprintsupportglobal.h>

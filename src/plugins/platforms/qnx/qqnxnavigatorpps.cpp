@@ -40,6 +40,8 @@
 #include "qqnxnavigatorpps.h"
 
 #include <QDebug>
+#include <QHash>
+#include <QByteArray>
 #include <private/qcore_unix_p.h>
 
 #if defined(QQNXNAVIGATOR_DEBUG)

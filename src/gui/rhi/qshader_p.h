@@ -52,6 +52,7 @@
 //
 
 #include <QtGui/qtguiglobal.h>
+#include <QtCore/qhash.h>
 #include <private/qshaderdescription_p.h>
 
 QT_BEGIN_NAMESPACE

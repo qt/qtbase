@@ -42,6 +42,9 @@
 #include <QElapsedTimer>
 #include <QRegularExpression>
 #include <QSettings>
+#include <QHash>
+#include <QSet>
+#include <QMap>
 
 #include <depfile_shared.h>
 

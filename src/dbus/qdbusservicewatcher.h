@@ -40,12 +40,17 @@
 #ifndef QDBUSSERVICEWATCHER_H
 #define QDBUSSERVICEWATCHER_H
 
+#include <QtCore/QObject>
+#include <QtCore/qcontainerfwd.h> // Q(String)List
 #include <QtDBus/qtdbusglobal.h>
 
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_QOBJECT)
 
 QT_BEGIN_NAMESPACE
 
+class QString;
+template<typename T>
+class QBindable;
 
 class QDBusConnection;
 

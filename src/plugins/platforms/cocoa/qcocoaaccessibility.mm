@@ -42,6 +42,7 @@
 #include "qcocoaaccessibility.h"
 #include "qcocoaaccessibilityelement.h"
 #include <QtGui/qaccessible.h>
+#include <QtCore/qmap.h>
 #include <private/qcore_mac_p.h>
 
 QT_BEGIN_NAMESPACE

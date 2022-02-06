@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qvkkhrdisplayvulkaninstance.h"
+#include <QVarLengthArray>
 
 QT_BEGIN_NAMESPACE
 

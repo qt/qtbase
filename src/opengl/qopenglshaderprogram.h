@@ -40,6 +40,7 @@
 #ifndef QOPENGLSHADERPROGRAM_H
 #define QOPENGLSHADERPROGRAM_H
 
+#include <QtCore/qobject.h>
 #include <QtOpenGL/qtopenglglobal.h>
 
 #include <QtGui/qopengl.h>

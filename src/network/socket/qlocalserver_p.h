@@ -61,6 +61,7 @@ QT_REQUIRE_CONFIG(localserver);
 
 #if defined(QT_LOCALSOCKET_TCP)
 #   include <qtcpserver.h>
+#   include <QtCore/qmap.h>
 #elif defined(Q_OS_WIN)
 #   include <qt_windows.h>
 #   include <qwineventnotifier.h>

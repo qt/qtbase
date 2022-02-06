@@ -40,6 +40,7 @@
 #ifndef QIOSCLIPBOARD_H
 #define QIOSCLIPBOARD_H
 
+#include <QtCore/qmap.h>
 #include <qpa/qplatformclipboard.h>
 
 #ifndef QT_NO_CLIPBOARD

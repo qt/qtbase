@@ -57,6 +57,7 @@
 #include <QObject>
 #include <QString>
 #include <QList>
+#include <QHash>
 #include <QThread>
 #include <QtCore/private/qthread_p.h>
 #include <qpa/qwindowsysteminterface.h>

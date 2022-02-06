@@ -41,6 +41,7 @@
 #include "qwindowscontext.h"
 
 #include <QtCore/qvariant.h>
+#include <QtCore/qmap.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qtextstream.h>
 #include <QtCore/qcoreapplication.h>

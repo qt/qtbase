@@ -49,13 +49,14 @@
 // source and binary incompatible with future versions of Qt.
 //
 
+#include <QtCore/qobject.h>
 #include <QtGui/qtguiglobal.h>
 #include <QtCore/qpointer.h>
-#include <QtGui/QFont>
+#include <QtGui/qfont.h>
 #if QT_CONFIG(shortcut)
-#  include <QtGui/QKeySequence>
+#  include <QtGui/qkeysequence.h>
 #endif
-#include <QtGui/QIcon>
+#include <QtGui/qicon.h>
 
 QT_BEGIN_NAMESPACE
 

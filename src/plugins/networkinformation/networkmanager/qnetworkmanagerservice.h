@@ -51,9 +51,9 @@
 // We mean it.
 //
 
-#include <QtDBus/QDBusAbstractInterface>
-#include <QtDBus/QDBusPendingCallWatcher>
-#include <QtDBus/QDBusObjectPath>
+#include <QtCore/qvariant.h>
+#include <QtCore/qmap.h>
+#include <QtDBus/qdbusabstractinterface.h>
 
 #include <optional>
 
@@ -73,6 +73,8 @@ enum NMDeviceState {
 };
 
 QT_BEGIN_NAMESPACE
+
+class QDBusObjectPath;
 
 // This tiny class exists for the purpose of seeing if NetworkManager is available without
 // initializing everything the derived/full class needs.

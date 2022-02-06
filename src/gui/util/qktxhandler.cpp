@@ -41,6 +41,7 @@
 #include "qtexturefiledata_p.h"
 #include <QtEndian>
 #include <QSize>
+#include <QMap>
 #include <QtCore/qiodevice.h>
 
 //#define KTX_DEBUG

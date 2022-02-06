@@ -41,6 +41,7 @@
 #define QCOCOAGLCONTEXT_H
 
 #include <QtCore/QPointer>
+#include <QtCore/QVarLengthArray>
 #include <QtCore/private/qcore_mac_p.h>
 #include <qpa/qplatformopenglcontext.h>
 #include <QtGui/qopenglcontext.h>

@@ -54,6 +54,8 @@
 
 #include <QtCore/QJniEnvironment>
 #include <QtCore/QJniObject>
+#include <QtCore/QList>
+#include <QtCore/QByteArray>
 
 QT_BEGIN_NAMESPACE
 

@@ -34,6 +34,8 @@
 #include <QProcess>
 #include <QDir>
 #include <QSet>
+#include <QVariant>
+#include <QVariantMap>
 #include <QStack>
 #include <QDirIterator>
 #include <QLibraryInfo>

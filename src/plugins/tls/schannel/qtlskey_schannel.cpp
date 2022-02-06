@@ -51,6 +51,7 @@
 
 #include <QtCore/qscopeguard.h>
 #include <QtCore/qbytearray.h>
+#include <QtCore/qvarlengtharray.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -43,6 +43,8 @@
 #include <qpa/qplatformtheme.h>
 #include <QtGui/qfont.h>
 #include <QtGui/qpalette.h>
+#include <QtCore/qhash.h>
+#include <QtCore/qbytearray.h>
 
 #include <QJsonObject>
 
