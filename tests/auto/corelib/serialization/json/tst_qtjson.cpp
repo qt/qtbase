@@ -68,6 +68,7 @@ private Q_SLOTS:
     void testObjectNestedEmpty();
 
     void testValueRef();
+    void testValueRefComparison();
     void testObjectIteration();
     void testArrayIteration();
 
@@ -908,6 +909,57 @@ void tst_QtJson::testValueRef()
     QCOMPARE(array[1], array[2]);
     QCOMPARE(array[2], object[QLatin1String("key")]);
     QCOMPARE(object.value(QLatin1String("key")), QJsonValue(42));
+}
+
+void tst_QtJson::testValueRefComparison()
+{
+    QJsonValue a0 = 42.;
+    QJsonValue a1 = QStringLiteral("142");
+
+#define CHECK_IMPL(lhs, rhs, ineq) \
+    QCOMPARE(lhs, rhs); \
+    QVERIFY(!(lhs != rhs)); \
+    QVERIFY(lhs != ineq); \
+    QVERIFY(!(lhs == ineq)); \
+    QVERIFY(ineq != rhs); \
+    QVERIFY(!(ineq == rhs)); \
+    /* end */
+
+#define CHECK(lhs, rhs, ineq) \
+    do { \
+        CHECK_IMPL(lhs, rhs, ineq) \
+        CHECK_IMPL(qAsConst(lhs), rhs, ineq) \
+        CHECK_IMPL(lhs, qAsConst(rhs), ineq) \
+        CHECK_IMPL(qAsConst(lhs), qAsConst(rhs), ineq) \
+    } while (0)
+
+    // check that the (in)equality operators aren't ambiguous in C++20:
+    QJsonArray a = {a0, a1};
+
+    Q_STATIC_ASSERT((std::is_same<decltype(a[0]), QJsonValueRef>::value));
+
+    auto r0 = a.begin()[0];
+    auto r1 = a.begin()[1];
+    auto c0 = qAsConst(a).begin()[0];
+    // ref <> ref
+    CHECK(r0, r0, r1);
+    // cref <> ref
+    CHECK(c0, r0, r1);
+    // ref <> cref
+    CHECK(r0, c0, r1);
+    // ref <> val
+    CHECK(r0, a0, r1);
+    // cref <> val
+    CHECK(c0, a0, r1);
+    // val <> ref
+    CHECK(a0, r0, a1);
+    // val <> cref
+    CHECK(a0, c0, a1);
+    // val <> val
+    CHECK(a0, a0, a1);
+
+#undef CHECK
+#undef CHECK_IMPL
 }
 
 void tst_QtJson::testObjectIteration()

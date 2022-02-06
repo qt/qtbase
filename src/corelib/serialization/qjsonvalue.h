@@ -232,6 +232,11 @@ public:
 
 Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QJsonValue)
 
+inline bool operator==(const QJsonValueRef &lhs, const QJsonValueRef &rhs)
+{ return QJsonValue(lhs) == QJsonValue(rhs); }
+inline bool operator!=(const QJsonValueRef &lhs, const QJsonValueRef &rhs)
+{ return !(lhs == rhs); }
+
 Q_CORE_EXPORT uint qHash(const QJsonValue &value, uint seed = 0);
 
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
