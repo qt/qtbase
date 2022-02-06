@@ -48,6 +48,7 @@
 #include <QtCore/QDateTime>
 #include <QtCore/QFile>
 #include <QtCore/QCache>
+#include <QtCore/QMap>
 #include <QtCore/QMutex>
 
 #include <qdebug.h>

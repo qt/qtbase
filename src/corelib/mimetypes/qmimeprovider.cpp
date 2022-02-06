@@ -45,6 +45,7 @@
 #include <qstandardpaths.h>
 #include "qmimemagicrulematcher_p.h"
 
+#include <QMap>
 #include <QXmlStreamReader>
 #include <QBuffer>
 #include <QDir>

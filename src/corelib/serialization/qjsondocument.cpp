@@ -43,6 +43,8 @@
 #include <qjsonarray.h>
 #include <qstringlist.h>
 #include <qvariant.h>
+#include <qmap.h>
+#include <qhash.h>
 #include <qdebug.h>
 #include <qcbormap.h>
 #include <qcborarray.h>

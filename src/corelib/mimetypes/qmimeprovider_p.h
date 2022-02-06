@@ -59,6 +59,7 @@ QT_REQUIRE_CONFIG(mimetype);
 #include "qmimeglobpattern_p.h"
 #include <QtCore/qdatetime.h>
 #include <QtCore/qset.h>
+#include <QtCore/qmap.h>
 
 QT_BEGIN_NAMESPACE
 

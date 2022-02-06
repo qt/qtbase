@@ -50,6 +50,7 @@
 #  include <qregularexpression.h>
 #endif
 #include <qstack.h>
+#include <qmap.h>
 #include <qbitarray.h>
 #include <qdatetime.h>
 #include <qloggingcategory.h>

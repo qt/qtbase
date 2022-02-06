@@ -56,6 +56,7 @@
 #include "private/qabstracteventdispatcher_p.h"
 #include "private/qcore_unix_p.h"
 #include "QtCore/qvarlengtharray.h"
+#include "QtCore/qhash.h"
 #include "private/qtimerinfo_unix_p.h"
 
 QT_BEGIN_NAMESPACE

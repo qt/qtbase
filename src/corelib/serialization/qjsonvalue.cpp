@@ -46,6 +46,8 @@
 #include <quuid.h>
 #include <qvariant.h>
 #include <qstringlist.h>
+#include <qmap.h>
+#include <qhash.h>
 #include <qdebug.h>
 #include "qdatastream.h"
 

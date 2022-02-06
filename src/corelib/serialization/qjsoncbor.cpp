@@ -48,6 +48,9 @@
 #include "qjsondocument.h"
 #include "qjson_p.h"
 
+#include <qmap.h>
+#include <qhash.h>
+
 #include <private/qnumeric_p.h>
 #include <quuid.h>
 

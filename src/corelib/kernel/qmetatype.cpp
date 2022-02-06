@@ -45,6 +45,8 @@
 #include "qdatetime.h"
 #include "qbytearray.h"
 #include "qreadwritelock.h"
+#include "qhash.h"
+#include "qmap.h"
 #include "qstring.h"
 #include "qstringlist.h"
 #include "qlist.h"

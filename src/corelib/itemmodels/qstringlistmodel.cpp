@@ -44,6 +44,7 @@
 #include "qstringlistmodel.h"
 
 #include <QtCore/qlist.h>
+#include <QtCore/qmap.h>
 
 #include <algorithm>
 

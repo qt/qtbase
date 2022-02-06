@@ -45,6 +45,7 @@
 #include "qdatastream.h"
 #include "qdebug.h"
 #include "qmap.h"
+#include "qhash.h"
 #include "qdatetime.h"
 #if QT_CONFIG(easingcurve)
 #include "qeasingcurve.h"

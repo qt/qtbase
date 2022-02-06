@@ -54,6 +54,7 @@
 #include <QtCore/private/qglobal_p.h>
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qlist.h>
+#include <QtCore/qhash.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qmutex.h>
 #include <QtCore/qstring.h>

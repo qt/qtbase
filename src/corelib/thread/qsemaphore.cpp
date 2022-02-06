@@ -44,6 +44,7 @@
 #include "qwaitcondition.h"
 #include "qdeadlinetimer.h"
 #include "qdatetime.h"
+#include "qdebug.h"
 
 QT_BEGIN_NAMESPACE
 

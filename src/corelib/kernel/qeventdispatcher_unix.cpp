@@ -42,6 +42,7 @@
 
 #include "qcoreapplication.h"
 #include "qpair.h"
+#include "qhash.h"
 #include "qsocketnotifier.h"
 #include "qthread.h"
 #include "qelapsedtimer.h"

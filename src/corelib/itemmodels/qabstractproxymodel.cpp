@@ -42,6 +42,7 @@
 #include <private/qabstractproxymodel_p.h>
 #include <QtCore/QSize>
 #include <QtCore/QStringList>
+#include <QtCore/QMap>
 
 
 QT_BEGIN_NAMESPACE

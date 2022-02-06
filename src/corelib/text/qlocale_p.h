@@ -58,6 +58,7 @@
 #include "QtCore/qvariant.h"
 #include "QtCore/qnumeric.h"
 #include <QtCore/qcalendar.h>
+#include <QtCore/QList> // Q_DECLARE_METATYPE(QList<Qt::DayOfWeek>)
 
 #include "qlocale.h"
 

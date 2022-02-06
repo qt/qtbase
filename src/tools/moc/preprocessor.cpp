@@ -33,6 +33,7 @@
 #include <qfile.h>
 #include <qdir.h>
 #include <qfileinfo.h>
+#include <qvarlengtharray.h>
 
 QT_BEGIN_NAMESPACE
 

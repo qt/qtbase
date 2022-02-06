@@ -41,6 +41,7 @@
 #include "qcollator_p.h"
 #include "qstringlist.h"
 #include "qstring.h"
+#include "qvarlengtharray.h"
 
 #include <cstring>
 #include <cwchar>

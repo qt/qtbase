@@ -43,6 +43,7 @@
 
 #include "qdatastream.h"
 #include "qset.h"
+#include "qvarlengtharray.h"
 #include "qlocale.h"
 #include "qdatetime.h"
 #if QT_CONFIG(timezone)

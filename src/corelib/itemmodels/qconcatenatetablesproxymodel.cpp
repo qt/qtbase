@@ -40,6 +40,7 @@
 #include "qconcatenatetablesproxymodel.h"
 #include <private/qabstractitemmodel_p.h>
 #include "qsize.h"
+#include "qmap.h"
 #include "qdebug.h"
 
 QT_BEGIN_NAMESPACE

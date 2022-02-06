@@ -36,6 +36,7 @@
 #include <qlist.h>
 #include <qstack.h>
 #include <qstring.h>
+#include <qset.h>
 
 QT_BEGIN_NAMESPACE
 

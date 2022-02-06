@@ -45,6 +45,8 @@
 #include <qdebug.h>
 #include <qvariant.h>
 #include <qcbormap.h>
+#include <qmap.h>
+#include <qhash.h>
 
 #include <private/qcborvalue_p.h>
 #include "qjsonwriter_p.h"

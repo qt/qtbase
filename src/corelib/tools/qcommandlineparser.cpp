@@ -43,6 +43,7 @@
 #include <qcoreapplication.h>
 #include <private/qcoreapplication_p.h>
 #include <qhash.h>
+#include <qvarlengtharray.h>
 #include <qlist.h>
 #include <qdebug.h>
 #if defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED)

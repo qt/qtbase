@@ -52,6 +52,9 @@
 #include <qstringconverter.h>
 #include <qxmlstream.h>
 #include "qxmlstreamgrammar_p.h"
+#include <QtCore/qhash.h>
+#include <QCoreApplication> // Q_DECLARE_TR_FUNCTIONS
+
 
 #include <memory>
 
@@ -169,7 +172,6 @@ public:
     const T *end() const { return data + size(); }
     const T *cend() const { return end(); }
 };
-
 
 class QXmlStream
 {

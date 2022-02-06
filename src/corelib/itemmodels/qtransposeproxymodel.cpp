@@ -42,6 +42,7 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qsize.h>
+#include <QtCore/qmap.h>
 
 QT_BEGIN_NAMESPACE
 

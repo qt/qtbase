@@ -49,6 +49,7 @@
 #include <private/qlocking_p.h>
 #endif
 #include "qtextstream.h"
+#include "qvarlengtharray.h"
 #include <ctype.h>
 #include <qt_windows.h>
 

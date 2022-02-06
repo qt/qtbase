@@ -85,6 +85,7 @@
 #include "qpropertyanimation_p.h"
 
 #include <QtCore/QMutex>
+#include <QtCore/QHash>
 #include <QtCore/private/qlocking_p.h>
 
 QT_BEGIN_NAMESPACE
