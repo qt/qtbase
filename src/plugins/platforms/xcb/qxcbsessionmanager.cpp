@@ -42,6 +42,7 @@
 
 #ifndef QT_NO_SESSIONMANAGER
 
+#include <QtCore/qvarlengtharray.h>
 #include <qpa/qwindowsysteminterface.h>
 
 #include <qguiapplication.h>

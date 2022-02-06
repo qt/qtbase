@@ -45,7 +45,8 @@
 #include <xcb/xcb.h>
 #include <xcb/xfixes.h>
 
-#include <QtCore/QObject>
+#include <QtCore/qobject.h>
+#include <QtCore/qmap.h>
 
 QT_BEGIN_NAMESPACE
 
