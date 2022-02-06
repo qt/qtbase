@@ -205,6 +205,11 @@ private:
 
 Q_DECLARE_SHARED(QJsonValue)
 
+inline bool operator==(const QJsonValueRef &lhs, const QJsonValueRef &rhs)
+{ return QJsonValue(lhs) == QJsonValue(rhs); }
+inline bool operator!=(const QJsonValueRef &lhs, const QJsonValueRef &rhs)
+{ return !(lhs == rhs); }
+
 Q_CORE_EXPORT size_t qHash(const QJsonValue &value, size_t seed = 0);
 
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
