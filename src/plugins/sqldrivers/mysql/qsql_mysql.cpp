@@ -41,6 +41,7 @@
 
 #include <qcoreapplication.h>
 #include <qvariant.h>
+#include <qvarlengtharray.h>
 #include <qdatetime.h>
 #include <qdebug.h>
 #include <qfile.h>

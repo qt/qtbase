@@ -53,6 +53,7 @@
 
 #include <QtSql/private/qtsqlglobal_p.h>
 #include <QtCore/qpointer.h>
+#include <QtCore/qhash.h>
 #include "qsqlerror.h"
 #include "qsqlresult.h"
 #include "qsqldriver.h"
