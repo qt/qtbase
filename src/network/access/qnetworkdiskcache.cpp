@@ -52,6 +52,7 @@
 #include <qurl.h>
 #include <qcryptographichash.h>
 #include <qdebug.h>
+#include <QMultiMap>
 
 #include <memory>
 

@@ -44,6 +44,7 @@
 #include "qfileinfo.h"
 #include "qdir.h"
 #include "qcoreapplication.h"
+#include "qhash.h"
 
 QT_BEGIN_NAMESPACE
 

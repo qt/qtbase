@@ -43,6 +43,7 @@
 #include <qdatastream.h>
 #include <qdatetime.h>
 #include <qurl.h>
+#include <qhash.h>
 
 #include <qdebug.h>
 
