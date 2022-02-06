@@ -41,23 +41,22 @@
 #define QVARIANT_H
 
 #include <QtCore/qatomic.h>
-#include <QtCore/qbytearray.h>
-#include <QtCore/qlist.h>
+#include <QtCore/qcontainerfwd.h>
 #include <QtCore/qmetatype.h>
-#include <QtCore/qmap.h>
-#include <QtCore/qhash.h>
-#include <QtCore/qstring.h>
-#include <QtCore/qstringlist.h>
-#include <QtCore/qobject.h>
 #ifndef QT_NO_DEBUG_STREAM
 #include <QtCore/qdebug.h>
-#endif
-#ifndef QT_BOOTSTRAPPED
-#include <QtCore/qbytearraylist.h>
 #endif
 #include <memory>
 #include <type_traits>
 #include <variant>
+#if !defined(QT_LEAN_HEADERS) || QT_LEAN_HEADERS < 1
+#  include <QtCore/qlist.h>
+#  include <QtCore/qstringlist.h>
+#  include <QtCore/qbytearraylist.h>
+#  include <QtCore/qhash.h>
+#  include <QtCore/qmap.h>
+#  include <QtCore/qobject.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 

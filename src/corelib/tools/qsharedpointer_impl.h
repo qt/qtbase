@@ -62,12 +62,16 @@ QT_END_NAMESPACE
 
 #include <new>
 #include <QtCore/qatomic.h>
-#include <QtCore/qobject.h>    // for qobject_cast
 #include <QtCore/qhashfunctions.h>
+#include <QtCore/qmetatype.h> // for IsPointerToTypeDerivedFromQObject
 
 #include <memory>
 
 QT_BEGIN_NAMESPACE
+
+class QObject;
+template <class T>
+T qobject_cast(const QObject *object);
 
 //
 // forward declarations

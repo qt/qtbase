@@ -51,7 +51,6 @@
     "qevent.h" => "QtEvents",
     "qnamespace.h" => "Qt",
     "qnumeric.h" => "QtNumeric",
-    "qvariant.h" => "QVariantHash,QVariantList,QVariantMap",
     "qvulkanfunctions.h" => "QVulkanFunctions,QVulkanDeviceFunctions",
     "qgl.h" => "QGL",
     "qtsqlglobal.h" => "QSql",

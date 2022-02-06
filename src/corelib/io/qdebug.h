@@ -41,14 +41,9 @@
 #ifndef QDEBUG_H
 #define QDEBUG_H
 
-#include <QtCore/qalgorithms.h>
-#include <QtCore/qhash.h>
-#include <QtCore/qlist.h>
-#include <QtCore/qmap.h>
+#include <QtCore/qcontainerfwd.h>
 #include <QtCore/qtextstream.h>
 #include <QtCore/qstring.h>
-#include <QtCore/qset.h>
-#include <QtCore/qvarlengtharray.h>
 #include <QtCore/qcontiguouscache.h>
 #include <QtCore/qsharedpointer.h>
 
@@ -57,6 +52,13 @@
 #include <list>
 #include <map>
 #include <utility>
+
+#if !defined(QT_LEAN_HEADERS) || QT_LEAN_HEADERS < 1
+#  include <QtCore/qlist.h>
+#  include <QtCore/qmap.h>
+#  include <QtCore/qset.h>
+#  include <QtCore/qvarlengtharray.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
