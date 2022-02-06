@@ -42,6 +42,7 @@
 
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qobject.h>
+#include <QtCore/qmap.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qpoint.h>

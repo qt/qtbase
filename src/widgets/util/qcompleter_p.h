@@ -57,6 +57,7 @@
 
 #include "QtWidgets/qabstractitemview.h"
 #include "QtCore/qabstractproxymodel.h"
+#include "QtCore/qmap.h"
 #include "qcompleter.h"
 #include "qstyleditemdelegate.h"
 #include "QtGui/qpainter.h"

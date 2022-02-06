@@ -57,6 +57,7 @@
 
 #include "qdebug.h"
 #include <QtCore/QLoggingCategory>
+#include <QtCore/QVarLengthArray>
 
 #ifndef QT_NO_GESTURES
 
