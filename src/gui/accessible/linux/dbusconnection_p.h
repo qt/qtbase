@@ -52,6 +52,7 @@
 // We mean it.
 //
 
+#include <QtCore/QObject>
 #include <QtCore/QString>
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusVariant>

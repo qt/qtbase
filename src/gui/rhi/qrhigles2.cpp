@@ -41,6 +41,7 @@
 #include <QWindow>
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
+#include <QtCore/qmap.h>
 #include <QtGui/private/qopenglextensions_p.h>
 #include <QtGui/private/qopenglprogrambinarycache_p.h>
 #include <qpa/qplatformopenglcontext.h>

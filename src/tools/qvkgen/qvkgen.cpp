@@ -30,6 +30,7 @@
 #include <QtCore/qfile.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qlist.h>
+#include <QtCore/qmap.h>
 #include <QtCore/qxmlstream.h>
 
 // generate wrappers for core functions from the following versions

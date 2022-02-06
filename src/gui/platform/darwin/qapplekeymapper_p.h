@@ -56,6 +56,7 @@
 #endif
 
 #include <QtCore/QList>
+#include <QtCore/QHash>
 #include <QtGui/QKeyEvent>
 
 #include <QtCore/private/qcore_mac_p.h>

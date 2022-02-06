@@ -45,8 +45,9 @@
 #ifndef QT_NO_OPENGL
 
 #include <QtCore/qnamespace.h>
-#include <QtCore/QObject>
-#include <QtCore/QScopedPointer>
+#include <QtCore/qobject.h>
+#include <QtCore/qscopedpointer.h>
+#include <QtCore/qset.h>
 #include <QtCore/qnativeinterface.h>
 
 #include <QtGui/QSurfaceFormat>

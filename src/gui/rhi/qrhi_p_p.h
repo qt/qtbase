@@ -55,6 +55,8 @@
 #include <QBitArray>
 #include <QAtomicInt>
 #include <QLoggingCategory>
+#include <QtCore/qset.h>
+#include <QtCore/qvarlengtharray.h>
 
 QT_BEGIN_NAMESPACE
 

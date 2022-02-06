@@ -39,6 +39,7 @@
 
 #include "qcssparser_p.h"
 
+#include <QtCore/qmap.h>
 #include <qdebug.h>
 #include <qicon.h>
 #include <qcolor.h>

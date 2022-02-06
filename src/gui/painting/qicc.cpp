@@ -41,6 +41,8 @@
 
 #include <qbuffer.h>
 #include <qbytearray.h>
+#include <qvarlengtharray.h>
+#include <qhash.h>
 #include <qdatastream.h>
 #include <qendian.h>
 #include <qloggingcategory.h>

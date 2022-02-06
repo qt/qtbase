@@ -41,6 +41,7 @@
 #include <QCoreApplication>
 #include <QList>
 #include <QLoggingCategory>
+#include <QVarLengthArray>
 
 QT_BEGIN_NAMESPACE
 

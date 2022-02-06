@@ -42,6 +42,7 @@
 #include <private/qmakearray_p.h>
 
 #include <QtCore/private/qstringiterator_p.h>
+#include <QtCore/qvarlengtharray.h>
 #include <QtCore/QMetaMethod>
 
 #include <QtGui/QKeyEvent>

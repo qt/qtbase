@@ -55,6 +55,7 @@
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qicon.h>
 
+#include <QtCore/QHash>
 #include <QtCore/QPointF>
 #include <QtCore/private/qcoreapplication_p.h>
 

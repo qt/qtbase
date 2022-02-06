@@ -54,6 +54,7 @@
 #include <QtGui/private/qtguiglobal_p.h>
 #include "QtGui/qtextformat.h"
 #include "QtCore/qlist.h"
+#include <QtCore/qhash.h> // QMultiHash
 
 QT_BEGIN_NAMESPACE
 

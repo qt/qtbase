@@ -38,7 +38,9 @@
 ****************************************************************************/
 
 #include "qtexturefiledata_p.h"
-#include <QSize>
+#include <QtCore/qsize.h>
+#include <QtCore/qvarlengtharray.h>
+#include <QtCore/qmap.h>
 
 QT_BEGIN_NAMESPACE
 

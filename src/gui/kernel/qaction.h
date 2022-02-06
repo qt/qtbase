@@ -47,6 +47,7 @@
 #include <QtGui/qicon.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qvariant.h>
+#include <QtCore/qobject.h>
 
 QT_REQUIRE_CONFIG(action);
 
