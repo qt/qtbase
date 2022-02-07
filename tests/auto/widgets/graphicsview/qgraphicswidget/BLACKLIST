@@ -2,8 +2,10 @@
 macos ci
 android
 b2qt
+# QTBUG-100930
 [updateFocusChainWhenChildDie]
 b2qt
+qnx
 [initialShow]
 macos ci
 opensuse-leap
