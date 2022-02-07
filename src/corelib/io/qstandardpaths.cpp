@@ -306,7 +306,7 @@ QT_BEGIN_NAMESPACE
          \li "<APPROOT>/Library/Caches"
     \row \li GenericDataLocation
          \li "<USER>"
-         \li "<APPROOT>/Documents"
+         \li "<APPROOT>/Library/Application Support"
     \row \li RuntimeLocation
          \li "<APPROOT>/cache"
          \li not supported
