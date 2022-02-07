@@ -63,3 +63,8 @@ qt_internal_add_resource(tst_rcc "size-1"
     FILES
         ${size-1_resource_files}
 )
+
+# Add dependencies that are implicitly used inside the test
+add_dependencies(tst_rcc
+    Qt::rcc
+)

@@ -143,3 +143,9 @@ add_custom_command(TARGET tst_moc
         --collect-json  "@${moc_json_out}"
     COMMENT "Running moc with --collect-json"
 )
+
+# Add dependencies that are implicitly used inside the test
+add_dependencies(tst_moc
+    Qt::qtpaths
+    Qt::moc
+)
