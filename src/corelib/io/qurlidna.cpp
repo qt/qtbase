@@ -42,6 +42,7 @@
 
 #include <QtCore/qstringlist.h>
 #include <QtCore/private/qnumeric_p.h>
+#include <QtCore/private/qoffsetstringarray_p.h>
 #include <QtCore/private/qstringiterator_p.h>
 #include <QtCore/private/qunicodetables_p.h>
 
@@ -310,7 +311,7 @@ Q_AUTOTEST_EXPORT QString qt_punycodeDecoder(const QString &pc)
     return QString::fromStdU32String(output);
 }
 
-static const char * const idn_whitelist[] = {
+static constexpr auto idn_whitelist = qOffsetStringArray(
     "ac", "ar", "asia", "at",
     "biz", "br",
     "cat", "ch", "cl", "cn", "com",
@@ -347,8 +348,7 @@ static const char * const idn_whitelist[] = {
     "xn--wgbh1c",               // Egypt
     "xn--wgbl6a",               // Qatar
     "xn--xkc2al3hye2a"          // Sri Lanka
-};
-static const size_t idn_whitelist_size = sizeof idn_whitelist / sizeof *idn_whitelist;
+);
 
 static QStringList *user_idn_whitelist = nullptr;
 
@@ -396,17 +396,17 @@ static bool qt_is_idn_enabled(QStringView aceDomain)
         return user_idn_whitelist->contains(tldString);
 
     int l = 0;
-    int r = idn_whitelist_size - 1;
+    int r = idn_whitelist.count() - 1;
     int i = (l + r + 1) / 2;
 
     while (r != l) {
-        if (lessThan(tld, len, idn_whitelist[i]))
+        if (lessThan(tld, len, idn_whitelist.at(i)))
             r = i - 1;
         else
             l = i;
         i = (l + r + 1) / 2;
     }
-    return equal(tld, len, idn_whitelist[i]);
+    return equal(tld, len, idn_whitelist.at(i));
 }
 
 template<typename C>
@@ -963,10 +963,10 @@ QStringList QUrl::idnWhitelist()
         return *user_idn_whitelist;
     static const QStringList list = [] {
         QStringList list;
-        list.reserve(idn_whitelist_size);
-        unsigned int i = 0;
-        while (i < idn_whitelist_size) {
-            list << QLatin1String(idn_whitelist[i]);
+        list.reserve(idn_whitelist.count());
+        int i = 0;
+        while (i < idn_whitelist.count()) {
+            list << QLatin1String(idn_whitelist.at(i));
             ++i;
         }
         return list;
