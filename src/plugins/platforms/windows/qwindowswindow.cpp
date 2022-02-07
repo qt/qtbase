@@ -167,6 +167,54 @@ static QByteArray debugWinSwpPos(UINT flags)
     return rc;
 }
 
+[[nodiscard]] static inline QByteArray debugWindowPlacementFlags(const UINT flags)
+{
+    QByteArray rc = "0x";
+    rc += QByteArray::number(flags, 16);
+    if (flags & WPF_SETMINPOSITION)
+        rc += " WPF_SETMINPOSITION";
+    if (flags & WPF_RESTORETOMAXIMIZED)
+        rc += " WPF_RESTORETOMAXIMIZED";
+    if (flags & WPF_ASYNCWINDOWPLACEMENT)
+        rc += " WPF_ASYNCWINDOWPLACEMENT";
+    return rc;
+}
+
+[[nodiscard]] static inline QByteArray debugShowWindowCmd(const UINT cmd)
+{
+    QByteArray rc = {};
+    rc += QByteArray::number(cmd);
+    if (cmd == SW_HIDE)
+        rc += " SW_HIDE";
+    if (cmd == SW_SHOWNORMAL)
+        rc += " SW_SHOWNORMAL";
+    if (cmd == SW_NORMAL)
+        rc += " SW_NORMAL";
+    if (cmd == SW_SHOWMINIMIZED)
+        rc += " SW_SHOWMINIMIZED";
+    if (cmd == SW_SHOWMAXIMIZED)
+        rc += " SW_SHOWMAXIMIZED";
+    if (cmd == SW_MAXIMIZE)
+        rc += " SW_MAXIMIZE";
+    if (cmd == SW_SHOWNOACTIVATE)
+        rc += " SW_SHOWNOACTIVATE";
+    if (cmd == SW_SHOW)
+        rc += " SW_SHOW";
+    if (cmd == SW_MINIMIZE)
+        rc += " SW_MINIMIZE";
+    if (cmd == SW_SHOWMINNOACTIVE)
+        rc += " SW_SHOWMINNOACTIVE";
+    if (cmd == SW_SHOWNA)
+        rc += " SW_SHOWNA";
+    if (cmd == SW_RESTORE)
+        rc += " SW_RESTORE";
+    if (cmd == SW_SHOWDEFAULT)
+        rc += " SW_SHOWDEFAULT";
+    if (cmd == SW_FORCEMINIMIZE)
+        rc += " SW_FORCEMINIMIZE";
+    return rc;
+}
+
 static inline QSize qSizeOfRect(const RECT &rect)
 {
     return QSize(rect.right -rect.left, rect.bottom - rect.top);
@@ -199,7 +247,9 @@ QDebug operator<<(QDebug d, const RECT &r)
 
 QDebug operator<<(QDebug d, const POINT &p)
 {
-    d << p.x << ',' << p.y;
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d << "POINT(x=" << p.x << ", y=" << p.y << ')';
     return d;
 }
 
@@ -218,7 +268,7 @@ QDebug operator<<(QDebug d, const NCCALCSIZE_PARAMS &p)
 {
     QDebugStateSaver saver(d);
     d.nospace();
-    d << "NCCALCSIZE_PARAMS(rgrc=[" << p.rgrc[0] << ' ' << p.rgrc[1] << ' '
+    d << "NCCALCSIZE_PARAMS(rgrc=[" << p.rgrc[0] << ", " << p.rgrc[1] << ", "
         << p.rgrc[2] << "], lppos=" << *p.lppos << ')';
     return d;
 }
@@ -227,11 +277,10 @@ QDebug operator<<(QDebug d, const MINMAXINFO &i)
 {
     QDebugStateSaver saver(d);
     d.nospace();
-    d << "MINMAXINFO maxSize=" << i.ptMaxSize.x << ','
-        << i.ptMaxSize.y << " maxpos=" << i.ptMaxPosition.x
-        << ',' << i.ptMaxPosition.y << " mintrack="
-        << i.ptMinTrackSize.x << ',' << i.ptMinTrackSize.y
-        << " maxtrack=" << i.ptMaxTrackSize.x << ',' << i.ptMaxTrackSize.y;
+    d << "MINMAXINFO(maxSize=" << i.ptMaxSize << ", "
+      << "maxpos=" << i.ptMaxPosition << ", "
+      << "maxtrack=" << i.ptMaxTrackSize << ", "
+      << "mintrack=" << i.ptMinTrackSize << ')';
     return d;
 }
 
@@ -240,9 +289,10 @@ QDebug operator<<(QDebug d, const WINDOWPLACEMENT &wp)
     QDebugStateSaver saver(d);
     d.nospace();
     d.noquote();
-    d <<  "WINDOWPLACEMENT(flags=0x" << Qt::hex << wp.flags << Qt::dec << ", showCmd="
-        << wp.showCmd << ", ptMinPosition=" << wp.ptMinPosition << ", ptMaxPosition=" << wp.ptMaxPosition
-        << ", rcNormalPosition=" << wp.rcNormalPosition;
+    d <<  "WINDOWPLACEMENT(flags=" << debugWindowPlacementFlags(wp.flags) << ", showCmd="
+      << debugShowWindowCmd(wp.showCmd) << ", ptMinPosition=" << wp.ptMinPosition
+      << ", ptMaxPosition=" << wp.ptMaxPosition << ", rcNormalPosition="
+      << wp.rcNormalPosition << ')';
     return d;
 }
 
@@ -2441,8 +2491,7 @@ void QWindowsWindow::setStyle(unsigned s) const
 
 void QWindowsWindow::setExStyle(unsigned s) const
 {
-    qCDebug(lcQpaWindows).nospace() << __FUNCTION__ << ' ' << this << ' ' << window()
-        << " 0x" << QByteArray::number(s, 16);
+    qCDebug(lcQpaWindows) << __FUNCTION__ << this << window() << debugWinExStyle(s);
     SetWindowLongPtr(m_data.hwnd, GWL_EXSTYLE, s);
 }
 
