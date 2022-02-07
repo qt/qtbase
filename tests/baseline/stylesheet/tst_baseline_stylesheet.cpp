@@ -98,7 +98,7 @@ void tst_Stylesheet::tst_QToolButton_data()
 
 void tst_Stylesheet::tst_QToolButton()
 {
-    const QIcon fileIcon = QApplication::style()->standardIcon(QStyle::SP_FileIcon);
+    const QIcon trashIcon = QApplication::style()->standardIcon(QStyle::SP_TrashIcon);
 
     QVBoxLayout *vbox = new QVBoxLayout;
 
@@ -107,8 +107,8 @@ void tst_Stylesheet::tst_QToolButton()
                                     Qt::ToolButtonTextUnderIcon, Qt::ToolButtonTextBesideIcon}) {
         QToolButton *normal = new QToolButton;
         normal->setToolButtonStyle(buttonStyle);
-        normal->setText("Text");
-        normal->setIcon(fileIcon);
+        normal->setText("Norm");
+        normal->setIcon(trashIcon);
         normalButtons->addWidget(normal);
     }
     vbox->addLayout(normalButtons);
@@ -116,7 +116,7 @@ void tst_Stylesheet::tst_QToolButton()
     QHBoxLayout *arrowButtons = new QHBoxLayout;
     for (const auto &arrowType : {Qt::LeftArrow, Qt::RightArrow, Qt::UpArrow, Qt::DownArrow}) {
         QToolButton *arrow = new QToolButton;
-        arrow->setText("Text");
+        arrow->setText("Arrs");
         arrow->setArrowType(arrowType);
         arrowButtons->addWidget(arrow);
     }
@@ -126,7 +126,7 @@ void tst_Stylesheet::tst_QToolButton()
     for (const auto &buttonStyle : {Qt::ToolButtonTextOnly,
                                     Qt::ToolButtonTextUnderIcon, Qt::ToolButtonTextBesideIcon}) {
         QToolButton *arrow = new QToolButton;
-        arrow->setText("Text");
+        arrow->setText("ArrTxt");
         arrow->setArrowType(Qt::UpArrow);
         arrow->setToolButtonStyle(buttonStyle);
         arrowWithTextButtons->addWidget(arrow);
@@ -137,8 +137,8 @@ void tst_Stylesheet::tst_QToolButton()
     for (const auto &popupMode : {QToolButton::InstantPopup, QToolButton::MenuButtonPopup,
                                   QToolButton::DelayedPopup}) {
         QToolButton *menuButton = new QToolButton;
-        menuButton->setText("Text");
-        menuButton->setIcon(fileIcon);
+        menuButton->setText("PppMd");
+        menuButton->setIcon(trashIcon);
         QMenu *menuButtonMenu = new QMenu;
         menuButtonMenu->addAction(QIcon(":/icons/align-left.png"), "Left");
         menuButtonMenu->addAction(QIcon(":/icons/align-right.png"), "Right");
