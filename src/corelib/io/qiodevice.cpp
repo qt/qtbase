@@ -1244,13 +1244,13 @@ QByteArray QIODevice::read(qint64 maxSize)
     CHECK_MAXLEN(read, result);
     CHECK_MAXBYTEARRAYSIZE(read);
 
-    result.resize(int(maxSize));
+    result.resize(qsizetype(maxSize));
     qint64 readBytes = d->read(result.data(), result.size());
 
     if (readBytes <= 0)
         result.clear();
     else
-        result.resize(int(readBytes));
+        result.resize(qsizetype(readBytes));
 
     return result;
 }
@@ -1306,7 +1306,7 @@ QByteArray QIODevice::readAll()
     if (readBytes <= 0)
         result.clear();
     else
-        result.resize(int(readBytes));
+        result.resize(qsizetype(readBytes));
 
     return result;
 }
@@ -1367,7 +1367,7 @@ qint64 QIODevice::readLine(char *data, qint64 maxSize)
 #if defined QIODEVICE_DEBUG
     printf("%p \treturning %lld, d->pos = %lld, d->buffer.size() = %lld, size() = %lld\n",
            this, readBytes, d->pos, d->buffer.size(), size());
-    debugBinaryString(data, int(readBytes));
+    debugBinaryString(data, qsizetype(readBytes));
 #endif
 
     return readBytes;
@@ -1411,7 +1411,7 @@ qint64 QIODevicePrivate::readLine(char *data, qint64 maxSize)
 #if defined QIODEVICE_DEBUG
         printf("%p \tread from buffer: %lld bytes, last character read: %hhx\n", q,
                readSoFar, data[readSoFar - 1]);
-        debugBinaryString(data, int(readSoFar));
+        debugBinaryString(data, qsizetype(readSoFar));
 #endif
         if (data[readSoFar - 1] == '\n') {
             if (openMode & QIODevice::Text) {
@@ -1438,7 +1438,7 @@ qint64 QIODevicePrivate::readLine(char *data, qint64 maxSize)
     printf("%p \tread from readLineData: %lld bytes, readSoFar = %lld bytes\n", q,
            readBytes, readSoFar);
     if (readBytes > 0) {
-        debugBinaryString(data, int(readSoFar + readBytes));
+        debugBinaryString(data, qsizetype(readSoFar + readBytes));
     }
 #endif
     if (readBytes < 0) {
@@ -1496,12 +1496,12 @@ QByteArray QIODevice::readLine(qint64 maxSize)
 
         qint64 readResult;
         do {
-            result.resize(int(qMin(maxSize, qint64(result.size() + d->buffer.chunkSize()))));
+            result.resize(qsizetype(qMin(maxSize, qint64(result.size() + d->buffer.chunkSize()))));
             readResult = d->readLine(result.data() + readBytes, result.size() - readBytes);
             if (readResult > 0 || readBytes == 0)
                 readBytes += readResult;
         } while (readResult == d->buffer.chunkSize()
-                && result[int(readBytes - 1)] != '\n');
+                && result[qsizetype(readBytes - 1)] != '\n');
     } else {
         CHECK_LINEMAXLEN(readLine, result);
         CHECK_MAXBYTEARRAYSIZE(readLine);
