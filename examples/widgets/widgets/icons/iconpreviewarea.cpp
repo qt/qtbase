@@ -52,6 +52,7 @@
 
 #include <QGridLayout>
 #include <QLabel>
+#include <QWindow>
 
 //! [0]
 IconPreviewArea::IconPreviewArea(QWidget *parent)
@@ -152,14 +153,11 @@ QLabel *IconPreviewArea::createPixmapLabel()
 //! [5]
 void IconPreviewArea::updatePixmapLabels()
 {
-    QWindow *window = nullptr;
-    if (const QWidget *nativeParent = nativeParentWidget())
-        window = nativeParent->windowHandle();
     for (int column = 0; column < NumModes; ++column) {
         for (int row = 0; row < NumStates; ++row) {
             const QPixmap pixmap =
-                icon.pixmap(window, size, IconPreviewArea::iconModes().at(column),
-                            IconPreviewArea::iconStates().at(row));
+                    icon.pixmap(size, devicePixelRatio(), IconPreviewArea::iconModes().at(column),
+                                IconPreviewArea::iconStates().at(row));
             QLabel *pixmapLabel = pixmapLabels[column][row];
             pixmapLabel->setPixmap(pixmap);
             pixmapLabel->setEnabled(!pixmap.isNull());
