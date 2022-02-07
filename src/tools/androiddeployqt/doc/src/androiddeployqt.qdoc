@@ -185,6 +185,12 @@
     It's also possible to manually specify the dependencies of your application.
     For more information, see \l{ANDROID_DEPLOYMENT_DEPENDENCIES} qmake variable.
 
+    \note androiddeployqt scans the QML files of the project to collect the QML imports.
+    However, if you are loading QML code as a QString from C++ at runtime, that might
+    not work properly because androiddeployqt won't be aware of it at deploy time.
+    To remedy that, you can add a dummy QML file that imports such QML modules that
+    are referenced at runtime.
+
     \section1 Android-specific qmake Variables
 
     Unless the project has special requirements such as third party libraries,
