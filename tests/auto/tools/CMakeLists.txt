@@ -3,7 +3,9 @@
 # QTBUG-88538 # special case
 if(NOT ANDROID AND NOT IOS)
     add_subdirectory(qmakelib)
-    add_subdirectory(qmake)
+    if(QT_FEATURE_qmake)
+        add_subdirectory(qmake)
+    endif()
     add_subdirectory(moc)
     add_subdirectory(rcc)
 endif()
