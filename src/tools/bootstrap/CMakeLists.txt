@@ -32,7 +32,6 @@ qt_internal_extend_target(Bootstrap
         ../../corelib/io/qfsfileengine.cpp
         ../../corelib/io/qfsfileengine_iterator.cpp
         ../../corelib/io/qiodevice.cpp
-        ../../corelib/io/qipaddress.cpp
         ../../corelib/io/qloggingcategory.cpp
         ../../corelib/io/qloggingregistry.cpp
         ../../corelib/io/qresource.cpp
