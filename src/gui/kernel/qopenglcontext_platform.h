@@ -40,6 +40,15 @@
 #ifndef QOPENGLCONTEXT_PLATFORM_H
 #define QOPENGLCONTEXT_PLATFORM_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is part of the native interface APIs. Usage of
+// this API may make your code source and binary incompatible
+// with future versions of Qt.
+//
+
 #ifndef QT_NO_OPENGL
 
 #include <QtGui/qtguiglobal.h>
