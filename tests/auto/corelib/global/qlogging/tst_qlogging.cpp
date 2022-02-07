@@ -97,6 +97,7 @@ void tst_qmessagehandler::initTestCase()
             break;
         }
     }
+    m_baseEnvironment.prepend("QT_FORCE_STDERR_LOGGING=1");
 #endif // QT_CONFIG(process)
 }
 
