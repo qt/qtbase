@@ -69,6 +69,14 @@ QT_BEGIN_NAMESPACE
 DBusConnection::DBusConnection(QObject *parent)
     : QObject(parent), m_a11yConnection(QString()), m_enabled(false)
 {
+    // If the bus is explicitly set via env var it overrides everything else.
+    QByteArray addressEnv = qgetenv("AT_SPI_BUS_ADDRESS");
+    if (!addressEnv.isEmpty()) {
+        m_enabled = true;
+        connectA11yBus(QString::fromLocal8Bit(addressEnv));
+        return;
+    }
+
     // Start monitoring if "org.a11y.Bus" is registered as DBus service.
     QDBusConnection c = QDBusConnection::sessionBus();
     if (!c.isConnected()) {
