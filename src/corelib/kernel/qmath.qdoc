@@ -322,7 +322,7 @@
     \relates <QtMath>
     \since 5.4
 
-    This function returns the nearest power of two greater than \a value. For 0 it returns 1, and for values larger than or equal to 2^31 it returns 0.
+    This function returns the nearest power of two greater than \a value. For 0 it returns 1, and for values larger than or equal to 2^31 the result is undefined.
 */
 
 /*!
@@ -331,7 +331,7 @@
     \since 5.4
     \overload
 
-    This function returns the nearest power of two greater than \a value. For negative values it returns 0.
+    This function returns the nearest power of two greater than \a value. For negative values the result is undefined.
 */
 
 /*!
@@ -339,7 +339,7 @@
     \relates <QtMath>
     \since 5.4
 
-    This function returns the nearest power of two greater than \a value. For 0 it returns 1, and for values larger than or equal to 2^63 it returns 0.
+    This function returns the nearest power of two greater than \a value. For 0 it returns 1, and for values larger than or equal to 2^63 the result is undefined.
 */
 
 /*!
@@ -348,5 +348,5 @@
     \since 5.4
     \overload
 
-    This function returns the nearest power of two greater than \a value. For negative values it returns 0.
+    This function returns the nearest power of two greater than \a value. For negative values the result is undefined.
 */

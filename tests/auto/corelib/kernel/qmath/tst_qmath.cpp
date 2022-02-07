@@ -290,9 +290,6 @@ void tst_QMath::qNextPowerOfTwo32S_data()
     QTest::newRow("2^30") << (1 << 30) << (1U << 31);
     QTest::newRow("2^30 + 1") << (1 << 30) + 1 << (1U << 31);
     QTest::newRow("2^31 - 1") << 0x7FFFFFFF << (1U<<31);
-    QTest::newRow("-1") << -1 << 0U;
-    QTest::newRow("-128") << -128 << 0U;
-    QTest::newRow("-(2^31)") << int(0x80000000) << 0U;
 }
 
 void tst_QMath::qNextPowerOfTwo32S()
@@ -318,8 +315,6 @@ void tst_QMath::qNextPowerOfTwo32U_data()
     QTest::newRow("2^30") << (1U << 30) << (1U << 31);
     QTest::newRow("2^30 + 1") << (1U << 30) + 1 << (1U << 31);
     QTest::newRow("2^31 - 1") << 2147483647U << 2147483648U;
-    QTest::newRow("2^31") << 2147483648U << 0U;
-    QTest::newRow("2^31 + 1") << 2147483649U << 0U;
 }
 
 void tst_QMath::qNextPowerOfTwo32U()
@@ -346,10 +341,6 @@ void tst_QMath::qNextPowerOfTwo64S_data()
     QTest::newRow("2^31") << Q_INT64_C(2147483648) << Q_UINT64_C(0x100000000);
     QTest::newRow("2^31 + 1") << Q_INT64_C(2147483649) << Q_UINT64_C(0x100000000);
     QTest::newRow("2^63 - 1") << Q_INT64_C(0x7FFFFFFFFFFFFFFF) << Q_UINT64_C(0x8000000000000000);
-    QTest::newRow("-1") << Q_INT64_C(-1) << Q_UINT64_C(0);
-    QTest::newRow("-128") << Q_INT64_C(-128) << Q_UINT64_C(0);
-    QTest::newRow("-(2^31)") << -Q_INT64_C(0x80000000) << Q_UINT64_C(0);
-    QTest::newRow("-(2^63)") << (qint64)Q_INT64_C(0x8000000000000000) << Q_UINT64_C(0);
 }
 
 void tst_QMath::qNextPowerOfTwo64S()
@@ -373,8 +364,6 @@ void tst_QMath::qNextPowerOfTwo64U_data()
     QTest::newRow("65535") << Q_UINT64_C(65535) << Q_UINT64_C(65536);
     QTest::newRow("65536") << Q_UINT64_C(65536) << Q_UINT64_C(131072);
     QTest::newRow("2^63 - 1") << Q_UINT64_C(0x7FFFFFFFFFFFFFFF)  << Q_UINT64_C(0x8000000000000000);
-    QTest::newRow("2^63") << Q_UINT64_C(0x8000000000000000) << Q_UINT64_C(0);
-    QTest::newRow("2^63 + 1") << Q_UINT64_C(0x8000000000000001) << Q_UINT64_C(0);
 }
 
 void tst_QMath::qNextPowerOfTwo64U()

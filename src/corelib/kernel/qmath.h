@@ -370,9 +370,8 @@ constexpr inline quint64 qConstexprNextPowerOfTwo(qint64 v)
 
 constexpr inline quint32 qNextPowerOfTwo(quint32 v)
 {
+    Q_ASSERT(static_cast<qint32>(v) >= 0); // There is a next power of two
 #if defined(__cpp_lib_int_pow2) && __cpp_lib_int_pow2 >= 202002L
-    if (static_cast<qint32>(v) < 0)
-        return 0; // std::bit_ceil() is undefined for values that would overflow, but we document them to be 0
     return std::bit_ceil(v + 1);
 #elif defined(QT_HAS_BUILTIN_CLZ)
     if (v == 0)
@@ -385,9 +384,8 @@ constexpr inline quint32 qNextPowerOfTwo(quint32 v)
 
 constexpr inline quint64 qNextPowerOfTwo(quint64 v)
 {
+    Q_ASSERT(static_cast<qint64>(v) >= 0); // There is a next power of two
 #if defined(__cpp_lib_int_pow2) && __cpp_lib_int_pow2 >= 202002L
-    if (static_cast<qint64>(v) < 0)
-        return 0; // std::bit_ceil() is undefined for values that would overflow, but we document them to be 0
     return std::bit_ceil(v + 1);
 #elif defined(QT_HAS_BUILTIN_CLZLL)
     if (v == 0)
