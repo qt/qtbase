@@ -40,6 +40,15 @@
 #ifndef QCOREAPPLICATION_PLATFORM_H
 #define QCOREAPPLICATION_PLATFORM_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is part of the native interface APIs. Usage of
+// this API may make your code source and binary incompatible
+// with future versions of Qt.
+//
+
 #include <QtCore/qglobal.h>
 #include <QtCore/qnativeinterface.h>
 #include <QtCore/qcoreapplication.h>

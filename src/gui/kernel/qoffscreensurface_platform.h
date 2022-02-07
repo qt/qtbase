@@ -40,6 +40,15 @@
 #ifndef QOFFSCREENSURFACE_PLATFORM_H
 #define QOFFSCREENSURFACE_PLATFORM_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is part of the native interface APIs. Usage of
+// this API may make your code source and binary incompatible
+// with future versions of Qt.
+//
+
 #include <QtGui/qtguiglobal.h>
 #include <QtGui/qoffscreensurface.h>
 #include <QtCore/qnativeinterface.h>
