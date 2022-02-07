@@ -1261,7 +1261,9 @@ QByteArray QIODevice::read(qint64 maxSize)
 
     This function has no way of reporting errors; returning an empty
     QByteArray can mean either that no data was currently available
-    for reading, or that an error occurred.
+    for reading, or that an error occurred. This function also has no
+    way of indicating that more data may have been available and
+    couldn't be read.
 */
 QByteArray QIODevice::readAll()
 {
@@ -1295,10 +1297,9 @@ QByteArray QIODevice::readAll()
         } while (readResult > 0);
     } else {
         // Read it all in one go.
-        // If resize fails, don't read anything.
         readBytes -= d->pos;
         if (readBytes >= MaxByteArraySize)
-            return QByteArray();
+            readBytes = MaxByteArraySize;
         result.resize(readBytes);
         readBytes = d->read(result.data(), readBytes);
     }
