@@ -631,36 +631,37 @@ QList<int> QAppleKeyMapper::possibleKeys(const QKeyEvent *event) const
 
 
 
-#else
-// Keyboard keys (non-modifiers)
-API_AVAILABLE(ios(13.4)) static QHash<NSString *, Qt::Key> uiKitKeys = {
-#if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_13_4)
-    { UIKeyInputF1, Qt::Key_F1 },
-    { UIKeyInputF2, Qt::Key_F2 },
-    { UIKeyInputF3, Qt::Key_F3 },
-    { UIKeyInputF4, Qt::Key_F4 },
-    { UIKeyInputF5, Qt::Key_F5 },
-    { UIKeyInputF6, Qt::Key_F6 },
-    { UIKeyInputF7, Qt::Key_F7 },
-    { UIKeyInputF8, Qt::Key_F8 },
-    { UIKeyInputF9, Qt::Key_F9 },
-    { UIKeyInputF10, Qt::Key_F10 },
-    { UIKeyInputF11, Qt::Key_F11 },
-    { UIKeyInputF12, Qt::Key_F12 },
-    { UIKeyInputHome, Qt::Key_Home },
-    { UIKeyInputEnd, Qt::Key_End },
-    { UIKeyInputPageUp, Qt::Key_PageUp },
-    { UIKeyInputPageDown, Qt::Key_PageDown },
-#endif
-    { UIKeyInputEscape, Qt::Key_Escape },
-    { UIKeyInputUpArrow, Qt::Key_Up },
-    { UIKeyInputDownArrow, Qt::Key_Down },
-    { UIKeyInputLeftArrow, Qt::Key_Left },
-    { UIKeyInputRightArrow, Qt::Key_Right }
-};
+#else // iOS
 
+// Keyboard keys (non-modifiers)
 API_AVAILABLE(ios(13.4)) Qt::Key QAppleKeyMapper::fromUIKitKey(NSString *keyCode)
 {
+    static QHash<NSString *, Qt::Key> uiKitKeys = {
+#if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_13_4)
+        { UIKeyInputF1, Qt::Key_F1 },
+        { UIKeyInputF2, Qt::Key_F2 },
+        { UIKeyInputF3, Qt::Key_F3 },
+        { UIKeyInputF4, Qt::Key_F4 },
+        { UIKeyInputF5, Qt::Key_F5 },
+        { UIKeyInputF6, Qt::Key_F6 },
+        { UIKeyInputF7, Qt::Key_F7 },
+        { UIKeyInputF8, Qt::Key_F8 },
+        { UIKeyInputF9, Qt::Key_F9 },
+        { UIKeyInputF10, Qt::Key_F10 },
+        { UIKeyInputF11, Qt::Key_F11 },
+        { UIKeyInputF12, Qt::Key_F12 },
+        { UIKeyInputHome, Qt::Key_Home },
+        { UIKeyInputEnd, Qt::Key_End },
+        { UIKeyInputPageUp, Qt::Key_PageUp },
+        { UIKeyInputPageDown, Qt::Key_PageDown },
+#endif
+        { UIKeyInputEscape, Qt::Key_Escape },
+        { UIKeyInputUpArrow, Qt::Key_Up },
+        { UIKeyInputDownArrow, Qt::Key_Down },
+        { UIKeyInputLeftArrow, Qt::Key_Left },
+        { UIKeyInputRightArrow, Qt::Key_Right }
+    };
+
     if (auto key = uiKitKeys.value(keyCode))
         return key;
 
