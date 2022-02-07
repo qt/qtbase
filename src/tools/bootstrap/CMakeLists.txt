@@ -40,10 +40,6 @@ qt_internal_extend_target(Bootstrap
         ../../corelib/io/qstandardpaths.cpp
         ../../corelib/io/qtemporarydir.cpp
         ../../corelib/io/qtemporaryfile.cpp
-        ../../corelib/io/qurl.cpp
-        ../../corelib/io/qurlidna.cpp
-        ../../corelib/io/qurlquery.cpp
-        ../../corelib/io/qurlrecode.cpp
         ../../corelib/kernel/qcoreapplication.cpp
         ../../corelib/kernel/qcoreglobaldata.cpp
         ../../corelib/kernel/qiterable.cpp
