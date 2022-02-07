@@ -66,6 +66,7 @@ struct QWindowsGeometryHint
     static QMargins frameOnPrimaryScreen(const QWindow *w, HWND hwnd);
     static QMargins frame(const QWindow *w, DWORD style, DWORD exStyle, qreal dpi);
     static QMargins frame(const QWindow *w, HWND hwnd, DWORD style, DWORD exStyle);
+    static QMargins frame(const QWindow *w, HWND hwnd);
     static QMargins frame(const QWindow *w, const QRect &geometry,
                           DWORD style, DWORD exStyle);
     static bool handleCalculateSize(const QMargins &customMargins, const MSG &msg, LRESULT *result);
