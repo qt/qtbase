@@ -800,7 +800,6 @@ static void showSystemMenu(QWindow* w)
     bool maximized = IsZoomed(topLevelHwnd);
 
     EnableMenuItem(menu, SC_MAXIMIZE, ! (topLevel->flags() & Qt::WindowMaximizeButtonHint) || maximized?disabled:enabled);
-    EnableMenuItem(menu, SC_RESTORE, maximized?enabled:disabled);
 
     // We should _not_ check with the setFixedSize(x,y) case here, since Windows is not able to check
     // this and our menu here would be out-of-sync with the menu produced by mouse-click on the
@@ -808,6 +807,15 @@ static void showSystemMenu(QWindow* w)
     EnableMenuItem(menu, SC_SIZE, (topLevel->flags() & Qt::MSWindowsFixedSizeDialogHint) || maximized?disabled:enabled);
     EnableMenuItem(menu, SC_MOVE, maximized?disabled:enabled);
     EnableMenuItem(menu, SC_CLOSE, enabled);
+
+    // Highlight the first entry in the menu, this is what native Win32 applications usually do.
+    MENUITEMINFOW restoreItem;
+    SecureZeroMemory(&restoreItem, sizeof(restoreItem));
+    restoreItem.cbSize = sizeof(restoreItem);
+    restoreItem.fMask = MIIM_STATE;
+    restoreItem.fState = MFS_HILITE | (maximized ? MFS_ENABLED : MFS_GRAYED);
+    SetMenuItemInfoW(menu, SC_RESTORE, FALSE, &restoreItem);
+
     // Set bold on close menu item
     MENUITEMINFO closeItem;
     closeItem.cbSize = sizeof(MENUITEMINFO);
