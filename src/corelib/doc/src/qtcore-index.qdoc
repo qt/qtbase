@@ -38,8 +38,8 @@
     \li a very powerful mechanism for seamless object communication called
     signals and slots
     \li queryable and designable object properties
-    \li hierarchical and queryable object trees that organize
-    \li object ownership in a natural way with guarded pointers (QPointer)
+    \li hierarchical and queryable object trees that organize object ownership
+    in a natural way with guarded pointers (QPointer)
     \li a dynamic cast that works across library boundaries
     \endlist
 
