@@ -1065,6 +1065,8 @@ QMargins QWindowsGeometryHint::frameOnPrimaryScreen(const QWindow *w, DWORD styl
 
 QMargins QWindowsGeometryHint::frameOnPrimaryScreen(const QWindow *w, HWND hwnd)
 {
+    if (!w->isTopLevel() || w->flags().testFlag(Qt::FramelessWindowHint))
+        return {};
     return frameOnPrimaryScreen(w, DWORD(GetWindowLongPtr(hwnd, GWL_STYLE)),
                                 DWORD(GetWindowLongPtr(hwnd, GWL_EXSTYLE)));
 }
@@ -1099,6 +1101,14 @@ QMargins QWindowsGeometryHint::frame(const QWindow *w, HWND hwnd, DWORD style, D
         screen = screenManager.screens().value(0);
     const auto dpi = screen ? screen->logicalDpi().first : qreal(96);
     return frame(w, style, exStyle, dpi);
+}
+
+QMargins QWindowsGeometryHint::frame(const QWindow *w, HWND hwnd)
+{
+    if (!w->isTopLevel() || w->flags().testFlag(Qt::FramelessWindowHint))
+        return {};
+    return frame(w, hwnd, DWORD(GetWindowLongPtrW(hwnd, GWL_STYLE)),
+                 DWORD(GetWindowLongPtrW(hwnd, GWL_EXSTYLE)));
 }
 
 // For newly created windows.
