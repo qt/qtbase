@@ -8,3 +8,8 @@ qt_internal_add_test(tst_uic
     SOURCES
         tst_uic.cpp
 )
+
+# Add dependencies that are implicitly used inside the test
+add_dependencies(tst_uic
+    Qt::uic
+)
