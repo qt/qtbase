@@ -143,4 +143,6 @@
 #define QT_FEATURE_commandlineparser 1
 #define QT_FEATURE_settings -1
 
+#define QT_NO_TEMPORARYFILE
+
 #endif // QT_BOOTSTRAPPED
