@@ -336,12 +336,14 @@ void tst_QSqlQuery::cleanup()
 
 void tst_QSqlQuery::generic_data(const QString& engine)
 {
-    if ( dbs.fillTestTable(engine) == 0 ) {
-        if(engine.isEmpty())
-           QSKIP( "No database drivers are available in this Qt configuration");
-        else
-           QSKIP( (QString("No database drivers of type %1 are available in this Qt configuration").arg(engine)).toLocal8Bit());
-    }
+    if (dbs.fillTestTable(engine))
+        return;
+
+    if (engine.isEmpty())
+        QSKIP("No database drivers are available in this Qt configuration");
+
+    QSKIP(qPrintable(QLatin1String("No database drivers of type %1 "
+                                   "are available in this Qt configuration").arg(engine)));
 }
 
 void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
@@ -1064,13 +1066,16 @@ void tst_QSqlQuery::value()
     do { \
         QVERIFY_SQL(q, exec("CREATE TABLE " + tst_record + " (id integer, extra varchar(50))")); \
         for (int i = 0; i < 3; ++i) \
-            QVERIFY_SQL(q, exec(QString("INSERT INTO " + tst_record + " VALUES(%1, 'extra%1')").arg(i))); \
+            QVERIFY_SQL(q, exec(QLatin1String("INSERT INTO %1 VALUES(%2, 'extra%2')") \
+                                .arg(tst_record).arg(i))); \
     } while (0)
 
 #define CHECK_RECORD \
     do { \
-        QVERIFY_SQL(q, exec(QString("select %1.id, %1.t_varchar, %1.t_char, %2.id, %2.extra from %1, %2 where " \
-                                    "%1.id = %2.id order by %1.id").arg(lowerQTest).arg(tst_record))); \
+        QVERIFY_SQL(q, exec(QLatin1String("select %1.id, %1.t_varchar, %1.t_char, " \
+                                          "%2.id, %2.extra from %1, %2 where " \
+                                          "%1.id = %2.id order by %1.id") \
+                            .arg(lowerQTest, tst_record))); \
         QCOMPARE(q.record().fieldName(0).toLower(), QString("id")); \
         QCOMPARE(q.record().field(0).tableName().toLower(), lowerQTest); \
         QCOMPARE(q.record().fieldName(1).toLower(), QString("t_varchar")); \
@@ -1360,7 +1365,7 @@ void tst_QSqlQuery::seek()
     CHECK_DATABASE( db );
     QSqlQuery q( db );
     QVERIFY( q.at() == QSql::BeforeFirstRow );
-    QVERIFY_SQL( q, exec( QString( "select id from %1 order by id" ).arg( qtest ) ) );
+    QVERIFY_SQL(q, exec(QLatin1String("select id from %1 order by id").arg(qtest)));
 
     // NB! The order of the calls below are important!
     QVERIFY( q.last() );
@@ -1416,7 +1421,7 @@ void tst_QSqlQuery::seekForwardOnlyQuery()
     QVERIFY( !q.isForwardOnly() );
 
     QVERIFY( q.at() == QSql::BeforeFirstRow );
-    QVERIFY_SQL( q, exec( QString( "select id from %1 order by id" ).arg( qtest ) ) );
+    QVERIFY_SQL(q, exec(QLatin1String("select id from %1 order by id").arg(qtest)));
 
     QSqlRecord rec;
 
@@ -2609,11 +2614,7 @@ void tst_QSqlQuery::batchExec()
     tst_Databases::safeDropTable(db, tableName);
 
     const auto dbType = tst_Databases::getDatabaseType(db);
-    QString timeStampString;
-    if (dbType == QSqlDriver::Interbase)
-        timeStampString = QLatin1String("TIMESTAMP");
-    else
-        timeStampString = QLatin1String("TIMESTAMP (3)");
+    QLatin1String timeStampString(dbType == QSqlDriver::Interbase ? "TIMESTAMP" : "TIMESTAMP (3)");
 
     QVERIFY_SQL(q, exec(QStringLiteral("create table ") + tableName +
                         QStringLiteral(" (id int, name varchar(20), dt date, num numeric(8, 4), "
@@ -3112,7 +3113,7 @@ void tst_QSqlQuery::createQueryOnClosedDatabase()
 
     QSqlQuery q( db );
     db.open();
-    QVERIFY_SQL( q, exec( QString( "select * from %1 where id = 1" ).arg( qtest ) ) );
+    QVERIFY_SQL(q, exec(QLatin1String("select * from %1 where id = 1").arg(qtest)));
 
     QVERIFY_SQL( q, next() );
     QCOMPARE( q.value( 0 ).toInt(), 1 );
@@ -3133,7 +3134,8 @@ void tst_QSqlQuery::reExecutePreparedForwardOnlyQuery()
     QSqlQuery q( db );
     q.setForwardOnly( true );
 
-    QVERIFY_SQL( q, prepare( QString( "SELECT id, t_varchar, t_char FROM %1 WHERE id = :id" ).arg( qtest ) ) );
+    QVERIFY_SQL(q, prepare(QLatin1String("SELECT id, t_varchar, t_char FROM %1 WHERE id = :id")
+                           .arg(qtest)));
     q.bindValue( ":id", 1 );
     QVERIFY_SQL( q, exec() );
 
@@ -3254,7 +3256,7 @@ void tst_QSqlQuery::nextResult()
     const QString tstStrings[] = { u"one"_qs, u"two"_qs, u"three"_qs, u"four"_qs };
 
     // Query that returns only one result set, nothing special about this
-    QVERIFY_SQL( q, exec( QString( "SELECT * FROM %1;" ).arg( tableName ) ) );
+    QVERIFY_SQL(q, exec(QLatin1String("SELECT * FROM %1;").arg(tableName)));
 
     QVERIFY( q.next() );                // Move to first row of the result set
 
@@ -3301,13 +3303,9 @@ void tst_QSqlQuery::nextResult()
     // nextResult() discarded the result set
 
     // Query that returns one result set, a count of affected rows and then another result set
-    QString query1 = QString( "SELECT id, text, num, empty FROM %1 WHERE id <= 3" ).arg( tableName );
-
-    QString query2 = QString( "UPDATE %1 SET empty = 'Yatta!'" ).arg( tableName );
-
-    QString query3 = QString( "SELECT id, empty FROM %1 WHERE id <=2" ).arg( tableName );
-
-    QVERIFY_SQL( q, exec( QString( "%1; %2; %3;" ).arg( query1 ).arg( query2 ).arg( query3 ) ) );
+    QVERIFY_SQL(q, exec(QLatin1String("SELECT id, text, num, empty FROM %1 WHERE id <= 3; "
+                                      "UPDATE %1 SET empty = 'Yatta!'; "
+                                      "SELECT id, empty FROM %1 WHERE id <=2;").arg(tableName)));
 
     // Check result set returned by first statement
     QVERIFY( q.isSelect() );            // The first statement is a select
@@ -3485,14 +3483,12 @@ void tst_QSqlQuery::blobsPreparedQuery()
     // In PostgreSQL a BLOB is not called a BLOB, but a BYTEA! :-)
     // ... and in SQL Server it can be called a lot, but IMAGE will do.
     QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
-    QString typeName( "BLOB" );
-    if (dbType == QSqlDriver::PostgreSQL)
-        typeName = "BYTEA";
-    else if (dbType == QSqlDriver::MSSqlServer)
-        typeName = "IMAGE";
+    const QLatin1String typeName(dbType == QSqlDriver::PostgreSQL ? "BYTEA"
+                                 : dbType == QSqlDriver::MSSqlServer ? "IMAGE" : "BLOB");
 
-    QVERIFY_SQL( q, exec( QString( "CREATE TABLE %1(id INTEGER, data %2)" ).arg( tableName ).arg( typeName ) ) );
-    q.prepare( QString( "INSERT INTO %1(id, data) VALUES(:id, :data)" ).arg( tableName ) );
+    QVERIFY_SQL(q, exec(QLatin1String("CREATE TABLE %1(id INTEGER, data %2)")
+                        .arg(tableName, typeName)));
+    q.prepare(QLatin1String("INSERT INTO %1(id, data) VALUES(:id, :data)").arg(tableName));
     q.bindValue( ":id", 1 );
     q.bindValue( ":data", shortBLOB );
     QVERIFY_SQL( q, exec() );
@@ -3502,7 +3498,7 @@ void tst_QSqlQuery::blobsPreparedQuery()
     QVERIFY_SQL( q, exec() );
 
     // Two executions and result sets
-    q.prepare( QString( "SELECT data FROM %1 WHERE id = ?" ).arg( tableName ) );
+    q.prepare(QLatin1String("SELECT data FROM %1 WHERE id = ?").arg(tableName));
     q.bindValue( 0, QVariant( 1 ) );
     QVERIFY_SQL( q, exec() );
     QVERIFY_SQL( q, next() );
@@ -3514,7 +3510,7 @@ void tst_QSqlQuery::blobsPreparedQuery()
     QCOMPARE( q.value( 0 ).toString().toUtf8(), longerBLOB.toUtf8() );
 
     // Only one execution and result set
-    q.prepare( QString( "SELECT id, data FROM %1 ORDER BY id" ).arg( tableName ) );
+    q.prepare(QLatin1String("SELECT id, data FROM %1 ORDER BY id").arg(tableName));
     QVERIFY_SQL( q, exec() );
     QVERIFY_SQL( q, next() );
     QCOMPARE( q.value( 1 ).toString(), shortBLOB );
@@ -4205,7 +4201,8 @@ void tst_QSqlQuery::QTBUG_2192()
         tst_Databases::safeDropTable( db, tableName );
 
         QSqlQuery q(db);
-        QVERIFY_SQL(q, exec(QString("CREATE TABLE " + tableName + " (dt %1)").arg(tst_Databases::dateTimeTypeName(db))));
+        QVERIFY_SQL(q, exec(QLatin1String("CREATE TABLE %1 (dt %2)")
+                            .arg(tableName, tst_Databases::dateTimeTypeName(db))));
 
         QDateTime dt = QDateTime(QDate(2012, 7, 4), QTime(23, 59, 59, 999));
         QVERIFY_SQL(q, prepare("INSERT INTO " + tableName + " (dt) VALUES (?)"));
@@ -4233,7 +4230,8 @@ void tst_QSqlQuery::QTBUG_36211()
         tst_Databases::safeDropTable( db, tableName );
 
         QSqlQuery q(db);
-        QVERIFY_SQL(q, exec(QString("CREATE TABLE %1 (dtwtz timestamptz, dtwotz timestamp)").arg(tableName)));
+        QVERIFY_SQL(q, exec(QLatin1String("CREATE TABLE %1 (dtwtz timestamptz, dtwotz timestamp)")
+                            .arg(tableName)));
 
 #if QT_CONFIG(timezone)
         QTimeZone l_tzBrazil("America/Sao_Paulo");
@@ -4279,8 +4277,8 @@ void tst_QSqlQuery::QTBUG_53969()
         tst_Databases::safeDropTable( db, tableName );
 
         QSqlQuery q(db);
-        QVERIFY_SQL(q, exec(QString("CREATE TABLE %1 (id INT AUTO_INCREMENT PRIMARY KEY, "
-                                    "test_number TINYINT(3) UNSIGNED)")
+        QVERIFY_SQL(q, exec(QLatin1String("CREATE TABLE %1 (id INT AUTO_INCREMENT PRIMARY KEY, "
+                                          "test_number TINYINT(3) UNSIGNED)")
                             .arg(tableName)));
 
         QVERIFY_SQL(q, prepare("INSERT INTO " + tableName + " (test_number) VALUES (:value)"));
@@ -4311,12 +4309,13 @@ void tst_QSqlQuery::gisPointDatatype()
     QSqlQuery sqlQuery(db);
     const auto tableName = qTableName("qtbug72140", __FILE__, db);
     tst_Databases::safeDropTable(db, tableName);
-    QString sqlCommand = QStringLiteral("CREATE TABLE %1 (`lonlat_point` POINT NULL) ENGINE = InnoDB;").arg(tableName);
-    QVERIFY(sqlQuery.exec(sqlCommand));
-    sqlCommand = QStringLiteral("INSERT INTO %1(lonlat_point) VALUES(ST_GeomFromText('POINT(1 1)'));").arg(tableName);
-    QVERIFY(sqlQuery.exec(sqlCommand));
-    sqlCommand = QStringLiteral("SELECT * FROM %1;").arg(tableName);
-    QVERIFY(sqlQuery.exec(sqlCommand));
+    QVERIFY(sqlQuery.exec(QLatin1String(
+                              "CREATE TABLE %1 (`lonlat_point` POINT NULL) ENGINE = InnoDB;")
+                          .arg(tableName)));
+    QVERIFY(sqlQuery.exec(QLatin1String(
+                              "INSERT INTO %1(lonlat_point) VALUES(ST_GeomFromText('POINT(1 1)'));")
+                          .arg(tableName)));
+    QVERIFY(sqlQuery.exec(QLatin1String("SELECT * FROM %1;").arg(tableName)));
     QCOMPARE(sqlQuery.record().field(0).metaType().id(), QMetaType::QByteArray);
     QVERIFY(sqlQuery.next());
 }
