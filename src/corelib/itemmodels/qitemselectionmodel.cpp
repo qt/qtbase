@@ -43,6 +43,7 @@
 #include <private/qitemselectionmodel_p.h>
 #include <private/qabstractitemmodel_p.h>
 #include <private/qduplicatetracker_p.h>
+#include <private/qoffsetstringarray_p.h>
 #include <qdebug.h>
 
 #include <algorithm>
@@ -585,45 +586,40 @@ void QItemSelection::split(const QItemSelectionRange &range,
 
 void QItemSelectionModelPrivate::initModel(QAbstractItemModel *m)
 {
-    struct Cx {
-        const char *signal;
-        const char *slot;
-    };
-    static const Cx connections[] = {
-        { SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
-          SLOT(_q_rowsAboutToBeRemoved(QModelIndex,int,int)) },
-        { SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
-          SLOT(_q_columnsAboutToBeRemoved(QModelIndex,int,int)) },
-        { SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
-          SLOT(_q_rowsAboutToBeInserted(QModelIndex,int,int)) },
-        { SIGNAL(columnsAboutToBeInserted(QModelIndex,int,int)),
-          SLOT(_q_columnsAboutToBeInserted(QModelIndex,int,int)) },
-        { SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)),
-          SLOT(_q_layoutAboutToBeChanged()) },
-        { SIGNAL(columnsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)),
-          SLOT(_q_layoutAboutToBeChanged()) },
-        { SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)),
-          SLOT(_q_layoutChanged()) },
-        { SIGNAL(columnsMoved(QModelIndex,int,int,QModelIndex,int)),
-          SLOT(_q_layoutChanged()) },
-        { SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
-          SLOT(_q_layoutAboutToBeChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)) },
-        { SIGNAL(layoutChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
-          SLOT(_q_layoutChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)) },
-        { SIGNAL(modelReset()),
-          SLOT(reset()) },
-        { SIGNAL(destroyed(QObject*)),
-           SLOT(_q_modelDestroyed()) },
-        { nullptr, nullptr }
-    };
+    static constexpr auto connections = qOffsetStringArray(
+        QT_STRINGIFY_SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
+        QT_STRINGIFY_SLOT(_q_rowsAboutToBeRemoved(QModelIndex,int,int)),
+        QT_STRINGIFY_SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
+        QT_STRINGIFY_SLOT(_q_columnsAboutToBeRemoved(QModelIndex,int,int)),
+        QT_STRINGIFY_SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
+        QT_STRINGIFY_SLOT(_q_rowsAboutToBeInserted(QModelIndex,int,int)),
+        QT_STRINGIFY_SIGNAL(columnsAboutToBeInserted(QModelIndex,int,int)),
+        QT_STRINGIFY_SLOT(_q_columnsAboutToBeInserted(QModelIndex,int,int)),
+        QT_STRINGIFY_SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)),
+        QT_STRINGIFY_SLOT(_q_layoutAboutToBeChanged()),
+        QT_STRINGIFY_SIGNAL(columnsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)),
+        QT_STRINGIFY_SLOT(_q_layoutAboutToBeChanged()),
+        QT_STRINGIFY_SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)),
+        QT_STRINGIFY_SLOT(_q_layoutChanged()),
+        QT_STRINGIFY_SIGNAL(columnsMoved(QModelIndex,int,int,QModelIndex,int)),
+        QT_STRINGIFY_SLOT(_q_layoutChanged()),
+        QT_STRINGIFY_SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
+        QT_STRINGIFY_SLOT(_q_layoutAboutToBeChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
+        QT_STRINGIFY_SIGNAL(layoutChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
+        QT_STRINGIFY_SLOT(_q_layoutChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
+        QT_STRINGIFY_SIGNAL(modelReset()),
+        QT_STRINGIFY_SLOT(reset()),
+        QT_STRINGIFY_SIGNAL(destroyed(QObject*)),
+        QT_STRINGIFY_SLOT(_q_modelDestroyed())
+    );
 
     if (model == m)
         return;
 
     Q_Q(QItemSelectionModel);
     if (model.value()) {
-        for (const Cx *cx = &connections[0]; cx->signal; cx++)
-            QObject::disconnect(model.value(), cx->signal, q, cx->slot);
+        for (int i = 0; i < connections.count(); i += 2)
+            QObject::disconnect(model.value(), connections.at(i), q, connections.at(i + 1));
         q->reset();
     }
 
@@ -631,8 +627,8 @@ void QItemSelectionModelPrivate::initModel(QAbstractItemModel *m)
     model.setValueBypassingBindings(m);
 
     if (model.value()) {
-        for (const Cx *cx = &connections[0]; cx->signal; cx++)
-            QObject::connect(model.value(), cx->signal, q, cx->slot);
+        for (int i = 0; i < connections.count(); i += 2)
+            QObject::connect(model.value(), connections.at(i), q, connections.at(i + 1));
     }
 }
 
