@@ -27,6 +27,7 @@
 ****************************************************************************/
 
 #include <QTest>
+#include <QVariantMap>
 #include <qjsondocument.h>
 #include <qjsonobject.h>
 
