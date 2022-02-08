@@ -39,8 +39,35 @@ else()
     message(STATUS "CMAKE_BUILD_TYPE was set to: '${CMAKE_BUILD_TYPE}'")
 endif()
 
-# Appends a 'debug postfix' to library targets (not executables)
-# e.g. lib/libQt6DBus_debug.5.12.0.dylib
+# Append a config-specific postfix to library names to ensure distinct names
+# in a multi-config build.
+# e.g. lib/libQt6DBus_relwithdebinfo.6.3.0.dylib
+# Don't apply the postfix to the first encountered release-like config, so we have at least one
+# config without a postifx.
+if(QT_GENERATOR_IS_MULTI_CONFIG AND CMAKE_CONFIGURATION_TYPES)
+    set(__qt_setup_release_configs Release RelWithDebInfo MinSizeRel)
+    set(__qt_setup_found_first_release_config FALSE)
+    foreach(__qt_setup_config_type IN LISTS CMAKE_CONFIGURATION_TYPES)
+        # Skip assigning postfix for the first release-like config.
+        if(NOT __qt_setup_found_first_release_config
+                AND __qt_setup_config_type IN_LIST __qt_setup_release_configs)
+            set(__qt_setup_found_first_release_config TRUE)
+            continue()
+        endif()
+
+        string(TOLOWER "${__qt_setup_config_type}" __qt_setup_config_type_lower)
+        string(TOUPPER "${__qt_setup_config_type}" __qt_setup_config_type_upper)
+        set(CMAKE_${__qt_setup_config_type_upper}_POSTFIX "_${__qt_setup_config_type_lower}")
+        if(APPLE)
+            set(CMAKE_FRAMEWORK_MULTI_CONFIG_POSTFIX_${__qt_setup_config_type_upper}
+                "_${__qt_setup_config_type_lower}")
+        endif()
+    endforeach()
+endif()
+
+# Override the generic debug postfixes above with custom debug postfixes (even in a single config
+# build) to follow the conventions we had since Qt 5.
+# e.g. lib/libQt6DBus_debug.6.3.0.dylib
 if(WIN32)
     if(MINGW)
         # On MinGW we don't have "d" suffix for debug libraries like on Linux,
