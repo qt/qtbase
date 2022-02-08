@@ -166,11 +166,11 @@ public:
     explicit QCborValue(const QDateTime &dt);
 #ifndef QT_BOOTSTRAPPED
     explicit QCborValue(const QUrl &url);
-#endif
-#if QT_CONFIG(regularexpression)
+#  if QT_CONFIG(regularexpression)
     explicit QCborValue(const QRegularExpression &rx);
-#endif
+#  endif
     explicit QCborValue(const QUuid &uuid);
+#endif
 
     ~QCborValue() { if (container) dispose(); }
 
@@ -238,11 +238,13 @@ public:
     QByteArray toByteArray(const QByteArray &defaultValue = {}) const;
     QString toString(const QString &defaultValue = {}) const;
     QDateTime toDateTime(const QDateTime &defaultValue = {}) const;
+#ifndef QT_BOOTSTRAPPED
     QUrl toUrl(const QUrl &defaultValue = {}) const;
-#if QT_CONFIG(regularexpression)
+#  if QT_CONFIG(regularexpression)
     QRegularExpression toRegularExpression(const QRegularExpression &defaultValue = {}) const;
-#endif
+#  endif
     QUuid toUuid(const QUuid &defaultValue = {}) const;
+#endif
 
     // only forward-declared, need split functions
     QCborArray toArray() const;
@@ -385,13 +387,13 @@ public:
 #ifndef QT_BOOTSTRAPPED
     QUrl toUrl(const QUrl &defaultValue = {}) const
     { return concrete().toUrl(defaultValue); }
-#endif
-#if QT_CONFIG(regularexpression)
+#  if QT_CONFIG(regularexpression)
     QRegularExpression toRegularExpression(const QRegularExpression &defaultValue = {}) const
     { return concrete().toRegularExpression(defaultValue); }
-#endif
+#  endif
     QUuid toUuid(const QUuid &defaultValue = {}) const
     { return concrete().toUuid(defaultValue); }
+#endif
 
     // only forward-declared, need split functions. Implemented in qcbor{array,map}.h
     inline QCborArray toArray() const;
@@ -538,13 +540,13 @@ public:
 #ifndef QT_BOOTSTRAPPED
     QUrl toUrl(const QUrl &defaultValue = {}) const
     { return concrete().toUrl(defaultValue); }
-#endif
-#if QT_CONFIG(regularexpression)
+#  if QT_CONFIG(regularexpression)
     QRegularExpression toRegularExpression(const QRegularExpression &defaultValue = {}) const
     { return concrete().toRegularExpression(defaultValue); }
-#endif
+#  endif
     QUuid toUuid(const QUuid &defaultValue = {}) const
     { return concrete().toUuid(defaultValue); }
+#endif
 
     // only forward-declared, need split functions. Implemented in qcbor{array,map}.h
     QCborArray toArray() const;

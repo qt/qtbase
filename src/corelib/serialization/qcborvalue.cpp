@@ -1861,7 +1861,6 @@ QCborValue::QCborValue(const QUrl &url)
     t = Url;
     container->elements[1].type = String;
 }
-#endif
 
 #if QT_CONFIG(regularexpression)
 /*!
@@ -1900,6 +1899,7 @@ QCborValue::QCborValue(const QUuid &uuid)
     // change our type
     t = Uuid;
 }
+#endif
 
 // destructor
 void QCborValue::dispose()
@@ -2031,7 +2031,6 @@ QUrl QCborValue::toUrl(const QUrl &defaultValue) const
 
     return QUrl::fromEncoded(byteData->asByteArrayView());
 }
-#endif
 
 #if QT_CONFIG(regularexpression)
 /*!
@@ -2074,6 +2073,7 @@ QUuid QCborValue::toUuid(const QUuid &defaultValue) const
 
     return QUuid::fromRfc4122(byteData->asByteArrayView());
 }
+#endif
 
 /*!
     \fn QCborArray QCborValue::toArray() const
@@ -2896,13 +2896,13 @@ size_t qHash(const QCborValue &value, size_t seed)
 #ifndef QT_BOOTSTRAPPED
     case QCborValue::Url:
         return qHash(value.toUrl(), seed);
-#endif
-#if QT_CONFIG(regularexpression)
+#  if QT_CONFIG(regularexpression)
     case QCborValue::RegularExpression:
         return qHash(value.toRegularExpression(), seed);
-#endif
+#  endif
     case QCborValue::Uuid:
         return qHash(value.toUuid(), seed);
+#endif
     case QCborValue::Invalid:
         return seed;
     default:

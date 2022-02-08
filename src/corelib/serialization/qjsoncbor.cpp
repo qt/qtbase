@@ -98,7 +98,6 @@ static QString maybeEncodeTag(const QCborContainerPrivate *d)
 {
     qint64 tag = d->elements.at(0).value;
     const Element &e = d->elements.at(1);
-    const ByteData *b = d->byteData(e);
 
     switch (tag) {
     case qint64(QCborKnownTags::DateTimeString):
@@ -115,8 +114,12 @@ static QString maybeEncodeTag(const QCborContainerPrivate *d)
         break;
 
     case qint64(QCborKnownTags::Uuid):
-        if (e.type == QCborValue::ByteArray && b->len == sizeof(QUuid))
+#ifndef QT_BOOTSTRAPPED
+        if (const ByteData *b = d->byteData(e); e.type == QCborValue::ByteArray && b
+                && b->len == sizeof(QUuid))
             return QUuid::fromRfc4122(b->asByteArrayView()).toString(QUuid::WithoutBraces);
+#endif
+        break;
     }
 
     // don't know what to do, bail out
@@ -586,15 +589,15 @@ QVariant QCborValue::toVariant() const
 #ifndef QT_BOOTSTRAPPED
     case Url:
         return toUrl();
-#endif
 
-#if QT_CONFIG(regularexpression)
+#  if QT_CONFIG(regularexpression)
     case RegularExpression:
         return toRegularExpression();
-#endif
+#  endif
 
     case Uuid:
         return toUuid();
+#endif
 
     case Invalid:
         return QVariant();
@@ -763,9 +766,9 @@ QCborValue QCborValue::fromVariant(const QVariant &variant)
 #ifndef QT_BOOTSTRAPPED
     case QMetaType::QUrl:
         return QCborValue(variant.toUrl());
-#endif
     case QMetaType::QUuid:
         return QCborValue(variant.toUuid());
+#endif
     case QMetaType::QVariantList:
         return QCborArray::fromVariantList(variant.toList());
     case QMetaType::QVariantMap:
