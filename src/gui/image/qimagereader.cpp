@@ -1246,11 +1246,9 @@ bool QImageReader::read(QImage *image)
         d->handler->setOption(QImageIOHandler::Quality, d->quality);
 
     // read the image
+    QString filename = fileName();
     if (Q_TRACE_ENABLED(QImageReader_read_before_reading)) {
-        QString fileName = QStringLiteral("unknown");
-        if (QFile *file = qobject_cast<QFile *>(d->device))
-            fileName = file->fileName();
-        Q_TRACE(QImageReader_read_before_reading, this, fileName);
+        Q_TRACE(QImageReader_read_before_reading, this, filename.isEmpty() ? u"unknown"_qs : filename);
     }
 
     const bool result = d->handler->read(image);
@@ -1317,7 +1315,7 @@ bool QImageReader::read(QImage *image)
     // successful read; check for "@Nx" file name suffix and set device pixel ratio.
     static bool disableNxImageLoading = !qEnvironmentVariableIsEmpty("QT_HIGHDPI_DISABLE_2X_IMAGE_LOADING");
     if (!disableNxImageLoading) {
-        const QByteArray suffix = QFileInfo(fileName()).baseName().right(3).toLatin1();
+        const QByteArray suffix = QFileInfo(filename).baseName().right(3).toLatin1();
         if (suffix.length() == 3 && suffix[0] == '@' && suffix[1] >= '2' && suffix[1] <= '9' && suffix[2] == 'x')
             image->setDevicePixelRatio(suffix[1] - '0');
     }
