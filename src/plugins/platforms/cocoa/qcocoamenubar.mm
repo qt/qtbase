@@ -196,8 +196,15 @@ void QCocoaMenuBar::syncMenu_helper(QPlatformMenu *menu, bool menubarUpdate)
 
     const QString captionNoAmpersand = QString::fromNSString(cocoaMenu->nsMenu().title)
                                        .remove(QLatin1Char('&'));
-    if (captionNoAmpersand == QCoreApplication::translate("QCocoaMenu", "Edit"))
+    if (captionNoAmpersand == QCoreApplication::translate("QCocoaMenu", "Edit")) {
+        // prevent recursion from QCocoaMenu::insertMenuItem - when the menu is visible
+        // it calls syncMenu again. QCocoaMenu::setVisible just sets the bool, which then
+        // gets evaluated in the code after this block.
+        const bool wasVisible = cocoaMenu->isVisible();
+        cocoaMenu->setVisible(false);
         insertDefaultEditItems(cocoaMenu);
+        cocoaMenu->setVisible(wasVisible);
+    }
 
     BOOL shouldHide = YES;
     if (cocoaMenu->isVisible()) {
