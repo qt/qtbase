@@ -1019,13 +1019,17 @@ void tst_QSqlQuery::blob()
     for (int i = 0; i < BLOBCOUNT; ++i) {
         QVERIFY( q.next() );
         QByteArray res = q.value( 1 ).toByteArray();
-        QVERIFY2( res.size() >= ba.size(),
-                  QString( "array sizes differ, expected %1, got %2" ).arg( ba.size() ).arg( res.size() ).toLatin1() );
+        QVERIFY2(res.size() >= ba.size(),
+                 qPrintable(QString::asprintf(
+                                "array sizes differ, expected (at least) %" PRIdQSIZETYPE
+                                ", got %" PRIdQSIZETYPE, ba.size(), res.size())));
 
         for (int i2 = 0; i2 < ba.size(); ++i2) {
-            if ( res[i2] != ba[i2] )
-                QFAIL( QString( "ByteArrays differ at position %1, expected %2, got %3" ).arg(
-                           i2 ).arg(( int )( unsigned char )ba[i2] ).arg(( int )( unsigned char )res[i2] ).toLatin1() );
+            if (res[i2] != ba[i2]) {
+                QFAIL(qPrintable(QString::asprintf(
+                                     "ByteArrays differ at position %d, expected %hhu, got %hhu",
+                                     i2, ba[i2], res[i2])));
+            }
         }
     }
 }
