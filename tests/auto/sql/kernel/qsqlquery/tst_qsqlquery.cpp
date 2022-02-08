@@ -814,8 +814,7 @@ void tst_QSqlQuery::oraClob()
     QCOMPARE( q.value( 1 ).toString(), QString( "lala" ) );
 
     // loooong string
-    QString loong;
-    loong.fill( QLatin1Char( 'A' ), 25000 );
+    const QString loong(25000, QLatin1Char('A'));
     QVERIFY_SQL( q, prepare( "insert into " + clobby + " (id, cl, bl) values(?, ?, ?)" ) );
     q.addBindValue( 3 );
     q.addBindValue( loong, QSql::Binary );
@@ -2549,9 +2548,7 @@ void tst_QSqlQuery::sqlServerLongStrings()
 
     QVERIFY_SQL( q, exec() );
 
-    QString testStr;
-
-    testStr.fill( QLatin1Char( 'a' ), 85000 );
+    const QString testStr(85000, QLatin1Char('a'));
 
     q.addBindValue( 1 );
 
@@ -3609,7 +3606,6 @@ void tst_QSqlQuery::task_217003()
 
 void tst_QSqlQuery::task_250026()
 {
-    QString data258, data1026;
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
@@ -3622,8 +3618,8 @@ void tst_QSqlQuery::task_250026()
         QSKIP( "Db doesn't support \"1100\" as a size for fields");
     }
 
-    data258.fill( 'A', 258 );
-    data1026.fill( 'A', 1026 );
+    const QString data258(258, QLatin1Char('A'));
+    const QString data1026(1026, QLatin1Char('A'));
     QVERIFY_SQL( q, prepare( "insert into " + tableName + "(longfield) VALUES (:longfield)" ) );
     q.bindValue( ":longfield", data258 );
     QVERIFY_SQL( q, exec() );
