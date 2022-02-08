@@ -225,7 +225,11 @@ qt_config_compile_test("separate_debug_info"
 qt_config_compile_test(signaling_nan
     LABEL "Signaling NaN for doubles"
     CODE
-"#include <limits>
+"#if defined(__ghs)  && (__GHS_VERSION_NUMBER <= 202014)
+#  error Signal NaNs are not supported by GHS compiler, but has_signaling_NaN returns TRUE. Will be fixed in future compiler releases.
+#endif
+
+#include <limits>
 
 int main(void)
 {
