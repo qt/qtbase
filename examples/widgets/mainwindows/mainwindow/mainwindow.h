@@ -52,6 +52,9 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QMap>
+#include <QString>
+#include <QSize>
 
 class ToolBar;
 QT_FORWARD_DECLARE_CLASS(QMenu)

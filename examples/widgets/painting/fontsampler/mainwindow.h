@@ -56,6 +56,11 @@
 #if defined(QT_PRINTSUPPORT_LIB)
 #include <QtPrintSupport/qtprintsupportglobal.h>
 #endif
+
+#include <QList>
+#include <QMap>
+#include <QString>
+
 QT_BEGIN_NAMESPACE
 class QPrinter;
 class QTextEdit;

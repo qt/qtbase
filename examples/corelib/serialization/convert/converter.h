@@ -54,6 +54,7 @@
 #include <QIODevice>
 #include <QPair>
 #include <QVariant>
+#include <QVariantMap>
 #include <QList>
 
 class VariantOrderedMap : public QList<QPair<QVariant, QVariant>>

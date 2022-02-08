@@ -57,6 +57,8 @@
 #include <QCheckBox>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QList>
+#include <QByteArray>
 #include <QPushButton>
 #include <QTextEdit>
 #include <QSplitter>
