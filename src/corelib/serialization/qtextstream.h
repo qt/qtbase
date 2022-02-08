@@ -41,10 +41,9 @@
 #define QTEXTSTREAM_H
 
 #include <QtCore/qiodevicebase.h>
-#include <QtCore/qstring.h>
 #include <QtCore/qchar.h>
 #include <QtCore/qscopedpointer.h>
-#include <QtCore/qstringconverter.h>
+#include <QtCore/qstringconverter_base.h>
 
 #include <stdio.h>
 
@@ -56,6 +55,7 @@ QT_BEGIN_NAMESPACE
 
 class QIODevice;
 class QLocale;
+class QString;
 
 class QTextStreamPrivate;
 class Q_CORE_EXPORT QTextStream : public QIODeviceBase

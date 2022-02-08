@@ -53,6 +53,7 @@
 //
 
 #include <QtCore/private/qglobal_p.h>
+#include <QtCore/qstringconverter.h>
 #include "qiodevice.h"
 #include "qlocale.h"
 #include "qtextstream.h"

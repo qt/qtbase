@@ -51,6 +51,7 @@
 #include <qdir.h>
 #include <qdebug.h>
 #include <qelapsedtimer.h>
+#include <qstringconverter.h>
 
 #ifdef Q_OS_VXWORKS
 #  include <selectLib.h>

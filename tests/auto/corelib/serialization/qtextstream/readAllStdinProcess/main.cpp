@@ -28,6 +28,7 @@
 
 
 #include <QtCore/QTextStream>
+#include <QtCore/QString>
 #include <stdio.h>
 
 int main(int, char**)

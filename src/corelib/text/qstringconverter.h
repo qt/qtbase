@@ -37,15 +37,21 @@
 **
 ****************************************************************************/
 
+#if 0
+// keep existing syncqt header working after the move of the class
+// into qstringconverter_base
+#pragma qt_class(QStringConverter)
+#pragma qt_class(QStringConverterBase)
+#endif
+
 #ifndef QSTRINGCONVERTER_H
 #define QSTRINGCONVERTER_H
 
+#include <QtCore/qstringconverter_base.h>
 #include <QtCore/qstring.h>
 #if defined(QT_USE_FAST_OPERATOR_PLUS) || defined(QT_USE_QSTRINGBUILDER)
 #include <QtCore/qstringbuilder.h>
 #endif
-
-#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -55,138 +61,6 @@ QT_BEGIN_NAMESPACE
 #else
 #define QSTRINGCONVERTER_CONSTEXPR constexpr
 #endif
-
-class QStringConverterBase
-{
-public:
-    enum class Flag {
-        Default = 0,
-        Stateless = 0x1,
-        ConvertInvalidToNull = 0x2,
-        WriteBom = 0x4,
-        ConvertInitialBom = 0x8
-    };
-    Q_DECLARE_FLAGS(Flags, Flag)
-
-    struct State {
-        constexpr State(Flags f = Flag::Default)
-            : flags(f), state_data{0, 0, 0, 0} {}
-        ~State() { clear(); }
-        State(State &&other)
-            : flags(other.flags),
-              remainingChars(other.remainingChars),
-              invalidChars(other.invalidChars),
-              d{other.d[0], other.d[1]},
-              clearFn(other.clearFn)
-        { other.clearFn = nullptr; }
-        State &operator=(State &&other)
-        {
-            clear();
-            flags = other.flags;
-            remainingChars = other.remainingChars;
-            invalidChars = other.invalidChars;
-            d[0] = other.d[0];
-            d[1] = other.d[1];
-            clearFn = other.clearFn;
-            other.clearFn = nullptr;
-            return *this;
-        }
-        Q_CORE_EXPORT void clear();
-
-        Flags flags;
-        int internalState = 0;
-        qsizetype remainingChars = 0;
-        qsizetype invalidChars = 0;
-
-        union {
-            uint state_data[4];
-            void *d[2];
-        };
-        using ClearDataFn = void (*)(State *);
-        ClearDataFn clearFn = nullptr;
-    private:
-        Q_DISABLE_COPY(State)
-    };
-};
-Q_DECLARE_OPERATORS_FOR_FLAGS(QStringConverterBase::Flags)
-
-class QStringConverter : public QStringConverterBase
-{
-public:
-
-    enum Encoding {
-        Utf8,
-        Utf16,
-        Utf16LE,
-        Utf16BE,
-        Utf32,
-        Utf32LE,
-        Utf32BE,
-        Latin1,
-        System,
-        LastEncoding = System
-    };
-#ifdef Q_QDOC
-    // document the flags here
-    enum class Flag {
-        Default = 0,
-        Stateless = 0x1,
-        ConvertInvalidToNull = 0x2,
-        WriteBom = 0x4,
-        ConvertInitialBom = 0x8
-    };
-    Q_DECLARE_FLAGS(Flags, Flag)
-#endif
-
-protected:
-
-    struct Interface
-    {
-        using DecoderFn = QChar * (*)(QChar *out, QByteArrayView in, State *state);
-        using LengthFn = qsizetype (*)(qsizetype inLength);
-        using EncoderFn = char * (*)(char *out, QStringView in, State *state);
-        const char *name = nullptr;
-        DecoderFn toUtf16 = nullptr;
-        LengthFn toUtf16Len = nullptr;
-        EncoderFn fromUtf16 = nullptr;
-        LengthFn fromUtf16Len = nullptr;
-    };
-
-    QSTRINGCONVERTER_CONSTEXPR QStringConverter()
-        : iface(nullptr)
-    {}
-    QSTRINGCONVERTER_CONSTEXPR QStringConverter(Encoding encoding, Flags f)
-        : iface(&encodingInterfaces[int(encoding)]), state(f)
-    {}
-    QSTRINGCONVERTER_CONSTEXPR QStringConverter(const Interface *i)
-        : iface(i)
-    {}
-    Q_CORE_EXPORT QStringConverter(const char *name, Flags f);
-
-
-public:
-    bool isValid() const { return iface != nullptr; }
-
-    void resetState()
-    {
-        state.clear();
-    }
-    bool hasError() const { return state.invalidChars != 0; }
-
-    const char *name() const
-    { return isValid() ? iface->name : nullptr; }
-
-    Q_CORE_EXPORT static std::optional<Encoding> encodingForName(const char *name);
-    Q_CORE_EXPORT static const char *nameForEncoding(Encoding e);
-    Q_CORE_EXPORT static std::optional<Encoding> encodingForData(QByteArrayView data, char16_t expectedFirstCharacter = 0);
-    Q_CORE_EXPORT static std::optional<Encoding> encodingForHtml(QByteArrayView data);
-
-protected:
-    const Interface *iface;
-    State state;
-private:
-    Q_CORE_EXPORT static const Interface encodingInterfaces[Encoding::LastEncoding + 1];
-};
 
 class QStringEncoder : public QStringConverter
 {
