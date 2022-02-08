@@ -56,7 +56,7 @@
 
     \section1 The Buses
 
-    D-Bus buses are used to when many-to-many communication is
+    D-Bus buses are used when many-to-many communication is
     desired. In order to achieve that, a central server is launched
     before any applications can connect to the bus: this server is
     responsible for keeping track of the applications that are
@@ -71,7 +71,7 @@
     For example, an application wishing to query the list of hardware
     devices attached to the computer will probably communicate to a
     service available on the system bus, while the service providing
-    opening of the user's web browser will be probably found on the
+    opening of the user's web browser will probably be found on the
     session bus.
 
     On the system bus, one can also expect to find restrictions on
@@ -135,10 +135,10 @@
 
     Like network hosts, applications provide specific services to
     other applications by exporting objects. Those objects are
-    hierarchically organised, much like the parent-child
+    hierarchically organized, much like the parent-child
     relationship that classes derived from QObject possess. One
     difference, however, is that there is the concept of "root
-    object", that all objects have as ultimate parent.
+    object", which all objects have as the ultimate parent.
 
     If we continue our analogy with Web services, object paths
     equate to the path part of a URL:
@@ -156,7 +156,7 @@
     Interfaces are similar to C++ abstract classes and Java's
     \c interface keyword and declare the "contract" that is
     established between caller and callee. That is, they establish
-    the names of the methods, signals and properties that are
+    the names of the methods, signals, and properties that are
     available as well as the behavior that is expected from either
     side when communication is established.
 
