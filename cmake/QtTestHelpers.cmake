@@ -346,10 +346,16 @@ function(qt_internal_add_test name)
     endif()
 
     # Add a ${target}/check makefile target, to more easily test one test.
+
+    set(test_config_options "")
+    get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
+    if(is_multi_config)
+        set(test_config_options -C $<CONFIG>)
+    endif()
     add_custom_target("${name}_check"
         VERBATIM
-        COMMENT "Running ${CMAKE_CTEST_COMMAND} -V -R \"^${name}$\""
-        COMMAND "${CMAKE_CTEST_COMMAND}" -V -R "^${name}$"
+        COMMENT "Running ${CMAKE_CTEST_COMMAND} -V -R \"^${name}$\" ${test_config_options}"
+        COMMAND "${CMAKE_CTEST_COMMAND}" -V -R "^${name}$" ${test_config_options}
     )
     if(TARGET "${name}")
         add_dependencies("${name}_check" "${name}")
