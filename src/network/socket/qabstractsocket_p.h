@@ -96,27 +96,27 @@ public:
     void _q_testConnection();
     void _q_abortConnectionAttempt();
 
-    bool emittedReadyRead;
-    bool emittedBytesWritten;
+    bool emittedReadyRead = false;
+    bool emittedBytesWritten = false;
 
-    bool abortCalled;
-    bool pendingClose;
+    bool abortCalled = false;
+    bool pendingClose = false;
 
-    QAbstractSocket::PauseModes pauseMode;
+    QAbstractSocket::PauseModes pauseMode = QAbstractSocket::PauseNever;
 
     QString hostName;
-    quint16 port;
+    quint16 port = 0;
     QHostAddress host;
     QList<QHostAddress> addresses;
 
-    quint16 localPort;
-    quint16 peerPort;
+    quint16 localPort = 0;
+    quint16 peerPort = 0;
     QHostAddress localAddress;
     QHostAddress peerAddress;
     QString peerName;
 
-    QAbstractSocketEngine *socketEngine;
-    qintptr cachedSocketDescriptor;
+    QAbstractSocketEngine *socketEngine = nullptr;
+    qintptr cachedSocketDescriptor = -1;
 
 #ifndef QT_NO_NETWORKPROXY
     QNetworkProxy proxy;
@@ -143,21 +143,22 @@ public:
     void setError(QAbstractSocket::SocketError errorCode, const QString &errorString);
     void setErrorAndEmit(QAbstractSocket::SocketError errorCode, const QString &errorString);
 
-    qint64 readBufferMaxSize;
-    bool isBuffered;
-    bool hasPendingData;
+    qint64 readBufferMaxSize = 0;
+    bool isBuffered = false;
+    bool hasPendingData = false;
 
-    QTimer *connectTimer;
+    QTimer *connectTimer = nullptr;
 
-    int hostLookupId;
+    int hostLookupId = -1;
 
-    QAbstractSocket::SocketType socketType;
-    QAbstractSocket::SocketState state;
+    QAbstractSocket::SocketType socketType = QAbstractSocket::UnknownSocketType;
+    QAbstractSocket::SocketState state = QAbstractSocket::UnconnectedState;
 
     // Must be kept in sync with QIODevicePrivate::errorString.
-    QAbstractSocket::SocketError socketError;
+    QAbstractSocket::SocketError socketError = QAbstractSocket::UnknownSocketError;
 
-    QAbstractSocket::NetworkLayerProtocol preferredNetworkLayerProtocol;
+    QAbstractSocket::NetworkLayerProtocol preferredNetworkLayerProtocol =
+            QAbstractSocket::UnknownNetworkLayerProtocol;
 
     bool prePauseReadSocketNotifierState = false;
     bool prePauseWriteSocketNotifierState = false;

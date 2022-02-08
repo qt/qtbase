@@ -522,25 +522,6 @@ static bool isProxyError(QAbstractSocket::SocketError error)
     Constructs a QAbstractSocketPrivate. Initializes all members.
 */
 QAbstractSocketPrivate::QAbstractSocketPrivate()
-    : emittedReadyRead(false),
-      emittedBytesWritten(false),
-      abortCalled(false),
-      pendingClose(false),
-      pauseMode(QAbstractSocket::PauseNever),
-      port(0),
-      localPort(0),
-      peerPort(0),
-      socketEngine(nullptr),
-      cachedSocketDescriptor(-1),
-      readBufferMaxSize(0),
-      isBuffered(false),
-      hasPendingData(false),
-      connectTimer(nullptr),
-      hostLookupId(-1),
-      socketType(QAbstractSocket::UnknownSocketType),
-      state(QAbstractSocket::UnconnectedState),
-      socketError(QAbstractSocket::UnknownSocketError),
-      preferredNetworkLayerProtocol(QAbstractSocket::UnknownNetworkLayerProtocol)
 {
     writeBufferChunkSize = QABSTRACTSOCKET_BUFFERSIZE;
 }
