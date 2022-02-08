@@ -387,6 +387,10 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
             node.addAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS);
         }
 
+        int[] ids = QtNativeAccessibility.childIdListForAccessibleObject(virtualViewId);
+        for (int i = 0; i < ids.length; ++i)
+            node.addChild(m_view, ids[i]);
+
         return node;
     }
 
