@@ -467,9 +467,9 @@ void tst_QSqlQuery::char1Select()
         QVERIFY( q.next() );
         QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
         if (dbType == QSqlDriver::Interbase)
-            QCOMPARE( q.value( 0 ).toString().left( 1 ), QString( "a" ) );
+            QCOMPARE(q.value(0).toString().left(1), u"a");
         else
-            QCOMPARE( q.value( 0 ).toString(), QString( "a" ) );
+            QCOMPARE(q.value(0).toString(), u"a");
 
         QVERIFY( !q.next() );
     }
@@ -561,12 +561,12 @@ void tst_QSqlQuery::oraRowId()
     q.addBindValue( v1 );
     QVERIFY_SQL( q, exec() );
     QVERIFY( q.next() );
-    QCOMPARE( q.value( 0 ).toString(), QString( "a" ) );
+    QCOMPARE(q.value(0).toString(), u"a");
 
     q.addBindValue( v2 );
     QVERIFY_SQL( q, exec() );
     QVERIFY( q.next() );
-    QCOMPARE( q.value( 0 ).toString(), QString( "b" ) );
+    QCOMPARE(q.value(0).toString(), u"b");
 }
 
 void tst_QSqlQuery::mysql_outValues()
@@ -585,13 +585,13 @@ void tst_QSqlQuery::mysql_outValues()
     QVERIFY_SQL( q, exec( "select " + hello + "('world')" ) );
     QVERIFY_SQL( q, next() );
 
-    QCOMPARE( q.value( 0 ).toString(), QString( "Hello world" ) );
+    QCOMPARE(q.value(0).toString(), u"Hello world");
 
     QVERIFY_SQL( q, prepare( "select " + hello + "('harald')" ) );
     QVERIFY_SQL( q, exec() );
     QVERIFY_SQL( q, next() );
 
-    QCOMPARE( q.value( 0 ).toString(), QString( "Hello harald" ) );
+    QCOMPARE(q.value(0).toString(), u"Hello harald");
 
     QVERIFY_SQL( q, exec( "drop function " + hello ) );
 
@@ -601,7 +601,7 @@ void tst_QSqlQuery::mysql_outValues()
                             "BEGIN select * from " + qtest + " order by id; END" ) );
     QVERIFY_SQL( q, exec( "call " + qtestproc + "()" ) );
     QVERIFY_SQL( q, next() );
-    QCOMPARE( q.value( 1 ).toString(), QString( "VarChar1" ) );
+    QCOMPARE(q.value(1).toString(), u"VarChar1");
 
     QVERIFY_SQL( q, exec( "drop procedure " + qtestproc ) );
 
@@ -610,7 +610,7 @@ void tst_QSqlQuery::mysql_outValues()
 
     QVERIFY_SQL( q, exec( "call " + qtestproc + " (@out)" ) );
     QVERIFY_SQL( q, exec( "select @out" ) );
-    QCOMPARE( q.record().fieldName( 0 ), QString( "@out" ) );
+    QCOMPARE(q.record().fieldName(0), u"@out");
     QVERIFY_SQL( q, next() );
     QCOMPARE( q.value( 0 ).toInt(), 42 );
 
@@ -701,7 +701,7 @@ void tst_QSqlQuery::oraOutValues()
     s1.reserve( 512 );
     q.addBindValue( s1, QSql::Out );
     QVERIFY_SQL( q, exec() );
-    QCOMPARE( q.boundValue( 0 ).toString(), QString( "blah" ) );
+    QCOMPARE(q.boundValue(0).toString(), u"blah");
 
     /*** in/outvalue numeric ***/
     QVERIFY_SQL( q, exec( "create or replace procedure " + tst_outValues + "(x in out numeric) is\n"
@@ -719,9 +719,9 @@ void tst_QSqlQuery::oraOutValues()
                             "    x := 'homer';\n"
                             "end;\n" ) );
     QVERIFY( q.prepare( "call " + tst_outValues + "(?)" ) );
-    q.addBindValue( QString( "maggy" ), QSql::Out );
+    q.addBindValue(u"maggy"_qs, QSql::Out);
     QVERIFY_SQL( q, exec() );
-    QCOMPARE( q.boundValue( 0 ).toString(), QString( "homer" ) );
+    QCOMPARE(q.boundValue(0).toString(), u"homer");
 
     /*** in/outvalue varchar ***/
     QVERIFY_SQL( q, exec( "create or replace procedure " + tst_outValues + "(x in out varchar) is\n"
@@ -729,7 +729,7 @@ void tst_QSqlQuery::oraOutValues()
                             "    x := NULL;\n"
                             "end;\n" ) );
     QVERIFY( q.prepare( "call " + tst_outValues + "(?)" ) );
-    q.addBindValue( QString( "maggy" ), QSql::Out );
+    q.addBindValue(u"maggy"_qs, QSql::Out);
     QVERIFY_SQL( q, exec() );
     QVERIFY( q.boundValue( 0 ).isNull() );
 
@@ -749,12 +749,12 @@ void tst_QSqlQuery::oraOutValues()
                             "    y := x||'bubulalakikikokololo';\n"
                             "end;\n" ) );
     QVERIFY( q.prepare( "call " + tst_outValues + "(?, ?)" ) );
-    q.addBindValue( QString( "fifi" ), QSql::In );
+    q.addBindValue(u"fifi"_qs, QSql::In);
     QString out;
     out.reserve( 50 );
     q.addBindValue( out, QSql::Out );
     QVERIFY_SQL( q, exec() );
-    QCOMPARE( q.boundValue( 1 ).toString(), QString( "fifibubulalakikikokololo" ) );
+    QCOMPARE(q.boundValue(1).toString(), u"fifibubulalakikikokololo");
 
     /*** in/outvalue date ***/
     QVERIFY_SQL(q, exec("create or replace procedure " + tst_outValues + "(x in date, y out date) is\n"
@@ -795,25 +795,25 @@ void tst_QSqlQuery::oraClob()
     QVERIFY_SQL( q, prepare( "insert into " + clobby + " (id, cl, bl) values(?, ?, ?)" ) );
     q.addBindValue( 1 );
     q.addBindValue( "bubu" );
-    q.addBindValue( QByteArray("bubu") );
+    q.addBindValue("bubu"_qba);
     QVERIFY_SQL( q, exec() );
 
     QVERIFY_SQL( q, exec( "select bl, cl from " + clobby + " where id = 1" ) );
     QVERIFY( q.next() );
-    QCOMPARE( q.value( 0 ).toString(), QString( "bubu" ) );
-    QCOMPARE( q.value( 1 ).toString(), QString( "bubu" ) );
+    QCOMPARE(q.value(0).toString(), u"bubu");
+    QCOMPARE(q.value(1).toString(), u"bubu");
 
     // simple short string with binding
     QVERIFY_SQL( q, prepare( "insert into " + clobby + " (id, cl, bl) values(?, ?, ?)" ) );
     q.addBindValue( 2 );
-    q.addBindValue( "lala", QSql::Binary );
-    q.addBindValue( QByteArray("lala"), QSql::Binary );
+    q.addBindValue(u"lala"_qs, QSql::Binary);
+    q.addBindValue("lala"_qba, QSql::Binary);
     QVERIFY_SQL( q, exec() );
 
     QVERIFY_SQL( q, exec( "select bl, cl from " + clobby + " where id = 2" ) );
     QVERIFY( q.next() );
-    QCOMPARE( q.value( 0 ).toString(), QString( "lala" ) );
-    QCOMPARE( q.value( 1 ).toString(), QString( "lala" ) );
+    QCOMPARE(q.value(0).toString(), u"lala");
+    QCOMPARE(q.value(1).toString(), u"lala");
 
     // loooong string
     const QString loong(25000, QLatin1Char('A'));
@@ -877,13 +877,13 @@ void tst_QSqlQuery::storedProceduresIBase()
     // check for a valid result set
     QSqlRecord rec = q.record();
     QCOMPARE( rec.count(), 2 );
-    QCOMPARE( rec.fieldName( 0 ).toUpper(), QString( "X" ) );
-    QCOMPARE( rec.fieldName( 1 ).toUpper(), QString( "Y" ) );
+    QCOMPARE(rec.fieldName(0).toUpper(), u"X");
+    QCOMPARE(rec.fieldName(1).toUpper(), u"Y");
 
     // the first next shall suceed
     QVERIFY_SQL( q, next() );
     QCOMPARE( q.value( 0 ).toInt(), 42 );
-    QCOMPARE( q.value( 1 ).toString(), QString( "Hello Anders" ) );
+    QCOMPARE(q.value(1).toString(), u"Hello Anders");
 
     // the second next shall fail
     QVERIFY( !q.next() );
@@ -923,7 +923,7 @@ void tst_QSqlQuery::outValuesDB2()
 
     QCOMPARE( q.boundValue( 0 ).toInt(), 42 );
     QCOMPARE( q.boundValue( 1 ).toDouble(), 4.2 );
-    QCOMPARE( q.boundValue( 2 ).toString().trimmed(), QString( "Homer" ) );
+    QCOMPARE(q.boundValue(2).toString().trimmed(), u"Homer");
 }
 
 void tst_QSqlQuery::outValues()
@@ -1080,15 +1080,15 @@ void tst_QSqlQuery::value()
                                           "%2.id, %2.extra from %1, %2 where " \
                                           "%1.id = %2.id order by %1.id") \
                             .arg(lowerQTest, tst_record))); \
-        QCOMPARE(q.record().fieldName(0).toLower(), QString("id")); \
+        QCOMPARE(q.record().fieldName(0).toLower(), u"id"); \
         QCOMPARE(q.record().field(0).tableName().toLower(), lowerQTest); \
-        QCOMPARE(q.record().fieldName(1).toLower(), QString("t_varchar")); \
+        QCOMPARE(q.record().fieldName(1).toLower(), u"t_varchar"); \
         QCOMPARE(q.record().field(1).tableName().toLower(), lowerQTest); \
-        QCOMPARE(q.record().fieldName(2).toLower(), QString("t_char")); \
+        QCOMPARE(q.record().fieldName(2).toLower(), u"t_char"); \
         QCOMPARE(q.record().field(2).tableName().toLower(), lowerQTest); \
-        QCOMPARE(q.record().fieldName(3).toLower(), QString("id")); \
+        QCOMPARE(q.record().fieldName(3).toLower(), u"id"); \
         QCOMPARE(q.record().field(3).tableName().toLower(), tst_record); \
-        QCOMPARE(q.record().fieldName(4).toLower(), QString("extra")); \
+        QCOMPARE(q.record().fieldName(4).toLower(), u"extra"); \
         QCOMPARE(q.record().field(4).tableName().toLower(), tst_record); \
     } while (0)
 
@@ -1101,9 +1101,9 @@ void tst_QSqlQuery::record()
     QSqlQuery q( db );
     QVERIFY( q.record().isEmpty() );
     QVERIFY_SQL( q, exec( "select id, t_varchar, t_char from " + qtest + " order by id" ) );
-    QCOMPARE( q.record().fieldName( 0 ).toLower(), QString( "id" ) );
-    QCOMPARE( q.record().fieldName( 1 ).toLower(), QString( "t_varchar" ) );
-    QCOMPARE( q.record().fieldName( 2 ).toLower(), QString( "t_char" ) );
+    QCOMPARE(q.record().fieldName(0).toLower(), u"id");
+    QCOMPARE(q.record().fieldName(1).toLower(), u"t_varchar");
+    QCOMPARE(q.record().fieldName(2).toLower(), u"t_char");
     QCOMPARE(q.record().value(0), QVariant(q.record().field(0).metaType()));
     QCOMPARE(q.record().value(1), QVariant(q.record().field(1).metaType()));
     QCOMPARE(q.record().value(2), QVariant(q.record().field(2).metaType()));
@@ -1111,7 +1111,7 @@ void tst_QSqlQuery::record()
     QVERIFY( q.next() );
     QVERIFY( q.next() );
 
-    QCOMPARE( q.record().fieldName( 0 ).toLower(), QString( "id" ) );
+    QCOMPARE(q.record().fieldName(0).toLower(), u"id");
     QCOMPARE( q.value( 0 ).toInt(), 2 );
 
     const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
@@ -1805,8 +1805,8 @@ void tst_QSqlQuery::writeNull()
     // cases from the QSqlResultPrivate::isVariantNull helper. Only PostgreSQL supports
     // QUuid.
     QMultiHash<QString, QVariant> nullableTypes = {
-        {"varchar(20)", QString("not null")},
-        {"varchar(20)", QByteArray("not null")},
+        {"varchar(20)", u"not null"_qs},
+        {"varchar(20)", "not null"_qba},
         {"date", QDateTime::currentDateTime()},
         {"date", QDate::currentDate()},
         {"date", QTime::currentTime()},
@@ -2153,17 +2153,17 @@ void tst_QSqlQuery::joins()
     QCOMPARE( q.value( 0 ).toInt(), 1 );
     QCOMPARE( q.value( 1 ).toInt(), 1 );
     QCOMPARE( q.value( 2 ).toInt(), 1 );
-    QCOMPARE( q.value( 3 ).toString(), QString( "trenton" ) );
+    QCOMPARE(q.value(3).toString(), u"trenton");
     QCOMPARE( q.value( 4 ).toInt(), 1 );
-    QCOMPARE( q.value( 5 ).toString(), QString( "trenton" ) );
+    QCOMPARE(q.value(5).toString(), u"trenton");
 
     QVERIFY( q.next() );
     QCOMPARE( q.value( 0 ).toInt(), 1 );
     QCOMPARE( q.value( 1 ).toInt(), 2 );
     QCOMPARE( q.value( 2 ).toInt(), 1 );
-    QCOMPARE( q.value( 3 ).toString(), QString( "trenton" ) );
+    QCOMPARE(q.value(3).toString(), u"trenton");
     QCOMPARE( q.value( 4 ).toInt(), 2 );
-    QCOMPARE( q.value( 5 ).toString(), QString( "marius" ) );
+    QCOMPARE(q.value(5).toString(), u"marius");
 }
 
 void tst_QSqlQuery::synonyms()
@@ -2176,14 +2176,14 @@ void tst_QSqlQuery::synonyms()
     QVERIFY_SQL( q, exec("select a.id, a.t_char, a.t_varchar from " + qtest + " a where a.id = 1") );
     QVERIFY( q.next() );
     QCOMPARE( q.value( 0 ).toInt(), 1 );
-    QCOMPARE( q.value( 1 ).toString().trimmed(), QString( "Char1" ) );
-    QCOMPARE( q.value( 2 ).toString().trimmed(), QString( "VarChar1" ) );
+    QCOMPARE(q.value(1).toString().trimmed(), u"Char1");
+    QCOMPARE(q.value(2).toString().trimmed(), u"VarChar1");
 
     QSqlRecord rec = q.record();
     QCOMPARE(rec.count(), qsizetype(3));
-    QCOMPARE( rec.field( 0 ).name().toLower(), QString( "id" ) );
-    QCOMPARE( rec.field( 1 ).name().toLower(), QString( "t_char" ) );
-    QCOMPARE( rec.field( 2 ).name().toLower(), QString( "t_varchar" ) );
+    QCOMPARE(rec.field(0).name().toLower(), u"id");
+    QCOMPARE(rec.field(1).name().toLower(), u"t_char");
+    QCOMPARE(rec.field(2).name().toLower(), u"t_varchar");
 }
 
 // It doesn't make sense to split this into several tests
@@ -2202,7 +2202,9 @@ void tst_QSqlQuery::prepare_bind_exec()
         // new scope for SQLITE
         static const QString utf8str = QString::fromUtf8( "काचं शक्नोम्यत्तुम् । नोपहिनस्ति माम् ॥" );
 
-        static const QString values[6] = { "Harry", "Trond", "Mark", "Ma?rk", "?", ":id" };
+        static const QString values[6] = {
+            u"Harry"_qs, u"Trond"_qs, u"Mark"_qs, u"Ma?rk"_qs, u"?"_qs, u":id"_qs
+        };
 
         bool useUnicode = db.driver()->hasFeature( QSqlDriver::Unicode );
 
@@ -2287,7 +2289,7 @@ void tst_QSqlQuery::prepare_bind_exec()
         for ( i = 99; i <= 100; ++i ) {
             QVERIFY( q.next() );
             QCOMPARE( q.value( 0 ).toInt(), i );
-            QCOMPARE( q.value( 1 ).toString().trimmed(), QString( "Bart" ) );
+            QCOMPARE(q.value(1).toString().trimmed(), u"Bart");
         }
 
         /*** SELECT stuff ***/
@@ -2301,8 +2303,8 @@ void tst_QSqlQuery::prepare_bind_exec()
             QCOMPARE( q.value( 1 ).toString().trimmed(), values[ i ] );
             QSqlRecord rInf = q.record();
             QCOMPARE(rInf.count(), qsizetype(3));
-            QCOMPARE( rInf.field( 0 ).name().toUpper(), QString( "ID" ) );
-            QCOMPARE( rInf.field( 1 ).name().toUpper(), QString( "NAME" ) );
+            QCOMPARE(rInf.field(0).name().toUpper(), u"ID");
+            QCOMPARE(rInf.field(1).name().toUpper(), u"NAME");
             QVERIFY( !q.next() );
         }
 
@@ -2434,15 +2436,14 @@ void tst_QSqlQuery::prepare_bind_exec()
         for ( i = 99; i <= 100; ++i ) {
             QVERIFY( q.next() );
             QCOMPARE( q.value( 0 ).toInt(), i );
-            QCOMPARE( q.value( 1 ).toString().trimmed(), QString( "Bart" ) );
+            QCOMPARE(q.value(1).toString().trimmed(), u"Bart");
         }
 
         /* insert a duplicate id and make sure the db bails out */
         QVERIFY( q.prepare( "insert into " + qtest_prepare + " (id, name) values (?, ?)" ) );
 
         q.addBindValue( 99 );
-
-        q.addBindValue( "something silly" );
+        q.addBindValue(u"something silly"_qs);
 
         QVERIFY( !q.exec() );
 
@@ -2461,8 +2462,8 @@ void tst_QSqlQuery::prepare_bind_exec()
         QVERIFY( q.exec( "select * from " + qtest_prepare + " where id > 100 order by id" ) );
         QVERIFY( q.next() );
         QCOMPARE( q.value(0).toInt(), 101 );
-        QCOMPARE( q.value(1).toString(), QString("name") );
-        QCOMPARE( q.value(2).toString(), QString("name") );
+        QCOMPARE(q.value(1).toString(), u"name");
+        QCOMPARE(q.value(2).toString(), u"name");
 
         // Test that duplicated named placeholders before the next unique one works correctly - QTBUG-65150
         QVERIFY(q.prepare("insert into " + qtest_prepare + " (id, name, name2) values (:id, :id, :name)"));
@@ -2474,8 +2475,8 @@ void tst_QSqlQuery::prepare_bind_exec()
         QVERIFY(q.exec("select * from " + qtest_prepare + " where id > 103 order by id"));
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toInt(), 104);
-        QCOMPARE(q.value(1).toString(), QString("104"));
-        QCOMPARE(q.value(2).toString(), QString("name"));
+        QCOMPARE(q.value(1).toString(), u"104");
+        QCOMPARE(q.value(2).toString(), u"name");
 
         // Test that duplicated named placeholders in any order
         QVERIFY(q.prepare("insert into " + qtest_prepare + " (id, name, name2) values (:id, :name, :id)"));
@@ -2487,8 +2488,8 @@ void tst_QSqlQuery::prepare_bind_exec()
         QVERIFY(q.exec("select * from " + qtest_prepare + " where id > 106 order by id"));
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toInt(), 107);
-        QCOMPARE(q.value(1).toString(), QString("name"));
-        QCOMPARE(q.value(2).toString(), QString("107"));
+        QCOMPARE(q.value(1).toString(), u"name");
+        QCOMPARE(q.value(2).toString(), u"107");
 
         // Test just duplicated placeholders
         QVERIFY(q.prepare("insert into " + qtest_prepare + " (id, name, name2) values (110, :name, :name)"));
@@ -2497,8 +2498,8 @@ void tst_QSqlQuery::prepare_bind_exec()
         QVERIFY(q.exec("select * from " + qtest_prepare + " where id > 109 order by id"));
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toInt(), 110);
-        QCOMPARE(q.value(1).toString(), QString("name"));
-        QCOMPARE(q.value(2).toString(), QString("name"));
+        QCOMPARE(q.value(1).toString(), u"name");
+        QCOMPARE(q.value(2).toString(), u"name");
     } // end of SQLite scope
 }
 
@@ -2553,7 +2554,7 @@ void tst_QSqlQuery::sqlServerLongStrings()
 
     q.addBindValue( 0 );
 
-    q.addBindValue( QString::fromLatin1( "bubu" ) );
+    q.addBindValue(u"bubu"_qs);
 
     QVERIFY_SQL( q, exec() );
 
@@ -2571,7 +2572,7 @@ void tst_QSqlQuery::sqlServerLongStrings()
 
     QCOMPARE( q.value( 0 ).toInt(), 0 );
 
-    QCOMPARE( q.value( 1 ).toString(), QString::fromLatin1( "bubu" ) );
+    QCOMPARE(q.value(1).toString(), u"bubu");
 
     QVERIFY_SQL( q, next() );
 
@@ -2626,7 +2627,7 @@ void tst_QSqlQuery::batchExec()
                                        QStringLiteral(", extraId int, extraName varchar(20))")));
 
     const QVariantList intCol = { 1, 2, QVariant(QMetaType(QMetaType::Int)) };
-    const QVariantList charCol = { QStringLiteral("harald"), QStringLiteral("boris"),
+    const QVariantList charCol = { u"harald"_qs, u"boris"_qs,
                                    QVariant(QMetaType(QMetaType::QString)) };
     const QDateTime currentDateTime = QDateTime(QDateTime::currentDateTime());
     const QVariantList dateCol = { currentDateTime.date(), currentDateTime.date().addDays(-1),
@@ -2648,8 +2649,8 @@ void tst_QSqlQuery::batchExec()
     q.addBindValue(charCol);
 
     QVERIFY_SQL( q, execBatch() );
-    QVERIFY_SQL(q, exec(QStringLiteral("select id, name, dt, num, dtstamp, "
-                                       "extraId, extraName from ") + tableName));
+    QVERIFY_SQL(q, exec(QLatin1String("select id, name, dt, num, dtstamp, extraId, extraName from ")
+                        + tableName));
 
     for (int i = 0; i < intCol.size(); ++i) {
         QVERIFY(q.next());
@@ -2667,7 +2668,7 @@ void tst_QSqlQuery::batchExec()
     }
 
     // Empty table ready for retesting with duplicated named placeholders
-    QVERIFY_SQL(q, exec(QStringLiteral("delete from ") + tableName));
+    QVERIFY_SQL(q, exec(QLatin1String("delete from ") + tableName));
     QVERIFY_SQL(q, prepare(QStringLiteral("insert into ") + tableName +
                            QStringLiteral(" (id, name, dt, num, dtstamp, extraId, extraName) "
                                           "values (:id, :name, :dt, :num, :dtstamp, :id, :name)")));
@@ -2678,8 +2679,8 @@ void tst_QSqlQuery::batchExec()
     q.bindValue(":dtstamp", timeStampCol);
 
     QVERIFY_SQL(q, execBatch());
-    QVERIFY_SQL(q, exec(QStringLiteral("select id, name, dt, num, dtstamp, extraId, extraName from ") +
-                        tableName));
+    QVERIFY_SQL(q, exec(QLatin1String("select id, name, dt, num, dtstamp, extraId, extraName from ")
+                        + tableName));
 
     for (int i = 0; i < intCol.size(); ++i) {
         QVERIFY(q.next());
@@ -2813,15 +2814,11 @@ void tst_QSqlQuery::oraArrayBind()
 
     const QVariantList out_list = q.boundValue( 0 ).toList();
 
-    QCOMPARE( out_list.at( 0 ).toString(), QString( "lorem" ) );
-
-    QCOMPARE( out_list.at( 1 ).toString(), QString( "ipsum" ) );
-
-    QCOMPARE( out_list.at( 2 ).toString(), QString( "dolor" ) );
-
-    QCOMPARE( out_list.at( 3 ).toString(), QString( "sit" ) );
-
-    QCOMPARE( out_list.at( 4 ).toString(), QString( "amet" ) );
+    QCOMPARE(out_list.at(0).toString(), u"lorem");
+    QCOMPARE(out_list.at(1).toString(), u"ipsum");
+    QCOMPARE(out_list.at(2).toString(), u"dolor");
+    QCOMPARE(out_list.at(3).toString(), u"sit");
+    QCOMPARE(out_list.at(4).toString(), u"amet");
 
     QVERIFY_SQL( q, exec( "DROP PACKAGE ora_array_test" ) );
 }
@@ -3121,8 +3118,8 @@ void tst_QSqlQuery::createQueryOnClosedDatabase()
 
     QVERIFY_SQL( q, next() );
     QCOMPARE( q.value( 0 ).toInt(), 1 );
-    QCOMPARE( q.value( 1 ).toString().trimmed(), QLatin1String( "VarChar1" ) );
-    QCOMPARE( q.value( 2 ).toString().trimmed(), QLatin1String( "Char1" ) );
+    QCOMPARE(q.value(1).toString().trimmed(), u"VarChar1");
+    QCOMPARE(q.value(2).toString().trimmed(), u"Char1");
 
     db.close();
     QVERIFY2(!q.exec(QLatin1String("select * from %1 where id = 1").arg(qtest)),
@@ -3153,8 +3150,8 @@ void tst_QSqlQuery::reExecutePreparedForwardOnlyQuery()
     */
     QVERIFY_SQL( q, next() );
     QCOMPARE( q.value( 0 ).toInt(), 1 );
-    QCOMPARE( q.value( 1 ).toString().trimmed(), QString( "VarChar1" ) );
-    QCOMPARE( q.value( 2 ).toString().trimmed(), QString( "Char1" ) );
+    QCOMPARE(q.value(1).toString().trimmed(), u"VarChar1");
+    QCOMPARE(q.value(2).toString().trimmed(), u"Char1");
 }
 
 void tst_QSqlQuery::finish()
@@ -3281,7 +3278,7 @@ void tst_QSqlQuery::nextResult()
 
     QCOMPARE( q.record().count(), 1 );  // Check that the meta data is as expected
 
-    QCOMPARE( q.record().field( 0 ).name().toUpper(), QString( "ID" ) );
+    QCOMPARE(q.record().field(0).name().toUpper(), u"ID");
 
     QCOMPARE( q.record().field( 0 ).metaType().id(), QMetaType::Int );
 
@@ -3289,11 +3286,11 @@ void tst_QSqlQuery::nextResult()
 
     QCOMPARE( q.record().count(), 2 );  // New meta data should be available
 
-    QCOMPARE( q.record().field( 0 ).name().toUpper(), QString( "TEXT" ) );
+    QCOMPARE(q.record().field(0).name().toUpper(), u"TEXT");
 
     QCOMPARE( q.record().field( 0 ).metaType().id(), QMetaType::QString );
 
-    QCOMPARE( q.record().field( 1 ).name().toUpper(), QString( "NUM" ) );
+    QCOMPARE(q.record().field(1).name().toUpper(), u"NUM");
     QCOMPARE(q.record().field(1).metaType().id(), QMetaType::Double);
 
     QVERIFY( q.next() );                    // Move to first row of the second result set
@@ -3335,7 +3332,7 @@ void tst_QSqlQuery::nextResult()
     for ( int i = 0; i < 2; i++ ) {
         QVERIFY_SQL( q, next() );
         QCOMPARE( q.value( 0 ).toInt(), 1+i );
-        QCOMPARE( q.value( 1 ).toString(), QString( "Yatta!" ) );
+        QCOMPARE(q.value(1).toString(), u"Yatta!");
     }
 
     // Stored procedure with multiple result sets
@@ -3439,7 +3436,7 @@ void tst_QSqlQuery::nextResult()
 
     for ( int i = 0; i < 4; i++ ) {
         QVERIFY_SQL( q, next() );
-        QCOMPARE( q.value( 0 ).toString(), QString( "Yatta!" ) );
+        QCOMPARE(q.value(0).toString(), u"Yatta!");
         QCOMPARE( q.value( 1 ).toDouble(), 1.1*( 1+i ) );
         QCOMPARE( q.value( 2 ).toString(), tstStrings[i]);
         QCOMPARE( q.value( 3 ).toInt(), 1+i );
@@ -3573,7 +3570,7 @@ void tst_QSqlQuery::timeStampParsing()
     QVERIFY_SQL(q, exec(
                     QStringLiteral("INSERT INTO ") + tableName + QStringLiteral(" (datefield) VALUES (current_timestamp);"
                     )));
-    QVERIFY_SQL(q, exec(QStringLiteral("SELECT * FROM ") + tableName));
+    QVERIFY_SQL(q, exec(QLatin1String("SELECT * FROM ") + tableName));
     while (q.next())
         QVERIFY(q.value(1).toDateTime().isValid());
 }
@@ -3595,16 +3592,16 @@ void tst_QSqlQuery::task_217003()
 
     QVERIFY_SQL( q, exec( "SELECT Name FROM " + Planet ) );
     QVERIFY_SQL( q, seek( 3 ) );
-    QCOMPARE( q.value( 0 ).toString(), QString( "Mars" ) );
+    QCOMPARE(q.value(0).toString(), u"Mars");
     QVERIFY_SQL( q, seek( 1 ) );
-    QCOMPARE( q.value( 0 ).toString(), QString( "Venus" ) );
+    QCOMPARE(q.value(0).toString(), u"Venus");
     QVERIFY_SQL( q, exec( "SELECT Name FROM " + Planet ) );
     QVERIFY_SQL( q, seek( 3 ) );
-    QCOMPARE( q.value( 0 ).toString(), QString( "Mars" ) );
+    QCOMPARE(q.value(0).toString(), u"Mars");
     QVERIFY_SQL( q, seek( 0 ) );
-    QCOMPARE( q.value( 0 ).toString(), QString( "Mercury" ) );
+    QCOMPARE(q.value(0).toString(), u"Mercury");
     QVERIFY_SQL( q, seek( 1 ) );
-    QCOMPARE( q.value( 0 ).toString(), QString( "Venus" ) );
+    QCOMPARE(q.value(0).toString(), u"Venus");
 }
 
 void tst_QSqlQuery::task_250026()
@@ -3872,17 +3869,20 @@ void tst_QSqlQuery::QTBUG_5251()
     timetestModel.setTable(timetest);
     QVERIFY_SQL(timetestModel, select());
 
-    QCOMPARE(timetestModel.record(0).field(0).value().toTime().toString("HH:mm:ss.zzz"), QString("01:02:03.666"));
+    QCOMPARE(timetestModel.record(0).field(0).value().toTime().toString("HH:mm:ss.zzz"),
+             u"01:02:03.666");
     QVERIFY_SQL(timetestModel,setData(timetestModel.index(0, 0), QTime(0,12,34,500)));
-    QCOMPARE(timetestModel.record(0).field(0).value().toTime().toString("HH:mm:ss.zzz"), QString("00:12:34.500"));
+    QCOMPARE(timetestModel.record(0).field(0).value().toTime().toString("HH:mm:ss.zzz"),
+             u"00:12:34.500");
     QVERIFY_SQL(timetestModel, submitAll());
-    QCOMPARE(timetestModel.record(0).field(0).value().toTime().toString("HH:mm:ss.zzz"), QString("00:12:34.500"));
+    QCOMPARE(timetestModel.record(0).field(0).value().toTime().toString("HH:mm:ss.zzz"),
+             u"00:12:34.500");
 
     QVERIFY_SQL(q, exec(QStringLiteral("UPDATE ") + timetest +
                         QStringLiteral(" SET t = '0:11:22.33'")));
     QVERIFY_SQL(timetestModel, select());
-    QCOMPARE(timetestModel.record(0).field(0).value().toTime().toString("HH:mm:ss.zzz"), QString("00:11:22.330"));
-
+    QCOMPARE(timetestModel.record(0).field(0).value().toTime().toString("HH:mm:ss.zzz"),
+             u"00:11:22.330");
 }
 
 void tst_QSqlQuery::QTBUG_6421()
@@ -4838,17 +4838,17 @@ void tst_QSqlQuery::dateTime_data()
         const QString tableNameDate(qTableName("dateTimeDate", __FILE__, db));
         QTest::newRow(QString(dbName + " timestamp with time zone").toLatin1())
                         << dbName << tableNameTSWithTimeZone
-                        << QStringLiteral(" (dt TIMESTAMP WITH TIME ZONE)")
+                        << u" (dt TIMESTAMP WITH TIME ZONE)"_qs
                         << dateTimes << dateTimes;
         QTest::newRow(QString(dbName + " timestamp with local time zone").toLatin1())
                         << dbName << tableNameTSWithTimeZone
-                        << QStringLiteral(" (dt TIMESTAMP WITH LOCAL TIME ZONE)")
+                        << u" (dt TIMESTAMP WITH LOCAL TIME ZONE)"_qs
                         << dateTimes << expectedDateTimesLocalTZ;
         QTest::newRow(QString(dbName + "timestamp").toLatin1())
-                        << dbName << tableNameTS << QStringLiteral(" (dt TIMESTAMP(3))")
+                        << dbName << tableNameTS << u" (dt TIMESTAMP(3))"_qs
                         << dateTimes << expectedTimeStampDateTimes;
         QTest::newRow(QString(dbName + "date").toLatin1())
-                        << dbName << tableNameDate << QStringLiteral(" (dt DATE)")
+                        << dbName << tableNameDate << u" (dt DATE)"_qs
                         << dateTimes << expectedDateTimes;
     }
 }
