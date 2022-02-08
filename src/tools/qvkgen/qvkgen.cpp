@@ -509,22 +509,25 @@ bool genVulkanFunctionsPC(const QList<VkSpecParser::Command> &commands,
         return false;
     }
 
-    static const char *s =
+    static const char s[] =
 "%s\n"
 "#include \"qvulkanfunctions_p.h\"\n"
 "#include \"qvulkaninstance.h\"\n"
+"\n"
+"#include <QtCore/private/qoffsetstringarray_p.h>\n"
 "\n"
 "QT_BEGIN_NAMESPACE\n"
 "\n%s"
 "QVulkanFunctionsPrivate::QVulkanFunctionsPrivate(QVulkanInstance *inst)\n"
 "{\n"
-"    static const char *funcNames[] = {\n"
+"    static constexpr auto funcNames = qOffsetStringArray(\n"
 "%s\n"
-"    };\n"
-"    for (int i = 0; i < %d; ++i) {\n"
-"        m_funcs[i] = inst->getInstanceProcAddr(funcNames[i]);\n"
+"    );\n"
+"    static_assert(std::extent_v<decltype(m_funcs)> == size_t(funcNames.count()));\n"
+"    for (int i = 0; i < funcNames.count(); ++i) {\n"
+"        m_funcs[i] = inst->getInstanceProcAddr(funcNames.at(i));\n"
 "        if (i < %d && !m_funcs[i])\n"
-"            qWarning(\"QVulkanFunctions: Failed to resolve %%s\", funcNames[i]);\n"
+"            qWarning(\"QVulkanFunctions: Failed to resolve %%s\", funcNames.at(i));\n"
 "    }\n"
 "}\n"
 "\n%s"
@@ -532,13 +535,14 @@ bool genVulkanFunctionsPC(const QList<VkSpecParser::Command> &commands,
 "{\n"
 "    QVulkanFunctions *f = inst->functions();\n"
 "    Q_ASSERT(f);\n\n"
-"    static const char *funcNames[] = {\n"
+"    static constexpr auto funcNames = qOffsetStringArray(\n"
 "%s\n"
-"    };\n"
-"    for (int i = 0; i < %d; ++i) {\n"
-"        m_funcs[i] = f->vkGetDeviceProcAddr(device, funcNames[i]);\n"
+"    );\n"
+"    static_assert(std::extent_v<decltype(m_funcs)> == size_t(funcNames.count()));\n"
+"    for (int i = 0; i < funcNames.count(); ++i) {\n"
+"        m_funcs[i] = f->vkGetDeviceProcAddr(device, funcNames.at(i));\n"
 "        if (i < %d && !m_funcs[i])\n"
-"            qWarning(\"QVulkanDeviceFunctions: Failed to resolve %%s\", funcNames[i]);\n"
+"            qWarning(\"QVulkanDeviceFunctions: Failed to resolve %%s\", funcNames.at(i));\n"
 "    }\n"
 "}\n"
 "\n"
@@ -547,9 +551,7 @@ bool genVulkanFunctionsPC(const QList<VkSpecParser::Command> &commands,
     QString devCmdWrapperStr;
     QString instCmdWrapperStr;
     int devIdx = 0;
-    int devCount = 0;
     int instIdx = 0;
-    int instCount = 0;
     QString devCmdNamesStr;
     QString instCmdNamesStr;
     int vulkan10DevCount = 0;
@@ -575,11 +577,6 @@ bool genVulkanFunctionsPC(const QList<VkSpecParser::Command> &commands,
             *dst += QStringLiteral("        \"");
             *dst += c.cmd.name;
             *dst += QStringLiteral("\",\n");
-
-            if (c.deviceLevel)
-                devCount += 1;
-            else
-                instCount += 1;
         }
         if (version == QStringLiteral("VK_VERSION_1_0")) {
             vulkan10InstCount = instIdx;
@@ -597,9 +594,9 @@ bool genVulkanFunctionsPC(const QList<VkSpecParser::Command> &commands,
     const QString str =
             QString::asprintf(s, preamble.get(licHeaderFn).constData(),
                               instCmdWrapperStr.toUtf8().constData(),
-                              instCmdNamesStr.toUtf8().constData(), instCount, vulkan10InstCount,
+                              instCmdNamesStr.toUtf8().constData(), vulkan10InstCount,
                               devCmdWrapperStr.toUtf8().constData(),
-                              devCmdNamesStr.toUtf8().constData(), devCount, vulkan10DevCount);
+                              devCmdNamesStr.toUtf8().constData(), vulkan10DevCount);
 
     f.write(str.toUtf8());
 
