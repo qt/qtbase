@@ -424,10 +424,10 @@ void tst_QSqlQuery::createTestTables( QSqlDatabase db )
     else
         QVERIFY_SQL( q, exec( "create table " + qtest + " (id int "+tst_Databases::autoFieldName(db) +" NOT NULL, t_varchar varchar(20), t_char char(20), primary key(id))" ) );
 
-    if (dbType == QSqlDriver::MSSqlServer || dbType == QSqlDriver::Sybase)
-        QVERIFY_SQL(q, exec("create table " + qTableName("qtest_null", __FILE__, db) + " (id int null, t_varchar varchar(20) null)"));
-    else
-        QVERIFY_SQL(q, exec("create table " + qTableName("qtest_null", __FILE__, db) + " (id int, t_varchar varchar(20))"));
+    QLatin1String creator(dbType == QSqlDriver::MSSqlServer || dbType == QSqlDriver::Sybase
+                          ? "create table %1 (id int null, t_varchar varchar(20) null)"
+                          : "create table %1 (id int, t_varchar varchar(20))");
+    QVERIFY_SQL(q, exec(creator.arg(qTableName("qtest_null", __FILE__, db))));
 }
 
 void tst_QSqlQuery::populateTestTables( QSqlDatabase db )
@@ -901,17 +901,18 @@ void tst_QSqlQuery::outValuesDB2()
 
     q.setForwardOnly( true );
 
-    q.exec("drop procedure " + qTableName("tst_outValues", __FILE__, db)); //non-fatal
-    QVERIFY_SQL( q, exec( "CREATE PROCEDURE " + qTableName("tst_outValues", __FILE__, db) +
-                            " (OUT x int, OUT x2 double, OUT x3 char(20))\n"
-                            "LANGUAGE SQL\n"
-                            "P1: BEGIN\n"
-                            " SET x = 42;\n"
-                            " SET x2 = 4.2;\n"
-                            " SET x3 = 'Homer';\n"
-                            "END P1" ) );
+    const QString procName = qTableName("tst_outValues", __FILE__, db);
+    q.exec("drop procedure " + procName); // non-fatal
+    QVERIFY_SQL(q, exec(QLatin1String("CREATE PROCEDURE %1 "
+                                      "(OUT x int, OUT x2 double, OUT x3 char(20))\n"
+                                      "LANGUAGE SQL\n"
+                                      "P1: BEGIN\n"
+                                      " SET x = 42;\n"
+                                      " SET x2 = 4.2;\n"
+                                      " SET x3 = 'Homer';\n"
+                                      "END P1").arg(procName)));
 
-    QVERIFY_SQL(q, prepare("call " + qTableName("tst_outValues", __FILE__, db) + "(?, ?, ?)"));
+    QVERIFY_SQL(q, prepare(QLatin1String("call %1(?, ?, ?)").arg(procName)));
 
     q.addBindValue( 0, QSql::Out );
     q.addBindValue( 0.0, QSql::Out );
@@ -998,12 +999,13 @@ void tst_QSqlQuery::blob()
     QSqlQuery q( db );
 
     q.setForwardOnly( true );
+    const QString tableName = qTableName("qtest_blob", __FILE__, db);
 
-    QString queryString = QString("create table " + qTableName("qtest_blob", __FILE__, db) +
-                                   " (id int not null primary key, t_blob %1)" ).arg( tst_Databases::blobTypeName( db, BLOBSIZE ) );
-    QVERIFY_SQL( q, exec( queryString ) );
+    QVERIFY_SQL(q, exec(QLatin1String("create table %1 (id int not null primary key, t_blob %2)")
+                        .arg(tableName, tst_Databases::blobTypeName(db, BLOBSIZE))));
 
-    QVERIFY_SQL(q, prepare("insert into " + qTableName("qtest_blob", __FILE__, db) + " (id, t_blob) values (?, ?)"));
+    QVERIFY_SQL(q, prepare(QLatin1String("insert into %1 (id, t_blob) values (?, ?)")
+                           .arg(tableName)));
 
     for (int i = 0; i < BLOBCOUNT; ++i) {
         q.addBindValue( i );
@@ -1011,7 +1013,7 @@ void tst_QSqlQuery::blob()
         QVERIFY_SQL( q, exec() );
     }
 
-    QVERIFY_SQL(q, exec("select * from " + qTableName("qtest_blob", __FILE__, db)));
+    QVERIFY_SQL(q, exec("select * from " + tableName));
 
     for (int i = 0; i < BLOBCOUNT; ++i) {
         QVERIFY( q.next() );
@@ -2535,10 +2537,11 @@ void tst_QSqlQuery::sqlServerLongStrings()
         QSKIP( "SQL Server specific test");
 
     QSqlQuery q( db );
+    const QString tableName = qTableName("qtest_longstr", __FILE__, db);
 
-    QVERIFY_SQL(q, exec("CREATE TABLE " + qTableName("qtest_longstr", __FILE__, db) + " (id int primary key, longstring ntext)"));
-
-    QVERIFY_SQL(q, prepare("INSERT INTO " + qTableName("qtest_longstr", __FILE__, db) + " VALUES (?, ?)"));
+    QVERIFY_SQL(q, exec(QLatin1String("CREATE TABLE %1 (id int primary key, longstring ntext)")
+                        .arg(tableName)));
+    QVERIFY_SQL(q, prepare(QLatin1String("INSERT INTO %1 VALUES (?, ?)").arg(tableName)));
 
     q.addBindValue( 0 );
 
@@ -2556,7 +2559,7 @@ void tst_QSqlQuery::sqlServerLongStrings()
 
     QVERIFY_SQL( q, exec() );
 
-    QVERIFY_SQL(q, exec("select * from " + qTableName( "qtest_longstr", __FILE__, db)));
+    QVERIFY_SQL(q, exec("select * from " + tableName));
 
     QVERIFY_SQL( q, next() );
 
@@ -2832,10 +2835,13 @@ void tst_QSqlQuery::record_sqlite()
     CHECK_DATABASE( db );
 
     QSqlQuery q( db );
+    const QString tableName = qTableName("record_sqlite", __FILE__, db);
 
-    QVERIFY_SQL(q, exec("create table " + qTableName("record_sqlite", __FILE__, db) + "(id integer primary key, name varchar, title int)"));
+    QVERIFY_SQL(q, exec(QLatin1String(
+                            "create table %1(id integer primary key, name varchar, title int)")
+                        .arg(tableName)));
 
-    QSqlRecord rec = db.record(qTableName("record_sqlite", __FILE__, db));
+    QSqlRecord rec = db.record(tableName);
 
     QCOMPARE( rec.count(), 3 );
     QCOMPARE( rec.field( 0 ).metaType().id(), QMetaType::Int );
@@ -2843,7 +2849,7 @@ void tst_QSqlQuery::record_sqlite()
     QCOMPARE( rec.field( 2 ).metaType().id(), QMetaType::Int );
 
     /* important - select from an empty table */
-    QVERIFY_SQL(q, exec("select id, name, title from " + qTableName("record_sqlite", __FILE__, db)));
+    QVERIFY_SQL(q, exec("select id, name, title from " + tableName));
 
     rec = q.record();
     QCOMPARE( rec.count(), 3 );
@@ -2861,14 +2867,17 @@ void tst_QSqlQuery::oraLong()
     QSqlQuery q( db );
 
     QString aLotOfText( 127000, QLatin1Char( 'H' ) );
+    const QString tableName = qTableName("qtest_longstr", __FILE__, db);
 
-    QVERIFY_SQL(q, exec("create table " + qTableName("qtest_longstr", __FILE__, db) + " (id int primary key, astr long)"));
-    QVERIFY_SQL(q, prepare("insert into " + qTableName("qtest_longstr", __FILE__, db) + " (id, astr) values (?, ?)"));
+    QVERIFY_SQL(q, exec(QLatin1String("create table %1 (id int primary key, astr long)")
+                        .arg(tableName)));
+    QVERIFY_SQL(q, prepare(QLatin1String("insert into %1 (id, astr) values (?, ?)")
+                           .arg(tableName)));
     q.addBindValue( 1 );
     q.addBindValue( aLotOfText );
     QVERIFY_SQL( q, exec() );
 
-    QVERIFY_SQL(q, exec("select id,astr from " + qTableName("qtest_longstr", __FILE__, db)));
+    QVERIFY_SQL(q, exec("select id,astr from " + tableName));
 
     QVERIFY( q.next() );
     QCOMPARE( q.value( 0 ).toInt(), 1 );
@@ -3910,16 +3919,17 @@ void tst_QSqlQuery::QTBUG_6618()
         QSKIP("SQL Server specific test");
 
     QSqlQuery q(db);
-    q.exec("drop procedure " + qTableName("tst_raiseError", __FILE__, db));  //non-fatal
+    const QString procedureName = qTableName("tst_raiseError", __FILE__, db);
+    q.exec("drop procedure " + procedureName);  // non-fatal
     QString errorString;
     for (int i=0;i<110;i++)
         errorString+="reallylong";
     errorString+=" error";
-    QVERIFY_SQL(q, exec("create procedure " + qTableName("tst_raiseError", __FILE__, db) + " as\n"
-                         "begin\n"
-                         "    raiserror('" + errorString + "', 16, 1)\n"
-                         "end\n" ));
-    q.exec("{call " + qTableName("tst_raiseError", __FILE__, db) + QLatin1Char('}'));
+    QVERIFY_SQL(q, exec(QLatin1String("create procedure %1 as\n"
+                                      "begin\n"
+                                      "    raiserror('%2', 16, 1)\n"
+                                      "end\n").arg(procedureName, errorString)));
+    q.exec(QLatin1String("{call %1}").arg(procedureName));
     QVERIFY(q.lastError().text().contains(errorString));
 }
 
