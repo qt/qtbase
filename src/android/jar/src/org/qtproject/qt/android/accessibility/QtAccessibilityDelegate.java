@@ -89,6 +89,8 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
     // this is because the Android platform window does not take
     // the offset of the view on screen into account (eg status bar on top)
     private final int[] m_globalOffset = new int[2];
+    private int m_oldOffsetX = 0;
+    private int m_oldOffsetY = 0;
 
     private class HoverEventListener implements View.OnHoverListener
     {
@@ -326,6 +328,22 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         int[] ids = QtNativeAccessibility.childIdListForAccessibleObject(-1);
         for (int i = 0; i < ids.length; ++i)
             result.addChild(m_view, ids[i]);
+
+        // The offset values have changed, so we need to re-focus the
+        // currently focused item, otherwise it will have an incorrect
+        // focus frame
+        if ((m_oldOffsetX != offsetX) || (m_oldOffsetY != offsetY)) {
+            m_oldOffsetX = offsetX;
+            m_oldOffsetY = offsetY;
+            if (m_focusedVirtualViewId != INVALID_ID) {
+                m_nodeProvider.performAction(m_focusedVirtualViewId,
+                                             AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS,
+                                             new Bundle());
+                m_nodeProvider.performAction(m_focusedVirtualViewId,
+                                             AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS,
+                                             new Bundle());
+            }
+        }
 
         return result;
     }
