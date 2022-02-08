@@ -1,0 +1,15 @@
+[
+    {
+        "Id": "SHA-3",
+        "Name": "Secure Hash Algorithm SHA-3",
+        "QDocModule": "qtcore",
+        "QtUsage": "Used in Qt Core (QCryptographicHash).",
+        "Homepage": "https://github.com/DuSTman31/SHA-3",
+        "Description": "SHA-3, originally known as Keccak, is a cryptographic hash function.",
+        "Version": "0bf9b8f4b22504202c22866458b7f6ba5445a41f",
+        "License": "BSD 3-Clause \"New\" or \"Revised\" License",
+        "LicenseId": "BSD-3-Clause",
+        "LicenseFile": "license.txt",
+        "Copyright": "Copyright 2017 Daniel Horne."
+    }
+]
