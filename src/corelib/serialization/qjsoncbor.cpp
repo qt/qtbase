@@ -205,10 +205,14 @@ static QJsonValue convertExtendedTypeToJson(QCborContainerPrivate *d)
 
     switch (tag) {
     case qint64(QCborKnownTags::Url):
-        // use the fullly-encoded URL form
+#ifdef QT_BOOTSTRAPPED
+        break;
+#else
+        // use the fully-encoded URL form
         if (d->elements.at(1).type == QCborValue::String)
             return QUrl::fromEncoded(d->byteData(1)->asByteArrayView()).toString(QUrl::FullyEncoded);
         Q_FALLTHROUGH();
+#endif
 
     case qint64(QCborKnownTags::DateTimeString):
     case qint64(QCborKnownTags::ExpectedBase64url):
