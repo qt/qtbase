@@ -233,7 +233,7 @@ struct StandardPageSize {
     qreal heightMillimeters;
     qreal widthInches;
     qreal heightInches;
-    const char *mediaOption;  // PPD standard mediaOption ID
+    const char mediaOption[20];  // PPD standard mediaOption ID
 };
 
 // Standard page sizes taken from the Postscript PPD Standard v4.3
