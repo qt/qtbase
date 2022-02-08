@@ -29,6 +29,8 @@
 #include <QTest>
 #include <QMutexLocker>
 #include <QLoggingCategory>
+#include <QMap>
+#include <QStringList>
 
 Q_LOGGING_CATEGORY(TST_LOG, "tst.log")
 Q_LOGGING_CATEGORY(Digia_Oslo_Office_com, "Digia.Oslo.Office.com")

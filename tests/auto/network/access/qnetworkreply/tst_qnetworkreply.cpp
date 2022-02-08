@@ -40,6 +40,8 @@
 #include <QScopeGuard>
 #include <QBuffer>
 
+#include <QtCore/qlist.h>
+#include <QtCore/qset.h>
 #include <QtCore/QCryptographicHash>
 #include <QtCore/QDataStream>
 #include <QtCore/QUrl>

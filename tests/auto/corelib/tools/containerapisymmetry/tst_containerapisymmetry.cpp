@@ -31,6 +31,8 @@
 #include "qbytearray.h"
 #include "qdebug.h"
 #include "qhash.h"
+#include "qmap.h"
+#include "qset.h"
 #include "qlist.h"
 #include "qstring.h"
 #include "qvarlengtharray.h"

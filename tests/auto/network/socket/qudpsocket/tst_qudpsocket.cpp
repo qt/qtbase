@@ -53,6 +53,7 @@
 #include <QNetworkInterface>
 
 #include <qstringlist.h>
+#include <QSet>
 #include "../../../network-settings.h"
 #include <QtTest/private/qemulationdetector_p.h>
 

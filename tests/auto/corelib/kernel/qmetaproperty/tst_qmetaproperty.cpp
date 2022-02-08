@@ -32,6 +32,8 @@
 
 #include <qobject.h>
 #include <qmetaobject.h>
+#include <QMap>
+#include <QString>
 
 struct CustomType
 {

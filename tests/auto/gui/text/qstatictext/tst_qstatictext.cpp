@@ -27,6 +27,7 @@
 ****************************************************************************/
 
 #include <QTest>
+#include <QtCore/QSet>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QPainter>
 #include <QtGui/QImage>

@@ -30,6 +30,7 @@
 #include <QThread>
 #include <QElapsedTimer>
 #include <QTest>
+#include <QSet>
 
 using namespace QtConcurrent;
 

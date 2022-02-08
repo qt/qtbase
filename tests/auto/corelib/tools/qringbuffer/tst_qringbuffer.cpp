@@ -28,6 +28,7 @@
 
 #include <QTest>
 #include <QBuffer>
+#include <QVarLengthArray>
 
 #include <private/qringbuffer_p.h>
 #include <qlist.h>

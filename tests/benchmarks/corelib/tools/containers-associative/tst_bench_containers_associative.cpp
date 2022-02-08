@@ -26,6 +26,8 @@
 **
 ****************************************************************************/
 #include <QString>
+#include <QMap>
+#include <QHash>
 
 #include <qtest.h>
 

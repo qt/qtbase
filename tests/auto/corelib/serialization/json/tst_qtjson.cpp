@@ -28,6 +28,8 @@
 ****************************************************************************/
 
 #include <QTest>
+#include <QMap>
+#include <QVariantList>
 
 QT_WARNING_DISABLE_DEPRECATED
 

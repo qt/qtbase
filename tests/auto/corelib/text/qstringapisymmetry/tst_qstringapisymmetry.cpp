@@ -40,6 +40,7 @@
 #include <QStringTokenizer>
 #include <QStringView>
 #include <QTest>
+#include <QVarLengthArray>
 
 #include "../../../../shared/localechange.h"
 

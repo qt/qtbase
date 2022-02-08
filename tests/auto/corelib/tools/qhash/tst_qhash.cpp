@@ -30,6 +30,7 @@
 
 #include <qhash.h>
 #include <qmap.h>
+#include <qset.h>
 
 #include <algorithm>
 #include <vector>

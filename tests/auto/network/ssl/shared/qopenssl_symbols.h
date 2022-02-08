@@ -71,6 +71,7 @@
 // reduced to the needs of our auto-tests, that have to mess with
 // OpenSSL calls directly.
 
+#include <QtCore/qset.h>
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 
 QT_REQUIRE_CONFIG(openssl);

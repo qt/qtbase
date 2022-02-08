@@ -30,6 +30,7 @@
 #include <QTest>
 
 #include <QtNetwork/qtnetworkglobal.h>
+#include <QtCore/qset.h>
 
 #include <qsslcertificate.h>
 #include <qsslkey.h>

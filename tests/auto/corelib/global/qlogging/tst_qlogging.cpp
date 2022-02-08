@@ -34,6 +34,8 @@
 # include <QtCore/QProcess>
 #endif
 #include <QtTest/QTest>
+#include <QList>
+#include <QMap>
 
 class tst_qmessagehandler : public QObject
 {

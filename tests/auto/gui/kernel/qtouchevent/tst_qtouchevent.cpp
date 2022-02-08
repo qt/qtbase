@@ -34,6 +34,8 @@
 #include <QtWidgets/QGraphicsWidget>
 #include <QtWidgets/QWidget>
 #include <QTest>
+#include <QSet>
+#include <QVarLengthArray>
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qwindowsysteminterface_p.h>
 #include <private/qevent_p.h>

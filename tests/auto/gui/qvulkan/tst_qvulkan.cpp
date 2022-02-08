@@ -29,6 +29,7 @@
 #include <QtGui/QVulkanInstance>
 #include <QtGui/QVulkanFunctions>
 #include <QtGui/QVulkanWindow>
+#include <QtCore/qvarlengtharray.h>
 
 #include <QTest>
 

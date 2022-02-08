@@ -31,6 +31,7 @@
 #include <QtTest/qtesttouch.h>
 
 #include <qevent.h>
+#include <QSet>
 #include <qpointingdevice.h>
 #include <qwidget.h>
 #include <qlayout.h>

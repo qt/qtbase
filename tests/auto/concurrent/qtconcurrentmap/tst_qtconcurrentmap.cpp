@@ -32,6 +32,7 @@
 #include <QThread>
 #include <QMutex>
 #include <QTest>
+#include <QSet>
 #include <QRandomGenerator>
 
 #include "../testhelper_functions.h"

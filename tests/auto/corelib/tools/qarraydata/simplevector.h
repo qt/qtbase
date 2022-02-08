@@ -32,6 +32,7 @@
 
 #include <QtCore/qarraydata.h>
 #include <QtCore/qarraydatapointer.h>
+#include <QtCore/qvarlengtharray.h>
 
 #include <algorithm>
 

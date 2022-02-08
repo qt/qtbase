@@ -29,6 +29,8 @@
 #include <QtCore/QUrl>
 #include <QtCore/QFile>
 #include <QTest>
+#include <QSet>
+#include <QByteArray>
 #include <algorithm>
 
 class tst_QUrlUts46 : public QObject

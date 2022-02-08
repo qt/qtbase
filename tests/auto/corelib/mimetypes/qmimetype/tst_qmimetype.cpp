@@ -30,6 +30,7 @@
 
 #include <qmimetype.h>
 #include <qmimedatabase.h>
+#include <QVariantMap>
 
 #include <QTest>
 

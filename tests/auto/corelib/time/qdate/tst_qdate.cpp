@@ -32,6 +32,7 @@
 #include <QTimeZone>
 #include <qdatetime.h>
 #include <qlocale.h>
+#include <QMap>
 
 class tst_QDate : public QObject
 {

@@ -30,6 +30,7 @@
 
 #include <QTest>
 #include <QtEndian>
+#include <QSet>
 
 #include <qcoreapplication.h>
 #include <qnetworkinterface.h>

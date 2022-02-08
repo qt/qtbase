@@ -33,6 +33,7 @@
 // for negative testing (can't convert from)
 #include <deque>
 #include <list>
+#include <QVarLengthArray>
 
 template <typename T>
 constexpr bool CanConvert = std::is_convertible_v<T, QByteArrayView>;

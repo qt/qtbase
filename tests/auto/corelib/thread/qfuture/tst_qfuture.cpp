@@ -33,6 +33,9 @@
 #include <QTestEventLoop>
 #include <QTimer>
 #include <QSignalSpy>
+#include <QVarLengthArray>
+#include <QSet>
+#include <QList>
 
 #include <QTest>
 #include <qfuture.h>

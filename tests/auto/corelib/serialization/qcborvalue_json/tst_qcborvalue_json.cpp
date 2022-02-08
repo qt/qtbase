@@ -42,6 +42,9 @@
 #include <QJsonValue>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QVariant>
+#include <QVariantMap>
+#include <QVariantList>
 
 Q_DECLARE_METATYPE(QCborValue)
 

@@ -31,6 +31,7 @@
 #include <QTest>
 #include <QQueue>
 #include <QStack>
+#include <QSet>
 
 #include <qvariant.h>
 #include <QtCore/private/qvariant_p.h>
@@ -38,6 +39,7 @@
 #include <qbytearraylist.h>
 #include <qdatetime.h>
 #include <qmap.h>
+#include <QHash>
 #include <qiodevice.h>
 #include <qurl.h>
 #include <qlocale.h>

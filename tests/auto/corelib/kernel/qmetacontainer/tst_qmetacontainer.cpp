@@ -29,6 +29,8 @@
 #include <QtTest/qtest.h>
 #include <QtCore/qcontainerinfo.h>
 #include <QtCore/qmetacontainer.h>
+#include <QtCore/QMap>
+#include <QtCore/QHash>
 
 #include <QtCore/qvector.h>
 #include <QtCore/qset.h>

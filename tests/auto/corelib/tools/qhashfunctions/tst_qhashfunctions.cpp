@@ -27,6 +27,7 @@
 ****************************************************************************/
 
 #include <QTest>
+#include <QVarLengthArray>
 
 #include <qhash.h>
 

@@ -33,6 +33,8 @@
 #include <QFileSystemWatcher>
 #include <QElapsedTimer>
 #include <QTextStream>
+#include <QMap>
+#include <QString>
 #include <QDir>
 #include <QSignalSpy>
 #include <QTimer>

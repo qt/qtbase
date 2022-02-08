@@ -34,6 +34,8 @@
 #include <qdiriterator.h>
 #include <qfileinfo.h>
 #include <qstringlist.h>
+#include <QSet>
+#include <QString>
 
 #include <QtCore/private/qfsfileengine_p.h>
 

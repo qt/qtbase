@@ -60,6 +60,8 @@
 #include <qnetworkinterface.h>
 
 #include <QNetworkProxy>
+#include <QSet>
+#include <QList>
 
 #include "../../../network-settings.h"
 

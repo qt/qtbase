@@ -33,6 +33,7 @@
 #include <qimage.h>
 #include <qimagereader.h>
 #include <qlist.h>
+#include <qset.h>
 #include <qtransform.h>
 #include <qrandom.h>
 #include <stdio.h>

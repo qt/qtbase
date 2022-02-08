@@ -29,6 +29,7 @@
 #include <QCoreApplication>
 #include <QList>
 #include <QTest>
+#include <QSet>
 
 #include "../testhelper_functions.h"
 
