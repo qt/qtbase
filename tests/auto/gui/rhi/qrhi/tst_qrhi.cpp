@@ -223,7 +223,10 @@ void tst_QRhi::rhiTestData()
     QTest::addColumn<QRhi::Implementation>("impl");
     QTest::addColumn<QRhiInitParams *>("initParams");
 
+// webOS does not support raster (software) pipeline
+#ifndef Q_OS_WEBOS
     QTest::newRow("Null") << QRhi::Null << static_cast<QRhiInitParams *>(&initParams.null);
+#endif
 #ifdef TST_GL
     QTest::newRow("OpenGL") << QRhi::OpenGLES2 << static_cast<QRhiInitParams *>(&initParams.gl);
 #endif
