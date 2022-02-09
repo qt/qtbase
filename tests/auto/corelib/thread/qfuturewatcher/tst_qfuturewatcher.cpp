@@ -487,7 +487,8 @@ void tst_QFutureWatcher::tooMuchProgress()
     QObject::connect(&f, SIGNAL(progressValueChanged(int)), &o, SLOT(registerProgress(int)));
     f.setFuture((new ProgressEmitterTask())->start());
 
-    QTestEventLoop::instance().enterLoop(5);
+    // Android reports ca. 10k progressValueChanged per second
+    QTestEventLoop::instance().enterLoop(15);
     QVERIFY(!QTestEventLoop::instance().timeout());
     QVERIFY(progressValues.contains(maxProgress));
 }
