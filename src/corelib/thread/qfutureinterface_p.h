@@ -122,7 +122,7 @@ private:
     { }
 };
 
-class QFutureCallOutInterface
+class Q_CORE_EXPORT QFutureCallOutInterface
 {
 public:
     virtual ~QFutureCallOutInterface();
