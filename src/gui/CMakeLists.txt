@@ -884,10 +884,14 @@ if (QT_FEATURE_vulkan)
     list(APPEND vulkan_fun_outputs "vulkan/${vulkan_fun_p_cpp}")
 
     if(NOT "${QT_HOST_PATH}" STREQUAL "")
+        set(host_executable_suffix "")
+        if(CMAKE_HOST_WIN32)
+            set(host_executable_suffix ".exe")
+        endif()
         qt_path_join(qvkgen
             "${QT_HOST_PATH}"
             "${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_LIBEXECDIR}"
-            "qvkgen")
+            "qvkgen${host_executable_suffix}")
     else()
         set(qvkgen "${QT_CMAKE_EXPORT_NAMESPACE}::qvkgen")
     endif()
@@ -897,7 +901,7 @@ if (QT_FEATURE_vulkan)
             "${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vk.xml"
             "${CMAKE_CURRENT_SOURCE_DIR}/vulkan/generated_header.txt"
             "${CMAKE_CURRENT_BINARY_DIR}/vulkan/qvulkanfunctions"
-        DEPENDS vulkan/vk.xml
+        DEPENDS vulkan/vk.xml ${qvkgen}
         COMMENT "Generating vulkan data"
     )
 
