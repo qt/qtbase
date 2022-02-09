@@ -36,7 +36,7 @@
 
 \include cmake-find-package-core.qdocinc
 
-\cmakecommandsince 6.3
+\cmakecommandsince 6.2
 
 \section1 Synopsis
 
