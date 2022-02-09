@@ -1192,10 +1192,9 @@ void tst_QSqlQuery::numRowsAffected()
     if ( q.numRowsAffected() == -1 || q.numRowsAffected() == 0 )
         QSKIP("Database doesn't support numRowsAffected");
 
-    if ( q.numRowsAffected() != -1 && q.numRowsAffected() != 0 && q.numRowsAffected() != i ) {
-        // the value is undefined for SELECT, this check is just here for curiosity
+    // Value is undefined for SELECT, this check is just here for curiosity:
+    if (q.numRowsAffected() != -1 && q.numRowsAffected() != 0 && q.numRowsAffected() != i)
         qDebug( "Expected numRowsAffected to be -1, 0 or %d, got %d", i, q.numRowsAffected() );
-    }
 
     QVERIFY_SQL( q, exec( "update " + qtest + " set id = 100 where id = 1" ) );
 
@@ -2082,8 +2081,9 @@ void tst_QSqlQuery::transaction()
         if (dbType == QSqlDriver::MySqlServer) {
             qDebug( "MySQL: %s", qPrintable(tst_Databases::printError( q.lastError() ) ));
             QSKIP( "MySQL transaction failed "); //non-fatal
-        } else
+        } else {
             QFAIL( "Could not rollback transaction: " + tst_Databases::printError( q.lastError() ) );
+        }
     }
 
     QVERIFY_SQL( q, exec( "select * from" + qtest + " where id = 41" ) );
@@ -2121,10 +2121,10 @@ void tst_QSqlQuery::joins()
     const QString qtestj1(qTableName("qtestj1", __FILE__, db)), qtestj2(qTableName("qtestj2", __FILE__, db));
 
     if (dbType == QSqlDriver::Oracle || dbType == QSqlDriver::Sybase
-         || dbType == QSqlDriver::Interbase || db.driverName().startsWith("QODBC"))
-        // Oracle broken beyond recognition - cannot outer join on more than
-        // one table.
+            || dbType == QSqlDriver::Interbase || db.driverName().startsWith("QODBC")) {
+        // Oracle broken beyond recognition - cannot outer join on more than one table:
         QSKIP( "DBMS cannot understand standard SQL");
+    }
 
     QSqlQuery q( db );
 
@@ -3104,8 +3104,9 @@ void tst_QSqlQuery::createQueryOnClosedDatabase()
     // Only supported by these drivers
 
     if (dbType != QSqlDriver::PostgreSQL && dbType != QSqlDriver::Oracle
-            && dbType != QSqlDriver::MySqlServer && dbType != QSqlDriver::DB2)
+            && dbType != QSqlDriver::MySqlServer && dbType != QSqlDriver::DB2) {
         QSKIP( "Test is specific for PostgreSQL, Oracle, MySql and DB2");
+    }
 
     db.close();
 
@@ -3469,8 +3470,10 @@ void tst_QSqlQuery::blobsPreparedQuery()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
 
-    if ( !db.driver()->hasFeature( QSqlDriver::BLOB ) || !db.driver()->hasFeature( QSqlDriver::PreparedQueries ) )
+    if (!db.driver()->hasFeature(QSqlDriver::BLOB)
+        || !db.driver()->hasFeature(QSqlDriver::PreparedQueries)) {
         QSKIP( "DBMS does not support BLOBs or prepared queries");
+    }
 
     const QString tableName(qTableName("blobstest", __FILE__, db));
 
@@ -4576,9 +4579,8 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         QString field = "id";
 
         // PSQL does not have the round() function with real type
-        if (dbType == QSqlDriver::PostgreSQL) {
+        if (dbType == QSqlDriver::PostgreSQL)
             field += "::NUMERIC";
-        }
 
         QVERIFY_SQL(q, exec("SELECT ROUND(" + field + ", 1) FROM " + tableName + " WHERE id=1.5"));
         QVERIFY(q.next());
