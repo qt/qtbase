@@ -224,11 +224,11 @@ static const int qt_windowsConversion[][2] = {
 
 // Standard sizes data
 struct StandardPageSize {
-    QPageSize::PageSizeId id;
-    int windowsId;                  // Windows DMPAPER value
-    QPageSize::Unit definitionUnits;    // Standard definition size, e.g. ISO uses mm, ANSI uses inches
-    int widthPoints;
-    int heightPoints;
+    QPageSize::PageSizeId id : 8;
+    int windowsId : 16;                  // Windows DMPAPER value
+    QPageSize::Unit definitionUnits : 8;    // Standard definition size, e.g. ISO uses mm, ANSI uses inches
+    int widthPoints : 16;
+    int heightPoints : 16;
     qreal widthMillimeters;
     qreal heightMillimeters;
     qreal widthInches;
@@ -386,6 +386,7 @@ static const StandardPageSize qt_pageSizes[] = {
 
 static const int pageSizesCount = int(sizeof(qt_pageSizes) / sizeof(qt_pageSizes[0]));
 static_assert(pageSizesCount == QPageSize::LastPageSize + 1);
+static_assert(QPageSize::LastPageSize < 256);
 
 // Return key name for PageSize
 static QString qt_keyForPageSizeId(QPageSize::PageSizeId id)
