@@ -67,6 +67,10 @@ QT_BEGIN_NAMESPACE
 #pragma qt_no_master_include
 #endif
 
+#ifndef QT_NO_DATASTREAM
+class QDataStream;
+#endif
+
 class qfloat16
 {
     struct Wrap
@@ -200,6 +204,11 @@ QT_WARNING_DISABLE_FLOAT_COMPARE
 #undef QF16_MAKE_BOOL_OP_INT
 
 QT_WARNING_POP
+
+#ifndef QT_NO_DATASTREAM
+    friend Q_CORE_EXPORT QDataStream &operator<<(QDataStream &ds, qfloat16 f);
+    friend Q_CORE_EXPORT QDataStream &operator>>(QDataStream &ds, qfloat16 &f);
+#endif
 };
 
 Q_DECLARE_TYPEINFO(qfloat16, Q_PRIMITIVE_TYPE);

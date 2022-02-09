@@ -993,20 +993,6 @@ QDataStream &QDataStream::operator>>(double &f)
 
 /*!
     \overload
-    \since 5.9
-
-    Reads a floating point number from the stream into \a f,
-    using the standard IEEE 754 format. Returns a reference to the
-    stream.
-*/
-QDataStream &QDataStream::operator>>(qfloat16 &f)
-{
-    return *this >> reinterpret_cast<qint16&>(f);
-}
-
-
-/*!
-    \overload
 
     Reads the '\\0'-terminated string \a s from the stream and returns
     a reference to the stream.
@@ -1339,19 +1325,6 @@ QDataStream &QDataStream::operator<<(double f)
     return *this;
 }
 
-
-/*!
-    \fn QDataStream &QDataStream::operator<<(qfloat16 f)
-    \overload
-    \since 5.9
-
-    Writes a floating point number, \a f, to the stream using
-    the standard IEEE 754 format. Returns a reference to the stream.
-*/
-QDataStream &QDataStream::operator<<(qfloat16 f)
-{
-    return *this << reinterpret_cast<qint16&>(f);
-}
 
 /*!
     \overload
