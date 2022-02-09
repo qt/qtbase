@@ -59,6 +59,7 @@ qt_internal_add_module(Core
         global/qsimd.cpp global/qsimd.h global/qsimd_p.h
         global/qsysinfo.h
         global/qsystemdetection.h
+        global/qtnamespacemacros.h
         global/qtypeinfo.h
         global/qvolatile_p.h
         global/q20algorithm.h
