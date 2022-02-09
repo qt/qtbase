@@ -227,6 +227,11 @@ static std::shared_ptr<AndroidStyle> loadAndroidStyle(QPalette *defaultPalette)
     if (style->m_styleData.isEmpty())
         return std::shared_ptr<AndroidStyle>();
 
+    {
+        QFont font(QLatin1String("Droid Sans Mono"), 14.0 * 100 / 72);
+        style->m_fonts.insert(QPlatformTheme::FixedFont, font);
+    }
+
     for (QJsonObject::const_iterator objectIterator = style->m_styleData.constBegin();
          objectIterator != style->m_styleData.constEnd();
          ++objectIterator) {
