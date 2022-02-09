@@ -123,6 +123,7 @@ public:
         InteractiveResizeAcrossScreens,
         ShowDirectoriesFirst,
         PreselectFirstFileInDirectory,
+        ButtonPressKeys
     };
     Q_ENUM(ThemeHint)
 

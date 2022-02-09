@@ -175,6 +175,8 @@ QT_BEGIN_NAMESPACE
            should be automatically selected when a file dialog opens.
            This enum value was added in Qt 6.3.
 
+    \value ButtonPressKeys (QList<Qt::Key>) A list of keys that can be used to press buttons via keyboard input.
+
     \sa themeHint(), QStyle::pixelMetric()
 */
 
@@ -586,6 +588,8 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
         return true;
     case PreselectFirstFileInDirectory:
         return false;
+    case ButtonPressKeys:
+        return QVariant::fromValue(QList<Qt::Key>({ Qt::Key_Space, Qt::Key_Select }));
     }
     return QVariant();
 }
