@@ -1492,11 +1492,13 @@ void tst_QSqlQuery::forwardOnly()
     QCOMPARE( q.value( 0 ).toInt(), 3 );
 
     // Let's make some mistakes to see how robust it is:
-    QTest::ignoreMessage( QtWarningMsg, "QSqlQuery::seek: cannot seek backwards in a forward only query" );
+    QTest::ignoreMessage(QtWarningMsg,
+                         "QSqlQuery::seek: cannot seek backwards in a forward only query");
     QVERIFY( q.first() == false );
     QCOMPARE( q.at(), 2 );
     QCOMPARE( q.value( 0 ).toInt(), 3 );
-    QTest::ignoreMessage( QtWarningMsg, "QSqlQuery::seek: cannot seek backwards in a forward only query" );
+    QTest::ignoreMessage(QtWarningMsg,
+                         "QSqlQuery::seek: cannot seek backwards in a forward only query");
     QVERIFY( q.previous() == false );
     QCOMPARE( q.at(), 2 );
     QCOMPARE( q.value( 0 ).toInt(), 3 );
@@ -1528,7 +1530,8 @@ QT_WARNING_POP
     QCOMPARE( q.at(), 3 );
     QCOMPARE( q.value( 0 ).toInt(), 4 );
 
-    QTest::ignoreMessage( QtWarningMsg, "QSqlQuery::seek: cannot seek backwards in a forward only query" );
+    QTest::ignoreMessage(QtWarningMsg,
+                         "QSqlQuery::seek: cannot seek backwards in a forward only query");
     QVERIFY( q.seek( 0 ) == false );
     QCOMPARE( q.value( 0 ).toInt(), 4 );
     QCOMPARE( q.at(), 3 );
@@ -1536,8 +1539,8 @@ QT_WARNING_POP
     QVERIFY( q.last() );
     QCOMPARE( q.at(), i-1 );
 
-    QTest::ignoreMessage( QtWarningMsg, "QSqlQuery::seek: cannot seek backwards in a forward only query" );
-
+    QTest::ignoreMessage(QtWarningMsg,
+                         "QSqlQuery::seek: cannot seek backwards in a forward only query");
     QVERIFY( q.first() == false );
     QCOMPARE( q.at(), i-1 );
 
@@ -1599,17 +1602,20 @@ void tst_QSqlQuery::forwardOnlyMultipleResultSet()
     QCOMPARE(q.at(), 3);
     QCOMPARE(q.value(0).toInt(), 4);
 
-    QTest::ignoreMessage(QtWarningMsg, "QSqlQuery::seek: cannot seek backwards in a forward only query");
+    QTest::ignoreMessage(QtWarningMsg,
+                         "QSqlQuery::seek: cannot seek backwards in a forward only query");
     QVERIFY(q.first() == false);
     QCOMPARE(q.at(), 3);
     QCOMPARE(q.value(0).toInt(), 4);
 
-    QTest::ignoreMessage(QtWarningMsg, "QSqlQuery::seek: cannot seek backwards in a forward only query");
+    QTest::ignoreMessage(QtWarningMsg,
+                         "QSqlQuery::seek: cannot seek backwards in a forward only query");
     QVERIFY(q.previous() == false);
     QCOMPARE(q.at(), 3);
     QCOMPARE(q.value(0).toInt(), 4);
 
-    QTest::ignoreMessage(QtWarningMsg, "QSqlQuery::seek: cannot seek backwards in a forward only query");
+    QTest::ignoreMessage(QtWarningMsg,
+                         "QSqlQuery::seek: cannot seek backwards in a forward only query");
     QVERIFY(q.seek(1) == false);
     QCOMPARE(q.at(), 3);
     QCOMPARE(q.value(0).toInt(), 4);
@@ -2591,7 +2597,8 @@ void tst_QSqlQuery::invalidQuery()
     QVERIFY( !q.next() );
     QVERIFY( !q.isActive() );
 
-    if (dbType != QSqlDriver::Oracle && dbType != QSqlDriver::DB2 && !db.driverName().startsWith("QODBC")) {
+    if (dbType != QSqlDriver::Oracle && dbType != QSqlDriver::DB2
+        && !db.driverName().startsWith("QODBC")) {
         // Oracle and DB2 just prepare everything without complaining:
         if ( db.driver()->hasFeature( QSqlDriver::PreparedQueries ) )
             QVERIFY( !q.prepare( "blahfasel" ) );
@@ -2652,9 +2659,10 @@ void tst_QSqlQuery::batchExec()
         QCOMPARE(q.value(1).toString(), charCol.at(i));
         QCOMPARE(q.value(2).toDate(), dateCol.at(i));
         QCOMPARE(q.value(3).toDouble(), numCol.at(i));
-        if (tst_Databases::getDatabaseType(db) == QSqlDriver::MySqlServer && timeStampCol.at(i).isNull()) {
-            QEXPECT_FAIL("", "This appears to be a bug in MySQL as it converts null datetimes to the "
-                         "current datetime for a timestamp field", Continue);
+        if (tst_Databases::getDatabaseType(db) == QSqlDriver::MySqlServer
+            && timeStampCol.at(i).isNull()) {
+            QEXPECT_FAIL("", "This appears to be a bug in MySQL as it converts null datetimes to "
+                             "the current datetime for a timestamp field", Continue);
         }
         QCOMPARE(q.value(4).toDateTime(), timeStampCol.at(i));
         QCOMPARE(q.value(5).toInt(), intCol.at(i));
@@ -2683,9 +2691,10 @@ void tst_QSqlQuery::batchExec()
         QCOMPARE(q.value(1).toString(), charCol.at(i));
         QCOMPARE(q.value(2).toDate(), dateCol.at(i));
         QCOMPARE(q.value(3).toDouble(), numCol.at(i));
-        if (tst_Databases::getDatabaseType(db) == QSqlDriver::MySqlServer && timeStampCol.at(i).isNull()) {
-            QEXPECT_FAIL("", "This appears to be a bug in MySQL as it converts null datetimes to the "
-                             "current datetime for a timestamp field", Continue);
+        if (tst_Databases::getDatabaseType(db) == QSqlDriver::MySqlServer
+            && timeStampCol.at(i).isNull()) {
+            QEXPECT_FAIL("", "This appears to be a bug in MySQL as it converts null datetimes to "
+                             "the current datetime for a timestamp field", Continue);
         }
         QCOMPARE(q.value(4).toDateTime(), timeStampCol.at(i));
         QCOMPARE(q.value(5).toInt(), intCol.at(i));
@@ -2752,8 +2761,8 @@ void tst_QSqlQuery::oraArrayBind()
     QSqlQuery q( db );
 
     QVERIFY_SQL( q, exec( "CREATE OR REPLACE PACKAGE ora_array_test "
-                            "IS "
-                            "TYPE names_type IS TABLE OF VARCHAR(64) NOT NULL INDEX BY BINARY_INTEGER; "
+                            "IS TYPE names_type IS "
+                            "TABLE OF VARCHAR(64) NOT NULL INDEX BY BINARY_INTEGER; "
                             "names_tab names_type; "
                             "PROCEDURE set_name(name_in IN VARCHAR2, row_in in INTEGER); "
                             "PROCEDURE get_name(row_in IN INTEGER, str_out OUT VARCHAR2); "
@@ -3781,7 +3790,8 @@ void tst_QSqlQuery::QTBUG_12186()
     // Make sure that query.boundValues() returns the values in the right order
     // even for more than 16 placeholders:
     QSqlQuery query(db);
-    query.prepare("INSERT INTO person (col1, col2, col3, col4, col5, col6, col7, col8, col9, col10, col11, col12, col13, col14, col15, col16, col17, col18) "
+    query.prepare("INSERT INTO person (col1, col2, col3, col4, col5, col6, col7, col8, col9, "
+                  "col10, col11, col12, col13, col14, col15, col16, col17, col18) "
                   "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
     const QList<QVariant> values = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
@@ -4501,13 +4511,14 @@ void tst_QSqlQuery::aggregateFunctionTypes()
 
         QVERIFY_SQL(q, exec("SELECT AVG(id) FROM " + tableName));
         QVERIFY(q.next());
-        if (dbType == QSqlDriver::SQLite || dbType == QSqlDriver::PostgreSQL || dbType == QSqlDriver::MySqlServer
-            || dbType == QSqlDriver::Oracle) {
+        if (dbType == QSqlDriver::SQLite || dbType == QSqlDriver::PostgreSQL
+            || dbType == QSqlDriver::MySqlServer || dbType == QSqlDriver::Oracle) {
             QCOMPARE(q.value(0).toDouble(), 1.5);
             QCOMPARE(q.record().field(0).metaType().id(), QMetaType::Double);
         } else {
             QCOMPARE(q.value(0).toInt(), 1);
-            QCOMPARE(q.record().field(0).metaType().id(), (dbType == QSqlDriver::Interbase ? QMetaType::LongLong : QMetaType::Int));
+            QCOMPARE(q.record().field(0).metaType().id(),
+                     dbType == QSqlDriver::Interbase ? QMetaType::LongLong : QMetaType::Int);
         }
 
         QVERIFY_SQL(q, exec("SELECT COUNT(id) FROM " + tableName));
@@ -4690,18 +4701,26 @@ void tst_QSqlQuery::integralTypesMysql()
     const QList<bool> boolValues = QList<bool>() << false << true;
     for (int i = 0; i < 2; ++i) {
         const bool withPreparedStatement = (i == 1);
-        runIntegralTypesMysqlTest<bool>(db, "tinyInt1Test", "TINYINT(1)", withPreparedStatement, boolValues);
-        runIntegralTypesMysqlTest<bool>(db, "unsignedTinyInt1Test", "TINYINT(1) UNSIGNED", withPreparedStatement, boolValues);
+        runIntegralTypesMysqlTest<bool>(db, "tinyInt1Test", "TINYINT(1)",
+                                        withPreparedStatement, boolValues);
+        runIntegralTypesMysqlTest<bool>(db, "unsignedTinyInt1Test", "TINYINT(1) UNSIGNED",
+                                        withPreparedStatement, boolValues);
         runIntegralTypesMysqlTest<qint8>(db, "tinyIntTest", "TINYINT", withPreparedStatement);
-        runIntegralTypesMysqlTest<quint8>(db, "unsignedTinyIntTest", "TINYINT UNSIGNED", withPreparedStatement);
+        runIntegralTypesMysqlTest<quint8>(db, "unsignedTinyIntTest", "TINYINT UNSIGNED",
+                                          withPreparedStatement);
         runIntegralTypesMysqlTest<qint16>(db, "smallIntTest", "SMALLINT", withPreparedStatement);
-        runIntegralTypesMysqlTest<quint16>(db, "unsignedSmallIntTest", "SMALLINT UNSIGNED", withPreparedStatement);
-        runIntegralTypesMysqlTest<qint32>(db, "mediumIntTest", "MEDIUMINT", withPreparedStatement, -(1 << 23), (1 << 23) - 1);
-        runIntegralTypesMysqlTest<quint32>(db, "unsignedMediumIntTest", "MEDIUMINT UNSIGNED", withPreparedStatement, 0, (1 << 24) - 1);
+        runIntegralTypesMysqlTest<quint16>(db, "unsignedSmallIntTest", "SMALLINT UNSIGNED",
+                                           withPreparedStatement);
+        runIntegralTypesMysqlTest<qint32>(db, "mediumIntTest", "MEDIUMINT", withPreparedStatement,
+                                          -(1 << 23), (1 << 23) - 1);
+        runIntegralTypesMysqlTest<quint32>(db, "unsignedMediumIntTest", "MEDIUMINT UNSIGNED",
+                                           withPreparedStatement, 0, (1 << 24) - 1);
         runIntegralTypesMysqlTest<qint32>(db, "intTest", "INT", withPreparedStatement);
-        runIntegralTypesMysqlTest<quint32>(db, "unsignedIntTest", "INT UNSIGNED", withPreparedStatement);
+        runIntegralTypesMysqlTest<quint32>(db, "unsignedIntTest", "INT UNSIGNED",
+                                           withPreparedStatement);
         runIntegralTypesMysqlTest<qint64>(db, "bigIntTest", "BIGINT", withPreparedStatement);
-        runIntegralTypesMysqlTest<quint64>(db, "unsignedBigIntTest", "BIGINT UNSIGNED", withPreparedStatement);
+        runIntegralTypesMysqlTest<quint64>(db, "unsignedBigIntTest", "BIGINT UNSIGNED",
+                                           withPreparedStatement);
     }
 }
 
@@ -4836,7 +4855,8 @@ void tst_QSqlQuery::dateTime_data()
         if (!db.isValid())
             continue;
         const QString tableNameTSWithTimeZone(qTableName("dateTimeTSWithTimeZone", __FILE__, db));
-        const QString tableNameTSWithLocalTimeZone(qTableName("dateTimeTSWithLocalTimeZone", __FILE__, db));
+        const QString tableNameTSWithLocalTimeZone(qTableName("dateTimeTSWithLocalTimeZone",
+                                                              __FILE__, db));
         const QString tableNameTS(qTableName("dateTimeTS", __FILE__, db));
         const QString tableNameDate(qTableName("dateTimeDate", __FILE__, db));
         QTest::newRow(QString(dbName + " timestamp with time zone").toLatin1())
