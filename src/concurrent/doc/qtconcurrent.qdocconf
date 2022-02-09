@@ -33,8 +33,6 @@ exampledirs += ../../../examples/qtconcurrent \
                snippets \
                .
 
-manifestmeta.highlighted.names = "QtConcurrent/Image Scaling Example"
-
 excludedirs += snippets
 
 imagedirs   += images
