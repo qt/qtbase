@@ -136,8 +136,12 @@ QT_BEGIN_NAMESPACE
 # define Q_DECL_HIDDEN_STATIC_METACALL Q_DECL_HIDDEN
 #endif
 
-#if defined(Q_CC_CLANG) && Q_CC_CLANG >= 306
-#  define Q_OBJECT_NO_OVERRIDE_WARNING      QT_WARNING_DISABLE_CLANG("-Winconsistent-missing-override")
+#if defined(Q_CC_CLANG)
+#  if Q_CC_CLANG >= 1100
+#    define Q_OBJECT_NO_OVERRIDE_WARNING    QT_WARNING_DISABLE_CLANG("-Winconsistent-missing-override") QT_WARNING_DISABLE_CLANG("-Wsuggest-override")
+#  elif Q_CC_CLANG >= 306
+#    define Q_OBJECT_NO_OVERRIDE_WARNING    QT_WARNING_DISABLE_CLANG("-Winconsistent-missing-override")
+#  endif
 #elif defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && Q_CC_GNU >= 501
 #  define Q_OBJECT_NO_OVERRIDE_WARNING      QT_WARNING_DISABLE_GCC("-Wsuggest-override")
 #else
