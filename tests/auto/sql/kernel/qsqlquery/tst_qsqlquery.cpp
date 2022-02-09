@@ -1061,9 +1061,8 @@ void tst_QSqlQuery::value()
     QSqlQuery q( db );
     QVERIFY_SQL(q, exec(QLatin1String("select id, t_varchar, t_char from %1 order by id")
                         .arg(qtest)));
-    int i = 1;
 
-    while ( q.next() ) {
+    for (int i = 1; q.next(); ++i) {
         QCOMPARE( q.value( 0 ).toInt(), i );
         QCOMPARE( q.value( "id" ).toInt(), i );
         auto istring = QString::number(i);
@@ -1081,8 +1080,6 @@ void tst_QSqlQuery::value()
             QCOMPARE(q.value(2).toString(), QLatin1String("Char%1               ").arg(istring));
         else
             QCOMPARE(q.value(2).toString(), "Char" + istring);
-
-        i++;
     }
 }
 
@@ -1366,7 +1363,7 @@ void tst_QSqlQuery::last()
 
     int i = 0;
     while ( q.next() )
-        i++;
+        ++i;
 
     QCOMPARE( q.at(), int( QSql::AfterLastRow ) );
     QVERIFY( q.last() );
@@ -1416,7 +1413,8 @@ void tst_QSqlQuery::seek()
     QCOMPARE(q.value(0).toInt(), 1);
 
     qint32 count = 1;
-    while (q.next()) ++count;
+    while (q.next())
+        ++count;
 
     QCOMPARE(q.at(), int(QSql::AfterLastRow));
 
@@ -1510,7 +1508,7 @@ void tst_QSqlQuery::forwardOnly()
 
     int i = 0;
     while ( q.next() )
-        i++;
+        ++i;
 
     QVERIFY( q.at() == QSql::AfterLastRow );
 
@@ -1643,7 +1641,7 @@ void tst_QSqlQuery::forwardOnlyMultipleResultSet()
     while (q.next()) {
         QCOMPARE(q.at(), index);
         QCOMPARE(q.value(0).toInt(), index+1);
-        index++;
+        ++index;
     }
     QVERIFY(q.at() == QSql::AfterLastRow);
     QCOMPARE(index, 3);
@@ -2003,7 +2001,7 @@ void tst_QSqlQuery::precision()
         if (!val.startsWith(precStr)) {
             int i = 0;
             while (i < val.size() && precStr[i] != 0 && precStr[i] == val[i].toLatin1())
-                i++;
+                ++i;
 
             // TDS has crappy precisions by default
             if (dbType == QSqlDriver::Sybase) {
@@ -2708,7 +2706,7 @@ void tst_QSqlQuery::batchExec()
         q.addBindValue(timeStampCol, QSql::In);
         QVariantList emptyDateTimes;
         emptyDateTimes.reserve(timeStampCol.size());
-        for (int i = 0; i < timeStampCol.size(); i++)
+        for (int i = 0; i < timeStampCol.size(); ++i)
             emptyDateTimes << QVariant(QDateTime());
         q.addBindValue(emptyDateTimes, QSql::Out);
         QVERIFY_SQL(q, execBatch());
@@ -3304,7 +3302,7 @@ void tst_QSqlQuery::nextResult()
     // Check result set returned by first statement
     QVERIFY( q.isSelect() );            // The first statement is a select
 
-    for ( int i = 0; i < 3; i++ ) {
+    for (int i = 0; i < 3; ++i) {
         QVERIFY_SQL( q, next() );
         QCOMPARE( q.value( 0 ).toInt(), 1+i );
         QCOMPARE( q.value( 1 ).toString(), tstStrings[i]);
@@ -3322,7 +3320,7 @@ void tst_QSqlQuery::nextResult()
     QVERIFY_SQL( q, nextResult() );
     QVERIFY( q.isSelect() );            // The third statement is a SELECT
 
-    for ( int i = 0; i < 2; i++ ) {
+    for (int i = 0; i < 2; ++i) {
         QVERIFY_SQL( q, next() );
         QCOMPARE( q.value( 0 ).toInt(), 1+i );
         QCOMPARE(q.value(1).toString(), u"Yatta!");
@@ -3417,7 +3415,7 @@ void tst_QSqlQuery::nextResult()
         QVERIFY(q.nextResult());
     }
 
-    for ( int i = 0; i < 4; i++ ) {
+    for (int i = 0; i < 4; ++i) {
         QVERIFY_SQL( q, next() );
         QCOMPARE( q.value( 0 ).toInt(), i+1 );
         QCOMPARE( q.value( 1 ).toString(), tstStrings[i]);
@@ -3426,7 +3424,7 @@ void tst_QSqlQuery::nextResult()
     QVERIFY_SQL( q, nextResult() );
     QVERIFY_SQL( q, isActive() );
 
-    for ( int i = 0; i < 4; i++ ) {
+    for (int i = 0; i < 4; ++i) {
         QVERIFY_SQL( q, next() );
         QCOMPARE(q.value(0).toString(), u"Yatta!");
         QCOMPARE( q.value( 1 ).toDouble(), 1.1*( 1+i ) );
@@ -3913,7 +3911,7 @@ void tst_QSqlQuery::QTBUG_6618()
     const QString procedureName = qTableName("tst_raiseError", __FILE__, db);
     q.exec("drop procedure " + procedureName);  // non-fatal
     QString errorString;
-    for (int i=0;i<110;i++)
+    for (int i = 0; i < 110; ++i)
         errorString+="reallylong";
     errorString+=" error";
     QVERIFY_SQL(q, exec(QLatin1String("create procedure %1 as\n"
