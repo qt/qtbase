@@ -45,7 +45,7 @@ target properties:
 
 \brief Overrides the Qt dependencies added to the target's deployment.
 
-\cmakepropertysince 6.3
+\cmakepropertysince 6.0
 \preliminarycmakeproperty
 \cmakepropertyandroidonly
 
@@ -76,7 +76,7 @@ is listed before its dependencies, it will fail to load on some devices.
 
 \summary {Extra libraries to deploy with the target.}
 
-\cmakepropertysince 6.3
+\cmakepropertysince 6.0
 \preliminarycmakeproperty
 \cmakepropertyandroidonly
 
@@ -98,7 +98,7 @@ to enable OpenSSL in your application. For more information, see
 
 \summary {Extra Qt plugins to deploy with the target.}
 
-\cmakepropertysince 6.3
+\cmakepropertysince 6.0
 \preliminarycmakeproperty
 \cmakepropertyandroidonly
 
@@ -148,7 +148,7 @@ Specifies the minimum Android API level for the target.
 
 \summary {Path to a custom Android package template.}
 
-\cmakepropertysince 6.3
+\cmakepropertysince 6.0
 \preliminarycmakeproperty
 \cmakepropertyandroidonly
 
@@ -200,7 +200,7 @@ Specifies the target Android API level for the target.
 
 \summary {Internal Android app version.}
 
-\cmakepropertysince 6.3
+\cmakepropertysince 6.1
 \preliminarycmakeproperty
 \cmakepropertyandroidonly
 
@@ -222,7 +222,7 @@ For more information, see \l{Android: App Versioning}{Android App Versioning}.
 
 \summary {Human-readable Android app version.}
 
-\cmakepropertysince 6.3
+\cmakepropertysince 6.1
 \preliminarycmakeproperty
 \cmakepropertyandroidonly
 
@@ -265,7 +265,7 @@ the list of ABIs that the single target packages are supposed to be built for.
 
 \summary {Overrides the location of the application's qml directory.}
 
-\cmakepropertysince 6.3
+\cmakepropertysince 6.1
 \preliminarycmakeproperty
 
 This property is currently only used when generating a deployment settings file
@@ -286,7 +286,7 @@ will be used instead.
 
 \summary {Specifies a list of directories to search for QML imports.}
 
-\cmakepropertysince 6.3
+\cmakepropertysince 6.0
 \preliminarycmakeproperty
 
 This property is currently only used when generating a deployment settings file
