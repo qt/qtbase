@@ -88,6 +88,9 @@ public:
     void setResponseBody(const QByteArray &body);
     // No authentication data is generated for the method, the full header value must be set
     void setAuthenticationHeader(const QByteArray &authentication);
+    // Set the redirect URL and count. The server will return a redirect response with the url
+    // 'count' amount of times
+    void setRedirect(const QByteArray &redirectUrl, int count);
     void emulateGOAWAY(int timeout);
     void redirectOpenStream(quint16 targetPort);
 
@@ -219,6 +222,9 @@ private:
     QAtomicInt interrupted;
 
     QByteArray authenticationHeader;
+
+    QByteArray redirectUrl;
+    int redirectCount = 0;
 protected slots:
     void ignoreErrorSlot();
 };

@@ -115,6 +115,9 @@ private slots:
     void authenticationRequired_data();
     void authenticationRequired();
 
+    void redirect_data();
+    void redirect();
+
 protected slots:
     // Slots to listen to our in-process server:
     void serverStarted(quint16 port);
@@ -952,6 +955,72 @@ void tst_Http2::authenticationRequired()
     // In the `!success` case we need to wait for the server to emit this or it might cause issues
     // in the next test running after this. In the `success` case we anyway expect it to have been
     // received.
+    QTRY_VERIFY(serverGotSettingsACK);
+}
+
+void tst_Http2::redirect_data()
+{
+    QTest::addColumn<int>("maxRedirects");
+    QTest::addColumn<int>("redirectCount");
+    QTest::addColumn<bool>("success");
+
+    QTest::addRow("1-redirects-none-allowed-failure") << 0 << 1 << false;
+    QTest::addRow("1-redirects-success") << 1 << 1 << true;
+    QTest::addRow("2-redirects-1-allowed-failure") << 1 << 2 << false;
+}
+
+void tst_Http2::redirect()
+{
+    QFETCH(const int, maxRedirects);
+    QFETCH(const int, redirectCount);
+    QFETCH(const bool, success);
+    const QByteArray redirectUrl = "/b.html";
+
+    clearHTTP2State();
+    serverPort = 0;
+
+    ServerPtr targetServer(newServer(defaultServerSettings, defaultConnectionType()));
+    targetServer->setRedirect(redirectUrl, redirectCount);
+
+    QMetaObject::invokeMethod(targetServer.data(), "startServer", Qt::QueuedConnection);
+    runEventLoop();
+
+    QVERIFY(serverPort != 0);
+
+    nRequests = 1 + maxRedirects;
+
+    auto originalUrl = requestUrl(defaultConnectionType());
+    auto url = originalUrl;
+    url.setPath("/index.html");
+    QNetworkRequest request(url);
+    request.setAttribute(QNetworkRequest::Http2AllowedAttribute, QVariant(true));
+    request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
+    request.setMaximumRedirectsAllowed(maxRedirects);
+
+    QScopedPointer<QNetworkReply> reply;
+    reply.reset(manager->get(request));
+
+    if (success) {
+        connect(reply.get(), &QNetworkReply::finished, this, &tst_Http2::replyFinished);
+    } else {
+        connect(reply.get(), &QNetworkReply::errorOccurred, this,
+                &tst_Http2::replyFinishedWithError);
+    }
+
+    // Since we're using self-signed certificates,
+    // ignore SSL errors:
+    reply->ignoreSslErrors();
+
+    runEventLoop();
+    STOP_ON_FAILURE
+
+    if (success) {
+        QCOMPARE(reply->error(), QNetworkReply::NoError);
+        QCOMPARE(reply->url().toString(),
+                 originalUrl.resolved(QString::fromLatin1(redirectUrl)).toString());
+    } else if (maxRedirects < redirectCount) {
+        QCOMPARE(reply->error(), QNetworkReply::TooManyRedirectsError);
+    }
     QTRY_VERIFY(serverGotSettingsACK);
 }
 
