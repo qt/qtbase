@@ -36,7 +36,7 @@ if(QT_FEATURE_thread)
 endif()
 # special case begin
 # QTBUG-87431
-if(TARGET Qt::Concurrent AND NOT ANDROID AND NOT INTEGRITY)
+if(TARGET Qt::Concurrent AND NOT INTEGRITY)
     add_subdirectory(qfuturewatcher)
 endif()
 # special case end
