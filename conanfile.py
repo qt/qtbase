@@ -334,8 +334,7 @@ def add_cmake_prefix_path(conan_file: ConanFile, dep: str) -> None:
         raise QtConanError("Unable to find dependency: {0}".format(dep))
     dep_cpp_info = conan_file.deps_cpp_info[dep]
     cmake_args_str = str(conan_file.options.get_safe("cmake_args_qtbase", default=""))
-    _common = conan_file.python_requires["qt-conan-common"].module
-    formatted_cmake_args_str = _common.append_cmake_prefix_path(
+    formatted_cmake_args_str = conan_file._shared.append_cmake_prefix_path(
         cmake_args_str, dep_cpp_info.rootpath
     )
     print("Adjusted cmake args for qtbase build: {0}".format(formatted_cmake_args_str))
@@ -395,6 +394,10 @@ class QtBase(ConanFile):
     revision_mode = "scm"
     python_requires = "qt-conan-common/{0}@qt/everywhere".format(_get_qt_minor_version())
     short_paths = True
+    _shared = None
+
+    def init(self):
+        self._shared = self.python_requires["qt-conan-common"].module
 
     def set_version(self):
         # Executed during "conan export" i.e. in source tree
@@ -406,8 +409,7 @@ class QtBase(ConanFile):
         self.copy("configure_options.json")
         self.copy("configure_features.txt")
         self.copy(".cmake.conf")
-        _common = self.python_requires["qt-conan-common"].module
-        conf = _common.qt_sw_versions_config_folder() / _common.qt_sw_versions_config_name()
+        conf = self._shared.qt_sw_versions_config_folder() / self._shared.qt_sw_versions_config_name()
         if not conf.exists():
             # If using "conan export" outside Qt CI provisioned machines
             print("Warning: Couldn't find '{0}'. 3rd party dependencies skipped.".format(conf))
@@ -415,14 +417,13 @@ class QtBase(ConanFile):
             shutil.copy2(conf, self.export_folder)
 
     def requirements(self):
-        parse_sw_req = self.python_requires["qt-conan-common"].module.parse_qt_sw_pkg_dependency
         # list of tuples, (package_name, fallback version)
         optional_requirements = [("icu", "56.1")]
         for req_name, req_ver_fallback in optional_requirements:
             if self.options.get_safe(req_name, default=False) == True:
                 # Note! If this conan package is being "conan export"ed outside Qt CI and the
                 # sw versions .ini file is not present then it will fall-back to default version
-                ver = parse_sw_req(
+                ver = self._shared.parse_sw_req(
                     config_folder=Path(self.recipe_folder),
                     package_name=req_name,
                     target_os=str(self.settings.os),
@@ -525,13 +526,13 @@ class QtBase(ConanFile):
                 raise QtConanError("Unknown build_type: {0}".format(self.settings.build_type))
 
     def build(self):
-        self.python_requires["qt-conan-common"].module.build_env_wrap(self, _build_qtbase)
+        self._shared.build_env_wrap(self, _build_qtbase)
 
     def package(self):
-        self.python_requires["qt-conan-common"].module.call_install(self)
+        self._shared.call_install(self)
 
     def package_info(self):
-        self.python_requires["qt-conan-common"].module.package_info(self)
+        self._shared.package_info(self)
 
     def package_id(self):
         # https://docs.conan.io/en/latest/creating_packages/define_abi_compatibility.html
@@ -545,18 +546,15 @@ class QtBase(ConanFile):
         # Enable 'qt-conan-common' updates on client side with $conan install .. --update
         self.info.python_requires.recipe_revision_mode()
 
+        if self.settings.os == "Android":
+            self.filter_package_id_for_android()
+
         # Remove those configure(.bat) options which should not affect package_id.
         # These point to local file system paths and in order to re-use pre-built
         # binaries (by Qt CI) by others these should not affect the 'package_id'
         # as those probably differ on each machine
         rm_list = [
             "sdk",
-            "android_sdk",
-            "android_ndk",
-            "android_ndk_platform",
-            "android_abis",
-            "android_javac_target",
-            "android_javac_source",
             "qpa",
             "translationsdir",
             "headersclean",
@@ -567,11 +565,30 @@ class QtBase(ConanFile):
                 delattr(self.info.options, item)
         # filter also those cmake options that should not end up in the package_id
         if hasattr(self.info.options, "cmake_args_qtbase"):
-            _filter = self.python_requires[
-                "qt-conan-common"
-            ].module.filter_cmake_args_for_package_id
-
+            _filter = self._shared.filter_cmake_args_for_package_id
             self.info.options.cmake_args_qtbase = _filter(self.info.options.cmake_args_qtbase)
+
+   def filter_package_id_for_android(self) -> None:
+        # Instead of using Android NDK path as the option value (package_id) we parse the
+        # actual version number and use that as the option value.
+        android_ndk = self.options.get_safe("android_ndk")
+        if android_ndk:
+            v = self._shared.parse_android_ndk_version(search_path=android_ndk)
+            print("Set 'android_ndk={0}' for package_id. Parsed from: {1}".format(android_ndk, v))
+            setattr(self.options, "android_ndk", v)
+
+        # If -DQT_ANDROID_API_VERSION is defined then prefer that value for package_id
+        qtbase_cmake_args = self.options.get_safe("cmake_args_qtbase")
+        m = re.search(r"QT_ANDROID_API_VERSION=(\S*)", qtbase_cmake_args)
+        if m:
+            android_api_ver = m.group(1).strip()
+            print("Using QT_ANDROID_API_VERSION='{0}' for package_id".format(android_api_ver))
+            setattr(self.options, "android_sdk", android_api_ver)
+        else:
+            # TODO, for now we have no clean means to query the Android SDK version
+            # from Qt build system so we just exclude the "android_sdk" from the
+            # package_id.
+            delattr(self.info.options, "android_sdk")
 
     def deploy(self):
         self.copy("*")  # copy from current package
