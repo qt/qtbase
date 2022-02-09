@@ -84,11 +84,11 @@ QT_IMPL_METATYPE_EXTERN_TAGGED(QSurface*, QSurface_ptr)
     \value VulkanSurface The surface is a Vulkan compatible surface and can be used
     in conjunction with the Vulkan graphics API.
     \value MetalSurface The surface is a Metal compatible surface and can be used
-    in conjunction with Apple's Metal graphics API. This surface type is supported
-    on macOS only.
+    in conjunction with Apple's Metal graphics API. This surface type is only supported
+    on \macos and iOS.
     \value Direct3DSurface The surface is a Direct 3D 11 and 12 compatible
     surface and can be used in conjunction with the DXGI and Direct3D APIs. This
-    surface type is supported on Windows only.
+    surface type is only supported on Windows.
  */
 
 
