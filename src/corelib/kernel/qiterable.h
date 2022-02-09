@@ -135,9 +135,9 @@ public:
     bool operator==(const QTaggedIterator &o) const { return Iterator::operator==(o); }
     bool operator!=(const QTaggedIterator &o) const { return Iterator::operator!=(o); }
     QTaggedIterator &operator++() { Iterator::operator++(); return *this; }
-    QTaggedIterator operator++(int x) { return QTaggedIterator(Iterator::operator++(x)); };
+    QTaggedIterator operator++(int x) { return QTaggedIterator(Iterator::operator++(x)); }
     QTaggedIterator &operator--() { Iterator::operator--(); return *this; }
-    QTaggedIterator operator--(int x) { return QTaggedIterator(Iterator::operator--(x)); };
+    QTaggedIterator operator--(int x) { return QTaggedIterator(Iterator::operator--(x)); }
     QTaggedIterator &operator+=(qsizetype j) { Iterator::operator+=(j); return *this; }
     QTaggedIterator &operator-=(qsizetype j)  { Iterator::operator-=(j); return *this; }
     QTaggedIterator operator+(qsizetype j) const { return QTaggedIterator(Iterator::operator+(j)); }
@@ -540,7 +540,7 @@ public:
     Container metaContainer() const
     {
         return m_metaContainer;
-    };
+    }
 };
 
 QT_END_NAMESPACE
