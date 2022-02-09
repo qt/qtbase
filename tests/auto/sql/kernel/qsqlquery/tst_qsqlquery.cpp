@@ -522,22 +522,17 @@ void tst_QSqlQuery::char1SelectUnicode()
         }
 
         QVERIFY_SQL(q, exec(createQuery.arg(char1SelectUnicode)));
-
         QVERIFY_SQL(q, prepare(QLatin1String("insert into %1 values(?)").arg(char1SelectUnicode)));
 
         q.bindValue( 0, uniStr );
-
         QVERIFY_SQL( q, exec() );
-
         QVERIFY_SQL( q, exec( "select * from " + char1SelectUnicode ) );
 
         QVERIFY( q.next() );
-
         if ( !q.value( 0 ).toString().isEmpty() )
             QCOMPARE( q.value( 0 ).toString()[ 0 ].unicode(), uniStr[0].unicode() );
 
         QCOMPARE( q.value( 0 ).toString().trimmed(), uniStr );
-
         QVERIFY( !q.next() );
     }
     else
@@ -1016,12 +1011,10 @@ void tst_QSqlQuery::blob()
 
     //don' make it too big otherwise sybase and mysql will complain
     QByteArray ba(BLOBSIZE, Qt::Uninitialized);
-
     for (int i = 0; i < ba.size(); ++i)
         ba[i] = i % 256;
 
     QSqlQuery q( db );
-
     q.setForwardOnly( true );
     const QString tableName = qTableName("qtest_blob", __FILE__, db);
 
@@ -1137,12 +1130,12 @@ void tst_QSqlQuery::record()
 
     QVERIFY( q.next() );
     QVERIFY( q.next() );
-
     QCOMPARE(q.record().fieldName(0).toLower(), u"id");
     QCOMPARE( q.value( 0 ).toInt(), 2 );
 
     if (tst_Databases::getDatabaseType(db) == QSqlDriver::Oracle)
         QSKIP("Getting the tablename is not supported in Oracle");
+
     const auto lowerQTest = qtest.toLower();
     for (int i = 0; i < 3; ++i)
         QCOMPARE(q.record().field(i).tableName().toLower(), lowerQTest);
@@ -1189,24 +1182,19 @@ void tst_QSqlQuery::isActive()
     if ( !tst_Databases::isMSAccess( db ) )
         // Access is stupid enough to let you scroll over boundaries
         QVERIFY( !q.next() );
-
     QVERIFY( q.isActive() );
 
     QVERIFY_SQL(q, exec(QLatin1String("insert into %1 values (41, 'VarChar41', 'Char41')")
                         .arg(qtest)));
-
     QVERIFY( q.isActive() );
 
     QVERIFY_SQL(q, exec(QLatin1String("update %1 set id = 42 where id = 41").arg(qtest)));
-
     QVERIFY( q.isActive() );
 
     QVERIFY_SQL(q, exec(QLatin1String("delete from %1 where id = 42").arg(qtest)));
-
     QVERIFY( q.isActive() );
 
     QVERIFY_SQL(q, exec(QLatin1String("delete from %1 where id = 42").arg(qtest)));
-
     QVERIFY( q.isActive() );
 }
 
@@ -1220,8 +1208,8 @@ void tst_QSqlQuery::numRowsAffected()
     QCOMPARE( q.numRowsAffected(), -1 );
 
     QVERIFY_SQL( q, exec( "select * from " + qtest ) );
-    int i = 0;
 
+    int i = 0;
     while ( q.next() )
         ++i;
 
@@ -1280,8 +1268,8 @@ void tst_QSqlQuery::size()
     QCOMPARE( q.size(), -1 );
 
     QVERIFY_SQL( q, exec( "select * from " + qtest ) );
-    int i = 0;
 
+    int i = 0;
     while ( q.next() )
         ++i;
 
@@ -1373,22 +1361,18 @@ void tst_QSqlQuery::last()
     QSqlQuery q( db );
     QCOMPARE( q.at(), int( QSql::BeforeFirstRow ) );
     QVERIFY_SQL( q, exec( "select * from " + qtest ) );
-    int i = 0;
 
+    int i = 0;
     while ( q.next() )
         i++;
 
     QCOMPARE( q.at(), int( QSql::AfterLastRow ) );
-
     QVERIFY( q.last() );
-
     QSet<int> validReturns(QSet<int>() << -1 << i-1);
     QVERIFY( validReturns.contains(q.at()) );
 
     QSqlQuery q2( "select * from " + qtest, db );
-
     QVERIFY( q2.last() );
-
     QVERIFY( validReturns.contains(q.at()) );
 }
 
@@ -1522,8 +1506,8 @@ void tst_QSqlQuery::forwardOnly()
     QCOMPARE( q.value( 0 ).toInt(), 4 );
 
     QVERIFY_SQL( q, exec( "select * from " + qtest ) );
-    int i = 0;
 
+    int i = 0;
     while ( q.next() )
         i++;
 
@@ -1537,39 +1521,28 @@ QT_WARNING_POP
     QVERIFY( q2.isForwardOnly() );
 
     QVERIFY_SQL(q, exec(QLatin1String("select * from %1 order by id").arg(qtest)));
-
     QVERIFY( q.isForwardOnly() );
-
     QVERIFY( q2.isForwardOnly() );
-
     QCOMPARE( q.at(), int( QSql::BeforeFirstRow ) );
 
     QVERIFY_SQL( q, seek( 3 ) );
-
     QCOMPARE( q.at(), 3 );
-
     QCOMPARE( q.value( 0 ).toInt(), 4 );
 
     QTest::ignoreMessage( QtWarningMsg, "QSqlQuery::seek: cannot seek backwards in a forward only query" );
-
     QVERIFY( q.seek( 0 ) == false );
-
     QCOMPARE( q.value( 0 ).toInt(), 4 );
-
     QCOMPARE( q.at(), 3 );
 
     QVERIFY( q.last() );
-
     QCOMPARE( q.at(), i-1 );
 
     QTest::ignoreMessage( QtWarningMsg, "QSqlQuery::seek: cannot seek backwards in a forward only query" );
 
     QVERIFY( q.first() == false );
-
     QCOMPARE( q.at(), i-1 );
 
     QVERIFY( q.next() == false );
-
     QCOMPARE( q.at(), int( QSql::AfterLastRow ) );
 }
 
@@ -1923,19 +1896,14 @@ void tst_QSqlQuery::tds_bitField()
     QSqlQuery q( db );
 
     QVERIFY_SQL(q, exec(QLatin1String("create table %1 (bitty bit)").arg(tableName)));
-
     QVERIFY_SQL(q, exec(QLatin1String("insert into %1 values (0)").arg(tableName)));
-
     QVERIFY_SQL(q, exec(QLatin1String("insert into %1 values (1)").arg(tableName)));
-
     QVERIFY_SQL(q, exec("select bitty from " + tableName));
 
     QVERIFY( q.next() );
-
     QVERIFY( q.value( 0 ).toInt() == 0 );
 
     QVERIFY( q.next() );
-
     QVERIFY( q.value( 0 ).toInt() == 1 );
 }
 
@@ -2061,7 +2029,6 @@ void tst_QSqlQuery::nullResult()
         QCOMPARE( q.size(), 0 );
 
     QVERIFY( q.next() == false );
-
     QVERIFY( q.first() == false );
     QVERIFY( q.last() == false );
     QVERIFY( q.previous() == false );
@@ -2090,39 +2057,30 @@ void tst_QSqlQuery::transaction()
         startTransactionStr = "begin work";
 
     QSqlQuery q( db );
-
     QSqlQuery q2( db );
 
     // test a working transaction
     q.exec( startTransactionStr );
-
     QVERIFY_SQL(q, exec(QLatin1String("insert into%1 values (40, 'VarChar40', 'Char40')")
                         .arg(qtest)));
-
     QVERIFY_SQL(q, exec(QLatin1String("select * from%1 where id = 40").arg(qtest)));
 
     QVERIFY( q.next() );
-
     QCOMPARE( q.value( 0 ).toInt(), 40 );
 
     QVERIFY_SQL( q, exec( "commit" ) );
-
     QVERIFY_SQL(q, exec(QLatin1String("select * from%1 where id = 40").arg(qtest)));
 
     QVERIFY( q.next() );
-
     QCOMPARE( q.value( 0 ).toInt(), 40 );
 
     // test a rollback
     q.exec( startTransactionStr );
-
     QVERIFY_SQL(q, exec(QLatin1String("insert into%1 values (41, 'VarChar41', 'Char41')")
                         .arg(qtest)));
-
     QVERIFY_SQL(q, exec(QLatin1String("select * from%1 where id = 41").arg(qtest)));
 
     QVERIFY( q.next() );
-
     QCOMPARE( q.value( 0 ).toInt(), 41 );
 
     if ( !q.exec( "rollback" ) ) {
@@ -2133,9 +2091,7 @@ void tst_QSqlQuery::transaction()
             QFAIL( "Could not rollback transaction: " + tst_Databases::printError( q.lastError() ) );
         }
     }
-
     QVERIFY_SQL(q, exec(QLatin1String("select * from%1 where id = 41").arg(qtest)));
-
     QVERIFY( q.next() == false );
 
     // test concurrent access
@@ -2147,17 +2103,14 @@ void tst_QSqlQuery::transaction()
     QCOMPARE( q.value( 0 ).toInt(), 42 );
 
     QVERIFY_SQL(q2, exec(QLatin1String("select * from%1 where id = 42").arg(qtest)));
-
     if ( q2.next() )
         qDebug("DBMS '%s' doesn't support query based transactions with concurrent access",
                qPrintable(tst_Databases::dbToString( db )));
 
     QVERIFY_SQL( q, exec( "commit" ) );
-
     QVERIFY_SQL(q2, exec(QLatin1String("select * from%1 where id = 42").arg(qtest)));
 
     QVERIFY( q2.next() );
-
     QCOMPARE( q2.value( 0 ).toInt(), 42 );
 }
 
@@ -2280,7 +2233,6 @@ void tst_QSqlQuery::prepare_bind_exec()
 
         q.exec("drop table " + qtest_prepare);
         QVERIFY_SQL(q, exec(createQuery.arg(qtest_prepare)));
-
         QVERIFY(q.prepare(QLatin1String("insert into %1 (id, name) values (:id, :name)")
                           .arg(qtest_prepare)));
         int i;
@@ -2296,7 +2248,6 @@ void tst_QSqlQuery::prepare_bind_exec()
         }
 
         q.bindValue( ":id", 8 );
-
         QVERIFY_SQL( q, exec() );
 
         if ( useUnicode ) {
@@ -2306,7 +2257,6 @@ void tst_QSqlQuery::prepare_bind_exec()
         }
 
         QVERIFY_SQL(q, exec(QLatin1String("SELECT * FROM %1 order by id").arg(qtest_prepare)));
-
         for ( i = 0; i < 6; ++i ) {
             QVERIFY( q.next() );
             QCOMPARE( q.value( 0 ).toInt(), i );
@@ -2320,7 +2270,6 @@ void tst_QSqlQuery::prepare_bind_exec()
         }
 
         QVERIFY_SQL( q, next() );
-
         QCOMPARE( q.value( 0 ).toInt(), 8 );
         QCOMPARE( q.value( 1 ).toString(), values[5] );
 
@@ -2455,7 +2404,6 @@ void tst_QSqlQuery::prepare_bind_exec()
         QFAIL_SQL(q, exec());
 
         QVERIFY_SQL(q, exec(QLatin1String("SELECT * FROM %1 order by id").arg(qtest_prepare)));
-
         for ( i = 0; i < 6; ++i ) {
             QVERIFY( q.next() );
             QCOMPARE( q.value( 0 ).toInt(), i );
@@ -2475,14 +2423,13 @@ void tst_QSqlQuery::prepare_bind_exec()
 
         QVERIFY(q.prepare(QLatin1String("insert into %1 (id, name) values (?, 'Bart')")
                           .arg(qtest_prepare)));
-
         q.bindValue( 0, 99 );
         QVERIFY_SQL( q, exec() );
         q.addBindValue( 100 );
         QVERIFY_SQL( q, exec() );
+
         QVERIFY(q.exec(QLatin1String("select * from %1 where id > 98 order by id")
                        .arg(qtest_prepare)));
-
         for ( i = 99; i <= 100; ++i ) {
             QVERIFY( q.next() );
             QCOMPARE( q.value( 0 ).toInt(), i );
@@ -2496,9 +2443,7 @@ void tst_QSqlQuery::prepare_bind_exec()
         q.addBindValue(u"something silly"_qs);
 
         QVERIFY( !q.exec() );
-
         QVERIFY( q.lastError().isValid() );
-
         QVERIFY( !q.isActive() );
 
         QVERIFY(q.prepare(QLatin1String(
@@ -2614,31 +2559,22 @@ void tst_QSqlQuery::sqlServerLongStrings()
     QVERIFY_SQL(q, prepare(QLatin1String("INSERT INTO %1 VALUES (?, ?)").arg(tableName)));
 
     q.addBindValue( 0 );
-
     q.addBindValue(u"bubu"_qs);
-
     QVERIFY_SQL( q, exec() );
 
     const QString testStr(85000, QLatin1Char('a'));
 
     q.addBindValue( 1 );
-
     q.addBindValue( testStr );
-
     QVERIFY_SQL( q, exec() );
-
     QVERIFY_SQL(q, exec("select * from " + tableName));
 
     QVERIFY_SQL( q, next() );
-
     QCOMPARE( q.value( 0 ).toInt(), 0 );
-
     QCOMPARE(q.value(1).toString(), u"bubu");
 
     QVERIFY_SQL( q, next() );
-
     QCOMPARE( q.value( 0 ).toInt(), 1 );
-
     QCOMPARE( q.value( 1 ).toString(), testStr );
 }
 
@@ -2664,7 +2600,6 @@ void tst_QSqlQuery::invalidQuery()
     }
 
     QVERIFY( !q.exec() );
-
     QVERIFY( !q.isActive() );
     QVERIFY( !q.next() );
 }
@@ -2861,9 +2796,7 @@ void tst_QSqlQuery::oraArrayBind()
                                "ora_array_test.set_table(?); "
                                "END;" ) );
     q.bindValue( 0, list, QSql::In );
-
     QVERIFY_SQL( q, execBatch( QSqlQuery::ValuesAsColumns ) );
-
     QVERIFY_SQL( q, prepare( "BEGIN "
                                "ora_array_test.get_table(?); "
                                "END;" ) );
@@ -3069,7 +3002,6 @@ void tst_QSqlQuery::psql_bindWithDoubleColonCastOperator()
     const QString tablename(qTableName("bindtest", __FILE__, db));
 
     QSqlQuery q( db );
-
     QVERIFY_SQL(q, exec(QLatin1String(
                             "create table %1 (id1 int, id2 int, id3 int, fld1 int, fld2 int)")
                         .arg(tablename)));
@@ -3350,7 +3282,6 @@ void tst_QSqlQuery::nextResult()
     QCOMPARE( q.record().field( 0 ).metaType().id(), QMetaType::Int );
 
     QVERIFY( q.nextResult() );          // Discards first result set and move to the next
-
     QCOMPARE( q.record().count(), 2 );  // New meta data should be available
 
     QCOMPARE(q.record().field(0).name().toUpper(), u"TEXT");
@@ -3360,11 +3291,8 @@ void tst_QSqlQuery::nextResult()
     QCOMPARE(q.record().field(1).metaType().id(), QMetaType::Double);
 
     QVERIFY( q.next() );                    // Move to first row of the second result set
-
     QFAIL_SQL(q, nextResult()); // No more result sets after this
-
     QVERIFY( !q.isActive() );               // So the query is no longer active
-
     QVERIFY( !q.next() );                   // ... and no data is available as the call to
 
     // nextResult() discarded the result set
@@ -3497,7 +3425,6 @@ void tst_QSqlQuery::nextResult()
     }
 
     QVERIFY_SQL( q, nextResult() );
-
     QVERIFY_SQL( q, isActive() );
 
     for ( int i = 0; i < 4; i++ ) {
@@ -4811,7 +4738,6 @@ void tst_QSqlQuery::QTBUG_57138()
     create.addBindValue(utc);
     create.addBindValue(localtime);
     create.addBindValue(tzoffset);
-
     QVERIFY_SQL(create, exec());
 
     QSqlQuery q(db);
