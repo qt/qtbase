@@ -92,8 +92,10 @@ static inline void appendTestMode(QString &path)
         path += QLatin1String("/qttest");
 }
 
-static bool isProcessLowIntegrity() {
-    const HANDLE process_token = GetCurrentProcessToken();
+static bool isProcessLowIntegrity()
+{
+    // same as GetCurrentProcessToken()
+    const auto process_token = HANDLE(quintptr(-4));
 
     QVarLengthArray<char,256> token_info_buf(256);
     auto* token_info = reinterpret_cast<TOKEN_MANDATORY_LABEL*>(token_info_buf.data());
