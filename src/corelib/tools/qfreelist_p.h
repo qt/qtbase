@@ -160,7 +160,7 @@ class QFreeList
                 return i;
             x -= size;
         }
-        Q_ASSERT(false);
+        Q_UNREACHABLE();
         return -1;
     }
 
