@@ -533,10 +533,23 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
     return false;
 }
 
-QUrl QHttpNetworkConnectionPrivate::parseRedirectResponse(QAbstractSocket *socket, QHttpNetworkReply *reply)
+// Used by the HTTP1 code-path
+QUrl QHttpNetworkConnectionPrivate::parseRedirectResponse(QAbstractSocket *socket,
+                                                          QHttpNetworkReply *reply)
+{
+    ParseRedirectResult result = parseRedirectResponse(reply);
+    if (result.errorCode != QNetworkReply::NoError) {
+        emitReplyError(socket, reply, result.errorCode);
+        return {};
+    }
+    return std::move(result.redirectUrl);
+}
+
+QHttpNetworkConnectionPrivate::ParseRedirectResult
+QHttpNetworkConnectionPrivate::parseRedirectResponse(QHttpNetworkReply *reply)
 {
     if (!reply->request().isFollowRedirects())
-        return QUrl();
+        return {{}, QNetworkReply::NoError};
 
     QUrl redirectUrl;
     const QList<QPair<QByteArray, QByteArray> > fields = reply->header();
@@ -547,17 +560,13 @@ QUrl QHttpNetworkConnectionPrivate::parseRedirectResponse(QAbstractSocket *socke
         }
     }
 
-    // If the location url is invalid/empty, we emit ProtocolUnknownError
-    if (!redirectUrl.isValid()) {
-        emitReplyError(socket, reply, QNetworkReply::ProtocolUnknownError);
-        return QUrl();
-    }
+    // If the location url is invalid/empty, we return ProtocolUnknownError
+    if (!redirectUrl.isValid())
+        return {{}, QNetworkReply::ProtocolUnknownError};
 
     // Check if we have exceeded max redirects allowed
-    if (reply->request().redirectCount() <= 0) {
-        emitReplyError(socket, reply, QNetworkReply::TooManyRedirectsError);
-        return QUrl();
-    }
+    if (reply->request().redirectCount() <= 0)
+        return {{}, QNetworkReply::TooManyRedirectsError};
 
     // Resolve the URL if it's relative
     if (redirectUrl.isRelative())
@@ -578,8 +587,7 @@ QUrl QHttpNetworkConnectionPrivate::parseRedirectResponse(QAbstractSocket *socke
             if (priorUrl.host() != redirectUrl.host()
                 || priorUrl.scheme() != redirectUrl.scheme()
                 || priorUrl.port() != redirectUrl.port()) {
-                emitReplyError(socket, reply, QNetworkReply::InsecureRedirectError);
-                return QUrl();
+                return {{}, QNetworkReply::InsecureRedirectError};
             }
             break;
         case QNetworkRequest::UserVerifiedRedirectPolicy:
@@ -588,10 +596,9 @@ QUrl QHttpNetworkConnectionPrivate::parseRedirectResponse(QAbstractSocket *socke
             Q_ASSERT(!"Unexpected redirect policy");
         }
     } else {
-        emitReplyError(socket, reply, QNetworkReply::ProtocolUnknownError);
-        return QUrl();
+        return {{}, QNetworkReply::ProtocolUnknownError};
     }
-    return redirectUrl;
+    return {std::move(redirectUrl), QNetworkReply::NoError};
 }
 
 void QHttpNetworkConnectionPrivate::createAuthorization(QAbstractSocket *socket, QHttpNetworkRequest &request)
