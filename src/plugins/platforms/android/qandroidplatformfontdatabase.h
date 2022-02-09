@@ -49,6 +49,7 @@ class QAndroidPlatformFontDatabase: public QFreeTypeFontDatabase
 public:
     QString fontDir() const override;
     void populateFontDatabase() override;
+    QFont defaultFont() const override;
     QStringList fallbacksForFamily(const QString &family,
                                    QFont::Style style,
                                    QFont::StyleHint styleHint,

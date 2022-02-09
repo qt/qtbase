@@ -48,6 +48,11 @@ QString QAndroidPlatformFontDatabase::fontDir() const
     return QLatin1String("/system/fonts");
 }
 
+QFont QAndroidPlatformFontDatabase::defaultFont() const
+{
+    return QFont(QLatin1String("Roboto"));
+}
+
 void QAndroidPlatformFontDatabase::populateFontDatabase()
 {
     QString fontpath = fontDir();
