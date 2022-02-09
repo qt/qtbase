@@ -969,16 +969,13 @@ QOpenGLContext *QWasmCompositor::context()
 int QWasmCompositor::keyboard_cb(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData)
 {
     QWasmCompositor *wasmCompositor = reinterpret_cast<QWasmCompositor *>(userData);
-    bool accepted = wasmCompositor->processKeyboard(eventType, keyEvent);
-
-    return accepted ? 1 : 0;
+    return static_cast<int>(wasmCompositor->processKeyboard(eventType, keyEvent));
 }
 
 int QWasmCompositor::mouse_cb(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
 {
     QWasmCompositor *compositor = (QWasmCompositor*)userData;
-    bool accepted = compositor->processMouse(eventType, mouseEvent);
-    return accepted;
+    return static_cast<int>(compositor->processMouse(eventType, mouseEvent));
 }
 
 int QWasmCompositor::focus_cb(int /*eventType*/, const EmscriptenFocusEvent */*focusEvent*/, void */*userData*/)
@@ -989,14 +986,13 @@ int QWasmCompositor::focus_cb(int /*eventType*/, const EmscriptenFocusEvent */*f
 int QWasmCompositor::wheel_cb(int eventType, const EmscriptenWheelEvent *wheelEvent, void *userData)
 {
     QWasmCompositor *compositor = (QWasmCompositor *) userData;
-    bool accepted = compositor->processWheel(eventType, wheelEvent);
-    return accepted ? 1 : 0;
+    return static_cast<int>(compositor->processWheel(eventType, wheelEvent));
 }
 
 int QWasmCompositor::touchCallback(int eventType, const EmscriptenTouchEvent *touchEvent, void *userData)
 {
     auto compositor = reinterpret_cast<QWasmCompositor*>(userData);
-    return compositor->handleTouch(eventType, touchEvent);
+    return static_cast<int>(compositor->handleTouch(eventType, touchEvent));
 }
 
 bool QWasmCompositor::processMouse(int eventType, const EmscriptenMouseEvent *mouseEvent)
