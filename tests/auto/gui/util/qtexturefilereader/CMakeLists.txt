@@ -4,14 +4,6 @@
 ## tst_qtexturefilereader Test:
 #####################################################################
 
-qt_internal_add_test(tst_qtexturefilereader
-    SOURCES
-        tst_qtexturefilereader.cpp
-    PUBLIC_LIBRARIES
-        Qt::Gui
-        Qt::GuiPrivate
-)
-
 # Resources:
 set(qtexturefilereader_resource_files
     "texturefiles/car.ktx"
@@ -23,10 +15,13 @@ set(qtexturefilereader_resource_files
     "texturefiles/pattern.pkm"
 )
 
-qt_internal_add_resource(tst_qtexturefilereader "qtexturefilereader"
-    PREFIX
-        "/"
-    FILES
-        ${qtexturefilereader_resource_files}
+qt_internal_add_test(tst_qtexturefilereader
+    SOURCES
+        tst_qtexturefilereader.cpp
+    PUBLIC_LIBRARIES
+        Qt::Gui
+        Qt::GuiPrivate
+    TESTDATA ${qtexturefilereader_resource_files}
+    BUILTIN_TESTDATA
 )
 

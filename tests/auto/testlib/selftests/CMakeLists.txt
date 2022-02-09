@@ -4,6 +4,13 @@ include(../../../../src/testlib/selfcover.cmake)
 
 # ------------- Test runner -------------
 
+# Resources:
+
+file(GLOB qmake_expected_files_resource_files RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "expected_*")
+foreach(file IN LISTS qmake_expected_files_resource_files)
+    set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/${file}" PROPERTIES QT_RESOURCE_ALIAS "${file}")
+endforeach()
+
 qt_internal_add_test(tst_selftests
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     EXCEPTIONS
@@ -13,6 +20,8 @@ qt_internal_add_test(tst_selftests
         catch.cpp
     PUBLIC_LIBRARIES
         Qt::TestPrivate
+    TESTDATA ${qmake_expected_files_resource_files}
+    BUILTIN_TESTDATA
     # These lines need to be commented out as they need to be enabled
     # COMPILE_OPTIONS
     #   conditionally
@@ -22,25 +31,6 @@ qt_internal_add_test(tst_selftests
     #   --cs-mcdc
     # LINK_OPTIONS
     #   "$$COVERAGE_OPTIONS"
-)
-
-file(GLOB resource_glob_0 RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "expected_*")
-foreach(file IN LISTS resource_glob_0)
-    set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/${file}" PROPERTIES QT_RESOURCE_ALIAS "${file}")
-endforeach()
-
-# Resources:
-set(qmake_expected_files_resource_files
-    ${resource_glob_0}
-)
-
-qt_internal_add_resource(tst_selftests "qmake_expected_files"
-    PREFIX
-        "/"
-    BASE
-        "${CMAKE_CURRENT_SOURCE_DIR}"
-    FILES
-        ${qmake_expected_files_resource_files}
 )
 
 qt_internal_apply_testlib_coverage_options(tst_selftests)

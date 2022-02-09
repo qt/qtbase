@@ -4,6 +4,12 @@
 ## tst_qfont Test:
 #####################################################################
 
+# Resources:
+set(testfont_resource_files
+    "datastream.515"
+    "weirdfont.otf"
+)
+
 qt_internal_add_test(tst_qfont
     SOURCES
         tst_qfont.cpp
@@ -12,21 +18,9 @@ qt_internal_add_test(tst_qfont
         Qt::Gui
         Qt::GuiPrivate
         Qt::TestPrivate
+    TESTDATA ${testfont_resource_files}
+    BUILTIN_TESTDATA
 )
-
-# Resources:
-set(testfont_resource_files
-    "datastream.515"
-    "weirdfont.otf"
-)
-
-qt_internal_add_resource(tst_qfont "testfont"
-    PREFIX
-        "/"
-    FILES
-        ${testfont_resource_files}
-)
-
 
 ## Scopes:
 #####################################################################

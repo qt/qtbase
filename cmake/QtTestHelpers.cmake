@@ -181,12 +181,39 @@ endfunction()
 # You may avoid test wrapping by either passing NO_WRAPPER option or switching QT_NO_TEST_WRAPPERS
 # to ON. This is helpful if you want to use internal CMake tools within tests, like memory or
 # sanitizer checks. See https://cmake.org/cmake/help/v3.19/manual/ctest.1.html#ctest-memcheck-step
+# Arguments:
+#    BUILTIN_TESTDATA the option forces adding the provded TESTDATA to resources.
 function(qt_internal_add_test name)
     # EXCEPTIONS is a noop as they are enabled by default.
+    set(optional_args
+        RUN_SERIAL
+        EXCEPTIONS
+        NO_EXCEPTIONS
+        GUI
+        QMLTEST
+        CATCH
+        LOWDPI
+        NO_WRAPPER
+        BUILTIN_TESTDATA
+    )
+    set(single_value_args
+        OUTPUT_DIRECTORY
+        WORKING_DIRECTORY
+        TIMEOUT
+        VERSION
+    )
+    set(multi_value_args
+        QML_IMPORTPATH
+        TESTDATA
+        QT_TEST_SERVER_LIST
+        ${__default_private_args}
+        ${__default_public_args}
+    )
     qt_parse_all_arguments(arg "qt_add_test"
-        "RUN_SERIAL;EXCEPTIONS;NO_EXCEPTIONS;GUI;QMLTEST;CATCH;LOWDPI;NO_WRAPPER"
-        "OUTPUT_DIRECTORY;WORKING_DIRECTORY;TIMEOUT;VERSION"
-        "QML_IMPORTPATH;TESTDATA;QT_TEST_SERVER_LIST;${__default_private_args};${__default_public_args}" ${ARGN}
+        "${optional_args}"
+        "${single_value_args}"
+        "${multi_value_args}"
+        ${ARGN}
     )
 
     if (NOT arg_OUTPUT_DIRECTORY)
@@ -364,7 +391,7 @@ function(qt_internal_add_test name)
         endif()
     endif()
 
-    if(ANDROID OR IOS OR INTEGRITY)
+    if(ANDROID OR IOS OR INTEGRITY OR arg_BUILTIN_TESTDATA)
         set(builtin_testdata TRUE)
     endif()
 

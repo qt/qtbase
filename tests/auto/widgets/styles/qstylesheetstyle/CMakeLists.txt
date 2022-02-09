@@ -1,12 +1,14 @@
 # Generated from qstylesheetstyle.pro.
 
-if(NOT QT_FEATURE_private_tests)
-    return()
-endif()
-
 #####################################################################
 ## tst_qstylesheetstyle Test:
 #####################################################################
+
+# Resources:
+set(resources_resource_files
+    "images/testimage.png"
+    "images/testimage@2x.png"
+)
 
 qt_internal_add_test(tst_qstylesheetstyle
     SOURCES
@@ -17,21 +19,9 @@ qt_internal_add_test(tst_qstylesheetstyle
         Qt::TestPrivate
         Qt::Widgets
         Qt::WidgetsPrivate
+    TESTDATA ${resources_resource_files}
+    BUILTIN_TESTDATA
 )
-
-# Resources:
-set(resources_resource_files
-    "images/testimage.png"
-    "images/testimage@2x.png"
-)
-
-qt_internal_add_resource(tst_qstylesheetstyle "resources"
-    PREFIX
-        "/"
-    FILES
-        ${resources_resource_files}
-)
-
 
 #### Keys ignored in scope 1:.:.:qstylesheetstyle.pro:<TRUE>:
 # _REQUIREMENTS = "qtConfig(private_tests)"

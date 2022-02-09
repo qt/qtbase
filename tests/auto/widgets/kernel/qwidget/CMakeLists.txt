@@ -4,6 +4,14 @@
 ## tst_qwidget Test:
 #####################################################################
 
+# Resources:
+set(qwidget_resource_files
+    "geometry-fullscreen.dat"
+    "geometry-maximized.dat"
+    "geometry.dat"
+    "hellotr_la.qm"
+)
+
 qt_internal_add_test(tst_qwidget
     SOURCES
         tst_qwidget.cpp
@@ -14,23 +22,9 @@ qt_internal_add_test(tst_qwidget
         Qt::TestPrivate
         Qt::Widgets
         Qt::WidgetsPrivate
+    TESTDATA ${qwidget_resource_files}
+    BUILTIN_TESTDATA
 )
-
-# Resources:
-set(qwidget_resource_files
-    "geometry-fullscreen.dat"
-    "geometry-maximized.dat"
-    "geometry.dat"
-    "hellotr_la.qm"
-)
-
-qt_internal_add_resource(tst_qwidget "qwidget"
-    PREFIX
-        "/"
-    FILES
-        ${qwidget_resource_files}
-)
-
 
 #### Keys ignored in scope 1:.:.:qwidget.pro:<TRUE>:
 # testcase.timeout = "600"
