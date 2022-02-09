@@ -629,29 +629,30 @@ bool QLibrary::isLibrary(const QString &fileName)
     if (completeSuffix.isEmpty())
         return false;
 
-    auto isValidSuffix = [](QStringView s) {
-        // if this throws an empty-array error, you need to fix the #ifdef's:
-        const QLatin1String candidates[] = {
+    // if this throws an empty-array error, you need to fix the #ifdef's:
+    const QLatin1String candidates[] = {
 # if defined(Q_OS_HPUX)
 /*
     See "HP-UX Linker and Libraries User's Guide", section "Link-time Differences between PA-RISC and IPF":
     "In PA-RISC (PA-32 and PA-64) shared libraries are suffixed with .sl. In IPF (32-bit and 64-bit),
     the shared libraries are suffixed with .so. For compatibility, the IPF linker also supports the .sl suffix."
- */
-            QLatin1String("sl"),
+*/
+        QLatin1String("sl"),
 #  if defined __ia64
-            QLatin1String("so"),
+        QLatin1String("so"),
 #  endif
 # elif defined(Q_OS_AIX)
-            QLatin1String("a"),
-            QLatin1String("so"),
+        QLatin1String("a"),
+        QLatin1String("so"),
 # elif defined(Q_OS_DARWIN)
-            QLatin1String("so"),
-            QLatin1String("bundle"),
+        QLatin1String("so"),
+        QLatin1String("bundle"),
 # elif defined(Q_OS_UNIX)
-            QLatin1String("so"),
+        QLatin1String("so"),
 # endif
-        }; // candidates
+    }; // candidates
+
+    auto isValidSuffix = [&candidates](QStringView s) {
         return std::find(std::begin(candidates), std::end(candidates), s) != std::end(candidates);
     };
 
