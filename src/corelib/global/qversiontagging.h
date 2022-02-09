@@ -86,19 +86,16 @@ QT_BEGIN_NAMESPACE
  *  const variable and tell the linker to merge them all via
  *  __declspec(selectany).
  *
- * ELF notes (Linux, FreeBSD):
+ * Unix notes:
  *
- *  The symbol in question is simply "qt_version_tag" in both QtCore and in
- *  this ELF module, but it has an ELF version attached to it (see
- *  qversiontagging.cpp and QtFlagHandlingHelpers.cmake). That way, the error
- *  message from the dynamic linker will say it can't find version "Qt_6.x".
+ *  On Unix, we use the same C++17 inline variable solution as MinGW, but we
+ *  don't need the "__imp_" trick.
  *
- *  This is currently implemented only for x86 by way of inline assembly. We
- *  inform the the linker to merge all TUs' .qtversion sections by way of the
- *  "comdat" attribute in the .section directive. The first pointer-sized
- *  variable is a GOT reference to qt_version_tag (that is: the address of
- *  qt_version_tag is stored in the .got section and the linker inserts the
- *  displacement to that pointer).
+ *  Additionally, on ELF systems like Linux and FreeBSD, the symbol in question
+ *  is simply "qt_version_tag" in both QtCore and in this ELF module, but it
+ *  has an ELF version attached to it (see qversiontagging.cpp and
+ *  QtFlagHandlingHelpers.cmake). That way, the error message from the dynamic
+ *  linker will say it can't find version "Qt_6.x".
  */
 
 namespace QtPrivate {
@@ -132,6 +129,19 @@ struct QVersionTag
 #  define QT_VERSION_TAG2(sym, imp)     \
     extern "C" const char * const imp;  \
     QT_VERSION_TAG_ATTRIBUTE QT_VERSION_TAG_SECTION QtPrivate::QVersionTag sym ## _used(&imp)
+#  define QT_VERSION_TAG(sym, imp)       QT_VERSION_TAG2(sym, imp)
+#elif defined(Q_CC_GNU) && __has_attribute(used)
+#  ifdef Q_OS_DARWIN
+#    define QT_VERSION_TAG_SECTION      __attribute__((section("__DATA,.qtversion")))
+#  endif
+#  if __has_attribute(retain)
+#    define QT_VERSION_TAG_ATTRIBUTE    __attribute__((visibility("hidden"), retain, used))
+#  else
+#    define QT_VERSION_TAG_ATTRIBUTE    __attribute__((visibility("hidden"), used))
+#  endif
+#  define QT_VERSION_TAG2(sym, imp)     \
+    extern "C" Q_DECL_IMPORT const char sym; \
+    QT_VERSION_TAG_ATTRIBUTE QT_VERSION_TAG_SECTION constexpr inline QtPrivate::QVersionTag sym ## _use(&sym)
 #  define QT_VERSION_TAG(sym, imp)       QT_VERSION_TAG2(sym, imp)
 #elif defined(Q_CC_GNU) && !defined(Q_OS_ANDROID)
 #  if defined(Q_PROCESSOR_X86) && (defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD_KERNEL))
