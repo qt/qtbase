@@ -2763,7 +2763,7 @@ QPointF QWindow::mapToGlobal(const QPointF &pos) const
     // QTBUG-43252, prefer platform implementation for foreign windows.
     if (d->platformWindow
         && (d->platformWindow->isForeignWindow() || d->platformWindow->isEmbedded())) {
-        return QHighDpi::fromNativeLocalPosition(d->platformWindow->mapToGlobalF(QHighDpi::toNativeLocalPosition(pos, this)), this);
+        return QHighDpi::fromNativeGlobalPosition(d->platformWindow->mapToGlobalF(QHighDpi::toNativeLocalPosition(pos, this)), this);
     }
 
     if (!QHighDpiScaling::isActive())
@@ -2805,7 +2805,7 @@ QPointF QWindow::mapFromGlobal(const QPointF &pos) const
     // QTBUG-43252, prefer platform implementation for foreign windows.
     if (d->platformWindow
         && (d->platformWindow->isForeignWindow() || d->platformWindow->isEmbedded())) {
-        return QHighDpi::fromNativeLocalPosition(d->platformWindow->mapFromGlobalF(QHighDpi::toNativeLocalPosition(pos, this)), this);
+        return QHighDpi::fromNativeLocalPosition(d->platformWindow->mapFromGlobalF(QHighDpi::toNativeGlobalPosition(pos, this)), this);
     }
 
     if (!QHighDpiScaling::isActive())
