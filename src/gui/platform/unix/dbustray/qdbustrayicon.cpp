@@ -46,6 +46,7 @@
 #include <QRect>
 #include <QLoggingCategory>
 #include <QStandardPaths>
+#include <QFileInfo>
 #include <QDir>
 #include <QMetaObject>
 #include <QMetaEnum>
@@ -76,8 +77,12 @@ Q_LOGGING_CATEGORY(qLcTray, "qt.qpa.tray")
 static QString iconTempPath()
 {
     QString tempPath = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
-    if (!tempPath.isEmpty())
+    if (!tempPath.isEmpty()) {
+        QString flatpakId = qEnvironmentVariable("FLATPAK_ID");
+        if (!flatpakId.isEmpty() && QFileInfo::exists(QLatin1String("/.flatpak-info")))
+            tempPath += QLatin1String("/app/") + flatpakId;
         return tempPath;
+    }
 
     tempPath = QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation);
 
