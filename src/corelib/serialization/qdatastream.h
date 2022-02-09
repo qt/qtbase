@@ -51,7 +51,9 @@
 
 QT_BEGIN_NAMESPACE
 
+#if QT_CORE_REMOVED_SINCE(6, 3)
 class qfloat16;
+#endif
 class QByteArray;
 class QIODevice;
 
@@ -159,8 +161,9 @@ public:
     QDataStream &operator>>(std::nullptr_t &ptr) { ptr = nullptr; return *this; }
 
     QDataStream &operator>>(bool &i);
-    // ### Qt 7: remove the operator or make qfloat16 fully defined, see QTBUG-93499
+#if QT_CORE_REMOVED_SINCE(6, 3)
     QDataStream &operator>>(qfloat16 &f);
+#endif
     QDataStream &operator>>(float &f);
     QDataStream &operator>>(double &f);
     QDataStream &operator>>(char *&str);
@@ -178,8 +181,9 @@ public:
     QDataStream &operator<<(quint64 i);
     QDataStream &operator<<(std::nullptr_t) { return *this; }
     QDataStream &operator<<(bool i);
-    // ### Qt 7: remove the operator or make qfloat16 fully defined, see QTBUG-93499
+#if QT_CORE_REMOVED_SINCE(6, 3)
     QDataStream &operator<<(qfloat16 f);
+#endif
     QDataStream &operator<<(float f);
     QDataStream &operator<<(double f);
     QDataStream &operator<<(const char *str);

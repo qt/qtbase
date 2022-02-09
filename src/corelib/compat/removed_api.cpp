@@ -103,6 +103,23 @@ QByteArray QCryptographicHash::hash(const QByteArray &data, Algorithm method)
     return hash(QByteArrayView{data}, method);
 }
 
+#include "qdatastream.h"
+
+# ifndef QT_NO_DATASTREAM
+# include "qfloat16.h"
+
+QDataStream &QDataStream::operator>>(qfloat16 &f)
+{
+    return *this >> reinterpret_cast<qint16&>(f);
+}
+
+QDataStream &QDataStream::operator<<(qfloat16 f)
+{
+    return *this << reinterpret_cast<qint16&>(f);
+}
+
+# endif
+
 #include "quuid.h"
 
 QUuid::QUuid(const QString &text)

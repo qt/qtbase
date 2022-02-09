@@ -42,6 +42,8 @@
 #include "private/qsimd_p.h"
 #include <cmath> // for fpclassify()'s return values
 
+#include <QtCore/qdatastream.h>
+
 QT_BEGIN_NAMESPACE
 
 QT_IMPL_METATYPE_EXTERN(qfloat16)
@@ -309,6 +311,41 @@ Q_CORE_EXPORT void qFloatFromFloat16(float *out, const qfloat16 *in, qsizetype l
     for (qsizetype i = 0; i < len; ++i)
         out[i] = float(in[i]);
 }
+
+#ifndef QT_NO_DATASTREAM
+/*!
+    \fn qfloat16::operator<<(QDataStream &ds, qfloat16 f)
+    \relates QDataStream
+    \since 5.9
+
+    Writes a floating point number, \a f, to the stream \a ds using
+    the standard IEEE 754 format. Returns a reference to the stream.
+
+    \note In Qt versions prior to 6.3, this was a member function on
+    QDataStream.
+*/
+QDataStream &operator<<(QDataStream &ds, qfloat16 f)
+{
+    return ds << f.b16;
+}
+
+/*!
+    \fn qfloat16::operator>>(QDataStream &ds, qfloat16 &f)
+    \relates QDataStream
+    \since 5.9
+
+    Reads a floating point number from the stream \a ds into \a f,
+    using the standard IEEE 754 format. Returns a reference to the
+    stream.
+
+    \note In Qt versions prior to 6.3, this was a member function on
+    QDataStream.
+*/
+QDataStream &operator>>(QDataStream &ds, qfloat16 &f)
+{
+    return ds >> f.b16;
+}
+#endif
 
 QT_END_NAMESPACE
 
