@@ -54,6 +54,8 @@
 #include "qaccessible.h"
 #endif
 #include <private/qwidget_p.h>
+#include <private/qguiapplication_p.h>
+#include <qpa/qplatformtheme.h>
 
 #include "qdebug.h"
 
@@ -360,7 +362,10 @@ bool QGroupBox::event(QEvent *e)
         return true;
     case QEvent::KeyPress: {
         QKeyEvent *k = static_cast<QKeyEvent*>(e);
-        if (!k->isAutoRepeat() && (k->key() == Qt::Key_Select || k->key() == Qt::Key_Space)) {
+        const auto buttonPressKeys = QGuiApplicationPrivate::platformTheme()
+                                             ->themeHint(QPlatformTheme::ButtonPressKeys)
+                                             .value<QList<Qt::Key>>();
+        if (!k->isAutoRepeat() && buttonPressKeys.contains(k->key())) {
             d->pressedControl = QStyle::SC_GroupBoxCheckBox;
             update(style()->subControlRect(QStyle::CC_GroupBox, &box, QStyle::SC_GroupBoxCheckBox, this));
             return true;
@@ -369,7 +374,10 @@ bool QGroupBox::event(QEvent *e)
     }
     case QEvent::KeyRelease: {
         QKeyEvent *k = static_cast<QKeyEvent*>(e);
-        if (!k->isAutoRepeat() && (k->key() == Qt::Key_Select || k->key() == Qt::Key_Space)) {
+        const auto buttonPressKeys = QGuiApplicationPrivate::platformTheme()
+                                             ->themeHint(QPlatformTheme::ButtonPressKeys)
+                                             .value<QList<Qt::Key>>();
+        if (!k->isAutoRepeat() && buttonPressKeys.contains(k->key())) {
             bool toggle = (d->pressedControl == QStyle::SC_GroupBoxLabel
                            || d->pressedControl == QStyle::SC_GroupBoxCheckBox);
             d->pressedControl = QStyle::SC_None;

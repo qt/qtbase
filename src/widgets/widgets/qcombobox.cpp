@@ -3196,7 +3196,23 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
 
     Move move = NoMove;
     int newIndex = currentIndex();
-    switch (e->key()) {
+
+    bool pressLikeButton = !d->lineEdit;
+#ifdef QT_KEYPAD_NAVIGATION
+    pressLikeButton |= QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus();
+#endif
+    auto key = e->key();
+    if (pressLikeButton) {
+        const auto buttonPressKeys = QGuiApplicationPrivate::platformTheme()
+                                             ->themeHint(QPlatformTheme::ButtonPressKeys)
+                                             .value<QList<Qt::Key>>();
+        if (buttonPressKeys.contains(key)) {
+            showPopup();
+            return;
+        }
+    }
+
+    switch (key) {
     case Qt::Key_Up:
         if (e->modifiers() & Qt::ControlModifier)
             break; // pass to line edit for auto completion
@@ -3238,26 +3254,11 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
             return;
         }
         break;
-    case Qt::Key_Space:
-        if (!d->lineEdit) {
-            showPopup();
-            return;
-        }
-        break;
-    case Qt::Key_Enter:
-    case Qt::Key_Return:
     case Qt::Key_Escape:
         if (!d->lineEdit)
             e->ignore();
         break;
 #ifdef QT_KEYPAD_NAVIGATION
-    case Qt::Key_Select:
-        if (QApplicationPrivate::keypadNavigationEnabled()
-                && (!hasEditFocus() || !d->lineEdit)) {
-            showPopup();
-            return;
-        }
-        break;
     case Qt::Key_Left:
     case Qt::Key_Right:
         if (QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus())

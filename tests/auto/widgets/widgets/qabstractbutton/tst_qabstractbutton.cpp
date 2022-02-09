@@ -42,6 +42,7 @@
 
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
+#include <qpa/qplatformtheme.h>
 
 class tst_QAbstractButton : public QObject
 {
@@ -80,6 +81,8 @@ private slots:
 #ifdef QT_KEYPAD_NAVIGATION
     void keyNavigation();
 #endif
+
+    void buttonPressKeys();
 
 protected slots:
     void onClicked();
@@ -276,7 +279,13 @@ void tst_QAbstractButton::setAutoRepeat()
         QCOMPARE(press_count, click_count);
         QVERIFY(click_count > 1);
         break;
-    case 4:
+    case 4: {
+        const auto buttonPressKeys = QGuiApplicationPrivate::platformTheme()
+                                             ->themeHint(QPlatformTheme::ButtonPressKeys)
+                                             .value<QList<Qt::Key>>();
+        if (buttonPressKeys.contains(Qt::Key_Enter)) {
+            QSKIP("platform theme has Key_Enter in ButtonPressKeys");
+        }
         // check that pressing ENTER has no effect when autorepeat is false
         testWidget->setDown( false );
         testWidget->setAutoRepeat( false );
@@ -293,7 +302,14 @@ void tst_QAbstractButton::setAutoRepeat()
 
         QVERIFY( click_count == 0 );
         break;
-    case 5:
+    }
+    case 5: {
+        const auto buttonPressKeys = QGuiApplicationPrivate::platformTheme()
+                                             ->themeHint(QPlatformTheme::ButtonPressKeys)
+                                             .value<QList<Qt::Key>>();
+        if (buttonPressKeys.contains(Qt::Key_Enter)) {
+            QSKIP("platform theme has Key_Enter in ButtonPressKeys");
+        }
         // check that pressing ENTER has no effect when autorepeat is true
         testWidget->setDown( false );
         testWidget->setAutoRepeat( true );
@@ -311,6 +327,7 @@ void tst_QAbstractButton::setAutoRepeat()
 
         QVERIFY( click_count == 0 );
         break;
+    }
     case 6:
         // verify autorepeat is off by default.
         MyButton tmp( 0);
@@ -686,6 +703,17 @@ void tst_QAbstractButton::keyNavigation()
     QVERIFY(buttons[0][0]->hasFocus());
 }
 #endif
+
+void tst_QAbstractButton::buttonPressKeys()
+{
+    const auto buttonPressKeys = QGuiApplicationPrivate::platformTheme()
+                                         ->themeHint(QPlatformTheme::ButtonPressKeys)
+                                         .value<QList<Qt::Key>>();
+    for (int i = 0; i < buttonPressKeys.length(); ++i) {
+        QTest::keyClick(testWidget, buttonPressKeys[i]);
+        QCOMPARE(click_count, i + 1);
+    }
+}
 
 QTEST_MAIN(tst_QAbstractButton)
 #include "tst_qabstractbutton.moc"

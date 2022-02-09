@@ -41,6 +41,9 @@
 #include <QStyleFactory>
 #include <QTabWidget>
 
+#include <private/qguiapplication_p.h>
+#include <qpa/qplatformtheme.h>
+
 class tst_QPushButton : public QObject
 {
 Q_OBJECT
@@ -220,6 +223,13 @@ void tst_QPushButton::autoRepeat()
     // check that pressing ENTER has no effect
     resetCounters();
     testWidget->setDown( false );
+    // Skip after reset if ButtonPressKeys has Key_Enter
+    const auto buttonPressKeys = QGuiApplicationPrivate::platformTheme()
+                                         ->themeHint(QPlatformTheme::ButtonPressKeys)
+                                         .value<QList<Qt::Key>>();
+    if (buttonPressKeys.contains(Qt::Key_Enter)) {
+        return;
+    }
     testWidget->setAutoRepeat( false );
     QTest::keyPress( testWidget, Qt::Key_Enter );
 
@@ -254,6 +264,14 @@ void tst_QPushButton::pressed()
     QTest::keyRelease( testWidget, ' ' );
     QCOMPARE( press_count, (uint)1 );
     QCOMPARE( release_count, (uint)1 );
+
+    // Skip if ButtonPressKeys has Key_Enter
+    const auto buttonPressKeys = QGuiApplicationPrivate::platformTheme()
+                                         ->themeHint(QPlatformTheme::ButtonPressKeys)
+                                         .value<QList<Qt::Key>>();
+    if (buttonPressKeys.contains(Qt::Key_Enter)) {
+        return;
+    }
 
     QTest::keyPress( testWidget,Qt::Key_Enter );
     QCOMPARE( press_count, (uint)1 );

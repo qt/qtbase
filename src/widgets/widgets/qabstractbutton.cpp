@@ -55,6 +55,7 @@
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
 #endif
+#include <qpa/qplatformtheme.h>
 
 #include <algorithm>
 
@@ -1043,19 +1044,19 @@ void QAbstractButton::keyPressEvent(QKeyEvent *e)
 {
     Q_D(QAbstractButton);
     bool next = true;
-    switch (e->key()) {
-    case Qt::Key_Enter:
-    case Qt::Key_Return:
-        e->ignore();
-        break;
-    case Qt::Key_Select:
-    case Qt::Key_Space:
-        if (!e->isAutoRepeat()) {
-            setDown(true);
-            repaint();
-            d->emitPressed();
-        }
-        break;
+
+    const auto key = e->key();
+    const auto buttonPressKeys = QGuiApplicationPrivate::platformTheme()
+                                         ->themeHint(QPlatformTheme::ButtonPressKeys)
+                                         .value<QList<Qt::Key>>();
+    if (buttonPressKeys.contains(key) && !e->isAutoRepeat()) {
+        setDown(true);
+        repaint();
+        d->emitPressed();
+        return;
+    }
+
+    switch (key) {
     case Qt::Key_Up:
         next = false;
         Q_FALLTHROUGH();
@@ -1120,15 +1121,15 @@ void QAbstractButton::keyReleaseEvent(QKeyEvent *e)
     if (!e->isAutoRepeat())
         d->repeatTimer.stop();
 
-    switch (e->key()) {
-    case Qt::Key_Select:
-    case Qt::Key_Space:
-        if (!e->isAutoRepeat() && d->down)
-            d->click();
-        break;
-    default:
-        e->ignore();
+    const auto buttonPressKeys = QGuiApplicationPrivate::platformTheme()
+                                         ->themeHint(QPlatformTheme::ButtonPressKeys)
+                                         .value<QList<Qt::Key>>();
+    if (buttonPressKeys.contains(e->key()) && !e->isAutoRepeat() && d->down) {
+        d->click();
+        return;
     }
+
+    e->ignore();
 }
 
 /*!\reimp
