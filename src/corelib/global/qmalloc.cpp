@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -80,6 +80,7 @@ void *qReallocAligned(void *oldptr, size_t newsize, size_t oldsize, size_t align
     // However, we need to store the actual pointer, so we need to allocate actually size +
     // alignment anyway.
 
+    qptrdiff oldoffset = oldptr ? static_cast<char *>(oldptr) - static_cast<char *>(actualptr) : 0;
     void *real = realloc(actualptr, newsize + alignment);
     if (!real)
         return nullptr;
@@ -89,7 +90,6 @@ void *qReallocAligned(void *oldptr, size_t newsize, size_t oldsize, size_t align
     void **faked_ptr = reinterpret_cast<void **>(faked);
 
     if (oldptr) {
-        qptrdiff oldoffset = static_cast<char *>(oldptr) - static_cast<char *>(actualptr);
         qptrdiff newoffset = reinterpret_cast<char *>(faked_ptr) - static_cast<char *>(real);
         if (oldoffset != newoffset)
             memmove(faked_ptr, static_cast<char *>(real) + oldoffset, qMin(oldsize, newsize));
