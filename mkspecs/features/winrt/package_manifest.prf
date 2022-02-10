@@ -37,8 +37,7 @@
             else: \
                 VCLIBS = $${VCLIBS}
             # VS 2017 and 2019 still use vclibs 140
-            contains(MSVC_VER, "15.0"): VCLIBS = $$replace(VCLIBS, 150, 140)
-            contains(MSVC_VER, "16.0"): VCLIBS = $$replace(VCLIBS, 160, 140)
+            contains(MSVC_VER, "1[56]\.[0-9]"): VCLIBS = $$replace(VCLIBS, 1[56][0-9], 140)
             VCLIBS = "$${VCLIBS}\" MinVersion=\"14.0.0.0\" Publisher=\"CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
             WINRT_MANIFEST.dependencies += $$VCLIBS
         }
