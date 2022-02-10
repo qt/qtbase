@@ -847,9 +847,9 @@ void tst_QSqlQuery::oraClob()
     QVERIFY_SQL(q, exec(QLatin1String("select bl, cl from %1 where id = 3").arg(clobby)));
     QVERIFY( q.next() );
     QCOMPARE( q.value( 0 ).toString().count(), loong.count() );
-    QVERIFY( q.value( 0 ).toString() == loong );
+    QVERIFY(q.value(0).toString() == loong); // Deliberately not QCOMPARE() as too long
     QCOMPARE( q.value( 1 ).toByteArray().count(), loong.toLatin1().count() );
-    QVERIFY( q.value( 1 ).toByteArray() == loong.toLatin1() );
+    QVERIFY(q.value(1).toByteArray() == loong.toLatin1()); // ditto
 }
 
 void tst_QSqlQuery::oraClobBatch()
@@ -871,7 +871,7 @@ void tst_QSqlQuery::oraClobBatch()
     QVERIFY_SQL(q, exec("select cl from " + clobBatch));
     QVERIFY(q.next());
     QCOMPARE(q.value(0).toString().count(), longString.size());
-    QVERIFY(q.value(0).toString() == longString);
+    QVERIFY(q.value(0).toString() == longString); // As above. deliberately not QCOMPARE().
 }
 
 void tst_QSqlQuery::storedProceduresIBase()
@@ -1305,7 +1305,7 @@ void tst_QSqlQuery::isSelect()
     QVERIFY( q.isSelect() );
 
     QVERIFY_SQL(q, exec(QLatin1String("update %1 set id = 1 where id = 1").arg(qtest)));
-    QVERIFY( q.isSelect() == false );
+    QVERIFY(!q.isSelect());
 }
 
 void tst_QSqlQuery::first()
@@ -1315,11 +1315,11 @@ void tst_QSqlQuery::first()
     CHECK_DATABASE( db );
 
     QSqlQuery q( db );
-    QVERIFY( q.at() == QSql::BeforeFirstRow );
+    QCOMPARE(q.at(), QSql::BeforeFirstRow);
     QVERIFY_SQL( q, exec( "select * from " + qtest ) );
     QVERIFY( q.last() );
     QVERIFY_SQL( q, first() );
-    QVERIFY( q.at() == 0 );
+    QCOMPARE(q.at(), 0);
 }
 
 void tst_QSqlQuery::next()
@@ -1329,11 +1329,11 @@ void tst_QSqlQuery::next()
     CHECK_DATABASE( db );
 
     QSqlQuery q( db );
-    QVERIFY( q.at() == QSql::BeforeFirstRow );
+    QCOMPARE(q.at(), QSql::BeforeFirstRow);
     QVERIFY_SQL( q, exec( "select * from " + qtest ) );
     QVERIFY( q.first() );
     QVERIFY( q.next() );
-    QVERIFY( q.at() == 1 );
+    QCOMPARE(q.at(), 1);
 }
 
 void tst_QSqlQuery::prev()
@@ -1343,12 +1343,12 @@ void tst_QSqlQuery::prev()
     CHECK_DATABASE( db );
 
     QSqlQuery q( db );
-    QVERIFY( q.at() == QSql::BeforeFirstRow );
+    QCOMPARE(q.at(), QSql::BeforeFirstRow);
     QVERIFY_SQL( q, exec( "select * from " + qtest ) );
     QVERIFY( q.first() );
     QVERIFY( q.next() );
     QVERIFY( q.previous() );
-    QVERIFY( q.at() == 0 );
+    QCOMPARE(q.at(), 0);
 }
 
 void tst_QSqlQuery::last()
@@ -1358,14 +1358,14 @@ void tst_QSqlQuery::last()
     CHECK_DATABASE( db );
 
     QSqlQuery q( db );
-    QCOMPARE( q.at(), int( QSql::BeforeFirstRow ) );
+    QCOMPARE(q.at(), QSql::BeforeFirstRow);
     QVERIFY_SQL( q, exec( "select * from " + qtest ) );
 
     int i = 0;
     while ( q.next() )
         ++i;
 
-    QCOMPARE( q.at(), int( QSql::AfterLastRow ) );
+    QCOMPARE(q.at(), QSql::AfterLastRow);
     QVERIFY( q.last() );
     QSet<int> validReturns(QSet<int>() << -1 << i-1);
     QVERIFY( validReturns.contains(q.at()) );
@@ -1381,13 +1381,13 @@ void tst_QSqlQuery::seek()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
     QSqlQuery q( db );
-    QVERIFY( q.at() == QSql::BeforeFirstRow );
+    QCOMPARE(q.at(), QSql::BeforeFirstRow);
     QVERIFY_SQL(q, exec(QLatin1String("select id from %1 order by id").arg(qtest)));
 
     // NB! The order of the calls below are important!
     QVERIFY( q.last() );
     QVERIFY( !q.seek( QSql::BeforeFirstRow ) );
-    QCOMPARE( q.at(), int( QSql::BeforeFirstRow ) );
+    QCOMPARE(q.at(), QSql::BeforeFirstRow);
     QVERIFY( q.seek( 0 ) );
     QCOMPARE( q.at(), 0 );
     QCOMPARE( q.value( 0 ).toInt(), 1 );
@@ -1407,7 +1407,7 @@ void tst_QSqlQuery::seek()
     QCOMPARE( q.value( 0 ).toInt(), 1 );
 
     QVERIFY(!q.seek(QSql::BeforeFirstRow));
-    QCOMPARE(q.at(), int(QSql::BeforeFirstRow));
+    QCOMPARE(q.at(), QSql::BeforeFirstRow);
     QVERIFY(q.seek(1, true));
     QCOMPARE(q.at(), 0);
     QCOMPARE(q.value(0).toInt(), 1);
@@ -1416,7 +1416,7 @@ void tst_QSqlQuery::seek()
     while (q.next())
         ++count;
 
-    QCOMPARE(q.at(), int(QSql::AfterLastRow));
+    QCOMPARE(q.at(), QSql::AfterLastRow);
 
     if (!q.isForwardOnly()) {
         QVERIFY(q.seek(-1, true));
@@ -1424,7 +1424,7 @@ void tst_QSqlQuery::seek()
         QCOMPARE(q.value(0).toInt(), count);
     } else {
         QVERIFY(!q.seek(-1, true));
-        QCOMPARE(q.at(), int(QSql::AfterLastRow));
+        QCOMPARE(q.at(), QSql::AfterLastRow);
     }
 }
 
@@ -1438,7 +1438,7 @@ void tst_QSqlQuery::seekForwardOnlyQuery()
     q.setForwardOnly( false );
     QVERIFY( !q.isForwardOnly() );
 
-    QVERIFY( q.at() == QSql::BeforeFirstRow );
+    QCOMPARE(q.at(), QSql::BeforeFirstRow);
     QVERIFY_SQL(q, exec(QLatin1String("select id from %1 order by id").arg(qtest)));
 
     QSqlRecord rec;
@@ -1476,11 +1476,11 @@ void tst_QSqlQuery::forwardOnly()
     QSqlQuery q( db );
     q.setForwardOnly( true );
     QVERIFY( q.isForwardOnly() );
-    QVERIFY( q.at() == QSql::BeforeFirstRow );
+    QCOMPARE(q.at(), QSql::BeforeFirstRow);
     QVERIFY_SQL(q, exec(QLatin1String("select * from %1 order by id").arg(qtest)));
     if (!q.isForwardOnly())
         QSKIP("DBMS doesn't support forward-only queries");
-    QVERIFY( q.at() == QSql::BeforeFirstRow );
+    QCOMPARE(q.at(), QSql::BeforeFirstRow);
     QVERIFY( q.first() );
     QCOMPARE( q.at(), 0 );
     QCOMPARE( q.value( 0 ).toInt(), 1 );
@@ -1494,12 +1494,12 @@ void tst_QSqlQuery::forwardOnly()
     // Let's make some mistakes to see how robust it is:
     QTest::ignoreMessage(QtWarningMsg,
                          "QSqlQuery::seek: cannot seek backwards in a forward only query");
-    QVERIFY( q.first() == false );
+    QVERIFY(!q.first());
     QCOMPARE( q.at(), 2 );
     QCOMPARE( q.value( 0 ).toInt(), 3 );
     QTest::ignoreMessage(QtWarningMsg,
                          "QSqlQuery::seek: cannot seek backwards in a forward only query");
-    QVERIFY( q.previous() == false );
+    QVERIFY(!q.previous());
     QCOMPARE( q.at(), 2 );
     QCOMPARE( q.value( 0 ).toInt(), 3 );
     QVERIFY( q.next() );
@@ -1512,7 +1512,7 @@ void tst_QSqlQuery::forwardOnly()
     while ( q.next() )
         ++i;
 
-    QVERIFY( q.at() == QSql::AfterLastRow );
+    QCOMPARE(q.at(), QSql::AfterLastRow);
 
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
@@ -1524,7 +1524,7 @@ QT_WARNING_POP
     QVERIFY_SQL(q, exec(QLatin1String("select * from %1 order by id").arg(qtest)));
     QVERIFY( q.isForwardOnly() );
     QVERIFY( q2.isForwardOnly() );
-    QCOMPARE( q.at(), int( QSql::BeforeFirstRow ) );
+    QCOMPARE(q.at(), QSql::BeforeFirstRow);
 
     QVERIFY_SQL( q, seek( 3 ) );
     QCOMPARE( q.at(), 3 );
@@ -1532,7 +1532,7 @@ QT_WARNING_POP
 
     QTest::ignoreMessage(QtWarningMsg,
                          "QSqlQuery::seek: cannot seek backwards in a forward only query");
-    QVERIFY( q.seek( 0 ) == false );
+    QVERIFY(!q.seek(0));
     QCOMPARE( q.value( 0 ).toInt(), 4 );
     QCOMPARE( q.at(), 3 );
 
@@ -1541,11 +1541,11 @@ QT_WARNING_POP
 
     QTest::ignoreMessage(QtWarningMsg,
                          "QSqlQuery::seek: cannot seek backwards in a forward only query");
-    QVERIFY( q.first() == false );
+    QVERIFY(!q.first());
     QCOMPARE( q.at(), i-1 );
 
-    QVERIFY( q.next() == false );
-    QCOMPARE( q.at(), int( QSql::AfterLastRow ) );
+    QVERIFY(!q.next());
+    QCOMPARE(q.at(), QSql::AfterLastRow);
 }
 
 void tst_QSqlQuery::forwardOnlyMultipleResultSet()
@@ -1573,9 +1573,9 @@ void tst_QSqlQuery::forwardOnlyMultipleResultSet()
         QSKIP("DBMS doesn't support forward-only queries");
 
     // 1. Result set with 2 columns and 5 rows
-    QVERIFY(q.at() == QSql::BeforeFirstRow);
-    QCOMPARE(q.isActive(), true);
-    QCOMPARE(q.isSelect(), true);
+    QCOMPARE(q.at(), QSql::BeforeFirstRow);
+    QVERIFY(q.isActive());
+    QVERIFY(q.isSelect());
 
     // Test record() of first result set
     QSqlRecord record = q.record();
@@ -1604,19 +1604,19 @@ void tst_QSqlQuery::forwardOnlyMultipleResultSet()
 
     QTest::ignoreMessage(QtWarningMsg,
                          "QSqlQuery::seek: cannot seek backwards in a forward only query");
-    QVERIFY(q.first() == false);
+    QVERIFY(!q.first());
     QCOMPARE(q.at(), 3);
     QCOMPARE(q.value(0).toInt(), 4);
 
     QTest::ignoreMessage(QtWarningMsg,
                          "QSqlQuery::seek: cannot seek backwards in a forward only query");
-    QVERIFY(q.previous() == false);
+    QVERIFY(!q.previous());
     QCOMPARE(q.at(), 3);
     QCOMPARE(q.value(0).toInt(), 4);
 
     QTest::ignoreMessage(QtWarningMsg,
                          "QSqlQuery::seek: cannot seek backwards in a forward only query");
-    QVERIFY(q.seek(1) == false);
+    QVERIFY(!q.seek(1));
     QCOMPARE(q.at(), 3);
     QCOMPARE(q.value(0).toInt(), 4);
 
@@ -1624,15 +1624,15 @@ void tst_QSqlQuery::forwardOnlyMultipleResultSet()
     QCOMPARE(q.at(), 4);
 
     // Try move after last row
-    QVERIFY(q.next() == false);
+    QVERIFY(!q.next());
     QCOMPARE(q.at(), QSql::AfterLastRow);
-    QCOMPARE(q.isActive(), true);
+    QVERIFY(q.isActive());
 
     // 2. Result set with 3 columns and 3 rows
     QVERIFY(q.nextResult());
-    QVERIFY(q.at() == QSql::BeforeFirstRow);
-    QCOMPARE(q.isActive(), true);
-    QCOMPARE(q.isSelect(), true);
+    QCOMPARE(q.at(), QSql::BeforeFirstRow);
+    QVERIFY(q.isActive());
+    QVERIFY(q.isSelect());
 
     // Test record() of second result set
     record = q.record();
@@ -1642,28 +1642,28 @@ void tst_QSqlQuery::forwardOnlyMultipleResultSet()
     QCOMPARE(record.indexOf("t_char"), 2);
 
     // Test iteration
-    QVERIFY(q.at() == QSql::BeforeFirstRow);
+    QCOMPARE(q.at(), QSql::BeforeFirstRow);
     int index = 0;
     while (q.next()) {
         QCOMPARE(q.at(), index);
         QCOMPARE(q.value(0).toInt(), index+1);
         ++index;
     }
-    QVERIFY(q.at() == QSql::AfterLastRow);
+    QCOMPARE(q.at(), QSql::AfterLastRow);
     QCOMPARE(index, 3);
 
     // 3. Update statement
     QVERIFY(q.nextResult());
-    QVERIFY(q.at() == QSql::BeforeFirstRow);
-    QCOMPARE(q.isActive(), true);
-    QCOMPARE(q.isSelect(), false);
+    QCOMPARE(q.at(), QSql::BeforeFirstRow);
+    QVERIFY(q.isActive());
+    QVERIFY(!q.isSelect());
     QCOMPARE(q.numRowsAffected(), 1);
 
     // 4. Result set with 5 rows
     QVERIFY(q.nextResult());
-    QVERIFY(q.at() == QSql::BeforeFirstRow);
-    QCOMPARE(q.isActive(), true);
-    QCOMPARE(q.isSelect(), true);
+    QCOMPARE(q.at(), QSql::BeforeFirstRow);
+    QVERIFY(q.isActive());
+    QVERIFY(q.isSelect());
 
     // Test forward seek(n)
     QVERIFY(q.seek(2));
@@ -1680,38 +1680,38 @@ void tst_QSqlQuery::forwardOnlyMultipleResultSet()
 
     // 5. Result set with 1 row
     QVERIFY(q.nextResult());
-    QVERIFY(q.at() == QSql::BeforeFirstRow);
-    QCOMPARE(q.isActive(), true);
-    QCOMPARE(q.isSelect(), true);
+    QCOMPARE(q.at(), QSql::BeforeFirstRow);
+    QVERIFY(q.isActive());
+    QVERIFY(q.isSelect());
     QVERIFY(q.first());
     QCOMPARE(q.at(), 0);
     QCOMPARE(q.value(0).toInt(), 5);
-    QVERIFY(q.next() == false);
-    QVERIFY(q.at() == QSql::AfterLastRow);
+    QVERIFY(!q.next());
+    QCOMPARE(q.at(), QSql::AfterLastRow);
 
     // 6. Result set without rows
     QVERIFY(q.nextResult());
-    QVERIFY(q.at() == QSql::BeforeFirstRow);
-    QCOMPARE(q.isActive(), true);
-    QCOMPARE(q.isSelect(), true);
-    QVERIFY(q.next() == false);
+    QCOMPARE(q.at(), QSql::BeforeFirstRow);
+    QVERIFY(q.isActive());
+    QVERIFY(q.isSelect());
+    QVERIFY(!q.next());
 
     // 7. Result set with 5 rows
     QVERIFY(q.nextResult());
-    QVERIFY(q.at() == QSql::BeforeFirstRow);
-    QCOMPARE(q.isActive(), true);
-    QCOMPARE(q.isSelect(), true);
+    QCOMPARE(q.at(), QSql::BeforeFirstRow);
+    QVERIFY(q.isActive());
+    QVERIFY(q.isSelect());
 
     // Just skip it, so we move after last result set.
-    QVERIFY(q.nextResult() == false);
-    QVERIFY(q.at() == QSql::BeforeFirstRow);
-    QCOMPARE(q.isActive(), false);
+    QVERIFY(!q.nextResult());
+    QCOMPARE(q.at(), QSql::BeforeFirstRow);
+    QVERIFY(!q.isActive());
 
     // See if we can execute another query
     QVERIFY_SQL(q, exec(QLatin1String("select id from %1 where id=5").arg(qtest)));
-    QVERIFY(q.at() == QSql::BeforeFirstRow);
-    QCOMPARE(q.isActive(), true);
-    QCOMPARE(q.isSelect(), true);
+    QCOMPARE(q.at(), QSql::BeforeFirstRow);
+    QVERIFY(q.isActive());
+    QVERIFY(q.isSelect());
     QVERIFY(q.first());
     QCOMPARE(q.at(), 0);
     QCOMPARE(q.value("id").toInt(), 5);
@@ -1907,10 +1907,10 @@ void tst_QSqlQuery::tds_bitField()
     QVERIFY_SQL(q, exec("select bitty from " + tableName));
 
     QVERIFY( q.next() );
-    QVERIFY( q.value( 0 ).toInt() == 0 );
+    QCOMPARE(q.value(0).toInt(), 0);
 
     QVERIFY( q.next() );
-    QVERIFY( q.value( 0 ).toInt() == 1 );
+    QCOMPARE(q.value(0).toInt(), 1);
 }
 
 // Oracle-specific NULL BLOB test:
@@ -2033,12 +2033,12 @@ void tst_QSqlQuery::nullResult()
     if ( q.driver()->hasFeature( QSqlDriver::QuerySize ) )
         QCOMPARE( q.size(), 0 );
 
-    QVERIFY( q.next() == false );
-    QVERIFY( q.first() == false );
-    QVERIFY( q.last() == false );
-    QVERIFY( q.previous() == false );
-    QVERIFY( q.seek( 10 ) == false );
-    QVERIFY( q.seek( 0 ) == false );
+    QVERIFY(!q.next());
+    QVERIFY(!q.first());
+    QVERIFY(!q.last());
+    QVERIFY(!q.previous());
+    QVERIFY(!q.seek(10));
+    QVERIFY(!q.seek(0));
 }
 
 // This test is just an experiment to see whether we can do query-based transactions.
@@ -2053,7 +2053,7 @@ void tst_QSqlQuery::transaction()
     CHECK_DATABASE( db );
     const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
     if ( !db.driver()->hasFeature( QSqlDriver::Transactions ) )
-        QSKIP( "DBMS not transaction capable");
+        QSKIP("DBMS not transaction-capable");
 
     // This is the standard SQL:
     QString startTransactionStr( "start transaction" );
@@ -2097,7 +2097,7 @@ void tst_QSqlQuery::transaction()
         }
     }
     QVERIFY_SQL(q, exec(QLatin1String("select * from%1 where id = 41").arg(qtest)));
-    QVERIFY( q.next() == false );
+    QVERIFY(!q.next());
 
     // Test concurrent access:
     q.exec( startTransactionStr );
@@ -2526,24 +2526,24 @@ void tst_QSqlQuery::prepared_select()
 
     q.bindValue( 0, 1 );
     QVERIFY_SQL( q, exec() );
-    QCOMPARE(q.at(), int(QSql::BeforeFirstRow));
+    QCOMPARE(q.at(), QSql::BeforeFirstRow);
     QVERIFY( q.next() );
     QCOMPARE( q.value( 0 ).toInt(), 1 );
 
     q.bindValue( 0, 2 );
     QVERIFY_SQL( q, exec() );
-    QCOMPARE(q.at(), int(QSql::BeforeFirstRow));
+    QCOMPARE(q.at(), QSql::BeforeFirstRow);
     QVERIFY( q.next() );
     QCOMPARE( q.value( 0 ).toInt(), 2 );
 
     q.bindValue( 0, 3 );
     QVERIFY_SQL( q, exec() );
-    QCOMPARE(q.at(), int(QSql::BeforeFirstRow));
+    QCOMPARE(q.at(), QSql::BeforeFirstRow);
     QVERIFY( q.next() );
     QCOMPARE( q.value( 0 ).toInt(), 3 );
 
     QVERIFY_SQL(q, prepare(query));
-    QCOMPARE(q.at(), int(QSql::BeforeFirstRow));
+    QCOMPARE(q.at(), QSql::BeforeFirstRow);
     QVERIFY( !q.first() );
 }
 
@@ -2553,7 +2553,7 @@ void tst_QSqlQuery::sqlServerLongStrings()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
     if (tst_Databases::getDatabaseType(db) != QSqlDriver::MSSqlServer)
-        QSKIP( "SQL Server specific test");
+        QSKIP("Test is specific to SQL Server");
 
     QSqlQuery q( db );
     const QString tableName = qTableName("qtest_longstr", __FILE__, db);
@@ -3534,7 +3534,7 @@ void tst_QSqlQuery::emptyTableNavigate()
         QVERIFY_SQL(q, prepare("select * from " + tbl));
         QVERIFY_SQL( q, exec() );
         QVERIFY( !q.next() );
-        QCOMPARE( q.lastError().isValid(), false );
+        QVERIFY(!q.lastError().isValid());
     }
 }
 
@@ -3673,7 +3673,7 @@ void tst_QSqlQuery::QTBUG_12477()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
     if (!db.driverName().startsWith("QPSQL"))
-        QSKIP("PostgreSQL specific test");
+        QSKIP("PostgreSQL-specific test");
 
     QSqlQuery q(db);
     QVERIFY_SQL(q, exec("SELECT 1::bit, '10101010000111101101'::varbit, "
@@ -3714,7 +3714,7 @@ void tst_QSqlQuery::sqlServerReturn0()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
     if (tst_Databases::getDatabaseType(db) != QSqlDriver::MSSqlServer)
-        QSKIP("SQL Server specific test");
+        QSKIP("Test is specific to SQL Server");
 
     const QString tableName(qTableName("test141895", __FILE__, db));
     const QString procName(qTableName("test141895_proc", __FILE__, db));
@@ -3827,7 +3827,7 @@ void tst_QSqlQuery::QTBUG_18435()
     CHECK_DATABASE(db);
     QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
     if (dbType != QSqlDriver::MSSqlServer || !db.driverName().startsWith("QODBC"))
-        QSKIP("SQL Server specific test");
+        QSKIP("Test is specific to SQL Server");
 
     QSqlQuery q(db);
     QString procName(qTableName("qtbug_18435_proc", __FILE__, db));
@@ -3915,7 +3915,7 @@ void tst_QSqlQuery::QTBUG_6618()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
     if (tst_Databases::getDatabaseType(db) != QSqlDriver::MSSqlServer)
-        QSKIP("SQL Server specific test");
+        QSKIP("Test is specific to SQL Server");
 
     QSqlQuery q(db);
     const QString procedureName = qTableName("tst_raiseError", __FILE__, db);
@@ -4132,10 +4132,10 @@ void tst_QSqlQuery::QTBUG_23895()
     QCOMPARE(q.value(0).toInt(), 1);
     QCOMPARE(q.record().field(1).metaType().id(), QMetaType::Bool);
     QCOMPARE(q.value(1).metaType().id(), QMetaType::LongLong);
-    QCOMPARE(q.value(1).toBool(), true);
+    QVERIFY(q.value(1).toBool());
     QCOMPARE(q.record().field(2).metaType().id(), QMetaType::Bool);
     QCOMPARE(q.value(2).metaType().id(), QMetaType::LongLong);
-    QCOMPARE(q.value(2).toBool(), false);
+    QVERIFY(!q.value(2).toBool());
 
     q.prepare(QLatin1String("insert into %1(id, val1, val2) values(?, ?, ?);").arg(tableName));
     q.addBindValue(2);
@@ -4182,14 +4182,14 @@ void tst_QSqlQuery::QTBUG_14904()
 
     QCOMPARE(q.record().indexOf("value1"), 0);
     QCOMPARE(q.record().field(0).metaType().id(), QMetaType::Bool);
-    QCOMPARE(q.value(0).toBool(), true);
+    QVERIFY(q.value(0).toBool());
 
     sql="select val1 AS 'value.one' from " + tableName;
     QVERIFY_SQL(q, exec(sql));
     QVERIFY_SQL(q, next());
     QCOMPARE(q.record().indexOf("value.one"), 0);  // Was -1 before bug fix.
     QCOMPARE(q.record().field(0).metaType().id(), QMetaType::Bool);
-    QCOMPARE(q.value(0).toBool(), true);
+    QVERIFY(q.value(0).toBool());
 }
 
 void tst_QSqlQuery::QTBUG_2192()
@@ -4424,7 +4424,7 @@ void tst_QSqlQuery::sqlite_constraint()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
     if (tst_Databases::getDatabaseType(db) != QSqlDriver::SQLite)
-        QSKIP("Sqlite3 specific test");
+        QSKIP("SQLite3-specific test");
 
     QSqlQuery q(db);
     const QString trigger(qTableName("test_constraint", __FILE__, db));
