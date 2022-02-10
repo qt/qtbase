@@ -231,9 +231,10 @@ namespace QtAndroid
         QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass, "notifyAccessibilityLocationChange");
     }
 
-    void notifyObjectHide(uint accessibilityObjectId)
+    void notifyObjectHide(uint accessibilityObjectId, uint parentObjectId)
     {
-        QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass, "notifyObjectHide","(I)V", accessibilityObjectId);
+        QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass, "notifyObjectHide", "(II)V",
+                                                  accessibilityObjectId, parentObjectId);
     }
 
     void notifyObjectFocus(uint accessibilityObjectId)
