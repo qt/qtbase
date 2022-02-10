@@ -360,8 +360,50 @@ if (!clazz) { \
         QString valueStr;
         QAccessibleValueInterface *valueIface = iface->valueInterface();
         if (valueIface) {
-            // TODO: fix double-to-string conversion
-            valueStr = valueIface->currentValue().toString();
+            const QVariant valueVar = valueIface->currentValue();
+            const auto type = static_cast<QMetaType::Type>(valueVar.type());
+            if (type == QMetaType::Double || type == QMetaType::Float) {
+                // QVariant's toString() formats floating-point values with
+                // FloatingPointShortest, which is not an accessible
+                // representation; nor, in many cases, is it suitable to the UI
+                // element whose value we're looking at. So roll our own
+                // A11Y-friendly conversion to string.
+                const double val = valueVar.toDouble();
+                // Try to use minimumStepSize() to determine precision
+                bool stepIsValid = false;
+                const double step = qAbs(valueIface->minimumStepSize().toDouble(&stepIsValid));
+                if (!stepIsValid || qFuzzyIsNull(step)) {
+                    // Ignore step, use default precision
+                    valueStr = qFuzzyIsNull(val) ? QStringLiteral("0") : QString::number(val, 'f');
+                } else {
+                    const int precision = [](double s) {
+                        int count = 0;
+                        while (s < 1. && !qFuzzyCompare(s, 1.)) {
+                            ++count;
+                            s *= 10;
+                        }
+                        // If s is now 1.25, we want to show some more digits,
+                        // but don't want to get silly with a step like 1./7;
+                        // so only include a few extra digits.
+                        const int stop = count + 3;
+                        const auto fractional = [](double v) {
+                            double whole = 0.0;
+                            std::modf(v + 0.5, &whole);
+                            return qAbs(v - whole);
+                        };
+                        s = fractional(s);
+                        while (count < stop && !qFuzzyIsNull(s)) {
+                            ++count;
+                            s = fractional(s * 10);
+                        }
+                        return count;
+                    }(step);
+                    valueStr = qFuzzyIsNull(val / step) ? QStringLiteral("0")
+                                                        : QString::number(val, 'f', precision);
+                }
+            } else {
+                valueStr = valueVar.toString();
+            }
         }
         return valueStr;
     }
