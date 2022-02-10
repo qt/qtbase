@@ -421,14 +421,18 @@ if (!clazz) { \
     {
         QString desc;
         if (iface && iface->isValid()) {
+            bool hasValue = false;
             desc = iface->text(QAccessible::Name);
             if (desc.isEmpty())
                 desc = iface->text(QAccessible::Description);
             if (desc.isEmpty()) {
                 desc = iface->text(QAccessible::Value);
-                if (desc.isEmpty()) {
-                    desc = textFromValue(iface);
-                }
+                hasValue = !desc.isEmpty();
+            }
+            if (!hasValue) {
+                if (!desc.isEmpty())
+                    desc.append(QChar(QChar::Space));
+                desc.append(textFromValue(iface));
             }
         }
         return desc;
