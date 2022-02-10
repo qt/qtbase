@@ -109,9 +109,12 @@ struct QVersionTag
 };
 }
 
-#if defined(QT_BUILD_CORE_LIB) || defined(QT_BOOTSTRAPPED) || defined(QT_NO_VERSION_TAGGING) || defined(QT_STATIC)
+#if defined(QT_BUILD_CORE_LIB) || defined(QT_BOOTSTRAPPED) || defined(QT_STATIC)
 // don't make tags in QtCore, bootstrapped systems or if the user asked not to
-#elif defined(Q_OS_WIN)
+#  define QT_NO_VERSION_TAGGING
+#endif
+
+#if defined(Q_OS_WIN)
 #  ifdef _WIN64
 //   64-bit calling convention does not prepend a _
 #    define QT_MANGLE_IMPORT_PREFIX     __imp_
@@ -143,23 +146,6 @@ struct QVersionTag
     extern "C" Q_DECL_IMPORT const char sym; \
     QT_VERSION_TAG_ATTRIBUTE QT_VERSION_TAG_SECTION constexpr inline QtPrivate::QVersionTag sym ## _use(&sym)
 #  define QT_VERSION_TAG(sym, imp)       QT_VERSION_TAG2(sym, imp)
-#elif defined(Q_CC_GNU) && !defined(Q_OS_ANDROID)
-#  if defined(Q_PROCESSOR_X86) && (defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD_KERNEL))
-#    if defined(Q_PROCESSOR_X86_64) && QT_POINTER_SIZE == 8     // x86-64 64-bit
-#      define QT_VERSION_TAG_RELOC(sym) ".quad " QT_STRINGIFY(QT_MANGLE_NAMESPACE(sym)) "@GOT\n"
-#    else                                                       // x86 or x86-64 32-bit (x32)
-#      define QT_VERSION_TAG_RELOC(sym) ".long " QT_STRINGIFY(QT_MANGLE_NAMESPACE(sym)) "@GOT\n"
-#    endif
-#    define QT_VERSION_TAG(sym, imp)    \
-    asm (   \
-    ".section .qtversion, \"aG\", @progbits, " QT_STRINGIFY(QT_MANGLE_NAMESPACE(sym)) ", comdat\n" \
-    ".align 8\n" \
-    QT_VERSION_TAG_RELOC(sym) \
-    ".long " QT_STRINGIFY(QT_VERSION) "\n" \
-    ".align 8\n" \
-    ".previous" \
-    )
-#  endif
 #endif
 
 #ifdef Q_OF_ELF
@@ -169,7 +155,7 @@ struct QVersionTag
 #  define QT_VERSION_TAG_SYMBOL(prefix, sym, m, n)      QT_VERSION_TAG_SYMBOL2(prefix, sym, m, n)
 #endif
 
-#if defined(QT_VERSION_TAG)
+#if defined(QT_VERSION_TAG) && !defined(QT_NO_VERSION_TAGGING)
 #  ifndef QT_VERSION_TAG_SECTION
 #    define QT_VERSION_TAG_SECTION          __attribute__((section(".qtversion")))
 #  endif
