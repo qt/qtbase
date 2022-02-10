@@ -15,21 +15,3 @@ qt_internal_add_test(tst_qdatastream
         Qt::Gui
     TESTDATA ${test_data}
 )
-
-## Scopes:
-#####################################################################
-
-if(ANDROID OR INTEGRITY)
-    # Resources:
-    set(testdata_resource_files
-        "datastream.q42"
-        "typedef.q5"
-    )
-
-    qt_internal_add_resource(tst_qdatastream "testdata"
-        PREFIX
-            "/"
-        FILES
-            ${testdata_resource_files}
-    )
-endif()

@@ -14,20 +14,3 @@ qt_internal_add_test(tst_qchar
         Qt::CorePrivate
     TESTDATA ${test_data}
 )
-
-## Scopes:
-#####################################################################
-
-if(ANDROID OR INTEGRITY)
-    # Resources:
-    set(testdata_resource_files
-        "data/NormalizationTest.txt"
-    )
-
-    qt_internal_add_resource(tst_qchar "testdata"
-        PREFIX
-            "/"
-        FILES
-            ${testdata_resource_files}
-    )
-endif()

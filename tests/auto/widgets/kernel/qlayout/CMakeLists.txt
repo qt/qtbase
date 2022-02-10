@@ -20,20 +20,3 @@ qt_internal_add_test(tst_qlayout
         Qt::WidgetsPrivate
     TESTDATA ${test_data}
 )
-
-## Scopes:
-#####################################################################
-
-if(ANDROID)
-    # Resources:
-    set(testdata_resource_files
-        "baseline/smartmaxsize"
-    )
-
-    qt_internal_add_resource(tst_qlayout "testdata"
-        PREFIX
-            "/"
-        FILES
-            ${testdata_resource_files}
-    )
-endif()

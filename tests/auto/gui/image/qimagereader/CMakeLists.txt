@@ -42,24 +42,3 @@ qt_internal_add_resource(tst_qimagereader "qmake_immediate"
         ${qmake_immediate_resource_files}
 )
 
-
-#### Keys ignored in scope 1:.:.:qimagereader.pro:<TRUE>:
-# MOC_DIR = "tmp"
-
-## Scopes:
-#####################################################################
-
-if(ANDROID)
-    # Resources:
-    set(android_testdata_resource_files
-        "images/kollada-noext"
-        "images/trans.gif"
-    )
-
-    qt_internal_add_resource(tst_qimagereader "android_testdata"
-        PREFIX
-            "/"
-        FILES
-            ${android_testdata_resource_files}
-    )
-endif()

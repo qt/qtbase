@@ -5,7 +5,10 @@
 #####################################################################
 
 # Collect test data
-list(APPEND test_data "testdata")
+file(GLOB_RECURSE test_data
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    testdata/*
+)
 
 qt_internal_add_test(tst_qzip
     SOURCES
@@ -15,21 +18,3 @@ qt_internal_add_test(tst_qzip
         Qt::GuiPrivate
     TESTDATA ${test_data}
 )
-
-## Scopes:
-#####################################################################
-
-if(ANDROID)
-    # Resources:
-    set(testdata_resource_files
-        "testdata/symlink.zip"
-        "testdata/test.zip"
-    )
-
-    qt_internal_add_resource(tst_qzip "testdata"
-        PREFIX
-            "/"
-        FILES
-            ${testdata_resource_files}
-    )
-endif()

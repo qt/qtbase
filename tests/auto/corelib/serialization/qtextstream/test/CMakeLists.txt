@@ -36,28 +36,6 @@ qt_internal_add_resource(tst_qtextstream "qtextstream"
         ${qtextstream_resource_files}
 )
 
-if(INTEGRITY)
-set(qtextstream_resource_files_integrity
-    "../rfc3261.txt"
-    "../task113817.txt"
-    "../tst_qtextstream.cpp"
-)
-
-qt_internal_add_resource(tst_qtextstream "qtextstream_integrity"
-    PREFIX
-        "/"
-    FILES
-        ${qtextstream_resource_files_integrity}
-)
-endif()
-
-## Scopes:
-
-qt_internal_extend_target(tst_qtextstream CONDITION builtin_testdata OR INTEGRITY
-    DEFINES
-        BUILTIN_TESTDATA
-)
-
 if(QT_FEATURE_process)
-  add_dependencies(tst_qtextstream stdinProcess readAllStdinProcess readLineStdinProcess)
+    add_dependencies(tst_qtextstream stdinProcess readAllStdinProcess readLineStdinProcess)
 endif()
