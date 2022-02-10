@@ -54,6 +54,7 @@ namespace QtAndroidAccessibility
     void notifyLocationChange();
     void notifyObjectHide(uint accessibilityObjectId);
     void notifyObjectFocus(uint accessibilityObjectId);
+    void notifyValueChanged(uint accessibilityObjectId);
     void createAccessibilityContextObject(QObject *parent);
 }
 

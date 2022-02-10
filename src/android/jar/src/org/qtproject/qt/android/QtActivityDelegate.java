@@ -921,6 +921,13 @@ public class QtActivityDelegate
         m_accessibilityDelegate.notifyObjectFocus(viewId);
     }
 
+    public void notifyValueChanged(int viewId, String value)
+    {
+        if (m_accessibilityDelegate == null)
+            return;
+        m_accessibilityDelegate.notifyValueChanged(viewId, value);
+    }
+
     public void notifyQtAndroidPluginRunning(boolean running)
     {
         m_isPluginRunning = running;
