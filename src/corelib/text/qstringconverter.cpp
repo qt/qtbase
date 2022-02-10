@@ -48,6 +48,9 @@
 
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
+#ifndef QT_BOOTSTRAPPED
+#include <QtCore/qvarlengtharray.h>
+#endif // !QT_BOOTSTRAPPED
 #endif
 
 #if __has_include(<bit>) && __cplusplus > 201703L
