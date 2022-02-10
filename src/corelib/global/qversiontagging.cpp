@@ -40,24 +40,40 @@
 #include "qglobal.h"
 #include "qversiontagging.h"
 
+extern "C" {
 #define SYM QT_MANGLE_NAMESPACE(qt_version_tag)
-//#define SSYM QT_STRINGIFY(SYM)
+#define SSYM QT_STRINGIFY(SYM)
+
+// With compilers that have the "alias" attribute, the macro creates a global
+// variable "qt_version_tag_M_m" (M: major, m: minor) as an alias to either
+// qt_version_tag or _qt_version_tag. Everywhere else, we simply create a new
+// global variable qt_version_tag_M_m without aliasing to a single variable.
+//
+// Additionally, on systems using ELF binaries (Linux, FreeBSD, etc.), we
+// create ELF versions by way of the .symver assembly directive[1].
+//
+// Unfortunately, Clang on Darwin systems says it supports the "alias"
+// attribute, but fails when used. That's a Clang bug (as of XCode 12).
+//
+// [1] https://sourceware.org/binutils/docs/as/Symver.html
 
 #if defined(Q_CC_GNU) && defined(Q_OF_ELF)
 #  define make_versioned_symbol2(sym, m, n, separator)     \
-    Q_CORE_EXPORT extern const char sym ## _ ## m ## _ ## n = 0; \
+    Q_CORE_EXPORT extern __attribute__((alias("_" SSYM))) const char sym ## _ ## m ## _ ## n; \
     asm(".symver " QT_STRINGIFY(sym) "_" QT_STRINGIFY(m) "_" QT_STRINGIFY(n) ", " \
         QT_STRINGIFY(sym) separator "Qt_" QT_STRINGIFY(m) "." QT_STRINGIFY(n))
 
+extern const char QT_MANGLE_NAMESPACE(_qt_version_tag) = 0;
+#elif __has_attribute(alias) && !defined(Q_OS_DARWIN)
+#  define make_versioned_symbol2(sym, m, n, separator)     \
+    Q_CORE_EXPORT extern __attribute__((alias(SSYM))) const char sym ## _ ## m ## _ ## n
+extern const char SYM = 0;
 #else
 #  define make_versioned_symbol2(sym, m, n, separator)     \
     Q_CORE_EXPORT extern const char sym ## _ ## m ## _ ## n = 0;
 #endif
 #define make_versioned_symbol(sym, m, n, separator)    make_versioned_symbol2(sym, m, n, separator)
 
-QT_BEGIN_NAMESPACE
-
-extern "C" {
 #if QT_VERSION_MINOR > 0
 make_versioned_symbol(SYM, QT_VERSION_MAJOR, 0, "@");
 #endif
@@ -113,6 +129,8 @@ make_versioned_symbol(SYM, QT_VERSION_MAJOR, 15, "@");
 // the default version:
 make_versioned_symbol(SYM, QT_VERSION_MAJOR, QT_VERSION_MINOR, "@@");
 }
+
+QT_BEGIN_NAMESPACE
 
 static_assert(std::is_trivially_destructible_v<QtPrivate::QVersionTag>);
 
