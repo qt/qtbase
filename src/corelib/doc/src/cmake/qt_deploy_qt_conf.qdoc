@@ -66,7 +66,7 @@ qt_deploy_qt_conf(file_name
 
 \section1 Description
 
-Use this command when you need to generate a \c{Using qt.conf}{qt.conf} file
+Use this command when you need to generate a \l{Using qt.conf}{qt.conf} file
 during deployment. The default value of any path supported by \c{qt.conf} can
 be overridden with the corresponding \c{..._DIR} option. The command will only
 write a path to the generated \c{qt.conf} file if it differs from the default
