@@ -1775,7 +1775,18 @@ function(_qt_internal_process_resource target resourceName)
     string(REPLACE "/" "_" resourceName ${resourceName})
     string(REPLACE "." "_" resourceName ${resourceName})
 
-    set(resource_files ${rcc_FILES})
+    set(resource_files "")
+    # Strip the ending slashes from the file_path. If paths contain slashes in the end
+    # set/get source properties works incorrect and may have the same QT_RESOURCE_ALIAS
+    # for two different paths. See https://gitlab.kitware.com/cmake/cmake/-/issues/23212
+    # for details.
+    foreach(file_path IN LISTS rcc_FILES)
+        if(file_path MATCHES "(.+)/$")
+            set(file_path "${CMAKE_MATCH_1}")
+        endif()
+        list(APPEND resource_files ${file_path})
+    endforeach()
+
     if(NOT "${rcc_BASE}" STREQUAL "")
         get_filename_component(abs_base "${rcc_BASE}" ABSOLUTE)
         foreach(file_path IN LISTS resource_files)
