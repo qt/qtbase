@@ -68,7 +68,7 @@ public:
     enum Initialization { InheritFromParent };
 
     QProcessEnvironment();
-    QProcessEnvironment(Initialization);
+    QProcessEnvironment(Initialization) noexcept;
     QProcessEnvironment(const QProcessEnvironment &other);
     ~QProcessEnvironment();
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QProcessEnvironment)
