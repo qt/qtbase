@@ -149,7 +149,7 @@ private:
     using if_compatible_container = typename std::enable_if<QtPrivate::IsContainerCompatibleWithQStringView<T>::value, bool>::type;
 
     template <typename Char>
-    static qsizetype lengthHelperPointer(const Char *str) noexcept
+    static constexpr qsizetype lengthHelperPointer(const Char *str) noexcept
     {
 #if defined(__cpp_lib_is_constant_evaluated)
         if (std::is_constant_evaluated())
