@@ -686,7 +686,9 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
     Q_UNUSED(data);
     return QFileSystemEntry(slowCanonicalized(absoluteName(entry).filePath()));
 #else
+# if defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID) || _POSIX_VERSION < 200801L
     char stack_result[PATH_MAX+1];
+# endif
     char *resolved_name = nullptr;
 # if defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID)
     // On some Android and macOS versions, realpath() will return a path even if
@@ -714,8 +716,10 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
         data.knownFlagsMask |= QFileSystemMetaData::ExistsAttribute;
         data.entryFlags |= QFileSystemMetaData::ExistsAttribute;
         QString canonicalPath = QDir::cleanPath(QFile::decodeName(resolved_name));
+# if defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID) || _POSIX_VERSION < 200801L
         if (resolved_name != stack_result)
             free(resolved_name);
+# endif
         return QFileSystemEntry(canonicalPath);
     } else if (errno == ENOENT || errno == ENOTDIR) { // file doesn't exist
         data.knownFlagsMask |= QFileSystemMetaData::ExistsAttribute;
