@@ -148,15 +148,27 @@ void QProcessEnvironmentPrivate::insert(const QProcessEnvironmentPrivate &other)
 }
 
 /*!
+    \enum QProcessEnvironment::Initialization
+
+    This enum contains a token that is used to disambiguate constructors.
+
+    \value InheritFromParent A QProcessEnvironment will be created that, when
+        set on a QProcess, causes it to inherit variables from its parent.
+
+    \since 6.3
+*/
+
+/*!
     Creates a new QProcessEnvironment object. This constructor creates an
     empty environment. If set on a QProcess, this will cause the current
-    environment variables to be removed.
+    environment variables to be removed (except for PATH and SystemRoot
+    on Windows).
 */
 QProcessEnvironment::QProcessEnvironment() : d(new QProcessEnvironmentPrivate) { }
 
 /*!
     Creates an object that when set on QProcess will cause it to be executed with
-    environment variables inherited from the parent process.
+    environment variables inherited from its parent process.
 
     \note The created object does not store any environment variables by itself,
     it just indicates to QProcess to arrange for inheriting the environment at the
@@ -172,7 +184,7 @@ QProcessEnvironment::QProcessEnvironment() : d(new QProcessEnvironmentPrivate) {
     \sa inheritsFromParent(), systemEnvironment()
     \since 6.3
 */
-QProcessEnvironment::QProcessEnvironment(QProcessEnvironment::Initialization) : d(nullptr) { }
+QProcessEnvironment::QProcessEnvironment(QProcessEnvironment::Initialization) noexcept { }
 
 /*!
     Frees the resources associated with this QProcessEnvironment object.
