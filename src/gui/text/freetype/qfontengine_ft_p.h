@@ -85,6 +85,8 @@ public:
                                   const QByteArray &fontData = QByteArray());
     void release(const QFontEngine::FaceId &face_id);
 
+    static int getFaceIndexByStyleName(const QString &faceFileName, const QString &styleName);
+
     // locks the struct for usage. Any read/write operations require locking.
     void lock()
     {

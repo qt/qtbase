@@ -403,9 +403,15 @@ QFontEngine *QCoreTextFontDatabaseEngineFactory<QFontEngineFT>::fontEngine(const
         return QFontEngineFT::create(*fontData, fontDef.pixelSize,
             static_cast<QFont::HintingPreference>(fontDef.hintingPreference));
     } else if (NSURL *url = descriptorAttribute<NSURL>(descriptor, kCTFontURLAttribute)) {
-        Q_ASSERT(url.fileURL);
         QFontEngine::FaceId faceId;
-        faceId.filename = QString::fromNSString(url.path).toUtf8();
+
+        Q_ASSERT(url.fileURL);
+        QString faceFileName{QString::fromNSString(url.path)};
+        faceId.filename = faceFileName.toUtf8();
+
+        QString styleName = QCFString(CTFontDescriptorCopyAttribute(descriptor, kCTFontStyleNameAttribute));
+        faceId.index = QFreetypeFace::getFaceIndexByStyleName(faceFileName, styleName);
+
         return QFontEngineFT::create(fontDef, faceId);
     }
     // We end up here with a descriptor does not contain Qt font data or kCTFontURLAttribute.

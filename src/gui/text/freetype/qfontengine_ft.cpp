@@ -128,8 +128,19 @@ public:
     { }
     ~QtFreetypeData();
 
+    struct FaceStyle {
+        QString faceFileName;
+        QString styleName;
+
+        FaceStyle(QString faceFileName, QString styleName)
+            : faceFileName(std::move(faceFileName)),
+              styleName(std::move(styleName))
+        {}
+    };
+
     FT_Library library;
     QHash<QFontEngine::FaceId, QFreetypeFace *> faces;
+    QHash<FaceStyle, int> faceIndices;
 };
 
 QtFreetypeData::~QtFreetypeData()
@@ -139,6 +150,16 @@ QtFreetypeData::~QtFreetypeData()
     faces.clear();
     FT_Done_FreeType(library);
     library = nullptr;
+}
+
+inline bool operator==(const QtFreetypeData::FaceStyle &style1, const QtFreetypeData::FaceStyle &style2)
+{
+    return style1.faceFileName == style2.faceFileName && style1.styleName == style2.styleName;
+}
+
+inline size_t qHash(const QtFreetypeData::FaceStyle &style, size_t seed)
+{
+    return qHashMulti(seed, style.faceFileName, style.styleName);
 }
 
 Q_GLOBAL_STATIC(QThreadStorage<QtFreetypeData *>, theFreetypeData)
@@ -336,6 +357,52 @@ void QFreetypeFace::release(const QFontEngine::FaceId &face_id)
     }
 }
 
+static int computeFaceIndex(const QString &faceFileName, const QString &styleName)
+{
+    FT_Library library = qt_getFreetype();
+
+    int faceIndex = 0;
+    int numFaces = 0;
+
+    do {
+        FT_Face face;
+
+        FT_Error error = FT_New_Face(library, faceFileName.toUtf8().constData(), faceIndex, &face);
+        if (error != FT_Err_Ok) {
+            qDebug() << "FT_New_Face failed for face index" << faceIndex << ':' << Qt::hex << error;
+            break;
+        }
+
+        QString faceStyleName = QString::fromLatin1(face->style_name);
+        numFaces = face->num_faces;
+
+        FT_Done_Face(face);
+
+        if (faceStyleName == styleName)
+            return faceIndex;
+    } while (++faceIndex < numFaces);
+
+    // Fall back to the first font face in the file
+    return 0;
+}
+
+int QFreetypeFace::getFaceIndexByStyleName(const QString &faceFileName, const QString &styleName)
+{
+    QtFreetypeData *freetypeData = qt_getFreetypeData();
+
+    // Try to get from cache
+    QtFreetypeData::FaceStyle faceStyle(faceFileName, styleName);
+    int faceIndex = freetypeData->faceIndices.value(faceStyle, -1);
+
+    if (faceIndex >= 0)
+        return faceIndex;
+
+    faceIndex = computeFaceIndex(faceFileName, styleName);
+
+    freetypeData->faceIndices.insert(faceStyle, faceIndex);
+
+    return faceIndex;
+}
 
 void QFreetypeFace::computeSize(const QFontDef &fontDef, int *xsize, int *ysize, bool *outline_drawing, QFixed *scalableBitmapScaleFactor)
 {
