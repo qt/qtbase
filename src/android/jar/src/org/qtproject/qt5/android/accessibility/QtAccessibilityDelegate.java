@@ -225,6 +225,33 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
                 AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
     }
 
+    public void notifyValueChanged(int viewId, String value)
+    {
+        // Send a TYPE_ANNOUNCEMENT event with the new value
+        if ((viewId == INVALID_ID) || !m_manager.isEnabled()) {
+            Log.w(TAG, "notifyValueChanged() for invalid view");
+            return;
+        }
+        final ViewGroup group = (ViewGroup)m_view.getParent();
+        if (group == null) {
+            Log.w(TAG, "Could not announce value because ViewGroup was null.");
+            return;
+        }
+        final AccessibilityEvent event =
+                AccessibilityEvent.obtain(AccessibilityEvent.TYPE_ANNOUNCEMENT);
+        event.setEnabled(true);
+        event.setClassName(m_view.getClass().getName() + DEFAULT_CLASS_NAME);
+        event.setContentDescription(value);
+        if (event.getText().isEmpty() && TextUtils.isEmpty(event.getContentDescription())) {
+            Log.w(TAG, "No value to announce for " + event.getClassName());
+            return;
+        }
+        event.setPackageName(m_view.getContext().getPackageName());
+        event.setSource(m_view, viewId);
+        if (!group.requestSendAccessibilityEvent(m_view, event))
+            Log.w(TAG, "Failed to send value change announcement for " + event.getClassName());
+    }
+
     public boolean sendEventForVirtualViewId(int virtualViewId, int eventType)
     {
         if ((virtualViewId == INVALID_ID) || !m_manager.isEnabled()) {

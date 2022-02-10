@@ -241,6 +241,13 @@ namespace QtAndroid
         QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass, "notifyObjectFocus","(I)V", accessibilityObjectId);
     }
 
+    void notifyValueChanged(uint accessibilityObjectId, jstring value)
+    {
+        QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass, "notifyValueChanged",
+                                                  "(ILjava/lang/String;)V", accessibilityObjectId,
+                                                  value);
+    }
+
     void notifyQtAndroidPluginRunning(bool running)
     {
         QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass, "notifyQtAndroidPluginRunning","(Z)V", running);

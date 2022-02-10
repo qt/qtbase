@@ -151,6 +151,14 @@ namespace QtAndroidAccessibility
         QtAndroid::notifyObjectFocus(accessibilityObjectId);
     }
 
+    static jstring jvalueForAccessibleObject(int objectId); // forward declaration
+
+    void notifyValueChanged(uint accessibilityObjectId)
+    {
+        jstring value = jvalueForAccessibleObject(accessibilityObjectId);
+        QtAndroid::notifyValueChanged(accessibilityObjectId, value);
+    }
+
     static QVarLengthArray<int, 8> childIdListForAccessibleObject_helper(int objectId)
     {
         QAccessibleInterface *iface = interfaceFromId(objectId);
@@ -347,6 +355,29 @@ if (!clazz) { \
 
         //__android_log_print(ANDROID_LOG_FATAL, m_qtTag, m_methodErrorMsg, METHOD_NAME, METHOD_SIGNATURE);
 
+    static QString textFromValue(QAccessibleInterface *iface)
+    {
+        QString valueStr;
+        QAccessibleValueInterface *valueIface = iface->valueInterface();
+        if (valueIface) {
+            // TODO: fix double-to-string conversion
+            valueStr = valueIface->currentValue().toString();
+        }
+        return valueStr;
+    }
+
+    static jstring jvalueForAccessibleObject(int objectId)
+    {
+        QAccessibleInterface *iface = interfaceFromId(objectId);
+        const QString value = textFromValue(iface);
+        QJNIEnvironmentPrivate env;
+        jstring jstr = env->NewString((jchar*)value.constData(), (jsize)value.size());
+#ifdef QT_DEBUG
+        env->ExceptionDescribe();
+#endif // QT_DEBUG
+        env->ExceptionClear();
+        return jstr;
+    }
 
     static QString descriptionForInterface(QAccessibleInterface *iface)
     {
@@ -358,9 +389,7 @@ if (!clazz) { \
             if (desc.isEmpty()) {
                 desc = iface->text(QAccessible::Value);
                 if (desc.isEmpty()) {
-                    if (QAccessibleValueInterface *valueIface = iface->valueInterface()) {
-                        desc= valueIface->currentValue().toString();
-                    }
+                    desc = textFromValue(iface);
                 }
             }
         }
