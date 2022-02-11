@@ -69,6 +69,10 @@ public slots:
     }
 };
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 6, 0)
+# define CAN_IMPLICITLY_UNSET
+#endif
+
 void tst_qdesktopservices::handlers()
 {
     MyUrlHandler fooHandler;
@@ -76,6 +80,12 @@ void tst_qdesktopservices::handlers()
 
     QDesktopServices::setUrlHandler(QString("foo"), &fooHandler, "handle");
     QDesktopServices::setUrlHandler(QString("bar"), &barHandler, "handle");
+#ifndef CAN_IMPLICITLY_UNSET
+    const auto unsetHandlers = qScopeGuard([] {
+        QDesktopServices::unsetUrlHandler(u"bar"_qs);
+        QDesktopServices::unsetUrlHandler(u"foo"_qs);
+    });
+#endif
 
     QUrl fooUrl("foo://blub/meh");
     QUrl barUrl("bar://hmm/hmmmm");
@@ -85,6 +95,15 @@ void tst_qdesktopservices::handlers()
 
     QCOMPARE(fooHandler.lastHandledUrl.toString(), fooUrl.toString());
     QCOMPARE(barHandler.lastHandledUrl.toString(), barUrl.toString());
+
+#ifdef CAN_IMPLICITLY_UNSET
+    for (int i = 0; i < 2; ++i)
+        QTest::ignoreMessage(QtWarningMsg,
+                             "Please call QDesktopServices::unsetUrlHandler() before destroying a "
+                             "registered URL handler object.\n"
+                             "Support for destroying a registered URL handler object is deprecated, "
+                             "and will be removed in Qt 6.6.");
+#endif
 }
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
