@@ -83,7 +83,9 @@
 
     \internal
     Constructs a QPromise with a passed QFutureInterface \a other.
-    Used internally for QtConcurrent::runWithPromise.
+    Used internally for QtConcurrent::run(), when its callable takes
+    a reference to the associated promise as its first argument
+    (run with promise mode).
 
     \sa operator=()
 */
