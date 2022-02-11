@@ -3307,18 +3307,18 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                 toolOpt.features &= ~QStyleOptionToolButton::Arrow;
                 toolOpt.text = QString(); // we need to draw the arrow and the text ourselves
             }
-            const bool drawDropDown = tool->features & QStyleOptionToolButton::MenuButtonPopup;
+            bool drawDropDown = tool->features & QStyleOptionToolButton::MenuButtonPopup;
             bool customDropDown = drawDropDown && hasStyleRule(w, PseudoElement_ToolButtonMenu);
             bool customDropDownArrow = false;
-            const bool drawMenuIndicator = tool->features & QStyleOptionToolButton::HasMenu;
+            bool drawMenuIndicator = tool->features & QStyleOptionToolButton::HasMenu;
             if (customDropDown) {
                 toolOpt.subControls &= ~QStyle::SC_ToolButtonMenu;
                 customDropDownArrow = hasStyleRule(w, PseudoElement_ToolButtonMenuArrow);
                 if (customDropDownArrow)
                     toolOpt.features &= ~(QStyleOptionToolButton::Menu | QStyleOptionToolButton::HasMenu);
             }
-            bool customMenuIndicator = (!customDropDown && drawMenuIndicator)
-                                    && hasStyleRule(w, PseudoElement_ToolButtonMenuIndicator);
+            const bool customMenuIndicator = (!customDropDown && drawMenuIndicator)
+                                          && hasStyleRule(w, PseudoElement_ToolButtonMenuIndicator);
             if (customMenuIndicator)
                 toolOpt.features &= ~QStyleOptionToolButton::HasMenu;
 
@@ -3336,10 +3336,17 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                         rule.drawBackground(p, toolOpt.rect);
                 }
 
+                // Let base or windows style draw the button
+                // set drawDropDown and drawMenuIndicator flags to false,
+                // unless customDropDownArrow needs to be drawn
                 if (rule.baseStyleCanDraw() && !(tool->features & QStyleOptionToolButton::Arrow)) {
                     baseStyle()->drawComplexControl(cc, &toolOpt, p, w);
                 } else {
                     QWindowsStyle::drawComplexControl(cc, &toolOpt, p, w);
+                }
+                if (!customDropDownArrow) {
+                    drawDropDown      = false;
+                    drawMenuIndicator = false;
                 }
             } else {
                 rule.drawRule(p, opt->rect);
@@ -3350,6 +3357,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
             }
 
             const QRect cr = toolOpt.rect;
+            // Draw DropDownButton unless drawn before
             if (drawDropDown) {
                 if (opt->subControls & QStyle::SC_ToolButtonMenu) {
                     QRenderRule subRule = renderRule(w, opt, PseudoElement_ToolButtonMenu);
