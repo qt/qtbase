@@ -1,21 +1,30 @@
 // Copyright (C) 2016 The Qt Company Ltd.
+// Copyright (C) 2022 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-#include <QtCore>
+#include <QAtomicInt>
+#include <QCoreApplication>
+#include <QMutex>
+#include <QMutexLocker>
+#include <QObject>
+#include <QRandomGenerator>
+#include <QThread>
+#include <QWaitCondition>
 
 #include <stdio.h>
 #include <stdlib.h>
 
 //! [0]
-const int DataSize = 100000;
+constexpr int DataSize = 100000;
+constexpr int BufferSize = 8192;
 
-const int BufferSize = 8192;
+QMutex mutex; // protects the buffer
 char buffer[BufferSize];
 
 QWaitCondition bufferNotEmpty;
 QWaitCondition bufferNotFull;
-QMutex mutex;
-int numUsedBytes = 0;
+
+QAtomicInt numUsedBytes;
 //! [0]
 
 //! [1]
@@ -23,24 +32,25 @@ class Producer : public QThread
 //! [1] //! [2]
 {
 public:
-    Producer(QObject *parent = NULL) : QThread(parent)
+    explicit Producer(QObject *parent = nullptr)
+        : QThread(parent)
     {
     }
 
+private:
     void run() override
     {
         for (int i = 0; i < DataSize; ++i) {
-            mutex.lock();
-            if (numUsedBytes == BufferSize)
-                bufferNotFull.wait(&mutex);
-            mutex.unlock();
+            {
+                const QMutexLocker locker(&mutex);
+                while (numUsedBytes.loadAcquire() == BufferSize)
+                    bufferNotFull.wait(&mutex);
+            }
 
             buffer[i % BufferSize] = "ACGT"[QRandomGenerator::global()->bounded(4)];
 
-            mutex.lock();
-            ++numUsedBytes;
+            numUsedBytes.fetchAndAddRelease(1);
             bufferNotEmpty.wakeAll();
-            mutex.unlock();
         }
     }
 };
@@ -50,32 +60,29 @@ public:
 class Consumer : public QThread
 //! [3] //! [4]
 {
-    Q_OBJECT
 public:
-    Consumer(QObject *parent = NULL) : QThread(parent)
+    explicit Consumer(QObject *parent = nullptr)
+        : QThread(parent)
     {
     }
 
+private:
     void run() override
     {
         for (int i = 0; i < DataSize; ++i) {
-            mutex.lock();
-            if (numUsedBytes == 0)
-                bufferNotEmpty.wait(&mutex);
-            mutex.unlock();
+            {
+                const QMutexLocker locker(&mutex);
+                while (numUsedBytes.loadAcquire() == 0)
+                    bufferNotEmpty.wait(&mutex);
+            }
 
             fprintf(stderr, "%c", buffer[i % BufferSize]);
 
-            mutex.lock();
-            --numUsedBytes;
+            numUsedBytes.fetchAndAddRelease(-1);
             bufferNotFull.wakeAll();
-            mutex.unlock();
         }
         fprintf(stderr, "\n");
     }
-
-signals:
-    void stringConsumed(const QString &text);
 };
 //! [4]
 
@@ -95,4 +102,3 @@ int main(int argc, char *argv[])
 }
 //! [6]
 
-#include "waitconditions.moc"
