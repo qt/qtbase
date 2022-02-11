@@ -123,6 +123,10 @@
 #include <emscripten.h>
 #endif
 
+#if QT_CONFIG(vulkan)
+#include <private/qvulkandefaultinstance_p.h>
+#endif
+
 #include <qtgui_tracepoints_p.h>
 
 #include <ctype.h>
@@ -1711,6 +1715,10 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
         delete qt_gl_global_share_context();
         qt_gl_set_global_share_context(nullptr);
     }
+#endif
+
+#if QT_CONFIG(vulkan)
+    QVulkanDefaultInstance::cleanup();
 #endif
 
     platform_integration->destroy();

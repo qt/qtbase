@@ -47,7 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcGuiVk, "qt.vulkan")
+Q_DECLARE_LOGGING_CATEGORY(lcGuiVk)
 
 /*!
   \class QVulkanWindow
