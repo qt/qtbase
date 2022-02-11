@@ -47,6 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QTextureFileHandler::~QTextureFileHandler() = default;
+
 QTextureFileReader::QTextureFileReader(QIODevice *device, const QString &fileName)
     : m_device(device), m_fileName(fileName)
 {

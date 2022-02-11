@@ -59,6 +59,7 @@ class QAstcHandler : public QTextureFileHandler
 {
 public:
     using QTextureFileHandler::QTextureFileHandler;
+    ~QAstcHandler() override;
 
     static bool canRead(const QByteArray &suffix, const QByteArray &block);
 

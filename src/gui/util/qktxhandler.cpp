@@ -111,6 +111,8 @@ constexpr quint32 withPadding(quint32 value, quint32 rounding)
     return value + (rounding - 1) - ((value + (rounding - 1)) % rounding);
 }
 
+QKtxHandler::~QKtxHandler() = default;
+
 bool QKtxHandler::canRead(const QByteArray &suffix, const QByteArray &block)
 {
     Q_UNUSED(suffix);

@@ -61,6 +61,7 @@ class QKtxHandler : public QTextureFileHandler
 {
 public:
     using QTextureFileHandler::QTextureFileHandler;
+    ~QKtxHandler() override;
 
     static bool canRead(const QByteArray &suffix, const QByteArray &block);
 

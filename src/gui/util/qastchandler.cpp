@@ -59,6 +59,8 @@ struct AstcHeader
     quint8 zSize[3];
 };
 
+QAstcHandler::~QAstcHandler() = default;
+
 bool QAstcHandler::canRead(const QByteArray &suffix, const QByteArray &block)
 {
     Q_UNUSED(suffix);
