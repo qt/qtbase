@@ -1,8 +1,8 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
-** Copyright (C) 2020 Intel Corporation.
-** Copyright (C) 2019 Klarälvdalens Datakonsult AB.
+** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 Intel Corporation.
+** Copyright (C) 2021 Klarälvdalens Datakonsult AB.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -794,9 +794,14 @@ public:
 void tst_QSharedPointer::downCast()
 {
     {
+        // copy construction
         QSharedPointer<DerivedData> ptr = QSharedPointer<DerivedData>(new DerivedData);
+        QSharedPointer<DerivedData> copy = ptr;
         QSharedPointer<Data> baseptr = qSharedPointerCast<Data>(ptr);
         QSharedPointer<Data> other;
+        QWeakPointer<DerivedData> weak = ptr;
+        QWeakPointer<Data> baseweak = qSharedPointerCast<Data>(ptr);
+        QWeakPointer<Data> baseweak2 = qSharedPointerCast<Data>(weak);
 
         QVERIFY(ptr == baseptr);
         QVERIFY(baseptr == ptr);
@@ -807,11 +812,55 @@ void tst_QSharedPointer::downCast()
         QVERIFY(other != ptr);
         QVERIFY(! (ptr == other));
         QVERIFY(! (other == ptr));
+
+        // copy assignments
+        baseptr = qSharedPointerCast<Data>(ptr);
+        baseweak = qSharedPointerCast<Data>(ptr);
+        baseweak2 = baseweak;
+
+        // move assignments (these don't actually move)
+        baseptr = qSharedPointerCast<Data>(std::move(ptr));
+        ptr = copy;
+        baseweak = qSharedPointerCast<Data>(std::move(ptr));
+        ptr = copy;
+        baseweak2 = qSharedPointerCast<Data>(std::move(baseweak));
+
+        // move construction (these don't actually move)
+        ptr = copy;
+        QSharedPointer<Data> ptr3(qSharedPointerCast<Data>(std::move(ptr)));
+        ptr = copy;
+        QWeakPointer<Data> baseweak3(qSharedPointerCast<Data>(std::move(ptr)));
+        ptr = copy;
+        QWeakPointer<Data> baseweak4(qSharedPointerCast<Data>(std::move(weak)));
     }
 
     {
+        // copy construction
         QSharedPointer<DerivedData> ptr = QSharedPointer<DerivedData>(new DerivedData);
+        QSharedPointer<DerivedData> copy = ptr;
         QSharedPointer<Data> baseptr = ptr;
+        QWeakPointer<DerivedData> weak = ptr;
+        QWeakPointer<Data> baseweak = ptr;
+        QWeakPointer<Data> baseweak2 = weak;
+
+        // copy assignments
+        baseptr = ptr;
+        baseweak = ptr;
+        baseweak2 = weak;
+
+        // move assignments (only the QSharedPointer-QSharedPointer actually moves)
+        baseweak = std::move(ptr);
+        baseweak2 = std::move(weak);
+        ptr = copy;
+        baseptr = std::move(ptr);
+
+        // move construction (only the QSharedPointer-QSharedPointer actually moves)
+        ptr = copy;
+        QWeakPointer<Data> baseweak3(std::move(ptr));
+        ptr = copy;
+        QWeakPointer<Data> baseweak4(std::move(weak));
+        ptr = copy;
+        QSharedPointer<Data> baseptr2(std::move(ptr));
     }
 
     int destructorCount;

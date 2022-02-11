@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
-** Copyright (C) 2020 Intel Corporation.
+** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 Intel Corporation.
 ** Copyright (C) 2019 Klarälvdalens Datakonsult AB.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -680,6 +680,7 @@ private:
 public:
 #else
     template <class X> friend class QSharedPointer;
+    template <class X> friend class QWeakPointer;
     template <class X> friend class QPointer;
 #endif
 
