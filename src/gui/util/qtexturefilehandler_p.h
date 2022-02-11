@@ -63,7 +63,7 @@ public:
     {
         m_logName = !logName.isEmpty() ? logName : QByteArrayLiteral("(unknown)");
     }
-    virtual ~QTextureFileHandler() {}
+    virtual ~QTextureFileHandler();
 
     virtual QTextureFileData read() = 0;
     QIODevice *device() const { return m_device; }

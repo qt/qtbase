@@ -65,6 +65,8 @@ static constexpr PkmType typeMap[5] = {
     { 0x9276,  8 }    // GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2
 };
 
+QPkmHandler::~QPkmHandler() = default;
+
 bool QPkmHandler::canRead(const QByteArray &suffix, const QByteArray &block)
 {
     Q_UNUSED(suffix);

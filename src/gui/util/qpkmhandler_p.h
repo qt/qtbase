@@ -59,6 +59,7 @@ class QPkmHandler : public QTextureFileHandler
 {
 public:
     using QTextureFileHandler::QTextureFileHandler;
+    ~QPkmHandler() override;
 
     static bool canRead(const QByteArray &suffix, const QByteArray &block);
 
