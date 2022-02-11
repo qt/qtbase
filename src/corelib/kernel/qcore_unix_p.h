@@ -105,7 +105,7 @@ QT_BEGIN_NAMESPACE
 Q_DECLARE_TYPEINFO(pollfd, Q_PRIMITIVE_TYPE);
 
 // Internal operator functions for timespecs
-inline timespec &normalizedTimespec(timespec &t)
+constexpr inline timespec &normalizedTimespec(timespec &t)
 {
     while (t.tv_nsec >= 1000000000) {
         ++t.tv_sec;
@@ -117,35 +117,35 @@ inline timespec &normalizedTimespec(timespec &t)
     }
     return t;
 }
-inline bool operator<(const timespec &t1, const timespec &t2)
+constexpr inline bool operator<(const timespec &t1, const timespec &t2)
 { return t1.tv_sec < t2.tv_sec || (t1.tv_sec == t2.tv_sec && t1.tv_nsec < t2.tv_nsec); }
-inline bool operator==(const timespec &t1, const timespec &t2)
+constexpr inline bool operator==(const timespec &t1, const timespec &t2)
 { return t1.tv_sec == t2.tv_sec && t1.tv_nsec == t2.tv_nsec; }
-inline bool operator!=(const timespec &t1, const timespec &t2)
+constexpr inline bool operator!=(const timespec &t1, const timespec &t2)
 { return !(t1 == t2); }
-inline timespec &operator+=(timespec &t1, const timespec &t2)
+constexpr inline timespec &operator+=(timespec &t1, const timespec &t2)
 {
     t1.tv_sec += t2.tv_sec;
     t1.tv_nsec += t2.tv_nsec;
     return normalizedTimespec(t1);
 }
-inline timespec operator+(const timespec &t1, const timespec &t2)
+constexpr inline timespec operator+(const timespec &t1, const timespec &t2)
 {
-    timespec tmp;
+    timespec tmp = {};
     tmp.tv_sec = t1.tv_sec + t2.tv_sec;
     tmp.tv_nsec = t1.tv_nsec + t2.tv_nsec;
     return normalizedTimespec(tmp);
 }
-inline timespec operator-(const timespec &t1, const timespec &t2)
+constexpr inline timespec operator-(const timespec &t1, const timespec &t2)
 {
-    timespec tmp;
+    timespec tmp = {};
     tmp.tv_sec = t1.tv_sec - (t2.tv_sec - 1);
     tmp.tv_nsec = t1.tv_nsec - (t2.tv_nsec + 1000000000);
     return normalizedTimespec(tmp);
 }
-inline timespec operator*(const timespec &t1, int mul)
+constexpr inline timespec operator*(const timespec &t1, int mul)
 {
-    timespec tmp;
+    timespec tmp = {};
     tmp.tv_sec = t1.tv_sec * mul;
     tmp.tv_nsec = t1.tv_nsec * mul;
     return normalizedTimespec(tmp);

@@ -197,15 +197,22 @@ inline timespec operator+(const timespec &t1, int ms)
     return t2 += ms;
 }
 
-static timespec roundToMillisecond(timespec val)
+static constexpr timespec roundToMillisecond(timespec val)
 {
     // always round up
     // worst case scenario is that the first trigger of a 1-ms timer is 0.999 ms late
 
     int ns = val.tv_nsec % (1000 * 1000);
-    val.tv_nsec += 1000 * 1000 - ns;
+    if (ns)
+        val.tv_nsec += 1000 * 1000 - ns;
     return normalizedTimespec(val);
 }
+static_assert(roundToMillisecond({0, 0}) == timespec{0, 0});
+static_assert(roundToMillisecond({0, 1}) == timespec{0, 1'000'000});
+static_assert(roundToMillisecond({0, 999'999}) == timespec{0, 1'000'000});
+static_assert(roundToMillisecond({0, 1'000'000}) == timespec{0, 1'000'000});
+static_assert(roundToMillisecond({0, 999'999'999}) == timespec{1, 0});
+static_assert(roundToMillisecond({1, 0}) == timespec{1, 0});
 
 #ifdef QTIMERINFO_DEBUG
 QDebug operator<<(QDebug s, timeval tv)
