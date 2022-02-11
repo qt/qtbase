@@ -167,18 +167,17 @@
 
     \section2 The mandatory QPromise argument
 
-    The function passed to QtConcurrent::run() in \e {Run With Promise} mode is expected
-    to have an additional argument of \c {QPromise<T> &} type, where
-    T is the type of the computation result (it should match the type T
-    of QFuture<T> returned by the QtConcurrent::runWithPromise()), like e.g.:
+    The function passed to QtConcurrent::run() in \e {Run With Promise} mode
+    is expected to have an additional argument of \c {QPromise<T> &} type, where
+    \c T is the type of the computation result (it should match the type \c T
+    of QFuture<T> returned by QtConcurrent::run()), like e.g.:
 
     \snippet code/src_concurrent_qtconcurrentrun.cpp 9
 
-    The \c promise argument is instantiated inside the
-    QtConcurrent::run() function, and its reference
-    is passed to the invoked \c aFunction, so the user
-    doesn't need to instantiate it by himself, nor pass it explicitly
-    when calling QtConcurrent::runWithPromise().
+    The \c promise argument is instantiated inside the QtConcurrent::run()
+    function, and its reference is passed to the invoked \c aFunction, so the
+    user doesn't need to instantiate it, nor pass it explicitly
+    when calling QtConcurrent::run() in this mode.
 
     The additional argument of QPromise type always needs to appear
     as a first argument on function's arguments list, like:
