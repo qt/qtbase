@@ -74,7 +74,7 @@ private:
 };
 
 tst_QSystemSemaphore::tst_QSystemSemaphore()
-    : m_helperBinary("acquirerelease_helper")
+    : m_helperBinary("./acquirerelease_helper")
 {
 }
 
