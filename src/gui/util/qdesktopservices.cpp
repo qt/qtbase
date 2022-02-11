@@ -58,9 +58,8 @@
 
 QT_BEGIN_NAMESPACE
 
-class QOpenUrlHandlerRegistry : public QObject
+class QOpenUrlHandlerRegistry
 {
-    Q_OBJECT
 public:
     QOpenUrlHandlerRegistry() = default;
 
@@ -75,7 +74,8 @@ public:
     HandlerHash handlers;
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 6, 0)
-public Q_SLOTS:
+    QObject context;
+
     void handlerDestroyed(QObject *handler);
 #endif
 
@@ -336,8 +336,8 @@ void QDesktopServices::setUrlHandler(const QString &scheme, QObject *receiver, c
     h.name = method;
     registry->handlers.insert(scheme.toLower(), h);
 #if QT_VERSION < QT_VERSION_CHECK(6, 6, 0)
-    QObject::connect(receiver, SIGNAL(destroyed(QObject*)),
-                     registry, SLOT(handlerDestroyed(QObject*)),
+    QObject::connect(receiver, &QObject::destroyed, &registry->context,
+                     [registry](QObject *obj) { registry->handlerDestroyed(obj); },
                      Qt::DirectConnection);
 #endif
 }
@@ -357,7 +357,5 @@ void QDesktopServices::unsetUrlHandler(const QString &scheme)
 }
 
 QT_END_NAMESPACE
-
-#include "qdesktopservices.moc"
 
 #endif // QT_NO_DESKTOPSERVICES
