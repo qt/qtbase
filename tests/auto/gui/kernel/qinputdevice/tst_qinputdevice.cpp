@@ -49,6 +49,11 @@ void tst_QInputDevice::initTestCase()
 {
 }
 
+static bool isPlatformWayland()
+{
+    return !QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive);
+}
+
 void tst_QInputDevice::multiSeatDevices()
 {
     QWindowSystemInterface::registerInputDevice(new QInputDevice("seat 1 kbd", 1000, QInputDevice::DeviceType::Keyboard, "seat 1", this));
@@ -65,6 +70,8 @@ void tst_QInputDevice::multiSeatDevices()
     QVERIFY(QInputDevicePrivate::fromId(2010));
     QVERIFY(!QInputDevicePrivate::fromId(2010)->hasCapability(QInputDevice::Capability::Scroll));
     QVERIFY(QInputDevice::primaryKeyboard());
+    if (isPlatformWayland())
+        QEXPECT_FAIL("", "This fails on Wayland, see QTBUG-100790.", Abort);
     QCOMPARE(QInputDevice::primaryKeyboard()->systemId(), qint64(1) << 33);
     QVERIFY(QPointingDevice::primaryPointingDevice());
     QCOMPARE(QPointingDevice::primaryPointingDevice()->systemId(), 1);
