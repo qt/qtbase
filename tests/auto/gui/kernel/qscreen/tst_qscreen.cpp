@@ -304,6 +304,8 @@ void tst_QScreen::grabWindow()
 
     QImage grabbedImage = pixmap.toImage();
     const QSize grabbedSize = grabbedImage.size();
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QEXPECT_FAIL("", "Wayland: Screen grabbing not implemented, See QTBUG-100792.", Abort);
     QCOMPARE(grabbedSize, expectedGrabSize);
 
     QPoint pixelOffset = QPoint(0, 0);
