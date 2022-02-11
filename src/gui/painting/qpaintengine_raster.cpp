@@ -1793,7 +1793,7 @@ void QRasterPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
     QRectF cpRect = path.controlPointRect();
     const QRectF pathDeviceRect = s->matrix.mapRect(cpRect);
     // Skip paths that by conservative estimates are completely outside the paint device.
-    if (!pathDeviceRect.intersects(QRectF(d->deviceRect)))
+    if (!pathDeviceRect.intersects(QRectF(d->deviceRect)) || !pathDeviceRect.isValid())
         return;
 
     ProcessSpans blend = d->getBrushFunc(pathDeviceRect, &s->brushData);
