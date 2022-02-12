@@ -60,8 +60,7 @@
 
 QT_BEGIN_NAMESPACE
 
-
-class Q_CORE_EXPORT QDebug : public QIODeviceBase
+class QT6_ONLY(Q_CORE_EXPORT) QDebug : public QIODeviceBase
 {
     friend class QMessageLogger;
     friend class QDebugStateSaver;
@@ -93,9 +92,9 @@ class Q_CORE_EXPORT QDebug : public QIODeviceBase
 
     enum Latin1Content { ContainsBinary = 0, ContainsLatin1 };
 
-    void putUcs4(uint ucs4);
-    void putString(const QChar *begin, size_t length);
-    void putByteArray(const char *begin, size_t length, Latin1Content content);
+    QT7_ONLY(Q_CORE_EXPORT) void putUcs4(uint ucs4);
+    QT7_ONLY(Q_CORE_EXPORT) void putString(const QChar *begin, size_t length);
+    QT7_ONLY(Q_CORE_EXPORT) void putByteArray(const char *begin, size_t length, Latin1Content content);
 public:
     explicit QDebug(QIODevice *device) : stream(new Stream(device)) {}
     explicit QDebug(QString *string) : stream(new Stream(string)) {}
@@ -107,7 +106,7 @@ public:
     ~QDebug();
     void swap(QDebug &other) noexcept { qt_ptr_swap(stream, other.stream); }
 
-    QDebug &resetFormat();
+    QT7_ONLY(Q_CORE_EXPORT) QDebug &resetFormat();
 
     inline QDebug &space() { stream->space = true; stream->ts << ' '; return *this; }
     inline QDebug &nospace() { stream->space = false; return *this; }
