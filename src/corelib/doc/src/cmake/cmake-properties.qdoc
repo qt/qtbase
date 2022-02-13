@@ -361,3 +361,49 @@ the property value overrides the runtime path where the resource file is found.
 
 \sa{The Qt Resource System}
 */
+
+/*!
+\page cmake-target-property-QT_WASM_PTHREAD_POOL_SIZE.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_WASM_PTHREAD_POOL_SIZE
+\target cmake-target-property-QT_WASM_PTHREAD_POOL_SIZE
+
+\summary {Internal WebAssembly thread pool size.}
+
+\cmakepropertysince 6.2.4
+\preliminarycmakeproperty
+\cmakepropertywebassemblyonly
+
+Specifies the number of web workers (threads) to create at application startup.
+Qt allocates a pool size of 4 by default. This means the app can use
+4 additional threads besides the main thread, without the additional overhead
+of creating a new web worker, which may deadlock if the main thread created it
+and join()s the thread without returning control to the event loop first.
+Translates into the Emscripten compiler setting of PTHREAD_POOL_SIZE.
+
+For more information, see \l{https://emscripten.org/docs/porting/pthreads.html}{Pthreads support}.
+*/
+
+/*!
+\page cmake-target-property-QT_WASM_INITIAL_MEMORY.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_WASM_INITIAL_MEMORY
+\target cmake-target-property-QT_WASM_INITIAL_MEMORY
+
+\summary {Internal WebAssembly initial memory.}
+
+\cmakepropertysince 6.2.4
+\preliminarycmakeproperty
+\cmakepropertywebassemblyonly
+
+Specifies the initial amount of memory to use, in bytes. Using more will cause the
+browser to copy the old heap into a new one. Translates into the
+Emscripten compiler setting of INITIAL_MEMORY.
+QT_WASM_INITIAL_MEMORY must be a multiple of 65536 bytes.
+
+For more information, see \l{https://github.com/emscripten-core/emscripten/blob/main/src/settings.js}{Emscripten compiler settings}.
+*/

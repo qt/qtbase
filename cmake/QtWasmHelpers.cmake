@@ -14,23 +14,6 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
         target_compile_options("${wasmTarget}" INTERFACE -O2 -msimd128 -msse -msse2)
     endif()
 
-    # Hardcode wasm memory size. Emscripten does not currently support memory growth
-    # (ALLOW_MEMORY_GROWTH) in pthreads mode, and requires specifying the memory size
-    # at build time. Further, browsers limit the maximum initial memory size to 1GB.
-    # QT_WASM_INITIAL_MEMORY must be a multiple of 64KB (i.e. 65536)
-    if(NOT DEFINED QT_WASM_INITIAL_MEMORY)
-        if(QT_FEATURE_thread)
-            set(QT_WASM_INITIAL_MEMORY "1GB")
-        else()
-            set(QT_WASM_INITIAL_MEMORY "20MB") # emscripten default is 16MB, we need slightly more sometimes
-        endif()
-    endif()
-
-    if(DEFINED QT_WASM_INITIAL_MEMORY)
-        target_link_options("${wasmTarget}" INTERFACE "SHELL:-s INITIAL_MEMORY=${QT_WASM_INITIAL_MEMORY}")
-        message("Setting INITIAL_MEMORY to ${QT_WASM_INITIAL_MEMORY}")
-    endif()
-
     if (QT_FEATURE_opengles3)
         target_link_options("${wasmTarget}" INTERFACE "SHELL:-s FULL_ES3=1")
 
@@ -50,14 +33,6 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
     if (QT_FEATURE_thread)
         target_compile_options("${wasmTarget}" INTERFACE "SHELL:-s USE_PTHREADS=1")
         target_link_options("${wasmTarget}" INTERFACE "SHELL:-s USE_PTHREADS=1")
-
-        set(POOL_SIZE 4)
-        if(DEFINED QT_WASM_PTHREAD_POOL_SIZE)
-            set(POOL_SIZE ${QT_WASM_PTHREAD_POOL_SIZE})
-        endif()
-        target_link_options("${wasmTarget}" INTERFACE "SHELL:-s PTHREAD_POOL_SIZE=${POOL_SIZE}")
-        message("Setting PTHREAD_POOL_SIZE to ${POOL_SIZE}")
-
     else()
         target_link_options("${wasmTarget}" INTERFACE "SHELL:-s ALLOW_MEMORY_GROWTH=1")
     endif()
