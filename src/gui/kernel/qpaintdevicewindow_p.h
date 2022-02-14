@@ -64,6 +64,9 @@ class Q_GUI_EXPORT QPaintDeviceWindowPrivate : public QWindowPrivate
     Q_DECLARE_PUBLIC(QPaintDeviceWindow)
 
 public:
+    QPaintDeviceWindowPrivate();
+    ~QPaintDeviceWindowPrivate() override;
+
     virtual void beginPaint(const QRegion &region)
     {
         Q_UNUSED(region);
