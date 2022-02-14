@@ -123,7 +123,7 @@ void tst_QCoreApplication::getSetCheck()
 
 void tst_QCoreApplication::qAppName()
 {
-#ifdef QT_GUI_LIB
+#ifdef QT_QGUIAPPLICATIONTEST
     const char* appName = "tst_qguiapplication";
 #else
     const char* appName = "tst_qcoreapplication";
@@ -1078,7 +1078,7 @@ static void createQObjectOnDestruction()
 }
 Q_DESTRUCTOR_FUNCTION(createQObjectOnDestruction)
 
-#ifndef QT_GUI_LIB
+#ifndef QT_QGUIAPPLICATIONTEST
 QTEST_APPLESS_MAIN(tst_QCoreApplication)
 #endif
 
