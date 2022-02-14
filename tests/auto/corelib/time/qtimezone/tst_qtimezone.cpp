@@ -574,14 +574,15 @@ void tst_QTimeZone::specificTransition()
     if (!timeZone.isValid())
         QSKIP("Missing time-zone data");
     QTimeZone::OffsetDataList transits =
-        timeZone.transitions(QDateTime(start, QTime(0, 0), timeZone),
-                             QDateTime(stop, QTime(23, 59), timeZone));
+        timeZone.transitions(start.startOfDay(timeZone), stop.endOfDay(timeZone));
     QCOMPARE(transits.length(), count);
-    const QTimeZone::OffsetData &transition = transits.at(0);
-    QCOMPARE(transition.offsetFromUtc, offset);
-    QCOMPARE(transition.standardTimeOffset, stdoff);
-    QCOMPARE(transition.daylightTimeOffset, dstoff);
-    QCOMPARE(transition.atUtc, atUtc);
+    if (count) {
+        const QTimeZone::OffsetData &transition = transits.at(0);
+        QCOMPARE(transition.offsetFromUtc, offset);
+        QCOMPARE(transition.standardTimeOffset, stdoff);
+        QCOMPARE(transition.daylightTimeOffset, dstoff);
+        QCOMPARE(transition.atUtc, atUtc);
+    }
 }
 
 void tst_QTimeZone::transitionEachZone_data()
