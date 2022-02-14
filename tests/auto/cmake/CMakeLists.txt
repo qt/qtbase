@@ -284,3 +284,22 @@ _qt_internal_test_expect_pass(test_static_resources
 _qt_internal_test_expect_pass(test_generating_cpp_exports)
 
 _qt_internal_test_expect_pass(test_qt_extract_metatypes)
+
+set(deploy_args
+    test_widgets_app_deployment
+    BINARY "${CMAKE_CTEST_COMMAND}"
+    BINARY_ARGS "-V"
+    # Need to explicitly specify a writable install prefix.
+    BUILD_OPTIONS
+        -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/test_widgets_app_deployment_installed
+)
+
+# For now, the test should only pass on Windows and macOS shared and static builds and fail on
+# other platforms, because there is no support for runtime dependency deployment
+# on those platforms.
+# With static builds the runtime dependencies are just skipped, but the test should still pass.
+if((WIN32 OR (APPLE AND NOT IOS)))
+    _qt_internal_test_expect_pass(${deploy_args})
+else()
+    _qt_internal_test_expect_fail(${deploy_args})
+endif()
