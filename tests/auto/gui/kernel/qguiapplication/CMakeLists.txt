@@ -23,6 +23,7 @@ qt_internal_add_test(tst_qguiapplication
         tst_qguiapplication.cpp
     DEFINES
         QT_DISABLE_DEPRECATED_BEFORE=0x050E00
+        QT_QGUIAPPLICATIONTEST=1
     INCLUDE_DIRECTORIES
         ../../../corelib/kernel/qcoreapplication
     PUBLIC_LIBRARIES
