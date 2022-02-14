@@ -226,14 +226,15 @@ void QWasmScreen::updateQScreenAndCanvasRenderSize()
     m_canvas.set("width", canvasSize.width());
     m_canvas.set("height", canvasSize.height());
 
-    QPoint offset;
-    offset.setX(m_canvas["offsetLeft"].as<int>());
-    offset.setY(m_canvas["offsetTop"].as<int>());
+    // Returns the html elments document/body position
+    auto getElementBodyPosition = [](const emscripten::val &element) -> QPoint {
+        emscripten::val bodyRect = element["ownerDocument"]["body"].call<emscripten::val>("getBoundingClientRect");
+        emscripten::val canvasRect = element.call<emscripten::val>("getBoundingClientRect");
+        return QPoint (canvasRect["left"].as<int>() - bodyRect["left"].as<int>(),
+                       canvasRect["top"].as<int>() - bodyRect["top"].as<int>());
+    };
 
-    emscripten::val rect = m_canvas.call<emscripten::val>("getBoundingClientRect");
-    QPoint position(rect["left"].as<int>() - offset.x(), rect["top"].as<int>() - offset.y());
-
-    setGeometry(QRect(position, cssSize.toSize()));
+    setGeometry(QRect(getElementBodyPosition(m_canvas), cssSize.toSize()));
     m_compositor->requestUpdateAllWindows();
 }
 
