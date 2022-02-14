@@ -31,6 +31,11 @@ if (APPLE)
 endif()
 # special case end
 
+if (ANDROID)
+    set_property(TARGET tst_qcoreapplication PROPERTY QT_ANDROID_VERSION_NAME ${target_version})
+endif()
+
+
 #### Keys ignored in scope 1:.:.:qcoreapplication.pro:<TRUE>:
 # QMAKE_INFO_PLIST = "$$PWD/Info.plist"
 # _REQUIREMENTS = "qtConfig(private_tests)"

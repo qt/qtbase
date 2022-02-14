@@ -35,6 +35,9 @@ qt_internal_add_test(tst_qguiapplication
     BUILTIN_TESTDATA
 )
 
+if (ANDROID)
+    set_property(TARGET tst_qguiapplication PROPERTY QT_ANDROID_VERSION_NAME ${target_version})
+endif()
 # special case begin
 if (APPLE)
     set_property(TARGET tst_qguiapplication PROPERTY MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist")
