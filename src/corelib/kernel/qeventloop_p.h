@@ -30,6 +30,7 @@ public:
         returnCode.storeRelaxed(-1);
         exit.storeRelaxed(true);
     }
+    ~QEventLoopPrivate() override;
 
     QAtomicInt quitLockRef;
 

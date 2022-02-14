@@ -58,6 +58,9 @@
 
 QT_BEGIN_NAMESPACE
 
+QPropertyAnimationPrivate::~QPropertyAnimationPrivate()
+    = default;
+
 void QPropertyAnimationPrivate::updateMetaProperty()
 {
     const QObject *target = targetObject.valueBypassingBindings();

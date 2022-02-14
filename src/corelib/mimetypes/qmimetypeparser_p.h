@@ -47,7 +47,7 @@ class QMimeTypeParserBase
 
 public:
     QMimeTypeParserBase() {}
-    virtual ~QMimeTypeParserBase() {}
+    virtual ~QMimeTypeParserBase();
 
     bool parse(QIODevice *dev, const QString &fileName, QString *errorMessage);
 
@@ -86,6 +86,7 @@ class QMimeTypeParser : public QMimeTypeParserBase
 {
 public:
     explicit QMimeTypeParser(QMimeXMLProvider &provider) : m_provider(provider) {}
+    ~QMimeTypeParser() override;
 
 protected:
     inline bool process(const QMimeTypeXMLData &t, QString *) override

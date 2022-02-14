@@ -57,6 +57,9 @@ static const char matchMaskAttributeC[] = "mask";
     \sa QMimeTypeParser
 */
 
+QMimeTypeParser::~QMimeTypeParser()
+    = default;
+
 /*!
     \class QMimeTypeParserBase
     \inmodule QtCore
@@ -68,6 +71,9 @@ static const char matchMaskAttributeC[] = "mask";
     \sa QMimeDatabase, QMimeMagicRuleMatcher, MagicRule, MagicStringRule, MagicByteRule, GlobPattern
     \sa QMimeTypeParser
 */
+
+QMimeTypeParserBase::~QMimeTypeParserBase()
+    = default;
 
 /*!
     \fn virtual bool QMimeTypeParserBase::process(const QMimeType &t, QString *errorMessage) = 0;

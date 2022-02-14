@@ -35,6 +35,7 @@ public:
     {
         intervalDuration.notify();
     }
+    ~QTimerPrivate() override;
 
     static constexpr int INV_TIMER = -1; // invalid timer id
 

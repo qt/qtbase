@@ -32,6 +32,9 @@ static QString appendSlashIfNeeded(const QString &path)
     return path;
 }
 
+QAbstractFileEnginePrivate::~QAbstractFileEnginePrivate()
+    = default;
+
 /*!
     \class QAbstractFileEngineHandler
     \inmodule QtCore

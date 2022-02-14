@@ -34,6 +34,7 @@ class QVariantAnimationPrivate : public QAbstractAnimationPrivate
 public:
 
     QVariantAnimationPrivate();
+    ~QVariantAnimationPrivate() override;
 
     static QVariantAnimationPrivate *get(QVariantAnimation *q)
     {

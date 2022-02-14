@@ -592,6 +592,8 @@ void QItemSelection::split(const QItemSelectionRange &range,
     }
 }
 
+QItemSelectionModelPrivate::~QItemSelectionModelPrivate()
+    = default;
 
 void QItemSelectionModelPrivate::initModel(QAbstractItemModel *m)
 {

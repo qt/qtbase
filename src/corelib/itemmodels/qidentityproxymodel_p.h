@@ -29,6 +29,7 @@ public:
     QIdentityProxyModelPrivate()
     {
     }
+    ~QIdentityProxyModelPrivate() override;
 
     QList<QPersistentModelIndex> layoutChangePersistentIndexes;
     QModelIndexList proxyIndexes;

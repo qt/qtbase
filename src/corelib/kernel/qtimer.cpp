@@ -19,6 +19,9 @@ using namespace std::chrono_literals;
 
 QT_BEGIN_NAMESPACE
 
+QTimerPrivate::~QTimerPrivate()
+    = default;
+
 /*!
     \class QTimer
     \inmodule QtCore

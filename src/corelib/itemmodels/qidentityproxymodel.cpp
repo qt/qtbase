@@ -8,6 +8,9 @@
 
 QT_BEGIN_NAMESPACE
 
+QIdentityProxyModelPrivate::~QIdentityProxyModelPrivate()
+    = default;
+
 /*!
     \since 4.8
     \class QIdentityProxyModel

@@ -14,6 +14,9 @@
 
 QT_BEGIN_NAMESPACE
 
+QEventLoopPrivate::~QEventLoopPrivate()
+    = default;
+
 /*!
     \class QEventLoop
     \inmodule QtCore
