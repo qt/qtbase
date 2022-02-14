@@ -684,19 +684,21 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::nextTransition(qint64 afterMSecsSinc
     for (int ruleIndex = ruleIndexForYear(m_tranRules, year);
          ruleIndex < m_tranRules.count(); ++ruleIndex) {
         const QWinTransitionRule &rule = m_tranRules.at(ruleIndex);
+        // Initial guess: rule starts in standard time (unsound in southern hemisphere).
+        int newYearOffset = rule.standardTimeBias;
         // Does this rule's period include any transition at all ?
         if (rule.standardTimeRule.wMonth > 0 || rule.daylightTimeRule.wMonth > 0) {
             if (year < rule.startYear) {
-                Q_ASSERT(ruleIndex == 0);
-                // Find first transition in this first rule.
-                // Initial guess: first rule starts in standard time.
-                TransitionTimePair pair(rule, rule.startYear, rule.standardTimeBias);
+                // Either before first rule's start, or we fell off the end of
+                // the rule for year because afterMSecsSinceEpoch is after any
+                // transitions in it. Find first transition in this rule.
+                TransitionTimePair pair(rule, rule.startYear, newYearOffset);
                 return pair.ruleToData(rule, this, pair.startsInDst());
             }
             const int endYear = ruleIndex + 1 < m_tranRules.count()
                 ? qMin(m_tranRules.at(ruleIndex + 1).startYear, year + 2) : (year + 2);
             int prior = year == 1 ? -1 : year - 1; // No year 0.
-            int newYearOffset = (year <= rule.startYear && ruleIndex > 0)
+            newYearOffset = (year <= rule.startYear && ruleIndex > 0)
                 ? yearEndOffset(m_tranRules.at(ruleIndex - 1), prior)
                 : yearEndOffset(rule, prior);
             while (year < endYear) {
