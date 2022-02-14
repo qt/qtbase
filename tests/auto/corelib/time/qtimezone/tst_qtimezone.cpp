@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -596,19 +596,15 @@ void tst_QTimeZone::transitionEachZone_data()
         int start, stop;
         int year;
     } table[] = {
-        { 25666200, 3, 12, 1970 },  // 1970-10-25 01:30 UTC; North America
-        { 1288488600, -4, 8, 2010 } // 2010-10-31 01:30 UTC; Europe, Russia
+        { 1288488600, -4, 8, 2010 }, // 2010-10-31 01:30 UTC; Europe, Russia
+        { 25666200, 3, 12, 1970 },   // 1970-10-25 01:30 UTC; North America
     };
 
     const auto zones = QTimeZone::availableTimeZoneIds();
-    for (int k = std::size(table); k-- > 0; ) {
+    for (const auto &entry : table) {
         for (const QByteArray &zone : zones) {
-            const QString name = QString::asprintf("%s@%d", zone.constData(), table[k].year);
-            QTest::newRow(name.toUtf8().constData())
-                << zone
-                << table[k].baseSecs
-                << table[k].start
-                << table[k].stop;
+            QTest::addRow("%s@%d", zone.constData(), entry.year)
+                << zone << entry.baseSecs << entry.start << entry.stop;
         }
     }
 }
