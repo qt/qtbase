@@ -2498,8 +2498,6 @@ endfunction()
 
 # Note this needs to be a macro because it sets variables intended for the
 # calling scope.
-# This function is currently in Technical Preview.
-# Its signature and behavior might change.
 macro(qt6_standard_project_setup)
     # A parent project might want to prevent child projects pulled in with
     # add_subdirectory() from changing the parent's preferred arrangement.
