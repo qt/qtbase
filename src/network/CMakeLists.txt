@@ -14,7 +14,6 @@ qt_internal_add_module(Network
         access/qnetworkaccessbackend.cpp access/qnetworkaccessbackend_p.h
         access/qnetworkaccesscache.cpp access/qnetworkaccesscache_p.h
         access/qnetworkaccesscachebackend.cpp access/qnetworkaccesscachebackend_p.h
-        access/qnetworkaccessdebugpipebackend.cpp access/qnetworkaccessdebugpipebackend_p.h
         access/qnetworkaccessfilebackend.cpp access/qnetworkaccessfilebackend_p.h
         access/qnetworkaccessmanager.cpp access/qnetworkaccessmanager.h access/qnetworkaccessmanager_p.h
         access/qnetworkcookie.cpp access/qnetworkcookie.h access/qnetworkcookie_p.h
@@ -69,6 +68,11 @@ qt_internal_add_module(Network
 
 ## Scopes:
 #####################################################################
+
+qt_internal_extend_target(Network CONDITION QT_FEATURE_private_tests
+    SOURCES
+        access/qnetworkaccessdebugpipebackend.cpp access/qnetworkaccessdebugpipebackend_p.h
+)
 
 qt_internal_extend_target(Network CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
     LINK_OPTIONS
