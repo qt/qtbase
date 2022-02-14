@@ -88,6 +88,9 @@ const int QtTimerIdFreeListConstants::Sizes[QtTimerIdFreeListConstants::BlockCou
 typedef QFreeList<void, QtTimerIdFreeListConstants> QtTimerIdFreeList;
 Q_GLOBAL_STATIC(QtTimerIdFreeList, timerIdFreeList)
 
+QAbstractEventDispatcherPrivate::~QAbstractEventDispatcherPrivate()
+    = default;
+
 int QAbstractEventDispatcherPrivate::allocateTimerId()
 {
     // This function may be called after timerIdFreeList() has been destructed

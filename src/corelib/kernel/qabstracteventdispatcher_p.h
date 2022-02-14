@@ -64,6 +64,7 @@ class Q_CORE_EXPORT QAbstractEventDispatcherPrivate : public QObjectPrivate
 public:
     inline QAbstractEventDispatcherPrivate()
     { }
+    ~QAbstractEventDispatcherPrivate() override;
 
     QList<QAbstractNativeEventFilter *> eventFilters;
 

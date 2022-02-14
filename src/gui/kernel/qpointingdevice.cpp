@@ -314,6 +314,9 @@ const QPointingDevice *QPointingDevice::primaryPointingDevice(const QString& sea
     return touchpad;
 }
 
+QPointingDevicePrivate::~QPointingDevicePrivate()
+    = default;
+
 /*!
     \internal
     Finds the device instance belonging to the drawing or eraser end of a particular stylus,

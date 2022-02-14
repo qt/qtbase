@@ -4827,6 +4827,9 @@ QApplicationStateChangeEvent::QApplicationStateChangeEvent(Qt::ApplicationState 
     Returns the state of the application.
 */
 
+QMutableTouchEvent::~QMutableTouchEvent()
+    = default;
+
 /*! \internal
     Add the given \a point.
 */
@@ -4840,5 +4843,7 @@ void QMutableTouchEvent::addPoint(const QEventPoint &point)
 }
 
 
+QMutableSinglePointEvent::~QMutableSinglePointEvent()
+    = default;
 
 QT_END_NAMESPACE

@@ -73,6 +73,7 @@ public:
         if (!systemId)
             systemId = nextId++;
     }
+    ~QInputDevicePrivate() override;
 
     QString name;
     QString seatName;

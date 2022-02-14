@@ -310,6 +310,9 @@ const QInputDevice *QInputDevice::primaryKeyboard(const QString& seatName)
     return ret;
 }
 
+QInputDevicePrivate::~QInputDevicePrivate()
+    = default;
+
 /*!
     \internal
     Checks whether a matching device is already registered

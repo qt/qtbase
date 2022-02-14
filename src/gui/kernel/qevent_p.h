@@ -69,6 +69,7 @@ public:
                        Qt::KeyboardModifiers modifiers = Qt::NoModifier,
                        const QList<QEventPoint> &touchPoints = QList<QEventPoint>()) :
         QTouchEvent(eventType, device, modifiers, touchPoints) { }
+    ~QMutableTouchEvent() override;
 
     static QMutableTouchEvent *from(QTouchEvent *e) { return static_cast<QMutableTouchEvent *>(e); }
 
@@ -88,6 +89,7 @@ public:
                              Qt::KeyboardModifiers modifiers = Qt::NoModifier,
                              Qt::MouseEventSource source = Qt::MouseEventSynthesizedByQt) :
         QSinglePointEvent(type, device, point, button, buttons, modifiers, source) { }
+    ~QMutableSinglePointEvent() override;
 
     static QMutableSinglePointEvent *from(QSinglePointEvent *e) { return static_cast<QMutableSinglePointEvent *>(e); }
 
