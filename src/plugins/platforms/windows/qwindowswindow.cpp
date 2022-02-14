@@ -2844,7 +2844,7 @@ void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
             mmi->ptMaxSize.x = availableGeometry.width();
 
             // If you have the taskbar on top, or on the left you don't want it at (0,0):
-            QPoint availablePositionDiff = geometry.topLeft() - availableGeometry.topLeft();
+            QPoint availablePositionDiff = availableGeometry.topLeft() - geometry.topLeft();
             mmi->ptMaxPosition.x = availablePositionDiff.x();
             mmi->ptMaxPosition.y = availablePositionDiff.y();
             if (!m_data.flags.testFlag(Qt::FramelessWindowHint)) {
