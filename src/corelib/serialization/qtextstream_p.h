@@ -54,8 +54,8 @@
 
 #include <QtCore/private/qglobal_p.h>
 #include <QtCore/qstringconverter.h>
-#include "qiodevice.h"
-#include "qlocale.h"
+#include <QtCore/qiodevice.h>
+#include <QtCore/qlocale.h>
 #include "qtextstream.h"
 
 QT_BEGIN_NAMESPACE
