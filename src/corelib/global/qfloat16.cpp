@@ -192,6 +192,14 @@ int qfloat16::fpClassify() const noexcept
  */
 
 #if QT_COMPILER_SUPPORTS_HERE(F16C)
+static inline bool hasFastF16()
+{
+    // qsimd.cpp:detectProcessorFeatures() turns off this feature if AVX
+    // state-saving is not enabled by the OS
+    return qCpuHasFeature(F16C);
+}
+
+#if QT_COMPILER_SUPPORTS_HERE(AVX512VL) && QT_COMPILER_SUPPORTS_HERE(AVX512BW)
 #define QT_FUNCTION_TARGET_STRING_AVX512VLBW    \
     QT_FUNCTION_TARGET_STRING_AVX512VL ","      \
     QT_FUNCTION_TARGET_STRING_AVX512BW ","      \
@@ -203,13 +211,6 @@ static bool hasFastF16Avx256()
     // 256-bit AVX512 don't have a performance penalty (see qstring.cpp for more info)
     constexpr quint64 CpuFeatureAVX512VLBW = CpuFeatureAVX512BW | CpuFeatureAVX512VL;
     return qCpuHasFeature(AVX512VLBW);
-}
-
-static inline bool hasFastF16()
-{
-    // qsimd.cpp:detectProcessorFeatures() turns off this feature if AVX
-    // state-saving is not enabled by the OS
-    return qCpuHasFeature(F16C);
 }
 
 static QT_FUNCTION_TARGET(AVX512VLBW)
@@ -229,6 +230,7 @@ void qFloatFromFloat16_tail_avx256(float *out, const quint16 *in, qsizetype len)
     __m256 f32 = _mm256_cvtph_ps(f16);
     _mm256_mask_storeu_ps(out, mask, f32);
 };
+#endif
 
 QT_FUNCTION_TARGET(F16C)
 static void qFloatToFloat16_fast(quint16 *out, const float *in, qsizetype len) noexcept
@@ -253,8 +255,10 @@ static void qFloatToFloat16_fast(quint16 *out, const float *in, qsizetype len) n
         return convertOneChunk(len - Step);
     }
 
+#if QT_COMPILER_SUPPORTS_HERE(AVX512VL) && QT_COMPILER_SUPPORTS_HERE(AVX512BW)
     if (hasFastF16Avx256())
         return qFloatToFloat16_tail_avx256(out, in, len);
+#endif
 
     if (len >= HalfStep) {
         auto convertOneChunk = [=](qsizetype offset) QT_FUNCTION_TARGET(F16C) {
@@ -296,8 +300,10 @@ static void qFloatFromFloat16_fast(float *out, const quint16 *in, qsizetype len)
         return convertOneChunk(len - Step);
     }
 
+#if QT_COMPILER_SUPPORTS_HERE(AVX512VL) && QT_COMPILER_SUPPORTS_HERE(AVX512BW)
     if (hasFastF16Avx256())
         return qFloatFromFloat16_tail_avx256(out, in, len);
+#endif
 
     if (len >= HalfStep) {
         auto convertOneChunk = [=](qsizetype offset) QT_FUNCTION_TARGET(F16C) {
