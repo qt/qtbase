@@ -58,6 +58,7 @@ public:
     QBitmap(int w, int h);
     explicit QBitmap(const QSize &);
     explicit QBitmap(const QString &fileName, const char *format = nullptr);
+    ~QBitmap() override;
 
 #if QT_DEPRECATED_SINCE(6, 0)
     QT_DEPRECATED_VERSION_X_6_0("Use fromPixmap instead.") QBitmap &operator=(const QPixmap &);
