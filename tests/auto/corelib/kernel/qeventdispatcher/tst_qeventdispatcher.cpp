@@ -451,7 +451,7 @@ void tst_QEventDispatcher::postEventFromEventHandler()
 #elif defined(Q_OS_WINDOWS)
     coreFails = true;
     guiFails = true;
-#elif defined(Q_OS_LINUX)
+#elif defined(Q_OS_LINUX) || defined(Q_OS_INTEGRITY)
     // QXcbUnixEventDispatcher and QEventDispatcherUNIX do not do this correctly
     // QXcbGlibEventDispatcher and QEventDispatcherGlib do
     coreFails = !eventDispatcherName.contains("Glib");
