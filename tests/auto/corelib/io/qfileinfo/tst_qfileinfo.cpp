@@ -1878,7 +1878,13 @@ void tst_QFileInfo::isExecutable()
 {
     QString appPath = QCoreApplication::applicationDirPath();
 #ifdef Q_OS_ANDROID
-    appPath += "/libtst_qfileinfo.so";
+    QDir dir(appPath);
+    QVERIFY(dir.exists());
+    dir.setNameFilters({ "libtst_qfileinfo*.so" });
+    QStringList entries = dir.entryList();
+    QCOMPARE(entries.size(), 1);
+
+    appPath += "/" + entries[0];
 #else
     appPath += "/tst_qfileinfo";
 # if defined(Q_OS_WIN)
@@ -1886,6 +1892,7 @@ void tst_QFileInfo::isExecutable()
 # endif
 #endif
     QFileInfo fi(appPath);
+    QVERIFY(fi.exists());
     QCOMPARE(fi.isExecutable(), true);
 
     QCOMPARE(QFileInfo(m_proFile).isExecutable(), false);
