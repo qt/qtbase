@@ -79,6 +79,7 @@ public:
         pointingDeviceType = true;
         activePoints.reserve(maxPoints);
     }
+    ~QPointingDevicePrivate() override;
 
     void sendTouchCancelEvent(QTouchEvent *cancelEvent);
 

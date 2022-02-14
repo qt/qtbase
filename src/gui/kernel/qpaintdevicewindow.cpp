@@ -44,6 +44,12 @@
 
 QT_BEGIN_NAMESPACE
 
+QPaintDeviceWindowPrivate::QPaintDeviceWindowPrivate()
+    = default;
+
+QPaintDeviceWindowPrivate::~QPaintDeviceWindowPrivate()
+    = default;
+
 /*!
     \class QPaintDeviceWindow
     \inmodule QtGui
