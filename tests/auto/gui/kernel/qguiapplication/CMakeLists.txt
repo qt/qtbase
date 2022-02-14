@@ -44,6 +44,9 @@ qt_internal_add_resource(tst_qguiapplication "tst_qguiapplication"
         ${tst_qguiapplication_resource_files}
 )
 
+if (ANDROID)
+    set_property(TARGET tst_qguiapplication PROPERTY QT_ANDROID_VERSION_NAME ${target_version})
+endif()
 # special case begin
 if (APPLE)
     set_property(TARGET tst_qguiapplication PROPERTY MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist")
