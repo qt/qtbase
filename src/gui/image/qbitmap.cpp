@@ -133,6 +133,12 @@ QBitmap::QBitmap(const QSize &size)
 }
 
 /*!
+    \internal
+    This dtor must stay empty until Qt 7 (was inline until 6.2).
+*/
+QBitmap::~QBitmap() = default;
+
+/*!
     \fn QBitmap::clear()
 
     Clears the bitmap, setting all its bits to Qt::color0.
