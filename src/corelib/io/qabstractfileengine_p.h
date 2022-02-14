@@ -246,7 +246,7 @@ public:
         : fileError(QFile::UnspecifiedError)
     {
     }
-    inline virtual ~QAbstractFileEnginePrivate() { }
+    virtual ~QAbstractFileEnginePrivate();
 
     QFile::FileError fileError;
     QString errorString;

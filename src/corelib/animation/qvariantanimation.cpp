@@ -152,6 +152,9 @@ template<> Q_INLINE_TEMPLATE QLineF _q_interpolate(const QLineF &f, const QLineF
 QVariantAnimationPrivate::QVariantAnimationPrivate() : duration(250), interpolator(&defaultInterpolator)
 { }
 
+QVariantAnimationPrivate::~QVariantAnimationPrivate()
+    = default;
+
 void QVariantAnimationPrivate::convertValues(int t)
 {
     auto type = QMetaType(t);

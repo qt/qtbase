@@ -31,6 +31,7 @@ public:
     QItemSelectionModelPrivate()
       : currentCommand(QItemSelectionModel::NoUpdate),
         tableSelected(false), tableColCount(0), tableRowCount(0) {}
+    ~QItemSelectionModelPrivate() override;
 
     QItemSelection expandSelection(const QItemSelection &selection,
                                    QItemSelectionModel::SelectionFlags command) const;
