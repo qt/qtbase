@@ -58,6 +58,8 @@
 #include <stdio.h>
 #include <errno.h>
 
+#include <memory> // for std::unique_ptr
+
 #if __has_include(<paths.h>)
 # include <paths.h>
 #endif
@@ -687,39 +689,40 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
     return QFileSystemEntry(slowCanonicalized(absoluteName(entry).filePath()));
 #else
 # if defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID) || _POSIX_VERSION < 200801L
-    char stack_result[PATH_MAX+1];
+    // used to store the result of realpath in case where realpath cannot allocate itself
+    char stack_result[PATH_MAX + 1];
+#else
+    // enables unconditionally passing stack_result below
+    std::nullptr_t stack_result = nullptr;
 # endif
-    char *resolved_name = nullptr;
+    auto resolved_path_deleter = [&](char *ptr) {
+        // frees resolved_name if it was allocated by realpath
+# if defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID) || _POSIX_VERSION < 200801L
+        // ptr is either null, or points to stack_result
+        Q_ASSERT(!ptr || ptr == stack_result);
+        return;
+#else
+        free(ptr);
+# endif
+    };
+    std::unique_ptr<char, decltype (resolved_path_deleter)> resolved_name {nullptr, resolved_path_deleter};
 # if defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID)
     // On some Android and macOS versions, realpath() will return a path even if
     // it does not exist. To work around this, we check existence in advance.
     if (!data.hasFlags(QFileSystemMetaData::ExistsAttribute))
         fillMetaData(entry, data, QFileSystemMetaData::ExistsAttribute);
 
-    if (!data.exists()) {
+    if (!data.exists())
         errno = ENOENT;
-    } else {
-        resolved_name = stack_result;
-    }
-    if (resolved_name && realpath(entry.nativeFilePath().constData(), resolved_name) == nullptr)
-        resolved_name = nullptr;
+    else
+        resolved_name.reset(realpath(entry.nativeFilePath().constData(), stack_result));
 # else
-#  if _POSIX_VERSION >= 200801L // ask realpath to allocate memory
-    resolved_name = realpath(entry.nativeFilePath().constData(), nullptr);
-#  else
-    resolved_name = stack_result;
-    if (realpath(entry.nativeFilePath().constData(), resolved_name) == nullptr)
-        resolved_name = nullptr;
-#  endif
+    resolved_name.reset(realpath(entry.nativeFilePath().constData(), stack_result));
 # endif
     if (resolved_name) {
         data.knownFlagsMask |= QFileSystemMetaData::ExistsAttribute;
         data.entryFlags |= QFileSystemMetaData::ExistsAttribute;
-        QString canonicalPath = QDir::cleanPath(QFile::decodeName(resolved_name));
-# if defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID) || _POSIX_VERSION < 200801L
-        if (resolved_name != stack_result)
-            free(resolved_name);
-# endif
+        QString canonicalPath = QDir::cleanPath(QFile::decodeName(resolved_name.get()));
         return QFileSystemEntry(canonicalPath);
     } else if (errno == ENOENT || errno == ENOTDIR) { // file doesn't exist
         data.knownFlagsMask |= QFileSystemMetaData::ExistsAttribute;
