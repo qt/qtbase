@@ -890,8 +890,8 @@ void tst_QTreeView::horizontalScrollMode()
     QTreeView view;
     setFrameless(&view);
     view.setModel(&model);
-    view.setFixedSize(100, 100);
-    view.header()->resizeSection(0, 200);
+    view.setFixedSize(100, 1000);
+    view.header()->resizeSection(0, 2000);
     view.show();
 
     QCOMPARE(view.horizontalScrollMode(), QAbstractItemView::ScrollPerPixel);
@@ -2050,7 +2050,7 @@ void tst_QTreeView::setSelection()
     QFETCH(PointList, expectedItems);
     QFETCH(int, verticalOffset);
 
-    QtTestModel model(10, 5);
+    QtTestModel model(100, 5);
     model.levels = 1;
     model.setDecorationsEnabled(true);
     QTreeView view;
