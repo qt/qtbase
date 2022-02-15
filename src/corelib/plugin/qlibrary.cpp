@@ -209,6 +209,8 @@ static QLibraryScanResult qt_find_pattern(const char *s, qsizetype s_len, QStrin
     return QMachOParser::parse(s, s_len, errMsg);
 #elif defined(Q_OS_WIN)
     return QCoffPeParser::parse({s, s_len}, errMsg);
+#else
+#   warning "Qt does not know how to efficiently parse your platform's binary format; using slow fall-back."
 #endif
     static constexpr auto matcher = [] {
         // QPluginMetaData::MagicString is not NUL-terminated, but
