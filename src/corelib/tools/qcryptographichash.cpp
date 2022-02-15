@@ -236,7 +236,7 @@ public:
         qsizetype size() const noexcept { return qsizetype{m_size}; }
         bool isEmpty() const noexcept { return size() == 0; }
         void clear() noexcept { m_size = 0; }
-        void resize(qsizetype s) {
+        void resizeForOverwrite(qsizetype s) {
             Q_ASSERT(s >= 0);
             Q_ASSERT(s <= MaxHashLength);
             m_size = std::uint8_t(s);
@@ -272,7 +272,7 @@ void QCryptographicHashPrivate::sha3Finish(int bitCount, Sha3Variant sha3Variant
     */
     static const unsigned char sha3FinalSuffix = 0x80;
 
-    result.resize(bitCount / 8);
+    result.resizeForOverwrite(bitCount / 8);
 
     SHA3Context copy = sha3Context;
 
@@ -587,7 +587,7 @@ void QCryptographicHashPrivate::finalize() noexcept
     switch (method) {
     case QCryptographicHash::Sha1: {
         Sha1State copy = sha1Context;
-        result.resize(20);
+        result.resizeForOverwrite(20);
         sha1FinalizeState(&copy);
         sha1ToHash(&copy, (unsigned char *)result.data());
         break;
@@ -600,37 +600,37 @@ void QCryptographicHashPrivate::finalize() noexcept
 #else
     case QCryptographicHash::Md4: {
         md4_context copy = md4Context;
-        result.resize(MD4_RESULTLEN);
+        result.resizeForOverwrite(MD4_RESULTLEN);
         md4_final(&copy, (unsigned char *)result.data());
         break;
     }
     case QCryptographicHash::Md5: {
         MD5Context copy = md5Context;
-        result.resize(16);
+        result.resizeForOverwrite(16);
         MD5Final(&copy, (unsigned char *)result.data());
         break;
     }
     case QCryptographicHash::Sha224: {
         SHA224Context copy = sha224Context;
-        result.resize(SHA224HashSize);
+        result.resizeForOverwrite(SHA224HashSize);
         SHA224Result(&copy, reinterpret_cast<unsigned char *>(result.data()));
         break;
     }
     case QCryptographicHash::Sha256: {
         SHA256Context copy = sha256Context;
-        result.resize(SHA256HashSize);
+        result.resizeForOverwrite(SHA256HashSize);
         SHA256Result(&copy, reinterpret_cast<unsigned char *>(result.data()));
         break;
     }
     case QCryptographicHash::Sha384: {
         SHA384Context copy = sha384Context;
-        result.resize(SHA384HashSize);
+        result.resizeForOverwrite(SHA384HashSize);
         SHA384Result(&copy, reinterpret_cast<unsigned char *>(result.data()));
         break;
     }
     case QCryptographicHash::Sha512: {
         SHA512Context copy = sha512Context;
-        result.resize(SHA512HashSize);
+        result.resizeForOverwrite(SHA512HashSize);
         SHA512Result(&copy, reinterpret_cast<unsigned char *>(result.data()));
         break;
     }
@@ -654,7 +654,7 @@ void QCryptographicHashPrivate::finalize() noexcept
     case QCryptographicHash::Blake2b_512: {
         const auto length = hashLengthInternal(method);
         blake2b_state copy = blake2bContext;
-        result.resize(length);
+        result.resizeForOverwrite(length);
         blake2b_final(&copy, reinterpret_cast<uint8_t *>(result.data()), length);
         break;
     }
@@ -664,7 +664,7 @@ void QCryptographicHashPrivate::finalize() noexcept
     case QCryptographicHash::Blake2s_256: {
         const auto length = hashLengthInternal(method);
         blake2s_state copy = blake2sContext;
-        result.resize(length);
+        result.resizeForOverwrite(length);
         blake2s_final(&copy, reinterpret_cast<uint8_t *>(result.data()), length);
         break;
     }
