@@ -38,6 +38,12 @@
 #include <private/qdrawingprimitive_sse2_p.h>
 #include <qrgba64.h>
 
+#if QT_DEPRECATED_SINCE(6, 6)
+# define DEPRECATED_IN_6_6(...) QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED __VA_ARGS__ QT_WARNING_POP
+#else
+# define DEPRECATED_IN_6_6(...)
+#endif
+
 class tst_QColor : public QObject
 {
     Q_OBJECT
@@ -335,7 +341,9 @@ void tst_QColor::namehex()
 {
     QFETCH(QString, hexcolor);
     QFETCH(QColor, color);
+    DEPRECATED_IN_6_6(
     QCOMPARE(QColor(hexcolor), color);
+    )
     QCOMPARE(QColor::fromString(hexcolor), color);
 }
 
@@ -724,8 +732,10 @@ static const int rgbTblSize = sizeof(rgbTbl) / sizeof(RGBData);
 
 void tst_QColor::fromString_data()
 {
+#if QT_DEPRECATED_SINCE(6, 6)
     QTest::addColumn<QColor>("byCtor");
     QTest::addColumn<QColor>("bySetNamedColor");
+#endif
     QTest::addColumn<QColor>("byFromString");
     QTest::addColumn<QColor>("expected");
 
@@ -735,13 +745,20 @@ void tst_QColor::fromString_data()
 
 #define ROW(expr) row(expr, #expr)
         auto row = [&] (auto expr, const char *exprS) {
+            QT_WARNING_PUSH
+        #if QT_DEPRECATED_SINCE(6, 6)
+            QT_WARNING_DISABLE_DEPRECATED
             QColor bySetNamedColor;
             bySetNamedColor.setNamedColor(expr);
             auto byCtor = QColor(expr);
+        #endif
             QTest::addRow("%s: %s", e.name, exprS)
+        #if QT_DEPRECATED_SINCE(6, 6)
                 << byCtor << bySetNamedColor
+        #endif
                 << QColor::fromString(expr)
                 << expected;
+            QT_WARNING_POP
         };
 
         const auto l1 = QLatin1String(e.name);
@@ -771,21 +788,27 @@ void tst_QColor::fromString_data()
 
 void tst_QColor::fromString()
 {
+#if QT_DEPRECATED_SINCE(6, 6)
     QFETCH(QColor, byCtor);
     QFETCH(QColor, bySetNamedColor);
+#endif
     QFETCH(QColor, byFromString);
     QFETCH(QColor, expected);
 
+#if QT_DEPRECATED_SINCE(6, 6)
     QCOMPARE(byCtor, expected);
     QCOMPARE(bySetNamedColor, expected);
+#endif
     QCOMPARE(byFromString, expected);
 }
 
 
 void tst_QColor::constructNamedColorWithSpace()
 {
+    DEPRECATED_IN_6_6(
     QColor whiteSmoke("white smoke");
     QCOMPARE(whiteSmoke, QColor(245, 245, 245));
+    )
     QCOMPARE(QColor::fromString("white smoke"), QColorConstants::Svg::whitesmoke);
 }
 

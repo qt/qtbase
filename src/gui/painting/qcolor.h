@@ -83,10 +83,16 @@ public:
              0) {}
     QColor(QRgb rgb) noexcept;
     QColor(QRgba64 rgba64) noexcept;
+#if QT_DEPRECATED_SINCE(6, 6)
+    QT_DEPRECATED_VERSION_X_6_6("Use QColor::fromString() instead.")
     inline QColor(const QString& name);
+    QT_DEPRECATED_VERSION_X_6_6("Use QColor::fromString() instead.")
     explicit inline QColor(QStringView name);
+    QT_DEPRECATED_VERSION_X_6_6("Use QColor::fromString() instead.")
     inline QColor(const char *aname);
+    QT_DEPRECATED_VERSION_X_6_6("Use QColor::fromString() instead.")
     inline QColor(QLatin1String name);
+#endif
     QColor(Spec spec) noexcept;
 
     static QColor fromString(QAnyStringView name) noexcept;
@@ -97,9 +103,14 @@ public:
 
     QString name(NameFormat format = HexRgb) const;
 
+#if QT_DEPRECATED_SINCE(6, 6)
+    QT_DEPRECATED_VERSION_X_6_6("Use fromString() instead.")
     void setNamedColor(const QString& name);
+    QT_DEPRECATED_VERSION_X_6_6("Use fromString() instead.")
     void setNamedColor(QStringView name);
+    QT_DEPRECATED_VERSION_X_6_6("Use fromString() instead.")
     void setNamedColor(QLatin1String name);
+#endif
 
     static QStringList colorNames();
 
@@ -223,9 +234,14 @@ public:
 
     operator QVariant() const;
 
+#if QT_DEPRECATED_SINCE(6, 6)
+    QT_DEPRECATED_VERSION_X_6_6("Use isValidColorName() instead.")
     static bool isValidColor(const QString &name);
+    QT_DEPRECATED_VERSION_X_6_6("Use isValidColorName() instead.")
     static bool isValidColor(QStringView) noexcept;
+    QT_DEPRECATED_VERSION_X_6_6("Use isValidColorName() instead.")
     static bool isValidColor(QLatin1String) noexcept;
+#endif
     static bool isValidColorName(QAnyStringView) noexcept;
 
 private:
@@ -296,6 +312,7 @@ public: // can't give friendship to a namespace, so it needs to be public
 };
 Q_DECLARE_TYPEINFO(QColor, Q_RELOCATABLE_TYPE);
 
+#if QT_DEPRECATED_SINCE(6, 6)
 inline QColor::QColor(QLatin1String aname)
     : QColor(fromString(aname)) {}
 
@@ -307,6 +324,7 @@ inline QColor::QColor(const QString& aname)
 
 inline QColor::QColor(const char *aname)
     : QColor(fromString(aname)) {}
+#endif
 
 inline bool QColor::isValid() const noexcept
 { return cspec != Invalid; }

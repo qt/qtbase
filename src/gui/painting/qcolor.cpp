@@ -820,10 +820,11 @@ QColor::QColor(Spec spec) noexcept
     }
 }
 
+#if QT_DEPRECATED_SINCE(6, 6)
 /*!
     \fn QColor::QColor(const QString &name)
 
-    \obsolete
+    \deprecated [6.6] Use fromString() instead.
 
     Constructs a named color in the same way as setNamedColor() using
     the given \a name.
@@ -836,7 +837,7 @@ QColor::QColor(Spec spec) noexcept
 /*!
     \fn QColor::QColor(const char *name)
 
-    \obsolete
+    \deprecated [6.6] Use fromString() instead.
 
     Constructs a named color in the same way as setNamedColor() using
     the given \a name.
@@ -848,7 +849,7 @@ QColor::QColor(Spec spec) noexcept
 /*!
     \fn QColor::QColor(QLatin1String name)
 
-    \obsolete
+    \deprecated [6.6] Use fromString() instead.
 
     Constructs a named color in the same way as setNamedColor() using
     the given \a name.
@@ -857,6 +858,7 @@ QColor::QColor(Spec spec) noexcept
     \since 5.8
     \sa setNamedColor(), name(), isValid()
 */
+#endif // QT_DEPRECATED_SINCE(6, 6)
 
 /*!
     \fn bool QColor::isValid() const
@@ -884,8 +886,9 @@ QString QColor::name(NameFormat format) const
     return QString();
 }
 
+#if QT_DEPRECATED_SINCE(6, 6)
 /*!
-    \obsolete
+    \deprecated [6.6] Use fromString() instead.
 
     Sets the RGB value of this QColor to \a name, which may be in one
     of these formats:
@@ -918,7 +921,7 @@ void QColor::setNamedColor(const QString &name)
 /*!
     \overload
     \since 5.10
-    \obsolete
+    \deprecated [6.6] Use fromString() instead.
 */
 
 void QColor::setNamedColor(QStringView name)
@@ -929,7 +932,7 @@ void QColor::setNamedColor(QStringView name)
 /*!
     \overload
     \since 5.8
-    \obsolete
+    \deprecated [6.6] Use fromString() instead.
 */
 
 void QColor::setNamedColor(QLatin1String name)
@@ -940,7 +943,7 @@ void QColor::setNamedColor(QLatin1String name)
 /*!
    \since 4.7
 
-   \obsolete
+   \deprecated [6.6] Use isValidColorName() instead.
 
    Returns \c true if the \a name is a valid color name and can
    be used to construct a valid QColor object, otherwise returns
@@ -958,7 +961,7 @@ bool QColor::isValidColor(const QString &name)
 /*!
     \overload
     \since 5.10
-    \obsolete
+    \deprecated [6.6] Use isValidColorName() instead.
 */
 bool QColor::isValidColor(QStringView name) noexcept
 {
@@ -968,12 +971,13 @@ bool QColor::isValidColor(QStringView name) noexcept
 /*!
     \overload
     \since 5.8
-    \obsolete
+    \deprecated [6.6] Use isValidColorName() instead.
 */
 bool QColor::isValidColor(QLatin1String name) noexcept
 {
     return isValidColorName(name);
 }
+#endif // QT_DEPRECATED_SINCE(6, 6)
 
 /*!
    \since 6.4
