@@ -472,22 +472,12 @@ namespace QtAndroid
 
 } // namespace QtAndroid
 
-static jboolean startQtAndroidPlugin(JNIEnv *env, jobject /*object*/, jstring paramsString, jstring environmentString)
+static jboolean startQtAndroidPlugin(JNIEnv *env, jobject /*object*/, jstring paramsString)
 {
     m_androidPlatformIntegration = nullptr;
     m_androidAssetsFileEngineHandler = new AndroidAssetsFileEngineHandler();
     m_androidContentFileEngineHandler = new AndroidContentFileEngineHandler();
     m_mainLibraryHnd = nullptr;
-    { // Set env. vars
-        const char *nativeString = env->GetStringUTFChars(environmentString, 0);
-        const QList<QByteArray> envVars = QByteArray(nativeString).split('\t');
-        env->ReleaseStringUTFChars(environmentString, nativeString);
-        for (const QByteArray &envVar : envVars) {
-            int pos = envVar.indexOf('=');
-            if (pos != -1 && ::setenv(envVar.left(pos), envVar.mid(pos + 1), 1) != 0)
-                qWarning() << "Can't set environment" << envVar;
-        }
-    }
 
     const char *nativeString = env->GetStringUTFChars(paramsString, 0);
     QByteArray string = nativeString;
@@ -798,8 +788,7 @@ static jobject onBind(JNIEnv */*env*/, jclass /*cls*/, jobject intent)
 }
 
 static JNINativeMethod methods[] = {
-    { "startQtAndroidPlugin", "(Ljava/lang/String;Ljava/lang/String;)Z",
-      (void *)startQtAndroidPlugin },
+    { "startQtAndroidPlugin", "(Ljava/lang/String;)Z", (void *)startQtAndroidPlugin },
     { "startQtApplication", "()V", (void *)startQtApplication },
     { "quitQtAndroidPlugin", "()V", (void *)quitQtAndroidPlugin },
     { "quitQtCoreApplication", "()V", (void *)quitQtCoreApplication },
