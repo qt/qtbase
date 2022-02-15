@@ -30,13 +30,21 @@ instructions:
         directory: "{{.SourceDir}}/build/host"
       - type: ChangeDirectory
         directory: "{{.BuildDir}}"
+
+      - type: EnvironmentVariable
+        variableName: COIN_CONFIGURE_ARGS
+        variableValue: "{{.Env.NON_QTBASE_CONFIGURE_ARGS}}"
       - type: EnvironmentVariable
         variableName: COIN_CMAKE_ARGS
-        # The lack of space between the non qtbase configure args and the rest of the args is important!
-        variableValue: "{{.Env.NON_QTBASE_CONFIGURE_ARGS}} {{.SourceDir}}"
-      - !include "{{qt/qtbase}}/call_host_cmake.yaml"
+        variableValue: "{{.Env.NON_QTBASE_CMAKE_ARGS}} {{.Env.COMMON_NON_QTBASE_CMAKE_ARGS}}"
+      - type: EnvironmentVariable
+        variableName: CONFIGURE_ENV_PREFIX
+        variableValue: "{{.Env.ENV_PREFIX}}"
+      - !include "{{qt/qtbase}}/prepare_install_dir_suffix_host.yaml"
+      - !include "{{qt/qtbase}}/call_configure_module.yaml"
+
       - type: ExecuteCommand
-        command: "{{.Env.ENV_PREFIX}} cmake --build . --parallel -v"
+        command: "{{.Env.CONFIGURE_ENV_PREFIX}} cmake --build . --parallel -v"
         maxTimeInSeconds: "{{.Env.CMAKE_BUILD_TIMEOUT}}"
         maxTimeBetweenOutput: "{{.Env.CMAKE_BUILD_OUTPUT_TIMEOUT}}"
         userMessageOnFailure: >
@@ -60,13 +68,21 @@ instructions:
     directory: "{{.SourceDir}}/build/target"
   - type: ChangeDirectory
     directory: "{{.BuildDir}}"
+
+  - type: EnvironmentVariable
+    variableName: COIN_CONFIGURE_ARGS
+    variableValue: "{{.Env.NON_QTBASE_TARGET_CONFIGURE_ARGS}}"
   - type: EnvironmentVariable
     variableName: COIN_CMAKE_ARGS
-    # The lack of space between the non qtbase configure args and the rest of the args is important!
-    variableValue: "{{.Env.NON_QTBASE_TARGET_CONFIGURE_ARGS}} {{.SourceDir}}"
-  - !include "{{qt/qtbase}}/call_target_cmake.yaml"
+    variableValue: "{{.Env.NON_QTBASE_TARGET_CMAKE_ARGS}} {{.Env.COMMON_NON_QTBASE_TARGET_CMAKE_ARGS}}"
+  - type: EnvironmentVariable
+    variableName: CONFIGURE_ENV_PREFIX
+    variableValue: "{{.Env.TARGET_ENV_PREFIX}}"
+  - !include "{{qt/qtbase}}/prepare_install_dir_suffix_target.yaml"
+  - !include "{{qt/qtbase}}/call_configure_module.yaml"
+
   - type: ExecuteCommand
-    command: "{{.Env.TARGET_ENV_PREFIX}} cmake --build . --parallel -v"
+    command: "{{.Env.CONFIGURE_ENV_PREFIX}} cmake --build . --parallel -v"
     maxTimeInSeconds: "{{.Env.CMAKE_BUILD_TIMEOUT}}"
     maxTimeBetweenOutput: "{{.Env.CMAKE_BUILD_OUTPUT_TIMEOUT}}"
     userMessageOnFailure: >

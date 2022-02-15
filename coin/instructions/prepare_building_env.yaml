@@ -28,14 +28,14 @@ instructions:
   - type: Group
     instructions:
       - type: PrependToEnvironmentVariable
-        variableName: CONFIGURE_ARGS
+        variableName: COMMON_CMAKE_ARGS
         variableValue: "-DCMAKE_C_COMPILER=icc -DCMAKE_CXX_COMPILER=icpc "
         enable_if:
           condition: property
           property: host.compiler
           contains_value: ICC
       - type: PrependToEnvironmentVariable
-        variableName: CONFIGURE_ARGS
+        variableName: COMMON_CMAKE_ARGS
         variableValue: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ "
         enable_if:
           condition: or
@@ -47,14 +47,14 @@ instructions:
               property: host.compiler
               contains_value: Mingw
       - type: PrependToEnvironmentVariable
-        variableName: CONFIGURE_ARGS
+        variableName: COMMON_CMAKE_ARGS
         variableValue: "-DCMAKE_C_COMPILER=cl.exe -DCMAKE_CXX_COMPILER=cl.exe "
         enable_if:
           condition: property
           property: host.compiler
           contains_value: MSVC
       - type: PrependToEnvironmentVariable
-        variableName: CONFIGURE_ARGS
+        variableName: COMMON_CMAKE_ARGS
         variableValue: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ "
         enable_if:
           condition: property
@@ -64,10 +64,10 @@ instructions:
       condition: and
       conditions:
         - condition: runtime
-          env_var: CONFIGURE_ARGS
+          env_var: COMMON_CMAKE_ARGS
           contains_value: "-DCMAKE_C_COMPILER="
         - condition: runtime
-          env_var: CONFIGURE_ARGS
+          env_var: COMMON_CMAKE_ARGS
           contains_value: "-DCMAKE_CXX_COMPILER="
 
 
@@ -351,7 +351,7 @@ instructions:
   - type: Group
     instructions:
       - type: AppendToEnvironmentVariable
-        variableName: CONFIGURE_ARGS
+        variableName: COMMON_CMAKE_ARGS
         variableValue: " -DWARNINGS_ARE_ERRORS=ON"
     enable_if:
       condition: property
@@ -361,46 +361,46 @@ instructions:
   - type: Group
     instructions:
       - type: AppendToEnvironmentVariable
-        variableName: CONFIGURE_ARGS
+        variableName: COMMON_CMAKE_ARGS
         variableValue: " -DQT_BUILD_TESTS=OFF -DCMAKE_AUTOGEN_VERBOSE=ON -DCMAKE_MESSAGE_LOG_LEVEL=STATUS"
       - type: AppendToEnvironmentVariable
-        variableName: NON_QTBASE_CONFIGURE_ARGS
+        variableName: COMMON_NON_QTBASE_CMAKE_ARGS
         variableValue: " -DQT_BUILD_TESTS=OFF -DCMAKE_AUTOGEN_VERBOSE=ON -DCMAKE_MESSAGE_LOG_LEVEL=STATUS"
       - type: AppendToEnvironmentVariable
-        variableName: TEST_CONFIGURE_ARGS
+        variableName: COMMON_TEST_CMAKE_ARGS
         variableValue: " -DCMAKE_AUTOGEN_VERBOSE=ON -DCMAKE_MESSAGE_LOG_LEVEL=STATUS"
 
       - type: AppendToEnvironmentVariable
-        variableName: TARGET_CONFIGURE_ARGS
+        variableName: COMMON_TARGET_CMAKE_ARGS
         variableValue: " -DQT_BUILD_TESTS=OFF -DCMAKE_AUTOGEN_VERBOSE=ON -DCMAKE_MESSAGE_LOG_LEVEL=STATUS"
       - type: AppendToEnvironmentVariable
-        variableName: NON_QTBASE_TARGET_CONFIGURE_ARGS
+        variableName: COMMON_NON_QTBASE_TARGET_CMAKE_ARGS
         variableValue: " -DQT_BUILD_TESTS=OFF -DCMAKE_AUTOGEN_VERBOSE=ON -DCMAKE_MESSAGE_LOG_LEVEL=STATUS"
       - type: AppendToEnvironmentVariable
-        variableName: TARGET_TEST_CONFIGURE_ARGS
+        variableName: COMMON_TARGET_TEST_CMAKE_ARGS
         variableValue: " -DCMAKE_AUTOGEN_VERBOSE=ON -DCMAKE_MESSAGE_LOG_LEVEL=STATUS"
 
   # Sccache
   - type: Group
     instructions:
       - type: AppendToEnvironmentVariable
-        variableName: CONFIGURE_ARGS
+        variableName: COMMON_CMAKE_ARGS
         variableValue: " -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache"
       - type: AppendToEnvironmentVariable
-        variableName: NON_QTBASE_CONFIGURE_ARGS
+        variableName: COMMON_NON_QTBASE_CMAKE_ARGS
         variableValue: " -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache"
       - type: AppendToEnvironmentVariable
-        variableName: TEST_CONFIGURE_ARGS
+        variableName: COMMON_TEST_CMAKE_ARGS
         variableValue: " -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache"
 
       - type: AppendToEnvironmentVariable
-        variableName: TARGET_CONFIGURE_ARGS
+        variableName: COMMON_TARGET_CMAKE_ARGS
         variableValue: " -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache"
       - type: AppendToEnvironmentVariable
-        variableName: NON_QTBASE_TARGET_CONFIGURE_ARGS
+        variableName: COMMON_NON_QTBASE_TARGET_CMAKE_ARGS
         variableValue: " -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache"
       - type: AppendToEnvironmentVariable
-        variableName: TARGET_TEST_CONFIGURE_ARGS
+        variableName: COMMON_TARGET_TEST_CMAKE_ARGS
         variableValue: " -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache"
     enable_if:
       condition: property
