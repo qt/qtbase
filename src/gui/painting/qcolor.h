@@ -81,9 +81,7 @@ public:
              0) {}
     QColor(QRgb rgb) noexcept;
     QColor(QRgba64 rgba64) noexcept;
-#if QT_STRINGVIEW_LEVEL < 2
     inline QColor(const QString& name);
-#endif
     explicit inline QColor(QStringView name);
     inline QColor(const char *aname) : QColor(QLatin1String(aname)) {}
     inline QColor(QLatin1String name);
@@ -95,9 +93,7 @@ public:
 
     QString name(NameFormat format = HexRgb) const;
 
-#if QT_STRINGVIEW_LEVEL < 2
     void setNamedColor(const QString& name);
-#endif
     void setNamedColor(QStringView name);
     void setNamedColor(QLatin1String name);
 
@@ -223,9 +219,7 @@ public:
 
     operator QVariant() const;
 
-#if QT_STRINGVIEW_LEVEL < 2
     static bool isValidColor(const QString &name);
-#endif
     static bool isValidColor(QStringView) noexcept;
     static bool isValidColor(QLatin1String) noexcept;
 
@@ -305,10 +299,8 @@ inline QColor::QColor(QLatin1String aname)
 inline QColor::QColor(QStringView aname)
 { setNamedColor(aname); }
 
-#if QT_STRINGVIEW_LEVEL < 2
 inline QColor::QColor(const QString& aname)
 { setNamedColor(aname); }
-#endif
 
 inline bool QColor::isValid() const noexcept
 { return cspec != Invalid; }
