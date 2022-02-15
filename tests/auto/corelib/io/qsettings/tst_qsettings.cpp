@@ -3548,7 +3548,7 @@ void tst_QSettings::rainersSyncBugOnMac()
 void tst_QSettings::recursionBug()
 {
     QPixmap pix(10,10);
-    pix.fill("blue");
+    pix.fill(Qt::blue);
 
     {
         QSettings settings(settingsPath("starrunner.ini"), QSettings::IniFormat);

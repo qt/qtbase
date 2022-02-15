@@ -101,8 +101,8 @@ public:
             m_colorNames << (str + "   " + c);
 
             QStringList duet = c.split(' ');
-            m_firstColor << duet[0];
-            m_secondColor << duet[1];
+            m_firstColor << QColor::fromString(duet[0]);
+            m_secondColor << QColor::fromString(duet[1]);
         }
 
         setAttribute(Qt::WA_OpaquePaintEvent, true);
