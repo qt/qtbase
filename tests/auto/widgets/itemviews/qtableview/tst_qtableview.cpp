@@ -2274,46 +2274,46 @@ void tst_QTableView::rowViewportPosition_data()
     QTest::addColumn<int>("rowViewportPosition");
 
     QTest::newRow("row 0, scroll per item 0")
-        << 10 << 40 << 0 << QAbstractItemView::ScrollPerItem << 0 << 0;
+        << 100 << 40 << 0 << QAbstractItemView::ScrollPerItem << 0 << 0;
 
     QTest::newRow("row 1, scroll per item, 0")
-        << 10 << 40 << 1 << QAbstractItemView::ScrollPerItem << 0 << 1 * 40;
+        << 100 << 40 << 1 << QAbstractItemView::ScrollPerItem << 0 << 1 * 40;
 
     QTest::newRow("row 1, scroll per item, 1")
-        << 10 << 40 << 1 << QAbstractItemView::ScrollPerItem << 1 << 0;
+        << 100 << 40 << 1 << QAbstractItemView::ScrollPerItem << 1 << 0;
 
     QTest::newRow("row 5, scroll per item, 0")
-        << 10 << 40 << 5 << QAbstractItemView::ScrollPerItem << 0 << 5 * 40;
+        << 100 << 40 << 5 << QAbstractItemView::ScrollPerItem << 0 << 5 * 40;
 
     QTest::newRow("row 5, scroll per item, 5")
-        << 10 << 40 << 5 << QAbstractItemView::ScrollPerItem << 5 << 0;
+        << 100 << 40 << 5 << QAbstractItemView::ScrollPerItem << 5 << 0;
 
     QTest::newRow("row 9, scroll per item, 0")
-        << 10 << 40 << 9 << QAbstractItemView::ScrollPerItem << 0 << 9 * 40;
+        << 100 << 40 << 9 << QAbstractItemView::ScrollPerItem << 0 << 9 * 40;
 
     QTest::newRow("row 9, scroll per item, 5")
-        << 10 << 40 << 9 << QAbstractItemView::ScrollPerItem << 5 << 4 * 40;
+        << 100 << 40 << 9 << QAbstractItemView::ScrollPerItem << 5 << 4 * 40;
 
     QTest::newRow("row 0, scroll per pixel 0")
-        << 10 << 40 << 0 << QAbstractItemView::ScrollPerPixel << 0 << 0;
+        << 100 << 40 << 0 << QAbstractItemView::ScrollPerPixel << 0 << 0;
 
     QTest::newRow("row 1, scroll per pixel, 0")
-        << 10 << 40 << 1 << QAbstractItemView::ScrollPerPixel << 0 << 1 * 40;
+        << 100 << 40 << 1 << QAbstractItemView::ScrollPerPixel << 0 << 1 * 40;
 
     QTest::newRow("row 1, scroll per pixel, 1")
-        << 10 << 40 << 1 << QAbstractItemView::ScrollPerPixel << 1 * 40 << 0;
+        << 100 << 40 << 1 << QAbstractItemView::ScrollPerPixel << 1 * 40 << 0;
 
     QTest::newRow("row 5, scroll per pixel, 0")
-        << 10 << 40 << 5 << QAbstractItemView::ScrollPerPixel << 0 << 5 * 40;
+        << 100 << 40 << 5 << QAbstractItemView::ScrollPerPixel << 0 << 5 * 40;
 
     QTest::newRow("row 5, scroll per pixel, 5")
-        << 10 << 40 << 5 << QAbstractItemView::ScrollPerPixel << 5 * 40 << 0;
+        << 100 << 40 << 5 << QAbstractItemView::ScrollPerPixel << 5 * 40 << 0;
 
     QTest::newRow("row 9, scroll per pixel, 0")
-        << 10 << 40 << 9 << QAbstractItemView::ScrollPerPixel << 0 << 9 * 40;
+        << 100 << 40 << 9 << QAbstractItemView::ScrollPerPixel << 0 << 9 * 40;
 
     QTest::newRow("row 9, scroll per pixel, 5")
-        << 10 << 40 << 9 << QAbstractItemView::ScrollPerPixel << 5 * 40 << 4 * 40;
+        << 100 << 40 << 9 << QAbstractItemView::ScrollPerPixel << 5 * 40 << 4 * 40;
 }
 
 void tst_QTableView::rowViewportPosition()
@@ -2437,46 +2437,46 @@ void tst_QTableView::columnViewportPosition_data()
     QTest::addColumn<int>("columnViewportPosition");
 
     QTest::newRow("column 0, scroll per item 0")
-        << 10 << 40 << 0 << QAbstractItemView::ScrollPerItem << 0 << 0;
+        << 100 << 40 << 0 << QAbstractItemView::ScrollPerItem << 0 << 0;
 
     QTest::newRow("column 1, scroll per item, 0")
-        << 10 << 40 << 1 << QAbstractItemView::ScrollPerItem << 0 << 1 * 40;
+        << 100 << 40 << 1 << QAbstractItemView::ScrollPerItem << 0 << 1 * 40;
 
     QTest::newRow("column 1, scroll per item, 1")
-        << 10 << 40 << 1 << QAbstractItemView::ScrollPerItem << 1 << 0;
+        << 100 << 40 << 1 << QAbstractItemView::ScrollPerItem << 1 << 0;
 
     QTest::newRow("column 5, scroll per item, 0")
-        << 10 << 40 << 5 << QAbstractItemView::ScrollPerItem << 0 << 5 * 40;
+        << 100 << 40 << 5 << QAbstractItemView::ScrollPerItem << 0 << 5 * 40;
 
     QTest::newRow("column 5, scroll per item, 5")
-        << 10 << 40 << 5 << QAbstractItemView::ScrollPerItem << 5 << 0;
+        << 100 << 40 << 5 << QAbstractItemView::ScrollPerItem << 5 << 0;
 
     QTest::newRow("column 9, scroll per item, 0")
-        << 10 << 40 << 9 << QAbstractItemView::ScrollPerItem << 0 << 9 * 40;
+        << 100 << 40 << 9 << QAbstractItemView::ScrollPerItem << 0 << 9 * 40;
 
     QTest::newRow("column 9, scroll per item, 5")
-        << 10 << 40 << 9 << QAbstractItemView::ScrollPerItem << 5 << 4 * 40;
+        << 100 << 40 << 9 << QAbstractItemView::ScrollPerItem << 5 << 4 * 40;
 
     QTest::newRow("column 0, scroll per pixel 0")
-        << 10 << 40 << 0 << QAbstractItemView::ScrollPerPixel << 0 << 0;
+        << 100 << 40 << 0 << QAbstractItemView::ScrollPerPixel << 0 << 0;
 
     QTest::newRow("column 1, scroll per pixel 0")
-        << 10 << 40 << 1 << QAbstractItemView::ScrollPerPixel << 0 << 1 * 40;
+        << 100 << 40 << 1 << QAbstractItemView::ScrollPerPixel << 0 << 1 * 40;
 
     QTest::newRow("column 1, scroll per pixel 1")
-        << 10 << 40 << 1 << QAbstractItemView::ScrollPerPixel << 1 * 40 << 0;
+        << 100 << 40 << 1 << QAbstractItemView::ScrollPerPixel << 1 * 40 << 0;
 
     QTest::newRow("column 5, scroll per pixel 0")
-        << 10 << 40 << 5 << QAbstractItemView::ScrollPerPixel << 0 << 5 * 40;
+        << 100 << 40 << 5 << QAbstractItemView::ScrollPerPixel << 0 << 5 * 40;
 
     QTest::newRow("column 5, scroll per pixel 5")
-        << 10 << 40 << 5 << QAbstractItemView::ScrollPerPixel << 5 * 40 << 0;
+        << 100 << 40 << 5 << QAbstractItemView::ScrollPerPixel << 5 * 40 << 0;
 
     QTest::newRow("column 9, scroll per pixel 0")
-        << 10 << 40 << 9 << QAbstractItemView::ScrollPerPixel << 0 << 9 * 40;
+        << 100 << 40 << 9 << QAbstractItemView::ScrollPerPixel << 0 << 9 * 40;
 
     QTest::newRow("column 9, scroll per pixel 5")
-        << 10 << 40 << 9 << QAbstractItemView::ScrollPerPixel << 5 * 40 << 4 * 40;
+        << 100 << 40 << 9 << QAbstractItemView::ScrollPerPixel << 5 * 40 << 4 * 40;
 }
 
 void tst_QTableView::columnViewportPosition()
