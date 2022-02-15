@@ -313,7 +313,7 @@ struct Span {
     }
     Node *insert(size_t i)
     {
-        Q_ASSERT(i <= SpanConstants::NEntries);
+        Q_ASSERT(i < SpanConstants::NEntries);
         Q_ASSERT(offsets[i] == SpanConstants::UnusedEntry);
         if (nextFree == allocated)
             addStorage();
@@ -325,7 +325,7 @@ struct Span {
     }
     void erase(size_t bucket) noexcept(std::is_nothrow_destructible<Node>::value)
     {
-        Q_ASSERT(bucket <= SpanConstants::NEntries);
+        Q_ASSERT(bucket < SpanConstants::NEntries);
         Q_ASSERT(offsets[bucket] != SpanConstants::UnusedEntry);
 
         unsigned char entry = offsets[bucket];
@@ -345,14 +345,14 @@ struct Span {
     }
     Node &at(size_t i) noexcept
     {
-        Q_ASSERT(i <= SpanConstants::NEntries);
+        Q_ASSERT(i < SpanConstants::NEntries);
         Q_ASSERT(offsets[i] != SpanConstants::UnusedEntry);
 
         return entries[offsets[i]].node();
     }
     const Node &at(size_t i) const noexcept
     {
-        Q_ASSERT(i <= SpanConstants::NEntries);
+        Q_ASSERT(i < SpanConstants::NEntries);
         Q_ASSERT(offsets[i] != SpanConstants::UnusedEntry);
 
         return entries[offsets[i]].node();
@@ -378,9 +378,9 @@ struct Span {
     }
     void moveFromSpan(Span &fromSpan, size_t fromIndex, size_t to) noexcept(std::is_nothrow_move_constructible_v<Node>)
     {
-        Q_ASSERT(to <= SpanConstants::NEntries);
+        Q_ASSERT(to < SpanConstants::NEntries);
         Q_ASSERT(offsets[to] == SpanConstants::UnusedEntry);
-        Q_ASSERT(fromIndex <= SpanConstants::NEntries);
+        Q_ASSERT(fromIndex < SpanConstants::NEntries);
         Q_ASSERT(fromSpan.offsets[fromIndex] != SpanConstants::UnusedEntry);
         if (nextFree == allocated)
             addStorage();
