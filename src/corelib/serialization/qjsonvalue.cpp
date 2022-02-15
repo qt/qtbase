@@ -761,7 +761,6 @@ QJsonObject QJsonValue::toObject() const
     return toObject(QJsonObject());
 }
 
-#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Returns a QJsonValue representing the value for the key \a key.
 
@@ -778,7 +777,6 @@ const QJsonValue QJsonValue::operator[](const QString &key) const
 {
     return (*this)[QStringView(key)];
 }
-#endif
 
 /*!
     \overload

@@ -225,12 +225,10 @@ public:
     }
     void appendAsciiString(QStringView s);
 
-#if QT_STRINGVIEW_LEVEL < 2
     void append(const QString &s)
     {
         append(qToStringViewIgnoringNull(s));
     }
-#endif
 
     void append(QStringView s)
     {

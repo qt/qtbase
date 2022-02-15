@@ -1715,7 +1715,6 @@ QCborValue::QCborValue(const QByteArray &ba)
     container->ref.storeRelaxed(1);
 }
 
-#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Creates a QCborValue with string value \a s. The value can later be
     retrieved using toString().
@@ -1723,7 +1722,6 @@ QCborValue::QCborValue(const QByteArray &ba)
     \sa toString(), isString(), isByteArray()
  */
 QCborValue::QCborValue(const QString &s) : QCborValue(qToStringViewIgnoringNull(s)) {}
-#endif
 
 /*!
     Creates a QCborValue with string value \a s. The value can later be
