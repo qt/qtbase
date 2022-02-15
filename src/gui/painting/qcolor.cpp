@@ -145,6 +145,13 @@ static bool get_hex_rgb(const QChar *str, size_t len, QRgba64 *rgb)
     return get_hex_rgb(tmp, len, rgb);
 }
 
+static bool get_hex_rgb(QAnyStringView name, QRgba64 *rgb)
+{
+    return name.visit([&rgb] (auto name) {
+        return get_hex_rgb(name.data(), name.size(), rgb);
+    });
+}
+
 #ifndef QT_NO_COLORNAMES
 
 /*
@@ -330,32 +337,25 @@ static bool get_named_rgb_no_space(const char *name_no_space, QRgb *rgb)
     return false;
 }
 
-static bool get_named_rgb(const char *name, int len, QRgb* rgb)
-{
-    if (len > 255)
-        return false;
-    char name_no_space[256];
-    int pos = 0;
-    for (int i = 0; i < len; i++) {
-        if (name[i] != '\t' && name[i] != ' ')
-            name_no_space[pos++] = QChar::toLower(name[i]);
-    }
-    name_no_space[pos] = 0;
-
-    return get_named_rgb_no_space(name_no_space, rgb);
+namespace {
+static inline char toLower(QChar ch) noexcept { return ch.toLower().toLatin1(); }
+static inline char toLower(char ch) noexcept { return toLower(QLatin1Char{ch}); }
 }
 
-static bool get_named_rgb(const QChar *name, int len, QRgb *rgb)
+static bool get_named_rgb(QAnyStringView name, QRgb* rgb)
 {
-    if (len > 255)
+    if (name.size() > 255)
         return false;
     char name_no_space[256];
     int pos = 0;
-    for (int i = 0; i < len; i++) {
-        if (name[i] != QLatin1Char('\t') && name[i] != QLatin1Char(' '))
-            name_no_space[pos++] = name[i].toLower().toLatin1();
-    }
+    name.visit([&pos, &name_no_space] (auto name) {
+        for (auto c : name) {
+            if (c != u'\t' && c != u' ')
+                name_no_space[pos++] = toLower(c);
+        }
+    });
     name_no_space[pos] = 0;
+
     return get_named_rgb_no_space(name_no_space, rgb);
 }
 
@@ -956,17 +956,16 @@ bool QColor::isValidColor(QLatin1String name) noexcept
     return name.size() && QColor().setColorFromString(name);
 }
 
-template <typename String>
-bool QColor::setColorFromString(String name)
+bool QColor::setColorFromString(QAnyStringView name) noexcept
 {
     if (!name.size()) {
         invalidate();
         return true;
     }
 
-    if (name[0] == QLatin1Char('#')) {
+    if (name.front() == u'#') {
         QRgba64 rgba;
-        if (get_hex_rgb(name.data(), name.size(), &rgba)) {
+        if (get_hex_rgb(name, &rgba)) {
             setRgba64(rgba);
             return true;
         } else {
@@ -977,7 +976,7 @@ bool QColor::setColorFromString(String name)
 
 #ifndef QT_NO_COLORNAMES
     QRgb rgb;
-    if (get_named_rgb(name.data(), name.size(), &rgb)) {
+    if (get_named_rgb(name, &rgb)) {
         setRgba(rgb);
         return true;
     } else
