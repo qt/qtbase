@@ -14,10 +14,15 @@ instructions:
     command: "cp -rfs /opt/qt-doctools/. {{.InstallDir}}"
     userMessageOnFailure: >
       Failed to create links to provisioned binaries.
+
   - type: EnvironmentVariable
     variableName: COIN_CMAKE_ARGS
-    variableValue: "-DQT_BUILD_TESTS=OFF {{.SourceDir}}"
-  - !include "{{qt/qtbase}}/call_cmake.yaml"
+    variableValue: "-DQT_BUILD_TESTS=OFF"
+  - type: EnvironmentVariable
+    variableName: CONFIGURE_ENV_PREFIX
+    variableValue: "{{.Env.ENV_PREFIX}}"
+  - !include "{{qt/qtbase}}/call_configure_module.yaml"
+
   - type: ExecuteCommand
     command: "{{.Env.ENV_PREFIX}} cmake --build . --target generate_docs -v"
     ignoreExitCode: false

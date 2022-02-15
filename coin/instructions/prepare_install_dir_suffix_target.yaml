@@ -1,0 +1,16 @@
+type: Group
+instructions:
+  - type: EnvironmentVariable
+    variableName: INSTALL_DIR_SUFFIX
+    variableValue: "/target"
+    disable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+  - type: EnvironmentVariable
+    variableName: INSTALL_DIR_SUFFIX
+    variableValue: "\\target"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows

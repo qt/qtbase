@@ -1,0 +1,27 @@
+type: Group
+instructions:
+  - !include "{{qt/qtbase}}/prepare_configure_executable.yaml"
+  - type: ExecuteCommand
+    # There is no SourceDir on purpose, because configure is called directly from qtbase,
+    # so the script knows it's own source dir.
+    command: "{{.Env.CONFIGURE_ENV_PREFIX}} {{.Env.CONFIGURE_EXECUTABLE}} {{.Env.COIN_CONFIGURE_ARGS}} -- {{.Env.COIN_CMAKE_ARGS}}"
+    executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to call cmake.
+    enable_if:
+      condition: property
+      property: features
+      contains_value: UseConfigure
+  - type: ExecuteCommand
+    command: "{{.Env.CONFIGURE_ENV_PREFIX}} {{.Env.CONFIGURE_EXECUTABLE}} {{.SourceDir}} {{.Env.COIN_CONFIGURE_ARGS}} {{.Env.COIN_CMAKE_ARGS}}"
+    executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to call cmake.
+    disable_if:
+      condition: property
+      property: features
+      contains_value: UseConfigure

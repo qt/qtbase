@@ -1,0 +1,35 @@
+# Call either cmake or configure depending on whether the
+# UseConfigure platform configuration feature is set.
+# We should remove the cmake branch, once all platform configurations
+# are ported to use configure.
+type: Group
+instructions:
+  - type: Group
+    enable_if:
+      condition: property
+      property: features
+      contains_value: UseConfigure
+    instructions:
+      - type: EnvironmentVariable
+        variableName: CONFIGURE_EXECUTABLE
+        variableValue: "{{.SourceDir}}/configure"
+        disable_if:
+          condition: property
+          property: host.os
+          equals_value: Windows
+      - type: EnvironmentVariable
+        variableName: CONFIGURE_EXECUTABLE
+        variableValue: "{{.SourceDir}}\\configure.bat"
+        enable_if:
+          condition: property
+          property: host.os
+          equals_value: Windows
+  - type: Group
+    disable_if:
+      condition: property
+      property: features
+      contains_value: UseConfigure
+    instructions:
+      - type: EnvironmentVariable
+        variableName: CONFIGURE_EXECUTABLE
+        variableValue: "cmake"

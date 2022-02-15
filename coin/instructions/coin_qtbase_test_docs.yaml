@@ -14,13 +14,16 @@ instructions:
     command: "cp -rfs /opt/qt-doctools/. {{.InstallDir}}"
     userMessageOnFailure: >
       Failed to create links to provisioned binaries.
-  - type: ExecuteCommand
-    command: "{{.Env.ENV_PREFIX}} cmake {{.Env.CONFIGURE_ARGS}} -DCMAKE_INSTALL_PREFIX:PATH={{.InstallDir}} -DQT_BUILD_TESTS=OFF {{.SourceDir}}"
-    executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
-    maxTimeInSeconds: 6000
-    maxTimeBetweenOutput: 1200
-    userMessageOnFailure: >
-      Failed to call cmake.
+
+  - type: EnvironmentVariable
+    variableName: COIN_CMAKE_ARGS
+    # Use unix separators even on Windows, to avoid escaping issues in the configure script.
+    variableValue: "-DQT_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX:PATH={{unixPathSeparators .InstallDir}}"
+  - type: EnvironmentVariable
+    variableName: CONFIGURE_ENV_PREFIX
+    variableValue: "{{.Env.ENV_PREFIX}}"
+  - !include "{{qt/qtbase}}/call_configure_qtbase.yaml"
+
   - type: ExecuteCommand
     command: "{{.Env.ENV_PREFIX}} cmake --build . --target generate_docs -v"
     ignoreExitCode: false
