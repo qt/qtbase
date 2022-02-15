@@ -56,6 +56,7 @@ qt_internal_add_module(Gui
         Qt::Network
     QMAKE_MODULE_CONFIG "${qmake_module_config}"
     SOURCES
+        compat/removed_api.cpp
         image/qabstractfileiconengine.cpp image/qabstractfileiconengine_p.h
         image/qabstractfileiconprovider.cpp image/qabstractfileiconprovider.h image/qabstractfileiconprovider_p.h
         image/qbitmap.cpp image/qbitmap.h
@@ -275,6 +276,7 @@ qt_internal_add_module(Gui
     PRIVATE_MODULE_INTERFACE
         Qt::CorePrivate
     NO_PCH_SOURCES
+        compat/removed_api.cpp
         painting/qdrawhelper.cpp
     PRECOMPILED_HEADER
         "kernel/qt_gui_pch.h"
