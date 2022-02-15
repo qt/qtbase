@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -829,6 +829,8 @@ QColor::QColor(Spec spec) noexcept
 /*!
     \fn QColor::QColor(const QString &name)
 
+    \obsolete
+
     Constructs a named color in the same way as setNamedColor() using
     the given \a name.
 
@@ -840,6 +842,8 @@ QColor::QColor(Spec spec) noexcept
 /*!
     \fn QColor::QColor(const char *name)
 
+    \obsolete
+
     Constructs a named color in the same way as setNamedColor() using
     the given \a name.
 
@@ -849,6 +853,8 @@ QColor::QColor(Spec spec) noexcept
 
 /*!
     \fn QColor::QColor(QLatin1String name)
+
+    \obsolete
 
     Constructs a named color in the same way as setNamedColor() using
     the given \a name.
@@ -885,6 +891,8 @@ QString QColor::name(NameFormat format) const
 }
 
 /*!
+    \obsolete
+
     Sets the RGB value of this QColor to \a name, which may be in one
     of these formats:
 
@@ -910,31 +918,35 @@ QString QColor::name(NameFormat format) const
 
 void QColor::setNamedColor(const QString &name)
 {
-    setColorFromString(qToStringViewIgnoringNull(name));
+    *this = fromString(qToAnyStringViewIgnoringNull(name));
 }
 
 /*!
     \overload
     \since 5.10
+    \obsolete
 */
 
 void QColor::setNamedColor(QStringView name)
 {
-    setColorFromString(name);
+    *this = fromString(name);
 }
 
 /*!
     \overload
     \since 5.8
+    \obsolete
 */
 
 void QColor::setNamedColor(QLatin1String name)
 {
-    setColorFromString(name);
+    *this = fromString(name);
 }
 
 /*!
    \since 4.7
+
+   \obsolete
 
    Returns \c true if the \a name is a valid color name and can
    be used to construct a valid QColor object, otherwise returns
@@ -946,25 +958,75 @@ void QColor::setNamedColor(QLatin1String name)
 */
 bool QColor::isValidColor(const QString &name)
 {
-    return isValidColor(qToStringViewIgnoringNull(name));
+    return isValidColorName(qToAnyStringViewIgnoringNull(name));
 }
 
 /*!
     \overload
     \since 5.10
+    \obsolete
 */
 bool QColor::isValidColor(QStringView name) noexcept
 {
-    return name.size() && QColor().setColorFromString(name);
+    return isValidColorName(name);
 }
 
 /*!
     \overload
     \since 5.8
+    \obsolete
 */
 bool QColor::isValidColor(QLatin1String name) noexcept
 {
+    return isValidColorName(name);
+}
+
+/*!
+   \since 6.4
+
+   Returns \c true if the \a name is a valid color name and can
+   be used to construct a valid QColor object, otherwise returns
+   false.
+
+   It uses the same algorithm used in fromString().
+
+   \sa fromString()
+*/
+bool QColor::isValidColorName(QAnyStringView name) noexcept
+{
     return name.size() && QColor().setColorFromString(name);
+}
+
+/*!
+    \since 6.4
+
+    Returns an RGB QColor parsed from \a name, which may be in one
+    of these formats:
+
+    \list
+    \li #RGB (each of R, G, and B is a single hex digit)
+    \li #RRGGBB
+    \li #AARRGGBB (Since 5.2)
+    \li #RRRGGGBBB
+    \li #RRRRGGGGBBBB
+    \li A name from the list of colors defined in the list of
+       \l{https://www.w3.org/TR/SVG11/types.html#ColorKeywords}{SVG color keyword names}
+       provided by the World Wide Web Consortium; for example, "steelblue" or "gainsboro".
+       These color names work on all platforms. Note that these color names are \e not the
+       same as defined by the Qt::GlobalColor enums, e.g. "green" and Qt::green does not
+       refer to the same color.
+    \li \c transparent - representing the absence of a color.
+    \endlist
+
+    Returns an invalid color if \a name cannot be parsed.
+
+    \sa isValidColorName()
+*/
+QColor QColor::fromString(QAnyStringView name) noexcept
+{
+    QColor c;
+    c.setColorFromString(name);
+    return c;
 }
 
 bool QColor::setColorFromString(QAnyStringView name) noexcept

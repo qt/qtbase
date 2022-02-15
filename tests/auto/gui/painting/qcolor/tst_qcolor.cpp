@@ -54,8 +54,8 @@ private slots:
     void name();
     void namehex_data();
     void namehex();
-    void setNamedColor_data();
-    void setNamedColor();
+    void fromString_data();
+    void fromString();
 
     void constructNamedColorWithSpace();
 
@@ -243,13 +243,13 @@ void tst_QColor::isValid_data()
     QTest::newRow("defaultConstructor") << QColor() << false;
     QTest::newRow("rgbConstructor-valid") << QColor(2,5,7) << true;
     QTest::newRow("rgbConstructor-invalid") << QColor(2,5,999) << false;
-    QTest::newRow("nameQStringConstructor-valid") << QColor(QString("#ffffff")) << true;
-    QTest::newRow("nameQStringConstructor-invalid") << QColor(QString("#ffffgg")) << false;
-    QTest::newRow("nameQStringConstructor-empty") << QColor(QString("")) << false;
-    QTest::newRow("nameQStringConstructor-named") << QColor(QString("red")) << true;
-    QTest::newRow("nameCharConstructor-valid") << QColor("#ffffff") << true;
-    QTest::newRow("nameCharConstructor-invalid") << QColor("#ffffgg") << false;
-    QTest::newRow("nameCharConstructor-invalid-2") << QColor("#fffffg") << false;
+    QTest::newRow("nameQStringConstructor-valid") << QColor::fromString("#ffffff") << true;
+    QTest::newRow("nameQStringConstructor-invalid") << QColor::fromString("#ffffgg") << false;
+    QTest::newRow("nameQStringConstructor-empty") << QColor::fromString("") << false;
+    QTest::newRow("nameQStringConstructor-named") << QColor::fromString("red") << true;
+    QTest::newRow("nameCharConstructor-valid") << QColor::fromString("#ffffff") << true;
+    QTest::newRow("nameCharConstructor-invalid") << QColor::fromString("#ffffgg") << false;
+    QTest::newRow("nameCharConstructor-invalid-2") << QColor::fromString("#fffffg") << false;
 }
 
 void tst_QColor::isValid()
@@ -336,6 +336,7 @@ void tst_QColor::namehex()
     QFETCH(QString, hexcolor);
     QFETCH(QColor, color);
     QCOMPARE(QColor(hexcolor), color);
+    QCOMPARE(QColor::fromString(hexcolor), color);
 }
 
 void tst_QColor::globalColors_data()
@@ -721,25 +722,27 @@ static const int rgbTblSize = sizeof(rgbTbl) / sizeof(RGBData);
 
 #undef rgb
 
-void tst_QColor::setNamedColor_data()
+void tst_QColor::fromString_data()
 {
     QTest::addColumn<QColor>("byCtor");
     QTest::addColumn<QColor>("bySetNamedColor");
+    QTest::addColumn<QColor>("byFromString");
     QTest::addColumn<QColor>("expected");
 
     for (const auto e : rgbTbl) {
         QColor expected;
         expected.setRgba(e.value);
 
-#define ROW(expr)                                \
-        do {                                     \
-            QColor bySetNamedColor;              \
-            bySetNamedColor.setNamedColor(expr); \
-            auto byCtor = QColor(expr);          \
-            QTest::addRow("%s: %s", e.name, #expr) \
-                << byCtor << bySetNamedColor << expected;    \
-        } while (0)                              \
-        /*end*/
+#define ROW(expr) row(expr, #expr)
+        auto row = [&] (auto expr, const char *exprS) {
+            QColor bySetNamedColor;
+            bySetNamedColor.setNamedColor(expr);
+            auto byCtor = QColor(expr);
+            QTest::addRow("%s: %s", e.name, exprS)
+                << byCtor << bySetNamedColor
+                << QColor::fromString(expr)
+                << expected;
+        };
 
         const auto l1 = QLatin1String(e.name);
         const auto l1UpperBA = QByteArray(e.name).toUpper();
@@ -766,14 +769,16 @@ void tst_QColor::setNamedColor_data()
     }
 }
 
-void tst_QColor::setNamedColor()
+void tst_QColor::fromString()
 {
     QFETCH(QColor, byCtor);
     QFETCH(QColor, bySetNamedColor);
+    QFETCH(QColor, byFromString);
     QFETCH(QColor, expected);
 
     QCOMPARE(byCtor, expected);
     QCOMPARE(bySetNamedColor, expected);
+    QCOMPARE(byFromString, expected);
 }
 
 
@@ -781,14 +786,19 @@ void tst_QColor::constructNamedColorWithSpace()
 {
     QColor whiteSmoke("white smoke");
     QCOMPARE(whiteSmoke, QColor(245, 245, 245));
+    QCOMPARE(QColor::fromString("white smoke"), QColorConstants::Svg::whitesmoke);
 }
 
 void tst_QColor::colorNames()
 {
-    QStringList all = QColor::colorNames();
+    const QStringList all = QColor::colorNames();
     QCOMPARE(all.size(), rgbTblSize);
     for (int i = 0; i < all.size(); ++i)
         QCOMPARE(all.at(i), QLatin1String(rgbTbl[i].name));
+    for (const QString &name : all)
+        QVERIFY(QColor::isValidColorName(name));
+    for (const auto &e : rgbTbl)
+        QVERIFY(QColor::isValidColorName(e.name));
 }
 
 void tst_QColor::spec()

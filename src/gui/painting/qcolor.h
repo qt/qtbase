@@ -85,9 +85,11 @@ public:
     QColor(QRgba64 rgba64) noexcept;
     inline QColor(const QString& name);
     explicit inline QColor(QStringView name);
-    inline QColor(const char *aname) : QColor(QLatin1String(aname)) {}
+    inline QColor(const char *aname);
     inline QColor(QLatin1String name);
     QColor(Spec spec) noexcept;
+
+    static QColor fromString(QAnyStringView name) noexcept;
 
     QColor &operator=(Qt::GlobalColor color) noexcept;
 
@@ -224,6 +226,7 @@ public:
     static bool isValidColor(const QString &name);
     static bool isValidColor(QStringView) noexcept;
     static bool isValidColor(QLatin1String) noexcept;
+    static bool isValidColorName(QAnyStringView) noexcept;
 
 private:
 
@@ -295,13 +298,16 @@ public: // can't give friendship to a namespace, so it needs to be public
 Q_DECLARE_TYPEINFO(QColor, Q_RELOCATABLE_TYPE);
 
 inline QColor::QColor(QLatin1String aname)
-{ setNamedColor(aname); }
+    : QColor(fromString(aname)) {}
 
 inline QColor::QColor(QStringView aname)
-{ setNamedColor(aname); }
+    : QColor(fromString(aname)) {}
 
 inline QColor::QColor(const QString& aname)
-{ setNamedColor(aname); }
+    : QColor(fromString(aname)) {}
+
+inline QColor::QColor(const char *aname)
+    : QColor(fromString(aname)) {}
 
 inline bool QColor::isValid() const noexcept
 { return cspec != Invalid; }
