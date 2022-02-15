@@ -4125,7 +4125,6 @@ QString &QString::replace(QChar c, QLatin1String after, Qt::CaseSensitivity cs)
     go through QObject::tr(), for example.
 */
 
-#if QT_STRINGVIEW_LEVEL < 2
 /*!
   Returns the index position of the first occurrence of the string \a
   str in this string, searching forward from index position \a
@@ -4147,7 +4146,6 @@ qsizetype QString::indexOf(const QString &str, qsizetype from, Qt::CaseSensitivi
 {
     return QtPrivate::findString(QStringView(unicode(), length()), from, QStringView(str.unicode(), str.length()), cs);
 }
-#endif  // QT_STRINGVIEW_LEVEL < 2
 
 /*!
     \fn qsizetype QString::indexOf(QStringView str, qsizetype from, Qt::CaseSensitivity cs) const
@@ -4203,7 +4201,6 @@ qsizetype QString::indexOf(QChar ch, qsizetype from, Qt::CaseSensitivity cs) con
     return qFindChar(QStringView(unicode(), length()), ch, from, cs);
 }
 
-#if QT_STRINGVIEW_LEVEL < 2
 /*!
   Returns the index position of the last occurrence of the string \a
   str in this string, searching backward from index position \a
@@ -4250,7 +4247,6 @@ qsizetype QString::lastIndexOf(const QString &str, qsizetype from, Qt::CaseSensi
   \sa indexOf(), contains(), count()
 */
 
-#endif // QT_STRINGVIEW_LEVEL < 2
 
 /*!
   \since 4.5
@@ -4542,7 +4538,6 @@ qsizetype QString::count(QStringView str, Qt::CaseSensitivity cs) const
     return QtPrivate::count(*this, str, cs);
 }
 
-#if QT_STRINGVIEW_LEVEL < 2
 /*! \fn bool QString::contains(const QString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
 
     Returns \c true if this string contains an occurrence of the string
@@ -4556,7 +4551,6 @@ qsizetype QString::count(QStringView str, Qt::CaseSensitivity cs) const
 
     \sa indexOf(), count()
 */
-#endif // QT_STRINGVIEW_LEVEL < 2
 
 /*! \fn bool QString::contains(QLatin1String str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
     \since 5.3
@@ -5081,7 +5075,6 @@ QString QString::mid(qsizetype position, qsizetype n) const
     \sa endsWith(), first(), last(), sliced(), chop(), truncate()
 */
 
-#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Returns \c true if the string starts with \a s; otherwise returns
     \c false.
@@ -5097,7 +5090,6 @@ bool QString::startsWith(const QString& s, Qt::CaseSensitivity cs) const
 {
     return qt_starts_with(*this, s, cs);
 }
-#endif
 
 /*!
   \overload startsWith()
@@ -5132,7 +5124,6 @@ bool QString::startsWith(QChar c, Qt::CaseSensitivity cs) const
     \sa endsWith()
 */
 
-#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Returns \c true if the string ends with \a s; otherwise returns
     \c false.
@@ -5148,7 +5139,6 @@ bool QString::endsWith(const QString &s, Qt::CaseSensitivity cs) const
 {
     return qt_ends_with(*this, s, cs);
 }
-#endif // QT_STRINGVIEW_LEVEL < 2
 
 /*!
     \fn bool QString::endsWith(QStringView str, Qt::CaseSensitivity cs) const
@@ -6252,7 +6242,6 @@ QString& QString::fill(QChar ch, qsizetype size)
     sensitivity setting \a cs.
 */
 
-#if QT_STRINGVIEW_LEVEL < 2
 /*!
     \overload compare()
     \since 4.2
@@ -6268,7 +6257,6 @@ int QString::compare(const QString &other, Qt::CaseSensitivity cs) const noexcep
 {
     return QtPrivate::compareStrings(*this, other, cs);
 }
-#endif
 
 /*!
     \internal
@@ -8121,7 +8109,6 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, qsizetyp
     return result;
 }
 
-#if QT_STRINGVIEW_LEVEL < 2
 /*!
   Returns a copy of this string with the lowest numbered place marker
   replaced by string \a a, i.e., \c %1, \c %2, ..., \c %99.
@@ -8155,7 +8142,6 @@ QString QString::arg(const QString &a, int fieldWidth, QChar fillChar) const
 {
     return arg(qToStringViewIgnoringNull(a), fieldWidth, fillChar);
 }
-#endif // QT_STRINGVIEW_LEVEL < 2
 
 /*!
     \overload

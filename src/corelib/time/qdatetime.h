@@ -98,10 +98,8 @@ public:
 
 #if QT_CONFIG(datestring)
     QString toString(Qt::DateFormat format = Qt::TextDate) const;
-# if QT_STRINGVIEW_LEVEL < 2
     QString toString(const QString &format, QCalendar cal = QCalendar()) const
     { return toString(qToStringViewIgnoringNull(format), cal); }
-# endif
     QString toString(QStringView format, QCalendar cal = QCalendar()) const;
 #endif
     bool setDate(int year, int month, int day); // Gregorian-optimized
@@ -123,13 +121,11 @@ public:
     static QDate fromString(QStringView string, QStringView format, QCalendar cal = QCalendar())
     { return fromString(string.toString(), format, cal); }
     static QDate fromString(const QString &string, QStringView format, QCalendar cal = QCalendar());
-# if QT_STRINGVIEW_LEVEL < 2
     static QDate fromString(const QString &string, Qt::DateFormat format = Qt::TextDate)
     { return fromString(qToStringViewIgnoringNull(string), format); }
     static QDate fromString(const QString &string, const QString &format,
                             QCalendar cal = QCalendar())
     { return fromString(string, qToStringViewIgnoringNull(format), cal); }
-# endif
 #endif
     static bool isValid(int y, int m, int d);
     static bool isLeapYear(int year);
@@ -180,10 +176,8 @@ public:
     int msec() const;
 #if QT_CONFIG(datestring)
     QString toString(Qt::DateFormat f = Qt::TextDate) const;
-#if QT_STRINGVIEW_LEVEL < 2
     QString toString(const QString &format) const
     { return toString(qToStringViewIgnoringNull(format)); }
-#endif
     QString toString(QStringView format) const;
 #endif
     bool setHMS(int h, int m, int s, int ms = 0);
@@ -202,12 +196,10 @@ public:
     static QTime fromString(QStringView string, QStringView format)
     { return fromString(string.toString(), format); }
     static QTime fromString(const QString &string, QStringView format);
-# if QT_STRINGVIEW_LEVEL < 2
     static QTime fromString(const QString &string, Qt::DateFormat format = Qt::TextDate)
     { return fromString(qToStringViewIgnoringNull(string), format); }
     static QTime fromString(const QString &string, const QString &format)
     { return fromString(string, qToStringViewIgnoringNull(format)); }
-# endif
 #endif
     static bool isValid(int h, int m, int s, int ms = 0);
 
@@ -323,10 +315,8 @@ public:
 
 #if QT_CONFIG(datestring)
     QString toString(Qt::DateFormat format = Qt::TextDate) const;
-# if QT_STRINGVIEW_LEVEL < 2
     QString toString(const QString &format, QCalendar cal = QCalendar()) const
     { return toString(qToStringViewIgnoringNull(format), cal); }
-# endif
     QString toString(QStringView format, QCalendar cal = QCalendar()) const;
 #endif
     [[nodiscard]] QDateTime addDays(qint64 days) const;
@@ -356,13 +346,11 @@ public:
     { return fromString(string.toString(), format, cal); }
     static QDateTime fromString(const QString &string, QStringView format,
                                 QCalendar cal = QCalendar());
-# if QT_STRINGVIEW_LEVEL < 2
     static QDateTime fromString(const QString &string, Qt::DateFormat format = Qt::TextDate)
     { return fromString(qToStringViewIgnoringNull(string), format); }
     static QDateTime fromString(const QString &string, const QString &format,
                                 QCalendar cal = QCalendar())
     { return fromString(string, qToStringViewIgnoringNull(format), cal); }
-# endif
 #endif
 
     static QDateTime fromMSecsSinceEpoch(qint64 msecs, Qt::TimeSpec spec = Qt::LocalTime,
