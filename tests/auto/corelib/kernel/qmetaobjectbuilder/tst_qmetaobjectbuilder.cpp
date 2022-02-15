@@ -1641,17 +1641,19 @@ void tst_QMetaObjectBuilder::classNameFirstInStringData()
 }
 
 struct MyFoo {};
+struct myParameter {};
 
 void tst_QMetaObjectBuilder::propertyMetaType()
 {
+    qRegisterMetaType<myParameter>();
     QMetaType meta = QMetaType::fromType<MyFoo>();
     auto metaId = meta.id();
     QMetaObjectBuilder builder;
     builder.setClassName("Test");
-    builder.addProperty("test", "MyFoo");
+    builder.addProperty("myParameter", "MyFoo");
     auto mo = builder.toMetaObject();
 
-    QMetaProperty metaProp = mo->property(mo->indexOfProperty("test"));
+    QMetaProperty metaProp = mo->property(mo->indexOfProperty("myParameter"));
     QCOMPARE(metaProp.typeName(), meta.name());
     QCOMPARE(metaProp.typeId(), metaId);
     QCOMPARE(metaProp.metaType(), meta);
