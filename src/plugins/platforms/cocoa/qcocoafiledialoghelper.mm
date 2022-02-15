@@ -259,7 +259,12 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
         }
     }
 
-    QString qtFileName = QFileInfo(QString::fromNSString(filename)).fileName();
+    // Treat symbolic links and aliases to directories like directories
+    QFileInfo fileInfo(QString::fromNSString(filename));
+    if (fileInfo.isSymLink() && QFileInfo(fileInfo.symLinkTarget()).isDir())
+        return YES;
+
+    QString qtFileName = fileInfo.fileName();
     // No filter means accept everything
     bool nameMatches = m_selectedNameFilter->isEmpty();
     // Check if the current file name filter accepts the file:
