@@ -60,6 +60,17 @@ int QMetaType::id() const
 
 #endif // QT_CORE_REMOVED_SINCE(6, 1)
 
+#if QT_CORE_REMOVED_SINCE(6, 2)
+
+#include "qbindingstorage.h"
+
+void QBindingStorage::maybeUpdateBindingAndRegister_helper(const QUntypedPropertyData *data) const
+{
+    registerDependency_helper(data);
+}
+
+#endif // QT_CORE_REMOVED_SINCE(6, 2)
+
 #if QT_CORE_REMOVED_SINCE(6, 3)
 
 #include "qbytearraymatcher.h"

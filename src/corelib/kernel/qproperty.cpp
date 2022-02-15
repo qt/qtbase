@@ -2207,12 +2207,6 @@ void QBindingStorage::clear()
     d = nullptr;
 }
 
-// ### Unused, retained for BC with 6.0
-void QBindingStorage::maybeUpdateBindingAndRegister_helper(const QUntypedPropertyData *data) const
-{
-    registerDependency_helper(data);
-}
-
 void QBindingStorage::registerDependency_helper(const QUntypedPropertyData *data) const
 {
     Q_ASSERT(bindingStatus);
