@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -58,7 +58,8 @@ QT_BEGIN_NAMESPACE
 namespace QTestPrivate {
     // Export functions so they can also be used by QQuickTest
     Q_TESTLIB_EXPORT void parseBlackList();
-    Q_TESTLIB_EXPORT void checkBlackLists(const char *slot, const char *data);
+    Q_TESTLIB_EXPORT void checkBlackLists(const char *slot, const char *data,
+                                          const char *global = nullptr);
 }
 
 QT_END_NAMESPACE
