@@ -86,7 +86,6 @@ public:
         return *self();
     }
 
-#if QT_STRINGVIEW_LEVEL < 2
     inline QString join(const QString &sep) const
     { return QtPrivate::QStringList_join(self(), sep.constData(), sep.length()); }
     inline QStringList filter(const QString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
@@ -106,7 +105,6 @@ public:
         QtPrivate::QStringList_replaceInStrings(self(), before, after, cs);
         return *self();
     }
-#endif
     using QListSpecialMethodsBase<QString>::contains;
     using QListSpecialMethodsBase<QString>::indexOf;
     using QListSpecialMethodsBase<QString>::lastIndexOf;
@@ -116,14 +114,12 @@ public:
     inline bool contains(QStringView str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::QStringList_contains(self(), str, cs); }
 
-#if QT_STRINGVIEW_LEVEL < 2
     inline bool contains(const QString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::QStringList_contains(self(), str, cs); }
     qsizetype indexOf(const QString &str, qsizetype from = 0) const noexcept
     { return indexOf(QStringView(str), from); }
     qsizetype lastIndexOf(const QString &str, qsizetype from = -1) const noexcept
     { return lastIndexOf(QStringView(str), from); }
-#endif
 
 #if QT_CONFIG(regularexpression)
     inline QStringList filter(const QRegularExpression &re) const

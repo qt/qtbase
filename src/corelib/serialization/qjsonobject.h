@@ -52,11 +52,9 @@ public:
     inline qsizetype length() const { return size(); }
     bool isEmpty() const;
 
-#if QT_STRINGVIEW_LEVEL < 2
     QJsonValue value(const QString &key) const;
     QJsonValue operator[] (const QString &key) const;
     QJsonValueRef operator[] (const QString &key);
-#endif
     QJsonValue value(QStringView key) const;
     QJsonValue value(QLatin1StringView key) const;
     QJsonValue operator[] (QStringView key) const { return value(key); }
@@ -64,11 +62,9 @@ public:
     QJsonValueRef operator[] (QStringView key);
     QJsonValueRef operator[] (QLatin1StringView key);
 
-#if QT_STRINGVIEW_LEVEL < 2
     void remove(const QString &key);
     QJsonValue take(const QString &key);
     bool contains(const QString &key) const;
-#endif
     void remove(QStringView key);
     void remove(QLatin1StringView key);
     QJsonValue take(QStringView key);
@@ -219,12 +215,10 @@ public:
     // more Qt
     typedef iterator Iterator;
     typedef const_iterator ConstIterator;
-#if QT_STRINGVIEW_LEVEL < 2
     iterator find(const QString &key);
     const_iterator find(const QString &key) const { return constFind(key); }
     const_iterator constFind(const QString &key) const;
     iterator insert(const QString &key, const QJsonValue &value);
-#endif
     iterator find(QStringView key);
     iterator find(QLatin1StringView key);
     const_iterator find(QStringView key) const { return constFind(key); }

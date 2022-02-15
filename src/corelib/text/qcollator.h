@@ -65,7 +65,6 @@ public:
     void setIgnorePunctuation(bool on);
     bool ignorePunctuation() const;
 
-#if QT_STRINGVIEW_LEVEL < 2
     int compare(const QString &s1, const QString &s2) const
     { return compare(QStringView(s1), QStringView(s2)); }
 #if QT_CORE_REMOVED_SINCE(6, 4) && QT_POINTER_SIZE != 4
@@ -77,7 +76,6 @@ public:
 
     bool operator()(const QString &s1, const QString &s2) const
     { return compare(s1, s2) < 0; }
-#endif
     int compare(QStringView s1, QStringView s2) const;
 
     bool operator()(QStringView s1, QStringView s2) const

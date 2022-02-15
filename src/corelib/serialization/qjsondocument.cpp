@@ -391,7 +391,6 @@ void QJsonDocument::setArray(const QJsonArray &array)
     d->value = QCborValue::fromJsonValue(array);
 }
 
-#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Returns a QJsonValue representing the value for the key \a key.
 
@@ -408,7 +407,6 @@ const QJsonValue QJsonDocument::operator[](const QString &key) const
 {
     return (*this)[QStringView(key)];
 }
-#endif
 
 /*!
     \overload
