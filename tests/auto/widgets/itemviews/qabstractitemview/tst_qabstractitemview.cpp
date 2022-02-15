@@ -1358,7 +1358,13 @@ void tst_QAbstractItemView::task200665_itemEntered()
 {
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
-
+    {
+        // skip if we can't move mouse
+        const QPoint cursorPos = QCursor::pos() + QPoint(10, 10);
+        QCursor::setPos(cursorPos);
+        if (!QTest::qWaitFor([cursorPos] { return QCursor::pos() == cursorPos; }, 500))
+            QSKIP("Can't move mouse");
+    }
     //we test that view will emit entered
     //when the scrollbar move but not the mouse itself
     QStandardItemModel model(1000, 1);
