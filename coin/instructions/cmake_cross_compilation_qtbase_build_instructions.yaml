@@ -16,15 +16,21 @@ instructions:
         directory: "{{.SourceDir}}/build/host"
       - type: ChangeDirectory
         directory: "{{.BuildDir}}"
+
+      - type: EnvironmentVariable
+        variableName: COIN_CONFIGURE_ARGS
+        variableValue: "{{.Env.CONFIGURE_ARGS}}"
+      - type: EnvironmentVariable
+        variableName: COIN_CMAKE_ARGS
+        # Use unix separators even on Windows, to avoid escaping issues the in configure script.
+        variableValue: "{{.Env.CMAKE_ARGS}} {{.Env.COMMON_CMAKE_ARGS}} -DCMAKE_INSTALL_PREFIX:PATH={{unixPathSeparators .InstallDir}}/host"
+      - type: EnvironmentVariable
+        variableName: CONFIGURE_ENV_PREFIX
+        variableValue: "{{.Env.ENV_PREFIX}}"
+      - !include "{{qt/qtbase}}/call_configure_qtbase.yaml"
+
       - type: ExecuteCommand
-        command: "{{.Env.ENV_PREFIX}} cmake {{.Env.CONFIGURE_ARGS}} -DCMAKE_INSTALL_PREFIX:PATH={{.InstallDir}}/host {{.SourceDir}}"
-        executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
-        maxTimeInSeconds: 6000
-        maxTimeBetweenOutput: 1200
-        userMessageOnFailure: >
-          Failed to call cmake.
-      - type: ExecuteCommand
-        command: "{{.Env.ENV_PREFIX}} cmake --build . --parallel -v"
+        command: "{{.Env.CONFIGURE_ENV_PREFIX}} cmake --build . --parallel -v"
         maxTimeInSeconds: 6000
         maxTimeBetweenOutput: 4800
         userMessageOnFailure: >
@@ -48,29 +54,36 @@ instructions:
     directory: "{{.SourceDir}}/build/target"
   - type: ChangeDirectory
     directory: "{{.BuildDir}}"
+
   - type: AppendToEnvironmentVariable
-    variableName: TARGET_CONFIGURE_ARGS
+    variableName: TARGET_CMAKE_ARGS
     variableValue: " -DQT_HOST_PATH={{.AgentWorkingDir}}/install"
     disable_if:
       condition: property
       property: platformDependency
       equals_value: null
   - type: AppendToEnvironmentVariable
-    variableName: TARGET_CONFIGURE_ARGS
+    variableName: TARGET_CMAKE_ARGS
     variableValue: " -DQT_HOST_PATH={{.InstallDir}}/host"
     enable_if:
       condition: property
       property: platformDependency
       equals_value: null
+
+  - type: EnvironmentVariable
+    variableName: COIN_CONFIGURE_ARGS
+    variableValue: "{{.Env.TARGET_CONFIGURE_ARGS}}"
+  - type: EnvironmentVariable
+    variableName: COIN_CMAKE_ARGS
+    # Use unix separators even on Windows, to avoid escaping issues in the configure script.
+    variableValue: "{{.Env.TARGET_CMAKE_ARGS}} {{.Env.COMMON_TARGET_CMAKE_ARGS}} -DCMAKE_INSTALL_PREFIX:PATH={{unixPathSeparators .InstallDir}}/target"
+  - type: EnvironmentVariable
+    variableName: CONFIGURE_ENV_PREFIX
+    variableValue: "{{.Env.TARGET_ENV_PREFIX}}"
+  - !include "{{qt/qtbase}}/call_configure_qtbase.yaml"
+
   - type: ExecuteCommand
-    command: "{{.Env.TARGET_ENV_PREFIX}} cmake {{.Env.TARGET_CONFIGURE_ARGS}} -DCMAKE_STAGING_PREFIX:PATH={{.InstallDir}}/target {{.SourceDir}}"
-    executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
-    maxTimeInSeconds: 6000
-    maxTimeBetweenOutput: 1200
-    userMessageOnFailure: >
-      Failed to call cmake.
-  - type: ExecuteCommand
-    command: "{{.Env.TARGET_ENV_PREFIX}} cmake --build . --parallel -v"
+    command: "{{.Env.CONFIGURE_ENV_PREFIX}} cmake --build . --parallel -v"
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 4800
     userMessageOnFailure: >

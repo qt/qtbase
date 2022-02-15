@@ -10,7 +10,7 @@ instructions:
         variableValue: "{{.InstallDir}}"
       - type: EnvironmentVariable
         variableName: COIN_CMAKE_ARGS
-        variableValue: "{{.Env.TEST_CONFIGURE_ARGS}}"
+        variableValue: "{{.Env.COMMON_TEST_CMAKE_ARGS}}"
       - !include "{{qt/qtbase}}/cmake_build_and_upload_test_artifacts.yaml"
     disable_if:
       condition: property
