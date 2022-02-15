@@ -1786,12 +1786,10 @@ size_t qHash(const QRegularExpression &key, size_t seed) noexcept
     return qHashMulti(seed, key.d->pattern, key.d->patternOptions);
 }
 
-#if QT_STRINGVIEW_LEVEL < 2
 /*!
     \fn QString QRegularExpression::escape(const QString &str)
     \overload
 */
-#endif // QT_STRINGVIEW_LEVEL < 2
 
 /*!
     \since 5.15
@@ -1848,13 +1846,11 @@ QString QRegularExpression::escape(QStringView str)
     return result;
 }
 
-#if QT_STRINGVIEW_LEVEL < 2
 /*!
     \since 5.12
     \fn QString QRegularExpression::wildcardToRegularExpression(const QString &pattern, WildcardConversionOptions options)
     \overload
 */
-#endif // QT_STRINGVIEW_LEVEL < 2
 
 /*!
     \since 6.0
@@ -2024,13 +2020,11 @@ QRegularExpression QRegularExpression::fromWildcard(QStringView pattern, Qt::Cas
     return QRegularExpression(wildcardToRegularExpression(pattern, options), reOptions);
 }
 
-#if QT_STRINGVIEW_LEVEL < 2
 /*!
     \fn QRegularExpression::anchoredPattern(const QString &expression)
     \since 5.12
     \overload
 */
-#endif // QT_STRINGVIEW_LEVEL < 2
 
 /*!
     \since 5.15
@@ -2235,7 +2229,6 @@ QStringView QRegularExpressionMatch::capturedView(int nth) const
     return d->subject.mid(start, capturedLength(nth));
 }
 
-#if QT_STRINGVIEW_LEVEL < 2
 /*! \fn QString QRegularExpressionMatch::captured(const QString &name) const
 
     Returns the substring captured by the capturing group named \a name.
@@ -2246,7 +2239,6 @@ QStringView QRegularExpressionMatch::capturedView(int nth) const
     \sa capturedView(), capturedStart(), capturedEnd(), capturedLength(),
     QString::isNull()
 */
-#endif // QT_STRINGVIEW_LEVEL < 2
 
 /*!
     \since 5.10
@@ -2353,7 +2345,6 @@ qsizetype QRegularExpressionMatch::capturedEnd(int nth) const
     return d->capturedOffsets.at(nth * 2 + 1);
 }
 
-#if QT_STRINGVIEW_LEVEL < 2
 /*! \fn qsizetype QRegularExpressionMatch::capturedStart(const QString &name) const
 
     Returns the offset inside the subject string corresponding to the starting
@@ -2384,7 +2375,6 @@ qsizetype QRegularExpressionMatch::capturedEnd(int nth) const
 
     \sa capturedStart(), capturedLength(), captured()
 */
-#endif // QT_STRINGVIEW_LEVEL < 2
 
 /*!
     \since 5.10
