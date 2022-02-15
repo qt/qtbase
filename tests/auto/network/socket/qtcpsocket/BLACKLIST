@@ -1,7 +1,5 @@
 [timeoutConnect:ip]
 windows
-[connectToHostError]
-windows-10 gcc developer-build
 # QTBUG-66247
 [delayedClose:WithSocks5Proxy]
 windows-10 gcc developer-build

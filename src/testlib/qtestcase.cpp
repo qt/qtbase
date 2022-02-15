@@ -1164,6 +1164,9 @@ bool TestMethods::invokeTest(int index, const char *data, WatchDog *watchDog) co
     const QTestTable *gTable = QTestTable::globalTestTable();
     const int globalDataCount = gTable->dataCount();
     int curGlobalDataIndex = 0;
+    const auto globalDataTag = [gTable, globalDataCount](int index) {
+        return globalDataCount ? gTable->testData(index)->dataTag() : nullptr;
+    };
 
     /* For each entry in the global data table, do: */
     do {
@@ -1180,6 +1183,9 @@ bool TestMethods::invokeTest(int index, const char *data, WatchDog *watchDog) co
         bool foundFunction = false;
         int curDataIndex = 0;
         const int dataCount = table.dataCount();
+        const auto dataTag = [&table, dataCount](int index) {
+            return dataCount ? table.testData(index)->dataTag() : nullptr;
+        };
 
         // Data tag requested but none available?
         if (data && !dataCount) {
@@ -1200,7 +1206,8 @@ bool TestMethods::invokeTest(int index, const char *data, WatchDog *watchDog) co
             if (!data || !qstrcmp(data, table.testData(curDataIndex)->dataTag())) {
                 foundFunction = true;
 
-                QTestPrivate::checkBlackLists(name.constData(), dataCount ? table.testData(curDataIndex)->dataTag() : nullptr);
+                QTestPrivate::checkBlackLists(name.constData(), dataTag(curDataIndex),
+                                              globalDataTag(curGlobalDataIndex));
 
                 QTestDataSetter s(curDataIndex >= dataCount ? nullptr : table.testData(curDataIndex));
 
