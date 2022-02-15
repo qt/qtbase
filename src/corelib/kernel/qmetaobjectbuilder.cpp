@@ -558,7 +558,7 @@ QMetaMethodBuilder QMetaObjectBuilder::addConstructor(const QMetaMethod &prototy
 QMetaPropertyBuilder QMetaObjectBuilder::addProperty(const QByteArray &name, const QByteArray &type,
                                                      int notifierId)
 {
-    return addProperty(name, type, QMetaType::fromName(name), notifierId);
+    return addProperty(name, type, QMetaType::fromName(type), notifierId);
 }
 
 /*!
