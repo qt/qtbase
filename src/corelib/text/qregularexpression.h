@@ -153,7 +153,6 @@ public:
     };
     Q_DECLARE_FLAGS(WildcardConversionOptions, WildcardConversionOption)
 
-#if QT_STRINGVIEW_LEVEL < 2
     static QString escape(const QString &str)
     {
         return escape(qToStringViewIgnoringNull(str));
@@ -168,7 +167,6 @@ public:
     {
         return anchoredPattern(qToStringViewIgnoringNull(expression));
     }
-#endif
 
     static QString escape(QStringView str);
     static QString wildcardToRegularExpression(QStringView str, WildcardConversionOptions options = DefaultWildcardConversion);
@@ -231,21 +229,16 @@ public:
 
     int lastCapturedIndex() const;
 
-#if QT_STRINGVIEW_LEVEL < 2
     bool hasCaptured(const QString &name) const
     { return hasCaptured(QStringView(name)); }
-#endif
     bool hasCaptured(QStringView name) const;
     bool hasCaptured(int nth) const;
 
     QString captured(int nth = 0) const;
     QStringView capturedView(int nth = 0) const;
 
-#if QT_STRINGVIEW_LEVEL < 2
     QString captured(const QString &name) const
     { return captured(QStringView(name)); }
-#endif
-
     QString captured(QStringView name) const;
     QStringView capturedView(QStringView name) const;
 
@@ -255,14 +248,12 @@ public:
     qsizetype capturedLength(int nth = 0) const;
     qsizetype capturedEnd(int nth = 0) const;
 
-#if QT_STRINGVIEW_LEVEL < 2
     qsizetype capturedStart(const QString &name) const
     { return capturedStart(QStringView(name)); }
     qsizetype capturedLength(const QString &name) const
     { return capturedLength(QStringView(name)); }
     qsizetype capturedEnd(const QString &name) const
     { return capturedEnd(QStringView(name)); }
-#endif
 
     qsizetype capturedStart(QStringView name) const;
     qsizetype capturedLength(QStringView name) const;
