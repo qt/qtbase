@@ -994,7 +994,7 @@ bool QColor::isValidColor(QLatin1String name) noexcept
 */
 bool QColor::isValidColorName(QAnyStringView name) noexcept
 {
-    return name.size() && QColor().setColorFromString(name);
+    return fromString(name).isValid();
 }
 
 /*!
@@ -1024,40 +1024,19 @@ bool QColor::isValidColorName(QAnyStringView name) noexcept
 */
 QColor QColor::fromString(QAnyStringView name) noexcept
 {
-    QColor c;
-    c.setColorFromString(name);
-    return c;
-}
-
-bool QColor::setColorFromString(QAnyStringView name) noexcept
-{
-    if (!name.size()) {
-        invalidate();
-        return true;
-    }
+    if (!name.size())
+        return {};
 
     if (name.front() == u'#') {
-        QRgba64 rgba;
-        if (get_hex_rgb(name, &rgba)) {
-            setRgba64(rgba);
-            return true;
-        } else {
-            invalidate();
-            return false;
-        }
+        if (QRgba64 r; get_hex_rgb(name, &r))
+            return QColor::fromRgba64(r);
+#ifndef QT_NO_COLORNAMES
+    } else if (QRgb r; get_named_rgb(name, &r)) {
+        return QColor::fromRgba(r);
+#endif
     }
 
-#ifndef QT_NO_COLORNAMES
-    QRgb rgb;
-    if (get_named_rgb(name, &rgb)) {
-        setRgba(rgb);
-        return true;
-    } else
-#endif
-    {
-        invalidate();
-        return false;
-    }
+    return {};
 }
 
 /*!

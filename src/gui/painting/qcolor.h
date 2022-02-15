@@ -231,7 +231,6 @@ public:
 private:
 
     void invalidate() noexcept;
-    bool setColorFromString(QAnyStringView) noexcept;
 
     static constexpr bool isRgbaValid(int r, int g, int b, int a = 255) noexcept Q_DECL_CONST_FUNCTION
     {
