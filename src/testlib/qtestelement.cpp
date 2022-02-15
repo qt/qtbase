@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -41,7 +41,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QTestElement::QTestElement(int type)
+QTestElement::QTestElement(QTest::LogElementType type)
     : QTestCoreElement<QTestElement>(type)
 {
 }

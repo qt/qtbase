@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -63,7 +63,7 @@ template <class ElementType>
 class QTestCoreElement
 {
     public:
-        QTestCoreElement( int type = -1 );
+        QTestCoreElement(QTest::LogElementType type = QTest::LET_Undefined);
         virtual ~QTestCoreElement();
 
         void addAttribute(const QTest::AttributeIndex index, const char *value);
@@ -81,8 +81,8 @@ class QTestCoreElement
 };
 
 template<class ElementType>
-QTestCoreElement<ElementType>::QTestCoreElement(int t)
-    : type(QTest::LogElementType(t))
+QTestCoreElement<ElementType>::QTestCoreElement(QTest::LogElementType t)
+    : type(t)
 {
 }
 
