@@ -817,7 +817,8 @@ QFile::copy(const QString &newName)
                             totalRead += in;
                             if (in != out.write(block, in)) {
                                 close();
-                                d->setError(QFile::CopyError, tr("Failure to write block"));
+                                d->setError(QFile::CopyError, tr("Failure to write block: %1")
+                                            .arg(out.errorString()));
                                 error = true;
                                 break;
                             }
@@ -837,7 +838,8 @@ QFile::copy(const QString &newName)
                         if (!out.rename(newName)) {
                             error = true;
                             close();
-                            d->setError(QFile::CopyError, tr("Cannot create %1 for output").arg(newName));
+                            d->setError(QFile::CopyError, tr("Cannot create %1 for output: %1")
+                                        .arg(newName, out.errorString()));
                         }
                     }
 #ifdef QT_NO_TEMPORARYFILE
