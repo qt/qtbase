@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2013 John Layt <jlayt@kde.org>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -455,10 +455,11 @@ public:
 
     QList<QByteArray> availableTimeZoneIds() const override;
 
-private:
-    void init(const QByteArray &ianaId);
+    // For use within implementation's TransitionTimePair:
     QTimeZonePrivate::Data ruleToData(const QWinTransitionRule &rule, qint64 atMSecsSinceEpoch,
                                       QTimeZone::TimeType type, bool fakeDst = false) const;
+private:
+    void init(const QByteArray &ianaId);
 
     QByteArray m_windowsId;
     QString m_displayName;
