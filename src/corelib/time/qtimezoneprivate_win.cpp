@@ -388,6 +388,21 @@ struct TransitionTimePair
         return std == QTimeZonePrivate::invalidMSecs()
             || dst == QTimeZonePrivate::invalidMSecs();
     }
+
+    bool startsInDst() const
+    {
+        // Year starts in daylightTimeRule iff it has a valid transition out of
+        // DST before it has a transition into it.
+        return std != QTimeZonePrivate::invalidMSecs() && std < dst;
+    }
+
+    QTimeZonePrivate::Data ruleToData(const QWinTimeZonePrivate::QWinTransitionRule &rule,
+                                      const QWinTimeZonePrivate *tzp, bool isDst) const
+    {
+        if (isDst)
+            return tzp->ruleToData(rule, dst, QTimeZone::DaylightTime, fakesDst());
+        return tzp->ruleToData(rule, std, QTimeZone::StandardTime, fakesDst());
+    }
 };
 
 int yearEndOffset(const QWinTimeZonePrivate::QWinTransitionRule &rule, int year)
@@ -676,11 +691,7 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::nextTransition(qint64 afterMSecsSinc
                 // Find first transition in this first rule.
                 // Initial guess: first rule starts in standard time.
                 TransitionTimePair pair(rule, rule.startYear, rule.standardTimeBias);
-                // Year starts in daylightTimeRule iff it has a valid transition
-                // out of DST before it has a transition into it.
-                if (pair.std != invalidMSecs() && pair.std < pair.dst)
-                    return ruleToData(rule, pair.dst, QTimeZone::DaylightTime, pair.fakesDst());
-                return ruleToData(rule, pair.std, QTimeZone::StandardTime, pair.fakesDst());
+                return pair.ruleToData(rule, this, pair.startsInDst());
             }
             const int endYear = ruleIndex + 1 < m_tranRules.count()
                 ? qMin(m_tranRules.at(ruleIndex + 1).startYear, year + 2) : (year + 2);
@@ -706,9 +717,7 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::nextTransition(qint64 afterMSecsSinc
                     continue;
                 }
 
-                if (isDst)
-                    return ruleToData(rule, pair.dst, QTimeZone::DaylightTime, pair.fakesDst());
-                return ruleToData(rule, pair.std, QTimeZone::StandardTime, pair.fakesDst());
+                return pair.ruleToData(rule, this, isDst);
             }
             // Fell off end of rule, try next rule.
         } // else: no transition during rule's period
@@ -745,9 +754,7 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::previousTransition(qint64 beforeMSec
                     prior = year == 1 ? -1 : year - 1; // No year 0.
                     continue;
                 }
-                if (isDst)
-                    return ruleToData(rule, pair.dst, QTimeZone::DaylightTime, pair.fakesDst());
-                return ruleToData(rule, pair.std, QTimeZone::StandardTime, pair.fakesDst());
+                return pair.ruleToData(rule, this, isDst);
             }
             // Fell off start of rule, try previous rule.
         } else if (ruleIndex == 0) {
