@@ -304,7 +304,8 @@ void tst_QAccessibility::cleanup()
 
 void tst_QAccessibility::eventTest()
 {
-    QPushButton* button = new QPushButton(0);
+    auto buttonHolder = std::make_unique<QPushButton>(nullptr);
+    auto button = buttonHolder.get();
     QAccessible::queryAccessibleInterface(button);
     button->setObjectName(QString("Olaf"));
     setFrameless(button);
@@ -329,23 +330,25 @@ void tst_QAccessibility::eventTest()
     // some platforms might send other events first, (such as state change event active=1)
     QVERIFY(QTestAccessibility::containsEvent(&hideEvent));
 
-    delete button;
+    buttonHolder.reset();
 
     // Make sure that invalid events don't bring down the system
     // these events can be in user code.
-    QWidget *widget = new QWidget();
+    auto widgetHolder = std::make_unique<QWidget>();
+    auto widget = widgetHolder.get();
     QAccessibleEvent ev1(widget, QAccessible::Focus);
     QAccessible::updateAccessibility(&ev1);
 
     QAccessibleEvent ev2(widget, QAccessible::Focus);
     ev2.setChild(7);
     QAccessible::updateAccessibility(&ev2);
-    delete widget;
+    widgetHolder.reset();
 
-    QObject *object = new QObject();
+    auto objectHolder = std::make_unique<QObject>();
+    auto object = objectHolder.get();
     QAccessibleEvent ev3(object, QAccessible::Focus);
     QAccessible::updateAccessibility(&ev3);
-    delete object;
+    objectHolder.reset();
 
     QTestAccessibility::clearEvents();
 }
@@ -353,59 +356,56 @@ void tst_QAccessibility::eventTest()
 void tst_QAccessibility::customWidget()
 {
     {
-    QtTestAccessibleWidget* widget = new QtTestAccessibleWidget(0, "Heinz");
-    widget->show();
-    QVERIFY(QTest::qWaitForWindowExposed(widget));
+    QtTestAccessibleWidget widget(nullptr, "Heinz");
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
     // By default we create QAccessibleWidget
-    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(widget);
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&widget);
     QVERIFY(iface != 0);
     QVERIFY(iface->isValid());
-    QCOMPARE(iface->object(), (QObject*)widget);
+    QCOMPARE(iface->object(), (QObject*)&widget);
     QCOMPARE(iface->object()->objectName(), QString("Heinz"));
-    QCOMPARE(iface->rect().height(), widget->height());
+    QCOMPARE(iface->rect().height(), widget.height());
     QCOMPARE(iface->text(QAccessible::Help), QString());
-    QCOMPARE(iface->rect().height(), widget->height());
-    delete widget;
+    QCOMPARE(iface->rect().width(), widget.width());
     }
     {
     QAccessible::installFactory(QtTestAccessibleWidgetIface::ifaceFactory);
-    QtTestAccessibleWidget* widget = new QtTestAccessibleWidget(0, "Heinz");
-    widget->show();
-    QVERIFY(QTest::qWaitForWindowExposed(widget));
-    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(widget);
+    QtTestAccessibleWidget widget(nullptr, "Heinz");
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&widget);
     QVERIFY(iface != 0);
     QVERIFY(iface->isValid());
-    QCOMPARE(iface->object(), (QObject*)widget);
+    QCOMPARE(iface->object(), (QObject*)&widget);
     QCOMPARE(iface->object()->objectName(), QString("Heinz"));
-    QCOMPARE(iface->rect().height(), widget->height());
+    QCOMPARE(iface->rect().height(), widget.height());
     // The help text is only set if our factory works
     QCOMPARE(iface->text(QAccessible::Help), QString("Help yourself"));
-    delete widget;
     }
     {
     // A subclass of any class should still get the right QAccessibleInterface
-    QtTestAccessibleWidgetSubclass* subclassedWidget = new QtTestAccessibleWidgetSubclass(0, "Hans");
-    QAccessibleInterface *subIface = QAccessible::queryAccessibleInterface(subclassedWidget);
+    QtTestAccessibleWidgetSubclass subclassedWidget(nullptr, "Hans");
+    QAccessibleInterface *subIface = QAccessible::queryAccessibleInterface(&subclassedWidget);
     QVERIFY(subIface != 0);
     QVERIFY(subIface->isValid());
-    QCOMPARE(subIface->object(), (QObject*)subclassedWidget);
+    QCOMPARE(subIface->object(), (QObject*)&subclassedWidget);
     QCOMPARE(subIface->text(QAccessible::Help), QString("Help yourself"));
-    delete subclassedWidget;
     }
     QTestAccessibility::clearEvents();
 }
 
 void tst_QAccessibility::deletedWidget()
 {
-    QtTestAccessibleWidget *widget = new QtTestAccessibleWidget(0, "Ralf");
+    auto widgetHolder = std::make_unique<QtTestAccessibleWidget>(nullptr, "Ralf");
+    auto widget = widgetHolder.get();
     QAccessible::installFactory(QtTestAccessibleWidgetIface::ifaceFactory);
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(widget);
     QVERIFY(iface != 0);
     QVERIFY(iface->isValid());
     QCOMPARE(iface->object(), (QObject*)widget);
 
-    delete widget;
-    widget = 0;
+    widgetHolder.reset();
     // fixme: QVERIFY(!iface->isValid());
 }
 
@@ -442,7 +442,8 @@ void tst_QAccessibility::statesStructTest()
 void tst_QAccessibility::sliderTest()
 {
     {
-    QSlider *slider = new QSlider(0);
+    auto sliderHolder = std::make_unique<QSlider>(nullptr);
+    auto slider = sliderHolder.get();
     setFrameless(slider);
     slider->setObjectName(QString("Slidy"));
     slider->show();
@@ -468,8 +469,6 @@ void tst_QAccessibility::sliderTest()
     QCOMPARE(77, slider->value());
     slider->setSingleStep(2);
     QCOMPARE(valueIface->minimumStepSize().toInt(), 2);
-
-    delete slider;
     }
     QTestAccessibility::clearEvents();
 }
@@ -477,7 +476,8 @@ void tst_QAccessibility::sliderTest()
 void tst_QAccessibility::navigateHierarchy()
 {
     {
-    QWidget *w = new QWidget(0);
+    auto widgetHolder = std::make_unique<QWidget>(nullptr);
+    auto w = widgetHolder.get();
     w->setObjectName(QString("Hans"));
     w->show();
     QWidget *w1 = new QWidget(w);
@@ -531,8 +531,6 @@ void tst_QAccessibility::navigateHierarchy()
     QVERIFY(parent != 0);
     QVERIFY(parent->isValid());
     QCOMPARE(parent->object(), (QObject*)w3);
-
-    delete w;
     }
     QTestAccessibility::clearEvents();
 }
@@ -588,7 +586,8 @@ static QWidget *createWidgets()
 
 void tst_QAccessibility::accessibleName()
 {
-    QWidget *toplevel = createWidgets();
+    auto holder = std::unique_ptr<QWidget>(createWidgets());
+    auto toplevel = holder.get();
     toplevel->show();
     QVERIFY(QTest::qWaitForWindowExposed(toplevel));
 
@@ -607,8 +606,6 @@ void tst_QAccessibility::accessibleName()
         child->setAccessibleDescription(desc);
         QCOMPARE(acc->text(QAccessible::Description), desc);
     }
-
-    delete toplevel;
     QTestAccessibility::clearEvents();
 }
 
@@ -774,7 +771,8 @@ void tst_QAccessibility::textAttributes()
 
 void tst_QAccessibility::hideShowTest()
 {
-    QWidget * const window = new QWidget();
+    auto windowHolder = std::make_unique<QWidget>();
+    QWidget * const window = windowHolder.get();
     window->resize(200, 200);
     QWidget * const child = new QWidget(window);
 
@@ -804,7 +802,7 @@ void tst_QAccessibility::hideShowTest()
     QVERIFY(QTestAccessibility::containsEvent(&hideChild));
     QTestAccessibility::clearEvents();
 
-    delete window;
+    windowHolder.reset();
     QTestAccessibility::clearEvents();
 }
 
@@ -814,7 +812,8 @@ void tst_QAccessibility::actionTest()
     {
     QCOMPARE(QAccessibleActionInterface::pressAction(), QString(QStringLiteral("Press")));
 
-    QWidget *widget = new QWidget;
+    auto widgetHolder = std::make_unique<QWidget>();
+    auto widget = widgetHolder.get();
     widget->setFocusPolicy(Qt::NoFocus);
     widget->show();
 
@@ -828,13 +827,12 @@ void tst_QAccessibility::actionTest()
     QCOMPARE(actions->actionNames(), QStringList());
     widget->setFocusPolicy(Qt::StrongFocus);
     QCOMPARE(actions->actionNames(), QStringList(QAccessibleActionInterface::setFocusAction()));
-
-    delete widget;
     }
     QTestAccessibility::clearEvents();
 
     {
-    QPushButton *button = new QPushButton;
+    auto buttonHolder = std::make_unique<QPushButton>();
+    auto button = buttonHolder.get();
     setFrameless(button);
     button->show();
     QVERIFY(QTest::qWaitForWindowExposed(button));
@@ -856,8 +854,6 @@ void tst_QAccessibility::actionTest()
     actions->doAction(QAccessibleActionInterface::pressAction());
     QTest::qWait(500);
     QCOMPARE(click_count, 1);
-
-    delete button;
     }
     QTestAccessibility::clearEvents();
 }
@@ -913,7 +909,8 @@ void tst_QAccessibility::mainWindowTest()
         QSKIP("Platform does not support window activation");
 
     {
-    QMainWindow *mw = new QMainWindow;
+    auto mwHolder = std::make_unique<QMainWindow>();
+    auto mw = mwHolder.get();
     mw->resize(300, 200);
     mw->show(); // triggers layout
     qApp->setActiveWindow(mw);
@@ -934,9 +931,6 @@ void tst_QAccessibility::mainWindowTest()
     QCOMPARE(iface->text(QAccessible::Name), name);
     QCOMPARE(iface->role(), QAccessible::Window);
     QVERIFY(iface->state().active);
-
-
-    delete mw;
     }
     QTestAccessibility::clearEvents();
 
@@ -1102,13 +1096,13 @@ void tst_QAccessibility::buttonTest()
 
     {
     // test menu push button
-    QAction *foo = new QAction("Foo", 0);
+    QAction *foo = new QAction("Foo", nullptr);
     foo->setShortcut(QKeySequence("Ctrl+F"));
-    QMenu *menu = new QMenu();
+    auto menu = std::make_unique<QMenu>();
     menu->addAction(foo);
     QPushButton menuButton;
     setFrameless(&menuButton);
-    menuButton.setMenu(menu);
+    menuButton.setMenu(menu.get());
     menuButton.show();
     QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(&menuButton);
     QCOMPARE(interface->role(), QAccessible::ButtonMenu);
@@ -1117,7 +1111,6 @@ void tst_QAccessibility::buttonTest()
     // showing the menu enters a new event loop...
 //    interface->actionInterface()->doAction(QAccessibleActionInterface::showMenuAction());
 //    QTest::qWait(500);
-    delete menu;
     }
 
 
@@ -1215,8 +1208,10 @@ void tst_QAccessibility::buttonTest()
 
 void tst_QAccessibility::scrollBarTest()
 {
-    QScrollBar *scrollBar  = new QScrollBar(Qt::Horizontal);
-    QAccessibleInterface * const scrollBarInterface = QAccessible::queryAccessibleInterface(scrollBar);
+    auto scrollBarHolder = std::make_unique<QScrollBar>(Qt::Horizontal);
+    auto scrollBar = scrollBarHolder.get();
+    QAccessibleInterface * const scrollBarInterface =
+                                    QAccessible::queryAccessibleInterface(scrollBar);
     QVERIFY(scrollBarInterface);
     QVERIFY(scrollBarInterface->state().invisible);
     scrollBar->resize(200, 50);
@@ -1253,14 +1248,13 @@ void tst_QAccessibility::scrollBarTest()
     const QRect scrollBarRect = scrollBarInterface->rect();
     QVERIFY(scrollBarRect.isValid());
 
-    delete scrollBar;
-
     QTestAccessibility::clearEvents();
 }
 
 void tst_QAccessibility::tabTest()
 {
-    QTabBar *tabBar = new QTabBar();
+    auto tabBarHolder = std::make_unique<QTabBar>();
+    auto tabBar = tabBarHolder.get();
     setFrameless(tabBar);
     tabBar->show();
 
@@ -1324,13 +1318,13 @@ void tst_QAccessibility::tabTest()
     tabBar->setCurrentIndex(1);
     QCOMPARE(interface->text(QAccessible::Name), QLatin1String("AccBar"));
 
-    delete tabBar;
     QTestAccessibility::clearEvents();
 }
 
 void tst_QAccessibility::tabWidgetTest()
 {
-    QTabWidget *tabWidget = new QTabWidget();
+    auto tabWidgetHolder = std::make_unique<QTabWidget>();
+    auto tabWidget = tabWidgetHolder.get();
     tabWidget->show();
 
     // the interface for the tab is just a container for tabbar and stacked widget
@@ -1418,7 +1412,6 @@ void tst_QAccessibility::tabWidgetTest()
 #endif
     QCOMPARE(parent->role(), QAccessible::LayeredPane);
 
-    delete tabWidget;
     QTestAccessibility::clearEvents();
 }
 
@@ -1618,17 +1611,17 @@ void tst_QAccessibility::menuTest()
     mw.hide();
 
     // Do not crash if the menu don't have a parent
-    QMenu *menu = new QMenu;
+    auto menu = std::make_unique<QMenu>();
     menu->addAction(QLatin1String("one"));
     menu->addAction(QLatin1String("two"));
     menu->addAction(QLatin1String("three"));
-    iface = QAccessible::queryAccessibleInterface(menu);
+    iface = QAccessible::queryAccessibleInterface(menu.get());
     iface2 = iface->parent();
     QVERIFY(iface2);
     QCOMPARE(iface2->role(), QAccessible::Application);
     // caused a *crash*
     iface2->state();
-    delete menu;
+    menu.reset();
 
     }
     QTestAccessibility::clearEvents();
@@ -1638,7 +1631,8 @@ void tst_QAccessibility::menuTest()
 
 void tst_QAccessibility::spinBoxTest()
 {
-    QSpinBox * const spinBox = new QSpinBox();
+    auto spinBoxHolder = std::make_unique<QSpinBox>();
+    const auto spinBox = spinBoxHolder.get();
     setFrameless(spinBox);
     spinBox->setValue(3);
     spinBox->show();
@@ -1675,13 +1669,13 @@ void tst_QAccessibility::spinBoxTest()
     QAccessibleTextInterface *textIface = interface->textInterface();
     QVERIFY(textIface);
 
-    delete spinBox;
     QTestAccessibility::clearEvents();
 }
 
 void tst_QAccessibility::doubleSpinBoxTest()
 {
-    QDoubleSpinBox *doubleSpinBox = new QDoubleSpinBox;
+    auto holder = std::make_unique<QDoubleSpinBox>();
+    auto doubleSpinBox = holder.get();
     setFrameless(doubleSpinBox);
     doubleSpinBox->show();
 
@@ -1702,7 +1696,6 @@ void tst_QAccessibility::doubleSpinBoxTest()
         QVERIFY(childRect.isValid());
     }
 
-    delete doubleSpinBox;
     QTestAccessibility::clearEvents();
 }
 
@@ -2049,10 +2042,11 @@ void tst_QAccessibility::mdiSubWindowTest()
 
 void tst_QAccessibility::lineEditTest()
 {
-    QWidget *toplevel = new QWidget;
+    auto topLevelHolder = std::make_unique<QWidget>();
+    auto toplevel = topLevelHolder.get();
     {
-    QLineEdit *le = new QLineEdit;
-    QAccessibleInterface *iface(QAccessible::queryAccessibleInterface(le));
+    auto le = std::make_unique<QLineEdit>();
+    QAccessibleInterface *iface(QAccessible::queryAccessibleInterface(le.get()));
     QVERIFY(iface);
     le->show();
 
@@ -2121,7 +2115,7 @@ void tst_QAccessibility::lineEditTest()
     iface->setText(QAccessible::Value, QLatin1String("This text is not a number"));
     QCOMPARE(le->text(), QLatin1String("500"));
 
-    delete le;
+    le.reset();
     delete le2;
     }
 
@@ -2298,7 +2292,6 @@ void tst_QAccessibility::lineEditTest()
     QAccessibleTextInsertEvent insertO(lineEdit, 4, "O");
     QVERIFY(QTestAccessibility::containsEvent(&insertO));
     }
-    delete toplevel;
     QTestAccessibility::clearEvents();
 }
 
@@ -2449,11 +2442,11 @@ void tst_QAccessibility::textInterfaceTest()
     QFETCH(QString, expectedText);
 
     QAccessible::installFactory(CustomTextWidgetIface::ifaceFactory);
-    CustomTextWidget *w = new CustomTextWidget();
+    auto w = std::make_unique<CustomTextWidget>();
     w->text = text;
     w->cursorPosition = cursorPosition;
 
-    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(w);
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(w.get());
     QVERIFY(iface);
     QCOMPARE(iface->text(QAccessible::Value), text);
     QAccessibleTextInterface *textIface = iface->textInterface();
@@ -2478,7 +2471,6 @@ void tst_QAccessibility::textInterfaceTest()
     QCOMPARE(start, expectedStart);
     QCOMPARE(end, expectedEnd);
 
-    delete w;
     QAccessible::removeFactory(CustomTextWidgetIface::ifaceFactory);
     QTestAccessibility::clearEvents();
 }
@@ -2486,7 +2478,8 @@ void tst_QAccessibility::textInterfaceTest()
 void tst_QAccessibility::groupBoxTest()
 {
     {
-    QGroupBox *groupBox = new QGroupBox();
+    auto gbHolder = std::make_unique<QGroupBox>();
+    auto groupBox = gbHolder.get();
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(groupBox);
 
     groupBox->setTitle(QLatin1String("Test QGroupBox"));
@@ -2511,12 +2504,11 @@ void tst_QAccessibility::groupBoxTest()
     QPair<QAccessibleInterface*, QAccessible::Relation> relation = relations.first();
     QCOMPARE(relation.first->object(), groupBox);
     QCOMPARE(relation.second, QAccessible::Label);
-
-    delete groupBox;
     }
 
     {
-    QGroupBox *groupBox = new QGroupBox();
+    auto gbHolder = std::make_unique<QGroupBox>();
+    auto groupBox = gbHolder.get();
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(groupBox);
     QVERIFY(!iface->state().checkable);
     groupBox->setCheckable(true);
@@ -2540,8 +2532,6 @@ void tst_QAccessibility::groupBoxTest()
     QVERIFY(state.checked);
     QAccessibleStateChangeEvent ev2(groupBox, st);
     QVERIFY_EVENT(&ev2);
-
-    delete groupBox;
     }
 }
 
@@ -2813,7 +2803,8 @@ void tst_QAccessibility::scrollAreaTest()
 void tst_QAccessibility::listTest()
 {
     {
-    QListWidget *listView = new QListWidget;
+    auto lvHolder = std::make_unique<QListWidget>();
+    auto listView = lvHolder.get();
     listView->addItem("Oslo");
     listView->addItem("Berlin");
     listView->addItem("Brisbane");
@@ -2929,19 +2920,17 @@ void tst_QAccessibility::listTest()
     // list: Oslo, Helsinki
     // verify that it doesn't return an invalid item from the cache
     QVERIFY(table2->cellAt(2,0) == 0);
-
-    delete listView;
     }
     QTestAccessibility::clearEvents();
 }
 
 void tst_QAccessibility::treeTest()
 {
-    QTreeWidget *treeView = new QTreeWidget;
+    auto treeView = std::make_unique<QTreeWidget>();
 
     // Empty model (do not crash, etc)
     treeView->setColumnCount(0);
-    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(treeView);
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(treeView.get());
     QCOMPARE(iface->child(0), static_cast<QAccessibleInterface*>(0));
 
     treeView->setColumnCount(2);
@@ -3074,7 +3063,6 @@ void tst_QAccessibility::treeTest()
     QCOMPARE(table2->columnDescription(0), QString("Artist"));
     QCOMPARE(table2->columnDescription(1), QString("Work"));
 
-    delete treeView;
     QTestAccessibility::clearEvents();
 }
 
@@ -3085,7 +3073,8 @@ void tst_QAccessibility::treeTest()
 // v3     (12) | 0.2 (13) | 1.2 (14) | 2.2 (15)
 void tst_QAccessibility::tableTest()
 {
-    QTableWidget *tableView = new QTableWidget(3, 3);
+    auto tvHolder = std::make_unique<QTableWidget>(3, 3);
+    auto tableView = tvHolder.get();
     tableView->setColumnCount(3);
     QStringList hHeader;
     hHeader << "h1" << "h2" << "h3";
@@ -3365,7 +3354,7 @@ void tst_QAccessibility::tableTest()
         tableView->horizontalHeader()->setVisible(false);
 
     }
-    delete tableView;
+    tvHolder.reset();
     QVERIFY(!QAccessible::accessibleInterface(id00));
     QTestAccessibility::clearEvents();
 }
@@ -3455,7 +3444,8 @@ void tst_QAccessibility::dockWidgetTest()
 {
 #if QT_CONFIG(dockwidget)
     // Set up a proper main window with two dock widgets
-    QMainWindow *mw = new QMainWindow();
+    auto mwHolder = std::make_unique<QMainWindow>();
+    auto mw = mwHolder.get();
     QFrame *central = new QFrame(mw);
     mw->setCentralWidget(central);
     QMenuBar *mb = new QMenuBar(mw);
@@ -3584,7 +3574,6 @@ void tst_QAccessibility::dockWidgetTest()
     QAccessibleInterface *dock3Widget = accDock3->child(0);
     QCOMPARE(dock3Widget->text(QAccessible::Name), pb3->text());
 
-    delete mw;
     QTestAccessibility::clearEvents();
 #endif // QT_CONFIG(dockwidget)
 }
@@ -3653,7 +3642,8 @@ void tst_QAccessibility::comboBoxTest()
 
 void tst_QAccessibility::labelTest()
 {
-    QWidget *window = new QWidget;
+    auto windowHolder = std::make_unique<QWidget>();
+    auto window = windowHolder.get();
     QString text = "Hello World";
     QLabel *label = new QLabel(text, window);
     setFrameless(label);
@@ -3687,7 +3677,7 @@ void tst_QAccessibility::labelTest()
     QCOMPARE(rel, QAccessible::Labelled);
     QCOMPARE(iface->role(), QAccessible::EditableText);
 
-    delete window;
+    windowHolder.reset();
     QTestAccessibility::clearEvents();
 
     QPixmap testPixmap(50, 50);
@@ -3713,7 +3703,8 @@ void tst_QAccessibility::labelTest()
 
 void tst_QAccessibility::accelerators()
 {
-    QWidget *window = new QWidget;
+    auto windowHolder = std::make_unique<QWidget>();
+    auto window = windowHolder.get();
     QHBoxLayout *lay = new QHBoxLayout(window);
     QLabel *label = new QLabel(tr("&Line edit"), window);
     QLineEdit *le = new QLineEdit(window);
@@ -3747,7 +3738,7 @@ void tst_QAccessibility::accelerators()
     QCoreApplication::processEvents();
 #endif
     QTest::qWait(100);
-    delete window;
+    windowHolder.reset();
     QTestAccessibility::clearEvents();
 }
 
@@ -4059,9 +4050,6 @@ void tst_QAccessibility::focusChild()
         QCOMPARE(iface2->focusChild(), iface2);
         QCOMPARE(QAccessible::queryAccessibleInterface(&mainWindow)->focusChild(), iface2);
 
-        delete widget1;
-        delete widget2;
-        delete centralWidget;
         QTestAccessibility::clearEvents();
     }
 
@@ -4078,7 +4066,6 @@ void tst_QAccessibility::focusChild()
         widget->setFocus();
         QCOMPARE(iface->focusChild(), QAccessible::queryAccessibleInterface(widget)->child(1));
 
-        delete widget;
         QAccessible::removeFactory(FocusChildTestAccessibleWidget::ifaceFactory);
         QTestAccessibility::clearEvents();
     }
@@ -4101,7 +4088,6 @@ void tst_QAccessibility::focusChild()
         QCOMPARE(iface->focusChild()->text(QAccessible::Name), QStringLiteral("Second tab"));
         QCOMPARE(iface->focusChild()->role(), QAccessible::PageTab);
 
-        delete tabBar;
         QTestAccessibility::clearEvents();
     }
 }
