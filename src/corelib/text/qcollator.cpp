@@ -318,7 +318,7 @@ bool QCollator::ignorePunctuation() const
     Returns an integer less than, equal to, or greater than zero depending on
     whether \a s1 sorts before, with or after \a s2.
 */
-#if QT_STRINGVIEW_LEVEL < 2
+
 /*!
     \fn bool QCollator::operator()(const QString &s1, const QString &s2) const
     \overload
@@ -342,7 +342,6 @@ bool QCollator::ignorePunctuation() const
     Returns an integer less than, equal to, or greater than zero depending on
     whether \a s1 sorts before, with or after \a s2.
 */
-#endif // QT_STRINGVIEW_LEVEL < 2
 
 /*!
     \fn QCollatorSortKey QCollator::sortKey(const QString &string) const

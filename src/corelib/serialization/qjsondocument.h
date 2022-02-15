@@ -130,9 +130,7 @@ public:
     void setObject(const QJsonObject &object);
     void setArray(const QJsonArray &array);
 
-#if QT_STRINGVIEW_LEVEL < 2
     const QJsonValue operator[](const QString &key) const;
-#endif
     const QJsonValue operator[](QStringView key) const;
     const QJsonValue operator[](QLatin1String key) const;
     const QJsonValue operator[](qsizetype i) const;

@@ -952,7 +952,6 @@ public:
     QString nativeCountryName() const;
 #endif
 
-#if QT_STRINGVIEW_LEVEL < 2
     short toShort(const QString &s, bool *ok = nullptr) const
     { return toShort(qToStringViewIgnoringNull(s), ok); }
     ushort toUShort(const QString &s, bool *ok = nullptr) const
@@ -973,7 +972,6 @@ public:
     { return toFloat(qToStringViewIgnoringNull(s), ok); }
     double toDouble(const QString &s, bool *ok = nullptr) const
     { return toDouble(qToStringViewIgnoringNull(s), ok); }
-#endif
 
     short toShort(QStringView s, bool *ok = nullptr) const;
     ushort toUShort(QStringView s, bool *ok = nullptr) const;
@@ -998,13 +996,11 @@ public:
     QString toString(float f, char format = 'g', int precision = 6) const
     { return toString(double(f), format, precision); }
 
-#if QT_STRINGVIEW_LEVEL < 2
     // (Can't inline first two: passing by value doesn't work when only forward-declared.)
     QString toString(QDate date, const QString &format) const;
     QString toString(QTime time, const QString &format) const;
     QString toString(const QDateTime &dateTime, const QString &format) const
     { return toString(dateTime, qToStringViewIgnoringNull(format)); }
-#endif
     QString toString(QDate date, QStringView format) const;
     QString toString(QTime time, QStringView format) const;
     QString toString(const QDateTime &dateTime, QStringView format) const;

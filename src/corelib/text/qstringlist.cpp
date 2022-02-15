@@ -276,7 +276,6 @@ void QtPrivate::QStringList_sort(QStringList *that, Qt::CaseSensitivity cs)
 }
 
 
-#if QT_STRINGVIEW_LEVEL < 2
 /*!
     \fn QStringList QStringList::filter(const QString &str, Qt::CaseSensitivity cs) const
 
@@ -296,7 +295,6 @@ void QtPrivate::QStringList_sort(QStringList *that, Qt::CaseSensitivity cs)
 
     \sa contains()
 */
-#endif
 
 /*!
     \fn QStringList QStringList::filter(QStringView str, Qt::CaseSensitivity cs) const
@@ -325,7 +323,6 @@ static bool stringList_contains(const QStringList &stringList, const T &str, Qt:
 }
 
 
-#if QT_STRINGVIEW_LEVEL < 2
 /*!
     \fn bool QStringList::contains(const QString &str, Qt::CaseSensitivity cs) const
 
@@ -335,7 +332,6 @@ static bool stringList_contains(const QStringList &stringList, const T &str, Qt:
 
     \sa indexOf(), lastIndexOf(), QString::contains()
  */
-#endif
 
 /*!
     \fn bool QStringList::contains(QStringView str, Qt::CaseSensitivity cs) const
@@ -390,7 +386,6 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, const QRegula
 }
 #endif // QT_CONFIG(regularexpression)
 
-#if QT_STRINGVIEW_LEVEL < 2
 /*!
     \fn QStringList &QStringList::replaceInStrings(const QString &before, const QString &after, Qt::CaseSensitivity cs)
 
@@ -418,7 +413,6 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, const QRegula
     \overload
     \since 5.14
 */
-#endif
 
 /*!
     \fn QStringList &QStringList::replaceInStrings(QStringView before, QStringView after, Qt::CaseSensitivity cs)
@@ -474,7 +468,6 @@ static qsizetype accumulatedSize(const QStringList &list, qsizetype seplen)
     return result;
 }
 
-#if QT_STRINGVIEW_LEVEL < 2
 /*!
     \fn QString QStringList::join(const QString &separator) const
 
@@ -484,7 +477,6 @@ static qsizetype accumulatedSize(const QStringList &list, qsizetype seplen)
 
     \sa QString::split()
 */
-#endif
 
 /*!
     \fn QString QStringList::join(QChar separator) const

@@ -1509,7 +1509,6 @@ QString QLocale::scriptToString(QLocale::Script script)
     return QLatin1String(script_name_list + script_name_index[script]);
 }
 
-#if QT_STRINGVIEW_LEVEL < 2
 /*!
     \fn short QLocale::toShort(const QString &s, bool *ok) const
 
@@ -1672,7 +1671,6 @@ QString QLocale::scriptToString(QLocale::Script script)
 
     \sa toFloat(), toInt(), toString()
 */
-#endif // QT_STRINGVIEW_LEVEL < 2
 
 /*!
     Returns the short int represented by the localized string \a s.
@@ -1914,7 +1912,6 @@ QString QLocale::toString(qulonglong i) const
     return d->m_data->unsLongLongToString(i, -1, 10, -1, flags);
 }
 
-#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Returns a localized string representation of the given \a date in the
     specified \a format.
@@ -1951,7 +1948,6 @@ QString QLocale::toString(QTime time, const QString &format) const
 
     \sa QDateTime::toString(), QDate::toString(), QTime::toString()
 */
-#endif
 
 /*!
     \since 5.14

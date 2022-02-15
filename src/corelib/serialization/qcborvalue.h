@@ -146,9 +146,7 @@ public:
     QCborValue(QCborSimpleType st) : t(type_helper(st)) {}
 
     QCborValue(const QByteArray &ba);
-#if QT_STRINGVIEW_LEVEL < 2
     QCborValue(const QString &s);
-#endif
     QCborValue(QStringView s);
     QCborValue(QLatin1String s);
 #ifndef QT_NO_CAST_FROM_ASCII
