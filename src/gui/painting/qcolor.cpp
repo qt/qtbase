@@ -873,7 +873,6 @@ QString QColor::name(NameFormat format) const
     return QString();
 }
 
-#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Sets the RGB value of this QColor to \a name, which may be in one
     of these formats:
@@ -902,7 +901,6 @@ void QColor::setNamedColor(const QString &name)
 {
     setColorFromString(qToStringViewIgnoringNull(name));
 }
-#endif
 
 /*!
     \overload
@@ -924,7 +922,6 @@ void QColor::setNamedColor(QLatin1String name)
     setColorFromString(name);
 }
 
-#if QT_STRINGVIEW_LEVEL < 2
 /*!
    \since 4.7
 
@@ -940,7 +937,6 @@ bool QColor::isValidColor(const QString &name)
 {
     return isValidColor(qToStringViewIgnoringNull(name));
 }
-#endif
 
 /*!
     \overload
