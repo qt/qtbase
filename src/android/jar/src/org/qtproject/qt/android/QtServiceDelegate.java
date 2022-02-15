@@ -101,7 +101,6 @@ public class QtServiceDelegate
 
     private String m_mainLib = null;
     private Service m_service = null;
-    private static String m_environmentVariables = null;
     private static String m_applicationParameters = null;
 
     public boolean loadApplication(Service service, ClassLoader classLoader, Bundle loaderParams)
@@ -151,20 +150,19 @@ public class QtServiceDelegate
         String nativeLibsDir = QtNativeLibrariesDir.nativeLibrariesDir(m_service);
         QtNative.loadBundledLibraries(libraries, nativeLibsDir);
         m_mainLib = loaderParams.getString(MAIN_LIBRARY_KEY);
-        m_environmentVariables = loaderParams.getString(ENVIRONMENT_VARIABLES_KEY);
-        String additionalEnvironmentVariables = "QT_ANDROID_FONTS_MONOSPACE=Droid Sans Mono;Droid Sans;Droid Sans Fallback"
-                                              + "\tQT_ANDROID_FONTS_SERIF=Droid Serif"
-                                              + "\tHOME=" + m_service.getFilesDir().getAbsolutePath()
-                                              + "\tTMPDIR=" + m_service.getFilesDir().getAbsolutePath();
-        if (Build.VERSION.SDK_INT < 14)
-            additionalEnvironmentVariables += "\tQT_ANDROID_FONTS=Droid Sans;Droid Sans Fallback";
-        else
-            additionalEnvironmentVariables += "\tQT_ANDROID_FONTS=Roboto;Droid Sans;Droid Sans Fallback";
 
-        if (m_environmentVariables != null && m_environmentVariables.length() > 0)
-            m_environmentVariables = additionalEnvironmentVariables + "\t" + m_environmentVariables;
+        QtNative.setEnvironmentVariables(loaderParams.getString(ENVIRONMENT_VARIABLES_KEY));
+        QtNative.setEnvironmentVariable("QT_ANDROID_FONTS_MONOSPACE",
+                                        "Droid Sans Mono;Droid Sans;Droid Sans Fallback");
+        QtNative.setEnvironmentVariable("QT_ANDROID_FONTS_SERIF", "Droid Serif");
+        QtNative.setEnvironmentVariable("HOME", m_service.getFilesDir().getAbsolutePath());
+        QtNative.setEnvironmentVariable("TMPDIR", m_service.getFilesDir().getAbsolutePath());
+
+        if (Build.VERSION.SDK_INT < 14)
+            QtNative.setEnvironmentVariable("QT_ANDROID_FONTS", "Droid Sans;Droid Sans Fallback");
         else
-            m_environmentVariables = additionalEnvironmentVariables;
+            QtNative.setEnvironmentVariable("QT_ANDROID_FONTS",
+                                            "Roboto;Droid Sans;Droid Sans Fallback");
 
         if (loaderParams.containsKey(APPLICATION_PARAMETERS_KEY))
             m_applicationParameters = loaderParams.getString(APPLICATION_PARAMETERS_KEY);
@@ -180,7 +178,7 @@ public class QtServiceDelegate
         // start application
         try {
             String nativeLibraryDir = QtNativeLibrariesDir.nativeLibrariesDir(m_service);
-            QtNative.startApplication(m_applicationParameters, m_environmentVariables, m_mainLib);
+            QtNative.startApplication(m_applicationParameters, m_mainLib);
             return true;
         } catch (Exception e) {
             e.printStackTrace();

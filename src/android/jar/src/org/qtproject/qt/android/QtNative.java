@@ -61,6 +61,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.system.Os;
 import android.content.ClipboardManager;
 import android.content.ClipData;
 import android.content.ClipDescription;
@@ -620,7 +621,7 @@ public class QtNative
         });
     }
 
-    public static boolean startApplication(String params, final String environment, String mainLib) throws Exception
+    public static boolean startApplication(String params, String mainLib) throws Exception
     {
         if (params == null)
             params = "-platform\tandroid";
@@ -634,7 +635,7 @@ public class QtNative
             m_qtThread.run(new Runnable() {
                 @Override
                 public void run() {
-                    res[0] = startQtAndroidPlugin(qtParams, environment);
+                    res[0] = startQtAndroidPlugin(qtParams);
                     setDisplayMetrics(
                             m_displayMetricsScreenWidthPixels, m_displayMetricsScreenHeightPixels,
                             m_displayMetricsAvailableLeftPixels, m_displayMetricsAvailableTopPixels,
@@ -693,7 +694,7 @@ public class QtNative
 
 
     // application methods
-    public static native boolean startQtAndroidPlugin(String params, String env);
+    public static native boolean startQtAndroidPlugin(String params);
     public static native void startQtApplication();
     public static native void waitForServiceSetup();
     public static native void quitQtCoreApplication();
@@ -1365,6 +1366,40 @@ public class QtNative
             e.printStackTrace();
         }
         return res.toArray(new String[res.size()]);
+    }
+
+    /**
+     *Sets a single environment variable
+     *
+     * returns true if the value was set, false otherwise.
+     * in case it cannot set value will log the exception
+     **/
+    public static void setEnvironmentVariable(String key, String value)
+    {
+        try {
+            android.system.Os.setenv(key, value, true);
+        } catch (Exception e) {
+            Log.e(QtNative.QtTAG, "Could not set environment variable:" + key + "=" + value);
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     *Sets multiple environment variables
+     *
+     * Uses '\t' as divider between variables and '=' between key/value
+     * Ex: key1=val1\tkey2=val2\tkey3=val3
+     * Note: it assumed that the key cannot have '=' but the value can
+     **/
+    public static void setEnvironmentVariables(String environmentVariables)
+    {
+        for (String variable : environmentVariables.split("\t")) {
+            String[] keyvalue = variable.split("=", 2);
+            if (keyvalue.length < 2 || keyvalue[0].isEmpty())
+                continue;
+
+            setEnvironmentVariable(keyvalue[0], keyvalue[1]);
+        }
     }
 
     // screen methods
