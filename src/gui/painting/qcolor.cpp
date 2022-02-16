@@ -164,7 +164,7 @@ static bool get_hex_rgb(QAnyStringView name, QRgba64 *rgb)
 #define rgb(r,g,b) (0xff000000 | (r << 16) |  (g << 8) | b)
 
 // keep this is in sync with QColorConstants
-static const struct RGBData {
+static constexpr struct RGBData {
     const char name[21];
     uint  value;
 } rgbTbl[] = {
@@ -320,6 +320,16 @@ static const struct RGBData {
 
 static const int rgbTblSize = sizeof(rgbTbl) / sizeof(RGBData);
 
+static_assert([] {
+    for (auto e : rgbTbl) {
+        for (auto it = e.name; *it ; ++it) {
+            if (uchar(*it) > 127)
+                return false;
+        }
+    }
+    return true;
+    }(), "the lookup code expects color names to be US-ASCII-only");
+
 #undef rgb
 
 inline bool operator<(const char *name, const RGBData &data)
@@ -338,8 +348,9 @@ static bool get_named_rgb_no_space(const char *name_no_space, QRgb *rgb)
 }
 
 namespace {
-static inline char toLower(QChar ch) noexcept { return ch.toLower().toLatin1(); }
-static inline char toLower(char ch) noexcept { return toLower(QLatin1Char{ch}); }
+// named colors are US-ASCII (enforced by static_assert above):
+static char to_char(char ch) noexcept { return ch; }
+static char to_char(QChar ch) noexcept { return ch.toLatin1(); }
 }
 
 static bool get_named_rgb(QAnyStringView name, QRgb* rgb)
@@ -351,7 +362,7 @@ static bool get_named_rgb(QAnyStringView name, QRgb* rgb)
     name.visit([&pos, &name_no_space] (auto name) {
         for (auto c : name) {
             if (c != u'\t' && c != u' ')
-                name_no_space[pos++] = toLower(c);
+                name_no_space[pos++] = QtMiscUtils::toAsciiLower(to_char(c));
         }
     });
     name_no_space[pos] = 0;
