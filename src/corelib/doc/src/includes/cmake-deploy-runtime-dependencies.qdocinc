@@ -10,7 +10,7 @@ qt_add_executable(MyApp main.cpp)
 # The following script must only be executed at install time
 set(deploy_script "${CMAKE_CURRENT_BINARY_DIR}/deploy_MyApp.cmake")
 
-file(GENERATE OUTPUT ${deploy_script} CONTENTS "
+file(GENERATE OUTPUT ${deploy_script} CONTENT "
 include(\"${QT_DEPLOY_SUPPORT}\")
 qt_deploy_runtime_dependencies(
     EXECUTABLE \"\${QT_DEPLOY_BIN_DIR}/$<TARGET_FILE_NAME:MyApp>\"
