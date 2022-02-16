@@ -443,24 +443,17 @@ void tst_QEventDispatcher::postEventFromEventHandler()
         QAbstractEventDispatcher::instance()->processEvents(QEventLoop::WaitForMoreEvents);
     done = true;
 
-    bool coreFails = false;
-    bool guiFails = false;
     const QByteArrayView eventDispatcherName(QAbstractEventDispatcher::instance()->metaObject()->className());
-#if defined(Q_OS_DARWIN)
-    coreFails = true;
-#elif defined(Q_OS_WINDOWS)
-    coreFails = true;
-    guiFails = true;
-#elif defined(Q_OS_LINUX) || defined(Q_OS_INTEGRITY)
-    // QXcbUnixEventDispatcher and QEventDispatcherUNIX do not do this correctly
-    // QXcbGlibEventDispatcher and QEventDispatcherGlib do
-    coreFails = !eventDispatcherName.contains("Glib");
-    guiFails = !eventDispatcherName.contains("Glib");
-#endif
+    qDebug() << eventDispatcherName;
+    // QXcbUnixEventDispatcher and QEventDispatcherUNIX do not do this correctly on any platform;
+    // both Windows event dispatchers fail as well.
+    const bool knownToFail = eventDispatcherName.contains("UNIX")
+                          || eventDispatcherName.contains("XcbUnix")
+                          || eventDispatcherName.contains("Win32")
+                          || eventDispatcherName.contains("WindowsGui")
+                          || eventDispatcherName.contains("Android");
 
-    if (coreFails && !isGuiEventDispatcher)
-        QEXPECT_FAIL("", eventDispatcherName.constData(), Continue);
-    if (guiFails && isGuiEventDispatcher)
+    if (knownToFail)
         QEXPECT_FAIL("", eventDispatcherName.constData(), Continue);
 
     QVERIFY(!hadToQuit);
