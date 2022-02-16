@@ -632,11 +632,13 @@ bool QSqlResultPrivate::isVariantNull(const QVariant &variant)
     case qMetaTypeId<QByteArray>():
         return static_cast<const QByteArray*>(variant.constData())->isNull();
     case qMetaTypeId<QDateTime>():
-        return static_cast<const QDateTime*>(variant.constData())->isNull();
+        // We treat invalid date-time as null, since its ISODate would be empty.
+        return !static_cast<const QDateTime*>(variant.constData())->isValid();
     case qMetaTypeId<QDate>():
         return static_cast<const QDate*>(variant.constData())->isNull();
     case qMetaTypeId<QTime>():
-        return static_cast<const QTime*>(variant.constData())->isNull();
+        // As for QDateTime, QTime can be invalid without being null.
+        return !static_cast<const QTime*>(variant.constData())->isValid();
     case qMetaTypeId<QUuid>():
         return static_cast<const QUuid*>(variant.constData())->isNull();
     default:
