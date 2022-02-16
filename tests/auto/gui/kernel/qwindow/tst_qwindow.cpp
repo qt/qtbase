@@ -525,7 +525,7 @@ static QString msgRectMismatch(const QRect &r1, const QRect &r2)
 
 static bool isPlatformWayland()
 {
-    return !QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive);
+    return QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive);
 }
 
 void tst_QWindow::positioning()
@@ -645,9 +645,6 @@ void tst_QWindow::childWindowPositioning_data()
 
 void tst_QWindow::childWindowPositioning()
 {
-    if (isPlatformWayland())
-        QSKIP("Wayland: This is flaky (protocol errors for xdg-shell v6). See QTBUG-67648.");
-
     const QPoint topLeftOrigin(0, 0);
 
     ColoredWindow topLevelWindowFirst(Qt::green);
@@ -1324,6 +1321,8 @@ void tst_QWindow::mouseToTouchTranslation()
     QTRY_COMPARE(window.touchPressedCount, 1);
     QTRY_COMPARE(window.touchReleasedCount, 1);
     QCOMPARE(window.mouseDevice, window.touchDevice);
+    if (isPlatformWayland())
+        QEXPECT_FAIL("", "Wayland: This fails. See QTBUG-100887.", Abort);
     QCOMPARE(window.touchDevice->type(), QInputDevice::DeviceType::Mouse);
     QCOMPARE(window.touchPressLocalPos.toPoint(), localPos);
     QCOMPARE(window.touchPressGlobalPos.toPoint(), window.mapToGlobal(localPos));
@@ -1481,9 +1480,6 @@ void tst_QWindow::touchCancelWithTouchToMouse()
 
 void tst_QWindow::touchInterruptedByPopup()
 {
-    if (isPlatformWayland())
-        QSKIP("Wayland: This test crashes with xdg-shell unstable v6");
-
     InputTestWindow window;
     window.setTitle(QLatin1String(QTest::currentTestFunction()));
     window.setGeometry(QRect(m_availableTopLeft + QPoint(80, 80), m_testWindowSize));
@@ -2091,9 +2087,6 @@ void tst_QWindow::mask()
 
 void tst_QWindow::initialSize()
 {
-    if (isPlatformWayland())
-        QSKIP("Wayland: This fails. See QTBUG-66818.");
-
     QSize defaultSize(0,0);
     {
     Window w;
@@ -2108,6 +2101,8 @@ void tst_QWindow::initialSize()
     w.setTitle(QLatin1String(QTest::currentTestFunction()));
     w.setWidth(m_testWindowSize.width());
     w.showNormal();
+    if (isPlatformWayland())
+        QEXPECT_FAIL("", "Wayland: This fails. See QTBUG-66818.", Abort);
     QTRY_COMPARE(w.width(), m_testWindowSize.width());
     QTRY_VERIFY(w.height() > 0);
     }
@@ -2291,6 +2286,8 @@ void tst_QWindow::modalWindowPosition()
     window.setModality(Qt::WindowModal);
     window.show();
     QVERIFY(QTest::qWaitForWindowExposed(&window));
+    if (isPlatformWayland())
+        QEXPECT_FAIL("", "Wayland: This fails. See QTBUG-100888.", Abort);
     QCOMPARE(window.geometry(), origGeo);
 }
 
@@ -2569,6 +2566,8 @@ void tst_QWindow::requestUpdate()
     QCoreApplication::processEvents();
     QTRY_VERIFY(window.isExposed());
 
+    if (isPlatformWayland())
+        QEXPECT_FAIL("", "Wayland: This fails. See QTBUG-100889.", Abort);
     QCOMPARE(window.received(QEvent::UpdateRequest), 0);
 
     window.requestUpdate();
