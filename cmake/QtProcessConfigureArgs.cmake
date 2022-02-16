@@ -69,7 +69,6 @@ list(TRANSFORM configure_args REPLACE ";" "[[;]]")
 
 list(FILTER configure_args EXCLUDE REGEX "^[ \t]*$")
 list(TRANSFORM configure_args STRIP)
-list(TRANSFORM configure_args REPLACE "\\\\" "\\\\\\\\")
 unset(generator)
 set(auto_detect_compiler TRUE)
 set(auto_detect_generator ${qtbase_or_top_level_build})
