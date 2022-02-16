@@ -47,6 +47,7 @@ public:
 
     QAbstractItemModel *model() const;
     FailureReportingMode failureReportingMode() const;
+    void setUseFetchMore(bool value);
 
 private:
     friend inline bool QTestPrivate::testDataGuiRoles(QAbstractItemModelTester *tester);

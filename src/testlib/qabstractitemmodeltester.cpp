@@ -91,6 +91,7 @@ private:
     QStack<Changing> insert;
     QStack<Changing> remove;
 
+    bool useFetchMore = true;
     bool fetchingMore;
 
     enum class ChangeInFlight {
@@ -315,6 +316,19 @@ QAbstractItemModelTester::FailureReportingMode QAbstractItemModelTester::failure
     return d->failureReportingMode;
 }
 
+/*!
+    If \a value is true, enables dynamic population of the
+    tested model, which is the default.
+    If \a value is false, it disables it.
+
+    \since 6.4
+*/
+void QAbstractItemModelTester::setUseFetchMore(bool value)
+{
+    Q_D(QAbstractItemModelTester);
+    d->useFetchMore = value;
+}
+
 bool QAbstractItemModelTester::verify(bool statement, const char *statementStr, const char *description, const char *file, int line)
 {
     Q_D(QAbstractItemModelTester);
@@ -349,9 +363,11 @@ void QAbstractItemModelTesterPrivate::nonDestructiveBasicTest()
     MODELTESTER_VERIFY(!model->buddy(QModelIndex()).isValid());
     model->canFetchMore(QModelIndex());
     MODELTESTER_VERIFY(model->columnCount(QModelIndex()) >= 0);
-    fetchingMore = true;
-    model->fetchMore(QModelIndex());
-    fetchingMore = false;
+    if (useFetchMore) {
+        fetchingMore = true;
+        model->fetchMore(QModelIndex());
+        fetchingMore = false;
+    }
     Qt::ItemFlags flags = model->flags(QModelIndex());
     MODELTESTER_VERIFY(flags == Qt::ItemIsDropEnabled || flags == 0);
     model->hasChildren(QModelIndex());
@@ -529,7 +545,7 @@ void QAbstractItemModelTesterPrivate::checkChildren(const QModelIndex &parent, i
         p = p.parent();
 
     // For models that are dynamically populated
-    if (model->canFetchMore(parent)) {
+    if (model->canFetchMore(parent) && useFetchMore) {
         fetchingMore = true;
         model->fetchMore(parent);
         fetchingMore = false;

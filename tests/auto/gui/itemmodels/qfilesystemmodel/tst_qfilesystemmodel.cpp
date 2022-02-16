@@ -20,6 +20,7 @@
 #include <QStyle>
 #include <QtGlobal>
 #include <QTemporaryDir>
+#include <QAbstractItemModelTester>
 #if defined(Q_OS_WIN)
 # include <qt_windows.h> // for SetFileAttributes
 #endif
@@ -149,6 +150,8 @@ void tst_QFileSystemModel::indexPath()
 {
 #if !defined(Q_OS_WIN)
     QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
+    QAbstractItemModelTester tester(model.get());
+    tester.setUseFetchMore(false);
     int depth = QDir::currentPath().count('/');
     model->setRootPath(QDir::currentPath());
     QString backPath;
@@ -163,6 +166,8 @@ void tst_QFileSystemModel::indexPath()
 void tst_QFileSystemModel::rootPath()
 {
     QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
+    QAbstractItemModelTester tester(model.get());
+    tester.setUseFetchMore(false);
     QCOMPARE(model->rootPath(), QString(QDir().path()));
 
     QSignalSpy rootChanged(model.data(), &QFileSystemModel::rootPathChanged);
@@ -227,6 +232,8 @@ void tst_QFileSystemModel::rootPath()
 void tst_QFileSystemModel::readOnly()
 {
     QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
+    QAbstractItemModelTester tester(model.get());
+    tester.setUseFetchMore(false);
     QCOMPARE(model->isReadOnly(), true);
     QTemporaryFile file(flatDirTestPath + QStringLiteral("/XXXXXX.dat"));
     QVERIFY2(file.open(), qPrintable(file.errorString()));
@@ -280,6 +287,8 @@ private:
 void tst_QFileSystemModel::iconProvider()
 {
     QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
+    QAbstractItemModelTester tester(model.get());
+    tester.setUseFetchMore(false);
     QVERIFY(model->iconProvider());
     QScopedPointer<QFileIconProvider> provider(new QFileIconProvider);
     model->setIconProvider(provider.data());
@@ -389,6 +398,8 @@ void tst_QFileSystemModel::rowCount()
     QSignalSpy *spy2 = nullptr;
     QSignalSpy *spy3 = nullptr;
     QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
+    QAbstractItemModelTester tester(model.get());
+    tester.setUseFetchMore(false);
     QModelIndex root = prepareTestModelRoot(model.data(), flatDirTestPath, &spy2, &spy3);
     QVERIFY(root.isValid());
 
@@ -417,6 +428,8 @@ void tst_QFileSystemModel::rowsInserted()
 {
     const QString tmp = flatDirTestPath;
     QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
+    QAbstractItemModelTester tester(model.get());
+    tester.setUseFetchMore(false);
     QModelIndex root = prepareTestModelRoot(model.data(), tmp);
     QVERIFY(root.isValid());
 
@@ -471,6 +484,8 @@ void tst_QFileSystemModel::rowsRemoved()
 {
     const QString tmp = flatDirTestPath;
     QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
+    QAbstractItemModelTester tester(model.get());
+    tester.setUseFetchMore(false);
     QModelIndex root = prepareTestModelRoot(model.data(), tmp);
     QVERIFY(root.isValid());
 
@@ -533,6 +548,8 @@ void tst_QFileSystemModel::dataChanged()
 
     const QString tmp = flatDirTestPath;
     QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
+    QAbstractItemModelTester tester(model.get());
+    tester.setUseFetchMore(false);
     QModelIndex root = prepareTestModelRoot(model.data(), tmp);
     QVERIFY(root.isValid());
 
@@ -593,6 +610,8 @@ void tst_QFileSystemModel::filters()
 {
     QString tmp = flatDirTestPath;
     QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
+    QAbstractItemModelTester tester(model.get());
+    tester.setUseFetchMore(false);
     QVERIFY(createFiles(model.data(), tmp, QStringList()));
     QModelIndex root = model->setRootPath(tmp);
     QFETCH(QStringList, files);
@@ -661,6 +680,8 @@ void tst_QFileSystemModel::nameFilters()
     QStringList list;
     list << "a" << "b" << "c";
     QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
+    QAbstractItemModelTester tester(model.get());
+    tester.setUseFetchMore(false);
     model->setNameFilters(list);
     model->setNameFilterDisables(false);
     QCOMPARE(model->nameFilters(), list);
@@ -706,6 +727,8 @@ void tst_QFileSystemModel::setData_data()
 void tst_QFileSystemModel::setData()
 {
     QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
+    QAbstractItemModelTester tester(model.get());
+    tester.setUseFetchMore(false);
     QSignalSpy spy(model.data(), &QFileSystemModel::fileRenamed);
     QFETCH(QString, subdirName);
     QFETCH(QStringList, files);
@@ -758,6 +781,8 @@ void tst_QFileSystemModel::sortPersistentIndex()
     file.close();
     QTRY_VERIFY(QDir(flatDirTestPath).entryInfoList().contains(fileInfo));
     QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
+    QAbstractItemModelTester tester(model.get());
+    tester.setUseFetchMore(false);
     QModelIndex root = model->setRootPath(flatDirTestPath);
     QTRY_VERIFY(model->rowCount(root) > 0);
 
@@ -864,6 +889,8 @@ void tst_QFileSystemModel::mkdir()
     QString tmp = flatDirTestPath;
     QString newFolderPath = QDir::toNativeSeparators(tmp + '/' + "NewFoldermkdirtest4");
     QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
+    QAbstractItemModelTester tester(model.get());
+    tester.setUseFetchMore(false);
     QModelIndex tmpDir = model->index(tmp);
     QVERIFY(tmpDir.isValid());
     QDir bestatic(newFolderPath);
@@ -899,6 +926,8 @@ void tst_QFileSystemModel::deleteFile()
     }
     newFile.close();
     QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
+    QAbstractItemModelTester tester(model.get());
+    tester.setUseFetchMore(false);
     QModelIndex idx = model->index(newFilePath);
     QVERIFY(idx.isValid());
     QVERIFY(model->remove(idx));
@@ -961,6 +990,8 @@ void tst_QFileSystemModel::caseSensitivity()
     QStringList files;
     files << "a" << "c" << "C";
     QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
+    QAbstractItemModelTester tester(model.get());
+    tester.setUseFetchMore(false);
     QVERIFY(createFiles(model.data(), tmp, files));
     QModelIndex root = model->index(tmp);
     QStringList paths;
@@ -1026,6 +1057,8 @@ void tst_QFileSystemModel::dirsBeforeFiles()
     }
 
     QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
+    QAbstractItemModelTester tester(model.get());
+    tester.setUseFetchMore(false);
     QModelIndex root = model->setRootPath(dir.absolutePath());
     // Wait for model to be notified by the file system watcher
     QTRY_COMPARE(model->rowCount(root), 2 * itemCount);
@@ -1100,6 +1133,8 @@ void tst_QFileSystemModel::permissions() // checks QTBUG-20503
     const QString tmp = flatDirTestPath;
     const QString file = tmp + QLatin1String("/f");
     QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
+    QAbstractItemModelTester tester(model.get());
+    tester.setUseFetchMore(false);
     QVERIFY(createFiles(model.data(), tmp, QStringList{QLatin1String("f")}));
 
     QVERIFY(QFile::setPermissions(file,  permissions));
