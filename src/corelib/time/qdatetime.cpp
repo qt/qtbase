@@ -3180,9 +3180,8 @@ static void setTimeSpec(QDateTimeData &d, Qt::TimeSpec spec, int offsetSeconds)
 static void setDateTime(QDateTimeData &d, QDate date, QTime time)
 {
     // If the date is valid and the time is not we set time to 00:00:00
-    QTime useTime = time;
-    if (!useTime.isValid() && date.isValid())
-        useTime = QTime::fromMSecsSinceStartOfDay(0);
+    if (!time.isValid() && date.isValid())
+        time = QTime::fromMSecsSinceStartOfDay(0);
 
     QDateTimePrivate::StatusFlags newStatus = { };
 
@@ -3195,8 +3194,8 @@ static void setDateTime(QDateTimeData &d, QDate date, QTime time)
 
     // Set time value and status
     int ds = 0;
-    if (useTime.isValid()) {
-        ds = useTime.msecsSinceStartOfDay();
+    if (time.isValid()) {
+        ds = time.msecsSinceStartOfDay();
         newStatus |= QDateTimePrivate::ValidTime;
     }
     Q_ASSERT(ds < MSECS_PER_DAY);

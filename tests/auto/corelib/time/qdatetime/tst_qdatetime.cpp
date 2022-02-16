@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -341,14 +341,26 @@ void tst_QDateTime::isNull()
     dt1.setTime(QTime());
     QVERIFY(dt1.isNull());
     dt1.setTimeSpec(Qt::UTC);
-    QVERIFY(dt1.isNull());   // maybe it should return false?
+    QVERIFY(dt1.isNull());
 
+    dt1.setTime(QTime(12, 34, 56));
+    QVERIFY(!dt1.isNull());
+    dt1.setTime(QTime()); // Date still invalid, so this really clears time.
+    QVERIFY(dt1.isNull());
     dt1.setDate(QDate(2004, 1, 2));
     QVERIFY(!dt1.isNull());
     dt1.setTime(QTime(12, 34, 56));
     QVERIFY(!dt1.isNull());
-    dt1.setTime(QTime());
+    dt1.setTime(QTime()); // Actually sets time to QTime(0, 0), as date is still valid.
     QVERIFY(!dt1.isNull());
+    dt1.setDate(QDate()); // Time remains valid
+    QVERIFY(!dt1.isNull());
+    dt1.setTime(QTime()); // Now really sets time invalid, too
+    QVERIFY(dt1.isNull());
+
+    // Either date or time non-null => date-time isn't null:
+    QVERIFY(!QDateTime(QDate(), QTime(0, 0)).isNull());
+    QVERIFY(!QDateTime(QDate(2022, 2, 16), QTime()).isNull());
 }
 
 void tst_QDateTime::isValid()
@@ -364,12 +376,21 @@ void tst_QDateTime::isValid()
 
     dt1.setDate(QDate(2004, 1, 2));
     QVERIFY(dt1.isValid());
+    dt1.setTime(QTime()); // Effectively QTime(0, 0)
+    QVERIFY(dt1.isValid());
     dt1.setDate(QDate());
     QVERIFY(!dt1.isValid());
     dt1.setTime(QTime(12, 34, 56));
     QVERIFY(!dt1.isValid());
-    dt1.setTime(QTime());
+    dt1.setTime(QTime()); // Does sets time invalid, as date is invalid
     QVERIFY(!dt1.isValid());
+    dt1.setDate(QDate(2004, 1, 2)); // Kicks time back to QTime(0, 0)
+    QVERIFY(dt1.isValid());
+
+    // Invalid date => invalid date-time:
+    QVERIFY(!QDateTime(QDate(), QTime(0, 0)).isValid());
+    // Invalid time gets replaced with QTime(0, 0) when date is valid:
+    QVERIFY(QDateTime(QDate(2022, 2, 16), QTime()).isValid());
 }
 
 void tst_QDateTime::date()
