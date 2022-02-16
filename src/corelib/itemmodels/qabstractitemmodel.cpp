@@ -1859,13 +1859,13 @@ QAbstractItemModel::~QAbstractItemModel()
 */
 
 /*!
-    \fn void QAbstractItemModel::rowsMoved(const QModelIndex &parent, int start, int end, const QModelIndex &destination, int row)
+    \fn void QAbstractItemModel::rowsMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destinationParent, int destinationRow)
     \since 4.6
 
     This signal is emitted after rows have been moved within the
-    model. The items between \a start and \a end
-    inclusive, under the given \a parent item have been moved to \a destination
-    starting at the row \a row.
+    model. The items between \a sourceStart and \a sourceEnd
+    inclusive, under the given \a sourceParent item have been moved to \a destinationParent
+    starting at the row \a destinationRow.
 
     \b{Note:} Components connected to this signal use it to adapt to changes
     in the model's dimensions. It can only be emitted by the QAbstractItemModel
@@ -1891,13 +1891,13 @@ QAbstractItemModel::~QAbstractItemModel()
 */
 
 /*!
-    \fn void QAbstractItemModel::columnsMoved(const QModelIndex &parent, int start, int end, const QModelIndex &destination, int column)
+    \fn void QAbstractItemModel::columnsMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destinationParent, int destinationColumn)
     \since 4.6
 
     This signal is emitted after columns have been moved within the
-    model. The items between \a start and \a end
-    inclusive, under the given \a parent item have been moved to \a destination
-    starting at the column \a column.
+    model. The items between \a sourceStart and \a sourceEnd
+    inclusive, under the given \a sourceParent item have been moved to \a destinationParent
+    starting at the column \a destinationColumn.
 
     \b{Note:} Components connected to this signal use it to adapt to changes
     in the model's dimensions. It can only be emitted by the QAbstractItemModel
