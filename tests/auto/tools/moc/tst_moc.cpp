@@ -362,6 +362,8 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_CLANG("-Wignored-qualifiers")
 QT_WARNING_DISABLE_GCC("-Wignored-qualifiers")
 
+using ObjectCRef = const QObject &;
+
 class TestClass : public MyNamespace::TestSuperClass, public DONT_CONFUSE_MOC(MyStruct),
                   public DONT_CONFUSE_MOC_EVEN_MORE(MyStruct2, dummy, ignored)
 {
@@ -557,6 +559,7 @@ signals:
 //
 public slots:
     void const slotWithSillyConst() {}
+    void slotTakingCRefViaTypedef(ObjectCRef o) { this->setObjectName(o.objectName()); }
 
 public:
     Q_INVOKABLE void const slotWithSillyConst2() {}
@@ -686,6 +689,7 @@ private slots:
     void preprocessorConditionals();
     void blackslashNewlines();
     void slotWithSillyConst();
+    void slotTakingCRefViaTypedef();
     void testExtraData();
     void testExtraDataForEnum();
     void namespaceTypeProperty();
@@ -1072,6 +1076,15 @@ void tst_Moc::slotWithSillyConst()
     QVERIFY(mobj->indexOfSlot("slotWithSillyConst()") != -1);
     QVERIFY(mobj->indexOfMethod("slotWithSillyConst2()") != -1);
     QVERIFY(mobj->indexOfSlot("slotWithVoidStar(void*)") != -1);
+}
+
+void tst_Moc::slotTakingCRefViaTypedef()
+{
+    TestClass tst;
+    QObject obj;
+    obj.setObjectName("works");
+    QMetaObject::invokeMethod(&tst, "slotTakingCRefViaTypedef", Q_ARG(ObjectCRef, obj));
+    QCOMPARE(obj.objectName(), "works");
 }
 
 void tst_Moc::testExtraData()

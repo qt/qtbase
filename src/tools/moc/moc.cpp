@@ -320,7 +320,7 @@ void Moc::parseFunctionArguments(FunctionDef *def)
             arg.rightType += lexem();
         }
         arg.normalizedType = normalizeType(QByteArray(arg.type.name + ' ' + arg.rightType));
-        arg.typeNameForCast = normalizeType(QByteArray(noRef(arg.type.name) + "(*)" + arg.rightType));
+        arg.typeNameForCast = QByteArray("std::add_pointer_t<"+arg.normalizedType+">");
         if (test(EQ))
             arg.isDefault = true;
         def->arguments += arg;
