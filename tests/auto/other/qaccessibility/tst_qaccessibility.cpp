@@ -269,13 +269,21 @@ void tst_QAccessibility::onClicked()
     click_count++;
 }
 
+static bool initAccessibility()
+{
+    QPlatformIntegration *pfIntegration = QGuiApplicationPrivate::platformIntegration();
+    if (pfIntegration->accessibility()) {
+        pfIntegration->accessibility()->setActive(true);
+        return true;
+    }
+    return false;
+}
+
 void tst_QAccessibility::initTestCase()
 {
     QTestAccessibility::initialize();
-    QPlatformIntegration *pfIntegration = QGuiApplicationPrivate::platformIntegration();
-    if (!pfIntegration->accessibility())
+    if (!initAccessibility())
         QSKIP("This platform does not support accessibility");
-    pfIntegration->accessibility()->setActive(true);
 }
 
 void tst_QAccessibility::cleanupTestCase()
@@ -286,6 +294,17 @@ void tst_QAccessibility::cleanupTestCase()
 void tst_QAccessibility::init()
 {
     QTestAccessibility::clearEvents();
+#ifdef Q_OS_ANDROID
+    // On Android a11y state is not explicitly set by calling
+    // QPlatformAccessibility::setActive(), there is another flag that is
+    // controlled from the Java side. The state of this flag is queried
+    // during event processing, so a11y state can be reset to false while
+    // we do QTest::qWait().
+    // To overcome the issue in unit-tests, re-enable a11y before each test.
+    // A more precise fix will require re-enabling it after every qWait() or
+    // processEvents() call, but the current tests pass with such condition.
+    initAccessibility();
+#endif
 }
 
 void tst_QAccessibility::cleanup()
@@ -1977,6 +1996,10 @@ void tst_QAccessibility::mdiSubWindowTest()
     QCOMPARE(interface->text(QAccessible::Name), QLatin1String("TitleSetOnWindow"));
 
     mdiArea.setActiveSubWindow(testWindow);
+
+#ifdef Q_OS_ANDROID // on Android QMdiSubWindow is maximized by default
+    testWindow->showNormal();
+#endif
 
     // state
     QAccessible::State state;
