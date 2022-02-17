@@ -48,6 +48,8 @@
 #include "QtCore/qdebug.h"
 #include "QtCore/qthread.h"
 
+#include "private/qsystemlibrary_p.h"
+
 QT_BEGIN_NAMESPACE
 
 static inline bool fileExists(const wchar_t *fileName)
@@ -150,7 +152,7 @@ QString QLockFilePrivate::processNameByPid(qint64 pid)
 #if !defined(Q_OS_WINRT)
     typedef DWORD (WINAPI *GetModuleFileNameExFunc)(HANDLE, HMODULE, LPTSTR, DWORD);
 
-    HMODULE hPsapi = LoadLibraryA("psapi");
+    HMODULE hPsapi = QSystemLibrary::load(L"psapi");
     if (!hPsapi)
         return QString();
     GetModuleFileNameExFunc qGetModuleFileNameEx = reinterpret_cast<GetModuleFileNameExFunc>(
