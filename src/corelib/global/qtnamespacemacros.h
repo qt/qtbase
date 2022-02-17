@@ -118,4 +118,8 @@ namespace QT_NAMESPACE {}
 
 #endif /* __cplusplus */
 
+/* silence syncqt warning */
+QT_BEGIN_NAMESPACE
+QT_END_NAMESPACE
+
 #endif /* QTNAMESPACEMACROS_H */
