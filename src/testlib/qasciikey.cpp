@@ -498,6 +498,11 @@ char QTest::keyToAscii(Qt::Key key)
     case Qt::Key_LaunchE : return 0; // = 0x10b0,
     case Qt::Key_LaunchF : return 0; // = 0x10b1,
 
+    // Keypad navigation keys
+    case Qt::Key_Select : return 0; // = 0x01010000
+    case Qt::Key_Yes : return 0; // = 0x01010001
+    case Qt::Key_No : return 0; // = 0x01010002
+
     default: QTEST_ASSERT(false); return 0;
     }
 }
