@@ -68,6 +68,7 @@ QT_WARNING_DISABLE_GCC("-Wfree-nonheap-object") // false positive tracking
 #include "qvarlengtharray.h"
 #include "qstringbuilder.h"
 #include "private/qnumeric_p.h"
+#include "private/qtools_p.h"
 #include <cmath>
 #ifndef QT_NO_SYSTEMLOCALE
 #   include "qmutex.h"
@@ -2629,14 +2630,6 @@ static bool qIsUpper(char c)
     return c >= 'A' && c <= 'Z';
 }
 
-static char qToLower(char c)
-{
-    if (c >= 'A' && c <= 'Z')
-        return c - 'A' + 'a';
-    else
-        return c;
-}
-
 /*!
     \overload
     Returns a string representing the floating-point number \a f.
@@ -2678,7 +2671,7 @@ QString QLocale::toString(double f, char format, int precision) const
     QLocaleData::DoubleForm form = QLocaleData::DFDecimal;
     uint flags = qIsUpper(format) ? QLocaleData::CapitalEorX : 0;
 
-    switch (qToLower(format)) {
+    switch (QtMiscUtils::toAsciiLower(format)) {
         case 'f':
             form = QLocaleData::DFDecimal;
             break;

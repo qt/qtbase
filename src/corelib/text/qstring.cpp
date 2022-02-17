@@ -45,6 +45,7 @@
 #endif
 #include "qunicodetables_p.h"
 #include <private/qstringconverter_p.h>
+#include <private/qtools_p.h>
 #include "qlocale_tools_p.h"
 #include "private/qsimd_p.h"
 #include <qnumeric.h>
@@ -130,13 +131,6 @@ inline bool qIsDigit(char ch)
     return ch >= '0' && ch <= '9';
 }
 
-inline char qToLower(char ch)
-{
-    if (ch >= 'A' && ch <= 'Z')
-        return ch - 'A' + 'a';
-    else
-        return ch;
-}
 template <typename Pointer>
 char32_t foldCaseHelper(Pointer ch, Pointer start) = delete;
 
@@ -6949,7 +6943,7 @@ QString QString::vasprintf(const char *cformat, va_list ap)
                     flags |= QLocaleData::CapitalEorX;
 
                 int base = 10;
-                switch (qToLower(*c)) {
+                switch (QtMiscUtils::toAsciiLower(*c)) {
                     case 'o':
                         base = 8; break;
                     case 'u':
@@ -6980,7 +6974,7 @@ QString QString::vasprintf(const char *cformat, va_list ap)
                     flags |= QLocaleData::CapitalEorX;
 
                 QLocaleData::DoubleForm form = QLocaleData::DFDecimal;
-                switch (qToLower(*c)) {
+                switch (QtMiscUtils::toAsciiLower(*c)) {
                     case 'e': form = QLocaleData::DFExponent; break;
                     case 'a':                             // not supported - decimal form used instead
                     case 'f': form = QLocaleData::DFDecimal; break;
@@ -7568,7 +7562,7 @@ QString QString::number(double n, char format, int precision)
 {
     QLocaleData::DoubleForm form = QLocaleData::DFDecimal;
 
-    switch (qToLower(format)) {
+    switch (QtMiscUtils::toAsciiLower(format)) {
         case 'f':
             form = QLocaleData::DFDecimal;
             break;
@@ -8452,7 +8446,7 @@ QString QString::arg(double a, int fieldWidth, char format, int precision, QChar
         flags |= QLocaleData::CapitalEorX;
 
     QLocaleData::DoubleForm form = QLocaleData::DFDecimal;
-    switch (qToLower(format)) {
+    switch (QtMiscUtils::toAsciiLower(format)) {
     case 'f':
         form = QLocaleData::DFDecimal;
         break;
