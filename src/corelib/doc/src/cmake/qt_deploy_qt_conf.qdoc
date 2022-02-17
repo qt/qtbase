@@ -42,11 +42,14 @@ project.
 
 \cmakecommandsince 6.3
 \preliminarycmakecommand
+\note This command does not usually need to be called directly. It is used
+      internally by other higher level commands, but projects wishing to
+      implement more customized deployment logic may find it useful.
 
 \section1 Synopsis
 
 \badcode
-qt_deploy_qt_conf(file_name
+qt_deploy_qt_conf(file_path
     [PREFIX prefix]
     [DOC_DIR doc_dir]
     [HEADERS_DIR headers_dir]
@@ -71,10 +74,12 @@ during deployment. The default value of any path supported by \c{qt.conf} can
 be overridden with the corresponding \c{..._DIR} option. The command will only
 write a path to the generated \c{qt.conf} file if it differs from the default
 value.
+The default values can be found at \l{Overriding Paths}.
 
-This command does not usually need to be called directly. It is used internally
-by other higher level commands, but projects wishing to implement more
-customized deployment logic may find it useful.
+The \c file_path argument expects an absolute path to the location where the
+\c qt.conf file should be written to. The \l{QT_DEPLOY_PREFIX} and \l{QT_DEPLOY_BIN_DIR}
+variables can be used to dynamically specify a path relative to the deployment binary directory,
+as shown in the example below. This helps avoid hard-coding an absolute path.
 
 \sa {qt6_generate_deploy_app_script}{qt_generate_deploy_app_script()},
     qt_deploy_runtime_dependencies()
@@ -87,7 +92,10 @@ set(deploy_script "${CMAKE_CURRENT_BINARY_DIR}/deploy_custom.cmake")
 
 file(GENERATE OUTPUT ${deploy_script} CONTENT "
 include(\"${QT_DEPLOY_SUPPORT}\")
-qt_deploy_qt_conf(\"\${QT_DEPLOY_BIN_DIR}/qt.conf\")
+qt_deploy_qt_conf(\"\${QT_DEPLOY_PREFIX}/\${QT_DEPLOY_BIN_DIR}/qt.conf\"
+    DATA_DIR \"./custom_data_dir\"
+    TRANSLATIONS_DIR \"./custom_translations_dir\"
+)
 ")
 
 install(SCRIPT ${deploy_script})

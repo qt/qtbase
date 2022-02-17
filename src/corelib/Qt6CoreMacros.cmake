@@ -2552,6 +2552,8 @@ set(__QT_DEPLOY_VERBOSE \"${QT_ENABLE_VERBOSE_DEPLOYMENT}\")
 set(__QT_CMAKE_EXPORT_NAMESPACE \"${QT_CMAKE_EXPORT_NAMESPACE}\")
 set(__QT_DEPLOY_GENERATOR_IS_MULTI_CONFIG \"${is_multi_config}\")
 set(__QT_DEPLOY_ACTIVE_CONFIG \"$<CONFIG>\")
+set(__QT_NO_CREATE_VERSIONLESS_FUNCTIONS \"${QT_NO_CREATE_VERSIONLESS_FUNCTIONS}\")
+set(__QT_DEFAULT_MAJOR_VERSION \"${QT_DEFAULT_MAJOR_VERSION}\")
 
 # Define the CMake commands to be made available during deployment.
 set(__qt_deploy_support_files

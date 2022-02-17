@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.16...3.21)
 
 # This function is currently in Technical Preview.
 # Its signature and behavior might change.
-function(qt_deploy_qt_conf file_to_write)
+function(qt6_deploy_qt_conf qt_conf_absolute_path)
     set(no_value_options "")
     set(single_value_options
         PREFIX
@@ -31,6 +31,11 @@ function(qt_deploy_qt_conf file_to_write)
 
     if(arg_UNPARSED_ARGUMENTS)
         message(FATAL_ERROR "Unparsed arguments: ${arg_UNPARSED_ARGUMENTS}")
+    endif()
+
+    if(NOT IS_ABSOLUTE "${qt_conf_absolute_path}")
+        message(FATAL_ERROR
+                "Given qt.conf path is not an absolute path: '${qt_conf_absolute_path}'")
     endif()
 
     # Only write out locations that differ from the defaults
@@ -83,9 +88,19 @@ function(qt_deploy_qt_conf file_to_write)
         string(APPEND contents "Settings = ${arg_SETTINGS_DIR}\n")
     endif()
 
-    message(STATUS "Writing ${file_to_write}")
-    file(WRITE "${file_to_write}" "${contents}")
+    message(STATUS "Writing ${qt_conf_absolute_path}")
+    file(WRITE "${qt_conf_absolute_path}" "${contents}")
 endfunction()
+
+if(NOT __QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
+    function(qt_deploy_qt_conf)
+        if(__QT_DEFAULT_MAJOR_VERSION EQUAL 6)
+            qt6_deploy_qt_conf(${ARGV})
+        else()
+            message(FATAL_ERROR "qt_deploy_qt_conf() is only available in Qt 6.")
+        endif()
+    endfunction()
+endif()
 
 # This function is currently in Technical Preview.
 # Its signature and behavior might change.
@@ -166,7 +181,7 @@ function(qt_deploy_runtime_dependencies)
             string(REPEAT "../" ${path_count} rel_path)
             string(REGEX REPLACE "/+$" "" prefix "${rel_path}")
         endif()
-        qt_deploy_qt_conf("${QT_DEPLOY_PREFIX}/${exe_dir}/qt.conf"
+        qt6_deploy_qt_conf("${QT_DEPLOY_PREFIX}/${exe_dir}/qt.conf"
             PREFIX "${prefix}"
             BIN_DIR "${arg_BIN_DIR}"
             LIB_DIR "${arg_LIB_DIR}"
