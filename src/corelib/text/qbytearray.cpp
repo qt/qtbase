@@ -272,7 +272,7 @@ int qstricmp(const char *str1, const char *str2)
         max += offset;
         do {
             uchar c = s1[offset];
-            if (int res = asciiLower(c) - asciiLower(s2[offset]))
+            if (int res = QtMiscUtils::caseCompareAscii(c, s2[offset]))
                 return res;
             if (!c)
                 return 0;
@@ -355,7 +355,7 @@ int qstrnicmp(const char *str1, const char *str2, size_t len)
         return s1 ? 1 : (s2 ? -1 : 0);
     for (; len--; ++s1, ++s2) {
         const uchar c = *s1;
-        if (int res = asciiLower(c) - asciiLower(*s2))
+        if (int res = QtMiscUtils::caseCompareAscii(c, *s2))
             return res;
         if (!c)                                // strings are equal
             break;
@@ -396,7 +396,7 @@ int qstrnicmp(const char *str1, qsizetype len1, const char *str2, qsizetype len2
             if (!c)
                 return 1;
 
-            if (int res = asciiLower(s1[i]) - asciiLower(c))
+            if (int res = QtMiscUtils::caseCompareAscii(s1[i], c))
                 return res;
         }
         return s2[i] ? -1 : 0;
@@ -404,7 +404,7 @@ int qstrnicmp(const char *str1, qsizetype len1, const char *str2, qsizetype len2
         // not null-terminated
         const qsizetype len = qMin(len1, len2);
         for (qsizetype i = 0; i < len; ++i) {
-            if (int res = asciiLower(s1[i]) - asciiLower(s2[i]))
+            if (int res = QtMiscUtils::caseCompareAscii(s1[i], s2[i]))
                 return res;
         }
         if (len1 == len2)

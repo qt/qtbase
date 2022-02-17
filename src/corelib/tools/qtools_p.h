@@ -89,6 +89,15 @@ constexpr inline char toAsciiLower(char ch) noexcept
 {
     return (ch >= 'A' && ch <= 'Z') ? ch - 'A' + 'a' : ch;
 }
+
+constexpr inline int caseCompareAscii(char lhs, char rhs) noexcept
+{
+    const char lhsLower = QtMiscUtils::toAsciiLower(lhs);
+    const char rhsLower = QtMiscUtils::toAsciiLower(rhs);
+    return int(uchar(lhsLower)) - int(uchar(rhsLower));
+}
+
+
 }
 
 // We typically need an extra bit for qNextPowerOfTwo when determining the next allocation size.
