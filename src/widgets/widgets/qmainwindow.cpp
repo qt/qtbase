@@ -1362,8 +1362,15 @@ void QMainWindow::setUnifiedTitleAndToolBarOnMac(bool enabled)
 
     Q_D(QMainWindow);
     d->useUnifiedToolBar = enabled;
-    createWinId();
 
+    // The unified toolbar is drawn by the macOS style with a transparent background.
+    // To ensure a suitable surface format is used we need to first create backing
+    // QWindow so we have something to update the surface format on, and then let
+    // QWidget know about the translucency, which it will propagate to the surface.
+    setAttribute(Qt::WA_NativeWindow);
+    setAttribute(Qt::WA_TranslucentBackground, enabled);
+
+    d->create(); // Create first, before querying the platform window
     using namespace QNativeInterface::Private;
     if (auto *platformWindow = dynamic_cast<QCocoaWindow*>(window()->windowHandle()->handle()))
         platformWindow->setContentBorderEnabled(enabled);
