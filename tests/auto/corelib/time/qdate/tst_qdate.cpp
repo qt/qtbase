@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -641,6 +641,17 @@ void tst_QDate::startOfDay_endOfDay_bounds()
     QCOMPARE(last.date().startOfDay(Qt::UTC).time(), QTime(0, 0));
     QVERIFY(!first.date().startOfDay(Qt::UTC).isValid());
     QVERIFY(!last.date().endOfDay(Qt::UTC).isValid());
+
+    // Test for QTBUG-100873, shouldn't assert:
+    const QDate qdteMin(1752, 9, 14); // Used by QDateTimeEdit
+    QCOMPARE(qdteMin.startOfDay(Qt::UTC).date(), qdteMin);
+    QCOMPARE(qdteMin.startOfDay(Qt::LocalTime).date(), qdteMin);
+#if QT_CONFIG(timezone)
+    QCOMPARE(qdteMin.startOfDay(QTimeZone::systemTimeZone()).date(), qdteMin);
+    QTimeZone berlin("Europe/Berlin");
+    if (berlin.isValid())
+        QCOMPARE(qdteMin.startOfDay(berlin).date(), qdteMin);
+#endif
 }
 
 void tst_QDate::julianDaysLimits()
