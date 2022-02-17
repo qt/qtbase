@@ -169,8 +169,11 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
     Windows native time zone support is severely limited compared to the
     standard IANA TZ Database.  Windows time zones cover larger geographic
     areas and are thus less accurate in their conversions.  They also do not
-    support as much historic conversion data and so may only be accurate for
-    the current year.
+    support as much historical data and so may only be accurate for the
+    current year.  In particular, when MS's zone data claims that DST was
+    observed prior to 1900 (this is historically known to be untrue), the
+    claim is ignored and the standard time (allegedly) in force in 1900 is
+    taken to have always been in effect.
 
     QTimeZone uses a conversion table derived from the Unicode CLDR data to map
     between IANA IDs and Windows IDs.  Depending on your version of Windows
