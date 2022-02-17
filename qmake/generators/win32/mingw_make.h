@@ -59,6 +59,7 @@ private:
     LibFlagType parseLibFlag(const ProString &flag, ProString *arg) override;
 
     QString objectsLinkLine;
+    LinkerResponseFileInfo linkerResponseFile;
 };
 
 QT_END_NAMESPACE

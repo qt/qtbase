@@ -244,8 +244,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     t << "####### Files\n\n";
     // This is used by the dist target.
     t << "SOURCES       = " << fileVarList("SOURCES") << ' ' << fileVarList("GENERATED_SOURCES") << Qt::endl;
-    auto objectParts = writeObjectsPart(t, do_incremental);
-    src_incremental = objectParts.first;
+
+    src_incremental = writeObjectsPart(t, do_incremental);
     if(do_incremental && !src_incremental)
         do_incremental = false;
     t << "DIST          = " << valList(fileFixify(project->values("DISTFILES").toQStringList())) << " "
@@ -395,6 +395,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             }
         }
     }
+    LinkerResponseFileInfo linkerResponseFile = maybeCreateLinkerResponseFile();
     QString deps = escapeDependencyPath(fileFixify(Option::output.fileName()));
     QString allDeps;
     if (!project->values("QMAKE_APP_FLAG").isEmpty() || project->first("TEMPLATE") == "aux") {
@@ -481,8 +482,13 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                     t << mkdir_p_asstring(destdir) << "\n\t";
                 if (!project->isEmpty("QMAKE_PRE_LINK"))
                     t << var("QMAKE_PRE_LINK") << "\n\t";
-                t << "$(LINK) $(LFLAGS) " << var("QMAKE_LINK_O_FLAG") << "$(TARGET) "
-                  << objectParts.second << " $(OBJCOMP) $(LIBS)";
+                t << "$(LINK) $(LFLAGS) " << var("QMAKE_LINK_O_FLAG") << "$(TARGET) ";
+                if (!linkerResponseFile.isValid())
+                    t << " $(OBJECTS) $(OBJCOMP) $(LIBS)";
+                else if (linkerResponseFile.onlyObjects)
+                    t << " @" << linkerResponseFile.filePath << " $(OBJCOMP) $(LIBS)";
+                else
+                    t << " $(OBJCOMP) @" << linkerResponseFile.filePath;
                 if (!project->isEmpty("QMAKE_POST_LINK"))
                     t << "\n\t" << var("QMAKE_POST_LINK");
             }
@@ -557,7 +563,10 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
               << incr_deps << " $(SUBLIBS) " << target_deps << ' ' << depVar("POST_TARGETDEPS");
         } else {
             ProStringList &cmd = project->values("QMAKE_LINK_SHLIB_CMD");
-            cmd[0] = cmd.at(0).toQString().replace(QLatin1String("$(OBJECTS)"), objectParts.second);
+            if (linkerResponseFile.isValid()) {
+                cmd[0] = cmd.at(0).toQString().replace(QLatin1String("$(OBJECTS)"),
+                                                       "@" + linkerResponseFile.filePath);
+            }
             t << destdir_d << depVar("TARGET") << ": " << depVar("PRE_TARGETDEPS")
               << " $(OBJECTS) $(SUBLIBS) $(OBJCOMP) " << target_deps
               << ' ' << depVar("POST_TARGETDEPS");
@@ -1550,7 +1559,7 @@ UnixMakefileGenerator::writeLibtoolFile()
         "libdir='" << Option::fixPathToTargetOS(install_dir.toQString(), false) << "'\n";
 }
 
-std::pair<bool, QString> UnixMakefileGenerator::writeObjectsPart(QTextStream &t, bool do_incremental)
+bool UnixMakefileGenerator::writeObjectsPart(QTextStream &t, bool do_incremental)
 {
     bool src_incremental = false;
     QString objectsLinkLine;
@@ -1584,18 +1593,9 @@ std::pair<bool, QString> UnixMakefileGenerator::writeObjectsPart(QTextStream &t,
               << escapeFilePaths(incrs_out).join(QString(" \\\n\t\t")) << Qt::endl;
         }
     } else {
-        const ProString &objMax = project->first("QMAKE_LINK_OBJECT_MAX");
-        // Used all over the place in both deps and commands.
-        if (objMax.isEmpty() || project->values("OBJECTS").count() < objMax.toInt()) {
-            objectsLinkLine = "$(OBJECTS)";
-        } else {
-            const QString ld_response_file = createResponseFile(
-                        fileVar("OBJECTS_DIR") + var("QMAKE_LINK_OBJECT_SCRIPT"), objs);
-            objectsLinkLine = "@" + escapeFilePath(ld_response_file);
-        }
         t << "OBJECTS       = " << valList(escapeDependencyPaths(objs)) << Qt::endl;
     }
-    return std::make_pair(src_incremental, objectsLinkLine);
+    return src_incremental;
 }
 
 QT_END_NAMESPACE

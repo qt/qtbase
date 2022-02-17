@@ -58,7 +58,7 @@ protected:
     void writeSubTargets(QTextStream &t, QList<SubTarget*> subtargets, int flags) override;
     void writeMakeParts(QTextStream &);
     bool writeMakefile(QTextStream &) override;
-    std::pair<bool, QString> writeObjectsPart(QTextStream &, bool do_incremental);
+    bool writeObjectsPart(QTextStream &, bool do_incremental);
 private:
     void init2();
     ProStringList libdirToFlags(const ProKey &key);
