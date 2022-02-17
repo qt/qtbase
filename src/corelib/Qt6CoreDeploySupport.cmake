@@ -104,14 +104,13 @@ endif()
 
 # This function is currently in Technical Preview.
 # Its signature and behavior might change.
-function(qt_deploy_runtime_dependencies)
+function(qt6_deploy_runtime_dependencies)
 
     if(NOT __QT_DEPLOY_TOOL)
         message(FATAL_ERROR "No Qt deploy tool available for this target platform")
     endif()
 
     set(no_value_options
-        MACOS_BUNDLE
         GENERATE_QT_CONF
         VERBOSE
         NO_OVERWRITE
@@ -162,7 +161,7 @@ function(qt_deploy_runtime_dependencies)
 
     # macdeployqt always writes out a qt.conf file. It will complain if one
     # already exists, so leave it to create it for us if we will be running it.
-    if(MACOS_BUNDLE AND __QT_DEPLOY_SYSTEM_NAME STREQUAL Darwin)
+    if(__QT_DEPLOY_SYSTEM_NAME STREQUAL Darwin)
         # We might get EXECUTABLE pointing to either the actual binary under the
         # Contents/MacOS directory, or it might be pointing to the top of the
         # app bundle (i.e. the <appname>.app directory). We want the latter to
@@ -239,7 +238,8 @@ function(qt_deploy_runtime_dependencies)
         list(APPEND tool_options "${extra_binaries_option}${extra_binary}")
     endforeach()
 
-    message(STATUS "Running Qt deploy tool for ${arg_EXECUTABLE}")
+    message(STATUS
+        "Running Qt deploy tool for ${arg_EXECUTABLE} in working directory '${QT_DEPLOY_PREFIX}'")
     execute_process(
         COMMAND_ECHO STDOUT
         COMMAND "${__QT_DEPLOY_TOOL}" "${arg_EXECUTABLE}" ${tool_options}
@@ -251,6 +251,16 @@ function(qt_deploy_runtime_dependencies)
     endif()
 
 endfunction()
+
+if(NOT __QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
+    function(qt_deploy_runtime_dependencies)
+        if(__QT_DEFAULT_MAJOR_VERSION EQUAL 6)
+            qt6_deploy_runtime_dependencies(${ARGV})
+        else()
+            message(FATAL_ERROR "qt_deploy_runtime_dependencies() is only available in Qt 6.")
+        endif()
+    endfunction()
+endif()
 
 function(_qt_internal_show_skip_runtime_deploy_message qt_build_type_string)
     message(STATUS
