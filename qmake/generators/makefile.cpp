@@ -3495,7 +3495,7 @@ ProKey MakefileGenerator::fullTargetVariable() const
 QString MakefileGenerator::createResponseFile(
         const QString &baseName,
         const ProStringList &objList,
-        const QString &prefix)
+        const QString &prefix) const
 {
     QString fileName = baseName + '.' + var("QMAKE_ORIG_TARGET");
     if (!var("BUILD_NAME").isEmpty())
@@ -3523,6 +3523,48 @@ QString MakefileGenerator::createResponseFile(
     t.flush();
     file.close();
     return fileName;
+}
+
+/*
+ * If the threshold for response files are overstepped, create a response file for the linker
+ * command line.
+ */
+MakefileGenerator::LinkerResponseFileInfo MakefileGenerator::maybeCreateLinkerResponseFile() const
+{
+    bool useLinkObjectMax = false;
+    bool ok;
+    int threshold = project->first("QMAKE_RESPONSEFILE_THRESHOLD").toInt(&ok);
+    if (!ok) {
+        threshold = project->first("QMAKE_LINK_OBJECT_MAX").toInt(&ok);
+        if (ok)
+            useLinkObjectMax = true;
+    }
+    if (!ok)
+        return {};
+
+    ProStringList linkerInputs = project->values("OBJECTS");
+    if (useLinkObjectMax) {
+        // When using QMAKE_LINK_OBJECT_MAX, the number of object files (regardless of their path
+        // length) decides whether to use a response file.  This is far from being a useful
+        // heuristic but let's keep this behavior for backwards compatibility.
+        if (linkerInputs.count() < threshold)
+            return {};
+    } else {
+        // When using QMAKE_REPONSEFILE_THRESHOLD, try to determine the command line length of the
+        // inputs.
+        linkerInputs += project->values("LIBS");
+        int totalLength = std::accumulate(linkerInputs.cbegin(), linkerInputs.cend(), 0,
+                                          [](int total, const ProString &input) {
+                                              return total + input.size() + 1;
+                                          });
+        if (totalLength < threshold)
+            return {};
+    }
+
+    return {
+        createResponseFile(fileVar("OBJECTS_DIR") + var("QMAKE_LINK_OBJECT_SCRIPT"), linkerInputs),
+        useLinkObjectMax
+    };
 }
 
 QT_END_NAMESPACE
