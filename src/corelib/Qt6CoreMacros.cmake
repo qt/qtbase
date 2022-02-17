@@ -2700,16 +2700,15 @@ function(qt6_generate_deploy_app_script)
         endif()
         file(GENERATE OUTPUT "${file_name}" CONTENT "
 include(${QT_DEPLOY_SUPPORT})
-qt_deploy_runtime_dependencies(
+qt6_deploy_runtime_dependencies(
     EXECUTABLE $<TARGET_FILE_NAME:${arg_TARGET}>.app
-    MACOS_BUNDLE
 )
 ")
 
     elseif(WIN32 AND QT6_IS_SHARED_LIBS_BUILD)
         file(GENERATE OUTPUT "${file_name}" CONTENT "
 include(${QT_DEPLOY_SUPPORT})
-qt_deploy_runtime_dependencies(
+qt6_deploy_runtime_dependencies(
     EXECUTABLE \${QT_DEPLOY_BIN_DIR}/$<TARGET_FILE_NAME:${arg_TARGET}>
     GENERATE_QT_CONF
 )")

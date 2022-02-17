@@ -7,16 +7,40 @@ qt_standard_project_setup()
 
 qt_add_executable(MyApp main.cpp)
 
+set_target_properties(MyApp PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
+
+# App bundles on macOS have an .app suffix
+if(APPLE)
+    set(executable_path "$<TARGET_FILE_NAME:MyApp>.app")
+else()
+    set(executable_path "\${QT_DEPLOY_BIN_DIR}/$<TARGET_FILE_NAME:MyApp>")
+endif()
+
+# Helper app, not necessarily built as part of this project.
+qt_add_executable(HelperApp helper.cpp)
+set(helper_app_path "\${QT_DEPLOY_BIN_DIR}/$<TARGET_FILE_NAME:HelperApp>")
+
 # The following script must only be executed at install time
 set(deploy_script "${CMAKE_CURRENT_BINARY_DIR}/deploy_MyApp.cmake")
 
 file(GENERATE OUTPUT ${deploy_script} CONTENT "
 include(\"${QT_DEPLOY_SUPPORT}\")
 qt_deploy_runtime_dependencies(
-    EXECUTABLE \"\${QT_DEPLOY_BIN_DIR}/$<TARGET_FILE_NAME:MyApp>\"
-)
-")
+    EXECUTABLE \"${executable_path}\"
+    ADDITIONAL_EXECUTABLES \"${helper_app_path}\"
+    GENERATE_QT_CONF
+    VERBOSE
+)")
 
-install(TARGETS MyApp)              # Install the target
+# Omitting RUNTIME DESTINATION will install a non-bundle target to CMAKE_INSTALL_BINDIR,
+# which coincides with the default value of QT_DEPLOY_BIN_DIR used above, './bin'.
+# Installing macOS bundles always requires an explicit BUNDLE DESTINATION option.
+install(TARGETS MyApp HelperApp    # Install to CMAKE_INSTALL_PREFIX/bin/MyApp.exe
+                                   #                           and ./binHelperApp.exe
+        BUNDLE  DESTINATION .      # Install to CMAKE_INSTALL_PREFIX/MyApp.app/Contents/MacOS/MyApp
+)
 install(SCRIPT ${deploy_script})    # Add its runtime dependencies
 \endcode
