@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -495,6 +495,56 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
     }
 
     return stream;
+}
+
+Q_GUI_EXPORT QDataStream &operator<<(QDataStream &stream, const QTextCharFormat &fmt)
+{
+    return stream << static_cast<const QTextFormat &>(fmt);
+}
+
+Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextCharFormat &fmt)
+{
+    return stream >> static_cast<QTextFormat &>(fmt);
+}
+
+Q_GUI_EXPORT QDataStream &operator<<(QDataStream &stream, const QTextBlockFormat &fmt)
+{
+    return stream << static_cast<const QTextFormat &>(fmt);
+}
+
+Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextBlockFormat &fmt)
+{
+    return stream >> static_cast<QTextFormat &>(fmt);
+}
+
+Q_GUI_EXPORT QDataStream &operator<<(QDataStream &stream, const QTextListFormat &fmt)
+{
+    return stream << static_cast<const QTextFormat &>(fmt);
+}
+
+Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextListFormat &fmt)
+{
+    return stream >> static_cast<QTextFormat &>(fmt);
+}
+
+Q_GUI_EXPORT QDataStream &operator<<(QDataStream &stream, const QTextFrameFormat &fmt)
+{
+    return stream << static_cast<const QTextFormat &>(fmt);
+}
+
+Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFrameFormat &fmt)
+{
+    return stream >> static_cast<QTextFormat &>(fmt);
+}
+
+Q_GUI_EXPORT QDataStream &operator<<(QDataStream &stream, const QTextTableCellFormat &fmt)
+{
+    return stream << static_cast<const QTextFormat &>(fmt);
+}
+
+Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextTableCellFormat &fmt)
+{
+    return stream >> static_cast<QTextFormat &>(fmt);
 }
 #endif // QT_NO_DATASTREAM
 

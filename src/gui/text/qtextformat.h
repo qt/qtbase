@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -624,6 +624,8 @@ public:
 protected:
     explicit QTextCharFormat(const QTextFormat &fmt);
     friend class QTextFormat;
+    friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QTextCharFormat &);
+    friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QTextCharFormat &);
 };
 
 Q_DECLARE_SHARED(QTextCharFormat)
@@ -732,6 +734,8 @@ public:
 protected:
     explicit QTextBlockFormat(const QTextFormat &fmt);
     friend class QTextFormat;
+    friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QTextBlockFormat &);
+    friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QTextBlockFormat &);
 };
 
 Q_DECLARE_SHARED(QTextBlockFormat)
@@ -843,6 +847,8 @@ public:
 protected:
     explicit QTextImageFormat(const QTextFormat &format);
     friend class QTextFormat;
+    friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QTextListFormat &);
+    friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QTextListFormat &);
 };
 
 Q_DECLARE_SHARED(QTextImageFormat)
@@ -946,6 +952,8 @@ public:
 protected:
     explicit QTextFrameFormat(const QTextFormat &fmt);
     friend class QTextFormat;
+    friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QTextFrameFormat &);
+    friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QTextFrameFormat &);
 };
 
 Q_DECLARE_SHARED(QTextFrameFormat)
@@ -1128,6 +1136,8 @@ public:
 
 protected:
     explicit QTextTableCellFormat(const QTextFormat &fmt);
+    friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QTextTableCellFormat &);
+    friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QTextTableCellFormat &);
     friend class QTextFormat;
 };
 
