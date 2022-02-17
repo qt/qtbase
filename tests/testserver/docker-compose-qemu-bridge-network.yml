@@ -1,0 +1,200 @@
+version: '2.1'
+
+# The tag of images is used by docker compose file to launch the correct
+# docker containers. By default we always launch the "latest" tag.
+#
+# But in the "docker build" phase, we also tag the images with a unique tag,
+# the SHA1 hash of all files used for "docker build" - see sha1tree() in
+# provisioning.
+#
+# So if you want to update the docker image at a specific time, make sure that
+#   1. you modify this file to run the specific image's SHA1 tag, instead of
+#      "latest"
+#   2. you build two docker images in provisioning, the currently used one,
+#      plus the new one that you tag as "latest"
+#   3. you switch this file to the "latest" tag when ready
+
+# You can run `docker images` to list all the tags of available images:
+# For example:
+# REPOSITORY              TAG
+# qt-test-server-apache2  537fe302f61851d1663f41495230d8e3554a4a13
+
+#
+# Configuration in this file is used solely to configure Docker properly
+# when running test on QNX qemu as that requires explicitly exposing
+# ports so that qemu and services in docker container can actually
+# communicate.
+#
+# !!! KEEP THIS FILE IN SYNC WITH GENERAL DOCKER CONFIGURATION FILE!!!
+# -> docker-compose-bridge-network.yml
+#
+
+services:
+    apache2:
+        extends:
+            file: ${SHARED_DATA}/docker-compose-common.yml
+            service: ${SHARED_SERVICE}
+        container_name: qt-test-server-apache2
+        hostname: ${HOST_NAME:-apache2}
+        ports:
+            - "172.31.1.1:80:80"
+            - "172.31.1.1:443:443"
+        build:
+            context: .
+            args:
+                provisioningImage: qt-test-server-apache2:latest
+                shareDir: ./common
+                serviceDir: ./apache2
+        entrypoint: service/startup.sh
+        command: [service/ssl.sh, service/apache2.sh]
+
+    squid:
+        extends:
+            file: ${SHARED_DATA}/docker-compose-common.yml
+            service: ${SHARED_SERVICE}
+        container_name: qt-test-server-squid
+        hostname: ${HOST_NAME:-squid}
+        ports:
+            - "172.31.1.1:3128:3128"
+            - "172.31.1.1:3129:3129"
+            - "172.31.1.1:3130:3130"
+        depends_on:
+            - apache2
+        external_links:
+            - apache2:apache2.${TEST_DOMAIN}
+            - cyrus:cyrus.${TEST_DOMAIN}
+            - iptables:iptables.${TEST_DOMAIN}
+            - vsftpd:vsftpd.${TEST_DOMAIN}
+            - echo:echo.${TEST_DOMAIN}
+        build:
+            context: .
+            args:
+                provisioningImage: qt-test-server-squid:latest
+                shareDir: ./common
+                serviceDir: ./squid
+        entrypoint: service/startup.sh
+        command: service/squid.sh
+
+    vsftpd:
+        extends:
+            file: ${SHARED_DATA}/docker-compose-common.yml
+            service: ${SHARED_SERVICE}
+        container_name: qt-test-server-vsftpd
+        hostname: ${HOST_NAME:-vsftpd}
+        ports:
+            - "172.31.1.1:20:20"
+            - "172.31.1.1:21:21"
+        build:
+            context: .
+            args:
+                provisioningImage: qt-test-server-vsftpd:latest
+                shareDir: ./common
+                serviceDir: ./vsftpd
+        entrypoint: service/startup.sh
+        command: service/vsftpd.sh
+
+    ftp-proxy:
+        extends:
+            file: ${SHARED_DATA}/docker-compose-common.yml
+            service: ${SHARED_SERVICE}
+        container_name: qt-test-server-ftp-proxy
+        hostname: ${HOST_NAME:-ftp-proxy}
+        ports:
+            - "172.31.1.1:2121:2121"
+        depends_on:
+            - vsftpd
+        external_links:
+            - vsftpd:vsftpd.${TEST_DOMAIN}
+        build:
+            context: .
+            args:
+                provisioningImage: qt-test-server-ftp-proxy:latest
+                shareDir: ./common
+                serviceDir: ./ftp-proxy
+        entrypoint: service/startup.sh
+        command: service/ftp-proxy.sh
+
+    danted:
+        extends:
+            file: ${SHARED_DATA}/docker-compose-common.yml
+            service: ${SHARED_SERVICE}
+        container_name: qt-test-server-danted
+        hostname: ${HOST_NAME:-danted}
+        ports:
+            - "172.31.1.1:1080:1080"
+            - "172.31.1.1:1081:1081"
+        depends_on:
+            - apache2
+            - vsftpd
+            - ftp-proxy
+        external_links:
+            - apache2:apache2.${TEST_DOMAIN}
+            - vsftpd:vsftpd.${TEST_DOMAIN}
+            - ftp-proxy:ftp-proxy.${TEST_DOMAIN}
+            - cyrus:cyrus.${TEST_DOMAIN}
+            - echo:echo.${TEST_DOMAIN}
+        build:
+            context: .
+            args:
+                provisioningImage: qt-test-server-danted:latest
+                shareDir: ./common
+                serviceDir: ./danted
+        entrypoint: service/startup.sh
+        command: service/danted.sh
+
+    cyrus:
+        extends:
+            file: ${SHARED_DATA}/docker-compose-common.yml
+            service: ${SHARED_SERVICE}
+        container_name: qt-test-server-cyrus
+        hostname: ${HOST_NAME:-cyrus}
+        ports:
+            - "172.31.1.1:143:143"
+            - "172.31.1.1:993:993"
+        build:
+            context: .
+            args:
+                provisioningImage: qt-test-server-cyrus:latest
+                shareDir: ./common
+                serviceDir: ./cyrus
+        entrypoint: service/startup.sh
+        command: [service/ssl.sh, service/cyrus.sh]
+
+    iptables:
+        extends:
+            file: ${SHARED_DATA}/docker-compose-common.yml
+            service: ${SHARED_SERVICE}
+        container_name: qt-test-server-iptables
+        hostname: ${HOST_NAME:-iptables}
+        ports:
+            - "172.31.1.1:1357:1357"
+        build:
+            context: .
+            args:
+                provisioningImage: qt-test-server-iptables:latest
+                shareDir: ./common
+                serviceDir: ./iptables
+        entrypoint: service/startup.sh
+        command: service/iptables.sh
+        cap_add:
+            - NET_ADMIN
+            - NET_RAW
+
+    echo:
+        extends:
+            file: ${SHARED_DATA}/docker-compose-common.yml
+            service: ${SHARED_SERVICE}
+        container_name: qt-test-server-echo
+        hostname: ${HOST_NAME:-echo}
+        ports:
+            - "172.31.1.1:13:13"
+            - "172.31.1.1:7:7"
+            - "172.31.1.1:7:7/udp"
+        build:
+            context: .
+            args:
+                provisioningImage: qt-test-server-echo:latest
+                shareDir: ./common
+                serviceDir: ./echo
+        entrypoint: service/startup.sh
+        command: service/echo.sh
