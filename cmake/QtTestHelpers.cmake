@@ -149,6 +149,8 @@ function(qt_internal_setup_docker_test_fixture name)
 
     if(DEFINED QT_TESTSERVER_COMPOSE_FILE)
         set(TESTSERVER_COMPOSE_FILE ${QT_TESTSERVER_COMPOSE_FILE})
+    elseif(QNX)
+        set(TESTSERVER_COMPOSE_FILE "${QT_SOURCE_TREE}/tests/testserver/docker-compose-qemu-bridge-network.yml")
     else()
         set(TESTSERVER_COMPOSE_FILE "${QT_SOURCE_TREE}/tests/testserver/docker-compose-bridge-network.yml")
     endif()
