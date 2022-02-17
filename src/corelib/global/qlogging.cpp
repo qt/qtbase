@@ -1532,7 +1532,7 @@ static bool slog2_default_handler(QtMsgType type, const QMessageLogContext &cont
         // Set as the default buffer
         slog2_set_default_buffer(buffer_handle);
     }
-    int severity;
+    int severity = SLOG2_INFO;
     //Determines the severity level
     switch (type) {
     case QtDebugMsg:
