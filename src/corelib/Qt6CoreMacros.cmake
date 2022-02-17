@@ -2708,7 +2708,7 @@ qt_deploy_runtime_dependencies(
         file(GENERATE OUTPUT "${file_name}" CONTENT "
 include(${QT_DEPLOY_SUPPORT})
 qt_deploy_runtime_dependencies(
-    EXECUTABLE ${CMAKE_INSTALL_BINDIR}/$<TARGET_FILE_NAME:${arg_TARGET}>
+    EXECUTABLE \${QT_DEPLOY_BIN_DIR}/$<TARGET_FILE_NAME:${arg_TARGET}>
     GENERATE_QT_CONF
 )")
 

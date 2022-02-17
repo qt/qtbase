@@ -71,9 +71,12 @@ which should come after the application's target has been installed using
 \l{install(TARGETS)}.
 
 The deployment script will call \l{qt_deploy_runtime_dependencies()} with a
-suitable set of options for the standard install layout. This is currently only
-implemented for macOS app bundles and Windows targets.
-Calling \c{qt_generate_deploy_app_script()} for any other platform will result
+suitable set of options for the standard install layout.
+Currently, this is only implemented for macOS app bundles built on a macOS
+host and Windows executables built on a Windows host.
+Cross-building a Windows executable on a Linux host, as well as similar
+scenarios, are not currently supported.
+Calling \c{qt_generate_deploy_app_script()} in such a case will result
 in a fatal error, unless the \c{NO_UNSUPPORTED_PLATFORM_ERROR} option is given.
 
 For deploying a QML application, use
