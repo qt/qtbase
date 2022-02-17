@@ -868,6 +868,35 @@ function(_qt_internal_configure_android_multiabi_target target)
         )
     endif()
 
+    get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
+    if(is_multi_config)
+        list(JOIN CMAKE_CONFIGURATION_TYPES "$<SEMICOLON>" escaped_configuration_types)
+        set(config_arg "-DCMAKE_CONFIGURATION_TYPES=${escaped_configuration_types}")
+    else()
+        set(config_arg "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
+    endif()
+
+    unset(extra_cmake_args)
+
+    # The flag is needed when building qt standalone tests only to avoid building
+    # qt repo itself
+    if(QT_BUILD_STANDALONE_TESTS)
+        list(APPEND extra_cmake_args "-DQT_BUILD_STANDALONE_TESTS=ON")
+    endif()
+
+    if(NOT QT_ADDITIONAL_PACKAGES_PREFIX_PATH STREQUAL "")
+        list(JOIN QT_ADDITIONAL_PACKAGES_PREFIX_PATH "$<SEMICOLON>" escaped_packages_prefix_path)
+        list(APPEND extra_cmake_args
+            "-DQT_ADDITIONAL_PACKAGES_PREFIX_PATH=${escaped_packages_prefix_path}")
+    endif()
+
+    if(NOT QT_ADDITIONAL_HOST_PACKAGES_PREFIX_PATH STREQUAL "")
+        list(JOIN QT_ADDITIONAL_HOST_PACKAGES_PREFIX_PATH "$<SEMICOLON>"
+            escaped_host_packages_prefix_path)
+        list(APPEND extra_cmake_args
+            "-DQT_ADDITIONAL_HOST_PACKAGES_PREFIX_PATH=${escaped_host_packages_prefix_path}")
+    endif()
+
     set(missing_qt_abi_toolchains "")
     # Create external projects for each android ABI except the main one.
     list(REMOVE_ITEM android_abis "${CMAKE_ANDROID_ARCH_ABI}")
@@ -877,20 +906,6 @@ function(_qt_internal_configure_android_multiabi_target target)
             list(APPEND missing_qt_abi_toolchains ${abi})
             list(REMOVE_ITEM android_abis "${abi}")
             continue()
-        endif()
-
-        get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
-        if(is_multi_config)
-            list(JOIN CMAKE_CONFIGURATION_TYPES "$<SEMICOLON>" escaped_configuration_types)
-            set(config_arg "-DCMAKE_CONFIGURATION_TYPES=${escaped_configuration_types}")
-        else()
-            set(config_arg "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
-        endif()
-
-        # The flag is needed when building qt standalone tests only to avoid building
-        # qt repo itself
-        if(QT_BUILD_STANDALONE_TESTS)
-            list(APPEND extra_cmake_args "-DQT_BUILD_STANDALONE_TESTS=ON")
         endif()
 
         set(android_abi_build_dir "${CMAKE_BINARY_DIR}/android_abi_builds/${abi}")
@@ -904,7 +919,9 @@ function(_qt_internal_configure_android_multiabi_target target)
             ExternalProject_Add("qt_internal_android_${abi}"
                 SOURCE_DIR "${CMAKE_SOURCE_DIR}"
                 BINARY_DIR "${android_abi_build_dir}"
-                CMAKE_ARGS "-DCMAKE_TOOLCHAIN_FILE=${qt_abi_toolchain_path}"
+                CMAKE_ARGS
+                    "-DCMAKE_TOOLCHAIN_FILE=${qt_abi_toolchain_path}"
+                    "-DQT_HOST_PATH=${QT_HOST_PATH}"
                     "-DQT_IS_ANDROID_MULTI_ABI_EXTERNAL_PROJECT=ON"
                     "-DQT_INTERNAL_ANDROID_MULTI_ABI_BINARY_DIR=${CMAKE_BINARY_DIR}"
                     "${config_arg}"
