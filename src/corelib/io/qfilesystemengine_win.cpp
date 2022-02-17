@@ -593,6 +593,9 @@ QNativeFilePermissions::QNativeFilePermissions(std::optional<QFileDevice::Permis
     sa.bInheritHandle = FALSE;
 
     isNull = false;
+#else
+    Q_UNUSED(perms);
+    Q_UNUSED(isDir);
 #endif // QT_CONFIG(fslibs)
     ok = true;
 }
