@@ -50,12 +50,19 @@
 #include <QDBusPendingCall>
 #include <QDBusPendingCallWatcher>
 #include <QDBusPendingReply>
+#include <QDBusReply>
 
 QT_BEGIN_NAMESPACE
 
 class QXdgDesktopPortalThemePrivate : public QPlatformThemePrivate
 {
 public:
+    enum XdgColorschemePref {
+        None,
+        PreferDark,
+        PreferLight
+    };
+
     QXdgDesktopPortalThemePrivate()
         : QPlatformThemePrivate()
     { }
@@ -65,8 +72,33 @@ public:
         delete baseTheme;
     }
 
+    /*! \internal
+
+        Converts the given Freedesktop color scheme setting \a colorschemePref to a QPlatformTheme::Appearance value.
+        Specification: https://github.com/flatpak/xdg-desktop-portal/blob/d7a304a00697d7d608821253cd013f3b97ac0fb6/data/org.freedesktop.impl.portal.Settings.xml#L33-L45
+
+        Unfortunately the enum numerical values are not defined identically, so we have to convert them.
+
+        The mapping is as follows:
+
+        Enum Index: Freedesktop definition  | Qt definition
+        ----------------------------------- | -------------
+        0: No preference                    | 0: Unknown
+        1: Prefer dark appearance           | 2: Dark
+        2: Prefer light appearance          | 1: Light
+    */
+    static QPlatformTheme::Appearance appearanceFromXdgPref(const XdgColorschemePref colorschemePref)
+    {
+        switch (colorschemePref) {
+            case PreferDark: return QPlatformTheme::Appearance::Dark;
+            case PreferLight: return QPlatformTheme::Appearance::Light;
+            default: return QPlatformTheme::Appearance::Unknown;
+        }
+    }
+
     QPlatformTheme *baseTheme = nullptr;
     uint fileChooserPortalVersion = 0;
+    QPlatformTheme::Appearance appearance = QPlatformTheme::Appearance::Unknown;
 };
 
 QXdgDesktopPortalTheme::QXdgDesktopPortalTheme()
@@ -113,6 +145,21 @@ QXdgDesktopPortalTheme::QXdgDesktopPortalTheme()
         }
         watcher->deleteLater();
     });
+
+    // Get information about system theme preference
+    message = QDBusMessage::createMethodCall(QLatin1String("org.freedesktop.portal.Desktop"),
+                                             QLatin1String("/org/freedesktop/portal/desktop"),
+                                             QLatin1String("org.freedesktop.portal.Settings"),
+                                             QLatin1String("Read"));
+    message << QLatin1String("org.freedesktop.appearance") << QLatin1String("color-scheme");
+
+    // this must not be asyncCall() because we have to set appearance now
+    QDBusReply<QVariant> reply = QDBusConnection::sessionBus().call(message);
+    if (reply.isValid()) {
+        const QDBusVariant dbusVariant = qvariant_cast<QDBusVariant>(reply.value());
+        const QXdgDesktopPortalThemePrivate::XdgColorschemePref xdgPref = static_cast<QXdgDesktopPortalThemePrivate::XdgColorschemePref>(dbusVariant.variant().toUInt());
+        d->appearance = QXdgDesktopPortalThemePrivate::appearanceFromXdgPref(xdgPref);
+    }
 }
 
 QPlatformMenuItem* QXdgDesktopPortalTheme::createPlatformMenuItem() const
@@ -189,6 +236,12 @@ QVariant QXdgDesktopPortalTheme::themeHint(ThemeHint hint) const
 {
     Q_D(const QXdgDesktopPortalTheme);
     return d->baseTheme->themeHint(hint);
+}
+
+QPlatformTheme::Appearance QXdgDesktopPortalTheme::appearance() const
+{
+    Q_D(const QXdgDesktopPortalTheme);
+    return d->appearance;
 }
 
 QPixmap QXdgDesktopPortalTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) const
