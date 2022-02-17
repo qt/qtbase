@@ -266,7 +266,17 @@ protected:
                             const QString &fixedFile);
     QString createResponseFile(const QString &baseName,
                                const ProStringList &objList,
-                               const QString &prefix = QString());
+                               const QString &prefix = QString()) const;
+
+    struct LinkerResponseFileInfo
+    {
+        QString filePath;
+        bool onlyObjects;
+
+        bool isValid() const { return !filePath.isEmpty(); }
+    };
+
+    LinkerResponseFileInfo maybeCreateLinkerResponseFile() const;
 
 public:
     QMakeProject *projectFile() const;

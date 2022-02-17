@@ -242,21 +242,18 @@ void MingwMakefileGenerator::writeLibsPart(QTextStream &t)
 
 void MingwMakefileGenerator::writeObjectsPart(QTextStream &t)
 {
-    const ProString &objmax = project->first("QMAKE_LINK_OBJECT_MAX");
-    if (objmax.isEmpty() || project->values("OBJECTS").count() < objmax.toInt()) {
+    linkerResponseFile = maybeCreateLinkerResponseFile();
+    if (!linkerResponseFile.isValid()) {
         objectsLinkLine = "$(OBJECTS)";
     } else if (project->isActiveConfig("staticlib") && project->first("TEMPLATE") == "lib") {
         // QMAKE_LIB is used for win32, including mingw, whereas QMAKE_AR is used on Unix.
         QString ar_cmd = var("QMAKE_LIB");
         if (ar_cmd.isEmpty())
             ar_cmd = "ar -rc";
-        const QString ar_response_file =
-                createResponseFile(var("QMAKE_LINK_OBJECT_SCRIPT"), project->values("OBJECTS"));
-        objectsLinkLine = ar_cmd + ' ' + var("DEST_TARGET") + " @" + escapeFilePath(ar_response_file);
+        objectsLinkLine = ar_cmd + ' ' + var("DEST_TARGET") + " @"
+            + escapeFilePath(linkerResponseFile.filePath);
     } else {
-        const QString ld_response_file =
-                createResponseFile(var("QMAKE_LINK_OBJECT_SCRIPT"), project->values("OBJECTS"));
-        objectsLinkLine = "@" + escapeFilePath(ld_response_file);
+        objectsLinkLine = "@" + escapeFilePath(linkerResponseFile.filePath);
     }
     Win32MakefileGenerator::writeObjectsPart(t);
 }
@@ -284,7 +281,10 @@ void MingwMakefileGenerator::writeBuildRulesPart(QTextStream &t)
             t << "\n\t" << objectsLinkLine << " " ;
         }
     } else {
-        t << "\n\t$(LINKER) $(LFLAGS) " << var("QMAKE_LINK_O_FLAG") << "$(DESTDIR_TARGET) " << objectsLinkLine << "  $(LIBS)";
+        t << "\n\t$(LINKER) $(LFLAGS) " << var("QMAKE_LINK_O_FLAG") << "$(DESTDIR_TARGET) "
+          << objectsLinkLine;
+        if (!linkerResponseFile.isValid() || linkerResponseFile.onlyObjects)
+            t << " $(LIBS)";
     }
     if(!project->isEmpty("QMAKE_POST_LINK"))
         t << "\n\t" <<var("QMAKE_POST_LINK");
