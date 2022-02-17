@@ -510,6 +510,8 @@ void tst_QImageReader::setScaledClipRect()
     QImageReader originalReader(prefix + fileName);
     originalReader.setScaledSize(QSize(300, 300));
     QImage originalImage = originalReader.read();
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive) && format.contains("svg"))
+        QEXPECT_FAIL("", "This fails on Wayland, see QTBUG-100917.", Abort);
     QCOMPARE(originalImage.copy(newRect), image);
 }
 
