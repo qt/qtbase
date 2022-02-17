@@ -112,23 +112,24 @@ function(qt_internal_add_tool target_name)
         set(${tools_package_name}_BACKUP_CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH})
         set(${tools_package_name}_BACKUP_CMAKE_FIND_ROOT_PATH "${CMAKE_FIND_ROOT_PATH}")
         if(QT_HOST_PATH_CMAKE_DIR)
-            set(CMAKE_PREFIX_PATH "${QT_HOST_PATH_CMAKE_DIR}")
+            set(qt_host_path_cmake_dir_absolute "${QT_HOST_PATH_CMAKE_DIR}")
         elseif(Qt${PROJECT_VERSION_MAJOR}HostInfo_DIR)
             get_filename_component(qt_host_path_cmake_dir_absolute
                 "${Qt${PROJECT_VERSION_MAJOR}HostInfo_DIR}/.." ABSOLUTE)
-            set(CMAKE_PREFIX_PATH "${qt_host_path_cmake_dir_absolute}")
         else()
             # This should never happen, serves as an assert.
             message(FATAL_ERROR
                 "Neither QT_HOST_PATH_CMAKE_DIR nor "
                 "Qt${PROJECT_VERSION_MAJOR}HostInfo_DIR} available.")
         endif()
+        set(CMAKE_PREFIX_PATH "${qt_host_path_cmake_dir_absolute}")
 
         # Look for tools in additional host Qt installations. This is done for conan support where
         # we have separate installation prefixes per package. For simplicity, we assume here that
         # all host Qt installations use the same value of INSTALL_LIBDIR.
         if(DEFINED QT_ADDITIONAL_HOST_PACKAGES_PREFIX_PATH)
-            file(RELATIVE_PATH rel_host_cmake_dir "${QT_HOST_PATH}" "${QT_HOST_PATH_CMAKE_DIR}")
+            file(RELATIVE_PATH rel_host_cmake_dir "${QT_HOST_PATH}"
+                "${qt_host_path_cmake_dir_absolute}")
             foreach(host_path IN LISTS QT_ADDITIONAL_HOST_PACKAGES_PREFIX_PATH)
                 set(host_cmake_dir "${host_path}/${rel_host_cmake_dir}")
                 list(PREPEND CMAKE_PREFIX_PATH "${host_cmake_dir}")
