@@ -1279,11 +1279,12 @@ void QMessagePattern::setPattern(const QString &pattern)
 */
 static constexpr int TypicalBacktraceFrameCount = 8;
 
-#if (defined(Q_CC_GNU) || __has_attribute(optimize)) \
-    && !defined(Q_CC_INTEL) && !defined(Q_CC_CLANG)
+#  if defined(Q_CC_GNU) && !defined(Q_CC_CLANG)
 // force skipping the frame pointer, to save the backtrace() function some work
-__attribute__((optimize("omit-frame-pointer")))
-#endif
+#    pragma GCC push_options
+#    pragma GCC optimize ("omit-frame-pointer")
+#  endif
+
 static QStringList backtraceFramesForLogMessage(int frameCount)
 {
     struct DecodedFrame {
@@ -1422,6 +1423,10 @@ static QString formatBacktraceForLogMessage(const QMessagePattern::BacktracePara
 
     return frames.join(backtraceSeparator);
 }
+
+#  if defined(Q_CC_GNU) && !defined(Q_CC_CLANG)
+#    pragma GCC pop_options
+#  endif
 #endif // QLOGGING_HAVE_BACKTRACE && !QT_BOOTSTRAPPED
 
 Q_GLOBAL_STATIC(QMessagePattern, qMessagePattern)
