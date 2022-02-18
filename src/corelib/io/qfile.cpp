@@ -838,7 +838,7 @@ QFile::copy(const QString &newName)
                         if (!out.rename(newName)) {
                             error = true;
                             close();
-                            d->setError(QFile::CopyError, tr("Cannot create %1 for output: %1")
+                            d->setError(QFile::CopyError, tr("Cannot create %1 for output: %2")
                                         .arg(newName, out.errorString()));
                         }
                     }
