@@ -1335,6 +1335,8 @@ static QStringList backtraceFramesForLogMessage(int frameCount)
 
 #  if QT_CONFIG(dladdr)
     // use dladdr() instead of backtrace_symbols()
+    QString cachedLibrary;
+    const char *cachedFname = nullptr;
     auto decodeFrame = [&](const void *addr) -> DecodedFrame {
         Dl_info info;
         if (!dladdr(addr, &info))
@@ -1351,9 +1353,12 @@ static QStringList backtraceFramesForLogMessage(int frameCount)
         if (shouldSkipFrame(lib, fn))
             return {};
 
-        QString library = QString::fromUtf8(lib.data(), lib.size());
         QString function = demangled(fn);
-        return { library, function };
+        if (lib.data() != cachedFname) {
+            cachedFname = lib.data();
+            cachedLibrary = QString::fromUtf8(cachedFname, lib.size());
+        }
+        return { cachedLibrary, function };
     };
 #  else
     // The results of backtrace_symbols looks like this:
