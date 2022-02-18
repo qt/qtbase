@@ -334,7 +334,8 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
     QTextBlockFormat blockFmt = block.blockFormat();
     bool missedBlankCodeBlockLine = false;
     const bool codeBlock = blockFmt.hasProperty(QTextFormat::BlockCodeFence) ||
-            blockFmt.stringProperty(QTextFormat::BlockCodeLanguage).length() > 0;
+            blockFmt.stringProperty(QTextFormat::BlockCodeLanguage).length() > 0 ||
+            blockFmt.nonBreakableLines();
     if (m_fencedCodeBlock && !codeBlock) {
         m_stream << m_linePrefix << m_codeBlockFence << Newline;
         m_fencedCodeBlock = false;

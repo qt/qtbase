@@ -41,6 +41,8 @@ private slots:
     void fragmentsAndProperties();
     void pathological_data();
     void pathological();
+    void fencedCodeBlocks_data();
+    void fencedCodeBlocks();
 
 private:
     bool isMainFontFixed();
@@ -488,6 +490,79 @@ void tst_QTextMarkdownImporter::pathological() // avoid crashing on crazy input
         QTest::ignoreMessage(QtWarningMsg, warning.toLatin1());
 #endif
     QTextDocument().setMarkdown(f.readAll());
+}
+
+void tst_QTextMarkdownImporter::fencedCodeBlocks_data()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<int>("expectedCodeBlockCount");
+    QTest::addColumn<int>("expectedPlainBlockCount");
+    QTest::addColumn<QString>("expectedLanguage");
+    QTest::addColumn<QString>("expectedFenceChar");
+    QTest::addColumn<QString>("rewrite");
+
+    // TODO shouldn't add empty blocks: QTBUG-101031
+    QTest::newRow("backtick fence with language")
+            << "```pseudocode\nprint('hello world\\n')\n```\n"
+            << 2 << 0 << "pseudocode" << "`"
+            << "```pseudocode\nprint('hello world\\n')\n```\n\n";
+    QTest::newRow("tilde fence with language")
+            << "~~~pseudocode\nprint('hello world\\n')\n~~~\n"
+            << 2 << 0 << "pseudocode" << "~"
+            << "~~~pseudocode\nprint('hello world\\n')\n~~~\n\n";
+    QTest::newRow("embedded backticks")
+            << "```\nnone `one` ``two``\n```\nplain\n```\n```three``` ````four````\n```\nplain\n"
+            << 4 << 2 << QString() << "`"
+            << "```\nnone `one` ``two``\n```\nplain\n\n```\n```three``` ````four````\n```\nplain\n\n";
+}
+
+void tst_QTextMarkdownImporter::fencedCodeBlocks()
+{
+    QFETCH(QString, input);
+    QFETCH(int, expectedCodeBlockCount);
+    QFETCH(int, expectedPlainBlockCount);
+    QFETCH(QString, expectedLanguage);
+    QFETCH(QString, expectedFenceChar);
+    QFETCH(QString, rewrite);
+
+    QTextDocument doc;
+    doc.setMarkdown(input);
+
+#ifdef DEBUG_WRITE_HTML
+    {
+        QFile out("/tmp/" + QLatin1String(QTest::currentDataTag()) + ".html");
+        out.open(QFile::WriteOnly);
+        out.write(doc.toHtml().toLatin1());
+        out.close();
+    }
+#endif
+
+    QTextFrame::iterator iterator = doc.rootFrame()->begin();
+    QTextFrame *currentFrame = iterator.currentFrame();
+    int codeBlockCount = 0;
+    int plainBlockCount = 0;
+    while (!iterator.atEnd()) {
+        // There are no child frames
+        QCOMPARE(iterator.currentFrame(), currentFrame);
+        // Check whether the block is code or plain
+        QTextBlock block = iterator.currentBlock();
+        const bool codeBlock = block.blockFormat().hasProperty(QTextFormat::BlockCodeFence);
+        QCOMPARE(block.blockFormat().nonBreakableLines(), codeBlock);
+        QCOMPARE(block.blockFormat().stringProperty(QTextFormat::BlockCodeLanguage), codeBlock ? expectedLanguage : QString());
+        if (codeBlock) {
+            QCOMPARE(block.blockFormat().stringProperty(QTextFormat::BlockCodeFence), expectedFenceChar);
+            ++codeBlockCount;
+        } else {
+            ++plainBlockCount;
+        }
+        qCDebug(lcTests) << (codeBlock ? "code" : "text") << block.text() << block.charFormat().fontFamilies();
+        ++iterator;
+    }
+    QCOMPARE(codeBlockCount, expectedCodeBlockCount);
+    QCOMPARE(plainBlockCount, expectedPlainBlockCount);
+    if (doc.toMarkdown() != rewrite && isMainFontFixed())
+        QEXPECT_FAIL("", "fixed-pitch main font (QTBUG-103484)", Continue);
+    QCOMPARE(doc.toMarkdown(), rewrite);
 }
 
 QTEST_MAIN(tst_QTextMarkdownImporter)

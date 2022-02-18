@@ -571,8 +571,10 @@ void QTextMarkdownImporter::insertBlock()
     }
     if (m_codeBlock) {
         blockFormat.setProperty(QTextFormat::BlockCodeLanguage, m_blockCodeLanguage);
-        if (m_blockCodeFence)
+        if (m_blockCodeFence) {
+            blockFormat.setNonBreakableLines(true);
             blockFormat.setProperty(QTextFormat::BlockCodeFence, QString(QLatin1Char(m_blockCodeFence)));
+        }
         charFormat.setFont(m_monoFont);
     } else {
         blockFormat.setTopMargin(m_paragraphMargin);
