@@ -11,6 +11,8 @@
 #include "common/debug.h"
 #include "libANGLE/renderer/d3d/d3d11/renderer11_utils.h"
 
+#define INFO_BUFFER_SIZE 32767
+
 namespace rx
 {
 
@@ -88,7 +90,11 @@ void DebugAnnotator11::initializeDevice()
     if (!mInitialized)
     {
 #if !defined(ANGLE_ENABLE_WINDOWS_STORE)
-        mD3d11Module = LoadLibrary(TEXT("d3d11.dll"));
+        TCHAR infoBuf[INFO_BUFFER_SIZE];
+        DWORD bufCharCount = INFO_BUFFER_SIZE;
+        GetSystemDirectory(infoBuf, INFO_BUFFER_SIZE);
+        lstrcat(infoBuf, TEXT("\\d3d11.dll"));
+        mD3d11Module = LoadLibrary(infoBuf);
         ASSERT(mD3d11Module);
 
         PFN_D3D11_CREATE_DEVICE D3D11CreateDevice = (PFN_D3D11_CREATE_DEVICE)GetProcAddress(mD3d11Module, "D3D11CreateDevice");
