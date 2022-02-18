@@ -81,8 +81,12 @@ private slots:
 
 void tst_PlatformSocketEngine::initTestCase()
 {
+#ifdef QT_TEST_SERVER
+     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::imapServerName(), 143));
+#else
     if (!QtNetworkSettings::verifyTestNetworkSettings())
         QSKIP("No network test server available");
+#endif
 }
 
 //---------------------------------------------------------------------------
@@ -122,14 +126,14 @@ void tst_PlatformSocketEngine::simpleConnectToIMAP()
     QVERIFY(socketDevice.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
     QCOMPARE(socketDevice.state(), QAbstractSocket::UnconnectedState);
 
-    const bool isConnected = socketDevice.connectToHost(QtNetworkSettings::serverIP(), 143);
+    const bool isConnected = socketDevice.connectToHost(QtNetworkSettings::imapServerIp(), 143);
     if (!isConnected) {
         QCOMPARE(socketDevice.state(), QAbstractSocket::ConnectingState);
         QVERIFY(socketDevice.waitForWrite());
         QCOMPARE(socketDevice.state(), QAbstractSocket::ConnectedState);
     }
     QCOMPARE(socketDevice.state(), QAbstractSocket::ConnectedState);
-    QCOMPARE(socketDevice.peerAddress(), QtNetworkSettings::serverIP());
+    QCOMPARE(socketDevice.peerAddress(), QtNetworkSettings::imapServerIp());
 
     // Wait for the greeting
     QVERIFY(socketDevice.waitForRead());
@@ -567,7 +571,7 @@ void tst_PlatformSocketEngine::networkError()
 
     QVERIFY(client.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
 
-    const bool isConnected = client.connectToHost(QtNetworkSettings::serverIP(), 143);
+    const bool isConnected = client.connectToHost(QtNetworkSettings::imapServerIp(), 143);
     if (!isConnected) {
         QCOMPARE(client.state(), QAbstractSocket::ConnectingState);
         QVERIFY(client.waitForWrite());
