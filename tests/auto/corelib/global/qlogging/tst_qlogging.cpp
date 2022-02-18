@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2022 The Qt Company Ltd.
+** Copyright (C) 2022 Intel Corporation.
 ** Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -63,7 +64,9 @@ private slots:
 
 private:
     QString backtraceHelperPath();
-    QStringList m_baseEnvironment;
+#if QT_CONFIG(process)
+    QProcessEnvironment m_baseEnvironment;
+#endif
 };
 
 static QtMsgType s_type;
@@ -90,14 +93,9 @@ tst_qmessagehandler::tst_qmessagehandler()
 void tst_qmessagehandler::initTestCase()
 {
 #if QT_CONFIG(process)
-    m_baseEnvironment = QProcess::systemEnvironment();
-    for (int i = 0; i < m_baseEnvironment.count(); ++i) {
-        if (m_baseEnvironment.at(i).startsWith("QT_MESSAGE_PATTERN=")) {
-            m_baseEnvironment.removeAt(i);
-            break;
-        }
-    }
-    m_baseEnvironment.prepend("QT_FORCE_STDERR_LOGGING=1");
+    m_baseEnvironment = QProcessEnvironment::systemEnvironment();
+    m_baseEnvironment.remove("QT_MESSAGE_PATTERN");
+    m_baseEnvironment.insert("QT_FORCE_STDERR_LOGGING", "1");
 #endif // QT_CONFIG(process)
 }
 
@@ -784,9 +782,9 @@ void tst_qmessagehandler::qMessagePattern()
     //
     // test QT_MESSAGE_PATTERN
     //
-    QStringList environment = m_baseEnvironment;
-    environment.prepend("QT_MESSAGE_PATTERN=\"" + pattern + QLatin1Char('"'));
-    process.setEnvironment(environment);
+    QProcessEnvironment environment = m_baseEnvironment;
+    environment.insert("QT_MESSAGE_PATTERN", pattern);
+    process.setProcessEnvironment(environment);
 
     process.start(appExe);
     QVERIFY2(process.waitForStarted(), qPrintable(
@@ -807,7 +805,7 @@ void tst_qmessagehandler::qMessagePattern()
         }
     }
     if (pattern.startsWith("%{pid}"))
-        QVERIFY2(output.startsWith('"' + pid), "PID: " + pid + "\noutput:\n" + output);
+        QVERIFY2(output.startsWith(pid), "PID: " + pid + "\noutput:\n" + output);
 #endif
 }
 
@@ -828,15 +826,7 @@ void tst_qmessagehandler::setMessagePattern()
     const QString appExe(backtraceHelperPath());
 
     // make sure there is no QT_MESSAGE_PATTERN in the environment
-    QStringList environment;
-    environment.reserve(m_baseEnvironment.size());
-    const auto doesNotStartWith = [](QLatin1String s) {
-        return [s](const QString &str) { return !str.startsWith(s); };
-    };
-    std::copy_if(m_baseEnvironment.cbegin(), m_baseEnvironment.cend(),
-                 std::back_inserter(environment),
-                 doesNotStartWith(QLatin1String("QT_MESSAGE_PATTERN")));
-    process.setEnvironment(environment);
+    process.setProcessEnvironment(m_baseEnvironment);
 
     process.start(appExe);
     QVERIFY2(process.waitForStarted(), qPrintable(
