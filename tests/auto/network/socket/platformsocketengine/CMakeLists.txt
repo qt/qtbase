@@ -16,6 +16,7 @@ qt_internal_add_test(tst_platformsocketengine
     PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
+    QT_TEST_SERVER_LIST "cyrus" # special case
 )
 
 #### Keys ignored in scope 1:.:.:platformsocketengine.pro:<TRUE>:
