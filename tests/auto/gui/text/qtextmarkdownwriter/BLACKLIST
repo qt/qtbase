@@ -1,2 +1,4 @@
 # QTBUG-89819
 ci b2qt 32bit
+[fromHtml:preformats with embedded backticks]
+qnx ci
