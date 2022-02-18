@@ -122,12 +122,16 @@ function(qt6_android_generate_deployment_settings target)
         "   \"sdk\": \"${android_sdk_root_native}\",\n")
 
     # Android SDK Build Tools Revision
-    get_target_property(android_sdk_build_tools ${target} QT_ANDROID_SDK_BUILD_TOOLS_REVISION)
-    if (NOT android_sdk_build_tools)
-        _qt_internal_android_get_sdk_build_tools_revision(android_sdk_build_tools)
-    endif()
+    _qt_internal_android_get_sdk_build_tools_revision(android_sdk_build_tools)
+    set(android_sdk_build_tools_genex "")
+    string(APPEND android_sdk_build_tools_genex
+        "$<IF:$<BOOL:$<TARGET_PROPERTY:${target},QT_ANDROID_SDK_BUILD_TOOLS_REVISION>>,"
+            "$<TARGET_PROPERTY:${target},QT_ANDROID_SDK_BUILD_TOOLS_REVISION>,"
+            "${android_sdk_build_tools}"
+        ">"
+    )
     string(APPEND file_contents
-        "   \"sdkBuildToolsRevision\": \"${android_sdk_build_tools}\",\n")
+        "   \"sdkBuildToolsRevision\": \"${android_sdk_build_tools_genex}\",\n")
 
     # Android NDK
     file(TO_CMAKE_PATH "${CMAKE_ANDROID_NDK}" android_ndk_root_native)
@@ -325,6 +329,9 @@ function(qt6_android_add_apk_target target)
     if (NOT deployment_file)
         message(FATAL_ERROR "Target ${target} is not a valid android executable target\n")
     endif()
+    # Use genex to get path to the deployment settings, the above check only to confirm that
+    # qt6_android_add_apk_target is called on an android executable target.
+    set(deployment_file "$<TARGET_PROPERTY:${target},QT_ANDROID_DEPLOYMENT_SETTINGS_FILE>")
 
     # Make global apk and aab targets depend on the current apk target.
     if(TARGET aab)
@@ -336,6 +343,7 @@ function(qt6_android_add_apk_target target)
     endif()
 
     set(deployment_tool "${QT_HOST_PATH}/${QT6_HOST_INFO_BINDIR}/androiddeployqt")
+    # No need to use genex for the BINARY_DIR since it's read-only.
     get_target_property(target_binary_dir ${target} BINARY_DIR)
     set(apk_final_dir "${target_binary_dir}/android-build")
     set(apk_file_name "${target}.apk")
@@ -657,7 +665,7 @@ endfunction()
 # The function converts the target property to a json record and appends it to the output
 # variable.
 function(_qt_internal_add_android_deployment_property out_var json_key target property)
-    set(property_genex "$<TARGET_PROPERTY:${target},${property}>")
+    set(property_genex "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},${property}>>")
     string(APPEND ${out_var}
         "$<$<BOOL:${property_genex}>:"
             "   \"${json_key}\": \"${property_genex}\"\,\n"
@@ -701,7 +709,7 @@ function(_qt_internal_add_android_deployment_list_property out_var json_key)
         endif()
 
         set(property_genex
-            "$<TARGET_PROPERTY:${target},${property}>"
+            "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},${property}>>"
         )
         set(add_quote_genex
             "$<$<BOOL:${property_genex}>:\">"
@@ -710,7 +718,7 @@ function(_qt_internal_add_android_deployment_list_property out_var json_key)
             "${list_join_genex}"
             "${add_comma_genex}${add_quote_genex}"
                 "$<JOIN:"
-                    "$<GENEX_EVAL:${property_genex}>,"
+                    "${property_genex},"
                     "\",\""
                 ">"
             "${add_quote_genex}"
@@ -750,14 +758,28 @@ endfunction()
 # It doesn't overwrite public properties, but instead writes formatted values to internal
 # properties.
 function(_qt_internal_android_format_deployment_paths target)
-    _qt_internal_android_format_deployment_path_property(${target}
-        QT_QML_IMPORT_PATH _qt_native_qml_import_paths)
+    if(QT_BUILD_STANDALONE_TESTS OR QT_BUILDING_QT)
+        # When building standalone tests or Qt itself we obligate developers to not use
+        # windows paths when setting QT_* properties below, so their values are used as is when
+        # generating deployment settings.
+        set_target_properties(${target} PROPERTIES
+            _qt_native_qml_import_paths "$<TARGET_PROPERTY:${target},QT_QML_IMPORT_PATH>"
+            _qt_android_native_qml_root_paths "$<TARGET_PROPERTY:${target},QT_QML_ROOT_PATH>"
+            _qt_android_native_package_source_dir
+                "$<TARGET_PROPERTY:${target},QT_ANDROID_PACKAGE_SOURCE_DIR>"
+        )
+    else()
+        # User projects still may use windows paths inside the QT_* properties below, with
+        # obligation to run the finalizer code.
+        _qt_internal_android_format_deployment_path_property(${target}
+            QT_QML_IMPORT_PATH _qt_native_qml_import_paths)
 
-    _qt_internal_android_format_deployment_path_property(${target}
-        QT_QML_ROOT_PATH _qt_android_native_qml_root_paths)
+        _qt_internal_android_format_deployment_path_property(${target}
+            QT_QML_ROOT_PATH _qt_android_native_qml_root_paths)
 
-    _qt_internal_android_format_deployment_path_property(${target}
-        QT_ANDROID_PACKAGE_SOURCE_DIR _qt_android_native_package_source_dir)
+        _qt_internal_android_format_deployment_path_property(${target}
+            QT_ANDROID_PACKAGE_SOURCE_DIR _qt_android_native_package_source_dir)
+    endif()
 endfunction()
 
 # The function converts the value of target property to JSON compatible path and writes the
