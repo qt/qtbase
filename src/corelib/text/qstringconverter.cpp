@@ -60,6 +60,11 @@
 
 QT_BEGIN_NAMESPACE
 
+static_assert(std::is_nothrow_move_constructible_v<QStringEncoder>);
+static_assert(std::is_nothrow_move_assignable_v<QStringEncoder>);
+static_assert(std::is_nothrow_move_constructible_v<QStringDecoder>);
+static_assert(std::is_nothrow_move_assignable_v<QStringDecoder>);
+
 enum { Endian = 0, Data = 1 };
 
 static const uchar utf8bom[] = { 0xef, 0xbb, 0xbf };
@@ -1388,7 +1393,7 @@ QByteArray QLocal8Bit::convertFromUnicode(QStringView in, QStringConverter::Stat
 }
 #endif
 
-void QStringConverter::State::clear()
+void QStringConverter::State::clear() noexcept
 {
     if (clearFn)
         clearFn(this);

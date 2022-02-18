@@ -73,14 +73,14 @@ public:
         constexpr State(Flags f = Flag::Default)
             : flags(f), state_data{0, 0, 0, 0} {}
         ~State() { clear(); }
-        State(State &&other)
+        State(State &&other) noexcept
             : flags(other.flags),
               remainingChars(other.remainingChars),
               invalidChars(other.invalidChars),
               d{other.d[0], other.d[1]},
               clearFn(other.clearFn)
         { other.clearFn = nullptr; }
-        State &operator=(State &&other)
+        State &operator=(State &&other) noexcept
         {
             clear();
             flags = other.flags;
@@ -92,7 +92,7 @@ public:
             other.clearFn = nullptr;
             return *this;
         }
-        Q_CORE_EXPORT void clear();
+        Q_CORE_EXPORT void clear() noexcept;
 
         Flags flags;
         int internalState = 0;
@@ -103,7 +103,7 @@ public:
             uint state_data[4];
             void *d[2];
         };
-        using ClearDataFn = void (*)(State *);
+        using ClearDataFn = void (*)(State *) noexcept;
         ClearDataFn clearFn = nullptr;
     private:
         Q_DISABLE_COPY(State)
