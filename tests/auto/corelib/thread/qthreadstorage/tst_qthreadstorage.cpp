@@ -301,7 +301,7 @@ void tst_QThreadStorage::crashOnExit()
     QSKIP("No qprocess support", SkipAll);
 #else
     QString errorMessage;
-    QVERIFY2(runCrashOnExit("crashOnExit_helper", &errorMessage),
+    QVERIFY2(runCrashOnExit("./crashOnExit_helper", &errorMessage),
              qPrintable(errorMessage));
 #endif
 }
