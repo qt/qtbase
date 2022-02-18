@@ -2,7 +2,7 @@
 **
 ** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2016 Olivier Goffart <ogoffart@woboq.com>
-** Copyright (C) 2018 Intel Corporation.
+** Copyright (C) 2022 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -107,14 +107,11 @@ extern char *__progname;
 #endif
 
 #ifndef QT_BOOTSTRAPPED
-#if QT_CONFIG(regularexpression)
-#  ifdef __UCLIBC__
-#    if __UCLIBC_HAS_BACKTRACE__
-#      define QLOGGING_HAVE_BACKTRACE
-#    endif
-#  elif (defined(__GLIBC__) && defined(__GLIBCXX__)) || (__has_include(<cxxabi.h>) && __has_include(<execinfo.h>))
-#    define QLOGGING_HAVE_BACKTRACE
-#  endif
+#if __has_include(<cxxabi.h>) && QT_CONFIG(backtrace) && QT_CONFIG(regularexpression)
+#  include <qregularexpression.h>
+#  include BACKTRACE_HEADER
+#  include <cxxabi.h>
+#  define QLOGGING_HAVE_BACKTRACE
 #endif
 
 #if defined(Q_OS_LINUX) && (defined(__GLIBC__) || __has_include(<sys/syscall.h>))
@@ -151,12 +148,6 @@ static QT_PREPEND_NAMESPACE(qint64) qt_gettid()
     QT_USE_NAMESPACE
     return qintptr(QThread::currentThreadId());
 }
-#endif
-
-#ifdef QLOGGING_HAVE_BACKTRACE
-#  include <qregularexpression.h>
-#  include <cxxabi.h>
-#  include <execinfo.h>
 #endif
 #endif // !QT_BOOTSTRAPPED
 
