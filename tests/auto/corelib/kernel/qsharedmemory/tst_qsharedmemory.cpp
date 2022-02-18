@@ -124,7 +124,7 @@ private:
 
 tst_QSharedMemory::tst_QSharedMemory()
     : existingSharedMemory(0)
-    , m_helperBinary("producerconsumer_helper")
+    , m_helperBinary("./producerconsumer_helper")
 {
 }
 
