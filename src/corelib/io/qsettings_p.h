@@ -208,6 +208,7 @@ public:
     virtual bool isWritable() const = 0;
     virtual QString fileName() const = 0;
 
+    QVariant value(const QString &key, const QVariant *defaultValue) const;
     QString actualKey(const QString &key) const;
     void beginGroupOrArray(const QSettingsGroup &group);
     void setStatus(QSettings::Status status) const;

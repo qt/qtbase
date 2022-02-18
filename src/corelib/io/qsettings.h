@@ -163,7 +163,8 @@ public:
     bool isWritable() const;
 
     void setValue(const QString &key, const QVariant &value);
-    QVariant value(const QString &key, const QVariant &defaultValue = QVariant()) const;
+    QVariant value(const QString &key, const QVariant &defaultValue) const;
+    QVariant value(const QString &key) const;
 
     void remove(const QString &key);
     bool contains(const QString &key) const;
