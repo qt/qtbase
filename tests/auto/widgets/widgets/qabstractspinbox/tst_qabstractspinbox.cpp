@@ -39,14 +39,11 @@
 #include "../../../shared/platforminputcontext.h"
 #include <private/qinputmethod_p.h>
 
+#include <memory>
 
 class tst_QAbstractSpinBox : public QObject
 {
 Q_OBJECT
-
-public:
-    tst_QAbstractSpinBox();
-    virtual ~tst_QAbstractSpinBox();
 
 private slots:
     void initTestCase();
@@ -64,32 +61,25 @@ private:
     PlatformInputContext m_platformInputContext;
 };
 
-tst_QAbstractSpinBox::tst_QAbstractSpinBox()
-{
-}
-
-tst_QAbstractSpinBox::~tst_QAbstractSpinBox()
-{
-}
-
 class MyAbstractSpinBox : public QAbstractSpinBox
 {
 public:
-    MyAbstractSpinBox() : QAbstractSpinBox() {}
-    QLineEdit *lineEdit() { return QAbstractSpinBox::lineEdit(); }
-    void setLineEdit(QLineEdit *le) { QAbstractSpinBox::setLineEdit(le); }
+    using QAbstractSpinBox::QAbstractSpinBox;
+
+    using QAbstractSpinBox::lineEdit;
+    using QAbstractSpinBox::setLineEdit;
 };
 
 void tst_QAbstractSpinBox::initTestCase()
 {
-    QInputMethodPrivate *inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
+    auto *inputMethodPrivate = QInputMethodPrivate::get(QGuiApplication::inputMethod());
     inputMethodPrivate->testContext = &m_platformInputContext;
 }
 
 void tst_QAbstractSpinBox::cleanupTestCase()
 {
-    QInputMethodPrivate *inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
-    inputMethodPrivate->testContext = 0;
+    auto *inputMethodPrivate = QInputMethodPrivate::get(QGuiApplication::inputMethod());
+    inputMethodPrivate->testContext = nullptr;
 }
 
 // Testing get/set functions
@@ -112,7 +102,7 @@ void tst_QAbstractSpinBox::getSetCheck()
 
     // QLineEdit * QAbstractSpinBox::lineEdit()
     // void QAbstractSpinBox::setLineEdit(QLineEdit *)
-    QLineEdit *var3 = new QLineEdit(0);
+    auto *var3 = new QLineEdit(nullptr);
     obj1.setLineEdit(var3);
     QCOMPARE(var3, obj1.lineEdit());
     // Will assert in debug, so only test in release
@@ -125,45 +115,38 @@ void tst_QAbstractSpinBox::getSetCheck()
 
 void tst_QAbstractSpinBox::task183108_clear()
 {
-    QAbstractSpinBox *sbox;
-
-    sbox = new QSpinBox;
+    auto sbox = std::make_unique<QSpinBox>();
     sbox->clear();
     sbox->show();
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     QVERIFY(sbox->text().isEmpty());
 
-    delete sbox;
-    sbox = new QSpinBox;
+    sbox.reset(new QSpinBox);
     sbox->clear();
     sbox->show();
     sbox->hide();
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     QCOMPARE(sbox->text(), QString());
 
-    delete sbox;
-    sbox = new QSpinBox;
+    sbox.reset(new QSpinBox);
     sbox->show();
     sbox->clear();
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     QCOMPARE(sbox->text(), QString());
 
-    delete sbox;
-    sbox = new QSpinBox;
+    sbox.reset(new QSpinBox);
     sbox->show();
     sbox->clear();
     sbox->hide();
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     QCOMPARE(sbox->text(), QString());
-
-    delete sbox;
 }
 
 void tst_QAbstractSpinBox::task228728_cssselector()
 {
     //QAbstractSpinBox does some call to stylehint into his constructor.
     //so while the stylesheet want to access property, it should not crash
-    qApp->setStyleSheet("[alignment=\"1\"], [text=\"foo\"] { color:black; }" );
+    qApp->setStyleSheet(R"([alignment="1"], [text="foo"] { color:black; })");
     QSpinBox box;
 }
 
@@ -174,24 +157,23 @@ void tst_QAbstractSpinBox::inputMethodUpdate()
 
     QSpinBox box;
 
-    QSpinBox *testWidget = &box;
-    testWidget->setRange(0, 1);
+    box.setRange(0, 1);
 
-    QTestPrivate::centerOnScreen(testWidget);
-    testWidget->clear();
-    testWidget->show();
-    QVERIFY(QTest::qWaitForWindowExposed(testWidget));
+    QTestPrivate::centerOnScreen(&box);
+    box.clear();
+    box.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&box));
 
-    testWidget->activateWindow();
-    testWidget->setFocus();
-    QTRY_VERIFY(testWidget->hasFocus());
-    QTRY_COMPARE(qApp->focusObject(), testWidget);
+    box.activateWindow();
+    box.setFocus();
+    QTRY_VERIFY(box.hasFocus());
+    QTRY_COMPARE(QGuiApplication::focusObject(), &box);
 
     m_platformInputContext.m_updateCallCount = 0;
     {
         QList<QInputMethodEvent::Attribute> attributes;
         QInputMethodEvent event("1", attributes);
-        QApplication::sendEvent(testWidget, &event);
+        QCoreApplication::sendEvent(&box, &event);
     }
     QVERIFY(m_platformInputContext.m_updateCallCount >= 1);
 
@@ -200,7 +182,7 @@ void tst_QAbstractSpinBox::inputMethodUpdate()
         QList<QInputMethodEvent::Attribute> attributes;
         attributes << QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, 0, 1, QVariant());
         QInputMethodEvent event("1", attributes);
-        QApplication::sendEvent(testWidget, &event);
+        QCoreApplication::sendEvent(&box, &event);
     }
     QVERIFY(m_platformInputContext.m_updateCallCount >= 1);
 
@@ -209,17 +191,17 @@ void tst_QAbstractSpinBox::inputMethodUpdate()
         QList<QInputMethodEvent::Attribute> attributes;
         QInputMethodEvent event("", attributes);
         event.setCommitString("1");
-        QApplication::sendEvent(testWidget, &event);
+        QCoreApplication::sendEvent(&box, &event);
     }
     QVERIFY(m_platformInputContext.m_updateCallCount >= 1);
-    QCOMPARE(testWidget->value(), 1);
+    QCOMPARE(box.value(), 1);
 
     m_platformInputContext.m_updateCallCount = 0;
     {
         QList<QInputMethodEvent::Attribute> attributes;
         attributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, 0, 0, QVariant());
         QInputMethodEvent event("", attributes);
-        QApplication::sendEvent(testWidget, &event);
+        QCoreApplication::sendEvent(&box, &event);
     }
     QVERIFY(m_platformInputContext.m_updateCallCount >= 1);
 }
