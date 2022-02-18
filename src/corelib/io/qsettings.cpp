@@ -3254,6 +3254,9 @@ bool QSettings::event(QEvent *event)
 #endif
 
 /*!
+    \fn QSettings::value(const QString &key) const
+    \fn QSettings::value(const QString &key, const QVariant &defaultValue) const
+
     Returns the value for setting \a key. If the setting doesn't
     exist, returns \a defaultValue.
 
@@ -3271,14 +3274,29 @@ bool QSettings::event(QEvent *event)
 
     \sa setValue(), contains(), remove()
 */
+QVariant QSettings::value(const QString &key) const
+{
+    Q_D(const QSettings);
+    return d->value(key, nullptr);
+}
+
 QVariant QSettings::value(const QString &key, const QVariant &defaultValue) const
 {
     Q_D(const QSettings);
+    return d->value(key, &defaultValue);
+}
+
+QVariant QSettingsPrivate::value(const QString &key, const QVariant *defaultValue) const
+{
     if (key.isEmpty()) {
         qWarning("QSettings::value: Empty key passed");
         return QVariant();
     }
-    return d->get(d->actualKey(key)).value_or(defaultValue);
+    if (std::optional r = get(actualKey(key)))
+        return std::move(*r);
+    if (defaultValue)
+        return *defaultValue;
+    return QVariant();
 }
 
 /*!
