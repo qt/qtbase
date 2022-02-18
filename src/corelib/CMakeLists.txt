@@ -697,6 +697,8 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_commandlineparser
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_backtrace
+    DEFINES
+        BACKTRACE_HEADER="${Backtrace_HEADER}"
     LIBRARIES
         WrapBacktrace::WrapBacktrace
 )

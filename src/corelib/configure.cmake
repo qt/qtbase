@@ -14,7 +14,9 @@ set_property(CACHE INPUT_libb2 PROPERTY STRINGS undefined no qt system)
 
 #### Libraries
 
-if((UNIX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
+if((UNIX AND NOT QNX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
+    # QNX's libbacktrace has an API wholly different from all the other Unix
+    # offerings
     qt_find_package(WrapBacktrace PROVIDED_TARGETS WrapBacktrace::WrapBacktrace MODULE_NAME core QMAKE_LIB backtrace)
 endif()
 qt_find_package(WrapDoubleConversion PROVIDED_TARGETS WrapDoubleConversion::WrapDoubleConversion MODULE_NAME core QMAKE_LIB doubleconversion)
