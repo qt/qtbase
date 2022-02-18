@@ -1297,7 +1297,7 @@ static QStringList backtraceFramesForLogMessage(int frameCount)
         int numberPrinted = 0;
         for (int i = 0; i < n && numberPrinted < frameCount; ++i) {
             QScopedPointer<char*, QScopedPointerPodDeleter> strings(backtrace_symbols(buffer.data() + i, 1));
-            QString trace = QString::fromLatin1(strings.data()[0]);
+            QString trace = QString::fromUtf8(strings.data()[0]);
             QRegularExpressionMatch m = rx.match(trace);
             if (m.hasMatch()) {
                 QString library = m.captured(1);
