@@ -1,5 +1,5 @@
 
-function(qt_internal_set_warnings_are_errors_flags target)
+function(qt_internal_set_warnings_are_errors_flags target target_scope)
     set(flags "")
     if (CLANG AND NOT MSVC)
         list(APPEND flags -Werror -Wno-error=\#warnings -Wno-error=deprecated-declarations)
@@ -69,7 +69,8 @@ function(qt_internal_set_warnings_are_errors_flags target)
     set(cxx_only_genex "$<OR:$<COMPILE_LANGUAGE:CXX>,$<COMPILE_LANGUAGE:OBJCXX>>")
     set(final_condition_genex "$<AND:${warnings_are_errors_enabled_genex},${cxx_only_genex}>")
     set(flags_generator_expression "$<${final_condition_genex}:${flags}>")
-    target_compile_options("${target}" INTERFACE "${flags_generator_expression}")
+
+    target_compile_options("${target}" ${target_scope} "${flags_generator_expression}")
 endfunction()
 
 # The function adds a global 'definition' to the platform internal targets and the target
@@ -145,9 +146,9 @@ qt_internal_add_global_definition(QT_NO_JAVA_STYLE_ITERATORS)
 qt_internal_add_global_definition(QT_NO_NARROWING_CONVERSIONS_IN_CONNECT)
 
 if(WARNINGS_ARE_ERRORS)
-    qt_internal_set_warnings_are_errors_flags(PlatformModuleInternal)
-    qt_internal_set_warnings_are_errors_flags(PlatformPluginInternal)
-    qt_internal_set_warnings_are_errors_flags(PlatformAppInternal)
+    qt_internal_set_warnings_are_errors_flags(PlatformModuleInternal INTERFACE)
+    qt_internal_set_warnings_are_errors_flags(PlatformPluginInternal INTERFACE)
+    qt_internal_set_warnings_are_errors_flags(PlatformAppInternal INTERFACE)
 endif()
 if(WIN32)
     # Needed for M_PI define. Same as mkspecs/features/qt_module.prf.

@@ -255,6 +255,9 @@ qt_set_msvc_cplusplus_options(Bootstrap PUBLIC)
 qt_set_common_target_properties(Bootstrap)
 qt_internal_apply_intel_cet(Bootstrap PUBLIC)
 
+if(WARNINGS_ARE_ERRORS)
+    qt_internal_set_warnings_are_errors_flags(Bootstrap PRIVATE)
+endif()
 qt_internal_extend_target(Bootstrap CONDITION MSVC
     DEFINES
         _CRT_SECURE_NO_WARNINGS
