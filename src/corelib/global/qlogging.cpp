@@ -1283,9 +1283,48 @@ __attribute__((optimize("omit-frame-pointer")))
 #endif
 static QStringList backtraceFramesForLogMessage(int frameCount)
 {
+    struct DecodedFrame {
+        QString library;
+        QString function;
+    };
+
     QStringList result;
     if (frameCount == 0)
         return result;
+
+    QVarLengthArray<void *, 32> buffer(TypicalBacktraceFrameCount + frameCount);
+    int n = backtrace(buffer.data(), buffer.size());
+    if (n <= 0)
+        return result;
+    buffer.resize(n);
+
+    auto shouldSkipFrame = [&result](const auto &library, const auto &function) {
+        if (!result.isEmpty() || !library.contains(QLatin1String("Qt6Core")))
+            return false;
+        if (function.isEmpty())
+            return true;
+        if (function.contains(QLatin1String("6QDebug")))
+            return true;
+        if (function.contains(QLatin1String("Message")) || function.contains(QLatin1String("_message")))
+            return true;
+        return false;
+    };
+
+    auto demangled = [](QString &function) {
+        if (!function.startsWith(QLatin1String("_Z")))
+            return function;
+
+        // we optimize for the case where __cxa_demangle succeeds
+        QByteArray fn = std::move(function).toUtf8();
+        QScopedPointer<char, QScopedPointerPodDeleter> demangled;
+        demangled.reset(abi::__cxa_demangle(fn, nullptr, nullptr, nullptr));
+
+        if (demangled)
+            return QString::fromUtf8(qCleanupFuncinfo(demangled.data()));
+        else
+            return QString::fromUtf8(fn);       // restore
+    };
+
 
     // The results of backtrace_symbols looks like this:
     //    /lib/libc.so.6(__libc_start_main+0xf3) [0x4a937413]
@@ -1294,46 +1333,39 @@ static QStringList backtraceFramesForLogMessage(int frameCount)
     // This code is protected by QMessagePattern::mutex so it is thread safe on all compilers
     static const QRegularExpression rx(QStringLiteral("^(?:[^(]*/)?([^(/]+)\\(([^+]*)(?:[\\+[a-f0-9x]*)?\\) \\[[a-f0-9x]*\\]$"));
 
-    QVarLengthArray<void *, 32> buffer(TypicalBacktraceFrameCount + frameCount);
-    int n = backtrace(buffer.data(), buffer.size());
-    if (n > 0) {
-        int numberPrinted = 0;
-        for (int i = 0; i < n && numberPrinted < frameCount; ++i) {
-            QScopedPointer<char*, QScopedPointerPodDeleter> strings(backtrace_symbols(buffer.data() + i, 1));
-            QString trace = QString::fromUtf8(strings.data()[0]);
-            QRegularExpressionMatch m = rx.match(trace);
-            if (m.hasMatch()) {
-                QString library = m.captured(1);
-                QString function = m.captured(2);
+    auto decodeFrame = [&](void *&addr) -> DecodedFrame {
+        QScopedPointer<char*, QScopedPointerPodDeleter> strings(backtrace_symbols(&addr, 1));
+        QString trace = QString::fromUtf8(strings.data()[0]);
+        QRegularExpressionMatch m = rx.match(trace);
+        if (!m.hasMatch())
+            return {};
 
-                // skip the trace from QtCore that are because of the qDebug itself
-                if (!numberPrinted && library.contains(QLatin1String("Qt6Core"))
-                        && (function.isEmpty() || function.contains(QLatin1String("Message"), Qt::CaseInsensitive)
-                            || function.contains(QLatin1String("QDebug")))) {
-                    continue;
-                }
+        QString library = m.captured(1);
+        QString function = m.captured(2);
 
-                if (function.startsWith(QLatin1String("_Z"))) {
-                    QScopedPointer<char, QScopedPointerPodDeleter> demangled(
-                                abi::__cxa_demangle(function.toUtf8(), nullptr, nullptr, nullptr));
-                    if (demangled)
-                        function = QString::fromUtf8(qCleanupFuncinfo(demangled.data()));
-                }
+        // skip the trace from QtCore that are because of the qDebug itself
+        if (shouldSkipFrame(library, function))
+            return {};
 
-                if (function.isEmpty()) {
-                    result.append(QLatin1Char('?') + library + QLatin1Char('?'));
-                } else {
-                    result.append(function);
-                }
-            } else {
-                if (numberPrinted == 0) {
-                    // innermost, unknown frames are usually the logging framework itself
-                    continue;
-                }
+        function = demangled(function);
+        return { library, function };
+    };
+
+    for (void *&addr : buffer) {
+        DecodedFrame frame = decodeFrame(addr);
+        if (!frame.library.isEmpty()) {
+            if (frame.function.isEmpty())
+                result.append(QLatin1Char('?') + frame.library + QLatin1Char('?'));
+            else
+                result.append(frame.function);
+        } else {
+            // innermost, unknown frames are usually the logging framework itself
+            if (!result.isEmpty())
                 result.append(QStringLiteral("???"));
-            }
-            numberPrinted++;
         }
+
+        if (result.size() == frameCount)
+            break;
     }
     return result;
 }
