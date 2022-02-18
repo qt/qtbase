@@ -238,11 +238,7 @@
 //
 // macOS's fat binaries support the "x86_64h" sub-architecture and the GNU libc
 // ELF loader also supports a "haswell/" subdir (e.g., /usr/lib/haswell).
-#  if defined(Q_CC_CLANG)
-#    define QT_FUNCTION_TARGET_STRING_ARCH_HASWELL    "haswell"
-#  else
-#    define QT_FUNCTION_TARGET_STRING_ARCH_HASWELL    "arch=haswell"
-#  endif
+#  define QT_FUNCTION_TARGET_STRING_ARCH_HASWELL    "arch=haswell"
 #  if defined(__AVX2__) && defined(__BMI__) && defined(__BMI2__) && defined(__F16C__) && \
     defined(__FMA__) && defined(__LZCNT__) && defined(__RDRND__)
 #    define __haswell__       1
