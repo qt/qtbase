@@ -115,8 +115,9 @@ void tst_QAbstractSpinBox::getSetCheck()
     QLineEdit *var3 = new QLineEdit(0);
     obj1.setLineEdit(var3);
     QCOMPARE(var3, obj1.lineEdit());
-#ifndef QT_DEBUG
-    obj1.setLineEdit((QLineEdit *)0); // Will assert in debug, so only test in release
+    // Will assert in debug, so only test in release
+#if defined(QT_NO_DEBUG) && !defined(QT_FORCE_ASSERTS)
+    obj1.setLineEdit(nullptr);
     QCOMPARE(var3, obj1.lineEdit()); // Setting 0 should keep the current editor
 #endif
     // delete var3; // No delete, since QAbstractSpinBox takes ownership
