@@ -171,7 +171,7 @@ std::filesystem::copy(
     /* END TEST: */
     return 0;
 }
-"# FIXME: qmake: CONFIG += c++17
+"
 )
 
 # eventfd
