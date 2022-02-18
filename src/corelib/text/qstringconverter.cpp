@@ -44,6 +44,7 @@
 
 #include "private/qsimd_p.h"
 #include "private/qstringiterator_p.h"
+#include "private/qtools_p.h"
 #include "qbytearraymatcher.h"
 
 #ifdef Q_OS_WIN
@@ -1671,7 +1672,7 @@ static bool nameMatch(const char *a, const char *b)
             ++b;
             continue;
         }
-        if (toupper(*a) != toupper(*b))
+        if (QtMiscUtils::toAsciiLower(*a) != QtMiscUtils::toAsciiLower(*b))
             return false;
         ++a;
         ++b;
