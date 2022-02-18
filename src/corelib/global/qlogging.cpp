@@ -109,6 +109,9 @@ extern char *__progname;
 #ifndef QT_BOOTSTRAPPED
 #if __has_include(<cxxabi.h>) && QT_CONFIG(backtrace) && QT_CONFIG(regularexpression)
 #  include <qregularexpression.h>
+#  if QT_CONFIG(dladdr)
+#    include <dlfcn.h>
+#  endif
 #  include BACKTRACE_HEADER
 #  include <cxxabi.h>
 #  define QLOGGING_HAVE_BACKTRACE
@@ -1310,12 +1313,17 @@ static QStringList backtraceFramesForLogMessage(int frameCount)
         return false;
     };
 
-    auto demangled = [](QString &function) {
+    auto demangled = [](auto &function) -> QString {
         if (!function.startsWith(QLatin1String("_Z")))
             return function;
 
         // we optimize for the case where __cxa_demangle succeeds
-        QByteArray fn = std::move(function).toUtf8();
+        auto fn = [&]() {
+            if constexpr (sizeof(function.at(0)) == 1)
+                return function.data();                 // -> const char *
+            else
+                return std::move(function).toUtf8();    // -> QByteArray
+        }();
         QScopedPointer<char, QScopedPointerPodDeleter> demangled;
         demangled.reset(abi::__cxa_demangle(fn, nullptr, nullptr, nullptr));
 
@@ -1325,7 +1333,29 @@ static QStringList backtraceFramesForLogMessage(int frameCount)
             return QString::fromUtf8(fn);       // restore
     };
 
+#  if QT_CONFIG(dladdr)
+    // use dladdr() instead of backtrace_symbols()
+    auto decodeFrame = [&](const void *addr) -> DecodedFrame {
+        Dl_info info;
+        if (!dladdr(addr, &info))
+            return {};
 
+        // These are actually UTF-8, so we'll correct below
+        QLatin1String fn(info.dli_sname);
+        QLatin1String lib;
+        if (const char *lastSlash = strrchr(info.dli_fname, '/'))
+            lib = QLatin1String(lastSlash + 1);
+        else
+            lib = QLatin1String(info.dli_fname);
+
+        if (shouldSkipFrame(lib, fn))
+            return {};
+
+        QString library = QString::fromUtf8(lib.data(), lib.size());
+        QString function = demangled(fn);
+        return { library, function };
+    };
+#  else
     // The results of backtrace_symbols looks like this:
     //    /lib/libc.so.6(__libc_start_main+0xf3) [0x4a937413]
     // The offset and function name are optional.
@@ -1350,6 +1380,7 @@ static QStringList backtraceFramesForLogMessage(int frameCount)
         function = demangled(function);
         return { library, function };
     };
+#  endif
 
     for (void *&addr : buffer) {
         DecodedFrame frame = decodeFrame(addr);

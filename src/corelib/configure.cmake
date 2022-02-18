@@ -176,6 +176,23 @@ std::filesystem::copy(
 "
 )
 
+# dladdr
+qt_config_compile_test(dladdr
+    LABEL "dladdr"
+    LIBRARIES
+        dl
+    CODE
+"#define _GNU_SOURCE 1
+#include <dlfcn.h>
+int i = 0;
+int main(void)
+{
+    Dl_info info;
+    dladdr(&i, &info);
+    return 0;
+}"
+)
+
 # eventfd
 qt_config_compile_test(eventfd
     LABEL "eventfd"
@@ -542,6 +559,10 @@ qt_feature("cxx11_future" PUBLIC
 qt_feature("cxx17_filesystem" PUBLIC
     LABEL "C++17 <filesystem>"
     CONDITION TEST_cxx17_filesystem
+)
+qt_feature("dladdr" PRIVATE
+    LABEL "dladdr"
+    CONDITION QT_FEATURE_dlopen AND TEST_dladdr
 )
 qt_feature("eventfd" PUBLIC
     LABEL "eventfd"
