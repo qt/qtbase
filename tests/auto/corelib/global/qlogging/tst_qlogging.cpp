@@ -799,9 +799,10 @@ void tst_qmessagehandler::qMessagePattern()
 
     for (const QByteArray &e : qAsConst(expected)) {
         if (!output.contains(e)) {
-            qDebug() << output;
-            qDebug() << "expected: " << e;
-            QVERIFY(output.contains(e));
+            // use QDebug so we get proper string escaping for the newlines
+            QString buf;
+            QDebug(&buf) << "Got:" << output << ";  Expected:" << e;
+            QVERIFY2(output.contains(e), qPrintable(buf));
         }
     }
     if (pattern.startsWith("%{pid}"))
