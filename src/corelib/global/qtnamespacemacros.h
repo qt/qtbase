@@ -40,6 +40,17 @@
 #ifndef QTNAMESPACEMACROS_H
 #define QTNAMESPACEMACROS_H
 
+// valid for both C and C++
+#define QT_MANGLE_NAMESPACE0(x) x
+#define QT_MANGLE_NAMESPACE1(a, b) a##_##b
+#define QT_MANGLE_NAMESPACE2(a, b) QT_MANGLE_NAMESPACE1(a,b)
+#if !defined(QT_NAMESPACE) || defined(Q_MOC_RUN) /* user namespace */
+# define QT_MANGLE_NAMESPACE(name) name
+#else
+# define QT_MANGLE_NAMESPACE(name) QT_MANGLE_NAMESPACE2( \
+        QT_MANGLE_NAMESPACE0(name), QT_MANGLE_NAMESPACE0(QT_NAMESPACE))
+#endif
+
 #ifdef __cplusplus
 
 #if !defined(QT_NAMESPACE) || defined(Q_MOC_RUN) /* user namespace */
@@ -58,7 +69,6 @@
 #endif
 # define QT_FORWARD_DECLARE_CLASS(name) class name;
 # define QT_FORWARD_DECLARE_STRUCT(name) struct name;
-# define QT_MANGLE_NAMESPACE(name) name
 
 #else /* user namespace */
 
@@ -81,12 +91,6 @@
 # define QT_FORWARD_DECLARE_STRUCT(name) \
     QT_BEGIN_NAMESPACE struct name; QT_END_NAMESPACE \
     using QT_PREPEND_NAMESPACE(name);
-
-# define QT_MANGLE_NAMESPACE0(x) x
-# define QT_MANGLE_NAMESPACE1(a, b) a##_##b
-# define QT_MANGLE_NAMESPACE2(a, b) QT_MANGLE_NAMESPACE1(a,b)
-# define QT_MANGLE_NAMESPACE(name) QT_MANGLE_NAMESPACE2( \
-        QT_MANGLE_NAMESPACE0(name), QT_MANGLE_NAMESPACE0(QT_NAMESPACE))
 
 namespace QT_NAMESPACE {}
 
