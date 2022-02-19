@@ -584,10 +584,10 @@ static inline uint detectProcessorFeatures()
 static const quint64 minFeature = qCompilerCpuFeatures;
 
 static constexpr auto SimdInitialized = QCpuFeatureType(1) << (sizeof(QCpuFeatureType) * 8 - 1);
-QBasicAtomicInteger<QCpuFeatureType> qt_cpu_features[1] = { 0 };
+Q_ATOMIC(QCpuFeatureType) QT_MANGLE_NAMESPACE(qt_cpu_features)[1] = { 0 };
 
 QT_FUNCTION_TARGET_BASELINE
-quint64 qDetectCpuFeatures()
+uint64_t QT_MANGLE_NAMESPACE(qDetectCpuFeatures)()
 {
     auto minFeatureTest = minFeature;
 #if defined(Q_OS_LINUX) && defined(Q_PROCESSOR_ARM_64)
@@ -595,7 +595,7 @@ quint64 qDetectCpuFeatures()
     // automatically by compilers, we can just add runtime check.
     minFeatureTest &= ~(CpuFeatureAES|CpuFeatureCRC32);
 #endif
-    quint64 f = detectProcessorFeatures();
+    QCpuFeatureType f = detectProcessorFeatures();
 
     // Intentionally NOT qgetenv (this code runs too early)
     if (char *disable = getenv("QT_NO_CPU_FEATURE"); disable && *disable) {
@@ -632,7 +632,8 @@ quint64 qDetectCpuFeatures()
     }
 
     assert((f & SimdInitialized) == 0);
-    qt_cpu_features[0].storeRelease(f | SimdInitialized);
+    f |= SimdInitialized;
+    std::atomic_store_explicit(QT_MANGLE_NAMESPACE(qt_cpu_features), f, std::memory_order_relaxed);
     return f;
 }
 
@@ -791,7 +792,7 @@ static bool checkRdrndWorks() noexcept { return false; }
 namespace {
 struct QSimdInitializer
 {
-    inline QSimdInitializer() { qDetectCpuFeatures(); }
+    inline QSimdInitializer() { QT_MANGLE_NAMESPACE(qDetectCpuFeatures)(); }
 };
 }
 

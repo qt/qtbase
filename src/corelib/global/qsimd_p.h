@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2018 Intel Corporation.
+** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -253,28 +253,6 @@ asm(
     defined(__FMA__) && defined(__LZCNT__) && defined(__RDRND__)
 #    define __haswell__       1
 #  endif
-
-QT_BEGIN_NAMESPACE
-static const quint64 qCompilerCpuFeatures = _compilerCpuFeatures;
-
-// This constant does not include all CPU features found in a Haswell, only
-// those that we'd have optimized code for.
-// Note: must use Q_CONSTEXPR here, as this file may be compiled in C mode.
-static const quint64 CpuFeatureArchHaswell    = 0
-        | CpuFeatureSSE2
-        | CpuFeatureSSE3
-        | CpuFeatureSSSE3
-        | CpuFeatureSSE4_1
-        | CpuFeatureSSE4_2
-        | CpuFeatureFMA
-        | CpuFeaturePOPCNT
-        | CpuFeatureAVX
-        | CpuFeatureF16C
-        | CpuFeatureAVX2
-        | CpuFeatureBMI
-        | CpuFeatureBMI2;
-QT_END_NAMESPACE
-
 #endif  /* Q_PROCESSOR_X86 */
 
 // NEON intrinsics
@@ -329,12 +307,6 @@ inline uint8_t vaddv_u8(uint8x8_t v8)
 #endif
 #endif
 
-
-#ifdef __cplusplus
-#include <qatomic.h>
-
-QT_BEGIN_NAMESPACE
-
 #ifndef Q_PROCESSOR_X86
 enum CPUFeatures {
 #if defined(Q_PROCESSOR_ARM)
@@ -368,35 +340,44 @@ static const quint64 qCompilerCpuFeatures = 0
         ;
 #endif
 
+#ifdef __cplusplus
+#  include <atomic>
+#  define Q_ATOMIC(T)   std::atomic<T>
+QT_BEGIN_NAMESPACE
+using std::atomic_load_explicit;
+static constexpr auto memory_order_relaxed = std::memory_order_relaxed;
+extern "C" {
+#else
+#  include <stdatomic.h>
+#  include <stdbool.h>
+#  define Q_ATOMIC(T)   _Atomic(T)
+#endif
+
 #ifdef Q_PROCESSOR_X86
-using QCpuFeatureType = quint64;
+typedef uint64_t QCpuFeatureType;
+static const QCpuFeatureType qCompilerCpuFeatures = _compilerCpuFeatures;
+static const QCpuFeatureType CpuFeatureArchHaswell = cpu_haswell;
 #else
-using QCpuFeatureType = unsigned;
+typedef unsigned QCpuFeatureType;
 #endif
-extern Q_CORE_EXPORT QBasicAtomicInteger<QCpuFeatureType> qt_cpu_features[1];
-Q_CORE_EXPORT quint64 qDetectCpuFeatures();
+extern Q_CORE_EXPORT Q_ATOMIC(QCpuFeatureType) QT_MANGLE_NAMESPACE(qt_cpu_features)[1];
+Q_CORE_EXPORT uint64_t QT_MANGLE_NAMESPACE(qDetectCpuFeatures)();
 
-#if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND) && !defined(QT_BOOTSTRAPPED)
-Q_CORE_EXPORT qsizetype qRandomCpu(void *, qsizetype) noexcept;
-#else
-static inline qsizetype qRandomCpu(void *, qsizetype) noexcept
+static inline uint64_t qCpuFeatures()
 {
-    return 0;
-}
-#endif
-
-static inline quint64 qCpuFeatures()
-{
-    quint64 features = qt_cpu_features[0].loadRelaxed();
-    if constexpr (!QT_SUPPORTS_INIT_PRIORITY) {
+    quint64 features = atomic_load_explicit(QT_MANGLE_NAMESPACE(qt_cpu_features), memory_order_relaxed);
+    if (!QT_SUPPORTS_INIT_PRIORITY) {
         if (Q_UNLIKELY(features == 0))
-            features = qDetectCpuFeatures();
+            features = QT_MANGLE_NAMESPACE(qDetectCpuFeatures)();
     }
     return features;
 }
 
 #define qCpuHasFeature(feature)     (((qCompilerCpuFeatures & CpuFeature ## feature) == CpuFeature ## feature) \
                                      || ((qCpuFeatures() & CpuFeature ## feature) == CpuFeature ## feature))
+
+#ifdef __cplusplus
+} // extern "C"
 
 #  if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND) && !defined(QT_BOOTSTRAPPED)
 Q_CORE_EXPORT qsizetype qRandomCpu(void *, qsizetype) noexcept;
