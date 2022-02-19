@@ -60,14 +60,6 @@
 #include <QtCore/private/qtcore-config_p.h>
 #endif
 
-#if defined(__cplusplus)
-#ifdef Q_CC_MINGW
-#  include <unistd.h> // Define _POSIX_THREAD_SAFE_FUNCTIONS to obtain localtime_r()
-#endif
-#include <time.h>
-
-QT_BEGIN_NAMESPACE
-
 #if defined(Q_CC_MSVC)
 #  define QT_SUPPORTS_INIT_PRIORITY     1
 // warning C4075: initializers put in unrecognized initialization area
@@ -86,6 +78,14 @@ QT_BEGIN_NAMESPACE
 #else
 #  define QT_SUPPORTS_INIT_PRIORITY     0
 #endif
+
+#if defined(__cplusplus)
+#ifdef Q_CC_MINGW
+#  include <unistd.h> // Define _POSIX_THREAD_SAFE_FUNCTIONS to obtain localtime_r()
+#endif
+#include <time.h>
+
+QT_BEGIN_NAMESPACE
 
 // These behave as if they consult the environment, so need to share its locking:
 Q_CORE_EXPORT void qTzSet();
