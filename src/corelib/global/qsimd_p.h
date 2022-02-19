@@ -398,14 +398,23 @@ static inline quint64 qCpuFeatures()
 #define qCpuHasFeature(feature)     (((qCompilerCpuFeatures & CpuFeature ## feature) == CpuFeature ## feature) \
                                      || ((qCpuFeatures() & CpuFeature ## feature) == CpuFeature ## feature))
 
-inline bool qHasHwrng()
+#  if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND) && !defined(QT_BOOTSTRAPPED)
+Q_CORE_EXPORT qsizetype qRandomCpu(void *, qsizetype) noexcept;
+
+static inline bool qHasHwrng()
 {
-#if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND)
     return qCpuHasFeature(RDRND);
-#else
-    return false;
-#endif
 }
+#  else
+static inline qsizetype qRandomCpu(void *, qsizetype) noexcept
+{
+    return 0;
+}
+static inline bool qHasHwrng()
+{
+    return false;
+}
+#  endif
 
 QT_END_NAMESPACE
 
