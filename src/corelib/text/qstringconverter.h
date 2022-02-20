@@ -47,6 +47,8 @@
 
 #include <optional>
 
+#include <cstring>
+
 QT_BEGIN_NAMESPACE
 
 // work around a compiler bug in GCC 7
@@ -76,7 +78,8 @@ public:
             : flags(other.flags),
               remainingChars(other.remainingChars),
               invalidChars(other.invalidChars),
-              d{other.d[0], other.d[1]},
+              state_data{other.state_data[0], other.state_data[1],
+                         other.state_data[2], other.state_data[3]},
               clearFn(other.clearFn)
         { other.clearFn = nullptr; }
         State &operator=(State &&other)
@@ -85,8 +88,7 @@ public:
             flags = other.flags;
             remainingChars = other.remainingChars;
             invalidChars = other.invalidChars;
-            d[0] = other.d[0];
-            d[1] = other.d[1];
+            std::memmove(state_data, other.state_data, sizeof state_data); // self-assignment-safe
             clearFn = other.clearFn;
             other.clearFn = nullptr;
             return *this;
