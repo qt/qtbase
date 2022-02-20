@@ -157,6 +157,11 @@ public:
     int handleTouch(int eventType, const EmscriptenTouchEvent *touchEvent);
     void resizeWindow(QWindow *window, QWasmCompositor::ResizeMode mode, QRect startRect, QPoint amount);
 
+    bool processMouseEnter(const EmscriptenMouseEvent *mouseEvent);
+    bool processMouseLeave();
+    void enterWindow(QWindow* window, const QPoint &localPoint, const QPoint &globalPoint);
+    void leaveWindow(QWindow* window);
+
 private slots:
     void frame();
 
@@ -217,6 +222,9 @@ private:
     static int touchCallback(int eventType, const EmscriptenTouchEvent *ev, void *userData);
 
     QWasmEventTranslator *eventTranslator;
+
+    bool mouseInCanvas;
+    QPointer<QWindow> windowUnderMouse;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWasmCompositor::SubControls)
 

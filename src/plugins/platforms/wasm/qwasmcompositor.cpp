@@ -95,6 +95,7 @@ QWasmCompositor::QWasmCompositor(QWasmScreen *screen)
     , pressedButtons(Qt::NoButton)
     , resizeMode(QWasmCompositor::ResizeNone)
     , eventTranslator(new QWasmEventTranslator())
+    , mouseInCanvas(false)
 {
     touchDevice = new QPointingDevice(
             "touchscreen", 1, QInputDevice::DeviceType::TouchScreen,
@@ -106,6 +107,8 @@ QWasmCompositor::QWasmCompositor(QWasmScreen *screen)
 
 QWasmCompositor::~QWasmCompositor()
 {
+    windowUnderMouse.clear();
+
     if (m_requestAnimationFrameId != -1)
         emscripten_cancel_animation_frame(m_requestAnimationFrameId);
 
@@ -122,6 +125,8 @@ void QWasmCompositor::deregisterEventHandlers()
     emscripten_set_mousedown_callback(canvasSelector.constData(), 0, 0, NULL);
     emscripten_set_mouseup_callback(canvasSelector.constData(),  0, 0, NULL);
     emscripten_set_mousemove_callback(canvasSelector.constData(),  0, 0, NULL);
+    emscripten_set_mouseenter_callback(canvasSelector.constData(),  0, 0, NULL);
+    emscripten_set_mouseleave_callback(canvasSelector.constData(),  0, 0, NULL);
 
     emscripten_set_focus_callback(canvasSelector.constData(),  0, 0, NULL);
 
@@ -177,6 +182,8 @@ void QWasmCompositor::initEventHandlers()
     emscripten_set_mousedown_callback(canvasSelector.constData(), (void *)this, 1, &mouse_cb);
     emscripten_set_mouseup_callback(canvasSelector.constData(), (void *)this, 1, &mouse_cb);
     emscripten_set_mousemove_callback(canvasSelector.constData(), (void *)this, 1, &mouse_cb);
+    emscripten_set_mouseenter_callback(canvasSelector.constData(), (void *)this, 1, &mouse_cb);
+    emscripten_set_mouseleave_callback(canvasSelector.constData(), (void *)this, 1, &mouse_cb);
 
     emscripten_set_focus_callback(canvasSelector.constData(), (void *)this, 1, &focus_cb);
 
@@ -965,8 +972,12 @@ int QWasmCompositor::mouse_cb(int eventType, const EmscriptenMouseEvent *mouseEv
     return static_cast<int>(compositor->processMouse(eventType, mouseEvent));
 }
 
-int QWasmCompositor::focus_cb(int /*eventType*/, const EmscriptenFocusEvent */*focusEvent*/, void */*userData*/)
+int QWasmCompositor::focus_cb(int eventType, const EmscriptenFocusEvent *focusEvent, void *userData)
 {
+    Q_UNUSED(eventType)
+    Q_UNUSED(focusEvent)
+    Q_UNUSED(userData)
+
     return 0;
 }
 
@@ -1003,6 +1014,14 @@ bool QWasmCompositor::processMouse(int eventType, const EmscriptenMouseEvent *mo
 
     QPoint localPoint = window2->mapFromGlobal(globalPoint);
     bool interior = window2->geometry().contains(globalPoint);
+
+    if (mouseInCanvas) {
+        if (windowUnderMouse != window2 && interior) {
+        // delayed mouse enter
+            enterWindow(window2, localPoint, globalPoint);
+            windowUnderMouse = window2;
+        }
+    }
 
     QWasmWindow *htmlWindow = static_cast<QWasmWindow*>(window2->handle());
     switch (eventType) {
@@ -1100,9 +1119,19 @@ bool QWasmCompositor::processMouse(int eventType, const EmscriptenMouseEvent *mo
         }
         break;
     }
-    default: // MOUSELEAVE MOUSEENTER
+        case EMSCRIPTEN_EVENT_MOUSEENTER:
+            processMouseEnter(mouseEvent);
         break;
+        case EMSCRIPTEN_EVENT_MOUSELEAVE:
+            processMouseLeave();
+        break;
+    default:        break;
     };
+
+    if (!interior && pressedButtons.testFlag(Qt::NoButton)) {
+        leaveWindow(lastWindow);
+    }
+
     if (!window2 && buttonEventType == QEvent::MouseButtonRelease) {
         window2 = lastWindow;
         lastWindow = nullptr;
@@ -1299,4 +1328,25 @@ int QWasmCompositor::handleTouch(int eventType, const EmscriptenTouchEvent *touc
                 window2, QWasmIntegration::getTimestamp(), touchDevice, touchPointList, keyModifier);
 
     return static_cast<int>(accepted);
+}
+
+void QWasmCompositor::leaveWindow(QWindow *window)
+{
+    windowUnderMouse = nullptr;
+    QWindowSystemInterface::handleLeaveEvent<QWindowSystemInterface::SynchronousDelivery>(window);
+}
+void QWasmCompositor::enterWindow(QWindow *window, const QPoint &localPoint, const QPoint &globalPoint)
+{
+    QWindowSystemInterface::handleEnterEvent<QWindowSystemInterface::SynchronousDelivery>(window, localPoint, globalPoint);
+}
+bool QWasmCompositor::processMouseEnter(const EmscriptenMouseEvent *mouseEvent)
+{
+    // mouse has entered the canvas area
+    mouseInCanvas = true;
+    return true;
+}
+bool QWasmCompositor::processMouseLeave()
+{
+    mouseInCanvas = false;
+    return true;
 }
