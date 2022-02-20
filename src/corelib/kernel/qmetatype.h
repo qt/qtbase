@@ -2187,7 +2187,9 @@ constexpr auto typenameHelper()
 #ifdef QT_NAMESPACE
             QT_STRINGIFY(QT_NAMESPACE) "::"
 #endif
-#ifdef Q_CC_MSVC
+#if defined(Q_CC_MSVC) && defined(Q_CC_CLANG)
+            "auto __cdecl QtPrivate::typenameHelper(void) [T = "
+#elif defined(Q_CC_MSVC)
             "auto __cdecl QtPrivate::typenameHelper<"
 #elif defined(Q_CC_CLANG)
             "auto QtPrivate::typenameHelper() [T = "
@@ -2197,7 +2199,7 @@ constexpr auto typenameHelper()
             "constexpr auto QtPrivate::typenameHelper() [with T = "
 #endif
             ) - 1;
-#ifdef Q_CC_MSVC
+#if defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
         constexpr int suffix = sizeof(">(void)");
 #else
         constexpr int suffix = sizeof("]");
