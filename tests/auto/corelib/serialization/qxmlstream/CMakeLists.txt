@@ -5,8 +5,9 @@
 #####################################################################
 
 # Collect test data
-list(APPEND test_data "data")
-list(APPEND test_data "XML-Test-Suite")
+file(GLOB_RECURSE test_data
+        RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+        data/* XML-Test-Suite/*)
 
 qt_internal_add_test(tst_qxmlstream
     SOURCES
