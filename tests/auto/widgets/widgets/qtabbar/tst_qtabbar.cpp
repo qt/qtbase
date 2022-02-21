@@ -36,6 +36,8 @@
 #include <QStyleOptionTab>
 #include <QProxyStyle>
 #include <QTimer>
+#include <QScreen>
+#include <QWindow>
 
 class TabBar;
 
@@ -1246,9 +1248,10 @@ void tst_QTabBar::currentTabLargeFont()
 
 void tst_QTabBar::hoverTab_data()
 {
-    // Since we still rely on moving the mouse via QCursor::setPos in QTest::mouseMove,
+    // Move the cursor away from the widget as not to interfere.
     // skip this test if we can't
-    const QPoint cursorPos = QCursor::pos() + QPoint(10, 10);
+    const QPoint topLeft = QGuiApplication::primaryScreen()->availableGeometry().topLeft();
+    const QPoint cursorPos = topLeft + QPoint(10, 10);
     QCursor::setPos(cursorPos);
     if (!QTest::qWaitFor([cursorPos]{ return QCursor::pos() == cursorPos; }, 500))
         QSKIP("Can't move mouse");
@@ -1261,7 +1264,7 @@ void tst_QTabBar::hoverTab_data()
 void tst_QTabBar::hoverTab()
 {
     QFETCH(bool, documentMode);
-    QWidget window;
+    QWidget topLevel;
     class TabBar : public QTabBar
     {
     public:
@@ -1272,7 +1275,7 @@ void tst_QTabBar::hoverTab()
             styleOptions[tabIndex] = *option;
         }
         mutable QHash<int, QStyleOptionTab> styleOptions;
-    } tabbar(&window);
+    } tabbar(&topLevel);
 
     tabbar.setDocumentMode(documentMode);
     tabbar.addTab("A");
@@ -1281,7 +1284,10 @@ void tst_QTabBar::hoverTab()
     tabbar.addTab("D");
 
     tabbar.move(0,0);
-    window.setMinimumSize(tabbar.sizeHint());
+    const QSize size = tabbar.sizeHint();
+    const auto center = topLevel.screen()->availableGeometry().center();
+    topLevel.move(center - QPoint{size.width(), size.height()} / 2);
+    topLevel.setMinimumSize(size);
     tabbar.ensurePolished();
 
     // some styles set those flags, some don't. If not, use a style sheet
@@ -1293,21 +1299,25 @@ void tst_QTabBar::hoverTab()
         )");
     }
 
-    window.show();
-    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    auto *window = topLevel.windowHandle();
 
-    QTest::mouseMove(&tabbar, tabbar.tabRect(0).center());
+    auto pos = tabbar.mapToParent(tabbar.tabRect(0).center());
+    QTest::mouseMove(window, pos);
     QTRY_VERIFY(tabbar.styleOptions[0].state & QStyle::State_Selected);
     QTRY_COMPARE(tabbar.styleOptions[1].state & QStyle::State_MouseOver, QStyle::State_None);
     QTRY_COMPARE(tabbar.styleOptions[2].state & QStyle::State_MouseOver, QStyle::State_None);
     QTRY_COMPARE(tabbar.styleOptions[3].state & QStyle::State_MouseOver, QStyle::State_None);
 
-    QTest::mouseMove(&tabbar, tabbar.tabRect(1).center());
+    pos = tabbar.mapToParent(tabbar.tabRect(1).center());
+    QTest::mouseMove(window, pos);
     QTRY_COMPARE(tabbar.styleOptions[1].state & QStyle::State_MouseOver, QStyle::State_MouseOver);
     QCOMPARE(tabbar.styleOptions[2].state & QStyle::State_MouseOver, QStyle::State_None);
     QCOMPARE(tabbar.styleOptions[3].state & QStyle::State_MouseOver, QStyle::State_None);
 
-    QTest::mouseMove(&tabbar, tabbar.tabRect(2).center());
+    pos = tabbar.mapToParent(tabbar.tabRect(2).center());
+    QTest::mouseMove(window, pos);
     QTRY_COMPARE(tabbar.styleOptions[2].state & QStyle::State_MouseOver, QStyle::State_MouseOver);
     QCOMPARE(tabbar.styleOptions[1].state & QStyle::State_MouseOver, QStyle::State_None);
     QCOMPARE(tabbar.styleOptions[3].state & QStyle::State_MouseOver, QStyle::State_None);
