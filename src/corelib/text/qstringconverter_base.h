@@ -72,7 +72,7 @@ public:
     Q_DECLARE_FLAGS(Flags, Flag)
 
     struct State {
-        constexpr State(Flags f = Flag::Default)
+        constexpr State(Flags f = Flag::Default) noexcept
             : flags(f), state_data{0, 0, 0, 0} {}
         ~State() { clear(); }
         State(State &&other) noexcept
@@ -155,33 +155,35 @@ protected:
         LengthFn fromUtf16Len = nullptr;
     };
 
-    constexpr QStringConverter()
+    constexpr QStringConverter() noexcept
         : iface(nullptr)
     {}
     constexpr explicit QStringConverter(Encoding encoding, Flags f)
         : iface(&encodingInterfaces[int(encoding)]), state(f)
     {}
-    constexpr explicit QStringConverter(const Interface *i)
+    constexpr explicit QStringConverter(const Interface *i) noexcept
         : iface(i)
     {}
-    Q_CORE_EXPORT explicit QStringConverter(const char *name, Flags f);
+    Q_CORE_EXPORT explicit QStringConverter(const char *name, Flags f) noexcept;
 
 
 public:
-    bool isValid() const { return iface != nullptr; }
 
-    void resetState()
+    bool isValid() const noexcept { return iface != nullptr; }
+
+    void resetState() noexcept
     {
         state.clear();
     }
-    bool hasError() const { return state.invalidChars != 0; }
+    bool hasError() const noexcept { return state.invalidChars != 0; }
 
-    const char *name() const
+    const char *name() const noexcept
     { return isValid() ? iface->name : nullptr; }
 
-    Q_CORE_EXPORT static std::optional<Encoding> encodingForName(const char *name);
+    Q_CORE_EXPORT static std::optional<Encoding> encodingForName(const char *name) noexcept;
     Q_CORE_EXPORT static const char *nameForEncoding(Encoding e);
-    Q_CORE_EXPORT static std::optional<Encoding> encodingForData(QByteArrayView data, char16_t expectedFirstCharacter = 0);
+    Q_CORE_EXPORT static std::optional<Encoding>
+    encodingForData(QByteArrayView data, char16_t expectedFirstCharacter = 0) noexcept;
     Q_CORE_EXPORT static std::optional<Encoding> encodingForHtml(QByteArrayView data);
 
 protected:

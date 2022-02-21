@@ -1699,7 +1699,7 @@ static bool nameMatch(const char *a, const char *b)
 /*!
     \internal
 */
-QStringConverter::QStringConverter(const char *name, Flags f)
+QStringConverter::QStringConverter(const char *name, Flags f) noexcept
     : iface(nullptr), state(f)
 {
     auto e = encodingForName(name);
@@ -1745,7 +1745,7 @@ QStringConverter::QStringConverter(const char *name, Flags f)
     Returns an optional encoding for \a name. The optional is empty if the name could
     not get converted to a valid encoding.
 */
-std::optional<QStringConverter::Encoding> QStringConverter::encodingForName(const char *name)
+std::optional<QStringConverter::Encoding> QStringConverter::encodingForName(const char *name) noexcept
 {
     for (int i = 0; i < LastEncoding + 1; ++i) {
         if (nameMatch(encodingInterfaces[i].name, name))
@@ -1763,7 +1763,8 @@ std::optional<QStringConverter::Encoding> QStringConverter::encodingForName(cons
 
    The returned optional is empty, if the encoding is unclear.
  */
-std::optional<QStringConverter::Encoding> QStringConverter::encodingForData(QByteArrayView data, char16_t expectedFirstCharacter)
+std::optional<QStringConverter::Encoding>
+QStringConverter::encodingForData(QByteArrayView data, char16_t expectedFirstCharacter) noexcept
 {
     // someone set us up the BOM?
     qsizetype arraySize = data.size();

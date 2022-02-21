@@ -58,17 +58,17 @@ QT_BEGIN_NAMESPACE
 class QStringEncoder : public QStringConverter
 {
 protected:
-    constexpr explicit QStringEncoder(const Interface *i)
+    constexpr explicit QStringEncoder(const Interface *i) noexcept
         : QStringConverter(i)
     {}
 public:
-    constexpr QStringEncoder()
+    constexpr QStringEncoder() noexcept
         : QStringConverter()
     {}
     constexpr explicit QStringEncoder(Encoding encoding, Flags flags = Flag::Default)
         : QStringConverter(encoding, flags)
     {}
-    explicit QStringEncoder(const char *name, Flags flags = Flag::Default)
+    explicit QStringEncoder(const char *name, Flags flags = Flag::Default) noexcept
         : QStringConverter(name, flags)
     {}
 
@@ -116,17 +116,17 @@ private:
 class QStringDecoder : public QStringConverter
 {
 protected:
-    constexpr explicit QStringDecoder(const Interface *i)
+    constexpr explicit QStringDecoder(const Interface *i) noexcept
         : QStringConverter(i)
     {}
 public:
     constexpr explicit QStringDecoder(Encoding encoding, Flags flags = Flag::Default)
         : QStringConverter(encoding, flags)
     {}
-    constexpr QStringDecoder()
+    constexpr QStringDecoder() noexcept
         : QStringConverter()
     {}
-    explicit QStringDecoder(const char *name, Flags f = Flag::Default)
+    explicit QStringDecoder(const char *name, Flags f = Flag::Default) noexcept
         : QStringConverter(name, f)
     {}
 
