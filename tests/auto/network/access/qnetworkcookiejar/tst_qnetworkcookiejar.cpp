@@ -44,6 +44,8 @@ class tst_QNetworkCookieJar: public QObject
     Q_OBJECT
 
 private slots:
+    void initTestCase();
+
     void getterSetter();
     void setCookiesFromUrl_data();
     void setCookiesFromUrl();
@@ -55,6 +57,8 @@ private slots:
 #endif
     void rfc6265_data();
     void rfc6265();
+private:
+    QSharedPointer<QTemporaryDir> m_dataDir;
 };
 
 class MyCookieJar: public QNetworkCookieJar
@@ -80,6 +84,22 @@ void tst_QNetworkCookieJar::getterSetter()
 
     jar.setAllCookies(list);
     QCOMPARE(jar.allCookies(), list);
+}
+
+void tst_QNetworkCookieJar::initTestCase()
+{
+#if QT_CONFIG(topleveldomain) && QT_CONFIG(publicsuffix_system)
+    QString testDataDir;
+#ifdef BUILTIN_TESTDATA
+    m_dataDir = QEXTRACTTESTDATA("/testdata");
+    QVERIFY(m_dataDir);
+    testDataDir = m_dataDir->path() + "/testdata";
+#else
+    testDataDir = QFINDTESTDATA("testdata");
+#endif
+    qDebug() << "Test data dir:" << testDataDir;
+    qputenv("XDG_DATA_DIRS", QFile::encodeName(testDataDir));
+#endif
 }
 
 void tst_QNetworkCookieJar::setCookiesFromUrl_data()

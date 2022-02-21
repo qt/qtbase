@@ -5,7 +5,7 @@
 #####################################################################
 
 # Collect test data
-list(APPEND test_data "parser.json")
+list(APPEND test_data "parser.json" "testdata/publicsuffix/public_suffix_list.dafsa")
 
 qt_internal_add_test(tst_qnetworkcookiejar
     SOURCES
