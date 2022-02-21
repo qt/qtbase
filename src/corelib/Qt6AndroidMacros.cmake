@@ -179,11 +179,11 @@ function(qt6_android_generate_deployment_settings target)
 
     # Extra plugins
     _qt_internal_add_android_deployment_multi_value_property(file_contents "android-extra-plugins"
-        ${target} "QT_ANDROID_EXTRA_PLUGINS" )
+        ${target} "_qt_android_native_extra_plugins" )
 
     # Extra libs
     _qt_internal_add_android_deployment_multi_value_property(file_contents "android-extra-libs"
-        ${target} "QT_ANDROID_EXTRA_LIBS" )
+        ${target} "_qt_android_native_extra_libs" )
 
     # package source dir
     _qt_internal_add_android_deployment_property(file_contents "android-package-source-directory"
@@ -737,11 +737,11 @@ endfunction()
 #    "android-extra-plugins": "plugin1,plugin2",
 function(_qt_internal_add_android_deployment_multi_value_property out_var json_key target property)
     set(property_genex
-        "$<TARGET_PROPERTY:${target},${property}>"
+        "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},${property}>>"
     )
     string(JOIN "" list_join_genex
         "$<JOIN:"
-            "$<GENEX_EVAL:${property_genex}>,"
+            "${property_genex},"
             ","
         ">"
     )
@@ -767,6 +767,8 @@ function(_qt_internal_android_format_deployment_paths target)
             _qt_android_native_qml_root_paths "$<TARGET_PROPERTY:${target},QT_QML_ROOT_PATH>"
             _qt_android_native_package_source_dir
                 "$<TARGET_PROPERTY:${target},QT_ANDROID_PACKAGE_SOURCE_DIR>"
+            _qt_android_native_extra_plugins "$<TARGET_PROPERTY:${target},QT_ANDROID_EXTRA_PLUGINS>"
+            _qt_android_native_extra_libs "$<TARGET_PROPERTY:${target},QT_ANDROID_EXTRA_LIBS>"
         )
     else()
         # User projects still may use windows paths inside the QT_* properties below, with
@@ -779,6 +781,12 @@ function(_qt_internal_android_format_deployment_paths target)
 
         _qt_internal_android_format_deployment_path_property(${target}
             QT_ANDROID_PACKAGE_SOURCE_DIR _qt_android_native_package_source_dir)
+
+        _qt_internal_android_format_deployment_path_property(${target}
+            QT_ANDROID_EXTRA_PLUGINS _qt_android_native_extra_plugins)
+
+        _qt_internal_android_format_deployment_path_property(${target}
+            QT_ANDROID_EXTRA_LIBS _qt_android_native_extra_libs)
     endif()
 endfunction()
 
