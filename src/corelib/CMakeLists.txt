@@ -1329,6 +1329,7 @@ qt_internal_add_docs(Core
 qt_internal_add_3rdparty_header_module(ZlibPrivate
     EXTERNAL_HEADERS
         ../3rdparty/zlib/src/zlib.h
+        ../3rdparty/zlib/src/zconf.h
 )
 
 qt_internal_add_optimize_full_flags()
