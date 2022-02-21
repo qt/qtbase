@@ -12,7 +12,6 @@ endif()
 if(TARGET Qt::Network)
     add_subdirectory(qtextstream)
 endif()
-# QTBUG-87671 # special case
-if(TARGET Qt::Network AND TARGET Qt::Xml AND NOT ANDROID AND NOT INTEGRITY)
+if(TARGET Qt::Network AND TARGET Qt::Xml AND NOT INTEGRITY)
     add_subdirectory(qxmlstream)
 endif()
