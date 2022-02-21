@@ -76,6 +76,32 @@ qsizetype count(QByteArrayView haystack, QByteArrayView needle) noexcept;
 
 [[nodiscard]] Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool isValidUtf8(QByteArrayView s) noexcept;
 
+[[nodiscard]] Q_CORE_EXPORT double toDouble(QByteArrayView a, bool *ok);
+[[nodiscard]] Q_CORE_EXPORT float toFloat(QByteArrayView a, bool *ok);
+[[nodiscard]] Q_CORE_EXPORT qlonglong toSignedInteger(QByteArrayView data, bool *ok, int base);
+[[nodiscard]] Q_CORE_EXPORT qulonglong toUnsignedInteger(QByteArrayView data, bool *ok, int base);
+
+// QByteArrayView has incomplete type here, and we can't include qbytearrayview.h,
+// since it includes qbytearrayalgorithms.h. Use the ByteArrayView template type as
+// a workaround.
+template <typename T, typename ByteArrayView,
+          typename = std::enable_if_t<std::is_same_v<ByteArrayView, QByteArrayView>>> static inline
+T toIntegral(ByteArrayView data, bool *ok, int base)
+{
+    auto val = [&] {
+        if constexpr (std::is_unsigned_v<T>)
+            return toUnsignedInteger(data, ok, base);
+        else
+            return toSignedInteger(data, ok, base);
+    }();
+    if (T(val) != val) {
+        if (ok)
+            *ok = false;
+        val = 0;
+    }
+    return T(val);
+}
+
 } // namespace QtPrivate
 
 /*****************************************************************************

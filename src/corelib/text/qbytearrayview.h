@@ -243,16 +243,26 @@ public:
     // Defined in qbytearray.cpp:
     [[nodiscard]] QByteArrayView trimmed() const noexcept
     { return QtPrivate::trimmed(*this); }
-    [[nodiscard]] short toShort(bool *ok = nullptr, int base = 10) const;
-    [[nodiscard]] ushort toUShort(bool *ok = nullptr, int base = 10) const;
-    [[nodiscard]] int toInt(bool *ok = nullptr, int base = 10) const;
-    [[nodiscard]] uint toUInt(bool *ok = nullptr, int base = 10) const;
-    [[nodiscard]] long toLong(bool *ok = nullptr, int base = 10) const;
-    [[nodiscard]] ulong toULong(bool *ok = nullptr, int base = 10) const;
-    [[nodiscard]] qlonglong toLongLong(bool *ok = nullptr, int base = 10) const;
-    [[nodiscard]] qulonglong toULongLong(bool *ok = nullptr, int base = 10) const;
-    [[nodiscard]] float toFloat(bool *ok = nullptr) const;
-    [[nodiscard]] double toDouble(bool *ok = nullptr) const;
+    [[nodiscard]] short toShort(bool *ok = nullptr, int base = 10) const
+    { return QtPrivate::toIntegral<short>(*this, ok, base); }
+    [[nodiscard]] ushort toUShort(bool *ok = nullptr, int base = 10) const
+    { return QtPrivate::toIntegral<ushort>(*this, ok, base); }
+    [[nodiscard]] int toInt(bool *ok = nullptr, int base = 10) const
+    { return QtPrivate::toIntegral<int>(*this, ok, base); }
+    [[nodiscard]] uint toUInt(bool *ok = nullptr, int base = 10) const
+    { return QtPrivate::toIntegral<uint>(*this, ok, base); }
+    [[nodiscard]] long toLong(bool *ok = nullptr, int base = 10) const
+    { return QtPrivate::toIntegral<long>(*this, ok, base); }
+    [[nodiscard]] ulong toULong(bool *ok = nullptr, int base = 10) const
+    { return QtPrivate::toIntegral<ulong>(*this, ok, base); }
+    [[nodiscard]] qlonglong toLongLong(bool *ok = nullptr, int base = 10) const
+    { return QtPrivate::toIntegral<qlonglong>(*this, ok, base); }
+    [[nodiscard]] qulonglong toULongLong(bool *ok = nullptr, int base = 10) const
+    { return QtPrivate::toIntegral<qulonglong>(*this, ok, base); }
+    [[nodiscard]] float toFloat(bool *ok = nullptr) const
+    { return QtPrivate::toFloat(*this, ok); }
+    [[nodiscard]] double toDouble(bool *ok = nullptr) const
+    { return QtPrivate::toDouble(*this, ok); }
 
     [[nodiscard]] bool startsWith(QByteArrayView other) const noexcept
     { return QtPrivate::startsWith(*this, other); }

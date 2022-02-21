@@ -3514,21 +3514,8 @@ bool QByteArray::isNull() const noexcept
     return d->isNull();
 }
 
-static qlonglong toIntegral_helper(QByteArrayView data, bool *ok, int base, qlonglong)
+qlonglong QtPrivate::toSignedInteger(QByteArrayView data, bool *ok, int base)
 {
-    return QLocaleData::bytearrayToLongLong(data, base, ok);
-}
-
-static qulonglong toIntegral_helper(QByteArrayView data, bool *ok, int base, qulonglong)
-{
-    return QLocaleData::bytearrayToUnsLongLong(data, base, ok);
-}
-
-template <typename T> static inline
-T toIntegral_helper(QByteArrayView data, bool *ok, int base)
-{
-    using Int64 = typename std::conditional<std::is_unsigned<T>::value, qulonglong, qlonglong>::type;
-
 #if defined(QT_CHECK_RANGE)
     if (base != 0 && (base < 2 || base > 36)) {
         qWarning("QByteArray::toIntegral: Invalid base %d", base);
@@ -3541,14 +3528,24 @@ T toIntegral_helper(QByteArrayView data, bool *ok, int base)
         return 0;
     }
 
-    // we select the right overload by the last, unused parameter
-    Int64 val = toIntegral_helper(data, ok, base, Int64());
-    if (T(val) != val) {
+    return QLocaleData::bytearrayToLongLong(data, base, ok);
+}
+
+qulonglong QtPrivate::toUnsignedInteger(QByteArrayView data, bool *ok, int base)
+{
+#if defined(QT_CHECK_RANGE)
+    if (base != 0 && (base < 2 || base > 36)) {
+        qWarning("QByteArray::toIntegral: Invalid base %d", base);
+        base = 10;
+    }
+#endif
+    if (data.isEmpty()) {
         if (ok)
             *ok = false;
-        val = 0;
+        return 0;
     }
-    return T(val);
+
+    return QLocaleData::bytearrayToUnsLongLong(data, base, ok);
 }
 
 /*!
@@ -3575,12 +3572,7 @@ T toIntegral_helper(QByteArrayView data, bool *ok, int base)
 
 qlonglong QByteArray::toLongLong(bool *ok, int base) const
 {
-    return toIntegral_helper<qlonglong>(*this, ok, base);
-}
-
-qlonglong QByteArrayView::toLongLong(bool *ok, int base) const
-{
-    return toIntegral_helper<qlonglong>(*this, ok, base);
+    return QtPrivate::toIntegral<qlonglong>(qToByteArrayViewIgnoringNull(*this), ok, base);
 }
 
 /*!
@@ -3607,12 +3599,7 @@ qlonglong QByteArrayView::toLongLong(bool *ok, int base) const
 
 qulonglong QByteArray::toULongLong(bool *ok, int base) const
 {
-    return toIntegral_helper<qulonglong>(*this, ok, base);
-}
-
-qulonglong QByteArrayView::toULongLong(bool *ok, int base) const
-{
-    return toIntegral_helper<qulonglong>(*this, ok, base);
+    return QtPrivate::toIntegral<qulonglong>(qToByteArrayViewIgnoringNull(*this), ok, base);
 }
 
 /*!
@@ -3641,12 +3628,7 @@ qulonglong QByteArrayView::toULongLong(bool *ok, int base) const
 
 int QByteArray::toInt(bool *ok, int base) const
 {
-    return toIntegral_helper<int>(*this, ok, base);
-}
-
-int QByteArrayView::toInt(bool *ok, int base) const
-{
-    return toIntegral_helper<int>(*this, ok, base);
+    return QtPrivate::toIntegral<int>(qToByteArrayViewIgnoringNull(*this), ok, base);
 }
 
 /*!
@@ -3673,12 +3655,7 @@ int QByteArrayView::toInt(bool *ok, int base) const
 
 uint QByteArray::toUInt(bool *ok, int base) const
 {
-    return toIntegral_helper<uint>(*this, ok, base);
-}
-
-uint QByteArrayView::toUInt(bool *ok, int base) const
-{
-    return toIntegral_helper<uint>(*this, ok, base);
+    return QtPrivate::toIntegral<uint>(qToByteArrayViewIgnoringNull(*this), ok, base);
 }
 
 /*!
@@ -3708,12 +3685,7 @@ uint QByteArrayView::toUInt(bool *ok, int base) const
 */
 long QByteArray::toLong(bool *ok, int base) const
 {
-    return toIntegral_helper<long>(*this, ok, base);
-}
-
-long QByteArrayView::toLong(bool *ok, int base) const
-{
-    return toIntegral_helper<long>(*this, ok, base);
+    return QtPrivate::toIntegral<long>(qToByteArrayViewIgnoringNull(*this), ok, base);
 }
 
 /*!
@@ -3741,12 +3713,7 @@ long QByteArrayView::toLong(bool *ok, int base) const
 */
 ulong QByteArray::toULong(bool *ok, int base) const
 {
-    return toIntegral_helper<ulong>(*this, ok, base);
-}
-
-ulong QByteArrayView::toULong(bool *ok, int base) const
-{
-    return toIntegral_helper<ulong>(*this, ok, base);
+    return QtPrivate::toIntegral<ulong>(qToByteArrayViewIgnoringNull(*this), ok, base);
 }
 
 /*!
@@ -3773,12 +3740,7 @@ ulong QByteArrayView::toULong(bool *ok, int base) const
 
 short QByteArray::toShort(bool *ok, int base) const
 {
-    return toIntegral_helper<short>(*this, ok, base);
-}
-
-short QByteArrayView::toShort(bool *ok, int base) const
-{
-    return toIntegral_helper<short>(*this, ok, base);
+    return QtPrivate::toIntegral<short>(qToByteArrayViewIgnoringNull(*this), ok, base);
 }
 
 /*!
@@ -3805,12 +3767,7 @@ short QByteArrayView::toShort(bool *ok, int base) const
 
 ushort QByteArray::toUShort(bool *ok, int base) const
 {
-    return toIntegral_helper<ushort>(*this, ok, base);
-}
-
-ushort QByteArrayView::toUShort(bool *ok, int base) const
-{
-    return toIntegral_helper<ushort>(*this, ok, base);
+    return QtPrivate::toIntegral<ushort>(qToByteArrayViewIgnoringNull(*this), ok, base);
 }
 
 /*!
@@ -3843,11 +3800,11 @@ double QByteArray::toDouble(bool *ok) const
     return QByteArrayView(*this).toDouble(ok);
 }
 
-double QByteArrayView::toDouble(bool *ok) const
+double QtPrivate::toDouble(QByteArrayView a, bool *ok)
 {
     bool nonNullOk = false;
     int processed = 0;
-    double d = qt_asciiToDouble(data(), size(), nonNullOk, processed, WhitespacesAllowed);
+    double d = qt_asciiToDouble(a.data(), a.size(), nonNullOk, processed, WhitespacesAllowed);
     if (ok)
         *ok = nonNullOk;
     return d;
@@ -3883,9 +3840,9 @@ float QByteArray::toFloat(bool *ok) const
     return QLocaleData::convertDoubleToFloat(toDouble(ok), ok);
 }
 
-float QByteArrayView::toFloat(bool *ok) const
+float QtPrivate::toFloat(QByteArrayView a, bool *ok)
 {
-    return QLocaleData::convertDoubleToFloat(toDouble(ok), ok);
+    return QLocaleData::convertDoubleToFloat(a.toDouble(ok), ok);
 }
 
 /*!
