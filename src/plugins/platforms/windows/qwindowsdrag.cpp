@@ -37,6 +37,7 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qt_windows.h>
 #include "qwindowsdrag.h"
 #include "qwindowscontext.h"
 #include "qwindowsscreen.h"
@@ -45,7 +46,6 @@
 #endif
 #include "qwindowsintegration.h"
 #include "qwindowsdropdataobject.h"
-#include <QtCore/qt_windows.h>
 #include "qwindowswindow.h"
 #include "qwindowsmousehandler.h"
 #include "qwindowscursor.h"

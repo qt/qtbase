@@ -43,6 +43,7 @@
 #define _WIN32_WINNT 0x0A00
 #endif
 
+#include <QtCore/qt_windows.h>
 #include "qwindowscombase.h"
 #include "qwindowsdialoghelpers.h"
 
@@ -73,8 +74,6 @@
 
 #include <algorithm>
 #include <vector>
-
-#include <QtCore/qt_windows.h>
 
 // #define USE_NATIVE_COLOR_DIALOG /* Testing purposes only */
 
