@@ -96,7 +96,6 @@ struct BMP_BITMAPV5HEADER {
     DWORD  bV5ProfileSize;
     DWORD  bV5Reserved;
 };
-static const int BMP_BITFIELDS = 3;
 
 static const char dibFormatC[] = "dib";
 
