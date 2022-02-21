@@ -1,14 +1,15 @@
 The file qurltlds_p.h is generated from the Public Suffix
 List (see [1] and [2]), by the program residing at
-qtbase/util/publicSuffix/ in the Qt source tree.
+qtbase/src/3rdparty/libpsl/src/psl-make-dafsa in the Qt source tree.
 
-That program generates a character array and an index array from the
-list to provide fast lookups of elements within C++.
+To regenerate the file, run the following command from qtbase tree:
+
+    src/3rdparty/libpsl/src/psl-make-dafsa public_suffix_list.dat src/network/kernel/qurltlds_p.h
 
 Those arrays in qurltlds_p.h are derived from the Public
 Suffix List ([2]), which was originally provided by
 Jo Hermans <jo.hermans@gmail.com>.
 
 ----
-[1] list: http://mxr.mozilla.org/mozilla-central/source/netwerk/dns/effective_tld_names.dat?raw=1
-[2] homepage: http://publicsuffix.org/
+[1] list: https://publicsuffix.org/list/public_suffix_list.dat
+[2] homepage: https://publicsuffix.org/

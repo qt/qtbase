@@ -43,68 +43,25 @@
 
 #if QT_CONFIG(topleveldomain)
 
-#include "qplatformdefs.h"
 #include "qurl.h"
-#include "private/qurltlds_p.h"
 #include "private/qtldurl_p.h"
-#include "QtCore/qlist.h"
 #include "QtCore/qstring.h"
+
+#include "qurltlds_p.h"
+
+// Defined in src/3rdparty/libpsl/src/lookup_string_in_fixed_set.c
+extern "C" int LookupStringInFixedSet(const unsigned char *graph, std::size_t length,
+                                      const char *key, std::size_t key_length);
 
 QT_BEGIN_NAMESPACE
 
-enum TLDMatchType {
-    ExactMatch,
-    SuffixMatch,
-    ExceptionMatch,
-};
+static constexpr int PSL_NOT_FOUND = -1;
+static constexpr int PSL_FLAG_EXCEPTION = 1 << 0;
+static constexpr int PSL_FLAG_WILDCARD = 1 << 1;
 
-// Scan the auto-generated table of TLDs for an entry. For more details
-// see comments in file: util/publicSuffix/main.cpp
-static bool containsTLDEntry(QStringView entry, TLDMatchType match)
+static int lookupDomain(QByteArrayView domain)
 {
-    const QStringView matchSymbols[] = {
-        u"",
-        u"*",
-        u"!",
-    };
-    const auto symbol = matchSymbols[match];
-    const int index = qt_hash(entry, qt_hash(symbol)) % tldCount;
-
-    // select the right chunk from the big table
-    short chunk = 0;
-    uint chunkIndex = tldIndices[index], offset = 0;
-
-    // The offset in the big string, of the group that our entry hashes into.
-    const auto tldGroupOffset = tldIndices[index];
-
-    // It should always be inside all chunks' total size.
-    Q_ASSERT(tldGroupOffset < tldChunks[tldChunkCount - 1]);
-    // All offsets are stored in non-decreasing order.
-    // This check is within bounds as tldIndices has length tldCount+1.
-    Q_ASSERT(tldGroupOffset <= tldIndices[index + 1]);
-    // The last extra entry in tldIndices
-    // should be equal to the total of all chunks' lengths.
-    static_assert(tldIndices[tldCount] == tldChunks[tldChunkCount - 1]);
-
-    // Find which chunk contains the tldGroupOffset
-    while (tldGroupOffset >= tldChunks[chunk]) {
-        chunkIndex -= tldChunks[chunk];
-        offset += tldChunks[chunk];
-        chunk++;
-
-        // We can not go above the number of chunks we have, since all our
-        // indices are less than the total chunks' size (see asserts above).
-        Q_ASSERT(chunk < tldChunkCount);
-    }
-
-    // check all the entries from the given offset
-    while (chunkIndex < tldIndices[index+1] - offset) {
-        const auto utf8 = tldData[chunk] + chunkIndex;
-        if ((symbol.isEmpty() || QLatin1Char(*utf8) == symbol) && entry == QString::fromUtf8(utf8 + symbol.size()))
-            return true;
-        chunkIndex += uint(qstrlen(utf8)) + 1; // +1 for the ending \0
-    }
-    return false;
+    return LookupStringInFixedSet(kDafsa, sizeof(kDafsa), domain.data(), domain.size());
 }
 
 /*!
@@ -118,19 +75,28 @@ static bool containsTLDEntry(QStringView entry, TLDMatchType match)
 Q_NETWORK_EXPORT bool qIsEffectiveTLD(QStringView domain)
 {
     // for domain 'foo.bar.com':
-    // 1. return if TLD table contains 'foo.bar.com'
-    // 2. else if table contains '*.bar.com',
-    // 3. test that table does not contain '!foo.bar.com'
+    // 1. return false if TLD table contains '!foo.bar.com'
+    // 2. return true if TLD table contains 'foo.bar.com'
+    // 3. return true if the table contains '*.bar.com'
 
-    if (containsTLDEntry(domain, ExactMatch)) // 1
-        return true;
+    QByteArray decodedDomain = domain.toUtf8();
+    QByteArrayView domainView(decodedDomain);
 
-    const auto dot = domain.indexOf(QLatin1Char('.'));
+    auto ret = lookupDomain(domainView);
+    if (ret != PSL_NOT_FOUND) {
+        if (ret & PSL_FLAG_EXCEPTION) // 1
+            return false;
+        if ((ret & PSL_FLAG_WILDCARD) == 0) // 2
+            return true;
+    }
+
+    const auto dot = domainView.indexOf('.');
     if (dot < 0) // Actual TLD: may be effective if the subject of a wildcard rule:
-        return containsTLDEntry(QString(QLatin1Char('.') + domain), SuffixMatch);
-    if (containsTLDEntry(domain.mid(dot), SuffixMatch))   // 2
-        return !containsTLDEntry(domain, ExceptionMatch); // 3
-    return false;
+        return ret != PSL_NOT_FOUND;
+    ret = lookupDomain(domainView.sliced(dot + 1)); // 3
+    if (ret == PSL_NOT_FOUND)
+        return false;
+    return (ret & PSL_FLAG_WILDCARD) != 0;
 }
 
 QT_END_NAMESPACE

@@ -1,7 +1,7 @@
 {
     "Id": "psl",
     "Name": "The Public Suffix List",
-    "QDocModule": "qtcore",
+    "QDocModule": "qtnetwork",
     "Description": "The Public Suffix List is an initiative of Mozilla,
 but is maintained as a community resource. It is available for use in any software,
 but was originally created to meet the needs of browser manufacturers.
@@ -14,8 +14,7 @@ It allows browsers to, for example:
 - Accurately sort history entries by site",
 
     "Files": "qurltlds_p.h",
-    "QtUsage": "See util/publicSuffix/ for code-generator",
-    "QtUsage": "Used in Qt Core to avoid setting \"supercookies\" in the cookie jar
+    "QtUsage": "Used in Qt Network to avoid setting \"supercookies\" in the cookie jar
 supported by Qt (by the QNetworkCookieJar class).",
 
     "Homepage": "Consult https://github.com/publicsuffix/list for the sha1 but download from ...",

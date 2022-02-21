@@ -1,0 +1,15 @@
+{
+    "Id": "libpsl",
+    "Name": "libpsl - C library to handle the Public Suffix List",
+    "QDocModule": "qtnetwork",
+    "Description": "Libpsl allows checking domains against the Public Suffix List.",
+    "Files": "src/lookup_string_in_fixed_set.c src/psl-make-dafsa",
+    "QtUsage": "Used to compress the embedded copy of publicsuffix list and
+to lookup entries in it.",
+    "Homepage": "https://github.com/rockdaboot/libpsl",
+    "Version": "664f3dc85259ec65e30248a61fa1c45b7b0e4c3f",
+    "License": "BSD 3-clause \"New\" or \"Revised\" License",
+    "LicenseFile": "src/LICENSE.chromium",
+    "LicenseId": "BSD-3-Clause",
+    "Copyright": "Copyright 2014-2016 The Chromium Authors. All rights reserved."
+}
