@@ -1158,8 +1158,8 @@ void tst_QGuiApplication::layoutDirection()
 {
     qRegisterMetaType<Qt::LayoutDirection>();
 
-    Qt::LayoutDirection oldDirection = QGuiApplication::layoutDirection();
-    Qt::LayoutDirection newDirection = oldDirection == Qt::LeftToRight ? Qt::RightToLeft : Qt::LeftToRight;
+    const Qt::LayoutDirection oldDirection = QGuiApplication::layoutDirection();
+    const Qt::LayoutDirection newDirection = oldDirection == Qt::LeftToRight ? Qt::RightToLeft : Qt::LeftToRight;
 
     QGuiApplication::setLayoutDirection(newDirection);
     QCOMPARE(QGuiApplication::layoutDirection(), newDirection);
@@ -1177,7 +1177,63 @@ void tst_QGuiApplication::layoutDirection()
     QGuiApplication::setLayoutDirection(oldDirection);
     QCOMPARE(QGuiApplication::layoutDirection(), oldDirection);
     QCOMPARE(signalSpy.count(), 1);
+
+    // with QGuiApplication instantiated, install a translator that gives us control
+    class LayoutDirectionTranslator : public QTranslator
+    {
+    public:
+        LayoutDirectionTranslator(Qt::LayoutDirection direction)
+        : direction(direction)
+        {}
+
+        bool isEmpty() const override { return false; }
+        QString translate(const char *context, const char *sourceText, const char *disambiguation, int n) const override
+        {
+            if (QByteArrayView(sourceText) == "QT_LAYOUT_DIRECTION")
+                return direction == Qt::LeftToRight ? QLatin1String("LTR") : QLatin1String("RTL");
+            return QTranslator::translate(context, sourceText, disambiguation, n);
+        }
+
+        const Qt::LayoutDirection direction;
+    };
+
+    int layoutDirectionChangedCount = 0;
+    // reset to auto-detection, should be back to oldDirection now
+    QGuiApplication::setLayoutDirection(Qt::LayoutDirectionAuto);
+    QCOMPARE(QGuiApplication::layoutDirection(), oldDirection);
+    signalSpy.clear();
+    {
+        // this translator doesn't change the direction
+        LayoutDirectionTranslator translator(oldDirection);
+        QGuiApplication::installTranslator(&translator);
+        QCOMPARE(QGuiApplication::layoutDirection(), translator.direction);
+        QCOMPARE(signalSpy.count(), layoutDirectionChangedCount);
+    }
+    QCOMPARE(signalSpy.count(), layoutDirectionChangedCount); // ltrTranslator removed, no change
+
+    // install a new translator that changes the direction
+    {
+        LayoutDirectionTranslator translator(newDirection);
+        QGuiApplication::installTranslator(&translator);
+        QCOMPARE(QGuiApplication::layoutDirection(), translator.direction);
+        QCOMPARE(signalSpy.count(), ++layoutDirectionChangedCount);
+    }
+    // rtlTranslator removed
+    QCOMPARE(signalSpy.count(), ++layoutDirectionChangedCount);
+
+    // override translation
+    QGuiApplication::setLayoutDirection(newDirection);
+    QCOMPARE(signalSpy.count(), ++layoutDirectionChangedCount);
+    {
+        // this translator will be ignored
+        LayoutDirectionTranslator translator(oldDirection);
+        QGuiApplication::installTranslator(&translator);
+        QCOMPARE(QGuiApplication::layoutDirection(), newDirection);
+        QCOMPARE(signalSpy.count(), layoutDirectionChangedCount);
+    }
+    QCOMPARE(signalSpy.count(), layoutDirectionChangedCount);
 }
+
 
 void tst_QGuiApplication::globalShareContext()
 {

@@ -191,6 +191,7 @@ static int touchDoubleTapDistance = 0;
 QWindow *QGuiApplicationPrivate::currentMousePressWindow = nullptr;
 
 static Qt::LayoutDirection layout_direction = Qt::LayoutDirectionAuto;
+static Qt::LayoutDirection effective_layout_direction = Qt::LeftToRight;
 static bool force_reverse = false;
 
 QGuiApplicationPrivate *QGuiApplicationPrivate::self = nullptr;
@@ -1672,8 +1673,8 @@ void QGuiApplicationPrivate::init()
     Q_UNUSED(loadTestability);
 #endif // QT_CONFIG(library)
 
-    if (layout_direction == Qt::LayoutDirectionAuto || force_reverse)
-        QGuiApplication::setLayoutDirection(qt_detectRTLLanguage() ? Qt::RightToLeft : Qt::LeftToRight);
+    // trigger changed signal and event delivery
+    QGuiApplication::setLayoutDirection(layout_direction);
 
     if (!QGuiApplicationPrivate::displayName)
         QObject::connect(q, &QGuiApplication::applicationNameChanged,
@@ -1699,7 +1700,7 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
     QCursorData::cleanup();
 #endif
 
-    layout_direction = Qt::LeftToRight;
+    layout_direction = Qt::LayoutDirectionAuto;
 
     cleanupThreadData();
 
@@ -1943,7 +1944,9 @@ bool QGuiApplication::notify(QObject *object, QEvent *event)
 bool QGuiApplication::event(QEvent *e)
 {
     if (e->type() == QEvent::LanguageChange) {
-        setLayoutDirection(qt_detectRTLLanguage()?Qt::RightToLeft:Qt::LeftToRight);
+        // if the layout direction was set explicitly, then don't override it here
+        if (layout_direction == Qt::LayoutDirectionAuto)
+            setLayoutDirection(layout_direction);
         for (auto *topLevelWindow : QGuiApplication::topLevelWindows()) {
             if (topLevelWindow->flags() != Qt::Desktop)
                 postEvent(topLevelWindow, new QEvent(QEvent::LanguageChange));
@@ -3881,7 +3884,8 @@ void QGuiApplication::sync()
     \property QGuiApplication::layoutDirection
     \brief the default layout direction for this application
 
-    On system start-up, the default layout direction depends on the
+    On system start-up, or when the direction is explicitly set to
+    Qt::LayoutDirectionAuto, the default layout direction depends on the
     application's language.
 
     The notifier signal was introduced in Qt 5.4.
@@ -3891,11 +3895,15 @@ void QGuiApplication::sync()
 
 void QGuiApplication::setLayoutDirection(Qt::LayoutDirection direction)
 {
-    if (layout_direction == direction || direction == Qt::LayoutDirectionAuto)
+    layout_direction = direction;
+    if (direction == Qt::LayoutDirectionAuto)
+        direction = qt_detectRTLLanguage() ? Qt::RightToLeft : Qt::LeftToRight;
+
+    // no change to the explicitly set or auto-detected layout direction
+    if (direction == effective_layout_direction)
         return;
 
-    layout_direction = direction;
-
+    effective_layout_direction = direction;
     if (qGuiApp) {
         emit qGuiApp->layoutDirectionChanged(direction);
         QGuiApplicationPrivate::self->notifyLayoutDirectionChange();
@@ -3904,10 +3912,15 @@ void QGuiApplication::setLayoutDirection(Qt::LayoutDirection direction)
 
 Qt::LayoutDirection QGuiApplication::layoutDirection()
 {
-    // layout_direction is only ever Qt::LayoutDirectionAuto if setLayoutDirection
-    // was never called, or called with Qt::LayoutDirectionAuto (which is a no-op).
-    // In that case we return the default LeftToRight.
-    return layout_direction == Qt::LayoutDirectionAuto ? Qt::LeftToRight : layout_direction;
+    /*
+        effective_layout_direction defaults to Qt::LeftToRight, and is updated with what is
+        auto-detected by a call to setLayoutDirection(Qt::LayoutDirectionAuto). This happens in
+        QGuiApplicationPrivate::init and when the language changes (or before if the application
+        calls the static function, but then no translators are installed so the auto-detection
+        always yields Qt::LeftToRight).
+        So we can be certain that it's always the right value.
+    */
+    return effective_layout_direction;
 }
 
 /*!
