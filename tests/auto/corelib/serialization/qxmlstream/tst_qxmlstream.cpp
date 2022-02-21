@@ -46,6 +46,7 @@ Q_DECLARE_METATYPE(QXmlStreamReader::ReadElementTextBehaviour)
 static const char *const catalogFile = "XML-Test-Suite/xmlconf/finalCatalog.xml";
 static const int expectedRunCount = 1646;
 static const int expectedSkipCount = 532;
+static const char *const xmlTestsuiteDir = "XML-Test-Suite";
 static const char *const xmlconfDir = "XML-Test-Suite/xmlconf/";
 static const char *const xmlDatasetName = "xmltest";
 static const char *const updateFilesDir = "xmltest_updates";
@@ -69,6 +70,28 @@ static inline int best(int a, int b, int c)
     if (c < 0)
         return best(a, b);
     return qMin(qMin(a, b), c);
+}
+
+// copied from tst_qmake.cpp
+static void copyDir(const QString &sourceDirPath, const QString &targetDirPath)
+{
+    QDir currentDir;
+    QDirIterator dit(sourceDirPath, QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden);
+    while (dit.hasNext()) {
+        dit.next();
+        const QString targetPath = targetDirPath + QLatin1Char('/') + dit.fileName();
+        currentDir.mkpath(targetPath);
+        copyDir(dit.filePath(), targetPath);
+    }
+
+    QDirIterator fit(sourceDirPath, QDir::Files | QDir::Hidden);
+    while (fit.hasNext()) {
+        fit.next();
+        const QString targetPath = targetDirPath + QLatin1Char('/') + fit.fileName();
+        QFile::remove(targetPath);  // allowed to fail
+        QFile src(fit.filePath());
+        QVERIFY2(src.copy(targetPath), qPrintable(src.errorString()));
+    }
 }
 
 template <typename C>
@@ -535,7 +558,7 @@ class tst_QXmlStream: public QObject
 {
     Q_OBJECT
 public:
-    tst_QXmlStream() : m_handler(QUrl::fromLocalFile(QFINDTESTDATA(catalogFile)))
+    tst_QXmlStream() : m_handler(QUrl::fromLocalFile(m_tempDir.filePath(catalogFile)))
     {
     }
 
@@ -589,6 +612,7 @@ private slots:
 private:
     static QByteArray readFile(const QString &filename);
 
+    QTemporaryDir m_tempDir;
     TestSuiteHandler m_handler;
 };
 
@@ -598,8 +622,18 @@ void tst_QXmlStream::initTestCase()
     // suit as a zip archive. So we need to unzip it before running the tests,
     // and also update some files there.
     // We also need to remove the unzipped data during cleanup.
-    const QString filesDir(QFINDTESTDATA(xmlconfDir));
-    QZipReader reader(filesDir + xmlDatasetName + ".zip");
+
+    // On Android, we cannot unzip at the resource location, so we copy
+    // everything to a temporary directory first.
+    const QString XML_Test_Suite_dir = QFINDTESTDATA(xmlTestsuiteDir);
+    const QString XML_Test_Suite_destDir = m_tempDir.filePath(xmlTestsuiteDir);
+    copyDir(XML_Test_Suite_dir, XML_Test_Suite_destDir);
+
+
+    const QString filesDir(m_tempDir.filePath(xmlconfDir));
+    const QString fileName = filesDir + xmlDatasetName + ".zip";
+    QVERIFY(QFile::exists(fileName));
+    QZipReader reader(fileName);
     QVERIFY(reader.isReadable());
     QVERIFY(reader.extractAll(filesDir));
     // update files
@@ -612,7 +646,7 @@ void tst_QXmlStream::initTestCase()
         QVERIFY(QFile::copy(fileInfo.filePath(), destinationPath));
     }
 
-    QFile file(QFINDTESTDATA(catalogFile));
+    QFile file(m_tempDir.filePath(catalogFile));
     QVERIFY2(file.open(QIODevice::ReadOnly),
              qPrintable(QString::fromLatin1("Failed to open the test suite catalog; %1").arg(file.fileName())));
 
@@ -621,9 +655,6 @@ void tst_QXmlStream::initTestCase()
 
 void tst_QXmlStream::cleanupTestCase()
 {
-    QDir d(QFINDTESTDATA(xmlconfDir) + xmlDatasetName);
-    d.removeRecursively();
-    QFile::remove(QLatin1String("test.xml"));
 }
 
 void tst_QXmlStream::reportFailures() const
