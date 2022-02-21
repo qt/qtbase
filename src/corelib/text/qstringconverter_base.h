@@ -110,6 +110,8 @@ public:
     private:
         Q_DISABLE_COPY(State)
     };
+protected:
+    ~QStringConverterBase() = default;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QStringConverterBase::Flags)
 
@@ -166,8 +168,11 @@ protected:
     {}
     Q_CORE_EXPORT explicit QStringConverter(const char *name, Flags f) noexcept;
 
+    ~QStringConverter() = default;
 
 public:
+    QStringConverter(QStringConverter &&) = default;
+    QStringConverter &operator=(QStringConverter &&) = default;
 
     bool isValid() const noexcept { return iface != nullptr; }
 
