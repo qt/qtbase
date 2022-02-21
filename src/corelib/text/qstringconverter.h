@@ -55,27 +55,20 @@
 
 QT_BEGIN_NAMESPACE
 
-// work around a compiler bug in GCC 7
-#if (defined(Q_CC_GNU) && __GNUC__ == 7) || defined(Q_QDOC)
-#define QSTRINGCONVERTER_CONSTEXPR
-#else
-#define QSTRINGCONVERTER_CONSTEXPR constexpr
-#endif
-
 class QStringEncoder : public QStringConverter
 {
 protected:
-    QSTRINGCONVERTER_CONSTEXPR QStringEncoder(const Interface *i)
+    constexpr explicit QStringEncoder(const Interface *i)
         : QStringConverter(i)
     {}
 public:
-    QSTRINGCONVERTER_CONSTEXPR QStringEncoder()
+    constexpr QStringEncoder()
         : QStringConverter()
     {}
-    QSTRINGCONVERTER_CONSTEXPR QStringEncoder(Encoding encoding, Flags flags = Flag::Default)
+    constexpr explicit QStringEncoder(Encoding encoding, Flags flags = Flag::Default)
         : QStringConverter(encoding, flags)
     {}
-    QStringEncoder(const char *name, Flags flags = Flag::Default)
+    explicit QStringEncoder(const char *name, Flags flags = Flag::Default)
         : QStringConverter(name, flags)
     {}
 
@@ -123,17 +116,17 @@ private:
 class QStringDecoder : public QStringConverter
 {
 protected:
-    QSTRINGCONVERTER_CONSTEXPR QStringDecoder(const Interface *i)
+    constexpr explicit QStringDecoder(const Interface *i)
         : QStringConverter(i)
     {}
 public:
-    QSTRINGCONVERTER_CONSTEXPR QStringDecoder(Encoding encoding, Flags flags = Flag::Default)
+    constexpr explicit QStringDecoder(Encoding encoding, Flags flags = Flag::Default)
         : QStringConverter(encoding, flags)
     {}
-    QSTRINGCONVERTER_CONSTEXPR QStringDecoder()
+    constexpr QStringDecoder()
         : QStringConverter()
     {}
-    QStringDecoder(const char *name, Flags f = Flag::Default)
+    explicit QStringDecoder(const char *name, Flags f = Flag::Default)
         : QStringConverter(name, f)
     {}
 
@@ -230,7 +223,5 @@ QByteArray &operator+=(QByteArray &a, const QStringEncoder::DecodedData<T> &b)
 #endif
 
 QT_END_NAMESPACE
-
-#undef QSTRINGCONVERTER_CONSTEXPR
 
 #endif

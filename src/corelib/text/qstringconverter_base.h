@@ -158,13 +158,13 @@ protected:
     constexpr QStringConverter()
         : iface(nullptr)
     {}
-    constexpr QStringConverter(Encoding encoding, Flags f)
+    constexpr explicit QStringConverter(Encoding encoding, Flags f)
         : iface(&encodingInterfaces[int(encoding)]), state(f)
     {}
-    constexpr QStringConverter(const Interface *i)
+    constexpr explicit QStringConverter(const Interface *i)
         : iface(i)
     {}
-    Q_CORE_EXPORT QStringConverter(const char *name, Flags f);
+    Q_CORE_EXPORT explicit QStringConverter(const char *name, Flags f);
 
 
 public:
