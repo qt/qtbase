@@ -1765,7 +1765,7 @@ void tst_QLocalSocket::verifyListenWithDescriptor()
     QLocalServer server;
     QVERIFY2(server.listen(listenSocket), "failed to start create QLocalServer with local socket");
 
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_LINUX) || defined(Q_OS_QNX)
     if (!bound) {
         QCOMPARE(server.serverName().isEmpty(), true);
         QCOMPARE(server.fullServerName().isEmpty(), true);
@@ -1806,7 +1806,7 @@ void tst_QLocalSocket::verifyListenWithDescriptor_data()
     QTest::addColumn<bool>("bound");
 
     QTest::newRow("normal") << QDir::tempPath() + QLatin1String("/testsocket") << false << true;
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_LINUX) || defined(Q_OS_QNX)
     QTest::newRow("abstract") << QString::fromLatin1("abstractsocketname") << true << true;
     QTest::newRow("abstractwithslash") << QString::fromLatin1("abstractsocketwitha/inthename") << true << true;
 #endif
