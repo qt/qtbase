@@ -37,6 +37,7 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qt_windows.h>
 #include "qwindowsdirect2dcontext.h"
 #include "qwindowsdirect2dintegration.h"
 #include "qwindowsdirect2dbackingstore.h"
