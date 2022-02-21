@@ -56,7 +56,6 @@ if(NOT ANDROID)
     # QTBUG-87421 # special case
     add_subdirectory(qmenubar)
 endif()
-# QTBUG-87671 # special case
-if(QT_FEATURE_opengl AND NOT ANDROID)
+if(QT_FEATURE_opengl)
     add_subdirectory(qopenglwidget)
 endif()
