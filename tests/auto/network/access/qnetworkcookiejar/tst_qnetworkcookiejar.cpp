@@ -37,7 +37,6 @@
 #include <QtNetwork/QNetworkRequest>
 #if QT_CONFIG(topleveldomain)
 #include "private/qtldurl_p.h"
-#include "private/qurltlds_p.h"
 #endif
 
 class tst_QNetworkCookieJar: public QObject
@@ -479,28 +478,6 @@ void tst_QNetworkCookieJar::effectiveTLDs_data()
     QTest::newRow("yes-wildcard5") << "foo.sch.uk" << true;
     QTest::newRow("yes-platform.sh") << "eu.platform.sh" << true;
     QTest::newRow("no-platform.sh") << "something.platform.sh" << false;
-
-    int inFirst = 0; // First group is guaranteed to be in first chunk.
-    while (tldIndices[inFirst] < tldChunks[0])
-        ++inFirst;
-    Q_ASSERT(inFirst < tldCount);
-    const char *lastGroupFromFirstChunk = &tldData[0][tldIndices[inFirst - 1]];
-    const char *cut = &tldData[0][tldChunks[0]];
-    for (const char *entry = lastGroupFromFirstChunk; entry < cut; entry += strlen(entry) + 1)
-        QTest::addRow("lastGroupFromFirstChunk: %s", entry) << entry << true;
-
-    Q_ASSERT(tldChunkCount > 1);    // There are enough TLDs to fill 64K bytes
-    // The tldCount + 1 entries in tldIndices are indexed by hash value and some
-    // hash cells may be empty: we need to find the last non-empty hash cell.
-    int tail = tldCount;
-    while (tldIndices[tail - 1] == tldIndices[tail])
-        --tail;
-    Q_ASSERT(tldIndices[tail] == tldChunks[tldChunkCount - 1]);
-    const char *lastGroupFromLastChunk =
-        &tldData[tldChunkCount-1][tldIndices[tail - 1] - tldChunks[tldChunkCount - 2]];
-    const char *end = &tldData[tldChunkCount-1][tldIndices[tail] - tldChunks[tldChunkCount - 2]];
-    for (const char *entry = lastGroupFromLastChunk; entry < end; entry += strlen(entry) + 1)
-        QTest::addRow("lastGroupFromLastChunk: %s", entry) << entry << true;
 }
 
 void tst_QNetworkCookieJar::effectiveTLDs()
