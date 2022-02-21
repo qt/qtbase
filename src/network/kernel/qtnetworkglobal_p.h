@@ -60,7 +60,7 @@
 QT_BEGIN_NAMESPACE
 
 enum {
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_LINUX) || defined(Q_OS_QNX)
     PlatformSupportsAbstractNamespace = true
 #else
     PlatformSupportsAbstractNamespace = false

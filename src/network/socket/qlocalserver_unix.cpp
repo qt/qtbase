@@ -237,6 +237,10 @@ bool QLocalServerPrivate::listen(qintptr socketDescriptor)
     QT_SOCKLEN_T len = sizeof(addr);
     memset(&addr, 0, sizeof(addr));
     if (::getsockname(socketDescriptor, (sockaddr *)&addr, &len) == 0) {
+#if defined(Q_OS_QNX)
+        if (addr.sun_path[0] == 0 && addr.sun_path[1] == 0)
+            len = SUN_LEN(&addr);
+#endif
         if (QLocalSocketPrivate::parseSockaddr(addr, len, fullServerName, serverName,
                                                abstractAddress)) {
             QLocalServer::SocketOptions options = socketOptions.value();
