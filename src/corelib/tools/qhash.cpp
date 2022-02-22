@@ -778,7 +778,7 @@ aeshash256_avx256(const uchar *p, size_t len, size_t seed, size_t seed2) noexcep
 }
 #  endif // VAES
 
-static size_t QT_FUNCTION_TARGET(VAES)
+static size_t QT_FUNCTION_TARGET(AES)
 aeshash128(const uchar *p, size_t len, size_t seed, size_t seed2) noexcept
 {
     AESHashSeed state(seed, seed2);
