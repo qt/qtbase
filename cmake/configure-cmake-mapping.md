@@ -3,6 +3,8 @@ The following table describes the mapping of configure options to CMake argument
 | configure                             | cmake                                             | Notes                                                           |
 |---------------------------------------|---------------------------------------------------|-----------------------------------------------------------------|
 | -prefix /opt/qt6                      | -DCMAKE_INSTALL_PREFIX=/opt/qta6                  |                                                                 |
+| -no-prefix (only available in Qt6)    | -DCMAKE_INSTALL_PREFIX=$PWD (with bash)           | In Qt5 this was done by specifying -prefix $PWD                 |
+|                                         or -DFEATURE_no_prefix=ON                         |                                                                 |
 | -extprefix /opt/qt6                   | -DCMAKE_STAGING_PREFIX=/opt/qt6                   |                                                                 |
 | -bindir <dir>                         | -DINSTALL_BINDIR=<dir>                            | similar for -headerdir -libdir and so on                        |
 | -hostdatadir <dir>                    | -DINSTALL_MKSPECSDIR=<dir>                        |                                                                 |

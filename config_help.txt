@@ -7,6 +7,10 @@ Top-level installation directories:
   -prefix <dir> ...... The deployment directory, as seen on the target device.
                        [/usr/local/Qt-$QT_VERSION; qtbase build directory if
                        -developer-build]
+  -no-prefix ......... The deployment directory is set to the qtbase build
+                       directory. Can be used instead of -developer-build
+                       to not have to install, as well as avoid
+                       -developer-build's default of -warnings-are-errors.
   -extprefix <dir> ... The installation directory, as seen on the host machine.
                        [SYSROOT/PREFIX]
 
