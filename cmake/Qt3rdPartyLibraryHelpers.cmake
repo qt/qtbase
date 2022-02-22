@@ -181,9 +181,14 @@ function(qt_internal_add_3rdparty_library target)
         ARCHIVE_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
         VERSION ${PROJECT_VERSION}
         SOVERSION ${PROJECT_VERSION_MAJOR}
-        QT_MODULE_IS_3RDPARTY_LIBRARY TRUE
-        QT_MODULE_SKIP_DEPENDS_INCLUDE TRUE
+        _qt_module_is_3rdparty_library TRUE
+        _qt_module_skip_depends_include TRUE
     )
+    set_property(TARGET "${target}"
+                 APPEND PROPERTY EXPORT_PROPERTIES _qt_module_is_3rdparty_library)
+    set_property(TARGET "${target}"
+                 APPEND PROPERTY EXPORT_PROPERTIES _qt_module_skip_depends_include)
+
     qt_handle_multi_config_output_dirs("${target}")
 
     set_target_properties(${target} PROPERTIES
