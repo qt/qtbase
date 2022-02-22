@@ -399,10 +399,14 @@ QMimeType QMimeDatabasePrivate::mimeTypeForFileNameAndData(const QString &fileNa
     // Extension is unknown, or matches multiple mimetypes.
     // Pass 2) Match on content, if we can read the data
     const auto matchOnContent = [this, &candidatesByName](QIODevice *device) {
+        const bool openedByUs = !device->isOpen() && device->open(QIODevice::ReadOnly);
         if (device->isOpen()) {
             // Read 16K in one go (QIODEVICE_BUFFERSIZE in qiodevice_p.h).
             // This is much faster than seeking back and forth into QIODevice.
             const QByteArray data = device->peek(16384);
+
+            if (openedByUs)
+                device->close();
 
             int magicAccuracy = 0;
             QMimeType candidateByData(findByData(data, &magicAccuracy));
@@ -441,7 +445,6 @@ QMimeType QMimeDatabasePrivate::mimeTypeForFileNameAndData(const QString &fileNa
         return matchOnContent(device);
 
     QFile fallbackFile(fileName);
-    fallbackFile.open(QIODevice::ReadOnly); // error handling: matchOnContent() will check isOpen()
     return matchOnContent(&fallbackFile);
 }
 
@@ -780,10 +783,7 @@ QMimeType QMimeDatabase::mimeTypeForFileNameAndData(const QString &fileName, QIO
     if (fileName.endsWith(QLatin1Char('/')))
         return d->mimeTypeForName(directoryMimeType());
 
-    const bool openedByUs = !device->isOpen() && device->open(QIODevice::ReadOnly);
     const QMimeType result = d->mimeTypeForFileNameAndData(fileName, device);
-    if (openedByUs)
-        device->close();
     return result;
 }
 
