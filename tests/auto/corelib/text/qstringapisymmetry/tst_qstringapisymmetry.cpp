@@ -714,6 +714,8 @@ private Q_SLOTS:
     void toNumber_QStringView() { toNumber_impl<QStringView>(); }
     void toNumber_QByteArray_data() { toNumber_data(); }
     void toNumber_QByteArray() { toNumber_impl<QByteArray>(); }
+    void toNumber_QLatin1String_data() { toNumber_data(); }
+    void toNumber_QLatin1String() { toNumber_impl<QLatin1String>(); }
 
 private:
     void count_data();

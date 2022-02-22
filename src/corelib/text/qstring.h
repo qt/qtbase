@@ -177,6 +177,37 @@ public:
     [[nodiscard]] qsizetype lastIndexOf(QChar c, qsizetype from, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::lastIndexOf(*this, from, QStringView(&c, 1), cs); }
 
+    [[nodiscard]] short toShort(bool *ok = nullptr, int base = 10) const
+    { return QtPrivate::toIntegral<short>(QByteArrayView(*this), ok, base); }
+    [[nodiscard]] ushort toUShort(bool *ok = nullptr, int base = 10) const
+    { return QtPrivate::toIntegral<ushort>(QByteArrayView(*this), ok, base); }
+    [[nodiscard]] int toInt(bool *ok = nullptr, int base = 10) const
+    { return QtPrivate::toIntegral<int>(QByteArrayView(*this), ok, base); }
+    [[nodiscard]] uint toUInt(bool *ok = nullptr, int base = 10) const
+    { return QtPrivate::toIntegral<uint>(QByteArrayView(*this), ok, base); }
+    [[nodiscard]] long toLong(bool *ok = nullptr, int base = 10) const
+    { return QtPrivate::toIntegral<long>(QByteArrayView(*this), ok, base); }
+    [[nodiscard]] ulong toULong(bool *ok = nullptr, int base = 10) const
+    { return QtPrivate::toIntegral<ulong>(QByteArrayView(*this), ok, base); }
+    [[nodiscard]] qlonglong toLongLong(bool *ok = nullptr, int base = 10) const
+    { return QtPrivate::toIntegral<qlonglong>(QByteArrayView(*this), ok, base); }
+    [[nodiscard]] qulonglong toULongLong(bool *ok = nullptr, int base = 10) const
+    { return QtPrivate::toIntegral<qulonglong>(QByteArrayView(*this), ok, base); }
+    [[nodiscard]] float toFloat(bool *ok = nullptr) const
+    {
+        const auto r = QtPrivate::toFloat(*this);
+        if (ok)
+            *ok = bool(r);
+        return r.value_or(0.0f);
+    }
+    [[nodiscard]] double toDouble(bool *ok = nullptr) const
+    {
+        const auto r = QtPrivate::toDouble(*this);
+        if (ok)
+            *ok = bool(r);
+        return r.value_or(0.0);
+    }
+
     using value_type = const char;
     using reference = value_type&;
     using const_reference = reference;

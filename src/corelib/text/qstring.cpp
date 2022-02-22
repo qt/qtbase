@@ -10130,6 +10130,62 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     equal to string \a s2; otherwise returns \c false.
 */
 
+/*!
+    \fn qlonglong QLatin1String::toLongLong(bool *ok, int base) const
+    \fn qulonglong QLatin1String::toULongLong(bool *ok, int base) const
+    \fn int QLatin1String::toInt(bool *ok, int base) const
+    \fn uint QLatin1String::toUInt(bool *ok, int base) const
+    \fn long QLatin1String::toLong(bool *ok, int base) const
+    \fn ulong QLatin1String::toULong(bool *ok, int base) const
+    \fn short QLatin1String::toShort(bool *ok, int base) const
+    \fn ushort QLatin1String::toUShort(bool *ok, int base) const
+
+    \since 6.4
+
+    Returns this QLatin1String converted to a corresponding numeric value using
+    base \a base, which is ten by default. Bases 0 and 2 through 36 are supported,
+    using letters for digits beyond 9; A is ten, B is eleven and so on.
+
+    If \a base is 0, the base is determined automatically using the following
+    rules: if the Latin-1 string begins with "0x", the rest of it is read as
+    hexadecimal (base 16); otherwise, if it begins with "0", the rest of it is
+    read as octal (base 8); otherwise it is read as decimal.
+
+    Returns 0 if the conversion fails.
+
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
+    to \c false, and success by setting *\a{ok} to \c true.
+
+//! [latin1-numeric-conversion-note]
+    \note The conversion of the number is performed in the default C locale,
+    regardless of the user's locale. Use QLocale to perform locale-aware
+    conversions between numbers and strings.
+
+    This function ignores leading and trailing spacing characters.
+//! [latin1-numeric-conversion-note]
+*/
+
+/*!
+    \fn double QLatin1String::toDouble(bool *ok) const
+    \fn float QLatin1String::toFloat(bool *ok) const
+    \since 6.4
+
+    Returns this QLatin1String converted to a corresponding floating-point value.
+
+    Returns an infinity if the conversion overflows or 0.0 if the
+    conversion fails for other reasons (e.g. underflow).
+
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
+    to \c false, and success by setting *\a{ok} to \c true.
+
+    \warning The QLatin1String content may only contain valid numerical
+    characters which includes the plus/minus sign, the character e used in
+    scientific notation, and the decimal point. Including the unit or additional
+    characters leads to a conversion error.
+
+    \include qstring.cpp latin1-numeric-conversion-note
+*/
+
 #if !defined(QT_NO_DATASTREAM) || defined(QT_BOOTSTRAPPED)
 /*!
     \fn QDataStream &operator<<(QDataStream &stream, const QString &string)
