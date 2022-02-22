@@ -250,6 +250,7 @@ private slots:
     void testResetCachedSizeHint();
     void statusTips();
     void testRemovingColumnsViaLayoutChanged();
+    void testModelMovingColumns();
 
 protected:
     void setupTestData(bool use_reset_model = false);
@@ -349,6 +350,12 @@ public:
         beginRemoveColumns(QModelIndex(), 0, cols - 1);
         cols = 0;
         endRemoveColumns();
+    }
+
+    void moveColumn(int from, int to)
+    {
+        beginMoveColumns(QModelIndex(), from, from, QModelIndex(), to);
+        endMoveColumns();
     }
 
     void cleanup()
@@ -3674,6 +3681,19 @@ void tst_QHeaderView::testRemovingColumnsViaLayoutChanged()
     for (int j = 0; j < model.cols; ++j)
         QCOMPARE(view->sectionSize(j), persistentSectionSize + j);
     // The main point of this test is that the section-size restoring code didn't go out of bounds.
+}
+
+void tst_QHeaderView::testModelMovingColumns()
+{
+    QtTestModel model(10, 10);
+    QHeaderView hv(Qt::Horizontal);
+    hv.setModel(&model);
+    hv.resizeSections(QHeaderView::ResizeToContents);
+    hv.show();
+
+    QPersistentModelIndex index3 = model.index(0, 3);
+    model.moveColumn(3, 1);
+    QCOMPARE(index3.column(), 1);
 }
 
 QTEST_MAIN(tst_QHeaderView)
