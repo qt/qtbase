@@ -3,6 +3,3 @@ osx
 [mouseWheel:scroll down per pixel]
 macos
 
-# QTBUG-87407
-[task191545_dragSelectRows]
-android

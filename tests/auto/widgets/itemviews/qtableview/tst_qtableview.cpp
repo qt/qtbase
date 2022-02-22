@@ -4436,6 +4436,8 @@ void tst_QTableView::task191545_dragSelectRows()
         QCoreApplication::sendEvent(tableVp, &cellPressEvent);
 
         for (int i = 0; i < 6; ++i) {
+            // cellPos might have been updated by scrolling, so refresh
+            cellPos = table.visualRect(model.index(3+i, 3+i)).center();
             cellPos.setX(cellPos.x() + cellRect.width());
             cellPos.setY(cellPos.y() + cellRect.height());
             QMouseEvent moveEvent(QEvent::MouseMove, cellPos, tableVp->mapToGlobal(cellPos),
