@@ -9,7 +9,7 @@ add_subdirectory(qinputdialog)
 add_subdirectory(qprogressdialog)
 add_subdirectory(qwizard)
 add_subdirectory(qfiledialog)
-# QTBUG-87671 # special case
+# QTBUG-101217, qmessagebox hangs on Android
 if(NOT ANDROID)
     add_subdirectory(qmessagebox)
 endif()
