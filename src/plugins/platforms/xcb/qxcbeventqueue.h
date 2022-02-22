@@ -123,7 +123,7 @@ public:
 
     const QXcbEventNode *flushedTail() const { return m_flushedTail; }
     void waitForNewEvents(const QXcbEventNode *sinceFlushedTail,
-                          unsigned long time = std::numeric_limits<unsigned long>::max());
+                          unsigned long time = (std::numeric_limits<unsigned long>::max)());
 
 private:
     QXcbEventNode *qXcbEventNodeFactory(xcb_generic_event_t *event);

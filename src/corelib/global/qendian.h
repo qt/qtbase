@@ -313,9 +313,9 @@ public:
     }
 
     static constexpr QSpecialInteger max()
-    { return QSpecialInteger(std::numeric_limits<T>::max()); }
+    { return QSpecialInteger((std::numeric_limits<T>::max)()); }
     static constexpr QSpecialInteger min()
-    { return QSpecialInteger(std::numeric_limits<T>::min()); }
+    { return QSpecialInteger((std::numeric_limits<T>::min)()); }
 };
 
 template<typename T>

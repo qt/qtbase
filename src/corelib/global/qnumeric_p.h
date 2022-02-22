@@ -203,8 +203,8 @@ static inline bool convertDoubleTo(double v, T *value, bool allow_precision_upgr
             return false;
     }
 
-    constexpr T Tmin = std::numeric_limits<T>::min();
-    constexpr T Tmax = std::numeric_limits<T>::max();
+    constexpr T Tmin = (std::numeric_limits<T>::min)();
+    constexpr T Tmax = (std::numeric_limits<T>::max)();
 
     // The [conv.fpint] (7.10 Floating-integral conversions) section of the C++
     // standard says only exact conversions are guaranteed. Converting
@@ -295,7 +295,7 @@ static inline bool convertDoubleTo(double v, T *value, bool allow_precision_upgr
             return false;
     } else {
         using ST = typename std::make_signed<T>::type;
-        supremum = -2.0 * std::numeric_limits<ST>::min();   // -2 * (-2^63) = 2^64, exact (for T = quint64)
+        supremum = -2.0 * (std::numeric_limits<ST>::min)();   // -2 * (-2^63) = 2^64, exact (for T = quint64)
         v = fabs(v);
     }
 
