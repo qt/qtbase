@@ -117,9 +117,9 @@ static constexpr OO copyData(II input, qsizetype n, OO output)
 
 template <size_t Highest> constexpr auto minifyValue()
 {
-    if constexpr (Highest <= std::numeric_limits<quint8>::max()) {
+    if constexpr (Highest <= (std::numeric_limits<quint8>::max)()) {
         return quint8(Highest);
-    } else if constexpr (Highest <= std::numeric_limits<quint16>::max()) {
+    } else if constexpr (Highest <= (std::numeric_limits<quint16>::max)()) {
         return quint16(Highest);
     } else {
         // int is probably enough for everyone

@@ -202,13 +202,13 @@ static inline bool convertDoubleTo(double v, T *value, bool allow_precision_upgr
 
     double supremum;
     if (std::numeric_limits<T>::is_signed) {
-        supremum = -1.0 * std::numeric_limits<T>::min();    // -1 * (-2^63) = 2^63, exact (for T = qint64)
-        *value = std::numeric_limits<T>::min();
-        if (v < std::numeric_limits<T>::min())
+        supremum = -1.0 * (std::numeric_limits<T>::min)();    // -1 * (-2^63) = 2^63, exact (for T = qint64)
+        *value = (std::numeric_limits<T>::min)();
+        if (v < (std::numeric_limits<T>::min)())
             return false;
     } else {
         using ST = typename std::make_signed<T>::type;
-        supremum = -2.0 * std::numeric_limits<ST>::min();   // -2 * (-2^63) = 2^64, exact (for T = quint64)
+        supremum = -2.0 * (std::numeric_limits<ST>::min)();   // -2 * (-2^63) = 2^64, exact (for T = quint64)
         v = fabs(v);
     }
     if (std::is_integral<T>::value && sizeof(T) > 4 && !allow_precision_upgrade) {
@@ -216,7 +216,7 @@ static inline bool convertDoubleTo(double v, T *value, bool allow_precision_upgr
             return false;
     }
 
-    *value = std::numeric_limits<T>::max();
+    *value = (std::numeric_limits<T>::max)();
     if (v >= supremum)
         return false;
 

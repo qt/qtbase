@@ -423,7 +423,7 @@ public:
     int minimumContentsLength = 0;
     int indexBeforeChange = -1;
     int maxVisibleItems = 10;
-    int maxCount = std::numeric_limits<int>::max();
+    int maxCount = (std::numeric_limits<int>::max)();
     int modelColumn = 0;
     int placeholderIndex = -1;
     bool shownOnce : 1;

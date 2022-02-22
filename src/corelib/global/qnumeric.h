@@ -219,7 +219,7 @@ qMulOverflow(T v1, T v2, T *r)
             typename LargerInt::Signed, typename LargerInt::Unsigned>;
     Larger lr = Larger(v1) * Larger(v2);
     *r = T(lr);
-    return lr > std::numeric_limits<T>::max() || lr < std::numeric_limits<T>::min();
+    return lr > (std::numeric_limits<T>::max)() || lr < (std::numeric_limits<T>::min)();
 }
 
 # if defined(Q_INTRINSIC_MUL_OVERFLOW64)
@@ -324,15 +324,15 @@ template <typename T, T V2> bool qMulOverflow(T v1, std::integral_constant<T, V2
     } else if constexpr (V2 == -1) {
         // multiplication by -1 is valid *except* for signed minimum values
         // (necessary to avoid diving min() by -1, which is an overflow)
-        if (v1 < 0 && v1 == std::numeric_limits<T>::min())
+        if (v1 < 0 && v1 == (std::numeric_limits<T>::min)())
             return true;
         *r = -v1;
         return false;
     } else {
         // For 64-bit multiplications on 32-bit platforms, let's instead compare v1
         // against the bounds that would overflow.
-        constexpr T Highest = std::numeric_limits<T>::max() / V2;
-        constexpr T Lowest = std::numeric_limits<T>::min() / V2;
+        constexpr T Highest = (std::numeric_limits<T>::max)() / V2;
+        constexpr T Lowest = (std::numeric_limits<T>::min)() / V2;
         if constexpr (Highest > Lowest) {
             if (v1 > Highest || v1 < Lowest)
                 return true;
