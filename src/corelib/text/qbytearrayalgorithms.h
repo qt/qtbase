@@ -85,8 +85,8 @@ qsizetype count(QByteArrayView haystack, QByteArrayView needle) noexcept;
 // since it includes qbytearrayalgorithms.h. Use the ByteArrayView template type as
 // a workaround.
 template <typename T, typename ByteArrayView,
-          typename = std::enable_if_t<std::is_same_v<ByteArrayView, QByteArrayView>>> static inline
-T toIntegral(ByteArrayView data, bool *ok, int base)
+          typename = std::enable_if_t<std::is_same_v<ByteArrayView, QByteArrayView>>>
+static inline T toIntegral(ByteArrayView data, bool *ok, int base)
 {
     auto val = [&] {
         if constexpr (std::is_unsigned_v<T>)
