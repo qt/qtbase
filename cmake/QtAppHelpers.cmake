@@ -4,11 +4,17 @@ function(qt_internal_add_app target)
     qt_parse_all_arguments(arg
         "qt_internal_add_app"
         "NO_INSTALL;INSTALL_VERSIONED_LINK"
-        "${__default_target_info_args}"
+        "${__default_target_info_args};INSTALL_DIR"
         "${__default_private_args}"
         ${ARGN})
 
-    set(output_directory "${QT_BUILD_DIR}/${INSTALL_BINDIR}")
+    if(DEFINED arg_INSTALL_DIR)
+        set(forward_install_dir INSTALL_DIRECTORY ${arg_INSTALL_DIR})
+    else()
+        set(forward_install_dir "")
+        set(arg_INSTALL_DIR ${INSTALL_BINDIR})
+    endif()
+    set(output_directory "${QT_BUILD_DIR}/${arg_INSTALL_DIR}")
 
     set(no_install "")
     if(arg_NO_INSTALL)
@@ -21,6 +27,7 @@ function(qt_internal_add_app target)
         DELAY_TARGET_INFO
         OUTPUT_DIRECTORY "${output_directory}"
         ${no_install}
+        ${forward_install_dir}
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
             ${arg_INCLUDE_DIRECTORIES}
@@ -55,7 +62,7 @@ function(qt_internal_add_app target)
 
     # Install versioned link if requested.
     if(NOT arg_NO_INSTALL AND arg_INSTALL_VERSIONED_LINK)
-        qt_internal_install_versioned_link("${INSTALL_BINDIR}" ${target})
+        qt_internal_install_versioned_link("${arg_INSTALL_DIR}" ${target})
     endif()
 
     qt_add_list_file_finalizer(qt_internal_finalize_app ${target})
