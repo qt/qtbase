@@ -76,10 +76,31 @@ qsizetype count(QByteArrayView haystack, QByteArrayView needle) noexcept;
 
 [[nodiscard]] Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool isValidUtf8(QByteArrayView s) noexcept;
 
-[[nodiscard]] Q_CORE_EXPORT double toDouble(QByteArrayView a, bool *ok);
-[[nodiscard]] Q_CORE_EXPORT float toFloat(QByteArrayView a, bool *ok);
-[[nodiscard]] Q_CORE_EXPORT qlonglong toSignedInteger(QByteArrayView data, bool *ok, int base);
-[[nodiscard]] Q_CORE_EXPORT qulonglong toUnsignedInteger(QByteArrayView data, bool *ok, int base);
+template <typename T>
+class ParsedNumber
+{
+    T m_value;
+    quint32 m_error : 1;
+    quint32 m_reserved : 31;
+    void *m_reserved2 = nullptr;
+public:
+    constexpr ParsedNumber() noexcept : m_value(), m_error(true), m_reserved(0) {}
+    constexpr explicit ParsedNumber(T v) : m_value(v), m_error(false), m_reserved(0) {}
+
+    // minimal optional-like API:
+    explicit operator bool() const noexcept { return !m_error; }
+    T &operator*() { Q_ASSERT(*this); return m_value; }
+    const T &operator*() const { Q_ASSERT(*this); return m_value; }
+    T *operator->() noexcept { return *this ? &m_value : nullptr; }
+    const T *operator->() const noexcept { return *this ? &m_value : nullptr; }
+    template <typename U> // not = T, as that'd allow calls that are incompatible with std::optional
+    T value_or(U &&u) const { return *this ? m_value : T(std::forward<U>(u)); }
+};
+
+[[nodiscard]] Q_CORE_EXPORT Q_DECL_PURE_FUNCTION ParsedNumber<double> toDouble(QByteArrayView a) noexcept;
+[[nodiscard]] Q_CORE_EXPORT Q_DECL_PURE_FUNCTION ParsedNumber<float> toFloat(QByteArrayView a) noexcept;
+[[nodiscard]] Q_CORE_EXPORT Q_DECL_PURE_FUNCTION ParsedNumber<qlonglong> toSignedInteger(QByteArrayView data, int base);
+[[nodiscard]] Q_CORE_EXPORT Q_DECL_PURE_FUNCTION ParsedNumber<qulonglong> toUnsignedInteger(QByteArrayView data, int base);
 
 // QByteArrayView has incomplete type here, and we can't include qbytearrayview.h,
 // since it includes qbytearrayalgorithms.h. Use the ByteArrayView template type as
@@ -88,18 +109,18 @@ template <typename T, typename ByteArrayView,
           typename = std::enable_if_t<std::is_same_v<ByteArrayView, QByteArrayView>>>
 static inline T toIntegral(ByteArrayView data, bool *ok, int base)
 {
-    auto val = [&] {
+    const auto val = [&] {
         if constexpr (std::is_unsigned_v<T>)
-            return toUnsignedInteger(data, ok, base);
+            return toUnsignedInteger(data, base);
         else
-            return toSignedInteger(data, ok, base);
+            return toSignedInteger(data, base);
     }();
-    if (T(val) != val) {
-        if (ok)
-            *ok = false;
-        val = 0;
-    }
-    return T(val);
+    const bool failed = !val || T(*val) != *val;
+    if (ok)
+        *ok = !failed;
+    if (failed)
+        return 0;
+    return T(*val);
 }
 
 } // namespace QtPrivate

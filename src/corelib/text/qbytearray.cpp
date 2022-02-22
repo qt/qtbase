@@ -3528,7 +3528,7 @@ bool QByteArray::isNull() const noexcept
     return d->isNull();
 }
 
-qlonglong QtPrivate::toSignedInteger(QByteArrayView data, bool *ok, int base)
+auto QtPrivate::toSignedInteger(QByteArrayView data, int base) -> ParsedNumber<qlonglong>
 {
 #if defined(QT_CHECK_RANGE)
     if (base != 0 && (base < 2 || base > 36)) {
@@ -3536,16 +3536,17 @@ qlonglong QtPrivate::toSignedInteger(QByteArrayView data, bool *ok, int base)
         base = 10;
     }
 #endif
-    if (data.isEmpty()) {
-        if (ok)
-            *ok = false;
-        return 0;
-    }
+    if (data.isEmpty())
+        return {};
 
-    return QLocaleData::bytearrayToLongLong(data, base, ok);
+    bool ok = false;
+    const auto i = QLocaleData::bytearrayToLongLong(data, base, &ok);
+    if (ok)
+        return ParsedNumber(i);
+    return {};
 }
 
-qulonglong QtPrivate::toUnsignedInteger(QByteArrayView data, bool *ok, int base)
+auto QtPrivate::toUnsignedInteger(QByteArrayView data, int base) -> ParsedNumber<qulonglong>
 {
 #if defined(QT_CHECK_RANGE)
     if (base != 0 && (base < 2 || base > 36)) {
@@ -3553,13 +3554,14 @@ qulonglong QtPrivate::toUnsignedInteger(QByteArrayView data, bool *ok, int base)
         base = 10;
     }
 #endif
-    if (data.isEmpty()) {
-        if (ok)
-            *ok = false;
-        return 0;
-    }
+    if (data.isEmpty())
+        return {};
 
-    return QLocaleData::bytearrayToUnsLongLong(data, base, ok);
+    bool ok = false;
+    const auto u = QLocaleData::bytearrayToUnsLongLong(data, base, &ok);
+    if (ok)
+        return ParsedNumber(u);
+    return {};
 }
 
 /*!
@@ -3814,14 +3816,15 @@ double QByteArray::toDouble(bool *ok) const
     return QByteArrayView(*this).toDouble(ok);
 }
 
-double QtPrivate::toDouble(QByteArrayView a, bool *ok)
+auto QtPrivate::toDouble(QByteArrayView a) noexcept -> ParsedNumber<double>
 {
     bool nonNullOk = false;
     int processed = 0;
     double d = qt_asciiToDouble(a.data(), a.size(), nonNullOk, processed, WhitespacesAllowed);
-    if (ok)
-        *ok = nonNullOk;
-    return d;
+    if (nonNullOk)
+        return ParsedNumber{d};
+    else
+        return {};
 }
 
 /*!
@@ -3854,9 +3857,15 @@ float QByteArray::toFloat(bool *ok) const
     return QLocaleData::convertDoubleToFloat(toDouble(ok), ok);
 }
 
-float QtPrivate::toFloat(QByteArrayView a, bool *ok)
+auto QtPrivate::toFloat(QByteArrayView a) noexcept -> ParsedNumber<float>
 {
-    return QLocaleData::convertDoubleToFloat(a.toDouble(ok), ok);
+    if (const auto r = toDouble(a)) {
+        bool ok = true;
+        const auto f = QLocaleData::convertDoubleToFloat(*r, &ok);
+        if (ok)
+            return ParsedNumber(f);
+    }
+    return {};
 }
 
 /*!

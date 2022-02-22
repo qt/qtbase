@@ -260,9 +260,19 @@ public:
     [[nodiscard]] qulonglong toULongLong(bool *ok = nullptr, int base = 10) const
     { return QtPrivate::toIntegral<qulonglong>(*this, ok, base); }
     [[nodiscard]] float toFloat(bool *ok = nullptr) const
-    { return QtPrivate::toFloat(*this, ok); }
+    {
+        const auto r = QtPrivate::toFloat(*this);
+        if (ok)
+            *ok = bool(r);
+        return r.value_or(0.0f);
+    }
     [[nodiscard]] double toDouble(bool *ok = nullptr) const
-    { return QtPrivate::toDouble(*this, ok); }
+    {
+        const auto r = QtPrivate::toDouble(*this);
+        if (ok)
+            *ok = bool(r);
+        return r.value_or(0.0);
+    }
 
     [[nodiscard]] bool startsWith(QByteArrayView other) const noexcept
     { return QtPrivate::startsWith(*this, other); }
