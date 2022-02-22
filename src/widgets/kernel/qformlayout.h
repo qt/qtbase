@@ -138,6 +138,14 @@ public:
     void setWidget(int row, ItemRole role, QWidget *widget);
     void setLayout(int row, ItemRole role, QLayout *layout);
 
+    void setRowVisible(int row, bool on);
+    void setRowVisible(QWidget *widget, bool on);
+    void setRowVisible(QLayout *layout, bool on);
+
+    bool isRowVisible(int row) const;
+    bool isRowVisible(QWidget *widget) const;
+    bool isRowVisible(QLayout *layout) const;
+
     QLayoutItem *itemAt(int row, ItemRole role) const;
     void getItemPosition(int index, int *rowPtr, ItemRole *rolePtr) const;
     void getWidgetPosition(QWidget *widget, int *rowPtr, ItemRole *rolePtr) const;

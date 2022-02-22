@@ -135,6 +135,7 @@ private slots:
     void takeRow_QLayout();
     void setWidget();
     void setLayout();
+    void hideShowRow();
 
 /*
     QLayoutItem *itemAt(int row, ItemRole role) const;
@@ -1121,6 +1122,135 @@ void tst_QFormLayout::setLayout()
         QCOMPARE(row, -1);
         QCOMPARE(int(role), int(invalidRole));
     }
+}
+
+void tst_QFormLayout::hideShowRow()
+{
+    QWidget topLevel;
+    QFormLayout layout;
+
+    const auto makeComplex = []{
+        QHBoxLayout *hboxField = new QHBoxLayout;
+        hboxField->addWidget(new QLineEdit("Left"));
+        hboxField->addWidget(new QLineEdit("Right"));
+        return hboxField;
+    };
+
+    layout.addRow("Label", new QLineEdit("one"));
+    layout.addRow("Label", new QLineEdit("two"));
+    layout.addRow("Label", new QLineEdit("three"));
+    layout.addRow("Label", makeComplex());
+    layout.addRow(new QLineEdit("five")); // spanning widget
+    layout.addRow(makeComplex()); // spanning layout
+
+    topLevel.setLayout(&layout);
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+
+    // returns the top-left position of the items in a row
+    const auto rowPosition = [&layout](int row) {
+        QRect rect;
+        if (QLayoutItem *spanningItem = layout.itemAt(row, QFormLayout::SpanningRole)) {
+            rect = spanningItem->geometry();
+        } else {
+            if (QLayoutItem *labelItem = layout.itemAt(row, QFormLayout::LabelRole)) {
+                rect = labelItem->geometry();
+            }
+            if (QLayoutItem *fieldItem = layout.itemAt(row, QFormLayout::FieldRole)) {
+                rect |= fieldItem->geometry();
+            }
+        }
+        return rect.topLeft();
+    };
+
+    // returns the first widget in a row, even if that row is taken by a layout
+    const auto rowInputWidget = [&layout](int row) -> QWidget* {
+        auto fieldItem = layout.itemAt(row, QFormLayout::FieldRole);
+        if (!fieldItem)
+            return nullptr;
+        QWidget *fieldWidget = fieldItem->widget();
+        // we happen to know our layout structure
+        if (!fieldWidget)
+            fieldWidget = fieldItem->layout()->itemAt(0)->widget();
+        return fieldWidget;
+    };
+
+    // record the reference positions for all rows
+    QList<QPoint> rowPositions(layout.rowCount());
+    for (int row = 0; row < layout.rowCount(); ++row)
+        rowPositions[row] = rowPosition(row);
+
+    // hide each row in turn, the next row should take the space of the hidden row
+    for (int row = 0; row < layout.rowCount(); ++ row) {
+        layout.setRowVisible(row, false);
+        QVERIFY(!layout.isRowVisible(row));
+        if (row < layout.rowCount() - 1)
+            QTRY_COMPARE(rowPosition(row + 1), rowPositions[row]);
+        layout.setRowVisible(row, true);
+        QVERIFY(layout.isRowVisible(row));
+    }
+
+    // Hiding only the label or only the field doesn't hide the row.
+    for (int row = 0; row < layout.rowCount() - 1; ++row) {
+        const auto labelItem = layout.itemAt(0, QFormLayout::LabelRole);
+        if (labelItem) {
+            labelItem->widget()->hide();
+            QVERIFY(layout.isRowVisible(row));
+            QCOMPARE(rowPosition(row), rowPositions[row]);
+            layout.itemAt(0, QFormLayout::LabelRole)->widget()->show();
+        }
+        const auto fieldItem = layout.itemAt(0, QFormLayout::FieldRole);
+        if (fieldItem) {
+            fieldItem->widget()->hide();
+            QVERIFY(layout.isRowVisible(row));
+            QCOMPARE(rowPosition(row), rowPositions[row]);
+            layout.itemAt(0, QFormLayout::FieldRole)->widget()->show();
+        }
+    }
+
+    // If we hide both label and field, then the row should be considered hidden and the
+    // following row should move up into the space of the hidden row. We can only test
+    // this if both label and field are widgets, or if there is a spanning widget.
+    for (int row = 0; row < layout.rowCount() - 1; ++row) {
+        QWidget *labelWidget = nullptr;
+        if (auto labelItem = layout.itemAt(row, QFormLayout::LabelRole))
+            labelWidget = labelItem->widget();
+        QWidget *fieldWidget = nullptr;
+        if (auto fieldItem = layout.itemAt(row, QFormLayout::FieldRole))
+            fieldWidget = fieldItem->widget();
+
+        if (!fieldWidget)
+            continue;
+        if (labelWidget)
+            labelWidget->hide();
+        fieldWidget->hide();
+        QVERIFY(!layout.isRowVisible(row));
+        QVERIFY(!layout.isRowVisible(fieldWidget));
+        if (labelWidget)
+            QVERIFY(!layout.isRowVisible(labelWidget));
+        QTRY_COMPARE(rowPosition(row + 1), rowPositions[row]);
+        if (labelWidget)
+            labelWidget->show();
+        fieldWidget->show();
+    }
+
+    // hiding a row where a widget has focus must move focus to a widget in the next row
+    for (int row = 0; row < layout.rowCount(); ++row) {
+        QWidget *inputWidget = rowInputWidget(row);
+        QVERIFY(inputWidget);
+        inputWidget->setFocus();
+        layout.setRowVisible(row, false);
+        QVERIFY(!inputWidget->hasFocus());
+    }
+
+    // Now hide all rows, hide the toplevel widget, and show the toplevel widget again.
+    // None of the widgets inside must be visible.
+    for (int row = 0; row < layout.rowCount(); ++row)
+        layout.setRowVisible(row, false);
+    topLevel.hide();
+    topLevel.show();
+    for (int row = 0; row < layout.rowCount(); ++row)
+        QVERIFY(rowInputWidget(row)->isHidden());
 }
 
 void tst_QFormLayout::itemAt()
