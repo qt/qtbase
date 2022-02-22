@@ -95,8 +95,14 @@ if(QT_ADDITIONAL_PACKAGES_PREFIX_PATH)
 endif()
 if(DEFINED ENV{QT_ADDITIONAL_PACKAGES_PREFIX_PATH}
     AND NOT "$ENV{QT_ADDITIONAL_PACKAGES_PREFIX_PATH}" STREQUAL "")
+    set(__qt_env_additional_packages_prefixes $ENV{QT_ADDITIONAL_PACKAGES_PREFIX_PATH})
+    if(NOT CMAKE_HOST_WIN32)
+        string(REPLACE ":" ";" __qt_env_additional_packages_prefixes
+            "${__qt_env_additional_packages_prefixes}")
+    endif()
     list(APPEND __qt_toolchain_additional_packages_prefixes
-         $ENV{QT_ADDITIONAL_PACKAGES_PREFIX_PATH})
+        ${__qt_env_additional_packages_prefixes})
+    unset(__qt_env_additional_packages_prefixes)
 endif()
 
 if(__qt_toolchain_additional_packages_prefixes)
