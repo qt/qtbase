@@ -11,6 +11,13 @@ if(NOT FEATURE_developer_build AND INPUT_developer_build
     set(FEATURE_developer_build ON)
 endif()
 
+# Pre-calculate the no_prefix feature if it's set by configure via INPUT_no_prefix.
+# This needs to be done before qtbase/configure.cmake is processed.
+if(NOT FEATURE_no_prefix AND INPUT_no_prefix
+        AND NOT "${INPUT_no_prefix}" STREQUAL "undefined")
+    set(FEATURE_no_prefix ON)
+endif()
+
 set(_default_build_type "Release")
 if(FEATURE_developer_build)
     set(_default_build_type "Debug")
@@ -95,7 +102,11 @@ set(CMAKE_LINK_DEPENDS_NO_SHARED ON)
 # QtBuildInternalsExtra.cmake file.
 if (PROJECT_NAME STREQUAL "QtBase" AND NOT QT_BUILD_STANDALONE_TESTS)
     if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-        if(FEATURE_developer_build)
+        # Handle both FEATURE_ and QT_FEATURE_ cases when they are specified on the command line
+        # explicitly. It's possible for one to be set, but not the other, because
+        # qtbase/configure.cmake is not processed by this point.
+        if(FEATURE_developer_build OR QT_FEATURE_developer_build
+            OR FEATURE_no_prefix OR QT_FEATURE_no_prefix)
             # Handle non-prefix builds by setting the CMake install prefix to point to qtbase's
             # build dir. While building another repo (like qtsvg) the CMAKE_PREFIX_PATH should be
             # set on the command line to point to the qtbase build dir.
