@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -209,14 +209,14 @@ public:
     virtual bool isWritable() const = 0;
     virtual QString fileName() const = 0;
 
-    QVariant value(const QString &key, const QVariant *defaultValue) const;
-    QString actualKey(const QString &key) const;
+    QVariant value(QAnyStringView key, const QVariant *defaultValue) const;
+    QString actualKey(QAnyStringView key) const;
     void beginGroupOrArray(const QSettingsGroup &group);
     void setStatus(QSettings::Status status) const;
     void requestUpdate();
     void update();
 
-    static QString normalizedKey(const QString &key);
+    static QString normalizedKey(QAnyStringView key);
     static QSettingsPrivate *create(QSettings::Format format, QSettings::Scope scope,
                                         const QString &organization, const QString &application);
     static QSettingsPrivate *create(const QString &fileName, QSettings::Format format);

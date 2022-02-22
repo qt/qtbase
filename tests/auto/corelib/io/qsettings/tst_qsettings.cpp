@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -2160,20 +2160,17 @@ void tst_QSettings::testNormalizedKey()
 
     inKey.detach();
 
-    QString result = QSettingsPrivate::normalizedKey(inKey);
-    QCOMPARE(result, outKey);
-
-    /*
-        If the key is already normalized, we verify that outKey is
-        just a shallow copy of the input string. This is an important
-        optimization that shouldn't be removed accidentally.
-    */
-    if (inKey == outKey) {
-        QVERIFY(!result.isDetached());
-    } else {
-        if (!result.isEmpty()) {
-            QVERIFY(result.isDetached());
-        }
+    {
+        auto result = QSettingsPrivate::normalizedKey(inKey);
+        QCOMPARE(result, outKey);
+    }
+    {
+        auto result = QSettingsPrivate::normalizedKey(QUtf8StringView{inKey.toUtf8()});
+        QCOMPARE(result, outKey);
+    }
+    {
+        auto result = QSettingsPrivate::normalizedKey(QLatin1String{inKey.toLatin1()});
+        QCOMPARE(result, outKey);
     }
 }
 #endif

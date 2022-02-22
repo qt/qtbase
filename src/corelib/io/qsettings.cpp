@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -53,7 +53,7 @@
 #include "qtemporaryfile.h"
 #include "qstandardpaths.h"
 #include <qdatastream.h>
-#include <qstringconverter.h>
+#include "private/qstringconverter_p.h"
 
 #ifndef QT_NO_GEOM_VARIANT
 #include "qsize.h"
@@ -230,11 +230,30 @@ QSettingsPrivate::~QSettingsPrivate()
 {
 }
 
-QString QSettingsPrivate::actualKey(const QString &key) const
+QString QSettingsPrivate::actualKey(QAnyStringView key) const
 {
     auto n = normalizedKey(key);
     Q_ASSERT_X(!n.isEmpty(), "QSettings", "empty key");
     return groupPrefix + n;
+}
+
+namespace {
+    // ### this needs some public API (QStringConverter?)
+    QChar *write(QChar *out, QUtf8StringView v)
+    {
+        return QUtf8::convertToUnicode(out, QByteArrayView(v));
+    }
+    QChar *write(QChar *out, QLatin1String v)
+    {
+        for (char ch : v)
+            *out++ = QLatin1Char(ch);
+        return out;
+    }
+    QChar *write(QChar *out, QStringView v)
+    {
+        memcpy(out, v.data(), v.size() * sizeof(QChar));
+        return out + v.size();
+    }
 }
 
 /*
@@ -244,32 +263,43 @@ QString QSettingsPrivate::actualKey(const QString &key) const
             "foo"            becomes   "foo"
             "/foo//bar///"   becomes   "foo/bar"
             "///"            becomes   ""
-
-    This function is optimized to avoid a QString deep copy in the
-    common case where the key is already normalized.
 */
-QString QSettingsPrivate::normalizedKey(const QString &key)
+QString QSettingsPrivate::normalizedKey(QAnyStringView key)
 {
-    QString result = key;
+    QString result(key.size(), Qt::Uninitialized);
+    auto out = const_cast<QChar*>(result.constData()); // don't detach
 
-    int i = 0;
-    while (i < result.size()) {
-        while (result.at(i) == QLatin1Char('/')) {
-            result.remove(i, 1);
-            if (i == result.size())
-                goto after_loop;
-        }
-        while (result.at(i) != QLatin1Char('/')) {
-            ++i;
-            if (i == result.size())
-                return result;
-        }
-        ++i; // leave the slash alone
-    }
+    const bool maybeEndsInSlash = key.visit([&out](auto key) {
+        using View = decltype(key);
 
-after_loop:
-    if (!result.isEmpty())
-        result.truncate(i - 1); // remove the trailing slash
+        auto it = key.begin();
+        const auto end = key.end();
+
+        while (it != end) {
+            while (*it == u'/') {
+                ++it;
+                if (it == end)
+                    return true;
+            }
+            auto mark = it;
+            while (*it != u'/') {
+                ++it;
+                if (it == end)
+                    break;
+            }
+            out = write(out, View{mark, it});
+            if (it == end)
+                return false;
+            Q_ASSERT(*it == u'/');
+            *out++ = u'/';
+            ++it;
+        }
+        return true;
+    });
+
+    if (maybeEndsInSlash && out != result.constData())
+        --out; // remove the trailing slash
+    result.truncate(out - result.constData());
     return result;
 }
 
@@ -3290,7 +3320,7 @@ QVariant QSettings::value(const QString &key, const QVariant &defaultValue) cons
     return d->value(key, &defaultValue);
 }
 
-QVariant QSettingsPrivate::value(const QString &key, const QVariant *defaultValue) const
+QVariant QSettingsPrivate::value(QAnyStringView key, const QVariant *defaultValue) const
 {
     if (key.isEmpty()) {
         qWarning("QSettings::value: Empty key passed");
