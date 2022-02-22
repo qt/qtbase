@@ -19,7 +19,4 @@ add_subdirectory(qgraphicspolygonitem)
 add_subdirectory(qgraphicstransform)
 add_subdirectory(qgraphicsproxywidget)
 add_subdirectory(qgraphicswidget)
-# QTBUG-87671 # special case
-if(NOT ANDROID)
-    add_subdirectory(qgraphicsview)
-endif()
+add_subdirectory(qgraphicsview)
