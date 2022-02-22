@@ -45,3 +45,9 @@ android
 android
 [update_ancestorClipsChildrenToShape2]
 android
+[QTBUG_70255_scrollTo]
+android # QTBUG-87397
+[embeddedViewsWithFocus]
+android # QTBUG-87397
+[viewportUpdateMode2]
+android # QTBUG-87397
