@@ -69,7 +69,11 @@ function(__qt_internal_collect_additional_prefix_paths out_var prefixes_var)
     endif()
     if(DEFINED ENV{${prefixes_var}}
         AND NOT "$ENV{${prefixes_var}}" STREQUAL "")
-        list(APPEND additional_packages_prefixes $ENV{${prefixes_var}})
+        set(prefixes_from_env "$ENV{${prefixes_var}}")
+        if(NOT CMAKE_HOST_WIN32)
+            string(REPLACE ":" ";" prefixes_from_env "${prefixes_from_env}")
+        endif()
+        list(APPEND additional_packages_prefixes ${prefixes_from_env})
     endif()
 
     foreach(additional_path IN LISTS additional_packages_prefixes)
