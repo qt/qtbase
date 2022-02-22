@@ -8,6 +8,8 @@ qt_commandline_subconfig(src/printsupport)
 qt_commandline_subconfig(src/plugins/sqldrivers)
 qt_commandline_subconfig(src/testlib)
 qt_commandline_subconfig(src/tools)
+# no-prefix needs to be placed before prefix
+qt_commandline_option(no-prefix TYPE void)
 qt_commandline_option(prefix TYPE string)
 qt_commandline_option(extprefix TYPE string)
 qt_commandline_option(archdatadir TYPE string)

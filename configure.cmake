@@ -467,9 +467,17 @@ qt_feature("pkg-config" PUBLIC
 )
 qt_feature_config("pkg-config" QMAKE_PUBLIC_QT_CONFIG
     NEGATE)
-qt_feature("developer-build"
+qt_feature("developer-build" PRIVATE
     LABEL "Developer build"
     AUTODETECT OFF
+)
+qt_feature("no-prefix" PRIVATE
+    LABEL "No prefix build"
+    # The var expansion on the right hand side is on purpose
+    # because the custom condition evaluator only expands the lhs
+    CONDITION (CMAKE_INSTALL_PREFIX STREQUAL "${QtBase_BINARY_DIR}")
+              OR CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT
+    AUTODETECT QT_FEATURE_developer_build
 )
 qt_feature("private_tests" PRIVATE
     LABEL "Developer build: private_tests"
