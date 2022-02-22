@@ -145,6 +145,11 @@
 #endif // __cplusplus
 
 #if defined(__cplusplus) && defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
+#  if Q_CC_MSVC < 1927
+     // Check below only works with 16.7 or newer
+#    error "Qt requires at least Visual Studio 2019 version 16.7 (VC++ version 14.27). Please upgrade."
+#  endif
+
 // On MSVC we require /permissive- set by user code. Check that we are
 // under its rules -- for instance, check that std::nullptr_t->bool is
 // not an implicit conversion, as per
