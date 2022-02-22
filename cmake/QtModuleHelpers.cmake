@@ -278,7 +278,9 @@ function(qt_internal_add_module target)
         endif()
 
         if (arg_SKIP_DEPENDS_INCLUDE)
-            set_target_properties(${target} PROPERTIES QT_MODULE_SKIP_DEPENDS_INCLUDE TRUE)
+            set_target_properties(${target} PROPERTIES _qt_module_skip_depends_include TRUE)
+            set_property(TARGET "${target}" APPEND PROPERTY
+                         EXPORT_PROPERTIES _qt_module_skip_depends_include)
         endif()
         if(is_framework)
             set_target_properties(${target} PROPERTIES
