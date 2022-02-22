@@ -323,6 +323,12 @@ endif()
 
 # Add custom target to package the APK
 function(qt6_android_add_apk_target target)
+    # Avoid calling qt6_android_add_apk_target twice
+    get_property(apk_targets GLOBAL PROPERTY _qt_apk_targets)
+    if("${target}" IN_LIST apk_targets)
+        return()
+    endif()
+
     get_target_property(deployment_file ${target} QT_ANDROID_DEPLOYMENT_SETTINGS_FILE)
     if (NOT deployment_file)
         message(FATAL_ERROR "Target ${target} is not a valid android executable target\n")
