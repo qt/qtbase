@@ -863,13 +863,20 @@ private:
 
 void tst_QMenu::activeSubMenuPositionExec()
 {
-
+#ifdef Q_OS_ANDROID
+    // QTBUG-87424
+    QSKIP("Android: This hangs. Figure out why.");
+#endif
     SubMenuPositionExecMenu menu;
     menu.exec(QGuiApplication::primaryScreen()->availableGeometry().center());
 }
 
 void tst_QMenu::task242454_sizeHint()
 {
+#ifdef Q_OS_ANDROID
+    // QTBUG-87424
+    QSKIP("Android: This hangs. Figure out why.");
+#endif
     QMenu menu;
     QString s = QLatin1String("foo\nfoo\nfoo\nfoo");
     menu.addAction(s);
