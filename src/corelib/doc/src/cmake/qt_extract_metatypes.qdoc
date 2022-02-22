@@ -52,4 +52,18 @@ example, to pass it to another command or to install it), use the
 \c OUTPUT_FILES option to provide the name of a variable in which to store its
 absolute path.
 
+\section1 Automatic metatype extraction
+
+Since Qt 6.8, if you have not disabled \c{AUTOMOC} and either are using CMake
+3.19 or later or are calling \l{qt6_finalize_target}{qt_finalize_target()}
+manually, then \c{qt_extract_metatypes()} is automatically called as part of the
+finalization step for \l{qt_add_library}. This has no effect if you have
+manually called \c{qt_extract_metatypes()} before the finalization, possibly
+with custom arguments. However, it does make sure that the metatypes are also
+produced if you haven't. This is important if any of the types in the library
+are used as part of any QML types any time in the future and has no downsides.
+
+Furthermore, \l{qt_add_qml_module} automatically invokes
+\c{qt_extract_metatypes()} for its target.
+
 */

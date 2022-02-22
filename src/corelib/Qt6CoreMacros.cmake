@@ -835,6 +835,17 @@ function(qt6_finalize_target target)
         endif()
     endif()
 
+    if(target_type STREQUAL "SHARED_LIBRARY" OR
+        target_type STREQUAL "STATIC_LIBRARY" OR
+        target_type STREQUAL "MODULE_LIBRARY" OR
+        target_type STREQUAL "OBJECT_LIBRARY")
+        get_target_property(is_immediately_finalized "${target}" _qt_is_immediately_finalized)
+        get_target_property(uses_automoc ${target} AUTOMOC)
+        if(uses_automoc AND NOT is_immediately_finalized)
+            qt6_extract_metatypes(${target})
+        endif()
+    endif()
+
     set_target_properties(${target} PROPERTIES _qt_is_finalized TRUE)
 endfunction()
 
