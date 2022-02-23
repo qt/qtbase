@@ -89,8 +89,8 @@ The following table describes the mapping of configure options to CMake argument
 |                                       |                                                   | If no value is provided, a simulator_and_device build is        |
 |                                       |                                                   | assumed.                                                        |
 | -android-sdk <path>                   | -DANDROID_SDK_ROOT=<path>                         |                                                                 |
-| -android-ndk <path>                   | -DCMAKE_TOOLCHAIN_PATH=<toolchain file in NDK>    |                                                                 |
-| -android-ndk-platform android-23      | -DCMAKE_ANDROID_NATIVE_API_LEVEL=23               |                                                                 |
+| -android-ndk <path>                   | -DCMAKE_TOOLCHAIN_FILE=<toolchain file in NDK>    |                                                                 |
+| -android-ndk-platform android-23      | -DANDROID_NATIVE_API_LEVEL=23                     |                                                                 |
 | -android-abis <abi_1>,...,<abi_n>     | -DANDROID_ABI=<abi_1>                             | only one ABI can be specified                                   |
 | -android-style-assets                 | -DFEATURE_android_style_assets=ON                 |                                                                 |
 | -android-javac-source                 | -DQT_ANDROID_JAVAC_SOURCE=7                       | Set the javac build source version.                             |
@@ -103,7 +103,7 @@ The following table describes the mapping of configure options to CMake argument
 |                                       |                                                   | -DQT_BUILD_EXAMPLES_BY_DEFAULT=OFF. Note that if you entirely   |
 |                                       |                                                   | disable tests/examples at configure time (by using              |
 |                                       |                                                   | -DQT_BUILD_TESTS=OFF or -DQT_BUILD_EXAMPLES=OFF) you can't then |
-|                                       |                                                   | build them separately, after configuration.                     | 
+|                                       |                                                   | build them separately, after configuration.                     |
 | -nomake <part>                        | -DQT_BUILD_TESTS=OFF                              | A way to turn off tools explicitly is missing.                  |
 |                                       | -DQT_BUILD_EXAMPLES=OFF                           |                                                                 |
 | -no-gui                               | -DFEATURE_gui=OFF                                 |                                                                 |
