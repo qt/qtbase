@@ -287,6 +287,7 @@ _qt_internal_setup_deploy_support()
 
 set(corelib_no_pch_sources
     compat/removed_api.cpp
+    global/qsimd.cpp
 )
 
 foreach(src ${corelib_no_pch_sources})
