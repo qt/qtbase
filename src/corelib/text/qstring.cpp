@@ -10850,6 +10850,25 @@ QString QString::toHtmlEscaped() const
 */
 
 /*!
+    \fn Qt::Literals::StringLiterals::operator""_L1(const char *str, size_t size)
+
+    \relates QLatin1String
+    \since 6.4
+
+    Literal operator that creates a QLatin1String out of the first \a size
+    characters in the char string literal \a str.
+
+    The following code creates a QLatin1String:
+    \code
+    using namespace Qt::Literals::StringLiterals;
+
+    auto str = "hello"_L1;
+    \endcode
+
+    \sa Qt::Literals::StringLiterals
+*/
+
+/*!
     \internal
  */
 void QAbstractConcatenable::appendLatin1To(QLatin1String in, QChar *out) noexcept

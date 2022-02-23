@@ -31,3 +31,36 @@
 
     \brief The QtLiterals namespace declares literal operators for Qt types.
 */
+
+/*!
+    \namespace Qt::Literals
+    \inmodule QtCore
+
+    \brief The Literals inline namespace declares literal operators for Qt types.
+*/
+
+/*!
+    \namespace Qt::Literals::StringLiterals
+    \inmodule QtCore
+
+    \brief The StringLiterals namespace declares string literal operators
+    for Qt types.
+
+    The inline Qt::Literals::StringLiterals namespace declares string literal
+    operators for Qt types. Because both \c Literals and \c StringLiterals
+    namespaces are declared as inline, the symbols from this namespace can be
+    accessed by adding one of the following to your code:
+
+    \code
+    // Makes visible only the literal operators declared in StringLiterals
+    using namespace Qt::Literals::StringLiterals;
+
+    // Makes visible literal operators declared in all inline namespaces
+    // inside Literals
+    using namespace Qt::Literals;
+
+    // Makes visible all symbols (including all literal operators) declared
+    // in the Qt namespace
+    using namespace Qt;
+    \endcode
+*/

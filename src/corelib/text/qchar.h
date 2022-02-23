@@ -654,6 +654,19 @@ Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, QChar);
 Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QChar &);
 #endif
 
+namespace Qt {
+inline namespace Literals {
+inline namespace StringLiterals {
+
+constexpr inline QLatin1Char operator"" _L1(char ch) noexcept
+{
+    return QLatin1Char(ch);
+}
+
+} // StringLiterals
+} // Literals
+} // Qt
+
 QT_END_NAMESPACE
 
 namespace std {

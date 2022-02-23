@@ -1821,6 +1821,23 @@ QDataStream &operator>>(QDataStream &in, QChar &chr)
     that of \a c2; otherwise returns \c false.
 */
 
+/*!
+    \fn Qt::Literals::StringLiterals::operator""_L1(char ch)
+
+    \relates QLatin1Char
+    \since 6.4
+
+    Literal operator that creates a QLatin1Char out of \a ch.
+
+    The following code creates a QLatin1Char:
+    \code
+    using namespace Qt::Literals::StringLiterals;
+
+    auto ch = 'a'_L1;
+    \endcode
+
+    \sa Qt::Literals::StringLiterals
+*/
 
 // ---------------------------------------------------------------------------
 

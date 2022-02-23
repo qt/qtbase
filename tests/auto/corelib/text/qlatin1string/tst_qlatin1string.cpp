@@ -46,6 +46,7 @@ class tst_QLatin1String : public QObject
 private Q_SLOTS:
     void constExpr();
     void construction();
+    void userDefinedLiterals();
     void at();
     void arg() const;
     void midLeftRight();
@@ -143,6 +144,50 @@ void tst_QLatin1String::construction()
         l1s = QLatin1String(helloView);
         QCOMPARE(l1s.latin1(), helloView.data());
         QCOMPARE(l1s.size(), helloView.size());
+    }
+}
+
+void tst_QLatin1String::userDefinedLiterals()
+{
+    {
+        using namespace Qt::Literals::StringLiterals;
+
+        auto str = "abcd"_L1;
+        static_assert(std::is_same_v<decltype(str), QLatin1String>);
+        QCOMPARE(str.size(), 4);
+        QCOMPARE(str, QLatin1String("abcd"));
+        QCOMPARE(str.latin1(), "abcd");
+        QCOMPARE("abcd"_L1, str.latin1());
+        QCOMPARE("M\xE5rten"_L1, QLatin1String("M\xE5rten"));
+
+        auto ch = 'a'_L1;
+        static_assert(std::is_same_v<decltype(ch), QLatin1Char>);
+        QCOMPARE(ch, QLatin1Char('a'));
+        QCOMPARE(ch.toLatin1(), 'a');
+        QCOMPARE('a'_L1, ch.toLatin1());
+        QCOMPARE('\xE5'_L1, QLatin1Char('\xE5'));
+    }
+    {
+        using namespace Qt::Literals;
+
+        auto str = "abcd"_L1;
+        static_assert(std::is_same_v<decltype(str), QLatin1String>);
+        QCOMPARE(str, QLatin1String("abcd"));
+
+        auto ch = 'a'_L1;
+        static_assert(std::is_same_v<decltype(ch), QLatin1Char>);
+        QCOMPARE(ch, QLatin1Char('a'));
+    }
+    {
+        using namespace Qt;
+
+        auto str = "abcd"_L1;
+        static_assert(std::is_same_v<decltype(str), QLatin1String>);
+        QCOMPARE(str, QLatin1String("abcd"));
+
+        auto ch = 'a'_L1;
+        static_assert(std::is_same_v<decltype(ch), QLatin1Char>);
+        QCOMPARE(ch, QLatin1Char('a'));
     }
 }
 

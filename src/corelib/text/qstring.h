@@ -1589,6 +1589,19 @@ inline QString operator"" _qs(const char16_t *str, size_t size) noexcept
 }
 } // QtLiterals
 
+namespace Qt {
+inline namespace Literals {
+inline namespace StringLiterals {
+
+constexpr inline QLatin1String operator"" _L1(const char *str, size_t size) noexcept
+{
+    return QLatin1String(str, qsizetype(size));
+}
+
+} // StringLiterals
+} // Literals
+} // Qt
+
 QT_END_NAMESPACE
 
 #if defined(QT_USE_FAST_OPERATOR_PLUS) || defined(QT_USE_QSTRINGBUILDER)
