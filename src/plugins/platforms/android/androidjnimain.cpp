@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2014 BogDan Vatra <bogdan@kde.org>
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -567,6 +567,9 @@ static void startQtApplication(JNIEnv */*env*/, jclass /*clazz*/)
             vm->AttachCurrentThread(&env, &args);
     }
 
+    // Register type for invokeMethod() calls.
+    qRegisterMetaType<Qt::ScreenOrientation>("Qt::ScreenOrientation");
+
     // Register resources if they are available
     if (QFile{QStringLiteral("assets:/android_rcc_bundle.rcc")}.exists())
         QResource::registerResource(QStringLiteral("assets:/android_rcc_bundle.rcc"));
@@ -793,9 +796,13 @@ static void handleOrientationChanged(JNIEnv */*env*/, jobject /*thiz*/, jint new
     QAndroidPlatformIntegration::setScreenOrientation(screenOrientation, native);
     QMutexLocker lock(&m_platformMutex);
     if (m_androidPlatformIntegration) {
-        QPlatformScreen *screen = m_androidPlatformIntegration->screen();
-        QWindowSystemInterface::handleScreenOrientationChange(screen->screen(),
-                                                              screenOrientation);
+        QAndroidPlatformScreen *screen = m_androidPlatformIntegration->screen();
+        // Use invokeMethod to keep the certain order of the "geometry change"
+        // and "orientation change" event handling.
+        if (screen) {
+            QMetaObject::invokeMethod(screen, "setOrientation", Qt::AutoConnection,
+                                      Q_ARG(Qt::ScreenOrientation, screenOrientation));
+        }
     }
 }
 
