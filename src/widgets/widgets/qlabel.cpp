@@ -65,11 +65,11 @@ QLabelPrivate::QLabelPrivate()
       sh(),
       msh(),
       text(),
-      pixmap(nullptr),
-      scaledpixmap(nullptr),
-      cachedimage(nullptr),
+      pixmap(),
+      scaledpixmap(),
+      cachedimage(),
 #ifndef QT_NO_PICTURE
-      picture(nullptr),
+      picture(),
 #endif
 #if QT_CONFIG(movie)
       movie(),
@@ -375,7 +375,7 @@ void QLabel::setPixmap(const QPixmap &pixmap)
     Q_D(QLabel);
     if (!d->pixmap || d->pixmap->cacheKey() != pixmap.cacheKey()) {
         d->clearContents();
-        d->pixmap = new QPixmap(pixmap);
+        d->pixmap = pixmap;
     }
 
     d->updateLabel();
@@ -420,7 +420,7 @@ void QLabel::setPicture(const QPicture &picture)
 {
     Q_D(QLabel);
     d->clearContents();
-    d->picture = new QPicture(picture);
+    d->picture = picture;
 
     d->updateLabel();
 }
@@ -1129,12 +1129,12 @@ void QLabel::paintEvent(QPaintEvent *)
             QSize scaledSize = cr.size() * devicePixelRatio();
             if (!d->scaledpixmap || d->scaledpixmap->size() != scaledSize) {
                 if (!d->cachedimage)
-                    d->cachedimage = new QImage(d->pixmap->toImage());
-                delete d->scaledpixmap;
+                    d->cachedimage = d->pixmap->toImage();
+                d->scaledpixmap.reset();
                 QImage scaledImage =
                     d->cachedimage->scaled(scaledSize,
                                            Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-                d->scaledpixmap = new QPixmap(QPixmap::fromImage(std::move(scaledImage)));
+                d->scaledpixmap = QPixmap::fromImage(std::move(scaledImage));
                 d->scaledpixmap->setDevicePixelRatio(devicePixelRatio());
             }
             pix = *d->scaledpixmap;
@@ -1335,15 +1335,11 @@ void QLabelPrivate::clearContents()
     hasShortcut = false;
 
 #ifndef QT_NO_PICTURE
-    delete picture;
-    picture = nullptr;
+    picture.reset();
 #endif
-    delete scaledpixmap;
-    scaledpixmap = nullptr;
-    delete cachedimage;
-    cachedimage = nullptr;
-    delete pixmap;
-    pixmap = nullptr;
+    scaledpixmap.reset();
+    cachedimage.reset();
+    pixmap.reset();
 
     text.clear();
     Q_Q(QLabel);
@@ -1489,10 +1485,8 @@ void QLabel::setScaledContents(bool enable)
         return;
     d->scaledcontents = enable;
     if (!enable) {
-        delete d->scaledpixmap;
-        d->scaledpixmap = nullptr;
-        delete d->cachedimage;
-        d->cachedimage = nullptr;
+        d->scaledpixmap.reset();
+        d->cachedimage.reset();
     }
     update(contentsRect());
 }

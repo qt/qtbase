@@ -69,6 +69,8 @@
 #include "qmenu.h"
 #endif
 
+#include <optional>
+
 QT_BEGIN_NAMESPACE
 
 class Q_AUTOTEST_EXPORT QLabelPrivate : public QFramePrivate
@@ -117,11 +119,11 @@ public:
     mutable QSize sh;
     mutable QSize msh;
     QString text;
-    QPixmap  *pixmap;
-    QPixmap *scaledpixmap;
-    QImage *cachedimage;
+    std::optional<QPixmap> pixmap;
+    std::optional<QPixmap> scaledpixmap;
+    std::optional<QImage> cachedimage;
 #ifndef QT_NO_PICTURE
-    QPicture *picture;
+    std::optional<QPicture> picture;
 #endif
 #if QT_CONFIG(movie)
     QPointer<QMovie> movie;
