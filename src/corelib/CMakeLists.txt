@@ -1326,11 +1326,13 @@ qt_internal_add_docs(Core
     doc/qtcore.qdocconf
 )
 
-qt_internal_add_3rdparty_header_module(ZlibPrivate
-    EXTERNAL_HEADERS
-        ../3rdparty/zlib/src/zlib.h
-        ../3rdparty/zlib/src/zconf.h
-)
+if(NOT QT_FEATURE_system_zlib)
+    qt_internal_add_3rdparty_header_module(ZlibPrivate
+        EXTERNAL_HEADERS
+            ../3rdparty/zlib/src/zlib.h
+            ../3rdparty/zlib/src/zconf.h
+    )
+endif()
 
 qt_internal_add_optimize_full_flags()
 
