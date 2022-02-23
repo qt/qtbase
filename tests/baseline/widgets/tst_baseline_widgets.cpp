@@ -45,6 +45,8 @@ private slots:
     void tst_QPushButton_data();
     void tst_QPushButton();
 
+    void tst_QPushButtonSquare();
+
     void tst_QProgressBar_data();
     void tst_QProgressBar();
 
@@ -196,6 +198,29 @@ void tst_Widgets::tst_QPushButton()
     testButton->setDown(true);
     QBASELINE_CHECK(takeSnapshot(), "default_down");
     testButton->setDown(false);
+}
+
+void tst_Widgets::tst_QPushButtonSquare()
+{
+    QVBoxLayout layout;
+
+    QPushButton button(testWindow());
+    button.setText(QLatin1String("Square"));
+    const auto sizeHint = button.sizeHint().width();
+    // Depending on the current QStyle, this may result in
+    // a different button look - on macOS it will look as
+    // a toolbutton:
+    button.setFixedSize(sizeHint, sizeHint);
+
+    layout.addWidget(&button);
+    testWindow()->setLayout(&layout);
+
+    takeStandardSnapshots();
+
+    button.setCheckable(true);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "square_unchecked");
+    button.setChecked(true);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "square_checked");
 }
 
 void tst_Widgets::tst_QProgressBar_data()
