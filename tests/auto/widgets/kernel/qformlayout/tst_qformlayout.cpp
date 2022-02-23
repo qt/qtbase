@@ -274,7 +274,9 @@ void tst_QFormLayout::wrapping()
     fl->setRowWrapPolicy(QFormLayout::WrapLongRows);
 
     QLineEdit *le = new QLineEdit;
-    QLabel *lbl = new QLabel("A long label");
+    QLabel *lbl = new QLabel("A long label which is actually long enough to trigger wrapping,"
+                             " even on Android and even if it is executed on a tiling window"
+                             " manager which forces the window into fullscreen mode.");
     le->setMinimumWidth(200);
     fl->addRow(lbl, le);
 
