@@ -321,6 +321,23 @@ qint64 calculateTransitionForYear(const SYSTEMTIME &rule, int year, int bias)
     return QTimeZonePrivate::invalidMSecs();
 }
 
+// True precisely if transition represents the start of the year.
+bool isAtStartOfYear(const SYSTEMTIME &transition, int year)
+{
+    /*
+      Note that, here, wDay identifies an instance of a given day-of-week in the
+      month, with 5 meaning last. (December 31st is, incidentally, always the
+      fifth instance of its day of the week in its month. But we aren't testing
+      that - see below.)
+
+      QDate represents Sunday by 7, SYSTEMTIME by 0; so compare day of the week
+      by taking difference mod 7.
+    */
+    return transition.wMonth == 1 && transition.wDay == 1
+        && (QDate(year, 1, 1).dayOfWeek() - transition.wDayOfWeek) % 7 == 0
+        && transition.wHour == 0 && transition.wMinute == 0 && transition.wSecond == 0;
+}
+
 struct TransitionTimePair
 {
     // Transition times, in ms:
@@ -342,16 +359,36 @@ struct TransitionTimePair
           year, or expresses a transition of each kind, even if standard time
           did change in a year with no DST.  We've seen year-start fake-DST
           (whose offset matches prior standard offset, in which the previous
-          year ended); and conjecture that similar might be used at a year-end.
-          (This might be used for a southern-hemisphere zone, where the start of
-          the year usually is in DST, when applicable.)  Note that, here, wDay
-          identifies an instance of a given day-of-week in the month, with 5
-          meaning last.
+          year ended).
+
+          It is possible there might also be year-end fake-DST but Bangladesh
+          toyed with DST from 2009-06-19 (a Friday) at 23:00 until, according to
+          the Olson database, 2009-12-32 24:00; however, MS represents that by
+          the last millisecond of the year, technically a millisecond early. (MS
+          falsely claims Bhutan did the same.) So we do not attempt to detect an
+          end-of-year fake transition; nor is there any reason to suppose MS
+          would need to do that, as anything it could implement thereby could
+          equally be implemented by a start-of-year fake.
+
+          A fake transition at the start of the year tells us what the offset at
+          the start of the year is; if this doesn't match the offset in effect
+          at the end of the previous year, then it's a real transition. If it
+          does match, then we have a fake transition. (A fake transition of one
+          kind at the end of the year would be paired with a real transition,
+          allegedly of the other kind, part way through the year; that would be
+          a transition away from the offset that would nominally be restored by
+          the fake so, again, the year would have started with the post-fake
+          offset in effect.)
 
           Either the alleged standardTimeRule or the alleged daylightTimeRule
           may be faked; either way, the transition is actually a change to the
           current standard offset; but the unfaked half of the rule contains the
-          useful bias data, so we have to go along with its lies.
+          useful bias data, so we have to go along with its lies. Clients of
+          this class should still use DaylightTime and StandardTime as if the
+          fake were not a lie, selecting which side of the real transition to
+          use the data for, and ruleToData() will take care of extracting the
+          right offset based on that, while tagging the resulting Data as
+          standard time.
 
           Example: Russia/Moscow
           Format: -bias +( -stdBias, stdDate | -dstBias, dstDate ) notes
@@ -361,25 +398,13 @@ struct TransitionTimePair
           Zone change in 2014: 180 +( 0, 0-10-5 2:0 | 60, 0-1-1 0:0 ) fake DST at year-start
           The last of these is missing on Win7 VMs (too old to know about it).
         */
-        if (rule.daylightTimeRule.wMonth == 1 && rule.daylightTimeRule.wDay == 1) {
-            // Fake "DST transition" at start of year producing the same offset as
-            // previous year ended in.
-            if (rule.standardTimeBias + rule.daylightTimeBias == oldYearOffset)
-                dst = QTimeZonePrivate::invalidMSecs();
-        } else if (rule.daylightTimeRule.wMonth == 12 && rule.daylightTimeRule.wDay > 3) {
-            // Similar, conjectured, for end of year, not changing offset.
-            if (rule.daylightTimeBias == 0)
-                dst = QTimeZonePrivate::invalidMSecs();
+        if (rule.standardTimeBias + rule.daylightTimeBias == oldYearOffset
+            && isAtStartOfYear(rule.daylightTimeRule, year)) {
+            dst = QTimeZonePrivate::invalidMSecs();
         }
-        if (rule.standardTimeRule.wMonth == 1 && rule.standardTimeRule.wDay == 1) {
-            // Fake "transition out of DST" at start of year producing the same
-            // offset as previous year ended in.
-            if (rule.standardTimeBias == oldYearOffset)
-                std = QTimeZonePrivate::invalidMSecs();
-        } else if (rule.standardTimeRule.wMonth == 12 && rule.standardTimeRule.wDay > 3) {
-            // Similar, conjectured, for end of year, not changing offset.
-            if (rule.daylightTimeBias == 0)
-                std = QTimeZonePrivate::invalidMSecs();
+        if (rule.standardTimeBias == oldYearOffset
+            && isAtStartOfYear(rule.standardTimeRule, year)) {
+            std = QTimeZonePrivate::invalidMSecs();
         }
     }
 
@@ -399,9 +424,13 @@ struct TransitionTimePair
     QTimeZonePrivate::Data ruleToData(const QWinTimeZonePrivate::QWinTransitionRule &rule,
                                       const QWinTimeZonePrivate *tzp, bool isDst) const
     {
-        if (isDst)
-            return tzp->ruleToData(rule, dst, QTimeZone::DaylightTime, fakesDst());
-        return tzp->ruleToData(rule, std, QTimeZone::StandardTime, fakesDst());
+        const auto type = isDst ? QTimeZone::DaylightTime : QTimeZone::StandardTime;
+        auto time = isDst ? dst : std;
+        // The isDst we're asked for may be set to the valid one of dst and
+        // std, when fake, but not always - so make sure:
+        if (time == QTimeZonePrivate::invalidMSecs())
+            time = isDst ? std : dst;
+        return tzp->ruleToData(rule, time, type, fakesDst());
     }
 };
 
