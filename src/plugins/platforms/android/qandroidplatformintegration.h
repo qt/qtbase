@@ -99,6 +99,12 @@ public:
     void setAvailableGeometry(const QRect &availableGeometry);
     void setPhysicalSize(int width, int height);
     void setScreenSize(int width, int height);
+    // The 3 methods above were replaced by a new one, so that we could have
+    // a better control over "geometry changed" event handling. Technically
+    // they are no longer used and can be removed. Not doing it now, because
+    // I'm not sure if it might be helpful to have them or not.
+    void setScreenSizeParameters(const QSize &physicalSize, const QSize &screenSize,
+                                 const QRect &availableGeometry);
     void setRefreshRate(qreal refreshRate);
     bool isVirtualDesktop() { return true; }
 
