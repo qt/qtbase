@@ -75,6 +75,9 @@
 
 #include "private/qdialog_p.h"
 
+#include <qpa/qplatformintegration.h>
+#include <private/qguiapplication_p.h>
+
 #include <algorithm>
 
 QT_BEGIN_NAMESPACE
@@ -122,6 +125,7 @@ public:
     void showAlpha(bool b);
     bool isAlphaVisible() const;
     void retranslateStrings();
+    bool supportsColorPicking() const;
 
     void _q_addCustom();
     void _q_setCustom(int index, QRgb color);
@@ -1634,16 +1638,18 @@ void QColorDialogPrivate::_q_pickScreenColor()
 
     addCusBt->setDisabled(true);
     buttons->setDisabled(true);
-    screenColorPickerButton->setDisabled(true);
-
-    const QPoint globalPos = QCursor::pos();
-    q->setCurrentColor(grabScreenColor(globalPos));
-    updateColorLabelText(globalPos);
+    if (screenColorPickerButton) {
+        screenColorPickerButton->setDisabled(true);
+        const QPoint globalPos = QCursor::pos();
+        q->setCurrentColor(grabScreenColor(globalPos));
+        updateColorLabelText(globalPos);
+    }
 }
 
 void QColorDialogPrivate::updateColorLabelText(const QPoint &globalPos)
 {
-    lblScreenColorInfo->setText(QColorDialog::tr("Cursor at %1, %2\nPress ESC to cancel")
+    if (lblScreenColorInfo)
+        lblScreenColorInfo->setText(QColorDialog::tr("Cursor at %1, %2\nPress ESC to cancel")
                                 .arg(globalPos.x())
                                 .arg(globalPos.y()));
 }
@@ -1725,12 +1731,16 @@ void QColorDialogPrivate::initWidgets()
         leftLay->addWidget(standard);
 
 #if !defined(QT_SMALL_COLORDIALOG)
-        // The screen color picker button
-        screenColorPickerButton = new QPushButton();
-        leftLay->addWidget(screenColorPickerButton);
-        lblScreenColorInfo = new QLabel(QLatin1String("\n"));
-        leftLay->addWidget(lblScreenColorInfo);
-        q->connect(screenColorPickerButton, SIGNAL(clicked()), SLOT(_q_pickScreenColor()));
+        if (supportsColorPicking()) {
+            screenColorPickerButton = new QPushButton();
+            leftLay->addWidget(screenColorPickerButton);
+            lblScreenColorInfo = new QLabel(QLatin1String("\n"));
+            leftLay->addWidget(lblScreenColorInfo);
+            q->connect(screenColorPickerButton, SIGNAL(clicked()), SLOT(_q_pickScreenColor()));
+        } else {
+            screenColorPickerButton = nullptr;
+            lblScreenColorInfo = nullptr;
+        }
 #endif
 
         leftLay->addStretch();
@@ -1867,10 +1877,18 @@ void QColorDialogPrivate::retranslateStrings()
         lblBasicColors->setText(QColorDialog::tr("&Basic colors"));
         lblCustomColors->setText(QColorDialog::tr("&Custom colors"));
         addCusBt->setText(QColorDialog::tr("&Add to Custom Colors"));
-        screenColorPickerButton->setText(QColorDialog::tr("&Pick Screen Color"));
+#if !defined(QT_SMALL_COLORDIALOG)
+        if (screenColorPickerButton)
+            screenColorPickerButton->setText(QColorDialog::tr("&Pick Screen Color"));
+#endif
     }
 
     cs->retranslateStrings();
+}
+
+bool QColorDialogPrivate::supportsColorPicking() const
+{
+    return QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ScreenWindowGrabbing);
 }
 
 bool QColorDialogPrivate::canBeNativeDialog() const
@@ -2214,7 +2232,6 @@ void QColorDialogPrivate::updateColorPicking(const QPoint &globalPos)
     // otherwise it is not possible to pre-select a custom cell for assignment.
     setCurrentColor(color, ShowColor);
     updateColorLabelText(globalPos);
-
 }
 
 bool QColorDialogPrivate::handleColorPickingMouseMove(QMouseEvent *e)
