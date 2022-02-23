@@ -94,6 +94,7 @@ public slots:
     void setAvailableGeometry(const QRect &rect);
     void setSize(const QSize &size);
     void setRefreshRate(qreal refreshRate);
+    void setOrientation(Qt::ScreenOrientation orientation);
 
 protected:
     bool event(QEvent *event) override;

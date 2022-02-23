@@ -291,6 +291,11 @@ void QAndroidPlatformScreen::setRefreshRate(qreal refreshRate)
     QWindowSystemInterface::handleScreenRefreshRateChange(QPlatformScreen::screen(), refreshRate);
 }
 
+void QAndroidPlatformScreen::setOrientation(Qt::ScreenOrientation orientation)
+{
+    QWindowSystemInterface::handleScreenOrientationChange(QPlatformScreen::screen(), orientation);
+}
+
 void QAndroidPlatformScreen::setAvailableGeometry(const QRect &rect)
 {
     QMutexLocker lock(&m_surfaceMutex);

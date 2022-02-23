@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2012 BogDan Vatra <bogdan@kde.org>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -53,6 +53,26 @@ import android.view.WindowInsets;
 public class QtLayout extends ViewGroup
 {
     private Runnable m_startApplicationRunnable;
+
+    private int m_activityDisplayRotation = -1;
+    private int m_ownDisplayRotation = -1;
+    private int m_nativeOrientation = -1;
+
+    public void setActivityDisplayRotation(int rotation)
+    {
+        m_activityDisplayRotation = rotation;
+    }
+
+    public void setNativeOrientation(int orientation)
+    {
+        m_nativeOrientation = orientation;
+    }
+
+    public int displayRotation()
+    {
+        return m_ownDisplayRotation;
+    }
+
     public QtLayout(Context context, Runnable startRunnable)
     {
         super(context);
@@ -80,6 +100,17 @@ public class QtLayout extends ViewGroup
                 : ((Activity)getContext()).getDisplay();
         display.getRealMetrics(realMetrics);
 
+        if ((realMetrics.widthPixels > realMetrics.heightPixels) != (w > h)) {
+            // This is an intermediate state during display rotation.
+            // The new size is still reported for old orientation, while
+            // realMetrics contain sizes for new orientation. Setting
+            // such parameters will produce inconsistent results, so
+            // we just skip them.
+            // We will have another onSizeChanged() with normal values
+            // a bit later.
+            return;
+        }
+
         boolean isFullScreenView = h == realMetrics.heightPixels;
 
         int insetLeft = isFullScreenView ? insets.getSystemWindowInsetLeft() : 0;
@@ -94,6 +125,17 @@ public class QtLayout extends ViewGroup
                 realMetrics.widthPixels, realMetrics.heightPixels, insetLeft, insetTop,
                 usableAreaWidth, usableAreaHeight, realMetrics.xdpi, realMetrics.ydpi,
                 realMetrics.scaledDensity, realMetrics.density, display.getRefreshRate());
+
+        int newRotation = display.getRotation();
+        if (m_ownDisplayRotation != m_activityDisplayRotation
+            && newRotation == m_activityDisplayRotation) {
+            // If the saved rotation value does not match the one from the
+            // activity, it means that we got orientation change before size
+            // change, and the value was cached. So we need to notify about
+            // orientation change now.
+            QtNative.handleOrientationChanged(newRotation, m_nativeOrientation);
+        }
+        m_ownDisplayRotation = newRotation;
 
         if (m_startApplicationRunnable != null) {
             m_startApplicationRunnable.run();
