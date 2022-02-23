@@ -525,7 +525,7 @@ static uint siphash(const uint8_t *in, uint inlen, uint seed, uint seed2)
 #    define mm256_set1_epz  _mm256_set1_epi64x
 #  else
 #    define mm_set1_epz     _mm_set1_epi32
-#    define mm_cvtepz_si128 _mm_cvtsi32_si128
+#    define mm_cvtsz_si128  _mm_cvtsi32_si128
 #    define mm_cvtsi128_sz  _mm_cvtsi128_si32
 #    define mm256_set1_epz  _mm256_set1_epi32
 #  endif
