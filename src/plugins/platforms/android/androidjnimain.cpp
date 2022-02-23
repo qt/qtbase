@@ -660,11 +660,13 @@ static void setDisplayMetrics(JNIEnv * /*env*/, jclass /*clazz*/, jint screenWid
                 qRound(double(screenHeightPixels) / ydpi * 25.4), screenWidthPixels,
                 screenHeightPixels);
     } else {
-        m_androidPlatformIntegration->setPhysicalSize(qRound(double(screenWidthPixels)  / xdpi * 25.4),
-                                                      qRound(double(screenHeightPixels) / ydpi * 25.4));
-        m_androidPlatformIntegration->setScreenSize(screenWidthPixels, screenHeightPixels);
-        m_androidPlatformIntegration->setAvailableGeometry(QRect(availableLeftPixels, availableTopPixels,
-                                                                 availableWidthPixels, availableHeightPixels));
+        const QSize physicalSize(qRound(double(screenWidthPixels) / xdpi * 25.4),
+                                 qRound(double(screenHeightPixels) / ydpi * 25.4));
+        const QSize screenSize(screenWidthPixels, screenHeightPixels);
+        const QRect availableGeometry(availableLeftPixels, availableTopPixels,
+                                      availableWidthPixels, availableHeightPixels);
+        m_androidPlatformIntegration->setScreenSizeParameters(physicalSize, screenSize,
+                                                              availableGeometry);
         m_androidPlatformIntegration->setRefreshRate(refreshRate);
     }
 }
