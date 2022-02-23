@@ -200,19 +200,21 @@ static inline quint64 detectProcessorFeatures()
 
 #ifdef Q_PROCESSOR_X86_32
 # define PICreg "%%ebx"
-# define X86_BASELINE   "i386"
 #else
 # define PICreg "%%rbx"
-# define X86_BASELINE   "x86-64"
+#endif
+#ifdef __SSE2_MATH__
+# define X86_BASELINE   "no-sse3"
+#else
+# define X86_BASELINE   "no-sse"
 #endif
 
 #if defined(Q_CC_GNU)
 // lower the target for functions in this file
 #  undef QT_FUNCTION_TARGET_BASELINE
-#  define QT_FUNCTION_TARGET_BASELINE               __attribute__((target("arch=" X86_BASELINE)))
+#  define QT_FUNCTION_TARGET_BASELINE               __attribute__((target(X86_BASELINE)))
 #  define QT_FUNCTION_TARGET_STRING_BASELINE_RDRND      \
-    "arch=" X86_BASELINE                                \
-    "," QT_FUNCTION_TARGET_STRING_RDRND
+    X86_BASELINE "," QT_FUNCTION_TARGET_STRING_RDRND
 #endif
 
 static bool checkRdrndWorks() noexcept;
