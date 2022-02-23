@@ -3730,9 +3730,14 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             // button in a 'pressed' state (the 'momentary push in' does
             // not show its state otherwise):
             [pb highlight:isPressed];
-            // For default/checked button this will give the required
-            // button accent color:
-            pb.keyEquivalent = isHighlighted ? @"\r" : @"";
+
+            if (cw.type == QMacStylePrivate::Button_SquareButton) {
+                pb.state = isHighlighted && !isPressed ? NSControlStateValueOn : NSControlStateValueOff;
+            } else {
+                // For default/checked button this will give the required
+                // button accent color:
+                pb.keyEquivalent = isHighlighted ? @"\r" : @"";
+            }
 
             d->drawNSViewInRect(pb, frameRect, p, ^(CGContextRef, const CGRect &r) {
                 [pb.cell drawBezelWithFrame:r inView:pb.superview];
