@@ -665,7 +665,7 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::data(qint64 forMSecsSinceEpoch) cons
         int prior = year == 1 ? -1 : year - 1; // No year 0.
         const int endYear = qMax(rule.startYear, prior);
         while (year >= endYear) {
-            const int newYearOffset = (year <= rule.startYear && ruleIndex > 0)
+            const int newYearOffset = (prior < rule.startYear && ruleIndex > 0)
                 ? yearEndOffset(m_tranRules.at(ruleIndex - 1), prior)
                 : yearEndOffset(rule, prior);
             const TransitionTimePair pair(rule, year, newYearOffset);
@@ -707,13 +707,20 @@ bool QWinTimeZonePrivate::hasTransitions() const
 QTimeZonePrivate::Data QWinTimeZonePrivate::nextTransition(qint64 afterMSecsSinceEpoch) const
 {
     int year = msecsToDate(afterMSecsSinceEpoch).year();
+    int newYearOffset = invalidSeconds();
     for (int ruleIndex = ruleIndexForYear(m_tranRules, year);
          ruleIndex < m_tranRules.count(); ++ruleIndex) {
         const QWinTransitionRule &rule = m_tranRules.at(ruleIndex);
-        // Initial guess: rule starts in standard time (unsound in southern hemisphere).
-        int newYearOffset = rule.standardTimeBias;
         // Does this rule's period include any transition at all ?
         if (rule.standardTimeRule.wMonth > 0 || rule.daylightTimeRule.wMonth > 0) {
+            int prior = year == 1 ? -1 : year - 1; // No year 0.
+            if (newYearOffset == invalidSeconds()) {
+                // First rule tried. (Will revise newYearOffset before any
+                // fall-back to a later rule.)
+                newYearOffset = (prior < rule.startYear && ruleIndex > 0)
+                    ? yearEndOffset(m_tranRules.at(ruleIndex - 1), prior)
+                    : yearEndOffset(rule, prior);
+            }
             if (year < rule.startYear) {
                 // Either before first rule's start, or we fell off the end of
                 // the rule for year because afterMSecsSinceEpoch is after any
@@ -723,10 +730,6 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::nextTransition(qint64 afterMSecsSinc
             }
             const int endYear = ruleIndex + 1 < m_tranRules.count()
                 ? qMin(m_tranRules.at(ruleIndex + 1).startYear, year + 2) : (year + 2);
-            int prior = year == 1 ? -1 : year - 1; // No year 0.
-            newYearOffset = (year <= rule.startYear && ruleIndex > 0)
-                ? yearEndOffset(m_tranRules.at(ruleIndex - 1), prior)
-                : yearEndOffset(rule, prior);
             while (year < endYear) {
                 const TransitionTimePair pair(rule, year, newYearOffset);
                 bool isDst = false;
@@ -748,7 +751,15 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::nextTransition(qint64 afterMSecsSinc
                 return pair.ruleToData(rule, this, isDst);
             }
             // Fell off end of rule, try next rule.
-        } // else: no transition during rule's period
+        } else {
+            // No transition during rule's period. If this is our first rule,
+            // record its standard time as newYearOffset for the next rule;
+            // otherwise, it should be consistent with what we have.
+            if (newYearOffset == invalidSeconds())
+                newYearOffset = rule.standardTimeBias;
+            else
+                Q_ASSERT(newYearOffset == rule.standardTimeBias);
+        }
     }
     // Apparently no transition after the given time:
     return invalidData();
@@ -770,7 +781,7 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::previousTransition(qint64 beforeMSec
             int prior = year == 1 ? -1 : year - 1; // No year 0.
             const int endYear = qMax(rule.startYear, prior);
             while (year >= endYear) {
-                const int newYearOffset = (year <= rule.startYear && ruleIndex > 0)
+                const int newYearOffset = (prior < rule.startYear && ruleIndex > 0)
                     ? yearEndOffset(m_tranRules.at(ruleIndex - 1), prior)
                     : yearEndOffset(rule, prior);
                 const TransitionTimePair pair(rule, year, newYearOffset);
