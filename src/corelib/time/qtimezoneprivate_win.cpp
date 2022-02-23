@@ -655,43 +655,41 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::data(qint64 forMSecsSinceEpoch) cons
     for (int ruleIndex = ruleIndexForYear(m_tranRules, year);
          ruleIndex >= 0; --ruleIndex) {
         const QWinTransitionRule &rule = m_tranRules.at(ruleIndex);
-        // Does this rule's period include any transition at all ?
-        if (rule.standardTimeRule.wMonth > 0 || rule.daylightTimeRule.wMonth > 0) {
-            int prior = year == 1 ? -1 : year - 1; // No year 0.
-            const int endYear = qMax(rule.startYear, prior);
-            while (year >= endYear) {
-                const int newYearOffset = (year <= rule.startYear && ruleIndex > 0)
-                    ? yearEndOffset(m_tranRules.at(ruleIndex - 1), prior)
-                    : yearEndOffset(rule, prior);
-                const TransitionTimePair pair(rule, year, newYearOffset);
-                bool isDst = false;
-                if (!ruleIndex && year < FIRST_DST_YEAR) {
-                    // We're before the invention of DST and have no earlier
-                    // rule that might give better data on this year, so just
-                    // extrapolate standard time (modulo fakery) backwards.
-                } else if (pair.std != invalidMSecs() && pair.std <= forMSecsSinceEpoch) {
-                    isDst = pair.std < pair.dst && pair.dst <= forMSecsSinceEpoch;
-                } else if (pair.dst != invalidMSecs() && pair.dst <= forMSecsSinceEpoch) {
-                    isDst = true;
-                } else {
-                    year = prior; // Try an earlier year for this rule (once).
-                    prior = year == 1 ? -1 : year - 1; // No year 0.
-                    continue;
-                }
-                return ruleToData(rule, forMSecsSinceEpoch,
-                                  isDst ? QTimeZone::DaylightTime : QTimeZone::StandardTime,
-                                  pair.fakesDst);
-            }
-            // Fell off start of rule, try previous rule.
-        } else {
-            // No transition, no DST, use the year's standard time.
+        Q_ASSERT(ruleIndex == 0 || year >= rule.startYear);
+        if (year < rule.startYear
+            || !(rule.standardTimeRule.wMonth > 0 || rule.daylightTimeRule.wMonth > 0)) {
+            // No transition (or before first rule), no DST, use the rule's standard time.
             return ruleToData(rule, forMSecsSinceEpoch, QTimeZone::StandardTime);
         }
-        if (year >= rule.startYear) {
-            year = rule.startYear - 1; // Seek last transition in new rule.
-            if (!year)
-                --year;
+
+        int prior = year == 1 ? -1 : year - 1; // No year 0.
+        const int endYear = qMax(rule.startYear, prior);
+        while (year >= endYear) {
+            const int newYearOffset = (year <= rule.startYear && ruleIndex > 0)
+                ? yearEndOffset(m_tranRules.at(ruleIndex - 1), prior)
+                : yearEndOffset(rule, prior);
+            const TransitionTimePair pair(rule, year, newYearOffset);
+            bool isDst = false;
+            if (!ruleIndex && year < FIRST_DST_YEAR) {
+                // We're before the invention of DST and have no earlier
+                // rule that might give better data on this year, so just
+                // extrapolate standard time (modulo fakery) backwards.
+            } else if (pair.std != invalidMSecs() && pair.std <= forMSecsSinceEpoch) {
+                isDst = pair.std < pair.dst && pair.dst <= forMSecsSinceEpoch;
+            } else if (pair.dst != invalidMSecs() && pair.dst <= forMSecsSinceEpoch) {
+                isDst = true;
+            } else {
+                year = prior; // Try an earlier year for this rule (once).
+                prior = year == 1 ? -1 : year - 1; // No year 0.
+                continue;
+            }
+            return ruleToData(rule, forMSecsSinceEpoch,
+                              isDst ? QTimeZone::DaylightTime : QTimeZone::StandardTime,
+                              pair.fakesDst);
         }
+        // We can only fall off the end of that loop if endYear is rule.startYear:
+        Q_ASSERT(year < rule.startYear);
+        // Fell off start of rule, try previous rule.
     }
     // We don't have relevant data :-(
     return invalidData();
@@ -765,8 +763,10 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::previousTransition(qint64 beforeMSec
     for (int ruleIndex = ruleIndexForYear(m_tranRules, year);
          ruleIndex >= 0; --ruleIndex) {
         const QWinTransitionRule &rule = m_tranRules.at(ruleIndex);
+        Q_ASSERT(ruleIndex == 0 || year >= rule.startYear);
         // Does this rule's period include any transition at all ?
-        if (rule.standardTimeRule.wMonth > 0 || rule.daylightTimeRule.wMonth > 0) {
+        if (year >= rule.startYear
+            && (rule.standardTimeRule.wMonth > 0 || rule.daylightTimeRule.wMonth > 0)) {
             int prior = year == 1 ? -1 : year - 1; // No year 0.
             const int endYear = qMax(rule.startYear, prior);
             while (year >= endYear) {
@@ -788,9 +788,9 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::previousTransition(qint64 beforeMSec
             }
             // Fell off start of rule, try previous rule.
         } else if (ruleIndex == 0) {
-            // Treat a no-transition first rule as a transition at the start of
-            // time, so that a scan through all rules *does* see it as the first
-            // rule:
+            // Describe time before the first transition in terms of a fictional
+            // transition at the start of time, so that a scan through all rules
+            // *does* see a first rule that supplies the offset for such times:
             return ruleToData(rule, minMSecs(), QTimeZone::StandardTime, false);
         } // else: no transition during rule's period
         if (year >= rule.startYear) {
