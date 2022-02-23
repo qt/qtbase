@@ -74,7 +74,13 @@
     the \l{GNU General Public License, version 2}.
     See \l{Qt Licensing} for further details.
 
-    Qt Network can use the \l{OpenSSL Toolkit} as a backend. The library is then
+    Furthermore, Qt Network in Qt \QtVersion may contain third-party
+    modules under the following permissive licenses:
+
+    \generatelist{groupsbymodule attributions-qtnetwork}
+
+    Qt Network can make use of the \l{OpenSSL Toolkit} as a back end.
+    The library is then
     linked against OpenSSL in a way that requires compliance with the \l{OpenSSL
     License}. To allow linking OpenSSL with Qt Network under the GPL, following
     exceptions to the GPL do apply:
