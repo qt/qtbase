@@ -236,6 +236,11 @@ void tst_QPlugin::scanInvalidPlugin()
         memset(data + offset + metadata.size(), 0, 512 - metadata.size());
     }
 
+#if defined(Q_OS_QNX)
+    // On QNX plugin access is still too early
+    QTest::qSleep(1000);
+#endif
+
     // now try to load this
     QFETCH(bool, loads);
     QFETCH(QString, errMsg);
