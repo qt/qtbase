@@ -147,7 +147,7 @@ inline QString QSettingsGroup::toString() const
     return result;
 }
 
-class Q_AUTOTEST_EXPORT QConfFile
+class QConfFile
 {
 public:
     ~QConfFile();
@@ -156,6 +156,7 @@ public:
     bool isWritable() const;
 
     static QConfFile *fromName(const QString &name, bool _userPerms);
+    Q_AUTOTEST_EXPORT
     static void clearCache();
 
     QString name;
