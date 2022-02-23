@@ -882,7 +882,7 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_datetimeparser
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_zstd
     LIBRARIES
-        ZSTD::ZSTD
+        WrapZSTD::WrapZSTD
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_filesystemwatcher
