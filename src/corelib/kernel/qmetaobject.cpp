@@ -3182,37 +3182,37 @@ QMetaProperty::QMetaProperty(const QMetaObject *mobj, int index)
 {
     Q_ASSERT(index >= 0 && index < priv(mobj->d.data)->propertyCount);
 
-    if (data.flags() & EnumOrFlag) {
-        const char *type = rawTypeNameFromTypeInfo(mobj, data.type());
-        menum = mobj->enumerator(mobj->indexOfEnumerator(type));
-        if (!menum.isValid()) {
-            const char *enum_name = type;
-            const char *scope_name = objectClassName(mobj);
-            char *scope_buffer = nullptr;
+    if (!(data.flags() & EnumOrFlag))
+        return;
+    const char *type = rawTypeNameFromTypeInfo(mobj, data.type());
+    menum = mobj->enumerator(mobj->indexOfEnumerator(type));
+    if (menum.isValid())
+        return;
+    const char *enum_name = type;
+    const char *scope_name = objectClassName(mobj);
+    char *scope_buffer = nullptr;
 
-            const char *colon = strrchr(enum_name, ':');
-            // ':' will always appear in pairs
-            Q_ASSERT(colon <= enum_name || *(colon - 1) == ':');
-            if (colon > enum_name) {
-                int len = colon - enum_name - 1;
-                scope_buffer = (char *)malloc(len + 1);
-                memcpy(scope_buffer, enum_name, len);
-                scope_buffer[len] = '\0';
-                scope_name = scope_buffer;
-                enum_name = colon + 1;
-            }
-
-            const QMetaObject *scope = nullptr;
-            if (qstrcmp(scope_name, "Qt") == 0)
-                scope = &Qt::staticMetaObject;
-            else
-                scope = QMetaObject_findMetaObject(mobj, scope_name);
-            if (scope)
-                menum = scope->enumerator(scope->indexOfEnumerator(enum_name));
-            if (scope_buffer)
-                free(scope_buffer);
-        }
+    const char *colon = strrchr(enum_name, ':');
+    // ':' will always appear in pairs
+    Q_ASSERT(colon <= enum_name || *(colon - 1) == ':');
+    if (colon > enum_name) {
+        int len = colon - enum_name - 1;
+        scope_buffer = (char *)malloc(len + 1);
+        memcpy(scope_buffer, enum_name, len);
+        scope_buffer[len] = '\0';
+        scope_name = scope_buffer;
+        enum_name = colon + 1;
     }
+
+    const QMetaObject *scope = nullptr;
+    if (qstrcmp(scope_name, "Qt") == 0)
+        scope = &Qt::staticMetaObject;
+    else
+        scope = QMetaObject_findMetaObject(mobj, scope_name);
+    if (scope)
+        menum = scope->enumerator(scope->indexOfEnumerator(enum_name));
+    if (scope_buffer)
+        free(scope_buffer);
 }
 
 /*!
