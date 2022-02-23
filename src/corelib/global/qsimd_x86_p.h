@@ -37,6 +37,17 @@
 **
 ****************************************************************************/
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 // This is a generated file. DO NOT EDIT.
 // Please see 3rdparty/x86simd_generate.pl
 #ifndef QSIMD_X86_P_H
