@@ -80,8 +80,19 @@ constexpr qint64 JULIAN_DAY_FOR_EPOCH = 2440588LL; // result of julianDayFromDat
    in 1908 (one town in Ontario, Canada) and 1916 (Germany).  Since MS's data
    tends to pretend the rules in force in 1970ish (or later) had always been in
    effect, which presents difficulties for the code that selects correct data
-   (for a time close to the earliest we can represent), always ignore any claims
-   a first rule may make of DST before 1900.
+   (for a time close to the earliest we can represent), always ignore any claim
+   a first rule may make of DST starting any time before 1900.
+
+   For southern-hemisphere zones, this implies that a rule claiming 1900 started
+   in DST is overruled to merely start DST later in 1900, having spent the whole
+   part of 1900 prior to that in standard time. This erases 1900's earlier
+   transition out of daylight-saving time so as to prevent a fake change of
+   offset at the start of the year, since 1899 shall be treated as observing
+   standard time throughout.
+
+   In the unlikely event of MS supplying a change in standard time before 1900,
+   however, that should be faithfully represented. If that ever happens, trust
+   that MS gets the start year of any subsequend DST right.
 
    See:
    * https://www.timeanddate.com/time/dst/history.html
@@ -421,6 +432,15 @@ struct TransitionTimePair
             && (std < dst || dst == QTimeZonePrivate::invalidMSecs());
     }
 
+    // Returns true if (assuming this pair was derived from the first rule, and
+    // that has non-zero wMonth values, so is a DST-recurrence or faking it) the
+    // given millis, presumed to be in the given year, is before the first
+    // transition into DST.
+    bool beforeInitialDst(int year, qint64 millis) const
+    {
+        return !fakesDst && (year == FIRST_DST_YEAR ? millis < dst : year < FIRST_DST_YEAR);
+    }
+
     QTimeZonePrivate::Data ruleToData(const QWinTimeZonePrivate::QWinTransitionRule &rule,
                                       const QWinTimeZonePrivate *tzp, bool isDst) const
     {
@@ -525,6 +545,14 @@ void QWinTimeZonePrivate::init(const QByteArray &ianaId)
         m_windowsId = ianaIdToWindowsId(ianaId);
         m_id = ianaId;
     }
+    const auto initialYear = [](const QWinTransitionRule &rule) {
+        // Only applicable to the first rule, and only if not faking DST.
+        // The rule starts in FIRST_DST_YEAR if it is a DST recurrence (with
+        // non-zero wMonth fields), otherwise read as a constant
+        // offset rule dating back to the start of time.
+        return (rule.standardTimeRule.wMonth > 0 || rule.daylightTimeRule.wMonth > 0
+                ? FIRST_DST_YEAR : int(QDateTime::YearRange::First));
+    };
 
     bool badMonth = false; // Only warn once per zone, if at all.
     if (!m_windowsId.isEmpty()) {
@@ -562,8 +590,10 @@ void QWinTimeZonePrivate::init(const QByteArray &ianaId)
                                      "this may cause mistakes for %s from %d",
                                      ianaId.constData(), year);
                         }
-                        rule.startYear =
-                            m_tranRules.isEmpty() ? int(QDateTime::YearRange::First) : year;
+                        const TransitionTimePair pair(rule, year, rule.standardTimeBias);
+                        // First rule may be a standard offset change, for which fakesDst is true.
+                        rule.startYear
+                            = m_tranRules.size() || pair.fakesDst ? year : initialYear(rule);
                         m_tranRules.append(rule);
                     }
                 }
@@ -571,9 +601,10 @@ void QWinTimeZonePrivate::init(const QByteArray &ianaId)
                 // No dynamic data so use the base data
                 bool ruleOk;
                 QWinTransitionRule rule = readRegistryRule(baseKey, L"TZI", &ruleOk);
-                rule.startYear = int(QDateTime::YearRange::First);
-                if (ruleOk)
+                if (ruleOk) {
+                    rule.startYear = initialYear(rule);
                     m_tranRules.append(rule);
+                }
             }
         }
     }
@@ -671,10 +702,10 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::data(qint64 forMSecsSinceEpoch) cons
                 : yearEndOffset(rule, prior);
             const TransitionTimePair pair(rule, year, newYearOffset);
             bool isDst = false;
-            if (!ruleIndex && year < FIRST_DST_YEAR) {
-                // We're before the invention of DST and have no earlier
-                // rule that might give better data on this year, so just
-                // extrapolate standard time (modulo fakery) backwards.
+            if (ruleIndex == 0 && pair.beforeInitialDst(year, forMSecsSinceEpoch)) {
+                // We're before DST first started and have no earlier rule that
+                // might give better data on this year, so just extrapolate
+                // standard time backwards.
             } else if (pair.std != invalidMSecs() && pair.std <= forMSecsSinceEpoch) {
                 isDst = pair.std < pair.dst && pair.dst <= forMSecsSinceEpoch;
             } else if (pair.dst != invalidMSecs() && pair.dst <= forMSecsSinceEpoch) {
@@ -728,8 +759,9 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::nextTransition(qint64 afterMSecsSinc
                 // transitions in it. Find first transition in this rule.
                 TransitionTimePair pair(rule, rule.startYear, newYearOffset);
                 // First transition is to DST precisely if the year started in
-                // standard time.
-                return pair.ruleToData(rule, this, !pair.startsInDst());
+                // standard time. If the year is FIRST_DST_YEAR or earlier, it
+                // definitely started in standard time.
+                return pair.ruleToData(rule, this, !(year > FIRST_DST_YEAR && pair.startsInDst()));
             }
             const int endYear = ruleIndex + 1 < m_tranRules.count()
                 ? qMin(m_tranRules.at(ruleIndex + 1).startYear, year + 2) : (year + 2);
@@ -737,7 +769,16 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::nextTransition(qint64 afterMSecsSinc
                 const TransitionTimePair pair(rule, year, newYearOffset);
                 bool isDst = false;
                 Q_ASSERT(invalidMSecs() <= afterMSecsSinceEpoch); // invalid is min qint64
-                if (pair.std > afterMSecsSinceEpoch) {
+                if (ruleIndex == 0 && pair.beforeInitialDst(year, afterMSecsSinceEpoch)) {
+                    // This is an initial recurrence rule, whose startYear
+                    // (which we know is <= year) is FIRST_DST_YEAR:
+                    Q_ASSERT(year == FIRST_DST_YEAR);
+                    // This year's DST transition is the first ever DST
+                    // transition, and we're before it. The transition back to
+                    // standard time is a lie unless the DST one comes before
+                    // it; either way, the DST one is next.
+                    isDst = true;
+                } else if (pair.std > afterMSecsSinceEpoch) {
                     isDst = pair.std > pair.dst && pair.dst > afterMSecsSinceEpoch;
                 } else if (pair.dst > afterMSecsSinceEpoch) {
                     isDst = true;
@@ -788,6 +829,13 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::previousTransition(qint64 beforeMSec
                     ? yearEndOffset(m_tranRules.at(ruleIndex - 1), prior)
                     : yearEndOffset(rule, prior);
                 const TransitionTimePair pair(rule, year, newYearOffset);
+                // A recurrent DST rule, before DST first started, is a lie:
+                // fake a first transition at the start of time, as for the
+                // other (ruleIndex == 0) case below. Same applies to first
+                // instant of DST; there is no prior (real) transition.
+                if (ruleIndex == 0 && pair.beforeInitialDst(year, beforeMSecsSinceEpoch - 1))
+                    return ruleToData(rule, minMSecs(), QTimeZone::StandardTime, false);
+
                 bool isDst = false;
                 if (pair.std != invalidMSecs() && pair.std < beforeMSecsSinceEpoch) {
                     isDst = pair.std < pair.dst && pair.dst < beforeMSecsSinceEpoch;
