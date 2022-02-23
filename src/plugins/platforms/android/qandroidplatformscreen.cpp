@@ -283,6 +283,24 @@ void QAndroidPlatformScreen::setSize(const QSize &size)
     QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), geometry(), availableGeometry());
 }
 
+void QAndroidPlatformScreen::setSizeParameters(const QSize &physicalSize, const QSize &size,
+                                               const QRect &availableGeometry)
+{
+    // The goal of this method is to set all geometry-related parameters
+    // at the same time and generate only one screen geometry change event.
+    m_physicalSize = physicalSize;
+    m_size = size;
+    // If available geometry has changed, the event will be handled in
+    // setAvailableGeometry. Otherwise we need to explicitly handle it to
+    // retain the behavior, because setSize() does the handling unconditionally.
+    if (m_availableGeometry != availableGeometry) {
+        setAvailableGeometry(availableGeometry);
+    } else {
+        QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), geometry(),
+                                                           this->availableGeometry());
+    }
+}
+
 void QAndroidPlatformScreen::setRefreshRate(qreal refreshRate)
 {
     if (refreshRate == m_refreshRate)
