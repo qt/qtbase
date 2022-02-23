@@ -84,6 +84,11 @@ constexpr inline int fromOct(uint c) noexcept
 {
     return ((c >= '0') && (c <= '7')) ? int(c - '0') : -1;
 }
+
+constexpr inline char toAsciiLower(char ch) noexcept
+{
+    return (ch >= 'A' && ch <= 'Z') ? ch - 'A' + 'a' : ch;
+}
 }
 
 // We typically need an extra bit for qNextPowerOfTwo when determining the next allocation size.
