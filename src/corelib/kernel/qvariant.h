@@ -240,7 +240,7 @@ class Q_CORE_EXPORT QVariant
     { other.d = Private(); }
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QVariant)
 
-    inline void swap(QVariant &other) noexcept { qSwap(d, other.d); }
+    inline void swap(QVariant &other) noexcept { std::swap(d, other.d); }
 
     int userType() const { return typeId(); }
     int typeId() const { return metaType().id(); }
