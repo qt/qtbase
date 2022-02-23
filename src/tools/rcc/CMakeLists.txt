@@ -32,7 +32,7 @@ qt_internal_extend_target(${target_name} CONDITION QT_FEATURE_zstd AND NOT CMAKE
     DEFINES
         QT_FEATURE_zstd=1
     LIBRARIES
-        ZSTD::ZSTD
+        WrapZSTD::WrapZSTD
 )
 
 qt_internal_extend_target(${target_name} CONDITION CMAKE_CROSSCOMPILING OR NOT QT_FEATURE_zstd
