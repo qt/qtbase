@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2017 BogDan Vatra <bogdan@kde.org>
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2016 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -697,13 +697,27 @@ public class QtActivityDelegate
             @Override
             public void onDisplayAdded(int displayId) { }
 
+            private boolean isSimilarRotation(int r1, int r2)
+            {
+                return (r1 == r2)
+                       || (r1 == Surface.ROTATION_0 && r2 == Surface.ROTATION_180)
+                       || (r1 == Surface.ROTATION_180 && r2 == Surface.ROTATION_0)
+                       || (r1 == Surface.ROTATION_90 && r2 == Surface.ROTATION_270)
+                       || (r1 == Surface.ROTATION_270 && r2 == Surface.ROTATION_90);
+            }
+
             @Override
             public void onDisplayChanged(int displayId) {
                 Display display = (Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
                         ? m_activity.getWindowManager().getDefaultDisplay()
                         : m_activity.getDisplay();
                 m_currentRotation = display.getRotation();
-                QtNative.handleOrientationChanged(m_currentRotation, m_nativeOrientation);
+                m_layout.setActivityDisplayRotation(m_currentRotation);
+                // Process orientation change only if it comes after the size
+                // change, or if the screen is rotated by 180 degrees.
+                // Otherwise it will be processed in QtLayout.
+                if (isSimilarRotation(m_currentRotation, m_layout.displayRotation()))
+                    QtNative.handleOrientationChanged(m_currentRotation, m_nativeOrientation);
                 float refreshRate = display.getRefreshRate();
                 QtNative.handleRefreshRateChanged(refreshRate);
             }
@@ -833,6 +847,7 @@ public class QtActivityDelegate
         else
             m_nativeOrientation = Configuration.ORIENTATION_PORTRAIT;
 
+        m_layout.setNativeOrientation(m_nativeOrientation);
         QtNative.handleOrientationChanged(rotation, m_nativeOrientation);
         m_currentRotation = rotation;
 
