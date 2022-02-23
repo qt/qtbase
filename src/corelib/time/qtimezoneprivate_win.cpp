@@ -416,8 +416,9 @@ struct TransitionTimePair
     bool startsInDst() const
     {
         // Year starts in daylightTimeRule iff it has a valid transition out of
-        // DST before it has a transition into it.
-        return std != QTimeZonePrivate::invalidMSecs() && std < dst;
+        // DST with no earlier valid transition into it.
+        return std != QTimeZonePrivate::invalidMSecs()
+            && (std < dst || dst == QTimeZonePrivate::invalidMSecs());
     }
 
     QTimeZonePrivate::Data ruleToData(const QWinTimeZonePrivate::QWinTransitionRule &rule,
@@ -726,7 +727,9 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::nextTransition(qint64 afterMSecsSinc
                 // the rule for year because afterMSecsSinceEpoch is after any
                 // transitions in it. Find first transition in this rule.
                 TransitionTimePair pair(rule, rule.startYear, newYearOffset);
-                return pair.ruleToData(rule, this, pair.startsInDst());
+                // First transition is to DST precisely if the year started in
+                // standard time.
+                return pair.ruleToData(rule, this, !pair.startsInDst());
             }
             const int endYear = ruleIndex + 1 < m_tranRules.count()
                 ? qMin(m_tranRules.at(ruleIndex + 1).startYear, year + 2) : (year + 2);
