@@ -642,7 +642,7 @@ _library_map = [
     LibraryMapping("xlib", "X11", "X11::X11"),
     LibraryMapping("xrender", "XRender", "PkgConfig::XRender", extra=["0.6"]),
     LibraryMapping("zlib", "WrapZLIB", "WrapZLIB::WrapZLIB", extra=["1.0.8"]),
-    LibraryMapping("zstd", "ZSTD", "ZSTD::ZSTD", extra=["1.3"]),
+    LibraryMapping("zstd", "WrapZSTD", "WrapZSTD::WrapZSTD", extra=["1.3"]),
     LibraryMapping("tiff", "TIFF", "TIFF::TIFF"),
     LibraryMapping("webp", "WrapWebP", "WrapWebP::WrapWebP"),
     LibraryMapping("jasper", "WrapJasper", "WrapJasper::WrapJasper"),
