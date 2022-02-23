@@ -224,16 +224,15 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
     std::integral_constant<qint64, 16 * 3600 * 1000> sixteenHoursInMSecs;
     static_assert(-sixteenHoursInMSecs / 1000 < QTimeZone::MinUtcOffsetSecs
                   && sixteenHoursInMSecs / 1000 > QTimeZone::MaxUtcOffsetSecs);
-    using Bound = std::numeric_limits<qint64>;
     qint64 millis;
     const qint64 recent =
         sub_overflow(forLocalMSecs, sixteenHoursInMSecs, &millis)
-        ? Bound::min() : millis;
+        ? minMSecs() : millis;
     const qint64 imminent =
         add_overflow(forLocalMSecs, sixteenHoursInMSecs, &millis)
-        ? Bound::max() : millis;
+        ? maxMSecs() : millis;
     // At most one of those took the boundary value:
-    Q_ASSERT(recent < imminent && sixteenHoursInMSecs < imminent - recent);
+    Q_ASSERT(recent < imminent && sixteenHoursInMSecs < imminent - recent + 1);
     /*
       Offsets are Local - UTC, positive to the east of Greenwich, negative to
       the west; DST offset always exceeds standard offset, when DST applies.

@@ -310,13 +310,13 @@ qint64 calculateTransitionForYear(const SYSTEMTIME &rule, int year, int bias)
     const QDate date = calculateTransitionLocalDate(rule, year);
     const QTime time = QTime(rule.wHour, rule.wMinute, rule.wSecond);
     qint64 msecs = 0;
-    using Bound = std::numeric_limits<qint64>;
     if (date.isValid() && time.isValid() && !timeToMSecs(date, time, &msecs)) {
-        // If bias pushes us outside representable range, clip to range - and
-        // exclude min() from range as it's invalidMSecs():
+        // If bias pushes us outside the representable range, clip to range
+        // (overflow went past the end bias pushed us towards; and
+        // invalidMSecs() is a representable value less than minMSecs()):
         return bias && add_overflow(msecs, qint64(bias) * 60000, &msecs)
-            ? (bias < 0 ? Bound::min() + 1 : Bound::max())
-            : (msecs == Bound::min() ? msecs + 1 : msecs);
+            ? (bias < 0 ? QTimeZonePrivate::minMSecs() : QTimeZonePrivate::maxMSecs())
+            : qMax(QTimeZonePrivate::minMSecs(), msecs);
     }
     return QTimeZonePrivate::invalidMSecs();
 }
@@ -730,8 +730,7 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::nextTransition(qint64 afterMSecsSinc
 
 QTimeZonePrivate::Data QWinTimeZonePrivate::previousTransition(qint64 beforeMSecsSinceEpoch) const
 {
-    const qint64 startOfTime = invalidMSecs() + 1;
-    if (beforeMSecsSinceEpoch <= startOfTime)
+    if (beforeMSecsSinceEpoch <= minMSecs())
         return invalidData();
 
     int year = msecsToDate(beforeMSecsSinceEpoch).year();
@@ -764,7 +763,7 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::previousTransition(qint64 beforeMSec
             // Treat a no-transition first rule as a transition at the start of
             // time, so that a scan through all rules *does* see it as the first
             // rule:
-            return ruleToData(rule, startOfTime, QTimeZone::StandardTime, false);
+            return ruleToData(rule, minMSecs(), QTimeZone::StandardTime, false);
         } // else: no transition during rule's period
         if (year >= rule.startYear) {
             year = rule.startYear - 1; // Seek last transition in new rule
