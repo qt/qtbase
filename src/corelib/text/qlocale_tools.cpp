@@ -286,7 +286,7 @@ double qt_asciiToDouble(const char *num, qsizetype numLen, bool &ok, int &proces
         return needleLen == haystackLen && memcmp(needle, haystack, haystackLen) == 0;
     };
 
-    if (numLen == 0) {
+    if (numLen <= 0) {
         ok = false;
         processed = 0;
         return 0.0;
@@ -350,23 +350,14 @@ double qt_asciiToDouble(const char *num, qsizetype numLen, bool &ok, int &proces
         }
     }
 #else
-    // need to ensure that our input is null-terminated for sscanf
-    // (this is a QVarLengthArray<char, 128> but this code here is too low-level for QVLA)
-    char reasonableBuffer[128];
-    char *buffer;
-    if (numLen < qsizetype(sizeof(reasonableBuffer)) - 1)
-        buffer = reasonableBuffer;
-    else
-        buffer = static_cast<char *>(malloc(numLen + 1));
-    Q_CHECK_PTR(buffer);
-    memcpy(buffer, num, numLen);
-    buffer[numLen] = '\0';
+    // ::digits10 is 19, but ::max() is 18'446'744'073'709'551'615ULL - go, figure...
+    constexpr auto maxDigitsForULongLong = 1 + std::numeric_limits<unsigned long long>::digits10;
+    // need to ensure that we don't read more than numLen of input:
+    char fmt[1 + maxDigitsForULongLong + 4 + 1];
+    sprintf(fmt, "%s%llu%s", "%", static_cast<unsigned long long>(numLen), "lf%n");
 
-    if (qDoubleSscanf(buffer, QT_CLOCALE, "%lf%n", &d, &processed) < 1)
+    if (qDoubleSscanf(num, QT_CLOCALE, fmt, &d, &processed) < 1)
         processed = 0;
-
-    if (buffer != reasonableBuffer)
-        free(buffer);
 
     if ((strayCharMode == TrailingJunkProhibited && processed != numLen) || qIsNaN(d)) {
         // Implementation defined nan symbol or garbage found. We don't accept it.
