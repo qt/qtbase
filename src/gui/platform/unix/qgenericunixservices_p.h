@@ -21,6 +21,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QWindow;
+
 class Q_GUI_EXPORT QGenericUnixServices : public QPlatformServices
 {
 public:
@@ -30,6 +32,8 @@ public:
 
     bool openUrl(const QUrl &url) override;
     bool openDocument(const QUrl &url) override;
+
+    virtual QString portalWindowIdentifier(QWindow *window);
 
 private:
     QString m_webBrowser;

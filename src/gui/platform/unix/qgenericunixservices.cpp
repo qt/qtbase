@@ -3,6 +3,8 @@
 
 #include "qgenericunixservices_p.h"
 #include <QtGui/private/qtguiglobal_p.h>
+#include "qguiapplication.h"
+#include "qwindow.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
@@ -152,7 +154,7 @@ static inline bool checkNeedPortalSupport()
     return !QStandardPaths::locate(QStandardPaths::RuntimeLocation, "flatpak-info"_L1).isEmpty() || qEnvironmentVariableIsSet("SNAP");
 }
 
-static inline QDBusMessage xdgDesktopPortalOpenFile(const QUrl &url)
+static inline QDBusMessage xdgDesktopPortalOpenFile(const QUrl &url, const QString &parentWindow)
 {
     // DBus signature:
     // OpenFile (IN   s      parent_window,
@@ -176,19 +178,19 @@ static inline QDBusMessage xdgDesktopPortalOpenFile(const QUrl &url)
 
         const QVariantMap options = {{"writable"_L1, true}};
 
-        // FIXME parent_window_id
-        message << QString() << QVariant::fromValue(descriptor) << options;
+        message << parentWindow << QVariant::fromValue(descriptor) << options;
 
         return QDBusConnection::sessionBus().call(message);
     }
 #else
     Q_UNUSED(url);
+    Q_UNUSED(parentWindow)
 #endif
 
     return QDBusMessage::createError(QDBusError::InternalError, qt_error_string());
 }
 
-static inline QDBusMessage xdgDesktopPortalOpenUrl(const QUrl &url)
+static inline QDBusMessage xdgDesktopPortalOpenUrl(const QUrl &url, const QString &parentWindow)
 {
     // DBus signature:
     // OpenURI (IN   s      parent_window,
@@ -206,12 +208,12 @@ static inline QDBusMessage xdgDesktopPortalOpenUrl(const QUrl &url)
                                                           "org.freedesktop.portal.OpenURI"_L1,
                                                           "OpenURI"_L1);
     // FIXME parent_window_id and handle writable option
-    message << QString() << url.toString() << QVariantMap();
+    message << parentWindow << url.toString() << QVariantMap();
 
     return QDBusConnection::sessionBus().call(message);
 }
 
-static inline QDBusMessage xdgDesktopPortalSendEmail(const QUrl &url)
+static inline QDBusMessage xdgDesktopPortalSendEmail(const QUrl &url, const QString &parentWindow)
 {
     // DBus signature:
     // ComposeEmail (IN   s      parent_window,
@@ -251,8 +253,7 @@ static inline QDBusMessage xdgDesktopPortalSendEmail(const QUrl &url)
                                                           "org.freedesktop.portal.Email"_L1,
                                                           "ComposeEmail"_L1);
 
-    // FIXME parent_window_id
-    message << QString() << options;
+    message << parentWindow << options;
 
     return QDBusConnection::sessionBus().call(message);
 }
@@ -269,7 +270,10 @@ bool QGenericUnixServices::openUrl(const QUrl &url)
     if (url.scheme() == "mailto"_L1) {
 #if QT_CONFIG(dbus)
         if (checkNeedPortalSupport()) {
-            QDBusError error = xdgDesktopPortalSendEmail(url);
+            const QString parentWindow = QGuiApplication::focusWindow()
+                    ? portalWindowIdentifier(QGuiApplication::focusWindow())
+                    : QString();
+            QDBusError error = xdgDesktopPortalSendEmail(url, parentWindow);
             if (!error.isValid())
                 return true;
 
@@ -281,7 +285,10 @@ bool QGenericUnixServices::openUrl(const QUrl &url)
 
 #if QT_CONFIG(dbus)
     if (checkNeedPortalSupport()) {
-        QDBusError error = xdgDesktopPortalOpenUrl(url);
+        const QString parentWindow = QGuiApplication::focusWindow()
+                ? portalWindowIdentifier(QGuiApplication::focusWindow())
+                : QString();
+        QDBusError error = xdgDesktopPortalOpenUrl(url, parentWindow);
         if (!error.isValid())
             return true;
     }
@@ -298,7 +305,10 @@ bool QGenericUnixServices::openDocument(const QUrl &url)
 {
 #if QT_CONFIG(dbus)
     if (checkNeedPortalSupport()) {
-        QDBusError error = xdgDesktopPortalOpenFile(url);
+        const QString parentWindow = QGuiApplication::focusWindow()
+                ? portalWindowIdentifier(QGuiApplication::focusWindow())
+                : QString();
+        QDBusError error = xdgDesktopPortalOpenFile(url, parentWindow);
         if (!error.isValid())
             return true;
     }
@@ -332,5 +342,13 @@ bool QGenericUnixServices::openDocument(const QUrl &url)
 }
 
 #endif // QT_NO_MULTIPROCESS
+
+QString QGenericUnixServices::portalWindowIdentifier(QWindow *window)
+{
+    if (QGuiApplication::platformName() == QLatin1String("xcb"))
+        return "x11:"_L1 + QString::number(window->winId(), 16);
+
+    return QString();
+}
 
 QT_END_NAMESPACE
