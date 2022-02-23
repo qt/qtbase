@@ -225,14 +225,18 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
     static_assert(-sixteenHoursInMSecs / 1000 < QTimeZone::MinUtcOffsetSecs
                   && sixteenHoursInMSecs / 1000 > QTimeZone::MaxUtcOffsetSecs);
     qint64 millis;
+    // Clip the bracketing times to the bounds of the supported range. Exclude
+    // minMSecs(), because at least one backend (Windows) uses it for a
+    // start-of-time fake transition, that we want previousTransition() to find.
     const qint64 recent =
-        sub_overflow(forLocalMSecs, sixteenHoursInMSecs, &millis)
-        ? minMSecs() : millis;
+        sub_overflow(forLocalMSecs, sixteenHoursInMSecs, &millis) || millis <= minMSecs()
+        ? minMSecs() + 1 : millis; // Necessarily <= forLocalMSecs + 2.
+    // (Given that minMSecs() is std::numeric_limits<qint64>::min() + 1.)
     const qint64 imminent =
         add_overflow(forLocalMSecs, sixteenHoursInMSecs, &millis)
-        ? maxMSecs() : millis;
-    // At most one of those took the boundary value:
-    Q_ASSERT(recent < imminent && sixteenHoursInMSecs < imminent - recent + 1);
+        ? maxMSecs() : millis; // Necessarily >= forLocalMSecs
+    // At most one of those was clipped to its boundary value:
+    Q_ASSERT(recent < imminent && sixteenHoursInMSecs < imminent - recent + 2);
     /*
       Offsets are Local - UTC, positive to the east of Greenwich, negative to
       the west; DST offset always exceeds standard offset, when DST applies.
