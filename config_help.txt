@@ -112,10 +112,6 @@ Build options:
 
   -c++std <edition> .... Select C++ standard <edition> [c++2b/c++20/c++17/c++14/c++11]
 
-  -sse2 ................ Use SSE2 instructions [auto]
-  -sse3/-ssse3/-sse4.1/-sse4.2/-avx/-avx2/-avx512
-                         Enable use of particular x86 instructions [auto]
-                         Enabled ones are still subject to runtime detection.
   -mips_dsp/-mips_dspr2  Use MIPS DSP/rev2 instructions [auto]
 
   -qreal <type> ........ typedef qreal to the specified type. [double]

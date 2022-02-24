@@ -264,68 +264,11 @@ static_assert(B::has_signaling_NaN, \"System lacks signaling NaN\");
 }
 ")
 
-# sse2
-qt_config_compile_test_x86simd(sse2 "SSE2 instructions")
-
-# sse3
-qt_config_compile_test_x86simd(sse3 "SSE3 instructions")
-
-# ssse3
-qt_config_compile_test_x86simd(ssse3 "SSSE3 instructions")
-
-# sse4_1
-qt_config_compile_test_x86simd(sse4_1 "SSE4.1 instructions")
-
-# sse4_2
-qt_config_compile_test_x86simd(sse4_2 "SSE4.2 instructions")
-
-# aesni
-qt_config_compile_test_x86simd(aesni "AES new instructions")
-
-# f16c
-qt_config_compile_test_x86simd(f16c "F16C instructions")
-
-# rdrnd
-qt_config_compile_test_x86simd(rdrnd "RDRAND instruction")
-
-# rdseed
-qt_config_compile_test_x86simd(rdseed "RDSEED instruction")
-
-# shani
-qt_config_compile_test_x86simd(shani "SHA new instructions")
-
-# avx
-qt_config_compile_test_x86simd(avx "AVX instructions")
-
-# avx2
-qt_config_compile_test_x86simd(avx2 "AVX2 instructions")
-
-# avx512f
-qt_config_compile_test_x86simd(avx512f "AVX512 F instructions")
-
-# avx512er
-qt_config_compile_test_x86simd(avx512er "AVX512 ER instructions")
-
-# avx512cd
-qt_config_compile_test_x86simd(avx512cd "AVX512 CD instructions")
-
-# avx512pf
-qt_config_compile_test_x86simd(avx512pf "AVX512 PF instructions")
-
-# avx512dq
-qt_config_compile_test_x86simd(avx512dq "AVX512 DQ instructions")
-
-# avx512bw
-qt_config_compile_test_x86simd(avx512bw "AVX512 BW instructions")
-
-# avx512vl
-qt_config_compile_test_x86simd(avx512vl "AVX512 VL instructions")
-
-# avx512ifma
-qt_config_compile_test_x86simd(avx512ifma "AVX512 IFMA instructions")
-
-# avx512vbmi
-qt_config_compile_test_x86simd(avx512vbmi "AVX512 VBMI instructions")
+# basic x86 intrinsics support
+qt_config_compile_test(x86intrin
+    LABEL "Basic x86 intrinsics"
+    PROJECT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/x86intrin"
+)
 
 # x86: avx512vbmi2
 qt_config_compile_test_x86simd(avx512vbmi2 "AVX512VBMI2")
@@ -741,143 +684,126 @@ qt_feature("signaling_nan" PUBLIC
     LABEL "Signaling NaN"
     CONDITION TEST_signaling_nan
 )
-qt_feature("sse2" PRIVATE
-    LABEL "SSE2"
-    CONDITION ( ( (  TEST_architecture_arch STREQUAL i386 )
-        OR ( TEST_architecture_arch STREQUAL x86_64 ) ) AND TEST_subarch_sse2 ) OR QT_FORCE_FEATURE_sse2 OR WASM
+qt_feature("x86intrin" PRIVATE
+    LABEL "Basic"
+    CONDITION (((TEST_architecture_arch STREQUAL i386) OR (TEST_architecture_arch STREQUAL x86_64))
+        AND (QT_FORCE_FEATURE_x86intrin OR TEST_x86intrin))
     AUTODETECT NOT WASM
+)
+qt_feature("sse2" PRIVATE
+    CONDITION QT_FEATURE_x86intrin
 )
 qt_feature_definition("sse2" "QT_COMPILER_SUPPORTS_SSE2" VALUE "1")
 qt_feature_config("sse2" QMAKE_PRIVATE_CONFIG)
 qt_feature("sse3" PRIVATE
-    LABEL "SSE3"
-    CONDITION QT_FEATURE_sse2 AND TEST_subarch_sse3
+    CONDITION QT_FEATURE_x86intrin
 )
 qt_feature_definition("sse3" "QT_COMPILER_SUPPORTS_SSE3" VALUE "1")
 qt_feature_config("sse3" QMAKE_PRIVATE_CONFIG)
 qt_feature("ssse3" PRIVATE
-    LABEL "SSSE3"
-    CONDITION QT_FEATURE_sse3 AND TEST_subarch_ssse3
+    CONDITION QT_FEATURE_x86intrin
 )
 qt_feature_definition("ssse3" "QT_COMPILER_SUPPORTS_SSSE3" VALUE "1")
 qt_feature_config("ssse3" QMAKE_PRIVATE_CONFIG)
 qt_feature("sse4_1" PRIVATE
-    LABEL "SSE4.1"
-    CONDITION QT_FEATURE_ssse3 AND TEST_subarch_sse4_1
+    CONDITION QT_FEATURE_x86intrin
 )
 qt_feature_definition("sse4_1" "QT_COMPILER_SUPPORTS_SSE4_1" VALUE "1")
 qt_feature_config("sse4_1" QMAKE_PRIVATE_CONFIG)
 qt_feature("sse4_2" PRIVATE
-    LABEL "SSE4.2"
-    CONDITION QT_FEATURE_sse4_1 AND TEST_subarch_sse4_2
+    CONDITION QT_FEATURE_x86intrin
 )
 qt_feature_definition("sse4_2" "QT_COMPILER_SUPPORTS_SSE4_2" VALUE "1")
 qt_feature_config("sse4_2" QMAKE_PRIVATE_CONFIG)
 qt_feature("avx" PRIVATE
-    LABEL "AVX"
-    CONDITION QT_FEATURE_sse4_2 AND TEST_subarch_avx AND ( NOT ANDROID OR NOT ( TEST_architecture_arch STREQUAL x86_64 ) )
+    CONDITION QT_FEATURE_x86intrin
 )
 qt_feature_definition("avx" "QT_COMPILER_SUPPORTS_AVX" VALUE "1")
 qt_feature_config("avx" QMAKE_PRIVATE_CONFIG)
 qt_feature("f16c" PRIVATE
-    LABEL "F16C"
-    CONDITION QT_FEATURE_avx AND TEST_subarch_f16c
+    CONDITION QT_FEATURE_x86intrin
 )
 qt_feature_definition("f16c" "QT_COMPILER_SUPPORTS_F16C" VALUE "1")
 qt_feature_config("f16c" QMAKE_PRIVATE_CONFIG)
 qt_feature("avx2" PRIVATE
-    LABEL "AVX2"
-    CONDITION QT_FEATURE_avx AND TEST_subarch_avx2 AND ( NOT ANDROID OR NOT ( TEST_architecture_arch STREQUAL x86_64 ) )
+    CONDITION QT_FEATURE_x86intrin
 )
 qt_feature_definition("avx2" "QT_COMPILER_SUPPORTS_AVX2" VALUE "1")
 qt_feature_config("avx2" QMAKE_PRIVATE_CONFIG)
 qt_feature("avx512f" PRIVATE
-    LABEL "F"
-    CONDITION QT_FEATURE_avx2 AND TEST_subarch_avx512f
+    CONDITION QT_FEATURE_x86intrin
 )
 qt_feature_definition("avx512f" "QT_COMPILER_SUPPORTS_AVX512F" VALUE "1")
 qt_feature_config("avx512f" QMAKE_PRIVATE_CONFIG)
 qt_feature("avx512er" PRIVATE
-    LABEL "ER"
-    CONDITION QT_FEATURE_avx512f AND TEST_subarch_avx512er
+    CONDITION QT_FEATURE_x86intrin
 )
 qt_feature_definition("avx512er" "QT_COMPILER_SUPPORTS_AVX512ER" VALUE "1")
 qt_feature_config("avx512er" QMAKE_PRIVATE_CONFIG)
 qt_feature("avx512cd" PRIVATE
-    LABEL "CD"
-    CONDITION QT_FEATURE_avx512f AND TEST_subarch_avx512cd
+    CONDITION QT_FEATURE_x86intrin
 )
 qt_feature_definition("avx512cd" "QT_COMPILER_SUPPORTS_AVX512CD" VALUE "1")
 qt_feature_config("avx512cd" QMAKE_PRIVATE_CONFIG)
 qt_feature("avx512pf" PRIVATE
-    LABEL "PF"
-    CONDITION QT_FEATURE_avx512f AND TEST_subarch_avx512pf
+    CONDITION QT_FEATURE_x86intrin
 )
 qt_feature_definition("avx512pf" "QT_COMPILER_SUPPORTS_AVX512PF" VALUE "1")
 qt_feature_config("avx512pf" QMAKE_PRIVATE_CONFIG)
 qt_feature("avx512dq" PRIVATE
-    LABEL "DQ"
-    CONDITION QT_FEATURE_avx512f AND TEST_subarch_avx512dq
+    CONDITION QT_FEATURE_x86intrin
 )
 qt_feature_definition("avx512dq" "QT_COMPILER_SUPPORTS_AVX512DQ" VALUE "1")
 qt_feature_config("avx512dq" QMAKE_PRIVATE_CONFIG)
 qt_feature("avx512bw" PRIVATE
-    LABEL "BW"
-    CONDITION QT_FEATURE_avx512f AND TEST_subarch_avx512bw
+    CONDITION QT_FEATURE_x86intrin
 )
 qt_feature_definition("avx512bw" "QT_COMPILER_SUPPORTS_AVX512BW" VALUE "1")
 qt_feature_config("avx512bw" QMAKE_PRIVATE_CONFIG)
 qt_feature("avx512vl" PRIVATE
-    LABEL "VL"
-    CONDITION QT_FEATURE_avx512f AND TEST_subarch_avx512vl
+    CONDITION QT_FEATURE_x86intrin
 )
 qt_feature_definition("avx512vl" "QT_COMPILER_SUPPORTS_AVX512VL" VALUE "1")
 qt_feature_config("avx512vl" QMAKE_PRIVATE_CONFIG)
 qt_feature("avx512ifma" PRIVATE
-    LABEL "IFMA"
-    CONDITION QT_FEATURE_avx512f AND TEST_subarch_avx512ifma
+    CONDITION QT_FEATURE_x86intrin
 )
 qt_feature_definition("avx512ifma" "QT_COMPILER_SUPPORTS_AVX512IFMA" VALUE "1")
 qt_feature_config("avx512ifma" QMAKE_PRIVATE_CONFIG)
 qt_feature("avx512vbmi" PRIVATE
-    LABEL "VBMI"
-    CONDITION QT_FEATURE_avx512f AND TEST_subarch_avx512vbmi
+    CONDITION QT_FEATURE_x86intrin
 )
 qt_feature_definition("avx512vbmi" "QT_COMPILER_SUPPORTS_AVX512VBMI" VALUE "1")
 qt_feature_config("avx512vbmi" QMAKE_PRIVATE_CONFIG)
 qt_feature("avx512vbmi2" PRIVATE
     LABEL "AVX512VBMI2"
-    CONDITION QT_FEATURE_avx512f AND TEST_subarch_avx512vbmi2
+    CONDITION QT_FEATURE_x86intrin AND TEST_subarch_avx512vbmi2
 )
 qt_feature_definition("avx512vbmi2" "QT_COMPILER_SUPPORTS_AVX512VBMI2" VALUE "1")
 qt_feature_config("avx512vbmi2" QMAKE_PRIVATE_CONFIG)
 qt_feature("aesni" PRIVATE
-    LABEL "AES"
-    CONDITION QT_FEATURE_sse2 AND TEST_subarch_aesni
+    CONDITION QT_FEATURE_x86intrin
 )
 qt_feature_definition("aesni" "QT_COMPILER_SUPPORTS_AES" VALUE "1")
 qt_feature_config("aesni" QMAKE_PRIVATE_CONFIG)
 qt_feature("vaes" PRIVATE
     LABEL "VAES"
-    CONDITION QT_FEATURE_avx2 AND TEST_subarch_vaes
+    CONDITION QT_FEATURE_x86intrin AND TEST_subarch_vaes
 )
 qt_feature_definition("vaes" "QT_COMPILER_SUPPORTS_VAES" VALUE "1")
 qt_feature_config("vaes" QMAKE_PRIVATE_CONFIG)
 qt_feature("rdrnd" PRIVATE
-    LABEL "RDRAND"
-    CONDITION TEST_subarch_rdrnd
+    CONDITION QT_FEATURE_x86intrin
 )
 qt_feature_definition("rdrnd" "QT_COMPILER_SUPPORTS_RDRND" VALUE "1")
 qt_feature_config("rdrnd" QMAKE_PRIVATE_CONFIG)
 qt_feature("rdseed" PRIVATE
-    LABEL "RDSEED"
-    CONDITION TEST_subarch_rdseed
+    CONDITION QT_FEATURE_x86intrin
 )
 qt_feature_definition("rdseed" "QT_COMPILER_SUPPORTS_RDSEED" VALUE "1")
 qt_feature_config("rdseed" QMAKE_PRIVATE_CONFIG)
 qt_feature("shani" PRIVATE
-    LABEL "SHA"
-    CONDITION QT_FEATURE_sse2 AND TEST_subarch_shani
+    CONDITION QT_FEATURE_x86intrin
 )
 qt_feature_definition("shani" "QT_COMPILER_SUPPORTS_SHA" VALUE "1")
 qt_feature_config("shani" QMAKE_PRIVATE_CONFIG)
@@ -1114,32 +1040,14 @@ qt_configure_add_summary_entry(ARGS "intelcet")
 qt_configure_add_summary_section(NAME "Target compiler supports")
 qt_configure_add_summary_entry(
     TYPE "featureList"
-    ARGS "sse2 sse3 ssse3 sse4_1 sse4_2"
-    MESSAGE "SSE"
-    CONDITION ( ( TEST_architecture_arch STREQUAL i386 ) OR ( TEST_architecture_arch STREQUAL x86_64 ) OR ( TEST_architecture_arch STREQUAL wasm ) )
-)
-qt_configure_add_summary_entry(
-    TYPE "featureList"
-    ARGS "avx avx2 vaes"
-    MESSAGE "AVX"
-    CONDITION ( ( TEST_architecture_arch STREQUAL i386 ) OR ( TEST_architecture_arch STREQUAL x86_64 ) )
-)
-qt_configure_add_summary_entry(
-    TYPE "featureList"
-    ARGS "avx512f avx512er avx512cd avx512pf avx512dq avx512bw avx512vl avx512ifma avx512vbmi avx512vbmi2"
-    MESSAGE "AVX512"
-    CONDITION ( ( TEST_architecture_arch STREQUAL i386 ) OR ( TEST_architecture_arch STREQUAL x86_64 ) )
-)
-qt_configure_add_summary_entry(
-    TYPE "featureList"
-    ARGS "aesni f16c rdrnd shani"
-    MESSAGE "Other x86"
+    ARGS "x86intrin vaes avx512vbmi2"
+    MESSAGE "x86 Intrinsics"
     CONDITION ( ( TEST_architecture_arch STREQUAL i386 ) OR ( TEST_architecture_arch STREQUAL x86_64 ) )
 )
 qt_configure_add_summary_entry(
     TYPE "featureList"
     ARGS "neon arm_crc32 arm_crypto"
-    MESSAGE "Extensions"
+    MESSAGE "ARM Extensions"
     CONDITION ( TEST_architecture_arch STREQUAL arm ) OR ( TEST_architecture_arch STREQUAL arm64 )
 )
 qt_configure_add_summary_entry(
@@ -1215,6 +1123,31 @@ qt_configure_add_report_entry(
     MESSAGE "Command line option -sanitize fuzzer-no-link is only supported with clang compilers."
     CONDITION QT_FEATURE_sanitize_fuzzer_no_link AND NOT CLANG
 )
+if (TEST_architecture_arch STREQUAL x86_64 OR TEST_architecture_arch STREQUAL i386)
+    if ((TEST_architecture_arch STREQUAL i386) OR QNX OR WASM)
+        # Warn only
+        qt_configure_add_report_entry(
+            TYPE WARNING
+            CONDITION (NOT QT_FEATURE_x86intrin)
+            MESSAGE [=[
+All x86 intrinsics and SIMD support were disabled. If this was in error, check
+the result of the build in config.tests/x86intrin and report at https://bugreports.qt.io.
+]=]
+        )
+    else()
+        qt_configure_add_report_entry(
+            TYPE ERROR
+            CONDITION (NOT QT_FEATURE_x86intrin)
+            MESSAGE [========[
+x86 intrinsics support missing. Check your compiler settings. If this is an
+error, report at https://bugreports.qt.io with your compiler ID and version,
+and this output:
+
+${TEST_x86intrin_OUTPUT}
+]========]
+        )
+    endif()
+endif()
 # special case begin
 qt_configure_add_report_entry(
     TYPE ERROR

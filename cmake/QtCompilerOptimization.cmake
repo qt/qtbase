@@ -13,7 +13,6 @@ if (MSVC)
     set(QT_CFLAGS_AESNI      "${QT_CFLAGS_SSE2}")
     set(QT_CFLAGS_SHANI      "${QT_CFLAGS_SSE2}")
 
-    # FIXME to be Visual Studio version specific, like in mkspecs/common/msvc-version.conf
     set(QT_CFLAGS_AVX     "-arch:AVX")
     set(QT_CFLAGS_AVX2    "-arch:AVX2")
     set(QT_CFLAGS_F16C    "-arch:AVX")
