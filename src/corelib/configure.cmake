@@ -243,6 +243,9 @@ qt_config_compile_test(getentropy
     LABEL "getentropy()"
     CODE
 "#include <unistd.h>
+#if __has_include(<sys/random.h>)
+#  include <sys/random.h>
+#endif
 
 int main(void)
 {

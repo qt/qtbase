@@ -54,7 +54,9 @@
 #  include <sys/auxv.h>
 #endif
 
-#if !QT_CONFIG(getentropy) && (!defined(Q_OS_BSD4) || defined(__GLIBC__)) && !defined(Q_OS_WIN)
+#if QT_CONFIG(getentropy) && __has_include(<sys/random.h>)
+#  include <sys/random.h>
+#elif !QT_CONFIG(getentropy) && (!defined(Q_OS_BSD4) || defined(__GLIBC__)) && !defined(Q_OS_WIN)
 #  include "qdeadlinetimer.h"
 #  include "qhashfunctions.h"
 #endif // !QT_CONFIG(getentropy)
