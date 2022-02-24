@@ -161,10 +161,16 @@ set(__qt_toolchain_initial_qt_host_path
 set(__qt_toolchain_initial_qt_host_path_cmake_dir
     "@qt_host_path_cmake_dir_absolute@")
 
-# Prefer initially configured path if none was explicitly set.
-if(NOT DEFINED QT_HOST_PATH AND __qt_toolchain_initial_qt_host_path
-      AND EXISTS "${__qt_toolchain_initial_qt_host_path}")
-    set(QT_HOST_PATH "${__qt_toolchain_initial_qt_host_path}" CACHE PATH "")
+# QT_HOST_PATH precedence:
+# - cache variable / command line option
+# - environment variable
+# - initial QT_HOST_PATH when qtbase was configured (and the directory exists)
+if(NOT DEFINED QT_HOST_PATH)
+    if(DEFINED ENV{QT_HOST_PATH})
+        set(QT_HOST_PATH "$ENV{QT_HOST_PATH}" CACHE PATH "")
+    else(__qt_toolchain_initial_qt_host_path AND EXISTS "${__qt_toolchain_initial_qt_host_path}")
+        set(QT_HOST_PATH "${__qt_toolchain_initial_qt_host_path}" CACHE PATH "")
+    endif()
 endif()
 
 if(NOT QT_HOST_PATH STREQUAL "")
