@@ -86,9 +86,6 @@ extern "C" {
 static void my_error_exit (j_common_ptr cinfo)
 {
     my_error_mgr* myerr = (my_error_mgr*) cinfo->err;
-    char buffer[JMSG_LENGTH_MAX];
-    (*cinfo->err->format_message)(cinfo, buffer);
-    qCWarning(lcJpeg, "%s", buffer);
     longjmp(myerr->setjmp_buffer, 1);
 }
 
@@ -353,7 +350,7 @@ static bool read_jpeg_image(QImage *outImage,
 
         // Allocate memory for the clipped QImage.
         if (!ensureValidImage(outImage, info, clip.size()))
-            longjmp(err->setjmp_buffer, 1);
+            return false;
 
         // Avoid memcpy() overhead if grayscale with no clipping.
         bool quickGray = (info->output_components == 1 &&
@@ -429,8 +426,10 @@ static bool read_jpeg_image(QImage *outImage,
             *outImage = outImage->copy(scaledClipRect);
         return !outImage->isNull();
     }
-    else
+    else {
+        my_output_message(j_common_ptr(info));
         return false;
+    }
 }
 
 struct my_jpeg_destination_mgr : public jpeg_destination_mgr {
@@ -704,6 +703,7 @@ static bool do_write_jpeg_image(struct jpeg_compress_struct &cinfo,
         jpeg_destroy_compress(&cinfo);
         success = true;
     } else {
+        my_output_message(j_common_ptr(&cinfo));
         jpeg_destroy_compress(&cinfo);
         success = false;
     }
@@ -986,8 +986,8 @@ bool QJpegHandlerPrivate::readJpegHeader(QIODevice *device)
             state = ReadHeader;
             return true;
         }
-        else
-        {
+        else {
+            my_output_message(j_common_ptr(&info));
             return false;
         }
     }
