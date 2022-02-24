@@ -15,6 +15,8 @@ set(qsettings_resource_files
     "resourcefile6.plist"
     "withcomments.ini"
     "float.ini"
+    "qt5settings.ini"
+    "utf8settings.ini"
 )
 
 qt_internal_add_test(tst_qsettings

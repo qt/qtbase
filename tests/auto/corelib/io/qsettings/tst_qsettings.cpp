@@ -198,6 +198,10 @@ private slots:
     void floatAsQVariant();
 
     void testXdg();
+
+    void testReadKeys_data();
+    void testReadKeys();
+
 private:
     void cleanupTestFiles();
 
@@ -3661,6 +3665,40 @@ void tst_QSettings::testXdg()
 #else
     QSKIP("This test is performed in QT_BUILD_INTERNAL on Q_XDG_PLATFORM with use of standard paths only.");
 #endif
+}
+
+void tst_QSettings::testReadKeys_data()
+{
+    QTest::addColumn<QString>("filepath");
+
+    QTest::newRow("escaped") << ":/qt5settings.ini";
+    QTest::newRow("utf-8") << ":/utf8settings.ini";
+}
+
+void tst_QSettings::testReadKeys()
+{
+    QFETCH(QString, filepath);
+
+    QSettings settings(filepath, QSettings::IniFormat);
+    QCOMPARE(settings.status(), QSettings::NoError);
+
+    QVariantMap expectedValues;
+    expectedValues.insert("Test/BAR", "BAR");
+    expectedValues.insert("Test/OST", "OST");
+    expectedValues.insert("Test/B\xC3\x84R", "B\xC3\x84R"); // BÄR
+    expectedValues.insert("Test/\xC3\x96SE", "\xC3\x96SE"); // ÖSE
+    expectedValues.insert(
+            "Test/\xD0\xAD\xD1\x82\xD0\xBE/\xD1\x82\xD0\xB5\xD1\x81\xD1\x82", // Это/тест
+            "\xD0\xAD\xD1\x82\xD0\xBE \xD1\x82\xD0\xB5\xD1\x81\xD1\x82"); // Это тест
+    expectedValues.insert(".,'%U\xD0\xB0\xD0\xB1\xD0\xB2\xD0\xB3\"\t", ".,'%!@#$");
+    expectedValues.insert("\xE2\x99\x9F", "\xE2\x99\x98\xE2\x99\x9A"); // ♟︎ ♘♚
+    expectedValues.insert("\xF0\x9F\x8C\x8D", "\xF0\x9F\x8C\x90"); // 🌍 🌐
+
+    QVariantMap readValues;
+    for (const auto &key : settings.allKeys())
+        readValues.insert(key, settings.value(key));
+
+    QCOMPARE(readValues, expectedValues);
 }
 
 QTEST_MAIN(tst_QSettings)

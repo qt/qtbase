@@ -545,11 +545,13 @@ void QSettingsPrivate::iniEscapedKey(const QString &key, QByteArray &result)
 
 bool QSettingsPrivate::iniUnescapedKey(const QByteArray &key, int from, int to, QString &result)
 {
+    const QString decoded = QString::fromUtf8(QByteArrayView(key).sliced(from, to - from));
+    const qsizetype size = decoded.size();
+    result.reserve(result.length() + size);
+    qsizetype i = 0;
     bool lowercaseOnly = true;
-    int i = from;
-    result.reserve(result.length() + (to - from));
-    while (i < to) {
-        char16_t ch = (uchar)key.at(i);
+    while (i < size) {
+        char16_t ch = decoded.at(i).unicode();
 
         if (ch == '\\') {
             result += QLatin1Char('/');
@@ -557,10 +559,11 @@ bool QSettingsPrivate::iniUnescapedKey(const QByteArray &key, int from, int to, 
             continue;
         }
 
-        if (ch != '%' || i == to - 1) {
-            if (uint(ch - 'A') <= 'Z' - 'A') // only for ASCII
+        if (ch != '%' || i == size - 1) {
+            QChar qch(ch);
+            if (qch.isUpper())
                 lowercaseOnly = false;
-            result += ch;
+            result += qch;
             ++i;
             continue;
         }
@@ -568,24 +571,22 @@ bool QSettingsPrivate::iniUnescapedKey(const QByteArray &key, int from, int to, 
         int numDigits = 2;
         int firstDigitPos = i + 1;
 
-        ch = key.at(i + 1);
+        ch = decoded.at(i + 1).unicode();
         if (ch == 'U') {
             ++firstDigitPos;
             numDigits = 4;
         }
 
-        if (firstDigitPos + numDigits > to) {
+        if (firstDigitPos + numDigits > size) {
             result += QLatin1Char('%');
-            // ### missing U
             ++i;
             continue;
         }
 
         bool ok;
-        ch = key.mid(firstDigitPos, numDigits).toUShort(&ok, 16);
+        ch = QStringView(decoded).sliced(firstDigitPos, numDigits).toUShort(&ok, 16);
         if (!ok) {
             result += QLatin1Char('%');
-            // ### missing U
             ++i;
             continue;
         }
@@ -2427,9 +2428,12 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
         such as "General/someKey", the key will be located in the
         "%General" section, \e not in the "General" section.
 
-    \li In line with most implementations today, QSettings will
-        assume the INI file is utf-8 encoded. This means that keys and values
+    \li In line with most implementations today, QSettings will assume that
+        \e values in the INI file are utf-8 encoded. This means that \e values
         will be decoded as utf-8 encoded entries and written back as utf-8.
+        To retain backward compatibility with older Qt versions, \e keys in the
+        INI file are written in %-encoded format, but can be read in both
+        %-encoded and utf-8 formats.
 
     \endlist
 
