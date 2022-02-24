@@ -5,6 +5,8 @@ set(__qt_toolchain_used_variables
     QT_TOOLCHAIN_RELOCATABLE_PREFIX
     QT_HOST_PATH
     QT_HOST_PATH_CMAKE_DIR
+    QT_ADDITIONAL_PACKAGES_PREFIX_PATH
+    QT_ADDITIONAL_HOST_PACKAGES_PREFIX_PATH
 )
 @init_additional_used_variables@
 
