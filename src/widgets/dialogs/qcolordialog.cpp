@@ -1784,7 +1784,7 @@ void QColorDialogPrivate::initWidgets()
     pickLay->addLayout(cLay);
     cp = new QColorPicker(q);
 
-    cp->setFrameStyle(QFrame::Panel + QFrame::Sunken);
+    cp->setFrameStyle(QFrame::Panel | QFrame::Sunken);
 
 #if defined(QT_SMALL_COLORDIALOG)
     cp->hide();
