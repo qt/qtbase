@@ -65,7 +65,7 @@ namespace QTestLocaleChange {
 #define CASE(cat) case cat: return #cat
             CASE(LC_ALL); CASE(LC_NUMERIC); CASE(LC_TIME); CASE(LC_MONETARY);
             CASE(LC_MESSAGES); CASE(LC_COLLATE);
-#if !defined(Q_OS_QNX) && !defined(Q_OS_INTEGRITY)
+#ifdef LC_MEASUREMENT
             CASE(LC_MEASUREMENT);
 #endif
 #undef CASE
