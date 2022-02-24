@@ -217,7 +217,8 @@ option(QT_BUILD_MANUAL_TESTS "Build Qt manual tests" OFF)
 option(QT_BUILD_MINIMAL_STATIC_TESTS "Build minimal subset of tests for static Qt builds" OFF)
 
 ## Find host tools (if non native):
-set(QT_HOST_PATH "" CACHE PATH "Installed Qt host directory path, used for cross compiling.")
+set(QT_HOST_PATH "$ENV{QT_HOST_PATH}" CACHE PATH
+    "Installed Qt host directory path, used for cross compiling.")
 
 if (CMAKE_CROSSCOMPILING)
     if(NOT IS_DIRECTORY "${QT_HOST_PATH}")
