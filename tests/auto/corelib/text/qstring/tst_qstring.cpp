@@ -2670,7 +2670,7 @@ void tst_QString::insert_special_cases()
     QCOMPARE(a.insert(1, QLatin1String("ontr")), montreal);
     QCOMPARE(a.insert(4, ""), montreal);
     QCOMPARE(a.insert(3, QLatin1String("")), montreal);
-    QCOMPARE(a.insert(3, QLatin1String(0)), montreal);
+    QCOMPARE(a.insert(3, QLatin1String(nullptr)), montreal);
     QCOMPARE(a.insert(3, static_cast<const char *>(0)), montreal);
     QCOMPARE(a.insert(0, QLatin1String("a")), QLatin1String("aMontreal"));
 
@@ -4242,7 +4242,7 @@ void tst_QString::startsWith()
     QVERIFY( !a.startsWith(QLatin1String("C")) );
     QVERIFY( !a.startsWith(QLatin1String("ABCDEF")) );
     QVERIFY( a.startsWith(QLatin1String("")) );
-    QVERIFY( a.startsWith(QLatin1String(0)) );
+    QVERIFY( a.startsWith(QLatin1String(nullptr)) );
 
     QVERIFY( a.startsWith("A", Qt::CaseSensitive) );
     QVERIFY( a.startsWith("A", Qt::CaseInsensitive) );
@@ -4277,7 +4277,7 @@ void tst_QString::startsWith()
     QVERIFY( !a.startsWith(QLatin1String("c"), Qt::CaseInsensitive) );
     QVERIFY( !a.startsWith(QLatin1String("abcdef"), Qt::CaseInsensitive) );
     QVERIFY( a.startsWith(QLatin1String(""), Qt::CaseInsensitive) );
-    QVERIFY( a.startsWith(QLatin1String(0), Qt::CaseInsensitive) );
+    QVERIFY( a.startsWith(QLatin1String(nullptr), Qt::CaseInsensitive) );
     QVERIFY( a.startsWith('A', Qt::CaseSensitive) );
     QVERIFY( a.startsWith(QLatin1Char('A'), Qt::CaseSensitive) );
     QVERIFY( a.startsWith(QChar('A'), Qt::CaseSensitive) );
@@ -4298,7 +4298,7 @@ void tst_QString::startsWith()
     QVERIFY( !a.startsWith("ABC") );
 
     QVERIFY( a.startsWith(QLatin1String("")) );
-    QVERIFY( a.startsWith(QLatin1String(0)) );
+    QVERIFY( a.startsWith(QLatin1String(nullptr)) );
     QVERIFY( !a.startsWith(QLatin1String("ABC")) );
 
     QVERIFY( !a.startsWith(QLatin1Char(0)) );
@@ -4311,7 +4311,7 @@ void tst_QString::startsWith()
     QVERIFY( !a.startsWith("ABC") );
 
     QVERIFY( !a.startsWith(QLatin1String("")) );
-    QVERIFY( a.startsWith(QLatin1String(0)) );
+    QVERIFY( a.startsWith(QLatin1String(nullptr)) );
     QVERIFY( !a.startsWith(QLatin1String("ABC")) );
 
     QVERIFY( !a.startsWith(QLatin1Char(0)) );
@@ -4358,7 +4358,7 @@ void tst_QString::endsWith()
     QVERIFY( !a.endsWith(QLatin1String("C")) );
     QVERIFY( !a.endsWith(QLatin1String("ABCDEF")) );
     QVERIFY( a.endsWith(QLatin1String("")) );
-    QVERIFY( a.endsWith(QLatin1String(0)) );
+    QVERIFY( a.endsWith(QLatin1String(nullptr)) );
 
     QVERIFY( a.endsWith("B", Qt::CaseSensitive) );
     QVERIFY( a.endsWith("B", Qt::CaseInsensitive) );
@@ -4393,7 +4393,7 @@ void tst_QString::endsWith()
     QVERIFY( !a.endsWith(QLatin1String("c"), Qt::CaseInsensitive) );
     QVERIFY( !a.endsWith(QLatin1String("abcdef"), Qt::CaseInsensitive) );
     QVERIFY( a.endsWith(QLatin1String(""), Qt::CaseInsensitive) );
-    QVERIFY( a.endsWith(QLatin1String(0), Qt::CaseInsensitive) );
+    QVERIFY( a.endsWith(QLatin1String(nullptr), Qt::CaseInsensitive) );
     QVERIFY( a.endsWith('B', Qt::CaseSensitive) );
     QVERIFY( a.endsWith(QLatin1Char('B'), Qt::CaseSensitive) );
     QVERIFY( a.endsWith(QChar('B'), Qt::CaseSensitive) );
@@ -4407,7 +4407,7 @@ void tst_QString::endsWith()
     TEST_VIEW_ENDS_WITH(QLatin1String("C"), false);
     TEST_VIEW_ENDS_WITH(QLatin1String("ABCDEF"), false);
     TEST_VIEW_ENDS_WITH(QLatin1String(""), true);
-    TEST_VIEW_ENDS_WITH(QLatin1String(0), true);
+    TEST_VIEW_ENDS_WITH(QLatin1String(nullptr), true);
 #undef TEST_VIEW_ENDS_WITH
 
     a = "";
@@ -4419,7 +4419,7 @@ void tst_QString::endsWith()
     QVERIFY( !a.endsWith(QChar()) );
 
     QVERIFY( a.endsWith(QLatin1String("")) );
-    QVERIFY( a.endsWith(QLatin1String(0)) );
+    QVERIFY( a.endsWith(QLatin1String(nullptr)) );
     QVERIFY( !a.endsWith(QLatin1String("ABC")) );
 
     a = QString();
@@ -4428,7 +4428,7 @@ void tst_QString::endsWith()
     QVERIFY( !a.endsWith("ABC") );
 
     QVERIFY( !a.endsWith(QLatin1String("")) );
-    QVERIFY( a.endsWith(QLatin1String(0)) );
+    QVERIFY( a.endsWith(QLatin1String(nullptr)) );
     QVERIFY( !a.endsWith(QLatin1String("ABC")) );
 
     QVERIFY( !a.endsWith(QLatin1Char(0)) );
@@ -5736,8 +5736,8 @@ void tst_QString::operator_smaller()
     QVERIFY( foo > empty );
     QVERIFY( !(foo < empty) );
 
-    QVERIFY( !(null < QLatin1String(0)) );
-    QVERIFY( !(null > QLatin1String(0)) );
+    QVERIFY( !(null < QLatin1String(nullptr)) );
+    QVERIFY( !(null > QLatin1String(nullptr)) );
     QVERIFY( !(null < QLatin1String("")) );
     QVERIFY( !(null > QLatin1String("")) );
 
@@ -5746,28 +5746,28 @@ void tst_QString::operator_smaller()
     QVERIFY( !(empty < QLatin1String("")) );
     QVERIFY( !(empty > QLatin1String("")) );
 
-    QVERIFY( !(QLatin1String(0) < null) );
-    QVERIFY( !(QLatin1String(0) > null) );
+    QVERIFY( !(QLatin1String(nullptr) < null) );
+    QVERIFY( !(QLatin1String(nullptr) > null) );
     QVERIFY( !(QLatin1String("") < null) );
     QVERIFY( !(QLatin1String("") > null) );
 
-    QVERIFY( !(QLatin1String(0) < empty) );
-    QVERIFY( !(QLatin1String(0) > empty) );
+    QVERIFY( !(QLatin1String(nullptr) < empty) );
+    QVERIFY( !(QLatin1String(nullptr) > empty) );
     QVERIFY( !(QLatin1String("") < empty) );
     QVERIFY( !(QLatin1String("") > empty) );
 
-    QVERIFY( QLatin1String(0) < foo );
-    QVERIFY( !(QLatin1String(0) > foo) );
+    QVERIFY( QLatin1String(nullptr) < foo );
+    QVERIFY( !(QLatin1String(nullptr) > foo) );
     QVERIFY( QLatin1String("") < foo );
     QVERIFY( !(QLatin1String("") > foo) );
 
-    QVERIFY( foo > QLatin1String(0) );
-    QVERIFY( !(foo < QLatin1String(0)) );
+    QVERIFY( foo > QLatin1String(nullptr) );
+    QVERIFY( !(foo < QLatin1String(nullptr)) );
     QVERIFY( foo > QLatin1String("") );
     QVERIFY( !(foo < QLatin1String("")) );
 
-    QVERIFY( QLatin1String(0) == empty);
-    QVERIFY( QLatin1String(0) == null);
+    QVERIFY( QLatin1String(nullptr) == empty);
+    QVERIFY( QLatin1String(nullptr) == null);
     QVERIFY( QLatin1String("") == empty);
     QVERIFY( QLatin1String("") == null);
 
@@ -7580,7 +7580,7 @@ void tst_QString::assignQLatin1String()
     QVERIFY(empty.isEmpty());
     QVERIFY(!empty.isNull());
 
-    QString null = QLatin1String(0);
+    QString null = QLatin1String(nullptr);
     QVERIFY(null.isEmpty());
     QVERIFY(null.isNull());
 

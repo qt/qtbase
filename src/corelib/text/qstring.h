@@ -84,6 +84,7 @@ class QLatin1String
 {
 public:
     constexpr inline QLatin1String() noexcept : m_size(0), m_data(nullptr) {}
+    constexpr QLatin1String(std::nullptr_t) noexcept : QLatin1String() {}
     constexpr inline explicit QLatin1String(const char *s) noexcept : m_size(s ? qsizetype(strlen(s)) : 0), m_data(s) {}
     constexpr explicit QLatin1String(const char *f, const char *l)
         : QLatin1String(f, qsizetype(l - f)) {}
@@ -96,9 +97,19 @@ public:
     constexpr const char *latin1() const noexcept { return m_data; }
     constexpr qsizetype size() const noexcept { return m_size; }
     constexpr const char *data() const noexcept { return m_data; }
+    [[nodiscard]] constexpr const char *constData() const noexcept { return data(); }
+    [[nodiscard]] constexpr const char *constBegin() const noexcept { return begin(); }
+    [[nodiscard]] constexpr const char *constEnd() const noexcept { return end(); }
+
+    [[nodiscard]] constexpr QLatin1Char first() const { return front(); }
+    [[nodiscard]] constexpr QLatin1Char last() const { return back(); }
+
+    [[nodiscard]] constexpr qsizetype length() const noexcept { return size(); }
 
     constexpr bool isNull() const noexcept { return !data(); }
     constexpr bool isEmpty() const noexcept { return !size(); }
+
+    [[nodiscard]] constexpr bool empty() const noexcept { return size() == 0; }
 
     template <typename...Args>
     [[nodiscard]] inline QString arg(Args &&...args) const;

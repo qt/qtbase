@@ -9108,6 +9108,14 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \sa data(), isEmpty(), isNull(), {Distinction Between Null and Empty Strings}
 */
 
+/*! \fn QLatin1String::QLatin1String(std::nullptr_t)
+    \since 6.4
+
+    Constructs a QLatin1String object that stores a \nullptr.
+
+    \sa data(), isEmpty(), isNull(), {Distinction Between Null and Empty Strings}
+*/
+
 /*! \fn QLatin1String::QLatin1String(const char *str)
 
     Constructs a QLatin1String object that stores \a str.
@@ -9193,27 +9201,45 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 
 /*! \fn const char *QLatin1String::latin1() const
 
-    Returns the Latin-1 string stored in this object.
+    Returns the start of the Latin-1 string referenced by this object.
 */
 
 /*! \fn const char *QLatin1String::data() const
 
-    Returns the Latin-1 string stored in this object.
+    Returns the start of the Latin-1 string referenced by this object.
+*/
+
+/*! \fn const char *QLatin1String::constData() const
+    \since 6.4
+
+    Returns the start of the Latin-1 string referenced by this object.
+
+    This function is provided for compatibility with other Qt containers.
+
+    \sa data()
 */
 
 /*! \fn qsizetype QLatin1String::size() const
 
-    Returns the size of the Latin-1 string stored in this object.
+    Returns the size of the Latin-1 string referenced by this object.
 
     \note In version prior to Qt 6, this function returned \c{int},
     restricting the amount of data that could be held in a QLatin1String
     on 64-bit architectures.
 */
 
+/*! \fn qsizetype QLatin1String::length() const
+    \since 6.4
+
+    Same as size().
+
+    This function is provided for compatibility with other Qt containers.
+*/
+
 /*! \fn bool QLatin1String::isNull() const
     \since 5.10
 
-    Returns whether the Latin-1 string stored in this object is null
+    Returns whether the Latin-1 string referenced by this object is null
     (\c{data() == nullptr}) or not.
 
     \sa isEmpty(), data()
@@ -9222,10 +9248,21 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 /*! \fn bool QLatin1String::isEmpty() const
     \since 5.10
 
-    Returns whether the Latin-1 string stored in this object is empty
+    Returns whether the Latin-1 string referenced by this object is empty
     (\c{size() == 0}) or not.
 
     \sa isNull(), size()
+*/
+
+/*! \fn bool QLatin1String::empty() const
+    \since 6.4
+
+    Returns whether the Latin-1 string referenced by this object is empty
+    (\c{size() == 0}) or not.
+
+    This function is provided for STL compatibility.
+
+    \sa isEmpty(), isNull(), size()
 */
 
 /*! \fn QLatin1Char QLatin1String::at(qsizetype pos) const
@@ -9266,6 +9303,21 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 
 /*!
+    \fn QLatin1Char QLatin1String::first() const
+    \since 6.4
+
+    Returns the first character in the string.
+    Same as \c{at(0)} or front().
+
+    This function is provided for compatibility with other Qt containers.
+
+    \warning Calling this function on an empty string constitutes
+    undefined behavior.
+
+    \sa last(), front(), back()
+*/
+
+/*!
     \fn QLatin1Char QLatin1String::back() const
     \since 5.10
 
@@ -9278,6 +9330,21 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     undefined behavior.
 
     \sa front(), at(), operator[]()
+*/
+
+/*!
+    \fn QLatin1Char QLatin1String::last() const
+    \since 6.4
+
+    Returns the last character in the string.
+    Same as \c{at(size() - 1)} or back().
+
+    This function is provided for compatibility with other Qt containers.
+
+    \warning Calling this function on an empty string constitutes
+    undefined behavior.
+
+    \sa first(), back(), front()
 */
 
 /*!
@@ -9447,6 +9514,17 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 
 /*!
+    \fn QLatin1String::const_iterator QLatin1String::constBegin() const
+    \since 6.4
+
+    Same as begin().
+
+    This function is provided for compatibility with other Qt containers.
+
+    \sa constEnd(), begin(), cbegin(), data()
+*/
+
+/*!
     \fn QLatin1String::const_iterator QLatin1String::end() const
     \since 5.10
 
@@ -9466,6 +9544,16 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     This function is provided for STL compatibility.
 
     \sa cbegin(), end(), crend()
+*/
+
+/*! \fn QLatin1String::const_iterator QLatin1String::constEnd() const
+    \since 6.4
+
+    Same as end().
+
+    This function is provided for compatibility with other Qt containers.
+
+    \sa constBegin(), end(), cend(), crend()
 */
 
 /*!
