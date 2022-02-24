@@ -100,6 +100,13 @@ struct IsContainerCompatibleWithQByteArrayView<T, std::enable_if_t<
                 // Don't make an accidental copy constructor
                 std::negation<std::is_same<std::decay_t<T>, QByteArrayView>>>>> : std::true_type {};
 
+// Used by QLatin1String too
+template <typename Char>
+static constexpr qsizetype lengthHelperPointer(const Char *data) noexcept
+{
+    return qsizetype(std::char_traits<Char>::length(data));
+}
+
 } // namespace QtPrivate
 
 class Q_CORE_EXPORT QByteArrayView
@@ -137,12 +144,6 @@ private:
     using if_compatible_container =
             typename std::enable_if_t<QtPrivate::IsContainerCompatibleWithQByteArrayView<T>::value,
                                       bool>;
-
-    template <typename Char>
-    static constexpr qsizetype lengthHelperPointer(const Char *data) noexcept
-    {
-        return qsizetype(std::char_traits<Char>::length(data));
-    }
 
     template <typename Container>
     static constexpr qsizetype lengthHelperContainer(const Container &c) noexcept
@@ -185,7 +186,7 @@ public:
     template <typename Pointer, if_compatible_pointer<Pointer> = true>
     constexpr QByteArrayView(const Pointer &data) noexcept
         : QByteArrayView(
-              data, data ? lengthHelperPointer(data) : 0) {}
+              data, data ? QtPrivate::lengthHelperPointer(data) : 0) {}
 #endif
 
 #ifdef Q_QDOC

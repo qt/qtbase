@@ -49,6 +49,7 @@
 
 #include <QtCore/qchar.h>
 #include <QtCore/qbytearray.h>
+#include <QtCore/qbytearrayview.h>
 #include <QtCore/qarraydata.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qstringliteral.h>
@@ -85,7 +86,8 @@ class QLatin1String
 public:
     constexpr inline QLatin1String() noexcept : m_size(0), m_data(nullptr) {}
     constexpr QLatin1String(std::nullptr_t) noexcept : QLatin1String() {}
-    constexpr inline explicit QLatin1String(const char *s) noexcept : m_size(s ? qsizetype(strlen(s)) : 0), m_data(s) {}
+    constexpr inline explicit QLatin1String(const char *s) noexcept
+        : m_size(s ? qsizetype(QtPrivate::lengthHelperPointer(s)) : 0), m_data(s) {}
     constexpr explicit QLatin1String(const char *f, const char *l)
         : QLatin1String(f, qsizetype(l - f)) {}
     constexpr inline explicit QLatin1String(const char *s, qsizetype sz) noexcept : m_size(sz), m_data(s) {}
