@@ -140,7 +140,6 @@ def _recursive_simplify(expr):
     expr = _simplify_flavors_in_condition("APPLE", apples, expr)
     expr = _simplify_flavors_in_condition("BSD", bsds, expr)
     expr = _simplify_flavors_in_condition("UNIX", unixes, expr)
-    expr = _simplify_flavors_in_condition("ANDROID", (), expr)
 
     # Simplify families of OSes against other families:
     expr = _simplify_os_families(expr, ("WIN32", "WINRT"), unixes)
