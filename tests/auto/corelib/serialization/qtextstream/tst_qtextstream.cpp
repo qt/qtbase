@@ -1211,11 +1211,16 @@ void tst_QTextStream::stillOpenWhenAtEnd()
     while (!stream.readLine().isNull()) {}
     QVERIFY(file.isOpen());
 
+#ifdef QT_TEST_SERVER
+    if (!QtNetworkSettings::verifyConnection(QtNetworkSettings::imapServerName(), 143))
+        QSKIP("No network test server available");
+#else
     if (!QtNetworkSettings::verifyTestNetworkSettings())
         QSKIP("No network test server available");
+#endif
 
     QTcpSocket socket;
-    socket.connectToHost(QtNetworkSettings::serverName(), 143);
+    socket.connectToHost(QtNetworkSettings::imapServerName(), 143);
     QVERIFY(socket.waitForReadyRead(5000));
 
     QTextStream stream2(&socket);

@@ -21,6 +21,7 @@ qt_internal_add_test(tst_qtextstream
         Qt::Network
         Qt::TestPrivate
     TESTDATA ${test_data}
+    QT_TEST_SERVER_LIST "cyrus"
 )
 
 # Resources:
