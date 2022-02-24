@@ -119,6 +119,7 @@ uint QNetworkInterfaceManager::interfaceIndexFromName(const QString &name)
     qt_safe_close(socket);
     return id;
 #else
+    Q_UNUSED(name);
     return 0;
 #endif
 }
@@ -242,6 +243,7 @@ static QNetworkInterfacePrivate *findInterface(int socket, QList<QNetworkInterfa
             break;
         }
 #else
+    Q_UNUSED(socket);
     // Search by name
     QList<QNetworkInterfacePrivate *>::Iterator if_it = interfaces.begin();
     for ( ; if_it != interfaces.end(); ++if_it)
