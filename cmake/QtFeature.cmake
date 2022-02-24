@@ -1074,7 +1074,7 @@ function(qt_config_compile_test_x86simd extension label)
     qt_get_platform_try_compile_vars(platform_try_compile_vars)
     list(APPEND flags ${platform_try_compile_vars})
 
-    message(STATUS "Performing SIMD Test ${label}")
+    message(STATUS "Performing Test ${label} intrinsics")
     try_compile("TEST_X86SIMD_${extension}"
         "${CMAKE_CURRENT_BINARY_DIR}/config.tests/x86_simd_${extension}"
         "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/x86_simd"
@@ -1085,7 +1085,7 @@ function(qt_config_compile_test_x86simd extension label)
     else()
         set(status_label "Failed")
     endif()
-    message(STATUS "Performing SIMD Test ${label} - ${status_label}")
+    message(STATUS "Performing Test ${label} intrinsics - ${status_label}")
     set(TEST_subarch_${extension} "${TEST_X86SIMD_${extension}}" CACHE INTERNAL "${label}")
 endfunction()
 

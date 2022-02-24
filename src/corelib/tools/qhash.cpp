@@ -680,7 +680,7 @@ aeshash256_lt32_avx256(__m256i state0, const uchar *p, size_t len)
 {
     __m128i state0_128 = _mm256_castsi256_si128(state0);
     if (len) {
-        __mmask32 mask = _bzhi_u32(-1, len);
+        __mmask32 mask = _bzhi_u32(-1, unsigned(len));
         __m256i data = _mm256_maskz_loadu_epi8(mask, p);
         __m128i data0 = _mm256_castsi256_si128(data);
         if (len >= sizeof(__m128i)) {

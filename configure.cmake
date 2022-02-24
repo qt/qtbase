@@ -304,6 +304,12 @@ qt_config_compile_test_x86simd(avx512ifma "AVX512 IFMA instructions")
 # avx512vbmi
 qt_config_compile_test_x86simd(avx512vbmi "AVX512 VBMI instructions")
 
+# x86: avx512vbmi2
+qt_config_compile_test_x86simd(avx512vbmi2 "AVX512VBMI2")
+
+# x86: vaes
+qt_config_compile_test_x86simd(vaes "VAES")
+
 # posix_fallocate
 qt_config_compile_test(posix_fallocate
     LABEL "POSIX fallocate()"
@@ -803,12 +809,24 @@ qt_feature("avx512vbmi" PRIVATE
 )
 qt_feature_definition("avx512vbmi" "QT_COMPILER_SUPPORTS_AVX512VBMI" VALUE "1")
 qt_feature_config("avx512vbmi" QMAKE_PRIVATE_CONFIG)
+qt_feature("avx512vbmi2" PRIVATE
+    LABEL "AVX512VBMI2"
+    CONDITION QT_FEATURE_avx512f AND TEST_subarch_avx512vbmi2
+)
+qt_feature_definition("avx512vbmi2" "QT_COMPILER_SUPPORTS_AVX512VBMI2" VALUE "1")
+qt_feature_config("avx512vbmi2" QMAKE_PRIVATE_CONFIG)
 qt_feature("aesni" PRIVATE
     LABEL "AES"
     CONDITION QT_FEATURE_sse2 AND TEST_subarch_aesni
 )
 qt_feature_definition("aesni" "QT_COMPILER_SUPPORTS_AES" VALUE "1")
 qt_feature_config("aesni" QMAKE_PRIVATE_CONFIG)
+qt_feature("vaes" PRIVATE
+    LABEL "VAES"
+    CONDITION QT_FEATURE_avx2 AND TEST_subarch_vaes
+)
+qt_feature_definition("vaes" "QT_COMPILER_SUPPORTS_VAES" VALUE "1")
+qt_feature_config("vaes" QMAKE_PRIVATE_CONFIG)
 qt_feature("rdrnd" PRIVATE
     LABEL "RDRAND"
     CONDITION TEST_subarch_rdrnd
@@ -1065,13 +1083,13 @@ qt_configure_add_summary_entry(
 )
 qt_configure_add_summary_entry(
     TYPE "featureList"
-    ARGS "avx avx2"
+    ARGS "avx avx2 vaes"
     MESSAGE "AVX"
     CONDITION ( ( TEST_architecture_arch STREQUAL i386 ) OR ( TEST_architecture_arch STREQUAL x86_64 ) )
 )
 qt_configure_add_summary_entry(
     TYPE "featureList"
-    ARGS "avx512f avx512er avx512cd avx512pf avx512dq avx512bw avx512vl avx512ifma avx512vbmi"
+    ARGS "avx512f avx512er avx512cd avx512pf avx512dq avx512bw avx512vl avx512ifma avx512vbmi avx512vbmi2"
     MESSAGE "AVX512"
     CONDITION ( ( TEST_architecture_arch STREQUAL i386 ) OR ( TEST_architecture_arch STREQUAL x86_64 ) )
 )
