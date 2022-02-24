@@ -202,6 +202,34 @@ public:
         }
     }
 
+    QBindingStatus *bindingStatus()
+    {
+        auto statusOrPendingObjects = m_statusOrPendingObjects.loadAcquire();
+        if (!(statusOrPendingObjects & 1))
+            return (QBindingStatus *) statusOrPendingObjects;
+        return nullptr;
+    }
+
+    void addObjectWithPendingBindingStatusChange(QObject *obj)
+    {
+        Q_ASSERT(!bindingStatus());
+        auto pendingObjects = pendingObjectsWithBindingStatusChange();
+        if (!pendingObjects) {
+            pendingObjects = new std::vector<QObject *>();
+            m_statusOrPendingObjects = quintptr(pendingObjects) | 1;
+        }
+        pendingObjects->push_back(obj);
+    }
+
+    std::vector<QObject *> *pendingObjectsWithBindingStatusChange()
+    {
+        auto statusOrPendingObjects = m_statusOrPendingObjects.loadAcquire();
+        if (statusOrPendingObjects & 1)
+            return reinterpret_cast<std::vector<QObject *> *>(statusOrPendingObjects - 1);
+        return nullptr;
+    }
+
+    QAtomicInteger<quintptr> m_statusOrPendingObjects = 0;
 #ifndef Q_OS_INTEGRITY
 private:
     // Used in QThread(Private)::start to avoid racy access to QObject::objectName,
@@ -220,7 +248,12 @@ public:
 
     mutable QMutex mutex;
     QThreadData *data;
+    QBindingStatus* m_bindingStatus;
     bool running = false;
+
+    QBindingStatus* bindingStatus() { return m_bindingStatus; }
+    void addObjectWithPendingBindingStatusChange(QObject *) {}
+    std::vector<QObject *> * pendingObjectsWithBindingStatusChange() { return nullptr; }
 
     static void setCurrentThread(QThread *) { }
     static QAbstractEventDispatcher *createEventDispatcher(QThreadData *data);

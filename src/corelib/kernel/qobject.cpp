@@ -505,6 +505,13 @@ bool QObjectPrivate::maybeSignalConnected(uint signalIndex) const
     return false;
 }
 
+void QObjectPrivate::reinitBindingStorageAfterThreadMove()
+{
+    bindingStorage.reinitAfterThreadMove();
+    for (int i = 0; i < children.size(); ++i)
+        children[i]->d_func()->reinitBindingStorageAfterThreadMove();
+}
+
 /*!
     \internal
  */
@@ -1641,7 +1648,16 @@ void QObject::moveToThread(QThread *targetThread)
     currentData->ref();
 
     // move the object
-    d_func()->setThreadData_helper(currentData, targetData);
+    auto threadPrivate =  targetThread
+        ? static_cast<QThreadPrivate *>(QThreadPrivate::get(targetThread))
+        : nullptr;
+    QBindingStatus *bindingStatus = threadPrivate
+        ? threadPrivate->bindingStatus()
+        : nullptr;
+    if (threadPrivate && !bindingStatus) {
+        threadPrivate->addObjectWithPendingBindingStatusChange(this);
+    }
+    d_func()->setThreadData_helper(currentData, targetData, bindingStatus);
 
     locker.unlock();
 
@@ -1656,13 +1672,19 @@ void QObjectPrivate::moveToThread_helper()
     QCoreApplication::sendEvent(q, &e);
     for (int i = 0; i < children.size(); ++i) {
         QObject *child = children.at(i);
+        child->d_func()->bindingStorage.clear();
         child->d_func()->moveToThread_helper();
     }
 }
 
-void QObjectPrivate::setThreadData_helper(QThreadData *currentData, QThreadData *targetData)
+void QObjectPrivate::setThreadData_helper(QThreadData *currentData, QThreadData *targetData, QBindingStatus *status)
 {
     Q_Q(QObject);
+
+    if (status) {
+        // the new thread is already running
+        this->bindingStorage.bindingStatus = status;
+    }
 
     // move posted events
     int eventsMoved = 0;
@@ -1718,7 +1740,7 @@ void QObjectPrivate::setThreadData_helper(QThreadData *currentData, QThreadData 
 
     for (int i = 0; i < children.size(); ++i) {
         QObject *child = children.at(i);
-        child->d_func()->setThreadData_helper(currentData, targetData);
+        child->d_func()->setThreadData_helper(currentData, targetData, status);
     }
 }
 

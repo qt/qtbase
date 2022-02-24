@@ -43,6 +43,7 @@
 #include "qmutex.h"
 #include "qreadwritelock.h"
 #include "qabstracteventdispatcher.h"
+#include "qbindingstorage.h"
 
 #include <qeventloop.h>
 
@@ -195,6 +196,7 @@ QThreadPrivate::QThreadPrivate(QThreadData *d)
 
 QThreadPrivate::~QThreadPrivate()
 {
+    delete pendingObjectsWithBindingStatusChange();
     data->deref();
 }
 
@@ -552,6 +554,13 @@ uint QThread::stackSize() const
 int QThread::exec()
 {
     Q_D(QThread);
+    const auto status = QtPrivate::getBindingStatus(QtPrivate::QBindingStatusAccessToken{});
+    if (auto pendingObjects = d->pendingObjectsWithBindingStatusChange()) {
+        for (auto obj: *pendingObjects)
+            QObjectPrivate::get(obj)->reinitBindingStorageAfterThreadMove();
+        delete pendingObjects;
+    }
+    d->m_statusOrPendingObjects.storeRelease(quintptr(status));
     QMutexLocker locker(&d->mutex);
     d->data->quitNow = false;
     if (d->exited) {
@@ -953,6 +962,7 @@ QThreadPrivate::QThreadPrivate(QThreadData *d) : data(d ? d : new QThreadData)
 
 QThreadPrivate::~QThreadPrivate()
 {
+    delete pendingObjectsWithBindingStatusChange();
     data->thread.storeRelease(nullptr); // prevent QThreadData from deleting the QThreadPrivate (again).
     delete data;
 }

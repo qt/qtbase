@@ -62,6 +62,7 @@ QT_BEGIN_NAMESPACE
 
 namespace QtPrivate {
     Q_CORE_EXPORT bool isAnyBindingEvaluating();
+    struct QBindingStatusAccessToken {};
 }
 
 // Keep all classes related to QProperty in one compilation unit. Performance of this code is crucial and
