@@ -134,6 +134,8 @@ protected:
 };
 
 #define Q_GLOBAL_STATIC_WITH_ARGS(TYPE, NAME, ARGS)                         \
+    QT_WARNING_PUSH                                                         \
+    QT_WARNING_DISABLE_CLANG("-Wunevaluated-expression")                    \
     namespace { struct Q_QGS_ ## NAME {                                     \
         typedef TYPE QGS_Type;                                              \
         static void innerFunction(void *pointer)                            \
@@ -143,6 +145,7 @@ protected:
         }                                                                   \
     }; }                                                                    \
     static QGlobalStatic<QtGlobalStatic::Holder<Q_QGS_ ## NAME>> NAME;      \
+    QT_WARNING_POP
     /**/
 
 #define Q_GLOBAL_STATIC(TYPE, NAME, ...)                                    \
