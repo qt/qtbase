@@ -378,9 +378,6 @@ void QLabel::setPixmap(const QPixmap &pixmap)
         d->pixmap = new QPixmap(pixmap);
     }
 
-    if (d->pixmap->depth() == 1 && !d->pixmap->mask())
-        d->pixmap->setMask(*((QBitmap *)d->pixmap));
-
     d->updateLabel();
 }
 
