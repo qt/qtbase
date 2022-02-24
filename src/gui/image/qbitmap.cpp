@@ -254,6 +254,8 @@ QBitmap QBitmap::fromData(const QSize &size, const uchar *bits, QImage::Format m
     If the pixmap has a depth greater than 1, the resulting bitmap
     will be dithered automatically.
 
+    \since 6.0
+
     \sa QPixmap::depth()
 */
 
