@@ -344,6 +344,7 @@ struct TransitionTimePair
     qint64 std, dst;
     // If either is invalidMSecs(), which shall then be < the other, there is no
     // DST and the other describes a change in actual standard offset.
+    bool fakesDst = false;
 
     TransitionTimePair(const QWinTimeZonePrivate::QWinTransitionRule &rule,
                        int year, int oldYearOffset)
@@ -401,17 +402,15 @@ struct TransitionTimePair
         if (rule.standardTimeBias + rule.daylightTimeBias == oldYearOffset
             && isAtStartOfYear(rule.daylightTimeRule, year)) {
             dst = QTimeZonePrivate::invalidMSecs();
+            fakesDst = true;
         }
         if (rule.standardTimeBias == oldYearOffset
             && isAtStartOfYear(rule.standardTimeRule, year)) {
+            Q_ASSERT_X(!fakesDst, "TransitionTimePair",
+                       "Year with (DST bias zero and) both transitions fake !");
             std = QTimeZonePrivate::invalidMSecs();
+            fakesDst = true;
         }
-    }
-
-    bool fakesDst() const
-    {
-        return std == QTimeZonePrivate::invalidMSecs()
-            || dst == QTimeZonePrivate::invalidMSecs();
     }
 
     bool startsInDst() const
@@ -428,9 +427,9 @@ struct TransitionTimePair
         auto time = isDst ? dst : std;
         // The isDst we're asked for may be set to the valid one of dst and
         // std, when fake, but not always - so make sure:
-        if (time == QTimeZonePrivate::invalidMSecs())
+        if (fakesDst && time == QTimeZonePrivate::invalidMSecs())
             time = isDst ? std : dst;
-        return tzp->ruleToData(rule, time, type, fakesDst());
+        return tzp->ruleToData(rule, time, type, fakesDst);
     }
 };
 
@@ -681,7 +680,7 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::data(qint64 forMSecsSinceEpoch) cons
                 }
                 return ruleToData(rule, forMSecsSinceEpoch,
                                   isDst ? QTimeZone::DaylightTime : QTimeZone::StandardTime,
-                                  pair.fakesDst());
+                                  pair.fakesDst);
             }
             // Fell off start of rule, try previous rule.
         } else {
