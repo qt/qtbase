@@ -57,7 +57,7 @@ def _parse_commandline():
 
 
 class Blacklist:
-    """ Class to check if a certain dir_name / dir_path is blacklisted """
+    """Class to check if a certain dir_name / dir_path is blacklisted"""
 
     def __init__(self, names: typing.List[str], path_parts: typing.List[str]):
         self.names = names
@@ -99,7 +99,7 @@ class Blacklist:
 
 
 def recursive_scan(path: str, extension: str, result_paths: typing.List[str], blacklist: Blacklist):
-    """ Find files ending with a certain extension, filtering out blacklisted entries """
+    """Find files ending with a certain extension, filtering out blacklisted entries"""
     try:
         for entry in os.scandir(path):
             if entry.is_file() and entry.path.endswith(extension):

@@ -358,14 +358,14 @@ def find_qmake_or_cmake_conf(project_file_path: str = "") -> str:
 def parse_qt_repo_module_version_from_qmake_conf(qmake_conf_path: str = "") -> str:
     with open(qmake_conf_path) as f:
         file_contents = f.read()
-        m = re.search(fr"MODULE_VERSION\s*=\s*([0-9.]+)", file_contents)
+        m = re.search(r"MODULE_VERSION\s*=\s*([0-9.]+)", file_contents)
     return m.group(1) if m else ""
 
 
 def parse_qt_repo_module_version_from_cmake_conf(cmake_conf_path: str = "") -> str:
     with open(cmake_conf_path) as f:
         file_contents = f.read()
-        m = re.search(fr'set\(QT_REPO_MODULE_VERSION\s*"([0-9.]+)"\)', file_contents)
+        m = re.search(r'set\(QT_REPO_MODULE_VERSION\s*"([0-9.]+)"\)', file_contents)
     return m.group(1) if m else ""
 
 
@@ -1772,7 +1772,7 @@ _path_replacements = {
 
 
 def replace_path_constants(path: str, scope: Scope) -> str:
-    """ Clean up DESTDIR and target.path """
+    """Clean up DESTDIR and target.path"""
     if path.startswith("./"):
         path = f"${{CMAKE_CURRENT_BINARY_DIR}}/{path[2:]}"
     elif path.startswith("../"):
@@ -2502,7 +2502,7 @@ def write_resources(
                     immediate_base_list = scope.get(f"{r}.base")
                     assert (
                         len(immediate_base_list) < 2
-                    ), f"immediate base directory must be at most one entry"
+                    ), "immediate base directory must be at most one entry"
                     immediate_base = replace_path_constants("".join(immediate_base_list), scope)
                     immediate_lang = None
                     immediate_name = f"qmake_{r}"
@@ -2579,7 +2579,7 @@ def write_qlalrsources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 
     if not sources:
         return
     cm_fh.write("\n# QLALR Grammars:\n")
-    cm_fh.write(f"qt_process_qlalr(\n")
+    cm_fh.write("qt_process_qlalr(\n")
     indent += 1
     cm_fh.write(f"{spaces(indent)}{target}\n")
     cm_fh.write(f"{spaces(indent)}{';'.join(sources)}\n")
@@ -2650,7 +2650,7 @@ def write_target_sources(
 ):
     command_name = "target_sources"
     header = f"{command_name}({target} {visibility}\n"
-    write_list(cm_fh, sources, "", indent, footer=f")", header=header)
+    write_list(cm_fh, sources, "", indent, footer=")", header=header)
 
 
 def expand_project_requirements(scope: Scope, skip_message: bool = False) -> str:
@@ -3728,7 +3728,7 @@ def write_jar(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
         android_sdk_jar = "${android_sdk}"
 
     write_source_file_list(
-        cm_fh, scope, "", ["JAVASOURCES"], indent=indent, header=f"set(java_sources\n", footer=")\n"
+        cm_fh, scope, "", ["JAVASOURCES"], indent=indent, header="set(java_sources\n", footer=")\n"
     )
 
     cm_fh.write(f"{spaces(indent)}qt_internal_add_jar({target}\n")
@@ -3873,9 +3873,9 @@ def write_example(
                     assert sc.condition
 
                     add_target += f"if ({sc.condition})\n"
-                    add_target += f"    list(APPEND module_dynamic_qml_imports\n        "
+                    add_target += "    list(APPEND module_dynamic_qml_imports\n        "
                     add_target += "\n        ".join(import_list)
-                    add_target += f"\n    )\nendif()\n\n"
+                    add_target += "\n    )\nendif()\n\n"
 
             add_target += dedent(
                 f"""\
@@ -4200,9 +4200,9 @@ def write_qml_plugin(
             assert sc.condition
 
             cm_fh.write(f"if ({sc.condition})\n")
-            cm_fh.write(f"    list(APPEND module_dynamic_qml_imports\n        ")
+            cm_fh.write("    list(APPEND module_dynamic_qml_imports\n        ")
             cm_fh.write("\n        ".join(import_list))
-            cm_fh.write(f"\n    )\nendif()\n\n")
+            cm_fh.write("\n    )\nendif()\n\n")
 
     if qml_dir is not None:
         if qml_dir.designer_supported:
@@ -4413,7 +4413,7 @@ def handle_top_level_repo_project(scope: Scope, cm_fh: IO[str]):
     )
 
     build_repo = dedent(
-        f"""\
+        """\
                 qt_build_repo()
                 """
     )
@@ -4445,7 +4445,7 @@ def find_top_level_repo_project_file(project_file_path: str = "") -> Optional[st
 def handle_top_level_repo_tests_project(scope: Scope, cm_fh: IO[str]):
 
     content = dedent(
-        f"""\
+        """\
         if(QT_BUILD_STANDALONE_TESTS)
             # Add qt_find_package calls for extra dependencies that need to be found when building
             # the standalone tests here.
@@ -4467,14 +4467,14 @@ def write_regular_cmake_target_scope_section(
     write_include_paths(
         cm_fh,
         scope,
-        f"target_include_directories(${{PROJECT_NAME}} PUBLIC",
+        "target_include_directories(${{PROJECT_NAME}} PUBLIC",
         indent=indent,
         footer=")",
     )
     write_defines(
         cm_fh,
         scope,
-        f"target_compile_definitions(${{PROJECT_NAME}} PUBLIC",
+        "target_compile_definitions(${{PROJECT_NAME}} PUBLIC",
         indent=indent,
         footer=")",
     )
@@ -4484,7 +4484,7 @@ def write_regular_cmake_target_scope_section(
         private_libs,
         "",
         indent=indent,
-        header=f"target_link_libraries(${{PROJECT_NAME}} PRIVATE\n",
+        header="target_link_libraries(${{PROJECT_NAME}} PRIVATE\n",
         footer=")",
     )
     write_list(
@@ -4492,11 +4492,11 @@ def write_regular_cmake_target_scope_section(
         public_libs,
         "",
         indent=indent,
-        header=f"target_link_libraries(${{PROJECT_NAME}} PUBLIC\n",
+        header="target_link_libraries(${{PROJECT_NAME}} PUBLIC\n",
         footer=")",
     )
     write_compile_options(
-        cm_fh, scope, f"target_compile_options(${{PROJECT_NAME}}", indent=indent, footer=")"
+        cm_fh, scope, "target_compile_options(${{PROJECT_NAME}}", indent=indent, footer=")"
     )
 
 
@@ -4534,7 +4534,7 @@ endif()
     # Remove default QT libs.
     scope._append_operation("QT", RemoveOperation(["core", "gui"]))
 
-    add_target = f"add_executable(${{PROJECT_NAME}}"
+    add_target = "add_executable(${{PROJECT_NAME}}"
 
     temp_buffer = io.StringIO()
     write_all_source_file_lists(temp_buffer, scope, add_target, indent=0)

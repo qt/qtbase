@@ -73,7 +73,7 @@ def fixup_comments(contents: str) -> str:
 
 
 def flatten_list(input_list):
-    """ Flattens an irregular nested list into a simple list."""
+    """Flattens an irregular nested list into a simple list."""
     for el in input_list:
         if isinstance(el, collections.abc.Iterable) and not isinstance(el, (str, bytes)):
             yield from flatten_list(el)

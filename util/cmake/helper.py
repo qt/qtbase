@@ -787,7 +787,7 @@ platform_mapping = {
 
 
 def map_platform(platform: str) -> str:
-    """ Return the qmake platform as cmake platform or the unchanged string. """
+    """Return the qmake platform as cmake platform or the unchanged string."""
     return platform_mapping.get(platform, platform)
 
 
@@ -935,5 +935,9 @@ def _set_up_py_parsing_nicer_debug_output(pp):
         pp._defaultExceptionDebugAction = decrease_indent(pp._defaultExceptionDebugAction)
     elif hasattr(pp.core, "_default_start_debug_action"):
         pp.core._default_start_debug_action = increase_indent(pp.core._default_start_debug_action)
-        pp.core._default_success_debug_action = decrease_indent(pp.core._default_success_debug_action)
-        pp.core._default_exception_debug_action = decrease_indent(pp.core._default_exception_debug_action)
+        pp.core._default_success_debug_action = decrease_indent(
+            pp.core._default_success_debug_action
+        )
+        pp.core._default_exception_debug_action = decrease_indent(
+            pp.core._default_exception_debug_action
+        )

@@ -100,7 +100,7 @@ def parse_command_line() -> argparse.Namespace:
 
 def find_all_pro_files(base_path: str, args: argparse.Namespace):
     def sorter(pro_file: str) -> str:
-        """ Sorter that tries to prioritize main pro files in a directory. """
+        """Sorter that tries to prioritize main pro files in a directory."""
         pro_file_without_suffix = pro_file.rsplit("/", 1)[-1][:-4]
         dir_name = os.path.dirname(pro_file)
         if dir_name == ".":
