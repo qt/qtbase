@@ -6,7 +6,7 @@ instructions:
         fileContents: |
             #!/bin/bash
             RESULT=1 # 0 upon success
-            TIMEOUT=60
+            TIMEOUT=120
             COUNT=0
             QEMUPID=0
             QEMUIPADDR="{{.Env.QNX_QEMU_IPADDR}}"
