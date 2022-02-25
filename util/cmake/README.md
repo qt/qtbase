@@ -39,22 +39,16 @@ python3.7 -m pip install -r requirements.txt
 You can verify if the styling of a script is compliant with PEP8, with a couple of exceptions:
 
 Install [flake8](http://flake8.pycqa.org/en/latest/) (`pip install flake8`) and run it
-on the script you want to test:
+on all python source files:
 
 ```
-flake8 <file>.py --ignore=E501,E266,W503
+make flake8
 ```
-
-* `E501`: Line too long (82>79 characters),
-* `E266`: Too many leading '#' for block comment,
-* `W503`: Line break occurred before a binary operator)
 
 You can also modify the file with an automatic formatter,
 like [black](https://black.readthedocs.io/en/stable/) (`pip install black`),
 and execute it:
 
 ```
-black -l 100 <file>.py
+make format
 ```
-
-Using Qt's maximum line length, 100.
