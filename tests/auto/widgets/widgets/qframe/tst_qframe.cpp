@@ -173,7 +173,16 @@ void tst_QFrame::testPainting()
     frame.setMidLineWidth(midLineWidth);
     frame.resize(16, 16);
 
-    const QPixmap pixmap = frame.grab();
+    QPixmap pixmap = frame.grab();
+#ifdef Q_OS_ANDROID
+    // QPixmap is created with system's default format, which is
+    // ARGB32_Premultiplied for Android. For desktop systems the format is
+    // RGB32, so that's also the format of the images in resources. So on
+    // Android we need to explicitly convert the pixmap to a proper format.
+    QImage img = pixmap.toImage();
+    QVERIFY(img.reinterpretAsFormat(QImage::Format_RGB32));
+    pixmap = QPixmap::fromImage(img);
+#endif
 
     const QString fileName = QLatin1String("images/") + basename + QLatin1Char('_')
         + QString::number(lineWidth) + QLatin1Char('_') + QString::number(midLineWidth)
