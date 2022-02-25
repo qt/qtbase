@@ -259,7 +259,7 @@ def test_realworld_comment_scope():
     (cond, if_branch, else_branch) = evaluate_condition(result[0])
     assert cond == 'freebsd|openbsd'
     assert len(if_branch) == 1
-    validate_op('QMAKE_LFLAGS_NOUNDEF', '=', None, if_branch[0])
+    validate_op('QMAKE_LFLAGS_NOUNDEF', '=', [], if_branch[0])
 
     assert 'included' in result[1]
     assert result[1]['included'].get('value', '') == 'animation/animation.pri'
