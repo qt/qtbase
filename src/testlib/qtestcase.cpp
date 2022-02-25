@@ -1665,7 +1665,7 @@ public:
         sigemptyset(&handledSignals);
 
         const int fatalSignals[] = {
-             SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGBUS, SIGFPE, SIGSEGV, SIGPIPE, SIGTERM, 0 };
+             SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGBUS, SIGFPE, SIGSEGV, SIGPIPE, SIGTERM };
 
         struct sigaction act;
         memset(&act, 0, sizeof(act));
@@ -1703,23 +1703,31 @@ public:
         // Block all fatal signals in our signal handler so we don't try to close
         // the testlog twice.
         sigemptyset(&act.sa_mask);
-        for (int i = 0; fatalSignals[i]; ++i)
-            sigaddset(&act.sa_mask, fatalSignals[i]);
+        for (int signal : fatalSignals)
+            sigaddset(&act.sa_mask, signal);
+
+        // The destructor can only restore SIG_DFL, so only register for signals
+        // that had default handling previously.
+        const auto isDefaultHandler = [](const struct sigaction &old) {
+#  ifdef SA_SIGINFO
+            // void sa_sigaction(int, siginfo_t *, void *) is never the default:
+            if (old.sa_flags & SA_SIGINFO)
+                return false;
+#  endif
+            // Otherwise, the handler is void sa_handler(int) but may be
+            // SIG_DFL (default action) or SIG_IGN (ignore signal):
+            return old.sa_handler == SIG_DFL;
+        };
 
         struct sigaction oldact;
-
-        for (int i = 0; fatalSignals[i]; ++i) {
-            sigaction(fatalSignals[i], &act, &oldact);
-            if (
-#  ifdef SA_SIGINFO
-                oldact.sa_flags & SA_SIGINFO ||
-#  endif
-                oldact.sa_handler != SIG_DFL) {
-                sigaction(fatalSignals[i], &oldact, nullptr);
-            } else
-            {
-                sigaddset(&handledSignals, fatalSignals[i]);
-            }
+        for (int signal : fatalSignals) {
+            // Registering reveals the existing handler:
+            if (sigaction(signal, &act, &oldact))
+                continue; // Failed to set our handler; nothing to restore.
+            if (isDefaultHandler(oldact))
+                sigaddset(&handledSignals, signal);
+            else // Restore non-default handler:
+                sigaction(signal, &oldact, nullptr);
         }
 #endif // defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
     }
@@ -1740,16 +1748,16 @@ public:
             return old.sa_handler == FatalSignalHandler::signal;
 #  endif
         };
-        struct sigaction oldact;
+        struct sigaction action;
 
-        for (int i = 1; i < 32; ++i) {
-            if (!sigismember(&handledSignals, i))
+        for (int signum = 1; signum < 32; ++signum) {
+            if (!sigismember(&handledSignals, signum))
                 continue;
-            if (sigaction(i, nullptr, &oldact))
+            if (sigaction(signum, nullptr, &action))
                 continue; // Failed to query present handler
 
-            if (isOurs(oldact))
-                sigaction(i, &act, nullptr);
+            if (isOurs(action))
+                sigaction(signum, &act, nullptr);
         }
 #endif
     }
