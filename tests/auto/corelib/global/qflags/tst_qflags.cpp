@@ -32,6 +32,7 @@ class tst_QFlags: public QObject
 {
     Q_OBJECT
 private slots:
+    void operators() const;
     void testFlag() const;
     void testFlagZeroFlag() const;
     void testFlagMultiBits() const;
@@ -44,6 +45,28 @@ private slots:
     void testSetFlags();
     void adl();
 };
+
+void tst_QFlags::operators() const
+{
+#define CHECK(op, LHS, RHS, RES) \
+    do { \
+        QCOMPARE((LHS op RHS), (RES)); \
+        QCOMPARE(( /*CTAD*/ QFlags(LHS) op RHS), (RES)); \
+        QCOMPARE((LHS op QFlags(RHS)), (RES)); \
+        QCOMPARE((QFlags(LHS) op QFlags(RHS)), (RES)); \
+        QCOMPARE((QFlags(LHS) op ## = RHS), (RES)); \
+        QCOMPARE((QFlags(LHS) op ## = QFlags(RHS)), (RES)); \
+    } while (false)
+
+    CHECK(|, Qt::AlignHCenter, Qt::AlignVCenter, Qt::AlignCenter);
+    CHECK(|, Qt::AlignHCenter, Qt::AlignHCenter, Qt::AlignHCenter);
+    CHECK(&, Qt::AlignHCenter, Qt::AlignVCenter, Qt::Alignment());
+    CHECK(&, Qt::AlignHCenter, Qt::AlignHCenter, Qt::AlignHCenter);
+    CHECK(^, Qt::AlignHCenter, Qt::AlignVCenter, Qt::AlignCenter);
+    CHECK(^, Qt::AlignHCenter, Qt::AlignHCenter, Qt::Alignment());
+
+#undef CHECK
+}
 
 void tst_QFlags::testFlag() const
 {
