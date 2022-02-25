@@ -4,7 +4,7 @@ qt_internal_add_plugin(QMock4Plugin
     DEFAULT_IF FALSE
     SOURCES
         qmock4plugin.cpp qmock4plugin.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::MockPlugins1
 )

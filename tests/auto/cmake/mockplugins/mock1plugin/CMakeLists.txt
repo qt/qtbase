@@ -3,7 +3,7 @@ qt_internal_add_plugin(QMock1Plugin
     PLUGIN_TYPE mockplugin
     SOURCES
         qmock1plugin.cpp qmock1plugin.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::MockPlugins1
 )

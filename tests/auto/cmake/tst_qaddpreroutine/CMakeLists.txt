@@ -30,7 +30,7 @@ qt_internal_add_plugin(QTBUG_90341ThemePlugin
     SOURCES
         plugin.cpp
     SKIP_INSTALL
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::Gui
         Qt::GuiPrivate
@@ -39,7 +39,7 @@ qt_internal_add_plugin(QTBUG_90341ThemePlugin
 qt_internal_add_test(tst_qaddpreroutine
     SOURCES
         tst_qaddpreroutine.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )
 
