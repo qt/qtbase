@@ -863,6 +863,81 @@ public:
         return it;
     }
 
+    template <typename Predicate>
+    size_type remove_if(Predicate pred)
+    {
+        const auto indirect_call_to_pred = [pred = std::move(pred)](iterator it) {
+            auto dependent_false = [](auto &&...) { return false; };
+            using Pair = decltype(*it);
+            using K = decltype(it.key());
+            using V = decltype(it.value());
+            using P = Predicate;
+            if constexpr (std::is_invocable_v<P, K, V>) {
+                return pred(it.key(), it.value());
+            } else if constexpr (std::is_invocable_v<P, Pair> && !std::is_invocable_v<P, K>) {
+                return pred(*it);
+            } else if constexpr (std::is_invocable_v<P, K> && !std::is_invocable_v<P, Pair>) {
+                return pred(it.key());
+            } else {
+                static_assert(dependent_false(pred),
+                    "Don't know how to call the predicate.\n"
+                    "Options:\n"
+                    "- pred(*it)\n"
+                    "- pred(it.key(), it.value())\n"
+                    "- pred(it.key())");
+            }
+        };
+
+        auto first = begin();
+        const auto last = end();
+
+        // find_if prefix loop
+        while (first != last && !indirect_call_to_pred(first))
+            ++first;
+
+        if (first == last)
+            return 0; // nothing to do
+
+        // we know that we need to remove *first
+
+        auto kdest = toKeysIterator(first);
+        auto vdest = toValuesIterator(first);
+
+        ++first;
+
+        auto k = std::next(kdest);
+        auto v = std::next(vdest);
+
+        // Main Loop
+        // - first is used only for indirect_call_to_pred
+        // - operations are done on k, v
+        // Loop invariants:
+        // - first, k, v are pointing to the same element
+        // - [begin(), first[, [c.keys.begin(), k[, [c.values.begin(), v[: already processed
+        // - [first, end()[,   [k, c.keys.end()[,   [v, c.values.end()[:   still to be processed
+        // - [c.keys.begin(), kdest[ and [c.values.begin(), vdest[ are keepers
+        // - [kdest, k[, [vdest, v[ are considered removed
+        // - kdest is not c.keys.end()
+        // - vdest is not v.values.end()
+        while (first != last) {
+            if (!indirect_call_to_pred(first)) {
+                // keep *first, aka {*k, *v}
+                *kdest = std::move(*k);
+                *vdest = std::move(*v);
+                ++kdest;
+                ++vdest;
+            }
+            ++k;
+            ++v;
+            ++first;
+        }
+
+        const size_type r = std::distance(kdest, c.keys.end());
+        c.keys.erase(kdest, c.keys.end());
+        c.values.erase(vdest, c.values.end());
+        return r;
+    }
+
     key_compare key_comp() const noexcept
     {
         return static_cast<key_compare>(*this);

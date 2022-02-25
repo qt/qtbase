@@ -40,6 +40,20 @@
 #include <list>
 #include <tuple>
 
+static constexpr bool is_even(int n) { return n % 2 == 0; }
+static constexpr bool is_empty(QAnyStringView v) { return v.isEmpty(); }
+
+namespace {
+template <typename P>
+constexpr inline bool is_pair_impl_v = false;
+template <typename T, typename S>
+constexpr inline bool is_pair_impl_v<std::pair<T,S>> = true;
+template <typename P>
+constexpr inline bool is_pair_v = is_pair_impl_v<std::decay_t<P>>;
+template <typename P>
+using if_pair = std::enable_if_t<is_pair_v<P>, bool>;
+}
+
 class tst_QFlatMap : public QObject
 {
     Q_OBJECT
@@ -53,6 +67,9 @@ private slots:
     void removal();
     void extraction();
     void iterators();
+    void remove_if_pair() { remove_if_impl([](const auto &p) -> if_pair<decltype(p)> { return is_even(p.first) && is_empty(p.second); }); }
+    void remove_if_key_value() { remove_if_impl([](const auto &k, const auto &v) { return is_even(k) && is_empty(v); }); }
+    void remove_if_key() { remove_if_impl([](int k) { return is_even(k); }, true); }
     void statefulComparator();
     void transparency_using();
     void transparency_struct();
@@ -63,6 +80,8 @@ private slots:
 private:
     template <typename Compare>
     void transparency_impl();
+    template <typename Predicate>
+    void remove_if_impl(Predicate p, bool removeNonEmptyValues = false);
 };
 
 #ifdef QFLATMAP_TEMPORARILY_REMOVED
@@ -366,6 +385,74 @@ void tst_QFlatMap::iterators()
         QCOMPARE(v0, v1);
         QCOMPARE(v1, v2);
         QCOMPARE(v2, v3);
+    }
+}
+
+template <typename Pred>
+void tst_QFlatMap::remove_if_impl(Pred p, bool removeNonEmptyValues)
+{
+    // empty stays empty:
+    {
+        QFlatMap<int, QString> m;
+        QCOMPARE(m.remove_if(p), 0);
+        QVERIFY(m.isEmpty());
+    }
+    // a matching element is removed:
+    {
+        {
+            QFlatMap<int, QString> m;
+            m.insert_or_assign(0, "");
+            QCOMPARE(m.remove_if(p), 1);
+            QVERIFY(m.isEmpty());
+        }
+        if (removeNonEmptyValues) {
+            QFlatMap<int, QString> m;
+            m.insert_or_assign(0, "x");
+            QCOMPARE(m.remove_if(p), 1);
+            QVERIFY(m.isEmpty());
+        }
+    }
+    // a non-matching element is not removed:
+    {
+        {
+            QFlatMap<int, QString> m;
+            m.insert_or_assign(1, "");
+            QCOMPARE(m.remove_if(p), 0);
+            QVERIFY(m.contains(1));
+            QVERIFY(m[1].isEmpty());
+        }
+        if (removeNonEmptyValues) {
+            QFlatMap<int, QString> m;
+            m.insert_or_assign(1, "x");
+            QCOMPARE(m.remove_if(p), 0);
+            QVERIFY(m.contains(1));
+            QCOMPARE(m[1], "x");
+        }
+    }
+    // of matching and non-matching elements, only matching ones are removed:
+    {
+        {
+            QFlatMap<int, QString> m;
+            m.insert_or_assign(0, "");
+            m.insert_or_assign(1, "");
+            const auto copy = m;
+            QCOMPARE(m.remove_if(p), 1);
+            QCOMPARE(copy.size(), 2);
+            QCOMPARE(copy[0], "");
+            QCOMPARE(copy[1], "");
+            QCOMPARE(m.size(), 1);
+            QVERIFY(m.contains(1));
+            QVERIFY(m[1].isEmpty());
+        }
+        {
+            QFlatMap<int, QString> m;
+            m.insert_or_assign(1, "");
+            m.insert_or_assign(2, "");
+            QCOMPARE(m.remove_if(p), 1);
+            QCOMPARE(m.size(), 1);
+            QVERIFY(m.contains(1));
+            QVERIFY(m[1].isEmpty());
+        }
     }
 }
 
