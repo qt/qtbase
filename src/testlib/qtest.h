@@ -503,14 +503,16 @@ template <typename T>
 inline bool qCompare(QFlags<T> const &t1, T const &t2, const char *actual, const char *expected,
                     const char *file, int line)
 {
-    return qCompare(int(t1), int(t2), actual, expected, file, line);
+    using Int = typename QFlags<T>::Int;
+    return qCompare(Int(t1), Int(t2), actual, expected, file, line);
 }
 
 template <typename T>
 inline bool qCompare(QFlags<T> const &t1, int const &t2, const char *actual, const char *expected,
                     const char *file, int line)
 {
-    return qCompare(int(t1), t2, actual, expected, file, line);
+    using Int = typename QFlags<T>::Int;
+    return qCompare(Int(t1), Int(t2), actual, expected, file, line);
 }
 
 template<>
