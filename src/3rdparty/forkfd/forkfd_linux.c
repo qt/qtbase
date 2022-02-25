@@ -184,10 +184,9 @@ int system_forkfd_wait(int ffd, struct forkfd_info *info, int ffdoptions, struct
             options |= WNOHANG;
     }
 
+    si.si_status = si.si_code = 0;
     ret = sys_waitid(P_PIDFD, ffd, &si, options, rusage);
-    if (ret == -1 && errno == ECHILD) {
-        errno = EWOULDBLOCK;
-    } else if (ret == 0 && info) {
+    if (info) {
         info->code = si.si_code;
         info->status = si.si_status;
     }
