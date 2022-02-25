@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -1669,7 +1669,12 @@ public:
 
         struct sigaction act;
         memset(&act, 0, sizeof(act));
+#  ifdef SA_SIGINFO
+        act.sa_flags |= SA_SIGINFO;
+        act.sa_sigaction = FatalSignalHandler::signal;
+#  else
         act.sa_handler = FatalSignalHandler::signal;
+#  endif
 
         // Remove the handler after it is invoked.
 #  if !defined(Q_OS_INTEGRITY)
@@ -1722,21 +1727,29 @@ public:
     ~FatalSignalHandler()
     {
 #if defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
-        // Unregister any of our remaining signal handlers
+        // Restore the default signal handler in place of ours.
+        // If ours has been replaced, leave the replacement alone.
         struct sigaction act;
         memset(&act, 0, sizeof(act));
         act.sa_handler = SIG_DFL;
 
+        auto isOurs = [](const struct sigaction &old) {
+#  ifdef SA_SIGINFO
+            return (old.sa_flags & SA_SIGINFO) && old.sa_sigaction == FatalSignalHandler::signal;
+#  else
+            return old.sa_handler == FatalSignalHandler::signal;
+#  endif
+        };
         struct sigaction oldact;
 
         for (int i = 1; i < 32; ++i) {
             if (!sigismember(&handledSignals, i))
                 continue;
-            sigaction(i, &act, &oldact);
+            if (sigaction(i, nullptr, &oldact))
+                continue; // Failed to query present handler
 
-            // If someone overwrote it in the mean time, put it back
-            if (oldact.sa_handler != FatalSignalHandler::signal)
-                sigaction(i, &oldact, nullptr);
+            if (isOurs(oldact))
+                sigaction(i, &act, nullptr);
         }
 #endif
     }
@@ -1788,7 +1801,11 @@ private:
 #endif // defined(Q_OS_WIN)
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
+#  ifdef SA_SIGINFO
+    static void signal(int signum, siginfo_t * /* info */, void * /* ucontext */)
+#  else
     static void signal(int signum)
+#endif
     {
         const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
         const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
