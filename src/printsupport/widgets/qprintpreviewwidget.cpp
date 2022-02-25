@@ -401,7 +401,7 @@ void QPrintPreviewWidgetPrivate::generatePreview()
     pictures = printer->d_func()->previewPages();
     populateScene(); // i.e. setPreviewPrintedPictures() e.l.
     layoutPages();
-    curPage = qBound(1, curPage, pages.count());
+    curPage = pages.count() > 0 ? qBound(1, curPage, pages.count()) : 1;
     if (fitting)
         _q_fit();
     emit q->previewChanged();
