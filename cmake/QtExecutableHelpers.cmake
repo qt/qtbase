@@ -20,10 +20,8 @@ function(qt_internal_add_executable name)
     endif()
 
     _qt_internal_create_executable(${name})
-    if (ANDROID)
-        _qt_internal_configure_android_multiabi_target("${name}")
-        qt_android_generate_deployment_settings("${name}")
-        qt_android_add_apk_target("${name}")
+    if(ANDROID)
+        _qt_internal_android_executable_finalizer(${name})
     endif()
 
     if(arg_QT_APP AND QT_FEATURE_debug_and_release AND CMAKE_VERSION VERSION_GREATER_EQUAL "3.19.0")
