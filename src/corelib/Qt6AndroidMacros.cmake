@@ -1005,3 +1005,12 @@ function(_qt_internal_configure_android_multiabi_target target)
     endif()
     set_target_properties(${target} PROPERTIES _qt_android_abis "${android_abis}")
 endfunction()
+
+# The wrapper function that contains routines that need to be called to produce a valid Android
+# package for the executable 'target'. The function is added to the finalizer list of the Core
+# module and is executed implicitly when configuring user projects.
+function(_qt_internal_android_executable_finalizer target)
+    _qt_internal_configure_android_multiabi_target("${target}")
+    qt6_android_generate_deployment_settings("${target}")
+    qt6_android_add_apk_target("${target}")
+endfunction()
