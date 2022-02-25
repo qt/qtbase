@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2022 The Qt Company Ltd.
+** Copyright (C) 2016 The Qt Company Ltd.
 ** Copyright (C) 2013 Richard J. Moore <rich@kde.org>.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -40,7 +40,6 @@
 
 #include <qcryptographichash.h>
 #include <qiodevice.h>
-#include <private/qglobal_p.h>
 
 #include "../../3rdparty/sha1/sha1.cpp"
 
@@ -55,9 +54,44 @@
 #include "../../3rdparty/md4/md4.h"
 #include "../../3rdparty/md4/md4.cpp"
 
-// SHA-3
-#include "../../3rdparty/SHA-3/HashFunction.cpp"
-#include "../../3rdparty/SHA-3/Keccak.cpp"
+typedef unsigned char BitSequence;
+typedef unsigned long long DataLength;
+typedef enum { SUCCESS = 0, FAIL = 1, BAD_HASHLEN = 2 } HashReturn;
+
+#ifdef Q_OS_RTEMS
+#  undef ALIGN
+#endif
+
+#include "../../3rdparty/sha3/KeccakSponge.c"
+typedef spongeState hashState;
+
+#include "../../3rdparty/sha3/KeccakNISTInterface.c"
+
+/*
+  This lets us choose between SHA3 implementations at build time.
+ */
+typedef spongeState SHA3Context;
+typedef HashReturn (SHA3Init)(hashState *state, int hashbitlen);
+typedef HashReturn (SHA3Update)(hashState *state, const BitSequence *data, DataLength databitlen);
+typedef HashReturn (SHA3Final)(hashState *state, BitSequence *hashval);
+
+#if Q_PROCESSOR_WORDSIZE == 8 // 64 bit version
+
+#include "../../3rdparty/sha3/KeccakF-1600-opt64.c"
+
+static SHA3Init * const sha3Init = Init;
+static SHA3Update * const sha3Update = Update;
+static SHA3Final * const sha3Final = Final;
+
+#else // 32 bit optimised fallback
+
+#include "../../3rdparty/sha3/KeccakF-1600-opt32.c"
+
+static SHA3Init * const sha3Init = Init;
+static SHA3Update * const sha3Update = Update;
+static SHA3Final * const sha3Final = Final;
+
+#endif
 
 // Header from rfc6234
 #include "../../3rdparty/rfc6234/sha.h"
@@ -161,20 +195,16 @@ public:
     explicit QCryptographicHashPrivate(QCryptographicHash::Algorithm method) noexcept
         : method(method)
     {
-        allocate();
+        reset();
     }
-    ~QCryptographicHashPrivate() { free(); }
-    void reset() noexcept
-    {
-        free();
-        allocate();
-    }
+
+    void reset() noexcept;
     void addData(QByteArrayView bytes) noexcept;
     void finalize() noexcept;
     QByteArrayView resultView() const noexcept { return result.toByteArrayView(); }
 
     const QCryptographicHash::Algorithm method;
-    union Contexts {
+    union {
         Sha1State sha1Context;
 #ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
         MD5Context md5Context;
@@ -183,20 +213,18 @@ public:
         SHA256Context sha256Context;
         SHA384Context sha384Context;
         SHA512Context sha512Context;
+        SHA3Context sha3Context;
         blake2b_state blake2bContext;
         blake2s_state blake2sContext;
-        Keccak keccakContext;
-        Sha3 sha3Context;
 #endif
-        Contexts() { } // Defined because they are
-        ~Contexts() { } // implicitly-deleted
-    } contexts;
-
-private:
-    void allocate() noexcept;
-    void free() noexcept;
+    };
 #ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
-    void digestToResult(KeccakBase &keccak) noexcept;
+    enum class Sha3Variant
+    {
+        Sha3,
+        Keccak
+    };
+    void sha3Finish(int bitCount, Sha3Variant sha3Variant);
 #endif
     class SmallByteArray {
         std::array<char, MaxHashLength> m_data;
@@ -218,6 +246,47 @@ private:
     };
     SmallByteArray result;
 };
+
+#ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
+void QCryptographicHashPrivate::sha3Finish(int bitCount, Sha3Variant sha3Variant)
+{
+    /*
+        FIPS 202 §6.1 defines SHA-3 in terms of calculating the Keccak function
+        over the original message with the two-bit suffix "01" appended to it.
+        This variable stores that suffix (and it's fed into the calculations
+        when the hash is returned to users).
+
+        Only 2 bits of this variable are actually used (see the call to sha3Update
+        below). The Keccak implementation we're using will actually use the
+        *leftmost* 2 bits, and interpret them right-to-left. In other words, the
+        bits must appear in order of *increasing* significance; and as the two most
+        significant bits of the byte -- the rightmost 6 are ignored. (Yes, this
+        seems self-contradictory, but it's the way it is...)
+
+        Overall, this means:
+        * the leftmost two bits must be "10" (not "01"!);
+        * we don't care what the other six bits are set to (they can be set to
+        any value), but we arbitrarily set them to 0;
+
+        and for an unsigned char this gives us 0b10'00'00'00, or 0x80.
+    */
+    static const unsigned char sha3FinalSuffix = 0x80;
+
+    result.resize(bitCount / 8);
+
+    SHA3Context copy = sha3Context;
+
+    switch (sha3Variant) {
+    case Sha3Variant::Sha3:
+        sha3Update(&copy, reinterpret_cast<const BitSequence *>(&sha3FinalSuffix), 2);
+        break;
+    case Sha3Variant::Keccak:
+        break;
+    }
+
+    sha3Final(&copy, reinterpret_cast<BitSequence *>(result.data()));
+}
+#endif
 
 /*!
   \class QCryptographicHash
@@ -298,33 +367,12 @@ void QCryptographicHash::reset() noexcept
     d->reset();
 }
 
-void QCryptographicHashPrivate::free() noexcept
-{
-    switch (method) {
-#ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
-    case QCryptographicHash::RealSha3_224:
-    case QCryptographicHash::RealSha3_256:
-    case QCryptographicHash::RealSha3_384:
-    case QCryptographicHash::RealSha3_512:
-        contexts.sha3Context.~Sha3();
-        break;
-    case QCryptographicHash::Keccak_224:
-    case QCryptographicHash::Keccak_256:
-    case QCryptographicHash::Keccak_384:
-    case QCryptographicHash::Keccak_512:
-        contexts.keccakContext.~Keccak();
-#endif
-    default:
-        break;
-    }
-}
-
-void QCryptographicHashPrivate::allocate() noexcept
+void QCryptographicHashPrivate::reset() noexcept
 {
     switch (method) {
     case QCryptographicHash::Sha1:
-        new (&contexts.sha1Context) Sha1State;
-        sha1InitState(&contexts.sha1Context);
+        new (&sha1Context) Sha1State;
+        sha1InitState(&sha1Context);
         break;
 #ifdef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
     default:
@@ -333,54 +381,53 @@ void QCryptographicHashPrivate::allocate() noexcept
         break;
 #else
     case QCryptographicHash::Md4:
-        new (&contexts.md4Context) md4_context;
-        md4_init(&contexts.md4Context);
+        new (&md4Context) md4_context;
+        md4_init(&md4Context);
         break;
     case QCryptographicHash::Md5:
-        new (&contexts.md5Context) MD5Context;
-        MD5Init(&contexts.md5Context);
+        new (&md5Context) MD5Context;
+        MD5Init(&md5Context);
         break;
     case QCryptographicHash::Sha224:
-        new (&contexts.sha224Context) SHA224Context;
-        SHA224Reset(&contexts.sha224Context);
+        new (&sha224Context) SHA224Context;
+        SHA224Reset(&sha224Context);
         break;
     case QCryptographicHash::Sha256:
-        new (&contexts.sha256Context) SHA256Context;
-        SHA256Reset(&contexts.sha256Context);
+        new (&sha256Context) SHA256Context;
+        SHA256Reset(&sha256Context);
         break;
     case QCryptographicHash::Sha384:
-        new (&contexts.sha384Context) SHA384Context;
-        SHA384Reset(&contexts.sha384Context);
+        new (&sha384Context) SHA384Context;
+        SHA384Reset(&sha384Context);
         break;
     case QCryptographicHash::Sha512:
-        new (&contexts.sha512Context) SHA512Context;
-        SHA512Reset(&contexts.sha512Context);
+        new (&sha512Context) SHA512Context;
+        SHA512Reset(&sha512Context);
         break;
     case QCryptographicHash::RealSha3_224:
-    case QCryptographicHash::RealSha3_256:
-    case QCryptographicHash::RealSha3_384:
-    case QCryptographicHash::RealSha3_512:
-        new (&contexts.sha3Context) Sha3(hashLengthInternal(method) * 8);
-        break;
     case QCryptographicHash::Keccak_224:
+    case QCryptographicHash::RealSha3_256:
     case QCryptographicHash::Keccak_256:
+    case QCryptographicHash::RealSha3_384:
     case QCryptographicHash::Keccak_384:
+    case QCryptographicHash::RealSha3_512:
     case QCryptographicHash::Keccak_512:
-        new (&contexts.keccakContext) Keccak(hashLengthInternal(method) * 8);
+        new (&sha3Context) SHA3Context;
+        sha3Init(&sha3Context, hashLengthInternal(method) * 8);
         break;
     case QCryptographicHash::Blake2b_160:
     case QCryptographicHash::Blake2b_256:
     case QCryptographicHash::Blake2b_384:
     case QCryptographicHash::Blake2b_512:
-        new (&contexts.blake2bContext) blake2b_state;
-        blake2b_init(&contexts.blake2bContext, hashLengthInternal(method));
+        new (&blake2bContext) blake2b_state;
+        blake2b_init(&blake2bContext, hashLengthInternal(method));
         break;
     case QCryptographicHash::Blake2s_128:
     case QCryptographicHash::Blake2s_160:
     case QCryptographicHash::Blake2s_224:
     case QCryptographicHash::Blake2s_256:
-        new (&contexts.blake2sContext) blake2s_state;
-        blake2s_init(&contexts.blake2sContext, hashLengthInternal(method));
+        new (&blake2sContext) blake2s_state;
+        blake2s_init(&blake2sContext, hashLengthInternal(method));
         break;
 #endif
     }
@@ -429,7 +476,7 @@ void QCryptographicHashPrivate::addData(QByteArrayView bytes) noexcept
 #endif
         switch (method) {
         case QCryptographicHash::Sha1:
-            sha1Update(&contexts.sha1Context, (const unsigned char *)data, length);
+            sha1Update(&sha1Context, (const unsigned char *)data, length);
             break;
 #ifdef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
         default:
@@ -438,52 +485,44 @@ void QCryptographicHashPrivate::addData(QByteArrayView bytes) noexcept
             break;
 #else
         case QCryptographicHash::Md4:
-            md4_update(&contexts.md4Context, (const unsigned char *)data, length);
+            md4_update(&md4Context, (const unsigned char *)data, length);
             break;
         case QCryptographicHash::Md5:
-            MD5Update(&contexts.md5Context, (const unsigned char *)data, length);
+            MD5Update(&md5Context, (const unsigned char *)data, length);
             break;
         case QCryptographicHash::Sha224:
-            SHA224Input(&contexts.sha224Context, reinterpret_cast<const unsigned char *>(data),
-                        length);
+            SHA224Input(&sha224Context, reinterpret_cast<const unsigned char *>(data), length);
             break;
         case QCryptographicHash::Sha256:
-            SHA256Input(&contexts.sha256Context, reinterpret_cast<const unsigned char *>(data),
-                        length);
+            SHA256Input(&sha256Context, reinterpret_cast<const unsigned char *>(data), length);
             break;
         case QCryptographicHash::Sha384:
-            SHA384Input(&contexts.sha384Context, reinterpret_cast<const unsigned char *>(data),
-                        length);
+            SHA384Input(&sha384Context, reinterpret_cast<const unsigned char *>(data), length);
             break;
         case QCryptographicHash::Sha512:
-            SHA512Input(&contexts.sha512Context, reinterpret_cast<const unsigned char *>(data),
-                        length);
-            break;
-        case QCryptographicHash::Keccak_224:
-        case QCryptographicHash::Keccak_256:
-        case QCryptographicHash::Keccak_384:
-        case QCryptographicHash::Keccak_512:
-            contexts.keccakContext.addData(reinterpret_cast<const uint8_t *>(data), 0, length);
+            SHA512Input(&sha512Context, reinterpret_cast<const unsigned char *>(data), length);
             break;
         case QCryptographicHash::RealSha3_224:
+        case QCryptographicHash::Keccak_224:
         case QCryptographicHash::RealSha3_256:
+        case QCryptographicHash::Keccak_256:
         case QCryptographicHash::RealSha3_384:
+        case QCryptographicHash::Keccak_384:
         case QCryptographicHash::RealSha3_512:
-            contexts.sha3Context.addData(reinterpret_cast<const uint8_t *>(data), 0, length);
+        case QCryptographicHash::Keccak_512:
+            sha3Update(&sha3Context, reinterpret_cast<const BitSequence *>(data), uint64_t(length) * 8);
             break;
         case QCryptographicHash::Blake2b_160:
         case QCryptographicHash::Blake2b_256:
         case QCryptographicHash::Blake2b_384:
         case QCryptographicHash::Blake2b_512:
-            blake2b_update(&contexts.blake2bContext, reinterpret_cast<const uint8_t *>(data),
-                           length);
+            blake2b_update(&blake2bContext, reinterpret_cast<const uint8_t *>(data), length);
             break;
         case QCryptographicHash::Blake2s_128:
         case QCryptographicHash::Blake2s_160:
         case QCryptographicHash::Blake2s_224:
         case QCryptographicHash::Blake2s_256:
-            blake2s_update(&contexts.blake2sContext, reinterpret_cast<const uint8_t *>(data),
-                           length);
+            blake2s_update(&blake2sContext, reinterpret_cast<const uint8_t *>(data), length);
             break;
 #endif
         }
@@ -547,10 +586,10 @@ void QCryptographicHashPrivate::finalize() noexcept
 
     switch (method) {
     case QCryptographicHash::Sha1: {
-        Sha1State copy = contexts.sha1Context;
+        Sha1State copy = sha1Context;
         result.resize(20);
         sha1FinalizeState(&copy);
-        sha1ToHash(&copy, reinterpret_cast<unsigned char *>(result.data()));
+        sha1ToHash(&copy, (unsigned char *)result.data());
         break;
     }
 #ifdef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
@@ -560,37 +599,37 @@ void QCryptographicHashPrivate::finalize() noexcept
         break;
 #else
     case QCryptographicHash::Md4: {
-        md4_context copy = contexts.md4Context;
+        md4_context copy = md4Context;
         result.resize(MD4_RESULTLEN);
-        md4_final(&copy, reinterpret_cast<unsigned char *>(result.data()));
+        md4_final(&copy, (unsigned char *)result.data());
         break;
     }
     case QCryptographicHash::Md5: {
-        MD5Context copy = contexts.md5Context;
+        MD5Context copy = md5Context;
         result.resize(16);
-        MD5Final(&copy, reinterpret_cast<unsigned char *>(result.data()));
+        MD5Final(&copy, (unsigned char *)result.data());
         break;
     }
     case QCryptographicHash::Sha224: {
-        SHA224Context copy = contexts.sha224Context;
+        SHA224Context copy = sha224Context;
         result.resize(SHA224HashSize);
         SHA224Result(&copy, reinterpret_cast<unsigned char *>(result.data()));
         break;
     }
     case QCryptographicHash::Sha256: {
-        SHA256Context copy = contexts.sha256Context;
+        SHA256Context copy = sha256Context;
         result.resize(SHA256HashSize);
         SHA256Result(&copy, reinterpret_cast<unsigned char *>(result.data()));
         break;
     }
     case QCryptographicHash::Sha384: {
-        SHA384Context copy = contexts.sha384Context;
+        SHA384Context copy = sha384Context;
         result.resize(SHA384HashSize);
         SHA384Result(&copy, reinterpret_cast<unsigned char *>(result.data()));
         break;
     }
     case QCryptographicHash::Sha512: {
-        SHA512Context copy = contexts.sha512Context;
+        SHA512Context copy = sha512Context;
         result.resize(SHA512HashSize);
         SHA512Result(&copy, reinterpret_cast<unsigned char *>(result.data()));
         break;
@@ -599,16 +638,14 @@ void QCryptographicHashPrivate::finalize() noexcept
     case QCryptographicHash::RealSha3_256:
     case QCryptographicHash::RealSha3_384:
     case QCryptographicHash::RealSha3_512: {
-        Sha3 copy = contexts.sha3Context;
-        digestToResult(copy);
+        sha3Finish(8 * hashLengthInternal(method), Sha3Variant::Sha3);
         break;
     }
     case QCryptographicHash::Keccak_224:
     case QCryptographicHash::Keccak_256:
     case QCryptographicHash::Keccak_384:
     case QCryptographicHash::Keccak_512: {
-        Keccak copy = contexts.keccakContext;
-        digestToResult(copy);
+        sha3Finish(8 * hashLengthInternal(method), Sha3Variant::Keccak);
         break;
     }
     case QCryptographicHash::Blake2b_160:
@@ -616,7 +653,7 @@ void QCryptographicHashPrivate::finalize() noexcept
     case QCryptographicHash::Blake2b_384:
     case QCryptographicHash::Blake2b_512: {
         const auto length = hashLengthInternal(method);
-        blake2b_state copy = contexts.blake2bContext;
+        blake2b_state copy = blake2bContext;
         result.resize(length);
         blake2b_final(&copy, reinterpret_cast<uint8_t *>(result.data()), length);
         break;
@@ -626,7 +663,7 @@ void QCryptographicHashPrivate::finalize() noexcept
     case QCryptographicHash::Blake2s_224:
     case QCryptographicHash::Blake2s_256: {
         const auto length = hashLengthInternal(method);
-        blake2s_state copy = contexts.blake2sContext;
+        blake2s_state copy = blake2sContext;
         result.resize(length);
         blake2s_final(&copy, reinterpret_cast<uint8_t *>(result.data()), length);
         break;
@@ -634,16 +671,6 @@ void QCryptographicHashPrivate::finalize() noexcept
 #endif
     }
 }
-
-#ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
-void QCryptographicHashPrivate::digestToResult(KeccakBase &keccak) noexcept
-{
-    std::vector<unsigned char> digest = keccak.digest();
-    result.resize(digest.size());
-    for (size_t i = 0; i < digest.size(); ++i)
-        result.data()[i] = static_cast<char>(digest[i]);
-}
-#endif
 
 /*!
   Returns the hash of \a data using \a method.
