@@ -3795,9 +3795,10 @@ def write_example(
         "$$[QT_INSTALL_EXAMPLES]", "${INSTALL_EXAMPLESDIR}"
     )
 
+    project_version = scope.get_string("VERSION", "1.0")
     cm_fh.write(
         f"cmake_minimum_required(VERSION {cmake_version_string})\n"
-        f"project({binary_name} LANGUAGES CXX)\n\n"
+        f"project({binary_name} VERSION {project_version} LANGUAGES CXX)\n\n"
         "set(CMAKE_INCLUDE_CURRENT_DIR ON)\n\n"
         "set(CMAKE_AUTOMOC ON)\n"
         "set(CMAKE_AUTOUIC ON)\n\n"
