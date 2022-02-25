@@ -1727,8 +1727,8 @@ public:
         // Block all fatal signals in our signal handler so we don't try to close
         // the testlog twice.
         sigemptyset(&act.sa_mask);
-        for (int sig : fatalSignals)
-            sigaddset(&act.sa_mask, sig);
+        for (int signal : fatalSignals)
+            sigaddset(&act.sa_mask, signal);
 
         // The destructor can only restore SIG_DFL, so only register for signals
         // that had default handling previously.
@@ -1744,14 +1744,14 @@ public:
         };
 
         struct sigaction oldact;
-        for (int sig : fatalSignals) {
+        for (int signal : fatalSignals) {
             // Registering reveals the existing handler:
-            if (sigaction(sig, &act, &oldact))
+            if (sigaction(signal, &act, &oldact))
                 continue; // Failed to set our handler; nothing to restore.
             if (isDefaultHandler(oldact))
-                sigaddset(&handledSignals, sig);
+                sigaddset(&handledSignals, signal);
             else // Restore non-default handler:
-                sigaction(sig, &oldact, nullptr);
+                sigaction(signal, &oldact, nullptr);
         }
 #endif // defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
     }
@@ -1772,16 +1772,16 @@ public:
             return old.sa_handler == FatalSignalHandler::signal;
 #  endif
         };
-        struct sigaction oldact;
+        struct sigaction action;
 
-        for (int i = 1; i < 32; ++i) {
-            if (!sigismember(&handledSignals, i))
+        for (int signum = 1; signum < 32; ++signum) {
+            if (!sigismember(&handledSignals, signum))
                 continue;
-            if (sigaction(i, nullptr, &oldact))
+            if (sigaction(signum, nullptr, &action))
                 continue; // Failed to query present handler
 
-            if (isOurs(oldact))
-                sigaction(i, &act, nullptr);
+            if (isOurs(action))
+                sigaction(signum, &act, nullptr);
         }
 #endif
     }
