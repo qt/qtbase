@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+// This is a generated file. DO NOT EDIT.
+// Please see util/x86simdgen/README.md
 #include "qsimd_x86_p.h"
 
 static const char features_string[] =

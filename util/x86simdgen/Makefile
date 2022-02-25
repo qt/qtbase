@@ -11,9 +11,14 @@ all: $(TARGETDIR)/$(TARGETHEADER) $(TARGETDIR)/$(TARGETCPP)
 $(TARGETHEADER): $(CONF_FILES) | $(GENERATOR)
 	cat $^ | perl $(GENERATOR) /dev/stdin $@ > $@
 $(TARGETDIR)/$(TARGETHEADER): header $(TARGETHEADER)
-	sed '/-- implementation start --/,/-- implementation end --/d' $^ > $@
+	sed '/-- implementation start --/,/-- implementation end --/d' $^ | \
+	sed 's!3rdparty/x86simd_generate\.pl!util/x86simdgen/README.md!' > $@
 $(TARGETDIR)/$(TARGETCPP): $(TARGETHEADER) header
-	(cat header; echo '#include "$(TARGETHEADER)"'; sed '1,/-- implementation start --/d;/-- implementation end --/,$$d' $<) > $@
+	(cat header | grep -v '^//' | grep .; echo; \
+	 echo '// This is a generated file. DO NOT EDIT.'; \
+	 echo '// Please see util/x86simdgen/README.md'; \
+	 echo '#include "$(TARGETHEADER)"'; \
+	 sed '1,/-- implementation start --/d;/-- implementation end --/,$$d' $<) > $@
 
 clean:
 	-$(RM) $(TARGETHEADER)

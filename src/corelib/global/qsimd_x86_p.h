@@ -49,7 +49,7 @@
 //
 
 // This is a generated file. DO NOT EDIT.
-// Please see 3rdparty/x86simd_generate.pl
+// Please see util/x86simdgen/README.md
 #ifndef QSIMD_X86_P_H
 #define QSIMD_X86_P_H
 
