@@ -233,6 +233,10 @@ constexpr inline QFlags<Flags::enum_type> operator&(Flags::enum_type f1, Flags::
 { return QFlags<Flags::enum_type>(f1) & f2; } \
 constexpr inline QFlags<Flags::enum_type> operator&(Flags::enum_type f1, QFlags<Flags::enum_type> f2) noexcept \
 { return f2 & f1; } \
+constexpr inline QFlags<Flags::enum_type> operator^(Flags::enum_type f1, Flags::enum_type f2) noexcept \
+{ return QFlags<Flags::enum_type>(f1) ^ f2; } \
+constexpr inline QFlags<Flags::enum_type> operator^(Flags::enum_type f1, QFlags<Flags::enum_type> f2) noexcept \
+{ return f2 ^ f1; } \
 constexpr inline void operator+(Flags::enum_type f1, Flags::enum_type f2) noexcept = delete; \
 constexpr inline void operator+(Flags::enum_type f1, QFlags<Flags::enum_type> f2) noexcept = delete; \
 constexpr inline void operator+(int f1, QFlags<Flags::enum_type> f2) noexcept = delete; \
