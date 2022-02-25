@@ -44,6 +44,7 @@ class tst_QLatin1String : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
+    void constExpr();
     void construction();
     void at();
     void arg() const;
@@ -54,6 +55,65 @@ private Q_SLOTS:
     void relationalOperators_data();
     void relationalOperators();
 };
+
+void tst_QLatin1String::constExpr()
+{
+    // compile-time checks
+    {
+        constexpr QLatin1String l1s;
+        static_assert(l1s.size() == 0);
+        static_assert(l1s.isNull());
+        static_assert(l1s.empty());
+        static_assert(l1s.isEmpty());
+        static_assert(l1s.latin1() == nullptr);
+
+        constexpr QLatin1String l1s2(l1s.latin1(), l1s.latin1() + l1s.size());
+        static_assert(l1s2.isNull());
+        static_assert(l1s2.empty());
+    }
+    {
+        constexpr QLatin1String l1s = nullptr;
+        static_assert(l1s.size() == 0);
+        static_assert(l1s.isNull());
+        static_assert(l1s.empty());
+        static_assert(l1s.isEmpty());
+        static_assert(l1s.latin1() == nullptr);
+    }
+    {
+        constexpr QLatin1String l1s("");
+        static_assert(l1s.size() == 0);
+        static_assert(!l1s.isNull());
+        static_assert(l1s.empty());
+        static_assert(l1s.isEmpty());
+        static_assert(l1s.latin1() != nullptr);
+
+        constexpr QLatin1String l1s2(l1s.latin1(), l1s.latin1() + l1s.size());
+        static_assert(!l1s2.isNull());
+        static_assert(l1s2.empty());
+    }
+    {
+        static_assert(QLatin1String("Hello").size() == 5);
+        constexpr QLatin1String l1s("Hello");
+        static_assert(l1s.size() == 5);
+        static_assert(!l1s.empty());
+        static_assert(!l1s.isEmpty());
+        static_assert(!l1s.isNull());
+        static_assert(*l1s.latin1() == 'H');
+        static_assert(l1s[0]      == QLatin1Char('H'));
+        static_assert(l1s.at(0)   == QLatin1Char('H'));
+        static_assert(l1s.front() == QLatin1Char('H'));
+        static_assert(l1s.first() == QLatin1Char('H'));
+        static_assert(l1s[4]      == QLatin1Char('o'));
+        static_assert(l1s.at(4)   == QLatin1Char('o'));
+        static_assert(l1s.back()  == QLatin1Char('o'));
+        static_assert(l1s.last()  == QLatin1Char('o'));
+
+        constexpr QLatin1String l1s2(l1s.latin1(), l1s.latin1() + l1s.size());
+        static_assert(!l1s2.isNull());
+        static_assert(!l1s2.empty());
+        static_assert(l1s2.size() == 5);
+    }
+}
 
 void tst_QLatin1String::construction()
 {
