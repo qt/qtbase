@@ -37,6 +37,8 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QStackedWidget>
+#include <QtWidgets/QTabWidget>
+#include <QtWidgets/QLabel>
 #include <QTest>
 #include <QSignalSpy>
 #include <private/qguiapplication_p.h>
@@ -58,6 +60,7 @@ private slots:
     void reparentToAlreadyCreated();
     void reparentToNotYetCreated();
     void reparentHidden();
+    void reparentTopLevel();
     void asViewport();
     void requestUpdate();
     void fboRedirect();
@@ -207,7 +210,7 @@ void tst_QOpenGLWidget::createNonTopLevel()
 class PainterWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
 public:
-    PainterWidget(QWidget *parent)
+    PainterWidget(QWidget *parent = nullptr)
         : QOpenGLWidget(parent), m_clear(false) { }
 
     void initializeGL() override {
@@ -319,6 +322,67 @@ void tst_QOpenGLWidget::reparentHidden()
 
     QOpenGLContext *newContext = glw->context();
     QVERIFY(originalContext != newContext);
+}
+
+void tst_QOpenGLWidget::reparentTopLevel()
+{
+    // no GL content yet, just an ordinary tab widget, top-level
+    QTabWidget tabWidget;
+    tabWidget.resize(640, 480);
+    tabWidget.addTab(new QLabel("Dummy page"), "Page 1");
+    tabWidget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&tabWidget));
+
+    PainterWidget *glw1 = new PainterWidget;
+    // add child GL widget as a tab page
+    {
+        QSignalSpy frameSwappedSpy(glw1, &QOpenGLWidget::frameSwapped);
+        tabWidget.setCurrentIndex(tabWidget.addTab(glw1, "OpenGL widget 1"));
+        QTRY_VERIFY(frameSwappedSpy.count() > 0);
+    }
+
+    PainterWidget *glw2 = new PainterWidget;
+    // add child GL widget #2 as a tab page
+    {
+        QSignalSpy frameSwappedSpy(glw2, &QOpenGLWidget::frameSwapped);
+        tabWidget.setCurrentIndex(tabWidget.addTab(glw2, "OpenGL widget 2"));
+        QTRY_VERIFY(frameSwappedSpy.count() > 0);
+    }
+
+    QImage image = glw2->grabFramebuffer();
+    QVERIFY(image.pixel(20, 10) == qRgb(0, 0, 255));
+
+    // now delete GL widget #2
+    {
+        QSignalSpy frameSwappedSpy(glw1, &QOpenGLWidget::frameSwapped);
+        delete glw2;
+        QTRY_VERIFY(frameSwappedSpy.count() > 0);
+    }
+
+    image = glw1->grabFramebuffer();
+    QVERIFY(image.pixel(20, 10) == qRgb(0, 0, 255));
+
+    // make the GL widget top-level
+    {
+        QSignalSpy frameSwappedSpy(glw1, &QOpenGLWidget::frameSwapped);
+        glw1->setParent(nullptr);
+        glw1->show();
+        QVERIFY(QTest::qWaitForWindowExposed(glw1));
+        QTRY_VERIFY(frameSwappedSpy.count() > 0);
+    }
+
+    image = glw1->grabFramebuffer();
+    QVERIFY(image.pixel(20, 10) == qRgb(0, 0, 255));
+
+    // back to a child widget by readding to the tab widget
+    {
+        QSignalSpy frameSwappedSpy(glw1, &QOpenGLWidget::frameSwapped);
+        tabWidget.setCurrentIndex(tabWidget.addTab(glw1, "Re-added OpenGL widget 1"));
+        QTRY_VERIFY(frameSwappedSpy.count() > 0);
+    }
+
+    image = glw1->grabFramebuffer();
+    QVERIFY(image.pixel(20, 10) == qRgb(0, 0, 255));
 }
 
 class CountingGraphicsView : public QGraphicsView
