@@ -996,8 +996,11 @@ QAbstractEventDispatcher *QThread::eventDispatcher() const
 
     Sets the event dispatcher for the thread to \a eventDispatcher. This is
     only possible as long as there is no event dispatcher installed for the
-    thread yet. That is, before the thread has been started with start() or, in
-    case of the main thread, before QCoreApplication has been instantiated.
+    thread yet.
+
+    An event dispatcher is automatically created for the main thread when \l
+    QCoreApplication is instantiated and on start() for auxiliary threads.
+
     This method takes ownership of the object.
 */
 void QThread::setEventDispatcher(QAbstractEventDispatcher *eventDispatcher)
