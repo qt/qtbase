@@ -107,7 +107,7 @@ static int disable_fork_fallback(void)
     /* if there's no system forkfd, we have to use the fallback */
     return system_has_forkfd();
 #else
-    return false;
+    return 0;
 #endif
 }
 
