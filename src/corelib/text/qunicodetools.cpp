@@ -1695,6 +1695,8 @@ enum MymrCharClassFlags {
     Mymr_CF_AFTER_KINZI = 0x00100000
 };
 
+Q_DECLARE_MIXED_ENUM_OPERATORS(int, MymrCharClassValues, MymrCharClassFlags)
+
 /* Characters that get refrered to by name */
 enum MymrChar
 {
@@ -1942,6 +1944,7 @@ enum KhmerCharClassFlags {
     CF_POS_MASK      = 0x000f0000
 };
 
+Q_DECLARE_MIXED_ENUM_OPERATORS(int, KhmerCharClassValues, KhmerCharClassFlags)
 
 /* Characters that get referred to by name */
 enum KhmerChar {

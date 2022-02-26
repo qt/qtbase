@@ -208,6 +208,7 @@ namespace Qt {
         // size of a multi-variant string.
         TextLongestVariant = 0x80000
     };
+    Q_DECLARE_MIXED_ENUM_OPERATORS_SYMMETRIC(int, AlignmentFlag, TextFlag)
 
     enum TextElideMode {
         ElideLeft,
@@ -215,6 +216,7 @@ namespace Qt {
         ElideMiddle,
         ElideNone
     };
+    Q_DECLARE_MIXED_ENUM_OPERATORS_SYMMETRIC(int, TextElideMode, TextFlag)
 
     enum WhiteSpaceMode {
         WhiteSpaceNormal,
