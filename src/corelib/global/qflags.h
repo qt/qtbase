@@ -192,6 +192,33 @@ typedef uint Flags;
 
 #endif /* Q_NO_TYPESAFE_FLAGS */
 
+// restore bit-wise enum-enum operators deprecated in C++20,
+// but used in a few places in the API
+#if __cplusplus > 201702L // assume compilers don't warn if in C++17 mode
+  // in C++20 mode, provide user-defined operators to override the deprecated operations:
+# define Q_DECLARE_MIXED_ENUM_OPERATOR(op, Ret, LHS, RHS) \
+    constexpr inline Ret operator op (LHS lhs, RHS rhs) noexcept \
+    { return static_cast<Ret>(std::underlying_type_t<LHS>(lhs) op std::underlying_type_t<RHS>(rhs)); } \
+    /* end */
+#else
+  // in C++11-17 mode, statically-assert that this compiler's result of the
+  // operation is the same that the C++20 version would produce:
+# define Q_DECLARE_MIXED_ENUM_OPERATOR(op, Ret, LHS, RHS) \
+    Q_STATIC_ASSERT((std::is_same<decltype(std::declval<LHS>() op std::declval<RHS>()), Ret>::value));
+#endif
+
+#define Q_DECLARE_MIXED_ENUM_OPERATORS(Ret, Flags, Enum) \
+    Q_DECLARE_MIXED_ENUM_OPERATOR(|, Ret, Flags, Enum) \
+    Q_DECLARE_MIXED_ENUM_OPERATOR(&, Ret, Flags, Enum) \
+    Q_DECLARE_MIXED_ENUM_OPERATOR(^, Ret, Flags, Enum) \
+    /* end */
+
+#define Q_DECLARE_MIXED_ENUM_OPERATORS_SYMMETRIC(Ret, Flags, Enum) \
+    Q_DECLARE_MIXED_ENUM_OPERATORS(Ret, Flags, Enum) \
+    Q_DECLARE_MIXED_ENUM_OPERATORS(Ret, Enum, Flags) \
+    /* end */
+
+
 QT_END_NAMESPACE
 
 #endif // QFLAGS_H

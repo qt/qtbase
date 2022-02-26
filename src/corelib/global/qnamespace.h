@@ -235,9 +235,7 @@ public:
 
         AlignCenter = AlignVCenter | AlignHCenter
     };
-
     Q_DECLARE_FLAGS(Alignment, AlignmentFlag)
-    Q_DECLARE_OPERATORS_FOR_FLAGS(Alignment)
 
     enum TextFlag {
         TextSingleLine = 0x0100,
@@ -260,6 +258,10 @@ public:
         , TextBypassShaping = 0x100000
 #endif
     };
+    Q_DECLARE_MIXED_ENUM_OPERATORS_SYMMETRIC(int, AlignmentFlag, TextFlag)
+    // *After* we've defined the mixed operators (or verified their sanity),
+    // otherwise the operators defined here mess with the mixed ones:
+    Q_DECLARE_OPERATORS_FOR_FLAGS(Alignment)
 
     enum TextElideMode {
         ElideLeft,
@@ -267,6 +269,7 @@ public:
         ElideMiddle,
         ElideNone
     };
+    Q_DECLARE_MIXED_ENUM_OPERATORS_SYMMETRIC(int, TextElideMode, TextFlag)
 
     enum WhiteSpaceMode {
         WhiteSpaceNormal,
