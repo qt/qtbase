@@ -44,6 +44,7 @@ class tst_QFlags: public QObject
 private slots:
     void boolCasts() const;
     void operators() const;
+    void mixingDifferentEnums() const;
     void testFlag() const;
     void testFlagZeroFlag() const;
     void testFlagMultiBits() const;
@@ -118,7 +119,41 @@ void tst_QFlags::operators() const
     CHECK(&, Qt::AlignHCenter, Qt::AlignHCenter, Qt::AlignHCenter);
     CHECK(^, Qt::AlignHCenter, Qt::AlignVCenter, Qt::AlignCenter);
     CHECK(^, Qt::AlignHCenter, Qt::AlignHCenter, Qt::Alignment());
+#undef CHECK
+}
 
+void tst_QFlags::mixingDifferentEnums() const
+{
+#define CHECK(op, LHS, RHS, RES) \
+    /* LHS must be QFlags'able */ \
+    do { \
+        QCOMPARE((LHS op RHS), (RES)); \
+        QCOMPARE((RHS op LHS), (RES)); \
+        /*QCOMPARE(( / *CTAD* / QFlags(LHS) op RHS), (RES));*/ \
+        /*QCOMPARE((QFlags(LHS) op ## = RHS), (RES));*/ \
+    } while (false)
+
+    // AlignmentFlags <-> TextFlags
+    {
+        CHECK(|, Qt::AlignCenter, Qt::TextSingleLine, 0x0184);
+        CHECK(&, Qt::AlignCenter, Qt::TextSingleLine, 0x0000);
+        CHECK(^, Qt::AlignCenter, Qt::TextSingleLine, 0x0184);
+    }
+    // QFlags<AlignmentFlags> <-> TextFlags
+    {
+#ifndef QT_TYPESAFE_FLAGS // QTBUG-101344
+        Qt::Alignment MyAlignCenter = Qt::AlignCenter; // convert enum to QFlags
+        CHECK(|, MyAlignCenter, Qt::TextSingleLine, 0x0184U); // yes, unsigned!
+        CHECK(&, MyAlignCenter, Qt::TextSingleLine, 0x0000U); // yes, unsigned!
+        CHECK(^, MyAlignCenter, Qt::TextSingleLine, 0x0184U); // yes, unsigned!
+#endif
+    }
+    // TextElideMode <-> TextFlags
+    {
+        CHECK(|, Qt::ElideNone, Qt::TextSingleLine, 0x0103);
+        CHECK(&, Qt::ElideNone, Qt::TextSingleLine, 0x0000);
+        CHECK(^, Qt::ElideNone, Qt::TextSingleLine, 0x0103);
+    }
 #undef CHECK
 }
 
