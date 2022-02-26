@@ -123,6 +123,8 @@ private:
     Q_DECLARE_PRIVATE(QFrame)
 };
 
+Q_DECLARE_MIXED_ENUM_OPERATORS_SYMMETRIC(int, QFrame::Shape, QFrame::Shadow)
+
 QT_END_NAMESPACE
 
 #endif // QFRAME_H

@@ -199,6 +199,7 @@ private:
 Q_DECLARE_TYPEINFO(QSizePolicy, Q_PRIMITIVE_TYPE);
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QSizePolicy::ControlTypes)
+Q_DECLARE_MIXED_ENUM_OPERATORS(int, QSizePolicy::Policy, QSizePolicy::PolicyFlag)
 
 #ifndef QT_NO_DATASTREAM
 Q_WIDGETS_EXPORT QDataStream &operator<<(QDataStream &, const QSizePolicy &);
