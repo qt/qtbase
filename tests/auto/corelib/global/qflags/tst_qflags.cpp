@@ -25,8 +25,18 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QTest>
 
+#ifdef QFLAGS_TEST_NO_TYPESAFE_FLAGS
+# ifdef QT_TYPESAFE_FLAGS
+#  undef QT_TYPESAFE_FLAGS
+# endif
+#else
+# ifndef QT_TYPESAFE_FLAGS
+#  define QT_TYPESAFE_FLAGS
+# endif
+#endif
+
+#include <QTest>
 
 class tst_QFlags: public QObject
 {
@@ -238,20 +248,25 @@ void tst_QFlags::constExpr()
     default: QFAIL(qPrintable(QStringLiteral("Unexpected button: %1").arg(btn.toInt())));
     }
 
-    QVERIFY(verifyConstExpr<uint((Qt::LeftButton | Qt::RightButton) & Qt::LeftButton)>(Qt::LeftButton));
-    QVERIFY(verifyConstExpr<uint((Qt::LeftButton | Qt::RightButton) & Qt::MiddleButton)>(0));
-    QVERIFY(verifyConstExpr<uint((Qt::LeftButton | Qt::RightButton) | Qt::MiddleButton)>(Qt::LeftButton | Qt::RightButton | Qt::MiddleButton));
-    QVERIFY(verifyConstExpr<uint(~(Qt::LeftButton | Qt::RightButton))>(~(Qt::LeftButton | Qt::RightButton)));
-    QVERIFY(verifyConstExpr<uint(Qt::MouseButtons(Qt::LeftButton) ^ Qt::RightButton)>(Qt::LeftButton ^ Qt::RightButton));
-    QVERIFY(verifyConstExpr<uint(Qt::MouseButtons(0))>(0));
+#define VERIFY_CONSTEXPR(expression, expected) \
+    QVERIFY(verifyConstExpr<(expression).toInt()>(expected))
+
+    VERIFY_CONSTEXPR((Qt::LeftButton | Qt::RightButton) & Qt::LeftButton, Qt::LeftButton);
+    VERIFY_CONSTEXPR((Qt::LeftButton | Qt::RightButton) & Qt::MiddleButton, 0);
+    VERIFY_CONSTEXPR((Qt::LeftButton | Qt::RightButton) | Qt::MiddleButton, Qt::LeftButton | Qt::RightButton | Qt::MiddleButton);
+    VERIFY_CONSTEXPR(~(Qt::LeftButton | Qt::RightButton), ~(Qt::LeftButton | Qt::RightButton));
+    VERIFY_CONSTEXPR(Qt::MouseButtons(Qt::LeftButton) ^ Qt::RightButton, Qt::LeftButton ^ Qt::RightButton);
+    VERIFY_CONSTEXPR(Qt::MouseButtons(0), 0);
 #ifndef QT_TYPESAFE_FLAGS
-    QVERIFY(verifyConstExpr<uint(Qt::MouseButtons(Qt::RightButton) & 0xff)>(Qt::RightButton));
-    QVERIFY(verifyConstExpr<uint(Qt::MouseButtons(Qt::RightButton) | 0xff)>(0xff));
+    QVERIFY(verifyConstExpr<(Qt::MouseButtons(Qt::RightButton) & 0xff)>(Qt::RightButton));
+    QVERIFY(verifyConstExpr<(Qt::MouseButtons(Qt::RightButton) | 0xff)>(0xff));
 #endif
 
     QVERIFY(!verifyConstExpr<Qt::RightButton>(~Qt::MouseButtons(Qt::LeftButton)));
 
-    QVERIFY(verifyConstExpr<uint(testRelaxedConstExpr())>(Qt::MiddleButton));
+    VERIFY_CONSTEXPR(testRelaxedConstExpr(), Qt::MiddleButton);
+
+#undef VERIFY_CONSTEXPR
 }
 
 void tst_QFlags::signedness()
