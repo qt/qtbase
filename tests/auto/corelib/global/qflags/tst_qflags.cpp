@@ -27,7 +27,6 @@
 ****************************************************************************/
 #include <QTest>
 
-QT_WARNING_DISABLE_DEPRECATED
 
 class tst_QFlags: public QObject
 {
