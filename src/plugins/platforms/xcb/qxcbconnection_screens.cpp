@@ -536,6 +536,7 @@ void QXcbConnection::initializeScreensFromMonitor(xcb_screen_iterator_t *it, int
 
         xcb_randr_monitor_info_next(&monitor_iter);
     }
+    free(monitors_r);
 
     if (siblings.isEmpty()) {
         QXcbScreen *screen = nullptr;
