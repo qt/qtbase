@@ -1555,6 +1555,8 @@ inline int QString::localeAwareCompare(QStringView s) const
 { return localeAwareCompare_helper(constData(), length(), s.constData(), s.length()); }
 inline int QString::localeAwareCompare(QStringView s1, QStringView s2)
 { return localeAwareCompare_helper(s1.constData(), s1.length(), s2.constData(), s2.length()); }
+inline int QStringView::localeAwareCompare(QStringView other) const
+{ return QString::localeAwareCompare(*this, other); }
 
 namespace QtPrivate {
 // used by qPrintable() and qUtf8Printable() macros

@@ -807,6 +807,21 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn int QStringView::localeAwareCompare(QStringView other) const
+    \since 6.4
+
+    Compares this string view with the \a other string view and returns
+    an integer less than, equal to, or greater than zero if this string
+    view is less than, equal to, or greater than the \a other string view.
+
+    The comparison is performed in a locale- and also platform-dependent
+    manner. Use this function to present sorted lists of strings to the
+    user.
+
+    \sa {Comparing Strings}
+*/
+
+/*!
     \fn bool QStringView::startsWith(QStringView str, Qt::CaseSensitivity cs) const
     \fn bool QStringView::startsWith(QLatin1String l1, Qt::CaseSensitivity cs) const
     \fn bool QStringView::startsWith(QChar ch) const

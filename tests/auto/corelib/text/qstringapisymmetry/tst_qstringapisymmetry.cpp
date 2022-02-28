@@ -440,6 +440,10 @@ private Q_SLOTS:
     void member_localeAwareCompare_QString_QString() { member_localeAwareCompare_impl<QString, QString>(); }
     void member_localeAwareCompare_QString_QStringView_data() { member_localeAwareCompare_data(); }
     void member_localeAwareCompare_QString_QStringView() { member_localeAwareCompare_impl<QString, QStringView>(); }
+    void member_localeAwareCompare_QStringView_QString_data() { member_localeAwareCompare_data(); }
+    void member_localeAwareCompare_QStringView_QString() { member_localeAwareCompare_impl<QStringView, QString>(); }
+    void member_localeAwareCompare_QStringView_QStringView_data() { member_localeAwareCompare_data(); }
+    void member_localeAwareCompare_QStringView_QStringView() { member_localeAwareCompare_impl<QStringView, QStringView>(); }
 
 private:
     void startsWith_data(bool rhsIsQChar = false);
