@@ -503,6 +503,9 @@ void tst_QDialog::snapToDefaultButton()
 #else
     if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("This platform does not support setting the cursor position.");
+#ifdef Q_OS_ANDROID
+    QSKIP("Android does not support cursor");
+#endif
 
     const QRect dialogGeometry(QGuiApplication::primaryScreen()->availableGeometry().topLeft()
                                + QPoint(100, 100), QSize(200, 200));
