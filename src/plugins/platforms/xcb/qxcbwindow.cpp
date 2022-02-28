@@ -1594,7 +1594,7 @@ void QXcbWindow::setWmWindowType(WindowTypes types, Qt::WindowFlags flags)
         break;
     }
 
-    if ((flags & Qt::FramelessWindowHint) && !(type & WindowType::KdeOverride)) {
+    if ((flags & Qt::FramelessWindowHint) && !(types & WindowType::KdeOverride)) {
         // override netwm type - quick and easy for KDE noborder
         atoms.append(atom(QXcbAtom::_KDE_NET_WM_WINDOW_TYPE_OVERRIDE));
     }
