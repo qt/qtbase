@@ -2,6 +2,3 @@
 macos
 [showFullScreen]
 macos ci
-# QTBUG-87389
-[snapToDefaultButton]
-android
