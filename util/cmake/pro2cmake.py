@@ -39,6 +39,7 @@ import posixpath
 import sys
 import re
 import io
+import itertools
 import glob
 import fnmatch
 
@@ -478,17 +479,32 @@ def get_cmake_api_call(api_name: str, api_version: Optional[int] = None) -> str:
     return cmake_api_calls[api_version][api_name]
 
 
-def process_qrc_file(
-    target: str,
-    scope: Scope,
+class QtResource:
+    def __init__(
+        self,
+        name: str = "",
+        prefix: str = "",
+        base_dir: str = "",
+        files: Dict[str, str] = {},
+        lang: str = None,
+        generated: bool = False,
+        skip_qtquick_compiler: bool = False,
+    ) -> None:
+        self.name = name
+        self.prefix = prefix
+        self.base_dir = base_dir
+        self.files = files
+        self.lang = lang
+        self.generated = generated
+        self.skip_qtquick_compiler = skip_qtquick_compiler
+
+
+def read_qrc_file(
     filepath: str,
     base_dir: str = "",
     project_file_path: str = "",
     skip_qtquick_compiler: bool = False,
-    is_example: bool = False,
-) -> str:
-    assert target
-
+) -> List[QtResource]:
     # Hack to handle QT_SOURCE_TREE. Assume currently that it's the same
     # as the qtbase source path.
     qt_source_tree_literal = "${QT_SOURCE_TREE}"
@@ -517,39 +533,63 @@ def process_qrc_file(
     root = tree.getroot()
     assert root.tag == "RCC"
 
-    output = ""
-
-    resource_count = 0
+    result: List[QtResource] = []
     for resource in root:
         assert resource.tag == "qresource"
-        lang = resource.get("lang", "")
-        prefix = resource.get("prefix", "/")
-        if not prefix.startswith("/"):
-            prefix = f"/{prefix}"
+        r = QtResource(
+            name=resource_name,
+            prefix=resource.get("prefix", "/"),
+            base_dir=base_dir,
+            lang=resource.get("lang", ""),
+            skip_qtquick_compiler=skip_qtquick_compiler,
+        )
 
-        full_resource_name = resource_name + (str(resource_count) if resource_count > 0 else "")
+        if len(result) > 0:
+            r.name += str(len(result))
 
-        files: Dict[str, str] = {}
+        if not r.prefix.startswith("/"):
+            r.prefix = f"/{r.prefix}"
+
         for file in resource:
             path = file.text
             assert path
 
             # Get alias:
             alias = file.get("alias", "")
-            files[path] = alias
+            r.files[path] = alias
 
-        output += write_add_qt_resource_call(
-            target,
-            scope,
-            full_resource_name,
-            prefix,
-            base_dir,
-            lang,
-            files,
-            skip_qtquick_compiler,
-            is_example,
-        )
-        resource_count += 1
+        result.append(r)
+
+    return result
+
+
+def write_resource_source_file_properties(
+    sorted_files: List[str], files: Dict[str, str], base_dir: str, skip_qtquick_compiler: bool
+) -> str:
+    output = ""
+    source_file_properties = defaultdict(list)
+
+    for source in sorted_files:
+        alias = files[source]
+        if alias:
+            source_file_properties[source].append(f'QT_RESOURCE_ALIAS "{alias}"')
+        # If a base dir is given, we have to write the source file property
+        # assignments that disable the quick compiler per file.
+        if base_dir and skip_qtquick_compiler:
+            source_file_properties[source].append("QT_SKIP_QUICKCOMPILER 1")
+
+    for full_source in source_file_properties:
+        per_file_props = source_file_properties[full_source]
+        if per_file_props:
+            prop_spaces = "                                "
+            per_file_props_joined = f"\n{prop_spaces}".join(per_file_props)
+            output += dedent(
+                f"""\
+                            set_source_files_properties("{full_source}"
+                                PROPERTIES {per_file_props_joined}
+                            )
+                        """
+            )
 
     return output
 
@@ -580,29 +620,9 @@ def write_add_qt_resource_call(
     sorted_files = sorted(files.keys())
     assert sorted_files
 
-    source_file_properties = defaultdict(list)
-
-    for source in sorted_files:
-        alias = files[source]
-        if alias:
-            source_file_properties[source].append(f'QT_RESOURCE_ALIAS "{alias}"')
-        # If a base dir is given, we have to write the source file property
-        # assignments that disable the quick compiler per file.
-        if base_dir and skip_qtquick_compiler:
-            source_file_properties[source].append("QT_SKIP_QUICKCOMPILER 1")
-
-    for full_source in source_file_properties:
-        per_file_props = source_file_properties[full_source]
-        if per_file_props:
-            prop_spaces = "                                "
-            per_file_props_joined = f"\n{prop_spaces}".join(per_file_props)
-            output += dedent(
-                f"""\
-                            set_source_files_properties("{full_source}"
-                                PROPERTIES {per_file_props_joined}
-                            )
-                        """
-            )
+    output += write_resource_source_file_properties(
+        sorted_files, files, base_dir, skip_qtquick_compiler
+    )
 
     # Quote file paths in case there are spaces.
     sorted_files_backup = sorted_files
@@ -2451,48 +2471,44 @@ def expand_resource_glob(cm_fh: IO[str], expression: str) -> str:
     return expanded_var
 
 
-def write_resources(
-    cm_fh: IO[str],
+def extract_resources(
     target: str,
     scope: Scope,
-    indent: int = 0,
-    is_example=False,
-    target_ref: str = None,
-):
-    if target_ref is None:
-        target_ref = target
-    # vpath = scope.expand('VPATH')
+) -> Tuple[List[QtResource], List[str]]:
+    """Read the resources of the given scope.
+    Return a tuple:
+      - list of QtResource objects
+      - list of standalone sources files that are marked as QTQUICK_COMPILER_SKIPPED_RESOURCES"""
 
-    # Handle QRC files by turning them into qt_add_resource:
+    resource_infos: List[QtResource] = []
+    skipped_standalone_files: List[str] = []
+
     resources = scope.get_files("RESOURCES")
     qtquickcompiler_skipped = scope.get_files("QTQUICK_COMPILER_SKIPPED_RESOURCES")
-    qrc_output = ""
     if resources:
         standalone_files: List[str] = []
         for r in resources:
             skip_qtquick_compiler = r in qtquickcompiler_skipped
             if r.endswith(".qrc"):
                 if "${CMAKE_CURRENT_BINARY_DIR}" in r:
-                    cm_fh.write(f"#### Ignored generated resource: {r}")
+                    resource_infos.append(
+                        QtResource(
+                            name=r, generated=True, skip_qtquick_compiler=skip_qtquick_compiler
+                        )
+                    )
                     continue
-                qrc_output += process_qrc_file(
-                    target_ref,
-                    scope,
+                resource_infos += read_qrc_file(
                     r,
                     scope.basedir,
                     scope.file_absolute_path,
-                    skip_qtquick_compiler,
-                    is_example,
+                    skip_qtquick_compiler=skip_qtquick_compiler,
                 )
             else:
                 immediate_files = {f: "" for f in scope.get_files(f"{r}.files")}
                 if immediate_files:
                     immediate_files_filtered = []
                     for f in immediate_files:
-                        if "*" in f:
-                            immediate_files_filtered.append(expand_resource_glob(cm_fh, f))
-                        else:
-                            immediate_files_filtered.append(f)
+                        immediate_files_filtered.append(f)
                     immediate_files = {f: "" for f in immediate_files_filtered}
                     scope_prefix = scope.get(f"{r}.prefix")
                     if scope_prefix:
@@ -2506,46 +2522,70 @@ def write_resources(
                     immediate_base = replace_path_constants("".join(immediate_base_list), scope)
                     immediate_lang = None
                     immediate_name = f"qmake_{r}"
-                    qrc_output += write_add_qt_resource_call(
-                        target=target_ref,
-                        scope=scope,
-                        resource_name=immediate_name,
-                        prefix=immediate_prefix,
-                        base_dir=immediate_base,
-                        lang=immediate_lang,
-                        files=immediate_files,
-                        skip_qtquick_compiler=skip_qtquick_compiler,
-                        is_example=is_example,
+                    resource_infos.append(
+                        QtResource(
+                            name=immediate_name,
+                            prefix=immediate_prefix,
+                            base_dir=immediate_base,
+                            lang=immediate_lang,
+                            files=immediate_files,
+                            skip_qtquick_compiler=skip_qtquick_compiler,
+                        )
                     )
                 else:
-                    if "*" in r:
-                        standalone_files.append(expand_resource_glob(cm_fh, r))
-                    else:
-                        # stadalone source file properties need to be set as they
-                        # are parsed.
-                        if skip_qtquick_compiler:
-                            qrc_output += (
-                                f'set_source_files_properties("{r}" PROPERTIES '
-                                f"QT_SKIP_QUICKCOMPILER 1)\n\n"
-                            )
-                        standalone_files.append(r)
+                    standalone_files.append(r)
+                    if not ("*" in r) and skip_qtquick_compiler:
+                        skipped_standalone_files.append(r)
 
         if standalone_files:
-            name = "qmake_immediate"
-            prefix = "/"
-            base = ""
-            lang = None
-            files = {f: "" for f in standalone_files}
-            qrc_output += write_add_qt_resource_call(
-                target=target_ref,
-                scope=scope,
-                resource_name=name,
-                prefix=prefix,
-                base_dir=base,
-                lang=lang,
-                files=files,
-                skip_qtquick_compiler=False,
-                is_example=is_example,
+            resource_infos.append(
+                QtResource(
+                    name="qmake_immediate",
+                    prefix="/",
+                    base_dir="",
+                    files={f: "" for f in standalone_files},
+                )
+            )
+
+    return (resource_infos, skipped_standalone_files)
+
+
+def write_resources(
+    cm_fh: IO[str],
+    target: str,
+    scope: Scope,
+    indent: int = 0,
+    is_example=False,
+    target_ref: str = None,
+    resources: List[QtResource] = None,
+    skipped_standalone_files: List[str] = None,
+):
+    if resources is None:
+        (resources, skipped_standalone_files) = extract_resources(target, scope)
+    if target_ref is None:
+        target_ref = target
+
+    qrc_output = ""
+    for r in resources:
+        name = r.name
+        if "*" in name:
+            name = expand_resource_glob(cm_fh, name)
+        qrc_output += write_add_qt_resource_call(
+            target=target_ref,
+            scope=scope,
+            resource_name=name,
+            prefix=r.prefix,
+            base_dir=r.base_dir,
+            lang=r.lang,
+            files=r.files,
+            skip_qtquick_compiler=r.skip_qtquick_compiler,
+            is_example=is_example,
+        )
+
+    if skipped_standalone_files:
+        for f in skipped_standalone_files:
+            qrc_output += (
+                f'set_source_files_properties("{f}" PROPERTIES ' f"QT_SKIP_QUICKCOMPILER 1)\n\n"
             )
 
     if qrc_output:
@@ -3782,11 +3822,32 @@ def write_win32_and_mac_bundle_properties(
         write_set_target_properties(cm_fh, [target], properties, indent=indent)
 
 
+def is_qtquick_source_file(filename: str):
+    return filename.endswith(".qml") or filename.endswith(".js") or filename.endswith(".mjs")
+
+
+def looks_like_qml_resource(resource: QtResource):
+    if resource.generated or "*" in resource.name:
+        return False
+    for f in resource.files:
+        if is_qtquick_source_file(f):
+            return True
+    return False
+
+
+def find_qml_resource(resources: List[QtResource]):
+    """Return the resource object that's most likely the one that should be used for
+    qt_add_qml_module. Return None if there's no such resource."""
+    return next(filter(looks_like_qml_resource, resources), None)
+
+
 def write_example(
     cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int = 0, is_plugin: bool = False
 ) -> str:
     binary_name = scope.TARGET
     assert binary_name
+    config = scope.get("CONFIG")
+    is_qml_plugin = ("qml" in scope.get("QT")) or "qmltypes" in config
 
     example_install_dir = scope.expandString("target.path")
     if not example_install_dir:
@@ -3823,101 +3884,31 @@ def write_example(
     (public_libs, private_libs) = extract_cmake_libraries(scope, is_example=True)
     write_find_package_section(cm_fh, public_libs, private_libs, indent=indent)
 
+    (resources, standalone_qtquick_compiler_skipped_files) = extract_resources(binary_name, scope)
+    qml_resource = find_qml_resource(resources) if is_qml_plugin else None
+
     add_target = ""
 
     if is_plugin:
-        if "qml" in scope.get("QT"):
-            # Get the uri from the destination directory
-            dest_dir = scope.expandString("DESTDIR")
-            if not dest_dir:
-                dest_dir = "${CMAKE_CURRENT_BINARY_DIR}"
-            else:
-                uri = os.path.basename(dest_dir)
-                dest_dir = f"${{CMAKE_CURRENT_BINARY_DIR}}/{dest_dir}"
-
-            add_target = ""
-
-            qml_dir = None
-            qml_dir_dynamic_imports = False
-
-            qmldir_file_path_list = scope.get_files("qmldir.files")
-            assert len(qmldir_file_path_list) < 2, "File path must only contain one path"
-            qmldir_file_path = qmldir_file_path_list[0] if qmldir_file_path_list else "qmldir"
-            qmldir_file_path = os.path.join(os.getcwd(), qmldir_file_path[0])
-
-            dynamic_qmldir = scope.get("DYNAMIC_QMLDIR")
-            if os.path.exists(qmldir_file_path):
-                qml_dir = QmlDir()
-                qml_dir.from_file(qmldir_file_path)
-            elif dynamic_qmldir:
-                qml_dir = QmlDir()
-                qml_dir.from_lines(dynamic_qmldir)
-                qml_dir_dynamic_imports = True
-
-                add_target += "set(module_dynamic_qml_imports\n    "
-                if len(qml_dir.imports) != 0:
-                    add_target += "\n    ".join(qml_dir.imports)
-                add_target += "\n)\n\n"
-
-                for sc in scopes[1:]:
-                    import_list = []
-                    qml_imports = sc.get("DYNAMIC_QMLDIR")
-                    for qml_import in qml_imports:
-                        if not qml_import.startswith("import "):
-                            raise RuntimeError(
-                                "Only qmldir import statements expected in conditional scope!"
-                            )
-                        import_list.append(qml_import[len("import ") :].replace(" ", "/"))
-                    if len(import_list) == 0:
-                        continue
-
-                    assert sc.condition
-
-                    add_target += f"if ({sc.condition})\n"
-                    add_target += "    list(APPEND module_dynamic_qml_imports\n        "
-                    add_target += "\n        ".join(import_list)
-                    add_target += "\n    )\nendif()\n\n"
-
-            add_target += dedent(
-                f"""\
-                qt6_add_qml_module({binary_name}
-                    OUTPUT_DIRECTORY "{dest_dir}"
-                    VERSION 1.0
-                    URI "{uri}"
-                    """
+        if is_qml_plugin:
+            extra_args = [f"PLUGIN_TARGET {binary_name}"]
+            io_string = io.StringIO()
+            write_qml_module(
+                io_string,
+                binary_name,
+                scope,
+                scopes,
+                indent=indent,
+                resource=qml_resource,
+                extra_add_qml_module_args=extra_args,
             )
-
-            if qml_dir is not None:
-                if qml_dir.designer_supported:
-                    add_target += "    DESIGNER_SUPPORTED\n"
-                if len(qml_dir.classname) != 0:
-                    add_target += f"    CLASSNAME {qml_dir.classname}\n"
-                if len(qml_dir.depends) != 0:
-                    add_target += "    DEPENDENCIES\n"
-                    for dep in qml_dir.depends:
-                        add_target += f"        {dep[0]}/{dep[1]}\n"
-                if len(qml_dir.type_names) == 0:
-                    add_target += "    SKIP_TYPE_REGISTRATION\n"
-                if len(qml_dir.imports) != 0 and not qml_dir_dynamic_imports:
-                    qml_dir_imports_line = "        \n".join(qml_dir.imports)
-                    add_target += f"    IMPORTS\n{qml_dir_imports_line}"
-                if qml_dir_dynamic_imports:
-                    add_target += "    IMPORTS ${module_dynamic_qml_imports}\n"
-                if len(qml_dir.optional_imports) != 0:
-                    qml_dir_optional_imports_line = "        \n".join(qml_dir.optional_imports)
-                    add_target += f"    OPTIONAL_IMPORTS\n{qml_dir_optional_imports_line}"
-                if qml_dir.plugin_optional:
-                    add_target += "    PLUGIN_OPTIONAL\n"
-
-            add_target += "    INSTALL_LOCATION ${INSTALL_EXAMPLEDIR}\n)\n\n"
-            add_target += f"target_sources({binary_name} PRIVATE"
+            add_target += io_string.getvalue()
         else:
             add_target = f"qt_add_plugin({binary_name}"
             if "static" in scope.get("CONFIG"):
                 add_target += " STATIC"
             add_target += ")\n"
-            add_target += f"target_sources({binary_name} PRIVATE"
-
+        add_target += f"target_sources({binary_name} PRIVATE"
     else:
         add_target = f"qt_add_executable({binary_name}"
 
@@ -3930,6 +3921,9 @@ def write_example(
 
     write_all_source_file_lists(cm_fh, scope, add_target, indent=0)
     cm_fh.write(")\n")
+
+    if is_qml_plugin and not is_plugin:
+        write_qml_module(cm_fh, binary_name, scope, scopes, indent=indent, resource=qml_resource)
 
     handling_first_scope = True
 
@@ -3995,7 +3989,23 @@ def write_example(
             io_string, scope, f"target_compile_options({binary_name}", indent=indent, footer=")\n"
         )
 
-        write_resources(io_string, binary_name, scope, indent=indent, is_example=True)
+        (resources, standalone_qtquick_compiler_skipped_files) = extract_resources(
+            binary_name, scope
+        )
+
+        # Remove the QML resource, because we've handled it in write_qml_module.
+        if qml_resource is not None:
+            resources = list(filter(lambda r: r.name != qml_resource.name, resources))
+
+        write_resources(
+            io_string,
+            binary_name,
+            scope,
+            indent=indent,
+            is_example=True,
+            resources=resources,
+            skipped_standalone_files=standalone_qtquick_compiler_skipped_files,
+        )
         write_statecharts(io_string, binary_name, scope, indent=indent, is_example=True)
         write_repc_files(io_string, binary_name, scope, indent=indent)
 
@@ -4124,6 +4134,137 @@ def get_qml_import_version(scope: Scope, target: str) -> str:
         for needle, replacement in replacements:
             import_version = import_version.replace(needle, replacement)
     return import_version
+
+
+def write_qml_module(
+    cm_fh: IO[str],
+    target: str,
+    scope: Scope,
+    scopes: List[Scope],
+    resource: QtResource,
+    extra_add_qml_module_args: List[str] = [],
+    indent: int = 0,
+):
+    uri = scope.get_string("QML_IMPORT_NAME")
+    if not uri:
+        uri = target
+
+    try:
+        version = get_qml_import_version(scope, target)
+    except RuntimeError:
+        version = "${PROJECT_VERSION}"
+
+    dest_dir = scope.expandString("DESTDIR")
+    if dest_dir:
+        dest_dir = f"${{CMAKE_CURRENT_BINARY_DIR}}/{dest_dir}"
+
+    content = ""
+
+    qml_dir = None
+    qml_dir_dynamic_imports = False
+
+    qmldir_file_path_list = scope.get_files("qmldir.files")
+    assert len(qmldir_file_path_list) < 2, "File path must only contain one path"
+    qmldir_file_path = qmldir_file_path_list[0] if qmldir_file_path_list else "qmldir"
+    qmldir_file_path = os.path.join(os.getcwd(), qmldir_file_path[0])
+
+    dynamic_qmldir = scope.get("DYNAMIC_QMLDIR")
+    if os.path.exists(qmldir_file_path):
+        qml_dir = QmlDir()
+        qml_dir.from_file(qmldir_file_path)
+    elif dynamic_qmldir:
+        qml_dir = QmlDir()
+        qml_dir.from_lines(dynamic_qmldir)
+        qml_dir_dynamic_imports = True
+
+        content += "set(module_dynamic_qml_imports\n    "
+        if len(qml_dir.imports) != 0:
+            content += "\n    ".join(qml_dir.imports)
+        content += "\n)\n\n"
+
+        for sc in scopes[1:]:
+            import_list = []
+            qml_imports = sc.get("DYNAMIC_QMLDIR")
+            for qml_import in qml_imports:
+                if not qml_import.startswith("import "):
+                    raise RuntimeError(
+                        "Only qmldir import statements expected in conditional scope!"
+                    )
+                import_list.append(qml_import[len("import ") :].replace(" ", "/"))
+            if len(import_list) == 0:
+                continue
+
+            assert sc.condition
+
+            content += f"if ({sc.condition})\n"
+            content += "    list(APPEND module_dynamic_qml_imports\n        "
+            content += "\n        ".join(import_list)
+            content += "\n    )\nendif()\n\n"
+
+    content += dedent(
+        f"""\
+        qt_add_qml_module({target}
+            URI {uri}
+            VERSION {version}
+            """
+    )
+
+    if resource is not None:
+        qml_files = list(filter(is_qtquick_source_file, resource.files.keys()))
+        if qml_files:
+            content += "    QML_FILES\n"
+            for file in qml_files:
+                content += f"        {file}\n"
+        other_files = list(itertools.filterfalse(is_qtquick_source_file, resource.files.keys()))
+        if other_files:
+            content += "    RESOURCES\n"
+            for file in other_files:
+                content += f"        {file}\n"
+        if resource.prefix != "/":
+            content += f"    RESOURCE_PREFIX {resource.prefix}\n"
+        if scope.TEMPLATE == "app":
+            content += "    NO_RESOURCE_TARGET_PATH\n"
+    if dest_dir:
+        content += f"    OUTPUT_DIRECTORY {dest_dir}\n"
+
+    if qml_dir is not None:
+        if qml_dir.designer_supported:
+            content += "    DESIGNER_SUPPORTED\n"
+        if len(qml_dir.classname) != 0:
+            content += f"    CLASSNAME {qml_dir.classname}\n"
+        if len(qml_dir.depends) != 0:
+            content += "    DEPENDENCIES\n"
+            for dep in qml_dir.depends:
+                content += f"        {dep[0]}/{dep[1]}\n"
+        if len(qml_dir.type_names) == 0:
+            content += "    SKIP_TYPE_REGISTRATION\n"
+        if len(qml_dir.imports) != 0 and not qml_dir_dynamic_imports:
+            qml_dir_imports_line = "        \n".join(qml_dir.imports)
+            content += f"    IMPORTS\n{qml_dir_imports_line}"
+        if qml_dir_dynamic_imports:
+            content += "    IMPORTS ${module_dynamic_qml_imports}\n"
+        if len(qml_dir.optional_imports) != 0:
+            qml_dir_optional_imports_line = "        \n".join(qml_dir.optional_imports)
+            content += f"    OPTIONAL_IMPORTS\n{qml_dir_optional_imports_line}"
+        if qml_dir.plugin_optional:
+            content += "    PLUGIN_OPTIONAL\n"
+
+    for arg in extra_add_qml_module_args:
+        content += "    "
+        content += arg
+        content += "\n"
+    content += "    INSTALL_LOCATION ${INSTALL_EXAMPLEDIR}\n)\n"
+
+    if resource:
+        content += write_resource_source_file_properties(
+            sorted(resource.files.keys()),
+            resource.files,
+            resource.base_dir,
+            resource.skip_qtquick_compiler,
+        )
+
+    content += "\n"
+    cm_fh.write(content)
 
 
 def write_qml_plugin(
@@ -4339,7 +4480,11 @@ def handle_app_or_lib(
 
     # Generate qmltypes instruction for anything that may have CONFIG += qmltypes
     # that is not a qml plugin
-    if "qmltypes" in scope.get("CONFIG") and "qml_plugin" not in scope.get("_LOADED"):
+    if (
+        not is_example
+        and "qmltypes" in scope.get("CONFIG")
+        and "qml_plugin" not in scope.get("_LOADED")
+    ):
         cm_fh.write(f"\n{spaces(indent)}set_target_properties({target_ref} PROPERTIES\n")
 
         install_dir = scope.expandString("QMLTYPES_INSTALL_DIR")
