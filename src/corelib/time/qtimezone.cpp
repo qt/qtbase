@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2013 John Layt <jlayt@kde.org>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -108,7 +108,7 @@ class QTimeZoneSingleton
 public:
     QTimeZoneSingleton() : backend(newBackendTimeZone()) {}
 
-    // The backend_tz is the tz to use in static methods such as availableTimeZoneIds() and
+    // The global_tz is the tz to use in static methods such as availableTimeZoneIds() and
     // isTimeZoneIdAvailable() and to create named IANA time zones.  This is usually the host
     // system, but may be different if the host resources are insufficient or if
     // QT_NO_SYSTEMLOCALE is set.  A simple UTC backend is used if no alternative is available.
@@ -175,7 +175,7 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
     claim is ignored and the standard time (allegedly) in force in 1900 is
     taken to have always been in effect.
 
-    QTimeZone uses a conversion table derived form the Unicode CLDR data to map
+    QTimeZone uses a conversion table derived from the Unicode CLDR data to map
     between IANA IDs and Windows IDs.  Depending on your version of Windows
     and Qt, this table may not be able to provide a valid conversion, in which
     "UTC" will be returned.
@@ -187,10 +187,6 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
 
     \section2 System Time Zone
 
-    QTimeZone does not support any concept of a system or default time zone.
-    If you require a QDateTime that uses the current system time zone at any
-    given moment then you should use a Qt::TimeSpec of Qt::LocalTime.
-
     The method systemTimeZoneId() returns the current system IANA time zone
     ID which on Unix-like systems will always be correct.  On Windows this ID is
     translated from the Windows system ID using an internal translation
@@ -200,7 +196,13 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
 
     Creating a new QTimeZone instance using the system time zone ID will only
     produce a fixed named copy of the time zone, it will not change if the
-    system time zone changes.
+    system time zone changes.  QTimeZone::systemTimeZone() will return an
+    instance representing the zone named by this system ID.  Note that
+    constructing a QDateTime using this system zone may behave differently than
+    constructing a QDateTime that uses Qt::LocalTime as its Qt::TimeSpec, as the
+    latter directly uses system APIs for accessing local time information, which
+    may behave differently (and, in particular, might adapt if the user adjusts
+    the system zone setting).
 
     \section2 Time Zone Offsets
 
@@ -226,7 +228,7 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
     of the Unicode Data Files and Software License. See
     \l{unicode-cldr}{Unicode Common Locale Data Repository (CLDR)} for details.
 
-    \sa QDateTime
+    \sa QDateTime, QCalendar
 */
 
 /*!
