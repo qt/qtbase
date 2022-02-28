@@ -45,11 +45,12 @@
 \cmakevariablesince 6.3
 \preliminarycmakevariable
 
-\c{QT_DEPLOY_PREFIX} provides the base directory of the deployment. The other
+\c{QT_DEPLOY_PREFIX} provides the base deployment directory. The other
 \c{QT_DEPLOY_..._DIR} variables should be treated as relative to this location.
 The value of \c{QT_DEPLOY_PREFIX} may be relative or absolute, so projects
 should not assume one or the other in any given situation. A relative path is
-expected to be treated as relative to the current working directory.
+expected to be treated as relative to the current working directory, as seen
+by the build tool (ninja, make, and so on) at install time.
 
 The default value is \c{$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}}, which is the
 base location CMake uses during installation. If that evaluates to an empty
@@ -58,6 +59,13 @@ appropriate value when deploying as part of a post-build rule. This two-step
 fallback logic ensures that projects can assume \c{QT_DEPLOY_PREFIX} will not
 be an empty string, so it can safely be used as part of a path like
 \c{${QT_DEPLOY_PREFIX}/${QT_DEPLOY_BIN_DIR}}.
+
+To change the value of \c QT_DEPLOY_PREFIX, the project can be configured
+with a custom \l CMAKE_INSTALL_PREFIX as described in
+\l {Command Line cmake invocation}.
+
+The \l DESTDIR environment variable can also be used to modify the final
+installation, and thus deployment, location.
 
 Projects should rarely need to use this variable. In typical scenarios, deploy
 scripts should assume that the working directory is already set to the base
@@ -82,7 +90,7 @@ variables.
 \cmakevariablesince 6.3
 \preliminarycmakevariable
 
-Projects should use \c QT_DEPLOY_BIN_DIR in their deploy scripts instead of
+Projects should use \c QT_DEPLOY_BIN_DIR in their deploy scripts to avoid
 hard-coding a particular directory in which to deploy the following types of
 binaries:
 
@@ -91,8 +99,12 @@ binaries:
 \li DLLs on Windows.
 \endlist
 
-\c QT_DEPLOY_BIN_DIR defaults to the value of \c${CMAKE_INSTALL_BINDIR}, which
-is provided by CMake's \l{GNUInstallDirs} module.
+\c QT_DEPLOY_BIN_DIR defaults to the value of \c${CMAKE_INSTALL_BINDIR}
+(usually \c{bin}), which is provided by CMake's \l{GNUInstallDirs} module.
+To change the value of \c QT_DEPLOY_BIN_DIR, ensure that the project sets
+\c{CMAKE_INSTALL_BINDIR} before the \c Core package is found.
+
+The \c QT_DEPLOY_BIN_DIR path is relative to \l{QT_DEPLOY_PREFIX}.
 
 This variable is not meaningful when deploying into a macOS app bundle and
 should not be used for that scenario.
@@ -119,7 +131,7 @@ should not be used for that scenario.
 \cmakevariablesince 6.3
 \preliminarycmakevariable
 
-Projects should use \c QT_DEPLOY_LIB_DIR in their deploy scripts instead of
+Projects should use \c QT_DEPLOY_LIB_DIR in their deploy scripts to avoid
 hard-coding a particular directory in which to deploy the following types of
 binaries:
 
@@ -128,11 +140,20 @@ binaries:
 \li Import libraries on Windows.
 \endlist
 
-\c QT_DEPLOY_LIB_DIR defaults to the value of \c${CMAKE_INSTALL_LIBDIR}, which
-is provided by CMake's \l{GNUInstallDirs} module.
+\c QT_DEPLOY_LIB_DIR defaults to the value of \c${CMAKE_INSTALL_LIBDIR}
+(usually \c{lib} or \c{lib64}), which is provided by
+CMake's \l{GNUInstallDirs} module.
+To change the value of \c QT_DEPLOY_LIB_DIR, ensure that the project sets
+\c{CMAKE_INSTALL_LIBDIR} before the \c Core package is found.
+
+The \c QT_DEPLOY_LIB_DIR path is relative to \l{QT_DEPLOY_PREFIX}.
 
 This variable is not meaningful when deploying into a macOS app bundle and
 should not be used for that scenario.
+
+\section1 Example
+
+\include cmake-deploy-modified-variable-values.qdocinc
 
 \sa QT_DEPLOY_SUPPORT, QT_DEPLOY_PREFIX, QT_DEPLOY_BIN_DIR,
     QT_DEPLOY_PLUGINS_DIR, QT_DEPLOY_QML_DIR
@@ -152,15 +173,23 @@ should not be used for that scenario.
 \cmakevariablesince 6.3
 \preliminarycmakevariable
 
-Projects should use \c QT_DEPLOY_PLUGINS_DIR in their deploy scripts instead of
+Projects should use \c QT_DEPLOY_PLUGINS_DIR in their deploy scripts to avoid
 hard-coding a particular directory under which to deploy plugins.
 
-\c QT_DEPLOY_PLUGINS_DIR defaults to the value \c{plugins}.
+\c QT_DEPLOY_PLUGINS_DIR defaults to the value \c{plugins}. To change the value
+of \c QT_DEPLOY_PLUGINS_DIR, set it in the project deployment script
+before \c QT_DEPLOY_SUPPORT is included.
+
+The \c QT_DEPLOY_PLUGINS_DIR path is relative to \l{QT_DEPLOY_PREFIX}.
 
 This variable is not meaningful when deploying into a macOS app bundle and
 should not be used for that scenario. Apple's macOS app bundle guidelines
 require all plugins to be deployed to the \c{PlugIns} subdirectory of the
 bundle contents.
+
+\section1 Example
+
+\include cmake-deploy-modified-variable-values.qdocinc
 
 \sa QT_DEPLOY_SUPPORT, QT_DEPLOY_PREFIX, QT_DEPLOY_BIN_DIR, QT_DEPLOY_LIB_DIR,
     QT_DEPLOY_QML_DIR
@@ -180,10 +209,14 @@ bundle contents.
 \cmakevariablesince 6.3
 \preliminarycmakevariable
 
-Projects should use \c QT_DEPLOY_QML_DIR in their deploy scripts instead of
+Projects should use \c QT_DEPLOY_QML_DIR in their deploy scripts to avoid
 hard-coding a particular directory under which to deploy QML modules.
 
-\c QT_DEPLOY_QML_DIR defaults to the value \c{qml}.
+\c QT_DEPLOY_QML_DIR defaults to the value \c{qml}. To change the value
+of \c QT_DEPLOY_QML_DIR, set it in the project deployment script
+before \c QT_DEPLOY_SUPPORT is included.
+
+The \c QT_DEPLOY_QML_DIR path is relative to \l{QT_DEPLOY_PREFIX}.
 
 This variable is not meaningful when deploying into a macOS app bundle and
 should not be used for that scenario. Apple's macOS app bundle guidelines
@@ -191,6 +224,10 @@ require all plugins to be deployed to the \c{PlugIns} subdirectory of the
 bundle contents, and all other non-binary files should generally be under the
 \c{Resources} subdirectory. The different parts of a QML module therefore need
 to be deployed to different locations within the app bundle.
+
+\section1 Example
+
+\include cmake-deploy-modified-variable-values.qdocinc
 
 \sa QT_DEPLOY_SUPPORT, QT_DEPLOY_PREFIX, QT_DEPLOY_BIN_DIR, QT_DEPLOY_LIB_DIR,
     QT_DEPLOY_PLUGINS_DIR

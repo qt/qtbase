@@ -112,6 +112,21 @@
 */
 
 /*!
+    \externalpage https://cmake.org/cmake/help/latest/variable/CMAKE_INSTALL_PREFIX.html
+    \title CMAKE_INSTALL_PREFIX
+*/
+
+/*!
+    \externalpage https://cmake.org/cmake/help/latest/guide/user-interaction/index.html#command-line-cmake-tool
+    \title Command Line cmake invocation
+*/
+
+/*!
+    \externalpage https://cmake.org/cmake/help/latest/envvar/DESTDIR.html
+    \title DESTDIR
+*/
+
+/*!
     \externalpage https://cmake.org/cmake/help/latest/command/install.html#targets
     \title install(TARGETS)
 */

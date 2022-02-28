@@ -262,10 +262,13 @@ must be set before the first \c{find_package(Qt6)} call to have that effect.
 
 \cmakevariablesince 6.3
 \preliminarycmakevariable
+\note The value of this variable should never be modified by project code.
 
-This variable is set by the Core package. It is intended to be used as the first
-line of any deployment script. Such scripts do not run during CMake's configure
-phase, they are executed during installation or as part of a post-build rule.
+This configure-phase variable is set by the Core package. It is intended to be
+used as the first line of any deployment script to ensure access to the
+deployment APIs provided by Qt. Such deployment scripts do not run during
+CMake's configure phase, they are executed during installation or as
+part of a post-build rule.
 
 The following example shows one way the variable would be used when installing
 an application, along with its runtime dependencies:
