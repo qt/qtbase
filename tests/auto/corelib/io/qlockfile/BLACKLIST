@@ -1,0 +1,13 @@
+# See qtbase/src/testlib/qtestblacklist.cpp for format
+#QTBUG-101328
+[staleLockFromCrashedProcessReusedPid]
+qnx
+#QTBUG-101328
+[staleLongLockFromBusyProcess]
+qnx
+#QTBUG-101328
+[staleShortLockFromBusyProcess]
+qnx
+#QTBUG-101328
+[lockUnlock]
+qnx
