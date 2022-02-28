@@ -231,8 +231,11 @@ QMimeMagicRule::QMimeMagicRule(const QString &type,
       m_mask(mask),
       m_matchFunction(nullptr)
 {
-    if (Q_UNLIKELY(m_type == Invalid))
-        *errorString = QLatin1String("Type ") + type + QLatin1String(" is not supported");
+    if (Q_UNLIKELY(m_type == Invalid)) {
+        if (errorString)
+            *errorString = QLatin1String("Type ") + type + QLatin1String(" is not supported");
+        return;
+    }
 
     // Parse for offset as "1" or "1:10"
     const int colonIndex = offsets.indexOf(QLatin1Char(':'));
