@@ -1816,7 +1816,7 @@ namespace Qt {
     Q_ENUM_NS(TimerType)
     Q_ENUM_NS(ScrollPhase)
     Q_ENUM_NS(MouseEventSource)
-    Q_FLAG_NS(MouseEventFlag)
+    Q_FLAG_NS(MouseEventFlags)
     Q_ENUM_NS(ChecksumType)
     Q_ENUM_NS(HighDpiScaleFactorRoundingPolicy)
     Q_ENUM_NS(TabFocusBehavior)
