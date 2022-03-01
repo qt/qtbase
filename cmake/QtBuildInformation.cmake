@@ -38,18 +38,30 @@ function(qt_print_build_instructions)
         set(local_install_prefix "${CMAKE_STAGING_PREFIX}")
     endif()
 
-    message("Qt is now configured for building. Just run '${build_command}'\n")
+    set(msg "")
+
+    list(APPEND msg "Qt is now configured for building. Just run '${build_command}'\n")
     if(QT_WILL_INSTALL)
-        message("Once everything is built, you must run '${install_command}'")
-        message("Qt will be installed into '${CMAKE_INSTALL_PREFIX}'")
+        list(APPEND msg "Once everything is built, you must run '${install_command}'")
+        list(APPEND msg "Qt will be installed into '${CMAKE_INSTALL_PREFIX}'")
     else()
-        message("Once everything is built, Qt is installed. You should NOT run '${install_command}'")
-        message("Note that this build cannot be deployed to other machines or devices.")
+        list(APPEND msg
+            "Once everything is built, Qt is installed. You should NOT run '${install_command}'")
+        list(APPEND msg
+            "Note that this build cannot be deployed to other machines or devices.")
     endif()
-    message("\nTo configure and build other Qt modules, you can use the following convenience script:
+    list(APPEND msg
+        "\nTo configure and build other Qt modules, you can use the following convenience script:
         ${local_install_prefix}/${INSTALL_BINDIR}/${configure_module_command}")
-    message("\nIf reconfiguration fails for some reason, try to remove 'CMakeCache.txt' \
+    list(APPEND msg "\nIf reconfiguration fails for some reason, try removing 'CMakeCache.txt' \
 from the build directory \n")
+    list(JOIN msg "\n" msg)
+
+    if(NOT QT_INTERNAL_BUILD_INSTRUCTIONS_SHOWN)
+        message(STATUS "${msg}")
+    endif()
+
+    set(QT_INTERNAL_BUILD_INSTRUCTIONS_SHOWN "TRUE" CACHE STRING "" FORCE)
 endfunction()
 
 function(qt_configure_print_summary)
@@ -60,7 +72,7 @@ function(qt_configure_print_summary)
     file(WRITE "${summary_file}" "")
     # Show Qt-specific configure summary and any notes, wranings, etc.
     if(__qt_configure_reports)
-        message("Configure summary:\n${__qt_configure_reports}")
+        message(STATUS "Configure summary:\n${__qt_configure_reports}")
         file(APPEND "${summary_file}" "${__qt_configure_reports}")
     endif()
     if(__qt_configure_notes)
