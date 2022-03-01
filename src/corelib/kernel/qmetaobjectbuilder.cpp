@@ -1439,41 +1439,39 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
         size += sizeof(SuperData) * (d->relatedMetaObjects.size() + 1);
     }
 
-    if (d->properties.size() > 0 || d->methods.size() > 0 || d->constructors.size() > 0) {
-        ALIGN(size, QtPrivate::QMetaTypeInterface *);
-        auto types = reinterpret_cast<QtPrivate::QMetaTypeInterface **>(buf + size);
-        if constexpr (mode == Construct) {
-            meta->d.metaTypes = types;
-            for (const auto &prop : d->properties) {
-                QMetaType mt = prop.metaType;
-                *types = reinterpret_cast<QtPrivate::QMetaTypeInterface *&>(mt);
-                types++;
-            }
-            // add metatype interface for this metaobject - must be null
-            // as we can't know our metatype
-            *types = nullptr;
+    ALIGN(size, QtPrivate::QMetaTypeInterface *);
+    auto types = reinterpret_cast<QtPrivate::QMetaTypeInterface **>(buf + size);
+    if constexpr (mode == Construct) {
+        meta->d.metaTypes = types;
+        for (const auto &prop : d->properties) {
+            QMetaType mt = prop.metaType;
+            *types = reinterpret_cast<QtPrivate::QMetaTypeInterface *&>(mt);
             types++;
-            for (const auto &method: d->methods) {
-                QMetaType mt(QMetaType::fromName(method.returnType).id());
+        }
+        // add metatype interface for this metaobject - must be null
+        // as we can't know our metatype
+        *types = nullptr;
+        types++;
+        for (const auto &method: d->methods) {
+            QMetaType mt(QMetaType::fromName(method.returnType).id());
+            *types = reinterpret_cast<QtPrivate::QMetaTypeInterface *&>(mt);
+            types++;
+            for (const auto &parameterType: method.parameterTypes()) {
+                QMetaType mt = QMetaType::fromName(parameterType);
                 *types = reinterpret_cast<QtPrivate::QMetaTypeInterface *&>(mt);
                 types++;
-                for (const auto &parameterType: method.parameterTypes()) {
-                    QMetaType mt = QMetaType::fromName(parameterType);
-                    *types = reinterpret_cast<QtPrivate::QMetaTypeInterface *&>(mt);
-                    types++;
-                }
-            }
-            for (const auto &constructor : d->constructors) {
-                for (const auto &parameterType : constructor.parameterTypes()) {
-                    QMetaType mt = QMetaType::fromName(parameterType);
-                    *types = reinterpret_cast<QtPrivate::QMetaTypeInterface *&>(mt);
-                    types++;
-                }
             }
         }
-        // parameterMetaTypesIndex is equal to the total number of metatypes
-        size += sizeof(QMetaType) * parameterMetaTypesIndex;
+        for (const auto &constructor : d->constructors) {
+            for (const auto &parameterType : constructor.parameterTypes()) {
+                QMetaType mt = QMetaType::fromName(parameterType);
+                *types = reinterpret_cast<QtPrivate::QMetaTypeInterface *&>(mt);
+                types++;
+            }
+        }
     }
+    // parameterMetaTypesIndex is equal to the total number of metatypes
+    size += sizeof(QMetaType) * parameterMetaTypesIndex;
 
     // Align the final size and return it.
     ALIGN(size, void *);
