@@ -23,6 +23,19 @@ if(FEATURE_developer_build)
     set(_default_build_type "Debug")
 endif()
 
+# Decide whether output should be verbose or not.
+# Default to verbose (--log-level=STATUS) in a developer-build and
+# non-verbose (--log-level=NOTICE) otherwise.
+# If a custom CMAKE_MESSAGE_LOG_LEVEL was specified, it takes priority.
+# Passing an explicit --log-level=Foo has the highest priority.
+if(NOT CMAKE_MESSAGE_LOG_LEVEL)
+    if(FEATURE_developer_build OR QT_FEATURE_developer_build)
+        set(CMAKE_MESSAGE_LOG_LEVEL "STATUS")
+    else()
+        set(CMAKE_MESSAGE_LOG_LEVEL "NOTICE")
+    endif()
+endif()
+
 # Reset content of extra build internal vars for each inclusion of QtSetup.
 unset(QT_EXTRA_BUILD_INTERNALS_VARS)
 
