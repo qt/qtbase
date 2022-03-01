@@ -143,7 +143,7 @@ public:
         RotationAngleChanged = 0x2,
         CenterPointChanged = 0x4
     };
-    Q_FLAG(ChangeFlag)
+    Q_ENUM(ChangeFlag)
     Q_DECLARE_FLAGS(ChangeFlags, ChangeFlag)
     Q_FLAG(ChangeFlags)
 
