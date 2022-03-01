@@ -269,7 +269,6 @@ void QCocoaScreen::update(CGDirectDisplayID displayId)
 
     const QRect previousGeometry = m_geometry;
     const QRect previousAvailableGeometry = m_availableGeometry;
-    const QDpi previousLogicalDpi = m_logicalDpi;
     const qreal previousRefreshRate = m_refreshRate;
 
     // The reference screen for the geometry is always the primary screen
@@ -289,8 +288,6 @@ void QCocoaScreen::update(CGDirectDisplayID displayId)
 
     CGSize size = CGDisplayScreenSize(m_displayId);
     m_physicalSize = QSizeF(size.width, size.height);
-    m_logicalDpi.first = 72;
-    m_logicalDpi.second = 72;
 
     QCFType<CGDisplayModeRef> displayMode = CGDisplayCopyDisplayMode(m_displayId);
     float refresh = CGDisplayModeGetRefreshRate(displayMode);
@@ -302,8 +299,6 @@ void QCocoaScreen::update(CGDirectDisplayID displayId)
 
     if (didChangeGeometry)
         QWindowSystemInterface::handleScreenGeometryChange(screen(), geometry(), availableGeometry());
-    if (m_logicalDpi != previousLogicalDpi)
-        QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(screen(), m_logicalDpi.first, m_logicalDpi.second);
     if (m_refreshRate != previousRefreshRate)
         QWindowSystemInterface::handleScreenRefreshRateChange(screen(), m_refreshRate);
 }
