@@ -114,11 +114,10 @@ static inline void formatNonNullQEnum(QDebug &debug, const char *prefix, QEnum v
 template <class Enum>
 static inline void formatQFlags(QDebug &debug, const QFlags<Enum> &value)
 {
-    const QMetaObject *metaObject = qt_getEnumMetaObject(Enum());
-    const QMetaEnum me = metaObject->enumerator(metaObject->indexOfEnumerator(qt_getEnumName(Enum())));
+    const QMetaEnum me = QMetaEnum::fromType<QFlags<Enum>>();
     const QDebugStateSaver saver(debug);
     debug.noquote();
-    debug << me.valueToKeys(value);
+    debug << me.valueToKeys(value.toInt());
 }
 
 template <class Enum>
