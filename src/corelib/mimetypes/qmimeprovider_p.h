@@ -93,7 +93,7 @@ public:
 /*
    Parses the files 'mime.cache' and 'types' on demand
  */
-class QMimeBinaryProvider : public QMimeProviderBase
+class QMimeBinaryProvider final : public QMimeProviderBase
 {
 public:
     QMimeBinaryProvider(QMimeDatabasePrivate *db, const QString &directory);
@@ -138,7 +138,7 @@ private:
 /*
    Parses the raw XML files (slower)
  */
-class QMimeXMLProvider : public QMimeProviderBase
+class QMimeXMLProvider final : public QMimeProviderBase
 {
 public:
     enum InternalDatabaseEnum { InternalDatabase };
