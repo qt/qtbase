@@ -148,7 +148,7 @@
     Like them, object paths in D-Bus are formed resembling path
     names on the filesystem: they are slash-separated labels, each
     consisting of letters, digits and the underscore character
-    ("_"). They must always start with a slash and must not end with
+    ("\_"). They must always start with a slash and must not end with
     one.
 
     \section2 Interfaces
