@@ -67,6 +67,8 @@ private slots:
 
     void cleanupTestCase();
 
+    void ownMetaTypeNoProperties();
+
 private:
     static bool checkForSideEffects
         (const QMetaObjectBuilder& builder,
@@ -1658,6 +1660,16 @@ void tst_QMetaObjectBuilder::propertyMetaType()
     QCOMPARE(metaProp.typeId(), metaId);
     QCOMPARE(metaProp.metaType(), meta);
     free(mo);
+}
+
+void tst_QMetaObjectBuilder::ownMetaTypeNoProperties()
+{
+    QMetaObjectBuilder builder;
+    builder.setClassName("NoProperties");
+    auto mo = builder.toMetaObject();
+    auto cleanup = qScopeGuard([&](){ free(mo); });
+    // own metatype should be invalid, as the dynamic metaobject has not been registered
+    QVERIFY(!mo->metaType().isValid());// should not crash
 }
 
 void tst_QMetaObjectBuilder::cleanupTestCase()
