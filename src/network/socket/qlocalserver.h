@@ -71,7 +71,7 @@ public:
         WorldAccessOption = 0x7,
         AbstractNamespaceOption = 0x8
     };
-    Q_FLAG(SocketOption)
+    Q_ENUM(SocketOption)
     Q_DECLARE_FLAGS(SocketOptions, SocketOption)
     Q_FLAG(SocketOptions)
 

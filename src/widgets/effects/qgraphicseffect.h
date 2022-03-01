@@ -163,7 +163,7 @@ public:
         QualityHint = 0x01,
         AnimationHint = 0x02
     };
-    Q_FLAG(BlurHint)
+    Q_ENUM(BlurHint)
     Q_DECLARE_FLAGS(BlurHints, BlurHint)
     Q_FLAG(BlurHints)
 
