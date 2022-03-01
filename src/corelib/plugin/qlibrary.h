@@ -63,7 +63,7 @@ public:
         DeepBindHint = 0x10
     };
     Q_DECLARE_FLAGS(LoadHints, LoadHint)
-    Q_FLAG(LoadHint)
+    Q_ENUM(LoadHint)
     Q_FLAG(LoadHints)
 
     explicit QLibrary(QObject *parent = nullptr);

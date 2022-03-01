@@ -90,7 +90,7 @@ public:
         VerticalSubpixelPositioning = 0x08,
         LosslessImageRendering = 0x40,
     };
-    Q_FLAG(RenderHint)
+    Q_ENUM(RenderHint)
 
     Q_DECLARE_FLAGS(RenderHints, RenderHint)
     Q_FLAG(RenderHints)
