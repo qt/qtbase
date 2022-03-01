@@ -491,7 +491,7 @@ void QIntValidator::setRange(int bottom, int top)
     \brief the validator's lowest acceptable value
 
     By default, this property's value is derived from the lowest signed
-    integer available (typically -2147483647).
+    integer available (-2147483648).
 
     \sa setRange()
 */
@@ -505,7 +505,7 @@ void QIntValidator::setBottom(int bottom)
     \brief the validator's highest acceptable value
 
     By default, this property's value is derived from the highest signed
-    integer available (typically 2147483647).
+    integer available (2147483647).
 
     \sa setRange()
 */
