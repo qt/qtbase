@@ -646,6 +646,10 @@ public:
     const_key_value_iterator constKeyValueBegin() const { return const_key_value_iterator(begin()); }
     const_key_value_iterator keyValueEnd() const { return const_key_value_iterator(end()); }
     const_key_value_iterator constKeyValueEnd() const { return const_key_value_iterator(end()); }
+    auto asKeyValueRange() & { return QtPrivate::QKeyValueRange(*this); }
+    auto asKeyValueRange() const & { return QtPrivate::QKeyValueRange(*this); }
+    auto asKeyValueRange() && { return QtPrivate::QKeyValueRange(std::move(*this)); }
+    auto asKeyValueRange() const && { return QtPrivate::QKeyValueRange(std::move(*this)); }
 
     iterator erase(const_iterator it)
     {
@@ -1341,6 +1345,10 @@ public:
     const_key_value_iterator constKeyValueBegin() const { return const_key_value_iterator(begin()); }
     const_key_value_iterator keyValueEnd() const { return const_key_value_iterator(end()); }
     const_key_value_iterator constKeyValueEnd() const { return const_key_value_iterator(end()); }
+    auto asKeyValueRange() & { return QtPrivate::QKeyValueRange(*this); }
+    auto asKeyValueRange() const & { return QtPrivate::QKeyValueRange(*this); }
+    auto asKeyValueRange() && { return QtPrivate::QKeyValueRange(std::move(*this)); }
+    auto asKeyValueRange() const && { return QtPrivate::QKeyValueRange(std::move(*this)); }
 
     iterator erase(const_iterator it)
     {

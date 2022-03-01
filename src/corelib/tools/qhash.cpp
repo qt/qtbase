@@ -2270,6 +2270,25 @@ size_t qHash(long double key, size_t seed) noexcept
     \sa constKeyValueBegin()
 */
 
+/*! \fn template <class Key, class T> auto QHash<Key, T>::asKeyValueRange() &
+    \fn template <class Key, class T> auto QHash<Key, T>::asKeyValueRange() const &
+    \fn template <class Key, class T> auto QHash<Key, T>::asKeyValueRange() &&
+    \fn template <class Key, class T> auto QHash<Key, T>::asKeyValueRange() const &&
+    \since 6.4
+
+    Returns a range object that allows iteration over this hash as
+    key/value pairs. For instance, this range object can be used in a
+    range-based for loop, in combination with a structured binding declaration:
+
+    \snippet code/src_corelib_tools_qhash.cpp 34
+
+    Note that both the key and the value obtained this way are
+    references to the ones in the hash. Specifically, mutating the value
+    will modify the hash itself.
+
+    \sa QKeyValueIterator
+*/
+
 /*! \fn template <class Key, class T> QHash<Key, T>::iterator QHash<Key, T>::erase(const_iterator pos)
     \since 5.7
 
@@ -3411,6 +3430,24 @@ size_t qHash(long double key, size_t seed) noexcept
     \sa constKeyValueBegin()
 */
 
+/*! \fn template <class Key, class T> auto QMultiHash<Key, T>::asKeyValueRange() &
+    \fn template <class Key, class T> auto QMultiHash<Key, T>::asKeyValueRange() const &
+    \fn template <class Key, class T> auto QMultiHash<Key, T>::asKeyValueRange() &&
+    \fn template <class Key, class T> auto QMultiHash<Key, T>::asKeyValueRange() const &&
+    \since 6.4
+
+    Returns a range object that allows iteration over this hash as
+    key/value pairs. For instance, this range object can be used in a
+    range-based for loop, in combination with a structured binding declaration:
+
+    \snippet code/src_corelib_tools_qhash.cpp 35
+
+    Note that both the key and the value obtained this way are
+    references to the ones in the hash. Specifically, mutating the value
+    will modify the hash itself.
+
+    \sa QKeyValueIterator
+*/
 
 /*! \class QMultiHash::iterator
     \inmodule QtCore

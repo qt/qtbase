@@ -360,3 +360,29 @@ template <> struct hash<K>
 };
 }
 //! [33]
+
+//! [34]
+QHash<QString, int> hash;
+hash.insert("January", 1);
+hash.insert("February", 2);
+// ...
+hash.insert("December", 12);
+
+for (auto [key, value] : hash.asKeyValueRange()) {
+    cout << key << ": " << value << Qt::endl;
+    --value; // convert to JS month indexing
+}
+//! [34]
+
+//! [35]
+QMultiHash<QString, int> hash;
+hash.insert("January", 1);
+hash.insert("February", 2);
+// ...
+hash.insert("December", 12);
+
+for (auto [key, value] : hash.asKeyValueRange()) {
+    cout << key << ": " << value << Qt::endl;
+    --value; // convert to JS month indexing
+}
+//! [35]

@@ -663,6 +663,25 @@
     \sa constKeyValueBegin()
 */
 
+/*! \fn template <class Key, class T> auto QMap<Key, T>::asKeyValueRange() &
+    \fn template <class Key, class T> auto QMap<Key, T>::asKeyValueRange() const &
+    \fn template <class Key, class T> auto QMap<Key, T>::asKeyValueRange() &&
+    \fn template <class Key, class T> auto QMap<Key, T>::asKeyValueRange() const &&
+    \since 6.4
+
+    Returns a range object that allows iteration over this map as
+    key/value pairs. For instance, this range object can be used in a
+    range-based for loop, in combination with a structured binding declaration:
+
+    \snippet code/src_corelib_tools_qmap.cpp 28
+
+    Note that both the key and the value obtained this way are
+    references to the ones in the map. Specifically, mutating the value
+    will modify the map itself.
+
+    \sa QKeyValueIterator
+*/
+
 /*! \fn template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::erase(const_iterator pos)
 
     Removes the (key, value) pair pointed to by the iterator \a pos

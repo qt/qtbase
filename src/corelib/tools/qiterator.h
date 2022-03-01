@@ -301,6 +301,47 @@ private:
     Iterator i;
 };
 
+namespace QtPrivate {
+
+template <typename Map>
+class QKeyValueRangeStorage
+{
+protected:
+    Map m_map;
+public:
+    explicit QKeyValueRangeStorage(const Map &map) : m_map(map) {}
+    explicit QKeyValueRangeStorage(Map &&map) : m_map(std::move(map)) {}
+};
+
+template <typename Map>
+class QKeyValueRangeStorage<Map &>
+{
+protected:
+    Map &m_map;
+public:
+    explicit QKeyValueRangeStorage(Map &map) : m_map(map) {}
+};
+
+template <typename Map>
+class QKeyValueRange : public QKeyValueRangeStorage<Map>
+{
+public:
+    using QKeyValueRangeStorage<Map>::QKeyValueRangeStorage;
+    auto begin() { return this->m_map.keyValueBegin(); }
+    auto begin() const { return this->m_map.keyValueBegin(); }
+    auto end() { return this->m_map.keyValueEnd(); }
+    auto end() const { return this->m_map.keyValueEnd(); }
+};
+
+template <typename Map>
+QKeyValueRange(Map &) -> QKeyValueRange<Map &>;
+
+template <typename Map, std::enable_if_t<!std::is_reference_v<Map>, bool> = false>
+QKeyValueRange(Map &&) -> QKeyValueRange<std::remove_const_t<Map>>;
+
+} // namespace QtPrivate
+
+
 QT_END_NAMESPACE
 
 #endif // QITERATOR_H

@@ -340,3 +340,16 @@ qDeleteAll(map2.keys());
 int numPrimes = std::count_if(map.keyBegin(), map.keyEnd(), isPrimeNumber);
 qDeleteAll(map2.keyBegin(), map2.keyEnd());
 //! [keyiterator2]
+
+//! [28]
+QMap<QString, int> map;
+map.insert("January", 1);
+map.insert("February", 2);
+// ...
+map.insert("December", 12);
+
+for (auto [key, value] : map.asKeyValueRange()) {
+    cout << key << ": " << value << Qt::endl;
+    --value; // convert to JS month indexing
+}
+//! [28]

@@ -391,6 +391,16 @@ private Q_SLOTS:
     void erase_if_QMultiMap() {erase_if_associative_impl<QMultiMap<int, int>>(); }
     void erase_if_QHash() { erase_if_associative_impl<QHash<int, int>>(); }
     void erase_if_QMultiHash() { erase_if_associative_impl<QMultiHash<int, int>>(); }
+
+private:
+    template <typename Container>
+    void keyValueRange_impl() const;
+
+private Q_SLOTS:
+    void keyValueRange_QMap() { keyValueRange_impl<QMap<int, int>>(); }
+    void keyValueRange_QMultiMap() { keyValueRange_impl<QMultiMap<int, int>>(); }
+    void keyValueRange_QHash() { keyValueRange_impl<QHash<int, int>>(); }
+    void keyValueRange_QMultiHash() { keyValueRange_impl<QMultiHash<int, int>>(); }
 };
 
 void tst_ContainerApiSymmetry::init()
@@ -849,6 +859,127 @@ void tst_ContainerApiSymmetry::erase_if_associative_impl() const
     result = erase_if(c, [](const I &it) { return Conv::toInt(it.key()) % 2 == 1; });
     QCOMPARE(result, S(7));
     QCOMPARE(c.size(), S(0));
+}
+
+template <typename Container>
+void tst_ContainerApiSymmetry::keyValueRange_impl() const
+{
+    constexpr int COUNT = 20;
+
+    using K = typename Container::key_type;
+    using V = typename Container::mapped_type;
+    QVector<K> keys;
+    keys.reserve(COUNT);
+    QVector<V> values;
+    values.reserve(COUNT);
+
+    auto c = makeAssociative<Container>(COUNT);
+    auto returnC = [&](){ return c; };
+
+    const auto verify = [](QVector<K> v, int count, int offset = 0) -> bool {
+        if (v.size() != count)
+            return false;
+        std::sort(v.begin(), v.end());
+        for (int i = 0; i < count; ++i) {
+            // vector is indexed from 0, but makeAssociative starts from 1
+            if (v[i] != i + 1 + offset)
+                return false;
+        }
+        return true;
+    };
+
+    // Check that the range has the right size
+    auto range = c.asKeyValueRange();
+    QCOMPARE(std::distance(range.begin(), range.end()), COUNT);
+
+    auto constRange = std::as_const(c).asKeyValueRange();
+    QCOMPARE(std::distance(constRange.begin(), constRange.end()), COUNT);
+
+    auto rvalueRange = returnC().asKeyValueRange();
+    QCOMPARE(std::distance(rvalueRange.begin(), rvalueRange.end()), COUNT);
+
+    // auto, mutating
+    keys.clear(); values.clear();
+    for (auto [key, value] : c.asKeyValueRange()) {
+        keys << key;
+        values << value;
+        QCOMPARE(key, value);
+        QCOMPARE(c.value(key), value);
+        ++value;
+        QCOMPARE(key, value - 1);
+        QCOMPARE(c.value(key), value);
+    }
+    QVERIFY(verify(keys, COUNT));
+    QVERIFY(verify(values, COUNT));
+
+    // auto, non-mutating
+    keys.clear(); values.clear();
+    for (auto [key, value] : c.asKeyValueRange()) {
+        keys << key;
+        values << value;
+        QCOMPARE(key, value - 1);
+        QCOMPARE(c.value(key), value);
+    }
+    QVERIFY(verify(keys, COUNT));
+    QVERIFY(verify(values, COUNT, 1));
+
+    // auto &&, mutating
+    keys.clear(); values.clear();
+    for (auto &&[key, value] : c.asKeyValueRange()) {
+        keys << key;
+        values << value;
+        QCOMPARE(key, value - 1);
+        QCOMPARE(c.value(key), value);
+        ++value;
+        QCOMPARE(key, value - 2);
+        QCOMPARE(c.value(key), value);
+    }
+    QVERIFY(verify(keys, COUNT));
+    QVERIFY(verify(values, COUNT, 1));
+
+    // auto, non-mutating (const map)
+    keys.clear(); values.clear();
+    for (auto [key, value] : std::as_const(c).asKeyValueRange()) {
+        keys << key;
+        values << value;
+        QCOMPARE(key, value - 2);
+        QCOMPARE(c.value(key), value);
+    }
+    QVERIFY(verify(keys, COUNT));
+    QVERIFY(verify(values, COUNT, 2));
+
+    // auto &&, non-mutating (const map)
+    keys.clear(); values.clear();
+    for (auto &&[key, value] : std::as_const(c).asKeyValueRange()) {
+        keys << key;
+        values << value;
+        QCOMPARE(key, value - 2);
+        QCOMPARE(c.value(key), value);
+    }
+    QVERIFY(verify(keys, COUNT));
+    QVERIFY(verify(values, COUNT, 2));
+
+    // auto, non-mutating (rvalue map)
+    keys.clear(); values.clear();
+    for (auto [key, value] : returnC().asKeyValueRange()) {
+        keys << key;
+        values << value;
+        QCOMPARE(key, value - 2);
+        QCOMPARE(c.value(key), value);
+    }
+    QVERIFY(verify(keys, COUNT));
+    QVERIFY(verify(values, COUNT, 2));
+
+    // auto &&, non-mutating (rvalue map)
+    keys.clear(); values.clear();
+    for (auto &&[key, value] : returnC().asKeyValueRange()) {
+        keys << key;
+        values << value;
+        QCOMPARE(key, value - 2);
+        QCOMPARE(c.value(key), value);
+    }
+    QVERIFY(verify(keys, COUNT));
+    QVERIFY(verify(values, COUNT, 2));
 }
 
 QTEST_APPLESS_MAIN(tst_ContainerApiSymmetry)
