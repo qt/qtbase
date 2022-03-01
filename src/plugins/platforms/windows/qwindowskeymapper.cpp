@@ -1250,7 +1250,6 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, MSG msg,
             switch (code) {
             case Qt::Key_Escape:
             case Qt::Key_Tab:
-            case Qt::Key_Enter:
             case Qt::Key_F4:
                 return false; // Send the event on to Windows
             case Qt::Key_Space:
