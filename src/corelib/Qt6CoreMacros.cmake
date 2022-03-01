@@ -291,6 +291,10 @@ function(qt6_add_binary_resources target )
     set(rcc_options ${_RCC_OPTIONS})
     set(rcc_destination ${_RCC_DESTINATION})
 
+    if(NOT QT_FEATURE_zstd)
+        list(APPEND rcc_options "--no-zstd")
+    endif()
+
     if(NOT rcc_destination)
         set(rcc_destination ${CMAKE_CURRENT_BINARY_DIR}/${target}.rcc)
     endif()
@@ -355,6 +359,10 @@ function(qt6_add_resources outfiles )
             message(WARNING "Use qt6_add_binary_resources for binary option")
         endif()
 
+        if(NOT QT_FEATURE_zstd)
+            list(APPEND rcc_options "--no-zstd")
+        endif()
+
         foreach(it ${rcc_files})
             get_filename_component(outfilename ${it} NAME_WE)
             get_filename_component(infile ${it} ABSOLUTE)
@@ -414,6 +422,10 @@ function(qt6_add_big_resources outfiles )
 
     if("${rcc_options}" MATCHES "-binary")
         message(WARNING "Use qt6_add_binary_resources for binary option")
+    endif()
+
+    if(NOT QT_FEATURE_zstd)
+        list(APPEND rcc_options "--no-zstd")
     endif()
 
     foreach(it ${rcc_files})
