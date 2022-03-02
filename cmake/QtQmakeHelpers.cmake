@@ -143,25 +143,38 @@ HostSpec=${QT_QMAKE_HOST_MKSPEC}
     qt_install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${qt_conf_path}"
         DESTINATION "${INSTALL_BINDIR}")
 
+    if(QT_GENERATE_WRAPPER_SCRIPTS_FOR_ALL_HOSTS)
+        set(hosts "unix" "non-unix")
+    elseif(CMAKE_HOST_UNIX)
+        set(hosts "unix")
+    else()
+        set(hosts "non-unix")
+    endif()
+
     set(wrapper_prefix)
-    set(wrapper_extension)
     if(QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
         # Avoid collisions with the cross-compiled qmake/qtpaths binaries.
         set(wrapper_prefix "host-")
     endif()
-    if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
-        set(wrapper_extension ".bat")
-    endif()
 
-    set(wrapper_in_file
-        "${CMAKE_CURRENT_SOURCE_DIR}/bin/qmake-and-qtpaths-wrapper${wrapper_extension}.in")
     set(host_qt_bindir "${host_prefix}/${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_BINDIR}")
 
-    foreach(tool_name qmake qtpaths)
-        set(wrapper "preliminary/${wrapper_prefix}${tool_name}${wrapper_extension}")
-        configure_file("${wrapper_in_file}" "${wrapper}" @ONLY)
-        qt_copy_or_install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/${wrapper}"
-            DESTINATION "${INSTALL_BINDIR}")
+    foreach(host_type ${hosts})
+        foreach(tool_name qmake qtpaths)
+            set(wrapper_extension)
+
+            if(host_type STREQUAL "non-unix")
+                set(wrapper_extension ".bat")
+            endif()
+
+            set(wrapper_in_file
+                "${CMAKE_CURRENT_SOURCE_DIR}/bin/qmake-and-qtpaths-wrapper${wrapper_extension}.in")
+
+            set(wrapper "preliminary/${wrapper_prefix}${tool_name}${wrapper_extension}")
+            configure_file("${wrapper_in_file}" "${wrapper}" @ONLY)
+            qt_copy_or_install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/${wrapper}"
+                DESTINATION "${INSTALL_BINDIR}")
+        endforeach()
     endforeach()
 endfunction()
 
