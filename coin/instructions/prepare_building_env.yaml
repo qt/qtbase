@@ -356,23 +356,23 @@ instructions:
     instructions:
       - type: AppendToEnvironmentVariable
         variableName: CONFIGURE_ARGS
-        variableValue: " -DQT_BUILD_TESTS=OFF -DCMAKE_AUTOGEN_VERBOSE=ON"
+        variableValue: " -DQT_BUILD_TESTS=OFF -DCMAKE_AUTOGEN_VERBOSE=ON -DCMAKE_MESSAGE_LOG_LEVEL=STATUS"
       - type: AppendToEnvironmentVariable
         variableName: NON_QTBASE_CONFIGURE_ARGS
-        variableValue: " -DQT_BUILD_TESTS=OFF -DCMAKE_AUTOGEN_VERBOSE=ON"
+        variableValue: " -DQT_BUILD_TESTS=OFF -DCMAKE_AUTOGEN_VERBOSE=ON -DCMAKE_MESSAGE_LOG_LEVEL=STATUS"
       - type: AppendToEnvironmentVariable
         variableName: TEST_CONFIGURE_ARGS
-        variableValue: " -DCMAKE_AUTOGEN_VERBOSE=ON"
+        variableValue: " -DCMAKE_AUTOGEN_VERBOSE=ON -DCMAKE_MESSAGE_LOG_LEVEL=STATUS"
 
       - type: AppendToEnvironmentVariable
         variableName: TARGET_CONFIGURE_ARGS
-        variableValue: " -DQT_BUILD_TESTS=OFF -DCMAKE_AUTOGEN_VERBOSE=ON"
+        variableValue: " -DQT_BUILD_TESTS=OFF -DCMAKE_AUTOGEN_VERBOSE=ON -DCMAKE_MESSAGE_LOG_LEVEL=STATUS"
       - type: AppendToEnvironmentVariable
         variableName: NON_QTBASE_TARGET_CONFIGURE_ARGS
-        variableValue: " -DQT_BUILD_TESTS=OFF -DCMAKE_AUTOGEN_VERBOSE=ON"
+        variableValue: " -DQT_BUILD_TESTS=OFF -DCMAKE_AUTOGEN_VERBOSE=ON -DCMAKE_MESSAGE_LOG_LEVEL=STATUS"
       - type: AppendToEnvironmentVariable
         variableName: TARGET_TEST_CONFIGURE_ARGS
-        variableValue: " -DCMAKE_AUTOGEN_VERBOSE=ON"
+        variableValue: " -DCMAKE_AUTOGEN_VERBOSE=ON -DCMAKE_MESSAGE_LOG_LEVEL=STATUS"
 
   # Sccache
   - type: Group
