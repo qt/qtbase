@@ -290,7 +290,7 @@ namespace QTest
     inline typename std::enable_if<QtPrivate::IsQEnumHelper<F>::Value, char*>::type toString(QFlags<F> f)
     {
         const QMetaEnum me = QMetaEnum::fromType<F>();
-        return qstrdup(me.valueToKeys(int(f)).constData());
+        return qstrdup(me.valueToKeys(int(f.toInt())).constData());
     }
 
     template <typename F> // Fallback: Output hex value
@@ -298,7 +298,7 @@ namespace QTest
     {
         const size_t space = 3 + 2 * sizeof(unsigned); // 2 for 0x, two hex digits per byte, 1 for '\0'
         char *msg = new char[space];
-        qsnprintf(msg, space, "0x%x", unsigned(f));
+        qsnprintf(msg, space, "0x%x", unsigned(f.toInt()));
         return msg;
     }
 
