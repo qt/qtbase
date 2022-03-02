@@ -748,6 +748,19 @@ private Q_SLOTS:
     void count_QStringView_char16_t_data() { count_data(); }
     void count_QStringView_char16_t() { count_impl<QStringView, char16_t>(); }
 
+    void count_QLatin1String_QString_data() { count_data(); }
+    void count_QLatin1String_QString() { count_impl<QLatin1String, QString>(); }
+    void count_QLatin1String_QLatin1String_data() { count_data(); }
+    void count_QLatin1String_QLatin1String() { count_impl<QLatin1String, QLatin1String>(); }
+    void count_QLatin1String_QStringView_data() { count_data(); }
+    void count_QLatin1String_QStringView() { count_impl<QLatin1String, QStringView>(); }
+    void count_QLatin1String_QChar_data() { count_data(); }
+    void count_QLatin1String_QChar() { count_impl<QLatin1String, QChar>(); }
+    void count_QLatin1String_char16_t_data() { count_data(); }
+    void count_QLatin1String_char16_t() { count_impl<QLatin1String, char16_t>(); }
+    void count_QLatin1String_QLatin1Char_data() { count_data(); }
+    void count_QLatin1String_QLatin1Char() { count_impl<QLatin1String, QLatin1Char>(); }
+
     //
     // UTF-16-only checks:
     //

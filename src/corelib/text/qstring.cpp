@@ -9491,6 +9491,22 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 
 /*!
+    \fn qsizetype QLatin1String::count(QStringView str, Qt::CaseSensitivity cs) const
+    \fn qsizetype QLatin1String::count(QLatin1String l1, Qt::CaseSensitivity cs) const
+    \fn qsizetype QLatin1String::count(QChar ch, Qt::CaseSensitivity cs) const
+    \since 6.4
+
+    Returns the number of (potentially overlapping) occurrences of the
+    string-view \a str, Latin-1 string \a l1, or character \a ch,
+    respectively, in this Latin-1 string.
+
+    If \a cs is Qt::CaseSensitive (default), the search is
+    case sensitive; otherwise the search is case insensitive.
+
+    \sa contains(), indexOf()
+*/
+
+/*!
     \fn QLatin1String::const_iterator QLatin1String::begin() const
     \since 5.10
 
@@ -10374,6 +10390,75 @@ qsizetype QtPrivate::count(QStringView haystack, QChar ch, Qt::CaseSensitivity c
         ch = foldCase(ch);
         for (QChar c : haystack) {
             if (foldCase(c) == ch)
+                ++num;
+        }
+    }
+    return num;
+}
+
+qsizetype QtPrivate::count(QLatin1String haystack, QLatin1String needle, Qt::CaseSensitivity cs)
+{
+    qsizetype num = 0;
+    qsizetype i = -1;
+
+    // TODO: use Boyer-Moore searcher for case-insensitive search too
+    // when QTBUG-100236 is done
+    if (cs == Qt::CaseSensitive) {
+        QByteArrayMatcher matcher(needle);
+        while ((i = matcher.indexIn(haystack, i + 1)) != -1)
+            ++num;
+    } else {
+        while ((i = QtPrivate::findString(haystack, i + 1, needle, cs)) != -1)
+            ++num;
+    }
+    return num;
+}
+
+qsizetype QtPrivate::count(QLatin1String haystack, QStringView needle, Qt::CaseSensitivity cs)
+{
+    if (haystack.size() < needle.size())
+        return 0;
+
+    if (!QtPrivate::isLatin1(needle)) // won't find non-L1 UTF-16 needles in a L1 haystack!
+        return 0;
+
+    qsizetype num = 0;
+    qsizetype i = -1;
+
+    // TODO: use Boyer-Moore searcher for case-insensitive search too
+    // when QTBUG-100236 is done
+    if (cs == Qt::CaseSensitive) {
+        QVarLengthArray<uchar> s(needle.size());
+        qt_to_latin1_unchecked(s.data(), needle.utf16(), needle.size());
+
+        QByteArrayMatcher matcher(s);
+        while ((i = matcher.indexIn(haystack, i + 1)) != -1)
+            ++num;
+    } else {
+        while ((i = QtPrivate::findString(haystack, i + 1, needle, cs)) != -1)
+            ++num;
+    }
+    return num;
+}
+
+qsizetype QtPrivate::count(QLatin1String haystack, QChar needle, Qt::CaseSensitivity cs) noexcept
+{
+    // non-L1 needles cannot possibly match in L1-only haystacks
+    if (needle.unicode() > 0xff)
+        return 0;
+
+    qsizetype num = 0;
+    if (cs == Qt::CaseSensitive) {
+        const char needleL1 = needle.toLatin1();
+        for (char c : haystack) {
+            if (c == needleL1)
+                ++num;
+        }
+    } else {
+        auto toLower = [](char ch) { return latin1Lower[uchar(ch)]; };
+        const uchar ch = toLower(needle.toLatin1());
+        for (char c : haystack) {
+            if (toLower(c) == ch)
                 ++num;
         }
     }

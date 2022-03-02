@@ -55,6 +55,7 @@ private Q_SLOTS:
     void iterators();
     void relationalOperators_data();
     void relationalOperators();
+    void count();
 };
 
 void tst_QLatin1String::constExpr()
@@ -396,6 +397,36 @@ void tst_QLatin1String::relationalOperators()
     CHECK(<=);
     CHECK(>=);
 #undef CHECK
+}
+
+void tst_QLatin1String::count()
+{
+    QLatin1String a("ABCDEFGHIEfGEFG");
+    QCOMPARE(a.size(), 15);
+    QCOMPARE(a.count('A'), 1);
+    QCOMPARE(a.count('Z'), 0);
+    QCOMPARE(a.count('E'), 3);
+    QCOMPARE(a.count('F'), 2);
+    QCOMPARE(a.count('F', Qt::CaseInsensitive), 3);
+    QCOMPARE(a.count(QLatin1String("FG")), 2);
+    QCOMPARE(a.count(QLatin1String("FG"), Qt::CaseInsensitive), 3);
+    QCOMPARE(a.count(QLatin1String(), Qt::CaseInsensitive), 16);
+    QCOMPARE(a.count(QLatin1String(""), Qt::CaseInsensitive), 16);
+
+    QLatin1String nullStr;
+    QCOMPARE(nullStr.count('A'), 0);
+    QCOMPARE(nullStr.count(QLatin1String("AB")), 0);
+    QCOMPARE(nullStr.count(QLatin1String()), 1);
+    QCOMPARE(nullStr.count(QLatin1String("")), 1);
+
+    QLatin1String emptyStr("");
+    QCOMPARE(emptyStr.count('A'), 0);
+    QCOMPARE(emptyStr.count(QLatin1String("AB")), 0);
+    QCOMPARE(emptyStr.count(QLatin1String()), 1);
+    QCOMPARE(emptyStr.count(QLatin1String("")), 1);
+
+    using namespace Qt::Literals::StringLiterals;
+    QCOMPARE("a\0b"_L1.count(QChar::SpecialCharacter::LineSeparator), 0);
 }
 
 QTEST_APPLESS_MAIN(tst_QLatin1String)

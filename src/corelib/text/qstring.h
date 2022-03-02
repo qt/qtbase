@@ -177,6 +177,13 @@ public:
     [[nodiscard]] qsizetype lastIndexOf(QChar c, qsizetype from, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::lastIndexOf(*this, from, QStringView(&c, 1), cs); }
 
+    [[nodiscard]] qsizetype count(QStringView str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    { return QtPrivate::count(*this, str, cs); }
+    [[nodiscard]] qsizetype count(QLatin1String str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    { return QtPrivate::count(*this, str, cs); }
+    [[nodiscard]] qsizetype count(QChar ch, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return QtPrivate::count(*this, ch, cs); }
+
     [[nodiscard]] short toShort(bool *ok = nullptr, int base = 10) const
     { return QtPrivate::toIntegral<short>(QByteArrayView(*this), ok, base); }
     [[nodiscard]] ushort toUShort(bool *ok = nullptr, int base = 10) const
