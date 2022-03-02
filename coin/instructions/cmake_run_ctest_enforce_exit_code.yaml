@@ -21,6 +21,10 @@ instructions:
 
   - type: Group
     instructions:
+      # Qttestrunner does not work with bic tests.
+      - type: EnvironmentVariable
+        variableName: TESTRUNNER
+        variableValue: ""
       - type: EnvironmentVariable
         variableName: QT_MODULE_TO_TEST
         variableValue: "{{.SourceDir}}"
