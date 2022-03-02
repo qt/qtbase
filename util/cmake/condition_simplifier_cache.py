@@ -105,11 +105,7 @@ def open_file_safe(file_path: str, mode: str = "r+"):
     try:
         import portalocker  # type: ignore
 
-        file_open_func = portalocker.Lock
-        file_open_args = [file_path]
-        file_open_kwargs = {"mode": mode, "flags": portalocker.LOCK_EX}
-        file_handle = file_open_func(*file_open_args, **file_open_kwargs)
-        return file_handle
+        return portalocker.Lock(file_path, mode=mode, flags=portalocker.LOCK_EX)
     except ImportError:
         print(
             "The conversion script is missing a required package: portalocker. Please run "
