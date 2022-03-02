@@ -111,6 +111,12 @@ private:
     Q_DECLARE_PRIVATE(QAbstractProxyModel)
     Q_DISABLE_COPY(QAbstractProxyModel)
     Q_PRIVATE_SLOT(d_func(), void _q_sourceModelDestroyed())
+    Q_PRIVATE_SLOT(d_func(), void _q_sourceModelRowsAboutToBeInserted(QModelIndex, int, int))
+    Q_PRIVATE_SLOT(d_func(), void _q_sourceModelRowsInserted(QModelIndex, int, int))
+    Q_PRIVATE_SLOT(d_func(), void _q_sourceModelRowsRemoved(QModelIndex, int, int))
+    Q_PRIVATE_SLOT(d_func(), void _q_sourceModelColumnsAboutToBeInserted(QModelIndex, int, int))
+    Q_PRIVATE_SLOT(d_func(), void _q_sourceModelColumnsInserted(QModelIndex, int, int))
+    Q_PRIVATE_SLOT(d_func(), void _q_sourceModelColumnsRemoved(QModelIndex, int, int))
 };
 
 QT_END_NAMESPACE

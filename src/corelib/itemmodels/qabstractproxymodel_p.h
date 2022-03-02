@@ -63,7 +63,11 @@ class Q_CORE_EXPORT QAbstractProxyModelPrivate : public QAbstractItemModelPrivat
 {
     Q_DECLARE_PUBLIC(QAbstractProxyModel)
 public:
-    QAbstractProxyModelPrivate() : QAbstractItemModelPrivate() { }
+    QAbstractProxyModelPrivate()
+        : QAbstractItemModelPrivate(),
+        sourceHadZeroRows(false),
+        sourceHadZeroColumns(false)
+    {}
     void setModelForwarder(QAbstractItemModel *sourceModel)
     {
         q_func()->setSourceModel(sourceModel);
@@ -79,8 +83,18 @@ public:
                                        &QAbstractProxyModelPrivate::modelChangedForwarder,
                                        &QAbstractProxyModelPrivate::getModelForwarder, nullptr)
     virtual void _q_sourceModelDestroyed();
+    void _q_sourceModelRowsAboutToBeInserted(const QModelIndex &parent, int first, int last);
+    void _q_sourceModelRowsInserted(const QModelIndex &parent, int first, int last);
+    void _q_sourceModelRowsRemoved(const QModelIndex &parent, int first, int last);
+    void _q_sourceModelColumnsAboutToBeInserted(const QModelIndex &parent, int first, int last);
+    void _q_sourceModelColumnsInserted(const QModelIndex &parent, int first, int last);
+    void _q_sourceModelColumnsRemoved(const QModelIndex &parent, int first, int last);
+
     void mapDropCoordinatesToSource(int row, int column, const QModelIndex &parent,
                                     int *source_row, int *source_column, QModelIndex *source_parent) const;
+
+    unsigned int sourceHadZeroRows : 1;
+    unsigned int sourceHadZeroColumns : 1;
 };
 
 QT_END_NAMESPACE

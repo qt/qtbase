@@ -91,6 +91,69 @@ void QAbstractProxyModelPrivate::_q_sourceModelDestroyed()
     model = QAbstractItemModelPrivate::staticEmptyModel();
 }
 
+void QAbstractProxyModelPrivate::_q_sourceModelRowsAboutToBeInserted(const QModelIndex &parent, int, int)
+{
+    if (parent.isValid())
+        return;
+    sourceHadZeroRows = model->rowCount() == 0;
+}
+
+void QAbstractProxyModelPrivate::_q_sourceModelRowsInserted(const QModelIndex &parent, int, int)
+{
+    if (parent.isValid())
+        return;
+    if (sourceHadZeroRows) {
+        Q_Q(QAbstractProxyModel);
+        const int columnCount = q->columnCount();
+        if (columnCount > 0)
+            emit q->headerDataChanged(Qt::Horizontal, 0, columnCount - 1);
+    }
+}
+
+
+void QAbstractProxyModelPrivate::_q_sourceModelRowsRemoved(const QModelIndex &parent, int, int)
+{
+    if (parent.isValid())
+        return;
+    if (model->rowCount() == 0) {
+        Q_Q(QAbstractProxyModel);
+        const int columnCount = q->columnCount();
+        if (columnCount > 0)
+            emit q->headerDataChanged(Qt::Horizontal, 0, columnCount - 1);
+    }
+}
+
+void QAbstractProxyModelPrivate::_q_sourceModelColumnsAboutToBeInserted(const QModelIndex &parent, int, int)
+{
+    if (parent.isValid())
+        return;
+    sourceHadZeroColumns = model->columnCount() == 0;
+}
+
+void QAbstractProxyModelPrivate::_q_sourceModelColumnsInserted(const QModelIndex &parent, int, int)
+{
+    if (parent.isValid())
+        return;
+    if (sourceHadZeroColumns) {
+        Q_Q(QAbstractProxyModel);
+        const int rowCount = q->rowCount();
+        if (rowCount > 0)
+            emit q->headerDataChanged(Qt::Vertical, 0, rowCount - 1);
+    }
+}
+
+void QAbstractProxyModelPrivate::_q_sourceModelColumnsRemoved(const QModelIndex &parent, int, int)
+{
+    if (parent.isValid())
+        return;
+    if (model->columnCount() == 0) {
+        Q_Q(QAbstractProxyModel);
+        const int rowCount = q->rowCount();
+        if (rowCount > 0)
+            emit q->headerDataChanged(Qt::Vertical, 0, rowCount - 1);
+    }
+}
+
 /*!
     Constructs a proxy model with the given \a parent.
 */
@@ -134,13 +197,29 @@ void QAbstractProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
     // notifications.
     if (!sourceModel && d->model == QAbstractItemModelPrivate::staticEmptyModel())
         return;
+    static const struct {
+        const char *signalName;
+        const char *slotName;
+    } connectionTable[] = {
+        { SIGNAL(destroyed()), SLOT(_q_sourceModelDestroyed()) },
+        { SIGNAL(rowsAboutToBeInserted(QModelIndex, int, int)), SLOT(_q_sourceModelRowsAboutToBeInserted(QModelIndex, int, int)) },
+        { SIGNAL(rowsInserted(QModelIndex, int, int)), SLOT(_q_sourceModelRowsInserted(QModelIndex, int, int)) },
+        { SIGNAL(rowsRemoved(QModelIndex, int, int)), SLOT(_q_sourceModelRowsRemoved(QModelIndex, int, int)) },
+        { SIGNAL(columnsAboutToBeInserted(QModelIndex, int, int)), SLOT(_q_sourceModelColumnsAboutToBeInserted(QModelIndex, int, int)) },
+        { SIGNAL(columnsInserted(QModelIndex, int, int)), SLOT(_q_sourceModelColumnsInserted(QModelIndex, int, int)) },
+        { SIGNAL(columnsRemoved(QModelIndex, int, int)), SLOT(_q_sourceModelColumnsRemoved(QModelIndex, int, int)) }
+    };
+
     if (sourceModel != d->model) {
-        if (d->model)
-            disconnect(d->model, SIGNAL(destroyed()), this, SLOT(_q_sourceModelDestroyed()));
+        if (d->model) {
+            for (const auto &c : connectionTable)
+                disconnect(d->model, c.signalName, this, c.slotName);
+        }
 
         if (sourceModel) {
             d->model.setValueBypassingBindings(sourceModel);
-            connect(d->model, SIGNAL(destroyed()), this, SLOT(_q_sourceModelDestroyed()));
+            for (const auto &c : connectionTable)
+                connect(d->model, c.signalName, this, c.slotName);
         } else {
             d->model.setValueBypassingBindings(QAbstractItemModelPrivate::staticEmptyModel());
         }
@@ -253,13 +332,17 @@ QVariant QAbstractProxyModel::data(const QModelIndex &proxyIndex, int role) cons
 QVariant QAbstractProxyModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     Q_D(const QAbstractProxyModel);
-    int sourceSection;
+    int sourceSection = section;
     if (orientation == Qt::Horizontal) {
-        const QModelIndex proxyIndex = index(0, section);
-        sourceSection = mapToSource(proxyIndex).column();
+        if (rowCount() > 0) {
+            const QModelIndex proxyIndex = index(0, section);
+            sourceSection = mapToSource(proxyIndex).column();
+        }
     } else {
-        const QModelIndex proxyIndex = index(section, 0);
-        sourceSection = mapToSource(proxyIndex).row();
+        if (columnCount() > 0) {
+            const QModelIndex proxyIndex = index(section, 0);
+            sourceSection = mapToSource(proxyIndex).row();
+        }
     }
     return d->model->headerData(sourceSection, orientation, role);
 }
