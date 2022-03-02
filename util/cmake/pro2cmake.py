@@ -3803,7 +3803,7 @@ def write_example(
         "set(CMAKE_AUTOMOC ON)\n"
         "set(CMAKE_AUTOUIC ON)\n\n"
         "if(NOT DEFINED INSTALL_EXAMPLESDIR)\n"
-        '  set(INSTALL_EXAMPLESDIR "examples")\n'
+        '    set(INSTALL_EXAMPLESDIR "examples")\n'
         "endif()\n\n"
         f'set(INSTALL_EXAMPLEDIR "{example_install_dir}")\n\n'
     )
