@@ -1371,7 +1371,9 @@ void tst_QPlainTextEdit::adjustScrollbars()
     ed->setFont(ff);
     ed->setMinimumSize(140, 100);
     ed->setMaximumSize(140, 100);
-    ed->show();
+    // We use showNormal() here, because otherwise on Android the widget will
+    // be shown fullscreen, and the scrollbar will not appear.
+    ed->showNormal();
     QLatin1String txt("\nabc def ghi jkl mno pqr stu vwx");
     ed->setPlainText(txt + txt + txt + txt);
 
