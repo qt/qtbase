@@ -787,13 +787,14 @@ def generate_find_package_info(
     emit_if: str = "",
     use_system_package_name: bool = False,
     remove_REQUIRED_from_extra: bool = True,
+    components_required: bool = True,
     module: str = "",
 ) -> str:
     isRequired = False
 
     extra = lib.extra.copy()
     if lib.components:
-        extra.append("COMPONENTS")
+        extra.append("COMPONENTS" if components_required else "OPTIONAL_COMPONENTS")
         extra += lib.components
 
     if "REQUIRED" in extra and use_qt_find_package:

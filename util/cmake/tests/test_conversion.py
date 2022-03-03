@@ -71,3 +71,11 @@ def test_qt_modules():
         if "find_package(" in line:
             find_package_lines.append(line.strip())
     assert(["find_package(Qt6 REQUIRED COMPONENTS Core Network Widgets)"] == find_package_lines)
+
+    output = convert("optional_qt_modules")
+    find_package_lines = []
+    for line in output.split("\n"):
+        if "find_package(" in line:
+            find_package_lines.append(line.strip())
+    assert(["find_package(Qt6 REQUIRED COMPONENTS Core Network Widgets)",
+            "find_package(Qt6 OPTIONAL_COMPONENTS OpenGL)"] == find_package_lines)

@@ -3731,7 +3731,13 @@ def write_binary(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int
 
 
 def write_find_package_section(
-    cm_fh: IO[str], public_libs: List[str], private_libs: List[str], *, indent: int = 0
+    cm_fh: IO[str],
+    public_libs: List[str],
+    private_libs: List[str],
+    *,
+    indent: int = 0,
+    is_required: bool = True,
+    end_with_extra_newline: bool = True,
 ):
     packages = []  # type: List[LibraryMapping]
     all_libs = public_libs + private_libs
@@ -3747,14 +3753,15 @@ def write_find_package_section(
             qt_components += p.components
     if qt_components:
         qt_components = sorted(qt_components)
-        qt_package = LibraryMapping(
-            "unknown", "Qt6", "unknown", extra=["REQUIRED"], components=qt_components
-        )
+        qt_package = LibraryMapping("unknown", "Qt6", "unknown", components=qt_components)
+        if is_required:
+            qt_package.extra = ["REQUIRED"]
         cm_fh.write(
             generate_find_package_info(
                 qt_package,
                 use_qt_find_package=False,
                 remove_REQUIRED_from_extra=False,
+                components_required=is_required,
                 indent=indent,
             )
         )
@@ -3762,7 +3769,7 @@ def write_find_package_section(
     for p in itertools.filterfalse(LibraryMapping.is_qt, packages):
         cm_fh.write(generate_find_package_info(p, use_qt_find_package=False, indent=indent))
 
-    if packages:
+    if packages and end_with_extra_newline:
         cm_fh.write("\n")
 
 
@@ -3901,8 +3908,35 @@ def write_example(
     handle_source_subtractions(scopes)
     scopes = merge_scopes(scopes)
 
+    # Write find_package calls for required packages.
+    # We consider packages as required if they appear at the top-level scope.
     (public_libs, private_libs) = extract_cmake_libraries(scope, is_example=True)
-    write_find_package_section(cm_fh, public_libs, private_libs, indent=indent)
+    write_find_package_section(
+        cm_fh, public_libs, private_libs, indent=indent, end_with_extra_newline=False
+    )
+
+    # Write find_package calls for optional packages.
+    # We consider packages inside scopes other than the top-level one as optional.
+    optional_public_libs: List[str] = []
+    optional_private_libs: List[str] = []
+    handling_first_scope = True
+    for inner_scope in scopes:
+        if handling_first_scope:
+            handling_first_scope = False
+            continue
+        (public_libs, private_libs) = extract_cmake_libraries(inner_scope, is_example=True)
+        optional_public_libs += public_libs
+        optional_private_libs += private_libs
+    write_find_package_section(
+        cm_fh,
+        optional_public_libs,
+        optional_private_libs,
+        indent=indent,
+        is_required=False,
+        end_with_extra_newline=False,
+    )
+
+    cm_fh.write("\n")
 
     (resources, standalone_qtquick_compiler_skipped_files) = extract_resources(binary_name, scope)
     qml_resource = find_qml_resource(resources) if is_qml_plugin else None
