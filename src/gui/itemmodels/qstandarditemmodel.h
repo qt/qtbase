@@ -143,43 +143,43 @@ public:
     void setFlags(Qt::ItemFlags flags);
 
     inline bool isEnabled() const {
-        return (flags() & Qt::ItemIsEnabled) != 0;
+        return bool(flags() & Qt::ItemIsEnabled);
     }
     void setEnabled(bool enabled);
 
     inline bool isEditable() const {
-        return (flags() & Qt::ItemIsEditable) != 0;
+        return bool(flags() & Qt::ItemIsEditable);
     }
     void setEditable(bool editable);
 
     inline bool isSelectable() const {
-        return (flags() & Qt::ItemIsSelectable) != 0;
+        return bool(flags() & Qt::ItemIsSelectable);
     }
     void setSelectable(bool selectable);
 
     inline bool isCheckable() const {
-        return (flags() & Qt::ItemIsUserCheckable) != 0;
+        return bool(flags() & Qt::ItemIsUserCheckable);
     }
     void setCheckable(bool checkable);
 
     inline bool isAutoTristate() const {
-        return (flags() & Qt::ItemIsAutoTristate) != 0;
+        return bool(flags() & Qt::ItemIsAutoTristate);
     }
     void setAutoTristate(bool tristate);
 
     inline bool isUserTristate() const {
-        return (flags() & Qt::ItemIsUserTristate) != 0;
+        return bool(flags() & Qt::ItemIsUserTristate);
     }
     void setUserTristate(bool tristate);
 
 #if QT_CONFIG(draganddrop)
     inline bool isDragEnabled() const {
-        return (flags() & Qt::ItemIsDragEnabled) != 0;
+        return bool(flags() & Qt::ItemIsDragEnabled);
     }
     void setDragEnabled(bool dragEnabled);
 
     inline bool isDropEnabled() const {
-        return (flags() & Qt::ItemIsDropEnabled) != 0;
+        return bool(flags() & Qt::ItemIsDropEnabled);
     }
     void setDropEnabled(bool dropEnabled);
 #endif // QT_CONFIG(draganddrop)
@@ -274,7 +274,7 @@ inline void QStandardItem::setFont(const QFont &afont)
 { setData(afont, Qt::FontRole); }
 
 inline void QStandardItem::setTextAlignment(Qt::Alignment atextAlignment)
-{ setData(int(atextAlignment), Qt::TextAlignmentRole); }
+{ setData(int(atextAlignment.toInt()), Qt::TextAlignmentRole); }
 
 inline void QStandardItem::setBackground(const QBrush &abrush)
 { setData(abrush, Qt::BackgroundRole); }

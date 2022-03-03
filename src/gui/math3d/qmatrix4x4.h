@@ -434,7 +434,7 @@ inline QMatrix4x4& QMatrix4x4::operator*=(const QMatrix4x4& o)
     const QMatrix4x4 other = o; // prevent aliasing when &o == this ### Qt 6: take o by value
     flagBits |= other.flagBits;
 
-    if (flagBits < Rotation2D) {
+    if (flagBits.toInt() < Rotation2D) {
         m[3][0] += m[0][0] * other.m[3][0];
         m[3][1] += m[1][1] * other.m[3][1];
         m[3][2] += m[2][2] * other.m[3][2];
@@ -637,7 +637,7 @@ inline QMatrix4x4 operator-(const QMatrix4x4& m1, const QMatrix4x4& m2)
 inline QMatrix4x4 operator*(const QMatrix4x4& m1, const QMatrix4x4& m2)
 {
     QMatrix4x4::Flags flagBits = m1.flagBits | m2.flagBits;
-    if (flagBits < QMatrix4x4::Rotation2D) {
+    if (flagBits.toInt() < QMatrix4x4::Rotation2D) {
         QMatrix4x4 m = m1;
         m.m[3][0] += m.m[0][0] * m2.m[3][0];
         m.m[3][1] += m.m[1][1] * m2.m[3][1];
@@ -943,11 +943,11 @@ inline QPoint QMatrix4x4::map(const QPoint& point) const
     yin = point.y();
     if (flagBits == QMatrix4x4::Identity) {
         return point;
-    } else if (flagBits < QMatrix4x4::Rotation2D) {
+    } else if (flagBits.toInt() < QMatrix4x4::Rotation2D) {
         // Translation | Scale
         return QPoint(qRound(xin * m[0][0] + m[3][0]),
                       qRound(yin * m[1][1] + m[3][1]));
-    } else if (flagBits < QMatrix4x4::Perspective) {
+    } else if (flagBits.toInt() < QMatrix4x4::Perspective) {
         return QPoint(qRound(xin * m[0][0] + yin * m[1][0] + m[3][0]),
                       qRound(xin * m[0][1] + yin * m[1][1] + m[3][1]));
     } else {
@@ -975,11 +975,11 @@ inline QPointF QMatrix4x4::map(const QPointF& point) const
     yin = point.y();
     if (flagBits == QMatrix4x4::Identity) {
         return point;
-    } else if (flagBits < QMatrix4x4::Rotation2D) {
+    } else if (flagBits.toInt() < QMatrix4x4::Rotation2D) {
         // Translation | Scale
         return QPointF(xin * qreal(m[0][0]) + qreal(m[3][0]),
                        yin * qreal(m[1][1]) + qreal(m[3][1]));
-    } else if (flagBits < QMatrix4x4::Perspective) {
+    } else if (flagBits.toInt() < QMatrix4x4::Perspective) {
         return QPointF(xin * qreal(m[0][0]) + yin * qreal(m[1][0]) +
                        qreal(m[3][0]),
                        xin * qreal(m[0][1]) + yin * qreal(m[1][1]) +
@@ -1009,12 +1009,12 @@ inline QVector3D QMatrix4x4::map(const QVector3D& point) const
     float x, y, z, w;
     if (flagBits == QMatrix4x4::Identity) {
         return point;
-    } else if (flagBits < QMatrix4x4::Rotation2D) {
+    } else if (flagBits.toInt() < QMatrix4x4::Rotation2D) {
         // Translation | Scale
         return QVector3D(point.x() * m[0][0] + m[3][0],
                          point.y() * m[1][1] + m[3][1],
                          point.z() * m[2][2] + m[3][2]);
-    } else if (flagBits < QMatrix4x4::Rotation) {
+    } else if (flagBits.toInt() < QMatrix4x4::Rotation) {
         // Translation | Scale | Rotation2D
         return QVector3D(point.x() * m[0][0] + point.y() * m[1][0] + m[3][0],
                          point.x() * m[0][1] + point.y() * m[1][1] + m[3][1],
@@ -1045,10 +1045,10 @@ inline QVector3D QMatrix4x4::map(const QVector3D& point) const
 
 inline QVector3D QMatrix4x4::mapVector(const QVector3D& vector) const
 {
-    if (flagBits < Scale) {
+    if (flagBits.toInt() < Scale) {
         // Translation
         return vector;
-    } else if (flagBits < Rotation2D) {
+    } else if (flagBits.toInt() < Rotation2D) {
         // Translation | Scale
         return QVector3D(vector.x() * m[0][0],
                          vector.y() * m[1][1],

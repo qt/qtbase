@@ -832,17 +832,17 @@ inline QWidget *QWidget::childAt(int ax, int ay) const
 { return childAt(QPoint(ax, ay)); }
 
 inline Qt::WindowType QWidget::windowType() const
-{ return static_cast<Qt::WindowType>(int(data->window_flags & Qt::WindowType_Mask)); }
+{ return static_cast<Qt::WindowType>((data->window_flags & Qt::WindowType_Mask).toInt()); }
 inline Qt::WindowFlags QWidget::windowFlags() const
 { return data->window_flags; }
 
 #if QT_DEPRECATED_SINCE(6, 1)
 inline bool QWidget::isTopLevel() const
-{ return (windowType() & Qt::Window); }
+{ return bool(windowType() & Qt::Window); }
 #endif
 
 inline bool QWidget::isWindow() const
-{ return (windowType() & Qt::Window); }
+{ return bool(windowType() & Qt::Window); }
 
 inline bool QWidget::isEnabled() const
 { return !testAttribute(Qt::WA_Disabled); }

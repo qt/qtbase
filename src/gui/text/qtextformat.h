@@ -707,7 +707,7 @@ public:
     { return boolProperty(BlockNonBreakableLines); }
 
     inline void setPageBreakPolicy(PageBreakFlags flags)
-    { setProperty(PageBreakPolicy, int(flags)); }
+    { setProperty(PageBreakPolicy, int(flags.toInt())); }
     inline PageBreakFlags pageBreakPolicy() const
     { return PageBreakFlags(intProperty(PageBreakPolicy)); }
 
@@ -727,7 +727,7 @@ protected:
 Q_DECLARE_SHARED(QTextBlockFormat)
 
 inline void QTextBlockFormat::setAlignment(Qt::Alignment aalignment)
-{ setProperty(BlockAlignment, int(aalignment)); }
+{ setProperty(BlockAlignment, int(aalignment.toInt())); }
 
 inline void QTextBlockFormat::setIndent(int aindent)
 { setProperty(BlockIndent, aindent); }
@@ -929,7 +929,7 @@ public:
     { return lengthProperty(FrameHeight); }
 
     inline void setPageBreakPolicy(PageBreakFlags flags)
-    { setProperty(PageBreakPolicy, int(flags)); }
+    { setProperty(PageBreakPolicy, int(flags.toInt())); }
     inline PageBreakFlags pageBreakPolicy() const
     { return PageBreakFlags(intProperty(PageBreakPolicy)); }
 
@@ -1027,7 +1027,7 @@ inline void QTextTableFormat::setCellPadding(qreal apadding)
 { setProperty(TableCellPadding, apadding); }
 
 inline void QTextTableFormat::setAlignment(Qt::Alignment aalignment)
-{ setProperty(BlockAlignment, int(aalignment)); }
+{ setProperty(BlockAlignment, int(aalignment.toInt())); }
 
 class Q_GUI_EXPORT QTextTableCellFormat : public QTextCharFormat
 {

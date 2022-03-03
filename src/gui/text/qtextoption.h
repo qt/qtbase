@@ -141,10 +141,10 @@ private:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTextOption::Flags)
 
 inline void QTextOption::setAlignment(Qt::Alignment aalignment)
-{ align = aalignment; }
+{ align = uint(aalignment.toInt()); }
 
 inline void QTextOption::setFlags(Flags aflags)
-{ f = aflags; }
+{ f = uint(aflags.toInt()); }
 
 inline void QTextOption::setTabStopDistance(qreal atabStop)
 { tab = atabStop; }

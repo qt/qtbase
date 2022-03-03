@@ -79,7 +79,7 @@ inline const char *toString(QSizePolicy::Policy p)
 inline QByteArray toString(QSizePolicy::ControlTypes ct)
 {
     static const QMetaEnum me = QSizePolicy::staticMetaObject.enumerator(QSizePolicy::staticMetaObject.indexOfEnumerator("ControlTypes"));
-    return me.valueToKeys(int(ct));
+    return me.valueToKeys(int(ct.toInt()));
 }
 
 inline QByteArray toString(QSizePolicy sp)

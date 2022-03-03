@@ -218,7 +218,7 @@ public:
     inline void setDirty(DirtyFlags df);
     inline void clearDirty(DirtyFlags df);
 
-    bool hasFeature(PaintEngineFeatures feature) const { return gccaps & feature; }
+    bool hasFeature(PaintEngineFeatures feature) const { return bool(gccaps & feature); }
 
     QPainter *painter() const;
 
@@ -320,7 +320,7 @@ inline void QPaintEngine::fix_neg_rect(int *x, int *y, int *w, int *h)
 
 inline bool QPaintEngine::testDirty(DirtyFlags df) {
     Q_ASSERT(state);
-    return state->dirtyFlags & df;
+    return bool(state->dirtyFlags & df);
 }
 
 inline void QPaintEngine::setDirty(DirtyFlags df) {
@@ -331,7 +331,7 @@ inline void QPaintEngine::setDirty(DirtyFlags df) {
 inline void QPaintEngine::clearDirty(DirtyFlags df)
 {
     Q_ASSERT(state);
-    state->dirtyFlags &= ~static_cast<uint>(df);
+    state->dirtyFlags &= ~df;
 }
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTextItem::RenderFlags)
