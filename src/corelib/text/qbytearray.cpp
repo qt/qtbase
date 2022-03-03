@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Copyright (C) 2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Contact: https://www.qt.io/licensing/
@@ -4653,15 +4653,16 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
         return QByteArray(data(), 0);
 
     QByteArray include2 = include;
-    if (percent != '%')                        // the default
-        if ((percent >= 0x61 && percent <= 0x7A) // ALPHA
+    if (exclude.contains(percent)
+        || ((percent >= 0x61 && percent <= 0x7A) // ALPHA
             || (percent >= 0x41 && percent <= 0x5A) // ALPHA
             || (percent >= 0x30 && percent <= 0x39) // DIGIT
             || percent == 0x2D // -
             || percent == 0x2E // .
             || percent == 0x5F // _
-            || percent == 0x7E) // ~
+            || percent == 0x7E)) { // ~
         include2 += percent;
+    }
 
     QByteArray result = *this;
     q_toPercentEncoding(&result, exclude.nulTerminated().constData(), include2.nulTerminated().constData(), percent);
