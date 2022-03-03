@@ -1470,7 +1470,14 @@ bool updateLibsXml(Options *options)
 
         qtLibs += QLatin1String("        <item>%1;%2</item>\n").arg(it.key(), options->stdCppName);
         for (const Options::BundledFile &bundledFile : options->bundledFiles[it.key()]) {
-            if (bundledFile.second.startsWith(QLatin1String("lib/"))) {
+            if (bundledFile.second.startsWith(QLatin1String("lib/lib"))) {
+                if (!bundledFile.second.endsWith(QLatin1String(".so"))) {
+                    fprintf(stderr,
+                            "The bundled library %s doesn't end with .so. Android only supports "
+                            "versionless libraries ending with the .so suffix.\n",
+                            qPrintable(bundledFile.second));
+                    return false;
+                }
                 QString s = bundledFile.second.mid(sizeof("lib/lib") - 1);
                 s.chop(sizeof(".so") - 1);
                 qtLibs += QLatin1String("        <item>%1;%2</item>\n").arg(it.key(), s);
@@ -1480,9 +1487,18 @@ bool updateLibsXml(Options *options)
         if (!options->archExtraLibs[it.key()].isEmpty()) {
             for (const QString &extraLib : options->archExtraLibs[it.key()]) {
                 QFileInfo extraLibInfo(extraLib);
-                QString name = extraLibInfo.fileName().mid(sizeof("lib") - 1);
-                name.chop(sizeof(".so") - 1);
-                extraLibs += QLatin1String("        <item>%1;%2</item>\n").arg(it.key(), name);
+                if (extraLibInfo.fileName().startsWith(QLatin1String("lib"))) {
+                    if (!extraLibInfo.fileName().endsWith(QLatin1String(".so"))) {
+                        fprintf(stderr,
+                                "The library %s doesn't end with .so. Android only supports "
+                                "versionless libraries ending with the .so suffix.\n",
+                                qPrintable(extraLibInfo.fileName()));
+                        return false;
+                    }
+                    QString name = extraLibInfo.fileName().mid(sizeof("lib") - 1);
+                    name.chop(sizeof(".so") - 1);
+                    extraLibs += QLatin1String("        <item>%1;%2</item>\n").arg(it.key(), name);
+                }
             }
         }
 
