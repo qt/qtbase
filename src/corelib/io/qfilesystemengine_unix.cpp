@@ -887,6 +887,8 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
         if (!data.hasFlags(QFileSystemMetaData::DirectoryType))
             what |= QFileSystemMetaData::DirectoryType;
     }
+    if (what & QFileSystemMetaData::AliasType)
+        what |= QFileSystemMetaData::LinkType;
 #endif
 #ifdef UF_HIDDEN
     if (what & QFileSystemMetaData::HiddenAttribute) {
@@ -1022,8 +1024,11 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
 
 #if defined(Q_OS_DARWIN)
     if (what & QFileSystemMetaData::AliasType) {
-        if (entryErrno == 0 && hasResourcePropertyFlag(data, entry, kCFURLIsAliasFileKey))
-            data.entryFlags |= QFileSystemMetaData::AliasType;
+        if (entryErrno == 0 && hasResourcePropertyFlag(data, entry, kCFURLIsAliasFileKey)) {
+            // kCFURLIsAliasFileKey includes symbolic links, so filter those out
+            if (!(data.entryFlags & QFileSystemMetaData::LinkType))
+                data.entryFlags |= QFileSystemMetaData::AliasType;
+        }
         data.knownFlagsMask |= QFileSystemMetaData::AliasType;
     }
 
