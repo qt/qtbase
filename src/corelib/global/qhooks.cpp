@@ -67,7 +67,7 @@ quintptr Q_CORE_EXPORT qtHookData[] = {
     // The required sizes and offsets are tested in tests/auto/other/toolsupport.
     // When this fails and the change was intentional, adjust the test and
     // adjust this value here.
-    21
+    23
 };
 
 static_assert(QHooks::LastHookIndex == sizeof(qtHookData) / sizeof(qtHookData[0]));
