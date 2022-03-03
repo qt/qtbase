@@ -4494,20 +4494,17 @@ static void q_fromPercentEncoding(QByteArray *ba, char percent)
         ba->truncate(outlen);
 }
 
-void q_fromPercentEncoding(QByteArray *ba)
-{
-    q_fromPercentEncoding(ba, '%');
-}
-
 /*!
-    \since 4.4
+    \since 6.4
 
-    Returns a decoded copy of the URI/URL-style percent-encoded \a input.
-    The \a percent parameter allows you to replace the '%' character for
-    another (for instance, '_' or '=').
+    Decodes URI/URL-style percent-encoding.
+
+    Returns a byte array containing the decoded text. The \a percent parameter
+    allows use of a different character than '%' (for instance, '_' or '=') as
+    the escape character.
 
     For example:
-    \snippet code/src_corelib_text_qbytearray.cpp 51
+    \snippet code/src_corelib_text_qbytearray.cpp 54
 
     \note Given invalid input (such as a string containing the sequence "%G5",
     which is not a valid hexadecimal number) the output will be invalid as
@@ -4515,16 +4512,33 @@ void q_fromPercentEncoding(QByteArray *ba)
 
     \sa toPercentEncoding(), QUrl::fromPercentEncoding()
 */
-QByteArray QByteArray::fromPercentEncoding(const QByteArray &input, char percent)
+QByteArray QByteArray::percentDecoded(char percent) const
 {
-    if (input.isNull())
-        return QByteArray();       // preserve null
-    if (input.isEmpty())
-        return QByteArray(input.data(), 0);
+    if (isEmpty())
+        return *this; // Preserves isNull().
 
-    QByteArray tmp = input;
+    QByteArray tmp = *this;
     q_fromPercentEncoding(&tmp, percent);
     return tmp;
+}
+
+/*!
+    \since 4.4
+
+    Decodes \a input from URI/URL-style percent-encoding.
+
+    Returns a byte array containing the decoded text. The \a percent parameter
+    allows use of a different character than '%' (for instance, '_' or '=') as
+    the escape character. Equivalent to input.percentDecoded(percent).
+
+    For example:
+    \snippet code/src_corelib_text_qbytearray.cpp 51
+
+    \sa percentDecoded()
+*/
+QByteArray QByteArray::fromPercentEncoding(const QByteArray &input, char percent)
+{
+    return input.percentDecoded(percent);
 }
 
 /*! \fn QByteArray QByteArray::fromStdString(const std::string &str)

@@ -1652,15 +1652,15 @@ void tst_QByteArray::toFromPercentEncoding()
 
     QByteArray data = arr.toPercentEncoding();
     QCOMPARE(data, QByteArray("Qt%20is%20great%21"));
-    QCOMPARE(QByteArray::fromPercentEncoding(data), arr);
+    QCOMPARE(data.percentDecoded(), arr);
 
     data = arr.toPercentEncoding("! ", "Qt");
     QCOMPARE(data, QByteArray("%51%74 is grea%74!"));
-    QCOMPARE(QByteArray::fromPercentEncoding(data), arr);
+    QCOMPARE(data.percentDecoded(), arr);
 
     data = arr.toPercentEncoding(QByteArray(), "abcdefghijklmnopqrstuvwxyz", 'Q');
     QCOMPARE(data, QByteArray("Q51Q74Q20Q69Q73Q20Q67Q72Q65Q61Q74Q21"));
-    QCOMPARE(QByteArray::fromPercentEncoding(data, 'Q'), arr);
+    QCOMPARE(data.percentDecoded('Q'), arr);
 
     // verify that to/from percent encoding preserves nullity
     arr = "";
@@ -1676,16 +1676,16 @@ void tst_QByteArray::toFromPercentEncoding()
     QVERIFY(arr.isNull());
     QVERIFY(arr.toPercentEncoding().isEmpty());
     QVERIFY(arr.toPercentEncoding().isNull());
-    QVERIFY(QByteArray::fromPercentEncoding(QByteArray()).isEmpty());
-    QVERIFY(QByteArray::fromPercentEncoding(QByteArray()).isNull());
+    QVERIFY(QByteArray().percentDecoded().isEmpty());
+    QVERIFY(QByteArray().percentDecoded().isNull());
 
     // Verify that literal % in the string to be encoded does round-trip:
     arr = "Qt%20is%20great%21";
     data = arr.toPercentEncoding();
-    QCOMPARE(QByteArray::fromPercentEncoding(data), arr);
+    QCOMPARE(data.percentDecoded(), arr);
     arr = "87% of all statistics are made up!";
     data = arr.toPercentEncoding();
-    QCOMPARE(QByteArray::fromPercentEncoding(data), arr);
+    QCOMPARE(data.percentDecoded(), arr);
 }
 
 void tst_QByteArray::fromPercentEncoding_data()
@@ -1707,7 +1707,7 @@ void tst_QByteArray::fromPercentEncoding()
     QFETCH(QByteArray, encodedString);
     QFETCH(QByteArray, decodedString);
 
-    QCOMPARE(QByteArray::fromPercentEncoding(encodedString), decodedString);
+    QCOMPARE(encodedString.percentDecoded(), decodedString);
 }
 
 void tst_QByteArray::toPercentEncoding_data()
@@ -1768,7 +1768,7 @@ void tst_QByteArray::pecentEncodingRoundTrip()
 
     QByteArray encodedData = original.toPercentEncoding(excludeInEncoding, includeInEncoding);
     QCOMPARE(encodedData, encoded);
-    QCOMPARE(QByteArray::fromPercentEncoding(encodedData), original);
+    QCOMPARE(encodedData.percentDecoded(), original);
 }
 
 struct StringComparisonData

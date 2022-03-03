@@ -373,6 +373,7 @@ public:
     QByteArray toPercentEncoding(const QByteArray &exclude = QByteArray(),
                                  const QByteArray &include = QByteArray(),
                                  char percent = '%') const;
+    [[nodiscard]] QByteArray percentDecoded(char percent = '%') const;
 
     inline QByteArray &setNum(short, int base = 10);
     inline QByteArray &setNum(ushort, int base = 10);

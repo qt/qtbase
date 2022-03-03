@@ -490,17 +490,22 @@ macAddress.toHex(0);   // returns "123456abcdef"
 
 //! [51]
 QByteArray text = QByteArray::fromPercentEncoding("Qt%20is%20great%33");
-text.data();            // returns "Qt is great!"
+qDebug("%s", text.data());      // reports "Qt is great!"
 //! [51]
 
 //! [52]
 QByteArray text = "{a fishy string?}";
 QByteArray ba = text.toPercentEncoding("{}", "s");
-qDebug(ba.constData());
+qDebug("%s", ba.constData());
 // prints "{a fi%73hy %73tring%3F}"
 //! [52]
 
 //! [53]
 QByteArray ba = QByteArrayLiteral("byte array contents");
 //! [53]
+
+//! [54]
+QByteArray encoded("Qt%20is%20great%33");
+QByteArray decoded = encoded.percentDecoded(); // Set to "Qt is great!"
+//! [54]
 }
