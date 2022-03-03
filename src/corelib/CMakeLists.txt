@@ -552,6 +552,12 @@ qt_internal_extend_target(Core CONDITION INTEGRITY
         --pending_instantiations=128
 )
 
+# Workaround for QTBUG-101411
+# Remove if QCC (gcc version 8.3.0) for QNX 7.1.0 is no longer supported
+qt_internal_extend_target(Core CONDITION QCC AND (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "8.3.0")
+    PUBLIC_COMPILE_OPTIONS $<$<COMPILE_LANGUAGE:CXX>:-Wno-invalid-offsetof>
+)
+
 #### Keys ignored in scope 14:.:.:corelib.pro:pathIsAbsolute(_ss_CMAKE_HOST_DATA_DIR):
 # CMAKE_HOST_DATA_DIR = "$$[QT_HOST_DATA/src]/"
 # CMAKE_HOST_DATA_DIR_IS_ABSOLUTE = "True"
