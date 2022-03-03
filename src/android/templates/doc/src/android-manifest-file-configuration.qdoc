@@ -109,6 +109,13 @@ Qt sets the following manifest configuration by default:
     \li android:requestLegacyExternalStorage
     \li Whether to use Android scoped storage. Default \c true.
 \row
+    \li android:allowNativeHeapPointerTagging
+    \li Whether or not the app has the Heap pointer tagging feature enabled.
+        This has to be set to \c false when targeting Arm64 hardware with Android 11+
+        because it can break QML's NaN-tagging scheme.
+        For more information, see \l {Android: Tagged Pointers}{Tagged Pointers}.
+        The default value is \c false.
+\row
     \li {1, 6} \l {Android: App Manifest <activity>}{<activity>}
     \li android:name
     \li The activity class name. Default: \c {org.qtproject.qt.android.bindings.QtActivity}.
