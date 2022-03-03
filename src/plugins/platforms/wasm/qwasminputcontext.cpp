@@ -80,12 +80,14 @@ QWasmInputContext::QWasmInputContext()
                                         &androidKeyboardCallback);
 
     }
-    if (QWasmIntegration::get()->platform == QWasmIntegration::MacOSPlatform)
+    if (QWasmIntegration::get()->platform == QWasmIntegration::MacOSPlatform ||
+        QWasmIntegration::get()->platform == QWasmIntegration::iPhonePlatform)
      {
         auto callback = [=](emscripten::val) {
-            m_inputElement["parentElement"].call<void>("removeChild", m_inputElement); };
+            m_inputElement["parentElement"].call<void>("removeChild", m_inputElement);
+            inputPanelIsOpen = false;
+        };
         m_blurEventHandler.reset(new EventCallback(m_inputElement, "blur", callback));
-        inputPanelIsOpen = false;
     }
 
     QObject::connect(qGuiApp, &QGuiApplication::focusWindowChanged, this,
@@ -132,7 +134,8 @@ void QWasmInputContext::showInputPanel()
     // captured by the keyboard event handler installed on the
     // canvas.
 
-    if (QWasmIntegration::get()->platform == QWasmIntegration::MacOSPlatform
+    if (QWasmIntegration::get()->platform == QWasmIntegration::MacOSPlatform // keep for compatibility
+     || QWasmIntegration::get()->platform == QWasmIntegration::iPhonePlatform
      || QWasmIntegration::get()->platform == QWasmIntegration::WindowsPlatform) {
         emscripten::val canvas = focusCanvas();
         if (canvas == emscripten::val::undefined())

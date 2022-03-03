@@ -66,7 +66,8 @@ public:
         MacOSPlatform,
         WindowsPlatform,
         LinuxPlatform,
-        AndroidPlatform
+        AndroidPlatform,
+        iPhonePlatform
     };
 
     QWasmIntegration();

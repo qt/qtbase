@@ -113,6 +113,8 @@ QWasmIntegration::QWasmIntegration()
 
     if (rawPlatform.call<bool>("includes", emscripten::val("Mac")))
         platform = MacOSPlatform;
+    if (rawPlatform.call<bool>("includes", emscripten::val("iPhone")))
+        platform = iPhonePlatform;
     if (rawPlatform.call<bool>("includes", emscripten::val("Win32")))
         platform = WindowsPlatform;
     if (rawPlatform.call<bool>("includes", emscripten::val("Linux"))) {
