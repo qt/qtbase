@@ -1946,6 +1946,10 @@ bool QAbstractSocket::setSocketDescriptor(qintptr socketDescriptor, SocketState 
     \since 4.6
     Sets the given \a option to the value described by \a value.
 
+    \note Since the options are set on an internal socket the options
+    only apply if the socket has been created. This is only guaranteed to
+    have happened after a call to bind(), or when connected() has been emitted.
+
     \sa socketOption()
 */
 void QAbstractSocket::setSocketOption(QAbstractSocket::SocketOption option, const QVariant &value)
