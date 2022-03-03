@@ -52,14 +52,17 @@
     \li \l{Signals & Slots}
     \endlist
 
-    \include module-use.qdocinc using qt module
-    \quotefile overview/using-qt-core.cmake
+    \section1 Using the Module
 
-    See also the \l {Build with CMake} overview.
+    \include {module-use.qdocinc} {using the c++ api}
+
+    \section2 Building with CMake
+
+    \include {module-use.qdocinc} {building with cmake} {Core}
 
     \section2 Building with qmake
 
-    If you use \l qmake to build your projects, Qt6Core is linked by default.
+    If you use \l qmake to build your projects, Qt Core is linked by default.
 
     \section1 Threading and Concurrent Programming
 
@@ -100,31 +103,8 @@
     \li \l{The Event System}
     \endlist
 
-    \section1 Module Evolution
-
-    \l{Changes to Qt Core} lists important changes in the module API
-    and functionality that were done for the Qt 6 series of Qt.
-
-    \section1 Licenses and Attributions
-
-    Qt Core is available under commercial licenses from \l{The Qt Company}.
-    In addition, it is available under free software licenses:
-    The \l{GNU Lesser General Public License, version 3}, or
-    the \l{GNU General Public License, version 2}.
-    See \l{Qt Licensing} for further details.
-
-    Executables on Windows potentially link
-    against \l{The QtEntryPoint Library}. This library is available
-    under commercial licenses and also under the
-    \l{BSD 3-clause "New" or "Revised" License}.
-
-    Furthermore, Qt Core in Qt \QtVersion may contain third party
-    modules under following permissive licenses:
-
-    \generatelist{groupsbymodule attributions-qtcore}
-
     \section1 Reference
-    These are links to the API reference materials.
+
     \list
     \li \l{Qt Core C++ Classes}{C++ Classes}
         \list
@@ -144,4 +124,26 @@
         \endlist
     \endlist
 
+    \section1 Module Evolution
+
+    \l{Changes to Qt Core} lists important changes in the module API
+    and functionality that were made for the Qt 6 series of Qt.
+
+    \section1 Licenses and Attributions
+
+    Qt Core is available under commercial licenses from \l{The Qt Company}.
+    In addition, it is available under free software licenses:
+    The \l{GNU Lesser General Public License, version 3}, or
+    the \l{GNU General Public License, version 2}.
+    See \l{Qt Licensing} for further details.
+
+    Executables on Windows potentially link
+    against \l{The QtEntryPoint Library}. This library is available
+    under commercial licenses and also under the
+    \l{BSD 3-clause "New" or "Revised" License}.
+
+    Furthermore, Qt Core in Qt \QtVersion may contain third party
+    modules under the following permissive licenses:
+
+    \generatelist{groupsbymodule attributions-qtcore}
 */
