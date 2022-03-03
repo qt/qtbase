@@ -1073,8 +1073,8 @@ bool QFileInfo::isBundle() const
 }
 
 /*!
-    Returns \c true if this object points to a symbolic link or shortcut;
-    otherwise returns \c false.
+    Returns \c true if this object points to a symbolic link, shortcut,
+    or alias; otherwise returns \c false.
 
     Symbolic links exist on Unix (including \macos and iOS) and Windows
     and are typically created by the \c{ln -s} or \c{mklink} commands,
@@ -1082,8 +1082,9 @@ bool QFileInfo::isBundle() const
     the \l{symLinkTarget()}{link's target}.
 
     In addition, true will be returned for shortcuts (\c *.lnk files) on
-    Windows. This behavior is deprecated and will likely change in a future
-    version of Qt. Opening those will open the \c .lnk file itself.
+    Windows, and aliases on \macos. This behavior is deprecated and will
+    likely change in a future version of Qt. Opening a shortcut or alias
+    will open the \c .lnk or alias file itself.
 
     Example:
 
@@ -1115,7 +1116,8 @@ bool QFileInfo::isSymLink() const
     opens the \l{symLinkTarget()}{link's target}.
 
     In contrast to isSymLink(), false will be returned for shortcuts
-    (\c *.lnk files) on Windows. Use QFileInfo::isShortcut() instead.
+    (\c *.lnk files) on Windows and aliases on \macos.
+    Use QFileInfo::isShortcut() on Windows instead.
 
     \note If the symlink points to a non existing file, exists() returns
     false.
