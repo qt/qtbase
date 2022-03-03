@@ -786,6 +786,7 @@ def generate_find_package_info(
     indent: int = 0,
     emit_if: str = "",
     use_system_package_name: bool = False,
+    remove_REQUIRED_from_extra: bool = True,
     module: str = "",
 ) -> str:
     isRequired = False
@@ -797,7 +798,8 @@ def generate_find_package_info(
 
     if "REQUIRED" in extra and use_qt_find_package:
         isRequired = True
-        extra.remove("REQUIRED")
+        if remove_REQUIRED_from_extra:
+            extra.remove("REQUIRED")
 
     cmake_target_name = lib.targetName
     assert cmake_target_name

@@ -3741,9 +3741,25 @@ def write_find_package_section(
         if info and info not in packages:
             packages.append(info)
 
-    # ind = spaces(indent)
+    qt_components: List[str] = []
+    for p in filter(LibraryMapping.is_qt, packages):
+        if p.components is not None:
+            qt_components += p.components
+    if qt_components:
+        qt_components = sorted(qt_components)
+        qt_package = LibraryMapping(
+            "unknown", "Qt6", "unknown", extra=["REQUIRED"], components=qt_components
+        )
+        cm_fh.write(
+            generate_find_package_info(
+                qt_package,
+                use_qt_find_package=False,
+                remove_REQUIRED_from_extra=False,
+                indent=indent,
+            )
+        )
 
-    for p in packages:
+    for p in itertools.filterfalse(LibraryMapping.is_qt, packages):
         cm_fh.write(generate_find_package_info(p, use_qt_find_package=False, indent=indent))
 
     if packages:
