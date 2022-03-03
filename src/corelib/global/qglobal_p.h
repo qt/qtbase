@@ -61,11 +61,16 @@
 #endif
 
 #if defined(Q_CC_MSVC)
+// By default, dynamic initialization uses subsection "$XCU", which is
+// equivalent to #pragma init_seg(user). Additionally, #pragma
+// init_seg(compiler) and init_seg(lib) use "$XCC" and "$XCL" respectively. So
+// place us between "compiler" and "lib".
 #  define QT_SUPPORTS_INIT_PRIORITY     1
+
 // warning C4075: initializers put in unrecognized initialization area
 #  define Q_DECL_INIT_PRIORITY(nn)      \
     __pragma(warning(disable: 4075)) \
-    __pragma(init_seg(".CRT$QT" QT_STRINGIFY(nn))) Q_DECL_UNUSED
+    __pragma(init_seg(".CRT$XCK" QT_STRINGIFY(nn))) Q_DECL_UNUSED
 #elif defined(Q_OS_WIN) || defined(Q_OF_ELF)
 #  define QT_SUPPORTS_INIT_PRIORITY     1
 // priorities 0 to 1000 are reserved to the runtime;
