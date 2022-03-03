@@ -949,6 +949,14 @@ void overload_sr_a(QString &&) {}
 Q_WEAK_OVERLOAD
 void overload_sr_a(QAnyStringView) {}
 
+Q_WEAK_OVERLOAD
+void overload_a_s(const QString &) {}
+void overload_a_s(QAnyStringView) {}
+
+Q_WEAK_OVERLOAD
+void overload_a_sr(QString &&) {}
+void overload_a_sr(QAnyStringView) {}
+
 void overload_s_v(const QString &) {}
 void overload_s_v(QStringView) {}
 
@@ -982,6 +990,20 @@ void tst_QStringApiSymmetry::overload()
     if constexpr (!std::is_array_v<T>) {
         overload_sr_a(T());
         overload_sr_a(CT());
+    }
+
+    overload_a_s(t);
+    overload_a_s(ct);
+    if constexpr (!std::is_array_v<T>) {
+        overload_a_s(T());
+        overload_a_s(CT());
+    }
+
+    overload_a_sr(t);
+    overload_a_sr(ct);
+    if constexpr (!std::is_array_v<T>) {
+        overload_a_sr(T());
+        overload_a_sr(CT());
     }
 
     if constexpr (std::is_convertible_v<T, QStringView> || std::is_convertible_v<T, QString>) {
