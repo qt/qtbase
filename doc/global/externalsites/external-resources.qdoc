@@ -53,6 +53,10 @@
     \title Android: Verify Android App Links
 */
 /*!
+    \externalpage https://source.android.com/devices/tech/debug/tagged-pointers
+    \title Android: Tagged Pointers
+*/
+/*!
     \externalpage https://developer.apple.com/documentation/uikit/uiapplication/1622952-canopenurl
     \title iOS: canOpenURL:
 */
