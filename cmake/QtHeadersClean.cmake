@@ -29,6 +29,7 @@ function(qt_internal_add_headers_clean_target
                  -DQT_NO_URL_CAST_FROM_STRING
                  -DQT_NO_CAST_FROM_BYTEARRAY
                  -DQT_NO_KEYWORDS
+                 -DQT_TYPESAFE_FLAGS
                  -DQT_USE_QSTRINGBUILDER
                  -DQT_USE_FAST_OPERATOR_PLUS)
 
