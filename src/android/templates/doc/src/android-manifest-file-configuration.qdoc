@@ -73,19 +73,19 @@ Qt sets the following manifest configuration by default:
 \row
     \li {1, 5} \l {Android: App Manifest <manifest>}{<manifest>}
     \li package
-    \li Sets the package name. Default: \c {org.qtproject.example.app_name}.
+    \li Sets the package name. The default value is \c {org.qtproject.example.app_name}.
 \row
     \li \c {android:installLocation}
     \li Sets the app's installation location, whether internal or external storage.
-        Default: \c auto.
+        The default value is \c auto.
 \row
     \li android:versionCode
     \li Sets the internal version code. Populated from \c ANDROID_VERSION_CODE (qmake)
-        and \c QT_ANDROID_VERSION_CODE (CMake). Default: \c 1.
+        and \c QT_ANDROID_VERSION_CODE (CMake). The default value is \c 1.
 \row
     \li android:versionName
     \li Sets the public version name. Populated from \c ANDROID_VERSION_NAME (qmake)
-        and \c QT_ANDROID_VERSION_NAME (CMake). Default: \c {1.0}.
+        and \c QT_ANDROID_VERSION_NAME (CMake). The default value is \c {1.0}.
 \row
     \li \c {<supports-screens>}
     \li Sets the screen sizes that the app supports,
@@ -94,20 +94,20 @@ Qt sets the following manifest configuration by default:
 \row
     \li {1, 5} \l {Android: App Manifest <application>}{<application>}
     \li android:name
-    \li The application class name. Default:
+    \li The application class name. Default value is
         \c {org.qtproject.qt.android.bindings.QtApplication}.
 \row
     \li android:label
-    \li The application name label. Default: the Qt project's target name.
+    \li The application name label. Default value is the Qt project's target name.
 \row
     \li android:extractNativeLibs
-    \li Extracts the native C++ libraries on installation. Default: \c true.
+    \li Extracts the native C++ libraries on installation. The default value is \c true.
 \row
     \li android:hardwareAccelerated
-    \li Sets hardware acceleration preference. Default: \c true.
+    \li Sets hardware acceleration preference. The default value is \c true.
 \row
     \li android:requestLegacyExternalStorage
-    \li Whether to use Android scoped storage. Default \c true.
+    \li Whether to use Android scoped storage. The default value is \c true.
 \row
     \li android:allowNativeHeapPointerTagging
     \li Whether or not the app has the Heap pointer tagging feature enabled.
@@ -118,25 +118,25 @@ Qt sets the following manifest configuration by default:
 \row
     \li {1, 6} \l {Android: App Manifest <activity>}{<activity>}
     \li android:name
-    \li The activity class name. Default: \c {org.qtproject.qt.android.bindings.QtActivity}.
+    \li The activity class name. The default value is \c {org.qtproject.qt.android.bindings.QtActivity}.
 \row
     \li android:label
-    \li The activity name label. Default: the Qt project's target name.
+    \li The activity name label. Default value is the Qt project's target name.
 \row
     \li android:configChanges
-    \li Lists configuration changes that the activity handles. Default:
+    \li Lists configuration changes that the activity handles. Default value is
         \c orientation, \c uiMode, \c screenLayout, \c screenSize,
         \c smallestScreenSize, \c layoutDirection, \c locale, \c fontScale,
         \c keyboard, \c keyboardHidden, \c navigation, \c mcc, \c mnc, \c density.
 \row
     \li android:launchMode
-    \li The method used to launch the activity. Default: \c singleTop.
+    \li The method used to launch the activity. The default value is \c singleTop.
 \row
     \li android:screenOrientation
-    \li The orientation of the activity's display on the device. Default: \c unspecified.
+    \li The orientation of the activity's display on the device. The default value is \c unspecified.
 \row
     \li <intent-filter>
-    \li Specifies the types of intents that the activity can respond to. Default:
+    \li Specifies the types of intents that the activity can respond to. Default value is
         \badcode
         <action android:name="android.intent.action.MAIN"/>
         <category android:name="android.intent.category.LAUNCHER"/>
@@ -166,19 +166,19 @@ The following is a list of such meta-data defined by Qt:
     \li android.app.lib_name
     \li The filename of the native C++ library that is used by the activity.
         \note This attribute is mandatory and shouldn't be removed.
-        Default: the Qt project's target name.
+        Default value is the Qt project's target name.
 \row
     \li android.app.extract_android_style
     \li The method used to extract the native Android Style information.
         For more information, see \l {Style Extraction}.
-        Default: \c minimal.
+        The default value is \c minimal.
 \row
     \target android.app.background_running
     \li android.app.background_running
     \li Sets whether the app keeps running tasks in the background.
         Setting this to \c true is the equivalent of setting the environment
         variable \c QT_BLOCK_EVENT_LOOPS_WHEN_SUSPENDED to \c 0.
-        Default: \c false.
+        The default value is \c false.
 
         \warning Setting this to \c true may cause unexpected crash if the
         application tries to draw after \l {QGuiApplication::applicationStateChanged()}
@@ -189,24 +189,24 @@ The following is a list of such meta-data defined by Qt:
     \li Sets a list of arguments to pass to the app \c {"arg1 arg2"}.
         Populated from \c ANDROID_APPLICATION_ARGUMENTS (qmake) and
         \c QT_ANDROID_APPLICATION_ARGUMENTS (CMake).
-        Default: not set.
+        Default value is not set.
 \row
     \li android.app.splash_screen_drawable_portrait
     \li Sets a drawable for a splash screen specific to portrait mode.
         For example: \c {android:resource="@drawable/splash_portrait"}.
-        Default: not set.
+        Default value is not set.
 \row
     \li android.app.splash_screen_drawable_landscape
     \li Sets a drawable for a splash screen specific to landscape mode.
         For example: \c {android:resource="@drawable/splash_landscape"}.
-        Default: not set.
+        Default value is not set.
 \row
     \li android.app.splash_screen_drawable
     \li Sets a drawable for a splash screen at the start of the app.
         \note Orientation specific splash screens are checked first,
         if not set, this is used instead.
         For example: \c {android:resource="@drawable/splash"}.
-        Default: not set.
+        Default value is not set.
 \row
     \li android.app.splash_screen_sticky
     \li Sets whether the splash screen stays visible until explicitly hidden
@@ -218,7 +218,7 @@ The following is a list of such meta-data defined by Qt:
     \li android.app.system_libs_prefix
     \li Specifies a custom system library path to use for library loading lookup.
         This is necessary when running as a system app.
-        Default: \c {/system/lib/}.
+        The default value is \c {/system/lib/}.
 \endtable
 
 \section2 Meta-data in Services
