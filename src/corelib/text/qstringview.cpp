@@ -1153,6 +1153,21 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn qsizetype QStringView::count(QLatin1String l1, Qt::CaseSensitivity cs) const noexcept
+
+    \since 6.4
+    \overload count()
+
+    Returns the number of (potentially overlapping) occurrences of the
+    Latin-1 string \a l1 in this string view.
+
+    If \a cs is Qt::CaseSensitive (default), the search is
+    case sensitive; otherwise the search is case insensitive.
+
+    \sa QString::count(), contains(), indexOf()
+*/
+
+/*!
   \fn qint64 QStringView::toLongLong(bool *ok, int base) const
 
     Returns the string view converted to a \c{long long} using base \a

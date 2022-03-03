@@ -341,6 +341,7 @@ public:
     { return QtPrivate::count(*this, c, cs); }
     [[nodiscard]] qsizetype count(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::count(*this, s, cs); }
+    [[nodiscard]] inline qsizetype count(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 
     [[nodiscard]] qsizetype lastIndexOf(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return lastIndexOf(c, -1, cs); }

@@ -738,9 +738,8 @@ private Q_SLOTS:
 
     void count_QStringView_QString_data() { count_data(); }
     void count_QStringView_QString() { count_impl<QStringView, QString>(); }
-    // TODO: enable when QStringView::count(QLatin1String, ...) is implemented
-    // void count_QStringView_QLatin1String_data() { count_data(); }
-    // void count_QStringView_QLatin1String() { count_impl<QStringView, QLatin1String>(); }
+    void count_QStringView_QLatin1String_data() { count_data(); }
+    void count_QStringView_QLatin1String() { count_impl<QStringView, QLatin1String>(); }
     void count_QStringView_QStringView_data() { count_data(); }
     void count_QStringView_QStringView() { count_impl<QStringView, QStringView>(); }
     void count_QStringView_QChar_data() { count_data(); }

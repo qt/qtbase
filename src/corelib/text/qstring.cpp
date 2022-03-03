@@ -10441,6 +10441,17 @@ qsizetype QtPrivate::count(QLatin1String haystack, QStringView needle, Qt::CaseS
     return num;
 }
 
+qsizetype QtPrivate::count(QStringView haystack, QLatin1String needle, Qt::CaseSensitivity cs)
+{
+    if (haystack.size() < needle.size())
+        return -1;
+
+    QVarLengthArray<char16_t> s(needle.size());
+    qt_from_latin1(s.data(), needle.latin1(), size_t(needle.size()));
+
+    return QtPrivate::count(haystack, QStringView(s.data(), s.size()), cs);
+}
+
 qsizetype QtPrivate::count(QLatin1String haystack, QChar needle, Qt::CaseSensitivity cs) noexcept
 {
     // non-L1 needles cannot possibly match in L1-only haystacks

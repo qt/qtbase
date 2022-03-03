@@ -396,6 +396,9 @@ qsizetype QStringView::lastIndexOf(QLatin1String s, Qt::CaseSensitivity cs) cons
 { return QtPrivate::lastIndexOf(*this, size(), s, cs); }
 qsizetype QStringView::lastIndexOf(QLatin1String s, qsizetype from, Qt::CaseSensitivity cs) const noexcept
 { return QtPrivate::lastIndexOf(*this, from, s, cs); }
+qsizetype QStringView::count(QLatin1String s, Qt::CaseSensitivity cs) const
+{ return QtPrivate::count(*this, s, cs); }
+
 
 //
 // QAnyStringView members that require QLatin1String
