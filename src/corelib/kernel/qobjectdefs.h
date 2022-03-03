@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2019 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -72,24 +72,27 @@ class QString;
 Q_CORE_EXPORT const char *qFlagLocation(const char *method);
 
 #ifndef QT_NO_META_MACROS
-#ifndef QT_NO_DEBUG
-# define QLOCATION "\0" __FILE__ ":" QT_STRINGIFY(__LINE__)
-# ifndef QT_NO_KEYWORDS
-#  define METHOD(a)   qFlagLocation("0"#a QLOCATION)
+# define QMETHOD_CODE  0                        // member type codes
+# define QSLOT_CODE    1
+# define QSIGNAL_CODE  2
+# define QT_PREFIX_CODE(code, a) QT_STRINGIFY(code) #a
+# define QT_STRINGIFY_METHOD(a) QT_PREFIX_CODE(QMETHOD_CODE, a)
+# define QT_STRINGIFY_SLOT(a) QT_PREFIX_CODE(QSLOT_CODE, a)
+# define QT_STRINGIFY_SIGNAL(a) QT_PREFIX_CODE(QSIGNAL_CODE, a)
+# ifndef QT_NO_DEBUG
+#  define QLOCATION "\0" __FILE__ ":" QT_STRINGIFY(__LINE__)
+#  ifndef QT_NO_KEYWORDS
+#   define METHOD(a)   qFlagLocation(QT_STRINGIFY_METHOD(a) QLOCATION)
+#  endif
+#  define SLOT(a)     qFlagLocation(QT_STRINGIFY_SLOT(a) QLOCATION)
+#  define SIGNAL(a)   qFlagLocation(QT_STRINGIFY_SIGNAL(a) QLOCATION)
+# else
+#  ifndef QT_NO_KEYWORDS
+#   define METHOD(a)  QT_STRINGIFY_METHOD(a)
+#  endif
+#  define SLOT(a)     QT_STRINGIFY_SLOT(a)
+#  define SIGNAL(a)   QT_STRINGIFY_SIGNAL(a)
 # endif
-# define SLOT(a)     qFlagLocation("1"#a QLOCATION)
-# define SIGNAL(a)   qFlagLocation("2"#a QLOCATION)
-#else
-# ifndef QT_NO_KEYWORDS
-#  define METHOD(a)   "0"#a
-# endif
-# define SLOT(a)     "1"#a
-# define SIGNAL(a)   "2"#a
-#endif
-
-#define QMETHOD_CODE  0                        // member type codes
-#define QSLOT_CODE    1
-#define QSIGNAL_CODE  2
 #endif // QT_NO_META_MACROS
 
 #define Q_ARG(type, data) QArgument<type >(#type, data)
