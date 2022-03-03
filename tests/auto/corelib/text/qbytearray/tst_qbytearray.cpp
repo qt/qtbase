@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -1678,6 +1678,14 @@ void tst_QByteArray::toFromPercentEncoding()
     QVERIFY(arr.toPercentEncoding().isNull());
     QVERIFY(QByteArray::fromPercentEncoding(QByteArray()).isEmpty());
     QVERIFY(QByteArray::fromPercentEncoding(QByteArray()).isNull());
+
+    // Verify that literal % in the string to be encoded does round-trip:
+    arr = "Qt%20is%20great%21";
+    data = arr.toPercentEncoding();
+    QCOMPARE(QByteArray::fromPercentEncoding(data), arr);
+    arr = "87% of all statistics are made up!";
+    data = arr.toPercentEncoding();
+    QCOMPARE(QByteArray::fromPercentEncoding(data), arr);
 }
 
 void tst_QByteArray::fromPercentEncoding_data()
