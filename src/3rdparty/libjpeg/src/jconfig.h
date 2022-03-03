@@ -13,3 +13,5 @@
 #define MEM_SRCDST_SUPPORTED 1
 
 #define BITS_IN_JSAMPLE 8
+
+#define NO_PUTENV
