@@ -2059,7 +2059,7 @@ void tst_QStringApiSymmetry::count_impl()
 
     const auto nutf8 = needle.toUtf8();
     const auto nl1s  = needle.toLatin1();
-    const auto nl1   = nl1s.isNull() ? QLatin1String() : QLatin1String(l1s);
+    const auto nl1   = nl1s.isNull() ? QLatin1String() : QLatin1String(nl1s);
 
     const auto nref = needle.isNull() ? QStringView() : QStringView(needle);
     const auto ns = make<String>(nref, nl1, nutf8);
