@@ -114,9 +114,9 @@ namespace QTest
         if (pos.isNull())
             pos = QPoint(window->width() / 2, window->height() / 2);
 
-        QTEST_ASSERT(uint(stateKey) == 0 || stateKey & Qt::KeyboardModifierMask);
+        QTEST_ASSERT(!stateKey || stateKey & Qt::KeyboardModifierMask);
 
-        stateKey &= static_cast<unsigned int>(Qt::KeyboardModifierMask);
+        stateKey &= Qt::KeyboardModifierMask;
 
         QPointF global = window->mapToGlobal(pos);
         QPointer<QWindow> w(window);
@@ -201,9 +201,9 @@ namespace QTest
             return;
         }
 
-        QTEST_ASSERT(stateKey == 0 || stateKey & Qt::KeyboardModifierMask);
+        QTEST_ASSERT(!stateKey || stateKey & Qt::KeyboardModifierMask);
 
-        stateKey &= static_cast<unsigned int>(Qt::KeyboardModifierMask);
+        stateKey &= Qt::KeyboardModifierMask;
 
         QEvent::Type meType;
         using namespace QTestPrivate;
