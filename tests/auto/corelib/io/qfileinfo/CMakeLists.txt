@@ -45,3 +45,7 @@ qt_internal_extend_target(tst_qfileinfo CONDITION WIN32
         advapi32
         netapi32
 )
+
+if (APPLE)
+    target_compile_options(tst_qfileinfo PRIVATE -x objective-c++)
+endif()

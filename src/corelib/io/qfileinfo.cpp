@@ -1118,8 +1118,8 @@ bool QFileInfo::isSymLink() const
     opens the \l{symLinkTarget()}{link's target}.
 
     In contrast to isSymLink(), false will be returned for shortcuts
-    (\c *.lnk files) on Windows and aliases on \macos.
-    Use QFileInfo::isShortcut() on Windows instead.
+    (\c *.lnk files) on Windows and aliases on \macos. Use QFileInfo::isShortcut()
+    and QFileInfo::isAlias() instead.
 
     \note If the symlink points to a non existing file, exists() returns
     false.
@@ -1162,6 +1162,29 @@ bool QFileInfo::isShortcut() const
             [d]() { return d->getFileFlags(QAbstractFileEngine::LinkType); });
 }
 
+/*!
+    Returns \c true if this object points to an alias;
+    otherwise returns \c false.
+
+    \since 6.4
+
+    Aliases only exist on \macos. They are treated as regular files, so
+    opening an alias will open the file itself. In order to open the file
+    or directory an alias references use symLinkTarget().
+
+    \note Even if an alias points to a non existing file,
+    isAlias() returns true.
+
+    \sa isFile(), isDir(), isSymLink(), symLinkTarget()
+*/
+bool QFileInfo::isAlias() const
+{
+    Q_D(const QFileInfo);
+    return d->checkAttribute<bool>(
+            QFileSystemMetaData::LegacyLinkType,
+            [d]() { return d->metaData.isAlias(); },
+            [d]() { return d->getFileFlags(QAbstractFileEngine::LinkType); });
+}
 
 /*!
     \since 5.15

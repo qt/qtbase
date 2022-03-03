@@ -62,6 +62,10 @@
 #include <private/qfileinfo_p.h>
 #include "../../../../shared/filesystem.h"
 
+#if defined(Q_OS_MACOS)
+#include <Foundation/Foundation.h>
+#endif
+
 #if defined(Q_OS_VXWORKS)
 #define Q_NO_SYMLINKS
 #endif
@@ -217,6 +221,9 @@ private slots:
 
     void isShortcut_data();
     void isShortcut();
+
+    void isAlias_data();
+    void isAlias();
 
     void link_data();
     void link();
@@ -1343,6 +1350,57 @@ void tst_QFileInfo::isShortcut()
 
     QFileInfo fi(path);
     QCOMPARE(fi.isShortcut(), isShortcut);
+}
+
+void tst_QFileInfo::isAlias_data()
+{
+    QFile::remove("symlink");
+    QFile::remove("file-alias");
+    QFile::remove("directory-alias");
+
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<bool>("isAlias");
+
+    QFile regularFile(m_sourceFile);
+    QTest::newRow("regular-file") << regularFile.fileName() << false;
+    QTest::newRow("directory") << QDir::currentPath() << false;
+
+#if defined(Q_OS_MACOS)
+    auto createAlias = [](const QString &target, const QString &alias) {
+        NSURL *targetUrl = [NSURL fileURLWithPath:target.toNSString()];
+        NSURL *aliasUrl = [NSURL fileURLWithPath:alias.toNSString()];
+        NSData *bookmarkData = [targetUrl bookmarkDataWithOptions:NSURLBookmarkCreationSuitableForBookmarkFile
+            includingResourceValuesForKeys:nil relativeToURL:nil error:nullptr];
+        Q_ASSERT(bookmarkData);
+
+        bool success = [NSURL writeBookmarkData:bookmarkData toURL:aliasUrl
+            options:NSURLBookmarkCreationSuitableForBookmarkFile error:nullptr];
+        Q_ASSERT(success);
+    };
+
+    regularFile.link("symlink");
+    QTest::newRow("symlink") << "symlink" << false;
+
+    createAlias(regularFile.fileName(), QDir::current().filePath("file-alias"));
+    QTest::newRow("file-alias") << "file-alias" << true;
+
+    createAlias(QDir::currentPath(), QDir::current().filePath("directory-alias"));
+    QTest::newRow("directory-alias") << "directory-alias" << true;
+
+    regularFile.copy("non-existing-file");
+    createAlias("non-existing-file", QDir::current().filePath("non-existing-file-alias"));
+    QDir::current().remove("non-existing-file");
+    QTest::newRow("non-existing-file-alias") << "non-existing-file-alias" << true;
+#endif
+}
+
+void tst_QFileInfo::isAlias()
+{
+    QFETCH(QString, path);
+    QFETCH(bool, isAlias);
+
+    QFileInfo fi(path);
+    QCOMPARE(fi.isAlias(), isAlias);
 }
 
 void tst_QFileInfo::isSymbolicLink_data()
