@@ -3878,7 +3878,11 @@ def write_example(
         f"project({binary_name} VERSION {project_version} LANGUAGES CXX)\n\n"
         "set(CMAKE_INCLUDE_CURRENT_DIR ON)\n\n"
         "set(CMAKE_AUTOMOC ON)\n"
-        "set(CMAKE_AUTOUIC ON)\n\n"
+    )
+    if scope.get_files("FORMS"):
+        cm_fh.write("set(CMAKE_AUTOUIC ON)\n")
+    cm_fh.write("\n")
+    cm_fh.write(
         "if(NOT DEFINED INSTALL_EXAMPLESDIR)\n"
         '    set(INSTALL_EXAMPLESDIR "examples")\n'
         "endif()\n\n"
