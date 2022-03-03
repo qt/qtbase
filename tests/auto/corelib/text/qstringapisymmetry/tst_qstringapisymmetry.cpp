@@ -717,15 +717,32 @@ private Q_SLOTS:
 
 private:
     void count_data();
-    template <typename String> void count_impl();
+    template<typename Haystack, typename Needle>
+    void count_impl();
 
 private Q_SLOTS:
-    void count_QString_data() { count_data(); }
-    void count_QString() { count_impl<QString>(); }
-    void count_QStringView_data() { count_data(); }
-    void count_QStringView() { count_impl<QStringView>(); }
-    void count_QByteArray_data() { count_data(); }
-    void count_QByteArray() { count_impl<QByteArray>(); }
+    void count_QString_QString_data() { count_data(); }
+    void count_QString_QString() { count_impl<QString, QString>(); }
+    void count_QString_QLatin1String_data() { count_data(); }
+    void count_QString_QLatin1String() { count_impl<QString, QLatin1String>(); }
+    void count_QString_QStringView_data() { count_data(); }
+    void count_QString_QStringView() { count_impl<QString, QStringView>(); }
+    void count_QString_QChar_data() { count_data(); }
+    void count_QString_QChar() { count_impl<QString, QChar>(); }
+    void count_QString_char16_t_data() { count_data(); }
+    void count_QString_char16_t() { count_impl<QString, char16_t>(); }
+
+    void count_QStringView_QString_data() { count_data(); }
+    void count_QStringView_QString() { count_impl<QStringView, QString>(); }
+    // TODO: enable when QStringView::count(QLatin1String, ...) is implemented
+    // void count_QStringView_QLatin1String_data() { count_data(); }
+    // void count_QStringView_QLatin1String() { count_impl<QStringView, QLatin1String>(); }
+    void count_QStringView_QStringView_data() { count_data(); }
+    void count_QStringView_QStringView() { count_impl<QStringView, QStringView>(); }
+    void count_QStringView_QChar_data() { count_data(); }
+    void count_QStringView_QChar() { count_impl<QStringView, QChar>(); }
+    void count_QStringView_char16_t_data() { count_data(); }
+    void count_QStringView_char16_t() { count_impl<QStringView, char16_t>(); }
 
     //
     // UTF-16-only checks:
@@ -2183,7 +2200,7 @@ void tst_QStringApiSymmetry::count_data()
     QTest::addRow("xyzaaaxyz") << QString::fromUtf8("xyzaaaxyz") << QString::fromUtf8("xyz") << qsizetype(2);
 }
 
-template <typename String>
+template<typename Haystack, typename Needle>
 void tst_QStringApiSymmetry::count_impl()
 {
     QFETCH(const QString, data);
@@ -2195,18 +2212,16 @@ void tst_QStringApiSymmetry::count_impl()
     const auto l1   = l1s.isNull() ? QLatin1String() : QLatin1String(l1s);
 
     const auto ref = data.isNull() ? QStringView() : QStringView(data);
-    const auto s = make<String>(ref, l1, utf8);
+    const auto s = make<Haystack>(ref, l1, utf8);
 
     const auto nutf8 = needle.toUtf8();
     const auto nl1s  = needle.toLatin1();
     const auto nl1   = nl1s.isNull() ? QLatin1String() : QLatin1String(nl1s);
 
     const auto nref = needle.isNull() ? QStringView() : QStringView(needle);
-    const auto ns = make<String>(nref, nl1, nutf8);
+    const auto ns = make<Needle>(nref, nl1, nutf8);
 
     QCOMPARE(s.count(ns), result);
-    if (ns.length() == 1)
-        QCOMPARE(s.count(ns.data()[0]), result);
 }
 
 //
