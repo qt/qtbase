@@ -2261,8 +2261,8 @@ int QStyle::sliderPositionFromValue(int min, int max, int logicalValue, int span
     if (logicalValue > max)
         return upsideDown ? span : min;
 
-    uint range = max - min;
-    uint p = upsideDown ? max - logicalValue : logicalValue - min;
+    const uint range = qint64(max) - min;
+    const uint p = upsideDown ? qint64(max) - logicalValue : qint64(logicalValue) - min;
 
     if (range > (uint)INT_MAX/4096) {
         double dpos = (double(p))/(double(range)/span);
@@ -2304,15 +2304,15 @@ int QStyle::sliderValueFromPosition(int min, int max, int pos, int span, bool up
     if (pos >= span)
         return upsideDown ? min : max;
 
-    uint range = max - min;
+    const qint64 range = qint64(max) - min;
 
     if ((uint)span > range) {
-        int tmp = (2 * pos * range + span) / (2 * span);
+        const int tmp = (2 * range * pos + span) / (qint64(2) * span);
         return upsideDown ? max - tmp : tmp + min;
     } else {
-        uint div = range / span;
-        uint mod = range % span;
-        int tmp = pos * div + (2 * pos * mod + span) / (2 * span);
+        const qint64 div = range / span;
+        const qint64 mod = range % span;
+        const int tmp = pos * div + (2 * mod * pos + span) / (qint64(2) * span);
         return upsideDown ? max - tmp : tmp + min;
     }
     // equiv. to min + (pos*range)/span + 0.5
