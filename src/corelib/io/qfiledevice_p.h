@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -62,6 +62,11 @@
 #  include <qt_windows.h>
 #  include <winnt.h> // for SECURITY_DESCRIPTOR
 #  include <optional>
+#  if defined(QT_BOOTSTRAPPED)
+#    define QT_FEATURE_fslibs -1
+#  else
+#    define QT_FEATURE_fslibs 1
+#  endif // QT_BOOTSTRAPPED
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -155,9 +160,11 @@ private:
     static constexpr auto MaxACLSize =
             sizeof(ACL) + (sizeof(ACCESS_ALLOWED_ACE) + SECURITY_MAX_SID_SIZE) * MaxNumACEs;
 
-    SECURITY_DESCRIPTOR sd;
     SECURITY_ATTRIBUTES sa;
+#if QT_CONFIG(fslibs)
+    SECURITY_DESCRIPTOR sd;
     alignas(DWORD) char aclStorage[MaxACLSize];
+#endif
 };
 
 #endif // Q_OS_UNIX

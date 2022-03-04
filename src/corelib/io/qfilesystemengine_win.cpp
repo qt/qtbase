@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -137,12 +137,6 @@ typedef struct _REPARSE_DATA_BUFFER {
 #    define FSCTL_GET_REPARSE_POINT                                                                \
         CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 42, METHOD_BUFFERED, FILE_ANY_ACCESS)
 #endif
-
-#if defined(QT_BOOTSTRAPPED)
-#  define QT_FEATURE_fslibs -1
-#else
-#  define QT_FEATURE_fslibs 1
-#endif // QT_BOOTSTRAPPED
 
 #if QT_CONFIG(fslibs)
 #include <aclapi.h>
@@ -411,6 +405,7 @@ constexpr NonSpecificPermissions toNonSpecificPermissions(PermissionTag tag,
     return NonSpecificPermissions::fromInt((permissions.toInt() >> int(tag)) & 0x7);
 }
 
+[[maybe_unused]] // Not currently used; included to show how to do it (without bit-rotting).
 constexpr QFileDevice::Permissions toSpecificPermissions(PermissionTag tag,
                                                          NonSpecificPermissions permissions)
 {
@@ -477,8 +472,8 @@ QNativeFilePermissions::QNativeFilePermissions(std::optional<QFileDevice::Permis
         ACCESS_MASK denyMask, allowMask;
     };
 
-    auto makeMasks = [this, isDir](NonSpecificPermissions allowPermissions,
-                                   NonSpecificPermissions denyPermissions, bool owner) {
+    auto makeMasks = [isDir](NonSpecificPermissions allowPermissions,
+                             NonSpecificPermissions denyPermissions, bool owner) {
         constexpr ACCESS_MASK AllowRead = FILE_READ_DATA | FILE_READ_ATTRIBUTES | FILE_READ_EA;
         constexpr ACCESS_MASK DenyRead = FILE_READ_DATA | FILE_READ_EA;
 
