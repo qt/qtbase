@@ -134,7 +134,7 @@ bool QQnxVirtualKeyboardPps::connect()
 
     m_buffer = new char[ms_bufferSize];
     if (Q_UNLIKELY(!m_buffer)) {
-        qCritical("QQnxVirtualKeyboard: Unable to allocate buffer of %d bytes. "
+        qCritical("QQnxVirtualKeyboard: Unable to allocate buffer of %zu bytes. "
                   "Size is unavailable.",  ms_bufferSize);
         return false;
     }
@@ -162,9 +162,9 @@ bool QQnxVirtualKeyboardPps::queryPPSInfo()
 
 void QQnxVirtualKeyboardPps::ppsDataReady()
 {
-    ssize_t nread = qt_safe_read(m_fd, m_buffer, ms_bufferSize - 1);
+    qint64 nread = qt_safe_read(m_fd, m_buffer, ms_bufferSize - 1);
 
-    qVirtualKeyboardDebug("keyboardMessage size: %zd", nread);
+    qVirtualKeyboardDebug("keyboardMessage size: %lld", nread);
     if (nread < 0){
         connect(); // reconnect
         return;
@@ -177,7 +177,7 @@ void QQnxVirtualKeyboardPps::ppsDataReady()
 
     // nread is the real space necessary, not the amount read.
     if (Q_UNLIKELY(static_cast<size_t>(nread) > ms_bufferSize - 1)) {
-        qCritical("QQnxVirtualKeyboard: Keyboard buffer size too short; need %u.", nread + 1);
+        qCritical("QQnxVirtualKeyboard: Keyboard buffer size too short; need %lld.", nread + 1);
         connect(); // reconnect
         return;
     }
