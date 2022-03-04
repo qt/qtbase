@@ -82,7 +82,6 @@ from helper import (
     LibraryMapping,
 )
 
-
 cmake_version_string = "3.16"
 cmake_api_version = 3
 
@@ -136,7 +135,13 @@ def _parse_commandline():
         "--is-example",
         action="store_true",
         dest="is_example",
-        help="Treat the input .pro file as an example.",
+        help="Treat the input .pro file as a Qt example.",
+    )
+    parser.add_argument(
+        "--is-user-project",
+        action="store_true",
+        dest="is_user_project",
+        help="Treat the input .pro file as a user project.",
     )
     parser.add_argument(
         "-s",
@@ -1826,7 +1831,12 @@ def replace_path_constants(path: str, scope: Scope) -> str:
 
 
 def handle_subdir(
-    scope: Scope, cm_fh: IO[str], *, indent: int = 0, is_example: bool = False
+    scope: Scope,
+    cm_fh: IO[str],
+    *,
+    indent: int = 0,
+    is_example: bool = False,
+    is_user_project: bool = False,
 ) -> None:
 
     # Global nested dictionary that will contain sub_dir assignments and their conditions.
@@ -1891,7 +1901,13 @@ def handle_subdir(
                     )
 
                     do_include(subdir_scope)
-                    cmakeify_scope(subdir_scope, cm_fh, indent=indent, is_example=is_example)
+                    cmakeify_scope(
+                        subdir_scope,
+                        cm_fh,
+                        indent=indent,
+                        is_example=is_example,
+                        is_user_project=is_user_project,
+                    )
             else:
                 print(f"    XXXX: SUBDIR {sd} in {scope}: Not found.")
 
@@ -3890,19 +3906,26 @@ def find_qml_resource(resources: List[QtResource]):
 
 
 def write_example(
-    cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int = 0, is_plugin: bool = False
+    cm_fh: IO[str],
+    scope: Scope,
+    gui: bool = False,
+    *,
+    indent: int = 0,
+    is_plugin: bool = False,
+    is_user_project: bool = False,
 ) -> str:
     binary_name = scope.TARGET
     assert binary_name
     config = scope.get("CONFIG")
     is_qml_plugin = ("qml" in scope.get("QT")) or "qmltypes" in config
 
-    example_install_dir = scope.expandString("target.path")
-    if not example_install_dir:
-        example_install_dir = "${INSTALL_EXAMPLESDIR}"
-    example_install_dir = example_install_dir.replace(
-        "$$[QT_INSTALL_EXAMPLES]", "${INSTALL_EXAMPLESDIR}"
-    )
+    if not is_user_project:
+        example_install_dir = scope.expandString("target.path")
+        if not example_install_dir:
+            example_install_dir = "${INSTALL_EXAMPLESDIR}"
+        example_install_dir = example_install_dir.replace(
+            "$$[QT_INSTALL_EXAMPLES]", "${INSTALL_EXAMPLESDIR}"
+        )
 
     project_version = scope.get_string("VERSION", "1.0")
     cm_fh.write(
@@ -3914,12 +3937,13 @@ def write_example(
     if scope.get_files("FORMS"):
         cm_fh.write("set(CMAKE_AUTOUIC ON)\n")
     cm_fh.write("\n")
-    cm_fh.write(
-        "if(NOT DEFINED INSTALL_EXAMPLESDIR)\n"
-        '    set(INSTALL_EXAMPLESDIR "examples")\n'
-        "endif()\n\n"
-        f'set(INSTALL_EXAMPLEDIR "{example_install_dir}")\n\n'
-    )
+    if not is_user_project:
+        cm_fh.write(
+            "if(NOT DEFINED INSTALL_EXAMPLESDIR)\n"
+            '    set(INSTALL_EXAMPLESDIR "examples")\n'
+            "endif()\n\n"
+            f'set(INSTALL_EXAMPLEDIR "{example_install_dir}")\n\n'
+        )
 
     recursive_evaluate_scope(scope)
 
@@ -4108,13 +4132,14 @@ def write_example(
 
         handling_first_scope = False
 
-    cm_fh.write(
-        f"\ninstall(TARGETS {binary_name}\n"
-        f'    RUNTIME DESTINATION "${{INSTALL_EXAMPLEDIR}}"\n'
-        f'    BUNDLE DESTINATION "${{INSTALL_EXAMPLEDIR}}"\n'
-        f'    LIBRARY DESTINATION "${{INSTALL_EXAMPLEDIR}}"\n'
-        f")\n"
-    )
+    if not is_user_project:
+        cm_fh.write(
+            f"\ninstall(TARGETS {binary_name}\n"
+            f'    RUNTIME DESTINATION "${{INSTALL_EXAMPLEDIR}}"\n'
+            f'    BUNDLE DESTINATION "${{INSTALL_EXAMPLEDIR}}"\n'
+            f'    LIBRARY DESTINATION "${{INSTALL_EXAMPLEDIR}}"\n'
+            f")\n"
+        )
 
     return binary_name
 
@@ -4505,7 +4530,12 @@ def write_qml_plugin_epilogue(
 
 
 def handle_app_or_lib(
-    scope: Scope, cm_fh: IO[str], *, indent: int = 0, is_example: bool = False
+    scope: Scope,
+    cm_fh: IO[str],
+    *,
+    indent: int = 0,
+    is_example: bool = False,
+    is_user_project=False,
 ) -> None:
     assert scope.TEMPLATE in ("app", "lib")
 
@@ -4527,7 +4557,9 @@ def handle_app_or_lib(
         assert not is_example
         target = write_3rdparty_library(cm_fh, scope, indent=indent)
     elif is_example:
-        target = write_example(cm_fh, scope, gui, indent=indent, is_plugin=is_plugin)
+        target = write_example(
+            cm_fh, scope, gui, indent=indent, is_plugin=is_plugin, is_user_project=is_user_project
+        )
     elif is_qt_plugin:
         assert not is_example
         target = write_plugin(cm_fh, scope, indent=indent)
@@ -4806,40 +4838,53 @@ endif()
 
 
 def cmakeify_scope(
-    scope: Scope, cm_fh: IO[str], *, indent: int = 0, is_example: bool = False
+    scope: Scope,
+    cm_fh: IO[str],
+    *,
+    indent: int = 0,
+    is_example: bool = False,
+    is_user_project: bool = False,
 ) -> None:
     template = scope.TEMPLATE
 
-    temp_buffer = io.StringIO()
-
-    # Handle top level repo project in a special way.
-    if is_top_level_repo_project(scope.file_absolute_path):
-        create_top_level_cmake_conf()
-        handle_top_level_repo_project(scope, temp_buffer)
-    # Same for top-level tests.
-    elif is_top_level_repo_tests_project(scope.file_absolute_path):
-        handle_top_level_repo_tests_project(scope, temp_buffer)
-    elif is_config_test_project(scope.file_absolute_path):
-        handle_config_test_project(scope, temp_buffer)
-    elif template == "subdirs":
-        handle_subdir(scope, temp_buffer, indent=indent, is_example=is_example)
-    elif template in ("app", "lib"):
-        handle_app_or_lib(scope, temp_buffer, indent=indent, is_example=is_example)
+    if is_user_project:
+        if template == "subdirs":
+            handle_subdir(scope, cm_fh, indent=indent, is_example=True, is_user_project=True)
+        elif template in ("app", "lib"):
+            handle_app_or_lib(scope, cm_fh, indent=indent, is_example=True, is_user_project=True)
     else:
-        print(f"    XXXX: {scope.file}: Template type {template} not yet supported.")
+        temp_buffer = io.StringIO()
 
-    buffer_value = temp_buffer.getvalue()
+        # Handle top level repo project in a special way.
+        if is_top_level_repo_project(scope.file_absolute_path):
+            create_top_level_cmake_conf()
+            handle_top_level_repo_project(scope, temp_buffer)
+        # Same for top-level tests.
+        elif is_top_level_repo_tests_project(scope.file_absolute_path):
+            handle_top_level_repo_tests_project(scope, temp_buffer)
+        elif is_config_test_project(scope.file_absolute_path):
+            handle_config_test_project(scope, temp_buffer)
+        elif template == "subdirs":
+            handle_subdir(scope, temp_buffer, indent=indent, is_example=is_example)
+        elif template in ("app", "lib"):
+            handle_app_or_lib(scope, temp_buffer, indent=indent, is_example=is_example)
+        else:
+            print(f"    XXXX: {scope.file}: Template type {template} not yet supported.")
 
-    if is_top_level_repo_examples_project(scope.file_absolute_path):
-        # Wrap top level examples project with some commands which
-        # are necessary to build examples as part of the overall
-        # build.
-        buffer_value = f"qt_examples_build_begin()\n\n{buffer_value}\nqt_examples_build_end()\n"
+        buffer_value = temp_buffer.getvalue()
 
-    cm_fh.write(buffer_value)
+        if is_top_level_repo_examples_project(scope.file_absolute_path):
+            # Wrap top level examples project with some commands which
+            # are necessary to build examples as part of the overall
+            # build.
+            buffer_value = f"qt_examples_build_begin()\n\n{buffer_value}\nqt_examples_build_end()\n"
+
+        cm_fh.write(buffer_value)
 
 
-def generate_new_cmakelists(scope: Scope, *, is_example: bool = False, debug: bool = False) -> None:
+def generate_new_cmakelists(
+    scope: Scope, *, is_example: bool = False, is_user_project: bool = True, debug: bool = False
+) -> None:
     if debug:
         print("Generating CMakeLists.gen.txt")
     with open(scope.generated_cmake_lists_path, "w") as cm_fh:
@@ -4848,7 +4893,9 @@ def generate_new_cmakelists(scope: Scope, *, is_example: bool = False, debug: bo
 
         is_example_heuristic = is_example_project(scope.file_absolute_path)
         final_is_example_decision = is_example or is_example_heuristic
-        cmakeify_scope(scope, cm_fh, is_example=final_is_example_decision)
+        cmakeify_scope(
+            scope, cm_fh, is_example=final_is_example_decision, is_user_project=is_user_project
+        )
 
 
 def do_include(scope: Scope, *, debug: bool = False) -> None:
@@ -5044,7 +5091,12 @@ def main() -> None:
             print(f'Skipping conversion of project: "{project_file_absolute_path}"')
             continue
 
-        generate_new_cmakelists(file_scope, is_example=args.is_example, debug=args.debug)
+        generate_new_cmakelists(
+            file_scope,
+            is_example=args.is_example,
+            is_user_project=args.is_user_project,
+            debug=args.debug,
+        )
 
         copy_generated_file = True
 
