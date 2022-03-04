@@ -81,3 +81,11 @@ def test_qt_modules():
     assert(["find_package(QT NAMES Qt5 Qt6 REQUIRED COMPONENTS Core)",
             "find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Network Widgets)",
             "find_package(Qt${QT_VERSION_MAJOR} OPTIONAL_COMPONENTS OpenGL)"] == find_package_lines)
+
+def test_qt_version_check():
+    output = convert("qt_version_check")
+    interesting_lines = []
+    for line in output.split("\n"):
+        if line.startswith("if(") and "QT_VERSION" in line:
+            interesting_lines.append(line.strip())
+    assert(["if(( ( (QT_VERSION_MAJOR GREATER 5) ) AND (QT_VERSION_MINOR LESS 1) ) AND (QT_VERSION_PATCH EQUAL 0))", "if(( ( (QT_VERSION VERSION_GREATER 6.6.5) ) AND (QT_VERSION VERSION_LESS 6.6.7) ) AND (QT_VERSION VERSION_EQUAL 6.6.6))"] == interesting_lines)

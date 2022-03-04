@@ -1669,6 +1669,28 @@ def map_condition(condition: str) -> str:
     pattern = r"(equals|greaterThan|lessThan)\(WINDOWS_SDK_VERSION,[ ]*([0-9]+)\)"
     condition = re.sub(pattern, windows_sdk_version_handler, condition)
 
+    def qt_version_handler(match_obj: Match):
+        operator = match_obj.group(1)
+        if operator == "equals":
+            operator = "EQUAL"
+        elif operator == "greaterThan":
+            operator = "GREATER"
+        elif operator == "lessThan":
+            operator = "LESS"
+
+        operator_prefix = "VERSION_"
+        version_variable = "QT_VERSION"
+        version_flavor = match_obj.group(2)
+        if version_flavor:
+            version_variable += "_" + version_flavor[:-1]
+            operator_prefix = ""
+
+        version = match_obj.group(3)
+        return f"({version_variable} {operator_prefix}{operator} {version})"
+
+    pattern = r"(equals|greaterThan|lessThan)\(QT_(MAJOR_|MINOR_|PATCH_)?VERSION,[ ]*([0-9.]+)\)"
+    condition = re.sub(pattern, qt_version_handler, condition)
+
     # Generic lessThan|equals|lessThan()
 
     def generic_version_handler(match_obj: Match):
