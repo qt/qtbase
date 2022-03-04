@@ -48,6 +48,7 @@
 #include "private/qtools_p.h"
 
 #include <algorithm>
+#include <optional>
 
 #include <stdio.h>
 #include <limits.h>
@@ -80,10 +81,10 @@ static inline int hex2int(const char *s, int n)
     return result;
 }
 
-static bool get_hex_rgb(const char *name, size_t len, QRgba64 *rgb)
+static std::optional<QRgba64> get_hex_rgb(const char *name, size_t len)
 {
     if (name[0] != '#')
-        return false;
+        return {};
     name++;
     --len;
     int a, r, g, b;
@@ -97,7 +98,7 @@ static bool get_hex_rgb(const char *name, size_t len, QRgba64 *rgb)
         g = hex2int(name + 3, 3);
         b = hex2int(name + 6, 3);
         if (r == -1 || g == -1 || b == -1)
-            return false;
+            return {};
         r = (r << 4) | (r >> 8);
         g = (g << 4) | (g >> 8);
         b = (b << 4) | (b >> 8);
@@ -117,38 +118,33 @@ static bool get_hex_rgb(const char *name, size_t len, QRgba64 *rgb)
     } else {
         r = g = b = -1;
     }
-    if ((uint)r > 65535 || (uint)g > 65535 || (uint)b > 65535 || (uint)a > 65535) {
-        *rgb = 0;
-        return false;
-    }
-    *rgb = qRgba64(r, g ,b, a);
-    return true;
+    if (uint(r) > 65535 || uint(g) > 65535 || uint(b) > 65535 || uint(a) > 65535)
+        return {};
+    return qRgba64(r, g ,b, a);
 }
 
-bool qt_get_hex_rgb(const char *name, QRgb *rgb)
+std::optional<QRgb> qt_get_hex_rgb(const char *name)
 {
-    QRgba64 rgba64;
-    if (!get_hex_rgb(name, qstrlen(name), &rgba64))
-        return false;
-    *rgb = rgba64.toArgb32();
-    return true;
+    if (std::optional<QRgba64> rgba64 = get_hex_rgb(name, qstrlen(name)))
+        return rgba64->toArgb32();
+    return {};
 }
 
-static bool get_hex_rgb(const QChar *str, size_t len, QRgba64 *rgb)
+static std::optional<QRgba64> get_hex_rgb(const QChar *str, size_t len)
 {
     if (len > 13)
-        return false;
+        return {};
     char tmp[16];
     for (size_t i = 0; i < len; ++i)
         tmp[i] = str[i].toLatin1();
     tmp[len] = 0;
-    return get_hex_rgb(tmp, len, rgb);
+    return get_hex_rgb(tmp, len);
 }
 
-static bool get_hex_rgb(QAnyStringView name, QRgba64 *rgb)
+static std::optional<QRgba64> get_hex_rgb(QAnyStringView name)
 {
-    return name.visit([&rgb] (auto name) {
-        return get_hex_rgb(name.data(), name.size(), rgb);
+    return name.visit([] (auto name) {
+        return get_hex_rgb(name.data(), name.size());
     });
 }
 
@@ -337,14 +333,12 @@ inline bool operator<(const char *name, const RGBData &data)
 inline bool operator<(const RGBData &data, const char *name)
 { return qstrcmp(data.name, name) < 0; }
 
-static bool get_named_rgb_no_space(const char *name_no_space, QRgb *rgb)
+static std::optional<QRgb> get_named_rgb_no_space(const char *name_no_space)
 {
     const RGBData *r = std::lower_bound(rgbTbl, rgbTbl + rgbTblSize, name_no_space);
-    if ((r != rgbTbl + rgbTblSize) && !(name_no_space < *r)) {
-        *rgb = r->value;
-        return true;
-    }
-    return false;
+    if ((r != rgbTbl + rgbTblSize) && !(name_no_space < *r))
+        return r->value;
+    return {};
 }
 
 namespace {
@@ -353,10 +347,10 @@ static char to_char(char ch) noexcept { return ch; }
 static char to_char(QChar ch) noexcept { return ch.toLatin1(); }
 }
 
-static bool get_named_rgb(QAnyStringView name, QRgb* rgb)
+static std::optional<QRgb> get_named_rgb(QAnyStringView name)
 {
     if (name.size() > 255)
-        return false;
+        return {};
     char name_no_space[256];
     int pos = 0;
     name.visit([&pos, &name_no_space] (auto name) {
@@ -367,7 +361,7 @@ static bool get_named_rgb(QAnyStringView name, QRgb* rgb)
     });
     name_no_space[pos] = 0;
 
-    return get_named_rgb_no_space(name_no_space, rgb);
+    return get_named_rgb_no_space(name_no_space);
 }
 
 #endif // QT_NO_COLORNAMES
@@ -1028,11 +1022,11 @@ QColor QColor::fromString(QAnyStringView name) noexcept
         return {};
 
     if (name.front() == u'#') {
-        if (QRgba64 r; get_hex_rgb(name, &r))
-            return QColor::fromRgba64(r);
+        if (std::optional<QRgba64> r = get_hex_rgb(name))
+            return QColor::fromRgba64(*r);
 #ifndef QT_NO_COLORNAMES
-    } else if (QRgb r; get_named_rgb(name, &r)) {
-        return QColor::fromRgba(r);
+    } else if (std::optional<QRgb> r = get_named_rgb(name)) {
+        return QColor::fromRgba(*r);
 #endif
     }
 

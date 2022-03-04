@@ -54,9 +54,11 @@
 #include <QtGui/private/qtguiglobal_p.h>
 #include "QtGui/qrgb.h"
 
+#include <optional>
+
 QT_BEGIN_NAMESPACE
 
-bool qt_get_hex_rgb(const char *, QRgb *);
+std::optional<QRgb> qt_get_hex_rgb(const char *) Q_DECL_PURE_FUNCTION;
 
 QT_END_NAMESPACE
 

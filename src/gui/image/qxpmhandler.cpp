@@ -754,15 +754,12 @@ inline bool operator<(const char *name, const XPMRGBData &data)
 inline bool operator<(const XPMRGBData &data, const char *name)
 { return qstrcmp(data.name, name) < 0; }
 
-static inline bool qt_get_named_xpm_rgb(const char *name_no_space, QRgb *rgb)
+static inline std::optional<QRgb> qt_get_named_xpm_rgb(const char *name_no_space)
 {
     const XPMRGBData *r = std::lower_bound(xpmRgbTbl, xpmRgbTbl + xpmRgbTblSize, name_no_space);
-    if ((r != xpmRgbTbl + xpmRgbTblSize) && !(name_no_space < *r)) {
-        *rgb = r->value;
-        return true;
-    } else {
-        return false;
-    }
+    if ((r != xpmRgbTbl + xpmRgbTblSize) && !(name_no_space < *r))
+        return r->value;
+    return {};
 }
 
 /*****************************************************************************
@@ -941,9 +938,9 @@ static bool read_xpm_body(
                 buf.truncate(((buf.length()-1) / 4 * 3) + 1); // remove alpha channel left by imagemagick
             }
             if (buf[0] == '#') {
-                qt_get_hex_rgb(buf, &c_rgb);
+                c_rgb = qt_get_hex_rgb(buf).value_or(0);
             } else {
-                qt_get_named_xpm_rgb(buf, &c_rgb);
+                c_rgb = qt_get_named_xpm_rgb(buf).value_or(0);
             }
             if (ncols <= 256) {
                 image.setColor(currentColor, 0xff000000 | c_rgb);
