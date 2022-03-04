@@ -940,6 +940,8 @@ void QWidgetTextControl::setTextCursor(const QTextCursor &cursor, bool selection
 #ifndef QT_NO_CLIPBOARD
     if (selectionClipboard)
         d->setClipboardSelection();
+#else
+    Q_UNUSED(selectionClipboard);
 #endif
 }
 
