@@ -68,14 +68,18 @@
 
 #if QT_CONFIG(dockwidget)
 #include "qdockarealayout_p.h"
+#include "qdockwidget.h"
 #endif
 #if QT_CONFIG(toolbar)
 #include "qtoolbararealayout_p.h"
 #endif
+#include <QtCore/qloggingcategory.h>
 
 QT_REQUIRE_CONFIG(mainwindow);
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcQpaDockWidgets);
 
 class QToolBar;
 class QRubberBand;
@@ -334,7 +338,7 @@ bool QMainWindowLayoutSeparatorHelper<Layout>::endSeparatorMove(const QPoint &)
     return true;
 }
 
-class QDockWidgetGroupWindow : public QWidget
+class Q_AUTOTEST_EXPORT QDockWidgetGroupWindow : public QWidget
 {
     Q_OBJECT
 public:
@@ -369,14 +373,35 @@ private:
 };
 
 // This item will be used in the layout for the gap item. We cannot use QWidgetItem directly
-// because QWidgetItem functions return an empty size for widgets that are are floating.
+// because QWidgetItem functions return an empty size for widgets that are floating.
 class QDockWidgetGroupWindowItem : public QWidgetItem
 {
 public:
     explicit QDockWidgetGroupWindowItem(QDockWidgetGroupWindow *parent) : QWidgetItem(parent) {}
-    QSize minimumSize() const override { return lay()->minimumSize(); }
-    QSize maximumSize() const override { return lay()->maximumSize(); }
-    QSize sizeHint() const override { return lay()->sizeHint(); }
+
+    // when the item contains a dock widget, obtain its size (to prevent infinite loop)
+    // ask the layout otherwise
+    QSize minimumSize() const override
+    {
+        if (auto dw = widget()->findChild<QDockWidget *>())
+            return dw->minimumSize();
+        return lay()->minimumSize();
+    }
+    QSize maximumSize() const override
+    {
+        auto dw = widget()->findChild<QDockWidget *>();
+        if (dw)
+            return dw->maximumSize();
+        return lay()->maximumSize();
+    }
+    QSize sizeHint() const override
+    {
+        auto dw = widget()->findChild<QDockWidget *>();
+        if (dw)
+            return dw->sizeHint();
+        return lay()->sizeHint();
+    }
+    QWidget* widget() const override { return wid; }
 
 private:
     QLayout *lay() const { return const_cast<QDockWidgetGroupWindowItem *>(this)->widget()->layout(); }
@@ -389,7 +414,7 @@ private:
    widgets.
 */
 
-class QMainWindowLayoutState
+class Q_AUTOTEST_EXPORT QMainWindowLayoutState
 {
 public:
     QRect rect;
@@ -460,22 +485,19 @@ public:
     QMainWindow::DockOptions dockOptions;
     void setDockOptions(QMainWindow::DockOptions opts);
 
-    // status bar
-
     QLayoutItem *statusbar;
 
+    // status bar
 #if QT_CONFIG(statusbar)
     QStatusBar *statusBar() const;
     void setStatusBar(QStatusBar *sb);
 #endif
 
     // central widget
-
     QWidget *centralWidget() const;
     void setCentralWidget(QWidget *cw);
 
     // toolbars
-
 #if QT_CONFIG(toolbar)
     void addToolBarBreak(Qt::ToolBarArea area);
     void insertToolBarBreak(QToolBar *before);
@@ -492,10 +514,11 @@ public:
 #endif
 
     // dock widgets
-
 #if QT_CONFIG(dockwidget)
     void setCorner(Qt::Corner corner, Qt::DockWidgetArea area);
     Qt::DockWidgetArea corner(Qt::Corner corner) const;
+    enum DockWidgetAreaSize {Visible, Maximum};
+    QRect dockWidgetAreaRect(Qt::DockWidgetArea area, DockWidgetAreaSize size = Maximum) const;
     void addDockWidget(Qt::DockWidgetArea area,
                        QDockWidget *dockwidget,
                        Qt::Orientation orientation);
@@ -542,7 +565,6 @@ public:
 #endif // QT_CONFIG(dockwidget)
 
     // save/restore
-
     enum VersionMarkers { // sentinel values used to validate state data
         VersionMarker = 0xff
     };
@@ -551,7 +573,6 @@ public:
     QBasicTimer discardRestoredStateTimer;
 
     // QLayout interface
-
     void addItem(QLayoutItem *item) override;
     void setGeometry(const QRect &r) override;
     QLayoutItem *itemAt(int index) const override;
@@ -565,7 +586,6 @@ public:
     void invalidate() override;
 
     // animations
-
     QWidgetAnimator widgetAnimator;
     QList<int> currentGapPos;
     QRect currentGapRect;
@@ -579,7 +599,7 @@ public:
 #endif
     bool isInApplyState = false;
 
-    void hover(QLayoutItem *widgetItem, const QPoint &mousePos);
+    void hover(QLayoutItem *hoverTarget, const QPoint &mousePos);
     bool plug(QLayoutItem *widgetItem);
     QLayoutItem *unplug(QWidget *widget, bool group = false);
     void revert(QLayoutItem *widgetItem);
