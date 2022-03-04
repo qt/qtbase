@@ -540,7 +540,7 @@ static bool addFontToDatabase(QString familyName,
             str << " TRUETYPE";
         str << " scalable=" << scalable << " Size=" << size
                 << " Style=" << style << " Weight=" << weight
-                << " stretch=" << stretch;
+                << " stretch=" << stretch << " styleName=" << styleName;
         qCDebug(lcQpaFonts) << message;
     }
 #endif

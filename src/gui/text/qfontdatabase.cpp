@@ -1074,13 +1074,15 @@ static int match(int script,
     qCDebug(lcFontMatch, "QFontDatabase::match\n"
              "  request:\n"
              "    family: %s [%s], script: %d\n"
+             "    styleName: %s\n"
              "    weight: %d, style: %d\n"
              "    stretch: %d\n"
              "    pixelSize: %g\n"
              "    pitch: %c",
              family_name.isEmpty() ? "-- first in script --" : family_name.toLatin1().constData(),
-             foundry_name.isEmpty() ? "-- any --" : foundry_name.toLatin1().constData(),
-             script, request.weight, request.style, request.stretch, request.pixelSize, pitch);
+             foundry_name.isEmpty() ? "-- any --" : foundry_name.toLatin1().constData(), script,
+             request.styleName.isEmpty() ? "-- any --" : request.styleName.toLatin1().constData(),
+             request.weight, request.style, request.stretch, request.pixelSize, pitch);
 
     desc->family = nullptr;
     desc->foundry = nullptr;
