@@ -149,6 +149,8 @@ QQnxAbstractVirtualKeyboard::EnterKeyType
     case Qt::EnterKeyPrevious: // unsupported
         return DefaultReturn;
     }
+    Q_UNREACHABLE();
+    return DefaultReturn;
 }
 
 QT_END_NAMESPACE
