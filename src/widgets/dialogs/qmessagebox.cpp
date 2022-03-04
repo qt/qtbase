@@ -1812,7 +1812,7 @@ void QMessageBox::about(QWidget *parent, const QString &title, const QString &te
     }
 #endif
 
-    QMessageBox *msgBox = new QMessageBox(title, text, Information, 0, 0, 0, parent
+    QMessageBox *msgBox = new QMessageBox(Information, title, text, NoButton, parent
 #ifdef Q_OS_MAC
                                           , Qt::WindowTitleHint | Qt::WindowSystemMenuHint
 #endif
