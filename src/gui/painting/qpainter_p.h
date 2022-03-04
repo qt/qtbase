@@ -252,7 +252,7 @@ public:
 
     static QPainterPrivate *get(QPainter *painter)
     {
-        return painter->d_ptr.data();
+        return painter->d_ptr.get();
     }
 
     QTransform viewTransform() const;

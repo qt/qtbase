@@ -48,6 +48,7 @@
 #include <QtGui/qpixmap.h>
 #include <QtGui/qimage.h>
 #include <QtGui/qtextoption.h>
+#include <memory>
 
 #ifndef QT_INCLUDE_COMPAT
 #include <QtGui/qpolygon.h>
@@ -448,7 +449,7 @@ public:
 private:
     Q_DISABLE_COPY(QPainter)
 
-    QScopedPointer<QPainterPrivate> d_ptr;
+    std::unique_ptr<QPainterPrivate> d_ptr;
 
     friend class QWidget;
     friend class QFontEngine;

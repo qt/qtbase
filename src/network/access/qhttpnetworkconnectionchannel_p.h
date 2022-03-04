@@ -78,6 +78,8 @@
 
 #include <QtCore/qscopedpointer.h>
 
+#include <memory>
+
 QT_REQUIRE_CONFIG(http);
 
 QT_BEGIN_NAMESPACE
@@ -120,7 +122,7 @@ public:
     QAuthenticator proxyAuthenticator;
     bool authenticationCredentialsSent;
     bool proxyCredentialsSent;
-    QScopedPointer<QAbstractProtocolHandler> protocolHandler;
+    std::unique_ptr<QAbstractProtocolHandler> protocolHandler;
     QMultiMap<int, HttpMessagePair> h2RequestsToSend;
     bool switchedToHttp2 = false;
 #ifndef QT_NO_SSL

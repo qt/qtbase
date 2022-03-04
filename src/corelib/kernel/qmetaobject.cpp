@@ -62,6 +62,7 @@
 #include "private/qmetaobject_moc_p.h"
 
 #include <ctype.h>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
@@ -2399,7 +2400,7 @@ bool QMetaMethod::invoke(QObject *object,
             return false;
         }
 
-        QScopedPointer<QMetaCallEvent> event(new QMetaCallEvent(idx_offset, idx_relative, callFunction, nullptr, -1, paramCount));
+        auto event = std::make_unique<QMetaCallEvent>(idx_offset, idx_relative, callFunction, nullptr, -1, paramCount);
         QMetaType *types = event->types();
         void **args = event->args();
 
@@ -2423,7 +2424,7 @@ bool QMetaMethod::invoke(QObject *object,
             }
         }
 
-        QCoreApplication::postEvent(object, event.take());
+        QCoreApplication::postEvent(object, event.release());
     } else { // blocking queued connection
 #if QT_CONFIG(thread)
         if (receiverInSameThread) {

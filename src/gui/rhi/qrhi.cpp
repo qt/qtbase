@@ -55,6 +55,8 @@
 #include "qrhimetal_p_p.h"
 #endif
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
@@ -4975,7 +4977,7 @@ QRhi::~QRhi()
  */
 QRhi *QRhi::create(Implementation impl, QRhiInitParams *params, Flags flags, QRhiNativeHandles *importDevice)
 {
-    QScopedPointer<QRhi> r(new QRhi);
+    std::unique_ptr<QRhi> r(new QRhi);
 
     switch (impl) {
     case Null:
@@ -5023,7 +5025,7 @@ QRhi *QRhi::create(Implementation impl, QRhiInitParams *params, Flags flags, QRh
     }
 
     if (r->d) {
-        r->d->q = r.data();
+        r->d->q = r.get();
 
         if (flags.testFlag(EnableProfiling)) {
             QRhiProfilerPrivate *profD = QRhiProfilerPrivate::get(&r->d->profiler);
@@ -5042,7 +5044,7 @@ QRhi *QRhi::create(Implementation impl, QRhiInitParams *params, Flags flags, QRh
         if (r->d->create(flags)) {
             r->d->implType = impl;
             r->d->implThread = QThread::currentThread();
-            return r.take();
+            return r.release();
         }
     }
 
