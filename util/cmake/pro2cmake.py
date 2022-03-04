@@ -3738,6 +3738,7 @@ def write_find_package_section(
     indent: int = 0,
     is_required: bool = True,
     end_with_extra_newline: bool = True,
+    qt_package_name: str = "Qt6",
 ):
     packages = []  # type: List[LibraryMapping]
     all_libs = public_libs + private_libs
@@ -3752,8 +3753,10 @@ def write_find_package_section(
         if p.components is not None:
             qt_components += p.components
     if qt_components:
+        if "Core" in qt_components:
+            qt_components.remove("Core")
         qt_components = sorted(qt_components)
-        qt_package = LibraryMapping("unknown", "Qt6", "unknown", components=qt_components)
+        qt_package = LibraryMapping("unknown", qt_package_name, "unknown", components=qt_components)
         if is_required:
             qt_package.extra = ["REQUIRED"]
         cm_fh.write(
@@ -3908,11 +3911,19 @@ def write_example(
     handle_source_subtractions(scopes)
     scopes = merge_scopes(scopes)
 
+    # Write find_package call for Qt5/Qt6 and make it available as package QT.
+    cm_fh.write("find_package(QT NAMES Qt5 Qt6 REQUIRED COMPONENTS Core)\n")
+
     # Write find_package calls for required packages.
     # We consider packages as required if they appear at the top-level scope.
     (public_libs, private_libs) = extract_cmake_libraries(scope, is_example=True)
     write_find_package_section(
-        cm_fh, public_libs, private_libs, indent=indent, end_with_extra_newline=False
+        cm_fh,
+        public_libs,
+        private_libs,
+        indent=indent,
+        end_with_extra_newline=False,
+        qt_package_name="Qt${QT_VERSION_MAJOR}",
     )
 
     # Write find_package calls for optional packages.
@@ -3934,6 +3945,7 @@ def write_example(
         indent=indent,
         is_required=False,
         end_with_extra_newline=False,
+        qt_package_name="Qt${QT_VERSION_MAJOR}",
     )
 
     cm_fh.write("\n")
