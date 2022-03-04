@@ -4319,7 +4319,7 @@ def write_qml_module(
         content += "    "
         content += arg
         content += "\n"
-    content += "    INSTALL_LOCATION ${INSTALL_EXAMPLEDIR}\n)\n"
+    content += ")\n"
 
     if resource:
         content += write_resource_source_file_properties(
