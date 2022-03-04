@@ -235,7 +235,7 @@ QErrorMessage::QErrorMessage(QWidget * parent)
     grid->setRowStretch(0, 42);
 
 #if QT_CONFIG(messagebox)
-    d->icon->setPixmap(QMessageBox::standardIcon(QMessageBox::Information));
+    d->icon->setPixmap(style()->standardPixmap(QStyle::SP_MessageBoxInformation));
     d->icon->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
 #endif
     d->again->setChecked(true);
