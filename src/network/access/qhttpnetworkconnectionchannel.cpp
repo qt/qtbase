@@ -58,6 +58,8 @@
 
 #include "private/qnetconmonitor_p.h"
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 namespace
@@ -242,7 +244,7 @@ void QHttpNetworkConnectionChannel::abort()
 
 bool QHttpNetworkConnectionChannel::sendRequest()
 {
-    Q_ASSERT(!protocolHandler.isNull());
+    Q_ASSERT(protocolHandler);
     return protocolHandler->sendRequest();
 }
 
@@ -255,7 +257,7 @@ bool QHttpNetworkConnectionChannel::sendRequest()
 void QHttpNetworkConnectionChannel::sendRequestDelayed()
 {
     QMetaObject::invokeMethod(this, [this] {
-        Q_ASSERT(!protocolHandler.isNull());
+        Q_ASSERT(protocolHandler);
         if (reply)
             protocolHandler->sendRequest();
     }, Qt::ConnectionType::QueuedConnection);
@@ -263,13 +265,13 @@ void QHttpNetworkConnectionChannel::sendRequestDelayed()
 
 void QHttpNetworkConnectionChannel::_q_receiveReply()
 {
-    Q_ASSERT(!protocolHandler.isNull());
+    Q_ASSERT(protocolHandler);
     protocolHandler->_q_receiveReply();
 }
 
 void QHttpNetworkConnectionChannel::_q_readyRead()
 {
-    Q_ASSERT(!protocolHandler.isNull());
+    Q_ASSERT(protocolHandler);
     protocolHandler->_q_readyRead();
 }
 
@@ -471,18 +473,18 @@ void QHttpNetworkConnectionChannel::allDone()
             // trick with ProtocolHandlerDeleter, a QObject-derived class.
             // These dances below just make it somewhat exception-safe.
             // 1. Create a new owner:
-            QAbstractProtocolHandler *oldHandler = protocolHandler.data();
-            QScopedPointer<ProtocolHandlerDeleter> deleter(new ProtocolHandlerDeleter(oldHandler));
+            QAbstractProtocolHandler *oldHandler = protocolHandler.get();
+            auto deleter = std::make_unique<ProtocolHandlerDeleter>(oldHandler);
             // 2. Retire the old one:
-            protocolHandler.take();
+            Q_UNUSED(protocolHandler.release());
             // 3. Call 'deleteLater':
             deleter->deleteLater();
             // 3. Give up the ownerthip:
-            deleter.take();
+            Q_UNUSED(deleter.release());
 
             connection->fillHttp2Queue();
             protocolHandler.reset(new QHttp2ProtocolHandler(this));
-            QHttp2ProtocolHandler *h2c = static_cast<QHttp2ProtocolHandler *>(protocolHandler.data());
+            QHttp2ProtocolHandler *h2c = static_cast<QHttp2ProtocolHandler *>(protocolHandler.get());
             QMetaObject::invokeMethod(h2c, "_q_receiveReply", Qt::QueuedConnection);
             QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
             // If we only had one request sent with H2 allowed, we may fail to send
@@ -989,11 +991,11 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
             // we do not resend, but must report errors if any request is in progress (note, while
             // not in its sendRequest(), protocol handler switches the channel to IdleState, thus
             // this check is under this condition in 'if'):
-            if (protocolHandler.data()) {
+            if (protocolHandler) {
                 if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2Direct
                     || (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2
                         && switchedToHttp2)) {
-                    auto h2Handler = static_cast<QHttp2ProtocolHandler *>(protocolHandler.data());
+                    auto h2Handler = static_cast<QHttp2ProtocolHandler *>(protocolHandler.get());
                     h2Handler->handleConnectionClosure();
                 }
             }

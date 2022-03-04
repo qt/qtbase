@@ -71,6 +71,7 @@
 
 #include <new>
 #include <mutex>
+#include <memory>
 
 #include <ctype.h>
 #include <limits.h>
@@ -125,7 +126,7 @@ static int *queuedConnectionTypes(const QMetaMethod &method)
 
 static int *queuedConnectionTypes(const QArgumentType *argumentTypes, int argc)
 {
-    QScopedArrayPointer<int> types(new int[argc + 1]);
+    auto types = std::make_unique<int[]>(argc + 1);
     for (int i = 0; i < argc; ++i) {
         const QArgumentType &type = argumentTypes[i];
         if (type.type())
@@ -145,7 +146,7 @@ static int *queuedConnectionTypes(const QArgumentType *argumentTypes, int argc)
     }
     types[argc] = 0;
 
-    return types.take();
+    return types.release();
 }
 
 static QBasicMutex _q_ObjectMutexPool[131];

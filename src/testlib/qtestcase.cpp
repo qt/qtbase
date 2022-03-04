@@ -88,6 +88,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <chrono>
+#include <memory>
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -1337,9 +1338,9 @@ char *toHexRepresentation(const char *ba, int length)
 char *toPrettyCString(const char *p, int length)
 {
     bool trimmed = false;
-    QScopedArrayPointer<char> buffer(new char[256]);
+    auto buffer = std::make_unique<char[]>(256);
     const char *end = p + length;
-    char *dst = buffer.data();
+    char *dst = buffer.get();
 
     bool lastWasHexEscape = false;
     *dst++ = '"';
@@ -1349,7 +1350,7 @@ char *toPrettyCString(const char *p, int length)
         //  2 bytes: a simple escape sequence (\n)
         //  3 bytes: "" and a character
         //  4 bytes: an hex escape sequence (\xHH)
-        if (dst - buffer.data() > 246) {
+        if (dst - buffer.get() > 246) {
             // plus the quote, the three dots and NUL, it's 255 in the worst case
             trimmed = true;
             break;
@@ -1410,7 +1411,7 @@ char *toPrettyCString(const char *p, int length)
         *dst++ = '.';
     }
     *dst++ = '\0';
-    return buffer.take();
+    return buffer.release();
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -1436,13 +1437,13 @@ char *toPrettyUnicode(QStringView string)
     auto length = string.size();
     // keep it simple for the vast majority of cases
     bool trimmed = false;
-    QScopedArrayPointer<char> buffer(new char[256]);
+    auto buffer = std::make_unique<char[]>(256);
     const ushort *end = p + length;
-    char *dst = buffer.data();
+    char *dst = buffer.get();
 
     *dst++ = '"';
     for ( ; p != end; ++p) {
-        if (dst - buffer.data() > 245) {
+        if (dst - buffer.get() > 245) {
             // plus the quote, the three dots and NUL, it's 250, 251 or 255
             trimmed = true;
             break;
@@ -1492,7 +1493,7 @@ char *toPrettyUnicode(QStringView string)
         *dst++ = '.';
     }
     *dst++ = '\0';
-    return buffer.take();
+    return buffer.release();
 }
 
 void TestMethods::invokeTests(QObject *testObject) const

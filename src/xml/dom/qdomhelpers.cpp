@@ -45,6 +45,7 @@
 #include "qdom_p.h"
 #include "qxmlstream.h"
 
+#include <memory>
 #include <stack>
 
 QT_BEGIN_NAMESPACE
@@ -145,23 +146,23 @@ bool QDomBuilder::characters(const QString &characters, bool cdata)
     if (node == doc)
         return false;
 
-    QScopedPointer<QDomNodePrivate> n;
+    std::unique_ptr<QDomNodePrivate> n;
     if (cdata) {
         n.reset(doc->createCDATASection(characters));
     } else if (!entityName.isEmpty()) {
-        QScopedPointer<QDomEntityPrivate> e(
-                new QDomEntityPrivate(doc, nullptr, entityName, QString(), QString(), QString()));
+        auto e = std::make_unique<QDomEntityPrivate>(
+                    doc, nullptr, entityName, QString(), QString(), QString());
         e->value = characters;
         e->ref.deref();
-        doc->doctype()->appendChild(e.data());
-        e.take();
+        doc->doctype()->appendChild(e.get());
+        Q_UNUSED(e.release());
         n.reset(doc->createEntityReference(entityName));
     } else {
         n.reset(doc->createTextNode(characters));
     }
     n->setLocation(locator->line(), locator->column());
-    node->appendChild(n.data());
-    n.take();
+    node->appendChild(n.get());
+    Q_UNUSED(n.release());
 
     return true;
 }

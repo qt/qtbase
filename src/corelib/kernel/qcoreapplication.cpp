@@ -134,6 +134,7 @@
 #endif
 
 #include <algorithm>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
@@ -391,8 +392,8 @@ struct QCoreApplicationData {
     bool applicationVersionSet; // true if setApplicationVersion was called
 
 #if QT_CONFIG(library)
-    QScopedPointer<QStringList> app_libpaths;
-    QScopedPointer<QStringList> manual_libpaths;
+    std::unique_ptr<QStringList> app_libpaths;
+    std::unique_ptr<QStringList> manual_libpaths;
 #endif
 
 };
@@ -568,7 +569,7 @@ void QCoreApplicationPrivate::checkReceiverThread(QObject *receiver)
 void QCoreApplicationPrivate::appendApplicationPathToLibraryPaths()
 {
 #if QT_CONFIG(library)
-    QStringList *app_libpaths = coreappdata()->app_libpaths.data();
+    QStringList *app_libpaths = coreappdata()->app_libpaths.get();
     if (!app_libpaths)
         coreappdata()->app_libpaths.reset(app_libpaths = new QStringList);
     QString app_location = QCoreApplication::applicationFilePath();
@@ -815,8 +816,8 @@ void QCoreApplicationPrivate::init()
     // Reset the lib paths, so that they will be recomputed, taking the availability of argv[0]
     // into account. If necessary, recompute right away and replay the manual changes on top of the
     // new lib paths.
-    QStringList *appPaths = coreappdata()->app_libpaths.take();
-    QStringList *manualPaths = coreappdata()->manual_libpaths.take();
+    QStringList *appPaths = coreappdata()->app_libpaths.release();
+    QStringList *manualPaths = coreappdata()->manual_libpaths.release();
     if (appPaths) {
         if (manualPaths) {
             // Replay the delta. As paths can only be prepended to the front or removed from
@@ -1599,10 +1600,10 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
 
     // delete the event on exceptions to protect against memory leaks till the event is
     // properly owned in the postEventList
-    QScopedPointer<QEvent> eventDeleter(event);
+    std::unique_ptr<QEvent> eventDeleter(event);
     Q_TRACE(QCoreApplication_postEvent_event_posted, receiver, event, event->type());
     data->postEventList.addEvent(QPostEvent(receiver, event, priority));
-    eventDeleter.take();
+    Q_UNUSED(eventDeleter.release());
     event->m_posted = true;
     ++receiver->d_func()->postedEvents;
     data->canWait = false;
@@ -2835,14 +2836,14 @@ void QCoreApplication::addLibraryPath(const QString &path)
 
     QMutexLocker locker(libraryPathMutex());
 
-    QStringList *libpaths = coreappdata()->manual_libpaths.data();
+    QStringList *libpaths = coreappdata()->manual_libpaths.get();
     if (libpaths) {
         if (libpaths->contains(canonicalPath))
             return;
     } else {
         // make sure that library paths are initialized
         libraryPathsLocked();
-        QStringList *app_libpaths = coreappdata()->app_libpaths.data();
+        QStringList *app_libpaths = coreappdata()->app_libpaths.get();
         if (app_libpaths->contains(canonicalPath))
             return;
 
@@ -2874,14 +2875,14 @@ void QCoreApplication::removeLibraryPath(const QString &path)
 
     QMutexLocker locker(libraryPathMutex());
 
-    QStringList *libpaths = coreappdata()->manual_libpaths.data();
+    QStringList *libpaths = coreappdata()->manual_libpaths.get();
     if (libpaths) {
         if (libpaths->removeAll(canonicalPath) == 0)
             return;
     } else {
         // make sure that library paths is initialized
         libraryPathsLocked();
-        QStringList *app_libpaths = coreappdata()->app_libpaths.data();
+        QStringList *app_libpaths = coreappdata()->app_libpaths.get();
         if (!app_libpaths->contains(canonicalPath))
             return;
 

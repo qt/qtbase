@@ -748,7 +748,7 @@ void QOpenGLWidgetPrivate::initialize()
     requestedSamples = requestedFormat.samples();
     requestedFormat.setSamples(0);
 
-    QScopedPointer<QOpenGLContext> ctx(new QOpenGLContext);
+    auto ctx = std::make_unique<QOpenGLContext>();
     ctx->setFormat(requestedFormat);
     if (shareContext) {
         ctx->setShareContext(shareContext);
@@ -793,7 +793,7 @@ void QOpenGLWidgetPrivate::initialize()
     paintDevice->setSize(q->size() * q->devicePixelRatio());
     paintDevice->setDevicePixelRatio(q->devicePixelRatio());
 
-    context = ctx.take();
+    context = ctx.release();
     initialized = true;
 
     q->initializeGL();

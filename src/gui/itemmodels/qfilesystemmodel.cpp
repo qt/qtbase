@@ -907,14 +907,14 @@ bool QFileSystemModel::setData(const QModelIndex &idx, const QVariant &value, in
         int visibleLocation = parentNode->visibleLocation(parentNode->children.value(indexNode->fileName)->fileName);
 
         parentNode->visibleChildren.removeAt(visibleLocation);
-        QScopedPointer<QFileSystemModelPrivate::QFileSystemNode> nodeToRename(parentNode->children.take(oldName));
+        std::unique_ptr<QFileSystemModelPrivate::QFileSystemNode> nodeToRename(parentNode->children.take(oldName));
         nodeToRename->fileName = newName;
         nodeToRename->parent = parentNode;
 #if QT_CONFIG(filesystemwatcher)
         nodeToRename->populate(d->fileInfoGatherer.getInfo(QFileInfo(parentPath, newName)));
 #endif
         nodeToRename->isVisible = true;
-        parentNode->children[newName] = nodeToRename.take();
+        parentNode->children[newName] = nodeToRename.release();
         parentNode->visibleChildren.insert(visibleLocation, newName);
 
         d->delayedSort();

@@ -92,6 +92,8 @@
 
 #include "qwindowsopengltester.h"
 
+#include <memory>
+
 static inline void initOpenGlBlacklistResources()
 {
     Q_INIT_RESOURCE(openglblacklists);
@@ -476,9 +478,9 @@ QPlatformOpenGLContext *QWindowsIntegration::createPlatformOpenGLContext(QOpenGL
 {
     qCDebug(lcQpaGl) << __FUNCTION__ << context->format();
     if (QWindowsStaticOpenGLContext *staticOpenGLContext = QWindowsIntegration::staticOpenGLContext()) {
-        QScopedPointer<QWindowsOpenGLContext> result(staticOpenGLContext->createContext(context));
+        std::unique_ptr<QWindowsOpenGLContext> result(staticOpenGLContext->createContext(context));
         if (result->isValid())
-            return result.take();
+            return result.release();
     }
     return nullptr;
 }
@@ -508,12 +510,12 @@ QOpenGLContext *QWindowsIntegration::createOpenGLContext(HGLRC ctx, HWND window,
         return nullptr;
 
     if (QWindowsStaticOpenGLContext *staticOpenGLContext = QWindowsIntegration::staticOpenGLContext()) {
-        QScopedPointer<QWindowsOpenGLContext> result(staticOpenGLContext->createContext(ctx, window));
+        std::unique_ptr<QWindowsOpenGLContext> result(staticOpenGLContext->createContext(ctx, window));
         if (result->isValid()) {
             auto *context = new QOpenGLContext;
             context->setShareContext(shareContext);
             auto *contextPrivate = QOpenGLContextPrivate::get(context);
-            contextPrivate->adopt(result.take());
+            contextPrivate->adopt(result.release());
             return context;
         }
     }

@@ -48,6 +48,7 @@
 #include "qbitmap.h"
 #include "qtransform.h"
 
+#include <memory>
 #include <private/qdebug_p.h>
 
 #ifdef Q_OS_WIN
@@ -3915,7 +3916,7 @@ QRegion &QRegion::operator=(const QRegion &r)
 QRegion QRegion::copy() const
 {
     QRegion r;
-    QScopedPointer<QRegionData> x(new QRegionData);
+    auto x = std::make_unique<QRegionData>();
     x->ref.initializeOwned();
     if (d->qt_rgn)
         x->qt_rgn = new QRegionPrivate(*d->qt_rgn);
@@ -3923,7 +3924,7 @@ QRegion QRegion::copy() const
         x->qt_rgn = new QRegionPrivate;
     if (!r.d->ref.deref())
         cleanUp(r.d);
-    r.d = x.take();
+    r.d = x.release();
     return r;
 }
 

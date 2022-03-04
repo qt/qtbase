@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 // QtCore
+#include <memory>
 #include <qdebug.h>
 #include <qmath.h>
 #include <qmutex.h>
@@ -76,6 +77,9 @@
 #include <private/qrawfont_p.h>
 
 QT_BEGIN_NAMESPACE
+
+// We changed the type from QScopedPointer to unique_ptr, make sure it's binary compatible:
+static_assert(sizeof(QScopedPointer<QPainterPrivate>) == sizeof(std::unique_ptr<QPainterPrivate>));
 
 #define QGradient_StretchToDevice 0x10000000
 #define QPaintEngine_OpaqueBackground 0x40000000
@@ -288,9 +292,9 @@ bool QPainterPrivate::attachPainterPrivate(QPainter *q, QPaintDevice *pdev)
         const int newSize = sp->d_ptr->d_ptrs_size * sizeof(QPainterPrivate *);
         sp->d_ptr->d_ptrs = q_check_ptr((QPainterPrivate **)realloc(sp->d_ptr->d_ptrs, newSize));
     }
-    sp->d_ptr->d_ptrs[++sp->d_ptr->refcount - 2] = q->d_ptr.data();
-    q->d_ptr.take();
-    q->d_ptr.reset(sp->d_ptr.data());
+    sp->d_ptr->d_ptrs[++sp->d_ptr->refcount - 2] = q->d_ptr.get();
+    Q_UNUSED(q->d_ptr.release());
+    q->d_ptr.reset(sp->d_ptr.get());
 
     Q_ASSERT(q->d_ptr->state);
 
@@ -344,7 +348,7 @@ void QPainterPrivate::detachPainterPrivate(QPainter *q)
 
     d_ptrs[refcount - 1] = nullptr;
     q->restore();
-    q->d_ptr.take();
+    Q_UNUSED(q->d_ptr.release());
     q->d_ptr.reset(original);
 
     if (emulationEngine) {

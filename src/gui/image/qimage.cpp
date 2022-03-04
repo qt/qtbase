@@ -77,6 +77,8 @@
 
 #include <qtgui_tracepoints_p.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 // MSVC 19.28 does show spurious warning "C4723: potential divide by 0" for code that divides
@@ -140,7 +142,7 @@ QImageData * QImageData::create(const QSize &size, QImage::Format format)
     if (!params.isValid())
         return nullptr;
 
-    QScopedPointer<QImageData> d(new QImageData);
+    auto d = std::make_unique<QImageData>();
 
     switch (format) {
     case QImage::Format_Mono:
@@ -168,7 +170,7 @@ QImageData * QImageData::create(const QSize &size, QImage::Format format)
         return nullptr;
 
     d->ref.ref();
-    return d.take();
+    return d.release();
 }
 
 QImageData::~QImageData()

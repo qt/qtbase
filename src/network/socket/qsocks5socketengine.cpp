@@ -56,6 +56,8 @@
 #include <qendian.h>
 #include <qnetworkinterface.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 static const int MaxWriteBufferSize = 128*1024;
@@ -1911,9 +1913,9 @@ QSocks5SocketEngineHandler::createSocketEngine(QAbstractSocket::SocketType socke
         QSOCKS5_DEBUG << "not proxying";
         return nullptr;
     }
-    QScopedPointer<QSocks5SocketEngine> engine(new QSocks5SocketEngine(parent));
+    auto engine = std::make_unique<QSocks5SocketEngine>(parent);
     engine->setProxy(proxy);
-    return engine.take();
+    return engine.release();
 }
 
 QAbstractSocketEngine *QSocks5SocketEngineHandler::createSocketEngine(qintptr socketDescriptor, QObject *parent)

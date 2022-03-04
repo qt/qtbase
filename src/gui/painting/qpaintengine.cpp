@@ -52,6 +52,7 @@
 #include <private/qpaintengineex_p.h>
 #include <private/qtextengine_p.h>
 
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
@@ -1009,9 +1010,9 @@ QPixmap QPaintEngine::createPixmap(QSize size)
         return QPixmap();
     }
 
-    QScopedPointer<QPlatformPixmap> data(QGuiApplicationPrivate::platformIntegration()->createPlatformPixmap(QPlatformPixmap::PixmapType));
+    std::unique_ptr<QPlatformPixmap> data(QGuiApplicationPrivate::platformIntegration()->createPlatformPixmap(QPlatformPixmap::PixmapType));
     data->resize(size.width(), size.height());
-    return QPixmap(data.take());
+    return QPixmap(data.release());
 }
 
 /*!
@@ -1026,12 +1027,12 @@ QPixmap QPaintEngine::createPixmapFromImage(QImage image, Qt::ImageConversionFla
         return QPixmap();
     }
 
-    QScopedPointer<QPlatformPixmap> data(QGuiApplicationPrivate::platformIntegration()->createPlatformPixmap(QPlatformPixmap::PixmapType));
+    std::unique_ptr<QPlatformPixmap> data(QGuiApplicationPrivate::platformIntegration()->createPlatformPixmap(QPlatformPixmap::PixmapType));
     if (image.isDetached())
         data->fromImageInPlace(image, flags);
     else
         data->fromImage(image, flags);
-    return QPixmap(data.take());
+    return QPixmap(data.release());
 }
 
 QPaintEnginePrivate::~QPaintEnginePrivate()
