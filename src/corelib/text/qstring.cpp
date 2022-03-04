@@ -4671,13 +4671,14 @@ qsizetype QString::count(const QRegularExpression &re) const
 }
 #endif // QT_CONFIG(regularexpression)
 
+#if QT_DEPRECATED_SINCE(6, 4)
 /*! \fn qsizetype QString::count() const
-
+    \deprecated [6.4] Use size() or length() instead.
     \overload count()
 
     Same as size().
 */
-
+#endif
 
 /*!
     \enum QString::SectionFlag

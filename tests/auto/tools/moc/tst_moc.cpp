@@ -1288,9 +1288,9 @@ void tst_Moc::winNewline()
     QVERIFY(f.open(QIODevice::ReadOnly)); // no QIODevice::Text!
     QByteArray data = f.readAll();
     f.close();
-    for (int i = 0; i < data.count(); ++i) {
+    for (int i = 0; i < data.size(); ++i) {
         if (data.at(i) == QLatin1Char('\r')) {
-            QVERIFY(i < data.count() - 1);
+            QVERIFY(i < data.size() - 1);
             ++i;
             QCOMPARE(data.at(i), '\n');
         } else {

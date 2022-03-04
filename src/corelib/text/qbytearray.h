@@ -468,7 +468,10 @@ public:
     inline std::string toStdString() const;
 
     inline qsizetype size() const noexcept { return d->size; }
+#if QT_DEPRECATED_SINCE(6, 4)
+    QT_DEPRECATED_VERSION_X_6_4("Use size() or length() instead.")
     inline qsizetype count() const noexcept { return size(); }
+#endif
     inline qsizetype length() const noexcept { return size(); }
     bool isNull() const noexcept;
 

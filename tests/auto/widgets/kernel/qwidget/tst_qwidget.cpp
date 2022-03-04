@@ -4019,7 +4019,7 @@ void tst_QWidget::restoreVersion1Geometry()
     QVERIFY(f.exists());
     f.open(QIODevice::ReadOnly);
     const QByteArray savedGeometry = f.readAll();
-    QCOMPARE(savedGeometry.count(), 46);
+    QCOMPARE(savedGeometry.size(), 46);
     f.close();
 
     QWidget widget;

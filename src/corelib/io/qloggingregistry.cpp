@@ -112,7 +112,7 @@ int QLoggingRule::pass(QLatin1String cat, QtMsgType msgType) const
                 return (enabled ? 1 : -1);
         } else if (flags == RightFilter) {
             // matches right
-            if (idx == (cat.size() - category.count()))
+            if (idx == (cat.size() - category.size()))
                 return (enabled ? 1 : -1);
         }
     }

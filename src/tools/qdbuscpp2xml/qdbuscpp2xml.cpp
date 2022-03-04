@@ -367,7 +367,7 @@ static void parseCmdLine(QStringList &arguments)
         if (!arg.startsWith(QLatin1Char('-')))
             continue;
 
-        char c = arg.count() == 2 ? arg.at(1).toLatin1() : char(0);
+        char c = arg.size() == 2 ? arg.at(1).toLatin1() : char(0);
         switch (c) {
         case 'P':
             flags |= QDBusConnection::ExportNonScriptableProperties;

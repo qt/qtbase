@@ -825,7 +825,7 @@ void tst_QFileDialog2::task203703_returnProperSeparator()
     QVERIFY(button);
     QTest::keyClick(button, Qt::Key_Return);
     QString result = fd.selectedFiles().first();
-    QVERIFY(result.at(result.count() - 1) != '/');
+    QVERIFY(result.at(result.size() - 1) != '/');
     QVERIFY(!result.contains('\\'));
     current.rmdir("aaaaaaaaaaaaaaaaaa");
 }

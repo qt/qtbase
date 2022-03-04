@@ -2659,12 +2659,14 @@ qsizetype QByteArray::count(char ch) const
     return static_cast<int>(countCharHelper(*this, ch));
 }
 
+#if QT_DEPRECATED_SINCE(6, 4)
 /*! \fn qsizetype QByteArray::count() const
-
+    \deprecated [6.4] Use size() or length() instead.
     \overload
 
     Same as size().
 */
+#endif
 
 /*!
     \fn int QByteArray::compare(QByteArrayView bv, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
@@ -4481,7 +4483,7 @@ static void q_fromPercentEncoding(QByteArray *ba, char percent)
     const char *inputPtr = data;
 
     qsizetype i = 0;
-    qsizetype len = ba->count();
+    qsizetype len = ba->size();
     qsizetype outlen = 0;
     int a, b;
     char c;
@@ -4584,7 +4586,7 @@ static void q_toPercentEncoding(QByteArray *ba, const char *dontEncode, const ch
         return;
 
     QByteArray input = *ba;
-    qsizetype len = input.count();
+    qsizetype len = input.size();
     const char *inputData = input.constData();
     char *output = nullptr;
     qsizetype length = 0;

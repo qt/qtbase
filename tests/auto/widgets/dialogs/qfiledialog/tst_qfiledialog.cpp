@@ -530,7 +530,7 @@ void tst_QFiledialog::completer()
     }
 
     // press 'keys' for the input
-    for (int i = 0; i < input.count(); ++i)
+    for (int i = 0; i < input.size(); ++i)
         QTest::keyPress(lineEdit, input[i].toLatin1());
 
     QStringList expectedFiles;

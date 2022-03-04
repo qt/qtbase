@@ -466,7 +466,10 @@ public:
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QString)
     void swap(QString &other) noexcept { d.swap(other.d); }
     inline qsizetype size() const { return d.size; }
+#if QT_DEPRECATED_SINCE(6, 4)
+    QT_DEPRECATED_VERSION_X_6_4("Use size() or length() instead.")
     inline qsizetype count() const { return d.size; }
+#endif
     inline qsizetype length() const { return d.size; }
     inline bool isEmpty() const;
     void resize(qsizetype size);

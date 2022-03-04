@@ -2515,7 +2515,12 @@ void tst_QByteArray::length()
 
     QCOMPARE(src.length(), res);
     QCOMPARE(src.size(), res);
+#if QT_DEPRECATED_SINCE(6, 4)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     QCOMPARE(src.count(), res);
+QT_WARNING_POP
+#endif
 }
 
 void tst_QByteArray::length_data()

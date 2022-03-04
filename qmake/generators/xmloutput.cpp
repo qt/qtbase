@@ -103,7 +103,7 @@ void XmlOutput::decreaseIndent()
 
 QString XmlOutput::doConversion(const QString &text)
 {
-    if (!text.count())
+    if (!text.size())
         return QString();
     else if (conversion == NoConversion)
         return text;
@@ -112,10 +112,10 @@ QString XmlOutput::doConversion(const QString &text)
     if (conversion == XMLConversion) {
 
         // this is a way to escape characters that shouldn't be converted
-        for (int i=0; i<text.count(); ++i) {
+        for (int i=0; i<text.size(); ++i) {
             const QChar c = text.at(i);
             if (c == QLatin1Char('&')) {
-                if ( (i + 7) < text.count() &&
+                if ( (i + 7) < text.size() &&
                     text.at(i + 1) == QLatin1Char('#') &&
                     text.at(i + 2) == QLatin1Char('x') &&
                     text.at(i + 7) == QLatin1Char(';') ) {
@@ -184,9 +184,9 @@ XmlOutput& XmlOutput::operator<<(const xml_output& o)
         addRaw(QString("\n%1<Import %2=\"%3\" />").arg(currentIndent).arg(o.xo_text).arg(o.xo_value));
         break;
     case tCloseTag:
-        if (o.xo_value.count())
+        if (o.xo_value.size())
             closeAll();
-        else if (o.xo_text.count())
+        else if (o.xo_text.size())
             closeTo(o.xo_text);
         else
             closeTag();
@@ -201,7 +201,7 @@ XmlOutput& XmlOutput::operator<<(const xml_output& o)
         {
             // Special case to be able to close tag in normal
             // way ("</tag>", not "/>") without using addRaw()..
-            if (!o.xo_text.count()) {
+            if (!o.xo_text.size()) {
                 closeOpen();
                 break;
             }
@@ -230,14 +230,14 @@ XmlOutput& XmlOutput::operator<<(const xml_output& o)
 // Output functions ----------------------------------------------------------
 void XmlOutput::newTag(const QString &tag)
 {
-    Q_ASSERT_X(tag.count(), "XmlOutput", "Cannot open an empty tag");
+    Q_ASSERT_X(tag.size(), "XmlOutput", "Cannot open an empty tag");
     newTagOpen(tag);
     closeOpen();
 }
 
 void XmlOutput::newTagOpen(const QString &tag)
 {
-    Q_ASSERT_X(tag.count(), "XmlOutput", "Cannot open an empty tag");
+    Q_ASSERT_X(tag.size(), "XmlOutput", "Cannot open an empty tag");
     closeOpen();
 
     if (format == NewLine)

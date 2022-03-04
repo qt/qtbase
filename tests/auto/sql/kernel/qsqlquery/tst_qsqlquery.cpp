@@ -844,9 +844,9 @@ void tst_QSqlQuery::oraClob()
 
     QVERIFY_SQL(q, exec(QLatin1String("select bl, cl from %1 where id = 3").arg(clobby)));
     QVERIFY(q.next());
-    QCOMPARE(q.value(0).toString().count(), loong.count());
+    QCOMPARE(q.value(0).toString().size(), loong.size());
     QVERIFY(q.value(0).toString() == loong); // Deliberately not QCOMPARE() as too long
-    QCOMPARE(q.value(1).toByteArray().count(), loong.toLatin1().count());
+    QCOMPARE(q.value(1).toByteArray().size(), loong.toLatin1().size());
     QVERIFY(q.value(1).toByteArray() == loong.toLatin1()); // ditto
 }
 
@@ -868,7 +868,7 @@ void tst_QSqlQuery::oraClobBatch()
 
     QVERIFY_SQL(q, exec("select cl from " + clobBatch));
     QVERIFY(q.next());
-    QCOMPARE(q.value(0).toString().count(), longString.size());
+    QCOMPARE(q.value(0).toString().size(), longString.size());
     QVERIFY(q.value(0).toString() == longString); // As above. deliberately not QCOMPARE().
 }
 

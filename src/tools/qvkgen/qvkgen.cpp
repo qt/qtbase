@@ -586,10 +586,10 @@ bool genVulkanFunctionsPC(const QList<VkSpecParser::Command> &commands,
         devCmdWrapperStr += "#endif\n\n";
     }
 
-    if (devCmdNamesStr.count() > 2)
-        devCmdNamesStr = devCmdNamesStr.left(devCmdNamesStr.count() - 2);
-    if (instCmdNamesStr.count() > 2)
-        instCmdNamesStr = instCmdNamesStr.left(instCmdNamesStr.count() - 2);
+    if (devCmdNamesStr.size() > 2)
+        devCmdNamesStr.chop(2);
+    if (instCmdNamesStr.size() > 2)
+        instCmdNamesStr.chop(2);
 
     const QString str =
             QString::asprintf(s, preamble.get(licHeaderFn).constData(),

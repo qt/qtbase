@@ -2724,8 +2724,8 @@ void tst_QNetworkReply::postToHttpMultipart()
 
     QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200); // 200 Ok
 
-    QVERIFY(multiPart->boundary().count() > 20); // check that there is randomness after the "boundary_.oOo._" string
-    QVERIFY(multiPart->boundary().count() < 70);
+    QVERIFY(multiPart->boundary().size() > 20); // check that there is randomness after the "boundary_.oOo._" string
+    QVERIFY(multiPart->boundary().size() < 70);
     QByteArray replyData = reply->readAll();
 
     expectedReplyData.prepend("content type: multipart/" + contentType + "; boundary=\"" + multiPart->boundary() + "\"\n");
@@ -2812,8 +2812,8 @@ void tst_QNetworkReply::putToHttpMultipart()
 
     QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200); // 200 Ok
 
-    QVERIFY(multiPart->boundary().count() > 20); // check that there is randomness after the "boundary_.oOo._" string
-    QVERIFY(multiPart->boundary().count() < 70);
+    QVERIFY(multiPart->boundary().size() > 20); // check that there is randomness after the "boundary_.oOo._" string
+    QVERIFY(multiPart->boundary().size() < 70);
     QByteArray replyData = reply->readAll();
 
     expectedReplyData.prepend("content type: multipart/" + contentType + "; boundary=\"" + multiPart->boundary() + "\"\n");
@@ -3030,8 +3030,8 @@ void tst_QNetworkReply::postToHttpsMultipart()
 
     QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200); // 200 Ok
 
-    QVERIFY(multiPart->boundary().count() > 20); // check that there is randomness after the "boundary_.oOo._" string
-    QVERIFY(multiPart->boundary().count() < 70);
+    QVERIFY(multiPart->boundary().size() > 20); // check that there is randomness after the "boundary_.oOo._" string
+    QVERIFY(multiPart->boundary().size() < 70);
     QByteArray replyData = reply->readAll();
 
     expectedReplyData.prepend("content type: multipart/" + contentType + "; boundary=\"" + multiPart->boundary() + "\"\n");
@@ -9013,8 +9013,8 @@ void tst_QNetworkReply::ioHttpRedirectMultipartPost()
 
     QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200); // 200 OK
 
-    QVERIFY(multiPart->boundary().count() > 20); // check that there is randomness after the "boundary_.oOo._" string
-    QVERIFY(multiPart->boundary().count() < 70);
+    QVERIFY(multiPart->boundary().size() > 20); // check that there is randomness after the "boundary_.oOo._" string
+    QVERIFY(multiPart->boundary().size() < 70);
     QByteArray replyData = reply->readAll();
 
     expectedReplyData.prepend("content type: multipart/" + contentType + "; boundary=\"" + multiPart->boundary() + "\"\n");
@@ -9179,7 +9179,7 @@ public slots:
         }
         if (m_receivedData.length() > 0 && !m_expectedData.startsWith(m_receivedData)) {
             // We had received some data but it is corrupt!
-            qDebug() << "CORRUPT" << m_receivedData.count();
+            qDebug() << "CORRUPT" << m_receivedData.size();
 
 #if 0 // Use this to track down the pattern of the corruption and conclude the source
             QFile a("/tmp/corrupt");
