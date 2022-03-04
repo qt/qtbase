@@ -558,12 +558,14 @@ static void startQtApplication(JNIEnv */*env*/, jclass /*clazz*/)
     if (QFile{QStringLiteral("assets:/android_rcc_bundle.rcc")}.exists())
         QResource::registerResource(QStringLiteral("assets:/android_rcc_bundle.rcc"));
 
-    QVarLengthArray<const char *> params(m_applicationParams.size());
-    for (int i = 0; i < m_applicationParams.size(); i++)
-        params[i] = static_cast<const char *>(m_applicationParams[i].constData());
+    const int argc = m_applicationParams.size();
+    QVarLengthArray<char *> argv(argc + 1);
+    for (int i = 0; i < argc; i++)
+        argv[i] = m_applicationParams[i].data();
+    argv[argc] = nullptr;
 
     startQtAndroidPluginCalled.fetchAndAddRelease(1);
-    int ret = m_main(m_applicationParams.length(), const_cast<char **>(params.data()));
+    int ret = m_main(argc, argv.data());
 
     if (m_mainLibraryHnd) {
         int res = dlclose(m_mainLibraryHnd);
