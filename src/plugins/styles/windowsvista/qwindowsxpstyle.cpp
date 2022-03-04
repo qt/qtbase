@@ -2191,7 +2191,7 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
             QColor dimHighlight(qMin(highlight.red()/2 + 110, 255),
                                 qMin(highlight.green()/2 + 110, 255),
                                 qMin(highlight.blue()/2 + 110, 255),
-                                (widget && widget->isTopLevel())? 255 : 127);
+                                (widget && widget->isWindow())? 255 : 127);
             p->setBrush(dimHighlight);
             p->drawRect(option->rect.adjusted(0, 0, -1, -1));
             p->restore();
