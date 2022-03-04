@@ -24,10 +24,3 @@ qt_internal_add_module(EglFsKmsSupportPrivate
         Qt::GuiPrivate
         Qt::KmsSupportPrivate
 )
-
-# begin special case
-qt_internal_extend_target(EglFsKmsSupportPrivate
-      CONDITION QNX
-      COMPILE_OPTIONS -fpermissive
-)
-# end special case
