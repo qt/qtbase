@@ -84,7 +84,7 @@ class QTabBar;
 // A path indetifies uniquely one object in this tree, the first number being the side and all the following
 // indexes into the QDockAreaLayoutInfo::item_list.
 
-struct QDockAreaLayoutItem
+struct Q_AUTOTEST_EXPORT QDockAreaLayoutItem
 {
     enum ItemFlags { NoFlags = 0, GapItem = 1, KeepSize = 2 };
 
@@ -299,6 +299,7 @@ public:
     void setGrid(QList<QLayoutStruct> *ver_struct_list, QList<QLayoutStruct> *hor_struct_list);
 
     QRect gapRect(const QList<int> &path) const;
+    QRect gapRect(QInternal::DockPosition dockPos) const;
 
     void keepSize(QDockWidget *w);
 #if QT_CONFIG(tabbar)

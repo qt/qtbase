@@ -90,6 +90,7 @@ public:
     void _q_toggleTopLevel(); // private slot
 
     void updateButtons();
+    static Qt::DockWidgetArea toDockWidgetArea(QInternal::DockPosition pos);
 
 #if QT_CONFIG(tabwidget)
     QTabWidget::TabPosition tabPosition = QTabWidget::North;
