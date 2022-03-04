@@ -72,6 +72,7 @@
         m_fileDialog = fileDialog;
         self.modalPresentationStyle = UIModalPresentationFormSheet;
         self.delegate = self;
+        self.presentationController.delegate = self;
 
         if (m_fileDialog->options()->fileMode() == QFileDialogOptions::ExistingFiles)
             self.allowsMultipleSelection = YES;
@@ -97,6 +98,20 @@
 - (void)documentPickerWasCancelled:(UIDocumentPickerViewController *)controller
 {
     Q_UNUSED(controller);
+    emit m_fileDialog->reject();
+}
+
+- (void)presentationControllerDidDismiss:(UIPresentationController *)presentationController
+{
+    Q_UNUSED(presentationController);
+
+    // "Called on the delegate when the user has taken action to dismiss the
+    // presentation successfully, after all animations are finished.
+    // This is not called if the presentation is dismissed programatically."
+
+    // So if document picker's view was dismissed, for example by swiping it away,
+    // we got this method called. But not if the dialog was cancelled or a file
+    // was selected.
     emit m_fileDialog->reject();
 }
 
