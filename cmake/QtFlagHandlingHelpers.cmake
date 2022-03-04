@@ -129,6 +129,9 @@ function(qt_internal_apply_intel_cet target visibility)
 endfunction()
 
 function(qt_internal_library_deprecation_level result)
+    # QT_DISABLE_DEPPRECATED_BEFORE controls which version we use as a cut-off
+    # compiling in to the library. E.g. if it is set to QT_VERSION then no
+    # code which was deprecated before QT_VERSION will be compiled in.
     if(WIN32)
         # On Windows, due to the way DLLs work, we need to export all functions,
         # including the inlines
@@ -137,7 +140,10 @@ function(qt_internal_library_deprecation_level result)
         # On other platforms, Qt's own compilation goes needs to compile the Qt 5.0 API
         list(APPEND deprecations "QT_DISABLE_DEPRECATED_BEFORE=0x050000")
     endif()
-    list(APPEND deprecations "QT_DEPRECATED_WARNINGS_SINCE=0x060000")
+    # QT_DEPRECATED_WARNINGS_SINCE controls the upper-bound of deprecation
+    # warnings that are emitted. E.g. if it is set to 7.0 then all deprecations
+    # during the 6.* lifetime will be warned about in Qt builds.
+    list(APPEND deprecations "QT_DEPRECATED_WARNINGS_SINCE=0x070000")
     set("${result}" "${deprecations}" PARENT_SCOPE)
 endfunction()
 
