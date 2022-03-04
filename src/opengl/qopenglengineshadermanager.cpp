@@ -46,6 +46,7 @@
 #include <QtCore/qthreadstorage.h>
 
 #include <algorithm>
+#include <memory>
 
 #if defined(QT_DEBUG)
 #include <QMetaEnum>
@@ -372,7 +373,7 @@ QOpenGLEngineShaderProg *QOpenGLEngineSharedShaders::findProgramInCache(const QO
         }
     }
 
-    QScopedPointer<QOpenGLEngineShaderProg> newProg;
+    std::unique_ptr<QOpenGLEngineShaderProg> newProg;
 
     do {
         QByteArray fragSource;
@@ -395,10 +396,10 @@ QOpenGLEngineShaderProg *QOpenGLEngineSharedShaders::findProgramInCache(const QO
         vertexSource.append(qShaderSnippets[prog.mainVertexShader]);
         vertexSource.append(qShaderSnippets[prog.positionVertexShader]);
 #endif
-        QScopedPointer<QOpenGLShaderProgram> shaderProgram(new QOpenGLShaderProgram);
+        auto shaderProgram = std::make_unique<QOpenGLShaderProgram>();
 
         CachedShader shaderCache(fragSource, vertexSource);
-        bool inCache = shaderCache.load(shaderProgram.data(), QOpenGLContext::currentContext());
+        bool inCache = shaderCache.load(shaderProgram.get(), QOpenGLContext::currentContext());
 
         if (!inCache) {
             if (!shaderProgram->addCacheableShaderFromSourceCode(QOpenGLShader::Vertex, vertexSource)) {
@@ -446,7 +447,7 @@ QOpenGLEngineShaderProg *QOpenGLEngineSharedShaders::findProgramInCache(const QO
         }
 
         newProg.reset(new QOpenGLEngineShaderProg(prog));
-        newProg->program = shaderProgram.take();
+        newProg->program = shaderProgram.release();
 
         newProg->program->link();
         if (newProg->program->isLinked()) {
@@ -478,10 +479,10 @@ QOpenGLEngineShaderProg *QOpenGLEngineSharedShaders::findProgramInCache(const QO
             }
         }
 
-        cachedPrograms.insert(0, newProg.data());
+        cachedPrograms.insert(0, newProg.get());
     } while (false);
 
-    return newProg.take();
+    return newProg.release();
 }
 
 void QOpenGLEngineSharedShaders::cleanupCustomStage(QOpenGLCustomShaderStage* stage)

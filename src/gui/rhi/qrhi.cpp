@@ -55,6 +55,8 @@
 #include "qrhimetal_p_p.h"
 #endif
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
@@ -5305,7 +5307,7 @@ QRhi::~QRhi()
  */
 QRhi *QRhi::create(Implementation impl, QRhiInitParams *params, Flags flags, QRhiNativeHandles *importDevice)
 {
-    QScopedPointer<QRhi> r(new QRhi);
+    std::unique_ptr<QRhi> r(new QRhi);
 
     switch (impl) {
     case Null:
@@ -5351,7 +5353,7 @@ QRhi *QRhi::create(Implementation impl, QRhiInitParams *params, Flags flags, QRh
     }
 
     if (r->d) {
-        r->d->q = r.data();
+        r->d->q = r.get();
 
         // Play nice with QSG_INFO since that is still the most commonly used
         // way to get graphics info printed from Qt Quick apps, and the Quick
@@ -5364,7 +5366,7 @@ QRhi *QRhi::create(Implementation impl, QRhiInitParams *params, Flags flags, QRh
         if (r->d->create(flags)) {
             r->d->implType = impl;
             r->d->implThread = QThread::currentThread();
-            return r.take();
+            return r.release();
         }
     }
 

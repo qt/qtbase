@@ -43,6 +43,7 @@
 #include "qcoreapplication.h"
 
 #include <algorithm>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
@@ -274,16 +275,16 @@ bool QThreadPoolPrivate::tooManyThreadsActive() const
 void QThreadPoolPrivate::startThread(QRunnable *runnable)
 {
     Q_ASSERT(runnable != nullptr);
-    QScopedPointer<QThreadPoolThread> thread(new QThreadPoolThread(this));
+    auto thread = std::make_unique<QThreadPoolThread>(this);
     if (objectName.isEmpty())
         objectName = QLatin1String("Thread (pooled)");
     thread->setObjectName(objectName);
-    Q_ASSERT(!allThreads.contains(thread.data())); // if this assert hits, we have an ABA problem (deleted threads don't get removed here)
-    allThreads.insert(thread.data());
+    Q_ASSERT(!allThreads.contains(thread.get())); // if this assert hits, we have an ABA problem (deleted threads don't get removed here)
+    allThreads.insert(thread.get());
     ++activeThreads;
 
     thread->runnable = runnable;
-    thread.take()->start(threadPriority);
+    thread.release()->start(threadPriority);
 }
 
 /*!

@@ -117,7 +117,6 @@ public:
 private:
     friend class QFontEngineFT;
     friend class QtFreetypeData;
-    friend struct QScopedPointerDeleter<QFreetypeFace>;
     QFreetypeFace() = default;
     ~QFreetypeFace() {}
     void cleanup();

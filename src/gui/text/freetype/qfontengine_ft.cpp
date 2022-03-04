@@ -59,6 +59,8 @@
 #include <qmath.h>
 #include <qendian.h>
 
+#include <memory>
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_OUTLINE_H
@@ -224,7 +226,8 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
     if (freetype) {
         freetype->ref.ref();
     } else {
-        QScopedPointer<QFreetypeFace> newFreetype(new QFreetypeFace);
+        const auto deleter = [](QFreetypeFace *f) { delete f; };
+        std::unique_ptr<QFreetypeFace, decltype(deleter)> newFreetype(new QFreetypeFace, deleter);
         FT_Face face;
         if (!face_id.filename.isEmpty()) {
             QString fileName = QFile::decodeName(face_id.filename);
@@ -293,13 +296,13 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
 
         FT_Set_Charmap(newFreetype->face, newFreetype->unicode_map);
         QT_TRY {
-            freetypeData->faces.insert(face_id, newFreetype.data());
+            freetypeData->faces.insert(face_id, newFreetype.get());
         } QT_CATCH(...) {
-            newFreetype.take()->release(face_id);
+            newFreetype.release()->release(face_id);
             // we could return null in principle instead of throwing
             QT_RETHROW;
         }
-        freetype = newFreetype.take();
+        freetype = newFreetype.release();
     }
     return freetype;
 }
@@ -594,7 +597,7 @@ static QFontEngine::SubpixelAntialiasingType subpixelAntialiasingTypeHint()
 
 QFontEngineFT *QFontEngineFT::create(const QFontDef &fontDef, FaceId faceId, const QByteArray &fontData)
 {
-    QScopedPointer<QFontEngineFT> engine(new QFontEngineFT(fontDef));
+    auto engine = std::make_unique<QFontEngineFT>(fontDef);
 
     QFontEngineFT::GlyphFormat format = QFontEngineFT::Format_Mono;
     const bool antialias = !(fontDef.styleStrategy & QFont::NoAntialias);
@@ -616,7 +619,7 @@ QFontEngineFT *QFontEngineFT::create(const QFontDef &fontDef, FaceId faceId, con
     }
 
     engine->setQtDefaultHintStyle(static_cast<QFont::HintingPreference>(fontDef.hintingPreference));
-    return engine.take();
+    return engine.release();
 }
 
 namespace {
@@ -1075,7 +1078,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     }
 
     int glyph_buffer_size = 0;
-    QScopedArrayPointer<uchar> glyph_buffer;
+    std::unique_ptr<uchar[]> glyph_buffer;
     FT_Render_Mode renderMode = (default_hint_style == HintLight) ? FT_RENDER_MODE_LIGHT : FT_RENDER_MODE_NORMAL;
     switch (format) {
     case Format_Mono:
@@ -1120,7 +1123,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
 
     if (slot->bitmap.pixel_mode == FT_PIXEL_MODE_MONO) {
         uchar *src = slot->bitmap.buffer;
-        uchar *dst = glyph_buffer.data();
+        uchar *dst = glyph_buffer.get();
         int h = slot->bitmap.rows;
         // Some fonts return bitmaps even when we requested something else:
         if (format == Format_Mono) {
@@ -1149,7 +1152,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     } else if (slot->bitmap.pixel_mode == 7 /*FT_PIXEL_MODE_BGRA*/) {
         Q_ASSERT(format == Format_ARGB);
         uchar *src = slot->bitmap.buffer;
-        uchar *dst = glyph_buffer.data();
+        uchar *dst = glyph_buffer.get();
         int h = slot->bitmap.rows;
         while (h--) {
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
@@ -1169,7 +1172,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     } else if (slot->bitmap.pixel_mode == FT_PIXEL_MODE_GRAY) {
         Q_ASSERT(format == Format_A8);
         uchar *src = slot->bitmap.buffer;
-        uchar *dst = glyph_buffer.data();
+        uchar *dst = glyph_buffer.get();
         int h = slot->bitmap.rows;
         int bytes = info.width;
         while (h--) {
@@ -1179,10 +1182,10 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
         }
     } else if (slot->bitmap.pixel_mode == FT_PIXEL_MODE_LCD) {
         Q_ASSERT(format == Format_A32);
-        convertRGBToARGB(slot->bitmap.buffer, (uint *)glyph_buffer.data(), info.width, info.height, slot->bitmap.pitch, subpixelType != Subpixel_RGB);
+        convertRGBToARGB(slot->bitmap.buffer, (uint *)glyph_buffer.get(), info.width, info.height, slot->bitmap.pitch, subpixelType != Subpixel_RGB);
     } else if (slot->bitmap.pixel_mode == FT_PIXEL_MODE_LCD_V) {
         Q_ASSERT(format == Format_A32);
-        convertRGBToARGB_V(slot->bitmap.buffer, (uint *)glyph_buffer.data(), info.width, info.height, slot->bitmap.pitch, subpixelType != Subpixel_VRGB);
+        convertRGBToARGB_V(slot->bitmap.buffer, (uint *)glyph_buffer.get(), info.width, info.height, slot->bitmap.pitch, subpixelType != Subpixel_VRGB);
     } else {
         qWarning("QFontEngine: Glyph rendered in unknown pixel_mode=%d", slot->bitmap.pixel_mode);
         return nullptr;
@@ -1201,7 +1204,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     g->advance = info.xOff;
     g->format = format;
     delete [] g->data;
-    g->data = glyph_buffer.take();
+    g->data = glyph_buffer.release();
 
     if (set)
         set->setGlyph(glyph, subPixelPosition, g);

@@ -57,6 +57,7 @@
 #endif
 
 #include <algorithm>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
@@ -3761,12 +3762,12 @@ bool QOpenGLShaderProgramPrivate::compileCacheable()
 {
     Q_Q(QOpenGLShaderProgram);
     for (const QOpenGLProgramBinaryCache::ShaderDesc &shader : qAsConst(binaryProgram.shaders)) {
-        QScopedPointer<QOpenGLShader> s(new QOpenGLShader(qt_shaderStageToType(shader.stage), q));
+        auto s = std::make_unique<QOpenGLShader>(qt_shaderStageToType(shader.stage), q);
         if (!s->compileSourceCode(shader.source)) {
             log = s->log();
             return false;
         }
-        anonShaders.append(s.take());
+        anonShaders.append(s.release());
         if (!q->addShader(anonShaders.last()))
             return false;
     }
