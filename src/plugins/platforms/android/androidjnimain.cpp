@@ -517,7 +517,8 @@ static void startQtApplication(JNIEnv */*env*/, jclass /*clazz*/)
     argv[argc] = nullptr;
 
     startQtAndroidPluginCalled.fetchAndAddRelease(1);
-    int ret = m_main(argc, argv.data());
+    const int ret = m_main(argc, argv.data());
+    qInfo() << "main() returned" << ret;
 
     if (m_mainLibraryHnd) {
         int res = dlclose(m_mainLibraryHnd);
@@ -525,10 +526,8 @@ static void startQtApplication(JNIEnv */*env*/, jclass /*clazz*/)
             qWarning() << "dlclose failed:" << dlerror();
     }
 
-    if (m_applicationClass) {
-        qWarning("exit app 0");
+    if (m_applicationClass)
         QJniObject::callStaticMethod<void>(m_applicationClass, "quitApp", "()V");
-    }
 
     sem_post(&m_terminateSemaphore);
     sem_wait(&m_exitSemaphore);
