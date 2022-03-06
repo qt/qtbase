@@ -67,6 +67,7 @@ private slots:
     void scopeTest();
     void unlockAndRelockTest();
     void lockerStateTest();
+    void moveSemantics();
 };
 
 void tst_QMutexLocker::scopeTest()
@@ -212,6 +213,72 @@ void tst_QMutexLocker::lockerStateTest()
 
     delete thread;
     thread = nullptr;
+}
+
+void tst_QMutexLocker::moveSemantics()
+{
+    {
+        QMutexLocker<QMutex> locker(nullptr);
+        QVERIFY(!locker.isLocked());
+        QCOMPARE(locker.mutex(), nullptr);
+
+        QMutexLocker locker2(std::move(locker));
+        QVERIFY(!locker.isLocked());
+        QVERIFY(!locker2.isLocked());
+        QCOMPARE(locker.mutex(), nullptr);
+        QCOMPARE(locker2.mutex(), nullptr);
+    }
+
+    QMutex mutex;
+
+    {
+        QMutexLocker locker(&mutex);
+        QVERIFY(locker.isLocked());
+        QCOMPARE(locker.mutex(), &mutex);
+        QVERIFY(!mutex.tryLock());
+
+        QMutexLocker locker2(std::move(locker));
+        QVERIFY(!locker.isLocked());
+        QVERIFY(locker2.isLocked());
+        QCOMPARE(locker.mutex(), nullptr);
+        QCOMPARE(locker2.mutex(), &mutex);
+        QVERIFY(!mutex.tryLock());
+    }
+
+    QVERIFY(mutex.tryLock());
+    mutex.unlock();
+
+    {
+        QMutex mutex;
+        QMutexLocker locker(&mutex);
+        QVERIFY(locker.isLocked());
+        QCOMPARE(locker.mutex(), &mutex);
+        QVERIFY(!mutex.tryLock());
+
+        locker.unlock();
+        QVERIFY(!locker.isLocked());
+        QCOMPARE(locker.mutex(), &mutex);
+        QVERIFY(mutex.tryLock());
+        mutex.unlock();
+
+        QMutexLocker locker2(std::move(locker));
+        QVERIFY(!locker.isLocked());
+        QVERIFY(!locker2.isLocked());
+        QCOMPARE(locker.mutex(), nullptr);
+        QCOMPARE(locker2.mutex(), &mutex);
+        QVERIFY(mutex.tryLock());
+        mutex.unlock();
+
+        locker2.relock();
+        QVERIFY(!locker.isLocked());
+        QVERIFY(locker2.isLocked());
+        QCOMPARE(locker.mutex(), nullptr);
+        QCOMPARE(locker2.mutex(), &mutex);
+        QVERIFY(!mutex.tryLock());
+    }
+
+    QVERIFY(mutex.tryLock());
+    mutex.unlock();
 }
 
 QTEST_MAIN(tst_QMutexLocker)

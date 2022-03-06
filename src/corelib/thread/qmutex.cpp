@@ -486,6 +486,40 @@ void QRecursiveMutex::unlock() noexcept
 */
 
 /*!
+    \fn template <typename Mutex> QMutexLocker<Mutex>::QMutexLocker(QMutexLocker &&other) noexcept
+    \since 6.4
+
+    Move-constructs a QMutexLocker from \a other. The mutex and the
+    state of \a other is transferred to the newly constructed instance.
+    After the move, \a other will no longer be managing its mutex.
+
+    \sa QMutex::lock()
+*/
+
+/*!
+    \fn template <typename Mutex> QMutexLocker<Mutex> &QMutexLocker<Mutex>::operator=(QMutexLocker &&other) noexcept
+    \since 6.4
+
+    Move-assigns \a other onto this QMutexLocker. If this QMutexLocker
+    was holding a locked mutex before the assignment, the mutex will be
+    unlocked. The mutex and the state of \a other is then transferred
+    to this QMutexLocker. After the move, \a other will no longer be
+    managing its mutex.
+
+    \sa QMutex::lock()
+*/
+
+/*!
+    \fn template <typename Mutex> void QMutexLocker<Mutex>::swap(QMutexLocker &other) noexcept
+    \since 6.4
+
+    Swaps the mutex and the state of this QMutexLocker with \a other.
+    This operation is very fast and never fails.
+
+    \sa QMutex::lock()
+*/
+
+/*!
     \fn template <typename Mutex> QMutexLocker<Mutex>::~QMutexLocker() noexcept
 
     Destroys the QMutexLocker and unlocks the mutex that was locked

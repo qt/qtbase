@@ -247,6 +247,13 @@ public:
         }
     }
 
+    inline QMutexLocker(QMutexLocker &&other) noexcept
+        : m_mutex(std::exchange(other.m_mutex, nullptr)),
+          m_isLocked(std::exchange(other.m_isLocked, false))
+    {}
+
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QMutexLocker)
+
     inline ~QMutexLocker()
     {
         unlock();
@@ -273,6 +280,12 @@ public:
             m_mutex->lock();
             m_isLocked = true;
         }
+    }
+
+    inline void swap(QMutexLocker &other) noexcept
+    {
+        qt_ptr_swap(m_mutex, other.m_mutex);
+        std::swap(m_isLocked, other.m_isLocked);
     }
 
     Mutex *mutex() const
