@@ -256,7 +256,8 @@ public:
 
     inline ~QMutexLocker()
     {
-        unlock();
+        if (m_isLocked)
+            unlock();
     }
 
     inline bool isLocked() const noexcept
@@ -266,20 +267,16 @@ public:
 
     inline void unlock() noexcept
     {
-        if (!m_isLocked)
-            return;
+        Q_ASSERT(m_isLocked);
         m_mutex->unlock();
         m_isLocked = false;
     }
 
     inline void relock() QT_MUTEX_LOCK_NOEXCEPT
     {
-        if (m_isLocked)
-            return;
-        if (m_mutex) {
-            m_mutex->lock();
-            m_isLocked = true;
-        }
+        Q_ASSERT(!m_isLocked);
+        m_mutex->lock();
+        m_isLocked = true;
     }
 
     inline void swap(QMutexLocker &other) noexcept

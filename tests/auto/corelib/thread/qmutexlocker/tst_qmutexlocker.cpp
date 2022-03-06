@@ -180,9 +180,6 @@ void tst_QMutexLocker::lockerStateTest()
                 QMutexLocker locker(&mutex);
                 QVERIFY(locker.isLocked());
 
-                locker.relock();
-                QVERIFY(locker.isLocked());
-
                 locker.unlock();
                 QVERIFY(!locker.isLocked());
 
