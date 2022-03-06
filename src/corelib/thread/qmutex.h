@@ -240,43 +240,45 @@ class [[nodiscard]] QMutexLocker
 public:
     inline explicit QMutexLocker(Mutex *mutex) QT_MUTEX_LOCK_NOEXCEPT
     {
-        m = mutex;
+        m_mutex = mutex;
         if (Q_LIKELY(mutex)) {
             mutex->lock();
-            isLocked = true;
+            m_isLocked = true;
         }
     }
-    inline ~QMutexLocker() {
+
+    inline ~QMutexLocker()
+    {
         unlock();
     }
 
     inline void unlock() noexcept
     {
-        if (!isLocked)
+        if (!m_isLocked)
             return;
-        m->unlock();
-        isLocked = false;
+        m_mutex->unlock();
+        m_isLocked = false;
     }
 
     inline void relock() QT_MUTEX_LOCK_NOEXCEPT
     {
-        if (isLocked)
+        if (m_isLocked)
             return;
-        if (m) {
-            m->lock();
-            isLocked = true;
+        if (m_mutex) {
+            m_mutex->lock();
+            m_isLocked = true;
         }
     }
 
     Mutex *mutex() const
     {
-        return m;
+        return m_mutex;
     }
 private:
     Q_DISABLE_COPY(QMutexLocker)
 
-    Mutex *m;
-    bool isLocked = false;
+    Mutex *m_mutex;
+    bool m_isLocked = false;
 };
 
 #else // !QT_CONFIG(thread) && !Q_CLANG_QDOC
