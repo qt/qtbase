@@ -112,12 +112,12 @@ template <QtMsgType Which> struct QLoggingCategoryMacroHolder
     static const bool IsOutputEnabled;
     const QLoggingCategory *category = nullptr;
     bool control = false;
-    QLoggingCategoryMacroHolder(const QLoggingCategory &cat)
+    explicit QLoggingCategoryMacroHolder(const QLoggingCategory &cat)
     {
         if (IsOutputEnabled)
             init(cat);
     }
-    QLoggingCategoryMacroHolder(QMessageLogger::CategoryFunction catfunc)
+    explicit QLoggingCategoryMacroHolder(QMessageLogger::CategoryFunction catfunc)
     {
         if (IsOutputEnabled)
             init(catfunc());
@@ -138,8 +138,8 @@ template <QtMsgType Which> struct QLoggingCategoryMacroHolder
             control = cat.isCriticalEnabled();
         }
     }
-    operator const char *() const { return category->categoryName(); }
-    operator bool() const { return Q_UNLIKELY(control); }
+    const char *name() const { return category->categoryName(); }
+    explicit operator bool() const { return Q_UNLIKELY(control); }
 };
 
 template <QtMsgType Which> const bool QLoggingCategoryMacroHolder<Which>::IsOutputEnabled = true;
@@ -166,7 +166,7 @@ template <> const bool QLoggingCategoryMacroHolder<QtWarningMsg>::IsOutputEnable
 
 #define QT_MESSAGE_LOGGER_COMMON(category, level) \
     for (QLoggingCategoryMacroHolder<level> qt_category(category); qt_category; qt_category.control = false) \
-        QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC, qt_category)
+        QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC, qt_category.name())
 
 #define qCDebug(category, ...) QT_MESSAGE_LOGGER_COMMON(category, QtDebugMsg).debug(__VA_ARGS__)
 #define qCInfo(category, ...) QT_MESSAGE_LOGGER_COMMON(category, QtInfoMsg).info(__VA_ARGS__)
