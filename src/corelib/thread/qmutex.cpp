@@ -495,6 +495,14 @@ void QRecursiveMutex::unlock() noexcept
 */
 
 /*!
+    \fn template <typename Mutex> bool QMutexLocker<Mutex>::isLocked() const noexcept
+    \since 6.4
+
+    Returns true if this QMutexLocker is currently locking its associated
+    mutex, or false otherwise.
+*/
+
+/*!
     \fn template <typename Mutex> void QMutexLocker<Mutex>::unlock() noexcept
 
     Unlocks this mutex locker. You can use \c relock() to lock

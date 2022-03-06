@@ -80,6 +80,7 @@ void tst_QMutexLocker::scopeTest()
 
             {
                 QMutexLocker locker(&mutex);
+                QVERIFY(locker.isLocked());
                 waitForTest();
             }
 
@@ -122,16 +123,23 @@ void tst_QMutexLocker::unlockAndRelockTest()
         void run() override
         {
             QMutexLocker locker(&mutex);
+            QVERIFY(locker.isLocked());
 
             waitForTest();
 
+            QVERIFY(locker.isLocked());
             locker.unlock();
+            QVERIFY(!locker.isLocked());
 
             waitForTest();
 
+            QVERIFY(!locker.isLocked());
             locker.relock();
+            QVERIFY(locker.isLocked());
 
             waitForTest();
+
+            QVERIFY(locker.isLocked());
         }
     };
 
@@ -169,10 +177,16 @@ void tst_QMutexLocker::lockerStateTest()
         {
             {
                 QMutexLocker locker(&mutex);
+                QVERIFY(locker.isLocked());
+
                 locker.relock();
+                QVERIFY(locker.isLocked());
+
                 locker.unlock();
+                QVERIFY(!locker.isLocked());
 
                 waitForTest();
+                QVERIFY(!locker.isLocked());
             }
 
             waitForTest();

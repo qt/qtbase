@@ -252,6 +252,11 @@ public:
         unlock();
     }
 
+    inline bool isLocked() const noexcept
+    {
+        return m_isLocked;
+    }
+
     inline void unlock() noexcept
     {
         if (!m_isLocked)
