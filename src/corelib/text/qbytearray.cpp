@@ -4568,22 +4568,15 @@ QByteArray QByteArray::fromPercentEncoding(const QByteArray &input, char percent
     \sa fromStdString(), QString::toStdString()
 */
 
-static inline bool q_strchr(const char str[], char chr)
+static void q_toPercentEncoding(QByteArray *ba, QByteArrayView exclude,
+                                QByteArrayView include, char percent)
 {
-    if (!str) return false;
+    Q_ASSERT(!ba->isEmpty());
 
-    const char *ptr = str;
-    char c;
-    while ((c = *ptr++))
-        if (c == chr)
-            return true;
-    return false;
-}
-
-static void q_toPercentEncoding(QByteArray *ba, const char *dontEncode, const char *alsoEncode, char percent)
-{
-    if (ba->isEmpty())
-        return;
+    const auto contains = [](QByteArrayView view, char c) {
+        // As view.contains(c), but optimised to bypass a lot of overhead:
+        return view.size() > 0 && memchr(view.data(), c, view.size()) != nullptr;
+    };
 
     QByteArray input = *ba;
     qsizetype len = input.size();
@@ -4601,8 +4594,8 @@ static void q_toPercentEncoding(QByteArray *ba, const char *dontEncode, const ch
                 || c == 0x2E // .
                 || c == 0x5F // _
                 || c == 0x7E // ~
-                || q_strchr(dontEncode, c))
-            && !q_strchr(alsoEncode, c)) {
+                || contains(exclude, c))
+            && !contains(include, c)) {
             if (output)
                 output[length] = c;
             ++length;
@@ -4654,7 +4647,7 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
         return QByteArray(data(), 0);
 
     QByteArray result = *this;
-    q_toPercentEncoding(&result, exclude.nulTerminated().constData(), include.nulTerminated().constData(), percent);
+    q_toPercentEncoding(&result, exclude, include, percent);
 
     return result;
 }
