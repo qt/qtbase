@@ -30,6 +30,7 @@
 #undef QT_NO_CAST_FROM_ASCII
 #undef QT_NO_CAST_TO_ASCII
 #undef QT_ASCII_CAST_WARNINGS
+#define QT_USE_QSTRINGBUILDER
 
 #include <QChar>
 #include <QLatin1String>
@@ -168,6 +169,7 @@ private Q_SLOTS:
     void overload_vector_char16_t() { overload<std::vector<char16_t>>(); }
     void overload_vector_QChar() { overload<std::vector<QChar>>(); }
 
+    void overload_special();
 private:
     //
     // Mixed UTF-16, UTF-8, Latin-1 checks:
@@ -943,27 +945,27 @@ template <> constexpr qsizetype size(const char16_t&) { return 1; }
 
 namespace {
 
-void overload_s_a(const QString &) {}
+auto overload_s_a(const QString &s) { return s; }
 Q_WEAK_OVERLOAD
-void overload_s_a(QAnyStringView) {}
+auto overload_s_a(QAnyStringView s) { return s; }
 
-void overload_sr_a(QString &&) {}
+auto overload_sr_a(QString &&s) { return std::move(s); }
 Q_WEAK_OVERLOAD
-void overload_sr_a(QAnyStringView) {}
-
-Q_WEAK_OVERLOAD
-void overload_a_s(const QString &) {}
-void overload_a_s(QAnyStringView) {}
+auto overload_sr_a(QAnyStringView s) { return s; }
 
 Q_WEAK_OVERLOAD
-void overload_a_sr(QString &&) {}
-void overload_a_sr(QAnyStringView) {}
+auto overload_a_s(const QString &s) { return s; }
+auto overload_a_s(QAnyStringView s) { return s; }
 
-void overload_s_v(const QString &) {}
-void overload_s_v(QStringView) {}
+Q_WEAK_OVERLOAD
+auto overload_a_sr(QString &&s) { return std::move(s); }
+auto overload_a_sr(QAnyStringView s) { return s; }
 
-void overload_sr_v(QString &&) {}
-void overload_sr_v(QStringView) {}
+auto overload_s_v(const QString &s) { return s; }
+auto overload_s_v(QStringView s) { return s; }
+
+auto overload_sr_v(QString &&s) { return std::move(s); }
+auto overload_sr_v(QStringView s) { return s; }
 
 } // unnamed namespace
 
@@ -1022,6 +1024,51 @@ void tst_QStringApiSymmetry::overload()
             overload_sr_v(T());
             overload_sr_v(CT());
         }
+    }
+}
+
+void tst_QStringApiSymmetry::overload_special()
+{
+    auto check = [](auto result, auto expected) {
+        static_assert(std::is_same_v<decltype(result), decltype(expected)>);
+    };
+
+    {
+#define rvalue QStringLiteral("hello")
+        auto lvalue = rvalue;
+        auto builder = [&] { return lvalue % ""; };
+
+        // check that QString/Builder go to the QString overload in a_s(r):
+
+        check(overload_a_s(lvalue), QString());
+        check(overload_a_s(rvalue), QString());
+        check(overload_a_s(builder()), QAnyStringView()); // weak overloads must match exactly
+        check(overload_a_s(QString(builder())), QString());
+
+        check(overload_a_sr(lvalue), QAnyStringView()); // lvalue can't bind to rvalue ref
+        check(overload_a_sr(rvalue), QString());
+        check(overload_a_sr(builder()), QAnyStringView());
+        check(overload_a_sr(QString(builder())), QString());
+
+        // check that everything goes to the QString overload in s(r)_a:
+        // exception: u""
+
+        check(overload_s_a(lvalue), QString());
+        check(overload_s_a(rvalue), QString());
+        check(overload_s_a(builder()), QString());
+        check(overload_s_a(""), QString());
+        check(overload_s_a(u""), QAnyStringView());
+        check(overload_s_a(u8""), QString());
+        check(overload_s_a(QLatin1String("")), QString());
+
+        check(overload_sr_a(lvalue), QAnyStringView()); // lvalues don't bind to rvalue refs
+        check(overload_sr_a(rvalue), QString());
+        check(overload_sr_a(builder()), QString());
+        check(overload_sr_a(""), QString());
+        check(overload_sr_a(u""), QAnyStringView());
+        check(overload_sr_a(u8""), QString());
+        check(overload_sr_a(QLatin1String("")), QString());
+#undef rvalue
     }
 }
 
