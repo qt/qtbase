@@ -48,12 +48,13 @@
 #include <string.h>
 
 #if defined(QT_COMPILER_SUPPORTS_F16C) && defined(__AVX2__) && !defined(__F16C__)
-// All processors that support AVX2 do support F16C too. That doesn't mean
-// we're allowed to use the intrinsics directly, so we'll do it only for
-// the Intel and Microsoft's compilers.
-#  if defined(Q_CC_INTEL) || defined(Q_CC_MSVC)
+// All processors that support AVX2 do support F16C too, so we could enable the
+// feature unconditionally if __AVX2__ is defined. However, all currently
+// supported compilers except Microsoft's are able to define __F16C__ on their
+// own when the user enables the feature, so we'll trust them.
+#  if defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
 #    define __F16C__        1
-# endif
+#  endif
 #endif
 
 #if defined(QT_COMPILER_SUPPORTS_F16C) && defined(__F16C__)
