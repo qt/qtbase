@@ -41,37 +41,13 @@
 #define QSTRINGALGORITHMS_H
 
 #include <QtCore/qnamespace.h>
+#include <QtCore/qstringfwd.h>
 #include <QtCore/qcontainerfwd.h>
 #if 0
 #pragma qt_class(QStringAlgorithms)
 #endif
 
 QT_BEGIN_NAMESPACE
-
-#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
-# define QT_BEGIN_HAS_CHAR8_T_NAMESPACE inline namespace q_has_char8_t {
-# define QT_BEGIN_NO_CHAR8_T_NAMESPACE namespace q_no_char8_t {
-#else
-# define QT_BEGIN_HAS_CHAR8_T_NAMESPACE namespace q_has_char8_t {
-# define QT_BEGIN_NO_CHAR8_T_NAMESPACE inline namespace q_no_char8_t {
-#endif
-#define QT_END_HAS_CHAR8_T_NAMESPACE }
-#define QT_END_NO_CHAR8_T_NAMESPACE }
-
-// declare namespaces:
-QT_BEGIN_HAS_CHAR8_T_NAMESPACE
-QT_END_HAS_CHAR8_T_NAMESPACE
-QT_BEGIN_NO_CHAR8_T_NAMESPACE
-QT_END_NO_CHAR8_T_NAMESPACE
-
-class QByteArray;
-class QLatin1String;
-class QStringView;
-template <bool> class QBasicUtf8StringView;
-class QAnyStringView;
-class QChar;
-class QRegularExpression;
-class QRegularExpressionMatch;
 
 namespace QtPrivate {
 

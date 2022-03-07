@@ -186,6 +186,7 @@ qt_internal_add_module(Core
         text/qstringbuilder.cpp text/qstringbuilder.h
         text/qstringconverter_base.h
         text/qstringconverter.cpp text/qstringconverter.h text/qstringconverter_p.h
+        text/qstringfwd.h
         text/qstringiterator_p.h
         text/qstringlist.cpp text/qstringlist.h
         text/qstringliteral.h

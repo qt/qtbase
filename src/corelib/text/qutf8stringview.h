@@ -361,15 +361,6 @@ private:
 #else
 template <bool UseChar8T>
 Q_DECLARE_TYPEINFO_BODY(QBasicUtf8StringView<UseChar8T>, Q_PRIMITIVE_TYPE);
-
-// ### Qt 7: remove the non-char8_t version of QUtf8StringView
-QT_BEGIN_NO_CHAR8_T_NAMESPACE
-using QUtf8StringView = QBasicUtf8StringView<false>;
-QT_END_NO_CHAR8_T_NAMESPACE
-
-QT_BEGIN_HAS_CHAR8_T_NAMESPACE
-using QUtf8StringView = QBasicUtf8StringView<true>;
-QT_END_HAS_CHAR8_T_NAMESPACE
 #endif // Q_CLANG_QDOC
 
 template <typename QStringLike, std::enable_if_t<std::is_same_v<QStringLike, QByteArray>, bool> = true>
