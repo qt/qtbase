@@ -2257,10 +2257,12 @@ Qt::Alignment QStyle::visualAlignment(Qt::LayoutDirection direction, Qt::Alignme
 
 int QStyle::sliderPositionFromValue(int min, int max, int logicalValue, int span, bool upsideDown)
 {
-    if (span <= 0 || logicalValue < min || max <= min)
+    if (span <= 0 || max <= min)
         return 0;
+    if (logicalValue < min)
+        return upsideDown ? span : 0;
     if (logicalValue > max)
-        return upsideDown ? span : min;
+        return upsideDown ? 0 : span;
 
     const uint range = qint64(max) - min;
     const uint p = upsideDown ? qint64(max) - logicalValue : qint64(logicalValue) - min;

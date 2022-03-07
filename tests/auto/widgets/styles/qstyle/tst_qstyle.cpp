@@ -680,14 +680,17 @@ void tst_QStyle::sliderPositionFromValue_data()
     QTest::addRow("no span inverse") << 12 << 56 << 34 << 0 << true << 0;
 
     QTest::addRow("value too small") << 34 << 56 << 12 << 2000 << false << 0;
+    QTest::addRow("value too small inverse") << 34 << 56 << 12 << 2000 << true << 2000;
 
     QTest::addRow("no-range") << 12 << 12 << 12 << 2000 << false << 0;
     QTest::addRow("no-range-inverse") << 12 << 12 << 12 << 2000 << true << 0;
 
     QTest::addRow("close-to-max") << 12 << 34 << 33 << 2000 << false << 1909;
     QTest::addRow("at-max") << 12 << 34 << 34 << 2000 << false << 2000;
+    QTest::addRow("value too large") << 12 << 34 << 35 << 2000 << false << 2000;
     QTest::addRow("close-to-max-inverse") << 12 << 34 << 33 << 2000 << true << 91;
     QTest::addRow("at-max-inverse") << 12 << 34 << 34 << 2000 << true << 0;
+    QTest::addRow("value too large-inverse") << 12 << 34 << 35 << 2000 << true << 0;
 
     QTest::addRow("big-range") << 100000 << 700000 << 250000 << 2000 << false << 500;
     QTest::addRow("big-range-inverse") << 100000 << 700000 << 250000 << 2000 << true << 1500;
