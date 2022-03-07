@@ -4593,14 +4593,15 @@ static void q_toPercentEncoding(QByteArray *ba, const char *dontEncode, const ch
 
     for (qsizetype i = 0; i < len; ++i) {
         unsigned char c = *inputData++;
-        if (((c >= 0x61 && c <= 0x7A) // ALPHA
-             || (c >= 0x41 && c <= 0x5A) // ALPHA
-             || (c >= 0x30 && c <= 0x39) // DIGIT
-             || c == 0x2D // -
-             || c == 0x2E // .
-             || c == 0x5F // _
-             || c == 0x7E // ~
-             || q_strchr(dontEncode, c))
+        if (c != percent
+            && ((c >= 0x61 && c <= 0x7A) // ALPHA
+                || (c >= 0x41 && c <= 0x5A) // ALPHA
+                || (c >= 0x30 && c <= 0x39) // DIGIT
+                || c == 0x2D // -
+                || c == 0x2E // .
+                || c == 0x5F // _
+                || c == 0x7E // ~
+                || q_strchr(dontEncode, c))
             && !q_strchr(alsoEncode, c)) {
             if (output)
                 output[length] = c;
@@ -4652,20 +4653,8 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
     if (isEmpty())
         return QByteArray(data(), 0);
 
-    QByteArray include2 = include;
-    if (exclude.contains(percent)
-        || ((percent >= 0x61 && percent <= 0x7A) // ALPHA
-            || (percent >= 0x41 && percent <= 0x5A) // ALPHA
-            || (percent >= 0x30 && percent <= 0x39) // DIGIT
-            || percent == 0x2D // -
-            || percent == 0x2E // .
-            || percent == 0x5F // _
-            || percent == 0x7E)) { // ~
-        include2 += percent;
-    }
-
     QByteArray result = *this;
-    q_toPercentEncoding(&result, exclude.nulTerminated().constData(), include2.nulTerminated().constData(), percent);
+    q_toPercentEncoding(&result, exclude.nulTerminated().constData(), include.nulTerminated().constData(), percent);
 
     return result;
 }
