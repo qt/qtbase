@@ -921,6 +921,17 @@ qint64 QPalette::cacheKey() const
     return (((qint64) d->ser_no) << 32) | ((qint64) (d->detach_no));
 }
 
+static constexpr QPalette::ResolveMask allResolveMask()
+{
+    QPalette::ResolveMask mask = {0};
+    for (int role = 0; role < int(QPalette::NColorRoles); ++role) {
+        for (int grp = 0; grp < int(QPalette::NColorGroups); ++grp) {
+            mask |= (QPalette::ResolveMask(1) << bitPosition(QPalette::ColorGroup(grp), QPalette::ColorRole(role)));
+        }
+    }
+    return mask;
+}
+
 /*!
     Returns a new QPalette that is a union of this instance and \a other.
     Color roles set in this instance take precedence.
@@ -933,6 +944,9 @@ QPalette QPalette::resolve(const QPalette &other) const
         o.d->resolveMask = d->resolveMask;
         return o;
     }
+
+    if (d->resolveMask == allResolveMask())
+        return *this;
 
     QPalette palette(*this);
     palette.detach();

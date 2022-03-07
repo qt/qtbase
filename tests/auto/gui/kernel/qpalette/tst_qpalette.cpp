@@ -122,6 +122,14 @@ void tst_QPalette::resolve()
 
     QVERIFY(p2ResolvedTo1 != p1);
     QVERIFY(p2ResolvedTo1 != p2);
+
+    QPalette p3;
+    // ensure the resolve mask is full
+    for (int r = 0; r < QPalette::NColorRoles; ++r)
+        p3.setBrush(QPalette::All, QPalette::ColorRole(r), Qt::red);
+
+    QPalette p3ResolvedToP1 = p3.resolve(p1);
+    QVERIFY(p3ResolvedToP1.isCopyOf(p3));
 }
 
 
