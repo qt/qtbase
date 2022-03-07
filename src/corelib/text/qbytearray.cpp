@@ -4618,17 +4618,6 @@ static void q_toPercentEncoding(QByteArray *ba, const char *dontEncode, const ch
         ba->truncate(length);
 }
 
-void q_toPercentEncoding(QByteArray *ba, const char *exclude, const char *include)
-{
-    q_toPercentEncoding(ba, exclude, include, '%');
-}
-
-void q_normalizePercentEncoding(QByteArray *ba, const char *exclude)
-{
-    q_fromPercentEncoding(ba, '%');
-    q_toPercentEncoding(ba, exclude, nullptr, '%');
-}
-
 /*!
     \since 4.4
 
