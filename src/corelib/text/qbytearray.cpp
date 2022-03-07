@@ -4600,21 +4600,16 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
     if (isEmpty())
         return QByteArray(data(), 0);
 
-    const auto contains = [](QByteArrayView view, char c) {
+    const auto contains = [](const QByteArray &view, char c) {
         // As view.contains(c), but optimised to bypass a lot of overhead:
         return view.size() > 0 && memchr(view.data(), c, view.size()) != nullptr;
     };
 
     QByteArray result = *this;
-    QByteArray *ba = &result;
-    QByteArray input = *ba;
-    qsizetype len = input.size();
-    const char *inputData = input.constData();
     char *output = nullptr;
     qsizetype length = 0;
 
-    for (qsizetype i = 0; i < len; ++i) {
-        unsigned char c = *inputData++;
+    for (unsigned char c : *this) {
         if (c != percent
             && ((c >= 0x61 && c <= 0x7A) // ALPHA
                 || (c >= 0x41 && c <= 0x5A) // ALPHA
@@ -4631,8 +4626,8 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
         } else {
             if (!output) {
                 // detach now
-                ba->resize(len*3); // worst case
-                output = ba->data();
+                result.resize(size() * 3); // worst case
+                output = result.data();
             }
             output[length++] = percent;
             output[length++] = QtMiscUtils::toHexUpper((c & 0xf0) >> 4);
@@ -4640,7 +4635,7 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
         }
     }
     if (output)
-        ba->truncate(length);
+        result.truncate(length);
 
     return result;
 }
