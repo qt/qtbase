@@ -3,8 +3,6 @@ macos
 [layoutDirection]
 macos
 # Fails when enabling synchronous expose events QTBUG-62092
-[pushButtonPopulateOnAboutToShow]
-macos
 [tearOff]
 macos
 [submenuTearOffDontClose]
