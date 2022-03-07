@@ -146,7 +146,7 @@ bool QPublicSuffixDatabase::loadFile(const QString &fileName)
 
     auto header = systemFile->read(DafsaFileHeader.size());
     if (header != DafsaFileHeader) {
-        qCWarning(lcTld, "Invalid publicsuffix file header: %s", qUtf8Printable(header.toHex()));
+        qCWarning(lcTld, "Invalid publicsuffix file header: %s", header.toHex().constData());
         return false;
     }
 
