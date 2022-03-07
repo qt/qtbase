@@ -4568,16 +4568,45 @@ QByteArray QByteArray::fromPercentEncoding(const QByteArray &input, char percent
     \sa fromStdString(), QString::toStdString()
 */
 
-static void q_toPercentEncoding(QByteArray *ba, QByteArrayView exclude,
-                                QByteArrayView include, char percent)
+/*!
+    \since 4.4
+
+    Returns a URI/URL-style percent-encoded copy of this byte array. The
+    \a percent parameter allows you to override the default '%'
+    character for another.
+
+    By default, this function will encode all bytes that are not one of the
+    following:
+
+        ALPHA ("a" to "z" and "A" to "Z") / DIGIT (0 to 9) / "-" / "." / "_" / "~"
+
+    To prevent bytes from being encoded pass them to \a exclude. To force bytes
+    to be encoded pass them to \a include. The \a percent character is always
+    encoded.
+
+    Example:
+
+    \snippet code/src_corelib_text_qbytearray.cpp 52
+
+    The hex encoding uses the numbers 0-9 and the uppercase letters A-F.
+
+    \sa fromPercentEncoding(), QUrl::toPercentEncoding()
+*/
+QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteArray &include,
+                                         char percent) const
 {
-    Q_ASSERT(!ba->isEmpty());
+    if (isNull())
+        return QByteArray();    // preserve null
+    if (isEmpty())
+        return QByteArray(data(), 0);
 
     const auto contains = [](QByteArrayView view, char c) {
         // As view.contains(c), but optimised to bypass a lot of overhead:
         return view.size() > 0 && memchr(view.data(), c, view.size()) != nullptr;
     };
 
+    QByteArray result = *this;
+    QByteArray *ba = &result;
     QByteArray input = *ba;
     qsizetype len = input.size();
     const char *inputData = input.constData();
@@ -4612,42 +4641,6 @@ static void q_toPercentEncoding(QByteArray *ba, QByteArrayView exclude,
     }
     if (output)
         ba->truncate(length);
-}
-
-/*!
-    \since 4.4
-
-    Returns a URI/URL-style percent-encoded copy of this byte array. The
-    \a percent parameter allows you to override the default '%'
-    character for another.
-
-    By default, this function will encode all bytes that are not one of the
-    following:
-
-        ALPHA ("a" to "z" and "A" to "Z") / DIGIT (0 to 9) / "-" / "." / "_" / "~"
-
-    To prevent bytes from being encoded pass them to \a exclude. To force bytes
-    to be encoded pass them to \a include. The \a percent character is always
-    encoded.
-
-    Example:
-
-    \snippet code/src_corelib_text_qbytearray.cpp 52
-
-    The hex encoding uses the numbers 0-9 and the uppercase letters A-F.
-
-    \sa fromPercentEncoding(), QUrl::toPercentEncoding()
-*/
-QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteArray &include,
-                                         char percent) const
-{
-    if (isNull())
-        return QByteArray();    // preserve null
-    if (isEmpty())
-        return QByteArray(data(), 0);
-
-    QByteArray result = *this;
-    q_toPercentEncoding(&result, exclude, include, percent);
 
     return result;
 }
