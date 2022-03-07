@@ -63,6 +63,8 @@ qt_internal_add_3rdparty_header_module(JpegPrivate
     EXTERNAL_HEADERS
         src/jpeglib.h
         src/jerror.h
+        src/jconfig.h
+        src/jmorecfg.h
 )
 
 qt_disable_warnings(BundledLibjpeg)
