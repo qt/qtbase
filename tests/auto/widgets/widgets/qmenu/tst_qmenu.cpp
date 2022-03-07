@@ -1060,12 +1060,16 @@ public:
 // Mouse move related signals for Windows Mobile unavailable
 void tst_QMenu::task258920_mouseBorder()
 {
+    const QRect screenGeometry = QGuiApplication::primaryScreen()->availableGeometry();
     Menu258920 menu;
+    QCursor::setPos(screenGeometry.topLeft());
+    if (!QTest::qWaitFor([screenGeometry]{ return QCursor::pos() == screenGeometry.topLeft(); }))
+        QSKIP("Can't move cursor out of the way");
     // For styles which inherit from QWindowsStyle, styleHint(QStyle::SH_Menu_MouseTracking) is true.
     menu.setMouseTracking(true);
     QAction *action = menu.addAction("test");
 
-    const QPoint center = QGuiApplication::primaryScreen()->availableGeometry().center();
+    const QPoint center = screenGeometry.center();
     menu.popup(center);
     QVERIFY(QTest::qWaitForWindowExposed(&menu));
     QRect actionRect = menu.actionGeometry(action);
