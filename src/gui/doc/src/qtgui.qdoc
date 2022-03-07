@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -45,8 +45,8 @@
     The Qt GUI module provides classes for windowing system
     integration, event handling, OpenGL and OpenGL ES integration, 2D
     graphics, basic imaging, fonts, and text. These classes are used
-    internally by Qt's user interface technologies and can also be
-    used directly, for instance to write applications using low-level
+    internally by Qt's user interface technologies but can also be
+    used directly, for example to write applications using low-level
     OpenGL ES graphics APIs.
 
     For application developers writing user interfaces, Qt provides
@@ -55,10 +55,13 @@
 
     \if !defined(qtforpython)
 
-    \include module-use.qdocinc using qt module
-    \quotefile overview/using-qt-gui.cmake
+    \section1 Using the Module
 
-    See also the \l {Build with CMake} overview.
+    \include {module-use.qdocinc} {using the c++ api}
+
+    \section2 Building with CMake
+
+    \include {module-use.qdocinc} {building with cmake} {Gui}
 
     \section2 Building with qmake
 
@@ -68,124 +71,32 @@
     \snippet code/doc_src_qtgui.pro 1
     \endif
 
-    \section1 Application Windows
-
-    The most important classes in the Qt GUI module are
-    QGuiApplication and QWindow. A Qt application that wants to show
-    content on screen will need to make use of these. QGuiApplication
-    contains the main event loop, where all events from the window
-    system and other sources are processed and dispatched. It also
-    handles the application's initialization and finalization.
-
-    The \l QWindow class represents a window in the underlying
-    windowing system. It provides a number of virtual functions to
-    handle events (\l {QEvent}) from the windowing system, such as
-    touch-input, exposure, focus, key strokes, and geometry changes.
-
-
-
-    \section1 2D Graphics
-
-    The Qt GUI module contains classes for 2D graphics, imaging, fonts,
-    and advanced typography.
-
-    A \l QWindow created with the surface type \l
-    {QSurface::RasterSurface} can be used in combination with \l
-    {QBackingStore} and \l {QPainter}, Qt's highly optimized 2D vector
-    graphics API. QPainter supports drawing lines, polygons, vector
-    paths, images, and text. For more information, see \l{Paint
-    System} and \l {Raster Window Example}.
-
-    Qt can load and save images using the \l QImage and \l QPixmap
-    classes. By default, Qt supports the most common image formats
-    including JPEG and PNG among others. Users can add support for
-    additional formats via the \l QImageIOPlugin class. For more
-    information, see \l {Reading and Writing Image Files}.
-
-    Typography in Qt is done with \l QTextDocument, which uses the \l
-    QPainter API in combination with Qt's font classes, primarily
-    QFont. Applications that prefer more low-level APIs to text
-    and font handling can use classes like QRawFont and QGlyphRun.
-
-    \section1 OpenGL and OpenGL ES Integration
-
-    QWindow supports rendering using OpenGL and OpenGL ES, depending
-    on what the platform supports. OpenGL rendering is enabled by
-    setting the QWindow's surface type to QSurface::OpenGLSurface,
-    choosing the format attributes with QSurfaceFormat, and then
-    creating a QOpenGLContext to manage the native OpenGL context. In
-    addition, Qt has QOpenGLPaintDevice, which enables the use of
-    OpenGL accelerated QPainter rendering, as well as convenience
-    classes that simplify the writing of OpenGL code and hides the
-    complexities of extension handling and the differences between
-    OpenGL ES 2 and desktop OpenGL. The convenience classes include
-    QOpenGLFunctions that lets an application use all the OpenGL ES 2
-    functions on desktop OpenGL without having to manually resolve the
-    OpenGL function pointers. This enables cross-platform development
-    of applications targeting mobile or embedded devices, and provides
-    classes that wrap native OpenGL functionality in a simpler Qt API:
+    \section1 Articles and Guides
 
     \list
-    \li QOpenGLBuffer
-    \li QOpenGLFramebufferObject
-    \li QOpenGLShaderProgram
-    \li QOpenGLTexture
-    \li QOpenGLDebugLogger
-    \li QOpenGLTimerQuery
-    \li QOpenGLVertexArrayObject
+        \li \l {Qt GUI Overview}
+        \list
+            \li \l {Application Windows} {Qt GUI Application Windows}
+            \li \l {2D Graphics} {Qt GUI 2D Graphics}
+            \li \l {OpenGL and OpenGL ES Integration}
+                   {Qt GUI OpenGL and OpenGL ES Integration}
+            \li \l {Vulkan Integration} {Qt GUI Vulkan Integration}
+        \endlist
     \endlist
 
-    Finally, in order to provide better support for the newer versions
-    (3.0 and higher) of OpenGL, a versioned function wrapper mechanism
-    is also available: The QOpenGLFunction_N_N family of classes
-    expose all the functions in a given OpenGL version and profile,
-    allowing easy development of desktop applications that rely on
-    modern, desktop-only OpenGL features.
-
-    For more information, see the \l {OpenGL Window Example}.
-
-    The Qt GUI module also contains a few math classes to aid with the
-    most common mathematical operations related to 3D graphics. These
-    classes include \l {QMatrix4x4}, \l {QVector4D}, and \l {QQuaternion}.
-
-    A \l {QWindow} created with the \l {QSurface::OpenGLSurface} can
-    be used in combination with \l QPainter and \l QOpenGLPaintDevice
-    to have OpenGL hardware-accelerated 2D graphics by sacrificing
-    some of the visual quality.
-
-
-
-    \section1 Vulkan Integration
-
-    Qt GUI has support for the \l {Vulkan} API. Qt applications require the
-    presence of the \l{LunarG Vulkan SDK}.
-
-    On Windows, the SDK sets the environment variable \c {VULKAN_SDK},
-    which will be detected by the \c {configure} script.
-
-    On Android, Vulkan headers were added in API level 24 of the NDK.
-
-    Relevant classes:
+    \section1 Reference
 
     \list
-    \li QVulkanDeviceFunctions
-    \li QVulkanExtension
-    \li QVulkanFunctions
-    \li QVulkanInfoVector
-    \li QVulkanInstance
-    \li QVulkanWindow
-    \li QVulkanWindowRenderer
+        \li \l{Qt GUI C++ Classes}
+            \list
+                \li \l{Event Classes}
+                \li \l{Painting Classes}
+                \li \l{Rendering in 3D}
+            \endlist
     \endlist
-
-    For more information, see the \l{Hello Vulkan Widget Example}
-    and the \l {Hello Vulkan Window Example}.
-
-    \section1 Drag and Drop
-
-    Qt GUI includes support for drag and drop. The \l{Drag and Drop} overview
-    has more information.
 
     \section1 Module Evolution
+
     \l{Changes to Qt GUI} lists important changes in the module API
     and functionality that were done for the Qt 6 series of Qt.
 
@@ -201,14 +112,4 @@
     modules under following permissive licenses:
 
     \generatelist{groupsbymodule attributions-qtgui}
-
-    \section1 Reference
-    \list
-    \li \l{Qt GUI C++ Classes}
-        \list
-        \li \l{Event Classes}
-        \li \l{Painting Classes}
-        \li \l{Rendering in 3D}
-        \endlist
-    \endlist
  */
