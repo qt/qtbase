@@ -63,3 +63,6 @@ android
 android
 [multipleToplevelFocusCheck]
 android
+#QTBUG-101571
+[enterLeaveOnWindowShowHide]
+windows-11
