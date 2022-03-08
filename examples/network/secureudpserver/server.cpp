@@ -69,14 +69,8 @@ QString connection_info(QDtls *connection)
 
     info += DtlsServer::tr("; session protocol: ");
     switch (connection->sessionProtocol()) {
-    case QSsl::DtlsV1_0:
-        info += DtlsServer::tr("DTLS 1.0.");
-        break;
     case QSsl::DtlsV1_2:
         info += DtlsServer::tr("DTLS 1.2.");
-        break;
-    case QSsl::DtlsV1_2OrLater:
-        info += DtlsServer::tr("DTLS 1.2 or later.");
         break;
     default:
         info += DtlsServer::tr("Unknown protocol.");
