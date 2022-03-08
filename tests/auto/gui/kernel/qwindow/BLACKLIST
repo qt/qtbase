@@ -13,6 +13,8 @@ osx
 android
 windows
 [spuriousMouseMove]
+# QTBUG-101567
+windows-11
 # QTBUG-69162
 windows-10
 android
