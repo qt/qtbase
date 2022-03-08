@@ -80,6 +80,7 @@ bool QAndroidPlatformFileDialogHelper::handleActivityResult(jint requestCode, ji
         takePersistableUriPermission(uri);
         m_selectedFile.append(QUrl(uri.toString()));
         Q_EMIT fileSelected(m_selectedFile.first());
+        Q_EMIT currentChanged(m_selectedFile.first());
         Q_EMIT accept();
 
         return true;
@@ -98,6 +99,7 @@ bool QAndroidPlatformFileDialogHelper::handleActivityResult(jint requestCode, ji
             m_selectedFile.append(itemUri.toString());
         }
         Q_EMIT filesSelected(m_selectedFile);
+        Q_EMIT currentChanged(m_selectedFile.first());
         Q_EMIT accept();
     }
 
