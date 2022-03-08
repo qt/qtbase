@@ -787,6 +787,7 @@ setBootstrapVariable()
             echo "EXTRA_CXXFLAGS += -MMD" >> "$mkfile"
             for arch in $QMAKE_APPLE_DEVICE_ARCHS; do
                 echo "EXTRA_CXXFLAGS += -arch $arch" >> "$mkfile"
+                echo "EXTRA_LFLAGS += -arch $arch" >> "$mkfile"
             done
             cat "$in_mkfile" >> "$mkfile"
             echo "-include \$(notdir \$(DEPEND_SRC:%.cpp=%.d))" >> "$mkfile"
