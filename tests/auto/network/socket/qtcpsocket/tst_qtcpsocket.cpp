@@ -2221,7 +2221,7 @@ public slots:
 #if defined(Q_OS_MAC)
         pthread_yield_np();
 #elif defined Q_OS_LINUX && !defined Q_OS_ANDROID
-        pthread_yield();
+        sched_yield();
 #endif
         if (!sock->waitForConnected()) {
             networkTimeout = true;
