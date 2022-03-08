@@ -41,6 +41,7 @@
 
 #include <QtCore/qstringalgorithms.h>
 #include <QtCore/qarraydata.h> // for QContainerImplHelper
+#include <QtCore/qbytearrayview.h>
 
 #include <string>
 
