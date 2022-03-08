@@ -30,6 +30,8 @@
 #include <qrasterwindow.h>
 #include <qscreen.h>
 #include <qpa/qwindowsysteminterface.h>
+#include <qpa/qplatformintegration.h>
+#include <private/qguiapplication_p.h>
 
 #include <QTest>
 #include <QSignalSpy>
@@ -205,6 +207,10 @@ void tst_QScreen::orientationChange()
 
 void tst_QScreen::grabWindow_data()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(
+                QPlatformIntegration::ScreenWindowGrabbing)) {
+        QSKIP("This platform does not support grabbing windows on screen.");
+    }
     QTest::addColumn<int>("screenIndex");
     QTest::addColumn<QByteArray>("screenName");
     QTest::addColumn<bool>("grabWindow");
@@ -302,8 +308,6 @@ void tst_QScreen::grabWindow()
 
     QImage grabbedImage = pixmap.toImage();
     const QSize grabbedSize = grabbedImage.size();
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QEXPECT_FAIL("", "Wayland: Screen grabbing not implemented, See QTBUG-100792.", Abort);
     QCOMPARE(grabbedSize, expectedGrabSize);
 
     QPoint pixelOffset = QPoint(0, 0);

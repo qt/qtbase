@@ -133,7 +133,8 @@ public:
         OpenGLOnRasterSurface,
         MaximizeUsingFullscreenGeometry,
         PaintEvents,
-        RhiBasedRendering
+        RhiBasedRendering,
+        ScreenWindowGrabbing // whether QScreen::grabWindow() is supported
     };
 
     virtual ~QPlatformIntegration() { }

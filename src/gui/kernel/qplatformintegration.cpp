@@ -260,6 +260,10 @@ QPlatformServices *QPlatformIntegration::services() const
     where there is an alternative, such as Qt Quick with its \c software backend, an
     automatic fallback to that alternative may occur, if applicable. The default
     implementation of hasCapability() returns \c true.
+
+    \value ScreenWindowGrabbing The platform supports grabbing window on screen.
+    On Wayland, this capability can be reported as \c false. The default implementation
+    of hasCapability() returns \c true.
  */
 
 /*!
@@ -284,7 +288,8 @@ QPlatformServices *QPlatformIntegration::services() const
 bool QPlatformIntegration::hasCapability(Capability cap) const
 {
     return cap == NonFullScreenWindows || cap == NativeWidgets || cap == WindowManagement
-        || cap == TopStackedNativeChildWindows || cap == WindowActivation || cap == RhiBasedRendering;
+        || cap == TopStackedNativeChildWindows || cap == WindowActivation
+        || cap == RhiBasedRendering || cap == ScreenWindowGrabbing;
 }
 
 QPlatformPixmap *QPlatformIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
