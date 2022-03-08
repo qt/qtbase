@@ -85,6 +85,7 @@ class QLatin1String
 {
 public:
     constexpr inline QLatin1String() noexcept : m_size(0), m_data(nullptr) {}
+    Q_WEAK_OVERLOAD
     constexpr QLatin1String(std::nullptr_t) noexcept : QLatin1String() {}
     constexpr inline explicit QLatin1String(const char *s) noexcept
         : m_size(s ? qsizetype(QtPrivate::lengthHelperPointer(s)) : 0), m_data(s) {}
