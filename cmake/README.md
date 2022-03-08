@@ -184,7 +184,7 @@ If you don't supply the configuration argument ``-DANDROID_ABI=...``, it will de
   * x86_64: ``-DANDROID_ABI=x86_64``
 
 By default we set the android API level to 23. Should you need to change this supply the following
-configuration argument to the above CMake call: ``-DANDROID_NATIVE_API_LEVEL=${API_LEVEL}``
+configuration argument to the above CMake call: ``-DANDROID_PLATFORM=android-${API_LEVEL}``.
 
 ### Cross compiling for iOS
 

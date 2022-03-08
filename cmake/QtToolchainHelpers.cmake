@@ -184,13 +184,17 @@ set(__qt_chainload_toolchain_file \"\${__qt_initially_configured_toolchain_file}
             list(APPEND init_platform "endif()")
         endif()
     elseif(ANDROID)
-        foreach(var ANDROID_NATIVE_API_LEVEL ANDROID_STL ANDROID_ABI
-                ANDROID_SDK_ROOT ANDROID_NDK_ROOT)
+        foreach(var ANDROID_PLATFORM ANDROID_NATIVE_API_LEVEL ANDROID_STL
+                ANDROID_ABI ANDROID_SDK_ROOT ANDROID_NDK_ROOT)
             list(APPEND init_additional_used_variables
                 "list(APPEND __qt_toolchain_used_variables ${var})")
         endforeach()
+
         list(APPEND init_platform
-             "set(ANDROID_NATIVE_API_LEVEL \"${ANDROID_NATIVE_API_LEVEL}\" CACHE STRING \"\")")
+            "if(NOT DEFINED ANDROID_PLATFORM AND NOT DEFINED ANDROID_NATIVE_API_LEVEL)")
+        list(APPEND init_platform
+            "    set(ANDROID_PLATFORM \"${ANDROID_PLATFORM}\" CACHE STRING \"\")")
+        list(APPEND init_platform "endif()")
         list(APPEND init_platform "set(ANDROID_STL \"${ANDROID_STL}\" CACHE STRING \"\")")
         list(APPEND init_platform "set(ANDROID_ABI \"${ANDROID_ABI}\" CACHE STRING \"\")")
         list(APPEND init_platform "if (NOT DEFINED ANDROID_SDK_ROOT)")
