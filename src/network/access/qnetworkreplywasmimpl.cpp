@@ -234,10 +234,13 @@ void QNetworkReplyWasmImplPrivate::doSendRequest()
         }
     }
 
+    QByteArray userName, password;
     // username & password
     if (!request.url().userInfo().isEmpty()) {
-        attr.userName = request.url().userName().toUtf8();
-        attr.password = request.url().password().toUtf8();
+        userName = request.url().userName().toUtf8();
+        password = request.url().password().toUtf8();
+        attr.userName = userName.constData();
+        attr.password = password.constData();
     }
 
     attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
@@ -265,7 +268,8 @@ void QNetworkReplyWasmImplPrivate::doSendRequest()
     attr.userData = reinterpret_cast<void *>(this);
 
     QString dPath = QStringLiteral("/home/web_user/") + request.url().fileName();
-    attr.destinationPath = dPath.toUtf8();
+    QByteArray destinationPath = dPath.toUtf8();
+    attr.destinationPath = destinationPath.constData();
 
     m_fetch = emscripten_fetch(&attr, request.url().toString().toUtf8());
 }
