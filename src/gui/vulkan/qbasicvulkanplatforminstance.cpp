@@ -81,19 +81,45 @@ QBasicPlatformVulkanInstance::~QBasicPlatformVulkanInstance()
         m_vkDestroyInstance(m_vkInst, nullptr);
 }
 
-void QBasicPlatformVulkanInstance::loadVulkanLibrary(const QString &defaultLibraryName)
+void QBasicPlatformVulkanInstance::loadVulkanLibrary(const QString &defaultLibraryName, int defaultLibraryVersion)
 {
-    if (qEnvironmentVariableIsSet("QT_VULKAN_LIB"))
-        m_vulkanLib.setFileName(QString::fromUtf8(qgetenv("QT_VULKAN_LIB")));
-    else
-        m_vulkanLib.setFileName(defaultLibraryName);
+    QVarLengthArray<std::pair<QString, int>, 3> loadList;
 
-    if (!m_vulkanLib.load()) {
-        qWarning("Failed to load %s: %s", qPrintable(m_vulkanLib.fileName()), qPrintable(m_vulkanLib.errorString()));
+    // First in the list of libraries to try is the manual override, relevant on
+    // embedded systems without a Vulkan loader and possibly with custom vendor
+    // library names.
+    if (qEnvironmentVariableIsSet("QT_VULKAN_LIB"))
+        loadList.append({ QString::fromUtf8(qgetenv("QT_VULKAN_LIB")), -1 });
+
+    // Then what the platform specified. On Linux the version is likely 1, thus
+    // preferring libvulkan.so.1 over libvulkan.so.
+    loadList.append({ defaultLibraryName, defaultLibraryVersion });
+
+    // If there was a version given, we must still try without it if the first
+    // attempt fails, so that libvulkan.so is picked up if the .so.1 is not
+    // present on the system (so loaderless embedded systems still work).
+    if (defaultLibraryVersion >= 0)
+        loadList.append({ defaultLibraryName, -1 });
+
+    bool ok = false;
+    for (const auto &lib : loadList) {
+        m_vulkanLib.reset(new QLibrary);
+        if (lib.second >= 0)
+            m_vulkanLib->setFileNameAndVersion(lib.first, lib.second);
+        else
+            m_vulkanLib->setFileName(lib.first);
+        if (m_vulkanLib->load()) {
+            ok = true;
+            break;
+        }
+    }
+
+    if (!ok) {
+        qWarning("Failed to load %s: %s", qPrintable(m_vulkanLib->fileName()), qPrintable(m_vulkanLib->errorString()));
         return;
     }
 
-    init(&m_vulkanLib);
+    init(m_vulkanLib.get());
 }
 
 void QBasicPlatformVulkanInstance::init(QLibrary *lib)

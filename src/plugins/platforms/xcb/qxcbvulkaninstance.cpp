@@ -48,7 +48,7 @@ QXcbVulkanInstance::QXcbVulkanInstance(QVulkanInstance *instance)
       m_getPhysDevPresSupport(nullptr),
       m_createSurface(nullptr)
 {
-    loadVulkanLibrary(QStringLiteral("vulkan"));
+    loadVulkanLibrary(QStringLiteral("vulkan"), 1);
 }
 
 QXcbVulkanInstance::~QXcbVulkanInstance()
