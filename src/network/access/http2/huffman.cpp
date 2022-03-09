@@ -402,6 +402,7 @@ void huffman_encode_string(const QByteArray &inputData, BitOStream &outputStream
         outputStream.writeBits(0xff, 8 - outputStream.bitLength() % 8);
 }
 
+static constexpr
 bool padding_is_valid(quint32 chunk, quint32 nBits)
 {
     Q_ASSERT(nBits);
