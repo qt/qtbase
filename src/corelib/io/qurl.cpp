@@ -439,6 +439,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 // in qstring.cpp:
 void qt_from_latin1(char16_t *dst, const char *str, size_t size) noexcept;
 
@@ -833,7 +835,7 @@ static const ushort * const fragmentInUrl = userNameInUrl + 6;
 
 static inline void parseDecodedComponent(QString &data)
 {
-    data.replace(QLatin1Char('%'), QLatin1String("%25"));
+    data.replace(u'%', "%25"_L1);
 }
 
 static inline QString
@@ -870,11 +872,11 @@ inline void QUrlPrivate::appendAuthority(QString &appendTo, QUrl::FormattingOpti
 
         // add '@' only if we added anything
         if (hasUserName() || (hasPassword() && (options & QUrl::RemovePassword) == 0))
-            appendTo += QLatin1Char('@');
+            appendTo += u'@';
     }
     appendHost(appendTo, options);
     if (!(options & QUrl::RemovePort) && port != -1)
-        appendTo += QLatin1Char(':') + QString::number(port);
+        appendTo += u':' + QString::number(port);
 }
 
 inline void QUrlPrivate::appendUserInfo(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const
@@ -916,7 +918,7 @@ inline void QUrlPrivate::appendUserInfo(QString &appendTo, QUrl::FormattingOptio
     if (options & QUrl::RemovePassword || !hasPassword()) {
         return;
     } else {
-        appendTo += QLatin1Char(':');
+        appendTo += u':';
         if (!qt_urlRecode(appendTo, password, options, passwordActions))
             appendTo += password;
     }
@@ -945,14 +947,14 @@ inline void QUrlPrivate::appendPath(QString &appendTo, QUrl::FormattingOptions o
 
     QStringView thePathView(thePath);
     if (options & QUrl::RemoveFilename) {
-        const qsizetype slash = path.lastIndexOf(QLatin1Char('/'));
+        const qsizetype slash = path.lastIndexOf(u'/');
         if (slash == -1)
             return;
         thePathView = QStringView{path}.left(slash + 1);
     }
     // check if we need to remove trailing slashes
     if (options & QUrl::StripTrailingSlash) {
-        while (thePathView.length() > 1 && thePathView.endsWith(QLatin1Char('/')))
+        while (thePathView.length() > 1 && thePathView.endsWith(u'/'))
             thePathView.chop(1);
     }
 
@@ -1048,7 +1050,7 @@ inline void QUrlPrivate::setAuthority(const QString &auth, qsizetype from, qsize
 
     // we never actually _loop_
     while (from != end) {
-        qsizetype userInfoIndex = auth.indexOf(QLatin1Char('@'), from);
+        qsizetype userInfoIndex = auth.indexOf(u'@', from);
         if (size_t(userInfoIndex) < size_t(end)) {
             setUserInfo(auth, from, userInfoIndex);
             if (mode == QUrl::StrictMode && !validateComponent(UserInfo, auth, from, userInfoIndex))
@@ -1056,14 +1058,14 @@ inline void QUrlPrivate::setAuthority(const QString &auth, qsizetype from, qsize
             from = userInfoIndex + 1;
         }
 
-        qsizetype colonIndex = auth.lastIndexOf(QLatin1Char(':'), end - 1);
+        qsizetype colonIndex = auth.lastIndexOf(u':', end - 1);
         if (colonIndex < from)
             colonIndex = -1;
 
         if (size_t(colonIndex) < size_t(end)) {
             if (auth.at(from).unicode() == '[') {
                 // check if colonIndex isn't inside the "[...]" part
-                qsizetype closingBracket = auth.indexOf(QLatin1Char(']'), from);
+                qsizetype closingBracket = auth.indexOf(u']', from);
                 if (size_t(closingBracket) > size_t(colonIndex))
                     colonIndex = -1;
             }
@@ -1111,7 +1113,7 @@ inline void QUrlPrivate::setAuthority(const QString &auth, qsizetype from, qsize
 
 inline void QUrlPrivate::setUserInfo(const QString &userInfo, qsizetype from, qsizetype end)
 {
-    qsizetype delimIndex = userInfo.indexOf(QLatin1Char(':'), from);
+    qsizetype delimIndex = userInfo.indexOf(u':', from);
     setUserName(userInfo, from, qMin<size_t>(delimIndex, end));
 
     if (size_t(delimIndex) >= size_t(end)) {
@@ -1248,7 +1250,7 @@ static const QChar *parseIpFuture(QString &host, const QChar *begin, const QChar
             else
                 return decoded.isEmpty() ? begin : &origBegin[2];
         }
-        host += QLatin1Char(']');
+        host += u']';
         return nullptr;
     }
     return &origBegin[2];
@@ -1290,14 +1292,14 @@ static const QChar *parseIp6(QString &host, const QChar *begin, const QChar *end
         return begin + (ret - decoded.constBegin());
 
     host.reserve(host.size() + (end - begin) + 2);  // +2 for the brackets
-    host += QLatin1Char('[');
+    host += u'[';
     QIPAddressUtils::toString(host, address);
 
     if (!zoneId.isEmpty()) {
         host += zoneIdIdentifier;
         host += zoneId;
     }
-    host += QLatin1Char(']');
+    host += u']';
     return nullptr;
 }
 
@@ -1504,19 +1506,19 @@ QString QUrlPrivate::toLocalFile(QUrl::FormattingOptions options) const
 
     // magic for shared drive on windows
     if (!host.isEmpty()) {
-        tmp = QLatin1String("//") + host;
+        tmp = "//"_L1 + host;
 #ifdef Q_OS_WIN // QTBUG-42346, WebDAV is visible as local file on Windows only.
         if (scheme == webDavScheme())
             tmp += webDavSslTag();
 #endif
-        if (!ourPath.isEmpty() && !ourPath.startsWith(QLatin1Char('/')))
-            tmp += QLatin1Char('/');
+        if (!ourPath.isEmpty() && !ourPath.startsWith(u'/'))
+            tmp += u'/';
         tmp += ourPath;
     } else {
         tmp = ourPath;
 #ifdef Q_OS_WIN
         // magic for drives on windows
-        if (ourPath.length() > 2 && ourPath.at(0) == QLatin1Char('/') && ourPath.at(2) == QLatin1Char(':'))
+        if (ourPath.length() > 2 && ourPath.at(0) == u'/' && ourPath.at(2) == u':')
             tmp.remove(0, 1);
 #endif
     }
@@ -1537,7 +1539,7 @@ inline QString QUrlPrivate::mergePaths(const QString &relativePath) const
     // path, then return a string consisting of "/" concatenated with
     // the reference's path; otherwise,
     if (!host.isEmpty() && path.isEmpty())
-        return QLatin1Char('/') + relativePath;
+        return u'/' + relativePath;
 
     // Return a string consisting of the reference's path component
     // appended to all but the last segment of the base URI's path
@@ -1545,10 +1547,10 @@ inline QString QUrlPrivate::mergePaths(const QString &relativePath) const
     // base URI path, or excluding the entire base URI path if it does
     // not contain any "/" characters).
     QString newPath;
-    if (!path.contains(QLatin1Char('/')))
+    if (!path.contains(u'/'))
         newPath = relativePath;
     else
-        newPath = QStringView{path}.left(path.lastIndexOf(QLatin1Char('/')) + 1) + relativePath;
+        newPath = QStringView{path}.left(path.lastIndexOf(u'/') + 1) + relativePath;
 
     return newPath;
 }
@@ -1594,7 +1596,7 @@ static void removeDotsFromPath(QString *path)
             in += 2;
             continue;
         } else if (in == end - 2 && in[0].unicode() == '/' && in[1].unicode() == '.') {
-            *out++ = QLatin1Char('/');
+            *out++ = u'/';
             in += 2;
             break;
         }
@@ -1661,8 +1663,8 @@ inline QUrlPrivate::ErrorCode QUrlPrivate::validityError(QString *source, qsizet
 
     if (path.isEmpty())
         return NoError;
-    if (path.at(0) == QLatin1Char('/')) {
-        if (hasAuthority() || path.length() == 1 || path.at(1) != QLatin1Char('/'))
+    if (path.at(0) == u'/') {
+        if (hasAuthority() || path.length() == 1 || path.at(1) != u'/')
             return NoError;
         if (source) {
             *source = path;
@@ -1779,7 +1781,7 @@ inline void QUrlPrivate::validate() const
     if (!isHostValid)
         return;
 
-    if (scheme == QLatin1String("mailto")) {
+    if (scheme == "mailto"_L1) {
         if (!host.isEmpty() || port != -1 || !userName.isEmpty() || !password.isEmpty()) {
             that->isValid = false;
             that->errorInfo.setParams(0, QT_TRANSLATE_NOOP(QUrl, "expected empty host, username,"
@@ -2321,15 +2323,15 @@ void QUrl::setHost(const QString &host, ParsingMode mode)
     if (d->setHost(data, 0, data.length(), mode)) {
         if (host.isNull())
             d->sectionIsPresent &= ~QUrlPrivate::Host;
-    } else if (!data.startsWith(QLatin1Char('['))) {
+    } else if (!data.startsWith(u'[')) {
         // setHost failed, it might be IPv6 or IPvFuture in need of bracketing
         Q_ASSERT(d->error);
 
-        data.prepend(QLatin1Char('['));
-        data.append(QLatin1Char(']'));
+        data.prepend(u'[');
+        data.append(u']');
         if (!d->setHost(data, 0, data.length(), mode)) {
             // failed again
-            if (data.contains(QLatin1Char(':'))) {
+            if (data.contains(u':')) {
                 // source data contains ':', so it's an IPv6 error
                 d->error->code = QUrlPrivate::InvalidIPv6AddressError;
             }
@@ -2363,7 +2365,7 @@ QString QUrl::host(ComponentFormattingOptions options) const
     QString result;
     if (d) {
         d->appendHost(result, options);
-        if (result.startsWith(QLatin1Char('[')))
+        if (result.startsWith(u'['))
             result = result.mid(1, result.length() - 2);
     }
     return result;
@@ -2518,7 +2520,7 @@ QString QUrl::path(ComponentFormattingOptions options) const
 QString QUrl::fileName(ComponentFormattingOptions options) const
 {
     const QString ourPath = path(options);
-    const qsizetype slash = ourPath.lastIndexOf(QLatin1Char('/'));
+    const qsizetype slash = ourPath.lastIndexOf(u'/');
     if (slash == -1)
         return ourPath;
     return ourPath.mid(slash + 1);
@@ -2776,7 +2778,7 @@ QUrl QUrl::resolved(const QUrl &relative) const
                     t.d->sectionIsPresent |= QUrlPrivate::Query;
                 }
             } else {
-                t.d->path = relative.d->path.startsWith(QLatin1Char('/'))
+                t.d->path = relative.d->path.startsWith(u'/')
                             ? relative.d->path
                             : d->mergePaths(relative.d->path);
                 if (relative.d->hasQuery()) {
@@ -2883,26 +2885,26 @@ QString QUrl::toString(FormattingOptions options) const
         options |= EncodeReserved;
 
     if (!(options & QUrl::RemoveScheme) && d->hasScheme())
-        url += d->scheme + QLatin1Char(':');
+        url += d->scheme + u':';
 
-    bool pathIsAbsolute = d->path.startsWith(QLatin1Char('/'));
+    bool pathIsAbsolute = d->path.startsWith(u'/');
     if (!((options & QUrl::RemoveAuthority) == QUrl::RemoveAuthority) && d->hasAuthority()) {
-        url += QLatin1String("//");
+        url += "//"_L1;
         d->appendAuthority(url, options, QUrlPrivate::FullUrl);
     } else if (isLocalFile() && pathIsAbsolute) {
         // Comply with the XDG file URI spec, which requires triple slashes.
-        url += QLatin1String("//");
+        url += "//"_L1;
     }
 
     if (!(options & QUrl::RemovePath))
         d->appendPath(url, options, QUrlPrivate::FullUrl);
 
     if (!(options & QUrl::RemoveQuery) && d->hasQuery()) {
-        url += QLatin1Char('?');
+        url += u'?';
         d->appendQuery(url, options, QUrlPrivate::FullUrl);
     }
     if (!(options & QUrl::RemoveFragment) && d->hasFragment()) {
-        url += QLatin1Char('#');
+        url += u'#';
         d->appendFragment(url, options, QUrlPrivate::FullUrl);
     }
 
@@ -3380,11 +3382,11 @@ QUrl QUrl::fromLocalFile(const QString &localFile)
     QString deslashified = fromNativeSeparators(localFile);
 
     // magic for drives on windows
-    if (deslashified.length() > 1 && deslashified.at(1) == QLatin1Char(':') && deslashified.at(0) != QLatin1Char('/')) {
-        deslashified.prepend(QLatin1Char('/'));
-    } else if (deslashified.startsWith(QLatin1String("//"))) {
+    if (deslashified.length() > 1 && deslashified.at(1) == u':' && deslashified.at(0) != u'/') {
+        deslashified.prepend(u'/');
+    } else if (deslashified.startsWith("//"_L1)) {
         // magic for shared drive on windows
-        qsizetype indexOfPath = deslashified.indexOf(QLatin1Char('/'), 2);
+        qsizetype indexOfPath = deslashified.indexOf(u'/', 2);
         QStringView hostSpec = QStringView{deslashified}.mid(2, indexOfPath - 2);
         // Check for Windows-specific WebDAV specification: "//host@SSL/path".
         if (hostSpec.endsWith(webDavSslTag(), Qt::CaseInsensitive)) {
@@ -3465,16 +3467,16 @@ bool QUrl::isParentOf(const QUrl &childUrl) const
     if (!d)
         return ((childUrl.scheme().isEmpty())
             && (childUrl.authority().isEmpty())
-            && childPath.length() > 0 && childPath.at(0) == QLatin1Char('/'));
+            && childPath.length() > 0 && childPath.at(0) == u'/');
 
     QString ourPath = path();
 
     return ((childUrl.scheme().isEmpty() || d->scheme == childUrl.scheme())
             && (childUrl.authority().isEmpty() || authority() == childUrl.authority())
             &&  childPath.startsWith(ourPath)
-            && ((ourPath.endsWith(QLatin1Char('/')) && childPath.length() > ourPath.length())
-                || (!ourPath.endsWith(QLatin1Char('/'))
-                    && childPath.length() > ourPath.length() && childPath.at(ourPath.length()) == QLatin1Char('/'))));
+            && ((ourPath.endsWith(u'/') && childPath.length() > ourPath.length())
+                || (!ourPath.endsWith(u'/') && childPath.length() > ourPath.length()
+                    && childPath.at(ourPath.length()) == u'/')));
 }
 
 
@@ -3533,21 +3535,21 @@ static QString errorMessage(QUrlPrivate::ErrorCode errorCode, const QString &err
         return QString();
 
     case QUrlPrivate::InvalidSchemeError: {
-        auto msg = QLatin1String("Invalid scheme (character '%1' not permitted)");
+        auto msg = "Invalid scheme (character '%1' not permitted)"_L1;
         return msg.arg(c);
     }
 
     case QUrlPrivate::InvalidUserNameError:
-        return QLatin1String("Invalid user name (character '%1' not permitted)")
+        return "Invalid user name (character '%1' not permitted)"_L1
                 .arg(c);
 
     case QUrlPrivate::InvalidPasswordError:
-        return QLatin1String("Invalid password (character '%1' not permitted)")
+        return "Invalid password (character '%1' not permitted)"_L1
                 .arg(c);
 
     case QUrlPrivate::InvalidRegNameError:
         if (errorPosition >= 0)
-            return QLatin1String("Invalid hostname (character '%1' not permitted)")
+            return "Invalid hostname (character '%1' not permitted)"_L1
                     .arg(c);
         else
             return QStringLiteral("Invalid hostname (contains invalid characters)");
@@ -3556,9 +3558,9 @@ static QString errorMessage(QUrlPrivate::ErrorCode errorCode, const QString &err
     case QUrlPrivate::InvalidIPv6AddressError:
         return QStringLiteral("Invalid IPv6 address");
     case QUrlPrivate::InvalidCharacterInIPv6Error:
-        return QLatin1String("Invalid IPv6 address (character '%1' not permitted)").arg(c);
+        return "Invalid IPv6 address (character '%1' not permitted)"_L1.arg(c);
     case QUrlPrivate::InvalidIPvFutureError:
-        return QLatin1String("Invalid IPvFuture address (character '%1' not permitted)").arg(c);
+        return "Invalid IPvFuture address (character '%1' not permitted)"_L1.arg(c);
     case QUrlPrivate::HostMissingEndBracket:
         return QStringLiteral("Expected ']' to match '[' in hostname");
 
@@ -3568,15 +3570,15 @@ static QString errorMessage(QUrlPrivate::ErrorCode errorCode, const QString &err
         return QStringLiteral("Port field was empty");
 
     case QUrlPrivate::InvalidPathError:
-        return QLatin1String("Invalid path (character '%1' not permitted)")
+        return "Invalid path (character '%1' not permitted)"_L1
                 .arg(c);
 
     case QUrlPrivate::InvalidQueryError:
-        return QLatin1String("Invalid query (character '%1' not permitted)")
+        return "Invalid query (character '%1' not permitted)"_L1
                 .arg(c);
 
     case QUrlPrivate::InvalidFragmentError:
-        return QLatin1String("Invalid fragment (character '%1' not permitted)")
+        return "Invalid fragment (character '%1' not permitted)"_L1
                 .arg(c);
 
     case QUrlPrivate::AuthorityPresentAndPathIsRelative:
@@ -3597,9 +3599,9 @@ static inline void appendComponentIfPresent(QString &msg, bool present, const ch
 {
     if (present) {
         msg += QLatin1String(componentName);
-        msg += QLatin1Char('"');
+        msg += u'"';
         msg += component;
-        msg += QLatin1String("\",");
+        msg += "\","_L1;
     }
 }
 
@@ -3629,9 +3631,9 @@ QString QUrl::errorString() const
         return msg;
 
     msg += errorMessage(errorCode, errorSource, errorPosition);
-    msg += QLatin1String("; source was \"");
+    msg += "; source was \""_L1;
     msg += errorSource;
-    msg += QLatin1String("\";");
+    msg += "\";"_L1;
     appendComponentIfPresent(msg, d->sectionIsPresent & QUrlPrivate::Scheme,
                              " scheme = ", d->scheme);
     appendComponentIfPresent(msg, d->sectionIsPresent & QUrlPrivate::UserInfo,
@@ -3646,7 +3648,7 @@ QString QUrl::errorString() const
                              " query = ", d->query);
     appendComponentIfPresent(msg, d->sectionIsPresent & QUrlPrivate::Fragment,
                              " fragment = ", d->fragment);
-    if (msg.endsWith(QLatin1Char(',')))
+    if (msg.endsWith(u','))
         msg.chop(1);
     return msg;
 }
@@ -3717,8 +3719,8 @@ static QUrl adjustFtpPath(QUrl url)
 {
     if (url.scheme() == ftpScheme()) {
         QString path = url.path(QUrl::PrettyDecoded);
-        if (path.startsWith(QLatin1String("//")))
-            url.setPath(QLatin1String("/%2F") + QStringView{path}.mid(2), QUrl::TolerantMode);
+        if (path.startsWith("//"_L1))
+            url.setPath("/%2F"_L1 + QStringView{path}.mid(2), QUrl::TolerantMode);
     }
     return url;
 }
@@ -3803,7 +3805,7 @@ QUrl QUrl::fromUserInput(const QString &userInput, const QString &workingDirecto
     if (QDir::isAbsolutePath(trimmedString))
         return QUrl::fromLocalFile(trimmedString);
 
-    QUrl urlPrepended = QUrl(QLatin1String("http://") + trimmedString, QUrl::TolerantMode);
+    QUrl urlPrepended = QUrl("http://"_L1 + trimmedString, QUrl::TolerantMode);
 
     // Check the most common case of a valid url with a scheme
     // We check if the port would be valid by adding the scheme to handle the case host:port
@@ -3815,7 +3817,7 @@ QUrl QUrl::fromUserInput(const QString &userInput, const QString &workingDirecto
 
     // Else, try the prepended one and adjust the scheme from the host name
     if (urlPrepended.isValid() && (!urlPrepended.host().isEmpty() || !urlPrepended.path().isEmpty())) {
-        qsizetype dotIndex = trimmedString.indexOf(QLatin1Char('.'));
+        qsizetype dotIndex = trimmedString.indexOf(u'.');
         const QStringView hostscheme = QStringView{trimmedString}.left(dotIndex);
         if (hostscheme.compare(ftpScheme(), Qt::CaseInsensitive) == 0)
             urlPrepended.setScheme(ftpScheme());

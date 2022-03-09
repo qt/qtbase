@@ -48,6 +48,8 @@
 **
 ****************************************************************************/
 
+using namespace Qt::StringLiterals;
+
 //! [0]
 int main(int argc, char *argv[])
 {
@@ -55,7 +57,7 @@ int main(int argc, char *argv[])
 
     QTranslator translator;
     // look up e.g. :/i18n/myapp_de.qm
-    if (translator.load(QLocale(), QLatin1String("myapp"), QLatin1String("_"), QLatin1String(":/i18n")))
+    if (translator.load(QLocale(), "myapp"_L1, "_"_L1, ":/i18n"_L1))
         QCoreApplication::installTranslator(&translator);
 
     QPushButton hello(QCoreApplication::translate("main", "Hello world!"));

@@ -90,6 +90,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 namespace { // anonymous used to hide QVariant handlers
 
 /*!
@@ -154,11 +156,11 @@ static qlonglong qConvertToNumber(const QVariant::Private *d, bool *ok, bool all
         if (*ok)
             return l;
         if (allowStringToBool) {
-            if (s == QLatin1String("false") || s == QLatin1String("0")) {
+            if (s == "false"_L1 || s == "0"_L1) {
                 *ok = true;
                 return 0;
             }
-            if (s == QLatin1String("true") || s == QLatin1String("1")) {
+            if (s == "true"_L1 || s == "1"_L1) {
                 *ok = true;
                 return 1;
             }

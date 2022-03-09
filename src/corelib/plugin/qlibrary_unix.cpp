@@ -59,10 +59,12 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static QString qdlerror()
 {
     const char *err = dlerror();
-    return err ? QLatin1Char('(') + QString::fromLocal8Bit(err) + QLatin1Char(')') : QString();
+    return err ? u'(' + QString::fromLocal8Bit(err) + u')' : QString();
 }
 
 QStringList QLibraryPrivate::suffixes_sys(const QString &fullVersion)
@@ -82,25 +84,25 @@ QStringList QLibraryPrivate::suffixes_sys(const QString &fullVersion)
     // .so is preferred.
 # if defined(__ia64)
     if (!fullVersion.isEmpty()) {
-        suffixes << QLatin1String(".so.%1").arg(fullVersion);
+        suffixes << ".so.%1"_L1.arg(fullVersion);
     } else {
-        suffixes << QLatin1String(".so");
+        suffixes << ".so"_L1;
     }
 # endif
     if (!fullVersion.isEmpty()) {
-        suffixes << QLatin1String(".sl.%1").arg(fullVersion);
-        suffixes << QLatin1String(".%1").arg(fullVersion);
+        suffixes << ".sl.%1"_L1.arg(fullVersion);
+        suffixes << ".%1"_L1.arg(fullVersion);
     } else {
-        suffixes << QLatin1String(".sl");
+        suffixes << ".sl"_L1;
     }
 #elif defined(Q_OS_AIX)
     suffixes << ".a";
 
 #else
     if (!fullVersion.isEmpty()) {
-        suffixes << QLatin1String(".so.%1").arg(fullVersion);
+        suffixes << ".so.%1"_L1.arg(fullVersion);
     } else {
-        suffixes << QLatin1String(".so");
+        suffixes << ".so"_L1;
 # ifdef Q_OS_ANDROID
         suffixes << QStringLiteral(LIBS_SUFFIX);
 # endif
@@ -108,10 +110,10 @@ QStringList QLibraryPrivate::suffixes_sys(const QString &fullVersion)
 #endif
 # ifdef Q_OS_MAC
     if (!fullVersion.isEmpty()) {
-        suffixes << QLatin1String(".%1.bundle").arg(fullVersion);
-        suffixes << QLatin1String(".%1.dylib").arg(fullVersion);
+        suffixes << ".%1.bundle"_L1.arg(fullVersion);
+        suffixes << ".%1.dylib"_L1.arg(fullVersion);
     } else {
-        suffixes << QLatin1String(".bundle") << QLatin1String(".dylib");
+        suffixes << ".bundle"_L1 << ".dylib"_L1;
     }
 #endif
     return suffixes;
@@ -119,7 +121,7 @@ QStringList QLibraryPrivate::suffixes_sys(const QString &fullVersion)
 
 QStringList QLibraryPrivate::prefixes_sys()
 {
-    return QStringList() << QLatin1String("lib");
+    return QStringList() << "lib"_L1;
 }
 
 bool QLibraryPrivate::load_sys()
@@ -130,10 +132,10 @@ bool QLibraryPrivate::load_sys()
 
     QString path = fsEntry.path();
     QString name = fsEntry.fileName();
-    if (path == QLatin1String(".") && !fileName.startsWith(path))
+    if (path == "."_L1 && !fileName.startsWith(path))
         path.clear();
     else
-        path += QLatin1Char('/');
+        path += u'/';
 
     QStringList suffixes;
     QStringList prefixes;
@@ -207,10 +209,10 @@ bool QLibraryPrivate::load_sys()
         };
         if (pluginState == IsAPlugin) {
             // add ".avx2" to each suffix in the list
-            transform(suffixes, [](QString *s) { s->append(QLatin1String(".avx2")); });
+            transform(suffixes, [](QString *s) { s->append(".avx2"_L1); });
         } else {
             // prepend "haswell/" to each prefix in the list
-            transform(prefixes, [](QString *s) { s->prepend(QLatin1String("haswell/")); });
+            transform(prefixes, [](QString *s) { s->prepend("haswell/"_L1); });
         }
     }
 #endif
@@ -222,13 +224,13 @@ bool QLibraryPrivate::load_sys()
         for (int suffix = 0; retry && !hnd && suffix < suffixes.size(); suffix++) {
             if (!prefixes.at(prefix).isEmpty() && name.startsWith(prefixes.at(prefix)))
                 continue;
-            if (path.isEmpty() && prefixes.at(prefix).contains(QLatin1Char('/')))
+            if (path.isEmpty() && prefixes.at(prefix).contains(u'/'))
                 continue;
             if (!suffixes.at(suffix).isEmpty() && name.endsWith(suffixes.at(suffix)))
                 continue;
             if (loadHints & QLibrary::LoadArchiveMemberHint) {
                 attempt = name;
-                int lparen = attempt.indexOf(QLatin1Char('('));
+                int lparen = attempt.indexOf(u'(');
                 if (lparen == -1)
                     lparen = attempt.size();
                 attempt = path + prefixes.at(prefix) + attempt.insert(lparen, suffixes.at(suffix));
@@ -240,7 +242,7 @@ bool QLibraryPrivate::load_sys()
 #ifdef Q_OS_ANDROID
             if (!hnd) {
                 auto attemptFromBundle = attempt;
-                hnd = dlopen(QFile::encodeName(attemptFromBundle.replace(QLatin1Char('/'), QLatin1Char('_'))), dlFlags);
+                hnd = dlopen(QFile::encodeName(attemptFromBundle.replace(u'/', u'_')), dlFlags);
             }
             if (hnd) {
                 using JniOnLoadPtr = jint (*)(JavaVM *vm, void *reserved);
@@ -252,7 +254,7 @@ bool QLibraryPrivate::load_sys()
             }
 #endif
 
-            if (!hnd && fileName.startsWith(QLatin1Char('/')) && QFile::exists(attempt)) {
+            if (!hnd && fileName.startsWith(u'/') && QFile::exists(attempt)) {
                 // We only want to continue if dlopen failed due to that the shared library did not exist.
                 // However, we are only able to apply this check for absolute filenames (since they are
                 // not influenced by the content of LD_LIBRARY_PATH, /etc/ld.so.cache, DT_RPATH etc...)

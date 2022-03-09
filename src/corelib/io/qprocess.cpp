@@ -98,7 +98,7 @@ QStringList QProcessEnvironmentPrivate::toList() const
     QStringList result;
     result.reserve(vars.size());
     for (auto it = vars.cbegin(), end = vars.cend(); it != end; ++it)
-        result << nameToString(it.key()) + QLatin1Char('=') + valueToString(it.value());
+        result << nameToString(it.key()) + u'=' + valueToString(it.value());
     return result;
 }
 
@@ -108,7 +108,7 @@ QProcessEnvironment QProcessEnvironmentPrivate::fromList(const QStringList &list
     QStringList::ConstIterator it = list.constBegin(),
                               end = list.constEnd();
     for ( ; it != end; ++it) {
-        int pos = it->indexOf(QLatin1Char('='), 1);
+        int pos = it->indexOf(u'=', 1);
         if (pos < 1)
             continue;
 
@@ -2213,7 +2213,7 @@ QStringList QProcess::splitCommand(QStringView command)
     // "hello world". three consecutive double quotes represent
     // the quote character itself.
     for (int i = 0; i < command.size(); ++i) {
-        if (command.at(i) == QLatin1Char('"')) {
+        if (command.at(i) == u'"') {
             ++quoteCount;
             if (quoteCount == 3) {
                 // third consecutive quote

@@ -51,6 +51,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static const int defaultBufferSize = MAX_PATH + 1;
 
 static QString canonicalPath(const QString &rootPath)
@@ -59,16 +61,16 @@ static QString canonicalPath(const QString &rootPath)
     if (path.isEmpty())
         return path;
 
-    if (path.startsWith(QLatin1String("\\\\?\\")))
+    if (path.startsWith("\\\\?\\"_L1))
         path.remove(0, 4);
-    if (path.length() < 2 || path.at(1) != QLatin1Char(':'))
+    if (path.length() < 2 || path.at(1) != u':')
         return QString();
 
     path[0] = path[0].toUpper();
     if (!(path.at(0).unicode() >= 'A' && path.at(0).unicode() <= 'Z'))
         return QString();
-    if (!path.endsWith(QLatin1Char('\\')))
-        path.append(QLatin1Char('\\'));
+    if (!path.endsWith(u'\\'))
+        path.append(u'\\');
     return path;
 }
 

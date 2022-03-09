@@ -46,6 +46,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 // Whether we include some extra validity checks
 // (checks to ensure we don't read out-of-bounds are always included)
 static constexpr bool IncludeValidityChecks = true;
@@ -143,7 +145,8 @@ QLibraryScanResult  QMachOParser::parse(const char *m_s, ulong fdlen, QString *e
 
         // check magic
         if (header->magic != my_magic)
-            return notfound(QLibrary::tr("invalid magic %1").arg(qFromBigEndian(header->magic), 8, 16, QLatin1Char('0')),
+            return notfound(QLibrary::tr("invalid magic %1").arg(qFromBigEndian(header->magic),
+                                                                 8, 16, '0'_L1),
                       errorString);
     }
 

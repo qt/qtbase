@@ -68,6 +68,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 // On Unix systema and on Windows with MinGW, we can mix and match debug and
 // release plugins without problems. (unless compiled in debug-and-release mode
 // - why?)
@@ -628,11 +630,11 @@ QtPluginInstanceFunction QLibraryPrivate::loadPlugin()
 bool QLibrary::isLibrary(const QString &fileName)
 {
 #if defined(Q_OS_WIN)
-    return fileName.endsWith(QLatin1String(".dll"), Qt::CaseInsensitive);
+    return fileName.endsWith(".dll"_L1, Qt::CaseInsensitive);
 #else // Generic Unix
 # if defined(Q_OS_DARWIN)
     // On Apple platforms, dylib look like libmylib.1.0.0.dylib
-    if (fileName.endsWith(QLatin1String(".dylib")))
+    if (fileName.endsWith(".dylib"_L1))
         return true;
 # endif
     QString completeSuffix = QFileInfo(fileName).completeSuffix();
@@ -647,18 +649,18 @@ bool QLibrary::isLibrary(const QString &fileName)
     "In PA-RISC (PA-32 and PA-64) shared libraries are suffixed with .sl. In IPF (32-bit and 64-bit),
     the shared libraries are suffixed with .so. For compatibility, the IPF linker also supports the .sl suffix."
 */
-        QLatin1String("sl"),
+        "sl"_L1,
 #  if defined __ia64
-        QLatin1String("so"),
+        "so"_L1,
 #  endif
 # elif defined(Q_OS_AIX)
-        QLatin1String("a"),
-        QLatin1String("so"),
+        "a"_L1,
+        "so"_L1,
 # elif defined(Q_OS_DARWIN)
-        QLatin1String("so"),
-        QLatin1String("bundle"),
+        "so"_L1,
+        "bundle"_L1,
 # elif defined(Q_OS_UNIX)
-        QLatin1String("so"),
+        "so"_L1,
 # endif
     }; // candidates
 
@@ -741,7 +743,7 @@ void QLibraryPrivate::updatePluginState()
     bool success = false;
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
-    if (fileName.endsWith(QLatin1String(".debug"))) {
+    if (fileName.endsWith(".debug"_L1)) {
         // refuse to load a file that ends in .debug
         // these are the debug symbols from the libraries
         // the problem is that they are valid shared library files
@@ -789,7 +791,7 @@ void QLibraryPrivate::updatePluginState()
                  QString::number((qt_version & 0xff0000) >> 16),
                  QString::number((qt_version & 0xff00) >> 8),
                  QString::number(qt_version & 0xff),
-                 debug ? QLatin1String("debug") : QLatin1String("release"));
+                 debug ? "debug"_L1 : "release"_L1);
     } else if (PluginMustMatchQtDebug && debug != QtBuildIsDebug) {
         //don't issue a qWarning since we will hopefully find a non-debug? --Sam
         errorString = QLibrary::tr("The plugin '%1' uses incompatible Qt library."

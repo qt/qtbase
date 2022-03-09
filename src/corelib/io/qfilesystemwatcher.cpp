@@ -67,6 +67,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(lcWatcher, "qt.core.filesystemwatcher")
 
 QFileSystemWatcherEngine *QFileSystemWatcherPrivate::createNativeEngine(QObject *parent)
@@ -364,14 +366,14 @@ QStringList QFileSystemWatcher::addPaths(const QStringList &paths)
 #ifdef QT_BUILD_INTERNAL
         const QString on = objectName();
 
-        if (Q_UNLIKELY(on.startsWith(QLatin1String("_qt_autotest_force_engine_")))) {
+        if (Q_UNLIKELY(on.startsWith("_qt_autotest_force_engine_"_L1))) {
             // Autotest override case - use the explicitly selected engine only
             const auto forceName = QStringView{on}.mid(26);
-            if (forceName == QLatin1String("poller")) {
+            if (forceName == "poller"_L1) {
                 qCDebug(lcWatcher, "QFileSystemWatcher: skipping native engine, using only polling engine");
                 d_func()->initPollerEngine();
                 return d->poller;
-            } else if (forceName == QLatin1String("native")) {
+            } else if (forceName == "native"_L1) {
                 qCDebug(lcWatcher, "QFileSystemWatcher: skipping polling engine, using only native engine");
                 return d->native;
             }

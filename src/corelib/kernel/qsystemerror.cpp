@@ -52,6 +52,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #if !defined(Q_OS_WIN) && QT_CONFIG(thread) && !defined(Q_OS_INTEGRITY) && !defined(Q_OS_QNX) && \
     defined(_POSIX_THREAD_SAFE_FUNCTIONS) && _POSIX_VERSION >= 200112L
 namespace {
@@ -92,11 +94,11 @@ static QString windowsErrorString(int errorCode)
 
     if (ret.isEmpty() && errorCode == ERROR_MOD_NOT_FOUND)
         ret = QString::fromLatin1("The specified module could not be found.");
-    if (ret.endsWith(QLatin1String("\r\n")))
+    if (ret.endsWith("\r\n"_L1))
         ret.chop(2);
     if (ret.isEmpty())
         ret = QString::fromLatin1("Unknown error 0x%1.")
-                .arg(unsigned(errorCode), 8, 16, QLatin1Char('0'));
+                .arg(unsigned(errorCode), 8, 16, '0'_L1);
     return ret;
 }
 #endif
@@ -152,7 +154,7 @@ QString QSystemError::string(ErrorScope errorScope, int errorCode)
         qWarning("invalid error scope");
         Q_FALLTHROUGH();
     case NoError:
-        return QLatin1String("No error");
+        return u"No error"_qs;
     }
 }
 

@@ -64,8 +64,8 @@ QStringList QPollingFileSystemWatcherEngine::addPaths(const QStringList &paths,
             if (directories->contains(path))
                 continue;
             directories->append(path);
-            if (!path.endsWith(QLatin1Char('/')))
-                fi = QFileInfo(path + QLatin1Char('/'));
+            if (!path.endsWith(u'/'))
+                fi = QFileInfo(path + u'/');
             this->directories.insert(path, fi);
         } else {
             if (files->contains(path))
@@ -127,8 +127,8 @@ void QPollingFileSystemWatcherEngine::timeout()
     for (auto it = directories.begin(), end = directories.end(); it != end; /*erasing*/) {
         QString path = it.key();
         QFileInfo fi(path);
-        if (!path.endsWith(QLatin1Char('/')))
-            fi = QFileInfo(path + QLatin1Char('/'));
+        if (!path.endsWith(u'/'))
+            fi = QFileInfo(path + u'/');
         if (!fi.exists()) {
             it = directories.erase(it);
             emit directoryChanged(path, true);

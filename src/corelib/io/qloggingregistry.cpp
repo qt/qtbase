@@ -60,6 +60,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_GLOBAL_STATIC(QLoggingRegistry, qtLoggingRegistry)
 
 /*!
@@ -133,34 +135,35 @@ void QLoggingRule::parse(QStringView pattern)
     QStringView p;
 
     // strip trailing ".messagetype"
-    if (pattern.endsWith(QLatin1String(".debug"))) {
+    if (pattern.endsWith(".debug"_L1)) {
         p = pattern.chopped(6); // strlen(".debug")
         messageType = QtDebugMsg;
-    } else if (pattern.endsWith(QLatin1String(".info"))) {
+    } else if (pattern.endsWith(".info"_L1)) {
         p = pattern.chopped(5); // strlen(".info")
         messageType = QtInfoMsg;
-    } else if (pattern.endsWith(QLatin1String(".warning"))) {
+    } else if (pattern.endsWith(".warning"_L1)) {
         p = pattern.chopped(8); // strlen(".warning")
         messageType = QtWarningMsg;
-    } else if (pattern.endsWith(QLatin1String(".critical"))) {
+    } else if (pattern.endsWith(".critical"_L1)) {
         p = pattern.chopped(9); // strlen(".critical")
         messageType = QtCriticalMsg;
     } else {
         p = pattern;
     }
 
-    if (!p.contains(QLatin1Char('*'))) {
+    const QChar asterisk = u'*';
+    if (!p.contains(asterisk)) {
         flags = FullText;
     } else {
-        if (p.endsWith(QLatin1Char('*'))) {
+        if (p.endsWith(asterisk)) {
             flags |= LeftFilter;
             p = p.chopped(1);
         }
-        if (p.startsWith(QLatin1Char('*'))) {
+        if (p.startsWith(asterisk)) {
             flags |= RightFilter;
             p = p.mid(1);
         }
-        if (p.contains(QLatin1Char('*'))) // '*' only supported at start/end
+        if (p.contains(asterisk)) // '*' only supported at start/end
             flags = PatternFlags();
     }
 
@@ -216,20 +219,20 @@ void QLoggingSettingsParser::parseNextLine(QStringView line)
     line = line.trimmed();
 
     // comment
-    if (line.startsWith(QLatin1Char(';')))
+    if (line.startsWith(u';'))
         return;
 
-    if (line.startsWith(QLatin1Char('[')) && line.endsWith(QLatin1Char(']'))) {
+    if (line.startsWith(u'[') && line.endsWith(u']')) {
         // new section
         auto sectionName = line.mid(1).chopped(1).trimmed();
-        m_inRulesSection = sectionName.compare(QLatin1String("rules"), Qt::CaseInsensitive) == 0;
+        m_inRulesSection = sectionName.compare("rules"_L1, Qt::CaseInsensitive) == 0;
         return;
     }
 
     if (m_inRulesSection) {
-        int equalPos = line.indexOf(QLatin1Char('='));
+        int equalPos = line.indexOf(u'=');
         if (equalPos != -1) {
-            if (line.lastIndexOf(QLatin1Char('=')) == equalPos) {
+            if (line.lastIndexOf(u'=') == equalPos) {
                 const auto key = line.left(equalPos).trimmed();
 #if QT_CONFIG(settings)
                 QString tmp;
@@ -240,9 +243,9 @@ void QLoggingSettingsParser::parseNextLine(QStringView line)
 #endif
                 const auto valueStr = line.mid(equalPos + 1).trimmed();
                 int value = -1;
-                if (valueStr == QLatin1String("true"))
+                if (valueStr == "true"_L1)
                     value = 1;
-                else if (valueStr == QLatin1String("false"))
+                else if (valueStr == "false"_L1)
                     value = 0;
                 QLoggingRule rule(pattern, (value == 1));
                 if (rule.flags != 0 && (value != -1))

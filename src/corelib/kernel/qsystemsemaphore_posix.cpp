@@ -64,13 +64,15 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 bool QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode mode)
 {
     if (semaphore != SEM_FAILED)
         return true;  // we already have a semaphore
 
     if (fileName.isEmpty()) {
-        errorString = QSystemSemaphore::tr("%1: key is empty").arg(QLatin1String("QSystemSemaphore::handle"));
+        errorString = QSystemSemaphore::tr("%1: key is empty").arg("QSystemSemaphore::handle"_L1);
         error = QSystemSemaphore::KeyError;
         return false;
     }
@@ -86,7 +88,7 @@ bool QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode mode)
         if (semaphore == SEM_FAILED && errno == EEXIST) {
             if (mode == QSystemSemaphore::Create) {
                 if (::sem_unlink(semName.constData()) == -1 && errno != ENOENT) {
-                    setErrorString(QLatin1String("QSystemSemaphore::handle (sem_unlink)"));
+                    setErrorString("QSystemSemaphore::handle (sem_unlink)"_L1);
                     return false;
                 }
                 // Race condition: the semaphore might be recreated before
@@ -104,7 +106,7 @@ bool QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode mode)
     }
 
     if (semaphore == SEM_FAILED) {
-        setErrorString(QLatin1String("QSystemSemaphore::handle"));
+        setErrorString("QSystemSemaphore::handle"_L1);
         return false;
     }
 
@@ -117,7 +119,7 @@ void QSystemSemaphorePrivate::cleanHandle()
 {
     if (semaphore != SEM_FAILED) {
         if (::sem_close(semaphore) == -1) {
-            setErrorString(QLatin1String("QSystemSemaphore::cleanHandle (sem_close)"));
+            setErrorString("QSystemSemaphore::cleanHandle (sem_close)"_L1);
 #if defined QSYSTEMSEMAPHORE_DEBUG
             qDebug("QSystemSemaphore::cleanHandle sem_close failed.");
 #endif
@@ -127,7 +129,7 @@ void QSystemSemaphorePrivate::cleanHandle()
 
     if (createdSemaphore) {
         if (::sem_unlink(QFile::encodeName(fileName).constData()) == -1 && errno != ENOENT) {
-            setErrorString(QLatin1String("QSystemSemaphore::cleanHandle (sem_unlink)"));
+            setErrorString("QSystemSemaphore::cleanHandle (sem_unlink)"_L1);
 #if defined QSYSTEMSEMAPHORE_DEBUG
             qDebug("QSystemSemaphore::cleanHandle sem_unlink failed.");
 #endif
@@ -145,7 +147,7 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
         int cnt = count;
         do {
             if (::sem_post(semaphore) == -1) {
-                setErrorString(QLatin1String("QSystemSemaphore::modifySemaphore (sem_post)"));
+                setErrorString("QSystemSemaphore::modifySemaphore (sem_post)"_L1);
 #if defined QSYSTEMSEMAPHORE_DEBUG
                 qDebug("QSystemSemaphore::modify sem_post failed %d %d", count, errno);
 #endif
@@ -167,7 +169,7 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
                 semaphore = SEM_FAILED;
                 return modifySemaphore(count);
             }
-            setErrorString(QLatin1String("QSystemSemaphore::modifySemaphore (sem_wait)"));
+            setErrorString("QSystemSemaphore::modifySemaphore (sem_wait)"_L1);
 #if defined QSYSTEMSEMAPHORE_DEBUG
             qDebug("QSystemSemaphore::modify sem_wait failed %d %d", count, errno);
 #endif

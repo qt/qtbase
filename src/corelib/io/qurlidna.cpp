@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 // needed by the punycode encoder/decoder
 static const uint base = 36;
 static const uint tmin = 1;
@@ -137,7 +139,7 @@ Q_AUTOTEST_EXPORT void qt_punycodeEncoder(QStringView in, QString *output)
 
     // if basic code points were copied, add the delimiter character.
     if (h > 0)
-        *output += QLatin1Char{'-'};
+        *output += u'-';
 
     // compute the input length in Unicode code points.
     uint inputLength = 0;
@@ -198,7 +200,7 @@ Q_AUTOTEST_EXPORT void qt_punycodeEncoder(QStringView in, QString *output)
     }
 
     // prepend ACE prefix
-    output->insert(outLen, QLatin1String("xn--"));
+    output->insert(outLen, "xn--"_L1);
     return;
 }
 
@@ -215,13 +217,13 @@ Q_AUTOTEST_EXPORT QString qt_punycodeDecoder(const QString &pc)
         return QString();
 
     // strip any ACE prefix
-    int start = pc.startsWith(QLatin1String("xn--")) ? 4 : 0;
+    int start = pc.startsWith("xn--"_L1) ? 4 : 0;
     if (!start)
         return pc;
 
     // find the last delimiter character '-' in the input array. copy
     // all data before this delimiter directly to the output array.
-    int delimiterPos = pc.lastIndexOf(QLatin1Char{'-'});
+    int delimiterPos = pc.lastIndexOf(u'-');
     auto output = delimiterPos < 4 ? std::u32string()
                                    : pc.mid(start, delimiterPos - start).toStdU32String();
 
@@ -383,7 +385,7 @@ static bool equal(const QChar *a, int l, const char *b)
 
 static bool qt_is_idn_enabled(QStringView aceDomain)
 {
-    auto idx = aceDomain.lastIndexOf(QLatin1Char('.'));
+    auto idx = aceDomain.lastIndexOf(u'.');
     if (idx == -1)
         return false;
 
@@ -747,14 +749,14 @@ bool DomainValidityChecker::checkLabel(const QString &label, QUrl::AceProcessing
         // This assumes that the first two characters are in BMP, but that's ok
         // because non-BMP characters are unlikely to be used for specifying
         // future extensions.
-        if (label[2] == QLatin1Char('-') && label[3] == QLatin1Char('-'))
+        if (label[2] == u'-' && label[3] == u'-')
             return false;
     }
 
-    if (label.startsWith(QLatin1Char('-')) || label.endsWith(QLatin1Char('-')))
+    if (label.startsWith(u'-') || label.endsWith(u'-'))
         return false;
 
-    if (label.contains(QLatin1Char('.')))
+    if (label.contains(u'.'))
         return false;
 
     QStringIterator iter(label);
@@ -871,7 +873,7 @@ static bool checkAsciiDomainName(const QString &normalizedDomain, AceLeadingDot 
             if (!validateAsciiLabel(label))
                 return false;
 
-            hasPunycode = hasPunycode || label.startsWith(QLatin1String("xn--"));
+            hasPunycode = hasPunycode || label.startsWith("xn--"_L1);
         }
 
         lastIdx = idx + 1;

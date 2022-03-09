@@ -70,6 +70,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*****************************************************************************
   Date/Time Constants
  *****************************************************************************/
@@ -3885,9 +3887,9 @@ QString QDateTime::timeZoneAbbreviation() const
 
     switch (getSpec(d)) {
     case Qt::UTC:
-        return QLatin1String("UTC");
+        return "UTC"_L1;
     case Qt::OffsetFromUTC:
-        return QLatin1String("UTC") + toOffsetString(Qt::ISODate, d->m_offsetFromUtc);
+        return "UTC"_L1 + toOffsetString(Qt::ISODate, d->m_offsetFromUtc);
     case Qt::TimeZone:
 #if !QT_CONFIG(timezone)
         break;
@@ -4272,9 +4274,9 @@ QString QDateTime::toString(Qt::DateFormat format) const
 #endif
         default:
 #if 0 // ### Qt 7 GMT: use UTC instead, see qnamespace.qdoc documentation
-            buf += QLatin1String(" UTC");
+            buf += " UTC"_L1;
 #else
-            buf += QLatin1String(" GMT");
+            buf += " GMT"_L1;
 #endif
             if (getSpec(d) == Qt::OffsetFromUTC)
                 buf += toOffsetString(Qt::TextDate, offsetFromUtc());
@@ -5177,9 +5179,9 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
             return QDateTime(date, time, Qt::LocalTime);
 
         QStringView tz = parts.at(5);
-        if (tz.startsWith(QLatin1String("UTC"))
+        if (tz.startsWith("UTC"_L1)
             // GMT has long been deprecated as an alias for UTC.
-            || tz.startsWith(QLatin1String("GMT"), Qt::CaseInsensitive)) {
+            || tz.startsWith("GMT"_L1, Qt::CaseInsensitive)) {
             tz = tz.sliced(3);
             if (tz.isEmpty())
                 return QDateTime(date, time, Qt::UTC);

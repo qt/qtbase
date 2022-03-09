@@ -196,7 +196,7 @@ QByteArray QtDebugUtils::toPrintable(const char *data, int len, int maxSize)
 QDebug::~QDebug()
 {
     if (stream && !--stream->ref) {
-        if (stream->space && stream->buffer.endsWith(QLatin1Char(' ')))
+        if (stream->space && stream->buffer.endsWith(u' '))
             stream->buffer.chop(1);
         if (stream->message_output) {
             qt_message_output(stream->type,
@@ -222,7 +222,7 @@ void QDebug::putUcs4(uint ucs4)
             stream->ts << "\\u" << qSetFieldWidth(4);
         else
             stream->ts << "\\U" << qSetFieldWidth(8);
-        stream->ts << Qt::hex << qSetPadChar(QLatin1Char('0')) << ucs4 << Qt::reset;
+        stream->ts << Qt::hex << qSetPadChar(u'0') << ucs4 << Qt::reset;
     }
     maybeQuote('\'');
 }
@@ -240,7 +240,7 @@ static inline bool isPrintable(uchar c)
 template <typename Char>
 static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, int length, bool isUnicode = true)
 {
-    QChar quote(QLatin1Char('"'));
+    QChar quote(u'"');
     d->write(&quote, 1);
 
     bool lastWasHexEscape = false;
@@ -250,7 +250,7 @@ static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, in
         if (Q_UNLIKELY(lastWasHexEscape)) {
             if (fromHex(*p) != -1) {
                 // yes, insert it
-                QChar quotes[] = { QLatin1Char('"'), QLatin1Char('"') };
+                QChar quotes[] = { quote, quote };
                 d->write(quotes, 2);
             }
             lastWasHexEscape = false;
@@ -983,7 +983,7 @@ public:
     {
         const bool currentSpaces = m_stream->space;
         if (currentSpaces && !m_spaces)
-            if (m_stream->buffer.endsWith(QLatin1Char(' ')))
+            if (m_stream->buffer.endsWith(u' '))
                 m_stream->buffer.chop(1);
 
         m_stream->space = m_spaces;

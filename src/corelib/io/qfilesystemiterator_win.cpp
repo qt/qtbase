@@ -46,6 +46,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 bool done = true;
 
 QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters filters,
@@ -64,12 +66,12 @@ QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Fi
         QFileSystemEntry link = QFileSystemEngine::getLinkTarget(entry, metaData);
         nativePath = link.nativeFilePath();
     }
-    if (!nativePath.endsWith(QLatin1Char('\\')))
-        nativePath.append(QLatin1Char('\\'));
-    nativePath.append(QLatin1Char('*'));
+    if (!nativePath.endsWith(u'\\'))
+        nativePath.append(u'\\');
+    nativePath.append(u'*');
     // In MSVC2015+ case we prepend //?/ for longer file-name support
-    if (!dirPath.endsWith(QLatin1Char('/')))
-        dirPath.append(QLatin1Char('/'));
+    if (!dirPath.endsWith(u'/'))
+        dirPath.append(u'/');
     if ((filters & (QDir::Dirs|QDir::Drives)) && (!(filters & (QDir::Files))))
         onlyDirs = true;
 }
@@ -97,10 +99,10 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
         findFileHandle = FindFirstFileEx((const wchar_t *)nativePath.utf16(), FINDEX_INFO_LEVELS(infoLevel), &findData,
                                          FINDEX_SEARCH_OPS(searchOps), 0, dwAdditionalFlags);
         if (findFileHandle == INVALID_HANDLE_VALUE) {
-            if (nativePath.startsWith(QLatin1String("\\\\?\\UNC\\"))) {
-                const auto parts = QStringView{nativePath}.split(QLatin1Char('\\'), Qt::SkipEmptyParts);
+            if (nativePath.startsWith("\\\\?\\UNC\\"_L1)) {
+                const auto parts = QStringView{nativePath}.split(u'\\', Qt::SkipEmptyParts);
                 if (parts.count() == 4 && QFileSystemEngine::uncListSharesOnServer(
-                        QLatin1String("\\\\") + parts.at(2), &uncShares)) {
+                        "\\\\"_L1 + parts.at(2), &uncShares)) {
                     if (uncShares.isEmpty())
                         return false; // No shares found in the server
                     uncFallback = true;
@@ -129,7 +131,7 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
         QString fileName = QString::fromWCharArray(findData.cFileName);
         fileEntry = QFileSystemEntry(dirPath + fileName);
         metaData = QFileSystemMetaData();
-        if (!fileName.endsWith(QLatin1String(".lnk"))) {
+        if (!fileName.endsWith(".lnk"_L1)) {
             metaData.fillFromFindData(findData, true);
         }
         return true;

@@ -47,6 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     \internal
     \class QMimeGlobMatchResult
@@ -97,17 +99,17 @@ QMimeGlobPattern::PatternType QMimeGlobPattern::detectPatternType(const QString 
     if (!patternLength)
         return OtherPattern;
 
-    const int starCount = pattern.count(QLatin1Char('*'));
-    const bool hasSquareBracket = pattern.indexOf(QLatin1Char('[')) != -1;
-    const bool hasQuestionMark = pattern.indexOf(QLatin1Char('?')) != -1;
+    const int starCount = pattern.count(u'*');
+    const bool hasSquareBracket = pattern.indexOf(u'[') != -1;
+    const bool hasQuestionMark = pattern.indexOf(u'?') != -1;
 
     if (!hasSquareBracket && !hasQuestionMark) {
         if (starCount == 1) {
             // Patterns like "*~", "*.extension"
-            if (pattern.at(0) == QLatin1Char('*'))
+            if (pattern.at(0) == u'*')
                 return SuffixPattern;
             // Patterns like "README*" (well this is currently the only one like that...)
-            if (pattern.at(patternLength - 1) == QLatin1Char('*'))
+            if (pattern.at(patternLength - 1) == u'*')
                 return PrefixPattern;
         } else if (starCount == 0) {
             // Names without any wildcards like "README"
@@ -115,10 +117,10 @@ QMimeGlobPattern::PatternType QMimeGlobPattern::detectPatternType(const QString 
         }
     }
 
-    if (pattern == QLatin1String("[0-9][0-9][0-9].vdr"))
+    if (pattern == "[0-9][0-9][0-9].vdr"_L1)
         return VdrPattern;
 
-    if (pattern == QLatin1String("*.anim[1-9j]"))
+    if (pattern == "*.anim[1-9j]"_L1)
         return AnimPattern;
 
     return OtherPattern;
@@ -175,14 +177,14 @@ bool QMimeGlobPattern::matchFileName(const QString &inputFileName) const
     case VdrPattern: // "[0-9][0-9][0-9].vdr" case
         return fileNameLength == 7
                 && fileName.at(0).isDigit() && fileName.at(1).isDigit() && fileName.at(2).isDigit()
-                && QStringView{fileName}.mid(3, 4) == QLatin1String(".vdr");
+                && QStringView{fileName}.mid(3, 4) == ".vdr"_L1;
     case AnimPattern: { // "*.anim[1-9j]" case
         if (fileNameLength < 6)
             return false;
         const QChar lastChar = fileName.at(fileNameLength - 1);
-        const bool lastCharOK = (lastChar.isDigit() && lastChar != QLatin1Char('0'))
-                              || lastChar == QLatin1Char('j');
-        return lastCharOK && QStringView{fileName}.mid(fileNameLength - 6, 5) == QLatin1String(".anim");
+        const bool lastCharOK = (lastChar.isDigit() && lastChar != u'0')
+                              || lastChar == u'j';
+        return lastCharOK && QStringView{fileName}.mid(fileNameLength - 6, 5) == ".anim"_L1;
     }
     case OtherPattern:
         // Other fallback patterns: slow but correct method
@@ -199,23 +201,23 @@ bool QMimeGlobPattern::matchFileName(const QString &inputFileName) const
 static bool isSimplePattern(const QString &pattern)
 {
    // starts with "*.", has no other '*'
-   return pattern.lastIndexOf(QLatin1Char('*')) == 0
+   return pattern.lastIndexOf(u'*') == 0
       && pattern.length() > 1
-      && pattern.at(1) == QLatin1Char('.') // (other dots are OK, like *.tar.bz2)
+      && pattern.at(1) == u'.' // (other dots are OK, like *.tar.bz2)
       // and contains no other special character
-      && !pattern.contains(QLatin1Char('?'))
-      && !pattern.contains(QLatin1Char('['))
+      && !pattern.contains(u'?')
+      && !pattern.contains(u'[')
       ;
 }
 
 static bool isFastPattern(const QString &pattern)
 {
    // starts with "*.", has no other '*' and no other '.'
-   return pattern.lastIndexOf(QLatin1Char('*')) == 0
-      && pattern.lastIndexOf(QLatin1Char('.')) == 1
+   return pattern.lastIndexOf(u'*') == 0
+      && pattern.lastIndexOf(u'.') == 1
       // and contains no other special character
-      && !pattern.contains(QLatin1Char('?'))
-      && !pattern.contains(QLatin1Char('['))
+      && !pattern.contains(u'?')
+      && !pattern.contains(u'[')
       ;
 }
 
@@ -276,14 +278,14 @@ void QMimeAllGlobPatterns::matchingGlobs(const QString &fileName, QMimeGlobMatch
 
     // Now use the "fast patterns" dict, for simple *.foo patterns with weight 50
     // (which is most of them, so this optimization is definitely worth it)
-    const int lastDot = fileName.lastIndexOf(QLatin1Char('.'));
+    const int lastDot = fileName.lastIndexOf(u'.');
     if (lastDot != -1) { // if no '.', skip the extension lookup
         const int ext_len = fileName.length() - lastDot - 1;
         const QString simpleExtension = fileName.right(ext_len).toLower();
         // (toLower because fast patterns are always case-insensitive and saved as lowercase)
 
         const QStringList matchingMimeTypes = m_fastPatterns.value(simpleExtension);
-        const QString simplePattern = QLatin1String("*.") + simpleExtension;
+        const QString simplePattern = "*."_L1 + simpleExtension;
         for (const QString &mime : matchingMimeTypes)
             result.addMatch(mime, 50, simplePattern, simpleExtension.size());
         // Can't return yet; *.tar.bz2 has to win over *.bz2, so we need the low-weight mimetypes anyway,

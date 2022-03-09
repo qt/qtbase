@@ -47,6 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*
     QThread wrapper, provides synchronization against a ThreadPool
 */
@@ -277,7 +279,7 @@ void QThreadPoolPrivate::startThread(QRunnable *runnable)
     Q_ASSERT(runnable != nullptr);
     auto thread = std::make_unique<QThreadPoolThread>(this);
     if (objectName.isEmpty())
-        objectName = QLatin1String("Thread (pooled)");
+        objectName = u"Thread (pooled)"_qs;
     thread->setObjectName(objectName);
     Q_ASSERT(!allThreads.contains(thread.get())); // if this assert hits, we have an ABA problem (deleted threads don't get removed here)
     allThreads.insert(thread.get());

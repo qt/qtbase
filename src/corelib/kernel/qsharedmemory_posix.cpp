@@ -61,12 +61,14 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 int QSharedMemoryPrivate::handle()
 {
     // don't allow making handles on empty keys
     const QString safeKey = makePlatformSafeKey(key);
     if (safeKey.isEmpty()) {
-        errorString = QSharedMemory::tr("%1: key is empty").arg(QLatin1String("QSharedMemory::handle"));
+        errorString = QSharedMemory::tr("%1: key is empty").arg("QSharedMemory::handle"_L1);
         error = QSharedMemory::KeyError;
         return 0;
     }
@@ -100,7 +102,7 @@ bool QSharedMemoryPrivate::create(qsizetype size)
 #endif
     if (fd == -1) {
         const int errorNumber = errno;
-        const QLatin1String function("QSharedMemory::attach (shm_open)");
+        const auto function = "QSharedMemory::attach (shm_open)"_L1;
         switch (errorNumber) {
         case EINVAL:
             errorString = QSharedMemory::tr("%1: bad name").arg(function);
@@ -116,7 +118,7 @@ bool QSharedMemoryPrivate::create(qsizetype size)
     int ret;
     EINTR_LOOP(ret, QT_FTRUNCATE(fd, size));
     if (ret == -1) {
-        setErrorString(QLatin1String("QSharedMemory::create (ftruncate)"));
+        setErrorString("QSharedMemory::create (ftruncate)"_L1);
         qt_safe_close(fd);
         return false;
     }
@@ -143,7 +145,7 @@ bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
 #endif
     if (hand == -1) {
         const int errorNumber = errno;
-        const QLatin1String function("QSharedMemory::attach (shm_open)");
+        const auto function = "QSharedMemory::attach (shm_open)"_L1;
         switch (errorNumber) {
         case EINVAL:
             errorString = QSharedMemory::tr("%1: bad name").arg(function);
@@ -159,7 +161,7 @@ bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
     // grab the size
     QT_STATBUF st;
     if (QT_FSTAT(hand, &st) == -1) {
-        setErrorString(QLatin1String("QSharedMemory::attach (fstat)"));
+        setErrorString("QSharedMemory::attach (fstat)"_L1);
         cleanHandle();
         return false;
     }
@@ -169,7 +171,7 @@ bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
     const int mprot = (mode == QSharedMemory::ReadOnly ? PROT_READ : PROT_READ | PROT_WRITE);
     memory = QT_MMAP(0, size_t(size), mprot, MAP_SHARED, hand, 0);
     if (memory == MAP_FAILED || !memory) {
-        setErrorString(QLatin1String("QSharedMemory::attach (mmap)"));
+        setErrorString("QSharedMemory::attach (mmap)"_L1);
         cleanHandle();
         memory = 0;
         size = 0;
@@ -190,7 +192,7 @@ bool QSharedMemoryPrivate::detach()
 {
     // detach from the memory segment
     if (::munmap(memory, size_t(size)) == -1) {
-        setErrorString(QLatin1String("QSharedMemory::detach (munmap)"));
+        setErrorString("QSharedMemory::detach (munmap)"_L1);
         return false;
     }
     memory = 0;
@@ -216,7 +218,7 @@ bool QSharedMemoryPrivate::detach()
     if (shm_nattch == 0) {
         const QByteArray shmName = QFile::encodeName(makePlatformSafeKey(key));
         if (::shm_unlink(shmName.constData()) == -1 && errno != ENOENT)
-            setErrorString(QLatin1String("QSharedMemory::detach (shm_unlink)"));
+            setErrorString("QSharedMemory::detach (shm_unlink)"_L1);
     }
 #else
     // On non-QNX systems (tested Linux and Haiku), the st_nlink field is always 1,

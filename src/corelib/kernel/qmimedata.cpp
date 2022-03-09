@@ -46,6 +46,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static inline QString textUriListLiteral() { return QStringLiteral("text/uri-list"); }
 static inline QString textHtmlLiteral() { return QStringLiteral("text/html"); }
 static inline QString textPlainLiteral() { return QStringLiteral("text/plain"); }
@@ -118,7 +120,7 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QMetaType ty
     QVariant data = q->retrieveData(format, type);
 
     // Text data requested: fallback to URL data if available
-    if (format == QLatin1String("text/plain") && !data.isValid()) {
+    if (format == "text/plain"_L1 && !data.isValid()) {
         data = retrieveTypedData(textUriListLiteral(), QMetaType(QMetaType::QVariantList));
         if (data.metaType().id() == QMetaType::QUrl) {
             data = QVariant(data.toUrl().toDisplayString());
@@ -128,7 +130,7 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QMetaType ty
             const QList<QVariant> list = data.toList();
             for (int i = 0; i < list.size(); ++i) {
                 if (list.at(i).metaType().id() == QMetaType::QUrl) {
-                    text += list.at(i).toUrl().toDisplayString() + QLatin1Char('\n');
+                    text += list.at(i).toUrl().toDisplayString() + u'\n';
                     ++numUrls;
                 }
             }
@@ -158,7 +160,7 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QMetaType ty
         switch (typeId) {
         case QMetaType::QString: {
             const QByteArray ba = data.toByteArray();
-            if (format == QLatin1String("text/html")) {
+            if (format == "text/html"_L1) {
                 auto encoding = QStringConverter::encodingForHtml(ba);
                 if (encoding) {
                     QStringDecoder toUtf16(*encoding);
@@ -176,7 +178,7 @@ QT_WARNING_POP
             return newData;
         }
         case QMetaType::QVariantList: {
-            if (format != QLatin1String("text/uri-list"))
+            if (format != "text/uri-list"_L1)
                 break;
             Q_FALLTHROUGH();
         }
@@ -594,7 +596,7 @@ void QMimeData::setData(const QString &mimeType, const QByteArray &data)
 {
     Q_D(QMimeData);
 
-    if (mimeType == QLatin1String("text/uri-list")) {
+    if (mimeType == "text/uri-list"_L1) {
         QByteArray ba = data;
         if (ba.endsWith('\0'))
             ba.chop(1);

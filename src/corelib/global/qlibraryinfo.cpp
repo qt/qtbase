@@ -68,6 +68,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 extern void qDumpCPUFeatures(); // in qsimd.cpp
 
 #if QT_CONFIG(settings)
@@ -116,8 +118,8 @@ void QLibrarySettings::load()
         // This code needs to be in the regular library, as otherwise a qt.conf that
         // works for qmake would break things for dynamically built Qt tools.
         QStringList children = settings->childGroups();
-        paths = !children.contains(QLatin1String("Platforms"))
-                || children.contains(QLatin1String("Paths"));
+        paths = !children.contains("Platforms"_L1)
+                || children.contains("Paths"_L1);
     }
 }
 
@@ -133,7 +135,7 @@ static QSettings *findConfiguration()
     CFBundleRef bundleRef = CFBundleGetMainBundle();
     if (bundleRef) {
         QCFType<CFURLRef> urlRef = CFBundleCopyResourceURL(bundleRef,
-                                                           QCFString(QLatin1String("qt.conf")),
+                                                           QCFString("qt.conf"_L1),
                                                            0,
                                                            0);
         if (urlRef) {
@@ -149,7 +151,7 @@ static QSettings *findConfiguration()
         qtconfig = pwd.filePath(QLatin1String("qt" QT_STRINGIFY(QT_VERSION_MAJOR) ".conf"));
         if (QFile::exists(qtconfig))
             return new QSettings(qtconfig, QSettings::IniFormat);
-        qtconfig = pwd.filePath(QLatin1String("qt.conf"));
+        qtconfig = pwd.filePath("qt.conf"_L1);
         if (QFile::exists(qtconfig))
             return new QSettings(qtconfig, QSettings::IniFormat);
     }
@@ -326,7 +328,7 @@ static QString prefixFromAppDirHelper()
             if (urlRef) {
                 QCFString path = CFURLCopyFileSystemPath(urlRef, kCFURLPOSIXPathStyle);
 #ifdef Q_OS_MACOS
-                QString bundleContentsDir = QString(path) + QLatin1String("/Contents/");
+                QString bundleContentsDir = QString(path) + "/Contents/"_L1;
                 if (QDir(bundleContentsDir).exists())
                     return QDir::cleanPath(bundleContentsDir);
 #else
@@ -351,8 +353,7 @@ static QString prefixFromQtCoreLibraryHelper(const QString &qtCoreLibraryPath)
 {
     const QString qtCoreLibrary = QDir::fromNativeSeparators(qtCoreLibraryPath);
     const QString libDir = QFileInfo(qtCoreLibrary).absolutePath();
-    const QString prefixDir = libDir + QLatin1Char('/')
-            + QLatin1String(QT_CONFIGURE_LIBLOCATION_TO_PREFIX_PATH);
+    const QString prefixDir = libDir + "/" QT_CONFIGURE_LIBLOCATION_TO_PREFIX_PATH;
     return QDir::cleanPath(prefixDir);
 }
 #endif
@@ -411,8 +412,7 @@ static QString getRelocatablePrefix()
 
     const QCFString libDirCFString = CFURLCopyFileSystemPath(libDirCFPath, kCFURLPOSIXPathStyle);
 
-    const QString prefixDir = QString(libDirCFString) + QLatin1Char('/')
-        + QLatin1String(QT_CONFIGURE_LIBLOCATION_TO_PREFIX_PATH);
+    const QString prefixDir = QString(libDirCFString) + "/" QT_CONFIGURE_LIBLOCATION_TO_PREFIX_PATH;
 
     prefixPath = QDir::cleanPath(prefixDir);
 #elif QT_CONFIG(dlopen)
@@ -446,7 +446,7 @@ static QString getRelocatablePrefix()
         const QString qtCoreImpLibFileName = implibPrefix
                 + QFileInfo(qtCoreFilePath).completeBaseName() + implibSuffix;
         const QString qtCoreImpLibPath = qtCoreDirPath
-                + slash + QLatin1String(QT_CONFIGURE_LIBLOCATION_TO_PREFIX_PATH)
+                + slash + QT_CONFIGURE_LIBLOCATION_TO_PREFIX_PATH
                 + slash + libdir
                 + slash + qtCoreImpLibFileName;
         if (!QFileInfo::exists(qtCoreImpLibPath)) {
@@ -535,7 +535,7 @@ QLibraryInfoPrivate::LocationInfo QLibraryInfoPrivate::locationInfo(QLibraryInfo
             result.fallbackKey = u"Qml2Imports"_qs;
 #ifndef Q_OS_WIN // On Windows we use the registry
     } else if (loc == QLibraryInfo::SettingsPath) {
-        result.key = QLatin1String("Settings");
+        result.key = "Settings"_L1;
         result.defaultValue = QLatin1String(dot);
 #endif
     }
@@ -566,7 +566,7 @@ QString QLibraryInfo::path(LibraryPath p)
         if (!li.key.isNull()) {
             QSettings *config = QLibraryInfoPrivate::configuration();
             Q_ASSERT(config != nullptr);
-            config->beginGroup(QLatin1String("Paths"));
+            config->beginGroup("Paths"_L1);
 
             if (li.fallbackKey.isNull()) {
                 ret = config->value(li.key, li.defaultValue).toString();
@@ -579,16 +579,16 @@ QString QLibraryInfo::path(LibraryPath p)
 
             int startIndex = 0;
             forever {
-                startIndex = ret.indexOf(QLatin1Char('$'), startIndex);
+                startIndex = ret.indexOf(u'$', startIndex);
                 if (startIndex < 0)
                     break;
                 if (ret.length() < startIndex + 3)
                     break;
-                if (ret.at(startIndex + 1) != QLatin1Char('(')) {
+                if (ret.at(startIndex + 1) != u'(') {
                     startIndex++;
                     continue;
                 }
-                int endIndex = ret.indexOf(QLatin1Char(')'), startIndex + 2);
+                int endIndex = ret.indexOf(u')', startIndex + 2);
                 if (endIndex < 0)
                     break;
                 auto envVarName = QStringView{ret}.mid(startIndex + 2, endIndex - startIndex - 2);
@@ -629,7 +629,7 @@ QString QLibraryInfo::path(LibraryPath p)
             // we make any other path absolute to the prefix directory
             baseDir = path(PrefixPath);
         }
-        ret = QDir::cleanPath(baseDir + QLatin1Char('/') + ret);
+        ret = QDir::cleanPath(baseDir + u'/' + ret);
     }
     return ret;
 }
@@ -652,10 +652,9 @@ QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
 #if QT_CONFIG(settings)
     QScopedPointer<const QSettings> settings(findConfiguration());
     if (!settings.isNull()) {
-        const QString key = QLatin1String("Platforms")
-                + QLatin1Char('/')
+        const QString key = "Platforms/"_L1
                 + platformName
-                + QLatin1String("Arguments");
+                + "Arguments"_L1;
         return settings->value(key).toStringList();
     }
 #else

@@ -48,11 +48,13 @@
 **
 ****************************************************************************/
 
+using namespace Qt::StringLiterals;
+
 //! [0]
     QString foo;
     QString type = "long";
 
-    foo = QLatin1String("vector<") + type + QLatin1String(">::iterator");
+    foo = "vector<"_L1 + type + ">::iterator"_L1;
 
     if (foo.startsWith("(" + type + ") 0x"))
         ...

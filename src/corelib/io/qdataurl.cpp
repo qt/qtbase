@@ -53,7 +53,7 @@ using namespace Qt::Literals;
 */
 Q_CORE_EXPORT bool qDecodeDataUrl(const QUrl &uri, QString &mimeType, QByteArray &payload)
 {
-    if (uri.scheme() != QLatin1String("data") || !uri.host().isEmpty())
+    if (uri.scheme() != "data"_L1 || !uri.host().isEmpty())
         return false;
 
     mimeType = QStringLiteral("text/plain;charset=US-ASCII");

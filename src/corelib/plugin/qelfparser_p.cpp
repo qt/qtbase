@@ -58,6 +58,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 // ### Qt7: propagate the constant and eliminate dead code
 static constexpr bool ElfNotesAreMandatory = QT_VERSION >= QT_VERSION_CHECK(7,0,0);
 
@@ -717,7 +719,7 @@ static QLibraryScanResult scanSections(QByteArrayView data, const ErrorMaker &er
             return error(QLibrary::tr("section contents extend past the end of the file"));
         }
 
-        if (name != QLatin1String(".qtmetadata"))
+        if (name != ".qtmetadata"_L1)
             continue;
         qEDebug << "found .qtmetadata section";
         if (shdr->sh_size < sizeof(QPluginMetaData::MagicHeader))

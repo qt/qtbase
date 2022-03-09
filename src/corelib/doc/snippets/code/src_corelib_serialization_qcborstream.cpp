@@ -48,6 +48,8 @@
 **
 ****************************************************************************/
 
+using namespace Qt::StringLiterals;
+
 //! [0]
    QCborValue(QCborTag(2), QByteArray("\x01\0\0\0\0\0\0\0\0", 9));
 //! [0]
@@ -55,18 +57,18 @@
 //! [1]
    writer.startMap(4);    // 4 elements in the map
 
-   writer.append(QLatin1String("label"));
-   writer.append(QLatin1String("journald"));
+   writer.append("label"_L1);
+   writer.append("journald"_L1);
 
-   writer.append(QLatin1String("autoDetect"));
+   writer.append("autoDetect"_L1);
    writer.append(false);
 
-   writer.append(QLatin1String("condition"));
-   writer.append(QLatin1String("libs.journald"));
+   writer.append("condition"_L1);
+   writer.append("libs.journald"_L1);
 
-   writer.append(QLatin1String("output"));
+   writer.append("output"_L1);
    writer.startArray(1);
-   writer.append(QLatin1String("privateFeature"));
+   writer.append("privateFeature"_L1);
    writer.endArray();
 
    writer.endMap();
@@ -118,7 +120,7 @@
 //! [7]
 
 //! [8]
-   writer.append(QLatin1String("Hello, World"));
+   writer.append("Hello, World"_L1);
 //! [8]
 
 //! [9]

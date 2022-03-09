@@ -79,6 +79,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #if !defined(Q_OS_DARWIN)
 
 QT_BEGIN_INCLUDE_NAMESPACE
@@ -415,7 +417,7 @@ static QString resolveExecutable(const QString &program)
 #ifdef Q_OS_DARWIN
     // allow invoking of .app bundles on the Mac.
     QFileInfo fileInfo(program);
-    if (program.endsWith(QLatin1String(".app")) && fileInfo.isDir()) {
+    if (program.endsWith(".app"_L1) && fileInfo.isDir()) {
         QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(0,
                                                           QCFString(fileInfo.absoluteFilePath()),
                                                           kCFURLPOSIXPathStyle, true);
@@ -437,7 +439,7 @@ static QString resolveExecutable(const QString &program)
     }
 #endif
 
-    if (!program.contains(QLatin1Char('/'))) {
+    if (!program.contains(u'/')) {
         // findExecutable() returns its argument if it's an absolute path,
         // otherwise it searches $PATH; returns empty if not found (we handle
         // that case much later)
@@ -625,7 +627,7 @@ bool QProcessPrivate::processStarted(QString *errorMessage)
 
     // did we read an error message?
     if (errorMessage)
-        *errorMessage = QLatin1String(buf.function) + QLatin1String(": ") + qt_error_string(buf.code);
+        *errorMessage = QLatin1String(buf.function) + ": "_L1 + qt_error_string(buf.code);
 
     return false;
 }
@@ -946,7 +948,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
 
     AutoPipe startedPipe, pidPipe;
     if (!startedPipe || !pidPipe) {
-        setErrorAndEmit(QProcess::FailedToStart, QLatin1String("pipe: ") + qt_error_string(errno));
+        setErrorAndEmit(QProcess::FailedToStart, "pipe: "_L1 + qt_error_string(errno));
         return false;
     }
 
@@ -1003,7 +1005,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
     closeChannels();
 
     if (childPid == -1) {
-        setErrorAndEmit(QProcess::FailedToStart, QLatin1String("fork: ") + qt_error_string(savedErrno));
+        setErrorAndEmit(QProcess::FailedToStart, "fork: "_L1 + qt_error_string(savedErrno));
         return false;
     }
 

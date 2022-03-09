@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 // Create default time zone using appropriate backend
 static QTimeZonePrivate *newBackendTimeZone()
 {
@@ -991,7 +993,7 @@ QDataStream &operator>>(QDataStream &ds, QTimeZone &tz)
     ds >> ianaId;
     if (ianaId == invalidId()) {
         tz = QTimeZone();
-    } else if (ianaId == QLatin1String("OffsetFromUtc")) {
+    } else if (ianaId == "OffsetFromUtc"_L1) {
         int utcOffset;
         QString name;
         QString abbreviation;

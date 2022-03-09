@@ -62,6 +62,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static QString directoryMimeType()
 {
     return QStringLiteral("inode/directory");
@@ -116,7 +118,7 @@ void QMimeDatabasePrivate::loadProviders()
     // We use QStandardPaths every time to check if new files appeared
     const QStringList mimeDirs = locateMimeDirectories();
     const auto fdoIterator = std::find_if(mimeDirs.constBegin(), mimeDirs.constEnd(), [](const QString &mimeDir) -> bool {
-        return QFileInfo::exists(mimeDir + QLatin1String("/packages/freedesktop.org.xml")); }
+        return QFileInfo::exists(mimeDir + "/packages/freedesktop.org.xml"_L1); }
     );
     const bool needInternalDB = QMimeXMLProvider::InternalDatabaseAvailable && fdoIterator == mimeDirs.constEnd();
     //qDebug() << "mime dirs:" << mimeDirs;
@@ -127,7 +129,7 @@ void QMimeDatabasePrivate::loadProviders()
     m_providers.reserve(mimeDirs.size() + (needInternalDB ? 1 : 0));
 
     for (const QString &mimeDir : mimeDirs) {
-        const QString cacheFile = mimeDir + QLatin1String("/mime.cache");
+        const QString cacheFile = mimeDir + "/mime.cache"_L1;
         // Check if we already have a provider for this dir
         const auto predicate = [mimeDir](const std::unique_ptr<QMimeProviderBase> &prov)
         {
@@ -219,7 +221,7 @@ QMimeType QMimeDatabasePrivate::mimeTypeForName(const QString &nameOrAlias)
 
 QStringList QMimeDatabasePrivate::mimeTypeForFileName(const QString &fileName)
 {
-    if (fileName.endsWith(QLatin1Char('/')))
+    if (fileName.endsWith(u'/'))
         return { directoryMimeType() };
 
     const QMimeGlobMatchResult result = findByFileName(fileName);
@@ -252,7 +254,7 @@ void QMimeDatabasePrivate::loadMimeTypePrivate(QMimeTypePrivate &mimePrivate)
             }
         }
         if (!found) {
-            const QString file = mimePrivate.name + QLatin1String(".xml");
+            const QString file = mimePrivate.name + ".xml"_L1;
             qWarning() << "No file found for" << file << ", even though update-mime-info said it would exist.\n"
                           "Either it was just removed, or the directory doesn't have executable permission..."
                        << locateMimeDirectories();
@@ -289,14 +291,14 @@ void QMimeDatabasePrivate::loadIcon(QMimeTypePrivate &mimePrivate)
 
 QString QMimeDatabasePrivate::fallbackParent(const QString &mimeTypeName) const
 {
-    const QStringView myGroup = QStringView{mimeTypeName}.left(mimeTypeName.indexOf(QLatin1Char('/')));
+    const QStringView myGroup = QStringView{mimeTypeName}.left(mimeTypeName.indexOf(u'/'));
     // All text/* types are subclasses of text/plain.
-    if (myGroup == QLatin1String("text") && mimeTypeName != plainTextMimeType())
+    if (myGroup == "text"_L1 && mimeTypeName != plainTextMimeType())
         return plainTextMimeType();
     // All real-file mimetypes implicitly derive from application/octet-stream
-    if (myGroup != QLatin1String("inode") &&
+    if (myGroup != "inode"_L1 &&
         // ignore non-file extensions
-        myGroup != QLatin1String("all") && myGroup != QLatin1String("fonts") && myGroup != QLatin1String("print") && myGroup != QLatin1String("uri")
+        myGroup != "all"_L1 && myGroup != "fonts"_L1 && myGroup != "print"_L1 && myGroup != "uri"_L1
         && mimeTypeName != defaultMimeType()) {
         return defaultMimeType();
     }
@@ -752,7 +754,7 @@ QMimeType QMimeDatabase::mimeTypeForUrl(const QUrl &url) const
         return mimeTypeForFile(url.toLocalFile());
 
     const QString scheme = url.scheme();
-    if (scheme.startsWith(QLatin1String("http")) || scheme == QLatin1String("mailto"))
+    if (scheme.startsWith("http"_L1) || scheme == "mailto"_L1)
         return mimeTypeForName(d->defaultMimeType());
 
     return mimeTypeForFile(url.path(), MatchExtension);
@@ -781,7 +783,7 @@ QMimeType QMimeDatabase::mimeTypeForFileNameAndData(const QString &fileName, QIO
 {
     QMutexLocker locker(&d->mutex);
 
-    if (fileName.endsWith(QLatin1Char('/')))
+    if (fileName.endsWith(u'/'))
         return d->mimeTypeForName(directoryMimeType());
 
     const QMimeType result = d->mimeTypeForFileNameAndData(fileName, device);
@@ -808,7 +810,7 @@ QMimeType QMimeDatabase::mimeTypeForFileNameAndData(const QString &fileName, con
 {
     QMutexLocker locker(&d->mutex);
 
-    if (fileName.endsWith(QLatin1Char('/')))
+    if (fileName.endsWith(u'/'))
         return d->mimeTypeForName(directoryMimeType());
 
     QBuffer buffer(const_cast<QByteArray *>(&data));

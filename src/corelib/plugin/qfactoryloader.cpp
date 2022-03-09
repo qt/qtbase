@@ -70,6 +70,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 bool QPluginParsedMetaData::parse(QByteArrayView raw)
 {
     QPluginMetaData::Header header;
@@ -187,14 +189,14 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
 #if defined(Q_OS_WIN)
                 QStringList(QStringLiteral("*.dll")),
 #elif defined(Q_OS_ANDROID)
-                QStringList(QLatin1String("libplugins_%1_*.so").arg(suffix)),
+                QStringList("libplugins_%1_*.so"_L1.arg(suffix)),
 #endif
                 QDir::Files);
 
     while (plugins.hasNext()) {
         QString fileName = plugins.next();
 #ifdef Q_OS_MAC
-        const bool isDebugPlugin = fileName.endsWith(QLatin1String("_debug.dylib"));
+        const bool isDebugPlugin = fileName.endsWith("_debug.dylib"_L1);
         const bool isDebugLibrary =
             #ifdef QT_DEBUG
                 true;
@@ -207,7 +209,7 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
         if (isDebugPlugin != isDebugLibrary)
             continue;
 #elif defined(Q_PROCESSOR_X86)
-        if (fileName.endsWith(QLatin1String(".avx2")) || fileName.endsWith(QLatin1String(".avx512"))) {
+        if (fileName.endsWith(".avx2"_L1) || fileName.endsWith(".avx512"_L1)) {
             // ignore AVX2-optimized file, we'll do a bait-and-switch to it later
             continue;
         }
@@ -232,7 +234,7 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
             QCborMap object = library->metaData.value(QtPluginMetaDataKeys::MetaData).toMap();
             metaDataOk = true;
 
-            const QCborArray k = object.value(QLatin1String("Keys")).toArray();
+            const QCborArray k = object.value("Keys"_L1).toArray();
             for (QCborValueConstRef v : k)
                 keys += cs ? v.toString() : v.toString().toLower();
         }
@@ -332,7 +334,7 @@ QFactoryLoader::QFactoryLoader(const char *iid,
     d->cs = cs;
     d->suffix = suffix;
 # ifdef Q_OS_ANDROID
-    if (!d->suffix.isEmpty() && d->suffix.at(0) == QLatin1Char('/'))
+    if (!d->suffix.isEmpty() && d->suffix.at(0) == u'/')
         d->suffix.remove(0, 1);
 # endif
 
@@ -434,7 +436,7 @@ QMultiMap<int, QString> QFactoryLoader::keyMap() const
     const QList<QPluginParsedMetaData> metaDataList = metaData();
     for (int i = 0; i < metaDataList.size(); ++i) {
         const QCborMap metaData = metaDataList.at(i).value(QtPluginMetaDataKeys::MetaData).toMap();
-        const QCborArray keys = metaData.value(QLatin1String("Keys")).toArray();
+        const QCborArray keys = metaData.value("Keys"_L1).toArray();
         for (QCborValueConstRef key : keys)
             result.insert(i, key.toString());
     }
@@ -446,7 +448,7 @@ int QFactoryLoader::indexOf(const QString &needle) const
     const QList<QPluginParsedMetaData> metaDataList = metaData();
     for (int i = 0; i < metaDataList.size(); ++i) {
         const QCborMap metaData = metaDataList.at(i).value(QtPluginMetaDataKeys::MetaData).toMap();
-        const QCborArray keys = metaData.value(QLatin1String("Keys")).toArray();
+        const QCborArray keys = metaData.value("Keys"_L1).toArray();
         for (QCborValueConstRef key : keys) {
             if (key.toString().compare(needle, Qt::CaseInsensitive) == 0)
                 return i;

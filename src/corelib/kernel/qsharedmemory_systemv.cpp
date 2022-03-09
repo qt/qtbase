@@ -63,6 +63,8 @@
 #ifndef QT_NO_SHAREDMEMORY
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     \internal
 
@@ -76,21 +78,21 @@ key_t QSharedMemoryPrivate::handle()
 
     // don't allow making handles on empty keys
     if (nativeKey.isEmpty()) {
-        errorString = QSharedMemory::tr("%1: key is empty").arg(QLatin1String("QSharedMemory::handle:"));
+        errorString = QSharedMemory::tr("%1: key is empty").arg("QSharedMemory::handle:"_L1);
         error = QSharedMemory::KeyError;
         return 0;
     }
 
     // ftok requires that an actual file exists somewhere
     if (!QFile::exists(nativeKey)) {
-        errorString = QSharedMemory::tr("%1: UNIX key file doesn't exist").arg(QLatin1String("QSharedMemory::handle:"));
+        errorString = QSharedMemory::tr("%1: UNIX key file doesn't exist").arg("QSharedMemory::handle:"_L1);
         error = QSharedMemory::NotFound;
         return 0;
     }
 
     unix_key = ftok(QFile::encodeName(nativeKey).constData(), 'Q');
     if (-1 == unix_key) {
-        errorString = QSharedMemory::tr("%1: ftok failed").arg(QLatin1String("QSharedMemory::handle:"));
+        errorString = QSharedMemory::tr("%1: ftok failed").arg("QSharedMemory::handle:"_L1);
         error = QSharedMemory::KeyError;
         unix_key = 0;
     }
@@ -138,7 +140,7 @@ bool QSharedMemoryPrivate::create(qsizetype size)
     bool createdFile = false;
     int built = createUnixKeyFile(nativeKey);
     if (built == -1) {
-        errorString = QSharedMemory::tr("%1: unable to make key").arg(QLatin1String("QSharedMemory::handle:"));
+        errorString = QSharedMemory::tr("%1: unable to make key").arg("QSharedMemory::handle:"_L1);
         error = QSharedMemory::KeyError;
         return false;
     }
@@ -155,10 +157,10 @@ bool QSharedMemoryPrivate::create(qsizetype size)
 
     // create
     if (-1 == shmget(unix_key, size_t(size), 0600 | IPC_CREAT | IPC_EXCL)) {
-        const QLatin1String function("QSharedMemory::create");
+        const auto function = "QSharedMemory::create"_L1;
         switch (errno) {
         case EINVAL:
-            errorString = QSharedMemory::tr("%1: system-imposed size restrictions").arg(QLatin1String("QSharedMemory::handle"));
+            errorString = QSharedMemory::tr("%1: system-imposed size restrictions").arg("QSharedMemory::handle"_L1);
             error = QSharedMemory::InvalidSize;
             break;
         default:
@@ -177,7 +179,7 @@ bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
     // grab the shared memory segment id
     int id = shmget(unix_key, 0, (mode == QSharedMemory::ReadOnly ? 0400 : 0600));
     if (-1 == id) {
-        setErrorString(QLatin1String("QSharedMemory::attach (shmget)"));
+        setErrorString("QSharedMemory::attach (shmget)"_L1);
         return false;
     }
 
@@ -185,7 +187,7 @@ bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
     memory = shmat(id, nullptr, (mode == QSharedMemory::ReadOnly ? SHM_RDONLY : 0));
     if ((void *)-1 == memory) {
         memory = nullptr;
-        setErrorString(QLatin1String("QSharedMemory::attach (shmat)"));
+        setErrorString("QSharedMemory::attach (shmat)"_L1);
         return false;
     }
 
@@ -194,7 +196,7 @@ bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
     if (!shmctl(id, IPC_STAT, &shmid_ds)) {
         size = (qsizetype)shmid_ds.shm_segsz;
     } else {
-        setErrorString(QLatin1String("QSharedMemory::attach (shmctl)"));
+        setErrorString("QSharedMemory::attach (shmctl)"_L1);
         return false;
     }
 
@@ -205,7 +207,7 @@ bool QSharedMemoryPrivate::detach()
 {
     // detach from the memory segment
     if (-1 == shmdt(memory)) {
-        const QLatin1String function("QSharedMemory::detach");
+        const auto function = "QSharedMemory::detach"_L1;
         switch (errno) {
         case EINVAL:
             errorString = QSharedMemory::tr("%1: not attached").arg(function);
@@ -236,7 +238,7 @@ bool QSharedMemoryPrivate::detach()
     if (shmid_ds.shm_nattch == 0) {
         // mark for removal
         if (-1 == shmctl(id, IPC_RMID, &shmid_ds)) {
-            setErrorString(QLatin1String("QSharedMemory::remove"));
+            setErrorString("QSharedMemory::remove"_L1);
             switch (errno) {
             case EINVAL:
                 return true;

@@ -84,6 +84,8 @@ QT_WARNING_DISABLE_GCC("-Wfree-nonheap-object") // false positive tracking
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #ifndef QT_NO_SYSTEMLOCALE
 static QSystemLocale *_systemLocale = nullptr;
 class QSystemLocaleSingleton: public QSystemLocale
@@ -221,7 +223,7 @@ QLatin1String QLocalePrivate::languageToCode(QLocale::Language language,
     if (language == QLocale::AnyLanguage || language > QLocale::LastLanguage)
         return QLatin1String();
     if (language == QLocale::C)
-        return QLatin1String("C");
+        return "C"_L1;
 
     const LanguageCodeEntry &i = languageCodeList[language];
 
@@ -636,22 +638,22 @@ QString qt_readEscapedFormatString(QStringView format, int *idx)
 {
     int &i = *idx;
 
-    Q_ASSERT(format.at(i) == QLatin1Char('\''));
+    Q_ASSERT(format.at(i) == u'\'');
     ++i;
     if (i == format.size())
         return QString();
     if (format.at(i).unicode() == '\'') { // "''" outside of a quoted string
         ++i;
-        return QLatin1String("'");
+        return "'"_L1;
     }
 
     QString result;
 
     while (i < format.size()) {
         if (format.at(i).unicode() == '\'') {
-            if (format.mid(i + 1).startsWith(QLatin1Char('\''))) {
+            if (format.mid(i + 1).startsWith(u'\'')) {
                 // "''" inside a quoted string
-                result.append(QLatin1Char('\''));
+                result.append(u'\'');
                 i += 2;
             } else {
                 break;
@@ -1357,7 +1359,7 @@ QString QLocale::name() const
     if (c == AnyTerritory)
         return d->languageCode();
 
-    return d->languageCode() + QLatin1Char('_') + d->territoryCode();
+    return d->languageCode() + u'_' + d->territoryCode();
 }
 
 static qlonglong toIntegral_helper(const QLocaleData *d, QStringView str, bool *ok,
@@ -1550,7 +1552,7 @@ QLocale::Script QLocale::codeToScript(QStringView scriptCode) noexcept
 QString QLocale::languageToString(Language language)
 {
     if (language > QLocale::LastLanguage)
-        return QLatin1String("Unknown");
+        return "Unknown"_L1;
     return QLatin1String(language_name_list + language_name_index[language]);
 }
 
@@ -1564,7 +1566,7 @@ QString QLocale::languageToString(Language language)
 QString QLocale::territoryToString(QLocale::Territory territory)
 {
     if (territory > QLocale::LastTerritory)
-        return QLatin1String("Unknown");
+        return "Unknown"_L1;
     return QLatin1String(territory_name_list + territory_name_index[territory]);
 }
 
@@ -1592,7 +1594,7 @@ QString QLocale::countryToString(Country country)
 QString QLocale::scriptToString(QLocale::Script script)
 {
     if (script > QLocale::LastScript)
-        return QLatin1String("Unknown");
+        return "Unknown"_L1;
     return QLatin1String(script_name_list + script_name_index[script]);
 }
 
@@ -2338,7 +2340,7 @@ QString QLocale::dateTimeFormat(FormatType format) const
         }
     }
 #endif
-    return dateFormat(format) + QLatin1Char(' ') + timeFormat(format);
+    return dateFormat(format) + u' ' + timeFormat(format);
 }
 
 #if QT_CONFIG(datestring)
@@ -3497,7 +3499,7 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
                 QString text = time.hour() < 12 ? locale.amText() : locale.pmText();
                 used = true;
                 repeat = 1;
-                if (format.mid(i + 1).startsWith(QLatin1Char('p'), Qt::CaseInsensitive))
+                if (format.mid(i + 1).startsWith(u'p', Qt::CaseInsensitive))
                     ++repeat;
                 if (c.unicode() == 'A' && (repeat == 1 || format.at(i + 1).unicode() == 'P'))
                     text = std::move(text).toUpper();
@@ -4403,7 +4405,7 @@ QString QLocale::formattedDataSize(qint64 bytes, int precision, DataSizeFormats 
         unit = d->m_data->byteCount().viewData(byte_unit_data);
     }
 
-    return number + QLatin1Char(' ') + unit;
+    return number + u' ' + unit;
 }
 
 /*!

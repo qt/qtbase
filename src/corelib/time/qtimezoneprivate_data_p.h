@@ -81,7 +81,7 @@ struct QZoneData
     quint16 territory;         // Territory of IANA ID's, AnyTerritory means No Territory
     quint16 ianaIdIndex;       // All IANA ID's for the Windows ID and Country, space separated
     inline QLatin1String id() const;
-    inline auto ids() const { return id().tokenize(QLatin1String(" ")); }
+    inline auto ids() const { return id().tokenize(u' '); }
 };
 
 struct QWindowsData

@@ -63,6 +63,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 // #define WINQFSW_DEBUG
 #ifdef WINQFSW_DEBUG
 #  define DEBUG qDebug
@@ -75,8 +77,8 @@ static Qt::HANDLE createChangeNotification(const QString &path, uint flags)
     // Volume and folder paths need a trailing slash for proper notification
     // (e.g. "c:" -> "c:/").
     QString nativePath = QDir::toNativeSeparators(path);
-    if ((flags & FILE_NOTIFY_CHANGE_ATTRIBUTES) == 0 && !nativePath.endsWith(QLatin1Char('\\')))
-        nativePath.append(QLatin1Char('\\'));
+    if ((flags & FILE_NOTIFY_CHANGE_ATTRIBUTES) == 0 && !nativePath.endsWith(u'\\'))
+        nativePath.append(u'\\');
     const HANDLE result = FindFirstChangeNotification(reinterpret_cast<const wchar_t *>(nativePath.utf16()),
                                                       FALSE, flags);
     DEBUG() << __FUNCTION__ << nativePath << Qt::hex << Qt::showbase << flags << "returns" << result;
@@ -274,7 +276,7 @@ bool QWindowsRemovableDriveListener::nativeEventFilter(const QByteArray &, void 
 // Set up listening for WM_DEVICECHANGE+DBT_CUSTOMEVENT for a removable drive path,
 void QWindowsRemovableDriveListener::addPath(const QString &p)
 {
-    const wchar_t drive = p.size() >= 2 && p.at(0).isLetter() && p.at(1) == QLatin1Char(':')
+    const wchar_t drive = p.size() >= 2 && p.at(0).isLetter() && p.at(1) == u':'
         ? wchar_t(p.at(0).toUpper().unicode()) : L'\0';
     if (!drive)
         return;
@@ -367,8 +369,8 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
     for (const QString &path : paths) {
         auto sg = qScopeGuard([&] { unhandled.push_back(path); });
         QString normalPath = path;
-        if ((normalPath.endsWith(QLatin1Char('/')) && !normalPath.endsWith(QLatin1String(":/")))
-            || (normalPath.endsWith(QLatin1Char('\\')) && !normalPath.endsWith(QLatin1String(":\\")))) {
+        if ((normalPath.endsWith(u'/') && !normalPath.endsWith(":/"_L1))
+            || (normalPath.endsWith(u'\\') && !normalPath.endsWith(":\\"_L1))) {
             normalPath.chop(1);
         }
         QFileInfo fileInfo(normalPath);
@@ -530,7 +532,7 @@ QStringList QWindowsFileSystemWatcherEngine::removePaths(const QStringList &path
     for (const QString &path : paths) {
         auto sg = qScopeGuard([&] { unhandled.push_back(path); });
         QString normalPath = path;
-        if (normalPath.endsWith(QLatin1Char('/')) || normalPath.endsWith(QLatin1Char('\\')))
+        if (normalPath.endsWith(u'/') || normalPath.endsWith(u'\\'))
             normalPath.chop(1);
         QFileInfo fileInfo(normalPath);
         DEBUG() << "removing" << normalPath;
@@ -631,10 +633,10 @@ Q_DECL_COLD_FUNCTION
 static QString msgFindNextFailed(const QWindowsFileSystemWatcherEngineThread::PathInfoHash &pathInfos)
 {
     QString str;
-    str += QLatin1String("QFileSystemWatcher: FindNextChangeNotification failed for");
+    str += "QFileSystemWatcher: FindNextChangeNotification failed for"_L1;
     for (const QWindowsFileSystemWatcherEngine::PathInfo &pathInfo : pathInfos)
-        str += QLatin1String(" \"") + QDir::toNativeSeparators(pathInfo.absolutePath) + QLatin1Char('"');
-    str += QLatin1Char(' ');
+        str += " \""_L1 + QDir::toNativeSeparators(pathInfo.absolutePath) + u'"';
+    str += u' ';
     return str;
 }
 

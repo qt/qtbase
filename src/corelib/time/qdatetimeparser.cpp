@@ -62,6 +62,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 template <typename T>
 using ShortVector = QVarLengthArray<T, 13>; // enough for month (incl. leap) and day-of-week names
 
@@ -551,8 +553,7 @@ bool QDateTimeParser::parseFormat(QStringView newFormat)
                     appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                     newDisplay |= AmPmSection;
                     if (i + 1 < newFormat.size()
-                        && newFormat.sliced(i + 1).startsWith(QLatin1Char('p'),
-                                                              Qt::CaseInsensitive)) {
+                        && newFormat.sliced(i + 1).startsWith(u'p', Qt::CaseInsensitive)) {
                         ++i;
                         if (newFormat.at(i) != QLatin1Char(caseOpt == UpperCase ? 'P' : 'p'))
                             caseOpt = NativeCase;
@@ -645,7 +646,7 @@ bool QDateTimeParser::parseFormat(QStringView newFormat)
 //     }
 
     QDTPDEBUG << newFormat << displayFormat;
-    QDTPDEBUGN("separators:\n'%s'", separators.join(QLatin1String("\n")).toLatin1().constData());
+    QDTPDEBUGN("separators:\n'%s'", separators.join("\n"_L1).toLatin1().constData());
 
     return true;
 }
@@ -819,7 +820,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
 
     const int sectionmaxsize = sectionMaxSize(sectionIndex);
     const bool negate = (sn.type == YearSection && m_text.size() > offset
-                         && m_text.at(offset) == QLatin1Char('-'));
+                         && m_text.at(offset) == u'-');
     const int negativeYearOffset = negate ? 1 : 0;
 
     QStringView sectionTextRef =
@@ -896,8 +897,8 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
     case MSecSection: {
         int used = negativeYearOffset;
         // We already sliced off the - sign if it was legitimately present.
-        if (sectionTextRef.startsWith(QLatin1Char('-'))
-            || sectionTextRef.startsWith(QLatin1Char('+'))) {
+        if (sectionTextRef.startsWith(u'-')
+            || sectionTextRef.startsWith(u'+')) {
             if (separators.at(sectionIndex + 1).startsWith(sectionTextRef[0]))
                 result = ParsedSection(Intermediate, 0, used);
             break;
@@ -966,7 +967,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
                     if (skipToNextSection(sectionIndex, currentValue, digitsStr)) {
                         const int missingZeroes = sectionmaxsize - digitsStr.size();
                         result = ParsedSection(Acceptable, last, sectionmaxsize, missingZeroes);
-                        m_text.insert(offset, QString(missingZeroes, QLatin1Char('0')));
+                        m_text.insert(offset, QString(missingZeroes, u'0'));
                         ++(const_cast<QDateTimeParser*>(this)->sectionNodes[sectionIndex].zeroesAdded);
                     } else {
                         result = ParsedSection(Intermediate, last, used);;
@@ -1267,7 +1268,7 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
         if (fixup && sect.state == Intermediate && sect.used < sn.count) {
             const FieldInfo fi = fieldInfo(index);
             if ((fi & (Numeric|FixedWidth)) == (Numeric|FixedWidth)) {
-                const QString newText = QString::fromLatin1("%1").arg(sect.value, sn.count, 10, QLatin1Char('0'));
+                const QString newText = QString::fromLatin1("%1").arg(sect.value, sn.count, 10, '0'_L1);
                 m_text.replace(pos, sect.used, newText);
                 sect.used = sn.count;
             }
@@ -1286,12 +1287,12 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
                 QStringView zoneName = QStringView{m_text}.sliced(pos, sect.used);
                 Q_ASSERT(!zoneName.isEmpty()); // sect.used > 0
 
-                const QStringView offsetStr = zoneName.startsWith(QLatin1String("UTC"))
+                const QStringView offsetStr = zoneName.startsWith("UTC"_L1)
                                              ? zoneName.sliced(3) : zoneName;
-                const bool isUtcOffset = offsetStr.startsWith(QLatin1Char('+'))
-                                         || offsetStr.startsWith(QLatin1Char('-'));
-                const bool isUtc = zoneName == QLatin1String("Z")
-                                   || zoneName == QLatin1String("UTC");
+                const bool isUtcOffset = offsetStr.startsWith(u'+')
+                                         || offsetStr.startsWith(u'-');
+                const bool isUtc = zoneName == "Z"_L1
+                                   || zoneName == "UTC"_L1;
 
                 if (isUtc || isUtcOffset) {
                     tspec = sect.value ? Qt::OffsetFromUTC : Qt::UTC;
@@ -1501,7 +1502,7 @@ QDateTimeParser::parse(const QString &input, int position,
     QDTPDEBUG << "parse" << input;
     StateNode scan = scanString(defaultValue, fixup);
     QDTPDEBUGN("'%s' => '%s'(%s)", m_text.toLatin1().constData(),
-               scan.value.toString(QLatin1String("yyyy/MM/dd hh:mm:ss.zzz")).toLatin1().constData(),
+               scan.value.toString("yyyy/MM/dd hh:mm:ss.zzz"_L1).toLatin1().constData(),
                stateName(scan.state).toLatin1().constData());
 
     if (scan.value.isValid() && scan.state != Invalid) {
@@ -1735,7 +1736,7 @@ int QDateTimeParser::findDay(const QString &str1, int startDay, int sectionIndex
  */
 QDateTimeParser::ParsedSection QDateTimeParser::findUtcOffset(QStringView str) const
 {
-    const bool startsWithUtc = str.startsWith(QLatin1String("UTC"));
+    const bool startsWithUtc = str.startsWith("UTC"_L1);
     // Get rid of UTC prefix if it exists
     if (startsWithUtc) {
         str = str.sliced(3);
@@ -1743,13 +1744,13 @@ QDateTimeParser::ParsedSection QDateTimeParser::findUtcOffset(QStringView str) c
             return ParsedSection(Acceptable, 0, 3);
     }
 
-    const bool negativeSign = str.startsWith(QLatin1Char('-'));
+    const bool negativeSign = str.startsWith(u'-');
     // Must start with a sign:
-    if (!negativeSign && !str.startsWith(QLatin1Char('+')))
+    if (!negativeSign && !str.startsWith(u'+'))
         return ParsedSection();
     str = str.sliced(1);  // drop sign
 
-    const int colonPosition = str.indexOf(QLatin1Char(':'));
+    const int colonPosition = str.indexOf(u':');
     // Colon that belongs to offset is at most at position 2 (hh:mm)
     bool hasColon = (colonPosition >= 0 && colonPosition < 3);
 
@@ -1827,7 +1828,7 @@ QDateTimeParser::findTimeZoneName(QStringView str, const QDateTime &when) const
     int count = 0;
     Q_ASSERT(index <= str.size());
     while (lastSlash < index) {
-        int slash = str.indexOf(QLatin1Char('/'), lastSlash + 1);
+        int slash = str.indexOf(u'/', lastSlash + 1);
         if (slash < 0 || slash > index)
             slash = index; // i.e. the end of the candidate text
         else if (++count > 5)
@@ -1861,7 +1862,7 @@ QDateTimeParser::findTimeZone(QStringView str, const QDateTime &when,
                               int maxVal, int minVal) const
 {
     // Short-cut Zulu suffix when it's all there is (rather than a prefix match):
-    if (str == QLatin1Char('Z'))
+    if (str == u'Z')
         return ParsedSection(Acceptable, 0, 1);
 
     ParsedSection section = findUtcOffset(str);
@@ -1874,9 +1875,9 @@ QDateTimeParser::findTimeZone(QStringView str, const QDateTime &when,
         return section;
 
     // Check if string is UTC or alias to UTC, after all other options
-    if (str.startsWith(QLatin1String("UTC")))
+    if (str.startsWith("UTC"_L1))
         return ParsedSection(Acceptable, 0, 3);
-    if (str.startsWith(QLatin1Char('Z')))
+    if (str.startsWith(u'Z'))
         return ParsedSection(Acceptable, 0, 1);
 
     return ParsedSection();
@@ -2060,18 +2061,18 @@ QString QDateTimeParser::SectionNode::format() const
 {
     QChar fillChar;
     switch (type) {
-    case AmPmSection: return QLatin1String(count == 1 ? "ap" : count == 2 ? "AP" : "Ap");
-    case MSecSection: fillChar = QLatin1Char('z'); break;
-    case SecondSection: fillChar = QLatin1Char('s'); break;
-    case MinuteSection: fillChar = QLatin1Char('m'); break;
-    case Hour24Section: fillChar = QLatin1Char('H'); break;
-    case Hour12Section: fillChar = QLatin1Char('h'); break;
+    case AmPmSection: return count == 1 ? "ap"_L1 : count == 2 ? "AP"_L1 : "Ap"_L1;
+    case MSecSection: fillChar = u'z'; break;
+    case SecondSection: fillChar = u's'; break;
+    case MinuteSection: fillChar = u'm'; break;
+    case Hour24Section: fillChar = u'H'; break;
+    case Hour12Section: fillChar = u'h'; break;
     case DayOfWeekSectionShort:
     case DayOfWeekSectionLong:
-    case DaySection: fillChar = QLatin1Char('d'); break;
-    case MonthSection: fillChar = QLatin1Char('M'); break;
+    case DaySection: fillChar = u'd'; break;
+    case MonthSection: fillChar = u'M'; break;
     case YearSection2Digits:
-    case YearSection: fillChar = QLatin1Char('y'); break;
+    case YearSection: fillChar = u'y'; break;
     default:
         qWarning("QDateTimeParser::sectionFormat Internal error (%ls)",
                  qUtf16Printable(name(type)));
@@ -2169,23 +2170,23 @@ bool QDateTimeParser::skipToNextSection(int index, const QDateTime &current, QSt
 QString QDateTimeParser::SectionNode::name(QDateTimeParser::Section s)
 {
     switch (s) {
-    case QDateTimeParser::AmPmSection: return QLatin1String("AmPmSection");
-    case QDateTimeParser::DaySection: return QLatin1String("DaySection");
-    case QDateTimeParser::DayOfWeekSectionShort: return QLatin1String("DayOfWeekSectionShort");
-    case QDateTimeParser::DayOfWeekSectionLong: return QLatin1String("DayOfWeekSectionLong");
-    case QDateTimeParser::Hour24Section: return QLatin1String("Hour24Section");
-    case QDateTimeParser::Hour12Section: return QLatin1String("Hour12Section");
-    case QDateTimeParser::MSecSection: return QLatin1String("MSecSection");
-    case QDateTimeParser::MinuteSection: return QLatin1String("MinuteSection");
-    case QDateTimeParser::MonthSection: return QLatin1String("MonthSection");
-    case QDateTimeParser::SecondSection: return QLatin1String("SecondSection");
-    case QDateTimeParser::TimeZoneSection: return QLatin1String("TimeZoneSection");
-    case QDateTimeParser::YearSection: return QLatin1String("YearSection");
-    case QDateTimeParser::YearSection2Digits: return QLatin1String("YearSection2Digits");
-    case QDateTimeParser::NoSection: return QLatin1String("NoSection");
-    case QDateTimeParser::FirstSection: return QLatin1String("FirstSection");
-    case QDateTimeParser::LastSection: return QLatin1String("LastSection");
-    default: return QLatin1String("Unknown section ") + QString::number(int(s));
+    case QDateTimeParser::AmPmSection: return "AmPmSection"_L1;
+    case QDateTimeParser::DaySection: return "DaySection"_L1;
+    case QDateTimeParser::DayOfWeekSectionShort: return "DayOfWeekSectionShort"_L1;
+    case QDateTimeParser::DayOfWeekSectionLong: return "DayOfWeekSectionLong"_L1;
+    case QDateTimeParser::Hour24Section: return "Hour24Section"_L1;
+    case QDateTimeParser::Hour12Section: return "Hour12Section"_L1;
+    case QDateTimeParser::MSecSection: return "MSecSection"_L1;
+    case QDateTimeParser::MinuteSection: return "MinuteSection"_L1;
+    case QDateTimeParser::MonthSection: return "MonthSection"_L1;
+    case QDateTimeParser::SecondSection: return "SecondSection"_L1;
+    case QDateTimeParser::TimeZoneSection: return "TimeZoneSection"_L1;
+    case QDateTimeParser::YearSection: return "YearSection"_L1;
+    case QDateTimeParser::YearSection2Digits: return "YearSection2Digits"_L1;
+    case QDateTimeParser::NoSection: return "NoSection"_L1;
+    case QDateTimeParser::FirstSection: return "FirstSection"_L1;
+    case QDateTimeParser::LastSection: return "LastSection"_L1;
+    default: return "Unknown section "_L1 + QString::number(int(s));
     }
 }
 
@@ -2197,10 +2198,10 @@ QString QDateTimeParser::SectionNode::name(QDateTimeParser::Section s)
 QString QDateTimeParser::stateName(State s) const
 {
     switch (s) {
-    case Invalid: return QLatin1String("Invalid");
-    case Intermediate: return QLatin1String("Intermediate");
-    case Acceptable: return QLatin1String("Acceptable");
-    default: return QLatin1String("Unknown state ") + QString::number(s);
+    case Invalid: return "Invalid"_L1;
+    case Intermediate: return "Intermediate"_L1;
+    case Acceptable: return "Acceptable"_L1;
+    default: return "Unknown state "_L1 + QString::number(s);
     }
 }
 

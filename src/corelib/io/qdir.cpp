@@ -68,6 +68,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #if defined(Q_OS_WIN)
 static QString driveSpec(const QString &path)
 {
@@ -95,18 +97,18 @@ static int rootLength(const QString &name, bool allowUncPaths)
 {
     const int len = name.length();
     // starts with double slash
-    if (allowUncPaths && name.startsWith(QLatin1String("//"))) {
+    if (allowUncPaths && name.startsWith("//"_L1)) {
         // Server name '//server/path' is part of the prefix.
-        const int nextSlash = name.indexOf(QLatin1Char('/'), 2);
+        const int nextSlash = name.indexOf(u'/', 2);
         return nextSlash >= 0 ? nextSlash + 1 : len;
     }
 #if defined(Q_OS_WIN)
-    if (len >= 2 && name.at(1) == QLatin1Char(':')) {
+    if (len >= 2 && name.at(1) == u':') {
         // Handle a possible drive letter
-        return len > 2 && name.at(2) == QLatin1Char('/') ? 3 : 2;
+        return len > 2 && name.at(2) == u'/' ? 3 : 2;
     }
 #endif
-    if (name.at(0) == QLatin1Char('/'))
+    if (name.at(0) == u'/')
         return 1;
     return 0;
 }
@@ -165,10 +167,10 @@ bool QDirPrivate::exists() const
 // static
 inline QChar QDirPrivate::getFilterSepChar(const QString &nameFilter)
 {
-    QChar sep(QLatin1Char(';'));
+    QChar sep(u';');
     int i = nameFilter.indexOf(sep, 0);
-    if (i == -1 && nameFilter.indexOf(QLatin1Char(' '), 0) != -1)
-        sep = QChar(QLatin1Char(' '));
+    if (i == -1 && nameFilter.indexOf(u' ', 0) != -1)
+        sep = QChar(u' ');
     return sep;
 }
 
@@ -186,7 +188,7 @@ inline QStringList QDirPrivate::splitFilters(const QString &nameFilter, QChar se
 inline void QDirPrivate::setPath(const QString &path)
 {
     QString p = QDir::fromNativeSeparators(path);
-    if (p.endsWith(QLatin1Char('/'))
+    if (p.endsWith(u'/')
             && p.length() > 1
 #if defined(Q_OS_WIN)
         && (!(p.length() == 3 && p.at(1).unicode() == ':' && p.at(0).isLetter()))
@@ -717,7 +719,7 @@ static int drivePrefixLength(const QString &path)
     if (size > 1 && path.at(1).unicode() == ':') {
         if (Q_UNLIKELY(!path.at(0).isLetter()))
             return 0;
-    } else if (path.startsWith(QLatin1String("//"))) {
+    } else if (path.startsWith("//"_L1)) {
         // UNC path; use its //server/share part as "drive" - it's as sane a
         // thing as we can do.
         for (int i = 2; i-- > 0; ) { // Scan two "path fragments":
@@ -749,7 +751,7 @@ static bool treatAsAbsolute(const QString &path)
     // a colon in the path.
     // FIXME: relies on virtual file-systems having colons in their prefixes.
     // The case of an MS-absolute C:/... path happens to work either way.
-    return (path.contains(QLatin1Char(':')) && QFileInfo(path).isAbsolute())
+    return (path.contains(u':') && QFileInfo(path).isAbsolute())
         || QFileSystemEntry(path).isAbsolute();
 }
 
@@ -773,16 +775,16 @@ QString QDir::filePath(const QString &fileName) const
         return ret;
 
 #ifdef Q_OS_WIN
-    if (fileName.startsWith(QLatin1Char('/')) || fileName.startsWith(QLatin1Char('\\'))) {
+    if (fileName.startsWith(u'/') || fileName.startsWith(u'\\')) {
         // Handle the "absolute except for drive" case (i.e. \blah not c:\blah):
         const int drive = drivePrefixLength(ret);
         return drive > 0 ? QStringView{ret}.left(drive) % fileName : fileName;
     }
 #endif // Q_OS_WIN
 
-    if (ret.isEmpty() || ret.endsWith(QLatin1Char('/')))
+    if (ret.isEmpty() || ret.endsWith(u'/'))
         return ret % fileName;
-    return ret % QLatin1Char('/') % fileName;
+    return ret % u'/' % fileName;
 }
 
 /*!
@@ -805,7 +807,7 @@ QString QDir::absoluteFilePath(const QString &fileName) const
         return absoluteDirPath;
 #ifdef Q_OS_WIN
     // Handle the "absolute except for drive" case (i.e. \blah not c:\blah):
-    if (fileName.startsWith(QLatin1Char('/')) || fileName.startsWith(QLatin1Char('\\'))) {
+    if (fileName.startsWith(u'/') || fileName.startsWith(u'\\')) {
         // Combine absoluteDirPath's drive with fileName
         const int drive = drivePrefixLength(absoluteDirPath);
         if (Q_LIKELY(drive))
@@ -816,8 +818,8 @@ QString QDir::absoluteFilePath(const QString &fileName) const
         return QString();
     }
 #endif // Q_OS_WIN
-    if (!absoluteDirPath.endsWith(QLatin1Char('/')))
-        return absoluteDirPath % QLatin1Char('/') % fileName;
+    if (!absoluteDirPath.endsWith(u'/'))
+        return absoluteDirPath % u'/' % fileName;
     return absoluteDirPath % fileName;
 }
 
@@ -847,9 +849,10 @@ QString QDir::relativeFilePath(const QString &fileName) const
     }
 
     if (fileDrive.toLower() != dirDrive.toLower()
-        || (file.startsWith(QLatin1String("//"))
-        && !dir.startsWith(QLatin1String("//"))))
+            || (file.startsWith("//"_L1)
+                && !dir.startsWith("//"_L1))) {
         return file;
+    }
 
     dir.remove(0, dirDrive.size());
     if (!fileDriveMissing)
@@ -857,8 +860,8 @@ QString QDir::relativeFilePath(const QString &fileName) const
 #endif
 
     QString result;
-    const auto dirElts = dir.tokenize(QLatin1Char('/'), Qt::SkipEmptyParts);
-    const auto fileElts = file.tokenize(QLatin1Char('/'), Qt::SkipEmptyParts);
+    const auto dirElts = dir.tokenize(u'/', Qt::SkipEmptyParts);
+    const auto fileElts = file.tokenize(u'/', Qt::SkipEmptyParts);
 
     const auto dend = dirElts.end();
     const auto fend = fileElts.end();
@@ -881,20 +884,20 @@ QString QDir::relativeFilePath(const QString &fileName) const
     }
 
     while (dit != dend) {
-        result += QLatin1String("../");
+        result += "../"_L1;
         ++dit;
     }
 
     if (fit != fend) {
         while (fit != fend) {
             result += *fit++;
-            result += QLatin1Char('/');
+            result += u'/';
         }
         result.chop(1);
     }
 
     if (result.isEmpty())
-        result = QLatin1String(".");
+        result = "."_L1;
     return result;
 }
 
@@ -916,16 +919,16 @@ QString QDir::relativeFilePath(const QString &fileName) const
 QString QDir::toNativeSeparators(const QString &pathName)
 {
 #if defined(Q_OS_WIN)
-    int i = pathName.indexOf(QLatin1Char('/'));
+    int i = pathName.indexOf(u'/');
     if (i != -1) {
         QString n(pathName);
 
         QChar * const data = n.data();
-        data[i++] = QLatin1Char('\\');
+        data[i++] = u'\\';
 
         for (; i < n.length(); ++i) {
-            if (data[i] == QLatin1Char('/'))
-                data[i] = QLatin1Char('\\');
+            if (data[i] == u'/')
+                data[i] = u'\\';
         }
 
         return n;
@@ -973,19 +976,19 @@ bool QDir::cd(const QString &dirName)
     // Don't detach just yet.
     const QDirPrivate * const d = d_ptr.constData();
 
-    if (dirName.isEmpty() || dirName == QLatin1String("."))
+    if (dirName.isEmpty() || dirName == u'.')
         return true;
     QString newPath;
     if (isAbsolutePath(dirName)) {
         newPath = qt_cleanPath(dirName);
     } else {
         newPath = d->dirEntry.filePath();
-        if (!newPath.endsWith(QLatin1Char('/')))
-            newPath += QLatin1Char('/');
+        if (!newPath.endsWith(u'/'))
+            newPath += u'/';
         newPath += dirName;
-        if (dirName.indexOf(QLatin1Char('/')) >= 0
-            || dirName == QLatin1String("..")
-            || d->dirEntry.filePath() == QLatin1String(".")) {
+        if (dirName.indexOf(u'/') >= 0
+            || dirName == ".."_L1
+            || d->dirEntry.filePath() == u'.') {
             bool ok;
             newPath = qt_cleanPath(newPath, &ok);
             if (!ok)
@@ -998,7 +1001,7 @@ bool QDir::cd(const QString &dirName)
                   while (dir.cdUp())
                       ;
             */
-            if (newPath.startsWith(QLatin1String(".."))) {
+            if (newPath.startsWith(".."_L1)) {
                 newPath = QFileInfo(newPath).absoluteFilePath();
             }
         }
@@ -2325,9 +2328,9 @@ static QString qt_cleanPath(const QString &path, bool *ok)
     QString ret = qt_normalizePathSegments(name, OSSupportsUncPaths ? QDirPrivate::AllowUncPaths : QDirPrivate::DefaultNormalization, ok);
 
     // Strip away last slash except for root directories
-    if (ret.length() > 1 && ret.endsWith(QLatin1Char('/'))) {
+    if (ret.length() > 1 && ret.endsWith(u'/')) {
 #if defined (Q_OS_WIN)
-        if (!(ret.length() == 3 && ret.at(1) == QLatin1Char(':')))
+        if (!(ret.length() == 3 && ret.at(1) == u':'))
 #endif
             ret.chop(1);
     }
@@ -2457,25 +2460,25 @@ QDebug operator<<(QDebug debug, QDir::Filters filters)
     debug.resetFormat();
     QStringList flags;
     if (filters == QDir::NoFilter) {
-        flags << QLatin1String("NoFilter");
+        flags << "NoFilter"_L1;
     } else {
-        if (filters & QDir::Dirs) flags << QLatin1String("Dirs");
-        if (filters & QDir::AllDirs) flags << QLatin1String("AllDirs");
-        if (filters & QDir::Files) flags << QLatin1String("Files");
-        if (filters & QDir::Drives) flags << QLatin1String("Drives");
-        if (filters & QDir::NoSymLinks) flags << QLatin1String("NoSymLinks");
-        if (filters & QDir::NoDot) flags << QLatin1String("NoDot");
-        if (filters & QDir::NoDotDot) flags << QLatin1String("NoDotDot");
-        if ((filters & QDir::AllEntries) == QDir::AllEntries) flags << QLatin1String("AllEntries");
-        if (filters & QDir::Readable) flags << QLatin1String("Readable");
-        if (filters & QDir::Writable) flags << QLatin1String("Writable");
-        if (filters & QDir::Executable) flags << QLatin1String("Executable");
-        if (filters & QDir::Modified) flags << QLatin1String("Modified");
-        if (filters & QDir::Hidden) flags << QLatin1String("Hidden");
-        if (filters & QDir::System) flags << QLatin1String("System");
-        if (filters & QDir::CaseSensitive) flags << QLatin1String("CaseSensitive");
+        if (filters & QDir::Dirs) flags << "Dirs"_L1;
+        if (filters & QDir::AllDirs) flags << "AllDirs"_L1;
+        if (filters & QDir::Files) flags << "Files"_L1;
+        if (filters & QDir::Drives) flags << "Drives"_L1;
+        if (filters & QDir::NoSymLinks) flags << "NoSymLinks"_L1;
+        if (filters & QDir::NoDot) flags << "NoDot"_L1;
+        if (filters & QDir::NoDotDot) flags << "NoDotDot"_L1;
+        if ((filters & QDir::AllEntries) == QDir::AllEntries) flags << "AllEntries"_L1;
+        if (filters & QDir::Readable) flags << "Readable"_L1;
+        if (filters & QDir::Writable) flags << "Writable"_L1;
+        if (filters & QDir::Executable) flags << "Executable"_L1;
+        if (filters & QDir::Modified) flags << "Modified"_L1;
+        if (filters & QDir::Hidden) flags << "Hidden"_L1;
+        if (filters & QDir::System) flags << "System"_L1;
+        if (filters & QDir::CaseSensitive) flags << "CaseSensitive"_L1;
     }
-    debug.noquote() << "QDir::Filters(" << flags.join(QLatin1Char('|')) << ')';
+    debug.noquote() << "QDir::Filters(" << flags.join(u'|') << ')';
     return debug;
 }
 
@@ -2487,18 +2490,18 @@ static QDebug operator<<(QDebug debug, QDir::SortFlags sorting)
         debug << "QDir::SortFlags(NoSort)";
     } else {
         QString type;
-        if ((sorting & QDir::SortByMask) == QDir::Name) type = QLatin1String("Name");
-        if ((sorting & QDir::SortByMask) == QDir::Time) type = QLatin1String("Time");
-        if ((sorting & QDir::SortByMask) == QDir::Size) type = QLatin1String("Size");
-        if ((sorting & QDir::SortByMask) == QDir::Unsorted) type = QLatin1String("Unsorted");
+        if ((sorting & QDir::SortByMask) == QDir::Name) type = "Name"_L1;
+        if ((sorting & QDir::SortByMask) == QDir::Time) type = "Time"_L1;
+        if ((sorting & QDir::SortByMask) == QDir::Size) type = "Size"_L1;
+        if ((sorting & QDir::SortByMask) == QDir::Unsorted) type = "Unsorted"_L1;
 
         QStringList flags;
-        if (sorting & QDir::DirsFirst) flags << QLatin1String("DirsFirst");
-        if (sorting & QDir::DirsLast) flags << QLatin1String("DirsLast");
-        if (sorting & QDir::IgnoreCase) flags << QLatin1String("IgnoreCase");
-        if (sorting & QDir::LocaleAware) flags << QLatin1String("LocaleAware");
-        if (sorting & QDir::Type) flags << QLatin1String("Type");
-        debug.noquote() << "QDir::SortFlags(" << type << '|' << flags.join(QLatin1Char('|')) << ')';
+        if (sorting & QDir::DirsFirst) flags << "DirsFirst"_L1;
+        if (sorting & QDir::DirsLast) flags << "DirsLast"_L1;
+        if (sorting & QDir::IgnoreCase) flags << "IgnoreCase"_L1;
+        if (sorting & QDir::LocaleAware) flags << "LocaleAware"_L1;
+        if (sorting & QDir::Type) flags << "Type"_L1;
+        debug.noquote() << "QDir::SortFlags(" << type << '|' << flags.join(u'|') << ')';
     }
     return debug;
 }
@@ -2508,7 +2511,7 @@ QDebug operator<<(QDebug debug, const QDir &dir)
     QDebugStateSaver save(debug);
     debug.resetFormat();
     debug << "QDir(" << dir.path() << ", nameFilters = {"
-          << dir.nameFilters().join(QLatin1Char(','))
+          << dir.nameFilters().join(u',')
           << "}, "
           << dir.sorting()
           << ','

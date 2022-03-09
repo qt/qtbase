@@ -279,6 +279,8 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 //-------------------------------------------------------------------
 
 /*!
@@ -310,7 +312,7 @@ void QTextStreamPrivate::Params::reset()
     realNumberPrecision = 6;
     integerBase = 0;
     fieldWidth = 0;
-    padChar = QLatin1Char(' ');
+    padChar = u' ';
     fieldAlignment = QTextStream::AlignRight;
     realNumberNotation = QTextStream::SmartNotation;
     numberFlags = { };
@@ -415,7 +417,7 @@ bool QTextStreamPrivate::fillReadBuffer(qint64 maxBytes)
 
     // remove all '\r\n' in the string.
     if (readBuffer.size() > oldReadBufferSize && textModeEnabled) {
-        QChar CR = QLatin1Char('\r');
+        QChar CR = u'\r';
         QChar *writePtr = readBuffer.data() + oldReadBufferSize;
         QChar *readPtr = readBuffer.data() + oldReadBufferSize;
         QChar *endPtr = readBuffer.data() + readBuffer.size();
@@ -483,7 +485,7 @@ void QTextStreamPrivate::flushWriteBuffer()
     bool textModeEnabled = device->isTextModeEnabled();
     if (textModeEnabled) {
         device->setTextModeEnabled(false);
-        writeBuffer.replace(QLatin1Char('\n'), QLatin1String("\r\n"));
+        writeBuffer.replace(u'\n', "\r\n"_L1);
     }
 #endif
 
@@ -590,9 +592,9 @@ bool QTextStreamPrivate::scan(const QChar **ptr, int *length, int maxlen, TokenD
                 }
                 break;
             case EndOfLine:
-                if (ch == QLatin1Char('\n')) {
+                if (ch == u'\n') {
                     foundToken = true;
-                    delimSize = (lastChar == QLatin1Char('\r')) ? 2 : 1;
+                    delimSize = (lastChar == u'\r') ? 2 : 1;
                     consumeDelimiter = true;
                 }
                 lastChar = ch;
@@ -614,7 +616,7 @@ bool QTextStreamPrivate::scan(const QChar **ptr, int *length, int maxlen, TokenD
     // don't make it part of the line.
     if (delimiter == EndOfLine && totalSize > 0 && !foundToken) {
         if (((string && stringOffset + totalSize == string->size()) || (device && device->atEnd()))
-            && lastChar == QLatin1Char('\r')) {
+            && lastChar == u'\r') {
             consumeDelimiter = true;
             ++delimSize;
         }
@@ -1646,7 +1648,7 @@ QTextStreamPrivate::NumberParsingStatus QTextStreamPrivate::getNumber(qulonglong
         QChar ch;
         if (!getChar(&ch))
             return npsInvalidPrefix;
-        if (ch == QLatin1Char('0')) {
+        if (ch == u'0') {
             QChar ch2;
             if (!getChar(&ch2)) {
                 // Result is the number 0
@@ -1655,9 +1657,9 @@ QTextStreamPrivate::NumberParsingStatus QTextStreamPrivate::getNumber(qulonglong
             }
             ch2 = ch2.toLower();
 
-            if (ch2 == QLatin1Char('x')) {
+            if (ch2 == u'x') {
                 base = 16;
-            } else if (ch2 == QLatin1Char('b')) {
+            } else if (ch2 == u'b') {
                 base = 2;
             } else if (ch2.isDigit() && ch2.digitValue() >= 0 && ch2.digitValue() <= 7) {
                 base = 8;
@@ -1682,9 +1684,9 @@ QTextStreamPrivate::NumberParsingStatus QTextStreamPrivate::getNumber(qulonglong
     case 2: {
         QChar pf1, pf2, dig;
         // Parse prefix '0b'
-        if (!getChar(&pf1) || pf1 != QLatin1Char('0'))
+        if (!getChar(&pf1) || pf1 != u'0')
             return npsInvalidPrefix;
-        if (!getChar(&pf2) || pf2.toLower() != QLatin1Char('b'))
+        if (!getChar(&pf2) || pf2.toLower() != u'b')
             return npsInvalidPrefix;
         // Parse digits
         int ndigits = 0;
@@ -1710,7 +1712,7 @@ QTextStreamPrivate::NumberParsingStatus QTextStreamPrivate::getNumber(qulonglong
     case 8: {
         QChar pf, dig;
         // Parse prefix '0'
-        if (!getChar(&pf) || pf != QLatin1Char('0'))
+        if (!getChar(&pf) || pf != u'0')
             return npsInvalidPrefix;
         // Parse digits
         int ndigits = 0;
@@ -1773,9 +1775,9 @@ QTextStreamPrivate::NumberParsingStatus QTextStreamPrivate::getNumber(qulonglong
     case 16: {
         QChar pf1, pf2, dig;
         // Parse prefix ' 0x'
-        if (!getChar(&pf1) || pf1 != QLatin1Char('0'))
+        if (!getChar(&pf1) || pf1 != u'0')
             return npsInvalidPrefix;
-        if (!getChar(&pf2) || pf2.toLower() != QLatin1Char('x'))
+        if (!getChar(&pf2) || pf2.toLower() != u'x')
             return npsInvalidPrefix;
         // Parse digits
         int ndigits = 0;
@@ -2251,8 +2253,8 @@ void QTextStreamPrivate::putNumber(qulonglong number, bool negative)
         // workaround for backward compatibility - in octal form with
         // ShowBase flag set zero should be written as '00'
         if (number == 0 && base == 8 && params.numberFlags & QTextStream::ShowBase
-            && result == QLatin1String("0")) {
-            result.prepend(QLatin1Char('0'));
+            && result == "0"_L1) {
+            result.prepend(u'0');
         }
     }
     putString(result, true);
@@ -2844,7 +2846,7 @@ QTextStream &center(QTextStream &stream)
 */
 QTextStream &endl(QTextStream &stream)
 {
-    return stream << QLatin1Char('\n') << Qt::flush;
+    return stream << '\n'_L1 << Qt::flush;
 }
 
 /*!

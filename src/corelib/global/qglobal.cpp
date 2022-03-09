@@ -125,6 +125,8 @@ extern "C" {
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 // Statically check assumptions about the environment we're running
 // in. The idea here is to error or warn if otherwise implicit Qt
 // assumptions are not fulfilled on new hardware or compilers
@@ -2200,7 +2202,7 @@ static QString winSp_helper()
         QString sp = QStringLiteral("SP ") + QString::number(major);
         const qint16 minor = osv.wServicePackMinor;
         if (minor)
-            sp += QLatin1Char('.') + QString::number(minor);
+            sp += u'.' + QString::number(minor);
 
         return sp;
     }
@@ -2392,7 +2394,7 @@ static bool readEtcRedHatRelease(QUnixOSVersion &v)
 
     const char keyword[] = "release ";
     int releaseIndex = line.indexOf(keyword);
-    v.productType = QString::fromLatin1(line.mid(0, releaseIndex)).remove(QLatin1Char(' '));
+    v.productType = QString::fromLatin1(line.mid(0, releaseIndex)).remove(u' ');
     int spaceIndex = line.indexOf(' ', releaseIndex + strlen(keyword));
     v.productVersion = QString::fromLatin1(line.mid(releaseIndex + strlen(keyword),
                                                     spaceIndex > -1 ? spaceIndex - releaseIndex - int(strlen(keyword)) : -1));
@@ -2615,11 +2617,11 @@ QString QSysInfo::currentCpuArchitecture()
 #  if defined(Q_PROCESSOR_POWER) || defined(QT_BUILD_INTERNAL)
         // harmonize "powerpc" and "ppc" to "power"
         if (strncmp(u.machine, "ppc", 3) == 0)
-            return QLatin1String("power") + QLatin1String(u.machine + 3);
+            return "power"_L1 + QLatin1String(u.machine + 3);
         if (strncmp(u.machine, "powerpc", 7) == 0)
-            return QLatin1String("power") + QLatin1String(u.machine + 7);
+            return "power"_L1 + QLatin1String(u.machine + 7);
         if (strcmp(u.machine, "Power Macintosh") == 0)
-            return QLatin1String("power");
+            return "power"_L1;
 #  endif
 #  if defined(Q_PROCESSOR_SPARC) || defined(QT_BUILD_INTERNAL)
         // Solaris sysinfo(2) (above) uses "sparcv9", but uname -m says "sun4u";
@@ -2743,8 +2745,8 @@ QString QSysInfo::kernelVersion()
 {
 #ifdef Q_OS_WIN
     const auto osver = QOperatingSystemVersion::current();
-    return QString::number(osver.majorVersion()) + QLatin1Char('.') + QString::number(osver.minorVersion())
-            + QLatin1Char('.') + QString::number(osver.microVersion());
+    return QString::asprintf("%d.%d.%d",
+                             osver.majorVersion(), osver.minorVersion(), osver.microVersion());
 #else
     struct utsname u;
     if (uname(&u) == 0)
@@ -2861,7 +2863,7 @@ QString QSysInfo::productVersion()
 {
 #if defined(Q_OS_ANDROID) || defined(Q_OS_DARWIN)
     const auto version = QOperatingSystemVersion::current();
-    return QString::number(version.majorVersion()) + QLatin1Char('.') + QString::number(version.minorVersion());
+    return QString::asprintf("%d.%d", version.majorVersion(), version.minorVersion());
 #elif defined(Q_OS_WIN)
     const char *version = osVer_helper();
     if (version) {
@@ -2900,24 +2902,23 @@ QString QSysInfo::prettyProductName()
 #if defined(Q_OS_ANDROID) || defined(Q_OS_DARWIN) || defined(Q_OS_WIN)
     const auto version = QOperatingSystemVersion::current();
     const int majorVersion = version.majorVersion();
-    const QString versionString = QString::number(majorVersion) + QLatin1Char('.')
-        + QString::number(version.minorVersion());
-    QString result = version.name() + QLatin1Char(' ');
+    const QString versionString = QString::asprintf("%d.%d", majorVersion, version.minorVersion());
+    QString result = version.name() + u' ';
     const char *name = osVer_helper(version);
     if (!name)
         return result + versionString;
     result += QLatin1String(name);
 #  if !defined(Q_OS_WIN)
-    return result + QLatin1String(" (") + versionString + QLatin1Char(')');
+    return result + " ("_L1 + versionString + u')';
 #  else
     // (resembling winver.exe): Windows 10 "Windows 10 Version 1809"
     const auto releaseId = windows10ReleaseId();
     if (!releaseId.isEmpty())
-        result += QLatin1String(" Version ") + releaseId;
+        result += " Version "_L1 + releaseId;
     return result;
 #  endif // Windows
 #elif defined(Q_OS_HAIKU)
-    return QLatin1String("Haiku ") + productVersion();
+    return "Haiku "_L1 + productVersion();
 #elif defined(Q_OS_UNIX)
 #  ifdef USE_ETC_OS_RELEASE
     QUnixOSVersion unixOsVersion;
@@ -2927,7 +2928,7 @@ QString QSysInfo::prettyProductName()
 #  endif
     struct utsname u;
     if (uname(&u) == 0)
-        return QString::fromLatin1(u.sysname) + QLatin1Char(' ') + QString::fromLatin1(u.release);
+        return QString::fromLatin1(u.sysname) + u' ' + QString::fromLatin1(u.release);
 #endif
     return unknownText();
 }
@@ -3506,7 +3507,7 @@ QString qEnvironmentVariable(const char *varName, const QString &defaultValue)
     _wgetenv_s(&requiredSize, reinterpret_cast<wchar_t *>(buffer.data()), requiredSize,
                wname.data());
     // requiredSize includes the terminating null, which we don't want.
-    Q_ASSERT(buffer.endsWith(QLatin1Char('\0')));
+    Q_ASSERT(buffer.endsWith(u'\0'));
     buffer.chop(1);
     return buffer;
 #else

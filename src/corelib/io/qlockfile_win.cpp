@@ -142,10 +142,10 @@ QString QLockFilePrivate::processNameByPid(qint64 pid)
     if (!length)
         return QString();
     QString name = QString::fromWCharArray(buf, length);
-    int i = name.lastIndexOf(QLatin1Char('\\'));
+    int i = name.lastIndexOf(u'\\');
     if (i >= 0)
         name.remove(0, i + 1);
-    i = name.lastIndexOf(QLatin1Char('.'));
+    i = name.lastIndexOf(u'.');
     if (i >= 0)
         name.truncate(i);
     return name;

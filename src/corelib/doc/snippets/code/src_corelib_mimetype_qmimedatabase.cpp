@@ -48,6 +48,8 @@
 **
 ****************************************************************************/
 
+using namespace Qt::StringLiterals;
+
 //! [0]
 QMimeDatabase db;
 QMimeType mime = db.mimeTypeForFile(fileName);
@@ -57,7 +59,7 @@ if (mime.inherits("text/plain")) {
 //! [0]
 
 //! [1]
-QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QLatin1String("mime/packages"),
+QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, "mime/packages"_L1,
                           QStandardPaths::LocateDirectory);
 //! [1]
 

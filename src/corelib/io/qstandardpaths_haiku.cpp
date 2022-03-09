@@ -61,10 +61,10 @@ void appendOrganizationAndApp(QString &path)
 #ifndef QT_BOOTSTRAPPED
     const QString org = QCoreApplication::organizationName();
     if (!org.isEmpty())
-        path += QLatin1Char('/') + org;
+        path += u'/' + org;
     const QString appName = QCoreApplication::applicationName();
     if (!appName.isEmpty())
-        path += QLatin1Char('/') + appName;
+        path += u'/' + appName;
 #else
     Q_UNUSED(path);
 #endif

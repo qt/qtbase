@@ -55,6 +55,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #ifdef QIODEVICE_DEBUG
 void debugBinaryString(const QByteArray &input)
 {
@@ -2246,23 +2248,23 @@ QDebug operator<<(QDebug debug, QIODevice::OpenMode modes)
     debug << "OpenMode(";
     QStringList modeList;
     if (modes == QIODevice::NotOpen) {
-        modeList << QLatin1String("NotOpen");
+        modeList << "NotOpen"_L1;
     } else {
         if (modes & QIODevice::ReadOnly)
-            modeList << QLatin1String("ReadOnly");
+            modeList << "ReadOnly"_L1;
         if (modes & QIODevice::WriteOnly)
-            modeList << QLatin1String("WriteOnly");
+            modeList << "WriteOnly"_L1;
         if (modes & QIODevice::Append)
-            modeList << QLatin1String("Append");
+            modeList << "Append"_L1;
         if (modes & QIODevice::Truncate)
-            modeList << QLatin1String("Truncate");
+            modeList << "Truncate"_L1;
         if (modes & QIODevice::Text)
-            modeList << QLatin1String("Text");
+            modeList << "Text"_L1;
         if (modes & QIODevice::Unbuffered)
-            modeList << QLatin1String("Unbuffered");
+            modeList << "Unbuffered"_L1;
     }
     std::sort(modeList.begin(), modeList.end());
-    debug << modeList.join(QLatin1Char('|'));
+    debug << modeList.join(u'|');
     debug << ')';
     return debug;
 }

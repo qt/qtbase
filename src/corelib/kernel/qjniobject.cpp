@@ -47,6 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     \class QJniObject
     \inmodule QtCore
@@ -317,7 +319,7 @@ public:
 
 static inline QLatin1String keyBase()
 {
-    return QLatin1String("%1%2:%3");
+    return "%1%2:%3"_L1;
 }
 
 static QString qt_convertJString(jstring string)

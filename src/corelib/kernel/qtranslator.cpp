@@ -485,8 +485,8 @@ bool QTranslator::load(const QString & filename, const QString & directory,
     QString prefix;
     if (QFileInfo(filename).isRelative()) {
         prefix = directory;
-        if (prefix.length() && !prefix.endsWith(QLatin1Char('/')))
-            prefix += QLatin1Char('/');
+        if (prefix.length() && !prefix.endsWith(u'/'))
+            prefix += u'/';
     }
 
     const QString suffixOrDotQM = suffix.isNull() ? dotQmLiteral() : suffix;
@@ -530,7 +530,7 @@ bool QTranslatorPrivate::do_load(const QString &realname, const QString &directo
     QTranslatorPrivate *d = this;
     bool ok = false;
 
-    if (realname.startsWith(QLatin1Char(':'))) {
+    if (realname.startsWith(u':')) {
         // If the translation is in a non-compressed resource file, the data is already in
         // memory, so no need to use QFile to copy it again.
         Q_ASSERT(!d->resource);
@@ -645,8 +645,8 @@ static QString find_translation(const QLocale & locale,
     QString path;
     if (QFileInfo(filename).isRelative()) {
         path = directory;
-        if (!path.isEmpty() && !path.endsWith(QLatin1Char('/')))
-            path += QLatin1Char('/');
+        if (!path.isEmpty() && !path.endsWith(u'/'))
+            path += u'/';
     }
     const QString suffixOrDotQM = suffix.isNull() ? dotQmLiteral() : suffix;
 
@@ -667,7 +667,7 @@ static QString find_translation(const QLocale & locale,
 #endif
 
     for (QString localeName : qAsConst(languages)) {
-        localeName.replace(QLatin1Char('-'), QLatin1Char('_'));
+        localeName.replace(u'-', u'_');
 
         // try the complete locale name first and progressively truncate from
         // the end until a matching language tag is found (with or without suffix)
@@ -682,7 +682,7 @@ static QString find_translation(const QLocale & locale,
 
             realname.truncate(realNameBaseSize);
 
-            int rightmost = localeName.lastIndexOf(QLatin1Char('_'));
+            int rightmost = localeName.lastIndexOf(u'_');
             if (rightmost <= 0)
                 break; // no truncations anymore, break
             localeName.truncate(rightmost);

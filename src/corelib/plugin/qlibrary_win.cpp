@@ -49,6 +49,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 extern QString qt_error_string(int code);
 
 QStringList QLibraryPrivate::suffixes_sys(const QString& fullVersion)
@@ -81,7 +83,7 @@ bool QLibraryPrivate::load_sys()
     QStringList attempts;
 
     if (pluginState != IsAPlugin)
-        attempts.append(fileName + QLatin1String(".dll"));
+        attempts.append(fileName + ".dll"_L1);
 
     // If the fileName is an absolute path we try that first, otherwise we
     // use the system-specific suffix first
@@ -115,9 +117,9 @@ bool QLibraryPrivate::load_sys()
         ::GetModuleFileName(hnd, buffer, MAX_PATH);
 
         QString moduleFileName = QString::fromWCharArray(buffer);
-        moduleFileName.remove(0, 1 + moduleFileName.lastIndexOf(QLatin1Char('\\')));
+        moduleFileName.remove(0, 1 + moduleFileName.lastIndexOf(u'\\'));
         const QDir dir(fsEntry.path());
-        if (dir.path() == QLatin1String("."))
+        if (dir.path() == "."_L1)
             qualifiedFileName = moduleFileName;
         else
             qualifiedFileName = dir.filePath(moduleFileName);

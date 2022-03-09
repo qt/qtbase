@@ -61,7 +61,7 @@ QString QFileSystemEngine::slowCanonicalized(const QString &path)
         return path;
 
     QFileInfo fi;
-    const QChar slash(QLatin1Char('/'));
+    const QChar slash(u'/');
     QString tmpPath = path;
     int separatorPos = 0;
     QSet<QString> nonSymlinks;
@@ -74,7 +74,7 @@ QString QFileSystemEngine::slowCanonicalized(const QString &path)
             if (tmpPath.size() >= 2 && tmpPath.at(0) == slash && tmpPath.at(1) == slash) {
                 // UNC, skip past the first two elements
                 separatorPos = tmpPath.indexOf(slash, 2);
-            } else if (tmpPath.size() >= 3 && tmpPath.at(1) == QLatin1Char(':') && tmpPath.at(2) == slash) {
+            } else if (tmpPath.size() >= 3 && tmpPath.at(1) == u':' && tmpPath.at(2) == slash) {
                 // volume root, skip since it can not be a symlink
                 separatorPos = 2;
             }
@@ -142,10 +142,10 @@ static bool _q_resolveEntryAndCreateLegacyEngine_recursive(QFileSystemEntry &ent
 #if defined(QT_BUILD_CORE_LIB)
     for (int prefixSeparator = 0; prefixSeparator < filePath.size(); ++prefixSeparator) {
         QChar const ch = filePath[prefixSeparator];
-        if (ch == QLatin1Char('/'))
+        if (ch == u'/')
             break;
 
-        if (ch == QLatin1Char(':')) {
+        if (ch == u':') {
             if (prefixSeparator == 0) {
                 engine = new QResourceFileEngine(filePath);
                 return _q_checkEntry(engine, resolvingEntry);
@@ -156,7 +156,8 @@ static bool _q_resolveEntryAndCreateLegacyEngine_recursive(QFileSystemEntry &ent
 
             const QStringList &paths = QDir::searchPaths(filePath.left(prefixSeparator));
             for (int i = 0; i < paths.count(); i++) {
-                entry = QFileSystemEntry(QDir::cleanPath(paths.at(i) % QLatin1Char('/') % QStringView{filePath}.mid(prefixSeparator + 1)));
+                entry = QFileSystemEntry(QDir::cleanPath(
+                        paths.at(i) % u'/' % QStringView{filePath}.mid(prefixSeparator + 1)));
                 // Recurse!
                 if (_q_resolveEntryAndCreateLegacyEngine_recursive(entry, data, engine, true))
                     return true;

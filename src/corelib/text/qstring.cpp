@@ -110,6 +110,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 const char16_t QString::_empty = 0;
 
 // in qstringmatcher.cpp
@@ -4394,7 +4396,7 @@ QString &QString::replace(const QRegularExpression &re, const QString &after)
     const QChar *ac = after.unicode();
 
     for (qsizetype i = 0; i < al - 1; i++) {
-        if (ac[i] == QLatin1Char('\\')) {
+        if (ac[i] == u'\\') {
             int no = ac[i + 1].digitValue();
             if (no > 0 && no <= numCaptures) {
                 QStringCapture backReference;
@@ -6878,11 +6880,11 @@ QString QString::vasprintf(const char *cformat, va_list ap)
         ++c;
 
         if (*c == '\0') {
-            result.append(QLatin1Char('%')); // a % at the end of the string - treat as non-escape text
+            result.append(u'%'); // a % at the end of the string - treat as non-escape text
             break;
         }
         if (*c == '%') {
-            result.append(QLatin1Char('%')); // %%
+            result.append(u'%'); // %%
             ++c;
             continue;
         }
@@ -8327,13 +8329,13 @@ QString QString::arg(qlonglong a, int fieldWidth, int base, QChar fillChar) cons
 
     unsigned flags = QLocaleData::NoFlags;
     // ZeroPadded sorts out left-padding when the fill is zero, to the right of sign:
-    if (fillChar == QLatin1Char('0'))
+    if (fillChar == u'0')
         flags = QLocaleData::ZeroPadded;
 
     QString arg;
     if (d.occurrences > d.locale_occurrences) {
         arg = QLocaleData::c()->longLongToString(a, -1, base, fieldWidth, flags);
-        Q_ASSERT(fillChar != QLatin1Char('0') || !qIsFinite(a)
+        Q_ASSERT(fillChar != u'0' || !qIsFinite(a)
                  || fieldWidth <= arg.length());
     }
 
@@ -8343,7 +8345,7 @@ QString QString::arg(qlonglong a, int fieldWidth, int base, QChar fillChar) cons
         if (!(locale.numberOptions() & QLocale::OmitGroupSeparator))
             flags |= QLocaleData::GroupDigits;
         localeArg = locale.d->m_data->longLongToString(a, -1, base, fieldWidth, flags);
-        Q_ASSERT(fillChar != QLatin1Char('0') || !qIsFinite(a)
+        Q_ASSERT(fillChar != u'0' || !qIsFinite(a)
                  || fieldWidth <= localeArg.length());
     }
 
@@ -8375,13 +8377,13 @@ QString QString::arg(qulonglong a, int fieldWidth, int base, QChar fillChar) con
 
     unsigned flags = QLocaleData::NoFlags;
     // ZeroPadded sorts out left-padding when the fill is zero, to the right of sign:
-    if (fillChar == QLatin1Char('0'))
+    if (fillChar == u'0')
         flags = QLocaleData::ZeroPadded;
 
     QString arg;
     if (d.occurrences > d.locale_occurrences) {
         arg = QLocaleData::c()->unsLongLongToString(a, -1, base, fieldWidth, flags);
-        Q_ASSERT(fillChar != QLatin1Char('0') || !qIsFinite(a)
+        Q_ASSERT(fillChar != u'0' || !qIsFinite(a)
                  || fieldWidth <= arg.length());
     }
 
@@ -8391,7 +8393,7 @@ QString QString::arg(qulonglong a, int fieldWidth, int base, QChar fillChar) con
         if (!(locale.numberOptions() & QLocale::OmitGroupSeparator))
             flags |= QLocaleData::GroupDigits;
         localeArg = locale.d->m_data->unsLongLongToString(a, -1, base, fieldWidth, flags);
-        Q_ASSERT(fillChar != QLatin1Char('0') || !qIsFinite(a)
+        Q_ASSERT(fillChar != u'0' || !qIsFinite(a)
                  || fieldWidth <= localeArg.length());
     }
 
@@ -8475,7 +8477,7 @@ QString QString::arg(double a, int fieldWidth, char format, int precision, QChar
 
     unsigned flags = QLocaleData::NoFlags;
     // ZeroPadded sorts out left-padding when the fill is zero, to the right of sign:
-    if (fillChar == QLatin1Char('0'))
+    if (fillChar == u'0')
         flags |= QLocaleData::ZeroPadded;
 
     if (qIsUpper(format))
@@ -8503,7 +8505,7 @@ QString QString::arg(double a, int fieldWidth, char format, int precision, QChar
     if (d.occurrences > d.locale_occurrences) {
         arg = QLocaleData::c()->doubleToString(a, precision, form, fieldWidth,
                                                flags | QLocaleData::ZeroPadExponent);
-        Q_ASSERT(fillChar != QLatin1Char('0') || !qIsFinite(a)
+        Q_ASSERT(fillChar != u'0' || !qIsFinite(a)
                  || fieldWidth <= arg.length());
     }
 
@@ -8519,7 +8521,7 @@ QString QString::arg(double a, int fieldWidth, char format, int precision, QChar
         if (numberOptions & QLocale::IncludeTrailingZeroesAfterDot)
             flags |= QLocaleData::AddTrailingZeroes;
         localeArg = locale.d->m_data->doubleToString(a, precision, form, fieldWidth, flags);
-        Q_ASSERT(fillChar != QLatin1Char('0') || !qIsFinite(a)
+        Q_ASSERT(fillChar != u'0' || !qIsFinite(a)
                  || fieldWidth <= localeArg.length());
     }
 
@@ -8534,7 +8536,7 @@ static int getEscape(const Char *uc, qsizetype *pos, qsizetype len, int maxNumbe
 {
     int i = *pos;
     ++i;
-    if (i < len && uc[i] == QLatin1Char('L'))
+    if (i < len && uc[i] == u'L')
         ++i;
     if (i < len) {
         int escape = to_unicode(uc[i]) - '0';
@@ -8630,7 +8632,7 @@ static ParseResult parseMultiArgFormatString(StringView s)
     qsizetype last = 0;
 
     while (i < end) {
-        if (uc[i] == QLatin1Char('%')) {
+        if (uc[i] == u'%') {
             qsizetype percent = i;
             int number = getEscape(uc, &i, len);
             if (number != -1) {
@@ -10899,14 +10901,14 @@ QString QString::toHtmlEscaped() const
     const int len = length();
     rich.reserve(qsizetype(len * 1.1));
     for (int i = 0; i < len; ++i) {
-        if (at(i) == QLatin1Char('<'))
-            rich += QLatin1String("&lt;");
-        else if (at(i) == QLatin1Char('>'))
-            rich += QLatin1String("&gt;");
-        else if (at(i) == QLatin1Char('&'))
-            rich += QLatin1String("&amp;");
-        else if (at(i) == QLatin1Char('"'))
-            rich += QLatin1String("&quot;");
+        if (at(i) == u'<')
+            rich += "&lt;"_L1;
+        else if (at(i) == u'>')
+            rich += "&gt;"_L1;
+        else if (at(i) == u'&')
+            rich += "&amp;"_L1;
+        else if (at(i) == u'"')
+            rich += "&quot;"_L1;
         else
             rich += at(i);
     }

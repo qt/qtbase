@@ -51,6 +51,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*
     Private
 
@@ -179,7 +181,7 @@ TIME_ZONE_INFORMATION getRegistryTzi(const QByteArray &windowsId, bool *ok)
     TIME_ZONE_INFORMATION tzi;
     REG_TZI_FORMAT regTzi;
     DWORD regTziSize = sizeof(regTzi);
-    const QString tziKeyPath = QString::fromWCharArray(tzRegPath) + QLatin1Char('\\')
+    const QString tziKeyPath = QString::fromWCharArray(tzRegPath) + u'\\'
                                + QString::fromUtf8(windowsId);
 
     QWinRegistryKey key(HKEY_LOCAL_MACHINE, tziKeyPath);
@@ -557,7 +559,7 @@ void QWinTimeZonePrivate::init(const QByteArray &ianaId)
     bool badMonth = false; // Only warn once per zone, if at all.
     if (!m_windowsId.isEmpty()) {
         // Open the base TZI for the time zone
-        const QString baseKeyPath = QString::fromWCharArray(tzRegPath) + QLatin1Char('\\')
+        const QString baseKeyPath = QString::fromWCharArray(tzRegPath) + u'\\'
                                    + QString::fromUtf8(m_windowsId);
         QWinRegistryKey baseKey(HKEY_LOCAL_MACHINE, baseKeyPath);
         if (baseKey.isValid()) {
@@ -566,7 +568,7 @@ void QWinTimeZonePrivate::init(const QByteArray &ianaId)
             m_standardName = baseKey.stringValue(L"Std");
             m_daylightName = baseKey.stringValue(L"Dlt");
             // On Vista and later the optional dynamic key holds historic data
-            const QString dynamicKeyPath = baseKeyPath + QLatin1String("\\Dynamic DST");
+            const QString dynamicKeyPath = baseKeyPath + "\\Dynamic DST"_L1;
             QWinRegistryKey dynamicKey(HKEY_LOCAL_MACHINE, dynamicKeyPath);
             if (dynamicKey.isValid()) {
                 // Find out the start and end years stored, then iterate over them

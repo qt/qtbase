@@ -48,8 +48,10 @@
 **
 ****************************************************************************/
 
+using namespace Qt::StringLiterals;
+
 //! [1]
-QString url = QLatin1String("https://www.unicode.org/");
+QString url = "https://www.unicode.org/"_L1;
 //! [1]
 
 
@@ -77,17 +79,17 @@ if (str == QString("auto") || str == QString("extern")
 
 
 //! [5]
-if (str == QLatin1String("auto")
-        || str == QLatin1String("extern")
-        || str == QLatin1String("static")
-        || str == QLatin1String("register") {
+if (str == "auto"_L1
+        || str == "extern"_L1
+        || str == "static"_L1
+        || str == "register"_L1 {
     ...
 }
 //! [5]
 
 
 //! [6]
-QLabel *label = new QLabel(QLatin1String("MOD"), this);
+QLabel *label = new QLabel("MOD"_L1, this);
 //! [6]
 
 
@@ -112,5 +114,5 @@ if (node.hasAttribute(QStringLiteral(u"http-contents-length"))) //...
 //! [10]
 
 //! [11]
-if (attribute.name() == QLatin1String("http-contents-length")) //...
+if (attribute.name() == "http-contents-length"_L1) //...
 //! [11]

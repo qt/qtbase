@@ -48,14 +48,16 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #ifdef Q_OS_WIN
 static bool isUncRoot(const QString &server)
 {
     QString localPath = QDir::toNativeSeparators(server);
-    if (!localPath.startsWith(QLatin1String("\\\\")))
+    if (!localPath.startsWith("\\\\"_L1))
         return false;
 
-    int idx = localPath.indexOf(QLatin1Char('\\'), 2);
+    int idx = localPath.indexOf(u'\\', 2);
     if (idx == -1 || idx + 1 == localPath.length())
         return true;
 
@@ -65,8 +67,8 @@ static bool isUncRoot(const QString &server)
 static inline QString fixIfRelativeUncPath(const QString &path)
 {
     QString currentPath = QDir::currentPath();
-    if (currentPath.startsWith(QLatin1String("//")))
-        return currentPath % QChar(QLatin1Char('/')) % path;
+    if (currentPath.startsWith("//"_L1))
+        return currentPath % QChar(u'/') % path;
     return path;
 }
 #endif
@@ -166,7 +168,7 @@ QString QFileSystemEntry::fileName() const
 {
     findLastSeparator();
 #if defined(Q_OS_WIN)
-    if (m_lastSeparator == -1 && m_filePath.length() >= 2 && m_filePath.at(1) == QLatin1Char(':'))
+    if (m_lastSeparator == -1 && m_filePath.length() >= 2 && m_filePath.at(1) == u':')
         return m_filePath.mid(2);
 #endif
     return m_filePath.mid(m_lastSeparator + 1);
@@ -177,15 +179,15 @@ QString QFileSystemEntry::path() const
     findLastSeparator();
     if (m_lastSeparator == -1) {
 #if defined(Q_OS_WIN)
-        if (m_filePath.length() >= 2 && m_filePath.at(1) == QLatin1Char(':'))
+        if (m_filePath.length() >= 2 && m_filePath.at(1) == u':')
             return m_filePath.left(2);
 #endif
-        return QString(QLatin1Char('.'));
+        return QString(u'.');
     }
     if (m_lastSeparator == 0)
-        return QString(QLatin1Char('/'));
+        return QString(u'/');
 #if defined(Q_OS_WIN)
-    if (m_lastSeparator == 2 && m_filePath.at(1) == QLatin1Char(':'))
+    if (m_lastSeparator == 2 && m_filePath.at(1) == u':')
         return m_filePath.left(m_lastSeparator + 1);
 #endif
     return m_filePath.left(m_lastSeparator);
@@ -201,7 +203,7 @@ QString QFileSystemEntry::baseName() const
             length--;
     }
 #if defined(Q_OS_WIN)
-    if (m_lastSeparator == -1 && m_filePath.length() >= 2 && m_filePath.at(1) == QLatin1Char(':'))
+    if (m_lastSeparator == -1 && m_filePath.length() >= 2 && m_filePath.at(1) == u':')
         return m_filePath.mid(2, length - 2);
 #endif
     return m_filePath.mid(m_lastSeparator + 1, length);
@@ -217,7 +219,7 @@ QString QFileSystemEntry::completeBaseName() const
             length--;
     }
 #if defined(Q_OS_WIN)
-    if (m_lastSeparator == -1 && m_filePath.length() >= 2 && m_filePath.at(1) == QLatin1Char(':'))
+    if (m_lastSeparator == -1 && m_filePath.length() >= 2 && m_filePath.at(1) == u':')
         return m_filePath.mid(2, length - 2);
 #endif
     return m_filePath.mid(m_lastSeparator + 1, length);
@@ -259,8 +261,8 @@ bool QFileSystemEntry::isAbsolute() const
              && m_filePath.at(1).unicode() == ':'
              && m_filePath.at(2).unicode() == '/')
          || (m_filePath.length() >= 2
-             && m_filePath.at(0) == QLatin1Char('/')
-             && m_filePath.at(1) == QLatin1Char('/')));
+             && m_filePath.at(0) == u'/'
+             && m_filePath.at(1) == u'/'));
 }
 #else
 bool QFileSystemEntry::isRelative() const
@@ -285,8 +287,8 @@ bool QFileSystemEntry::isDriveRoot() const
 bool QFileSystemEntry::isDriveRootPath(const QString &path)
 {
     return (path.length() == 3
-           && path.at(0).isLetter() && path.at(1) == QLatin1Char(':')
-           && path.at(2) == QLatin1Char('/'));
+           && path.at(0).isLetter() && path.at(1) == u':'
+           && path.at(2) == u'/');
 }
 
 QString QFileSystemEntry::removeUncOrLongPathPrefix(QString path)
@@ -320,7 +322,7 @@ QString QFileSystemEntry::removeUncOrLongPathPrefix(QString path)
 
 bool QFileSystemEntry::isRootPath(const QString &path)
 {
-    if (path == QLatin1String("/")
+    if (path == "/"_L1
 #if defined(Q_OS_WIN)
             || isDriveRootPath(path)
             || isUncRoot(path)
@@ -343,7 +345,7 @@ void QFileSystemEntry::findLastSeparator() const
 {
     if (m_lastSeparator == -2) {
         resolveFilePath();
-        m_lastSeparator = m_filePath.lastIndexOf(QLatin1Char('/'));
+        m_lastSeparator = m_filePath.lastIndexOf(u'/');
     }
 }
 
@@ -402,7 +404,7 @@ bool QFileSystemEntry::isClean() const
     bool dotok = true; // checking for ".." or "." starts to relative paths
     bool slashok = true;
     for (QString::const_iterator iter = m_filePath.constBegin(); iter != m_filePath.constEnd(); ++iter) {
-        if (*iter == QLatin1Char('/')) {
+        if (*iter == u'/') {
             if (dots == 1 || dots == 2)
                 return false; // path contains "./" or "../"
             if (!slashok)
@@ -412,7 +414,7 @@ bool QFileSystemEntry::isClean() const
             slashok = false;
         } else if (dotok) {
             slashok = true;
-            if (*iter == QLatin1Char('.')) {
+            if (*iter == u'.') {
                 dots++;
                 if (dots > 2)
                     dotok = false;

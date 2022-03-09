@@ -53,6 +53,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static bool isReadReady = false;
 
 class QWasmSettingsPrivate : public QConfFileSettingsPrivate
@@ -127,7 +129,7 @@ QSettingsPrivate *QSettingsPrivate::create(QSettings::Format format,
                                            const QString &application)
 {
     Q_UNUSED(format);
-    if (organization == QLatin1String("Qt"))
+    if (organization == "Qt"_L1)
     {
         QString organizationDomain = QCoreApplication::organizationDomain();
         QString applicationName = QCoreApplication::applicationName();

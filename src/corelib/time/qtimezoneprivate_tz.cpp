@@ -64,6 +64,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #if QT_CONFIG(icu)
 static QBasicMutex s_icu_mutex;
 #endif
@@ -550,7 +552,7 @@ PosixZone PosixZone::parse(const char *&pos, const char *end)
     pos = zoneEnd;
     // UTC+hh:mm:ss or GMT+hh:mm:ss should be read as offsets from UTC, not as a
     // POSIX rule naming a zone as UTC or GMT and specifying a non-zero offset.
-    if (offset != 0 && (name == QLatin1String("UTC") || name == QLatin1String("GMT")))
+    if (offset != 0 && (name =="UTC"_L1 || name == "GMT"_L1))
         return invalid();
     return {std::move(name), offset};
 }
@@ -763,9 +765,9 @@ QTzTimeZoneCacheEntry QTzTimeZoneCache::findEntry(const QByteArray &ianaId)
             return ret;
     } else {
         // Open named tz, try modern path first, if fails try legacy path
-        tzif.setFileName(QLatin1String("/usr/share/zoneinfo/") + QString::fromLocal8Bit(ianaId));
+        tzif.setFileName("/usr/share/zoneinfo/"_L1 + QString::fromLocal8Bit(ianaId));
         if (!tzif.open(QIODevice::ReadOnly)) {
-            tzif.setFileName(QLatin1String("/usr/lib/zoneinfo/") + QString::fromLocal8Bit(ianaId));
+            tzif.setFileName("/usr/lib/zoneinfo/"_L1 + QString::fromLocal8Bit(ianaId));
             if (!tzif.open(QIODevice::ReadOnly)) {
                 // ianaId may be a POSIX rule, taken from $TZ or /etc/TZ
                 auto check = validatePosixRule(ianaId);
@@ -1317,7 +1319,7 @@ private:
     {
         // On most distros /etc/localtime is a symlink to a real file so extract
         // name from the path
-        const QLatin1String zoneinfo("/zoneinfo/");
+        const auto zoneinfo = "/zoneinfo/"_L1;
         QString path = QStringLiteral("/etc/localtime");
         long iteration = getSymloopMax();
         // Symlink may point to another symlink etc. before being under zoneinfo/

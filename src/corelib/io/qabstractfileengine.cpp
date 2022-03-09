@@ -1017,8 +1017,8 @@ QString QAbstractFileEngineIterator::currentFilePath() const
     if (!name.isNull()) {
         QString tmp = path();
         if (!tmp.isEmpty()) {
-            if (!tmp.endsWith(QLatin1Char('/')))
-                tmp.append(QLatin1Char('/'));
+            if (!tmp.endsWith(u'/'))
+                tmp.append(u'/');
             name.prepend(tmp);
         }
     }

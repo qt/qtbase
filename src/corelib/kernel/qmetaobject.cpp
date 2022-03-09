@@ -66,6 +66,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     \class QMetaObject
     \inmodule QtCore
@@ -2837,7 +2839,7 @@ static auto parse_scope(QLatin1String qualifiedKey) noexcept
         std::optional<QLatin1String> scope;
         QLatin1String key;
     };
-    const auto scopePos = qualifiedKey.lastIndexOf(QLatin1String("::"));
+    const auto scopePos = qualifiedKey.lastIndexOf("::"_L1);
     if (scopePos < 0)
         return R{std::nullopt, qualifiedKey};
     else
@@ -2871,7 +2873,7 @@ int QMetaEnum::keysToValue(const char *keys, bool *ok) const
     auto className = [&] { return stringDataView(mobj, priv(mobj->d.data)->className); };
 
     int value = 0;
-    for (const QLatin1String &untrimmed : qTokenize(QLatin1String{keys}, QLatin1Char{'|'})) {
+    for (const QLatin1String &untrimmed : qTokenize(QLatin1String{keys}, u'|')) {
         const auto parsed = parse_scope(untrimmed.trimmed());
         if (parsed.scope && *parsed.scope != className())
             return -1; // wrong type name in qualified name

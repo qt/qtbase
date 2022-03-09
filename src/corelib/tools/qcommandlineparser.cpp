@@ -54,6 +54,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 extern void Q_CORE_EXPORT qt_call_post_routines();
 
 typedef QHash<QString, int> NameHash_t;
@@ -593,7 +595,7 @@ static void showParserMessage(const QString &message, MessageType type)
 void QCommandLineParser::process(const QStringList &arguments)
 {
     if (!d->parse(arguments)) {
-        showParserMessage(QCoreApplication::applicationName() + QLatin1String(": ") + errorText() + QLatin1Char('\n'), ErrorMessage);
+        showParserMessage(QCoreApplication::applicationName() + ": "_L1 + errorText() + u'\n', ErrorMessage);
         qt_call_post_routines();
         ::exit(EXIT_FAILURE);
     }
@@ -1018,8 +1020,8 @@ QStringList QCommandLineParser::unknownOptionNames() const
 */
 Q_NORETURN void QCommandLineParser::showVersion()
 {
-    showParserMessage(QCoreApplication::applicationName() + QLatin1Char(' ')
-                      + QCoreApplication::applicationVersion() + QLatin1Char('\n'),
+    showParserMessage(QCoreApplication::applicationName() + u' '
+                      + QCoreApplication::applicationVersion() + u'\n',
                       UsageMessage);
     qt_call_post_routines();
     ::exit(EXIT_SUCCESS);
@@ -1060,8 +1062,8 @@ QString QCommandLineParser::helpText() const
 
 static QString wrapText(const QString &names, int optionNameMaxWidth, const QString &description)
 {
-    const QLatin1Char nl('\n');
-    const QLatin1String indentation("  ");
+    const auto nl = u'\n';
+    const auto indentation = "  "_L1;
 
     // In case the list of option names is very long, wrap it as well
     int nameIndex = 0;
@@ -1103,7 +1105,7 @@ static QString wrapText(const QString &names, int optionNameMaxWidth, const QStr
         if (breakAt != -1) {
             const int numChars = breakAt - lineStart;
             //qDebug() << "breakAt=" << description.at(breakAt) << "breakAtSpace=" << breakAtSpace << lineStart << "to" << breakAt << description.mid(lineStart, numChars);
-            text += indentation + nextNameSection().leftJustified(optionNameMaxWidth) + QLatin1Char(' ');
+            text += indentation + nextNameSection().leftJustified(optionNameMaxWidth) + u' ';
             text += QStringView{description}.mid(lineStart, numChars) + nl;
             x = 0;
             lastBreakable = -1;
@@ -1132,9 +1134,9 @@ QString QCommandLineParserPrivate::helpText(bool includeQtOptions) const
     if (includeQtOptions && qApp)
         qApp->d_func()->addQtOptions(&options);
     if (!options.isEmpty())
-        usage += QLatin1Char(' ') + QCommandLineParser::tr("[options]");
+        usage += u' ' + QCommandLineParser::tr("[options]");
     for (const PositionalArgumentDefinition &arg : positionalArgumentDefinitions)
-        usage += QLatin1Char(' ') + arg.syntax;
+        usage += u' ' + arg.syntax;
     text += QCommandLineParser::tr("Usage: %1").arg(usage) + nl;
     if (!description.isEmpty())
         text += description + nl;
@@ -1151,13 +1153,13 @@ QString QCommandLineParserPrivate::helpText(bool includeQtOptions) const
         QString optionNamesString;
         for (const QString &optionName : optionNames) {
             const int numDashes = optionName.length() == 1 ? 1 : 2;
-            optionNamesString += QLatin1String("--", numDashes) + optionName + QLatin1String(", ");
+            optionNamesString += QLatin1String("--", numDashes) + optionName + ", "_L1;
         }
         if (!optionNames.isEmpty())
             optionNamesString.chop(2); // remove trailing ", "
         const auto valueName = option.valueName();
         if (!valueName.isEmpty())
-            optionNamesString += QLatin1String(" <") + valueName + QLatin1Char('>');
+            optionNamesString += " <"_L1 + valueName + u'>';
         optionNameList.append(optionNamesString);
         longestOptionNameString = qMax(longestOptionNameString, optionNamesString.length());
     }

@@ -61,6 +61,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     \class QRegularExpression
     \inmodule QtCore
@@ -1211,8 +1213,8 @@ void QRegularExpressionPrivate::doMatch(QRegularExpressionMatchPrivate *priv,
 
             if (usingCrLfNewlines
                     && offset < subjectLength
-                    && subjectUtf16[offset - 1] == QLatin1Char('\r')
-                    && subjectUtf16[offset] == QLatin1Char('\n')) {
+                    && subjectUtf16[offset - 1] == u'\r'
+                    && subjectUtf16[offset] == u'\n') {
                 ++offset;
             } else if (offset < subjectLength
                        && QChar::isLowSurrogate(subjectUtf16[offset])) {
@@ -1595,7 +1597,7 @@ QString QRegularExpression::errorString() const
 #endif
     }
 #ifdef QT_NO_TRANSLATION
-        return QLatin1String("no error");
+        return u"no error"_qs;
 #else
     return QCoreApplication::translate("QRegularExpression", "no error");
 #endif
@@ -1837,14 +1839,13 @@ QString QRegularExpression::escape(QStringView str)
             // unlike Perl, a literal NUL must be escaped with
             // "\\0" (backslash + 0) and not "\\\0" (backslash + NUL),
             // because pcre16_compile uses a NUL-terminated string
-            result.append(QLatin1Char('\\'));
-            result.append(QLatin1Char('0'));
-        } else if ( (current < QLatin1Char('a') || current > QLatin1Char('z')) &&
-                    (current < QLatin1Char('A') || current > QLatin1Char('Z')) &&
-                    (current < QLatin1Char('0') || current > QLatin1Char('9')) &&
-                     current != QLatin1Char('_') )
-        {
-            result.append(QLatin1Char('\\'));
+            result.append(u'\\');
+            result.append(u'0');
+        } else if ((current < u'a' || current > u'z') &&
+                   (current < u'A' || current > u'Z') &&
+                   (current < u'0' || current > u'9') &&
+                   current != u'_') {
+            result.append(u'\\');
             result.append(current);
             if (current.isHighSurrogate() && i < (count - 1))
                 result.append(str.at(++i));
@@ -1940,13 +1941,13 @@ QString QRegularExpression::wildcardToRegularExpression(QStringView pattern, Wil
     const QChar *wc = pattern.data();
 
 #ifdef Q_OS_WIN
-    const QLatin1Char nativePathSeparator('\\');
-    const QLatin1String starEscape("[^/\\\\]*");
-    const QLatin1String questionMarkEscape("[^/\\\\]");
+    const char16_t nativePathSeparator = u'\\';
+    const auto starEscape = "[^/\\\\]*"_L1;
+    const auto questionMarkEscape = "[^/\\\\]"_L1;
 #else
-    const QLatin1Char nativePathSeparator('/');
-    const QLatin1String starEscape("[^/]*");
-    const QLatin1String questionMarkEscape("[^/]");
+    const char16_t nativePathSeparator = u'/';
+    const auto starEscape = "[^/]*"_L1;
+    const auto questionMarkEscape = "[^/]"_L1;
 #endif
 
     while (i < wclen) {
@@ -1961,7 +1962,7 @@ QString QRegularExpression::wildcardToRegularExpression(QStringView pattern, Wil
         case '\\':
 #ifdef Q_OS_WIN
         case '/':
-            rx += QLatin1String("[/\\\\]");
+            rx += "[/\\\\]"_L1;
             break;
 #endif
         case '$':
@@ -1973,29 +1974,29 @@ QString QRegularExpression::wildcardToRegularExpression(QStringView pattern, Wil
         case '{':
         case '|':
         case '}':
-            rx += QLatin1Char('\\');
+            rx += u'\\';
             rx += c;
             break;
         case '[':
             rx += c;
             // Support for the [!abc] or [!a-c] syntax
             if (i < wclen) {
-                if (wc[i] == QLatin1Char('!')) {
-                    rx += QLatin1Char('^');
+                if (wc[i] == u'!') {
+                    rx += u'^';
                     ++i;
                 }
 
-                if (i < wclen && wc[i] == QLatin1Char(']'))
+                if (i < wclen && wc[i] == u']')
                     rx += wc[i++];
 
-                while (i < wclen && wc[i] != QLatin1Char(']')) {
+                while (i < wclen && wc[i] != u']') {
                     // The '/' appearing in a character class invalidates the
                     // regular expression parsing. It also concerns '\\' on
                     // Windows OS types.
-                    if (wc[i] == QLatin1Char('/') || wc[i] == nativePathSeparator)
+                    if (wc[i] == u'/' || wc[i] == nativePathSeparator)
                         return rx;
-                    if (wc[i] == QLatin1Char('\\'))
-                        rx += QLatin1Char('\\');
+                    if (wc[i] == u'\\')
+                        rx += u'\\';
                     rx += wc[i++];
                 }
             }
@@ -2050,9 +2051,9 @@ QRegularExpression QRegularExpression::fromWildcard(QStringView pattern, Qt::Cas
 QString QRegularExpression::anchoredPattern(QStringView expression)
 {
     return QString()
-           + QLatin1String("\\A(?:")
+           + "\\A(?:"_L1
            + expression
-           + QLatin1String(")\\z");
+           + ")\\z"_L1;
 }
 
 /*!

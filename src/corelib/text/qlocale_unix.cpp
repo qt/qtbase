@@ -47,6 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #ifndef QT_NO_SYSTEMLOCALE
 struct QSystemLocaleData
 {
@@ -144,12 +146,12 @@ QLocale QSystemLocale::fallbackLocale() const
     if (lang.isEmpty())
         lang = qEnvironmentVariable("LANG");
     // if the locale is the "C" locale, then we can return the language we found here:
-    if (lang.isEmpty() || lang == QLatin1String("C") || lang == QLatin1String("POSIX"))
+    if (lang.isEmpty() || lang == "C"_L1 || lang == "POSIX"_L1)
         return QLocale(lang);
 
     // ... otherwise, if the first part of LANGUAGE says more than or
     // contradicts what we have, use that:
-    for (const auto &language : qEnvironmentVariable("LANGUAGE").tokenize(QLatin1Char(':'))) {
+    for (const auto &language : qEnvironmentVariable("LANGUAGE").tokenize(u':')) {
         if (contradicts(language, lang))
             return QLocale(language);
         break; // We only look at the first entry.
@@ -260,9 +262,9 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
     }
     case MeasurementSystem: {
         const QString meas_locale = QString::fromLatin1(d->lc_measurement_var);
-        if (meas_locale.compare(QLatin1String("Metric"), Qt::CaseInsensitive) == 0)
+        if (meas_locale.compare("Metric"_L1, Qt::CaseInsensitive) == 0)
             return QLocale::MetricSystem;
-        if (meas_locale.compare(QLatin1String("Other"), Qt::CaseInsensitive) == 0)
+        if (meas_locale.compare("Other"_L1, Qt::CaseInsensitive) == 0)
             return QLocale::MetricSystem;
         return QVariant((int)QLocale(meas_locale).measurementSystem());
     }
@@ -276,7 +278,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         if (languages.isEmpty())
             lst.append(QString::fromLatin1(d->lc_messages_var));
         else
-            lst = languages.split(QLatin1Char(':'));
+            lst = languages.split(u':');
 
         // Inadequate for various cases of a language that's written in more
         // than one script in the same country, e.g. Sindhi in India.
@@ -285,7 +287,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
             QStringView lang, cntry;
             if (qt_splitLocaleName(lst.at(i), &lang, nullptr, &cntry)) {
                 d->uiLanguages.append(
-                    cntry.size() ? lang % QLatin1Char('-') % cntry : lang.toString());
+                    cntry.size() ? lang % u'-' % cntry : lang.toString());
             }
         }
         return d->uiLanguages.isEmpty() ? QVariant() : QVariant(d->uiLanguages);

@@ -55,6 +55,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QSaveFilePrivate::QSaveFilePrivate()
     : writeError(QFileDevice::NoError),
       useTemporaryFile(true),
@@ -246,10 +248,10 @@ bool QSaveFile::open(OpenMode mode)
     bool requiresDirectWrite = false;
 #ifdef Q_OS_WIN
     // check if it is an Alternate Data Stream
-    requiresDirectWrite = d->finalFileName == d->fileName && d->fileName.indexOf(QLatin1Char(':'), 2) > 1;
+    requiresDirectWrite = d->finalFileName == d->fileName && d->fileName.indexOf(u':', 2) > 1;
 #elif defined(Q_OS_ANDROID)
     // check if it is a content:// URL
-    requiresDirectWrite  = d->fileName.startsWith(QLatin1String("content://"));
+    requiresDirectWrite  = d->fileName.startsWith("content://"_L1);
 #endif
     if (requiresDirectWrite) {
         // yes, we can't rename onto it...

@@ -44,6 +44,9 @@
 #include "qvarlengtharray.h"
 
 QT_BEGIN_NAMESPACE
+
+using namespace Qt::StringLiterals;
+
 namespace QIPAddressUtils {
 
 static QString number(quint8 val, int base = 10)
@@ -130,12 +133,9 @@ void toString(QString &appendTo, IPv4Address address)
 {
     // reconstructing is easy
     // use the fast operator% that pre-calculates the size
-    appendTo += number(address >> 24)
-                % QLatin1Char('.')
-                % number(address >> 16)
-                % QLatin1Char('.')
-                % number(address >> 8)
-                % QLatin1Char('.')
+    appendTo += number(address >> 24) % u'.'
+                % number(address >> 16) % u'.'
+                % number(address >> 8) % u'.'
                 % number(address);
 }
 
@@ -283,7 +283,7 @@ void toString(QString &appendTo, const IPv6Address address)
             if (address[12] != 0 || address[13] != 0 || address[14] != 0) {
                 embeddedIp4 = true;
             } else if (address[15] == 0) {
-                appendTo.append(QLatin1String("::"));
+                appendTo.append("::"_L1);
                 return;
             }
         }

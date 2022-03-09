@@ -735,10 +735,10 @@ void Widget::splitCaseSensitiveFunction()
     //! [62]
     QString str = QStringLiteral("a,,b,c");
 
-    QStringList list1 = str.split(QLatin1Char(','));
+    QStringList list1 = str.split(u',');
     // list1: [ "a", "", "b", "c" ]
 
-    QStringList list2 = str.split(QLatin1Char(','), Qt::SkipEmptyParts);
+    QStringList list2 = str.split(u',', Qt::SkipEmptyParts);
     // list2: [ "a", "b", "c" ]
     //! [62]
 
@@ -750,7 +750,7 @@ void Widget::splitCaseSensitiveFunction()
 
     //! [62-slashes]
     QString str = "/a/b/c/";
-    auto parts = str.split(QLatin1Char('/'));
+    auto parts = str.split(u'/');
     // parts: {"", "a", "b", "c", ""}
     //! [62-slashes]
 }

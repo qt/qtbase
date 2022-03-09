@@ -380,7 +380,7 @@ bool QXmlUtils::isNCName(QStringView ncName)
         return false;
 
     for (QChar at : ncName) {
-        if (!QXmlUtils::isNameChar(at) || at == QLatin1Char(':'))
+        if (!QXmlUtils::isNameChar(at) || at == u':')
             return false;
     }
 

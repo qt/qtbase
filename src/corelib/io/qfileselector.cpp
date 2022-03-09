@@ -52,6 +52,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 //Environment variable to allow tooling full control of file selectors
 static const char env_override[] = "QT_NO_BUILTIN_SELECTORS";
 
@@ -196,9 +198,9 @@ QString QFileSelector::select(const QString &filePath) const
 
 static bool isLocalScheme(const QString &file)
 {
-    bool local = file == QLatin1String("qrc");
+    bool local = file == "qrc"_L1;
 #ifdef Q_OS_ANDROID
-    local |= file == QLatin1String("assets");
+    local |= file == "assets"_L1;
 #endif
     return local;
 }
@@ -217,11 +219,11 @@ QUrl QFileSelector::select(const QUrl &filePath) const
         return filePath;
     QUrl ret(filePath);
     if (isLocalScheme(filePath.scheme())) {
-        QLatin1String scheme(":");
+        auto scheme = ":"_L1;
 #ifdef Q_OS_ANDROID
         // use other scheme because ":" means "qrc" here
-        if (filePath.scheme() == QLatin1String("assets"))
-            scheme = QLatin1String("assets:");
+        if (filePath.scheme() == "assets"_L1)
+            scheme = "assets:"_L1;
 #endif
 
         QString equivalentPath = scheme + filePath.path();
@@ -250,13 +252,13 @@ QString QFileSelectorPrivate::selectionHelper(const QString &path, const QString
        selector ordering in the API, we can stop checking as soon as we find the file in a directory
        which does not contain any other valid selector directories.
     */
-    Q_ASSERT(path.isEmpty() || path.endsWith(QLatin1Char('/')));
+    Q_ASSERT(path.isEmpty() || path.endsWith(u'/'));
 
     for (const QString &s : selectors) {
         QString prospectiveBase = path;
         if (!indicator.isNull())
             prospectiveBase += indicator;
-        prospectiveBase += s + QLatin1Char('/');
+        prospectiveBase += s + u'/';
         QStringList remainingSelectors = selectors;
         remainingSelectors.removeAll(s);
         if (!QDir(prospectiveBase).exists())
@@ -356,7 +358,7 @@ QStringList QFileSelectorPrivate::platformSelectors()
     ret << QSysInfo::kernelType();
 #  endif
     QString productName = QSysInfo::productType();
-    if (productName != QLatin1String("unknown"))
+    if (productName != "unknown"_L1)
         ret << productName; // "opensuse", "fedora", "osx", "ios", "android"
 #endif
     return ret;

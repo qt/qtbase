@@ -61,6 +61,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_DECL_COLD_FUNCTION
 static bool file_already_open(QFile &file, const char *where = nullptr)
 {
@@ -616,7 +618,7 @@ QFile::rename(const QString &newName)
             // report both errors
             d->setError(QFile::RenameError,
                         tr("Error while renaming: %1").arg(error.toString())
-                        + QLatin1Char('\n')
+                        + u'\n'
                         + tr("Unable to restore from %1: %2").
                         arg(QDir::toNativeSeparators(tmp.filePath()), error2.toString()));
             return false;
@@ -789,7 +791,7 @@ QFile::copy(const QString &newName)
                 error = true;
                 d->setError(QFile::CopyError, tr("Cannot open %1 for input").arg(d->fileName));
             } else {
-                const auto fileTemplate = QLatin1String("%1/qt_temp.XXXXXX");
+                const auto fileTemplate = "%1/qt_temp.XXXXXX"_L1;
 #ifdef QT_NO_TEMPORARYFILE
                 QFile out(fileTemplate.arg(QFileInfo(newName).path()));
                 if (!out.open(QIODevice::ReadWrite))

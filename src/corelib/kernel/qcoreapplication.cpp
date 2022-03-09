@@ -138,6 +138,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #if defined(Q_OS_WIN) || defined(Q_OS_MAC)
 extern QString qAppFileName();
 #endif
@@ -573,7 +575,7 @@ void QCoreApplicationPrivate::appendApplicationPathToLibraryPaths()
     if (!app_libpaths)
         coreappdata()->app_libpaths.reset(app_libpaths = new QStringList);
     QString app_location = QCoreApplication::applicationFilePath();
-    app_location.truncate(app_location.lastIndexOf(QLatin1Char('/')));
+    app_location.truncate(app_location.lastIndexOf(u'/'));
     app_location = QDir(app_location).canonicalPath();
     if (QFile::exists(app_location) && !app_libpaths->contains(app_location))
         app_libpaths->append(app_location);
@@ -2181,20 +2183,20 @@ static void replacePercentN(QString *result, int n)
     if (n >= 0) {
         int percentPos = 0;
         int len = 0;
-        while ((percentPos = result->indexOf(QLatin1Char('%'), percentPos + len)) != -1) {
+        while ((percentPos = result->indexOf(u'%', percentPos + len)) != -1) {
             len = 1;
             if (percentPos + len == result->length())
                 break;
             QString fmt;
-            if (result->at(percentPos + len) == QLatin1Char('L')) {
+            if (result->at(percentPos + len) == u'L') {
                 ++len;
                 if (percentPos + len == result->length())
                     break;
-                fmt = QLatin1String("%L1");
+                fmt = "%L1"_L1;
             } else {
-                fmt = QLatin1String("%1");
+                fmt = "%1"_L1;
             }
-            if (result->at(percentPos + len) == QLatin1Char('n')) {
+            if (result->at(percentPos + len) == u'n') {
                 fmt = fmt.arg(n);
                 ++len;
                 result->replace(percentPos, len, fmt);
@@ -2290,7 +2292,7 @@ QString QCoreApplication::translate(const char *context, const char *sourceText,
     Q_UNUSED(disambiguation);
     QString ret = QString::fromUtf8(sourceText);
     if (n >= 0)
-        ret.replace(QLatin1String("%n"), QString::number(n));
+        ret.replace("%n"_L1, QString::number(n));
     return ret;
 }
 
@@ -2406,13 +2408,13 @@ QString QCoreApplication::applicationFilePath()
     if (absPath.isEmpty() && !arguments().isEmpty()) {
         QString argv0 = QFile::decodeName(arguments().at(0).toLocal8Bit());
 
-        if (!argv0.isEmpty() && argv0.at(0) == QLatin1Char('/')) {
+        if (!argv0.isEmpty() && argv0.at(0) == u'/') {
             /*
               If argv0 starts with a slash, it is already an absolute
               file path.
             */
             absPath = argv0;
-        } else if (argv0.contains(QLatin1Char('/'))) {
+        } else if (argv0.contains(u'/')) {
             /*
               If argv0 contains one or more slashes, it is a file path
               relative to the current directory.

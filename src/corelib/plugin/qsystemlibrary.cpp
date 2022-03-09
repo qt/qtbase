@@ -72,6 +72,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #if !defined(QT_BOOTSTRAPPED)
 extern QString qAppFileName();
 #endif
@@ -101,16 +103,16 @@ HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirect
 
     if (!onlySystemDirectory) {
         const QString PATH(QLatin1String(qgetenv("PATH").constData()));
-        searchOrder << PATH.split(QLatin1Char(';'), Qt::SkipEmptyParts);
+        searchOrder << PATH.split(u';', Qt::SkipEmptyParts);
     }
     QString fileName = QString::fromWCharArray(libraryName);
-    fileName.append(QLatin1String(".dll"));
+    fileName.append(".dll"_L1);
 
     // Start looking in the order specified
     for (int i = 0; i < searchOrder.count(); ++i) {
         QString fullPathAttempt = searchOrder.at(i);
-        if (!fullPathAttempt.endsWith(QLatin1Char('\\'))) {
-            fullPathAttempt.append(QLatin1Char('\\'));
+        if (!fullPathAttempt.endsWith(u'\\')) {
+            fullPathAttempt.append(u'\\');
         }
         fullPathAttempt.append(fileName);
         HINSTANCE inst = ::LoadLibrary(reinterpret_cast<const wchar_t *>(fullPathAttempt.utf16()));

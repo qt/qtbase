@@ -53,6 +53,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #if QT_CONFIG(library)
 
 /*!
@@ -269,7 +271,7 @@ static QString locatePlugin(const QString& fileName)
     suffixes.prepend(QString());
 
     // Split up "subdir/filename"
-    const int slash = fileName.lastIndexOf(QLatin1Char('/'));
+    const int slash = fileName.lastIndexOf(u'/');
     const auto baseName = QStringView{fileName}.mid(slash + 1);
     const auto basePath = isAbsolute ? QStringView() : QStringView{fileName}.left(slash + 1); // keep the '/'
 
@@ -286,13 +288,13 @@ static QString locatePlugin(const QString& fileName)
 #ifdef Q_OS_ANDROID
                 {
                     QString pluginPath = basePath + prefix + baseName + suffix;
-                    const QString fn = path + QLatin1String("/lib") + pluginPath.replace(QLatin1Char('/'), QLatin1Char('_'));
+                    const QString fn = path + "/lib"_L1 + pluginPath.replace(u'/', u'_');
                     qCDebug(qt_lcDebugPlugins) << "Trying..." << fn;
                     if (QFileInfo(fn).isFile())
                         return fn;
                 }
 #endif
-                const QString fn = path + QLatin1Char('/') + basePath + prefix + baseName + suffix;
+                const QString fn = path + u'/' + basePath + prefix + baseName + suffix;
                 qCDebug(qt_lcDebugPlugins) << "Trying..." << fn;
                 if (QFileInfo(fn).isFile())
                     return fn;

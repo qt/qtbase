@@ -113,6 +113,8 @@ struct statx { mode_t stx_mode; };      // dummy
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 enum {
 #ifdef Q_OS_ANDROID
     // On Android, the link(2) system call has been observed to always fail
@@ -180,7 +182,7 @@ static bool isPackage(const QFileSystemMetaData &data, const QFileSystemEntry &e
             QCFType<CFBundleRef> bundle = CFBundleCreate(kCFAllocatorDefault, application);
             CFStringRef identifier = CFBundleGetIdentifier(bundle);
             QString applicationId = QString::fromCFString(identifier);
-            if (applicationId != QLatin1String("com.apple.finder"))
+            if (applicationId != "com.apple.finder"_L1)
                 return true;
         }
 #endif
@@ -633,15 +635,15 @@ QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link, 
             QDir parent(link.filePath());
             parent.cdUp();
             ret = parent.path();
-            if (!ret.isEmpty() && !ret.endsWith(QLatin1Char('/')))
-                ret += QLatin1Char('/');
+            if (!ret.isEmpty() && !ret.endsWith(u'/'))
+                ret += u'/';
         }
         ret += QFile::decodeName(s);
 
-        if (!ret.startsWith(QLatin1Char('/')))
-            ret.prepend(absoluteName(link).path() + QLatin1Char('/'));
+        if (!ret.startsWith(u'/'))
+            ret.prepend(absoluteName(link).path() + u'/');
         ret = QDir::cleanPath(ret);
-        if (ret.size() > 1 && ret.endsWith(QLatin1Char('/')))
+        if (ret.size() > 1 && ret.endsWith(u'/'))
             ret.chop(1);
         return QFileSystemEntry(ret);
     }
@@ -764,7 +766,7 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
     QFileSystemEntry resultingEntry(result, QFileSystemEntry::FromNativePath());
     QString stringVersion = QDir::cleanPath(resultingEntry.filePath());
     if (isDir)
-        stringVersion.append(QLatin1Char('/'));
+        stringVersion.append(u'/');
     return QFileSystemEntry(stringVersion);
 }
 
@@ -1047,7 +1049,7 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
     if (what & QFileSystemMetaData::HiddenAttribute
             && !data.isHidden()) {
         QString fileName = entry.fileName();
-        if ((fileName.size() > 0 && fileName.at(0) == QLatin1Char('.'))
+        if (fileName.startsWith(u'.')
 #if defined(Q_OS_DARWIN)
                 || (entryErrno == 0 && hasResourcePropertyFlag(data, entry, kCFURLIsHiddenKey))
 #endif
@@ -1165,7 +1167,7 @@ bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool crea
     Q_CHECK_FILE_NAME(dirName, false);
 
     // Darwin doesn't support trailing /'s, so remove for everyone
-    while (dirName.size() > 1 && dirName.endsWith(QLatin1Char('/')))
+    while (dirName.size() > 1 && dirName.endsWith(u'/'))
         dirName.chop(1);
 
     // try to mkdir this directory
@@ -1250,7 +1252,7 @@ static QString freeDesktopTrashLocation(const QString &sourcePath)
     const QStorageInfo homeStorage(QDir::home());
     // We support trashing of files outside the users home partition
     if (sourceStorage != homeStorage) {
-        const QLatin1String dotTrash(".Trash");
+        const auto dotTrash = ".Trash"_L1;
         QDir topDir(sourceStorage.rootPath());
         /*
             Method 1:
@@ -1298,7 +1300,7 @@ static QString freeDesktopTrashLocation(const QString &sourcePath)
         */
         if (trash.isEmpty()) {
             topDir = QDir(sourceStorage.rootPath());
-            const QString userTrashDir = dotTrash + QLatin1Char('-') + userID;
+            const QString userTrashDir = dotTrash + u'-' + userID;
             trash = makeTrashDir(topDir, userTrashDir);
         }
     }
@@ -1314,7 +1316,7 @@ static QString freeDesktopTrashLocation(const QString &sourcePath)
     */
     if (trash.isEmpty()) {
         QDir topDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
-        trash = makeTrashDir(topDir, QLatin1String("Trash"));
+        trash = makeTrashDir(topDir, "Trash"_L1);
         if (!QFileInfo(trash).isDir()) {
             qWarning("Unable to establish trash directory in %s",
                      topDir.path().toLocal8Bit().constData());
@@ -1348,8 +1350,8 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
     /*
         "A trash directory contains two subdirectories, named info and files."
     */
-    const QLatin1String filesDir("files");
-    const QLatin1String infoDir("info");
+    const auto filesDir = "files"_L1;
+    const auto infoDir = "info"_L1;
     trashDir.mkdir(filesDir);
     int savedErrno = errno;
     trashDir.mkdir(infoDir);
@@ -1369,7 +1371,7 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
     const QString trashedName = sourceInfo.isDir()
                               ? QDir(sourcePath).dirName()
                               : sourceInfo.fileName();
-    QString uniqueTrashedName = QLatin1Char('/') + trashedName;
+    QString uniqueTrashedName = u'/' + trashedName;
     QString infoFileName;
     int counter = 0;
     QFile infoFile;
@@ -1392,7 +1394,7 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
              (at least on the same machine), if it fails you need to pick another filename."
         */
         infoFileName = trashDir.filePath(infoDir)
-                     + uniqueTrashedName + QLatin1String(".trashinfo");
+                     + uniqueTrashedName + ".trashinfo"_L1;
         infoFile.setFileName(infoFileName);
         if (!infoFile.open(QIODevice::NewOnly | QIODevice::WriteOnly | QIODevice::Text))
             uniqueTrashedName = makeUniqueTrashedName();
@@ -1415,7 +1417,7 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
     QByteArray info =
             "[Trash Info]\n"
             "Path=" + sourcePath.toUtf8() + "\n"
-            "DeletionDate=" + QDateTime::currentDateTime().toString(QLatin1String("yyyy-MM-ddThh:mm:ss")).toUtf8()
+            "DeletionDate=" + QDateTime::currentDateTime().toString("yyyy-MM-ddThh:mm:ss"_L1).toUtf8()
             + "\n";
     infoFile.write(info);
     infoFile.close();
@@ -1646,7 +1648,7 @@ QString QFileSystemEngine::homePath()
 
 QString QFileSystemEngine::rootPath()
 {
-    return QLatin1String("/");
+    return u"/"_qs;
 }
 
 QString QFileSystemEngine::tempPath()

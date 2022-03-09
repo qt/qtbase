@@ -55,6 +55,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static QString convertCharArray(const wchar_t *path)
 {
     return QDir::fromNativeSeparators(QString::fromWCharArray(path));
@@ -77,10 +79,10 @@ static void appendOrganizationAndApp(QString &path) // Courtesy qstandardpaths_u
 #ifndef QT_BOOTSTRAPPED
     const QString &org = QCoreApplication::organizationName();
     if (!org.isEmpty())
-        path += QLatin1Char('/') + org;
+        path += u'/' + org;
     const QString &appName = QCoreApplication::applicationName();
     if (!appName.isEmpty())
-        path += QLatin1Char('/') + appName;
+        path += u'/' + appName;
 #else // !QT_BOOTSTRAPPED
     Q_UNUSED(path);
 #endif
@@ -89,7 +91,7 @@ static void appendOrganizationAndApp(QString &path) // Courtesy qstandardpaths_u
 static inline void appendTestMode(QString &path)
 {
     if (QStandardPaths::isTestModeEnabled())
-        path += QLatin1String("/qttest");
+        path += "/qttest"_L1;
 }
 
 static bool isProcessLowIntegrity()
@@ -197,7 +199,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         if (!result.isEmpty()) {
             appendTestMode(result);
             appendOrganizationAndApp(result);
-            result += QLatin1String("/cache");
+            result += "/cache"_L1;
         }
         break;
 
@@ -205,7 +207,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         result = sHGetKnownFolderPath(writableSpecialFolderId(GenericDataLocation));
         if (!result.isEmpty()) {
             appendTestMode(result);
-            result += QLatin1String("/cache");
+            result += "/cache"_L1;
         }
         break;
 
@@ -256,7 +258,7 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
         QString applicationDirPath = qApp ? QCoreApplication::applicationDirPath()
             : QFileInfo(qAppFileName()).path();
         dirs.append(applicationDirPath);
-        const QString dataDir = applicationDirPath + QLatin1String("/data");
+        const QString dataDir = applicationDirPath + "/data"_L1;
         dirs.append(dataDir);
 
         if (!isGenericConfigLocation(type)) {

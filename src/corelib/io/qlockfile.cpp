@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 namespace {
 struct LockFileInfo
 {
@@ -293,7 +295,7 @@ bool QLockFile::tryLock(int timeout)
                     qInfo("QLockFile: Lock file '%ls' has a modification time in the future", qUtf16Printable(d->fileName));
                 // Stale lock from another thread/process
                 // Ensure two processes don't remove it at the same time
-                QLockFile rmlock(d->fileName + QLatin1String(".rmlock"));
+                QLockFile rmlock(d->fileName + ".rmlock"_L1);
                 if (rmlock.tryLock()) {
                     if (d->isApparentlyStale() && d->removeStaleLock())
                         continue;

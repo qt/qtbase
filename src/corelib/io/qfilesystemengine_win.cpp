@@ -72,6 +72,8 @@
 #define SECURITY_WIN32
 #include <security.h>
 
+using namespace Qt::StringLiterals;
+
 #ifndef SPI_GETPLATFORMTYPE
 #define SPI_GETPLATFORMTYPE 257
 #endif
@@ -684,14 +686,14 @@ static QString readSymLink(const QFileSystemEntry &link)
 
 #if QT_CONFIG(fslibs) && QT_CONFIG(regularexpression)
         initGlobalSid();
-        QRegularExpression matchVolumeRe(QLatin1String("^Volume\\{([a-z]|[0-9]|-)+\\}\\\\"),
+        QRegularExpression matchVolumeRe("^Volume\\{([a-z]|[0-9]|-)+\\}\\\\"_L1,
                                          QRegularExpression::CaseInsensitiveOption);
         auto matchVolume = matchVolumeRe.match(result);
         if (matchVolume.hasMatch()) {
             Q_ASSERT(matchVolume.capturedStart() == 0);
             DWORD len;
             wchar_t buffer[MAX_PATH];
-            const QString volumeName = QLatin1String("\\\\?\\") + matchVolume.captured();
+            const QString volumeName = "\\\\?\\"_L1 + matchVolume.captured();
             if (GetVolumePathNamesForVolumeName(reinterpret_cast<LPCWSTR>(volumeName.utf16()),
                                                 buffer, MAX_PATH, &len)
                 != 0) {
@@ -751,10 +753,10 @@ static QString readLink(const QFileSystemEntry &link)
 static bool uncShareExists(const QString &server)
 {
     // This code assumes the UNC path is always like \\?\UNC\server...
-    const auto parts = QStringView{server}.split(QLatin1Char('\\'), Qt::SkipEmptyParts);
+    const auto parts = QStringView{server}.split(u'\\', Qt::SkipEmptyParts);
     if (parts.count() >= 3) {
         QStringList shares;
-        if (QFileSystemEngine::uncListSharesOnServer(QLatin1String("\\\\") + parts.at(2), &shares))
+        if (QFileSystemEngine::uncListSharesOnServer("\\\\"_L1 + parts.at(2), &shares))
             return parts.count() < 4
                     || shares.contains(parts.at(3).toString(), Qt::CaseInsensitive);
     }
@@ -764,11 +766,11 @@ static bool uncShareExists(const QString &server)
 static inline bool getFindData(QString path, WIN32_FIND_DATA &findData)
 {
     // path should not end with a trailing slash
-    while (path.endsWith(QLatin1Char('\\')))
+    while (path.endsWith(u'\\'))
         path.chop(1);
 
     // can't handle drives
-    if (!path.endsWith(QLatin1Char(':'))) {
+    if (!path.endsWith(u':')) {
         HANDLE hFind = ::FindFirstFile((wchar_t*)path.utf16(), &findData);
         if (hFind != INVALID_HANDLE_VALUE) {
             ::FindClose(hFind);
@@ -913,7 +915,7 @@ QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link,
         target = readSymLink(link);
     QFileSystemEntry ret(target);
     if (!target.isEmpty() && ret.isRelative()) {
-        target.prepend(absoluteName(link).path() + QLatin1Char('/'));
+        target.prepend(absoluteName(link).path() + u'/');
         ret = QFileSystemEntry(QDir::cleanPath(target));
     }
     return ret;
@@ -933,7 +935,7 @@ QFileSystemEntry QFileSystemEngine::junctionTarget(const QFileSystemEntry &link,
         target = readSymLink(link);
     QFileSystemEntry ret(target);
     if (!target.isEmpty() && ret.isRelative()) {
-        target.prepend(absoluteName(link).path() + QLatin1Char('/'));
+        target.prepend(absoluteName(link).path() + u'/');
         ret = QFileSystemEntry(QDir::cleanPath(target));
     }
     return ret;
@@ -976,8 +978,8 @@ QString QFileSystemEngine::nativeAbsoluteFilePath(const QString &path)
     // (which is an invalid filename) this function will strip the space off and viola,
     // the file is later reported as existing. Therefore, we re-add the whitespace that
     // was at the end of path in order to keep the filename invalid.
-    if (!path.isEmpty() && path.at(path.size() - 1) == QLatin1Char(' '))
-        absPath.append(QLatin1Char(' '));
+    if (!path.isEmpty() && path.at(path.size() - 1) == u' ')
+        absPath.append(u' ');
     return absPath;
 }
 
@@ -994,17 +996,17 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
         else
             ret = QDir::fromNativeSeparators(nativeAbsoluteFilePath(entry.filePath()));
     } else {
-        ret = QDir::cleanPath(QDir::currentPath() + QLatin1Char('/') + entry.filePath());
+        ret = QDir::cleanPath(QDir::currentPath() + u'/' + entry.filePath());
     }
 
     // The path should be absolute at this point.
     // From the docs :
     // Absolute paths begin with the directory separator "/"
     // (optionally preceded by a drive specification under Windows).
-    if (ret.at(0) != QLatin1Char('/')) {
+    if (ret.at(0) != u'/') {
         Q_ASSERT(ret.length() >= 2);
         Q_ASSERT(ret.at(0).isLetter());
-        Q_ASSERT(ret.at(1) == QLatin1Char(':'));
+        Q_ASSERT(ret.at(1) == u':');
 
         // Force uppercase drive letters.
         ret[0] = ret.at(0).toUpper();
@@ -1264,9 +1266,8 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
 
         QString fname = entry.filePath();
         QString ext = fname.right(4).toLower();
-        if (data.isDirectory() || ext == QLatin1String(".exe") || ext == QLatin1String(".com")
-            || ext == QLatin1String(".bat") || ext == QLatin1String(".pif")
-            || ext == QLatin1String(".cmd")) {
+        if (data.isDirectory() || ext == ".exe"_L1 || ext == ".com"_L1
+            || ext == ".bat"_L1 || ext == ".pif"_L1 || ext == ".cmd"_L1) {
             data.entryFlags |= QFileSystemMetaData::OwnerExecutePermission
                     | QFileSystemMetaData::GroupExecutePermission
                     | QFileSystemMetaData::OtherExecutePermission
@@ -1301,7 +1302,7 @@ static bool tryDriveUNCFallback(const QFileSystemEntry &fname, QFileSystemMetaDa
         DWORD drivesBitmask = ::GetLogicalDrives();
         ::SetErrorMode(oldErrorMode);
         int drivebit =
-                1 << (fname.filePath().at(0).toUpper().unicode() - QLatin1Char('A').unicode());
+                1 << (fname.filePath().at(0).toUpper().unicode() - u'A');
         if (drivesBitmask & drivebit) {
             fileAttrib = FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_SYSTEM;
             entryExists = true;
@@ -1309,7 +1310,7 @@ static bool tryDriveUNCFallback(const QFileSystemEntry &fname, QFileSystemMetaDa
     } else {
         const QString &path = fname.nativeFilePath();
         bool is_dir = false;
-        if (path.startsWith(QLatin1String("\\\\?\\UNC"))) {
+        if (path.startsWith("\\\\?\\UNC"_L1)) {
             // UNC - stat doesn't work for all cases (Windows bug)
             int s = path.indexOf(path.at(0),7);
             if (s > 0) {
@@ -1398,7 +1399,7 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
     // Check for ".lnk": Directories named ".lnk" should be skipped, corrupted
     // link files should still be detected as links.
     const QString origFilePath = entry.filePath();
-    if (origFilePath.endsWith(QLatin1String(".lnk")) && !isDirPath(origFilePath, nullptr)) {
+    if (origFilePath.endsWith(".lnk"_L1) && !isDirPath(origFilePath, nullptr)) {
         data.entryFlags |= QFileSystemMetaData::WinLnkType;
         fname = QFileSystemEntry(readLink(entry));
     } else {
@@ -1471,8 +1472,8 @@ static inline bool rmDir(const QString &path)
 bool QFileSystemEngine::isDirPath(const QString &dirPath, bool *existed)
 {
     QString path = dirPath;
-    if (path.length() == 2 && path.at(1) == QLatin1Char(':'))
-        path += QLatin1Char('\\');
+    if (path.length() == 2 && path.at(1) == u':')
+        path += u'\\';
 
     const QString longPath = QFSFileEnginePrivate::longFileName(path);
     DWORD fileAttrib = ::GetFileAttributes(reinterpret_cast<const wchar_t*>(longPath.utf16()));
@@ -1501,11 +1502,11 @@ static bool createDirectoryWithParents(const QString &nativeName,
                                        bool shouldMkdirFirst = true)
 {
     const auto isUNCRoot = [](const QString &nativeName) {
-        return nativeName.startsWith(QLatin1String("\\\\"))
+        return nativeName.startsWith("\\\\"_L1)
                 && nativeName.count(QDir::separator()) <= 3;
     };
     const auto isDriveName = [](const QString &nativeName) {
-        return nativeName.size() == 2 && nativeName.at(1) == QLatin1Char(':');
+        return nativeName.size() == 2 && nativeName.at(1) == u':';
     };
     const auto isDir = [](const QString &nativeName) {
         bool exists = false;
@@ -1573,7 +1574,7 @@ bool QFileSystemEngine::removeDirectory(const QFileSystemEntry &entry, bool remo
         for (int oldslash = 0, slash=dirName.length(); slash > 0; oldslash = slash) {
             const auto chunkRef = QStringView{dirName}.left(slash);
             if (chunkRef.length() == 2 && chunkRef.at(0).isLetter()
-                && chunkRef.at(1) == QLatin1Char(':')) {
+                && chunkRef.at(1) == u':') {
                 break;
             }
             const QString chunk = chunkRef.toString();
@@ -1593,8 +1594,8 @@ QString QFileSystemEngine::rootPath()
 {
     QString ret = QString::fromLatin1(qgetenv("SystemDrive"));
     if (ret.isEmpty())
-        ret = QLatin1String("c:");
-    ret.append(QLatin1Char('/'));
+        ret = "c:"_L1;
+    ret.append(u'/');
     return ret;
 }
 
@@ -1652,13 +1653,13 @@ QString QFileSystemEngine::tempPath()
               QString::fromWCharArray(tempPath, len);
     }
     if (!ret.isEmpty()) {
-        while (ret.endsWith(QLatin1Char('\\')))
+        while (ret.endsWith(u'\\'))
             ret.chop(1);
         ret = QDir::fromNativeSeparators(ret);
     }
     if (ret.isEmpty()) {
-        ret = QLatin1String("C:/tmp");
-    } else if (ret.length() >= 2 && ret[1] == QLatin1Char(':'))
+        ret = "C:/tmp"_L1;
+    } else if (ret.length() >= 2 && ret[1] == u':')
         ret[0] = ret.at(0).toUpper(); // Force uppercase drive letters.
     return ret;
 }
@@ -1695,7 +1696,7 @@ QFileSystemEntry QFileSystemEngine::currentPath()
             ret = QString::fromWCharArray(currentName, size);
         }
     }
-    if (ret.length() >= 2 && ret[1] == QLatin1Char(':'))
+    if (ret.length() >= 2 && ret[1] == u':')
         ret[0] = ret.at(0).toUpper(); // Force uppercase drive letters.
     return QFileSystemEntry(ret, QFileSystemEntry::FromNativePath());
 }

@@ -49,6 +49,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 namespace  {
 class DiagnosticNotation
 {
@@ -86,7 +88,7 @@ private:
     };
 
     DiagnosticNotation(QCborValue::DiagnosticNotationOptions opts_)
-        : separator(QLatin1String(opts_ & QCborValue::LineWrapped ? "\n" : "")), opts(opts_)
+        : separator(opts_ & QCborValue::LineWrapped ? "\n"_L1 : ""_L1), opts(opts_)
     {
         byteArrayFormatStack.push(int(QCborKnownTags::ExpectedBase16));
     }
@@ -109,11 +111,11 @@ static QString makeFpString(double d)
     } else if (convertDoubleTo(d, &v)) {
         s = QString::fromLatin1("%1.0").arg(v);
         if (d < 0)
-            s.prepend(QLatin1Char('-'));
+            s.prepend(u'-');
     } else {
         s = QString::number(d, 'g', QLocale::FloatingPointShortest);
         if (!s.contains(u'.') && !s.contains(u'e'))
-            s += QLatin1Char('.');
+            s += u'.';
     }
     return s;
 }
@@ -131,7 +133,7 @@ static bool isByteArrayEncodingTag(QCborTag tag)
 
 void DiagnosticNotation::appendString(const QString &s)
 {
-    result += QLatin1Char('"');
+    result += u'"';
 
     const QChar *begin = s.begin();
     const QChar *end = s.end();
@@ -161,7 +163,7 @@ void DiagnosticNotation::appendString(const QString &s)
         };
         int buflen = 2;
         QChar buf[10];
-        buf[0] = QLatin1Char('\\');
+        buf[0] = u'\\';
         buf[1] = QChar::Null;
         char16_t uc = ptr->unicode();
 
@@ -203,12 +205,12 @@ void DiagnosticNotation::appendString(const QString &s)
         begin = ptr + 1;
     }
 
-    result += QLatin1Char('"');
+    result += u'"';
 }
 
 void DiagnosticNotation::appendArray(const QCborArray &a)
 {
-    result += QLatin1Char('[');
+    result += u'[';
 
     // length 2 (including the space) when not line wrapping
     QLatin1String commaValue(", ", opts & QCborValue::LineWrapped ? 1 : 2);
@@ -222,12 +224,12 @@ void DiagnosticNotation::appendArray(const QCborArray &a)
         }
     }
 
-    result += separator + QLatin1Char(']');
+    result += separator + u']';
 }
 
 void DiagnosticNotation::appendMap(const QCborMap &m)
 {
-    result += QLatin1Char('{');
+    result += u'{';
 
     // length 2 (including the space) when not line wrapping
     QLatin1String commaValue(", ", opts & QCborValue::LineWrapped ? 1 : 2);
@@ -238,12 +240,12 @@ void DiagnosticNotation::appendMap(const QCborMap &m)
             result += comma + separator;
             comma = commaValue;
             appendValue(v.first);
-            result += QLatin1String(": ");
+            result += ": "_L1;
             appendValue(v.second);
         }
     }
 
-    result += separator + QLatin1Char('}');
+    result += separator + u'}';
 };
 
 void DiagnosticNotation::appendValue(const QCborValue &v)
@@ -276,16 +278,16 @@ void DiagnosticNotation::appendValue(const QCborValue &v)
     case QCborValue::Map:
         return appendMap(v.toMap());
     case QCborValue::False:
-        result += QLatin1String("false");
+        result += "false"_L1;
         return;
     case QCborValue::True:
-        result += QLatin1String("true");
+        result += "true"_L1;
         return;
     case QCborValue::Null:
-        result += QLatin1String("null");
+        result += "null"_L1;
         return;
     case QCborValue::Undefined:
-        result += QLatin1String("undefined");
+        result += "undefined"_L1;
         return;
     case QCborValue::Double:
         result += makeFpString(v.toDouble());
@@ -305,9 +307,9 @@ void DiagnosticNotation::appendValue(const QCborValue &v)
         bool byteArrayFormat = opts & QCborValue::ExtendedFormat && isByteArrayEncodingTag(v.tag());
         if (byteArrayFormat)
             byteArrayFormatStack.push(int(v.tag()));
-        result += QString::number(quint64(v.tag())) + QLatin1Char('(');
+        result += QString::number(quint64(v.tag())) + u'(';
         appendValue(v.taggedValue());
-        result += QLatin1Char(')');
+        result += u')';
         if (byteArrayFormat)
             byteArrayFormatStack.pop();
     } else {

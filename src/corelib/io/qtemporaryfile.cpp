@@ -59,6 +59,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #if defined(Q_OS_WIN)
 typedef ushort Char;
 
@@ -85,13 +87,13 @@ QTemporaryFileName::QTemporaryFileName(const QString &templateName)
     while (phPos != 0) {
         --phPos;
 
-        if (qfilename[phPos] == QLatin1Char('X')) {
+        if (qfilename[phPos] == u'X') {
             ++phLength;
             continue;
         }
 
         if (phLength >= 6
-                || qfilename[phPos] == QLatin1Char('/')) {
+                || qfilename[phPos] == u'/') {
             ++phPos;
             break;
         }
@@ -101,7 +103,7 @@ QTemporaryFileName::QTemporaryFileName(const QString &templateName)
     }
 
     if (phLength < 6)
-        qfilename.append(QLatin1String(".XXXXXX"));
+        qfilename.append(".XXXXXX"_L1);
 
     // "Nativify" :-)
     QFileSystemEntry::NativePath filename = QFileSystemEngine::absoluteName(
@@ -576,9 +578,9 @@ QString QTemporaryFilePrivate::defaultTemplateName()
     baseName = QCoreApplication::applicationName();
     if (baseName.isEmpty())
 #endif
-        baseName = QLatin1String("qt_temp");
+        baseName = "qt_temp"_L1;
 
-    return QDir::tempPath() + QLatin1Char('/') + baseName + QLatin1String(".XXXXXX");
+    return QDir::tempPath() + u'/' + baseName + ".XXXXXX"_L1;
 }
 
 //************* QTemporaryFile

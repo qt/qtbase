@@ -100,6 +100,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 struct QConfFileCustomFormat
 {
     QString extension;
@@ -323,7 +325,7 @@ QSettingsPrivate *QSettingsPrivate::create(const QString &fileName, QSettings::F
 void QSettingsPrivate::processChild(QStringView key, ChildSpec spec, QStringList &result)
 {
     if (spec != AllKeys) {
-        int slashPos = key.indexOf(QLatin1Char('/'));
+        int slashPos = key.indexOf(u'/');
         if (slashPos == -1) {
             if (spec != ChildKeys)
                 return;
@@ -341,7 +343,7 @@ void QSettingsPrivate::beginGroupOrArray(const QSettingsGroup &group)
     groupStack.push(group);
     const QString name = group.name();
     if (!name.isEmpty())
-        groupPrefix += name + QLatin1Char('/');
+        groupPrefix += name + u'/';
 }
 
 /*
@@ -390,8 +392,8 @@ QVariant QSettingsPrivate::stringListToVariantList(const QStringList &l)
     for (int i = 0; i < outStringList.count(); ++i) {
         const QString &str = outStringList.at(i);
 
-        if (str.startsWith(QLatin1Char('@'))) {
-            if (str.length() >= 2 && str.at(1) == QLatin1Char('@')) {
+        if (str.startsWith(u'@')) {
+            if (str.length() >= 2 && str.at(1) == u'@') {
                 outStringList[i].remove(0, 1);
             } else {
                 QVariantList variantList;
@@ -412,14 +414,14 @@ QString QSettingsPrivate::variantToString(const QVariant &v)
 
     switch (v.metaType().id()) {
         case QMetaType::UnknownType:
-            result = QLatin1String("@Invalid()");
+            result = "@Invalid()"_L1;
             break;
 
         case QMetaType::QByteArray: {
             QByteArray a = v.toByteArray();
-            result = QLatin1String("@ByteArray(")
+            result = "@ByteArray("_L1
                      + QLatin1String(a.constData(), a.size())
-                     + QLatin1Char(')');
+                     + u')';
             break;
         }
 
@@ -436,9 +438,9 @@ QString QSettingsPrivate::variantToString(const QVariant &v)
         case QMetaType::Double: {
             result = v.toString();
             if (result.contains(QChar::Null))
-                result = QLatin1String("@String(") + result + QLatin1Char(')');
-            else if (result.startsWith(QLatin1Char('@')))
-                result.prepend(QLatin1Char('@'));
+                result = "@String("_L1 + result + u')';
+            else if (result.startsWith(u'@'))
+                result.prepend(u'@');
             break;
         }
 #ifndef QT_NO_GEOM_VARIANT
@@ -479,7 +481,7 @@ QString QSettingsPrivate::variantToString(const QVariant &v)
 
             result = QLatin1String(typeSpec)
                      + QLatin1String(a.constData(), a.size())
-                     + QLatin1Char(')');
+                     + u')';
 #else
             Q_ASSERT(!"QSettings: Cannot save custom types without QDataStream support");
 #endif
@@ -493,18 +495,18 @@ QString QSettingsPrivate::variantToString(const QVariant &v)
 
 QVariant QSettingsPrivate::stringToVariant(const QString &s)
 {
-    if (s.startsWith(QLatin1Char('@'))) {
-        if (s.endsWith(QLatin1Char(')'))) {
-            if (s.startsWith(QLatin1String("@ByteArray("))) {
+    if (s.startsWith(u'@')) {
+        if (s.endsWith(u')')) {
+            if (s.startsWith("@ByteArray("_L1)) {
                 return QVariant(QStringView{s}.mid(11, s.size() - 12).toLatin1());
-            } else if (s.startsWith(QLatin1String("@String("))) {
+            } else if (s.startsWith("@String("_L1)) {
                 return QVariant(QStringView{s}.mid(8, s.size() - 9).toString());
-            } else if (s.startsWith(QLatin1String("@Variant("))
-                       || s.startsWith(QLatin1String("@DateTime("))) {
+            } else if (s.startsWith("@Variant("_L1)
+                       || s.startsWith("@DateTime("_L1)) {
 #ifndef QT_NO_DATASTREAM
                 QDataStream::Version version;
                 int offset;
-                if (s.at(1) == QLatin1Char('D')) {
+                if (s.at(1) == u'D') {
                     version = QDataStream::Qt_5_6;
                     offset = 10;
                 } else {
@@ -521,25 +523,25 @@ QVariant QSettingsPrivate::stringToVariant(const QString &s)
                 Q_ASSERT(!"QSettings: Cannot load custom types without QDataStream support");
 #endif
 #ifndef QT_NO_GEOM_VARIANT
-            } else if (s.startsWith(QLatin1String("@Rect("))) {
+            } else if (s.startsWith("@Rect("_L1)) {
                 QStringList args = QSettingsPrivate::splitArgs(s, 5);
                 if (args.size() == 4)
                     return QVariant(QRect(args[0].toInt(), args[1].toInt(), args[2].toInt(), args[3].toInt()));
-            } else if (s.startsWith(QLatin1String("@Size("))) {
+            } else if (s.startsWith("@Size("_L1)) {
                 QStringList args = QSettingsPrivate::splitArgs(s, 5);
                 if (args.size() == 2)
                     return QVariant(QSize(args[0].toInt(), args[1].toInt()));
-            } else if (s.startsWith(QLatin1String("@Point("))) {
+            } else if (s.startsWith("@Point("_L1)) {
                 QStringList args = QSettingsPrivate::splitArgs(s, 6);
                 if (args.size() == 2)
                     return QVariant(QPoint(args[0].toInt(), args[1].toInt()));
 #endif
-            } else if (s == QLatin1String("@Invalid()")) {
+            } else if (s == "@Invalid()"_L1) {
                 return QVariant();
             }
 
         }
-        if (s.startsWith(QLatin1String("@@")))
+        if (s.startsWith("@@"_L1))
             return QVariant(s.mid(1));
     }
 
@@ -584,7 +586,7 @@ bool QSettingsPrivate::iniUnescapedKey(const QByteArray &key, int from, int to, 
         char16_t ch = decoded.at(i).unicode();
 
         if (ch == '\\') {
-            result += QLatin1Char('/');
+            result += u'/';
             ++i;
             continue;
         }
@@ -608,7 +610,7 @@ bool QSettingsPrivate::iniUnescapedKey(const QByteArray &key, int from, int to, 
         }
 
         if (firstDigitPos + numDigits > size) {
-            result += QLatin1Char('%');
+            result += u'%';
             ++i;
             continue;
         }
@@ -616,7 +618,7 @@ bool QSettingsPrivate::iniUnescapedKey(const QByteArray &key, int from, int to, 
         bool ok;
         ch = QStringView(decoded).sliced(firstDigitPos, numDigits).toUShort(&ok, 16);
         if (!ok) {
-            result += QLatin1Char('%');
+            result += u'%';
             ++i;
             continue;
         }
@@ -634,8 +636,8 @@ void QSettingsPrivate::iniEscapedString(const QString &str, QByteArray &result)
 {
     bool needsQuotes = false;
     bool escapeNextIfDigit = false;
-    bool useCodec = !str.startsWith(QLatin1String("@ByteArray("))
-                    && !str.startsWith(QLatin1String("@Variant("));
+    bool useCodec = !str.startsWith("@ByteArray("_L1)
+                    && !str.startsWith("@Variant("_L1);
 
     int i;
     int startPos = result.size();
@@ -715,7 +717,7 @@ inline static void iniChopTrailingSpaces(QString &str, int limit)
 {
     int n = str.size() - 1;
     QChar ch;
-    while (n >= limit && ((ch = str.at(n)) == QLatin1Char(' ') || ch == QLatin1Char('\t')))
+    while (n >= limit && ((ch = str.at(n)) == u' ' || ch == u'\t'))
         str.truncate(n--);
 }
 
@@ -899,18 +901,18 @@ QStringList QSettingsPrivate::splitArgs(const QString &s, int idx)
 {
     int l = s.length();
     Q_ASSERT(l > 0);
-    Q_ASSERT(s.at(idx) == QLatin1Char('('));
-    Q_ASSERT(s.at(l - 1) == QLatin1Char(')'));
+    Q_ASSERT(s.at(idx) == u'(');
+    Q_ASSERT(s.at(l - 1) == u')');
 
     QStringList result;
     QString item;
 
     for (++idx; idx < l; ++idx) {
         QChar c = s.at(idx);
-        if (c == QLatin1Char(')')) {
+        if (c == u')') {
             Q_ASSERT(idx == l - 1);
             result.append(item);
-        } else if (c == QLatin1Char(' ')) {
+        } else if (c == u' ') {
             result.append(item);
             item.clear();
         } else {
@@ -926,7 +928,7 @@ QStringList QSettingsPrivate::splitArgs(const QString &s, int idx)
 
 void QConfFileSettingsPrivate::initFormat()
 {
-    extension = (format == QSettings::NativeFormat) ? QLatin1String(".conf") : QLatin1String(".ini");
+    extension = (format == QSettings::NativeFormat) ? ".conf"_L1 : ".ini"_L1;
     readFunc = nullptr;
     writeFunc = nullptr;
 #if defined(Q_OS_MAC)
@@ -975,9 +977,9 @@ static QString windowsConfigPath(const KNOWNFOLDERID &type)
 
     if (result.isEmpty()) {
         if (type == FOLDERID_ProgramData) {
-            result = QLatin1String("C:\\temp\\qt-common");
+            result = "C:\\temp\\qt-common"_L1;
         } else if (type == FOLDERID_RoamingAppData) {
-            result = QLatin1String("C:\\temp\\qt-user");
+            result = "C:\\temp\\qt-user"_L1;
         }
     }
 
@@ -993,13 +995,13 @@ static inline int pathHashKey(QSettings::Format format, QSettings::Scope scope)
 #ifndef Q_OS_WIN
 static QString make_user_path()
 {
-    static constexpr QChar sep = QLatin1Char('/');
+    static constexpr QChar sep = u'/';
 #ifndef QSETTINGS_USE_QSTANDARDPATHS
     // Non XDG platforms (OS X, iOS, Android...) have used this code path erroneously
     // for some time now. Moving away from that would require migrating existing settings.
     QByteArray env = qgetenv("XDG_CONFIG_HOME");
     if (env.isEmpty()) {
-        return QDir::homePath() + QLatin1String("/.config/");
+        return QDir::homePath() + "/.config/"_L1;
     } else if (env.startsWith('/')) {
         return QFile::decodeName(env) + sep;
     } else {
@@ -1025,7 +1027,7 @@ static std::unique_lock<QBasicMutex> initDefaultPaths(std::unique_lock<QBasicMut
        avoid a dead-lock, we can't hold the global mutex while
        calling it.
     */
-    QString systemPath = QLibraryInfo::path(QLibraryInfo::SettingsPath) + QLatin1Char('/');
+    QString systemPath = QLibraryInfo::path(QLibraryInfo::SettingsPath) + u'/';
 
     locker.lock();
     if (pathHash->isEmpty()) {
@@ -1095,7 +1097,7 @@ QConfFileSettingsPrivate::QConfFileSettingsPrivate(QSettings::Format format,
     QString org = organization;
     if (org.isEmpty()) {
         setStatus(QSettings::AccessError);
-        org = QLatin1String("Unknown Organization");
+        org = "Unknown Organization"_L1;
     }
 
     QString appFile = org + QDir::separator() + application + extension;
@@ -1123,12 +1125,12 @@ QConfFileSettingsPrivate::QConfFileSettingsPrivate(QSettings::Format format,
         if (!application.isEmpty()) {
             paths.reserve(dirs.size() * 2);
             for (const auto &dir : qAsConst(dirs))
-                paths.append(dir + QLatin1Char('/') + appFile);
+                paths.append(dir + u'/' + appFile);
         } else {
             paths.reserve(dirs.size());
         }
         for (const auto &dir : qAsConst(dirs))
-            paths.append(dir + QLatin1Char('/') + orgFile);
+            paths.append(dir + u'/' + orgFile);
 
         // Note: No check for existence of files is done intentionally.
         for (const auto &path : qAsConst(paths))
@@ -1198,7 +1200,7 @@ void QConfFileSettingsPrivate::remove(const QString &key)
     QConfFile *confFile = confFiles.at(0);
 
     QSettingsKey theKey(key, caseSensitivity);
-    QSettingsKey prefix(key + QLatin1Char('/'), caseSensitivity);
+    QSettingsKey prefix(key + u'/', caseSensitivity);
     const auto locker = qt_scoped_lock(confFile->mutex);
 
     ensureSectionParsed(confFile, theKey);
@@ -1377,7 +1379,7 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
         We only need to lock if we are actually writing as only concurrent writes are a problem.
         Concurrent read and write are not a problem because the writing operation is atomic.
     */
-    QLockFile lockFile(confFile->name + QLatin1String(".lock"));
+    QLockFile lockFile(confFile->name + ".lock"_L1);
     if (!readOnly && !lockFile.lock() && atomicSyncOnly) {
         setStatus(QSettings::AccessError);
         return;
@@ -1661,7 +1663,7 @@ bool QConfFileSettingsPrivate::readIniFile(const QByteArray &data,
                     currentSection.clear();
                     iniUnescapedKey(iniSection, 0, iniSection.size(), currentSection);
                 }
-                currentSection += QLatin1Char('/');
+                currentSection += u'/';
             }
             currentSectionStart = dataPos;
         }
@@ -1784,7 +1786,7 @@ bool QConfFileSettingsPrivate::writeIniFile(QIODevice &device, const ParsedSetti
         QSettingsIniKey key(j.key().originalCaseKey(), j.key().originalKeyPosition());
         int slashPos;
 
-        if ((slashPos = key.indexOf(QLatin1Char('/'))) != -1) {
+        if ((slashPos = key.indexOf(u'/')) != -1) {
             section = key.left(slashPos);
             key.remove(0, slashPos + 1);
         }
@@ -1877,7 +1879,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
 
     UnparsedSettingsMap::iterator i;
 
-    int indexOfSlash = key.indexOf(QLatin1Char('/'));
+    int indexOfSlash = key.indexOf(u'/');
     if (indexOfSlash != -1) {
         i = confFile->unparsedIniSections.upperBound(key);
         if (i == confFile->unparsedIniSections.begin())
@@ -2982,7 +2984,7 @@ int QSettings::beginReadArray(QAnyStringView prefix)
 {
     Q_D(QSettings);
     d->beginGroupOrArray(QSettingsGroup(d->normalizedKey(prefix), false));
-    return value(QLatin1String("size")).toInt();
+    return value("size"_L1).toInt();
 }
 
 /*!
@@ -3023,9 +3025,9 @@ void QSettings::beginWriteArray(QAnyStringView prefix, int size)
     d->beginGroupOrArray(QSettingsGroup(d->normalizedKey(prefix), size < 0));
 
     if (size < 0)
-        remove(QLatin1String("size"));
+        remove("size"_L1);
     else
-        setValue(QLatin1String("size"), size);
+        setValue("size"_L1, size);
 }
 
 /*!
@@ -3049,7 +3051,7 @@ void QSettings::endArray()
         d->groupPrefix.truncate(d->groupPrefix.size() - (len + 1));
 
     if (group.arraySizeGuess() != -1)
-        setValue(group.name() + QLatin1String("/size"), group.arraySizeGuess());
+        setValue(group.name() + "/size"_L1, group.arraySizeGuess());
 
     if (!group.isArray())
         qWarning("QSettings::endArray: Expected endGroup() instead");
@@ -3510,7 +3512,7 @@ QSettings::Format QSettings::registerFormat(const QString &extension, ReadFunc r
         return QSettings::InvalidFormat;
 
     QConfFileCustomFormat info;
-    info.extension = QLatin1Char('.') + extension;
+    info.extension = u'.' + extension;
     info.readFunc = readFunc;
     info.writeFunc = writeFunc;
     info.caseSensitivity = caseSensitivity;

@@ -45,6 +45,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static const DWORD minReadBufferSize = 4096;
 
 QWindowsPipeReader::QWindowsPipeReader(QObject *parent)
@@ -493,7 +495,7 @@ bool QWindowsPipeReader::consumePendingAndEmit(bool allowWinActPosting)
         if (emitReadyRead)
             emit readyRead();
         if (alive && dwError != ERROR_BROKEN_PIPE && dwError != ERROR_PIPE_NOT_CONNECTED)
-            emit winError(dwError, QLatin1String("QWindowsPipeReader::consumePendingAndEmit"));
+            emit winError(dwError, "QWindowsPipeReader::consumePendingAndEmit"_L1);
         if (alive)
             emit pipeClosed();
     }

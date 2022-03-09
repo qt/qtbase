@@ -111,6 +111,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 template <class Iterator>
 class QDirIteratorPrivateIteratorStack : public QStack<Iterator *>
 {
@@ -163,7 +165,7 @@ public:
 QDirIteratorPrivate::QDirIteratorPrivate(const QFileSystemEntry &entry, const QStringList &nameFilters,
                                          QDir::Filters _filters, QDirIterator::IteratorFlags flags, bool resolveEngine)
     : dirEntry(entry)
-      , nameFilters(nameFilters.contains(QLatin1String("*")) ? QStringList() : nameFilters)
+      , nameFilters(nameFilters.contains("*"_L1) ? QStringList() : nameFilters)
       , filters(QDir::NoFilter == _filters ? QDir::AllEntries : _filters)
       , iteratorFlags(flags)
 {
@@ -301,7 +303,7 @@ void QDirIteratorPrivate::checkAndPushDirectory(const QFileInfo &fileInfo)
 
     // Never follow . and ..
     QString fileName = fileInfo.fileName();
-    if (QLatin1String(".") == fileName || QLatin1String("..") == fileName)
+    if ("."_L1 == fileName || ".."_L1 == fileName)
         return;
 
     // No hidden directories unless requested
@@ -329,9 +331,9 @@ bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInf
 
     // filter . and ..?
     const int fileNameSize = fileName.size();
-    const bool dotOrDotDot = fileName[0] == QLatin1Char('.')
+    const bool dotOrDotDot = fileName[0] == u'.'
                              && ((fileNameSize == 1)
-                                 ||(fileNameSize == 2 && fileName[1] == QLatin1Char('.')));
+                                 ||(fileNameSize == 2 && fileName[1] == u'.'));
     if ((filters & QDir::NoDot) && dotOrDotDot && fileNameSize == 1)
         return false;
     if ((filters & QDir::NoDotDot) && dotOrDotDot && fileNameSize == 2)

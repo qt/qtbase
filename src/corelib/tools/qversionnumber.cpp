@@ -403,7 +403,7 @@ QString QVersionNumber::toString() const
     bool first = true;
     for (qsizetype i = 0; i < segmentCount(); ++i) {
         if (!first)
-            version += QLatin1Char('.');
+            version += u'.';
         version += QString::number(segmentAt(i));
         first = false;
     }

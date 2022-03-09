@@ -261,11 +261,11 @@ namespace {
                 return warn("be empty");
 
             const QChar c = name.at(0);
-            if (Q_UNLIKELY(c == QLatin1Char('-')))
+            if (Q_UNLIKELY(c == u'-'))
                 return warn("start with a '-'");
-            if (Q_UNLIKELY(c == QLatin1Char('/')))
+            if (Q_UNLIKELY(c == u'/'))
                 return warn("start with a '/'");
-            if (Q_UNLIKELY(name.contains(QLatin1Char('='))))
+            if (Q_UNLIKELY(name.contains(u'=')))
                 return warn("contain a '='");
 
             return false;

@@ -49,14 +49,14 @@
 QT_BEGIN_NAMESPACE
 
 using namespace QNativeInterface;
+using namespace Qt::StringLiterals;
 
 typedef QMap<QString, QString> AndroidDirCache;
 Q_GLOBAL_STATIC(AndroidDirCache, androidDirCache)
 
 static QString testDir()
 {
-    return QStandardPaths::isTestModeEnabled() ? QLatin1String("/qttest")
-                                               : QLatin1String("");
+    return QStandardPaths::isTestModeEnabled() ? "/qttest"_L1 : ""_L1;
 }
 
 static inline QString getAbsolutePath(const QJniObject &file)
@@ -75,7 +75,7 @@ static inline QString getAbsolutePath(const QJniObject &file)
  */
 static QString getExternalFilesDir(const char *directoryField = nullptr)
 {
-    QString &path = (*androidDirCache)[QLatin1String("APPNAME_%1").arg(QLatin1String(directoryField))];
+    QString &path = (*androidDirCache)["APPNAME_%1"_L1.arg(QLatin1String(directoryField))];
     if (!path.isEmpty())
         return path;
 
@@ -83,7 +83,7 @@ static QString getExternalFilesDir(const char *directoryField = nullptr)
     if (!appCtx.isValid())
         return QString();
 
-    QJniObject dirField = QJniObject::fromString(QLatin1String(""));
+    QJniObject dirField = QJniObject::fromString(""_L1);
     if (directoryField && strlen(directoryField) > 0) {
         dirField = QJniObject::getStaticObjectField("android/os/Environment",
                                                     directoryField,
@@ -184,7 +184,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     case QStandardPaths::GenericConfigLocation:
     case QStandardPaths::ConfigLocation:
     case QStandardPaths::AppConfigLocation:
-        return getFilesDir() + testDir() + QLatin1String("/settings");
+        return getFilesDir() + testDir() + "/settings"_L1;
     case QStandardPaths::GenericDataLocation:
         return getExternalFilesDir() + testDir();
     case QStandardPaths::AppDataLocation:
@@ -260,7 +260,7 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
 
         // Don't cache the fallback, as we might just have been called before
         // QT_ANDROID_FONT_LOCATION has been set.
-        return QStringList(QLatin1String("/system/fonts"));
+        return QStringList("/system/fonts"_L1);
     }
 
     return QStringList(writableLocation(type));

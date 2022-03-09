@@ -53,6 +53,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static QString pathForDirectory(NSSearchPathDirectory directory,
                                 NSSearchPathDomainMask mask)
 {
@@ -98,10 +100,10 @@ static void appendOrganizationAndApp(QString &path)
 #ifndef QT_BOOTSTRAPPED
     const QString org = QCoreApplication::organizationName();
     if (!org.isEmpty())
-        path += QLatin1Char('/') + org;
+        path += u'/' + org;
     const QString appName = QCoreApplication::applicationName();
     if (!appName.isEmpty())
-        path += QLatin1Char('/') + appName;
+        path += u'/' + appName;
 #else
     Q_UNUSED(path);
 #endif
@@ -123,36 +125,36 @@ static QString baseWritableLocation(QStandardPaths::StandardLocation type,
 #if defined(QT_PLATFORM_UIKIT)
     // These locations point to non-existing write-protected paths. Use sensible fallbacks.
     case QStandardPaths::MusicLocation:
-        path = pathForDirectory(NSDocumentDirectory, mask) + QLatin1String("/Music");
+        path = pathForDirectory(NSDocumentDirectory, mask) + "/Music"_L1;
         break;
     case QStandardPaths::MoviesLocation:
-        path = pathForDirectory(NSDocumentDirectory, mask) + QLatin1String("/Movies");
+        path = pathForDirectory(NSDocumentDirectory, mask) + "/Movies"_L1;
         break;
     case QStandardPaths::PicturesLocation:
-        path = pathForDirectory(NSDocumentDirectory, mask) + QLatin1String("/Pictures");
+        path = pathForDirectory(NSDocumentDirectory, mask) + "/Pictures"_L1;
         break;
     case QStandardPaths::DownloadLocation:
-        path = pathForDirectory(NSDocumentDirectory, mask) + QLatin1String("/Downloads");
+        path = pathForDirectory(NSDocumentDirectory, mask) + "/Downloads"_L1;
         break;
     case QStandardPaths::DesktopLocation:
-        path = pathForDirectory(NSDocumentDirectory, mask) + QLatin1String("/Desktop");
+        path = pathForDirectory(NSDocumentDirectory, mask) + "/Desktop"_L1;
         break;
     case QStandardPaths::ApplicationsLocation:
         break;
     case QStandardPaths::PublicShareLocation:
-        path = pathForDirectory(NSDocumentDirectory, mask) + QLatin1String("/Public");
+        path = pathForDirectory(NSDocumentDirectory, mask) + "/Public"_L1;
         break;
     case QStandardPaths::TemplatesLocation:
-        path = pathForDirectory(NSDocumentDirectory, mask) + QLatin1String("/Templates");
+        path = pathForDirectory(NSDocumentDirectory, mask) + "/Templates"_L1;
         break;
 #endif
     case QStandardPaths::FontsLocation:
-        path = pathForDirectory(NSLibraryDirectory, mask) + QLatin1String("/Fonts");
+        path = pathForDirectory(NSLibraryDirectory, mask) + "/Fonts"_L1;
         break;
     case QStandardPaths::ConfigLocation:
     case QStandardPaths::GenericConfigLocation:
     case QStandardPaths::AppConfigLocation:
-        path = pathForDirectory(NSLibraryDirectory, mask) + QLatin1String("/Preferences");
+        path = pathForDirectory(NSLibraryDirectory, mask) + "/Preferences"_L1;
         break;
     default:
         path = pathForDirectory(dir, mask);
@@ -179,7 +181,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
 {
     QString location = baseWritableLocation(type, NSUserDomainMask, true);
     if (isTestModeEnabled())
-        location = location.replace(QDir::homePath(), QDir::homePath() + QLatin1String("/.qttest"));
+        location = location.replace(QDir::homePath(), QDir::homePath() + "/.qttest"_L1);
 
     return location;
 }
@@ -190,7 +192,7 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
 
 #if defined(QT_PLATFORM_UIKIT)
     if (type == PicturesLocation)
-        dirs << writableLocation(PicturesLocation) << QLatin1String("assets-library://");
+        dirs << writableLocation(PicturesLocation) << "assets-library://"_L1;
 #endif
 
     if (type == GenericDataLocation || type == FontsLocation || type == ApplicationsLocation

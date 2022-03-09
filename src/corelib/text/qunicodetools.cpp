@@ -51,6 +51,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_AUTOTEST_EXPORT int qt_initcharattributes_default_algorithm_only = 0;
 
 namespace QUnicodeTools {
@@ -1409,8 +1411,8 @@ static int init_libthai() {
 #if QT_CONFIG(library)
     static bool initialized = false;
     if (!initialized && (!th_brk || !th_next_cell)) {
-        th_brk = reinterpret_cast<th_brk_def>(QLibrary::resolve(QLatin1String("thai"), static_cast<int>(LIBTHAI_MAJOR), "th_brk"));
-        th_next_cell = (th_next_cell_def)QLibrary::resolve(QLatin1String("thai"), LIBTHAI_MAJOR, "th_next_cell");
+        th_brk = reinterpret_cast<th_brk_def>(QLibrary::resolve("thai"_L1, static_cast<int>(LIBTHAI_MAJOR), "th_brk"));
+        th_next_cell = (th_next_cell_def)QLibrary::resolve("thai"_L1, LIBTHAI_MAJOR, "th_next_cell");
         initialized = true;
     }
     if (th_brk && th_next_cell)

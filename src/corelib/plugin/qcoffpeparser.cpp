@@ -49,14 +49,15 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 // Whether we include some extra validity checks
 // (checks to ensure we don't read out-of-bounds are always included)
 static constexpr bool IncludeValidityChecks = true;
 
-static constexpr char rawSectionName[] = ".qtmetadata";
-static constexpr QLatin1String metadataSectionName(rawSectionName, sizeof(rawSectionName) - 1);
+static constexpr inline auto metadataSectionName() noexcept { return ".qtmetadata"_L1; }
 static constexpr QLatin1String truncatedSectionName =
-        metadataSectionName.left(sizeof(IMAGE_SECTION_HEADER::Name));
+        metadataSectionName().left(sizeof(IMAGE_SECTION_HEADER::Name));
 
 #ifdef QT_BUILD_INTERNAL
 #  define QCOFFPEPARSER_DEBUG
@@ -389,7 +390,7 @@ QLibraryScanResult QCoffPeParser::parse(QByteArrayView data, QString *errMsg)
             continue;
 
         // if we do have a string table, the name may be complete
-        if (sectionName != truncatedSectionName && sectionName != metadataSectionName)
+        if (sectionName != truncatedSectionName && sectionName != metadataSectionName())
             continue;
         peDebug << "found .qtmetadata section";
 

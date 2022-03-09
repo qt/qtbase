@@ -53,6 +53,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 // XML tags in MIME files
 static const char mimeInfoTagC[] = "mime-info";
 static const char mimeTypeTagC[] = "mime-type";
@@ -167,7 +169,7 @@ bool QMimeTypeParserBase::parseNumber(QStringView n, int *target, QString *error
     *target = n.toInt(&ok);
     if (Q_UNLIKELY(!ok)) {
         if (errorMessage)
-            *errorMessage = QLatin1String("Not a number '") + n + QLatin1String("'.");
+            *errorMessage = "Not a number '"_L1 + n + "'."_L1;
         return false;
     }
     return true;
@@ -235,7 +237,7 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
             case ParseGlobPattern: {
                 const QString pattern = atts.value(QLatin1String(patternAttributeC)).toString();
                 unsigned weight = atts.value(QLatin1String(weightAttributeC)).toInt();
-                const bool caseSensitive = atts.value(QLatin1String(caseSensitiveAttributeC)) == QLatin1String("true");
+                const bool caseSensitive = atts.value(QLatin1String(caseSensitiveAttributeC)) == "true"_L1;
 
                 if (weight == 0)
                     weight = QMimeGlobPattern::DefaultWeight;
@@ -299,7 +301,7 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
                 break;
             }
             case ParseError:
-                reader.raiseError(QLatin1String("Unexpected element <") + reader.name() + QLatin1Char('>'));
+                reader.raiseError("Unexpected element <"_L1 + reader.name() + u'>');
                 break;
             default:
                 break;

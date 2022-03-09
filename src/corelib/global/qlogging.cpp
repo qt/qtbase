@@ -163,6 +163,8 @@ static QT_PREPEND_NAMESPACE(qint64) qt_gettid()
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #if !defined(Q_CC_MSVC)
 Q_NORETURN
 #endif
@@ -1126,10 +1128,9 @@ void QMessagePattern::setPattern(const QString &pattern)
     bool inPlaceholder = false;
     for (int i = 0; i < pattern.size(); ++i) {
         const QChar c = pattern.at(i);
-        if ((c == QLatin1Char('%'))
-                && !inPlaceholder) {
+        if (c == u'%' && !inPlaceholder) {
             if ((i + 1 < pattern.size())
-                    && pattern.at(i + 1) == QLatin1Char('{')) {
+                    && pattern.at(i + 1) == u'{') {
                 // beginning of placeholder
                 if (!lexeme.isEmpty()) {
                     lexemes.append(lexeme);
@@ -1141,7 +1142,7 @@ void QMessagePattern::setPattern(const QString &pattern)
 
         lexeme.append(c);
 
-        if ((c == QLatin1Char('}') && inPlaceholder)) {
+        if (c == u'}' && inPlaceholder) {
             // end of placeholder
             lexemes.append(lexeme);
             lexeme.clear();
@@ -1162,8 +1163,7 @@ void QMessagePattern::setPattern(const QString &pattern)
 
     for (int i = 0; i < lexemes.size(); ++i) {
         const QString lexeme = lexemes.at(i);
-        if (lexeme.startsWith(QLatin1String("%{"))
-                && lexeme.endsWith(QLatin1Char('}'))) {
+        if (lexeme.startsWith("%{"_L1) && lexeme.endsWith(u'}')) {
             // placeholder
             if (lexeme == QLatin1String(typeTokenC)) {
                 tokens[i] = typeTokenC;
@@ -1203,7 +1203,7 @@ void QMessagePattern::setPattern(const QString &pattern)
                 if (m.hasMatch()) {
                     int depth = m.capturedView(1).toInt();
                     if (depth <= 0)
-                        error += QLatin1String("QT_MESSAGE_PATTERN: %{backtrace} depth must be a number greater than 0\n");
+                        error += "QT_MESSAGE_PATTERN: %{backtrace} depth must be a number greater than 0\n"_L1;
                     else
                         backtraceDepth = depth;
                 }
@@ -1215,7 +1215,7 @@ void QMessagePattern::setPattern(const QString &pattern)
                 backtraceParams.backtraceSeparator = backtraceSeparator;
                 backtraceArgs.append(backtraceParams);
 #else
-                error += QLatin1String("QT_MESSAGE_PATTERN: %{backtrace} is not supported by this Qt build\n");
+                error += "QT_MESSAGE_PATTERN: %{backtrace} is not supported by this Qt build\n"_L1;
                 tokens[i] = "";
 #endif
             }
@@ -1237,7 +1237,7 @@ void QMessagePattern::setPattern(const QString &pattern)
             else if (lexeme == QLatin1String(endifTokenC)) {
                 tokens[i] = endifTokenC;
                 if (!inIf && !nestedIfError)
-                    error += QLatin1String("QT_MESSAGE_PATTERN: %{endif} without an %{if-*}\n");
+                    error += "QT_MESSAGE_PATTERN: %{endif} without an %{if-*}\n"_L1;
                 inIf = false;
             } else {
                 tokens[i] = emptyTokenC;
@@ -1253,9 +1253,9 @@ void QMessagePattern::setPattern(const QString &pattern)
         }
     }
     if (nestedIfError)
-        error += QLatin1String("QT_MESSAGE_PATTERN: %{if-*} cannot be nested\n");
+        error += "QT_MESSAGE_PATTERN: %{if-*} cannot be nested\n"_L1;
     else if (inIf)
-        error += QLatin1String("QT_MESSAGE_PATTERN: missing %{endif}\n");
+        error += "QT_MESSAGE_PATTERN: missing %{endif}\n"_L1;
 
     if (!error.isEmpty())
         qt_message_print(error);
@@ -1303,19 +1303,19 @@ static QStringList backtraceFramesForLogMessage(int frameCount)
     buffer.resize(n);
 
     auto shouldSkipFrame = [&result](const auto &library, const auto &function) {
-        if (!result.isEmpty() || !library.contains(QLatin1String("Qt6Core")))
+        if (!result.isEmpty() || !library.contains("Qt6Core"_L1))
             return false;
         if (function.isEmpty())
             return true;
-        if (function.contains(QLatin1String("6QDebug")))
+        if (function.contains("6QDebug"_L1))
             return true;
-        if (function.contains(QLatin1String("Message")) || function.contains(QLatin1String("_message")))
+        if (function.contains("Message"_L1) || function.contains("_message"_L1))
             return true;
         return false;
     };
 
     auto demangled = [](auto &function) -> QString {
-        if (!function.startsWith(QLatin1String("_Z")))
+        if (!function.startsWith("_Z"_L1))
             return function;
 
         // we optimize for the case where __cxa_demangle succeeds
@@ -1392,7 +1392,7 @@ static QStringList backtraceFramesForLogMessage(int frameCount)
         DecodedFrame frame = decodeFrame(addr);
         if (!frame.library.isEmpty()) {
             if (frame.function.isEmpty())
-                result.append(QLatin1Char('?') + frame.library + QLatin1Char('?'));
+                result.append(u'?' + frame.library + u'?');
             else
                 result.append(frame.function);
         } else {
@@ -1418,7 +1418,7 @@ static QString formatBacktraceForLogMessage(const QMessagePattern::BacktracePara
         return QString();
 
     // if the first frame is unknown, replace it with the context function
-    if (function && frames.at(0).startsWith(QLatin1Char('?')))
+    if (function && frames.at(0).startsWith(u'?'))
         frames[0] = QString::fromUtf8(qCleanupFuncinfo(function));
 
     return frames.join(backtraceSeparator);
@@ -1492,24 +1492,24 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
 #endif
         } else if (token == typeTokenC) {
             switch (type) {
-            case QtDebugMsg:   message.append(QLatin1String("debug")); break;
-            case QtInfoMsg:    message.append(QLatin1String("info")); break;
-            case QtWarningMsg: message.append(QLatin1String("warning")); break;
-            case QtCriticalMsg:message.append(QLatin1String("critical")); break;
-            case QtFatalMsg:   message.append(QLatin1String("fatal")); break;
+            case QtDebugMsg:   message.append("debug"_L1); break;
+            case QtInfoMsg:    message.append("info"_L1); break;
+            case QtWarningMsg: message.append("warning"_L1); break;
+            case QtCriticalMsg:message.append("critical"_L1); break;
+            case QtFatalMsg:   message.append("fatal"_L1); break;
             }
         } else if (token == fileTokenC) {
             if (context.file)
                 message.append(QLatin1String(context.file));
             else
-                message.append(QLatin1String("unknown"));
+                message.append("unknown"_L1);
         } else if (token == lineTokenC) {
             message.append(QString::number(context.line));
         } else if (token == functionTokenC) {
             if (context.function)
                 message.append(QString::fromLatin1(qCleanupFuncinfo(context.function)));
             else
-                message.append(QLatin1String("unknown"));
+                message.append("unknown"_L1);
 #ifndef QT_BOOTSTRAPPED
         } else if (token == pidTokenC) {
             message.append(QString::number(QCoreApplication::applicationPid()));
@@ -1519,7 +1519,7 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
             // print the TID as decimal
             message.append(QString::number(qt_gettid()));
         } else if (token == qthreadptrTokenC) {
-            message.append(QLatin1String("0x"));
+            message.append("0x"_L1);
             message.append(QString::number(qlonglong(QThread::currentThread()->currentThread()), 16));
 #ifdef QLOGGING_HAVE_BACKTRACE
         } else if (token == backtraceTokenC) {
@@ -1530,10 +1530,10 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
         } else if (token == timeTokenC) {
             QString timeFormat = pattern->timeArgs.at(timeArgsIdx);
             timeArgsIdx++;
-            if (timeFormat == QLatin1String("process")) {
+            if (timeFormat == "process"_L1) {
                     quint64 ms = pattern->timer.elapsed();
                     message.append(QString::asprintf("%6d.%03d", uint(ms / 1000), uint(ms % 1000)));
-            } else if (timeFormat ==  QLatin1String("boot")) {
+            } else if (timeFormat == "boot"_L1) {
                 // just print the milliseconds since the elapsed timer reference
                 // like the Linux kernel does
                 uint ms = QDeadlineTimer::current().deadline();
@@ -1587,7 +1587,7 @@ static bool slog2_default_handler(QtMsgType type, const QMessageLogContext &cont
         return false; // Leave logging up to stderr handler
 
     QString formattedMessage = qFormatLogMessage(type, context, message);
-    formattedMessage.append(QLatin1Char('\n'));
+    formattedMessage.append(u'\n');
     if (slog2_set_default_buffer((slog2_buffer_t)-1) == 0) {
         slog2_buffer_set_config_t buffer_config;
         slog2_buffer_t buffer_handle;
@@ -1773,7 +1773,7 @@ static bool win_message_handler(QtMsgType type, const QMessageLogContext &contex
     if (shouldLogToStderr())
         return false; // Leave logging up to stderr handler
 
-    const QString formattedMessage = qFormatLogMessage(type, context, message).append(QLatin1Char('\n'));
+    const QString formattedMessage = qFormatLogMessage(type, context, message).append(u'\n');
     win_outputDebugString_helper(formattedMessage);
 
     return true; // Prevent further output to stderr
@@ -1980,7 +1980,7 @@ void qErrnoWarning(const char *msg, ...)
     QString buf = QString::vasprintf(msg, ap);
     va_end(ap);
 
-    buf += QLatin1String(" (") + error_string + QLatin1Char(')');
+    buf += " ("_L1 + error_string + u')';
     QMessageLogContext context;
     qt_message_output(QtCriticalMsg, context, buf);
 }
@@ -1994,7 +1994,7 @@ void qErrnoWarning(int code, const char *msg, ...)
     QString buf = QString::vasprintf(msg, ap);
     va_end(ap);
 
-    buf += QLatin1String(" (") + qt_error_string(code) + QLatin1Char(')');
+    buf += " ("_L1 + qt_error_string(code) + u')';
     QMessageLogContext context;
     qt_message_output(QtCriticalMsg, context, buf);
 }

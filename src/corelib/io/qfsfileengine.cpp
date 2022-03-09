@@ -60,6 +60,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #ifdef Q_OS_WIN
 #  ifndef S_ISREG
 #    define S_ISREG(x)   (((x) & S_IFMT) == S_IFREG)
@@ -173,14 +175,14 @@ ProcessOpenModeResult processOpenModeFlags(QIODevice::OpenMode openMode)
     result.ok = false;
     if ((openMode & QFile::NewOnly) && (openMode & QFile::ExistingOnly)) {
         qWarning("NewOnly and ExistingOnly are mutually exclusive");
-        result.error = QLatin1String("NewOnly and ExistingOnly are mutually exclusive");
+        result.error = "NewOnly and ExistingOnly are mutually exclusive"_L1;
         return result;
     }
 
     if ((openMode & QFile::ExistingOnly) && !(openMode & (QFile::ReadOnly | QFile::WriteOnly))) {
         qWarning("ExistingOnly must be specified alongside ReadOnly, WriteOnly, or ReadWrite");
-        result.error = QLatin1String(
-                    "ExistingOnly must be specified alongside ReadOnly, WriteOnly, or ReadWrite");
+        result.error =
+                    "ExistingOnly must be specified alongside ReadOnly, WriteOnly, or ReadWrite"_L1;
         return result;
     }
 
@@ -235,7 +237,7 @@ bool QFSFileEngine::open(QIODevice::OpenMode openMode,
     Q_D(QFSFileEngine);
     if (d->fileEntry.isEmpty()) {
         qWarning("QFSFileEngine::open: No file name specified");
-        setError(QFile::OpenError, QLatin1String("No file name specified"));
+        setError(QFile::OpenError, "No file name specified"_L1);
         return false;
     }
 

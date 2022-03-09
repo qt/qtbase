@@ -61,6 +61,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static_assert(std::is_nothrow_move_constructible_v<QTemporaryDir>);
 static_assert(std::is_nothrow_move_assignable_v<QTemporaryDir>);
 
@@ -95,9 +97,9 @@ static QString defaultTemplateName()
     baseName = QCoreApplication::applicationName();
     if (baseName.isEmpty())
 #endif
-        baseName = QLatin1String("qt_temp");
+        baseName = "qt_temp"_L1;
 
-    return QDir::tempPath() + QLatin1Char('/') + baseName + QLatin1String("-XXXXXX");
+    return QDir::tempPath() + u'/' + baseName + "-XXXXXX"_L1;
 }
 
 void QTemporaryDirPrivate::create(const QString &templateName)
@@ -302,7 +304,7 @@ QString QTemporaryDir::filePath(const QString &fileName) const
 
     QString ret = d_ptr->pathOrError;
     if (!fileName.isEmpty()) {
-        ret += QLatin1Char('/');
+        ret += u'/';
         ret += fileName;
     }
     return ret;
@@ -347,7 +349,7 @@ bool QTemporaryDir::remove()
     if (!d_ptr->success)
         return false;
     Q_ASSERT(!path().isEmpty());
-    Q_ASSERT(path() != QLatin1String("."));
+    Q_ASSERT(path() != "."_L1);
 
     const bool result = QDir(path()).removeRecursively();
     if (!result) {

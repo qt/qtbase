@@ -419,7 +419,7 @@ static QUuid uuidFromString(QStringView text) noexcept
 static QUuid uuidFromString(QLatin1String text) noexcept
 {
     if (Q_UNLIKELY(text.size() < MaxStringUuidLength - 2
-                   || (text.front() == QLatin1Char('{') && text.size() < MaxStringUuidLength - 1))) {
+                   || (text.front() == '{' && text.size() < MaxStringUuidLength - 1))) {
         // Too short. Don't call _q_uuidFromHex(); QL1Ss need not be NUL-terminated,
         // and we don't want to read trailing garbage as potentially valid data.
         text = QLatin1String();

@@ -119,6 +119,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QStorageIterator
 {
 public:
@@ -190,7 +192,7 @@ template <typename String>
 static bool isParentOf(const String &parent, const QString &dirName)
 {
     return dirName.startsWith(parent) &&
-            (dirName.size() == parent.size() || dirName.at(parent.size()) == QLatin1Char('/') ||
+            (dirName.size() == parent.size() || dirName.at(parent.size()) == u'/' ||
              parent.size() == 1);
 }
 
@@ -214,11 +216,11 @@ static bool shouldIncludeFs(const QStorageIterator &it)
      */
 
     QString mountDir = it.rootPath();
-    if (isParentOf(QLatin1String("/dev"), mountDir)
-        || isParentOf(QLatin1String("/proc"), mountDir)
-        || isParentOf(QLatin1String("/sys"), mountDir)
-        || isParentOf(QLatin1String("/var/run"), mountDir)
-        || isParentOf(QLatin1String("/var/lock"), mountDir)) {
+    if (isParentOf("/dev"_L1, mountDir)
+        || isParentOf("/proc"_L1, mountDir)
+        || isParentOf("/sys"_L1, mountDir)
+        || isParentOf("/var/run"_L1, mountDir)
+        || isParentOf("/var/lock"_L1, mountDir)) {
         return false;
     }
 
@@ -767,8 +769,7 @@ static QString decodeFsEncString(const QString &str)
     int i = 0;
     while (i < str.size()) {
         if (i <= str.size() - 4) {    // we need at least four characters \xAB
-            if (str.at(i) == QLatin1Char('\\') &&
-                str.at(i+1) == QLatin1Char('x')) {
+            if (QStringView{str}.sliced(i).startsWith("\\x"_L1)) {
                 bool bOk;
                 const int code = QStringView{str}.mid(i+2, 2).toInt(&bOk, 16);
                 // only decode characters between 0x20 and 0x7f but not

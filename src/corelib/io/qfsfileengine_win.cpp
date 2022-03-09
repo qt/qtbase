@@ -69,11 +69,13 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static inline bool isUncPath(const QString &path)
 {
     // Starts with \\, but not \\.
-    return (path.startsWith(QLatin1String("\\\\"))
-            && path.size() > 2 && path.at(2) != QLatin1Char('.'));
+    return (path.startsWith("\\\\"_L1)
+            && path.size() > 2 && path.at(2) != u'.');
 }
 
 /*!
@@ -81,13 +83,13 @@ static inline bool isUncPath(const QString &path)
 */
 QString QFSFileEnginePrivate::longFileName(const QString &path)
 {
-    if (path.startsWith(QLatin1String("\\\\.\\")))
+    if (path.startsWith("\\\\.\\"_L1))
         return path;
 
     QString absPath = QFileSystemEngine::nativeAbsoluteFilePath(path);
-    QString prefix = QLatin1String("\\\\?\\");
+    QString prefix = "\\\\?\\"_L1;
     if (isUncPath(absPath)) {
-        prefix.append(QLatin1String("UNC\\")); // "\\\\?\\UNC\\"
+        prefix.append("UNC\\"_L1); // "\\\\?\\UNC\\"
         absPath.remove(0, 2);
     }
     return prefix + absPath;
@@ -438,7 +440,7 @@ QString QFSFileEngine::currentPath(const QString &fileName)
     QString ret;
     //if filename is a drive: then get the pwd of that drive
     if (fileName.length() >= 2 &&
-        fileName.at(0).isLetter() && fileName.at(1) == QLatin1Char(':')) {
+        fileName.at(0).isLetter() && fileName.at(1) == u':') {
         int drv = fileName.toUpper().at(0).toLatin1() - 'A' + 1;
         if (_getdrive() != drv) {
             wchar_t buf[PATH_MAX];
@@ -450,7 +452,7 @@ QString QFSFileEngine::currentPath(const QString &fileName)
         //just the pwd
         ret = QFileSystemEngine::currentPath().filePath();
     }
-    if (ret.length() >= 2 && ret[1] == QLatin1Char(':'))
+    if (ret.length() >= 2 && ret[1] == u':')
         ret[0] = ret.at(0).toUpper(); // Force uppercase drive letters.
     return ret;
 }

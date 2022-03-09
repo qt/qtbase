@@ -60,6 +60,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*  Keys are stored in QStrings. If the variable name starts with 'u', this is a "user"
     key, ie. "foo/bar/alpha/beta". If the variable name starts with 'r', this is a "registry"
     key, ie. "\foo\bar\alpha\beta". */
@@ -76,7 +78,7 @@ static const REGSAM registryPermissions = KEY_READ | KEY_WRITE;
 
 static QString keyPath(const QString &rKey)
 {
-    int idx = rKey.lastIndexOf(QLatin1Char('\\'));
+    int idx = rKey.lastIndexOf(u'\\');
     if (idx == -1)
         return QString();
     return rKey.left(idx + 1);
@@ -84,7 +86,7 @@ static QString keyPath(const QString &rKey)
 
 static QString keyName(const QString &rKey)
 {
-    int idx = rKey.lastIndexOf(QLatin1Char('\\'));
+    int idx = rKey.lastIndexOf(u'\\');
 
     QString res;
     if (idx == -1)
@@ -92,8 +94,8 @@ static QString keyName(const QString &rKey)
     else
         res = rKey.mid(idx + 1);
 
-    if (res == QLatin1String("Default") || res == QLatin1String("."))
-        res = QLatin1String("");
+    if (res == "Default"_L1 || res == "."_L1)
+        res = ""_L1;
 
     return res;
 }
@@ -248,7 +250,7 @@ static QStringList childKeysOrGroups(HKEY parentHandle, QSettingsPrivate::ChildS
             continue;
         }
         if (item.isEmpty())
-            item = QLatin1String(".");
+            item = "."_L1;
         result.append(item);
     }
     return result;
@@ -267,7 +269,7 @@ static void allKeys(HKEY parentHandle, const QString &rSubKey, NameSet *result, 
     for (int i = 0; i < childKeys.size(); ++i) {
         QString s = rSubKey;
         if (!s.isEmpty())
-            s += QLatin1Char('\\');
+            s += u'\\';
         s += childKeys.at(i);
         result->insert(s, QString());
     }
@@ -275,7 +277,7 @@ static void allKeys(HKEY parentHandle, const QString &rSubKey, NameSet *result, 
     for (int i = 0; i < childGroups.size(); ++i) {
         QString s = rSubKey;
         if (!s.isEmpty())
-            s += QLatin1Char('\\');
+            s += u'\\';
         s += childGroups.at(i);
         allKeys(parentHandle, s, result, access);
     }
@@ -411,9 +413,9 @@ QWinSettingsPrivate::QWinSettingsPrivate(QSettings::Scope scope, const QString &
     deleteWriteHandleOnExit = false;
 
     if (!organization.isEmpty()) {
-        QString prefix = QLatin1String("Software\\") + organization;
-        QString orgPrefix = prefix + QLatin1String("\\OrganizationDefaults");
-        QString appPrefix = prefix + QLatin1Char('\\') + application;
+        QString prefix = "Software\\"_L1 + organization;
+        QString orgPrefix = prefix + "\\OrganizationDefaults"_L1;
+        QString appPrefix = prefix + u'\\' + application;
 
         if (scope == QSettings::UserScope) {
             if (!application.isEmpty())
@@ -438,34 +440,34 @@ QWinSettingsPrivate::QWinSettingsPrivate(QString rPath, REGSAM access)
 {
     deleteWriteHandleOnExit = false;
 
-    if (rPath.startsWith(QLatin1Char('\\')))
+    if (rPath.startsWith(u'\\'))
         rPath.remove(0, 1);
 
     int keyLength;
     HKEY keyName;
 
-    if (rPath.startsWith(QLatin1String("HKEY_CURRENT_USER"))) {
+    if (rPath.startsWith("HKEY_CURRENT_USER"_L1)) {
         keyLength = 17;
         keyName = HKEY_CURRENT_USER;
-    } else if (rPath.startsWith(QLatin1String("HKCU"))) {
+    } else if (rPath.startsWith("HKCU"_L1)) {
         keyLength = 4;
         keyName = HKEY_CURRENT_USER;
-    } else if (rPath.startsWith(QLatin1String("HKEY_LOCAL_MACHINE"))) {
+    } else if (rPath.startsWith("HKEY_LOCAL_MACHINE"_L1)) {
         keyLength = 18;
         keyName = HKEY_LOCAL_MACHINE;
-    } else if (rPath.startsWith(QLatin1String("HKLM"))) {
+    } else if (rPath.startsWith("HKLM"_L1)) {
         keyLength = 4;
         keyName = HKEY_LOCAL_MACHINE;
-    } else if (rPath.startsWith(QLatin1String("HKEY_CLASSES_ROOT"))) {
+    } else if (rPath.startsWith("HKEY_CLASSES_ROOT"_L1)) {
         keyLength = 17;
         keyName = HKEY_CLASSES_ROOT;
-    } else if (rPath.startsWith(QLatin1String("HKCR"))) {
+    } else if (rPath.startsWith("HKCR"_L1)) {
         keyLength = 4;
         keyName = HKEY_CLASSES_ROOT;
-    } else if (rPath.startsWith(QLatin1String("HKEY_USERS"))) {
+    } else if (rPath.startsWith("HKEY_USERS"_L1)) {
         keyLength = 10;
         keyName = HKEY_USERS;
-    } else if (rPath.startsWith(QLatin1String("HKU"))) {
+    } else if (rPath.startsWith("HKU"_L1)) {
         keyLength = 3;
         keyName = HKEY_USERS;
     } else {
@@ -474,7 +476,7 @@ QWinSettingsPrivate::QWinSettingsPrivate(QString rPath, REGSAM access)
 
     if (rPath.length() == keyLength)
         regList.append(RegistryKey(keyName, QString(), false, access));
-    else if (rPath[keyLength] == QLatin1Char('\\'))
+    else if (rPath[keyLength] == u'\\')
         regList.append(RegistryKey(keyName, rPath.mid(keyLength+1), false, access));
 }
 
@@ -773,7 +775,7 @@ QStringList QWinSettingsPrivate::children(const QString &uKey, ChildSpec spec) c
 
         if (spec == AllKeys) {
             NameSet keys;
-            allKeys(handle, QLatin1String(""), &keys, access);
+            allKeys(handle, ""_L1, &keys, access);
             mergeKeySets(&result, keys);
         } else { // ChildGroups or ChildKeys
             QStringList names = childKeysOrGroups(handle, spec);
@@ -813,9 +815,9 @@ QString QWinSettingsPrivate::fileName() const
     const RegistryKey &key = regList.at(0);
     QString result;
     if (key.parentHandle() == HKEY_CURRENT_USER)
-        result = QLatin1String("\\HKEY_CURRENT_USER\\");
+        result = "\\HKEY_CURRENT_USER\\"_L1;
     else
-        result = QLatin1String("\\HKEY_LOCAL_MACHINE\\");
+        result = "\\HKEY_LOCAL_MACHINE\\"_L1;
 
     return result + regList.at(0).key();
 }
