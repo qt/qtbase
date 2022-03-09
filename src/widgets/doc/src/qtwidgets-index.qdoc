@@ -113,46 +113,35 @@ interfaces
 
     \image graphicsview-items.png
 
-    \include module-use.qdocinc using qt module
-    \snippet snippets/CMakeLists.txt cmake_use
+    \section1 Using the Module
 
-    See also the \l {Build with CMake} overview.
+    \include {module-use.qdocinc} {using the c++ api}
 
-    \include module-use.qdocinc building with qmake
-    \snippet snippets.pro qmake_use
+    \section2 Building with CMake
 
-    \section1 Module Evolution
-    \l{Changes to Qt Widgets} lists important changes in the module API
-    and functionality that were done for the Qt 6 series of Qt.
+    \include {module-use.qdocinc} {building with cmake} {Widgets}
 
-    \section1 Licenses
+    \section2 Building with qmake
 
-    The Qt Widgets module is available under commercial licenses from \l{The Qt Company}.
-    In addition, it is available under free software licenses:
-    The \l{GNU Lesser General Public License, version 3}, or
-    the \l{GNU General Public License, version 2}.
-    See \l{Qt Licensing} for further details.
+    \include {module-use.qdocinc} {building_with_qmake} {widgets}
 
-    \section1 Related Information
+    \section1 Articles and Guides
 
-        \section2 Tutorials
     \list
         \li \l{Widgets Tutorial}
         \li \l{Getting Started Programming with Qt Widgets}
         \li \l{Creating a Qt Widget Based Application}
-
-
         \li \l{Model/View Tutorial}
     \endlist
 
-    \section2 Examples
+    \section1 Examples
+
     \list
         \li \l{Qt Widgets Examples}
         \li \l{Layout Examples}
     \endlist
 
     \section1 API Reference
-    These are links to the API reference materials.
 
     \list
         \li \l{Qt Widgets C++ Classes}
@@ -170,4 +159,16 @@ interfaces
         \li \l{Qt Style Sheets Reference}
     \endlist
 
+    \section1 Module Evolution
+
+    \l{Changes to Qt Widgets} lists important changes in the module API
+    and functionality that were done for the Qt 6 series of Qt.
+
+    \section1 Licenses
+
+    The Qt Widgets module is available under commercial licenses from \l{The Qt Company}.
+    In addition, it is available under free software licenses:
+    The \l{GNU Lesser General Public License, version 3}, or
+    the \l{GNU General Public License, version 2}.
+    See \l{Qt Licensing} for further details.
 */
