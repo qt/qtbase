@@ -44,7 +44,7 @@ QT_BEGIN_NAMESPACE
 QVkKhrDisplayVulkanInstance::QVkKhrDisplayVulkanInstance(QVulkanInstance *instance)
     : m_instance(instance)
 {
-    loadVulkanLibrary(QStringLiteral("vulkan"));
+    loadVulkanLibrary(QStringLiteral("vulkan"), 1);
 }
 
 void QVkKhrDisplayVulkanInstance::createOrAdoptInstance()

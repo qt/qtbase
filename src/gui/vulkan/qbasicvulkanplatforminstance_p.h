@@ -80,7 +80,7 @@ public:
     const QList<QVulkanInstance::DebugFilter> *debugFilters() const { return &m_debugFilters; }
 
 protected:
-    void loadVulkanLibrary(const QString &defaultLibraryName);
+    void loadVulkanLibrary(const QString &defaultLibraryName, int defaultLibraryVersion = -1);
     void init(QLibrary *lib);
     void initInstance(QVulkanInstance *instance, const QByteArrayList &extraExts);
 
@@ -92,7 +92,7 @@ protected:
 private:
     void setupDebugOutput();
 
-    QLibrary m_vulkanLib;
+    std::unique_ptr<QLibrary> m_vulkanLib;
 
     bool m_ownsVkInst;
     VkResult m_errorCode;
