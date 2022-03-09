@@ -381,7 +381,7 @@ void write_huffman_code(BitOStream &outputStream, const CodeEntry &code)
 // That's from HPACK's specs - we deal with octets.
 static_assert(std::numeric_limits<uchar>::digits == 8, "octets expected");
 
-quint64 huffman_encoded_bit_length(const QByteArray &inputData)
+quint64 huffman_encoded_bit_length(QByteArrayView inputData)
 {
     quint64 bitLength = 0;
     for (int i = 0, e = inputData.size(); i < e; ++i)
@@ -390,7 +390,7 @@ quint64 huffman_encoded_bit_length(const QByteArray &inputData)
     return bitLength;
 }
 
-void huffman_encode_string(const QByteArray &inputData, BitOStream &outputStream)
+void huffman_encode_string(QByteArrayView inputData, BitOStream &outputStream)
 {
     for (int i = 0, e = inputData.size(); i < e; ++i) {
         const auto value = uchar(inputData[i]);

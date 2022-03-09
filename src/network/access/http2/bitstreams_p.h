@@ -79,7 +79,7 @@ public:
     // * 32-bit integers
     // * strings
     void write(quint32 src);
-    void write(const QByteArray &src, bool compressed);
+    void write(QByteArrayView src, bool compressed);
 
     quint64 bitLength() const;
     quint64 byteLength() const;

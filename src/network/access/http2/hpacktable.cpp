@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 namespace HPack
 {
 
-HeaderSize entry_size(const QByteArray &name, const QByteArray &value)
+HeaderSize entry_size(QByteArrayView name, QByteArrayView value)
 {
     // 32 comes from HPACK:
     // "4.1 Calculating Table Size

@@ -99,7 +99,7 @@ void BitOStream::write(quint32 src)
     }
 }
 
-void BitOStream::write(const QByteArray &src, bool compressed)
+void BitOStream::write(QByteArrayView src, bool compressed)
 {
     quint32 byteLen = src.size();
     if (compressed && byteLen) {

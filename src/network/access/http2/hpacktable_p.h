@@ -88,7 +88,7 @@ struct Q_AUTOTEST_EXPORT HeaderField
 
 using HeaderSize = QPair<bool, quint32>;
 
-HeaderSize entry_size(const QByteArray &name, const QByteArray &value);
+HeaderSize entry_size(QByteArrayView name, QByteArrayView value);
 
 inline HeaderSize entry_size(const HeaderField &entry)
 {

@@ -69,8 +69,8 @@ struct CodeEntry
 
 class BitOStream;
 
-quint64 huffman_encoded_bit_length(const QByteArray &inputData);
-void huffman_encode_string(const QByteArray &inputData, BitOStream &outputStream);
+quint64 huffman_encoded_bit_length(QByteArrayView inputData);
+void huffman_encode_string(QByteArrayView inputData, BitOStream &outputStream);
 
 // PrefixTable:
 // Huffman codes with a small bit length
