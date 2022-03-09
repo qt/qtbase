@@ -779,7 +779,6 @@ static inline bool getFindData(QString path, WIN32_FIND_DATA &findData)
     return false;
 }
 
-#if defined(__IFileOperation_INTERFACE_DEFINED__)
 class FileOperationProgressSink : public IFileOperationProgressSink
 {
 public:
@@ -866,7 +865,6 @@ public:
 private:
     ULONG ref;
 };
-#endif
 
 bool QFileSystemEngine::uncListSharesOnServer(const QString &server, QStringList *list)
 {
@@ -1808,7 +1806,6 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
     // we need the "display name" of the file, so can't use nativeAbsoluteFilePath
     const QString sourcePath = QDir::toNativeSeparators(absoluteName(source).filePath());
 
-#  if defined(__IFileOperation_INTERFACE_DEFINED__)
     CoInitialize(nullptr);
     IFileOperation *pfo = nullptr;
     IShellItem *deleteItem = nullptr;
@@ -1845,9 +1842,7 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
         return false;
     newLocation = QFileSystemEntry(sink->targetPath);
 
-#  endif // no IFileOperation in SDK (mingw, likely) - fall back to SHFileOperation
     return true;
-
 }
 
 //static
