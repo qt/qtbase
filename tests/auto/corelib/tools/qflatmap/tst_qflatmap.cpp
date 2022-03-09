@@ -511,7 +511,7 @@ void tst_QFlatMap::transparency_using()
 {
     struct StringViewCompare
     {
-        using is_transparent = void;
+        using is_transparent [[maybe_unused]] = void;
         bool operator()(QAnyStringView lhs, QAnyStringView rhs) const
         {
             return lhs < rhs;
