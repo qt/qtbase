@@ -94,11 +94,11 @@ public:
     QJsonValueRef operator[] (const QString &key);
 #endif
     QJsonValue value(QStringView key) const;
-    QJsonValue value(QLatin1String key) const;
+    QJsonValue value(QLatin1StringView key) const;
     QJsonValue operator[] (QStringView key) const { return value(key); }
-    QJsonValue operator[] (QLatin1String key) const { return value(key); }
+    QJsonValue operator[] (QLatin1StringView key) const { return value(key); }
     QJsonValueRef operator[] (QStringView key);
-    QJsonValueRef operator[] (QLatin1String key);
+    QJsonValueRef operator[] (QLatin1StringView key);
 
 #if QT_STRINGVIEW_LEVEL < 2
     void remove(const QString &key);
@@ -106,11 +106,11 @@ public:
     bool contains(const QString &key) const;
 #endif
     void remove(QStringView key);
-    void remove(QLatin1String key);
+    void remove(QLatin1StringView key);
     QJsonValue take(QStringView key);
-    QJsonValue take(QLatin1String key);
+    QJsonValue take(QLatin1StringView key);
     bool contains(QStringView key) const;
-    bool contains(QLatin1String key) const;
+    bool contains(QLatin1StringView key) const;
 
     bool operator==(const QJsonObject &other) const;
     bool operator!=(const QJsonObject &other) const;
@@ -262,13 +262,13 @@ public:
     iterator insert(const QString &key, const QJsonValue &value);
 #endif
     iterator find(QStringView key);
-    iterator find(QLatin1String key);
+    iterator find(QLatin1StringView key);
     const_iterator find(QStringView key) const { return constFind(key); }
-    const_iterator find(QLatin1String key) const { return constFind(key); }
+    const_iterator find(QLatin1StringView key) const { return constFind(key); }
     const_iterator constFind(QStringView key) const;
-    const_iterator constFind(QLatin1String key) const;
+    const_iterator constFind(QLatin1StringView key) const;
     iterator insert(QStringView key, const QJsonValue &value);
-    iterator insert(QLatin1String key, const QJsonValue &value);
+    iterator insert(QLatin1StringView key, const QJsonValue &value);
 
     // STL compatibility
     typedef QJsonValue mapped_type;

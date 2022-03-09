@@ -101,7 +101,7 @@ static inline QString msgOpenDirectory()
 #if QT_CONFIG(translation)
     return QIODevice::tr(message);
 #else
-    return QLatin1String(message);
+    return QLatin1StringView(message);
 #endif
 }
 

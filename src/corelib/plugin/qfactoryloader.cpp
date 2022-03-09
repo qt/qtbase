@@ -230,7 +230,7 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
         bool metaDataOk = false;
 
         QString iid = library->metaData.value(QtPluginMetaDataKeys::IID).toString();
-        if (iid == QLatin1String(this->iid.constData(), this->iid.size())) {
+        if (iid == QLatin1StringView(this->iid.constData(), this->iid.size())) {
             QCborMap object = library->metaData.value(QtPluginMetaDataKeys::MetaData).toMap();
             metaDataOk = true;
 
@@ -381,7 +381,7 @@ QFactoryLoader::MetaDataList QFactoryLoader::metaData() const
         metaData.append(library->metaData);
 #endif
 
-    QLatin1String iid(d->iid.constData(), d->iid.size());
+    QLatin1StringView iid(d->iid.constData(), d->iid.size());
     const auto staticPlugins = QPluginLoader::staticPlugins();
     for (const QStaticPlugin &plugin : staticPlugins) {
         QByteArrayView pluginData(static_cast<const char *>(plugin.rawMetaData), plugin.rawMetaDataSize);
@@ -414,7 +414,7 @@ QObject *QFactoryLoader::instance(int index) const
     lock.unlock();
 #endif
 
-    QLatin1String iid(d->iid.constData(), d->iid.size());
+    QLatin1StringView iid(d->iid.constData(), d->iid.size());
     const QList<QStaticPlugin> staticPlugins = QPluginLoader::staticPlugins();
     for (QStaticPlugin plugin : staticPlugins) {
         QByteArrayView pluginData(static_cast<const char *>(plugin.rawMetaData), plugin.rawMetaDataSize);

@@ -69,6 +69,6 @@ using namespace Qt::StringLiterals;
 
     QString hello("hello");
     QStringView el = QStringView{ hello }.mid(2, 3);
-    QLatin1String world("world");
+    QLatin1StringView world("world");
     QString message =  hello % el % world % QChar('!');
 //! [5]

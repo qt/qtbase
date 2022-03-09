@@ -626,7 +626,8 @@ using qsizetype = QIntegerForSizeof<std::size_t>::Signed;
 #endif
 
 #ifdef QT_ASCII_CAST_WARNINGS
-#  define QT_ASCII_CAST_WARN Q_DECL_DEPRECATED_X("Use fromUtf8, QStringLiteral, or QLatin1String")
+#  define QT_ASCII_CAST_WARN \
+    Q_DECL_DEPRECATED_X("Use fromUtf8, QStringLiteral, or QLatin1StringView")
 #else
 #  define QT_ASCII_CAST_WARN
 #endif

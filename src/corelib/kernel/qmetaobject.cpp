@@ -160,13 +160,13 @@ static inline const char *rawStringData(const QMetaObject *mo, int index)
     return reinterpret_cast<const char *>(mo->d.stringdata) + offset;
 }
 
-static inline QLatin1String stringDataView(const QMetaObject *mo, int index)
+static inline QLatin1StringView stringDataView(const QMetaObject *mo, int index)
 {
     Q_ASSERT(priv(mo->d.data)->revision >= 7);
     uint offset = mo->d.stringdata[2*index];
     uint length = mo->d.stringdata[2*index + 1];
     const char *string = reinterpret_cast<const char *>(mo->d.stringdata) + offset;
-    return QLatin1String(string, length);
+    return QLatin1StringView(string, length);
 }
 
 static inline QByteArray stringData(const QMetaObject *mo, int index)
@@ -2833,11 +2833,11 @@ const char *QMetaEnum::valueToKey(int value) const
     return nullptr;
 }
 
-static auto parse_scope(QLatin1String qualifiedKey) noexcept
+static auto parse_scope(QLatin1StringView qualifiedKey) noexcept
 {
     struct R {
-        std::optional<QLatin1String> scope;
-        QLatin1String key;
+        std::optional<QLatin1StringView> scope;
+        QLatin1StringView key;
     };
     const auto scopePos = qualifiedKey.lastIndexOf("::"_L1);
     if (scopePos < 0)
@@ -2863,7 +2863,7 @@ int QMetaEnum::keysToValue(const char *keys, bool *ok) const
     if (!mobj || !keys)
         return -1;
 
-    auto lookup = [&] (QLatin1String key) -> std::optional<int> {
+    auto lookup = [&] (QLatin1StringView key) -> std::optional<int> {
         for (int i = data.keyCount() - 1; i >= 0; --i) {
             if (key == stringDataView(mobj, mobj->d.data[data.data() + 2*i]))
                 return mobj->d.data[data.data() + 2*i + 1];
@@ -2873,7 +2873,7 @@ int QMetaEnum::keysToValue(const char *keys, bool *ok) const
     auto className = [&] { return stringDataView(mobj, priv(mobj->d.data)->className); };
 
     int value = 0;
-    for (const QLatin1String &untrimmed : qTokenize(QLatin1String{keys}, u'|')) {
+    for (const QLatin1StringView &untrimmed : qTokenize(QLatin1StringView{keys}, u'|')) {
         const auto parsed = parse_scope(untrimmed.trimmed());
         if (parsed.scope && *parsed.scope != className())
             return -1; // wrong type name in qualified name
@@ -2920,7 +2920,7 @@ QByteArray QMetaEnum::valueToKeys(int value) const
     QByteArray keys;
     if (!mobj)
         return keys;
-    QVarLengthArray<QLatin1String, sizeof(int) * CHAR_BIT> parts;
+    QVarLengthArray<QLatin1StringView, sizeof(int) * CHAR_BIT> parts;
     int v = value;
     // reverse iterate to ensure values like Qt::Dialog=0x2|Qt::Window are processed first.
     for (int i = data.keyCount() - 1; i >= 0; --i) {

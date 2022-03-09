@@ -190,7 +190,7 @@ class Q_CORE_EXPORT QVariant
     QVariant(const QByteArray &bytearray);
     QVariant(const QBitArray &bitarray);
     QVariant(const QString &string);
-    QVariant(QLatin1String string);
+    QVariant(QLatin1StringView string);
     QVariant(const QStringList &stringlist);
     QVariant(QChar qchar);
     QVariant(QDate date);

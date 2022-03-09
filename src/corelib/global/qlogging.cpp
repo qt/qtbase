@@ -1105,7 +1105,7 @@ QMessagePattern::QMessagePattern()
 #endif
     const QString envPattern = QString::fromLocal8Bit(qgetenv("QT_MESSAGE_PATTERN"));
     if (envPattern.isEmpty()) {
-        setPattern(QLatin1String(defaultPattern));
+        setPattern(QLatin1StringView(defaultPattern));
         fromEnvironment = false;
     } else {
         setPattern(envPattern);
@@ -1165,34 +1165,34 @@ void QMessagePattern::setPattern(const QString &pattern)
         const QString lexeme = lexemes.at(i);
         if (lexeme.startsWith("%{"_L1) && lexeme.endsWith(u'}')) {
             // placeholder
-            if (lexeme == QLatin1String(typeTokenC)) {
+            if (lexeme == QLatin1StringView(typeTokenC)) {
                 tokens[i] = typeTokenC;
-            } else if (lexeme == QLatin1String(categoryTokenC))
+            } else if (lexeme == QLatin1StringView(categoryTokenC))
                 tokens[i] = categoryTokenC;
-            else if (lexeme == QLatin1String(messageTokenC))
+            else if (lexeme == QLatin1StringView(messageTokenC))
                 tokens[i] = messageTokenC;
-            else if (lexeme == QLatin1String(fileTokenC))
+            else if (lexeme == QLatin1StringView(fileTokenC))
                 tokens[i] = fileTokenC;
-            else if (lexeme == QLatin1String(lineTokenC))
+            else if (lexeme == QLatin1StringView(lineTokenC))
                 tokens[i] = lineTokenC;
-            else if (lexeme == QLatin1String(functionTokenC))
+            else if (lexeme == QLatin1StringView(functionTokenC))
                 tokens[i] = functionTokenC;
-            else if (lexeme == QLatin1String(pidTokenC))
+            else if (lexeme == QLatin1StringView(pidTokenC))
                 tokens[i] = pidTokenC;
-            else if (lexeme == QLatin1String(appnameTokenC))
+            else if (lexeme == QLatin1StringView(appnameTokenC))
                 tokens[i] = appnameTokenC;
-            else if (lexeme == QLatin1String(threadidTokenC))
+            else if (lexeme == QLatin1StringView(threadidTokenC))
                 tokens[i] = threadidTokenC;
-            else if (lexeme == QLatin1String(qthreadptrTokenC))
+            else if (lexeme == QLatin1StringView(qthreadptrTokenC))
                 tokens[i] = qthreadptrTokenC;
-            else if (lexeme.startsWith(QLatin1String(timeTokenC))) {
+            else if (lexeme.startsWith(QLatin1StringView(timeTokenC))) {
                 tokens[i] = timeTokenC;
                 int spaceIdx = lexeme.indexOf(QChar::fromLatin1(' '));
                 if (spaceIdx > 0)
                     timeArgs.append(lexeme.mid(spaceIdx + 1, lexeme.length() - spaceIdx - 2));
                 else
                     timeArgs.append(QString());
-            } else if (lexeme.startsWith(QLatin1String(backtraceTokenC))) {
+            } else if (lexeme.startsWith(QLatin1StringView(backtraceTokenC))) {
 #ifdef QLOGGING_HAVE_BACKTRACE
                 tokens[i] = backtraceTokenC;
                 QString backtraceSeparator = QStringLiteral("|");
@@ -1221,7 +1221,7 @@ void QMessagePattern::setPattern(const QString &pattern)
             }
 
 #define IF_TOKEN(LEVEL) \
-            else if (lexeme == QLatin1String(LEVEL)) { \
+            else if (lexeme == QLatin1StringView(LEVEL)) { \
                 if (inIf) \
                     nestedIfError = true; \
                 tokens[i] = LEVEL; \
@@ -1234,7 +1234,7 @@ void QMessagePattern::setPattern(const QString &pattern)
             IF_TOKEN(ifCriticalTokenC)
             IF_TOKEN(ifFatalTokenC)
 #undef IF_TOKEN
-            else if (lexeme == QLatin1String(endifTokenC)) {
+            else if (lexeme == QLatin1StringView(endifTokenC)) {
                 tokens[i] = endifTokenC;
                 if (!inIf && !nestedIfError)
                     error += "QT_MESSAGE_PATTERN: %{endif} without an %{if-*}\n"_L1;
@@ -1344,12 +1344,12 @@ static QStringList backtraceFramesForLogMessage(int frameCount)
             return {};
 
         // These are actually UTF-8, so we'll correct below
-        QLatin1String fn(info.dli_sname);
-        QLatin1String lib;
+        QLatin1StringView fn(info.dli_sname);
+        QLatin1StringView lib;
         if (const char *lastSlash = strrchr(info.dli_fname, '/'))
-            lib = QLatin1String(lastSlash + 1);
+            lib = QLatin1StringView(lastSlash + 1);
         else
-            lib = QLatin1String(info.dli_fname);
+            lib = QLatin1StringView(info.dli_fname);
 
         if (shouldSkipFrame(lib, fn))
             return {};
@@ -1488,7 +1488,7 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
         } else if (token == categoryTokenC) {
 #ifndef Q_OS_ANDROID
             // Don't add the category to the message on Android
-            message.append(QLatin1String(context.category));
+            message.append(QLatin1StringView(context.category));
 #endif
         } else if (token == typeTokenC) {
             switch (type) {
@@ -1500,7 +1500,7 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
             }
         } else if (token == fileTokenC) {
             if (context.file)
-                message.append(QLatin1String(context.file));
+                message.append(QLatin1StringView(context.file));
             else
                 message.append("unknown"_L1);
         } else if (token == lineTokenC) {
@@ -1559,7 +1559,7 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
         HANDLE_IF_TOKEN(Fatal)
 #undef HANDLE_IF_TOKEN
         } else {
-            message.append(QLatin1String(token));
+            message.append(QLatin1StringView(token));
         }
     }
     return message;

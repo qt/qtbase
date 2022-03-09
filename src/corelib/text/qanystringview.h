@@ -189,7 +189,7 @@ public:
     // defined in qstring.h
     inline QAnyStringView(const QByteArray &str) noexcept; // TODO: Should we have this at all? Remove?
     inline QAnyStringView(const QString &str) noexcept;
-    inline constexpr QAnyStringView(QLatin1String str) noexcept;
+    inline constexpr QAnyStringView(QLatin1StringView str) noexcept;
 
     // defined in qstringbuilder.h
     template <typename A, typename B>
@@ -308,7 +308,7 @@ private:
     { return Q_ASSERT(isUtf16()), QStringView{m_data_utf16, size()}; }
     [[nodiscard]] constexpr q_no_char8_t::QUtf8StringView asUtf8StringView() const
     { return Q_ASSERT(isUtf8()), q_no_char8_t::QUtf8StringView{m_data_utf8, size()}; }
-    [[nodiscard]] inline constexpr QLatin1String asLatin1StringView() const;
+    [[nodiscard]] inline constexpr QLatin1StringView asLatin1StringView() const;
     [[nodiscard]] constexpr size_t charSize() const noexcept { return isUtf16() ? 2 : 1; }
     Q_ALWAYS_INLINE constexpr void verify(qsizetype pos, qsizetype n = 0) const
     {

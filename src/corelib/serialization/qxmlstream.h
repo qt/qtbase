@@ -112,10 +112,10 @@ class QXmlStreamAttributes : public QList<QXmlStreamAttribute>
 public:
     inline QXmlStreamAttributes() {}
     Q_CORE_EXPORT QStringView value(const QString &namespaceUri, const QString &name) const;
-    Q_CORE_EXPORT QStringView value(const QString &namespaceUri, QLatin1String name) const;
-    Q_CORE_EXPORT QStringView value(QLatin1String namespaceUri, QLatin1String name) const;
+    Q_CORE_EXPORT QStringView value(const QString &namespaceUri, QLatin1StringView name) const;
+    Q_CORE_EXPORT QStringView value(QLatin1StringView namespaceUri, QLatin1StringView name) const;
     Q_CORE_EXPORT QStringView value(const QString &qualifiedName) const;
-    Q_CORE_EXPORT QStringView value(QLatin1String qualifiedName) const;
+    Q_CORE_EXPORT QStringView value(QLatin1StringView qualifiedName) const;
     Q_CORE_EXPORT void append(const QString &namespaceUri, const QString &name, const QString &value);
     Q_CORE_EXPORT void append(const QString &qualifiedName, const QString &value);
 
@@ -124,7 +124,7 @@ public:
         return !value(qualifiedName).isNull();
     }
 
-    inline bool hasAttribute(QLatin1String qualifiedName) const
+    inline bool hasAttribute(QLatin1StringView qualifiedName) const
     {
         return !value(qualifiedName).isNull();
     }

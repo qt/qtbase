@@ -217,46 +217,46 @@ QLocale::Territory QLocalePrivate::codeToTerritory(QStringView code) noexcept
     return QLocale::AnyTerritory;
 }
 
-QLatin1String QLocalePrivate::languageToCode(QLocale::Language language,
-                                             QLocale::LanguageCodeTypes codeTypes)
+QLatin1StringView QLocalePrivate::languageToCode(QLocale::Language language,
+                                                 QLocale::LanguageCodeTypes codeTypes)
 {
     if (language == QLocale::AnyLanguage || language > QLocale::LastLanguage)
-        return QLatin1String();
+        return {};
     if (language == QLocale::C)
         return "C"_L1;
 
     const LanguageCodeEntry &i = languageCodeList[language];
 
     if (codeTypes.testFlag(QLocale::ISO639Part1) && i.part1.isValid())
-        return QLatin1String(i.part1.code, 2);
+        return QLatin1StringView(i.part1.code, 2);
 
     if (codeTypes.testFlag(QLocale::ISO639Part2B) && i.part2B.isValid())
-        return QLatin1String(i.part2B.code, 3);
+        return QLatin1StringView(i.part2B.code, 3);
 
     if (codeTypes.testFlag(QLocale::ISO639Part2T) && i.part2T.isValid())
-        return QLatin1String(i.part2T.code, 3);
+        return QLatin1StringView(i.part2T.code, 3);
 
     if (codeTypes.testFlag(QLocale::ISO639Part3))
-        return QLatin1String(i.part3.code, 3);
+        return QLatin1StringView(i.part3.code, 3);
 
-    return QLatin1String();
+    return {};
 }
 
-QLatin1String QLocalePrivate::scriptToCode(QLocale::Script script)
+QLatin1StringView QLocalePrivate::scriptToCode(QLocale::Script script)
 {
     if (script == QLocale::AnyScript || script > QLocale::LastScript)
-        return QLatin1String();
+        return {};
     const unsigned char *c = script_code_list + 4 * script;
-    return QLatin1String(reinterpret_cast<const char *>(c), 4);
+    return QLatin1StringView(reinterpret_cast<const char *>(c), 4);
 }
 
-QLatin1String QLocalePrivate::territoryToCode(QLocale::Territory territory)
+QLatin1StringView QLocalePrivate::territoryToCode(QLocale::Territory territory)
 {
     if (territory == QLocale::AnyTerritory || territory > QLocale::LastTerritory)
-        return QLatin1String();
+        return {};
 
     const unsigned char *c = territory_code_list + 3 * territory;
-    return QLatin1String(reinterpret_cast<const char*>(c), c[2] == 0 ? 2 : 3);
+    return QLatin1StringView(reinterpret_cast<const char*>(c), c[2] == 0 ? 2 : 3);
 }
 
 namespace {
@@ -1553,7 +1553,7 @@ QString QLocale::languageToString(Language language)
 {
     if (language > QLocale::LastLanguage)
         return "Unknown"_L1;
-    return QLatin1String(language_name_list + language_name_index[language]);
+    return QLatin1StringView(language_name_list + language_name_index[language]);
 }
 
 /*!
@@ -1567,7 +1567,7 @@ QString QLocale::territoryToString(QLocale::Territory territory)
 {
     if (territory > QLocale::LastTerritory)
         return "Unknown"_L1;
-    return QLatin1String(territory_name_list + territory_name_index[territory]);
+    return QLatin1StringView(territory_name_list + territory_name_index[territory]);
 }
 
 #if QT_DEPRECATED_SINCE(6, 6)
@@ -1595,7 +1595,7 @@ QString QLocale::scriptToString(QLocale::Script script)
 {
     if (script > QLocale::LastScript)
         return "Unknown"_L1;
-    return QLatin1String(script_name_list + script_name_index[script]);
+    return QLatin1StringView(script_name_list + script_name_index[script]);
 }
 
 #if QT_STRINGVIEW_LEVEL < 2

@@ -181,7 +181,7 @@ public:
     QTextStream &operator<<(double f);
     QTextStream &operator<<(const QString &s);
     QTextStream &operator<<(QStringView s);
-    QTextStream &operator<<(QLatin1String s);
+    QTextStream &operator<<(QLatin1StringView s);
     QTextStream &operator<<(const QByteArray &array);
     QTextStream &operator<<(const char *c);
     QTextStream &operator<<(const void *ptr);

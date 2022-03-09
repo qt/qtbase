@@ -466,7 +466,7 @@ void QCborStreamWriter::append(QCborNegativeInteger n)
 
    \sa QCborStreamReader::isString(), QCborStreamReader::readString()
  */
-void QCborStreamWriter::append(QLatin1String str)
+void QCborStreamWriter::append(QLatin1StringView str)
 {
     // We've got Latin-1 but CBOR wants UTF-8, so check if the string is the
     // common subset (US-ASCII).
@@ -639,11 +639,11 @@ void QCborStreamWriter::appendByteString(const char *data, qsizetype len)
    The string pointed to by \a utf8 is expected to be properly encoded UTF-8.
    QCborStreamWriter performs no validation that this is the case.
 
-   Unlike the QLatin1String overload of append(), this function is not limited
+   Unlike the QLatin1StringView overload of append(), this function is not limited
    to 2 GB. However, note that neither QCborStreamReader::readString() nor
    QCborValue support reading CBOR streams with text strings larger than 2 GB.
 
-   \sa append(QLatin1String), append(QStringView),
+   \sa append(QLatin1StringView), append(QStringView),
        QCborStreamReader::isString(), QCborStreamReader::readString()
  */
 void QCborStreamWriter::appendTextString(const char *utf8, qsizetype len)
@@ -663,11 +663,11 @@ void QCborStreamWriter::appendTextString(const char *utf8, qsizetype len)
    The string pointed to by \a str is expected to be properly encoded UTF-8.
    QCborStreamWriter performs no validation that this is the case.
 
-   Unlike the QLatin1String overload of append(), this function is not limited
+   Unlike the QLatin1StringView overload of append(), this function is not limited
    to 2 GB. However, note that neither QCborStreamReader nor QCborValue support
    reading CBOR streams with text strings larger than 2 GB.
 
-   \sa append(QLatin1String), append(QStringView),
+   \sa append(QLatin1StringView), append(QStringView),
        QCborStreamReader::isString(), QCborStreamReader::readString()
  */
 

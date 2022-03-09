@@ -56,7 +56,7 @@ using namespace Qt::StringLiterals;
 static constexpr bool IncludeValidityChecks = true;
 
 static constexpr inline auto metadataSectionName() noexcept { return ".qtmetadata"_L1; }
-static constexpr QLatin1String truncatedSectionName =
+static constexpr QLatin1StringView truncatedSectionName =
         metadataSectionName().left(sizeof(IMAGE_SECTION_HEADER::Name));
 
 #ifdef QT_BUILD_INTERNAL
@@ -328,7 +328,7 @@ findStringTable(QByteArrayView data, const IMAGE_NT_HEADERS *ntHeader, const Err
     return data.sliced(off, size);
 }
 
-static QLatin1String findSectionName(const IMAGE_SECTION_HEADER *section, QByteArrayView stringTable)
+static QLatin1StringView findSectionName(const IMAGE_SECTION_HEADER *section, QByteArrayView stringTable)
 {
     auto ptr = reinterpret_cast<const char *>(section->Name);
     qsizetype n = qstrnlen(ptr, sizeof(section->Name));
@@ -344,13 +344,13 @@ static QLatin1String findSectionName(const IMAGE_SECTION_HEADER *section, QByteA
         bool ok;
         qsizetype offset = QByteArrayView(ptr + 1, n - 1).toUInt(&ok);
         if (!ok || offset >= stringTable.size())
-            return QLatin1String();
+            return {};
 
         ptr = stringTable.data() + offset;
         n = qstrnlen(ptr, stringTable.size() - offset);
     }
 
-    return QLatin1String(ptr, n);
+    return QLatin1StringView(ptr, n);
 }
 
 QLibraryScanResult QCoffPeParser::parse(QByteArrayView data, QString *errMsg)
@@ -373,7 +373,7 @@ QLibraryScanResult QCoffPeParser::parse(QByteArrayView data, QString *errMsg)
     // scan the sections now
     const auto sectionTableEnd = section + ntHeaders->FileHeader.NumberOfSections;
     for ( ; section < sectionTableEnd; ++section) {
-        QLatin1String sectionName = findSectionName(section, stringTable);
+        QLatin1StringView sectionName = findSectionName(section, stringTable);
         peDebug << "section" << sectionName << SectionDebug{section};
         if (IncludeValidityChecks && sectionName.isEmpty())
             return error(QLibrary::tr("a section name is empty or extends past the end of the file"));

@@ -698,11 +698,11 @@ static QLibraryScanResult scanSections(QByteArrayView data, const ErrorMaker &er
     const char *shstrtab_start = data.data() + offset;
     shdr = sections;
     for (int section = 0; shdr != sections_end; ++section, ++shdr) {
-        QLatin1String name;
+        QLatin1StringView name;
         if (shdr->sh_name < shstrtab_size) {
             const char *namestart = shstrtab_start + shdr->sh_name;
             size_t len = qstrnlen(namestart, shstrtab_size - shdr->sh_name);
-            name = QLatin1String(namestart, len);
+            name = QLatin1StringView(namestart, len);
         }
         qEDebug << "section" << section << "name" << name << ElfSectionDebug{shdr};
 

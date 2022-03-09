@@ -611,7 +611,7 @@ namespace QtPrivate {
     inline QObject & deref_for_methodcall(QObject &o) { return  o; }
     inline QObject & deref_for_methodcall(QObject *o) { return *o; }
 }
-#define Q_SET_OBJECT_NAME(obj) QT_PREPEND_NAMESPACE(QtPrivate)::deref_for_methodcall(obj).setObjectName(QLatin1String(#obj))
+#define Q_SET_OBJECT_NAME(obj) QT_PREPEND_NAMESPACE(QtPrivate)::deref_for_methodcall(obj).setObjectName(QLatin1StringView(#obj))
 
 QT_END_NAMESPACE
 

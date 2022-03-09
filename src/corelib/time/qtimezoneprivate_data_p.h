@@ -80,7 +80,7 @@ struct QZoneData
     quint16 windowsIdKey;      // Windows ID Key
     quint16 territory;         // Territory of IANA ID's, AnyTerritory means No Territory
     quint16 ianaIdIndex;       // All IANA ID's for the Windows ID and Country, space separated
-    inline QLatin1String id() const;
+    inline QLatin1StringView id() const;
     inline auto ids() const { return id().tokenize(u' '); }
 };
 
@@ -1272,7 +1272,8 @@ static const char ianaIdData[] = {
 inline QByteArrayView QWindowsData::windowsId() const { return windowsIdData + windowsIdIndex; }
 inline QByteArrayView QWindowsData::ianaId() const { return ianaIdData + ianaIdIndex; }
 inline QByteArrayView QUtcData::id() const { return ianaIdData + ianaIdIndex; }
-inline QLatin1String QZoneData::id() const { return QLatin1String(ianaIdData + ianaIdIndex); }
+inline QLatin1StringView QZoneData::id() const
+{ return QLatin1StringView(ianaIdData + ianaIdIndex); }
 
 QT_END_NAMESPACE
 

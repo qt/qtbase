@@ -87,11 +87,11 @@ QT_BEGIN_NAMESPACE
             QChar constructor by itself.
         \li \e QString: if you store an unmodified copy of the string and thus would
             like to take advantage of QString's implicit sharing.
-        \li QLatin1String: if you can implement the function without converting the
-            QLatin1String to UTF-16 first; users expect a function overloaded on
-            QLatin1String to perform strictly less memory allocations than the
+        \li QLatin1StringView: if you can implement the function without converting the
+            QLatin1StringView to UTF-16 first; users expect a function overloaded on
+            QLatin1StringView to perform strictly less memory allocations than the
             semantically equivalent call of the QStringView version, involving
-            construction of a QString from the QLatin1String.
+            construction of a QString from the QLatin1StringView.
     \endlist
 
     QStringView can also be used as the return value of a function. If you call a
@@ -564,7 +564,7 @@ QT_BEGIN_NAMESPACE
     second of the \a args the \c{%N} with the next-lowest \c{N} etc.
 
     \c Args can consist of anything that implicitly converts to QString,
-    QStringView or QLatin1String.
+    QStringView or QLatin1StringView.
 
     In addition, the following types are also supported: QChar, QLatin1Char.
 
@@ -779,7 +779,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn int QStringView::compare(QLatin1String l1, Qt::CaseSensitivity cs) const
+    \fn int QStringView::compare(QLatin1StringView l1, Qt::CaseSensitivity cs) const
     \fn int QStringView::compare(QChar ch) const
     \fn int QStringView::compare(QChar ch, Qt::CaseSensitivity cs) const
     \since 5.15
@@ -823,7 +823,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn bool QStringView::startsWith(QStringView str, Qt::CaseSensitivity cs) const
-    \fn bool QStringView::startsWith(QLatin1String l1, Qt::CaseSensitivity cs) const
+    \fn bool QStringView::startsWith(QLatin1StringView l1, Qt::CaseSensitivity cs) const
     \fn bool QStringView::startsWith(QChar ch) const
     \fn bool QStringView::startsWith(QChar ch, Qt::CaseSensitivity cs) const
 
@@ -839,7 +839,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn bool QStringView::endsWith(QStringView str, Qt::CaseSensitivity cs) const
-    \fn bool QStringView::endsWith(QLatin1String l1, Qt::CaseSensitivity cs) const
+    \fn bool QStringView::endsWith(QLatin1StringView l1, Qt::CaseSensitivity cs) const
     \fn bool QStringView::endsWith(QChar ch) const
     \fn bool QStringView::endsWith(QChar ch, Qt::CaseSensitivity cs) const
 
@@ -855,7 +855,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn qsizetype QStringView::indexOf(QStringView str, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
-    \fn qsizetype QStringView::indexOf(QLatin1String l1, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \fn qsizetype QStringView::indexOf(QLatin1StringView l1, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
     \fn qsizetype QStringView::indexOf(QChar c, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
     \since 5.14
 
@@ -874,7 +874,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn bool QStringView::contains(QStringView str, Qt::CaseSensitivity cs) const
-    \fn bool QStringView::contains(QLatin1String l1, Qt::CaseSensitivity cs) const
+    \fn bool QStringView::contains(QLatin1StringView l1, Qt::CaseSensitivity cs) const
     \fn bool QStringView::contains(QChar c, Qt::CaseSensitivity cs) const
     \since 5.14
 
@@ -889,7 +889,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn qsizetype QStringView::lastIndexOf(QStringView str, qsizetype from, Qt::CaseSensitivity cs) const
-    \fn qsizetype QStringView::lastIndexOf(QLatin1String l1, qsizetype from, Qt::CaseSensitivity cs) const
+    \fn qsizetype QStringView::lastIndexOf(QLatin1StringView l1, qsizetype from, Qt::CaseSensitivity cs) const
     \fn qsizetype QStringView::lastIndexOf(QChar c, qsizetype from, Qt::CaseSensitivity cs) const
     \since 5.14
 
@@ -915,7 +915,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn qsizetype QStringView::lastIndexOf(QStringView str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
-    \fn qsizetype QStringView::lastIndexOf(QLatin1String l1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \fn qsizetype QStringView::lastIndexOf(QLatin1StringView l1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
     \since 6.2
     \overload lastIndexOf()
 
@@ -1168,7 +1168,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn qsizetype QStringView::count(QLatin1String l1, Qt::CaseSensitivity cs) const noexcept
+    \fn qsizetype QStringView::count(QLatin1StringView l1, Qt::CaseSensitivity cs) const noexcept
 
     \since 6.4
     \overload count()

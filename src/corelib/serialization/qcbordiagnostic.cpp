@@ -77,7 +77,7 @@ private:
             ++dn->nestingLevel;
             static const char indent[IndentationWidth + 1] = "    ";
             if (dn->opts & QCborValue::LineWrapped)
-                dn->separator += QLatin1String(indent, IndentationWidth);
+                dn->separator += QLatin1StringView(indent, IndentationWidth);
         }
         ~Nest()
         {
@@ -213,10 +213,10 @@ void DiagnosticNotation::appendArray(const QCborArray &a)
     result += u'[';
 
     // length 2 (including the space) when not line wrapping
-    QLatin1String commaValue(", ", opts & QCborValue::LineWrapped ? 1 : 2);
+    QLatin1StringView commaValue(", ", opts & QCborValue::LineWrapped ? 1 : 2);
     {
         Nest n(this);
-        QLatin1String comma;
+        QLatin1StringView comma;
         for (auto v : a) {
             result += comma + separator;
             comma = commaValue;
@@ -232,10 +232,10 @@ void DiagnosticNotation::appendMap(const QCborMap &m)
     result += u'{';
 
     // length 2 (including the space) when not line wrapping
-    QLatin1String commaValue(", ", opts & QCborValue::LineWrapped ? 1 : 2);
+    QLatin1StringView commaValue(", ", opts & QCborValue::LineWrapped ? 1 : 2);
     {
         Nest n(this);
-        QLatin1String comma;
+        QLatin1StringView comma;
         for (auto v : m) {
             result += comma + separator;
             comma = commaValue;

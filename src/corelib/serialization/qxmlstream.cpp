@@ -757,8 +757,8 @@ bool QXmlStreamReader::namespaceProcessing() const
 QString QXmlStreamReader::tokenString() const
 {
     Q_D(const QXmlStreamReader);
-    return QLatin1String(QXmlStreamReader_tokenTypeString_string +
-                         QXmlStreamReader_tokenTypeString_indices[d->type]);
+    return QLatin1StringView(QXmlStreamReader_tokenTypeString_string +
+                             QXmlStreamReader_tokenTypeString_indices[d->type]);
 }
 
 #endif // QT_NO_XMLSTREAMREADER
@@ -1853,22 +1853,27 @@ void QXmlStreamReaderPrivate::parseError()
 
     if (nexpected && nexpected < nmax) {
         //: '<first option>'
-        QString exp_str = QXmlStream::tr("'%1'", "expected").arg(QLatin1String(spell[expected[0]]));
+        QString exp_str = QXmlStream::tr("'%1'", "expected")
+                .arg(QLatin1StringView(spell[expected[0]]));
         if (nexpected == 2) {
             //: <first option>, '<second option>'
-            exp_str = QXmlStream::tr("%1 or '%2'", "expected").arg(exp_str, QLatin1String(spell[expected[1]]));
+            exp_str = QXmlStream::tr("%1 or '%2'", "expected")
+                    .arg(exp_str, QLatin1StringView(spell[expected[1]]));
         } else if (nexpected > 2) {
             int s = 1;
             for (; s < nexpected - 1; ++s) {
                 //: <options so far>, '<next option>'
-                exp_str = QXmlStream::tr("%1, '%2'", "expected").arg(exp_str, QLatin1String(spell[expected[s]]));
+                exp_str = QXmlStream::tr("%1, '%2'", "expected")
+                        .arg(exp_str, QLatin1StringView(spell[expected[s]]));
             }
             //: <options so far>, or '<final option>'
-            exp_str = QXmlStream::tr("%1, or '%2'", "expected").arg(exp_str, QLatin1String(spell[expected[s]]));
+            exp_str = QXmlStream::tr("%1, or '%2'", "expected")
+                    .arg(exp_str, QLatin1StringView(spell[expected[s]]));
         }
-        error_message = QXmlStream::tr("Expected %1, but got '%2'.").arg(exp_str, QLatin1String(spell[token]));
+        error_message = QXmlStream::tr("Expected %1, but got '%2'.")
+                .arg(exp_str, QLatin1StringView(spell[token]));
     } else {
-        error_message = QXmlStream::tr("Unexpected '%1'.").arg(QLatin1String(spell[token]));
+        error_message = QXmlStream::tr("Unexpected '%1'.").arg(QLatin1StringView(spell[token]));
     }
 
     raiseWellFormedError(error_message);
@@ -2572,7 +2577,7 @@ QStringView QXmlStreamAttributes::value(const QString &namespaceUri, const QStri
   described with \a namespaceUri, or an empty string reference if the
   attribute is not defined. The \a namespaceUri can be empty.
  */
-QStringView QXmlStreamAttributes::value(const QString &namespaceUri, QLatin1String name) const
+QStringView QXmlStreamAttributes::value(const QString &namespaceUri, QLatin1StringView name) const
 {
     for (const QXmlStreamAttribute &attribute : *this) {
         if (attribute.name() == name && attribute.namespaceUri() == namespaceUri)
@@ -2586,7 +2591,8 @@ QStringView QXmlStreamAttributes::value(const QString &namespaceUri, QLatin1Stri
   described with \a namespaceUri, or an empty string reference if the
   attribute is not defined. The \a namespaceUri can be empty.
  */
-QStringView QXmlStreamAttributes::value(QLatin1String namespaceUri, QLatin1String name) const
+QStringView QXmlStreamAttributes::value(QLatin1StringView namespaceUri,
+                                        QLatin1StringView name) const
 {
     for (const QXmlStreamAttribute &attribute : *this) {
         if (attribute.name() == name && attribute.namespaceUri() == namespaceUri)
@@ -2628,7 +2634,7 @@ QStringView QXmlStreamAttributes::value(const QString &qualifiedName) const
   use qualified names, but a resolved namespaceUri and the attribute's
   local name.
  */
-QStringView QXmlStreamAttributes::value(QLatin1String qualifiedName) const
+QStringView QXmlStreamAttributes::value(QLatin1StringView qualifiedName) const
 {
     for (const QXmlStreamAttribute &attribute : *this) {
         if (attribute.qualifiedName() == qualifiedName)
@@ -3765,7 +3771,7 @@ void QXmlStreamWriter::writeCurrentToken(const QXmlStreamReader &reader)
 */
 
 /*!
- \fn bool QXmlStreamAttributes::hasAttribute(QLatin1String qualifiedName) const
+ \fn bool QXmlStreamAttributes::hasAttribute(QLatin1StringView qualifiedName) const
  \overload
  \since 4.5
 */

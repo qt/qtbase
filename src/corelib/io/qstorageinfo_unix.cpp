@@ -796,7 +796,7 @@ static inline QString retrieveLabel(const QByteArray &device)
     QFileInfo devinfo(QFile::decodeName(device));
     QString devicePath = devinfo.canonicalFilePath();
 
-    QDirIterator it(QLatin1String(pathDiskByLabel), QDir::NoDotAndDotDot);
+    QDirIterator it(QLatin1StringView(pathDiskByLabel), QDir::NoDotAndDotDot);
     while (it.hasNext()) {
         QFileInfo fileInfo = it.nextFileInfo();
         if (fileInfo.isSymLink() && fileInfo.symLinkTarget() == devicePath)

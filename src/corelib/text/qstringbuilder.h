@@ -63,7 +63,7 @@ protected:
     {
         *out++ = QLatin1Char(a);
     }
-    static void appendLatin1To(QLatin1String in, QChar *out) noexcept;
+    static void appendLatin1To(QLatin1StringView in, QChar *out) noexcept;
 };
 
 template <typename T> struct QConcatenable {};
@@ -250,18 +250,18 @@ template <> struct QConcatenable<QChar::SpecialCharacter> : private QAbstractCon
     { *out++ = c; }
 };
 
-template <> struct QConcatenable<QLatin1String> : private QAbstractConcatenable
+template <> struct QConcatenable<QLatin1StringView> : private QAbstractConcatenable
 {
-    typedef QLatin1String type;
+    typedef QLatin1StringView type;
     typedef QString ConvertTo;
     enum { ExactSize = true };
-    static qsizetype size(const QLatin1String a) { return a.size(); }
-    static inline void appendTo(const QLatin1String a, QChar *&out)
+    static qsizetype size(const QLatin1StringView a) { return a.size(); }
+    static inline void appendTo(const QLatin1StringView a, QChar *&out)
     {
         appendLatin1To(a, out);
         out += a.size();
     }
-    static inline void appendTo(const QLatin1String a, char *&out)
+    static inline void appendTo(const QLatin1StringView a, char *&out)
     {
         if (const char *data = a.data()) {
             memcpy(out, data, a.size());

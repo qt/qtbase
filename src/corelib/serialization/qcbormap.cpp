@@ -328,7 +328,7 @@ QList<QCborValue> QCborMap::keys() const
     duplicate keys is usually an indication of a problem in the sender.
 
     \sa operator[](qint64), find(qint64), constFind(qint64), remove(qint64), contains(qint64)
-        value(QLatin1String), value(const QString &), value(const QCborValue &)
+        value(QLatin1StringView), value(const QString &), value(const QCborValue &)
  */
 
 /*!
@@ -350,7 +350,8 @@ QList<QCborValue> QCborMap::keys() const
     is usually an indication of a problem in the sender.
 
     \sa value(qint64), find(qint64), constFind(qint64), remove(qint64), contains(qint64)
-        operator[](QLatin1String), operator[](const QString &), operator[](const QCborOperator[] &)
+        operator[](QLatin1StringView), operator[](const QString &),
+        operator[](const QCborOperator[] &)
  */
 
 /*!
@@ -366,7 +367,7 @@ QList<QCborValue> QCborMap::keys() const
     is usually an indication of a problem in the sender.
 
     \sa value(qint64), operator[](qint64), find(qint64), contains(qint64),
-      take(QLatin1String), take(const QString &), take(const QCborValue &), insert()
+        take(QLatin1StringView), take(const QString &), take(const QCborValue &), insert()
  */
 
 /*!
@@ -382,7 +383,7 @@ QList<QCborValue> QCborMap::keys() const
     is usually an indication of a problem in the sender.
 
     \sa value(qint64), operator[](qint64), find(qint64), contains(qint64)
-        remove(QLatin1String), remove(const QString &), remove(const QCborValue &)
+        remove(QLatin1StringView), remove(const QString &), remove(const QCborValue &)
  */
 
 /*!
@@ -393,7 +394,7 @@ QList<QCborValue> QCborMap::keys() const
     are simpler to encode and decode.
 
     \sa value(qint64), operator[](qint64), find(qint64), remove(qint64),
-        contains(QLatin1String), remove(const QString &), remove(const QCborValue &)
+        contains(QLatin1StringView), remove(const QString &), remove(const QCborValue &)
  */
 
 /*!
@@ -418,7 +419,7 @@ QList<QCborValue> QCborMap::keys() const
     is usually an indication of a problem in the sender.
 
     \sa value(qint64), find(qint64), contains(qint64), remove(qint64),
-        operator[](QLatin1String), operator[](const QString &), operator[](const QCborValue &)
+        operator[](QLatin1StringView), operator[](const QString &), operator[](const QCborValue &)
  */
 QCborValueRef QCborMap::operator[](qint64 key)
 {
@@ -426,7 +427,7 @@ QCborValueRef QCborMap::operator[](qint64 key)
 }
 
 /*!
-    \fn QCborValue QCborMap::value(QLatin1String key) const
+    \fn QCborValue QCborMap::value(QLatin1StringView key) const
     \overload
 
     Returns the QCborValue element in this map that corresponds to key \a key,
@@ -443,13 +444,13 @@ QCborValueRef QCborMap::operator[](qint64 key)
     stream with them. They are usually not permitted and having duplicate keys
     is usually an indication of a problem in the sender.
 
-    \sa operator[](QLatin1String), find(QLatin1String), constFind(QLatin1String),
-        remove(QLatin1String), contains(QLatin1String)
+    \sa operator[](QLatin1StringView), find(QLatin1StringView), constFind(QLatin1StringView),
+        remove(QLatin1StringView), contains(QLatin1StringView)
         value(qint64), value(const QString &), value(const QCborValue &)
  */
 
 /*!
-    \fn QCborValue QCborMap::operator[](QLatin1String key) const
+    \fn QCborValue QCborMap::operator[](QLatin1StringView key) const
     \overload
 
     Returns the QCborValue element in this map that corresponds to key \a key,
@@ -466,13 +467,13 @@ QCborValueRef QCborMap::operator[](qint64 key)
     stream with them. They are usually not permitted and having duplicate keys
     is usually an indication of a problem in the sender.
 
-    \sa value(QLatin1String), find(QLatin1String), constFind(QLatin1String),
-        remove(QLatin1String), contains(QLatin1String)
+    \sa value(QLatin1StringView), find(QLatin1StringView), constFind(QLatin1StringView),
+        remove(QLatin1StringView), contains(QLatin1StringView)
         operator[](qint64), operator[](const QString &), operator[](const QCborOperator[] &)
  */
 
 /*!
-    \fn QCborValue QCborMap::take(QLatin1String key)
+    \fn QCborValue QCborMap::take(QLatin1StringView key)
 
     Removes the key \a key and the corresponding value from the map and returns
     the value, if it is found. If the map contains no such key, this function does nothing.
@@ -483,12 +484,13 @@ QCborValueRef QCborMap::operator[](qint64 key)
     stream with them. They are usually not permitted and having duplicate keys
     is usually an indication of a problem in the sender.
 
-    \sa value(QLatin1String), operator[](QLatin1String), find(QLatin1String), contains(QLatin1String),
-      take(qint64), take(const QString &), take(const QCborValue &), insert()
+    \sa value(QLatin1StringView), operator[](QLatin1StringView), find(QLatin1StringView),
+        contains(QLatin1StringView), take(qint64), take(const QString &),
+        take(const QCborValue &), insert()
  */
 
 /*!
-    \fn void QCborMap::remove(QLatin1String key)
+    \fn void QCborMap::remove(QLatin1StringView key)
     \overload
 
     Removes the key \a key and the corresponding value from the map, if it is
@@ -500,19 +502,21 @@ QCborValueRef QCborMap::operator[](qint64 key)
     stream with them. They are usually not permitted and having duplicate keys
     is usually an indication of a problem in the sender.
 
-    \sa value(QLatin1String), operator[](QLatin1String), find(QLatin1String), contains(QLatin1String)
-        remove(qint64), remove(const QString &), remove(const QCborValue &)
+    \sa value(QLatin1StringView), operator[](QLatin1StringView), find(QLatin1StringView),
+        contains(QLatin1StringView), remove(qint64), remove(const QString &),
+        remove(const QCborValue &)
  */
 
 /*!
-    \fn bool QCborMap::contains(QLatin1String key) const
+    \fn bool QCborMap::contains(QLatin1StringView key) const
     \overload
 
     Returns true if this map contains a key-value pair identified by key \a
     key.
 
-    \sa value(QLatin1String), operator[](QLatin1String), find(QLatin1String), remove(QLatin1String),
-        contains(qint64), remove(const QString &), remove(const QCborValue &)
+    \sa value(QLatin1StringView), operator[](QLatin1StringView), find(QLatin1StringView),
+        remove(QLatin1StringView), contains(qint64), remove(const QString &),
+        remove(const QCborValue &)
  */
 
 /*!
@@ -537,10 +541,11 @@ QCborValueRef QCborMap::operator[](qint64 key)
     stream with them. They are usually not permitted and having duplicate keys
     is usually an indication of a problem in the sender.
 
-    \sa value(QLatin1String), find(QLatin1String), contains(QLatin1String), remove(QLatin1String),
-        operator[](qint64), operator[](const QString &), operator[](const QCborValue &)
+    \sa value(QLatin1StringView), find(QLatin1StringView), contains(QLatin1StringView),
+        remove(QLatin1StringView), operator[](qint64), operator[](const QString &),
+        operator[](const QCborValue &)
  */
-QCborValueRef QCborMap::operator[](QLatin1String key)
+QCborValueRef QCborMap::operator[](QLatin1StringView key)
 {
     return QCborContainerPrivate::findOrAddMapKey(*this, key);
 }
@@ -565,7 +570,7 @@ QCborValueRef QCborMap::operator[](QLatin1String key)
 
     \sa operator[](const QString &), find(const QString &), constFind(const QString &),
         remove(const QString &), contains(const QString &)
-        value(qint64), value(QLatin1String), value(const QCborValue &)
+        value(qint64), value(QLatin1StringView), value(const QCborValue &)
  */
 
 /*!
@@ -588,7 +593,7 @@ QCborValueRef QCborMap::operator[](QLatin1String key)
 
     \sa value(const QString &), find(const QString &), constFind(const QString &),
         remove(const QString &), contains(const QString &)
-        operator[](qint64), operator[](QLatin1String), operator[](const QCborOperator[] &)
+        operator[](qint64), operator[](QLatin1StringView), operator[](const QCborOperator[] &)
  */
 
 /*!
@@ -603,8 +608,9 @@ QCborValueRef QCborMap::operator[](QLatin1String key)
     stream with them. They are usually not permitted and having duplicate keys
     is usually an indication of a problem in the sender.
 
-    \sa value(const QString &), operator[](const QString &), find(const QString &), contains(const QString &),
-      take(QLatin1String), take(qint64), take(const QCborValue &), insert()
+    \sa value(const QString &), operator[](const QString &), find(const QString &),
+        contains(const QString &), take(QLatin1StringView), take(qint64),
+        take(const QCborValue &), insert()
  */
 
 /*!
@@ -622,7 +628,7 @@ QCborValueRef QCborMap::operator[](QLatin1String key)
 
     \sa value(const QString &), operator[](const QString &), find(const QString &),
         contains(const QString &)
-        remove(qint64), remove(QLatin1String), remove(const QCborValue &)
+        remove(qint64), remove(QLatin1StringView), remove(const QCborValue &)
  */
 
 /*!
@@ -634,7 +640,7 @@ QCborValueRef QCborMap::operator[](QLatin1String key)
 
     \sa value(const QString &), operator[](const QString &), find(const QString &),
         remove(const QString &),
-        contains(qint64), remove(QLatin1String), remove(const QCborValue &)
+        contains(qint64), remove(QLatin1StringView), remove(const QCborValue &)
  */
 
 /*!
@@ -659,8 +665,9 @@ QCborValueRef QCborMap::operator[](QLatin1String key)
     stream with them. They are usually not permitted and having duplicate keys
     is usually an indication of a problem in the sender.
 
-    \sa value(const QString &), find(const QString &), contains(const QString &), remove(const QString &),
-        operator[](qint64), operator[](QLatin1String), operator[](const QCborValue &)
+    \sa value(const QString &), find(const QString &), contains(const QString &),
+        remove(const QString &), operator[](qint64), operator[](QLatin1StringView),
+        operator[](const QCborValue &)
  */
 QCborValueRef QCborMap::operator[](const QString & key)
 {
@@ -686,7 +693,7 @@ QCborValueRef QCborMap::operator[](const QString & key)
 
     \sa operator[](const QCborValue &), find(const QCborValue &), constFind(const QCborValue &),
         remove(const QCborValue &), contains(const QCborValue &)
-        value(qint64), value(QLatin1String), value(const QString &)
+        value(qint64), value(QLatin1StringView), value(const QString &)
  */
 
 /*!
@@ -708,7 +715,7 @@ QCborValueRef QCborMap::operator[](const QString & key)
 
     \sa value(const QCborValue &), find(const QCborValue &), constFind(const QCborValue &),
         remove(const QCborValue &), contains(const QCborValue &)
-        operator[](qint64), operator[](QLatin1String), operator[](const QCborOperator[] &)
+        operator[](qint64), operator[](QLatin1StringView), operator[](const QCborOperator[] &)
  */
 
 /*!
@@ -723,8 +730,9 @@ QCborValueRef QCborMap::operator[](const QString & key)
     stream with them. They are usually not permitted and having duplicate keys
     is usually an indication of a problem in the sender.
 
-    \sa value(const QCborValue &), operator[](const QCborValue &), find(const QCborValue &), contains(const QCborValue &),
-      take(QLatin1String), take(const QString &), take(qint64), insert()
+    \sa value(const QCborValue &), operator[](const QCborValue &), find(const QCborValue &),
+        contains(const QCborValue &), take(QLatin1StringView), take(const QString &),
+        take(qint64), insert()
  */
 
 /*!
@@ -741,7 +749,7 @@ QCborValueRef QCborMap::operator[](const QString & key)
 
     \sa value(const QCborValue &), operator[](const QCborValue &), find(const QCborValue &),
         contains(const QCborValue &)
-        remove(qint64), remove(QLatin1String), remove(const QString &)
+        remove(qint64), remove(QLatin1StringView), remove(const QString &)
  */
 
 /*!
@@ -752,7 +760,7 @@ QCborValueRef QCborMap::operator[](const QString & key)
 
     \sa value(const QCborValue &), operator[](const QCborValue &), find(const QCborValue &),
         remove(const QCborValue &),
-        contains(qint64), remove(QLatin1String), remove(const QString &)
+        contains(qint64), remove(QLatin1StringView), remove(const QString &)
  */
 
 /*!
@@ -777,8 +785,9 @@ QCborValueRef QCborMap::operator[](const QString & key)
     stream with them. They are usually not permitted and having duplicate keys
     is usually an indication of a problem in the sender.
 
-    \sa value(const QCborValue &), find(const QCborValue &), contains(const QCborValue &), remove(const QCborValue &),
-        operator[](qint64), operator[](QLatin1String), operator[](const QString &)
+    \sa value(const QCborValue &), find(const QCborValue &), contains(const QCborValue &),
+        remove(const QCborValue &), operator[](qint64), operator[](QLatin1StringView),
+        operator[](const QString &)
  */
 QCborValueRef QCborMap::operator[](const QCborValue &key)
 {
@@ -809,8 +818,8 @@ QCborContainerPrivate::findOrAddMapKey(QCborMap &map, KeyType key)
     stream with them. They are usually not permitted and having duplicate keys
     is usually an indication of a problem in the sender.
 
-    \sa value(qint64), operator[](qint64), constFind(qint64), remove(qint64), contains(qint64)
-        value(QLatin1String), value(const QString &), value(const QCborValue &)
+    \sa value(qint64), operator[](qint64), constFind(qint64), remove(qint64), contains(qint64),
+        value(QLatin1StringView), value(const QString &), value(const QCborValue &)
  */
 QCborMap::iterator QCborMap::find(qint64 key)
 {
@@ -820,8 +829,8 @@ QCborMap::iterator QCborMap::find(qint64 key)
 }
 
 /*!
-    \fn QCborMap::iterator QCborMap::find(QLatin1String key)
-    \fn QCborMap::const_iterator QCborMap::find(QLatin1String key) const
+    \fn QCborMap::iterator QCborMap::find(QLatin1StringView key)
+    \fn QCborMap::const_iterator QCborMap::find(QLatin1StringView key) const
     \overload
 
     Returns a map iterator to the key-value pair whose key is \a key, if the
@@ -833,11 +842,11 @@ QCborMap::iterator QCborMap::find(qint64 key)
     stream with them. They are usually not permitted and having duplicate keys
     is usually an indication of a problem in the sender.
 
-    \sa value(QLatin1String), operator[](QLatin1String), constFind(QLatin1String),
-        remove(QLatin1String), contains(QLatin1String)
+    \sa value(QLatin1StringView), operator[](QLatin1StringView), constFind(QLatin1StringView),
+        remove(QLatin1StringView), contains(QLatin1StringView),
         value(qint64), value(const QString &), value(const QCborValue &)
  */
-QCborMap::iterator QCborMap::find(QLatin1String key)
+QCborMap::iterator QCborMap::find(QLatin1StringView key)
 {
     detach();
     auto it = constFind(key);
@@ -859,8 +868,8 @@ QCborMap::iterator QCborMap::find(QLatin1String key)
     is usually an indication of a problem in the sender.
 
     \sa value(const QString &), operator[](const QString &), constFind(const QString &),
-        remove(const QString &), contains(const QString &)
-        value(qint64), value(QLatin1String), value(const QCborValue &)
+        remove(const QString &), contains(const QString &),
+        value(qint64), value(QLatin1StringView), value(const QCborValue &)
  */
 QCborMap::iterator QCborMap::find(const QString & key)
 {
@@ -884,8 +893,8 @@ QCborMap::iterator QCborMap::find(const QString & key)
     is usually an indication of a problem in the sender.
 
     \sa value(const QCborValue &), operator[](const QCborValue &), constFind(const QCborValue &),
-        remove(const QCborValue &), contains(const QCborValue &)
-        value(qint64), value(QLatin1String), value(const QString &)
+        remove(const QCborValue &), contains(const QCborValue &),
+        value(qint64), value(QLatin1StringView), value(const QString &)
  */
 QCborMap::iterator QCborMap::find(const QCborValue &key)
 {
@@ -907,8 +916,8 @@ QCborMap::iterator QCborMap::find(const QCborValue &key)
     stream with them. They are usually not permitted and having duplicate keys
     is usually an indication of a problem in the sender.
 
-    \sa value(qint64), operator[](qint64), find(qint64), remove(qint64), contains(qint64)
-        value(QLatin1String), value(const QString &), value(const QCborValue &)
+    \sa value(qint64), operator[](qint64), find(qint64), remove(qint64), contains(qint64),
+        value(QLatin1StringView), value(const QString &), value(const QCborValue &)
  */
 QCborMap::const_iterator QCborMap::constFind(qint64 key) const
 {
@@ -927,11 +936,11 @@ QCborMap::const_iterator QCborMap::constFind(qint64 key) const
     stream with them. They are usually not permitted and having duplicate keys
     is usually an indication of a problem in the sender.
 
-    \sa value(QLatin1String), operator[](QLatin1String), find(QLatin1String),
-        remove(QLatin1String), contains(QLatin1String)
+    \sa value(QLatin1StringView), operator[](QLatin1StringView), find(QLatin1StringView),
+        remove(QLatin1StringView), contains(QLatin1StringView),
         value(qint64), value(const QString &), value(const QCborValue &)
  */
-QCborMap::const_iterator QCborMap::constFind(QLatin1String key) const
+QCborMap::const_iterator QCborMap::constFind(QLatin1StringView key) const
 {
     return d ? d->findCborMapKey(key) : constEnd();
 }
@@ -949,8 +958,8 @@ QCborMap::const_iterator QCborMap::constFind(QLatin1String key) const
     is usually an indication of a problem in the sender.
 
     \sa value(const QString &), operator[](const QString &), find(const QString &),
-        remove(const QString &), contains(const QString &)
-        value(qint64), value(QLatin1String), value(const QCborValue &)
+        remove(const QString &), contains(const QString &),
+        value(qint64), value(QLatin1StringView), value(const QCborValue &)
  */
 QCborMap::const_iterator QCborMap::constFind(const QString &key) const
 {
@@ -971,7 +980,7 @@ QCborMap::const_iterator QCborMap::constFind(const QString &key) const
 
     \sa value(const QCborValue &), operator[](const QCborValue &), find(const QCborValue &),
         remove(const QCborValue &), contains(const QCborValue &),
-        value(qint64), value(QLatin1String), value(const QString &)
+        value(qint64), value(QLatin1StringView), value(const QString &)
  */
 QCborMap::const_iterator QCborMap::constFind(const QCborValue &key) const
 {
@@ -993,7 +1002,7 @@ QCborMap::const_iterator QCborMap::constFind(const QCborValue &key) const
  */
 
 /*!
-    \fn QCborMap::iterator QCborMap::insert(QLatin1String key, const QCborValue &value)
+    \fn QCborMap::iterator QCborMap::insert(QLatin1StringView key, const QCborValue &value)
     \overload
 
     Inserts the key \a key and value \a value into this map and returns a map
@@ -1002,8 +1011,8 @@ QCborMap::const_iterator QCborMap::constFind(const QCborValue &key) const
     If the map already had a key equal to \a key, its value will be overwritten
     by \a value.
 
-    \sa erase(), remove(QLatin1String), value(QLatin1String), operator[](QLatin1String),
-        find(QLatin1String), contains(QLatin1String), take(QLatin1String), extract()
+    \sa erase(), remove(QLatin1StringView), value(QLatin1StringView), operator[](QLatin1StringView),
+        find(QLatin1StringView), contains(QLatin1StringView), take(QLatin1StringView), extract()
  */
 
 /*!

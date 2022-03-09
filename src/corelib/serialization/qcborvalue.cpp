@@ -1395,7 +1395,7 @@ static void encodeToCbor(QCborStreamWriter &writer, const QCborContainerPrivate 
                     return writer.append(b->asStringView());
                 return writer.appendTextString(b->byte(), b->len);
             }
-            return writer.append(QLatin1String());
+            return writer.append(QLatin1StringView());
 
         case QCborValue::Array:
         case QCborValue::Map:
@@ -1755,7 +1755,7 @@ QCborValue::QCborValue(QStringView s)
 
     \sa toString(), isString(), isByteArray()
  */
-QCborValue::QCborValue(QLatin1String s)
+QCborValue::QCborValue(QLatin1StringView s)
     : n(0), container(new QCborContainerPrivate), t(String)
 {
     container->append(s);
@@ -2192,7 +2192,7 @@ const QCborValue QCborValue::operator[](const QString &key) const
     \sa operator[](qint64), QCborMap::operator[], QCborMap::value(),
         QCborMap::find()
  */
-const QCborValue QCborValue::operator[](QLatin1String key) const
+const QCborValue QCborValue::operator[](QLatin1StringView key) const
 {
     return QCborContainerPrivate::findCborMapKey(*this, key);
 }
@@ -2349,7 +2349,7 @@ QCborValueRef QCborValue::operator[](const QString &key)
     \sa operator[](qint64), QCborMap::operator[], QCborMap::value(),
         QCborMap::find()
  */
-QCborValueRef QCborValue::operator[](QLatin1String key)
+QCborValueRef QCborValue::operator[](QLatin1StringView key)
 {
     return QCborContainerPrivate::findOrAddMapKey(*this, key);
 }
@@ -2703,7 +2703,7 @@ const QCborValue QCborValueConstRef::operator[](const QString &key) const
     return item[key];
 }
 
-const QCborValue QCborValueConstRef::operator[](const QLatin1String key) const
+const QCborValue QCborValueConstRef::operator[](const QLatin1StringView key) const
 {
     const QCborValue item = d->valueAt(i);
     return item[key];
@@ -2761,7 +2761,7 @@ const QCborValue QCborValueRef::operator[](const QString &key) const
     \sa operator[](qint64), QCborMap::operator[], QCborMap::value(),
         QCborMap::find()
  */
-const QCborValue QCborValueRef::operator[](QLatin1String key) const
+const QCborValue QCborValueRef::operator[](QLatin1StringView key) const
 {
     return QCborValueConstRef::operator[](key);
 }
@@ -2817,7 +2817,7 @@ QCborValueRef QCborValueRef::operator[](const QString &key)
     \sa operator[](qint64), QCborMap::operator[], QCborMap::value(),
         QCborMap::find()
  */
-QCborValueRef QCborValueRef::operator[](QLatin1String key)
+QCborValueRef QCborValueRef::operator[](QLatin1StringView key)
 {
     return QCborContainerPrivate::findOrAddMapKey(*this, key);
 }

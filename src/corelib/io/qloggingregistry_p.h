@@ -79,7 +79,7 @@ class Q_AUTOTEST_EXPORT QLoggingRule
 public:
     QLoggingRule();
     QLoggingRule(QStringView pattern, bool enabled);
-    int pass(QLatin1String categoryName, QtMsgType type) const;
+    int pass(QLatin1StringView categoryName, QtMsgType type) const;
 
     enum PatternFlag {
         FullText = 0x1,

@@ -307,7 +307,7 @@ public:
 
 #if QT_CORE_REMOVED_SINCE(6, 4)
     [[nodiscard]] Q_CORE_EXPORT static QVersionNumber fromString(const QString &string, int *suffixIndex);
-    [[nodiscard]] Q_CORE_EXPORT static QVersionNumber fromString(QLatin1String string, int *suffixIndex);
+    [[nodiscard]] Q_CORE_EXPORT static QVersionNumber fromString(QLatin1StringView string, int *suffixIndex);
     [[nodiscard]] Q_CORE_EXPORT static QVersionNumber fromString(QStringView string, int *suffixIndex);
 #endif
 

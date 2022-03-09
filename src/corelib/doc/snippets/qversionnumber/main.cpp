@@ -97,7 +97,7 @@ void QObject::parse()
     //! [3]
 
     //! [3-latin1-1]
-    QLatin1String string("5.4.0-alpha");
+    QLatin1StringView string("5.4.0-alpha");
     qsizetype suffixIndex;
     auto version = QVersionNumber::fromString(string, &suffixIndex);
     // version is 5.4.0

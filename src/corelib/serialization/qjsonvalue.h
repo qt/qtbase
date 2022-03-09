@@ -75,7 +75,7 @@ public:
     QJsonValue(int n);
     QJsonValue(qint64 v);
     QJsonValue(const QString &s);
-    QJsonValue(QLatin1String s);
+    QJsonValue(QLatin1StringView s);
 #ifndef QT_NO_CAST_FROM_ASCII
     QT_ASCII_CAST_WARN inline QJsonValue(const char *s)
         : QJsonValue(QString::fromUtf8(s)) {}
@@ -127,7 +127,7 @@ public:
     const QJsonValue operator[](const QString &key) const;
 #endif
     const QJsonValue operator[](QStringView key) const;
-    const QJsonValue operator[](QLatin1String key) const;
+    const QJsonValue operator[](QLatin1StringView key) const;
     const QJsonValue operator[](qsizetype i) const;
 
     bool operator==(const QJsonValue &other) const;
@@ -183,7 +183,7 @@ public:
     Q_CORE_EXPORT QJsonObject toObject() const;
 
     const QJsonValue operator[](QStringView key) const { return concrete(*this)[key]; }
-    const QJsonValue operator[](QLatin1String key) const { return concrete(*this)[key]; }
+    const QJsonValue operator[](QLatin1StringView key) const { return concrete(*this)[key]; }
     const QJsonValue operator[](qsizetype i) const { return concrete(*this)[i]; }
 
     inline bool operator==(const QJsonValue &other) const { return concrete(*this) == other; }
@@ -290,7 +290,7 @@ public:
     QJsonObject toObject() const;
 
     const QJsonValue operator[](QStringView key) const { return QJsonValueConstRef::operator[](key); }
-    const QJsonValue operator[](QLatin1String key) const { return QJsonValueConstRef::operator[](key); }
+    const QJsonValue operator[](QLatin1StringView key) const { return QJsonValueConstRef::operator[](key); }
     const QJsonValue operator[](qsizetype i) const { return QJsonValueConstRef::operator[](i); }
 
     inline bool operator==(const QJsonValue &other) const { return QJsonValueConstRef::operator==(other); }

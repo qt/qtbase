@@ -353,7 +353,7 @@ bool QtPrivate::QStringList_contains(const QStringList *that, QStringView str,
 }
 
 /*!
-    \fn bool QStringList::contains(QLatin1String str, Qt::CaseSensitivity cs) const
+    \fn bool QStringList::contains(QLatin1StringView str, Qt::CaseSensitivity cs) const
     \overload
     \since 5.10
 
@@ -363,7 +363,7 @@ bool QtPrivate::QStringList_contains(const QStringList *that, QStringView str,
 
     \sa indexOf(), lastIndexOf(), QString::contains()
  */
-bool QtPrivate::QStringList_contains(const QStringList *that, QLatin1String str,
+bool QtPrivate::QStringList_contains(const QStringList *that, QLatin1StringView str,
                                      Qt::CaseSensitivity cs)
 {
     return stringList_contains(*that, str, cs);
@@ -509,11 +509,11 @@ QString QtPrivate::QStringList_join(const QStringList *that, const QChar *sep, q
 }
 
 /*!
-    \fn QString QStringList::join(QLatin1String separator) const
+    \fn QString QStringList::join(QLatin1StringView separator) const
     \since 5.8
     \overload join()
 */
-QString QtPrivate::QStringList_join(const QStringList &list, QLatin1String sep)
+QString QtPrivate::QStringList_join(const QStringList &list, QLatin1StringView sep)
 {
     QString result;
     if (!list.isEmpty()) {

@@ -134,7 +134,7 @@ public:
     const QJsonValue operator[](const QString &key) const;
 #endif
     const QJsonValue operator[](QStringView key) const;
-    const QJsonValue operator[](QLatin1String key) const;
+    const QJsonValue operator[](QLatin1StringView key) const;
     const QJsonValue operator[](qsizetype i) const;
 
     bool operator==(const QJsonDocument &other) const;

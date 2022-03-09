@@ -3597,12 +3597,8 @@ static QString errorMessage(QUrlPrivate::ErrorCode errorCode, const QString &err
 static inline void appendComponentIfPresent(QString &msg, bool present, const char *componentName,
                                             const QString &component)
 {
-    if (present) {
-        msg += QLatin1String(componentName);
-        msg += u'"';
-        msg += component;
-        msg += "\","_L1;
-    }
+    if (present)
+        msg += QLatin1StringView(componentName) % u'"' % component % "\","_L1;
 }
 
 /*!

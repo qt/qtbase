@@ -871,7 +871,7 @@ static const struct { const char * typeName; int typeNameLength; int type; } typ
 static const struct : QMetaTypeModuleHelper
 {
     template<typename T, typename LiteralWrapper =
-             std::conditional_t<std::is_same_v<T, QString>, QLatin1String, const char *>>
+             std::conditional_t<std::is_same_v<T, QString>, QLatin1StringView, const char *>>
     static inline bool convertToBool(const T &source)
     {
         T str = source.toLower();

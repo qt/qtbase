@@ -462,7 +462,7 @@ const QJsonValue QJsonDocument::operator[](QStringView key) const
     \overload
     \since 5.10
 */
-const QJsonValue QJsonDocument::operator[](QLatin1String key) const
+const QJsonValue QJsonDocument::operator[](QLatin1StringView key) const
 {
     if (!isObject())
         return QJsonValue(QJsonValue::Undefined);

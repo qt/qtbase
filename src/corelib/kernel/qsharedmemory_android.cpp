@@ -53,7 +53,7 @@ QSharedMemoryPrivate::QSharedMemoryPrivate()
 {
 }
 
-void QSharedMemoryPrivate::setErrorString(QLatin1String function)
+void QSharedMemoryPrivate::setErrorString(QLatin1StringView function)
 {
     Q_UNUSED(function);
     Q_UNIMPLEMENTED();

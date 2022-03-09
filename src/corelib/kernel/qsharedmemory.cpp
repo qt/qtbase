@@ -102,7 +102,7 @@ QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
            (ch >= u'A' && ch <= u'Z'))
            result += ch;
     }
-    result.append(QLatin1String(hex));
+    result.append(QLatin1StringView(hex));
 
 #ifdef Q_OS_WIN
     return result;

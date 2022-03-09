@@ -627,7 +627,7 @@ bool QProcessPrivate::processStarted(QString *errorMessage)
 
     // did we read an error message?
     if (errorMessage)
-        *errorMessage = QLatin1String(buf.function) + ": "_L1 + qt_error_string(buf.code);
+        *errorMessage = QLatin1StringView(buf.function) + ": "_L1 + qt_error_string(buf.code);
 
     return false;
 }
@@ -1036,7 +1036,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
             *pid = -1;
         QString msg;
         if (startResult == sizeof(childStatus))
-            msg = QLatin1String(childStatus.function) + qt_error_string(childStatus.code);
+            msg = QLatin1StringView(childStatus.function) + qt_error_string(childStatus.code);
         setErrorAndEmit(QProcess::FailedToStart, msg);
     }
     return success;

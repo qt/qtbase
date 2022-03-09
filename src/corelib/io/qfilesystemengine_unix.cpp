@@ -1654,7 +1654,7 @@ QString QFileSystemEngine::rootPath()
 QString QFileSystemEngine::tempPath()
 {
 #ifdef QT_UNIX_TEMP_PATH_OVERRIDE
-    return QLatin1String(QT_UNIX_TEMP_PATH_OVERRIDE);
+    return QT_UNIX_TEMP_PATH_OVERRIDE ""_L1;
 #else
     QString temp = QFile::decodeName(qgetenv("TMPDIR"));
     if (temp.isEmpty()) {
@@ -1664,7 +1664,7 @@ QString QFileSystemEngine::tempPath()
             temp = QString::fromCFString((CFStringRef)nsPath);
 #endif
         } else {
-            temp = QLatin1String(_PATH_TMP);
+            temp = _PATH_TMP ""_L1;
         }
     }
     return QDir(QDir::cleanPath(temp)).canonicalPath();

@@ -1153,7 +1153,7 @@ QString QCommandLineParserPrivate::helpText(bool includeQtOptions) const
         QString optionNamesString;
         for (const QString &optionName : optionNames) {
             const int numDashes = optionName.length() == 1 ? 1 : 2;
-            optionNamesString += QLatin1String("--", numDashes) + optionName + ", "_L1;
+            optionNamesString += QLatin1StringView("--", numDashes) + optionName + ", "_L1;
         }
         if (!optionNames.isEmpty())
             optionNamesString.chop(2); // remove trailing ", "

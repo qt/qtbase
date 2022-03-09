@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
     \list
     \li QString, (since 5.10:) QStringView
     \li QChar, QLatin1Char, (since 5.10:) \c char16_t,
-    \li QLatin1String,
+    \li QLatin1StringView,
     \li (since 5.10:) \c{const char16_t[]} (\c{u"foo"}),
     \li QByteArray, \c char, \c{const char[]}.
     \endlist
@@ -93,7 +93,7 @@ QT_BEGIN_NAMESPACE
     if there are three or more of them, and performs equally well in other
     cases.
 
-    \sa QLatin1String, QString
+    \sa QLatin1StringView, QString
 */
 
 /*! \fn template <typename A, typename B> QStringBuilder<A, B>::QStringBuilder(const A &a, const B &b)
@@ -107,7 +107,7 @@ QT_BEGIN_NAMESPACE
     takes a QString parameter.
 
     This function is usable with arguments of type \c QString,
-    \c QLatin1String,
+    \c QLatin1StringView,
     \c QChar, \c QLatin1Char, and \c char.
 */
 

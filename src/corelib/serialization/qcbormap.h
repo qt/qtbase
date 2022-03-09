@@ -204,7 +204,7 @@ public:
 
     QCborValue value(qint64 key) const
     { const_iterator it = find(key); return it == end() ? QCborValue() : it.value(); }
-    QCborValue value(QLatin1String key) const
+    QCborValue value(QLatin1StringView key) const
     { const_iterator it = find(key); return it == end() ? QCborValue() : it.value(); }
     QCborValue value(const QString & key) const
     { const_iterator it = find(key); return it == end() ? QCborValue() : it.value(); }
@@ -216,7 +216,7 @@ public:
 #endif
     const QCborValue operator[](qint64 key) const
     { const_iterator it = find(key); return it == end() ? QCborValue() : it.value(); }
-    const QCborValue operator[](QLatin1String key) const
+    const QCborValue operator[](QLatin1StringView key) const
     { const_iterator it = find(key); return it == end() ? QCborValue() : it.value(); }
     const QCborValue operator[](const QString & key) const
     { const_iterator it = find(key); return it == end() ? QCborValue() : it.value(); }
@@ -227,13 +227,13 @@ public:
     { return operator[](QString::fromUtf8(key, N - 1)); }
 #endif
     QCborValueRef operator[](qint64 key);
-    QCborValueRef operator[](QLatin1String key);
+    QCborValueRef operator[](QLatin1StringView key);
     QCborValueRef operator[](const QString & key);
     QCborValueRef operator[](const QCborValue &key);
 
     QCborValue take(qint64 key)
     { const_iterator it = constFind(key); if (it != constEnd()) return extract(it); return QCborValue(); }
-    QCborValue take(QLatin1String key)
+    QCborValue take(QLatin1StringView key)
     { const_iterator it = constFind(key); if (it != constEnd()) return extract(it); return QCborValue(); }
     QCborValue take(const QString &key)
     { const_iterator it = constFind(key); if (it != constEnd()) return extract(it); return QCborValue(); }
@@ -241,7 +241,7 @@ public:
     { const_iterator it = constFind(key); if (it != constEnd()) return extract(it); return QCborValue(); }
     void remove(qint64 key)
     { const_iterator it = constFind(key); if (it != constEnd()) erase(it); }
-    void remove(QLatin1String key)
+    void remove(QLatin1StringView key)
     { const_iterator it = constFind(key); if (it != constEnd()) erase(it); }
     void remove(const QString & key)
     { const_iterator it = constFind(key); if (it != constEnd()) erase(it); }
@@ -249,7 +249,7 @@ public:
     { const_iterator it = constFind(key); if (it != constEnd()) erase(it); }
     bool contains(qint64 key) const
     { const_iterator it = find(key); return it != end(); }
-    bool contains(QLatin1String key) const
+    bool contains(QLatin1StringView key) const
     { const_iterator it = find(key); return it != end(); }
     bool contains(const QString & key) const
     { const_iterator it = find(key); return it != end(); }
@@ -291,15 +291,15 @@ public:
     bool empty() const { return isEmpty(); }
 
     iterator find(qint64 key);
-    iterator find(QLatin1String key);
+    iterator find(QLatin1StringView key);
     iterator find(const QString & key);
     iterator find(const QCborValue &key);
     const_iterator constFind(qint64 key) const;
-    const_iterator constFind(QLatin1String key) const;
+    const_iterator constFind(QLatin1StringView key) const;
     const_iterator constFind(const QString & key) const;
     const_iterator constFind(const QCborValue &key) const;
     const_iterator find(qint64 key) const { return constFind(key); }
-    const_iterator find(QLatin1String key) const { return constFind(key); }
+    const_iterator find(QLatin1StringView key) const { return constFind(key); }
     const_iterator find(const QString & key) const { return constFind(key); }
     const_iterator find(const QCborValue &key) const { return constFind(key); }
 
@@ -309,7 +309,7 @@ public:
         v = value_;
         return { d.data(), v.i };
     }
-    iterator insert(QLatin1String key, const QCborValue &value_)
+    iterator insert(QLatin1StringView key, const QCborValue &value_)
     {
         QCborValueRef v = operator[](key);  // detaches
         v = value_;

@@ -103,7 +103,7 @@ public:
 #if QT_CORE_REMOVED_SINCE(6, 3)
     explicit QUuid(const QString &);
     static QUuid fromString(QStringView string) noexcept;
-    static QUuid fromString(QLatin1String string) noexcept;
+    static QUuid fromString(QLatin1StringView string) noexcept;
     explicit QUuid(const char *);
     explicit QUuid(const QByteArray &);
 #endif

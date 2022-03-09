@@ -75,7 +75,7 @@ static void appendOrganizationAndApp(QString &path)
 }
 
 #if QT_CONFIG(regularexpression)
-static QLatin1String xdg_key_name(QStandardPaths::StandardLocation type)
+static QLatin1StringView xdg_key_name(QStandardPaths::StandardLocation type)
 {
     switch (type) {
     case QStandardPaths::DesktopLocation:
@@ -285,7 +285,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     if (xdgConfigHome.isEmpty())
         xdgConfigHome = QDir::homePath() + "/.config"_L1;
     QFile file(xdgConfigHome + "/user-dirs.dirs"_L1);
-    const QLatin1String key = xdg_key_name(type);
+    const QLatin1StringView key = xdg_key_name(type);
     if (!key.isEmpty() && !isTestModeEnabled() && file.open(QIODevice::ReadOnly)) {
         QTextStream stream(&file);
         // Only look for lines like: XDG_DESKTOP_DIR="$HOME/Desktop"

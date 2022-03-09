@@ -150,7 +150,7 @@ public:
     QCborValue(const QString &s);
 #endif
     QCborValue(QStringView s);
-    QCborValue(QLatin1String s);
+    QCborValue(QLatin1StringView s);
 #ifndef QT_NO_CAST_FROM_ASCII
     QT_ASCII_CAST_WARN QCborValue(const char *s) : QCborValue(QString::fromUtf8(s)) {}
 #endif
@@ -253,10 +253,10 @@ public:
     QCborMap toMap(const QCborMap &defaultValue) const;
 
     const QCborValue operator[](const QString &key) const;
-    const QCborValue operator[](QLatin1String key) const;
+    const QCborValue operator[](QLatin1StringView key) const;
     const QCborValue operator[](qint64 key) const;
     QCborValueRef operator[](qint64 key);
-    QCborValueRef operator[](QLatin1String key);
+    QCborValueRef operator[](QLatin1StringView key);
     QCborValueRef operator[](const QString & key);
 
     int compare(const QCborValue &other) const;
@@ -402,7 +402,7 @@ public:
     inline QCborMap toMap(const QCborMap &m) const;
 
     Q_CORE_EXPORT const QCborValue operator[](const QString &key) const;
-    Q_CORE_EXPORT const QCborValue operator[](QLatin1String key) const;
+    Q_CORE_EXPORT const QCborValue operator[](QLatin1StringView key) const;
     Q_CORE_EXPORT const QCborValue operator[](qint64 key) const;
 
     int compare(const QCborValue &other) const
@@ -479,7 +479,7 @@ public:
     { assign(*this, other); return *this; }
 
     QT7_ONLY(Q_CORE_EXPORT) QCborValueRef operator[](qint64 key);
-    QT7_ONLY(Q_CORE_EXPORT) QCborValueRef operator[](QLatin1String key);
+    QT7_ONLY(Q_CORE_EXPORT) QCborValueRef operator[](QLatin1StringView key);
     QT7_ONLY(Q_CORE_EXPORT) QCborValueRef operator[](const QString & key);
 
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
@@ -555,7 +555,7 @@ public:
     QCborMap toMap(const QCborMap &m) const;
 
     const QCborValue operator[](const QString &key) const;
-    const QCborValue operator[](QLatin1String key) const;
+    const QCborValue operator[](QLatin1StringView key) const;
     const QCborValue operator[](qint64 key) const;
 
     int compare(const QCborValue &other) const

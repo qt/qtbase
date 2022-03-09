@@ -73,7 +73,7 @@ QT_BEGIN_NAMESPACE
     Argument Deduction (CTAD), you may write
     \c{QStringTokenizer{string, separator}} (without template
     arguments).  If you can't use C++17 CTAD, you must use the
-    QStringView::split() or QLatin1String::split() member functions
+    QStringView::split() or QLatin1StringView::split() member functions
     and store the return value only in \c{auto} variables:
 
     \code
@@ -149,7 +149,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \typealias QStringTokenizer::value_type
 
-    Alias for \c{const QStringView} or \c{const QLatin1String},
+    Alias for \c{const QStringView} or \c{const QLatin1StringView},
     depending on the tokenizer's \c Haystack template argument.
 */
 

@@ -96,7 +96,7 @@ struct IsContainerCompatibleWithQUtf8StringView<T, std::enable_if_t<std::conjunc
         std::negation<std::is_same<std::decay_t<T>, QByteArray>>,
 
         // This has a compatible value_type, but explicitly a different encoding
-        std::negation<std::is_same<std::decay_t<T>, QLatin1String>>,
+        std::negation<std::is_same<std::decay_t<T>, QLatin1StringView>>,
 
         // Don't make an accidental copy constructor
         std::negation<std::disjunction<

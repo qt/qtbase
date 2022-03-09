@@ -115,7 +115,7 @@ struct ByteData
     QString toUtf8String() const    { return QString::fromUtf8(byte(), len); }
 
     QByteArray asByteArrayView() const { return QByteArray::fromRawData(byte(), len); }
-    QLatin1String asLatin1() const  { return QLatin1String(byte(), len); }
+    QLatin1StringView asLatin1() const  { return QLatin1StringView(byte(), len); }
     QUtf8StringView asUtf8StringView() const { return QUtf8StringView(byte(), len); }
     QStringView asStringView() const{ return QStringView(utf16(), len / 2); }
     QString asQStringRaw() const    { return QString::fromRawData(utf16(), len / 2); }
@@ -250,7 +250,7 @@ public:
     {
         appendByteData(str, len, QCborValue::String);
     }
-    void append(QLatin1String s)
+    void append(QLatin1StringView s)
     {
         if (!QtPrivate::isAscii(s))
             return append(QString(s));
@@ -367,7 +367,7 @@ public:
         return e;
     }
 
-    static int compareUtf8(const QtCbor::ByteData *b, const QLatin1String &s)
+    static int compareUtf8(const QtCbor::ByteData *b, QLatin1StringView s)
     {
         return QUtf8::compareUtf8(QByteArrayView(b->byte(), b->len), s);
     }

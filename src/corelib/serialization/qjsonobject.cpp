@@ -342,7 +342,7 @@ QJsonValue QJsonObject::value(QStringView key) const
     \overload
     \since 5.7
 */
-QJsonValue QJsonObject::value(QLatin1String key) const
+QJsonValue QJsonObject::value(QLatin1StringView key) const
 {
     return valueImpl(key);
 }
@@ -387,7 +387,7 @@ QJsonValue QJsonObject::operator [](const QString &key) const
 */
 
 /*!
-    \fn QJsonValue QJsonObject::operator [](QLatin1String key) const
+    \fn QJsonValue QJsonObject::operator [](QLatin1StringView key) const
 
     \overload
     \since 5.7
@@ -426,7 +426,7 @@ QJsonValueRef QJsonObject::operator [](QStringView key)
     \overload
     \since 5.7
 */
-QJsonValueRef QJsonObject::operator [](QLatin1String key)
+QJsonValueRef QJsonObject::operator [](QLatin1StringView key)
 {
     return atImpl(key);
 }
@@ -484,7 +484,7 @@ QJsonObject::iterator QJsonObject::insert(QStringView key, const QJsonValue &val
     \overload
     \since 5.14
 */
-QJsonObject::iterator QJsonObject::insert(QLatin1String key, const QJsonValue &value)
+QJsonObject::iterator QJsonObject::insert(QLatin1StringView key, const QJsonValue &value)
 {
     return insertImpl(key, value);
 }
@@ -549,7 +549,7 @@ void QJsonObject::remove(QStringView key)
     \overload
     \since 5.14
 */
-void QJsonObject::remove(QLatin1String key)
+void QJsonObject::remove(QLatin1StringView key)
 {
     removeImpl(key);
 }
@@ -600,7 +600,7 @@ QJsonValue QJsonObject::take(QStringView key)
     \overload
     \since 5.14
 */
-QJsonValue QJsonObject::take(QLatin1String key)
+QJsonValue QJsonObject::take(QLatin1StringView key)
 {
     return takeImpl(key);
 }
@@ -650,7 +650,7 @@ bool QJsonObject::contains(QStringView key) const
     \overload
     \since 5.7
 */
-bool QJsonObject::contains(QLatin1String key) const
+bool QJsonObject::contains(QLatin1StringView key) const
 {
     return containsImpl(key);
 }
@@ -744,7 +744,7 @@ QJsonObject::iterator QJsonObject::find(QStringView key)
     \overload
     \since 5.7
 */
-QJsonObject::iterator QJsonObject::find(QLatin1String key)
+QJsonObject::iterator QJsonObject::find(QLatin1StringView key)
 {
     return findImpl(key);
 }
@@ -776,7 +776,7 @@ QJsonObject::iterator QJsonObject::findImpl(T key)
     \since 5.14
 */
 
-/*! \fn QJsonObject::const_iterator QJsonObject::find(QLatin1String key) const
+/*! \fn QJsonObject::const_iterator QJsonObject::find(QLatin1StringView key) const
 
     \overload
     \since 5.7
@@ -809,7 +809,7 @@ QJsonObject::const_iterator QJsonObject::constFind(QStringView key) const
     \overload
     \since 5.7
 */
-QJsonObject::const_iterator QJsonObject::constFind(QLatin1String key) const
+QJsonObject::const_iterator QJsonObject::constFind(QLatin1StringView key) const
 {
     return constFindImpl(key);
 }

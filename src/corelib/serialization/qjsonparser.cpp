@@ -193,7 +193,7 @@ QString QJsonParseError::errorString() const
 #ifndef QT_BOOTSTRAPPED
     return QCoreApplication::translate("QJsonParseError", sz);
 #else
-    return QLatin1String(sz);
+    return QLatin1StringView(sz);
 #endif
 }
 

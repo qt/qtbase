@@ -72,12 +72,12 @@ Q_CORE_EXPORT bool qDecodeDataUrl(const QUrl &uri, QString &mimeType, QByteArray
         data = data.trimmed();
 
         // find out if the payload is encoded in Base64
-        if (QLatin1String{data}.endsWith(";base64"_L1, Qt::CaseInsensitive)) {
+        if (QLatin1StringView{data}.endsWith(";base64"_L1, Qt::CaseInsensitive)) {
             payload = QByteArray::fromBase64(payload);
             data.chop(7);
         }
 
-        if (QLatin1String{data}.startsWith("charset"_L1, Qt::CaseInsensitive)) {
+        if (QLatin1StringView{data}.startsWith("charset"_L1, Qt::CaseInsensitive)) {
             int i = 7;      // strlen("charset")
             while (data.at(i) == ' ')
                 ++i;

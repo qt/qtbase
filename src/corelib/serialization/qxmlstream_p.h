@@ -255,7 +255,7 @@ public:
         Entity(const QString &name, const QString &value)
           :  name(name), value(value), external(false), unparsed(false), literal(false),
              hasBeenParsed(false), isCurrentlyReferenced(false){}
-        static inline Entity createLiteral(QLatin1String name, QLatin1String value)
+        static inline Entity createLiteral(QLatin1StringView name, QLatin1StringView value)
             { Entity result(name, value); result.literal = result.hasBeenParsed = true; return result; }
         QString name, value;
         uint external : 1;

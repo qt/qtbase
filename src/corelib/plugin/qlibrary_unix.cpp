@@ -299,7 +299,7 @@ bool QLibraryPrivate::unload_sys()
         if (!qstrcmp(error, "Shared objects still referenced")) // On QNX that's only "informative"
             return true;
         errorString = QLibrary::tr("Cannot unload library %1: %2").arg(fileName,
-                                                                       QLatin1String(error));
+                                                                       QLatin1StringView(error));
 #else
         errorString = QLibrary::tr("Cannot unload library %1: %2").arg(fileName, qdlerror());
 #endif

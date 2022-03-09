@@ -168,7 +168,7 @@ namespace Tok {
 
     template <typename String> struct ViewForImpl {};
     template <> struct ViewForImpl<QStringView>   { using type = QStringView; };
-    template <> struct ViewForImpl<QLatin1String> { using type = QLatin1String; };
+    template <> struct ViewForImpl<QLatin1StringView> { using type = QLatin1StringView; };
     template <> struct ViewForImpl<QChar>         { using type = QChar; };
     template <> struct ViewForImpl<QString>     : ViewForImpl<QStringView> {};
     template <> struct ViewForImpl<QLatin1Char> : ViewForImpl<QChar> {};
@@ -185,7 +185,7 @@ namespace Tok {
 #endif
 
     // This metafunction maps a StringLike to a View (currently, QChar,
-    // QStringView, QLatin1String). This is what QStringTokenizerBase
+    // QStringView, QLatin1StringView). This is what QStringTokenizerBase
     // operates on. QStringTokenizer adds pinning to keep rvalues alive
     // for the duration of the algorithm.
     template <typename String>

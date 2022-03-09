@@ -395,7 +395,7 @@ static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCrypto
     public data members in QUuid.
 
     \note In Qt versions prior to 6.3, this function was an overload
-    set consisting of QStringView and QLatin1String instead of
+    set consisting of QStringView and QLatin1StringView instead of
     one function taking QAnyStringView.
 
     \sa toString(), QUuid()
@@ -416,13 +416,13 @@ static QUuid uuidFromString(QStringView text) noexcept
     return _q_uuidFromHex(latin1);
 }
 
-static QUuid uuidFromString(QLatin1String text) noexcept
+static QUuid uuidFromString(QLatin1StringView text) noexcept
 {
     if (Q_UNLIKELY(text.size() < MaxStringUuidLength - 2
                    || (text.front() == '{' && text.size() < MaxStringUuidLength - 1))) {
         // Too short. Don't call _q_uuidFromHex(); QL1Ss need not be NUL-terminated,
         // and we don't want to read trailing garbage as potentially valid data.
-        text = QLatin1String();
+        text = QLatin1StringView();
     }
     return _q_uuidFromHex(text.data());
 }
@@ -431,7 +431,7 @@ Q_ALWAYS_INLINE
 // can treat UTF-8 the same as Latin-1:
 static QUuid uuidFromString(QUtf8StringView text) noexcept
 {
-    return uuidFromString(QLatin1String(text.data(), text.size()));
+    return uuidFromString(QLatin1StringView(text.data(), text.size()));
 }
 
 QUuid QUuid::fromString(QAnyStringView text) noexcept

@@ -1019,7 +1019,7 @@ size_t qHash(const QBitArray &bitArray, size_t seed) noexcept
     return result;
 }
 
-size_t qHash(QLatin1String key, size_t seed) noexcept
+size_t qHash(QLatin1StringView key, size_t seed) noexcept
 {
     return qHashBits(reinterpret_cast<const uchar *>(key.data()), size_t(key.size()), seed);
 }
@@ -1541,7 +1541,7 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
-/*! \fn size_t qHash(QLatin1String key, size_t seed = 0)
+/*! \fn size_t qHash(QLatin1StringView key, size_t seed = 0)
     \relates QHash
     \since 5.0
 

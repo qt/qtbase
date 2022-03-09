@@ -424,12 +424,12 @@ QString QVersionNumber::toString() const
     \snippet qversionnumber/main.cpp 3-latin1-1
 
     \note In versions prior to Qt 6.4, this function was overloaded for QString,
-    QLatin1String and QStringView instead, and \a suffixIndex was an \c{int*}.
+    QLatin1StringView and QStringView instead, and \a suffixIndex was an \c{int*}.
 
     \sa isNull()
 */
 
-static QVersionNumber from_string(QLatin1String string, qsizetype *suffixIndex)
+static QVersionNumber from_string(QLatin1StringView string, qsizetype *suffixIndex)
 {
     // 32 should be more than enough, and, crucially, it means we're allocating
     // not more (and often less) often when compared with direct QList usage
@@ -462,7 +462,7 @@ static QVersionNumber from_string(QLatin1String string, qsizetype *suffixIndex)
 
 static QVersionNumber from_string(q_no_char8_t::QUtf8StringView string, qsizetype *suffixIndex)
 {
-    return from_string(QLatin1String(string.data(), string.size()), suffixIndex);
+    return from_string(QLatin1StringView(string.data(), string.size()), suffixIndex);
 }
 
 // in qstring.cpp
@@ -473,7 +473,7 @@ static QVersionNumber from_string(QStringView string, qsizetype *suffixIndex)
     QVarLengthArray<char> copy;
     copy.resize(string.size());
     qt_to_latin1(reinterpret_cast<uchar*>(copy.data()), string.utf16(), string.size());
-    return from_string(QLatin1String(copy.data(), copy.size()), suffixIndex);
+    return from_string(QLatin1StringView(copy.data(), copy.size()), suffixIndex);
 }
 
 QVersionNumber QVersionNumber::fromString(QAnyStringView string, qsizetype *suffixIndex)

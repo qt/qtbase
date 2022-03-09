@@ -728,7 +728,7 @@ QDebug &QDebug::resetFormat()
 */
 
 /*!
-    \fn QDebug &QDebug::operator<<(QLatin1String t)
+    \fn QDebug &QDebug::operator<<(QLatin1StringView t)
 
     Writes the string, \a t, to the stream and returns a reference to the
     stream. Normally, QDebug prints the string inside quotes and transforms

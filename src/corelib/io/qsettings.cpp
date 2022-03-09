@@ -418,7 +418,7 @@ QString QSettingsPrivate::variantToString(const QVariant &v)
         case QMetaType::QByteArray: {
             QByteArray a = v.toByteArray();
             result = "@ByteArray("_L1
-                     + QLatin1String(a.constData(), a.size())
+                     + QLatin1StringView(a.constData(), a.size())
                      + u')';
             break;
         }
@@ -477,8 +477,8 @@ QString QSettingsPrivate::variantToString(const QVariant &v)
                 s << v;
             }
 
-            result = QLatin1String(typeSpec)
-                     + QLatin1String(a.constData(), a.size())
+            result = QLatin1StringView(typeSpec)
+                     + QLatin1StringView(a.constData(), a.size())
                      + u')';
 #else
             Q_ASSERT(!"QSettings: Cannot save custom types without QDataStream support");
@@ -1656,7 +1656,7 @@ bool QConfFileSettingsPrivate::readIniFile(const QByteArray &data,
                 currentSection.clear();
             } else {
                 if (iniSection.compare("%general", Qt::CaseInsensitive) == 0) {
-                    currentSection = QLatin1String(iniSection.constData() + 1);
+                    currentSection = QLatin1StringView(iniSection.constData() + 1);
                 } else {
                     currentSection.clear();
                     iniUnescapedKey(iniSection, 0, iniSection.size(), currentSection);

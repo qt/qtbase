@@ -235,7 +235,7 @@ QJsonValue::QJsonValue(const QString &s)
 /*!
     Creates a value of type String, with value \a s.
  */
-QJsonValue::QJsonValue(QLatin1String s)
+QJsonValue::QJsonValue(QLatin1StringView s)
     : value(s)
 {
 }
@@ -826,7 +826,7 @@ const QJsonValue QJsonValue::operator[](QStringView key) const
     \overload
     \since 5.10
 */
-const QJsonValue QJsonValue::operator[](QLatin1String key) const
+const QJsonValue QJsonValue::operator[](QLatin1StringView key) const
 {
     if (!isObject())
         return QJsonValue(QJsonValue::Undefined);

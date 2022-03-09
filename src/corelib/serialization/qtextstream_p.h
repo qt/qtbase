@@ -178,14 +178,14 @@ public:
     inline void write(QStringView data) { write(data.begin(), data.length()); }
     inline void write(QChar ch);
     void write(const QChar *data, qsizetype len);
-    void write(QLatin1String data);
+    void write(QLatin1StringView data);
     void writePadding(qsizetype len);
     inline void putString(QStringView string, bool number = false)
     {
         putString(string.constData(), string.length(), number);
     }
     void putString(const QChar *data, qsizetype len, bool number = false);
-    void putString(QLatin1String data, bool number = false);
+    void putString(QLatin1StringView data, bool number = false);
     void putString(QUtf8StringView data, bool number = false);
     inline void putChar(QChar ch);
     void putNumber(qulonglong number, bool negative);

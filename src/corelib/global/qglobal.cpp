@@ -2617,9 +2617,9 @@ QString QSysInfo::currentCpuArchitecture()
 #  if defined(Q_PROCESSOR_POWER) || defined(QT_BUILD_INTERNAL)
         // harmonize "powerpc" and "ppc" to "power"
         if (strncmp(u.machine, "ppc", 3) == 0)
-            return "power"_L1 + QLatin1String(u.machine + 3);
+            return "power"_L1 + QLatin1StringView(u.machine + 3);
         if (strncmp(u.machine, "powerpc", 7) == 0)
-            return "power"_L1 + QLatin1String(u.machine + 7);
+            return "power"_L1 + QLatin1StringView(u.machine + 7);
         if (strcmp(u.machine, "Power Macintosh") == 0)
             return "power"_L1;
 #  endif
@@ -2907,7 +2907,7 @@ QString QSysInfo::prettyProductName()
     const char *name = osVer_helper(version);
     if (!name)
         return result + versionString;
-    result += QLatin1String(name);
+    result += QLatin1StringView(name);
 #  if !defined(Q_OS_WIN)
     return result + " ("_L1 + versionString + u')';
 #  else

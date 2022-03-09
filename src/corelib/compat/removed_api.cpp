@@ -142,7 +142,7 @@ QUuid QUuid::fromString(QStringView string) noexcept
     return fromString(QAnyStringView{string});
 }
 
-QUuid QUuid::fromString(QLatin1String string) noexcept
+QUuid QUuid::fromString(QLatin1StringView string) noexcept
 {
     return fromString(QAnyStringView{string});
 }
@@ -202,7 +202,7 @@ QByteArray QUrl::toAce(const QString &domain)
 QCalendar::QCalendar(QStringView name)
     : QCalendar(QAnyStringView{name}) {}
 
-QCalendar::QCalendar(QLatin1String name)
+QCalendar::QCalendar(QLatin1StringView name)
     : QCalendar(QAnyStringView{name}) {}
 
 
@@ -272,7 +272,7 @@ QVersionNumber QVersionNumber::fromString(QStringView string, int *suffixIndex)
     return fromString(QAnyStringView{string}, suffixIndex);
 }
 
-QVersionNumber QVersionNumber::fromString(QLatin1String string, int *suffixIndex)
+QVersionNumber QVersionNumber::fromString(QLatin1StringView string, int *suffixIndex)
 {
     return fromString(QAnyStringView{string}, suffixIndex);
 }

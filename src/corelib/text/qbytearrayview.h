@@ -98,7 +98,7 @@ struct IsContainerCompatibleWithQByteArrayView<T, std::enable_if_t<
                 // Don't make an accidental copy constructor
                 std::negation<std::is_same<std::decay_t<T>, QByteArrayView>>>>> : std::true_type {};
 
-// Used by QLatin1String too
+// Used by QLatin1StringView too
 template <typename Char>
 static constexpr qsizetype lengthHelperPointer(const Char *data) noexcept
 {

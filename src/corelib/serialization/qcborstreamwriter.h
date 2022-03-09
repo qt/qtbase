@@ -77,7 +77,7 @@ public:
     void append(qint64 i);
     void append(QCborNegativeInteger n);
     void append(const QByteArray &ba)       { appendByteString(ba.constData(), ba.size()); }
-    void append(QLatin1String str);
+    void append(QLatin1StringView str);
     void append(QStringView str);
     void append(QCborTag tag);
     void append(QCborKnownTags tag)         { append(QCborTag(tag)); }

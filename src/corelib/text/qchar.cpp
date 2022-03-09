@@ -68,7 +68,7 @@ QT_BEGIN_NAMESPACE
 
     This class is only useful to construct a QChar with 8-bit character.
 
-    \sa QChar, QLatin1String, QString
+    \sa QChar, QLatin1StringView, QString
 */
 
 /*!

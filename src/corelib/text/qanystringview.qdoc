@@ -61,13 +61,13 @@
     function to accept a wide variety of string data sources. One
     function accepting QAnyStringView thus replaces five function
     overloads (taking QString, \c{(const QChar*, int)},
-    QUtf8StringView, QLatin1String (but see above), and QChar), while
+    QUtf8StringView, QLatin1StringView (but see above), and QChar), while
     at the same time enabling even more string data sources to be
     passed to the function, such as \c{u8"Hello World"}, a \c char8_t
     string literal.
 
     Like elsewhere in Qt, QAnyStringView assumes \c char data is encoded
-    in UTF-8, unless it is presented as a QLatin1String.
+    in UTF-8, unless it is presented as a QLatin1StringView.
 
     QAnyStringViews should be passed by value, not by reference-to-const:
     \snippet code/src_corelib_text_qanystringview.cpp 0
@@ -97,7 +97,7 @@
     \endlist
 
     The 8-bit character types are interpreted as UTF-8 data (except when
-    presented as a QLatin1String) while the 16-bit character types are
+    presented as a QLatin1StringView) while the 16-bit character types are
     interpreted as UTF-16 data in host byte order (the same as QString).
 
     \section2 Sizes and Sub-Strings

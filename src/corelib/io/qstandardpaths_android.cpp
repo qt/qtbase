@@ -75,7 +75,7 @@ static inline QString getAbsolutePath(const QJniObject &file)
  */
 static QString getExternalFilesDir(const char *directoryField = nullptr)
 {
-    QString &path = (*androidDirCache)["APPNAME_%1"_L1.arg(QLatin1String(directoryField))];
+    QString &path = (*androidDirCache)["APPNAME_%1"_L1.arg(QLatin1StringView(directoryField))];
     if (!path.isEmpty())
         return path;
 

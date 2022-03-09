@@ -89,7 +89,7 @@ QLoggingRule::QLoggingRule(QStringView pattern, bool enabled) :
     Return value 1 means filter passed, 0 means filter doesn't influence this
     category, -1 means category doesn't pass this filter.
  */
-int QLoggingRule::pass(QLatin1String cat, QtMsgType msgType) const
+int QLoggingRule::pass(QLatin1StringView cat, QtMsgType msgType) const
 {
     // check message type
     if (messageType > -1 && messageType != msgType)
@@ -482,7 +482,7 @@ void QLoggingRegistry::defaultCategoryFilter(QLoggingCategory *cat)
         }
     }
 
-    const auto categoryName = QLatin1String(cat->categoryName());
+    const auto categoryName = QLatin1StringView(cat->categoryName());
 
     for (const auto &ruleSet : reg->ruleSets) {
         for (const auto &rule : ruleSet) {

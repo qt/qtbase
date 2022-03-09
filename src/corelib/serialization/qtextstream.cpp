@@ -744,7 +744,7 @@ inline void QTextStreamPrivate::write(QChar ch)
 /*!
     \internal
 */
-void QTextStreamPrivate::write(QLatin1String data)
+void QTextStreamPrivate::write(QLatin1StringView data)
 {
     if (string) {
         // ### What about seek()??
@@ -880,7 +880,7 @@ void QTextStreamPrivate::putString(const QChar *data, qsizetype len, bool number
 /*!
     \internal
 */
-void QTextStreamPrivate::putString(QLatin1String data, bool number)
+void QTextStreamPrivate::putString(QLatin1StringView data, bool number)
 {
     if (Q_UNLIKELY(params.fieldWidth > data.size())) {
 
@@ -893,7 +893,7 @@ void QTextStreamPrivate::putString(QLatin1String data, bool number)
             if (sign == locale.negativeSign() || sign == locale.positiveSign()) {
                 // write the sign before the padding, then skip it later
                 write(&sign, 1);
-                data = QLatin1String(data.data() + 1, data.size() - 1);
+                data = QLatin1StringView(data.data() + 1, data.size() - 1);
             }
         }
 
@@ -2498,7 +2498,7 @@ QTextStream &QTextStream::operator<<(QStringView string)
     Writes \a string to the stream, and returns a reference to the
     QTextStream.
 */
-QTextStream &QTextStream::operator<<(QLatin1String string)
+QTextStream &QTextStream::operator<<(QLatin1StringView string)
 {
     Q_D(QTextStream);
     CHECK_VALID_STREAM(*this);

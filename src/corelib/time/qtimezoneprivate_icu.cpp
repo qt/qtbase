@@ -491,7 +491,7 @@ QList<QByteArray> QIcuTimeZonePrivate::availableTimeZoneIds() const
 
 QList<QByteArray> QIcuTimeZonePrivate::availableTimeZoneIds(QLocale::Territory territory) const
 {
-    const QLatin1String regionCode = QLocalePrivate::territoryToCode(territory);
+    const QLatin1StringView regionCode = QLocalePrivate::territoryToCode(territory);
     const QByteArray regionCodeUtf8 = QString(regionCode).toUtf8();
     UErrorCode status = U_ZERO_ERROR;
     UEnumeration *uenum = ucal_openCountryTimeZones(regionCodeUtf8.data(), &status);

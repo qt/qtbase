@@ -148,7 +148,7 @@ static QSettings *findConfiguration()
 #endif
     if (QCoreApplication::instance()) {
         QDir pwd(QCoreApplication::applicationDirPath());
-        qtconfig = pwd.filePath(QLatin1String("qt" QT_STRINGIFY(QT_VERSION_MAJOR) ".conf"));
+        qtconfig = pwd.filePath(u"qt" QT_STRINGIFY(QT_VERSION_MAJOR) ".conf"_qs);
         if (QFile::exists(qtconfig))
             return new QSettings(qtconfig, QSettings::IniFormat);
         qtconfig = pwd.filePath("qt.conf"_L1);
@@ -529,14 +529,14 @@ QLibraryInfoPrivate::LocationInfo QLibraryInfoPrivate::locationInfo(QLibraryInfo
     LocationInfo result;
 
     if (int(loc) < qtConfEntries.count()) {
-        result.key = QLatin1String(qtConfEntries.viewAt(loc * 2));
-        result.defaultValue = QLatin1String(qtConfEntries.viewAt(loc * 2 + 1));
+        result.key = QLatin1StringView(qtConfEntries.viewAt(loc * 2));
+        result.defaultValue = QLatin1StringView(qtConfEntries.viewAt(loc * 2 + 1));
         if (result.key == u"QmlImports")
             result.fallbackKey = u"Qml2Imports"_qs;
 #ifndef Q_OS_WIN // On Windows we use the registry
     } else if (loc == QLibraryInfo::SettingsPath) {
         result.key = "Settings"_L1;
-        result.defaultValue = QLatin1String(dot);
+        result.defaultValue = QLatin1StringView(dot);
 #endif
     }
 

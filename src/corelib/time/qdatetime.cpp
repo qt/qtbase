@@ -123,7 +123,7 @@ static const char qt_shortMonthNames[][4] = {
 static int fromShortMonthName(QStringView monthName)
 {
     for (unsigned int i = 0; i < sizeof(qt_shortMonthNames) / sizeof(qt_shortMonthNames[0]); ++i) {
-        if (monthName == QLatin1String(qt_shortMonthNames[i], 3))
+        if (monthName == QLatin1StringView(qt_shortMonthNames[i], 3))
             return i + 1;
     }
     return -1;

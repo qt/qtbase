@@ -642,7 +642,7 @@ bool QLibrary::isLibrary(const QString &fileName)
         return false;
 
     // if this throws an empty-array error, you need to fix the #ifdef's:
-    const QLatin1String candidates[] = {
+    const QLatin1StringView candidates[] = {
 # if defined(Q_OS_HPUX)
 /*
     See "HP-UX Linker and Libraries User's Guide", section "Link-time Differences between PA-RISC and IPF":

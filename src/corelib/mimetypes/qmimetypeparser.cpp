@@ -114,13 +114,13 @@ QMimeTypeParserBase::ParseState QMimeTypeParserBase::nextState(ParseState curren
 {
     switch (currentState) {
     case ParseBeginning:
-        if (startElement == QLatin1String(mimeInfoTagC))
+        if (startElement == QLatin1StringView(mimeInfoTagC))
             return ParseMimeInfo;
-        if (startElement == QLatin1String(mimeTypeTagC))
+        if (startElement == QLatin1StringView(mimeTypeTagC))
             return ParseMimeType;
         return ParseError;
     case ParseMimeInfo:
-        return startElement == QLatin1String(mimeTypeTagC) ? ParseMimeType : ParseError;
+        return startElement == QLatin1StringView(mimeTypeTagC) ? ParseMimeType : ParseError;
     case ParseMimeType:
     case ParseComment:
     case ParseGenericIcon:
@@ -131,29 +131,29 @@ QMimeTypeParserBase::ParseState QMimeTypeParserBase::nextState(ParseState curren
     case ParseAlias:
     case ParseOtherMimeTypeSubTag:
     case ParseMagicMatchRule:
-        if (startElement == QLatin1String(mimeTypeTagC)) // Sequence of <mime-type>
+        if (startElement == QLatin1StringView(mimeTypeTagC)) // Sequence of <mime-type>
             return ParseMimeType;
-        if (startElement == QLatin1String(commentTagC))
+        if (startElement == QLatin1StringView(commentTagC))
             return ParseComment;
-        if (startElement == QLatin1String(genericIconTagC))
+        if (startElement == QLatin1StringView(genericIconTagC))
             return ParseGenericIcon;
-        if (startElement == QLatin1String(iconTagC))
+        if (startElement == QLatin1StringView(iconTagC))
             return ParseIcon;
-        if (startElement == QLatin1String(globTagC))
+        if (startElement == QLatin1StringView(globTagC))
             return ParseGlobPattern;
-        if (startElement == QLatin1String(globDeleteAllTagC))
+        if (startElement == QLatin1StringView(globDeleteAllTagC))
             return ParseGlobDeleteAll;
-        if (startElement == QLatin1String(subClassTagC))
+        if (startElement == QLatin1StringView(subClassTagC))
             return ParseSubClass;
-        if (startElement == QLatin1String(aliasTagC))
+        if (startElement == QLatin1StringView(aliasTagC))
             return ParseAlias;
-        if (startElement == QLatin1String(magicTagC))
+        if (startElement == QLatin1StringView(magicTagC))
             return ParseMagic;
-        if (startElement == QLatin1String(matchTagC))
+        if (startElement == QLatin1StringView(matchTagC))
             return ParseMagicMatchRule;
         return ParseOtherMimeTypeSubTag;
     case ParseMagic:
-        if (startElement == QLatin1String(matchTagC))
+        if (startElement == QLatin1StringView(matchTagC))
             return ParseMagicMatchRule;
         break;
     case ParseError:
@@ -190,10 +190,10 @@ struct CreateMagicMatchRuleResult
 
 static CreateMagicMatchRuleResult createMagicMatchRule(const QXmlStreamAttributes &atts)
 {
-    const auto type = atts.value(QLatin1String(matchTypeAttributeC));
-    const auto value = atts.value(QLatin1String(matchValueAttributeC));
-    const auto offsets = atts.value(QLatin1String(matchOffsetAttributeC));
-    const auto mask = atts.value(QLatin1String(matchMaskAttributeC));
+    const auto type = atts.value(QLatin1StringView(matchTypeAttributeC));
+    const auto value = atts.value(QLatin1StringView(matchValueAttributeC));
+    const auto offsets = atts.value(QLatin1StringView(matchOffsetAttributeC));
+    const auto mask = atts.value(QLatin1StringView(matchMaskAttributeC));
     return CreateMagicMatchRuleResult(type, value, offsets, mask);
 }
 #endif
@@ -220,7 +220,7 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
             const QXmlStreamAttributes atts = reader.attributes();
             switch (ps) {
             case ParseMimeType: { // start parsing a MIME type name
-                const QString name = atts.value(QLatin1String(mimeTypeAttributeC)).toString();
+                const QString name = atts.value(QLatin1StringView(mimeTypeAttributeC)).toString();
                 if (name.isEmpty()) {
                     reader.raiseError(QStringLiteral("Missing 'type'-attribute"));
                 } else {
@@ -229,15 +229,15 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
             }
                 break;
             case ParseGenericIcon:
-                data.genericIconName = atts.value(QLatin1String(nameAttributeC)).toString();
+                data.genericIconName = atts.value(QLatin1StringView(nameAttributeC)).toString();
                 break;
             case ParseIcon:
-                data.iconName = atts.value(QLatin1String(nameAttributeC)).toString();
+                data.iconName = atts.value(QLatin1StringView(nameAttributeC)).toString();
                 break;
             case ParseGlobPattern: {
-                const QString pattern = atts.value(QLatin1String(patternAttributeC)).toString();
-                unsigned weight = atts.value(QLatin1String(weightAttributeC)).toInt();
-                const bool caseSensitive = atts.value(QLatin1String(caseSensitiveAttributeC)) == "true"_L1;
+                const QString pattern = atts.value(QLatin1StringView(patternAttributeC)).toString();
+                unsigned weight = atts.value(QLatin1StringView(weightAttributeC)).toInt();
+                const bool caseSensitive = atts.value(QLatin1StringView(caseSensitiveAttributeC)) == "true"_L1;
 
                 if (weight == 0)
                     weight = QMimeGlobPattern::DefaultWeight;
@@ -253,14 +253,14 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
                 data.globPatterns.clear();
                 break;
             case ParseSubClass: {
-                const QString inheritsFrom = atts.value(QLatin1String(mimeTypeAttributeC)).toString();
+                const QString inheritsFrom = atts.value(QLatin1StringView(mimeTypeAttributeC)).toString();
                 if (!inheritsFrom.isEmpty())
                     processParent(data.name, inheritsFrom);
             }
                 break;
             case ParseComment: {
                 // comments have locale attributes.
-                QString locale = atts.value(QLatin1String(localeAttributeC)).toString();
+                QString locale = atts.value(QLatin1StringView(localeAttributeC)).toString();
                 const QString comment = reader.readElementText();
                 if (locale.isEmpty())
                     locale = QString::fromLatin1("default");
@@ -268,14 +268,14 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
             }
                 break;
             case ParseAlias: {
-                const QString alias = atts.value(QLatin1String(mimeTypeAttributeC)).toString();
+                const QString alias = atts.value(QLatin1StringView(mimeTypeAttributeC)).toString();
                 if (!alias.isEmpty())
                     processAlias(alias, data.name);
             }
                 break;
             case ParseMagic: {
                 priority = 50;
-                const auto priorityS = atts.value(QLatin1String(priorityAttributeC));
+                const auto priorityS = atts.value(QLatin1StringView(priorityAttributeC));
                 if (!priorityS.isEmpty()) {
                     if (!parseNumber(priorityS, &priority, errorMessage))
                         return false;
@@ -312,15 +312,15 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
         case QXmlStreamReader::EndElement: // Finished element
         {
             const auto elementName = reader.name();
-            if (elementName == QLatin1String(mimeTypeTagC)) {
+            if (elementName == QLatin1StringView(mimeTypeTagC)) {
                 if (!process(QMimeType(data), errorMessage))
                     return false;
                 data.clear();
-            } else if (elementName == QLatin1String(matchTagC)) {
+            } else if (elementName == QLatin1StringView(matchTagC)) {
                 // Closing a <match> tag, pop stack
                 currentRules.pop();
                 //qDebug() << " MATCH closed. Stack size is now" << currentRules.size();
-            } else if (elementName == QLatin1String(magicTagC)) {
+            } else if (elementName == QLatin1StringView(magicTagC)) {
                 //qDebug() << "MAGIC ended, we got" << rules.count() << "rules, with prio" << priority;
                 // Finished a <magic> sequence
                 QMimeMagicRuleMatcher ruleMatcher(data.name, priority);

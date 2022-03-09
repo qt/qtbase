@@ -968,7 +968,7 @@ QStringList QUrl::idnWhitelist()
         list.reserve(idn_whitelist.count());
         int i = 0;
         while (i < idn_whitelist.count()) {
-            list << QLatin1String(idn_whitelist.at(i));
+            list << QLatin1StringView(idn_whitelist.at(i));
             ++i;
         }
         return list;

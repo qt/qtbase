@@ -175,7 +175,7 @@ static QString flagsValue(const QWinMessageMapping<IntType> *haystack,
         if ((p->value & value) == p->value) {
             if (!result.isEmpty())
                 result += " | "_L1;
-            result += QLatin1String(p->name);
+            result += QLatin1StringView(p->name);
         }
     }
     return result;
@@ -677,7 +677,7 @@ QString decodeMSG(const MSG& msg)
     switch (msg.message) {
         case WM_ACTIVATE:
             if (const char *a = activateParameter(uint(wParam)))
-                parameters += QLatin1String(a);
+                parameters += QLatin1StringView(a);
             parameters += " Hwnd "_L1 + hwndS;
             break;
         case WM_CAPTURECHANGED:
@@ -719,7 +719,7 @@ QString decodeMSG(const MSG& msg)
             {
                 parameters = "Command("_L1;
                 if (const char *c = imeCommand(uint(wParam)))
-                    parameters += QLatin1String(c);
+                    parameters += QLatin1StringView(c);
                 parameters += " : "_L1 + lParamS;
             }
             break;
@@ -794,7 +794,7 @@ QString decodeMSG(const MSG& msg)
         case WM_SETCURSOR:
             parameters = QString::asprintf("HitTestCode(0x%x) MouseMsg(", LOWORD(lParam));
             if (const char *mouseMsg = findWMstr(HIWORD(lParam)))
-                parameters += QLatin1String(mouseMsg);
+                parameters += QLatin1StringView(mouseMsg);
             parameters += u')';
             break;
         case WM_SETFOCUS:
@@ -809,7 +809,7 @@ QString decodeMSG(const MSG& msg)
             parameters = QString::asprintf("w,h(%4d,%4d) showmode(",
                                            LOWORD(lParam), HIWORD(lParam));
             if (const char *showMode = wmSizeParam(uint(wParam)))
-                parameters += QLatin1String(showMode);
+                parameters += QLatin1StringView(showMode);
             parameters += u')';
             break;
         case WM_WINDOWPOSCHANGED:
@@ -822,7 +822,7 @@ QString decodeMSG(const MSG& msg)
                                                winPos->x, winPos->y, winPos->cx, winPos->cy,
                                                winPosFlags(winPos->flags).toLatin1().constData());
                 if (const char *h = winPosInsertAfter(insertAfter))
-                    parameters += QLatin1String(h);
+                    parameters += QLatin1StringView(h);
                 else
                     parameters += QString::number(insertAfter, 16);
                 parameters += u')';
@@ -831,7 +831,7 @@ QString decodeMSG(const MSG& msg)
         case WM_QUERYENDSESSION:
             parameters = "End session: "_L1;
             if (const char *logoffOption = sessionMgrLogOffOption(uint(wParam)))
-                parameters += QLatin1String(logoffOption);
+                parameters += QLatin1StringView(logoffOption);
             break;
         default:
             parameters = "wParam"_L1 + wParamS + " lParam"_L1 + lParamS;

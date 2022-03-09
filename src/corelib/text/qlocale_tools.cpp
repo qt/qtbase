@@ -629,7 +629,7 @@ QString qdtoa(qreal d, int *decpt, int *sign)
     if (decpt)
         *decpt = nonNullDecpt;
 
-    return QLatin1String(result, length);
+    return QLatin1StringView(result, length);
 }
 
 static QLocaleData::DoubleForm resolveFormat(int precision, int decpt, qsizetype length)
@@ -706,7 +706,7 @@ static T dtoString(double d, QLocaleData::DoubleForm form, int precision, bool u
     int length = 0;
     int decpt = 0;
     qt_doubleToAscii(d, form, precision, buffer.data(), buffer.length(), negative, length, decpt);
-    QLatin1String view(buffer.data(), buffer.data() + length);
+    QLatin1StringView view(buffer.data(), length);
     const bool succinct = form == QLocaleData::DFSignificantDigits;
     qsizetype total = (negative ? 1 : 0) + length;
     if (qIsFinite(d)) {

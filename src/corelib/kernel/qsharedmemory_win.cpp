@@ -58,7 +58,7 @@ QSharedMemoryPrivate::QSharedMemoryPrivate() :
 {
 }
 
-void QSharedMemoryPrivate::setErrorString(QLatin1String function)
+void QSharedMemoryPrivate::setErrorString(QLatin1StringView function)
 {
     DWORD windowsError = GetLastError();
     if (windowsError == 0)

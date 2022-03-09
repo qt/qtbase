@@ -121,9 +121,9 @@ QByteArray QTimeZonePrivate::id() const
 QLocale::Territory QTimeZonePrivate::territory() const
 {
     // Default fall-back mode, use the zoneTable to find Region of known Zones
-    const QLatin1String sought(m_id.data(), m_id.size());
+    const QLatin1StringView sought(m_id.data(), m_id.size());
     for (const QZoneData &data : zoneDataTable) {
-        for (QLatin1String token : data.ids()) {
+        for (QLatin1StringView token : data.ids()) {
             if (token == sought)
                 return QLocale::Territory(data.territory);
         }

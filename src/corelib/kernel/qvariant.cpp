@@ -549,7 +549,7 @@ QVariant::QVariant(const QVariant &p)
 */
 
 /*!
-  \fn QVariant::QVariant(QLatin1String val)
+    \fn QVariant::QVariant(QLatin1StringView val)
 
     Constructs a new variant with a string value, \a val.
 */
@@ -858,7 +858,7 @@ QVariant::QVariant(const QString &val)
 QVariant::QVariant(QChar val)
     : d(QMetaType::fromType<QChar>())
 { v_construct<QChar>(&d, val);  }
-QVariant::QVariant(QLatin1String val)
+QVariant::QVariant(QLatin1StringView val)
     : d(QMetaType::fromType<QString>())
 { v_construct<QString>(&d, val); }
 QVariant::QVariant(const QStringList &val)

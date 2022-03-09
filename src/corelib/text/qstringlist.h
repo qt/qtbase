@@ -63,11 +63,11 @@ namespace QtPrivate {
     qsizetype Q_CORE_EXPORT QStringList_removeDuplicates(QStringList *that);
     QString Q_CORE_EXPORT QStringList_join(const QStringList *that, QStringView sep);
     QString Q_CORE_EXPORT QStringList_join(const QStringList *that, const QChar *sep, qsizetype seplen);
-    Q_CORE_EXPORT QString QStringList_join(const QStringList &list, QLatin1String sep);
+    Q_CORE_EXPORT QString QStringList_join(const QStringList &list, QLatin1StringView sep);
     QStringList Q_CORE_EXPORT QStringList_filter(const QStringList *that, QStringView str,
                                                Qt::CaseSensitivity cs);
     bool Q_CORE_EXPORT QStringList_contains(const QStringList *that, QStringView str, Qt::CaseSensitivity cs);
-    bool Q_CORE_EXPORT QStringList_contains(const QStringList *that, QLatin1String str, Qt::CaseSensitivity cs);
+    bool Q_CORE_EXPORT QStringList_contains(const QStringList *that, QLatin1StringView str, Qt::CaseSensitivity cs);
     void Q_CORE_EXPORT QStringList_replaceInStrings(QStringList *that, QStringView before, QStringView after,
                                       Qt::CaseSensitivity cs);
 
@@ -109,7 +109,7 @@ public:
 
     inline QString join(QStringView sep) const
     { return QtPrivate::QStringList_join(self(), sep); }
-    inline QString join(QLatin1String sep) const
+    inline QString join(QLatin1StringView sep) const
     { return QtPrivate::QStringList_join(*self(), sep); }
     inline QString join(QChar sep) const
     { return QtPrivate::QStringList_join(self(), &sep, 1); }
@@ -147,7 +147,7 @@ public:
     using QListSpecialMethodsBase<QString>::indexOf;
     using QListSpecialMethodsBase<QString>::lastIndexOf;
 
-    inline bool contains(QLatin1String str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    inline bool contains(QLatin1StringView str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::QStringList_contains(self(), str, cs); }
     inline bool contains(QStringView str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::QStringList_contains(self(), str, cs); }
