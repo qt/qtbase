@@ -62,7 +62,7 @@ QT_END_NO_CHAR8_T_NAMESPACE
 
 class QByteArray;
 class QByteArrayView;
-#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED)
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED) || defined(Q_CLANG_QDOC)
 class QLatin1StringView;
 using QLatin1String = QLatin1StringView;
 #else

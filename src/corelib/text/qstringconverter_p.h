@@ -310,7 +310,7 @@ struct QUtf8
     };
     static ValidUtf8Result isValidUtf8(QByteArrayView in);
     static int compareUtf8(QByteArrayView utf8, QStringView utf16) noexcept;
-    static int compareUtf8(QByteArrayView utf8, QLatin1String s);
+    static int compareUtf8(QByteArrayView utf8, QLatin1StringView s);
 };
 
 struct QUtf16

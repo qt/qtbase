@@ -872,7 +872,7 @@ int QUtf8::compareUtf8(QByteArrayView utf8, QStringView utf16) noexcept
     return (end1 > src1) - int(end2 > src2);
 }
 
-int QUtf8::compareUtf8(QByteArrayView utf8, QLatin1String s)
+int QUtf8::compareUtf8(QByteArrayView utf8, QLatin1StringView s)
 {
     char32_t uc1 = QChar::Null;
     auto src1 = reinterpret_cast<const uchar *>(utf8.data());

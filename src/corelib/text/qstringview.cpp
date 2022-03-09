@@ -554,7 +554,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn template <typename...Args> QString QStringView::arg(Args &&...args) const
-    \fn template <typename...Args> QString QLatin1String::arg(Args &&...args) const
+    \fn template <typename...Args> QString QLatin1StringView::arg(Args &&...args) const
     \fn template <typename...Args> QString QString::arg(Args &&...args) const
     \since 5.14
 
@@ -1403,7 +1403,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn template <typename Needle, typename...Flags> auto QStringView::tokenize(Needle &&sep, Flags...flags) const
-    \fn template <typename Needle, typename...Flags> auto QLatin1String::tokenize(Needle &&sep, Flags...flags) const
+    \fn template <typename Needle, typename...Flags> auto QLatin1StringView::tokenize(Needle &&sep, Flags...flags) const
     \fn template <typename Needle, typename...Flags> auto QString::tokenize(Needle &&sep, Flags...flags) const &
     \fn template <typename Needle, typename...Flags> auto QString::tokenize(Needle &&sep, Flags...flags) const &&
     \fn template <typename Needle, typename...Flags> auto QString::tokenize(Needle &&sep, Flags...flags) &&
