@@ -41,6 +41,16 @@
 #include "qtestresult_p.h"
 #include "qbenchmark_p.h"
 
+/*! \internal
+    \class QCsvBenchmarkLogger
+    \inmodule QtTest
+
+    QCsvBenchmarkLogger implements a comma-separated value format for benchmarks.
+
+    This is intended to be suitable for import into spreadsheets.
+    It does not print test failures, debug messages, warnings or any other details.
+*/
+
 QCsvBenchmarkLogger::QCsvBenchmarkLogger(const char *filename)
     : QAbstractTestLogger(filename)
 {

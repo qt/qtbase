@@ -570,3 +570,23 @@
     \externalpage https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessw
     \title CreateProcess
 */
+
+/*!
+    \externalpage https://testanything.org
+    \title Test Anything Protocol
+*/
+
+/*!
+    \externalpage https://www.jetbrains.com/teamcity/
+    \title TeamCity
+*/
+
+/*!
+    \externalpage https://junit.org/
+    \title JUnit XML
+*/
+
+/*!
+    \externalpage https://www.froglogic.com/testcenter/
+    \title Squish Test Center
+*/

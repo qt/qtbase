@@ -48,6 +48,17 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+/*! \internal
+    \class QTapTestLogger
+    \inmodule QtTest
+
+    QTapTestLogger implements the Test Anything Protocol v13.
+
+    The \l{Test Anything Protocol} (TAP) is a simple plain-text interface
+    between testing code and systems for reporting and analyzing test results.
+
+    \sa QAbstractTestLogger
+*/
 
 QTapTestLogger::QTapTestLogger(const char *filename)
     : QAbstractTestLogger(filename)
@@ -76,7 +87,7 @@ void QTapTestLogger::stopLogging()
 
     QTestCharBuffer testPlanAndStats;
     QTest::qt_asprintf(&testPlanAndStats,
-        "1..%d\n"
+        "1..%d\n" // The plan (last non-diagnostic line)
         "# tests %d\n"
         "# pass %d\n"
         "# fail %d\n",
@@ -265,4 +276,3 @@ void QTapTestLogger::addMessage(MessageTypes type, const QString &message,
 }
 
 QT_END_NAMESPACE
-

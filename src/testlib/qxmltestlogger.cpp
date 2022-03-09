@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -101,6 +101,26 @@ namespace QTest {
 
 }
 
+/*! \internal
+    \class QXmlTestLogger
+    \inmodule QtTest
+
+    QXmlTestLogger implements two XML formats specific to Qt.
+
+    The two formats are distinguished by the XmlMode enum.
+*/
+/*! \internal
+    \enum QXmlTestLogger::XmlMode
+
+    This enumerated type selects the type of XML output to produce.
+
+    \value Complete A full self-contained XML document
+    \value Light XML content suitable for embedding in an XML document
+
+    The Complete form wraps the Light form in a <TestCase> element whose name
+    attribute identifies the test class whose private slots are to be run. It
+    also includes the usual <?xml ...> preamble.
+*/
 
 QXmlTestLogger::QXmlTestLogger(XmlMode mode, const char *filename)
     : QAbstractTestLogger(filename), xmlmode(mode)

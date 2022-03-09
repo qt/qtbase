@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -46,6 +46,14 @@ QT_BEGIN_NAMESPACE
 #if defined(QT_USE_APPLE_UNIFIED_LOGGING)
 
 using namespace QTestPrivate;
+
+/*! \internal
+    \class QAppleTestLogger
+    \inmodule QtTest
+
+    QAppleTestLogger reports test results through Apple's unified system logging.
+    Results can be viewed in the Console app.
+*/
 
 bool QAppleTestLogger::debugLoggingEnabled()
 {

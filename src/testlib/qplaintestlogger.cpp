@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -212,6 +212,15 @@ namespace QTest {
         return size;
     }
 }
+
+/*! \internal
+    \class QPlainTestLogger
+    \inmodule QtTest
+
+    QPlainTestLogger implements basic logging of test results.
+
+    The format is Qt-specific and aims to be be easy to read.
+*/
 
 void QPlainTestLogger::outputMessage(const char *str)
 {

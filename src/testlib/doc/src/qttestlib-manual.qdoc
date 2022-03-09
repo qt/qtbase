@@ -258,14 +258,14 @@
     \li \c -lightxml \br
     Outputs results as a stream of XML tags.
     \li \c -junitxml \br
-    Outputs results as an JUnit XML document.
+    Outputs results as an \l{JUnit XML} document.
     \li \c -csv \br
     Outputs results as comma-separated values (CSV). This mode is only suitable for
     benchmarks, since it suppresses normal pass/fail messages.
     \li \c -teamcity \br
-    Outputs results in TeamCity format.
+    Outputs results in \l{TeamCity} format.
     \li \c -tap \br
-    Outputs results in Test Anything Protocol (TAP) format.
+    Outputs results in \l{Test Anything Protocol} (TAP) format.
     \endlist
 
     The first version of the \c -o option may be repeated in order to log

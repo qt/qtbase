@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2017 Borgar Ovsthus
 ** Contact: https://www.qt.io/licensing/
 **
@@ -98,6 +98,13 @@ namespace QTest {
         return "??????";
     }
 }
+
+/*! \internal
+    \class QTeamCityLogger
+    \inmodule QtTest
+
+    QTeamCityLogger implements logging in the \l{TeamCity} format.
+*/
 
 QTeamCityLogger::QTeamCityLogger(const char *filename)
     : QAbstractTestLogger(filename)

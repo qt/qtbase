@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -57,6 +57,16 @@
 #include <string.h>
 
 QT_BEGIN_NAMESPACE
+/*! \internal
+    \class QJUnitTestLogger
+    \inmodule QtTest
+
+    QJUnitTestLogger implements logging in a JUnit-compatible XML format.
+
+    The \l{JUnit XML} format was originally developed for Java testing.
+    It is supported by \l{Squish Test Center}.
+*/
+// QTBUG-95424 links to further useful documentation.
 
 QJUnitTestLogger::QJUnitTestLogger(const char *filename)
     : QAbstractTestLogger(filename)

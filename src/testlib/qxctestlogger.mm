@@ -46,6 +46,9 @@
 
 #import <XCTest/XCTest.h>
 
+// This XCode logging integration has probably bit-rotted since it was written.
+// It is not even compiled as part of normal builds.
+
 // ---------------------------------------------------------
 
 @interface XCTestProbe (Private)
