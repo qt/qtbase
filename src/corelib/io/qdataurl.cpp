@@ -43,6 +43,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::Literals;
+
 /*!
     \internal
 
@@ -54,7 +56,7 @@ Q_CORE_EXPORT bool qDecodeDataUrl(const QUrl &uri, QString &mimeType, QByteArray
     if (uri.scheme() != QLatin1String("data") || !uri.host().isEmpty())
         return false;
 
-    mimeType = QLatin1String("text/plain;charset=US-ASCII");
+    mimeType = QStringLiteral("text/plain;charset=US-ASCII");
 
     // the following would have been the correct thing, but
     // reality often differs from the specification. People have
@@ -70,12 +72,12 @@ Q_CORE_EXPORT bool qDecodeDataUrl(const QUrl &uri, QString &mimeType, QByteArray
         data = data.trimmed();
 
         // find out if the payload is encoded in Base64
-        if (data.endsWith(";base64")) {
+        if (QLatin1String{data}.endsWith(";base64"_L1, Qt::CaseInsensitive)) {
             payload = QByteArray::fromBase64(payload);
             data.chop(7);
         }
 
-        if (data.toLower().startsWith("charset")) {
+        if (QLatin1String{data}.startsWith("charset"_L1, Qt::CaseInsensitive)) {
             int i = 7;      // strlen("charset")
             while (data.at(i) == ' ')
                 ++i;
@@ -84,7 +86,7 @@ Q_CORE_EXPORT bool qDecodeDataUrl(const QUrl &uri, QString &mimeType, QByteArray
         }
 
         if (!data.isEmpty())
-            mimeType = QLatin1String(data.trimmed());
+            mimeType = QString::fromLatin1(data.trimmed());
 
     }
 
