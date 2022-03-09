@@ -35,43 +35,45 @@ class tst_QDataUrl : public QObject
     Q_OBJECT
 
 private slots:
-    void nonData();
-    void emptyData();
-    void alreadyPercentageEncoded();
+    void decode_data();
+    void decode();
 };
 
-void tst_QDataUrl::nonData()
+void tst_QDataUrl::decode_data()
 {
-    QLatin1String data("http://test.com");
-    QUrl url(data);
-    QString mimeType;
-    QByteArray payload;
-    bool result = qDecodeDataUrl(url, mimeType, payload);
-    QVERIFY(!result);
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<bool>("result");
+    QTest::addColumn<QString>("mimeType");
+    QTest::addColumn<QByteArray>("payload");
+
+    auto row = [](const char *tag, const char *url, bool success, QString mimeType = {}, QByteArray payload = {}) {
+        QTest::newRow(tag) << url << success <<mimeType << payload;
+    };
+
+    row("nonData", "http://test.com", false);
+    row("emptyData", "data:text/plain", true,
+        QLatin1String("text/plain;charset=US-ASCII"));
+    row("alreadyPercentageEncoded", "data:text/plain,%E2%88%9A", true,
+        QLatin1String("text/plain"), QByteArray::fromPercentEncoding("%E2%88%9A"));
 }
 
-void tst_QDataUrl::emptyData()
+void tst_QDataUrl::decode()
 {
-    QLatin1String data("data:text/plain");
-    QUrl url(data);
-    QString mimeType;
-    QByteArray payload;
-    bool result = qDecodeDataUrl(url, mimeType, payload);
-    QVERIFY(result);
-    QCOMPARE(mimeType, QLatin1String("text/plain;charset=US-ASCII"));
-    QVERIFY(payload.isNull());
-}
+    QFETCH(const QString, input);
+    QFETCH(const bool, result);
+    QFETCH(const QString, mimeType);
+    QFETCH(const QByteArray, payload);
 
-void tst_QDataUrl::alreadyPercentageEncoded()
-{
-    QLatin1String data("data:text/plain,%E2%88%9A");
-    QUrl url(data);
-    QString mimeType;
-    QByteArray payload;
-    bool result = qDecodeDataUrl(url, mimeType, payload);
-    QVERIFY(result);
-    QCOMPARE(mimeType, QLatin1String("text/plain"));
-    QCOMPARE(payload, QByteArray::fromPercentEncoding("%E2%88%9A"));
+    QString actualMimeType;
+    QByteArray actualPayload;
+
+    QUrl url(input);
+    const bool actualResult = qDecodeDataUrl(url, actualMimeType, actualPayload);
+
+    QCOMPARE(actualResult, result);
+    QCOMPARE(actualMimeType, mimeType);
+    QCOMPARE(actualPayload, payload);
+    QCOMPARE(actualPayload.isNull(), payload.isNull()); // assume nullness is significant
 }
 
 QTEST_MAIN(tst_QDataUrl)
