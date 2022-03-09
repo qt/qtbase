@@ -246,6 +246,7 @@ class tst_QAnyStringView : public QObject
 private Q_SLOTS:
     void constExpr() const;
     void basics() const;
+    void asciiLiteralIsLatin1() const;
 
     void fromQString() const { fromQStringOrByteArray<QString>(); }
     void fromQByteArray() const { fromQStringOrByteArray<QByteArray>(); }
@@ -429,6 +430,27 @@ void tst_QAnyStringView::basics() const
 
     QVERIFY(sv2 == sv1);
     QVERIFY(!(sv2 != sv1));
+}
+
+void tst_QAnyStringView::asciiLiteralIsLatin1() const
+{
+    if constexpr (QAnyStringView::detects_US_ASCII_at_compile_time) {
+        constexpr bool asciiCstringIsLatin1 = QAnyStringView("Hello, World").isLatin1();
+        QVERIFY(asciiCstringIsLatin1);
+        constexpr bool asciiUtf8stringIsLatin1 = QAnyStringView(u8"Hello, World").isLatin1();
+        QVERIFY(asciiUtf8stringIsLatin1);
+        constexpr bool utf8StringIsNotLatin1 = !QAnyStringView(u8"Tørrfisk").isLatin1();
+        QVERIFY(utf8StringIsNotLatin1);
+        constexpr bool asciiCstringArrayIsLatin1 =
+                QAnyStringView::fromArray("Hello, World").isLatin1();
+        QVERIFY(asciiCstringArrayIsLatin1);
+        constexpr bool asciiUtfstringArrayIsLatin1 =
+                QAnyStringView::fromArray(u8"Hello, World").isLatin1();
+        QVERIFY(asciiUtfstringArrayIsLatin1);
+        constexpr bool utf8StringArrayIsNotLatin1 =
+                !QAnyStringView::fromArray(u8"Tørrfisk").isLatin1();
+        QVERIFY(utf8StringArrayIsNotLatin1);
+    }
 }
 
 template <typename StringBuilder>

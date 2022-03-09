@@ -47,6 +47,8 @@
 #endif
 #include <limits>
 
+class tst_QAnyStringView;
+
 QT_BEGIN_NAMESPACE
 
 template <typename, typename> class QStringBuilder;
@@ -81,14 +83,41 @@ private:
     static_assert(QtPrivate::IsContainerCompatibleWithQStringView<QAnyStringView>::value == false);
     static_assert(QtPrivate::IsContainerCompatibleWithQUtf8StringView<QAnyStringView>::value == false);
 
-    template <typename Char>
-    static constexpr std::size_t encodeType(qsizetype sz) noexcept
+    template<typename Char>
+    static constexpr bool isAsciiOnlyCharsAtCompileTime(Char *str, qsizetype sz) noexcept
     {
-        // only deals with Utf8 and Utf16 - there's only one way to create
-        // a Latin1 string, and that ctor deals with the tag itself
+        // do not perform check if not at compile time
+#if defined(__cpp_lib_is_constant_evaluated)
+        if (!std::is_constant_evaluated())
+            return false;
+#elif defined(Q_CC_GNU) && !defined(Q_CC_CLANG)
+        if (!str || !__builtin_constant_p(*str))
+            return false;
+#else
+        return false;
+#endif
+        if constexpr (sizeof(Char) != sizeof(char)) {
+            Q_UNUSED(str);
+            Q_UNUSED(sz);
+            return false;
+        } else {
+            for (qsizetype i = 0; i < sz; ++i) {
+                if (uchar(str[i]) > 0x7f)
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    template<typename Char>
+    static constexpr std::size_t encodeType(const Char *str, qsizetype sz) noexcept
+    {
+        // Utf16 if 16 bit, Latin1 if ASCII, else Utf8
         Q_ASSERT(sz >= 0);
         Q_ASSERT(sz <= qsizetype(SizeMask));
-        return std::size_t(sz) | uint(sizeof(Char) == sizeof(char16_t)) * Tag::Utf16;
+        Q_ASSERT(str || !sz);
+        return std::size_t(sz) | uint(sizeof(Char) == sizeof(char16_t)) * Tag::Utf16
+                | uint(isAsciiOnlyCharsAtCompileTime(str, sz)) * Tag::Latin1;
     }
 
     template <typename Char>
@@ -136,8 +165,9 @@ public:
 
     template <typename Char, if_compatible_char<Char> = true>
     constexpr QAnyStringView(const Char *str, qsizetype len)
-        : m_data{str},
-          m_size{encodeType<Char>((Q_ASSERT(len >= 0), Q_ASSERT(str || !len), len))} {}
+        : m_data{str}, m_size{encodeType<Char>(str, len)}
+    {
+    }
 
     template <typename Char, if_compatible_char<Char> = true>
     constexpr QAnyStringView(const Char *f, const Char *l)
@@ -204,6 +234,13 @@ public:
     [[nodiscard]] Q_CORE_EXPORT static int compare(QAnyStringView lhs, QAnyStringView rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
     [[nodiscard]] Q_CORE_EXPORT static bool equal(QAnyStringView lhs, QAnyStringView rhs) noexcept;
 
+    static constexpr inline bool detects_US_ASCII_at_compile_time =
+#ifdef __cpp_lib_is_constant_evaluated
+            true
+#else
+            false
+#endif
+            ;
     //
     // STL compatibility API:
     //
@@ -286,6 +323,7 @@ private:
         const char16_t *m_data_utf16;
     };
     size_t m_size;
+    friend class ::tst_QAnyStringView;
 };
 Q_DECLARE_TYPEINFO(QAnyStringView, Q_PRIMITIVE_TYPE);
 
