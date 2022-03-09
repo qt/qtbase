@@ -34,16 +34,17 @@
     applications that use TCP/IP. Operations such as requests, cookies, and
     sending data over HTTP are handled by various C++ classes.
 
-    \include module-use.qdocinc using qt module
-    \snippet doc/snippets/CMakeLists.txt 0
+    \section1 Using the Module
 
-    See also the \l {Build with CMake} overview.
+    \include {module-use.qdocinc} {using the c++ api}
+
+    \section2 Building with CMake
+
+    \include {module-use.qdocinc} {building with cmake} {Network}
 
     \section2 Building with qmake
 
-    Add \c network to the \c QT variable:
-
-    \snippet network/network.pro 0
+    \include {module-use.qdocinc} {building_with_qmake} {network}
 
     \section1 Articles and Guides
 
