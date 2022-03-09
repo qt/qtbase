@@ -867,7 +867,7 @@ public:
     size_type remove_if(Predicate pred)
     {
         const auto indirect_call_to_pred = [pred = std::move(pred)](iterator it) {
-            auto dependent_false = [](auto &&...) { return false; };
+            [[maybe_unused]] auto dependent_false = [](auto &&...) { return false; };
             using Pair = decltype(*it);
             using K = decltype(it.key());
             using V = decltype(it.value());
