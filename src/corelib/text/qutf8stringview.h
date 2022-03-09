@@ -40,16 +40,13 @@
 #define QUTF8STRINGVIEW_H
 
 #include <QtCore/qstringalgorithms.h>
+#include <QtCore/qstringfwd.h>
 #include <QtCore/qarraydata.h> // for QContainerImplHelper
 #include <QtCore/qbytearrayview.h>
 
 #include <string>
 
 QT_BEGIN_NAMESPACE
-
-template <bool> class QBasicUtf8StringView;
-class QByteArray;
-class QLatin1String;
 
 namespace QtPrivate {
 template <typename Char>

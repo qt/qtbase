@@ -42,6 +42,7 @@
 #define QHASHFUNCTIONS_H
 
 #include <QtCore/qstring.h>
+#include <QtCore/qstringfwd.h>
 #include <QtCore/qpair.h>
 
 #include <numeric> // for std::accumulate
@@ -60,9 +61,6 @@
 QT_BEGIN_NAMESPACE
 
 class QBitArray;
-class QByteArray;
-class QString;
-class QLatin1String;
 
 #if QT_DEPRECATED_SINCE(6,6)
 QT_DEPRECATED_VERSION_X_6_6("Use QHashSeed instead")

@@ -52,12 +52,10 @@
 //
 
 #include <QtTest/qttestglobal.h>
+#include <QtCore/qstringfwd.h>
 #include <QtCore/private/qglobal_p.h>
 
 QT_BEGIN_NAMESPACE
-
-class QLatin1String;
-class QStringView;
 
 class QTestResultPrivate;
 class QTestData;

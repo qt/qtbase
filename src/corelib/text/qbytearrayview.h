@@ -40,13 +40,11 @@
 #define QBYTEARRAYVIEW_H
 
 #include <QtCore/qbytearrayalgorithms.h>
+#include <QtCore/qstringfwd.h>
 
 #include <string>
 
 QT_BEGIN_NAMESPACE
-
-class QByteArray;
-class QLatin1String;
 
 namespace QtPrivate {
 

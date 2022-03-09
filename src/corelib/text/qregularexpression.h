@@ -54,8 +54,6 @@ QT_REQUIRE_CONFIG(regularexpression);
 
 QT_BEGIN_NAMESPACE
 
-class QLatin1String;
-
 class QRegularExpressionMatch;
 class QRegularExpressionMatchIterator;
 struct QRegularExpressionPrivate;
