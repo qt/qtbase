@@ -125,6 +125,12 @@ public:
         QObjectPrivate *parent;
     };
 
+    void ensureExtraData()
+    {
+        if (!extraData)
+            extraData = new ExtraData(this);
+    }
+
     typedef void (*StaticMetaCallFunction)(QObject *, QMetaObject::Call, int, void **);
     struct Connection;
     struct SignalVector;

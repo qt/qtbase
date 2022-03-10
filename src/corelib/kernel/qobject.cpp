@@ -1272,8 +1272,7 @@ void QObject::setObjectName(const QString &name)
 {
     Q_D(QObject);
 
-    if (!d->extraData)
-        d->extraData = new QObjectPrivate::ExtraData(d);
+    d->ensureExtraData();
 
     d->extraData->objectName.removeBindingUnlessInWrapper();
 
@@ -1287,8 +1286,7 @@ QBindable<QString> QObject::bindableObjectName()
 {
     Q_D(QObject);
 
-    if (!d->extraData)
-        d->extraData = new QObjectPrivate::ExtraData(d);
+    d->ensureExtraData();
 
     return QBindable<QString>(&d->extraData->objectName);
 }
@@ -1817,8 +1815,7 @@ int QObject::startTimer(int interval, Qt::TimerType timerType)
         return 0;
     }
     int timerId = thisThreadData->eventDispatcher.loadRelaxed()->registerTimer(interval, timerType, this);
-    if (!d->extraData)
-        d->extraData = new QObjectPrivate::ExtraData(d);
+    d->ensureExtraData();
     d->extraData->runningTimers.append(timerId);
     return timerId;
 }
@@ -2278,8 +2275,7 @@ void QObject::installEventFilter(QObject *obj)
         return;
     }
 
-    if (!d->extraData)
-        d->extraData = new QObjectPrivate::ExtraData(d);
+    d->ensureExtraData();
 
     // clean up unused items in the list
     d->extraData->eventFilters.removeAll((QObject *)nullptr);
@@ -4101,8 +4097,7 @@ bool QObject::setProperty(const char *name, const QVariant &value)
 
     int id = meta->indexOfProperty(name);
     if (id < 0) {
-        if (!d->extraData)
-            d->extraData = new QObjectPrivate::ExtraData(d);
+        d->ensureExtraData();
 
         const int idx = d->extraData->propertyNames.indexOf(name);
 
