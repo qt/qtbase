@@ -71,6 +71,12 @@ Q_FORWARD_DECLARE_CF_TYPE(CFString);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSString);
 #endif
 
+#if 0
+// Workaround for generating forward headers
+#pragma qt_class(QLatin1String)
+#pragma qt_class(QLatin1StringView)
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QRegularExpression;
@@ -81,9 +87,25 @@ namespace QtPrivate {
 template <bool...B> class BoolList;
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED)
+#    define Q_L1S_VIEW_IS_PRIMARY
+class QLatin1StringView
+#else
 class QLatin1String
+#endif
 {
 public:
+#ifdef Q_L1S_VIEW_IS_PRIMARY
+    constexpr inline QLatin1StringView() noexcept : m_size(0), m_data(nullptr) {}
+    constexpr QLatin1StringView(std::nullptr_t) noexcept : QLatin1StringView() {}
+    constexpr inline explicit QLatin1StringView(const char *s) noexcept
+        : m_size(s ? qsizetype(QtPrivate::lengthHelperPointer(s)) : 0), m_data(s) {}
+    constexpr explicit QLatin1StringView(const char *f, const char *l)
+        : QLatin1StringView(f, qsizetype(l - f)) {}
+    constexpr inline explicit QLatin1StringView(const char *s, qsizetype sz) noexcept : m_size(sz), m_data(s) {}
+    explicit QLatin1StringView(const QByteArray &s) noexcept : m_size(s.size()), m_data(s.constData()) {}
+    constexpr explicit QLatin1StringView(QByteArrayView s) noexcept : m_size(s.size()), m_data(s.data()) {}
+#else
     constexpr inline QLatin1String() noexcept : m_size(0), m_data(nullptr) {}
     Q_WEAK_OVERLOAD
     constexpr QLatin1String(std::nullptr_t) noexcept : QLatin1String() {}
@@ -94,6 +116,7 @@ public:
     constexpr inline explicit QLatin1String(const char *s, qsizetype sz) noexcept : m_size(sz), m_data(s) {}
     explicit QLatin1String(const QByteArray &s) noexcept : m_size(s.size()), m_data(s.constData()) {}
     constexpr explicit QLatin1String(QByteArrayView s) noexcept : m_size(s.size()), m_data(s.data()) {}
+#endif // !Q_L1S_VIEW_IS_PRIMARY
 
     inline QString toString() const;
 
@@ -370,7 +393,11 @@ private:
     qsizetype m_size;
     const char *m_data;
 };
+#ifdef Q_L1S_VIEW_IS_PRIMARY
+Q_DECLARE_TYPEINFO(QLatin1StringView, Q_RELOCATABLE_TYPE);
+#else
 Q_DECLARE_TYPEINFO(QLatin1String, Q_RELOCATABLE_TYPE);
+#endif
 
 // Qt 4.x compatibility
 
@@ -1653,6 +1680,10 @@ QT_END_NAMESPACE
 
 #if defined(QT_USE_FAST_OPERATOR_PLUS) || defined(QT_USE_QSTRINGBUILDER)
 #include <QtCore/qstringbuilder.h>
+#endif
+
+#ifdef Q_L1S_VIEW_IS_PRIMARY
+#    undef Q_L1S_VIEW_IS_PRIMARY
 #endif
 
 #endif // QSTRING_H
