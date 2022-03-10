@@ -995,9 +995,9 @@ function(_qt_internal_configure_android_multiabi_target target)
 
     list(JOIN android_abis ", " android_abis_string)
     if(android_abis_string)
-        set(android_abis_string "${CMAKE_ANDROID_ARCH_ABI}(default), ${android_abis_string}")
+        set(android_abis_string "${CMAKE_ANDROID_ARCH_ABI} (default), ${android_abis_string}")
     else()
-        set(android_abis_string "${CMAKE_ANDROID_ARCH_ABI}(default)")
+        set(android_abis_string "${CMAKE_ANDROID_ARCH_ABI} (default)")
     endif()
     if(NOT QT_NO_ANDROID_ABI_STATUS_MESSAGE)
         message(STATUS "Configuring '${target}' for the following Android ABIs:"
