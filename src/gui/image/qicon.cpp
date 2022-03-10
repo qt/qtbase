@@ -1137,10 +1137,9 @@ QList<QSize> QIcon::availableSizes(Mode mode, State state) const
     Returns the name used to create the icon, if available.
 
     Depending on the way the icon was created, it may have an associated
-    name. This is the case for icons created with fromTheme() or icons
-    using a QIconEngine which supports the QIconEngine::IconNameHook.
+    name. This is the case for icons created with fromTheme().
 
-    \sa fromTheme(), QIconEngine
+    \sa fromTheme(), QIconEngine::iconName()
 */
 QString QIcon::name() const
 {
