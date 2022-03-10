@@ -1858,7 +1858,7 @@ void QObject::moveToThread(QThread *targetThread)
         ? threadPrivate->bindingStatus()
         : nullptr;
     if (threadPrivate && !bindingStatus) {
-        threadPrivate->addObjectWithPendingBindingStatusChange(this);
+        bindingStatus = threadPrivate->addObjectWithPendingBindingStatusChange(this);
     }
     d_func()->setThreadData_helper(currentData, targetData, bindingStatus);
 

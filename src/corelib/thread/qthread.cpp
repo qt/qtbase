@@ -160,7 +160,10 @@ QThreadPrivate::QThreadPrivate(QThreadData *d)
 
 QThreadPrivate::~QThreadPrivate()
 {
-    delete pendingObjectsWithBindingStatusChange();
+    // access to m_statusOrPendingObjects cannot race with anything
+    // unless there is already a potential use-after-free bug, as the
+    // thread is in the process of being destroyed
+    delete m_statusOrPendingObjects.list();
     data->deref();
 }
 
@@ -503,6 +506,23 @@ uint QThread::stackSize() const
 }
 
 /*!
+    \internal
+    Transitions BindingStatusOrList to the binding status state. If we had a list of
+    pending objects, all objects get their reinitBindingStorageAfterThreadMove method
+    called, and afterwards, the list gets discarded.
+ */
+void QtPrivate::BindingStatusOrList::setStatusAndClearList(QBindingStatus *status) noexcept
+{
+
+    if (auto pendingObjects = list()) {
+        for (auto obj: *pendingObjects)
+            QObjectPrivate::get(obj)->reinitBindingStorageAfterThreadMove();
+        delete pendingObjects;
+    }
+    data = encodeBindingStatus(status);
+}
+
+/*!
     Enters the event loop and waits until exit() is called, returning the value
     that was passed to exit(). The value returned is 0 if exit() is called via
     quit().
@@ -519,13 +539,9 @@ int QThread::exec()
 {
     Q_D(QThread);
     const auto status = QtPrivate::getBindingStatus(QtPrivate::QBindingStatusAccessToken{});
-    if (auto pendingObjects = d->pendingObjectsWithBindingStatusChange()) {
-        for (auto obj: *pendingObjects)
-            QObjectPrivate::get(obj)->reinitBindingStorageAfterThreadMove();
-        delete pendingObjects;
-    }
-    d->m_statusOrPendingObjects.storeRelease(quintptr(status));
+
     QMutexLocker locker(&d->mutex);
+    d->m_statusOrPendingObjects.setStatusAndClearList(status);
     d->data->quitNow = false;
     if (d->exited) {
         d->exited = false;
@@ -540,6 +556,35 @@ int QThread::exec()
     d->exited = false;
     d->returnCode = -1;
     return returnCode;
+}
+
+
+/*!
+    \internal
+    If BindingStatusOrList is already in the binding status state, this will
+    return that BindingStatus pointer.
+    Otherwise, \a object is added to the list, and we return nullptr.
+    The list is allocated if it does not already exist.
+ */
+QBindingStatus *QtPrivate::BindingStatusOrList::addObjectUnlessAlreadyStatus(QObject *object)
+{
+
+    if (auto status = bindingStatus())
+        return status;
+    List *objectList = list();
+    if (!objectList) {
+        objectList = new List();
+        objectList->reserve(8);
+        data = encodeList(objectList);
+    }
+    objectList->push_back(object);
+    return nullptr;
+}
+
+QBindingStatus *QThreadPrivate::addObjectWithPendingBindingStatusChange(QObject *obj)
+{
+    QMutexLocker lock(&mutex);
+    return m_statusOrPendingObjects.addObjectUnlessAlreadyStatus(obj);
 }
 
 /*!
@@ -926,7 +971,6 @@ QThreadPrivate::QThreadPrivate(QThreadData *d) : data(d ? d : new QThreadData)
 
 QThreadPrivate::~QThreadPrivate()
 {
-    delete pendingObjectsWithBindingStatusChange();
     data->thread.storeRelease(nullptr); // prevent QThreadData from deleting the QThreadPrivate (again).
     delete data;
 }
