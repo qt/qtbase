@@ -246,22 +246,24 @@
 
     \list
     \li \c -o \e{filename,format} \br
-    Writes output to the specified file, in the specified format (one of
-    \c txt, \c xml, \c lightxml, \c junitxml or \c tap).  The special filename \c -
-    may be used to log to standard output.
+    Writes output to the specified file, in the specified format (one
+    of \c txt, \c csv, \c junitxml, \c xml, \c lightxml, \c teamcity
+    or \c tap).  The special filename \c - may be used to log to
+    standard output.
     \li \c -o \e filename \br
     Writes output to the specified file.
     \li \c -txt \br
     Outputs results in plain text.
+    \li \c -csv \br
+    Outputs results as comma-separated values (CSV) suitable for
+    import into spreadsheets. This mode is only suitable for
+    benchmarks, since it suppresses normal pass/fail messages.
+    \li \c -junitxml \br
+    Outputs results as a \l{JUnit XML} document.
     \li \c -xml \br
     Outputs results as an XML document.
     \li \c -lightxml \br
     Outputs results as a stream of XML tags.
-    \li \c -junitxml \br
-    Outputs results as an \l{JUnit XML} document.
-    \li \c -csv \br
-    Outputs results as comma-separated values (CSV). This mode is only suitable for
-    benchmarks, since it suppresses normal pass/fail messages.
     \li \c -teamcity \br
     Outputs results in \l{TeamCity} format.
     \li \c -tap \br
