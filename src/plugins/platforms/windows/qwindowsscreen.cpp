@@ -151,20 +151,8 @@ static bool monitorData(HMONITOR hMonitor, QWindowsScreenData *data)
     data->hMonitor = hMonitor;
     data->geometry = QRect(QPoint(info.rcMonitor.left, info.rcMonitor.top), QPoint(info.rcMonitor.right - 1, info.rcMonitor.bottom - 1));
     data->availableGeometry = QRect(QPoint(info.rcWork.left, info.rcWork.top), QPoint(info.rcWork.right - 1, info.rcWork.bottom - 1));
-    DISPLAYCONFIG_PATH_INFO pathInfo = {};
-    const bool hasPathInfo = getPathInfo(info, &pathInfo);
-    if (hasPathInfo) {
-        DISPLAYCONFIG_TARGET_DEVICE_NAME deviceName = {};
-        deviceName.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME;
-        deviceName.header.size = sizeof(DISPLAYCONFIG_TARGET_DEVICE_NAME);
-        deviceName.header.adapterId = pathInfo.targetInfo.adapterId;
-        deviceName.header.id = pathInfo.targetInfo.id;
-        if (DisplayConfigGetDeviceInfo(&deviceName.header) == ERROR_SUCCESS)
-            data->name = QString::fromWCharArray(deviceName.monitorFriendlyDeviceName);
-    }
-    if (data->name.isEmpty())
-        data->name = QString::fromWCharArray(info.szDevice);
-    if (wcscmp(info.szDevice, L"WinDisc") == 0) {
+    data->name = QString::fromWCharArray(info.szDevice);
+    if (data->name == u"WinDisc") {
         data->flags |= QWindowsScreenData::LockScreen;
     } else {
         if (const HDC hdc = CreateDC(info.szDevice, nullptr, nullptr, nullptr)) {
@@ -186,7 +174,8 @@ static bool monitorData(HMONITOR hMonitor, QWindowsScreenData *data)
 
     // ### We might want to consider storing adapterId/id from DISPLAYCONFIG_PATH_TARGET_INFO,
     // if we are going to use DISPLAYCONFIG lookups more.
-    if (hasPathInfo) {
+    DISPLAYCONFIG_PATH_INFO pathInfo = {};
+    if (getPathInfo(info, &pathInfo)) {
         switch (pathInfo.targetInfo.rotation) {
         case DISPLAYCONFIG_ROTATION_IDENTITY:
             data->orientation = Qt::LandscapeOrientation;
