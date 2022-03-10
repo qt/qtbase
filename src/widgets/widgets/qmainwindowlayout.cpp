@@ -2798,6 +2798,12 @@ QDockWidgetGroupWindow *QMainWindowLayout::createTabbedDockWindow()
 
 void QMainWindowLayout::applyState(QMainWindowLayoutState &newState, bool animate)
 {
+    // applying the state can lead to showing separator widgets, which would lead to a re-layout
+    // (even though the separator widgets are not really part of the layout)
+    // break the loop
+    if (isInApplyState)
+        return;
+    isInApplyState = true;
 #if QT_CONFIG(dockwidget) && QT_CONFIG(tabwidget)
     QSet<QTabBar*> used = newState.dockAreaLayout.usedTabBars();
     const auto groups =
@@ -2820,6 +2826,7 @@ void QMainWindowLayout::applyState(QMainWindowLayoutState &newState, bool animat
         usedSeparatorWidgets = usedSeps;
         for (QWidget *sepWidget : retiredSeps) {
             unusedSeparatorWidgets.append(sepWidget);
+            sepWidget->hide();
         }
     }
 
@@ -2828,6 +2835,7 @@ void QMainWindowLayout::applyState(QMainWindowLayoutState &newState, bool animat
 
 #endif // QT_CONFIG(dockwidget) && QT_CONFIG(tabwidget)
     newState.apply(dockOptions & QMainWindow::AnimatedDocks && animate);
+    isInApplyState = false;
 }
 
 void QMainWindowLayout::saveState(QDataStream &stream) const
