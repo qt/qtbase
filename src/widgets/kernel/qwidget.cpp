@@ -11049,6 +11049,13 @@ void QWidgetPrivate::update(T r)
 {
     Q_Q(QWidget);
 
+#ifndef QT_NO_OPENGL
+    if (renderToTexture && !q->isVisible()) {
+        renderToTextureReallyDirty = 1;
+        return;
+    }
+#endif
+
     if (!q->isVisible() || !q->updatesEnabled())
         return;
 
