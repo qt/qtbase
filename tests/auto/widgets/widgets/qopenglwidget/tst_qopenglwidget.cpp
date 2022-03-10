@@ -66,6 +66,7 @@ private slots:
     void stackWidgetOpaqueChildIsVisible();
     void offscreen();
     void offscreenThenOnscreen();
+    void paintWhileHidden();
 
 #ifdef QT_BUILD_INTERNAL
     void staticTextDanglingPointer();
@@ -692,6 +693,30 @@ void tst_QOpenGLWidget::offscreenThenOnscreen()
     QCOMPARE(image.width(), w->width());
     QCOMPARE(image.height(), w->height());
     QVERIFY(image.pixel(30, 40) == qRgb(0, 0, 255));
+}
+
+void tst_QOpenGLWidget::paintWhileHidden()
+{
+    QScopedPointer<QWidget> tlw(new QWidget);
+    tlw->resize(640, 480);
+
+    ClearWidget *w = new ClearWidget(0, 640, 480);
+    w->setParent(tlw.data());
+    w->setClearColor(0, 0, 1);
+
+    tlw->show();
+    QVERIFY(QTest::qWaitForWindowExposed(tlw.data()));
+
+    // QTBUG-101620: Now make visible=false and call update and see if we get to
+    // paintEvent/paintGL eventually, to ensure the updating of the texture is
+    // not optimized permanently away even though there is no composition
+    // on-screen at the point when update() is called.
+
+    w->setVisible(false);
+    w->m_paintCalled = 0;
+    w->update();
+    w->setVisible(true);
+    QTRY_VERIFY(w->m_paintCalled > 0);
 }
 
 class StaticTextPainterWidget : public QOpenGLWidget
