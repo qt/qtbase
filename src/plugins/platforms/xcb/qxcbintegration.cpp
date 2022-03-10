@@ -177,7 +177,7 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
 
     bool underDebugger = runningUnderDebugger();
     if (noGrabArg && doGrabArg && underDebugger) {
-        qWarning("Both -nograb and -dograb command line arguments specified. Please pick one. -nograb takes prcedence");
+        qWarning("Both -nograb and -dograb command line arguments specified. Please pick one. -nograb takes precedence");
         doGrabArg = false;
     }
 
