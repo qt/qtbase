@@ -440,8 +440,14 @@ void tst_Widgets::tst_QCheckbox()
     QFETCH(bool, hasIcon);
     QFETCH(bool, isTriState);
 
+    class CheckBox : public QCheckBox
+    {
+    public:
+        using QCheckBox::initStyleOption;
+    };
+
     QBoxLayout layout(QBoxLayout::TopToBottom);
-    QCheckBox box;
+    CheckBox box;
     box.setTristate(isTriState);
 
     if (!text.isEmpty())
@@ -454,10 +460,11 @@ void tst_Widgets::tst_QCheckbox()
     testWindow()->setLayout(&layout);
     takeStandardSnapshots();
 
-    do
-    {
+    do {
         const Qt::CheckState checkState = box.checkState();
-        const QPoint clickTarget = box.rect().center();
+        QStyleOptionButton styleOption;
+        box.initStyleOption(&styleOption);
+        const QPoint clickTarget = box.style()->subElementRect(QStyle::SE_CheckBoxClickRect, &styleOption, &box).center();
 
         const std::array titles = {"unChecked", "partiallyChecked", "checked"};
         const QString snapShotTitle = titles[checkState];
@@ -490,7 +497,14 @@ void tst_Widgets::tst_QRadioButton()
     QFETCH(QString,text);
     QFETCH(bool,hasIcon);
 
-    QRadioButton button1(testWindow());
+    class RadioButton : public QRadioButton
+    {
+    public:
+        using QRadioButton::QRadioButton;
+        using QRadioButton::initStyleOption;
+    };
+
+    RadioButton button1(testWindow());
 
     if (!text.isEmpty())
         button1.setText(text);
@@ -500,7 +514,7 @@ void tst_Widgets::tst_QRadioButton()
 
     button1.setChecked(false);
 
-    QRadioButton button2(testWindow());
+    RadioButton button2(testWindow());
 
     if (!text.isEmpty())
         button2.setText(text);
@@ -517,7 +531,10 @@ void tst_Widgets::tst_QRadioButton()
     testWindow()->setLayout(&box);
     takeStandardSnapshots();
 
-    const QPoint clickTarget = button1.rect().center();
+    QStyleOptionButton styleOption;
+    button1.initStyleOption(&styleOption);
+    const QPoint clickTarget = button1.style()->subElementRect(QStyle::SE_RadioButtonClickRect, &styleOption, &button1).center();
+
     QTest::mousePress(&button1,Qt::MouseButton::LeftButton, Qt::KeyboardModifiers(), clickTarget,0);
     QVERIFY(button1.isDown());
     QBASELINE_CHECK_DEFERRED(takeSnapshot(), "pressUnchecked");
