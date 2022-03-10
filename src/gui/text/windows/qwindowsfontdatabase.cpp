@@ -558,7 +558,13 @@ static bool addFontToDatabase(QString familyName,
         subFamilyStyle = styleName;
         faceName = familyName; // Remember the original name for later lookups
         familyName = canonicalNames.preferredName;
-        styleName = canonicalNames.preferredStyle;
+        // Preferred style / typographic subfamily name:
+        // "If it is absent, then name ID 2 is considered to be the typographic subfamily name."
+        // From: https://docs.microsoft.com/en-us/windows/win32/directwrite/opentype-variable-fonts
+        // Name ID 2 is already stored in the styleName variable. Furthermore, for variable fonts,
+        // styleName holds the variation instance name, which should be used over name ID 2.
+        if (!canonicalNames.preferredStyle.isEmpty())
+            styleName = canonicalNames.preferredStyle;
     }
 
     QSupportedWritingSystems writingSystems;
