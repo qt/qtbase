@@ -329,6 +329,8 @@ function(qt_internal_add_plugin target)
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
     )
 
+    qt_internal_add_repo_local_defines("${target}")
+
     qt_internal_set_exceptions_flags("${target}" ${arg_EXCEPTIONS})
 
 
