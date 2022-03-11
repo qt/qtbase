@@ -374,7 +374,6 @@ public:
 
     QRect clipRect;
     QRegion clipRegion;
-    QTransform clipTransform;
 
     uint enabled : 1;
     uint hasRectClip : 1;

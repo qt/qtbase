@@ -564,8 +564,12 @@ void PaintCommands::staticInit()
                       "setClipPath mypath ReplaceClip");
     DECL_PAINTCOMMAND("setClipRect", command_setClipRect,
                       "^setClipRect\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)\\s*(\\w*)$",
-                      "setClipRect <x1> <y1> <x2> <y2> <clip operation enum>",
-                      "setClipRect 0.0 0.0 10.0 10.0 ReplaceClip");
+                      "setClipRect <x> <y> <w> <h> <clip operation enum>",
+                      "setClipRect 0 0 10 10 ReplaceClip");
+    DECL_PAINTCOMMAND("setClipRectF", command_setClipRectF,
+                      "^setClipRectF\\s+(-?[.\\w]*)\\s+(-?[.\\w]*)\\s+(-?[.\\w]*)\\s+(-?[.\\w]*)\\s*(\\w.*)$",
+                      "setClipRectF <x> <y> <w> <h> <clip operation enum>",
+                      "setClipRectF 0.1 0.2 10.3 10.4 ReplaceClip");
     DECL_PAINTCOMMAND("setClipping", command_setClipping,
                       "^setClipping\\s+(\\w*)$",
                       "setClipping <true|false>",
@@ -2079,6 +2083,25 @@ void PaintCommands::command_setClipRect(QRegularExpressionMatch re)
         printf(" -(lance) setClipRect(%d, %d, %d, %d), %s\n", x, y, w, h, clipOperationTable[combine]);
 
     m_painter->setClipRect(x, y, w, h, Qt::ClipOperation(combine));
+}
+
+/***************************************************************************************************/
+void PaintCommands::command_setClipRectF(QRegularExpressionMatch re)
+{
+    QStringList caps = re.capturedTexts();
+    double x = convertToDouble(caps.at(1));
+    double y = convertToDouble(caps.at(2));
+    double w = convertToDouble(caps.at(3));
+    double h = convertToDouble(caps.at(4));
+
+    int combine = translateEnum(clipOperationTable, caps.at(5), Qt::IntersectClip + 1);
+    if (combine == -1)
+        combine = Qt::ReplaceClip;
+
+    if (m_verboseMode)
+        printf(" -(lance) setClipRectF(%f, %f, %f, %f), %s\n", x, y, w, h, clipOperationTable[combine]);
+
+    m_painter->setClipRect(QRectF(x, y, w, h), Qt::ClipOperation(combine));
 }
 
 /***************************************************************************************************/

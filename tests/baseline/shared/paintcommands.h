@@ -162,7 +162,7 @@ private:
     void command_brushShear(QRegularExpressionMatch re);
     void command_setClipPath(QRegularExpressionMatch re);
     void command_setClipRect(QRegularExpressionMatch re);
-    void command_setClipRectangle(QRegularExpressionMatch re);
+    void command_setClipRectF(QRegularExpressionMatch re);
     void command_setClipRegion(QRegularExpressionMatch re);
     void command_setClipping(QRegularExpressionMatch re);
     void command_setCompositionMode(QRegularExpressionMatch re);

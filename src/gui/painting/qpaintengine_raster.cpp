@@ -1222,7 +1222,6 @@ void QRasterPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
         ensureOutlineMapper();
         d->rasterize(d->outlineMapper->convertPath(path), qt_span_clip, &clipData, nullptr);
 
-        newClip->clipTransform = s->matrix;
         newClip->fixup();
 
         if (s->flags.has_clip_ownership)
@@ -1307,7 +1306,6 @@ bool QRasterPaintEngine::setClipRectInDeviceCoords(const QRect &r, Qt::ClipOpera
         return false;
     }
 
-    s->clip->clipTransform = s->matrix;
     qrasterpaintengine_dirty_clip(d, s);
     return true;
 }
@@ -1363,7 +1361,6 @@ void QRasterPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
         else if (curClip->hasRegionClip)
             newClip->setClipRegion(r & curClip->clipRegion);
 
-        newClip->clipTransform = s->matrix;
         qrasterpaintengine_dirty_clip(d, s);
     }
 }
@@ -3689,27 +3686,8 @@ void QRasterPaintEnginePrivate::updateClipping()
     if (!s->clipEnabled)
         return;
 
-    bool noClipPath = s->clipPath.isEmpty();
-    bool noClipRegion = s->clipRegion.isEmpty();
-
-    if (noClipPath && noClipRegion)
-        return;
-
-    if (!s->clip)
-        return;
-
-    const QTransform stateTransform = s->matrix;
-    s->matrix = s->clip->clipTransform;
-
     qrasterpaintengine_state_setNoClip(s);
-
-    if (noClipRegion) {
-        q->clip(qtVectorPathForPath(s->clipPath), s->clipOperation);
-    } else {
-        q->clip(s->clipRegion, s->clipOperation);
-    }
-
-    s->matrix = stateTransform;
+    replayClipOperations();
 }
 
 void QRasterPaintEnginePrivate::recalculateFastImages()
