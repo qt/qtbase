@@ -162,20 +162,32 @@ tst_QLocalSocket::tst_QLocalSocket()
     qRegisterMetaType<QFile::Permissions>("QFile::Permissions");
 }
 
-class LocalServer : public QLocalServer
+class CrashSafeLocalServer : public QLocalServer
 {
     Q_OBJECT
 
 public:
-    LocalServer() : QLocalServer()
+    CrashSafeLocalServer() : QLocalServer()
     {
-        connect(this, SIGNAL(newConnection()), this, SLOT(slotNewConnection()));
     }
 
     bool listen(const QString &name)
     {
         removeServer(name);
         return QLocalServer::listen(name);
+    }
+
+    bool listen(qintptr socketDescriptor) { return QLocalServer::listen(socketDescriptor); }
+};
+
+class LocalServer : public CrashSafeLocalServer
+{
+    Q_OBJECT
+
+public:
+    LocalServer() : CrashSafeLocalServer()
+    {
+        connect(this, SIGNAL(newConnection()), this, SLOT(slotNewConnection()));
     }
 
     QList<int> hits;
@@ -946,7 +958,7 @@ static QVariant readCommand(QIODevice *ioDevice, int *readCommandCounter, bool r
 
 void tst_QLocalSocket::simpleCommandProtocol1()
 {
-    QLocalServer server;
+    CrashSafeLocalServer server;
     server.listen(QStringLiteral("simpleProtocol"));
 
     QLocalSocket localSocketWrite;
@@ -972,7 +984,7 @@ void tst_QLocalSocket::simpleCommandProtocol1()
 
 void tst_QLocalSocket::simpleCommandProtocol2()
 {
-    QLocalServer server;
+    CrashSafeLocalServer server;
     server.listen(QStringLiteral("simpleProtocol"));
 
     QLocalSocket localSocketWrite;
@@ -1029,7 +1041,7 @@ void tst_QLocalSocket::simpleCommandProtocol2()
 // QLocalSocket/Server can take a name or path, check that it works as expected
 void tst_QLocalSocket::fullPath()
 {
-    QLocalServer server;
+    CrashSafeLocalServer server;
     QString name = "qlocalsocket_pathtest";
 #if defined(QT_LOCALSOCKET_TCP)
     QString path = "QLocalServer";
@@ -1392,7 +1404,9 @@ void tst_QLocalSocket::delayedDisconnect()
 void tst_QLocalSocket::removeServer()
 {
     // this is a hostile takeover, but recovering from a crash results in the same
+    // Note: Explicitly not a CrashSafeLocalServer
     QLocalServer server, server2;
+
     QVERIFY(QLocalServer::removeServer("cleanuptest"));
     QVERIFY2(server.listen("cleanuptest"), qUtf8Printable(server.errorString()));
 #ifndef Q_OS_WIN
@@ -1406,7 +1420,7 @@ void tst_QLocalSocket::removeServer()
 
 void tst_QLocalSocket::recycleServer()
 {
-    QLocalServer server;
+    CrashSafeLocalServer server;
     QLocalSocket client;
 
     QVERIFY2(server.listen("recycletest1"), qUtf8Printable(server.errorString()));
@@ -1431,7 +1445,7 @@ void tst_QLocalSocket::recycleClientSocket()
     const QByteArrayList lines = QByteArrayList() << "Have you heard of that new band"
                                                   << "\"1023 Megabytes\"?"
                                                   << "They haven't made it to a gig yet.";
-    QLocalServer server;
+    CrashSafeLocalServer server;
     const QString serverName = QStringLiteral("recycleClientSocket");
     QVERIFY2(server.listen(serverName), qUtf8Printable(server.errorString()));
     QLocalSocket client;
@@ -1456,7 +1470,7 @@ void tst_QLocalSocket::recycleClientSocket()
 
 void tst_QLocalSocket::multiConnect()
 {
-    QLocalServer server;
+    CrashSafeLocalServer server;
     QLocalSocket client1;
     QLocalSocket client2;
     QLocalSocket client3;
@@ -1481,7 +1495,7 @@ void tst_QLocalSocket::multiConnect()
 
 void tst_QLocalSocket::writeOnlySocket()
 {
-    QLocalServer server;
+    CrashSafeLocalServer server;
     QVERIFY2(server.listen("writeOnlySocket"), qUtf8Printable(server.errorString()));
 
     QLocalSocket client;
@@ -1512,7 +1526,7 @@ void tst_QLocalSocket::writeToClientAndDisconnect_data()
 void tst_QLocalSocket::writeToClientAndDisconnect()
 {
     QFETCH(int, chunks);
-    QLocalServer server;
+    CrashSafeLocalServer server;
     QLocalSocket client;
     QSignalSpy readChannelFinishedSpy(&client, SIGNAL(readChannelFinished()));
 
@@ -1540,7 +1554,7 @@ void tst_QLocalSocket::writeToClientAndDisconnect()
 
 void tst_QLocalSocket::writeToDisconnected()
 {
-    QLocalServer server;
+    CrashSafeLocalServer server;
     QVERIFY2(server.listen("writeToDisconnected"), qUtf8Printable(server.errorString()));
 
     QLocalSocket client;
@@ -1611,7 +1625,7 @@ public slots:
 */
 void tst_QLocalSocket::bytesWrittenSignal()
 {
-    QLocalServer server;
+    CrashSafeLocalServer server;
     QVERIFY2(server.listen("qlocalsocket_readyread"), qUtf8Printable(server.errorString()));
     WriteThread writeThread;
     QSignalSpy receivedSpy(&writeThread, &WriteThread::bytesWrittenReceived);
@@ -1632,7 +1646,7 @@ void tst_QLocalSocket::socketClosedSlot()
 
 void tst_QLocalSocket::syncDisconnectNotify()
 {
-    QLocalServer server;
+    CrashSafeLocalServer server;
     QVERIFY2(server.listen("syncDisconnectNotify"), qUtf8Printable(server.errorString()));
     QLocalSocket client;
     connect(&client, &QLocalSocket::disconnected,
@@ -1651,7 +1665,7 @@ void tst_QLocalSocket::syncDisconnectNotify()
 
 void tst_QLocalSocket::asyncDisconnectNotify()
 {
-    QLocalServer server;
+    CrashSafeLocalServer server;
     QVERIFY2(server.listen("asyncDisconnectNotify"), qUtf8Printable(server.errorString()));
     QLocalSocket client;
     QSignalSpy disconnectedSpy(&client, SIGNAL(disconnected()));
@@ -1703,9 +1717,7 @@ void tst_QLocalSocket::verifySocketOptions()
    QFETCH(QLocalServer::SocketOption, opts);
    QFETCH(QFile::Permissions, perms);
 
-
-   QLocalServer::removeServer(service);
-   QLocalServer server;
+   CrashSafeLocalServer server;
    server.setSocketOptions(opts);
    QVERIFY2(server.listen(service), qUtf8Printable(server.errorString()));
 
@@ -1762,7 +1774,7 @@ void tst_QLocalSocket::verifyListenWithDescriptor()
         close(fds[1]);
     }
 
-    QLocalServer server;
+    CrashSafeLocalServer server;
     QVERIFY2(server.listen(listenSocket), qUtf8Printable(server.errorString()));
 
 #if defined(Q_OS_LINUX) || defined(Q_OS_QNX)
@@ -1818,7 +1830,7 @@ void tst_QLocalSocket::verifyListenWithDescriptor_data()
 
 void tst_QLocalSocket::serverBindingsAndProperties()
 {
-    QLocalServer server;
+    CrashSafeLocalServer server;
 
     QProperty<QLocalServer::SocketOptions> sockOpts;
     server.bindableSocketOptions().setBinding(Qt::makePropertyBinding(sockOpts));
