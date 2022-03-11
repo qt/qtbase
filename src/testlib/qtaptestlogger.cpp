@@ -176,7 +176,7 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
 
         outputString(YAML_INDENT "---\n");
 
-        if (type != XFail) {
+        if (type != XFail && type != BlacklistedXFail) {
 #if QT_CONFIG(regularexpression)
             // This is fragile, but unfortunately testlib doesn't plumb
             // the expected and actual values to the loggers (yet).

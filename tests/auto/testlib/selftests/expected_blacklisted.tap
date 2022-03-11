@@ -18,7 +18,6 @@ not ok 4 - fail() # TODO 'false' returned FALSE. (This test should BFAIL)
   ...
 not ok 5 - xfail() # TODO This test should BXFAIL then BPASS
   ---
-  # This test should BXFAIL then BPASS
   at: tst_Blacklisted::xfail() (qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp
   line: 0
@@ -113,7 +112,6 @@ not ok 7 - multiFail() # TODO But this test should only contribute one to the bl
   ...
 not ok 8 - xfailContinueSkip() # TODO This test should BXFAIL then SKIP
   ---
-  # This test should BXFAIL then SKIP
   at: tst_Blacklisted::xfailContinueSkip() (qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp
   line: 0
@@ -121,7 +119,6 @@ not ok 8 - xfailContinueSkip() # TODO This test should BXFAIL then SKIP
 ok 8 - xfailContinueSkip() # SKIP This skip should be seen and counted
 not ok 9 - xfailContinueFail() # TODO This test should BXFAIL then BFAIL
   ---
-  # This test should BXFAIL then BFAIL
   at: tst_Blacklisted::xfailContinueFail() (qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp
   line: 0
