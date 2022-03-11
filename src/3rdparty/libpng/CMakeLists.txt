@@ -35,6 +35,7 @@ qt_internal_add_3rdparty_header_module(PngPrivate
     EXTERNAL_HEADERS
         png.h
         pngconf.h
+        pnglibconf.h
 )
 
 qt_disable_warnings(BundledLibpng)
