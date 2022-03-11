@@ -49,10 +49,10 @@
     For example, to build the Notepad example on Windows, when using Ninja
     as the generator, enter the following commands:
 
-    \badcode
+    \badcode \QtVersion
     md notepad-build
     cd notepad-build
-    C:\Qt\6.2.1\msvc2019_64\bin\qt-cmake -GNinja C:\Examples\notepad
+    C:\Qt\\1\msvc2019_64\bin\qt-cmake -GNinja C:\Examples\notepad
     ninja
     \endcode
 
