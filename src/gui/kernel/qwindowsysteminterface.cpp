@@ -43,6 +43,7 @@
 #include "private/qevent_p.h"
 #include "private/qeventpoint_p.h"
 #include "private/qpointingdevice_p.h"
+#include "private/qscreen_p.h"
 #include <QAbstractEventDispatcher>
 #include <qpa/qplatformintegration.h>
 #include <qdebug.h>
@@ -785,6 +786,7 @@ void QWindowSystemInterface::handleScreenAdded(QPlatformScreen *ps, bool isPrima
 
     QGuiApplicationPrivate::resetCachedDevicePixelRatio();
     QHighDpiScaling::updateHighDpiScaling();
+    screen->d_func()->updateHighDpi();
 
     emit qGuiApp->screenAdded(screen);
 
