@@ -29,7 +29,7 @@ class QScreenPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QScreen)
 public:
     void setPlatformScreen(QPlatformScreen *screen);
-    void updateHighDpi();
+    void updateGeometry();
 
     void updatePrimaryOrientation();
     void updateGeometriesWithSignals();

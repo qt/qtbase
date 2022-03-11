@@ -48,7 +48,7 @@ void QScreenPrivate::updateGeometriesWithSignals()
 {
     const QRect oldGeometry = geometry;
     const QRect oldAvailableGeometry = availableGeometry;
-    updateHighDpi();
+    updateGeometry();
     emitGeometryChangeSignals(oldGeometry != geometry, oldAvailableGeometry != availableGeometry);
 }
 
@@ -85,11 +85,11 @@ void QScreenPrivate::setPlatformScreen(QPlatformScreen *screen)
     if (refreshRate < 1.0)
         refreshRate = 60.0;
 
-    updateHighDpi();
+    updateGeometry();
     updatePrimaryOrientation(); // derived from the geometry
 }
 
-void QScreenPrivate::updateHighDpi()
+void QScreenPrivate::updateGeometry()
 {
     qreal scaleFactor = QHighDpiScaling::factor(platformScreen);
     QRect nativeGeometry = platformScreen->geometry();

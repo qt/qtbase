@@ -532,7 +532,7 @@ void QHighDpiScaling::setGlobalFactor(qreal factor)
     m_active = m_globalScalingActive || m_screenFactorSet || m_platformPluginDpiScalingActive ;
     const auto screens = QGuiApplication::screens();
     for (QScreen *screen : screens)
-         screen->d_func()->updateHighDpi();
+         screen->d_func()->updateGeometry();
 }
 
 static const char scaleFactorProperty[] = "_q_scaleFactor";
