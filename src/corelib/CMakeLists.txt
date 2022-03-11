@@ -1357,6 +1357,14 @@ if(NOT QT_FEATURE_system_zlib)
         HEADER_MODULE
         NO_CONFIG_HEADER_FILE
     )
+    set_target_properties(ZlibPrivate PROPERTIES
+        _qt_module_is_3rdparty_header_library TRUE
+        _qt_module_skip_depends_include TRUE
+    )
+    set_property(TARGET ZlibPrivate
+                 APPEND PROPERTY EXPORT_PROPERTIES _qt_module_is_3rdparty_header_library)
+    set_property(TARGET ZlibPrivate
+                 APPEND PROPERTY EXPORT_PROPERTIES _qt_module_skip_depends_include)
 endif()
 
 qt_internal_add_optimize_full_flags()
