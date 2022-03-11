@@ -1,4 +1,4 @@
-LANCELOT_DIR = $$PWD/../../baseline/painting
+LANCELOT_DIR = $$[QT_HOST_PREFIX]/tests/baseline/shared
 CONFIG += cmdline moc
 TEMPLATE = app
 INCLUDEPATH += . $$LANCELOT_DIR
@@ -11,7 +11,7 @@ SOURCES += interactivewidget.cpp \
            main.cpp \
            $$LANCELOT_DIR/paintcommands.cpp
 RESOURCES += icons.qrc \
-           $$LANCELOT_DIR/images.qrc
+           $$LANCELOT_DIR/../painting/images.qrc
 
 qtHaveModule(opengl): QT += opengl
 

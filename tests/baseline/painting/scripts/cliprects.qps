@@ -1,7 +1,7 @@
 # Version: 1
 # CheckVsReference: 5%
 
-
+save
 
 translate 10 10
 setPen NoPen
@@ -56,4 +56,297 @@ setRenderHint Antialiasing
 setRenderHint SmoothPixmapTransform
 repeat_block clipping
 
+restore
 
+# Excercise combining different clips
+
+translate 0 250
+scale 0.9 0.9
+setFont "times" 10 bold
+region_addRect dummyRegion 1000 1000 10 10
+region_addRect realRegion 20 10 60 30
+path_addRect dummyPath 1000 1000 10 10
+path_addRect realPath 20 10 60 30
+begin_block paintstuff
+fillRect 0 0 100 50 orange
+drawText 0 5 "Should be clipped"
+drawText 0 15 "Should be clipped"
+drawText 0 25 "Should be clipped"
+drawText 0 35 "Should be clipped"
+drawText 0 45 "Should be clipped"
+drawText 0 55 "Should be clipped"
+end_block
+
+translate 0 100
+
+# rect replaced by x
+save
+setClipRect 1000 1000 10 10 ReplaceClip
+setClipRect 20 10 60 30 ReplaceClip
+repeat_block paintstuff
+restore
+translate 100 0
+
+save
+setClipRect 1000 1000 10 10 ReplaceClip
+setClipRectF 20 10 60 30 ReplaceClip
+repeat_block paintstuff
+restore
+translate 100 0
+
+save
+setClipRect 1000 1000 10 10 ReplaceClip
+setClipRegion realRegion ReplaceClip
+repeat_block paintstuff
+restore
+translate 100 0
+
+save
+setClipRect 1000 1000 10 10 ReplaceClip
+setClipPath realPath ReplaceClip
+repeat_block paintstuff
+restore
+translate 100 0
+
+# rectF replaced by x
+save
+setClipRectF 1000 1000 10 10 ReplaceClip
+setClipRect 20 10 60 30 ReplaceClip
+repeat_block paintstuff
+restore
+translate 100 0
+
+save
+setClipRectF 1000 1000 10 10 ReplaceClip
+setClipRectF 20 10 60 30 ReplaceClip
+repeat_block paintstuff
+restore
+translate 100 0
+
+save
+setClipRectF 1000 1000 10 10 ReplaceClip
+setClipRegion realRegion ReplaceClip
+repeat_block paintstuff
+restore
+translate 100 0
+
+save
+setClipRectF 1000 1000 10 10 ReplaceClip
+setClipPath realPath ReplaceClip
+repeat_block paintstuff
+restore
+translate 100 0
+
+translate -800 100
+
+# region replaced by  x
+save
+setClipRegion dummyRegion ReplaceClip
+setClipRect 20 10 60 30 ReplaceClip
+repeat_block paintstuff
+restore
+translate 100 0
+
+save
+setClipRegion dummyRegion ReplaceClip
+setClipRectF 20 10 60 30 ReplaceClip
+repeat_block paintstuff
+restore
+translate 100 0
+
+save
+setClipRegion dummyRegion ReplaceClip
+setClipRegion realRegion ReplaceClip
+repeat_block paintstuff
+restore
+translate 100 0
+
+save
+setClipRegion dummyRegion ReplaceClip
+setClipPath realPath ReplaceClip
+repeat_block paintstuff
+restore
+translate 100 0
+
+# path replaced by  x
+save
+setClipPath dummyPath ReplaceClip
+setClipRect 20 10 60 30 ReplaceClip
+repeat_block paintstuff
+restore
+translate 100 0
+
+save
+setClipPath dummyPath ReplaceClip
+setClipRectF 20 10 60 30 ReplaceClip
+repeat_block paintstuff
+restore
+translate 100 0
+
+save
+setClipPath dummyPath ReplaceClip
+setClipRegion realRegion ReplaceClip
+repeat_block paintstuff
+restore
+translate 100 0
+
+save
+setClipPath dummyPath ReplaceClip
+setClipPath realPath ReplaceClip
+repeat_block paintstuff
+restore
+translate 100 0
+
+region_addRect intregion 0 10 60 30
+path_addRect intpath 0 10 60 30
+
+translate -800 100
+# rect & x
+save
+setClipRect 0 10 60 30 ReplaceClip
+translate 40 0
+setClipRect 0 10 60 30 IntersectClip
+translate -40 0
+repeat_block paintstuff
+restore
+translate 100 0
+
+save
+setClipRect 0 10 60 30 ReplaceClip
+translate 40 0
+setClipRectF 0 10 60 30 IntersectClip
+translate -40 0
+repeat_block paintstuff
+restore
+translate 100 0
+
+save
+setClipRect 0 10 60 30 ReplaceClip
+translate 40 0
+setClipRegion intregion IntersectClip
+translate -40 0
+repeat_block paintstuff
+restore
+translate 100 0
+
+save
+setClipRect 0 10 60 30 ReplaceClip
+translate 40 0
+setClipPath intpath IntersectClip
+translate -40 0
+repeat_block paintstuff
+restore
+translate 100 0
+
+# rectF & x
+save
+setClipRectF 0 10 60 30 ReplaceClip
+translate 40 0
+setClipRect 0 10 60 30 IntersectClip
+translate -40 0
+repeat_block paintstuff
+restore
+translate 100 0
+
+save
+setClipRectF 0 10 60 30 ReplaceClip
+translate 40 0
+setClipRectF 0 10 60 30 IntersectClip
+translate -40 0
+repeat_block paintstuff
+restore
+translate 100 0
+
+save
+setClipRectF 0 10 60 30 ReplaceClip
+translate 40 0
+setClipRegion intregion IntersectClip
+translate -40 0
+repeat_block paintstuff
+restore
+translate 100 0
+
+save
+setClipRectF 0 10 60 30 ReplaceClip
+translate 40 0
+setClipPath intpath IntersectClip
+translate -40 0
+repeat_block paintstuff
+restore
+translate 100 0
+
+translate -800 100
+
+# region & x
+save
+setClipRegion intregion ReplaceClip
+translate 40 0
+setClipRect 0 10 60 30 IntersectClip
+translate -40 0
+repeat_block paintstuff
+restore
+translate 100 0
+
+save
+setClipRegion intregion ReplaceClip
+translate 40 0
+setClipRectF 0 10 60 30 IntersectClip
+translate -40 0
+repeat_block paintstuff
+restore
+translate 100 0
+
+save
+setClipRegion intregion ReplaceClip
+translate 40 0
+setClipRegion intregion IntersectClip
+translate -40 0
+repeat_block paintstuff
+restore
+translate 100 0
+
+save
+setClipRegion intregion ReplaceClip
+translate 40 0
+setClipPath intpath IntersectClip
+translate -40 0
+repeat_block paintstuff
+restore
+translate 100 0
+
+# path & x
+save
+setClipPath intpath ReplaceClip
+translate 40 0
+setClipRect 0 10 60 30 IntersectClip
+translate -40 0
+repeat_block paintstuff
+restore
+translate 100 0
+
+save
+setClipPath intpath ReplaceClip
+translate 40 0
+setClipRectF 0 10 60 30 IntersectClip
+translate -40 0
+repeat_block paintstuff
+restore
+translate 100 0
+
+save
+setClipPath intpath ReplaceClip
+translate 40 0
+setClipRegion intregion IntersectClip
+translate -40 0
+repeat_block paintstuff
+restore
+translate 100 0
+
+save
+setClipPath intpath ReplaceClip
+translate 40 0
+setClipPath intpath IntersectClip
+translate -40 0
+repeat_block paintstuff
+restore
+translate 100 0
