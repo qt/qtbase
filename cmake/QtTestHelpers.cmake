@@ -33,6 +33,9 @@ function(qt_internal_add_benchmark target)
         ${exec_args}
     )
 
+
+    qt_internal_add_repo_local_defines(${target})
+
     # Disable the QT_NO_NARROWING_CONVERSIONS_IN_CONNECT define for benchmarks
     qt_internal_undefine_global_definition(${target} QT_NO_NARROWING_CONVERSIONS_IN_CONNECT)
 
@@ -238,6 +241,8 @@ function(qt_internal_add_test name)
             ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
             DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
         )
+
+        qt_internal_add_repo_local_defines(${name})
 
         # Disable the QT_NO_NARROWING_CONVERSIONS_IN_CONNECT define for tests
         qt_internal_undefine_global_definition(${name} QT_NO_NARROWING_CONVERSIONS_IN_CONNECT)

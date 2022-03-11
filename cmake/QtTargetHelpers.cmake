@@ -874,3 +874,19 @@ function(qt_internal_undefine_global_definition target)
         set_target_properties(${target} PROPERTIES "${undef_property_name}" TRUE)
     endforeach()
 endfunction()
+
+# This function adds any defines which are local to the current repository (e.g. qtbase,
+# qtmultimedia). Those can be defined in the corresponding .cmake.conf file via
+# QT_EXTRA_INTERNAL_TARGET_DEFINES. QT_EXTRA_INTERNAL_TARGET_DEFINES accepts a list of definitions.
+# The definitions are passed to target_compile_definitions, which means that values can be provided
+# via the FOO=Bar syntax
+# This does nothing for interface targets
+function(qt_internal_add_repo_local_defines target)
+    get_target_property(type "${target}" TYPE)
+    if (${type} STREQUAL "INTERFACE_LIBRARY")
+        return()
+    endif()
+    if(DEFINED QT_EXTRA_INTERNAL_TARGET_DEFINES)
+        target_compile_definitions("${target}" PRIVATE ${QT_EXTRA_INTERNAL_TARGET_DEFINES})
+    endif()
+endfunction()
