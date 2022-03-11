@@ -2649,6 +2649,14 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                     f->glVertexAttribDivisor(GLuint(i), 0);
                 state.instancedAttributesUsed = false;
             }
+#ifdef Q_OS_WASM
+            for (int i = 0; i < CommandBufferExecTrackedState::TRACKED_ATTRIB_COUNT; ++i) {
+                if (state.enabledAttribArrays[i]) {
+                    f->glDisableVertexAttribArray(GLuint(i));
+                    state.enabledAttribArrays[i] = false;
+                }
+            }
+#endif
             if (vao)
                 f->glBindVertexArray(0);
             break;
