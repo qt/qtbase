@@ -1244,11 +1244,11 @@ foreach my $lib (@modules_to_sync) {
                     "#endif\n" .
                     "#endif\n";
                 if (writeFile($header_path, $hdrcont)) {
-                    if ($verbose_level < 3) {
+                    if ($verbose_level > 0 and $verbose_level < 3) {
                         my $line_prefix = ",";
                         $line_prefix = "$lib: created deprecated header(s) {" if ($first);
                         print "$line_prefix $header";
-                    } else {
+                    } elsif ($verbose_level >= 3) {
                         print "$lib: created deprecated header $header => $include\n";
                     }
                     $first = 0;
@@ -1257,7 +1257,7 @@ foreach my $lib (@modules_to_sync) {
 
             $pri_install_gfiles .= "$header ";
         }
-        if ($verbose_level < 3) {
+        if ($verbose_level > 0 and $verbose_level < 3) {
             print " }\n" unless ($first);
         }
 
