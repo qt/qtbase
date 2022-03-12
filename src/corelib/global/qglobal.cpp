@@ -159,8 +159,7 @@ static_assert(std::numeric_limits<float>::is_iec559,
 // Technically, presence of NaN and infinities are implied from the above check,
 // but double checking our environment doesn't hurt...
 static_assert(std::numeric_limits<float>::has_infinity &&
-                  std::numeric_limits<float>::has_quiet_NaN &&
-                  std::numeric_limits<float>::has_signaling_NaN,
+                  std::numeric_limits<float>::has_quiet_NaN,
                   "Qt assumes IEEE 754 floating point");
 
 // is_iec559 checks for ISO/IEC/IEEE 60559:2011 (aka IEEE 754-2008) compliance,
