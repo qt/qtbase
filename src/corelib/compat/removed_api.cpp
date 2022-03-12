@@ -214,6 +214,49 @@ void QObject::setObjectName(const QString &name)
 }
 
 
+#include "qsettings.h"
+
+void QSettings::beginGroup(const QString &prefix)
+{
+    return beginGroup(qToAnyStringViewIgnoringNull(prefix));
+}
+
+int QSettings::beginReadArray(const QString &prefix)
+{
+    return beginReadArray(qToAnyStringViewIgnoringNull(prefix));
+}
+
+void QSettings::beginWriteArray(const QString &prefix, int size)
+{
+    beginWriteArray(qToAnyStringViewIgnoringNull(prefix), size);
+}
+
+void QSettings::setValue(const QString &key, const QVariant &value)
+{
+    setValue(qToAnyStringViewIgnoringNull(key), value);
+}
+
+void QSettings::remove(const QString &key)
+{
+    remove(qToAnyStringViewIgnoringNull(key));
+}
+
+bool QSettings::contains(const QString &key) const
+{
+    return contains(qToAnyStringViewIgnoringNull(key));
+}
+
+QVariant QSettings::value(const QString &key, const QVariant &defaultValue) const
+{
+    return value(qToAnyStringViewIgnoringNull(key), defaultValue);
+}
+
+QVariant QSettings::value(const QString &key) const
+{
+    return value(qToAnyStringViewIgnoringNull(key));
+}
+
+
 #include "qversionnumber.h"
 
 QT_WARNING_PUSH

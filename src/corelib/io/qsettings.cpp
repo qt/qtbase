@@ -2914,9 +2914,12 @@ void QSettings::setAtomicSyncRequired(bool enable)
     Call endGroup() to reset the current group to what it was before
     the corresponding beginGroup() call. Groups can be nested.
 
+    \note In Qt versions prior to 6.4, this function took QString, not
+    QAnyStringView.
+
     \sa endGroup(), group()
 */
-void QSettings::beginGroup(const QString &prefix)
+void QSettings::beginGroup(QAnyStringView prefix)
 {
     Q_D(QSettings);
     d->beginGroupOrArray(QSettingsGroup(d->normalizedKey(prefix)));
@@ -2970,9 +2973,12 @@ QString QSettings::group() const
 
     Use beginWriteArray() to write the array in the first place.
 
+    \note In Qt versions prior to 6.4, this function took QString, not
+    QAnyStringView.
+
     \sa beginWriteArray(), endArray(), setArrayIndex()
 */
-int QSettings::beginReadArray(const QString &prefix)
+int QSettings::beginReadArray(QAnyStringView prefix)
 {
     Q_D(QSettings);
     d->beginGroupOrArray(QSettingsGroup(d->normalizedKey(prefix), false));
@@ -3006,9 +3012,12 @@ int QSettings::beginReadArray(const QString &prefix)
 
     To read back an array, use beginReadArray().
 
+    \note In Qt versions prior to 6.4, this function took QString, not
+    QAnyStringView.
+
     \sa beginReadArray(), endArray(), setArrayIndex()
 */
-void QSettings::beginWriteArray(const QString &prefix, int size)
+void QSettings::beginWriteArray(QAnyStringView prefix, int size)
 {
     Q_D(QSettings);
     d->beginGroupOrArray(QSettingsGroup(d->normalizedKey(prefix), size < 0));
@@ -3169,9 +3178,12 @@ bool QSettings::isWritable() const
 
   \snippet code/src_corelib_io_qsettings.cpp 23
 
+  \note In Qt versions prior to 6.4, this function took QString, not
+  QAnyStringView.
+
   \sa value(), remove(), contains()
 */
-void QSettings::setValue(const QString &key, const QVariant &value)
+void QSettings::setValue(QAnyStringView key, const QVariant &value)
 {
     Q_D(QSettings);
     if (key.isEmpty()) {
@@ -3203,9 +3215,12 @@ void QSettings::setValue(const QString &key, const QVariant &value)
     case-sensitive keys. To avoid portability problems, see the
     \l{Section and Key Syntax} rules.
 
+    \note In Qt versions prior to 6.4, this function took QString, not
+    QAnyStringView.
+
     \sa setValue(), value(), contains()
 */
-void QSettings::remove(const QString &key)
+void QSettings::remove(QAnyStringView key)
 {
     Q_D(QSettings);
     /*
@@ -3238,9 +3253,12 @@ void QSettings::remove(const QString &key)
     case-sensitive keys. To avoid portability problems, see the
     \l{Section and Key Syntax} rules.
 
+    \note In Qt versions prior to 6.4, this function took QString, not
+    QAnyStringView.
+
     \sa value(), setValue()
 */
-bool QSettings::contains(const QString &key) const
+bool QSettings::contains(QAnyStringView key) const
 {
     Q_D(const QSettings);
     return d->get(d->actualKey(key)) != std::nullopt;
@@ -3288,8 +3306,8 @@ bool QSettings::event(QEvent *event)
 #endif
 
 /*!
-    \fn QSettings::value(const QString &key) const
-    \fn QSettings::value(const QString &key, const QVariant &defaultValue) const
+    \fn QSettings::value(QAnyStringView key) const
+    \fn QSettings::value(QAnyStringView key, const QVariant &defaultValue) const
 
     Returns the value for setting \a key. If the setting doesn't
     exist, returns \a defaultValue.
@@ -3306,15 +3324,18 @@ bool QSettings::event(QEvent *event)
 
     \snippet code/src_corelib_io_qsettings.cpp 26
 
+    \note In Qt versions prior to 6.4, this function took QString, not
+    QAnyStringView.
+
     \sa setValue(), contains(), remove()
 */
-QVariant QSettings::value(const QString &key) const
+QVariant QSettings::value(QAnyStringView key) const
 {
     Q_D(const QSettings);
     return d->value(key, nullptr);
 }
 
-QVariant QSettings::value(const QString &key, const QVariant &defaultValue) const
+QVariant QSettings::value(QAnyStringView key, const QVariant &defaultValue) const
 {
     Q_D(const QSettings);
     return d->value(key, &defaultValue);

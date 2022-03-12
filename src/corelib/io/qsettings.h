@@ -148,12 +148,19 @@ public:
     bool isAtomicSyncRequired() const;
     void setAtomicSyncRequired(bool enable);
 
+#if QT_CORE_REMOVED_SINCE(6, 4)
     void beginGroup(const QString &prefix);
+#endif
+    void beginGroup(QAnyStringView prefix);
     void endGroup();
     QString group() const;
 
+#if QT_CORE_REMOVED_SINCE(6, 4)
     int beginReadArray(const QString &prefix);
     void beginWriteArray(const QString &prefix, int size = -1);
+#endif
+    int beginReadArray(QAnyStringView prefix);
+    void beginWriteArray(QAnyStringView prefix, int size = -1);
     void endArray();
     void setArrayIndex(int i);
 
@@ -162,12 +169,21 @@ public:
     QStringList childGroups() const;
     bool isWritable() const;
 
+#if QT_CORE_REMOVED_SINCE(6, 4)
     void setValue(const QString &key, const QVariant &value);
     QVariant value(const QString &key, const QVariant &defaultValue) const;
     QVariant value(const QString &key) const;
+#endif
+    void setValue(QAnyStringView key, const QVariant &value);
+    QVariant value(QAnyStringView key, const QVariant &defaultValue) const;
+    QVariant value(QAnyStringView key) const;
 
+#if QT_CORE_REMOVED_SINCE(6, 4)
     void remove(const QString &key);
     bool contains(const QString &key) const;
+#endif
+    void remove(QAnyStringView key);
+    bool contains(QAnyStringView key) const;
 
     void setFallbacksEnabled(bool b);
     bool fallbacksEnabled() const;
