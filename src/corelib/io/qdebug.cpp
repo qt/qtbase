@@ -961,6 +961,10 @@ QDebug &QDebug::resetFormat()
     so that using << Qt::hex in a QDebug operator doesn't affect other QDebug
     operators.
 
+    QDebugStateSaver is typically used in the implementation of an operator<<() for debugging:
+
+    \snippet tools/customtype/message.cpp custom type streaming operator
+
     \since 5.1
 */
 
