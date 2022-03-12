@@ -550,16 +550,19 @@ void tst_qfloat16::properties()
     // and the same supposed to be for qfloat16.
 #if !defined(Q_CC_GHS)
     QVERIFY(Bounds::is_iec559);
-#else
+#endif //Q_CC_GHS
+#if QT_CONFIG(signaling_nan)
     // Technically, presence of NaN and infinities are implied from the above check, but that checkings GHS compiler complies.
     QVERIFY(Bounds::has_infinity && Bounds::has_quiet_NaN && Bounds::has_signaling_NaN);
-#endif // Q_CC_GHS
+#endif
     QVERIFY(Bounds::is_bounded);
     QVERIFY(!Bounds::is_modulo);
     QVERIFY(!Bounds::traps);
     QVERIFY(Bounds::has_infinity);
     QVERIFY(Bounds::has_quiet_NaN);
+#if QT_CONFIG(signaling_nan)
     QVERIFY(Bounds::has_signaling_NaN);
+#endif
 #if !defined(Q_CC_GHS)
     QCOMPARE(Bounds::has_denorm, std::denorm_present);
 #else
