@@ -60,6 +60,7 @@ Message::Message(const QString &body, const QStringList &headers)
 //! [custom type streaming operator]
 QDebug operator<<(QDebug dbg, const Message &message)
 {
+    QDebugStateSaver saver(dbg);
     QList<QStringView> pieces = message.body().split(u"\r\n", Qt::SkipEmptyParts);
     if (pieces.isEmpty())
         dbg.nospace() << "Message()";
@@ -67,7 +68,7 @@ QDebug operator<<(QDebug dbg, const Message &message)
         dbg.nospace() << "Message(" << pieces.first() << ")";
     else
         dbg.nospace() << "Message(" << pieces.first() << " ...)";
-    return dbg.maybeSpace();
+    return dbg;
 }
 //! [custom type streaming operator]
 
