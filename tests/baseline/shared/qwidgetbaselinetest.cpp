@@ -47,15 +47,16 @@ QWidgetBaselineTest::QWidgetBaselineTest()
     // Encode a number of parameters that impact the UI
     QPalette palette;
     QFont font;
-    QByteArray appearanceBytes;
-    {
-        QDataStream appearanceStream(&appearanceBytes, QIODevice::WriteOnly);
-        appearanceStream << palette << font <<
+    const QString styleName =
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             QApplication::style()->metaObject()->className();
 #else
             QApplication::style()->name();
 #endif
+    QByteArray appearanceBytes;
+    {
+        QDataStream appearanceStream(&appearanceBytes, QIODevice::WriteOnly);
+        appearanceStream << palette << font;
         const qreal screenDpr = QApplication::primaryScreen()->devicePixelRatio();
         if (screenDpr != 1.0)
             qWarning() << "DPR is" << screenDpr << "- images will be scaled";
@@ -72,8 +73,8 @@ QWidgetBaselineTest::QWidgetBaselineTest()
     const QColor windowColor = palette.window().color();
     const QColor textColor = palette.text().color();
     const QString appearanceIdString = (windowColor.value() > textColor.value()
-                                        ? QString("light-%1") : QString("dark-%1"))
-                                       .arg(appearanceId, 0, 16);
+                                        ? QString("light-%1-%2") : QString("dark-%1-%2"))
+                                       .arg(styleName).arg(appearanceId, 0, 16);
     QBaselineTest::addClientProperty("AppearanceID", appearanceIdString);
 
     // let users know where they can find the results
