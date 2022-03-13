@@ -72,14 +72,14 @@ struct Q_GUI_EXPORT QShaderPrivate
     {
     }
 
-    QShaderPrivate(const QShaderPrivate *other)
+    QShaderPrivate(const QShaderPrivate &other)
         : ref(1),
-          qsbVersion(other->qsbVersion),
-          stage(other->stage),
-          desc(other->desc),
-          shaders(other->shaders),
-          bindings(other->bindings),
-          combinedImageMap(other->combinedImageMap)
+          qsbVersion(other.qsbVersion),
+          stage(other.stage),
+          desc(other.desc),
+          shaders(other.shaders),
+          bindings(other.bindings),
+          combinedImageMap(other.combinedImageMap)
     {
     }
 

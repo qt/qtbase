@@ -66,18 +66,18 @@ struct Q_GUI_EXPORT QShaderDescriptionPrivate
         localSize[0] = localSize[1] = localSize[2] = 0;
     }
 
-    QShaderDescriptionPrivate(const QShaderDescriptionPrivate *other)
+    QShaderDescriptionPrivate(const QShaderDescriptionPrivate &other)
         : ref(1),
-          inVars(other->inVars),
-          outVars(other->outVars),
-          uniformBlocks(other->uniformBlocks),
-          pushConstantBlocks(other->pushConstantBlocks),
-          storageBlocks(other->storageBlocks),
-          combinedImageSamplers(other->combinedImageSamplers),
-          separateImages(other->separateImages),
-          separateSamplers(other->separateSamplers),
-          storageImages(other->storageImages),
-          localSize(other->localSize)
+          inVars(other.inVars),
+          outVars(other.outVars),
+          uniformBlocks(other.uniformBlocks),
+          pushConstantBlocks(other.pushConstantBlocks),
+          storageBlocks(other.storageBlocks),
+          combinedImageSamplers(other.combinedImageSamplers),
+          separateImages(other.separateImages),
+          separateSamplers(other.separateSamplers),
+          storageImages(other.storageImages),
+          localSize(other.localSize)
     {
     }
 
