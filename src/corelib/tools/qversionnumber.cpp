@@ -415,7 +415,7 @@ QString QVersionNumber::toString() const
     \since 6.4
 
     Constructs a QVersionNumber from a specially formatted \a string of
-    non-negative decimal numbers delimited by '.'.
+    non-negative decimal numbers delimited by a period (\c{.}).
 
     Once the numerical segments have been parsed, the remainder of the string
     is considered to be the suffix string.  The start index of that string will be
