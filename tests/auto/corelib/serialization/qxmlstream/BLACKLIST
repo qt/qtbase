@@ -1,4 +1,0 @@
-# See qtbase/src/testlib/qtestblacklist.cpp for format
-#QTBUG-101332
-[initTestCase]
-qnx
