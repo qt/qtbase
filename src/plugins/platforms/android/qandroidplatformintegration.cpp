@@ -491,8 +491,10 @@ void QAndroidPlatformIntegration::setScreenOrientation(Qt::ScreenOrientation cur
 
 void QAndroidPlatformIntegration::flushPendingUpdates()
 {
-    m_primaryScreen->setSizeParameters(m_defaultPhysicalSize, m_defaultScreenSize,
-                                       m_defaultAvailableGeometry);
+    if (m_primaryScreen) {
+        m_primaryScreen->setSizeParameters(m_defaultPhysicalSize, m_defaultScreenSize,
+                                           m_defaultAvailableGeometry);
+    }
 }
 
 #ifndef QT_NO_ACCESSIBILITY
