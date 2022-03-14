@@ -498,7 +498,8 @@ QString QFSFileEngine::fileName(FileName file) const
 bool QFSFileEngine::isRelativePath() const
 {
     Q_D(const QFSFileEngine);
-    return d->fileEntry.filePath().length() ? d->fileEntry.filePath().at(0) != QLatin1Char('/') : true;
+    const QString fp = d->fileEntry.filePath();
+    return fp.isEmpty() || fp.at(0) != u'/';
 }
 
 uint QFSFileEngine::ownerId(FileOwner own) const
