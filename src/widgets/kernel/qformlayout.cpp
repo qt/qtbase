@@ -110,7 +110,7 @@ enum { ColumnCount = 2 };
 // This owns the QLayoutItem
 struct QFormLayoutItem
 {
-    QFormLayoutItem(QLayoutItem* i) : item(i), fullRow(false), isHfw(false) { }
+    QFormLayoutItem(QLayoutItem* i) : item(i) { }
     ~QFormLayoutItem() { delete item; }
 
     // Wrappers
@@ -133,27 +133,27 @@ struct QFormLayoutItem
     // For use with FixedColumnMatrix
     bool operator==(const QFormLayoutItem& other) { return item == other.item; }
 
-    QLayoutItem *item;
-    bool fullRow;
+    QLayoutItem *item = nullptr;
+    bool fullRow = false;
     bool isVisible = true;
 
     // set by updateSizes
-    bool isHfw;
+    bool isHfw = false;
     QSize minSize;
     QSize sizeHint;
     QSize maxSize;
 
     // also set by updateSizes
-    int sbsHSpace; // only used for side by side, for the field item only (not label)
-    int vSpace; // This is the spacing to the item in the row above
+    int sbsHSpace = -1; // only used for side by side, for the field item only (not label)
+    int vSpace = -1; // This is the spacing to the item in the row above
 
     // set by setupVerticalLayoutData
-    bool sideBySide;
-    int vLayoutIndex;
+    bool sideBySide = false;
+    int vLayoutIndex = -1;
 
     // set by setupHorizontalLayoutData
-    int layoutPos;
-    int layoutWidth;
+    int layoutPos = -1;
+    int layoutWidth = -1;
 };
 
 static void hideOrShowWidgetsInLayout(QLayout *layout, bool on)
@@ -540,7 +540,7 @@ void QFormLayoutPrivate::setupHfwLayoutData()
         QFormLayoutItem *label = m_matrix(i, 0);
         QFormLayoutItem *field = m_matrix(i, 1);
 
-        if (label) {
+        if (label && label->vLayoutIndex > -1) {
             if (label->isHfw) {
                 // We don't check sideBySide here, since a label is only
                 // ever side by side with its field
@@ -555,7 +555,7 @@ void QFormLayoutPrivate::setupHfwLayoutData()
             }
         }
 
-        if (field) {
+        if (field && field->vLayoutIndex > -1) {
             int hfw = field->isHfw ? field->heightForWidth(field->layoutWidth) : 0;
             int h = field->isHfw ? hfw : field->sizeHint.height();
             int mh = field->isHfw ? hfw : field->minSize.height();
@@ -2226,7 +2226,7 @@ void QFormLayoutPrivate::arrangeWidgets(const QList<QLayoutStruct> &layouts, QRe
         QFormLayoutItem *label = m_matrix(i, 0);
         QFormLayoutItem *field = m_matrix(i, 1);
 
-        if (label) {
+        if (label && label->vLayoutIndex > -1) {
             int height = layouts.at(label->vLayoutIndex).size;
             if ((label->expandingDirections() & Qt::Vertical) == 0) {
                 /*
@@ -2253,7 +2253,7 @@ void QFormLayoutPrivate::arrangeWidgets(const QList<QLayoutStruct> &layouts, QRe
             label->setGeometry(QStyle::visualRect(layoutDirection, rect, QRect(p, sz)));
         }
 
-        if (field) {
+        if (field && field->vLayoutIndex > -1) {
             QSize sz(field->layoutWidth, layouts.at(field->vLayoutIndex).size);
             QPoint p(field->layoutPos + leftOffset + rect.x(), layouts.at(field->vLayoutIndex).pos);
 /*

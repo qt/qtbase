@@ -136,6 +136,7 @@ private slots:
     void setWidget();
     void setLayout();
     void hideShowRow();
+    void showWithHiddenRow();
 
 /*
     QLayoutItem *itemAt(int row, ItemRole role) const;
@@ -817,6 +818,7 @@ void tst_QFormLayout::removeRow_QWidget()
     QCOMPARE(layout->rowCount(), 0);
 
     QWidget *w3 = new QWidget;
+    QTest::ignoreMessage(QtWarningMsg, "QFormLayout::takeRow: Invalid widget");
     layout->removeRow(w3);
     delete w3;
 }
@@ -857,6 +859,7 @@ void tst_QFormLayout::removeRow_QLayout()
     QCOMPARE(layout->rowCount(), 0);
 
     QHBoxLayout *l3 = new QHBoxLayout;
+    QTest::ignoreMessage(QtWarningMsg, "QFormLayout::takeRow: Invalid layout");
     layout->removeRow(l3);
     delete l3;
 }
@@ -896,6 +899,7 @@ void tst_QFormLayout::takeRow()
     QCOMPARE(layout->rowCount(), 0);
     QCOMPARE(result.fieldItem->widget(), w1.data());
 
+    QTest::ignoreMessage(QtWarningMsg, "QFormLayout::takeRow: Invalid row 0");
     result = layout->takeRow(0);
 
     QVERIFY(!result.fieldItem);
@@ -936,6 +940,7 @@ void tst_QFormLayout::takeRow_QWidget()
     QCOMPARE(layout->rowCount(), 0);
 
     QWidget *w3 = new QWidget;
+    QTest::ignoreMessage(QtWarningMsg, "QFormLayout::takeRow: Invalid widget");
     result = layout->takeRow(w3);
     delete w3;
 
@@ -983,6 +988,7 @@ void tst_QFormLayout::takeRow_QLayout()
     QCOMPARE(layout->rowCount(), 0);
 
     QHBoxLayout *l3 = new QHBoxLayout;
+    QTest::ignoreMessage(QtWarningMsg, "QFormLayout::takeRow: Invalid layout");
     result = layout->takeRow(l3);
     delete l3;
 
@@ -1012,7 +1018,9 @@ void tst_QFormLayout::setWidget()
     QCOMPARE(layout.rowCount(), 6);
 
     // should be ignored and generate warnings
+    QTest::ignoreMessage(QtWarningMsg, "QFormLayoutPrivate::setItem: Cell (3, 1) already occupied");
     layout.setWidget(3, QFormLayout::FieldRole, &w4);
+    QTest::ignoreMessage(QtWarningMsg, "QFormLayoutPrivate::setItem: Invalid cell (-1, 1)");
     layout.setWidget(-1, QFormLayout::FieldRole, &w4);
 
     {
@@ -1080,7 +1088,9 @@ void tst_QFormLayout::setLayout()
     QCOMPARE(layout.rowCount(), 6);
 
     // should be ignored and generate warnings
+    QTest::ignoreMessage(QtWarningMsg, "QFormLayoutPrivate::setItem: Cell (3, 1) already occupied");
     layout.setLayout(3, QFormLayout::FieldRole, &l4);
+    QTest::ignoreMessage(QtWarningMsg, "QLayout::addChildLayout: layout \"\" already has a parent");
     layout.setLayout(-1, QFormLayout::FieldRole, &l4);
     QCOMPARE(layout.count(), 3);
     QCOMPARE(layout.rowCount(), 6);
@@ -1253,6 +1263,19 @@ void tst_QFormLayout::hideShowRow()
     topLevel.show();
     for (int row = 0; row < layout.rowCount(); ++row)
         QVERIFY(rowInputWidget(row)->isHidden());
+}
+
+void tst_QFormLayout::showWithHiddenRow()
+{
+    QWidget topLevel;
+    QFormLayout layout;
+
+    for (int row = 0; row < 3; ++row)
+        layout.addRow(QString("Label %1").arg(row), new QLineEdit);
+    layout.setRowVisible(1, false);
+
+    topLevel.setLayout(&layout);
+    topLevel.show();
 }
 
 void tst_QFormLayout::itemAt()
