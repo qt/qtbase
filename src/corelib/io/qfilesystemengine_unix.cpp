@@ -1365,10 +1365,7 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
     int counter = 0;
     QFile infoFile;
     auto makeUniqueTrashedName = [trashedName, &counter]() -> QString {
-        ++counter;
-        return QString(QLatin1String("/%1-%2"))
-                                        .arg(trashedName)
-                                        .arg(counter, 4, 10, QLatin1Char('0'));
+        return QString::asprintf("/%ls-%04d", qUtf16Printable(trashedName), ++counter);
     };
     do {
         while (QFile::exists(trashDir.filePath(filesDir) + uniqueTrashedName))
