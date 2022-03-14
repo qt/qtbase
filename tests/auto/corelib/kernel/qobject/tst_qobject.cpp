@@ -108,6 +108,7 @@ private slots:
     void deleteSelfInSlot();
     void disconnectSelfInSlotAndDeleteAfterEmit();
     void dumpObjectInfo();
+    void dumpObjectTree();
     void connectToSender();
     void qobjectConstCast();
     void uniqConnection();
@@ -3411,6 +3412,32 @@ void tst_QObject::dumpObjectInfo()
     QTest::ignoreMessage(QtDebugMsg, "  SIGNALS IN");
     QTest::ignoreMessage(QtDebugMsg, "        <None>");
     a.dumpObjectInfo(); // should not crash
+}
+
+void tst_QObject::dumpObjectTree()
+{
+    QObject a;
+    Q_SET_OBJECT_NAME(a);
+
+    QTimer b(&a);
+    Q_SET_OBJECT_NAME(b);
+
+    QObject c(&b);
+    Q_SET_OBJECT_NAME(c);
+
+    QFile f(&a);
+    Q_SET_OBJECT_NAME(f);
+
+    const char * const output[] = {
+        "QObject::a ",
+        "    QTimer::b ",
+        "        QObject::c ",
+        "    QFile::f ",
+    };
+    for (const char *line : output)
+        QTest::ignoreMessage(QtDebugMsg, line);
+
+    a.dumpObjectTree();
 }
 
 class ConnectToSender : public QObject

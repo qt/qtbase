@@ -4205,12 +4205,9 @@ QList<QByteArray> QObject::dynamicPropertyNames() const
 static void dumpRecursive(int level, const QObject *object)
 {
     if (object) {
-        QByteArray buf;
-        buf.fill(' ', level / 2 * 8);
-        if (level % 2)
-            buf += "    ";
-        QString name = object->objectName();
-        QString flags = QLatin1String("");
+        const int indent = level * 4;
+        const QString name = object->objectName();
+        QString flags;
 #if 0
         if (qApp->focusWidget() == object)
             flags += 'F';
@@ -4224,13 +4221,10 @@ static void dumpRecursive(int level, const QObject *object)
             }
         }
 #endif
-        qDebug("%s%s::%s %s", (const char*)buf, object->metaObject()->className(), name.toLocal8Bit().data(),
-               flags.toLatin1().data());
-        QObjectList children = object->children();
-        if (!children.isEmpty()) {
-            for (int i = 0; i < children.size(); ++i)
-                dumpRecursive(level+1, children.at(i));
-        }
+        qDebug("%*s%s::%ls %ls", indent, "", object->metaObject()->className(),
+               qUtf16Printable(name), qUtf16Printable(flags));
+        for (auto child : object->children())
+            dumpRecursive(level + 1, child);
     }
 }
 
