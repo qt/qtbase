@@ -82,7 +82,7 @@ private:
     void flushMessages();
     void beginYamlish();
     void endYamlish();
-    bool m_wasExpectedFail;
+    QTestCharBuffer m_firstExpectedFail;
     QTestCharBuffer m_comments;
     QTestCharBuffer m_messages;
     bool m_gatherMessages = false;

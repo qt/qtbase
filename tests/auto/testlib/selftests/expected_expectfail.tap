@@ -3,37 +3,52 @@ TAP version 13
 ok 1 - initTestCase()
 not ok 2 - xfailAndContinue() # TODO This should xfail
   ---
-  at: tst_ExpectFail::xfailAndContinue() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
-  file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
-  line: 0
   extensions:
     messages:
     - severity: debug
       message: begin
+    - severity: xfail
+      message: This should xfail
+      at: tst_ExpectFail::xfailAndContinue() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
+      file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
+      line: 0
+    - severity: debug
+      message: after
   ...
-# debug: after
 not ok 3 - xfailAndAbort() # TODO This should xfail
   ---
-  at: tst_ExpectFail::xfailAndAbort() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
-  file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
-  line: 0
   extensions:
     messages:
     - severity: debug
       message: begin
+    - severity: xfail
+      message: This should xfail
+      at: tst_ExpectFail::xfailAndAbort() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
+      file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
+      line: 0
   ...
-not ok 4 - xfailContinueSkip() # TODO This should xfail then skip
+not ok 4 - xfailContinueSkip() # SKIP This skip should be reported and counted
   ---
   at: tst_ExpectFail::xfailContinueSkip() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
   line: 0
+  extensions:
+    messages:
+    - severity: xfail
+      message: This should xfail then skip
+      at: tst_ExpectFail::xfailContinueSkip() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
+      file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
+      line: 0
   ...
-ok 4 - xfailContinueSkip() # SKIP This skip should be reported and counted
 not ok 5 - xfailAbortSkip() # TODO This should xfail
   ---
-  at: tst_ExpectFail::xfailAbortSkip() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
-  file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
-  line: 0
+  extensions:
+    messages:
+    - severity: xfail
+      message: This should xfail
+      at: tst_ExpectFail::xfailAbortSkip() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
+      file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
+      line: 0
   ...
 not ok 6 - xfailTwice()
   ---
@@ -72,52 +87,92 @@ not ok 10 - xfailDataDrivenTwice(Fail Continue)
   ...
 not ok 11 - xfailWithQString() # TODO A string
   ---
-  at: tst_ExpectFail::xfailWithQString() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
-  file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
-  line: 0
+  extensions:
+    messages:
+    - severity: xfail
+      message: A string
+      at: tst_ExpectFail::xfailWithQString() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
+      file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
+      line: 0
+    - severity: xfail
+      message: Bug 5 (The message)
+      at: tst_ExpectFail::xfailWithQString() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
+      file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
+      line: 0
   ...
 ok 12 - xfailDataDrivenWithQString(Pass Abort) # SKIP Each Continue or Pass reports this and increments skip-count
 ok 13 - xfailDataDrivenWithQString(Pass Continue) # SKIP Each Continue or Pass reports this and increments skip-count
 not ok 14 - xfailDataDrivenWithQString(Fail Abort) # TODO A string
   ---
-  at: tst_ExpectFail::xfailDataDrivenWithQString() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
-  file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
-  line: 0
+  extensions:
+    messages:
+    - severity: xfail
+      message: A string
+      at: tst_ExpectFail::xfailDataDrivenWithQString() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
+      file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
+      line: 0
   ...
-not ok 15 - xfailDataDrivenWithQString(Fail Continue) # TODO A string
+not ok 15 - xfailDataDrivenWithQString(Fail Continue) # SKIP Each Continue or Pass reports this and increments skip-count
   ---
   at: tst_ExpectFail::xfailDataDrivenWithQString() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
   line: 0
+  extensions:
+    messages:
+    - severity: xfail
+      message: A string
+      at: tst_ExpectFail::xfailDataDrivenWithQString() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
+      file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
+      line: 0
+    - severity: xfail
+      message: Bug 5 (The message)
+      at: tst_ExpectFail::xfailDataDrivenWithQString() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
+      file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
+      line: 0
   ...
-ok 15 - xfailDataDrivenWithQString(Fail Continue) # SKIP Each Continue or Pass reports this and increments skip-count
 ok 16 - xfailDataDrivenWithQVerify(Pass Abort)
 ok 17 - xfailDataDrivenWithQVerify(Pass Continue)
 not ok 18 - xfailDataDrivenWithQVerify(Fail Abort) # TODO This test should xfail
   ---
-  at: tst_ExpectFail::xfailDataDrivenWithQVerify() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
-  file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
-  line: 0
+  extensions:
+    messages:
+    - severity: xfail
+      message: This test should xfail
+      at: tst_ExpectFail::xfailDataDrivenWithQVerify() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
+      file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
+      line: 0
   ...
 not ok 19 - xfailDataDrivenWithQVerify(Fail Continue) # TODO This test should xfail
   ---
-  at: tst_ExpectFail::xfailDataDrivenWithQVerify() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
-  file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
-  line: 0
+  extensions:
+    messages:
+    - severity: xfail
+      message: This test should xfail
+      at: tst_ExpectFail::xfailDataDrivenWithQVerify() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
+      file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
+      line: 0
   ...
 ok 20 - xfailDataDrivenWithQCompare(Pass Abort)
 ok 21 - xfailDataDrivenWithQCompare(Pass Continue)
 not ok 22 - xfailDataDrivenWithQCompare(Fail Abort) # TODO This test should xfail
   ---
-  at: tst_ExpectFail::xfailDataDrivenWithQCompare() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
-  file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
-  line: 0
+  extensions:
+    messages:
+    - severity: xfail
+      message: This test should xfail
+      at: tst_ExpectFail::xfailDataDrivenWithQCompare() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
+      file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
+      line: 0
   ...
 not ok 23 - xfailDataDrivenWithQCompare(Fail Continue) # TODO This test should xfail
   ---
-  at: tst_ExpectFail::xfailDataDrivenWithQCompare() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
-  file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
-  line: 0
+  extensions:
+    messages:
+    - severity: xfail
+      message: This test should xfail
+      at: tst_ExpectFail::xfailDataDrivenWithQCompare() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
+      file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
+      line: 0
   ...
 ok 24 - xfailOnWrongRow(Fail Abort)
   ---
@@ -135,15 +190,23 @@ ok 25 - xfailOnWrongRow(Fail Continue)
   ...
 not ok 26 - xfailOnAnyRow(Fail Abort) # TODO This test should xfail
   ---
-  at: tst_ExpectFail::xfailOnAnyRow() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
-  file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
-  line: 0
+  extensions:
+    messages:
+    - severity: xfail
+      message: This test should xfail
+      at: tst_ExpectFail::xfailOnAnyRow() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
+      file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
+      line: 0
   ...
 not ok 27 - xfailOnAnyRow(Fail Continue) # TODO This test should xfail
   ---
-  at: tst_ExpectFail::xfailOnAnyRow() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
-  file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
-  line: 0
+  extensions:
+    messages:
+    - severity: xfail
+      message: This test should xfail
+      at: tst_ExpectFail::xfailOnAnyRow() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
+      file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
+      line: 0
   ...
 not ok 28 - xfailWithoutCheck(Fail Abort)
   ---
@@ -169,12 +232,7 @@ ok 33 - xpassContinue() # TODO 'true' returned TRUE unexpectedly. ()
 ok 34 - xpassContinueSkip() # TODO 'true' returned TRUE unexpectedly. ()
 ok 34 - xpassContinueSkip() # SKIP This should be reached but not increment skip-count
 ok 35 - xpassContinueXfailAbort() # TODO 'true' returned TRUE unexpectedly. ()
-not ok 36 - xpassContinueXfailAbort() # TODO This test should xfail but not add to totals
-  ---
-  at: tst_ExpectFail::xpassContinueXfailAbort() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
-  file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
-  line: 0
-  ...
+  # xfail: This test should xfail but not add to totals
 ok 36 - xpassAbortDataDrivenWithQVerify(XPass) # TODO 'true' returned TRUE unexpectedly. ()
 ok 37 - xpassAbortDataDrivenWithQVerify(Pass)
 ok 38 - xpassContinueDataDrivenWithQVerify(XPass) # TODO 'true' returned TRUE unexpectedly. ()

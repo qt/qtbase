@@ -127,7 +127,6 @@ QT_BEGIN_NAMESPACE
 
 QTapTestLogger::QTapTestLogger(const char *filename)
     : QAbstractTestLogger(filename)
-    , m_wasExpectedFail(false)
 {
 }
 
@@ -164,7 +163,7 @@ void QTapTestLogger::stopLogging()
 
 void QTapTestLogger::enterTestFunction(const char *function)
 {
-    m_wasExpectedFail = false;
+    m_firstExpectedFail.clear();
     Q_ASSERT(!m_gatherMessages);
     Q_ASSERT(m_comments.isEmpty());
     Q_ASSERT(m_messages.isEmpty());
@@ -173,7 +172,7 @@ void QTapTestLogger::enterTestFunction(const char *function)
 
 void QTapTestLogger::enterTestData(QTestData *data)
 {
-    m_wasExpectedFail = false;
+    m_firstExpectedFail.clear();
     if (!m_messages.isEmpty() || !m_comments.isEmpty())
         flushMessages();
     m_gatherMessages = data != nullptr;
@@ -250,22 +249,19 @@ void QTapTestLogger::flushMessages()
 void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
                                  const char *file, int line)
 {
-    m_gatherMessages = false;
-    if (m_wasExpectedFail && (type == Pass || type == BlacklistedPass
-                              || type == XFail || type == BlacklistedXFail)) {
-        // XFail comes with a corresponding Pass incident, but we only want
-        // to emit a single test point for it, so skip the this pass.
-        return;
-    }
-    m_wasExpectedFail = type == XFail || type == BlacklistedXFail;
-    const bool ok = type == Pass || type == BlacklistedPass || type == Skip
-                    || type == XPass || type == BlacklistedXPass;
+    const bool isExpectedFail = type == XFail || type == BlacklistedXFail;
+    const bool ok = (m_firstExpectedFail.isEmpty()
+                     && (type == Pass || type == BlacklistedPass || type == Skip
+                         || type == XPass || type == BlacklistedXPass));
 
-    const char *const incident = [type]() {
+    const char *const incident = [type](const char *priorXFail) {
         switch (type) {
         // We treat expected or blacklisted failures/passes as TODO-failures/passes,
         // which should be treated as soft issues by consumers. Not all do though :/
         case BlacklistedPass:
+            if (priorXFail[0] != '\0')
+                return priorXFail;
+            Q_FALLTHROUGH();
         case XFail: case BlacklistedXFail:
         case XPass: case BlacklistedXPass:
         case BlacklistedFail:
@@ -273,116 +269,138 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
         case Skip:
             return "SKIP";
         case Pass:
+            if (priorXFail[0] != '\0')
+                return priorXFail;
+            Q_FALLTHROUGH();
         case Fail:
             break;
         }
         return static_cast<const char *>(nullptr);
-    }();
+    }(m_firstExpectedFail.constData());
 
     QTestCharBuffer directive;
     if (incident) {
-        QTest::qt_asprintf(&directive, " # %s%s%s", incident,
+        QTest::qt_asprintf(&directive, "%s%s%s%s",
+                           isExpectedFail ? "" : " # ", incident,
                            description && description[0] ? " " : "", description);
     }
 
-    int testNumber = QTestLog::totalCount();
-    // That counts Pass, Fail, Skip and blacklisted; the XFail will eventually
-    // be added to it as a Pass, but that hasn't heppened yet, so count it now:
-    if (m_wasExpectedFail)
-        testNumber += 1;
-
-    outputTestLine(ok, testNumber, directive);
+    if (!isExpectedFail) {
+        m_gatherMessages = false;
+        outputTestLine(ok, QTestLog::totalCount(), directive);
+    } else if (m_gatherMessages && m_firstExpectedFail.isEmpty()) {
+        QTestPrivate::appendCharBuffer(&m_firstExpectedFail, directive);
+    }
     flushComments();
 
     if (!ok || !m_messages.isEmpty()) {
         // All failures need a diagnostics section to not confuse consumers.
         // We also need a diagnostics section when we have messages to report.
-        beginYamlish();
+        if (isExpectedFail) {
+            QTestCharBuffer message;
+            if (m_gatherMessages) {
+                QTest::qt_asprintf(&message, YAML_INDENT YAML_INDENT "- severity: xfail\n"
+                                   YAML_INDENT YAML_INDENT YAML_INDENT "message:%s\n",
+                                   directive.constData() + 4);
+            } else {
+                QTest::qt_asprintf(&message, YAML_INDENT "# xfail:%s\n", directive.constData() + 4);
+            }
+            outputBuffer(message);
+        } else {
+            beginYamlish();
+        }
 
-        if (!ok && type != XFail && type != BlacklistedXFail) {
+        if (!isExpectedFail || m_gatherMessages) {
+            const char *indent = isExpectedFail ? YAML_INDENT YAML_INDENT YAML_INDENT : YAML_INDENT;
+            if (!ok) {
 #if QT_CONFIG(regularexpression)
-            // This is fragile, but unfortunately testlib doesn't plumb
-            // the expected and actual values to the loggers (yet).
-            static QRegularExpression verifyRegex(
-                QLatin1String("^'(?<actualexpression>.*)' returned (?<actual>\\w+).+\\((?<message>.*)\\)$"));
+                // This is fragile, but unfortunately testlib doesn't plumb
+                // the expected and actual values to the loggers (yet).
+                static QRegularExpression verifyRegex(
+                    QLatin1String("^'(?<actualexpression>.*)' returned "
+                                  "(?<actual>\\w+).+\\((?<message>.*)\\)$"));
 
-            static QRegularExpression comparRegex(
-                QLatin1String("^(?<message>.*)\n"
-                    "\\s*Actual\\s+\\((?<actualexpression>.*)\\)\\s*: (?<actual>.*)\n"
-                    "\\s*Expected\\s+\\((?<expectedexpresssion>.*)\\)\\s*: (?<expected>.*)$"));
+                static QRegularExpression compareRegex(
+                    QLatin1String("^(?<message>.*)\n"
+                                  "\\s*Actual\\s+\\((?<actualexpression>.*)\\)\\s*: (?<actual>.*)\n"
+                                  "\\s*Expected\\s+\\((?<expectedexpresssion>.*)\\)\\s*: "
+                                  "(?<expected>.*)$"));
 
-            QString descriptionString = QString::fromUtf8(description);
-            QRegularExpressionMatch match = verifyRegex.match(descriptionString);
-            if (!match.hasMatch())
-                match = comparRegex.match(descriptionString);
+                QString descriptionString = QString::fromUtf8(description);
+                QRegularExpressionMatch match = verifyRegex.match(descriptionString);
+                if (!match.hasMatch())
+                    match = compareRegex.match(descriptionString);
 
-            if (match.hasMatch()) {
-                bool isVerify = match.regularExpression() == verifyRegex;
-                QString message = match.captured(QLatin1String("message"));
-                QString expected;
-                QString actual;
+                if (match.hasMatch()) {
+                    bool isVerify = match.regularExpression() == verifyRegex;
+                    QString message = match.captured(QLatin1String("message"));
+                    QString expected;
+                    QString actual;
 
-                if (isVerify) {
-                    QString expression = QLatin1String(" (")
-                        % match.captured(QLatin1String("actualexpression")) % QLatin1Char(')') ;
-                    actual = match.captured(QLatin1String("actual")).toLower() % expression;
-                    expected = (actual.startsWith(QLatin1String("true")) ? QLatin1String("false") : QLatin1String("true")) % expression;
-                    if (message.isEmpty())
-                        message = QLatin1String("Verification failed");
-                } else {
-                    expected = match.captured(QLatin1String("expected"))
-                        % QLatin1String(" (") % match.captured(QLatin1String("expectedexpresssion")) % QLatin1Char(')');
-                    actual = match.captured(QLatin1String("actual"))
-                        % QLatin1String(" (") % match.captured(QLatin1String("actualexpression")) % QLatin1Char(')');
-                }
+                    if (isVerify) {
+                        QString expression = QLatin1String(" (")
+                            % match.captured(QLatin1String("actualexpression")) % QLatin1Char(')') ;
+                        actual = match.captured(QLatin1String("actual")).toLower() % expression;
+                        expected = (actual.startsWith(QLatin1String("true"))
+                                    ? QLatin1String("false")
+                                    : QLatin1String("true")) % expression;
+                        if (message.isEmpty())
+                            message = QLatin1String("Verification failed");
+                    } else {
+                        expected = match.captured(QLatin1String("expected")) % QLatin1String(" (")
+                            % match.captured(QLatin1String("expectedexpresssion"))
+                            % QLatin1Char(')');
+                        actual = match.captured(QLatin1String("actual")) % QLatin1String(" (")
+                            % match.captured(QLatin1String("actualexpression")) % QLatin1Char(')');
+                    }
 
-                QTestCharBuffer diagnosticsYamlish;
-                QTest::qt_asprintf(&diagnosticsYamlish,
-                    YAML_INDENT "type: %s\n"
-                    YAML_INDENT "message: %s\n"
+                    QTestCharBuffer diagnosticsYamlish;
+                    QTest::qt_asprintf(&diagnosticsYamlish,
+                                       "%stype: %s\n"
+                                       "%smessage: %s\n"
+                                       // Some consumers understand 'wanted/found', others need
+                                       // 'expected/actual', so be compatible with both.
+                                       "%swanted: %s\n"
+                                       "%sfound: %s\n"
+                                       "%sexpected: %s\n"
+                                       "%sactual: %s\n",
+                                       indent, isVerify ? "QVERIFY" : "QCOMPARE",
+                                       indent, qPrintable(message),
+                                       indent, qPrintable(expected), indent, qPrintable(actual),
+                                       indent, qPrintable(expected), indent, qPrintable(actual)
+                    );
 
-                    // Some consumers understand 'wanted/found', while others need
-                    // 'expected/actual', so we do both for maximum compatibility.
-                    YAML_INDENT "wanted: %s\n"
-                    YAML_INDENT "found: %s\n"
-                    YAML_INDENT "expected: %s\n"
-                    YAML_INDENT "actual: %s\n",
-
-                    isVerify ? "QVERIFY" : "QCOMPARE",
-                    qPrintable(message),
-                    qPrintable(expected), qPrintable(actual),
-                    qPrintable(expected), qPrintable(actual)
-                );
-
-                outputBuffer(diagnosticsYamlish);
-            } else
+                    outputBuffer(diagnosticsYamlish);
+                } else
 #endif
-            if (description && !incident) {
-                QTestCharBuffer unparsableDescription;
-                QTest::qt_asprintf(&unparsableDescription, YAML_INDENT "# %s\n", description);
-                outputBuffer(unparsableDescription);
+                if (description && !incident) {
+                    QTestCharBuffer unparsableDescription;
+                    QTest::qt_asprintf(&unparsableDescription, YAML_INDENT "# %s\n", description);
+                    outputBuffer(unparsableDescription);
+                }
+            }
+
+            if (file) {
+                QTestCharBuffer location;
+                QTest::qt_asprintf(&location,
+                                   // The generic 'at' key is understood by most consumers.
+                                   "%sat: %s::%s() (%s:%d)\n"
+
+                                   // The file and line keys are for consumers that are able
+                                   // to read more granular location info.
+                                   "%sfile: %s\n"
+                                   "%sline: %d\n",
+
+                                   indent, QTestResult::currentTestObjectName(),
+                                   QTestResult::currentTestFunction(),
+                                   file, line, indent, file, indent, line
+                    );
+                outputBuffer(location);
             }
         }
 
-        if (file) {
-            QTestCharBuffer location;
-            QTest::qt_asprintf(&location,
-                // The generic 'at' key is understood by most consumers.
-                YAML_INDENT "at: %s::%s() (%s:%d)\n"
-
-                // The file and line keys are for consumers that are able
-                // to read more granular location info.
-                YAML_INDENT "file: %s\n"
-                YAML_INDENT "line: %d\n",
-
-                QTestResult::currentTestObjectName(),
-                QTestResult::currentTestFunction(),
-                file, line, file, line
-            );
-            outputBuffer(location);
-        }
-
-        endYamlish();
+        if (!isExpectedFail)
+            endYamlish();
     }
 }
 

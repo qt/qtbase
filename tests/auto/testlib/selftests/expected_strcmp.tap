@@ -2,12 +2,6 @@ TAP version 13
 # tst_StrCmp
 ok 1 - initTestCase()
 ok 2 - compareCharStars()
-not ok 3 - compareByteArray() # TODO Next test should fail
-  ---
-  at: tst_StrCmp::compareByteArray() (qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp:0)
-  file: qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp
-  line: 0
-  ...
 not ok 3 - compareByteArray()
   ---
   type: QCOMPARE
@@ -19,6 +13,23 @@ not ok 3 - compareByteArray()
   at: tst_StrCmp::compareByteArray() (qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp
   line: 0
+  extensions:
+    messages:
+    - severity: xfail
+      message: Next test should fail
+      at: tst_StrCmp::compareByteArray() (qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp:0)
+      file: qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp
+      line: 0
+    - severity: xfail
+      message: Next test should fail
+      at: tst_StrCmp::compareByteArray() (qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp:0)
+      file: qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp
+      line: 0
+    - severity: xfail
+      message: Next test should fail
+      at: tst_StrCmp::compareByteArray() (qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp:0)
+      file: qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp
+      line: 0
   ...
 not ok 4 - failByteArray()
   ---
