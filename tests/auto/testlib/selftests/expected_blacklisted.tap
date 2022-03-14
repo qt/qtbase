@@ -35,77 +35,66 @@ ok 6 - multiSkip() # SKIP This skip should be repeated ten times
 ok 6 - multiSkip() # SKIP But this test should only contribute one to the skip count
 not ok 7 - multiFail() # TODO This failure message should be repeated ten times
   ---
-  # This failure message should be repeated ten times
   at: tst_Blacklisted::multiFail() (qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp
   line: 0
   ...
 not ok 7 - multiFail() # TODO This failure message should be repeated ten times
   ---
-  # This failure message should be repeated ten times
   at: tst_Blacklisted::multiFail() (qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp
   line: 0
   ...
 not ok 7 - multiFail() # TODO This failure message should be repeated ten times
   ---
-  # This failure message should be repeated ten times
   at: tst_Blacklisted::multiFail() (qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp
   line: 0
   ...
 not ok 7 - multiFail() # TODO This failure message should be repeated ten times
   ---
-  # This failure message should be repeated ten times
   at: tst_Blacklisted::multiFail() (qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp
   line: 0
   ...
 not ok 7 - multiFail() # TODO This failure message should be repeated ten times
   ---
-  # This failure message should be repeated ten times
   at: tst_Blacklisted::multiFail() (qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp
   line: 0
   ...
 not ok 7 - multiFail() # TODO This failure message should be repeated ten times
   ---
-  # This failure message should be repeated ten times
   at: tst_Blacklisted::multiFail() (qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp
   line: 0
   ...
 not ok 7 - multiFail() # TODO This failure message should be repeated ten times
   ---
-  # This failure message should be repeated ten times
   at: tst_Blacklisted::multiFail() (qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp
   line: 0
   ...
 not ok 7 - multiFail() # TODO This failure message should be repeated ten times
   ---
-  # This failure message should be repeated ten times
   at: tst_Blacklisted::multiFail() (qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp
   line: 0
   ...
 not ok 7 - multiFail() # TODO This failure message should be repeated ten times
   ---
-  # This failure message should be repeated ten times
   at: tst_Blacklisted::multiFail() (qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp
   line: 0
   ...
 not ok 7 - multiFail() # TODO This failure message should be repeated ten times
   ---
-  # This failure message should be repeated ten times
   at: tst_Blacklisted::multiFail() (qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp
   line: 0
   ...
 not ok 7 - multiFail() # TODO But this test should only contribute one to the blacklisted count
   ---
-  # But this test should only contribute one to the blacklisted count
   at: tst_Blacklisted::multiFail() (qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp
   line: 0
@@ -125,7 +114,6 @@ not ok 9 - xfailContinueFail() # TODO This test should BXFAIL then BFAIL
   ...
 not ok 9 - xfailContinueFail() # TODO This fail should be seen and counted as blacklisted
   ---
-  # This fail should be seen and counted as blacklisted
   at: tst_Blacklisted::xfailContinueFail() (qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp
   line: 0
@@ -136,7 +124,6 @@ ok 11 - xpassContinueSkip() # SKIP This skip should be seen but not counted
 ok 12 - xpassContinueFail() # TODO 'true' returned TRUE unexpectedly. (This test should BXPASS then BFAIL)
 not ok 12 - xpassContinueFail() # TODO This fail should be seen and not counted (due to prior XPASS)
   ---
-  # This fail should be seen and not counted (due to prior XPASS)
   at: tst_Blacklisted::xpassContinueFail() (qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp
   line: 0

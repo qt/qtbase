@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -234,7 +234,7 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
                 outputString(diagnosticsYamlish.data());
             } else
 #endif
-            {
+            if (description && !incident) {
                 QTestCharBuffer unparsableDescription;
                 QTest::qt_asprintf(&unparsableDescription, YAML_INDENT "# %s\n", description);
                 outputString(unparsableDescription.data());
