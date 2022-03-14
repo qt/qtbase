@@ -124,7 +124,7 @@ void QTapTestLogger::outputTestLine(bool ok, int testNumber, QTestCharBuffer &di
 }
 
 void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
-                                   const char *file, int line)
+                                 const char *file, int line)
 {
     if (m_wasExpectedFail && (type == Pass || type == BlacklistedPass
                               || type == XFail || type == BlacklistedXFail)) {
@@ -264,7 +264,7 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
 }
 
 void QTapTestLogger::addMessage(MessageTypes type, const QString &message,
-                    const char *file, int line)
+                                const char *file, int line)
 {
     Q_UNUSED(file);
     Q_UNUSED(line);
