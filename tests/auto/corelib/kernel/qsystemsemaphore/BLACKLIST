@@ -1,7 +1,0 @@
-# See qtbase/src/testlib/qtestblacklist.cpp for format
-#QTBUG-101590
-[basicProcesses]
-qnx
-#QTBUG-101590
-[initialValue]
-qnx
