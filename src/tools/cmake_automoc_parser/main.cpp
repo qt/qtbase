@@ -168,6 +168,8 @@ static bool readParseCache(ParseCacheMap &entries, const QString &parseCacheFile
                 entries.insert(source,
                                ParseCacheEntry { std::move(mocEntries), std::move(mocIncludes) });
                 source.clear();
+                mocEntries = {};
+                mocIncludes = {};
                 mmc_key_found = false;
             }
             source = line;
