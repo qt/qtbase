@@ -49,10 +49,10 @@ using namespace Qt::StringLiterals;
 
 namespace QIPAddressUtils {
 
-static QString number(quint8 val, int base = 10)
+static QString number(quint8 val)
 {
     QString zero = QStringLiteral("0");
-    return val ? qulltoa(val, base, zero) : zero;
+    return val ? qulltoa(val, 10, zero) : zero;
 }
 
 typedef QVarLengthArray<char, 64> Buffer;
