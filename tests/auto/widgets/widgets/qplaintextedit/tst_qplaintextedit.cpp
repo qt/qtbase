@@ -1028,6 +1028,10 @@ void tst_QPlainTextEdit::copyAvailable()
 #endif
     ed->clear();
     QApplication::clipboard()->clear();
+#ifdef Q_OS_ANDROID
+    if (QNativeInterface::QAndroidApplication::sdkVersion() < 28)
+        QEXPECT_FAIL("", "Before Android 9, there's no API to clear the clipboard ", Continue);
+#endif
     QVERIFY(!ed->canPaste());
     QSignalSpy spyCopyAvailabe(ed, SIGNAL(copyAvailable(bool)));
 
