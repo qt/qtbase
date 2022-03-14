@@ -1382,6 +1382,9 @@ void tst_QString::asprintfS()
     QCOMPARE(QString::asprintf("%-10.10s", "Hello" ), QLatin1String("Hello     "));
     QCOMPARE(QString::asprintf("%-10.3s", "Hello" ), QLatin1String("Hel       "));
     QCOMPARE(QString::asprintf("%-5.5s", "Hello" ), QLatin1String("Hello"));
+    QCOMPARE(QString::asprintf("%*s", 4, "Hello"), QLatin1String("Hello"));
+    QCOMPARE(QString::asprintf("%*s", 10, "Hello"), QLatin1String("     Hello"));
+    QCOMPARE(QString::asprintf("%-*s", 10, "Hello"), QLatin1String("Hello     "));
 
     // Check utf8 conversion for %s
     QCOMPARE(QString::asprintf("%s", "\303\266\303\244\303\274\303\226\303\204\303\234\303\270\303\246\303\245\303\230\303\206\303\205"), QString::fromLatin1("\366\344\374\326\304\334\370\346\345\330\306\305"));
@@ -1401,6 +1404,9 @@ void tst_QString::asprintfS()
         QCOMPARE(QString::asprintf("%-10.10ls", qUtf16Printable("Hello")), QLatin1String("Hello     "));
         QCOMPARE(QString::asprintf("%-10.3ls",  qUtf16Printable("Hello")), QLatin1String("Hel       "));
         QCOMPARE(QString::asprintf("%-5.5ls",   qUtf16Printable("Hello")), QLatin1String("Hello"));
+        QCOMPARE(QString::asprintf("%*ls",   4, qUtf16Printable("Hello")), QLatin1String("Hello"));
+        QCOMPARE(QString::asprintf("%*ls",  10, qUtf16Printable("Hello")), QLatin1String("     Hello"));
+        QCOMPARE(QString::asprintf("%-*ls", 10, qUtf16Printable("Hello")), QLatin1String("Hello     "));
 
         // Check utf16 is preserved for %ls
         QCOMPARE(QString::asprintf("%ls",
