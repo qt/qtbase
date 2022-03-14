@@ -812,12 +812,12 @@ void QLibraryPrivate::updatePluginState()
                  (qt_version&0xff0000) >> 16, (qt_version&0xff00) >> 8, qt_version&0xff,
                  debug ? "debug" : "release");
         }
-        errorString = QLibrary::tr("The plugin '%1' uses incompatible Qt library. (%2.%3.%4) [%5]")
-            .arg(fileName)
+        errorString = QLibrary::tr("The plugin '%5' uses incompatible Qt library. (%1.%2.%3) [%4]")
             .arg((qt_version&0xff0000) >> 16)
             .arg((qt_version&0xff00) >> 8)
             .arg(qt_version&0xff)
-            .arg(debug ? QLatin1String("debug") : QLatin1String("release"));
+            .arg(debug ? QLatin1String("debug") : QLatin1String("release"))
+            .arg(fileName);
 #ifndef QT_NO_DEBUG_PLUGIN_CHECK
     } else if (debug != QLIBRARY_AS_DEBUG) {
         //don't issue a qWarning since we will hopefully find a non-debug? --Sam
