@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -53,6 +53,7 @@
 
 #include <QtTest/qttestglobal.h>
 #include <QtCore/private/qglobal_p.h>
+#include <QtCore/qbytearrayalgorithms.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -155,12 +156,14 @@ struct QTestCharBuffer
         return _size;
     }
 
-    inline bool reset(int newSize)
+    bool reset(int newSize, bool copy = false)
     {
         char *newBuf = nullptr;
         if (buf == staticBuf) {
             // if we point to our internal buffer, we need to malloc first
             newBuf = reinterpret_cast<char *>(malloc(newSize));
+            if (copy && newBuf)
+                qstrncpy(newBuf, buf, _size);
         } else {
             // if we already malloc'ed, just realloc
             newBuf = reinterpret_cast<char *>(realloc(buf, newSize));
@@ -174,6 +177,13 @@ struct QTestCharBuffer
         buf = newBuf;
         return true;
     }
+
+    bool resize(int newSize) {
+        return newSize <= _size || reset(newSize, true);
+    }
+
+    void clear() { buf[0] = '\0'; }
+    bool isEmpty() { return buf[0] == '\0'; }
 
 private:
     int _size = InitialSize;
@@ -190,6 +200,7 @@ namespace QTestPrivate
 {
     enum IdentifierPart { TestObject = 0x1, TestFunction = 0x2, TestDataTag = 0x4, AllParts = 0xFFFF };
     void Q_TESTLIB_EXPORT generateTestIdentifier(QTestCharBuffer *identifier, int parts = AllParts);
+    bool appendCharBuffer(QTestCharBuffer *accumulator, const QTestCharBuffer &more);
 }
 
 QT_END_NAMESPACE

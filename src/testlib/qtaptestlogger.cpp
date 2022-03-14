@@ -164,33 +164,84 @@ void QTapTestLogger::stopLogging()
 
 void QTapTestLogger::enterTestFunction(const char *function)
 {
-    Q_UNUSED(function);
     m_wasExpectedFail = false;
+    Q_ASSERT(!m_gatherMessages);
+    Q_ASSERT(!hasMessages());
+    m_gatherMessages = function != nullptr;
 }
 
 void QTapTestLogger::enterTestData(QTestData *data)
 {
-    Q_UNUSED(data);
     m_wasExpectedFail = false;
+    if (hasMessages())
+        flushMessages();
+    m_gatherMessages = data != nullptr;
 }
 
 using namespace QTestPrivate;
 
-void QTapTestLogger::outputTestLine(bool ok, int testNumber, QTestCharBuffer &directive)
+void QTapTestLogger::outputTestLine(bool ok, int testNumber, const QTestCharBuffer &directive)
 {
     QTestCharBuffer testIdentifier;
     QTestPrivate::generateTestIdentifier(&testIdentifier, TestFunction | TestDataTag);
 
     QTestCharBuffer testLine;
-    QTest::qt_asprintf(&testLine, "%s %d - %s%s\n",
-        ok ? "ok" : "not ok", testNumber, testIdentifier.data(), directive.data());
+    QTest::qt_asprintf(&testLine, "%s %d - %s%s\n", ok ? "ok" : "not ok",
+                       testNumber, testIdentifier.data(), directive.constData());
 
     outputString(testLine.data());
+}
+
+// The indent needs to be two spaces for maximum compatibility.
+// This matches the width of the "- " prefix on a list item's first line.
+#define YAML_INDENT "  "
+
+void QTapTestLogger::outputBuffer(const QTestCharBuffer &buffer)
+{
+    if (!m_gatherMessages)
+        outputString(buffer.constData());
+    else if (buffer.constData()[strlen(YAML_INDENT)] == '#')
+        QTestPrivate::appendCharBuffer(&m_comments, buffer);
+    else
+        QTestPrivate::appendCharBuffer(&m_messages, buffer);
+}
+
+void QTapTestLogger::beginYamlish()
+{
+    outputString(YAML_INDENT "---\n");
+    // Flush any accumulated messages:
+    if (!m_comments.isEmpty()) {
+        outputString(m_comments.constData());
+        m_comments.clear();
+    }
+    if (!m_messages.isEmpty()) {
+        outputString(YAML_INDENT "extensions:\n");
+        outputString(YAML_INDENT YAML_INDENT "messages:\n");
+        outputString(m_messages.constData());
+        m_messages.clear();
+    }
+}
+
+void QTapTestLogger::endYamlish()
+{
+    outputString(YAML_INDENT "...\n");
+}
+
+void QTapTestLogger::flushMessages()
+{
+    /* A _data() function's messages show up here. */
+    QTestCharBuffer dataLine;
+    QTest::qt_asprintf(&dataLine, "ok %d - %s() # Data prepared\n",
+                       QTestLog::totalCount(), QTestResult::currentTestFunction());
+    outputString(dataLine.constData());
+    beginYamlish();
+    endYamlish();
 }
 
 void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
                                  const char *file, int line)
 {
+    m_gatherMessages = false;
     if (m_wasExpectedFail && (type == Pass || type == BlacklistedPass
                               || type == XFail || type == BlacklistedXFail)) {
         // XFail comes with a corresponding Pass incident, but we only want
@@ -233,16 +284,12 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
 
     outputTestLine(ok, testNumber, directive);
 
-    if (!ok) {
-        // All failures need a diagnostics section to not confuse consumers
+    if (!ok || hasMessages()) {
+        // All failures need a diagnostics section to not confuse consumers.
+        // We also need a diagnostics section when we have messages to report.
+        beginYamlish();
 
-        // The indent needs to be two spaces for maximum compatibility.
-        // This matches the width of the "- " prefix on a list item's first line.
-        #define YAML_INDENT "  "
-
-        outputString(YAML_INDENT "---\n");
-
-        if (type != XFail && type != BlacklistedXFail) {
+        if (!ok && type != XFail && type != BlacklistedXFail) {
 #if QT_CONFIG(regularexpression)
             // This is fragile, but unfortunately testlib doesn't plumb
             // the expected and actual values to the loggers (yet).
@@ -297,17 +344,17 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
                     qPrintable(expected), qPrintable(actual)
                 );
 
-                outputString(diagnosticsYamlish.data());
+                outputBuffer(diagnosticsYamlish);
             } else
 #endif
             if (description && !incident) {
                 QTestCharBuffer unparsableDescription;
                 QTest::qt_asprintf(&unparsableDescription, YAML_INDENT "# %s\n", description);
-                outputString(unparsableDescription.data());
+                outputBuffer(unparsableDescription);
             }
         }
 
-        if (file) {
+        if (!ok && file) {
             QTestCharBuffer location;
             QTest::qt_asprintf(&location,
                 // The generic 'at' key is understood by most consumers.
@@ -322,10 +369,10 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
                 QTestResult::currentTestFunction(),
                 file, line, file, line
             );
-            outputString(location.data());
+            outputBuffer(location);
         }
 
-        outputString(YAML_INDENT "...\n");
+        endYamlish();
     }
 }
 
@@ -334,11 +381,38 @@ void QTapTestLogger::addMessage(MessageTypes type, const QString &message,
 {
     Q_UNUSED(file);
     Q_UNUSED(line);
-    Q_UNUSED(type);
+    const char *const flavor = [type]() {
+        switch (type) {
+        case QDebug: return "debug";
+        case QInfo: return "info";
+        case QWarning: return "warning";
+        case QCritical: return "critical";
+        case QFatal: return "fatal";
+        // Handle internal messages as comments
+        case Info: return "# inform";
+        case Warn: return "# warn";
+        }
+        return "unrecognised message";
+    }();
 
-    QTestCharBuffer diagnostics;
-    QTest::qt_asprintf(&diagnostics, "# %s\n", qPrintable(message));
-    outputString(diagnostics.data());
+    QTestCharBuffer diagnostic;
+    if (!m_gatherMessages) {
+        QTest::qt_asprintf(&diagnostic, "%s%s: %s\n",
+                           flavor[0] == '#' ? "" : "# ",
+                           flavor, qPrintable(message));
+        outputString(diagnostic.constData());
+    } else if (flavor[0] == '#') {
+        QTest::qt_asprintf(&diagnostic, YAML_INDENT "%s: %s\n",
+                           flavor, qPrintable(message));
+        QTestPrivate::appendCharBuffer(&m_comments, diagnostic);
+    } else {
+        // These shall appear in a messages: sub-block of the extensions: block,
+        // so triple-indent.
+        QTest::qt_asprintf(&diagnostic, YAML_INDENT YAML_INDENT "- severity: %s\n"
+                           YAML_INDENT YAML_INDENT YAML_INDENT "message: %s\n",
+                           flavor, qPrintable(message));
+        QTestPrivate::appendCharBuffer(&m_messages, diagnostic);
+    }
 }
 
 QT_END_NAMESPACE

@@ -1,22 +1,30 @@
 TAP version 13
 # tst_Counting
 ok 1 - initTestCase()
-# QVERIFY(true)
-# QCOMPARE(2 + 1, 3)
 ok 2 - testPassPass(row 1)
-# QVERIFY(true)
-# QCOMPARE(2 + 1, 3)
+  ---
+  # inform: QVERIFY(true)
+  # inform: QCOMPARE(2 + 1, 3)
+  ...
 ok 3 - testPassPass(row 2)
-# QVERIFY(true)
-# QCOMPARE(2 + 1, 3)
+  ---
+  # inform: QVERIFY(true)
+  # inform: QCOMPARE(2 + 1, 3)
+  ...
 ok 4 - testPassSkip(row 1)
+  ---
+  # inform: QVERIFY(true)
+  # inform: QCOMPARE(2 + 1, 3)
+  ...
 ok 5 - testPassSkip(row 2) # SKIP Skipping
-# QVERIFY(true)
-# QCOMPARE(2 + 1, 3)
 ok 6 - testPassFail(row 1)
-# QVERIFY(false)
+  ---
+  # inform: QVERIFY(true)
+  # inform: QCOMPARE(2 + 1, 3)
+  ...
 not ok 7 - testPassFail(row 2)
   ---
+  # inform: QVERIFY(false)
   type: QVERIFY
   message: Verification failed
   wanted: true (false)
@@ -28,15 +36,17 @@ not ok 7 - testPassFail(row 2)
   line: 0
   ...
 ok 8 - testSkipPass(row 1) # SKIP Skipping
-# QVERIFY(true)
-# QCOMPARE(2 + 1, 3)
 ok 9 - testSkipPass(row 2)
+  ---
+  # inform: QVERIFY(true)
+  # inform: QCOMPARE(2 + 1, 3)
+  ...
 ok 10 - testSkipSkip(row 1) # SKIP Skipping
 ok 11 - testSkipSkip(row 2) # SKIP Skipping
 ok 12 - testSkipFail(row 1) # SKIP Skipping
-# QVERIFY(false)
 not ok 13 - testSkipFail(row 2)
   ---
+  # inform: QVERIFY(false)
   type: QVERIFY
   message: Verification failed
   wanted: true (false)
@@ -47,9 +57,9 @@ not ok 13 - testSkipFail(row 2)
   file: qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp
   line: 0
   ...
-# QVERIFY(false)
 not ok 14 - testFailPass(row 1)
   ---
+  # inform: QVERIFY(false)
   type: QVERIFY
   message: Verification failed
   wanted: true (false)
@@ -60,12 +70,14 @@ not ok 14 - testFailPass(row 1)
   file: qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp
   line: 0
   ...
-# QVERIFY(true)
-# QCOMPARE(2 + 1, 3)
 ok 15 - testFailPass(row 2)
-# QVERIFY(false)
+  ---
+  # inform: QVERIFY(true)
+  # inform: QCOMPARE(2 + 1, 3)
+  ...
 not ok 16 - testFailSkip(row 1)
   ---
+  # inform: QVERIFY(false)
   type: QVERIFY
   message: Verification failed
   wanted: true (false)
@@ -77,9 +89,9 @@ not ok 16 - testFailSkip(row 1)
   line: 0
   ...
 ok 17 - testFailSkip(row 2) # SKIP Skipping
-# QVERIFY(false)
 not ok 18 - testFailFail(row 1)
   ---
+  # inform: QVERIFY(false)
   type: QVERIFY
   message: Verification failed
   wanted: true (false)
@@ -90,9 +102,9 @@ not ok 18 - testFailFail(row 1)
   file: qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp
   line: 0
   ...
-# QVERIFY(false)
 not ok 19 - testFailFail(row 2)
   ---
+  # inform: QVERIFY(false)
   type: QVERIFY
   message: Verification failed
   wanted: true (false)
@@ -113,9 +125,12 @@ not ok 21 - testFailInInit(fail)
   ...
 ok 22 - testFailInInit(after)
 ok 23 - testFailInCleanup(before)
-# This test function should execute and then QFAIL in cleanup()
 not ok 24 - testFailInCleanup(fail)
   ---
+  extensions:
+    messages:
+    - severity: debug
+      message: This test function should execute and then QFAIL in cleanup()
   # Fail in cleanup()
   at: tst_Counting::testFailInCleanup() (qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp
@@ -126,8 +141,13 @@ ok 26 - testSkipInInit(before)
 ok 27 - testSkipInInit(skip) # SKIP Skip in init()
 ok 28 - testSkipInInit(after)
 ok 29 - testSkipInCleanup(before)
-# This test function should execute and then QSKIP in cleanup()
 ok 30 - testSkipInCleanup(skip) # SKIP Skip in cleanup()
+  ---
+  extensions:
+    messages:
+    - severity: debug
+      message: This test function should execute and then QSKIP in cleanup()
+  ...
 ok 31 - testSkipInCleanup(after)
 ok 32 - cleanupTestCase()
 1..32

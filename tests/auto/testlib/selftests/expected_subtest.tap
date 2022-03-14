@@ -1,39 +1,101 @@
 TAP version 13
 # tst_Subtest
-# initTestCase initTestCase (null)
 ok 1 - initTestCase()
-# init test1 (null)
-# test1 test1 (null)
-# cleanup test1 (null)
+  ---
+  extensions:
+    messages:
+    - severity: debug
+      message: initTestCase initTestCase (null)
+  ...
 ok 2 - test1()
-# test2_data test2 (null)
-# test2_data end
-# init test2 data0
-# test2 test2 data0
-# test2 end
-# cleanup test2 data0
+  ---
+  extensions:
+    messages:
+    - severity: debug
+      message: init test1 (null)
+    - severity: debug
+      message: test1 test1 (null)
+    - severity: debug
+      message: cleanup test1 (null)
+  ...
+ok 2 - test2() # Data prepared
+  ---
+  extensions:
+    messages:
+    - severity: debug
+      message: test2_data test2 (null)
+    - severity: debug
+      message: test2_data end
+  ...
 ok 3 - test2(data0)
-# init test2 data1
-# test2 test2 data1
-# test2 end
-# cleanup test2 data1
+  ---
+  extensions:
+    messages:
+    - severity: debug
+      message: init test2 data0
+    - severity: debug
+      message: test2 test2 data0
+    - severity: debug
+      message: test2 end
+    - severity: debug
+      message: cleanup test2 data0
+  ...
 ok 4 - test2(data1)
-# init test2 data2
-# test2 test2 data2
-# test2 end
-# cleanup test2 data2
+  ---
+  extensions:
+    messages:
+    - severity: debug
+      message: init test2 data1
+    - severity: debug
+      message: test2 test2 data1
+    - severity: debug
+      message: test2 end
+    - severity: debug
+      message: cleanup test2 data1
+  ...
 ok 5 - test2(data2)
-# test3_data test3 (null)
-# test3_data end
-# init test3 data0
-# test3 test3 data0
-# test3 end
-# cleanup test3 data0
+  ---
+  extensions:
+    messages:
+    - severity: debug
+      message: init test2 data2
+    - severity: debug
+      message: test2 test2 data2
+    - severity: debug
+      message: test2 end
+    - severity: debug
+      message: cleanup test2 data2
+  ...
+ok 5 - test3() # Data prepared
+  ---
+  extensions:
+    messages:
+    - severity: debug
+      message: test3_data test3 (null)
+    - severity: debug
+      message: test3_data end
+  ...
 ok 6 - test3(data0)
-# init test3 data1
-# test3 test3 data1
+  ---
+  extensions:
+    messages:
+    - severity: debug
+      message: init test3 data0
+    - severity: debug
+      message: test3 test3 data0
+    - severity: debug
+      message: test3 end
+    - severity: debug
+      message: cleanup test3 data0
+  ...
 not ok 7 - test3(data1)
   ---
+  extensions:
+    messages:
+    - severity: debug
+      message: init test3 data1
+    - severity: debug
+      message: test3 test3 data1
   type: QCOMPARE
   message: Compared values are not the same
   wanted: "hello0" (QString("hello0"))
@@ -44,11 +106,15 @@ not ok 7 - test3(data1)
   file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
   line: 0
   ...
-# cleanup test3 data1
-# init test3 data2
-# test3 test3 data2
+# debug: cleanup test3 data1
 not ok 8 - test3(data2)
   ---
+  extensions:
+    messages:
+    - severity: debug
+      message: init test3 data2
+    - severity: debug
+      message: test3 test3 data2
   type: QCOMPARE
   message: Compared values are not the same
   wanted: "hello0" (QString("hello0"))
@@ -59,10 +125,13 @@ not ok 8 - test3(data2)
   file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
   line: 0
   ...
-# cleanup test3 data2
-# init multiFail (null)
+# debug: cleanup test3 data2
 not ok 9 - multiFail()
   ---
+  extensions:
+    messages:
+    - severity: debug
+      message: init multiFail (null)
   # This failure message should be repeated ten times
   at: tst_Subtest::multiFail() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
@@ -138,9 +207,14 @@ not ok 9 - multiFail()
   file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
   line: 0
   ...
-# cleanup multiFail (null)
-# init multiSkip (null)
+# debug: cleanup multiFail (null)
 ok 10 - multiSkip() # SKIP This skip should be repeated ten times
+  ---
+  extensions:
+    messages:
+    - severity: debug
+      message: init multiSkip (null)
+  ...
 ok 10 - multiSkip() # SKIP This skip should be repeated ten times
 ok 10 - multiSkip() # SKIP This skip should be repeated ten times
 ok 10 - multiSkip() # SKIP This skip should be repeated ten times
@@ -151,9 +225,14 @@ ok 10 - multiSkip() # SKIP This skip should be repeated ten times
 ok 10 - multiSkip() # SKIP This skip should be repeated ten times
 ok 10 - multiSkip() # SKIP This skip should be repeated ten times
 ok 10 - multiSkip() # SKIP But this test should only contribute one to the skip count
-# cleanup multiSkip (null)
-# cleanupTestCase cleanupTestCase (null)
+# debug: cleanup multiSkip (null)
 ok 11 - cleanupTestCase()
+  ---
+  extensions:
+    messages:
+    - severity: debug
+      message: cleanupTestCase cleanupTestCase (null)
+  ...
 1..11
 # tests 11
 # pass 7

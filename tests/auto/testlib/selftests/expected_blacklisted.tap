@@ -1,8 +1,13 @@
 TAP version 13
 # tst_Blacklisted
 ok 1 - initTestCase()
-# This test should BPASS
 ok 2 - pass() # TODO
+  ---
+  extensions:
+    messages:
+    - severity: debug
+      message: This test should BPASS
+  ...
 ok 3 - skip() # SKIP This test should SKIP
 not ok 4 - fail() # TODO 'false' returned FALSE. (This test should BFAIL)
   ---
@@ -128,8 +133,13 @@ not ok 12 - xpassContinueFail() # TODO This fail should be seen and not counted 
   file: qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp
   line: 0
   ...
-# Totals should add up to 13: 2 passed, 0 failed, 3 skipped, 8 blacklisted
 ok 13 - cleanupTestCase()
+  ---
+  extensions:
+    messages:
+    - severity: debug
+      message: Totals should add up to 13: 2 passed, 0 failed, 3 skipped, 8 blacklisted
+  ...
 1..13
 # tests 13
 # pass 2

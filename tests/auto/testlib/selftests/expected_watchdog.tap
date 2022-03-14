@@ -1,9 +1,12 @@
 TAP version 13
 # tst_Watchdog
 ok 1 - initTestCase()
-# Test function timed out
 not ok 2 - delay()
   ---
+  extensions:
+    messages:
+    - severity: fatal
+      message: Test function timed out
   # Received a fatal error.
   ...
 1..2

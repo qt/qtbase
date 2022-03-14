@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -76,8 +76,16 @@ public:
 
     void addBenchmarkResult(const QBenchmarkResult &) override {}
 private:
-    void outputTestLine(bool ok, int testNumber, QTestCharBuffer &directive);
+    void outputTestLine(bool ok, int testNumber, const QTestCharBuffer &directive);
+    void outputBuffer(const QTestCharBuffer &buffer);
+    bool hasMessages() const { return m_comments.constData()[0] || m_messages.constData()[0]; }
+    void flushMessages();
+    void beginYamlish();
+    void endYamlish();
     bool m_wasExpectedFail;
+    QTestCharBuffer m_comments;
+    QTestCharBuffer m_messages;
+    bool m_gatherMessages = false;
 };
 
 QT_END_NAMESPACE

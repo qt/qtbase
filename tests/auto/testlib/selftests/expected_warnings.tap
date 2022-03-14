@@ -1,52 +1,69 @@
 TAP version 13
 # tst_Warnings
 ok 1 - initTestCase()
-# Warning
-# Warning
-# Debug
-# Debug
-# Info
-# Info
-# Baba
-# Baba
-# Bubublabla
-# Babablabla
 ok 2 - testWarnings()
-# Did not receive message: "Warning0"
-# Did not receive message: "Warning1"
+  ---
+  extensions:
+    messages:
+    - severity: warning
+      message: Warning
+    - severity: warning
+      message: Warning
+    - severity: debug
+      message: Debug
+    - severity: debug
+      message: Debug
+    - severity: info
+      message: Info
+    - severity: info
+      message: Info
+    - severity: debug
+      message: Baba
+    - severity: debug
+      message: Baba
+    - severity: debug
+      message: Bubublabla
+    - severity: warning
+      message: Babablabla
+  ...
 not ok 3 - testMissingWarnings()
   ---
+  # inform: Did not receive message: "Warning0"
+  # inform: Did not receive message: "Warning1"
   # Not all expected messages were received
   ...
-# Did not receive any message matching: "Warning\s\d"
 not ok 4 - testMissingWarningsRegularExpression()
   ---
+  # inform: Did not receive any message matching: "Warning\s\d"
   # Not all expected messages were received
   ...
-# Did not receive message: "Warning0"
-# Did not receive message: "Warning1"
 not ok 5 - testMissingWarningsWithData(first row)
   ---
+  # inform: Did not receive message: "Warning0"
+  # inform: Did not receive message: "Warning1"
   # Not all expected messages were received
   ...
-# Did not receive message: "Warning0"
-# Did not receive message: "Warning1"
 not ok 6 - testMissingWarningsWithData(second row)
   ---
+  # inform: Did not receive message: "Warning0"
+  # inform: Did not receive message: "Warning1"
   # Not all expected messages were received
   ...
-# Ran out of space!
 not ok 7 - testFailOnWarnings()
   ---
+  extensions:
+    messages:
+    - severity: warning
+      message: Ran out of space!
   # Received a warning that resulted in a failure:
 Ran out of cabbage!
   at: tst_Warnings::testFailOnWarnings() (qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp
   line: 0
   ...
-# Ran out of tortillas!
-# Ran out of oil!
-# nope
+# debug: Ran out of tortillas!
+# info: Ran out of oil!
+# warning: nope
 not ok 7 - testFailOnWarnings()
   ---
   # Received a warning that resulted in a failure:
@@ -63,11 +80,16 @@ Running low on toothpaste!
   file: qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp
   line: 0
   ...
-# Running low on flour!
-# Running low on toothpaste!
-# Running low on toothpaste!
-# Ran out of muffins!
+# warning: Running low on flour!
+# debug: Running low on toothpaste!
+# info: Running low on toothpaste!
 ok 8 - testFailOnWarningsCleared()
+  ---
+  extensions:
+    messages:
+    - severity: warning
+      message: Ran out of muffins!
+  ...
 not ok 9 - testFailOnWarningsWithData(warning1)
   ---
   # Received a warning that resulted in a failure:
@@ -76,22 +98,29 @@ warning1
   file: qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp
   line: 0
   ...
-# warning2
-# warning3
-# warning1
+# warning: warning2
+# warning: warning3
 not ok 10 - testFailOnWarningsWithData(warning2)
   ---
+  extensions:
+    messages:
+    - severity: warning
+      message: warning1
   # Received a warning that resulted in a failure:
 warning2
   at: tst_Warnings::testFailOnWarningsWithData() (qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp
   line: 0
   ...
-# warning3
-# warning1
-# warning2
+# warning: warning3
 not ok 11 - testFailOnWarningsWithData(warning3)
   ---
+  extensions:
+    messages:
+    - severity: warning
+      message: warning1
+    - severity: warning
+      message: warning2
   # Received a warning that resulted in a failure:
 warning3
   at: tst_Warnings::testFailOnWarningsWithData() (qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp:0)

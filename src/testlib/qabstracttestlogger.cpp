@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -399,6 +399,11 @@ void QAbstractTestLogger::addMessage(QtMsgType type, const QMessageLogContext &c
     addMessage(messageType, formattedMessage);
 }
 
+namespace
+{
+    constexpr int MAXSIZE = 1024 * 1024 * 2;
+}
+
 namespace QTest
 {
 
@@ -408,7 +413,6 @@ namespace QTest
  */
 int qt_asprintf(QTestCharBuffer *str, const char *format, ...)
 {
-    constexpr int MAXSIZE = 1024 * 1024 * 2;
     Q_ASSERT(str);
     int size = str->size();
     Q_ASSERT(size > 0);
@@ -454,6 +458,28 @@ void generateTestIdentifier(QTestCharBuffer *identifier, int parts)
     QTest::qt_asprintf(identifier, "%s%s%s%s%s%s%s%s",
         testObject, objectFunctionFiller, testFunction, testFuctionStart,
         globalDataTag, tagFiller, dataTag, testFuctionEnd);
+}
+
+// strcat() for QTestCharBuffer objects:
+bool appendCharBuffer(QTestCharBuffer *accumulator, const QTestCharBuffer &more)
+{
+    const auto bufsize = [](const QTestCharBuffer &buf) -> int {
+        const int max = buf.size();
+        return max > 0 ? int(qstrnlen(buf.constData(), max)) : 0;
+    };
+    const int extra = bufsize(more);
+    if (extra <= 0)
+        return true; // Nothing to do, fatuous success
+
+    const int oldsize = bufsize(*accumulator);
+    const int newsize = oldsize + extra + 1; // 1 for final '\0'
+    if (newsize > MAXSIZE || !accumulator->resize(newsize))
+        return false; // too big or unable to grow
+
+    char *tail = accumulator->data() + oldsize;
+    memcpy(tail, more.constData(), extra);
+    tail[extra] = '\0';
+    return true;
 }
 
 }

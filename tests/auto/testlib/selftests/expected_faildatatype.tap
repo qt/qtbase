@@ -1,10 +1,14 @@
 TAP version 13
 # tst_FailDataType
 ok 1 - initTestCase()
-# expected data of type 'QString', got 'bool' for element 0 of data with tag 'bool-as-string'
-# ASSERT: "false" in file qtbase/src/testlib/qtestdata.cpp, line 0
 not ok 2 - value()
   ---
+  extensions:
+    messages:
+    - severity: debug
+      message: expected data of type 'QString', got 'bool' for element 0 of data with tag 'bool-as-string'
+    - severity: fatal
+      message: ASSERT: "false" in file qtbase/src/testlib/qtestdata.cpp, line 0
   # Received a fatal error.
   at: tst_FailDataType::value() (qtbase/src/testlib/qtestdata.cpp:0)
   file: qtbase/src/testlib/qtestdata.cpp

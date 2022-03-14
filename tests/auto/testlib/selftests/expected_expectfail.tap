@@ -1,17 +1,23 @@
 TAP version 13
 # tst_ExpectFail
 ok 1 - initTestCase()
-# begin
 not ok 2 - xfailAndContinue() # TODO This should xfail
   ---
+  extensions:
+    messages:
+    - severity: debug
+      message: begin
   at: tst_ExpectFail::xfailAndContinue() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
   line: 0
   ...
-# after
-# begin
+# debug: after
 not ok 3 - xfailAndAbort() # TODO This should xfail
   ---
+  extensions:
+    messages:
+    - severity: debug
+      message: begin
   at: tst_ExpectFail::xfailAndAbort() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
   line: 0
@@ -113,10 +119,20 @@ not ok 23 - xfailDataDrivenWithQCompare(Fail Continue) # TODO This test should x
   file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
   line: 0
   ...
-# Should pass (*not* xpass), despite test-case name
 ok 24 - xfailOnWrongRow(Fail Abort)
-# Should pass (*not* xpass), despite test-case name
+  ---
+  extensions:
+    messages:
+    - severity: debug
+      message: Should pass (*not* xpass), despite test-case name
+  ...
 ok 25 - xfailOnWrongRow(Fail Continue)
+  ---
+  extensions:
+    messages:
+    - severity: debug
+      message: Should pass (*not* xpass), despite test-case name
+  ...
 not ok 26 - xfailOnAnyRow(Fail Abort) # TODO This test should xfail
   ---
   at: tst_ExpectFail::xfailOnAnyRow() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
@@ -129,21 +145,27 @@ not ok 27 - xfailOnAnyRow(Fail Continue) # TODO This test should xfail
   file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
   line: 0
   ...
-# Should fail (*not* xfail), despite test-case name
 not ok 28 - xfailWithoutCheck(Fail Abort)
   ---
+  extensions:
+    messages:
+    - severity: debug
+      message: Should fail (*not* xfail), despite test-case name
   # QEXPECT_FAIL was called without any subsequent verification statements
   ...
-# Should fail (*not* xfail), despite test-case name
 not ok 29 - xfailWithoutCheck(Fail Continue)
   ---
+  extensions:
+    messages:
+    - severity: debug
+      message: Should fail (*not* xfail), despite test-case name
   # QEXPECT_FAIL was called without any subsequent verification statements
   ...
 ok 30 - xpassAbort() # TODO 'true' returned TRUE unexpectedly. ()
 ok 31 - xpassAbortSkip() # TODO 'true' returned TRUE unexpectedly. ()
 ok 32 - xpassAbortXfailContinue() # TODO 'true' returned TRUE unexpectedly. ()
 ok 33 - xpassContinue() # TODO 'true' returned TRUE unexpectedly. ()
-# This should be reached
+# debug: This should be reached
 ok 34 - xpassContinueSkip() # TODO 'true' returned TRUE unexpectedly. ()
 ok 34 - xpassContinueSkip() # SKIP This should be reached but not increment skip-count
 ok 35 - xpassContinueXfailAbort() # TODO 'true' returned TRUE unexpectedly. ()
@@ -156,17 +178,32 @@ not ok 36 - xpassContinueXfailAbort() # TODO This test should xfail but not add 
 ok 36 - xpassAbortDataDrivenWithQVerify(XPass) # TODO 'true' returned TRUE unexpectedly. ()
 ok 37 - xpassAbortDataDrivenWithQVerify(Pass)
 ok 38 - xpassContinueDataDrivenWithQVerify(XPass) # TODO 'true' returned TRUE unexpectedly. ()
-# Test should Continue past XPASS
-# Test should simply PASS
+# debug: Test should Continue past XPASS
 ok 39 - xpassContinueDataDrivenWithQVerify(Pass)
+  ---
+  extensions:
+    messages:
+    - severity: debug
+      message: Test should simply PASS
+  ...
 ok 40 - xpassAbortDataDrivenWithQCompare(XPass) # TODO QCOMPARE(1, 1) returned TRUE unexpectedly.
 ok 41 - xpassAbortDataDrivenWithQCompare(Pass)
 ok 42 - xpassContinueDataDrivenWithQCompare(XPass) # TODO QCOMPARE(1, 1) returned TRUE unexpectedly.
-# Test should Continue past XPASS
-# Test should simply PASS
+# debug: Test should Continue past XPASS
 ok 43 - xpassContinueDataDrivenWithQCompare(Pass)
-# Totals should add up to 44: 23 passed, 17 failed, 4 skipped
+  ---
+  extensions:
+    messages:
+    - severity: debug
+      message: Test should simply PASS
+  ...
 ok 44 - cleanupTestCase()
+  ---
+  extensions:
+    messages:
+    - severity: debug
+      message: Totals should add up to 44: 23 passed, 17 failed, 4 skipped
+  ...
 1..44
 # tests 44
 # pass 23
