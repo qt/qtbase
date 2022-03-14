@@ -1319,8 +1319,8 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
 
     \note the parameters are read as integers in the normal way, so should
     normally be written in decimal (so a \c 0x prefix must be used if writing
-    them in hexadecimal). Thuse \c{QT_VERSION_CHECK(5, 15, 0)} is equal to \c
-    0x050e00, which could equally be written \c{QT_VERSION_CHECK(5, 0xe, 0)}.
+    them in hexadecimal). Thus \c{QT_VERSION_CHECK(5, 15, 0)} is equal to \c
+    0x050f00, which could equally be written \c{QT_VERSION_CHECK(5, 0xf, 0)}.
 
     \sa QT_VERSION
 */
