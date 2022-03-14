@@ -313,7 +313,7 @@ Q_DECLARE_SHARED(QJsonObject)
 
 #if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED)
 inline QJsonValueConstRef::QJsonValueConstRef(QJsonObject *o, qsizetype idx)
-    : d(o->o.data()), is_object(true), index(idx)
+    : d(o ? o->o.data() : nullptr), is_object(true), index(idx)
 {}
 #endif
 
