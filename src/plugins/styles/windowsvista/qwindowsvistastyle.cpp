@@ -86,6 +86,22 @@ bool QWindowsVistaStylePrivate::useVista()
     return QWindowsVistaStylePrivate::useXP();
 }
 
+/*!
+    \internal
+
+    Animations are started at a frame that is based on the current time,
+    which makes it impossible to run baseline tests with this style. Allow
+    overriding through a dynamic property.
+*/
+QTime QWindowsVistaStylePrivate::animationTime() const
+{
+    Q_Q(const QWindowsVistaStyle);
+    static bool animationTimeOverride = q->dynamicPropertyNames().contains("_qt_animation_time");
+    if (animationTimeOverride)
+        return q->property("_qt_animation_time").toTime();
+    return QTime::currentTime();
+}
+
 /* \internal
     Checks and returns the style object
 */
@@ -391,7 +407,7 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
                                                                 TMT_TRANSITIONDURATIONS, &duration))) {
                         t->setDuration(int(duration));
                     }
-                    t->setStartTime(QTime::currentTime());
+                    t->setStartTime(d->animationTime());
 
                     deleteClonedAnimationStyleOption(styleOption);
                     d->startAnimation(t);
@@ -899,7 +915,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                     t->setDuration(int(duration));
                 else
                     t->setDuration(0);
-                t->setStartTime(QTime::currentTime());
+                t->setStartTime(d->animationTime());
                 styleObject->setProperty("_q_no_animation", false);
 
                 deleteClonedAnimationStyleOption(styleOption);
@@ -961,7 +977,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                         d->drawBackground(theme);
                         pulse->setStartImage(startImage);
                         pulse->setEndImage(alternateImage);
-                        pulse->setStartTime(QTime::currentTime());
+                        pulse->setStartTime(d->animationTime());
                         pulse->setDuration(2000);
                         d->startAnimation(pulse);
                         anim = pulse;
@@ -1022,7 +1038,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                               vertical ? PP_FILLVERT : PP_FILL);
             theme.rect = option->rect;
             bool reverse = (bar->direction == Qt::LeftToRight && inverted) || (bar->direction == Qt::RightToLeft && !inverted);
-            QTime current = QTime::currentTime();
+            QTime current = d->animationTime();
 
             if (isIndeterminate) {
                 if (QProgressStyleAnimation *a = qobject_cast<QProgressStyleAnimation *>(d->animation(styleObject(option)))) {
@@ -1030,7 +1046,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                     int animationWidth = glowSize * 2 + (vertical ? theme.rect.height() : theme.rect.width());
                     int animOffset = a->startTime().msecsTo(current) / 4;
                     if (animOffset > animationWidth)
-                        a->setStartTime(QTime::currentTime());
+                        a->setStartTime(d->animationTime());
                     painter->save();
                     painter->setClipRect(theme.rect);
                     QRect animRect;
@@ -1102,7 +1118,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                     theme.partId = vertical ? PP_MOVEOVERLAYVERT : PP_MOVEOVERLAY;
                     if (animOffset > animationWidth) {
                         if (bar->progress < bar->maximum)
-                            a->setStartTime(QTime::currentTime());
+                            a->setStartTime(d->animationTime());
                         else
                             d->stopAnimation(styleObject(option)); //we stop the glow motion only after it has
                                                                    //moved out of view
@@ -1577,7 +1593,7 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
                 styleObject->setProperty("_q_no_animation", false);
 
                 t->setEndImage(endImage);
-                t->setStartTime(QTime::currentTime());
+                t->setStartTime(d->animationTime());
 
                 if (option->state & State_MouseOver || option->state & State_Sunken)
                     t->setDuration(150);

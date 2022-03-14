@@ -53,6 +53,7 @@ QWidgetBaselineTest::QWidgetBaselineTest()
 #else
             QApplication::style()->name();
 #endif
+    QApplication::style()->setProperty("_qt_animation_time", QTime());
     QByteArray appearanceBytes;
     {
         QDataStream appearanceStream(&appearanceBytes, QIODevice::WriteOnly);
