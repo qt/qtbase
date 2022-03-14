@@ -55,6 +55,8 @@ void tst_QDataUrl::decode_data()
         QLatin1String("text/plain;charset=US-ASCII"));
     row("alreadyPercentageEncoded", "data:text/plain,%E2%88%9A", true,
         QLatin1String("text/plain"), QByteArray::fromPercentEncoding("%E2%88%9A"));
+    row("everythingIsCaseInsensitive", "Data:texT/PlaiN;charSet=iSo-8859-1;Base64,SGVsbG8=", true,
+        QLatin1String("texT/PlaiN;charSet=iSo-8859-1"), QByteArrayLiteral("Hello"));
 }
 
 void tst_QDataUrl::decode()
