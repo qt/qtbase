@@ -58,8 +58,10 @@ QWidgetBaselineTest::QWidgetBaselineTest()
         QDataStream appearanceStream(&appearanceBytes, QIODevice::WriteOnly);
         appearanceStream << palette << font;
         const qreal screenDpr = QApplication::primaryScreen()->devicePixelRatio();
-        if (screenDpr != 1.0)
-            qWarning() << "DPR is" << screenDpr << "- images will be scaled";
+        if (screenDpr != 1.0) {
+            qWarning() << "DPR is" << screenDpr << "- images will not be compared to 1.0 baseline!";
+            appearanceStream << screenDpr;
+        }
     }
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     const quint16 appearanceId = qChecksum(appearanceBytes, appearanceBytes.size());
@@ -123,17 +125,13 @@ void QWidgetBaselineTest::makeVisible()
 }
 
 /*
-    Always return images scaled to a DPR of 1.0.
-
-    This might produce some fuzzy differences, but lets us
-    compare those.
+    Grabs the test window and returns the resulting QImage, without
+    compensating for DPR differences.
 */
 QImage QWidgetBaselineTest::takeSnapshot()
 {
     QGuiApplication::processEvents();
-    QPixmap pm = window->grab();
-    QTransform scaleTransform = QTransform::fromScale(1.0 / pm.devicePixelRatioF(), 1.0 / pm.devicePixelRatioF());
-    return pm.toImage().transformed(scaleTransform, Qt::SmoothTransformation);
+    return window->grab().toImage();
 }
 
 /*!
