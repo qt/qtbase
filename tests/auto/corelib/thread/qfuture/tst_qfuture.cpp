@@ -3667,6 +3667,36 @@ void tst_QFuture::signalConnect()
         QVERIFY(!future.isCanceled());
         QVERIFY(future.isValid());
     }
+
+    // Connect to nullptr
+    {
+        SenderObject *sender = nullptr;
+        auto future = QtFuture::connect(sender, &SenderObject::intArgSignal);
+        QVERIFY(future.isFinished());
+        QVERIFY(future.isCanceled());
+        QVERIFY(!future.isValid());
+    }
+
+    // Connect to non-signal
+    {
+        SenderObject sender;
+
+#if defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
+#define EXPECT_FUTURE_CONNECT_FAIL() QEXPECT_FAIL("", "QTBUG-101761, test fails on Windows/MSVC", Continue)
+#else
+        QTest::ignoreMessage(QtWarningMsg, "QObject::connect: signal not found in SenderObject");
+#define EXPECT_FUTURE_CONNECT_FAIL()
+#endif
+
+        auto future = QtFuture::connect(&sender, &SenderObject::emitNoArg);
+        EXPECT_FUTURE_CONNECT_FAIL();
+        QVERIFY(future.isFinished());
+        EXPECT_FUTURE_CONNECT_FAIL();
+        QVERIFY(future.isCanceled());
+        EXPECT_FUTURE_CONNECT_FAIL();
+        QVERIFY(!future.isValid());
+#undef EXPECT_FUTURE_CONNECT_FAIL
+    }
 }
 
 void tst_QFuture::waitForFinished()

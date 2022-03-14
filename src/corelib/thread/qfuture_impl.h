@@ -832,6 +832,11 @@ static QFuture<ArgsType<Signal>> connect(Sender *sender, Signal signal)
     using ArgsType = ArgsType<Signal>;
     QFutureInterface<ArgsType> promise;
     promise.reportStarted();
+    if (!sender) {
+        promise.reportCanceled();
+        promise.reportFinished();
+        return promise.future();
+    }
 
     using Connections = std::pair<QMetaObject::Connection, QMetaObject::Connection>;
     auto connections = std::make_shared<Connections>();
@@ -860,6 +865,12 @@ static QFuture<ArgsType<Signal>> connect(Sender *sender, Signal signal)
                                                   promise.reportResult(value);
                                                   promise.reportFinished();
                                               });
+    }
+
+    if (!connections->first) {
+        promise.reportCanceled();
+        promise.reportFinished();
+        return promise.future();
     }
 
     connections->second =
