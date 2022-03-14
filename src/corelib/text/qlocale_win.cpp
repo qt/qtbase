@@ -542,10 +542,8 @@ QVariant QSystemLocalePrivate::measurementSystem()
     wchar_t output[2];
 
     if (getLocaleInfo(LOCALE_IMEASURE, output, 2)) {
-        QString iMeasure = QString::fromWCharArray(output);
-        if (iMeasure == QLatin1String("1")) {
+        if (output[0] == L'1' && !output[1])
             return QLocale::ImperialSystem;
-        }
     }
 
     return QLocale::MetricSystem;
