@@ -153,6 +153,9 @@ void tst_QOpenGLWidget::clearAndGrab()
 
 void tst_QOpenGLWidget::clearAndResizeAndGrab()
 {
+#ifdef Q_OS_ANDROID
+    QSKIP("Crashes on Android (QTBUG-102043)");
+#endif
     QScopedPointer<QOpenGLWidget> w(new ClearWidget(0, 640, 480));
     w->resize(640, 480);
     w->show();
