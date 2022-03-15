@@ -3613,7 +3613,7 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
 */
 QDateTime::QDateTime() noexcept
 {
-#if QT_VERSION >= QT_VERSION_CHECK(7,0,0) || QT_POINTER_SIZE == 8
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED) || QT_POINTER_SIZE == 8
     static_assert(sizeof(ShortData) == sizeof(qint64));
     static_assert(sizeof(Data) == sizeof(qint64));
 #endif

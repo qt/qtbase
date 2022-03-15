@@ -240,7 +240,7 @@ class Q_CORE_EXPORT QDateTime
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
         quintptr status : 8;
 #endif
-#if QT_VERSION >= QT_VERSION_CHECK(7,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(7,0,0) || defined(QT_BOOTSTRAPPED)
         qint64 msecs : 56;
 #else
         // note: this is only 24 bits on 32-bit systems...
