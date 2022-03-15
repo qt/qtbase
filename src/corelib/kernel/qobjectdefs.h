@@ -392,7 +392,8 @@ struct Q_CORE_EXPORT QMetaObject
         IndexOfMethod,
         RegisterPropertyMetaType,
         RegisterMethodArgumentMetaType,
-        BindableProperty
+        BindableProperty,
+        CustomCall
     };
 
     int static_metacall(Call, int, void **) const;
