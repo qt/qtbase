@@ -297,7 +297,6 @@ QCocoaTheme::QCocoaTheme()
 QCocoaTheme::~QCocoaTheme()
 {
     reset();
-    qDeleteAll(m_fonts);
 }
 
 void QCocoaTheme::reset()
@@ -370,12 +369,9 @@ const QPalette *QCocoaTheme::palette(Palette type) const
 
 const QFont *QCocoaTheme::font(Font type) const
 {
-    if (m_fonts.isEmpty()) {
-        const auto *platformIntegration = QGuiApplicationPrivate::platformIntegration();
-        const auto *coreTextFontDb = static_cast<QCoreTextFontDatabase *>(platformIntegration->fontDatabase());
-        m_fonts = coreTextFontDb->themeFonts();
-    }
-    return m_fonts.value(type, nullptr);
+    const auto *platformIntegration = QGuiApplicationPrivate::platformIntegration();
+    const auto *coreTextFontDatabase = static_cast<QCoreTextFontDatabase *>(platformIntegration->fontDatabase());
+    return coreTextFontDatabase->themeFonts().value(type, nullptr);
 }
 
 //! \internal

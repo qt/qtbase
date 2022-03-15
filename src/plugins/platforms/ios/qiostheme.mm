@@ -70,7 +70,6 @@ QIOSTheme::QIOSTheme()
 
 QIOSTheme::~QIOSTheme()
 {
-    qDeleteAll(m_fonts);
 }
 
 QPalette QIOSTheme::s_systemPalette;
@@ -170,12 +169,9 @@ QVariant QIOSTheme::themeHint(ThemeHint hint) const
 
 const QFont *QIOSTheme::font(Font type) const
 {
-    if (m_fonts.isEmpty()) {
-        QCoreTextFontDatabase *ctfd = static_cast<QCoreTextFontDatabase *>(QGuiApplicationPrivate::platformIntegration()->fontDatabase());
-        m_fonts = ctfd->themeFonts();
-    }
-
-    return m_fonts.value(type, 0);
+    const auto *platformIntegration = QGuiApplicationPrivate::platformIntegration();
+    const auto *coreTextFontDatabase = static_cast<QCoreTextFontDatabase *>(platformIntegration->fontDatabase());
+    return coreTextFontDatabase->themeFonts().value(type, nullptr);
 }
 
 QT_END_NAMESPACE
