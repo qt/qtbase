@@ -3618,6 +3618,7 @@ QDateTime::QDateTime() noexcept
     static_assert(sizeof(ShortData) == sizeof(qint64));
     static_assert(sizeof(Data) == sizeof(qint64));
 #endif
+    static_assert(sizeof(ShortData) >= sizeof(void*), "oops, Data::swap() is broken!");
 }
 
 /*!
