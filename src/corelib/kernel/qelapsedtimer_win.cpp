@@ -44,7 +44,7 @@
 
 QT_BEGIN_NAMESPACE
 
-// Result of QueryPerformanceFrequency, 0 indicates that the high resolution timer is unavailable
+// Result of QueryPerformanceFrequency
 static quint64 counterFrequency = 0;
 
 static void resolveCounterFrequency()
@@ -55,26 +55,19 @@ static void resolveCounterFrequency()
 
     // Retrieve the number of high-resolution performance counter ticks per second
     LARGE_INTEGER frequency;
-    if (!QueryPerformanceFrequency(&frequency)) {
+    if (!QueryPerformanceFrequency(&frequency) || frequency.QuadPart == 0)
         qFatal("QueryPerformanceFrequency failed, even though Microsoft documentation promises it wouldn't.");
-        counterFrequency = 0;
-    } else {
-        counterFrequency = frequency.QuadPart;
-    }
+    counterFrequency = frequency.QuadPart;
 
     done = true;
 }
 
 static inline qint64 ticksToNanoseconds(qint64 ticks)
 {
-    if (counterFrequency > 0) {
-        // QueryPerformanceCounter uses an arbitrary frequency
-        qint64 seconds = ticks / counterFrequency;
-        qint64 nanoSeconds = (ticks - seconds * counterFrequency) * 1000000000 / counterFrequency;
-        return seconds * 1000000000 + nanoSeconds;
-    }
-    // GetTickCount(64) returns milliseconds
-    return ticks * 1000000;
+    // QueryPerformanceCounter uses an arbitrary frequency
+    qint64 seconds = ticks / counterFrequency;
+    qint64 nanoSeconds = (ticks - seconds * counterFrequency) * 1000000000 / counterFrequency;
+    return seconds * 1000000000 + nanoSeconds;
 }
 
 
@@ -82,18 +75,12 @@ static quint64 getTickCount()
 {
     resolveCounterFrequency();
 
-    // This avoids a division by zero and disables the high performance counter if it's not available
-    if (counterFrequency > 0) {
-        LARGE_INTEGER counter;
-
-        bool ok = QueryPerformanceCounter(&counter);
-        Q_ASSERT_X(ok, "QElapsedTimer::start()",
-                   "QueryPerformanceCounter failed, although QueryPerformanceFrequency succeeded.");
-        Q_UNUSED(ok);
-        return counter.QuadPart;
-    }
-
-    return GetTickCount64();
+    LARGE_INTEGER counter;
+    bool ok = QueryPerformanceCounter(&counter);
+    Q_ASSERT_X(ok, "QElapsedTimer::start()",
+               "QueryPerformanceCounter failed, although QueryPerformanceFrequency succeeded.");
+    Q_UNUSED(ok);
+    return counter.QuadPart;
 }
 
 quint64 qt_msectime()
@@ -105,7 +92,7 @@ QElapsedTimer::ClockType QElapsedTimer::clockType() noexcept
 {
     resolveCounterFrequency();
 
-    return counterFrequency > 0 ? PerformanceCounter : TickCounter;
+    return PerformanceCounter;
 }
 
 bool QElapsedTimer::isMonotonic() noexcept
