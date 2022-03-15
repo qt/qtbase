@@ -60,9 +60,9 @@ public:
 
     void swap(QSqlRelation &other) noexcept
     {
-        qSwap(tName, other.tName);
-        qSwap(iColumn, other.iColumn);
-        qSwap(dColumn, other.dColumn);
+        tName.swap(other.tName);
+        iColumn.swap(other.iColumn);
+        dColumn.swap(other.dColumn);
     }
 
     inline QString tableName() const

@@ -80,9 +80,7 @@ public:
     ~QSqlQuery();
 
     void swap(QSqlQuery &other) noexcept
-    {
-        qSwap(d, other.d);
-    }
+    { qt_ptr_swap(d, other.d); }
 
     bool isValid() const;
     bool isActive() const;
