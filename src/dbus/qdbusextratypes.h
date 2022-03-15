@@ -64,7 +64,7 @@ public:
     inline explicit QDBusObjectPath(const QString &path);
     explicit QDBusObjectPath(QString &&p) : m_path(std::move(p)) { doCheck(); }
 
-    void swap(QDBusObjectPath &other) noexcept { qSwap(m_path, other.m_path); }
+    void swap(QDBusObjectPath &other) noexcept { m_path.swap(other.m_path); }
 
     inline void setPath(const QString &path);
 
@@ -119,7 +119,7 @@ public:
     inline explicit QDBusSignature(const QString &signature);
     explicit QDBusSignature(QString &&sig) : m_signature(std::move(sig)) { doCheck(); }
 
-    void swap(QDBusSignature &other) noexcept { qSwap(m_signature, other.m_signature); }
+    void swap(QDBusSignature &other) noexcept { m_signature.swap(other.m_signature); }
 
     inline void setSignature(const QString &signature);
 
@@ -169,7 +169,7 @@ public:
     inline explicit QDBusVariant(const QVariant &variant);
     explicit QDBusVariant(QVariant &&v) noexcept : m_variant(std::move(v)) {}
 
-    void swap(QDBusVariant &other) noexcept { qSwap(m_variant, other.m_variant); }
+    void swap(QDBusVariant &other) noexcept { m_variant.swap(other.m_variant); }
 
     inline void setVariant(const QVariant &variant);
 

@@ -63,7 +63,7 @@ public:
     QDBusPendingCall &operator=(QDBusPendingCall &&other) noexcept { swap(other); return *this; }
     QDBusPendingCall &operator=(const QDBusPendingCall &other);
 
-    void swap(QDBusPendingCall &other) noexcept { qSwap(d, other.d); }
+    void swap(QDBusPendingCall &other) noexcept { d.swap(other.d); }
 
 #ifndef Q_CLANG_QDOC
     // pretend that they aren't here

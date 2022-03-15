@@ -138,7 +138,7 @@ public:
     QDBusConnection &operator=(const QDBusConnection &other);
     ~QDBusConnection();
 
-    void swap(QDBusConnection &other) noexcept { qSwap(d, other.d); }
+    void swap(QDBusConnection &other) noexcept { qt_ptr_swap(d, other.d); }
 
     bool isConnected() const;
     QString baseService() const;
