@@ -938,13 +938,7 @@ int QFont::pointSize() const
     \li PreferVerticalHinting
     \li PreferFullHinting
     \row
-    \li Windows Vista (w/o Platform Update) and earlier
-    \li Full hinting
-    \li Full hinting
-    \li Full hinting
-    \li Full hinting
-    \row
-    \li Windows 7 and Windows Vista (w/Platform Update) and DirectWrite enabled in Qt
+    \li Windows and DirectWrite enabled in Qt
     \li Full hinting
     \li Vertical hinting
     \li Vertical hinting
