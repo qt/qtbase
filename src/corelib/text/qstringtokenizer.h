@@ -292,7 +292,7 @@ class QStringTokenizer
     using if_haystack_not_pinned = typename if_haystack_not_pinned_impl<Container, HPin>::type;
     template <typename Container, typename Iterator = decltype(std::begin(std::declval<Container>()))>
     using if_compatible_container = typename std::enable_if<
-            std::is_same<
+            std::is_convertible<
                 typename Base::value_type,
                 typename std::iterator_traits<Iterator>::value_type
             >::value,

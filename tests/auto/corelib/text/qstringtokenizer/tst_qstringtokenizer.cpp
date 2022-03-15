@@ -145,6 +145,19 @@ void tst_QStringTokenizer::toContainer() const
         auto v = tok.toContainer();
         QVERIFY((std::is_same_v<decltype(v), QList<QLatin1String>>));
     }
+    // QLatin1String value_type into QStringList
+    {
+        auto tok = qTokenize(QLatin1String{"a,b,c"}, u',');
+        QStringList result;
+        tok.toContainer(result);
+        QCOMPARE(result, QStringList({"a", "b", "c"}));
+    }
+    // QLatin1String value_type into QStringList: rvalue overload
+    {
+        QStringList result;
+        qTokenize(QLatin1String{"a,b,c"}, u',').toContainer(result);
+        QCOMPARE(result, QStringList({"a", "b", "c"}));
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_QStringTokenizer)
