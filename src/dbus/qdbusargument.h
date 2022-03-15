@@ -81,7 +81,7 @@ public:
     QDBusArgument &operator=(const QDBusArgument &other);
     ~QDBusArgument();
 
-    void swap(QDBusArgument &other) noexcept { qSwap(d, other.d); }
+    void swap(QDBusArgument &other) noexcept { qt_ptr_swap(d, other.d); }
 
     // used for marshalling (Qt -> D-BUS)
     QDBusArgument &operator<<(uchar arg);
