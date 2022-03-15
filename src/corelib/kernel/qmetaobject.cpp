@@ -166,7 +166,7 @@ static inline QLatin1StringView stringDataView(const QMetaObject *mo, int index)
     uint offset = mo->d.stringdata[2*index];
     uint length = mo->d.stringdata[2*index + 1];
     const char *string = reinterpret_cast<const char *>(mo->d.stringdata) + offset;
-    return QLatin1StringView(string, length);
+    return {string, qsizetype(length)};
 }
 
 static inline QByteArray stringData(const QMetaObject *mo, int index)

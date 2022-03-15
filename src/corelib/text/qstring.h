@@ -100,9 +100,9 @@ public:
     constexpr QLatin1StringView(std::nullptr_t) noexcept : QLatin1StringView() {}
     constexpr inline explicit QLatin1StringView(const char *s) noexcept
         : m_size(s ? qsizetype(QtPrivate::lengthHelperPointer(s)) : 0), m_data(s) {}
-    constexpr explicit QLatin1StringView(const char *f, const char *l)
+    constexpr QLatin1StringView(const char *f, const char *l)
         : QLatin1StringView(f, qsizetype(l - f)) {}
-    constexpr inline explicit QLatin1StringView(const char *s, qsizetype sz) noexcept : m_size(sz), m_data(s) {}
+    constexpr inline QLatin1StringView(const char *s, qsizetype sz) noexcept : m_size(sz), m_data(s) {}
     explicit QLatin1StringView(const QByteArray &s) noexcept : m_size(s.size()), m_data(s.constData()) {}
     constexpr explicit QLatin1StringView(QByteArrayView s) noexcept : m_size(s.size()), m_data(s.data()) {}
 #else
@@ -111,9 +111,9 @@ public:
     constexpr QLatin1String(std::nullptr_t) noexcept : QLatin1String() {}
     constexpr inline explicit QLatin1String(const char *s) noexcept
         : m_size(s ? qsizetype(QtPrivate::lengthHelperPointer(s)) : 0), m_data(s) {}
-    constexpr explicit QLatin1String(const char *f, const char *l)
+    constexpr QLatin1String(const char *f, const char *l)
         : QLatin1String(f, qsizetype(l - f)) {}
-    constexpr inline explicit QLatin1String(const char *s, qsizetype sz) noexcept : m_size(sz), m_data(s) {}
+    constexpr inline QLatin1String(const char *s, qsizetype sz) noexcept : m_size(sz), m_data(s) {}
     explicit QLatin1String(const QByteArray &s) noexcept : m_size(s.size()), m_data(s.constData()) {}
     constexpr explicit QLatin1String(QByteArrayView s) noexcept : m_size(s.size()), m_data(s.data()) {}
 #endif // !Q_L1S_VIEW_IS_PRIMARY
@@ -271,25 +271,25 @@ public:
     {
         if (size_t(n) >= size_t(size()))
             n = size();
-        return QLatin1StringView(m_data, n);
+        return {m_data, n};
     }
     [[nodiscard]] constexpr QLatin1StringView right(qsizetype n) const
     {
         if (size_t(n) >= size_t(size()))
             n = size();
-        return QLatin1StringView(m_data + m_size - n, n);
+        return {m_data + m_size - n, n};
     }
 
     [[nodiscard]] constexpr QLatin1StringView sliced(qsizetype pos) const
-    { verify(pos); return QLatin1StringView(m_data + pos, m_size - pos); }
+    { verify(pos); return {m_data + pos, m_size - pos}; }
     [[nodiscard]] constexpr QLatin1StringView sliced(qsizetype pos, qsizetype n) const
-    { verify(pos, n); return QLatin1StringView(m_data + pos, n); }
+    { verify(pos, n); return {m_data + pos, n}; }
     [[nodiscard]] constexpr QLatin1StringView first(qsizetype n) const
-    { verify(n); return QLatin1StringView(m_data, n); }
+    { verify(n); return {m_data, n}; }
     [[nodiscard]] constexpr QLatin1StringView last(qsizetype n) const
-    { verify(n); return QLatin1StringView(m_data + size() - n, n); }
+    { verify(n); return {m_data + size() - n, n}; }
     [[nodiscard]] constexpr QLatin1StringView chopped(qsizetype n) const
-    { verify(n); return QLatin1StringView(m_data, size() - n); }
+    { verify(n); return {m_data, size() - n}; }
 
     constexpr void chop(qsizetype n)
     { verify(n); m_size -= n; }
@@ -440,7 +440,7 @@ constexpr QAnyStringView::QAnyStringView(QLatin1StringView str) noexcept
 constexpr QLatin1StringView QAnyStringView::asLatin1StringView() const
 {
     Q_ASSERT(isLatin1());
-    return QLatin1StringView{m_data_utf8, int(size())};
+    return {m_data_utf8, int(size())};
 }
 
 template <typename Visitor>
@@ -1671,7 +1671,7 @@ inline namespace StringLiterals {
 
 constexpr inline QLatin1StringView operator"" _L1(const char *str, size_t size) noexcept
 {
-    return QLatin1StringView(str, qsizetype(size));
+    return {str, qsizetype(size)};
 }
 
 } // StringLiterals

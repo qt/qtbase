@@ -350,7 +350,7 @@ static QLatin1StringView findSectionName(const IMAGE_SECTION_HEADER *section, QB
         n = qstrnlen(ptr, stringTable.size() - offset);
     }
 
-    return QLatin1StringView(ptr, n);
+    return {ptr, n};
 }
 
 QLibraryScanResult QCoffPeParser::parse(QByteArrayView data, QString *errMsg)

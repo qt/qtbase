@@ -126,6 +126,11 @@ void tst_QLatin1StringView::construction()
         QCOMPARE(l1s.latin1(), reinterpret_cast<const void *>(&str[0]));
         QCOMPARE(l1s.latin1(), "hello");
 
+        QLatin1StringView s1 = {str, 5};
+        QCOMPARE(s1, l1s);
+        QLatin1StringView s2 = {str, str + 5};
+        QCOMPARE(s2, l1s);
+
         QByteArrayView helloView(str);
         helloView = helloView.first(4);
         l1s = QLatin1StringView(helloView);

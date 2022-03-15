@@ -228,16 +228,16 @@ QLatin1StringView QLocalePrivate::languageToCode(QLocale::Language language,
     const LanguageCodeEntry &i = languageCodeList[language];
 
     if (codeTypes.testFlag(QLocale::ISO639Part1) && i.part1.isValid())
-        return QLatin1StringView(i.part1.code, 2);
+        return {i.part1.code, 2};
 
     if (codeTypes.testFlag(QLocale::ISO639Part2B) && i.part2B.isValid())
-        return QLatin1StringView(i.part2B.code, 3);
+        return {i.part2B.code, 3};
 
     if (codeTypes.testFlag(QLocale::ISO639Part2T) && i.part2T.isValid())
-        return QLatin1StringView(i.part2T.code, 3);
+        return {i.part2T.code, 3};
 
     if (codeTypes.testFlag(QLocale::ISO639Part3))
-        return QLatin1StringView(i.part3.code, 3);
+        return {i.part3.code, 3};
 
     return {};
 }
@@ -247,7 +247,7 @@ QLatin1StringView QLocalePrivate::scriptToCode(QLocale::Script script)
     if (script == QLocale::AnyScript || script > QLocale::LastScript)
         return {};
     const unsigned char *c = script_code_list + 4 * script;
-    return QLatin1StringView(reinterpret_cast<const char *>(c), 4);
+    return {reinterpret_cast<const char *>(c), 4};
 }
 
 QLatin1StringView QLocalePrivate::territoryToCode(QLocale::Territory territory)
@@ -256,7 +256,7 @@ QLatin1StringView QLocalePrivate::territoryToCode(QLocale::Territory territory)
         return {};
 
     const unsigned char *c = territory_code_list + 3 * territory;
-    return QLatin1StringView(reinterpret_cast<const char*>(c), c[2] == 0 ? 2 : 3);
+    return {reinterpret_cast<const char*>(c), c[2] == 0 ? 2 : 3};
 }
 
 namespace {
