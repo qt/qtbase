@@ -330,7 +330,7 @@ public:
     ~QTextFormat();
 
     void swap(QTextFormat &other)
-    { qSwap(d, other.d); qSwap(format_type, other.format_type); }
+    { d.swap(other.d); std::swap(format_type, other.format_type); }
 
     void merge(const QTextFormat &other);
 

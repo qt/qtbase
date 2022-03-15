@@ -70,7 +70,7 @@ public:
     QGlyphRun &operator=(const QGlyphRun &other);
     ~QGlyphRun();
 
-    void swap(QGlyphRun &other) noexcept { qSwap(d, other.d); }
+    void swap(QGlyphRun &other) noexcept { d.swap(other.d); }
 
     QRawFont rawFont() const;
     void setRawFont(const QRawFont &rawFont);

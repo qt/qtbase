@@ -90,7 +90,7 @@ public:
     QCursor(QCursor &&other) noexcept : d(qExchange(other.d, nullptr)) {}
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QCursor)
 
-    void swap(QCursor &other) noexcept { qSwap(d, other.d); }
+    void swap(QCursor &other) noexcept { qt_ptr_swap(d, other.d); }
 
     operator QVariant() const;
 

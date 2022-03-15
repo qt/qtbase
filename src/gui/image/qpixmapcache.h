@@ -63,7 +63,7 @@ public:
         { return !operator==(key); }
         Key &operator =(const Key &other);
 
-        void swap(Key &other) noexcept { qSwap(d, other.d); }
+        void swap(Key &other) noexcept { qt_ptr_swap(d, other.d); }
         bool isValid() const noexcept;
 
     private:

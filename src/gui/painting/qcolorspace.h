@@ -112,7 +112,7 @@ public:
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QColorSpace)
 
     void swap(QColorSpace &colorSpace) noexcept
-    { qSwap(d_ptr, colorSpace.d_ptr); }
+    { d_ptr.swap(colorSpace.d_ptr); }
 
     Primaries primaries() const noexcept;
     TransferFunction transferFunction() const noexcept;

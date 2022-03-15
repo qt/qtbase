@@ -63,7 +63,7 @@ public:
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QFontMetrics)
 
     void swap(QFontMetrics &other) noexcept
-    { qSwap(d, other.d); }
+    { d.swap(other.d); }
 
     int ascent() const;
     int capHeight() const;
@@ -132,7 +132,7 @@ public:
     QFontMetricsF &operator=(const QFontMetrics &);
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QFontMetricsF)
 
-    void swap(QFontMetricsF &other) noexcept { qSwap(d, other.d); }
+    void swap(QFontMetricsF &other) noexcept { d.swap(other.d); }
 
     qreal ascent() const;
     qreal capHeight() const;
