@@ -1384,7 +1384,7 @@ QByteArray QRhiGles2::pipelineCacheData()
     header.rhiId = pipelineCacheRhiId();
     header.arch = quint32(sizeof(void*));
     header.programBinaryCount = m_pipelineCache.count();
-    const size_t driverStrLen = qMin(sizeof(header.driver) - 1, size_t(driverInfoStruct.deviceName.count()));
+    const size_t driverStrLen = qMin(sizeof(header.driver) - 1, size_t(driverInfoStruct.deviceName.length()));
     if (driverStrLen)
         memcpy(header.driver, driverInfoStruct.deviceName.constData(), driverStrLen);
     header.driver[driverStrLen] = '\0';
@@ -1456,7 +1456,7 @@ void QRhiGles2::setPipelineCacheData(const QByteArray &data)
     if (header.programBinaryCount == 0)
         return;
 
-    const size_t driverStrLen = qMin(sizeof(header.driver) - 1, size_t(driverInfoStruct.deviceName.count()));
+    const size_t driverStrLen = qMin(sizeof(header.driver) - 1, size_t(driverInfoStruct.deviceName.length()));
     if (strncmp(header.driver, driverInfoStruct.deviceName.constData(), driverStrLen)) {
         qWarning("setPipelineCacheData: OpenGL vendor/renderer/version does not match");
         return;
@@ -4348,7 +4348,7 @@ bool QRhiGles2::compileShader(GLuint program, const QRhiShaderStage &shaderStage
     } else {
         shader = f->glCreateShader(toGlShaderType(shaderStage.type()));
         const char *srcStr = source.constData();
-        const GLint srcLength = source.count();
+        const GLint srcLength = source.length();
         f->glShaderSource(shader, 1, &srcStr, &srcLength);
         f->glCompileShader(shader);
         GLint compiled = 0;

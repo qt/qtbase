@@ -811,7 +811,7 @@ void QAccessibleLineEdit::selection(int selectionIndex, int *startOffset, int *e
         return;
 
     *startOffset = lineEdit()->selectionStart();
-    *endOffset = *startOffset + lineEdit()->selectedText().count();
+    *endOffset = *startOffset + lineEdit()->selectedText().length();
 }
 
 QString QAccessibleLineEdit::text(int startOffset, int endOffset) const
@@ -884,7 +884,7 @@ void QAccessibleLineEdit::setSelection(int selectionIndex, int startOffset, int 
 
 int QAccessibleLineEdit::characterCount() const
 {
-    return lineEdit()->text().count();
+    return lineEdit()->text().length();
 }
 
 void QAccessibleLineEdit::scrollToSubstring(int startIndex, int endIndex)

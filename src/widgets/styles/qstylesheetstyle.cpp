@@ -748,7 +748,7 @@ static const int numKnownStyleHints = sizeof(knownStyleHints)/sizeof(knownStyleH
 static QList<QVariant> subControlLayout(const QString& layout)
 {
     QList<QVariant> buttons;
-    for (int i = 0; i < layout.count(); i++) {
+    for (int i = 0; i < layout.length(); i++) {
         int button = layout[i].toLatin1();
         switch (button) {
         case 'm':

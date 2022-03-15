@@ -154,10 +154,10 @@ namespace QTest {
 
         QString beforeDecimalPoint = QString::number(qint64(number), 'f', 0);
         QString afterDecimalPoint = QString::number(number, 'f', 20);
-        afterDecimalPoint.remove(0, beforeDecimalPoint.count() + 1);
+        afterDecimalPoint.remove(0, beforeDecimalPoint.length() + 1);
 
-        int beforeUse = qMin(beforeDecimalPoint.count(), significantDigits);
-        int beforeRemove = beforeDecimalPoint.count() - beforeUse;
+        int beforeUse = qMin(beforeDecimalPoint.length(), significantDigits);
+        int beforeRemove = beforeDecimalPoint.length() - beforeUse;
 
         // Replace insignificant digits before the decimal point with zeros.
         beforeDecimalPoint.chop(beforeRemove);
@@ -172,14 +172,14 @@ namespace QTest {
             ++afterUse;
 
             int i = 0;
-            while (i < afterDecimalPoint.count() && afterDecimalPoint.at(i) == QLatin1Char('0')) {
+            while (i < afterDecimalPoint.length() && afterDecimalPoint.at(i) == QLatin1Char('0')) {
                 ++i;
             }
 
             afterUse += i;
         }
 
-        int afterRemove = afterDecimalPoint.count() - afterUse;
+        int afterRemove = afterDecimalPoint.length() - afterUse;
         afterDecimalPoint.chop(afterRemove);
 
         QChar separator = QLatin1Char(',');
@@ -207,7 +207,7 @@ namespace QTest {
     int formatResult(char * buffer, int bufferSize, T number, int significantDigits)
     {
         QString result = formatResult(number, significantDigits);
-        int size = result.count();
+        int size = result.length();
         qstrncpy(buffer, std::move(result).toLatin1().constData(), bufferSize);
         return size;
     }

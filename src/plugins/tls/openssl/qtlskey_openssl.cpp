@@ -160,7 +160,7 @@ QByteArray TlsKeyOpenSSL::derFromPem(const QByteArray &pem, QMap<QByteArray, QBy
     if (der.contains("Proc-Type:")) {
         // taken from QHttpNetworkReplyPrivate::parseHeader
         int i = 0;
-        while (i < der.count()) {
+        while (i < der.length()) {
             int j = der.indexOf(':', i); // field-name
             if (j == -1)
                 break;
@@ -179,7 +179,7 @@ QByteArray TlsKeyOpenSSL::derFromPem(const QByteArray &pem, QMap<QByteArray, QBy
                 int length = i -(hasCR ? 1: 0) - j;
                 value += der.mid(j, length).trimmed();
                 j = ++i;
-            } while (i < der.count() && (der.at(i) == ' ' || der.at(i) == '\t'));
+            } while (i < der.length() && (der.at(i) == ' ' || der.at(i) == '\t'));
             if (i == -1)
                 break; // something is wrong
 

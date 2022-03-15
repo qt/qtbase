@@ -3198,7 +3198,7 @@ QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
         for (const QTextOption::Tab &tabSpec : qAsConst(tabArray)) {
             QFixed tab = QFixed::fromReal(tabSpec.position) * dpiScale;
             if (tab > x) {  // this is the tab we need.
-                int tabSectionEnd = layoutData->string.count();
+                int tabSectionEnd = layoutData->string.length();
                 if (tabSpec.type == QTextOption::RightTab || tabSpec.type == QTextOption::CenterTab) {
                     // find next tab to calculate the width required.
                     tab = QFixed::fromReal(tabSpec.position);

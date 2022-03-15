@@ -1525,7 +1525,7 @@ void QTextHtmlParserNode::applyBackgroundImage(const QString &url, const QTextDo
 
 bool QTextHtmlParserNode::hasOnlyWhitespace() const
 {
-    for (int i = 0; i < text.count(); ++i)
+    for (int i = 0; i < text.length(); ++i)
         if (!text.at(i).isSpace() || text.at(i) == QChar::LineSeparator)
             return false;
     return true;

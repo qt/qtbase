@@ -1089,7 +1089,7 @@ void QDir::setSearchPaths(const QString &prefix, const QStringList &searchPaths)
         return;
     }
 
-    for (int i = 0; i < prefix.count(); ++i) {
+    for (int i = 0; i < prefix.length(); ++i) {
         if (!prefix.at(i).isLetterOrNumber()) {
             qWarning("QDir::setSearchPaths: Prefix can only contain letters or numbers");
             return;

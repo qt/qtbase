@@ -93,7 +93,7 @@ static bool variantToString(const QVariant &arg, QString &out)
     } else if (argType == QMetaType::QByteArray) {
         out += QLatin1Char('{');
         QByteArray list = arg.toByteArray();
-        for (int i = 0; i < list.count(); ++i) {
+        for (int i = 0; i < list.length(); ++i) {
             out += QString::number(list.at(i));
             out += QLatin1String(", ");
         }

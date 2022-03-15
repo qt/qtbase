@@ -266,7 +266,7 @@ SSL* QSslContext::createSsl()
         }
         if (m_supportedNPNVersions.size()) {
             m_npnContext.data = reinterpret_cast<unsigned char *>(m_supportedNPNVersions.data());
-            m_npnContext.len = m_supportedNPNVersions.count();
+            m_npnContext.len = m_supportedNPNVersions.length();
             m_npnContext.status = QSslConfiguration::NextProtocolNegotiationNone;
             // Callback's type has a parameter 'const unsigned char ** out'
             // since it was introduced in 1.0.2. Internally, OpenSSL's own code

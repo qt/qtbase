@@ -1031,7 +1031,7 @@ int QKeySequence::assign(const QString &ks, QKeySequence::SequenceFormat format)
         // in them.. (Let's hope no one translate with a comma in it:)
         p = keyseq.indexOf(QLatin1Char(','));
         if (-1 != p) {
-            if (p == keyseq.count() - 1) { // Last comma 'Ctrl+,'
+            if (p == keyseq.length() - 1) { // Last comma 'Ctrl+,'
                 p = -1;
             } else {
                 if (QLatin1Char(',') == keyseq.at(p+1)) // e.g. 'Ctrl+,, Shift+,,'
