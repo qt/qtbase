@@ -70,7 +70,7 @@ public:
     bool operator!=(const QSqlError& other) const;
     ~QSqlError();
 
-    void swap(QSqlError &other) noexcept { qSwap(d, other.d); }
+    void swap(QSqlError &other) noexcept { qt_ptr_swap(d, other.d); }
 
     QString driverText() const;
     QString databaseText() const;

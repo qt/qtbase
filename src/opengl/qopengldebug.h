@@ -112,7 +112,7 @@ public:
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QOpenGLDebugMessage)
     ~QOpenGLDebugMessage();
 
-    void swap(QOpenGLDebugMessage &other) noexcept { qSwap(d, other.d); }
+    void swap(QOpenGLDebugMessage &other) noexcept { d.swap(other.d); }
 
     Source source() const;
     Type type() const;
