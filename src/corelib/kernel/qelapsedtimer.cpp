@@ -139,9 +139,9 @@ QT_BEGIN_NAMESPACE
 
     \value SystemTime         The human-readable system time. This clock is not monotonic.
     \value MonotonicClock     The system's monotonic clock, usually found in Unix systems. This clock is monotonic and does not overflow.
-    \value TickCounter        The system's tick counter, used on Windows systems. This clock may overflow.
+    \value TickCounter        Not used anymore.
     \value MachAbsoluteTime   The Mach kernel's absolute time (\macos and iOS). This clock is monotonic and does not overflow.
-    \value PerformanceCounter The high-resolution performance counter provided by Windows. This clock is monotonic and does not overflow.
+    \value PerformanceCounter The performance counter provided by Windows. This clock is monotonic and does not overflow.
 
     \section2 SystemTime
 
@@ -161,24 +161,6 @@ QT_BEGIN_NAMESPACE
 
     This clock does not overflow.
 
-    \section2 TickCounter
-
-    The tick counter clock type is based on the system's or the processor's
-    tick counter, multiplied by the duration of a tick. This clock type is
-    used on Windows platforms. If the high-precision performance
-    counter is available on Windows, the \tt{PerformanceCounter} clock type
-    is used instead.
-
-    The TickCounter clock type is the only clock type that may overflow.
-    Windows Vista and Windows Server 2008 support the extended 64-bit tick
-    counter, which allows avoiding the overflow.
-
-    On Windows systems, the clock overflows after 2^32 milliseconds, which
-    corresponds to roughly 49.7 days. This means two processes' reckoning of
-    the time since the reference may be different by multiples of 2^32
-    milliseconds. When comparing such values, it's recommended that the high
-    32 bits of the millisecond count be masked off.
-
     \section2 MachAbsoluteTime
 
     This clock type is based on the absolute time presented by Mach kernels,
@@ -192,10 +174,7 @@ QT_BEGIN_NAMESPACE
     \section2 PerformanceCounter
 
     This clock uses the Windows functions \tt{QueryPerformanceCounter} and
-    \tt{QueryPerformanceFrequency} to access the system's high-precision
-    performance counter. Since this counter may not be available on all
-    systems, QElapsedTimer will fall back to the \tt{TickCounter} clock
-    automatically, if this clock cannot be used.
+    \tt{QueryPerformanceFrequency} to access the system's performance counter.
 
     This clock is monotonic and does not overflow.
 
