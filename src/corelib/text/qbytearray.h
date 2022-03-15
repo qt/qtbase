@@ -121,7 +121,7 @@ public:
     QByteArray &operator=(const QByteArray &) noexcept;
     QByteArray &operator=(const char *str);
     inline QByteArray(QByteArray && other) noexcept
-    { qSwap(d, other.d); }
+        = default;
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QByteArray)
     inline void swap(QByteArray &other) noexcept
     { d.swap(other.d); }
