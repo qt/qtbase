@@ -214,6 +214,9 @@ ok 10 - multiSkip() # SKIP This skip should be repeated ten times
     messages:
     - severity: debug
       message: init multiSkip (null)
+  at: tst_Subtest::multiSkip() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
+  line: 0
   ...
 ok 10 - multiSkip() # SKIP This skip should be repeated ten times
 ok 10 - multiSkip() # SKIP This skip should be repeated ten times

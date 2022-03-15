@@ -354,7 +354,7 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
             }
         }
 
-        if (!ok && file) {
+        if (file) {
             QTestCharBuffer location;
             QTest::qt_asprintf(&location,
                 // The generic 'at' key is understood by most consumers.

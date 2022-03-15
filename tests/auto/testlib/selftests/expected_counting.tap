@@ -117,6 +117,9 @@ ok 30 - testSkipInCleanup(skip) # SKIP Skip in cleanup()
     messages:
     - severity: debug
       message: This test function should execute and then QSKIP in cleanup()
+  at: tst_Counting::testSkipInCleanup() (qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp
+  line: 0
   ...
 ok 31 - testSkipInCleanup(after)
 ok 32 - cleanupTestCase()
