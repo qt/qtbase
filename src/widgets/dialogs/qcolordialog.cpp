@@ -1400,9 +1400,8 @@ void QColorShower::hsvEd()
 
 void QColorShower::htmlEd()
 {
-    QColor c;
     QString t = htEd->text();
-    c.setNamedColor(t);
+    QColor c = QColor::fromString(t);
     if (!c.isValid())
         return;
     curCol = qRgba(c.red(), c.green(), c.blue(), currentAlpha());

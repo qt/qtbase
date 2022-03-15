@@ -122,7 +122,7 @@ static const struct : QMetaTypeModuleHelper
             return true;
         );
         QMETATYPE_CONVERTER(QColor, QByteArray,
-            result.setNamedColor(QLatin1String(source));
+            result = QColor::fromString(QLatin1String(source));
             return result.isValid();
         );
         QMETATYPE_CONVERTER(QString, QColor,
@@ -131,7 +131,7 @@ static const struct : QMetaTypeModuleHelper
             return true;
         );
         QMETATYPE_CONVERTER(QColor, QString,
-            result.setNamedColor(source);
+            result = QColor::fromString(source);
             return result.isValid();
         );
 #if QT_CONFIG(shortcut)
