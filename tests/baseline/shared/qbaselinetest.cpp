@@ -51,9 +51,6 @@ static QByteArray curFunction;
 static ImageItemList itemList;
 static bool gotBaselines;
 
-static QString definedTestProject;
-static QString definedTestCase;
-
 
 void handleCmdLineArgs(int *argcp, char ***argvp)
 {
@@ -200,10 +197,7 @@ bool connect(QByteArray *msg, bool *error)
     if (!customAutoModeSet)
         clientInfo.setAdHocRun(defaultInfo.isAdHocRun());
 
-    if (!definedTestProject.isEmpty())
-        clientInfo.insert(PI_Project, definedTestProject);
-
-    QString testCase = definedTestCase;
+    QString testCase = clientInfo.value(PI_TestCase);
     if (testCase.isEmpty() && QTest::testObject() && QTest::testObject()->metaObject()) {
         //qDebug() << "Trying to Read TestCaseName from Testlib!";
         testCase = QTest::testObject()->metaObject()->className();
@@ -233,16 +227,10 @@ bool disconnectFromBaselineServer()
     return false;
 }
 
-bool connectToBaselineServer(QByteArray *msg, const QString &testProject, const QString &testCase)
+bool connectToBaselineServer(QByteArray *msg)
 {
     bool dummy;
     QByteArray dummyMsg;
-
-    if (!testProject.isEmpty())
-        definedTestProject = testProject;
-    if (!testCase.isEmpty())
-        definedTestCase = testCase;
-
     return connect(msg ? msg : &dummyMsg, &dummy);
 }
 
@@ -259,7 +247,7 @@ void setSimFail(bool fail)
 
 void setProject(const QString &projectName)
 {
-    definedTestProject = projectName;
+    addClientProperty(PI_Project, projectName);
 }
 
 void setProjectImageKeys(const QStringList &keys)
