@@ -407,7 +407,7 @@ public:
     QString &operator=(const QString &) noexcept;
     QString &operator=(QLatin1String latin1);
     inline QString(QString &&other) noexcept
-    { qSwap(d, other.d); }
+        = default;
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QString)
     void swap(QString &other) noexcept { d.swap(other.d); }
     inline qsizetype size() const { return d.size; }
