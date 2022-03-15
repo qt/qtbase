@@ -1044,9 +1044,16 @@ public class QtNative
 
     private static void clearClipData()
     {
-        if (Build.VERSION.SDK_INT >= 28 && m_clipboardManager != null)
-            m_clipboardManager.clearPrimaryClip();
-         m_usePrimaryClip = false;
+        if (m_clipboardManager != null) {
+            if (Build.VERSION.SDK_INT >= 28) {
+                m_clipboardManager.clearPrimaryClip();
+            } else {
+                String[] mimeTypes = { ClipDescription.MIMETYPE_UNKNOWN };
+                ClipData data = new ClipData("", mimeTypes, new ClipData.Item(new Intent()));
+                m_clipboardManager.setPrimaryClip(data);
+            }
+        }
+        m_usePrimaryClip = false;
     }
     private static void setClipboardText(String text)
     {
