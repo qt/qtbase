@@ -41,7 +41,6 @@
 #define QTCORE_RESULTSTORE_H
 
 #include <QtCore/qmap.h>
-#include <QtCore/qdebug.h>
 
 #include <utility>
 
