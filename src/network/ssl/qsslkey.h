@@ -74,7 +74,7 @@ public:
     QSslKey &operator=(const QSslKey &other);
     ~QSslKey();
 
-    void swap(QSslKey &other) noexcept { qSwap(d, other.d); }
+    void swap(QSslKey &other) noexcept { d.swap(other.d); }
 
     bool isNull() const;
     void clear();

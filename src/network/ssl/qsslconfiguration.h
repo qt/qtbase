@@ -83,7 +83,7 @@ public:
     QSslConfiguration &operator=(const QSslConfiguration &other);
 
     void swap(QSslConfiguration &other) noexcept
-    { qSwap(d, other.d); }
+    { d.swap(other.d); }
 
     bool operator==(const QSslConfiguration &other) const;
     inline bool operator!=(const QSslConfiguration &other) const
