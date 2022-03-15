@@ -89,7 +89,6 @@ private:
     mutable QPalette *m_systemPalette;
     QMacNotificationObserver m_systemColorObserver;
     mutable QHash<QPlatformTheme::Palette, QPalette*> m_palettes;
-    mutable QHash<QPlatformTheme::Font, QFont*> m_fonts;
     QMacKeyValueObserver m_appearanceObserver;
 };
 
