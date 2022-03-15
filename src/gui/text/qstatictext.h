@@ -68,7 +68,7 @@ public:
     QStaticText &operator=(const QStaticText &);
     ~QStaticText();
 
-    void swap(QStaticText &other) noexcept { qSwap(data, other.data); }
+    void swap(QStaticText &other) noexcept { data.swap(other.data); }
 
     void setText(const QString &text);
     QString text() const;

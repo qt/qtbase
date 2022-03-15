@@ -102,7 +102,7 @@ public:
     bool operator!=(const QEventPoint &other) const noexcept { return !operator==(other); }
     ~QEventPoint();
     inline void swap(QEventPoint &other) noexcept
-    { qSwap(d, other.d); }
+    { d.swap(other.d); }
 
     QPointF position() const;
     QPointF pressPosition() const;

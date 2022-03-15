@@ -74,8 +74,8 @@ public:
 
     void swap(QPalette &other) noexcept
     {
-        qSwap(currentGroup, other.currentGroup);
-        qSwap(d, other.d);
+        std::swap(currentGroup, other.currentGroup);
+        qt_ptr_swap(d, other.d);
     }
 
     operator QVariant() const;

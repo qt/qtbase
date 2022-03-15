@@ -83,7 +83,7 @@ public:
     QRawFont &operator=(const QRawFont &other);
     ~QRawFont();
 
-    void swap(QRawFont &other) noexcept { qSwap(d, other.d); }
+    void swap(QRawFont &other) noexcept { d.swap(other.d); }
 
     bool isValid() const;
 

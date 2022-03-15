@@ -139,7 +139,7 @@ public:
     QImage &operator=(const QImage &);
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QImage)
     void swap(QImage &other) noexcept
-    { qSwap(d, other.d); }
+    { qt_ptr_swap(d, other.d); }
 
     bool isNull() const;
 

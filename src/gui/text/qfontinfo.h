@@ -56,7 +56,7 @@ public:
 
     QFontInfo &operator=(const QFontInfo &);
 
-    void swap(QFontInfo &other) { qSwap(d, other.d); }
+    void swap(QFontInfo &other) noexcept { d.swap(other.d); }
 
     QString family() const;
     QString styleName() const;

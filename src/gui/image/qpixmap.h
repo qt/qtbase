@@ -77,7 +77,7 @@ public:
     QPixmap &operator=(const QPixmap &);
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QPixmap)
     inline void swap(QPixmap &other) noexcept
-    { qSwap(data, other.data); }
+    { data.swap(other.data); }
     bool operator==(const QPixmap &) const = delete;
     bool operator!=(const QPixmap &) const = delete;
 
