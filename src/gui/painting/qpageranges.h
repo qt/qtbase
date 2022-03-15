@@ -65,7 +65,7 @@ public:
     QPageRanges(QPageRanges &&other) noexcept = default;
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QPageRanges)
     void swap(QPageRanges &other) noexcept
-    { qSwap(d, other.d); }
+    { d.swap(other.d); }
 
     friend bool operator==(const QPageRanges &lhs, const QPageRanges &rhs) noexcept
     { return lhs.isEqual(rhs); }

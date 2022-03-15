@@ -70,7 +70,7 @@ public:
     QIcon &operator=(const QIcon &other);
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QIcon)
     inline void swap(QIcon &other) noexcept
-    { qSwap(d, other.d); }
+    { qt_ptr_swap(d, other.d); }
     bool operator==(const QIcon &) const = delete;
     bool operator!=(const QIcon &) const = delete;
 

@@ -75,7 +75,7 @@ public:
     ~QRegion();
     QRegion &operator=(const QRegion &);
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QRegion)
-    inline void swap(QRegion &other) noexcept { qSwap(d, other.d); }
+    void swap(QRegion &other) noexcept { qt_ptr_swap(d, other.d); }
     bool isEmpty() const;
     bool isNull() const;
 
