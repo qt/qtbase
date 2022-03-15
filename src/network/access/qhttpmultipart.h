@@ -65,7 +65,7 @@ public:
     QHttpPart &operator=(QHttpPart &&other) noexcept { swap(other); return *this; }
     QHttpPart &operator=(const QHttpPart &other);
 
-    void swap(QHttpPart &other) noexcept { qSwap(d, other.d); }
+    void swap(QHttpPart &other) noexcept { d.swap(other.d); }
 
     bool operator==(const QHttpPart &other) const;
     inline bool operator!=(const QHttpPart &other) const

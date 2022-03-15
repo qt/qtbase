@@ -82,7 +82,7 @@ public:
     QSslDiffieHellmanParameters &operator=(const QSslDiffieHellmanParameters &other);
     QSslDiffieHellmanParameters &operator=(QSslDiffieHellmanParameters &&other) noexcept { swap(other); return *this; }
 
-    void swap(QSslDiffieHellmanParameters &other) noexcept { qSwap(d, other.d); }
+    void swap(QSslDiffieHellmanParameters &other) noexcept { qt_ptr_swap(d, other.d); }
 
     static QSslDiffieHellmanParameters fromEncoded(const QByteArray &encoded, QSsl::EncodingFormat format = QSsl::Pem);
     static QSslDiffieHellmanParameters fromEncoded(QIODevice *device, QSsl::EncodingFormat format = QSsl::Pem);

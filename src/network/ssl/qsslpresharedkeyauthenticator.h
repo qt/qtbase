@@ -60,7 +60,7 @@ public:
 
     QSslPreSharedKeyAuthenticator &operator=(QSslPreSharedKeyAuthenticator &&other) noexcept { swap(other); return *this; }
 
-    void swap(QSslPreSharedKeyAuthenticator &other) noexcept { qSwap(d, other.d); }
+    void swap(QSslPreSharedKeyAuthenticator &other) noexcept { d.swap(other.d); }
 
     Q_NETWORK_EXPORT QByteArray identityHint() const;
 

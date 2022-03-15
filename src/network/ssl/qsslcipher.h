@@ -66,7 +66,7 @@ public:
     ~QSslCipher();
 
     void swap(QSslCipher &other) noexcept
-    { qSwap(d, other.d); }
+    { d.swap(other.d); }
 
     bool operator==(const QSslCipher &other) const;
     inline bool operator!=(const QSslCipher &other) const { return !operator==(other); }

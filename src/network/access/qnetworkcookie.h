@@ -77,7 +77,7 @@ public:
     QNetworkCookie &operator=(QNetworkCookie &&other) noexcept { swap(other); return *this; }
     QNetworkCookie &operator=(const QNetworkCookie &other);
 
-    void swap(QNetworkCookie &other) noexcept { qSwap(d, other.d); }
+    void swap(QNetworkCookie &other) noexcept { d.swap(other.d); }
 
     bool operator==(const QNetworkCookie &other) const;
     inline bool operator!=(const QNetworkCookie &other) const
