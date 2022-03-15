@@ -89,7 +89,7 @@ class Q_GUI_EXPORT QAction : public QObject
                NOTIFY changed)
     Q_PROPERTY(bool shortcutVisibleInContextMenu READ isShortcutVisibleInContextMenu
                WRITE setShortcutVisibleInContextMenu NOTIFY changed)
-    Q_PROPERTY(Priority priority READ priority WRITE setPriority)
+    Q_PROPERTY(Priority priority READ priority WRITE setPriority NOTIFY changed)
 
 public:
     // note this is copied into qplatformmenu.h, which must stay in sync
