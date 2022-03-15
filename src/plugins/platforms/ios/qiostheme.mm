@@ -171,7 +171,7 @@ const QFont *QIOSTheme::font(Font type) const
 {
     const auto *platformIntegration = QGuiApplicationPrivate::platformIntegration();
     const auto *coreTextFontDatabase = static_cast<QCoreTextFontDatabase *>(platformIntegration->fontDatabase());
-    return coreTextFontDatabase->themeFonts().value(type, nullptr);
+    return coreTextFontDatabase->themeFont(type);
 }
 
 QT_END_NAMESPACE

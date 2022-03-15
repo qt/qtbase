@@ -128,11 +128,7 @@ void QCoreTextFontDatabase::populateFontDatabase()
 
     qCDebug(lcQpaFonts) << "Populating available families took" << elapsed.restart() << "ms";
 
-    // Force creating the theme fonts to get the descriptors in m_systemFontDescriptors
-    if (m_themeFonts.isEmpty())
-        (void)themeFonts();
-
-    qCDebug(lcQpaFonts) << "Resolving theme fonts took" << elapsed.restart() << "ms";
+    populateThemeFonts();
 
     for (CTFontDescriptorRef fontDesc : m_systemFontDescriptors)
         populateFromDescriptor(fontDesc);
@@ -758,31 +754,43 @@ static CTFontDescriptorRef fontDescriptorFromTheme(QPlatformTheme::Font f)
     return descriptorForFontType(fontTypeFromTheme(f));
 }
 
-const QHash<QPlatformTheme::Font, QFont *> &QCoreTextFontDatabase::themeFonts() const
+void QCoreTextFontDatabase::populateThemeFonts()
 {
-    if (m_themeFonts.isEmpty()) {
-        for (long f = QPlatformTheme::SystemFont; f < QPlatformTheme::NFonts; f++) {
-            QPlatformTheme::Font ft = static_cast<QPlatformTheme::Font>(f);
-            m_themeFonts.insert(ft, themeFont(ft));
-        }
+    if (!m_themeFonts.isEmpty())
+        return;
+
+    QElapsedTimer elapsed;
+    if (lcQpaFonts().isDebugEnabled())
+        elapsed.start();
+
+    qCDebug(lcQpaFonts) << "Populating theme fonts...";
+
+    for (long f = QPlatformTheme::SystemFont; f < QPlatformTheme::NFonts; f++) {
+        QPlatformTheme::Font themeFont = static_cast<QPlatformTheme::Font>(f);
+        CTFontDescriptorRef fontDescriptor = fontDescriptorFromTheme(themeFont);
+        FontDescription fd;
+        getFontDescription(fontDescriptor, &fd);
+
+        if (!m_systemFontDescriptors.contains(fontDescriptor))
+            m_systemFontDescriptors.insert(fontDescriptor);
+        else
+            CFRelease(fontDescriptor);
+
+        QFont *font = new QFont(fd.familyName, fd.pointSize, fd.weight, fd.style == QFont::StyleItalic);
+        m_themeFonts.insert(themeFont, font);
     }
 
-    return m_themeFonts;
+    qCDebug(lcQpaFonts) << "Populating theme fonts took" << elapsed.restart() << "ms";
 }
 
 QFont *QCoreTextFontDatabase::themeFont(QPlatformTheme::Font f) const
 {
-    CTFontDescriptorRef fontDesc = fontDescriptorFromTheme(f);
-    FontDescription fd;
-    getFontDescription(fontDesc, &fd);
+    // The code paths via QFontDatabase::systemFont() or QPlatformTheme::font()
+    // do not ensure that the font database has been populated, so we need to
+    // manually populate the theme fonts lazily here just in case.
+    const_cast<QCoreTextFontDatabase*>(this)->populateThemeFonts();
 
-    if (!m_systemFontDescriptors.contains(fontDesc))
-        m_systemFontDescriptors.insert(fontDesc);
-    else
-        CFRelease(fontDesc);
-
-    QFont *font = new QFont(fd.familyName, fd.pointSize, fd.weight, fd.style == QFont::StyleItalic);
-    return font;
+    return m_themeFonts.value(f, nullptr);
 }
 
 QFont QCoreTextFontDatabase::defaultFont() const
