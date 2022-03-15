@@ -310,8 +310,8 @@ public:
 
     void swap(QAppleLogActivity &other)
     {
-        qSwap(activity, other.activity);
-        qSwap(state, other.state);
+        activity.swap(other.activity);
+        std::swap(state, other.state);
     }
 
 private:
@@ -368,7 +368,7 @@ public:
 
     void swap(QMacNotificationObserver &other) noexcept
     {
-        qSwap(observer, other.observer);
+        qt_ptr_swap(observer, other.observer);
     }
 
     void remove();
@@ -418,9 +418,9 @@ public:
 
     void swap(QMacKeyValueObserver &other) noexcept
     {
-        qSwap(object, other.object);
-        qSwap(keyPath, other.keyPath);
-        qSwap(callback, other.callback);
+        qt_ptr_swap(object, other.object);
+        qt_ptr_swap(keyPath, other.keyPath);
+        callback.swap(other.callback);
     }
 
 private:
