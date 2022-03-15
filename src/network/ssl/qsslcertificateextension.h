@@ -59,7 +59,7 @@ public:
     QSslCertificateExtension &operator=(const QSslCertificateExtension &other);
     ~QSslCertificateExtension();
 
-    void swap(QSslCertificateExtension &other) noexcept { qSwap(d, other.d); }
+    void swap(QSslCertificateExtension &other) noexcept { d.swap(other.d); }
 
     QString oid() const;
     QString name() const;

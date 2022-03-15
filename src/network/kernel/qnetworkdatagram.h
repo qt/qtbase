@@ -68,7 +68,7 @@ public:
     { swap(other); return *this; }
 
     void swap(QNetworkDatagram &other) noexcept
-    { qSwap(d, other.d); }
+    { qt_ptr_swap(d, other.d); }
 
     void clear();
     bool isValid() const;

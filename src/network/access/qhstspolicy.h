@@ -68,7 +68,7 @@ public:
     QHstsPolicy &operator=(QHstsPolicy &&other) noexcept { swap(other); return *this; }
     ~QHstsPolicy();
 
-    void swap(QHstsPolicy &other) noexcept { qSwap(d, other.d); }
+    void swap(QHstsPolicy &other) noexcept { d.swap(other.d); }
 
     void setHost(const QString &host, QUrl::ParsingMode mode = QUrl::DecodedMode);
     QString host(QUrl::ComponentFormattingOptions options = QUrl::FullyDecoded) const;

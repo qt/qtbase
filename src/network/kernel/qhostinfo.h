@@ -67,7 +67,7 @@ public:
     QHostInfo &operator=(QHostInfo &&other) noexcept { swap(other); return *this; }
     ~QHostInfo();
 
-    void swap(QHostInfo &other) noexcept { qSwap(d_ptr, other.d_ptr); }
+    void swap(QHostInfo &other) noexcept { qt_ptr_swap(d_ptr, other.d_ptr); }
 
     QString hostName() const;
     void setHostName(const QString &name);

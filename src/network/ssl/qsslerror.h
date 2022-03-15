@@ -108,7 +108,7 @@ public:
     QSslError(const QSslError &other);
 
     void swap(QSslError &other) noexcept
-    { qSwap(d, other.d); }
+    { d.swap(other.d); }
 
     ~QSslError();
     QSslError &operator=(QSslError &&other) noexcept { swap(other); return *this; }

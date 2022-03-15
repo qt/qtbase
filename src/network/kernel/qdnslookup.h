@@ -69,7 +69,7 @@ public:
     QDnsDomainNameRecord &operator=(const QDnsDomainNameRecord &other);
     ~QDnsDomainNameRecord();
 
-    void swap(QDnsDomainNameRecord &other) noexcept { qSwap(d, other.d); }
+    void swap(QDnsDomainNameRecord &other) noexcept { d.swap(other.d); }
 
     QString name() const;
     quint32 timeToLive() const;
@@ -91,7 +91,7 @@ public:
     QDnsHostAddressRecord &operator=(const QDnsHostAddressRecord &other);
     ~QDnsHostAddressRecord();
 
-    void swap(QDnsHostAddressRecord &other) noexcept { qSwap(d, other.d); }
+    void swap(QDnsHostAddressRecord &other) noexcept { d.swap(other.d); }
 
     QString name() const;
     quint32 timeToLive() const;
@@ -113,7 +113,7 @@ public:
     QDnsMailExchangeRecord &operator=(const QDnsMailExchangeRecord &other);
     ~QDnsMailExchangeRecord();
 
-    void swap(QDnsMailExchangeRecord &other) noexcept { qSwap(d, other.d); }
+    void swap(QDnsMailExchangeRecord &other) noexcept { d.swap(other.d); }
 
     QString exchange() const;
     QString name() const;
@@ -136,7 +136,7 @@ public:
     QDnsServiceRecord &operator=(const QDnsServiceRecord &other);
     ~QDnsServiceRecord();
 
-    void swap(QDnsServiceRecord &other) noexcept { qSwap(d, other.d); }
+    void swap(QDnsServiceRecord &other) noexcept { d.swap(other.d); }
 
     QString name() const;
     quint16 port() const;
@@ -161,7 +161,7 @@ public:
     QDnsTextRecord &operator=(const QDnsTextRecord &other);
     ~QDnsTextRecord();
 
-    void swap(QDnsTextRecord &other) noexcept { qSwap(d, other.d); }
+    void swap(QDnsTextRecord &other) noexcept { d.swap(other.d); }
 
     QString name() const;
     quint32 timeToLive() const;
