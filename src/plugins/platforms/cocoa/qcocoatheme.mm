@@ -371,7 +371,7 @@ const QFont *QCocoaTheme::font(Font type) const
 {
     const auto *platformIntegration = QGuiApplicationPrivate::platformIntegration();
     const auto *coreTextFontDatabase = static_cast<QCoreTextFontDatabase *>(platformIntegration->fontDatabase());
-    return coreTextFontDatabase->themeFonts().value(type, nullptr);
+    return coreTextFontDatabase->themeFont(type);
 }
 
 //! \internal
