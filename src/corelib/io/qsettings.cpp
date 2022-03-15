@@ -393,16 +393,14 @@ QVariant QSettingsPrivate::stringListToVariantList(const QStringList &l)
         const QString &str = outStringList.at(i);
 
         if (str.startsWith(u'@')) {
-            if (str.length() >= 2 && str.at(1) == u'@') {
-                outStringList[i].remove(0, 1);
-            } else {
+            if (str.length() < 2 || str.at(1) != u'@') {
                 QVariantList variantList;
-                const int stringCount = l.count();
-                variantList.reserve(stringCount);
-                for (int j = 0; j < stringCount; ++j)
-                    variantList.append(stringToVariant(l.at(j)));
+                variantList.reserve(l.count());
+                for (const auto &s : l)
+                    variantList.append(stringToVariant(s));
                 return variantList;
             }
+            outStringList[i].remove(0, 1);
         }
     }
     return outStringList;
