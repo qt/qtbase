@@ -109,6 +109,8 @@ QCoreTextFontDatabase::QCoreTextFontDatabase()
 
 QCoreTextFontDatabase::~QCoreTextFontDatabase()
 {
+    qDeleteAll(m_themeFonts);
+
     for (CTFontDescriptorRef ref : qAsConst(m_systemFontDescriptors))
         CFRelease(ref);
 }

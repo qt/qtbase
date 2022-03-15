@@ -68,8 +68,6 @@ public:
     static void initializeSystemPalette();
 
 private:
-    mutable QHash<QPlatformTheme::Font, QFont *> m_fonts;
-
     static QPalette s_systemPalette;
 };
 
