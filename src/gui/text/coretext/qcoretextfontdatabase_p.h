@@ -83,20 +83,20 @@ public:
     bool fontsAlwaysScalable() const override;
     QList<int> standardSizes() const override;
 
-    // For iOS and OS X platform themes
+    // For iOS and macOS platform themes
     QFont *themeFont(QPlatformTheme::Font) const;
-    const QHash<QPlatformTheme::Font, QFont *> &themeFonts() const;
 
 protected:
     mutable QSet<CTFontDescriptorRef> m_systemFontDescriptors;
 
 private:
+    void populateThemeFonts();
     void populateFromDescriptor(CTFontDescriptorRef font, const QString &familyName = QString(), QFontDatabasePrivate::ApplicationFont *applicationFont = nullptr);
     static CFArrayRef fallbacksForFamily(const QString &family);
 
     mutable QString defaultFontName;
 
-    mutable QHash<QPlatformTheme::Font, QFont *> m_themeFonts;
+    QHash<QPlatformTheme::Font, QFont *> m_themeFonts;
     bool m_hasPopulatedAliases;
 };
 
