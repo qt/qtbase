@@ -194,14 +194,25 @@ bool QCoreTextFontDatabase::populateFamilyAliases(const QString &missingFamily)
 #endif
 }
 
+CTFontDescriptorRef descriptorForFamily(const QString &familyName)
+{
+    return CTFontDescriptorCreateWithAttributes(CFDictionaryRef(@{
+        (id)kCTFontFamilyNameAttribute: familyName.toNSString()
+    }));
+}
+
+CTFontDescriptorRef descriptorForFamily(const char *familyName)
+{
+    return descriptorForFamily(QString::fromLatin1(familyName));
+}
+
 void QCoreTextFontDatabase::populateFamily(const QString &familyName)
 {
-    QCFType<CFMutableDictionaryRef> attributes = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-    CFDictionaryAddValue(attributes, kCTFontFamilyNameAttribute, QCFString(familyName));
-    QCFType<CTFontDescriptorRef> nameOnlyDescriptor = CTFontDescriptorCreateWithAttributes(attributes);
-
-    // A single family might match several different fonts with different styles eg.
-    QCFType<CFArrayRef> matchingFonts = (CFArrayRef) CTFontDescriptorCreateMatchingFontDescriptors(nameOnlyDescriptor, 0);
+    // A single family might match several different fonts with different styles.
+    // We need to add them all so that the font database has the full picture,
+    // as once a family has been populated we will not populate it again.
+    QCFType<CTFontDescriptorRef> familyDescriptor = descriptorForFamily(familyName);
+    QCFType<CFArrayRef> matchingFonts = CTFontDescriptorCreateMatchingFontDescriptors(familyDescriptor, nullptr);
     if (!matchingFonts) {
         qCWarning(lcQpaFonts) << "QCoreTextFontDatabase: Found no matching fonts for family" << familyName;
         return;
@@ -434,18 +445,6 @@ template class QCoreTextFontDatabaseEngineFactory<QCoreTextFontEngine>;
 #ifndef QT_NO_FREETYPE
 template class QCoreTextFontDatabaseEngineFactory<QFontEngineFT>;
 #endif
-
-CTFontDescriptorRef descriptorForFamily(const QString &familyName)
-{
-    return CTFontDescriptorCreateWithAttributes(CFDictionaryRef(@{
-        (id)kCTFontFamilyNameAttribute: familyName.toNSString()
-    }));
-}
-
-CTFontDescriptorRef descriptorForFamily(const char *familyName)
-{
-    return descriptorForFamily(QString::fromLatin1(familyName));
-}
 
 CFArrayRef fallbacksForDescriptor(CTFontDescriptorRef descriptor)
 {
