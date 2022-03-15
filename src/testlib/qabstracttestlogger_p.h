@@ -65,6 +65,7 @@ class QTestData;
 
 class Q_TESTLIB_EXPORT QAbstractTestLogger
 {
+    Q_DISABLE_COPY_MOVE(QAbstractTestLogger)
 public:
     enum IncidentTypes {
         Skip,
