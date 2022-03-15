@@ -30,16 +30,16 @@
 
 #include <QString>
 
-// Preserve QLatin1String-ness (QVariant(QLatin1String) creates a QVariant::String):
-struct QLatin1StringContainer {
-    QLatin1String l1;
+// Preserve QLatin1StringView-ness (QVariant(QLatin1StringView) creates a QVariant::String):
+struct QLatin1StringViewContainer {
+    QLatin1StringView l1;
 };
 QT_BEGIN_NAMESPACE
-Q_DECLARE_TYPEINFO(QLatin1StringContainer, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(QLatin1StringViewContainer, Q_RELOCATABLE_TYPE);
 QT_END_NAMESPACE
-Q_DECLARE_METATYPE(QLatin1StringContainer)
+Q_DECLARE_METATYPE(QLatin1StringViewContainer)
 
-class tst_QLatin1String : public QObject
+class tst_QLatin1StringView : public QObject
 {
     Q_OBJECT
 
@@ -58,23 +58,23 @@ private Q_SLOTS:
     void count();
 };
 
-void tst_QLatin1String::constExpr()
+void tst_QLatin1StringView::constExpr()
 {
     // compile-time checks
     {
-        constexpr QLatin1String l1s;
+        constexpr QLatin1StringView l1s;
         static_assert(l1s.size() == 0);
         static_assert(l1s.isNull());
         static_assert(l1s.empty());
         static_assert(l1s.isEmpty());
         static_assert(l1s.latin1() == nullptr);
 
-        constexpr QLatin1String l1s2(l1s.latin1(), l1s.latin1() + l1s.size());
+        constexpr QLatin1StringView l1s2(l1s.latin1(), l1s.latin1() + l1s.size());
         static_assert(l1s2.isNull());
         static_assert(l1s2.empty());
     }
     {
-        constexpr QLatin1String l1s = nullptr;
+        constexpr QLatin1StringView l1s = nullptr;
         static_assert(l1s.size() == 0);
         static_assert(l1s.isNull());
         static_assert(l1s.empty());
@@ -82,20 +82,20 @@ void tst_QLatin1String::constExpr()
         static_assert(l1s.latin1() == nullptr);
     }
     {
-        constexpr QLatin1String l1s("");
+        constexpr QLatin1StringView l1s("");
         static_assert(l1s.size() == 0);
         static_assert(!l1s.isNull());
         static_assert(l1s.empty());
         static_assert(l1s.isEmpty());
         static_assert(l1s.latin1() != nullptr);
 
-        constexpr QLatin1String l1s2(l1s.latin1(), l1s.latin1() + l1s.size());
+        constexpr QLatin1StringView l1s2(l1s.latin1(), l1s.latin1() + l1s.size());
         static_assert(!l1s2.isNull());
         static_assert(l1s2.empty());
     }
     {
-        static_assert(QLatin1String("Hello").size() == 5);
-        constexpr QLatin1String l1s("Hello");
+        static_assert(QLatin1StringView("Hello").size() == 5);
+        constexpr QLatin1StringView l1s("Hello");
         static_assert(l1s.size() == 5);
         static_assert(!l1s.empty());
         static_assert(!l1s.isEmpty());
@@ -110,25 +110,25 @@ void tst_QLatin1String::constExpr()
         static_assert(l1s.back()  == QLatin1Char('o'));
         static_assert(l1s.last()  == QLatin1Char('o'));
 
-        constexpr QLatin1String l1s2(l1s.latin1(), l1s.latin1() + l1s.size());
+        constexpr QLatin1StringView l1s2(l1s.latin1(), l1s.latin1() + l1s.size());
         static_assert(!l1s2.isNull());
         static_assert(!l1s2.empty());
         static_assert(l1s2.size() == 5);
     }
 }
 
-void tst_QLatin1String::construction()
+void tst_QLatin1StringView::construction()
 {
     {
         const char str[6] = "hello";
-        QLatin1String l1s(str);
+        QLatin1StringView l1s(str);
         QCOMPARE(l1s.size(), 5);
         QCOMPARE(l1s.latin1(), reinterpret_cast<const void *>(&str[0]));
         QCOMPARE(l1s.latin1(), "hello");
 
         QByteArrayView helloView(str);
         helloView = helloView.first(4);
-        l1s = QLatin1String(helloView);
+        l1s = QLatin1StringView(helloView);
         QCOMPARE(l1s.latin1(), helloView.data());
         QCOMPARE(l1s.latin1(), reinterpret_cast<const void *>(helloView.data()));
         QCOMPARE(l1s.size(), helloView.size());
@@ -136,30 +136,30 @@ void tst_QLatin1String::construction()
 
     {
         const QByteArray helloArray("hello");
-        QLatin1String l1s(helloArray);
+        QLatin1StringView l1s(helloArray);
         QCOMPARE(l1s.latin1(), helloArray.data());
         QCOMPARE(l1s.size(), helloArray.size());
 
         QByteArrayView helloView(helloArray);
         helloView = helloView.first(4);
-        l1s = QLatin1String(helloView);
+        l1s = QLatin1StringView(helloView);
         QCOMPARE(l1s.latin1(), helloView.data());
         QCOMPARE(l1s.size(), helloView.size());
     }
 }
 
-void tst_QLatin1String::userDefinedLiterals()
+void tst_QLatin1StringView::userDefinedLiterals()
 {
     {
         using namespace Qt::Literals::StringLiterals;
 
         auto str = "abcd"_L1;
-        static_assert(std::is_same_v<decltype(str), QLatin1String>);
+        static_assert(std::is_same_v<decltype(str), QLatin1StringView>);
         QCOMPARE(str.size(), 4);
-        QCOMPARE(str, QLatin1String("abcd"));
+        QCOMPARE(str, QLatin1StringView("abcd"));
         QCOMPARE(str.latin1(), "abcd");
         QCOMPARE("abcd"_L1, str.latin1());
-        QCOMPARE("M\xE5rten"_L1, QLatin1String("M\xE5rten"));
+        QCOMPARE("M\xE5rten"_L1, QLatin1StringView("M\xE5rten"));
 
         auto ch = 'a'_L1;
         static_assert(std::is_same_v<decltype(ch), QLatin1Char>);
@@ -172,8 +172,8 @@ void tst_QLatin1String::userDefinedLiterals()
         using namespace Qt::Literals;
 
         auto str = "abcd"_L1;
-        static_assert(std::is_same_v<decltype(str), QLatin1String>);
-        QCOMPARE(str, QLatin1String("abcd"));
+        static_assert(std::is_same_v<decltype(str), QLatin1StringView>);
+        QCOMPARE(str, QLatin1StringView("abcd"));
 
         auto ch = 'a'_L1;
         static_assert(std::is_same_v<decltype(ch), QLatin1Char>);
@@ -183,8 +183,8 @@ void tst_QLatin1String::userDefinedLiterals()
         using namespace Qt;
 
         auto str = "abcd"_L1;
-        static_assert(std::is_same_v<decltype(str), QLatin1String>);
-        QCOMPARE(str, QLatin1String("abcd"));
+        static_assert(std::is_same_v<decltype(str), QLatin1StringView>);
+        QCOMPARE(str, QLatin1StringView("abcd"));
 
         auto ch = 'a'_L1;
         static_assert(std::is_same_v<decltype(ch), QLatin1Char>);
@@ -192,32 +192,32 @@ void tst_QLatin1String::userDefinedLiterals()
     }
 }
 
-void tst_QLatin1String::at()
+void tst_QLatin1StringView::at()
 {
-    const QLatin1String l1("Hello World");
+    const QLatin1StringView l1("Hello World");
     QCOMPARE(l1.at(0), QLatin1Char('H'));
     QCOMPARE(l1.at(l1.size() - 1), QLatin1Char('d'));
     QCOMPARE(l1[0], QLatin1Char('H'));
     QCOMPARE(l1[l1.size() - 1], QLatin1Char('d'));
 }
 
-void tst_QLatin1String::arg() const
+void tst_QLatin1StringView::arg() const
 {
 #define CHECK1(pattern, arg1, expected) \
     do { \
-        auto p = QLatin1String(pattern); \
-        QCOMPARE(p.arg(QLatin1String(arg1)), expected); \
+        auto p = QLatin1StringView(pattern); \
+        QCOMPARE(p.arg(QLatin1StringView(arg1)), expected); \
         QCOMPARE(p.arg(u"" arg1), expected); \
         QCOMPARE(p.arg(QStringLiteral(arg1)), expected); \
-        QCOMPARE(p.arg(QString(QLatin1String(arg1))), expected); \
+        QCOMPARE(p.arg(QString(QLatin1StringView(arg1))), expected); \
     } while (false) \
     /*end*/
 #define CHECK2(pattern, arg1, arg2, expected) \
     do { \
-        auto p = QLatin1String(pattern); \
-        QCOMPARE(p.arg(QLatin1String(arg1), QLatin1String(arg2)), expected); \
-        QCOMPARE(p.arg(u"" arg1, QLatin1String(arg2)), expected); \
-        QCOMPARE(p.arg(QLatin1String(arg1), u"" arg2), expected); \
+        auto p = QLatin1StringView(pattern); \
+        QCOMPARE(p.arg(QLatin1StringView(arg1), QLatin1StringView(arg2)), expected); \
+        QCOMPARE(p.arg(u"" arg1, QLatin1StringView(arg2)), expected); \
+        QCOMPARE(p.arg(QLatin1StringView(arg1), u"" arg2), expected); \
         QCOMPARE(p.arg(u"" arg1, u"" arg2), expected); \
     } while (false) \
     /*end*/
@@ -239,32 +239,33 @@ void tst_QLatin1String::arg() const
 #undef CHECK2
 #undef CHECK1
 
-    QCOMPARE(QLatin1String(" %2 %2 %1 %3 ").arg(QLatin1Char('c'), QChar::CarriageReturn, u'C'), " \r \r c C ");
+    QCOMPARE(QLatin1StringView(" %2 %2 %1 %3 ").arg(QLatin1Char('c'), QChar::CarriageReturn, u'C'),
+             " \r \r c C ");
 }
 
-void tst_QLatin1String::midLeftRight()
+void tst_QLatin1StringView::midLeftRight()
 {
-    const QLatin1String l1("Hello World");
+    const QLatin1StringView l1("Hello World");
     QCOMPARE(l1.mid(0),            l1);
     QCOMPARE(l1.mid(0, l1.size()), l1);
     QCOMPARE(l1.left(l1.size()),   l1);
     QCOMPARE(l1.right(l1.size()),  l1);
 
-    QCOMPARE(l1.mid(6), QLatin1String("World"));
-    QCOMPARE(l1.mid(6, 5), QLatin1String("World"));
-    QCOMPARE(l1.right(5), QLatin1String("World"));
+    QCOMPARE(l1.mid(6), QLatin1StringView("World"));
+    QCOMPARE(l1.mid(6, 5), QLatin1StringView("World"));
+    QCOMPARE(l1.right(5), QLatin1StringView("World"));
 
-    QCOMPARE(l1.mid(6, 1), QLatin1String("W"));
-    QCOMPARE(l1.right(5).left(1), QLatin1String("W"));
+    QCOMPARE(l1.mid(6, 1), QLatin1StringView("W"));
+    QCOMPARE(l1.right(5).left(1), QLatin1StringView("W"));
 
-    QCOMPARE(l1.left(5), QLatin1String("Hello"));
+    QCOMPARE(l1.left(5), QLatin1StringView("Hello"));
 }
 
-void tst_QLatin1String::nullString()
+void tst_QLatin1StringView::nullString()
 {
     // default ctor
     {
-        QLatin1String l1;
+        QLatin1StringView l1;
         QCOMPARE(static_cast<const void*>(l1.data()), static_cast<const void*>(nullptr));
         QCOMPARE(l1.size(), 0);
 
@@ -275,7 +276,7 @@ void tst_QLatin1String::nullString()
     // from nullptr
     {
         const char *null = nullptr;
-        QLatin1String l1(null);
+        QLatin1StringView l1(null);
         QCOMPARE(static_cast<const void*>(l1.data()), static_cast<const void*>(nullptr));
         QCOMPARE(l1.size(), 0);
 
@@ -288,7 +289,7 @@ void tst_QLatin1String::nullString()
         const QByteArray null;
         QVERIFY(null.isNull());
 
-        QLatin1String l1(null);
+        QLatin1StringView l1(null);
         QEXPECT_FAIL("", "null QByteArrays become non-null QLatin1Strings...", Continue);
         QCOMPARE(static_cast<const void*>(l1.data()), static_cast<const void*>(nullptr));
         QCOMPARE(l1.size(), 0);
@@ -299,11 +300,11 @@ void tst_QLatin1String::nullString()
     }
 }
 
-void tst_QLatin1String::emptyString()
+void tst_QLatin1StringView::emptyString()
 {
     {
         const char *empty = "";
-        QLatin1String l1(empty);
+        QLatin1StringView l1(empty);
         QCOMPARE(static_cast<const void*>(l1.data()), static_cast<const void*>(empty));
         QCOMPARE(l1.size(), 0);
 
@@ -314,7 +315,7 @@ void tst_QLatin1String::emptyString()
 
     {
         const char *notEmpty = "foo";
-        QLatin1String l1(notEmpty, qsizetype(0));
+        QLatin1StringView l1(notEmpty, qsizetype(0));
         QCOMPARE(static_cast<const void*>(l1.data()), static_cast<const void*>(notEmpty));
         QCOMPARE(l1.size(), 0);
 
@@ -325,7 +326,7 @@ void tst_QLatin1String::emptyString()
 
     {
         const QByteArray empty = "";
-        QLatin1String l1(empty);
+        QLatin1StringView l1(empty);
         QCOMPARE(static_cast<const void*>(l1.data()), static_cast<const void*>(empty.constData()));
         QCOMPARE(l1.size(), 0);
 
@@ -335,10 +336,10 @@ void tst_QLatin1String::emptyString()
     }
 }
 
-void tst_QLatin1String::iterators()
+void tst_QLatin1StringView::iterators()
 {
-    QLatin1String hello("hello");
-    QLatin1String olleh("olleh");
+    QLatin1StringView hello("hello");
+    QLatin1StringView olleh("olleh");
 
     QVERIFY(std::equal(hello.begin(), hello.end(),
                        olleh.rbegin()));
@@ -351,27 +352,27 @@ void tst_QLatin1String::iterators()
                        QT_MAKE_CHECKED_ARRAY_ITERATOR(olleh.begin(), olleh.size())));
 }
 
-void tst_QLatin1String::relationalOperators_data()
+void tst_QLatin1StringView::relationalOperators_data()
 {
-    QTest::addColumn<QLatin1StringContainer>("lhs");
+    QTest::addColumn<QLatin1StringViewContainer>("lhs");
     QTest::addColumn<int>("lhsOrderNumber");
-    QTest::addColumn<QLatin1StringContainer>("rhs");
+    QTest::addColumn<QLatin1StringViewContainer>("rhs");
     QTest::addColumn<int>("rhsOrderNumber");
 
     struct Data {
-        QLatin1String l1;
+        QLatin1StringView l1;
         int order;
     } data[] = {
-        { QLatin1String(),     0 },
-        { QLatin1String(""),   0 },
-        { QLatin1String("a"),  1 },
-        { QLatin1String("aa"), 2 },
-        { QLatin1String("b"),  3 },
+        { QLatin1StringView(),     0 },
+        { QLatin1StringView(""),   0 },
+        { QLatin1StringView("a"),  1 },
+        { QLatin1StringView("aa"), 2 },
+        { QLatin1StringView("b"),  3 },
     };
 
     for (Data *lhs = data; lhs != data + sizeof data / sizeof *data; ++lhs) {
         for (Data *rhs = data; rhs != data + sizeof data / sizeof *data; ++rhs) {
-            QLatin1StringContainer l = { lhs->l1 }, r = { rhs->l1 };
+            QLatin1StringViewContainer l = { lhs->l1 }, r = { rhs->l1 };
             QTest::addRow("\"%s\" <> \"%s\"",
                           lhs->l1.data() ? lhs->l1.data() : "nullptr",
                           rhs->l1.data() ? rhs->l1.data() : "nullptr")
@@ -380,11 +381,11 @@ void tst_QLatin1String::relationalOperators_data()
     }
 }
 
-void tst_QLatin1String::relationalOperators()
+void tst_QLatin1StringView::relationalOperators()
 {
-    QFETCH(QLatin1StringContainer, lhs);
+    QFETCH(QLatin1StringViewContainer, lhs);
     QFETCH(int, lhsOrderNumber);
-    QFETCH(QLatin1StringContainer, rhs);
+    QFETCH(QLatin1StringViewContainer, rhs);
     QFETCH(int, rhsOrderNumber);
 
 #define CHECK(op) \
@@ -399,36 +400,36 @@ void tst_QLatin1String::relationalOperators()
 #undef CHECK
 }
 
-void tst_QLatin1String::count()
+void tst_QLatin1StringView::count()
 {
-    QLatin1String a("ABCDEFGHIEfGEFG");
+    QLatin1StringView a("ABCDEFGHIEfGEFG");
     QCOMPARE(a.size(), 15);
     QCOMPARE(a.count('A'), 1);
     QCOMPARE(a.count('Z'), 0);
     QCOMPARE(a.count('E'), 3);
     QCOMPARE(a.count('F'), 2);
     QCOMPARE(a.count('F', Qt::CaseInsensitive), 3);
-    QCOMPARE(a.count(QLatin1String("FG")), 2);
-    QCOMPARE(a.count(QLatin1String("FG"), Qt::CaseInsensitive), 3);
-    QCOMPARE(a.count(QLatin1String(), Qt::CaseInsensitive), 16);
-    QCOMPARE(a.count(QLatin1String(""), Qt::CaseInsensitive), 16);
+    QCOMPARE(a.count(QLatin1StringView("FG")), 2);
+    QCOMPARE(a.count(QLatin1StringView("FG"), Qt::CaseInsensitive), 3);
+    QCOMPARE(a.count(QLatin1StringView(), Qt::CaseInsensitive), 16);
+    QCOMPARE(a.count(QLatin1StringView(""), Qt::CaseInsensitive), 16);
 
-    QLatin1String nullStr;
+    QLatin1StringView nullStr;
     QCOMPARE(nullStr.count('A'), 0);
-    QCOMPARE(nullStr.count(QLatin1String("AB")), 0);
-    QCOMPARE(nullStr.count(QLatin1String()), 1);
-    QCOMPARE(nullStr.count(QLatin1String("")), 1);
+    QCOMPARE(nullStr.count(QLatin1StringView("AB")), 0);
+    QCOMPARE(nullStr.count(QLatin1StringView()), 1);
+    QCOMPARE(nullStr.count(QLatin1StringView("")), 1);
 
-    QLatin1String emptyStr("");
+    QLatin1StringView emptyStr("");
     QCOMPARE(emptyStr.count('A'), 0);
-    QCOMPARE(emptyStr.count(QLatin1String("AB")), 0);
-    QCOMPARE(emptyStr.count(QLatin1String()), 1);
-    QCOMPARE(emptyStr.count(QLatin1String("")), 1);
+    QCOMPARE(emptyStr.count(QLatin1StringView("AB")), 0);
+    QCOMPARE(emptyStr.count(QLatin1StringView()), 1);
+    QCOMPARE(emptyStr.count(QLatin1StringView("")), 1);
 
     using namespace Qt::Literals::StringLiterals;
     QCOMPARE("a\0b"_L1.count(QChar::SpecialCharacter::LineSeparator), 0);
 }
 
-QTEST_APPLESS_MAIN(tst_QLatin1String)
+QTEST_APPLESS_MAIN(tst_QLatin1StringView)
 
-#include "tst_qlatin1string.moc"
+#include "tst_qlatin1stringview.moc"
