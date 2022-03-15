@@ -71,6 +71,9 @@
 #  define Q_DECL_INIT_PRIORITY(nn)      \
     __pragma(warning(disable: 4075)) \
     __pragma(init_seg(".CRT$XCK" QT_STRINGIFY(nn))) Q_DECL_UNUSED
+#elif defined(Q_OS_QNX)
+// init_priority fails on QNX and we didn't bother investigating why
+#  define QT_SUPPORTS_INIT_PRIORITY     0
 #elif defined(Q_OS_WIN) || defined(Q_OF_ELF)
 #  define QT_SUPPORTS_INIT_PRIORITY     1
 // priorities 0 to 1000 are reserved to the runtime;
