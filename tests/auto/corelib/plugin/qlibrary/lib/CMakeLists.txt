@@ -35,8 +35,7 @@ if (MACOS)
             "${CMAKE_CURRENT_BINARY_DIR}/../"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${CMAKE_CURRENT_BINARY_DIR}/*dylib"
-            "${CMAKE_CURRENT_BINARY_DIR}/../"
-            )
+            "${CMAKE_CURRENT_BINARY_DIR}/../")
 elseif (UNIX)
     add_custom_command(TARGET mylib POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -48,13 +47,13 @@ elseif (UNIX)
             COMMAND ${CMAKE_COMMAND} -E create_symlink
             "libmylib.so.1.0.0"
             "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so1"
-            )
+            VERBATIM)
 else() #Win32
     add_custom_command(TARGET mylib POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
             $<TARGET_FILE:mylib>
             "${CMAKE_CURRENT_BINARY_DIR}/../mylib.dll"
-            )
+            VERBATIM)
 endif()
 # special case end
 

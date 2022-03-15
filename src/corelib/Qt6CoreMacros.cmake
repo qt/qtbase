@@ -1243,6 +1243,7 @@ function(qt6_extract_metatypes target)
                     ${multi_config_args}
                 COMMENT "Running AUTOMOC file extraction for target ${target}"
                 COMMAND_EXPAND_LISTS
+                VERBATIM
             )
 
         endif()
@@ -1304,6 +1305,7 @@ function(qt6_extract_metatypes target)
             ${metatypes_file_gen}
             ${metatypes_file}
         COMMENT "Running moc --collect-json for target ${target}"
+        VERBATIM
     )
 
     # We can't rely on policy CMP0118 since user project controls it
@@ -1612,6 +1614,7 @@ END
             add_custom_command(OUTPUT "${output}"
                 DEPENDS "${input}"
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different "${input}" "${output}"
+                VERBATIM
             )
             # We can't rely on policy CMP0118 since user project controls it
             set_source_files_properties(${output} ${scope_args} PROPERTIES

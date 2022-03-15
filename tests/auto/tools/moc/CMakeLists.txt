@@ -142,6 +142,7 @@ add_custom_command(TARGET tst_moc
         -o "allmocs.json"
         --collect-json  "@${moc_json_out}"
     COMMENT "Running moc with --collect-json"
+    VERBATIM
 )
 
 # Add dependencies that are implicitly used inside the test

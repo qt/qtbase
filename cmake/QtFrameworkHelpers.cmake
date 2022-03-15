@@ -86,7 +86,8 @@ function(qt_copy_framework_headers target)
             OUTPUT ${out_file_path}
             DEPENDS ${in_file_path}
             COMMAND ${CMAKE_COMMAND} -E make_directory "${fw_output_header_dir}"
-            COMMAND ${CMAKE_COMMAND} -E copy "${in_file_path}" "${fw_output_header_dir}")
+            COMMAND ${CMAKE_COMMAND} -E copy "${in_file_path}" "${fw_output_header_dir}"
+            VERBATIM)
         list(APPEND out_files ${out_file_path})
     endforeach()
 

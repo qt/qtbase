@@ -115,5 +115,5 @@ function(qt_enable_separate_debug_info target installDestination)
         TARGET ${target}
         POST_BUILD
         ${commands}
-        )
+        VERBATIM)
 endfunction()

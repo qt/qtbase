@@ -931,6 +931,7 @@ add_custom_command(
     OUTPUT ${vulkan_fun_outputs}
     ${vulkan_fun_command_content}
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+    VERBATIM
 )
 # special case end
 

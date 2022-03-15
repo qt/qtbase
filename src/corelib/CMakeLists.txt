@@ -1182,6 +1182,7 @@ if(QT_FEATURE_mimetype AND QT_FEATURE_mimetype_database)
             DEPENDS ${command_depends}
             COMMAND ${command_args}
             COMMENT "Generating ${qmimeprovider_db_output}"
+            VERBATIM
         )
     else()
         if(QT_FEATURE_zstd)

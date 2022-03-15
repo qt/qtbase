@@ -7,4 +7,5 @@ add_custom_command(
     POST_BUILD
     COMMAND ${CMAKE_OBJCOPY} --only-keep-debug $<TARGET_FILE:objcopytest> objcopytest.debug
     COMMAND ${CMAKE_OBJCOPY} --strip-debug $<TARGET_FILE:objcopytest>
-    COMMAND ${CMAKE_OBJCOPY} --add-gnu-debuglink=objcopytest.debug $<TARGET_FILE:objcopytest>)
+    COMMAND ${CMAKE_OBJCOPY} --add-gnu-debuglink=objcopytest.debug $<TARGET_FILE:objcopytest>
+    VERBATIM)

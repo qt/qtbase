@@ -37,7 +37,7 @@ function(qt_internal_add_linker_version_script target)
             BYPRODUCTS "${outfile}" DEPENDS "${infile}"
             WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
             COMMENT "Generating version linker script"
-            )
+            VERBATIM)
         target_link_options("${target}" PRIVATE "-Wl,--version-script,${outfile}")
     endif()
 endfunction()

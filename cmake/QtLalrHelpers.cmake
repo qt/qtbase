@@ -57,6 +57,7 @@ function(qt_process_qlalr consuming_target input_file_list flags)
             COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qlalr ${flags} ${relative_input_file}
             DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::qlalr
             MAIN_DEPENDENCY ${input_file}
+            VERBATIM
         )
         target_sources(${consuming_target} PRIVATE ${cpp_file} ${impl_file})
     endforeach()

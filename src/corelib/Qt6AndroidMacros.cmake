@@ -424,6 +424,7 @@ function(qt6_android_add_apk_target target)
             COMMENT "Creating APK for ${target}"
             DEPENDS "${target}" "${deployment_file}" ${extra_deps}
             DEPFILE "${dep_file_path}"
+            VERBATIM
         )
         cmake_policy(POP)
 
@@ -491,6 +492,7 @@ function(qt6_android_add_apk_target target)
                     --builddir "${CMAKE_BINARY_DIR}"
                 COMMENT "Resolving ${CMAKE_ANDROID_ARCH_ABI} dependencies for the ${target} APK"
                 DEPFILE "${dep_file}"
+                VERBATIM
             )
             add_custom_target(qt_internal_${target}_copy_apk_dependencies
                 DEPENDS "${timestamp_file}")
