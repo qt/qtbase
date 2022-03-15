@@ -68,13 +68,13 @@ public:
 public slots:
     void go()
     {
-        QNetworkRequest request(QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/bigfile"));
+        QNetworkRequest request(QUrl("http://" + QtNetworkSettings::httpServerName() + "/qtest/bigfile"));
         if (zeroCopy)
             request.setAttribute(QNetworkRequest::MaximumDownloadBufferSizeAttribute, 10*1024*1024);
 
         QNetworkReply *reply = netmanager.get(
                 QNetworkRequest(
-                QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/bigfile")
+                QUrl("http://" + QtNetworkSettings::httpServerName() + "/qtest/bigfile")
                 ));
         connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
                 this, SLOT(dataReadProgress(qint64,qint64)));
@@ -117,8 +117,13 @@ tst_QNetworkAccessManager_And_QProgressDialog::tst_QNetworkAccessManager_And_QPr
 
 void tst_QNetworkAccessManager_And_QProgressDialog::initTestCase()
 {
+#ifdef QT_TEST_SERVER
+    if (!QtNetworkSettings::verifyConnection(QtNetworkSettings::httpServerName(), 80))
+        QSKIP("No network test server available");
+#else
     if (!QtNetworkSettings::verifyTestNetworkSettings())
         QSKIP("No network test server available");
+#endif
 }
 
 void tst_QNetworkAccessManager_And_QProgressDialog::downloadCheck_data()

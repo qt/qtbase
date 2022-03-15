@@ -11,4 +11,5 @@ qt_internal_add_test(tst_qnetworkaccessmanager_and_qprogressdialog
         Qt::Gui
         Qt::Network
         Qt::Widgets
+    QT_TEST_SERVER_LIST "apache2"
 )
