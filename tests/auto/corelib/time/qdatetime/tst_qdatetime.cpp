@@ -48,6 +48,7 @@ public Q_SLOTS:
 private Q_SLOTS:
     void ctor();
     void operator_eq();
+    void moveSemantics();
     void isNull();
     void isValid();
     void date();
@@ -330,6 +331,18 @@ void tst_QDateTime::operator_eq()
     QDateTime dt2(QDate(2005, 3, 11), QTime(0, 0), Qt::UTC);
     dt2 = dt1;
     QVERIFY(dt1 == dt2);
+}
+
+void tst_QDateTime::moveSemantics()
+{
+    QDateTime dt1{QDate{2004, 3, 24}, QTime{23, 45, 57}, Qt::UTC};
+    QDateTime dt2{QDate{2005, 3, 11}, QTime{0, 0}, Qt::UTC};
+    QDateTime copy = dt1;
+    QDateTime moved = std::move(dt1);
+    QCOMPARE(copy, moved);
+    copy = dt2;
+    moved = std::move(dt2);
+    QCOMPARE(copy, moved);
 }
 
 void tst_QDateTime::isNull()

@@ -267,6 +267,9 @@ class Q_CORE_EXPORT QDateTime
         Data &operator=(const Data &other);
         ~Data();
 
+        void swap(Data &other) noexcept
+        { std::swap(data, other.data); }
+
         bool isShort() const;
         void detach();
 
@@ -290,7 +293,7 @@ public:
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QDateTime)
     QDateTime &operator=(const QDateTime &other) noexcept;
 
-    void swap(QDateTime &other) noexcept { qSwap(d.d, other.d.d); }
+    void swap(QDateTime &other) noexcept { d.swap(other.d); }
 
     bool isNull() const;
     bool isValid() const;
