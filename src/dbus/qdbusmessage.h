@@ -71,7 +71,7 @@ public:
     QDBusMessage &operator=(const QDBusMessage &other);
     ~QDBusMessage();
 
-    void swap(QDBusMessage &other) noexcept { qSwap(d_ptr, other.d_ptr); }
+    void swap(QDBusMessage &other) noexcept { qt_ptr_swap(d_ptr, other.d_ptr); }
 
     static QDBusMessage createSignal(const QString &path, const QString &interface,
                                      const QString &name);

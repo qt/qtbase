@@ -64,7 +64,7 @@ public:
     ~QDBusUnixFileDescriptor();
 
     void swap(QDBusUnixFileDescriptor &other) noexcept
-    { qSwap(d, other.d); }
+    { d.swap(other.d); }
 
     bool isValid() const;
 

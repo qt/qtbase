@@ -112,9 +112,9 @@ public:
 
     void swap(QDBusError &other) noexcept
     {
-        qSwap(code,   other.code);
-        qSwap(msg,    other.msg);
-        qSwap(nm,     other.nm);
+        std::swap(code, other.code);
+        msg.swap(other.msg);
+        nm.swap(other.nm);
     }
 
     ErrorType type() const;
