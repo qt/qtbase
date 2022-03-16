@@ -11,4 +11,5 @@ qt_internal_add_test(tst_qlocalsocket
     PUBLIC_LIBRARIES
         Qt::Network
 )
+add_dependencies(tst_qlocalsocket socketprocess)
 # special case end
