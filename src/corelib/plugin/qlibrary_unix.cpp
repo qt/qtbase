@@ -230,7 +230,7 @@ bool QLibraryPrivate::load_sys()
                 attempt = name;
                 int lparen = attempt.indexOf(QLatin1Char('('));
                 if (lparen == -1)
-                    lparen = attempt.count();
+                    lparen = attempt.size();
                 attempt = path + prefixes.at(prefix) + attempt.insert(lparen, suffixes.at(suffix));
             } else {
                 attempt = path + prefixes.at(prefix) + name + suffixes.at(suffix);

@@ -976,7 +976,9 @@ void tst_QString::length()
     QFETCH(QString, s1);
     QTEST(s1.length(), "res");
     QTEST(s1.size(), "res");
-    QTEST(s1.count(), "res");
+#if QT_DEPRECATED_SINCE(6, 4)
+    QT_IGNORE_DEPRECATIONS(QTEST(s1.count(), "res");)
+#endif
 }
 
 #include <qfile.h>
@@ -1905,7 +1907,9 @@ void tst_QString::count()
     QCOMPARE(a.count( QStringView(), Qt::CaseInsensitive), 16);
 
     QString nullStr;
-    QCOMPARE(nullStr.count(), 0);
+#if QT_DEPRECATED_SINCE(6, 4)
+    QT_IGNORE_DEPRECATIONS(QCOMPARE(nullStr.count(), 0);)
+#endif
     QCOMPARE(nullStr.count('A'), 0);
     QCOMPARE(nullStr.count("AB"), 0);
     QCOMPARE(nullStr.count(view), 0);
@@ -1919,7 +1923,9 @@ void tst_QString::count()
 #endif
 
     QString emptyStr("");
-    QCOMPARE(emptyStr.count(), 0);
+#if QT_DEPRECATED_SINCE(6, 4)
+    QT_IGNORE_DEPRECATIONS(QCOMPARE(emptyStr.count(), 0);)
+#endif
     QCOMPARE(emptyStr.count('A'), 0);
     QCOMPARE(emptyStr.count("AB"), 0);
     QCOMPARE(emptyStr.count(view), 0);
@@ -6500,7 +6506,7 @@ void tst_QString::arg_fillChar()
     QFETCH(IntList, widths);
     QFETCH(QString, fillChars);
     QFETCH(QString, expected);
-    QCOMPARE(replaceValues.count(), fillChars.count());
+    QCOMPARE(replaceValues.count(), fillChars.size());
     QCOMPARE(replaceValues.count(), widths.count());
 
     QString actual = pattern;
