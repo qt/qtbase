@@ -137,11 +137,7 @@ struct QVersionTag
 #  ifdef Q_OS_DARWIN
 #    define QT_VERSION_TAG_SECTION      __attribute__((section("__DATA,.qtversion")))
 #  endif
-#  if __has_attribute(retain)
-#    define QT_VERSION_TAG_ATTRIBUTE    __attribute__((visibility("hidden"), retain, used))
-#  else
-#    define QT_VERSION_TAG_ATTRIBUTE    __attribute__((visibility("hidden"), used))
-#  endif
+#  define QT_VERSION_TAG_ATTRIBUTE    __attribute__((visibility("hidden"), used))
 #  define QT_VERSION_TAG2(sym, imp)     \
     extern "C" Q_DECL_IMPORT const char sym; \
     QT_VERSION_TAG_ATTRIBUTE QT_VERSION_TAG_SECTION constexpr inline QtPrivate::QVersionTag sym ## _use(&sym)
