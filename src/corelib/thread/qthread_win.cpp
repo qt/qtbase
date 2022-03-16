@@ -334,23 +334,27 @@ void QThreadPrivate::finish(void *arg, bool lockAnyway) noexcept
     QThread *thr = reinterpret_cast<QThread *>(arg);
     QThreadPrivate *d = thr->d_func();
 
-    QMutexLocker locker(lockAnyway ? &d->mutex : 0);
+    QMutexLocker locker(lockAnyway ? &d->mutex : nullptr);
     d->isInFinish = true;
     d->priority = QThread::InheritPriority;
     void **tls_data = reinterpret_cast<void **>(&d->data->tls);
-    locker.unlock();
+    if (lockAnyway)
+        locker.unlock();
     emit thr->finished(QThread::QPrivateSignal());
     QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
     QThreadStorageData::finish(tls_data);
-    locker.relock();
+    if (lockAnyway)
+        locker.relock();
 
     QAbstractEventDispatcher *eventDispatcher = d->data->eventDispatcher.loadRelaxed();
     if (eventDispatcher) {
         d->data->eventDispatcher = 0;
-        locker.unlock();
+        if (lockAnyway)
+            locker.unlock();
         eventDispatcher->closingDown();
         delete eventDispatcher;
-        locker.relock();
+        if (lockAnyway)
+            locker.relock();
     }
 
     d->running = false;
