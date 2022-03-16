@@ -764,7 +764,7 @@ void QVulkanWindowPrivate::init()
                 err = f->vkEnumerateDeviceLayerProperties(physDev, &count, layerProps.data());
                 if (err == VK_SUCCESS) {
                     for (const VkLayerProperties &prop : layerProps) {
-                        if (!strncmp(prop.layerName, stdValNamePtr, stdValName.count())) {
+                        if (!strncmp(prop.layerName, stdValNamePtr, stdValName.size())) {
                             devInfo.enabledLayerCount = 1;
                             devInfo.ppEnabledLayerNames = &stdValNamePtr;
                             break;
