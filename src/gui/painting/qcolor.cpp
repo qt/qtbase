@@ -84,7 +84,7 @@ static inline int hex2int(const char *s, int n)
 static std::optional<QRgba64> get_hex_rgb(const char *name, size_t len)
 {
     if (name[0] != '#')
-        return {};
+        return std::nullopt;
     name++;
     --len;
     int a, r, g, b;
@@ -98,7 +98,7 @@ static std::optional<QRgba64> get_hex_rgb(const char *name, size_t len)
         g = hex2int(name + 3, 3);
         b = hex2int(name + 6, 3);
         if (r == -1 || g == -1 || b == -1)
-            return {};
+            return std::nullopt;
         r = (r << 4) | (r >> 8);
         g = (g << 4) | (g >> 8);
         b = (b << 4) | (b >> 8);
@@ -119,7 +119,7 @@ static std::optional<QRgba64> get_hex_rgb(const char *name, size_t len)
         r = g = b = -1;
     }
     if (uint(r) > 65535 || uint(g) > 65535 || uint(b) > 65535 || uint(a) > 65535)
-        return {};
+        return std::nullopt;
     return qRgba64(r, g ,b, a);
 }
 
@@ -127,13 +127,13 @@ std::optional<QRgb> qt_get_hex_rgb(const char *name)
 {
     if (std::optional<QRgba64> rgba64 = get_hex_rgb(name, qstrlen(name)))
         return rgba64->toArgb32();
-    return {};
+    return std::nullopt;
 }
 
 static std::optional<QRgba64> get_hex_rgb(const QChar *str, size_t len)
 {
     if (len > 13)
-        return {};
+        return std::nullopt;
     char tmp[16];
     for (size_t i = 0; i < len; ++i)
         tmp[i] = str[i].toLatin1();
@@ -338,7 +338,7 @@ static std::optional<QRgb> get_named_rgb_no_space(const char *name_no_space)
     const RGBData *r = std::lower_bound(rgbTbl, rgbTbl + rgbTblSize, name_no_space);
     if ((r != rgbTbl + rgbTblSize) && !(name_no_space < *r))
         return r->value;
-    return {};
+    return std::nullopt;
 }
 
 namespace {
@@ -350,7 +350,7 @@ static char to_char(QChar ch) noexcept { return ch.toLatin1(); }
 static std::optional<QRgb> get_named_rgb(QAnyStringView name)
 {
     if (name.size() > 255)
-        return {};
+        return std::nullopt;
     char name_no_space[256];
     int pos = 0;
     name.visit([&pos, &name_no_space] (auto name) {
