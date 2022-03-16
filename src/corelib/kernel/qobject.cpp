@@ -4202,27 +4202,18 @@ QList<QByteArray> QObject::dynamicPropertyNames() const
   QObject debugging output routines.
  *****************************************************************************/
 
+std::string QObjectPrivate::flagsForDumping() const
+{
+    return {};
+}
+
 static void dumpRecursive(int level, const QObject *object)
 {
     if (object) {
         const int indent = level * 4;
-        const QString name = object->objectName();
-        QString flags;
-#if 0
-        if (qApp->focusWidget() == object)
-            flags += 'F';
-        if (object->isWidgetType()) {
-            QWidget * w = (QWidget *)object;
-            if (w->isVisible()) {
-                QString t("<%1,%2,%3,%4>");
-                flags += t.arg(w->x()).arg(w->y()).arg(w->width()).arg(w->height());
-            } else {
-                flags += 'I';
-            }
-        }
-#endif
-        qDebug("%*s%s::%ls %ls", indent, "", object->metaObject()->className(),
-               qUtf16Printable(name), qUtf16Printable(flags));
+        qDebug("%*s%s::%ls %s", indent, "", object->metaObject()->className(),
+               qUtf16Printable(object->objectName()),
+               QObjectPrivate::get(object)->flagsForDumping().c_str());
         for (auto child : object->children())
             dumpRecursive(level + 1, child);
     }

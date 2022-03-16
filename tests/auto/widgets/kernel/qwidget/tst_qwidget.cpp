@@ -335,6 +335,8 @@ private slots:
     void resizeInPaintEvent();
     void opaqueChildren();
 
+    void dumpObjectTree();
+
     void setMaskInResizeEvent();
     void moveInResizeEvent();
 
@@ -9060,6 +9062,44 @@ void tst_QWidget::opaqueChildren()
     QCOMPARE(qt_widget_private(&grandChild)->getOpaqueChildren(), QRegion());
 }
 
+void tst_QWidget::dumpObjectTree()
+{
+    QWidget w;
+    w.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+    Q_SET_OBJECT_NAME(w);
+    w.move(100, 100);
+    w.resize(500, 500);
+
+    QLineEdit le(&w);
+    Q_SET_OBJECT_NAME(le);
+    le.resize(500, 500);
+
+    {
+        const char * const expected[] = {
+            "QWidget::w I",
+            "    QLineEdit::le I",
+            "        QWidgetLineControl:: ",
+        };
+        for (const char *line : expected)
+            QTest::ignoreMessage(QtDebugMsg, line);
+        w.dumpObjectTree();
+    }
+
+    w.show();
+    QApplication::setActiveWindow(&w);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
+
+    {
+        const char * const expected[] = {
+            "QWidget::w <500x500+100+100>",
+            "    QLineEdit::le F<500x500+0+0>",
+            "        QWidgetLineControl:: ",
+        };
+        for (const char *line : expected)
+            QTest::ignoreMessage(QtDebugMsg, line);
+        w.dumpObjectTree();
+    }
+}
 
 class MaskSetWidget : public QWidget
 {

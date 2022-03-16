@@ -110,6 +110,8 @@
 
 #include "qwindowcontainer_p.h"
 
+#include <sstream>
+
 // widget/widget data creation count
 //#define QWIDGET_EXTRA_DEBUG
 //#define ALIEN_DEBUG
@@ -12959,6 +12961,25 @@ void QWidgetPrivate::setWidgetParentHelper(QObject *widgetAsObject, QObject *new
     Q_ASSERT(!newParent || newParent->isWidgetType());
     QWidget *widget = static_cast<QWidget*>(widgetAsObject);
     widget->setParent(static_cast<QWidget*>(newParent));
+}
+
+std::string QWidgetPrivate::flagsForDumping() const
+{
+    Q_Q(const QWidget);
+    std::string flags = QObjectPrivate::flagsForDumping();
+    if (QApplication::focusWidget() == q)
+        flags += 'F';
+    if (q->isVisible()) {
+        std::stringstream s;
+        s << '<'
+          << q->width() << 'x' << q->height()
+          << std::showpos << q->x() << q->y()
+          << '>';
+        flags += s.str();
+    } else {
+        flags += 'I';
+    }
+    return flags;
 }
 
 void QWidgetPrivate::setNetWmWindowTypes(bool skipIfMissing)

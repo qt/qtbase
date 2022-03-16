@@ -63,6 +63,8 @@
 #include "QtCore/qproperty.h"
 #include "QtCore/private/qproperty_p.h"
 
+#include <string>
+
 QT_BEGIN_NAMESPACE
 
 class QVariant;
@@ -411,6 +413,8 @@ public:
         cd->ref.ref();
         connections.storeRelaxed(cd);
     }
+
+    virtual std::string flagsForDumping() const;
 
 public:
     mutable ExtraData *extraData; // extra data set by the user
