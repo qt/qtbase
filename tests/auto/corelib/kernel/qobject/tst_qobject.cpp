@@ -4533,6 +4533,17 @@ void tst_QObject::pointerConnect()
     con = connect(&r1, &ReceiverObject::slot4 , &s, &SenderObject::signal4);
     QVERIFY(!con);
     QVERIFY(!QObject::disconnect(con));
+
+    //connect an arbitrary PMF to a slot
+    QTest::ignoreMessage(QtWarningMsg, "QObject::connect: signal not found in ReceiverObject");
+    con = connect(&r1, &ReceiverObject::reset, &r1, &ReceiverObject::slot1);
+    QVERIFY(!con);
+    QVERIFY(!QObject::disconnect(con));
+
+    QTest::ignoreMessage(QtWarningMsg, "QObject::connect: signal not found in ReceiverObject");
+    con = connect(&r1, &ReceiverObject::reset, &r1, [](){});
+    QVERIFY(!con);
+    QVERIFY(!QObject::disconnect(con));
 }
 
 void tst_QObject::pointerDisconnect()
