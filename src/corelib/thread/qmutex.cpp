@@ -491,7 +491,7 @@ void QRecursiveMutex::unlock() noexcept
 
     Move-constructs a QMutexLocker from \a other. The mutex and the
     state of \a other is transferred to the newly constructed instance.
-    After the move, \a other will no longer be managing its mutex.
+    After the move, \a other will no longer be managing any mutex.
 
     \sa QMutex::lock()
 */
@@ -504,7 +504,7 @@ void QRecursiveMutex::unlock() noexcept
     was holding a locked mutex before the assignment, the mutex will be
     unlocked. The mutex and the state of \a other is then transferred
     to this QMutexLocker. After the move, \a other will no longer be
-    managing its mutex.
+    managing any mutex.
 
     \sa QMutex::lock()
 */
