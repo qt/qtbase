@@ -56,6 +56,71 @@ QT_BEGIN_NAMESPACE
 
     The \l{Test Anything Protocol} (TAP) is a simple plain-text interface
     between testing code and systems for reporting and analyzing test results.
+    Since QtTest doesn't build the table for a data-driven test until the test
+    is about to be run, we don't typically know how many tests we'll run until
+    we've run them, so we put The Plan at the end, rather than the beginning.
+    We summarise the results in comments following The Plan.
+
+    \section1 YAMLish
+
+    The TAP protocol supports inclusion, after a Test Line, of a "diagnostic
+    block" in YAML, containing supporting information. We use this to package
+    other information from the test, in combination with comments to record
+    information we're unable to deliver at the same time as a test line.  By
+    convention, TAP producers limit themselves to a restricted subset of YAML,
+    known as YAMLish, for maximal compatibility with TAP consumers.
+
+    YAML (see \c yaml.org for details) supports three data-types: mapping (hash
+    or dictionary), sequence (list, array or set) and scalar (string or number),
+    much as JSON does. It uses indentation to indicate levels of nesting of
+    mappings and sequences within one another. A line starting with a dash (at
+    the same level of indent as its context) introduces a list entry. A line
+    starting with a key (more indented than its context, aside from any earlier
+    keys at its level) followed by a colon introduces a mapping entry; the key
+    may be either a simple word or a quoted string (within which numeric escapes
+    may be used to indicate unicode characters). The value associated with a
+    given key, or the entry in a list, can appar after the key-colon or dasy
+    either on the same line or on a succession of subsequent lines at higher
+    indent. Thus
+
+    \code
+    - first list item
+    -
+      second: list item is a mapping
+      with:
+      - two keys
+      - the second of which is a list
+    - back in the outer list, a third item
+    \endcode
+
+    In YAMLish, the top-level structure should be a hash. The keys supported for
+    this hash, with the meanings for their values, are:
+
+    \list
+    \li \c message: free text supplying supporting details
+    \li \c severity: how bad is it ?
+    \li \c source: source describing the test, as an URL (compare file, line)
+    \li \c at: identifies the function (with file and line) performing the test
+    \li \c datetime: when the test was run (ISO 8601 or HTTP format)
+    \li \c file: source of the test as a local file-name, when appropriate
+    \li \c line: line number within the source
+    \li \c name: test name
+    \li \c extensions: sub-hash in which to store random other stuff
+    \li \c actual: what happened (a.k.a. found; contrast expected)
+    \li \c expected: what was expected (a.k.a. wanted; contrast actual)
+    \li \c display: description of the result, suitable for display
+    \li \c dump: a sub-hash of variable values when the result arose
+    \li \c error: describes the error
+    \li \c backtrace: describes the call-stack of the error
+    \endlist
+
+    In practice, only \c at, \c expected and \c actual appear to be generally
+    supported.
+
+    We can also have several messages produced within a single test, so the
+    simple \c message / \c severity pair of top-level keys does not serve us
+    well. We therefore use \c extensions with a sub-tag \c messages in which to
+    package a list of messages.
 
     \sa QAbstractTestLogger
 */
@@ -171,7 +236,8 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
     if (!ok) {
         // All failures need a diagnostics section to not confuse consumers
 
-        // The indent needs to be two spaces for maximum compatibility
+        // The indent needs to be two spaces for maximum compatibility.
+        // This matches the width of the "- " prefix on a list item's first line.
         #define YAML_INDENT "  "
 
         outputString(YAML_INDENT "---\n");
