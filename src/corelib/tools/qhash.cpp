@@ -149,7 +149,7 @@ private:
     const char *seedstr = getenv("QT_HASH_SEED");
     const char *endptr = nullptr;
     bool ok = false;
-    int seed;
+    int seed = 0;
     if (seedstr)
         seed = qstrntoll(seedstr, strlen(seedstr), &endptr, 10, &ok);
     if (ok && endptr != seedstr + strlen(seedstr))
