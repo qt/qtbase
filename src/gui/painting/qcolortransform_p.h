@@ -36,6 +36,7 @@ public:
     void updateLutsIn() const;
     void updateLutsOut() const;
     bool simpleGammaCorrection() const;
+    bool isIdentity() const;
 
     void prepare();
     enum TransformFlag {

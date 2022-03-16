@@ -1418,7 +1418,7 @@ static void convert_ARGB_to_gray8(QImageData *dest, const QImageData *src, Qt::I
 
     QColorSpace fromCS = src->colorSpace.isValid() ? src->colorSpace : QColorSpace::SRgb;
     QColorTransform tf = QColorSpacePrivate::get(fromCS)->transformationToXYZ();
-    QColorTransformPrivate *tfd = QColorTransformPrivate::get(tf);
+    const QColorTransformPrivate *tfd = QColorTransformPrivate::get(tf);
     QColorTransformPrivate::TransformFlags flags = Premultiplied
             ? QColorTransformPrivate::InputPremultiplied
             : QColorTransformPrivate::Unpremultiplied;
@@ -1448,7 +1448,7 @@ static void convert_ARGB_to_gray16(QImageData *dest, const QImageData *src, Qt::
 
     QColorSpace fromCS = src->colorSpace.isValid() ? src->colorSpace : QColorSpace::SRgb;
     QColorTransform tf = QColorSpacePrivate::get(fromCS)->transformationToXYZ();
-    QColorTransformPrivate *tfd = QColorTransformPrivate::get(tf);
+    const QColorTransformPrivate *tfd = QColorTransformPrivate::get(tf);
     QColorTransformPrivate::TransformFlags flags = Premultiplied
             ? QColorTransformPrivate::InputPremultiplied
             : QColorTransformPrivate::Unpremultiplied;
@@ -1487,7 +1487,7 @@ static void convert_RGBA64_to_gray8(QImageData *dest, const QImageData *src, Qt:
 
     QColorSpace fromCS = src->colorSpace.isValid() ? src->colorSpace : QColorSpace::SRgb;
     QColorTransform tf = QColorSpacePrivate::get(fromCS)->transformationToXYZ();
-    QColorTransformPrivate *tfd = QColorTransformPrivate::get(tf);
+    const QColorTransformPrivate *tfd = QColorTransformPrivate::get(tf);
     QColorTransformPrivate::TransformFlags flags = Premultiplied
             ? QColorTransformPrivate::InputPremultiplied
             : QColorTransformPrivate::Unpremultiplied;
@@ -1526,7 +1526,7 @@ static void convert_RGBA64_to_gray16(QImageData *dest, const QImageData *src, Qt
 
     QColorSpace fromCS = src->colorSpace.isValid() ? src->colorSpace : QColorSpace::SRgb;
     QColorTransform tf = QColorSpacePrivate::get(fromCS)->transformationToXYZ();
-    QColorTransformPrivate *tfd = QColorTransformPrivate::get(tf);
+    const QColorTransformPrivate *tfd = QColorTransformPrivate::get(tf);
     QColorTransformPrivate::TransformFlags flags = Premultiplied
             ? QColorTransformPrivate::InputPremultiplied
             : QColorTransformPrivate::Unpremultiplied;

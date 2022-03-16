@@ -1,4 +1,4 @@
-// Copyright (C) 2021 The Qt Company Ltd.
+// Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qimage.h"
@@ -4979,6 +4979,8 @@ QImage QImage::convertedToColorSpace(const QColorSpace &colorSpace) const
 {
     if (!d || !d->colorSpace.isValid() || !colorSpace.isValid())
         return QImage();
+    if (d->colorSpace == colorSpace)
+        return *this;
     QImage image = copy();
     image.convertToColorSpace(colorSpace);
     return image;
@@ -5003,6 +5005,8 @@ QColorSpace QImage::colorSpace() const
 */
 void QImage::applyColorTransform(const QColorTransform &transform)
 {
+    if (transform.isIdentity())
+        return;
     detach();
     if (!d)
         return;
@@ -5054,21 +5058,21 @@ void QImage::applyColorTransform(const QColorTransform &transform)
         transformSegment = [&](int yStart, int yEnd) {
             for (int y = yStart; y < yEnd; ++y) {
                 QRgbaFloat32 *scanline = reinterpret_cast<QRgbaFloat32 *>(d->data + y * d->bytes_per_line);
-                transform.d->apply(scanline, scanline, width(), flags);
+                QColorTransformPrivate::get(transform)->apply(scanline, scanline, width(), flags);
             }
         };
     } else  if (depth() > 32) {
         transformSegment = [&](int yStart, int yEnd) {
             for (int y = yStart; y < yEnd; ++y) {
                 QRgba64 *scanline = reinterpret_cast<QRgba64 *>(d->data + y * d->bytes_per_line);
-                transform.d->apply(scanline, scanline, width(), flags);
+                QColorTransformPrivate::get(transform)->apply(scanline, scanline, width(), flags);
             }
         };
     } else {
         transformSegment = [&](int yStart, int yEnd) {
             for (int y = yStart; y < yEnd; ++y) {
                 QRgb *scanline = reinterpret_cast<QRgb *>(d->data + y * d->bytes_per_line);
-                transform.d->apply(scanline, scanline, width(), flags);
+                QColorTransformPrivate::get(transform)->apply(scanline, scanline, width(), flags);
             }
         };
     }
@@ -5097,6 +5101,39 @@ void QImage::applyColorTransform(const QColorTransform &transform)
         *this = std::move(*this).convertToFormat(oldFormat);
 }
 
+/*!
+    \since 6.4
+
+    Returns the image color transformed using \a transform on all pixels in the image.
+
+    \sa applyColorTransform()
+*/
+QImage QImage::colorTransformed(const QColorTransform &transform) const &
+{
+    if (!d || !d->colorSpace.isValid())
+        return QImage();
+    if (transform.isIdentity())
+        return *this;
+    QImage image = copy();
+    image.applyColorTransform(transform);
+    return image;
+}
+
+/*!
+    \since 6.4
+    \overload
+
+    Returns the image color transformed using \a transform on all pixels in the image.
+
+    \sa applyColorTransform()
+*/
+QImage QImage::colorTransformed(const QColorTransform &transform) &&
+{
+    if (!d || !d->colorSpace.isValid())
+        return QImage();
+    applyColorTransform(transform);
+    return std::move(*this);
+}
 
 bool QImageData::convertInPlace(QImage::Format newFormat, Qt::ImageConversionFlags flags)
 {

@@ -419,6 +419,8 @@ QColorTransform QColorSpacePrivate::transformationToColorSpace(const QColorSpace
     ptr->colorSpaceIn = this;
     ptr->colorSpaceOut = out;
     ptr->colorMatrix = out->toXyz.inverted() * toXyz;
+    if (ptr->isIdentity())
+        return QColorTransform();
     return combined;
 }
 
@@ -979,6 +981,9 @@ bool QColorSpace::equals(const QColorSpace &other) const
 QColorTransform QColorSpace::transformationToColorSpace(const QColorSpace &colorspace) const
 {
     if (!isValid() || !colorspace.isValid())
+        return QColorTransform();
+
+    if (*this == colorspace)
         return QColorTransform();
 
     return d_ptr->transformationToColorSpace(colorspace.d_ptr.get());

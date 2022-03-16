@@ -101,6 +101,10 @@ public:
                     r.z * (b.y * g.x - g.y * b.x);
         return !qFuzzyIsNull(det);
     }
+    bool isIdentity() const noexcept
+    {
+        return *this == identity();
+    }
 
     QColorMatrix inverted() const
     {

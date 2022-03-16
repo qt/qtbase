@@ -46,6 +46,8 @@ private slots:
     void mapRGB64();
     void mapQColor_data();
     void mapQColor();
+
+    void transformIsIdentity();
 };
 
 tst_QColorTransform::tst_QColorTransform()
@@ -55,32 +57,30 @@ tst_QColorTransform::tst_QColorTransform()
 void tst_QColorTransform::mapRGB32_data()
 {
     QTest::addColumn<QColorTransform>("transform");
-    QTest::addColumn<bool>("isIdentity");
     QTest::addColumn<bool>("sharesRed");
 
-    QTest::newRow("default") << QColorTransform() << true << true;
-    QTest::newRow("sRGB to Linear") << QColorSpace(QColorSpace::SRgb).transformationToColorSpace(QColorSpace::SRgbLinear) << false << true;
-    QTest::newRow("AdobeRGB to sRGB") << QColorSpace(QColorSpace::AdobeRgb).transformationToColorSpace(QColorSpace::SRgb) << false << true;
+    QTest::newRow("default") << QColorTransform() << true;
+    QTest::newRow("sRGB to Linear") << QColorSpace(QColorSpace::SRgb).transformationToColorSpace(QColorSpace::SRgbLinear) << true;
+    QTest::newRow("AdobeRGB to sRGB") << QColorSpace(QColorSpace::AdobeRgb).transformationToColorSpace(QColorSpace::SRgb) << true;
     QTest::newRow("Linear AdobeRGB to Linear sRGB")
         << QColorSpace(QColorSpace::AdobeRgb).withTransferFunction(QColorSpace::TransferFunction::Linear).transformationToColorSpace(
             QColorSpace::SRgb)
-        << false << true;
-    QTest::newRow("sRgb to AdobeRGB") << QColorSpace(QColorSpace::SRgb).transformationToColorSpace(QColorSpace::AdobeRgb) << false << true;
-    QTest::newRow("DP3 to sRGB") << QColorSpace(QColorSpace::DisplayP3).transformationToColorSpace(QColorSpace::SRgb) << false << false;
+        << true;
+    QTest::newRow("sRgb to AdobeRGB") << QColorSpace(QColorSpace::SRgb).transformationToColorSpace(QColorSpace::AdobeRgb) << true;
+    QTest::newRow("DP3 to sRGB") << QColorSpace(QColorSpace::DisplayP3).transformationToColorSpace(QColorSpace::SRgb) << false;
     QTest::newRow("DP3 to Linear DP3")
         << QColorSpace(QColorSpace::DisplayP3).transformationToColorSpace(
             QColorSpace(QColorSpace::DisplayP3).withTransferFunction(QColorSpace::TransferFunction::Linear))
-        << false << false;
+        << false;
     QTest::newRow("Linear DP3 to Linear sRGB")
         << QColorSpace(QColorSpace::DisplayP3).withTransferFunction(QColorSpace::TransferFunction::Linear).transformationToColorSpace(
             QColorSpace::SRgb)
-        << false << false;
+        << false;
 }
 
 void tst_QColorTransform::mapRGB32()
 {
     QFETCH(QColorTransform, transform);
-    QFETCH(bool, isIdentity);
     QFETCH(bool, sharesRed);
     // Do basic sanity tests of conversions between similar sane color spaces
 
@@ -89,7 +89,7 @@ void tst_QColorTransform::mapRGB32()
     QVERIFY(qRed(result) < qGreen(result));
     QVERIFY(qGreen(result) < qBlue(result));
     QCOMPARE(qAlpha(result), 255);
-    if (isIdentity)
+    if (transform.isIdentity())
         QVERIFY(result == testColor);
     else
         QVERIFY(result != testColor);
@@ -99,7 +99,7 @@ void tst_QColorTransform::mapRGB32()
     QVERIFY(qRed(result) > qGreen(result));
     QVERIFY(qGreen(result) > qBlue(result));
     QCOMPARE(qAlpha(result), 255);
-    if (isIdentity)
+    if (transform.isIdentity())
         QVERIFY(result == testColor);
     else
         QVERIFY(result != testColor);
@@ -109,7 +109,7 @@ void tst_QColorTransform::mapRGB32()
     QVERIFY(qRed(result) < qGreen(result));
     QVERIFY(qGreen(result) < qBlue(result));
     QCOMPARE(qAlpha(result), 128);
-    if (isIdentity)
+    if (transform.isIdentity())
         QVERIFY(result == testColor);
     else
         QVERIFY(result != testColor);
@@ -148,7 +148,6 @@ void tst_QColorTransform::mapRGB64_data()
 void tst_QColorTransform::mapRGB64()
 {
     QFETCH(QColorTransform, transform);
-    QFETCH(bool, isIdentity);
     QFETCH(bool, sharesRed);
 
     QRgba64 testColor = QRgba64::fromRgba(128, 64, 32, 255);
@@ -156,7 +155,7 @@ void tst_QColorTransform::mapRGB64()
     QVERIFY(result.red() > result.green());
     QVERIFY(result.green() > result.blue());
     QCOMPARE(result.alpha(), 0xffff);
-    if (isIdentity)
+    if (transform.isIdentity())
         QVERIFY(result == testColor);
     else
         QVERIFY(result != testColor);
@@ -189,7 +188,6 @@ void tst_QColorTransform::mapQColor_data()
 void tst_QColorTransform::mapQColor()
 {
     QFETCH(QColorTransform, transform);
-    QFETCH(bool, isIdentity);
     QFETCH(bool, sharesRed);
 
     QColor testColor(32, 64, 128);
@@ -197,7 +195,7 @@ void tst_QColorTransform::mapQColor()
     QVERIFY(result.redF() < result.greenF());
     QVERIFY(result.greenF() < result.blueF());
     QCOMPARE(result.alphaF(), 1.0f);
-    if (isIdentity)
+    if (transform.isIdentity())
         QVERIFY(result == testColor);
     else
         QVERIFY(result != testColor);
@@ -220,6 +218,22 @@ void tst_QColorTransform::mapQColor()
     result = transform.map(testColor);
     QCOMPARE(result.alphaF(), 1.0f);
     QVERIFY(result.blueF() >= 1.0f);
+}
+
+void tst_QColorTransform::transformIsIdentity()
+{
+    QColorTransform ct;
+    QVERIFY(ct.isIdentity());
+
+    QColorSpace cs = QColorSpace::SRgb;
+    ct = cs.transformationToColorSpace(QColorSpace::SRgb);
+    QVERIFY(ct.isIdentity());
+
+    ct = cs.transformationToColorSpace(QColorSpace::SRgbLinear);
+    QVERIFY(!ct.isIdentity());
+
+    ct = cs.withTransferFunction(QColorSpace::TransferFunction::Linear).transformationToColorSpace(QColorSpace::SRgbLinear);
+    QVERIFY(ct.isIdentity());
 }
 
 QTEST_MAIN(tst_QColorTransform)

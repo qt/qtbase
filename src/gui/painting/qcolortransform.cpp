@@ -1,6 +1,5 @@
-// Copyright (C) 2018 The Qt Company Ltd.
+// Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
-
 
 #include "qcolortransform.h"
 #include "qcolortransform_p.h"
@@ -13,6 +12,7 @@
 #include <QtCore/qatomic.h>
 #include <QtCore/qmath.h>
 #include <QtGui/qcolor.h>
+#include <QtGui/qimage.h>
 #include <QtGui/qtransform.h>
 #include <QtCore/private/qsimd_p.h>
 
@@ -103,6 +103,50 @@ QColorTransform::QColorTransform(const QColorTransform &colorTransform) noexcept
 QColorTransform::~QColorTransform() = default;
 
 QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QColorTransformPrivate)
+
+/*!
+    \since 6.4
+    Returns true if the color transform is the identity transform.
+*/
+bool QColorTransform::isIdentity() const noexcept
+{
+    return !d || d->isIdentity();
+}
+
+/*!
+    \fn bool QColorTransform::operator==(const QColorTransform &ct1, const QColorTransform &ct2)
+    \since 6.4
+    Returns true if \a ct1 defines the same color transformation as \a ct2.
+*/
+
+/*!
+    \fn bool QColorTransform::operator!=(const QColorTransform &ct1, const QColorTransform &ct2)
+    \since 6.4
+    Returns true if \a ct1 does not define the same transformation as \a ct2.
+*/
+
+/*! \internal
+*/
+bool QColorTransform::compare(const QColorTransform &other) const
+{
+    if (d == other.d)
+        return true;
+    if (bool(d) != bool(other.d))
+        return d ? d->isIdentity() : other.d->isIdentity();
+    if (d->colorMatrix != other.d->colorMatrix)
+        return false;
+    if (bool(d->colorSpaceIn) != bool(other.d->colorSpaceIn))
+        return false;
+    if (bool(d->colorSpaceOut) != bool(other.d->colorSpaceOut))
+        return false;
+    for (int i = 0; i < 3; ++i) {
+        if (d->colorSpaceIn && d->colorSpaceIn->trc[i] != other.d->colorSpaceIn->trc[i])
+            return false;
+        if (d->colorSpaceOut && d->colorSpaceOut->trc[i] != other.d->colorSpaceOut->trc[i])
+            return false;
+    }
+    return true;
+}
 
 /*!
     Applies the color transformation on the QRgb value \a argb.
@@ -1129,7 +1173,7 @@ void QColorTransformPrivate::apply(T *dst, const T *src, qsizetype count, Transf
     updateLutsIn();
     updateLutsOut();
 
-    bool doApplyMatrix = (colorMatrix != QColorMatrix::identity());
+    bool doApplyMatrix = !colorMatrix.isIdentity();
     constexpr bool DoClip = !std::is_same_v<T, QRgbaFloat16> && !std::is_same_v<T, QRgbaFloat32>;
 
     QUninitialized<QColorVector, WorkBlockSize> buffer;
@@ -1280,5 +1324,29 @@ void QColorTransformPrivate::apply(quint16 *dst, const QRgba64 *src, qsizetype c
     applyReturnGray<quint16, QRgba64>(dst, src, count, flags);
 }
 
+
+/*!
+    \internal
+*/
+bool QColorTransformPrivate::isIdentity() const
+{
+    if (!colorMatrix.isIdentity())
+        return false;
+    if (colorSpaceIn && colorSpaceOut) {
+        if (colorSpaceIn->transferFunction != colorSpaceOut->transferFunction)
+            return false;
+        if (colorSpaceIn->transferFunction == QColorSpace::TransferFunction::Custom) {
+            return colorSpaceIn->trc[0] == colorSpaceOut->trc[0]
+                && colorSpaceIn->trc[1] == colorSpaceOut->trc[1]
+                && colorSpaceIn->trc[2] == colorSpaceOut->trc[2];
+        }
+    } else {
+        if (colorSpaceIn && colorSpaceIn->transferFunction != QColorSpace::TransferFunction::Linear)
+            return false;
+        if (colorSpaceOut && colorSpaceOut->transferFunction != QColorSpace::TransferFunction::Linear)
+            return false;
+    }
+    return true;
+}
 
 QT_END_NAMESPACE

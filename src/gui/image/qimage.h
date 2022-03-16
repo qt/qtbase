@@ -234,6 +234,8 @@ public:
     void convertToColorSpace(const QColorSpace &);
     void setColorSpace(const QColorSpace &);
 
+    QImage colorTransformed(const QColorTransform &transform) const &;
+    QImage colorTransformed(const QColorTransform &transform) &&;
     void applyColorTransform(const QColorTransform &transform);
 
     bool load(QIODevice *device, const char *format);
