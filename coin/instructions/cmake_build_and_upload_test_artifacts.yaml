@@ -54,7 +54,7 @@ instructions:
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 4800
     userMessageOnFailure: >
-      Failed to build sources. In the current state bug can be everywhere.
+      Failed to build sources.
   - type: UploadTestArtifact
     transferType: UploadModuleTestsArtifact
     archiveDirectory: "{{.BuildDir}}"
