@@ -326,9 +326,14 @@ instructions:
   # QNX variables
   - type: Group
     enable_if:
-      condition: property
-      property: target.os
-      equals_value: QNX
+      condition: and
+      conditions:
+        - condition: property
+          property: host.os
+          equals_value: Linux
+        - condition: property
+          property: target.os
+          equals_value: QNX
     instructions:
     - type: WriteFile
       fileContents: "#!/bin/bash\nexport TESTARGS={{.Env.TESTARGS}}\nexport TESTRUNNER={{.Env.TESTRUNNER}}\nexport COIN_CTEST_RESULTSDIR={{.Env.COIN_CTEST_RESULTSDIR}}\n$*"
@@ -360,10 +365,39 @@ instructions:
     - type: AppendToEnvironmentVariable
       variableName: PATH
       variableValue: ":{{.Env.QEMUARMV7_TOOLCHAIN_SYSROOT}}/../x86_64-pokysdk-linux/usr/bin:"
-      enable_if:
-        condition: property
-        property: host.os
-        equals_value: Linux
+
+  - type: Group
+    enable_if:
+      condition: and
+      conditions:
+        - condition: property
+          property: host.os
+          equals_value: Windows
+        - condition: property
+          property: target.os
+          equals_value: QNX
+    instructions:
+    - type: EnvironmentVariable
+      variableName: QNX_TARGET
+      variableValue: "{{.Env.QNX_710_CMAKE}}/target/qnx7"
+    - type: EnvironmentVariable
+      variableName: QNX_CONFIGURATION_EXCLUSIVE
+      variableValue: "{{.Env.HOMEPATH}}\\.qnx"
+    - type: EnvironmentVariable
+      variableName: QNX_CONFIGURATION
+      variableValue: "{{.Env.HOMEPATH}}\\.qnx"
+    - type: PrependToEnvironmentVariable
+      variableName: PATH
+      variableValue: "{{.Env.QNX_710}}\\host\\win64\\x86_64\\usr\\bin;"
+    - type: PrependToEnvironmentVariable
+      variableName: PATH
+      variableValue: "{{.Env.QNX_710}}\\host\\common\\bin;"
+    - type: PrependToEnvironmentVariable
+      variableName: PATH
+      variableValue: "{{.Env.HOMEPATH}}\\.qnx;"
+    - type: EnvironmentVariable
+      variableName: QNX_HOST
+      variableValue: "{{.Env.QNX_710}}\\host\\win64\\x86_64"
 
   # Enable warnings are errors
   - type: Group
