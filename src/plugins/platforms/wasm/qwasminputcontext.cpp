@@ -43,13 +43,22 @@ using namespace qstdweb;
 
 static void inputCallback(emscripten::val event)
 {
-    QString str = QString::fromStdString(event["target"]["value"].as<std::string>());
-    QWasmInputContext *wasmInput =
-            reinterpret_cast<QWasmInputContext*>(event["target"]["data-context"].as<quintptr>());
-    wasmInput->inputStringChanged(str, wasmInput);
+    // android sends all the characters typed since the user started typing in this element
+    int length = event["target"]["value"]["length"].as<int>();
+    if (length <= 0)
+        return;
 
-    // this stops suggestions
-    // but allows us to send only one character like a normal keyboard
+    // use only last character
+    emscripten::val _incomingCharVal = event["target"]["value"][length - 1];
+    if (_incomingCharVal != emscripten::val::undefined() && _incomingCharVal != emscripten::val::null()) {
+
+        QString str = QString::fromStdString(_incomingCharVal.as<std::string>());
+        QWasmInputContext *wasmInput =
+                reinterpret_cast<QWasmInputContext*>(event["target"]["data-context"].as<quintptr>());
+        wasmInput->inputStringChanged(str, wasmInput);
+    }
+    // this clears the input string, so backspaces do not send a character
+    // but stops suggestions
     event["target"].set("value", "");
 }
 
@@ -168,10 +177,12 @@ int QWasmInputContext::androidKeyboardCallback(int eventType,
                                                const EmscriptenKeyboardEvent *keyEvent,
                                                void *userData)
 {
+    // we get Enter, Backspace and function keys via emscripten on target window
     Q_UNUSED(eventType)
     QString strKey(keyEvent->key);
-    if (strKey == "Unidentified")
+    if (strKey == "Unidentified" || strKey == "Process")
         return false;
+
     QWasmInputContext *wasmInput = reinterpret_cast<QWasmInputContext*>(userData);
     wasmInput->inputStringChanged(strKey, wasmInput);
 
