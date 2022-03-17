@@ -2498,8 +2498,15 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
     if (self) {
         self->notifyActiveWindowChange(previous);
 
-        if (previousFocusObject != qApp->focusObject())
+        if (previousFocusObject != qApp->focusObject() ||
+            // We are getting an activation change but there is no new focusObject, and we also
+            // don't have a previousFocusObject in the previously active window anymore. This can
+            // happen when window gets destroyed (see QWidgetWindow::focusObject returning nullptr
+            // when already in the QWidget destructor), so update the focusObject to avoid dangling
+            // pointers. See also QWidget::clearFocus(), which tries to cover for this as well.
+            (previous && previousFocusObject == nullptr && qApp->focusObject() == nullptr)) {
             self->_q_updateFocusObject(qApp->focusObject());
+        }
     }
 
     emit qApp->focusWindowChanged(newFocus);
