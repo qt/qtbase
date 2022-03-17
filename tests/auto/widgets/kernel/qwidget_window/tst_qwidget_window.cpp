@@ -43,6 +43,7 @@
 #include <qlabel.h>
 #include <qmainwindow.h>
 #include <qtoolbar.h>
+#include <qsignalspy.h>
 #include <private/qwindow_p.h>
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
@@ -130,6 +131,8 @@ private slots:
 
     void mouseMoveWithPopup_data();
     void mouseMoveWithPopup();
+
+    void resetFocusObjectOnDestruction();
 
 private:
     QSize m_testWidgetSize;
@@ -1572,6 +1575,39 @@ void tst_QWidget_window::mouseMoveWithPopup()
         && !QGuiApplication::platformName().startsWith(QLatin1String("windows"), Qt::CaseInsensitive))
         QEXPECT_FAIL("Dialog", "Platform specific behavior", Continue);
     QCOMPARE(topLevel.popup->mouseReleaseCount, 1);
+}
+
+void tst_QWidget_window::resetFocusObjectOnDestruction()
+{
+    QSignalSpy focusObjectChangedSpy(qApp, &QGuiApplication::focusObjectChanged);
+
+    // single top level widget that has focus
+    std::unique_ptr<QWidget> widget(new QWidget);
+    widget->setObjectName("Widget 1");
+    widget->setFocus();
+    widget->show();
+    QVERIFY(QTest::qWaitForWindowActive(widget.get()));
+
+    int activeCount = focusObjectChangedSpy.count();
+    widget.reset();
+    QVERIFY(focusObjectChangedSpy.count() > activeCount);
+    QCOMPARE(focusObjectChangedSpy.last().last().value<QObject*>(), nullptr);
+    focusObjectChangedSpy.clear();
+
+    // top level widget with focused child
+    widget.reset(new QWidget);
+    widget->setObjectName("Widget 2");
+    QWidget *child = new QWidget(widget.get());
+    child->setObjectName("Child widget");
+    child->setFocus();
+    widget->show();
+    QVERIFY(QTest::qWaitForWindowActive(widget.get()));
+
+    activeCount = focusObjectChangedSpy.count();
+    widget.reset();
+    // we might get more than one signal emission
+    QVERIFY(focusObjectChangedSpy.count() > activeCount);
+    QCOMPARE(focusObjectChangedSpy.last().last().value<QObject*>(), nullptr);
 }
 
 QTEST_MAIN(tst_QWidget_window)

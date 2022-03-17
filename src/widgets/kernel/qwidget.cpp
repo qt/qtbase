@@ -6672,7 +6672,14 @@ void QWidget::clearFocus()
     }
 
     QTLWExtra *extra = window()->d_func()->maybeTopData();
-    QObject *originalFocusObject = (extra && extra->window) ? extra->window->focusObject() : nullptr;
+    QObject *originalFocusObject = nullptr;
+    if (extra && extra->window) {
+        originalFocusObject = extra->window->focusObject();
+        // the window's focus object might already be nullptr if we are in the destructor, but we still
+        // need to update QGuiApplication and input context if we have a focus widget.
+        if (!originalFocusObject)
+            originalFocusObject = focusWidget();
+    }
 
     QWidget *w = this;
     while (w) {
