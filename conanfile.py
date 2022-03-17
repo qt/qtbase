@@ -533,6 +533,14 @@ class QtBase(ConanFile):
 
     def package_info(self):
         self._shared.package_info(self)
+        if tools.cross_building(conanfile=self):
+            qt_host_path = self.options.get_safe("qt_host_path")
+            if qt_host_path is None:
+                raise QtConanError("Unable to cross-compile, 'qt_host_path' option missing?")
+            resolved_qt_host_path = str(
+                Path(os.path.expandvars(str(qt_host_path))).expanduser().resolve(strict=True)
+            )
+            self.env_info.QT_HOST_PATH.append(resolved_qt_host_path)
 
     def package_id(self):
         # https://docs.conan.io/en/latest/creating_packages/define_abi_compatibility.html
