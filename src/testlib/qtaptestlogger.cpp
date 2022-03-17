@@ -157,7 +157,7 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
     QTestCharBuffer directive;
     if (incident) {
         QTest::qt_asprintf(&directive, " # %s%s%s", incident,
-                           qstrlen(description) ? " " : "", description);
+                           description && description[0] ? " " : "", description);
     }
 
     int testNumber = QTestLog::totalCount();
