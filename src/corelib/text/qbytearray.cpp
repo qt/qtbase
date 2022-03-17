@@ -70,7 +70,7 @@
 
 QT_BEGIN_NAMESPACE
 
-const char QByteArray::_empty = '\0';
+Q_CONSTINIT const char QByteArray::_empty = '\0';
 
 // ASCII case system, used by QByteArray::to{Upper,Lower}() and qstr(n)icmp():
 static constexpr inline uchar asciiUpper(uchar c)

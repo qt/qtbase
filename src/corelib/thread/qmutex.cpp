@@ -835,7 +835,7 @@ struct FreeListConstants : QFreeListDefaultConstants {
     enum { BlockCount = 4, MaxIndex=0xffff };
     static const int Sizes[BlockCount];
 };
-const int FreeListConstants::Sizes[FreeListConstants::BlockCount] = {
+Q_CONSTINIT const int FreeListConstants::Sizes[FreeListConstants::BlockCount] = {
     16,
     128,
     1024,
@@ -844,7 +844,7 @@ const int FreeListConstants::Sizes[FreeListConstants::BlockCount] = {
 
 typedef QFreeList<QMutexPrivate, FreeListConstants> FreeList;
 // We cannot use Q_GLOBAL_STATIC because it uses QMutex
-static FreeList freeList_;
+Q_CONSTINIT static FreeList freeList_;
 FreeList *freelist()
 {
     return &freeList_;

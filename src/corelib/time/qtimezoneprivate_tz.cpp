@@ -1389,7 +1389,7 @@ QByteArray QTzTimeZonePrivate::staticSystemTimeZoneId()
         ianaId = ianaId.mid(1);
 
     if (ianaId.isEmpty()) {
-        thread_local static ZoneNameReader reader;
+        Q_CONSTINIT thread_local static ZoneNameReader reader;
         ianaId = reader.name();
     }
 

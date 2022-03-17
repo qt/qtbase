@@ -162,7 +162,7 @@ inline timeval timespecToTimeval(const timespec &ts)
 inline void qt_ignore_sigpipe()
 {
     // Set to ignore SIGPIPE once only.
-    static QBasicAtomicInt atom = Q_BASIC_ATOMIC_INITIALIZER(0);
+    Q_CONSTINIT static QBasicAtomicInt atom = Q_BASIC_ATOMIC_INITIALIZER(0);
     if (!atom.loadRelaxed()) {
         // More than one thread could turn off SIGPIPE at the same time
         // But that's acceptable because they all would be doing the same

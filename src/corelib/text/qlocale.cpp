@@ -87,7 +87,7 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 
 #ifndef QT_NO_SYSTEMLOCALE
-static QSystemLocale *_systemLocale = nullptr;
+Q_CONSTINIT static QSystemLocale *_systemLocale = nullptr;
 class QSystemLocaleSingleton: public QSystemLocale
 {
 public:
@@ -95,7 +95,7 @@ public:
 };
 
 Q_GLOBAL_STATIC(QSystemLocaleSingleton, QSystemLocale_globalSystemLocale)
-static QLocaleData systemLocaleData;
+Q_CONSTINIT static QLocaleData systemLocaleData = {};
 #endif
 
 /******************************************************************************
@@ -695,7 +695,7 @@ int qt_repeatCount(QStringView s)
     return int(j);
 }
 
-static const QLocaleData *default_data = nullptr;
+Q_CONSTINIT static const QLocaleData *default_data = nullptr;
 
 static const QLocaleData *const c_data = locale_data;
 static QLocalePrivate *c_private()
@@ -852,7 +852,7 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
 
 static const int locale_data_size = sizeof(locale_data)/sizeof(QLocaleData) - 1;
 
-QBasicAtomicInt QLocalePrivate::s_generation = Q_BASIC_ATOMIC_INITIALIZER(0);
+Q_CONSTINIT QBasicAtomicInt QLocalePrivate::s_generation = Q_BASIC_ATOMIC_INITIALIZER(0);
 Q_GLOBAL_STATIC_WITH_ARGS(QSharedDataPointer<QLocalePrivate>, defaultLocalePrivate,
                           (new QLocalePrivate(defaultData(), defaultIndex())))
 

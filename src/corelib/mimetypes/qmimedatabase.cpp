@@ -89,6 +89,7 @@ QMimeDatabasePrivate::~QMimeDatabasePrivate()
 {
 }
 
+Q_CONSTINIT
 #ifdef QT_BUILD_INTERNAL
 Q_CORE_EXPORT
 #else

@@ -148,9 +148,9 @@ extern QString qAppFileName();
 # error "Bump QCoreApplicatoinPrivate::app_compile_version to QT_VERSION_CHECK(7, 0, 0)"
 #endif
 // We don't know exactly, but it's at least 6.0.0:
-int QCoreApplicationPrivate::app_compile_version = QT_VERSION_CHECK(6, 0, 0);
+Q_CONSTINIT int QCoreApplicationPrivate::app_compile_version = QT_VERSION_CHECK(6, 0, 0);
 
-bool QCoreApplicationPrivate::setuidAllowed = false;
+Q_CONSTINIT bool QCoreApplicationPrivate::setuidAllowed = false;
 
 #if !defined(Q_OS_WIN)
 #ifdef Q_OS_DARWIN
@@ -207,7 +207,7 @@ QString QCoreApplicationPrivate::appVersion() const
 }
 #endif // !Q_OS_WIN
 
-QString *QCoreApplicationPrivate::cachedApplicationFilePath = nullptr;
+Q_CONSTINIT QString *QCoreApplicationPrivate::cachedApplicationFilePath = nullptr;
 
 bool QCoreApplicationPrivate::checkInstance(const char *function)
 {
@@ -353,9 +353,9 @@ void Q_CORE_EXPORT qt_call_post_routines()
 #ifndef QT_NO_QOBJECT
 
 // app starting up if false
-bool QCoreApplicationPrivate::is_app_running = false;
+Q_CONSTINIT bool QCoreApplicationPrivate::is_app_running = false;
  // app closing down if true
-bool QCoreApplicationPrivate::is_app_closing = false;
+Q_CONSTINIT bool QCoreApplicationPrivate::is_app_closing = false;
 
 Q_CORE_EXPORT uint qGlobalPostedEventsCount()
 {
@@ -363,12 +363,12 @@ Q_CORE_EXPORT uint qGlobalPostedEventsCount()
     return currentThreadData->postEventList.size() - currentThreadData->postEventList.startOffset;
 }
 
-QAbstractEventDispatcher *QCoreApplicationPrivate::eventDispatcher = nullptr;
+Q_CONSTINIT QAbstractEventDispatcher *QCoreApplicationPrivate::eventDispatcher = nullptr;
 
 #endif // QT_NO_QOBJECT
 
-QCoreApplication *QCoreApplication::self = nullptr;
-uint QCoreApplicationPrivate::attribs =
+Q_CONSTINIT QCoreApplication *QCoreApplication::self = nullptr;
+Q_CONSTINIT uint QCoreApplicationPrivate::attribs =
     (1 << Qt::AA_SynthesizeMouseForUnhandledTouchEvents) |
     (1 << Qt::AA_SynthesizeMouseForUnhandledTabletEvents);
 
@@ -403,7 +403,7 @@ struct QCoreApplicationData {
 Q_GLOBAL_STATIC(QCoreApplicationData, coreappdata)
 
 #ifndef QT_NO_QOBJECT
-static bool quitLockEnabled = true;
+Q_CONSTINIT static bool quitLockEnabled = true;
 #endif
 
 #if defined(Q_OS_WIN)
@@ -536,7 +536,7 @@ void QCoreApplicationPrivate::eventDispatcherReady()
 {
 }
 
-QBasicAtomicPointer<QThread> QCoreApplicationPrivate::theMainThread = Q_BASIC_ATOMIC_INITIALIZER(nullptr);
+Q_CONSTINIT QBasicAtomicPointer<QThread> QCoreApplicationPrivate::theMainThread = Q_BASIC_ATOMIC_INITIALIZER(nullptr);
 QThread *QCoreApplicationPrivate::mainThread()
 {
     Q_ASSERT(theMainThread.loadRelaxed() != nullptr);
@@ -592,7 +592,7 @@ QString qAppName()
 void QCoreApplicationPrivate::initLocale()
 {
 #if defined(Q_OS_UNIX) && !defined(QT_BOOTSTRAPPED)
-    static bool qt_locale_initialized = false;
+    Q_CONSTINIT static bool qt_locale_initialized = false;
     if (qt_locale_initialized)
         return;
     qt_locale_initialized = true;

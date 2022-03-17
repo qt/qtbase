@@ -352,7 +352,7 @@ static constexpr auto idn_whitelist = qOffsetStringArray(
     "xn--xkc2al3hye2a"          // Sri Lanka
 );
 
-static QStringList *user_idn_whitelist = nullptr;
+Q_CONSTINIT static QStringList *user_idn_whitelist = nullptr;
 
 static bool lessThan(const QChar *a, int l, const char *c)
 {

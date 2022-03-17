@@ -1323,7 +1323,7 @@ struct QMetaTypeIdQObject<T*, QMetaType::PointerToQObject>
 
     static int qt_metatype_id()
     {
-        static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0);
+        Q_CONSTINIT static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0);
         if (const int id = metatype_id.loadAcquire())
             return id;
         const char *const cName = T::staticMetaObject.className();
@@ -1345,7 +1345,7 @@ struct QMetaTypeIdQObject<T, QMetaType::IsGadget>
 
     static int qt_metatype_id()
     {
-        static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0);
+        Q_CONSTINIT static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0);
         if (const int id = metatype_id.loadAcquire())
             return id;
         const char *const cName = T::staticMetaObject.className();
@@ -1364,7 +1364,7 @@ struct QMetaTypeIdQObject<T*, QMetaType::PointerToGadget>
 
     static int qt_metatype_id()
     {
-        static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0);
+        Q_CONSTINIT static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0);
         if (const int id = metatype_id.loadAcquire())
             return id;
         const char *const cName = T::staticMetaObject.className();
@@ -1386,7 +1386,7 @@ struct QMetaTypeIdQObject<T, QMetaType::IsEnumeration>
 
     static int qt_metatype_id()
     {
-        static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0);
+        Q_CONSTINIT static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0);
         if (const int id = metatype_id.loadAcquire())
             return id;
         const char *eName = qt_getEnumName(T());
@@ -1421,7 +1421,7 @@ struct QMetaTypeIdQObject<T, QMetaType::IsEnumeration>
         enum { Defined = 1 };                                           \
         static int qt_metatype_id()                                     \
             {                                                           \
-                static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
+                Q_CONSTINIT static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
                 if (const int id = metatype_id.loadAcquire())           \
                     return id;                                          \
                 constexpr auto arr = QtPrivate::typenameHelper<TYPE>(); \
@@ -1469,7 +1469,7 @@ struct QMetaTypeId< SINGLE_ARG_TEMPLATE<T> > \
     }; \
     static int qt_metatype_id() \
     { \
-        static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
+        Q_CONSTINIT static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
         if (const int id = metatype_id.loadRelaxed()) \
             return id; \
         const char *tName = QMetaType::fromType<T>().name(); \
@@ -1497,7 +1497,7 @@ struct QMetaTypeId< DOUBLE_ARG_TEMPLATE<T, U> > \
     }; \
     static int qt_metatype_id() \
     { \
-        static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
+        Q_CONSTINIT static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
         if (const int id = metatype_id.loadAcquire()) \
             return id; \
         const char *tName = QMetaType::fromType<T>().name(); \
@@ -1545,7 +1545,7 @@ struct SharedPointerMetaTypeIdHelper<SMART_POINTER<T>, true> \
     }; \
     static int qt_metatype_id() \
     { \
-        static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
+        Q_CONSTINIT static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
         if (const int id = metatype_id.loadAcquire()) \
             return id; \
         const char * const cName = T::staticMetaObject.className(); \

@@ -611,7 +611,7 @@ QString QStandardPaths::displayName(StandardLocation type)
   \include standardpath/functiondocs.qdocinc setTestModeEnabled
 */
 
-static bool qsp_testMode = false;
+Q_CONSTINIT static bool qsp_testMode = false;
 
 void QStandardPaths::setTestModeEnabled(bool testMode)
 {

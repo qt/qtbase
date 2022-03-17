@@ -76,7 +76,7 @@ enum {
     Size5 = QtTimerIdFreeListConstants::MaxIndex - Offset5
 };
 
-const int QtTimerIdFreeListConstants::Sizes[QtTimerIdFreeListConstants::BlockCount] = {
+Q_CONSTINIT const int QtTimerIdFreeListConstants::Sizes[QtTimerIdFreeListConstants::BlockCount] = {
     Size0,
     Size1,
     Size2,

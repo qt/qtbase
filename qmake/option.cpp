@@ -631,7 +631,7 @@ public:
         *data = nullptr;
     }
 };
-static QList<QMakeCacheClearItem*> cache_items;
+Q_CONSTINIT static QList<QMakeCacheClearItem*> cache_items;
 
 void
 qmakeClearCaches()

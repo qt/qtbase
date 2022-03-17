@@ -326,7 +326,7 @@ SubdirsMetaMakefileGenerator::init()
         if(!thispwd.endsWith('/'))
            thispwd += '/';
         const ProStringList &subdirs = project->values("SUBDIRS");
-        static int recurseDepth = -1;
+        Q_CONSTINIT static int recurseDepth = -1;
         ++recurseDepth;
         for(int i = 0; i < subdirs.size(); ++i) {
             Subdir *sub = new Subdir;

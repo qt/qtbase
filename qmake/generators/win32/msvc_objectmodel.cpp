@@ -336,14 +336,12 @@ static QString vcCommandSeparator()
     // of the custom commands into it, and putting an "if errorlevel goto" statement behind it.
     // As we want every sub-command to be error-checked (as is done by makefile-based
     // backends), we insert the checks ourselves, using the undocumented jump target.
-    static QString cmdSep =
-    QLatin1String("&#x000D;&#x000A;if errorlevel 1 goto VCReportError&#x000D;&#x000A;");
-    return cmdSep;
+    return QStringLiteral("&#x000D;&#x000A;if errorlevel 1 goto VCReportError&#x000D;&#x000A;");
 }
 
 static void unknownOptionWarning(const char *tool, const char *option)
 {
-    static bool firstCall = true;
+    Q_CONSTINIT static bool firstCall = true;
     warn_msg(WarnLogic, "Could not parse %s option '%s'; added to AdditionalOptions.", tool, option);
     if (firstCall) {
         firstCall = false;

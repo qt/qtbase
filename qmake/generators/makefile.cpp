@@ -2826,7 +2826,7 @@ MakefileGenerator::writeMakeQmake(QTextStream &t, bool noDummyQmakeAll)
 QFileInfo
 MakefileGenerator::fileInfo(QString file) const
 {
-    static QHash<FileInfoCacheKey, QFileInfo> *cache = nullptr;
+    Q_CONSTINIT static QHash<FileInfoCacheKey, QFileInfo> *cache = nullptr;
     static QFileInfo noInfo = QFileInfo();
     if(!cache) {
         cache = new QHash<FileInfoCacheKey, QFileInfo>;

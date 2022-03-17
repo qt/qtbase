@@ -113,10 +113,10 @@ static_assert(sizeof(pthread_t) <= sizeof(Qt::HANDLE));
 enum { ThreadPriorityResetFlag = 0x80000000 };
 
 
-static thread_local QThreadData *currentThreadData = nullptr;
+Q_CONSTINIT static thread_local QThreadData *currentThreadData = nullptr;
 
-static pthread_once_t current_thread_data_once = PTHREAD_ONCE_INIT;
-static pthread_key_t current_thread_data_key;
+Q_CONSTINIT static pthread_once_t current_thread_data_once = PTHREAD_ONCE_INIT;
+Q_CONSTINIT static pthread_key_t current_thread_data_key;
 
 static void destroy_current_thread_data(void *p)
 {

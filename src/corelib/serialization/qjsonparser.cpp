@@ -50,7 +50,7 @@
 
 //#define PARSER_DEBUG
 #ifdef PARSER_DEBUG
-static int indent = 0;
+Q_CONSTINIT static int indent = 0;
 #define BEGIN qDebug() << QByteArray(4*indent++, ' ').constData() << "pos=" << current
 #define END --indent
 #define DEBUG qDebug() << QByteArray(4*indent, ' ').constData()

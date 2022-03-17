@@ -499,7 +499,7 @@ struct QBasicAtomicBitField {
 
 typedef QBasicAtomicBitField<QEvent::MaxUser - QEvent::User + 1> UserEventTypeRegistry;
 
-static UserEventTypeRegistry userEventTypeRegistry {};
+Q_CONSTINIT static UserEventTypeRegistry userEventTypeRegistry {};
 
 static inline int registerEventTypeZeroBased(int id) noexcept
 {

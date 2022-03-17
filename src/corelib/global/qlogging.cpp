@@ -1568,7 +1568,7 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
 static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &buf);
 
 // pointer to QtMessageHandler debug handler (with context)
-static QBasicAtomicPointer<void (QtMsgType, const QMessageLogContext &, const QString &)> messageHandler = Q_BASIC_ATOMIC_INITIALIZER(nullptr);
+Q_CONSTINIT static QBasicAtomicPointer<void (QtMsgType, const QMessageLogContext &, const QString &)> messageHandler = Q_BASIC_ATOMIC_INITIALIZER(nullptr);
 
 // ------------------------ Alternate logging sinks -------------------------
 
@@ -1873,7 +1873,7 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
 
 #if defined(Q_COMPILER_THREAD_LOCAL)
 
-static thread_local bool msgHandlerGrabbed = false;
+Q_CONSTINIT static thread_local bool msgHandlerGrabbed = false;
 
 static bool grabMessageHandler()
 {

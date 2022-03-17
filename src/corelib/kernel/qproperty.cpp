@@ -198,7 +198,7 @@ struct QPropertyDelayedNotifications
     }
 };
 
-static thread_local QBindingStatus bindingStatus;
+Q_CONSTINIT static thread_local QBindingStatus bindingStatus;
 
 /*!
     \since 6.2

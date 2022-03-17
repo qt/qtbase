@@ -88,7 +88,7 @@ struct TraceDBusCall
 
     static inline ThreadData &td()
     {
-        static thread_local ThreadData value;
+        Q_CONSTINIT static thread_local ThreadData value;
         return value;
     }
 

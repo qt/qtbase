@@ -293,7 +293,7 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State newState,
         auto locker = qt_unique_lock(mutex);
         typedef QPair<QObject *, QByteArray> QPropertyAnimationPair;
         typedef QHash<QPropertyAnimationPair, QPropertyAnimation*> QPropertyAnimationHash;
-        static QPropertyAnimationHash hash;
+        Q_CONSTINIT static QPropertyAnimationHash hash;
 
         // in case the targetObject gets deleted, the following happens:
         // 1. targetObject's destroyed signal calls our targetObjectDestroyed.

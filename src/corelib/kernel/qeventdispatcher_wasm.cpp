@@ -118,11 +118,12 @@ bool qt_asyncify_yield()
 
 #endif // QT_HAVE_EMSCRIPTEN_ASYNCIFY
 
-QEventDispatcherWasm *QEventDispatcherWasm::g_mainThreadEventDispatcher = nullptr;
+Q_CONSTINIT QEventDispatcherWasm *QEventDispatcherWasm::g_mainThreadEventDispatcher = nullptr;
 #if QT_CONFIG(thread)
-QVector<QEventDispatcherWasm *> QEventDispatcherWasm::g_secondaryThreadEventDispatchers;
-std::mutex QEventDispatcherWasm::g_secondaryThreadEventDispatchersMutex;
+Q_CONSTINIT QVector<QEventDispatcherWasm *> QEventDispatcherWasm::g_secondaryThreadEventDispatchers;
+Q_CONSTINIT std::mutex QEventDispatcherWasm::g_secondaryThreadEventDispatchersMutex;
 #endif
+// ### dynamic initialization:
 std::multimap<int, QSocketNotifier *> QEventDispatcherWasm::g_socketNotifiers;
 
 QEventDispatcherWasm::QEventDispatcherWasm()

@@ -1404,12 +1404,12 @@ typedef int (*th_brk_def) (const unsigned char*, int*, size_t);
 typedef size_t (*th_next_cell_def) (const unsigned char *, size_t, struct thcell_t *, int);
 
 /* libthai related function handles */
-static th_brk_def th_brk = nullptr;
-static th_next_cell_def th_next_cell = nullptr;
+Q_CONSTINIT static th_brk_def th_brk = nullptr;
+Q_CONSTINIT static th_next_cell_def th_next_cell = nullptr;
 
 static int init_libthai() {
 #if QT_CONFIG(library)
-    static bool initialized = false;
+    Q_CONSTINIT static bool initialized = false;
     if (!initialized && (!th_brk || !th_next_cell)) {
         th_brk = reinterpret_cast<th_brk_def>(QLibrary::resolve("thai"_L1, static_cast<int>(LIBTHAI_MAJOR), "th_brk"));
         th_next_cell = (th_next_cell_def)QLibrary::resolve("thai"_L1, LIBTHAI_MAJOR, "th_next_cell");

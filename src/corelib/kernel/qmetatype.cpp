@@ -1548,8 +1548,8 @@ static const struct : QMetaTypeModuleHelper
     }
 } metatypeHelper = {};
 
-Q_CORE_EXPORT const QMetaTypeModuleHelper *qMetaTypeGuiHelper = nullptr;
-Q_CORE_EXPORT const QMetaTypeModuleHelper *qMetaTypeWidgetsHelper = nullptr;
+Q_CONSTINIT Q_CORE_EXPORT const QMetaTypeModuleHelper *qMetaTypeGuiHelper = nullptr;
+Q_CONSTINIT Q_CORE_EXPORT const QMetaTypeModuleHelper *qMetaTypeWidgetsHelper = nullptr;
 
 static const QMetaTypeModuleHelper *qModuleHelperForType(int type)
 {

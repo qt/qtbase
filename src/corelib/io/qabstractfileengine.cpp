@@ -101,14 +101,14 @@ QT_BEGIN_NAMESPACE
     \sa QAbstractFileEngine, QAbstractFileEngine::create()
 */
 
-static QBasicAtomicInt qt_file_engine_handlers_in_use = Q_BASIC_ATOMIC_INITIALIZER(false);
+Q_CONSTINIT static QBasicAtomicInt qt_file_engine_handlers_in_use = Q_BASIC_ATOMIC_INITIALIZER(false);
 
 /*
     All application-wide handlers are stored in this list. The mutex must be
     acquired to ensure thread safety.
  */
 Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, fileEngineHandlerMutex, (QReadWriteLock::Recursive))
-static bool qt_abstractfileenginehandlerlist_shutDown = false;
+Q_CONSTINIT static bool qt_abstractfileenginehandlerlist_shutDown = false;
 class QAbstractFileEngineHandlerList : public QList<QAbstractFileEngineHandler *>
 {
 public:

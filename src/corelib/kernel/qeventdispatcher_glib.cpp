@@ -112,7 +112,7 @@ static gboolean socketNotifierSourceDispatch(GSource *source, GSourceFunc, gpoin
     return true; // ??? don't remove, right?
 }
 
-static GSourceFuncs socketNotifierSourceFuncs = {
+Q_CONSTINIT static GSourceFuncs socketNotifierSourceFuncs = {
     socketNotifierSourcePrepare,
     socketNotifierSourceCheck,
     socketNotifierSourceDispatch,
@@ -186,7 +186,7 @@ static gboolean timerSourceDispatch(GSource *source, GSourceFunc, gpointer)
     return true; // ??? don't remove, right again?
 }
 
-static GSourceFuncs timerSourceFuncs = {
+Q_CONSTINIT static GSourceFuncs timerSourceFuncs = {
     timerSourcePrepare,
     timerSourceCheck,
     timerSourceDispatch,
@@ -233,7 +233,7 @@ static gboolean idleTimerSourceDispatch(GSource *source, GSourceFunc, gpointer)
     return true;
 }
 
-static GSourceFuncs idleTimerSourceFuncs = {
+Q_CONSTINIT static GSourceFuncs idleTimerSourceFuncs = {
     idleTimerSourcePrepare,
     idleTimerSourceCheck,
     idleTimerSourceDispatch,
@@ -281,7 +281,7 @@ static gboolean postEventSourceDispatch(GSource *s, GSourceFunc, gpointer)
     return true; // i dunno, george...
 }
 
-static GSourceFuncs postEventSourceFuncs = {
+Q_CONSTINIT static GSourceFuncs postEventSourceFuncs = {
     postEventSourcePrepare,
     postEventSourceCheck,
     postEventSourceDispatch,

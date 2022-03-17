@@ -204,6 +204,8 @@ inline HashSeedStorage::StateResult HashSeedStorage::state(int which)
 */
 #ifdef Q_DECL_INIT_PRIORITY
 Q_DECL_INIT_PRIORITY(05)
+#else
+Q_CONSTINIT
 #endif
 static HashSeedStorage qt_qhash_seed;
 

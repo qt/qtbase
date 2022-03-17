@@ -619,7 +619,7 @@ struct FreeListConstants : QFreeListDefaultConstants {
     enum { BlockCount = 4, MaxIndex=0xffff };
     static const int Sizes[BlockCount];
 };
-const int FreeListConstants::Sizes[FreeListConstants::BlockCount] = {
+Q_CONSTINIT const int FreeListConstants::Sizes[FreeListConstants::BlockCount] = {
     16,
     128,
     1024,

@@ -79,17 +79,17 @@ typedef HashReturn (SHA3Final)(hashState *state, BitSequence *hashval);
 
 #include "../../3rdparty/sha3/KeccakF-1600-opt64.c"
 
-static SHA3Init * const sha3Init = Init;
-static SHA3Update * const sha3Update = Update;
-static SHA3Final * const sha3Final = Final;
+Q_CONSTINIT static SHA3Init * const sha3Init = Init;
+Q_CONSTINIT static SHA3Update * const sha3Update = Update;
+Q_CONSTINIT static SHA3Final * const sha3Final = Final;
 
 #else // 32 bit optimised fallback
 
 #include "../../3rdparty/sha3/KeccakF-1600-opt32.c"
 
-static SHA3Init * const sha3Init = Init;
-static SHA3Update * const sha3Update = Update;
-static SHA3Final * const sha3Final = Final;
+Q_CONSTINIT static SHA3Init * const sha3Init = Init;
+Q_CONSTINIT static SHA3Update * const sha3Update = Update;
+Q_CONSTINIT static SHA3Final * const sha3Final = Final;
 
 #endif
 

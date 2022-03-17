@@ -2434,7 +2434,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 # include <crt_externs.h>
 # define environ (*_NSGetEnviron())
 #elif defined(QT_PLATFORM_UIKIT)
-  static char *qt_empty_environ[] = { 0 };
+  Q_CONSTINIT static char *qt_empty_environ[] = { 0 };
 #define environ qt_empty_environ
 #elif !defined(Q_OS_WIN)
   extern char **environ;

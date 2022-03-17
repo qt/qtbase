@@ -134,7 +134,7 @@ Q_GLOBAL_STATIC(CustomFormatVector, customFormatVectorFunc)
 
 Q_CONSTINIT static QBasicMutex settingsGlobalMutex;
 
-static QSettings::Format globalDefaultFormat = QSettings::NativeFormat;
+Q_CONSTINIT static QSettings::Format globalDefaultFormat = QSettings::NativeFormat;
 
 QConfFile::QConfFile(const QString &fileName, bool _userPerms)
     : name(fileName), size(0), ref(1), userPerms(_userPerms)

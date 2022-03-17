@@ -54,7 +54,7 @@ enum {
     Size3 = QFreeListDefaultConstants::MaxIndex - Offset3
 };
 
-const int QFreeListDefaultConstants::Sizes[QFreeListDefaultConstants::BlockCount] = {
+Q_CONSTINIT const int QFreeListDefaultConstants::Sizes[QFreeListDefaultConstants::BlockCount] = {
     Size0,
     Size1,
     Size2,

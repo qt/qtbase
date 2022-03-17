@@ -176,7 +176,7 @@ QThreadPrivate::QThreadPrivate(QThreadData *d)
 #ifdef Q_OS_INTEGRITY
     stackSize = 128 * 1024;
 #elif defined(Q_OS_RTEMS)
-    static bool envStackSizeOk = false;
+    Q_CONSTINIT static bool envStackSizeOk = false;
     static const int envStackSize = qEnvironmentVariableIntValue("QT_DEFAULT_THREAD_STACK_SIZE", &envStackSizeOk);
     if (envStackSizeOk)
         stackSize = envStackSize;
@@ -923,7 +923,7 @@ bool QThread::isRunning() const
 }
 
 // No threads: so we can just use static variables
-static QThreadData *data = nullptr;
+Q_CONSTINIT static QThreadData *data = nullptr;
 
 QThreadData *QThreadData::current(bool createIfNecessary)
 {

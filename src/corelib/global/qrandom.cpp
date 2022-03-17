@@ -229,7 +229,7 @@ static void fallback_fill(quint32 *ptr, qsizetype left) noexcept
     arc4random_buf(ptr, left * sizeof(*ptr));
 }
 #else
-static QBasicAtomicInteger<unsigned> seed = Q_BASIC_ATOMIC_INITIALIZER(0U);
+Q_CONSTINIT static QBasicAtomicInteger<unsigned> seed = Q_BASIC_ATOMIC_INITIALIZER(0U);
 static void fallback_update_seed(unsigned value)
 {
     // Update the seed to be used for the fallback mechanism, if we need to.
@@ -379,7 +379,7 @@ struct QRandomGenerator::SystemAndGlobalGenerators
 
     static SystemAndGlobalGenerators *self()
     {
-        static SystemAndGlobalGenerators g;
+        Q_CONSTINIT static SystemAndGlobalGenerators g;
         static_assert(sizeof(g) > sizeof(QRandomGenerator64));
         return &g;
     }
