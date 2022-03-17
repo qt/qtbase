@@ -1182,6 +1182,7 @@ void tst_QOpenGL::sizeLessWindow()
     // child window
     {
         QWindow parent;
+        parent.setSurfaceType(QWindow::OpenGLSurface);
         QWindow window(&parent);
         window.setSurfaceType(QWindow::OpenGLSurface);
 
