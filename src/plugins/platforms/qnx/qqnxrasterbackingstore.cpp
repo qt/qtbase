@@ -89,17 +89,11 @@ void QQnxRasterBackingStore::flush(QWindow *window, const QRegion &region, const
     if (!m_needsPosting)
         return;
 
-    QQnxWindow *targetWindow = nullptr;
-    if (window)
-        targetWindow = static_cast<QQnxWindow *>(window->handle());
+    auto *targetWindow = window
+        ? static_cast<QQnxRasterWindow *>(window->handle()) : platformWindow();
 
-    // we only need to flush the platformWindow backing store, since this is
-    // the buffer where all drawing operations of all windows, including the
-    // child windows, are performed; conceptually ,child windows have no buffers
-    // (actually they do have a 1x1 placeholder buffer due to libscreen limitations),
-    // since Qt will only draw to the backing store of the top-level window.
-    if (!targetWindow || targetWindow == platformWindow())
-        platformWindow()->post(region);  // update the display with newly rendered content
+    if (targetWindow)
+        targetWindow->post(region);  // update the display with newly rendered content
 
     m_needsPosting = false;
     m_scrolled = false;
