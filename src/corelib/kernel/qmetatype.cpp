@@ -1552,14 +1552,13 @@ static const struct : QMetaTypeModuleHelper
     }
 } metatypeHelper = {};
 
-static const QMetaTypeModuleHelper *qMetaTypeCoreHelper = &metatypeHelper;
 Q_CORE_EXPORT const QMetaTypeModuleHelper *qMetaTypeGuiHelper = nullptr;
 Q_CORE_EXPORT const QMetaTypeModuleHelper *qMetaTypeWidgetsHelper = nullptr;
 
 static const QMetaTypeModuleHelper *qModuleHelperForType(int type)
 {
     if (type <= QMetaType::LastCoreType)
-        return qMetaTypeCoreHelper;
+        return &metatypeHelper;
     if (type >= QMetaType::FirstGuiType && type <= QMetaType::LastGuiType)
         return qMetaTypeGuiHelper;
     else if (type >= QMetaType::FirstWidgetsType && type <= QMetaType::LastWidgetsType)
