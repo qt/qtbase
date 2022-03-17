@@ -57,7 +57,12 @@
 #include <errno.h>
 #endif
 
+#include <type_traits>
+
 QT_BEGIN_NAMESPACE
+
+static_assert(std::is_nothrow_move_constructible_v<QTemporaryDir>);
+static_assert(std::is_nothrow_move_assignable_v<QTemporaryDir>);
 
 //************* QTemporaryDirPrivate
 class QTemporaryDirPrivate
@@ -198,6 +203,39 @@ QTemporaryDir::QTemporaryDir(const QString &templatePath)
 }
 
 /*!
+    \fn QTemporaryDir::QTemporaryDir(QTemporaryDir &&other)
+
+    Move-constructs a new QTemporaryDir from \a other.
+
+    \note The moved-from object \a other is placed in a
+    partially-formed state, in which the only valid operations are
+    destruction and assignment of a new value.
+
+    \since 6.4
+*/
+
+/*!
+    \fn QTemporaryDir &QTemporaryDir::operator=(QTemporaryDir&& other)
+
+    Move-assigns \a other to this QTemporaryDir instance.
+
+    \note The moved-from object \a other is placed in a
+    partially-formed state, in which the only valid operations are
+    destruction and assignment of a new value.
+
+    \since 6.4
+*/
+
+/*!
+    \fn void QTemporaryDir::swap(QTemporaryDir &other)
+
+    Swaps temporary-dir \a other with this temporary-dir. This operation is
+    very fast and never fails.
+
+    \since 6.4
+*/
+
+/*!
     Destroys the temporary directory object.
     If auto remove mode was set, it will automatically delete the directory
     including all its contents.
@@ -206,8 +244,12 @@ QTemporaryDir::QTemporaryDir(const QString &templatePath)
 */
 QTemporaryDir::~QTemporaryDir()
 {
-    if (d_ptr->autoRemove)
-        remove();
+    if (d_ptr) {
+        if (d_ptr->autoRemove)
+            remove();
+
+        delete d_ptr;
+    }
 }
 
 /*!

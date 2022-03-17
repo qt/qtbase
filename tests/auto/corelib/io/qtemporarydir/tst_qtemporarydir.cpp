@@ -49,6 +49,8 @@
 #include "qplatformdefs.h"
 #endif
 
+#include <optional>
+
 class tst_QTemporaryDir : public QObject
 {
     Q_OBJECT
@@ -59,6 +61,7 @@ public slots:
 
 private slots:
     void construction();
+    void moveSemantics();
     void fileTemplate();
     void fileTemplate_data();
     void getSetCheck();
@@ -103,6 +106,58 @@ void tst_QTemporaryDir::construction()
     QVERIFY(dir.path().contains("tst_qtemporarydir"));
     QVERIFY(QFileInfo(dir.path()).isDir());
     QCOMPARE(dir.errorString(), QString());
+}
+
+void tst_QTemporaryDir::moveSemantics()
+{
+    {
+        auto original = std::optional<QTemporaryDir>(std::in_place);
+        QVERIFY(original->isValid());
+
+        original->setAutoRemove(true);
+
+        auto OriginalDirectoryInfo = QFileInfo(original->path());
+        OriginalDirectoryInfo.setCaching(false);
+        QVERIFY(OriginalDirectoryInfo.exists());
+
+        QTemporaryDir movedInto = std::move(*original);
+
+        original.reset();
+
+        QVERIFY(OriginalDirectoryInfo.exists());
+        QVERIFY(movedInto.path() == OriginalDirectoryInfo.filePath());
+    }
+
+    {
+        auto movedInto = QTemporaryDir();
+        QVERIFY(movedInto.isValid());
+
+        movedInto.setAutoRemove(true);
+
+        auto movedIntoInitialDirectoryInfo = QFileInfo(movedInto.path());
+        movedIntoInitialDirectoryInfo.setCaching(false);
+        QVERIFY(movedIntoInitialDirectoryInfo.exists());
+
+        auto OriginalDirectoryInfo = QFileInfo();
+        OriginalDirectoryInfo.setCaching(false);
+
+        {
+            auto original = QTemporaryDir();
+            QVERIFY(original.isValid());
+
+            original.setAutoRemove(true);
+
+            OriginalDirectoryInfo.setFile(original.path());
+            QVERIFY(OriginalDirectoryInfo.exists());
+
+            movedInto = std::move(original);
+        }
+
+        QVERIFY(!movedIntoInitialDirectoryInfo.exists());
+        QVERIFY(OriginalDirectoryInfo.exists());
+
+        QVERIFY(movedInto.path() == OriginalDirectoryInfo.filePath());
+    }
 }
 
 // Testing get/set functions
