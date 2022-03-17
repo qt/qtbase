@@ -96,7 +96,7 @@ tst_LanceBench::tst_LanceBench()
 
 void tst_LanceBench::initTestCase()
 {
-    QString baseDir = QFINDTESTDATA("../../../../auto/other/lancelot/scripts/text.qps");
+    QString baseDir = QFINDTESTDATA("../../../../baseline/painting/scripts/text.qps");
     scriptsDir = baseDir.left(baseDir.lastIndexOf('/')) + '/';
     QDir qpsDir(scriptsDir);
     qpsFiles = qpsDir.entryList(QStringList() << QLatin1String("*.qps"), QDir::Files | QDir::Readable);
