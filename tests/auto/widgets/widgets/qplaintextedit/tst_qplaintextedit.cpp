@@ -1226,9 +1226,6 @@ void tst_QPlainTextEdit::canPaste()
 
 void tst_QPlainTextEdit::ensureCursorVisibleOnInitialShow()
 {
-#ifdef Q_OS_ANDROID
-    QSKIP("This test crashed on Android");
-#endif
     QString manyPagesOfPlainText;
     for (int i = 0; i < 800; ++i)
         manyPagesOfPlainText += QLatin1String("Blah blah blah blah blah blah\n");

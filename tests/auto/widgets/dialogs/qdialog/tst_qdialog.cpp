@@ -561,10 +561,6 @@ void tst_QDialog::transientParent()
 
 void tst_QDialog::dialogInGraphicsView()
 {
-#ifdef Q_OS_ANDROID
-    // QTBUG-101321
-    QSKIP("This test crashes on Android");
-#endif
     // QTBUG-49124: A dialog embedded into QGraphicsView has Qt::WA_DontShowOnScreen
     // set (as has a native dialog). It must not trigger the modal handling though
     // as not to lock up.
