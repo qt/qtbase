@@ -4604,7 +4604,7 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
     qsizetype length = 0;
 
     for (unsigned char c : *this) {
-        if (c != percent
+        if (char(c) != percent
             && ((c >= 0x61 && c <= 0x7A) // ALPHA
                 || (c >= 0x41 && c <= 0x5A) // ALPHA
                 || (c >= 0x30 && c <= 0x39) // DIGIT
