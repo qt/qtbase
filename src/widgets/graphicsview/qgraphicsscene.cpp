@@ -2284,9 +2284,11 @@ void QGraphicsScene::clearSelection()
 
     // Disable emitting selectionChanged
     ++d->selectionChanging;
-    bool changed = !d->selectedItems.isEmpty();
+    // iterate over a copy, as clearing selection might invalidate selectedItems
+    const auto selectedItems = d->selectedItems;
+    bool changed = !selectedItems.isEmpty();
 
-    for (QGraphicsItem *item : qAsConst(d->selectedItems))
+    for (QGraphicsItem *item : selectedItems)
         item->setSelected(false);
     d->selectedItems.clear();
 
