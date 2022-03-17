@@ -3279,9 +3279,6 @@ void tst_QLineEdit::returnPressedKeyEvent()
 
 void tst_QLineEdit::keepSelectionOnTabFocusIn()
 {
-#ifdef Q_OS_ANDROID
-    QSKIP("This test crashes on Android, see QTBUG-101321 to track fix progress");
-#endif
     QLineEdit *testWidget = ensureTestWidget();
     testWidget->setText("hello world");
     {
