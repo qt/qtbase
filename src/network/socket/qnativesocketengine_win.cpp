@@ -52,6 +52,7 @@
 #include <qdatetime.h>
 #include <qnetworkinterface.h>
 #include <qoperatingsystemversion.h>
+#include <qvarlengtharray.h>
 
 #include <algorithm>
 

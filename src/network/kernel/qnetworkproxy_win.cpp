@@ -47,6 +47,8 @@
 #include <qurl.h>
 #include <qnetworkinterface.h>
 #include <qdebug.h>
+#include <qvarlengtharray.h>
+#include <qhash.h>
 
 #include <string.h>
 #include <qt_windows.h>
