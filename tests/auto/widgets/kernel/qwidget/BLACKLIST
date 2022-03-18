@@ -35,10 +35,6 @@ ubuntu
 sles-15
 
 # QTBUG-87668
-[reparent]
-android
-[windowState]
-android
 [showMinimizedKeepsFocus]
 android
 [normalGeometry]
@@ -47,19 +43,23 @@ android
 android
 [optimizedResizeMove]
 android
-[resizeEvent]
-android
 [update]
 android
 [scroll]
 android
-[setWindowGeometry]
-android
-[windowMoveResize]
-android
 [moveChild]
 android
-[showAndMoveChild]
-android
 [multipleToplevelFocusCheck]
+android
+[renderInvisible]
+android
+[updateWhileMinimized]
+android
+[doubleRepaint]
+android
+[setMaskInResizeEvent]
+android
+[activateWindow]
+android
+[optimizedResize_topLevel]
 android
