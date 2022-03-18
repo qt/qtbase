@@ -83,6 +83,7 @@
 #include <QtTest/private/qtesthelpers_p.h>
 
 using namespace QTestPrivate;
+using namespace Qt::StringLiterals;
 
 #if defined(Q_OS_WIN)
 #  include <QtCore/qt_windows.h>
@@ -473,8 +474,8 @@ void tst_QWidget::getSetCheck()
     QVERIFY(var1.data() != obj1.style());
     QVERIFY(obj1.style() != nullptr); // style can never be 0 for a widget
 
-    const QRegularExpression negativeNotPossible(u"^.*Negative sizes \\(.*\\) are not possible$"_qs);
-    const QRegularExpression largestAllowedSize(u"^.*The largest allowed size is \\(.*\\)$"_qs);
+    const QRegularExpression negativeNotPossible(u"^.*Negative sizes \\(.*\\) are not possible$"_s);
+    const QRegularExpression largestAllowedSize(u"^.*The largest allowed size is \\(.*\\)$"_s);
     // int QWidget::minimumWidth()
     // void QWidget::setMinimumWidth(int)
     obj1.setMinimumWidth(0);

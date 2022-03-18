@@ -75,6 +75,8 @@ extern Q_CORE_EXPORT int qt_ntfs_permission_lookup;
 #include "private/qdir_p.h"
 #endif
 
+using namespace Qt::StringLiterals;
+
 static QByteArray msgDoesNotExist(const QString &name)
 {
     return (QLatin1Char('"') + QDir::toNativeSeparators(name)
@@ -490,7 +492,7 @@ void tst_QDir::mkdirWithPermissions()
         QFile::ReadOwner, QFile::WriteOwner, QFile::ExeOwner
     };
 
-    const QString path = u"tmpdir"_qs;
+    const QString path = u"tmpdir"_s;
     QDir dir;
     auto deleteDirectory = qScopeGuard([&dir, &path] { dir.rmdir(path); });
 
@@ -1332,19 +1334,19 @@ tst_QDir::cleanPath_data()
     QTest::newRow("unc-server-up") << "//server/path/.." << "//server";
     QTest::newRow("unc-server-above-root") << "//server/.." << "//server/..";
 
-    QTest::newRow("longpath") << uR"(\\?\d:\)"_qs << u"d:/"_qs;
-    QTest::newRow("longpath-slash") << u"//?/d:/"_qs << u"d:/"_qs;
-    QTest::newRow("longpath-mixed-slashes") << uR"(//?/d:\)"_qs << u"d:/"_qs;
-    QTest::newRow("longpath-mixed-slashes-2") << uR"(\\?\d:/)"_qs << u"d:/"_qs;
+    QTest::newRow("longpath") << uR"(\\?\d:\)"_s << u"d:/"_s;
+    QTest::newRow("longpath-slash") << u"//?/d:/"_s << u"d:/"_s;
+    QTest::newRow("longpath-mixed-slashes") << uR"(//?/d:\)"_s << u"d:/"_s;
+    QTest::newRow("longpath-mixed-slashes-2") << uR"(\\?\d:/)"_s << u"d:/"_s;
 
-    QTest::newRow("unc-network-share") << uR"(\\?\UNC\localhost\c$\tmp.txt)"_qs
-        << u"//localhost/c$/tmp.txt"_qs;
-    QTest::newRow("unc-network-share-slash") << u"//?/UNC/localhost/c$/tmp.txt"_qs
-        << u"//localhost/c$/tmp.txt"_qs;
-    QTest::newRow("unc-network-share-mixed-slashes") << uR"(//?/UNC/localhost\c$\tmp.txt)"_qs
-        << u"//localhost/c$/tmp.txt"_qs;
-    QTest::newRow("unc-network-share-mixed-slashes-2") << uR"(\\?\UNC\localhost/c$/tmp.txt)"_qs
-        << u"//localhost/c$/tmp.txt"_qs;
+    QTest::newRow("unc-network-share") << uR"(\\?\UNC\localhost\c$\tmp.txt)"_s
+        << u"//localhost/c$/tmp.txt"_s;
+    QTest::newRow("unc-network-share-slash") << u"//?/UNC/localhost/c$/tmp.txt"_s
+        << u"//localhost/c$/tmp.txt"_s;
+    QTest::newRow("unc-network-share-mixed-slashes") << uR"(//?/UNC/localhost\c$\tmp.txt)"_s
+        << u"//localhost/c$/tmp.txt"_s;
+    QTest::newRow("unc-network-share-mixed-slashes-2") << uR"(\\?\UNC\localhost/c$/tmp.txt)"_s
+        << u"//localhost/c$/tmp.txt"_s;
 #else
     QTest::newRow("data15") << "//c:/foo" << "/c:/foo";
 #endif // non-windows
@@ -1743,9 +1745,9 @@ void tst_QDir::dotAndDotDot()
 {
     QDir dir(QString((m_dataPath + "/testdir/")));
     QStringList entryList = dir.entryList(QDir::Dirs);
-    QCOMPARE(entryList, QStringList({ u"."_qs, u".."_qs, u"dir"_qs, u"dir.lnk"_qs, u"spaces"_qs }));
+    QCOMPARE(entryList, QStringList({ u"."_s, u".."_s, u"dir"_s, u"dir.lnk"_s, u"spaces"_s }));
     entryList = dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-    QCOMPARE(entryList, QStringList({ u"dir"_qs, u"dir.lnk"_qs, u"spaces"_qs }));
+    QCOMPARE(entryList, QStringList({ u"dir"_s, u"dir.lnk"_s, u"spaces"_s }));
 }
 
 void tst_QDir::homePath()
@@ -1820,10 +1822,10 @@ void tst_QDir::nativeSeparators()
     QCOMPARE(QDir::fromNativeSeparators(QLatin1String("/")), QString("/"));
     QCOMPARE(QDir::fromNativeSeparators(QLatin1String("\\")), QString("/"));
     QCOMPARE(QDir::fromNativeSeparators(QLatin1String("\\\\?\\C:\\")), QString("C:/"));
-    QCOMPARE(QDir::fromNativeSeparators(uR"(\\?\UNC\localhost\c$\tmp.txt)"_qs),
-             u"//localhost/c$/tmp.txt"_qs);
-    QCOMPARE(QDir::fromNativeSeparators(uR"(//?/UNC/localhost\c$\tmp.txt)"_qs),
-             u"//localhost/c$/tmp.txt"_qs);
+    QCOMPARE(QDir::fromNativeSeparators(uR"(\\?\UNC\localhost\c$\tmp.txt)"_s),
+             u"//localhost/c$/tmp.txt"_s);
+    QCOMPARE(QDir::fromNativeSeparators(uR"(//?/UNC/localhost\c$\tmp.txt)"_s),
+             u"//localhost/c$/tmp.txt"_s);
 #else
     QCOMPARE(QDir::toNativeSeparators(QLatin1String("/")), QString("/"));
     QCOMPARE(QDir::toNativeSeparators(QLatin1String("\\")), QString("\\"));

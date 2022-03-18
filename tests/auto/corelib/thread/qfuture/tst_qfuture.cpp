@@ -55,6 +55,8 @@
 #  undef interface
 #endif
 
+using namespace Qt::StringLiterals;
+
 class SenderObject : public QObject
 {
     Q_OBJECT
@@ -4305,7 +4307,7 @@ void tst_QFuture::whenAllDifferentTypesWithCanceled()
     QPromise<int> pInt;
     QPromise<QString> pString;
 
-    const QString someValue = u"some value"_qs;
+    const QString someValue = u"some value"_s;
 
     bool finished = false;
     using Futures = std::variant<QFuture<int>, QFuture<QString>>;
@@ -4344,7 +4346,7 @@ void tst_QFuture::whenAllDifferentTypesWithFailed()
     QPromise<int> pInt;
     QPromise<QString> pString;
 
-    const QString someValue = u"some value"_qs;
+    const QString someValue = u"some value"_s;
 
     bool finished = false;
     using Futures = std::variant<QFuture<int>, QFuture<QString>>;

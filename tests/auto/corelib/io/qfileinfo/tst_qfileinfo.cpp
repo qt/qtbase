@@ -77,6 +77,8 @@ QT_END_NAMESPACE
 bool IsUserAdmin();
 #endif
 
+using namespace Qt::StringLiterals;
+
 inline bool qIsLikelyToBeFat(const QString &path)
 {
     QByteArray name = QStorageInfo(path).fileSystemType().toLower();
@@ -1853,14 +1855,14 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks()
             creationResult.target = creationResult.target.sliced(4);
 
         // resolve volume to drive letter
-        static const QRegularExpression matchVolumeRe(uR"(^Volume\{([a-z]|[0-9]|-)+\}\\)"_qs,
+        static const QRegularExpression matchVolumeRe(uR"(^Volume\{([a-z]|[0-9]|-)+\}\\)"_s,
             QRegularExpression::CaseInsensitiveOption);
         auto matchVolume = matchVolumeRe.match(creationResult.target);
         if (matchVolume.hasMatch()) {
             Q_ASSERT(matchVolume.capturedStart() == 0);
             DWORD len;
             wchar_t buffer[MAX_PATH];
-            const QString volumeName = uR"(\\?\)"_qs + matchVolume.captured();
+            const QString volumeName = uR"(\\?\)"_s + matchVolume.captured();
             if (GetVolumePathNamesForVolumeName(reinterpret_cast<LPCWSTR>(volumeName.utf16()),
                                                 buffer, MAX_PATH, &len) != 0) {
                 creationResult.target.replace(0, matchVolume.capturedLength(),

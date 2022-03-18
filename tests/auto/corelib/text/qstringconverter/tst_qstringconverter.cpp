@@ -32,6 +32,8 @@
 #include <qstringconverter.h>
 #include <qthreadpool.h>
 
+using namespace Qt::StringLiterals;
+
 class tst_QStringConverter : public QObject
 {
     Q_OBJECT
@@ -171,7 +173,7 @@ void tst_QStringConverter::roundtrip_data()
     // TODO: include flag variations, too.
 
     for (const auto code : codes) {
-        QTest::addRow("empty-%s", code.name) << u""_qs << code.code;
+        QTest::addRow("empty-%s", code.name) << u""_s << code.code;
         {
             const char32_t zeroVal = 0x11136; // Unicode's representation of Chakma zero
             const QChar data[] = {

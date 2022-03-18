@@ -40,6 +40,8 @@
 
 #include <QtTest/private/qemulationdetector_p.h>
 
+using namespace Qt::StringLiterals;
+
 Q_DECLARE_METATYPE(QUrl::FormattingOptions)
 
 class tst_QUrl : public QObject
@@ -2085,7 +2087,7 @@ void tst_QUrl::hasQuery()
 void tst_QUrl::nameprep()
 {
     // U+FB01 LATIN SMALL LIGATURE FI
-    QUrl url(u"http://www.\uFB01le.de/"_qs);
+    QUrl url(u"http://www.\uFB01le.de/"_s);
     QCOMPARE(url.toString(), QStringLiteral(u"http://www.file.de/"));
 }
 

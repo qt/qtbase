@@ -39,6 +39,8 @@
 
 #include <qsemaphore.h>
 
+using namespace Qt::StringLiterals;
+
 class tst_QHash : public QObject
 {
     Q_OBJECT
@@ -2771,7 +2773,7 @@ void tst_QHash::lookupUsingKeyIterator()
     qsizetype rehashLimit = minCapacity == 64 ? 63 : 8;
 
     for (char16_t c = u'a'; c <= u'a' + rehashLimit; ++c)
-        hash.insert(QString(QChar(c)), u"h"_qs);
+        hash.insert(QString(QChar(c)), u"h"_s);
 
     for (auto it = hash.keyBegin(), end = hash.keyEnd(); it != end; ++it)
         QVERIFY(!hash[*it].isEmpty());

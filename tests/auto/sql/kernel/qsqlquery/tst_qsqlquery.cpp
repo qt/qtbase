@@ -33,6 +33,8 @@
 
 #include "../qsqldatabase/tst_databases.h"
 
+using namespace Qt::StringLiterals;
+
 QString qtest;
 
 class tst_QSqlQuery : public QObject
@@ -729,7 +731,7 @@ void tst_QSqlQuery::oraOutValues()
                             "    x := 'homer';\n"
                             "end;\n").arg(tst_outValues)));
     QVERIFY(q.prepare(QLatin1String("call %1(?)").arg(tst_outValues)));
-    q.addBindValue(u"maggy"_qs, QSql::Out);
+    q.addBindValue(u"maggy"_s, QSql::Out);
     QVERIFY_SQL(q, exec());
     QCOMPARE(q.boundValue(0).toString(), u"homer");
 
@@ -740,7 +742,7 @@ void tst_QSqlQuery::oraOutValues()
                             "    x := NULL;\n"
                             "end;\n").arg(tst_outValues)));
     QVERIFY(q.prepare(QLatin1String("call %1(?)").arg(tst_outValues)));
-    q.addBindValue(u"maggy"_qs, QSql::Out);
+    q.addBindValue(u"maggy"_s, QSql::Out);
     QVERIFY_SQL(q, exec());
     QVERIFY(q.boundValue(0).isNull());
 
@@ -762,7 +764,7 @@ void tst_QSqlQuery::oraOutValues()
                             "    y := x||'bubulalakikikokololo';\n"
                             "end;\n").arg(tst_outValues)));
     QVERIFY(q.prepare(QLatin1String("call %1(?, ?)").arg(tst_outValues)));
-    q.addBindValue(u"fifi"_qs, QSql::In);
+    q.addBindValue(u"fifi"_s, QSql::In);
     QString out;
     out.reserve(50);
     q.addBindValue(out, QSql::Out);
@@ -824,7 +826,7 @@ void tst_QSqlQuery::oraClob()
     QVERIFY_SQL(q, prepare(QLatin1String("insert into %1 (id, cl, bl) values(?, ?, ?)")
                            .arg(clobby)));
     q.addBindValue(2);
-    q.addBindValue(u"lala"_qs, QSql::Binary);
+    q.addBindValue(u"lala"_s, QSql::Binary);
     q.addBindValue("lala"_qba, QSql::Binary);
     QVERIFY_SQL(q, exec());
 
@@ -1814,7 +1816,7 @@ void tst_QSqlQuery::writeNull()
     // cases from the QSqlResultPrivate::isVariantNull helper. Only PostgreSQL supports
     // QUuid.
     QMultiHash<QString, QVariant> nullableTypes = {
-        {"varchar(20)", u"not null"_qs},
+        {"varchar(20)", u"not null"_s},
         {"varchar(20)", "not null"_qba},
         {"date", QDateTime::currentDateTime()},
         {"date", QDate::currentDate()},
@@ -2202,7 +2204,7 @@ void tst_QSqlQuery::prepare_bind_exec()
         static const QString utf8str = QString::fromUtf8("काचं शक्नोम्यत्तुम् । नोपहिनस्ति माम् ॥");
 
         static const QString values[6] = {
-            u"Harry"_qs, u"Trond"_qs, u"Mark"_qs, u"Ma?rk"_qs, u"?"_qs, u":id"_qs
+            u"Harry"_s, u"Trond"_s, u"Mark"_s, u"Ma?rk"_s, u"?"_s, u":id"_s
         };
 
         bool useUnicode = db.driver()->hasFeature(QSqlDriver::Unicode);
@@ -2442,7 +2444,7 @@ void tst_QSqlQuery::prepare_bind_exec()
         QVERIFY(q.prepare(QLatin1String("insert into %1 (id, name) values (?, ?)")
                           .arg(qtest_prepare)));
         q.addBindValue( 99 );
-        q.addBindValue(u"something silly"_qs);
+        q.addBindValue(u"something silly"_s);
 
         QVERIFY(!q.exec());
         QVERIFY(q.lastError().isValid());
@@ -2561,7 +2563,7 @@ void tst_QSqlQuery::sqlServerLongStrings()
     QVERIFY_SQL(q, prepare(QLatin1String("INSERT INTO %1 VALUES (?, ?)").arg(tableName)));
 
     q.addBindValue(0);
-    q.addBindValue(u"bubu"_qs);
+    q.addBindValue(u"bubu"_s);
     QVERIFY_SQL(q, exec());
 
     const QString testStr(85000, QLatin1Char('a'));
@@ -2626,7 +2628,7 @@ void tst_QSqlQuery::batchExec()
                         .arg(timeStampString, tableName)));
 
     const QVariantList intCol = { 1, 2, QVariant(QMetaType(QMetaType::Int)) };
-    const QVariantList charCol = { u"harald"_qs, u"boris"_qs,
+    const QVariantList charCol = { u"harald"_s, u"boris"_s,
                                    QVariant(QMetaType(QMetaType::QString)) };
     const QDateTime currentDateTime = QDateTime(QDateTime::currentDateTime());
     const QVariantList dateCol = { currentDateTime.date(), currentDateTime.date().addDays(-1),
@@ -2795,7 +2797,7 @@ void tst_QSqlQuery::oraArrayBind()
                         "END set_table; "
                         "END ora_array_test; "));
 
-    QVariantList list = { u"lorem"_qs, u"ipsum"_qs, u"dolor"_qs, u"sit"_qs, u"amet"_qs };
+    QVariantList list = { u"lorem"_s, u"ipsum"_s, u"dolor"_s, u"sit"_s, u"amet"_s };
 
     QVERIFY_SQL(q, prepare("BEGIN "
                            "ora_array_test.set_table(?); "
@@ -3258,7 +3260,7 @@ void tst_QSqlQuery::nextResult()
     QVERIFY_SQL(q, exec(QLatin1String("INSERT INTO %1 VALUES(4, 'four', 4.4, '');")
                         .arg(tableName)));
 
-    const QString tstStrings[] = { u"one"_qs, u"two"_qs, u"three"_qs, u"four"_qs };
+    const QString tstStrings[] = { u"one"_s, u"two"_s, u"three"_s, u"four"_s };
 
     // Query that returns only one result set, nothing special about this
     QVERIFY_SQL(q, exec(QLatin1String("SELECT * FROM %1;").arg(tableName)));
@@ -4859,17 +4861,17 @@ void tst_QSqlQuery::dateTime_data()
         const QString tableNameDate(qTableName("dateTimeDate", __FILE__, db));
         QTest::newRow(QString(dbName + " timestamp with time zone").toLatin1())
                         << dbName << tableNameTSWithTimeZone
-                        << u" (dt TIMESTAMP WITH TIME ZONE)"_qs
+                        << u" (dt TIMESTAMP WITH TIME ZONE)"_s
                         << dateTimes << dateTimes;
         QTest::newRow(QString(dbName + " timestamp with local time zone").toLatin1())
                         << dbName << tableNameTSWithTimeZone
-                        << u" (dt TIMESTAMP WITH LOCAL TIME ZONE)"_qs
+                        << u" (dt TIMESTAMP WITH LOCAL TIME ZONE)"_s
                         << dateTimes << expectedDateTimesLocalTZ;
         QTest::newRow(QString(dbName + "timestamp").toLatin1())
-                        << dbName << tableNameTS << u" (dt TIMESTAMP(3))"_qs
+                        << dbName << tableNameTS << u" (dt TIMESTAMP(3))"_s
                         << dateTimes << expectedTimeStampDateTimes;
         QTest::newRow(QString(dbName + "date").toLatin1())
-                        << dbName << tableNameDate << u" (dt DATE)"_qs
+                        << dbName << tableNameDate << u" (dt DATE)"_s
                         << dateTimes << expectedDateTimes;
     }
 }
@@ -4960,13 +4962,13 @@ void tst_QSqlQuery::mysql_timeType()
 
     // MySQL will convert days into hours and add them together so 17 days 11 hours becomes 419 hours
     const QString timeData[] = {
-        u"-838:59:59.000000"_qs, u"-123:45:56.789"_qs, u"000:00:00.0"_qs, u"123:45:56.789"_qs,
-        u"838:59:59.000000"_qs, u"15:50"_qs, u"12"_qs, u"1213"_qs, u"0 1:2:3"_qs, u"17 11:22:33"_qs
+        u"-838:59:59.000000"_s, u"-123:45:56.789"_s, u"000:00:00.0"_s, u"123:45:56.789"_s,
+        u"838:59:59.000000"_s, u"15:50"_s, u"12"_s, u"1213"_s, u"0 1:2:3"_s, u"17 11:22:33"_s
     };
     const QString resultTimeData[] =  {
-        u"-838:59:59.000000"_qs, u"-123:45:56.789000"_qs, u"00:00:00.000000"_qs,
-        u"123:45:56.789000"_qs, u"838:59:59.000000"_qs, u"15:50:00.000000"_qs,
-        u"00:00:12.000000"_qs, u"00:12:13.000000"_qs, u"01:02:03.000000"_qs, u"419:22:33.000000"_qs
+        u"-838:59:59.000000"_s, u"-123:45:56.789000"_s, u"00:00:00.000000"_s,
+        u"123:45:56.789000"_s, u"838:59:59.000000"_s, u"15:50:00.000000"_s,
+        u"00:00:12.000000"_s, u"00:12:13.000000"_s, u"01:02:03.000000"_s, u"419:22:33.000000"_s
     };
     for (const QString &time : timeData) {
         QVERIFY_SQL(qry, exec(QLatin1String("insert into %2 (t) VALUES ('%1')")

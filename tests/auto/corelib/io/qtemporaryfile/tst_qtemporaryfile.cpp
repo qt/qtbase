@@ -60,6 +60,8 @@
 #include "qplatformdefs.h"
 #endif
 
+using namespace Qt::StringLiterals;
+
 class tst_QTemporaryFile : public QObject
 {
     Q_OBJECT
@@ -218,22 +220,22 @@ void tst_QTemporaryFile::fileTemplate_data()
         return; // skip if we have no drive letter
 
     tmp.data()[1] = u'$';
-    const auto tmpPath = tmp + uR"(\QTBUG-74291.XXXXXX.tmpFile)"_qs;
+    const auto tmpPath = tmp + uR"(\QTBUG-74291.XXXXXX.tmpFile)"_s;
 
     QTest::newRow("UNC-backslash")
-            << uR"(\\localhost\)"_qs + tmpPath << "QTBUG-74291."
+            << uR"(\\localhost\)"_s + tmpPath << "QTBUG-74291."
             << ".tmpFile"
             << "";
     QTest::newRow("UNC-prefix")
-            << uR"(\\?\UNC\localhost\)"_qs + tmpPath << "QTBUG-74291."
+            << uR"(\\?\UNC\localhost\)"_s + tmpPath << "QTBUG-74291."
             << ".tmpFile"
             << "";
     QTest::newRow("UNC-slash")
-            << u"//localhost/"_qs + QDir::fromNativeSeparators(tmpPath) << "QTBUG-74291."
+            << u"//localhost/"_s + QDir::fromNativeSeparators(tmpPath) << "QTBUG-74291."
             << ".tmpFile"
             << "";
     QTest::newRow("UNC-prefix-slash")
-            << uR"(//?/UNC/localhost/)"_qs + QDir::fromNativeSeparators(tmpPath) << "QTBUG-74291."
+            << uR"(//?/UNC/localhost/)"_s + QDir::fromNativeSeparators(tmpPath) << "QTBUG-74291."
             << ".tmpFile"
             << "";
 #endif

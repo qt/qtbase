@@ -107,6 +107,8 @@ Q_DECLARE_METATYPE(QNetworkProxyQuery)
 
 typedef QSharedPointer<QNetworkReply> QNetworkReplyPtr;
 
+using namespace Qt::StringLiterals;
+
 #if QT_CONFIG(ssl)
 QT_BEGIN_NAMESPACE
 // Technically, a workaround, and only needed for OpenSSL:
@@ -8050,10 +8052,10 @@ void tst_QNetworkReply::varyingCacheExpiry()
         server.doClose = false;
 
     QUrl urls[4] = {
-        u"http://localhost"_qs,
-        u"http://localhost"_qs,
-        u"http://localhost"_qs,
-        u"http://localhost"_qs,
+        u"http://localhost"_s,
+        u"http://localhost"_s,
+        u"http://localhost"_s,
+        u"http://localhost"_s,
     };
     for (size_t i = 0; i < std::size(urls); ++i)
         urls[i].setPort(servers[i].serverPort());

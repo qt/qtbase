@@ -39,6 +39,8 @@
 #include <QScreen>
 #include <QWindow>
 
+using namespace Qt::StringLiterals;
+
 class TabBar;
 
 class tst_QTabBar : public QObject
@@ -1013,8 +1015,8 @@ void tst_QTabBar::kineticWheel()
     window.show();
     QVERIFY(QTest::qWaitForWindowExposed(&window));
 
-    const auto *leftButton = tabbar.findChild<QAbstractButton*>(u"ScrollLeftButton"_qs);
-    const auto *rightButton = tabbar.findChild<QAbstractButton*>(u"ScrollRightButton"_qs);
+    const auto *leftButton = tabbar.findChild<QAbstractButton*>(u"ScrollLeftButton"_s);
+    const auto *rightButton = tabbar.findChild<QAbstractButton*>(u"ScrollRightButton"_s);
     QVERIFY(leftButton && rightButton);
     QVERIFY(leftButton->isEnabled() && rightButton->isEnabled());
 
@@ -1192,8 +1194,8 @@ void tst_QTabBar::scrollButtons()
     window.show();
     QVERIFY(QTest::qWaitForWindowActive(&window));
 
-    auto *leftB = tabWidget.tabBar()->findChild<QAbstractButton*>(u"ScrollLeftButton"_qs);
-    auto *rightB = tabWidget.tabBar()->findChild<QAbstractButton*>(u"ScrollRightButton"_qs);
+    auto *leftB = tabWidget.tabBar()->findChild<QAbstractButton*>(u"ScrollLeftButton"_s);
+    auto *rightB = tabWidget.tabBar()->findChild<QAbstractButton*>(u"ScrollRightButton"_s);
 
     QVERIFY(leftB->isVisible());
     QVERIFY(!leftB->isEnabled());

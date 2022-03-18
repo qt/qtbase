@@ -51,6 +51,8 @@
 
 #include <optional>
 
+using namespace Qt::StringLiterals;
+
 class tst_QTemporaryDir : public QObject
 {
     Q_OBJECT
@@ -224,19 +226,19 @@ void tst_QTemporaryDir::fileTemplate_data()
         return; // skip if we have no drive letter
 
     tmp.data()[1] = u'$';
-    const auto tmpPath = tmp + uR"(\UNC.XXXXXX.tmpDir)"_qs;
+    const auto tmpPath = tmp + uR"(\UNC.XXXXXX.tmpDir)"_s;
 
     QTest::newRow("UNC-backslash")
-            << uR"(\\localhost\)"_qs + tmpPath << "UNC."
+            << uR"(\\localhost\)"_s + tmpPath << "UNC."
             << ".tmpDir";
     QTest::newRow("UNC-prefix")
-            << uR"(\\?\UNC\localhost\)"_qs + tmpPath << "UNC."
+            << uR"(\\?\UNC\localhost\)"_s + tmpPath << "UNC."
             << ".tmpDir";
     QTest::newRow("UNC-slash")
-            << u"//localhost/"_qs + QDir::fromNativeSeparators(tmpPath) << "UNC."
+            << u"//localhost/"_s + QDir::fromNativeSeparators(tmpPath) << "UNC."
             << ".tmpDir";
     QTest::newRow("UNC-prefix-slash")
-            << uR"(//?/UNC/localhost/)"_qs + QDir::fromNativeSeparators(tmpPath) << "UNC."
+            << uR"(//?/UNC/localhost/)"_s + QDir::fromNativeSeparators(tmpPath) << "UNC."
             << ".tmpDir";
 #endif
 }

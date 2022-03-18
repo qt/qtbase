@@ -52,6 +52,8 @@
 
 #include <algorithm>
 
+using namespace Qt::StringLiterals;
+
 #define WAITTIME 1000
 
 // Will try to wait for the condition while allowing event processing
@@ -233,17 +235,17 @@ void tst_QFileSystemModel::rootPath()
 
 #ifdef Q_OS_WIN
     // check case insensitive root node on windows, tests QTBUG-71701
-    QModelIndex index = model->setRootPath(uR"(\\localhost\c$)"_qs);
+    QModelIndex index = model->setRootPath(uR"(\\localhost\c$)"_s);
     QVERIFY(index.isValid());
-    QCOMPARE(model->rootPath(), u"//localhost/c$"_qs);
+    QCOMPARE(model->rootPath(), u"//localhost/c$"_s);
 
-    index = model->setRootPath(uR"(\\localhost\C$)"_qs);
+    index = model->setRootPath(uR"(\\localhost\C$)"_s);
     QVERIFY(index.isValid());
-    QCOMPARE(model->rootPath(), u"//localhost/C$"_qs);
+    QCOMPARE(model->rootPath(), u"//localhost/C$"_s);
 
-    index = model->setRootPath(uR"(\\LOCALHOST\C$)"_qs);
+    index = model->setRootPath(uR"(\\LOCALHOST\C$)"_s);
     QVERIFY(index.isValid());
-    QCOMPARE(model->rootPath(), u"//LOCALHOST/C$"_qs);
+    QCOMPARE(model->rootPath(), u"//LOCALHOST/C$"_s);
 #endif
 }
 

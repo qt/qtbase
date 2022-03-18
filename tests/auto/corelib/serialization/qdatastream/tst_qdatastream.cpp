@@ -44,6 +44,8 @@
 #include <QtGui/QPixmap>
 #include <QtGui/QTextLength>
 
+using namespace Qt::StringLiterals;
+
 static_assert(QTypeTraits::has_ostream_operator_v<QDataStream, int>);
 static_assert(QTypeTraits::has_ostream_operator_v<QDataStream, QList<int>>);
 static_assert(QTypeTraits::has_ostream_operator_v<QDataStream, QMap<int, QString>>);
@@ -3904,7 +3906,7 @@ void tst_QDataStream::typedefQt5Compat()
         // writing in Qt 6 results in the same file
         QTemporaryDir dir;
         QVERIFY(dir.isValid());
-        QFile file(dir.filePath(u"typedef.q6"_qs));
+        QFile file(dir.filePath(u"typedef.q6"_s));
         file.open(QIODevice::WriteOnly);
         QDataStream stream(&file);
         stream.setVersion(QDataStream::Qt_5_15);

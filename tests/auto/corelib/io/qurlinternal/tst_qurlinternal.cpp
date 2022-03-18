@@ -41,6 +41,8 @@
 #define STRINGPREP_BIDI_BOTH_L_AND_RAL 4
 #define STRINGPREP_BIDI_LEADTRAIL_NOT_RAL 5
 
+using namespace Qt::StringLiterals;
+
 struct char16array {
     char16array() {}
     template <size_t N>
@@ -259,8 +261,8 @@ void tst_QUrlInternal::ace_testsuite_data()
     QTest::newRow("ascii-upper") << "FLUKE" << "fluke" << "fluke" << "fluke";
 
     // U+FB01 LATIN SMALL LIGATURE FI
-    QTest::newRow("asciifolded") << u"\uFB01le"_qs << "file" << "." << "file";
-    QTest::newRow("asciifolded-dotcom") << u"\uFB01le.example.com"_qs << "file.example.com" << "." << "file.example.com";
+    QTest::newRow("asciifolded") << u"\uFB01le"_s << "file" << "." << "file";
+    QTest::newRow("asciifolded-dotcom") << u"\uFB01le.example.com"_s << "file.example.com" << "." << "file.example.com";
     QTest::newRow("greek-mu") << QString::fromLatin1("\265V")
                               <<"xn--v-lmb"
                               << "."

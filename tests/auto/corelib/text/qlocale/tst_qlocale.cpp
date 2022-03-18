@@ -56,6 +56,8 @@
 #    include <stdlib.h>
 #endif
 
+using namespace Qt::StringLiterals;
+
 Q_DECLARE_METATYPE(QLocale::FormatType)
 
 class tst_QLocale : public QObject
@@ -2541,7 +2543,7 @@ void tst_QLocale::dayName_data()
     QTest::newRow("ru_RU short")
         << QString("ru_RU") << QString::fromUtf8("\320\262\321\201") << 7 << QLocale::ShortFormat;
     QTest::newRow("ru_RU narrow")
-        << QString("ru_RU") << u"\u0412"_qs << 7 << QLocale::NarrowFormat;
+        << QString("ru_RU") << u"\u0412"_s << 7 << QLocale::NarrowFormat;
 }
 
 void tst_QLocale::dayName()
@@ -3589,18 +3591,18 @@ void tst_QLocale::lcsToCode()
     QCOMPARE(QLocale::languageToCode(QLocale::AnyLanguage), QString());
     QCOMPARE(QLocale::languageToCode(QLocale::C), QString("C"));
     QCOMPARE(QLocale::languageToCode(QLocale::English), QString("en"));
-    QCOMPARE(QLocale::languageToCode(QLocale::Albanian), u"sq"_qs);
-    QCOMPARE(QLocale::languageToCode(QLocale::Albanian, QLocale::ISO639Part1), u"sq"_qs);
-    QCOMPARE(QLocale::languageToCode(QLocale::Albanian, QLocale::ISO639Part2B), u"alb"_qs);
-    QCOMPARE(QLocale::languageToCode(QLocale::Albanian, QLocale::ISO639Part2T), u"sqi"_qs);
-    QCOMPARE(QLocale::languageToCode(QLocale::Albanian, QLocale::ISO639Part3), u"sqi"_qs);
+    QCOMPARE(QLocale::languageToCode(QLocale::Albanian), u"sq"_s);
+    QCOMPARE(QLocale::languageToCode(QLocale::Albanian, QLocale::ISO639Part1), u"sq"_s);
+    QCOMPARE(QLocale::languageToCode(QLocale::Albanian, QLocale::ISO639Part2B), u"alb"_s);
+    QCOMPARE(QLocale::languageToCode(QLocale::Albanian, QLocale::ISO639Part2T), u"sqi"_s);
+    QCOMPARE(QLocale::languageToCode(QLocale::Albanian, QLocale::ISO639Part3), u"sqi"_s);
 
-    QCOMPARE(QLocale::languageToCode(QLocale::Taita), u"dav"_qs);
+    QCOMPARE(QLocale::languageToCode(QLocale::Taita), u"dav"_s);
     QCOMPARE(QLocale::languageToCode(QLocale::Taita,
                                      QLocale::ISO639Part1 | QLocale::ISO639Part2B
                                              | QLocale::ISO639Part2T),
              QString());
-    QCOMPARE(QLocale::languageToCode(QLocale::Taita, QLocale::ISO639Part3), u"dav"_qs);
+    QCOMPARE(QLocale::languageToCode(QLocale::Taita, QLocale::ISO639Part3), u"dav"_s);
     QCOMPARE(QLocale::languageToCode(QLocale::English, QLocale::LanguageCodeTypes {}), QString());
 
     // Legacy codes can only be used to convert them to Language values, not other way around.

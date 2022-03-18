@@ -119,6 +119,8 @@ QT_END_NAMESPACE
 #define QT_OPEN_BINARY 0
 #endif
 
+using namespace Qt::StringLiterals;
+
 Q_DECLARE_METATYPE(QFile::FileError)
 
 
@@ -1302,7 +1304,7 @@ void tst_QFile::createFilePermissions()
         QFile::ReadOwner, QFile::WriteOwner, QFile::ExeOwner
     };
 
-    const QString fileName = u"createme.txt"_qs;
+    const QString fileName = u"createme.txt"_s;
 
     QFile::remove(fileName);
     QVERIFY(!QFile::exists(fileName));

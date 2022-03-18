@@ -50,6 +50,8 @@ QT_REQUIRE_CONFIG(process);
 
 #include <QtTest/private/qemulationdetector_p.h>
 
+using namespace Qt::StringLiterals;
+
 struct BenchmarkResult
 {
     qint64  total;
@@ -693,7 +695,7 @@ bool TestLogger::shouldIgnoreTest(const QString &test) const
 #if defined(__GNUC__) && (defined(__i386) || defined(__x86_64)) && defined(Q_OS_LINUX)
         // Check that it's actually available
         QProcess checkProcess;
-        QStringList args{u"--version"_qs};
+        QStringList args{u"--version"_s};
         checkProcess.start("valgrind", args);
         if (!checkProcess.waitForFinished(-1)) {
             WARN("Valgrind broken or not available. Not running benchlibcallgrind test!");

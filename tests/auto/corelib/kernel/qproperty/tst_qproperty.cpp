@@ -41,7 +41,7 @@
 #endif
 
 using namespace QtPrivate;
-
+using namespace Qt::StringLiterals;
 
 struct DtorCounter {
     static inline int counter = 0;
@@ -1697,9 +1697,9 @@ public:
 
     Q_INVOKABLE bool bindingTest()
     {
-        QProperty<QString> name(u"inThread"_qs);
+        QProperty<QString> name(u"inThread"_s);
         bindableObjectName().setBinding([&]() -> QString { return name; });
-        name = u"inThreadChanged"_qs;
+        name = u"inThreadChanged"_s;
         const bool nameChangedCorrectly = objectName() == name;
         bindableObjectName().takeBinding();
         return nameChangedCorrectly;

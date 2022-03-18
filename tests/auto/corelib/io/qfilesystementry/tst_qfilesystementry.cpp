@@ -30,6 +30,8 @@
 
 #include <QtCore/private/qfilesystementry_p.h>
 
+using namespace Qt::StringLiterals;
+
 class tst_QFileSystemEntry : public QObject
 {
     Q_OBJECT
@@ -106,12 +108,12 @@ void tst_QFileSystemEntry::getSetCheck_data()
             << "A:dir/without/leading/backslash.bat" << "backslash.bat" << "backslash" << "backslash" << "bat" << "bat" << false << false;
 
     QTest::newRow("longpath")
-            << uR"(\\?\D:\)"_qs
+            << uR"(\\?\D:\)"_s
             << absPrefix + QLatin1String(R"(D:\)")
             << "D:/" << "" << "" << "" << "" << "" << true << false;
 
     QTest::newRow("uncprefix")
-            << uR"(\\?\UNC\localhost\C$\tmp.txt)"_qs
+            << uR"(\\?\UNC\localhost\C$\tmp.txt)"_s
             << absPrefix + QLatin1String(R"(UNC\localhost\C$\tmp.txt)")
             << "//localhost/C$/tmp.txt" << "tmp.txt" << "tmp" << "tmp" << "txt" << "txt" << true
             << false;

@@ -31,6 +31,8 @@
 #include <qdesktopservices.h>
 #include <qregularexpression.h>
 
+using namespace Qt::StringLiterals;
+
 class tst_qdesktopservices : public QObject
 {
     Q_OBJECT
@@ -78,8 +80,8 @@ void tst_qdesktopservices::handlers()
     QDesktopServices::setUrlHandler(QString("bar"), &barHandler, "handle");
 #ifndef CAN_IMPLICITLY_UNSET
     const auto unsetHandlers = qScopeGuard([] {
-        QDesktopServices::unsetUrlHandler(u"bar"_qs);
-        QDesktopServices::unsetUrlHandler(u"foo"_qs);
+        QDesktopServices::unsetUrlHandler(u"bar"_s);
+        QDesktopServices::unsetUrlHandler(u"foo"_s);
     });
 #endif
 

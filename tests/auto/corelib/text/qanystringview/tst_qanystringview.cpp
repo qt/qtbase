@@ -67,6 +67,8 @@
 #  define ONLY_WIN(expr) QSKIP("This is a Windows-only test")
 #endif
 
+using namespace Qt::StringLiterals;
+
 template <typename T>
 constexpr inline bool CanConvert = std::is_convertible_v<T, QAnyStringView>;
 
@@ -312,7 +314,7 @@ private Q_SLOTS:
     void fromChar16TContainers() const { fromContainers<char16_t>(); }
     void fromWCharTContainers() const { ONLY_WIN(fromContainers<wchar_t>()); }
 
-    void fromQStringBuilder_QString_QString() const { fromQStringBuilder(u"1"_qs % u"2"_qs, u"12"); }
+    void fromQStringBuilder_QString_QString() const { fromQStringBuilder(u"1"_s % u"2"_s, u"12"); }
 
     void comparison();
 
