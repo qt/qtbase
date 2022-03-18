@@ -500,7 +500,7 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
 /*!
     \fn QMarginsF::QMarginsF(const QMargins &margins)
 
-    Constructs margins copied from the given \a margins
+    Constructs margins copied from the given \a margins.
 */
 
 /*!
