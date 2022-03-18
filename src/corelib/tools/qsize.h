@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -50,6 +50,7 @@ struct CGSize;
 
 QT_BEGIN_NAMESPACE
 
+class QSizeF;
 
 class Q_CORE_EXPORT QSize
 {
@@ -108,6 +109,8 @@ public:
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
     [[nodiscard]] CGSize toCGSize() const noexcept;
 #endif
+
+    [[nodiscard]] inline constexpr QSizeF toSizeF() const noexcept;
 
 private:
     int wd;
@@ -419,6 +422,8 @@ constexpr inline QSize QSizeF::toSize() const noexcept
 {
     return QSize(qRound(wd), qRound(ht));
 }
+
+constexpr QSizeF QSize::toSizeF() const noexcept { return *this; }
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QSizeF &);

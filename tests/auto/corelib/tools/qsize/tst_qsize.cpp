@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -29,6 +29,8 @@
 #include <QTest>
 #include <qsize.h>
 
+#include <array>
+
 Q_DECLARE_METATYPE(QMargins)
 
 class tst_QSize : public QObject
@@ -46,6 +48,9 @@ private slots:
 
     void grownOrShrunkBy_data();
     void grownOrShrunkBy();
+
+    void toSizeF_data();
+    void toSizeF();
 
     void transpose_data();
     void transpose();
@@ -230,6 +235,30 @@ void tst_QSize::grownOrShrunkBy()
     QCOMPARE(input.shrunkBy(margins), shrunk);
     QCOMPARE(grown.shrunkBy(margins), input);
     QCOMPARE(shrunk.grownBy(margins), input);
+}
+
+void tst_QSize::toSizeF_data()
+{
+    QTest::addColumn<QSize>("input");
+    QTest::addColumn<QSizeF>("result");
+
+    auto row = [](int w, int h) {
+        QTest::addRow("(%d, %d)", w, h) << QSize(w, h) << QSizeF(w, h);
+    };
+    constexpr std::array samples = {-1, 0, 1};
+    for (int w : samples) {
+        for (int h : samples) {
+            row(w, h);
+        }
+    }
+}
+
+void tst_QSize::toSizeF()
+{
+    QFETCH(const QSize, input);
+    QFETCH(const QSizeF, result);
+
+    QCOMPARE(input.toSizeF(), result);
 }
 
 void tst_QSize::transpose_data()

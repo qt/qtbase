@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -381,6 +381,15 @@ QT_BEGIN_NAMESPACE
     \sa QPoint::operator/=()
 */
 
+/*!
+    \fn QPoint::toPointF() const
+    \since 6.4
+
+    Returns this point as a point with floating point accuracy.
+
+    \sa QPointF::toPoint()
+*/
+
 /*****************************************************************************
   QPoint stream functions
  *****************************************************************************/
@@ -532,7 +541,7 @@ size_t qHash(QPoint key, size_t seed) noexcept
 
     Constructs a copy of the given \a point.
 
-    \sa toPoint()
+    \sa toPoint(), QPoint::toPointF()
 */
 
 /*!
@@ -744,7 +753,7 @@ size_t qHash(QPoint key, size_t seed) noexcept
     Rounds the coordinates of this point to the nearest integer, and
     returns a QPoint object with the rounded coordinates.
 
-    \sa QPointF()
+    \sa QPointF(), QPoint::toPointF()
 */
 
 /*!

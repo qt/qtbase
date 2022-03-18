@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -403,6 +403,15 @@ QSize QSize::scaled(const QSize &s, Qt::AspectRatioMode mode) const noexcept
     \sa grownBy()
 */
 
+/*!
+    \fn QSize::toSizeF() const
+    \since 6.4
+
+    Returns this size as a size with floating point accuracy.
+
+    \sa QSizeF::toSize()
+*/
+
 /*****************************************************************************
   QSize stream functions
  *****************************************************************************/
@@ -520,7 +529,7 @@ QDebug operator<<(QDebug dbg, const QSize &s)
     Constructs a size with floating point accuracy from the given \a
     size.
 
-    \sa toSize()
+    \sa toSize(), QSize::toSizeF()
 */
 
 /*!
@@ -596,7 +605,7 @@ QDebug operator<<(QDebug dbg, const QSize &s)
     Note that the coordinates in the returned size will be rounded to
     the nearest integer.
 
-    \sa QSizeF()
+    \sa QSizeF(), QSize::toSizeF()
 */
 
 /*!

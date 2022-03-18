@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -31,6 +31,8 @@
 
 #include <qpoint.h>
 
+#include <array>
+
 class tst_QPoint : public QObject
 {
     Q_OBJECT
@@ -44,6 +46,9 @@ private slots:
     void getSet();
 
     void transposed();
+
+    void toPointF_data();
+    void toPointF();
 
     void rx();
     void ry();
@@ -129,6 +134,30 @@ void tst_QPoint::getSet()
 
     point.setY(i);
     QCOMPARE(point.y(), i);
+}
+
+void tst_QPoint::toPointF_data()
+{
+    QTest::addColumn<QPoint>("input");
+    QTest::addColumn<QPointF>("result");
+
+    auto row = [](int x, int y) {
+        QTest::addRow("(%d, %d)", x, y) << QPoint(x, y) << QPointF(x, y);
+    };
+    constexpr std::array samples = {-1, 0, 1};
+    for (int x : samples) {
+        for (int y : samples) {
+            row(x, y);
+        }
+    }
+}
+
+void tst_QPoint::toPointF()
+{
+    QFETCH(const QPoint, input);
+    QFETCH(const QPointF, result);
+
+    QCOMPARE(input.toPointF(), result);
 }
 
 void tst_QPoint::transposed()

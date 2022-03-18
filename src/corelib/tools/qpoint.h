@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -47,6 +47,8 @@ struct CGPoint;
 #endif
 
 QT_BEGIN_NAMESPACE
+
+class QPointF;
 
 class QPoint
 {
@@ -110,6 +112,7 @@ public:
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
     [[nodiscard]] Q_CORE_EXPORT CGPoint toCGPoint() const noexcept;
 #endif
+    [[nodiscard]] constexpr inline QPointF toPointF() const noexcept;
 
 private:
     friend class QTransform;
@@ -416,6 +419,8 @@ constexpr inline QPointF &QPointF::operator/=(qreal divisor)
     yp /= divisor;
     return *this;
 }
+
+constexpr QPointF QPoint::toPointF() const noexcept { return *this; }
 
 constexpr inline QPoint QPointF::toPoint() const
 {
