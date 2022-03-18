@@ -61,10 +61,6 @@ QT_REQUIRE_CONFIG(graphicsview);
 QT_BEGIN_NAMESPACE
 
 class QGraphicsItem;
-class QGraphicsSceneBspTreeVisitor;
-class QGraphicsSceneInsertItemBspTreeVisitor;
-class QGraphicsSceneRemoveItemBspTreeVisitor;
-class QGraphicsSceneFindItemBspTreeVisitor;
 
 class QGraphicsSceneBspTree
 {
@@ -102,24 +98,14 @@ public:
 
 private:
     void initialize(const QRectF &rect, int depth, int index);
-    void climbTree(QGraphicsSceneBspTreeVisitor *visitor, const QRectF &rect, int index = 0) const;
+    template<typename Visitor>
+    void climbTree(Visitor &&visitor, const QRectF &rect, int index = 0) const;
     QRectF rectForIndex(int index) const;
 
     QList<Node> nodes;
     QList<QList<QGraphicsItem *>> leaves;
     int leafCnt;
     QRectF rect;
-
-    QGraphicsSceneInsertItemBspTreeVisitor *insertVisitor;
-    QGraphicsSceneRemoveItemBspTreeVisitor *removeVisitor;
-    QGraphicsSceneFindItemBspTreeVisitor *findVisitor;
-};
-
-class QGraphicsSceneBspTreeVisitor
-{
-public:
-    virtual ~QGraphicsSceneBspTreeVisitor() { }
-    virtual void visit(QList<QGraphicsItem *> *items) = 0;
 };
 
 QT_END_NAMESPACE

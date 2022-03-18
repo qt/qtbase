@@ -44,57 +44,14 @@
 
 QT_BEGIN_NAMESPACE
 
-class QGraphicsSceneInsertItemBspTreeVisitor : public QGraphicsSceneBspTreeVisitor
-{
-public:
-    QGraphicsItem *item;
-
-    void visit(QList<QGraphicsItem *> *items) override
-    { items->prepend(item); }
-};
-
-class QGraphicsSceneRemoveItemBspTreeVisitor : public QGraphicsSceneBspTreeVisitor
-{
-public:
-    QGraphicsItem *item;
-
-    void visit(QList<QGraphicsItem *> *items) override
-    { items->removeAll(item); }
-};
-
-class QGraphicsSceneFindItemBspTreeVisitor : public QGraphicsSceneBspTreeVisitor
-{
-public:
-    QList<QGraphicsItem *> *foundItems;
-    bool onlyTopLevelItems;
-
-    void visit(QList<QGraphicsItem *> *items) override
-    {
-        for (int i = 0; i < items->size(); ++i) {
-            QGraphicsItem *item = items->at(i);
-            if (onlyTopLevelItems && item->d_ptr->parent)
-                item = item->topLevelItem();
-            if (!item->d_func()->itemDiscovered && item->d_ptr->visible) {
-                item->d_func()->itemDiscovered = 1;
-                foundItems->prepend(item);
-            }
-        }
-    }
-};
 
 QGraphicsSceneBspTree::QGraphicsSceneBspTree()
     : leafCnt(0)
 {
-    insertVisitor = new QGraphicsSceneInsertItemBspTreeVisitor;
-    removeVisitor = new QGraphicsSceneRemoveItemBspTreeVisitor;
-    findVisitor = new QGraphicsSceneFindItemBspTreeVisitor;
 }
 
 QGraphicsSceneBspTree::~QGraphicsSceneBspTree()
 {
-    delete insertVisitor;
-    delete removeVisitor;
-    delete findVisitor;
 }
 
 void QGraphicsSceneBspTree::initialize(const QRectF &rect, int depth)
@@ -118,14 +75,16 @@ void QGraphicsSceneBspTree::clear()
 
 void QGraphicsSceneBspTree::insertItem(QGraphicsItem *item, const QRectF &rect)
 {
-    insertVisitor->item = item;
-    climbTree(insertVisitor, rect);
+    climbTree([item](QList<QGraphicsItem *> *items){
+        items->prepend(item);
+    }, rect);
 }
 
 void QGraphicsSceneBspTree::removeItem(QGraphicsItem *item, const QRectF &rect)
 {
-    removeVisitor->item = item;
-    climbTree(removeVisitor, rect);
+    climbTree([item](QList<QGraphicsItem *> *items){
+        items->removeAll(item);
+    }, rect);
 }
 
 void QGraphicsSceneBspTree::removeItems(const QSet<QGraphicsItem *> &items)
@@ -144,14 +103,22 @@ void QGraphicsSceneBspTree::removeItems(const QSet<QGraphicsItem *> &items)
 
 QList<QGraphicsItem *> QGraphicsSceneBspTree::items(const QRectF &rect, bool onlyTopLevelItems) const
 {
-    QList<QGraphicsItem *> tmp;
-    findVisitor->foundItems = &tmp;
-    findVisitor->onlyTopLevelItems = onlyTopLevelItems;
-    climbTree(findVisitor, rect);
+    QList<QGraphicsItem *> foundItems;
+    climbTree([&foundItems, onlyTopLevelItems](QList<QGraphicsItem *> *items) {
+        for (int i = 0; i < items->size(); ++i) {
+            QGraphicsItem *item = items->at(i);
+            if (onlyTopLevelItems && item->d_ptr->parent)
+                item = item->topLevelItem();
+            if (!item->d_func()->itemDiscovered && item->d_ptr->visible) {
+                item->d_func()->itemDiscovered = 1;
+                foundItems.prepend(item);
+            }
+        }
+    }, rect);
     // Reset discovery bits.
-    for (int i = 0; i < tmp.size(); ++i)
-        tmp.at(i)->d_ptr->itemDiscovered = 0;
-    return tmp;
+    for (const auto &foundItem : qAsConst(foundItems))
+        foundItem->d_ptr->itemDiscovered = 0;
+    return foundItems;
 }
 
 int QGraphicsSceneBspTree::leafCount() const
@@ -230,7 +197,8 @@ void QGraphicsSceneBspTree::initialize(const QRectF &rect, int depth, int index)
     }
 }
 
-void QGraphicsSceneBspTree::climbTree(QGraphicsSceneBspTreeVisitor *visitor, const QRectF &rect, int index) const
+template<typename Visitor>
+void QGraphicsSceneBspTree::climbTree(Visitor &&visitor, const QRectF &rect, int index) const
 {
     if (nodes.isEmpty())
         return;
@@ -240,7 +208,7 @@ void QGraphicsSceneBspTree::climbTree(QGraphicsSceneBspTreeVisitor *visitor, con
 
     switch (node.type) {
     case Node::Leaf: {
-        visitor->visit(const_cast<QList<QGraphicsItem*>*>(&leaves[node.leafIndex]));
+        visitor(const_cast<QList<QGraphicsItem*>*>(&leaves[node.leafIndex]));
         break;
     }
     case Node::Vertical:
