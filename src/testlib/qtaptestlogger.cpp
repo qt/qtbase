@@ -328,30 +328,31 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
 
                 QString descriptionString = QString::fromUtf8(description);
                 QRegularExpressionMatch match = verifyRegex.match(descriptionString);
-                if (!match.hasMatch())
+                const bool isVerify = match.hasMatch();
+                if (!isVerify)
                     match = compareRegex.match(descriptionString);
 
                 if (match.hasMatch()) {
-                    bool isVerify = match.regularExpression() == verifyRegex;
                     QString message = match.captured(QLatin1String("message"));
                     QString expected;
                     QString actual;
+                    const auto parenthesize = [&match](QLatin1String key) -> QString {
+                        return QLatin1String(" (") % match.captured(key) % QLatin1Char(')');
+                    };
+                    const QString actualExpression
+                        = parenthesize(QLatin1String("actualexpression"));
 
                     if (isVerify) {
-                        QString expression = QLatin1String(" (")
-                            % match.captured(QLatin1String("actualexpression")) % QLatin1Char(')') ;
-                        actual = match.captured(QLatin1String("actual")).toLower() % expression;
-                        expected = (actual.startsWith(QLatin1String("true"))
-                                    ? QLatin1String("false")
-                                    : QLatin1String("true")) % expression;
+                        actual = match.captured(QLatin1String("actual")).toLower()
+                            % actualExpression;
+                        expected = QLatin1String(actual.startsWith(QLatin1String("true "))
+                                                 ? "false" : "true") % actualExpression;
                         if (message.isEmpty())
                             message = QLatin1String("Verification failed");
                     } else {
-                        expected = match.captured(QLatin1String("expected")) % QLatin1String(" (")
-                            % match.captured(QLatin1String("expectedexpresssion"))
-                            % QLatin1Char(')');
-                        actual = match.captured(QLatin1String("actual")) % QLatin1String(" (")
-                            % match.captured(QLatin1String("actualexpression")) % QLatin1Char(')');
+                        expected = match.captured(QLatin1String("expected"))
+                            % parenthesize(QLatin1String("expectedexpresssion"));
+                        actual = match.captured(QLatin1String("actual")) % actualExpression;
                     }
 
                     QTestCharBuffer diagnosticsYamlish;
