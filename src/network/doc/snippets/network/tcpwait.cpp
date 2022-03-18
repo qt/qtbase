@@ -50,7 +50,7 @@
 
 #include <QTcpSocket>
 
-void test_tcpwait()
+int test_tcpwait()
 {
     QTcpSocket socket;
     socket.connectToHost("localhost", 1025);
@@ -69,4 +69,5 @@ void test_tcpwait()
             break;
     }
 //! [0]
+    return numReadTotal;
 }
