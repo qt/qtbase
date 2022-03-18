@@ -4326,6 +4326,8 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
         return caps.tessellation;
     case QRhi::GeometryShader:
         return caps.geometryShader;
+    case QRhi::TextureArrayRange:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -6016,7 +6018,12 @@ bool QVkTexture::finishCreate()
     viewInfo.components.a = VK_COMPONENT_SWIZZLE_A;
     viewInfo.subresourceRange.aspectMask = aspectMask;
     viewInfo.subresourceRange.levelCount = mipLevelCount;
-    viewInfo.subresourceRange.layerCount = isCube ? 6 : (isArray ? m_arraySize : 1);
+    if (isArray && m_arrayRangeStart >= 0 && m_arrayRangeLength >= 0) {
+        viewInfo.subresourceRange.baseArrayLayer = uint32_t(m_arrayRangeStart);
+        viewInfo.subresourceRange.layerCount = uint32_t(m_arrayRangeLength);
+    } else {
+        viewInfo.subresourceRange.layerCount = isCube ? 6 : (isArray ? m_arraySize : 1);
+    }
 
     VkResult err = rhiD->df->vkCreateImageView(rhiD->dev, &viewInfo, nullptr, &imageView);
     if (err != VK_SUCCESS) {

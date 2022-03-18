@@ -402,7 +402,12 @@ void tst_QRhi::create()
             QRhi::PipelineCacheDataLoadSave,
             QRhi::ImageDataStride,
             QRhi::RenderBufferImport,
-            QRhi::ThreeDimensionalTextures
+            QRhi::ThreeDimensionalTextures,
+            QRhi::RenderTo3DTextureSlice,
+            QRhi::TextureArrays,
+            QRhi::Tessellation,
+            QRhi::GeometryShader,
+            QRhi::TextureArrayRange
         };
         for (size_t i = 0; i <sizeof(features) / sizeof(QRhi::Feature); ++i)
             rhi->isFeatureSupported(features[i]);

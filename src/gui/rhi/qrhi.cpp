@@ -722,6 +722,28 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     implementation reports it as supported at run time. Geometry shaders have
     portability issues between APIs, and therefore no guarantees can be given
     for a universal solution for now.
+
+    \value TextureArrayRange Indicates that for
+    \l{QRhi::newTextureArray()}{texture arrays} it is possible to specify a
+    range that is exposed to the shaders. Normally all array layers are exposed
+    and it is up to the shader to select the layer (via the third coordinate
+    passed to texture() when sampling the \c sampler2DArray). When supported,
+    calling QRhiTexture::setArrayRangeStart() and
+    QRhiTexture::setArrayRangeLength() before
+    \l{QRhiTexture::create()}{building} or
+    \l{QRhiTexture::createFrom()}{importing} the native texture has an effect,
+    and leads to selecting only the specified range from the array. This will
+    be necessary in special cases, such as when working with accelerated video
+    decoding and Direct 3D 11, because a texture array with both
+    \c{D3D11_BIND_DECODER} and \c{D3D11_BIND_SHADER_RESOURCE} on it is only
+    usable as a shader resource if a single array layer is selected. Note that
+    all this is applicable only when the texture is used as a
+    QRhiShaderResourceBinding::SampledTexture or
+    QRhiShaderResourceBinding::Texture shader resource, and is not compatible
+    with image load/store. This feature is only available with some backends as
+    it does not map well to all graphics APIs, and it is only meant to provide
+    support for special cases anyhow. In practice the feature can be expected to
+    be supported with Direct3D 11 and Vulkan.
  */
 
 /*!

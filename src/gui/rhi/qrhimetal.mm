@@ -633,6 +633,8 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return false;
     case QRhi::GeometryShader:
         return false;
+    case QRhi::TextureArrayRange:
+        return false;
     default:
         Q_UNREACHABLE();
         return false;

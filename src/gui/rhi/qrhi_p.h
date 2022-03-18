@@ -866,6 +866,14 @@ public:
     int arraySize() const { return m_arraySize; }
     void setArraySize(int arraySize) { m_arraySize = arraySize; }
 
+    int arrayRangeStart() const { return m_arrayRangeStart; }
+    int arrayRangeLength() const { return m_arrayRangeLength; }
+    void setArrayRange(int startIndex, int count)
+    {
+        m_arrayRangeStart = startIndex;
+        m_arrayRangeLength = count;
+    }
+
     Flags flags() const { return m_flags; }
     void setFlags(Flags f) { m_flags = f; }
 
@@ -886,6 +894,8 @@ protected:
     int m_arraySize;
     int m_sampleCount;
     Flags m_flags;
+    int m_arrayRangeStart = -1;
+    int m_arrayRangeLength = -1;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QRhiTexture::Flags)
@@ -1676,7 +1686,8 @@ public:
         RenderTo3DTextureSlice,
         TextureArrays,
         Tessellation,
-        GeometryShader
+        GeometryShader,
+        TextureArrayRange
     };
 
     enum BeginFrameFlag {

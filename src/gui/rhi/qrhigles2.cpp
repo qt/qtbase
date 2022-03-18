@@ -1278,6 +1278,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return caps.tessellation;
     case QRhi::GeometryShader:
         return caps.geometryShader;
+    case QRhi::TextureArrayRange:
+        return false;
     default:
         Q_UNREACHABLE();
         return false;

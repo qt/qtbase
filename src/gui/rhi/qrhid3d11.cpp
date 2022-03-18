@@ -574,6 +574,8 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return false;
     case QRhi::GeometryShader:
         return false;
+    case QRhi::TextureArrayRange:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -3105,13 +3107,23 @@ bool QD3D11Texture::finishCreate()
         if (isArray) {
             if (sampleDesc.Count > 1) {
                 srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMSARRAY;
-                srvDesc.Texture2DMSArray.FirstArraySlice = 0;
-                srvDesc.Texture2DMSArray.ArraySize = UINT(m_arraySize);
+                if (m_arrayRangeStart >= 0 && m_arrayRangeLength >= 0) {
+                    srvDesc.Texture2DMSArray.FirstArraySlice = UINT(m_arrayRangeStart);
+                    srvDesc.Texture2DMSArray.ArraySize = UINT(m_arrayRangeLength);
+                } else {
+                    srvDesc.Texture2DMSArray.FirstArraySlice = 0;
+                    srvDesc.Texture2DMSArray.ArraySize = UINT(m_arraySize);
+                }
             } else {
                 srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
                 srvDesc.Texture2DArray.MipLevels = mipLevelCount;
-                srvDesc.Texture2DArray.FirstArraySlice = 0;
-                srvDesc.Texture2DArray.ArraySize = UINT(m_arraySize);
+                if (m_arrayRangeStart >= 0 && m_arrayRangeLength >= 0) {
+                    srvDesc.Texture2DArray.FirstArraySlice = UINT(m_arrayRangeStart);
+                    srvDesc.Texture2DArray.ArraySize = UINT(m_arrayRangeLength);
+                } else {
+                    srvDesc.Texture2DArray.FirstArraySlice = 0;
+                    srvDesc.Texture2DArray.ArraySize = UINT(m_arraySize);
+                }
             }
         } else {
             if (sampleDesc.Count > 1) {
