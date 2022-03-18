@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -54,6 +54,8 @@ struct CGRect;
 #endif
 
 QT_BEGIN_NAMESPACE
+
+class QRectF;
 
 class Q_CORE_EXPORT QRect
 {
@@ -157,6 +159,7 @@ public:
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
     [[nodiscard]] CGRect toCGRect() const noexcept;
 #endif
+    [[nodiscard]] constexpr inline QRectF toRectF() const noexcept;
 
 private:
     int x1;
@@ -862,6 +865,8 @@ inline QRectF QRectF::united(const QRectF &r) const noexcept
 {
     return *this | r;
 }
+
+constexpr QRectF QRect::toRectF() const noexcept { return *this; }
 
 constexpr inline QRect QRectF::toRect() const noexcept
 {

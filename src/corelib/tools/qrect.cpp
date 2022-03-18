@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -1232,6 +1232,18 @@ bool QRect::intersects(const QRect &r) const noexcept
     \since 6.0
 */
 
+/*!
+    \fn QRect::toRectF() const
+    \since 6.4
+
+    Returns this rectangle as a rectangle with floating point accuracy.
+
+    \note This function, like the QRectF(QRect) constructor, preserves the
+    size() of the rectangle, not its bottomRight() corner.
+
+    \sa QRectF::toRect()
+*/
+
 /*****************************************************************************
   QRect stream functions
  *****************************************************************************/
@@ -1480,7 +1492,10 @@ QDebug operator<<(QDebug dbg, const QRect &r)
 
     Constructs a QRectF rectangle from the given QRect \a rectangle.
 
-    \sa toRect()
+    \note This function, like QRect::toRectF(), preserves the size() of
+    \a rectangle, not its bottomRight() corner.
+
+    \sa toRect(), QRect::toRectF()
 */
 
 /*!
@@ -2334,7 +2349,7 @@ bool QRectF::intersects(const QRectF &r) const noexcept
     Returns a QRect based on the values of this rectangle.  Note that the
     coordinates in the returned rectangle are rounded to the nearest integer.
 
-    \sa QRectF(), toAlignedRect()
+    \sa QRectF(), toAlignedRect(), QRect::toRectF()
 */
 
 /*!

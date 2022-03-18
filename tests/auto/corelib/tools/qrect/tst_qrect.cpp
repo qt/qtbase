@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -32,6 +32,7 @@
 #include <limits.h>
 #include <qdebug.h>
 
+#include <array>
 
 class tst_QRect : public QObject
 {
@@ -123,6 +124,9 @@ private slots:
     void newMoveBottomRight();
     void margins();
     void marginsf();
+
+    void toRectF_data();
+    void toRectF();
 
     void translate_data();
     void translate();
@@ -3535,6 +3539,39 @@ void tst_QRect::marginsf()
     QCOMPARE(a, QRectF(QPoint(13.0, 14.0), QSizeF(43.5, 141.5)));
     QCOMPARE(a, rectangle.marginsRemoved(margins));
 }
+
+void tst_QRect::toRectF_data()
+{
+    QTest::addColumn<QRect>("input");
+    QTest::addColumn<QRectF>("result");
+
+    auto row = [](int x1, int y1, int w, int h) {
+        // QRectF -> QRect conversion tries to maintain size(), not bottomRight(),
+        // so compare in (topLeft(), size()) space
+        QTest::addRow("((%d, %d) (%dx%d))", x1, y1, w, h)
+                << QRect({x1, y1}, QSize{w, h}) << QRectF(QPointF(x1, y1), QSizeF(w, h));
+    };
+    constexpr std::array samples = {-1, 0, 1};
+    for (int x1 : samples) {
+        for (int y1 : samples) {
+            for (int w : samples) {
+                for (int h : samples) {
+                    row(x1, y1, w, h);
+                }
+            }
+        }
+    }
+}
+
+void tst_QRect::toRectF()
+{
+    QFETCH(const QRect, input);
+    QFETCH(const QRectF, result);
+
+    QCOMPARE(result.toRect(), input); // consistency check
+    QCOMPARE(input.toRectF(), result);
+}
+
 
 void tst_QRect::translate_data()
 {
