@@ -388,13 +388,7 @@ function(qt6_android_add_apk_target target)
         list(APPEND extra_args "--verbose")
     endif()
 
-    # The DEPFILE argument to add_custom_command is only available with Ninja or CMake>=3.20 and
-    # make.
-    set(has_depfile_support FALSE)
-    if(CMAKE_GENERATOR MATCHES "Ninja" OR
-        (CMAKE_VERSION VERSION_GREATER_EQUAL 3.20 AND CMAKE_GENERATOR MATCHES "Makefiles"))
-        set(has_depfile_support TRUE)
-    endif()
+    _qt_internal_check_depfile_support(has_depfile_support)
 
     if(has_depfile_support)
         cmake_policy(PUSH)

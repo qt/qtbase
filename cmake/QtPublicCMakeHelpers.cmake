@@ -18,3 +18,17 @@ function(_qt_internal_copy_file_if_different_command out_var src_file dst_file)
         )
     endif()
 endfunction()
+
+# The function checks if add_custom_command has the support of the DEPFILE argument.
+function(_qt_internal_check_depfile_support out_var)
+    if(CMAKE_GENERATOR MATCHES "Ninja" OR
+        CMAKE_VERSION VERSION_GREATER_EQUAL 3.20 AND CMAKE_GENERATOR MATCHES "Makefiles"
+        OR CMAKE_VERSION VERSION_GREATER_EQUAL 3.21
+        AND (CMAKE_GENERATOR MATCHES "Xcode"
+            OR CMAKE_GENERATOR MATCHES "Visual Studio ([0-9]+)" AND CMAKE_MATCH_1 GREATER_EQUAL 12))
+        set(${out_var} TRUE)
+    else()
+        set(${out_var} FALSE)
+    endif()
+    set(${out_var} "${${out_var}}" PARENT_SCOPE)
+endfunction()
