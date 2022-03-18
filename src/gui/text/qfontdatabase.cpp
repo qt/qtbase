@@ -2136,10 +2136,16 @@ int QFontDatabasePrivate::addAppFont(const QByteArray &fontData, const QString &
     applicationFonts[i] = font;
 
     // If the cache has not yet been populated, we need to reload the application font later
-    if (wasEmpty)
+    if (wasEmpty) {
         invalidate();
-    else
+    } else {
         emit qApp->fontDatabaseChanged();
+
+        // The font cache may have cached lookups for the font that was now
+        // loaded, so it has to be flushed.
+        QFontCache::instance()->clear();
+    }
+
     return i;
 }
 
