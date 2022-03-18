@@ -5,3 +5,9 @@ b2qt
 macos ci
 [windowOpacity]
 macos ci
+[wheelEventPropagation]
+android
+[forwardTouchEvent]
+android
+[touchEventPropagation]
+android
