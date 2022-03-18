@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -263,6 +263,15 @@ QT_BEGIN_NAMESPACE
     \sa setP1(), setP2(), p1(), p2()
 */
 
+/*!
+    \fn QLine::toLineF() const
+    \since 6.4
+
+    Returns this line as a line with floating point accuracy.
+
+    \sa QLineF::toLine()
+*/
+
 
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -423,7 +432,7 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 
     Construct a QLineF object from the given integer-based \a line.
 
-    \sa toLine()
+    \sa toLine(), QLine::toLineF()
 */
 
 /*!
@@ -463,7 +472,7 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
     Note that the returned line's start and end points are rounded to
     the nearest integer.
 
-    \sa QLineF()
+    \sa QLineF(), QLine::toLineF()
 */
 /*!
     \fn qreal QLineF::x1() const

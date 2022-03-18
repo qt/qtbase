@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -30,6 +30,8 @@
 #include <qline.h>
 #include <qmath.h>
 
+#include <array>
+
 class tst_QLine : public QObject
 {
     Q_OBJECT
@@ -58,6 +60,9 @@ private slots:
     void testAngleTo_data();
 
     void testSet();
+
+    void toLineF_data();
+    void toLineF();
 };
 
 const qreal epsilon = sizeof(qreal) == sizeof(double) ? 1e-8 : 1e-4;
@@ -501,6 +506,36 @@ void tst_QLine::testAngleTo_data()
             << qreal(i);
     }
 }
+
+void tst_QLine::toLineF_data()
+{
+    QTest::addColumn<QLine>("input");
+    QTest::addColumn<QLineF>("result");
+
+    auto row = [](int x1, int y1, int x2, int y2) {
+        QTest::addRow("((%d, %d)->(%d, %d))", x1, y1, x2, y2)
+                << QLine(x1, y1, x2, y2) << QLineF(x1, y1, x2, y2);
+    };
+    constexpr std::array samples = {-1, 0, 1};
+    for (int x1 : samples) {
+        for (int y1 : samples) {
+            for (int x2 : samples) {
+                for (int y2 : samples) {
+                    row(x1, y1, x2, y2);
+                }
+            }
+        }
+    }
+}
+
+void tst_QLine::toLineF()
+{
+    QFETCH(const QLine, input);
+    QFETCH(const QLineF, result);
+
+    QCOMPARE(input.toLineF(), result);
+}
+
 
 QTEST_MAIN(tst_QLine)
 #include "tst_qline.moc"

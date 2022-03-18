@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -406,6 +406,15 @@ QT_BEGIN_NAMESPACE
     \since 5.1
 */
 
+/*!
+    \fn QMargins::toMarginsF() const
+    \since 6.4
+
+    Returns these margins as margins with floating point accuracy.
+
+    \sa QMarginsF::toMargins()
+*/
+
 /*****************************************************************************
   QMargins stream functions
  *****************************************************************************/
@@ -501,6 +510,8 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
     \fn QMarginsF::QMarginsF(const QMargins &margins)
 
     Constructs margins copied from the given \a margins.
+
+    \sa QMargins::toMarginsF()
 */
 
 /*!
@@ -768,7 +779,7 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
     Note that the components in the returned margins will be rounded to
     the nearest integer.
 
-    \sa QMarginsF()
+    \sa QMarginsF(), QMargins::toMarginsF()
 */
 
 /*****************************************************************************

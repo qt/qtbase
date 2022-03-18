@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -29,6 +29,8 @@
 #include <QTest>
 #include <qmargins.h>
 
+#include <array>
+
 Q_DECLARE_METATYPE(QMargins)
 
 class tst_QMargins : public QObject
@@ -54,6 +56,9 @@ private slots:
 #endif
 
     void structuredBinding();
+
+    void toMarginsF_data();
+    void toMarginsF();
 };
 
 // Testing get/set functions
@@ -337,6 +342,35 @@ void tst_QMargins::structuredBinding()
         QCOMPARE(m.right(), 30.0);
         QCOMPARE(m.bottom(), 40.0);
     }
+}
+
+void tst_QMargins::toMarginsF_data()
+{
+    QTest::addColumn<QMargins>("input");
+    QTest::addColumn<QMarginsF>("result");
+
+    auto row = [](int x1, int y1, int x2, int y2) {
+        QTest::addRow("(%d, %d, %d, %d)", x1, y1, x2, y2)
+                << QMargins(x1, y1, x2, y2) << QMarginsF(x1, y1, x2, y2);
+    };
+    constexpr std::array samples = {-1, 0, 1};
+    for (int x1 : samples) {
+        for (int y1 : samples) {
+            for (int x2 : samples) {
+                for (int y2 : samples) {
+                    row(x1, y1, x2, y2);
+                }
+            }
+        }
+    }
+}
+
+void tst_QMargins::toMarginsF()
+{
+    QFETCH(const QMargins, input);
+    QFETCH(const QMarginsF, result);
+
+    QCOMPARE(input.toMarginsF(), result);
 }
 
 QTEST_APPLESS_MAIN(tst_QMargins)

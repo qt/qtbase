@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -44,6 +44,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QLineF;
 
 /*******************************************************************************
  * class QLine
@@ -85,6 +86,8 @@ public:
 
     constexpr inline bool operator==(const QLine &d) const noexcept;
     constexpr inline bool operator!=(const QLine &d) const noexcept { return !(*this == d); }
+
+    [[nodiscard]] constexpr inline QLineF toLineF() const noexcept;
 
 private:
     QPoint pt1, pt2;
@@ -385,6 +388,8 @@ constexpr inline QPointF QLineF::pointAt(qreal t) const
 {
     return QPointF(pt1.x() + (pt2.x() - pt1.x()) * t, pt1.y() + (pt2.y() - pt1.y()) * t);
 }
+
+constexpr inline QLineF QLine::toLineF() const noexcept { return *this; }
 
 constexpr inline QLine QLineF::toLine() const
 {

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -44,6 +44,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QMarginsF;
+
 /*****************************************************************************
   QMargins class
  *****************************************************************************/
@@ -74,6 +76,8 @@ public:
     constexpr QMargins &operator/=(int);
     constexpr QMargins &operator*=(qreal) noexcept;
     constexpr QMargins &operator/=(qreal);
+
+    [[nodiscard]] constexpr inline QMarginsF toMarginsF() const noexcept;
 
 private:
     int m_left;
@@ -515,6 +519,8 @@ constexpr inline QMarginsF operator-(const QMarginsF &margins) noexcept
 {
     return QMarginsF(-margins.left(), -margins.top(), -margins.right(), -margins.bottom());
 }
+
+constexpr QMarginsF QMargins::toMarginsF() const noexcept { return *this; }
 
 constexpr inline QMargins QMarginsF::toMargins() const noexcept
 {
