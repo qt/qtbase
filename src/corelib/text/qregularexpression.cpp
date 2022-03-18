@@ -1597,7 +1597,7 @@ QString QRegularExpression::errorString() const
 #endif
     }
 #ifdef QT_NO_TRANSLATION
-        return u"no error"_qs;
+        return u"no error"_s;
 #else
     return QCoreApplication::translate("QRegularExpression", "no error");
 #endif

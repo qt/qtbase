@@ -35,6 +35,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 CustomWidgetsInfo::CustomWidgetsInfo() = default;
 
 void CustomWidgetsInfo::acceptUI(DomUI *node)
@@ -109,8 +111,8 @@ bool CustomWidgetsInfo::isAmbiguousSignal(const QString &className,
     if (signalSignature.startsWith(u"triggered") && extends(className, "QAction"))
         return true;
     if (signalSignature.startsWith(u"clicked(")
-        && extendsOneOf(className, {u"QCommandLinkButton"_qs, u"QCheckBox"_qs,
-                                    u"QPushButton"_qs, u"QRadioButton"_qs, u"QToolButton"_qs})) {
+        && extendsOneOf(className, {u"QCommandLinkButton"_s, u"QCheckBox"_s,
+                                    u"QPushButton"_s, u"QRadioButton"_s, u"QToolButton"_s})) {
         return true;
     }
     return false;
@@ -137,12 +139,12 @@ QString CustomWidgetsInfo::simpleContainerAddPageMethod(const QString &name) con
     using AddPageMethod = std::pair<QString, QString>;
 
     static const AddPageMethod addPageMethods[] = {
-        {u"QStackedWidget"_qs, u"addWidget"_qs},
-        {u"QToolBar"_qs, u"addWidget"_qs},
-        {u"QDockWidget"_qs, u"setWidget"_qs},
-        {u"QScrollArea"_qs, u"setWidget"_qs},
-        {u"QSplitter"_qs, u"addWidget"_qs},
-        {u"QMdiArea"_qs, u"addSubWindow"_qs}
+        {u"QStackedWidget"_s, u"addWidget"_s},
+        {u"QToolBar"_s, u"addWidget"_s},
+        {u"QDockWidget"_s, u"setWidget"_s},
+        {u"QScrollArea"_s, u"setWidget"_s},
+        {u"QSplitter"_s, u"addWidget"_s},
+        {u"QMdiArea"_s, u"addSubWindow"_s}
     };
     for (const auto &m : addPageMethods) {
         if (extends(name, m.first))

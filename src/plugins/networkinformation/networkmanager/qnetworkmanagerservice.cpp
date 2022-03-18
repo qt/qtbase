@@ -61,6 +61,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QNetworkManagerInterfaceBase::QNetworkManagerInterfaceBase(QObject *parent)
     : QDBusAbstractInterface(QLatin1String(NM_DBUS_SERVICE), QLatin1String(NM_DBUS_PATH),
                              NM_DBUS_INTERFACE, QDBusConnection::systemBus(), parent)
@@ -137,7 +139,7 @@ static QDBusInterface getPrimaryDevice(const QDBusObjectPath &devicePath)
 
 std::optional<QDBusObjectPath> QNetworkManagerInterface::primaryConnectionDevicePath() const
 {
-    auto it = propertyMap.constFind(u"PrimaryConnection"_qs);
+    auto it = propertyMap.constFind(u"PrimaryConnection"_s);
     if (it != propertyMap.cend())
         return it->value<QDBusObjectPath>();
     return std::nullopt;

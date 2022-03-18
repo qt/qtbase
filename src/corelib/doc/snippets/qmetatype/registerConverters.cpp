@@ -58,7 +58,7 @@ int main() {
     int y;
     int z;
 
-    QString toString() const { return u"[x: %1; y: %2, z: %3]"_qs.arg(QString::number(x),
+    QString toString() const { return u"[x: %1; y: %2, z: %3]"_s.arg(QString::number(x),
       QString::number(y),
       QString::number(z)); }
   };

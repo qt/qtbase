@@ -70,6 +70,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 namespace {
 class CloseButton : public QAbstractButton
 {
@@ -406,12 +408,12 @@ void QTabBarPrivate::init()
 {
     Q_Q(QTabBar);
     leftB = new QToolButton(q);
-    leftB->setObjectName(u"ScrollLeftButton"_qs);
+    leftB->setObjectName(u"ScrollLeftButton"_s);
     leftB->setAutoRepeat(true);
     QObject::connect(leftB, SIGNAL(clicked()), q, SLOT(_q_scrollTabs()));
     leftB->hide();
     rightB = new QToolButton(q);
-    rightB->setObjectName(u"ScrollRightButton"_qs);
+    rightB->setObjectName(u"ScrollRightButton"_s);
     rightB->setAutoRepeat(true);
     QObject::connect(rightB, SIGNAL(clicked()), q, SLOT(_q_scrollTabs()));
     rightB->hide();

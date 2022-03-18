@@ -57,13 +57,15 @@
 
 #include "dialog.h"
 
+using namespace Qt::StringLiterals;
+
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
 #if QT_CONFIG(translation)
     QTranslator translator;
-    if (translator.load(QLocale::system(), u"qtbase"_qs, u"_"_qs,
+    if (translator.load(QLocale::system(), u"qtbase"_s, u"_"_s,
                         QLibraryInfo::path(QLibraryInfo::TranslationsPath))) {
         app.installTranslator(&translator);
     }

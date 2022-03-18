@@ -1113,7 +1113,7 @@ static QString winIso639LangName(LCID id)
         if (ok && *endptr == '\0') {
             switch (i) {
                 case 0x814:
-                    result = u"nn"_qs; // Nynorsk
+                    result = u"nn"_s; // Nynorsk
                     break;
                 default:
                     break;

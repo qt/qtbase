@@ -154,7 +154,7 @@ QString QSystemError::string(ErrorScope errorScope, int errorCode)
         qWarning("invalid error scope");
         Q_FALLTHROUGH();
     case NoError:
-        return u"No error"_qs;
+        return u"No error"_s;
     }
 }
 

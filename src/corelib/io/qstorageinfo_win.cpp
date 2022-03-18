@@ -251,7 +251,7 @@ bool QStorageInfoPrivate::queryStorageProperty()
 struct Helper
 {
     QBasicMutex mutex;
-    QSystemLibrary ntdll {u"ntdll"_qs};
+    QSystemLibrary ntdll {u"ntdll"_s};
 };
 Q_GLOBAL_STATIC(Helper, gNtdllHelper)
 

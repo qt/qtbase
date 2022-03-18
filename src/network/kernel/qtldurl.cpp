@@ -64,6 +64,8 @@ extern "C" int LookupStringInFixedSet(const unsigned char *graph, std::size_t le
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(lcTld, "qt.network.tld")
 
 static constexpr int PSL_NOT_FOUND = -1;
@@ -106,7 +108,7 @@ int QPublicSuffixDatabase::lookupDomain(QByteArrayView domain) const
 static QStringList locatePublicSuffixFiles()
 {
     return QStandardPaths::locateAll(QStandardPaths::GenericDataLocation,
-                                     u"publicsuffix/public_suffix_list.dafsa"_qs);
+                                     u"publicsuffix/public_suffix_list.dafsa"_s);
 }
 
 QPublicSuffixDatabase::QPublicSuffixDatabase()

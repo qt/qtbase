@@ -55,6 +55,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QT_IMPL_METATYPE_EXTERN(QNetworkCookie)
 
 /*!
@@ -667,7 +669,7 @@ static QDateTime parseDateString(const QByteArray &dateString)
 
     // hour:minute:second.ms pm
     static const QRegularExpression timeRx(
-            u"(\\d\\d?):(\\d\\d?)(?::(\\d\\d?)(?:\\.(\\d{1,3}))?)?(?:\\s*(am|pm))?"_qs);
+            u"(\\d\\d?):(\\d\\d?)(?::(\\d\\d?)(?:\\.(\\d{1,3}))?)?(?:\\s*(am|pm))?"_s);
 
     int at = 0;
     while (at < dateString.length()) {

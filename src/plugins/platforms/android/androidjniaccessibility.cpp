@@ -58,6 +58,8 @@ static const char m_classErrorMsg[] = "Can't find class \"%s\"";
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 namespace QtAndroidAccessibility
 {
     static jmethodID m_addActionMethodID = 0;
@@ -374,7 +376,7 @@ if (!clazz) { \
                 const double step = qAbs(valueIface->minimumStepSize().toDouble(&stepIsValid));
                 if (!stepIsValid || qFuzzyIsNull(step)) {
                     // Ignore step, use default precision
-                    valueStr = qFuzzyIsNull(val) ? u"0"_qs : QString::number(val, 'f');
+                    valueStr = qFuzzyIsNull(val) ? u"0"_s : QString::number(val, 'f');
                 } else {
                     const int precision = [](double s) {
                         int count = 0;
@@ -398,7 +400,7 @@ if (!clazz) { \
                         }
                         return count;
                     }(step);
-                    valueStr = qFuzzyIsNull(val / step) ? u"0"_qs
+                    valueStr = qFuzzyIsNull(val / step) ? u"0"_s
                                                         : QString::number(val, 'f', precision);
                 }
             } else {

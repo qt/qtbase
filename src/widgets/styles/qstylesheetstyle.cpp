@@ -134,6 +134,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 using namespace QCss;
 
 
@@ -1588,12 +1590,12 @@ public:
         if (propertyIndex == -1) {
             value = obj->property(name.toLatin1()); // might be a dynamic property
             if (!value.isValid()) {
-                if (name == u"class"_qs) {
+                if (name == "class"_L1) {
                     QString className = QString::fromLatin1(obj->metaObject()->className());
                     if (className.contains(QLatin1Char(':')))
                         className.replace(QLatin1Char(':'), QLatin1Char('-'));
                     valueStr = className;
-                } else if (name == u"style"_qs) {
+                } else if (name == "style"_L1) {
                     QWidget *w = qobject_cast<QWidget *>(obj);
                     QStyleSheetStyle *proxy = w ? qt_styleSheet(w->style()) : nullptr;
                     if (proxy)

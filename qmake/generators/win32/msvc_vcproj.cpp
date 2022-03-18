@@ -46,6 +46,7 @@
 //#define DEBUG_SOLUTION_GEN
 
 using namespace QMakeInternal;
+using namespace Qt::StringLiterals;
 
 QT_BEGIN_NAMESPACE
 // Filter GUIDs (Do NOT change these!) ------------------------------
@@ -301,7 +302,7 @@ QString VcprojGenerator::retrievePlatformToolSet() const
     if (!envVar.isEmpty())
         return envVar;
 
-    return u"v"_qs + project->first("MSVC_TOOLSET_VER");
+    return u"v"_s + project->first("MSVC_TOOLSET_VER");
 }
 
 bool VcprojGenerator::isStandardSuffix(const QString &suffix) const

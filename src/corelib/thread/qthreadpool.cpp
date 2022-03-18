@@ -279,7 +279,7 @@ void QThreadPoolPrivate::startThread(QRunnable *runnable)
     Q_ASSERT(runnable != nullptr);
     auto thread = std::make_unique<QThreadPoolThread>(this);
     if (objectName.isEmpty())
-        objectName = u"Thread (pooled)"_qs;
+        objectName = u"Thread (pooled)"_s;
     thread->setObjectName(objectName);
     Q_ASSERT(!allThreads.contains(thread.get())); // if this assert hits, we have an ABA problem (deleted threads don't get removed here)
     allThreads.insert(thread.get());

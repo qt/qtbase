@@ -1648,7 +1648,7 @@ QString QFileSystemEngine::homePath()
 
 QString QFileSystemEngine::rootPath()
 {
-    return u"/"_qs;
+    return u"/"_s;
 }
 
 QString QFileSystemEngine::tempPath()
