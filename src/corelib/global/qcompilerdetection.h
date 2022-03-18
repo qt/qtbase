@@ -156,29 +156,29 @@
 #  elif defined(__clang__)
 /* Clang also masquerades as GCC */
 #    if defined(__apple_build_version__)
-#      /* http://en.wikipedia.org/wiki/Xcode#Toolchain_Versions */
-#      if __apple_build_version__ >= 8020041
-#        define Q_CC_CLANG 309
-#      elif __apple_build_version__ >= 8000038
-#        define Q_CC_CLANG 308
-#      elif __apple_build_version__ >= 7000053
-#        define Q_CC_CLANG 306
-#      elif __apple_build_version__ >= 6000051
-#        define Q_CC_CLANG 305
-#      elif __apple_build_version__ >= 5030038
-#        define Q_CC_CLANG 304
-#      elif __apple_build_version__ >= 5000275
-#        define Q_CC_CLANG 303
-#      elif __apple_build_version__ >= 4250024
-#        define Q_CC_CLANG 302
-#      elif __apple_build_version__ >= 3180045
-#        define Q_CC_CLANG 301
-#      elif __apple_build_version__ >= 2111001
-#        define Q_CC_CLANG 300
+      // The Clang version reported by Apple Clang in __clang_major__
+      // and __clang_minor__ does _not_ reflect the actual upstream
+      // version of the compiler. To allow consumers to use a single
+      // define to verify the Clang version we hard-code the versions
+      // based on the best available info we have about the actual
+      // version: http://en.wikipedia.org/wiki/Xcode#Toolchain_Versions
+#      if __apple_build_version__   >= 13160021 // Xcode 13.3
+#        define Q_CC_CLANG 1300
+#      elif __apple_build_version__ >= 13000029 // Xcode 13.0
+#        define Q_CC_CLANG 1200
+#      elif __apple_build_version__ >= 12050022 // Xcode 12.5
+#        define Q_CC_CLANG 1110
+#      elif __apple_build_version__ >= 12000032 // Xcode 12.0
+#        define Q_CC_CLANG 1000
+#      elif __apple_build_version__ >= 11030032 // Xcode 11.4
+#        define Q_CC_CLANG 900
+#      elif __apple_build_version__ >= 11000033 // Xcode 11.0
+#        define Q_CC_CLANG 800
 #      else
-#        error "Unknown Apple Clang version"
+#        error "Unsupported Apple Clang version"
 #      endif
 #    else
+       // Non-Apple Clang, so we trust the versions reported
 #      define Q_CC_CLANG ((__clang_major__ * 100) + __clang_minor__)
 #    endif
 #    if __has_builtin(__builtin_assume)
