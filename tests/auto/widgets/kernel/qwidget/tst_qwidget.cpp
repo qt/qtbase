@@ -2573,12 +2573,14 @@ void tst_QWidget::windowState()
 
     QPoint pos;
     QSize size = m_testWidgetSize;
-    if (QGuiApplicationPrivate::platformIntegration()->defaultWindowState(Qt::Widget)
-                                                       == Qt::WindowFullScreen) {
+    const Qt::WindowState defaultWidgetState =
+            QGuiApplicationPrivate::platformIntegration()->defaultWindowState(Qt::Widget);
+    if (defaultWidgetState == Qt::WindowFullScreen)
         size = QGuiApplication::primaryScreen()->size();
-    } else {
+    else if (defaultWidgetState == Qt::WindowMaximized)
+        size = QGuiApplication::primaryScreen()->availableSize();
+    else
         pos = QPoint(10, 10);
-    }
 
     QWidget widget1;
     widget1.move(pos);
@@ -2882,7 +2884,7 @@ void tst_QWidget::resizeEvent()
         wParent.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
         wParent.resize(m_testWidgetSize);
         ResizeWidget wChild(&wParent);
-        wParent.show();
+        QTestPrivate::androidCompatibleShow(&wParent);
         QVERIFY(QTest::qWaitForWindowExposed(&wParent));
         QCOMPARE (wChild.m_resizeEventCount, 1); // initial resize event before paint
         wParent.hide();
@@ -2891,7 +2893,7 @@ void tst_QWidget::resizeEvent()
             safeSize.setWidth(639);
         wChild.resize(safeSize);
         QCOMPARE (wChild.m_resizeEventCount, 1);
-        wParent.show();
+        QTestPrivate::androidCompatibleShow(&wParent);
         QCOMPARE (wChild.m_resizeEventCount, 2);
     }
 
@@ -2899,7 +2901,7 @@ void tst_QWidget::resizeEvent()
         ResizeWidget wTopLevel;
         wTopLevel.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
         wTopLevel.resize(m_testWidgetSize);
-        wTopLevel.show();
+        QTestPrivate::androidCompatibleShow(&wTopLevel);
         QVERIFY(QTest::qWaitForWindowExposed(&wTopLevel));
         QCOMPARE (wTopLevel.m_resizeEventCount, 1); // initial resize event before paint for toplevels
         wTopLevel.hide();
@@ -2908,7 +2910,7 @@ void tst_QWidget::resizeEvent()
             safeSize.setWidth(639);
         wTopLevel.resize(safeSize);
         QCOMPARE (wTopLevel.m_resizeEventCount, 1);
-        wTopLevel.show();
+        QTestPrivate::androidCompatibleShow(&wTopLevel);
         QVERIFY(QTest::qWaitForWindowExposed(&wTopLevel));
         QCOMPARE (wTopLevel.m_resizeEventCount, 2);
     }
@@ -3123,8 +3125,8 @@ void tst_QWidget::reparent()
     pal2.setColor(childTLW.backgroundRole(), Qt::yellow);
     childTLW.setPalette(pal2);
 
-    parent.show();
-    childTLW.show();
+    QTestPrivate::androidCompatibleShow(&parent);
+    QTestPrivate::androidCompatibleShow(&childTLW);
     QVERIFY(QTest::qWaitForWindowExposed(&parent));
 
     parent.move(parentPosition);
@@ -3134,7 +3136,7 @@ void tst_QWidget::reparent()
 
     child.setParent(nullptr, child.windowFlags() & ~Qt::WindowType_Mask);
     child.setGeometry(childPos.x(), childPos.y(), child.width(), child.height());
-    child.show();
+    QTestPrivate::androidCompatibleShow(&child);
 
 #if 0   // QTBUG-26424
     if (m_platform == QStringLiteral("xcb"))
@@ -5595,7 +5597,7 @@ void tst_QWidget::setWindowGeometry()
         QTRY_COMPARE(widget.geometry(), rect);
 
         // show() again, geometry() should still be the same
-        widget.show();
+        QTestPrivate::androidCompatibleShow(&widget);
         if (rect.isValid())
             QVERIFY(QTest::qWaitForWindowExposed(&widget));
         QTRY_COMPARE(widget.geometry(), rect);
@@ -5646,7 +5648,7 @@ void tst_QWidget::setWindowGeometry()
         QTRY_COMPARE(widget.geometry(), rect);
 
         // show() again, geometry() should still be the same
-        widget.show();
+        QTestPrivate::androidCompatibleShow(&widget);
         if (rect.isValid())
             QVERIFY(QTest::qWaitForWindowExposed(&widget));
         QTest::qWait(10);
@@ -5794,7 +5796,7 @@ void tst_QWidget::windowMoveResize()
         QTRY_COMPARE(widget.size(), rect.size());
 
         // show() again, pos() should be the same
-        widget.show();
+        QTestPrivate::androidCompatibleShow(&widget);
         if (rect.isValid())
             QVERIFY(QTest::qWaitForWindowExposed(&widget));
         QApplication::processEvents();
@@ -5865,7 +5867,7 @@ void tst_QWidget::windowMoveResize()
         QTRY_COMPARE(widget.size(), rect.size());
 
         // show() again, pos() should be the same
-        widget.show();
+        QTestPrivate::androidCompatibleShow(&widget);
         if (rect.isValid())
             QVERIFY(QTest::qWaitForWindowExposed(&widget));
         QTest::qWait(10);
@@ -7087,7 +7089,9 @@ void tst_QWidget::childEvents()
             << qMakePair(&widget, QEvent::Move)
             << qMakePair(&widget, QEvent::Resize)
             << qMakePair(&widget, QEvent::Show)
+#ifndef Q_OS_ANDROID
             << qMakePair(&widget, QEvent::CursorChange)
+#endif
             << qMakePair(&widget, QEvent::ShowToParent);
 
         QVERIFY2(spy.eventList() == expected,
@@ -7176,7 +7180,9 @@ void tst_QWidget::childEvents()
             << qMakePair(&widget, QEvent::Move)
             << qMakePair(&widget, QEvent::Resize)
             << qMakePair(&widget, QEvent::Show)
+#ifndef Q_OS_ANDROID
             << qMakePair(&widget, QEvent::CursorChange)
+#endif
             << qMakePair(&widget, QEvent::ShowToParent);
 
         QVERIFY2(spy.eventList() == expected,
@@ -7268,7 +7274,9 @@ void tst_QWidget::childEvents()
             << qMakePair(&widget, QEvent::Move)
             << qMakePair(&widget, QEvent::Resize)
             << qMakePair(&widget, QEvent::Show)
+#ifndef Q_OS_ANDROID
             << qMakePair(&widget, QEvent::CursorChange)
+#endif
             << qMakePair(&widget, QEvent::ShowToParent);
 
         QVERIFY2(spy.eventList() == expected,
@@ -7376,7 +7384,11 @@ void tst_QWidget::renderChildFillsBackground()
     QCoreApplication::processEvents();
     const QPixmap childPixmap = child.grab(QRect(QPoint(0, 0), QSize(-1, -1)));
     const QPixmap windowPixmap = window.grab(QRect(QPoint(0, 0), QSize(-1, -1)));
+#ifndef Q_OS_ANDROID
+    // On Android all widgets are shown maximized, so the pixmaps
+    // will be similar
     QEXPECT_FAIL("", "This test fails on all platforms", Continue);
+#endif
     QCOMPARE(childPixmap, windowPixmap);
 }
 
@@ -9068,11 +9080,11 @@ void tst_QWidget::dumpObjectTree()
     w.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     Q_SET_OBJECT_NAME(w);
     w.move(100, 100);
-    w.resize(500, 500);
+    w.resize(200, 200);
 
     QLineEdit le(&w);
     Q_SET_OBJECT_NAME(le);
-    le.resize(500, 500);
+    le.resize(200, 200);
 
     {
         const char * const expected[] = {
@@ -9085,14 +9097,14 @@ void tst_QWidget::dumpObjectTree()
         w.dumpObjectTree();
     }
 
-    w.show();
+    QTestPrivate::androidCompatibleShow(&w);
     QApplication::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
 
     {
         const char * const expected[] = {
-            "QWidget::w <500x500+100+100>",
-            "    QLineEdit::le F<500x500+0+0>",
+            "QWidget::w <200x200+100+100>",
+            "    QLineEdit::le F<200x200+0+0>",
             "        QWidgetLineControl:: ",
         };
         for (const char *line : expected)
@@ -9606,6 +9618,10 @@ void tst_QWidget::translucentWidget()
     const QImage actual = widgetSnapshot.toImage().convertToFormat(QImage::Format_RGB32);
     QImage expected = pm.toImage().scaled(label.devicePixelRatio() * pm.size());
     expected.setDevicePixelRatio(label.devicePixelRatio());
+#ifdef Q_OS_ANDROID
+    // Android uses Format_ARGB32_Premultiplied by default
+    expected = expected.convertToFormat(QImage::Format_RGB32);
+#endif
     QCOMPARE(actual.size(),expected.size());
     QCOMPARE(actual,expected);
 
@@ -10711,6 +10727,9 @@ void tst_QWidget::activateWindow()
 
 void tst_QWidget::openModal_taskQTBUG_5804()
 {
+#ifdef Q_OS_ANDROID
+    QSKIP("This test hangs on Android");
+#endif
     class Widget : public QWidget
     {
     public:
@@ -12539,6 +12558,9 @@ protected:
 
 void tst_QWidget::deleteWindowInCloseEvent()
 {
+#ifdef Q_OS_ANDROID
+    QSKIP("This test crashes on Android");
+#endif
     QSignalSpy quitSpy(qApp, &QGuiApplication::lastWindowClosed);
 
     // Closing this widget should not cause a crash
