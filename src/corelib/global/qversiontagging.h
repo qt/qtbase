@@ -115,12 +115,12 @@ struct QVersionTag
 #endif
 
 #if defined(Q_OS_WIN)
-#  ifdef _WIN64
-//   64-bit calling convention does not prepend a _
-#    define QT_MANGLE_IMPORT_PREFIX     __imp_
-#  else
-//   32-bit convention does prepend a _
+#  ifdef Q_PROCESSOR_X86_32
+//   32-bit x86 convention does prepend a _
 #    define QT_MANGLE_IMPORT_PREFIX     _imp__
+#  else
+//   Calling convention on other architectures does not prepend a _
+#    define QT_MANGLE_IMPORT_PREFIX     __imp_
 #  endif
 #  ifdef Q_CC_MSVC
 #    pragma section(".qtversion",read,shared)
