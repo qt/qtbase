@@ -62,6 +62,8 @@ Q_DECLARE_METATYPE(QNetworkRequest::Attribute)
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QHttp2Configuration qt_defaultH2Configuration()
 {
     QHttp2Configuration config;
@@ -1245,7 +1247,7 @@ void tst_Http2::redirect()
     QFETCH(const int, maxRedirects);
     QFETCH(const int, redirectCount);
     QFETCH(const bool, success);
-    const QByteArray redirectUrl = "/b.html"_qba;
+    const QByteArray redirectUrl = "/b.html"_ba;
 
     clearHTTP2State();
     serverPort = 0;

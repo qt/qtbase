@@ -52,6 +52,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*
   The BLACKLIST file format is a grouped listing of keywords.
 
@@ -320,7 +322,7 @@ void checkBlackLists(const char *slot, const char *data, const char *global)
         }
 
         if (!ignore && global) {
-            s = slot + ":"_qba + global;
+            s = slot + ":"_ba + global;
             ignore = ignoredTests->find(s) != ignoredTests->end();
             if (!ignore && data) {
                 s = (s + ':') + data;

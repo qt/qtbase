@@ -814,7 +814,7 @@ void tst_QSqlQuery::oraClob()
                            .arg(clobby)));
     q.addBindValue(1);
     q.addBindValue("bubu");
-    q.addBindValue("bubu"_qba);
+    q.addBindValue("bubu"_ba);
     QVERIFY_SQL(q, exec());
 
     QVERIFY_SQL(q, exec(QLatin1String("select bl, cl from %1 where id = 1").arg(clobby)));
@@ -827,7 +827,7 @@ void tst_QSqlQuery::oraClob()
                            .arg(clobby)));
     q.addBindValue(2);
     q.addBindValue(u"lala"_s, QSql::Binary);
-    q.addBindValue("lala"_qba, QSql::Binary);
+    q.addBindValue("lala"_ba, QSql::Binary);
     QVERIFY_SQL(q, exec());
 
     QVERIFY_SQL(q, exec(QLatin1String("select bl, cl from %1 where id = 2").arg(clobby)));
@@ -1817,7 +1817,7 @@ void tst_QSqlQuery::writeNull()
     // QUuid.
     QMultiHash<QString, QVariant> nullableTypes = {
         {"varchar(20)", u"not null"_s},
-        {"varchar(20)", "not null"_qba},
+        {"varchar(20)", "not null"_ba},
         {"date", QDateTime::currentDateTime()},
         {"date", QDate::currentDate()},
         {"date", QTime::currentTime()},
