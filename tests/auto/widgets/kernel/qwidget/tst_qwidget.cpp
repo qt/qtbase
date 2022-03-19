@@ -9941,6 +9941,8 @@ void tst_QWidget::enterLeaveOnWindowShowHide()
             secondary->show();
             if (!QTest::qWaitForWindowExposed(secondary))
                 QEXPECT_FAIL("", "Secondary window failed to show, test will fail", Abort);
+            if (secondaryWindowType == Qt::Dialog && QGuiApplication::platformName() == "windows")
+                QTest::qWait(250); // on Windows, we have to wait for fade-in effects
         }
     };
 
@@ -9967,15 +9969,16 @@ void tst_QWidget::enterLeaveOnWindowShowHide()
 
     QTest::mouseClick(&widget, Qt::LeftButton, {}, widget.mapFromGlobal(cursorPos));
     ++expectedLeave;
-    QTRY_COMPARE_WITH_TIMEOUT(widget.numLeaveEvents, expectedLeave, 500);
+    QTRY_COMPARE_WITH_TIMEOUT(widget.numLeaveEvents, expectedLeave, 1000);
     QVERIFY(!widget.underMouse());
+    QTRY_VERIFY(QApplication::activeModalWidget() || QApplication::activePopupWidget());
     if (QApplication::activeModalWidget())
         QApplication::activeModalWidget()->close();
     else if (QApplication::activePopupWidget())
         QApplication::activePopupWidget()->close();
     ++expectedEnter;
     // Use default timeout, the test is flaky on Windows otherwise.
-    QVERIFY(QTest::qWaitFor([&]{ return widget.numEnterEvents >= expectedEnter; }));
+    QTRY_VERIFY(widget.numEnterEvents >= expectedEnter);
     // When a modal dialog closes we might get more than one enter event on macOS.
     // This seems to depend on timing, so we tolerate that flakiness for now.
     if (widget.numEnterEvents > expectedEnter && QGuiApplication::platformName() == "cocoa")
