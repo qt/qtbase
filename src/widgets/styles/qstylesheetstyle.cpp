@@ -4391,6 +4391,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
     case CE_TabBarTabLabel:
     case CE_TabBarTabShape:
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
+            const auto foregroundRole = w ? w->foregroundRole() : QPalette::WindowText;
             QRenderRule subRule = renderRule(w, opt, PseudoElement_TabBarTab);
             QRect r = positionRect(w, subRule, PseudoElement_TabBarTab, opt->rect, opt->direction);
             if (ce == CE_TabBarTabShape && subRule.hasDrawable() && tab->shape < QTabBar::TriangularNorth) {
@@ -4398,7 +4399,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 return;
             }
             QStyleOptionTab tabCopy(*tab);
-            subRule.configurePalette(&tabCopy.palette, QPalette::WindowText, QPalette::Base);
+            subRule.configurePalette(&tabCopy.palette, foregroundRole, QPalette::Base);
             QFont oldFont = p->font();
             if (subRule.hasFont)
                 p->setFont(subRule.font.resolve(p->font()));

@@ -2028,7 +2028,8 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                 p->drawPixmap(iconRect.x(), iconRect.y(), tabIcon);
             }
 
-            proxy()->drawItemText(p, tr, alignment, tab->palette, tab->state & State_Enabled, tab->text, QPalette::WindowText);
+            proxy()->drawItemText(p, tr, alignment, tab->palette, tab->state & State_Enabled, tab->text,
+                                  widget ? widget->foregroundRole() : QPalette::WindowText);
             if (verticalTabs)
                 p->restore();
 
