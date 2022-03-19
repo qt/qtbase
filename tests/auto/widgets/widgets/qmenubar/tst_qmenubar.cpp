@@ -1432,7 +1432,7 @@ void tst_QMenuBar::taskQTBUG4965_escapeEaten()
     QMenu menu("menu1");
     QAction *first = menubar.addMenu(&menu);
 #if QT_CONFIG(shortcut)
-    menu.addAction("quit", &menubar, SLOT(close()), QKeySequence("ESC"));
+    menu.addAction("quit", QKeySequence("ESC"), &menubar, SLOT(close()));
 #endif
     centerOnScreen(&menubar);
     menubar.show();
