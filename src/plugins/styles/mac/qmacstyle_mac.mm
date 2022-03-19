@@ -4098,6 +4098,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
     case CE_TabBarTabLabel:
         if (const auto *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
             QStyleOptionTab myTab = *tab;
+            const auto foregroundRole = w ? w->foregroundRole() : QPalette::WindowText;
             const auto tabDirection = QMacStylePrivate::tabDirection(tab->shape);
             const bool verticalTabs = tabDirection == QMacStylePrivate::East
                                    || tabDirection == QMacStylePrivate::West;
@@ -4111,11 +4112,11 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             if (!myTab.documentMode && (myTab.state & State_Selected) && (myTab.state & State_Active))
                 if (const auto *tabBar = qobject_cast<const QTabBar *>(w))
                     if (!tabBar->tabTextColor(tabBar->currentIndex()).isValid())
-                        myTab.palette.setColor(QPalette::WindowText, Qt::white);
+                        myTab.palette.setColor(foregroundRole, Qt::white);
 
             if (myTab.documentMode && isDarkMode()) {
                 bool active = (myTab.state & State_Selected) && (myTab.state & State_Active);
-                myTab.palette.setColor(QPalette::WindowText, active ? Qt::white : Qt::gray);
+                myTab.palette.setColor(foregroundRole, active ? Qt::white : Qt::gray);
             }
 
             int heightOffset = 0;
