@@ -744,8 +744,8 @@ aeshash256_ge32(__m256i state0, const uchar *p, size_t len)
         state1 = _mm256_aesenc_epi128(state1, state1);
     };
 
-    auto src = reinterpret_cast<const __m256i *>(p);
-    const auto srcend = reinterpret_cast<const __m256i *>(p + len);
+    const __m256i *src = reinterpret_cast<const __m256i *>(p);
+    const __m256i *srcend = reinterpret_cast<const __m256i *>(p + len);
 
     __m256i state1 = _mm256_aesenc_epi128(state0, mm256_set1_epz(len));
 
