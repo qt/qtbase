@@ -4059,9 +4059,10 @@ void QAbstractItemView::doAutoScroll()
 }
 
 /*!
-    Returns the SelectionFlags to be used when updating a selection with
-    to include the \a index specified. The \a event is a user input event,
-    such as a mouse or keyboard event.
+    Returns the SelectionFlags to be used when updating a selection model
+    for the specified \a index. The result depends on the current
+    selectionMode(), and on the user input event \a event, which can be
+    \nullptr.
 
     Reimplement this function to define your own selection behavior.
 
@@ -4078,12 +4079,24 @@ QItemSelectionModel::SelectionFlags QAbstractItemView::selectionCommand(const QM
         case NoSelection: // Never update selection model
             return QItemSelectionModel::NoUpdate;
         case SingleSelection: // ClearAndSelect on valid index otherwise NoUpdate
-            if (event && event->type() == QEvent::MouseButtonRelease)
-                return QItemSelectionModel::NoUpdate;
-            if ((keyModifiers & Qt::ControlModifier) && d->selectionModel->isSelected(index) && event->type() != QEvent::MouseMove)
-                return QItemSelectionModel::Deselect | d->selectionBehaviorFlags();
-            else
-                return QItemSelectionModel::ClearAndSelect | d->selectionBehaviorFlags();
+            if (event) {
+                switch (event->type()) {
+                case QEvent::MouseButtonPress:
+                    // press with any modifiers on a selected item does nothing
+                    if (d->pressedAlreadySelected)
+                        return QItemSelectionModel::NoUpdate;
+                    break;
+                case QEvent::KeyPress:
+                case QEvent::MouseButtonRelease:
+                    // ctrl-release on selected item deselects
+                    if ((keyModifiers & Qt::ControlModifier) && d->selectionModel->isSelected(index))
+                        return QItemSelectionModel::Deselect | d->selectionBehaviorFlags();
+                    break;
+                default:
+                    break;
+                }
+            }
+            return QItemSelectionModel::ClearAndSelect | d->selectionBehaviorFlags();
         case MultiSelection:
             return d->multiSelectionCommand(index, event);
         case ExtendedSelection:

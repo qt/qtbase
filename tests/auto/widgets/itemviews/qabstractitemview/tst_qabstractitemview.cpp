@@ -2884,9 +2884,17 @@ void tst_QAbstractItemView::mouseSelection_data()
     QTest::addRow("Single:Shift+Click") << QAbstractItemView::SingleSelection << false
         << QList{SelectionEvent{SelectionEvent::Click, Qt::ShiftModifier, 2}}
         << QList{2};
+    QTest::addRow("Single:Press;Ctrl+Press") << QAbstractItemView::SingleSelection << false
+        << QList{SelectionEvent{SelectionEvent::Press, 3},
+                 SelectionEvent{SelectionEvent::Press, Qt::ControlModifier, 3}}
+        << QList{3};
     QTest::addRow("Single:Ctrl+Click") << QAbstractItemView::SingleSelection << false
         << QList{SelectionEvent{SelectionEvent::Click, Qt::ControlModifier, 3}}
         << QList{3};
+    QTest::addRow("Single:Click;Ctrl+Click") << QAbstractItemView::SingleSelection << false
+        << QList{SelectionEvent{SelectionEvent::Click, 3},
+                 SelectionEvent{SelectionEvent::Click, Qt::ControlModifier, 3}}
+        << QList<int>{};
 
     // multi selection mode - selection toggles on press, selection can be drag-extended
     // modifiers ignored
