@@ -595,7 +595,7 @@ void tst_QHash::erase_edge_case()
     for (qsizetype i = 0; i < numBuckets * 4 && index < 2; ++i) {
         const size_t hash = qHash(i, QHashSeed::globalSeed());
         const size_t bucketForHash = QHashPrivate::GrowthPolicy::bucketForHash(numBuckets, hash);
-        if (bucketForHash == numBuckets - 1)
+        if (qsizetype(bucketForHash) == numBuckets - 1)
             keys[index++] = i;
     }
     QCOMPARE(index, 2); // Sanity check. If this fails then the test needs an update!
