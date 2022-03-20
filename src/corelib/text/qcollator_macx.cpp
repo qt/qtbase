@@ -130,12 +130,12 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
     // Documentation recommends having it 5 times as big as the input
     QList<UCCollationValue> ret(string.size() * 5);
     ItemCount actualSize;
-    int status = UCGetCollationKey(d->collator, text, string.count(),
+    int status = UCGetCollationKey(d->collator, text, string.size(),
                                    ret.size(), &actualSize, ret.data());
 
     ret.resize(actualSize + 1);
     if (status == kUCOutputBufferTooSmall) {
-        status = UCGetCollationKey(d->collator, text, string.count(),
+        status = UCGetCollationKey(d->collator, text, string.size(),
                                    ret.size(), &actualSize, ret.data());
         Q_ASSERT(status != kUCOutputBufferTooSmall);
         Q_ASSERT(ret.size() == qsizetype(actualSize + 1));
