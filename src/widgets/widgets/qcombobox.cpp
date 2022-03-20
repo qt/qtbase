@@ -2558,8 +2558,8 @@ bool QComboBoxPrivate::showNativePopup()
 #ifdef Q_OS_MACOS
     // The Cocoa popup will swallow any mouse release event.
     // We need to fake one here to un-press the button.
-    QMouseEvent mouseReleased(QEvent::MouseButtonRelease, q->pos(), Qt::LeftButton,
-                              Qt::MouseButtons(Qt::LeftButton), Qt::KeyboardModifiers());
+    QMouseEvent mouseReleased(QEvent::MouseButtonRelease, q->pos(), q->mapToGlobal(QPoint(0, 0)),
+                              Qt::LeftButton, Qt::MouseButtons(Qt::LeftButton), {});
     QCoreApplication::sendEvent(q, &mouseReleased);
 #endif
 
