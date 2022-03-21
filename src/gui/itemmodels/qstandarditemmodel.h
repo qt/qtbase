@@ -110,7 +110,7 @@ public:
     inline void setFont(const QFont &font);
 
     inline Qt::Alignment textAlignment() const {
-        return Qt::Alignment(qvariant_cast<int>(data(Qt::TextAlignmentRole)));
+        return qvariant_cast<Qt::Alignment>(data(Qt::TextAlignmentRole));
     }
     inline void setTextAlignment(Qt::Alignment textAlignment);
 
@@ -274,7 +274,7 @@ inline void QStandardItem::setFont(const QFont &afont)
 { setData(afont, Qt::FontRole); }
 
 inline void QStandardItem::setTextAlignment(Qt::Alignment atextAlignment)
-{ setData(int(atextAlignment.toInt()), Qt::TextAlignmentRole); }
+{ setData(QVariant::fromValue(atextAlignment), Qt::TextAlignmentRole); }
 
 inline void QStandardItem::setBackground(const QBrush &abrush)
 { setData(abrush, Qt::BackgroundRole); }
