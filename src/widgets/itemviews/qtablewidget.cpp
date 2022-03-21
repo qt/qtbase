@@ -1289,20 +1289,44 @@ void QTableWidgetItem::setFlags(Qt::ItemFlags aflags)
 */
 
 /*!
+    \if defined(qt7)
+
+    \fn Qt::Alignment QTableWidgetItem::textAlignment() const
+
+    Returns the text alignment for the list item.
+
+    \else
+
     \fn int QTableWidgetItem::textAlignment() const
 
     Returns the text alignment for the item's text.
 
+    \note This function returns an int for historical reasons. It will
+    be corrected to return Qt::Alignment in Qt 7.
+
     \sa Qt::Alignment
+
+    \endif
 */
 
 /*!
+    \obsolete [6.4] Use the overload that takes a Qt::Alignment argument.
+
     \fn void QTableWidgetItem::setTextAlignment(int alignment)
 
     Sets the text alignment for the item's text to the \a alignment
     specified.
 
     \sa Qt::Alignment
+*/
+
+/*!
+    \since 6.4
+
+    \fn void QTableWidgetItem::setTextAlignment(Qt::Alignment alignment)
+
+    Sets the text alignment for the item's text to the \a alignment
+    specified.
 */
 
 /*!

@@ -129,10 +129,20 @@ public:
         { return qvariant_cast<QFont>(data(column, Qt::FontRole)); }
     inline void setFont(int column, const QFont &font);
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     inline int textAlignment(int column) const
         { return data(column, Qt::TextAlignmentRole).toInt(); }
+#else
+    inline Qt::Alignment textAlignment(int column) const
+    { return qvariant_cast<Qt::Alignment>(data(column, Qt::TextAlignmentRole)); }
+#endif
+#if QT_DEPRECATED_SINCE(6, 4)
+    QT_DEPRECATED_VERSION_X_6_4("Use the overload taking Qt::Alignment")
     inline void setTextAlignment(int column, int alignment)
         { setData(column, Qt::TextAlignmentRole, alignment); }
+#endif
+    inline void setTextAlignment(int column, Qt::Alignment alignment)
+        { setData(column, Qt::TextAlignmentRole, QVariant::fromValue(alignment)); }
 
     inline QBrush background(int column) const
         { return qvariant_cast<QBrush>(data(column, Qt::BackgroundRole)); }
@@ -145,7 +155,7 @@ public:
         { setData(column, Qt::ForegroundRole, brush.style() != Qt::NoBrush ? QVariant(brush) : QVariant()); }
 
     inline Qt::CheckState checkState(int column) const
-        { return static_cast<Qt::CheckState>(data(column, Qt::CheckStateRole).toInt()); }
+        { return qvariant_cast<Qt::CheckState>(data(column, Qt::CheckStateRole)); }
     inline void setCheckState(int column, Qt::CheckState state)
         { setData(column, Qt::CheckStateRole, state); }
 

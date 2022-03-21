@@ -934,11 +934,24 @@ QDataStream &operator>>(QDataStream &in, QListWidgetItem &item)
 */
 
 /*!
+    \if defined(qt7)
+
+    \fn Qt::Alignment QListWidgetItem::textAlignment() const
+
+    Returns the text alignment for the list item.
+
+    \else
+
     \fn int QListWidgetItem::textAlignment() const
 
     Returns the text alignment for the list item.
 
-    \sa Qt::AlignmentFlag
+    \note This function returns an int for historical reasons. It will
+    be corrected to return Qt::Alignment in Qt 7.
+
+    \sa Qt::Alignment
+
+    \endif
 */
 
 /*!
@@ -1092,11 +1105,21 @@ void QListWidgetItem::setFlags(Qt::ItemFlags aflags)
 */
 
 /*!
+    \obsolete [6.4] Use the overload that takes a Qt::Alignment argument.
+
     \fn void QListWidgetItem::setTextAlignment(int alignment)
 
     Sets the list item's text alignment to \a alignment.
 
-    \sa Qt::AlignmentFlag
+    \sa Qt::Alignment
+*/
+
+/*!
+    \since 6.4
+
+    \fn void QListWidgetItem::setTextAlignment(Qt::Alignment alignment)
+
+    Sets the list item's text alignment to \a alignment.
 */
 
 /*!

@@ -1362,17 +1362,44 @@ bool QTreeWidgetItem::isFirstColumnSpanned() const
 */
 
 /*!
+  \if defined(qt7)
+
+  \fn Qt::Alignment QTreeWidgetItem::textAlignment(int column) const
+
+  Returns the text alignment for the label in the given \a column.
+
+  \else
+
   \fn int QTreeWidgetItem::textAlignment(int column) const
 
-  Returns the text alignment for the label in the given \a column
-  (see \l{Qt::AlignmentFlag}).
+  Returns the text alignment for the label in the given \a column.
+
+  \note This function returns an int for historical reasons. It will
+  be corrected to return Qt::Alignment in Qt 7.
+
+  \sa Qt::Alignment
+
+  \endif
 */
 
 /*!
+  \obsolete [6.4] Use the overload that takes a Qt::Alignment argument.
+
   \fn void QTreeWidgetItem::setTextAlignment(int column, int alignment)
 
   Sets the text alignment for the label in the given \a column to
-  the \a alignment specified (see \l{Qt::AlignmentFlag}).
+  the \a alignment specified.
+
+  \sa Qt::Alignment
+*/
+
+/*!
+  \since 6.4
+
+  \fn void QTreeWidgetItem::setTextAlignment(int column, Qt::Alignment alignment)
+
+  Sets the text alignment for the label in the given \a column to
+  the \a alignment specified.
 */
 
 /*!
