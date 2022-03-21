@@ -380,9 +380,7 @@ QString QSettingsPrivate::variantToString(const QVariant &v)
 
         case QMetaType::QByteArray: {
             QByteArray a = v.toByteArray();
-            result = "@ByteArray("_L1
-                     + QLatin1StringView(a.constData(), a.size())
-                     + u')';
+            result = "@ByteArray("_L1 + QLatin1StringView(a) + u')';
             break;
         }
 
@@ -597,18 +595,16 @@ void QSettingsPrivate::iniEscapedString(const QString &str, QByteArray &result)
 {
     bool needsQuotes = false;
     bool escapeNextIfDigit = false;
-    bool useCodec = !str.startsWith("@ByteArray("_L1)
-                    && !str.startsWith("@Variant("_L1)
-                    && !str.startsWith("@DateTime("_L1);
+    const bool useCodec = !(str.startsWith("@ByteArray("_L1)
+                            || str.startsWith("@Variant("_L1)
+                            || str.startsWith("@DateTime("_L1));
+    const qsizetype startPos = result.size();
 
     QStringEncoder toUtf8(QStringEncoder::Utf8);
 
-    qsizetype startPos = result.size();
     result.reserve(startPos + str.size() * 3 / 2);
-
-    const QChar *unicode = str.unicode();
-    for (qsizetype i = 0; i < str.size(); ++i) {
-        uint ch = unicode[i].unicode();
+    for (QChar qch : str) {
+        uint ch = qch.unicode();
         if (ch == ';' || ch == ',' || ch == '=')
             needsQuotes = true;
 
@@ -659,7 +655,7 @@ void QSettingsPrivate::iniEscapedString(const QString &str, QByteArray &result)
                 escapeNextIfDigit = true;
             } else if (useCodec) {
                 // slow
-                result += toUtf8(unicode[i]);
+                result += toUtf8(qch);
             } else {
                 result += (char)ch;
             }
@@ -1607,10 +1603,9 @@ bool QConfFileSettingsPrivate::readIniFile(QByteArrayView data,
     qsizetype sectionPosition = 0;
     bool ok = true;
 
-    // skip potential utf8 BOM
-    const uchar *dd = (const uchar *)data.constData();
-    if (data.size() >= 3 && dd[0] == 0xef && dd[1] == 0xbb && dd[2] == 0xbf)
-        dataPos = 3;
+    // Skip possible UTF-8 BOM:
+    if (data.startsWith("\xef\xbb\xbf"))
+        data = data.sliced(3);
 
     while (readIniLine(data, dataPos, lineStart, lineLen, equalsPos)) {
         QByteArrayView line = data.sliced(lineStart, lineLen);
@@ -1682,27 +1677,22 @@ bool QConfFileSettingsPrivate::readIniSection(const QSettingsKey &section, QByte
         QByteArrayView value = line.sliced(equalsPos + 1);
 
         QString strKey = section.originalCaseKey();
-        bool keyIsLowercase = iniUnescapedKey(key, strKey) && sectionIsLowercase;
+        const Qt::CaseSensitivity casing = iniUnescapedKey(key, strKey) && sectionIsLowercase
+                                           ? Qt::CaseSensitive
+                                           : IniCaseSensitivity;
 
         QString strValue;
         strValue.reserve(value.size());
-        bool isStringList = iniUnescapedStringList(value, strValue, strListValue);
-        QVariant variant;
-        if (isStringList) {
-            variant = stringListToVariantList(strListValue);
-        } else {
-            variant = stringToVariant(strValue);
-        }
+        QVariant variant = iniUnescapedStringList(value, strValue, strListValue)
+                           ? stringListToVariantList(strListValue)
+                           : stringToVariant(strValue);
 
         /*
             We try to avoid the expensive toLower() call in
             QSettingsKey by passing Qt::CaseSensitive when the
             key is already in lowercase.
         */
-        settingsMap->insert(QSettingsKey(strKey, keyIsLowercase ? Qt::CaseSensitive
-                                                                : IniCaseSensitivity,
-                                         position),
-                            variant);
+        settingsMap->insert(QSettingsKey(strKey, casing, position), std::move(variant));
         ++position;
     }
 
