@@ -496,9 +496,9 @@ QVariant QSettingsPrivate::stringToVariant(const QString &s)
     if (s.startsWith(u'@')) {
         if (s.endsWith(u')')) {
             if (s.startsWith("@ByteArray("_L1)) {
-                return QVariant(QStringView{s}.mid(11, s.size() - 12).toLatin1());
+                return QVariant(QStringView{s}.sliced(11).chopped(1).toLatin1());
             } else if (s.startsWith("@String("_L1)) {
-                return QVariant(QStringView{s}.mid(8, s.size() - 9).toString());
+                return QVariant(QStringView{s}.sliced(8).chopped(1).toString());
             } else if (s.startsWith("@Variant("_L1)
                        || s.startsWith("@DateTime("_L1)) {
 #ifndef QT_NO_DATASTREAM
@@ -511,7 +511,7 @@ QVariant QSettingsPrivate::stringToVariant(const QString &s)
                     version = QDataStream::Qt_4_0;
                     offset = 9;
                 }
-                QByteArray a = QStringView{s}.mid(offset).toLatin1();
+                QByteArray a = QStringView{s}.sliced(offset).toLatin1();
                 QDataStream stream(&a, QIODevice::ReadOnly);
                 stream.setVersion(version);
                 QVariant result;
@@ -540,7 +540,7 @@ QVariant QSettingsPrivate::stringToVariant(const QString &s)
 
         }
         if (s.startsWith("@@"_L1))
-            return QVariant(s.mid(1));
+            return QVariant(s.sliced(1));
     }
 
     return QVariant(s);
@@ -575,7 +575,7 @@ void QSettingsPrivate::iniEscapedKey(const QString &key, QByteArray &result)
 
 bool QSettingsPrivate::iniUnescapedKey(const QByteArray &key, int from, int to, QString &result)
 {
-    const QString decoded = QString::fromUtf8(QByteArrayView(key).sliced(from, to - from));
+    const QString decoded = QString::fromUtf8(QByteArrayView(key).first(to).sliced(from));
     const qsizetype size = decoded.size();
     result.reserve(result.length() + size);
     qsizetype i = 0;
@@ -1280,14 +1280,14 @@ QStringList QConfFileSettingsPrivate::children(const QString &prefix, ChildSpec 
                 &confFile->originalKeys)->lowerBound( thePrefix);
         while (j != confFile->originalKeys.constEnd() && j.key().startsWith(thePrefix)) {
             if (!confFile->removedKeys.contains(j.key()))
-                processChild(QStringView{j.key().originalCaseKey()}.mid(startPos), spec, result);
+                processChild(QStringView{j.key().originalCaseKey()}.sliced(startPos), spec, result);
             ++j;
         }
 
         j = const_cast<const ParsedSettingsMap *>(
                 &confFile->addedKeys)->lowerBound(thePrefix);
         while (j != confFile->addedKeys.constEnd() && j.key().startsWith(thePrefix)) {
-            processChild(QStringView{j.key().originalCaseKey()}.mid(startPos), spec, result);
+            processChild(QStringView{j.key().originalCaseKey()}.sliced(startPos), spec, result);
             ++j;
         }
 
@@ -1616,7 +1616,7 @@ bool QConfFileSettingsPrivate::readIniFile(const QByteArray &data,
                                                                       sectionPosition)]; \
         if (!sectionData.isEmpty()) \
             sectionData.append('\n'); \
-        sectionData += data.mid(currentSectionStart, lineStart - currentSectionStart); \
+        sectionData += data.first(lineStart).sliced(currentSectionStart); \
         sectionPosition = ++position; \
     }
 
