@@ -2215,25 +2215,50 @@ void tst_QByteArray::literals()
 
 void tst_QByteArray::userDefinedLiterals()
 {
-    QByteArray str = "abcd"_qba;
+    {
+        using namespace Qt::StringLiterals;
+        QByteArray str = "abcd"_ba;
 
-    QVERIFY(str.length() == 4);
-    QCOMPARE(str.capacity(), 0);
-    QVERIFY(str == "abcd");
-    QVERIFY(!str.data_ptr()->isMutable());
+        QVERIFY(str.length() == 4);
+        QCOMPARE(str.capacity(), 0);
+        QVERIFY(str == "abcd");
+        QVERIFY(!str.data_ptr()->isMutable());
 
-    const char *s = str.constData();
-    QByteArray str2 = str;
-    QVERIFY(str2.constData() == s);
-    QCOMPARE(str2.capacity(), 0);
+        const char *s = str.constData();
+        QByteArray str2 = str;
+        QVERIFY(str2.constData() == s);
+        QCOMPARE(str2.capacity(), 0);
 
-    // detach on non const access
-    QVERIFY(str.data() != s);
-    QVERIFY(str.capacity() >= str.length());
+        // detach on non const access
+        QVERIFY(str.data() != s);
+        QVERIFY(str.capacity() >= str.length());
 
-    QVERIFY(str2.constData() == s);
-    QVERIFY(str2.data() != s);
-    QVERIFY(str2.capacity() >= str2.length());
+        QVERIFY(str2.constData() == s);
+        QVERIFY(str2.data() != s);
+        QVERIFY(str2.capacity() >= str2.length());
+    }
+
+    {
+        QByteArray str = "abcd"_qba;
+
+        QVERIFY(str.length() == 4);
+        QCOMPARE(str.capacity(), 0);
+        QVERIFY(str == "abcd");
+        QVERIFY(!str.data_ptr()->isMutable());
+
+        const char *s = str.constData();
+        QByteArray str2 = str;
+        QVERIFY(str2.constData() == s);
+        QCOMPARE(str2.capacity(), 0);
+
+        // detach on non const access
+        QVERIFY(str.data() != s);
+        QVERIFY(str.capacity() >= str.length());
+
+        QVERIFY(str2.constData() == s);
+        QVERIFY(str2.data() != s);
+        QVERIFY(str2.capacity() >= str2.length());
+    }
 }
 
 void tst_QByteArray::toUpperLower_data()

@@ -1658,13 +1658,6 @@ qsizetype erase_if(QString &s, Predicate pred)
     return QtPrivate::sequential_erase_if(s, pred);
 }
 
-inline namespace QtLiterals {
-inline QString operator"" _qs(const char16_t *str, size_t size) noexcept
-{
-    return QString(QStringPrivate(nullptr, const_cast<char16_t *>(str), qsizetype(size)));
-}
-} // QtLiterals
-
 namespace Qt {
 inline namespace Literals {
 inline namespace StringLiterals {
@@ -1674,9 +1667,21 @@ constexpr inline QLatin1StringView operator"" _L1(const char *str, size_t size) 
     return {str, qsizetype(size)};
 }
 
+inline QString operator"" _s(const char16_t *str, size_t size) noexcept
+{
+    return QString(QStringPrivate(nullptr, const_cast<char16_t *>(str), qsizetype(size)));
+}
+
 } // StringLiterals
 } // Literals
 } // Qt
+
+inline namespace QtLiterals {
+inline QString operator"" _qs(const char16_t *str, size_t size) noexcept
+{
+    return Qt::StringLiterals::operator""_s(str, size);
+}
+} // QtLiterals
 
 QT_END_NAMESPACE
 

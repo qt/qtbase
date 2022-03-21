@@ -690,10 +690,23 @@ QByteArray QByteArrayView::toByteArray() const
     return QByteArray(data(), size());
 }
 
+namespace Qt {
+inline namespace Literals {
+inline namespace StringLiterals {
+
+inline QByteArray operator"" _ba(const char *str, size_t size) noexcept
+{
+    return QByteArray(QByteArrayData(nullptr, const_cast<char *>(str), qsizetype(size)));
+}
+
+} // StringLiterals
+} // Literals
+} // Qt
+
 inline namespace QtLiterals {
 inline QByteArray operator"" _qba(const char *str, size_t size) noexcept
 {
-    return QByteArray(QByteArrayData(nullptr, const_cast<char *>(str), qsizetype(size)));
+    return Qt::StringLiterals::operator""_ba(str, size);
 }
 } // QtLiterals
 
