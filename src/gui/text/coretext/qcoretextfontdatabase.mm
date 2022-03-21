@@ -764,6 +764,12 @@ void QCoreTextFontDatabase::populateThemeFonts()
         FontDescription fd;
         getFontDescription(fontDescriptor, &fd);
 
+        // We might get here from QFontDatabase::systemFont() or QPlatformTheme::font(),
+        // before the font database has initialized itself and populated all available
+        // families. As a result, we can't populate the descriptor at this time, as that
+        // would result in the font database having > 0 families, which would result in
+        // skipping the initialization and population of all other font families. Instead
+        // we store the descriptors for later and populate them during populateFontDatabase().
         if (!m_systemFontDescriptors.contains(fontDescriptor))
             m_systemFontDescriptors.insert(fontDescriptor);
         else
