@@ -150,7 +150,7 @@ auto createTuple(Arg &&arg, Args &&... args)
     constexpr auto Size = sizeof...(Args); // One less than the size of all arguments
     if constexpr (QtPrivate::IsPrivateSignalArg<std::tuple_element_t<Size, TupleType>>) {
         if constexpr (Size == 1) {
-            return arg;
+            return std::move(arg);
         } else {
             return cutTuple(std::make_tuple(std::forward<Arg>(arg), std::forward<Args>(args)...),
                             std::make_index_sequence<Size>());
