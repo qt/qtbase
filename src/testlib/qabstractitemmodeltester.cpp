@@ -41,6 +41,7 @@
 #include "qabstractitemmodeltester.h"
 
 #include <private/qobject_p.h>
+#include <private/qabstractitemmodel_p.h>
 #include <QtCore/QPointer>
 #include <QtCore/QAbstractItemModel>
 #include <QtCore/QStack>
@@ -674,14 +675,14 @@ void QAbstractItemModelTesterPrivate::data()
     // Check that the alignment is one we know about
     QVariant textAlignmentVariant = model->data(model->index(0, 0), Qt::TextAlignmentRole);
     if (textAlignmentVariant.isValid()) {
-        Qt::Alignment alignment = qvariant_cast<Qt::Alignment>(textAlignmentVariant);
+        Qt::Alignment alignment = QtPrivate::legacyFlagValueFromModelData<Qt::Alignment>(textAlignmentVariant);
         MODELTESTER_COMPARE(alignment, (alignment & (Qt::AlignHorizontal_Mask | Qt::AlignVertical_Mask)));
     }
 
     // Check that the "check state" is one we know about.
     QVariant checkStateVariant = model->data(model->index(0, 0), Qt::CheckStateRole);
     if (checkStateVariant.isValid()) {
-        int state = checkStateVariant.toInt();
+        Qt::CheckState state = QtPrivate::legacyEnumValueFromModelData<Qt::CheckState>(checkStateVariant);
         MODELTESTER_VERIFY(state == Qt::Unchecked
                 || state == Qt::PartiallyChecked
                 || state == Qt::Checked);
