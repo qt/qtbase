@@ -441,6 +441,10 @@ private slots:
 
     void activateWhileModalHidden();
 
+#ifdef Q_OS_ANDROID
+    void showFullscreenAndroid();
+#endif
+
 private:
     const QString m_platform;
     QSize m_testWidgetSize;
@@ -12441,6 +12445,39 @@ void tst_QWidget::activateWhileModalHidden()
     QVERIFY(window.isActiveWindow());
     QCOMPARE(QApplication::activeWindow(), &window);
 }
+
+#ifdef Q_OS_ANDROID
+void tst_QWidget::showFullscreenAndroid()
+{
+    QWidget w;
+    w.setAutoFillBackground(true);
+    QPalette p = w.palette();
+    p.setColor(QPalette::Window, Qt::red);
+    w.setPalette(p);
+
+    // Need to toggle showFullScreen() twice, see QTBUG-101968
+    w.showFullScreen();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    w.showFullScreen();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+
+    // Make sure that the lower part of the screen contains the red widget, not
+    // the buttons.
+
+    const QRect fullGeometry = w.screen()->geometry();
+    // Take a rect of (20 x 20) from the bottom area
+    const QRect grabArea(10, fullGeometry.height() - 30, 20, 20);
+    const QImage img = grabFromWidget(&w, grabArea).toImage().convertedTo(QImage::Format_RGB32);
+
+    QPixmap expectedPix(20, 20);
+    expectedPix.fill(Qt::red);
+    const QImage expectedImg = expectedPix.toImage().convertedTo(QImage::Format_RGB32);
+
+    QCOMPARE(img, expectedImg);
+}
+#endif // Q_OS_ANDROID
 
 QTEST_MAIN(tst_QWidget)
 #include "tst_qwidget.moc"
