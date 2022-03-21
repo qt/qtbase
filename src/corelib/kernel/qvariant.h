@@ -228,6 +228,14 @@ class Q_CORE_EXPORT QVariant
     QVariant(const QModelIndex &modelIndex);
     QVariant(const QPersistentModelIndex &modelIndex);
 #endif
+#if !defined(Q_CC_GHS)
+    // GHS has an ICE with this code; use the simplified version below
+    template <typename T,
+              std::enable_if_t<std::disjunction_v<std::is_pointer<T>, std::is_member_pointer<T>>, bool> = false>
+    QVariant(T) = delete;
+#else
+    QVariant(const volatile void *) = delete;
+#endif
 
     QVariant& operator=(const QVariant &other);
     inline QVariant(QVariant &&other) noexcept : d(other.d)
