@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
@@ -38,23 +38,24 @@
 ****************************************************************************/
 
 #include "qsql_ibase_p.h"
-#include <qcoreapplication.h>
-#include <qdatetime.h>
-#include <qdeadlinetimer.h>
-#include <qdebug.h>
-#include <qlist.h>
-#include <qmutex.h>
-#include <qsqlerror.h>
-#include <qsqlfield.h>
-#include <qsqlindex.h>
-#include <qsqlquery.h>
-#include <qvariant.h>
+#include <QtCore/qcoreapplication.h>
+#include <QtCore/qdatetime.h>
+#include <QtCore/qdeadlinetimer.h>
+#include <QtCore/qdebug.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qmap.h>
+#include <QtCore/qmutex.h>
+#include <QtCore/qvariant.h>
+#include <QtCore/qvarlengtharray.h>
+#include <QtSql/qsqlerror.h>
+#include <QtSql/qsqlfield.h>
+#include <QtSql/qsqlindex.h>
+#include <QtSql/qsqlquery.h>
 #include <QtSql/private/qsqlcachedresult_p.h>
 #include <QtSql/private/qsqldriver_p.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <math.h>
-#include <QVarLengthArray>
 
 QT_BEGIN_NAMESPACE
 
