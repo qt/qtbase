@@ -49,6 +49,7 @@ import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
+import android.view.WindowManager;
 
 public class QtLayout extends ViewGroup
 {
@@ -112,11 +113,25 @@ public class QtLayout extends ViewGroup
         }
 
         boolean isFullScreenView = h == realMetrics.heightPixels;
-
-        int insetLeft = isFullScreenView ? insets.getSystemWindowInsetLeft() : 0;
-        int insetTop = isFullScreenView ? insets.getSystemWindowInsetTop() : 0;
-        int insetRight = isFullScreenView ? insets.getSystemWindowInsetRight() : 0;
-        int insetBottom = isFullScreenView ? insets.getSystemWindowInsetBottom() : 0;
+        // The code uses insets for fullscreen mode only. However in practice
+        // the insets can be reported incorrectly. Both on Android 6 and Android 11
+        // a non-zero bottom inset is reported even when the
+        // WindowManager.LayoutParams.FLAG_FULLSCREEN flag is set.
+        // To avoid that, add an extra check for the fullscreen mode.
+        // The insets-related logic is not removed for the case when
+        // isFullScreenView == true, but hasFlagFullscreen == false, although
+        // I can't get such case in my tests.
+        final int windowFlags = ((Activity)getContext()).getWindow().getAttributes().flags;
+        final boolean hasFlagFullscreen =
+                (windowFlags & WindowManager.LayoutParams.FLAG_FULLSCREEN) != 0;
+        int insetLeft =
+                (isFullScreenView && !hasFlagFullscreen) ? insets.getSystemWindowInsetLeft() : 0;
+        int insetTop =
+                (isFullScreenView && !hasFlagFullscreen) ? insets.getSystemWindowInsetTop() : 0;
+        int insetRight =
+                (isFullScreenView && !hasFlagFullscreen) ? insets.getSystemWindowInsetRight() : 0;
+        int insetBottom =
+                (isFullScreenView && !hasFlagFullscreen) ? insets.getSystemWindowInsetBottom() : 0;
 
         int usableAreaWidth = w - insetLeft - insetRight;
         int usableAreaHeight = h - insetTop - insetBottom;
