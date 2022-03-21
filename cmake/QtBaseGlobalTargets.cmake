@@ -289,8 +289,25 @@ qt_copy_or_install(DIRECTORY cmake/platforms
 # Install public config.tests files.
 qt_copy_or_install(DIRECTORY
     "config.tests/static_link_order"
+    "config.tests/binary_for_strip"
     DESTINATION "${__GlobalConfig_install_dir}/config.tests"
 )
+
+# Install qt-internal-strip files.
+set(__qt_internal_strip_wrappers
+    libexec/qt-internal-strip.in
+    libexec/qt-internal-strip.bat.in
+)
+qt_copy_or_install(PROGRAMS
+    ${__qt_internal_strip_wrappers}
+    DESTINATION "${__GlobalConfig_install_dir}/libexec"
+)
+if(QT_WILL_INSTALL)
+    foreach(__qt_internal_strip_wrapper ${__qt_internal_strip_wrappers})
+        file(COPY "${__qt_internal_strip_wrapper}"
+             DESTINATION "${__GlobalConfig_build_dir}/libexec")
+    endforeach()
+endif()
 
 # Install public CMake files.
 # The functions defined inside can be used in both public projects and while building Qt.
