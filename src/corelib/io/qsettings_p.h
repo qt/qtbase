@@ -231,10 +231,10 @@ public:
     static QString variantToString(const QVariant &v);
     static QVariant stringToVariant(const QString &s);
     static void iniEscapedKey(const QString &key, QByteArray &result);
-    static bool iniUnescapedKey(const QByteArray &key, int from, int to, QString &result);
+    static bool iniUnescapedKey(QByteArrayView key, int from, int to, QString &result);
     static void iniEscapedString(const QString &str, QByteArray &result);
     static void iniEscapedStringList(const QStringList &strs, QByteArray &result);
-    static bool iniUnescapedStringList(const QByteArray &str, int from, int to,
+    static bool iniUnescapedStringList(QByteArrayView str, int from, int to,
                                        QString &stringResult, QStringList &stringListResult);
     static QStringList splitArgs(const QString &s, int idx);
 
@@ -276,10 +276,10 @@ public:
     bool isWritable() const override;
     QString fileName() const override;
 
-    bool readIniFile(const QByteArray &data, UnparsedSettingsMap *unparsedIniSections);
-    static bool readIniSection(const QSettingsKey &section, const QByteArray &data,
+    bool readIniFile(QByteArrayView data, UnparsedSettingsMap *unparsedIniSections);
+    static bool readIniSection(const QSettingsKey &section, QByteArrayView data,
                                ParsedSettingsMap *settingsMap);
-    static bool readIniLine(const QByteArray &data, int &dataPos, int &lineStart, int &lineLen,
+    static bool readIniLine(QByteArrayView data, int &dataPos, int &lineStart, int &lineLen,
                             int &equalsPos);
 
 private:

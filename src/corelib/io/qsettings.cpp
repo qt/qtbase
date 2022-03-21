@@ -573,9 +573,9 @@ void QSettingsPrivate::iniEscapedKey(const QString &key, QByteArray &result)
     }
 }
 
-bool QSettingsPrivate::iniUnescapedKey(const QByteArray &key, int from, int to, QString &result)
+bool QSettingsPrivate::iniUnescapedKey(QByteArrayView key, int from, int to, QString &result)
 {
-    const QString decoded = QString::fromUtf8(QByteArrayView(key).first(to).sliced(from));
+    const QString decoded = QString::fromUtf8(key.first(to).sliced(from));
     const qsizetype size = decoded.size();
     result.reserve(result.length() + size);
     qsizetype i = 0;
@@ -740,7 +740,7 @@ void QSettingsPrivate::iniEscapedStringList(const QStringList &strs, QByteArray 
     }
 }
 
-bool QSettingsPrivate::iniUnescapedStringList(const QByteArray &str, int from, int to,
+bool QSettingsPrivate::iniUnescapedStringList(QByteArrayView str, int from, int to,
                                               QString &stringResult, QStringList &stringListResult)
 {
     static const char escapeCodes[][2] =
@@ -844,7 +844,7 @@ StNormal:
                 ++j;
             }
 
-            stringResult += fromUtf8(QByteArrayView(str).first(j).sliced(i));
+            stringResult += fromUtf8(str.first(j).sliced(i));
             i = j;
         }
         }
@@ -1535,7 +1535,7 @@ static const char charTraits[256] =
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-bool QConfFileSettingsPrivate::readIniLine(const QByteArray &data, int &dataPos,
+bool QConfFileSettingsPrivate::readIniLine(QByteArrayView data, int &dataPos,
                                            int &lineStart, int &lineLen, int &equalsPos)
 {
     int dataLen = data.length();
@@ -1606,7 +1606,7 @@ break_out_of_outer_loop:
     possible, so if the user doesn't check the status he will get the
     most out of the file anyway.
 */
-bool QConfFileSettingsPrivate::readIniFile(const QByteArray &data,
+bool QConfFileSettingsPrivate::readIniFile(QByteArrayView data,
                                            UnparsedSettingsMap *unparsedIniSections)
 {
 #define FLUSH_CURRENT_SECTION() \
@@ -1641,13 +1641,13 @@ bool QConfFileSettingsPrivate::readIniFile(const QByteArray &data,
             FLUSH_CURRENT_SECTION();
 
             // this is a section
-            QByteArray iniSection;
+            QByteArrayView iniSection;
             int idx = data.indexOf(']', lineStart);
             if (idx == -1 || idx >= lineStart + lineLen) {
                 ok = false;
-                iniSection = data.mid(lineStart + 1, lineLen - 1);
+                iniSection = data.sliced(lineStart + 1, lineLen - 1);
             } else {
-                iniSection = data.mid(lineStart + 1, idx - lineStart - 1);
+                iniSection = data.sliced(lineStart + 1, idx - lineStart - 1);
             }
 
             iniSection = iniSection.trimmed();
@@ -1676,7 +1676,7 @@ bool QConfFileSettingsPrivate::readIniFile(const QByteArray &data,
 #undef FLUSH_CURRENT_SECTION
 }
 
-bool QConfFileSettingsPrivate::readIniSection(const QSettingsKey &section, const QByteArray &data,
+bool QConfFileSettingsPrivate::readIniSection(const QSettingsKey &section, QByteArrayView data,
                                               ParsedSettingsMap *settingsMap)
 {
     QStringList strListValue;
