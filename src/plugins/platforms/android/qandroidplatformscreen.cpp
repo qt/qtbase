@@ -191,7 +191,9 @@ void QAndroidPlatformScreen::addWindow(QAndroidPlatformWindow *window)
     if (window->parent() && window->isRaster())
         return;
 
-    Q_ASSERT(!m_windowStack.contains(window));
+    if (m_windowStack.contains(window))
+        return;
+
     m_windowStack.prepend(window);
     if (window->isRaster()) {
         m_rasterSurfaces.ref();
@@ -208,10 +210,10 @@ void QAndroidPlatformScreen::removeWindow(QAndroidPlatformWindow *window)
     if (window->parent() && window->isRaster())
         return;
 
-
-    Q_ASSERT(m_windowStack.contains(window));
     m_windowStack.removeOne(window);
-    Q_ASSERT(!m_windowStack.contains(window));
+
+    if (m_windowStack.contains(window))
+        qWarning() << "Failed to remove window";
 
     if (window->isRaster()) {
         m_rasterSurfaces.deref();
