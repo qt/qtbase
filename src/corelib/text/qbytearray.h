@@ -704,10 +704,15 @@ inline QByteArray operator"" _ba(const char *str, size_t size) noexcept
 } // Qt
 
 inline namespace QtLiterals {
+#if QT_DEPRECATED_SINCE(6, 8)
+
+QT_DEPRECATED_VERSION_X_6_8("Use _ba from Qt::StringLiterals namespace instead.")
 inline QByteArray operator"" _qba(const char *str, size_t size) noexcept
 {
     return Qt::StringLiterals::operator""_ba(str, size);
 }
+
+#endif // QT_DEPRECATED_SINCE(6, 8)
 } // QtLiterals
 
 QT_END_NAMESPACE

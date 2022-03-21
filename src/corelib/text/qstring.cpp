@@ -10987,11 +10987,13 @@ QString QString::toHtmlEscaped() const
   \sa QByteArrayLiteral
 */
 
+#if QT_DEPRECATED_SINCE(6, 8)
 /*!
   \fn QtLiterals::operator""_qs(const char16_t *str, size_t size)
 
   \relates QString
   \since 6.2
+  \deprecated [6.8] Use \c _s from Qt::StringLiterals namespace instead.
 
   Literal operator that creates a QString out of the first \a size characters in
   the char16_t string literal \a str.
@@ -11009,6 +11011,7 @@ QString QString::toHtmlEscaped() const
 
   \sa QStringLiteral, QtLiterals::operator""_qba(const char *str, size_t size)
 */
+#endif // QT_DEPRECATED_SINCE(6, 8)
 
 /*!
     \fn Qt::Literals::StringLiterals::operator""_s(const char16_t *str, size_t size)

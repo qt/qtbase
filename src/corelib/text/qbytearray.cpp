@@ -4779,11 +4779,13 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
     \sa QStringLiteral
 */
 
+#if QT_DEPRECATED_SINCE(6, 8)
 /*!
   \fn QtLiterals::operator""_qba(const char *str, size_t size)
 
   \relates QByteArray
   \since 6.2
+  \deprecated [6.8] Use \c _ba from Qt::StringLiterals namespace instead.
 
   Literal operator that creates a QByteArray out of the first \a size characters
   in the char string literal \a str.
@@ -4801,6 +4803,7 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
 
   \sa QByteArrayLiteral, QtLiterals::operator""_qs(const char16_t *str, size_t size)
 */
+#endif // QT_DEPRECATED_SINCE(6, 8)
 
 /*!
     \fn Qt::Literals::StringLiterals::operator""_ba(const char *str, size_t size)

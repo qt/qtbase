@@ -2238,8 +2238,9 @@ void tst_QByteArray::userDefinedLiterals()
         QVERIFY(str2.capacity() >= str2.length());
     }
 
+#if QT_DEPRECATED_SINCE(6, 8)
     {
-        QByteArray str = "abcd"_qba;
+        QT_IGNORE_DEPRECATIONS(QByteArray str = "abcd"_qba;)
 
         QVERIFY(str.length() == 4);
         QCOMPARE(str.capacity(), 0);
@@ -2259,6 +2260,7 @@ void tst_QByteArray::userDefinedLiterals()
         QVERIFY(str2.data() != s);
         QVERIFY(str2.capacity() >= str2.length());
     }
+#endif // QT_DEPRECATED_SINCE(6, 8)
 }
 
 void tst_QByteArray::toUpperLower_data()

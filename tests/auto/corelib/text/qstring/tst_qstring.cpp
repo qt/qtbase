@@ -7053,8 +7053,9 @@ void tst_QString::userDefinedLiterals()
         QVERIFY(str2.capacity() >= str2.length());
     }
 
+#if QT_DEPRECATED_SINCE(6, 8)
     {
-        QString str = u"abcd"_qs;
+        QT_IGNORE_DEPRECATIONS(QString str = u"abcd"_qs;)
 
         QVERIFY(str.length() == 4);
         QCOMPARE(str.capacity(), 0);
@@ -7074,6 +7075,7 @@ void tst_QString::userDefinedLiterals()
         QVERIFY(str2.data() != s);
         QVERIFY(str2.capacity() >= str2.length());
     }
+#endif // QT_DEPRECATED_SINCE(6, 8)
 }
 
 void tst_QString::eightBitLiterals_data()
