@@ -416,7 +416,7 @@ static QStringList get_colornames()
 
     A color can be set by passing an RGB string (such as "#112233"),
     or an ARGB string (such as "#ff112233") or a color name (such as "blue"),
-    to the setNamedColor() function.
+    to the fromString() function.
     The color names are taken from the SVG 1.0 color names. The name()
     function returns the name of the color in the format
     "#RRGGBB". Colors can also be set using setRgb(), setHsv() and
@@ -871,7 +871,7 @@ QColor::QColor(Spec spec) noexcept
 
     Returns the name of the color in the specified \a format.
 
-    \sa setNamedColor(), NameFormat
+    \sa fromString(), NameFormat
 */
 
 QString QColor::name(NameFormat format) const

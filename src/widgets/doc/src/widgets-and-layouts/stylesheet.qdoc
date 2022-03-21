@@ -2927,7 +2927,7 @@
            | \tt{hsl(\e{h}, \e{s}, \e{l})} \br
            | \tt{hsla(\e{h}, \e{s}, \e{l}, \e{a})} \br
            | \tt{#\e{rrggbb}} \br
-           | \l{QColor::setNamedColor()}{Color Name} \br
+           | \l{QColor::fromString()}{Color Name} \br
         \li Specifies a color as RGB (red, green, blue), RGBA (red,
            green, blue, alpha), HSV (hue, saturation, value), HSVA
            (hue, saturation, value, alpha), HSL (hue, saturation,

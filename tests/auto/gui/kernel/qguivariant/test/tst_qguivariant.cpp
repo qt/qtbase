@@ -245,7 +245,7 @@ void tst_QGuiVariant::toColor_data()
     QTest::newRow("qstring(#ff0000)") << QVariant(QString::fromUtf8("#ff0000")) << c;
     QTest::newRow("qbytearray(#ff0000)") << QVariant(QByteArray("#ff0000")) << c;
 
-    c.setNamedColor("#88112233");
+    c = QColor::fromString("#88112233");
     QTest::newRow("qstring(#88112233)") << QVariant(QString::fromUtf8("#88112233")) << c;
     QTest::newRow("qbytearray(#88112233)") << QVariant(QByteArray("#88112233")) << c;
 }
