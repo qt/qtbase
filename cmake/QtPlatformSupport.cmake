@@ -19,6 +19,10 @@ qt_set01(NETBSD CMAKE_SYSTEM_NAME STREQUAL "NetBSD") # FIXME: How to identify th
 qt_set01(WASM CMAKE_SYSTEM_NAME STREQUAL "Emscripten" OR EMSCRIPTEN)
 qt_set01(SOLARIS CMAKE_SYSTEM_NAME STREQUAL "SunOS")
 
+# This is the only reliable way we can determine the webOS platform as the yocto recipe adds this
+# compile definition into its generated toolchain.cmake file
+qt_set01(WEBOS CMAKE_CXX_FLAGS MATCHES "-D__WEBOS__")
+
 qt_set01(BSD APPLE OR OPENBSD OR FREEBSD OR NETBSD)
 
 qt_set01(WINRT WIN32 AND CMAKE_VS_PLATFORM_TOOSLET STREQUAL "winrt") # FIXME: How to identify this?
