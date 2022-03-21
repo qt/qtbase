@@ -20,6 +20,10 @@ qt_set01(WASM CMAKE_SYSTEM_NAME STREQUAL "Emscripten" OR EMSCRIPTEN)
 qt_set01(SOLARIS CMAKE_SYSTEM_NAME STREQUAL "SunOS")
 qt_set01(HURD CMAKE_SYSTEM_NAME STREQUAL "GNU")
 
+# This is the only reliable way we can determine the webOS platform as the yocto recipe adds this
+# compile definition into its generated toolchain.cmake file
+qt_set01(WEBOS CMAKE_CXX_FLAGS MATCHES "-D__WEBOS__")
+
 qt_set01(BSD APPLE OR OPENBSD OR FREEBSD OR NETBSD)
 
 qt_set01(IOS APPLE AND CMAKE_SYSTEM_NAME STREQUAL "iOS")
