@@ -4,6 +4,166 @@ if(CMAKE_VERSION VERSION_LESS 3.17.0)
 set(CMAKE_CURRENT_FUNCTION_LIST_DIR ${CMAKE_CURRENT_LIST_DIR})
 endif()
 
+# Builds a shared library which will have strip run on it.
+function(qt_internal_try_compile_binary_for_strip binary_out_var)
+    # Need to find the config.tests files depending on which repo we are building.
+    if(EXISTS "${QT_CMAKE_DIR}")
+        # building qtbase
+        set(basedir "${QT_CMAKE_DIR}/..")
+    else()
+        # building other repo
+        set(basedir "${_qt_cmake_dir}/${QT_CMAKE_EXPORT_NAMESPACE}")
+    endif()
+
+    set(config_test_dir "config.tests/binary_for_strip")
+    set(src_dir "${basedir}/${config_test_dir}")
+
+    # Make sure the built project files are not installed when doing an in-source build (like it
+    # happens in Qt's CI) by choosing a build dir that does not coincide with the installed
+    # source dir.
+    set(binary_dir "${CMAKE_CURRENT_BINARY_DIR}/${config_test_dir}_built")
+
+    set(flags "")
+    qt_get_platform_try_compile_vars(platform_try_compile_vars)
+    list(APPEND flags ${platform_try_compile_vars})
+
+    # CI passes the project dir of the Qt repository as absolute path without drive letter:
+    #   \Users\qt\work\qt\qtbase
+    # Ensure that arg_PROJECT_PATH is an absolute path with drive letter:
+    #   C:/Users/qt/work/qt/qtbase
+    # This works around CMake upstream issue #22534.
+    if(CMAKE_HOST_WIN32)
+        get_filename_component(src_dir "${src_dir}" REALPATH)
+    endif()
+
+    # Build a real binary that strip can be run on.
+    try_compile(QT_INTERNAL_BUILT_BINARY_FOR_STRIP
+        "${binary_dir}"
+        "${src_dir}"
+        binary_for_strip # project name
+        OUTPUT_VARIABLE build_output
+        CMAKE_FLAGS ${flags}
+    )
+
+    # Retrieve the binary path from the build output.
+    string(REGEX REPLACE ".+###(.+)###.+" "\\1" output_binary_path "${build_output}")
+
+    if(NOT EXISTS "${output_binary_path}")
+        message(FATAL_ERROR "Extracted binary path for strip does not exist: ${output_binary_path}")
+    endif()
+
+    set(${binary_out_var} "${output_binary_path}" PARENT_SCOPE)
+endfunction()
+
+# When using the MinGW 11.2.0 toolchain, cmake --install --strip as used by
+# qt-cmake-private-intstall.cmake, removes the .gnu_debuglink section in binaries and thus
+# breaks the separate debug info feature.
+#
+# Generate a wrapper shell script that passes an option to keep the debug section.
+# The wrapper is used when targeting Linux or MinGW with a shared Qt build.
+# The check to see if the option is supported by 'strip', is done once for every repo configured,
+# because different machines might have different strip versions installed, without support for
+# the option we need.
+#
+# Once CMake supports custom strip arguments, we can remove the part that creates a shell wrapper.
+# https://gitlab.kitware.com/cmake/cmake/-/issues/23346
+function(qt_internal_generate_binary_strip_wrapper)
+    # Return early if check was done already, if explicitly skipped, or when building a static Qt.
+    if(DEFINED CACHE{QT_INTERNAL_STRIP_SUPPORTS_KEEP_SECTION}
+            OR QT_NO_STRIP_WRAPPER
+            OR (NOT QT_BUILD_SHARED_LIBS)
+        )
+        return()
+    endif()
+
+    # To make reconfiguration more robust when QT_INTERNAL_STRIP_SUPPORTS_KEEP_SECTION is manually
+    # removed, make sure to always find the original strip first, by first removing the cached var
+    # and then finding the binary again.
+    unset(CMAKE_STRIP CACHE)
+    include(CMakeFindBinUtils)
+
+    # Target Linux and MinGW.
+    if((UNIX OR MINGW)
+            AND NOT APPLE
+            AND CMAKE_STRIP)
+
+        # Getting path to a binary we can run strip on.
+        qt_internal_try_compile_binary_for_strip(valid_binary_path)
+
+        # The strip arguments are used both for the execute_process test and also as content
+        # in the file created by configure_file.
+        set(strip_arguments "--keep-section=.gnu_debuglink")
+
+        # Check if the option is supported.
+        message(STATUS "Performing Test strip --keep-section")
+        execute_process(
+            COMMAND
+                "${CMAKE_STRIP}" ${strip_arguments} "${valid_binary_path}"
+            OUTPUT_VARIABLE strip_probe_output
+            ERROR_VARIABLE strip_probe_output
+            RESULT_VARIABLE strip_result_var
+        )
+
+        # A successful strip of a binary should have a '0' exit code.
+        if(NOT strip_result_var STREQUAL "0")
+            set(keep_section_supported FALSE)
+        else()
+            set(keep_section_supported TRUE)
+        endif()
+
+        # Cache the result.
+        set(QT_INTERNAL_STRIP_SUPPORTS_KEEP_SECTION "${keep_section_supported}" CACHE BOOL
+            "strip supports --keep-section")
+
+        message(DEBUG
+            "qt_internal_generate_binary_strip_wrapper:\n"
+            "original strip: ${CMAKE_STRIP}\n"
+            "strip probe output: ${strip_probe_output}\n"
+            "strip result: ${strip_result_var}\n"
+            "keep section supported: ${keep_section_supported}\n"
+        )
+        message(STATUS "Performing Test strip --keep-section - ${keep_section_supported}")
+
+        # If the option is not supported, don't generate a wrapper and just use the stock binary.
+        if(NOT keep_section_supported)
+            return()
+        endif()
+
+        set(wrapper_extension "")
+
+        if(NOT CMAKE_HOST_UNIX)
+            set(wrapper_extension ".bat")
+        endif()
+
+        set(script_name "qt-internal-strip")
+
+        if(EXISTS "${QT_CMAKE_DIR}")
+            # qtbase build-tree case
+            set(wrapper_in_basedir "${QT_CMAKE_DIR}/..")
+        else()
+            # other repo case
+            set(wrapper_in_basedir "${_qt_cmake_dir}/${QT_CMAKE_EXPORT_NAMESPACE}")
+        endif()
+
+        # the libexec literal is used on purpose for the source, so the file is found
+        # on Windows hosts.
+        set(wrapper_in
+            "${wrapper_in_basedir}/libexec/${script_name}${wrapper_extension}.in")
+
+        set(wrapper_out "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/${script_name}${wrapper_extension}")
+
+        set(original_strip "${CMAKE_STRIP}")
+
+        configure_file("${wrapper_in}" "${wrapper_out}" @ONLY)
+
+        # Backup the original strip path for informational purposes.
+        set(QT_INTERNAL_ORIGINAL_STRIP "${original_strip}" CACHE INTERNAL "Original strip binary")
+
+        # Override the strip binary to be used by CMake install target.
+        set(CMAKE_STRIP "${wrapper_out}" CACHE INTERNAL "Custom Qt strip wrapper")
+    endif()
+endfunction()
+
 # Enable separate debug information for the given target
 function(qt_enable_separate_debug_info target installDestination)
     set(flags QT_EXECUTABLE)
