@@ -242,6 +242,7 @@ public:
     bool isUpdating() {return updating;}
     void setSticky(bool keep = true) {m_sticky = keep;}
     bool isSticky() {return m_sticky;}
+    void scheduleNotify() {pendingNotify = true;}
 
     QPropertyBindingPrivate(QMetaType metaType, const QtPrivate::BindingFunctionVTable *vtable,
                             const QPropertyBindingSourceLocation &location, bool isQQmlPropertyBinding=false)
