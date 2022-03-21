@@ -118,6 +118,7 @@ private slots:
     void selfBindingShouldNotCrash();
 
     void qpropertyAlias();
+    void scheduleNotify();
 };
 
 void tst_QProperty::functorBinding()
@@ -2013,6 +2014,21 @@ void tst_QProperty::qpropertyAlias()
     QCOMPARE(alias.value(), 42);
     i.reset();
     QVERIFY(!alias.isValid());
+}
+
+void tst_QProperty::scheduleNotify()
+{
+    int notifications = 0;
+    QProperty<int> p;
+    QCOMPARE(p.value(), 0);
+    const auto handler = p.addNotifier([&](){ ++notifications; });
+    QCOMPARE(notifications, 0);
+    QPropertyBinding<int> b([]() { return 0; }, QPropertyBindingSourceLocation());
+    QPropertyBindingPrivate::get(b)->scheduleNotify();
+    QCOMPARE(notifications, 0);
+    p.setBinding(b);
+    QCOMPARE(notifications, 1);
+    QCOMPARE(p.value(), 0);
 }
 
 QTEST_MAIN(tst_QProperty);
