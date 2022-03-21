@@ -597,10 +597,11 @@ endif()\n")
                 "set(QT_BUILD_TOOLS_WHEN_CROSSCOMPILING \"TRUE\" CACHE BOOL \"\" FORCE)\n")
         endif()
 
-        if(QT_INTERNAL_CUSTOM_INSTALL_DIR)
-            file(TO_CMAKE_PATH "${QT_INTERNAL_CUSTOM_INSTALL_DIR}" qt_internal_custom_install_dir)
+        if(QT_INTERNAL_EXAMPLES_INSTALL_PREFIX)
+            file(TO_CMAKE_PATH
+                "${QT_INTERNAL_EXAMPLES_INSTALL_PREFIX}" examples_install_prefix)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
-                "set(QT_INTERNAL_CUSTOM_INSTALL_DIR \"${qt_internal_custom_install_dir}\" CACHE STRING \"\")\n")
+                "set(QT_INTERNAL_EXAMPLES_INSTALL_PREFIX \"${examples_install_prefix}\" CACHE STRING \"\")\n")
         endif()
 
         # Save the default qpa platform.
