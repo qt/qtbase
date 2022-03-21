@@ -1106,12 +1106,13 @@ function(qt_internal_add_example_external_project subdir)
     #    example_source_dir, use _qt_internal_override_example_install_dir_to_dot to ensure
     #    INSTALL_EXAMPLEDIR does not interfere.
 
-    # Allow installing somewhere under the build dir.
-    if(QT_INTERNAL_CUSTOM_INSTALL_DIR)
-        set(qt_example_install_prefix "${QT_INTERNAL_CUSTOM_INSTALL_DIR}")
+    # Allow customizing the installation path of the examples. Will be used in CI.
+    if(QT_INTERNAL_EXAMPLES_INSTALL_PREFIX)
+        set(qt_example_install_prefix "${QT_INTERNAL_EXAMPLES_INSTALL_PREFIX}")
     else()
         set(qt_example_install_prefix "${CMAKE_INSTALL_PREFIX}/${INSTALL_EXAMPLESDIR}")
     endif()
+    file(TO_CMAKE_PATH "${qt_example_install_prefix}" qt_example_install_prefix)
 
     set(example_install_prefix "${qt_example_install_prefix}/${example_rel_path}")
 
