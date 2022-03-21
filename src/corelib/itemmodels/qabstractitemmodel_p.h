@@ -157,6 +157,52 @@ public:
 };
 Q_DECLARE_TYPEINFO(QAbstractItemModelPrivate::Change, Q_RELOCATABLE_TYPE);
 
+namespace QtPrivate {
+
+/*!
+    \internal
+    This is a workaround for QTBUG-75172.
+
+    Some predefined model roles are supposed to use certain enum/flag
+    types (e.g. fetching Qt::TextAlignmentRole is supposed to return a
+    variant containing a Qt::Alignment object).
+
+    For historical reasons, a plain `int` was used sometimes. This is
+    surprising to end-users and also sloppy on Qt's part; users were
+    forced to use `int` rather than the correct datatype.
+
+    This function tries both the "right" type and plain `int`, for a
+    given QVariant. This fixes the problem (using the correct datatype)
+    but also keeps compatibility with existing code using `int`.
+
+    ### Qt 7: get rid of this. Always use the correct datatype.
+*/
+template <typename T>
+T legacyEnumValueFromModelData(const QVariant &data)
+{
+    static_assert(std::is_enum_v<T>);
+    if (data.userType() == qMetaTypeId<T>())
+        return data.value<T>();
+    else if (data.userType() == qMetaTypeId<int>())
+        return T(data.toInt());
+
+    return T();
+}
+
+template <typename T>
+T legacyFlagValueFromModelData(const QVariant &data)
+{
+    if (data.userType() == qMetaTypeId<T>())
+        return data.value<T>();
+    else if (data.userType() == qMetaTypeId<int>())
+        return T::fromInt(data.toInt());
+
+    return T();
+}
+
+} // namespace QtPrivate
+
+
 QT_END_NAMESPACE
 
 #endif // QABSTRACTITEMMODEL_P_H
