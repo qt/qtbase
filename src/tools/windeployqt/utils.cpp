@@ -172,7 +172,7 @@ QString normalizeFileName(const QString &name)
 // Find a tool binary in the Windows SDK 8
 QString findSdkTool(const QString &tool)
 {
-    QStringList paths = QString::fromLocal8Bit(qgetenv("PATH")).split(QLatin1Char(';'));
+    QStringList paths = QString::fromLocal8Bit(qgetenv("PATH")).split(QDir::listSeparator());
     const QByteArray sdkDir = qgetenv("WindowsSdkDir");
     if (!sdkDir.isEmpty())
         paths.prepend(QDir::cleanPath(QString::fromLocal8Bit(sdkDir)) + QLatin1String("/Tools/x64"));

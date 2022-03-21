@@ -1876,7 +1876,7 @@ ProjectBuilderMakefileGenerator::findProgram(const ProString &prog)
 {
     QString ret = prog.toQString();
     if(QDir::isRelativePath(ret)) {
-        QStringList paths = QString(qgetenv("PATH")).split(':');
+        QStringList paths = QString(qgetenv("PATH")).split(QDir::listSeparator());
         for(int i = 0; i < paths.size(); ++i) {
             QString path = paths.at(i) + "/" + prog;
             if(exists(path)) {

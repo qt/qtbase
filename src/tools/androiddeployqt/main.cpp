@@ -2547,13 +2547,7 @@ bool createAndroidProject(const Options &options)
 QString findInPath(const QString &fileName)
 {
     const QString path = QString::fromLocal8Bit(qgetenv("PATH"));
-#if defined(Q_OS_WIN32)
-    QLatin1Char separator(';');
-#else
-    QLatin1Char separator(':');
-#endif
-
-    const QStringList paths = path.split(separator);
+    const QStringList paths = path.split(QDir::listSeparator());
     for (const QString &path : paths) {
         QFileInfo fileInfo(path + QLatin1Char('/') + fileName);
         if (fileInfo.exists() && fileInfo.isFile() && fileInfo.isExecutable())

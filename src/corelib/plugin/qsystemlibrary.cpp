@@ -101,7 +101,7 @@ HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirect
 
     if (!onlySystemDirectory) {
         const QString PATH(QLatin1String(qgetenv("PATH").constData()));
-        searchOrder << PATH.split(QLatin1Char(';'), Qt::SkipEmptyParts);
+        searchOrder << PATH.split(QDir::listSeparator(), Qt::SkipEmptyParts);
     }
     QString fileName = QString::fromWCharArray(libraryName);
     fileName.append(QLatin1String(".dll"));
@@ -109,8 +109,8 @@ HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirect
     // Start looking in the order specified
     for (int i = 0; i < searchOrder.count(); ++i) {
         QString fullPathAttempt = searchOrder.at(i);
-        if (!fullPathAttempt.endsWith(QLatin1Char('\\'))) {
-            fullPathAttempt.append(QLatin1Char('\\'));
+        if (!fullPathAttempt.endsWith(QDir::separator())) {
+            fullPathAttempt.append(QDir::separator());
         }
         fullPathAttempt.append(fileName);
         HINSTANCE inst = ::LoadLibrary(reinterpret_cast<const wchar_t *>(fullPathAttempt.utf16()));

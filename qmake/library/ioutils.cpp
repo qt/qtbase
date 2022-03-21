@@ -63,11 +63,9 @@ QString IoUtils::binaryAbsLocation(const QString &argv0)
     } else { // in the PATH
         QByteArray pEnv = qgetenv("PATH");
         QDir currentDir = QDir::current();
+        QStringList paths = QString::fromLocal8Bit(pEnv).split(QDir::listSeparator());
 #ifdef Q_OS_WIN
-        QStringList paths = QString::fromLocal8Bit(pEnv).split(QLatin1String(";"));
         paths.prepend(QLatin1String("."));
-#else
-        QStringList paths = QString::fromLocal8Bit(pEnv).split(QLatin1String(":"));
 #endif
         for (QStringList::const_iterator p = paths.constBegin(); p != paths.constEnd(); ++p) {
             if ((*p).isEmpty())

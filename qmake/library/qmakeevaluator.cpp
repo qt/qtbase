@@ -1023,7 +1023,7 @@ static ProString msvcArchitecture(const QString &vcInstallDir, const QString &pa
     QString vcBinDir = vcInstallDir;
     if (vcBinDir.endsWith(QLatin1Char('\\')))
         vcBinDir.chop(1);
-    const auto dirs = pathVar.split(QLatin1Char(';'), Qt::SkipEmptyParts);
+    const auto dirs = pathVar.split(QDir::listSeparator(), Qt::SkipEmptyParts);
     for (const QString &dir : dirs) {
         if (!dir.startsWith(vcBinDir, Qt::CaseInsensitive))
             continue;

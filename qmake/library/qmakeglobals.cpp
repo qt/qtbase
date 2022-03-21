@@ -78,13 +78,8 @@ QMakeGlobals::QMakeGlobals()
 #ifdef PROEVALUATOR_DEBUG
     debugLevel = 0;
 #endif
-#ifdef Q_OS_WIN
-    dirlist_sep = QLatin1Char(';');
-    dir_sep = QLatin1Char('\\');
-#else
-    dirlist_sep = QLatin1Char(':');
-    dir_sep = QLatin1Char('/');
-#endif
+dirlist_sep = QDir::listSeparator();
+dir_sep = QDir::separator();
 }
 
 QMakeGlobals::~QMakeGlobals()
