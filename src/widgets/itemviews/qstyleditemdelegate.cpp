@@ -66,6 +66,7 @@
 #include <qmetaobject.h>
 #include <qtextlayout.h>
 #include <private/qabstractitemdelegate_p.h>
+#include <private/qabstractitemmodel_p.h>
 #include <private/qtextengine_p.h>
 #include <private/qlayoutengine_p.h>
 #include <qdebug.h>
@@ -302,7 +303,7 @@ void QStyledItemDelegate::initStyleOption(QStyleOptionViewItem *option,
 
     value = modelRoleDataSpan.dataForRole(Qt::TextAlignmentRole);
     if (value->isValid() && !value->isNull())
-        option->displayAlignment = Qt::Alignment(value->toInt());
+        option->displayAlignment = QtPrivate::legacyFlagValueFromModelData<Qt::Alignment>(*value);
 
     value = modelRoleDataSpan.dataForRole(Qt::ForegroundRole);
     if (value->canConvert<QBrush>())
@@ -311,7 +312,7 @@ void QStyledItemDelegate::initStyleOption(QStyleOptionViewItem *option,
     value = modelRoleDataSpan.dataForRole(Qt::CheckStateRole);
     if (value->isValid() && !value->isNull()) {
         option->features |= QStyleOptionViewItem::HasCheckIndicator;
-        option->checkState = static_cast<Qt::CheckState>(value->toInt());
+        option->checkState = QtPrivate::legacyEnumValueFromModelData<Qt::CheckState>(*value);
     }
 
     value = modelRoleDataSpan.dataForRole(Qt::DecorationRole);
@@ -633,7 +634,7 @@ bool QStyledItemDelegate::editorEvent(QEvent *event,
         return false;
     }
 
-    Qt::CheckState state = static_cast<Qt::CheckState>(value.toInt());
+    Qt::CheckState state = QtPrivate::legacyEnumValueFromModelData<Qt::CheckState>(value);
     if (flags & Qt::ItemIsUserTristate)
         state = ((Qt::CheckState)((state + 1) % 3));
     else
