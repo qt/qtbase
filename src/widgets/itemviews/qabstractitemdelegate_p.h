@@ -55,6 +55,9 @@
 #include "qabstractitemdelegate.h"
 #include <private/qobject_p.h>
 
+#include <qvariant.h>
+#include <qmetatype.h>
+
 QT_REQUIRE_CONFIG(itemviews);
 
 QT_BEGIN_NAMESPACE

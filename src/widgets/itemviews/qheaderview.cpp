@@ -60,6 +60,7 @@
 #endif
 #include <private/qheaderview_p.h>
 #include <private/qabstractitemmodel_p.h>
+#include <private/qabstractitemdelegate_p.h>
 
 #ifndef QT_NO_DATASTREAM
 #include <qdatastream.h>
@@ -2936,9 +2937,9 @@ void QHeaderView::initStyleOptionForIndex(QStyleOptionHeader *option, int logica
                                                   Qt::TextAlignmentRole);
     opt.section = logicalIndex;
     opt.state |= state;
-    opt.textAlignment = Qt::Alignment(textAlignment.isValid()
-                                      ? Qt::Alignment(textAlignment.toInt())
-                                      : d->defaultAlignment);
+    opt.textAlignment = textAlignment.isValid()
+                        ? QtPrivate::legacyFlagValueFromModelData<Qt::Alignment>(textAlignment)
+                        : d->defaultAlignment;
 
     opt.iconAlignment = Qt::AlignVCenter;
     opt.text = d->model->headerData(logicalIndex, d->orientation,
