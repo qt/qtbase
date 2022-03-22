@@ -47,9 +47,8 @@ if(QT_FEATURE_shortcut)
     add_subdirectory(qkeysequenceedit)
 endif()
 add_subdirectory(qmenu)
+add_subdirectory(qlineedit)
 if(NOT ANDROID)
-    # QTBUG-87417 # special case
-    add_subdirectory(qlineedit)
     # QTBUG-87420 # special case
     add_subdirectory(qmdiarea)
     # QTBUG-87421 # special case
