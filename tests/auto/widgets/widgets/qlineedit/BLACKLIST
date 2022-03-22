@@ -3,13 +3,7 @@
 android
 [leftKeyOnSelectedText]
 android
-[cutWithoutSelection]
-android
-[inlineCompletion]
-android
 [textMargin]
-android
-[task210502_caseInsensitiveInlineCompletion]
 android
 [testQuickSelectionWithMouse]
 android
