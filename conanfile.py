@@ -568,7 +568,7 @@ class QtBase(ConanFile):
             _filter = self._shared.filter_cmake_args_for_package_id
             self.info.options.cmake_args_qtbase = _filter(self.info.options.cmake_args_qtbase)
 
-   def filter_package_id_for_android(self) -> None:
+    def filter_package_id_for_android(self) -> None:
         # Instead of using Android NDK path as the option value (package_id) we parse the
         # actual version number and use that as the option value.
         android_ndk = self.options.get_safe("android_ndk")
