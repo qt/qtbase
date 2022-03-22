@@ -74,14 +74,6 @@ public:
 
     Q_DECLARE_FLAGS(NetWmStates, NetWmState)
 
-    enum Task {
-        Map,
-        Unmap,
-        SetGeometry,
-        SetWindowFlags,
-        SetWindowState
-    };
-
     QXcbWindow(QWindow *window);
     ~QXcbWindow();
 
@@ -150,9 +142,6 @@ public:
     void handleXIEnterLeave(xcb_ge_event_t *) override;
 
     QXcbWindow *toWindow() override;
-
-    bool shouldDeferTask(Task task);
-    void handleDeferredTasks();
 
     void handleMouseEvent(xcb_timestamp_t time, const QPoint &local, const QPoint &global,
                           Qt::KeyboardModifiers modifiers, QEvent::Type type, Qt::MouseEventSource source);
@@ -292,11 +281,6 @@ protected:
     int m_swapInterval = -1;
 
     qreal m_sizeHintsScaleFactor = 1.0;
-
-    bool m_wmStateValid = true;
-    QVector<Task> m_deferredTasks;
-    bool m_isWmManagedWindow = true;
-    QRect m_deferredGeometry;
 };
 
 class QXcbForeignWindow : public QXcbWindow
