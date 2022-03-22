@@ -272,6 +272,11 @@ CONFIG += no_keywords
 //! [22]
 
 
+//! [cmake_no_keywords]
+target_compile_definitions(my_app PRIVATE QT_NO_KEYWORDS)
+//! [cmake_no_keywords]
+
+
 //! [23]
 QString onlyLetters(const QString &in)
 {

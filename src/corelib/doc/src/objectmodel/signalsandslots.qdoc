@@ -412,8 +412,12 @@
     \section2 Using Qt with 3rd Party Signals and Slots
 
     It is possible to use Qt with a 3rd party signal/slot mechanism.
-    You can even use both mechanisms in the same project. Just add the
-    following line to your qmake project (.pro) file.
+    You can even use both mechanisms in the same project. To do that,
+    write the following into your CMake project file:
+
+    \snippet code/doc_src_containers.cpp cmake_no_keywords
+
+    In a qmake project (.pro) file, you need to write:
 
     \snippet code/doc_src_containers.cpp 22
 
@@ -423,4 +427,19 @@
     with the \c{no_keywords} flag, simply replace all uses of the Qt
     moc keywords in your sources with the corresponding Qt macros
     Q_SIGNALS (or Q_SIGNAL), Q_SLOTS (or Q_SLOT), and Q_EMIT.
-*/
+
+    \section2 Signals and slots in Qt-based libraries
+
+    The public API of Qt-based libraries should use the keywords
+    \c{Q_SIGNALS} and \c{Q_SLOTS} instead of \c{signals} and
+    \c{slots}. Otherwise it is hard to use such a library in a project
+    that defines \c{QT_NO_KEYWORDS}.
+
+    To enforce this restriction, the library creator may set the
+    preprocessor define \c{QT_NO_SIGNALS_SLOTS_KEYWORDS} when building
+    the library.
+
+    This define excludes signals and slots without affecting whether
+    other Qt-specific keywords can be used in the library
+    implementation.
+ */
