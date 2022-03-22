@@ -34,11 +34,11 @@
 
     Qt has two main approaches to UI development: \l[QtQuick]{Qt Quick} and
     \l{Qt Widgets}. They exist to support different types of user
-    interfaces, and build on separate graphics engines which have been
+    interfaces, and build on separate graphics engines that have been
     optimized for each of these types.
 
     It is possible to combine code written in the OpenGL graphics API
-    with both these user interface types in Qt. This can be useful
+    with both of these user interface types in Qt. This can be useful
     when the application has its own OpenGL-dependent code, or when it
     is integrating with a third-party OpenGL-based renderer.
 
@@ -70,15 +70,29 @@
     For more details on enabling OpenGL with \l[QtQuick]{Qt Quick}, see
     \l{Rendering via the Qt Rendering Hardware Interface}{scenegraph renderer documentation}.
 
-    \section1 Overview
+    \section1 Using the Module
 
-    \include module-use.qdocinc using qt module
-    \snippet snippets/CMakeLists.txt cmake_use
+    \include {module-use.qdocinc} {using the c++ api}
 
-    See also the \l {Build with CMake} overview.
+    \section2 Building with CMake
 
-    \include module-use.qdocinc building with qmake
-    \snippet snippets.pro qmake_use
+    \include {module-use.qdocinc} {building with cmake} {OpenGL}
+
+    \section2 Building with qmake
+
+    \include {module-use.qdocinc} {building_with_qmake} {opengl}
+
+    \section1 Examples
+
+    \list
+        \li \l {OpenGL Window Example}
+    \endlist
+
+    \section1 Reference
+
+    \list
+        \li \l {Qt OpenGL C++ Classes} {C++ Classes}
+    \endlist
 
     \section1 Module Evolution
     \l{Changes to Qt OpenGL} lists important changes in the module API
@@ -95,15 +109,4 @@
 
     OpenGL\reg is a trademark of Silicon Graphics, Inc. in
     the United States and other countries.
-
-
-    \section1 Related Information
-
-    These are links to the API reference materials and related pages.
-
-    \list
-    \li \l{Qt OpenGL C++ Classes}{C++ Classes}
-    \li \l{OpenGL Window Example}
-    \endlist
-
 */
