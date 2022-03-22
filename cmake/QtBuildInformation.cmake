@@ -72,6 +72,14 @@ function(qt_configure_print_summary)
     file(WRITE "${summary_file}" "")
     # Show Qt-specific configure summary and any notes, wranings, etc.
     if(__qt_configure_reports)
+        if(NOT QT_INTERNAL_SUMMARY_INSTRUCTIONS_SHOWN)
+            message("")
+            message(
+                "-- Cconfiguration summary has been written to ${CMAKE_BINARY_DIR}/config.summary")
+            message(
+                "-- Configure with --log-level=STATUS or higher to increase the output verbosity.")
+        endif()
+
         message(STATUS "Configure summary:\n${__qt_configure_reports}")
         file(APPEND "${summary_file}" "${__qt_configure_reports}")
     endif()
@@ -92,6 +100,7 @@ function(qt_configure_print_summary)
         message(FATAL_ERROR "Check the configuration messages for an error that has occurred.")
     endif()
     file(APPEND "${summary_file}" "\n")
+    set(QT_INTERNAL_SUMMARY_INSTRUCTIONS_SHOWN "TRUE" CACHE STRING "" FORCE)
 endfunction()
 
 # Takes a list of arguments, and saves them to be evaluated at the end of the configuration
