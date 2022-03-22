@@ -1634,21 +1634,19 @@ bool QConfFileSettingsPrivate::readIniFile(QByteArrayView data,
         dataPos = 3;
 
     while (readIniLine(data, dataPos, lineStart, lineLen, equalsPos)) {
-        char ch = data.at(lineStart);
-        if (ch == '[') {
+        QByteArrayView line = data.sliced(lineStart, lineLen);
+        if (line.startsWith('[')) {
             FLUSH_CURRENT_SECTION();
 
-            // this is a section
-            QByteArrayView iniSection;
-            qsizetype idx = data.indexOf(']', lineStart);
-            if (idx == -1 || idx >= lineStart + lineLen) {
+            // This starts a new section.
+            qsizetype idx = line.indexOf(']');
+            Q_ASSERT(idx == -1 || idx > 0); // line[0] is '[', not ']'.
+            Q_ASSERT(idx < lineLen); // (including -1 < lineLen, if no ']' present.)
+            if (idx < 0) {
                 ok = false;
-                iniSection = data.sliced(lineStart + 1, lineLen - 1);
-            } else {
-                iniSection = data.sliced(lineStart + 1, idx - lineStart - 1);
+                idx = lineLen; // so line.first(idx) is just line
             }
-
-            iniSection = iniSection.trimmed();
+            QByteArrayView iniSection = line.first(idx).sliced(1).trimmed();
 
             if (iniSection.compare("general", Qt::CaseInsensitive) == 0) {
                 currentSection.clear();
