@@ -364,7 +364,7 @@ bool QDomParser::parseBody()
             break;
         case QXmlStreamReader::Characters:
             if (!reader->isWhitespace()) { // Skip the content consisting of only whitespaces
-                if (!reader->text().toString().trimmed().isEmpty()) {
+                if (!reader->text().trimmed().isEmpty()) {
                     if (!domBuilder.characters(reader->text().toString(), reader->isCDATA())) {
                         domBuilder.fatalError(QDomParser::tr(
                                 "Error occurred while processing the element content"));
