@@ -296,10 +296,12 @@ qt_copy_or_install(DIRECTORY
     DESTINATION "${__GlobalConfig_install_dir}/config.tests"
 )
 
-# Install qt-internal-strip files.
+# Install qt-internal-strip and qt-internal-ninja files.
 set(__qt_internal_strip_wrappers
     libexec/qt-internal-strip.in
     libexec/qt-internal-strip.bat.in
+    libexec/qt-internal-ninja.in
+    libexec/qt-internal-ninja.bat.in
 )
 qt_copy_or_install(PROGRAMS
     ${__qt_internal_strip_wrappers}
