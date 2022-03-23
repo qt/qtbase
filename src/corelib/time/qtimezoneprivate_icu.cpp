@@ -183,8 +183,7 @@ static bool ucalOffsetsAtTime(UCalendar *m_ucal, qint64 atMSecsSinceEpoch,
     return false;
 }
 
-// ICU Draft api in v50, should be stable in ICU v51. Available in C++ api from ICU v3.8
-#if U_ICU_VERSION_MAJOR_NUM == 50
+#if U_ICU_VERSION_MAJOR_NUM >= 50
 // Qt wrapper around qt_ucal_getTimeZoneTransitionDate & ucal_get
 static QTimeZonePrivate::Data ucalTimeZoneTransition(UCalendar *m_ucal,
                                                      UTimeZoneTransitionType type,
@@ -388,7 +387,7 @@ bool QIcuTimeZonePrivate::hasDaylightTime() const
 {
     if (ucalDaylightOffset(m_id) != 0)
         return true;
-#if U_ICU_VERSION_MAJOR_NUM == 50
+#if U_ICU_VERSION_MAJOR_NUM >= 50
     for (qint64 when = minMSecs(); when != invalidMSecs(); ) {
         auto data = nextTransition(when);
         if (data.daylightTimeOffset && data.daylightTimeOffset != invalidSeconds())
@@ -424,13 +423,12 @@ bool QIcuTimeZonePrivate::isDaylightTime(qint64 atMSecsSinceEpoch) const
 QTimeZonePrivate::Data QIcuTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
 {
     // Available in ICU C++ api, and draft C api in v50
-    // TODO When v51 released see if api is stable
     QTimeZonePrivate::Data data = invalidData();
-#if U_ICU_VERSION_MAJOR_NUM == 50
+#if U_ICU_VERSION_MAJOR_NUM >= 50
     data = ucalTimeZoneTransition(m_ucal, UCAL_TZ_TRANSITION_PREVIOUS_INCLUSIVE,
                                   forMSecsSinceEpoch);
     if (data.atMSecsSinceEpoch == invalidMSecs()) // before first transition
-#endif // U_ICU_VERSION_MAJOR_NUM >= 50
+#endif
     {
         ucalOffsetsAtTime(m_ucal, forMSecsSinceEpoch, &data.standardTimeOffset,
                           &data.daylightTimeOffset);
@@ -444,36 +442,33 @@ QTimeZonePrivate::Data QIcuTimeZonePrivate::data(qint64 forMSecsSinceEpoch) cons
 bool QIcuTimeZonePrivate::hasTransitions() const
 {
     // Available in ICU C++ api, and draft C api in v50
-    // TODO When v51 released see if api is stable
-#if U_ICU_VERSION_MAJOR_NUM == 50
+#if U_ICU_VERSION_MAJOR_NUM >= 50
     return true;
 #else
     return false;
-#endif // U_ICU_VERSION_MAJOR_NUM == 50
+#endif
 }
 
 QTimeZonePrivate::Data QIcuTimeZonePrivate::nextTransition(qint64 afterMSecsSinceEpoch) const
 {
     // Available in ICU C++ api, and draft C api in v50
-    // TODO When v51 released see if api is stable
-#if U_ICU_VERSION_MAJOR_NUM == 50
+#if U_ICU_VERSION_MAJOR_NUM >= 50
     return ucalTimeZoneTransition(m_ucal, UCAL_TZ_TRANSITION_NEXT, afterMSecsSinceEpoch);
 #else
     Q_UNUSED(afterMSecsSinceEpoch);
     return invalidData();
-#endif // U_ICU_VERSION_MAJOR_NUM == 50
+#endif
 }
 
 QTimeZonePrivate::Data QIcuTimeZonePrivate::previousTransition(qint64 beforeMSecsSinceEpoch) const
 {
     // Available in ICU C++ api, and draft C api in v50
-    // TODO When v51 released see if api is stable
-#if U_ICU_VERSION_MAJOR_NUM == 50
+#if U_ICU_VERSION_MAJOR_NUM >= 50
     return ucalTimeZoneTransition(m_ucal, UCAL_TZ_TRANSITION_PREVIOUS, beforeMSecsSinceEpoch);
 #else
     Q_UNUSED(beforeMSecsSinceEpoch);
     return invalidData();
-#endif // U_ICU_VERSION_MAJOR_NUM == 50
+#endif
 }
 
 QByteArray QIcuTimeZonePrivate::systemTimeZoneId() const
