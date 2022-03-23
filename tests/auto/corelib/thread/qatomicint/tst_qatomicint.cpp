@@ -242,7 +242,8 @@ void tst_QAtomicInt::alignment()
     QCOMPARE(alignof(QBasicAtomicInteger<char>), alignof(TypeInStruct<char>));
 #endif
 
-#ifdef Q_ATOMIC_INT64_IS_SUPPORTED
+#if !defined(Q_PROCESSOR_X86_32) && defined(Q_ATOMIC_INT64_IS_SUPPORTED)
+    // The alignment is different on x86_32
     QCOMPARE(alignof(QBasicAtomicInteger<qlonglong>), alignof(TypeInStruct<qlonglong>));
 #endif
 }
