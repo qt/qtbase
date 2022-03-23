@@ -131,7 +131,8 @@ void QWidgetBaselineTest::makeVisible()
 */
 QImage QWidgetBaselineTest::takeSnapshot()
 {
-    QGuiApplication::processEvents();
+    // make sure all effects are done
+    QTest::qWait(250);
     return window->grab().toImage();
 }
 
