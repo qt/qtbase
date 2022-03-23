@@ -633,7 +633,7 @@ QMatrix4x4& QMatrix4x4::operator/=(float divisor)
     \fn QVector3D operator*(const QVector3D& vector, const QMatrix4x4& matrix)
     \relates QMatrix4x4
 
-    \deprecated [6.1] Convert the QVector3D to a QVector4D first, then multiply.
+    \deprecated [6.1] Convert the QVector3D to a QVector4D with 1.0 as the w coordinate, then multiply.
 
     Returns the result of transforming \a vector according to \a matrix,
     with the matrix applied post-vector. The vector is transformed as a point.
@@ -643,7 +643,7 @@ QMatrix4x4& QMatrix4x4::operator/=(float divisor)
     \fn QVector3D operator*(const QMatrix4x4& matrix, const QVector3D& vector)
     \relates QMatrix4x4
 
-    \deprecated [6.1] Use QMatrix4x4::map() or QMatrix4x4::mapVector() instead.
+    \deprecated [6.1] Use QMatrix4x4::map() instead.
 
     Returns the result of transforming \a vector according to \a matrix,
     with the matrix applied pre-vector. The vector is transformed as a
@@ -1737,8 +1737,12 @@ QTransform QMatrix4x4::toTransform(float distanceToPlane) const
 /*!
     \fn QVector3D QMatrix4x4::map(const QVector3D& point) const
 
-    Maps \a point by multiplying this matrix by \a point.
-    The matrix is applied pre-point.
+    Maps \a point by multiplying this matrix by \a point extended to a 4D
+    vector by assuming 1.0 for the w coordinate. The matrix is applied
+    pre-point.
+
+    \note This function is not the same as mapVector(). For points, always use
+    map(). mapVector() is suitable for vectors (directions) only.
 
     \sa mapRect(), mapVector()
 */
