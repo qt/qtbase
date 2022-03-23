@@ -91,20 +91,12 @@ public:
 
     void propagateSizeHints() override;
 
-    void setMMRendererWindowName(const QString &name);
-    void setMMRendererWindow(screen_window_t handle);
-    void clearMMRendererWindow();
-
     QPlatformScreen *screen() const override;
     const QList<QQnxWindow*>& children() const { return m_childWindows; }
 
     QQnxWindow *findWindow(screen_window_t windowHandle);
 
     void minimize();
-
-    QString mmRendererWindowName() const { return m_mmRendererWindowName; }
-
-    screen_window_t mmRendererWindow() const { return m_mmRendererWindow; }
 
     void setRotation(int rotation);
 
@@ -152,8 +144,6 @@ private:
     bool m_foreign;
     QRect m_unmaximizedGeometry;
     Qt::WindowStates m_windowState;
-    QString m_mmRendererWindowName;
-    screen_window_t m_mmRendererWindow;
 
     // Group name of window group headed by this window
     QByteArray m_windowGroupName;

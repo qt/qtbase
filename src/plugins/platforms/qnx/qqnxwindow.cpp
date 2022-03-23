@@ -157,7 +157,6 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context, bool needRootW
       m_exposed(true),
       m_foreign(false),
       m_windowState(Qt::WindowNoState),
-      m_mmRendererWindow(0),
       m_firstActivateHandled(false)
 {
     qWindowDebug() << "window =" << window << ", size =" << window->size();
@@ -280,7 +279,6 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context, screen_window_
     , m_exposed(true)
     , m_foreign(true)
     , m_windowState(Qt::WindowNoState)
-    , m_mmRendererWindow(0)
     , m_parentGroupName(256, 0)
     , m_isTopLevel(false)
 {
@@ -752,22 +750,6 @@ void QQnxWindow::propagateSizeHints()
     qWindowDebug("ignored");
 }
 
-void QQnxWindow::setMMRendererWindowName(const QString &name)
-{
-    m_mmRendererWindowName = name;
-}
-
-void QQnxWindow::setMMRendererWindow(screen_window_t handle)
-{
-    m_mmRendererWindow = handle;
-}
-
-void QQnxWindow::clearMMRendererWindow()
-{
-    m_mmRendererWindowName.clear();
-    m_mmRendererWindow = 0;
-}
-
 QPlatformScreen *QQnxWindow::screen() const
 {
     return m_screen;
@@ -911,9 +893,6 @@ void QQnxWindow::joinWindowGroup(const QByteArray &groupName)
 void QQnxWindow::updateZorder(int &topZorder)
 {
     updateZorder(m_window, topZorder);
-
-    if (m_mmRendererWindow)
-        updateZorder(m_mmRendererWindow, topZorder);
 
     Q_FOREACH (QQnxWindow *childWindow, m_childWindows)
         childWindow->updateZorder(topZorder);
