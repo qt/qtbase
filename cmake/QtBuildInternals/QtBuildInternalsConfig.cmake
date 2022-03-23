@@ -1047,6 +1047,9 @@ function(qt_internal_add_example_external_project subdir)
         list(APPEND var_defs -D${var_with_type}=${varForGenex})
     endforeach()
 
+    if(QT_INTERNAL_VERBOSE_EXAMPLES)
+        list(APPEND var_defs -DCMAKE_MESSAGE_LOG_LEVEL:STRING=DEBUG)
+    endif()
 
     set(deps "")
     list(REMOVE_DUPLICATES QT_EXAMPLE_DEPENDENCIES)
