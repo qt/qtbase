@@ -420,12 +420,14 @@ QTimeZonePrivate::Data QIcuTimeZonePrivate::data(qint64 forMSecsSinceEpoch) cons
 #if U_ICU_VERSION_MAJOR_NUM == 50
     data = ucalTimeZoneTransition(m_ucal, UCAL_TZ_TRANSITION_PREVIOUS_INCLUSIVE,
                                   forMSecsSinceEpoch);
-#else
-    ucalOffsetsAtTime(m_ucal, forMSecsSinceEpoch, &data.standardTimeOffset,
-                      &data.daylightTimeOffset);
-    data.offsetFromUtc = data.standardTimeOffset + data.daylightTimeOffset;
-    data.abbreviation = abbreviation(forMSecsSinceEpoch);
-#endif // U_ICU_VERSION_MAJOR_NUM == 50
+    if (data.atMSecsSinceEpoch == invalidMSecs()) // before first transition
+#endif // U_ICU_VERSION_MAJOR_NUM >= 50
+    {
+        ucalOffsetsAtTime(m_ucal, forMSecsSinceEpoch, &data.standardTimeOffset,
+                          &data.daylightTimeOffset);
+        data.offsetFromUtc = data.standardTimeOffset + data.daylightTimeOffset;
+        data.abbreviation = abbreviation(forMSecsSinceEpoch);
+    }
     data.atMSecsSinceEpoch = forMSecsSinceEpoch;
     return data;
 }
