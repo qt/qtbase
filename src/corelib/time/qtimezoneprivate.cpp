@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2013 John Layt <jlayt@kde.org>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -634,16 +634,20 @@ QTimeZone::OffsetData QTimeZonePrivate::toOffsetData(const QTimeZonePrivate::Dat
 bool QTimeZonePrivate::isValidId(const QByteArray &ianaId)
 {
     /*
-      Main rules for defining TZ/IANA names as per ftp://ftp.iana.org/tz/code/Theory
+      Main rules for defining TZ/IANA names, as per
+      https://www.iana.org/time-zones/repository/theory.html, are:
        1. Use only valid POSIX file name components
        2. Within a file name component, use only ASCII letters, `.', `-' and `_'.
        3. Do not use digits (except in a [+-]\d+ suffix, when used).
        4. A file name component must not exceed 14 characters or start with `-'
+
       However, the rules are really guidelines - a later one says
        - Do not change established names if they only marginally violate the
          above rules.
       We may, therefore, need to be a bit slack in our check here, if we hit
-      legitimate exceptions in real time-zone databases.
+      legitimate exceptions in real time-zone databases. In particular, ICU
+      includes some non-standard names with some components > 14 characters
+      long; so does Android, possibly deriving them from ICU.
 
       In particular, aliases such as "Etc/GMT+7" and "SystemV/EST5EDT" are valid
       so we need to accept digits, ':', and '+'; aliases typically have the form
@@ -670,8 +674,8 @@ bool QTimeZonePrivate::isValidId(const QByteArray &ianaId)
 
     // Somewhat slack hand-rolled version:
     const int MinSectionLength = 1;
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
-    // Android has its own naming of zones.
+#if defined(Q_OS_ANDROID) || QT_CONFIG(icu)
+    // Android has its own naming of zones. It may well come from ICU.
     // "Canada/East-Saskatchewan" has a 17-character second component.
     const int MaxSectionLength = 17;
 #else
