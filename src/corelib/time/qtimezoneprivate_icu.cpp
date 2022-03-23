@@ -386,8 +386,17 @@ int QIcuTimeZonePrivate::daylightTimeOffset(qint64 atMSecsSinceEpoch) const
 
 bool QIcuTimeZonePrivate::hasDaylightTime() const
 {
-    // TODO No direct ICU C api, work-around below not reliable?  Find a better way?
-    return (ucalDaylightOffset(m_id) != 0);
+    if (ucalDaylightOffset(m_id) != 0)
+        return true;
+#if U_ICU_VERSION_MAJOR_NUM == 50
+    for (qint64 when = minMSecs(); when != invalidMSecs(); ) {
+        auto data = nextTransition(when);
+        if (data.daylightTimeOffset && data.daylightTimeOffset != invalidSeconds())
+            return true;
+        when = data.atMSecsSinceEpoch;
+    }
+#endif
+    return false;
 }
 
 bool QIcuTimeZonePrivate::isDaylightTime(qint64 atMSecsSinceEpoch) const
