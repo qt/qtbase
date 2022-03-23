@@ -192,6 +192,7 @@ public:
         EditorFont,
         NFonts
     };
+    Q_ENUM(Font)
 
     enum StandardPixmap {  // Keep in sync with QStyle::StandardPixmap
         TitleBarMenuButton,

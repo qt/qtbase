@@ -86,9 +86,6 @@ public:
     // For iOS and macOS platform themes
     QFont *themeFont(QPlatformTheme::Font) const;
 
-protected:
-    mutable QSet<CTFontDescriptorRef> m_systemFontDescriptors;
-
 private:
     void populateThemeFonts();
     void populateFromDescriptor(CTFontDescriptorRef font, const QString &familyName = QString(), QFontDatabasePrivate::ApplicationFont *applicationFont = nullptr);
@@ -97,6 +94,8 @@ private:
     mutable QString defaultFontName;
 
     QHash<QPlatformTheme::Font, QFont *> m_themeFonts;
+    QHash<QString, QList<QCFType<CTFontDescriptorRef>>> m_systemFontDescriptors;
+
     bool m_hasPopulatedAliases;
 };
 
