@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -41,13 +41,35 @@
     The \l{SQL Programming} guide contains information about development using
     Qt SQL.
 
-    \include module-use.qdocinc using qt module
-    \snippet snippets/CMakeLists.txt cmake_use
+    \section1 Using the Module
 
-    See also the \l {Build with CMake} overview.
+    \include {module-use.qdocinc} {using the c++ api}
 
-    \include module-use.qdocinc building with qmake
-    \snippet snippets/code/code.pro qmake_use
+    \section2 Building with CMake
+
+    \include {module-use.qdocinc} {building with cmake} {Sql}
+
+    \section2 Building with qmake
+
+    \include {module-use.qdocinc} {building_with_qmake} {sql}
+
+    \section1 Articles and Guides
+
+    \list
+        \li \l {SQL Programming} {Qt SQL Programming Guide}
+    \endlist
+
+    \section1 Examples
+
+    \list
+        \li \l {SQL Examples}
+    \endlist
+
+    \section1 Reference
+
+    \list
+        \li \l {Qt SQL C++ Classes} {C++ Classes}
+    \endlist
 
     \section1 Module Evolution
     \l{Changes to Qt SQL} lists important changes in the module API
@@ -65,14 +87,6 @@
     modules under following permissive licenses:
 
     \generatelist{groupsbymodule attributions-qtsql}
-
-    \section1 Related Information
-
-    These are links to the API reference materials and related pages.
-    \list
-    \li \l{Qt SQL C++ Classes}{C++ Classes}
-    \li \l{SQL Examples}
-    \endlist
 */
 
 /*!
