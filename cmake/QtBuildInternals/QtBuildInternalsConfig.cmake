@@ -1051,6 +1051,7 @@ function(qt_internal_add_example_external_project subdir)
 
     if(QT_INTERNAL_VERBOSE_EXAMPLES)
         list(APPEND var_defs -DCMAKE_MESSAGE_LOG_LEVEL:STRING=DEBUG)
+        list(APPEND var_defs -DCMAKE_AUTOGEN_VERBOSE:BOOL=TRUE)
     endif()
 
     set(deps "")
