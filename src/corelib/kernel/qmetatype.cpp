@@ -2655,7 +2655,7 @@ static inline int qMetaTypeTypeImpl(const char *typeName, int length)
 */
 
 /*!
-    \a internal
+    \internal
 
     Similar to QMetaType::type(); the only difference is that this function
     doesn't attempt to normalize the type name (i.e., the lookup will fail
