@@ -1139,6 +1139,12 @@ function(qt_internal_add_example_external_project subdir)
     set(example_install_prefix "${qt_example_install_prefix}/${example_rel_path}")
 
     set(ep_binary_dir    "${CMAKE_CURRENT_BINARY_DIR}/${subdir}")
+
+    set(build_command "")
+    if(QT_INTERNAL_VERBOSE_EXAMPLES AND CMAKE_GENERATOR MATCHES "Ninja")
+        set(build_command BUILD_COMMAND "${CMAKE_COMMAND}" --build "." -- -v)
+    endif()
+
     ExternalProject_Add(${arg_NAME}
         EXCLUDE_FROM_ALL TRUE
         SOURCE_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/${subdir}"
@@ -1147,6 +1153,7 @@ function(qt_internal_add_example_external_project subdir)
         BINARY_DIR       "${ep_binary_dir}"
         INSTALL_DIR      "${example_install_prefix}"
         INSTALL_COMMAND  ""
+        ${build_command}
         TEST_COMMAND     ""
         DEPENDS          ${deps}
         CMAKE_CACHE_ARGS ${var_defs}
