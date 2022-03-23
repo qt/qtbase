@@ -71,15 +71,9 @@ public:
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QPromise)
     ~QPromise()
     {
-        const int state = d.loadState();
-        // If QFutureInterface has no state, there is nothing to be done
-        if (state == static_cast<int>(QFutureInterfaceBase::State::NoState)) {
-            d.cleanContinuation();
-            return;
-        }
-        // Otherwise, if computation is not finished at this point, cancel
+        // If computation is not finished at this point, cancel
         // potential waits
-        if (!(state & QFutureInterfaceBase::State::Finished)) {
+        if (d.d && !(d.loadState() & QFutureInterfaceBase::State::Finished)) {
             d.cancelAndFinish(); // cancel and finalize the state
             d.cleanContinuation();
         }
