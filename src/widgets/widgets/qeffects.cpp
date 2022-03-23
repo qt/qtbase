@@ -553,7 +553,7 @@ void QRollEffect::scroll()
     }
 }
 
-/*!
+/*
     Scroll widget \a w in \a time ms. \a orient may be 1 (vertical), 2
     (horizontal) or 3 (diagonal).
 */
@@ -576,7 +576,7 @@ void qScrollEffect(QWidget* w, QEffects::DirFlags orient, int time)
     q_roll->run(time);
 }
 
-/*!
+/*
     Fade in widget \a w in \a time ms.
 */
 void qFadeEffect(QWidget* w, int time)

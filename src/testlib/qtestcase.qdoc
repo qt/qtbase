@@ -163,6 +163,7 @@
 
 /*!
    \macro QVERIFY_THROWS_EXCEPTION(exceptiontype, ...)
+   \relates QTest
    \since 6.3
 
    The QVERIFY_THROWS_EXCEPTION macro executes the expression given in the variadic

@@ -799,6 +799,7 @@ void qDrawWinButton(QPainter *p, const QRect &r,
 /*!
     \fn void qDrawWinPanel(QPainter *painter, const QRect &rect, const QPalette &palette,
              bool sunken, const QBrush *fill)
+    \relates <qdrawutil.h>
     \overload
 
     Draws the Windows-style panel at the rectangle specified by \a rect using
@@ -895,6 +896,7 @@ void qDrawPlainRect(QPainter *p, const QRect &r, const QColor &c,
 typedef QVarLengthArray<QPainter::PixmapFragment, 16> QPixmapFragmentsArray;
 
 /*!
+    \relates <qdrawutil.h>
     \since 4.6
 
     Draws the indicated \a sourceRect rectangle from the given \a pixmap into

@@ -256,6 +256,7 @@ Q_CORE_EXPORT quint64 qFloatDistance(double a, double b)
 
 /*!
     \fn template<typename T> bool qAddOverflow(T v1, T v2, T *result)
+    \relates <QtGlobal>
     \since 6.1
 
     Adds two values \a v1 and \a v2, of a numeric type \c T and records the
@@ -287,6 +288,7 @@ Q_CORE_EXPORT quint64 qFloatDistance(double a, double b)
 
 /*!
     \fn template<typename T> bool qSubOverflow(T v1, T v2, T *result)
+    \relates <QtGlobal>
     \since 6.1
 
     Subtracts \a v2 from \a v1 and records the resulting value in \a result. If
@@ -318,6 +320,7 @@ Q_CORE_EXPORT quint64 qFloatDistance(double a, double b)
 
 /*!
     \fn template<typename T> bool qMulOverflow(T v1, T v2, T *result)
+    \relates <QtGlobal>
     \since 6.1
 
     Multiplies \a v1 and \a v2, and records the resulting value in \a result. If
