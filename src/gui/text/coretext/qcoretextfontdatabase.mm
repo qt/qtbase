@@ -113,9 +113,6 @@ QCoreTextFontDatabase::QCoreTextFontDatabase()
 QCoreTextFontDatabase::~QCoreTextFontDatabase()
 {
     qDeleteAll(m_themeFonts);
-
-    for (CTFontDescriptorRef ref : qAsConst(m_systemFontDescriptors))
-        CFRelease(ref);
 }
 
 void QCoreTextFontDatabase::populateFontDatabase()
@@ -133,8 +130,10 @@ void QCoreTextFontDatabase::populateFontDatabase()
 
     populateThemeFonts();
 
-    for (CTFontDescriptorRef fontDesc : m_systemFontDescriptors)
-        populateFromDescriptor(fontDesc);
+    for (auto familyName : m_systemFontDescriptors.keys()) {
+        for (auto fontDescriptor : m_systemFontDescriptors.value(familyName))
+            populateFromDescriptor(fontDescriptor, familyName);
+    }
 
     qCDebug(lcQpaFonts) << "Populating system descriptors took" << elapsed.restart() << "ms";
 
@@ -211,6 +210,8 @@ CTFontDescriptorRef descriptorForFamily(const char *familyName)
 
 void QCoreTextFontDatabase::populateFamily(const QString &familyName)
 {
+    qCDebug(lcQpaFonts) << "Populating family" << familyName;
+
     // A single family might match several different fonts with different styles.
     // We need to add them all so that the font database has the full picture,
     // as once a family has been populated we will not populate it again.
@@ -758,6 +759,8 @@ static CTFontDescriptorRef fontDescriptorFromTheme(QPlatformTheme::Font f)
 
 void QCoreTextFontDatabase::populateThemeFonts()
 {
+    QMacAutoReleasePool pool;
+
     if (!m_themeFonts.isEmpty())
         return;
 
@@ -769,7 +772,7 @@ void QCoreTextFontDatabase::populateThemeFonts()
 
     for (long f = QPlatformTheme::SystemFont; f < QPlatformTheme::NFonts; f++) {
         QPlatformTheme::Font themeFont = static_cast<QPlatformTheme::Font>(f);
-        CTFontDescriptorRef fontDescriptor = fontDescriptorFromTheme(themeFont);
+        QCFType<CTFontDescriptorRef> fontDescriptor = fontDescriptorFromTheme(themeFont);
         FontDescription fd;
         getFontDescription(fontDescriptor, &fd);
 
@@ -779,10 +782,54 @@ void QCoreTextFontDatabase::populateThemeFonts()
         // would result in the font database having > 0 families, which would result in
         // skipping the initialization and population of all other font families. Instead
         // we store the descriptors for later and populate them during populateFontDatabase().
-        if (!m_systemFontDescriptors.contains(fontDescriptor))
-            m_systemFontDescriptors.insert(fontDescriptor);
-        else
-            CFRelease(fontDescriptor);
+
+        bool haveRegisteredFamily = m_systemFontDescriptors.contains(fd.familyName);
+        qCDebug(lcQpaFonts) << "Got" << (haveRegisteredFamily ? "already registered" : "unseen")
+                            << "family" << fd.familyName << "for" << themeFont;
+
+        if (!haveRegisteredFamily) {
+            // We need to register all weights and variants of the theme font,
+            // as the user might tweak the returned QFont before use.
+            QList<QCFType<CTFontDescriptorRef>> themeFontVariants;
+
+            auto addFontVariants = [&](CTFontDescriptorRef descriptor) {
+                QCFType<CFArrayRef> matchingDescriptors = CTFontDescriptorCreateMatchingFontDescriptors(descriptor, nullptr);
+                const int matchingDescriptorsCount = CFArrayGetCount(matchingDescriptors);
+                qCDebug(lcQpaFonts) << "Enumerating font variants based on" << id(descriptor)
+                    << "resulted in" << matchingDescriptorsCount << "matching descriptors"
+                    << matchingDescriptors.as<NSArray*>();
+
+                for (int i = 0; i < matchingDescriptorsCount; ++i) {
+                    auto matchingDescriptor = CTFontDescriptorRef(CFArrayGetValueAtIndex(matchingDescriptors, i));
+                    themeFontVariants.append(QCFType<CTFontDescriptorRef>::constructFromGet(matchingDescriptor));
+                }
+            };
+
+            // Try populating the font variants based on its UI design trait, if available
+            if (@available(macos 10.15, ios 13.0, *)) {
+                auto fontTraits = QCFType<CFDictionaryRef>(CTFontDescriptorCopyAttribute(fontDescriptor, kCTFontTraitsAttribute));
+                static const NSString *kUIFontDesignTrait = @"NSCTFontUIFontDesignTrait";
+                if (id uiFontDesignTrait = fontTraits.as<NSDictionary*>()[kUIFontDesignTrait]) {
+                    QCFType<CTFontDescriptorRef> designTraitDescriptor = CTFontDescriptorCreateWithAttributes(
+                        CFDictionaryRef(@{ (id)kCTFontTraitsAttribute: @{ kUIFontDesignTrait: uiFontDesignTrait }
+                    }));
+                    addFontVariants(designTraitDescriptor);
+                }
+            }
+
+            if (themeFontVariants.isEmpty()) {
+                // Fall back to populating variants based on the family name alone
+                QCFType<CTFontDescriptorRef> familyDescriptor = descriptorForFamily(fd.familyName);
+                addFontVariants(familyDescriptor);
+            }
+
+            if (themeFontVariants.isEmpty()) {
+                qCDebug(lcQpaFonts) << "No theme font variants found, falling back to single variant descriptor";
+                themeFontVariants.append(fontDescriptor);
+            }
+
+            m_systemFontDescriptors.insert(fd.familyName, themeFontVariants);
+        }
 
         QFont *font = new QFont(fd.familyName, fd.pointSize, fd.weight, fd.style == QFont::StyleItalic);
         m_themeFonts.insert(themeFont, font);
