@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 John Layt <jlayt@kde.org>
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -206,6 +206,14 @@ static QTimeZonePrivate::Data ucalTimeZoneTransition(UCalendar *m_ucal,
     UDate tranMSecs = 0;
     status = U_ZERO_ERROR;
     bool ok = ucal_getTimeZoneTransitionDate(ucal, type, &tranMSecs, &status);
+
+    // Catch a known violation (in ICU 67) of the specified behavior:
+    if (U_SUCCESS(status) && ok && type == UCAL_TZ_TRANSITION_NEXT) {
+        // At the end of time, that can "succeed" with tranMSecs ==
+        // atMSecsSinceEpoch, which should be treated as a failure.
+        // (At the start of time, previous correctly fails.)
+        ok = qint64(tranMSecs) > atMSecsSinceEpoch;
+    }
 
     // Set the transition time to find the offsets for
     if (U_SUCCESS(status) && ok) {
