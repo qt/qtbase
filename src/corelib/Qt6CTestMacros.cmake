@@ -64,6 +64,7 @@ function(_qt_internal_get_cmake_test_configure_options out_var)
     endif()
 
     list(APPEND option_list "-DCMAKE_MESSAGE_LOG_LEVEL=DEBUG")
+    list(APPEND option_list "-DCMAKE_AUTOGEN_VERBOSE=TRUE")
 
     if(APPLE AND CMAKE_OSX_ARCHITECTURES)
         list(LENGTH CMAKE_OSX_ARCHITECTURES osx_arch_count)
