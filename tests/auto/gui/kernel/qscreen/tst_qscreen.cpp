@@ -32,6 +32,7 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformintegration.h>
 #include <private/qguiapplication_p.h>
+#include <private/qhighdpiscaling_p.h>
 
 #include <QTest>
 #include <QSignalSpy>
@@ -282,9 +283,20 @@ void tst_QScreen::grabWindow()
     QCOMPARE(screen->name().toUtf8(), screenName);
     const double screenDpr = screen->devicePixelRatio();
 
+    if (QHighDpiScaling::isActive()) {
+        const float rawFactor = QHighDpiScaling::factor(screen);
+        const float roundedFactor = qRound(rawFactor);
+        if (!qFuzzyCompare(roundedFactor, rawFactor))
+            QSKIP("HighDPI enabled with non-integer factor. Skip due to possible rounding errors.");
+    }
+
     Window window(screen);
     window.setGeometry(windowRect);
+#ifndef Q_OS_ANDROID
     window.show();
+#else
+    window.showNormal();
+#endif
 
     if (!QTest::qWaitForWindowExposed(&window))
         QSKIP("Failed to expose window - aborting");
