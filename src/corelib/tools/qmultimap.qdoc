@@ -246,7 +246,7 @@
     Returns an STL multi map equivalent to this QMultiMap.
 */
 
-/*! \fn template <class Key, class T> std::multimap<Key, T> QMultiMap<Key, T>::toStdMultiMap() const
+/*! \fn template <class Key, class T> std::multimap<Key, T> QMultiMap<Key, T>::toStdMultiMap() const &
 
     Returns an STL multi map equivalent to this QMultiMap.
 */
