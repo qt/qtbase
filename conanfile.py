@@ -423,7 +423,7 @@ class QtBase(ConanFile):
             if self.options.get_safe(req_name, default=False) == True:
                 # Note! If this conan package is being "conan export"ed outside Qt CI and the
                 # sw versions .ini file is not present then it will fall-back to default version
-                ver = self._shared.parse_sw_req(
+                ver = self._shared.parse_qt_sw_pkg_dependency(
                     config_folder=Path(self.recipe_folder),
                     package_name=req_name,
                     target_os=str(self.settings.os),
