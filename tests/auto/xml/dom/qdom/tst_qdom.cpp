@@ -87,6 +87,7 @@ private slots:
     void invalidCharData();
 
     void roundTripAttributes() const;
+    void roundTripCDATA() const;
     void normalizeEndOfLine() const;
     void normalizeAttributes() const;
     void serializeWeirdEOL() const;
@@ -1439,6 +1440,17 @@ void tst_QDom::roundTripAttributes() const
 
     const QByteArray expected("<localName xmlns=\"\" attr=\"   &#xd;&#xa;&#x9;  \"/>\n");
     QCOMPARE(QString::fromLatin1(serialized.constData()), QString::fromLatin1(expected.constData()));
+}
+
+void tst_QDom::roundTripCDATA() const
+{
+    const QString input = u"<?xml version='1.0' encoding='UTF-8'?>\n"
+                          "<content><![CDATA[]]></content>\n"_qs;
+    QString errorMsg;
+    QDomDocument doc;
+    QVERIFY(doc.setContent(input, false, &errorMsg));
+    QVERIFY(errorMsg.isEmpty());
+    QCOMPARE(doc.toString(), input);
 }
 
 void tst_QDom::normalizeEndOfLine() const
