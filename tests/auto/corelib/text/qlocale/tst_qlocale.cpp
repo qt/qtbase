@@ -191,19 +191,19 @@ tst_QLocale::tst_QLocale()
 
 void tst_QLocale::initTestCase()
 {
-#if QT_CONFIG(process)
-#  ifdef Q_OS_ANDROID
-    m_sysapp = QCoreApplication::applicationDirPath() + "/libsyslocaleapp.so";
-#  else // !defined(Q_OS_ANDROID)
+#ifdef Q_OS_ANDROID
+    // We can't start a QProcess on Android, and we anyway skip the test
+    // that uses m_sysapp. So no need to initialize it properly.
+    return;
+#elif QT_CONFIG(process)
     const QString syslocaleapp_dir = QFINDTESTDATA("syslocaleapp");
     QVERIFY2(!syslocaleapp_dir.isEmpty(),
             qPrintable(QStringLiteral("Cannot find 'syslocaleapp' starting from ")
                        + QDir::toNativeSeparators(QDir::currentPath())));
     m_sysapp = syslocaleapp_dir + QStringLiteral("/syslocaleapp");
-#    ifdef Q_OS_WIN
+#ifdef Q_OS_WIN
     m_sysapp += QStringLiteral(".exe");
-#    endif
-#  endif // Q_OS_ANDROID
+#endif
     const QFileInfo fi(m_sysapp);
     QVERIFY2(fi.exists() && fi.isExecutable(),
              qPrintable(QDir::toNativeSeparators(m_sysapp)
@@ -560,10 +560,10 @@ static inline bool runSysAppTest(const QString &binary,
 void tst_QLocale::emptyCtor_data()
 {
 #if !QT_CONFIG(process)
-    QSKIP("No qprocess support", SkipAll);
+    QSKIP("No qprocess support");
 #endif
 #ifdef Q_OS_ANDROID
-    QSKIP("This test crashes on Android");
+    QSKIP("Can't start QProcess to run a custom user binary on Android");
 #endif
 
     QTest::addColumn<QString>("expected");
@@ -3105,6 +3105,9 @@ private:
 
 void tst_QLocale::systemLocale_data()
 {
+#ifdef Q_OS_ANDROID
+    QSKIP("Android already has a QSystemLocale installed, we can't override it");
+#endif
     // Test uses MySystemLocale, so is platform-independent.
     QTest::addColumn<QString>("name");
     QTest::addColumn<QLocale::Language>("language");
