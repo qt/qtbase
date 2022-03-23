@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #############################################################################
 ##
-## Copyright (C) 2020 The Qt Company Ltd.
+## Copyright (C) 2022 The Qt Company Ltd.
 ## Contact: https://www.qt.io/licensing/
 ##
 ## This file is part of the release tools of the Qt Toolkit.
@@ -99,8 +99,12 @@ class Cleaner (object):
     def _read_qt_version(qtbase_dir):
         cmake_conf_file = os.path.join(qtbase_dir, '.cmake.conf')
         with open(cmake_conf_file) as f:
-            qtver = f.readline().strip()
-        return qtver.split('"')[1]   # set(QT_REPO_MODULE_VERSION "6.1.0")
+            for line in f:
+                # set(QT_REPO_MODULE_VERSION "6.1.0")
+                if 'set(QT_REPO_MODULE_VERSION' in line:
+                    return line.strip().split('"')[1]
+
+        raise RuntimeError("Someone broke .cmake.conf formatting again")
 
     @staticmethod
     def __getPatterns(patterns = (
