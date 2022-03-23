@@ -22,12 +22,7 @@ if(QT_FEATURE_thread)
     # special case end
     add_subdirectory(qthreadonce)
     add_subdirectory(qthreadpool)
-    # special case begin
-    # QTBUG-87431
-    if(NOT ANDROID)
-        add_subdirectory(qthreadstorage)
-    endif()
-    # special case end
+    add_subdirectory(qthreadstorage)
     add_subdirectory(qwaitcondition)
     add_subdirectory(qwritelocker)
     if(NOT INTEGRITY)
