@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2018 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -484,10 +484,54 @@ static QRgbaFloat32 *QT_FASTCALL destFetchFP(QRgbaFloat32 *buffer, QRasterBuffer
     return const_cast<QRgbaFloat32 *>(qFetchToRGBA32F[rasterBuffer->format](buffer, rasterBuffer->scanLine(y), x, length, nullptr, nullptr));
 }
 
+static QRgbaFloat32 *QT_FASTCALL destFetchRGBFP(QRgbaFloat32 *, QRasterBuffer *rasterBuffer, int x, int y, int)
+{
+    return reinterpret_cast<QRgbaFloat32 *>(rasterBuffer->scanLine(y)) + x;
+}
+
 static QRgbaFloat32 *QT_FASTCALL destFetchFPUndefined(QRgbaFloat32 *buffer, QRasterBuffer *, int, int, int)
 {
     return buffer;
 }
+static DestFetchProcFP destFetchProcFP[QImage::NImageFormats] =
+{
+    nullptr,            // Format_Invalid
+    nullptr,            // Format_Mono,
+    nullptr,            // Format_MonoLSB
+    nullptr,            // Format_Indexed8
+    destFetchFP,        // Format_RGB32
+    destFetchFP,        // Format_ARGB32,
+    destFetchFP,        // Format_ARGB32_Premultiplied
+    destFetchFP,        // Format_RGB16
+    destFetchFP,        // Format_ARGB8565_Premultiplied
+    destFetchFP,        // Format_RGB666
+    destFetchFP,        // Format_ARGB6666_Premultiplied
+    destFetchFP,        // Format_RGB555
+    destFetchFP,        // Format_ARGB8555_Premultiplied
+    destFetchFP,        // Format_RGB888
+    destFetchFP,        // Format_RGB444
+    destFetchFP,        // Format_ARGB4444_Premultiplied
+    destFetchFP,        // Format_RGBX8888
+    destFetchFP,        // Format_RGBA8888
+    destFetchFP,        // Format_RGBA8888_Premultiplied
+    destFetchFP,        // Format_BGR30
+    destFetchFP,        // Format_A2BGR30_Premultiplied
+    destFetchFP,        // Format_RGB30
+    destFetchFP,        // Format_A2RGB30_Premultiplied
+    destFetchFP,        // Format_Alpha8
+    destFetchFP,        // Format_Grayscale8
+    destFetchFP,        // Format_RGBX64
+    destFetchFP,        // Format_RGBA64
+    destFetchFP,        // Format_RGBA64_Premultiplied
+    destFetchFP,        // Format_Grayscale16
+    destFetchFP,        // Format_BGR888
+    destFetchFP,        // Format_RGBX16FPx4
+    destFetchFP,        // Format_RGBA16FPx4
+    destFetchFP,        // Format_RGBA16FPx4_Premultiplied
+    destFetchRGBFP,     // Format_RGBX32FPx4
+    destFetchFP,        // Format_RGBA32FPx4
+    destFetchRGBFP,     // Format_RGBA32FPx4_Premultiplied
+};
 #endif
 
 /*
@@ -3660,11 +3704,10 @@ static inline Operator getOperator(const QSpanData *data, const QSpan *spans, in
     op.destFetch64 = nullptr;
 #endif
 #if QT_CONFIG(raster_fp)
-    if (data->rasterBuffer->format > QImage::Format_Indexed8)
-        op.destFetchFP = destFetchFP;
-    else
+    op.destFetchFP = destFetchProcFP[data->rasterBuffer->format];
+#else
+    op.destFetchFP = nullptr;
 #endif
-        op.destFetchFP = nullptr;
     if (op.mode == QPainter::CompositionMode_Source &&
             (data->type != QSpanData::Texture || data->texture.const_alpha == 256)) {
         const QSpan *lastSpan = spans + spanCount;
@@ -3686,7 +3729,8 @@ static inline Operator getOperator(const QSpanData *data, const QSpan *spans, in
                 op.destFetch64 = destFetch64Undefined;
 #endif
 #if QT_CONFIG(raster_fp)
-            op.destFetchFP = destFetchFPUndefined;
+            if (op.destFetchFP != destFetchRGBFP)
+                op.destFetchFP = destFetchFPUndefined;
 #endif
         }
     }
@@ -3915,6 +3959,7 @@ void handleSpans(int count, const QSpan *spans, const QSpanData *data, T &handle
     uint const_alpha = 256;
     if (data->type == QSpanData::Texture)
         const_alpha = data->texture.const_alpha;
+    const bool solidSource = handler.op.mode == QPainter::CompositionMode_Source && const_alpha == 256;
 
     int coverage = 0;
     while (count) {
@@ -3926,9 +3971,10 @@ void handleSpans(int count, const QSpan *spans, const QSpanData *data, T &handle
         int x = spans->x;
         const int y = spans->y;
         int right = x + spans->len;
+        const bool fetchDest = !solidSource || spans->coverage < 255;
 
         // compute length of adjacent spans
-        for (int i = 1; i < count && spans[i].y == y && spans[i].x == right; ++i)
+        for (int i = 1; i < count && spans[i].y == y && spans[i].x == right && fetchDest == (!solidSource || spans[i].coverage < 255); ++i)
             right += spans[i].len;
         int length = right - x;
 
@@ -3939,7 +3985,7 @@ void handleSpans(int count, const QSpan *spans, const QSpanData *data, T &handle
             int process_length = l;
             int process_x = x;
 
-            const auto *src = handler.fetch(process_x, y, process_length);
+            const auto *src = handler.fetch(process_x, y, process_length, fetchDest);
             int offset = 0;
             while (l > 0) {
                 if (x == spans->x) // new span?
@@ -3966,8 +4012,8 @@ void handleSpans(int count, const QSpan *spans, const QSpanData *data, T &handle
 
 struct QBlendBase
 {
-    QSpanData *data;
-    Operator op;
+    const QSpanData *data;
+    const Operator op;
 };
 
 class BlendSrcGeneric : public QBlendBase
@@ -3976,14 +4022,17 @@ public:
     uint *dest = nullptr;
     alignas(16) uint buffer[BufferSize];
     alignas(16) uint src_buffer[BufferSize];
-    BlendSrcGeneric(QSpanData *d, const Operator &o)
+    BlendSrcGeneric(const QSpanData *d, const Operator &o)
         : QBlendBase{d, o}
     {
     }
 
-    const uint *fetch(int x, int y, int len)
+    const uint *fetch(int x, int y, int len, bool fetchDest)
     {
-        dest = op.destFetch(buffer, data->rasterBuffer, x, y, len);
+        if (fetchDest || op.destFetch == destFetchARGB32P)
+            dest = op.destFetch(buffer, data->rasterBuffer, x, y, len);
+        else
+            dest = buffer;
         return op.srcFetch(src_buffer, &op, data, y, x, len);
     }
 
@@ -4006,7 +4055,7 @@ public:
     QRgba64 *dest = nullptr;
     alignas(16) QRgba64 buffer[BufferSize];
     alignas(16) QRgba64 src_buffer[BufferSize];
-    BlendSrcGenericRGB64(QSpanData *d, const Operator &o)
+    BlendSrcGenericRGB64(const QSpanData *d, const Operator &o)
         : QBlendBase{d, o}
     {
     }
@@ -4016,9 +4065,12 @@ public:
         return op.func64 && op.destFetch64;
     }
 
-    const QRgba64 *fetch(int x, int y, int len)
+    const QRgba64 *fetch(int x, int y, int len, bool fetchDest)
     {
-        dest = op.destFetch64(buffer, data->rasterBuffer, x, y, len);
+        if (fetchDest || op.destFetch64 == destFetchRGB64)
+            dest = op.destFetch64(buffer, data->rasterBuffer, x, y, len);
+        else
+            dest = buffer;
         return op.srcFetch64(src_buffer, &op, data, y, x, len);
     }
 
@@ -4052,9 +4104,12 @@ public:
         return op.funcFP && op.destFetchFP && op.srcFetchFP;
     }
 
-    const QRgbaFloat32 *fetch(int x, int y, int len)
+    const QRgbaFloat32 *fetch(int x, int y, int len, bool fetchDest)
     {
-        dest = op.destFetchFP(buffer, data->rasterBuffer, x, y, len);
+        if (fetchDest || op.destFetchFP == destFetchRGBFP)
+            dest = op.destFetchFP(buffer, data->rasterBuffer, x, y, len);
+        else
+            dest = buffer;
         return op.srcFetchFP(src_buffer, &op, data, y, x, len);
     }
 
@@ -4122,6 +4177,7 @@ static void blend_untransformed_generic(int count, const QSpan *spans, void *use
     const int image_height = data->texture.height;
     int xoff = -qRound(-data->dx);
     int yoff = -qRound(-data->dy);
+    const bool solidSource = op.mode == QPainter::CompositionMode_Source && data->texture.const_alpha == 256 && op.destFetch != destFetchARGB32P;
 
     for (; count--; spans++) {
         if (!spans->len)
@@ -4130,6 +4186,7 @@ static void blend_untransformed_generic(int count, const QSpan *spans, void *use
         int length = spans->len;
         int sx = xoff + x;
         int sy = yoff + spans->y;
+        const bool fetchDest = !solidSource || spans->coverage < 255;
         if (sy >= 0 && sy < image_height && sx < image_width) {
             if (sx < 0) {
                 x -= sx;
@@ -4143,7 +4200,7 @@ static void blend_untransformed_generic(int count, const QSpan *spans, void *use
                 while (length) {
                     int l = qMin(BufferSize, length);
                     const uint *src = op.srcFetch(src_buffer, &op, data, sy, sx, l);
-                    uint *dest = op.destFetch(buffer, data->rasterBuffer, x, spans->y, l);
+                    uint *dest = fetchDest ? op.destFetch(buffer, data->rasterBuffer, x, spans->y, l) : buffer;
                     op.func(dest, src, l, coverage);
                     if (op.destStore)
                         op.destStore(data->rasterBuffer, x, spans->y, dest, l);
@@ -4173,6 +4230,7 @@ static void blend_untransformed_generic_rgb64(int count, const QSpan *spans, voi
     const int image_height = data->texture.height;
     int xoff = -qRound(-data->dx);
     int yoff = -qRound(-data->dy);
+    const bool solidSource = op.mode == QPainter::CompositionMode_Source && data->texture.const_alpha == 256 && op.destFetch64 != destFetchRGB64;
 
     for (; count--; spans++) {
         if (!spans->len)
@@ -4181,6 +4239,7 @@ static void blend_untransformed_generic_rgb64(int count, const QSpan *spans, voi
         int length = spans->len;
         int sx = xoff + x;
         int sy = yoff + spans->y;
+        const bool fetchDest = !solidSource || spans->coverage < 255;
         if (sy >= 0 && sy < image_height && sx < image_width) {
             if (sx < 0) {
                 x -= sx;
@@ -4194,7 +4253,7 @@ static void blend_untransformed_generic_rgb64(int count, const QSpan *spans, voi
                 while (length) {
                     int l = qMin(BufferSize, length);
                     const QRgba64 *src = op.srcFetch64(src_buffer, &op, data, sy, sx, l);
-                    QRgba64 *dest = op.destFetch64(buffer, data->rasterBuffer, x, spans->y, l);
+                    QRgba64 *dest = fetchDest ? op.destFetch64(buffer, data->rasterBuffer, x, spans->y, l) : buffer;
                     op.func64(dest, src, l, coverage);
                     if (op.destStore64)
                         op.destStore64(data->rasterBuffer, x, spans->y, dest, l);
@@ -4225,6 +4284,7 @@ static void blend_untransformed_generic_fp(int count, const QSpan *spans, void *
     const int image_height = data->texture.height;
     int xoff = -qRound(-data->dx);
     int yoff = -qRound(-data->dy);
+    const bool solidSource = op.mode == QPainter::CompositionMode_Source && data->texture.const_alpha == 256 && op.destFetchFP != destFetchRGBFP;
 
     for (; count--; spans++) {
         if (!spans->len)
@@ -4233,6 +4293,7 @@ static void blend_untransformed_generic_fp(int count, const QSpan *spans, void *
         int length = spans->len;
         int sx = xoff + x;
         int sy = yoff + spans->y;
+        const bool fetchDest = !solidSource || spans->coverage < 255;
         if (sy >= 0 && sy < image_height && sx < image_width) {
             if (sx < 0) {
                 x -= sx;
@@ -4246,7 +4307,7 @@ static void blend_untransformed_generic_fp(int count, const QSpan *spans, void *
                 while (length) {
                     int l = qMin(BufferSize, length);
                     const QRgbaFloat32 *src = op.srcFetchFP(src_buffer, &op, data, sy, sx, l);
-                    QRgbaFloat32 *dest = op.destFetchFP(buffer, data->rasterBuffer, x, spans->y, l);
+                    QRgbaFloat32 *dest = fetchDest ? op.destFetchFP(buffer, data->rasterBuffer, x, spans->y, l) : buffer;
                     op.funcFP(dest, src, l, coverage);
                     if (op.destStoreFP)
                         op.destStoreFP(data->rasterBuffer, x, spans->y, dest, l);
