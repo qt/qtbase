@@ -868,7 +868,7 @@ void tst_QTimeZone::isValidId_data()
     // Parts separated by '/', each part min 1 and max of 14 chars
     TESTSET("empty", "", false);
     TESTSET("minimal", "m", true);
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_ANDROID) || QT_CONFIG(icu)
     TESTSET("maximal", "East-Saskatchewan", true); // Android actually uses this
     TESTSET("too long", "North-Saskatchewan", false); // ... but thankfully not this.
 #else
@@ -939,7 +939,7 @@ void tst_QTimeZone::isValidId_data()
     QTest::newRow("a,z alone") << QByteArray("a,z") << false;
     QTest::newRow("/z alone") << QByteArray("/z") << false;
     QTest::newRow("-z alone") << QByteArray("-z") << false;
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_ANDROID) || QT_CONFIG(icu)
     QTest::newRow("long alone") << QByteArray("12345678901234567") << true;
     QTest::newRow("over-long alone") << QByteArray("123456789012345678") << false;
 #else
