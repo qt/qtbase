@@ -69,17 +69,35 @@ bool AndroidContentFileEngine::open(QIODevice::OpenMode openMode)
         openModeStr += QLatin1Char('a');
     }
 
-    const auto fd = QJniObject::callStaticMethod<jint>("org/qtproject/qt/android/QtNative",
-        "openFdForContentUrl",
-        "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)I",
+    m_pfd = QJniObject::callStaticObjectMethod("org/qtproject/qt/android/QtNative",
+        "openParcelFdForContentUrl",
+        "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)Landroid/os/ParcelFileDescriptor;",
         QAndroidApplication::context(),
         QJniObject::fromString(fileName(DefaultName)).object(),
         QJniObject::fromString(openModeStr).object());
 
-    if (fd < 0)
+    if (!m_pfd.isValid())
         return false;
 
-    return QFSFileEngine::open(openMode, fd, QFile::AutoCloseHandle);
+    const auto fd = m_pfd.callMethod<jint>("getFd", "()I");
+
+    if (fd < 0) {
+        m_pfd.callMethod<void>("close", "()V");
+        m_pfd = QJniObject();
+        return false;
+    }
+
+    return QFSFileEngine::open(openMode, fd, QFile::DontCloseHandle);
+}
+
+bool AndroidContentFileEngine::close()
+{
+    if (m_pfd.isValid()) {
+        m_pfd.callMethod<void>("close", "()V");
+        m_pfd = QJniObject();
+    }
+
+    return QFSFileEngine::close();
 }
 
 qint64 AndroidContentFileEngine::size() const

@@ -41,12 +41,14 @@
 #define ANDROIDCONTENTFILEENGINE_H
 
 #include <private/qfsfileengine_p.h>
+#include <QtCore/qjniobject.h>
 
 class AndroidContentFileEngine : public QFSFileEngine
 {
 public:
     AndroidContentFileEngine(const QString &fileName);
     bool open(QIODevice::OpenMode openMode) override;
+    bool close() override;
     qint64 size() const override;
     FileFlags fileFlags(FileFlags type = FileInfoAll) const override;
     QString fileName(FileName file = DefaultName) const override;
@@ -54,6 +56,7 @@ public:
     QAbstractFileEngine::Iterator *endEntryList() override;
 private:
     QString m_file;
+    QJniObject m_pfd;
 
 };
 
