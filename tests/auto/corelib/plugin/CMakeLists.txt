@@ -1,7 +1,6 @@
 # Generated from plugin.pro.
 
-# QTBUG-87438 # special case
-if(QT_BUILD_SHARED_LIBS AND NOT ANDROID)
+if(QT_BUILD_SHARED_LIBS)
     add_subdirectory(qfactoryloader)
 endif()
 add_subdirectory(quuid)
