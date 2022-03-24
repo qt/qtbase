@@ -785,7 +785,7 @@ macro(qt_examples_build_begin)
     if(NOT QT_IS_EXTERNAL_EXAMPLES_BUILD OR NOT __qt_all_examples_ported_to_external_projects)
         qt_internal_set_up_build_dir_package_paths()
         list(APPEND CMAKE_FIND_ROOT_PATH "${QT_BUILD_DIR}")
-        list(APPEND QT_EXAMPLES_CMAKE_PREFIX_PATH "${QT_BUILD_DIR}/lib/cmake")
+        list(APPEND QT_EXAMPLES_CMAKE_PREFIX_PATH "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/cmake")
     endif()
 
     # Because CMAKE_INSTALL_RPATH is empty by default in the repo project, examples need to have
