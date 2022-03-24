@@ -120,6 +120,10 @@ list(APPEND CMAKE_REQUIRED_LIBRARIES "${EGL_LIBRARY}")
 list(APPEND CMAKE_REQUIRED_INCLUDES "${EGL_INCLUDE_DIR}")
 list(APPEND CMAKE_REQUIRED_DEFINITIONS "${EGL_DEFINITIONS}")
 
+if(_qt_igy_gui_libs)
+    list(APPEND CMAKE_REQUIRED_LIBRARIES "${_qt_igy_gui_libs}")
+endif()
+
 check_cxx_source_compiles("
 #include <EGL/egl.h>
 

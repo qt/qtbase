@@ -30,6 +30,11 @@ qt_find_package(ATSPI2 PROVIDED_TARGETS PkgConfig::ATSPI2 MODULE_NAME gui QMAKE_
 qt_find_package(DirectFB PROVIDED_TARGETS PkgConfig::DirectFB MODULE_NAME gui QMAKE_LIB directfb)
 qt_find_package(Libdrm PROVIDED_TARGETS Libdrm::Libdrm MODULE_NAME gui QMAKE_LIB drm)
 qt_find_package(EGL PROVIDED_TARGETS EGL::EGL MODULE_NAME gui QMAKE_LIB egl)
+if(INTEGRITY AND _qt_igy_gui_libs)
+    qt_find_package(IntegrityPlatformGraphics
+        PROVIDED_TARGETS IntegrityPlatformGraphics::IntegrityPlatformGraphics
+        MODULE_NAME gui QMAKE_LIB integrity_platform_graphics)
+endif()
 qt_find_package(WrapSystemFreetype 2.2.0 PROVIDED_TARGETS WrapSystemFreetype::WrapSystemFreetype MODULE_NAME gui QMAKE_LIB freetype)
 set_package_properties(WrapFreetype PROPERTIES TYPE REQUIRED)
 if(QT_FEATURE_system_zlib)
@@ -289,11 +294,16 @@ fbGetDisplayByIndex(0);
 "# FIXME: qmake: ['DEFINES += EGL_API_FB=1', '!integrity: DEFINES += LINUX=1']
 )
 
+set(test_libs EGL::EGL)
+if(INTEGRITY AND _qt_igy_gui_libs)
+    set(test_libs ${test_libs} IntegrityPlatformGraphics::IntegrityPlatformGraphics)
+endif()
+
 # egl-openwfd
 qt_config_compile_test(egl_openwfd
     LABEL "OpenWFD EGL"
     LIBRARIES
-        EGL::EGL
+        ${test_libs}
     CODE
 "#include <wfd.h>
 
@@ -397,10 +407,15 @@ if(WASM)
 endif()
 # special case end
 
+set(test_libs GLESv2::GLESv2)
+if(INTEGRITY AND _qt_igy_gui_libs)
+    set(test_libs ${test_libs} IntegrityPlatformGraphics::IntegrityPlatformGraphics)
+endif()
+
 qt_config_compile_test(opengles3
     LABEL "OpenGL ES 3.0"
     LIBRARIES
-        GLESv2::GLESv2
+        ${test_libs}
 # special case begin
     COMPILE_OPTIONS ${extra_compiler_options}
 # special case end
@@ -425,11 +440,12 @@ glMapBufferRange(GL_ARRAY_BUFFER, 0, 0, GL_MAP_READ_BIT);
 }
 ")
 
+
 # opengles31
 qt_config_compile_test(opengles31
     LABEL "OpenGL ES 3.1"
     LIBRARIES
-        GLESv2::GLESv2
+        ${test_libs}
     CODE
 "#include <GLES3/gl31.h>
 
@@ -447,7 +463,7 @@ glProgramUniform1i(0, 0, 0);
 qt_config_compile_test(opengles32
     LABEL "OpenGL ES 3.2"
     LIBRARIES
-        GLESv2::GLESv2
+        ${test_libs}
     CODE
 "#include <GLES3/gl32.h>
 
