@@ -157,6 +157,9 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
     if (state.searchEdit)
         traits |= UIAccessibilityTraitSearchField;
 
+    if (state.selected)
+        traits |= UIAccessibilityTraitSelected;
+
     const auto accessibleRole = iface->role();
     if (accessibleRole == QAccessible::Button) {
         traits |= UIAccessibilityTraitButton;
@@ -166,6 +169,14 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
             return textField.accessibilityTraits;
         }();
         traits |= defaultTextFieldTraits;
+    } else if (accessibleRole == QAccessible::Graphic) {
+        traits |= UIAccessibilityTraitImage;
+    } else if (accessibleRole == QAccessible::Heading) {
+        traits |= UIAccessibilityTraitHeader;
+    } else if (accessibleRole == QAccessible::Link) {
+        traits |= UIAccessibilityTraitLink;
+    } else if (accessibleRole == QAccessible::StaticText) {
+        traits |= UIAccessibilityTraitStaticText;
     }
 
     if (iface->valueInterface())
