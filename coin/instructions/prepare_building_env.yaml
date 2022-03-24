@@ -347,6 +347,9 @@ instructions:
       - type: AppendToEnvironmentVariable
         variableName: COMMON_CMAKE_ARGS
         variableValue: " -DWARNINGS_ARE_ERRORS=ON"
+      - type: AppendToEnvironmentVariable
+        variableName: COMMON_TARGET_CMAKE_ARGS
+        variableValue: " -DWARNINGS_ARE_ERRORS=ON"
     enable_if:
       condition: property
       property: features
