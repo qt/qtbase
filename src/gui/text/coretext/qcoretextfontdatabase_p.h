@@ -97,6 +97,10 @@ private:
     QHash<QString, QList<QCFType<CTFontDescriptorRef>>> m_systemFontDescriptors;
 
     bool m_hasPopulatedAliases;
+
+#if defined(Q_OS_MACOS)
+    QMacNotificationObserver m_fontSetObserver;
+#endif
 };
 
 // Split out into separate template class so that the compiler doesn't have

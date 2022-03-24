@@ -614,6 +614,18 @@ void QPlatformFontDatabase::registerAliasToFontFamily(const QString &familyName,
 }
 
 /*!
+    Inform the Qt font database that the platform's available fonts have changed.
+
+    This will result in invalidating the entire font database.
+
+    \since 6.4
+*/
+void QPlatformFontDatabase::handleAvailableFontsChanged()
+{
+    QFontDatabasePrivate::instance()->invalidate();
+}
+
+/*!
     Helper function that returns true if the font family has already been registered and populated.
 
     \since 5.14

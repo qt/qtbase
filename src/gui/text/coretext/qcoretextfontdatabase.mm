@@ -60,6 +60,8 @@
 #include <QtGui/private/qfontengine_ft_p.h>
 #endif
 
+#include <QtGui/qpa/qwindowsysteminterface.h>
+
 QT_BEGIN_NAMESPACE
 
 // this could become a list of all languages used for each writing
@@ -105,6 +107,12 @@ enum { LanguageCount = sizeof(languageForWritingSystem) / sizeof(const char *) }
 QCoreTextFontDatabase::QCoreTextFontDatabase()
     : m_hasPopulatedAliases(false)
 {
+#if defined(Q_OS_MACOS)
+    m_fontSetObserver = QMacNotificationObserver(nil, NSFontSetChangedNotification, [] {
+        qCDebug(lcQpaFonts) << "Fonts have changed";
+        handleAvailableFontsChanged();
+    });
+#endif
 }
 
 QCoreTextFontDatabase::~QCoreTextFontDatabase()
@@ -223,7 +231,12 @@ void QCoreTextFontDatabase::populateFamily(const QString &familyName)
 
 void QCoreTextFontDatabase::invalidate()
 {
+    qCDebug(lcQpaFonts) << "Invalidating font database";
     m_hasPopulatedAliases = false;
+
+    qDeleteAll(m_themeFonts);
+    m_themeFonts.clear();
+    QWindowSystemInterface::handleThemeChange<QWindowSystemInterface::SynchronousDelivery>(nullptr);
 }
 
 struct FontDescription {
