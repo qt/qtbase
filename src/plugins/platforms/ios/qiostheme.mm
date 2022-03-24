@@ -66,6 +66,12 @@ const char *QIOSTheme::name = "ios";
 QIOSTheme::QIOSTheme()
 {
     initializeSystemPalette();
+
+    m_contentSizeCategoryObserver = QMacNotificationObserver(nil,
+        UIContentSizeCategoryDidChangeNotification, [] {
+        qCDebug(lcQpaFonts) << "Contents size category changed to" << UIApplication.sharedApplication.preferredContentSizeCategory;
+        QPlatformFontDatabase::handleAvailableFontsChanged();
+    });
 }
 
 QIOSTheme::~QIOSTheme()

@@ -44,6 +44,8 @@
 #include <QtGui/QPalette>
 #include <qpa/qplatformtheme.h>
 
+#include <QtCore/private/qcore_mac_p.h>
+
 QT_BEGIN_NAMESPACE
 
 class QIOSTheme : public QPlatformTheme
@@ -71,6 +73,7 @@ public:
 
 private:
     static QPalette s_systemPalette;
+    QMacNotificationObserver m_contentSizeCategoryObserver;
 };
 
 QT_END_NAMESPACE
