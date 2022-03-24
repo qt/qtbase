@@ -42,11 +42,6 @@ Q_IMPORT_PLUGIN(Plugin2)
 class tst_QFactoryLoader : public QObject
 {
     Q_OBJECT
-
-#ifdef Q_OS_ANDROID
-    QSharedPointer<QTemporaryDir> directory;
-#endif
-
 public slots:
     void initTestCase();
 
@@ -58,17 +53,14 @@ static const char binFolderC[] = "bin";
 
 void tst_QFactoryLoader::initTestCase()
 {
-#ifdef Q_OS_ANDROID
-    directory = QEXTRACTTESTDATA("android_test_data");
-    QVERIFY(directory);
-    QVERIFY(directory->isValid());
-    QVERIFY2(QDir::setCurrent(directory->path()), qPrintable("Could not chdir to " + directory->path()));
-#endif
+    // On Android the plugins are bundled into APK's libs subdir
+#ifndef Q_OS_ANDROID
     const QString binFolder = QFINDTESTDATA(binFolderC);
     QVERIFY2(!binFolder.isEmpty(), "Unable to locate 'bin' folder");
 #if QT_CONFIG(library)
     QCoreApplication::setLibraryPaths(QStringList(QFileInfo(binFolder).absolutePath()));
 #endif
+#endif // Q_OS_ANDROID
 }
 
 void tst_QFactoryLoader::usingTwoFactoriesFromSameDir()
