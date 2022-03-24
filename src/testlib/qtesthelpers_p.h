@@ -103,6 +103,19 @@ static inline void setFrameless(QWidget *w)
              | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
     w->setWindowFlags(flags);
 }
+
+static inline void androidCompatibleShow(QWidget *widget)
+{
+    // On Android QWidget::show() shows the widget maximized, so if we need
+    // to move or resize the widget, we need to explicitly call
+    // QWidget::setVisible(true) instead, because that's what show() actually
+    // does on desktop platforms.
+#ifdef Q_OS_ANDROID
+    widget->setVisible(true);
+#else
+    widget->show();
+#endif
+}
 #endif // QT_WIDGETS_LIB
 
 } // namespace QTestPrivate
