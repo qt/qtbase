@@ -484,8 +484,9 @@ for this function. Will be ignored")
     # Prepend emulator to test command in generated cmake script instead. Keep in mind that
     # CROSSCOMPILING_EMULATOR don't check if actual cross compilation is configured,
     # emulator is prepended independently.
-    if(CMAKE_CROSSCOMPILING)
-        get_test_property(${arg_NAME} CROSSCOMPILING_EMULATOR crosscompiling_emulator)
+    set(crosscompiling_emulator "")
+    if(CMAKE_CROSSCOMPILING AND TARGET ${arg_NAME})
+        get_target_property(crosscompiling_emulator ${arg_NAME} CROSSCOMPILING_EMULATOR)
         if(NOT crosscompiling_emulator)
             set(crosscompiling_emulator "")
         else()
