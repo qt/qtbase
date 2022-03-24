@@ -65,10 +65,6 @@
         \li the order of initialization and destruction among different
         translation units is not determined, leading to possible uses before
         initialization or after destruction;
-
-        \li if it is found inside a function (that is, not global), it will be
-        initialized on first use, but many current compilers (as of 2013) do
-        not guarantee that the initialization will be thread-safe;
     \endlist
 
     The Q_GLOBAL_STATIC macro solves all of the above problems by guaranteeing
