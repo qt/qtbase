@@ -75,7 +75,7 @@ function(qt_configure_print_summary)
         if(NOT QT_INTERNAL_SUMMARY_INSTRUCTIONS_SHOWN)
             message("")
             message(
-                "-- Cconfiguration summary has been written to ${CMAKE_BINARY_DIR}/config.summary")
+                "-- Configuration summary has been written to ${CMAKE_BINARY_DIR}/config.summary")
             message(
                 "-- Configure with --log-level=STATUS or higher to increase the output verbosity.")
         endif()
