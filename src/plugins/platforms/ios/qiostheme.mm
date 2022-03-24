@@ -167,6 +167,19 @@ QVariant QIOSTheme::themeHint(ThemeHint hint) const
     }
 }
 
+QPlatformTheme::Appearance QIOSTheme::appearance() const
+{
+    if (@available(ios 12, *)) {
+        if (UIWindow *window = qt_apple_sharedApplication().keyWindow) {
+            return window.rootViewController.traitCollection.userInterfaceStyle
+                    == UIUserInterfaceStyleDark
+                    ? QPlatformTheme::Appearance::Dark
+                    : QPlatformTheme::Appearance::Light;
+        }
+    }
+    return QPlatformTheme::Appearance::Unknown;
+}
+
 const QFont *QIOSTheme::font(Font type) const
 {
     const auto *platformIntegration = QGuiApplicationPrivate::platformIntegration();

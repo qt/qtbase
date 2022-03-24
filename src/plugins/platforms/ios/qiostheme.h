@@ -55,6 +55,8 @@ public:
     const QPalette *palette(Palette type = SystemPalette) const override;
     QVariant themeHint(ThemeHint hint) const override;
 
+    Appearance appearance() const override;
+
     QPlatformMenuItem* createPlatformMenuItem() const override;
     QPlatformMenu* createPlatformMenu() const override;
 
