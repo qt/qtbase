@@ -91,8 +91,6 @@ private:
     void populateFromDescriptor(CTFontDescriptorRef font, const QString &familyName = QString(), QFontDatabasePrivate::ApplicationFont *applicationFont = nullptr);
     static CFArrayRef fallbacksForFamily(const QString &family);
 
-    mutable QString defaultFontName;
-
     QHash<QPlatformTheme::Font, QFont *> m_themeFonts;
     QHash<QString, QList<QCFType<CTFontDescriptorRef>>> m_systemFontDescriptors;
 

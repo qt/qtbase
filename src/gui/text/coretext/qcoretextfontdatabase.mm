@@ -850,12 +850,7 @@ QFont *QCoreTextFontDatabase::themeFont(QPlatformTheme::Font f) const
 
 QFont QCoreTextFontDatabase::defaultFont() const
 {
-    if (defaultFontName.isEmpty()) {
-        QCFType<CTFontDescriptorRef> systemFont = descriptorForFontType(kCTFontUIFontSystem);
-        defaultFontName = QCFString(CTFontDescriptorCopyAttribute(systemFont, kCTFontFamilyNameAttribute));
-    }
-
-    return QFont(defaultFontName);
+    return QFont(*themeFont(QPlatformTheme::SystemFont));
 }
 
 bool QCoreTextFontDatabase::fontsAlwaysScalable() const
