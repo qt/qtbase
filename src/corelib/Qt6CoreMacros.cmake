@@ -377,8 +377,10 @@ function(qt6_add_resources outfiles )
                                MAIN_DEPENDENCY ${infile}
                                DEPENDS ${_rc_depends} "${_out_depends}" ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
                                VERBATIM)
-            set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC ON)
-            set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOUIC ON)
+            set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC ON
+                                                              SKIP_AUTOUIC ON
+                                                              SKIP_UNITY_BUILD_INCLUSION ON
+                                                              )
             list(APPEND ${outfiles} ${outfile})
         endforeach()
         set(${outfiles} ${${outfiles}} PARENT_SCOPE)
@@ -2017,6 +2019,7 @@ function(_qt_internal_process_resource target resourceName)
         set_source_files_properties(${generatedOutfile} ${scope_args} PROPERTIES
             SKIP_AUTOGEN TRUE
             GENERATED TRUE
+            SKIP_UNITY_BUILD_INCLUSION TRUE
         )
         get_target_property(target_source_dir ${target} SOURCE_DIR)
         if(NOT target_source_dir STREQUAL CMAKE_CURRENT_SOURCE_DIR)
