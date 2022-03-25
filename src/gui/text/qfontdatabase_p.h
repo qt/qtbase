@@ -263,7 +263,6 @@ public:
 
     static QFontDatabasePrivate *instance();
 
-    static void createDatabase();
     static void parseFontName(const QString &name, QString &foundry, QString &family);
     static QString resolveFontFamilyAlias(const QString &family);
     static QFontEngine *findFont(const QFontDef &request,
