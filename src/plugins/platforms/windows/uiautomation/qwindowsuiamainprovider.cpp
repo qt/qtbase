@@ -206,12 +206,16 @@ void QWindowsUiaMainProvider::notifyValueChange(QAccessibleValueChangeEvent *eve
 void QWindowsUiaMainProvider::notifyNameChange(QAccessibleEvent *event)
 {
     if (QAccessibleInterface *accessible = event->accessibleInterface()) {
-        if (QWindowsUiaMainProvider *provider = providerForAccessible(accessible)) {
-            VARIANT oldVal, newVal;
-            clearVariant(&oldVal);
-            setVariantString(accessible->text(QAccessible::Name), &newVal);
-            QWindowsUiaWrapper::instance()->raiseAutomationPropertyChangedEvent(provider, UIA_NamePropertyId, oldVal, newVal);
-            ::SysFreeString(newVal.bstrVal);
+        // Restrict notification to combo boxes, which need it for accessibility,
+        // in order to avoid slowdowns with unnecessary notifications.
+        if (accessible->role() == QAccessible::ComboBox) {
+            if (QWindowsUiaMainProvider *provider = providerForAccessible(accessible)) {
+                VARIANT oldVal, newVal;
+                clearVariant(&oldVal);
+                setVariantString(accessible->text(QAccessible::Name), &newVal);
+                QWindowsUiaWrapper::instance()->raiseAutomationPropertyChangedEvent(provider, UIA_NamePropertyId, oldVal, newVal);
+                ::SysFreeString(newVal.bstrVal);
+            }
         }
     }
 }
