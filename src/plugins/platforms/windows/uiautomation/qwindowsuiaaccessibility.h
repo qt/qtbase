@@ -56,6 +56,8 @@ public:
     virtual ~QWindowsUiaAccessibility();
     static bool handleWmGetObject(HWND hwnd, WPARAM wParam, LPARAM lParam, LRESULT *lResult);
     void notifyAccessibilityUpdate(QAccessibleEvent *event) override;
+private:
+    static bool m_accessibleActive;
 };
 
 QT_END_NAMESPACE
