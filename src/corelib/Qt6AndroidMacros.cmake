@@ -935,6 +935,14 @@ function(_qt_internal_configure_android_multiabi_target target)
             "-DQT_ADDITIONAL_HOST_PACKAGES_PREFIX_PATH=${escaped_host_packages_prefix_path}")
     endif()
 
+    if(NOT ANDROID_SDK_ROOT STREQUAL "")
+        list(APPEND extra_cmake_args "-DANDROID_SDK_ROOT=${ANDROID_SDK_ROOT}")
+    endif()
+
+    if(NOT ANDROID_NDK_ROOT STREQUAL "")
+        list(APPEND extra_cmake_args "-DANDROID_NDK_ROOT=${ANDROID_NDK_ROOT}")
+    endif()
+
     set(missing_qt_abi_toolchains "")
     # Create external projects for each android ABI except the main one.
     list(REMOVE_ITEM android_abis "${CMAKE_ANDROID_ARCH_ABI}")
