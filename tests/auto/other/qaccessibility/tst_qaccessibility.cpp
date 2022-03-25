@@ -36,6 +36,7 @@
 # include <winuser.h>
 #endif
 #include <QTest>
+#include <QSignalSpy>
 #include <QtGui>
 #include <QtWidgets>
 #include <math.h>
@@ -4117,6 +4118,112 @@ void tst_QAccessibility::focusChild()
         QCOMPARE(iface->focusChild()->role(), QAccessible::PageTab);
 
         QTestAccessibility::clearEvents();
+    }
+
+    {
+        auto tableView = std::make_unique<QTableWidget>(3, 3);
+
+        QSignalSpy spy(tableView.get(), SIGNAL(currentCellChanged(int,int,int,int)));
+
+        tableView->setColumnCount(3);
+        QStringList hHeader;
+        hHeader << "h1" << "h2" << "h3";
+        tableView->setHorizontalHeaderLabels(hHeader);
+
+        QStringList vHeader;
+        vHeader << "v1" << "v2" << "v3";
+        tableView->setVerticalHeaderLabels(vHeader);
+
+        for (int i = 0; i < 9; ++i) {
+            QTableWidgetItem *item = new QTableWidgetItem;
+            item->setText(QString::number(i/3) + QString(".") + QString::number(i%3));
+            tableView->setItem(i/3, i%3, item);
+        }
+
+        tableView->resize(600, 600);
+        tableView->show();
+        QVERIFY(QTest::qWaitForWindowExposed(tableView.get()));
+
+        tableView->setFocus();
+
+        QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(tableView.get());
+        QVERIFY(iface);
+
+        spy.clear();
+        tableView->setCurrentCell(2, 1);
+        QTRY_COMPARE(spy.count(), 1);
+
+        QAccessibleInterface *child = iface->focusChild();
+        QVERIFY(child);
+        QCOMPARE(child->text(QAccessible::Name), QStringLiteral("2.1"));
+
+        spy.clear();
+        tableView->setCurrentCell(1, 2);
+        QTRY_COMPARE(spy.count(), 1);
+
+        child = iface->focusChild();
+        QVERIFY(child);
+        QCOMPARE(child->text(QAccessible::Name), QStringLiteral("1.2"));
+    }
+
+    {
+        auto treeView = std::make_unique<QTreeWidget>();
+
+        QSignalSpy spy(treeView.get(), SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)));
+
+        treeView->setColumnCount(2);
+        QTreeWidgetItem *header = new QTreeWidgetItem;
+        header->setText(0, "Artist");
+        header->setText(1, "Work");
+        treeView->setHeaderItem(header);
+
+        QTreeWidgetItem *root1 = new QTreeWidgetItem;
+        root1->setText(0, "Spain");
+        treeView->addTopLevelItem(root1);
+
+        QTreeWidgetItem *item1 = new QTreeWidgetItem;
+        item1->setText(0, "Picasso");
+        item1->setText(1, "Guernica");
+        root1->addChild(item1);
+
+        QTreeWidgetItem *item2 = new QTreeWidgetItem;
+        item2->setText(0, "Tapies");
+        item2->setText(1, "Ambrosia");
+        root1->addChild(item2);
+
+        QTreeWidgetItem *root2 = new QTreeWidgetItem;
+        root2->setText(0, "Austria");
+        treeView->addTopLevelItem(root2);
+
+        QTreeWidgetItem *item3 = new QTreeWidgetItem;
+        item3->setText(0, "Klimt");
+        item3->setText(1, "The Kiss");
+        root2->addChild(item3);
+
+        treeView->resize(400, 400);
+        treeView->show();
+        QVERIFY(QTest::qWaitForWindowExposed(treeView.get()));
+
+        treeView->setFocus();
+
+        QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(treeView.get());
+        QVERIFY(iface);
+
+        spy.clear();
+        treeView->setCurrentItem(item2);
+        QTRY_COMPARE(spy.count(), 1);
+
+        QAccessibleInterface *child = iface->focusChild();
+        QVERIFY(child);
+        QCOMPARE(child->text(QAccessible::Name), QStringLiteral("Tapies"));
+
+        spy.clear();
+        treeView->setCurrentItem(item3);
+        QTRY_COMPARE(spy.count(), 1);
+
+        child = iface->focusChild();
+        QVERIFY(child);
+        QCOMPARE(child->text(QAccessible::Name), QStringLiteral("Klimt"));
     }
 }
 
