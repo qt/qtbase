@@ -1686,29 +1686,28 @@ bool QConfFileSettingsPrivate::readIniSection(const QSettingsKey &section, QByte
     qsizetype position = section.originalKeyPosition();
 
     while (readIniLine(data, dataPos, lineStart, lineLen, equalsPos)) {
-        char ch = data.at(lineStart);
-        Q_ASSERT(ch != '[');
+        QByteArrayView line = data.sliced(lineStart, lineLen);
+        Q_ASSERT(!line.startsWith('['));
 
         if (equalsPos == -1) {
-            if (ch != ';')
+            if (!line.startsWith(';'))
                 ok = false;
             continue;
         }
+        // Shift equalPos indexing to be within line, rather than data:
+        equalsPos -= lineStart;
+        // Assured by readIniLine:
+        Q_ASSERT(equalsPos >= 0 && equalsPos < lineLen);
 
-        qsizetype keyEnd = equalsPos;
-        while (keyEnd > lineStart && ((ch = data.at(keyEnd - 1)) == ' ' || ch == '\t'))
-            --keyEnd;
-        qsizetype valueStart = equalsPos + 1;
+        QByteArrayView key = line.first(equalsPos).trimmed();
+        QByteArrayView value = line.sliced(equalsPos + 1);
 
-        QString key = section.originalCaseKey();
-        bool keyIsLowercase
-            = iniUnescapedKey(data.first(keyEnd).sliced(lineStart), key) && sectionIsLowercase;
+        QString strKey = section.originalCaseKey();
+        bool keyIsLowercase = iniUnescapedKey(key, strKey) && sectionIsLowercase;
 
         QString strValue;
-        strValue.reserve(lineLen - (valueStart - lineStart));
-        bool isStringList
-            = iniUnescapedStringList(data.first(lineStart + lineLen).sliced(valueStart),
-                                     strValue, strListValue);
+        strValue.reserve(value.size());
+        bool isStringList = iniUnescapedStringList(value, strValue, strListValue);
         QVariant variant;
         if (isStringList) {
             variant = stringListToVariantList(strListValue);
@@ -1721,8 +1720,8 @@ bool QConfFileSettingsPrivate::readIniSection(const QSettingsKey &section, QByte
             QSettingsKey by passing Qt::CaseSensitive when the
             key is already in lowercase.
         */
-        settingsMap->insert(QSettingsKey(key, keyIsLowercase ? Qt::CaseSensitive
-                                                             : IniCaseSensitivity,
+        settingsMap->insert(QSettingsKey(strKey, keyIsLowercase ? Qt::CaseSensitive
+                                                                : IniCaseSensitivity,
                                          position),
                             variant);
         ++position;
