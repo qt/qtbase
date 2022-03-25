@@ -2141,9 +2141,6 @@ void QFontDatabasePrivate::parseFontName(const QString &name, QString &foundry, 
     QT_PREPEND_NAMESPACE(parseFontName)(name, foundry, family);
 }
 
-void QFontDatabasePrivate::createDatabase()
-{ initializeDb(); }
-
 // used from qfontengine_ft.cpp
 Q_GUI_EXPORT QByteArray qt_fontdata_from_index(int index)
 {
