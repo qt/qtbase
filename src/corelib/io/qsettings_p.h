@@ -80,11 +80,11 @@ static const Qt::CaseSensitivity IniCaseSensitivity = Qt::CaseSensitive;
 class QSettingsKey : public QString
 {
 public:
-    inline QSettingsKey(const QString &key, Qt::CaseSensitivity cs, int /* position */ = -1)
+    inline QSettingsKey(const QString &key, Qt::CaseSensitivity cs, qsizetype /* position */ = -1)
         : QString(key) { Q_ASSERT(cs == Qt::CaseSensitive); Q_UNUSED(cs); }
 
     inline QString originalCaseKey() const { return *this; }
-    inline int originalKeyPosition() const { return -1; }
+    inline qsizetype originalKeyPosition() const { return -1; }
 };
 #else
 static const Qt::CaseSensitivity IniCaseSensitivity = Qt::CaseInsensitive;
@@ -92,7 +92,7 @@ static const Qt::CaseSensitivity IniCaseSensitivity = Qt::CaseInsensitive;
 class QSettingsKey : public QString
 {
 public:
-    inline QSettingsKey(const QString &key, Qt::CaseSensitivity cs, int position = -1)
+    inline QSettingsKey(const QString &key, Qt::CaseSensitivity cs, qsizetype position = -1)
         : QString(key), theOriginalKey(key), theOriginalKeyPosition(position)
     {
         if (cs == Qt::CaseInsensitive)
@@ -100,11 +100,11 @@ public:
     }
 
     inline QString originalCaseKey() const { return theOriginalKey; }
-    inline int originalKeyPosition() const { return theOriginalKeyPosition; }
+    inline qsizetype originalKeyPosition() const { return theOriginalKeyPosition; }
 
 private:
     QString theOriginalKey;
-    int theOriginalKeyPosition;
+    qsizetype theOriginalKeyPosition;
 };
 #endif
 
@@ -126,13 +126,13 @@ public:
     inline QString name() const { return str; }
     inline QString toString() const;
     inline bool isArray() const { return num != -1; }
-    inline int arraySizeGuess() const { return maxNum; }
-    inline void setArrayIndex(int i)
+    inline qsizetype arraySizeGuess() const { return maxNum; }
+    inline void setArrayIndex(qsizetype i)
     { num = i + 1; if (maxNum != -1 && num > maxNum) maxNum = num; }
 
     QString str;
-    int num;
-    int maxNum;
+    qsizetype num;
+    qsizetype maxNum;
 };
 Q_DECLARE_TYPEINFO(QSettingsGroup, Q_RELOCATABLE_TYPE);
 
@@ -236,7 +236,7 @@ public:
     static void iniEscapedStringList(const QStringList &strs, QByteArray &result);
     static bool iniUnescapedStringList(QByteArrayView str, QString &stringResult,
                                        QStringList &stringListResult);
-    static QStringList splitArgs(const QString &s, int idx);
+    static QStringList splitArgs(const QString &s, qsizetype idx);
 
     QSettings::Format format;
     QSettings::Scope scope;
@@ -279,8 +279,9 @@ public:
     bool readIniFile(QByteArrayView data, UnparsedSettingsMap *unparsedIniSections);
     static bool readIniSection(const QSettingsKey &section, QByteArrayView data,
                                ParsedSettingsMap *settingsMap);
-    static bool readIniLine(QByteArrayView data, int &dataPos, int &lineStart, int &lineLen,
-                            int &equalsPos);
+    static bool readIniLine(QByteArrayView data, qsizetype &dataPos,
+                            qsizetype &lineStart, qsizetype &lineLen,
+                            qsizetype &equalsPos);
 
 private:
     void initFormat();
@@ -299,7 +300,7 @@ private:
     QSettings::WriteFunc writeFunc;
     QString extension;
     Qt::CaseSensitivity caseSensitivity;
-    int nextPosition;
+    qsizetype nextPosition;
 #ifdef Q_OS_WASM
     friend class QWasmSettingsPrivate;
 #endif

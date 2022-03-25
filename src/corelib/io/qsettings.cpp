@@ -325,7 +325,7 @@ QSettingsPrivate *QSettingsPrivate::create(const QString &fileName, QSettings::F
 void QSettingsPrivate::processChild(QStringView key, ChildSpec spec, QStringList &result)
 {
     if (spec != AllKeys) {
-        int slashPos = key.indexOf(u'/');
+        qsizetype slashPos = key.indexOf(u'/');
         if (slashPos == -1) {
             if (spec != ChildKeys)
                 return;
@@ -389,7 +389,7 @@ QStringList QSettingsPrivate::variantListToStringList(const QVariantList &l)
 QVariant QSettingsPrivate::stringListToVariantList(const QStringList &l)
 {
     QStringList outStringList = l;
-    for (int i = 0; i < outStringList.count(); ++i) {
+    for (qsizetype i = 0; i < outStringList.size(); ++i) {
         const QString &str = outStringList.at(i);
 
         if (str.startsWith(u'@')) {
@@ -549,7 +549,7 @@ QVariant QSettingsPrivate::stringToVariant(const QString &s)
 void QSettingsPrivate::iniEscapedKey(const QString &key, QByteArray &result)
 {
     result.reserve(result.length() + key.length() * 3 / 2);
-    for (int i = 0; i < key.size(); ++i) {
+    for (qsizetype i = 0; i < key.size(); ++i) {
         uint ch = key.at(i).unicode();
 
         if (ch == '/') {
@@ -564,7 +564,7 @@ void QSettingsPrivate::iniEscapedKey(const QString &key, QByteArray &result)
         } else {
             result += "%U";
             QByteArray hexCode;
-            for (int i = 0; i < 4; ++i) {
+            for (int j = 0; j < 4; ++j) {
                 hexCode.prepend(QtMiscUtils::toHexUpper(ch % 16));
                 ch >>= 4;
             }
@@ -637,8 +637,8 @@ void QSettingsPrivate::iniEscapedString(const QString &str, QByteArray &result)
     bool useCodec = !str.startsWith("@ByteArray("_L1)
                     && !str.startsWith("@Variant("_L1);
 
-    int i;
-    int startPos = result.size();
+    qsizetype i;
+    qsizetype startPos = result.size();
 
     QStringEncoder toUtf8(QStringEncoder::Utf8);
 
@@ -711,9 +711,9 @@ void QSettingsPrivate::iniEscapedString(const QString &str, QByteArray &result)
     }
 }
 
-inline static void iniChopTrailingSpaces(QString &str, int limit)
+inline static void iniChopTrailingSpaces(QString &str, qsizetype limit)
 {
-    int n = str.size() - 1;
+    qsizetype n = str.size() - 1;
     QChar ch;
     while (n >= limit && ((ch = str.at(n)) == u' ' || ch == u'\t'))
         str.truncate(n--);
@@ -732,7 +732,7 @@ void QSettingsPrivate::iniEscapedStringList(const QStringList &strs, QByteArray 
         */
         result += "@Invalid()";
     } else {
-        for (int i = 0; i < strs.size(); ++i) {
+        for (qsizetype i = 0; i < strs.size(); ++i) {
             if (i != 0)
                 result += ", ";
             iniEscapedString(strs.at(i), result);
@@ -762,7 +762,7 @@ bool QSettingsPrivate::iniUnescapedStringList(QByteArrayView str,
     bool inQuotedString = false;
     bool currentValueIsQuoted = false;
     char16_t escapeVal = 0;
-    int i = 0;
+    qsizetype i = 0;
     char ch;
     QStringDecoder fromUtf8(QStringDecoder::Utf8);
 
@@ -772,7 +772,7 @@ StSkipSpaces:
     // fallthrough
 
 StNormal:
-    int chopLimit = stringResult.length();
+    qsizetype chopLimit = stringResult.length();
     while (i < str.size()) {
         switch (str.at(i)) {
         case '\\':
@@ -836,7 +836,7 @@ StNormal:
             }
             Q_FALLTHROUGH();
         default: {
-            int j = i + 1;
+            qsizetype j = i + 1;
             while (j < str.size()) {
                 ch = str.at(j);
                 if (ch == '\\' || ch == '"' || ch == ',')
@@ -895,9 +895,9 @@ end:
     return isStringList;
 }
 
-QStringList QSettingsPrivate::splitArgs(const QString &s, int idx)
+QStringList QSettingsPrivate::splitArgs(const QString &s, qsizetype idx)
 {
-    int l = s.length();
+    qsizetype l = s.length();
     Q_ASSERT(l > 0);
     Q_ASSERT(s.at(idx) == u'(');
     Q_ASSERT(s.at(l - 1) == u')');
@@ -939,7 +939,7 @@ void QConfFileSettingsPrivate::initFormat()
         const auto locker = qt_scoped_lock(settingsGlobalMutex);
         const CustomFormatVector *customFormatVector = customFormatVectorFunc();
 
-        int i = (int)format - (int)QSettings::CustomFormat1;
+        qsizetype i = qsizetype(format) - qsizetype(QSettings::CustomFormat1);
         if (i >= 0 && i < customFormatVector->size()) {
             QConfFileCustomFormat info = customFormatVector->at(i);
             extension = info.extension;
@@ -1058,8 +1058,8 @@ static std::unique_lock<QBasicMutex> initDefaultPaths(std::unique_lock<QBasicMut
 
 static Path getPath(QSettings::Format format, QSettings::Scope scope)
 {
-    Q_ASSERT((int)QSettings::NativeFormat == 0);
-    Q_ASSERT((int)QSettings::IniFormat == 1);
+    Q_ASSERT(int(QSettings::NativeFormat) == 0);
+    Q_ASSERT(int(QSettings::IniFormat) == 1);
 
     auto locker = qt_unique_lock(settingsGlobalMutex);
     PathHash *pathHash = pathHashFunc();
@@ -1266,7 +1266,7 @@ QStringList QConfFileSettingsPrivate::children(const QString &prefix, ChildSpec 
     ParsedSettingsMap::const_iterator j;
 
     QSettingsKey thePrefix(prefix, caseSensitivity);
-    int startPos = prefix.size();
+    qsizetype startPos = prefix.size();
 
     for (auto confFile : qAsConst(confFiles)) {
         const auto locker = qt_scoped_lock(confFile->mutex);
@@ -1535,10 +1535,11 @@ static const char charTraits[256] =
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-bool QConfFileSettingsPrivate::readIniLine(QByteArrayView data, int &dataPos,
-                                           int &lineStart, int &lineLen, int &equalsPos)
+bool QConfFileSettingsPrivate::readIniLine(QByteArrayView data, qsizetype &dataPos,
+                                           qsizetype &lineStart, qsizetype &lineLen,
+                                           qsizetype &equalsPos)
 {
-    int dataLen = data.length();
+    qsizetype dataLen = data.length();
     bool inQuotes = false;
 
     equalsPos = -1;
@@ -1547,7 +1548,7 @@ bool QConfFileSettingsPrivate::readIniLine(QByteArrayView data, int &dataPos,
     while (lineStart < dataLen && (charTraits[uint(uchar(data.at(lineStart)))] & Space))
         ++lineStart;
 
-    int i = lineStart;
+    qsizetype i = lineStart;
     while (i < dataLen) {
         char ch = data.at(i);
         while (!(charTraits[uchar(ch)] & Special)) {
@@ -1621,13 +1622,13 @@ bool QConfFileSettingsPrivate::readIniFile(QByteArrayView data,
     }
 
     QString currentSection;
-    int currentSectionStart = 0;
-    int dataPos = 0;
-    int lineStart;
-    int lineLen;
-    int equalsPos;
-    int position = 0;
-    int sectionPosition = 0;
+    qsizetype currentSectionStart = 0;
+    qsizetype dataPos = 0;
+    qsizetype lineStart;
+    qsizetype lineLen;
+    qsizetype equalsPos;
+    qsizetype position = 0;
+    qsizetype sectionPosition = 0;
     bool ok = true;
 
     // skip potential utf8 BOM
@@ -1642,7 +1643,7 @@ bool QConfFileSettingsPrivate::readIniFile(QByteArrayView data,
 
             // this is a section
             QByteArrayView iniSection;
-            int idx = data.indexOf(']', lineStart);
+            qsizetype idx = data.indexOf(']', lineStart);
             if (idx == -1 || idx >= lineStart + lineLen) {
                 ok = false;
                 iniSection = data.sliced(lineStart + 1, lineLen - 1);
@@ -1681,13 +1682,13 @@ bool QConfFileSettingsPrivate::readIniSection(const QSettingsKey &section, QByte
 {
     QStringList strListValue;
     bool sectionIsLowercase = (section == section.originalCaseKey());
-    int equalsPos;
+    qsizetype equalsPos;
 
     bool ok = true;
-    int dataPos = 0;
-    int lineStart;
-    int lineLen;
-    int position = section.originalKeyPosition();
+    qsizetype dataPos = 0;
+    qsizetype lineStart;
+    qsizetype lineLen;
+    qsizetype position = section.originalKeyPosition();
 
     while (readIniLine(data, dataPos, lineStart, lineLen, equalsPos)) {
         char ch = data.at(lineStart);
@@ -1699,10 +1700,10 @@ bool QConfFileSettingsPrivate::readIniSection(const QSettingsKey &section, QByte
             continue;
         }
 
-        int keyEnd = equalsPos;
+        qsizetype keyEnd = equalsPos;
         while (keyEnd > lineStart && ((ch = data.at(keyEnd - 1)) == ' ' || ch == '\t'))
             --keyEnd;
-        int valueStart = equalsPos + 1;
+        qsizetype valueStart = equalsPos + 1;
 
         QString key = section.originalCaseKey();
         bool keyIsLowercase
@@ -1739,9 +1740,9 @@ class QSettingsIniKey : public QString
 {
 public:
     inline QSettingsIniKey() : position(-1) {}
-    inline QSettingsIniKey(const QString &str, int pos = -1) : QString(str), position(pos) {}
+    inline QSettingsIniKey(const QString &str, qsizetype pos = -1) : QString(str), position(pos) {}
 
-    int position;
+    qsizetype position;
 };
 Q_DECLARE_TYPEINFO(QSettingsIniKey, Q_RELOCATABLE_TYPE);
 
@@ -1756,7 +1757,7 @@ typedef QMap<QSettingsIniKey, QVariant> IniKeyMap;
 
 struct QSettingsIniSection
 {
-    int position;
+    qsizetype position;
     IniKeyMap keyMap;
 
     inline QSettingsIniSection() : position(-1) {}
@@ -1784,7 +1785,7 @@ bool QConfFileSettingsPrivate::writeIniFile(QIODevice &device, const ParsedSetti
     for (ParsedSettingsMap::const_iterator j = map.constBegin(); j != map.constEnd(); ++j) {
         QString section;
         QSettingsIniKey key(j.key().originalCaseKey(), j.key().originalKeyPosition());
-        int slashPos;
+        qsizetype slashPos;
 
         if ((slashPos = key.indexOf(u'/')) != -1) {
             section = key.left(slashPos);
@@ -1794,12 +1795,12 @@ bool QConfFileSettingsPrivate::writeIniFile(QIODevice &device, const ParsedSetti
         QSettingsIniSection &iniSection = iniMap[section];
 
         // -1 means infinity
-        if (uint(key.position) < uint(iniSection.position))
+        if (size_t(key.position) < size_t(iniSection.position))
             iniSection.position = key.position;
         iniSection.keyMap[key] = j.value();
     }
 
-    const int sectionCount = iniMap.size();
+    const qsizetype sectionCount = iniMap.size();
     QList<QSettingsIniKey> sections;
     sections.reserve(sectionCount);
     for (i = iniMap.constBegin(); i != iniMap.constEnd(); ++i)
@@ -1807,7 +1808,7 @@ bool QConfFileSettingsPrivate::writeIniFile(QIODevice &device, const ParsedSetti
     std::sort(sections.begin(), sections.end());
 
     bool writeError = false;
-    for (int j = 0; !writeError && j < sectionCount; ++j) {
+    for (qsizetype j = 0; !writeError && j < sectionCount; ++j) {
         i = iniMap.constFind(sections.at(j));
         Q_ASSERT(i != iniMap.constEnd());
 
@@ -1879,7 +1880,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
 
     UnparsedSettingsMap::iterator i;
 
-    int indexOfSlash = key.indexOf(u'/');
+    qsizetype indexOfSlash = key.indexOf(u'/');
     if (indexOfSlash != -1) {
         i = confFile->unparsedIniSections.upperBound(key);
         if (i == confFile->unparsedIniSections.begin())
@@ -2946,7 +2947,7 @@ void QSettings::endGroup()
     }
 
     QSettingsGroup group = d->groupStack.pop();
-    int len = group.toString().size();
+    qsizetype len = group.toString().size();
     if (len > 0)
         d->groupPrefix.truncate(d->groupPrefix.size() - (len + 1));
 
@@ -3045,7 +3046,7 @@ void QSettings::endArray()
     }
 
     QSettingsGroup group = d->groupStack.top();
-    int len = group.toString().size();
+    qsizetype len = group.toString().size();
     d->groupStack.pop();
     if (len > 0)
         d->groupPrefix.truncate(d->groupPrefix.size() - (len + 1));
@@ -3074,7 +3075,7 @@ void QSettings::setArrayIndex(int i)
     }
 
     QSettingsGroup &top = d->groupStack.top();
-    int len = top.toString().size();
+    qsizetype len = top.toString().size();
     top.setArrayIndex(qMax(i, 0));
     d->groupPrefix.replace(d->groupPrefix.size() - len - 1, len, top.toString());
 }
@@ -3507,7 +3508,7 @@ QSettings::Format QSettings::registerFormat(const QString &extension, ReadFunc r
 
     const auto locker = qt_scoped_lock(settingsGlobalMutex);
     CustomFormatVector *customFormatVector = customFormatVectorFunc();
-    int index = customFormatVector->size();
+    qsizetype index = customFormatVector->size();
     if (index == 16) // the QSettings::Format enum has room for 16 custom formats
         return QSettings::InvalidFormat;
 
@@ -3518,7 +3519,7 @@ QSettings::Format QSettings::registerFormat(const QString &extension, ReadFunc r
     info.caseSensitivity = caseSensitivity;
     customFormatVector->append(info);
 
-    return QSettings::Format((int)QSettings::CustomFormat1 + index);
+    return QSettings::Format(int(QSettings::CustomFormat1) + index);
 }
 
 QT_END_NAMESPACE
