@@ -896,8 +896,15 @@ unset(CMAKE_INSTALL_PREFIX)
 
     # Override the install prefix in the subdir cmake_install.cmake, so that
     # relative install(TARGETS DESTINATION) calls in example projects install where we tell them to.
-    set(CMAKE_INSTALL_PREFIX
-        "${CMAKE_INSTALL_PREFIX}/${INSTALL_EXAMPLESDIR}/${example_rel_path}")
+    # Allow customizing the installation path of the examples. Will be used in CI.
+    if(QT_INTERNAL_EXAMPLES_INSTALL_PREFIX)
+        set(qt_example_install_prefix "${QT_INTERNAL_EXAMPLES_INSTALL_PREFIX}")
+    else()
+        set(qt_example_install_prefix "${CMAKE_INSTALL_PREFIX}/${INSTALL_EXAMPLESDIR}")
+    endif()
+    file(TO_CMAKE_PATH "${qt_example_install_prefix}" qt_example_install_prefix)
+
+    set(CMAKE_INSTALL_PREFIX "${qt_example_install_prefix}/${example_rel_path}")
 
     # Make sure unclean example projects have their INSTALL_EXAMPLEDIR set to "."
     # Won't have any effect on example projects that don't use INSTALL_EXAMPLEDIR.
