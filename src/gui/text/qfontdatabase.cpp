@@ -717,8 +717,7 @@ QStringList qt_fallbacksForFamily(const QString &family, QFont::Style style, QFo
 
 static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt);
 
-static
-QFontEngine *loadSingleEngine(int script,
+QFontEngine *QFontDatabasePrivate::loadSingleEngine(int script,
                               const QFontDef &request,
                               QtFontFamily *family, QtFontFoundry *foundry,
                               QtFontStyle *style, QtFontSize *size)
@@ -798,8 +797,7 @@ QFontEngine *loadSingleEngine(int script,
     return engine;
 }
 
-static
-QFontEngine *loadEngine(int script, const QFontDef &request,
+QFontEngine *QFontDatabasePrivate::loadEngine(int script, const QFontDef &request,
                         QtFontFamily *family, QtFontFoundry *foundry,
                         QtFontStyle *style, QtFontSize *size)
 {
@@ -890,11 +888,10 @@ static QtFontStyle *bestStyle(QtFontFoundry *foundry, const QtFontStyle::Key &st
 }
 
 
-static
-unsigned int bestFoundry(int script, unsigned int score, int styleStrategy,
+unsigned int QFontDatabasePrivate::bestFoundry(int script, unsigned int score, int styleStrategy,
                          const QtFontFamily *family, const QString &foundry_name,
                          QtFontStyle::Key styleKey, int pixelSize, char pitch,
-                         QtFontDesc *desc, const QString &styleName = QString())
+                         QtFontDesc *desc, const QString &styleName)
 {
     Q_UNUSED(script);
     Q_UNUSED(pitch);
@@ -1037,13 +1034,9 @@ static bool matchFamilyName(const QString &familyName, QtFontFamily *f)
 
     Tries to find the best match for a given request and family/foundry
 */
-static int match(int script,
-                 const QFontDef &request,
-                 const QString &family_name,
-                 const QString &foundry_name,
-                 QtFontDesc *desc,
-                 const QList<int> &blacklistedFamilies,
-                 unsigned int *resultingScore = nullptr)
+int QFontDatabasePrivate::match(int script, const QFontDef &request, const QString &family_name,
+                     const QString &foundry_name, QtFontDesc *desc, const QList<int> &blacklistedFamilies,
+                     unsigned int *resultingScore)
 {
     int result = -1;
 
@@ -1055,7 +1048,7 @@ static int match(int script,
     char pitch = request.ignorePitch ? '*' : request.fixedPitch ? 'm' : 'p';
 
 
-    qCDebug(lcFontMatch, "QFontDatabase::match\n"
+    qCDebug(lcFontMatch, "QFontDatabasePrivate::match\n"
              "  request:\n"
              "    family: %s [%s], script: %d\n"
              "    styleName: %s\n"

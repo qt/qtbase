@@ -58,6 +58,8 @@
 
 QT_BEGIN_NAMESPACE
 
+struct QtFontDesc;
+
 struct QtFontFallbacksCacheKey
 {
     QString family;
@@ -267,6 +269,25 @@ public:
     static QFontDatabasePrivate *ensureFontDatabase();
 
     void invalidate();
+
+private:
+    static int match(int script, const QFontDef &request, const QString &family_name,
+                     const QString &foundry_name, QtFontDesc *desc, const QList<int> &blacklistedFamilies,
+                     unsigned int *resultingScore = nullptr);
+
+    static unsigned int bestFoundry(int script, unsigned int score, int styleStrategy,
+                            const QtFontFamily *family, const QString &foundry_name,
+                            QtFontStyle::Key styleKey, int pixelSize, char pitch,
+                            QtFontDesc *desc, const QString &styleName = QString());
+
+    static QFontEngine *loadSingleEngine(int script, const QFontDef &request,
+                            QtFontFamily *family, QtFontFoundry *foundry,
+                            QtFontStyle *style, QtFontSize *size);
+
+    static QFontEngine *loadEngine(int script, const QFontDef &request,
+                            QtFontFamily *family, QtFontFoundry *foundry,
+                            QtFontStyle *style, QtFontSize *size);
+
 };
 Q_DECLARE_TYPEINFO(QFontDatabasePrivate::ApplicationFont, Q_RELOCATABLE_TYPE);
 
