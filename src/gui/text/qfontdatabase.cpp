@@ -715,8 +715,6 @@ QStringList qt_fallbacksForFamily(const QString &family, QFont::Style style, QFo
     return fallbacksForFamily(family, style, styleHint, script);
 }
 
-static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt);
-
 QFontEngine *QFontDatabasePrivate::loadSingleEngine(int script,
                               const QFontDef &request,
                               QtFontFamily *family, QtFontFoundry *foundry,
@@ -841,11 +839,6 @@ QtFontStyle::~QtFontStyle()
    }
 
    free(pixelSizes);
-}
-
-static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
-{
-    QGuiApplicationPrivate::platformIntegration()->fontDatabase()->addApplicationFont(fnt->data, fnt->fileName, fnt);
 }
 
 static QtFontStyle *bestStyle(QtFontFoundry *foundry, const QtFontStyle::Key &styleKey,
@@ -1300,10 +1293,13 @@ QFontDatabasePrivate *QFontDatabasePrivate::ensureFontDatabase()
         if (Q_UNLIKELY(qGuiApp == nullptr || QGuiApplicationPrivate::platformIntegration() == nullptr))
             qFatal("QFontDatabase: Must construct a QGuiApplication before accessing QFontDatabase");
 
-        QGuiApplicationPrivate::platformIntegration()->fontDatabase()->populateFontDatabase();
+        auto *platformFontDatabase = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
+        platformFontDatabase->populateFontDatabase();
         for (int i = 0; i < d->applicationFonts.count(); i++) {
-            if (!d->applicationFonts.at(i).properties.isEmpty())
-                registerFont(&d->applicationFonts[i]);
+            if (!d->applicationFonts.at(i).properties.isEmpty()) {
+                auto *font = &d->applicationFonts[i];
+                platformFontDatabase->addApplicationFont(font->data, font->fileName, font);
+            }
         }
     }
     return d;
@@ -2122,7 +2118,9 @@ int QFontDatabasePrivate::addAppFont(const QByteArray &fontData, const QString &
         font.fileName = QLatin1String(":qmemoryfonts/") + QString::number(i);
 
     bool wasEmpty = QFontDatabasePrivate::instance()->count == 0;
-    registerFont(&font);
+
+    auto *platformFontDatabase = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
+    platformFontDatabase->addApplicationFont(font.data, font.fileName, &font);
     if (font.properties.isEmpty())
         return -1;
 
