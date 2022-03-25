@@ -151,11 +151,10 @@ QConfFile::~QConfFile()
 ParsedSettingsMap QConfFile::mergedKeyMap() const
 {
     ParsedSettingsMap result = originalKeys;
-    ParsedSettingsMap::const_iterator i;
 
-    for (i = removedKeys.begin(); i != removedKeys.end(); ++i)
+    for (auto i = removedKeys.begin(); i != removedKeys.end(); ++i)
         result.remove(i.key());
-    for (i = addedKeys.begin(); i != addedKeys.end(); ++i)
+    for (auto i = addedKeys.begin(); i != addedKeys.end(); ++i)
         result.insert(i.key(), i.value());
     return result;
 }
@@ -380,9 +379,8 @@ QStringList QSettingsPrivate::variantListToStringList(const QVariantList &l)
 {
     QStringList result;
     result.reserve(l.count());
-    QVariantList::const_iterator it = l.constBegin();
-    for (; it != l.constEnd(); ++it)
-        result.append(variantToString(*it));
+    for (auto v : l)
+        result.append(variantToString(v));
     return result;
 }
 
@@ -1204,12 +1202,12 @@ void QConfFileSettingsPrivate::remove(const QString &key)
     ensureSectionParsed(confFile, theKey);
     ensureSectionParsed(confFile, prefix);
 
-    ParsedSettingsMap::iterator i = confFile->addedKeys.lowerBound(prefix);
+    auto i = confFile->addedKeys.lowerBound(prefix);
     while (i != confFile->addedKeys.end() && i.key().startsWith(prefix))
         i = confFile->addedKeys.erase(i);
     confFile->addedKeys.remove(theKey);
 
-    ParsedSettingsMap::const_iterator j = const_cast<const ParsedSettingsMap *>(&confFile->originalKeys)->lowerBound(prefix);
+    auto j = const_cast<const ParsedSettingsMap *>(&confFile->originalKeys)->lowerBound(prefix);
     while (j != confFile->originalKeys.constEnd() && j.key().startsWith(prefix)) {
         confFile->removedKeys.insert(j.key(), QVariant());
         ++j;
@@ -1263,7 +1261,6 @@ std::optional<QVariant> QConfFileSettingsPrivate::get(const QString &key) const
 QStringList QConfFileSettingsPrivate::children(const QString &prefix, ChildSpec spec) const
 {
     QStringList result;
-    ParsedSettingsMap::const_iterator j;
 
     QSettingsKey thePrefix(prefix, caseSensitivity);
     qsizetype startPos = prefix.size();
@@ -1276,7 +1273,7 @@ QStringList QConfFileSettingsPrivate::children(const QString &prefix, ChildSpec 
         else
             ensureSectionParsed(confFile, thePrefix);
 
-        j = const_cast<const ParsedSettingsMap *>(
+        auto j = const_cast<const ParsedSettingsMap *>(
                 &confFile->originalKeys)->lowerBound( thePrefix);
         while (j != confFile->originalKeys.constEnd() && j.key().startsWith(thePrefix)) {
             if (!confFile->removedKeys.contains(j.key()))
@@ -1426,7 +1423,7 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
                 ok = readFunc(file, tempNewKeys);
 
                 if (ok) {
-                    QSettings::SettingsMap::const_iterator i = tempNewKeys.constBegin();
+                    auto i = tempNewKeys.constBegin();
                     while (i != tempNewKeys.constEnd()) {
                         confFile->originalKeys.insert(QSettingsKey(i.key(), caseSensitivity),
                                                       i.value());
@@ -1473,7 +1470,7 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
         } else if (writeFunc) {
             QSettings::SettingsMap tempOriginalKeys;
 
-            ParsedSettingsMap::const_iterator i = mergedKeys.constBegin();
+            auto i = mergedKeys.constBegin();
             while (i != mergedKeys.constEnd()) {
                 tempOriginalKeys.insert(i.key(), i.value());
                 ++i;
@@ -1774,7 +1771,6 @@ typedef QMap<QString, QSettingsIniSection> IniMap;
 bool QConfFileSettingsPrivate::writeIniFile(QIODevice &device, const ParsedSettingsMap &map)
 {
     IniMap iniMap;
-    IniMap::const_iterator i;
 
 #ifdef Q_OS_WIN
     const char * const eol = "\r\n";
@@ -1782,7 +1778,7 @@ bool QConfFileSettingsPrivate::writeIniFile(QIODevice &device, const ParsedSetti
     const char eol = '\n';
 #endif
 
-    for (ParsedSettingsMap::const_iterator j = map.constBegin(); j != map.constEnd(); ++j) {
+    for (auto j = map.constBegin(); j != map.constEnd(); ++j) {
         QString section;
         QSettingsIniKey key(j.key().originalCaseKey(), j.key().originalKeyPosition());
         qsizetype slashPos;
@@ -1803,13 +1799,13 @@ bool QConfFileSettingsPrivate::writeIniFile(QIODevice &device, const ParsedSetti
     const qsizetype sectionCount = iniMap.size();
     QList<QSettingsIniKey> sections;
     sections.reserve(sectionCount);
-    for (i = iniMap.constBegin(); i != iniMap.constEnd(); ++i)
+    for (auto i = iniMap.constBegin(); i != iniMap.constEnd(); ++i)
         sections.append(QSettingsIniKey(i.key(), i.value().position));
     std::sort(sections.begin(), sections.end());
 
     bool writeError = false;
     for (qsizetype j = 0; !writeError && j < sectionCount; ++j) {
-        i = iniMap.constFind(sections.at(j));
+        auto i = iniMap.constFind(sections.at(j));
         Q_ASSERT(i != iniMap.constEnd());
 
         QByteArray realSection;
@@ -1832,7 +1828,7 @@ bool QConfFileSettingsPrivate::writeIniFile(QIODevice &device, const ParsedSetti
         device.write(realSection);
 
         const IniKeyMap &ents = i.value().keyMap;
-        for (IniKeyMap::const_iterator j = ents.constBegin(); j != ents.constEnd(); ++j) {
+        for (auto j = ents.constBegin(); j != ents.constEnd(); ++j) {
             QByteArray block;
             iniEscapedKey(j.key(), block);
             block += '=';
@@ -1862,8 +1858,8 @@ bool QConfFileSettingsPrivate::writeIniFile(QIODevice &device, const ParsedSetti
 
 void QConfFileSettingsPrivate::ensureAllSectionsParsed(QConfFile *confFile) const
 {
-    UnparsedSettingsMap::const_iterator i = confFile->unparsedIniSections.constBegin();
-    const UnparsedSettingsMap::const_iterator end = confFile->unparsedIniSections.constEnd();
+    auto i = confFile->unparsedIniSections.constBegin();
+    const auto end = confFile->unparsedIniSections.constEnd();
 
     for (; i != end; ++i) {
         if (!QConfFileSettingsPrivate::readIniSection(i.key(), i.value(), &confFile->originalKeys))
