@@ -221,8 +221,10 @@ public:
     { }
 
     ~QFontDatabasePrivate() {
-        free();
+        clearFamilies();
     }
+
+    void clearFamilies();
 
     enum FamilyRequestFlags {
         RequestFamily = 0,
@@ -231,14 +233,6 @@ public:
     };
 
     QtFontFamily *family(const QString &f, FamilyRequestFlags flags = EnsurePopulated);
-    void free() {
-        while (count--)
-            delete families[count];
-        ::free(families);
-        families = nullptr;
-        count = 0;
-        // don't clear the memory fonts!
-    }
 
     int count;
     QtFontFamily **families;

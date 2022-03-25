@@ -298,12 +298,22 @@ void QtFontFamily::ensurePopulated()
     Q_ASSERT_X(populated, Q_FUNC_INFO, qPrintable(name));
 }
 
+void QFontDatabasePrivate::clearFamilies()
+{
+    while (count--)
+        delete families[count];
+    ::free(families);
+    families = nullptr;
+    count = 0;
+    // don't clear the memory fonts!
+}
+
 void QFontDatabasePrivate::invalidate()
 {
     QFontCache::instance()->clear();
 
     fallbacksCache.clear();
-    free();
+    clearFamilies();
     QGuiApplicationPrivate::platformIntegration()->fontDatabase()->invalidate();
     emit static_cast<QGuiApplication *>(QCoreApplication::instance())->fontDatabaseChanged();
 }
@@ -530,7 +540,7 @@ void qt_cleanupFontDatabase()
 {
     auto *db = QFontDatabasePrivate::instance();
     db->fallbacksCache.clear();
-    db->free();
+    db->clearFamilies();
 }
 
 // used in qfont.cpp
