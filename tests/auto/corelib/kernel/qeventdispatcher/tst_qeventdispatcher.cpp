@@ -448,7 +448,7 @@ void tst_QEventDispatcher::postEventFromEventHandler()
     // QXcbUnixEventDispatcher and QEventDispatcherUNIX do not do this correctly on any platform;
     // both Windows event dispatchers fail as well.
     const bool knownToFail = eventDispatcherName.contains("UNIX")
-                          || eventDispatcherName.contains("XcbUnix")
+                          || eventDispatcherName.contains("Unix")
                           || eventDispatcherName.contains("Win32")
                           || eventDispatcherName.contains("WindowsGui")
                           || eventDispatcherName.contains("Android");
