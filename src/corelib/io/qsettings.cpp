@@ -573,9 +573,9 @@ void QSettingsPrivate::iniEscapedKey(const QString &key, QByteArray &result)
     }
 }
 
-bool QSettingsPrivate::iniUnescapedKey(QByteArrayView key, int from, int to, QString &result)
+bool QSettingsPrivate::iniUnescapedKey(QByteArrayView key, QString &result)
 {
-    const QString decoded = QString::fromUtf8(key.first(to).sliced(from));
+    const QString decoded = QString::fromUtf8(key);
     const qsizetype size = decoded.size();
     result.reserve(result.length() + size);
     qsizetype i = 0;
@@ -740,7 +740,7 @@ void QSettingsPrivate::iniEscapedStringList(const QStringList &strs, QByteArray 
     }
 }
 
-bool QSettingsPrivate::iniUnescapedStringList(QByteArrayView str, int from, int to,
+bool QSettingsPrivate::iniUnescapedStringList(QByteArrayView str,
                                               QString &stringResult, QStringList &stringListResult)
 {
     static const char escapeCodes[][2] =
@@ -762,22 +762,22 @@ bool QSettingsPrivate::iniUnescapedStringList(QByteArrayView str, int from, int 
     bool inQuotedString = false;
     bool currentValueIsQuoted = false;
     char16_t escapeVal = 0;
-    int i = from;
+    int i = 0;
     char ch;
     QStringDecoder fromUtf8(QStringDecoder::Utf8);
 
 StSkipSpaces:
-    while (i < to && ((ch = str.at(i)) == ' ' || ch == '\t'))
+    while (i < str.size() && ((ch = str.at(i)) == ' ' || ch == '\t'))
         ++i;
     // fallthrough
 
 StNormal:
     int chopLimit = stringResult.length();
-    while (i < to) {
+    while (i < str.size()) {
         switch (str.at(i)) {
         case '\\':
             ++i;
-            if (i >= to)
+            if (i >= str.size())
                 goto end;
 
             ch = str.at(i++);
@@ -791,7 +791,7 @@ StNormal:
             if (ch == 'x') {
                 escapeVal = 0;
 
-                if (i >= to)
+                if (i >= str.size())
                     goto end;
 
                 ch = str.at(i);
@@ -801,7 +801,7 @@ StNormal:
                 escapeVal = ch - '0';
                 goto StOctEscape;
             } else if (ch == '\n' || ch == '\r') {
-                if (i < to) {
+                if (i < str.size()) {
                     char ch2 = str.at(i);
                     // \n, \r, \r\n, and \n\r are legitimate line terminators in INI files
                     if ((ch2 == '\n' || ch2 == '\r') && ch2 != ch)
@@ -837,7 +837,7 @@ StNormal:
             Q_FALLTHROUGH();
         default: {
             int j = i + 1;
-            while (j < to) {
+            while (j < str.size()) {
                 ch = str.at(j);
                 if (ch == '\\' || ch == '"' || ch == ',')
                     break;
@@ -854,7 +854,7 @@ StNormal:
     goto end;
 
 StHexEscape:
-    if (i >= to) {
+    if (i >= str.size()) {
         stringResult += escapeVal;
         goto end;
     }
@@ -873,7 +873,7 @@ StHexEscape:
     }
 
 StOctEscape:
-    if (i >= to) {
+    if (i >= str.size()) {
         stringResult += escapeVal;
         goto end;
     }
@@ -1659,7 +1659,7 @@ bool QConfFileSettingsPrivate::readIniFile(QByteArrayView data,
                     currentSection = QLatin1StringView(iniSection.constData() + 1);
                 } else {
                     currentSection.clear();
-                    iniUnescapedKey(iniSection, 0, iniSection.size(), currentSection);
+                    iniUnescapedKey(iniSection, currentSection);
                 }
                 currentSection += u'/';
             }
@@ -1705,12 +1705,14 @@ bool QConfFileSettingsPrivate::readIniSection(const QSettingsKey &section, QByte
         int valueStart = equalsPos + 1;
 
         QString key = section.originalCaseKey();
-        bool keyIsLowercase = (iniUnescapedKey(data, lineStart, keyEnd, key) && sectionIsLowercase);
+        bool keyIsLowercase
+            = iniUnescapedKey(data.first(keyEnd).sliced(lineStart), key) && sectionIsLowercase;
 
         QString strValue;
         strValue.reserve(lineLen - (valueStart - lineStart));
-        bool isStringList = iniUnescapedStringList(data, valueStart, lineStart + lineLen,
-                                                   strValue, strListValue);
+        bool isStringList
+            = iniUnescapedStringList(data.first(lineStart + lineLen).sliced(valueStart),
+                                     strValue, strListValue);
         QVariant variant;
         if (isStringList) {
             variant = stringListToVariantList(strListValue);

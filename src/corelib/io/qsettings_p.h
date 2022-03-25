@@ -231,11 +231,11 @@ public:
     static QString variantToString(const QVariant &v);
     static QVariant stringToVariant(const QString &s);
     static void iniEscapedKey(const QString &key, QByteArray &result);
-    static bool iniUnescapedKey(QByteArrayView key, int from, int to, QString &result);
+    static bool iniUnescapedKey(QByteArrayView key, QString &result);
     static void iniEscapedString(const QString &str, QByteArray &result);
     static void iniEscapedStringList(const QStringList &strs, QByteArray &result);
-    static bool iniUnescapedStringList(QByteArrayView str, int from, int to,
-                                       QString &stringResult, QStringList &stringListResult);
+    static bool iniUnescapedStringList(QByteArrayView str, QString &stringResult,
+                                       QStringList &stringListResult);
     static QStringList splitArgs(const QString &s, int idx);
 
     QSettings::Format format;

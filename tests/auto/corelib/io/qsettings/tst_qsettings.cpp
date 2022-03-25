@@ -2715,7 +2715,7 @@ static QByteArray iniEscapedKey(const QString &str)
 static QString iniUnescapedKey(const QByteArray &ba)
 {
     QString result;
-    QSettingsPrivate::iniUnescapedKey(ba, 0, ba.size(), result);
+    QSettingsPrivate::iniUnescapedKey(ba, result);
     return result;
 }
 
@@ -2730,7 +2730,7 @@ static QStringList iniUnescapedStringList(const QByteArray &ba)
 {
     QStringList result;
     QString str;
-    bool isStringList = QSettingsPrivate::iniUnescapedStringList(ba, 0, ba.size(), str, result);
+    bool isStringList = QSettingsPrivate::iniUnescapedStringList(ba, str, result);
     if (!isStringList)
         result = QStringList(str);
     return result;

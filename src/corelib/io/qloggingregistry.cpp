@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -236,7 +236,7 @@ void QLoggingSettingsParser::parseNextLine(QStringView line)
                 const auto key = line.left(equalPos).trimmed();
 #if QT_CONFIG(settings)
                 QString tmp;
-                QSettingsPrivate::iniUnescapedKey(key.toUtf8(), 0, key.length(), tmp);
+                QSettingsPrivate::iniUnescapedKey(key.toUtf8(), tmp);
                 QStringView pattern = qToStringViewIgnoringNull(tmp);
 #else
                 QStringView pattern = key;
