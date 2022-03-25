@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2022 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -409,7 +409,7 @@ void tst_QtJson::testNumbers_2()
             QVERIFY2(floatValues_1[index - 1] == (floatValues_1[index] * 2), QString("Value should be double adjacent value at index %1").arg(index).toLatin1());
         }
     } else {
-        QSKIP("Skipping 'denorm' as this type lacks denormals on this system");
+        qInfo("Skipping denormal test as this system's double type lacks support");
     }
 }
 
@@ -2332,30 +2332,28 @@ void tst_QtJson::parseNumbers()
             QCOMPARE(val.toDouble(), numbers[i].n);
         }
     }
-    {
-        if constexpr (std::numeric_limits<double>::has_denorm == std::denorm_present) {
-             Numbers numbers [] = {
-                { "1.1e-308", 1.1e-308 },
-                { "-1.1e-308", -1.1e-308 }
-            };
-            int size = sizeof(numbers)/sizeof(Numbers);
-            for (int i = 0; i < size; ++i) {
-                QByteArray json = "[ ";
-                json += numbers[i].str;
-                json += " ]";
-                QJsonDocument doc = QJsonDocument::fromJson(json);
-                QVERIFY(!doc.isEmpty());
-                QCOMPARE(doc.isArray(), true);
-                QCOMPARE(doc.isObject(), false);
-                QJsonArray array = doc.array();
-                QCOMPARE(array.size(), 1);
-                QJsonValue val = array.at(0);
-                QCOMPARE(val.type(), QJsonValue::Double);
-                QCOMPARE(val.toDouble(), numbers[i].n);
-            }
-        } else {
-            QSKIP("Skipping 'denorm' as this type lacks denormals on this system");
+    if constexpr (std::numeric_limits<double>::has_denorm == std::denorm_present) {
+        Numbers numbers [] = {
+            { "1.1e-308", 1.1e-308 },
+            { "-1.1e-308", -1.1e-308 }
+        };
+        int size = sizeof(numbers)/sizeof(Numbers);
+        for (int i = 0; i < size; ++i) {
+            QByteArray json = "[ ";
+            json += numbers[i].str;
+            json += " ]";
+            QJsonDocument doc = QJsonDocument::fromJson(json);
+            QVERIFY(!doc.isEmpty());
+            QCOMPARE(doc.isArray(), true);
+            QCOMPARE(doc.isObject(), false);
+            QJsonArray array = doc.array();
+            QCOMPARE(array.size(), 1);
+            QJsonValue val = array.at(0);
+            QCOMPARE(val.type(), QJsonValue::Double);
+            QCOMPARE(val.toDouble(), numbers[i].n);
         }
+    } else {
+        qInfo("Skipping denormal test as this system's double type lacks support");
     }
 }
 
