@@ -54,8 +54,15 @@ private slots:
 };
 
 tst_QPlugin::tst_QPlugin()
-    : dir(QFINDTESTDATA("plugins"))
 {
+    // On Android the plugins must be located in the APK's libs subdir
+#ifndef Q_OS_ANDROID
+    dir = QFINDTESTDATA("plugins");
+#else
+    const QStringList paths = QCoreApplication::libraryPaths();
+    if (!paths.isEmpty())
+        dir = paths.first();
+#endif
 }
 
 void tst_QPlugin::initTestCase()
