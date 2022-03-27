@@ -343,10 +343,6 @@ QT_BEGIN_NAMESPACE
     Returns a deep copy of this string view's data as a QString.
 
     The return value will be the null QString if and only if this string view is null.
-
-    \warning QStringView can store strings with more than 2\sup{30} characters
-    while QString cannot. Calling this function on a string view for which size()
-    returns a value greater than \c{INT_MAX / 2} constitutes undefined behavior.
 */
 
 /*!

@@ -329,10 +329,6 @@
 
     The return value will be a null QByteArray if and only if this byte array
     view is null.
-
-    \warning QByteArrayView can store data with more than 2\sup{31} bytes while
-    QByteArray cannot. Calling this function on a byte array view for which size()
-    returns a value greater than \c{INT_MAX / 2} constitutes undefined behavior.
 */
 
 /*!
