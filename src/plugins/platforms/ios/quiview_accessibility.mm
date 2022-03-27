@@ -56,7 +56,7 @@
 
 - (void)createAccessibleContainer:(QAccessibleInterface *)iface
 {
-    if (!iface)
+    if (!iface || iface->state().invisible)
         return;
 
     [self createAccessibleElement: iface];
