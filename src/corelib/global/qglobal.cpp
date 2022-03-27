@@ -3507,7 +3507,7 @@ QString qEnvironmentVariable(const char *varName, const QString &defaultValue)
     _wgetenv_s(&requiredSize, reinterpret_cast<wchar_t *>(buffer.data()), requiredSize,
                wname.data());
     // requiredSize includes the terminating null, which we don't want.
-    Q_ASSERT(buffer.endsWith(u'\0'));
+    Q_ASSERT(buffer.endsWith(QChar(u'\0')));
     buffer.chop(1);
     return buffer;
 #else
