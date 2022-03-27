@@ -40,31 +40,25 @@
 #ifndef ANDROID_DEADLOCKPROTECTOR_H
 #define ANDROID_DEADLOCKPROTECTOR_H
 
-#include <QAtomicInt>
+#include <QtCore/private/qjnihelpers_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class AndroidDeadlockProtector
 {
 public:
-    AndroidDeadlockProtector()
-        : m_acquired(0)
-    {
-    }
-
     ~AndroidDeadlockProtector() {
         if (m_acquired)
-            s_blocked.storeRelease(0);
+            QtAndroidPrivate::releaseAndroidDeadlockProtector();
     }
 
     bool acquire() {
-        m_acquired = s_blocked.testAndSetAcquire(0, 1);
+        m_acquired = QtAndroidPrivate::acquireAndroidDeadlockProtector();
         return m_acquired;
     }
 
 private:
-    static QAtomicInt s_blocked;
-    int m_acquired;
+    bool m_acquired = false;
 };
 
 QT_END_NAMESPACE
