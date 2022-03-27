@@ -376,6 +376,18 @@ jobject QtAndroidPrivate::callOnBindListener(jobject intent)
     return nullptr;
 }
 
+Q_GLOBAL_STATIC(QAtomicInt, g_androidDeadlockProtector);
+
+bool QtAndroidPrivate::acquireAndroidDeadlockProtector()
+{
+    return g_androidDeadlockProtector->testAndSetAcquire(0, 1);
+}
+
+void QtAndroidPrivate::releaseAndroidDeadlockProtector()
+{
+    g_androidDeadlockProtector->storeRelease(0);
+}
+
 QT_END_NAMESPACE
 
 Q_CORE_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)

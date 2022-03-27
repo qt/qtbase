@@ -1227,7 +1227,7 @@ QtAndroidPrivate::requestPermission(QtAndroidPrivate::PermissionType permission)
     promise->start();
     const auto nativePermissions = nativeStringsFromPermission(permission);
 
-    if (nativePermissions.size() > 0) {
+    if (nativePermissions.size() > 0 && QtAndroidPrivate::acquireAndroidDeadlockProtector()) {
         requestPermissionsInternal(nativePermissions).then(
                     [promise, permission](QFuture<QtAndroidPrivate::PermissionResult> future) {
             auto AuthorizedCount = future.results().count(QtAndroidPrivate::Authorized);
@@ -1239,6 +1239,7 @@ QtAndroidPrivate::requestPermission(QtAndroidPrivate::PermissionType permission)
             } else {
                 promise->addResult(QtAndroidPrivate::Denied, 0);
             }
+            QtAndroidPrivate::releaseAndroidDeadlockProtector();
             promise->finish();
         });
 
