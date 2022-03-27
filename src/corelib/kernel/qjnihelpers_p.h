@@ -137,6 +137,9 @@ namespace QtAndroidPrivate
     Q_CORE_EXPORT int acuqireServiceSetup(int flags);
     Q_CORE_EXPORT void setOnBindListener(OnBindListener *listener);
     Q_CORE_EXPORT jobject callOnBindListener(jobject intent);
+
+    Q_CORE_EXPORT bool acquireAndroidDeadlockProtector();
+    Q_CORE_EXPORT void releaseAndroidDeadlockProtector();
 }
 
 #define Q_JNI_FIND_AND_CHECK_CLASS(CLASS_NAME) \

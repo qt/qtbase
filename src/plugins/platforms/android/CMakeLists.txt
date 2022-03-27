@@ -11,7 +11,7 @@ qt_internal_add_plugin(QAndroidIntegrationPlugin
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES android # special case
     SOURCES
         androidcontentfileengine.cpp androidcontentfileengine.h
-        androiddeadlockprotector.cpp androiddeadlockprotector.h
+        androiddeadlockprotector.h
         androidjniaccessibility.cpp androidjniaccessibility.h
         androidjniclipboard.cpp androidjniclipboard.h
         androidjniinput.cpp androidjniinput.h
