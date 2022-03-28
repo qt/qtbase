@@ -79,6 +79,8 @@ public:
     void ensureFamilyPopulated(const QString &familyName);
 
     void populateFontDatabase() override;
+    void invalidate() override;
+
     void populateFamily(const QString &familyName) override;
     bool populateFamilyAliases(const QString &missingFamily) override;
     QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) override;

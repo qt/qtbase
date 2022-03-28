@@ -723,7 +723,6 @@ void QWindowsFontDatabase::addDefaultEUDCFont()
 
 void QWindowsFontDatabase::populateFontDatabase()
 {
-    removeApplicationFonts();
     HDC dummy = GetDC(0);
     LOGFONT lf;
     lf.lfCharSet = DEFAULT_CHARSET;
@@ -736,6 +735,11 @@ void QWindowsFontDatabase::populateFontDatabase()
     if (QPlatformFontDatabase::resolveFontFamilyAlias(systemDefaultFamily) == systemDefaultFamily)
         QPlatformFontDatabase::registerFontFamily(systemDefaultFamily);
     addDefaultEUDCFont();
+}
+
+void QWindowsFontDatabase::invalidate()
+{
+    removeApplicationFonts();
 }
 
 QWindowsFontDatabase::QWindowsFontDatabase()

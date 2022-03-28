@@ -238,6 +238,7 @@ public:
 
     int count;
     QtFontFamily **families;
+    bool populated = false;
 
     QCache<QtFontFallbacksCacheKey, QStringList> fallbacksCache;
     struct ApplicationFont {
@@ -245,6 +246,7 @@ public:
         QByteArray data;
 
         bool isNull() const { return fileName.isEmpty(); }
+        bool isPopulated() const { return !properties.isEmpty(); }
 
         struct Properties {
             QString familyName;

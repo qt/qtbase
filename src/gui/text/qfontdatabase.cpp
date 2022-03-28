@@ -305,6 +305,11 @@ void QFontDatabasePrivate::clearFamilies()
     ::free(families);
     families = nullptr;
     count = 0;
+
+    for (auto &font : applicationFonts)
+        font.properties.clear(); // Unpopulate
+
+    populated = false;
     // don't clear the memory fonts!
 }
 
@@ -1319,9 +1324,9 @@ QString QFontDatabase::styleString(const QFontInfo &fontInfo)
 
         Application fonts are always fully registered when added.
 
-    Fonts can be added by the user at any time, so the database
-    may grow even after QFontDatabasePrivate::populateFontDatabase()
-    has been completed.
+    Fonts can be added at any time, so the database may grow even
+    after QFontDatabasePrivate::populateFontDatabase() has been
+    completed.
 
     The database does not support granular removal of fonts,
     so if the system fonts change, or an application font is
@@ -1339,17 +1344,27 @@ QString QFontDatabase::styleString(const QFontInfo &fontInfo)
 QFontDatabasePrivate *QFontDatabasePrivate::ensureFontDatabase()
 {
     auto *d = QFontDatabasePrivate::instance();
-    if (d->count == 0) {
+    if (!d->populated) {
+        // The font database may have been partially populated, but to ensure
+        // we can answer queries for any platform- or user-provided family we
+        // need to fully populate it now.
+
         if (Q_UNLIKELY(qGuiApp == nullptr || QGuiApplicationPrivate::platformIntegration() == nullptr))
             qFatal("QFontDatabase: Must construct a QGuiApplication before accessing QFontDatabase");
 
         auto *platformFontDatabase = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
         platformFontDatabase->populateFontDatabase();
+
         for (int i = 0; i < d->applicationFonts.count(); i++) {
             auto *font = &d->applicationFonts[i];
-            if (!font->isNull())
+            if (!font->isNull() && !font->isPopulated())
                 platformFontDatabase->addApplicationFont(font->data, font->fileName, font);
         }
+
+        // Note: Both application fonts and platform fonts may be added
+        // after this initial population, so the only thing we are tracking
+        // is whether we've done our part in ensuring a filled font database.
+        d->populated = true;
     }
     return d;
 }
@@ -2166,8 +2181,6 @@ int QFontDatabasePrivate::addAppFont(const QByteArray &fontData, const QString &
     if (font.fileName.isEmpty() && !fontData.isEmpty())
         font.fileName = QLatin1String(":qmemoryfonts/") + QString::number(i);
 
-    bool wasEmpty = QFontDatabasePrivate::instance()->count == 0;
-
     auto *platformFontDatabase = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
     platformFontDatabase->addApplicationFont(font.data, font.fileName, &font);
     if (font.properties.isEmpty())
@@ -2175,16 +2188,11 @@ int QFontDatabasePrivate::addAppFont(const QByteArray &fontData, const QString &
 
     applicationFonts[i] = font;
 
-    // If the cache has not yet been populated, we need to reload the application font later
-    if (wasEmpty) {
-        invalidate();
-    } else {
-        emit qGuiApp->fontDatabaseChanged();
+    emit qApp->fontDatabaseChanged();
 
-        // The font cache may have cached lookups for the font that was now
-        // loaded, so it has to be flushed.
-        QFontCache::instance()->clear();
-    }
+    // The font cache may have cached lookups for the font that was now
+    // loaded, so it has to be flushed.
+    QFontCache::instance()->clear();
 
     return i;
 }
