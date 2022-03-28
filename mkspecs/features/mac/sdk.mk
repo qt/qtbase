@@ -1,6 +1,6 @@
 
 ifeq ($(QT_MAC_SDK_NO_VERSION_CHECK),)
-    CHECK_SDK_COMMAND = /usr/bin/xcrun --sdk $(EXPORT_QMAKE_MAC_SDK) -show-sdk-version 2>&1
+    CHECK_SDK_COMMAND = /usr/bin/xcrun --sdk $(EXPORT_QMAKE_MAC_SDK) -show-sdk-version 2>/dev/null
     CURRENT_MAC_SDK_VERSION := $(shell DEVELOPER_DIR=$(EXPORT_QMAKE_XCODE_DEVELOPER_PATH) $(CHECK_SDK_COMMAND))
     ifneq ($(CURRENT_MAC_SDK_VERSION),$(EXPORT_QMAKE_MAC_SDK_VERSION))
         # We don't want to complain about out of date SDK unless the target needs to be remade.
