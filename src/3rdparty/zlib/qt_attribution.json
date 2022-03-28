@@ -6,10 +6,10 @@
 
     "Description": "zlib is a general purpose data compression library.",
     "Homepage": "http://zlib.net/",
-    "Version": "1.2.11",
+    "Version": "1.2.12",
 
     "License": "zlib License",
     "LicenseId": "Zlib",
     "LicenseFile": "LICENSE",
-    "Copyright": "(C) 1995-2017 Jean-loup Gailly and Mark Adler"
+    "Copyright": "(C) 1995-2022 Jean-loup Gailly and Mark Adler"
 }
