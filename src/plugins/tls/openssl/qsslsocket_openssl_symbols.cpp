@@ -884,9 +884,10 @@ bool q_resolveOpenSslSymbols()
     triedToResolveSymbols = true;
 
     LoadedOpenSsl libs = loadOpenSsl();
-    if (!libs.ssl || !libs.crypto)
-        // failed to load them
+    if (!libs.ssl || !libs.crypto) {
+        qCWarning(lcTlsBackend, "Failed to load libssl/libcrypto.");
         return false;
+    }
 
     RESOLVEFUNC(OPENSSL_init_ssl)
     RESOLVEFUNC(OPENSSL_init_crypto)
