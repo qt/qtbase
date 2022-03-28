@@ -219,11 +219,12 @@ bool QBackingStoreRhiSupportWindowWatcher::eventFilter(QObject *obj, QEvent *eve
         auto it = m_rhiSupport->m_swapchains.find(window);
         if (it != m_rhiSupport->m_swapchains.end()) {
             qCDebug(lcQpaBackingStore) << "SurfaceAboutToBeDestroyed received for tracked window" << window << "cleaning up swapchain";
-            it->reset();
+            auto data = *it;
             m_rhiSupport->m_swapchains.erase(it);
+            data.reset(); // deletes 'this'
         }
     }
-    return QObject::eventFilter(obj, event);
+    return false;
 }
 
 QSurface::SurfaceType QBackingStoreRhiSupport::surfaceTypeForConfig(const QPlatformBackingStoreRhiConfig &config)
