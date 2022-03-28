@@ -6,21 +6,31 @@ endif()
 
 # Builds a shared library which will have strip run on it.
 function(qt_internal_try_compile_binary_for_strip binary_out_var)
-    # Need to find the config.tests files depending on which repo we are building.
-    if(EXISTS "${QT_CMAKE_DIR}")
-        # building qtbase
-        set(basedir "${QT_CMAKE_DIR}/..")
-    else()
-        # building other repo
-        set(basedir "${_qt_cmake_dir}/${QT_CMAKE_EXPORT_NAMESPACE}")
-    endif()
+    # Need to find the config.tests files depending whether the qtbase sources are available.
+    # This mirrors the logic in qt_set_up_build_internals_paths.
+    # TODO: Clean this up, together with qt_set_up_build_internals_paths to only use the
+    # the qtbase sources when building qtbase. And perhaps also when doing a non-prefix
+    # developer-build.
 
     set(config_test_dir "config.tests/binary_for_strip")
-    set(src_dir "${basedir}/${config_test_dir}")
+    set(qtbase_config_test_dir "${QT_SOURCE_TREE}/${config_test_dir}")
+    set(installed_config_test_dir
+        "${_qt_cmake_dir}/${QT_CMAKE_EXPORT_NAMESPACE}/${config_test_dir}")
+
+    # qtbase sources available, always use them, regardless of prefix or non-prefix builds.
+    if(EXISTS "${qtbase_config_test_dir}")
+        set(src_dir "${qtbase_config_test_dir}")
+
+    # qtbase sources unavailable, use installed files.
+    elseif(EXISTS "${installed_config_test_dir}")
+        set(src_dir "${installed_config_test_dir}")
+    else()
+        message(FATAL_ERROR "Can't find binary_for_strip config test project.")
+    endif()
 
     # Make sure the built project files are not installed when doing an in-source build (like it
     # happens in Qt's CI) by choosing a build dir that does not coincide with the installed
-    # source dir.
+    # source dir. Otherwise the config test binaries will be packaged up, which we don't want.
     set(binary_dir "${CMAKE_CURRENT_BINARY_DIR}/${config_test_dir}_built")
 
     set(flags "")
@@ -137,18 +147,29 @@ function(qt_internal_generate_binary_strip_wrapper)
 
         set(script_name "qt-internal-strip")
 
-        if(EXISTS "${QT_CMAKE_DIR}")
-            # qtbase build-tree case
-            set(wrapper_in_basedir "${QT_CMAKE_DIR}/..")
-        else()
-            # other repo case
-            set(wrapper_in_basedir "${_qt_cmake_dir}/${QT_CMAKE_EXPORT_NAMESPACE}")
-        endif()
-
         # the libexec literal is used on purpose for the source, so the file is found
         # on Windows hosts.
-        set(wrapper_in
-            "${wrapper_in_basedir}/libexec/${script_name}${wrapper_extension}.in")
+        set(wrapper_rel_path "libexec/${script_name}${wrapper_extension}.in")
+
+        # Need to find the libexec input file depending whether the qtbase sources are available.
+        # This mirrors the logic in qt_set_up_build_internals_paths.
+        # TODO: Clean this up, together with qt_set_up_build_internals_paths to only use the
+        # the qtbase sources when building qtbase. And perhaps also when doing a non-prefix
+        # developer-build.
+        set(qtbase_wrapper_in_path "${QT_SOURCE_TREE}/${wrapper_rel_path}")
+        set(installed_wrapper_in_path
+            "${_qt_cmake_dir}/${QT_CMAKE_EXPORT_NAMESPACE}/${wrapper_rel_path}")
+
+        # qtbase sources available, always use them, regardless of prefix or non-prefix builds.
+        if(EXISTS "${qtbase_wrapper_in_path}")
+            set(wrapper_in "${qtbase_wrapper_in_path}")
+
+        # qtbase sources unavailable, use installed files.
+        elseif(EXISTS "${installed_wrapper_in_path}")
+            set(wrapper_in "${installed_wrapper_in_path}")
+        else()
+            message(FATAL_ERROR "Can't find ${script_name}${wrapper_extension}.in file.")
+        endif()
 
         set(wrapper_out "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/${script_name}${wrapper_extension}")
 
