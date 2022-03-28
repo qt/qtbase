@@ -244,6 +244,8 @@ public:
         QString fileName;
         QByteArray data;
 
+        bool isNull() const { return fileName.isEmpty(); }
+
         struct Properties {
             QString familyName;
             QString styleName;

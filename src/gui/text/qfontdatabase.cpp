@@ -1296,10 +1296,9 @@ QFontDatabasePrivate *QFontDatabasePrivate::ensureFontDatabase()
         auto *platformFontDatabase = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
         platformFontDatabase->populateFontDatabase();
         for (int i = 0; i < d->applicationFonts.count(); i++) {
-            if (!d->applicationFonts.at(i).properties.isEmpty()) {
-                auto *font = &d->applicationFonts[i];
+            auto *font = &d->applicationFonts[i];
+            if (!font->isNull())
                 platformFontDatabase->addApplicationFont(font->data, font->fileName, font);
-            }
         }
     }
     return d;
@@ -2107,7 +2106,7 @@ int QFontDatabasePrivate::addAppFont(const QByteArray &fontData, const QString &
 
     int i;
     for (i = 0; i < applicationFonts.count(); ++i)
-        if (applicationFonts.at(i).properties.isEmpty())
+        if (applicationFonts.at(i).isNull())
             break;
     if (i >= applicationFonts.count()) {
         applicationFonts.append(ApplicationFont());
