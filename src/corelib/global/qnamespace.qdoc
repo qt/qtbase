@@ -798,14 +798,18 @@
 /*!
     \enum Qt::DockWidgetArea
 
-    \value LeftDockWidgetArea
-    \value RightDockWidgetArea
-    \value TopDockWidgetArea
-    \value BottomDockWidgetArea
-    \value AllDockWidgetAreas
-    \value NoDockWidgetArea
+    Represents the areas a QDockWidget can be plugged to.
+    \note A floating dock widget with tabs can be docked anywhere.
+
+    \value LeftDockWidgetArea The left dock area of a QMainWindow.
+    \value RightDockWidgetArea The right dock area of a QMainWindow.
+    \value TopDockWidgetArea The top dock area of a QMainWindow.
+    \value BottomDockWidgetArea The bottom dock area of a QMainWindow.
+    \value AllDockWidgetAreas All dock widget areas (default).
+    \value NoDockWidgetArea No dock widget areas.
 
     \omitvalue DockWidgetArea_Mask
+    \sa QDockWidget::setAllowedAreas, QDockWidget::isAreaAllowed
 */
 
 /*!
