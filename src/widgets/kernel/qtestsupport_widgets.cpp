@@ -47,8 +47,23 @@
 #include <QtGui/qtestsupport_gui.h>
 #include <QtGui/private/qevent_p.h>
 #include <QtGui/private/qeventpoint_p.h>
+#include <private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
 
 QT_BEGIN_NAMESPACE
+
+template <typename FunctorWindowGetter, typename FunctorPredicate>
+static bool qWaitForWidgetWindow(FunctorWindowGetter windowGetter, FunctorPredicate predicate, int timeout)
+{
+    if (!windowGetter())
+        return false;
+
+    return QTest::qWaitFor([&]() {
+        if (QWindow *window = windowGetter())
+            return predicate(window);
+        return false;
+    }, timeout);
+}
 
 /*!
     \since 5.0
@@ -61,9 +76,17 @@ QT_BEGIN_NAMESPACE
 */
 Q_WIDGETS_EXPORT bool QTest::qWaitForWindowActive(QWidget *widget, int timeout)
 {
-    if (QWindow *window = widget->window()->windowHandle())
-        return QTest::qWaitForWindowActive(window, timeout);
-    return false;
+    if (Q_UNLIKELY(!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))) {
+        qWarning() << "qWaitForWindowActive was called on a platform that doesn't support window"
+                   << "activation. This means there is an error in the test and it should either"
+                   << "check for the WindowActivation platform capability before calling"
+                   << "qWaitForWindowActivate, use qWaitForWindowExposed instead, or skip the test."
+                   << "Falling back to qWaitForWindowExposed.";
+        return qWaitForWindowExposed(widget, timeout);
+    }
+    return qWaitForWidgetWindow([&]() { return widget->window()->windowHandle(); },
+                                [&](QWindow *window) { return window->isActive(); },
+                                timeout);
 }
 
 /*!
@@ -86,9 +109,9 @@ Q_WIDGETS_EXPORT bool QTest::qWaitForWindowActive(QWidget *widget, int timeout)
 */
 Q_WIDGETS_EXPORT bool QTest::qWaitForWindowExposed(QWidget *widget, int timeout)
 {
-    if (QWindow *window = widget->window()->windowHandle())
-        return QTest::qWaitForWindowExposed(window, timeout);
-    return false;
+    return qWaitForWidgetWindow([&]() { return widget->window()->windowHandle(); },
+                                [&](QWindow *window) { return window->isExposed(); },
+                                timeout);
 }
 
 namespace QTest {
