@@ -8,7 +8,7 @@ qt_internal_add_cmake_library(staticplugin
     STATIC
     SOURCES
         main.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
     MOC_OPTIONS
         "-M"
