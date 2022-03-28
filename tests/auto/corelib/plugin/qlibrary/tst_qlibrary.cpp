@@ -104,9 +104,6 @@ enum QLibraryOperation {
     QString sys_qualifiedLibraryName(const QString &fileName);
 
     QString directory;
-#ifdef Q_OS_ANDROID
-    QSharedPointer<QTemporaryDir> temporaryDir;
-#endif
 private slots:
     void initTestCase();
 
@@ -141,24 +138,9 @@ typedef int (*VersionFunction)(void);
 void tst_QLibrary::initTestCase()
 {
 #ifdef Q_OS_ANDROID
-    auto tempDir = QEXTRACTTESTDATA("android_test_data");
-
-    QVERIFY2(QDir::setCurrent(tempDir->path()), qPrintable("Could not chdir to " + tempDir->path()));
-
-    // copy :/library_path into ./library_path
-    QVERIFY(QDir().mkdir("library_path"));
-    QDirIterator iterator(":/library_path", QDirIterator::Subdirectories);
-    while (iterator.hasNext()) {
-        iterator.next();
-        QFileInfo sourceFileInfo(iterator.path());
-        QFileInfo targetFileInfo("./library_path/" + sourceFileInfo.fileName());
-        if (!targetFileInfo.exists()) {
-            QDir().mkpath(targetFileInfo.path());
-            QVERIFY(QFile::copy(sourceFileInfo.filePath(), targetFileInfo.filePath()));
-        }
-    }
-    directory = tempDir->path();
-    temporaryDir = std::move(tempDir);
+    const QStringList paths = QCoreApplication::libraryPaths();
+    QVERIFY(!paths.isEmpty());
+    directory = paths.first();
 #else
     // chdir to our testdata directory, and use relative paths in some tests.
     QString testdatadir = QFileInfo(QFINDTESTDATA("library_path")).absolutePath();
@@ -224,7 +206,10 @@ void tst_QLibrary::load_data()
     QTest::newRow( "ok03 (with many dots)" ) << appDir + "/system.qt.test.mylib.dll" << true;
 # elif defined Q_OS_UNIX
     QTest::newRow( "ok01 (with suffix)" ) << appDir + "/libmylib" SUFFIX << true;
+#ifndef Q_OS_ANDROID
+    // We do not support non-standard suffixes on Android
     QTest::newRow( "ok02 (with non-standard suffix)" ) << appDir + "/libmylib.so2" << true;
+#endif
     QTest::newRow( "ok03 (with many dots)" ) << appDir + "/system.qt.test.mylib.so" << true;
 # endif  // Q_OS_UNIX
 }
@@ -438,7 +423,10 @@ void tst_QLibrary::loadHints_data()
     QTest::newRow( "ok03 (with many dots)" ) << appDir + "/system.qt.test.mylib.dll" << int(lh) << true;
 # elif defined Q_OS_UNIX
     QTest::newRow( "ok01 (with suffix)" ) << appDir + "/libmylib" SUFFIX << int(lh) << true;
+#ifndef Q_OS_ANDROID
+    // We do not support non-standard suffixes on Android
     QTest::newRow( "ok02 (with non-standard suffix)" ) << appDir + "/libmylib.so2" << int(lh) << true;
+#endif
     QTest::newRow( "ok03 (with many dots)" ) << appDir + "/system.qt.test.mylib.so" << int(lh) << true;
 # endif  // Q_OS_UNIX
 }
