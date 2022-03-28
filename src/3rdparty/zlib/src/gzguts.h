@@ -1,5 +1,5 @@
 /* gzguts.h -- zlib internal header definitions for gz* operations
- * Copyright (C) 2004, 2005, 2010, 2011, 2012, 2013, 2016 Mark Adler
+ * Copyright (C) 2004-2019 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -11,16 +11,7 @@
 #    define _CRT_NONSTDC_NO_DEPRECATE
 #  endif
 // disable warnings like '=': conversion from 'size_t' to 'unsigned int', possible loss of data
-#  pragma warning(disable: 4267)
-#endif
-
-#ifdef _LARGEFILE64_SOURCE
-#  ifndef _LARGEFILE_SOURCE
-#    define _LARGEFILE_SOURCE 1
-#  endif
-#  ifdef _FILE_OFFSET_BITS
-#    undef _FILE_OFFSET_BITS
-#  endif
+#  pragma warning(disable: 4267; disable: 4244)
 #endif
 
 #ifndef QT_BOOTSTRAPPED
@@ -31,6 +22,14 @@
 #define HAVE_HIDDEN
 #endif
 
+#ifdef _LARGEFILE64_SOURCE
+#  ifndef _LARGEFILE_SOURCE
+#    define _LARGEFILE_SOURCE 1
+#  endif
+#  ifdef _FILE_OFFSET_BITS
+#    undef _FILE_OFFSET_BITS
+#  endif
+#endif
 
 #ifdef HAVE_HIDDEN
 #  define ZLIB_INTERNAL __attribute__((visibility ("hidden")))
@@ -59,7 +58,7 @@
 #  include <io.h>
 #endif
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(_WIN32)
 #  define WIDECHAR
 #endif
 
@@ -210,6 +209,7 @@ typedef struct {
         /* just for writing */
     int level;              /* compression level */
     int strategy;           /* compression strategy */
+    int reset;              /* true if a reset is pending after a Z_FINISH */
         /* seek request */
     z_off64_t skip;         /* amount to skip (already rewound if backwards) */
     int seek;               /* true if seek request pending */
