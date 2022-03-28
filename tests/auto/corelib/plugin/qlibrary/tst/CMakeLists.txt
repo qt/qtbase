@@ -15,39 +15,14 @@ qt_internal_add_test(tst_qlibrary
     LIBRARIES mylib mylib2 # special case
 )
 
-## Scopes:
-#####################################################################
+add_dependencies(tst_qlibrary mylib mylib2)
 
 if(ANDROID)
-    # special case begin
-    set_source_files_properties(
-        ${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so
-        PROPERTIES QT_RESOURCE_TARGET_DEPENDENCY mylib
-    )
-    set_source_files_properties(
-        ${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so2
-        ${CMAKE_CURRENT_BINARY_DIR}/../system.qt.test.mylib.so
-        PROPERTIES QT_RESOURCE_TARGET_DEPENDENCY mylib2
-    )
-    # special case end
-    # Resources:
-    set(qmake_libs_resource_files
-        # special case begin
-        #libmylib.prl
-        libmylib.so
-        libmylib.so2
-        system.qt.test.mylib.so
-        # special case end
-    )
-
-    list(TRANSFORM qmake_libs_resource_files PREPEND "${CMAKE_CURRENT_BINARY_DIR}/../")
-
-    qt_internal_add_resource(tst_qlibrary "qmake_libs"
-        PREFIX
-            "android_test_data"
-        BASE
-            "${CMAKE_CURRENT_BINARY_DIR}/.."
-        FILES
-            ${qmake_libs_resource_files}
-    )
+    list(APPEND extra_libs
+        "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so")
+    list(APPEND extra_libs
+        "${CMAKE_CURRENT_BINARY_DIR}/../libsystem.qt.test.mylib.so")
+    set_target_properties(tst_qlibrary PROPERTIES
+        QT_ANDROID_EXTRA_LIBS "${extra_libs}")
+    qt6_android_generate_deployment_settings(tst_qlibrary)
 endif()
