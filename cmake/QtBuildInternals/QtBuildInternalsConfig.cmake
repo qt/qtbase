@@ -74,6 +74,9 @@ macro(qt_set_up_build_internals_paths)
     # building qtdeclarative, rather than having to build qtbase first (which will copy
     # QtBuild.cmake to the build dir). This is similar to qmake non-prefix builds, where the
     # source qtbase/mkspecs directory is used.
+    # TODO: Clean this up, together with qt_internal_try_compile_binary_for_strip to only use the
+    # the qtbase sources when building qtbase. And perhaps also when doing a non-prefix
+    # developer-build.
     if(EXISTS "${QT_SOURCE_TREE}/cmake")
         list(PREPEND CMAKE_MODULE_PATH "${QT_SOURCE_TREE}/cmake")
     endif()
