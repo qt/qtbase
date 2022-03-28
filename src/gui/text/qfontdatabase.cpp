@@ -315,7 +315,7 @@ void QFontDatabasePrivate::invalidate()
     fallbacksCache.clear();
     clearFamilies();
     QGuiApplicationPrivate::platformIntegration()->fontDatabase()->invalidate();
-    emit static_cast<QGuiApplication *>(QCoreApplication::instance())->fontDatabaseChanged();
+    emit qGuiApp->fontDatabaseChanged();
 }
 
 QtFontFamily *QFontDatabasePrivate::family(const QString &f, FamilyRequestFlags flags)
@@ -2179,7 +2179,7 @@ int QFontDatabasePrivate::addAppFont(const QByteArray &fontData, const QString &
     if (wasEmpty) {
         invalidate();
     } else {
-        emit qApp->fontDatabaseChanged();
+        emit qGuiApp->fontDatabaseChanged();
 
         // The font cache may have cached lookups for the font that was now
         // loaded, so it has to be flushed.
