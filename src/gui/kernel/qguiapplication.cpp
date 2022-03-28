@@ -4173,7 +4173,10 @@ QInputMethod *QGuiApplication::inputMethod()
 /*!
     \fn void QGuiApplication::fontDatabaseChanged()
 
-    This signal is emitted when application fonts are loaded or removed.
+    This signal is emitted when the available fonts have changed.
+
+    This can happen when application fonts are added or removed, or when the
+    system fonts change.
 
     \sa QFontDatabase::addApplicationFont(),
     QFontDatabase::addApplicationFontFromData(),
