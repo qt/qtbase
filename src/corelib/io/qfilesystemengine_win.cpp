@@ -56,6 +56,7 @@
 #if QT_CONFIG(regularexpression)
 #include "qregularexpression.h"
 #endif
+#include "qstring.h"
 
 #include <sys/types.h>
 #include <direct.h>
@@ -71,8 +72,6 @@
 #include <limits.h>
 #define SECURITY_WIN32
 #include <security.h>
-
-using namespace Qt::StringLiterals;
 
 #ifndef SPI_GETPLATFORMTYPE
 #define SPI_GETPLATFORMTYPE 257
@@ -153,9 +152,12 @@ static PSID currentUserSID = nullptr;
 static PSID currentGroupSID = nullptr;
 static PSID worldSID = nullptr;
 static HANDLE currentUserImpersonatedToken = nullptr;
+#endif // fslibs
 
 QT_BEGIN_NAMESPACE
+using namespace Qt::StringLiterals;
 
+#if QT_CONFIG(fslibs)
 namespace {
 struct GlobalSid
 {
@@ -415,12 +417,9 @@ constexpr QFileDevice::Permissions toSpecificPermissions(PermissionTag tag,
     return QFileDevice::Permissions::fromInt(permissions.toInt() << int(tag));
 }
 
-QT_END_NAMESPACE
-
 } // anonymous namespace
 #endif // QT_CONFIG(fslibs)
 
-QT_BEGIN_NAMESPACE
 
 Q_CORE_EXPORT int qt_ntfs_permission_lookup = 0;
 
