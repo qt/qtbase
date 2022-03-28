@@ -37,7 +37,8 @@ if (MACOS)
             "${CMAKE_CURRENT_BINARY_DIR}/*dylib"
             "${CMAKE_CURRENT_BINARY_DIR}/../")
 elseif (UNIX)
-    add_custom_command(TARGET mylib POST_BUILD
+    if (NOT ANDROID)
+        add_custom_command(TARGET mylib POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
             $<TARGET_FILE:mylib>
             "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so.1.0.0"
@@ -48,6 +49,16 @@ elseif (UNIX)
             "libmylib.so.1.0.0"
             "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so1"
             VERBATIM)
+    else()
+        # Android does not use symlinks. Also, according to our conventions,
+        # libraries on Android MUST be named in the following pattern:
+        # lib*.so
+        add_custom_command(TARGET mylib POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_FILE:mylib>
+            "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so"
+            VERBATIM)
+    endif()
 else() #Win32
     add_custom_command(TARGET mylib POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
