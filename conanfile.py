@@ -522,6 +522,9 @@ class QtBase(ConanFile):
             elif build_type == "MinSizeRel":
                 self.options.release = True
                 self.options.optimize_size = True
+            elif build_type == "Debug":
+                self.options.release = False
+                self.options.force_debug_info = True
             else:
                 raise QtConanError("Unknown build_type: {0}".format(self.settings.build_type))
 
