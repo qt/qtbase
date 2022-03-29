@@ -3,24 +3,24 @@ TAP version 13
 ok 1 - initTestCase()
 not ok 2 - xfailAndContinue() # TODO This should xfail
   ---
+  at: tst_ExpectFail::xfailAndContinue() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
+  line: 0
   extensions:
     messages:
     - severity: debug
       message: begin
-  at: tst_ExpectFail::xfailAndContinue() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
-  file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
-  line: 0
   ...
 # debug: after
 not ok 3 - xfailAndAbort() # TODO This should xfail
   ---
+  at: tst_ExpectFail::xfailAndAbort() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
+  line: 0
   extensions:
     messages:
     - severity: debug
       message: begin
-  at: tst_ExpectFail::xfailAndAbort() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
-  file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
-  line: 0
   ...
 not ok 4 - xfailContinueSkip() # TODO This should xfail then skip
   ---
@@ -147,19 +147,19 @@ not ok 27 - xfailOnAnyRow(Fail Continue) # TODO This test should xfail
   ...
 not ok 28 - xfailWithoutCheck(Fail Abort)
   ---
+  # QEXPECT_FAIL was called without any subsequent verification statements
   extensions:
     messages:
     - severity: debug
       message: Should fail (*not* xfail), despite test-case name
-  # QEXPECT_FAIL was called without any subsequent verification statements
   ...
 not ok 29 - xfailWithoutCheck(Fail Continue)
   ---
+  # QEXPECT_FAIL was called without any subsequent verification statements
   extensions:
     messages:
     - severity: debug
       message: Should fail (*not* xfail), despite test-case name
-  # QEXPECT_FAIL was called without any subsequent verification statements
   ...
 ok 30 - xpassAbort() # TODO 'true' returned TRUE unexpectedly. ()
 ok 31 - xpassAbortSkip() # TODO 'true' returned TRUE unexpectedly. ()

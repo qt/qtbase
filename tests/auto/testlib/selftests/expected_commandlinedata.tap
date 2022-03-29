@@ -2,29 +2,17 @@ TAP version 13
 # tst_DataTable
 ok 1 - initTestCase()
 ok 2 - fiveTablePasses(fiveTablePasses_data1)
-  ---
   # inform: QVERIFY(test)
-  ...
 ok 3 - fiveTablePasses(fiveTablePasses_data2)
-  ---
   # inform: QVERIFY(test)
-  ...
 ok 4 - fiveTablePasses(fiveTablePasses_data3)
-  ---
   # inform: QVERIFY(test)
-  ...
 ok 5 - fiveTablePasses(fiveTablePasses_data4)
-  ---
   # inform: QVERIFY(test)
-  ...
 ok 6 - fiveTablePasses(fiveTablePasses_data5)
-  ---
   # inform: QVERIFY(test)
-  ...
 ok 7 - fiveTablePasses(fiveTablePasses_data1)
-  ---
   # inform: QVERIFY(test)
-  ...
 ok 8 - cleanupTestCase()
 1..8
 # tests 8

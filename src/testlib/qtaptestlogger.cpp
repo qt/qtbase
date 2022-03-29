@@ -166,14 +166,15 @@ void QTapTestLogger::enterTestFunction(const char *function)
 {
     m_wasExpectedFail = false;
     Q_ASSERT(!m_gatherMessages);
-    Q_ASSERT(!hasMessages());
+    Q_ASSERT(m_comments.isEmpty());
+    Q_ASSERT(m_messages.isEmpty());
     m_gatherMessages = function != nullptr;
 }
 
 void QTapTestLogger::enterTestData(QTestData *data)
 {
     m_wasExpectedFail = false;
-    if (hasMessages())
+    if (!m_messages.isEmpty() || !m_comments.isEmpty())
         flushMessages();
     m_gatherMessages = data != nullptr;
 }
@@ -198,33 +199,38 @@ void QTapTestLogger::outputTestLine(bool ok, int testNumber, const QTestCharBuff
 
 void QTapTestLogger::outputBuffer(const QTestCharBuffer &buffer)
 {
+    auto isComment = [&buffer]() {
+        return buffer.constData()[strlen(YAML_INDENT)] == '#';
+    };
     if (!m_gatherMessages)
         outputString(buffer.constData());
-    else if (buffer.constData()[strlen(YAML_INDENT)] == '#')
-        QTestPrivate::appendCharBuffer(&m_comments, buffer);
     else
-        QTestPrivate::appendCharBuffer(&m_messages, buffer);
+        QTestPrivate::appendCharBuffer(isComment() ? &m_comments : &m_messages, buffer);
 }
 
 void QTapTestLogger::beginYamlish()
 {
     outputString(YAML_INDENT "---\n");
+}
+
+void QTapTestLogger::endYamlish()
+{
     // Flush any accumulated messages:
-    if (!m_comments.isEmpty()) {
-        outputString(m_comments.constData());
-        m_comments.clear();
-    }
     if (!m_messages.isEmpty()) {
         outputString(YAML_INDENT "extensions:\n");
         outputString(YAML_INDENT YAML_INDENT "messages:\n");
         outputString(m_messages.constData());
         m_messages.clear();
     }
+    outputString(YAML_INDENT "...\n");
 }
 
-void QTapTestLogger::endYamlish()
+void QTapTestLogger::flushComments()
 {
-    outputString(YAML_INDENT "...\n");
+    if (!m_comments.isEmpty()) {
+        outputString(m_comments.constData());
+        m_comments.clear();
+    }
 }
 
 void QTapTestLogger::flushMessages()
@@ -234,8 +240,11 @@ void QTapTestLogger::flushMessages()
     QTest::qt_asprintf(&dataLine, "ok %d - %s() # Data prepared\n",
                        QTestLog::totalCount(), QTestResult::currentTestFunction());
     outputString(dataLine.constData());
-    beginYamlish();
-    endYamlish();
+    flushComments();
+    if (!m_messages.isEmpty()) {
+        beginYamlish();
+        endYamlish();
+    }
 }
 
 void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
@@ -283,8 +292,9 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
         testNumber += 1;
 
     outputTestLine(ok, testNumber, directive);
+    flushComments();
 
-    if (!ok || hasMessages()) {
+    if (!ok || !m_messages.isEmpty()) {
         // All failures need a diagnostics section to not confuse consumers.
         // We also need a diagnostics section when we have messages to report.
         beginYamlish();

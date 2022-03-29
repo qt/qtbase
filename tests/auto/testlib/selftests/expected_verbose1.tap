@@ -97,14 +97,14 @@ ok 22 - testFailInInit(after)
 ok 23 - testFailInCleanup(before)
 not ok 24 - testFailInCleanup(fail)
   ---
-  extensions:
-    messages:
-    - severity: debug
-      message: This test function should execute and then QFAIL in cleanup()
   # Fail in cleanup()
   at: tst_Counting::testFailInCleanup() (qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp
   line: 0
+  extensions:
+    messages:
+    - severity: debug
+      message: This test function should execute and then QFAIL in cleanup()
   ...
 ok 25 - testFailInCleanup(after)
 ok 26 - testSkipInInit(before)
@@ -113,13 +113,13 @@ ok 28 - testSkipInInit(after)
 ok 29 - testSkipInCleanup(before)
 ok 30 - testSkipInCleanup(skip) # SKIP Skip in cleanup()
   ---
+  at: tst_Counting::testSkipInCleanup() (qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp
+  line: 0
   extensions:
     messages:
     - severity: debug
       message: This test function should execute and then QSKIP in cleanup()
-  at: tst_Counting::testSkipInCleanup() (qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp:0)
-  file: qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp
-  line: 0
   ...
 ok 31 - testSkipInCleanup(after)
 ok 32 - cleanupTestCase()

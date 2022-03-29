@@ -2,8 +2,8 @@ TAP version 13
 # MaxWarnings
 ok 1 - initTestCase()
 ok 2 - warn()
-  ---
   # warn: Maximum amount of warnings exceeded. Use -maxwarnings to override.
+  ---
   extensions:
     messages:
     - severity: warning

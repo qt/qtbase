@@ -2,30 +2,23 @@ TAP version 13
 # tst_Signaldumper
 ok 1 - initTestCase()
 ok 2 - noConnections()
-  ---
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))
-  ...
 ok 3 - oneSlot(direct)
-  ---
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
-  ...
 ok 4 - oneSlot(queued)
-  ---
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
-  ...
 ok 5 - oneSlotOldSyntax(direct)
-  ---
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()
   # inform:     Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
@@ -35,36 +28,28 @@ ok 5 - oneSlotOldSyntax(direct)
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))
   # inform:     Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
-  ...
 ok 6 - oneSlotOldSyntax(queued)
-  ---
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
-  ...
 ok 7 - twoSlots(direct)
-  ---
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
-  ...
 ok 8 - twoSlots(queued)
-  ---
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
-  ...
 ok 9 - twoSlotsOldSyntax(direct)
-  ---
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()
   # inform:     Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()
   # inform:     Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()
@@ -77,18 +62,14 @@ ok 9 - twoSlotsOldSyntax(direct)
   # inform:     Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()
   # inform:     Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
-  ...
 ok 10 - twoSlotsOldSyntax(queued)
-  ---
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
-  ...
 ok 11 - signalForwarding(direct)
-  ---
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()
   # inform:     Signal: SignalSlotClass(_POINTER_) nestedSignal ()
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
@@ -98,9 +79,7 @@ ok 11 - signalForwarding(direct)
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))
   # inform:     Signal: SignalSlotClass(_POINTER_) nestedSignal ()
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
-  ...
 ok 12 - signalForwarding(queued)
-  ---
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
   # inform: Signal: SignalSlotClass(_POINTER_) nestedSignal ()
@@ -110,9 +89,7 @@ ok 12 - signalForwarding(queued)
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
   # inform: Signal: SignalSlotClass(_POINTER_) nestedSignal ()
-  ...
 ok 13 - signalForwardingOldSyntax(direct)
-  ---
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()
   # inform:     Slot: SignalSlotClass(_POINTER_) nestedSignal()
   # inform:     Signal: SignalSlotClass(_POINTER_) nestedSignal ()
@@ -125,9 +102,7 @@ ok 13 - signalForwardingOldSyntax(direct)
   # inform:     Slot: SignalSlotClass(_POINTER_) nestedSignal()
   # inform:     Signal: SignalSlotClass(_POINTER_) nestedSignal ()
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
-  ...
 ok 14 - signalForwardingOldSyntax(queued)
-  ---
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
   # inform: Signal: SignalSlotClass(_POINTER_) nestedSignal ()
@@ -137,34 +112,24 @@ ok 14 - signalForwardingOldSyntax(queued)
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
   # inform: Signal: SignalSlotClass(_POINTER_) nestedSignal ()
-  ...
 ok 15 - slotEmittingSignal(direct)
-  ---
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()
   # inform:     Signal: SignalSlotClass(_POINTER_) nestedSignal ()
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
-  ...
 ok 16 - slotEmittingSignal(queued)
-  ---
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
   # inform: Signal: SignalSlotClass(_POINTER_) nestedSignal ()
-  ...
 ok 17 - slotEmittingSignalOldSyntax(direct)
-  ---
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()
   # inform:     Slot: SignalSlotClass(_POINTER_) emitSecondSignal()
   # inform:     Signal: SignalSlotClass(_POINTER_) nestedSignal ()
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
-  ...
 ok 18 - slotEmittingSignalOldSyntax(queued)
-  ---
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()
   # inform: Signal: QEventDispatcherPlatform(_POINTER_) awake ()
   # inform: Signal: SignalSlotClass(_POINTER_) nestedSignal ()
-  ...
 ok 19 - variousTypes()
-  ---
   # inform: Signal: SignalSlotClass(_POINTER_) qStringSignal (QString(Test string))
   # inform: Signal: SignalSlotClass(_POINTER_) qStringRefSignal ((QString&)@_POINTER_)
   # inform: Signal: SignalSlotClass(_POINTER_) qStringConstRefSignal (QString(Test string))
@@ -177,11 +142,8 @@ ok 19 - variousTypes()
   # inform: Signal: SignalSlotClass(_POINTER_) qVectorPointerConstSignal ((QList<int>*)_POINTER_)
   # inform: Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())
   # inform: Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())
-  ...
 ok 20 - deletingSender()
-  ---
   # inform: Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()
-  ...
 ok 21 - cleanupTestCase()
 1..21
 # tests 21

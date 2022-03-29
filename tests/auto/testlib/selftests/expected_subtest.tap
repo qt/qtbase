@@ -90,12 +90,6 @@ ok 6 - test3(data0)
   ...
 not ok 7 - test3(data1)
   ---
-  extensions:
-    messages:
-    - severity: debug
-      message: init test3 data1
-    - severity: debug
-      message: test3 test3 data1
   type: QCOMPARE
   message: Compared values are not the same
   wanted: "hello0" (QString("hello0"))
@@ -105,16 +99,16 @@ not ok 7 - test3(data1)
   at: tst_Subtest::test3() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
   line: 0
+  extensions:
+    messages:
+    - severity: debug
+      message: init test3 data1
+    - severity: debug
+      message: test3 test3 data1
   ...
 # debug: cleanup test3 data1
 not ok 8 - test3(data2)
   ---
-  extensions:
-    messages:
-    - severity: debug
-      message: init test3 data2
-    - severity: debug
-      message: test3 test3 data2
   type: QCOMPARE
   message: Compared values are not the same
   wanted: "hello0" (QString("hello0"))
@@ -124,18 +118,24 @@ not ok 8 - test3(data2)
   at: tst_Subtest::test3() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
   line: 0
+  extensions:
+    messages:
+    - severity: debug
+      message: init test3 data2
+    - severity: debug
+      message: test3 test3 data2
   ...
 # debug: cleanup test3 data2
 not ok 9 - multiFail()
   ---
-  extensions:
-    messages:
-    - severity: debug
-      message: init multiFail (null)
   # This failure message should be repeated ten times
   at: tst_Subtest::multiFail() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
   line: 0
+  extensions:
+    messages:
+    - severity: debug
+      message: init multiFail (null)
   ...
 not ok 9 - multiFail()
   ---
@@ -210,13 +210,13 @@ not ok 9 - multiFail()
 # debug: cleanup multiFail (null)
 ok 10 - multiSkip() # SKIP This skip should be repeated ten times
   ---
+  at: tst_Subtest::multiSkip() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
+  line: 0
   extensions:
     messages:
     - severity: debug
       message: init multiSkip (null)
-  at: tst_Subtest::multiSkip() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
-  file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
-  line: 0
   ...
 ok 10 - multiSkip() # SKIP This skip should be repeated ten times
 ok 10 - multiSkip() # SKIP This skip should be repeated ten times

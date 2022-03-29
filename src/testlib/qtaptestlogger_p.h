@@ -78,7 +78,7 @@ public:
 private:
     void outputTestLine(bool ok, int testNumber, const QTestCharBuffer &directive);
     void outputBuffer(const QTestCharBuffer &buffer);
-    bool hasMessages() const { return m_comments.constData()[0] || m_messages.constData()[0]; }
+    void flushComments();
     void flushMessages();
     void beginYamlish();
     void endYamlish();

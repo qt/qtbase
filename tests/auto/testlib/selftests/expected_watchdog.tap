@@ -3,11 +3,11 @@ TAP version 13
 ok 1 - initTestCase()
 not ok 2 - delay()
   ---
+  # Received a fatal error.
   extensions:
     messages:
     - severity: fatal
       message: Test function timed out
-  # Received a fatal error.
   ...
 1..2
 # tests 2

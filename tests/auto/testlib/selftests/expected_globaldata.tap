@@ -62,46 +62,46 @@ ok 5 - testGlobal(global=true:local=true)
 ok 6 - skip(global=false) # SKIP skipping
 ok 7 - skipLocal(global=false:local=false) # SKIP skipping
   ---
+  at: tst_globaldata::skipLocal() (qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp
+  line: 0
   extensions:
     messages:
     - severity: debug
       message: init skipLocal local=false
-  at: tst_globaldata::skipLocal() (qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp:0)
-  file: qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp
-  line: 0
   ...
 # debug: cleanup skipLocal local=false
 ok 8 - skipLocal(global=false:local=true) # SKIP skipping
   ---
+  at: tst_globaldata::skipLocal() (qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp
+  line: 0
   extensions:
     messages:
     - severity: debug
       message: init skipLocal local=true
-  at: tst_globaldata::skipLocal() (qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp:0)
-  file: qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp
-  line: 0
   ...
 # debug: cleanup skipLocal local=true
 ok 9 - skipLocal(global=true:local=false) # SKIP skipping
   ---
+  at: tst_globaldata::skipLocal() (qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp
+  line: 0
   extensions:
     messages:
     - severity: debug
       message: init skipLocal local=false
-  at: tst_globaldata::skipLocal() (qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp:0)
-  file: qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp
-  line: 0
   ...
 # debug: cleanup skipLocal local=false
 ok 10 - skipLocal(global=true:local=true) # SKIP skipping
   ---
+  at: tst_globaldata::skipLocal() (qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp
+  line: 0
   extensions:
     messages:
     - severity: debug
       message: init skipLocal local=true
-  at: tst_globaldata::skipLocal() (qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp:0)
-  file: qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp
-  line: 0
   ...
 # debug: cleanup skipLocal local=true
 ok 11 - skipSingle(global=false:local=false)
@@ -117,24 +117,24 @@ ok 11 - skipSingle(global=false:local=false)
   ...
 ok 12 - skipSingle(global=false:local=true) # SKIP Skipping
   ---
+  at: tst_globaldata::skipSingle() (qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp
+  line: 0
   extensions:
     messages:
     - severity: debug
       message: init skipSingle local=true
-  at: tst_globaldata::skipSingle() (qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp:0)
-  file: qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp
-  line: 0
   ...
 # debug: cleanup skipSingle local=true
 ok 13 - skipSingle(global=true:local=false) # SKIP Skipping
   ---
+  at: tst_globaldata::skipSingle() (qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp
+  line: 0
   extensions:
     messages:
     - severity: debug
       message: init skipSingle local=false
-  at: tst_globaldata::skipSingle() (qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp:0)
-  file: qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp
-  line: 0
   ...
 # debug: cleanup skipSingle local=false
 ok 14 - skipSingle(global=true:local=true)
