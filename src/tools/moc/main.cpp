@@ -306,6 +306,10 @@ int runMoc(int argc, char **argv)
     jsonOption.setDescription(QStringLiteral("In addition to generating C++ code, create a machine-readable JSON file in a file that matches the output file and an extra .json extension."));
     parser.addOption(jsonOption);
 
+    QCommandLineOption debugIncludesOption(QStringLiteral("debug-includes"));
+    debugIncludesOption.setDescription(QStringLiteral("Display debug messages of each considered include path."));
+    parser.addOption(debugIncludesOption);
+
     QCommandLineOption collectOption(QStringLiteral("collect-json"));
     collectOption.setDescription(QStringLiteral("Instead of processing C++ code, collect previously generated JSON output into a single file."));
     parser.addOption(collectOption);
@@ -358,6 +362,7 @@ int runMoc(int argc, char **argv)
 
     const bool ignoreConflictingOptions = parser.isSet(ignoreConflictsOption);
     pp.preprocessOnly = parser.isSet(preprocessOption);
+    pp.setDebugIncludes(parser.isSet(debugIncludesOption));
     if (parser.isSet(noIncludeOption)) {
         moc.noInclude = true;
         autoInclude = false;
@@ -498,6 +503,17 @@ int runMoc(int argc, char **argv)
 
     moc.currentFilenames.push(filename.toLocal8Bit());
     moc.includes = pp.includes;
+
+    if (Q_UNLIKELY(parser.isSet(debugIncludesOption))) {
+        fprintf(stderr, "debug-includes: include search list:\n");
+
+        for (auto &includePath : pp.includes) {
+            fprintf(stderr, "debug-includes:   '%s' framework: %d \n",
+                    includePath.path.constData(),
+                    includePath.isFrameworkPath);
+        }
+        fprintf(stderr, "debug-includes: end of search list.\n");
+    }
 
     // 1. preprocess
     const auto includeFiles = parser.values(includeOption);

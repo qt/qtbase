@@ -1016,9 +1016,15 @@ static void mergeStringLiterals(Symbols *_symbols)
 }
 
 static QByteArray searchIncludePaths(const QList<Parser::IncludePath> &includepaths,
-                                     const QByteArray &include)
+                                     const QByteArray &include,
+                                     const bool debugIncludes)
 {
     QFileInfo fi;
+
+    if (Q_UNLIKELY(debugIncludes)) {
+        fprintf(stderr, "debug-includes: searching for '%s'\n", include.constData());
+    }
+
     for (int j = 0; j < includepaths.size() && !fi.exists(); ++j) {
         const Parser::IncludePath &p = includepaths.at(j);
         if (p.isFrameworkPath) {
@@ -1030,6 +1036,12 @@ static QByteArray searchIncludePaths(const QList<Parser::IncludePath> &includepa
         } else {
             fi.setFile(QString::fromLocal8Bit(p.path), QString::fromLocal8Bit(include));
         }
+
+        if (Q_UNLIKELY(debugIncludes)) {
+            const auto candidate = fi.filePath().toLocal8Bit();
+            fprintf(stderr, "debug-includes: considering '%s'\n", candidate.constData());
+        }
+
         // try again, maybe there's a file later in the include paths with the same name
         // (186067)
         if (fi.isDir()) {
@@ -1038,9 +1050,20 @@ static QByteArray searchIncludePaths(const QList<Parser::IncludePath> &includepa
         }
     }
 
-    if (!fi.exists() || fi.isDir())
+    if (!fi.exists() || fi.isDir()) {
+        if (Q_UNLIKELY(debugIncludes)) {
+            fprintf(stderr, "debug-includes: can't find '%s'\n", include.constData());
+        }
         return QByteArray();
-    return fi.canonicalFilePath().toLocal8Bit();
+    }
+
+    const auto result = fi.canonicalFilePath().toLocal8Bit();
+
+    if (Q_UNLIKELY(debugIncludes)) {
+        fprintf(stderr, "debug-includes: found '%s'\n", result.constData());
+    }
+
+    return result;
 }
 
 QByteArray Preprocessor::resolveInclude(const QByteArray &include, const QByteArray &relativeTo)
@@ -1054,7 +1077,11 @@ QByteArray Preprocessor::resolveInclude(const QByteArray &include, const QByteAr
 
     auto it = nonlocalIncludePathResolutionCache.find(include);
     if (it == nonlocalIncludePathResolutionCache.end())
-       it = nonlocalIncludePathResolutionCache.insert(include, searchIncludePaths(includes, include));
+       it = nonlocalIncludePathResolutionCache.insert(include,
+                                                      searchIncludePaths(
+                                                          includes,
+                                                          include,
+                                                          debugIncludes));
     return it.value();
 }
 
@@ -1318,5 +1345,11 @@ void Preprocessor::until(Token t)
     while(hasNext() && next() != t)
         ;
 }
+
+void Preprocessor::setDebugIncludes(bool value)
+{
+    debugIncludes = value;
+}
+
 
 QT_END_NAMESPACE

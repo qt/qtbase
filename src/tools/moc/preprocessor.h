@@ -81,10 +81,13 @@ public:
     enum TokenizeMode { TokenizeCpp, TokenizePreprocessor, PreparePreprocessorStatement, TokenizePreprocessorStatement, TokenizeInclude, PrepareDefine, TokenizeDefine };
     static Symbols tokenize(const QByteArray &input, int lineNum = 1, TokenizeMode mode = TokenizeCpp);
 
+    void setDebugIncludes(bool value);
+
 private:
     void until(Token);
 
     void preprocess(const QByteArray &filename, Symbols &preprocessed);
+    bool debugIncludes = false;
 };
 
 QT_END_NAMESPACE
