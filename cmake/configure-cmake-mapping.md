@@ -67,7 +67,7 @@ The following table describes the mapping of configure options to CMake argument
 | -pch                                  | -DBUILD_WITH_PCH=ON                               |                                                                 |
 | -ltcg                                 | -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON or        |                                                                 |
 |                                       | -DCMAKE_INTERPROCEDURAL_OPTIMIZATION_<CONFIG>=ON  |                                                                 |
-| -linker [bfd,gold,lld]                | -DINPUT_linker=<name> or                          |                                                                 |
+| -linker [bfd,gold,lld,mold]           | -DINPUT_linker=<name> or                          |                                                                 |
 |                                       | -DFEATURE_use_<name>_linker=ON                    |                                                                 |
 | -incredibuild-xge                     | n/a                                               | This option enables remote distribution of Visual Studio        |
 |                                       |                                                   | custom build steps for moc, uic, and rcc.                       |
