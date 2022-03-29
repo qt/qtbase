@@ -76,7 +76,7 @@ instructions:
   - type: EnvironmentVariable
     variableName: COIN_CMAKE_ARGS
     # Use unix separators even on Windows, to avoid escaping issues in the configure script.
-    variableValue: "{{.Env.TARGET_CMAKE_ARGS}} {{.Env.COMMON_TARGET_CMAKE_ARGS}} -DCMAKE_INSTALL_PREFIX:PATH={{unixPathSeparators .InstallDir}}/target"
+    variableValue: "{{.Env.TARGET_CMAKE_ARGS}} {{.Env.COMMON_TARGET_CMAKE_ARGS}} -DCMAKE_STAGING_PREFIX:PATH={{unixPathSeparators .InstallDir}}/target"
   - type: EnvironmentVariable
     variableName: CONFIGURE_ENV_PREFIX
     variableValue: "{{.Env.TARGET_ENV_PREFIX}}"
