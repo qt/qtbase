@@ -57,6 +57,8 @@ class QAndroidPlatformMessageDialogHelper: public QPlatformMessageDialogHelper
     Q_OBJECT
 public:
     QAndroidPlatformMessageDialogHelper();
+    ~QAndroidPlatformMessageDialogHelper();
+
     void exec() override;
     bool show(Qt::WindowFlags windowFlags,
               Qt::WindowModality windowModality,
