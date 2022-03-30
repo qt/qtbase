@@ -276,12 +276,15 @@ void tst_QIODevice::unget()
             lineResult = "ZXCV";
         } else {
 #ifdef QT_TEST_SERVER
-            if (!QtNetworkSettings::verifyConnection(QtNetworkSettings::httpServerName(), 80))
-                QSKIP("No network test server available");
+            const bool hasNetworkServer =
+                    QtNetworkSettings::verifyConnection(QtNetworkSettings::httpServerName(), 80);
 #else
-            if (!QtNetworkSettings::verifyTestNetworkSettings())
-                QSKIP("No network test server available");
+            const bool hasNetworkServer = QtNetworkSettings::verifyTestNetworkSettings();
 #endif
+            if (!hasNetworkServer) {
+                qInfo("No network test server: skipping QTcpSocket part of test.");
+                continue;
+            }
             socket.connectToHost(QtNetworkSettings::httpServerName(), 80);
             socket.write("GET / HTTP/1.0\r\n\r\n");
             QVERIFY(socket.waitForReadyRead());
