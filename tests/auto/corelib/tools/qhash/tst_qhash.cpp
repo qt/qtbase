@@ -98,6 +98,7 @@ private slots:
     void fineTuningInEmptyHash();
 
     void reserveShared();
+    void reserveLessThanCurrentAmount();
 
     void QTBUG98265();
 
@@ -2665,6 +2666,36 @@ void tst_QHash::reserveShared()
 
     QVERIFY(hash2.capacity() >= 100);
     QCOMPARE(hash.capacity(), oldCap);
+}
+
+void tst_QHash::reserveLessThanCurrentAmount()
+{
+    {
+        QHash<int, int> hash;
+        for (int i = 0; i < 1000; ++i)
+            hash.insert(i, i * 10);
+
+        // This used to hang in an infinite loop: QTBUG-102067
+        hash.reserve(1);
+
+        // Make sure that hash still has all elements
+        for (int i = 0; i < 1000; ++i)
+            QCOMPARE(hash.value(i), i * 10);
+    }
+    {
+        QMultiHash<int, int> hash;
+        for (int i = 0; i < 1000; ++i) {
+            hash.insert(i, i * 10);
+            hash.insert(i, i * 10 + 1);
+        }
+
+        // This used to hang in infinite loop: QTBUG-102067
+        hash.reserve(1);
+
+        // Make sure that hash still has all elements
+        for (int i = 0; i < 1000; ++i)
+            QCOMPARE(hash.values(i), QList<int>() << i * 10 + 1 << i * 10);
+    }
 }
 
 void tst_QHash::QTBUG98265()
