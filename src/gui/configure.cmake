@@ -884,7 +884,7 @@ qt_feature("sessionmanager" PUBLIC
 qt_feature_definition("sessionmanager" "QT_NO_SESSIONMANAGER" NEGATE VALUE "1")
 qt_feature("tslib" PRIVATE
     LABEL "tslib"
-    CONDITION Tslib_FOUND
+    CONDITION Tslib_FOUND AND NOT INTEGRITY
 )
 qt_feature("tuiotouch" PRIVATE
     LABEL "TuioTouch"
