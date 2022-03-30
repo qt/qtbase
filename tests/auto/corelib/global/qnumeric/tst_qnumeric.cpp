@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -195,21 +195,22 @@ void tst_QNumeric::checkNaN(F nan)
         QVERIFY(!qIsFinite(v)); \
         QVERIFY(!qIsInf(v)); \
     } while (0)
+    const F zero(0), one(1), two(2);
 
-    QVERIFY(!(0 > nan));
-    QVERIFY(!(0 < nan));
-    QVERIFY(!(0 == nan));
+    QVERIFY(!(zero > nan));
+    QVERIFY(!(zero < nan));
+    QVERIFY(!(zero == nan));
     QVERIFY(!(nan == nan));
 
     CHECKNAN(nan);
-    CHECKNAN(nan + 1);
-    CHECKNAN(nan - 1);
+    CHECKNAN(nan + one);
+    CHECKNAN(nan - one);
     CHECKNAN(-nan);
-    CHECKNAN(nan * 2.0);
-    CHECKNAN(nan / 2.0);
-    CHECKNAN(1.0 / nan);
-    CHECKNAN(0.0 / nan);
-    CHECKNAN(0.0 * nan);
+    CHECKNAN(nan * two);
+    CHECKNAN(nan / two);
+    CHECKNAN(one / nan);
+    CHECKNAN(zero / nan);
+    CHECKNAN(zero * nan);
 
     // When any NaN is expected, any NaN will do:
     QCOMPARE(nan, nan);
