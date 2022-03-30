@@ -143,6 +143,12 @@ void QCoreTextFontDatabase::populateFontDatabase()
 bool QCoreTextFontDatabase::populateFamilyAliases(const QString &missingFamily)
 {
 #if defined(Q_OS_MACOS)
+    if (isFamilyPopulated(missingFamily)) {
+        // We got here because one of the other properties of the font mismatched,
+        // for example the style, so there's no point in populating font aliases.
+        return false;
+    }
+
     if (m_hasPopulatedAliases)
         return false;
 
