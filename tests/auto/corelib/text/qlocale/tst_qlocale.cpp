@@ -90,7 +90,6 @@ private slots:
     void long_long_conversion_data();
     void long_long_conversion();
     void long_long_conversion_extra();
-    void testInfAndNan();
     void fpExceptions();
     void negativeZero_data();
     void negativeZero();
@@ -1407,29 +1406,6 @@ void tst_QLocale::long_long_conversion_extra()
     QCOMPARE(l.toString((qulonglong)123), QString("123"));
     QCOMPARE(l.toString((qulonglong)1234), QString("1,234"));
     QCOMPARE(l.toString((qulonglong)12345), QString("12,345"));
-}
-
-void tst_QLocale::testInfAndNan()
-{
-    double neginf = log(0.0);
-    double nan = sqrt(-1.0);
-
-#ifdef Q_OS_WIN
-    // these cause INVALID floating point exception so we want to clear the status.
-    _clear87();
-#endif
-
-    QVERIFY(qIsInf(-neginf));
-    QVERIFY(!qIsNaN(-neginf));
-    QVERIFY(!qIsFinite(-neginf));
-
-    QVERIFY(!qIsInf(nan));
-    QVERIFY(qIsNaN(nan));
-    QVERIFY(!qIsFinite(nan));
-
-    QVERIFY(!qIsInf(1.234));
-    QVERIFY(!qIsNaN(1.234));
-    QVERIFY(qIsFinite(1.234));
 }
 
 void tst_QLocale::fpExceptions()

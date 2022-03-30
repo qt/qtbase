@@ -179,6 +179,15 @@ void tst_QNumeric::fuzzyIsNull()
     QCOMPARE(::qFuzzyIsNull(-value), isNull);
 }
 
+static void clearFpExceptions()
+{
+    // Call after any functions that exercise floating-point exceptions, such as
+    // sqrt(-1) or log(0).
+#ifdef Q_OS_WIN
+    _clearfp();
+#endif
+}
+
 #if defined __FAST_MATH__ && (__GNUC__ * 100 + __GNUC_MINOR__ >= 404)
    // turn -ffast-math off
 #  pragma GCC optimize "no-fast-math"
@@ -187,6 +196,7 @@ void tst_QNumeric::fuzzyIsNull()
 template<typename F>
 void tst_QNumeric::checkNaN(F nan)
 {
+    const auto cleanup = qScopeGuard([]() { clearFpExceptions(); });
 #define CHECKNAN(value) \
     do { \
         const F v = (value); \
@@ -211,6 +221,7 @@ void tst_QNumeric::checkNaN(F nan)
     CHECKNAN(one / nan);
     CHECKNAN(zero / nan);
     CHECKNAN(zero * nan);
+    CHECKNAN(sqrt(-one));
 
     // When any NaN is expected, any NaN will do:
     QCOMPARE(nan, nan);
@@ -298,6 +309,7 @@ void tst_QNumeric::generalNaN()
 template<typename F>
 void tst_QNumeric::infinity()
 {
+    const auto cleanup = qScopeGuard([]() { clearFpExceptions(); });
     const F inf = qInf();
     const F zero(0), one(1), two(2);
     QVERIFY(inf > zero);
@@ -320,6 +332,7 @@ void tst_QNumeric::infinity()
     QCOMPARE(one / -inf, zero);
     QVERIFY(qIsNaN(zero * inf));
     QVERIFY(qIsNaN(zero * -inf));
+    QCOMPARE(log(zero), -inf);
 }
 
 template<typename F>
