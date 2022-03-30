@@ -44,8 +44,16 @@
 #include <QtCore/qt_windows.h>
 #include <QtCore/qnamespace.h>
 
-#ifndef WM_DWMCOMPOSITIONCHANGED // MinGW.
-#    define WM_DWMCOMPOSITIONCHANGED 0x31E
+#ifndef WM_DWMCOMPOSITIONCHANGED
+#  define WM_DWMCOMPOSITIONCHANGED 0x31E
+#endif
+
+#ifndef WM_DWMCOLORIZATIONCOLORCHANGED
+#  define WM_DWMCOLORIZATIONCOLORCHANGED 0x0320
+#endif
+
+#ifndef WM_SYSCOLORCHANGE
+#  define WM_SYSCOLORCHANGE 0x0015
 #endif
 
 #ifndef WM_TOUCH
@@ -288,9 +296,8 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
     case WM_DISPLAYCHANGE:
         return QtWindows::DisplayChangedEvent;
     case WM_THEMECHANGED:
-#ifdef WM_SYSCOLORCHANGE // Windows 7: Handle color change as theme change (QTBUG-34170).
-    case WM_SYSCOLORCHANGE:
-#endif
+    case WM_SYSCOLORCHANGE: // Handle color change as theme change (QTBUG-34170).
+    case WM_DWMCOLORIZATIONCOLORCHANGED:
         return QtWindows::ThemeChanged;
     case WM_DWMCOMPOSITIONCHANGED:
         return QtWindows::CompositionSettingsChanged;
