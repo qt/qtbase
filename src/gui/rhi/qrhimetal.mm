@@ -4033,6 +4033,10 @@ QSize QMetalSwapChain::surfacePixelSize()
 
 bool QMetalSwapChain::isFormatSupported(Format f)
 {
+#ifdef Q_OS_MACOS
+    if (@available(macOS 10.12, /*iOS 10.0,*/ *))
+        return f == SDR || f == HDRExtendedSrgbLinear;
+#endif
     return f == SDR;
 }
 
@@ -4064,6 +4068,13 @@ void QMetalSwapChain::chooseFormats()
     QRHI_RES_RHI(QRhiMetal);
     samples = rhiD->effectiveSampleCount(m_sampleCount);
     // pick a format that is allowed for CAMetalLayer.pixelFormat
+    if (m_format == HDRExtendedSrgbLinear) {
+        if (@available(macOS 10.12, /*iOS 10.0,*/ *)) {
+            d->colorFormat = MTLPixelFormatRGBA16Float;
+            d->rhiColorFormat = QRhiTexture::RGBA16F;
+            return;
+        }
+    }
     d->colorFormat = m_flags.testFlag(sRGB) ? MTLPixelFormatBGRA8Unorm_sRGB : MTLPixelFormatBGRA8Unorm;
     d->rhiColorFormat = QRhiTexture::BGRA8;
 }
@@ -4095,6 +4106,14 @@ bool QMetalSwapChain::createOrResize()
     chooseFormats();
     if (d->colorFormat != d->layer.pixelFormat)
         d->layer.pixelFormat = d->colorFormat;
+#ifdef Q_OS_MACOS
+    if (@available(macOS 10.12, /*iOS 10.0,*/ *)) { // Can't enable this on iOS until wantsExtendedDynamicRangeContent is available
+        if (m_format == HDRExtendedSrgbLinear) {
+            d->layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceExtendedLinearSRGB);
+            d->layer.wantsExtendedDynamicRangeContent = YES;
+        }
+    }
+#endif
 
     if (m_flags.testFlag(UsedAsTransferSource))
         d->layer.framebufferOnly = NO;
@@ -4187,6 +4206,28 @@ bool QMetalSwapChain::createOrResize()
         rhiD->registerResource(this);
 
     return true;
+}
+
+QRhiSwapChainHdrInfo QMetalSwapChain::hdrInfo()
+{
+    QRhiSwapChainHdrInfo info;
+    info.limitsType = QRhiSwapChainHdrInfo::ColorComponentValue;
+    if (m_format == SDR) {
+        info.limits.colorComponentValue.maxColorComponentValue = 1;
+        return info;
+    }
+
+#ifdef Q_OS_MACOS
+    info.isHardCodedDefaults = false;
+    NSView *view = reinterpret_cast<NSView *>(window->winId());
+    info.limits.colorComponentValue.maxColorComponentValue = view.window.screen.maximumExtendedDynamicRangeColorComponentValue;
+#else
+    // ### Fixme: Maybe retrieve the brightness from the screen and if we're not at full brightness we might be able to do more.
+    // For now, assume 2, in line with iPhone 12 specs that claim 625 nits max brightness and 1200 nits max HDR brightness.
+    info.isHardCodedDefaults = true;
+    info.limits.colorComponentValue.maxColorComponentValue = 2;
+#endif
+    return info;
 }
 
 QT_END_NAMESPACE
