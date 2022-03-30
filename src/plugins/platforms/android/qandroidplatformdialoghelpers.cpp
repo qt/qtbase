@@ -60,6 +60,11 @@ QAndroidPlatformMessageDialogHelper::QAndroidPlatformMessageDialogHelper()
 {
 }
 
+QAndroidPlatformMessageDialogHelper::~QAndroidPlatformMessageDialogHelper()
+{
+    hide();
+}
+
 void QAndroidPlatformMessageDialogHelper::exec()
 {
     if (!m_shown)
