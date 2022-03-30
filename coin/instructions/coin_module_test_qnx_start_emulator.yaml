@@ -6,7 +6,7 @@ instructions:
         fileContents: |
             #!/bin/bash
             RESULT=1 # 0 upon success
-            TIMEOUT=120
+            TIMEOUT=240
             COUNT=0
             QEMUPID=0
             QEMUIPADDR="{{.Env.QNX_QEMU_IPADDR}}"
@@ -71,7 +71,7 @@ instructions:
           equals_value: Windows
       - type: ExecuteCommand
         command: "{{.Env.QNX_QEMU}}/start_qnx_qemu.sh"
-        maxTimeInSeconds: 100
+        maxTimeInSeconds: 300
         maxTimeBetweenOutput: 100
         userMessageOnFailure: >
           Failed to start QNX qemu, check logs.
