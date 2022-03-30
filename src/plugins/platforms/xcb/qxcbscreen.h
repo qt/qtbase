@@ -225,6 +225,7 @@ private:
     void sendStartupMessage(const QByteArray &message) const;
     int forcedDpi() const;
 
+    void updateColorSpaceAndEdid();
     QByteArray getOutputProperty(xcb_atom_t atom) const;
     QByteArray getEdid() const;
 

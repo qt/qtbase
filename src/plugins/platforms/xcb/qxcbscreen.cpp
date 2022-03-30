@@ -557,18 +557,23 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
 
     m_cursor = new QXcbCursor(connection, this);
 
+    updateColorSpaceAndEdid();
+}
+
+void QXcbScreen::updateColorSpaceAndEdid()
+{
     {
         // Read colord ICC data (from GNOME settings)
         auto reply = Q_XCB_REPLY_UNCHECKED(xcb_get_property, xcb_connection(),
                                            false, screen()->root,
-                                           connection->atom(QXcbAtom::_ICC_PROFILE),
+                                           connection()->atom(QXcbAtom::_ICC_PROFILE),
                                            XCB_ATOM_CARDINAL, 0, 8192);
         if (reply->format == 8 && reply->type == XCB_ATOM_CARDINAL) {
             QByteArray data(reinterpret_cast<const char *>(xcb_get_property_value(reply.get())), reply->value_len);
             m_colorSpace = QColorSpace::fromIccProfile(data);
         }
     }
-    if (connection->isAtLeastXRandR12()) { // Parse EDID
+    if (connection()->isAtLeastXRandR12()) { // Parse EDID
         QByteArray edid = getEdid();
         if (m_edid.parse(edid)) {
             qCDebug(lcQpaScreen, "EDID data for output \"%s\": identifier '%s', manufacturer '%s',"
@@ -627,11 +632,11 @@ void QXcbScreen::setMonitor(xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp
 
     m_outputs.clear();
     m_crtcs.clear();
+    m_output = XCB_NONE;
+    m_crtc = XCB_NONE;
 
     if (!monitorInfo) {
         m_monitor = nullptr;
-        m_output = XCB_NONE;
-        m_crtc = XCB_NONE;
         m_mode = XCB_NONE;
         m_outputName = defaultName();
         // TODO: Send an event to the QScreen instance that the screen changed its name
@@ -641,8 +646,12 @@ void QXcbScreen::setMonitor(xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp
     xcb_randr_select_input(xcb_connection(), screen()->root, true);
 
     m_monitor = monitorInfo;
+    qCDebug(lcQpaScreen) << "xcb_randr_monitor_info_t: primary=" << m_monitor->primary << ", x=" << m_monitor->x << ", y=" << m_monitor->y
+        << ", width=" << m_monitor->width << ", height=" << m_monitor->height
+        << ", width_in_millimeters=" << m_monitor->width_in_millimeters << ", height_in_millimeters=" << m_monitor->height_in_millimeters;
     QRect monitorGeometry = QRect(m_monitor->x, m_monitor->y,
                                   m_monitor->width, m_monitor->height);
+    m_sizeMillimeters = QSize(m_monitor->width_in_millimeters, m_monitor->height_in_millimeters);
 
     int outputCount = xcb_randr_monitor_info_outputs_length(m_monitor);
     xcb_randr_output_t *outputs = nullptr;
@@ -670,7 +679,13 @@ void QXcbScreen::setMonitor(xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp
             }
 
             m_outputs << outputs[i];
+            if (m_output == XCB_NONE) {
+                m_output = outputs[i];
+                m_outputSizeMillimeters = QSize(output->mm_width, output->mm_height);
+            }
             m_crtcs << output->crtc;
+            if (m_crtc == XCB_NONE)
+                m_crtc = output->crtc;
         }
     }
 
@@ -698,8 +713,6 @@ void QXcbScreen::setMonitor(xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp
     if (m_availableGeometry.isEmpty())
         m_availableGeometry = m_virtualDesktop->availableGeometry(m_geometry);
 
-    m_sizeMillimeters = sizeInMillimeters(m_geometry.size(), m_virtualDesktop->dpi());
-
     if (m_sizeMillimeters.isEmpty())
         m_sizeMillimeters = virtualDesktop()->physicalSize();
 
@@ -708,6 +721,8 @@ void QXcbScreen::setMonitor(xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp
     m_primary = monitorInfo->primary;
 
     m_cursor = new QXcbCursor(connection(), this);
+
+    updateColorSpaceAndEdid();
 }
 
 QString QXcbScreen::defaultName()
@@ -923,19 +938,23 @@ void QXcbScreen::updateGeometry(const QRect &geometry, uint8_t rotation)
     switch (rotation) {
     case XCB_RANDR_ROTATION_ROTATE_0: // xrandr --rotate normal
         m_orientation = Qt::LandscapeOrientation;
-        m_sizeMillimeters = m_outputSizeMillimeters;
+        if (!m_monitor)
+            m_sizeMillimeters = m_outputSizeMillimeters;
         break;
     case XCB_RANDR_ROTATION_ROTATE_90: // xrandr --rotate left
         m_orientation = Qt::PortraitOrientation;
-        m_sizeMillimeters = m_outputSizeMillimeters.transposed();
+        if (!m_monitor)
+            m_sizeMillimeters = m_outputSizeMillimeters.transposed();
         break;
     case XCB_RANDR_ROTATION_ROTATE_180: // xrandr --rotate inverted
         m_orientation = Qt::InvertedLandscapeOrientation;
-        m_sizeMillimeters = m_outputSizeMillimeters;
+        if (!m_monitor)
+            m_sizeMillimeters = m_outputSizeMillimeters;
         break;
     case XCB_RANDR_ROTATION_ROTATE_270: // xrandr --rotate right
         m_orientation = Qt::InvertedPortraitOrientation;
-        m_sizeMillimeters = m_outputSizeMillimeters.transposed();
+        if (!m_monitor)
+            m_sizeMillimeters = m_outputSizeMillimeters.transposed();
         break;
     }
 
