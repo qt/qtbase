@@ -868,6 +868,9 @@ public:
     inline qsizetype capacity() const noexcept { return d ? qsizetype(d->numBuckets >> 1) : 0; }
     void reserve(qsizetype size)
     {
+        // reserve(0) is used in squeeze()
+        if (size && (this->capacity() >= size))
+            return;
         if (isDetached())
             d->rehash(size);
         else
@@ -1421,6 +1424,9 @@ public:
     inline qsizetype capacity() const noexcept { return d ? qsizetype(d->numBuckets >> 1) : 0; }
     void reserve(qsizetype size)
     {
+        // reserve(0) is used in squeeze()
+        if (size && (this->capacity() >= size))
+            return;
         if (isDetached())
             d->rehash(size);
         else
