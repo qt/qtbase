@@ -31,6 +31,7 @@
 #include <qbaselinetest.h>
 #include <QApplication>
 #include <QStyle>
+#include <QStyleHints>
 #include <QScreen>
 
 QT_BEGIN_NAMESPACE
@@ -53,7 +54,10 @@ QWidgetBaselineTest::QWidgetBaselineTest()
 #else
             QApplication::style()->name();
 #endif
+    // turn off animations and make the cursor flash time really long to avoid blinking
     QApplication::style()->setProperty("_qt_animation_time", QTime());
+    QGuiApplication::styleHints()->setCursorFlashTime(50000);
+
     QByteArray appearanceBytes;
     {
         QDataStream appearanceStream(&appearanceBytes, QIODevice::WriteOnly);
