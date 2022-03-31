@@ -4148,9 +4148,10 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
         if (spec == Qt::LocalTime) {
             QDate dt;
             QTime tm;
-            if (QDateTimePrivate::epochMSecsToLocalTime(msecs, &dt, &tm, &dst))
+            if (QDateTimePrivate::epochMSecsToLocalTime(msecs, &dt, &tm, &dst)) {
                 setDateTime(d, dt, tm);
-            status = getStatus(d);
+                status = getStatus(d);
+            } // else leave status marked invalid.
             if ((status & QDateTimePrivate::ValidDate) && (status & QDateTimePrivate::ValidTime)) {
                 local = getMSecs(d);
                 offsetFromUtc = (local - msecs) / MSECS_PER_SEC;
