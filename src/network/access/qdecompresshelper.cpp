@@ -41,6 +41,7 @@
 
 #include <QtCore/private/qbytearray_p.h>
 #include <QtCore/qiodevice.h>
+#include <QtCore/qcoreapplication.h>
 
 #include <limits>
 #include <zlib.h>
@@ -131,13 +132,16 @@ bool QDecompressHelper::setEncoding(const QByteArray &encoding)
     Q_ASSERT(contentEncoding == QDecompressHelper::None);
     if (contentEncoding != QDecompressHelper::None) {
         qWarning("Encoding is already set.");
+        // This isn't an error, so it doesn't set errorStr, it's just wrong usage.
         return false;
     }
     ContentEncoding ce = encodingFromByteArray(encoding);
     if (ce == None) {
-        qWarning("An unsupported content encoding was selected: %s", encoding.data());
+        errorStr = QCoreApplication::translate("QHttp", "Unsupported content encoding: %1")
+                           .arg(QLatin1String(encoding));
         return false;
     }
+    errorStr = QString(); // clear error
     return setEncoding(ce);
 }
 
@@ -179,7 +183,8 @@ bool QDecompressHelper::setEncoding(ContentEncoding ce)
         break;
     }
     if (!decoderPointer) {
-        qWarning("Failed to initialize the decoder.");
+        errorStr = QCoreApplication::translate("QHttp",
+                                               "Failed to initialize the compression decoder.");
         contentEncoding = QDecompressHelper::None;
         return false;
     }
@@ -386,8 +391,13 @@ qsizetype QDecompressHelper::read(char *data, qsizetype maxSize)
         uncompressedBytes -= bytesRead;
 
     totalUncompressedBytes += bytesRead;
-    if (isPotentialArchiveBomb())
+    if (isPotentialArchiveBomb()) {
+        errorStr = QCoreApplication::translate(
+                "QHttp",
+                "The decompressed output exceeds the limits specified by "
+                "QNetworkRequest::decompressedSafetyCheckThreshold()");
         return -1;
+    }
 
     return bytesRead;
 }
@@ -458,9 +468,27 @@ qint64 QDecompressHelper::encodedBytesAvailable() const
     return compressedDataBuffer.byteAmount();
 }
 
+/*!
+    \internal
+    Returns whether or not the object is valid.
+    If it becomes invalid after an operation has been performed
+    then an error has occurred.
+    \sa errorString()
+*/
 bool QDecompressHelper::isValid() const
 {
     return contentEncoding != None;
+}
+
+/*!
+    \internal
+    Returns a string describing the error that occurred or an empty
+    string if no error occurred.
+    \sa isValid()
+*/
+QString QDecompressHelper::errorString() const
+{
+    return errorStr;
 }
 
 void QDecompressHelper::clear()
@@ -504,6 +532,8 @@ void QDecompressHelper::clear()
     uncompressedBytes = 0;
     totalUncompressedBytes = 0;
     totalCompressedBytes = 0;
+
+    errorStr.clear();
 }
 
 qsizetype QDecompressHelper::readZLib(char *data, const qsizetype maxSize)
@@ -659,8 +689,9 @@ qsizetype QDecompressHelper::readBrotli(char *data, const qsizetype maxSize)
 
         switch (result) {
         case BROTLI_DECODER_RESULT_ERROR:
-            qWarning("Brotli error: %s",
-                     BrotliDecoderErrorString(BrotliDecoderGetErrorCode(brotliDecoderState)));
+            errorStr = QLatin1String("Brotli error: %1")
+                               .arg(QString::fromUtf8(BrotliDecoderErrorString(
+                                       BrotliDecoderGetErrorCode(brotliDecoderState))));
             return -1;
         case BROTLI_DECODER_RESULT_SUCCESS:
             BrotliDecoderDestroyInstance(brotliDecoderState);
@@ -706,7 +737,8 @@ qsizetype QDecompressHelper::readZstandard(char *data, const qsizetype maxSize)
     while (outBuf.pos < outBuf.size && (inBuf.pos < inBuf.size || decoderHasData)) {
         size_t retValue = ZSTD_decompressStream(zstdStream, &outBuf, &inBuf);
         if (ZSTD_isError(retValue)) {
-            qWarning("ZStandard error: %s", ZSTD_getErrorName(retValue));
+            errorStr = QLatin1String("ZStandard error: %1")
+                               .arg(QString::fromUtf8(ZSTD_getErrorName(retValue)));
             return -1;
         } else {
             decoderHasData = false;

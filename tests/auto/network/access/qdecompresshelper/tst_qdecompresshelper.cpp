@@ -424,10 +424,13 @@ void tst_QDecompressHelper::archiveBomb()
     QVERIFY(bytesRead <= output.size());
     QVERIFY(helper.isValid());
 
-    if (shouldFail)
+    if (shouldFail) {
         QCOMPARE(bytesRead, -1);
-    else
+        QVERIFY(!helper.errorString().isEmpty());
+    } else {
         QVERIFY(bytesRead > 0);
+        QVERIFY(helper.errorString().isEmpty());
+    }
 }
 
 void tst_QDecompressHelper::bigZlib()

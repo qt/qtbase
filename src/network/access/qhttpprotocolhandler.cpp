@@ -203,7 +203,13 @@ void QHttpProtocolHandler::_q_receiveReply()
                     }
                 } else if (haveRead == -1) {
                     // Some error occurred
-                    m_connection->d_func()->emitReplyError(m_socket, m_reply, QNetworkReply::ProtocolFailure);
+                    if (replyPrivate->autoDecompress && !replyPrivate->decompressHelper.isValid()) {
+                        m_connection->d_func()->emitReplyError(m_socket, m_reply,
+                                                               QNetworkReply::UnknownContentError);
+                    } else {
+                        m_connection->d_func()->emitReplyError(m_socket, m_reply,
+                                                               QNetworkReply::ProtocolFailure);
+                    }
                     break;
                 }
             }

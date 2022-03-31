@@ -1297,9 +1297,11 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const Frame &frame,
                     output.resize(read);
                     replyPrivate->responseData.append(std::move(output));
                 } else if (read < 0) {
-                    finishStreamWithError(
-                            stream, QNetworkReply::ProtocolFailure,
-                            QCoreApplication::translate("QHttp", "Data corrupted"));
+                    const QString decompressError =
+                            QCoreApplication::translate("QHttp", "Decompression failed: %1")
+                                    .arg(replyPrivate->decompressHelper.errorString());
+                    finishStreamWithError(stream, QNetworkReply::UnknownContentError,
+                                          decompressError);
                     return;
                 }
             }

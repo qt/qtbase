@@ -7077,7 +7077,7 @@ void tst_QNetworkReply::compressedHttpReplyBrokenGzip()
 
     QCOMPARE(waitForFinish(reply), int(Failure));
 
-    QCOMPARE(reply->error(), QNetworkReply::ProtocolFailure);
+    QCOMPARE(reply->error(), QNetworkReply::UnknownContentError);
 }
 
 // TODO add similar test for FTP

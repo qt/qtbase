@@ -96,6 +96,8 @@ public:
     static bool isSupportedEncoding(const QByteArray &encoding);
     static QByteArrayList acceptedEncoding();
 
+    QString errorString() const;
+
 private:
     bool isPotentialArchiveBomb() const;
 
@@ -116,6 +118,8 @@ private:
     bool countDecompressed = false;
     std::unique_ptr<QDecompressHelper> countHelper;
     qint64 uncompressedBytes = 0;
+
+    QString errorStr;
 
     // Used for calculating the ratio
     qint64 archiveBombCheckThreshold = 10 * 1024 * 1024;
