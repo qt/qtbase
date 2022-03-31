@@ -1942,10 +1942,16 @@ QByteArray QProcess::readAllStandardOutput()
 */
 QByteArray QProcess::readAllStandardError()
 {
-    ProcessChannel tmp = readChannel();
-    setReadChannel(StandardError);
-    QByteArray data = readAll();
-    setReadChannel(tmp);
+    Q_D(QProcess);
+    QByteArray data;
+    if (d->processChannelMode == MergedChannels) {
+        qWarning("QProcess::readAllStandardError: Called with MergedChannels");
+    } else {
+        ProcessChannel tmp = readChannel();
+        setReadChannel(StandardError);
+        data = readAll();
+        setReadChannel(tmp);
+    }
     return data;
 }
 
