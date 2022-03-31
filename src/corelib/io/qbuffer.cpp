@@ -421,17 +421,19 @@ qint64 QBuffer::readData(char *data, qint64 len)
 qint64 QBuffer::writeData(const char *data, qint64 len)
 {
     Q_D(QBuffer);
-    int extraBytes = pos() + len - d->buf->size();
-    if (extraBytes > 0) { // overflow
-        int newSize = d->buf->size() + extraBytes;
-        d->buf->resize(newSize);
-        if (d->buf->size() != newSize) { // could not resize
+    const quint64 required = quint64(pos()) + quint64(len); // cannot overflow (pos() ≥ 0, len ≥ 0)
+
+    if (required > quint64(d->buf->size())) { // capacity exceeded
+        // The following must hold, since qsizetype covers half the virtual address space:
+        Q_ASSUME(required <= quint64((std::numeric_limits<qsizetype>::max)()));
+        d->buf->resize(qsizetype(required));
+        if (quint64(d->buf->size()) != required) { // could not resize
             qWarning("QBuffer::writeData: Memory allocation error");
             return -1;
         }
     }
 
-    memcpy(d->buf->data() + pos(), data, int(len));
+    memcpy(d->buf->data() + pos(), data, size_t(len));
 
 #ifndef QT_NO_QOBJECT
     d->writtenSinceLastEmit += len;
