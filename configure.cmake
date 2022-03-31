@@ -4,8 +4,7 @@
 
 #### Libraries
 
-qt_find_package(WrapZLIB 1.0.8 PROVIDED_TARGETS WrapZLIB::WrapZLIB MODULE_NAME global QMAKE_LIB zlib)
-# special case begin
+qt_find_package(WrapSystemZLIB 1.0.8 PROVIDED_TARGETS WrapSystemZLIB::WrapSystemZLIB MODULE_NAME global QMAKE_LIB zlib)
 # Work around global target promotion failure when WrapZLIB is used on APPLE platforms.
 # What ends up happening is that the ZLIB::ZLIB target is not promoted to global by qt_find_package,
 # then qt_find_package(WrapSystemPNG) tries to find its dependency ZLIB::ZLIB, sees it's not global
@@ -882,7 +881,7 @@ qt_feature("stack-protector-strong" PRIVATE
 )
 qt_feature("system-zlib" PRIVATE
     LABEL "Using system zlib"
-    CONDITION WrapZLIB_FOUND
+    CONDITION WrapSystemZLIB_FOUND
 )
 qt_feature("zstd" PRIVATE
     LABEL "Zstandard support"

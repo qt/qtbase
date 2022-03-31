@@ -3,6 +3,7 @@
 # special case begin
 qt_find_package(Threads PROVIDED_TARGETS Threads::Threads)
 qt_find_package(WrapPCRE2 PROVIDED_TARGETS WrapPCRE2::WrapPCRE2)
+qt_find_package(WrapZLIB PROVIDED_TARGETS WrapZLIB::WrapZLIB)
 
 
 # compute the reverse relative path from QtCoreConfigExtras to the install prefix
@@ -264,6 +265,7 @@ qt_internal_add_module(Core
         ../3rdparty/tinycbor/src
     LIBRARIES
         Qt::GlobalConfigPrivate # special case
+        WrapZLIB::WrapZLIB
     PRECOMPILED_HEADER
         "global/qt_pch.h"
     GENERATE_CPP_EXPORTS
@@ -664,30 +666,9 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_std_atomic64
         WrapAtomic::WrapAtomic
 )
 
-qt_internal_extend_target(Core CONDITION QT_FEATURE_system_zlib
-    LIBRARIES
-        WrapZLIB::WrapZLIB
-)
-
 qt_internal_extend_target(Core CONDITION NOT QT_FEATURE_system_zlib
-    SOURCES
-        ../3rdparty/zlib/src/adler32.c
-        ../3rdparty/zlib/src/compress.c
-        ../3rdparty/zlib/src/crc32.c
-        ../3rdparty/zlib/src/deflate.c
-        ../3rdparty/zlib/src/gzclose.c
-        ../3rdparty/zlib/src/gzlib.c
-        ../3rdparty/zlib/src/gzread.c
-        ../3rdparty/zlib/src/gzwrite.c
-        ../3rdparty/zlib/src/infback.c
-        ../3rdparty/zlib/src/inffast.c
-        ../3rdparty/zlib/src/inflate.c
-        ../3rdparty/zlib/src/inftrees.c
-        ../3rdparty/zlib/src/trees.c
-        ../3rdparty/zlib/src/uncompr.c
-        ../3rdparty/zlib/src/zutil.c
-    INCLUDE_DIRECTORIES
-        ../3rdparty/zlib/src
+    LIBRARIES
+        Qt::ZlibPrivate
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_commandlineparser
@@ -1322,14 +1303,6 @@ qt_internal_create_tracepoints(Core qtcore.tracepoints)
 qt_internal_add_docs(Core
     doc/qtcore.qdocconf
 )
-
-if(NOT QT_FEATURE_system_zlib)
-    qt_internal_add_3rdparty_header_module(ZlibPrivate
-        EXTERNAL_HEADERS
-            ../3rdparty/zlib/src/zlib.h
-            ../3rdparty/zlib/src/zconf.h
-    )
-endif()
 
 qt_internal_add_optimize_full_flags()
 
