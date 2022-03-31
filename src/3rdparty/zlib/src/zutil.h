@@ -13,9 +13,7 @@
 #ifndef ZUTIL_H
 #define ZUTIL_H
 
-#ifndef QT_BOOTSTRAPPED
-#  include <qconfig.h>
-#endif
+#include <qconfig.h>
 
 #ifdef QT_VISIBILITY_AVAILABLE
 #define HAVE_HIDDEN

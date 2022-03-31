@@ -15,24 +15,11 @@ diff -ruN orig/ChangeLog src/ChangeLog
 diff -ruN orig/gzguts.h src/gzguts.h
 --- orig/gzguts.h
 +++ src/gzguts.h
-@@ -3,6 +3,25 @@
+@@ -3,6 +3,12 @@
   * For conditions of distribution and use, see copyright notice in zlib.h
   */
  
-+#ifdef _MSC_VER
-+#  ifndef _CRT_SECURE_NO_DEPRECATE
-+#    define _CRT_SECURE_NO_DEPRECATE
-+#  endif
-+#  ifndef _CRT_NONSTDC_NO_DEPRECATE
-+#    define _CRT_NONSTDC_NO_DEPRECATE
-+#  endif
-+// disable warnings like '=': conversion from 'size_t' to 'unsigned int', possible loss of data
-+#  pragma warning(disable: 4267; disable: 4244)
-+#endif
-+
-+#ifndef QT_BOOTSTRAPPED
-+#  include <qconfig.h>
-+#endif
++#include <qconfig.h>
 +
 +#ifdef QT_VISIBILITY_AVAILABLE
 +#define HAVE_HIDDEN
@@ -107,13 +94,11 @@ diff -ruN orig/zlib.h src/zlib.h
 diff -ruN orig/zutil.h src/zutil.h
 --- orig/zutil.h
 +++ src/zutil.h
-@@ -13,6 +13,14 @@
+@@ -13,6 +13,12 @@
  #ifndef ZUTIL_H
  #define ZUTIL_H
  
-+#ifndef QT_BOOTSTRAPPED
-+#  include <qconfig.h>
-+#endif
++#include <qconfig.h>
 +
 +#ifdef QT_VISIBILITY_AVAILABLE
 +#define HAVE_HIDDEN
@@ -122,7 +107,7 @@ diff -ruN orig/zutil.h src/zutil.h
  #ifdef HAVE_HIDDEN
  #  define ZLIB_INTERNAL __attribute__((visibility ("hidden")))
  #else
-@@ -143,6 +151,11 @@
+@@ -143,6 +149,11 @@
  #    if defined(__MWERKS__) && __dest_os != __be_os && __dest_os != __win32_os
  #      include <unix.h> /* for fdopen */
  #    else
@@ -134,7 +119,7 @@ diff -ruN orig/zutil.h src/zutil.h
  #      ifndef fdopen
  #        define fdopen(fd,mode) NULL /* No fdopen() */
  #      endif
-@@ -166,7 +179,7 @@
+@@ -166,7 +177,7 @@
  #  define OS_CODE 18
  #endif
  

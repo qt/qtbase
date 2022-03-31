@@ -3,20 +3,7 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#ifdef _MSC_VER
-#  ifndef _CRT_SECURE_NO_DEPRECATE
-#    define _CRT_SECURE_NO_DEPRECATE
-#  endif
-#  ifndef _CRT_NONSTDC_NO_DEPRECATE
-#    define _CRT_NONSTDC_NO_DEPRECATE
-#  endif
-// disable warnings like '=': conversion from 'size_t' to 'unsigned int', possible loss of data
-#  pragma warning(disable: 4267; disable: 4244)
-#endif
-
-#ifndef QT_BOOTSTRAPPED
-#  include <qconfig.h>
-#endif
+#include <qconfig.h>
 
 #ifdef QT_VISIBILITY_AVAILABLE
 #define HAVE_HIDDEN
