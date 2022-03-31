@@ -165,9 +165,12 @@ QStringList QCupsPrinterSupport::availablePrintDeviceIds() const
     list.reserve(count);
     for (int i = 0; i < count; ++i) {
         QString printerId = QString::fromLocal8Bit(dests[i].name);
-        if (dests[i].instance)
+        if (dests[i].instance) {
             printerId += u'/' + QString::fromLocal8Bit(dests[i].instance);
-        list.append(printerId);
+            list.append(printerId);
+        } else if (cupsGetOption("printer-uri-supported", dests[i].num_options, dests[i].options)) {
+            list.append(printerId);
+        }
     }
     cupsFreeDests(count, dests);
     return list;
