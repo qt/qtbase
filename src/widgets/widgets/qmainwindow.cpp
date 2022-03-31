@@ -213,9 +213,6 @@ void QMainWindowPrivate::init()
 
     \image mainwindowlayout.png
 
-    \note Creating a main window without a central widget is not supported.
-    You must have a central widget even if it is just a placeholder.
-
     \section1 Creating Main Window Components
 
     A central widget will typically be a standard Qt widget such
@@ -615,7 +612,7 @@ void QMainWindow::setStatusBar(QStatusBar *statusbar)
 
 /*!
     Returns the central widget for the main window. This function
-    returns zero if the central widget has not been set.
+    returns \nullptr if the central widget has not been set.
 
     \sa setCentralWidget()
 */
