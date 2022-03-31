@@ -317,6 +317,16 @@ inline QJsonValue QCborValueConstRef::toJsonValue() const
     return concrete().toJsonValue();
 }
 
+inline bool operator==(const QJsonValueConstRef &lhs, const QJsonValueRef &rhs)
+{ return QJsonValue(lhs) == QJsonValue(rhs); }
+inline bool operator!=(const QJsonValueConstRef &lhs, const QJsonValueRef &rhs)
+{ return !(lhs == rhs); }
+
+inline bool operator==(const QJsonValueRef &lhs, const QJsonValueConstRef &rhs)
+{ return QJsonValue(lhs) == QJsonValue(rhs); }
+inline bool operator!=(const QJsonValueRef &lhs, const QJsonValueConstRef &rhs)
+{ return !(lhs == rhs); }
+
 inline bool operator==(const QJsonValueRef &lhs, const QJsonValueRef &rhs)
 { return QJsonValue(lhs) == QJsonValue(rhs); }
 inline bool operator!=(const QJsonValueRef &lhs, const QJsonValueRef &rhs)
