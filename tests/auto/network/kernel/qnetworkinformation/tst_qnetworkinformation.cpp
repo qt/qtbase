@@ -135,10 +135,10 @@ void tst_QNetworkInformation::initTestCase()
     auto backends = QNetworkInformation::availableBackends();
     QVERIFY(backends.size() > prevBackends.size());
     QVERIFY(backends.contains(u"mock"));
-    QVERIFY(QNetworkInformation::load(u"mock"));
-    QVERIFY(QNetworkInformation::load(u"mock"));
-    QVERIFY(QNetworkInformation::load(u"mOcK"));
-    QVERIFY(!QNetworkInformation::load(u"mocks"));
+    QVERIFY(QNetworkInformation::loadBackendByName(u"mock"));
+    QVERIFY(QNetworkInformation::loadBackendByName(u"mock"));
+    QVERIFY(QNetworkInformation::loadBackendByName(u"mOcK"));
+    QVERIFY(!QNetworkInformation::loadBackendByName(u"mocks"));
 }
 
 void tst_QNetworkInformation::cleanupTestCase()

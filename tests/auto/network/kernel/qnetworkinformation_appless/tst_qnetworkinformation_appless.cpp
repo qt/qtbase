@@ -48,7 +48,7 @@ void tst_QNetworkInformation_appless::reinit()
         if (QNetworkInformation::availableBackends().isEmpty())
             QSKIP("No backends available!");
 
-        QVERIFY(QNetworkInformation::load(QNetworkInformation::Feature::Reachability));
+        QVERIFY(QNetworkInformation::loadDefaultBackend());
         auto info = QNetworkInformation::instance();
         QVERIFY(info);
     }
@@ -57,7 +57,7 @@ void tst_QNetworkInformation_appless::reinit()
 
     {
         QCoreApplication app(argc, argv);
-        QVERIFY(QNetworkInformation::load(QNetworkInformation::Feature::Reachability));
+        QVERIFY(QNetworkInformation::loadDefaultBackend());
         auto info = QNetworkInformation::instance();
         QVERIFY(info);
     }

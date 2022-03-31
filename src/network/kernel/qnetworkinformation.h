@@ -101,8 +101,12 @@ public:
     Features supportedFeatures() const;
 
     static bool loadDefaultBackend();
-    static bool load(QStringView backend);
-    static bool load(Features features);
+    static bool loadBackendByName(QStringView backend);
+    static bool loadBackendByFeatures(Features features);
+#if QT_DEPRECATED_SINCE(6,4)
+    QT_DEPRECATED_VERSION_X_6_4("Use loadBackendByName") static bool load(QStringView backend);
+    QT_DEPRECATED_VERSION_X_6_4("Use loadBackendByFeatures") static bool load(Features features);
+#endif
     static QStringList availableBackends();
     static QNetworkInformation *instance();
 

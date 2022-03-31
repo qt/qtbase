@@ -678,10 +678,12 @@ bool QNetworkInformation::loadDefaultBackend()
 #endif
     if (index == -1)
         return false;
-    return load(QNetworkInformationBackend::PluginNames[index]);
+    return loadBackendByName(QNetworkInformationBackend::PluginNames[index]);
 }
 
 /*!
+    \since 6.4
+
     Attempts to load a backend whose name matches \a backend
     (case insensitively).
 
@@ -690,10 +692,20 @@ bool QNetworkInformation::loadDefaultBackend()
 
     \sa instance
 */
-bool QNetworkInformation::load(QStringView backend)
+bool QNetworkInformation::loadBackendByName(QStringView backend)
 {
     auto loadedBackend = QNetworkInformationPrivate::create(backend);
     return loadedBackend && loadedBackend->backendName().compare(backend, Qt::CaseInsensitive) == 0;
+}
+
+/*!
+    \deprecated [6.4] Use loadBackendByName() instead.
+
+    \sa loadBackendByName(), loadDefaultBackend(), loadBackendByFeatures()
+*/
+bool QNetworkInformation::load(QStringView backend)
+{
+    return loadBackendByName(backend);
 }
 
 /*!
@@ -704,10 +716,20 @@ bool QNetworkInformation::load(QStringView backend)
 
     \sa instance
 */
-bool QNetworkInformation::load(Features features)
+bool QNetworkInformation::loadBackendByFeatures(Features features)
 {
     auto loadedBackend = QNetworkInformationPrivate::create(features);
     return loadedBackend && loadedBackend->supports(features);
+}
+
+/*!
+    \deprecated [6.4] Use loadBackendByFeatures() instead.
+
+    \sa loadBackendByName(), loadDefaultBackend(), loadBackendByFeatures()
+*/
+bool QNetworkInformation::load(Features features)
+{
+    return loadBackendByFeatures(features);
 }
 
 /*!
