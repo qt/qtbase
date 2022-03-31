@@ -1507,6 +1507,11 @@ void QNetworkProxyFactory::setApplicationProxyFactory(QNetworkProxyFactory *fact
     SOCKS server for all queries. If SOCKS isn't enabled, it will use
     the HTTPS proxy for all TcpSocket and UrlRequest queries.
 
+    On systems configured with libproxy support, this function will
+    rely on libproxy to obtain the proxy settings. Depending on
+    libproxy configurations, this can in turn delegate to desktop
+    settings, environment variables, etc.
+
     On other systems, this function will pick up proxy settings from
     the "http_proxy" environment variable. This variable must be a URL
     using one of the following schemes: "http", "socks5" or "socks5h".
