@@ -196,4 +196,14 @@
     \code
     request.setAttribute(QNetworkRequest::Http2AllowedAttribute, false);
     \endcode
+
+    \section2 QNetworkAccessManager now guards against archive bombs
+
+    Starting with Qt 6.2 QNetworkAccessManager will guard against compressed
+    files that decompress to files which are much larger than their compressed
+    form by erroring out the reply if the decompression ratio exceeds a certain
+    threshold.
+    This check is only applied to files larger than a certain size, which can be
+    customized (or disabled by passing -1) by calling
+    \l{QNetworkRequest::setDecompressedSafetyCheckThreshold()}.
 */

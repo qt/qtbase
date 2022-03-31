@@ -532,6 +532,8 @@ private Q_SLOTS:
     void cacheWithContentEncoding();
     void downloadProgressWithContentEncoding_data();
     void downloadProgressWithContentEncoding();
+    void contentEncodingError_data();
+    void contentEncodingError();
 
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
@@ -7105,7 +7107,7 @@ void tst_QNetworkReply::compressedHttpReplyBrokenGzip()
 
     QCOMPARE(waitForFinish(reply), int(Failure));
 
-    QCOMPARE(reply->error(), QNetworkReply::ProtocolFailure);
+    QCOMPARE(reply->error(), QNetworkReply::UnknownContentError);
 }
 
 // TODO add similar test for FTP
@@ -9806,6 +9808,37 @@ void tst_QNetworkReply::downloadProgressWithContentEncoding()
     QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
     QCOMPARE(reply->error(), QNetworkReply::NoError);
     QCOMPARE(bytesReceived, expected.size());
+}
+
+void tst_QNetworkReply::contentEncodingError_data()
+{
+    QTest::addColumn<QByteArray>("encoding");
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<QNetworkReply::NetworkError>("expectedError");
+
+    QTest::addRow("archive-bomb") << QByteArray("gzip") << (":/4G.gz")
+                                  << QNetworkReply::UnknownContentError;
+}
+
+void tst_QNetworkReply::contentEncodingError()
+{
+    QFETCH(QString, path);
+    QFile compressedFile(path);
+    QVERIFY(compressedFile.open(QIODevice::ReadOnly));
+    QByteArray body = compressedFile.readAll();
+
+    QFETCH(QByteArray, encoding);
+    QString header("HTTP/1.0 200 OK\r\nContent-Encoding: %1\r\nContent-Length: %2\r\n\r\n");
+    header = header.arg(encoding, QString::number(body.size()));
+
+    MiniHttpServer server(header.toLatin1() + body);
+
+    QNetworkRequest request(
+            QUrl(QLatin1String("http://localhost:%1").arg(QString::number(server.serverPort()))));
+    QNetworkReplyPtr reply(manager.get(request));
+
+    QTRY_VERIFY2_WITH_TIMEOUT(reply->isFinished(), qPrintable(reply->errorString()), 15000);
+    QTEST(reply->error(), "expectedError");
 }
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!
