@@ -271,20 +271,22 @@ bool QCALayerBackingStore::scroll(const QRegion &region, int dx, int dy)
     m_buffers.back()->lock(QPlatformGraphicsBuffer::SWWriteAccess);
 
     if (!inPlaceRegion.isEmpty()) {
-        qCDebug(lcQpaBackingStore) << "Scrolling" << inPlaceRegion << "in place";
+        // We have to scroll everything in one go, instead of scrolling the
+        // individual rects of the region, as otherwise we may end up reading
+        // already overwritten (scrolled) pixels.
+        const QRect inPlaceBoundingRect = inPlaceRegion.boundingRect();
+
+        qCDebug(lcQpaBackingStore) << "Scrolling" << inPlaceBoundingRect << "in place";
         QImage *backBufferImage = m_buffers.back()->asImage();
         const qreal devicePixelRatio = backBufferImage->devicePixelRatio();
         const QPoint devicePixelDelta = scrollDelta * devicePixelRatio;
 
         extern void qt_scrollRectInImage(QImage &, const QRect &, const QPoint &);
 
-        for (const QRect &rect : inPlaceRegion) {
-            qt_scrollRectInImage(*backBufferImage,
-                QRect(rect.topLeft() * devicePixelRatio,
-                      rect.size() * devicePixelRatio),
-                      devicePixelDelta);
-        }
-
+        qt_scrollRectInImage(*backBufferImage,
+            QRect(inPlaceBoundingRect.topLeft() * devicePixelRatio,
+                  inPlaceBoundingRect.size() * devicePixelRatio),
+                  devicePixelDelta);
     }
 
     if (!frontBufferRegion.isEmpty()) {
