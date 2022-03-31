@@ -1082,6 +1082,16 @@ void tst_QProcess::mergedChannels()
 
     QVERIFY(process.waitForStarted(5000));
 
+    {
+        QCOMPARE(process.write("abc"), qlonglong(3));
+        while (process.bytesAvailable() < 6)
+            QVERIFY(process.waitForReadyRead(5000));
+        QCOMPARE(process.readAllStandardOutput(), QByteArray("aabbcc"));
+        QTest::ignoreMessage(QtWarningMsg,
+            "QProcess::readAllStandardError: Called with MergedChannels");
+        QCOMPARE(process.readAllStandardError(), QByteArray());
+    }
+
     for (int i = 0; i < 100; ++i) {
         QCOMPARE(process.write("abc"), qlonglong(3));
         while (process.bytesAvailable() < 6)
