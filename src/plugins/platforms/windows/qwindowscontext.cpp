@@ -1154,17 +1154,20 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         return false;
     case QtWindows::SettingChangedEvent: {
         QWindowsWindow::settingsChanged();
-        const bool darkMode = QWindowsTheme::queryDarkMode();
-        if (darkMode != QWindowsContextPrivate::m_darkMode) {
-            QWindowsContextPrivate::m_darkMode = darkMode;
-            auto integration = QWindowsIntegration::instance();
-            if (integration->darkModeHandling().testFlag(QWindowsApplication::DarkModeWindowFrames)) {
-                for (QWindowsWindow *w : d->m_windows)
-                    w->setDarkBorder(QWindowsContextPrivate::m_darkMode);
-            }
-            if (integration->darkModeHandling().testFlag(QWindowsApplication::DarkModeStyle)) {
-                QWindowsTheme::instance()->refresh();
-                QWindowSystemInterface::handleThemeChange();
+        // Only refresh the window theme if the user changes the personalize settings.
+        if (wParam == 0 && wcscmp(reinterpret_cast<LPCWSTR>(lParam), L"ImmersiveColorSet") == 0) {
+            const bool darkMode = QWindowsTheme::queryDarkMode();
+            if (darkMode != QWindowsContextPrivate::m_darkMode) {
+                QWindowsContextPrivate::m_darkMode = darkMode;
+                auto integration = QWindowsIntegration::instance();
+                if (integration->darkModeHandling().testFlag(QWindowsApplication::DarkModeWindowFrames)) {
+                    for (QWindowsWindow *w : d->m_windows)
+                        w->setDarkBorder(QWindowsContextPrivate::m_darkMode);
+                }
+                if (integration->darkModeHandling().testFlag(QWindowsApplication::DarkModeStyle)) {
+                    QWindowsTheme::instance()->refresh();
+                    QWindowSystemInterface::handleThemeChange();
+                }
             }
         }
         return d->m_screenManager.handleScreenChanges();
