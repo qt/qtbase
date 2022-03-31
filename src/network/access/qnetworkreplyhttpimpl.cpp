@@ -357,9 +357,10 @@ qint64 QNetworkReplyHttpImpl::readData(char* data, qint64 maxlen)
             return 0;
         const qint64 bytesRead = d->decompressHelper.read(data, maxlen);
         if (!d->decompressHelper.isValid()) {
-            // error occurred, error copied from QHttpNetworkConnectionPrivate::errorDetail
-            d->error(QNetworkReplyImpl::NetworkError::ProtocolFailure,
-                     QCoreApplication::translate("QHttp", "Data corrupted"));
+            d->error(QNetworkReplyImpl::NetworkError::UnknownContentError,
+                     QCoreApplication::translate("QHttp", "Decompression failed: %1")
+                             .arg(d->decompressHelper.errorString()));
+            return -1;
         }
         if (d->cacheSaveDevice) {
             // Need to write to the cache now that we have the data
@@ -1085,9 +1086,9 @@ void QNetworkReplyHttpImplPrivate::replyDownloadData(QByteArray d)
         decompressHelper.feed(std::move(d));
 
         if (!decompressHelper.isValid()) {
-            // error occurred, error copied from QHttpNetworkConnectionPrivate::errorDetail
-            error(QNetworkReplyImpl::NetworkError::ProtocolFailure,
-                  QCoreApplication::translate("QHttp", "Data corrupted"));
+            error(QNetworkReplyImpl::NetworkError::UnknownContentError,
+                  QCoreApplication::translate("QHttp", "Decompression failed: %1")
+                          .arg(decompressHelper.errorString()));
             return;
         }
 
@@ -1104,12 +1105,19 @@ void QNetworkReplyHttpImplPrivate::replyDownloadData(QByteArray d)
             while (decompressHelper.hasData()) {
                 quint64 nextSize = quint64(d.size()) + quint64(increments);
                 if (nextSize > quint64(std::numeric_limits<QByteArray::size_type>::max())) {
-                    error(QNetworkReplyImpl::NetworkError::ProtocolFailure,
-                          QCoreApplication::translate("QHttp", "Data corrupted"));
+                    error(QNetworkReplyImpl::NetworkError::UnknownContentError,
+                          QCoreApplication::translate("QHttp",
+                                                      "Data downloaded is too large to store"));
                     return;
                 }
                 d.resize(nextSize);
                 bytesRead += decompressHelper.read(d.data() + bytesRead, increments);
+                if (!decompressHelper.isValid()) {
+                    error(QNetworkReplyImpl::NetworkError::UnknownContentError,
+                          QCoreApplication::translate("QHttp", "Decompression failed: %1")
+                                  .arg(decompressHelper.errorString()));
+                    return;
+                }
             }
             d.resize(bytesRead);
             // we're synchronous so we're not calling this function again; reset the decompressHelper
@@ -1376,9 +1384,10 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData(const QList<QPair<QByte
                 decompressHelper.setCountingBytesEnabled(true);
 
             if (!decompressHelper.setEncoding(it->second)) {
-                // error occurred, error copied from QHttpNetworkConnectionPrivate::errorDetail
-                error(QNetworkReplyImpl::NetworkError::ProtocolFailure,
-                      QCoreApplication::translate("QHttp", "Data corrupted"));
+                error(QNetworkReplyImpl::NetworkError::UnknownContentError,
+                      QCoreApplication::translate("QHttp", "Failed to initialize decompression: %1")
+                              .arg(decompressHelper.errorString()));
+                return;
             }
             decompressHelper.setDecompressedSafetyCheckThreshold(
                     request.decompressedSafetyCheckThreshold());
