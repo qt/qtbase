@@ -2144,19 +2144,27 @@ void PaintCommands::command_setFont(QRegularExpressionMatch re)
 {
     QStringList caps = re.capturedTexts();
     QString family = caps.at(1);
-    int size = convertToInt(caps.at(2));
 
-    int weight = translateEnum(fontWeightTable, re.captured(3).toLower(), 5);
-    if (weight != -1) {
-        switch (weight) {
-        case 0: weight = QFont::Light; break;
-        case 1: weight = QFont::Normal; break;
-        case 2: weight = QFont::DemiBold; break;
-        case 3: weight = QFont::Bold; break;
-        case 4: weight = QFont::Black; break;
-        }
-    } else {
-        weight = convertToInt(re.captured(3));
+    int size = -1; // Default
+    QString sizeArg = caps.at(2);
+    if (!sizeArg.isEmpty())
+      size = convertToInt(caps.at(2));
+
+    int weight = -1; // Default
+    QString weightArg = caps.at(3);
+    if (!weightArg.isEmpty()) {
+      weight = translateEnum(fontWeightTable, weightArg.toLower(), 5);
+      if (weight != -1) {
+          switch (weight) {
+          case 0: weight = QFont::Light; break;
+          case 1: weight = QFont::Normal; break;
+          case 2: weight = QFont::DemiBold; break;
+          case 3: weight = QFont::Bold; break;
+          case 4: weight = QFont::Black; break;
+          }
+      } else {
+          weight = convertToInt(weightArg);
+      }
     }
 
     bool italic = caps.at(4).toLower() == "true" || caps.at(4).toLower() == "italic";
