@@ -3867,7 +3867,12 @@ void tst_QAccessibility::bridgeTest()
     RECT rect;
     hr = buttonElement->get_CurrentBoundingRectangle(&rect);
     QVERIFY(SUCCEEDED(hr));
-    QCOMPARE(buttonRect, QRect(rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top));
+    const QRect boundingRect(rect.left, rect.top, rect.right - rect.left + 1, rect.bottom - rect.top + 1);
+    const QRectF nativeRect = QHighDpi::toNativePixels(QRectF(buttonRect), window.windowHandle());
+    const QRect truncRect(int(nativeRect.left()), int(nativeRect.top()),
+                          int(nativeRect.right()) - int(nativeRect.left()) + 1,
+                          int(nativeRect.bottom()) - int(nativeRect.top()) + 1);
+    QCOMPARE(truncRect, boundingRect);
 
     buttonElement->Release();
 
