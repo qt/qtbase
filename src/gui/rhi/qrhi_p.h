@@ -74,6 +74,7 @@ class QRhiSampler;
 class QRhiCommandBuffer;
 class QRhiResourceUpdateBatch;
 class QRhiResourceUpdateBatchPrivate;
+class QRhiSwapChain;
 
 class Q_GUI_EXPORT QRhiDepthStencilClearValue
 {
@@ -697,7 +698,7 @@ public:
         Sampler,
         RenderBuffer,
         RenderPassDescriptor,
-        RenderTarget,
+        SwapChainRenderTarget,
         TextureRenderTarget,
         ShaderResourceBindings,
         GraphicsPipeline,
@@ -1031,8 +1032,6 @@ protected:
 class Q_GUI_EXPORT QRhiRenderTarget : public QRhiResource
 {
 public:
-    QRhiResource::Type resourceType() const override;
-
     virtual QSize pixelSize() const = 0;
     virtual float devicePixelRatio() const = 0;
     virtual int sampleCount() const = 0;
@@ -1043,6 +1042,17 @@ public:
 protected:
     QRhiRenderTarget(QRhiImplementation *rhi);
     QRhiRenderPassDescriptor *m_renderPassDesc = nullptr;
+};
+
+class Q_GUI_EXPORT QRhiSwapChainRenderTarget : public QRhiRenderTarget
+{
+public:
+    QRhiResource::Type resourceType() const override;
+    QRhiSwapChain *swapChain() const { return m_swapchain; }
+
+protected:
+    QRhiSwapChainRenderTarget(QRhiImplementation *rhi, QRhiSwapChain *swapchain_);
+    QRhiSwapChain *m_swapchain;
 };
 
 class Q_GUI_EXPORT QRhiTextureRenderTarget : public QRhiRenderTarget

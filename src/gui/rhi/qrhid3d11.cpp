@@ -1759,8 +1759,8 @@ void QRhiD3D11::finishActiveReadbacks()
 static inline QD3D11RenderTargetData *rtData(QRhiRenderTarget *rt)
 {
     switch (rt->resourceType()) {
-    case QRhiResource::RenderTarget:
-        return &QRHI_RES(QD3D11ReferenceRenderTarget, rt)->d;
+    case QRhiResource::SwapChainRenderTarget:
+        return &QRHI_RES(QD3D11SwapChainRenderTarget, rt)->d;
     case QRhiResource::TextureRenderTarget:
         return &QRHI_RES(QD3D11TextureRenderTarget, rt)->d;
     default:
@@ -3453,33 +3453,33 @@ QVector<quint32> QD3D11RenderPassDescriptor::serializedFormat() const
     return {};
 }
 
-QD3D11ReferenceRenderTarget::QD3D11ReferenceRenderTarget(QRhiImplementation *rhi)
-    : QRhiRenderTarget(rhi),
+QD3D11SwapChainRenderTarget::QD3D11SwapChainRenderTarget(QRhiImplementation *rhi, QRhiSwapChain *swapchain)
+    : QRhiSwapChainRenderTarget(rhi, swapchain),
       d(rhi)
 {
 }
 
-QD3D11ReferenceRenderTarget::~QD3D11ReferenceRenderTarget()
+QD3D11SwapChainRenderTarget::~QD3D11SwapChainRenderTarget()
 {
     destroy();
 }
 
-void QD3D11ReferenceRenderTarget::destroy()
+void QD3D11SwapChainRenderTarget::destroy()
 {
     // nothing to do here
 }
 
-QSize QD3D11ReferenceRenderTarget::pixelSize() const
+QSize QD3D11SwapChainRenderTarget::pixelSize() const
 {
     return d.pixelSize;
 }
 
-float QD3D11ReferenceRenderTarget::devicePixelRatio() const
+float QD3D11SwapChainRenderTarget::devicePixelRatio() const
 {
     return d.dpr;
 }
 
-int QD3D11ReferenceRenderTarget::sampleCount() const
+int QD3D11SwapChainRenderTarget::sampleCount() const
 {
     return d.sampleCount;
 }
@@ -4380,7 +4380,7 @@ void QD3D11CommandBuffer::destroy()
 
 QD3D11SwapChain::QD3D11SwapChain(QRhiImplementation *rhi)
     : QRhiSwapChain(rhi),
-      rt(rhi),
+      rt(rhi, this),
       cb(rhi)
 {
     backBufferTex = nullptr;
@@ -4825,7 +4825,7 @@ bool QD3D11SwapChain::createOrResize()
     frameCount = 0;
     ds = m_depthStencil ? QRHI_RES(QD3D11RenderBuffer, m_depthStencil) : nullptr;
 
-    QD3D11ReferenceRenderTarget *rtD = QRHI_RES(QD3D11ReferenceRenderTarget, &rt);
+    QD3D11SwapChainRenderTarget *rtD = QRHI_RES(QD3D11SwapChainRenderTarget, &rt);
     rtD->d.rp = QRHI_RES(QD3D11RenderPassDescriptor, m_renderPassDesc);
     rtD->d.pixelSize = pixelSize;
     rtD->d.dpr = float(window->devicePixelRatio());

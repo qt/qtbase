@@ -124,10 +124,10 @@ struct QNullRenderTargetData
     QRhiRenderTargetAttachmentTracker::ResIdList currentResIdList;
 };
 
-struct QNullReferenceRenderTarget : public QRhiRenderTarget
+struct QNullSwapChainRenderTarget : public QRhiSwapChainRenderTarget
 {
-    QNullReferenceRenderTarget(QRhiImplementation *rhi);
-    ~QNullReferenceRenderTarget();
+    QNullSwapChainRenderTarget(QRhiImplementation *rhi, QRhiSwapChain *swapchain);
+    ~QNullSwapChainRenderTarget();
     void destroy() override;
 
     QSize pixelSize() const override;
@@ -201,7 +201,7 @@ struct QNullSwapChain : public QRhiSwapChain
     bool createOrResize() override;
 
     QWindow *window = nullptr;
-    QNullReferenceRenderTarget rt;
+    QNullSwapChainRenderTarget rt;
     QNullCommandBuffer cb;
     int frameCount = 0;
 };

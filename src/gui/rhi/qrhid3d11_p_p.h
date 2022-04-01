@@ -177,10 +177,10 @@ struct QD3D11RenderTargetData
     QRhiRenderTargetAttachmentTracker::ResIdList currentResIdList;
 };
 
-struct QD3D11ReferenceRenderTarget : public QRhiRenderTarget
+struct QD3D11SwapChainRenderTarget : public QRhiSwapChainRenderTarget
 {
-    QD3D11ReferenceRenderTarget(QRhiImplementation *rhi);
-    ~QD3D11ReferenceRenderTarget();
+    QD3D11SwapChainRenderTarget(QRhiImplementation *rhi, QRhiSwapChain *swapchain);
+    ~QD3D11SwapChainRenderTarget();
     void destroy() override;
 
     QSize pixelSize() const override;
@@ -571,7 +571,7 @@ struct QD3D11SwapChain : public QRhiSwapChain
 
     QWindow *window = nullptr;
     QSize pixelSize;
-    QD3D11ReferenceRenderTarget rt;
+    QD3D11SwapChainRenderTarget rt;
     QD3D11CommandBuffer cb;
     DXGI_FORMAT colorFormat;
     DXGI_FORMAT srgbAdjustedColorFormat;

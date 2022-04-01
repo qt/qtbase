@@ -219,10 +219,10 @@ struct QVkRenderTargetData
     static const int MAX_COLOR_ATTACHMENTS = 8;
 };
 
-struct QVkReferenceRenderTarget : public QRhiRenderTarget
+struct QVkSwapChainRenderTarget : public QRhiSwapChainRenderTarget
 {
-    QVkReferenceRenderTarget(QRhiImplementation *rhi);
-    ~QVkReferenceRenderTarget();
+    QVkSwapChainRenderTarget(QRhiImplementation *rhi, QRhiSwapChain *swapchain);
+    ~QVkSwapChainRenderTarget();
     void destroy() override;
 
     QSize pixelSize() const override;
@@ -625,7 +625,7 @@ struct QVkSwapChain : public QRhiSwapChain
     VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT;
     QVarLengthArray<VkPresentModeKHR, 8> supportedPresentationModes;
     VkDeviceMemory msaaImageMem = VK_NULL_HANDLE;
-    QVkReferenceRenderTarget rtWrapper;
+    QVkSwapChainRenderTarget rtWrapper;
     QVkCommandBuffer cbWrapper;
 
     struct ImageResources {

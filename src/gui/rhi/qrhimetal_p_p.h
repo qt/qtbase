@@ -163,10 +163,10 @@ struct QMetalRenderPassDescriptor : public QRhiRenderPassDescriptor
 
 struct QMetalRenderTargetData;
 
-struct QMetalReferenceRenderTarget : public QRhiRenderTarget
+struct QMetalSwapChainRenderTarget : public QRhiSwapChainRenderTarget
 {
-    QMetalReferenceRenderTarget(QRhiImplementation *rhi);
-    ~QMetalReferenceRenderTarget();
+    QMetalSwapChainRenderTarget(QRhiImplementation *rhi, QRhiSwapChain *swapchain);
+    ~QMetalSwapChainRenderTarget();
     void destroy() override;
 
     QSize pixelSize() const override;
@@ -337,7 +337,7 @@ struct QMetalSwapChain : public QRhiSwapChain
     int currentFrameSlot = 0; // 0..QMTL_FRAMES_IN_FLIGHT-1
     int frameCount = 0;
     int samples = 1;
-    QMetalReferenceRenderTarget rtWrapper;
+    QMetalSwapChainRenderTarget rtWrapper;
     QMetalCommandBuffer cbWrapper;
     QMetalRenderBuffer *ds = nullptr;
     QMetalSwapChainData *d = nullptr;

@@ -3953,8 +3953,8 @@ QGles2RenderTargetData *QRhiGles2::enqueueBindFramebuffer(QRhiRenderTarget *rt, 
     static const bool doClearColorBuffer = qEnvironmentVariableIntValue("QT_GL_NO_CLEAR_COLOR_BUFFER") == 0;
 
     switch (rt->resourceType()) {
-    case QRhiResource::RenderTarget:
-        rtD = &QRHI_RES(QGles2ReferenceRenderTarget, rt)->d;
+    case QRhiResource::SwapChainRenderTarget:
+        rtD = &QRHI_RES(QGles2SwapChainRenderTarget, rt)->d;
         if (wantsColorClear)
             *wantsColorClear = doClearBuffers && doClearColorBuffer;
         if (wantsDsClear)
@@ -5196,33 +5196,33 @@ QVector<quint32> QGles2RenderPassDescriptor::serializedFormat() const
     return {};
 }
 
-QGles2ReferenceRenderTarget::QGles2ReferenceRenderTarget(QRhiImplementation *rhi)
-    : QRhiRenderTarget(rhi),
+QGles2SwapChainRenderTarget::QGles2SwapChainRenderTarget(QRhiImplementation *rhi, QRhiSwapChain *swapchain)
+    : QRhiSwapChainRenderTarget(rhi, swapchain),
       d(rhi)
 {
 }
 
-QGles2ReferenceRenderTarget::~QGles2ReferenceRenderTarget()
+QGles2SwapChainRenderTarget::~QGles2SwapChainRenderTarget()
 {
     destroy();
 }
 
-void QGles2ReferenceRenderTarget::destroy()
+void QGles2SwapChainRenderTarget::destroy()
 {
     // nothing to do here
 }
 
-QSize QGles2ReferenceRenderTarget::pixelSize() const
+QSize QGles2SwapChainRenderTarget::pixelSize() const
 {
     return d.pixelSize;
 }
 
-float QGles2ReferenceRenderTarget::devicePixelRatio() const
+float QGles2SwapChainRenderTarget::devicePixelRatio() const
 {
     return d.dpr;
 }
 
-int QGles2ReferenceRenderTarget::sampleCount() const
+int QGles2SwapChainRenderTarget::sampleCount() const
 {
     return d.sampleCount;
 }
@@ -5731,7 +5731,7 @@ void QGles2CommandBuffer::destroy()
 
 QGles2SwapChain::QGles2SwapChain(QRhiImplementation *rhi)
     : QRhiSwapChain(rhi),
-      rt(rhi),
+      rt(rhi, this),
       cb(rhi)
 {
 }

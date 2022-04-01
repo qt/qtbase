@@ -2032,8 +2032,8 @@ void QRhiMetal::beginPass(QRhiCommandBuffer *cb,
 
     QMetalRenderTargetData *rtD = nullptr;
     switch (rt->resourceType()) {
-    case QRhiResource::RenderTarget:
-        rtD = QRHI_RES(QMetalReferenceRenderTarget, rt)->d;
+    case QRhiResource::SwapChainRenderTarget:
+        rtD = QRHI_RES(QMetalSwapChainRenderTarget, rt)->d;
         cbD->d->currentPassRpDesc = d->createDefaultRenderPass(rtD->dsAttCount, colorClearValue, depthStencilClearValue, rtD->colorAttCount);
         if (rtD->colorAttCount) {
             QMetalRenderTargetData::ColorAtt &color0(rtD->fb.colorAtt[0]);
@@ -3053,34 +3053,34 @@ QVector<quint32> QMetalRenderPassDescriptor::serializedFormat() const
     return serializedFormatData;
 }
 
-QMetalReferenceRenderTarget::QMetalReferenceRenderTarget(QRhiImplementation *rhi)
-    : QRhiRenderTarget(rhi),
+QMetalSwapChainRenderTarget::QMetalSwapChainRenderTarget(QRhiImplementation *rhi, QRhiSwapChain *swapchain)
+    : QRhiSwapChainRenderTarget(rhi, swapchain),
       d(new QMetalRenderTargetData)
 {
 }
 
-QMetalReferenceRenderTarget::~QMetalReferenceRenderTarget()
+QMetalSwapChainRenderTarget::~QMetalSwapChainRenderTarget()
 {
     destroy();
     delete d;
 }
 
-void QMetalReferenceRenderTarget::destroy()
+void QMetalSwapChainRenderTarget::destroy()
 {
     // nothing to do here
 }
 
-QSize QMetalReferenceRenderTarget::pixelSize() const
+QSize QMetalSwapChainRenderTarget::pixelSize() const
 {
     return d->pixelSize;
 }
 
-float QMetalReferenceRenderTarget::devicePixelRatio() const
+float QMetalSwapChainRenderTarget::devicePixelRatio() const
 {
     return d->dpr;
 }
 
-int QMetalReferenceRenderTarget::sampleCount() const
+int QMetalSwapChainRenderTarget::sampleCount() const
 {
     return d->sampleCount;
 }
@@ -3947,7 +3947,7 @@ void QMetalCommandBuffer::resetPerPassCachedState()
 
 QMetalSwapChain::QMetalSwapChain(QRhiImplementation *rhi)
     : QRhiSwapChain(rhi),
-      rtWrapper(rhi),
+      rtWrapper(rhi, this),
       cbWrapper(rhi),
       d(new QMetalSwapChainData)
 {

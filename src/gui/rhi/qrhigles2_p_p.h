@@ -219,10 +219,10 @@ struct QGles2RenderTargetData
     QRhiRenderTargetAttachmentTracker::ResIdList currentResIdList;
 };
 
-struct QGles2ReferenceRenderTarget : public QRhiRenderTarget
+struct QGles2SwapChainRenderTarget : public QRhiSwapChainRenderTarget
 {
-    QGles2ReferenceRenderTarget(QRhiImplementation *rhi);
-    ~QGles2ReferenceRenderTarget();
+    QGles2SwapChainRenderTarget(QRhiImplementation *rhi, QRhiSwapChain *swapchain);
+    ~QGles2SwapChainRenderTarget();
     void destroy() override;
 
     QSize pixelSize() const override;
@@ -735,7 +735,7 @@ struct QGles2SwapChain : public QRhiSwapChain
 
     QSurface *surface = nullptr;
     QSize pixelSize;
-    QGles2ReferenceRenderTarget rt;
+    QGles2SwapChainRenderTarget rt;
     QGles2CommandBuffer cb;
     int frameCount = 0;
 };

@@ -788,32 +788,32 @@ QVector<quint32> QNullRenderPassDescriptor::serializedFormat() const
     return {};
 }
 
-QNullReferenceRenderTarget::QNullReferenceRenderTarget(QRhiImplementation *rhi)
-    : QRhiRenderTarget(rhi),
+QNullSwapChainRenderTarget::QNullSwapChainRenderTarget(QRhiImplementation *rhi, QRhiSwapChain *swapchain)
+    : QRhiSwapChainRenderTarget(rhi, swapchain),
       d(rhi)
 {
 }
 
-QNullReferenceRenderTarget::~QNullReferenceRenderTarget()
+QNullSwapChainRenderTarget::~QNullSwapChainRenderTarget()
 {
     destroy();
 }
 
-void QNullReferenceRenderTarget::destroy()
+void QNullSwapChainRenderTarget::destroy()
 {
 }
 
-QSize QNullReferenceRenderTarget::pixelSize() const
+QSize QNullSwapChainRenderTarget::pixelSize() const
 {
     return d.pixelSize;
 }
 
-float QNullReferenceRenderTarget::devicePixelRatio() const
+float QNullSwapChainRenderTarget::devicePixelRatio() const
 {
     return d.dpr;
 }
 
-int QNullReferenceRenderTarget::sampleCount() const
+int QNullSwapChainRenderTarget::sampleCount() const
 {
     return 1;
 }
@@ -965,7 +965,7 @@ void QNullCommandBuffer::destroy()
 
 QNullSwapChain::QNullSwapChain(QRhiImplementation *rhi)
     : QRhiSwapChain(rhi),
-      rt(rhi),
+      rt(rhi, this),
       cb(rhi)
 {
 }

@@ -2943,6 +2943,8 @@ const QRhiNativeHandles *QRhiRenderPassDescriptor::nativeHandles()
     \internal
     \inmodule QtGui
     \brief Represents an onscreen (swapchain) or offscreen (texture) render target.
+
+    \sa QRhiSwapChainRenderTarget, QRhiTextureRenderTarget
  */
 
 /*!
@@ -2951,14 +2953,6 @@ const QRhiNativeHandles *QRhiRenderPassDescriptor::nativeHandles()
 QRhiRenderTarget::QRhiRenderTarget(QRhiImplementation *rhi)
     : QRhiResource(rhi)
 {
-}
-
-/*!
-    \return the resource type.
- */
-QRhiResource::Type QRhiRenderTarget::resourceType() const
-{
-    return RenderTarget;
 }
 
 /*!
@@ -2989,6 +2983,42 @@ QRhiResource::Type QRhiRenderTarget::resourceType() const
  */
 
 /*!
+    \internal
+ */
+QRhiSwapChainRenderTarget::QRhiSwapChainRenderTarget(QRhiImplementation *rhi, QRhiSwapChain *swapchain_)
+    : QRhiRenderTarget(rhi),
+      m_swapchain(swapchain_)
+{
+}
+
+/*!
+    \class QRhiSwapChainRenderTarget
+    \internal
+    \inmodule QtGui
+    \brief Swapchain render target resource.
+
+    When targeting the color buffers of a swapchain, active render target is a
+    QRhiSwapChainRenderTarget. This is what
+    QRhiSwapChain::currentFrameRenderTarget() returns.
+
+    \sa QRhiSwapChain
+ */
+
+/*!
+    \return the resource type.
+ */
+QRhiResource::Type QRhiSwapChainRenderTarget::resourceType() const
+{
+    return SwapChainRenderTarget;
+}
+
+/*!
+    \fn QRhiSwapChain *QRhiSwapChainRenderTarget::swapChain() const
+
+    \return the swapchain object.
+ */
+
+/*!
     \class QRhiTextureRenderTarget
     \internal
     \inmodule QtGui
@@ -2996,6 +3026,10 @@ QRhiResource::Type QRhiRenderTarget::resourceType() const
 
     A texture render target allows rendering into one or more textures,
     optionally with a depth texture or depth/stencil renderbuffer.
+
+    For multisample rendering the common approach is to use a renderbuffer as
+    the color attachment and set the non-multisample destination texture as the
+    \c{resolve texture}.
 
     \note Textures used in combination with QRhiTextureRenderTarget must be
     created with the QRhiTexture::RenderTarget flag.
@@ -4911,8 +4945,8 @@ static const char *resourceTypeStr(QRhiResource *res)
         return "RenderBuffer";
     case QRhiResource::RenderPassDescriptor:
         return "RenderPassDescriptor";
-    case QRhiResource::RenderTarget:
-        return "RenderTarget";
+    case QRhiResource::SwapChainRenderTarget:
+        return "SwapChainRenderTarget";
     case QRhiResource::TextureRenderTarget:
         return "TextureRenderTarget";
     case QRhiResource::ShaderResourceBindings:

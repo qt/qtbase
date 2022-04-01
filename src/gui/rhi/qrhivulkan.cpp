@@ -2322,8 +2322,8 @@ void QRhiVulkan::beginPass(QRhiCommandBuffer *cb,
 
     QVkRenderTargetData *rtD = nullptr;
     switch (rt->resourceType()) {
-    case QRhiResource::RenderTarget:
-        rtD = &QRHI_RES(QVkReferenceRenderTarget, rt)->d;
+    case QRhiResource::SwapChainRenderTarget:
+        rtD = &QRHI_RES(QVkSwapChainRenderTarget, rt)->d;
         rtD->rp->lastActiveFrameSlot = currentFrameSlot;
         Q_ASSERT(currentSwapChain);
         currentSwapChain->imageRes[currentSwapChain->currentImageIndex].lastUse =
@@ -5122,8 +5122,8 @@ static inline QVkRenderTargetData *maybeRenderTargetData(QVkCommandBuffer *cbD)
     QVkRenderTargetData *rtD = nullptr;
     if (cbD->recordingPass == QVkCommandBuffer::RenderPass) {
         switch (cbD->currentTarget->resourceType()) {
-        case QRhiResource::RenderTarget:
-            rtD = &QRHI_RES(QVkReferenceRenderTarget, cbD->currentTarget)->d;
+        case QRhiResource::SwapChainRenderTarget:
+            rtD = &QRHI_RES(QVkSwapChainRenderTarget, cbD->currentTarget)->d;
             break;
         case QRhiResource::TextureRenderTarget:
             rtD = &QRHI_RES(QVkTextureRenderTarget, cbD->currentTarget)->d;
@@ -6432,32 +6432,32 @@ const QRhiNativeHandles *QVkRenderPassDescriptor::nativeHandles()
     return &nativeHandlesStruct;
 }
 
-QVkReferenceRenderTarget::QVkReferenceRenderTarget(QRhiImplementation *rhi)
-    : QRhiRenderTarget(rhi)
+QVkSwapChainRenderTarget::QVkSwapChainRenderTarget(QRhiImplementation *rhi, QRhiSwapChain *swapchain)
+    : QRhiSwapChainRenderTarget(rhi, swapchain)
 {
 }
 
-QVkReferenceRenderTarget::~QVkReferenceRenderTarget()
+QVkSwapChainRenderTarget::~QVkSwapChainRenderTarget()
 {
     destroy();
 }
 
-void QVkReferenceRenderTarget::destroy()
+void QVkSwapChainRenderTarget::destroy()
 {
     // nothing to do here
 }
 
-QSize QVkReferenceRenderTarget::pixelSize() const
+QSize QVkSwapChainRenderTarget::pixelSize() const
 {
     return d.pixelSize;
 }
 
-float QVkReferenceRenderTarget::devicePixelRatio() const
+float QVkSwapChainRenderTarget::devicePixelRatio() const
 {
     return d.dpr;
 }
 
-int QVkReferenceRenderTarget::sampleCount() const
+int QVkSwapChainRenderTarget::sampleCount() const
 {
     return d.sampleCount;
 }
@@ -7250,7 +7250,7 @@ const QRhiNativeHandles *QVkCommandBuffer::nativeHandles()
 
 QVkSwapChain::QVkSwapChain(QRhiImplementation *rhi)
     : QRhiSwapChain(rhi),
-      rtWrapper(rhi),
+      rtWrapper(rhi, this),
       cbWrapper(rhi)
 {
 }
