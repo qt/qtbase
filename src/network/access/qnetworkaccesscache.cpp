@@ -50,6 +50,9 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN_TAGGED(QNetworkAccessCache::CacheableObject*,
+                               QNetworkAccessCache__CacheableObject_ptr)
+
 enum ExpiryTimeEnum {
     ExpiryTime = 120
 };

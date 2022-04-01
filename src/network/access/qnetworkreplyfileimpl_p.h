@@ -97,6 +97,8 @@ public:
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QNetworkRequest::KnownHeaders)
+// ### move to qnetworkrequest.h
+QT_DECL_METATYPE_EXTERN_TAGGED(QNetworkRequest::KnownHeaders,
+                               QNetworkRequest__KnownHeaders, Q_NETWORK_EXPORT)
 
 #endif // QNETWORKREPLYFILEIMPL_H

@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN_TAGGED(Http2::Settings, Http2__Settings)
+
 Q_LOGGING_CATEGORY(QT_HTTP2, "qt.network.http2")
 
 namespace Http2

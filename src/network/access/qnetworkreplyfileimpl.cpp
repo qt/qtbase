@@ -49,6 +49,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN_TAGGED(QNetworkRequest::KnownHeaders, QNetworkRequest__KnownHeaders)
+
 QNetworkReplyFileImplPrivate::QNetworkReplyFileImplPrivate()
     : QNetworkReplyPrivate(), managerPrivate(nullptr), realFile(nullptr)
 {

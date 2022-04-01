@@ -123,6 +123,7 @@ private:
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QNetworkAccessCache::CacheableObject*)
+QT_DECL_METATYPE_EXTERN_TAGGED(QNetworkAccessCache::CacheableObject*,
+                               QNetworkAccessCache__CacheableObject_ptr, /* not exported */)
 
 #endif
