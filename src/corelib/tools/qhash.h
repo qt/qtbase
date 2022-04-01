@@ -490,25 +490,16 @@ struct Data
         spans = new Span[nSpans];
         seed = QHashSeed::globalSeed();
     }
-    Data(const Data &other, size_t reserved = 0)
-        : size(other.size),
-          numBuckets(other.numBuckets),
-          seed(other.seed)
-    {
-        if (reserved)
-            numBuckets = GrowthPolicy::bucketsForCapacity(qMax(size, reserved));
-        bool resized = numBuckets != other.numBuckets;
-        size_t nSpans = (numBuckets + Span::LocalBucketMask) / Span::NEntries;
-        spans = new Span[nSpans];
-        size_t otherNSpans = (other.numBuckets + Span::LocalBucketMask) / Span::NEntries;
 
-        for (size_t s = 0; s < otherNSpans; ++s) {
+    void reallocationHelper(const Data &other, size_t nSpans, bool resized)
+    {
+        for (size_t s = 0; s < nSpans; ++s) {
             const Span &span = other.spans[s];
             for (size_t index = 0; index < Span::NEntries; ++index) {
                 if (!span.hasNode(index))
                     continue;
                 const Node &n = span.at(index);
-                iterator it = resized ? find(n.key) : iterator{ this, s*Span::NEntries + index };
+                iterator it = resized ? find(n.key) : iterator { this, s * Span::NEntries + index };
                 Q_ASSERT(it.isUnused());
                 Node *newNode = spans[it.span()].insert(it.index());
                 new (newNode) Node(n);
@@ -516,7 +507,31 @@ struct Data
         }
     }
 
-    static Data *detached(Data *d, size_t size = 0)
+    Data(const Data &other) : size(other.size), numBuckets(other.numBuckets), seed(other.seed)
+    {
+        size_t nSpans = (numBuckets + Span::LocalBucketMask) / Span::NEntries;
+        spans = new Span[nSpans];
+        reallocationHelper(other, nSpans, false);
+    }
+    Data(const Data &other, size_t reserved) : size(other.size), seed(other.seed)
+    {
+        numBuckets = GrowthPolicy::bucketsForCapacity(qMax(size, reserved));
+        size_t nSpans = (numBuckets + Span::LocalBucketMask) / Span::NEntries;
+        spans = new Span[nSpans];
+        size_t otherNSpans = (other.numBuckets + Span::LocalBucketMask) / Span::NEntries;
+        reallocationHelper(other, otherNSpans, true);
+    }
+
+    static Data *detached(Data *d)
+    {
+        if (!d)
+            return new Data;
+        Data *dd = new Data(*d);
+        if (!d->ref.deref())
+            delete d;
+        return dd;
+    }
+    static Data *detached(Data *d, size_t size)
     {
         if (!d)
             return new Data(size);
