@@ -196,6 +196,7 @@ private:
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QNetworkReply::NetworkError)
+QT_DECL_METATYPE_EXTERN_TAGGED(QNetworkReply::NetworkError,
+                               QNetworkReply__NetworkError, Q_NETWORK_EXPORT)
 
 #endif

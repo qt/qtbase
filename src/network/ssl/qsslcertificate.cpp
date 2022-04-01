@@ -151,6 +151,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN(QSslCertificate)
+
 QSslCertificatePrivate::QSslCertificatePrivate()
 {
 #ifndef QT_NO_SSL

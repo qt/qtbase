@@ -72,6 +72,8 @@ QT_BEGIN_NAMESPACE
 
 //#define QHOSTINFO_DEBUG
 
+QT_IMPL_METATYPE_EXTERN(QHostInfo)
+
 namespace {
 struct ToBeLookedUpEquals {
     typedef bool result_type;

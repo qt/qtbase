@@ -96,6 +96,6 @@ Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, QSslEllipticCurve curve);
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QSslEllipticCurve)
+QT_DECL_METATYPE_EXTERN(QSslEllipticCurve, Q_NETWORK_EXPORT)
 
 #endif // QSSLELLIPTICCURVE_H

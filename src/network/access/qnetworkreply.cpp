@@ -45,6 +45,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN_TAGGED(QNetworkReply::NetworkError, QNetworkReply__NetworkError)
+
 const int QNetworkReplyPrivate::progressSignalInterval = 100;
 
 QNetworkReplyPrivate::QNetworkReplyPrivate()

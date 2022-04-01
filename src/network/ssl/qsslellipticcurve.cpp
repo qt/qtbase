@@ -47,6 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN(QSslEllipticCurve)
+
 /*!
     \class QSslEllipticCurve
     \since 5.5

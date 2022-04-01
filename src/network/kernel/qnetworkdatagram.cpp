@@ -44,6 +44,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN(QNetworkDatagram)
+
 /*!
     \class QNetworkDatagram
     \brief The QNetworkDatagram class provides the data and metadata of a UDP datagram.

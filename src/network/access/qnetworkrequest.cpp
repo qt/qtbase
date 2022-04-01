@@ -59,6 +59,9 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN(QNetworkRequest)
+QT_IMPL_METATYPE_EXTERN_TAGGED(QNetworkRequest::RedirectPolicy, QNetworkRequest__RedirectPolicy)
+
 /*!
     \class QNetworkRequest
     \since 4.4

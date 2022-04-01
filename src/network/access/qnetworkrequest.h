@@ -199,7 +199,8 @@ Q_DECLARE_SHARED(QNetworkRequest)
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QNetworkRequest)
-Q_DECLARE_METATYPE(QNetworkRequest::RedirectPolicy)
+QT_DECL_METATYPE_EXTERN(QNetworkRequest, Q_NETWORK_EXPORT)
+QT_DECL_METATYPE_EXTERN_TAGGED(QNetworkRequest::RedirectPolicy,
+                               QNetworkRequest__RedirectPolicy, Q_NETWORK_EXPORT)
 
 #endif

@@ -44,6 +44,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN(QOcspResponse)
+
 /*!
     \class QOcspResponse
     \brief This class represents Online Certificate Status Protocol response.

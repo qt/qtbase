@@ -206,7 +206,7 @@ Q_DECLARE_SHARED(QSslConfiguration)
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QSslConfiguration)
+QT_DECL_METATYPE_EXTERN(QSslConfiguration, Q_NETWORK_EXPORT)
 
 #endif  // QT_NO_SSL
 

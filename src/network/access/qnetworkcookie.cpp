@@ -55,6 +55,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN(QNetworkCookie)
+
 /*!
     \class QNetworkCookie
     \since 4.4

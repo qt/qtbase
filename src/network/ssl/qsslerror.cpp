@@ -111,6 +111,11 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_SSL
+QT_IMPL_METATYPE_EXTERN_TAGGED(QList<QSslError>, QList_QSslError)
+#endif
+
+
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 // Avoid an ABI break due to the QScopedPointer->std::unique_ptr change
 static_assert(sizeof(QScopedPointer<QSslErrorPrivate>) == sizeof(std::unique_ptr<QSslErrorPrivate>));

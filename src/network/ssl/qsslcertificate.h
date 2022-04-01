@@ -167,6 +167,6 @@ Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, QSslCertificate::SubjectInfo in
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QSslCertificate)
+QT_DECL_METATYPE_EXTERN(QSslCertificate, Q_NETWORK_EXPORT)
 
 #endif

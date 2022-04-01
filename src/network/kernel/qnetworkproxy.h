@@ -210,7 +210,7 @@ Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QNetworkProxyQuery &proxy
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QNetworkProxy)
+QT_DECL_METATYPE_EXTERN(QNetworkProxy, Q_NETWORK_EXPORT)
 
 #endif // QT_NO_NETWORKPROXY
 

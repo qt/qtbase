@@ -243,6 +243,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN(QNetworkProxy)
+
 class QSocks5SocketEngineHandler;
 class QHttpSocketEngineHandler;
 

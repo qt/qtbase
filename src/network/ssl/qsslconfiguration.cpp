@@ -48,6 +48,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN(QSslConfiguration)
+
 const QSsl::SslOptions QSslConfigurationPrivate::defaultSslOptions = QSsl::SslOptionDisableEmptyFragments
                                                                     |QSsl::SslOptionDisableLegacyRenegotiation
                                                                     |QSsl::SslOptionDisableCompression

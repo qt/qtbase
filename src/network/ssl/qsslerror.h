@@ -141,7 +141,7 @@ class Q_NETWORK_EXPORT QSslError {}; // dummy class so that moc has a complete t
 QT_END_NAMESPACE
 
 #ifndef QT_NO_SSL
-Q_DECLARE_METATYPE(QList<QSslError>)
+QT_DECL_METATYPE_EXTERN_TAGGED(QList<QSslError>, QList_QSslError, Q_NETWORK_EXPORT)
 #endif
 
 #endif

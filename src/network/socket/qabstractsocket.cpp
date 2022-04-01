@@ -500,6 +500,9 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN_TAGGED(QAbstractSocket::SocketState, QAbstractSocket__SocketState)
+QT_IMPL_METATYPE_EXTERN_TAGGED(QAbstractSocket::SocketError, QAbstractSocket__SocketError)
+
 static const int DefaultConnectTimeout = 30000;
 
 static bool isProxyError(QAbstractSocket::SocketError error)
