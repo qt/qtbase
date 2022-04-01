@@ -2716,10 +2716,11 @@ QSettings::~QSettings()
 {
     Q_D(QSettings);
     if (d->pendingChanges) {
+        // Don't cause a failing flush() to std::terminate() the whole
+        // application - dtors are implicitly noexcept!
         QT_TRY {
             d->flush();
         } QT_CATCH(...) {
-            ; // ok. then don't flush but at least don't throw in the destructor
         }
     }
 }
