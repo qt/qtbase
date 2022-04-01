@@ -18,6 +18,7 @@ qtConfig(c++11): CONFIG += c++11 strict_c++
 qtConfig(c++14): CONFIG += c++14
 qtConfig(c++1z): CONFIG += c++1z
 qtConfig(c++2a): CONFIG += c++2a
+qtConfig(c++2b): CONFIG += c++2b
 qtConfig(c99): CONFIG += c99
 qtConfig(c11): CONFIG += c11
 qtConfig(separate_debug_info): CONFIG += separate_debug_info
@@ -162,4 +163,3 @@ warnings_are_errors:warning_clean {
     }
     unset(ver)
 }
-
