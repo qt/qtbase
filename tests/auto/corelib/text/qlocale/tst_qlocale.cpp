@@ -1967,7 +1967,8 @@ void tst_QLocale::toDateTime_data()
     QTest::addColumn<QDateTime>("result");
     QTest::addColumn<QString>("format");
     QTest::addColumn<QString>("string");
-    QTest::addColumn<bool>("clean"); // No non-format letters in format string
+    // No non-format letters in format string, no time-zone (t format):
+    QTest::addColumn<bool>("clean");
 
     QTest::newRow("1C") << "C" << QDateTime(QDate(1974, 12, 1), QTime(5, 14, 0))
                         << "d/M/yyyy hh:h:mm" << "1/12/1974 05:5:14" << true;
@@ -2020,6 +2021,18 @@ void tst_QLocale::toDateTime_data()
                              << "d'dd'd/MMM'M'/yysss" << "1dd1/des.M/74033" << false;
     QTest::newRow("12no_NO") << "no_NO" << QDateTime(QDate(1974, 12, 1), QTime(15, 0, 0))
                              << "d'd'dd/M/yyh" << "1d01/12/7415" << false;
+
+    QTest::newRow("short-ss") // QTBUG-102199: trips over an assert in CET
+        << "C" << QDateTime() // Single-digit seconds does not match ss format.
+        << u"ddd, d MMM yyyy HH:mm:ss"_qs << u"Sun, 29 Mar 2020 02:26:3"_qs << true;
+
+    QTest::newRow("short-ss-Z") // Same, but with a valid date-time:
+        << "C" << QDateTime()
+        << u"ddd, d MMM yyyy HH:mm:ss t"_qs << u"Sun, 29 Mar 2020 02:26:3 Z"_qs << false;
+
+    QTest::newRow("s-Z") // Same, but with a format that accepts the single digit:
+        << "C" << QDateTime(QDate(2020, 3, 29), QTime(2, 26, 3), Qt::UTC)
+        << u"ddd, d MMM yyyy HH:mm:s t"_qs << u"Sun, 29 Mar 2020 02:26:3 Z"_qs << false;
 
     QTest::newRow("RFC-1123")
         << "C" << QDateTime(QDate(2007, 11, 1), QTime(18, 8, 30))
