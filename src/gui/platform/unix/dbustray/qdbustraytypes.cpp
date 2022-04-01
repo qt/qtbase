@@ -59,6 +59,10 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN(QXdgDBusImageStruct)
+QT_IMPL_METATYPE_EXTERN(QXdgDBusImageVector)
+QT_IMPL_METATYPE_EXTERN(QXdgDBusToolTipStruct)
+
 static const int IconSizeLimit = 64;
 static const int IconNormalSmallSize = 22;
 static const int IconNormalMediumSize = 64;

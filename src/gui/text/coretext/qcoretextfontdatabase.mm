@@ -64,6 +64,9 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN_TAGGED(QCFType<CGFontRef>, QCFType_CGFontRef)
+QT_IMPL_METATYPE_EXTERN_TAGGED(QCFType<CFURLRef>, QCFType_CFURLRef)
+
 // this could become a list of all languages used for each writing
 // system, instead of using the single most common language.
 static const char languageForWritingSystem[][8] = {

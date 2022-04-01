@@ -56,6 +56,16 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN(QDBusMenuItem)
+QT_IMPL_METATYPE_EXTERN(QDBusMenuItemList)
+QT_IMPL_METATYPE_EXTERN(QDBusMenuItemKeys)
+QT_IMPL_METATYPE_EXTERN(QDBusMenuItemKeysList)
+QT_IMPL_METATYPE_EXTERN(QDBusMenuLayoutItem)
+QT_IMPL_METATYPE_EXTERN(QDBusMenuLayoutItemList)
+QT_IMPL_METATYPE_EXTERN(QDBusMenuEvent)
+QT_IMPL_METATYPE_EXTERN(QDBusMenuEventList)
+QT_IMPL_METATYPE_EXTERN(QDBusMenuShortcut)
+
 const QDBusArgument &operator<<(QDBusArgument &arg, const QDBusMenuItem &item)
 {
     arg.beginStructure();
