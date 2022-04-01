@@ -3126,7 +3126,7 @@ Qt::MouseButtons QGraphicsItem::acceptedMouseButtons() const
     mouse events to the first item beneath it that does.
 
     To disable mouse events for an item (i.e., make it transparent for mouse
-    events), call setAcceptedMouseButtons(0).
+    events), call setAcceptedMouseButtons(Qt::NoButton).
 
     \sa acceptedMouseButtons(), mousePressEvent()
 */
