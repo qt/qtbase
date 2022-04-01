@@ -4076,7 +4076,7 @@ qint64 QDateTime::toMSecsSinceEpoch() const
     case Qt::LocalTime: {
         // recalculate the local timezone
         auto status = extractDaylightStatus(getStatus(d));
-        // If short, use offset saved by refreshZonedDateTime() on creation:
+        // If available, use offset saved by refreshZonedDateTime() on creation:
         if (!d.isShort())
             return d->m_msecs - d->m_offsetFromUtc * MSECS_PER_SEC;
         // Offset from UTC not recorded: need to recompute.
