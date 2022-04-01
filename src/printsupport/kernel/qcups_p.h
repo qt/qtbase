@@ -177,10 +177,14 @@ Q_DECLARE_TYPEINFO(QCUPSSupport::PagesPerSheet,       Q_PRIMITIVE_TYPE);
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QCUPSSupport::JobHoldUntil)
-Q_DECLARE_METATYPE(QCUPSSupport::BannerPage)
-Q_DECLARE_METATYPE(QCUPSSupport::PageSet)
-Q_DECLARE_METATYPE(QCUPSSupport::PagesPerSheetLayout)
-Q_DECLARE_METATYPE(QCUPSSupport::PagesPerSheet)
+QT_DECL_METATYPE_EXTERN_TAGGED(QCUPSSupport::JobHoldUntil,
+                               QCUPSSupport__JobHoldUntil, Q_PRINTSUPPORT_EXPORT)
+QT_DECL_METATYPE_EXTERN_TAGGED(QCUPSSupport::BannerPage,
+                               QCUPSSupport__BannerPage, Q_PRINTSUPPORT_EXPORT)
+QT_DECL_METATYPE_EXTERN_TAGGED(QCUPSSupport::PageSet, QCUPSSupport__PageSet, Q_PRINTSUPPORT_EXPORT)
+QT_DECL_METATYPE_EXTERN_TAGGED(QCUPSSupport::PagesPerSheetLayout,
+                               QCUPSSupport__PagesPerSheetLayout, Q_PRINTSUPPORT_EXPORT)
+QT_DECL_METATYPE_EXTERN_TAGGED(QCUPSSupport::PagesPerSheet,
+                               QCUPSSupport__PagesPerSheet, Q_PRINTSUPPORT_EXPORT)
 
 #endif

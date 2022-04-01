@@ -829,6 +829,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN_TAGGED(QGraphicsItem*, QGraphicsItem_ptr)
+
 static inline void _q_adjustRect(QRect *rect)
 {
     Q_ASSERT(rect);

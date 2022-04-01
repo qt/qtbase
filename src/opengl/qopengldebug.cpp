@@ -48,6 +48,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN(QOpenGLDebugMessage)
+
 /*!
     \class QOpenGLDebugMessage
     \brief The QOpenGLDebugMessage class wraps an OpenGL debug message.

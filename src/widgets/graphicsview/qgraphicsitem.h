@@ -1032,10 +1032,6 @@ Q_WIDGETS_EXPORT QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QGraphicsItem *)
-
-QT_BEGIN_NAMESPACE
-
-QT_END_NAMESPACE
+QT_DECL_METATYPE_EXTERN_TAGGED(QGraphicsItem*, QGraphicsItem_ptr, Q_WIDGETS_EXPORT)
 
 #endif // QGRAPHICSITEM_H

@@ -44,6 +44,7 @@
 #include <QtCore/qvariant.h>
 #include <QtPrintSupport/qprinter.h>
 
+// ### move to qmargins.h
 Q_DECLARE_METATYPE(QMarginsF)
 
 QT_BEGIN_NAMESPACE

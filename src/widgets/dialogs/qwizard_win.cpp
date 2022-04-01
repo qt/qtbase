@@ -60,6 +60,7 @@
 #include <vssym32.h>
 #include <dwmapi.h>
 
+// ### move to qmargins.h
 Q_DECLARE_METATYPE(QMargins)
 
 #ifndef WM_DWMCOMPOSITIONCHANGED

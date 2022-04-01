@@ -130,7 +130,9 @@ private:
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QScrollerProperties::OvershootPolicy)
-Q_DECLARE_METATYPE(QScrollerProperties::FrameRates)
+QT_DECL_METATYPE_EXTERN_TAGGED(QScrollerProperties::OvershootPolicy,
+                               QScrollerProperties__OvershootPolicy, Q_WIDGETS_EXPORT)
+QT_DECL_METATYPE_EXTERN_TAGGED(QScrollerProperties::FrameRates,
+                               QScrollerProperties__FrameRates, Q_WIDGETS_EXPORT)
 
 #endif // QSCROLLERPROPERTIES_H

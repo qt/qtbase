@@ -46,6 +46,11 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN_TAGGED(QScrollerProperties::OvershootPolicy,
+                               QScrollerProperties__OvershootPolicy)
+QT_IMPL_METATYPE_EXTERN_TAGGED(QScrollerProperties::FrameRates,
+                               QScrollerProperties__FrameRates)
+
 static QScrollerPropertiesPrivate *userDefaults = nullptr;
 static QScrollerPropertiesPrivate *systemDefaults = nullptr;
 

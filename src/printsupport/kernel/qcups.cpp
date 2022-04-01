@@ -44,6 +44,16 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN_TAGGED(QCUPSSupport::JobHoldUntil,
+                               QCUPSSupport__JobHoldUntil)
+QT_IMPL_METATYPE_EXTERN_TAGGED(QCUPSSupport::BannerPage,
+                               QCUPSSupport__BannerPage)
+QT_IMPL_METATYPE_EXTERN_TAGGED(QCUPSSupport::PageSet, QCUPSSupport__PageSet)
+QT_IMPL_METATYPE_EXTERN_TAGGED(QCUPSSupport::PagesPerSheetLayout,
+                               QCUPSSupport__PagesPerSheetLayout)
+QT_IMPL_METATYPE_EXTERN_TAGGED(QCUPSSupport::PagesPerSheet,
+                               QCUPSSupport__PagesPerSheet)
+
 static QStringList cupsOptionsList(QPrinter *printer) noexcept
 {
     return printer->printEngine()->property(PPK_CupsOptions).toStringList();

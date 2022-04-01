@@ -58,7 +58,7 @@
 #include "QtCore/qvariant.h"
 #include "QtCore/qnumeric.h"
 #include <QtCore/qcalendar.h>
-#include <QtCore/QList> // Q_DECLARE_METATYPE(QList<Qt::DayOfWeek>)
+#include <QtCore/qcontainerfwd.h>
 
 #include "qlocale.h"
 
@@ -544,10 +544,13 @@ static_assert(!ascii_isspace(uchar('\377')));
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QStringView)
-Q_DECLARE_METATYPE(QList<Qt::DayOfWeek>)
+// ### move to qstringview.h
+QT_DECL_METATYPE_EXTERN(QStringView, Q_CORE_EXPORT)
+// ### move to qnamespace.h
+QT_DECL_METATYPE_EXTERN_TAGGED(QList<Qt::DayOfWeek>, QList_Qt__DayOfWeek, Q_CORE_EXPORT)
 #ifndef QT_NO_SYSTEMLOCALE
-Q_DECLARE_METATYPE(QSystemLocale::CurrencyToStringArgument)
+QT_DECL_METATYPE_EXTERN_TAGGED(QSystemLocale::CurrencyToStringArgument,
+                               QSystemLocale__CurrencyToStringArgument, Q_CORE_EXPORT)
 #endif
 
 #endif // QLOCALE_P_H

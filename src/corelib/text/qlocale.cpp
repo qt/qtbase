@@ -84,6 +84,13 @@ QT_WARNING_DISABLE_GCC("-Wfree-nonheap-object") // false positive tracking
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN(QStringView)
+QT_IMPL_METATYPE_EXTERN_TAGGED(QList<Qt::DayOfWeek>, QList_Qt__DayOfWeek)
+#ifndef QT_NO_SYSTEMLOCALE
+QT_IMPL_METATYPE_EXTERN_TAGGED(QSystemLocale::CurrencyToStringArgument,
+                               QSystemLocale__CurrencyToStringArgument)
+#endif
+
 using namespace Qt::StringLiterals;
 
 #ifndef QT_NO_SYSTEMLOCALE

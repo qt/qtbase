@@ -49,6 +49,13 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN_TAGGED(Qt::GestureState, Qt__GestureState)
+QT_IMPL_METATYPE_EXTERN_TAGGED(Qt::GestureType, Qt__GestureType)
+QT_IMPL_METATYPE_EXTERN_TAGGED(QPinchGesture::ChangeFlags,
+                               QPinchGesture__ChangeFlags)
+QT_IMPL_METATYPE_EXTERN_TAGGED(QGesture::GestureCancelPolicy,
+                               QGesture__GestureCancelPolicy)
+
  /*!
     \class QGesture
     \since 4.6
