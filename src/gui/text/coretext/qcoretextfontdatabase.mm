@@ -64,8 +64,8 @@ QT_BEGIN_NAMESPACE
 
 // this could become a list of all languages used for each writing
 // system, instead of using the single most common language.
-static const char *languageForWritingSystem[] = {
-    0,     // Any
+static const char languageForWritingSystem[][8] = {
+    "",    // Any
     "en",  // Latin
     "el",  // Greek
     "ru",  // Cyrillic
@@ -95,12 +95,12 @@ static const char *languageForWritingSystem[] = {
     "ja",  // Japanese
     "ko",  // Korean
     "vi",  // Vietnamese
-    0, // Symbol
+    "",    // Symbol
     "sga", // Ogham
     "non", // Runic
     "man" // N'Ko
 };
-enum { LanguageCount = sizeof(languageForWritingSystem) / sizeof(const char *) };
+enum { LanguageCount = sizeof languageForWritingSystem / sizeof *languageForWritingSystem };
 
 QCoreTextFontDatabase::QCoreTextFontDatabase()
     : m_hasPopulatedAliases(false)
@@ -321,7 +321,7 @@ static void getFontDescription(CTFontDescriptorRef font, FontDescription *fd)
     if (QCFType<CFArrayRef> languages = (CFArrayRef) CTFontDescriptorCopyAttribute(font, kCTFontLanguagesAttribute)) {
         CFIndex length = CFArrayGetCount(languages);
         for (int i = 1; i < LanguageCount; ++i) {
-            if (!languageForWritingSystem[i])
+            if (!*languageForWritingSystem[i])
                 continue;
             QCFString lang = CFStringCreateWithCString(NULL, languageForWritingSystem[i], kCFStringEncodingASCII);
             if (CFArrayContainsValue(languages, CFRangeMake(0, length), lang))
