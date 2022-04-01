@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2019 BogDan Vatra <bogdan@kde.org>
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -47,17 +47,89 @@
 #define QT_POPEN_READ "r"
 #endif
 
-static auto junitChecker = [](const QByteArray &data) -> bool {
+static bool checkJunit(const QByteArray &data) {
     QXmlStreamReader reader{data};
     while (!reader.atEnd()) {
         reader.readNext();
-        if (reader.isStartElement() && reader.name() == QStringLiteral("testcase") &&
-                reader.attributes().value(QStringLiteral("result")).toString() == QStringLiteral("fail")) {
+
+        if (!reader.isStartElement())
+            continue;
+
+        if (reader.name() == QStringLiteral("error"))
             return false;
+
+        const QString type = reader.attributes().value(QStringLiteral("type")).toString();
+        if (reader.name() == QStringLiteral("failure")) {
+            if (type == QStringLiteral("fail") || type == QStringLiteral("xpass"))
+                return false;
         }
     }
+
+    // Fail if there's an error after reading through all the xml output
+    return !reader.hasError();
+}
+
+static bool checkTxt(const QByteArray &data) {
+    if (data.indexOf(QLatin1String("\nFAIL!  : ")) >= 0)
+        return false;
+    if (data.indexOf(QLatin1String("\nXPASS  : ")) >= 0)
+        return false;
+    // Look for "********* Finished testing of tst_QTestName *********"
+    static const QRegularExpression testTail(QLatin1String("\\*+ +Finished testing of .+ +\\*+"));
+    return testTail.match(QLatin1String(data)).hasMatch();
+}
+
+static bool checkCsv(const QByteArray &data) {
+    // The csv format is only suitable for benchmarks,
+    // so this is not much useful to determine test failure/success.
+    // FIXME: warn the user early on about this.
+    Q_UNUSED(data);
     return true;
-};
+}
+
+static bool checkXml(const QByteArray &data) {
+    QXmlStreamReader reader{data};
+    while (!reader.atEnd()) {
+        reader.readNext();
+        const QString type = reader.attributes().value(QStringLiteral("type")).toString();
+        const bool isIncident = (reader.name() == QStringLiteral("Incident"));
+        if (reader.isStartElement() && isIncident) {
+            if (type == QStringLiteral("fail") || type == QStringLiteral("xpass"))
+                return false;
+        }
+    }
+
+    // Fail if there's an error after reading through all the xml output
+    return !reader.hasError();
+}
+
+static bool checkLightxml(const QByteArray &data) {
+    // lightxml intentionally skips the root element, which technically makes it
+    // not valid XML. We'll add that ourselves for the purpose of validation.
+    QByteArray newData = data;
+    newData.prepend("<root>");
+    newData.append("</root>");
+    return checkXml(newData);
+}
+
+static bool checkTeamcity(const QByteArray &data) {
+    if (data.indexOf("' message='Failure! |[Loc: ") >= 0)
+        return false;
+    const QList<QByteArray> lines = data.trimmed().split('\n');
+    if (lines.isEmpty())
+        return false;
+    return lines.last().startsWith(QLatin1String("##teamcity[testSuiteFinished "));
+}
+
+static bool checkTap(const QByteArray &data) {
+    // This will still report blacklisted fails because QTest with TAP
+    // is not putting any data about that.
+    if (data.indexOf("\nnot ok ") >= 0)
+        return false;
+
+    static const QRegularExpression testTail(QLatin1String("ok [0-9]* - cleanupTestCase\\(\\)"));
+    return testTail.match(QLatin1String(data)).hasMatch();
+}
 
 struct Options
 {
@@ -77,36 +149,15 @@ struct Options
     int sdkVersion = -1;
     int pid = -1;
     bool showLogcatOutput = false;
-    QHash<QString, std::function<bool(const QByteArray &)>> checkFiles = {
-    {QStringLiteral("txt"), [](const QByteArray &data) -> bool {
-        return data.indexOf("\nFAIL!  : ") < 0;
-    }},
-    {QStringLiteral("csv"), [](const QByteArray &/*data*/) -> bool {
-        // It seems csv is broken
-        return true;
-    }},
-    {QStringLiteral("xml"), [](const QByteArray &data) -> bool {
-        QXmlStreamReader reader{data};
-        while (!reader.atEnd()) {
-            reader.readNext();
-            if (reader.isStartElement() && reader.name() == QStringLiteral("Incident") &&
-                    reader.attributes().value(QStringLiteral("type")).toString() == QStringLiteral("fail")) {
-                return false;
-            }
-        }
-        return true;
-    }},
-    {QStringLiteral("lightxml"), [](const QByteArray &data) -> bool {
-        return data.indexOf("\n<Incident type=\"fail\" ") < 0;
-    }},
-    {QStringLiteral("xunitxml"), junitChecker},
-    {QStringLiteral("junitxml"), junitChecker},
-    {QStringLiteral("teamcity"), [](const QByteArray &data) -> bool {
-        return data.indexOf("' message='Failure! |[Loc: ") < 0;
-    }},
-    {QStringLiteral("tap"), [](const QByteArray &data) -> bool {
-        return data.indexOf("\nnot ok ") < 0;
-    }},
+    const QHash<QString, std::function<bool(const QByteArray &)>> checkFiles = {
+        {QStringLiteral("txt"), checkTxt},
+        {QStringLiteral("csv"), checkCsv},
+        {QStringLiteral("xml"), checkXml},
+        {QStringLiteral("lightxml"), checkLightxml},
+        {QStringLiteral("xunitxml"), checkJunit},
+        {QStringLiteral("junitxml"), checkJunit},
+        {QStringLiteral("teamcity"), checkTeamcity},
+        {QStringLiteral("tap"), checkTap},
     };
 };
 
@@ -466,20 +517,30 @@ static bool pullFiles()
 {
     bool ret = true;
     for (auto it = g_options.outFiles.constBegin(); it != g_options.outFiles.end(); ++it) {
+        // Get only stdout from cat and get rid of stderr and fail later if the output is empty
+        const QString catCmd = QStringLiteral("cat files/output.%1 2> /dev/null").arg(it.key());
+
         QByteArray output;
-        if (!execCommand(QStringLiteral("%1 shell run-as %2 cat files/output.%3")
-                         .arg(g_options.adbCommand, g_options.package, it.key()), &output)) {
+        if (!execCommand(QStringLiteral("%1 shell 'run-as %2 %3'")
+                         .arg(g_options.adbCommand, g_options.package, catCmd), &output)) {
             // Cannot find output file. Check in path related to current user
             QByteArray userId;
             execCommand(QStringLiteral("%1 shell cmd activity get-current-user")
                         .arg(g_options.adbCommand), &userId);
             const QString userIdSimplified(QString::fromUtf8(userId).simplified());
-            if (!execCommand(QStringLiteral("%1 shell run-as %2 --user %3 cat files/output.%4")
-                        .arg(g_options.adbCommand, g_options.package, userIdSimplified, it.key()),
+            if (!execCommand(QStringLiteral("%1 shell 'run-as %2 --user %3 %4'")
+                        .arg(g_options.adbCommand, g_options.package, userIdSimplified, catCmd),
                          &output)) {
                 return false;
             }
         }
+
+        if (output.isEmpty()) {
+            fprintf(stderr, "Failed to get the test output from the target. Either the output "
+                            "is empty or androidtestrunner failed to retrieve it.\n");
+            return false;
+        }
+
         auto checkerIt = g_options.checkFiles.find(it.key());
         ret = ret && checkerIt != g_options.checkFiles.end() && checkerIt.value()(output);
         if (it.value() == QStringLiteral("-")){
