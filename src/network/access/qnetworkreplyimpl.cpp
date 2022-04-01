@@ -51,6 +51,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN_TAGGED(QSharedPointer<char>, QSharedPointer_char)
+
 inline QNetworkReplyImplPrivate::QNetworkReplyImplPrivate()
     : backend(nullptr), outgoingData(nullptr),
       copyDevice(nullptr),

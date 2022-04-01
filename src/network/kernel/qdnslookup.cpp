@@ -49,6 +49,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN(QDnsLookupReply)
+
 #if QT_CONFIG(thread)
 Q_GLOBAL_STATIC(QDnsLookupThreadPool, theDnsLookupThreadPool);
 #endif
