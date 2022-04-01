@@ -176,8 +176,10 @@ Q_SIGNALS:
 };
 
 QT_END_NAMESPACE
-Q_DECLARE_METATYPE(QPlatformDialogHelper::StandardButton)
-Q_DECLARE_METATYPE(QPlatformDialogHelper::ButtonRole)
+QT_DECL_METATYPE_EXTERN_TAGGED(QPlatformDialogHelper::StandardButton,
+                               QPlatformDialogHelper__StandardButton, Q_GUI_EXPORT)
+QT_DECL_METATYPE_EXTERN_TAGGED(QPlatformDialogHelper::ButtonRole,
+                               QPlatformDialogHelper__ButtonRole, Q_GUI_EXPORT)
 QT_BEGIN_NAMESPACE
 
 class Q_GUI_EXPORT QColorDialogOptions

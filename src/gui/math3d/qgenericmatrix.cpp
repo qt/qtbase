@@ -41,6 +41,15 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN(QMatrix2x2)
+QT_IMPL_METATYPE_EXTERN(QMatrix2x3)
+QT_IMPL_METATYPE_EXTERN(QMatrix2x4)
+QT_IMPL_METATYPE_EXTERN(QMatrix3x2)
+QT_IMPL_METATYPE_EXTERN(QMatrix3x3)
+QT_IMPL_METATYPE_EXTERN(QMatrix3x4)
+QT_IMPL_METATYPE_EXTERN(QMatrix4x2)
+QT_IMPL_METATYPE_EXTERN(QMatrix4x3)
+
 /*!
     \class QGenericMatrix
     \brief The QGenericMatrix class is a template class that represents a NxM transformation matrix with N columns and M rows.

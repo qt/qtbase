@@ -48,6 +48,10 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN(QPageSize)
+QT_IMPL_METATYPE_EXTERN_TAGGED(QPageSize::PageSizeId, QPageSize__PageSizeId)
+QT_IMPL_METATYPE_EXTERN_TAGGED(QPageSize::Unit, QPageSize__Unit)
+
 // Define the Windows DMPAPER sizes for use in the look-up table
 // See http://msdn.microsoft.com/en-us/library/windows/desktop/dd319099.aspx
 

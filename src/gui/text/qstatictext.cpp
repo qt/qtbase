@@ -46,6 +46,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN(QStaticText)
+
 QStaticTextUserData::~QStaticTextUserData()
 {
 }

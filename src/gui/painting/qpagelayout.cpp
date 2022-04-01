@@ -48,6 +48,10 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN(QPageLayout)
+QT_IMPL_METATYPE_EXTERN_TAGGED(QPageLayout::Unit, QPageLayout__Unit)
+QT_IMPL_METATYPE_EXTERN_TAGGED(QPageLayout::Orientation, QPageLayout__Orientation)
+
 // Multiplier for converting units to points.
 Q_GUI_EXPORT qreal qt_pointMultiplier(QPageLayout::Unit unit)
 {

@@ -56,6 +56,11 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN_TAGGED(QPlatformDialogHelper::StandardButton,
+                               QPlatformDialogHelper__StandardButton)
+QT_IMPL_METATYPE_EXTERN_TAGGED(QPlatformDialogHelper::ButtonRole,
+                               QPlatformDialogHelper__ButtonRole)
+
 /*!
     \class QPlatformDialogHelper
     \since 5.0

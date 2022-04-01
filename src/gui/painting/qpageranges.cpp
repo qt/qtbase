@@ -46,6 +46,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN(QPageRanges)
+
 void QPageRangesPrivate::mergeIntervals()
 {
     const int count = intervals.count();
