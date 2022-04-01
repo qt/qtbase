@@ -207,6 +207,7 @@ const char *QtMetaTypePrivate::typedefNameForType(const QtPrivate::QMetaTypeInte
         if (it.value() == type_d && it.key() != officialName)
             otherNames << it.key();
     }
+    l.unlock();
     if (!otherNames.isEmpty())
         qWarning("QMetaType: type %s has more than one typedef alias: %s, %s",
                  type_d->name, name, otherNames.join(", ").constData());
