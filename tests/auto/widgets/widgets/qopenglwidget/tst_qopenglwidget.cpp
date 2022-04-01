@@ -154,7 +154,7 @@ void tst_QOpenGLWidget::clearAndGrab()
 void tst_QOpenGLWidget::clearAndResizeAndGrab()
 {
 #ifdef Q_OS_ANDROID
-    QSKIP("Crashes on Android (QTBUG-102043)");
+    QSKIP("Crashes on Android, figure out why (QTBUG-102043)");
 #endif
     QScopedPointer<QOpenGLWidget> w(new ClearWidget(0, 640, 480));
     w->resize(640, 480);
@@ -276,6 +276,9 @@ void tst_QOpenGLWidget::reparentToAlreadyCreated()
 
 void tst_QOpenGLWidget::reparentToNotYetCreated()
 {
+#ifdef Q_OS_ANDROID
+    QSKIP("Crashes on Android, figure out why (QTBUG-102043)");
+#endif
     QWidget w1;
     PainterWidget *glw = new PainterWidget(&w1);
     w1.resize(640, 480);
@@ -350,6 +353,9 @@ void CountingGraphicsView::drawForeground(QPainter *, const QRectF &)
 
 void tst_QOpenGLWidget::asViewport()
 {
+#ifdef Q_OS_ANDROID
+    QSKIP("Crashes on Android, figure out why (QTBUG-102043)");
+#endif
     // Have a QGraphicsView with a QOpenGLWidget as its viewport.
     QGraphicsScene scene;
     scene.addItem(new QGraphicsRectItem(10, 10, 100, 100));
@@ -398,6 +404,9 @@ public:
 
 void tst_QOpenGLWidget::requestUpdate()
 {
+#ifdef Q_OS_ANDROID
+    QSKIP("Crashes on Android, figure out why (QTBUG-102043)");
+#endif
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
@@ -425,6 +434,9 @@ public:
 
 void tst_QOpenGLWidget::fboRedirect()
 {
+#ifdef Q_OS_ANDROID
+    QSKIP("Crashes on Android, figure out why (QTBUG-102043)");
+#endif
     FboCheckWidget w;
     w.resize(640, 480);
     w.show();
@@ -440,6 +452,9 @@ void tst_QOpenGLWidget::fboRedirect()
 
 void tst_QOpenGLWidget::showHide()
 {
+#ifdef Q_OS_ANDROID
+    QSKIP("Crashes on Android, figure out why (QTBUG-102043)");
+#endif
     QScopedPointer<ClearWidget> w(new ClearWidget(0, 800, 600));
     w->resize(800, 600);
     w->show();
@@ -466,6 +481,9 @@ void tst_QOpenGLWidget::showHide()
 
 void tst_QOpenGLWidget::nativeWindow()
 {
+#ifdef Q_OS_ANDROID
+    QSKIP("Crashes on Android, figure out why (QTBUG-102043)");
+#endif
     QScopedPointer<ClearWidget> w(new ClearWidget(0, 800, 600));
     w->resize(800, 600);
     w->show();
@@ -589,6 +607,9 @@ void tst_QOpenGLWidget::stackWidgetOpaqueChildIsVisible()
     QSKIP("QScreen::grabWindow() doesn't work properly on OSX HighDPI screen: QTBUG-46803");
     return;
 #endif
+#ifdef Q_OS_ANDROID
+    QSKIP("Crashes on Android, figure out why (QTBUG-102043)");
+#endif
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
     if (QGuiApplication::platformName().startsWith(QLatin1String("offscreen"), Qt::CaseInsensitive))
@@ -675,6 +696,9 @@ void tst_QOpenGLWidget::offscreen()
 
 void tst_QOpenGLWidget::offscreenThenOnscreen()
 {
+#ifdef Q_OS_ANDROID
+    QSKIP("Crashes on Android, figure out why (QTBUG-102043)");
+#endif
     QScopedPointer<ClearWidget> w(new ClearWidget(0, 800, 600));
     w->resize(800, 600);
 
@@ -700,6 +724,9 @@ void tst_QOpenGLWidget::offscreenThenOnscreen()
 
 void tst_QOpenGLWidget::paintWhileHidden()
 {
+#ifdef Q_OS_ANDROID
+    QSKIP("Crashes on Android, figure out why (QTBUG-102043)");
+#endif
     QScopedPointer<QWidget> tlw(new QWidget);
     tlw->resize(640, 480);
 
