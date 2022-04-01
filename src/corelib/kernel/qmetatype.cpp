@@ -2583,7 +2583,7 @@ static int qMetaTypeCustomType_unlocked(const char *typeName, int length)
 #if QT_CONFIG(thread)
         Q_ASSERT(!reg->lock.tryLockForWrite());
 #endif
-        if (auto ti = reg->aliases.value(QByteArray(typeName, length), nullptr)) {
+        if (auto ti = reg->aliases.value(QByteArray::fromRawData(typeName, length), nullptr)) {
             return ti->typeId;
         }
     }
