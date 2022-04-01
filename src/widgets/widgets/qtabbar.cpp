@@ -406,12 +406,12 @@ void QTabBarPrivate::init()
 {
     Q_Q(QTabBar);
     leftB = new QToolButton(q);
-    leftB->setObjectName(u"ScrollLeftButton"_qs);
+    leftB->setObjectName(QStringLiteral("ScrollLeftButton"));
     leftB->setAutoRepeat(true);
     QObject::connect(leftB, SIGNAL(clicked()), q, SLOT(_q_scrollTabs()));
     leftB->hide();
     rightB = new QToolButton(q);
-    rightB->setObjectName(u"ScrollRightButton"_qs);
+    rightB->setObjectName(QStringLiteral("ScrollRightButton"));
     rightB->setAutoRepeat(true);
     QObject::connect(rightB, SIGNAL(clicked()), q, SLOT(_q_scrollTabs()));
     rightB->hide();
@@ -2262,10 +2262,15 @@ void QTabBarPrivate::setupMovableTab()
     QStyleOptionTab tab;
     q->initStyleOption(&tab, pressedIndex);
     tab.position = QStyleOptionTab::OnlyOneTab;
-    if (verticalTabs(shape))
-        tab.rect.moveTopLeft(QPoint(0, taboverlap));
-    else
-        tab.rect.moveTopLeft(QPoint(taboverlap, 0));
+
+    /////////////////////////////// fix: text disappeared when moving
+    p.setWindow(grabRect);
+    //if (verticalTabs(shape))
+    //    tab.rect.moveTopLeft(QPoint(0, taboverlap));
+    //else
+    //    tab.rect.moveTopLeft(QPoint(taboverlap, 0));
+
+
     p.drawControl(QStyle::CE_TabBarTab, tab);
     p.end();
 
