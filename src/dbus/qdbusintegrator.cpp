@@ -79,6 +79,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN(QDBusSlotCache)
+
 // used with dbus_server_allocate_data_slot
 static dbus_int32_t server_slot = -1;
 

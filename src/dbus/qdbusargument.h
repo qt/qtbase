@@ -157,7 +157,7 @@ protected:
 Q_DECLARE_SHARED(QDBusArgument)
 
 QT_END_NAMESPACE
-Q_DECLARE_METATYPE(QDBusArgument)
+QT_DECL_METATYPE_EXTERN(QDBusArgument, Q_DBUS_EXPORT)
 QT_BEGIN_NAMESPACE
 
 template<typename T> inline T qdbus_cast(const QDBusArgument &arg)

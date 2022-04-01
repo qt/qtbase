@@ -58,6 +58,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN(QDBusArgument)
+
 QDBusArgumentPrivate::~QDBusArgumentPrivate()
 {
     if (message)
