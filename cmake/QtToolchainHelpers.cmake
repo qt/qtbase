@@ -184,6 +184,20 @@ set(__qt_chainload_toolchain_file \"\${__qt_initially_configured_toolchain_file}
             list(APPEND init_platform "endif()")
         endif()
     elseif(ANDROID)
+        list(APPEND init_platform
+"# Detect Android SDK/NDK from environment before loading the Android platform toolchain file."
+"if(NOT DEFINED ANDROID_SDK_ROOT)"
+"    if(NOT \"\$ENV{ANDROID_SDK_ROOT}\" STREQUAL \"\")"
+"        set(ANDROID_SDK_ROOT \"\$ENV{ANDROID_SDK_ROOT}\" CACHE STRING \"Path to the Android SDK\")"
+"    endif()"
+"endif()"
+"if(NOT DEFINED ANDROID_NDK_ROOT)"
+"    if(NOT \"\$ENV{ANDROID_NDK_ROOT}\" STREQUAL \"\")"
+"        set(ANDROID_NDK_ROOT \"\$ENV{ANDROID_NDK_ROOT}\" CACHE STRING \"Path to the Android NDK\")"
+"    endif()"
+"endif()"
+        )
+
         foreach(var ANDROID_PLATFORM ANDROID_NATIVE_API_LEVEL ANDROID_STL
                 ANDROID_ABI ANDROID_SDK_ROOT ANDROID_NDK_ROOT)
             list(APPEND init_additional_used_variables
