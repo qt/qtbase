@@ -94,8 +94,8 @@ template <typename Holder> struct QGlobalStatic
 {
     using Type = typename Holder::Type;
 
-    bool isDestroyed() const { return guardValue() <= QtGlobalStatic::Destroyed; }
-    bool exists() const { return guardValue() == QtGlobalStatic::Initialized; }
+    bool isDestroyed() const noexcept { return guardValue() <= QtGlobalStatic::Destroyed; }
+    bool exists() const noexcept { return guardValue() == QtGlobalStatic::Initialized; }
     operator Type *()
     {
         if (isDestroyed())
@@ -127,7 +127,7 @@ protected:
         static Holder holder;
         return holder.pointer();
     }
-    static QtGlobalStatic::GuardValues guardValue()
+    static QtGlobalStatic::GuardValues guardValue() noexcept
     {
         return QtGlobalStatic::GuardValues(Holder::guard.loadAcquire());
     }
