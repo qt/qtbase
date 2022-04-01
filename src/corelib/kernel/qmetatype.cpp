@@ -2578,7 +2578,8 @@ static inline int qMetaTypeStaticType(const char *typeName, int length)
 */
 static int qMetaTypeCustomType_unlocked(const char *typeName, int length)
 {
-    if (auto reg = customTypeRegistry()) {
+    if (customTypeRegistry.exists()) {
+        auto reg = &*customTypeRegistry;
 #if QT_CONFIG(thread)
         Q_ASSERT(!reg->lock.tryLockForWrite());
 #endif
@@ -2978,8 +2979,8 @@ static const QtPrivate::QMetaTypeInterface *interfaceForType(int typeId)
 {
     const QtPrivate::QMetaTypeInterface *iface = nullptr;
     if (typeId >= QMetaType::User) {
-        if (auto reg = customTypeRegistry())
-            iface = reg->getCustomType(typeId);
+        if (customTypeRegistry.exists())
+            iface = customTypeRegistry->getCustomType(typeId);
     } else {
         if (auto moduleHelper = qModuleHelperForType(typeId))
             iface = moduleHelper->interfaceForType(typeId);
