@@ -54,6 +54,10 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN_TAGGED(QCss::BackgroundData, QCss__BackgroundData)
+QT_IMPL_METATYPE_EXTERN_TAGGED(QCss::LengthData, QCss__LengthData)
+QT_IMPL_METATYPE_EXTERN_TAGGED(QCss::BorderData, QCss__BorderData)
+
 #include "qcssscanner.cpp"
 
 using namespace QCss;

@@ -42,6 +42,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_IMPL_METATYPE_EXTERN_TAGGED(QInputDeviceManager::DeviceType, QInputDeviceManager__DeviceType)
+
 /*!
   \class QInputDeviceManager
   \internal

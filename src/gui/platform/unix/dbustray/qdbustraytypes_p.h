@@ -102,8 +102,8 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, QXdgDBusToolTipSt
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QXdgDBusImageStruct)
-Q_DECLARE_METATYPE(QXdgDBusImageVector)
-Q_DECLARE_METATYPE(QXdgDBusToolTipStruct)
+QT_DECL_METATYPE_EXTERN(QXdgDBusImageStruct, Q_GUI_EXPORT)
+QT_DECL_METATYPE_EXTERN(QXdgDBusImageVector, Q_GUI_EXPORT)
+QT_DECL_METATYPE_EXTERN(QXdgDBusToolTipStruct, Q_GUI_EXPORT)
 
 #endif // QDBUSTRAYTYPES_P_H

@@ -91,6 +91,7 @@ Q_SIGNALS:
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QInputDeviceManager::DeviceType)
+QT_DECL_METATYPE_EXTERN_TAGGED(QInputDeviceManager::DeviceType,
+                               QInputDeviceManager__DeviceType, Q_GUI_EXPORT)
 
 #endif // QINPUTDEVICEMANAGER_P_H
