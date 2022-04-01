@@ -1268,7 +1268,7 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
         if (fixup && sect.state == Intermediate && sect.used < sn.count) {
             const FieldInfo fi = fieldInfo(index);
             if ((fi & (Numeric|FixedWidth)) == (Numeric|FixedWidth)) {
-                const QString newText = QString::fromLatin1("%1").arg(sect.value, sn.count, 10, '0'_L1);
+                const QString newText = QString("%1"_L1).arg(sect.value, sn.count, 10, '0'_L1);
                 m_text.replace(pos, sect.used, newText);
                 sect.used = sn.count;
             }
@@ -1287,12 +1287,10 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
                 QStringView zoneName = QStringView{m_text}.sliced(pos, sect.used);
                 Q_ASSERT(!zoneName.isEmpty()); // sect.used > 0
 
-                const QStringView offsetStr = zoneName.startsWith("UTC"_L1)
-                                             ? zoneName.sliced(3) : zoneName;
-                const bool isUtcOffset = offsetStr.startsWith(u'+')
-                                         || offsetStr.startsWith(u'-');
-                const bool isUtc = zoneName == "Z"_L1
-                                   || zoneName == "UTC"_L1;
+                const QStringView offsetStr
+                    = zoneName.startsWith("UTC"_L1) ? zoneName.sliced(3) : zoneName;
+                const bool isUtcOffset = offsetStr.startsWith(u'+') || offsetStr.startsWith(u'-');
+                const bool isUtc = zoneName == "Z"_L1 || zoneName == "UTC"_L1;
 
                 if (isUtc || isUtcOffset) {
                     tspec = sect.value ? Qt::OffsetFromUTC : Qt::UTC;
