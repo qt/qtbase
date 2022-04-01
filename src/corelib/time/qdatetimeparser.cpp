@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -761,6 +761,11 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex,
     const int sectionmaxsize = sectionMaxSize(sectionIndex);
     QStringRef sectionTextRef = text->midRef(offset, sectionmaxsize);
 
+    // If the fields we've read thus far imply a time in a spring-forward,
+    // coerce to a nearby valid time:
+    const QDateTime defaultValue = currentValue.isValid() ? currentValue
+        : QDateTime::fromMSecsSinceEpoch(currentValue.toMSecsSinceEpoch());
+
     QDTPDEBUG << "sectionValue for" << sn.name()
               << "with text" << *text << "and (at" << offset
               << ") st:" << sectionTextRef;
@@ -793,7 +798,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex,
             text->replace(offset, used, sectiontext.constData(), used);
         break; }
     case TimeZoneSection:
-        result = findTimeZone(sectionTextRef, currentValue,
+        result = findTimeZone(sectionTextRef, defaultValue,
                               absoluteMax(sectionIndex),
                               absoluteMin(sectionIndex));
         break;
@@ -805,7 +810,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex,
             int num = 0, used = 0;
             if (sn.type == MonthSection) {
                 const QDate minDate = getMinimum().date();
-                const int year = currentValue.date().year(calendar);
+                const int year = defaultValue.date().year(calendar);
                 const int min = (year == minDate.year(calendar)) ? minDate.month(calendar) : 1;
                 num = findMonth(sectiontext.toLower(), min, sectionIndex, year, &sectiontext, &used);
             } else {
@@ -887,7 +892,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex,
                     else
                         QDTPDEBUG << "invalid because" << last << "is less than absoluteMin" << absMin;
                 } else if (unfilled && (fi & (FixedWidth|Numeric)) == (FixedWidth|Numeric)) {
-                    if (skipToNextSection(sectionIndex, currentValue, digitsStr)) {
+                    if (skipToNextSection(sectionIndex, defaultValue, digitsStr)) {
                         const int missingZeroes = sectionmaxsize - digitsStr.size();
                         result = ParsedSection(Acceptable, last, sectionmaxsize, missingZeroes);
                         text->insert(offset, QString(missingZeroes, QLatin1Char('0')));
