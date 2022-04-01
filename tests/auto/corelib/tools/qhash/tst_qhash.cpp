@@ -104,6 +104,9 @@ private slots:
     void detachAndReferences();
 
     void lookupUsingKeyIterator();
+
+    void squeeze();
+    void squeezeShared();
 };
 
 struct IdentityTracker {
@@ -2667,7 +2670,7 @@ void tst_QHash::reserveLessThanCurrentAmount()
 
         // Make sure that hash still has all elements
         for (int i = 0; i < 1000; ++i)
-            QCOMPARE(hash.values(i), QList<int>() << i * 10 + 1 << i * 10);
+            QCOMPARE(hash.values(i), QList<int>({ i * 10 + 1, i * 10 }));
     }
 }
 
@@ -2745,6 +2748,96 @@ void tst_QHash::lookupUsingKeyIterator()
 
     for (auto it = hash.keyBegin(), end = hash.keyEnd(); it != end; ++it)
         QVERIFY(!hash[*it].isEmpty());
+}
+
+void tst_QHash::squeeze()
+{
+    {
+        QHash<int, int> hash;
+        hash.reserve(1000);
+        for (int i = 0; i < 10; ++i)
+            hash.insert(i, i * 10);
+        QVERIFY(hash.isDetached());
+        const size_t buckets = hash.bucket_count();
+        const qsizetype size = hash.size();
+
+        hash.squeeze();
+
+        QVERIFY(hash.bucket_count() < buckets);
+        QCOMPARE(hash.size(), size);
+        for (int i = 0; i < size; ++i)
+            QCOMPARE(hash.value(i), i * 10);
+    }
+    {
+        QMultiHash<int, int> hash;
+        hash.reserve(1000);
+        for (int i = 0; i < 10; ++i) {
+            hash.insert(i, i * 10);
+            hash.insert(i, i * 10 + 1);
+        }
+        QVERIFY(hash.isDetached());
+        const size_t buckets = hash.bucket_count();
+        const qsizetype size = hash.size();
+
+        hash.squeeze();
+
+        QVERIFY(hash.bucket_count() < buckets);
+        QCOMPARE(hash.size(), size);
+        for (int i = 0; i < (size / 2); ++i)
+            QCOMPARE(hash.values(i), QList<int>({ i * 10 + 1, i * 10 }));
+    }
+}
+
+void tst_QHash::squeezeShared()
+{
+    {
+        QHash<int, int> hash;
+        hash.reserve(1000);
+        for (int i = 0; i < 10; ++i)
+            hash.insert(i, i * 10);
+
+        QHash<int, int> other = hash;
+
+        // Check that when squeezing a hash with shared d_ptr, the number of
+        // buckets actually decreases.
+        QVERIFY(!other.isDetached());
+        const size_t buckets = other.bucket_count();
+        const qsizetype size = other.size();
+
+        other.squeeze();
+
+        QCOMPARE(hash.bucket_count(), buckets);
+        QVERIFY(other.bucket_count() < buckets);
+
+        QCOMPARE(other.size(), size);
+        for (int i = 0; i < size; ++i)
+            QCOMPARE(other.value(i), i * 10);
+    }
+    {
+        QMultiHash<int, int> hash;
+        hash.reserve(1000);
+        for (int i = 0; i < 10; ++i) {
+            hash.insert(i, i * 10);
+            hash.insert(i, i * 10 + 1);
+        }
+
+        QMultiHash<int, int> other = hash;
+
+        // Check that when squeezing a hash with shared d_ptr, the number of
+        // buckets actually decreases.
+        QVERIFY(!other.isDetached());
+        const size_t buckets = other.bucket_count();
+        const qsizetype size = other.size();
+
+        other.squeeze();
+
+        QCOMPARE(hash.bucket_count(), buckets);
+        QVERIFY(other.bucket_count() < buckets);
+
+        QCOMPARE(other.size(), size);
+        for (int i = 0; i < (size / 2); ++i)
+            QCOMPARE(other.values(i), QList<int>({ i * 10 + 1, i * 10 }));
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_QHash)
