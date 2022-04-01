@@ -583,7 +583,6 @@ public:
     bool plug(QLayoutItem *widgetItem);
     QLayoutItem *unplug(QWidget *widget, bool group = false);
     void revert(QLayoutItem *widgetItem);
-    void paintDropIndicator(QPainter *p, QWidget *widget, const QRegion &clip);
     void applyState(QMainWindowLayoutState &newState, bool animate = true);
     void restore(bool keepSavedState = false);
     void animationFinished(QWidget *widget);
