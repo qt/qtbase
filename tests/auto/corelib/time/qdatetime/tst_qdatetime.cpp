@@ -1483,14 +1483,29 @@ void tst_QDateTime::addSecs()
     QFETCH(const qint64, nsecs);
     QFETCH(const QDateTime, result);
     QDateTime test = dt.addSecs(nsecs);
+    QDateTime test2 = dt + std::chrono::seconds(nsecs);
+    QDateTime test3 = dt;
+    test3 += std::chrono::seconds(nsecs);
     if (!result.isValid()) {
         QVERIFY(!test.isValid());
+        QVERIFY(!test2.isValid());
+        QVERIFY(!test3.isValid());
     } else {
         QCOMPARE(test, result);
+        QCOMPARE(test2, result);
+        QCOMPARE(test3, result);
         QCOMPARE(test.timeSpec(), dt.timeSpec());
-        if (test.timeSpec() == Qt::OffsetFromUTC)
+        QCOMPARE(test2.timeSpec(), dt.timeSpec());
+        QCOMPARE(test3.timeSpec(), dt.timeSpec());
+        if (test.timeSpec() == Qt::OffsetFromUTC) {
             QCOMPARE(test.offsetFromUtc(), dt.offsetFromUtc());
+            QCOMPARE(test2.offsetFromUtc(), dt.offsetFromUtc());
+            QCOMPARE(test3.offsetFromUtc(), dt.offsetFromUtc());
+        }
         QCOMPARE(result.addSecs(-nsecs), dt);
+        QCOMPARE(result - std::chrono::seconds(nsecs), dt);
+        test3 -= std::chrono::seconds(nsecs);
+        QCOMPARE(test3, dt);
     }
 }
 
@@ -1744,7 +1759,9 @@ void tst_QDateTime::msecsTo()
 
     if (result.isValid()) {
         QCOMPARE(dt.msecsTo(result), qint64(nsecs) * 1000);
+        QCOMPARE(result - dt, std::chrono::milliseconds(nsecs * 1000));
         QCOMPARE(result.msecsTo(dt), -qint64(nsecs) * 1000);
+        QCOMPARE(dt - result, -std::chrono::milliseconds(nsecs * 1000));
         QVERIFY((dt == result) == (0 == (qint64(nsecs) * 1000)));
         QVERIFY((dt != result) == (0 != (qint64(nsecs) * 1000)));
         QVERIFY((dt < result) == (0 < (qint64(nsecs) * 1000)));
@@ -1753,7 +1770,9 @@ void tst_QDateTime::msecsTo()
         QVERIFY((dt >= result) == (0 >= (qint64(nsecs) * 1000)));
     } else {
         QVERIFY(dt.msecsTo(result) == 0);
+        QCOMPARE(result - dt, std::chrono::milliseconds(0));
         QVERIFY(result.msecsTo(dt) == 0);
+        QCOMPARE(dt - result, std::chrono::milliseconds(0));
     }
 }
 

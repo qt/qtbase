@@ -4623,6 +4623,75 @@ qint64 QDateTime::msecsTo(const QDateTime &other) const
 }
 
 /*!
+    \fn std::chrono::milliseconds QDateTime::operator-(const QDateTime &lhs, const QDateTime &rhs)
+    \since 6.4
+
+    Returns the number of milliseconds between \a lhs and \a rhs.
+    If \a lhs is earlier than \a rhs, the result will be negative.
+
+    Returns 0 if either datetime is invalid.
+
+    \sa msecsTo()
+*/
+
+/*!
+    \fn QDateTime QDateTime::operator+(const QDateTime &dateTime, std::chrono::milliseconds duration)
+    \fn QDateTime QDateTime::operator+(std::chrono::milliseconds duration, const QDateTime &dateTime)
+
+    \since 6.4
+
+    Returns a QDateTime object containing a datetime \a duration milliseconds
+    later than \a dateTime (or earlier if \a duration is negative).
+
+    If \a dateTime is invalid, an invalid datetime will be returned.
+
+    \sa addMSecs()
+*/
+
+/*!
+    \fn QDateTime &QDateTime::operator+=(std::chrono::milliseconds duration)
+    \since 6.4
+
+    Modifies this datetime object by adding the given \a duration.
+    The updated object will be later if \a duration is positive,
+    or earlier if it is negative.
+
+    If this datetime is invalid, this function has no effect.
+
+    Returns a reference to this datetime object.
+
+    \sa addMSecs()
+*/
+
+/*!
+    \fn QDateTime QDateTime::operator-(const QDateTime &dateTime, std::chrono::milliseconds duration)
+
+    \since 6.4
+
+    Returns a QDateTime object containing a datetime \a duration milliseconds
+    earlier than \a dateTime (or later if \a duration is negative).
+
+    If \a dateTime is invalid, an invalid datetime will be returned.
+
+    \sa addMSecs()
+*/
+
+/*!
+    \fn QDateTime &QDateTime::operator-=(std::chrono::milliseconds duration)
+    \since 6.4
+
+    Modifies this datetime object by subtracting the given \a duration.
+    The updated object will be earlier if \a duration is positive,
+    or later if it is negative.
+
+    If this datetime is invalid, this function has no effect.
+
+    Returns a reference to this datetime object.
+
+    \sa addMSecs
+*/
+
+/*!
     Returns a copy of this datetime converted to the given time
     \a spec.
 

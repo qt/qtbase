@@ -47,6 +47,7 @@
 #include <QtCore/qcalendar.h>
 
 #include <limits>
+#include <chrono>
 
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
 Q_FORWARD_DECLARE_CF_TYPE(CFDate);
@@ -384,6 +385,38 @@ public:
     static QDateTime fromNSDate(const NSDate *date);
     NSDate *toNSDate() const Q_DECL_NS_RETURNS_AUTORELEASED;
 #endif
+
+    friend std::chrono::milliseconds operator-(const QDateTime &lhs, const QDateTime &rhs)
+    {
+        return std::chrono::milliseconds(rhs.msecsTo(lhs));
+    }
+
+    friend QDateTime operator+(const QDateTime &dateTime, std::chrono::milliseconds duration)
+    {
+        return dateTime.addMSecs(duration.count());
+    }
+
+    friend QDateTime operator+(std::chrono::milliseconds duration, const QDateTime &dateTime)
+    {
+        return dateTime + duration;
+    }
+
+    QDateTime &operator+=(std::chrono::milliseconds duration)
+    {
+        *this = addMSecs(duration.count());
+        return *this;
+    }
+
+    friend QDateTime operator-(const QDateTime &dateTime, std::chrono::milliseconds duration)
+    {
+        return dateTime.addMSecs(-duration.count());
+    }
+
+    QDateTime &operator-=(std::chrono::milliseconds duration)
+    {
+        *this = addMSecs(-duration.count());
+        return *this;
+    }
 
     // (1<<63) ms is 292277024.6 (average Gregorian) years, counted from the start of 1970, so
     // Last is floor(1970 + 292277024.6); no year 0, so First is floor(1970 - 1 - 292277024.6)
