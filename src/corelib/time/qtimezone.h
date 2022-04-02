@@ -200,6 +200,20 @@ Q_CORE_EXPORT QDataStream &operator>>(QDataStream &ds, QTimeZone &tz);
 Q_CORE_EXPORT QDebug operator<<(QDebug dbg, const QTimeZone &tz);
 #endif
 
+#if __cpp_lib_chrono >= 201907L
+// zoned_time
+template <typename> // QT_POST_CXX17_API_IN_EXPORTED_CLASS
+inline QDateTime QDateTime::fromStdZonedTime(const std::chrono::zoned_time<
+                                                std::chrono::milliseconds,
+                                                const std::chrono::time_zone *
+                                             > &time)
+{
+    const auto sysTime = time.get_sys_time();
+    const QTimeZone timeZone = QTimeZone::fromStdTimeZonePtr(time.get_time_zone());
+    return fromMSecsSinceEpoch(sysTime.time_since_epoch().count(), timeZone);
+}
+#endif
+
 QT_END_NAMESPACE
 
 #endif // QTIMEZONE_H

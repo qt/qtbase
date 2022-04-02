@@ -152,6 +152,15 @@ private Q_SLOTS:
 
     void macTypes();
 
+    void stdCompatibilitySysTime_data();
+    void stdCompatibilitySysTime();
+    void stdCompatibilityLocalTime_data();
+    void stdCompatibilityLocalTime();
+#if QT_CONFIG(timezone)
+    void stdCompatibilityZonedTime_data();
+    void stdCompatibilityZonedTime();
+#endif
+
 private:
     enum { LocalTimeIsUtc = 0, LocalTimeAheadOfUtc = 1, LocalTimeBehindUtc = -1} localTimeType;
     int preZoneFix;
@@ -4120,6 +4129,224 @@ void tst_QDateTime::macTypes()
     tst_QDateTime_macTypes();
 #endif
 }
+
+#if __cpp_lib_chrono >= 201907L
+using StdSysMillis = std::chrono::sys_time<std::chrono::milliseconds>;
+Q_DECLARE_METATYPE(StdSysMillis);
+#endif
+
+void tst_QDateTime::stdCompatibilitySysTime_data()
+{
+#if __cpp_lib_chrono >= 201907L
+    QTest::addColumn<StdSysMillis>("sysTime");
+    QTest::addColumn<QDateTime>("expected");
+
+    using namespace std::chrono;
+
+    QTest::newRow("zero")
+            << StdSysMillis(0s)
+            << QDateTime(QDate(1970, 1, 1), QTime(0, 0, 0), Qt::UTC);
+    QTest::newRow("1s")
+            << StdSysMillis(1s)
+            << QDateTime(QDate(1970, 1, 1), QTime(0, 0, 1), Qt::UTC);
+    QTest::newRow("1ms")
+            << StdSysMillis(1ms)
+            << QDateTime(QDate(1970, 1, 1), QTime(0, 0, 0, 1), Qt::UTC);
+    QTest::newRow("365d")
+            << StdSysMillis(days(365))
+            << QDateTime(QDate(1971, 1, 1), QTime(0, 0, 0), Qt::UTC);
+    QTest::newRow("-1s")
+            << StdSysMillis(-1s)
+            << QDateTime(QDate(1969, 12, 31), QTime(23, 59, 59), Qt::UTC);
+    QTest::newRow("-1ms")
+            << StdSysMillis(-1ms)
+            << QDateTime(QDate(1969, 12, 31), QTime(23, 59, 59, 999), Qt::UTC);
+
+    {
+        // The first leap second occurred on 30 June 1972 at 23:59:60.
+        // Check that QDateTime does not take that leap second into account (like sys_time)
+        const year_month_day firstLeapSecondDate = 1972y/July/1;
+        const sys_days firstLeapSecondDateAsSysDays = firstLeapSecondDate;
+        QTest::newRow("first_leap_second")
+                << StdSysMillis(firstLeapSecondDateAsSysDays)
+                << QDateTime(QDate(1972, 7, 1), QTime(0, 0, 0), Qt::UTC);
+    }
+
+    {
+        // Random date
+        const sys_days date = 2000y/January/31;
+        const StdSysMillis dateTime = date + 3h + 10min + 42s;
+        QTest::newRow("2000-01-31 03:10:42")
+                << dateTime
+                << QDateTime(QDate(2000, 1, 31), QTime(3, 10, 42), Qt::UTC);
+    }
+#else
+    QSKIP("This test requires C++20's <chrono>.");
+#endif
+}
+
+void tst_QDateTime::stdCompatibilitySysTime()
+{
+#if __cpp_lib_chrono >= 201907L
+    QFETCH(StdSysMillis, sysTime);
+    QFETCH(QDateTime, expected);
+
+    using namespace std::chrono;
+
+    // system_clock in milliseconds -> QDateTime
+    QDateTime dtFromSysTime = QDateTime::fromStdTimePoint(sysTime);
+    QCOMPARE(dtFromSysTime, expected);
+    QCOMPARE(dtFromSysTime.timeSpec(), Qt::UTC);
+
+    // QDateTime -> system_clock in milliseconds
+    StdSysMillis sysTimeFromDt = dtFromSysTime.toStdSysMilliseconds();
+    QCOMPARE(sysTimeFromDt, sysTime);
+
+    // system_clock in seconds -> QDateTime
+    sys_seconds sysTimeSecs = floor<seconds>(sysTime);
+    QDateTime dtFromSysSeconds = QDateTime::fromStdTimePoint(sysTimeSecs);
+    QDateTime expectedInSeconds = expected.addMSecs(-expected.time().msec()); // "floor"
+    QCOMPARE(dtFromSysSeconds, expectedInSeconds);
+    QCOMPARE(dtFromSysSeconds.timeSpec(), Qt::UTC);
+
+    // QDateTime -> system_clock in seconds
+    sys_seconds sysTimeFromDtSecs = dtFromSysSeconds.toStdSysSeconds();
+    QCOMPARE(sysTimeFromDtSecs, sysTimeSecs);
+
+    // utc_clock in milliseconds -> QDateTime
+    utc_time<std::chrono::milliseconds> utcTime = utc_clock::from_sys(sysTime);
+    QDateTime dtFromUtcTime = QDateTime::fromStdTimePoint(utcTime);
+    QCOMPARE(dtFromUtcTime, expected);
+    QCOMPARE(dtFromUtcTime.timeSpec(), Qt::UTC);
+
+    // QDateTime -> system_clock in milliseconds
+    sysTimeFromDt = dtFromUtcTime.toStdSysMilliseconds();
+    QCOMPARE(sysTimeFromDt, sysTime);
+#else
+    QSKIP("This test requires C++20's <chrono>.");
+#endif
+}
+
+#if __cpp_lib_chrono >= 201907L
+using StdLocalMillis = std::chrono::local_time<std::chrono::milliseconds>;
+Q_DECLARE_METATYPE(StdLocalMillis);
+#endif
+
+void tst_QDateTime::stdCompatibilityLocalTime_data()
+{
+#if __cpp_lib_chrono >= 201907L
+    QTest::addColumn<StdLocalMillis>("localTime");
+    QTest::addColumn<QDateTime>("expected");
+
+    using namespace std::chrono;
+
+    QTest::newRow("zero")
+            << StdLocalMillis(0s)
+            << QDateTime(QDate(1970, 1, 1), QTime(0, 0, 0), Qt::LocalTime);
+    QTest::newRow("1s")
+            << StdLocalMillis(1s)
+            << QDateTime(QDate(1970, 1, 1), QTime(0, 0, 1), Qt::LocalTime);
+    QTest::newRow("1ms")
+            << StdLocalMillis(1ms)
+            << QDateTime(QDate(1970, 1, 1), QTime(0, 0, 0, 1), Qt::LocalTime);
+    QTest::newRow("365d")
+            << StdLocalMillis(days(365))
+            << QDateTime(QDate(1971, 1, 1), QTime(0, 0, 0), Qt::LocalTime);
+    QTest::newRow("-1s")
+            << StdLocalMillis(-1s)
+            << QDateTime(QDate(1969, 12, 31), QTime(23, 59, 59), Qt::LocalTime);
+    QTest::newRow("-1ms")
+            << StdLocalMillis(-1ms)
+            << QDateTime(QDate(1969, 12, 31), QTime(23, 59, 59, 999), Qt::LocalTime);
+    {
+        // Random date
+        const local_days date = local_days(2000y/January/31);
+        const StdLocalMillis dateTime = date + 3h + 10min + 42s;
+        QTest::newRow("2000-01-31 03:10:42")
+                << dateTime
+                << QDateTime(QDate(2000, 1, 31), QTime(3, 10, 42), Qt::LocalTime);
+    }
+#else
+    QSKIP("This test requires C++20's <chrono>.");
+#endif
+}
+
+void tst_QDateTime::stdCompatibilityLocalTime()
+{
+#if __cpp_lib_chrono >= 201907L
+    QFETCH(StdLocalMillis, localTime);
+    QFETCH(QDateTime, expected);
+
+    using namespace std::chrono;
+
+    QDateTime dtFromLocalTime = QDateTime::fromStdLocalTime(localTime);
+    QCOMPARE(dtFromLocalTime, expected);
+    QCOMPARE(dtFromLocalTime.timeSpec(), Qt::LocalTime);
+
+    const time_zone *tz = current_zone();
+    QVERIFY(tz);
+    const StdSysMillis sysMillis = tz->to_sys(localTime);
+    QCOMPARE(dtFromLocalTime.toStdSysMilliseconds(), sysMillis);
+#else
+    QSKIP("This test requires C++20's <chrono>.");
+#endif
+}
+
+#if QT_CONFIG(timezone)
+#if __cpp_lib_chrono >= 201907L
+using StdZonedMillis = std::chrono::zoned_time<std::chrono::milliseconds>;
+Q_DECLARE_METATYPE(StdZonedMillis);
+#endif
+
+void tst_QDateTime::stdCompatibilityZonedTime_data()
+{
+#if __cpp_lib_chrono >= 201907L
+    QTest::addColumn<StdZonedMillis>("zonedTime");
+    QTest::addColumn<QDateTime>("expected");
+
+    using namespace std::chrono;
+    using namespace std::literals;
+
+    const char timeZoneName[] = "Europe/Oslo";
+    const QTimeZone timeZone(timeZoneName);
+
+    {
+        StdZonedMillis zs(timeZoneName, local_days(2021y/1/1));
+        QTest::addRow("localTimeOslo")
+                << zs
+                << QDateTime(QDate(2021, 1, 1), QTime(0, 0, 0), timeZone);
+    }
+    {
+        StdZonedMillis zs(timeZoneName, sys_days(2021y/1/1));
+        QTest::addRow("sysTimeOslo")
+                << zs
+                << QDateTime(QDate(2021, 1, 1), QTime(1, 0, 0), timeZone);
+    }
+    {
+        StdZonedMillis zs(timeZoneName, sys_days(2021y/7/1));
+        QTest::addRow("sysTimeOslo summer")
+                << zs
+                << QDateTime(QDate(2021, 7, 1), QTime(2, 0, 0), timeZone);
+    }
+#else
+    QSKIP("This test requires C++20's <chrono>.");
+#endif
+}
+
+void tst_QDateTime::stdCompatibilityZonedTime()
+{
+#if __cpp_lib_chrono >= 201907L
+    QFETCH(StdZonedMillis, zonedTime);
+    QFETCH(QDateTime, expected);
+
+    QDateTime dtFromZonedTime = QDateTime::fromStdZonedTime(zonedTime);
+    QCOMPARE(dtFromZonedTime, expected);
+    QCOMPARE(dtFromZonedTime.timeSpec(), Qt::TimeZone);
+#else
+    QSKIP("This test requires C++20's <chrono>.");
+#endif
+}
+#endif // QT_CONFIG(timezone)
 
 QTEST_APPLESS_MAIN(tst_QDateTime)
 #include "tst_qdatetime.moc"

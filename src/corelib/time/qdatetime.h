@@ -438,6 +438,64 @@ public:
     NSDate *toNSDate() const Q_DECL_NS_RETURNS_AUTORELEASED;
 #endif
 
+#if __cpp_lib_chrono >= 201907L || defined(Q_QDOC)
+#if __cpp_concepts >= 201907L || defined(Q_QDOC)
+    // Generic clock, as long as it's compatible with us (= system_clock)
+    template <typename Clock, typename Duration>
+    static QDateTime fromStdTimePoint(const std::chrono::time_point<Clock, Duration> &time)
+        requires
+            requires(const std::chrono::time_point<Clock, Duration> &t) {
+                // the clock can be converted to system_clock
+                std::chrono::clock_cast<std::chrono::system_clock>(t);
+                // the duration can be converted to milliseconds
+                requires std::is_convertible_v<Duration, std::chrono::milliseconds>;
+            }
+    {
+        const auto sysTime = std::chrono::clock_cast<std::chrono::system_clock>(time);
+        // clock_cast can change the duration, so convert it again to milliseconds
+        const auto timeInMSec = std::chrono::time_point_cast<std::chrono::milliseconds>(sysTime);
+        return fromMSecsSinceEpoch(timeInMSec.time_since_epoch().count(), Qt::UTC);
+    }
+#endif // __cpp_concepts
+
+    // local_time
+    QT_POST_CXX17_API_IN_EXPORTED_CLASS
+    static QDateTime fromStdTimePoint(const std::chrono::local_time<std::chrono::milliseconds> &time)
+    {
+        return fromStdLocalTime(time);
+    }
+
+    QT_POST_CXX17_API_IN_EXPORTED_CLASS
+    static QDateTime fromStdLocalTime(const std::chrono::local_time<std::chrono::milliseconds> &time)
+    {
+        QDateTime result(QDate(1970, 1, 1), QTime(0, 0, 0), Qt::LocalTime);
+        return result.addMSecs(time.time_since_epoch().count());
+    }
+
+#if QT_CONFIG(timezone)
+    // zoned_time. defined in qtimezone.h
+    QT_POST_CXX17_API_IN_EXPORTED_CLASS
+    static QDateTime fromStdZonedTime(const std::chrono::zoned_time<
+                                          std::chrono::milliseconds,
+                                          const std::chrono::time_zone *
+                                      > &time);
+#endif // QT_CONFIG(timezone)
+
+    QT_POST_CXX17_API_IN_EXPORTED_CLASS
+    std::chrono::sys_time<std::chrono::milliseconds> toStdSysMilliseconds() const
+    {
+        const std::chrono::milliseconds duration(toMSecsSinceEpoch());
+        return std::chrono::sys_time(duration);
+    }
+
+    QT_POST_CXX17_API_IN_EXPORTED_CLASS
+    std::chrono::sys_seconds toStdSysSeconds() const
+    {
+        const std::chrono::seconds duration(toSecsSinceEpoch());
+        return std::chrono::sys_seconds(duration);
+    }
+#endif // __cpp_lib_chrono >= 201907L
+
     friend std::chrono::milliseconds operator-(const QDateTime &lhs, const QDateTime &rhs)
     {
         return std::chrono::milliseconds(rhs.msecsTo(lhs));

@@ -4963,6 +4963,85 @@ bool QDateTime::precedes(const QDateTime &other) const
     \sa currentMSecsSinceEpoch()
 */
 
+/*!
+    \fn template <typename Clock, typename Duration> QDateTime QDateTime::fromStdTimePoint(const std::chrono::time_point<Clock, Duration> &time)
+    \since 6.4
+
+    Constructs a datetime representing the same point in time as \a time,
+    using Qt::UTC as its specification.
+
+    The clock of \a time must be compatible with \c{std::chrono::system_clock},
+    and the duration type must be convertible to \c{std::chrono::milliseconds}.
+
+    \note This function requires C++20.
+
+    \sa toStdSysMilliseconds(), fromMSecsSinceEpoch()
+*/
+
+/*!
+    \fn QDateTime QDateTime::fromStdTimePoint(const std::chrono::local_time<std::chrono::milliseconds> &time)
+    \since 6.4
+
+    Constructs a datetime whose date and time are the number of milliseconds
+    represented by \a time, counted since 1970-01-01T00:00:00.000 in local
+    time (Qt::LocalTime).
+
+    \note This function requires C++20.
+
+    \sa toStdSysMilliseconds(), fromMSecsSinceEpoch()
+*/
+
+/*!
+    \fn QDateTime QDateTime::fromStdLocalTime(const std::chrono::local_time<std::chrono::milliseconds> &time)
+    \since 6.4
+
+    Constructs a datetime whose date and time are the number of milliseconds
+    represented by \a time, counted since 1970-01-01T00:00:00.000 in local
+    time (Qt::LocalTime).
+
+    \note This function requires C++20.
+
+    \sa toStdSysMilliseconds(), fromMSecsSinceEpoch()
+*/
+
+/*!
+    \fn QDateTime QDateTime::fromStdZonedTime(const std::chrono::zoned_time<std::chrono::milliseconds, const std::chrono::time_zone *> &time);
+    \since 6.4
+
+    Constructs a datetime representing the same point in time as \a time.
+    The result will be expressed in \a{time}'s time zone.
+
+    \note This function requires C++20.
+
+    \sa QTimeZone
+
+    \sa toStdSysMilliseconds(), fromMSecsSinceEpoch()
+*/
+
+/*!
+    \fn std::chrono::sys_time<std::chrono::milliseconds> QDateTime::toStdSysMilliseconds() const
+    \since 6.4
+
+    Converts this datetime object to the equivalent time point expressed in
+    milliseconds, using \c{std::chrono::system_clock} as a clock.
+
+    \note This function requires C++20.
+
+    \sa fromStdTimePoint(), toMSecsSinceEpoch()
+*/
+
+/*!
+    \fn std::chrono::sys_seconds QDateTime::toStdSysSeconds() const
+    \since 6.4
+
+    Converts this datetime object to the equivalent time point expressed in
+    seconds, using \c{std::chrono::system_clock} as a clock.
+
+    \note This function requires C++20.
+
+    \sa fromStdTimePoint(), toSecsSinceEpoch()
+*/
+
 #if defined(Q_OS_WIN)
 static inline uint msecsFromDecomposed(int hour, int minute, int sec, int msec = 0)
 {
