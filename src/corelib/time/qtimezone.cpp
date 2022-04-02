@@ -974,6 +974,15 @@ QList<QByteArray> QTimeZone::windowsIdToIanaIds(const QByteArray &windowsId, QLo
     return QTimeZonePrivate::windowsIdToIanaIds(windowsId, territory);
 }
 
+/*!
+    \fn QTimeZone QTimeZone::fromStdTimeZonePtr(const std::chrono::time_zone *timeZone)
+    \since 6.4
+
+    Returns a QTimeZone object representing the same time zone as \a timeZone.
+    The IANA ID of \a timeZone must be one of the available system IDs,
+    otherwise an invalid time zone will be returned.
+*/
+
 #ifndef QT_NO_DATASTREAM
 // Invalid, as an IANA ID: too long, starts with - and has other invalid characters in it
 static inline QString invalidId() { return QStringLiteral("-No Time Zone Specified!"); }

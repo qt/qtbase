@@ -45,6 +45,8 @@
 #include <QtCore/qlocale.h>
 #include <QtCore/qdatetime.h>
 
+#include <chrono>
+
 QT_REQUIRE_CONFIG(timezone);
 
 #if (defined(Q_OS_DARWIN) || defined(Q_QDOC)) && !defined(QT_NO_SYSTEMLOCALE)
@@ -162,6 +164,17 @@ public:
     CFTimeZoneRef toCFTimeZone() const Q_DECL_CF_RETURNS_RETAINED;
     static QTimeZone fromNSTimeZone(const NSTimeZone *timeZone);
     NSTimeZone *toNSTimeZone() const Q_DECL_NS_RETURNS_AUTORELEASED;
+#endif
+
+#if __cpp_lib_chrono >= 201907L || defined(Q_QDOC)
+    QT_POST_CXX17_API_IN_EXPORTED_CLASS
+    static QTimeZone fromStdTimeZonePtr(const std::chrono::time_zone *timeZone)
+    {
+        if (!timeZone)
+            return QTimeZone();
+        const std::string_view timeZoneName = timeZone->name();
+        return QTimeZone(QByteArrayView(timeZoneName).toByteArray());
+    }
 #endif
 
 private:

@@ -77,6 +77,8 @@ private Q_SLOTS:
     void winTest();
     void localeSpecificDisplayName_data();
     void localeSpecificDisplayName();
+    void stdCompatibility_data();
+    void stdCompatibility();
 
 private:
     void printTimeZone(const QTimeZone &tz);
@@ -341,6 +343,11 @@ void tst_QTimeZone::systemZone()
     };
     for (const auto &date : dates)
         QCOMPARE(date.startOfDay(Qt::LocalTime), date.startOfDay(zone));
+
+#if __cpp_lib_chrono >= 201907L
+    const std::chrono::time_zone *currentTimeZone = std::chrono::current_zone();
+    QCOMPARE(QByteArrayView(currentTimeZone->name()), QByteArrayView(zone.id()));
+#endif
 }
 
 void tst_QTimeZone::dataStreamTest()
@@ -1608,6 +1615,47 @@ void tst_QTimeZone::testEpochTranPrivate(const QTimeZonePrivate &tzp)
     }
 }
 #endif // QT_BUILD_INTERNAL
+
+#if __cpp_lib_chrono >= 201907L
+Q_DECLARE_METATYPE(const std::chrono::time_zone *);
+#endif
+
+void tst_QTimeZone::stdCompatibility_data()
+{
+#if __cpp_lib_chrono >= 201907L
+    QTest::addColumn<const std::chrono::time_zone *>("timeZone");
+    const std::chrono::tzdb &tzdb = std::chrono::get_tzdb();
+    qDebug() << "Using tzdb version:" << QByteArrayView(tzdb.version);
+
+    for (const std::chrono::time_zone &zone : tzdb.zones)
+        QTest::addRow(zone.name().data()) << &zone;
+#else
+    QSKIP("This test requires C++20's <chrono>.");
+#endif
+}
+
+void tst_QTimeZone::stdCompatibility()
+{
+#if __cpp_lib_chrono >= 201907L
+    QFETCH(const std::chrono::time_zone *, timeZone);
+    QByteArrayView zoneName = QByteArrayView(timeZone->name());
+    QTimeZone tz = QTimeZone::fromStdTimeZonePtr(timeZone);
+    if (tz.isValid()) {
+        QCOMPARE(tz.id(), zoneName);
+    } else {
+        // QTBUG-102187: a few timezones reported by tzdb might not be
+        // recognized by QTimeZone. This happens for instance on Windows, where
+        // tzdb is using ICU, whose database does not match QTimeZone's.
+        const bool isKnownUnknown =
+                !zoneName.contains('/')
+                || zoneName == "Antarctica/Troll"
+                || zoneName.startsWith("SystemV/");
+        QVERIFY(isKnownUnknown);
+    }
+#else
+    QSKIP("This test requires C++20's <chrono>.");
+#endif
+}
 
 QTEST_APPLESS_MAIN(tst_QTimeZone)
 #include "tst_qtimezone.moc"
