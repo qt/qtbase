@@ -449,6 +449,54 @@ QDate::QDate(int y, int m, int d, QCalendar cal)
 }
 
 /*!
+    \fn QDate::QDate(std::chrono::year_month_day ymd)
+    \fn QDate::QDate(std::chrono::year_month_day_last ymd)
+    \fn QDate::QDate(std::chrono::year_month_weekday ymd)
+    \fn QDate::QDate(std::chrono::year_month_weekday_last ymd)
+
+    \since 6.4
+
+    Constructs a QDate representing the same date as \a ymd. This allows for
+    easy interoperability between the Standard Library calendaring classes and
+    Qt datetime classes.
+
+    For example:
+
+    \snippet code/src_corelib_time_qdatetime.cpp 22
+
+    \note Unlike QDate, std::chrono::year and the related classes feature the
+    year zero. This means that if \a ymd is in the year zero or before, the
+    resulting QDate object will have an year one less than the one specified by
+    \a ymd.
+
+    \note This function requires C++20.
+*/
+
+/*!
+    \fn QDate QDate::fromStdSysDays(const std::chrono::sys_days &days)
+    \since 6.4
+
+    Returns a QDate \a days days after January 1st, 1970 (the UNIX epoch). If
+    \a days is negative, the returned date will be before the epoch.
+
+    \note This function requires C++20.
+
+    \sa toStdSysDays()
+*/
+
+/*!
+    \fn std::chrono::sys_days QDate::toStdSysDays() const
+
+    Returns the number of days between January 1st, 1970 (the UNIX epoch) and
+    this date, represented as a \c{std::chrono::sys_days} object. If this date
+    is before the epoch, the number of days will be negative.
+
+    \note This function requires C++20.
+
+    \sa fromStdSysDays(), daysTo()
+*/
+
+/*!
     \fn bool QDate::isNull() const
 
     Returns \c true if the date is null; otherwise returns \c false. A null

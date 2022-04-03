@@ -68,6 +68,57 @@ public:
     constexpr QDate() : jd(nullJd()) {}
     QDate(int y, int m, int d);
     QDate(int y, int m, int d, QCalendar cal);
+#if __cpp_lib_chrono >= 201907L || defined(Q_QDOC)
+    QT_POST_CXX17_API_IN_EXPORTED_CLASS
+    Q_IMPLICIT QDate(std::chrono::year_month_day ymd)
+    {
+        if (!ymd.ok())
+            jd = nullJd();
+        else
+            *this = fromStdSysDays(ymd);
+    }
+
+    QT_POST_CXX17_API_IN_EXPORTED_CLASS
+    Q_IMPLICIT QDate(std::chrono::year_month_day_last ymdl)
+    {
+        if (!ymdl.ok())
+            jd = nullJd();
+        else
+            *this = fromStdSysDays(ymdl);
+    }
+
+    QT_POST_CXX17_API_IN_EXPORTED_CLASS
+    Q_IMPLICIT QDate(std::chrono::year_month_weekday ymw)
+    {
+        if (!ymw.ok())
+            jd = nullJd();
+        else
+            *this = fromStdSysDays(ymw);
+    }
+
+    QT_POST_CXX17_API_IN_EXPORTED_CLASS
+    Q_IMPLICIT QDate(std::chrono::year_month_weekday_last ymwl)
+    {
+        if (!ymwl.ok())
+            jd = nullJd();
+        else
+            *this = fromStdSysDays(ymwl);
+    }
+
+    QT_POST_CXX17_API_IN_EXPORTED_CLASS
+    static QDate fromStdSysDays(const std::chrono::sys_days &days)
+    {
+        const QDate epoch(unixEpochJd());
+        return epoch.addDays(days.time_since_epoch().count());
+    }
+
+    QT_POST_CXX17_API_IN_EXPORTED_CLASS
+    std::chrono::sys_days toStdSysDays() const
+    {
+        const QDate epoch(unixEpochJd());
+        return std::chrono::sys_days(std::chrono::days(epoch.daysTo(*this)));
+    }
+#endif
 
     constexpr bool isNull() const { return !isValid(); }
     constexpr bool isValid() const { return jd >= minJd() && jd <= maxJd(); }
@@ -144,6 +195,7 @@ private:
     static constexpr inline qint64 nullJd() { return (std::numeric_limits<qint64>::min)(); }
     static constexpr inline qint64 minJd() { return Q_INT64_C(-784350574879); }
     static constexpr inline qint64 maxJd() { return Q_INT64_C( 784354017364); }
+    static constexpr inline qint64 unixEpochJd() { return Q_INT64_C(2440588); }
 
     qint64 jd;
 

@@ -199,6 +199,32 @@ void tst_QDate::isValid_data()
     QTest::newRow("jd latest formula")   << 1400000 << 12 << 31 << qint64(513060925) << true;
 }
 
+#if __cpp_lib_chrono >= 201907L
+// QDate has a bigger range than year_month_date. The tests use this bigger
+// range. However building a year_month_time with "out of range" data has
+// unspecified results, so don't do that. See [time.cal.year],
+// [time.cal.month], [time.cal.day]. Also, std::chrono::year has a year 0, so
+// take that into account.
+static std::optional<std::chrono::year_month_day> convertToStdYearMonthDay(int y, int m, int d)
+{
+    using namespace std::chrono;
+
+    if (y >= int((year::min)())
+            && y <= int((year::max)())
+            && m >= 0
+            && m <= 255
+            && d >= 0
+            && d <= 255)
+    {
+        if (y < 0)
+            ++y;
+        return std::make_optional(year(y) / m / d);
+    }
+
+    return std::nullopt;
+}
+#endif
+
 void tst_QDate::isValid()
 {
     QFETCH(int, year);
@@ -218,6 +244,19 @@ void tst_QDate::isValid()
         QCOMPARE(d.year(), year);
         QCOMPARE(d.month(), month);
         QCOMPARE(d.day(), day);
+#if __cpp_lib_chrono >= 201907L
+        std::optional<std::chrono::year_month_day> ymd = convertToStdYearMonthDay(year, month, day);
+        if (ymd) {
+            QDate d = *ymd;
+            QCOMPARE(d.year(), year);
+            QCOMPARE(d.month(), month);
+            QCOMPARE(d.day(), day);
+
+            const std::chrono::sys_days qdateSysDays = d.toStdSysDays();
+            const std::chrono::sys_days ymdSysDays = *ymd;
+            QCOMPARE(qdateSysDays, ymdSysDays);
+        }
+#endif
     } else {
         QCOMPARE(d.year(), 0);
         QCOMPARE(d.month(), 0);

@@ -216,3 +216,23 @@ QString string = "Tuesday, 23 April 12 22:51:41";
 QString format = "dddd, d MMMM yy hh:mm:ss";
 QDateTime valid = QDateTime::fromString(string, format);
 //! [21]
+
+//! [22]
+// 23 April 2012:
+QDate date = std::chrono::year_month_day(std::chrono::year(2012),
+                                         std::chrono::month(4),
+                                         std::chrono::day(23));
+
+// Same, under `using std::chrono` convenience:
+QDate dateWithLiterals1 = 23 / April / 2012y;
+QDate dateWithLiterals2 = 2012y / April / 23;
+
+// Last day of February 2000
+QDate lastDayFeb2020 = 2000y / February / last;
+
+// First Monday of January 2020:
+QDate firstMonday = 2020y / January / Monday[0];
+
+// Last Monday of January 2020:
+QDate lastMonday = 2020y / January / Monday[last];
+//! [22]
