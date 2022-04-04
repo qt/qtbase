@@ -21,9 +21,9 @@ instructions:
         testcmd = sys.argv[1]
         testcmd += ' '.join(testargs)
         qemuargs = os.getenv('TESTARGS')
-        sshcmd, ldenv, backend, qpa = qemuargs.split()
+        sshcmd, ldenv, backend, qpa, ci = qemuargs.split()
         testdir = sys.argv[1][::-1].split('/', 1)[1][::-1]
-        testcmd = "cd " + testdir + ";" + ldenv + " " + backend + " " + qpa  + " " + testcmd
+        testcmd = "cd " + testdir + ";" + ldenv + " " + backend + " " + qpa  + " " + ci  + " " + testcmd
         proc = subprocess.run(["ssh", sshcmd, testcmd])
         exit(proc.returncode)
     filename: "{{.SourceDir}}/coin_qnx_qemu_runner.py"
