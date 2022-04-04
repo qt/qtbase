@@ -290,6 +290,9 @@ void tst_QCalendarWidget::showPrevNext()
     QFETCH(ShowFunc, function);
     QFETCH(QDate, dateOrigin);
     QFETCH(QDate, expectedDate);
+#ifdef Q_OS_ANDROID
+    QSKIP("Crashes sometimes on Android emulator, figure out why (QTBUG-102258)");
+#endif
 
     QCalendarWidget calWidget;
     calWidget.show();
