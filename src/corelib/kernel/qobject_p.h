@@ -276,8 +276,10 @@ public:
             if (c)
                 deleteOrphaned(c);
             SignalVector *v = signalVector.loadRelaxed();
-            if (v)
+            if (v) {
+                v->~SignalVector();
                 free(v);
+            }
         }
 
         // must be called on the senders connection data
@@ -308,7 +310,9 @@ public:
             if (vector && vector->allocated > size)
                 return;
             size = (size + 7) & ~7;
-            SignalVector *newVector = reinterpret_cast<SignalVector *>(malloc(sizeof(SignalVector) + (size + 1) * sizeof(ConnectionList)));
+            void *ptr = malloc(sizeof(SignalVector) + (size + 1) * sizeof(ConnectionList));
+            auto newVector = new (ptr) SignalVector;
+
             int start = -1;
             if (vector) {
                 // not (yet) existing trait:
