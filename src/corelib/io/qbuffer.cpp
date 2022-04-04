@@ -212,7 +212,7 @@ QBuffer::~QBuffer()
 }
 
 /*!
-    Makes QBuffer uses the QByteArray pointed to by \a
+    Makes QBuffer use the QByteArray pointed to by \a
     byteArray as its internal buffer. The caller is responsible for
     ensuring that \a byteArray remains valid until the QBuffer is
     destroyed, or until setBuffer() is called to change the buffer.
