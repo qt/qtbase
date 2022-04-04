@@ -311,11 +311,14 @@ public:
             SignalVector *newVector = reinterpret_cast<SignalVector *>(malloc(sizeof(SignalVector) + (size + 1) * sizeof(ConnectionList)));
             int start = -1;
             if (vector) {
+                // not (yet) existing trait:
+                //static_assert(std::is_relocatable_v<SignalVector>);
+                //static_assert(std::is_relocatable_v<ConnectionList>);
                 memcpy(newVector, vector, sizeof(SignalVector) + (vector->allocated + 1) * sizeof(ConnectionList));
                 start = vector->count();
             }
             for (int i = start; i < int(size); ++i)
-                newVector->at(i) = ConnectionList();
+                new (&newVector->at(i)) ConnectionList();
             newVector->next = nullptr;
             newVector->allocated = size;
 
