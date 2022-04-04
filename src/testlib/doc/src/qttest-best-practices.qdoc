@@ -182,6 +182,13 @@
     tested even when earlier ones fail. It also encourages systematic and
     uniform testing, because the same tests are applied to each data sample.
 
+    When a test is data-driven, you can specify its data-tag along with the
+    test-function name, as \c{function:tag}, on the command-line of the test to
+    run the test on just one specific test-case, rather than all test-cases of
+    the function. This can be used for either a global data tag or a local tag,
+    identifying a row from the function's own data; you can even combine them as
+    \c{function:global:local}.
+
     \section2 Use Coverage Tools
 
     Use a coverage tool such as \l {Froglogic Coco Code Coverage} or \l {gcov}
