@@ -28,6 +28,8 @@
 
 
 #include <QTest>
+#include <QSignalSpy>
+
 #include <qapplication.h>
 #include <qsplitter.h>
 #include <qstyle.h>
@@ -89,6 +91,7 @@ private slots:
     void task169702_sizes();
     void taskQTBUG_4101_ensureOneNonCollapsedWidget_data();
     void taskQTBUG_4101_ensureOneNonCollapsedWidget();
+    void taskQTBUG_102249_moveNonPressed();
     void setLayout();
     void autoAdd();
 
@@ -1024,6 +1027,24 @@ void tst_QSplitter::taskQTBUG_4101_ensureOneNonCollapsedWidget()
     else
         delete l;
     QTRY_VERIFY(s.sizes().at(0) > 0);
+}
+
+void tst_QSplitter::taskQTBUG_102249_moveNonPressed()
+{
+    QSplitter s;
+    s.setOpaqueResize(true);
+    s.addWidget(new QWidget());
+    s.addWidget(new QWidget());
+    s.show();
+
+    QSignalSpy spyMove(&s, &QSplitter::splitterMoved);
+    QPointF posOutOfWidget = QPointF(30, 30);
+    QMouseEvent me(QEvent::MouseMove,
+                   posOutOfWidget, s.mapToGlobal(posOutOfWidget),
+                   Qt::NoButton, Qt::MouseButtons(Qt::LeftButton),
+                   Qt::NoModifier);
+    qApp->sendEvent(s.handle(0), &me);
+    QCOMPARE(spyMove.count(), 0);
 }
 
 void tst_QSplitter::setLayout()
