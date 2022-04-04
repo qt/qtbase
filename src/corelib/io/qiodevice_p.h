@@ -75,6 +75,7 @@ class Q_CORE_EXPORT QIODevicePrivate
 #endif
 {
     Q_DECLARE_PUBLIC(QIODevice)
+    Q_DISABLE_COPY_MOVE(QIODevicePrivate)
 
 public:
     QIODevicePrivate();
