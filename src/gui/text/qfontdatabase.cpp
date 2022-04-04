@@ -1281,6 +1281,56 @@ QString QFontDatabase::styleString(const QFontInfo &fontInfo)
 */
 
 /*!
+    \class QFontDatabasePrivate
+    \internal
+
+    Singleton implementation of the public QFontDatabase APIs,
+    accessed through QFontDatabasePrivate::instance().
+
+    The database is organized in multiple levels:
+
+      - QFontDatabasePrivate::families
+        - QtFontFamily::foundries
+          - QtFontFoundry::styles
+            - QtFontStyle::sizes
+              - QtFontSize::pixelSize
+
+    The font database is the single source of truth when doing
+    font matching, so the database must be sufficiently filled
+    before attempting a match.
+
+    The database is populated (filled) from two sources:
+
+     1. The system (platform's) view of the available fonts
+
+        Initiated via QFontDatabasePrivate::populateFontDatabase().
+
+        a. Can be registered lazily by family only, by calling
+           QPlatformFontDatabase::registerFontFamily(), and later
+           populated via QPlatformFontDatabase::populateFamily().
+
+        b. Or fully registered with all styles, by calling
+           QPlatformFontDatabase::registerFont().
+
+     2. The fonts registered by the application via Qt APIs
+
+        Initiated via QFontDatabase::addApplicationFont() and
+        QFontDatabase::addApplicationFontFromData().
+
+        Application fonts are always fully registered when added.
+
+    Fonts can be added by the user at any time, so the database
+    may grow even after QFontDatabasePrivate::populateFontDatabase()
+    has been completed.
+
+    The database does not support granular removal of fonts,
+    so if the system fonts change, or an application font is
+    removed, the font database will be cleared and then filled
+    from scratch, via QFontDatabasePrivate:invalidate() and
+    QFontDatabasePrivate::ensureFontDatabase().
+*/
+
+/*!
     \internal
 
     Initializes the font database if necessary and returns its
