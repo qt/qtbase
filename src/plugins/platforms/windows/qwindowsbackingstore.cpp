@@ -182,8 +182,8 @@ bool QWindowsBackingStore::scroll(const QRegion &area, int dx, int dy)
         return false;
 
     const QPoint offset(dx, dy);
-    for (const QRect &rect : area)
-        qt_scrollRectInImage(m_image->image(), rect, offset);
+    const QRect rect = area.boundingRect();
+    qt_scrollRectInImage(m_image->image(), rect, offset);
 
     return true;
 }

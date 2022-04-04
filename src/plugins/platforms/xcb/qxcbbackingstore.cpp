@@ -488,8 +488,8 @@ bool QXcbBackingStoreImage::scroll(const QRegion &area, int dx, int dy)
         if (hasShm())
             preparePaint(destinationRegion);
 
-        for (const QRect &rect : scrollArea)
-            qt_scrollRectInImage(m_qimage, rect, delta);
+        const QRect rect = scrollArea.boundingRect();
+        qt_scrollRectInImage(m_qimage, rect, delta);
     } else {
         ensureGC(m_xcb_pixmap);
 
