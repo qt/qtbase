@@ -245,6 +245,19 @@
     \sa size(), squeeze()
 */
 
+/*!
+    \fn template<class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::resize(qsizetype size, const T &v)
+    \since 6.4
+
+    Sets the size of the array to \a size. If \a size is greater than
+    the current size, copies of \a v are added to the end. If \a size is
+    less than the current size, elements are removed from the end.
+
+    \note This function is only available when \c T is copy-constructible.
+
+    \sa size(), squeeze()
+*/
+
 /*! \fn template<class T, qsizetype Prealloc> qsizetype QVarLengthArray<T, Prealloc>::capacity() const
 
     Returns the maximum number of elements that can be stored in the

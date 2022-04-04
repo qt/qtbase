@@ -125,6 +125,7 @@ private slots:
     void reserve();
     void reserveExtended_data();
     void reserveExtended();
+    void resize();
     void movablity_data();
     void movablity();
     void literals();
@@ -2089,6 +2090,23 @@ void tst_QByteArray::reserveExtended()
     array.squeeze();
     QCOMPARE(array, QByteArray("data"));
     QCOMPARE(array.capacity(), array.size());
+}
+
+void tst_QByteArray::resize()
+{
+    QByteArray ba;
+    ba.resize(15);
+    QCOMPARE(ba.size(), qsizetype(15));
+    ba.resize(10);
+    QCOMPARE(ba.size(), 10);
+    ba.resize(0);
+    QCOMPARE(ba.size(), 0);
+    ba.resize(5, 'a');
+    QCOMPARE(ba.size(), 5);
+    QCOMPARE(ba, "aaaaa");
+    ba.resize(10, 'b');
+    QCOMPARE(ba.size(), 10);
+    QCOMPARE(ba, "aaaaabbbbb");
 }
 
 void tst_QByteArray::movablity_data()

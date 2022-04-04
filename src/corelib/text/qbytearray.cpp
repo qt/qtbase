@@ -1760,6 +1760,31 @@ void QByteArray::resize(qsizetype size)
 }
 
 /*!
+    \since 6.4
+
+    Sets the size of the byte array to \a newSize bytes.
+
+    If \a newSize is greater than the current size, the byte array is
+    extended to make it \a newSize bytes with the extra bytes added to
+    the end. The new bytes are initialized to \a c.
+
+    If \a newSize is less than the current size, bytes beyond position
+    \a newSize are excluded from the byte array.
+
+    \note While resize() will grow the capacity if needed, it never shrinks
+    capacity. To shed excess capacity, use squeeze().
+
+    \sa size(), truncate(), squeeze()
+*/
+void QByteArray::resize(qsizetype newSize, char c)
+{
+    const auto old = d.size;
+    resize(newSize);
+    if (old < d.size)
+        memset(d.data() + old, c, d.size - old);
+}
+
+/*!
     Sets every byte in the byte array to \a ch. If \a size is different from -1
     (the default), the byte array is resized to size \a size beforehand.
 

@@ -347,6 +347,17 @@ private Q_SLOTS:
 
 private:
     template <typename Container>
+    void resize_impl() const;
+
+private Q_SLOTS:
+    void resize_std_vector() { resize_impl<std::vector<int>>(); }
+    void resize_QList() { resize_impl<QList<qintptr>>(); }
+    void resize_QVarLengthArray() { resize_impl<QVarLengthArray<int>>(); }
+    void resize_QString() { resize_impl<QString>(); }
+    void resize_QByteArray() { resize_impl<QByteArray>(); }
+
+private:
+    template <typename Container>
     void front_back_impl() const;
 
 private Q_SLOTS:
@@ -728,6 +739,18 @@ template <> QByteArray    make(int size) { return QByteArray("\1\2\3\4\5\6\7", s
 
 template <typename T> T clean(T &&t) { return std::forward<T>(t); }
 inline char clean(QLatin1Char ch) { return ch.toLatin1(); }
+
+template <typename Container>
+void tst_ContainerApiSymmetry::resize_impl() const
+{
+    using V = typename Container::value_type;
+    using S = typename Container::size_type;
+    auto c = make<Container>(3);
+    QCOMPARE(c.size(), S(3));
+    c.resize(4, V(5));
+    QCOMPARE(c.size(), S(4));
+    QCOMPARE(c.back(), V(5));
+}
 
 template <typename Container>
 void tst_ContainerApiSymmetry::front_back_impl() const
