@@ -421,6 +421,22 @@ typedef double qreal;
 # define QT_DEPRECATED_VERSION_6_6
 #endif
 
+#if QT_DEPRECATED_WARNINGS_SINCE >= QT_VERSION_CHECK(6, 7, 0)
+# define QT_DEPRECATED_VERSION_X_6_7(text) QT_DEPRECATED_X(text)
+# define QT_DEPRECATED_VERSION_6_7         QT_DEPRECATED
+#else
+# define QT_DEPRECATED_VERSION_X_6_7(text)
+# define QT_DEPRECATED_VERSION_6_7
+#endif
+
+#if QT_DEPRECATED_WARNINGS_SINCE >= QT_VERSION_CHECK(6, 8, 0)
+# define QT_DEPRECATED_VERSION_X_6_8(text) QT_DEPRECATED_X(text)
+# define QT_DEPRECATED_VERSION_6_8         QT_DEPRECATED
+#else
+# define QT_DEPRECATED_VERSION_X_6_8(text)
+# define QT_DEPRECATED_VERSION_6_8
+#endif
+
 #define QT_DEPRECATED_VERSION_X_5(minor, text)      QT_DEPRECATED_VERSION_X_5_##minor(text)
 #define QT_DEPRECATED_VERSION_X(major, minor, text) QT_DEPRECATED_VERSION_X_##major##_##minor(text)
 
