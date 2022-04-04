@@ -363,16 +363,15 @@ bool QBuffer::seek(qint64 pos)
     const auto oldBufSize = d->buf->size();
     constexpr qint64 MaxSeekPos = (std::numeric_limits<decltype(oldBufSize)>::max)();
     if (pos <= MaxSeekPos && pos > oldBufSize && isWritable()) {
-        if (seek(d->buf->size())) {
-            const qint64 gapSize = pos - d->buf->size();
-            if (write(QByteArray(gapSize, 0)) != gapSize) {
-                qWarning("QBuffer::seek: Unable to fill gap");
-                return false;
-            }
-        } else {
+        QT_TRY {
+            d->buf->resize(qsizetype(pos), '\0');
+        } QT_CATCH(const std::bad_alloc &) {} // swallow, failure case is handled below
+        if (d->buf->size() != pos) {
+            qWarning("QBuffer::seek: Unable to fill gap");
             return false;
         }
-    } else if (pos > d->buf->size() || pos < 0) {
+    }
+    if (pos > d->buf->size() || pos < 0) {
         qWarning("QBuffer::seek: Invalid pos: %lld", pos);
         return false;
     }
