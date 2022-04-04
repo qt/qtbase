@@ -767,11 +767,19 @@ void tst_QDate::addDays()
     QFETCH( int, expectedDay );
 
     QDate dt( year, month, day );
-    dt = dt.addDays( amountToAdd );
+    QDate dt2 = dt.addDays( amountToAdd );
 
-    QCOMPARE( dt.year(), expectedYear );
-    QCOMPARE( dt.month(), expectedMonth );
-    QCOMPARE( dt.day(), expectedDay );
+    QCOMPARE( dt2.year(), expectedYear );
+    QCOMPARE( dt2.month(), expectedMonth );
+    QCOMPARE( dt2.day(), expectedDay );
+
+#if __cpp_lib_chrono >= 201907L
+    QDate dt3 = dt.addDuration( std::chrono::days( amountToAdd ) );
+
+    QCOMPARE( dt3.year(), expectedYear );
+    QCOMPARE( dt3.month(), expectedMonth );
+    QCOMPARE( dt3.day(), expectedDay );
+#endif
 }
 
 void tst_QDate::addDays_data()

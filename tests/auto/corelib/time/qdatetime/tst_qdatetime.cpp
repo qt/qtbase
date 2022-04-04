@@ -1524,16 +1524,21 @@ void tst_QDateTime::addMSecs()
     QFETCH(const qint64, nsecs);
     QFETCH(const QDateTime, result);
 
-    QDateTime test = dt.addMSecs(qint64(nsecs) * 1000);
-    if (!result.isValid()) {
-        QVERIFY(!test.isValid());
-    } else {
-        QCOMPARE(test, result);
-        QCOMPARE(test.timeSpec(), dt.timeSpec());
-        if (test.timeSpec() == Qt::OffsetFromUTC)
-            QCOMPARE(test.offsetFromUtc(), dt.offsetFromUtc());
-        QCOMPARE(result.addMSecs(qint64(-nsecs) * 1000), dt);
-    }
+    const auto verify = [&](const QDateTime &test) {
+        if (!result.isValid()) {
+            QVERIFY(!test.isValid());
+        } else {
+            QCOMPARE(test, result);
+            QCOMPARE(test.timeSpec(), dt.timeSpec());
+            if (test.timeSpec() == Qt::OffsetFromUTC)
+                QCOMPARE(test.offsetFromUtc(), dt.offsetFromUtc());
+            QCOMPARE(result.addMSecs(qint64(-nsecs) * 1000), dt);
+        }
+    };
+
+    verify(dt.addMSecs(qint64(nsecs) * 1000));
+    verify(dt.addDuration(std::chrono::seconds(nsecs)));
+    verify(dt.addDuration(std::chrono::milliseconds(nsecs * 1000)));
 }
 
 void tst_QDateTime::toTimeSpec_data()

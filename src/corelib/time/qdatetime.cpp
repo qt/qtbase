@@ -1285,6 +1285,28 @@ QDate QDate::addDays(qint64 ndays) const
 }
 
 /*!
+    \fn QDate QDate::addDuration(std::chrono::days ndays) const
+
+    \since 6.4
+
+    Returns a QDate object containing a date \a ndays later than the
+    date of this object (or earlier if \a ndays is negative).
+
+    Returns a null date if the current date is invalid or the new date is
+    out of range.
+
+    \note Adding durations expressed in \c{std::chrono::months} or
+    \c{std::chrono::years} does not yield the same result obtained by using
+    addMonths() or addYears(). The former are fixed durations, calculated in
+    relation to the solar year; the latter use the Gregorian calendar definitions
+    of months/years.
+
+    \note This function requires C++20.
+
+    \sa addMonths(), addYears(), daysTo()
+*/
+
+/*!
     Returns a QDate object containing a date \a nmonths later than the
     date of this object (or earlier if \a nmonths is negative).
 
@@ -4604,6 +4626,26 @@ QDateTime QDateTime::addMSecs(qint64 msecs) const
     }
     return dt;
 }
+
+/*!
+    \fn QDateTime QDateTime::addDuration(std::chrono::milliseconds msecs) const
+
+    \since 6.4
+
+    Returns a QDateTime object containing a datetime \a msecs milliseconds
+    later than the datetime of this object (or earlier if \a msecs is
+    negative).
+
+    If this datetime is invalid, an invalid datetime will be returned.
+
+    \note Adding durations expressed in \c{std::chrono::months} or
+    \c{std::chrono::years} does not yield the same result obtained by using
+    addMonths() or addYears(). The former are fixed durations, calculated in
+    relation to the solar year; the latter use the Gregorian calendar definitions
+    of months/years.
+
+    \sa addMSecs(), msecsTo(), addDays(), addMonths(), addYears()
+*/
 
 /*!
     Returns the number of days from this datetime to the \a other

@@ -162,6 +162,13 @@ public:
     void getDate(int *year, int *month, int *day) const;
 
     [[nodiscard]] QDate addDays(qint64 days) const;
+#if __cpp_lib_chrono >= 201907L || defined(Q_QDOC)
+    QT_POST_CXX17_API_IN_EXPORTED_CLASS
+    [[nodiscard]] QDate addDuration(std::chrono::days days) const
+    {
+        return addDays(days.count());
+    }
+#endif
     // Gregorian-optimized:
     [[nodiscard]] QDate addMonths(int months) const;
     [[nodiscard]] QDate addYears(int years) const;
@@ -387,6 +394,10 @@ public:
     [[nodiscard]] QDateTime addYears(int years) const;
     [[nodiscard]] QDateTime addSecs(qint64 secs) const;
     [[nodiscard]] QDateTime addMSecs(qint64 msecs) const;
+    [[nodiscard]] QDateTime addDuration(std::chrono::milliseconds msecs) const
+    {
+        return addMSecs(msecs.count());
+    }
 
     QDateTime toTimeSpec(Qt::TimeSpec spec) const;
     inline QDateTime toLocalTime() const { return toTimeSpec(Qt::LocalTime); }
