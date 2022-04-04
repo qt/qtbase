@@ -2188,11 +2188,11 @@ int QFontDatabasePrivate::addAppFont(const QByteArray &fontData, const QString &
 
     applicationFonts[i] = font;
 
-    emit qApp->fontDatabaseChanged();
-
     // The font cache may have cached lookups for the font that was now
     // loaded, so it has to be flushed.
     QFontCache::instance()->clear();
+
+    emit qApp->fontDatabaseChanged();
 
     return i;
 }
