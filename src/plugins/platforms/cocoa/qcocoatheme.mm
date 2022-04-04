@@ -205,7 +205,7 @@ static QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
             NSColor *selectedMenuItemColor = nil;
             if (__builtin_available(macOS 10.14, *)) {
                 // Cheap approximation for NSVisualEffectView (see deprecation note for selectedMenuItemTextColor)
-                selectedMenuItemColor = [[NSColor selectedContentBackgroundColor] highlightWithLevel:0.4];
+                selectedMenuItemColor = [[NSColor controlAccentColor] highlightWithLevel:0.3];
             } else {
                 // selectedMenuItemColor would presumably be the correct color to use as the background
                 // for selected menu items. But that color is always blue, and doesn't follow the
