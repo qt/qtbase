@@ -1003,20 +1003,21 @@ struct WhenAllContext
 {
     using ValueType = typename ResultFutures::value_type;
 
-    WhenAllContext(qsizetype size) : count(size) {}
+    explicit WhenAllContext(qsizetype size) : remaining(size) {}
 
     template<typename T = ValueType>
     void checkForCompletion(qsizetype index, T &&future)
     {
         futures[index] = std::forward<T>(future);
-        Q_ASSERT(count > 0);
-        if (--count <= 0) {
+        const auto oldRemaining = remaining.fetchAndSubRelaxed(1);
+        Q_ASSERT(oldRemaining > 0);
+        if (oldRemaining <= 1) { // that was the last one
             promise.addResult(futures);
             promise.finish();
         }
     }
 
-    QAtomicInteger<qsizetype> count;
+    QAtomicInteger<qsizetype> remaining;
     QPromise<ResultFutures> promise;
     ResultFutures futures;
 };
