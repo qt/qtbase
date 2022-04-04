@@ -177,7 +177,7 @@ void QFutureInterfaceBase::reportSuspended() const
     // i.e. no more events will be reported.
 
     QMutexLocker locker(&d->m_mutex);
-    const int state = d->state;
+    const int state = d->state.loadRelaxed();
     if (!(state & Suspending) || (state & Suspended))
         return;
 
