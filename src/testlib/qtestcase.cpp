@@ -230,23 +230,23 @@ static void stackTrace()
 #  ifdef Q_OS_LINUX
     char cmd[512];
     qsnprintf(cmd, 512, "gdb --pid %d 1>&2 2>/dev/null <<EOF\n"
-                         "set prompt\n"
-                         "set height 0\n"
-                         "thread apply all where full\n"
-                         "detach\n"
-                         "quit\n"
-                         "EOF\n",
-                         static_cast<int>(getpid()));
+                        "set prompt\n"
+                        "set height 0\n"
+                        "thread apply all where full\n"
+                        "detach\n"
+                        "quit\n"
+                        "EOF\n",
+              static_cast<int>(getpid()));
     if (system(cmd) == -1)
         fprintf(stderr, "calling gdb failed\n");
     fprintf(stderr, "=== End of stack trace ===\n");
 #  elif defined(Q_OS_MACOS)
     char cmd[512];
     qsnprintf(cmd, 512, "lldb -p %d 1>&2 2>/dev/null <<EOF\n"
-                         "bt all\n"
-                         "quit\n"
-                         "EOF\n",
-                         static_cast<int>(getpid()));
+                        "bt all\n"
+                        "quit\n"
+                        "EOF\n",
+              static_cast<int>(getpid()));
     if (system(cmd) == -1)
         fprintf(stderr, "calling lldb failed\n");
     fprintf(stderr, "=== End of stack trace ===\n");
@@ -376,7 +376,7 @@ static bool noCrashHandler = false;
 
 /*! \internal
     Invoke a method of the object without generating warning if the method does not exist
- */
+*/
 static void invokeMethod(QObject *obj, const char *methodName)
 {
     const QMetaObject *metaObject = obj->metaObject();
@@ -617,14 +617,14 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
                    "%s", argv[0], testOptions);
 
             if (qml) {
-                printf ("\n"
-                        " QmlTest options:\n"
-                        " -import dir         : Specify an import directory.\n"
-                        " -plugins dir        : Specify a directory where to search for plugins.\n"
-                        " -input dir/file     : Specify the root directory for test cases or a single test case file.\n"
-                        " -translation file   : Specify the translation file.\n"
-                        " -file-selector dir  : Specify a file selector for the QML engine.\n"
-                        );
+                printf("\n"
+                       " QmlTest options:\n"
+                       " -import dir         : Specify an import directory.\n"
+                       " -plugins dir        : Specify a directory where to search for plugins.\n"
+                       " -input dir/file     : Specify the root directory for test cases or a single test case file.\n"
+                       " -translation file   : Specify the translation file.\n"
+                       " -file-selector dir  : Specify a file selector for the QML engine.\n"
+                       );
             }
 
             printf("\n"
@@ -1147,7 +1147,7 @@ public:
 
     If the function was successfully called, true is returned, otherwise
     false.
- */
+*/
 bool TestMethods::invokeTest(int index, const char *data, WatchDog *watchDog) const
 {
     QBenchmarkTestMethodData benchmarkData;
@@ -1268,7 +1268,7 @@ void *fetchData(QTestData *data, const char *tagName, int typeId)
 
 /*!
  * \internal
- */
+*/
 char *formatString(const char *prefix, const char *suffix, size_t numArguments, ...)
 {
     va_list ap;
@@ -1302,7 +1302,7 @@ char *formatString(const char *prefix, const char *suffix, size_t numArguments, 
   to operator delete[].
 
   \a length is the length of the string \a ba.
- */
+*/
 char *toHexRepresentation(const char *ba, int length)
 {
     if (length == 0)
@@ -1931,7 +1931,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 }
 
 /*! \internal
- */
+*/
 void QTest::qInit(QObject *testObject, int argc, char **argv)
 {
     initEnvironment();
@@ -1977,7 +1977,7 @@ void QTest::qInit(QObject *testObject, int argc, char **argv)
 }
 
 /*! \internal
- */
+*/
 int QTest::qRun()
 {
     QTEST_ASSERT(currentTestObject);
@@ -2052,7 +2052,7 @@ int QTest::qRun()
 }
 
 /*! \internal
- */
+*/
 void QTest::qCleanup()
 {
     currentTestObject = nullptr;
@@ -2079,7 +2079,7 @@ void QTest::qCleanup()
 
   Behaves identically to qExec(QObject *, int, char**) but takes a
   QStringList of \a arguments instead of a \c char** list.
- */
+*/
 int QTest::qExec(QObject *testObject, const QStringList &arguments)
 {
     const int argc = arguments.count();
@@ -2098,14 +2098,14 @@ int QTest::qExec(QObject *testObject, const QStringList &arguments)
 }
 
 /*! \internal
- */
+*/
 void QTest::qFail(const char *message, const char *file, int line)
 {
     QTestResult::fail(message, file, line);
 }
 
 /*! \internal
- */
+*/
 bool QTest::qVerify(bool statement, const char *statementStr, const char *description,
                    const char *file, int line)
 {
@@ -2113,8 +2113,8 @@ bool QTest::qVerify(bool statement, const char *statementStr, const char *descri
 }
 
 /*! \fn void QTest::qSkip(const char *message, const char *file, int line)
-\internal
- */
+    \internal
+*/
 void QTest::qSkip(const char *message, const char *file, int line)
 {
     QTestResult::addSkip(message, file, line);
@@ -2122,8 +2122,8 @@ void QTest::qSkip(const char *message, const char *file, int line)
 }
 
 /*! \fn bool QTest::qExpectFail(const char *dataIndex, const char *comment, TestFailMode mode, const char *file, int line)
-\internal
- */
+    \internal
+*/
 bool QTest::qExpectFail(const char *dataIndex, const char *comment,
                        QTest::TestFailMode mode, const char *file, int line)
 {
@@ -2168,7 +2168,7 @@ void QTest::qCaught(const char *expected, const char *what, const char *file, in
 /*!
   \internal
   \deprecated [6.3] Use qWarning() instead
- */
+*/
 void QTest::qWarn(const char *message, const char *file, int line)
 {
     QTestLog::warn(message, file, line);
@@ -2281,7 +2281,7 @@ void QTest::failOnWarning(const QRegularExpression &messagePattern)
 #endif // QT_CONFIG(regularexpression)
 
 /*! \internal
- */
+*/
 
 #ifdef Q_OS_WIN
 static inline bool isWindowsBuildDirectory(const QString &dirName)
@@ -2301,7 +2301,7 @@ static inline bool isWindowsBuildDirectory(const QString &dirName)
 
     Returns the temporary directory where the data was extracted or null in case of
     errors.
- */
+*/
 QSharedPointer<QTemporaryDir> QTest::qExtractTestData(const QString &dirName)
 {
       QSharedPointer<QTemporaryDir> result; // null until success, then == tempDir
@@ -2353,7 +2353,7 @@ QSharedPointer<QTemporaryDir> QTest::qExtractTestData(const QString &dirName)
 #endif // QT_CONFIG(temporaryfile)
 
 /*! \internal
- */
+*/
 
 QString QTest::qFindTestData(const QString& base, const char *file, int line, const char *builddir,
                              const char *sourcedir)
@@ -2494,7 +2494,7 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
 }
 
 /*! \internal
- */
+*/
 QString QTest::qFindTestData(const char *base, const char *file, int line, const char *builddir,
                              const char *sourcedir)
 {
@@ -2502,21 +2502,21 @@ QString QTest::qFindTestData(const char *base, const char *file, int line, const
 }
 
 /*! \internal
- */
+*/
 void *QTest::qData(const char *tagName, int typeId)
 {
     return fetchData(QTestResult::currentTestData(), tagName, typeId);
 }
 
 /*! \internal
- */
+*/
 void *QTest::qGlobalData(const char *tagName, int typeId)
 {
     return fetchData(QTestResult::currentGlobalTestData(), tagName, typeId);
 }
 
 /*! \internal
- */
+*/
 void *QTest::qElementData(const char *tagName, int metaTypeId)
 {
     QTEST_ASSERT(tagName);
@@ -2532,7 +2532,7 @@ void *QTest::qElementData(const char *tagName, int metaTypeId)
 }
 
 /*! \internal
- */
+*/
 void QTest::addColumnInternal(int id, const char *name)
 {
     QTestTable *tbl = QTestTable::currentTestTable();
@@ -2671,14 +2671,14 @@ bool QTest::currentTestFailed()
 }
 
 /*! \internal
- */
+*/
 QObject *QTest::testObject()
 {
     return currentTestObject;
 }
 
 /*! \internal
- */
+*/
 void QTest::setMainSourcePath(const char *file, const char *builddir)
 {
     QString mainSourceFile = QFile::decodeName(file);
@@ -2700,7 +2700,7 @@ void QTest::setMainSourcePath(const char *file, const char *builddir)
 
     If the caller has already passed a failure message showing the compared
     values, or if those values cannot be stringified, val1 and val2 can be null.
- */
+*/
 bool QTest::compare_helper(bool success, const char *failureMsg,
                            char *val1, char *val2,
                            const char *actual, const char *expected,
@@ -2730,7 +2730,7 @@ static bool floatingCompare(const T &actual, const T &expected)
 
 /*! \fn bool QTest::qCompare(const qfloat16 &t1, const qfloat16 &t2, const char *actual, const char *expected, const char *file, int line)
     \internal
- */
+*/
 bool QTest::qCompare(qfloat16 const &t1, qfloat16 const &t2, const char *actual, const char *expected,
                      const char *file, int line)
 {
@@ -2741,9 +2741,9 @@ bool QTest::qCompare(qfloat16 const &t1, qfloat16 const &t2, const char *actual,
 
 /*! \fn bool QTest::qCompare(const float &t1, const float &t2, const char *actual, const char *expected, const char *file, int line)
     \internal
- */
+*/
 bool QTest::qCompare(float const &t1, float const &t2, const char *actual, const char *expected,
-                    const char *file, int line)
+                     const char *file, int line)
 {
     return QTestResult::compare(floatingCompare(t1, t2),
                                 "Compared floats are not the same (fuzzy compare)",
@@ -2752,9 +2752,9 @@ bool QTest::qCompare(float const &t1, float const &t2, const char *actual, const
 
 /*! \fn bool QTest::qCompare(const double &t1, const double &t2, const char *actual, const char *expected, const char *file, int line)
     \internal
- */
+*/
 bool QTest::qCompare(double const &t1, double const &t2, const char *actual, const char *expected,
-                    const char *file, int line)
+                     const char *file, int line)
 {
     return QTestResult::compare(floatingCompare(t1, t2),
                                 "Compared doubles are not the same (fuzzy compare)",
@@ -2764,7 +2764,7 @@ bool QTest::qCompare(double const &t1, double const &t2, const char *actual, con
 /*! \fn bool QTest::qCompare(int t1, int t2, const char *actual, const char *expected, const char *file, int line)
     \internal
     \since 5.14
- */
+*/
 bool QTest::qCompare(int t1, int t2, const char *actual, const char *expected,
                     const char *file, int line)
 {
@@ -2777,7 +2777,7 @@ bool QTest::qCompare(int t1, int t2, const char *actual, const char *expected,
 /*! \fn bool QTest::qCompare(qsizetype t1, qsizetype t2, const char *actual, const char *expected, const char *file, int line)
     \internal
     \since 6.0
- */
+*/
 
 bool QTest::qCompare(qsizetype t1, qsizetype t2, const char *actual, const char *expected,
                      const char *file, int line)
@@ -2791,9 +2791,9 @@ bool QTest::qCompare(qsizetype t1, qsizetype t2, const char *actual, const char 
 /*! \fn bool QTest::qCompare(unsigned t1, unsigned t2, const char *actual, const char *expected, const char *file, int line)
     \internal
     \since 5.14
- */
+*/
 bool QTest::qCompare(unsigned t1, unsigned t2, const char *actual, const char *expected,
-                    const char *file, int line)
+                     const char *file, int line)
 {
     return QTestResult::compare(t1 == t2,
                                 "Compared values are not the same",
@@ -2803,7 +2803,7 @@ bool QTest::qCompare(unsigned t1, unsigned t2, const char *actual, const char *e
 /*! \fn bool QTest::qCompare(QStringView t1, QStringView t2, const char *actual, const char *expected, const char *file, int line)
     \internal
     \since 5.14
- */
+*/
 bool QTest::qCompare(QStringView t1, QStringView t2, const char *actual, const char *expected,
                      const char *file, int line)
 {
@@ -2815,7 +2815,7 @@ bool QTest::qCompare(QStringView t1, QStringView t2, const char *actual, const c
 /*! \fn bool QTest::qCompare(QStringView t1, const QLatin1String &t2, const char *actual, const char *expected, const char *file, int line)
     \internal
     \since 5.14
- */
+*/
 bool QTest::qCompare(QStringView t1, const QLatin1String &t2, const char *actual, const char *expected,
                      const char *file, int line)
 {
@@ -2827,7 +2827,7 @@ bool QTest::qCompare(QStringView t1, const QLatin1String &t2, const char *actual
 /*! \fn bool QTest::qCompare(const QLatin1String &t1, QStringView t2, const char *actual, const char *expected, const char *file, int line)
     \internal
     \since 5.14
- */
+*/
 bool QTest::qCompare(const QLatin1String &t1, QStringView t2, const char *actual, const char *expected,
                      const char *file, int line)
 {
@@ -2839,25 +2839,25 @@ bool QTest::qCompare(const QLatin1String &t1, QStringView t2, const char *actual
 /*! \fn bool QTest::qCompare(const QString &t1, const QString &t2, const char *actual, const char *expected, const char *file, int line)
     \internal
     \since 5.14
- */
+*/
 
 /*! \fn bool QTest::qCompare(const QString &t1, const QLatin1String &t2, const char *actual, const char *expected, const char *file, int line)
     \internal
     \since 5.14
- */
+*/
 
 /*! \fn bool QTest::qCompare(const QLatin1String &t1, const QString &t2, const char *actual, const char *expected, const char *file, int line)
     \internal
     \since 5.14
- */
+*/
 
 /*! \fn bool QTest::qCompare(const double &t1, const float &t2, const char *actual, const char *expected, const char *file, int line)
     \internal
- */
+*/
 
 /*! \fn bool QTest::qCompare(const float &t1, const double &t2, const char *actual, const char *expected, const char *file, int line)
     \internal
- */
+*/
 
 #define TO_STRING_IMPL(TYPE, FORMAT) \
 template <> Q_TESTLIB_EXPORT char *QTest::toString<TYPE>(const TYPE &t) \
@@ -2893,7 +2893,7 @@ TO_STRING_IMPL(unsigned char, %hhu)
   the exponent, requiring a leading 0 on single-digit exponents; (at least)
   MinGW includes a leading zero also on an already-two-digit exponent,
   e.g. 9e-040, which differs from more usual platforms.  So massage that away.
- */
+*/
 static void massageExponent(char *text)
 {
     char *p = strchr(text, 'e');
@@ -2984,7 +2984,7 @@ template <> Q_TESTLIB_EXPORT char *QTest::toString<char>(const char &t)
 }
 
 /*! \internal
- */
+*/
 char *QTest::toString(const char *str)
 {
     if (!str) {
@@ -2997,7 +2997,7 @@ char *QTest::toString(const char *str)
 }
 
 /*! \internal
- */
+*/
 char *QTest::toString(const volatile void *p) // Use volatile to match compare_ptr_helper()
 {
     return QTest::toString(const_cast<const void *>(p));
@@ -3011,7 +3011,7 @@ char *QTest::toString(const void *p)
 }
 
 /*! \internal
- */
+*/
 char *QTest::toString(const volatile QObject *vo)
 {
     if (vo == nullptr)
@@ -3030,30 +3030,30 @@ char *QTest::toString(const volatile QObject *vo)
 
 /*! \fn char *QTest::toString(const QColor &color)
     \internal
- */
+*/
 
 /*! \fn char *QTest::toString(const QRegion &region)
     \internal
- */
+*/
 
 /*! \fn char *QTest::toString(const QHostAddress &addr)
     \internal
- */
+*/
 
 /*! \fn char *QTest::toString(QNetworkReply::NetworkError code)
     \internal
- */
+*/
 
 /*! \fn char *QTest::toString(const QNetworkCookie &cookie)
     \internal
- */
+*/
 
 /*! \fn char *QTest::toString(const QList<QNetworkCookie> &list)
     \internal
- */
+*/
 
 /*! \internal
- */
+*/
 bool QTest::compare_string_helper(const char *t1, const char *t2, const char *actual,
                                   const char *expected, const char *file, int line)
 {
