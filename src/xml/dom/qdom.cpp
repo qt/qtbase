@@ -3625,7 +3625,7 @@ void QDomAttrPrivate::setNodeValue(const QString& v)
     t->ref.deref();
     if (first) {
         auto removed = removeChild(first);
-        if (removed && !removed->ref)
+        if (removed && !removed->ref.loadRelaxed()) // removeChild() already deref()ed
             delete removed;
     }
     appendChild(t);
