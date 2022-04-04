@@ -42,6 +42,7 @@ private slots:
     void writeBlock_data();
     void writeBlock();
     void seek();
+    void invalidSeeks();
     void seekTest_data();
     void seekTest();
     void read_rawdata();
@@ -284,6 +285,29 @@ void tst_QBuffer::seek()
     const qint64 pos = 10;
     QVERIFY(buffer.seek(pos));
     QCOMPARE(buffer.size(), pos);
+}
+
+void tst_QBuffer::invalidSeeks()
+{
+    if (sizeof(qsizetype) == sizeof(qint64)) {
+        // sizeof(qsizetype) == sizeof(qint64), so +1 would overflow
+        QSKIP("This is a 32-bit-only test.");
+    } else {
+        QBuffer buffer;
+        buffer.open(QIODevice::WriteOnly);
+        QCOMPARE(buffer.buffer().size(), qsizetype(0));
+        QCOMPARE(buffer.pos(), qint64(0));
+        constexpr qint64 MaxQByteArrayCapacity = (std::numeric_limits<qsizetype>::max)();
+        // this should fail fast, not after trying to allocate nearly 2 GiB of data,
+        // potentially crashing in the process:
+        QVERIFY(!buffer.seek(2 * MaxQByteArrayCapacity - 1));
+        QCOMPARE(buffer.buffer().size(), qsizetype(0));
+        QCOMPARE(buffer.pos(), qint64(0));
+        // ditto:
+        QVERIFY(!buffer.seek(MaxQByteArrayCapacity + 1));
+        QCOMPARE(buffer.buffer().size(), qsizetype(0));
+        QCOMPARE(buffer.pos(), qint64(0));
+    }
 }
 
 void tst_QBuffer::seekTest_data()
