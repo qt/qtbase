@@ -58,6 +58,7 @@ QT_BEGIN_NAMESPACE
 
 class QOpenGLContext;
 class QOffscreenSurface;
+class QSurface;
 class QWindow;
 
 struct Q_GUI_EXPORT QRhiGles2InitParams : public QRhiInitParams
@@ -65,7 +66,7 @@ struct Q_GUI_EXPORT QRhiGles2InitParams : public QRhiInitParams
     QRhiGles2InitParams();
 
     QSurfaceFormat format;
-    QOffscreenSurface *fallbackSurface = nullptr;
+    QSurface *fallbackSurface = nullptr;
     QWindow *window = nullptr;
     QOpenGLContext *shareContext = nullptr;
 

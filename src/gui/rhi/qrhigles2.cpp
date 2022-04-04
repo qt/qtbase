@@ -68,9 +68,10 @@ QT_BEGIN_NAMESPACE
     \inmodule QtGui
     \brief OpenGL specific initialization parameters.
 
-    An OpenGL-based QRhi needs an already created QOffscreenSurface at minimum.
-    Additionally, while optional, it is recommended that the QWindow the first
-    QRhiSwapChain will target is passed in as well.
+    An OpenGL-based QRhi needs an already created QSurface that can be used in
+    combination with QOpenGLContext. Most commonly, this is a QOffscreenSurface
+    in practice. Additionally, while optional, it is recommended that the QWindow
+    the first QRhiSwapChain will target is passed in as well.
 
     \badcode
         QOffscreenSurface *fallbackSurface = QRhiGles2InitParams::newFallbackSurface();
@@ -98,10 +99,10 @@ QT_BEGIN_NAMESPACE
     adjustedFormat() to query the effective format that is passed to
     QOpenGLContext::setFormat() internally.
 
-    A QOffscreenSurface has to be specified in \l fallbackSurface. In order to
-    prevent mistakes in threaded situations, this is never created
-    automatically by the QRhi since, like QWindow, QOffscreenSurface can only
-    be created on the gui/main thread.
+    A QSurface has to be specified in \l fallbackSurface. In order to prevent
+    mistakes in threaded situations, this is never created automatically by the
+    QRhi because, like QWindow, instances of QSurface subclasses can often be
+    created on the gui/main thread only.
 
     As a convenience, applications can use newFallbackSurface() which creates
     and returns a QOffscreenSurface that is compatible with the QOpenGLContext
