@@ -174,7 +174,7 @@ QString NmakeMakefileGenerator::var(const ProKey &value) const
     return MakefileGenerator::var(value);
 }
 
-void NmakeMakefileGenerator::suppressBuiltinRules(QTextStream &t) const
+void NmakeMakefileGenerator::suppressBuiltinRules(QTextStream &) const
 {
 }
 
