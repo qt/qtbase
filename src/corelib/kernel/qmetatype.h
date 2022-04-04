@@ -52,6 +52,7 @@
 #ifndef QT_NO_QOBJECT
 #include <QtCore/qobjectdefs.h>
 #endif
+#include <QtCore/qhashfunctions.h>
 
 #include <array>
 #include <new>
@@ -2535,6 +2536,13 @@ template<typename Unique,typename... T>
 constexpr const QtPrivate::QMetaTypeInterface *const qt_incomplete_metaTypeArray[] = {
     QtPrivate::qTryMetaTypeInterfaceForType<Unique, T>()...
 };
+
+inline size_t qHash(QMetaType type, size_t seed = 0)
+{
+    // We cannot use d_ptr here since the same type in different DLLs
+    // might result in different pointers!
+    return qHash(type.id(), seed);
+}
 
 QT_END_NAMESPACE
 
