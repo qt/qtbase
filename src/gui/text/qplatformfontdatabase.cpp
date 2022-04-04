@@ -164,6 +164,26 @@ QSupportedWritingSystems &QSupportedWritingSystems::operator=(const QSupportedWr
     return *this;
 }
 
+bool operator==(const QSupportedWritingSystems &lhs, const QSupportedWritingSystems &rhs)
+{
+    return !(lhs != rhs);
+}
+
+bool operator!=(const QSupportedWritingSystems &lhs, const QSupportedWritingSystems &rhs)
+{
+    if (lhs.d == rhs.d)
+        return false;
+
+    Q_ASSERT(lhs.d->list.size() == rhs.d->list.size());
+    Q_ASSERT(lhs.d->list.size() == QFontDatabase::WritingSystemsCount);
+    for (int i = 0; i < QFontDatabase::WritingSystemsCount; ++i) {
+        if (lhs.d->list.at(i) != rhs.d->list.at(i))
+            return true;
+    }
+
+    return false;
+}
+
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, const QSupportedWritingSystems &sws)
 {
