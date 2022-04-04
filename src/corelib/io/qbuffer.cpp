@@ -49,15 +49,9 @@ class QBufferPrivate : public QIODevicePrivate
     Q_DECLARE_PUBLIC(QBuffer)
 
 public:
-    QBufferPrivate()
-        : buf(nullptr)
-#ifndef QT_NO_QOBJECT
-        , writtenSinceLastEmit(0), signalConnectionCount(0), signalsEmitted(false)
-#endif
-    { }
-    ~QBufferPrivate() { }
+    QBufferPrivate() = default;
 
-    QByteArray *buf;
+    QByteArray *buf = nullptr;
     QByteArray defaultBuf;
 
     qint64 peek(char *data, qint64 maxSize) override;
@@ -67,9 +61,9 @@ public:
     // private slots
     void _q_emitSignals();
 
-    qint64 writtenSinceLastEmit;
-    int signalConnectionCount;
-    bool signalsEmitted;
+    qint64 writtenSinceLastEmit = 0;
+    int signalConnectionCount = 0;
+    bool signalsEmitted = false;
 #endif
 };
 
