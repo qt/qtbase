@@ -90,8 +90,8 @@ bool QRasterBackingStore::scroll(const QRegion &region, int dx, int dy)
     const qreal devicePixelRatio = m_image.devicePixelRatio();
     const QPoint delta(dx * devicePixelRatio, dy * devicePixelRatio);
 
-    for (const QRect &rect : region)
-        qt_scrollRectInImage(m_image, QRect(rect.topLeft() * devicePixelRatio, rect.size() * devicePixelRatio), delta);
+    const QRect rect = region.boundingRect();
+    qt_scrollRectInImage(m_image, QRect(rect.topLeft() * devicePixelRatio, rect.size() * devicePixelRatio), delta);
 
     return true;
 }

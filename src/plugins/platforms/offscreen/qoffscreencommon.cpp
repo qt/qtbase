@@ -189,8 +189,8 @@ bool QOffscreenBackingStore::scroll(const QRegion &area, int dx, int dy)
     if (m_image.isNull())
         return false;
 
-    for (const QRect &rect : area)
-        qt_scrollRectInImage(m_image, rect, QPoint(dx, dy));
+    const QRect rect = area.boundingRect();
+    qt_scrollRectInImage(m_image, rect, QPoint(dx, dy));
 
     return true;
 }
