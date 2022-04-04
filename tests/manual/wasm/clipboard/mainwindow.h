@@ -90,5 +90,10 @@ private:
     bool eventFilter(QObject *obj, QEvent *event) override;
 
     QColor generateRandomColor();
+
+protected:
+    void dragEnterEvent(QDragEnterEvent *e) override;
+    void dropEvent(QDropEvent *e) override;
+
 };
 #endif // MAINWINDOW_H

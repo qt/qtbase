@@ -45,6 +45,10 @@
 #include "qwasminputcontext.h"
 #include <private/qstdweb_p.h>
 
+#if QT_CONFIG(draganddrop)
+#include "qwasmdrag.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QWasmEventTranslator;
@@ -91,6 +95,10 @@ public:
     void initialize() override;
     QPlatformInputContext *inputContext() const override;
 
+#if QT_CONFIG(draganddrop)
+    QPlatformDrag *drag() const override;
+#endif
+
     QWasmClipboard *getWasmClipboard() { return m_clipboard; }
     QWasmInputContext *getWasmInputContext() { return m_platformInputContext; }
     static QWasmIntegration *get() { return s_instance; }
@@ -117,6 +125,11 @@ private:
     static QWasmIntegration *s_instance;
 
     mutable QWasmInputContext *m_platformInputContext = nullptr;
+
+#if QT_CONFIG(draganddrop)
+    QWasmDrag *m_drag;
+#endif
+
 };
 
 QT_END_NAMESPACE

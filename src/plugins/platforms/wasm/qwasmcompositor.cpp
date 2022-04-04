@@ -136,6 +136,11 @@ void QWasmCompositor::deregisterEventHandlers()
     emscripten_set_touchend_callback(canvasSelector.constData(),  0, 0, NULL);
     emscripten_set_touchmove_callback(canvasSelector.constData(),  0, 0, NULL);
     emscripten_set_touchcancel_callback(canvasSelector.constData(),  0, 0, NULL);
+
+    val canvas = screen()->canvas();
+    canvas.call<void>("removeEventListener",
+        std::string("drop"),
+        val::module_property("qtDrop"), val(true));
 }
 
 void QWasmCompositor::destroy()
@@ -193,6 +198,13 @@ void QWasmCompositor::initEventHandlers()
     emscripten_set_touchend_callback(canvasSelector.constData(), (void *)this, 1, &touchCallback);
     emscripten_set_touchmove_callback(canvasSelector.constData(), (void *)this, 1, &touchCallback);
     emscripten_set_touchcancel_callback(canvasSelector.constData(), (void *)this, 1, &touchCallback);
+
+    val canvas = screen()->canvas();
+    canvas.call<void>("addEventListener",
+        std::string("drop"),
+        val::module_property("qtDrop"), val(true));
+    canvas.set("data-qtdropcontext", // ? unique
+                       emscripten::val(quintptr(reinterpret_cast<void *>(screen()))));
 }
 
 void QWasmCompositor::setEnabled(bool enabled)
@@ -1145,7 +1157,6 @@ bool QWasmCompositor::processMouse(int eventType, const EmscriptenMouseEvent *mo
 
     if (eventType == EMSCRIPTEN_EVENT_MOUSEDOWN && !accepted)
         QGuiApplicationPrivate::instance()->closeAllPopups();
-
     return accepted;
 }
 

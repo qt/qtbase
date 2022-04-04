@@ -57,7 +57,7 @@
 
 // this is where EGL headers are pulled in, make sure it is last
 #include "qwasmscreen.h"
-
+#include <private/qsimpledrag_p.h>
 using namespace emscripten;
 QT_BEGIN_NAMESPACE
 
@@ -176,6 +176,7 @@ QWasmIntegration::QWasmIntegration()
         visualViewport.call<void>("addEventListener", val("resize"),
                           val::module_property("qtResizeAllScreens"));
     }
+    m_drag = new QWasmDrag();
 }
 
 QWasmIntegration::~QWasmIntegration()
@@ -192,6 +193,7 @@ QWasmIntegration::~QWasmIntegration()
     delete m_desktopServices;
     if (m_platformInputContext)
         delete m_platformInputContext;
+    delete m_drag;
 
     for (const auto &elementAndScreen : m_screens)
         QWindowSystemInterface::handleScreenRemoved(elementAndScreen.second);
@@ -373,5 +375,12 @@ quint64 QWasmIntegration::getTimestamp()
 {
     return emscripten_performance_now();
 }
+
+#if QT_CONFIG(draganddrop)
+QPlatformDrag *QWasmIntegration::drag() const
+{
+    return m_drag;
+}
+#endif // QT_CONFIG(draganddrop)
 
 QT_END_NAMESPACE
