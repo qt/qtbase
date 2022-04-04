@@ -289,10 +289,11 @@ bool QSplitterHandle::event(QEvent *event)
 void QSplitterHandle::mouseMoveEvent(QMouseEvent *e)
 {
     Q_D(QSplitterHandle);
-    if (!(e->buttons() & Qt::LeftButton))
+    if (!d->pressed)
         return;
-    int pos = d->pick(parentWidget()->mapFromGlobal(e->globalPosition().toPoint()))
-                 - d->mouseOffset;
+
+    const int pos = d->pick(parentWidget()->mapFromGlobal(e->globalPosition().toPoint()))
+                    - d->mouseOffset;
     if (opaqueResize()) {
         moveSplitter(pos);
     } else {
@@ -319,16 +320,18 @@ void QSplitterHandle::mousePressEvent(QMouseEvent *e)
 void QSplitterHandle::mouseReleaseEvent(QMouseEvent *e)
 {
     Q_D(QSplitterHandle);
-    if (!opaqueResize() && e->button() == Qt::LeftButton) {
-        int pos = d->pick(parentWidget()->mapFromGlobal(e->globalPosition().toPoint()))
-                     - d->mouseOffset;
+    if (!d->pressed)
+        return;
+
+    if (!opaqueResize()) {
+        const int pos = d->pick(parentWidget()->mapFromGlobal(e->globalPosition().toPoint()))
+                        - d->mouseOffset;
         d->s->setRubberBand(-1);
         moveSplitter(pos);
     }
-    if (e->button() == Qt::LeftButton) {
-        d->pressed = false;
-        update();
-    }
+
+    d->pressed = false;
+    update();
 }
 
 /*!
