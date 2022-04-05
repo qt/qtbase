@@ -176,8 +176,8 @@ void tst_QCryptographicHash::addDataChunked()
 
         // add the data in chunks of 64 bytes
         for (int i = 0; i < data.size() / 64; ++i)
-            hash.addData(data.constData() + 64 * i, 64);
-        hash.addData(data.constData() + data.size() / 64 * 64, data.size() % 64);
+            hash.addData({data.constData() + 64 * i, 64});
+        hash.addData({data.constData() + data.size() / 64 * 64, data.size() % 64});
 
         hash.result();
     }
