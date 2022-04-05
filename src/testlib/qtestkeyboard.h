@@ -93,7 +93,10 @@ namespace QTest
 
 
         if (action == Click) {
+            QPointer<QWindow> ptr(window);
             sendKeyEvent(Press, window, code, text, modifier, delay);
+            if (!ptr)
+                return;
             sendKeyEvent(Release, window, code, text, modifier, delay);
             return;
         }
