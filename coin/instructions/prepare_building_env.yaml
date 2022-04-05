@@ -335,10 +335,10 @@ instructions:
       variableValue: "{{.Env.QNX_710}}/target/qnx7"
     - type: EnvironmentVariable
       variableName: QNX_CONFIGURATION_EXCLUSIVE
-      variableValue: "{{.Env.QNX_710}}/.qnx"
+      variableValue: "{{.Env.HOME}}/.qnx"
     - type: EnvironmentVariable
       variableName: QNX_CONFIGURATION
-      variableValue: "{{.Env.QNX_710}}/.qnx"
+      variableValue: "{{.Env.HOME}}/.qnx"
     - type: PrependToEnvironmentVariable
       variableName: PATH
       variableValue: "{{.Env.QNX_710}}/host/linux/x86_64/usr/bin:"
@@ -347,7 +347,7 @@ instructions:
       variableValue: "{{.Env.QNX_710}}/host/common/bin:"
     - type: PrependToEnvironmentVariable
       variableName: PATH
-      variableValue: "{{.Env.QNX_710}}/.qnx:"
+      variableValue: "{{.Env.HOME}}/.qnx:"
     - type: EnvironmentVariable
       variableName: QNX_HOST
       variableValue: "{{.Env.QNX_710}}/host/linux/x86_64"
