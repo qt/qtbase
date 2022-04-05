@@ -104,8 +104,9 @@ struct QMetaTypeCustomRegistry
 #endif
                     (ti->name);
             if (auto ti2 = aliases.value(name)) {
-                ti->typeId.storeRelaxed(ti2->typeId.loadRelaxed());
-                return ti2->typeId;
+                const auto id = ti2->typeId.loadRelaxed();
+                ti->typeId.storeRelaxed(id);
+                return id;
             }
             aliases[name] = ti;
             int size = registry.size();
@@ -2657,7 +2658,7 @@ static int qMetaTypeCustomType_unlocked(const char *typeName, int length)
         Q_ASSERT(!reg->lock.tryLockForWrite());
 #endif
         if (auto ti = reg->aliases.value(QByteArray::fromRawData(typeName, length), nullptr)) {
-            return ti->typeId;
+            return ti->typeId.loadRelaxed();
         }
     }
     return QMetaType::UnknownType;
