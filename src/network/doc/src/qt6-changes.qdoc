@@ -100,6 +100,9 @@
 
     In Qt 6.2 QNetworkInformation gained the ability to detect captive portals.
 
+    In Qt 6.3 QNetworkInformation gained QNetworkInformation::transportMedium()
+    and QNetworkInformation::isMetered().
+
     \section2 Deleted enumerators
 
     Several enumerators are removed in QtNetwork. This includes constants
