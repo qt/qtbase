@@ -88,8 +88,17 @@
     void networkSessionConnected();
     \endcode
 
-    \note Qt 6.0 does not provide replacements for these deleted
-    classes and functions.
+    QNetworkInformation, initially introduced in Qt 6.1, aims to replace some
+    aspects of the bearer management API. It works by providing a unified API
+    which subscribes to changes to the network as notified by the operating
+    system.
+
+    QNetworkInformation::reachability(), introduced in Qt 6.1, replaces the
+    QNetworkAccessManager::networkAccessible() function, while adding more
+    detailed information about the reachability of the network. See its
+    documentation for more details.
+
+    In Qt 6.2 QNetworkInformation gained the ability to detect captive portals.
 
     \section2 Deleted enumerators
 
