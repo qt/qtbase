@@ -76,6 +76,10 @@ QT_BEGIN_NAMESPACE
 
 class QMetaTypeModuleHelper
 {
+    Q_DISABLE_COPY_MOVE(QMetaTypeModuleHelper)
+protected:
+    QMetaTypeModuleHelper() = default;
+    ~QMetaTypeModuleHelper() = default;
 public:
     static constexpr auto makePair(int from, int to) -> quint64
     {
