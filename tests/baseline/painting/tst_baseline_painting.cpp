@@ -66,7 +66,8 @@ private:
     };
 
     void setupTestSuite(const QStringList& blacklist = QStringList());
-    void runTestSuite(GraphicsEngine engine, QImage::Format format, const QSurfaceFormat &contextFormat = QSurfaceFormat());
+    void runTestSuite(GraphicsEngine engine, QImage::Format format,
+                      const QSurfaceFormat &contextFormat = QSurfaceFormat::defaultFormat());
     void paint(QPaintDevice *device, GraphicsEngine engine, QImage::Format format, const QStringList &script, const QString &filePath);
 
     QStringList qpsFiles;
@@ -112,6 +113,7 @@ private slots:
     void testCoreOpenGL_data();
     void testCoreOpenGL();
 private:
+    void initOpenGL();
     bool checkSystemGLSupport();
     bool checkSystemCoreGLSupport();
 #endif
@@ -148,6 +150,10 @@ void tst_Lancelot::initTestCase()
         scripts.insert(fileName, QString::fromUtf8(cont).split(QLatin1Char('\n'), Qt::SkipEmptyParts));
         scriptChecksums.insert(fileName, qChecksum(cont));
     }
+
+#ifndef QT_NO_OPENGL
+    initOpenGL();
+#endif
 }
 
 
@@ -292,6 +298,14 @@ void tst_Lancelot::testPdf()
 
 
 #ifndef QT_NO_OPENGL
+void tst_Lancelot::initOpenGL()
+{
+    // Stencil buffer is needed for clipping
+    QSurfaceFormat glFormat;
+    glFormat.setStencilBufferSize(8);
+    QSurfaceFormat::setDefaultFormat(glFormat);
+}
+
 bool tst_Lancelot::checkSystemGLSupport()
 {
     QWindow win;
@@ -315,7 +329,7 @@ bool tst_Lancelot::checkSystemCoreGLSupport()
     if (QOpenGLContext::openGLModuleType() != QOpenGLContext::LibGL)
         return false;
 
-    QSurfaceFormat coreFormat;
+    QSurfaceFormat coreFormat(QSurfaceFormat::defaultFormat());
     coreFormat.setVersion(3, 2);
     coreFormat.setProfile(QSurfaceFormat::CoreProfile);
     QWindow win;
@@ -370,7 +384,7 @@ void tst_Lancelot::testCoreOpenGL_data()
 
 void tst_Lancelot::testCoreOpenGL()
 {
-    QSurfaceFormat coreFormat;
+    QSurfaceFormat coreFormat(QSurfaceFormat::defaultFormat());
     coreFormat.setVersion(3, 2);
     coreFormat.setProfile(QSurfaceFormat::CoreProfile);
     runTestSuite(OpenGL, QImage::Format_RGB32, coreFormat);
