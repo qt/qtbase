@@ -2,6 +2,25 @@
 windows
 [connectToHostError]
 windows-10 gcc developer-build
+# QTBUG-101274
+[timeoutConnect:WithSocks5Proxy:ip]
+qnx ci
+[timeoutConnect:WithSocks5ProxyAuth:ip]
+qnx ci
+[timeoutConnect:WithHttpProxy:ip]
+qnx ci
+[timeoutConnect:WithHttpProxyBasicAuth:ip]
+qnx ci
+[timeoutConnect:WithSocks5Proxy SSL:ip]
+qnx ci
+[timeoutConnect:WithSocks5AuthProxy SSL:ip]
+qnx ci
+[timeoutConnect:WithHttpProxy SSL:ip]
+qnx ci
+[timeoutConnect:WithHttpProxyBasicAuth SSL:ip]
+qnx ci
+[suddenRemoteDisconnect:WithoutProxy:Qt4 Client <-> Qt4 Server]
+qnx ci
 # QTBUG-66247
 [delayedClose:WithSocks5Proxy]
 windows-10 gcc developer-build
@@ -53,3 +72,8 @@ windows-10 gcc developer-build
 windows-10 gcc developer-build
 [bind]
 macos arm
+# QTBUG-101274
+[bindThenResolveHost:WithoutProxy:first-fail]
+qnx ci
+[bindThenResolveHost:WithoutProxy SSL:first-fail]
+qnx ci
