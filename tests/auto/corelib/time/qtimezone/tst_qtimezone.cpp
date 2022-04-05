@@ -31,6 +31,8 @@
 #include <private/qtimezoneprivate_p.h>
 #include <qlocale.h>
 
+Q_DECLARE_METATYPE(QTimeZone::TimeType)
+
 #if defined(Q_OS_WIN) && !QT_CONFIG(icu)
 #  define USING_WIN_TZ
 #endif
@@ -70,6 +72,8 @@ private slots:
     void macTest();
     void darwinTypes();
     void winTest();
+    void localeSpecificDisplayName_data();
+    void localeSpecificDisplayName();
 
 private:
     void printTimeZone(const QTimeZone &tz);
@@ -1364,6 +1368,55 @@ void tst_QTimeZone::winTest()
     testCetPrivate(tzp);
     testEpochTranPrivate(QWinTimeZonePrivate("America/Toronto"));
 #endif // QT_BUILD_INTERNAL && USING_WIN_TZ
+}
+
+void tst_QTimeZone::localeSpecificDisplayName_data()
+{
+#ifdef USING_WIN_TZ
+    QSKIP("MS backend does not use locale parameter");
+#endif
+    QTest::addColumn<QByteArray>("zoneName");
+    QTest::addColumn<QLocale>("locale");
+    QTest::addColumn<QTimeZone::TimeType>("timeType");
+    QTest::addColumn<QString>("expectedName");
+
+    QStringList names;
+    QLocale locale;
+    // Pick a non-system locale; German or French
+    if (QLocale::system().language() != QLocale::German) {
+        locale = QLocale(QLocale::German);
+        names << QString("Mitteleurop\u00e4ische Normalzeit")
+              << QString("Mitteleurop\u00e4ische Sommerzeit");
+    } else {
+        locale = QLocale(QLocale::French);
+        names << QString("heure normale d\u2019Europe centrale")
+              << QString("heure d\u2019\u00E9t\u00E9 d\u2019Europe centrale");
+    }
+
+    qsizetype index = 0;
+    QTest::newRow("Berlin, standard time")
+            << QByteArray("Europe/Berlin") << locale << QTimeZone::StandardTime
+            << names.at(index++);
+
+    QTest::newRow("Berlin, summer time")
+            << QByteArray("Europe/Berlin") << locale << QTimeZone::DaylightTime
+            << names.at(index++);
+}
+
+void tst_QTimeZone::localeSpecificDisplayName()
+{
+    // This test checks that QTimeZone::displayName() correctly uses the
+    // specified locale, NOT the system locale (see QTBUG-101460).
+    QFETCH(QByteArray, zoneName);
+    QFETCH(QLocale, locale);
+    QFETCH(QTimeZone::TimeType, timeType);
+    QFETCH(QString, expectedName);
+
+    QTimeZone zone(zoneName);
+    QVERIFY(zone.isValid());
+
+    const QString localeName = zone.displayName(timeType, QTimeZone::LongName, locale);
+    QCOMPARE(localeName, expectedName);
 }
 
 #ifdef QT_BUILD_INTERNAL
