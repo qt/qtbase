@@ -64,7 +64,7 @@ struct Options
     bool helpRequested = false;
     bool verbose = false;
     bool skipAddInstallRoot = false;
-    std::chrono::seconds timeout{300}; // 5minutes
+    std::chrono::seconds timeout{480}; // 8 minutes
     QString buildPath;
     QString adbCommand{QStringLiteral("adb")};
     QString makeCommand;
