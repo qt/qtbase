@@ -131,7 +131,7 @@ struct QObjectPrivate::Connection : public ConnectionOrSignalVector
         QtPrivate::QSlotObjectBase *slotObj;
     };
     QAtomicPointer<const int> argumentTypes;
-    QAtomicInt ref_;
+    QAtomicInt ref_{2};     //ref_ is 2 for the use in the internal lists, and for the use in QMetaObject::Connection
     uint id = 0;
     ushort method_offset;
     ushort method_relative;
@@ -140,9 +140,7 @@ struct QObjectPrivate::Connection : public ConnectionOrSignalVector
     ushort isSlotObject : 1;
     ushort ownArgumentTypes : 1;
     ushort isSingleShot : 1;
-    Connection() : ref_(2), ownArgumentTypes(true) {
-        //ref_ is 2 for the use in the internal lists, and for the use in QMetaObject::Connection
-    }
+    Connection() : ownArgumentTypes(true) { }
     ~Connection();
     int method() const { Q_ASSERT(!isSlotObject); return method_offset + method_relative; }
     void ref() { ref_.ref(); }
