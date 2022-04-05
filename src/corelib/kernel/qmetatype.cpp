@@ -148,9 +148,9 @@ Q_GLOBAL_STATIC(QMetaTypeCustomRegistry, customTypeRegistry)
 const char *QtMetaTypePrivate::typedefNameForType(const QtPrivate::QMetaTypeInterface *type_d)
 {
     const char *name = nullptr;
-    QMetaTypeCustomRegistry *r = customTypeRegistry;
-    if (!r)
+    if (!customTypeRegistry.exists())
         return name;
+    QMetaTypeCustomRegistry *r = &*customTypeRegistry;
 
     QByteArrayView officialName(type_d->name);
     QReadLocker l(&r->lock);
