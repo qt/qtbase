@@ -120,6 +120,8 @@ while(NOT "${configure_args}" STREQUAL "")
         set(cmake_file_api TRUE)
     elseif(arg STREQUAL "-no-cmake-file-api")
         set(cmake_file_api FALSE)
+    elseif(arg STREQUAL "-verbose")
+        list(APPEND cmake_args "--log-level=STATUS")
     elseif(arg STREQUAL "--")
         # Everything after this argument will be passed to CMake verbatim.
         list(APPEND cmake_args "${configure_args}")

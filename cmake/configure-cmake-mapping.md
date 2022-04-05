@@ -9,7 +9,7 @@ The following table describes the mapping of configure options to CMake argument
 | -bindir <dir>                         | -DINSTALL_BINDIR=<dir>                            | similar for -headerdir -libdir and so on                        |
 | -hostdatadir <dir>                    | -DINSTALL_MKSPECSDIR=<dir>                        |                                                                 |
 | -help                                 | n/a                                               | Handled by configure[.bat].                                     |
-| -verbose                              |                                                   |                                                                 |
+| -verbose                              | --log-level=STATUS                                | Sets the CMake log level to STATUS. The default one is NOTICE.  |
 | -continue                             |                                                   |                                                                 |
 | -redo                                 | n/a                                               | Handled by configure[.bat].                                     |
 | -recheck [test,...]                   |                                                   |                                                                 |
