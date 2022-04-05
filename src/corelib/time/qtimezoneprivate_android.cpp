@@ -85,7 +85,7 @@ QAndroidTimeZonePrivate::~QAndroidTimeZonePrivate()
 {
 }
 
-static QJniObject getDisplayName(QJniObject zone, jint style, jboolean dst,
+static QString getDisplayName(QJniObject zone, jint style, jboolean dst,
                                         const QLocale &locale)
 {
     QJniObject jbcpTag = QJniObject::fromString(locale.bcp47Name());
@@ -95,7 +95,7 @@ static QJniObject getDisplayName(QJniObject zone, jint style, jboolean dst,
 
     return zone.callObjectMethod("getDisplayName",
                                  "(ZILjava/util/Locale;)Ljava/lang/String;",
-                                 dst, style, jlocale.object());
+                                 dst, style, jlocale.object()).toString();
 }
 
 void QAndroidTimeZonePrivate::init(const QByteArray &ianaId)
@@ -106,8 +106,7 @@ void QAndroidTimeZonePrivate::init(const QByteArray &ianaId)
         QJniObject::fromString(iana).object<jstring>());
 
     // The ID or display name of the zone we've got, if it looks like what we asked for:
-    const auto match = [iana](const QJniObject &jname) -> QByteArray {
-        const QString name = jname.toString();
+    const auto match = [iana](const QString &name) -> QByteArray {
         if (iana.compare(name, Qt::CaseInsensitive) == 0)
             return name.toUtf8();
 
@@ -118,7 +117,7 @@ void QAndroidTimeZonePrivate::init(const QByteArray &ianaId)
     // recognize the name; so check for whether ianaId is a recognized name of
     // the zone object we got and ignore the zone if not.
     // Try checking ianaId against getID(), getDisplayName():
-    m_id = match(androidTimeZone.callObjectMethod("getID", "()Ljava/lang/String;"));
+    m_id = match(androidTimeZone.callObjectMethod("getID", "()Ljava/lang/String;").toString());
     for (int style = 1; m_id.isEmpty() && style >= 0; --style) {
         for (int dst = 1; m_id.isEmpty() && dst >= 0; --dst) {
             for (int pick = 2; m_id.isEmpty() && pick >= 0; --pick) {
@@ -147,7 +146,7 @@ QString QAndroidTimeZonePrivate::displayName(QTimeZone::TimeType timeType, QTime
         // treat all NameTypes as java TimeZone style LONG (value 1), except of course QTimeZone::ShortName which is style SHORT (value 0);
         jint style = (nameType == QTimeZone::ShortName ? 0 : 1);
 
-        name = getDisplayName(androidTimeZone, style, daylightTime, locale).toString();
+        name = getDisplayName(androidTimeZone, style, daylightTime, locale);
     }
 
     return name;
