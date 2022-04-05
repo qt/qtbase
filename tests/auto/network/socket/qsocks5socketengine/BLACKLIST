@@ -3,6 +3,8 @@
 [passwordAuth]
 ubuntu-18.04
 ubuntu-20.04
+# QTBUG-101274
+qnx ci
 # QTBUG-74162
 [passwordAuth2]
 ubuntu
