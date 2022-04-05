@@ -516,7 +516,7 @@ QObjectList QObjectPrivate::senderList() const
     return returnValue;
 }
 
-void QObjectPrivate::ensureConnectionData()
+inline void QObjectPrivate::ensureConnectionData()
 {
     if (connections.loadRelaxed())
         return;
@@ -535,7 +535,7 @@ void QObjectPrivate::ensureConnectionData()
 
   Will also add the connection in the sender's list of the receiver.
  */
-void QObjectPrivate::addConnection(int signal, Connection *c)
+inline void QObjectPrivate::addConnection(int signal, Connection *c)
 {
     Q_ASSERT(c->sender == q_ptr);
     ensureConnectionData();
@@ -657,7 +657,7 @@ void QObjectPrivate::ConnectionData::cleanOrphanedConnectionsImpl(QObject *sende
     }
 }
 
-void QObjectPrivate::ConnectionData::deleteOrphaned(QObjectPrivate::ConnectionOrSignalVector *o)
+inline void QObjectPrivate::ConnectionData::deleteOrphaned(QObjectPrivate::ConnectionOrSignalVector *o)
 {
     while (o) {
         QObjectPrivate::ConnectionOrSignalVector *next = nullptr;
@@ -1345,7 +1345,7 @@ QObject::~QObject()
         d->setParent_helper(nullptr);
 }
 
-QObjectPrivate::Connection::~Connection()
+inline QObjectPrivate::Connection::~Connection()
 {
     if (ownArgumentTypes) {
         const int *v = argumentTypes.loadRelaxed();
@@ -5532,7 +5532,7 @@ bool QObjectPrivate::disconnect(const QObject *sender, int signal_index, const Q
     \internal
     \threadsafe
 */
-bool QObjectPrivate::disconnect(QObjectPrivate::Connection *c)
+inline bool QObjectPrivate::disconnect(QObjectPrivate::Connection *c)
 {
     if (!c)
         return false;
