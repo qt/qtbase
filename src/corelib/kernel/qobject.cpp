@@ -4052,7 +4052,7 @@ static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connect
             args[n] = types[n].create(argv[n]);
     }
 
-    if (c->isSingleShot && !QObjectPrivate::disconnect(c)) {
+    if (c->isSingleShot && !QObjectPrivate::removeConnection(c)) {
         delete ev;
         return;
     }
@@ -4160,7 +4160,7 @@ void doActivate(QObject *sender, int signal_index, void **argv)
                     receiver->metaObject()->className(), receiver);
                 }
 
-                if (c->isSingleShot && !QObjectPrivate::disconnect(c))
+                if (c->isSingleShot && !QObjectPrivate::removeConnection(c))
                     continue;
 
                 QSemaphore semaphore;
@@ -4179,7 +4179,7 @@ void doActivate(QObject *sender, int signal_index, void **argv)
 #endif
             }
 
-            if (c->isSingleShot && !QObjectPrivate::disconnect(c))
+            if (c->isSingleShot && !QObjectPrivate::removeConnection(c))
                 continue;
 
             QObjectPrivate::Sender senderData(receiverInSameThread ? receiver : nullptr, sender, signal_index);
@@ -5359,7 +5359,7 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
     QObjectPrivate::Connection *c = static_cast<QObjectPrivate::Connection *>(connection.d_ptr);
     if (!c)
         return false;
-    const bool disconnected = QObjectPrivate::disconnect(c);
+    const bool disconnected = QObjectPrivate::removeConnection(c);
     const_cast<QMetaObject::Connection &>(connection).d_ptr = nullptr;
     c->deref(); // has been removed from the QMetaObject::Connection object
     return disconnected;
@@ -5532,7 +5532,7 @@ bool QObjectPrivate::disconnect(const QObject *sender, int signal_index, const Q
     \internal
     \threadsafe
 */
-inline bool QObjectPrivate::disconnect(QObjectPrivate::Connection *c)
+inline bool QObjectPrivate::removeConnection(QObjectPrivate::Connection *c)
 {
     if (!c)
         return false;

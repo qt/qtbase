@@ -173,7 +173,9 @@ public:
     QObjectList receiverList(const char *signal) const;
     QObjectList senderList() const;
 
+    inline void ensureConnectionData();
     inline void addConnection(int signal, Connection *c);
+    static inline bool removeConnection(Connection *c);
 
     static QObjectPrivate *get(QObject *o) { return o->d_func(); }
     static const QObjectPrivate *get(const QObject *o) { return o->d_func(); }
@@ -211,9 +213,6 @@ public:
     static bool disconnect(const QObject *sender, int signal_index, void **slot);
     static bool disconnect(const QObject *sender, int signal_index, const QObject *receiver,
                            void **slot);
-    static inline bool disconnect(Connection *c);
-
-    inline void ensureConnectionData();
 
     virtual std::string flagsForDumping() const;
 
