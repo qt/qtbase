@@ -867,6 +867,59 @@ public:
     }
 };
 
+struct UnwrapHandler
+{
+    template<class T>
+    static auto unwrapImpl(T *outer)
+    {
+        Q_ASSERT(outer);
+
+        using ResultType = typename QtPrivate::Future<std::decay_t<T>>::type;
+        using NestedType = typename QtPrivate::Future<ResultType>::type;
+        QFutureInterface<NestedType> promise(QFutureInterfaceBase::State::Pending);
+
+        outer->then([promise](const QFuture<ResultType> &outerFuture) mutable {
+            // We use the .then([](QFuture<ResultType> outerFuture) {...}) version
+            // (where outerFuture == *outer), to propagate the exception if the
+            // outer future has failed.
+            Q_ASSERT(outerFuture.isFinished());
+#ifndef QT_NO_EXCEPTIONS
+            if (outerFuture.d.hasException()) {
+                promise.reportStarted();
+                promise.reportException(outerFuture.d.exceptionStore().exception());
+                promise.reportFinished();
+                return;
+            }
+#endif
+
+            promise.reportStarted();
+            ResultType nestedFuture = outerFuture.result();
+
+            nestedFuture.then([promise] (const QFuture<NestedType> &nested) mutable {
+#ifndef QT_NO_EXCEPTIONS
+                if (nested.d.hasException()) {
+                    promise.reportException(nested.d.exceptionStore().exception());
+                } else
+#endif
+                {
+                    if constexpr (!std::is_void_v<NestedType>)
+                        promise.reportResults(nested.results());
+                }
+                promise.reportFinished();
+            }).onCanceled([promise] () mutable {
+                promise.reportCanceled();
+                promise.reportFinished();
+            });
+        }).onCanceled([promise]() mutable {
+            // propagate the cancellation of the outer future
+            promise.reportStarted();
+            promise.reportCanceled();
+            promise.reportFinished();
+        });
+        return promise.future();
+    }
+};
+
 } // namespace QtPrivate
 
 namespace QtFuture {

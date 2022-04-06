@@ -1357,6 +1357,41 @@
     \sa then(), onFailed()
 */
 
+/*! \fn template<class T> template<class U> QFuture<U> QFuture<T>::unwrap()
+
+    \since 6.4
+
+    Unwraps the inner future from this \c QFuture<T>, where \c T is a future
+    of type \c QFuture<U>, i.e. this future has type of \c QFuture<QFuture<U>>.
+    For example:
+
+    \snippet code/src_corelib_thread_qfuture.cpp 28
+
+    \c unwrappedFuture will be fulfilled as soon as the inner future nested
+    inside the \c outerFuture is fulfilled, with the same result or exception
+    and in the same thread that reports the inner future as finished. If the
+    inner future is canceled, \c unwrappedFuture will also be canceled.
+
+    This is especially useful when chaining multiple computations, and one of
+    them returns a \c QFuture as its result type. For example, let's say we
+    want to download multiple images from an URL, scale the images, and reduce
+    them to a single image using QtConcurrent::mappedReduced(). We could write
+    something like:
+
+    \snippet code/src_corelib_thread_qfuture.cpp 29
+
+    Here \c QtConcurrent::mappedReduced() returns a \c QFuture<QImage>, so
+    \c .then(processImages) returns a \c QFuture<QFuture<QImage>>. Since
+    \c show() takes a \c QImage as argument, the result of \c .then(processImages)
+    can't be passed to it directly. We need to call \c .unwrap(), that will
+    get the result of the inner future when it's ready and pass it to the next
+    continuation.
+
+    In case of multiple nesting, \c .unwrap() goes down to the innermost level:
+
+    \snippet code/src_corelib_thread_qfuture.cpp 30
+*/
+
 /*! \fn template<typename OutputSequence, typename InputIt> QFuture<OutputSequence> QtFuture::whenAll(InputIt first, InputIt last)
 
     \since 6.3

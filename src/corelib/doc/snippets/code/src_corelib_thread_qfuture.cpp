@@ -398,3 +398,37 @@ QtFuture::whenAny(intFuture, stringFuture, voidFuture).then([](const FuturesVari
     ...
 });
 //! [27]
+
+//! [28]
+
+QFuture<QFuture<int>> outerFuture = ...;
+QFuture<int> unwrappedFuture = outerFuture.unwrap();
+
+//! [28]
+
+//! [29]
+
+auto downloadImages = [] (const QUrl &url) {
+    QList<QImage> images;
+    ...
+    return images;
+};
+
+auto processImages = [](const QList<QImage> &images) {
+   return QtConcurrent::mappedReduced(images, scale, reduceImages);
+}
+
+auto show = [](const QImage &image) { ... };
+
+auto future = QtConcurrent::run(downloadImages, url)
+               .then(processImages)
+               .unwrap()
+               .then(show);
+//! [29]
+
+//! [30]
+
+QFuture<QFuture<QFuture<int>>>> outerFuture;
+QFuture<int> unwrappedFuture = outerFuture.unwrap();
+
+//! [30]

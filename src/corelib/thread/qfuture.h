@@ -191,6 +191,14 @@ QT_WARNING_POP
     template<class Function, typename = std::enable_if_t<std::is_invocable_r_v<T, Function>>>
     QFuture<T> onCanceled(QObject *context, Function &&handler);
 
+#if !defined(Q_CLANG_QDOC)
+    template<class U = T, typename = std::enable_if_t<QtPrivate::isQFutureV<U>>>
+    auto unwrap();
+#else
+    template<class U>
+    QFuture<U> unwrap();
+#endif
+
     class const_iterator
     {
     public:
@@ -317,6 +325,8 @@ private:
     template<typename ResultType>
     friend struct QtPrivate::WhenAnyContext;
 
+    friend struct QtPrivate::UnwrapHandler;
+
     using QFuturePrivate =
             std::conditional_t<std::is_same_v<T, void>, QFutureInterfaceBase, QFutureInterface<T>>;
 
@@ -429,6 +439,16 @@ QFuture<T> QFuture<T>::onCanceled(QObject *context, Function &&handler)
     QtPrivate::CanceledHandler<std::decay_t<Function>, T>::create(std::forward<Function>(handler),
                                                                   this, promise, context);
     return promise.future();
+}
+
+template<class T>
+template<class U, typename>
+auto QFuture<T>::unwrap()
+{
+    if constexpr (QtPrivate::isQFutureV<typename QtPrivate::Future<T>::type>)
+        return QtPrivate::UnwrapHandler::unwrapImpl(this).unwrap();
+    else
+        return QtPrivate::UnwrapHandler::unwrapImpl(this);
 }
 
 inline QFuture<void> QFutureInterface<void>::future()
