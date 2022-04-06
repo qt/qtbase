@@ -3720,7 +3720,12 @@ void QGraphicsView::drawBackground(QPainter *painter, const QRectF &rect)
         return;
     }
 
+    const bool wasAa = painter->testRenderHint(QPainter::Antialiasing);
+    if (wasAa)
+        painter->setRenderHints(QPainter::Antialiasing, false);
     painter->fillRect(rect, d->backgroundBrush);
+    if (wasAa)
+        painter->setRenderHints(QPainter::Antialiasing, true);
 }
 
 /*!
