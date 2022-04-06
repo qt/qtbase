@@ -38,7 +38,7 @@ function(qt_print_build_instructions)
         set(local_install_prefix "${CMAKE_STAGING_PREFIX}")
     endif()
 
-    set(msg "")
+    set(msg "\n")
 
     list(APPEND msg "Qt is now configured for building. Just run '${build_command}'\n")
     if(QT_WILL_INSTALL)
