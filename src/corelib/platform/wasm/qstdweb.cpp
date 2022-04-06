@@ -327,8 +327,11 @@ emscripten::val Uint8Array::constructor_()
 // name must be the name as returned by the Event.type property: e.g. "load", "error".
 EventCallback::~EventCallback()
 {
-    m_element.set(contextPropertyName(m_eventName).c_str(), emscripten::val::undefined());
-    m_element.set((std::string("on") + m_eventName).c_str(), emscripten::val::undefined());
+    // Clean up if this instance's callback is still installed on the element
+    if (m_element[contextPropertyName(m_eventName).c_str()].as<intptr_t>() == intptr_t(this)) {
+        m_element.set(contextPropertyName(m_eventName).c_str(), emscripten::val::undefined());
+        m_element.set((std::string("on") + m_eventName).c_str(), emscripten::val::undefined());
+    }
 }
 
 EventCallback::EventCallback(emscripten::val element, const std::string &name, const std::function<void(emscripten::val)> &fn)
