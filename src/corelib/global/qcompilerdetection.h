@@ -1207,6 +1207,26 @@
 #define Q_WEAK_OVERLOAD template <typename = void>
 
 /*
+ * If one wants to add functions that use post-C++17 APIs, one needs to:
+ *
+ * 1) make them fully inline; and
+ * 2) guard them using the necessary feature-testing macros.
+ *
+ * This decouples the C++ version used to build Qt with the one used by
+ * end-user applications; Qt and the application can either choose any C++
+ * version.
+ *
+ * A problem arises on MSVC for member functions of exported classes. Client
+ * code that tries to use such a function will see it as exported, and simply
+ * try to consume the function's *symbol*. However, if Qt has been built in
+ * C++17, it won't have such a symbol, and linking will fail.
+ *
+ * The workaround: declare such functions as function templates.
+ * (Obviously a function template does not need this marker.)
+*/
+#define QT_POST_CXX17_API_IN_EXPORTED_CLASS template <typename = void>
+
+/*
  * Warning/diagnostic handling
  */
 
