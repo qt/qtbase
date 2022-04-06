@@ -303,7 +303,7 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
     if (filters.size() > 0){
         for (int i = 0; i < filters.size(); ++i) {
             QString filter = hideDetails ? [self removeExtensions:filters.at(i)] : filters.at(i);
-            [m_popupButton addItemWithTitle:filter.toNSString()];
+            [m_popupButton.menu addItemWithTitle:filter.toNSString() action:nil keyEquivalent:@""];
         }
         [m_popupButton selectItemAtIndex:0];
         m_panel.accessoryView = m_accessoryView;
@@ -497,7 +497,7 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
                 (filterToUse == -1 && currentFilter.startsWith(selectedFilter)))
                 filterToUse = i;
             QString filter = hideDetails ? [self removeExtensions:currentFilter] : currentFilter;
-            [m_popupButton addItemWithTitle:filter.toNSString()];
+            [m_popupButton.menu addItemWithTitle:filter.toNSString() action:nil keyEquivalent:@""];
         }
         if (filterToUse != -1)
             [m_popupButton selectItemAtIndex:filterToUse];
