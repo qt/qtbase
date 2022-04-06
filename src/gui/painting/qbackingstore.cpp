@@ -227,8 +227,18 @@ void QBackingStore::flush(const QRegion &region, QWindow *window, const QPoint &
 
     Q_ASSERT(window == topLevelWindow || topLevelWindow->isAncestorOf(window, QWindow::ExcludeTransients));
 
-    handle()->flush(window, QHighDpi::toNativeLocalRegion(region, window),
-                                            QHighDpi::toNativeLocalPosition(offset, window));
+    QRegion nativeRegion = QHighDpi::toNativeLocalRegion(region, window);
+    QPoint nativeOffset;
+    if (!offset.isNull()) {
+        nativeOffset = QHighDpi::toNativeLocalPosition(offset, window);
+        // Under fractional DPR, rounding of region and offset may accumulate to an off-by-one
+        QPoint topLeft = region.boundingRect().topLeft() + offset;
+        QPoint nativeTopLeft = QHighDpi::toNativeLocalPosition(topLeft, window);
+        QPoint diff = nativeTopLeft - (nativeRegion.boundingRect().topLeft() + nativeOffset);
+        Q_ASSERT(qMax(qAbs(diff.x()), qAbs(diff.y())) <= 1);
+        nativeRegion.translate(diff);
+    }
+    handle()->flush(window, nativeRegion, nativeOffset);
 }
 
 /*!
