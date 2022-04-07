@@ -59,8 +59,8 @@ QT_BEGIN_NAMESPACE
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2021-11-09 from the
-    Common Locale Data Repository v40
+    This part of the file was generated on 2022-04-07 from the
+    Common Locale Data Repository v41
 
     http://www.unicode.org/cldr/
 
@@ -238,6 +238,7 @@ static const QCalendarLocale locale_data[] = {
       {    75,    66,   141,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// English/Latin/Madagascar
       {    75,    66,   142,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// English/Latin/Malawi
       {    75,    66,   143,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// English/Latin/Malaysia
+      {    75,    66,   144,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// English/Latin/Maldives
       {    75,    66,   146,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// English/Latin/Malta
       {    75,    66,   147,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// English/Latin/Marshall Islands
       {    75,    66,   150,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// English/Latin/Mauritius
