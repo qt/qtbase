@@ -74,6 +74,13 @@ public:
 
     Q_DECLARE_FLAGS(NetWmStates, NetWmState)
 
+    enum RecreationReason {
+        RecreationNotNeeded = 0,
+        WindowStaysOnTopHintChanged = 0x1,
+        WindowStaysOnBottomHintChanged = 0x2
+    };
+    Q_DECLARE_FLAGS(RecreationReasons, RecreationReason)
+
     QXcbWindow(QWindow *window);
     ~QXcbWindow();
 
@@ -281,6 +288,8 @@ protected:
     int m_swapInterval = -1;
 
     qreal m_sizeHintsScaleFactor = 1.0;
+
+    RecreationReasons m_recreationReasons = RecreationNotNeeded;
 };
 
 class QXcbForeignWindow : public QXcbWindow
