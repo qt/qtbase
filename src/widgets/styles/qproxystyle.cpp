@@ -382,13 +382,8 @@ void QProxyStyle::unpolish(QApplication *app)
  */
 bool QProxyStyle::event(QEvent *e)
 {
-    Q_D (QProxyStyle);
-
-    if (e->type() == QEvent::DeferredDelete)
-        return QCommonStyle::event(e);
-
-    d->ensureBaseStyle();
-    return d->baseStyle->event(e);
+    // ### Qt 7: remove this override
+    return QCommonStyle::event(e);
 }
 
 /*!
