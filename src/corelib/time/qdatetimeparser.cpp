@@ -1737,6 +1737,24 @@ QDateTimeParser::findTimeZoneName(QStringRef str, const QDateTime &when) const
     int index = std::distance(str.cbegin(),
                               std::find_if(str.cbegin(), str.cend(), invalidZoneNameCharacter));
 
+    // Limit name fragments (between slashes) to 20 characters.
+    // (Valid time-zone IDs are allowed up to 14 and Android has quirks up to 17.)
+    // Limit number of fragments to six; no known zone name has more than four.
+    int lastSlash = -1;
+    int count = 0;
+    Q_ASSERT(index <= str.size());
+    while (lastSlash < index) {
+        int slash = str.indexOf(QLatin1Char('/'), lastSlash + 1);
+        if (slash < 0)
+            slash = index; // i.e. the end of the candidate text
+        else if (++count > 5)
+            index = slash; // Truncate
+        if (slash - lastSlash > 20)
+            index = lastSlash + 20; // Truncate
+        // If any of those conditions was met, index <= slash, so this exits the loop:
+        lastSlash = slash;
+    }
+
     for (; index > systemLength; --index) {  // Find longest match
         str.truncate(index);
         QTimeZone zone(str.toLatin1());

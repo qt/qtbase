@@ -593,6 +593,14 @@ void QFontDialogPrivate::updateStyles()
                     cstyle.replace(QLatin1String("Oblique"), QLatin1String("Italic"));
                     first = false;
                     goto redo;
+                } else if (cstyle.contains(QLatin1String("Regular"))) {
+                    cstyle.replace(QLatin1String("Regular"), QLatin1String("Normal"));
+                    first = false;
+                    goto redo;
+                } else if (cstyle.contains(QLatin1String("Normal"))) {
+                    cstyle.replace(QLatin1String("Normal"), QLatin1String("Regular"));
+                    first = false;
+                    goto redo;
                 }
             }
             if (!found)

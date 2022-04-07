@@ -851,7 +851,7 @@ const QCalendarBackend *QCalendarBackend::fromEnum(QCalendar::System system)
     This enumerated type is used to specify a choice of calendar system.
 
     \value Gregorian The default calendar, used internationally.
-    \value Julian An ancient Roman calendar with too few leap years.
+    \value Julian An ancient Roman calendar.
     \value Milankovic A revised Julian calendar used by some Orthodox churches.
     \value Jalali The Solar Hijri calendar (also called Persian).
     \value IslamicCivil The (tabular) Islamic Civil calendar.

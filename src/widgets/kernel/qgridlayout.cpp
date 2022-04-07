@@ -149,14 +149,14 @@ public:
     QRect cellRect(int row, int col) const;
 
     inline QLayoutItem *itemAt(int index) const {
-        if (index < things.count())
+        if (index >= 0 && index < things.count())
             return things.at(index)->item();
         else
             return nullptr;
     }
     inline QLayoutItem *takeAt(int index) {
         Q_Q(QGridLayout);
-        if (index < things.count()) {
+        if (index >= 0 && index < things.count()) {
             if (QGridBox *b = things.takeAt(index)) {
                 QLayoutItem *item = b->takeItem();
                 if (QLayout *l = item->layout()) {
@@ -184,7 +184,7 @@ public:
     }
 
     void getItemPosition(int index, int *row, int *column, int *rowSpan, int *columnSpan) const {
-        if (index < things.count()) {
+        if (index >= 0 && index < things.count()) {
             const QGridBox *b =  things.at(index);
             int toRow = b->toRow(rr);
             int toCol = b->toCol(cc);

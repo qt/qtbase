@@ -28,6 +28,7 @@
 
 #include <qtest.h>
 #include <QtCore/qmetatype.h>
+#include <QScopeGuard>
 
 class tst_QGuiMetaType : public QObject
 {
@@ -59,17 +60,20 @@ void tst_QGuiMetaType::constructInPlace_data()
 void tst_QGuiMetaType::constructInPlace()
 {
     QFETCH(int, typeId);
-    int size = QMetaType::sizeOf(typeId);
+    QMetaType type(typeId);
+    int size = type.sizeOf();
     void *storage = qMallocAligned(size, 2 * sizeof(qlonglong));
-    QCOMPARE(QMetaType::construct(typeId, storage, /*copy=*/0), storage);
-    QMetaType::destruct(typeId, storage);
+    auto cleanUp = qScopeGuard([&]() {
+        qFreeAligned(storage);
+    });
+    QCOMPARE(type.construct(storage, /*copy=*/0), storage);
+    type.destruct(storage);
     QBENCHMARK {
         for (int i = 0; i < 100000; ++i) {
-            QMetaType::construct(typeId, storage, /*copy=*/0);
-            QMetaType::destruct(typeId, storage);
+            type.construct(storage, /*copy=*/0);
+            type.destruct(storage);
         }
     }
-    qFreeAligned(storage);
 }
 
 void tst_QGuiMetaType::constructInPlaceCopy_data()
@@ -80,19 +84,22 @@ void tst_QGuiMetaType::constructInPlaceCopy_data()
 void tst_QGuiMetaType::constructInPlaceCopy()
 {
     QFETCH(int, typeId);
-    int size = QMetaType::sizeOf(typeId);
+    QMetaType type(typeId);
+    int size = type.sizeOf();
     void *storage = qMallocAligned(size, 2 * sizeof(qlonglong));
-    void *other = QMetaType::create(typeId);
-    QCOMPARE(QMetaType::construct(typeId, storage, other), storage);
-    QMetaType::destruct(typeId, storage);
+    void *other = type.create();
+    auto cleanUp = qScopeGuard([&]() {
+        type.destroy(other);
+        qFreeAligned(storage);
+    });
+    QCOMPARE(type.construct(storage, other), storage);
+    type.destruct(storage);
     QBENCHMARK {
         for (int i = 0; i < 100000; ++i) {
-            QMetaType::construct(typeId, storage, other);
-            QMetaType::destruct(typeId, storage);
+            type.construct(storage, other);
+            type.destruct(storage);
         }
     }
-    QMetaType::destroy(typeId, other);
-    qFreeAligned(storage);
 }
 
 QTEST_MAIN(tst_QGuiMetaType)

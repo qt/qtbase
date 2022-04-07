@@ -612,7 +612,7 @@ bool QPngHandlerPrivate::readPngHeader()
         png_get_iCCP(png_ptr, info_ptr, &name, &compressionType, &profileData, &profLen);
         colorSpace = QColorSpace::fromIccProfile(QByteArray((const char *)profileData, profLen));
         if (!colorSpace.isValid()) {
-            qWarning() << "QPngHandler: Failed to parse ICC profile";
+            qDebug() << "QPngHandler: Failed to parse ICC profile";
         } else {
             QColorSpacePrivate *csD = QColorSpacePrivate::getWritable(colorSpace);
             if (csD->description.isEmpty())

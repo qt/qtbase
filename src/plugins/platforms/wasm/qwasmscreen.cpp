@@ -210,8 +210,8 @@ void QWasmScreen::updateQScreenAndCanvasRenderSize()
     m_canvas.set("height", canvasSize.height());
 
     QPoint offset;
-    offset.setX(m_canvas["offsetTop"].as<int>());
-    offset.setY(m_canvas["offsetLeft"].as<int>());
+    offset.setX(m_canvas["offsetLeft"].as<int>());
+    offset.setY(m_canvas["offsetTop"].as<int>());
 
     emscripten::val rect = m_canvas.call<emscripten::val>("getBoundingClientRect");
     QPoint position(rect["left"].as<int>() - offset.x(), rect["top"].as<int>() - offset.y());

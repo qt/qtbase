@@ -126,6 +126,7 @@ FILES="
    jdmaster.c
    jdmaster.h
    jdmerge.c
+   jdmerge.h
    jdmrgext.c
    jdmrg565.c
    jdpostct.c

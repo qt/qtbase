@@ -173,8 +173,18 @@ void tst_QPainterPath::clear()
     p1.setFillRule(Qt::WindingFill);
     QVERIFY(p1 != p3);
     p1.clear();
-    QCOMPARE(p1.fillRule(), Qt::OddEvenFill);
+    QVERIFY(p1 != p3);
+    p1.setFillRule(Qt::OddEvenFill);
     QCOMPARE(p1, p2);
+
+    QPainterPath p4;
+    QCOMPARE(p4.fillRule(), Qt::OddEvenFill);
+    p4.setFillRule(Qt::WindingFill);
+    QCOMPARE(p4.fillRule(), Qt::WindingFill);
+    p4.clear();
+    QCOMPARE(p4.fillRule(), Qt::WindingFill);
+    p4 = QPainterPath();
+    QCOMPARE(p4.fillRule(), Qt::OddEvenFill);
 }
 
 void tst_QPainterPath::reserveAndCapacity()

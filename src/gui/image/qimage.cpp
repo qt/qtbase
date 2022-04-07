@@ -1749,10 +1749,14 @@ void QImage::fill(uint pixel)
                             w, d->height, d->bytes_per_line);
         return;
     } else if (d->depth == 16) {
+        if (d->format == Format_RGB444)
+            pixel |= 0xf000;
         qt_rectfill<quint16>(reinterpret_cast<quint16*>(d->data), pixel,
                              0, 0, d->width, d->height, d->bytes_per_line);
         return;
     } else if (d->depth == 24) {
+        if (d->format == Format_RGB666)
+            pixel |= 0xfc0000;
         qt_rectfill<quint24>(reinterpret_cast<quint24*>(d->data), pixel,
                              0, 0, d->width, d->height, d->bytes_per_line);
         return;
@@ -2493,7 +2497,7 @@ void QImage::setPixel(int x, int y, uint index_or_rgb)
         ((uint *)s)[x] = index_or_rgb;
         return;
     case Format_RGB16:
-        ((quint16 *)s)[x] = qConvertRgb32To16(qUnpremultiply(index_or_rgb));
+        ((quint16 *)s)[x] = qConvertRgb32To16(index_or_rgb);
         return;
     case Format_RGBX8888:
         ((uint *)s)[x] = ARGB2RGBA(0xff000000 | index_or_rgb);
@@ -2514,6 +2518,10 @@ void QImage::setPixel(int x, int y, uint index_or_rgb)
     case Format_A2RGB30_Premultiplied:
         ((uint *)s)[x] = qConvertArgb32ToA2rgb30<PixelOrderRGB>(index_or_rgb);
         return;
+    case Format_RGBA64:
+    case Format_RGBA64_Premultiplied:
+        ((QRgba64 *)s)[x] = QRgba64::fromArgb32(index_or_rgb);
+        return;
     case Format_Invalid:
     case NImageFormats:
         Q_ASSERT(false);
@@ -2523,7 +2531,10 @@ void QImage::setPixel(int x, int y, uint index_or_rgb)
     }
 
     const QPixelLayout *layout = &qPixelLayouts[d->format];
-    layout->storeFromARGB32PM(s, &index_or_rgb, x, 1, nullptr, nullptr);
+    if (!hasAlphaChannel())
+        layout->storeFromRGB32(s, &index_or_rgb, x, 1, nullptr, nullptr);
+    else
+        layout->storeFromARGB32PM(s, &index_or_rgb, x, 1, nullptr, nullptr);
 }
 
 /*!

@@ -7,7 +7,12 @@ QMAKE_MAC_SDK_VERSION = $$xcodeSDKInfo(SDKVersion)
 contains(TEMPLATE, .*app) {
     !macx-xcode:if(isEmpty(BUILDS)|build_pass) {
         # Detect changes to the platform SDK
-        QMAKE_EXTRA_VARIABLES += QMAKE_MAC_SDK QMAKE_MAC_SDK_VERSION QMAKE_XCODE_DEVELOPER_PATH
+        QMAKE_EXTRA_VARIABLES += \
+            QMAKE_MAC_SDK \
+            QMAKE_MAC_SDK_VERSION \
+            QMAKE_XCODE_DEVELOPER_PATH \
+            _QMAKE_STASH_ \
+
         QMAKE_EXTRA_INCLUDES += $$shell_quote($$PWD/sdk.mk)
     }
 

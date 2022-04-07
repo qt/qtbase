@@ -62,6 +62,7 @@ private slots:
     void windowsId();
     void isValidId_data();
     void isValidId();
+    void malformed();
     // Backend tests
     void utcTest();
     void icuTest();
@@ -929,6 +930,21 @@ void tst_QTimeZone::isValidId()
 
     QCOMPARE(QTimeZonePrivate::isValidId(input), valid);
 #endif
+}
+
+void tst_QTimeZone::malformed()
+{
+    // Regression test for QTBUG-92808
+    // Strings that look enough like a POSIX zone specifier that the constructor
+    // accepts them, but the specifier is invalid.
+    // Must not crash or trigger assertions when calling offsetFromUtc()
+    const QDateTime now = QDateTime::currentDateTime();
+    QTimeZone barf("QUT4tCZ0 , /");
+    if (barf.isValid())
+        barf.offsetFromUtc(now);
+    barf = QTimeZone("QtC+09,,MA");
+    if (barf.isValid())
+        barf.offsetFromUtc(now);
 }
 
 void tst_QTimeZone::utcTest()

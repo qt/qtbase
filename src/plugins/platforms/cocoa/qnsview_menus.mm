@@ -74,17 +74,20 @@ static bool selectorIsCutCopyPaste(SEL selector)
         return YES;
 
     // Check if a modal dialog is active. If so, enable only menu
-    // items explicitly belonging to this window's own menu bar.
+    // items explicitly belonging to this window's own menu bar, or to the window.
     if (QGuiApplication::modalWindow() && QGuiApplication::modalWindow()->isActive()) {
         QCocoaMenuBar *menubar = nullptr;
+        QCocoaWindow *menuWindow = nullptr;
 
         QObject *menuParent = platformItem->menuParent();
         while (menuParent && !(menubar = qobject_cast<QCocoaMenuBar *>(menuParent))) {
+            menuWindow = qobject_cast<QCocoaWindow *>(menuParent);
             auto *menuObject = dynamic_cast<QCocoaMenuObject *>(menuParent);
-            menuParent = menuObject->menuParent();
+            menuParent = menuObject ? menuObject->menuParent() : nullptr;
         }
 
-        if (!menubar || menubar->cocoaWindow() != self.platformWindow)
+        if ((!menuWindow || menuWindow->window() != QGuiApplication::modalWindow())
+            && (!menubar || menubar->cocoaWindow() != self.platformWindow))
             return NO;
     }
 

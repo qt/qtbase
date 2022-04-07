@@ -70,7 +70,7 @@ bool QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode mode)
         return true;  // we already have a semaphore
 
     if (fileName.isEmpty()) {
-        errorString = QCoreApplication::tr("%1: key is empty", "QSystemSemaphore").arg(QLatin1String("QSystemSemaphore::handle"));
+        errorString = QCoreApplication::translate("%1: key is empty", "QSystemSemaphore").arg(QLatin1String("QSystemSemaphore::handle"));
         error = QSystemSemaphore::KeyError;
         return false;
     }

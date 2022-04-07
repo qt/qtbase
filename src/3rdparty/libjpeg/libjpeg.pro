@@ -9,8 +9,8 @@ CONFIG += \
 MODULE_INCLUDEPATH = $$PWD/src
 MODULE_EXT_HEADERS = $$PWD/src/jpeglib.h \
                      $$PWD/src/jerror.h \
-		     $$PWD/src/jconfig.h \
-		     $$PWD/src/jmorecfg.h
+                     $$PWD/src/jconfig.h \
+                     $$PWD/src/jmorecfg.h
 
 INCLUDEPATH += $$PWD $$PWD/src
 

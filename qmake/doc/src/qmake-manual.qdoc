@@ -3357,7 +3357,7 @@
         \li publisher
         \li Display name of the publisher. Defaults to \c{Default publisher display name}.
     \row
-        \li publisher_id
+        \li publisherid
         \li The publisher's distinguished name (default: \c{CN=MyCN}).
     \row
         \li target

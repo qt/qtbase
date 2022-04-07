@@ -174,7 +174,9 @@ void tst_QMenu::getSetCheck()
 tst_QMenu::tst_QMenu()
     : m_onStatusTipTimerExecuted(false)
 {
+    QApplication::setEffectEnabled(Qt::UI_FadeTooltip, false);
     QApplication::setEffectEnabled(Qt::UI_AnimateMenu, false);
+    QApplication::setEffectEnabled(Qt::UI_AnimateTooltip, false);
 }
 
 void tst_QMenu::initTestCase()

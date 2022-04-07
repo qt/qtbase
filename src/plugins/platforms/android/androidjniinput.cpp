@@ -80,18 +80,18 @@ namespace QtAndroidInput
                                                   candidatesEnd);
     }
 
-    void showSoftwareKeyboard(int left, int top, int width, int height, int inputHints, int enterKeyType)
+    void showSoftwareKeyboard(int left, int top, int width, int height, int editorHeight, int inputHints, int enterKeyType)
     {
         QJNIObjectPrivate::callStaticMethod<void>(applicationClass(),
                                                   "showSoftwareKeyboard",
-                                                  "(IIIIII)V",
+                                                  "(IIIIIII)V",
                                                   left,
                                                   top,
                                                   width,
                                                   height,
+                                                  editorHeight,
                                                   inputHints,
-                                                  enterKeyType
-                                                 );
+                                                  enterKeyType);
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
         qDebug() << "@@@ SHOWSOFTWAREKEYBOARD" << left << top << width << height << inputHints << enterKeyType;
 #endif
@@ -129,6 +129,17 @@ namespace QtAndroidInput
                                                   mode, editMenuPos.x(), editMenuPos.y(), editButtons,
                                                   cursor.x(), cursor.y(),
                                                   anchor.x(), anchor.y(), rtl);
+    }
+
+    void updateInputItemRectangle(int left, int top, int width, int height)
+    {
+        QJNIObjectPrivate::callStaticMethod<void>(applicationClass(),
+                                                  "updateInputItemRectangle",
+                                                  "(IIII)V",
+                                                  left,
+                                                  top,
+                                                  width,
+                                                  height);
     }
 
     static void mouseDown(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint x, jint y)
@@ -516,7 +527,7 @@ namespace QtAndroidInput
             return Qt::Key_Search;
 
         case 0x00000055: // KEYCODE_MEDIA_PLAY_PAUSE
-            return Qt::Key_MediaPlay;
+            return Qt::Key_MediaTogglePlayPause;
 
         case 0x00000056: // KEYCODE_MEDIA_STOP
             return Qt::Key_MediaStop;

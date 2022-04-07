@@ -62,7 +62,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     QFile file(":/default.txt");
     file.open(QIODevice::ReadOnly);
-    TreeModel *model = new TreeModel(headers, file.readAll());
+    TreeModel *model = new TreeModel(headers, file.readAll(), this);
     file.close();
 
     view->setModel(model);

@@ -1677,7 +1677,7 @@ void QTextHtmlParser::applyAttributes(const QStringList &attributes)
                         node->tableCellRowSpan = qMax(1, node->tableCellRowSpan);
                 } else if (key == QLatin1String("colspan")) {
                     if (setIntAttribute(&node->tableCellColSpan, value))
-                        node->tableCellColSpan = qMax(1, node->tableCellColSpan);
+                        node->tableCellColSpan = qBound(1, node->tableCellColSpan, 20480);
                 }
                 break;
             case Html_table:

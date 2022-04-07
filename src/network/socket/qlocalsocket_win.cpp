@@ -255,13 +255,10 @@ void QLocalSocketPrivate::_q_pipeClosed()
     emit q->disconnected();
 
     pipeReader->stop();
+    delete pipeWriter;
+    pipeWriter = nullptr;
     destroyPipeHandles();
     handle = INVALID_HANDLE_VALUE;
-
-    if (pipeWriter) {
-        delete pipeWriter;
-        pipeWriter = 0;
-    }
 }
 
 qint64 QLocalSocket::bytesAvailable() const

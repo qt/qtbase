@@ -46,6 +46,7 @@
 #include "qiosscreen.h"
 #include "qiosviewcontroller.h"
 #include "quiview.h"
+#include "qiosinputcontext.h"
 
 #include <QtGui/private/qwindow_p.h>
 #include <qpa/qplatformintegration.h>

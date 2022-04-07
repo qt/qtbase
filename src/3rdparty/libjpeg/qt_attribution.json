@@ -6,19 +6,20 @@
 
     "Description": "The Independent JPEG Group's JPEG software",
     "Homepage": "http://libjpeg-turbo.virtualgl.org/",
-    "Version": "2.0.5",
+    "Version": "2.0.6",
     "License": "Independent JPEG Group License",
     "LicenseId": "IJG",
     "LicenseFile": "LICENSE",
     "Copyright": "Copyright (C) 2009-2020 D. R. Commander
-Copyright (C) 2011-2016 Siarhei Siamashka
+Copyright (C) 2015, 2020 Google, Inc.
+Copyright (C) 2019 Arm Limited
 Copyright (C) 2015-2016, 2018 Matthieu Darbois
+Copyright (C) 2011-2016 Siarhei Siamashka
 Copyright (C) 2015 Intel Corporation
-Copyright (C) 2015 Google, Inc.
+Copyright (C) 2013-2014 Linaro Limited
 Copyright (C) 2013-2014 MIPS Technologies, Inc.
-Copyright (C) 2013 Linaro Limited
+Copyright (C) 2009, 2012 Pierre Ossman for Cendio AB
 Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies)
-Copyright (C) 2009 Pierre Ossman for Cendio AB
 Copyright (C) 1999-2006 MIYASAKA Masaru
-Copyright (C) 1991-2016 Thomas G. Lane, Guido Vollbeding"
+Copyright (C) 1991-2017 Thomas G. Lane, Guido Vollbeding"
 }

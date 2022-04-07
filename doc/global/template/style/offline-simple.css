@@ -8,10 +8,6 @@ pre, .LegaleseLeft {
   overflow-x:auto;
 }
 
-pre a[href] {
-  color: #5caa15;
-}
-
 p {
   width: 70%;
   margin: 15px 0px 10px 15px;
@@ -20,16 +16,6 @@ p {
 table p {
   margin: 0px;
   padding: 0px;
-}
-
-a[href] {
-  color: #007330;
-  text-decoration: none;
-}
-
-/* Different color for ext. links */
-a[href|="http://"], a[href|="https://"] {
-    color: #6bb8db;
 }
 
 h1.title {

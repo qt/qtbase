@@ -38,14 +38,6 @@ QWasmOpenGLContext::QWasmOpenGLContext(const QSurfaceFormat &format)
     : m_requestedFormat(format)
 {
     m_requestedFormat.setRenderableType(QSurfaceFormat::OpenGLES);
-
-    // if we set one, we need to set the other as well since in webgl, these are tied together
-    if (format.depthBufferSize() < 0 && format.stencilBufferSize() > 0)
-       m_requestedFormat.setDepthBufferSize(16);
-
-   if (format.stencilBufferSize() < 0 && format.depthBufferSize() > 0)
-       m_requestedFormat.setStencilBufferSize(8);
-
 }
 
 QWasmOpenGLContext::~QWasmOpenGLContext()
@@ -105,14 +97,10 @@ EMSCRIPTEN_WEBGL_CONTEXT_HANDLE QWasmOpenGLContext::createEmscriptenContext(cons
     attributes.majorVersion = format.majorVersion() - 1;
     attributes.minorVersion = format.minorVersion();
 
-    // WebGL doesn't allow separate attach buffers to STENCIL_ATTACHMENT and DEPTH_ATTACHMENT
-    // we need both or none
-    bool useDepthStencil = (format.depthBufferSize() > 0 || format.stencilBufferSize() > 0);
-
     // WebGL offers enable/disable control but not size control for these
     attributes.alpha = format.alphaBufferSize() > 0;
-    attributes.depth = useDepthStencil;
-    attributes.stencil = useDepthStencil;
+    attributes.depth = format.depthBufferSize() > 0;
+    attributes.stencil = format.stencilBufferSize() > 0;
 
     QByteArray convasSelector = "#" + canvasId.toUtf8();
     EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context = emscripten_webgl_create_context(convasSelector.constData(), &attributes);

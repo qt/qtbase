@@ -116,6 +116,7 @@ private Q_SLOTS:
     void shouldPropagateDropBetweenItemsAtModelBoundary();
     void shouldPropagateDropAfterLastRow_data();
     void shouldPropagateDropAfterLastRow();
+    void qtbug91788();
 
 private:
     QStandardItemModel mod;
@@ -453,6 +454,17 @@ void tst_QConcatenateTablesProxyModel::shouldUseSmallestColumnCount()
     const QModelIndex indexD = pm.mapFromSource(mod2.index(0, 0));
     QVERIFY(indexD.isValid());
     QCOMPARE(indexD, pm.index(1, 0));
+
+    // Test setData in an ignored column (QTBUG-91253)
+    QSignalSpy dataChangedSpy(&pm, SIGNAL(dataChanged(QModelIndex,QModelIndex)));
+    mod.setData(mod.index(0, 1), "b");
+    QCOMPARE(dataChangedSpy.count(), 0);
+
+    // Test dataChanged across all columns, some visible, some ignored
+    mod.dataChanged(mod.index(0, 0), mod.index(0, 2));
+    QCOMPARE(dataChangedSpy.count(), 1);
+    QCOMPARE(dataChangedSpy.at(0).at(0).toModelIndex(), pm.index(0, 0));
+    QCOMPARE(dataChangedSpy.at(0).at(1).toModelIndex(), pm.index(0, 0));
 }
 
 void tst_QConcatenateTablesProxyModel::shouldIncreaseColumnCountWhenRemovingFirstModel()
@@ -816,6 +828,19 @@ void tst_QConcatenateTablesProxyModel::shouldPropagateDropAfterLastRow()
     QCOMPARE(extractRowTexts(&pm, 2), QStringLiteral("DEF"));
     QCOMPARE(extractRowTexts(&pm, 3), QStringLiteral("456"));
 
+}
+
+void tst_QConcatenateTablesProxyModel::qtbug91788()
+{
+    QConcatenateTablesProxyModel proxyConcat;
+    QStringList strList{QString("one"),QString("two")};
+    QStringListModel strListModelA(strList);
+    QSortFilterProxyModel proxyFilter;
+    proxyFilter.setSourceModel(&proxyConcat);
+
+    proxyConcat.addSourceModel(&strListModelA);
+    proxyConcat.removeSourceModel(&strListModelA); // This should not assert
+    QCOMPARE(proxyConcat.columnCount(), 0);
 }
 
 QTEST_GUILESS_MAIN(tst_QConcatenateTablesProxyModel)

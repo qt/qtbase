@@ -138,7 +138,7 @@ public:
             return 1.0f;
         if (!m_table16.isEmpty()) {
             float v = x * 65535.0f;
-            uint32_t i = std::floor(resultLargerThan * (m_tableSize - 1)) + 1;
+            uint32_t i = std::floor(resultLargerThan * (m_tableSize - 1));
             for ( ; i < m_tableSize; ++i) {
                 if (m_table16[i] > v)
                     break;
@@ -147,14 +147,14 @@ public:
                 return 1.0f;
             float y1 = m_table16[i - 1];
             float y2 = m_table16[i];
-            Q_ASSERT(x >= y1 && x < y2);
+            Q_ASSERT(v >= y1 && v <= y2);
             float fr = (v - y1) / (y2 - y1);
             return (i + fr) * (1.0f / (m_tableSize - 1));
 
         }
         if (!m_table8.isEmpty()) {
             float v = x * 255.0f;
-            uint32_t i = std::floor(resultLargerThan * (m_tableSize - 1)) + 1;
+            uint32_t i = std::floor(resultLargerThan * (m_tableSize - 1));
             for ( ; i < m_tableSize; ++i) {
                 if (m_table8[i] > v)
                     break;
@@ -163,7 +163,7 @@ public:
                 return 1.0f;
             float y1 = m_table8[i - 1];
             float y2 = m_table8[i];
-            Q_ASSERT(x >= y1 && x < y2);
+            Q_ASSERT(v >= y1 && v <= y2);
             float fr = (v - y1) / (y2 - y1);
             return (i + fr) * (1.0f / (m_tableSize - 1));
         }

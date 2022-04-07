@@ -52,7 +52,7 @@
 #include <array>
 
 QT_BEGIN_NAMESPACE
-Q_LOGGING_CATEGORY(lcIcc, "qt.gui.icc")
+Q_LOGGING_CATEGORY(lcIcc, "qt.gui.icc", QtWarningMsg)
 
 struct ICCProfileHeader
 {
@@ -165,7 +165,7 @@ struct XYZTagData : GenericTagData {
 
 struct CurvTagData : GenericTagData {
     quint32_be valueCount;
-    quint16_be value[1];
+    // followed by curv values: quint16_be[]
 };
 
 struct ParaTagData : GenericTagData {
@@ -237,18 +237,20 @@ static bool isValidIccProfile(const ICCProfileHeader &header)
     }
 
     if (header.profileClass != uint(ProfileClass::Input)
-        && header.profileClass != uint(ProfileClass::Display)) {
-        qCWarning(lcIcc, "Unsupported ICC profile class %x", quint32(header.profileClass));
+        && header.profileClass != uint(ProfileClass::Display)
+        && (header.profileClass != uint(ProfileClass::Output)
+            || header.inputColorSpace != uint(ColorSpaceType::Gray)))  {
+        qCInfo(lcIcc, "Unsupported ICC profile class 0x%x", quint32(header.profileClass));
         return false;
     }
     if (header.inputColorSpace != uint(ColorSpaceType::Rgb)
         && header.inputColorSpace != uint(ColorSpaceType::Gray)) {
-        qCWarning(lcIcc, "Unsupported ICC input color space %x", quint32(header.inputColorSpace));
+        qCInfo(lcIcc, "Unsupported ICC input color space 0x%x", quint32(header.inputColorSpace));
         return false;
     }
     if (header.pcs != 0x58595a20 /* 'XYZ '*/) {
         // ### support PCSLAB
-        qCWarning(lcIcc, "Unsupported ICC profile connection space %x", quint32(header.pcs));
+        qCInfo(lcIcc, "Unsupported ICC profile connection space 0x%x", quint32(header.pcs));
         return false;
     }
 
@@ -468,25 +470,26 @@ bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc &gamma
     const GenericTagData trcData = qFromUnaligned<GenericTagData>(data.constData()
                                                                   + tagEntry.offset);
     if (trcData.type == quint32(Tag::curv)) {
+        Q_STATIC_ASSERT(sizeof(CurvTagData) == 12);
         const CurvTagData curv = qFromUnaligned<CurvTagData>(data.constData() + tagEntry.offset);
         if (curv.valueCount > (1 << 16))
             return false;
         if (tagEntry.size - 12 < 2 * curv.valueCount)
             return false;
+        const auto valueOffset = tagEntry.offset + sizeof(CurvTagData);
         if (curv.valueCount == 0) {
             gamma.m_type = QColorTrc::Type::Function;
             gamma.m_fun = QColorTransferFunction(); // Linear
         } else if (curv.valueCount == 1) {
-            float g = curv.value[0] * (1.0f / 256.0f);
+            const quint16 v = qFromBigEndian<quint16>(data.constData() + valueOffset);
             gamma.m_type = QColorTrc::Type::Function;
-            gamma.m_fun = QColorTransferFunction::fromGamma(g);
+            gamma.m_fun = QColorTransferFunction::fromGamma(v * (1.0f / 256.0f));
         } else {
             QVector<quint16> tabl;
             tabl.resize(curv.valueCount);
             static_assert(sizeof(GenericTagData) == 2 * sizeof(quint32_be),
                           "GenericTagData has padding. The following code is a subject to UB.");
-            const auto offset = tagEntry.offset + sizeof(GenericTagData) + sizeof(quint32_be);
-            qFromBigEndian<quint16>(data.constData() + offset, curv.valueCount, tabl.data());
+            qFromBigEndian<quint16>(data.constData() + valueOffset, curv.valueCount, tabl.data());
             QColorTransferTable table = QColorTransferTable(curv.valueCount, std::move(tabl));
             QColorTransferFunction curve;
             if (!table.checkValidity()) {
@@ -702,7 +705,7 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
         if (!tagIndex.contains(Tag::rXYZ) || !tagIndex.contains(Tag::gXYZ) || !tagIndex.contains(Tag::bXYZ) ||
             !tagIndex.contains(Tag::rTRC) || !tagIndex.contains(Tag::gTRC) || !tagIndex.contains(Tag::bTRC) ||
             !tagIndex.contains(Tag::wtpt)) {
-            qCWarning(lcIcc) << "fromIccProfile: Unsupported ICC profile - not three component matrix based";
+            qCInfo(lcIcc) << "fromIccProfile: Unsupported ICC profile - not three component matrix based";
             return false;
         }
     } else {
@@ -756,12 +759,12 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
         } else {
             colorspaceDPtr->primaries = QColorSpace::Primaries::Custom;
             // Calculate chromaticity from xyz (assuming y == 1.0f).
-            float y = 1.0f / (1.0f + whitePoint.z - whitePoint.x);
+            float y = 1.0f / (1.0f + whitePoint.z + whitePoint.x);
             float x = whitePoint.x * y;
             QColorSpacePrimaries primaries(QColorSpace::Primaries::SRgb);
             primaries.whitePoint = QPointF(x,y);
             if (!primaries.areValid()) {
-                qCWarning(lcIcc) << "fromIccProfile: Invalid ICC profile - invalid white-point";
+                qCWarning(lcIcc, "fromIccProfile: Invalid ICC profile - invalid white-point(%f, %f)", x, y);
                 return false;
             }
             colorspaceDPtr->toXyz = primaries.toXyzMatrix();

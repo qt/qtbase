@@ -227,13 +227,11 @@
         self.keyboardType = UIKeyboardTypeEmailAddress;
     else if (hints & Qt::ImhDigitsOnly)
         self.keyboardType = UIKeyboardTypeNumberPad;
-    else if (hints & Qt::ImhFormattedNumbersOnly)
-        self.keyboardType = UIKeyboardTypeDecimalPad;
     else if (hints & Qt::ImhDialableCharactersOnly)
         self.keyboardType = UIKeyboardTypePhonePad;
     else if (hints & Qt::ImhLatinOnly)
         self.keyboardType = UIKeyboardTypeASCIICapable;
-    else if (hints & Qt::ImhPreferNumbers)
+    else if (hints & (Qt::ImhPreferNumbers | Qt::ImhFormattedNumbersOnly))
         self.keyboardType = UIKeyboardTypeNumbersAndPunctuation;
     else
         self.keyboardType = UIKeyboardTypeDefault;

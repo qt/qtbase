@@ -90,7 +90,6 @@ private slots:
     void yearsZeroToNinetyNine();
     void printNegativeYear_data() const;
     void printNegativeYear() const;
-    void roundtripGermanLocale() const;
 #if QT_CONFIG(textdate) && QT_DEPRECATED_SINCE(5, 10)
     void shortDayName() const;
     void standaloneShortDayName() const;
@@ -100,6 +99,7 @@ private slots:
     void standaloneShortMonthName() const;
     void longMonthName() const;
     void standaloneLongMonthName() const;
+    void roundtripString() const;
 #endif // textdate
     void roundtrip() const;
     void qdebug() const;
@@ -1484,16 +1484,6 @@ void tst_QDate::printNegativeYear() const
     QCOMPARE(date.toString(QLatin1String("yyyy")), expect);
 }
 
-void tst_QDate::roundtripGermanLocale() const
-{
-    /* This code path should not result in warnings. */
-    const QDate theDate(QDate::currentDate());
-    theDate.fromString(theDate.toString(Qt::TextDate), Qt::TextDate);
-
-    const QDateTime theDateTime(QDateTime::currentDateTime());
-    theDateTime.fromString(theDateTime.toString(Qt::TextDate), Qt::TextDate);
-}
-
 #if QT_CONFIG(textdate) && QT_DEPRECATED_SINCE(5, 10)
 QT_WARNING_PUSH // the methods tested here are all deprecated
 QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
@@ -1626,6 +1616,17 @@ void tst_QDate::standaloneLongMonthName() const
     }
 }
 QT_WARNING_POP
+
+void tst_QDate::roundtripString() const
+{
+    /* This code path should not result in warnings, no matter what locale is set. */
+    const QDate date(QDate::currentDate());
+    QCOMPARE(date.fromString(date.toString(Qt::TextDate), Qt::TextDate), date);
+
+    const QDateTime now(QDateTime::currentDateTime());
+    const QDateTime when = now.addMSecs(-now.time().msec()); // TextDate rounds to whole seconds.
+    QCOMPARE(when.fromString(when.toString(Qt::TextDate), Qt::TextDate), when);
+}
 #endif // textdate
 
 void tst_QDate::roundtrip() const

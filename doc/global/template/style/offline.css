@@ -1,6 +1,6 @@
 body {
     font: normal 400 14px/1.2 Arial;
-    margin-top: 85px;
+    margin-top: 50px;
     font-family: Arial, Helvetica;
     text-align: left;
     margin-left: 5px;
@@ -232,7 +232,6 @@ footer and license
 .navigationbar {
     display: block;
     position: relative;
-    top: -20px;
     border-top: 1px solid #cecece;
     border-bottom: 1px solid #cecece;
     background-color: #F2F2F2;
@@ -320,18 +319,17 @@ headers
 @media screen {
     .title {
         color: #313131;
-        font-size: 24px;
+        font-size: 20px;
         font-weight: normal;
         left: 0;
-        padding-bottom: 20px;
+        padding-bottom: 15px;
         padding-left: 10px;
-        padding-top: 20px;
+        padding-top: 15px;
         position: absolute;
         right: 0;
         top: 0;
         background-color: #E6E6E6;
         border-bottom: 1px #CCC solid;
-        border-top: 2px #CCC solid;
         font-weight: bold;
         margin-left: 0px;
         margin-right: 0px;
@@ -351,7 +349,7 @@ h2, p.h2 {
     font-weight: 100;
     background-color: #F2F3F4;
     padding: 4px;
-    margin-bottom: 30px;
+    margin-bottom: 15px;
     margin-top: 30px;
     border-top: #E0E0DE 1px solid;
     border-bottom: #E0E0DE 1px solid;
@@ -366,7 +364,7 @@ h3 {
     font: 500 14px/1.2 Arial;
     font-weight: 100;
     text-decoration: underline;
-    margin-bottom: 30px;
+    margin-bottom: 15px;
     margin-top: 30px;
 }
 
@@ -385,7 +383,7 @@ h3.fn, span.fn {
     max-width: 75%;
     font-size: 14px;
     margin: 0px;
-    margin-top: 45px;
+    margin-top: 30px;
 }
 .fngroup h3.fngroupitem {
     margin-bottom: 5px;
@@ -659,6 +657,7 @@ Content table
         width: 200px;
         text-align: left;
         margin-left: 20px;
+        margin-top: 5px;
     }
 }
 

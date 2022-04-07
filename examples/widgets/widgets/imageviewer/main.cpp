@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     commandLineParser.process(QCoreApplication::arguments());
     ImageViewer imageViewer;
     if (!commandLineParser.positionalArguments().isEmpty()
-        && !imageViewer.loadFile(commandLineParser.positionalArguments().front())) {
+        && !imageViewer.loadFile(commandLineParser.positionalArguments().constFirst())) {
         return -1;
     }
     imageViewer.show();

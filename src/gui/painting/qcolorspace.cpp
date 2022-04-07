@@ -331,6 +331,7 @@ void QColorSpacePrivate::setTransferFunction()
     }
     trc[1] = trc[0];
     trc[2] = trc[0];
+    lut.generated.storeRelease(0);
 }
 
 QColorTransform QColorSpacePrivate::transformationToColorSpace(const QColorSpacePrivate *out) const

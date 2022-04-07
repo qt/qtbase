@@ -1701,22 +1701,25 @@ QT_WARNING_POP
         return rfcDateImpl(string).date;
     default:
     case Qt::TextDate: {
+        // Accept only "ddd MMM d yyyy" form (in contrast with QDateTime), e.g. "Sun Dec 1 1974"
         QVector<QStringRef> parts = string.splitRef(QLatin1Char(' '), Qt::SkipEmptyParts);
-
-        if (parts.count() != 4)
+        const int count = parts.count();
+        bool ok = count > 3;
+        int year = ok ? parts.at(count - 1).toInt(&ok) : 0;
+        int day = ok ? parts.at(count - 2).toInt(&ok) : 0;
+        if (!ok || !day || !year)
             return QDate();
 
-        bool ok = false;
-        int year = parts.at(3).toInt(&ok);
-        int day = ok ? parts.at(2).toInt(&ok) : 0;
-        if (!ok || !day)
-            return QDate();
-
-        const int month = fromShortMonthName(parts.at(1), year);
-        if (month == -1) // Month name matches no English or localised name.
-            return QDate();
-
-        return QDate(year, month, day);
+        // Some locales have multi-word month names:
+        int i = count - 3;
+        QString monthName = parts.at(i).toString();
+        while (i > 0) {
+            const int month = fromShortMonthName(monthName, year);
+            if (month > 0) // Month name matches an English or localised name.
+                return QDate(year, month, day);
+            monthName = parts.at(--i) + QLatin1Char(' ') + monthName;
+        }
+        return QDate();
         }
     case Qt::ISODate:
         // Semi-strict parsing, must be long enough and have punctuators as separators
@@ -5378,49 +5381,66 @@ QT_WARNING_POP
     case Qt::TextDate: {
         QVector<QStringRef> parts = string.splitRef(QLatin1Char(' '), Qt::SkipEmptyParts);
 
-        if ((parts.count() < 5) || (parts.count() > 6))
+        const int count = parts.count();
+        if (count < 5)
             return QDateTime();
 
-        // Accept "Sun Dec 1 13:02:00 1974" and "Sun 1. Dec 13:02:00 1974"
+        // Accept "Sun Dec 1 13:02:00 1974" and "Sun 1. Dec 13:02:00 1974" with
+        // optional GMT-based zone-suffix, with time and year in either order;
+        // and some locales have spaces even in short names of months and days.
+        int tail = count - 1, zonePart = 0;
+        if (parts.at(tail).startsWith(QLatin1String("GMT"), Qt::CaseInsensitive))
+            zonePart = tail--;
 
         // Year and time can be in either order.
         // Guess which by looking for ':' in the time
-        int yearPart = 3;
-        int timePart = 3;
-        if (parts.at(3).contains(QLatin1Char(':')))
-            yearPart = 4;
-        else if (parts.at(4).contains(QLatin1Char(':')))
-            timePart = 4;
+        int yearPart = tail;
+        int timePart = tail;
+        if (parts.at(timePart).contains(QLatin1Char(':')))
+            yearPart--;
+        else if (parts.at(timePart - 1).contains(QLatin1Char(':')))
+            timePart--;
         else
             return QDateTime();
 
-        int month = 0;
-        int day = 0;
-        bool ok = false;
-
-        int year = parts.at(yearPart).toInt(&ok);
-        if (!ok || year == 0)
-            return QDateTime();
-
-        // Next try month then day
-        month = fromShortMonthName(parts.at(1), year);
-        if (month)
-            day = parts.at(2).toInt(&ok);
-
-        // If failed, try day then month
-        if (!ok || !month || !day) {
-            month = fromShortMonthName(parts.at(2), year);
-            if (month) {
-                QStringRef dayStr = parts.at(1);
-                if (dayStr.endsWith(QLatin1Char('.'))) {
-                    dayStr = dayStr.left(dayStr.size() - 1);
-                    day = dayStr.toInt(&ok);
-                }
-            }
+        int dayPart = tail - 2; // but may be earlier, with a comma after:
+        for (int i = 1; i < dayPart; i++) {
+            if (parts.at(i).endsWith(QLatin1Char('.')))
+                dayPart = i; // exits the loop
         }
 
-        // If both failed, give up
-        if (!ok || !month || !day)
+        bool ok = false;
+        int year = parts.at(yearPart).toInt(&ok);
+        int day = 0;
+
+        if (ok && year) {
+            QStringRef dayStr = parts.at(dayPart);
+            if (dayStr.endsWith(QLatin1Char('.')))
+                dayStr.chop(1);
+            day = dayStr.toInt(&ok);
+        }
+        if (!ok || !year || !day)
+            return QDateTime();
+
+        int month = 0;
+        if (dayPart < tail - 2) {
+            // Easy case, month is the parts from dayPart + 1 to count - 3
+            int i = dayPart + 1;
+            QString monthName = parts.at(i).toString();
+            while (++i < tail - 1)
+                monthName += QLatin1Char(' ') + parts.at(i);
+            month = fromShortMonthName(monthName, year);
+        } else {
+            int i = dayPart - 1;
+            QString monthName = parts.at(i).toString();
+            while (i > 0) {
+                month = fromShortMonthName(monthName, year);
+                if (month > 0)
+                    break;
+                monthName = parts.at(--i) + QLatin1Char(' ') + monthName;
+            }
+        }
+        if (month <= 0)
             return QDateTime();
 
         QDate date(year, month, day);
@@ -5464,21 +5484,15 @@ QT_WARNING_POP
         if (!time.isValid())
             return QDateTime();
 
-        if (parts.count() == 5)
+        if (!zonePart)
             return QDateTime(date, time, Qt::LocalTime);
 
-        QStringView tz = parts.at(5);
-        if (!tz.startsWith(QLatin1String("GMT"), Qt::CaseInsensitive))
-            return QDateTime();
-        tz = tz.mid(3);
-        if (!tz.isEmpty()) {
-            int offset = fromOffsetString(tz, &ok);
-            if (!ok)
-                return QDateTime();
-            return QDateTime(date, time, Qt::OffsetFromUTC, offset);
-        } else {
+        const QStringView tz = parts.at(zonePart).mid(3);
+        if (tz.isEmpty())
             return QDateTime(date, time, Qt::UTC);
-        }
+
+        int offset = fromOffsetString(tz, &ok);
+        return ok ? QDateTime(date, time, Qt::OffsetFromUTC, offset) : QDateTime();
     }
     }
 

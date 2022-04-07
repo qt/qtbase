@@ -116,5 +116,22 @@ installed|if(!not_installed:qtConfig(static)) {
     pri_lib_replace.CONFIG = path
     pri_lib_replace.filename = qt_ext_$${MODULE}.pri
     QMAKE_INSTALL_REPLACE += pri_header_replace pri_lib_replace
+    if(msvc|qtConfig(debug_and_release)): {
+        rpl_lib_target = $$prefix$${TARGET}.$$suffix
+        pri_lib_release_replace.match = $$DESTDIR/$${rpl_lib_target}
+        pri_lib_release_replace.replace = $$qqt_dir/$${rpl_lib_target}
+        pri_lib_release_replace.CONFIG = path
+        pri_lib_release_replace.filename = qt_ext_$${MODULE}.pri
+        QMAKE_INSTALL_REPLACE += pri_lib_release_replace
+        win32: \
+            rpl_lib_target = $$prefix$${TARGET}d.$$suffix
+        else: darwin: \
+            rpl_lib_target = $$prefix$${TARGET}_debug.$$suffix
+        pri_lib_debug_replace.match = $$DESTDIR/$${rpl_lib_target}
+        pri_lib_debug_replace.replace = $$qqt_dir/$${rpl_lib_target}
+        pri_lib_debug_replace.CONFIG = path
+        pri_lib_debug_replace.filename = qt_ext_$${MODULE}.pri
+        QMAKE_INSTALL_REPLACE += pri_lib_debug_replace
+    }
     load(qt_installs)
 }
