@@ -636,14 +636,13 @@ void QSettingsPrivate::iniEscapedString(const QString &str, QByteArray &result)
                     && !str.startsWith("@Variant("_L1)
                     && !str.startsWith("@DateTime("_L1);
 
-    qsizetype i;
-    qsizetype startPos = result.size();
-
     QStringEncoder toUtf8(QStringEncoder::Utf8);
 
+    qsizetype startPos = result.size();
     result.reserve(startPos + str.size() * 3 / 2);
+
     const QChar *unicode = str.unicode();
-    for (i = 0; i < str.size(); ++i) {
+    for (qsizetype i = 0; i < str.size(); ++i) {
         uint ch = unicode[i].unicode();
         if (ch == ';' || ch == ',' || ch == '=')
             needsQuotes = true;
