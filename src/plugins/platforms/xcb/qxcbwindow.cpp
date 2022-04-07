@@ -92,6 +92,8 @@ enum {
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcQpaWindow, "qt.qpa.window");
+
 Q_DECLARE_TYPEINFO(xcb_rectangle_t, Q_PRIMITIVE_TYPE);
 
 #undef FocusIn
@@ -539,6 +541,7 @@ void QXcbWindow::destroy()
     }
 
     m_mapped = false;
+    m_recreationReasons = RecreationNotNeeded;
 
     if (m_pendingSyncRequest)
         m_pendingSyncRequest->invalidate();
@@ -673,6 +676,11 @@ void QXcbWindow::setVisible(bool visible)
 void QXcbWindow::show()
 {
     if (window()->isTopLevel()) {
+        if (m_recreationReasons != RecreationNotNeeded) {
+            qCDebug(lcQpaWindow) << "QXcbWindow: need to recreate window" << window() << m_recreationReasons;
+            create();
+            m_recreationReasons = RecreationNotNeeded;
+        }
 
         // update WM_NORMAL_HINTS
         propagateSizeHints();
@@ -887,6 +895,12 @@ void QXcbWindow::setWindowFlags(Qt::WindowFlags flags)
         flags |= Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::X11BypassWindowManagerHint;
     if (type == Qt::Popup)
         flags |= Qt::X11BypassWindowManagerHint;
+
+    Qt::WindowFlags oldflags = window()->flags();
+    if ((oldflags & Qt::WindowStaysOnTopHint) != (flags & Qt::WindowStaysOnTopHint))
+        m_recreationReasons |= WindowStaysOnTopHintChanged;
+    if ((oldflags & Qt::WindowStaysOnBottomHint) != (flags & Qt::WindowStaysOnBottomHint))
+        m_recreationReasons |= WindowStaysOnBottomHintChanged;
 
     const quint32 mask = XCB_CW_OVERRIDE_REDIRECT | XCB_CW_EVENT_MASK;
     const quint32 values[] = {
