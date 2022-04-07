@@ -83,10 +83,6 @@
 
 #include <memory>
 
-#ifdef Q_OS_LINUX
-#include "private/qnativesocketengine_p.h"
-#endif // Q_OS_LINUX
-
 #include "private/qhostinfo_p.h"
 
 #include "../../../network-settings.h"
