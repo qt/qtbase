@@ -239,6 +239,24 @@ class QtBase(ConanFile):
             else:
                 raise QtConanError("Unknown build_type: {0}".format(self.settings.build_type))
 
+        if self.settings.os == "Android":
+            if self.options.get_safe("android_sdk_version") == None:
+                cmake_args_qtbase = str(self.options.get_safe("cmake_args_qtbase"))
+                sdk_ver = self._shared.parse_android_sdk_version(cmake_args_qtbase)
+                if sdk_ver:
+                    print("'android_sdk_version' not given. Deduced version: {0}".format(sdk_ver))
+                    self.options.android_sdk_version = sdk_ver
+                else:
+                    # TODO, for now we have no clean means to query the Android SDK version from
+                    # Qt build system so we just exclude the "android_sdk" from the package_id.
+                    print("Can't deduce 'android_sdk_version'. Excluding it from 'package_id'")
+                    delattr(self.info.options, "android_sdk_version")
+            if self.options.get_safe("android_ndk_version") == None:
+                ndk_ver = str(self.options.get_safe("android_ndk"))
+                ndk_ver = self._shared.parse_android_ndk_version(Path(ndk_ver, strict=True))
+                print("'android_ndk_version' not given. Deduced version: {0}".format(ndk_ver))
+                self.options.android_ndk_version = ndk_ver
+
     def build(self):
         self._shared.build_env_wrap(self, _build_qtbase)
 
@@ -268,9 +286,6 @@ class QtBase(ConanFile):
         # Enable 'qt-conan-common' updates on client side with $conan install .. --update
         self.info.python_requires.recipe_revision_mode()
 
-        if self.settings.os == "Android":
-            self.filter_package_id_for_android()
-
         # Remove those configure(.bat) options which should not affect package_id.
         # These point to local file system paths and in order to re-use pre-built
         # binaries (by Qt CI) by others these should not affect the 'package_id'
@@ -281,6 +296,8 @@ class QtBase(ConanFile):
             "translationsdir",
             "headersclean",
             "qt_host_path",
+            "android_sdk",
+            "android_ndk",
         ]
         for item in rm_list:
             if item in self.info.options:
@@ -289,28 +306,6 @@ class QtBase(ConanFile):
         if hasattr(self.info.options, "cmake_args_qtbase"):
             _filter = self._shared.filter_cmake_args_for_package_id
             self.info.options.cmake_args_qtbase = _filter(self.info.options.cmake_args_qtbase)
-
-    def filter_package_id_for_android(self) -> None:
-        # Instead of using Android NDK path as the option value (package_id) we parse the
-        # actual version number and use that as the option value.
-        android_ndk = self.options.get_safe("android_ndk")
-        if android_ndk:
-            v = self._shared.parse_android_ndk_version(search_path=android_ndk)
-            print("Set 'android_ndk={0}' for package_id. Parsed from: {1}".format(android_ndk, v))
-            setattr(self.options, "android_ndk", v)
-
-        # If -DQT_ANDROID_API_VERSION is defined then prefer that value for package_id
-        qtbase_cmake_args = self.options.get_safe("cmake_args_qtbase")
-        m = re.search(r"QT_ANDROID_API_VERSION=(\S*)", qtbase_cmake_args)
-        if m:
-            android_api_ver = m.group(1).strip()
-            print("Using QT_ANDROID_API_VERSION='{0}' for package_id".format(android_api_ver))
-            setattr(self.options, "android_sdk", android_api_ver)
-        else:
-            # TODO, for now we have no clean means to query the Android SDK version
-            # from Qt build system so we just exclude the "android_sdk" from the
-            # package_id.
-            delattr(self.info.options, "android_sdk")
 
     def deploy(self):
         self.copy("*")  # copy from current package
