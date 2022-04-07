@@ -604,7 +604,8 @@ void QSettingsPrivate::iniEscapedString(const QString &str, QByteArray &result)
     bool needsQuotes = false;
     bool escapeNextIfDigit = false;
     bool useCodec = !str.startsWith(QLatin1String("@ByteArray("))
-                    && !str.startsWith(QLatin1String("@Variant("));
+                    && !str.startsWith(QLatin1String("@Variant("))
+                    && !str.startsWith(QLatin1String("@DateTime("));
 
     int i;
     int startPos = result.size();
