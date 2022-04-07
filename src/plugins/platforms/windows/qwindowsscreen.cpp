@@ -117,8 +117,21 @@ static bool monitorData(HMONITOR hMonitor, QWindowsScreenData *data)
     data->hMonitor = hMonitor;
     data->geometry = QRect(QPoint(info.rcMonitor.left, info.rcMonitor.top), QPoint(info.rcMonitor.right - 1, info.rcMonitor.bottom - 1));
     data->availableGeometry = QRect(QPoint(info.rcWork.left, info.rcWork.top), QPoint(info.rcWork.right - 1, info.rcWork.bottom - 1));
-    data->name = QString::fromWCharArray(info.szDevice);
-    if (data->name == u"WinDisc") {
+    data->deviceName = QString::fromWCharArray(info.szDevice);
+    DISPLAYCONFIG_PATH_INFO pathInfo = {};
+    const bool hasPathInfo = getPathInfo(info, &pathInfo);
+    if (hasPathInfo) {
+        DISPLAYCONFIG_TARGET_DEVICE_NAME deviceName = {};
+        deviceName.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME;
+        deviceName.header.size = sizeof(DISPLAYCONFIG_TARGET_DEVICE_NAME);
+        deviceName.header.adapterId = pathInfo.targetInfo.adapterId;
+        deviceName.header.id = pathInfo.targetInfo.id;
+        if (DisplayConfigGetDeviceInfo(&deviceName.header) == ERROR_SUCCESS)
+            data->name = QString::fromWCharArray(deviceName.monitorFriendlyDeviceName);
+    }
+    if (data->name.isEmpty())
+        data->name = data->deviceName;
+    if (data->deviceName == u"WinDisc") {
         data->flags |= QWindowsScreenData::LockScreen;
     } else {
         if (const HDC hdc = CreateDC(info.szDevice, nullptr, nullptr, nullptr)) {
@@ -133,15 +146,14 @@ static bool monitorData(HMONITOR hMonitor, QWindowsScreenData *data)
             DeleteDC(hdc);
         } else {
             qWarning("%s: Unable to obtain handle for monitor '%s', defaulting to %g DPI.",
-                     __FUNCTION__, qPrintable(QString::fromWCharArray(info.szDevice)),
+                     __FUNCTION__, qPrintable(data->deviceName),
                      data->dpi.first);
         } // CreateDC() failed
     } // not lock screen
 
     // ### We might want to consider storing adapterId/id from DISPLAYCONFIG_PATH_TARGET_INFO,
     // if we are going to use DISPLAYCONFIG lookups more.
-    DISPLAYCONFIG_PATH_INFO pathInfo = {};
-    if (getPathInfo(info, &pathInfo)) {
+    if (hasPathInfo) {
         switch (pathInfo.targetInfo.rotation) {
         case DISPLAYCONFIG_ROTATION_IDENTITY:
             data->orientation = Qt::LandscapeOrientation;
@@ -184,6 +196,16 @@ BOOL QT_WIN_CALLBACK monitorEnumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM 
     QWindowsScreenData data;
     if (monitorData(hMonitor, &data)) {
         auto *result = reinterpret_cast<WindowsScreenDataList *>(p);
+        auto it = std::find_if(result->rbegin(), result->rend(),
+            [&data](QWindowsScreenData i){ return i.name == data.name; });
+        if (it != result->rend()) {
+            int previousIndex = 1;
+            if (it->deviceIndex.has_value())
+                previousIndex = it->deviceIndex.value();
+            else
+                (*it).deviceIndex = 1;
+            data.deviceIndex = previousIndex + 1;
+        }
         // QWindowSystemInterface::handleScreenAdded() documentation specifies that first
         // added screen will be the primary screen, so order accordingly.
         // Note that the side effect of this policy is that there is no way to change primary
@@ -217,7 +239,8 @@ static QDebug operator<<(QDebug dbg, const QWindowsScreenData &d)
         << " physical: " << d.physicalSizeMM.width() << 'x' << d.physicalSizeMM.height()
         << " DPI: " << d.dpi.first << 'x' << d.dpi.second << " Depth: " << d.depth
         << " Format: " << d.format
-        << " hMonitor: " << d.hMonitor;
+        << " hMonitor: " << d.hMonitor
+        << " device name: " << d.deviceName;
     if (d.flags & QWindowsScreenData::PrimaryScreen)
         dbg << " primary";
     if (d.flags & QWindowsScreenData::VirtualDesktop)
@@ -241,6 +264,13 @@ QWindowsScreen::QWindowsScreen(const QWindowsScreenData &data) :
     , m_cursor(new QWindowsCursor(this))
 #endif
 {
+}
+
+QString QWindowsScreen::name() const
+{
+    return m_data.deviceIndex.has_value()
+               ? (u"%1 (%2)"_s).arg(m_data.name, QString::number(m_data.deviceIndex.value()))
+               : m_data.name;
 }
 
 Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0);
@@ -492,19 +522,19 @@ bool QWindowsScreenManager::isSingleScreen()
 }
 
 static inline int indexOfMonitor(const QWindowsScreenManager::WindowsScreenList &screens,
-                                 const QString &monitorName)
+                                 const QString &deviceName)
 {
     for (int i= 0; i < screens.size(); ++i)
-        if (screens.at(i)->data().name == monitorName)
+        if (screens.at(i)->data().deviceName == deviceName)
             return i;
     return -1;
 }
 
 static inline int indexOfMonitor(const WindowsScreenDataList &screenData,
-                                 const QString &monitorName)
+                                 const QString &deviceName)
 {
     for (int i = 0; i < screenData.size(); ++i)
-        if (screenData.at(i).name == monitorName)
+        if (screenData.at(i).deviceName == deviceName)
             return i;
     return -1;
 }
@@ -570,7 +600,7 @@ bool QWindowsScreenManager::handleScreenChanges()
     const bool lockScreen = newDataList.size() == 1 && (newDataList.front().flags & QWindowsScreenData::LockScreen);
     bool primaryScreenChanged = false;
     for (const QWindowsScreenData &newData : newDataList) {
-        const int existingIndex = indexOfMonitor(m_screens, newData.name);
+        const int existingIndex = indexOfMonitor(m_screens, newData.deviceName);
         if (existingIndex != -1) {
             m_screens.at(existingIndex)->handleChanges(newData);
             if (existingIndex == 0)
@@ -587,7 +617,7 @@ bool QWindowsScreenManager::handleScreenChanges()
     // temporary lock screen to avoid window recreation (QTBUG-33062).
     if (!lockScreen) {
         for (int i = m_screens.size() - 1; i >= 0; --i) {
-            if (indexOfMonitor(newDataList, m_screens.at(i)->data().name) == -1)
+            if (indexOfMonitor(newDataList, m_screens.at(i)->data().deviceName) == -1)
                 removeScreen(i);
         }     // for existing screens
     }     // not lock screen

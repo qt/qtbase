@@ -33,6 +33,8 @@ struct QWindowsScreenData
     Qt::ScreenOrientation orientation = Qt::LandscapeOrientation;
     qreal refreshRateHz = 60;
     HMONITOR hMonitor = nullptr;
+    QString deviceName = {};
+    std::optional<int> deviceIndex = std::nullopt;
 };
 
 class QWindowsScreen : public QPlatformScreen
@@ -53,7 +55,7 @@ public:
     QDpi logicalBaseDpi() const override { return QDpi(baseDpi, baseDpi); }
     qreal devicePixelRatio() const override { return 1.0; }
     qreal refreshRate() const override { return m_data.refreshRateHz; }
-    QString name() const override { return m_data.name; }
+    QString name() const override;
     Qt::ScreenOrientation orientation() const override { return m_data.orientation; }
     QList<QPlatformScreen *> virtualSiblings() const override;
     QWindow *topLevelAt(const QPoint &point) const override;
