@@ -124,6 +124,8 @@ void PreviewWindow::setWindowFlags(Qt::WindowFlags flags)
         text += "\n| Qt::WindowShadeButtonHint";
     if (flags & Qt::WindowStaysOnTopHint)
         text += "\n| Qt::WindowStaysOnTopHint";
+    if (flags & Qt::WindowStaysOnBottomHint)
+        text += "\n| Qt::WindowStaysOnBottomHint";
     if (flags & Qt::CustomizeWindowHint)
         text += "\n| Qt::CustomizeWindowHint";
 
