@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -619,7 +619,8 @@ void QSettingsPrivate::iniEscapedString(const QString &str, QByteArray &result, 
     bool needsQuotes = false;
     bool escapeNextIfDigit = false;
     bool useCodec = codec && !str.startsWith(QLatin1String("@ByteArray("))
-                    && !str.startsWith(QLatin1String("@Variant("));
+                    && !str.startsWith(QLatin1String("@Variant("))
+                    && !str.startsWith(QLatin1String("@DateTime("));
 
     int i;
     int startPos = result.size();
