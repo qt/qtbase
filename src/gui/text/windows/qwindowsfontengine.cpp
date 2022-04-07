@@ -626,8 +626,8 @@ qreal QWindowsFontEngine::minRightBearing() const
                     fmr = qMin(fmr,abc[i].abcfC);
                 }
             }
-            ml = int(fml - 0.9999);
-            mr = int(fmr - 0.9999);
+            ml = qFloor(fml);
+            mr = qFloor(fmr);
             delete [] abc;
         }
         lbearing = ml;

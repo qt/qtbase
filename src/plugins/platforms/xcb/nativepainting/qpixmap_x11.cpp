@@ -1437,22 +1437,16 @@ QPixmap QX11PlatformPixmap::transformed(const QTransform &transform, Qt::Transfo
                    transform.m21(), transform.m22(), transform.m23(),
                    0., 0., 1);
     bool complex_xform = false;
-    qreal scaledWidth;
-    qreal scaledHeight;
 
     if (mat.type() <= QTransform::TxScale) {
-        scaledHeight = qAbs(mat.m22()) * hs + 0.9999;
-        scaledWidth = qAbs(mat.m11()) * ws + 0.9999;
-        h = qAbs(int(scaledHeight));
-        w = qAbs(int(scaledWidth));
+        h = qRound(qAbs(mat.m22()) * hs);
+        w = qRound(qAbs(mat.m11()) * ws);
     } else {                                        // rotation or shearing
         QPolygonF a(QRectF(0, 0, ws, hs));
         a = mat.map(a);
         QRect r = a.boundingRect().toAlignedRect();
         w = r.width();
         h = r.height();
-        scaledWidth = w;
-        scaledHeight = h;
         complex_xform = true;
     }
     mat = QPixmap::trueMatrix(mat, ws, hs); // true matrix
@@ -1461,7 +1455,7 @@ QPixmap QX11PlatformPixmap::transformed(const QTransform &transform, Qt::Transfo
     mat = mat.inverted(&invertible);  // invert matrix
 
     if (h == 0 || w == 0 || !invertible
-        || qAbs(scaledWidth) >= 32768 || qAbs(scaledHeight) >= 32768 )
+        || qAbs(h) >= 32768 || qAbs(w) >= 32768 )
     // error, return null pixmap
         return QPixmap();
 

@@ -4783,13 +4783,8 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
         else if (mat.m11() == -1. && mat.m22() == -1.)
             return rotated180(*this);
 
-        if (mode == Qt::FastTransformation) {
-            hd = qRound(qAbs(mat.m22()) * hs);
-            wd = qRound(qAbs(mat.m11()) * ws);
-        } else {
-            hd = int(qAbs(mat.m22()) * hs + 0.9999);
-            wd = int(qAbs(mat.m11()) * ws + 0.9999);
-        }
+        hd = qRound(qAbs(mat.m22()) * hs);
+        wd = qRound(qAbs(mat.m11()) * ws);
         scale_xform = true;
         // The paint-based scaling is only bilinear, and has problems
         // with scaling smoothly more than 2x down.
