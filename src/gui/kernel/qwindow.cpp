@@ -2273,8 +2273,15 @@ bool QWindow::close()
     if (!d->platformWindow)
         return true;
 
-    QBoolBlocker inCloseReset(d->inClose);
-    return d->platformWindow->close();
+    // The window might be deleted during close,
+    // as a result of delivering the close event.
+    QPointer guard(this);
+    d->inClose = true;
+    bool success = d->platformWindow->close();
+    if (guard)
+        d->inClose = false;
+
+    return success;
 }
 
 /*!
