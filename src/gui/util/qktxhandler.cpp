@@ -123,14 +123,14 @@ QTextureFileData QKtxHandler::read()
     if (!device())
         return QTextureFileData();
 
-    QByteArray buf = device()->readAll();
+    const QByteArray buf = device()->readAll();
     const quint32 dataSize = quint32(buf.size());
     if (dataSize < headerSize || !canRead(QByteArray(), buf)) {
         qCDebug(lcQtGuiTextureIO, "Invalid KTX file %s", logName().constData());
         return QTextureFileData();
     }
 
-    const KTXHeader *header = reinterpret_cast<const KTXHeader *>(buf.constData());
+    const KTXHeader *header = reinterpret_cast<const KTXHeader *>(buf.data());
     if (!checkHeader(*header)) {
         qCDebug(lcQtGuiTextureIO, "Unsupported KTX file format in %s", logName().constData());
         return QTextureFileData();
@@ -159,7 +159,7 @@ QTextureFileData QKtxHandler::read()
         if (offset + sizeof(quint32) > dataSize) // Corrupt file; avoid oob read
             break;
 
-        const quint32 imageSize = decode(qFromUnaligned<quint32>(buf.constData() + offset));
+        const quint32 imageSize = decode(qFromUnaligned<quint32>(buf.data() + offset));
         offset += sizeof(quint32);
 
         for (int face = 0; face < qMin(texData.numFaces(), MAX_ITERATIONS); face++) {
