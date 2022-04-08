@@ -22,9 +22,6 @@ osx
 macos arm
 [render_systemClip]
 osx
-[maskedUpdate]
-opensuse
-opensuse-leap
 [moveInResizeEvent]
 ubuntu-16.04
 [multipleToplevelFocusCheck]
@@ -33,7 +30,6 @@ centos
 opensuse-leap
 ubuntu
 sles-15
-
 # QTBUG-87668
 [showMinimizedKeepsFocus]
 android
