@@ -2,6 +2,9 @@
 
 This directory holds scripts to help the porting process from `qmake` to `cmake` for Qt6.
 
+If you're looking to port your own Qt-based project from `qmake` to `cmake`, please use
+[qmake2cmake](https://wiki.qt.io/Qmake2cmake).
+
 # Requirements
 
 * [Python 3.7](https://www.python.org/downloads/),

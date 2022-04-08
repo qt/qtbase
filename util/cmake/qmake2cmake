@@ -1,4 +1,0 @@
-#!/usr/bin/env sh
-script_dir_path=`dirname $0`
-script_dir_path=`(cd "$script_dir_path"; /bin/pwd)`
-python3 $script_dir_path/pro2cmake.py --is-user-project $@
