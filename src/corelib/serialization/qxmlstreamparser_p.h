@@ -695,7 +695,7 @@ bool QXmlStreamReaderPrivate::parse()
 
         case 173:
             if (normalizeLiterals)
-                textBuffer.data()[textBuffer.size()-1] = QLatin1Char(' ');
+                textBuffer.data()[textBuffer.size()-1] = u' ';
         break;
 
         case 174:

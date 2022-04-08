@@ -141,7 +141,7 @@ inline QString QSettingsGroup::toString() const
     QString result;
     result = str;
     if (num > 0) {
-        result += QLatin1Char('/');
+        result += u'/';
         result += QString::number(num);
     }
     return result;

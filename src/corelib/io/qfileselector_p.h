@@ -71,7 +71,7 @@ public:
     static QStringList platformSelectors();
     static void addStatics(const QStringList &); //For loading GUI statics from other Qt modules
     static QString selectionHelper(const QString &path, const QString &fileName,
-                                   const QStringList &selectors, const QChar &indicator = QLatin1Char('+'));
+                                   const QStringList &selectors, const QChar &indicator = u'+');
     QFileSelectorPrivate();
     QString select(const QString &filePath) const;
 

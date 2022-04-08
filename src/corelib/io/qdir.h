@@ -225,18 +225,18 @@ public:
     constexpr static inline QChar listSeparator() noexcept
     {
 #if defined(Q_OS_WIN)
-        return QLatin1Char(';');
+        return u';';
 #else
-        return QLatin1Char(':');
+        return u':';
 #endif
     }
 
     static QChar separator()
     {
 #if defined(Q_OS_WIN)
-        return QLatin1Char('\\');
+        return u'\\';
 #else
-        return QLatin1Char('/');
+        return u'/';
 #endif
     }
 

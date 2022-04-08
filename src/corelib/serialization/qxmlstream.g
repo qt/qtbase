@@ -1071,7 +1071,7 @@ literal_content_start ::= SPACE;
 /.
         case $rule_number:
             if (normalizeLiterals)
-                textBuffer.data()[textBuffer.size()-1] = QLatin1Char(' ');
+                textBuffer.data()[textBuffer.size()-1] = u' ';
         break;
 ./
 

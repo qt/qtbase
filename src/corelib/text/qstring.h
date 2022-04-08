@@ -532,35 +532,35 @@ public:
     [[nodiscard]] inline QChar &back();
 
     [[nodiscard]] QString arg(qlonglong a, int fieldwidth=0, int base=10,
-                QChar fillChar = QLatin1Char(' ')) const;
+                QChar fillChar = u' ') const;
     [[nodiscard]] QString arg(qulonglong a, int fieldwidth=0, int base=10,
-                QChar fillChar = QLatin1Char(' ')) const;
+                QChar fillChar = u' ') const;
     [[nodiscard]] QString arg(long a, int fieldwidth=0, int base=10,
-                QChar fillChar = QLatin1Char(' ')) const;
+                QChar fillChar = u' ') const;
     [[nodiscard]] QString arg(ulong a, int fieldwidth=0, int base=10,
-                QChar fillChar = QLatin1Char(' ')) const;
+                QChar fillChar = u' ') const;
     [[nodiscard]] QString arg(int a, int fieldWidth = 0, int base = 10,
-                QChar fillChar = QLatin1Char(' ')) const;
+                QChar fillChar = u' ') const;
     [[nodiscard]] QString arg(uint a, int fieldWidth = 0, int base = 10,
-                QChar fillChar = QLatin1Char(' ')) const;
+                QChar fillChar = u' ') const;
     [[nodiscard]] QString arg(short a, int fieldWidth = 0, int base = 10,
-                QChar fillChar = QLatin1Char(' ')) const;
+                QChar fillChar = u' ') const;
     [[nodiscard]] QString arg(ushort a, int fieldWidth = 0, int base = 10,
-                QChar fillChar = QLatin1Char(' ')) const;
+                QChar fillChar = u' ') const;
     [[nodiscard]] QString arg(double a, int fieldWidth = 0, char format = 'g', int precision = -1,
-                QChar fillChar = QLatin1Char(' ')) const;
+                QChar fillChar = u' ') const;
     [[nodiscard]] QString arg(char a, int fieldWidth = 0,
-                QChar fillChar = QLatin1Char(' ')) const;
+                QChar fillChar = u' ') const;
     [[nodiscard]] QString arg(QChar a, int fieldWidth = 0,
-                QChar fillChar = QLatin1Char(' ')) const;
+                QChar fillChar = u' ') const;
 #if QT_STRINGVIEW_LEVEL < 2
     [[nodiscard]] QString arg(const QString &a, int fieldWidth = 0,
-                QChar fillChar = QLatin1Char(' ')) const;
+                QChar fillChar = u' ') const;
 #endif
     [[nodiscard]] QString arg(QStringView a, int fieldWidth = 0,
-                QChar fillChar = QLatin1Char(' ')) const;
+                QChar fillChar = u' ') const;
     [[nodiscard]] QString arg(QLatin1StringView a, int fieldWidth = 0,
-                QChar fillChar = QLatin1Char(' ')) const;
+                QChar fillChar = u' ') const;
 private:
     template <typename T>
     struct is_convertible_to_view_or_qstring_helper
@@ -691,8 +691,8 @@ public:
     bool isUpper() const;
     bool isLower() const;
 
-    [[nodiscard]] QString leftJustified(qsizetype width, QChar fill = QLatin1Char(' '), bool trunc = false) const;
-    [[nodiscard]] QString rightJustified(qsizetype width, QChar fill = QLatin1Char(' '), bool trunc = false) const;
+    [[nodiscard]] QString leftJustified(qsizetype width, QChar fill = u' ', bool trunc = false) const;
+    [[nodiscard]] QString rightJustified(qsizetype width, QChar fill = u' ', bool trunc = false) const;
 
 #if !defined(Q_CLANG_QDOC)
     [[nodiscard]] QString toLower() const &
