@@ -51,6 +51,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static void copyArgument(void *to, int id, const QVariant &arg)
 {
     if (id == arg.metaType().id()) {
@@ -161,7 +163,7 @@ QDBusInterfacePrivate::QDBusInterfacePrivate(const QString &serv, const QString 
             // those are not fatal errors, so we continue working
 
             if (!lastError.isValid())
-                lastError = QDBusError(QDBusError::InternalError, QLatin1String("Unknown error"));
+                lastError = QDBusError(QDBusError::InternalError, "Unknown error"_L1);
         }
     }
 }

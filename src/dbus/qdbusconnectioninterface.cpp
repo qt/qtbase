@@ -54,6 +54,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*
  * Implementation of interface class QDBusConnectionInterface
  */
@@ -184,7 +186,7 @@ QDBusConnectionInterface::~QDBusConnectionInterface()
 */
 QDBusReply<QString> QDBusConnectionInterface::serviceOwner(const QString &name) const
 {
-    return internalConstCall(QDBus::AutoDetect, QLatin1String("GetNameOwner"), QList<QVariant>() << name);
+    return internalConstCall(QDBus::AutoDetect, "GetNameOwner"_L1, QList<QVariant>() << name);
 }
 
 /*!
@@ -195,7 +197,7 @@ QDBusReply<QString> QDBusConnectionInterface::serviceOwner(const QString &name) 
 */
 QDBusReply<QStringList> QDBusConnectionInterface::registeredServiceNames() const
 {
-    return internalConstCall(QDBus::AutoDetect, QLatin1String("ListNames"));
+    return internalConstCall(QDBus::AutoDetect, "ListNames"_L1);
 }
 
 /*!
@@ -207,7 +209,7 @@ QDBusReply<QStringList> QDBusConnectionInterface::registeredServiceNames() const
 */
 QDBusReply<QStringList> QDBusConnectionInterface::activatableServiceNames() const
 {
-    return internalConstCall(QDBus::AutoDetect, QLatin1String("ListActivatableNames"));
+    return internalConstCall(QDBus::AutoDetect, "ListActivatableNames"_L1);
 }
 
 /*!
@@ -216,7 +218,7 @@ QDBusReply<QStringList> QDBusConnectionInterface::activatableServiceNames() cons
 */
 QDBusReply<bool> QDBusConnectionInterface::isServiceRegistered(const QString &serviceName) const
 {
-    return internalConstCall(QDBus::AutoDetect, QLatin1String("NameHasOwner"),
+    return internalConstCall(QDBus::AutoDetect, "NameHasOwner"_L1,
                              QList<QVariant>() << serviceName);
 }
 
@@ -226,7 +228,7 @@ QDBusReply<bool> QDBusConnectionInterface::isServiceRegistered(const QString &se
 */
 QDBusReply<uint> QDBusConnectionInterface::servicePid(const QString &serviceName) const
 {
-    return internalConstCall(QDBus::AutoDetect, QLatin1String("GetConnectionUnixProcessID"),
+    return internalConstCall(QDBus::AutoDetect, "GetConnectionUnixProcessID"_L1,
                              QList<QVariant>() << serviceName);
 }
 
@@ -236,7 +238,7 @@ QDBusReply<uint> QDBusConnectionInterface::servicePid(const QString &serviceName
 */
 QDBusReply<uint> QDBusConnectionInterface::serviceUid(const QString &serviceName) const
 {
-    return internalConstCall(QDBus::AutoDetect, QLatin1String("GetConnectionUnixUser"),
+    return internalConstCall(QDBus::AutoDetect, "GetConnectionUnixUser"_L1,
                              QList<QVariant>() << serviceName);
 }
 
@@ -245,7 +247,7 @@ QDBusReply<uint> QDBusConnectionInterface::serviceUid(const QString &serviceName
 */
 QDBusReply<void> QDBusConnectionInterface::startService(const QString &name)
 {
-    return call(QLatin1String("StartServiceByName"), name, uint(0));
+    return call("StartServiceByName"_L1, name, uint(0));
 }
 
 /*!
@@ -290,7 +292,7 @@ QDBusConnectionInterface::registerService(const QString &serviceName,
         break;
     }
 
-    QDBusMessage reply = call(QLatin1String("RequestName"), serviceName, flags);
+    QDBusMessage reply = call("RequestName"_L1, serviceName, flags);
 //    qDebug() << "QDBusConnectionInterface::registerService" << serviceName << "Reply:" << reply;
 
     // convert the low-level flags to something that we can use
@@ -328,7 +330,7 @@ QDBusConnectionInterface::registerService(const QString &serviceName,
 QDBusReply<bool>
 QDBusConnectionInterface::unregisterService(const QString &serviceName)
 {
-    QDBusMessage reply = call(QLatin1String("ReleaseName"), serviceName);
+    QDBusMessage reply = call("ReleaseName"_L1, serviceName);
     if (reply.type() == QDBusMessage::ReplyMessage) {
         bool success = reply.arguments().at(0).toUInt() == DBUS_RELEASE_NAME_REPLY_RELEASED;
         reply.setArguments(QVariantList() << success);

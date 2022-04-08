@@ -46,6 +46,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     \class QDBusReply
     \inmodule QtDBus
@@ -235,15 +237,13 @@ void qDBusReplyFill(const QDBusMessage &reply, QDBusError &error, QVariant &data
         receivedSignature = "<empty signature>";
     QString errorMsg;
     if (receivedType) {
-        errorMsg = QLatin1String("Unexpected reply signature: got \"%1\" (%4), "
-                                         "expected \"%2\" (%3)")
+        errorMsg = "Unexpected reply signature: got \"%1\" (%4), expected \"%2\" (%3)"_L1
                    .arg(QLatin1String(receivedSignature),
                         QLatin1String(expectedSignature),
                         QLatin1String(data.typeName()),
                         QLatin1String(receivedType));
     } else {
-        errorMsg = QLatin1String("Unexpected reply signature: got \"%1\", "
-                                         "expected \"%2\" (%3)")
+        errorMsg = "Unexpected reply signature: got \"%1\", expected \"%2\" (%3)"_L1
                    .arg(QLatin1String(receivedSignature),
                         QLatin1String(expectedSignature),
                         QLatin1String(data.typeName()));

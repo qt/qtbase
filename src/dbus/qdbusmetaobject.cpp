@@ -59,6 +59,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QDBusMetaObjectGenerator
 {
 public:
@@ -305,7 +307,7 @@ void QDBusMetaObjectGenerator::parseMethods()
             prototype.append(')');
 
         // check the async tag
-        if (m.annotations.value(QLatin1String(ANNOTATION_NO_WAIT)) == QLatin1String("true"))
+        if (m.annotations.value(ANNOTATION_NO_WAIT ""_L1) == "true"_L1)
             mm.tag = "Q_NOREPLY";
 
         // meta method flags
@@ -411,9 +413,9 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     // with a few modifications to make it cleaner
 
     QString className = interface;
-    className.replace(u'.', QLatin1String("::"));
+    className.replace(u'.', "::"_L1);
     if (className.isEmpty())
-        className = QLatin1String("QDBusInterface");
+        className = "QDBusInterface"_L1;
 
     QVarLengthArray<int> idata;
     idata.resize(sizeof(QDBusMetaObjectPrivate) / sizeof(int));
@@ -589,7 +591,7 @@ void QDBusMetaObjectGenerator::writeWithoutXml(const QString &interface)
 {
     // no XML definition
     QString tmp(interface);
-    tmp.replace(u'.', QLatin1String("::"));
+    tmp.replace(u'.', "::"_L1);
     QByteArray name(tmp.toLatin1());
 
     QDBusMetaObjectPrivate *header = new QDBusMetaObjectPrivate;
@@ -628,13 +630,13 @@ QDBusMetaObject *QDBusMetaObject::createMetaObject(const QString &interface, con
         bool us = it.key() == interface;
 
         QDBusMetaObject *obj = cache.value(it.key(), 0);
-        if ( !obj && ( us || !interface.startsWith( QLatin1String("local.") ) ) ) {
+        if (!obj && (us || !interface.startsWith("local."_L1 ))) {
             // not in cache; create
             obj = new QDBusMetaObject;
             QDBusMetaObjectGenerator generator(it.key(), it.value().constData());
             generator.write(obj);
 
-            if ( (obj->cached = !it.key().startsWith( QLatin1String("local.") )) )
+            if ((obj->cached = !it.key().startsWith("local."_L1)))
                 // cache it
                 cache.insert(it.key(), obj);
             else if (!us)
@@ -670,7 +672,7 @@ QDBusMetaObject *QDBusMetaObject::createMetaObject(const QString &interface, con
             merged.properties.insert(it.value()->properties);
         }
 
-        merged.name = QLatin1String("local.Merged");
+        merged.name = "local.Merged"_L1;
         merged.introspection.clear();
 
         we = new QDBusMetaObject;
@@ -682,8 +684,7 @@ QDBusMetaObject *QDBusMetaObject::createMetaObject(const QString &interface, con
 
     // mark as an error
     error = QDBusError(QDBusError::UnknownInterface,
-        QLatin1String("Interface '%1' was not found")
-                       .arg(interface));
+                       "Interface '%1' was not found"_L1.arg(interface));
     return nullptr;
 }
 

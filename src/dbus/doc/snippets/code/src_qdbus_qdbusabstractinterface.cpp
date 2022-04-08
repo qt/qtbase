@@ -53,6 +53,8 @@
 #include <QDBusReply>
 #include <QDBusInterface>
 
+using namespace Qt::StringLiterals;
+
 class Abstract_DBus_Interface : public QObject
 {
     Q_OBJECT
@@ -81,11 +83,11 @@ void Abstract_DBus_Interface::interfaceMain()
 QString value = retrieveValue();
 QDBusMessage reply;
 
-QDBusReply<int> api = interface->call(QLatin1String("GetAPIVersion"));
+QDBusReply<int> api = interface->call("GetAPIVersion"_L1);
 if (api >= 14)
-  reply = interface->call(QLatin1String("ProcessWorkUnicode"), value);
+  reply = interface->call("ProcessWorkUnicode"_L1, value);
 else
-  reply = interface->call(QLatin1String("ProcessWork"), QLatin1String("UTF-8"), value.toUtf8());
+  reply = interface->call("ProcessWork"_L1, "UTF-8"_L1, value.toUtf8());
 //! [0]
 }
 
@@ -93,7 +95,7 @@ void Abstract_DBus_Interface::asyncCall()
 {
 //! [1]
 QString value = retrieveValue();
-QDBusPendingCall pcall = interface->asyncCall(QLatin1String("Process"), value);
+QDBusPendingCall pcall = interface->asyncCall("Process"_L1, value);
 
 QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(pcall);
 

@@ -51,6 +51,8 @@ extern "C" void dbus_shutdown();
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 void (*qdbus_resolve_me(const char *name))();
 
 #if !defined QT_LINKED_LIBDBUS
@@ -94,9 +96,9 @@ bool qdbus_loadLibDBus()
     static int majorversions[] = { 3, 2, -1 };
     const QString baseNames[] = {
 #ifdef Q_OS_WIN
-        QLatin1String("dbus-1"),
+        "dbus-1"_L1,
 #endif
-        QLatin1String("libdbus-1")
+        "libdbus-1"_L1
     };
 
     lib->unload();

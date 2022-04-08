@@ -55,6 +55,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 bool qDBusCheckAsyncTag(const char *tag)
 {
     static const char noReplyTag[] = "Q_NOREPLY";
@@ -81,23 +83,23 @@ QString qDBusInterfaceFromMetaObject(const QMetaObject *mo)
         interface = QLatin1String(mo->classInfo(idx).value());
     } else {
         interface = QLatin1String(mo->className());
-        interface.replace(QLatin1String("::"), QLatin1String("."));
+        interface.replace("::"_L1, "."_L1);
 
-        if (interface.startsWith(QLatin1String("QDBus"))) {
-            interface.prepend(QLatin1String("org.qtproject.QtDBus."));
+        if (interface.startsWith("QDBus"_L1)) {
+            interface.prepend("org.qtproject.QtDBus."_L1);
         } else if (interface.startsWith(u'Q') &&
                    interface.length() >= 2 && interface.at(1).isUpper()) {
             // assume it's Qt
-            interface.prepend(QLatin1String("org.qtproject.Qt."));
+            interface.prepend("org.qtproject.Qt."_L1);
         } else if (!QCoreApplication::instance()||
                    QCoreApplication::instance()->applicationName().isEmpty()) {
-            interface.prepend(QLatin1String("local."));
+            interface.prepend("local."_L1);
          } else {
             interface.prepend(u'.').prepend(QCoreApplication::instance()->applicationName());
             const QString organizationDomain = QCoreApplication::instance()->organizationDomain();
             const auto domainName = QStringView{organizationDomain}.split(u'.', Qt::SkipEmptyParts);
             if (domainName.isEmpty()) {
-                 interface.prepend(QLatin1String("local."));
+                 interface.prepend("local."_L1);
             } else {
                 QString composedDomain;
                 // + 1 for additional dot, e.g. organizationDomain equals "example.com",
@@ -156,7 +158,7 @@ int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QList<QMet
     for ( ; it != end; ++it) {
         QByteArray type = *it;
         if (type.endsWith('*')) {
-            errorMsg = QLatin1String("Pointers are not supported: ") + QLatin1String(type);
+            errorMsg = "Pointers are not supported: "_L1 + QLatin1String(type);
             return -1;
         }
 
@@ -166,7 +168,7 @@ int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QList<QMet
 
             QMetaType id = QMetaType::fromName(basictype);
             if (!id.isValid()) {
-                errorMsg = QLatin1String("Unregistered output type in parameter list: ") + QLatin1String(type);
+                errorMsg = "Unregistered output type in parameter list: "_L1 + QLatin1String(type);
                 return -1;
             } else if (QDBusMetaType::typeToSignature(id) == nullptr)
                 return -1;
@@ -177,7 +179,7 @@ int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QList<QMet
         }
 
         if (seenMessage) {      // && !type.endsWith('&')
-            errorMsg = QLatin1String("Invalid method, non-output parameters after message or after output parameters: ") + QLatin1String(type);
+            errorMsg = "Invalid method, non-output parameters after message or after output parameters: "_L1 + QLatin1String(type);
             return -1;          // not allowed
         }
 
@@ -193,14 +195,14 @@ int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QList<QMet
 #endif
 
         if (!id.isValid()) {
-            errorMsg = QLatin1String("Unregistered input type in parameter list: ") + QLatin1String(type);
+            errorMsg = "Unregistered input type in parameter list: "_L1 + QLatin1String(type);
             return -1;
         }
 
         if (id == QDBusMetaTypeId::message())
             seenMessage = true;
         else if (QDBusMetaType::typeToSignature(id) == nullptr) {
-            errorMsg = QLatin1String("Type not registered with QtDBus in parameter list: ") + QLatin1String(type);
+            errorMsg = "Type not registered with QtDBus in parameter list: "_L1 + QLatin1String(type);
             return -1;
         }
 

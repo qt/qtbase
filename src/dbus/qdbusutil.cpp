@@ -51,6 +51,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static inline bool isValidCharacterNoDash(QChar c)
 {
     ushort u = c.unicode();
@@ -86,7 +88,7 @@ static bool variantToString(const QVariant &arg, QString &out)
         out += u'{';
         const QStringList list = arg.toStringList();
         for (const QString &item : list)
-            out += u'\"' + item + QLatin1String("\", ");
+            out += u'\"' + item + "\", "_L1;
         if (!list.isEmpty())
             out.chop(2);
         out += u'}';
@@ -95,7 +97,7 @@ static bool variantToString(const QVariant &arg, QString &out)
         QByteArray list = arg.toByteArray();
         for (int i = 0; i < list.length(); ++i) {
             out += QString::number(list.at(i));
-            out += QLatin1String(", ");
+            out += ", "_L1;
         }
         if (!list.isEmpty())
             out.chop(2);
@@ -106,7 +108,7 @@ static bool variantToString(const QVariant &arg, QString &out)
         for (const QVariant &item : list) {
             if (!variantToString(item, out))
                 return false;
-            out += QLatin1String(", ");
+            out += ", "_L1;
         }
         if (!list.isEmpty())
             out.chop(2);
@@ -120,31 +122,31 @@ static bool variantToString(const QVariant &arg, QString &out)
     } else if (argType == QMetaType::Double) {
         out += QString::number(arg.toDouble());
     } else if (argType == QMetaType::Bool) {
-        out += QLatin1String(arg.toBool() ? "true" : "false");
+        out += arg.toBool() ? "true"_L1 : "false"_L1;
     } else if (argType == qMetaTypeId<QDBusArgument>()) {
         argToString(qvariant_cast<QDBusArgument>(arg), out);
     } else if (argType == qMetaTypeId<QDBusObjectPath>()) {
         const QString path = qvariant_cast<QDBusObjectPath>(arg).path();
-        out += QLatin1String("[ObjectPath: ");
+        out += "[ObjectPath: "_L1;
         out += path;
         out += u']';
     } else if (argType == qMetaTypeId<QDBusSignature>()) {
-        out += QLatin1String("[Signature: ") + qvariant_cast<QDBusSignature>(arg).signature();
+        out += "[Signature: "_L1 + qvariant_cast<QDBusSignature>(arg).signature();
         out += u']';
     } else if (argType == qMetaTypeId<QDBusUnixFileDescriptor>()) {
-        out += QLatin1String("[Unix FD: ");
-        out += QLatin1String(qvariant_cast<QDBusUnixFileDescriptor>(arg).isValid() ? "valid" : "not valid");
+        out += "[Unix FD: "_L1;
+        out += qvariant_cast<QDBusUnixFileDescriptor>(arg).isValid() ? "valid"_L1 : "not valid"_L1;
         out += u']';
     } else if (argType == qMetaTypeId<QDBusVariant>()) {
         const QVariant v = qvariant_cast<QDBusVariant>(arg).variant();
-        out += QLatin1String("[Variant");
+        out += "[Variant"_L1;
         QMetaType vUserType = v.metaType();
         if (vUserType != QMetaType::fromType<QDBusVariant>()
                 && vUserType != QMetaType::fromType<QDBusSignature>()
                 && vUserType != QMetaType::fromType<QDBusObjectPath>()
                 && vUserType != QMetaType::fromType<QDBusArgument>())
             out += u'(' + QLatin1String(v.typeName()) + u')';
-        out += QLatin1String(": ");
+        out += ": "_L1;
         if (!variantToString(v, out))
             return false;
         out += u']';
@@ -167,7 +169,7 @@ bool argToString(const QDBusArgument &busArg, QString &out)
 
     if (elementType != QDBusArgument::BasicType && elementType != QDBusArgument::VariantType
             && elementType != QDBusArgument::MapEntryType)
-        out += QLatin1String("[Argument: ") + busSig + u' ';
+        out += "[Argument: "_L1 + busSig + u' ';
 
     switch (elementType) {
         case QDBusArgument::BasicType:
@@ -193,21 +195,21 @@ bool argToString(const QDBusArgument &busArg, QString &out)
             busArg.beginMapEntry();
             if (!variantToString(busArg.asVariant(), out))
                 return false;
-            out += QLatin1String(" = ");
+            out += " = "_L1;
             if (!argToString(busArg, out))
                 return false;
             busArg.endMapEntry();
             break;
         case QDBusArgument::UnknownType:
         default:
-            out += QLatin1String("<ERROR - Unknown Type>");
+            out += "<ERROR - Unknown Type>"_L1;
             return false;
     }
     if (doIterate && !busArg.atEnd()) {
         while (!busArg.atEnd()) {
             if (!argToString(busArg, out))
                 return false;
-            out += QLatin1String(", ");
+            out += ", "_L1;
         }
         out.chop(2);
     }
@@ -512,10 +514,10 @@ namespace QDBusUtil
     */
     bool isValidObjectPath(const QString &path)
     {
-        if (path == QLatin1String("/"))
+        if (path == "/"_L1)
             return true;
 
-        if (!path.startsWith(u'/') || path.indexOf(QLatin1String("//")) != -1 ||
+        if (!path.startsWith(u'/') || path.indexOf("//"_L1) != -1 ||
             path.endsWith(u'/'))
             return false;
 

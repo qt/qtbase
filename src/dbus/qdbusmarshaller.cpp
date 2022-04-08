@@ -46,6 +46,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static void qIterAppend(DBusMessageIter *it, QByteArray *ba, int type, const void *arg)
 {
     if (ba)
@@ -65,7 +67,7 @@ void QDBusMarshaller::unregisteredTypeError(QMetaType id)
     qWarning("QDBusMarshaller: type `%s' (%d) is not registered with D-BUS. "
              "Use qDBusRegisterMetaType to register it",
              name ? name : "", id.id());
-    error(QLatin1String("Unregistered type %1 passed in arguments")
+    error("Unregistered type %1 passed in arguments"_L1
           .arg(QLatin1String(id.name())));
 }
 
@@ -143,7 +145,7 @@ inline void QDBusMarshaller::append(const QDBusObjectPath &arg)
 {
     QByteArray data = arg.path().toUtf8();
     if (!ba && data.isEmpty()) {
-        error(QLatin1String("Invalid object path passed in arguments"));
+        error("Invalid object path passed in arguments"_L1);
     } else {
         const char *cdata = data.constData();
         if (!skipSignature)
@@ -155,7 +157,7 @@ inline void QDBusMarshaller::append(const QDBusSignature &arg)
 {
     QByteArray data = arg.signature().toUtf8();
     if (!ba && data.isEmpty()) {
-        error(QLatin1String("Invalid signature passed in arguments"));
+        error("Invalid signature passed in arguments"_L1);
     } else {
         const char *cdata = data.constData();
         if (!skipSignature)
@@ -167,7 +169,7 @@ inline void QDBusMarshaller::append(const QDBusUnixFileDescriptor &arg)
 {
     int fd = arg.fileDescriptor();
     if (!ba && fd == -1) {
-        error(QLatin1String("Invalid file descriptor passed in arguments"));
+        error("Invalid file descriptor passed in arguments"_L1);
     } else {
         if (!skipSignature)
             qIterAppend(&iterator, ba, DBUS_TYPE_UNIX_FD, &fd);
@@ -202,7 +204,7 @@ inline bool QDBusMarshaller::append(const QDBusVariant &arg)
     QMetaType id = value.metaType();
     if (!id.isValid()) {
         qWarning("QDBusMarshaller: cannot add a null QDBusVariant");
-        error(QLatin1String("Invalid QVariant passed in arguments"));
+        error("Invalid QVariant passed in arguments"_L1);
         return false;
     }
 
@@ -273,7 +275,7 @@ inline QDBusMarshaller *QDBusMarshaller::beginMap(QMetaType kid, QMetaType vid)
     if (ksignature[1] != 0 || !QDBusUtil::isValidBasicType(*ksignature)) {
         qWarning("QDBusMarshaller: type '%s' (%d) cannot be used as the key type in a D-BUS map.",
                  kid.name(), kid.id());
-        error(QLatin1String("Type %1 passed in arguments cannot be used as a key in a map")
+        error("Type %1 passed in arguments cannot be used as a key in a map"_L1
               .arg(QLatin1String(kid.name())));
         return this;
     }
@@ -379,7 +381,7 @@ bool QDBusMarshaller::appendVariantInternal(const QVariant &arg)
     QMetaType id = arg.metaType();
     if (!id.isValid()) {
         qWarning("QDBusMarshaller: cannot add an invalid QVariant");
-        error(QLatin1String("Invalid QVariant passed in arguments"));
+        error("Invalid QVariant passed in arguments"_L1);
         return false;
     }
 

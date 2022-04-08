@@ -58,6 +58,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 namespace {
 // ### Qt6: change to a regular QEvent (customEvent)
 // We need to use a QMetaCallEvent here because we can't override customEvent() in
@@ -163,8 +165,7 @@ bool QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, void *retu
             qWarning("QDBusAbstractInterface: type %s must be registered with Qt D-Bus before it can be "
                      "used to read property %s.%s",
                      mp.typeName(), qPrintable(interface), mp.name());
-            lastError = QDBusError(QDBusError::Failed,
-                                   QLatin1String("Unregistered type %1 cannot be handled")
+            lastError = QDBusError(QDBusError::Failed, "Unregistered type %1 cannot be handled"_L1
                                    .arg(QLatin1String(mp.typeName())));
             return false;
         }
@@ -182,9 +183,9 @@ bool QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, void *retu
         lastError = QDBusError(reply);
         return false;
     }
-    if (reply.signature() != QLatin1String("v")) {
-        QString errmsg = QLatin1String("Invalid signature `%1' in return from call to "
-                                       DBUS_INTERFACE_PROPERTIES);
+    if (reply.signature() != "v"_L1) {
+        QString errmsg = "Invalid signature `%1' in return from call to "
+                         DBUS_INTERFACE_PROPERTIES ""_L1;
         lastError = QDBusError(QDBusError::InvalidSignature, std::move(errmsg).arg(reply.signature()));
         return false;
     }
@@ -220,8 +221,8 @@ bool QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, void *retu
     }
 
     // there was an error...
-    const auto errmsg = QLatin1String("Unexpected `%1' (%2) when retrieving property `%3.%4' "
-                                      "(expected type `%5' (%6))");
+    const auto errmsg = "Unexpected `%1' (%2) when retrieving property `%3.%4' "
+                        "(expected type `%5' (%6))"_L1;
     lastError = QDBusError(QDBusError::InvalidSignature,
                            errmsg.arg(QLatin1String(foundType),
                                       QLatin1String(foundSignature),

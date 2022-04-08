@@ -79,6 +79,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QT_IMPL_METATYPE_EXTERN(QDBusSlotCache)
 
 // used with dbus_server_allocate_data_slot
@@ -310,7 +312,7 @@ static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, v
 
     QDBusConnectionPrivate *newConnection = new QDBusConnectionPrivate(serverConnection->parent());
     const auto locker = qt_scoped_lock(QDBusConnectionManager::instance()->mutex);
-    QDBusConnectionManager::instance()->setConnection(QLatin1String("QDBusServer-") + QString::number(reinterpret_cast<qulonglong>(newConnection), 16), newConnection);
+    QDBusConnectionManager::instance()->setConnection("QDBusServer-"_L1 + QString::number(reinterpret_cast<qulonglong>(newConnection), 16), newConnection);
     serverConnection->serverConnectionNames << newConnection->name;
 
     // setPeer does the error handling for us
@@ -346,27 +348,27 @@ static QByteArray buildMatchRule(const QString &service,
                                  const QString &member, const QDBusConnectionPrivate::ArgMatchRules &argMatch, const QString & /*signature*/)
 {
     QString result;
-    result += QLatin1String("type='signal',");
-    const auto keyValue = QLatin1String("%1='%2',");
+    result += "type='signal',"_L1;
+    const auto keyValue = "%1='%2',"_L1;
 
     if (!service.isEmpty())
-        result += keyValue.arg(QLatin1String("sender"), service);
+        result += keyValue.arg("sender"_L1, service);
     if (!objectPath.isEmpty())
-        result += keyValue.arg(QLatin1String("path"), objectPath);
+        result += keyValue.arg("path"_L1, objectPath);
     if (!interface.isEmpty())
-        result += keyValue.arg(QLatin1String("interface"), interface);
+        result += keyValue.arg("interface"_L1, interface);
     if (!member.isEmpty())
-        result += keyValue.arg(QLatin1String("member"), member);
+        result += keyValue.arg("member"_L1, member);
 
     // add the argument string-matching now
     if (!argMatch.args.isEmpty()) {
-        const QString keyValue = QLatin1String("arg%1='%2',");
+        const QString keyValue = "arg%1='%2',"_L1;
         for (int i = 0; i < argMatch.args.count(); ++i)
             if (!argMatch.args.at(i).isNull())
                 result += keyValue.arg(i).arg(argMatch.args.at(i));
     }
     if (!argMatch.arg0namespace.isEmpty()) {
-        result += QLatin1String("arg0namespace='%1',").arg(argMatch.arg0namespace);
+        result += "arg0namespace='%1',"_L1.arg(argMatch.arg0namespace);
     }
 
     result.chop(1);             // remove ending comma
@@ -377,7 +379,7 @@ static bool findObject(const QDBusConnectionPrivate::ObjectTreeNode *root,
                        const QString &fullpath, int &usedLength,
                        QDBusConnectionPrivate::ObjectTreeNode &result)
 {
-    if (!fullpath.compare(QLatin1String("/")) && root->obj) {
+    if (!fullpath.compare("/"_L1) && root->obj) {
         usedLength = 1;
         result = *root;
         return root;
@@ -1017,8 +1019,7 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
         } else {
             // generate internal error
             qWarning("Internal error: Failed to deliver message");
-            send(msg.createErrorReply(QDBusError::InternalError,
-                                      QLatin1String("Failed to deliver message")));
+            send(msg.createErrorReply(QDBusError::InternalError, "Failed to deliver message"_L1));
         }
     }
 
@@ -1279,7 +1280,7 @@ void QDBusConnectionPrivate::relaySignal(QObject *obj, const QMetaObject *mo, in
 
     checkThread();
     QDBusReadLocker locker(RelaySignalAction, this);
-    QDBusMessage message = QDBusMessage::createSignal(QLatin1String("/"), interface,
+    QDBusMessage message = QDBusMessage::createSignal("/"_L1, interface,
                                                       QLatin1String(memberName));
     QDBusMessagePrivate::setParametersValidated(message, true);
     message.setArguments(args);
@@ -1382,21 +1383,20 @@ void QDBusConnectionPrivate::sendError(const QDBusMessage &msg, QDBusError::Erro
     if (code == QDBusError::UnknownMethod) {
         QString interfaceMsg;
         if (msg.interface().isEmpty())
-            interfaceMsg = QLatin1String("any interface");
+            interfaceMsg = "any interface"_L1;
         else
-            interfaceMsg = QLatin1String("interface '%1'").arg(msg.interface());
+            interfaceMsg = "interface '%1'"_L1.arg(msg.interface());
 
-        send(msg.createErrorReply(code,
-                                  QLatin1String("No such method '%1' in %2 at object path '%3' "
-                                                "(signature '%4')")
+        send(msg.createErrorReply(code, "No such method '%1' in %2 at object path '%3' "
+                                        "(signature '%4')"_L1
                                   .arg(msg.member(), interfaceMsg, msg.path(), msg.signature())));
     } else if (code == QDBusError::UnknownInterface) {
         send(msg.createErrorReply(QDBusError::UnknownInterface,
-                                  QLatin1String("No such interface '%1' at object path '%2'")
+                                  "No such interface '%1' at object path '%2'"_L1
                                   .arg(msg.interface(), msg.path())));
     } else if (code == QDBusError::UnknownObject) {
         send(msg.createErrorReply(QDBusError::UnknownObject,
-                                  QLatin1String("No such object path '%1'").arg(msg.path())));
+                                  "No such object path '%1'"_L1.arg(msg.path())));
     }
 }
 
@@ -1407,7 +1407,7 @@ bool QDBusConnectionPrivate::activateInternalFilters(const ObjectTreeNode &node,
     const QString interface = msg.interface();
 
     if (interface.isEmpty() || interface == QDBusUtil::dbusInterfaceIntrospectable()) {
-        if (msg.member() == QLatin1String("Introspect") && msg.signature().isEmpty()) {
+        if (msg.member() == "Introspect"_L1 && msg.signature().isEmpty()) {
             //qDebug() << "QDBusConnectionPrivate::activateInternalFilters introspect" << msg.d_ptr->msg;
             QDBusMessage reply = msg.createReply(qDBusIntrospectObject(node, msg.path()));
             send(reply);
@@ -1423,15 +1423,15 @@ bool QDBusConnectionPrivate::activateInternalFilters(const ObjectTreeNode &node,
     if (node.obj && (interface.isEmpty() ||
                      interface == QDBusUtil::dbusInterfaceProperties())) {
         //qDebug() << "QDBusConnectionPrivate::activateInternalFilters properties" << msg.d_ptr->msg;
-        if (msg.member() == QLatin1String("Get") && msg.signature() == QLatin1String("ss")) {
+        if (msg.member() == "Get"_L1 && msg.signature() == "ss"_L1) {
             QDBusMessage reply = qDBusPropertyGet(node, msg);
             send(reply);
             return true;
-        } else if (msg.member() == QLatin1String("Set") && msg.signature() == QLatin1String("ssv")) {
+        } else if (msg.member() == "Set"_L1 && msg.signature() == "ssv"_L1) {
             QDBusMessage reply = qDBusPropertySet(node, msg);
             send(reply);
             return true;
-        } else if (msg.member() == QLatin1String("GetAll") && msg.signature() == QLatin1String("s")) {
+        } else if (msg.member() == "GetAll"_L1 && msg.signature() == "s"_L1) {
             QDBusMessage reply = qDBusPropertyGetAll(node, msg);
             send(reply);
             return true;
@@ -1566,8 +1566,8 @@ void QDBusConnectionPrivate::handleObjectCall(const QDBusMessage &msg)
         objThread = result.obj->thread();
         if (!objThread) {
             send(msg.createErrorReply(QDBusError::InternalError,
-                                      QLatin1String("Object '%1' (at path '%2')"
-                                                    " has no thread. Cannot deliver message.")
+                                      "Object '%1' (at path '%2')"
+                                      " has no thread. Cannot deliver message."_L1
                                       .arg(result.obj->objectName(), msg.path())));
             return;
         }
@@ -1708,7 +1708,7 @@ void QDBusConnectionPrivate::watchForDBusDisconnection()
     hook.params << QMetaType(QMetaType::Void);
     hook.midx = staticMetaObject.indexOfSlot("handleDBusDisconnection()");
     Q_ASSERT(hook.midx != -1);
-    signalHooks.insert(QLatin1String("Disconnected:" DBUS_INTERFACE_LOCAL), hook);
+    signalHooks.insert("Disconnected:" DBUS_INTERFACE_LOCAL ""_L1, hook);
 }
 
 void QDBusConnectionPrivate::setServer(QDBusServer *object, DBusServer *s, const QDBusErrorInternal &error)
@@ -1846,11 +1846,11 @@ void QDBusConnectionPrivate::setConnection(DBusConnection *dbc, const QDBusError
 
     hook.midx = staticMetaObject.indexOfSlot("registerServiceNoLock(QString)");
     Q_ASSERT(hook.midx != -1);
-    signalHooks.insert(QLatin1String("NameAcquired:" DBUS_INTERFACE_DBUS), hook);
+    signalHooks.insert("NameAcquired:" DBUS_INTERFACE_DBUS ""_L1, hook);
 
     hook.midx = staticMetaObject.indexOfSlot("unregisterServiceNoLock(QString)");
     Q_ASSERT(hook.midx != -1);
-    signalHooks.insert(QLatin1String("NameLost:" DBUS_INTERFACE_DBUS), hook);
+    signalHooks.insert("NameLost:" DBUS_INTERFACE_DBUS ""_L1, hook);
 
     // And initialize the hook for the NameOwnerChanged signal;
     // we don't use connectSignal here because the rules are added by connectSignal on a per-need basis
@@ -1859,7 +1859,7 @@ void QDBusConnectionPrivate::setConnection(DBusConnection *dbc, const QDBusError
     hook.params << QMetaType(QMetaType::Void) << QMetaType(QMetaType::QString) << QMetaType(QMetaType::QString) << QMetaType(QMetaType::QString);
     hook.midx = staticMetaObject.indexOfSlot("serviceOwnerChangedNoLock(QString,QString,QString)");
     Q_ASSERT(hook.midx != -1);
-    signalHooks.insert(QLatin1String("NameOwnerChanged:" DBUS_INTERFACE_DBUS), hook);
+    signalHooks.insert("NameOwnerChanged:" DBUS_INTERFACE_DBUS ""_L1, hook);
 
     watchForDBusDisconnection();
 
@@ -2103,9 +2103,9 @@ QDBusMessage QDBusConnectionPrivate::sendWithReplyLocal(const QDBusMessage &mess
     if (!handled) {
         QString interface = message.interface();
         if (interface.isEmpty())
-            interface = QLatin1String("<no-interface>");
+            interface = "<no-interface>"_L1;
         return QDBusMessage::createError(QDBusError::InternalError,
-                                         QLatin1String("Internal error trying to call %1.%2 at %3 (signature '%4'")
+                                         "Internal error trying to call %1.%2 at %3 (signature '%4'"_L1
                                          .arg(interface, message.member(),
                                               message.path(), message.signature()));
     }
@@ -2118,7 +2118,7 @@ QDBusMessage QDBusConnectionPrivate::sendWithReplyLocal(const QDBusMessage &mess
                  qPrintable(message.signature()));
         return QDBusMessage::createError(
             QDBusError(QDBusError::InternalError,
-                       QLatin1String("local-loop message cannot have delayed replies")));
+                       "local-loop message cannot have delayed replies"_L1));
     }
 
     // there is a reply
@@ -2434,7 +2434,7 @@ void QDBusConnectionPrivate::unregisterObject(const QString &path, QDBusConnecti
     QDBusConnectionPrivate::ObjectTreeNode *node = &rootNode;
     QList<QStringView> pathComponents;
     int i;
-    if (path == QLatin1String("/")) {
+    if (path == "/"_L1) {
         i = 0;
     } else {
         pathComponents = QStringView{path}.split(u'/');
@@ -2606,7 +2606,7 @@ QDBusConnectionPrivate::findMetaObject(const QString &service, const QString &pa
 
     QString xml;
     if (reply.type() == QDBusMessage::ReplyMessage) {
-        if (reply.signature() == QLatin1String("s"))
+        if (reply.signature() == "s"_L1)
             // fetch the XML description
             xml = reply.arguments().at(0).toString();
     } else {

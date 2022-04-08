@@ -53,6 +53,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     \class QDBusPendingCall
     \inmodule QtDBus
@@ -188,7 +190,7 @@ bool QDBusPendingCallPrivate::setReplyCallback(QObject *target, const char *memb
 void QDBusPendingCallPrivate::setMetaTypes(int count, const QMetaType *types)
 {
     if (count == 0) {
-        expectedReplySignature = QLatin1String(""); // not null
+        expectedReplySignature = ""_L1; // not null
         return;
     }
 
@@ -219,8 +221,7 @@ void QDBusPendingCallPrivate::checkReceivedSignature()
 
     // can't use startsWith here because a null string doesn't start or end with an empty string
     if (replyMessage.signature().indexOf(expectedReplySignature) != 0) {
-        const auto errorMsg = QLatin1String("Unexpected reply signature: got \"%1\", "
-                                            "expected \"%2\"");
+        const auto errorMsg = "Unexpected reply signature: got \"%1\", expected \"%2\""_L1;
         replyMessage = QDBusMessage::createError(
             QDBusError::InvalidSignature,
             errorMsg.arg(replyMessage.signature(), expectedReplySignature));

@@ -56,6 +56,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QT_IMPL_METATYPE_EXTERN(QDBusMessage)
 
 static_assert(QDBusMessage::InvalidMessage == DBUS_MESSAGE_TYPE_INVALID);
@@ -114,7 +116,7 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message, QDB
                                                 QDBusError *error)
 {
     if (!qdbus_loadLibDBus()) {
-        *error = QDBusError(QDBusError::Failed, QLatin1String("Could not open lidbus-1 library"));
+        *error = QDBusError(QDBusError::Failed, "Could not open lidbus-1 library"_L1);
         return nullptr;
     }
 
@@ -204,7 +206,7 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message, QDB
 
     // not ok;
     q_dbus_message_unref(msg);
-    *error = QDBusError(QDBusError::Failed, QLatin1String("Marshalling failed: ") + marshaller.errorString);
+    *error = QDBusError(QDBusError::Failed, "Marshalling failed: "_L1 + marshaller.errorString);
     return nullptr;
 }
 
