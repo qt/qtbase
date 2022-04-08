@@ -1,8 +1,6 @@
 [scrollUpdate]
 android
 b2qt
-[hoverEnterLeaveEvent]
-macos ci
 [windowOpacity]
 macos ci
 [wheelEventPropagation]

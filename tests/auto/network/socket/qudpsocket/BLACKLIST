@@ -6,8 +6,6 @@ windows-10 gcc cmake
 opensuse-leap
 [echo]
 opensuse-42.3
-[readyReadForEmptyDatagram]
-linux
 [multicast]
 centos
 macos arm
