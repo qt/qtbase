@@ -330,10 +330,9 @@ QXcbScreen *QXcbConnection::findScreenForMonitorInfo(const QList<QPlatformScreen
 {
     for (int i = 0; i < screens.size(); ++i) {
         auto s = static_cast<QXcbScreen*>(screens[i]);
-        if (s->m_monitor && monitorInfo) {
-            QByteArray ba1 = atomName(s->m_monitor->name);
+        if (monitorInfo) {
             QByteArray ba2 = atomName(monitorInfo->name);
-            if (ba1 == ba2)
+            if (s->name().toLocal8Bit() == ba2)
                 return s;
         }
     }

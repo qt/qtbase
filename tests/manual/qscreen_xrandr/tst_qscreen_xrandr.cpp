@@ -143,7 +143,7 @@ void tst_QScreen_Xrandr::xrandr_15_scale()
     QVERIFY(height2 == expectedHeight);
     QVERIFY(width2 == expectedWidth);
 
-    QSignalSpy geometryChangedSpy2(screen1, &QScreen::geometryChanged);
+    QSignalSpy geometryChangedSpy2(screen2, &QScreen::geometryChanged);
 
     // "xrandr --output name1 --scale 1x1"
     args.clear();
