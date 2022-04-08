@@ -957,6 +957,13 @@ void tst_QCborStreamReader::hugeDeviceValidation()
     if (!useDevice)
         return;
 
+#if (defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer))
+    if (   qstrcmp(QTest::currentDataTag(), "bytearray-just-too-big") == 0
+        || qstrcmp(QTest::currentDataTag(),    "string-just-too-big") == 0)
+        QSKIP("This test tries to allocate a huge memory buffer,"
+              " which Address Sanitizer flags as a problem");
+#endif
+
     QFETCH(QSharedPointer<QIODevice>, device);
     QFETCH(CborError, expectedError);
     QFETCH(CborError, expectedValidationError);
