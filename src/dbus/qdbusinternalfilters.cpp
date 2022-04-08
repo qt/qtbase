@@ -177,11 +177,11 @@ QString qDBusIntrospectObject(const QDBusConnectionPrivate::ObjectTreeNode &node
             xml_data += node.treeNode->introspect(path);
         }
 
-        xml_data += QLatin1String( propertiesInterfaceXml );
+        xml_data += QLatin1StringView(propertiesInterfaceXml);
     }
 
-    xml_data += QLatin1String( introspectableInterfaceXml );
-    xml_data += QLatin1String( peerInterfaceXml );
+    xml_data += QLatin1StringView(introspectableInterfaceXml);
+    xml_data += QLatin1StringView(peerInterfaceXml);
 
     if (node.flags & QDBusConnection::ExportChildObjects) {
         xml_data += generateSubObjectXml(node.obj);
@@ -216,7 +216,7 @@ propertyNotFoundError(const QDBusMessage &msg, const QString &interface_name, co
                                 "Property %1%2%3 was not found in object %4"_L1
                                 .arg(interface_name,
                                      interface_name.isEmpty() ? ""_L1 : "."_L1,
-                                     QLatin1String(property_name),
+                                     QLatin1StringView(property_name),
                                      msg.path()));
 }
 
@@ -253,7 +253,7 @@ QDBusMessage qDBusPropertyGet(const QDBusConnectionPrivate::ObjectTreeNode &node
             QDBusAdaptorConnector::AdaptorMap::ConstIterator it;
             it = std::lower_bound(connector->adaptors.constBegin(), connector->adaptors.constEnd(),
                                   interface_name);
-            if (it != connector->adaptors.constEnd() && interface_name == QLatin1String(it->interface)) {
+            if (it != connector->adaptors.constEnd() && interface_name == QLatin1StringView(it->interface)) {
                 interfaceFound = true;
                 value = it->adaptor->property(property_name);
             }
@@ -307,13 +307,13 @@ static QDBusMessage propertyWriteReply(const QDBusMessage &msg, const QString &i
                                     "Invalid arguments for writing to property %1%2%3"_L1
                                     .arg(interface_name,
                                          interface_name.isEmpty() ? ""_L1 : "."_L1,
-                                         QLatin1String(property_name)));
+                                         QLatin1StringView(property_name)));
     case PropertyReadOnly:
         return msg.createErrorReply(QDBusError::PropertyReadOnly,
                                     "Property %1%2%3 is read-only"_L1
                                     .arg(interface_name,
                                          interface_name.isEmpty() ? ""_L1 : "."_L1,
-                                         QLatin1String(property_name)));
+                                         QLatin1StringView(property_name)));
     case PropertyWriteFailed:
         return msg.createErrorReply(QDBusError::InternalError,
                                     QString::fromLatin1("Internal error"));
@@ -408,7 +408,7 @@ QDBusMessage qDBusPropertySet(const QDBusConnectionPrivate::ObjectTreeNode &node
             QDBusAdaptorConnector::AdaptorMap::ConstIterator it;
             it = std::lower_bound(connector->adaptors.constBegin(), connector->adaptors.constEnd(),
                                   interface_name);
-            if (it != connector->adaptors.cend() && interface_name == QLatin1String(it->interface)) {
+            if (it != connector->adaptors.cend() && interface_name == QLatin1StringView(it->interface)) {
                 return propertyWriteReply(msg, interface_name, property_name,
                                           writeProperty(it->adaptor, property_name, value));
             }
@@ -506,7 +506,7 @@ QDBusMessage qDBusPropertyGetAll(const QDBusConnectionPrivate::ObjectTreeNode &n
             QDBusAdaptorConnector::AdaptorMap::ConstIterator it;
             it = std::lower_bound(connector->adaptors.constBegin(), connector->adaptors.constEnd(),
                                   interface_name);
-            if (it != connector->adaptors.constEnd() && interface_name == QLatin1String(it->interface)) {
+            if (it != connector->adaptors.constEnd() && interface_name == QLatin1StringView(it->interface)) {
                 interfaceFound = true;
                 result = readAllProperties(it->adaptor, QDBusConnection::ExportAllProperties);
             }

@@ -179,7 +179,7 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
         QString annotationName = QString::fromLatin1("org.qtproject.QtDBus.QtTypeName");
         if (id >= 0)
             annotationName += QString::fromLatin1(".%1%2")
-                              .arg(QLatin1String(direction))
+                              .arg(QLatin1StringView(direction))
                               .arg(id);
 
         // extract from annotations:
@@ -191,7 +191,7 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
             annotationName = QString::fromLatin1("com.trolltech.QtDBus.QtTypeName");
             if (id >= 0)
                 annotationName += QString::fromLatin1(".%1%2")
-                                  .arg(QLatin1String(direction))
+                                  .arg(QLatin1StringView(direction))
                                   .arg(id);
             typeName = annotations.value(annotationName).toLatin1();
         }

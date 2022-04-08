@@ -103,7 +103,7 @@ public: // typedefs
         inline bool operator<(const AdaptorData &other) const
         { return QByteArray(interface) < other.interface; }
         inline bool operator<(const QString &other) const
-        { return QLatin1String(interface) < other; }
+        { return QLatin1StringView(interface) < other; }
         inline bool operator<(const QByteArray &other) const
         { return interface < other; }
     };

@@ -61,7 +61,7 @@ static inline QString typeNameToXml(const char *typeName)
 {
     // ### copied from qtextdocument.cpp
     // ### move this into Qt Core at some point
-    const QLatin1String plain(typeName);
+    const QLatin1StringView plain(typeName);
     QString rich;
     rich.reserve(int(plain.size() * 1.1));
     for (int i = 0; i < plain.size(); ++i) {
@@ -77,7 +77,7 @@ static inline QString typeNameToXml(const char *typeName)
     return rich;
 }
 
-static inline QLatin1String accessAsString(bool read, bool write)
+static inline QLatin1StringView accessAsString(bool read, bool write)
 {
     if (read)
         return write ? "readwrite"_L1 : "read"_L1 ;
@@ -111,8 +111,8 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
                 continue;
 
             retval += "    <property name=\"%1\" type=\"%2\" access=\"%3\""_L1
-                      .arg(QLatin1String(mp.name()),
-                           QLatin1String(signature),
+                      .arg(QLatin1StringView(mp.name()),
+                           QLatin1StringView(signature),
                            accessAsString(mp.isReadable(), mp.isWritable()));
 
             if (!QDBusMetaType::signatureToMetaType(signature).isValid()) {
@@ -204,7 +204,7 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
 
             QString name;
             if (!names.at(j - 1).isEmpty())
-                name = "name=\"%1\" "_L1.arg(QLatin1String(names.at(j - 1)));
+                name = "name=\"%1\" "_L1.arg(QLatin1StringView(names.at(j - 1)));
 
             bool isOutput = isSignal || j > inputCount;
 
@@ -272,9 +272,9 @@ QString qDBusGenerateMetaObjectXml(QString interface, const QMetaObject *mo, con
         // generate the interface name from the meta object
         int idx = mo->indexOfClassInfo(QCLASSINFO_DBUS_INTERFACE);
         if (idx >= mo->classInfoOffset()) {
-            interface = QLatin1String(mo->classInfo(idx).value());
+            interface = QLatin1StringView(mo->classInfo(idx).value());
         } else {
-            interface = QLatin1String(mo->className());
+            interface = QLatin1StringView(mo->className());
             interface.replace("::"_L1, "."_L1);
 
             if (interface.startsWith("QDBus"_L1)) {

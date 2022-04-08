@@ -80,9 +80,9 @@ QString qDBusInterfaceFromMetaObject(const QMetaObject *mo)
 
     int idx = mo->indexOfClassInfo(QCLASSINFO_DBUS_INTERFACE);
     if (idx >= mo->classInfoOffset()) {
-        interface = QLatin1String(mo->classInfo(idx).value());
+        interface = QLatin1StringView(mo->classInfo(idx).value());
     } else {
-        interface = QLatin1String(mo->className());
+        interface = QLatin1StringView(mo->className());
         interface.replace("::"_L1, "."_L1);
 
         if (interface.startsWith("QDBus"_L1)) {
@@ -158,7 +158,7 @@ int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QList<QMet
     for ( ; it != end; ++it) {
         QByteArray type = *it;
         if (type.endsWith('*')) {
-            errorMsg = "Pointers are not supported: "_L1 + QLatin1String(type);
+            errorMsg = "Pointers are not supported: "_L1 + QLatin1StringView(type);
             return -1;
         }
 
@@ -168,7 +168,7 @@ int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QList<QMet
 
             QMetaType id = QMetaType::fromName(basictype);
             if (!id.isValid()) {
-                errorMsg = "Unregistered output type in parameter list: "_L1 + QLatin1String(type);
+                errorMsg = "Unregistered output type in parameter list: "_L1 + QLatin1StringView(type);
                 return -1;
             } else if (QDBusMetaType::typeToSignature(id) == nullptr)
                 return -1;
@@ -179,7 +179,7 @@ int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QList<QMet
         }
 
         if (seenMessage) {      // && !type.endsWith('&')
-            errorMsg = "Invalid method, non-output parameters after message or after output parameters: "_L1 + QLatin1String(type);
+            errorMsg = "Invalid method, non-output parameters after message or after output parameters: "_L1 + QLatin1StringView(type);
             return -1;          // not allowed
         }
 
@@ -195,14 +195,14 @@ int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QList<QMet
 #endif
 
         if (!id.isValid()) {
-            errorMsg = "Unregistered input type in parameter list: "_L1 + QLatin1String(type);
+            errorMsg = "Unregistered input type in parameter list: "_L1 + QLatin1StringView(type);
             return -1;
         }
 
         if (id == QDBusMetaTypeId::message())
             seenMessage = true;
         else if (QDBusMetaType::typeToSignature(id) == nullptr) {
-            errorMsg = "Type not registered with QtDBus in parameter list: "_L1 + QLatin1String(type);
+            errorMsg = "Type not registered with QtDBus in parameter list: "_L1 + QLatin1StringView(type);
             return -1;
         }
 

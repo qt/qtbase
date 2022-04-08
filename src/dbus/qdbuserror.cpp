@@ -240,7 +240,7 @@ QDBusError::QDBusError(const QDBusMessage &qdmsg)
 QDBusError::QDBusError(ErrorType error, const QString &mess)
     : code(error)
 {
-    nm = QLatin1String(errorMessages[error]);
+    nm = QLatin1StringView(errorMessages[error]);
     msg = mess;
 }
 
@@ -336,7 +336,7 @@ bool QDBusError::isValid() const
 */
 QString QDBusError::errorString(ErrorType error)
 {
-    return QLatin1String(errorMessages[error]);
+    return QLatin1StringView(errorMessages[error]);
 }
 
 #ifndef QT_NO_DEBUG_STREAM

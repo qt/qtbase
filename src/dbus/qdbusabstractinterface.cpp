@@ -166,7 +166,7 @@ bool QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, void *retu
                      "used to read property %s.%s",
                      mp.typeName(), qPrintable(interface), mp.name());
             lastError = QDBusError(QDBusError::Failed, "Unregistered type %1 cannot be handled"_L1
-                                   .arg(QLatin1String(mp.typeName())));
+                                   .arg(QLatin1StringView(mp.typeName())));
             return false;
         }
     }
@@ -224,12 +224,12 @@ bool QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, void *retu
     const auto errmsg = "Unexpected `%1' (%2) when retrieving property `%3.%4' "
                         "(expected type `%5' (%6))"_L1;
     lastError = QDBusError(QDBusError::InvalidSignature,
-                           errmsg.arg(QLatin1String(foundType),
-                                      QLatin1String(foundSignature),
+                           errmsg.arg(QLatin1StringView(foundType),
+                                      QLatin1StringView(foundSignature),
                                       interface,
-                                      QLatin1String(mp.name()),
-                                      QLatin1String(mp.typeName()),
-                                      QLatin1String(expectedSignature)));
+                                      QLatin1StringView(mp.name()),
+                                      QLatin1StringView(mp.typeName()),
+                                      QLatin1StringView(expectedSignature)));
     return false;
 }
 

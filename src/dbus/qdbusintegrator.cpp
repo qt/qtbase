@@ -1281,7 +1281,7 @@ void QDBusConnectionPrivate::relaySignal(QObject *obj, const QMetaObject *mo, in
     checkThread();
     QDBusReadLocker locker(RelaySignalAction, this);
     QDBusMessage message = QDBusMessage::createSignal("/"_L1, interface,
-                                                      QLatin1String(memberName));
+                                                      QLatin1StringView(memberName));
     QDBusMessagePrivate::setParametersValidated(message, true);
     message.setArguments(args);
     QDBusError error;
@@ -1371,7 +1371,7 @@ bool QDBusConnectionPrivate::prepareHook(QDBusConnectionPrivate::SignalHook &hoo
         hook.signature.clear();
         for (int i = 1; i < hook.params.count(); ++i)
             if (hook.params.at(i) != QDBusMetaTypeId::message())
-                hook.signature += QLatin1String( QDBusMetaType::typeToSignature( hook.params.at(i) ) );
+                hook.signature += QLatin1StringView(QDBusMetaType::typeToSignature(hook.params.at(i)));
     }
 
     hook.matchRule = buildMatchRule(service, path, interface, mname, argMatch, hook.signature);
@@ -1495,7 +1495,7 @@ void QDBusConnectionPrivate::activateObject(ObjectTreeNode &node, const QDBusMes
             QDBusAdaptorConnector::AdaptorMap::ConstIterator it;
             it = std::lower_bound(connector->adaptors.constBegin(), connector->adaptors.constEnd(),
                                   msg.interface());
-            if (it != connector->adaptors.constEnd() && msg.interface() == QLatin1String(it->interface)) {
+            if (it != connector->adaptors.constEnd() && msg.interface() == QLatin1StringView(it->interface)) {
                 if (!activateCall(it->adaptor, newflags, msg))
                     sendError(msg, QDBusError::UnknownMethod);
                 return;

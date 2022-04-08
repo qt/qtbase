@@ -68,7 +68,7 @@ void QDBusMarshaller::unregisteredTypeError(QMetaType id)
              "Use qDBusRegisterMetaType to register it",
              name ? name : "", id.id());
     error("Unregistered type %1 passed in arguments"_L1
-          .arg(QLatin1String(id.name())));
+          .arg(QLatin1StringView(id.name())));
 }
 
 inline QString QDBusMarshaller::currentSignature()
@@ -276,7 +276,7 @@ inline QDBusMarshaller *QDBusMarshaller::beginMap(QMetaType kid, QMetaType vid)
         qWarning("QDBusMarshaller: type '%s' (%d) cannot be used as the key type in a D-BUS map.",
                  kid.name(), kid.id());
         error("Type %1 passed in arguments cannot be used as a key in a map"_L1
-              .arg(QLatin1String(kid.name())));
+              .arg(QLatin1StringView(kid.name())));
         return this;
     }
 

@@ -139,7 +139,7 @@ static void copyArgument(void *to, int id, const QVariant &arg)
 
     // is it the same signature?
     QDBusArgument dbarg = qvariant_cast<QDBusArgument>(arg);
-    if (dbarg.currentSignature() != QLatin1String(userSignature)) {
+    if (dbarg.currentSignature() != QLatin1StringView(userSignature)) {
         // not the same signature, another mismatch
         //qWarning?
         return;

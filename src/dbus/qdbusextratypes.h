@@ -60,7 +60,7 @@ public:
     // compiler-generated destructor is ok!
 
     inline explicit QDBusObjectPath(const char *path);
-    inline explicit QDBusObjectPath(QLatin1String path);
+    inline explicit QDBusObjectPath(QLatin1StringView path);
     inline explicit QDBusObjectPath(const QString &path);
     explicit QDBusObjectPath(QString &&p) : m_path(std::move(p)) { doCheck(); }
 
@@ -82,7 +82,7 @@ inline QDBusObjectPath::QDBusObjectPath(const char *objectPath)
     : m_path(QString::fromLatin1(objectPath))
 { doCheck(); }
 
-inline QDBusObjectPath::QDBusObjectPath(QLatin1String objectPath)
+inline QDBusObjectPath::QDBusObjectPath(QLatin1StringView objectPath)
     : m_path(objectPath)
 { doCheck(); }
 
@@ -115,7 +115,7 @@ public:
     // compiler-generated destructor is ok!
 
     inline explicit QDBusSignature(const char *signature);
-    inline explicit QDBusSignature(QLatin1String signature);
+    inline explicit QDBusSignature(QLatin1StringView signature);
     inline explicit QDBusSignature(const QString &signature);
     explicit QDBusSignature(QString &&sig) : m_signature(std::move(sig)) { doCheck(); }
 
@@ -135,7 +135,7 @@ inline QDBusSignature::QDBusSignature(const char *dBusSignature)
     : m_signature(QString::fromLatin1(dBusSignature))
 { doCheck(); }
 
-inline QDBusSignature::QDBusSignature(QLatin1String dBusSignature)
+inline QDBusSignature::QDBusSignature(QLatin1StringView dBusSignature)
     : m_signature(dBusSignature)
 { doCheck(); }
 

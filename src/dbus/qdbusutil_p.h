@@ -99,11 +99,11 @@ namespace Q_DBUS_NO_EXPORT QDBusUtil
     {
         if (name.isEmpty()) {
             if (empty == EmptyAllowed) return true;
-            *error = QDBusError(QDBusError::InvalidInterface, QLatin1String("Interface name cannot be empty"));
+            *error = QDBusError(QDBusError::InvalidInterface, QLatin1StringView("Interface name cannot be empty"));
             return false;
         }
         if (isValidInterfaceName(name)) return true;
-        *error = QDBusError(QDBusError::InvalidInterface, QLatin1String("Invalid interface class: %1").arg(name));
+        *error = QDBusError(QDBusError::InvalidInterface, QLatin1StringView("Invalid interface class: %1").arg(name));
         return false;
     }
 
@@ -111,11 +111,11 @@ namespace Q_DBUS_NO_EXPORT QDBusUtil
     {
         if (name.isEmpty()) {
             if (empty == EmptyAllowed) return true;
-            *error = QDBusError(QDBusError::InvalidService, QLatin1String("Service name cannot be empty"));
+            *error = QDBusError(QDBusError::InvalidService, QLatin1StringView("Service name cannot be empty"));
             return false;
         }
         if (isValidBusName(name)) return true;
-        *error = QDBusError(QDBusError::InvalidService, QLatin1String("Invalid service name: %1").arg(name));
+        *error = QDBusError(QDBusError::InvalidService, QLatin1StringView("Invalid service name: %1").arg(name));
         return false;
     }
 
@@ -123,11 +123,11 @@ namespace Q_DBUS_NO_EXPORT QDBusUtil
     {
         if (path.isEmpty()) {
             if (empty == EmptyAllowed) return true;
-            *error = QDBusError(QDBusError::InvalidObjectPath, QLatin1String("Object path cannot be empty"));
+            *error = QDBusError(QDBusError::InvalidObjectPath, QLatin1StringView("Object path cannot be empty"));
             return false;
         }
         if (isValidObjectPath(path)) return true;
-        *error = QDBusError(QDBusError::InvalidObjectPath, QLatin1String("Invalid object path: %1").arg(path));
+        *error = QDBusError(QDBusError::InvalidObjectPath, QLatin1StringView("Invalid object path: %1").arg(path));
         return false;
     }
 
@@ -136,12 +136,12 @@ namespace Q_DBUS_NO_EXPORT QDBusUtil
         if (!nameType) nameType = "member";
         if (name.isEmpty()) {
             if (empty == EmptyAllowed) return true;
-            *error = QDBusError(QDBusError::InvalidMember, QLatin1String(nameType) + QLatin1String(" name cannot be empty"));
+            *error = QDBusError(QDBusError::InvalidMember, QLatin1StringView(nameType) + QLatin1StringView(" name cannot be empty"));
             return false;
         }
         if (isValidMemberName(name)) return true;
-        *error = QDBusError(QDBusError::InvalidMember, QLatin1String("Invalid %1 name: %2")
-                            .arg(QLatin1String(nameType), name));
+        *error = QDBusError(QDBusError::InvalidMember, QLatin1StringView("Invalid %1 name: %2")
+                            .arg(QLatin1StringView(nameType), name));
         return false;
     }
 
@@ -149,11 +149,11 @@ namespace Q_DBUS_NO_EXPORT QDBusUtil
     {
         if (name.isEmpty()) {
             if (empty == EmptyAllowed) return true;
-            *error = QDBusError(QDBusError::InvalidInterface, QLatin1String("Error name cannot be empty"));
+            *error = QDBusError(QDBusError::InvalidInterface, QLatin1StringView("Error name cannot be empty"));
             return false;
         }
         if (isValidErrorName(name)) return true;
-        *error = QDBusError(QDBusError::InvalidInterface, QLatin1String("Invalid error name: %1").arg(name));
+        *error = QDBusError(QDBusError::InvalidInterface, QLatin1StringView("Invalid error name: %1").arg(name));
         return false;
     }
 
@@ -166,7 +166,7 @@ namespace Q_DBUS_NO_EXPORT QDBusUtil
     inline QString dbusInterface()
     {
         // it's the same string, but just be sure
-        Q_ASSERT(dbusService() == QLatin1String(DBUS_INTERFACE_DBUS));
+        Q_ASSERT(dbusService() == QLatin1StringView(DBUS_INTERFACE_DBUS));
         return dbusService();
     }
     inline QString dbusInterfaceProperties()

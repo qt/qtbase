@@ -145,7 +145,7 @@ static bool variantToString(const QVariant &arg, QString &out)
                 && vUserType != QMetaType::fromType<QDBusSignature>()
                 && vUserType != QMetaType::fromType<QDBusObjectPath>()
                 && vUserType != QMetaType::fromType<QDBusArgument>())
-            out += u'(' + QLatin1String(v.typeName()) + u')';
+            out += u'(' + QLatin1StringView(v.typeName()) + u')';
         out += ": "_L1;
         if (!variantToString(v, out))
             return false;
@@ -154,7 +154,7 @@ static bool variantToString(const QVariant &arg, QString &out)
         out += u'\"' + arg.toString() + u'\"';
     } else {
         out += u'[';
-        out += QLatin1String(arg.typeName());
+        out += QLatin1StringView(arg.typeName());
         out += u']';
     }
 
