@@ -551,7 +551,7 @@ const QAppleKeyMapper::KeyMap &QAppleKeyMapper::keyMapForKey(VirtualKeyCode virt
         qCDebug(lcQpaKeyMapper).verbosity(0) << "\t" << qtModifiers
             << "+" << qUtf8Printable(QString::asprintf("0x%02x", virtualKey))
             << "=" << qUtf8Printable(QString::asprintf("%d / 0x%02x /", qtKey, qtKey))
-                   << QString(QChar(qtKey));
+                   << QKeySequence(qtKey).toString();
     }
 
     return keyMap;
