@@ -695,9 +695,6 @@ void QXcbScreen::setMonitor(xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp
         m_singlescreen = (monitorGeometry == (QRect(crtc->x, crtc->y, crtc->width, crtc->height)));
         if (m_singlescreen) {
             if (crtc->mode) {
-                if (crtc->rotation == XCB_RANDR_ROTATION_ROTATE_90 ||
-                    crtc->rotation == XCB_RANDR_ROTATION_ROTATE_270)
-                    std::swap(crtc->width, crtc->height);
                 updateGeometry(QRect(crtc->x, crtc->y, crtc->width, crtc->height), crtc->rotation);
                 if (mode() != crtc->mode)
                     updateRefreshRate(crtc->mode);

@@ -43,6 +43,7 @@ private slots:
     void xrandr_15_scale();
     void xrandr_15_off_and_on();
     void xrandr_15_primary();
+    void xrandr_15_rotate();
 
 private:
     void xrandr_process(const QStringList &arguments = {});
@@ -230,6 +231,65 @@ void tst_QScreen_Xrandr::xrandr_15_primary()
             QVERIFY(ps->name() == name);
         }
     }
+}
+
+void tst_QScreen_Xrandr::xrandr_15_rotate()
+{
+    QList<QScreen *> screens = QGuiApplication::screens();
+    int ss = screens.size();
+    if (ss < 1)
+        QSKIP("This test requires at least one screen.");
+
+    QScreen *screen1 = screens.at(0);
+    QString name1 = screen1->name();
+    int height1 = screen1->size().height();
+    int width1 = screen1->size().width();
+    qDebug() << "screen " << name1 << ": height=" << height1 << ", width=" << width1;
+
+    int expectedHeight = width1;
+    int expectedWidth = height1;
+
+    QSignalSpy geometryChangedSpy1(screen1, &QScreen::geometryChanged);
+
+    // "xrandr --output name1 --rotate left"
+    QStringList args;
+    args << "--output" << name1 << "--rotate" << "left";
+    xrandr_process(args);
+    QTRY_COMPARE(geometryChangedSpy1.count(), 1);
+
+    QList<QScreen *> screens2 = QGuiApplication::screens();
+    QVERIFY(screens2.size() >= 1);
+    QScreen *screen2 = nullptr;
+    for (QScreen *s : screens2) {
+        if (s->name() == name1)
+            screen2 = s;
+    }
+    int height2 = screen2->size().height();
+    int width2 = screen2->size().width();
+    qDebug() << "screen " << name1 << ": height=" << height2 << ", width=" << width2;
+    QVERIFY(height2 == expectedHeight);
+    QVERIFY(width2 == expectedWidth);
+
+    QSignalSpy geometryChangedSpy2(screen2, &QScreen::geometryChanged);
+
+    // "xrandr --output name1 --rotate normal"
+    args.clear();
+    args << "--output" << name1 << "--rotate" << "normal";
+    xrandr_process(args);
+    QTRY_COMPARE(geometryChangedSpy2.count(), 1);
+
+    QList<QScreen *> screens3 = QGuiApplication::screens();
+    QVERIFY(screens3.size() >= 1);
+    QScreen *screen3 = nullptr;
+    for (QScreen *s : screens3) {
+        if (s->name() == name1)
+            screen3 = s;
+    }
+    int height3 = screen3->size().height();
+    int width3 = screen3->size().width();
+    qDebug() << "screen " << name1 << ": height=" << height3 << ", width=" << width3;
+    QVERIFY(height3 == height1);
+    QVERIFY(width3 == width1);
 }
 
 void tst_QScreen_Xrandr::xrandr_process(const QStringList &args)
