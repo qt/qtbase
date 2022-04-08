@@ -328,9 +328,9 @@ static void readInterface(QXmlStreamReader &xml, QDBusIntrospection::Object *obj
 static void readNode(const QXmlStreamReader &xml, QDBusIntrospection::Object *objData, int nodeLevel)
 {
     const QString objName = xml.attributes().value(QLatin1String("name")).toString();
-    const QString fullName = objData->path.endsWith(QLatin1Char('/'))
+    const QString fullName = objData->path.endsWith(u'/')
                                 ? (objData->path + objName)
-                                : QString(objData->path + QLatin1Char('/') + objName);
+                                : QString(objData->path + u'/' + objName);
     if (!QDBusUtil::isValidObjectPath(fullName)) {
         qDBusParserError("Invalid D-BUS object path '%s' found while parsing introspection",
                  qPrintable(fullName));

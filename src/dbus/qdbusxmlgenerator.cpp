@@ -63,11 +63,11 @@ static inline QString typeNameToXml(const char *typeName)
     QString rich;
     rich.reserve(int(plain.size() * 1.1));
     for (int i = 0; i < plain.size(); ++i) {
-        if (plain.at(i) == QLatin1Char('<'))
+        if (plain.at(i) == u'<')
             rich += QLatin1String("&lt;");
-        else if (plain.at(i) == QLatin1Char('>'))
+        else if (plain.at(i) == u'>')
             rich += QLatin1String("&gt;");
-        else if (plain.at(i) == QLatin1Char('&'))
+        else if (plain.at(i) == u'&')
             rich += QLatin1String("&amp;");
         else
             rich += plain.at(i);
@@ -279,7 +279,7 @@ QString qDBusGenerateMetaObjectXml(QString interface, const QMetaObject *mo, con
 
             if (interface.startsWith(QLatin1String("QDBus"))) {
                 interface.prepend(QLatin1String("org.qtproject.QtDBus."));
-            } else if (interface.startsWith(QLatin1Char('Q')) &&
+            } else if (interface.startsWith(u'Q') &&
                        interface.length() >= 2 && interface.at(1).isUpper()) {
                 // assume it's Qt
                 interface.prepend(QLatin1String("org.qtproject.Qt."));
@@ -287,15 +287,15 @@ QString qDBusGenerateMetaObjectXml(QString interface, const QMetaObject *mo, con
                        QCoreApplication::instance()->applicationName().isEmpty()) {
                 interface.prepend(QLatin1String("local."));
             } else {
-                interface.prepend(QLatin1Char('.')).prepend(QCoreApplication::instance()->applicationName());
+                interface.prepend(u'.').prepend(QCoreApplication::instance()->applicationName());
                 QStringList domainName =
-                    QCoreApplication::instance()->organizationDomain().split(QLatin1Char('.'),
+                    QCoreApplication::instance()->organizationDomain().split(u'.',
                                                                              Qt::SkipEmptyParts);
                 if (domainName.isEmpty())
                     interface.prepend(QLatin1String("local."));
                 else
                     for (int i = 0; i < domainName.count(); ++i)
-                        interface.prepend(QLatin1Char('.')).prepend(domainName.at(i));
+                        interface.prepend(u'.').prepend(domainName.at(i));
             }
         }
     }

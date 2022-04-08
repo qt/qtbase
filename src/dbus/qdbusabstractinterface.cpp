@@ -460,7 +460,7 @@ QDBusMessage QDBusAbstractInterface::callWithArgumentList(QDBus::CallMode mode,
 
     QString m = method;
     // split out the signature from the method
-    int pos = method.indexOf(QLatin1Char('.'));
+    int pos = method.indexOf(u'.');
     if (pos != -1)
         m.truncate(pos);
 

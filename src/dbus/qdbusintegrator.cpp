@@ -384,7 +384,7 @@ static bool findObject(const QDBusConnectionPrivate::ObjectTreeNode *root,
     }
     int start = 0;
     int length = fullpath.length();
-    if (fullpath.at(0) == QLatin1Char('/'))
+    if (fullpath.at(0) == u'/')
         start = 1;
 
     // walk the object tree
@@ -394,7 +394,7 @@ static bool findObject(const QDBusConnectionPrivate::ObjectTreeNode *root,
             break;
         if ((node->flags & QDBusConnectionPrivate::VirtualObject) && (node->flags & QDBusConnection::SubPath))
             break;
-        int end = fullpath.indexOf(QLatin1Char('/'), start);
+        int end = fullpath.indexOf(u'/', start);
         end = (end == -1 ? length : end);
         QStringView pathComponent = QStringView{fullpath}.mid(start, end - start);
 
@@ -437,7 +437,7 @@ static QObject *findChildObject(const QDBusConnectionPrivate::ObjectTreeNode *ro
                 // we're at the correct level
                 return obj;
 
-            int pos = fullpath.indexOf(QLatin1Char('/'), start);
+            int pos = fullpath.indexOf(u'/', start);
             pos = (pos == -1 ? length : pos);
             auto pathComponent = QStringView{fullpath}.mid(start, pos - start);
 
@@ -468,7 +468,7 @@ static QObject *findChildObject(const QDBusConnectionPrivate::ObjectTreeNode *ro
 static QDBusConnectionPrivate::ArgMatchRules matchArgsForService(const QString &service, QDBusServiceWatcher::WatchMode mode)
 {
     QDBusConnectionPrivate::ArgMatchRules matchArgs;
-    if (service.endsWith(QLatin1Char('*'))) {
+    if (service.endsWith(u'*')) {
         matchArgs.arg0namespace = service.chopped(1);
         matchArgs.args << QString();
     }
@@ -641,7 +641,7 @@ static void huntAndEmit(DBusConnection *connection, DBusMessage *msg,
     QDBusConnectionPrivate::ObjectTreeNode::DataList::ConstIterator end = haystack.children.constEnd();
     for ( ; it != end; ++it) {
         if (it->isActive())
-            huntAndEmit(connection, msg, needle, *it, isScriptable, isAdaptor, path + QLatin1Char('/') + it->name);
+            huntAndEmit(connection, msg, needle, *it, isScriptable, isAdaptor, path + u'/' + it->name);
     }
 
     if (needle == haystack.obj) {
@@ -864,7 +864,7 @@ bool QDBusConnectionPrivate::activateCall(QObject* object, int flags, const QDBu
     QString cacheKey = msg.member(), signature = msg.signature();
     if (!signature.isEmpty()) {
         cacheKey.reserve(cacheKey.length() + 1 + signature.length());
-        cacheKey += QLatin1Char('.');
+        cacheKey += u'.';
         cacheKey += signature;
     }
 
@@ -1033,7 +1033,7 @@ QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
       mode(InvalidMode),
       busService(nullptr),
       connection(nullptr),
-      rootNode(QString(QLatin1Char('/'))),
+      rootNode(QStringLiteral("/")),
       anonymousAuthenticationAllowed(false),
       dispatchEnabled(true),
       isAuthenticated(false)
@@ -1363,7 +1363,7 @@ bool QDBusConnectionPrivate::prepareHook(QDBusConnectionPrivate::SignalHook &hoo
     }
     key = mname;
     key.reserve(interface.length() + 1 + mname.length());
-    key += QLatin1Char(':');
+    key += u':';
     key += interface;
 
     if (buildSignature) {
@@ -1665,8 +1665,8 @@ void QDBusConnectionPrivate::handleSignal(const QString &key, const QDBusMessage
             if (arguments.size() < 1)
                 continue;
             const QString param = arguments.at(0).toString();
-            if (param != hook.argumentMatch.arg0namespace
-                && !param.startsWith(hook.argumentMatch.arg0namespace + QLatin1Char('.')))
+            const QStringView ns = hook.argumentMatch.arg0namespace;
+            if (!param.startsWith(ns) || (param.size() != ns.size() && param[ns.size()] != u'.'))
                 continue;
         }
         activateSignal(hook, msg);
@@ -1684,7 +1684,7 @@ void QDBusConnectionPrivate::handleSignal(const QDBusMessage& msg)
 
     QString key = msg.member();
     key.reserve(key.length() + 1 + msg.interface().length());
-    key += QLatin1Char(':');
+    key += u':';
     key += msg.interface();
 
     QDBusReadLocker locker(HandleSignalAction, this);
@@ -1693,7 +1693,7 @@ void QDBusConnectionPrivate::handleSignal(const QDBusMessage& msg)
     key.truncate(msg.member().length() + 1); // keep the ':'
     handleSignal(key, msg);                  // second try
 
-    key = QLatin1Char(':');
+    key = u':';
     key += msg.interface();
     handleSignal(key, msg);                  // third try
 }
@@ -2437,7 +2437,7 @@ void QDBusConnectionPrivate::unregisterObject(const QString &path, QDBusConnecti
     if (path == QLatin1String("/")) {
         i = 0;
     } else {
-        pathComponents = QStringView{path}.split(QLatin1Char('/'));
+        pathComponents = QStringView{path}.split(u'/');
         i = 1;
     }
 

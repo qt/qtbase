@@ -85,7 +85,7 @@ QString qDBusInterfaceFromMetaObject(const QMetaObject *mo)
 
         if (interface.startsWith(QLatin1String("QDBus"))) {
             interface.prepend(QLatin1String("org.qtproject.QtDBus."));
-        } else if (interface.startsWith(QLatin1Char('Q')) &&
+        } else if (interface.startsWith(u'Q') &&
                    interface.length() >= 2 && interface.at(1).isUpper()) {
             // assume it's Qt
             interface.prepend(QLatin1String("org.qtproject.Qt."));
@@ -93,9 +93,9 @@ QString qDBusInterfaceFromMetaObject(const QMetaObject *mo)
                    QCoreApplication::instance()->applicationName().isEmpty()) {
             interface.prepend(QLatin1String("local."));
          } else {
-            interface.prepend(QLatin1Char('.')).prepend(QCoreApplication::instance()->applicationName());
+            interface.prepend(u'.').prepend(QCoreApplication::instance()->applicationName());
             const QString organizationDomain = QCoreApplication::instance()->organizationDomain();
-            const auto domainName = QStringView{organizationDomain}.split(QLatin1Char('.'), Qt::SkipEmptyParts);
+            const auto domainName = QStringView{organizationDomain}.split(u'.', Qt::SkipEmptyParts);
             if (domainName.isEmpty()) {
                  interface.prepend(QLatin1String("local."));
             } else {
@@ -104,7 +104,7 @@ QString qDBusInterfaceFromMetaObject(const QMetaObject *mo)
                 // then composedDomain will be equal "com.example."
                 composedDomain.reserve(organizationDomain.size() + 1);
                 for (auto it = domainName.rbegin(), end = domainName.rend(); it != end; ++it)
-                    composedDomain += *it + QLatin1Char('.');
+                    composedDomain += *it + u'.';
 
                 interface.prepend(composedDomain);
             }

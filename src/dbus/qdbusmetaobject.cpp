@@ -411,7 +411,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     // with a few modifications to make it cleaner
 
     QString className = interface;
-    className.replace(QLatin1Char('.'), QLatin1String("::"));
+    className.replace(u'.', QLatin1String("::"));
     if (className.isEmpty())
         className = QLatin1String("QDBusInterface");
 
@@ -589,7 +589,7 @@ void QDBusMetaObjectGenerator::writeWithoutXml(const QString &interface)
 {
     // no XML definition
     QString tmp(interface);
-    tmp.replace(QLatin1Char('.'), QLatin1String("::"));
+    tmp.replace(u'.', QLatin1String("::"));
     QByteArray name(tmp.toLatin1());
 
     QDBusMetaObjectPrivate *header = new QDBusMetaObjectPrivate;
