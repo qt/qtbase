@@ -74,12 +74,12 @@ public:
 // --- BEGIN public API ---
 
 #define QBENCHMARK \
-    for (QTest::QBenchmarkIterationController __iteration_controller; \
-            __iteration_controller.isDone() == false; __iteration_controller.next())
+    for (QTest::QBenchmarkIterationController _q_iteration_controller; \
+            _q_iteration_controller.isDone() == false; _q_iteration_controller.next())
 
 #define QBENCHMARK_ONCE \
-    for (QTest::QBenchmarkIterationController __iteration_controller(QTest::QBenchmarkIterationController::RunOnce); \
-            __iteration_controller.isDone() == false; __iteration_controller.next())
+    for (QTest::QBenchmarkIterationController _q_iteration_controller(QTest::QBenchmarkIterationController::RunOnce); \
+            _q_iteration_controller.isDone() == false; _q_iteration_controller.next())
 
 namespace QTest
 {
