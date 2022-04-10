@@ -334,10 +334,14 @@ QRecursiveMutex::~QRecursiveMutex()
 */
 bool QRecursiveMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 {
+    unsigned tsanFlags = QtTsan::MutexWriteReentrant | QtTsan::TryLock;
+    QtTsan::mutexPreLock(this, tsanFlags);
+
     Qt::HANDLE self = QThread::currentThreadId();
     if (owner.loadRelaxed() == self) {
         ++count;
         Q_ASSERT_X(count != 0, "QMutex::lock", "Overflow in recursion counter");
+        QtTsan::mutexPostLock(this, tsanFlags, 0);
         return true;
     }
     bool success = true;
@@ -349,6 +353,11 @@ bool QRecursiveMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 
     if (success)
         owner.storeRelaxed(self);
+    else
+        tsanFlags |= QtTsan::TryLockFailed;
+
+    QtTsan::mutexPostLock(this, tsanFlags, 0);
+
     return success;
 }
 
@@ -412,6 +421,7 @@ bool QRecursiveMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 void QRecursiveMutex::unlock() noexcept
 {
     Q_ASSERT(owner.loadRelaxed() == QThread::currentThreadId());
+    QtTsan::mutexPreUnlock(this, 0u);
 
     if (count > 0) {
         count--;
@@ -419,6 +429,8 @@ void QRecursiveMutex::unlock() noexcept
         owner.storeRelaxed(nullptr);
         mutex.unlock();
     }
+
+    QtTsan::mutexPostUnlock(this, 0u);
 }
 
 
