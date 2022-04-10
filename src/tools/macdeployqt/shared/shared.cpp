@@ -834,9 +834,15 @@ void changeInstallName(const QString &bundlePath, const FrameworkInfo &framework
         changeInstallName(framework.installName, deployedInstallName, binary);
         // Workaround for the case when the library ID name is a symlink, while the dependencies
         // specified using the canonical path to the library (QTBUG-56814)
-        QString canonicalInstallName = QFileInfo(framework.installName).canonicalFilePath();
+        QFileInfo fileInfo= QFileInfo(framework.installName);
+        QString canonicalInstallName = fileInfo.canonicalFilePath();
         if (!canonicalInstallName.isEmpty() && canonicalInstallName != framework.installName) {
             changeInstallName(canonicalInstallName, deployedInstallName, binary);
+            // some libraries' inner dependencies (such as ffmpeg, nettle) use symbol link (QTBUG-100093)
+            QString innerDependency = fileInfo.canonicalPath() + "/" + fileInfo.fileName();
+            if (innerDependency != canonicalInstallName && innerDependency != framework.installName) {
+                changeInstallName(innerDependency, deployedInstallName, binary);
+            }
         }
     }
 }
