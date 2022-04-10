@@ -177,6 +177,18 @@ static bool qt_write_dibv5(QDataStream &s, QImage image)
     if (s.status() != QDataStream::Ok)
         return false;
 
+    d->write(reinterpret_cast<const char *>(&bi.bV5RedMask), sizeof(bi.bV5RedMask));
+    if (s.status() != QDataStream::Ok)
+        return false;
+
+    d->write(reinterpret_cast<const char *>(&bi.bV5GreenMask), sizeof(bi.bV5GreenMask));
+    if (s.status() != QDataStream::Ok)
+        return false;
+
+    d->write(reinterpret_cast<const char *>(&bi.bV5BlueMask), sizeof(bi.bV5BlueMask));
+    if (s.status() != QDataStream::Ok)
+        return false;
+
     if (image.format() != QImage::Format_ARGB32)
         image = image.convertToFormat(QImage::Format_ARGB32);
 
