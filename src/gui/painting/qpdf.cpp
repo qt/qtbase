@@ -2982,7 +2982,7 @@ void QPdfEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &ti)
 {
     Q_Q(QPdfEngine);
 
-    if (ti.charFormat.isAnchor()) {
+    if (ti.charFormat.hasProperty(QTextFormat::AnchorHref)) {
         qreal size = ti.fontEngine->fontDef.pixelSize;
         int synthesized = ti.fontEngine->synthesized();
         qreal stretch = synthesized & QFontEngine::SynthesizedStretch ? ti.fontEngine->fontDef.stretch/100. : 1.;
