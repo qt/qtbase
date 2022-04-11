@@ -380,6 +380,7 @@ function(qt6_add_resources outfiles )
             set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC ON
                                                               SKIP_AUTOUIC ON
                                                               SKIP_UNITY_BUILD_INCLUSION ON
+                                                              SKIP_PRECOMPILE_HEADERS ON
                                                               )
             list(APPEND ${outfiles} ${outfile})
         endforeach()
@@ -2020,6 +2021,7 @@ function(_qt_internal_process_resource target resourceName)
             SKIP_AUTOGEN TRUE
             GENERATED TRUE
             SKIP_UNITY_BUILD_INCLUSION TRUE
+            SKIP_PRECOMPILE_HEADERS TRUE
         )
         get_target_property(target_source_dir ${target} SOURCE_DIR)
         if(NOT target_source_dir STREQUAL CMAKE_CURRENT_SOURCE_DIR)
