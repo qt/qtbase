@@ -260,6 +260,9 @@ class QVarLengthArray
     using Storage = QVLAStorage<sizeof(T), alignof(T), Prealloc>;
     static_assert(std::is_nothrow_destructible_v<T>, "Types with throwing destructors are not supported in Qt containers.");
     using Base::verify;
+
+    template <typename U>
+    using if_copyable = std::enable_if_t<std::is_copy_constructible_v<U>, bool>;
 public:
     using size_type = typename Base::size_type;
     using value_type = typename Base::value_type;
@@ -393,13 +396,10 @@ public:
     }
     bool isEmpty() const { return empty(); }
     void resize(qsizetype sz) { Base::resize_impl(Prealloc, this->array, sz); }
-#ifdef Q_QDOC
-    void
-#else
-    template <typename U = T>
-    std::enable_if_t<std::is_copy_constructible_v<U>>
+#ifndef Q_QDOC
+    template <typename U = T, if_copyable<U> = true>
 #endif
-    resize(qsizetype sz, const T &v)
+    void resize(qsizetype sz, const T &v)
     { Base::resize_impl(Prealloc, this->array, sz, &v); }
     inline void clear() { resize(0); }
     void squeeze() { reallocate(size(), size()); }
