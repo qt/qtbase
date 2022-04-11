@@ -119,6 +119,12 @@ function(qt_internal_generate_pkg_config_file module)
         else()
             set(postfix "")
         endif()
+
+        set(extra_args "")
+        if(NOT postfix STREQUAL "")
+            list(APPEND extra_args "-DPOSTFIX=${postfix}")
+        endif()
+
         qt_path_join(pc_step2_path "${build_dir}" ${step_prefix}_${config}_step2.pc)
         qt_path_join(final_pc_path "${build_dir}" ${pkgconfig_file}${postfix}.pc)
 
@@ -129,7 +135,7 @@ function(qt_internal_generate_pkg_config_file module)
             COMMAND ${CMAKE_COMMAND}
                     "-DIN_FILE=${pc_step2_path}"
                     "-DOUT_FILE=${final_pc_path}"
-                    "$<$<BOOL:${postfix}>:-DPOSTFIX=${postfix}>"
+                    ${extra_args}
                     -P "${QT_CMAKE_DIR}/QtFinishPkgConfigFile.cmake"
             VERBATIM
             COMMENT "Generating pc file for target ${target}"
