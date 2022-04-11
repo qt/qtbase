@@ -2214,6 +2214,10 @@ void QPlainTextEdit::inputMethodEvent(QInputMethodEvent *e)
     }
 #endif
     d->sendControlEvent(e);
+    const bool emptyEvent = e->preeditString().isEmpty() && e->commitString().isEmpty()
+                         && e->attributes().isEmpty();
+    if (emptyEvent)
+        return;
     ensureCursorVisible();
 }
 
