@@ -55,15 +55,15 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcMDW, "qt.text.markdown.writer")
 
-static const QChar Space = QLatin1Char(' ');
-static const QChar Tab = QLatin1Char('\t');
-static const QChar Newline = QLatin1Char('\n');
-static const QChar CarriageReturn = QLatin1Char('\r');
+static const QChar Space = u' ';
+static const QChar Tab = u'\t';
+static const QChar Newline = u'\n';
+static const QChar CarriageReturn = u'\r';
 static const QChar LineBreak = u'\x2028';
-static const QChar DoubleQuote = QLatin1Char('"');
-static const QChar Backtick = QLatin1Char('`');
-static const QChar Backslash = QLatin1Char('\\');
-static const QChar Period = QLatin1Char('.');
+static const QChar DoubleQuote = u'"';
+static const QChar Backtick = u'`';
+static const QChar Backslash = u'\\';
+static const QChar Period = u'.';
 
 QTextMarkdownWriter::QTextMarkdownWriter(QTextStream &stream, QTextDocument::MarkdownFeatures features)
   : m_stream(stream), m_features(features)
@@ -95,7 +95,7 @@ void QTextMarkdownWriter::writeTable(const QAbstractItemModel *table)
     }
     m_stream << "|" << Qt::endl;
     for (int col = 0; col < tableColumnWidths.length(); ++col)
-        m_stream << '|' << QString(tableColumnWidths[col], QLatin1Char('-'));
+        m_stream << '|' << QString(tableColumnWidths[col], u'-');
     m_stream << '|'<< Qt::endl;
 
     // write the body
@@ -166,7 +166,7 @@ void QTextMarkdownWriter::writeFrame(const QTextFrame *frame)
                     if (tableRow == 0) {
                         m_stream << Newline;
                         for (int col = 0; col < tableColumnWidths.length(); ++col)
-                            m_stream << '|' << QString(tableColumnWidths[col], QLatin1Char('-'));
+                            m_stream << '|' << QString(tableColumnWidths[col], u'-');
                         m_stream << '|';
                     }
                     m_stream << Newline << "|";
@@ -252,11 +252,11 @@ static int nearestWordWrapIndex(const QString &s, int before)
     if (lcMDW().isDebugEnabled()) {
         QString frag = s.mid(fragBegin, 30);
         qCDebug(lcMDW) << frag << before;
-        qCDebug(lcMDW) << QString(before - fragBegin, Period) + QLatin1Char('<');
+        qCDebug(lcMDW) << QString(before - fragBegin, Period) + u'<';
     }
     for (int i = before - 1; i >= 0; --i) {
         if (s.at(i).isSpace()) {
-            qCDebug(lcMDW) << QString(i - fragBegin, Period) + QLatin1Char('^') << i;
+            qCDebug(lcMDW) << QString(i - fragBegin, Period) + u'^' << i;
             return i;
         }
     }
@@ -290,7 +290,7 @@ static void maybeEscapeFirstChar(QString &s)
     char firstChar = sTrimmed.at(0).toLatin1();
     if (firstChar == '*' || firstChar == '+' || firstChar == '-') {
         int i = s.indexOf(QLatin1Char(firstChar));
-        s.insert(i, QLatin1Char('\\'));
+        s.insert(i, u'\\');
     }
 }
 
@@ -509,7 +509,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
             QString title = ifmt.stringProperty(QTextFormat::ImageTitle);
             if (!title.isEmpty())
                 s += Space + DoubleQuote + title + DoubleQuote;
-            s += QLatin1Char(')');
+            s += u')';
             if (wrap && col + s.length() > ColumnLimit) {
                 m_stream << Newline << wrapIndentString;
                 col = m_wrappedLineIndent;
@@ -517,13 +517,13 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
             m_stream << s;
             col += s.length();
         } else if (fmt.hasProperty(QTextFormat::AnchorHref)) {
-            QString s = QLatin1Char('[') + fragmentText + QLatin1String("](") +
+            QString s = u'[' + fragmentText + QLatin1String("](") +
                     fmt.property(QTextFormat::AnchorHref).toString();
             if (fmt.hasProperty(QTextFormat::TextToolTip)) {
                 s += Space;
                 s += createLinkTitle(fmt.property(QTextFormat::TextToolTip).toString());
             }
-            s += QLatin1Char(')');
+            s += u')';
             if (wrap && col + s.length() > ColumnLimit) {
                 m_stream << Newline << wrapIndentString;
                 col = m_wrappedLineIndent;
@@ -549,7 +549,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
                         bold = fontInfo.bold();
                     }
                     if (fontInfo.italic() != italic) {
-                        markers += QLatin1Char('*');
+                        markers += u'*';
                         italic = fontInfo.italic();
                     }
                     if (fontInfo.strikeOut() != strikeOut) {
@@ -560,7 +560,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
                         // Markdown doesn't support underline, but the parser will treat a single underline
                         // the same as a single asterisk, and the marked fragment will be rendered in italics.
                         // That will have to do.
-                        markers += QLatin1Char('_');
+                        markers += u'_';
                         underline = fontInfo.underline();
                     }
                 }

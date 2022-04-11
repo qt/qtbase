@@ -1205,12 +1205,12 @@ static void init_platform(const QString &pluginNamesWithArguments, const QString
         << "platformPluginPath" << platformPluginPath
         << "platformThemeName" << platformThemeName;
 
-    QStringList plugins = pluginNamesWithArguments.split(QLatin1Char(';'), Qt::SkipEmptyParts);
+    QStringList plugins = pluginNamesWithArguments.split(u';', Qt::SkipEmptyParts);
     QStringList platformArguments;
     QStringList availablePlugins = QPlatformIntegrationFactory::keys(platformPluginPath);
     for (const auto &pluginArgument : plugins) {
         // Split into platform name and arguments
-        QStringList arguments = pluginArgument.split(QLatin1Char(':'), Qt::SkipEmptyParts);
+        QStringList arguments = pluginArgument.split(u':', Qt::SkipEmptyParts);
         if (arguments.isEmpty())
             continue;
         const QString name = arguments.takeFirst().toLower();
@@ -1314,7 +1314,7 @@ static void init_platform(const QString &pluginNamesWithArguments, const QString
     if (!platformArguments.isEmpty()) {
         if (QObject *nativeInterface = QGuiApplicationPrivate::platform_integration->nativeInterface()) {
             for (const QString &argument : qAsConst(platformArguments)) {
-                const int equalsPos = argument.indexOf(QLatin1Char('='));
+                const int equalsPos = argument.indexOf(u'=');
                 const QByteArray name =
                     equalsPos != -1 ? argument.left(equalsPos).toUtf8() : argument.toUtf8();
                 const QVariant value =
@@ -1591,7 +1591,7 @@ void QGuiApplicationPrivate::init()
                 QString qbundlePath = QCFString(CFURLCopyFileSystemPath(bundleURL,
                                                                         kCFURLPOSIXPathStyle));
                 if (qbundlePath.endsWith(QLatin1String(".app")))
-                    QDir::setCurrent(qbundlePath.section(QLatin1Char('/'), 0, -2));
+                    QDir::setCurrent(qbundlePath.section(u'/', 0, -2));
             }
 #endif
 #ifndef QT_NO_SESSIONMANAGER
@@ -1599,7 +1599,7 @@ void QGuiApplicationPrivate::init()
             ++i;
             if (argv[i] && *argv[i]) {
                 session_id = QString::fromLatin1(argv[i]);
-                int p = session_id.indexOf(QLatin1Char('_'));
+                int p = session_id.indexOf(u'_');
                 if (p >= 0) {
                     session_key = session_id.mid(p +1);
                     session_id = session_id.left(p);

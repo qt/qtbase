@@ -769,7 +769,7 @@ static QString fbname(const QString &fileName) // get file basename (sort of)
 {
     QString s = fileName;
     if (!s.isEmpty()) {
-        int i = qMax(s.lastIndexOf(QLatin1Char('/')), s.lastIndexOf(QLatin1Char('\\')));
+        int i = qMax(s.lastIndexOf(u'/'), s.lastIndexOf(u'\\'));
         if (i < 0)
             i = 0;
         auto isAsciiLetterOrNumber = [](QChar ch) -> bool {

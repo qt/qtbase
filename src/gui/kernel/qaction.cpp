@@ -66,7 +66,7 @@ static QString qt_strippedText(QString s)
 {
     s.remove(QLatin1String("..."));
     for (int i = 0; i < s.size(); ++i) {
-        if (s.at(i) == QLatin1Char('&'))
+        if (s.at(i) == u'&')
             s.remove(i, 1);
     }
     return s.trimmed();
@@ -654,7 +654,7 @@ QString QAction::text() const
     QString s = d->text;
     if (s.isEmpty()) {
         s = d->iconText;
-        s.replace(QLatin1Char('&'), QLatin1String("&&"));
+        s.replace(u'&', QLatin1String("&&"));
     }
     return s;
 }

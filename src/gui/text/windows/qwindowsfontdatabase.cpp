@@ -430,7 +430,7 @@ QString qt_getEnglishName(const QString &familyName, bool includeStyle)
         const QFontNames names = qt_getCanonicalFontNames(table, bytes);
         i18n_name = names.name;
         if (includeStyle)
-            i18n_name += QLatin1Char(' ') + names.style;
+            i18n_name += u' ' + names.style;
     }
 error:
     delete [] table;
@@ -509,7 +509,7 @@ static bool addFontToDatabase(QString familyName,
                               StoreFontPayload *sfp)
 {
     // the "@family" fonts are just the same as "family". Ignore them.
-    if (familyName.isEmpty() || familyName.at(0) == QLatin1Char('@') || familyName.startsWith(QLatin1String("WST_")))
+    if (familyName.isEmpty() || familyName.at(0) == u'@' || familyName.startsWith(QLatin1String("WST_")))
         return false;
 
     uchar charSet = logFont.lfCharSet;
@@ -782,10 +782,10 @@ QFontEngine *QWindowsFontDatabase::fontEngine(const QByteArray &fontData, qreal 
 
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_GCC("-Wstrict-aliasing")
-        QString uniqueFamilyName = QLatin1Char('f')
-                + QString::number(guid.Data1, 36) + QLatin1Char('-')
-                + QString::number(guid.Data2, 36) + QLatin1Char('-')
-                + QString::number(guid.Data3, 36) + QLatin1Char('-')
+        QString uniqueFamilyName = u'f'
+                + QString::number(guid.Data1, 36) + u'-'
+                + QString::number(guid.Data2, 36) + u'-'
+                + QString::number(guid.Data3, 36) + u'-'
                 + QString::number(*reinterpret_cast<quint64 *>(guid.Data4), 36);
 QT_WARNING_POP
 

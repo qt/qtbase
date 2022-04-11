@@ -450,11 +450,11 @@ Q_GUI_EXPORT QFontDatabase::WritingSystem qt_writing_system_for_script(int scrip
 */
 static void parseFontName(const QString &name, QString &foundry, QString &family)
 {
-    int i = name.indexOf(QLatin1Char('['));
-    int li = name.lastIndexOf(QLatin1Char(']'));
+    int i = name.indexOf(u'[');
+    int li = name.lastIndexOf(u']');
     if (i >= 0 && li >= 0 && i < li) {
         foundry = name.mid(i + 1, li - i - 1);
-        if (i > 0 && name[i - 1] == QLatin1Char(' '))
+        if (i > 0 && name[i - 1] == u' ')
             i--;
         family = name.left(i);
     } else {
@@ -497,7 +497,7 @@ static void initFontDef(const QtFontDesc &desc, const QFontDef &request, QFontDe
     QString family;
     family = desc.family->name;
     if (! desc.foundry->name.isEmpty() && desc.family->count > 1)
-        family += QLatin1String(" [") + desc.foundry->name + QLatin1Char(']');
+        family += QLatin1String(" [") + desc.foundry->name + u']';
     fontDef->families = QStringList(family);
 
     if (desc.style->smoothScalable
@@ -664,7 +664,7 @@ QStringList QPlatformFontDatabase::fallbacksForFamily(const QString &family, QFo
             for (int k = 0; k < foundry->count; ++k) {
                 QString name = foundry->name.isEmpty()
                         ? f->name
-                        : f->name + QLatin1String(" [") + foundry->name + QLatin1Char(']');
+                        : f->name + QLatin1String(" [") + foundry->name + u']';
                 if (style == foundry->styles[k]->key.style)
                     preferredFallbacks.append(name);
                 else
@@ -1136,9 +1136,9 @@ static QString styleStringHelper(int weight, QFont::Style style)
     }
 
     if (style == QFont::StyleItalic)
-        result += QLatin1Char(' ') + QCoreApplication::translate("QFontDatabase", "Italic");
+        result += u' ' + QCoreApplication::translate("QFontDatabase", "Italic");
     else if (style == QFont::StyleOblique)
-        result += QLatin1Char(' ') + QCoreApplication::translate("QFontDatabase", "Oblique");
+        result += u' ' + QCoreApplication::translate("QFontDatabase", "Oblique");
 
     if (result.isEmpty())
         result = QCoreApplication::translate("QFontDatabase", "Normal", "The Normal or Regular font weight");
@@ -1456,7 +1456,7 @@ QStringList QFontDatabase::families(WritingSystem writingSystem)
                 if (!foundry.isEmpty()) {
                     str += QLatin1String(" [");
                     str += foundry;
-                    str += QLatin1Char(']');
+                    str += u']';
                 }
                 flist.append(str);
             }

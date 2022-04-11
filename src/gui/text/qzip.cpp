@@ -500,9 +500,9 @@ QZipReader::FileInfo QZipPrivate::fillFileInfo(int index) const
     // fix the file path, if broken (convert separators, eat leading and trailing ones)
     fileInfo.filePath = QDir::fromNativeSeparators(fileInfo.filePath);
     QStringView filePathRef(fileInfo.filePath);
-    while (filePathRef.startsWith(QLatin1Char('.')) || filePathRef.startsWith(QLatin1Char('/')))
+    while (filePathRef.startsWith(u'.') || filePathRef.startsWith(u'/'))
         filePathRef = filePathRef.mid(1);
-    while (filePathRef.endsWith(QLatin1Char('/')))
+    while (filePathRef.endsWith(u'/'))
         filePathRef.chop(1);
 
     fileInfo.filePath = filePathRef.toString();
@@ -1330,8 +1330,8 @@ void QZipWriter::addDirectory(const QString &dirName)
 {
     QString name(QDir::fromNativeSeparators(dirName));
     // separator is mandatory
-    if (!name.endsWith(QLatin1Char('/')))
-        name.append(QLatin1Char('/'));
+    if (!name.endsWith(u'/'))
+        name.append(u'/');
     d->addEntry(QZipWriterPrivate::Directory, name, QByteArray());
 }
 

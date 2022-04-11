@@ -117,7 +117,7 @@ static inline bool qt_ensureWritableDir(const QString &name)
 QOpenGLProgramBinaryCache::QOpenGLProgramBinaryCache()
     : m_cacheWritable(false)
 {
-    const QString subPath = QLatin1String("/qtshadercache-") + QSysInfo::buildAbi() + QLatin1Char('/');
+    const QString subPath = QLatin1String("/qtshadercache-") + QSysInfo::buildAbi() + u'/';
     const QString sharedCachePath = QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation);
     m_globalCacheDir = sharedCachePath + subPath;
     m_localCacheDir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + subPath;

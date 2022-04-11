@@ -970,10 +970,10 @@ QKeySequence QKeySequence::mnemonic(const QString &text)
     bool found = false;
     int p = 0;
     while (p >= 0) {
-        p = text.indexOf(QLatin1Char('&'), p) + 1;
+        p = text.indexOf(u'&', p) + 1;
         if (p <= 0 || p >= (int)text.length())
             break;
-        if (text.at(p) != QLatin1Char('&')) {
+        if (text.at(p) != u'&') {
             QChar c = text.at(p);
             if (c.isPrint()) {
                 if (!found) {
@@ -1029,14 +1029,14 @@ int QKeySequence::assign(const QString &ks, QKeySequence::SequenceFormat format)
         // We MUST use something to separate each sequence, and space
         // does not cut it, since some of the key names have space
         // in them.. (Let's hope no one translate with a comma in it:)
-        p = keyseq.indexOf(QLatin1Char(','));
+        p = keyseq.indexOf(u',');
         if (-1 != p) {
             if (p == keyseq.length() - 1) { // Last comma 'Ctrl+,'
                 p = -1;
             } else {
-                if (QLatin1Char(',') == keyseq.at(p+1)) // e.g. 'Ctrl+,, Shift+,,'
+                if (u',' == keyseq.at(p+1)) // e.g. 'Ctrl+,, Shift+,,'
                     p++;
-                if (QLatin1Char(' ') == keyseq.at(p+1)) { // Space after comma
+                if (u' ' == keyseq.at(p+1)) { // Space after comma
                     diff = 1;
                     p++;
                 } else {
@@ -1117,11 +1117,11 @@ int QKeySequencePrivate::decodeString(QString accel, QKeySequence::SequenceForma
 
     QList<QModifKeyName> modifs;
     if (nativeText) {
-        modifs << QModifKeyName(Qt::CTRL, QCoreApplication::translate("QShortcut", "Ctrl").toLower().append(QLatin1Char('+')))
-               << QModifKeyName(Qt::SHIFT, QCoreApplication::translate("QShortcut", "Shift").toLower().append(QLatin1Char('+')))
-               << QModifKeyName(Qt::ALT, QCoreApplication::translate("QShortcut", "Alt").toLower().append(QLatin1Char('+')))
-               << QModifKeyName(Qt::META, QCoreApplication::translate("QShortcut", "Meta").toLower().append(QLatin1Char('+')))
-               << QModifKeyName(Qt::KeypadModifier, QCoreApplication::translate("QShortcut", "Num").toLower().append(QLatin1Char('+')));
+        modifs << QModifKeyName(Qt::CTRL, QCoreApplication::translate("QShortcut", "Ctrl").toLower().append(u'+'))
+               << QModifKeyName(Qt::SHIFT, QCoreApplication::translate("QShortcut", "Shift").toLower().append(u'+'))
+               << QModifKeyName(Qt::ALT, QCoreApplication::translate("QShortcut", "Alt").toLower().append(u'+'))
+               << QModifKeyName(Qt::META, QCoreApplication::translate("QShortcut", "Meta").toLower().append(u'+'))
+               << QModifKeyName(Qt::KeypadModifier, QCoreApplication::translate("QShortcut", "Num").toLower().append(u'+'));
     }
     modifs += *gmodifs; // Test non-translated ones last
 
@@ -1141,7 +1141,7 @@ int QKeySequencePrivate::decodeString(QString accel, QKeySequence::SequenceForma
 
     int i = 0;
     int lastI = 0;
-    while ((i = sl.indexOf(QLatin1Char('+'), i + 1)) != -1) {
+    while ((i = sl.indexOf(u'+', i + 1)) != -1) {
         const QStringView sub = QStringView{sl}.mid(lastI, i - lastI + 1);
         // If we get here the shortcuts contains at least one '+'. We break up
         // along the following strategy:
@@ -1154,7 +1154,7 @@ int QKeySequencePrivate::decodeString(QString accel, QKeySequence::SequenceForma
         // Only '+' can have length 1.
         if (sub.length() == 1) {
             // Make sure we only encounter a single '+' at the end of the accel
-            if (accel.lastIndexOf(QLatin1Char('+')) != accel.length()-1)
+            if (accel.lastIndexOf(u'+') != accel.length()-1)
                 return Qt::Key_unknown;
         } else {
             // Identify the modifier
@@ -1174,7 +1174,7 @@ int QKeySequencePrivate::decodeString(QString accel, QKeySequence::SequenceForma
         lastI = i + 1;
     }
 
-    int p = accel.lastIndexOf(QLatin1Char('+'), accel.length() - 2); // -2 so that Ctrl++ works
+    int p = accel.lastIndexOf(u'+', accel.length() - 2); // -2 so that Ctrl++ works
     QStringView accelRef(accel);
     if (p > 0)
         accelRef = accelRef.mid(p + 1);
@@ -1190,7 +1190,7 @@ int QKeySequencePrivate::decodeString(QString accel, QKeySequence::SequenceForma
         {
             ret |= accelRef.at(0).toUpper().unicode();
         }
-    } else if (accelRef.at(0) == QLatin1Char('f') && (fnum = accelRef.mid(1).toInt()) >= 1 && fnum <= 35) {
+    } else if (accelRef.at(0) == u'f' && (fnum = accelRef.mid(1).toInt()) >= 1 && fnum <= 35) {
         ret |= Qt::Key_F1 + fnum - 1;
     } else {
         // For NativeText, check the translation table first,
@@ -1237,7 +1237,7 @@ static inline void addKey(QString &str, const QString &theKey, QKeySequence::Seq
             //: Key separator in shortcut string
             str += QCoreApplication::translate("QShortcut", "+");
         } else {
-            str += QLatin1Char('+');
+            str += u'+';
         }
     }
 

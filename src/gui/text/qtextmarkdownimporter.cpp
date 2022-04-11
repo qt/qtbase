@@ -58,8 +58,8 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcMD, "qt.text.markdown")
 
-static const QChar Newline = QLatin1Char('\n');
-static const QChar Space = QLatin1Char(' ');
+static const QChar Newline = u'\n';
+static const QChar Space = u' ';
 
 // TODO maybe eliminate the margins after all views recognize BlockQuoteLevel, CSS can format it, etc.
 static const int BlockQuoteIndent = 40; // pixels, same as in QTextHtmlParserNode::initializeProperties

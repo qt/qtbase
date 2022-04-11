@@ -1220,8 +1220,8 @@ static QString groupsToString(const QPalette &p, QPalette::ColorRole cr)
 
         if (p.isBrushSet(cg, cr)) {
             const auto &color = p.color(cg, cr);
-            groupString += QString::fromUtf8(groupEnum.valueToKey(cg)) + QLatin1Char(':') +
-                           color.name(QColor::HexArgb) + QLatin1Char(',');
+            groupString += QString::fromUtf8(groupEnum.valueToKey(cg)) + u':' +
+                           color.name(QColor::HexArgb) + u',';
         }
     }
     groupString.chop(1);

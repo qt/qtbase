@@ -878,10 +878,10 @@ QString QColor::name(NameFormat format) const
 {
     switch (format) {
     case HexRgb:
-        return QLatin1Char('#') + QStringView{QString::number(rgba() | 0x1000000, 16)}.right(6);
+        return u'#' + QStringView{QString::number(rgba() | 0x1000000, 16)}.right(6);
     case HexArgb:
         // it's called rgba() but it does return AARRGGBB
-        return QLatin1Char('#') + QStringView{QString::number(rgba() | Q_INT64_C(0x100000000), 16)}.right(8);
+        return u'#' + QStringView{QString::number(rgba() | Q_INT64_C(0x100000000), 16)}.right(8);
     }
     return QString();
 }

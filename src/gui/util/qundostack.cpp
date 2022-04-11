@@ -302,7 +302,7 @@ QString QUndoCommand::actionText() const
 
 void QUndoCommand::setText(const QString &text)
 {
-    int cdpos = text.indexOf(QLatin1Char('\n'));
+    int cdpos = text.indexOf(u'\n');
     if (cdpos > 0) {
         d->text = text.left(cdpos);
         d->actionText = text.mid(cdpos + 1);
@@ -1044,7 +1044,7 @@ void QUndoStackPrivate::setPrefixedText(QAction *action, const QString &prefix, 
     if (defaultText.isEmpty()) {
         QString s = prefix;
         if (!prefix.isEmpty() && !text.isEmpty())
-            s.append(QLatin1Char(' '));
+            s.append(u' ');
         s.append(text);
         action->setText(s);
     } else {

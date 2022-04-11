@@ -162,7 +162,7 @@ static inline bool detectWebBrowser(const QByteArray &desktop,
 
 static inline bool launch(const QString &launcher, const QUrl &url)
 {
-    const QString command = launcher + QLatin1Char(' ') + QLatin1String(url.toEncoded());
+    const QString command = launcher + u' ' + QLatin1String(url.toEncoded());
     if (debug)
         qDebug("Launching %s", qPrintable(command));
 #if !QT_CONFIG(process)

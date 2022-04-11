@@ -316,13 +316,13 @@ static QString qt_GetLongPathName(const QString &strShortPath)
     if (strShortPath.isEmpty()
         || strShortPath == QLatin1String(".") || strShortPath == QLatin1String(".."))
         return strShortPath;
-    if (strShortPath.length() == 2 && strShortPath.endsWith(QLatin1Char(':')))
+    if (strShortPath.length() == 2 && strShortPath.endsWith(u':'))
         return strShortPath.toUpper();
     const QString absPath = QDir(strShortPath).absolutePath();
     if (absPath.startsWith(QLatin1String("//"))
         || absPath.startsWith(QLatin1String("\\\\"))) // unc
         return QDir::fromNativeSeparators(absPath);
-    if (absPath.startsWith(QLatin1Char('/')))
+    if (absPath.startsWith(u'/'))
         return QString();
     const QString inputString = QLatin1String("\\\\?\\") + QDir::toNativeSeparators(absPath);
     QVarLengthArray<TCHAR, MAX_PATH> buffer(MAX_PATH);
@@ -354,7 +354,7 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
 {
     Q_Q(const QFileSystemModel);
     Q_UNUSED(q);
-    if (path.isEmpty() || path == myComputer() || path.startsWith(QLatin1Char(':')))
+    if (path.isEmpty() || path == myComputer() || path.startsWith(u':'))
         return const_cast<QFileSystemModelPrivate::QFileSystemNode*>(&root);
 
     // Construct the nodes up to the new root path if they need to be built
@@ -370,7 +370,7 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
         absolutePath = QDir(longPath).absolutePath();
 
     // ### TODO can we use bool QAbstractFileEngine::caseSensitive() const?
-    QStringList pathElements = absolutePath.split(QLatin1Char('/'), Qt::SkipEmptyParts);
+    QStringList pathElements = absolutePath.split(u'/', Qt::SkipEmptyParts);
     if ((pathElements.isEmpty())
 #if !defined(Q_OS_WIN)
         && QDir::fromNativeSeparators(longPath) != QLatin1String("/")
@@ -379,16 +379,16 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
         return const_cast<QFileSystemModelPrivate::QFileSystemNode*>(&root);
     QModelIndex index = QModelIndex(); // start with "My Computer"
     QString elementPath;
-    QChar separator = QLatin1Char('/');
+    QChar separator = u'/';
     QString trailingSeparator;
 #if defined(Q_OS_WIN)
     if (absolutePath.startsWith(QLatin1String("//"))) { // UNC path
         QString host = QLatin1String("\\\\") + pathElements.constFirst();
         if (absolutePath == QDir::fromNativeSeparators(host))
-            absolutePath.append(QLatin1Char('/'));
-        if (longPath.endsWith(QLatin1Char('/')) && !absolutePath.endsWith(QLatin1Char('/')))
-            absolutePath.append(QLatin1Char('/'));
-        if (absolutePath.endsWith(QLatin1Char('/')))
+            absolutePath.append(u'/');
+        if (longPath.endsWith(u'/') && !absolutePath.endsWith(u'/'))
+            absolutePath.append(u'/');
+        if (absolutePath.endsWith(u'/'))
             trailingSeparator = QLatin1String("\\");
         int r = 0;
         auto rootNode = const_cast<QFileSystemModelPrivate::QFileSystemNode*>(&root);
@@ -396,7 +396,7 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
         if (it != root.children.cend()) {
             host = it.key(); // Normalize case for lookup in visibleLocation()
         } else {
-            if (pathElements.count() == 1 && !absolutePath.endsWith(QLatin1Char('/')))
+            if (pathElements.count() == 1 && !absolutePath.endsWith(u'/'))
                 return rootNode;
             QFileInfo info(host);
             if (!info.exists())
@@ -409,20 +409,20 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
         r = translateVisibleLocation(rootNode, r);
         index = q->index(r, 0, QModelIndex());
         pathElements.pop_front();
-        separator = QLatin1Char('\\');
+        separator = u'\\';
         elementPath = host;
         elementPath.append(separator);
     } else {
-        if (!pathElements.at(0).contains(QLatin1Char(':'))) {
+        if (!pathElements.at(0).contains(u':')) {
             QString rootPath = QDir(longPath).rootPath();
             pathElements.prepend(rootPath);
         }
-        if (pathElements.at(0).endsWith(QLatin1Char('/')))
+        if (pathElements.at(0).endsWith(u'/'))
             pathElements[0].chop(1);
     }
 #else
     // add the "/" item, since it is a valid path element on Unix
-    if (absolutePath[0] == QLatin1Char('/'))
+    if (absolutePath[0] == u'/')
         pathElements.prepend(QLatin1String("/"));
 #endif
 
@@ -443,7 +443,7 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
         // If after stripping the characters there is nothing left then we
         // just return the parent directory as it is assumed that the path
         // is referring to the parent
-        while (element.endsWith(QLatin1Char('.')) || element.endsWith(QLatin1Char(' ')))
+        while (element.endsWith(u'.') || element.endsWith(u' '))
             element.chop(1);
         // Only filenames that can't possibly exist will be end up being empty
         if (element.isEmpty())
@@ -1414,11 +1414,11 @@ QString QFileSystemModelPrivate::filePath(const QModelIndex &index) const
     }
     QString fullPath = QDir::fromNativeSeparators(path.join(QDir::separator()));
 #if !defined(Q_OS_WIN)
-    if ((fullPath.length() > 2) && fullPath[0] == QLatin1Char('/') && fullPath[1] == QLatin1Char('/'))
+    if ((fullPath.length() > 2) && fullPath[0] == u'/' && fullPath[1] == u'/')
         fullPath = fullPath.mid(1);
 #else
-    if (fullPath.length() == 2 && fullPath.endsWith(QLatin1Char(':')))
-        fullPath.append(QLatin1Char('/'));
+    if (fullPath.length() == 2 && fullPath.endsWith(u':'))
+        fullPath.append(u'/');
 #endif
     return fullPath;
 }
@@ -2051,7 +2051,7 @@ QStringList QFileSystemModelPrivate::unwatchPathsAt(const QModelIndex &index)
         if (pathSize == watchedPath.size()) {
             return path.compare(watchedPath, caseSensitivity) == 0;
         } else if (watchedPath.size() > pathSize) {
-            return watchedPath.at(pathSize) == QLatin1Char('/')
+            return watchedPath.at(pathSize) == u'/'
                 && watchedPath.startsWith(path, caseSensitivity);
         }
         return false;

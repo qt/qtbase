@@ -2182,7 +2182,7 @@ void QTextDocumentLayoutPrivate::drawListItem(const QPointF &offset, QPainter *p
 
     QRectF r(pos, size);
 
-    qreal xoff = fontMetrics.horizontalAdvance(QLatin1Char(' '));
+    qreal xoff = fontMetrics.horizontalAdvance(u' ');
     if (dir == Qt::LeftToRight)
         xoff = -xoff - size.width();
     r.translate( xoff, (fontMetrics.height() / 2) - (size.height() / 2));

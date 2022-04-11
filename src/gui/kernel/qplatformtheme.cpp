@@ -765,15 +765,15 @@ QString QPlatformTheme::removeMnemonics(const QString &original)
     int currPos = 0;
     int l = original.length();
     while (l) {
-        if (original.at(currPos) == QLatin1Char('&')) {
+        if (original.at(currPos) == u'&') {
             ++currPos;
             --l;
             if (l == 0)
                 break;
-        } else if (original.at(currPos) == QLatin1Char('(') && l >= 4 &&
-                   original.at(currPos + 1) == QLatin1Char('&') &&
-                   original.at(currPos + 2) != QLatin1Char('&') &&
-                   original.at(currPos + 3) == QLatin1Char(')')) {
+        } else if (original.at(currPos) == u'(' && l >= 4 &&
+                   original.at(currPos + 1) == u'&' &&
+                   original.at(currPos + 2) != u'&' &&
+                   original.at(currPos + 3) == u')') {
             /* remove mnemonics its format is "\s*(&X)" */
             int n = 0;
             while (finalDest > n && returnText.at(finalDest - n - 1).isSpace())

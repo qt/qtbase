@@ -140,7 +140,7 @@ static FontKeys &fontKeys()
 #if QT_CONFIG(regularexpression)
                 realKey.remove(sizeListMatch);
 #endif
-                const auto fontNames = QStringView(realKey).trimmed().split(QLatin1Char('&'));
+                const auto fontNames = QStringView(realKey).trimmed().split(u'&');
                 fontKey.fontNames.reserve(fontNames.size());
                 for (const auto &fontName : fontNames)
                     fontKey.fontNames.append(fontName.trimmed().toString());
@@ -176,7 +176,7 @@ static bool addFontToDatabase(QString familyName,
                               int type)
 {
     // the "@family" fonts are just the same as "family". Ignore them.
-    if (familyName.isEmpty() || familyName.at(0) == QLatin1Char('@') || familyName.startsWith(QLatin1String("WST_")))
+    if (familyName.isEmpty() || familyName.at(0) == u'@' || familyName.startsWith(QLatin1String("WST_")))
         return false;
 
     uchar charSet = logFont.lfCharSet;

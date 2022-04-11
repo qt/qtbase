@@ -68,9 +68,9 @@ static QString translateDriveName(const QFileInfo &drive)
 {
     QString driveName = drive.absoluteFilePath();
 #ifdef Q_OS_WIN
-    if (driveName.startsWith(QLatin1Char('/'))) // UNC host
+    if (driveName.startsWith(u'/')) // UNC host
         return drive.fileName();
-    if (driveName.endsWith(QLatin1Char('/')))
+    if (driveName.endsWith(u'/'))
         driveName.chop(1);
 #endif // Q_OS_WIN
     return driveName;
@@ -176,7 +176,7 @@ void QFileInfoGatherer::fetchExtendedInformation(const QString &path, const QStr
 */
 void QFileInfoGatherer::updateFile(const QString &filePath)
 {
-    QString dir = filePath.mid(0, filePath.lastIndexOf(QLatin1Char('/')));
+    QString dir = filePath.mid(0, filePath.lastIndexOf(u'/'));
     QString fileName = filePath.mid(dir.length() + 1);
     fetchExtendedInformation(dir, QStringList(fileName));
 }

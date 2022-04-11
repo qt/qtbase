@@ -640,7 +640,7 @@ static QTtfTable generateName(const qttf_name_table &name)
     rec.nameId = 4;
     rec.value = name.family;
     if (name.subfamily != QLatin1String("Regular"))
-        rec.value += QLatin1Char(' ') + name.subfamily;
+        rec.value += u' ' + name.subfamily;
     list.append(rec);
     rec.nameId = 6;
     rec.value = name.postscript_name;

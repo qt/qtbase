@@ -82,7 +82,7 @@ bool QInputControl::isAcceptableInput(const QKeyEvent *event) const
     if (c.isHighSurrogate() && text.length() > 1 && text.at(1).isLowSurrogate())
         return true;
 
-    if (m_type == TextEdit && c == QLatin1Char('\t'))
+    if (m_type == TextEdit && c == u'\t')
         return true;
 
     return false;

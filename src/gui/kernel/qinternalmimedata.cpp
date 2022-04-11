@@ -225,7 +225,7 @@ QByteArray QInternalMimeData::renderDataHelper(const QString &mimeType, const QM
                 QImage image = qvariant_cast<QImage>(data->imageData());
                 QBuffer buf(&ba);
                 buf.open(QBuffer::WriteOnly);
-                image.save(&buf, mimeType.mid(mimeType.indexOf(QLatin1Char('/')) + 1).toLatin1().toUpper());
+                image.save(&buf, mimeType.mid(mimeType.indexOf(u'/') + 1).toLatin1().toUpper());
             }
         }
     }

@@ -653,7 +653,7 @@ QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData
 
 bool QCoreTextFontDatabase::isPrivateFontFamily(const QString &family) const
 {
-    if (family.startsWith(QLatin1Char('.')) || family == QLatin1String("LastResort"))
+    if (family.startsWith(u'.') || family == QLatin1String("LastResort"))
         return true;
 
     return QPlatformFontDatabase::isPrivateFontFamily(family);

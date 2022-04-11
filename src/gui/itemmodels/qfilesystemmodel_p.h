@@ -182,10 +182,10 @@ public:
             for (QFileSystemNode *child : qAsConst(children)) {
                 //On windows the root (My computer) has no path so we don't want to add a / for nothing (e.g. /C:/)
                 if (!path.isEmpty()) {
-                    if (path.endsWith(QLatin1Char('/')))
+                    if (path.endsWith(u'/'))
                         child->updateIcon(iconProvider, path + child->fileName);
                     else
-                        child->updateIcon(iconProvider, path + QLatin1Char('/') + child->fileName);
+                        child->updateIcon(iconProvider, path + u'/' + child->fileName);
                 } else
                     child->updateIcon(iconProvider, child->fileName);
             }
@@ -197,10 +197,10 @@ public:
             for (QFileSystemNode *child : qAsConst(children)) {
                 //On windows the root (My computer) has no path so we don't want to add a / for nothing (e.g. /C:/)
                 if (!path.isEmpty()) {
-                    if (path.endsWith(QLatin1Char('/')))
+                    if (path.endsWith(u'/'))
                         child->retranslateStrings(iconProvider, path + child->fileName);
                     else
-                        child->retranslateStrings(iconProvider, path + QLatin1Char('/') + child->fileName);
+                        child->retranslateStrings(iconProvider, path + u'/' + child->fileName);
                 } else
                     child->retranslateStrings(iconProvider, child->fileName);
             }

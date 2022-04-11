@@ -596,7 +596,7 @@ bool QTextHtmlImporter::appendNodeText()
             && ch != QChar::Nbsp
             && ch != QChar::ParagraphSeparator) {
 
-            if (wsm == QTextHtmlParserNode::WhiteSpacePreLine && (ch == QLatin1Char('\n') || ch == QLatin1Char('\r')))
+            if (wsm == QTextHtmlParserNode::WhiteSpacePreLine && (ch == u'\n' || ch == u'\r'))
                 compressNextWhitespace = PreserveWhiteSpace;
 
             if (compressNextWhitespace == CollapseWhiteSpace)
@@ -607,30 +607,30 @@ bool QTextHtmlImporter::appendNodeText()
             if (wsm == QTextHtmlParserNode::WhiteSpacePre
                 || textEditMode
                ) {
-                if (ch == QLatin1Char('\n')) {
+                if (ch == u'\n') {
                     if (textEditMode)
                         continue;
-                } else if (ch == QLatin1Char('\r')) {
+                } else if (ch == u'\r') {
                     continue;
                 }
             } else if (wsm != QTextHtmlParserNode::WhiteSpacePreWrap) {
                 compressNextWhitespace = RemoveWhiteSpace;
-                if (wsm == QTextHtmlParserNode::WhiteSpacePreLine && (ch == QLatin1Char('\n') || ch == QLatin1Char('\r')))
+                if (wsm == QTextHtmlParserNode::WhiteSpacePreLine && (ch == u'\n' || ch == u'\r'))
                 { }
                 else if (wsm == QTextHtmlParserNode::WhiteSpaceNoWrap)
                     ch = QChar::Nbsp;
                 else
-                    ch = QLatin1Char(' ');
+                    ch = u' ';
             }
         } else {
             compressNextWhitespace = PreserveWhiteSpace;
         }
 
-        if (ch == QLatin1Char('\n')
+        if (ch == u'\n'
             || ch == QChar::ParagraphSeparator) {
 
             if (!textToInsert.isEmpty()) {
-                if (wsm == QTextHtmlParserNode::WhiteSpacePreLine && textToInsert.at(textToInsert.length() - 1) == QLatin1Char(' '))
+                if (wsm == QTextHtmlParserNode::WhiteSpacePreLine && textToInsert.at(textToInsert.length() - 1) == u' ')
                     textToInsert = textToInsert.chopped(1);
                 cursor.insertText(textToInsert, format);
                 textToInsert.clear();

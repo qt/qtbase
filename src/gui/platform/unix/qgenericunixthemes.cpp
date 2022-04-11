@@ -523,7 +523,7 @@ QFont *QKdeThemePrivate::kdeFont(const QVariant &fontValue)
             const QStringList list = fontValue.toStringList();
             if (!list.isEmpty()) {
                 fontFamily = list.first();
-                fontDescription = list.join(QLatin1Char(','));
+                fontDescription = list.join(u',');
             }
         } else {
             fontDescription = fontFamily = fontValue.toString();
@@ -643,7 +643,7 @@ QPlatformTheme *QKdeTheme::createKdeTheme()
 
     const QString kdeDirsVar = QFile::decodeName(qgetenv("KDEDIRS"));
     if (!kdeDirsVar.isEmpty())
-        kdeDirs += kdeDirsVar.split(QLatin1Char(':'), Qt::SkipEmptyParts);
+        kdeDirs += kdeDirsVar.split(u':', Qt::SkipEmptyParts);
 
     const QString kdeVersionHomePath = QDir::homePath() + QLatin1String("/.kde") + QLatin1String(kdeVersionBA);
     if (QFileInfo(kdeVersionHomePath).isDir())

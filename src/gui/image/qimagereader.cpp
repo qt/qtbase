@@ -564,7 +564,7 @@ bool QImageReaderPrivate::initHandler()
         QString fileName = file->fileName();
 
         do {
-            file->setFileName(fileName + QLatin1Char('.')
+            file->setFileName(fileName + u'.'
                     + QLatin1String(extensions.at(currentExtension++).constData()));
             file->open(QIODevice::ReadOnly);
         } while (!file->isOpen() && currentExtension < extensions.size());

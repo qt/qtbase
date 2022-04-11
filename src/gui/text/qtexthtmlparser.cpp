@@ -479,7 +479,7 @@ int QTextHtmlParser::lookupElement(const QString &element)
 static QString quoteNewline(const QString &s)
 {
     QString n = s;
-    n.replace(QLatin1Char('\n'), QLatin1String("\\n"));
+    n.replace(u'\n', QLatin1String("\\n"));
     return n;
 }
 
@@ -509,10 +509,9 @@ QTextHtmlParserNode::QTextHtmlParserNode()
 void QTextHtmlParser::dumpHtml()
 {
     for (int i = 0; i < count(); ++i) {
-        qDebug().nospace() << qPrintable(QString(depth(i)*4, QLatin1Char(' ')))
+        qDebug().nospace() << qPrintable(QString(depth(i) * 4, u' '))
                            << qPrintable(at(i).tag) << ':'
                            << quoteNewline(at(i).text);
-            ;
     }
 }
 
@@ -637,9 +636,9 @@ void QTextHtmlParser::parse()
 {
     while (pos < len) {
         QChar c = txt.at(pos++);
-        if (c == QLatin1Char('<')) {
+        if (c == u'<') {
             parseTag();
-        } else if (c == QLatin1Char('&')) {
+        } else if (c == u'&') {
             nodes.last()->text += parseEntity();
         } else {
             nodes.last()->text += c;
@@ -653,7 +652,7 @@ void QTextHtmlParser::parseTag()
     eatSpace();
 
     // handle comments and other exclamation mark declarations
-    if (hasPrefix(QLatin1Char('!'))) {
+    if (hasPrefix(u'!')) {
         parseExclamationTag();
         if (nodes.last()->wsm != QTextHtmlParserNode::WhiteSpacePre
             && nodes.last()->wsm != QTextHtmlParserNode::WhiteSpacePreWrap
@@ -663,7 +662,7 @@ void QTextHtmlParser::parseTag()
     }
 
     // if close tag just close
-    if (hasPrefix(QLatin1Char('/'))) {
+    if (hasPrefix(u'/')) {
         if (nodes.last()->id == Html_style) {
 #ifndef QT_NO_CSSPARSER
             QCss::Parser parser(nodes.constLast()->text);
@@ -714,8 +713,8 @@ void QTextHtmlParser::parseTag()
 
     // finish tag
     bool tagClosed = false;
-    while (pos < len && txt.at(pos) != QLatin1Char('>')) {
-        if (txt.at(pos) == QLatin1Char('/'))
+    while (pos < len && txt.at(pos) != u'>') {
+        if (txt.at(pos) == u'/')
             tagClosed = true;
 
         pos++;
@@ -728,7 +727,7 @@ void QTextHtmlParser::parseTag()
          || node->wsm == QTextHtmlParserNode::WhiteSpacePreWrap
          || node->wsm == QTextHtmlParserNode::WhiteSpacePreLine)
         && node->isBlock()) {
-        if (pos < len - 1 && txt.at(pos) == QLatin1Char('\n'))
+        if (pos < len - 1 && txt.at(pos) == u'\n')
             ++pos;
     }
 
@@ -745,7 +744,7 @@ void QTextHtmlParser::parseCloseTag()
     QString tag = parseWord().toLower().trimmed();
     while (pos < len) {
         QChar c = txt.at(pos++);
-        if (c == QLatin1Char('>'))
+        if (c == u'>')
             break;
     }
 
@@ -773,7 +772,7 @@ void QTextHtmlParser::parseCloseTag()
          || at(p).wsm == QTextHtmlParserNode::WhiteSpacePreWrap
          || at(p).wsm == QTextHtmlParserNode::WhiteSpacePreLine)
         && at(p).isBlock()) {
-        if (at(last()).text.endsWith(QLatin1Char('\n')))
+        if (at(last()).text.endsWith(u'\n'))
             nodes[last()]->text.chop(1);
     }
 
@@ -785,7 +784,7 @@ void QTextHtmlParser::parseCloseTag()
 void QTextHtmlParser::parseExclamationTag()
 {
     ++pos;
-    if (hasPrefix(QLatin1Char('-')) && hasPrefix(QLatin1Char('-'), 1)) {
+    if (hasPrefix(u'-') && hasPrefix(u'-', 1)) {
         pos += 2;
         // eat comments
         int end = txt.indexOf(QLatin1String("-->"), pos);
@@ -794,7 +793,7 @@ void QTextHtmlParser::parseExclamationTag()
         // eat internal tags
         while (pos < len) {
             QChar c = txt.at(pos++);
-            if (c == QLatin1Char('>'))
+            if (c == u'>')
                 break;
         }
     }
@@ -806,13 +805,13 @@ QString QTextHtmlParser::parseEntity(QStringView entity)
     if (!resolved.isNull())
         return QString(resolved);
 
-    if (entity.length() > 1 && entity.at(0) == QLatin1Char('#')) {
+    if (entity.length() > 1 && entity.at(0) == u'#') {
         entity = entity.mid(1); // removing leading #
 
         int base = 10;
         bool ok = false;
 
-        if (entity.at(0).toLower() == QLatin1Char('x')) { // hex entity?
+        if (entity.at(0).toLower() == u'x') { // hex entity?
             entity = entity.mid(1);
             base = 16;
         }
@@ -837,7 +836,7 @@ QString QTextHtmlParser::parseEntity()
         if (c.isSpace() || pos - recover > 9) {
             goto error;
         }
-        if (c == QLatin1Char(';'))
+        if (c == u';')
             break;
         ++entityLen;
     }
@@ -857,23 +856,23 @@ error:
 QString QTextHtmlParser::parseWord()
 {
     QString word;
-    if (hasPrefix(QLatin1Char('\"'))) { // double quotes
+    if (hasPrefix(u'\"')) { // double quotes
         ++pos;
         while (pos < len) {
             QChar c = txt.at(pos++);
-            if (c == QLatin1Char('\"'))
+            if (c == u'\"')
                 break;
-            else if (c == QLatin1Char('&'))
+            else if (c == u'&')
                 word += parseEntity();
             else
                 word += c;
         }
-    } else if (hasPrefix(QLatin1Char('\''))) { // single quotes
+    } else if (hasPrefix(u'\'')) { // single quotes
         ++pos;
         while (pos < len) {
             QChar c = txt.at(pos++);
             // Allow for escaped single quotes as they may be part of the string
-            if (c == QLatin1Char('\'') && (txt.length() > 1 && txt.at(pos - 2) != QLatin1Char('\\')))
+            if (c == u'\'' && (txt.length() > 1 && txt.at(pos - 2) != u'\\'))
                 break;
             else
                 word += c;
@@ -881,15 +880,12 @@ QString QTextHtmlParser::parseWord()
     } else { // normal text
         while (pos < len) {
             QChar c = txt.at(pos++);
-            if (c == QLatin1Char('>')
-                || (c == QLatin1Char('/') && hasPrefix(QLatin1Char('>')))
-                || c == QLatin1Char('<')
-                || c == QLatin1Char('=')
-                || c.isSpace()) {
+            if (c == u'>' || (c == u'/' && hasPrefix(u'>'))
+                    || c == u'<' || c == u'=' || c.isSpace()) {
                 --pos;
                 break;
             }
-            if (c == QLatin1Char('&'))
+            if (c == u'&')
                 word += parseEntity();
             else
                 word += c;
@@ -1559,7 +1555,7 @@ static void setWidthAttribute(QTextLength *width, const QString &valueStr)
         *width = QTextLength(QTextLength::FixedLength, realVal);
     } else {
         auto value = QStringView(valueStr).trimmed();
-        if (!value.isEmpty() && value.endsWith(QLatin1Char('%'))) {
+        if (!value.isEmpty() && value.endsWith(u'%')) {
             value.truncate(value.size() - 1);
             realVal = value.toDouble(&ok);
             if (ok)
@@ -1571,7 +1567,7 @@ static void setWidthAttribute(QTextLength *width, const QString &valueStr)
 #ifndef QT_NO_CSSPARSER
 void QTextHtmlParserNode::parseStyleAttribute(const QString &value, const QTextDocument *resourceProvider)
 {
-    const QString css = QLatin1String("* {") + value + QLatin1Char('}');
+    const QString css = QLatin1String("* {") + value + u'}';
     QCss::Parser parser(css);
     QCss::StyleSheet sheet;
     parser.parse(&sheet, Qt::CaseInsensitive);
@@ -1586,14 +1582,14 @@ QStringList QTextHtmlParser::parseAttributes()
 
     while (pos < len) {
         eatSpace();
-        if (hasPrefix(QLatin1Char('>')) || hasPrefix(QLatin1Char('/')))
+        if (hasPrefix(u'>') || hasPrefix(u'/'))
             break;
         QString key = parseWord().toLower();
         QString value = QLatin1String("1");
         if (key.size() == 0)
             break;
         eatSpace();
-        if (hasPrefix(QLatin1Char('='))){
+        if (hasPrefix(u'=')){
             pos++;
             eatSpace();
             value = parseWord();
@@ -1627,12 +1623,12 @@ void QTextHtmlParser::applyAttributes(const QStringList &attributes)
                 // the infamous font tag
                 if (key == QLatin1String("size") && value.size()) {
                     int n = value.toInt();
-                    if (value.at(0) != QLatin1Char('+') && value.at(0) != QLatin1Char('-'))
+                    if (value.at(0) != u'+' && value.at(0) != u'-')
                         n -= 3;
                     node->charFormat.setProperty(QTextFormat::FontSizeAdjustment, n);
                 } else if (key == QLatin1String("face")) {
-                    if (value.contains(QLatin1Char(','))) {
-                        const QStringList values = value.split(QLatin1Char(','));
+                    if (value.contains(u',')) {
+                        const QStringList values = value.split(u',');
                         QStringList families;
                         for (const QString &family : values)
                             families << family.trimmed();

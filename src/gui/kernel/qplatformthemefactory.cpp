@@ -53,7 +53,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 
 QPlatformTheme *QPlatformThemeFactory::create(const QString& key, const QString &platformPluginPath)
 {
-    QStringList paramList = key.split(QLatin1Char(':'));
+    QStringList paramList = key.split(u':');
     const QString platform = paramList.takeFirst().toLower();
     loader->setExtraSearchPath(platformPluginPath);
     return qLoadPlugin<QPlatformTheme, QPlatformThemePlugin>(loader(), platform, paramList);

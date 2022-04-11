@@ -120,7 +120,7 @@ private:
         for (int i = start + 1; i < end; ++i) {
             if (m_analysis[i].bidiLevel == m_analysis[start].bidiLevel
                 && m_analysis[i].flags == m_analysis[start].flags
-                && (m_analysis[i].script == m_analysis[start].script || m_string[i] == QLatin1Char('.'))
+                && (m_analysis[i].script == m_analysis[start].script || m_string[i] == u'.')
                 && m_analysis[i].flags < QScriptAnalysis::SpaceTabOrObject
                 && i - start < MaxItemLength)
                 continue;
@@ -2982,14 +2982,14 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
 
             const int end = si.position + length(&si);
             for (int i = si.position; i < end - 1; ++i) {
-                if (layoutData->string.at(i) == QLatin1Char('&')
+                if (layoutData->string.at(i) == u'&'
                     && !attributes[i + 1].whiteSpace && attributes[i + 1].graphemeBoundary) {
                     const int gp = logClusters[i - si.position];
                     glyphs.attributes[gp].dontPrint = true;
                     // emulate grapheme cluster
                     attributes[i] = attributes[i + 1];
                     memset(attributes + i + 1, 0, sizeof(QCharAttributes));
-                    if (layoutData->string.at(i + 1) == QLatin1Char('&'))
+                    if (layoutData->string.at(i + 1) == u'&')
                         ++i;
                 }
             }

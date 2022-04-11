@@ -72,7 +72,7 @@ QPlatformInputContext *QPlatformInputContextFactory::create(const QString& key)
 {
 #if QT_CONFIG(settings)
     if (!key.isEmpty()) {
-        QStringList paramList = key.split(QLatin1Char(':'));
+        QStringList paramList = key.split(u':');
         const QString platform = paramList.takeFirst().toLower();
 
         QPlatformInputContext *ic = qLoadPlugin<QPlatformInputContext, QPlatformInputContextPlugin>

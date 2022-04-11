@@ -749,7 +749,7 @@ static ColorData parseColorValue(QCss::Value v)
     if (!rgb && !hsv && !hsl)
         return ColorData();
 
-    const bool hasAlpha = identifier.size() == 4 && identifier.at(3) == QLatin1Char('a');
+    const bool hasAlpha = identifier.size() == 4 && identifier.at(3) == u'a';
     if (identifier.size() > 3 && !hasAlpha)
         return ColorData();
 
@@ -777,11 +777,11 @@ static ColorData parseColorValue(QCss::Value v)
         return ColorData();
 
     if (hasAlpha && tokenCount != 7) {
-        qWarning("QCssParser::parseColorValue: Specified color with alpha value but no alpha given: '%s'", qPrintable(lst.join(QLatin1Char(' '))));
+        qWarning("QCssParser::parseColorValue: Specified color with alpha value but no alpha given: '%s'", qPrintable(lst.join(u' ')));
         return ColorData();
     }
     if (!hasAlpha && tokenCount != 5) {
-        qWarning("QCssParser::parseColorValue: Specified color without alpha value but alpha given: '%s'", qPrintable(lst.join(QLatin1Char(' '))));
+        qWarning("QCssParser::parseColorValue: Specified color without alpha value but alpha given: '%s'", qPrintable(lst.join(u' ')));
         return ColorData();
     }
 
@@ -1228,7 +1228,7 @@ static bool setFontFamilyFromValues(const QList<QCss::Value> &values, QFont *fon
         if (str.isEmpty())
             break;
         if (shouldAddSpace)
-            family += QLatin1Char(' ');
+            family += u' ';
         family += str;
         shouldAddSpace = true;
     }
@@ -1652,7 +1652,7 @@ QRect Declaration::rectValue() const
     const QStringList func = v.variant.toStringList();
     if (func.count() != 2 || func.at(0).compare(QLatin1String("rect")) != 0)
         return QRect();
-    const auto args = QStringView{func[1]}.split(QLatin1Char(' '), Qt::SkipEmptyParts);
+    const auto args = QStringView{func[1]}.split(u' ', Qt::SkipEmptyParts);
     if (args.count() != 4)
         return QRect();
     QRect rect(args[0].toInt(), args[1].toInt(), args[2].toInt(), args[3].toInt());
@@ -2090,7 +2090,7 @@ bool StyleSelector::basicSelectorMatches(const BasicSelector &sel, NodePtr node)
                 break;
             }
             case QCss::AttributeSelector::MatchDashMatch: {
-                const QString dashPrefix = a.value + QLatin1Char('-');
+                const QString dashPrefix = a.value + u'-';
                 if (attrValue != a.value && !attrValue.startsWith(dashPrefix))
                     return false;
                 break;
@@ -2244,7 +2244,7 @@ QString Scanner::preprocess(const QString &input, bool *hasEscapeSequences)
 
     int i = 0;
     while (i < output.size()) {
-        if (output.at(i) == QLatin1Char('\\')) {
+        if (output.at(i) == u'\\') {
 
             ++i;
             // test for unicode hex escape
@@ -2281,8 +2281,7 @@ QString Scanner::preprocess(const QString &input, bool *hasEscapeSequences)
 int QCssScanner_Generated::handleCommentStart()
 {
     while (pos < input.size() - 1) {
-        if (input.at(pos) == QLatin1Char('*')
-            && input.at(pos + 1) == QLatin1Char('/')) {
+        if (input.at(pos) == u'*' && input.at(pos + 1) == u'/') {
             pos += 2;
             break;
         }
@@ -2312,7 +2311,7 @@ QString Symbol::lexem() const
     if (len > 0)
         result.reserve(len);
     for (int i = 0; i < len; ++i) {
-        if (text.at(start + i) == QLatin1Char('\\') && i < len - 1)
+        if (text.at(start + i) == u'\\' && i < len - 1)
             ++i;
         result += text.at(start + i);
     }
@@ -2337,7 +2336,7 @@ void Parser::init(const QString &css, bool isFile)
     if (isFile) {
         QFile file(css);
         if (file.open(QFile::ReadOnly)) {
-            sourcePath = QFileInfo(styleSheet).absolutePath() + QLatin1Char('/');
+            sourcePath = QFileInfo(styleSheet).absolutePath() + u'/';
             QTextStream stream(&file);
             styleSheet = stream.readAll();
         } else {
@@ -2405,8 +2404,7 @@ Symbol Parser::errorSymbol()
 
 static inline void removeOptionalQuotes(QString *str)
 {
-    if (!str->startsWith(QLatin1Char('\''))
-        && !str->startsWith(QLatin1Char('\"')))
+    if (!str->startsWith(u'\'') && !str->startsWith(u'\"'))
         return;
     str->remove(0, 1);
     str->chop(1);

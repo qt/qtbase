@@ -7160,17 +7160,17 @@ start_lengthVariant:
     int old_offset = offset;
     for (; offset < text.length(); offset++) {
         QChar chr = text.at(offset);
-        if (chr == QLatin1Char('\r') || (singleline && chr == QLatin1Char('\n'))) {
-            text[offset] = QLatin1Char(' ');
-        } else if (chr == QLatin1Char('\n')) {
+        if (chr == u'\r' || (singleline && chr == u'\n')) {
+            text[offset] = u' ';
+        } else if (chr == u'\n') {
             text[offset] = QChar::LineSeparator;
-        } else if (chr == QLatin1Char('&')) {
+        } else if (chr == u'&') {
             ++maxUnderlines;
-        } else if (chr == QLatin1Char('\t')) {
+        } else if (chr == u'\t') {
             if (!expandtabs) {
-                text[offset] = QLatin1Char(' ');
+                text[offset] = u' ';
             } else if (!tabarraylen && !tabstops) {
-                tabstops = qRound(fm.horizontalAdvance(QLatin1Char('x'))*8);
+                tabstops = qRound(fm.horizontalAdvance(u'x')*8);
             }
         } else if (chr == u'\x9c') {
             // string with multiple length variants
@@ -7187,13 +7187,13 @@ start_lengthVariant:
         QChar *cin = cout;
         int l = length;
         while (l) {
-            if (*cin == QLatin1Char('&')) {
+            if (*cin == u'&') {
                 ++cin;
                 --length;
                 --l;
                 if (!l)
                     break;
-                if (*cin != QLatin1Char('&') && !hidemnmemonic && !(tf & Qt::TextDontPrint)) {
+                if (*cin != u'&' && !hidemnmemonic && !(tf & Qt::TextDontPrint)) {
                     QTextLayout::FormatRange range;
                     range.start = cout - cout0;
                     range.length = 1;
@@ -7201,9 +7201,9 @@ start_lengthVariant:
                     underlineFormats.append(range);
                 }
 #ifdef Q_OS_MAC
-            } else if (hidemnmemonic && *cin == QLatin1Char('(') && l >= 4 &&
-                       cin[1] == QLatin1Char('&') && cin[2] != QLatin1Char('&') &&
-                       cin[3] == QLatin1Char(')')) {
+            } else if (hidemnmemonic && *cin == u'(' && l >= 4 &&
+                       cin[1] == u'&' && cin[2] != u'&' &&
+                       cin[3] == u')') {
                 int n = 0;
                 while ((cout - n) > cout0 && (cout - n - 1)->isSpace())
                     ++n;

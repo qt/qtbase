@@ -2523,7 +2523,7 @@ void QTextLine::draw_internal(QPainter *p, const QPointF &pos,
 
             const qreal lineHeight = line.height().toReal();
             QRectF r(pos.x() + line.x.toReal(), pos.y() + line.y.toReal(),
-                     lineHeight / 2, QFontMetrics(eng->font()).horizontalAdvance(QLatin1Char(' ')));
+                     lineHeight / 2, QFontMetrics(eng->font()).horizontalAdvance(u' '));
             setPenAndDrawBackground(p, QPen(), selection->format, r);
             p->setPen(pen);
         }

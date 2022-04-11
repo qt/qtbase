@@ -269,7 +269,7 @@ QIconCacheGtkReader::QIconCacheGtkReader(const QString &dirName)
     quint32 dirListLen = read32(dirListOffset);
     for (uint i = 0; i < dirListLen; ++i) {
         quint32 offset = read32(dirListOffset + 4 + 4 * i);
-        if (!m_isValid || offset >= m_size || lastModified < QFileInfo(dirName + QLatin1Char('/')
+        if (!m_isValid || offset >= m_size || lastModified < QFileInfo(dirName + u'/'
                 + QString::fromUtf8(reinterpret_cast<const char*>(m_data + offset))).lastModified()) {
             m_isValid = false;
             return;
@@ -348,7 +348,7 @@ QIconTheme::QIconTheme(const QString &themeName)
     const QStringList iconDirs = QIcon::themeSearchPaths();
     for ( int i = 0 ; i < iconDirs.size() ; ++i) {
         QDir iconDir(iconDirs[i]);
-        QString themeDir = iconDir.path() + QLatin1Char('/') + themeName;
+        QString themeDir = iconDir.path() + u'/' + themeName;
         QFileInfo themeDirInfo(themeDir);
 
         if (themeDirInfo.isDir()) {
@@ -475,10 +475,10 @@ QThemeIconInfo QIconLoader::findIconHelper(const QString &themeName,
                 }
             }
 
-            QString contentDir = contentDirs.at(i) + QLatin1Char('/');
+            QString contentDir = contentDirs.at(i) + u'/';
             for (int j = 0; j < subDirs.size() ; ++j) {
                 const QIconDirInfo &dirInfo = subDirs.at(j);
-                const QString subDir = contentDir + dirInfo.path + QLatin1Char('/');
+                const QString subDir = contentDir + dirInfo.path + u'/';
                 const QString pngPath = subDir + pngIconName;
                 if (QFile::exists(pngPath)) {
                     auto iconEntry = std::make_unique<PixmapEntry>();
@@ -505,7 +505,7 @@ QThemeIconInfo QIconLoader::findIconHelper(const QString &themeName,
         }
 
         // If it's possible - find next fallback for the icon
-        const int indexOfDash = iconNameFallback.lastIndexOf(QLatin1Char('-'));
+        const int indexOfDash = iconNameFallback.lastIndexOf(u'-');
         if (indexOfDash == -1)
             break;
 

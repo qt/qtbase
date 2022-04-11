@@ -1469,18 +1469,18 @@ void QTextCursor::insertText(const QString &text, const QTextCharFormat &_format
 
             const int blockEnd = i;
 
-            if (ch == QLatin1Char('\r')
+            if (ch == u'\r'
                 && (i + 1) < text.length()
-                && text.at(i + 1) == QLatin1Char('\n')) {
+                && text.at(i + 1) == u'\n') {
                 ++i;
                 ch = text.at(i);
             }
 
-            if (ch == QLatin1Char('\n')
+            if (ch == u'\n'
                 || ch == QChar::ParagraphSeparator
                 || ch == QTextBeginningOfFrame
                 || ch == QTextEndOfFrame
-                || ch == QLatin1Char('\r')) {
+                || ch == u'\r') {
 
                 if (!hasEditBlock) {
                     hasEditBlock = true;

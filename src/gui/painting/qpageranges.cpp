@@ -196,7 +196,7 @@ QPageRanges QPageRanges::fromString(const QString &ranges)
         if (item.isEmpty())
             return QPageRanges();
 
-        if (item.contains(QLatin1Char('-'))) {
+        if (item.contains(u'-')) {
             const QStringList rangeItems = item.split(u'-');
             if (rangeItems.count() != 2)
                 return QPageRanges();
@@ -246,7 +246,7 @@ QString QPageRanges::toString() const
     QString result;
     for (const Range &range : d->intervals) {
         if (!result.isEmpty())
-            result += QLatin1Char(',');
+            result += u',';
 
         if (range.from == range.to)
             result += QString::number(range.from);

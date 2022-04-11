@@ -5704,8 +5704,8 @@ QMap<QString, QString> qt_getImageTextFromDescription(const QString &description
     QMap<QString, QString> text;
     const auto pairs = QStringView{description}.split(u"\n\n");
     for (const auto &pair : pairs) {
-        int index = pair.indexOf(QLatin1Char(':'));
-        if (index >= 0 && pair.indexOf(QLatin1Char(' ')) < index) {
+        int index = pair.indexOf(u':');
+        if (index >= 0 && pair.indexOf(u' ') < index) {
             if (!pair.trimmed().isEmpty())
                 text.insert(QLatin1String("Description"), pair.toString().simplified());
         } else {

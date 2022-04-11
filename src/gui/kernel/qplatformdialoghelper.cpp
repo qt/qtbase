@@ -648,7 +648,7 @@ QStringList QFileDialogOptions::mimeTypeFilters() const
 void QFileDialogOptions::setDefaultSuffix(const QString &suffix)
 {
     d->defaultSuffix = suffix;
-    if (d->defaultSuffix.size() > 1 && d->defaultSuffix.startsWith(QLatin1Char('.')))
+    if (d->defaultSuffix.size() > 1 && d->defaultSuffix.startsWith(u'.'))
         d->defaultSuffix.remove(0, 1); // Silently change ".txt" -> "txt".
 }
 
@@ -782,7 +782,7 @@ QStringList QPlatformFileDialogHelper::cleanFilterList(const QString &filter)
     QRegularExpressionMatch match = regexp.match(filter);
     if (match.hasMatch())
         f = match.captured(2);
-    return f.split(QLatin1Char(' '), Qt::SkipEmptyParts);
+    return f.split(u' ', Qt::SkipEmptyParts);
 #else
     Q_UNUSED(filter);
     return QStringList();

@@ -450,7 +450,7 @@ void QPixmapIconEngine::addFile(const QString &fileName, const QSize &size, QIco
 {
     if (fileName.isEmpty())
         return;
-    const QString abs = fileName.startsWith(QLatin1Char(':')) ? fileName : QFileInfo(fileName).absoluteFilePath();
+    const QString abs = fileName.startsWith(u':') ? fileName : QFileInfo(fileName).absoluteFilePath();
     const bool ignoreSize = !size.isValid();
     ImageReader imageReader(abs);
     const QByteArray format = imageReader.format();
@@ -1557,11 +1557,11 @@ QString qt_findAtNxFile(const QString &baseFileName, qreal targetDevicePixelRati
     if (disableNxImageLoading)
         return baseFileName;
 
-    int dotIndex = baseFileName.lastIndexOf(QLatin1Char('.'));
+    int dotIndex = baseFileName.lastIndexOf(u'.');
     if (dotIndex == -1) { /* no dot */
         dotIndex = baseFileName.size(); /* append */
-    } else if (dotIndex >= 2 && baseFileName[dotIndex - 1] == QLatin1Char('9')
-        && baseFileName[dotIndex - 2] == QLatin1Char('.')) {
+    } else if (dotIndex >= 2 && baseFileName[dotIndex - 1] == u'9'
+        && baseFileName[dotIndex - 2] == u'.') {
         // If the file has a .9.* (9-patch image) extension, we must ensure that the @nx goes before it.
         dotIndex -= 2;
     }

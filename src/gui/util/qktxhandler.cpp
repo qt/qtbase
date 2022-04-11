@@ -53,6 +53,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #define KTX_IDENTIFIER_LENGTH 12
 static const char ktxIdentifier[KTX_IDENTIFIER_LENGTH] = { '\xAB', 'K', 'T', 'X', ' ', '1', '1', '\xBB', '\r', '\n', '\x1A', '\n' };
 static const quint32 platformEndianIdentifier = 0x04030201;
@@ -237,7 +239,7 @@ QMap<QByteArray, QByteArray> QKtxHandler::decodeKeyValues(QByteArrayView view) c
         // To separate the key and value we convert the complete data to utf-8 and find the first
         // null terminator from the left, here we split the data into two.
         const auto str = QString::fromUtf8(view.constData() + offset, keyAndValueByteSize);
-        const int idx = str.indexOf(QLatin1Char('\0'));
+        const int idx = str.indexOf('\0'_L1);
         if (idx == -1)
             continue;
 

@@ -208,13 +208,13 @@ static QStringList splitIntoFamilies(const QString &family)
     QStringList familyList;
     if (family.isEmpty())
         return familyList;
-    const auto list = QStringView{family}.split(QLatin1Char(','));
+    const auto list = QStringView{family}.split(u',');
     const int numFamilies = list.size();
     familyList.reserve(numFamilies);
     for (int i = 0; i < numFamilies; ++i) {
         auto str = list.at(i).trimmed();
-        if ((str.startsWith(QLatin1Char('"')) && str.endsWith(QLatin1Char('"')))
-            || (str.startsWith(QLatin1Char('\'')) && str.endsWith(QLatin1Char('\'')))) {
+        if ((str.startsWith(u'"') && str.endsWith(u'"'))
+            || (str.startsWith(u'\'') && str.endsWith(u'\''))) {
             str = str.mid(1, str.length() - 2);
         }
         familyList << str.toString();
@@ -844,7 +844,7 @@ QString QFont::family() const
 void QFont::setFamily(const QString &family)
 {
 #ifdef QT_DEBUG
-    if (family.contains(QLatin1Char(','))) {
+    if (family.contains(u',')) {
         qWarning("From Qt 6.2, QFont::setFamily() will no long split the family string on the comma"
                  " and will keep it as a single family");
     }
@@ -2123,7 +2123,7 @@ QString QFont::key() const
  */
 QString QFont::toString() const
 {
-    const QChar comma(QLatin1Char(','));
+    const QChar comma(u',');
     QString fontDescription = family() + comma +
         QString::number(     pointSizeF()) + comma +
         QString::number(      pixelSize()) + comma +
@@ -2171,7 +2171,7 @@ size_t qHash(const QFont &font, size_t seed) noexcept
 bool QFont::fromString(const QString &descrip)
 {
     const auto sr = QStringView(descrip).trimmed();
-    const auto l = sr.split(QLatin1Char(','));
+    const auto l = sr.split(u',');
     const int count = l.count();
     if (!count || (count > 2 && count < 9) || count == 9 || count > 17 ||
         l.first().isEmpty()) {
@@ -2793,7 +2793,7 @@ bool QFontInfo::fixedPitch() const
     Q_ASSERT(engine != nullptr);
 #ifdef Q_OS_MAC
     if (!engine->fontDef.fixedPitchComputed) {
-        QChar ch[2] = { QLatin1Char('i'), QLatin1Char('m') };
+        QChar ch[2] = { u'i', u'm' };
         QGlyphLayoutArray<2> g;
         int l = 2;
         if (!engine->stringToCMap(ch, 2, &g, &l, {}))
