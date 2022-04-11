@@ -189,7 +189,7 @@ public:
         XmlStringRef name;
         XmlStringRef qualifiedName;
         NamespaceDeclaration namespaceDeclaration;
-        int tagStackStringStorageSize;
+        qsizetype tagStackStringStorageSize;
         qsizetype namespaceDeclarationsSize;
     };
 
@@ -197,14 +197,14 @@ public:
     QXmlStreamPrivateTagStack();
     QXmlStreamSimpleStack<NamespaceDeclaration> namespaceDeclarations;
     QString tagStackStringStorage;
-    int tagStackStringStorageSize;
-    int initialTagStackStringStorageSize;
+    qsizetype tagStackStringStorageSize;
+    qsizetype initialTagStackStringStorageSize;
     bool tagsDone;
 
     XmlStringRef addToStringStorage(QStringView s)
     {
-        int pos = tagStackStringStorageSize;
-        int sz = s.size();
+        qsizetype pos = tagStackStringStorageSize;
+        qsizetype sz = s.size();
         if (pos != tagStackStringStorage.size())
             tagStackStringStorage.resize(pos);
         tagStackStringStorage.append(s.data(), sz);
