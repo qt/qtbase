@@ -105,6 +105,18 @@
     \l{default-constructed value}.
 */
 
+/*!
+    \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::QVarLengthArray(qsizetype size, const T &v)
+    \since 6.4
+
+    Constructs an array with an initial size of \a size elements filled with
+    copies of \a v.
+
+    \note This constructor is only available when \c T is copy-constructible.
+
+    \sa size(), squeeze()
+*/
+
 
 /*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::QVarLengthArray(std::initializer_list<T> args)
     \since 5.5

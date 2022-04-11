@@ -286,6 +286,15 @@ public:
 
     inline explicit QVarLengthArray(qsizetype size);
 
+#ifndef Q_QDOC
+    template <typename U = T, if_copyable<U> = true>
+#endif
+    explicit QVarLengthArray(qsizetype sz, const T &v)
+        : QVarLengthArray{}
+    {
+        resize(sz, v);
+    }
+
     QVarLengthArray(const QVarLengthArray &other)
         : QVarLengthArray{}
     {

@@ -750,6 +750,18 @@ void tst_ContainerApiSymmetry::resize_impl() const
     c.resize(4, V(5));
     QCOMPARE(c.size(), S(4));
     QCOMPARE(c.back(), V(5));
+
+    // ctor/resize symmetry:
+    {
+        Container c1(S(5), V(4));
+        QCOMPARE(c1.size(), S(5));
+
+        Container c2;
+        c2.resize(S(5), V(4));
+        QCOMPARE(c2.size(), S(5));
+
+        QCOMPARE(c1, c2);
+    }
 }
 
 template <typename Container>
