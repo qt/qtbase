@@ -103,18 +103,6 @@ public:
     int index1;
     int index2;
     QString text;
-
-private:
-    QFutureCallOutEvent(CallOutType callOutType,
-                        int index1,
-                        int index2,
-                        const QString &text)
-        : QEvent(QEvent::FutureCallOut),
-          callOutType(callOutType),
-          index1(index1),
-          index2(index2),
-          text(text)
-    { }
 };
 
 class Q_CORE_EXPORT QFutureCallOutInterface
