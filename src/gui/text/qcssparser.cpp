@@ -269,7 +269,7 @@ static const short indexOfId[NumKnownValues] = { 0, 41, 48, 42, 49, 50, 55, 35, 
 QString Value::toString() const
 {
     if (type == KnownIdentifier) {
-        return QLatin1String(values[indexOfId[variant.toInt()]].name);
+        return QLatin1StringView(values[indexOfId[variant.toInt()]].name);
     } else {
         return variant.toString();
     }
@@ -362,12 +362,12 @@ static const QCssKnownValue styleFeatures[NumKnownStyleFeatures - 1] = {
 
 static bool operator<(const QString &name, const QCssKnownValue &prop)
 {
-    return QString::compare(name, QLatin1String(prop.name), Qt::CaseInsensitive) < 0;
+    return QString::compare(name, QLatin1StringView(prop.name), Qt::CaseInsensitive) < 0;
 }
 
 static bool operator<(const QCssKnownValue &prop, const QString &name)
 {
-    return QString::compare(QLatin1String(prop.name), name, Qt::CaseInsensitive) < 0;
+    return QString::compare(QLatin1StringView(prop.name), name, Qt::CaseInsensitive) < 0;
 }
 
 static quint64 findKnownValue(const QString &name, const QCssKnownValue *start, int numValues)
@@ -1570,7 +1570,7 @@ bool Declaration::realValue(qreal *real, const char *unit) const
     const QString str = v.variant.toString();
     QStringView s(str);
     if (unit) {
-        const QLatin1String unitStr(unit);
+        const QLatin1StringView unitStr(unit);
         if (!s.endsWith(unitStr, Qt::CaseInsensitive))
             return false;
         s.chop(unitStr.size());
@@ -1589,7 +1589,7 @@ static bool intValueHelper(const QCss::Value &v, int *i, const char *unit)
     const QString str = v.variant.toString();
     QStringView s(str);
     if (unit) {
-        const QLatin1String unitStr(unit);
+        const QLatin1StringView unitStr(unit);
         if (!s.endsWith(unitStr, Qt::CaseInsensitive))
             return false;
         s.chop(unitStr.size());
@@ -2214,7 +2214,7 @@ QList<Declaration> StyleSelector::declarationsForNode(NodePtr node, const char *
         const Selector& selector = rules.at(i).selectors.at(0);
         const QString pseudoElement = selector.pseudoElement();
 
-        if (extraPseudo && pseudoElement == QLatin1String(extraPseudo)) {
+        if (extraPseudo && pseudoElement == QLatin1StringView(extraPseudo)) {
             decls += rules.at(i).declarations;
             continue;
         }
@@ -2991,7 +2991,7 @@ bool Parser::until(QCss::TokenType target, QCss::TokenType target2)
     return false;
 }
 
-bool Parser::testTokenAndEndsWith(QCss::TokenType t, QLatin1String str)
+bool Parser::testTokenAndEndsWith(QCss::TokenType t, QLatin1StringView str)
 {
     if (!test(t)) return false;
     if (!lexem().endsWith(str, Qt::CaseInsensitive)) {

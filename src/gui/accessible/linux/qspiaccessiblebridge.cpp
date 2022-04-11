@@ -277,7 +277,7 @@ static RoleMapping map[] = {
 void QSpiAccessibleBridge::initializeConstantMappings()
 {
     for (uint i = 0; i < sizeof(map) / sizeof(RoleMapping); ++i)
-        m_spiRoleMapping.insert(map[i].role, RoleNames(map[i].spiRole, QLatin1String(map[i].name), tr(map[i].name)));
+        m_spiRoleMapping.insert(map[i].role, RoleNames(map[i].spiRole, QLatin1StringView(map[i].name), tr(map[i].name)));
 
     // -1 because we have button duplicated, as PushButton and Button.
     Q_ASSERT_X(m_spiRoleMapping.size() ==

@@ -326,18 +326,18 @@ static_assert(MAX_ENTITY == sizeof entities / sizeof *entities);
 #if defined(Q_CC_MSVC) && _MSC_VER < 1600
 bool operator<(const QTextHtmlEntity &entity1, const QTextHtmlEntity &entity2)
 {
-    return QLatin1String(entity1.name) < QLatin1String(entity2.name);
+    return QLatin1StringView(entity1.name) < QLatin1StringView(entity2.name);
 }
 #endif
 
 static bool operator<(QStringView entityStr, const QTextHtmlEntity &entity)
 {
-    return entityStr < QLatin1String(entity.name);
+    return entityStr < QLatin1StringView(entity.name);
 }
 
 static bool operator<(const QTextHtmlEntity &entity, QStringView entityStr)
 {
-    return QLatin1String(entity.name) < entityStr;
+    return QLatin1StringView(entity.name) < entityStr;
 }
 
 static QChar resolveEntity(QStringView entity)
@@ -451,12 +451,12 @@ static const QTextHtmlElement elements[Html_NumElements]= {
 
 static bool operator<(const QString &str, const QTextHtmlElement &e)
 {
-    return str < QLatin1String(e.name);
+    return str < QLatin1StringView(e.name);
 }
 
 static bool operator<(const QTextHtmlElement &e, const QString &str)
 {
-    return QLatin1String(e.name) < str;
+    return QLatin1StringView(e.name) < str;
 }
 
 static const QTextHtmlElement *lookupElementHelper(const QString &element)

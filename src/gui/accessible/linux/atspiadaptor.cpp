@@ -152,7 +152,7 @@ AtSpiAdaptor::~AtSpiAdaptor()
   */
 QString AtSpiAdaptor::introspect(const QString &path) const
 {
-    static const QLatin1String accessibleIntrospection(
+    static const QLatin1StringView accessibleIntrospection(
                 "  <interface name=\"org.a11y.atspi.Accessible\">\n"
                 "    <property access=\"read\" type=\"s\" name=\"Name\"/>\n"
                 "    <property access=\"read\" type=\"s\" name=\"Description\"/>\n"
@@ -200,7 +200,7 @@ QString AtSpiAdaptor::introspect(const QString &path) const
                 "  </interface>\n"
                 );
 
-    static const QLatin1String actionIntrospection(
+    static const QLatin1StringView actionIntrospection(
                 "  <interface name=\"org.a11y.atspi.Action\">\n"
                 "    <property access=\"read\" type=\"i\" name=\"NActions\"/>\n"
                 "    <method name=\"GetDescription\">\n"
@@ -226,7 +226,7 @@ QString AtSpiAdaptor::introspect(const QString &path) const
                 "  </interface>\n"
                 );
 
-    static const QLatin1String applicationIntrospection(
+    static const QLatin1StringView applicationIntrospection(
                 "  <interface name=\"org.a11y.atspi.Application\">\n"
                 "    <property access=\"read\" type=\"s\" name=\"ToolkitName\"/>\n"
                 "    <property access=\"read\" type=\"s\" name=\"Version\"/>\n"
@@ -241,7 +241,7 @@ QString AtSpiAdaptor::introspect(const QString &path) const
                 "  </interface>\n"
                 );
 
-    static const QLatin1String componentIntrospection(
+    static const QLatin1StringView componentIntrospection(
                 "  <interface name=\"org.a11y.atspi.Component\">\n"
                 "    <method name=\"Contains\">\n"
                 "      <arg direction=\"in\" type=\"i\" name=\"x\"/>\n"
@@ -304,7 +304,7 @@ QString AtSpiAdaptor::introspect(const QString &path) const
                 "  </interface>\n"
                 );
 
-    static const QLatin1String editableTextIntrospection(
+    static const QLatin1StringView editableTextIntrospection(
                 "  <interface name=\"org.a11y.atspi.EditableText\">\n"
                 "    <method name=\"SetTextContents\">\n"
                 "      <arg direction=\"in\" type=\"s\" name=\"newContents\"/>\n"
@@ -337,7 +337,7 @@ QString AtSpiAdaptor::introspect(const QString &path) const
                 "  </interface>\n"
                 );
 
-    static const QLatin1String tableIntrospection(
+    static const QLatin1StringView tableIntrospection(
                 "  <interface name=\"org.a11y.atspi.Table\">\n"
                 "    <property access=\"read\" type=\"i\" name=\"NRows\"/>\n"
                 "    <property access=\"read\" type=\"i\" name=\"NColumns\"/>\n"
@@ -445,7 +445,7 @@ QString AtSpiAdaptor::introspect(const QString &path) const
                 "  </interface>\n"
                 );
 
-    static const QLatin1String textIntrospection(
+    static const QLatin1StringView textIntrospection(
                 "  <interface name=\"org.a11y.atspi.Text\">\n"
                 "    <property access=\"read\" type=\"i\" name=\"CharacterCount\"/>\n"
                 "    <property access=\"read\" type=\"i\" name=\"CaretOffset\"/>\n"
@@ -573,7 +573,7 @@ QString AtSpiAdaptor::introspect(const QString &path) const
                 "  </interface>\n"
                 );
 
-    static const QLatin1String valueIntrospection(
+    static const QLatin1StringView valueIntrospection(
                 "  <interface name=\"org.a11y.atspi.Value\">\n"
                 "    <property access=\"read\" type=\"d\" name=\"MinimumValue\"/>\n"
                 "    <property access=\"read\" type=\"d\" name=\"MaximumValue\"/>\n"
@@ -1321,7 +1321,7 @@ bool AtSpiAdaptor::applicationInterface(QAccessibleInterface *interface, const Q
     }
     if (function == "GetVersion"_L1) {
         Q_ASSERT(message.signature() == "ss"_L1);
-        QDBusMessage reply = message.createReply(QVariant::fromValue(QDBusVariant(QLatin1String(qVersion()))));
+        QDBusMessage reply = message.createReply(QVariant::fromValue(QDBusVariant(QLatin1StringView(qVersion()))));
         return connection.send(reply);
     }
     if (function == "GetLocale"_L1) {
@@ -1548,7 +1548,7 @@ bool AtSpiAdaptor::inheritsQAction(QObject *object)
 {
     const QMetaObject *mo = object->metaObject();
     while (mo) {
-        const QLatin1String cn(mo->className());
+        const QLatin1StringView cn(mo->className());
         if (cn == "QAction"_L1)
             return true;
         mo = mo->superClass();

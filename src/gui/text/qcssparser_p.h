@@ -799,9 +799,9 @@ public:
     inline bool testMedium() { return test(IDENT); }
     inline bool parseNextMedium(QStringList *media) { if (!testMedium()) return recordError(); return parseMedium(media); }
     inline bool testPseudoPage() { return test(COLON); }
-    inline bool testImport() { return testTokenAndEndsWith(ATKEYWORD_SYM, QLatin1String("import")); }
-    inline bool testMedia() { return testTokenAndEndsWith(ATKEYWORD_SYM, QLatin1String("media")); }
-    inline bool testPage() { return testTokenAndEndsWith(ATKEYWORD_SYM, QLatin1String("page")); }
+    inline bool testImport() { return testTokenAndEndsWith(ATKEYWORD_SYM, QLatin1StringView("import")); }
+    inline bool testMedia() { return testTokenAndEndsWith(ATKEYWORD_SYM, QLatin1StringView("media")); }
+    inline bool testPage() { return testTokenAndEndsWith(ATKEYWORD_SYM, QLatin1StringView("page")); }
     inline bool testCombinator() { return test(PLUS) || test(GREATER) || test(TILDE) || test(S); }
     inline bool testProperty() { return test(IDENT); }
     bool testTerm();
@@ -835,7 +835,7 @@ public:
         return (index - 1) < symbols.count() ? symbols.at(index - 1).token : NONE;
     }
 
-    bool testTokenAndEndsWith(TokenType t, QLatin1String str);
+    bool testTokenAndEndsWith(TokenType t, QLatin1StringView str);
 
     inline bool recordError() { errorIndex = index; return false; }
 

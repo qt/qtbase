@@ -141,8 +141,8 @@ class QGenericUnixThemePrivate : public QPlatformThemePrivate
 public:
     QGenericUnixThemePrivate()
         : QPlatformThemePrivate()
-        , systemFont(QLatin1String(defaultSystemFontNameC), defaultSystemFontSize)
-        , fixedFont(QLatin1String(defaultFixedFontNameC), systemFont.pointSize())
+        , systemFont(QLatin1StringView(defaultSystemFontNameC), defaultSystemFontSize)
+        , fixedFont(QLatin1StringView(defaultFixedFontNameC), systemFont.pointSize())
     {
         fixedFont.setStyleHint(QFont::TypeWriter);
         qCDebug(lcQpaFonts) << "default fonts: system" << systemFont << "fixed" << fixedFont;
@@ -386,12 +386,12 @@ void QKdeThemePrivate::refresh()
     if (QFont *systemFont = kdeFont(readKdeSetting(QStringLiteral("font"), kdeDirs, kdeVersion, kdeSettings)))
         resources.fonts[QPlatformTheme::SystemFont] = systemFont;
     else
-        resources.fonts[QPlatformTheme::SystemFont] = new QFont(QLatin1String(defaultSystemFontNameC), defaultSystemFontSize);
+        resources.fonts[QPlatformTheme::SystemFont] = new QFont(QLatin1StringView(defaultSystemFontNameC), defaultSystemFontSize);
 
     if (QFont *fixedFont = kdeFont(readKdeSetting(QStringLiteral("fixed"), kdeDirs, kdeVersion, kdeSettings))) {
         resources.fonts[QPlatformTheme::FixedFont] = fixedFont;
     } else {
-        fixedFont = new QFont(QLatin1String(defaultFixedFontNameC), defaultSystemFontSize);
+        fixedFont = new QFont(QLatin1StringView(defaultFixedFontNameC), defaultSystemFontSize);
         fixedFont->setStyleHint(QFont::TypeWriter);
         resources.fonts[QPlatformTheme::FixedFont] = fixedFont;
     }
@@ -647,7 +647,7 @@ QPlatformTheme *QKdeTheme::createKdeTheme()
     if (!kdeDirsVar.isEmpty())
         kdeDirs += kdeDirsVar.split(u':', Qt::SkipEmptyParts);
 
-    const QString kdeVersionHomePath = QDir::homePath() + "/.kde"_L1 + QLatin1String(kdeVersionBA);
+    const QString kdeVersionHomePath = QDir::homePath() + "/.kde"_L1 + QLatin1StringView(kdeVersionBA);
     if (QFileInfo(kdeVersionHomePath).isDir())
         kdeDirs += kdeVersionHomePath;
 
@@ -655,14 +655,14 @@ QPlatformTheme *QKdeTheme::createKdeTheme()
     if (QFileInfo(kdeHomePath).isDir())
         kdeDirs += kdeHomePath;
 
-    const QString kdeRcPath = "/etc/kde"_L1 + QLatin1String(kdeVersionBA) + "rc"_L1;
+    const QString kdeRcPath = "/etc/kde"_L1 + QLatin1StringView(kdeVersionBA) + "rc"_L1;
     if (QFileInfo(kdeRcPath).isReadable()) {
         QSettings kdeSettings(kdeRcPath, QSettings::IniFormat);
         kdeSettings.beginGroup(QStringLiteral("Directories-default"));
         kdeDirs += kdeSettings.value(QStringLiteral("prefixes")).toStringList();
     }
 
-    const QString kdeVersionPrefix = "/etc/kde"_L1 + QLatin1String(kdeVersionBA);
+    const QString kdeVersionPrefix = "/etc/kde"_L1 + QLatin1StringView(kdeVersionBA);
     if (QFileInfo(kdeVersionPrefix).isDir())
         kdeDirs += kdeVersionPrefix;
 
@@ -719,7 +719,7 @@ public:
         QString fontName = gtkFontName.left(split);
 
         systemFont = new QFont(fontName, size);
-        fixedFont = new QFont(QLatin1String(defaultFixedFontNameC), systemFont->pointSize());
+        fixedFont = new QFont(QLatin1StringView(defaultFixedFontNameC), systemFont->pointSize());
         fixedFont->setStyleHint(QFont::TypeWriter);
         qCDebug(lcQpaFonts) << "default fonts: system" << systemFont << "fixed" << fixedFont;
     }
@@ -795,7 +795,7 @@ const QFont *QGnomeTheme::font(Font type) const
 
 QString QGnomeTheme::gtkFontName() const
 {
-    return QStringLiteral("%1 %2").arg(QLatin1String(defaultSystemFontNameC)).arg(defaultSystemFontSize);
+    return QStringLiteral("%1 %2").arg(QLatin1StringView(defaultSystemFontNameC)).arg(defaultSystemFontSize);
 }
 
 #ifndef QT_NO_DBUS
@@ -841,14 +841,14 @@ QString QGnomeTheme::standardButtonText(int button) const
 
 QPlatformTheme *QGenericUnixTheme::createUnixTheme(const QString &name)
 {
-    if (name == QLatin1String(QGenericUnixTheme::name))
+    if (name == QLatin1StringView(QGenericUnixTheme::name))
         return new QGenericUnixTheme;
 #if QT_CONFIG(settings)
-    if (name == QLatin1String(QKdeTheme::name))
+    if (name == QLatin1StringView(QKdeTheme::name))
         if (QPlatformTheme *kdeTheme = QKdeTheme::createKdeTheme())
             return kdeTheme;
 #endif
-    if (name == QLatin1String(QGnomeTheme::name))
+    if (name == QLatin1StringView(QGnomeTheme::name))
         return new QGnomeTheme;
     return nullptr;
 }
@@ -869,13 +869,13 @@ QStringList QGenericUnixTheme::themeNames()
         for (const QByteArray &desktopName : desktopNames) {
             if (desktopEnvironment == "KDE") {
 #if QT_CONFIG(settings)
-                result.push_back(QLatin1String(QKdeTheme::name));
+                result.push_back(QLatin1StringView(QKdeTheme::name));
 #endif
             } else if (gtkBasedEnvironments.contains(desktopName)) {
                 // prefer the GTK3 theme implementation with native dialogs etc.
                 result.push_back(QStringLiteral("gtk3"));
                 // fallback to the generic Gnome theme if loading the GTK3 theme fails
-                result.push_back(QLatin1String(QGnomeTheme::name));
+                result.push_back(QLatin1StringView(QGnomeTheme::name));
             } else {
                 // unknown, but lowercase the name (our standard practice) and
                 // remove any "x-" prefix
@@ -884,7 +884,7 @@ QStringList QGenericUnixTheme::themeNames()
             }
         }
     } // desktopSettingsAware
-    result.append(QLatin1String(QGenericUnixTheme::name));
+    result.append(QLatin1StringView(QGenericUnixTheme::name));
     return result;
 }
 

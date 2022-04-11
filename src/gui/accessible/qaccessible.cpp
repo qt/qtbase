@@ -683,7 +683,7 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
     // derived class and walk up the class hierarchy.
     const QMetaObject *mo = object->metaObject();
     while (mo) {
-        const QString cn = QLatin1String(mo->className());
+        const QString cn = QLatin1StringView(mo->className());
 
         // Check if the class has a InterfaceFactory installed.
         for (int i = qAccessibleFactories()->count(); i > 0; --i) {

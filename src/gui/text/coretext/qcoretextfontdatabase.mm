@@ -588,7 +588,7 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
     // of the required glyphs, or representing them by question marks.
     // Move these to the end, so that the proper fonts are preferred.
     for (const char *family : { ".Apple Symbols Fallback", ".Noto Sans Universal" }) {
-        int index = fallbackList.indexOf(QLatin1String(family));
+        int index = fallbackList.indexOf(QLatin1StringView(family));
         if (index >= 0)
             fallbackList.move(index, fallbackList.size() - 1);
     }

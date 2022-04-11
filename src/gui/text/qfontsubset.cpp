@@ -1248,10 +1248,10 @@ QByteArray QFontSubset::toTruetype() const
         if (noEmbed)
             name.copyright = "Fake font"_L1;
         else
-            name.copyright = QLatin1String(properties.copyright);
+            name.copyright = QLatin1StringView(properties.copyright);
         name.family = fontEngine->fontDef.families.first();
         name.subfamily = "Regular"_L1; // ######
-        name.postscript_name = QLatin1String(properties.postscriptName);
+        name.postscript_name = QLatin1StringView(properties.postscriptName);
         name_table = generateName(name);
     }
     tables.append(name_table);

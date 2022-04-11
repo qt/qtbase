@@ -2469,7 +2469,7 @@ QString QTextHtmlExporter::toHtml(ExportMode mode)
 void QTextHtmlExporter::emitAttribute(const char *attribute, const QString &value)
 {
     html += u' ';
-    html += QLatin1String(attribute);
+    html += QLatin1StringView(attribute);
     html += "=\""_L1;
     html += value.toHtmlEscaped();
     html += u'"';
@@ -2512,7 +2512,7 @@ bool QTextHtmlExporter::emitCharFormatStyle(const QTextCharFormat &format)
         }
         if (name) {
             html += " font-size:"_L1;
-            html += QLatin1String(name);
+            html += QLatin1StringView(name);
             html += u';';
             attributesEmitted = true;
         }
@@ -2659,7 +2659,7 @@ void QTextHtmlExporter::emitTextLength(const char *attribute, const QTextLength 
         return;
 
     html += u' ';
-    html += QLatin1String(attribute);
+    html += QLatin1StringView(attribute);
     html += "=\""_L1;
     html += QString::number(length.rawValue());
 
@@ -2702,7 +2702,7 @@ void QTextHtmlExporter::emitFloatStyle(QTextFrameFormat::Position pos, StyleMode
         html += u'\"';
 }
 
-static QLatin1String richtextBorderStyleToHtmlBorderStyle(QTextFrameFormat::BorderStyle style)
+static QLatin1StringView richtextBorderStyleToHtmlBorderStyle(QTextFrameFormat::BorderStyle style)
 {
     switch (style) {
     case QTextFrameFormat::BorderStyle_None:

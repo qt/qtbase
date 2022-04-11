@@ -823,7 +823,7 @@ void QXkbCommon::setXkbContext(QPlatformInputContext *inputContext, struct xkb_c
     const char *const inputContextClassName = "QComposeInputContext";
     const char *const normalizedSignature = "setXkbContext(xkb_context*)";
 
-    if (inputContext->objectName() != QLatin1String(inputContextClassName))
+    if (inputContext->objectName() != QLatin1StringView(inputContextClassName))
         return;
 
     static const QMetaMethod setXkbContext = [&]() {

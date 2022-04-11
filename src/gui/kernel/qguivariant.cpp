@@ -122,7 +122,7 @@ static const struct : QMetaTypeModuleHelper
             return true;
         );
         QMETATYPE_CONVERTER(QColor, QByteArray,
-            result = QColor::fromString(QLatin1String(source));
+            result = QColor::fromString(QLatin1StringView(source));
             return result.isValid();
         );
         QMETATYPE_CONVERTER(QString, QColor,

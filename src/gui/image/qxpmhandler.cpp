@@ -928,9 +928,9 @@ static bool read_xpm_body(
             int transparentColor = currentColor;
             if (ncols <= 256) {
                 image.setColor(transparentColor, 0);
-                colorMap.insert(xpmHash(QLatin1String(index.constData())), transparentColor);
+                colorMap.insert(xpmHash(QLatin1StringView(index.constData())), transparentColor);
             } else {
-                colorMap.insert(xpmHash(QLatin1String(index.constData())), 0);
+                colorMap.insert(xpmHash(QLatin1StringView(index.constData())), 0);
             }
         } else {
             QRgb c_rgb = 0;
@@ -944,9 +944,9 @@ static bool read_xpm_body(
             }
             if (ncols <= 256) {
                 image.setColor(currentColor, 0xff000000 | c_rgb);
-                colorMap.insert(xpmHash(QLatin1String(index.constData())), currentColor);
+                colorMap.insert(xpmHash(QLatin1StringView(index.constData())), currentColor);
             } else {
-                colorMap.insert(xpmHash(QLatin1String(index.constData())), 0xff000000 | c_rgb);
+                colorMap.insert(xpmHash(QLatin1StringView(index.constData())), 0xff000000 | c_rgb);
             }
         }
     }

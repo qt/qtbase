@@ -430,7 +430,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
                 numberStr += Space;
             prefix += numberStr;
         } else {
-            prefix += QLatin1String(bullet) + Space;
+            prefix += QLatin1StringView(bullet) + Space;
         }
         m_stream << prefix;
     } else if (blockFmt.hasProperty(QTextFormat::BlockTrailingHorizontalRulerWidth)) {

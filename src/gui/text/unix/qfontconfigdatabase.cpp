@@ -522,7 +522,7 @@ static void populateFromPattern(FcPattern *pattern, QFontDatabasePrivate::Applic
         applicationFont->properties.append(properties);
     }
 
-    QPlatformFontDatabase::registerFont(familyName,styleName,QLatin1String((const char *)foundry_value),weight,style,stretch,antialias,scalable,pixel_size,fixedPitch,writingSystems,fontFile);
+    QPlatformFontDatabase::registerFont(familyName,styleName,QLatin1StringView((const char *)foundry_value),weight,style,stretch,antialias,scalable,pixel_size,fixedPitch,writingSystems,fontFile);
 //        qDebug() << familyName << (const char *)foundry_value << weight << style << &writingSystems << scalable << true << pixel_size;
 
     for (int k = 1; FcPatternGetString(pattern, FC_FAMILY, k, &value) == FcResultMatch; ++k) {
@@ -554,7 +554,7 @@ static void populateFromPattern(FcPattern *pattern, QFontDatabasePrivate::Applic
                 applicationFont->properties.append(properties);
             }
             FontFile *altFontFile = new FontFile(*fontFile);
-            QPlatformFontDatabase::registerFont(altFamilyName, altStyleName, QLatin1String((const char *)foundry_value),weight,style,stretch,antialias,scalable,pixel_size,fixedPitch,writingSystems,altFontFile);
+            QPlatformFontDatabase::registerFont(altFamilyName, altStyleName, QLatin1StringView((const char *)foundry_value),weight,style,stretch,antialias,scalable,pixel_size,fixedPitch,writingSystems,altFontFile);
         } else {
             QPlatformFontDatabase::registerAliasToFontFamily(familyName, altFamilyName);
         }

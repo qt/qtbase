@@ -372,7 +372,7 @@ static QStringList get_colornames()
 #ifndef QT_NO_COLORNAMES
     lst.reserve(rgbTblSize);
     for (int i = 0; i < rgbTblSize; i++)
-        lst << QLatin1String(rgbTbl[i].name);
+        lst << QLatin1StringView(rgbTbl[i].name);
 #endif
     return lst;
 }
@@ -847,7 +847,7 @@ QColor::QColor(Spec spec) noexcept
 */
 
 /*!
-    \fn QColor::QColor(QLatin1String name)
+    \fn QColor::QColor(QLatin1StringView name)
 
     \deprecated [6.6] Use fromString() instead.
 
@@ -935,7 +935,7 @@ void QColor::setNamedColor(QStringView name)
     \deprecated [6.6] Use fromString() instead.
 */
 
-void QColor::setNamedColor(QLatin1String name)
+void QColor::setNamedColor(QLatin1StringView name)
 {
     *this = fromString(name);
 }
@@ -973,7 +973,7 @@ bool QColor::isValidColor(QStringView name) noexcept
     \since 5.8
     \deprecated [6.6] Use isValidColorName() instead.
 */
-bool QColor::isValidColor(QLatin1String name) noexcept
+bool QColor::isValidColor(QLatin1StringView name) noexcept
 {
     return isValidColorName(name);
 }

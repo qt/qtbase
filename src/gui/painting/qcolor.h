@@ -91,7 +91,7 @@ public:
     QT_DEPRECATED_VERSION_X_6_6("Use QColor::fromString() instead.")
     inline QColor(const char *aname);
     QT_DEPRECATED_VERSION_X_6_6("Use QColor::fromString() instead.")
-    inline QColor(QLatin1String name);
+    inline QColor(QLatin1StringView name);
 #endif
     QColor(Spec spec) noexcept;
 
@@ -109,7 +109,7 @@ public:
     QT_DEPRECATED_VERSION_X_6_6("Use fromString() instead.")
     void setNamedColor(QStringView name);
     QT_DEPRECATED_VERSION_X_6_6("Use fromString() instead.")
-    void setNamedColor(QLatin1String name);
+    void setNamedColor(QLatin1StringView name);
 #endif
 
     static QStringList colorNames();
@@ -240,7 +240,7 @@ public:
     QT_DEPRECATED_VERSION_X_6_6("Use isValidColorName() instead.")
     static bool isValidColor(QStringView) noexcept;
     QT_DEPRECATED_VERSION_X_6_6("Use isValidColorName() instead.")
-    static bool isValidColor(QLatin1String) noexcept;
+    static bool isValidColor(QLatin1StringView) noexcept;
 #endif
     static bool isValidColorName(QAnyStringView) noexcept;
 
@@ -313,7 +313,7 @@ public: // can't give friendship to a namespace, so it needs to be public
 Q_DECLARE_TYPEINFO(QColor, Q_RELOCATABLE_TYPE);
 
 #if QT_DEPRECATED_SINCE(6, 6)
-inline QColor::QColor(QLatin1String aname)
+inline QColor::QColor(QLatin1StringView aname)
     : QColor(fromString(aname)) {}
 
 inline QColor::QColor(QStringView aname)

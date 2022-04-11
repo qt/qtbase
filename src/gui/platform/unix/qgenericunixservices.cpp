@@ -157,14 +157,14 @@ static inline bool detectWebBrowser(const QByteArray &desktop,
     }
 
     for (size_t i = 0; i < sizeof(browsers)/sizeof(char *); ++i)
-        if (checkExecutable(QLatin1String(browsers[i]), browser))
+        if (checkExecutable(QLatin1StringView(browsers[i]), browser))
             return true;
     return false;
 }
 
 static inline bool launch(const QString &launcher, const QUrl &url)
 {
-    const QString command = launcher + u' ' + QLatin1String(url.toEncoded());
+    const QString command = launcher + u' ' + QLatin1StringView(url.toEncoded());
     if (debug)
         qDebug("Launching %s", qPrintable(command));
 #if !QT_CONFIG(process)

@@ -196,9 +196,9 @@ int QTextMarkdownImporter::cbEnterBlock(int blockType, void *det)
     case MD_BLOCK_CODE: {
         MD_BLOCK_CODE_DETAIL *detail = static_cast<MD_BLOCK_CODE_DETAIL *>(det);
         m_codeBlock = true;
-        m_blockCodeLanguage = QLatin1String(detail->lang.text, int(detail->lang.size));
+        m_blockCodeLanguage = QLatin1StringView(detail->lang.text, int(detail->lang.size));
         m_blockCodeFence = detail->fence_char;
-        QString info = QLatin1String(detail->info.text, int(detail->info.size));
+        QString info = QLatin1StringView(detail->info.text, int(detail->info.size));
         m_needsInsertBlock = true;
         if (m_blockQuoteDepth)
             qCDebug(lcMD, "CODE lang '%s' info '%s' fenced with '%c' inside QUOTE %d", qPrintable(m_blockCodeLanguage), qPrintable(info), m_blockCodeFence, m_blockQuoteDepth);

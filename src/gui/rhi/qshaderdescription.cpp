@@ -643,13 +643,13 @@ static const struct TypeTab {
     { "imageBuffer", QShaderDescription::ImageBuffer }
 };
 
-static QLatin1String typeStr(const QShaderDescription::VariableType &t)
+static QLatin1StringView typeStr(const QShaderDescription::VariableType &t)
 {
     for (size_t i = 0; i < sizeof(typeTab) / sizeof(TypeTab); ++i) {
         if (typeTab[i].v == t)
-            return QLatin1String(typeTab[i].k);
+            return QLatin1StringView(typeTab[i].k);
     }
-    return QLatin1String();
+    return {};
 }
 
 static const struct ImageFormatTab {
@@ -698,13 +698,13 @@ static const struct ImageFormatTab {
     { "r8ui", QShaderDescription::ImageFormatR8ui }
 };
 
-static QLatin1String imageFormatStr(const QShaderDescription::ImageFormat &f)
+static QLatin1StringView imageFormatStr(const QShaderDescription::ImageFormat &f)
 {
     for (size_t i = 0; i < sizeof(imageFormatTab) / sizeof(ImageFormatTab); ++i) {
         if (imageFormatTab[i].v == f)
-            return QLatin1String(imageFormatTab[i].k);
+            return QLatin1StringView(imageFormatTab[i].k);
     }
-    return QLatin1String();
+    return {};
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -806,7 +806,7 @@ QDebug operator<<(QDebug dbg, const QShaderDescription::StorageBlock &blk)
 }
 #endif
 
-#define JSON_KEY(key) static constexpr QLatin1String key ## Key() noexcept { return QLatin1String( #key ); }
+#define JSON_KEY(key) static constexpr QLatin1StringView key ## Key() noexcept { return QLatin1StringView( #key ); }
 JSON_KEY(name)
 JSON_KEY(type)
 JSON_KEY(location)

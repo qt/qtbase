@@ -271,7 +271,7 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
                 }
             }
         } else {
-            const int testIndex = keyMap.key(QLatin1String(testFormat), -1);
+            const int testIndex = keyMap.key(QLatin1StringView(testFormat), -1);
             if (testIndex != -1) {
                 QImageIOPlugin *plugin = qobject_cast<QImageIOPlugin *>(l->instance(testIndex));
                 if (plugin && plugin->capabilities(device, testFormat) & QImageIOPlugin::CanRead) {
@@ -565,7 +565,7 @@ bool QImageReaderPrivate::initHandler()
 
         do {
             file->setFileName(fileName + u'.'
-                    + QLatin1String(extensions.at(currentExtension++).constData()));
+                    + QLatin1StringView(extensions.at(currentExtension++).constData()));
             file->open(QIODevice::ReadOnly);
         } while (!file->isOpen() && currentExtension < extensions.size());
 

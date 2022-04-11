@@ -53,7 +53,7 @@ static QStringList imageMimeFormats(const QList<QByteArray> &imageFormats)
     QStringList formats;
     formats.reserve(imageFormats.size());
     for (const auto &format : imageFormats)
-        formats.append("image/"_L1 + QLatin1String(format.toLower()));
+        formats.append("image/"_L1 + QLatin1StringView(format.toLower()));
 
     //put png at the front because it is best
     int pngIndex = formats.indexOf("image/png"_L1);

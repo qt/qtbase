@@ -412,7 +412,7 @@ static QPageSize::PageSizeId qt_idForPpdKey(const QString &ppdKey, QSize *match 
     else if (key.endsWith(".Transverse"_L1))
         key.chop(11);
     for (int i = 0; i <= int(QPageSize::LastPageSize); ++i) {
-        if (QLatin1String(qt_pageSizes[i].mediaOption) == key) {
+        if (QLatin1StringView(qt_pageSizes[i].mediaOption) == key) {
             if (match)
                 *match = QSize(qt_pageSizes[i].widthPoints, qt_pageSizes[i].heightPoints);
             return qt_pageSizes[i].id;

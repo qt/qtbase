@@ -1339,10 +1339,10 @@ static void init_plugins(const QList<QByteArray> &pluginList)
         int colonPos = pluginSpec.indexOf(':');
         QObject *plugin;
         if (colonPos < 0)
-            plugin = QGenericPluginFactory::create(QLatin1String(pluginSpec), QString());
+            plugin = QGenericPluginFactory::create(QLatin1StringView(pluginSpec), QString());
         else
-            plugin = QGenericPluginFactory::create(QLatin1String(pluginSpec.mid(0, colonPos)),
-                                                   QLatin1String(pluginSpec.mid(colonPos+1)));
+            plugin = QGenericPluginFactory::create(QLatin1StringView(pluginSpec.mid(0, colonPos)),
+                                                   QLatin1StringView(pluginSpec.mid(colonPos+1)));
         if (plugin)
             QGuiApplicationPrivate::generic_plugin_list.append(plugin);
         else
@@ -1505,7 +1505,7 @@ void QGuiApplicationPrivate::createPlatformIntegration()
 
     Q_UNUSED(platformExplicitlySelected);
 
-    init_platform(QLatin1String(platformName), platformPluginPath, platformThemeName, argc, argv);
+    init_platform(QLatin1StringView(platformName), platformPluginPath, platformThemeName, argc, argv);
 
     if (!icon.isEmpty())
         forcedWindowIcon = QDir::isAbsolutePath(icon) ? QIcon(icon) : QIcon::fromTheme(icon);
