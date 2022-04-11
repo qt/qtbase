@@ -163,7 +163,7 @@ private:
     QMetaObject::Connection m_updateCursorPosConnection;
     HandleModes m_handleMode;
     int m_batchEditNestingLevel;
-    QObject *m_focusObject;
+    QPointer<QObject> m_focusObject;
     QTimer m_hideCursorHandleTimer;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QAndroidInputContext::HandleModes)
