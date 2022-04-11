@@ -635,6 +635,8 @@ bool QRhiVulkan::create(QRhi::Flags flags)
             features.textureCompressionBC = VK_TRUE;
         if (physDevFeatures.geometryShader)
             features.geometryShader = VK_TRUE;
+        if (physDevFeatures.fillModeNonSolid)
+            features.fillModeNonSolid = VK_TRUE;
         devInfo.pEnabledFeatures = &features;
 
         VkResult err = f->vkCreateDevice(physDev, &devInfo, nullptr, &dev);
