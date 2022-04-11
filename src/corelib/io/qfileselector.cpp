@@ -246,7 +246,8 @@ QUrl QFileSelector::select(const QUrl &filePath) const
     return ret;
 }
 
-QString QFileSelectorPrivate::selectionHelper(const QString &path, const QString &fileName, const QStringList &selectors, const QChar &indicator)
+QString QFileSelectorPrivate::selectionHelper(const QString &path, const QString &fileName,
+                                              const QStringList &selectors, QChar indicator)
 {
     /* selectionHelper does a depth-first search of possible selected files. Because there is strict
        selector ordering in the API, we can stop checking as soon as we find the file in a directory
