@@ -57,6 +57,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #if defined(Q_OS_MACOS) || defined(Q_CLANG_QDOC)
 static bool qt_sequence_no_mnemonics = true;
 struct MacSpecialKey {
@@ -1097,20 +1099,20 @@ int QKeySequencePrivate::decodeString(QString accel, QKeySequence::SequenceForma
                 *gmodifs << QModifKeyName(Qt::META, QChar(kControlUnicode));
             *gmodifs << QModifKeyName(Qt::SHIFT, QChar(kShiftUnicode));
 #endif
-            *gmodifs << QModifKeyName(Qt::CTRL, QLatin1String("ctrl+"))
-                     << QModifKeyName(Qt::SHIFT, QLatin1String("shift+"))
-                     << QModifKeyName(Qt::ALT, QLatin1String("alt+"))
-                     << QModifKeyName(Qt::META, QLatin1String("meta+"))
-                     << QModifKeyName(Qt::KeypadModifier, QLatin1String("num+"));
+            *gmodifs << QModifKeyName(Qt::CTRL, "ctrl+"_L1)
+                     << QModifKeyName(Qt::SHIFT, "shift+"_L1)
+                     << QModifKeyName(Qt::ALT, "alt+"_L1)
+                     << QModifKeyName(Qt::META, "meta+"_L1)
+                     << QModifKeyName(Qt::KeypadModifier, "num+"_L1);
         }
     } else {
         gmodifs = globalPortableModifs();
         if (gmodifs->isEmpty()) {
-            *gmodifs << QModifKeyName(Qt::CTRL, QLatin1String("ctrl+"))
-                     << QModifKeyName(Qt::SHIFT, QLatin1String("shift+"))
-                     << QModifKeyName(Qt::ALT, QLatin1String("alt+"))
-                     << QModifKeyName(Qt::META, QLatin1String("meta+"))
-                     << QModifKeyName(Qt::KeypadModifier, QLatin1String("num+"));
+            *gmodifs << QModifKeyName(Qt::CTRL, "ctrl+"_L1)
+                     << QModifKeyName(Qt::SHIFT, "shift+"_L1)
+                     << QModifKeyName(Qt::ALT, "alt+"_L1)
+                     << QModifKeyName(Qt::META, "meta+"_L1)
+                     << QModifKeyName(Qt::KeypadModifier, "num+"_L1);
         }
     }
 
@@ -1546,7 +1548,7 @@ QString QKeySequence::toString(SequenceFormat format) const
     int end = count();
     for (int i = 0; i < end; ++i) {
         finalString += d->encodeString(d->key[i], format);
-        finalString += QLatin1String(", ");
+        finalString += ", "_L1;
     }
     finalString.truncate(finalString.length() - 2);
     return finalString;
@@ -1576,7 +1578,7 @@ QList<QKeySequence> QKeySequence::listFromString(const QString &str, SequenceFor
 {
     QList<QKeySequence> result;
 
-    const QStringList strings = str.split(QLatin1String("; "));
+    const QStringList strings = str.split("; "_L1);
     result.reserve(strings.count());
     for (const QString &string : strings) {
         result << fromString(string, format);
@@ -1599,7 +1601,7 @@ QString QKeySequence::listToString(const QList<QKeySequence> &list, SequenceForm
 
     for (const QKeySequence &sequence : list) {
         result += sequence.toString(format);
-        result += QLatin1String("; ");
+        result += "; "_L1;
     }
     result.truncate(result.length() - 2);
 

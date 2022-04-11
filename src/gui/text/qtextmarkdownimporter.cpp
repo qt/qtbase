@@ -56,6 +56,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(lcMD, "qt.text.markdown")
 
 static const QChar Newline = u'\n';
@@ -559,12 +561,12 @@ int QTextMarkdownImporter::cbText(int textType, const char *text, unsigned size)
         QTextBlockFormat bfmt = m_cursor->blockFormat();
         QString debugInfo;
         if (m_cursor->currentList())
-            debugInfo = QLatin1String("in list at depth ") + QString::number(m_cursor->currentList()->format().indent());
+            debugInfo = "in list at depth "_L1 + QString::number(m_cursor->currentList()->format().indent());
         if (bfmt.hasProperty(QTextFormat::BlockQuoteLevel))
-            debugInfo += QLatin1String("in blockquote at depth ") +
+            debugInfo += "in blockquote at depth "_L1 +
                     QString::number(bfmt.intProperty(QTextFormat::BlockQuoteLevel));
         if (bfmt.hasProperty(QTextFormat::BlockCodeLanguage))
-            debugInfo += QLatin1String("in a code block");
+            debugInfo += "in a code block"_L1;
         qCDebug(lcMD) << textType << "in block" << m_blockType << s << qPrintable(debugInfo)
                       << "bindent" << bfmt.indent() << "tindent" << bfmt.textIndent()
                       << "margins" << bfmt.leftMargin() << bfmt.topMargin() << bfmt.bottomMargin() << bfmt.rightMargin();

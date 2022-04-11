@@ -56,6 +56,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 void QFreeTypeFontDatabase::populateFontDatabase()
 {
     QString fontpath = fontDir();
@@ -69,11 +71,11 @@ void QFreeTypeFontDatabase::populateFontDatabase()
     }
 
     QStringList nameFilters;
-    nameFilters << QLatin1String("*.ttf")
-                << QLatin1String("*.ttc")
-                << QLatin1String("*.pfa")
-                << QLatin1String("*.pfb")
-                << QLatin1String("*.otf");
+    nameFilters << "*.ttf"_L1
+                << "*.ttc"_L1
+                << "*.pfa"_L1
+                << "*.pfb"_L1
+                << "*.otf"_L1;
 
     const auto fis = dir.entryInfoList(nameFilters, QDir::Files);
     for (const QFileInfo &fi : fis) {

@@ -48,6 +48,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QT_IMPL_METATYPE_EXTERN(QPageSize)
 QT_IMPL_METATYPE_EXTERN_TAGGED(QPageSize::PageSizeId, QPageSize__PageSizeId)
 QT_IMPL_METATYPE_EXTERN_TAGGED(QPageSize::Unit, QPageSize__Unit)
@@ -405,9 +407,9 @@ static QPageSize::PageSizeId qt_idForPpdKey(const QString &ppdKey, QSize *match 
         return QPageSize::Custom;
     QStringView key(ppdKey);
     // Remove any Rotated or Tranverse modifiers
-    if (key.endsWith(QLatin1String("Rotated")))
+    if (key.endsWith("Rotated"_L1))
         key.chop(7);
-    else if (key.endsWith(QLatin1String(".Transverse")))
+    else if (key.endsWith(".Transverse"_L1))
         key.chop(11);
     for (int i = 0; i <= int(QPageSize::LastPageSize); ++i) {
         if (QLatin1String(qt_pageSizes[i].mediaOption) == key) {

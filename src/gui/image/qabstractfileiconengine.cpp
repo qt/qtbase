@@ -43,6 +43,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     \class QAbstractFileIconEngine
     \brief Helper base class for retrieving icons for files for usage by QFileIconProvider and related.
@@ -128,7 +130,7 @@ QString QAbstractFileIconEngine::cacheKey() const
         return QString();
 
     const QString &suffix = m_fileInfo.suffix();
-    return QLatin1String("qt_.")
+    return "qt_."_L1
         + (suffix.isEmpty() ? m_fileInfo.fileName() : suffix); // handle "Makefile"                                    ;)
 }
 

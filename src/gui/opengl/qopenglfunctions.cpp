@@ -57,6 +57,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #define QT_OPENGL_COUNT_FUNCTIONS(ret, name, args) +1
 #define QT_OPENGL_FUNCTION_NAMES(ret, name, args) \
     "gl"#name"\0"
@@ -431,9 +433,9 @@ static int qt_gl_resolve_extensions()
         QString *deviceName =
                 static_cast<QString *>(QGuiApplication::platformNativeInterface()->nativeResourceForIntegration("AndroidDeviceName"));
         static bool wrongfullyReportsBgra8888Support = deviceName != 0
-                                                        && (deviceName->compare(QLatin1String("samsung SM-T211"), Qt::CaseInsensitive) == 0
-                                                            || deviceName->compare(QLatin1String("samsung SM-T210"), Qt::CaseInsensitive) == 0
-                                                            || deviceName->compare(QLatin1String("samsung SM-T215"), Qt::CaseInsensitive) == 0);
+                                                        && (deviceName->compare("samsung SM-T211"_L1, Qt::CaseInsensitive) == 0
+                                                            || deviceName->compare("samsung SM-T210"_L1, Qt::CaseInsensitive) == 0
+                                                            || deviceName->compare("samsung SM-T215"_L1, Qt::CaseInsensitive) == 0);
         if (wrongfullyReportsBgra8888Support)
             extensions &= ~QOpenGLExtensions::BGRATextureFormat;
 #endif

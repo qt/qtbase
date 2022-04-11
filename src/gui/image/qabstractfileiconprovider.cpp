@@ -53,6 +53,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QAbstractFileIconProviderPrivate::QAbstractFileIconProviderPrivate(QAbstractFileIconProvider *q)
     : q_ptr(q)
 {}
@@ -114,22 +116,22 @@ QIcon QAbstractFileIconProviderPrivate::getIconThemeIcon(QAbstractFileIconProvid
 {
     switch (type) {
     case QAbstractFileIconProvider::Computer:
-        return QIcon::fromTheme(QLatin1String("computer"));
+        return QIcon::fromTheme("computer"_L1);
     case QAbstractFileIconProvider::Desktop:
-        return QIcon::fromTheme(QLatin1String("user-desktop"));
+        return QIcon::fromTheme("user-desktop"_L1);
     case QAbstractFileIconProvider::Trashcan:
-        return QIcon::fromTheme(QLatin1String("user-trash"));
+        return QIcon::fromTheme("user-trash"_L1);
     case QAbstractFileIconProvider::Network:
-        return QIcon::fromTheme(QLatin1String("network-workgroup"));
+        return QIcon::fromTheme("network-workgroup"_L1);
     case QAbstractFileIconProvider::Drive:
-        return QIcon::fromTheme(QLatin1String("drive-harddisk"));
+        return QIcon::fromTheme("drive-harddisk"_L1);
     case QAbstractFileIconProvider::Folder:
-        return QIcon::fromTheme(QLatin1String("folder"));
+        return QIcon::fromTheme("folder"_L1);
     case QAbstractFileIconProvider::File:
-        return QIcon::fromTheme(QLatin1String("text-x-generic"));
+        return QIcon::fromTheme("text-x-generic"_L1);
         // no default on purpose; we want warnings when the type enum is extended
     }
-    return QIcon::fromTheme(QLatin1String("text-x-generic"));
+    return QIcon::fromTheme("text-x-generic"_L1);
 }
 
 static inline QPlatformTheme::IconOptions toThemeIconOptions(QAbstractFileIconProvider::Options options)
@@ -156,7 +158,7 @@ QIcon QAbstractFileIconProviderPrivate::getIconThemeIcon(const QFileInfo &info) 
 #if QT_CONFIG(mimetype)
     return QIcon::fromTheme(mimeDatabase.mimeTypeForFile(info).iconName());
 #else
-    return QIcon::fromTheme(QLatin1String("text-x-generic"));
+    return QIcon::fromTheme("text-x-generic"_L1);
 #endif
 }
 

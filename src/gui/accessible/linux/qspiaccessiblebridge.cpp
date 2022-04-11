@@ -57,6 +57,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     \class QSpiAccessibleBridge
     \internal
@@ -95,10 +97,10 @@ void QSpiAccessibleBridge::updateStatus()
         cache = new QSpiDBusCache(dbusConnection->connection(), this);
         dec = new DeviceEventControllerAdaptor(this);
 
-        dbusConnection->connection().registerObject(QLatin1String(ATSPI_DBUS_PATH_DEC), this, QDBusConnection::ExportAdaptors);
+        dbusConnection->connection().registerObject(ATSPI_DBUS_PATH_DEC ""_L1, this, QDBusConnection::ExportAdaptors);
 
         dbusAdaptor = new AtSpiAdaptor(dbusConnection, this);
-        dbusConnection->connection().registerVirtualObject(QLatin1String(QSPI_OBJECT_PATH_ACCESSIBLE), dbusAdaptor, QDBusConnection::SubPath);
+        dbusConnection->connection().registerVirtualObject(QSPI_OBJECT_PATH_ACCESSIBLE ""_L1, dbusAdaptor, QDBusConnection::SubPath);
         dbusAdaptor->registerApplication();
     }
 }

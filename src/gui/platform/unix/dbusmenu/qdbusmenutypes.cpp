@@ -56,6 +56,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QT_IMPL_METATYPE_EXTERN(QDBusMenuItem)
 QT_IMPL_METATYPE_EXTERN(QDBusMenuItemList)
 QT_IMPL_METATYPE_EXTERN(QDBusMenuItemKeys)
@@ -103,7 +105,7 @@ uint QDBusMenuLayoutItem::populate(int id, int depth, const QStringList &propert
     qCDebug(qLcMenu) << id << "depth" << depth << propertyNames;
     m_id = id;
     if (id == 0) {
-        m_properties.insert(QLatin1String("children-display"), QLatin1String("submenu"));
+        m_properties.insert("children-display"_L1, "submenu"_L1);
         if (topLevelMenu)
             populate(topLevelMenu, depth, propertyNames);
         return 1; // revision
@@ -192,34 +194,34 @@ QDBusMenuItem::QDBusMenuItem(const QDBusPlatformMenuItem *item)
     : m_id(item->dbusID())
 {
     if (item->isSeparator()) {
-        m_properties.insert(QLatin1String("type"), QLatin1String("separator"));
+        m_properties.insert("type"_L1, "separator"_L1);
     } else {
-        m_properties.insert(QLatin1String("label"), convertMnemonic(item->text()));
+        m_properties.insert("label"_L1, convertMnemonic(item->text()));
         if (item->menu())
-            m_properties.insert(QLatin1String("children-display"), QLatin1String("submenu"));
-        m_properties.insert(QLatin1String("enabled"), item->isEnabled());
+            m_properties.insert("children-display"_L1, "submenu"_L1);
+        m_properties.insert("enabled"_L1, item->isEnabled());
         if (item->isCheckable()) {
-            QString toggleType = item->hasExclusiveGroup() ? QLatin1String("radio") : QLatin1String("checkmark");
-            m_properties.insert(QLatin1String("toggle-type"), toggleType);
-            m_properties.insert(QLatin1String("toggle-state"), item->isChecked() ? 1 : 0);
+            QString toggleType = item->hasExclusiveGroup() ? "radio"_L1 : "checkmark"_L1;
+            m_properties.insert("toggle-type"_L1, toggleType);
+            m_properties.insert("toggle-state"_L1, item->isChecked() ? 1 : 0);
         }
 #ifndef QT_NO_SHORTCUT
         const QKeySequence &scut = item->shortcut();
         if (!scut.isEmpty()) {
             QDBusMenuShortcut shortcut = convertKeySequence(scut);
-            m_properties.insert(QLatin1String("shortcut"), QVariant::fromValue(shortcut));
+            m_properties.insert("shortcut"_L1, QVariant::fromValue(shortcut));
         }
 #endif
         const QIcon &icon = item->icon();
         if (!icon.name().isEmpty()) {
-            m_properties.insert(QLatin1String("icon-name"), icon.name());
+            m_properties.insert("icon-name"_L1, icon.name());
         } else if (!icon.isNull()) {
             QBuffer buf;
             icon.pixmap(16).save(&buf, "PNG");
-            m_properties.insert(QLatin1String("icon-data"), buf.data());
+            m_properties.insert("icon-data"_L1, buf.data());
         }
     }
-    m_properties.insert(QLatin1String("visible"), item->isVisible());
+    m_properties.insert("visible"_L1, item->isVisible());
 }
 
 QDBusMenuItemList QDBusMenuItem::items(const QList<int> &ids, const QStringList &propertyNames)
@@ -264,9 +266,9 @@ QDBusMenuShortcut QDBusMenuItem::convertKeySequence(const QKeySequence &sequence
             tokens << QStringLiteral("Num");
 
         QString keyName = QKeySequencePrivate::keyName(key, QKeySequence::PortableText);
-        if (keyName == QLatin1String("+"))
+        if (keyName == "+"_L1)
             tokens << QStringLiteral("plus");
-        else if (keyName == QLatin1String("-"))
+        else if (keyName == "-"_L1)
             tokens << QStringLiteral("minus");
         else
             tokens << keyName;

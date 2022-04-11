@@ -81,6 +81,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 // MSVC 19.28 does show spurious warning "C4723: potential divide by 0" for code that divides
 // by height() in release builds. Anyhow, all the code paths in this file are only executed
 // for valid QImage's, where height() cannot be 0. Therefore disable the warning.
@@ -4182,7 +4184,7 @@ QString QImage::text(const QString &key) const
 
     QString tmp;
     for (auto it = d->text.begin(), end = d->text.end(); it != end; ++it)
-        tmp += it.key() + QLatin1String(": ") + it.value().simplified() + QLatin1String("\n\n");
+        tmp += it.key() + ": "_L1 + it.value().simplified() + "\n\n"_L1;
     if (!tmp.isEmpty())
         tmp.chop(2); // remove final \n\n
     return tmp;
@@ -5707,7 +5709,7 @@ QMap<QString, QString> qt_getImageTextFromDescription(const QString &description
         int index = pair.indexOf(u':');
         if (index >= 0 && pair.indexOf(u' ') < index) {
             if (!pair.trimmed().isEmpty())
-                text.insert(QLatin1String("Description"), pair.toString().simplified());
+                text.insert("Description"_L1, pair.toString().simplified());
         } else {
             const auto key = pair.left(index);
             if (!key.trimmed().isEmpty())

@@ -72,6 +72,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(qLcTray, "qt.qpa.tray")
 
 static QString iconTempPath()
@@ -79,8 +81,8 @@ static QString iconTempPath()
     QString tempPath = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
     if (!tempPath.isEmpty()) {
         QString flatpakId = qEnvironmentVariable("FLATPAK_ID");
-        if (!flatpakId.isEmpty() && QFileInfo::exists(QLatin1String("/.flatpak-info")))
-            tempPath += QLatin1String("/app/") + flatpakId;
+        if (!flatpakId.isEmpty() && QFileInfo::exists("/.flatpak-info"_L1))
+            tempPath += "/app/"_L1 + flatpakId;
         return tempPath;
     }
 
@@ -110,7 +112,7 @@ static int instanceCount = 0;
 
 static inline QString tempFileTemplate()
 {
-    static const QString TempFileTemplate = iconTempPath() + QLatin1String("/qt-trayicon-XXXXXX.png");
+    static const QString TempFileTemplate = iconTempPath() + "/qt-trayicon-XXXXXX.png"_L1;
     return TempFileTemplate;
 }
 
@@ -212,7 +214,7 @@ QTemporaryFile *QDBusTrayIcon::tempIcon(const QIcon &icon)
         QDBusConnection session = QDBusConnection::sessionBus();
         uint pid = session.interface()->servicePid(KDEWatcherService).value();
         QString processName = QLockFilePrivate::processNameByPid(pid);
-        necessary = processName.endsWith(QLatin1String("indicator-application-service"));
+        necessary = processName.endsWith("indicator-application-service"_L1);
         if (!necessary) {
             necessary = session.interface()->isServiceRegistered(
                 QStringLiteral("com.canonical.indicator.application"));
@@ -346,7 +348,7 @@ void QDBusTrayIcon::showMessage(const QString &title, const QString &msg, const 
     int urgency = static_cast<int>(iconType) - 1;
     if (urgency < 0) // no icon
         urgency = 0;
-    hints.insert(QLatin1String("urgency"), QVariant(urgency));
+    hints.insert("urgency"_L1, QVariant(urgency));
     m_notifier->notify(QCoreApplication::applicationName(), 0,
                        m_attentionIconName, title, msg, notificationActions, hints, msecs);
 }

@@ -47,6 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 template<typename T>
 static void insertOrRemoveItems(QList<T> &items, int index, int delta)
 {
@@ -1187,7 +1189,7 @@ void QGridLayoutEngine::dump(int indent) const
     qDebug("%*s Grid (%d x %d)", indent, "", internalGridRowCount(),
            internalGridColumnCount());
     for (int row = 0; row < internalGridRowCount(); ++row) {
-        QString message = QLatin1String("[ ");
+        QString message = "[ "_L1;
         for (int column = 0; column < internalGridColumnCount(); ++column) {
             message += QString::number(q_items.indexOf(itemAt(row, column))).rightJustified(3);
             message += u' ';
@@ -1214,7 +1216,7 @@ void QGridLayoutEngine::dump(int indent) const
     for (int pass = 0; pass < 2; ++pass) {
         QString message;
         for (i = 0; i < cellPos->count(); ++i) {
-            message += QLatin1String((message.isEmpty() ? "[" : ", "));
+            message += (message.isEmpty() ? "["_L1 : ", "_L1);
             message += QString::number(cellPos->at(i));
         }
         message += u']';

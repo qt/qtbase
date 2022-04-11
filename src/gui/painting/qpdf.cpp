@@ -78,6 +78,8 @@ static void initResources()
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 inline QPaintEngine::PaintEngineFeatures qt_pdf_decide_features()
 {
     QPaintEngine::PaintEngineFeatures f = QPaintEngine::AllFeatures;
@@ -1735,11 +1737,11 @@ int QPdfEnginePrivate::writeXmpDcumentMetaData()
         else if (offset > 0)
             tzStr = QString::asprintf("+%02d:%02d", hours , mins);
         else
-            tzStr = QLatin1String("Z");
+            tzStr = "Z"_L1;
 
         const QString metaDataDate = timeStr + tzStr;
 
-        QFile metaDataFile(QLatin1String(":/qpdf/qpdfa_metadata.xml"));
+        QFile metaDataFile(":/qpdf/qpdfa_metadata.xml"_L1);
         metaDataFile.open(QIODevice::ReadOnly);
         metaDataContent = QString::fromUtf8(metaDataFile.readAll()).arg(producer.toHtmlEscaped(),
                                                                         title.toHtmlEscaped(),
@@ -1765,7 +1767,7 @@ int QPdfEnginePrivate::writeOutputIntent()
 {
     const int colorProfile = addXrefEntry(-1);
     {
-        QFile colorProfileFile(QLatin1String(":/qpdf/sRGB2014.icc"));
+        QFile colorProfileFile(":/qpdf/sRGB2014.icc"_L1);
         colorProfileFile.open(QIODevice::ReadOnly);
         const QByteArray colorProfileData = colorProfileFile.readAll();
 
@@ -1860,8 +1862,7 @@ void QPdfEnginePrivate::writeAttachmentRoot()
                  , attachmentID);
         if (!attachment.mimeType.isEmpty())
             xprintf("/Subtype/%s\n",
-                    attachment.mimeType.replace(QLatin1String("/"),
-                                                QLatin1String("#2F")).toLatin1().constData());
+                    attachment.mimeType.replace("/"_L1, "#2F"_L1).toLatin1().constData());
         xprintf(">>\nendobj\n");
     }
 

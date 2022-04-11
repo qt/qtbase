@@ -78,6 +78,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_DECLARE_LOGGING_CATEGORY(qLcTray)
 
 ResourceHelper::ResourceHelper()
@@ -173,7 +175,7 @@ QStringList QGenericUnixTheme::xdgIconThemePaths()
 {
     QStringList paths;
     // Add home directory first in search path
-    const QFileInfo homeIconDir(QDir::homePath() + QLatin1String("/.icons"));
+    const QFileInfo homeIconDir(QDir::homePath() + "/.icons"_L1);
     if (homeIconDir.isDir())
         paths.prepend(homeIconDir.absoluteFilePath());
 
@@ -274,8 +276,8 @@ public:
     static QString kdeGlobals(const QString &kdeDir, int kdeVersion)
     {
         if (kdeVersion > 4)
-            return kdeDir + QLatin1String("/kdeglobals");
-        return kdeDir + QLatin1String("/share/config/kdeglobals");
+            return kdeDir + "/kdeglobals"_L1;
+        return kdeDir + "/share/config/kdeglobals"_L1;
     }
 
     void refresh();
@@ -350,11 +352,11 @@ void QKdeThemePrivate::refresh()
     const QVariant toolbarStyleValue = readKdeSetting(QStringLiteral("Toolbar style/ToolButtonStyle"), kdeDirs, kdeVersion, kdeSettings);
     if (toolbarStyleValue.isValid()) {
         const QString toolBarStyle = toolbarStyleValue.toString();
-        if (toolBarStyle == QLatin1String("TextBesideIcon"))
+        if (toolBarStyle == "TextBesideIcon"_L1)
             toolButtonStyle =  Qt::ToolButtonTextBesideIcon;
-        else if (toolBarStyle == QLatin1String("TextOnly"))
+        else if (toolBarStyle == "TextOnly"_L1)
             toolButtonStyle = Qt::ToolButtonTextOnly;
-        else if (toolBarStyle == QLatin1String("TextUnderIcon"))
+        else if (toolBarStyle == "TextUnderIcon"_L1)
             toolButtonStyle = Qt::ToolButtonTextUnderIcon;
     }
 
@@ -645,22 +647,22 @@ QPlatformTheme *QKdeTheme::createKdeTheme()
     if (!kdeDirsVar.isEmpty())
         kdeDirs += kdeDirsVar.split(u':', Qt::SkipEmptyParts);
 
-    const QString kdeVersionHomePath = QDir::homePath() + QLatin1String("/.kde") + QLatin1String(kdeVersionBA);
+    const QString kdeVersionHomePath = QDir::homePath() + "/.kde"_L1 + QLatin1String(kdeVersionBA);
     if (QFileInfo(kdeVersionHomePath).isDir())
         kdeDirs += kdeVersionHomePath;
 
-    const QString kdeHomePath = QDir::homePath() + QLatin1String("/.kde");
+    const QString kdeHomePath = QDir::homePath() + "/.kde"_L1;
     if (QFileInfo(kdeHomePath).isDir())
         kdeDirs += kdeHomePath;
 
-    const QString kdeRcPath = QLatin1String("/etc/kde") + QLatin1String(kdeVersionBA) + QLatin1String("rc");
+    const QString kdeRcPath = "/etc/kde"_L1 + QLatin1String(kdeVersionBA) + "rc"_L1;
     if (QFileInfo(kdeRcPath).isReadable()) {
         QSettings kdeSettings(kdeRcPath, QSettings::IniFormat);
         kdeSettings.beginGroup(QStringLiteral("Directories-default"));
         kdeDirs += kdeSettings.value(QStringLiteral("prefixes")).toStringList();
     }
 
-    const QString kdeVersionPrefix = QLatin1String("/etc/kde") + QLatin1String(kdeVersionBA);
+    const QString kdeVersionPrefix = "/etc/kde"_L1 + QLatin1String(kdeVersionBA);
     if (QFileInfo(kdeVersionPrefix).isDir())
         kdeDirs += kdeVersionPrefix;
 
@@ -878,7 +880,7 @@ QStringList QGenericUnixTheme::themeNames()
                 // unknown, but lowercase the name (our standard practice) and
                 // remove any "x-" prefix
                 QString s = QString::fromLatin1(desktopName.toLower());
-                result.push_back(s.startsWith(QLatin1String("x-")) ? s.mid(2) : s);
+                result.push_back(s.startsWith("x-"_L1) ? s.mid(2) : s);
             }
         }
     } // desktopSettingsAware

@@ -51,6 +51,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(lcPointerGrab, "qt.pointer.grab");
 
 /*!
@@ -149,7 +151,7 @@ Q_LOGGING_CATEGORY(lcPointerGrab, "qt.pointer.grab");
     Creates a new invalid pointing device instance as a child of \a parent.
 */
 QPointingDevice::QPointingDevice(QObject *parent)
-    : QInputDevice(*(new QPointingDevicePrivate(QLatin1String("unknown"), -1,
+    : QInputDevice(*(new QPointingDevicePrivate("unknown"_L1, -1,
                                               DeviceType::Unknown, PointerType::Unknown,
                                               Capability::None, 0, 0)), parent)
 {
@@ -303,7 +305,7 @@ const QPointingDevice *QPointingDevice::primaryPointingDevice(const QString& sea
         qCDebug(lcQpaInputDevices) << "no mouse-like devices registered for seat" << seatName
                                    << "The platform plugin should have provided one via "
                                       "QWindowSystemInterface::registerInputDevice(). Creating a default mouse for now.";
-        mouse = new QPointingDevice(QLatin1String("core pointer"), 1, DeviceType::Mouse,
+        mouse = new QPointingDevice("core pointer"_L1, 1, DeviceType::Mouse,
                                     PointerType::Generic, Capability::Position, 1, 3, seatName,
                                     QPointingDeviceUniqueId(), QCoreApplication::instance());
         QInputDevicePrivate::registerDevice(mouse);
@@ -669,9 +671,9 @@ const QPointingDevice *QPointingDevicePrivate::tabletDevice(QInputDevice::Device
                                    << deviceType << pointerType << Qt::hex << uniqueId.numericId()
                                    << "The platform plugin should have provided one via "
                                       "QWindowSystemInterface::registerInputDevice(). Creating a default one for now.";
-        dev = new QPointingDevice(QLatin1String("fake tablet"), 2, deviceType, pointerType,
-                                                   QInputDevice::Capability::Position | QInputDevice::Capability::Pressure,
-                                                   1, 1, QString(), uniqueId, QCoreApplication::instance());
+        dev = new QPointingDevice("fake tablet"_L1, 2, deviceType, pointerType,
+                                  QInputDevice::Capability::Position | QInputDevice::Capability::Pressure,
+                                  1, 1, QString(), uniqueId, QCoreApplication::instance());
         QInputDevicePrivate::registerDevice(dev);
     }
     return dev;

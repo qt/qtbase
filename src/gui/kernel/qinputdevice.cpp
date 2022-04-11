@@ -48,6 +48,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     \class QInputDevice
     \brief The QInputDevice class describes a device from which a QInputEvent originates.
@@ -323,7 +325,7 @@ const QInputDevice *QInputDevice::primaryKeyboard(const QString& seatName)
         qCDebug(lcQpaInputDevices) << "no keyboards registered for seat" << seatName
                                    << "The platform plugin should have provided one via "
                                       "QWindowSystemInterface::registerInputDevice(). Creating a default one for now.";
-        ret = new QInputDevice(QLatin1String("core keyboard"), 0, DeviceType::Keyboard, seatName, QCoreApplication::instance());
+        ret = new QInputDevice("core keyboard"_L1, 0, DeviceType::Keyboard, seatName, QCoreApplication::instance());
         QInputDevicePrivate::registerDevice(ret);
         return ret;
     }

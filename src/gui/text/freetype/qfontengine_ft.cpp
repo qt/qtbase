@@ -89,6 +89,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #define FLOOR(x)    ((x) & -64)
 #define CEIL(x)     (((x)+63) & -64)
 #define TRUNC(x)    ((x) >> 6)
@@ -804,7 +806,7 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
     PS_FontInfoRec psrec;
     // don't assume that type1 fonts are symbol fonts by default
     if (FT_Get_PS_Font_Info(freetype->face, &psrec) == FT_Err_Ok) {
-        symbol = !fontDef.families.isEmpty() && bool(fontDef.families.first().contains(QLatin1String("symbol"), Qt::CaseInsensitive));
+        symbol = !fontDef.families.isEmpty() && bool(fontDef.families.first().contains("symbol"_L1, Qt::CaseInsensitive));
     }
 
     freetype->computeSize(fontDef, &xsize, &ysize, &defaultGlyphSet.outline_drawing, &scalableBitmapScaleFactor);
@@ -867,7 +869,7 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
                     metrics.ascender = face->size->metrics.ascender;
                     metrics.descender = face->size->metrics.descender;
                     if (metrics.descender > 0
-                            && QString::fromUtf8(face->family_name) == QLatin1String("Courier New")) {
+                            && QString::fromUtf8(face->family_name) == "Courier New"_L1) {
                         metrics.descender *= -1;
                     }
                     metrics.height = metrics.ascender - metrics.descender + leading;

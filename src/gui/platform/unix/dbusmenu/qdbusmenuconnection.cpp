@@ -55,12 +55,14 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_DECLARE_LOGGING_CATEGORY(qLcMenu)
 
-const QString StatusNotifierWatcherService = QLatin1String("org.kde.StatusNotifierWatcher");
-const QString StatusNotifierWatcherPath = QLatin1String("/StatusNotifierWatcher");
-const QString StatusNotifierItemPath = QLatin1String("/StatusNotifierItem");
-const QString MenuBarPath = QLatin1String("/MenuBar");
+const QString StatusNotifierWatcherService = "org.kde.StatusNotifierWatcher"_L1;
+const QString StatusNotifierWatcherPath = "/StatusNotifierWatcher"_L1;
+const QString StatusNotifierItemPath = "/StatusNotifierItem"_L1;
+const QString MenuBarPath = "/MenuBar"_L1;
 
 /*!
     \class QDBusMenuConnection
@@ -131,7 +133,7 @@ bool QDBusMenuConnection::registerTrayIconWithWatcher(QDBusTrayIcon *item)
     Q_UNUSED(item);
     QDBusMessage registerMethod = QDBusMessage::createMethodCall(
                 StatusNotifierWatcherService, StatusNotifierWatcherPath, StatusNotifierWatcherService,
-                QLatin1String("RegisterStatusNotifierItem"));
+                "RegisterStatusNotifierItem"_L1);
     registerMethod.setArguments(QVariantList() << m_connection.baseService());
     return m_connection.callWithCallback(registerMethod, this, SIGNAL(trayIconRegistered()), SLOT(dbusError(QDBusError)));
 }

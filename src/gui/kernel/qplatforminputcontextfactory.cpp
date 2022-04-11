@@ -48,9 +48,11 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #if QT_CONFIG(settings)
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
-    (QPlatformInputContextFactoryInterface_iid, QLatin1String("/platforminputcontexts"), Qt::CaseInsensitive))
+    (QPlatformInputContextFactoryInterface_iid, "/platforminputcontexts"_L1, Qt::CaseInsensitive))
 #endif
 
 QStringList QPlatformInputContextFactory::keys()

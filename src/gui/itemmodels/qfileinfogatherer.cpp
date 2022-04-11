@@ -51,6 +51,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #ifdef QT_BUILD_INTERNAL
 static QBasicAtomicInt fetchedRoot = Q_BASIC_ATOMIC_INITIALIZER(false);
 Q_AUTOTEST_EXPORT void qt_test_resetFetchedRoot()
@@ -162,7 +164,7 @@ void QFileInfoGatherer::fetchExtendedInformation(const QString &path, const QStr
 #if QT_CONFIG(filesystemwatcher)
     if (files.isEmpty()
         && !path.isEmpty()
-        && !path.startsWith(QLatin1String("//")) /*don't watch UNC path*/) {
+        && !path.startsWith("//"_L1) /*don't watch UNC path*/) {
         if (!watchedDirectories().contains(path))
             watchPaths(QStringList(path));
     }

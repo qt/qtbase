@@ -57,6 +57,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 // Avoid an ABI break due to the QScopedPointer->std::unique_ptr change
 static_assert(sizeof(QBrush::DataPtr) == sizeof(QScopedPointer<QBrushData, QBrushDataPointerDeleter>));
@@ -114,7 +116,7 @@ Q_GUI_EXPORT QPixmap qt_pixmapForBrush(int brushStyle, bool invert)
 {
 
     QPixmap pm;
-    QString key = QLatin1String("$qt-brush$")
+    QString key = "$qt-brush$"_L1
                   % HexString<uint>(brushStyle)
                   % QLatin1Char(invert ? '1' : '0');
     if (!QPixmapCache::find(key, &pm)) {

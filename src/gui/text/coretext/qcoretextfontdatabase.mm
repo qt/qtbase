@@ -64,6 +64,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QT_IMPL_METATYPE_EXTERN_TAGGED(QCFType<CGFontRef>, QCFType_CGFontRef)
 QT_IMPL_METATYPE_EXTERN_TAGGED(QCFType<CFURLRef>, QCFType_CFURLRef)
 
@@ -537,7 +539,7 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
     Q_UNUSED(style);
 
     qCDebug(lcQpaFonts).nospace() << "Resolving fallbacks families for"
-        << (!family.isEmpty() ? qPrintable(QLatin1String(" family '%1' with").arg(family)) : "")
+        << (!family.isEmpty() ? qPrintable(" family '%1' with"_L1.arg(family)) : "")
         << " style hint " << styleHint;
 
     QMacAutoReleasePool pool;
@@ -653,7 +655,7 @@ QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData
 
 bool QCoreTextFontDatabase::isPrivateFontFamily(const QString &family) const
 {
-    if (family.startsWith(u'.') || family == QLatin1String("LastResort"))
+    if (family.startsWith(u'.') || family == "LastResort"_L1)
         return true;
 
     return QPlatformFontDatabase::isPrivateFontFamily(family);

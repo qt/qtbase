@@ -59,6 +59,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_GLOBAL_STATIC(QIconLoader, iconLoaderInstance)
 
 /* Theme to use in last resort, if the theme does not have the icon, neither the parents  */
@@ -122,7 +124,7 @@ void QIconLoader::ensureInitialized()
 
         if (m_systemTheme.isEmpty())
             m_systemTheme = systemFallbackThemeName();
-        if (qt_iconEngineFactoryLoader()->keyMap().key(QLatin1String("svg"), -1) != -1)
+        if (qt_iconEngineFactoryLoader()->keyMap().key("svg"_L1, -1) != -1)
             m_supportsSvg = true;
     }
 }
@@ -187,7 +189,7 @@ QStringList QIconLoader::themeSearchPaths() const
     if (m_iconDirs.isEmpty()) {
         m_iconDirs = systemIconSearchPaths();
         // Always add resource directory as search path
-        m_iconDirs.append(QLatin1String(":/icons"));
+        m_iconDirs.append(":/icons"_L1);
     }
     return m_iconDirs;
 }
@@ -248,7 +250,7 @@ private:
 QIconCacheGtkReader::QIconCacheGtkReader(const QString &dirName)
     : m_isValid(false)
 {
-    QFileInfo info(dirName + QLatin1String("/icon-theme.cache"));
+    QFileInfo info(dirName + "/icon-theme.cache"_L1);
     if (!info.exists() || info.lastModified() < QFileInfo(dirName).lastModified())
         return;
     m_file.setFileName(info.absoluteFilePath());
@@ -357,7 +359,7 @@ QIconTheme::QIconTheme(const QString &themeName)
         }
 
         if (!m_valid) {
-            themeIndex.setFileName(themeDir + QLatin1String("/index.theme"));
+            themeIndex.setFileName(themeDir + "/index.theme"_L1);
             if (themeIndex.exists())
                 m_valid = true;
         }
@@ -367,47 +369,38 @@ QIconTheme::QIconTheme(const QString &themeName)
         const QSettings indexReader(themeIndex.fileName(), QSettings::IniFormat);
         const QStringList keys = indexReader.allKeys();
         for (const QString &key : keys) {
-            if (key.endsWith(QLatin1String("/Size"))) {
+            if (key.endsWith("/Size"_L1)) {
                 // Note the QSettings ini-format does not accept
                 // slashes in key names, hence we have to cheat
                 if (int size = indexReader.value(key).toInt()) {
                     QString directoryKey = key.left(key.size() - 5);
                     QIconDirInfo dirInfo(directoryKey);
                     dirInfo.size = size;
-                    QString type = indexReader.value(directoryKey +
-                                                     QLatin1String("/Type")
-                                                     ).toString();
+                    QString type = indexReader.value(directoryKey + "/Type"_L1).toString();
 
-                    if (type == QLatin1String("Fixed"))
+                    if (type == "Fixed"_L1)
                         dirInfo.type = QIconDirInfo::Fixed;
-                    else if (type == QLatin1String("Scalable"))
+                    else if (type == "Scalable"_L1)
                         dirInfo.type = QIconDirInfo::Scalable;
                     else
                         dirInfo.type = QIconDirInfo::Threshold;
 
                     dirInfo.threshold = indexReader.value(directoryKey +
-                                                        QLatin1String("/Threshold"),
-                                                        2).toInt();
+                                                          "/Threshold"_L1,
+                                                          2).toInt();
 
-                    dirInfo.minSize = indexReader.value(directoryKey +
-                                                         QLatin1String("/MinSize"),
-                                                         size).toInt();
+                    dirInfo.minSize = indexReader.value(directoryKey + "/MinSize"_L1, size).toInt();
 
-                    dirInfo.maxSize = indexReader.value(directoryKey +
-                                                        QLatin1String("/MaxSize"),
-                                                        size).toInt();
+                    dirInfo.maxSize = indexReader.value(directoryKey + "/MaxSize"_L1, size).toInt();
 
-                    dirInfo.scale = indexReader.value(directoryKey +
-                                                      QLatin1String("/Scale"),
-                                                      1).toInt();
+                    dirInfo.scale = indexReader.value(directoryKey + "/Scale"_L1, 1).toInt();
                     m_keyList.append(dirInfo);
                 }
             }
         }
 
         // Parent themes provide fallbacks for missing icons
-        m_parents = indexReader.value(
-                QLatin1String("Icon Theme/Inherits")).toStringList();
+        m_parents = indexReader.value("Icon Theme/Inherits"_L1).toStringList();
         m_parents.removeAll(QString());
 
         // Ensure a default platform fallback for all themes
@@ -418,8 +411,8 @@ QIconTheme::QIconTheme(const QString &themeName)
         }
 
         // Ensure that all themes fall back to hicolor
-        if (!m_parents.contains(QLatin1String("hicolor")))
-            m_parents.append(QLatin1String("hicolor"));
+        if (!m_parents.contains("hicolor"_L1))
+            m_parents.append("hicolor"_L1);
     }
 #endif // settings
 }
@@ -447,8 +440,8 @@ QThemeIconInfo QIconLoader::findIconHelper(const QString &themeName,
 
     // Iterate through all icon's fallbacks in current theme
     while (info.entries.empty()) {
-        const QString svgIconName = iconNameFallback + QLatin1String(".svg");
-        const QString pngIconName = iconNameFallback + QLatin1String(".png");
+        const QString svgIconName = iconNameFallback + ".svg"_L1;
+        const QString pngIconName = iconNameFallback + ".png"_L1;
 
         // Add all relevant files
         for (int i = 0; i < contentDirs.size(); ++i) {
@@ -533,9 +526,9 @@ QThemeIconInfo QIconLoader::lookupFallbackIcon(const QString &iconName) const
 {
     QThemeIconInfo info;
 
-    const QString pngIconName = iconName + QLatin1String(".png");
-    const QString xpmIconName = iconName + QLatin1String(".xpm");
-    const QString svgIconName = iconName + QLatin1String(".svg");
+    const QString pngIconName = iconName + ".png"_L1;
+    const QString xpmIconName = iconName + ".xpm"_L1;
+    const QString svgIconName = iconName + ".svg"_L1;
 
     const auto searchPaths = QIcon::fallbackSearchPaths();
     for (const QString &iconDir: searchPaths) {
@@ -766,7 +759,7 @@ QPixmap PixmapEntry::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State st
     if (!actualSize.isNull() && (actualSize.width() > size.width() || actualSize.height() > size.height()))
         actualSize.scale(size, Qt::KeepAspectRatio);
 
-    QString key = QLatin1String("$qt_theme_")
+    QString key = "$qt_theme_"_L1
                   % HexString<qint64>(basePixmap.cacheKey())
                   % HexString<int>(mode)
                   % HexString<qint64>(QGuiApplication::palette().cacheKey())
@@ -815,7 +808,7 @@ QPixmap QIconLoaderEngine::pixmap(const QSize &size, QIcon::Mode mode,
 
 QString QIconLoaderEngine::key() const
 {
-    return QLatin1String("QIconLoaderEngine");
+    return "QIconLoaderEngine"_L1;
 }
 
 QString QIconLoaderEngine::iconName()

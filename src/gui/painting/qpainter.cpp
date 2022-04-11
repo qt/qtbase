@@ -78,6 +78,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 // We changed the type from QScopedPointer to unique_ptr, make sure it's binary compatible:
 static_assert(sizeof(QScopedPointer<QPainterPrivate>) == sizeof(std::unique_ptr<QPainterPrivate>));
 
@@ -5925,7 +5927,7 @@ static QPixmap generateWavyPixmap(qreal maxRadius, const QPen &pen)
 {
     const qreal radiusBase = qMax(qreal(1), maxRadius);
 
-    QString key = QLatin1String("WaveUnderline-")
+    QString key = "WaveUnderline-"_L1
                   % pen.color().name()
                   % HexString<qreal>(radiusBase)
                   % HexString<qreal>(pen.widthF());

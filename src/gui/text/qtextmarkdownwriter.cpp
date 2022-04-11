@@ -53,6 +53,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(lcMDW, "qt.text.markdown.writer")
 
 static const QChar Space = u' ';
@@ -442,7 +444,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
         if (!m_fencedCodeBlock) {
             QString fenceChar = blockFmt.stringProperty(QTextFormat::BlockCodeFence);
             if (fenceChar.isEmpty())
-                fenceChar = QLatin1String("`");
+                fenceChar = "`"_L1;
             m_codeBlockFence = QString(3, fenceChar.at(0));
             if (blockFmt.hasProperty(QTextFormat::BlockIndent))
                 m_codeBlockFence = QString(m_wrappedLineIndent, Space) + m_codeBlockFence;
@@ -504,8 +506,8 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
             QTextImageFormat ifmt = fmt.toImageFormat();
             QString desc = ifmt.stringProperty(QTextFormat::ImageAltText);
             if (desc.isEmpty())
-                desc = QLatin1String("image");
-            QString s = QLatin1String("![") + desc + QLatin1String("](") + ifmt.name();
+                desc = "image"_L1;
+            QString s = "!["_L1 + desc + "]("_L1 + ifmt.name();
             QString title = ifmt.stringProperty(QTextFormat::ImageTitle);
             if (!title.isEmpty())
                 s += Space + DoubleQuote + title + DoubleQuote;
@@ -517,7 +519,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
             m_stream << s;
             col += s.length();
         } else if (fmt.hasProperty(QTextFormat::AnchorHref)) {
-            QString s = u'[' + fragmentText + QLatin1String("](") +
+            QString s = u'[' + fragmentText + "]("_L1 +
                     fmt.property(QTextFormat::AnchorHref).toString();
             if (fmt.hasProperty(QTextFormat::TextToolTip)) {
                 s += Space;
@@ -545,7 +547,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
                 }
                 if (!blockFmt.headingLevel() && !mono) {
                     if (fontInfo.bold() != bold) {
-                        markers += QLatin1String("**");
+                        markers += "**"_L1;
                         bold = fontInfo.bold();
                     }
                     if (fontInfo.italic() != italic) {
@@ -553,7 +555,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
                         italic = fontInfo.italic();
                     }
                     if (fontInfo.strikeOut() != strikeOut) {
-                        markers += QLatin1String("~~");
+                        markers += "~~"_L1;
                         strikeOut = fontInfo.strikeOut();
                     }
                     if (fontInfo.underline() != underline) {

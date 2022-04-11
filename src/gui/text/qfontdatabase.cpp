@@ -68,6 +68,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(lcFontDb, "qt.text.font.db")
 Q_LOGGING_CATEGORY(lcFontMatch, "qt.text.font.match")
 
@@ -94,41 +96,40 @@ static int getFontWeight(const QString &weightString)
     //
     // A simple string test is the cheapest, so let's do that first.
     // Test in decreasing order of commonness
-    if (s == QLatin1String("normal") || s == QLatin1String("regular"))
+    if (s == "normal"_L1 || s == "regular"_L1)
         return QFont::Normal;
-    if (s == QLatin1String("bold"))
+    if (s == "bold"_L1)
         return QFont::Bold;
-    if (s == QLatin1String("semibold") || s == QLatin1String("semi bold")
-            || s == QLatin1String("demibold") || s == QLatin1String("demi bold"))
+    if (s == "semibold"_L1 || s == "semi bold"_L1 || s == "demibold"_L1 || s == "demi bold"_L1)
         return QFont::DemiBold;
-    if (s == QLatin1String("medium"))
+    if (s == "medium"_L1)
         return QFont::Medium;
-    if (s == QLatin1String("black"))
+    if (s == "black"_L1)
         return QFont::Black;
-    if (s == QLatin1String("light"))
+    if (s == "light"_L1)
         return QFont::Light;
-    if (s == QLatin1String("thin"))
+    if (s == "thin"_L1)
         return QFont::Thin;
     const QStringView s2 = QStringView{s}.mid(2);
-    if (s.startsWith(QLatin1String("ex")) || s.startsWith(QLatin1String("ul"))) {
-            if (s2 == QLatin1String("tralight") || s == QLatin1String("tra light"))
+    if (s.startsWith("ex"_L1) || s.startsWith("ul"_L1)) {
+            if (s2 == "tralight"_L1 || s == "tra light"_L1)
                 return QFont::ExtraLight;
-            if (s2 == QLatin1String("trabold") || s2 == QLatin1String("tra bold"))
+            if (s2 == "trabold"_L1 || s2 == "tra bold"_L1)
                 return QFont::ExtraBold;
     }
 
     // Next up, let's see if contains() matches: slightly more expensive, but
     // still fast enough.
-    if (s.contains(QLatin1String("bold"))) {
-        if (s.contains(QLatin1String("demi")))
+    if (s.contains("bold"_L1)) {
+        if (s.contains("demi"_L1))
             return QFont::DemiBold;
         return QFont::Bold;
     }
-    if (s.contains(QLatin1String("thin")))
+    if (s.contains("thin"_L1))
         return QFont::Thin;
-    if (s.contains(QLatin1String("light")))
+    if (s.contains("light"_L1))
         return QFont::Light;
-    if (s.contains(QLatin1String("black")))
+    if (s.contains("black"_L1))
         return QFont::Black;
 
     // Now, we perform string translations & comparisons with those.
@@ -185,9 +186,9 @@ QtFontStyle::Key::Key(const QString &styleString)
 
     if (!styleString.isEmpty()) {
         // First the straightforward no-translation checks, these are fast.
-        if (styleString.contains(QLatin1String("Italic")))
+        if (styleString.contains("Italic"_L1))
             style = QFont::StyleItalic;
-        else if (styleString.contains(QLatin1String("Oblique")))
+        else if (styleString.contains("Oblique"_L1))
             style = QFont::StyleOblique;
 
         // Then the translation checks. These aren't as fast.
@@ -502,7 +503,7 @@ static void initFontDef(const QtFontDesc &desc, const QFontDef &request, QFontDe
     QString family;
     family = desc.family->name;
     if (! desc.foundry->name.isEmpty() && desc.family->count > 1)
-        family += QLatin1String(" [") + desc.foundry->name + u']';
+        family += " ["_L1 + desc.foundry->name + u']';
     fontDef->families = QStringList(family);
 
     if (desc.style->smoothScalable
@@ -669,7 +670,7 @@ QStringList QPlatformFontDatabase::fallbacksForFamily(const QString &family, QFo
             for (int k = 0; k < foundry->count; ++k) {
                 QString name = foundry->name.isEmpty()
                         ? f->name
-                        : f->name + QLatin1String(" [") + foundry->name + u']';
+                        : f->name + " ["_L1 + foundry->name + u']';
                 if (style == foundry->styles[k]->key.style)
                     preferredFallbacks.append(name);
                 else
@@ -1469,7 +1470,7 @@ QStringList QFontDatabase::families(WritingSystem writingSystem)
                 QString str = f->name;
                 QString foundry = f->foundries[j]->name;
                 if (!foundry.isEmpty()) {
-                    str += QLatin1String(" [");
+                    str += " ["_L1;
                     str += foundry;
                     str += u']';
                 }
@@ -2179,7 +2180,7 @@ int QFontDatabasePrivate::addAppFont(const QByteArray &fontData, const QString &
     }
 
     if (font.fileName.isEmpty() && !fontData.isEmpty())
-        font.fileName = QLatin1String(":qmemoryfonts/") + QString::number(i);
+        font.fileName = ":qmemoryfonts/"_L1 + QString::number(i);
 
     auto *platformFontDatabase = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
     platformFontDatabase->addApplicationFont(font.data, font.fileName, &font);
@@ -2387,7 +2388,7 @@ QFontEngine *QFontDatabasePrivate::findFont(const QFontDef &req,
 
 #if defined(QT_BUILD_INTERNAL)
     // For testing purpose only, emulates an exact-matching monospace font
-    if (qt_enable_test_font && request.families.first() == QLatin1String("__Qt__Box__Engine__")) {
+    if (qt_enable_test_font && request.families.first() == "__Qt__Box__Engine__"_L1) {
         engine = new QTestFontEngine(request.pixelSize);
         engine->fontDef = request;
         return engine;
@@ -2471,7 +2472,7 @@ QFontEngine *QFontDatabasePrivate::findFont(const QFontDef &req,
                 if (!engine) {
                     QtFontDesc desc;
                     do {
-                        index = match(multi ? QChar::Script_Common : script, def, def.families.first(), QLatin1String(""), &desc, blackListed);
+                        index = match(multi ? QChar::Script_Common : script, def, def.families.first(), ""_L1, &desc, blackListed);
                         if (index >= 0) {
                             QFontDef loadDef = def;
                             if (loadDef.families.isEmpty())

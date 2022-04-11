@@ -54,6 +54,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(lcOpenGLProgramDiskCache, "qt.opengl.diskcache")
 
 #ifndef GL_CONTEXT_LOST
@@ -117,7 +119,7 @@ static inline bool qt_ensureWritableDir(const QString &name)
 QOpenGLProgramBinaryCache::QOpenGLProgramBinaryCache()
     : m_cacheWritable(false)
 {
-    const QString subPath = QLatin1String("/qtshadercache-") + QSysInfo::buildAbi() + u'/';
+    const QString subPath = "/qtshadercache-"_L1 + QSysInfo::buildAbi() + u'/';
     const QString sharedCachePath = QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation);
     m_globalCacheDir = sharedCachePath + subPath;
     m_localCacheDir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + subPath;

@@ -67,6 +67,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #if QT_CONFIG(directwrite)
 static inline bool useDirectWrite(QFont::HintingPreference hintingPreference,
                                   const QString &familyName = QString(),
@@ -78,7 +80,7 @@ static inline bool useDirectWrite(QFont::HintingPreference hintingPreference,
 
     // At some scales, GDI will misrender the MingLiU font, so we force use of
     // DirectWrite to work around the issue.
-    if (Q_UNLIKELY(familyName.startsWith(QLatin1String("MingLiU"))))
+    if (Q_UNLIKELY(familyName.startsWith("MingLiU"_L1)))
         return true;
 
     if (isColorFont)
@@ -509,7 +511,7 @@ static bool addFontToDatabase(QString familyName,
                               StoreFontPayload *sfp)
 {
     // the "@family" fonts are just the same as "family". Ignore them.
-    if (familyName.isEmpty() || familyName.at(0) == u'@' || familyName.startsWith(QLatin1String("WST_")))
+    if (familyName.isEmpty() || familyName.at(0) == u'@' || familyName.startsWith("WST_"_L1))
         return false;
 
     uchar charSet = logFont.lfCharSet;
@@ -584,7 +586,7 @@ static bool addFontToDatabase(QString familyName,
         // display Thai text by default. As a temporary work around, we special case Segoe UI
         // and remove the Thai script from its list of supported writing systems.
         if (writingSystems.supported(QFontDatabase::Thai) &&
-                familyName == QLatin1String("Segoe UI"))
+                familyName == "Segoe UI"_L1)
             writingSystems.setSupported(QFontDatabase::Thai, false);
     } else {
         const QFontDatabase::WritingSystem ws = writingSystemFromCharSet(charSet);

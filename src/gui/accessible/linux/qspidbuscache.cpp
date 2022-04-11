@@ -48,6 +48,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     \class QSpiDBusCache
     \internal
@@ -69,7 +71,7 @@ QSpiDBusCache::QSpiDBusCache(QDBusConnection c, QObject* parent)
     : QObject(parent)
 {
     new CacheAdaptor(this);
-    c.registerObject(QLatin1String(QSPI_OBJECT_PATH_CACHE), this, QDBusConnection::ExportAdaptors);
+    c.registerObject(QSPI_OBJECT_PATH_CACHE ""_L1, this, QDBusConnection::ExportAdaptors);
 }
 
 void QSpiDBusCache::emitAddAccessible(const QSpiAccessibleCacheItem& item)

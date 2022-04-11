@@ -45,6 +45,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(lcDistanceField, "qt.distanceField");
 
 namespace
@@ -796,7 +798,7 @@ bool qt_fontHasNarrowOutlines(const QRawFont &f)
     if (!font.isValid())
         return false;
 
-    QList<quint32> glyphIndices = font.glyphIndexesForString(QLatin1String("O"));
+    QList<quint32> glyphIndices = font.glyphIndexesForString("O"_L1);
     if (glyphIndices.isEmpty() || glyphIndices[0] == 0)
         return false;
 

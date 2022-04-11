@@ -45,12 +45,14 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 namespace QImageReaderWriterHelpers {
 
 #ifndef QT_NO_IMAGEFORMATPLUGIN
 
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
-                          (QImageIOHandlerFactoryInterface_iid, QLatin1String("/imageformats")))
+                          (QImageIOHandlerFactoryInterface_iid, "/imageformats"_L1))
 Q_GLOBAL_STATIC(QMutex, loaderMutex)
 
 static void appendImagePluginFormats(QFactoryLoader *loader,
@@ -85,8 +87,8 @@ static void appendImagePluginMimeTypes(QFactoryLoader *loader,
     const int pluginCount = metaDataList.size();
     for (int i = 0; i < pluginCount; ++i) {
         const QCborMap metaData = metaDataList.at(i).value(QtPluginMetaDataKeys::MetaData).toMap();
-        const QCborArray keys = metaData.value(QLatin1String("Keys")).toArray();
-        const QCborArray mimeTypes = metaData.value(QLatin1String("MimeTypes")).toArray();
+        const QCborArray keys = metaData.value("Keys"_L1).toArray();
+        const QCborArray mimeTypes = metaData.value("MimeTypes"_L1).toArray();
         QImageIOPlugin *plugin = qobject_cast<QImageIOPlugin *>(loader->instance(i));
         const int keyCount = keys.size();
         for (int k = 0; k < keyCount; ++k) {

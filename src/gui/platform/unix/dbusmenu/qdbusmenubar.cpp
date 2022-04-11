@@ -42,11 +42,13 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /* note: do not change these to QStringLiteral;
    we are unloaded before QtDBus is done using the strings.
  */
-#define REGISTRAR_SERVICE QLatin1String("com.canonical.AppMenu.Registrar")
-#define REGISTRAR_PATH QLatin1String("/com/canonical/AppMenu/Registrar")
+#define REGISTRAR_SERVICE "com.canonical.AppMenu.Registrar"_L1
+#define REGISTRAR_PATH "/com/canonical/AppMenu/Registrar"_L1
 
 QDBusMenuBar::QDBusMenuBar()
     : QPlatformMenuBar()

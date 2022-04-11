@@ -61,6 +61,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 typedef QList<QMacInternalPasteboardMime*> MimeList;
 Q_GLOBAL_STATIC(MimeList, globalMimeList)
 Q_GLOBAL_STATIC(QStringList, globalDraggedTypesList)
@@ -203,23 +205,23 @@ public:
 
 QString QMacPasteboardMimeAny::convertorName()
 {
-    return QLatin1String("Any-Mime");
+    return "Any-Mime"_L1;
 }
 
 QString QMacPasteboardMimeAny::flavorFor(const QString &mime)
 {
     // do not handle the mime type name in the drag pasteboard
-    if (mime == QLatin1String("application/x-qt-mime-type-name"))
+    if (mime == "application/x-qt-mime-type-name"_L1)
         return QString();
-    QString ret = QLatin1String("com.trolltech.anymime.") + mime;
-    return ret.replace(u'/', QLatin1String("--"));
+    QString ret = "com.trolltech.anymime."_L1 + mime;
+    return ret.replace(u'/', "--"_L1);
 }
 
 QString QMacPasteboardMimeAny::mimeFor(QString flav)
 {
-    const QString any_prefix = QLatin1String("com.trolltech.anymime.");
+    const QString any_prefix = "com.trolltech.anymime."_L1;
     if (flav.size() > any_prefix.length() && flav.startsWith(any_prefix))
-        return flav.mid(any_prefix.length()).replace(QLatin1String("--"), QLatin1String("/"));
+        return flav.mid(any_prefix.length()).replace("--"_L1, "/"_L1);
     return QString();
 }
 
@@ -233,7 +235,7 @@ QVariant QMacPasteboardMimeAny::convertToMime(const QString &mime, QList<QByteAr
     if (data.count() > 1)
         qWarning("QMacPasteboardMimeAny: Cannot handle multiple member data");
     QVariant ret;
-    if (mime == QLatin1String("text/plain"))
+    if (mime == "text/plain"_L1)
         ret = QString::fromUtf8(data.first());
     else
         ret = data.first();
@@ -243,7 +245,7 @@ QVariant QMacPasteboardMimeAny::convertToMime(const QString &mime, QList<QByteAr
 QList<QByteArray> QMacPasteboardMimeAny::convertFromMime(const QString &mime, QVariant data, QString)
 {
     QList<QByteArray> ret;
-    if (mime == QLatin1String("text/plain"))
+    if (mime == "text/plain"_L1)
         ret.append(data.toString().toUtf8());
     else
         ret.append(data.toByteArray());
@@ -269,13 +271,13 @@ public:
 
 QString QMacPasteboardMimeTypeName::convertorName()
 {
-    return QLatin1String("Qt-Mime-Type");
+    return "Qt-Mime-Type"_L1;
 }
 
 QString QMacPasteboardMimeTypeName::flavorFor(const QString &mime)
 {
-    if (mime == QLatin1String("application/x-qt-mime-type-name"))
-        return QLatin1String("com.trolltech.qt.MimeTypeName");
+    if (mime == "application/x-qt-mime-type-name"_L1)
+        return "com.trolltech.qt.MimeTypeName"_L1;
     return QString();
 }
 
@@ -298,7 +300,7 @@ QVariant QMacPasteboardMimeTypeName::convertToMime(const QString &, QList<QByteA
 QList<QByteArray> QMacPasteboardMimeTypeName::convertFromMime(const QString &, QVariant, QString)
 {
     QList<QByteArray> ret;
-    ret.append(QString(QLatin1String("x-qt-mime-type-name")).toUtf8());
+    ret.append(QString("x-qt-mime-type-name"_L1).toUtf8());
     return ret;
 }
 
@@ -316,20 +318,20 @@ public:
 
 QString QMacPasteboardMimePlainTextFallback::convertorName()
 {
-    return QLatin1String("PlainText (public.text)");
+    return "PlainText (public.text)"_L1;
 }
 
 QString QMacPasteboardMimePlainTextFallback::flavorFor(const QString &mime)
 {
-    if (mime == QLatin1String("text/plain"))
-        return QLatin1String("public.text");
+    if (mime == "text/plain"_L1)
+        return "public.text"_L1;
     return QString();
 }
 
 QString QMacPasteboardMimePlainTextFallback::mimeFor(QString flav)
 {
-    if (flav == QLatin1String("public.text"))
-        return QLatin1String("text/plain");
+    if (flav == "public.text"_L1)
+        return "text/plain"_L1;
     return QString();
 }
 
@@ -343,7 +345,7 @@ QVariant QMacPasteboardMimePlainTextFallback::convertToMime(const QString &mimet
     if (data.count() > 1)
         qWarning("QMacPasteboardMimePlainTextFallback: Cannot handle multiple member data");
 
-    if (flavor == QLatin1String("public.text")) {
+    if (flavor == "public.text"_L1) {
         // Note that public.text is documented by Apple to have an undefined encoding. From
         // testing it seems that utf8 is normally used, at least by Safari on iOS.
         const QByteArray &firstData = data.first();
@@ -360,7 +362,7 @@ QList<QByteArray> QMacPasteboardMimePlainTextFallback::convertFromMime(const QSt
 {
     QList<QByteArray> ret;
     QString string = data.toString();
-    if (flavor == QLatin1String("public.text"))
+    if (flavor == "public.text"_L1)
         ret.append(string.toUtf8());
     return ret;
 }
@@ -379,39 +381,38 @@ public:
 
 QString QMacPasteboardMimeUnicodeText::convertorName()
 {
-    return QLatin1String("UnicodeText");
+    return "UnicodeText"_L1;
 }
 
 QString QMacPasteboardMimeUnicodeText::flavorFor(const QString &mime)
 {
-    if (mime == QLatin1String("text/plain"))
-        return QLatin1String("public.utf16-plain-text");
-    int i = mime.indexOf(QLatin1String("charset="));
+    if (mime == "text/plain"_L1)
+        return "public.utf16-plain-text"_L1;
+    int i = mime.indexOf("charset="_L1);
     if (i >= 0) {
         QString cs(mime.mid(i+8).toLower());
         i = cs.indexOf(u';');
         if (i>=0)
             cs = cs.left(i);
-        if (cs == QLatin1String("system"))
-            return QLatin1String("public.utf8-plain-text");
-        else if (cs == QLatin1String("iso-10646-ucs-2")
-                 || cs == QLatin1String("utf16"))
-            return QLatin1String("public.utf16-plain-text");
+        if (cs == "system"_L1)
+            return "public.utf8-plain-text"_L1;
+        else if (cs == "iso-10646-ucs-2"_L1 || cs == "utf16"_L1)
+            return "public.utf16-plain-text"_L1;
     }
     return QString();
 }
 
 QString QMacPasteboardMimeUnicodeText::mimeFor(QString flav)
 {
-    if (flav == QLatin1String("public.utf16-plain-text") || flav == QLatin1String("public.utf8-plain-text"))
-        return QLatin1String("text/plain");
+    if (flav == "public.utf16-plain-text"_L1 || flav == "public.utf8-plain-text"_L1)
+        return "text/plain"_L1;
     return QString();
 }
 
 bool QMacPasteboardMimeUnicodeText::canConvert(const QString &mime, QString flav)
 {
-    return (mime == QLatin1String("text/plain")
-            && (flav == QLatin1String("public.utf8-plain-text") || (flav == QLatin1String("public.utf16-plain-text"))));
+    return (mime == "text/plain"_L1
+            && (flav == "public.utf8-plain-text"_L1 || (flav == "public.utf16-plain-text"_L1)));
 }
 
 QVariant QMacPasteboardMimeUnicodeText::convertToMime(const QString &mimetype, QList<QByteArray> data, QString flavor)
@@ -421,9 +422,9 @@ QVariant QMacPasteboardMimeUnicodeText::convertToMime(const QString &mimetype, Q
     const QByteArray &firstData = data.first();
     // I can only handle two types (system and unicode) so deal with them that way
     QVariant ret;
-    if (flavor == QLatin1String("public.utf8-plain-text")) {
+    if (flavor == "public.utf8-plain-text"_L1) {
         ret = QString::fromUtf8(firstData);
-    } else if (flavor == QLatin1String("public.utf16-plain-text")) {
+    } else if (flavor == "public.utf16-plain-text"_L1) {
         QString str = QStringDecoder(QStringDecoder::Utf16)(firstData);
         ret = str;
     } else {
@@ -436,9 +437,9 @@ QList<QByteArray> QMacPasteboardMimeUnicodeText::convertFromMime(const QString &
 {
     QList<QByteArray> ret;
     QString string = data.toString();
-    if (flavor == QLatin1String("public.utf8-plain-text"))
+    if (flavor == "public.utf8-plain-text"_L1)
         ret.append(string.toUtf8());
-    else if (flavor == QLatin1String("public.utf16-plain-text")) {
+    else if (flavor == "public.utf16-plain-text"_L1) {
         QStringEncoder::Flags f;
 #if defined(Q_OS_MACOS)
         // Some applications such as Microsoft Excel, don't deal well with
@@ -472,20 +473,20 @@ public:
 
 QString QMacPasteboardMimeHTMLText::convertorName()
 {
-    return QLatin1String("HTML");
+    return "HTML"_L1;
 }
 
 QString QMacPasteboardMimeHTMLText::flavorFor(const QString &mime)
 {
-    if (mime == QLatin1String("text/html"))
-        return QLatin1String("public.html");
+    if (mime == "text/html"_L1)
+        return "public.html"_L1;
     return QString();
 }
 
 QString QMacPasteboardMimeHTMLText::mimeFor(QString flav)
 {
-    if (flav == QLatin1String("public.html"))
-        return QLatin1String("text/html");
+    if (flav == "public.html"_L1)
+        return "text/html"_L1;
     return QString();
 }
 
@@ -526,20 +527,20 @@ public:
 
 QString QMacPasteboardMimeRtfText::convertorName()
 {
-    return QLatin1String("Rtf");
+    return "Rtf"_L1;
 }
 
 QString QMacPasteboardMimeRtfText::flavorFor(const QString &mime)
 {
-    if (mime == QLatin1String("text/html"))
-        return QLatin1String("public.rtf");
+    if (mime == "text/html"_L1)
+        return "public.rtf"_L1;
     return QString();
 }
 
 QString QMacPasteboardMimeRtfText::mimeFor(QString flav)
 {
-    if (flav == QLatin1String("public.rtf"))
-        return QLatin1String("text/html");
+    if (flav == "public.rtf"_L1)
+        return "text/html"_L1;
     return QString();
 }
 
@@ -602,26 +603,26 @@ public:
 
 QString QMacPasteboardMimeFileUri::convertorName()
 {
-    return QLatin1String("FileURL");
+    return "FileURL"_L1;
 }
 
 QString QMacPasteboardMimeFileUri::flavorFor(const QString &mime)
 {
-    if (mime == QLatin1String("text/uri-list"))
-        return QLatin1String("public.file-url");
+    if (mime == "text/uri-list"_L1)
+        return "public.file-url"_L1;
     return QString();
 }
 
 QString QMacPasteboardMimeFileUri::mimeFor(QString flav)
 {
-    if (flav == QLatin1String("public.file-url"))
-        return QLatin1String("text/uri-list");
+    if (flav == "public.file-url"_L1)
+        return "text/uri-list"_L1;
     return QString();
 }
 
 bool QMacPasteboardMimeFileUri::canConvert(const QString &mime, QString flav)
 {
-    return mime == QLatin1String("text/uri-list") && flav == QLatin1String("public.file-url");
+    return mime == "text/uri-list"_L1 && flav == "public.file-url"_L1;
 }
 
 QVariant QMacPasteboardMimeFileUri::convertToMime(const QString &mime, QList<QByteArray> data, QString flav)
@@ -642,7 +643,7 @@ QVariant QMacPasteboardMimeFileUri::convertToMime(const QString &mime, QList<QBy
             url = QUrl::fromNSURL(nsurl);
         }
 
-        if (url.host().toLower() == QLatin1String("localhost"))
+        if (url.host().toLower() == "localhost"_L1)
             url.setHost(QString());
 
         url.setPath(url.path().normalized(QString::NormalizationForm_C));
@@ -660,10 +661,10 @@ QList<QByteArray> QMacPasteboardMimeFileUri::convertFromMime(const QString &mime
     for (int i = 0; i < urls.size(); ++i) {
         QUrl url = urls.at(i).toUrl();
         if (url.scheme().isEmpty())
-            url.setScheme(QLatin1String("file"));
-        if (url.scheme() == QLatin1String("file")) {
+            url.setScheme("file"_L1);
+        if (url.scheme() == "file"_L1) {
             if (url.host().isEmpty())
-                url.setHost(QLatin1String("localhost"));
+                url.setHost("localhost"_L1);
             url.setPath(url.path().normalized(QString::NormalizationForm_D));
         }
         if (url.isLocalFile())
@@ -691,27 +692,27 @@ public:
 
 QString QMacPasteboardMimeUrl::convertorName()
 {
-    return QLatin1String("URL");
+    return "URL"_L1;
 }
 
 QString QMacPasteboardMimeUrl::flavorFor(const QString &mime)
 {
-    if (mime.startsWith(QLatin1String("text/uri-list")))
-        return QLatin1String("public.url");
+    if (mime.startsWith("text/uri-list"_L1))
+        return "public.url"_L1;
     return QString();
 }
 
 QString QMacPasteboardMimeUrl::mimeFor(QString flav)
 {
-    if (flav == QLatin1String("public.url"))
-        return QLatin1String("text/uri-list");
+    if (flav == "public.url"_L1)
+        return "text/uri-list"_L1;
     return QString();
 }
 
 bool QMacPasteboardMimeUrl::canConvert(const QString &mime, QString flav)
 {
-    return flav == QLatin1String("public.url")
-            && mime == QLatin1String("text/uri-list");
+    return flav == "public.url"_L1
+            && mime == "text/uri-list"_L1;
 }
 
 QVariant QMacPasteboardMimeUrl::convertToMime(const QString &mime, QList<QByteArray> data, QString flav)
@@ -722,7 +723,7 @@ QVariant QMacPasteboardMimeUrl::convertToMime(const QString &mime, QList<QByteAr
     QList<QVariant> ret;
     for (int i=0; i<data.size(); ++i) {
         QUrl url = QUrl::fromEncoded(data.at(i));
-        if (url.host().toLower() == QLatin1String("localhost"))
+        if (url.host().toLower() == "localhost"_L1)
             url.setHost(QString());
         url.setPath(url.path().normalized(QString::NormalizationForm_C));
         ret.append(url);
@@ -740,10 +741,10 @@ QList<QByteArray> QMacPasteboardMimeUrl::convertFromMime(const QString &mime, QV
     for (int i=0; i<urls.size(); ++i) {
         QUrl url = urls.at(i).toUrl();
         if (url.scheme().isEmpty())
-            url.setScheme(QLatin1String("file"));
-        if (url.scheme() == QLatin1String("file")) {
+            url.setScheme("file"_L1);
+        if (url.scheme() == "file"_L1) {
             if (url.host().isEmpty())
-                url.setHost(QLatin1String("localhost"));
+                url.setHost("localhost"_L1);
             url.setPath(url.path().normalized(QString::NormalizationForm_D));
         }
         ret.append(url.toEncoded());
@@ -766,7 +767,7 @@ public:
 
 QString QMacPasteboardMimeVCard::convertorName()
 {
-    return QLatin1String("VCard");
+    return "VCard"_L1;
 }
 
 bool QMacPasteboardMimeVCard::canConvert(const QString &mime, QString flav)
@@ -776,22 +777,22 @@ bool QMacPasteboardMimeVCard::canConvert(const QString &mime, QString flav)
 
 QString QMacPasteboardMimeVCard::flavorFor(const QString &mime)
 {
-    if (mime.startsWith(QLatin1String("text/vcard")))
-        return QLatin1String("public.vcard");
+    if (mime.startsWith("text/vcard"_L1))
+        return "public.vcard"_L1;
     return QString();
 }
 
 QString QMacPasteboardMimeVCard::mimeFor(QString flav)
 {
-    if (flav == QLatin1String("public.vcard"))
-        return QLatin1String("text/vcard");
+    if (flav == "public.vcard"_L1)
+        return "text/vcard"_L1;
     return QString();
 }
 
 QVariant QMacPasteboardMimeVCard::convertToMime(const QString &mime, QList<QByteArray> data, QString)
 {
     QByteArray cards;
-    if (mime == QLatin1String("text/vcard")) {
+    if (mime == "text/vcard"_L1) {
         for (int i=0; i<data.size(); ++i)
             cards += data[i];
     }
@@ -801,7 +802,7 @@ QVariant QMacPasteboardMimeVCard::convertToMime(const QString &mime, QList<QByte
 QList<QByteArray> QMacPasteboardMimeVCard::convertFromMime(const QString &mime, QVariant data, QString)
 {
     QList<QByteArray> ret;
-    if (mime == QLatin1String("text/vcard"))
+    if (mime == "text/vcard"_L1)
         ret.append(data.toString().toUtf8());
     return ret;
 }
@@ -823,26 +824,26 @@ public:
 
 QString QMacPasteboardMimeTiff::convertorName()
 {
-    return QLatin1String("Tiff");
+    return "Tiff"_L1;
 }
 
 QString QMacPasteboardMimeTiff::flavorFor(const QString &mime)
 {
-    if (mime.startsWith(QLatin1String("application/x-qt-image")))
-        return QLatin1String("public.tiff");
+    if (mime.startsWith("application/x-qt-image"_L1))
+        return "public.tiff"_L1;
     return QString();
 }
 
 QString QMacPasteboardMimeTiff::mimeFor(QString flav)
 {
-    if (flav == QLatin1String("public.tiff"))
-        return QLatin1String("application/x-qt-image");
+    if (flav == "public.tiff"_L1)
+        return "application/x-qt-image"_L1;
     return QString();
 }
 
 bool QMacPasteboardMimeTiff::canConvert(const QString &mime, QString flav)
 {
-    return flav == QLatin1String("public.tiff") && mime == QLatin1String("application/x-qt-image");
+    return flav == "public.tiff"_L1 && mime == "application/x-qt-image"_L1;
 }
 
 QVariant QMacPasteboardMimeTiff::convertToMime(const QString &mime, QList<QByteArray> data, QString flav)

@@ -133,6 +133,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static QImageIOHandler *createWriteHandlerHelper(QIODevice *device,
     const QByteArray &format)
 {
@@ -646,8 +648,8 @@ QImageIOHandler::Transformations QImageWriter::transformation() const
 void QImageWriter::setText(const QString &key, const QString &text)
 {
     if (!d->description.isEmpty())
-        d->description += QLatin1String("\n\n");
-    d->description += key.simplified() + QLatin1String(": ") + text.simplified();
+        d->description += "\n\n"_L1;
+    d->description += key.simplified() + ": "_L1 + text.simplified();
 }
 
 /*!

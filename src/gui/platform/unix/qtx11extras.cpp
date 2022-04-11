@@ -53,6 +53,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static QScreen *findScreenForVirtualDesktop(int virtualDesktopNumber)
 {
     const auto screens = QGuiApplication::screens();
@@ -95,7 +97,7 @@ QX11Info::QX11Info()
  */
 bool QX11Info::isPlatformX11()
 {
-    return QGuiApplication::platformName() == QLatin1String("xcb");
+    return QGuiApplication::platformName() == "xcb"_L1;
 }
 
 /*!

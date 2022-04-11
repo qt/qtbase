@@ -134,6 +134,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 // Helper macro for static functions to check on the existence of the application class.
 #define CHECK_QAPP_INSTANCE(...) \
     if (Q_LIKELY(QCoreApplication::instance())) { \
@@ -230,7 +232,7 @@ static bool qt_detectRTLLanguage()
         (QGuiApplication::tr("QT_LAYOUT_DIRECTION",
                          "Translate this string to the string 'LTR' in left-to-right"
                          " languages or to 'RTL' in right-to-left languages (such as Hebrew"
-                         " and Arabic) to get proper widget layout.") == QLatin1String("RTL"));
+                         " and Arabic) to get proper widget layout.") == "RTL"_L1);
 }
 
 static void initFontUnlocked()
@@ -260,7 +262,7 @@ static void initThemeHints()
 static bool checkNeedPortalSupport()
 {
 #if QT_CONFIG(dbus)
-    return !QStandardPaths::locate(QStandardPaths::RuntimeLocation, QLatin1String("flatpak-info")).isEmpty() || qEnvironmentVariableIsSet("SNAP");
+    return !QStandardPaths::locate(QStandardPaths::RuntimeLocation, "flatpak-info"_L1).isEmpty() || qEnvironmentVariableIsSet("SNAP");
 #else
     return false;
 #endif // QT_CONFIG(dbus)
@@ -1247,7 +1249,7 @@ static void init_platform(const QString &pluginNamesWithArguments, const QString
                                               "Reinstalling the application may fix this problem.\n");
 
         if (!availablePlugins.isEmpty())
-            fatalMessage += QStringLiteral("\nAvailable platform plugins are: %1.\n").arg(availablePlugins.join(QLatin1String(", ")));
+            fatalMessage += QStringLiteral("\nAvailable platform plugins are: %1.\n").arg(availablePlugins.join(", "_L1));
 
 #if defined(Q_OS_WIN)
         // Windows: Display message box unless it is a console application
@@ -1586,11 +1588,11 @@ void QGuiApplicationPrivate::init()
         } else if (strncmp(arg, "-psn_", 5) == 0) {
             // eat "-psn_xxxx" on Mac, which is passed when starting an app from Finder.
             // special hack to change working directory (for an app bundle) when running from finder
-            if (QDir::currentPath() == QLatin1String("/")) {
+            if (QDir::currentPath() == "/"_L1) {
                 QCFType<CFURLRef> bundleURL(CFBundleCopyBundleURL(CFBundleGetMainBundle()));
                 QString qbundlePath = QCFString(CFURLCopyFileSystemPath(bundleURL,
                                                                         kCFURLPOSIXPathStyle));
-                if (qbundlePath.endsWith(QLatin1String(".app")))
+                if (qbundlePath.endsWith(".app"_L1))
                     QDir::setCurrent(qbundlePath.section(u'/', 0, -2));
             }
 #endif

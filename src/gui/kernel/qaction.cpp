@@ -59,12 +59,14 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*
   internal: guesses a descriptive text from a text suited for a menu entry
  */
 static QString qt_strippedText(QString s)
 {
-    s.remove(QLatin1String("..."));
+    s.remove("..."_L1);
     for (int i = 0; i < s.size(); ++i) {
         if (s.at(i) == u'&')
             s.remove(i, 1);
@@ -654,7 +656,7 @@ QString QAction::text() const
     QString s = d->text;
     if (s.isEmpty()) {
         s = d->iconText;
-        s.replace(u'&', QLatin1String("&&"));
+        s.replace(u'&', "&&"_L1);
     }
     return s;
 }

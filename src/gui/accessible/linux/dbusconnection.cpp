@@ -53,11 +53,13 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /* note: do not change these to QStringLiteral;
    we are unloaded before QtDBus is done using the strings.
  */
-#define A11Y_SERVICE QLatin1String("org.a11y.Bus")
-#define A11Y_PATH QLatin1String("/org/a11y/bus")
+#define A11Y_SERVICE "org.a11y.Bus"_L1
+#define A11Y_PATH "/org/a11y/bus"_L1
 
 /*!
     \class DBusConnection
@@ -137,7 +139,7 @@ void DBusConnection::serviceRegistered()
         } else {
             QDBusConnection c = QDBusConnection::sessionBus();
             QDBusMessage m = QDBusMessage::createMethodCall(A11Y_SERVICE, A11Y_PATH, A11Y_SERVICE,
-                                                            QLatin1String("GetAddress"));
+                                                            "GetAddress"_L1);
             c.callWithCallback(m, this, SLOT(connectA11yBus(QString)), SLOT(dbusError(QDBusError)));
         }
     }
@@ -156,7 +158,7 @@ void DBusConnection::connectA11yBus(const QString &address)
         qWarning("Could not find Accessibility DBus address.");
         return;
     }
-    m_a11yConnection = QDBusConnection(QDBusConnection::connectToBus(address, QLatin1String("a11y")));
+    m_a11yConnection = QDBusConnection(QDBusConnection::connectToBus(address, "a11y"_L1));
 
     if (m_enabled)
         emit enabledChanged(true);

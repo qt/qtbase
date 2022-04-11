@@ -66,6 +66,8 @@
 #ifndef QT_NO_ICON
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     \enum QIcon::Mode
 
@@ -320,7 +322,7 @@ QPixmap QPixmapIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIc
     if (!actualSize.isNull() && (actualSize.width() > size.width() || actualSize.height() > size.height()))
         actualSize.scale(size, Qt::KeepAspectRatio);
 
-    QString key = QLatin1String("qt_")
+    QString key = "qt_"_L1
                   % HexString<quint64>(pm.cacheKey())
                   % HexString<uint>(pe ? pe->mode : QIcon::Normal)
                   % HexString<quint64>(QGuiApplication::palette().cacheKey())
@@ -493,7 +495,7 @@ void QPixmapIconEngine::addFile(const QString &fileName, const QSize &size, QIco
 
 QString QPixmapIconEngine::key() const
 {
-    return QLatin1String("QPixmapIconEngine");
+    return "QPixmapIconEngine"_L1;
 }
 
 QIconEngine *QPixmapIconEngine::clone() const
@@ -550,7 +552,7 @@ bool QPixmapIconEngine::write(QDataStream &out) const
 }
 
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
-    (QIconEngineFactoryInterface_iid, QLatin1String("/iconengines"), Qt::CaseInsensitive))
+    (QIconEngineFactoryInterface_iid, "/iconengines"_L1, Qt::CaseInsensitive))
 
 QFactoryLoader *qt_iconEngineFactoryLoader()
 {
@@ -1457,10 +1459,10 @@ QDataStream &operator>>(QDataStream &s, QIcon &icon)
         icon = QIcon();
         QString key;
         s >> key;
-        if (key == QLatin1String("QPixmapIconEngine")) {
+        if (key == "QPixmapIconEngine"_L1) {
             icon.d = new QIconPrivate(new QPixmapIconEngine);
             icon.d->engine->read(s);
-        } else if (key == QLatin1String("QIconLoaderEngine")) {
+        } else if (key == "QIconLoaderEngine"_L1) {
             icon.d = new QIconPrivate(new QIconLoaderEngine());
             icon.d->engine->read(s);
         } else {
@@ -1567,7 +1569,7 @@ QString qt_findAtNxFile(const QString &baseFileName, qreal targetDevicePixelRati
     }
 
     QString atNxfileName = baseFileName;
-    atNxfileName.insert(dotIndex, QLatin1String("@2x"));
+    atNxfileName.insert(dotIndex, "@2x"_L1);
     // Check for @Nx, ..., @3x, @2x file versions,
     for (int n = qMin(qCeil(targetDevicePixelRatio), 9); n > 1; --n) {
         atNxfileName[dotIndex + 1] = QLatin1Char('0' + n);

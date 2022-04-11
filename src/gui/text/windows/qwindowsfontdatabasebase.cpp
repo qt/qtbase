@@ -55,6 +55,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 // Helper classes for creating font engines directly from font data
 namespace {
 
@@ -940,7 +942,7 @@ QFontDef QWindowsFontDatabaseBase::sanitizeRequest(QFontDef request) const
     if (fam.isEmpty())
         req.families[0] = QStringLiteral("MS Sans Serif");
 
-    if (fam == QLatin1String("MS Sans Serif")) {
+    if (fam == "MS Sans Serif"_L1) {
         int height = -qRound(request.pixelSize);
         // MS Sans Serif has bearing problems in italic, and does not scale
         if (request.style == QFont::StyleItalic || (height > 18 && height != 24))

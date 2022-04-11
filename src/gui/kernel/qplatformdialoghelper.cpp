@@ -56,6 +56,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QT_IMPL_METATYPE_EXTERN_TAGGED(QPlatformDialogHelper::StandardButton,
                                QPlatformDialogHelper__StandardButton)
 QT_IMPL_METATYPE_EXTERN_TAGGED(QPlatformDialogHelper::ButtonRole,
@@ -299,7 +301,7 @@ void QColorDialogStaticData::readSettings()
 #if QT_CONFIG(settings)
     const QSettings settings(QSettings::UserScope, QStringLiteral("QtProject"));
     for (int i = 0; i < int(CustomColorCount); ++i) {
-        const QVariant v = settings.value(QLatin1String("Qt/customColors/") + QString::number(i));
+        const QVariant v = settings.value("Qt/customColors/"_L1 + QString::number(i));
         if (v.isValid())
             customRgb[i] = v.toUInt();
     }
@@ -313,7 +315,7 @@ void QColorDialogStaticData::writeSettings() const
         const_cast<QColorDialogStaticData*>(this)->customSet = false;
         QSettings settings(QSettings::UserScope, QStringLiteral("QtProject"));
         for (int i = 0; i < int(CustomColorCount); ++i)
-            settings.setValue(QLatin1String("Qt/customColors/") + QString::number(i), customRgb[i]);
+            settings.setValue("Qt/customColors/"_L1 + QString::number(i), customRgb[i]);
     }
 #endif
 }

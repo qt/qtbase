@@ -46,9 +46,10 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
-    (QGenericPluginFactoryInterface_iid,
-     QLatin1String("/generic"), Qt::CaseInsensitive))
+    (QGenericPluginFactoryInterface_iid, "/generic"_L1, Qt::CaseInsensitive))
 
 /*!
     \class QGenericPluginFactory

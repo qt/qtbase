@@ -55,6 +55,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QT_IMPL_METATYPE_EXTERN_TAGGED(QCss::BackgroundData, QCss__BackgroundData)
 QT_IMPL_METATYPE_EXTERN_TAGGED(QCss::LengthData, QCss__LengthData)
 QT_IMPL_METATYPE_EXTERN_TAGGED(QCss::BorderData, QCss__BorderData)
@@ -734,7 +736,7 @@ static ColorData parseColorValue(QCss::Value v)
         return ColorData();
 
     const QString &identifier = lst.at(0);
-    if ((identifier.compare(QLatin1String("palette"), Qt::CaseInsensitive)) == 0) {
+    if ((identifier.compare("palette"_L1, Qt::CaseInsensitive)) == 0) {
         int role = findKnownValue(lst.at(1).trimmed(), values, NumKnownValues);
         if (role >= Value_FirstColorRole && role <= Value_LastColorRole)
             return (QPalette::ColorRole)(role-Value_FirstColorRole);
@@ -742,9 +744,9 @@ static ColorData parseColorValue(QCss::Value v)
         return ColorData();
     }
 
-    const bool rgb = identifier.startsWith(QLatin1String("rgb"));
-    const bool hsv = !rgb && identifier.startsWith(QLatin1String("hsv"));
-    const bool hsl = !rgb && !hsv && identifier.startsWith(QLatin1String("hsl"));
+    const bool rgb = identifier.startsWith("rgb"_L1);
+    const bool hsv = !rgb && identifier.startsWith("hsv"_L1);
+    const bool hsl = !rgb && !hsv && identifier.startsWith("hsl"_L1);
 
     if (!rgb && !hsv && !hsl)
         return ColorData();
@@ -831,7 +833,7 @@ static BrushData parseBrushValue(const QCss::Value &v, const QPalette &pal)
         return BrushData();
 
     QStringList gradFuncs;
-    gradFuncs << QLatin1String("qlineargradient") << QLatin1String("qradialgradient") << QLatin1String("qconicalgradient") << QLatin1String("qgradient");
+    gradFuncs << "qlineargradient"_L1 << "qradialgradient"_L1 << "qconicalgradient"_L1 << "qgradient"_L1;
     int gradType = -1;
 
     if ((gradType = gradFuncs.indexOf(lst.at(0).toLower())) == -1)
@@ -842,7 +844,7 @@ static BrushData parseBrushValue(const QCss::Value &v, const QPalette &pal)
 
     int spread = -1;
     QStringList spreads;
-    spreads << QLatin1String("pad") << QLatin1String("reflect") << QLatin1String("repeat");
+    spreads << "pad"_L1 << "reflect"_L1 << "repeat"_L1;
 
     bool dependsOnThePalette = false;
     Parser parser(lst.at(1));
@@ -855,7 +857,7 @@ static BrushData parseBrushValue(const QCss::Value &v, const QPalette &pal)
         if (!parser.test(COLON))
             return BrushData();
         parser.skipSpace();
-        if (attr.compare(QLatin1String("stop"), Qt::CaseInsensitive) == 0) {
+        if (attr.compare("stop"_L1, Qt::CaseInsensitive) == 0) {
             QCss::Value stop, color;
             parser.next();
             if (!parser.parseTerm(&stop)) return BrushData();
@@ -870,7 +872,7 @@ static BrushData parseBrushValue(const QCss::Value &v, const QPalette &pal)
             parser.next();
             QCss::Value value;
             (void)parser.parseTerm(&value);
-            if (attr.compare(QLatin1String("spread"), Qt::CaseInsensitive) == 0) {
+            if (attr.compare("spread"_L1, Qt::CaseInsensitive) == 0) {
                 spread = spreads.indexOf(value.variant.toString());
             } else {
                 vars[attr] = value.variant.toReal();
@@ -881,8 +883,8 @@ static BrushData parseBrushValue(const QCss::Value &v, const QPalette &pal)
     }
 
     if (gradType == 0) {
-        QLinearGradient lg(vars.value(QLatin1String("x1")), vars.value(QLatin1String("y1")),
-                           vars.value(QLatin1String("x2")), vars.value(QLatin1String("y2")));
+        QLinearGradient lg(vars.value("x1"_L1), vars.value("y1"_L1),
+                           vars.value("x2"_L1), vars.value("y2"_L1));
         lg.setCoordinateMode(QGradient::ObjectBoundingMode);
         lg.setStops(stops);
         if (spread != -1)
@@ -894,9 +896,9 @@ static BrushData parseBrushValue(const QCss::Value &v, const QPalette &pal)
     }
 
     if (gradType == 1) {
-        QRadialGradient rg(vars.value(QLatin1String("cx")), vars.value(QLatin1String("cy")),
-                           vars.value(QLatin1String("radius")), vars.value(QLatin1String("fx")),
-                           vars.value(QLatin1String("fy")));
+        QRadialGradient rg(vars.value("cx"_L1), vars.value("cy"_L1),
+                           vars.value("radius"_L1), vars.value("fx"_L1),
+                           vars.value("fy"_L1));
         rg.setCoordinateMode(QGradient::ObjectBoundingMode);
         rg.setStops(stops);
         if (spread != -1)
@@ -908,8 +910,7 @@ static BrushData parseBrushValue(const QCss::Value &v, const QPalette &pal)
     }
 
     if (gradType == 2) {
-        QConicalGradient cg(vars.value(QLatin1String("cx")), vars.value(QLatin1String("cy")),
-                            vars.value(QLatin1String("angle")));
+        QConicalGradient cg(vars.value("cx"_L1), vars.value("cy"_L1), vars.value("angle"_L1));
         cg.setCoordinateMode(QGradient::ObjectBoundingMode);
         cg.setStops(stops);
         if (spread != -1)
@@ -1145,14 +1146,14 @@ static bool setFontSizeFromValue(QCss::Value value, QFont *font, int *fontSizeAd
 
     bool valid = false;
     QString s = value.variant.toString();
-    if (s.endsWith(QLatin1String("pt"), Qt::CaseInsensitive)) {
+    if (s.endsWith("pt"_L1, Qt::CaseInsensitive)) {
         s.chop(2);
         value.variant = s;
         if (value.variant.convert(QMetaType::fromType<qreal>())) {
             font->setPointSizeF(qBound(qreal(0), value.variant.toReal(), qreal(1 << 24) - 1));
             valid = true;
         }
-    } else if (s.endsWith(QLatin1String("px"), Qt::CaseInsensitive)) {
+    } else if (s.endsWith("px"_L1, Qt::CaseInsensitive)) {
         s.chop(2);
         value.variant = s;
         if (value.variant.convert(QMetaType::fromType<int>())) {
@@ -1264,12 +1265,12 @@ static void setLetterSpacingFromValue(const QCss::Value &value, QFont *font)
     QString s = value.variant.toString();
     qreal val;
     bool ok = false;
-    if (s.endsWith(QLatin1String("em"), Qt::CaseInsensitive)) {
+    if (s.endsWith("em"_L1, Qt::CaseInsensitive)) {
         s.chop(2);
         val = s.toDouble(&ok);
         if (ok)
             font->setLetterSpacing(QFont::PercentageSpacing, (val + 1.0) * 100);
-    } else if (s.endsWith(QLatin1String("px"), Qt::CaseInsensitive)) {
+    } else if (s.endsWith("px"_L1, Qt::CaseInsensitive)) {
         s.chop(2);
         val = s.toDouble(&ok);
         if (ok)
@@ -1280,7 +1281,7 @@ static void setLetterSpacingFromValue(const QCss::Value &value, QFont *font)
 static void setWordSpacingFromValue(const QCss::Value &value, QFont *font)
 {
     QString s = value.variant.toString();
-    if (s.endsWith(QLatin1String("px"), Qt::CaseInsensitive)) {
+    if (s.endsWith("px"_L1, Qt::CaseInsensitive)) {
         s.chop(2);
         qreal val;
         bool ok = false;
@@ -1650,7 +1651,7 @@ QRect Declaration::rectValue() const
     if (v.type != Value::Function)
         return QRect();
     const QStringList func = v.variant.toStringList();
-    if (func.count() != 2 || func.at(0).compare(QLatin1String("rect")) != 0)
+    if (func.count() != 2 || func.at(0).compare("rect"_L1) != 0)
         return QRect();
     const auto args = QStringView{func[1]}.split(u' ', Qt::SkipEmptyParts);
     if (args.count() != 4)
@@ -1835,7 +1836,7 @@ bool Declaration::borderCollapseValue() const
     if (d->values.count() != 1)
         return false;
     else
-        return d->values.at(0).toString() == QLatin1String("collapse");
+        return d->values.at(0).toString() == "collapse"_L1;
 }
 
 QIcon Declaration::iconValue() const
@@ -1993,7 +1994,7 @@ bool StyleSelector::nodeNameEquals(NodePtr node, const QString& nodeName) const
 
 QStringList StyleSelector::nodeIds(NodePtr node) const
 {
-    return QStringList(attributeValue(node, QCss::AttributeSelector{QLatin1String("id"), {}, AttributeSelector::NoMatch}));
+    return QStringList(attributeValue(node, QCss::AttributeSelector{"id"_L1, {}, AttributeSelector::NoMatch}));
 }
 
 bool StyleSelector::selectorMatches(const Selector &selector, NodePtr node)
@@ -2357,7 +2358,7 @@ void Parser::init(const QString &css, bool isFile)
 
 bool Parser::parse(StyleSheet *styleSheet, Qt::CaseSensitivity nameCaseSensitivity)
 {
-    if (testTokenAndEndsWith(ATKEYWORD_SYM, QLatin1String("charset"))) {
+    if (testTokenAndEndsWith(ATKEYWORD_SYM, "charset"_L1)) {
         while (test(S) || test(CDO) || test(CDC)) {}
         if (!next(STRING)) return false;
         if (!next(SEMICOLON)) return false;
@@ -2621,7 +2622,7 @@ bool Parser::parseSimpleSelector(BasicSelector *basicSel)
         } else if (testClass()) {
             onceMore = true;
             AttributeSelector a;
-            a.name = QLatin1String("class");
+            a.name = "class"_L1;
             a.valueMatchCriterium = AttributeSelector::MatchIncludes;
             if (!parseClass(&a.value)) return false;
             basicSel->attributeSelectors.append(a);
@@ -2732,7 +2733,7 @@ bool Parser::testPrio()
         index = rewind;
         return false;
     }
-    if (lexem().compare(QLatin1String("important"), Qt::CaseInsensitive) != 0) {
+    if (lexem().compare("important"_L1, Qt::CaseInsensitive) != 0) {
         index = rewind;
         return false;
     }
@@ -2835,7 +2836,7 @@ bool Parser::parseTerm(Value *value)
             } else if (testFunction()) {
                 QString name, args;
                 if (!parseFunction(&name, &args)) return false;
-                if (name == QLatin1String("url")) {
+                if (name == "url"_L1) {
                     value->type = Value::Uri;
                     removeOptionalQuotes(&args);
                     if (QFileInfo(args).isRelative() && !sourcePath.isEmpty()) {
@@ -2896,7 +2897,7 @@ bool Parser::testAndParseUri(QString *uri)
         index = rewind;
         return false;
     }
-    if (name.compare(QLatin1String("url"), Qt::CaseInsensitive) != 0) {
+    if (name.compare("url"_L1, Qt::CaseInsensitive) != 0) {
         index = rewind;
         return false;
     }

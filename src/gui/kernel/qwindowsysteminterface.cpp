@@ -58,6 +58,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(lcQpaInputDevices, "qt.qpa.input.devices")
 
 QElapsedTimer QWindowSystemInterfacePrivate::eventTime;
@@ -1229,7 +1231,7 @@ namespace QTest
                                                      QInputDevice::Capabilities caps = QInputDevice::Capability::Position)
     {
         static qint64 nextId = 0x100000000;
-        QPointingDevice *ret = new QPointingDevice(QLatin1String("test touch device"), nextId++,
+        QPointingDevice *ret = new QPointingDevice("test touch device"_L1, nextId++,
                                                    devType, QPointingDevice::PointerType::Finger,
                                                    caps, 8, 0);
         QWindowSystemInterface::registerInputDevice(ret);

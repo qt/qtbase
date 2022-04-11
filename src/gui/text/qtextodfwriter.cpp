@@ -60,11 +60,13 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /// Convert pixels to postscript point units
 static QString pixelToPoint(qreal pixels)
 {
     // we hardcode 96 DPI, we do the same in the ODF importer to have a perfect roundtrip.
-    return QString::number(pixels * 72 / 96) + QLatin1String("pt");
+    return QString::number(pixels * 72 / 96) + "pt"_L1;
 }
 
 // strategies
@@ -454,8 +456,8 @@ void QTextOdfWriter::writeInlineCharacter(QXmlStreamWriter &writer, const QTextF
 
         QImage image;
         QString name = imageFormat.name();
-        if (name.startsWith(QLatin1String(":/"))) // auto-detect resources
-            name.prepend(QLatin1String("qrc"));
+        if (name.startsWith(":/"_L1)) // auto-detect resources
+            name.prepend("qrc"_L1);
         QUrl url = QUrl(name);
         const QVariant variant = m_document->resource(QTextDocument::ImageResource, url);
         if (variant.userType() == QMetaType::QPixmap || variant.userType() == QMetaType::QImage) {
@@ -867,7 +869,7 @@ void QTextOdfWriter::writeTableFormat(QXmlStreamWriter &writer, QTextTableFormat
        writer.writeAttribute(tableNS, QString::fromLatin1("align"), QString::fromLatin1(align));
     if (format.width().rawValue()) {
         writer.writeAttribute(styleNS, QString::fromLatin1("width"),
-                              QString::number(format.width().rawValue()) + QLatin1String("pt"));
+                              QString::number(format.width().rawValue()) + "pt"_L1);
     }
     writer.writeEndElement();
     // start writing table-column style element
@@ -883,14 +885,14 @@ void QTextOdfWriter::writeTableFormat(QXmlStreamWriter &writer, QTextTableFormat
             QString columnWidth;
             if (format.columnWidthConstraints().at(colit).type() == QTextLength::PercentageLength) {
                 columnWidth = QString::number(format.columnWidthConstraints().at(colit).rawValue())
-                        + QLatin1String("%");
+                        + "%"_L1;
             } else if (format.columnWidthConstraints().at(colit).type() == QTextLength::FixedLength) {
                 columnWidth = QString::number(format.columnWidthConstraints().at(colit).rawValue())
-                        + QLatin1String("pt");
+                        + "pt"_L1;
             } else {
                 //!! HARD-CODING variableWidth Constraints to 100% / nr constraints
                 columnWidth = QString::number(100 / format.columnWidthConstraints().size())
-                                      + QLatin1String("%");
+                                      + "%"_L1;
             }
             writer.writeAttribute(styleNS, QString::fromLatin1("column-width"), columnWidth);
             writer.writeEndElement();
@@ -932,8 +934,8 @@ void QTextOdfWriter::tableCellStyleElement(QXmlStreamWriter &writer, const int &
     writer.writeEmptyElement(styleNS, QString::fromLatin1("table-cell-properties"));
     if (hasBorder) {
         writer.writeAttribute(foNS, QString::fromLatin1("border"),
-                              pixelToPoint(tableFormatTmp.border()) + QLatin1String(" ")
-                              + borderStyleName(tableFormatTmp.borderStyle()) + QLatin1String(" ")
+                              pixelToPoint(tableFormatTmp.border()) + " "_L1
+                              + borderStyleName(tableFormatTmp.borderStyle()) + " "_L1
                               + tableFormatTmp.borderBrush().color().name(QColor::HexRgb));
     }
     qreal topPadding = format.topPadding();
@@ -984,14 +986,14 @@ void QTextOdfWriter::tableCellStyleElement(QXmlStreamWriter &writer, const int &
 ///////////////////////
 
 QTextOdfWriter::QTextOdfWriter(const QTextDocument &document, QIODevice *device)
-    : officeNS (QLatin1String("urn:oasis:names:tc:opendocument:xmlns:office:1.0")),
-    textNS (QLatin1String("urn:oasis:names:tc:opendocument:xmlns:text:1.0")),
-    styleNS (QLatin1String("urn:oasis:names:tc:opendocument:xmlns:style:1.0")),
-    foNS (QLatin1String("urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0")),
-    tableNS (QLatin1String("urn:oasis:names:tc:opendocument:xmlns:table:1.0")),
-    drawNS (QLatin1String("urn:oasis:names:tc:opendocument:xmlns:drawing:1.0")),
-    xlinkNS (QLatin1String("http://www.w3.org/1999/xlink")),
-    svgNS (QLatin1String("urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0")),
+    : officeNS ("urn:oasis:names:tc:opendocument:xmlns:office:1.0"_L1),
+    textNS ("urn:oasis:names:tc:opendocument:xmlns:text:1.0"_L1),
+    styleNS ("urn:oasis:names:tc:opendocument:xmlns:style:1.0"_L1),
+    foNS ("urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"_L1),
+    tableNS ("urn:oasis:names:tc:opendocument:xmlns:table:1.0"_L1),
+    drawNS ("urn:oasis:names:tc:opendocument:xmlns:drawing:1.0"_L1),
+    xlinkNS ("http://www.w3.org/1999/xlink"_L1),
+    svgNS ("urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0"_L1),
     m_document(&document),
     m_device(device),
     m_strategy(nullptr),

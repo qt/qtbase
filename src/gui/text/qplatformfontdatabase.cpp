@@ -53,6 +53,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(lcQpaFonts, "qt.qpa.fonts")
 
 void qt_registerFont(const QString &familyname, const QString &stylename,
@@ -357,7 +359,7 @@ QString QPlatformFontDatabase::fontDir() const
 {
     QString fontpath = QString::fromLocal8Bit(qgetenv("QT_QPA_FONTDIR"));
     if (fontpath.isEmpty())
-        fontpath = QLibraryInfo::path(QLibraryInfo::LibrariesPath) + QLatin1String("/fonts");
+        fontpath = QLibraryInfo::path(QLibraryInfo::LibrariesPath) + "/fonts"_L1;
 
     return fontpath;
 }
@@ -381,7 +383,7 @@ bool QPlatformFontDatabase::isPrivateFontFamily(const QString &family) const
 
 QFont QPlatformFontDatabase::defaultFont() const
 {
-    return QFont(QLatin1String("Helvetica"));
+    return QFont("Helvetica"_L1);
 }
 
 

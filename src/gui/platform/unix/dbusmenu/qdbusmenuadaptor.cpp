@@ -59,6 +59,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QDBusMenuAdaptor::QDBusMenuAdaptor(QDBusPlatformMenu *topLevelMenu)
     : QDBusAbstractAdaptor(topLevelMenu)
     , m_topLevelMenu(topLevelMenu)
@@ -73,12 +75,12 @@ QDBusMenuAdaptor::~QDBusMenuAdaptor()
 QString QDBusMenuAdaptor::status() const
 {
     qCDebug(qLcMenu);
-    return QLatin1String("normal");
+    return "normal"_L1;
 }
 
 QString QDBusMenuAdaptor::textDirection() const
 {
-    return QLocale().textDirection() == Qt::RightToLeft ? QLatin1String("rtl") : QLatin1String("ltr");
+    return QLocale().textDirection() == Qt::RightToLeft ? "rtl"_L1 : "ltr"_L1;
 }
 
 uint QDBusMenuAdaptor::version() const
@@ -117,12 +119,12 @@ void QDBusMenuAdaptor::Event(int id, const QString &eventId, const QDBusVariant 
     Q_UNUSED(data);
     Q_UNUSED(timestamp);
     QDBusPlatformMenuItem *item = QDBusPlatformMenuItem::byId(id);
-    qCDebug(qLcMenu) << id << (item ? item->text() : QLatin1String("")) << eventId;
-    if (item && eventId == QLatin1String("clicked"))
+    qCDebug(qLcMenu) << id << (item ? item->text() : ""_L1) << eventId;
+    if (item && eventId == "clicked"_L1)
         item->trigger();
-    if (item && eventId == QLatin1String("hovered"))
+    if (item && eventId == "hovered"_L1)
         emit item->hovered();
-    if (eventId == QLatin1String("closed")) {
+    if (eventId == "closed"_L1) {
         // There is no explicit AboutToHide method, so map closed event to aboutToHide method
         const QDBusPlatformMenu *menu = nullptr;
         if (item)

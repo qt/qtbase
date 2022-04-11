@@ -47,11 +47,13 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #ifndef QT_NO_ACCESSIBILITY
 
 /* accessiblebridge plugin discovery stuff */
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, bridgeloader,
-    (QAccessibleBridgeFactoryInterface_iid, QLatin1String("/accessiblebridge")))
+    (QAccessibleBridgeFactoryInterface_iid, "/accessiblebridge"_L1))
 
 Q_GLOBAL_STATIC(QList<QAccessibleBridge *>, bridges)
 

@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*
   Direct3D 11 backend. Provides a double-buffered flip model swapchain.
   Textures and "static" buffers are USAGE_DEFAULT, leaving it to
@@ -159,9 +161,9 @@ QRhiD3D11::QRhiD3D11(QRhiD3D11InitParams *params, QRhiD3D11NativeHandles *import
 static QString comErrorMessage(HRESULT hr)
 {
     const _com_error comError(hr);
-    QString result = QLatin1String("Error 0x") + QString::number(ulong(hr), 16);
+    QString result = "Error 0x"_L1 + QString::number(ulong(hr), 16);
     if (const wchar_t *msg = comError.ErrorMessage())
-        result += QLatin1String(": ") + QString::fromWCharArray(msg);
+        result += ": "_L1 + QString::fromWCharArray(msg);
     return result;
 }
 

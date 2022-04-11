@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     \class QOffscreenSurface
     \inmodule QtGui
@@ -162,7 +164,7 @@ void QOffscreenSurface::create()
             // violate the minimum title bar width on the platform.
             d->offscreenWindow->setFlags(d->offscreenWindow->flags()
                                          | Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
-            d->offscreenWindow->setObjectName(QLatin1String("QOffscreenSurface"));
+            d->offscreenWindow->setObjectName("QOffscreenSurface"_L1);
             // Remove this window from the global list since we do not want it to be destroyed when closing the app.
             // The QOffscreenSurface has to be usable even after exiting the event loop.
             QGuiApplicationPrivate::window_list.removeOne(d->offscreenWindow);

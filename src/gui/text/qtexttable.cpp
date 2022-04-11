@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     \class QTextTableCell
     \reentrant
@@ -1110,7 +1112,7 @@ void QTextTable::mergeCells(int row, int column, int numRows, int numCols)
                     QTextCursorPrivate::fromPosition(p, insertPos++).insertBlock();
                     p->move(pos + 1, insertPos, nextPos - pos);
                 } else if (rowHasText) {
-                    QTextCursorPrivate::fromPosition(p, insertPos++).insertText(QLatin1String(" "));
+                    QTextCursorPrivate::fromPosition(p, insertPos++).insertText(" "_L1);
                     p->move(pos + 1, insertPos, nextPos - pos);
                 } else {
                     p->move(pos, insertPos, nextPos - pos);

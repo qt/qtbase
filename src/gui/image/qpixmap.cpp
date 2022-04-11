@@ -72,6 +72,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 // MSVC 19.28 does show spurious warning "C4723: potential divide by 0" for code that divides
 // by height() in release builds. Anyhow, all the code paths in this file are only executed
 // for valid QPixmap's, where height() cannot be 0. Therefore disable the warning.
@@ -744,7 +746,7 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
         if (info.completeSuffix().isEmpty() || info.exists()) {
             const bool inGuiThread = qApp->thread() == QThread::currentThread();
 
-            QString key = QLatin1String("qt_pixmap")
+            QString key = "qt_pixmap"_L1
                     % info.absoluteFilePath()
                     % HexString<uint>(info.lastModified().toSecsSinceEpoch())
                     % HexString<quint64>(info.size())

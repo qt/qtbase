@@ -81,6 +81,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_DECLARE_LOGGING_CATEGORY(lcImageIo)
 
 // avoid going through QImage::scanLine() which calls detach
@@ -525,8 +527,8 @@ void QPngHandlerPrivate::readPngTexts(png_info *info)
             value = QString::fromLatin1(text_ptr->text, int(text_ptr->text_length));
         }
         if (!description.isEmpty())
-            description += QLatin1String("\n\n");
-        description += key + QLatin1String(": ") + value.simplified();
+            description += "\n\n"_L1;
+        description += key + ": "_L1 + value.simplified();
         readTexts.append(key);
         readTexts.append(value);
         text_ptr++;

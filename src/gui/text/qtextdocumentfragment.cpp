@@ -49,6 +49,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QTextCopyHelper::QTextCopyHelper(const QTextCursor &_source, const QTextCursor &_destination, bool forceCharFormat, const QTextCharFormat &fmt)
 #if defined(Q_CC_DIAB) // compiler bug
     : formatCollection(*_destination.d->priv->formatCollection()), originalText((const QString)_source.d->priv->buffer())
@@ -445,14 +447,14 @@ QTextHtmlImporter::QTextHtmlImporter(QTextDocument *_doc, const QString &_html, 
     wsm = QTextHtmlParserNode::WhiteSpaceNormal;
 
     QString html = _html;
-    const int startFragmentPos = html.indexOf(QLatin1String("<!--StartFragment-->"));
+    const int startFragmentPos = html.indexOf("<!--StartFragment-->"_L1);
     if (startFragmentPos != -1) {
-        const QLatin1String qt3RichTextHeader("<meta name=\"qrichtext\" content=\"1\" />");
+        const auto qt3RichTextHeader = "<meta name=\"qrichtext\" content=\"1\" />"_L1;
 
         // Hack for Qt3
         const bool hasQtRichtextMetaTag = html.contains(qt3RichTextHeader);
 
-        const int endFragmentPos = html.indexOf(QLatin1String("<!--EndFragment-->"));
+        const int endFragmentPos = html.indexOf("<!--EndFragment-->"_L1);
         if (startFragmentPos < endFragmentPos)
             html = html.mid(startFragmentPos, endFragmentPos - startFragmentPos);
         else

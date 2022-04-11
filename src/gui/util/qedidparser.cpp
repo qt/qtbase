@@ -60,11 +60,13 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static QString lookupVendorIdInSystemDatabase(QByteArrayView id)
 {
     QString result;
 
-    const QString fileName = QLatin1String("/usr/share/hwdata/pnp.ids");
+    const QString fileName = "/usr/share/hwdata/pnp.ids"_L1;
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly))
         return result;

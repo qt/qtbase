@@ -49,6 +49,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #ifndef QT_NO_PDF
 
 // This map is used for symbol fonts to get the correct glyph names for the latin range
@@ -639,7 +641,7 @@ static QTtfTable generateName(const qttf_name_table &name)
     list.append(rec);
     rec.nameId = 4;
     rec.value = name.family;
-    if (name.subfamily != QLatin1String("Regular"))
+    if (name.subfamily != "Regular"_L1)
         rec.value += u' ' + name.subfamily;
     list.append(rec);
     rec.nameId = 6;
@@ -1244,11 +1246,11 @@ QByteArray QFontSubset::toTruetype() const
     if (name_table.data.isEmpty()) {
         qttf_name_table name;
         if (noEmbed)
-            name.copyright = QLatin1String("Fake font");
+            name.copyright = "Fake font"_L1;
         else
             name.copyright = QLatin1String(properties.copyright);
         name.family = fontEngine->fontDef.families.first();
-        name.subfamily = QLatin1String("Regular"); // ######
+        name.subfamily = "Regular"_L1; // ######
         name.postscript_name = QLatin1String(properties.postscriptName);
         name_table = generateName(name);
     }

@@ -59,6 +59,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
 
 /*!
@@ -470,7 +472,7 @@ QAccessibleInterface::~QAccessibleInterface()
 
 /* accessible widgets plugin discovery stuff */
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
-    (QAccessibleFactoryInterface_iid, QLatin1String("/accessible")))
+    (QAccessibleFactoryInterface_iid, "/accessible"_L1))
 typedef QHash<QString, QAccessiblePlugin*> QAccessiblePluginsHash;
 Q_GLOBAL_STATIC(QAccessiblePluginsHash, qAccessiblePlugins)
 
@@ -1841,13 +1843,13 @@ Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface)
         QStringList stateStrings;
         QAccessible::State st = iface->state();
         if (st.focusable)
-            stateStrings << QLatin1String("focusable");
+            stateStrings << "focusable"_L1;
         if (st.focused)
-            stateStrings << QLatin1String("focused");
+            stateStrings << "focused"_L1;
         if (st.selected)
-            stateStrings << QLatin1String("selected");
+            stateStrings << "selected"_L1;
         if (st.invisible)
-            stateStrings << QLatin1String("invisible");
+            stateStrings << "invisible"_L1;
 
         if (!stateStrings.isEmpty())
             d << stateStrings.join(u'|');

@@ -51,13 +51,15 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 extern QString qt_findAtNxFile(const QString &baseFileName, qreal targetDevicePixelRatio,
                                qreal *sourceDevicePixelRatio);
 
 static inline QUrl fromLocalfileOrResources(QString path)
 {
-    if (path.startsWith(QLatin1String(":/"))) // auto-detect resources and convert them to url
-        path.prepend(QLatin1String("qrc"));
+    if (path.startsWith(":/"_L1)) // auto-detect resources and convert them to url
+        path.prepend("qrc"_L1);
     return QUrl(path);
 }
 
@@ -78,13 +80,13 @@ static QPixmap getPixmap(QTextDocument *doc, const QTextImageFormat &format, con
     if (pm.isNull()) {
         QImage img;
         if (name.isEmpty() || !img.load(name))
-            return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/file-16.png"));
+            return QPixmap(":/qt-project.org/styles/commonstyle/images/file-16.png"_L1);
 
         pm = QPixmap::fromImage(img);
         doc->addResource(QTextDocument::ImageResource, url, pm);
     }
 
-    if (name.contains(QLatin1String("@2x")))
+    if (name.contains("@2x"_L1))
         pm.setDevicePixelRatio(sourcePixelRatio);
 
     return pm;
@@ -147,7 +149,7 @@ static QImage getImage(QTextDocument *doc, const QTextImageFormat &format, const
 
     if (image.isNull()) {
         if (name.isEmpty() || !image.load(name))
-            return QImage(QLatin1String(":/qt-project.org/styles/commonstyle/images/file-16.png"));
+            return QImage(":/qt-project.org/styles/commonstyle/images/file-16.png"_L1);
 
         doc->addResource(QTextDocument::ImageResource, url, image);
     }

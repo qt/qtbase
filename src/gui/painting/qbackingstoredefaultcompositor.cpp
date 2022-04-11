@@ -44,6 +44,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QBackingStoreDefaultCompositor::~QBackingStoreDefaultCompositor()
 {
     reset();
@@ -349,8 +351,8 @@ static QRhiGraphicsPipeline *createGraphicsPipeline(QRhi *rhi,
     }
 
     ps->setShaderStages({
-        { QRhiShaderStage::Vertex, getShader(QLatin1String(":/qt-project.org/gui/painting/shaders/backingstorecompose.vert.qsb")) },
-        { QRhiShaderStage::Fragment, getShader(QLatin1String(":/qt-project.org/gui/painting/shaders/backingstorecompose.frag.qsb")) }
+        { QRhiShaderStage::Vertex, getShader(":/qt-project.org/gui/painting/shaders/backingstorecompose.vert.qsb"_L1) },
+        { QRhiShaderStage::Fragment, getShader(":/qt-project.org/gui/painting/shaders/backingstorecompose.frag.qsb"_L1) }
     });
     QRhiVertexInputLayout inputLayout;
     inputLayout.setBindings({ { 5 * sizeof(float) } });

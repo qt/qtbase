@@ -60,6 +60,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static inline QFontDatabase::WritingSystem writingSystemFromCharSet(uchar charSet)
 {
     switch (charSet) {
@@ -176,7 +178,7 @@ static bool addFontToDatabase(QString familyName,
                               int type)
 {
     // the "@family" fonts are just the same as "family". Ignore them.
-    if (familyName.isEmpty() || familyName.at(0) == u'@' || familyName.startsWith(QLatin1String("WST_")))
+    if (familyName.isEmpty() || familyName.at(0) == u'@' || familyName.startsWith("WST_"_L1))
         return false;
 
     uchar charSet = logFont.lfCharSet;
@@ -242,8 +244,7 @@ static bool addFontToDatabase(QString familyName,
         // Since it's the default UI font on this platform, most widgets will be unable to
         // display Thai text by default. As a temporary work around, we special case Segoe UI
         // and remove the Thai script from its list of supported writing systems.
-        if (writingSystems.supported(QFontDatabase::Thai) &&
-                faceName == QLatin1String("Segoe UI"))
+        if (writingSystems.supported(QFontDatabase::Thai) && faceName == "Segoe UI"_L1)
             writingSystems.setSupported(QFontDatabase::Thai, false);
     } else {
         const QFontDatabase::WritingSystem ws = writingSystemFromCharSet(charSet);
@@ -259,8 +260,8 @@ static bool addFontToDatabase(QString familyName,
         QLocale systemLocale = QLocale::system();
         if (systemLocale.language() != QLocale::C
                 && systemLocale.language() != QLocale::English
-                && styleName != QLatin1String("Italic")
-                && styleName != QLatin1String("Bold")) {
+                && styleName != "Italic"_L1
+                && styleName != "Bold"_L1) {
             key = findFontKey(qt_getEnglishName(fullName, true), &index);
         }
         if (!key)
@@ -431,7 +432,7 @@ QStringList QWindowsFontDatabaseFT::fallbacksForFamily(const QString &family, QF
 }
 QString QWindowsFontDatabaseFT::fontDir() const
 {
-    const QString result = QLatin1String(qgetenv("windir")) + QLatin1String("/Fonts");//QPlatformFontDatabase::fontDir();
+    const QString result = QLatin1String(qgetenv("windir")) + "/Fonts"_L1;//QPlatformFontDatabase::fontDir();
     qCDebug(lcQpaFonts) << __FUNCTION__ << result;
     return result;
 }
