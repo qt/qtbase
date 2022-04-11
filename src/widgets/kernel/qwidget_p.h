@@ -479,27 +479,22 @@ public:
 
     // These helper functions return the (available) geometry for the screen
     // the widget is on, and takes care if this one is embedded in a QGraphicsView.
-    static QRect graphicsViewParentRect(const QWidget *widget)
+    static QWidget *parentGraphicsView(const QWidget *widget)
     {
-        QRect rect;
 #if QT_CONFIG(graphicsview)
         QGraphicsProxyWidget *ancestorProxy = widget->d_func()->nearestGraphicsProxyWidget(widget);
         //It's embedded if it has an ancestor
         if (ancestorProxy) {
             if (!bypassGraphicsProxyWidget(widget) && ancestorProxy->scene() != nullptr) {
-                // One view, let be smart and return the viewport rect then the popup is aligned
-                if (ancestorProxy->scene()->views().size() == 1) {
-                    QGraphicsView *view = ancestorProxy->scene()->views().at(0);
-                    rect = view->mapToScene(view->viewport()->rect()).boundingRect().toRect();
-                } else {
-                    rect = ancestorProxy->scene()->sceneRect().toRect();
+                if (!ancestorProxy->scene()->views().empty()) {
+                    return ancestorProxy->scene()->views().at(0);
                 }
             }
         }
 #else
         Q_UNUSED(widget);
 #endif
-        return rect;
+        return nullptr;
     }
 
     static QRect screenGeometry(const QWidget *widget)
@@ -512,11 +507,10 @@ public:
         return availableScreenGeometry(widget, QPoint(), false);
     }
 
-    static QRect screenGeometry(const QWidget *widget, const QPoint &globalPosition, bool hasPosition = true)
+    static QScreen *screen(const QWidget *widget, const QPoint &globalPosition, bool hasPosition = true)
     {
-        QRect rect = graphicsViewParentRect(widget);
-        if (!rect.isNull())
-            return rect;
+        while (QWidget *view = parentGraphicsView(widget))
+            widget = view;
 
         QScreen *screen = nullptr;
         if (hasPosition)
@@ -524,22 +518,17 @@ public:
         if (!screen)
             screen = widget->screen();
 
-        return screen->geometry();
+        return screen;
+    }
+
+    static QRect screenGeometry(const QWidget *widget, const QPoint &globalPosition, bool hasPosition = true)
+    {
+        return screen(widget, globalPosition, hasPosition)->geometry();
     }
 
     static QRect availableScreenGeometry(const QWidget *widget, const QPoint &globalPosition, bool hasPosition = true)
     {
-        QRect rect = graphicsViewParentRect(widget);
-        if (!rect.isNull())
-            return rect;
-
-        QScreen *screen = nullptr;
-        if (hasPosition)
-            screen = widget->screen()->virtualSiblingAt(globalPosition);
-        if (!screen)
-            screen = widget->screen();
-
-        return screen->availableGeometry();
+        return screen(widget, globalPosition, hasPosition)->availableGeometry();
     }
 
     inline void setRedirected(QPaintDevice *replacement, const QPoint &offset)
