@@ -4179,6 +4179,7 @@ bool QMetalSwapChain::createOrResize()
         }
     }
 
+    rtWrapper.setRenderPassDescriptor(m_renderPassDesc); // for the public getter in QRhiRenderTarget
     rtWrapper.d->pixelSize = pixelSize;
     rtWrapper.d->dpr = float(window->devicePixelRatio());
     rtWrapper.d->sampleCount = samples;

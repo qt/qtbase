@@ -4827,6 +4827,7 @@ bool QD3D11SwapChain::createOrResize()
     frameCount = 0;
     ds = m_depthStencil ? QRHI_RES(QD3D11RenderBuffer, m_depthStencil) : nullptr;
 
+    rt.setRenderPassDescriptor(m_renderPassDesc); // for the public getter in QRhiRenderTarget
     QD3D11SwapChainRenderTarget *rtD = QRHI_RES(QD3D11SwapChainRenderTarget, &rt);
     rtD->d.rp = QRHI_RES(QD3D11RenderPassDescriptor, m_renderPassDesc);
     rtD->d.pixelSize = pixelSize;

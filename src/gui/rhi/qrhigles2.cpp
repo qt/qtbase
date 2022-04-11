@@ -5795,6 +5795,7 @@ bool QGles2SwapChain::createOrResize()
         m_depthStencil->create();
     }
 
+    rt.setRenderPassDescriptor(m_renderPassDesc); // for the public getter in QRhiRenderTarget
     rt.d.rp = QRHI_RES(QGles2RenderPassDescriptor, m_renderPassDesc);
     rt.d.pixelSize = pixelSize;
     rt.d.dpr = float(m_window->devicePixelRatio());

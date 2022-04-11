@@ -7507,6 +7507,7 @@ bool QVkSwapChain::createOrResize()
     if (!m_renderPassDesc)
         qWarning("QVkSwapChain: No renderpass descriptor set. See newCompatibleRenderPassDescriptor() and setRenderPassDescriptor().");
 
+    rtWrapper.setRenderPassDescriptor(m_renderPassDesc); // for the public getter in QRhiRenderTarget
     rtWrapper.d.rp = QRHI_RES(QVkRenderPassDescriptor, m_renderPassDesc);
     Q_ASSERT(rtWrapper.d.rp && rtWrapper.d.rp->rp);
 

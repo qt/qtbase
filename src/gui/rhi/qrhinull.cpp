@@ -1015,6 +1015,7 @@ bool QNullSwapChain::createOrResize()
 
     window = m_window;
     m_currentPixelSize = surfacePixelSize();
+    rt.setRenderPassDescriptor(m_renderPassDesc); // for the public getter in QRhiRenderTarget
     rt.d.rp = QRHI_RES(QNullRenderPassDescriptor, m_renderPassDesc);
     rt.d.pixelSize = m_currentPixelSize;
     frameCount = 0;

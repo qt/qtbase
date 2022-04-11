@@ -3456,6 +3456,7 @@ void tst_QRhi::renderToWindowSimple()
         QRhiCommandBuffer *cb = swapChain->currentFrameCommandBuffer();
         QRhiRenderTarget *rt = swapChain->currentFrameRenderTarget();
         QCOMPARE(rt->resourceType(), QRhiResource::SwapChainRenderTarget);
+        QVERIFY(rt->renderPassDescriptor());
         QCOMPARE(static_cast<QRhiSwapChainRenderTarget *>(rt)->swapChain(), swapChain.data());
         const QSize outputSize = swapChain->currentPixelSize();
         QCOMPARE(rt->pixelSize(), outputSize);
