@@ -1808,6 +1808,10 @@ void QTextEdit::inputMethodEvent(QInputMethodEvent *e)
         setEditFocus(true);
 #endif
     d->sendControlEvent(e);
+    const bool emptyEvent = e->preeditString().isEmpty() && e->commitString().isEmpty()
+                         && e->attributes().isEmpty();
+    if (emptyEvent)
+        return;
     ensureCursorVisible();
 }
 
