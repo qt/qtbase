@@ -70,7 +70,7 @@ public:
     qsizetype m_size = 0;
 
     constexpr XmlStringRef() = default;
-    constexpr inline XmlStringRef(const QString *string, int pos, int length)
+    constexpr inline XmlStringRef(const QString *string, qsizetype pos, qsizetype length)
         : m_string(string), m_pos(pos), m_size(length)
     {
     }
