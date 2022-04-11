@@ -641,7 +641,7 @@ QPoint QPushButtonPrivate::adjustedMenuPosition()
     QPoint globalPos = q->mapToGlobal(rect.topLeft());
     int x = globalPos.x();
     int y = globalPos.y();
-    const QRect availableGeometry = QWidgetPrivate::availableScreenGeometry(q);
+    const QRect availableGeometry = QWidgetPrivate::availableScreenGeometry(q, q->mapToGlobal(rect.center()));
     if (horizontal) {
         if (globalPos.y() + rect.height() + menuSize.height() <= availableGeometry.bottom()) {
             y += rect.height();
