@@ -65,7 +65,7 @@ QT_REQUIRE_CONFIG(future);
 
 QT_BEGIN_NAMESPACE
 
-class Q_CORE_EXPORT QFutureCallOutEvent : public QEvent
+class Q_AUTOTEST_EXPORT QFutureCallOutEvent : public QEvent
 {
     Q_DECL_EVENT_COMMON(QFutureCallOutEvent)
 public:
