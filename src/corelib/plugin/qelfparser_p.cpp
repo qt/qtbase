@@ -409,7 +409,9 @@ Q_DECL_UNUSED Q_DECL_COLD_FUNCTION static QDebug &operator<<(QDebug &d, ElfHeade
     case EM_NONE:       d << ", no machine"; break;
     case EM_ARM:        d << ", ARM"; break;
     case EM_AARCH64:    d << ", AArch64"; break;
+#ifdef EM_BLACKFIN
     case EM_BLACKFIN:   d << ", Blackfin"; break;
+#endif
     case EM_IA_64:      d << ", IA-64"; break;
     case EM_MIPS:       d << ", MIPS"; break;
     case EM_PPC:        d << ", PowerPC"; break;
