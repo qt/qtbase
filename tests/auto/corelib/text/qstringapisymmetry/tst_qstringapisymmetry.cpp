@@ -708,6 +708,8 @@ private Q_SLOTS:
 private:
     void toNumber_data();
     template <typename String> void toNumber_impl();
+    void toNumberWithBases_data();
+    template <typename String> void toNumberWithBases_impl();
 
 private Q_SLOTS:
     void toNumber_QString_data() { toNumber_data(); }
@@ -716,6 +718,13 @@ private Q_SLOTS:
     void toNumber_QStringView() { toNumber_impl<QStringView>(); }
     void toNumber_QByteArray_data() { toNumber_data(); }
     void toNumber_QByteArray() { toNumber_impl<QByteArray>(); }
+
+    void toNumberWithBases_QString_data() { toNumberWithBases_data(); }
+    void toNumberWithBases_QString() { toNumberWithBases_impl<QString>(); }
+    void toNumberWithBases_QStringView_data() { toNumberWithBases_data(); }
+    void toNumberWithBases_QStringView() { toNumberWithBases_impl<QStringView>(); }
+    void toNumberWithBases_QByteArray_data() { toNumberWithBases_data(); }
+    void toNumberWithBases_QByteArray() { toNumberWithBases_impl<QByteArray>(); }
 
 private:
     void count_data();
@@ -2240,6 +2249,113 @@ void tst_QStringApiSymmetry::toNumber_impl()
         if (is_ok)
             QCOMPARE(qint64(d), result);
     }
+}
+
+void tst_QStringApiSymmetry::toNumberWithBases_data()
+{
+    QTest::addColumn<QString>("data");
+    QTest::addColumn<int>("base");
+    QTest::addColumn<qint64>("result");
+    QTest::addColumn<bool>("ok");
+
+    constexpr struct {
+        const char prefix[3];
+        int base;
+    } bases[] = {
+        { "",    2 }, // should be {"0b", 2}, but Qt lacks support for the 0b prefix (QTBUG-85002)
+        { "0",   8 },
+        { "",   10 },
+        { "0x", 16 },
+    };
+
+    const auto check = [&](const char *input, qint64 n2, qint64 n8, qint64 n10, qint64 n16, bool result) {
+        for (const auto &e : bases) {
+            const QString data = QLatin1String(e.prefix) + QString::fromUtf8(input);
+            const auto row = [&](int base) {
+                const auto select = [&](int base) {
+                    switch (base) {
+                    case 2: return n2;
+                    case 8: return n8;
+                    case 10: return n10;
+                    case 16: return n16;
+                    }
+                    Q_UNREACHABLE();
+                };
+                QTest::addRow("base%2d: %s%s", base, e.prefix, input)
+                        << data << base << select(e.base /* NOT base! */) << result;
+            };
+            row(e.base); // explicit base
+            if (e.base == 2)
+                continue; // Qt doesn't know 0b (yet, QTBUG-85002), so nothing to auto-detect
+            row(0);      // automatically detected base
+        }
+    };
+
+    check("0", 0, 0, 0, 0, true);
+    check("y0", 0, 0, 0, 0, false);
+    check("0y", 0, 0, 0, 0, false);
+    check("10", 2, 8, 10, 16, true);
+    check("11", 3, 9, 11, 17, true);
+    check("100", 4, 64, 100, 256, true);
+}
+
+template<typename String>
+void tst_QStringApiSymmetry::toNumberWithBases_impl()
+{
+    QFETCH(const QString, data);
+    QFETCH(const int, base);
+    QFETCH(const qint64, result);
+    QFETCH(const bool, ok);
+
+    const auto utf8 = data.toUtf8();
+    const auto l1s  = data.toLatin1();
+    const auto l1   = l1s.isNull() ? QLatin1String() : QLatin1String(l1s);
+
+    const auto ref = data.isNull() ? QStringView() : QStringView(data);
+    const auto s = make<String>(ref, l1, utf8);
+
+    bool is_ok = false;
+    qint64 n = 0;
+
+    n = s.toShort(&is_ok, base);
+    QCOMPARE(is_ok, ok && inRange<short>(result));
+    if (is_ok)
+        QCOMPARE(n, result);
+
+    n = s.toUShort(&is_ok, base);
+    QCOMPARE(is_ok, ok && inRange<ushort>(result));
+    if (is_ok)
+        QCOMPARE(n, result);
+
+    n = s.toInt(&is_ok, base);
+    QCOMPARE(is_ok, ok && inRange<int>(result));
+    if (is_ok)
+        QCOMPARE(n, result);
+
+    n = s.toUInt(&is_ok, base);
+    QCOMPARE(is_ok, ok && inRange<uint>(result));
+    if (is_ok)
+        QCOMPARE(n, result);
+
+    n = s.toLong(&is_ok, base);
+    QCOMPARE(is_ok, ok && inRange<long>(result));
+    if (is_ok)
+        QCOMPARE(n, result);
+
+    n = s.toULong(&is_ok, base);
+    QCOMPARE(is_ok, ok && inRange<ulong>(result));
+    if (is_ok)
+        QCOMPARE(n, result);
+
+    n = s.toLongLong(&is_ok, base);
+    QCOMPARE(is_ok, ok && inRange<qlonglong>(result));
+    if (is_ok)
+        QCOMPARE(n, result);
+
+    n = s.toULongLong(&is_ok, base);
+    QCOMPARE(is_ok, ok && inRange<qulonglong>(result));
+    if (is_ok)
+        QCOMPARE(n, result);
 }
 
 void tst_QStringApiSymmetry::count_data()
