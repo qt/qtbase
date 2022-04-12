@@ -124,6 +124,8 @@ using namespace QtPrivate;
 
 template <typename T> class QXmlStreamSimpleStack
 {
+    Q_DISABLE_COPY_MOVE(QXmlStreamSimpleStack)
+
     T *data;
     qsizetype tos, cap;
 public:
