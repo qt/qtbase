@@ -100,11 +100,13 @@ sanitize_address() {
     echo "0x$address"
 }
 
+arch_offset=0
 read_binary() {
     local address=$1
     local length=$2
 
-    dd if="$target" bs=1 iseek=$address count=$length 2>|/dev/null
+    seek=$(($address + $arch_offset))
+    dd if="$target" bs=1 iseek=$seek count=$length 2>|/dev/null
 }
 
 read_32bit_value() {
@@ -112,20 +114,15 @@ read_32bit_value() {
     read_binary $address 4 | xxd -p | dd conv=swab 2>/dev/null | rev
 }
 
+otool_args=
+otool() {
+    command otool $otool_args $*
+}
+
+declare -a extra_classnames_files
+
 inspect_binary() {
     inspect_mode="$1"
-
-    echo "🔎  Inspecting binary '$target'..."
-    if [ ! -f "$target" ]; then
-        echo " 💥  Target does not exist!"
-        exit 1
-    fi
-
-    read -a mach_header <<< "$(otool -h "$target" -v | tail -n 1)"
-    if [ "${mach_header[1]}" != "X86_64" ]; then
-        echo " 💥  Binary is not 64-bit, only 64-bit binaries are supported!"
-        exit 1
-    fi
 
     classnames_section="__objc_classname"
     classnames=$(otool -v -s __TEXT $classnames_section "$target" | tail -n +3)
@@ -143,6 +140,7 @@ inspect_binary() {
     done <<< "$classnames"
 
     extra_classnames_file="$(mktemp -t ${classnames_section}_additions).S"
+    extra_classnames_files+=("$extra_classnames_file")
 
     if [ "$inspect_mode" == "inject_classnames" ]; then
         echo " ℹ️  Class names have not been namespaced, adding suffix '$suffix'..."
@@ -213,6 +211,8 @@ inspect_binary() {
                 class_type="class"
             fi
 
+            name_offset=$(($name_offset + $arch_offset))
+
             echo " 🔨  Patching class_ro_t at $address ($class_type) from $classname_address ($classname) to $newclassname_address ($newclassname)"
             echo ${newclassname_address: -8} | rev | dd conv=swab 2>/dev/null | xxd -p -r -seek $name_offset -l 4 - "$target"
         fi
@@ -222,13 +222,43 @@ inspect_binary() {
 echo "🔩  Linking binary using '$original_ld'..."
 link_binary
 
-inspect_binary inject_classnames
-if [ $? -ne 0 ]; then
-    exit
+echo "🔎  Inspecting binary '$target'..."
+if [ ! -f "$target" ]; then
+    echo " 💥  Target does not exist!"
+    exit 1
 fi
 
-echo "🔩  Re-linking binary with extra __objc_classname section..."
-link_binary $extra_classnames_file
+read -a mach_header <<< "$(otool -h "$target" -v | tail -n 1)"
+if [ "${mach_header[0]}" != "MH_MAGIC_64" ]; then
+    echo " 💥  Binary is not 64-bit, only 64-bit binaries are supported!"
+    exit 1
+fi
 
-inspect_binary patch_classes
+architectures=$(otool -f -v $target | grep architecture)
 
+setup_arch() {
+    arch="$1"
+    if [ ! -z "$arch" ]; then
+        otool_args="-arch $arch"
+        offset=$(otool -f -v $target | grep -A 6 "architecture $arch" | grep offset)
+        offset="${offset##*( )}"
+        arch_offset="$(echo $offset | cut -d ' ' -f 2)"
+        echo "🤖 Processing architecture '$arch' at offset $arch_offset..."
+    fi
+}
+
+while read -a arch; do
+    setup_arch "${arch[1]}"
+    inspect_binary inject_classnames
+    if [ $? -ne 0 ]; then
+        exit
+    fi
+done <<< "$architectures"
+
+echo "🔩  Re-linking binary with extra __objc_classname section(s)..."
+link_binary "${extra_classnames_files[@]}"
+
+while read -a arch; do
+    setup_arch "${arch[1]}"
+    inspect_binary patch_classes
+done <<< "$architectures"
