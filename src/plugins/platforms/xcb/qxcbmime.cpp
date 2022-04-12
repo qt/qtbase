@@ -112,7 +112,7 @@ bool QXcbMime::mimeDataForAtom(QXcbConnection *connection, xcb_atom_t a, QMimeDa
         // so QXcbConnection::atomName() has to be used.
         if (atomName == QLatin1String("text/uri-list")
             && connection->atomName(a) == "text/x-moz-url") {
-            const QString mozUri = QLatin1String(data->split('\n').constFirst()) + QLatin1Char('\n');
+            const QString mozUri = QLatin1String(data->split('\n').constFirst()) + u'\n';
             *data = QByteArray(reinterpret_cast<const char *>(mozUri.data()),
                                mozUri.length() * 2);
         } else if (atomName == QLatin1String("application/x-color"))
@@ -195,7 +195,7 @@ QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a,
                   reinterpret_cast<const char16_t *>(data.constData()), data.size() / 2);
             if (!str.isNull()) {
                 if (format == QLatin1String("text/uri-list")) {
-                    const auto urls = QStringView{str}.split(QLatin1Char('\n'));
+                    const auto urls = QStringView{str}.split(u'\n');
                     QList<QVariant> list;
                     list.reserve(urls.size());
                     for (const QStringView &s : urls) {

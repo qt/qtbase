@@ -158,23 +158,23 @@ static QString convertMnemonics(QString text, bool *found)
 {
     *found = false;
 
-    int i = text.length() - 1;
+    qsizetype i = text.length() - 1;
     while (i >= 0) {
         const QChar c = text.at(i);
-        if (c == QLatin1Char('&')) {
-            if (i == 0 || text.at(i - 1) != QLatin1Char('&')) {
+        if (c == u'&') {
+            if (i == 0 || text.at(i - 1) != u'&') {
                 // convert Qt to GTK mnemonic
                 if (i < text.length() - 1 && !text.at(i + 1).isSpace()) {
-                    text.replace(i, 1, QLatin1Char('_'));
+                    text.replace(i, 1, u'_');
                     *found = true;
                 }
-            } else if (text.at(i - 1) == QLatin1Char('&')) {
+            } else if (text.at(i - 1) == u'&') {
                 // unescape ampersand
-                text.replace(--i, 2, QLatin1Char('&'));
+                text.replace(--i, 2, u'&');
             }
-        } else if (c == QLatin1Char('_')) {
+        } else if (c == u'_') {
             // escape GTK mnemonic
-            text.insert(i, QLatin1Char('_'));
+            text.insert(i, u'_');
         }
         --i;
     }

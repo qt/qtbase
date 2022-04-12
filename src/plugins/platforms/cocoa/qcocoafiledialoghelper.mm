@@ -290,7 +290,7 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
             return NO;
     }
     if (!(filter & QDir::Hidden)
-        && (qtFileName.startsWith(QLatin1Char('.')) || [self isHiddenFileAtURL:url]))
+        && (qtFileName.startsWith(u'.') || [self isHiddenFileAtURL:url]))
             return NO;
 
     return YES;
@@ -446,10 +446,10 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
         if (!filter.startsWith(QLatin1String("*.")))
             continue;
 
-        if (filter.contains(QLatin1Char('?')))
+        if (filter.contains(u'?'))
             continue;
 
-        if (filter.count(QLatin1Char('*')) != 1)
+        if (filter.count(u'*') != 1)
             continue;
 
         auto extensions = filter.split('.', Qt::SkipEmptyParts);

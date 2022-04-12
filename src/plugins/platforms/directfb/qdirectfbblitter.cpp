@@ -403,7 +403,7 @@ bool QDirectFbBlitterPlatformPixmap::fromFile(const QString &filename, const cha
         return QBlittablePlatformPixmap::fromFile(filename, format, flags);
 
     // Deal with resources
-    if (filename.startsWith(QLatin1Char(':')))
+    if (filename.startsWith(u':'))
         return QBlittablePlatformPixmap::fromFile(filename, format, flags);
 
     // Try to use directfb to load it.

@@ -47,6 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QMinimalBackingStore::QMinimalBackingStore(QWindow *window)
     : QPlatformBackingStore(window)
     , mDebug(QMinimalIntegration::instance()->options() & QMinimalIntegration::DebugBackingStore)
@@ -75,7 +77,7 @@ void QMinimalBackingStore::flush(QWindow *window, const QRegion &region, const Q
 
     if (mDebug) {
         static int c = 0;
-        QString filename = QString("output%1.png").arg(c++, 4, 10, QLatin1Char('0'));
+        QString filename = QString("output%1.png").arg(c++, 4, 10, QChar(u'0'));
         qDebug() << "QMinimalBackingStore::flush() saving contents to" << filename.toLocal8Bit().constData();
         mImage.save(filename);
     }

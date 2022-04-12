@@ -613,7 +613,7 @@ static void dumpNativeWindowsRecursion(const QXcbConnection *connection, xcb_win
     const int oldFieldWidth = str.fieldWidth();
     const QChar oldPadChar =str.padChar();
     str.setFieldWidth(8);
-    str.setPadChar(QLatin1Char('0'));
+    str.setPadChar(u'0');
     str << Qt::hex << window;
     str.setFieldWidth(oldFieldWidth);
     str.setPadChar(oldPadChar);

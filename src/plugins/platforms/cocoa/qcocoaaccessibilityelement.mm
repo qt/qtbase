@@ -192,7 +192,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 + (id) lineNumberForIndex: (int)index forText:(const QString &)text
 {
     auto textBefore = QStringView(text).left(index);
-    int newlines = textBefore.count(QLatin1Char('\n'));
+    qsizetype newlines = textBefore.count(u'\n');
     return @(newlines);
 }
 

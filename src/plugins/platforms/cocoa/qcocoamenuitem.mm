@@ -216,7 +216,7 @@ void QCocoaMenuItem::setNativeContents(WId item)
 static QPlatformMenuItem::MenuRole detectMenuRole(const QString &caption)
 {
     QString captionNoAmpersand(caption);
-    captionNoAmpersand.remove(QLatin1Char('&'));
+    captionNoAmpersand.remove(u'&');
     const QString aboutString = QCoreApplication::translate("QCocoaMenuItem", "About");
     if (captionNoAmpersand.startsWith(aboutString, Qt::CaseInsensitive)
         || captionNoAmpersand.endsWith(aboutString, Qt::CaseInsensitive)) {

@@ -86,7 +86,7 @@ static QSize determineScreenSize(screen_display_t display, bool primaryScreen) {
 
     const QString envPhySizeStr = qgetenv("QQNX_PHYSICAL_SCREEN_SIZE");
     if (!envPhySizeStr.isEmpty()) {
-        const auto envPhySizeStrList = QStringView{envPhySizeStr}.split(QLatin1Char(','));
+        const auto envPhySizeStrList = QStringView{envPhySizeStr}.split(u',');
         const int envWidth = envPhySizeStrList.size() == 2 ? envPhySizeStrList[0].toInt() : -1;
         const int envHeight = envPhySizeStrList.size() == 2 ? envPhySizeStrList[1].toInt() : -1;
 

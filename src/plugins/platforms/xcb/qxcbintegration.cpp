@@ -501,7 +501,7 @@ static QString argv0BaseName()
     const QStringList arguments = QCoreApplication::arguments();
     if (!arguments.isEmpty() && !arguments.front().isEmpty()) {
         result = arguments.front();
-        const int lastSlashPos = result.lastIndexOf(QLatin1Char('/'));
+        const int lastSlashPos = result.lastIndexOf(u'/');
         if (lastSlashPos != -1)
             result.remove(0, lastSlashPos + 1);
     }

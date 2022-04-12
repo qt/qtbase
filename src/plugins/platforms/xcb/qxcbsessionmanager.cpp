@@ -194,7 +194,7 @@ static void sm_performSaveYourself(QXcbSessionManager *sm)
     timeval tv;
     gettimeofday(&tv, nullptr);
     sm->setSessionKey(QString::number(qulonglong(tv.tv_sec)) +
-                      QLatin1Char('_') +
+                      u'_' +
                       QString::number(qulonglong(tv.tv_usec)));
 
     QStringList arguments = QCoreApplication::arguments();
@@ -228,8 +228,7 @@ static void sm_performSaveYourself(QXcbSessionManager *sm)
 
     // generate a restart and discard command that makes sense
     QStringList restart;
-    restart  << argument0 << QLatin1String("-session")
-             << sm->sessionId() + QLatin1Char('_') + sm->sessionKey();
+    restart << argument0 << QLatin1String("-session") << sm->sessionId() + u'_' + sm->sessionKey();
 
     QFileInfo fi(QCoreApplication::applicationFilePath());
     if (qAppName().compare(fi.fileName(), Qt::CaseInsensitive) != 0)

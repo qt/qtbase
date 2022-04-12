@@ -729,7 +729,7 @@ QString QXcbScreen::defaultName()
     int dotPos = displayName.lastIndexOf('.');
     if (dotPos != -1)
         displayName.truncate(dotPos);
-    name = QString::fromLocal8Bit(displayName) + QLatin1Char('.')
+    name = QString::fromLocal8Bit(displayName) + u'.'
             + QString::number(m_virtualDesktop->number());
     return name;
 }
@@ -762,7 +762,7 @@ QString QXcbScreen::getName(xcb_randr_monitor_info_t *monitorInfo)
         int dotPos = displayName.lastIndexOf('.');
         if (dotPos != -1)
             displayName.truncate(dotPos);
-        name = QString::fromLocal8Bit(displayName) + QLatin1Char('.')
+        name = QString::fromLocal8Bit(displayName) + u'.'
                 + QString::number(m_virtualDesktop->number());
     }
     return name;

@@ -1053,7 +1053,7 @@ static QList<FilterSpec> filterSpecs(const QStringList &filters,
 #if QT_CONFIG(regularexpression)
         filterSpec.filter.replace(filterSeparatorRE, separator);
 #else
-        filterSpec.filter.replace(QLatin1Char(' '), QLatin1Char(';'));
+        filterSpec.filter.replace(u' ', u';');
 #endif
         filterSpec.description = filterString;
         if (hideFilterDetails && openingParenPos != -1) { // Do not show pattern in description

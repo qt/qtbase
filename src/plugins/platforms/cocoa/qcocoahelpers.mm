@@ -225,7 +225,7 @@ QString qt_mac_applicationName()
     if (appName.isEmpty()) {
         QString arg0 = QGuiApplicationPrivate::instance()->appName();
         if (arg0.contains("/")) {
-            QStringList parts = arg0.split(QLatin1Char('/'));
+            QStringList parts = arg0.split(u'/');
             appName = parts.at(parts.count() - 1);
         } else {
             appName = arg0;

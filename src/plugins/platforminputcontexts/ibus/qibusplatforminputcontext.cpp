@@ -745,7 +745,7 @@ QString QIBusPlatformInputContextPrivate::getSocketPath()
     return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) +
                QLatin1String("/ibus/bus/") +
                QLatin1String(QDBusConnection::localMachineId()) +
-               QLatin1Char('-') + QString::fromLocal8Bit(host) + QLatin1Char('-') + QString::fromLocal8Bit(displayNumber);
+               u'-' + QString::fromLocal8Bit(host) + u'-' + QString::fromLocal8Bit(displayNumber);
 }
 
 QDBusConnection *QIBusPlatformInputContextPrivate::createConnection()
