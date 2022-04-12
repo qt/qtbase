@@ -148,10 +148,10 @@ void QNetworkDiskCache::setCacheDirectory(const QString &cacheDir)
     d->cacheDirectory = cacheDir;
     QDir dir(d->cacheDirectory);
     d->cacheDirectory = dir.absolutePath();
-    if (!d->cacheDirectory.endsWith(QLatin1Char('/')))
-        d->cacheDirectory += QLatin1Char('/');
+    if (!d->cacheDirectory.endsWith(u'/'))
+        d->cacheDirectory += u'/';
 
-    d->dataDirectory = d->cacheDirectory + DATA_DIR + QString::number(CACHE_VERSION) + QLatin1Char('/');
+    d->dataDirectory = d->cacheDirectory + DATA_DIR + QString::number(CACHE_VERSION) + u'/';
     d->prepareLayout();
 }
 
@@ -598,8 +598,7 @@ QString QNetworkDiskCachePrivate::uniqueFileName(const QUrl &url)
     const QByteArray id = QByteArray::number(*(qlonglong*)hash.data(), 36).left(8);
     // generates <one-char subdir>/<8-char filname.d>
     uint code = (uint)id.at(id.length()-1) % 16;
-    QString pathFragment = QString::number(code, 16) + QLatin1Char('/')
-                             + QLatin1String(id) + CACHE_POSTFIX;
+    QString pathFragment = QString::number(code, 16) + u'/' + QLatin1String(id) + CACHE_POSTFIX;
 
     return pathFragment;
 }

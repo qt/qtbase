@@ -105,7 +105,7 @@ QNetworkReplyFileImpl::QNetworkReplyFileImpl(QNetworkAccessManager *manager, con
     if (fileName.isEmpty()) {
         const QString scheme = url.scheme();
         if (scheme == QLatin1String("qrc")) {
-            fileName = QLatin1Char(':') + url.path();
+            fileName = u':' + url.path();
         } else {
 #if defined(Q_OS_ANDROID)
             if (scheme == QLatin1String("assets"))

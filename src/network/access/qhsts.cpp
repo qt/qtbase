@@ -210,7 +210,7 @@ bool QHstsCache::isKnownHost(const QUrl &url) const
             }
         }
 
-        const int dot = nameToTest.fragment.indexOf(QLatin1Char('.'));
+        const qsizetype dot = nameToTest.fragment.indexOf(u'.');
         if (dot == -1)
             break;
 

@@ -1592,7 +1592,7 @@ QDebug operator<<(QDebug debug, const QNetworkProxy &proxy)
         scaps << QStringLiteral("SctpTunnel");
     if (caps & QNetworkProxy::SctpListeningCapability)
         scaps << QStringLiteral("SctpListen");
-    debug << '[' << scaps.join(QLatin1Char(' ')) << ']';
+    debug << '[' << scaps.join(u' ') << ']';
     return debug;
 }
 

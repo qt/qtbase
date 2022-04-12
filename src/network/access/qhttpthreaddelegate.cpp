@@ -172,7 +172,7 @@ static QByteArray makeCacheKey(QUrl &url, QNetworkProxy *proxy, const QString &p
     Q_UNUSED(proxy);
 #endif
     if (!peerVerifyName.isEmpty())
-        result += QLatin1Char(':') + peerVerifyName;
+        result += u':' + peerVerifyName;
     return "http-connection:" + std::move(result).toLatin1();
 }
 

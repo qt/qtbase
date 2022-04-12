@@ -82,11 +82,11 @@ static bool currentProcessIsService()
 static QStringList splitSpaceSemicolon(const QString &source)
 {
     QStringList list;
-    int start = 0;
-    int end;
+    qsizetype start = 0;
+    qsizetype end;
     while (true) {
-        int space = source.indexOf(QLatin1Char(' '), start);
-        int semicolon = source.indexOf(QLatin1Char(';'), start);
+        qsizetype space = source.indexOf(u' ', start);
+        qsizetype semicolon = source.indexOf(u';', start);
         end = space;
         if (semicolon != -1 && (end == -1 || semicolon < end))
             end = semicolon;
@@ -108,7 +108,7 @@ static bool isBypassed(const QString &host, const QStringList &bypassList)
     if (host.isEmpty())
         return false;
 
-    bool isSimple = !host.contains(QLatin1Char('.')) && !host.contains(QLatin1Char(':'));
+    bool isSimple = !host.contains(u'.') && !host.contains(u':');
 
     QHostAddress ipAddress;
     bool isIpAddress = ipAddress.setAddress(host);
@@ -219,12 +219,12 @@ static QList<QNetworkProxy> parseServerList(const QNetworkProxyQuery &query, con
             && query.queryType() != QNetworkProxyQuery::TcpServer
             && query.queryType() != QNetworkProxyQuery::SctpServer;
     for (const QString &entry : proxyList) {
-        int server = 0;
+        qsizetype server = 0;
 
         QNetworkProxy::ProxyType proxyType = QNetworkProxy::HttpProxy;
         quint16 port = 8080;
 
-        int pos = entry.indexOf(QLatin1Char('='));
+        qsizetype pos = entry.indexOf(u'=');
         QStringView scheme;
         QStringView protocolTag;
         if (pos != -1) {
@@ -253,7 +253,7 @@ static QList<QNetworkProxy> parseServerList(const QNetworkProxyQuery &query, con
             }
         }
 
-        pos = entry.indexOf(QLatin1Char(':'), server);
+        pos = entry.indexOf(u':', server);
         if (pos != -1) {
             bool ok;
             uint value = QStringView{entry}.mid(pos + 1).toUInt(&ok);

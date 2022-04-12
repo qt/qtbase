@@ -1529,7 +1529,7 @@ static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phas
     Q_ASSERT(QNtlmPhase3BlockBase::Size == sizeof(QNtlmPhase3BlockBase));
 
     // for kerberos style user@domain logins, NTLM domain string should be left empty
-    if (ctx->userDomain.isEmpty() && !ctx->extractedUser.contains(QLatin1Char('@'))) {
+    if (ctx->userDomain.isEmpty() && !ctx->extractedUser.contains(u'@')) {
         offset = qEncodeNtlmString(pb.domain, offset, ch.targetNameStr, unicode);
         pb.domainStr = ch.targetNameStr;
     } else {

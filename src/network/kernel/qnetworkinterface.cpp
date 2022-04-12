@@ -145,7 +145,7 @@ QString QNetworkInterfacePrivate::makeHwAddress(int len, uchar *data)
     QChar *out = result.data();
     for (int i = 0; i < len; ++i) {
         if (i)
-            *out++ = QLatin1Char(':');
+            *out++ = u':';
         *out++ = QLatin1Char(QtMiscUtils::toHexUpper(data[i] / 16));
         *out++ = QLatin1Char(QtMiscUtils::toHexUpper(data[i] % 16));
     }

@@ -3055,14 +3055,14 @@ bool QSslSocketPrivate::isMatchingHostname(const QSslCertificate &cert, const QS
  */
 bool QSslSocketPrivate::isMatchingHostname(const QString &cn, const QString &hostname)
 {
-    int wildcard = cn.indexOf(QLatin1Char('*'));
+    qsizetype wildcard = cn.indexOf(u'*');
 
     // Check this is a wildcard cert, if not then just compare the strings
     if (wildcard < 0)
         return QLatin1String(QUrl::toAce(cn)) == hostname;
 
-    int firstCnDot = cn.indexOf(QLatin1Char('.'));
-    int secondCnDot = cn.indexOf(QLatin1Char('.'), firstCnDot+1);
+    qsizetype firstCnDot = cn.indexOf(u'.');
+    qsizetype secondCnDot = cn.indexOf(u'.', firstCnDot+1);
 
     // Check at least 3 components
     if ((-1 == secondCnDot) || (secondCnDot+1 >= cn.length()))
@@ -3073,7 +3073,7 @@ bool QSslSocketPrivate::isMatchingHostname(const QString &cn, const QString &hos
         return false;
 
     // Check only one star
-    if (cn.lastIndexOf(QLatin1Char('*')) != wildcard)
+    if (cn.lastIndexOf(u'*') != wildcard)
         return false;
 
     // Reject wildcard character embedded within the A-labels or U-labels of an internationalized
@@ -3086,7 +3086,7 @@ bool QSslSocketPrivate::isMatchingHostname(const QString &cn, const QString &hos
         return false;
 
     // Check characters following first . match
-    int hnDot = hostname.indexOf(QLatin1Char('.'));
+    qsizetype hnDot = hostname.indexOf(u'.');
     if (QStringView{hostname}.mid(hnDot + 1) != QStringView{cn}.mid(firstCnDot + 1)
         && QStringView{hostname}.mid(hnDot + 1) != QLatin1String(QUrl::toAce(cn.mid(firstCnDot + 1)))) {
         return false;

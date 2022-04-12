@@ -806,7 +806,7 @@ QSslCipher QTlsBackend::createCiphersuite(const QString &descriptionOneLine, int
 {
     QSslCipher ciph;
 
-    const auto descriptionList = QStringView{descriptionOneLine}.split(QLatin1Char(' '), Qt::SkipEmptyParts);
+    const auto descriptionList = QStringView{descriptionOneLine}.split(u' ', Qt::SkipEmptyParts);
     if (descriptionList.size() > 5) {
         ciph.d->isNull = false;
         ciph.d->name = descriptionList.at(0).toString();
@@ -868,7 +868,7 @@ QSslCipher QTlsBackend::createCiphersuite(const QString &suiteName, QSsl::SslPro
     ciph.d->protocol = protocol;
     ciph.d->protocolString = protocolString;
 
-    const auto bits = QStringView{ciph.d->name}.split(QLatin1Char('-'));
+    const auto bits = QStringView{ciph.d->name}.split(u'-');
     if (bits.size() >= 2) {
         if (bits.size() == 2 || bits.size() == 3)
             ciph.d->keyExchangeMethod = QLatin1String("RSA");

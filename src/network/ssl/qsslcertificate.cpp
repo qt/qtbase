@@ -658,7 +658,7 @@ QList<QSslCertificate> QSslCertificate::fromPath(const QString &path,
     QString sourcePath = QDir::fromNativeSeparators(path);
 
     // Find the path without the filename
-    QString pathPrefix = sourcePath.left(sourcePath.lastIndexOf(QLatin1Char('/')));
+    QString pathPrefix = sourcePath.left(sourcePath.lastIndexOf(u'/'));
 
     // Check if the path contains any special chars
     int pos = -1;
@@ -677,7 +677,7 @@ QList<QSslCertificate> QSslCertificate::fromPath(const QString &path,
     if (pos != -1) {
         // there was a special char in the path so cut of the part containing that char.
         pathPrefix = pathPrefix.left(pos);
-        const int lastIndexOfSlash = pathPrefix.lastIndexOf(QLatin1Char('/'));
+        const qsizetype lastIndexOfSlash = pathPrefix.lastIndexOf(u'/');
         if (lastIndexOfSlash != -1)
             pathPrefix = pathPrefix.left(lastIndexOfSlash);
         else

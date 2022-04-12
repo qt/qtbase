@@ -84,11 +84,11 @@ void QLocalServerPrivate::init()
 bool QLocalServerPrivate::removeServer(const QString &name)
 {
     QString fileName;
-    if (name.startsWith(QLatin1Char('/'))) {
+    if (name.startsWith(u'/')) {
         fileName = name;
     } else {
         fileName = QDir::cleanPath(QDir::tempPath());
-        fileName += QLatin1Char('/') + name;
+        fileName += u'/' + name;
     }
     if (QFile::exists(fileName))
         return QFile::remove(fileName);
@@ -105,11 +105,11 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
 
     // determine the full server path
     if (options.testFlag(QLocalServer::AbstractNamespaceOption)
-        ||  requestedServerName.startsWith(QLatin1Char('/'))) {
+        ||  requestedServerName.startsWith(u'/')) {
         fullServerName = requestedServerName;
     } else {
         fullServerName = QDir::cleanPath(QDir::tempPath());
-        fullServerName += QLatin1Char('/') + requestedServerName;
+        fullServerName += u'/' + requestedServerName;
     }
     serverName = requestedServerName;
 

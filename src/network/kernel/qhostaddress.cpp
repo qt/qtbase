@@ -137,7 +137,7 @@ void QHostAddressPrivate::setAddress(const Q_IPV6ADDR &a_)
 static bool parseIp6(const QString &address, QIPAddressUtils::IPv6Address &addr, QString *scopeId)
 {
     QStringView tmp(address);
-    int scopeIdPos = tmp.lastIndexOf(QLatin1Char('%'));
+    qsizetype scopeIdPos = tmp.lastIndexOf(u'%');
     if (scopeIdPos != -1) {
         *scopeId = tmp.mid(scopeIdPos + 1).toString();
         tmp.chop(tmp.size() - scopeIdPos);
@@ -155,7 +155,7 @@ bool QHostAddressPrivate::parse(const QString &ipString)
         return false;
 
     // All IPv6 addresses contain a ':', and may contain a '.'.
-    if (a.contains(QLatin1Char(':'))) {
+    if (a.contains(u':')) {
         quint8 maybeIp6[16];
         if (parseIp6(a, maybeIp6, &scopeId)) {
             setAddress(maybeIp6);
@@ -738,7 +738,7 @@ QString QHostAddress::toString() const
     } else if (d->protocol == QHostAddress::IPv6Protocol) {
         QIPAddressUtils::toString(s, d->a6.c);
         if (!d->scopeId.isEmpty())
-            s.append(QLatin1Char('%') + d->scopeId);
+            s.append(u'%' + d->scopeId);
     }
     return s;
 }
@@ -1043,17 +1043,17 @@ QPair<QHostAddress, int> QHostAddress::parseSubnet(const QString &subnet)
     if (subnet.isEmpty())
         return invalid;
 
-    int slash = subnet.indexOf(QLatin1Char('/'));
+    qsizetype slash = subnet.indexOf(u'/');
     QStringView netStr(subnet);
     if (slash != -1)
         netStr.truncate(slash);
 
     int netmask = -1;
-    bool isIpv6 = netStr.contains(QLatin1Char(':'));
+    bool isIpv6 = netStr.contains(u':');
 
     if (slash != -1) {
         // is the netmask given in IP-form or in bit-count form?
-        if (!isIpv6 && subnet.indexOf(QLatin1Char('.'), slash + 1) != -1) {
+        if (!isIpv6 && subnet.indexOf(u'.', slash + 1) != -1) {
             // IP-style, convert it to bit-count form
             QHostAddress mask;
             QNetmask parser;
@@ -1089,7 +1089,7 @@ QPair<QHostAddress, int> QHostAddress::parseSubnet(const QString &subnet)
         return invalid;         // invalid netmask
 
     // parse the address manually
-    auto parts = netStr.split(QLatin1Char('.'));
+    auto parts = netStr.split(u'.');
     if (parts.isEmpty() || parts.count() > 4)
         return invalid;         // invalid IPv4 address
 

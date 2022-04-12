@@ -974,7 +974,7 @@ void QAbstractSocketPrivate::_q_startConnecting(const QHostInfo &hostInfo)
         if (i != 0) s += QLatin1String(", ");
         s += addresses.at(i).toString();
     }
-    s += QLatin1Char('}');
+    s += u'}';
     qDebug("QAbstractSocketPrivate::_q_startConnecting(hostInfo == %s)", s.toLatin1().constData());
 #endif
 

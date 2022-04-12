@@ -634,7 +634,7 @@ void QSslConfiguration::setCiphers(const QString &ciphers)
 {
     auto *p = d.data();
     p->ciphers.clear();
-    const auto cipherNames = ciphers.split(QLatin1Char(':'), Qt::SkipEmptyParts);
+    const auto cipherNames = ciphers.split(u':', Qt::SkipEmptyParts);
     for (const QString &cipherName : cipherNames) {
         QSslCipher cipher(cipherName);
         if (!cipher.isNull())

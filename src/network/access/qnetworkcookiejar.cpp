@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 static bool qIsEffectiveTLD(QStringView domain)
 {
     // provide minimal checking by not accepting cookies on real TLDs
-    return !domain.contains(QLatin1Char('.'));
+    return !domain.contains(u'.');
 }
 QT_END_NAMESPACE
 #endif
@@ -167,7 +167,7 @@ static inline bool isParentPath(const QString &path, const QString &reference)
 
 static inline bool isParentDomain(const QString &domain, const QString &reference)
 {
-    if (!reference.startsWith(QLatin1Char('.')))
+    if (!reference.startsWith(u'.'))
         return domain == reference;
 
     return domain.endsWith(reference) || domain == QStringView{reference}.mid(1);
@@ -250,13 +250,13 @@ QList<QNetworkCookie> QNetworkCookieJar::cookiesForUrl(const QUrl &url) const
             continue;
 
         QString domain = it->domain();
-        if (domain.startsWith(QLatin1Char('.'))) /// Qt6?: remove when compliant with RFC6265
+        if (domain.startsWith(u'.')) /// Qt6?: remove when compliant with RFC6265
             domain = domain.mid(1);
 #if QT_CONFIG(topleveldomain)
         if (qIsEffectiveTLD(domain) && url.host() != domain)
             continue;
 #else
-        if (!domain.contains(QLatin1Char('.')) && url.host() != domain)
+        if (!domain.contains(u'.') && url.host() != domain)
             continue;
 #endif // topleveldomain
 
@@ -356,7 +356,7 @@ bool QNetworkCookieJar::validateCookie(const QNetworkCookie &cookie, const QUrl 
     if (!isParentDomain(domain, host) && !isParentDomain(host, domain))
         return false; // not accepted
 
-    if (domain.startsWith(QLatin1Char('.')))
+    if (domain.startsWith(u'.'))
         domain = domain.mid(1);
 
     // We shouldn't reject if:

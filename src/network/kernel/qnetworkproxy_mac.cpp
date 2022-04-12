@@ -83,7 +83,7 @@ static bool isHostExcluded(CFDictionaryRef dict, const QString &host)
     if (host.isEmpty())
         return true;
 
-    bool isSimple = !host.contains(QLatin1Char('.')) && !host.contains(QLatin1Char(':'));
+    bool isSimple = !host.contains(u'.') && !host.contains(u':');
     CFNumberRef excludeSimples;
     if (isSimple &&
         (excludeSimples = (CFNumberRef)CFDictionaryGetValue(dict, kSCPropNetProxiesExcludeSimpleHostnames))) {

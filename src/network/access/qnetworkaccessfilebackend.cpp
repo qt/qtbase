@@ -131,7 +131,7 @@ void QNetworkAccessFileBackend::open()
     QString fileName = url.toLocalFile();
     if (fileName.isEmpty()) {
         if (url.scheme() == QLatin1String("qrc")) {
-            fileName = QLatin1Char(':') + url.path();
+            fileName = u':' + url.path();
         } else {
 #if defined(Q_OS_ANDROID)
             if (url.scheme() == QLatin1String("assets"))

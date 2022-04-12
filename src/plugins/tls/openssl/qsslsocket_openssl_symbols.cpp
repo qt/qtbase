@@ -583,8 +583,8 @@ struct LibGreaterThan
     typedef bool result_type;
     result_type operator()(QStringView lhs, QStringView rhs) const
     {
-        const auto lhsparts = lhs.split(QLatin1Char('.'));
-        const auto rhsparts = rhs.split(QLatin1Char('.'));
+        const auto lhsparts = lhs.split(u'.');
+        const auto rhsparts = rhs.split(u'.');
         Q_ASSERT(lhsparts.count() > 1 && rhsparts.count() > 1);
 
         // note: checking rhs < lhs, the same as lhs > rhs
@@ -615,8 +615,7 @@ static QStringList libraryPathList()
 {
     QStringList paths;
 #  ifdef Q_OS_DARWIN
-    paths = QString::fromLatin1(qgetenv("DYLD_LIBRARY_PATH"))
-            .split(QLatin1Char(':'), Qt::SkipEmptyParts);
+    paths = QString::fromLatin1(qgetenv("DYLD_LIBRARY_PATH")).split(u':', Qt::SkipEmptyParts);
 
     // search in .app/Contents/Frameworks
     UInt32 packageType;
@@ -627,8 +626,7 @@ static QStringList libraryPathList()
         paths << bundleUrl.resolved(frameworksUrl).path();
     }
 #  else
-    paths = QString::fromLatin1(qgetenv("LD_LIBRARY_PATH"))
-            .split(QLatin1Char(':'), Qt::SkipEmptyParts);
+    paths = QString::fromLatin1(qgetenv("LD_LIBRARY_PATH")).split(u':', Qt::SkipEmptyParts);
 #  endif
     paths << QLatin1String("/lib") << QLatin1String("/usr/lib") << QLatin1String("/usr/local/lib");
     paths << QLatin1String("/lib64") << QLatin1String("/usr/lib64") << QLatin1String("/usr/local/lib64");
@@ -659,7 +657,7 @@ static QStringList findAllLibs(QLatin1String filter)
 
         std::sort(entryList.begin(), entryList.end(), LibGreaterThan());
         for (const QString &entry : qAsConst(entryList))
-            found << path + QLatin1Char('/') + entry;
+            found << path + u'/' + entry;
     }
 
     return found;

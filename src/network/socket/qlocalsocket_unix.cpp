@@ -68,11 +68,11 @@ static QString pathNameForConnection(const QString &connectingName,
                                      QLocalSocket::SocketOptions options)
 {
     if (options.testFlag(QLocalSocket::AbstractNamespaceOption)
-        || connectingName.startsWith(QLatin1Char('/'))) {
+        || connectingName.startsWith(u'/')) {
         return connectingName;
     }
 
-    return QDir::tempPath() + QLatin1Char('/') + connectingName;
+    return QDir::tempPath() + u'/' + connectingName;
 }
 
 static QLocalSocket::SocketOptions optionsForPlatform(QLocalSocket::SocketOptions srcOptions)
@@ -446,7 +446,7 @@ bool QLocalSocketPrivate::parseSockaddr(const struct ::sockaddr_un &addr,
         fullServerName = name;
         serverName = abstractNamespace
                      ? name
-                     : fullServerName.mid(fullServerName.lastIndexOf(QLatin1Char('/')) + 1);
+                     : fullServerName.mid(fullServerName.lastIndexOf(u'/') + 1);
         if (serverName.isEmpty())
             serverName = fullServerName;
     }

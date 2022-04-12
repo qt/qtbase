@@ -541,7 +541,7 @@ QByteArray QNetworkCookie::toRawForm(RawForm form) const
         }
         if (!d->domain.isEmpty()) {
             result += "; domain=";
-            if (d->domain.startsWith(QLatin1Char('.'))) {
+            if (d->domain.startsWith(u'.')) {
                 result += '.';
                 result += QUrl::toAce(d->domain.mid(1));
             } else {
@@ -1028,7 +1028,7 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
                     if (!rawDomain.isEmpty()) {
                         QString maybeLeadingDot;
                         if (rawDomain.startsWith('.')) {
-                            maybeLeadingDot = QLatin1Char('.');
+                            maybeLeadingDot = u'.';
                             rawDomain = rawDomain.mid(1);
                         }
 
@@ -1096,9 +1096,9 @@ void QNetworkCookie::normalize(const QUrl &url)
     // don't do path checking. See QTBUG-5815
     if (d->path.isEmpty()) {
         QString pathAndFileName = url.path();
-        QString defaultPath = pathAndFileName.left(pathAndFileName.lastIndexOf(QLatin1Char('/'))+1);
+        QString defaultPath = pathAndFileName.left(pathAndFileName.lastIndexOf(u'/') + 1);
         if (defaultPath.isEmpty())
-            defaultPath = QLatin1Char('/');
+            defaultPath = u'/';
         d->path = defaultPath;
     }
 
@@ -1108,12 +1108,12 @@ void QNetworkCookie::normalize(const QUrl &url)
         QHostAddress hostAddress(d->domain);
         if (hostAddress.protocol() != QAbstractSocket::IPv4Protocol
                 && hostAddress.protocol() != QAbstractSocket::IPv6Protocol
-                && !d->domain.startsWith(QLatin1Char('.'))) {
+                && !d->domain.startsWith(u'.')) {
             // Ensure the domain starts with a dot if its field was not empty
             // in the HTTP header. There are some servers that forget the
             // leading dot and this is actually forbidden according to RFC 2109,
             // but all browsers accept it anyway so we do that as well.
-            d->domain.prepend(QLatin1Char('.'));
+            d->domain.prepend(u'.');
         }
     }
 }

@@ -124,9 +124,9 @@ static QString dump(const QByteArray &buf)
 {
     QString data;
     for (int i = 0; i < qMin<int>(MAX_DATA_DUMP, buf.size()); ++i) {
-        if (i) data += QLatin1Char(' ');
+        if (i) data += u' ';
         uint val = (unsigned char)buf.at(i);
-       // data += QString("0x%1").arg(val, 3, 16, QLatin1Char('0'));
+       // data += QString("0x%1").arg(val, 3, 16, u'0');
         data += QString::number(val);
     }
     if (buf.size() > MAX_DATA_DUMP)
