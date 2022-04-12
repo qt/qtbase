@@ -1387,7 +1387,7 @@ bool QSocks5SocketEngine::bind(const QHostAddress &addr, quint16 port)
 
     // binding timed out
     setError(QAbstractSocket::SocketTimeoutError,
-             QLatin1String(QT_TRANSLATE_NOOP("QSocks5SocketEngine", "Network operation timed out")));
+             QLatin1StringView(QT_TRANSLATE_NOOP("QSocks5SocketEngine", "Network operation timed out")));
 
 ///###    delete d->udpSocket;
 ///###    d->udpSocket = 0;

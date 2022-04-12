@@ -653,7 +653,7 @@ bool DtlsState::initTls(QDtlsBasePrivate *dtlsBase)
 static QString msgFunctionFailed(const char *function)
 {
     //: %1: Some function
-    return QDtls::tr("%1 failed").arg(QLatin1String(function));
+    return QDtls::tr("%1 failed").arg(QLatin1StringView(function));
 }
 
 bool DtlsState::initCtxAndConnection(QDtlsBasePrivate *dtlsBase)

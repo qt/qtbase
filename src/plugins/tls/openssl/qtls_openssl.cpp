@@ -85,7 +85,7 @@ QSsl::AlertLevel tlsAlertLevel(int value)
 
 QString tlsAlertDescription(int value)
 {
-    QString description = QLatin1String(q_SSL_alert_desc_string_long(value));
+    QString description = QLatin1StringView(q_SSL_alert_desc_string_long(value));
     if (!description.size())
         description = "no description provided"_L1;
     return description;

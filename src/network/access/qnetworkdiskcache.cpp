@@ -600,7 +600,7 @@ QString QNetworkDiskCachePrivate::uniqueFileName(const QUrl &url)
     const QByteArray id = QByteArray::number(*(qlonglong*)hash.data(), 36).left(8);
     // generates <one-char subdir>/<8-char filname.d>
     uint code = (uint)id.at(id.length()-1) % 16;
-    QString pathFragment = QString::number(code, 16) + u'/' + QLatin1String(id) + CACHE_POSTFIX;
+    QString pathFragment = QString::number(code, 16) + u'/' + QLatin1StringView(id) + CACHE_POSTFIX;
 
     return pathFragment;
 }

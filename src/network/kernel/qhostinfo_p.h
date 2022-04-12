@@ -127,7 +127,7 @@ class QHostInfoPrivate
 public:
     inline QHostInfoPrivate()
         : err(QHostInfo::NoError),
-          errorStr(QLatin1String(QT_TRANSLATE_NOOP("QHostInfo", "Unknown error"))),
+          errorStr(QLatin1StringView(QT_TRANSLATE_NOOP("QHostInfo", "Unknown error"))),
           lookupId(0)
     {
     }

@@ -151,7 +151,7 @@ QUrl urlkey_from_request(const QHttpNetworkRequest &request)
 
     url.setScheme(request.url().scheme());
     url.setAuthority(request.url().authority(QUrl::FullyEncoded | QUrl::RemoveUserInfo));
-    url.setPath(QLatin1String(request.uri(false)));
+    url.setPath(QLatin1StringView(request.uri(false)));
 
     return url;
 }
@@ -1537,9 +1537,9 @@ bool QHttp2ProtocolHandler::tryReserveStream(const Http2::Frame &pushPromiseFram
         return false;
 
     QUrl url;
-    url.setScheme(QLatin1String(pseudoHeaders[":scheme"]));
-    url.setAuthority(QLatin1String(pseudoHeaders[":authority"]));
-    url.setPath(QLatin1String(pseudoHeaders[":path"]));
+    url.setScheme(QLatin1StringView(pseudoHeaders[":scheme"]));
+    url.setAuthority(QLatin1StringView(pseudoHeaders[":authority"]));
+    url.setPath(QLatin1StringView(pseudoHeaders[":path"]));
 
     if (!url.isValid())
         return false;
@@ -1636,7 +1636,7 @@ void QHttp2ProtocolHandler::connectionError(Http2::Http2Error errorCode,
     m_channel->emitFinishedWithError(error, message);
 
     for (auto &stream: activeStreams)
-        finishStreamWithError(stream, error, QLatin1String(message));
+        finishStreamWithError(stream, error, QLatin1StringView(message));
 
     closeSession();
 }

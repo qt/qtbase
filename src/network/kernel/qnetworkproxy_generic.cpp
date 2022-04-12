@@ -64,7 +64,7 @@ static bool ignoreProxyFor(const QNetworkProxyQuery &query)
     const QList<QByteArray> noProxyTokens = noProxy.split(',');
 
     for (const QByteArray &rawToken : noProxyTokens) {
-        auto token = QLatin1String(rawToken).trimmed();
+        auto token = QLatin1StringView(rawToken).trimmed();
 
         // Since we use suffix matching, "*" is our 'default' behaviour
         if (token.startsWith(u'*'))

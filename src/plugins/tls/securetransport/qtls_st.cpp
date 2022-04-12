@@ -119,7 +119,7 @@ EphemeralSecKeychain::EphemeralSecKeychain()
     Q_ASSERT(uuidAsByteArray.size() > 2);
     Q_ASSERT(uuidAsByteArray.startsWith('{'));
     Q_ASSERT(uuidAsByteArray.endsWith('}'));
-    const auto uuidAsString = QLatin1String(uuidAsByteArray.data(), uuidAsByteArray.size()).mid(1, uuidAsByteArray.size() - 2);
+    const auto uuidAsString = QLatin1StringView(uuidAsByteArray.data(), uuidAsByteArray.size()).mid(1, uuidAsByteArray.size() - 2);
 
     const QString keychainName
             = QDir::tempPath() + QDir::separator() + uuidAsString + ".keychain"_L1;

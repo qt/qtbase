@@ -647,7 +647,7 @@ static QStringList libraryPathList()
 }
 
 Q_NEVER_INLINE
-static QStringList findAllLibs(QLatin1String filter)
+static QStringList findAllLibs(QLatin1StringView filter)
 {
     const QStringList paths = libraryPathList();
     QStringList found;
@@ -682,7 +682,7 @@ struct LoadedOpenSsl {
     std::unique_ptr<QSystemLibrary> ssl, crypto;
 };
 
-static bool tryToLoadOpenSslWin32Library(QLatin1String ssleay32LibName, QLatin1String libeay32LibName, LoadedOpenSsl &result)
+static bool tryToLoadOpenSslWin32Library(QLatin1StringView ssleay32LibName, QLatin1StringView libeay32LibName, LoadedOpenSsl &result)
 {
     auto ssleay32 = std::make_unique<QSystemLibrary>(ssleay32LibName);
     if (!ssleay32->load(false)) {

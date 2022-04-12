@@ -247,7 +247,7 @@ static QNetworkInterfacePrivate *findInterface(int socket, QList<QNetworkInterfa
     // Search by name
     QList<QNetworkInterfacePrivate *>::Iterator if_it = interfaces.begin();
     for ( ; if_it != interfaces.end(); ++if_it)
-        if ((*if_it)->name == QLatin1String(req.ifr_name)) {
+        if ((*if_it)->name == QLatin1StringView(req.ifr_name)) {
             // existing interface
             iface = *if_it;
             break;
@@ -627,7 +627,7 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
     interfaces = createInterfaces(interfaceListing);
     for (ifaddrs *ptr = interfaceListing; ptr; ptr = ptr->ifa_next) {
         // Find the interface
-        QLatin1String name(ptr->ifa_name);
+        QLatin1StringView name(ptr->ifa_name);
         QNetworkInterfacePrivate *iface = nullptr;
         QList<QNetworkInterfacePrivate *>::Iterator if_it = interfaces.begin();
         for ( ; if_it != interfaces.end(); ++if_it)

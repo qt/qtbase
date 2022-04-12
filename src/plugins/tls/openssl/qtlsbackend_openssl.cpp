@@ -230,7 +230,7 @@ void QTlsBackendOpenSSL::ensureCiphersAndCertsLoaded() const
     QStringList symLinkFilter;
     symLinkFilter << "[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].[0-9]"_L1;
     for (const auto &dir : dirs) {
-        QDirIterator iterator(QLatin1String(dir), symLinkFilter, QDir::Files);
+        QDirIterator iterator(QLatin1StringView(dir), symLinkFilter, QDir::Files);
         if (iterator.hasNext()) {
             QSslSocketPrivate::setRootCertOnDemandLoadingSupported(true);
             break;
@@ -414,7 +414,7 @@ QList<QSslCertificate> systemCaCertificates()
         QDir currentDir;
         currentDir.setNameFilters(QStringList{QStringLiteral("*.pem"), QStringLiteral("*.crt")});
         for (const auto &directory : directories) {
-            currentDir.setPath(QLatin1String(directory));
+            currentDir.setPath(QLatin1StringView(directory));
             QDirIterator it(currentDir);
             while (it.hasNext()) {
                 // use canonical path here to not load the same certificate twice if symlinked

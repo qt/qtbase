@@ -3061,7 +3061,7 @@ bool QSslSocketPrivate::isMatchingHostname(const QString &cn, const QString &hos
 
     // Check this is a wildcard cert, if not then just compare the strings
     if (wildcard < 0)
-        return QLatin1String(QUrl::toAce(cn)) == hostname;
+        return QLatin1StringView(QUrl::toAce(cn)) == hostname;
 
     qsizetype firstCnDot = cn.indexOf(u'.');
     qsizetype secondCnDot = cn.indexOf(u'.', firstCnDot+1);
@@ -3090,7 +3090,7 @@ bool QSslSocketPrivate::isMatchingHostname(const QString &cn, const QString &hos
     // Check characters following first . match
     qsizetype hnDot = hostname.indexOf(u'.');
     if (QStringView{hostname}.mid(hnDot + 1) != QStringView{cn}.mid(firstCnDot + 1)
-        && QStringView{hostname}.mid(hnDot + 1) != QLatin1String(QUrl::toAce(cn.mid(firstCnDot + 1)))) {
+        && QStringView{hostname}.mid(hnDot + 1) != QLatin1StringView(QUrl::toAce(cn.mid(firstCnDot + 1)))) {
         return false;
     }
 

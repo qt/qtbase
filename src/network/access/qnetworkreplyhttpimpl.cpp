@@ -1316,7 +1316,7 @@ void QNetworkReplyHttpImplPrivate::checkForRedirect(const int statusCode)
         QByteArray header = q->rawHeader("location");
         QUrl url = QUrl(QString::fromUtf8(header));
         if (!url.isValid())
-            url = QUrl(QLatin1String(header));
+            url = QUrl(QLatin1StringView(header));
         q->setAttribute(QNetworkRequest::RedirectionTargetAttribute, url);
     }
 }
