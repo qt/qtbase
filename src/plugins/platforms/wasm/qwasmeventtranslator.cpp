@@ -162,6 +162,9 @@ QWasmEventTranslator::~QWasmEventTranslator()
 template <typename Event>
 QFlags<Qt::KeyboardModifier> QWasmEventTranslator::translatKeyModifier(const Event *event)
 {
+    // macOS CTRL <-> META switching. We most likely want to enable
+    // the existing switching code in QtGui, but for now do it here.
+
     QFlags<Qt::KeyboardModifier> keyModifier = Qt::NoModifier;
     if (event->shiftKey)
         keyModifier |= Qt::ShiftModifier;

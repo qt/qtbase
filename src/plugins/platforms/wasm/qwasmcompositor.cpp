@@ -37,8 +37,6 @@ QWasmCompositedWindow::QWasmCompositedWindow()
 {
 }
 
-// macOS CTRL <-> META switching. We most likely want to enable
-// the existing switching code in QtGui, but for now do it here.
 bool g_scrollingInvertedFromDevice = false;
 
 static void mouseWheelEvent(emscripten::val event)
