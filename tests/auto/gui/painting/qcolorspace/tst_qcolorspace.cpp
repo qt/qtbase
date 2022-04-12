@@ -65,6 +65,8 @@ private slots:
     void imageConversion64PM();
     void imageConversionOverLargerGamut_data();
     void imageConversionOverLargerGamut();
+    void imageConversionOverLargerGamut2_data();
+    void imageConversionOverLargerGamut2();
 
     void loadImage();
 
@@ -487,6 +489,55 @@ void tst_QColorSpace::imageConversionOverLargerGamut()
             QCOMPARE(resultImage.pixel(x, y), testImage.pixel(x, y));
         }
     }
+}
+
+void tst_QColorSpace::imageConversionOverLargerGamut2_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+
+    QTest::newRow("rgbx16x4") << QImage::Format_RGBX16FPx4;
+    QTest::newRow("rgba16x4") << QImage::Format_RGBA16FPx4;
+    QTest::newRow("rgba16x4PM") << QImage::Format_RGBA16FPx4_Premultiplied;
+    QTest::newRow("rgbx32x4") << QImage::Format_RGBX32FPx4;
+    QTest::newRow("rgba32x4") << QImage::Format_RGBA32FPx4;
+    QTest::newRow("rgba32x4PM") << QImage::Format_RGBA32FPx4_Premultiplied;
+}
+
+void tst_QColorSpace::imageConversionOverLargerGamut2()
+{
+    QFETCH(QImage::Format, format);
+
+    QColorSpace csfrom = QColorSpace::DisplayP3;
+    QColorSpace csto = QColorSpace::SRgb;
+
+    QImage testImage(256, 256, format);
+    testImage.setColorSpace(csfrom);
+    for (int y = 0; y < 256; ++y)
+        for (int x = 0; x < 256; ++x)
+            testImage.setPixel(x, y, qRgba(x, y, 16, 255));
+
+    QImage resultImage = testImage.convertedToColorSpace(csto);
+    for (int y = 0; y < 256; ++y) {
+        float lastRed = -256.0f;
+        for (int x = 0; x < 256; ++x) {
+            float pr = resultImage.pixelColor(x, y).redF();
+            QVERIFY(pr >= lastRed);
+            lastRed = pr;
+        }
+    }
+    for (int x = 0; x < 256; ++x) {
+        float lastGreen = -256.0f;
+        for (int y = 0; y < 256; ++y) {
+            float pg = resultImage.pixelColor(x, y).greenF();
+            QVERIFY(pg >= lastGreen);
+            lastGreen = pg;
+        }
+    }
+    // Test colors outside of sRGB are converted to values outside of 0-1 range.
+    QVERIFY(resultImage.pixelColor(255, 0).redF() > 1.0f);
+    QVERIFY(resultImage.pixelColor(255, 0).greenF() < 0.0f);
+    QVERIFY(resultImage.pixelColor(0, 255).redF() < 0.0f);
+    QVERIFY(resultImage.pixelColor(0, 255).greenF() > 1.0f);
 }
 
 void tst_QColorSpace::loadImage()

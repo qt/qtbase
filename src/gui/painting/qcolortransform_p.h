@@ -55,6 +55,7 @@
 #include "qcolorspace_p.h"
 
 #include <QtCore/qshareddata.h>
+#include <QtGui/qrgbafloat.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -84,6 +85,8 @@ public:
 
     void apply(QRgb *dst, const QRgb *src, qsizetype count, TransformFlags flags = Unpremultiplied) const;
     void apply(QRgba64 *dst, const QRgba64 *src, qsizetype count, TransformFlags flags = Unpremultiplied) const;
+    void apply(QRgbaFloat32 *dst, const QRgbaFloat32 *src, qsizetype count,
+               TransformFlags flags = Unpremultiplied) const;
     void apply(quint8 *dst, const QRgb *src, qsizetype count, TransformFlags flags = Unpremultiplied) const;
     void apply(quint16 *dst, const QRgba64 *src, qsizetype count, TransformFlags flags = Unpremultiplied) const;
 

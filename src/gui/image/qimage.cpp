@@ -5048,30 +5048,37 @@ void QImage::applyColorTransform(const QColorTransform &transform)
         return;
     }
     QImage::Format oldFormat = format();
-    if (depth() > 32) {
-        if (format() != QImage::Format_RGBX64 && format() != QImage::Format_RGBA64
-                && format() != QImage::Format_RGBA64_Premultiplied)
-            *this = std::move(*this).convertToFormat(QImage::Format_RGBA64);
-    } else if (format() != QImage::Format_ARGB32 && format() != QImage::Format_RGB32
-                && format() != QImage::Format_ARGB32_Premultiplied) {
+    if (qt_fpColorPrecision(oldFormat)) {
+        if (oldFormat != QImage::Format_RGBX32FPx4 && oldFormat != QImage::Format_RGBA32FPx4
+                && oldFormat != QImage::Format_RGBA32FPx4_Premultiplied)
+            convertTo(QImage::Format_RGBA32FPx4);
+    } else if (depth() > 32) {
+        if (oldFormat != QImage::Format_RGBX64 && oldFormat != QImage::Format_RGBA64
+                && oldFormat != QImage::Format_RGBA64_Premultiplied)
+            convertTo(QImage::Format_RGBA64);
+    } else if (oldFormat != QImage::Format_ARGB32 && oldFormat != QImage::Format_RGB32
+                && oldFormat != QImage::Format_ARGB32_Premultiplied) {
         if (hasAlphaChannel())
-            *this = std::move(*this).convertToFormat(QImage::Format_ARGB32);
+            convertTo(QImage::Format_ARGB32);
         else
-            *this = std::move(*this).convertToFormat(QImage::Format_RGB32);
+            convertTo(QImage::Format_RGB32);
     }
 
     QColorTransformPrivate::TransformFlags flags = QColorTransformPrivate::Unpremultiplied;
     switch (format()) {
     case Format_ARGB32_Premultiplied:
     case Format_RGBA64_Premultiplied:
+    case Format_RGBA32FPx4_Premultiplied:
         flags = QColorTransformPrivate::Premultiplied;
         break;
     case Format_RGB32:
     case Format_RGBX64:
+    case Format_RGBX32FPx4:
         flags = QColorTransformPrivate::InputOpaque;
         break;
     case Format_ARGB32:
     case Format_RGBA64:
+    case Format_RGBA32FPx4:
         break;
     default:
         Q_UNREACHABLE();
@@ -5079,7 +5086,14 @@ void QImage::applyColorTransform(const QColorTransform &transform)
 
     std::function<void(int,int)> transformSegment;
 
-    if (depth() > 32) {
+    if (qt_fpColorPrecision(format())) {
+        transformSegment = [&](int yStart, int yEnd) {
+            for (int y = yStart; y < yEnd; ++y) {
+                QRgbaFloat32 *scanline = reinterpret_cast<QRgbaFloat32 *>(d->data + y * d->bytes_per_line);
+                transform.d->apply(scanline, scanline, width(), flags);
+            }
+        };
+    } else  if (depth() > 32) {
         transformSegment = [&](int yStart, int yEnd) {
             for (int y = yStart; y < yEnd; ++y) {
                 QRgba64 *scanline = reinterpret_cast<QRgba64 *>(d->data + y * d->bytes_per_line);
