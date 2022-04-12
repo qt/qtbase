@@ -156,17 +156,22 @@ void QWasmBackingStore::beginPaint(const QRegion &region)
         resize(backingStore()->size(), backingStore()->staticContents());
 
     QPainter painter(&m_image);
-    painter.setCompositionMode(QPainter::CompositionMode_Source);
-    const QColor blank = Qt::transparent;
-    for (const QRect &rect : region)
-        painter.fillRect(rect, blank);
+
+    if (m_image.hasAlphaChannel()) {
+        painter.setCompositionMode(QPainter::CompositionMode_Source);
+        const QColor blank = Qt::transparent;
+        for (const QRect &rect : region)
+            painter.fillRect(rect, blank);
+    }
 }
 
 void QWasmBackingStore::resize(const QSize &size, const QRegion &staticContents)
 {
     Q_UNUSED(staticContents);
 
-    m_image = QImage(size * window()->devicePixelRatio(), QImage::Format_RGB32);
+    QImage::Format format = window()->format().hasAlpha() ?
+        QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
+    m_image = QImage(size * window()->devicePixelRatio(), format);
     m_image.setDevicePixelRatio(window()->devicePixelRatio());
     m_recreateTexture = true;
 }
