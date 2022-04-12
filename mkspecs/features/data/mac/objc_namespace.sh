@@ -42,7 +42,7 @@
 script_argument_prefix="-Wobjc_namespace,--"
 
 required_arguments="target suffix original_ld"
-optional_arguments="exclude_list exclude_regex slient"
+optional_arguments="exclude_list exclude_regex silent"
 
 for argument in $required_arguments $optional_arguments; do
     declare "$argument="
