@@ -60,6 +60,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 namespace {
 QLocalServer::SocketOptions optionsForPlatform(QLocalServer::SocketOptions srcOptions)
 {
@@ -121,16 +123,16 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
         QFileInfo serverNameFileInfo(fullServerName);
         tempDir.emplace(serverNameFileInfo.absolutePath() + u'/');
         if (!tempDir->isValid()) {
-            setError(QLatin1String("QLocalServer::listen"));
+            setError("QLocalServer::listen"_L1);
             return false;
         }
-        encodedTempPath = QFile::encodeName(tempDir->path() + QLatin1String("/s"));
+        encodedTempPath = QFile::encodeName(tempDir->path() + "/s"_L1);
     }
 
     // create the unix socket
     listenSocket = qt_safe_socket(PF_UNIX, SOCK_STREAM, 0);
     if (-1 == listenSocket) {
-        setError(QLatin1String("QLocalServer::listen"));
+        setError("QLocalServer::listen"_L1);
         closeServer();
         return false;
     }
@@ -145,7 +147,7 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
     constexpr unsigned int extraCharacters = PlatformSupportsAbstractNamespace ? 2 : 1;
 
     if (sizeof(addr.sun_path) < static_cast<size_t>(encodedFullServerName.size() + extraCharacters)) {
-        setError(QLatin1String("QLocalServer::listen"));
+        setError("QLocalServer::listen"_L1);
         closeServer();
         return false;
     }
@@ -159,7 +161,7 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
         addrSize = offsetof(::sockaddr_un, sun_path) + encodedFullServerName.size() + 1;
     } else if (options & QLocalServer::WorldAccessOption) {
         if (sizeof(addr.sun_path) < static_cast<size_t>(encodedTempPath.size() + 1)) {
-            setError(QLatin1String("QLocalServer::listen"));
+            setError("QLocalServer::listen"_L1);
             closeServer();
             return false;
         }
@@ -172,7 +174,7 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
 
     // bind
     if (-1 == QT_SOCKET_BIND(listenSocket, (sockaddr *)&addr, addrSize)) {
-        setError(QLatin1String("QLocalServer::listen"));
+        setError("QLocalServer::listen"_L1);
         // if address is in use already, just close the socket, but do not delete the file
         if (errno == EADDRINUSE)
             QT_CLOSE(listenSocket);
@@ -185,7 +187,7 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
 
     // listen for connections
     if (-1 == qt_safe_listen(listenSocket, listenBacklog)) {
-        setError(QLatin1String("QLocalServer::listen"));
+        setError("QLocalServer::listen"_L1);
         closeServer();
         return false;
     }
@@ -203,13 +205,13 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
             mode |= S_IRWXO;
 
         if (::chmod(encodedTempPath.constData(), mode) == -1) {
-            setError(QLatin1String("QLocalServer::listen"));
+            setError("QLocalServer::listen"_L1);
             closeServer();
             return false;
         }
 
         if (::rename(encodedTempPath.constData(), encodedFullServerName.constData()) == -1) {
-            setError(QLatin1String("QLocalServer::listen"));
+            setError("QLocalServer::listen"_L1);
             closeServer();
             return false;
         }
@@ -301,7 +303,7 @@ void QLocalServerPrivate::_q_onNewConnection()
     QT_SOCKLEN_T length = sizeof(sockaddr_un);
     int connectedSocket = qt_safe_accept(listenSocket, (sockaddr *)&addr, &length);
     if (-1 == connectedSocket) {
-        setError(QLatin1String("QLocalSocket::activated"));
+        setError("QLocalSocket::activated"_L1);
         closeServer();
     } else {
         socketNotifier->setEnabled(pendingConnections.size()
@@ -330,7 +332,7 @@ void QLocalServerPrivate::waitForNewConnection(int msec, bool *timedOut)
         errno = EBADF;
         Q_FALLTHROUGH();
     case -1:
-        setError(QLatin1String("QLocalServer::waitForNewConnection"));
+        setError("QLocalServer::waitForNewConnection"_L1);
         closeServer();
         break;
     }

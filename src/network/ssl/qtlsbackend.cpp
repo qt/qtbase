@@ -61,6 +61,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_APPLICATION_STATIC(QFactoryLoader, loader, QTlsBackend_iid,
                      QStringLiteral("/tls"))
 
@@ -832,13 +834,13 @@ QT_WARNING_DISABLE_DEPRECATED
         }
 QT_WARNING_POP
 
-        if (descriptionList.at(2).startsWith(QLatin1String("Kx=")))
+        if (descriptionList.at(2).startsWith("Kx="_L1))
             ciph.d->keyExchangeMethod = descriptionList.at(2).mid(3).toString();
-        if (descriptionList.at(3).startsWith(QLatin1String("Au=")))
+        if (descriptionList.at(3).startsWith("Au="_L1))
             ciph.d->authenticationMethod = descriptionList.at(3).mid(3).toString();
-        if (descriptionList.at(4).startsWith(QLatin1String("Enc=")))
+        if (descriptionList.at(4).startsWith("Enc="_L1))
             ciph.d->encryptionMethod = descriptionList.at(4).mid(4).toString();
-        ciph.d->exportable = (descriptionList.size() > 6 && descriptionList.at(6) == QLatin1String("export"));
+        ciph.d->exportable = (descriptionList.size() > 6 && descriptionList.at(6) == "export"_L1);
 
         ciph.d->bits = bits;
         ciph.d->supportedBits = supportedBits;
@@ -852,7 +854,7 @@ QT_WARNING_POP
     Auxiliary function. Creates a new QSslCipher from \a suiteName, \a protocol version and
     \a protocolString. For example:
     \code
-    createCiphersuite(QLatin1String("ECDHE-RSA-AES256-GCM-SHA256"), QSsl::TlsV1_2, QLatin1String("TLSv1.2"));
+    createCiphersuite("ECDHE-RSA-AES256-GCM-SHA256"_L1, QSsl::TlsV1_2, "TLSv1.2"_L1);
     \endcode
 */
 QSslCipher QTlsBackend::createCiphersuite(const QString &suiteName, QSsl::SslProtocol protocol,
@@ -871,49 +873,49 @@ QSslCipher QTlsBackend::createCiphersuite(const QString &suiteName, QSsl::SslPro
     const auto bits = QStringView{ciph.d->name}.split(u'-');
     if (bits.size() >= 2) {
         if (bits.size() == 2 || bits.size() == 3)
-            ciph.d->keyExchangeMethod = QLatin1String("RSA");
-        else if (bits.front() == QLatin1String("DH") || bits.front() == QLatin1String("DHE"))
-            ciph.d->keyExchangeMethod = QLatin1String("DH");
-        else if (bits.front() == QLatin1String("ECDH") || bits.front() == QLatin1String("ECDHE"))
-            ciph.d->keyExchangeMethod = QLatin1String("ECDH");
+            ciph.d->keyExchangeMethod = "RSA"_L1;
+        else if (bits.front() == "DH"_L1 || bits.front() == "DHE"_L1)
+            ciph.d->keyExchangeMethod = "DH"_L1;
+        else if (bits.front() == "ECDH"_L1 || bits.front() == "ECDHE"_L1)
+            ciph.d->keyExchangeMethod = "ECDH"_L1;
         else
             qCWarning(lcSsl) << "Unknown Kx" << ciph.d->name;
 
         if (bits.size() == 2 || bits.size() == 3)
-            ciph.d->authenticationMethod = QLatin1String("RSA");
-        else if (ciph.d->name.contains(QLatin1String("-ECDSA-")))
-            ciph.d->authenticationMethod = QLatin1String("ECDSA");
-        else if (ciph.d->name.contains(QLatin1String("-RSA-")))
-            ciph.d->authenticationMethod = QLatin1String("RSA");
+            ciph.d->authenticationMethod = "RSA"_L1;
+        else if (ciph.d->name.contains("-ECDSA-"_L1))
+            ciph.d->authenticationMethod = "ECDSA"_L1;
+        else if (ciph.d->name.contains("-RSA-"_L1))
+            ciph.d->authenticationMethod = "RSA"_L1;
         else
             qCWarning(lcSsl) << "Unknown Au" << ciph.d->name;
 
-        if (ciph.d->name.contains(QLatin1String("RC4-"))) {
-            ciph.d->encryptionMethod = QLatin1String("RC4(128)");
+        if (ciph.d->name.contains("RC4-"_L1)) {
+            ciph.d->encryptionMethod = "RC4(128)"_L1;
             ciph.d->bits = 128;
             ciph.d->supportedBits = 128;
-        } else if (ciph.d->name.contains(QLatin1String("DES-CBC3-"))) {
-            ciph.d->encryptionMethod = QLatin1String("3DES(168)");
+        } else if (ciph.d->name.contains("DES-CBC3-"_L1)) {
+            ciph.d->encryptionMethod = "3DES(168)"_L1;
             ciph.d->bits = 168;
             ciph.d->supportedBits = 168;
-        } else if (ciph.d->name.contains(QLatin1String("AES128-"))) {
-            ciph.d->encryptionMethod = QLatin1String("AES(128)");
+        } else if (ciph.d->name.contains("AES128-"_L1)) {
+            ciph.d->encryptionMethod = "AES(128)"_L1;
             ciph.d->bits = 128;
             ciph.d->supportedBits = 128;
-        } else if (ciph.d->name.contains(QLatin1String("AES256-GCM"))) {
-            ciph.d->encryptionMethod = QLatin1String("AESGCM(256)");
+        } else if (ciph.d->name.contains("AES256-GCM"_L1)) {
+            ciph.d->encryptionMethod = "AESGCM(256)"_L1;
             ciph.d->bits = 256;
             ciph.d->supportedBits = 256;
-        } else if (ciph.d->name.contains(QLatin1String("AES256-"))) {
-            ciph.d->encryptionMethod = QLatin1String("AES(256)");
+        } else if (ciph.d->name.contains("AES256-"_L1)) {
+            ciph.d->encryptionMethod = "AES(256)"_L1;
             ciph.d->bits = 256;
             ciph.d->supportedBits = 256;
-        } else if (ciph.d->name.contains(QLatin1String("CHACHA20-"))) {
-            ciph.d->encryptionMethod = QLatin1String("CHACHA20");
+        } else if (ciph.d->name.contains("CHACHA20-"_L1)) {
+            ciph.d->encryptionMethod = "CHACHA20"_L1;
             ciph.d->bits = 256;
             ciph.d->supportedBits = 256;
-        } else if (ciph.d->name.contains(QLatin1String("NULL-"))) {
-            ciph.d->encryptionMethod = QLatin1String("NULL");
+        } else if (ciph.d->name.contains("NULL-"_L1)) {
+            ciph.d->encryptionMethod = "NULL"_L1;
         } else {
             qCWarning(lcSsl) << "Unknown Enc" << ciph.d->name;
         }
@@ -926,7 +928,7 @@ QSslCipher QTlsBackend::createCiphersuite(const QString &suiteName, QSsl::SslPro
     Auxiliary function. Creates a new QSslCipher from \a name (which is an implementation-specific
     string), \a protocol and \a protocolString, e.g.:
     \code
-    createCipher(QStringLiteral("schannel"), QSsl::TlsV1_2, QLatin1String("TLSv1.2"));
+    createCipher(QStringLiteral("schannel"), QSsl::TlsV1_2, "TLSv1.2"_L1);
     \endcode
 */
 QSslCipher QTlsBackend::createCipher(const QString &name, QSsl::SslProtocol protocol,

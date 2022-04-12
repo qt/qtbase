@@ -69,6 +69,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_DECLARE_LOGGING_CATEGORY(lcAuthenticator);
 Q_LOGGING_CATEGORY(lcAuthenticator, "qt.network.authenticator");
 
@@ -405,7 +407,7 @@ void QAuthenticatorPrivate::updateCredentials()
 
     switch (method) {
     case QAuthenticatorPrivate::Ntlm:
-        if ((separatorPosn = user.indexOf(QLatin1String("\\"))) != -1) {
+        if ((separatorPosn = user.indexOf("\\"_L1)) != -1) {
             //domain name is present
             realm.clear();
             userDomain = user.left(separatorPosn);
@@ -522,7 +524,7 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
             if (phase == Done)
                 phase = Start;
             realm = newRealm;
-            this->options[QLatin1String("realm")] = realm;
+            this->options["realm"_L1] = realm;
         }
     };
 
@@ -1658,7 +1660,7 @@ static QByteArray qSspiContinue(QAuthenticatorPrivate *ctx, QAuthenticatorPrivat
 
     // Calculate target (SPN for Negotiate, empty for NTLM)
     std::wstring targetNameW = (method == QAuthenticatorPrivate::Negotiate
-                                ? QLatin1String("HTTP/") + host : QString()).toStdWString();
+                                ? "HTTP/"_L1 + host : QString()).toStdWString();
 
     // Generate our challenge-response message
     SECURITY_STATUS secStatus = pSecurityFunctionTable->InitializeSecurityContext(

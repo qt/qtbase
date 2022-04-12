@@ -47,6 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QLocalSocketPrivate::QLocalSocketPrivate() : QIODevicePrivate(),
         tcpSocket(0),
         ownsTcpSocket(true),
@@ -85,7 +87,7 @@ void QLocalSocketPrivate::setSocket(QLocalUnixSocket* socket)
 void QLocalSocketPrivate::_q_errorOccurred(QAbstractSocket::SocketError socketError)
 {
     Q_Q(QLocalSocket);
-    QString function = QLatin1String("QLocalSocket");
+    QString function = "QLocalSocket"_L1;
     QLocalSocket::LocalSocketError error = (QLocalSocket::LocalSocketError)socketError;
     QString errorString = generateErrorString(error, function);
     q->setErrorString(errorString);
@@ -225,23 +227,21 @@ void QLocalSocket::connectToServer(OpenMode openMode)
     emit stateChanged(d->state);
 
     if (d->serverName.isEmpty()) {
-        d->setErrorAndEmit(ServerNotFoundError,
-                           QLatin1String("QLocalSocket::connectToServer"));
+        d->setErrorAndEmit(ServerNotFoundError, "QLocalSocket::connectToServer"_L1);
         return;
     }
 
-    const QLatin1String prefix("QLocalServer/");
+    const auto prefix = "QLocalServer/"_L1;
     if (d->serverName.startsWith(prefix))
         d->fullServerName = d->serverName;
     else
         d->fullServerName = prefix + d->serverName;
 
-    QSettings settings(QLatin1String("QtProject"), QLatin1String("Qt"));
+    QSettings settings("QtProject"_L1, "Qt"_L1);
     bool ok;
     const quint16 port = settings.value(d->fullServerName).toUInt(&ok);
     if (!ok) {
-        d->setErrorAndEmit(ServerNotFoundError,
-                           QLatin1String("QLocalSocket::connectToServer"));
+        d->setErrorAndEmit(ServerNotFoundError, "QLocalSocket::connectToServer"_L1);
         return;
     }
     QIODevice::open(openMode);

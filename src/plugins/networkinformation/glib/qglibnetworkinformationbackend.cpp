@@ -45,6 +45,9 @@
 #include <gio/gio.h>
 
 QT_BEGIN_NAMESPACE
+
+using namespace Qt::StringLiterals;
+
 Q_DECLARE_LOGGING_CATEGORY(lcNetInfoGlib)
 Q_LOGGING_CATEGORY(lcNetInfoGlib, "qt.network.info.glib");
 
@@ -141,7 +144,7 @@ QGlibNetworkInformationBackend::~QGlibNetworkInformationBackend()
 
 bool QGlibNetworkInformationBackend::isValid() const
 {
-    return G_OBJECT_TYPE_NAME(networkMonitor) != QLatin1String("GNetworkMonitorBase");
+    return G_OBJECT_TYPE_NAME(networkMonitor) != "GNetworkMonitorBase"_L1;
 }
 
 void QGlibNetworkInformationBackend::updateInformation(QGlibNetworkInformationBackend *backend)

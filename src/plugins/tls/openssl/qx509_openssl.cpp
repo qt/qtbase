@@ -57,6 +57,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 namespace QTlsPrivate {
 
 namespace {
@@ -305,9 +307,9 @@ QVariant x509ExtensionToValue(X509_EXTENSION *ext)
             if (!basic)
                 return {};
             QVariantMap result;
-            result[QLatin1String("ca")] = basic->ca ? true : false;
+            result["ca"_L1] = basic->ca ? true : false;
             if (basic->pathlen)
-                result[QLatin1String("pathLenConstraint")] = (qlonglong)q_ASN1_INTEGER_get(basic->pathlen);
+                result["pathLenConstraint"_L1] = (qlonglong)q_ASN1_INTEGER_get(basic->pathlen);
 
             q_BASIC_CONSTRAINTS_free(basic);
             return result;
@@ -364,7 +366,7 @@ QVariant x509ExtensionToValue(X509_EXTENSION *ext)
             if (auth_key->keyid) {
                 QByteArray keyid(reinterpret_cast<const char *>(auth_key->keyid->data),
                                  auth_key->keyid->length);
-                result[QLatin1String("keyid")] = keyid.toHex();
+                result["keyid"_L1] = keyid.toHex();
             }
 
             // issuer
@@ -372,7 +374,7 @@ QVariant x509ExtensionToValue(X509_EXTENSION *ext)
 
             // serial
             if (auth_key->serial)
-                result[QLatin1String("serial")] = (qlonglong)q_ASN1_INTEGER_get(auth_key->serial);
+                result["serial"_L1] = (qlonglong)q_ASN1_INTEGER_get(auth_key->serial);
 
             q_AUTHORITY_KEYID_free(auth_key);
             return result;

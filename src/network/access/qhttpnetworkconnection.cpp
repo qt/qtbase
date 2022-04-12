@@ -66,6 +66,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 const int QHttpNetworkConnectionPrivate::defaultHttpChannelCount = 6;
 
 // The pipeline length. So there will be 4 requests in flight.
@@ -318,12 +320,12 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
     if (value.isEmpty()) {
         QString systemLocale = QLocale::system().name().replace(QChar::fromLatin1('_'),QChar::fromLatin1('-'));
         QString acceptLanguage;
-        if (systemLocale == QLatin1String("C"))
+        if (systemLocale == "C"_L1)
             acceptLanguage = QString::fromLatin1("en,*");
-        else if (systemLocale.startsWith(QLatin1String("en-")))
-            acceptLanguage = systemLocale + QLatin1String(",*");
+        else if (systemLocale.startsWith("en-"_L1))
+            acceptLanguage = systemLocale + ",*"_L1;
         else
-            acceptLanguage = systemLocale + QLatin1String(",en,*");
+            acceptLanguage = systemLocale + ",en,*"_L1;
         request.setHeaderField("Accept-Language", std::move(acceptLanguage).toLatin1());
     }
 
@@ -567,7 +569,7 @@ QHttpNetworkConnectionPrivate::parseRedirectResponse(QHttpNetworkReply *reply)
 
     // Check redirect url protocol
     const QUrl priorUrl(reply->request().url());
-    if (redirectUrl.scheme() == QLatin1String("http") || redirectUrl.scheme() == QLatin1String("https")) {
+    if (redirectUrl.scheme() == "http"_L1 || redirectUrl.scheme() == "https"_L1) {
         switch (reply->request().redirectPolicy()) {
         case QNetworkRequest::NoLessSafeRedirectPolicy:
             // Here we could handle https->http redirects as InsecureProtocolError.

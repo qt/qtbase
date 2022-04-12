@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QHttpNetworkReply::QHttpNetworkReply(const QUrl &url, QObject *parent)
     : QObject(*new QHttpNetworkReplyPrivate(url), parent)
 {
@@ -352,8 +354,7 @@ QHttpNetworkReplyPrivate::QHttpNetworkReplyPrivate(const QUrl &newUrl)
 
 {
     QString scheme = newUrl.scheme();
-    if (scheme == QLatin1String("preconnect-http")
-            || scheme == QLatin1String("preconnect-https"))
+    if (scheme == "preconnect-http"_L1 || scheme == "preconnect-https"_L1)
         // make sure we do not close the socket after preconnecting
         connectionCloseEnabled = false;
 }

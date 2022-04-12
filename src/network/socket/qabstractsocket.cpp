@@ -500,6 +500,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QT_IMPL_METATYPE_EXTERN_TAGGED(QAbstractSocket::SocketState, QAbstractSocket__SocketState)
 QT_IMPL_METATYPE_EXTERN_TAGGED(QAbstractSocket::SocketError, QAbstractSocket__SocketError)
 
@@ -576,14 +578,14 @@ bool QAbstractSocketPrivate::initSocketLayer(QAbstractSocket::NetworkLayerProtoc
     Q_Q(QAbstractSocket);
 #if defined (QABSTRACTSOCKET_DEBUG)
     QString typeStr;
-    if (q->socketType() == QAbstractSocket::TcpSocket) typeStr = QLatin1String("TcpSocket");
-    else if (q->socketType() == QAbstractSocket::UdpSocket) typeStr = QLatin1String("UdpSocket");
-    else if (q->socketType() == QAbstractSocket::SctpSocket) typeStr = QLatin1String("SctpSocket");
-    else typeStr = QLatin1String("UnknownSocketType");
+    if (q->socketType() == QAbstractSocket::TcpSocket) typeStr = "TcpSocket"_L1;
+    else if (q->socketType() == QAbstractSocket::UdpSocket) typeStr = "UdpSocket"_L1;
+    else if (q->socketType() == QAbstractSocket::SctpSocket) typeStr = "SctpSocket"_L1;
+    else typeStr = "UnknownSocketType"_L1;
     QString protocolStr;
-    if (protocol == QAbstractSocket::IPv4Protocol) protocolStr = QLatin1String("IPv4Protocol");
-    else if (protocol == QAbstractSocket::IPv6Protocol) protocolStr = QLatin1String("IPv6Protocol");
-    else protocolStr = QLatin1String("UnknownNetworkLayerProtocol");
+    if (protocol == QAbstractSocket::IPv4Protocol) protocolStr = "IPv4Protocol"_L1;
+    else if (protocol == QAbstractSocket::IPv6Protocol) protocolStr = "IPv6Protocol"_L1;
+    else protocolStr = "UnknownNetworkLayerProtocol"_L1;
 #endif
 
     resetSocketLayer();
@@ -969,9 +971,9 @@ void QAbstractSocketPrivate::_q_startConnecting(const QHostInfo &hostInfo)
 
 
 #if defined(QABSTRACTSOCKET_DEBUG)
-    QString s = QLatin1String("{");
+    QString s = "{"_L1;
     for (int i = 0; i < addresses.count(); ++i) {
-        if (i != 0) s += QLatin1String(", ");
+        if (i != 0) s += ", "_L1;
         s += addresses.at(i).toString();
     }
     s += u'}';

@@ -47,6 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QStringList QNetworkAccessFileBackendFactory::supportedSchemes() const
 {
     QStringList schemes;
@@ -74,9 +76,9 @@ QNetworkAccessFileBackendFactory::create(QNetworkAccessManager::Operation op,
     }
 
     QUrl url = request.url();
-    if (url.scheme().compare(QLatin1String("qrc"), Qt::CaseInsensitive) == 0
+    if (url.scheme().compare("qrc"_L1, Qt::CaseInsensitive) == 0
 #if defined(Q_OS_ANDROID)
-            || url.scheme().compare(QLatin1String("assets"), Qt::CaseInsensitive) == 0
+            || url.scheme().compare("assets"_L1, Qt::CaseInsensitive) == 0
 #endif
             || url.isLocalFile()) {
         return new QNetworkAccessFileBackend;
@@ -112,7 +114,7 @@ void QNetworkAccessFileBackend::open()
 {
     QUrl url = this->url();
 
-    if (url.host() == QLatin1String("localhost"))
+    if (url.host() == "localhost"_L1)
         url.setHost(QString());
 #if !defined(Q_OS_WIN)
     // do not allow UNC paths on Unix
@@ -125,17 +127,17 @@ void QNetworkAccessFileBackend::open()
     }
 #endif // !defined(Q_OS_WIN)
     if (url.path().isEmpty())
-        url.setPath(QLatin1String("/"));
+        url.setPath("/"_L1);
     setUrl(url);
 
     QString fileName = url.toLocalFile();
     if (fileName.isEmpty()) {
-        if (url.scheme() == QLatin1String("qrc")) {
+        if (url.scheme() == "qrc"_L1) {
             fileName = u':' + url.path();
         } else {
 #if defined(Q_OS_ANDROID)
-            if (url.scheme() == QLatin1String("assets"))
-                fileName = QLatin1String("assets:") + url.path();
+            if (url.scheme() == "assets"_L1)
+                fileName = "assets:"_L1 + url.path();
             else
 #endif
                 fileName = url.toString(QUrl::RemoveAuthority | QUrl::RemoveFragment | QUrl::RemoveQuery);

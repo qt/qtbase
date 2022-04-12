@@ -76,6 +76,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 // Defined in qsslsocket_qt.cpp.
 QByteArray _q_makePkcs12(const QList<QSslCertificate> &certs, const QSslKey &key,
                          const QString &passPhrase);
@@ -120,7 +122,7 @@ EphemeralSecKeychain::EphemeralSecKeychain()
     const auto uuidAsString = QLatin1String(uuidAsByteArray.data(), uuidAsByteArray.size()).mid(1, uuidAsByteArray.size() - 2);
 
     const QString keychainName
-            = QDir::tempPath() + QDir::separator() + uuidAsString + QLatin1String(".keychain");
+            = QDir::tempPath() + QDir::separator() + uuidAsString + ".keychain"_L1;
     // SecKeychainCreate, pathName parameter:
     //
     // "A constant character string representing the POSIX path indicating where
@@ -575,107 +577,107 @@ void TlsCryptographSecureTransport::transmit()
 
 SSLCipherSuite TlsCryptographSecureTransport::SSLCipherSuite_from_QSslCipher(const QSslCipher &ciph)
 {
-    if (ciph.name() == QLatin1String("AES128-SHA"))
+    if (ciph.name() == "AES128-SHA"_L1)
         return TLS_RSA_WITH_AES_128_CBC_SHA;
-    if (ciph.name() == QLatin1String("DHE-RSA-AES128-SHA"))
+    if (ciph.name() == "DHE-RSA-AES128-SHA"_L1)
         return TLS_DHE_RSA_WITH_AES_128_CBC_SHA;
-    if (ciph.name() == QLatin1String("AES256-SHA"))
+    if (ciph.name() == "AES256-SHA"_L1)
         return TLS_RSA_WITH_AES_256_CBC_SHA;
-    if (ciph.name() == QLatin1String("DHE-RSA-AES256-SHA"))
+    if (ciph.name() == "DHE-RSA-AES256-SHA"_L1)
         return TLS_DHE_RSA_WITH_AES_256_CBC_SHA;
-    if (ciph.name() == QLatin1String("ECDH-ECDSA-NULL-SHA"))
+    if (ciph.name() == "ECDH-ECDSA-NULL-SHA"_L1)
         return TLS_ECDH_ECDSA_WITH_NULL_SHA;
-    if (ciph.name() == QLatin1String("ECDH-ECDSA-RC4-SHA"))
+    if (ciph.name() == "ECDH-ECDSA-RC4-SHA"_L1)
         return TLS_ECDH_ECDSA_WITH_RC4_128_SHA;
-    if (ciph.name() == QLatin1String("ECDH-ECDSA-DES-CBC3-SHA"))
+    if (ciph.name() == "ECDH-ECDSA-DES-CBC3-SHA"_L1)
         return TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA;
-    if (ciph.name() == QLatin1String("ECDH-ECDSA-AES128-SHA"))
+    if (ciph.name() == "ECDH-ECDSA-AES128-SHA"_L1)
         return TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA;
-    if (ciph.name() == QLatin1String("ECDH-ECDSA-AES256-SHA"))
+    if (ciph.name() == "ECDH-ECDSA-AES256-SHA"_L1)
         return TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA;
-    if (ciph.name() == QLatin1String("ECDH-ECDSA-RC4-SHA"))
+    if (ciph.name() == "ECDH-ECDSA-RC4-SHA"_L1)
         return TLS_ECDHE_ECDSA_WITH_RC4_128_SHA;
-    if (ciph.name() == QLatin1String("ECDH-ECDSA-DES-CBC3-SHA"))
+    if (ciph.name() == "ECDH-ECDSA-DES-CBC3-SHA"_L1)
         return TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA;
-    if (ciph.name() == QLatin1String("ECDH-ECDSA-AES128-SHA"))
+    if (ciph.name() == "ECDH-ECDSA-AES128-SHA"_L1)
         return TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA;
-    if (ciph.name() == QLatin1String("ECDH-ECDSA-AES256-SHA"))
+    if (ciph.name() == "ECDH-ECDSA-AES256-SHA"_L1)
         return TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA;
-    if (ciph.name() == QLatin1String("ECDH-RSA-NULL-SHA"))
+    if (ciph.name() == "ECDH-RSA-NULL-SHA"_L1)
         return TLS_ECDH_RSA_WITH_NULL_SHA;
-    if (ciph.name() == QLatin1String("ECDH-RSA-RC4-SHA"))
+    if (ciph.name() == "ECDH-RSA-RC4-SHA"_L1)
         return TLS_ECDH_RSA_WITH_RC4_128_SHA;
-    if (ciph.name() == QLatin1String("ECDH-RSA-DES-CBC3-SHA"))
+    if (ciph.name() == "ECDH-RSA-DES-CBC3-SHA"_L1)
         return TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA;
-    if (ciph.name() == QLatin1String("ECDH-RSA-AES128-SHA"))
+    if (ciph.name() == "ECDH-RSA-AES128-SHA"_L1)
         return TLS_ECDH_RSA_WITH_AES_128_CBC_SHA;
-    if (ciph.name() == QLatin1String("ECDH-RSA-AES256-SHA"))
+    if (ciph.name() == "ECDH-RSA-AES256-SHA"_L1)
         return TLS_ECDH_RSA_WITH_AES_256_CBC_SHA;
-    if (ciph.name() == QLatin1String("ECDH-RSA-RC4-SHA"))
+    if (ciph.name() == "ECDH-RSA-RC4-SHA"_L1)
         return TLS_ECDHE_RSA_WITH_RC4_128_SHA;
-    if (ciph.name() == QLatin1String("ECDH-RSA-DES-CBC3-SHA"))
+    if (ciph.name() == "ECDH-RSA-DES-CBC3-SHA"_L1)
         return TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA;
-    if (ciph.name() == QLatin1String("ECDH-RSA-AES128-SHA"))
+    if (ciph.name() == "ECDH-RSA-AES128-SHA"_L1)
         return TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA;
-    if (ciph.name() == QLatin1String("ECDH-RSA-AES256-SHA"))
+    if (ciph.name() == "ECDH-RSA-AES256-SHA"_L1)
         return TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA;
-    if (ciph.name() == QLatin1String("DES-CBC3-SHA"))
+    if (ciph.name() == "DES-CBC3-SHA"_L1)
         return TLS_RSA_WITH_3DES_EDE_CBC_SHA;
-    if (ciph.name() == QLatin1String("AES128-SHA256"))
+    if (ciph.name() == "AES128-SHA256"_L1)
         return TLS_RSA_WITH_AES_128_CBC_SHA256;
-    if (ciph.name() == QLatin1String("AES256-SHA256"))
+    if (ciph.name() == "AES256-SHA256"_L1)
         return TLS_RSA_WITH_AES_256_CBC_SHA256;
-    if (ciph.name() == QLatin1String("DHE-RSA-DES-CBC3-SHA"))
+    if (ciph.name() == "DHE-RSA-DES-CBC3-SHA"_L1)
         return TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA;
-    if (ciph.name() == QLatin1String("DHE-RSA-AES128-SHA256"))
+    if (ciph.name() == "DHE-RSA-AES128-SHA256"_L1)
         return TLS_DHE_RSA_WITH_AES_128_CBC_SHA256;
-    if (ciph.name() == QLatin1String("DHE-RSA-AES256-SHA256"))
+    if (ciph.name() == "DHE-RSA-AES256-SHA256"_L1)
         return TLS_DHE_RSA_WITH_AES_256_CBC_SHA256;
-    if (ciph.name() == QLatin1String("AES256-GCM-SHA384"))
+    if (ciph.name() == "AES256-GCM-SHA384"_L1)
         return TLS_RSA_WITH_AES_256_GCM_SHA384;
-    if (ciph.name() == QLatin1String("ECDHE-ECDSA-AES128-SHA256"))
+    if (ciph.name() == "ECDHE-ECDSA-AES128-SHA256"_L1)
         return TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256;
-    if (ciph.name() == QLatin1String("ECDHE-ECDSA-AES256-SHA384"))
+    if (ciph.name() == "ECDHE-ECDSA-AES256-SHA384"_L1)
         return TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384;
-    if (ciph.name() == QLatin1String("ECDH-ECDSA-AES128-SHA256"))
+    if (ciph.name() == "ECDH-ECDSA-AES128-SHA256"_L1)
         return TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256;
-    if (ciph.name() == QLatin1String("ECDH-ECDSA-AES256-SHA384"))
+    if (ciph.name() == "ECDH-ECDSA-AES256-SHA384"_L1)
         return TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384;
-    if (ciph.name() == QLatin1String("ECDHE-RSA-AES128-SHA256"))
+    if (ciph.name() == "ECDHE-RSA-AES128-SHA256"_L1)
         return TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256;
-    if (ciph.name() == QLatin1String("ECDHE-RSA-AES256-SHA384"))
+    if (ciph.name() == "ECDHE-RSA-AES256-SHA384"_L1)
         return TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384;
-    if (ciph.name() == QLatin1String("ECDHE-RSA-AES256-SHA384"))
+    if (ciph.name() == "ECDHE-RSA-AES256-SHA384"_L1)
         return TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256;
-    if (ciph.name() == QLatin1String("ECDHE-RSA-AES256-GCM-SHA384"))
+    if (ciph.name() == "ECDHE-RSA-AES256-GCM-SHA384"_L1)
         return TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384;
-    if (ciph.name() == QLatin1String("AES128-GCM-SHA256"))
+    if (ciph.name() == "AES128-GCM-SHA256"_L1)
         return TLS_AES_128_GCM_SHA256;
-    if (ciph.name() == QLatin1String("AES256-GCM-SHA384"))
+    if (ciph.name() == "AES256-GCM-SHA384"_L1)
         return TLS_AES_256_GCM_SHA384;
-    if (ciph.name() == QLatin1String("CHACHA20-POLY1305-SHA256"))
+    if (ciph.name() == "CHACHA20-POLY1305-SHA256"_L1)
         return TLS_CHACHA20_POLY1305_SHA256;
-    if (ciph.name() == QLatin1String("AES128-CCM-SHA256"))
+    if (ciph.name() == "AES128-CCM-SHA256"_L1)
         return TLS_AES_128_CCM_SHA256;
-    if (ciph.name() == QLatin1String("AES128-CCM8-SHA256"))
+    if (ciph.name() == "AES128-CCM8-SHA256"_L1)
         return TLS_AES_128_CCM_8_SHA256;
-    if (ciph.name() == QLatin1String("ECDHE-ECDSA-AES128-GCM-SHA256"))
+    if (ciph.name() == "ECDHE-ECDSA-AES128-GCM-SHA256"_L1)
         return TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256;
-    if (ciph.name() == QLatin1String("ECDHE-ECDSA-AES256-GCM-SHA384"))
+    if (ciph.name() == "ECDHE-ECDSA-AES256-GCM-SHA384"_L1)
         return TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384;
-    if (ciph.name() == QLatin1String("ECDH-ECDSA-AES128-GCM-SHA256"))
+    if (ciph.name() == "ECDH-ECDSA-AES128-GCM-SHA256"_L1)
         return TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256;
-    if (ciph.name() == QLatin1String("ECDH-ECDSA-AES256-GCM-SHA384"))
+    if (ciph.name() == "ECDH-ECDSA-AES256-GCM-SHA384"_L1)
         return TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384;
-    if (ciph.name() == QLatin1String("ECDHE-RSA-AES128-GCM-SHA256"))
+    if (ciph.name() == "ECDHE-RSA-AES128-GCM-SHA256"_L1)
         return TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256;
-    if (ciph.name() == QLatin1String("ECDH-RSA-AES128-GCM-SHA256"))
+    if (ciph.name() == "ECDH-RSA-AES128-GCM-SHA256"_L1)
         return TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256;
-    if (ciph.name() == QLatin1String("ECDH-RSA-AES256-GCM-SHA384"))
+    if (ciph.name() == "ECDH-RSA-AES256-GCM-SHA384"_L1)
         return TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384;
-    if (ciph.name() == QLatin1String("ECDHE-RSA-CHACHA20-POLY1305-SHA256"))
+    if (ciph.name() == "ECDHE-RSA-CHACHA20-POLY1305-SHA256"_L1)
         return TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256;
-    if (ciph.name() == QLatin1String("ECDHE-ECDSA-CHACHA20-POLY1305-SHA256"))
+    if (ciph.name() == "ECDHE-ECDSA-CHACHA20-POLY1305-SHA256"_L1)
         return TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256;
 
     return 0;

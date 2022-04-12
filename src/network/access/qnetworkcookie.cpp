@@ -537,7 +537,7 @@ QByteArray QNetworkCookie::toRawForm(RawForm form) const
         if (!isSessionCookie()) {
             result += "; expires=";
             result += QLocale::c().toString(d->expirationDate.toUTC(),
-                                            QLatin1String("ddd, dd-MMM-yyyy hh:mm:ss 'GMT")).toLatin1();
+                                            "ddd, dd-MMM-yyyy hh:mm:ss 'GMT"_L1).toLatin1();
         }
         if (!d->domain.isEmpty()) {
             result += "; domain=";
@@ -759,7 +759,7 @@ static QDateTime parseDateString(const QByteArray &dateString)
                 int ms = match.capturedView(4).toInt();
                 QStringView ampm = match.capturedView(5);
                 if (h < 12 && !ampm.isEmpty())
-                    if (ampm == QLatin1String("pm"))
+                    if (ampm == "pm"_L1)
                         h += 12;
                 time = QTime(h, m, s, ms);
 #ifdef PARSEDATESTRINGDEBUG

@@ -59,6 +59,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QT_IMPL_METATYPE_EXTERN(QNetworkRequest)
 QT_IMPL_METATYPE_EXTERN_TAGGED(QNetworkRequest::RedirectPolicy, QNetworkRequest__RedirectPolicy)
 
@@ -1512,7 +1514,7 @@ QDateTime QNetworkHeadersPrivate::fromHttpDate(const QByteArray &value)
             // eat the weekday, the comma and the space following it
             QString sansWeekday = QString::fromLatin1(value.constData() + pos + 2);
             // must be RFC 850 date
-            dt = c.toDateTime(sansWeekday, QLatin1String("dd-MMM-yy hh:mm:ss 'GMT'"));
+            dt = c.toDateTime(sansWeekday, "dd-MMM-yy hh:mm:ss 'GMT'"_L1);
         }
     }
 #endif // datestring

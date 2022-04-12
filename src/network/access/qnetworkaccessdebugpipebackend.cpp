@@ -46,6 +46,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #ifdef QT_BUILD_INTERNAL
 
 enum {
@@ -74,7 +76,7 @@ QNetworkAccessDebugPipeBackendFactory::create(QNetworkAccessManager::Operation o
     }
 
     QUrl url = request.url();
-    if (url.scheme() == QLatin1String("debugpipe"))
+    if (url.scheme() == "debugpipe"_L1)
         return new QNetworkAccessDebugPipeBackend;
     return nullptr;
 }
@@ -109,7 +111,7 @@ void QNetworkAccessDebugPipeBackend::open()
     // socket bytes written -> we can push more from upstream to socket
     connect(&socket, SIGNAL(bytesWritten(qint64)), SLOT(socketBytesWritten(qint64)));
 
-    bareProtocol = QUrlQuery(url()).queryItemValue(QLatin1String("bare")) == QLatin1String("1");
+    bareProtocol = QUrlQuery(url()).queryItemValue("bare"_L1) == "1"_L1;
 
     if (operation() == QNetworkAccessManager::PutOperation) {
         createUploadByteDevice();

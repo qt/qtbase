@@ -48,6 +48,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 void QLocalServerPrivate::init()
 {
     Q_Q(QLocalServer);
@@ -61,13 +63,13 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
     if (!tcpServer.listen(QHostAddress::LocalHost))
         return false;
 
-    const QLatin1String prefix("QLocalServer/");
+    const auto prefix = "QLocalServer/"_L1;
     if (requestedServerName.startsWith(prefix))
         fullServerName = requestedServerName;
     else
         fullServerName = prefix + requestedServerName;
 
-    QSettings settings(QLatin1String("QtProject"), QLatin1String("Qt"));
+    QSettings settings("QtProject"_L1, "Qt"_L1);
     if (settings.contains(fullServerName)) {
         qWarning("QLocalServer::listen: server name is already in use.");
         tcpServer.close();
@@ -85,8 +87,8 @@ bool QLocalServerPrivate::listen(qintptr socketDescriptor)
 
 void QLocalServerPrivate::closeServer()
 {
-    QSettings settings(QLatin1String("QtProject"), QLatin1String("Qt"));
-    if (fullServerName == QLatin1String("QLocalServer"))
+    QSettings settings("QtProject"_L1, "Qt"_L1);
+    if (fullServerName == "QLocalServer"_L1)
         settings.setValue(fullServerName, QVariant());
     else
         settings.remove(fullServerName);
@@ -117,14 +119,14 @@ void QLocalServerPrivate::_q_onNewConnection()
 
 bool QLocalServerPrivate::removeServer(const QString &name)
 {
-    const QLatin1String prefix("QLocalServer/");
+    const auto prefix = "QLocalServer/"_L1;
     QString serverName;
     if (name.startsWith(prefix))
         serverName = name;
     else
         serverName = prefix + name;
 
-    QSettings settings(QLatin1String("QtProject"), QLatin1String("Qt"));
+    QSettings settings("QtProject"_L1, "Qt"_L1);
     if (settings.contains(serverName))
         settings.remove(serverName);
 

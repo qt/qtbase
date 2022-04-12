@@ -47,6 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_GLOBAL_STATIC(QRecursiveMutex, qt_securetransport_mutex)
 
 Q_LOGGING_CATEGORY(lcSecureTransport, "qt.tlsbackend.securetransport");
@@ -64,98 +66,98 @@ QSslCipher QSslCipher_from_SSLCipherSuite(SSLCipherSuite cipher)
     // Sorted as in CipherSuite.h (and groupped by their RFC)
     // TLS addenda using AES, per RFC 3268
     case TLS_RSA_WITH_AES_128_CBC_SHA:
-        name = QLatin1String("AES128-SHA");
+        name = "AES128-SHA"_L1;
         break;
     case TLS_DHE_RSA_WITH_AES_128_CBC_SHA:
-        name = QLatin1String("DHE-RSA-AES128-SHA");
+        name = "DHE-RSA-AES128-SHA"_L1;
         break;
     case TLS_RSA_WITH_AES_256_CBC_SHA:
-        name = QLatin1String("AES256-SHA");
+        name = "AES256-SHA"_L1;
         break;
     case TLS_DHE_RSA_WITH_AES_256_CBC_SHA:
-        name = QLatin1String("DHE-RSA-AES256-SHA");
+        name = "DHE-RSA-AES256-SHA"_L1;
         break;
 
     // ECDSA addenda, RFC 4492
     case TLS_ECDH_ECDSA_WITH_NULL_SHA:
-        name = QLatin1String("ECDH-ECDSA-NULL-SHA");
+        name = "ECDH-ECDSA-NULL-SHA"_L1;
         break;
     case TLS_ECDH_ECDSA_WITH_RC4_128_SHA:
-        name = QLatin1String("ECDH-ECDSA-RC4-SHA");
+        name = "ECDH-ECDSA-RC4-SHA"_L1;
         break;
     case TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA:
-        name = QLatin1String("ECDH-ECDSA-DES-CBC3-SHA");
+        name = "ECDH-ECDSA-DES-CBC3-SHA"_L1;
         break;
     case TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA:
-        name = QLatin1String("ECDH-ECDSA-AES128-SHA");
+        name = "ECDH-ECDSA-AES128-SHA"_L1;
         break;
     case TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA:
-        name = QLatin1String("ECDH-ECDSA-AES256-SHA");
+        name = "ECDH-ECDSA-AES256-SHA"_L1;
         break;
     case TLS_ECDHE_ECDSA_WITH_NULL_SHA:
-        name = QLatin1String("ECDHE-ECDSA-NULL-SHA");
+        name = "ECDHE-ECDSA-NULL-SHA"_L1;
         break;
     case TLS_ECDHE_ECDSA_WITH_RC4_128_SHA:
-        name = QLatin1String("ECDHE-ECDSA-RC4-SHA");
+        name = "ECDHE-ECDSA-RC4-SHA"_L1;
         break;
     case TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA:
-        name = QLatin1String("ECDHE-ECDSA-DES-CBC3-SHA");
+        name = "ECDHE-ECDSA-DES-CBC3-SHA"_L1;
         break;
     case TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA:
-        name = QLatin1String("ECDHE-ECDSA-AES128-SHA");
+        name = "ECDHE-ECDSA-AES128-SHA"_L1;
         break;
     case TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA:
-        name = QLatin1String("ECDHE-ECDSA-AES256-SHA");
+        name = "ECDHE-ECDSA-AES256-SHA"_L1;
         break;
     case TLS_ECDH_RSA_WITH_NULL_SHA:
-        name = QLatin1String("ECDH-RSA-NULL-SHA");
+        name = "ECDH-RSA-NULL-SHA"_L1;
         break;
     case TLS_ECDH_RSA_WITH_RC4_128_SHA:
-        name = QLatin1String("ECDH-RSA-RC4-SHA");
+        name = "ECDH-RSA-RC4-SHA"_L1;
         break;
     case TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA:
-        name = QLatin1String("ECDH-RSA-DES-CBC3-SHA");
+        name = "ECDH-RSA-DES-CBC3-SHA"_L1;
         break;
     case TLS_ECDH_RSA_WITH_AES_128_CBC_SHA:
-        name = QLatin1String("ECDH-RSA-AES128-SHA");
+        name = "ECDH-RSA-AES128-SHA"_L1;
         break;
     case TLS_ECDH_RSA_WITH_AES_256_CBC_SHA:
-        name = QLatin1String("ECDH-RSA-AES256-SHA");
+        name = "ECDH-RSA-AES256-SHA"_L1;
         break;
     case TLS_ECDHE_RSA_WITH_NULL_SHA:
-        name = QLatin1String("ECDHE-RSA-NULL-SHA");
+        name = "ECDHE-RSA-NULL-SHA"_L1;
         break;
     case TLS_ECDHE_RSA_WITH_RC4_128_SHA:
-        name = QLatin1String("ECDHE-RSA-RC4-SHA");
+        name = "ECDHE-RSA-RC4-SHA"_L1;
         break;
     case TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA:
-        name = QLatin1String("ECDHE-RSA-DES-CBC3-SHA");
+        name = "ECDHE-RSA-DES-CBC3-SHA"_L1;
         break;
     case TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA:
-        name = QLatin1String("ECDHE-RSA-AES128-SHA");
+        name = "ECDHE-RSA-AES128-SHA"_L1;
         break;
     case TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA:
-        name = QLatin1String("ECDHE-RSA-AES256-SHA");
+        name = "ECDHE-RSA-AES256-SHA"_L1;
         break;
 
     // TLS 1.2 addenda, RFC 5246
     case TLS_RSA_WITH_3DES_EDE_CBC_SHA:
-        name = QLatin1String("DES-CBC3-SHA");
+        name = "DES-CBC3-SHA"_L1;
         break;
     case TLS_RSA_WITH_AES_128_CBC_SHA256:
-        name = QLatin1String("AES128-SHA256");
+        name = "AES128-SHA256"_L1;
         break;
     case TLS_RSA_WITH_AES_256_CBC_SHA256:
-        name = QLatin1String("AES256-SHA256");
+        name = "AES256-SHA256"_L1;
         break;
     case TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA:
-        name = QLatin1String("DHE-RSA-DES-CBC3-SHA");
+        name = "DHE-RSA-DES-CBC3-SHA"_L1;
         break;
     case TLS_DHE_RSA_WITH_AES_128_CBC_SHA256:
-        name = QLatin1String("DHE-RSA-AES128-SHA256");
+        name = "DHE-RSA-AES128-SHA256"_L1;
         break;
     case TLS_DHE_RSA_WITH_AES_256_CBC_SHA256:
-        name = QLatin1String("DHE-RSA-AES256-SHA256");
+        name = "DHE-RSA-AES256-SHA256"_L1;
         break;
 
     // Addendum from RFC 4279, TLS PSK
@@ -166,7 +168,7 @@ QSslCipher QSslCipher_from_SSLCipherSuite(SSLCipherSuite cipher)
 
     // Addenda from rfc 5288 AES Galois Counter Mode (CGM) Cipher Suites for TLS
     case TLS_RSA_WITH_AES_256_GCM_SHA384:
-        name = QLatin1String("AES256-GCM-SHA384");
+        name = "AES256-GCM-SHA384"_L1;
         break;
 
     // RFC 5487 - PSK with SHA-256/384 and AES GCM
@@ -174,90 +176,90 @@ QSslCipher QSslCipher_from_SSLCipherSuite(SSLCipherSuite cipher)
 
     // Addenda from rfc 5289 Elliptic Curve Cipher Suites with HMAC SHA-256/384
     case TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256:
-        name = QLatin1String("ECDHE-ECDSA-AES128-SHA256");
+        name = "ECDHE-ECDSA-AES128-SHA256"_L1;
         break;
     case TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384:
-        name = QLatin1String("ECDHE-ECDSA-AES256-SHA384");
+        name = "ECDHE-ECDSA-AES256-SHA384"_L1;
         break;
     case TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256:
-        name = QLatin1String("ECDH-ECDSA-AES128-SHA256");
+        name = "ECDH-ECDSA-AES128-SHA256"_L1;
         break;
     case TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384:
-        name = QLatin1String("ECDH-ECDSA-AES256-SHA384");
+        name = "ECDH-ECDSA-AES256-SHA384"_L1;
         break;
     case TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256:
-        name = QLatin1String("ECDHE-RSA-AES128-SHA256");
+        name = "ECDHE-RSA-AES128-SHA256"_L1;
         break;
     case TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384:
-        name = QLatin1String("ECDHE-RSA-AES256-SHA384");
+        name = "ECDHE-RSA-AES256-SHA384"_L1;
         break;
     case TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256:
-        name = QLatin1String("ECDH-RSA-AES128-SHA256");
+        name = "ECDH-RSA-AES128-SHA256"_L1;
         break;
     case TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384:
-        name = QLatin1String("ECDH-RSA-AES256-SHA384");
+        name = "ECDH-RSA-AES256-SHA384"_L1;
         break;
 
     // Addenda from rfc 5289 Elliptic Curve Cipher Suites
     // with SHA-256/384 and AES Galois Counter Mode (GCM)
     case TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384:
-        name = QLatin1String("ECDHE-RSA-AES256-GCM-SHA384");
+        name = "ECDHE-RSA-AES256-GCM-SHA384"_L1;
         break;
 
     // TLS 1.3 standard cipher suites for ChaCha20+Poly1305.
     // Note: TLS 1.3 ciphersuites do not specify the key exchange
     // algorithm -- they only specify the symmetric ciphers.
     case TLS_AES_128_GCM_SHA256:
-        name = QLatin1String("AES128-GCM-SHA256");
+        name = "AES128-GCM-SHA256"_L1;
         break;
     case TLS_AES_256_GCM_SHA384:
-        name = QLatin1String("AES256-GCM-SHA384");
+        name = "AES256-GCM-SHA384"_L1;
         break;
     case TLS_CHACHA20_POLY1305_SHA256:
-        name = QLatin1String("CHACHA20-POLY1305-SHA256");
+        name = "CHACHA20-POLY1305-SHA256"_L1;
         break;
     case TLS_AES_128_CCM_SHA256:
-        name = QLatin1String("AES128-CCM-SHA256");
+        name = "AES128-CCM-SHA256"_L1;
         break;
     case TLS_AES_128_CCM_8_SHA256:
-        name = QLatin1String("AES128-CCM8-SHA256");
+        name = "AES128-CCM8-SHA256"_L1;
         break;
     // Addenda from rfc 5289  Elliptic Curve Cipher Suites with
     // SHA-256/384 and AES Galois Counter Mode (GCM).
     case TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256:
-        name = QLatin1String("ECDHE-ECDSA-AES128-GCM-SHA256");
+        name = "ECDHE-ECDSA-AES128-GCM-SHA256"_L1;
         break;
     case TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384:
-        name = QLatin1String("ECDHE-ECDSA-AES256-GCM-SHA384");
+        name = "ECDHE-ECDSA-AES256-GCM-SHA384"_L1;
         break;
     case TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256:
-        name = QLatin1String("ECDH-ECDSA-AES128-GCM-SHA256");
+        name = "ECDH-ECDSA-AES128-GCM-SHA256"_L1;
         break;
     case TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384:
-        name = QLatin1String("ECDH-ECDSA-AES256-GCM-SHA384");
+        name = "ECDH-ECDSA-AES256-GCM-SHA384"_L1;
         break;
     case TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256:
-        name = QLatin1String("ECDHE-RSA-AES128-GCM-SHA256");
+        name = "ECDHE-RSA-AES128-GCM-SHA256"_L1;
         break;
     case TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256:
-        name = QLatin1String("ECDH-RSA-AES128-GCM-SHA256");
+        name = "ECDH-RSA-AES128-GCM-SHA256"_L1;
         break;
     case TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384:
-        name = QLatin1String("ECDH-RSA-AES256-GCM-SHA384");
+        name = "ECDH-RSA-AES256-GCM-SHA384"_L1;
         break;
     // Addenda from rfc 7905  ChaCha20-Poly1305 Cipher Suites for
     // Transport Layer Security (TLS).
     case TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256:
-        name = QLatin1String("ECDHE-RSA-CHACHA20-POLY1305-SHA256");
+        name = "ECDHE-RSA-CHACHA20-POLY1305-SHA256"_L1;
         break;
     case TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256:
-        name = QLatin1String("ECDHE-ECDSA-CHACHA20-POLY1305-SHA256");
+        name = "ECDHE-ECDSA-CHACHA20-POLY1305-SHA256"_L1;
         break;
     default:
         return {};
     }
 
-    return QTlsBackend::createCiphersuite(name, QSsl::TlsV1_2, QLatin1String("TLSv1.2"));
+    return QTlsBackend::createCiphersuite(name, QSsl::TlsV1_2, "TLSv1.2"_L1);
 }
 
 } // namespace QTlsPrivate
@@ -266,7 +268,7 @@ bool QSecureTransportBackend::s_loadedCiphersAndCerts = false;
 
 QString QSecureTransportBackend::tlsLibraryVersionString() const
 {
-    return QLatin1String("Secure Transport, ") + QSysInfo::prettyProductName();
+    return "Secure Transport, "_L1 + QSysInfo::prettyProductName();
 }
 
 QString QSecureTransportBackend::tlsLibraryBuildVersionString() const

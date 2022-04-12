@@ -78,6 +78,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static bool isHostExcluded(CFDictionaryRef dict, const QString &host)
 {
     if (host.isEmpty())
@@ -292,19 +294,19 @@ QList<QNetworkProxy> macQueryInternal(const QNetworkProxyQuery &query)
 
     // try the protocol-specific proxy
     QNetworkProxy protocolSpecificProxy;
-    if (protocol == QLatin1String("ftp")) {
+    if (protocol == "ftp"_L1) {
         protocolSpecificProxy =
             proxyFromDictionary(dict, QNetworkProxy::FtpCachingProxy,
                                 kSCPropNetProxiesFTPEnable,
                                 kSCPropNetProxiesFTPProxy,
                                 kSCPropNetProxiesFTPPort);
-    } else if (protocol == QLatin1String("http")) {
+    } else if (protocol == "http"_L1) {
         protocolSpecificProxy =
             proxyFromDictionary(dict, QNetworkProxy::HttpProxy,
                                 kSCPropNetProxiesHTTPEnable,
                                 kSCPropNetProxiesHTTPProxy,
                                 kSCPropNetProxiesHTTPPort);
-    } else if (protocol == QLatin1String("https")) {
+    } else if (protocol == "https"_L1) {
         isHttps = true;
         protocolSpecificProxy =
             proxyFromDictionary(dict, QNetworkProxy::HttpProxy,

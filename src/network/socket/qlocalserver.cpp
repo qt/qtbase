@@ -47,6 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     \class QLocalServer
     \since 4.4
@@ -348,7 +350,7 @@ bool QLocalServer::listen(const QString &name)
 
     if (name.isEmpty()) {
         d->error = QAbstractSocket::HostNotFoundError;
-        QString function = QLatin1String("QLocalServer::listen");
+        QString function = "QLocalServer::listen"_L1;
         d->errorString = tr("%1: Name error").arg(function);
         return false;
     }

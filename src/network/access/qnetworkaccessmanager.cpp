@@ -100,14 +100,15 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_APPLICATION_STATIC(QNetworkAccessFileBackendFactory, fileBackend)
 
 #ifdef QT_BUILD_INTERNAL
 Q_GLOBAL_STATIC(QNetworkAccessDebugPipeBackendFactory, debugpipeBackend)
 #endif
 
-Q_APPLICATION_STATIC(QFactoryLoader, loader, QNetworkAccessBackendFactory_iid,
-                     QLatin1String("/networkaccess"))
+Q_APPLICATION_STATIC(QFactoryLoader, loader, QNetworkAccessBackendFactory_iid, "/networkaccess"_L1)
 
 #if defined(Q_OS_MACOS)
 bool getProxyAuth(const QString& proxyHostname, const QString &scheme, QString& username, QString& password)
@@ -116,13 +117,13 @@ bool getProxyAuth(const QString& proxyHostname, const QString &scheme, QString& 
     SecKeychainItemRef itemRef;
     bool retValue = false;
     SecProtocolType protocolType = kSecProtocolTypeAny;
-    if (scheme.compare(QLatin1String("ftp"),Qt::CaseInsensitive)==0) {
+    if (scheme.compare("ftp"_L1, Qt::CaseInsensitive) == 0) {
         protocolType = kSecProtocolTypeFTPProxy;
-    } else if (scheme.compare(QLatin1String("http"),Qt::CaseInsensitive)==0
-               || scheme.compare(QLatin1String("preconnect-http"),Qt::CaseInsensitive)==0) {
+    } else if (scheme.compare("http"_L1, Qt::CaseInsensitive) == 0
+               || scheme.compare("preconnect-http"_L1, Qt::CaseInsensitive) == 0) {
         protocolType = kSecProtocolTypeHTTPProxy;
-    } else if (scheme.compare(QLatin1String("https"),Qt::CaseInsensitive)==0
-               || scheme.compare(QLatin1String("preconnect-https"),Qt::CaseInsensitive)==0) {
+    } else if (scheme.compare("https"_L1,Qt::CaseInsensitive)==0
+               || scheme.compare("preconnect-https"_L1, Qt::CaseInsensitive) == 0) {
         protocolType = kSecProtocolTypeHTTPSProxy;
     }
     QByteArray proxyHostnameUtf8(proxyHostname.toUtf8());
@@ -978,7 +979,7 @@ void QNetworkAccessManager::connectToHostEncrypted(const QString &hostName, quin
     QUrl url;
     url.setHost(hostName);
     url.setPort(port);
-    url.setScheme(QLatin1String("preconnect-https"));
+    url.setScheme("preconnect-https"_L1);
     QNetworkRequest request(url);
     if (sslConfiguration != QSslConfiguration::defaultConfiguration())
         request.setSslConfiguration(sslConfiguration);
@@ -1009,7 +1010,7 @@ void QNetworkAccessManager::connectToHost(const QString &hostName, quint16 port)
     QUrl url;
     url.setHost(hostName);
     url.setPort(port);
-    url.setScheme(QLatin1String("preconnect-http"));
+    url.setScheme("preconnect-http"_L1);
     QNetworkRequest request(url);
     get(request);
 }
@@ -1164,13 +1165,13 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
      || op == QNetworkAccessManager::HeadOperation) {
         if (isLocalFile
 #ifdef Q_OS_ANDROID
-            || scheme == QLatin1String("assets")
+            || scheme == "assets"_L1
 #endif
-            || scheme == QLatin1String("qrc")) {
+            || scheme == "qrc"_L1) {
             return new QNetworkReplyFileImpl(this, req, op);
         }
 
-        if (scheme == QLatin1String("data"))
+        if (scheme == "data"_L1)
             return new QNetworkReplyDataImpl(this, req, op);
 
         // A request with QNetworkRequest::AlwaysCache does not need any bearer management
@@ -1212,7 +1213,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 #ifdef Q_OS_WASM
     Q_UNUSED(isLocalFile);
     // Support http, https, and relative urls
-    if (scheme == QLatin1String("http") || scheme == QLatin1String("https") || scheme.isEmpty()) {
+    if (scheme == "http"_L1 || scheme == "https"_L1 || scheme.isEmpty()) {
         QNetworkReplyWasmImpl *reply = new QNetworkReplyWasmImpl(this);
         QNetworkReplyWasmImplPrivate *priv = reply->d_func();
         priv->manager = this;
@@ -1246,7 +1247,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
             // MUST NOT add one.
             if (stsUrl.port() == 80)
                 stsUrl.setPort(443);
-            stsUrl.setScheme(QLatin1String("https"));
+            stsUrl.setScheme("https"_L1);
             request.setUrl(stsUrl);
         }
 #endif

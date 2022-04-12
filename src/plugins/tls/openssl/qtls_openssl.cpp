@@ -60,6 +60,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 namespace  {
 
 QSsl::AlertLevel tlsAlertLevel(int value)
@@ -85,7 +87,7 @@ QString tlsAlertDescription(int value)
 {
     QString description = QLatin1String(q_SSL_alert_desc_string_long(value));
     if (!description.size())
-        description = QLatin1String("no description provided");
+        description = "no description provided"_L1;
     return description;
 }
 
@@ -822,7 +824,7 @@ void TlsCryptographOpenSSL::continueHandshake()
         debugLineClientRandom.append(masterKey.toHex().toUpper());
         debugLineClientRandom.append("\n");
 
-        QString sslKeyFile = QDir::tempPath() + QLatin1String("/qt-ssl-keys");
+        QString sslKeyFile = QDir::tempPath() + "/qt-ssl-keys"_L1;
         QFile file(sslKeyFile);
         if (!file.open(QIODevice::Append))
             qCWarning(lcTlsBackend) << "could not open file" << sslKeyFile << "for appending";

@@ -57,6 +57,8 @@ QT_END_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     \class QNetworkCookieJar
     \since 4.4
@@ -148,7 +150,7 @@ void QNetworkCookieJar::setAllCookies(const QList<QNetworkCookie> &cookieList)
 
 static inline bool isParentPath(const QString &path, const QString &reference)
 {
-    if ((path.isEmpty() && reference == QLatin1String("/")) || path.startsWith(reference)) {
+    if ((path.isEmpty() && reference == "/"_L1) || path.startsWith(reference)) {
         //The cookie-path and the request-path are identical.
         if (path.length() == reference.length())
             return true;
@@ -234,7 +236,7 @@ QList<QNetworkCookie> QNetworkCookieJar::cookiesForUrl(const QUrl &url) const
     Q_D(const QNetworkCookieJar);
     const QDateTime now = QDateTime::currentDateTimeUtc();
     QList<QNetworkCookie> result;
-    bool isEncrypted = url.scheme() == QLatin1String("https");
+    bool isEncrypted = url.scheme() == "https"_L1;
 
     // scan our cookies for something that matches
     QList<QNetworkCookie>::ConstIterator it = d->allCookies.constBegin(),

@@ -43,6 +43,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 namespace {
 struct QSocketPoller
 {
@@ -197,14 +199,14 @@ void QLocalSocket::connectToServer(OpenMode openMode)
     emit stateChanged(d->state);
     if (d->serverName.isEmpty()) {
         d->error = ServerNotFoundError;
-        d->errorString = tr("%1: Invalid name").arg(QLatin1String("QLocalSocket::connectToServer"));
+        d->errorString = tr("%1: Invalid name").arg("QLocalSocket::connectToServer"_L1);
         d->state = UnconnectedState;
         emit errorOccurred(d->error);
         emit stateChanged(d->state);
         return;
     }
 
-    const QLatin1String pipePath("\\\\.\\pipe\\");
+    const auto pipePath = "\\\\.\\pipe\\"_L1;
     if (d->serverName.startsWith(pipePath))
         d->fullServerName = d->serverName;
     else
@@ -237,7 +239,7 @@ void QLocalSocket::connectToServer(OpenMode openMode)
 
     if (localSocket == INVALID_HANDLE_VALUE) {
         const DWORD winError = GetLastError();
-        d->_q_winError(winError, QLatin1String("QLocalSocket::connectToServer"));
+        d->_q_winError(winError, "QLocalSocket::connectToServer"_L1);
         d->fullServerName = QString();
         return;
     }

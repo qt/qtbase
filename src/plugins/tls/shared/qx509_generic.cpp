@@ -52,6 +52,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 namespace QTlsPrivate {
 
 namespace {
@@ -291,7 +293,7 @@ bool X509CertificateGeneric::parse(const QByteArray &data)
                     if (!parseExtension(elem.value(), extension))
                         return false;
 
-                    if (extension.oid == QLatin1String("2.5.29.17")) {
+                    if (extension.oid == "2.5.29.17"_L1) {
                         // subjectAltName
 
                         // Note, parseExtension() returns true for this extensions,

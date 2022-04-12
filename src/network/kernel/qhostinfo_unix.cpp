@@ -74,6 +74,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 enum LibResolvFeature {
     NeedResInit,
     NeedResNInit
@@ -129,7 +131,7 @@ LibResolv::LibResolv()
     if (!lib.load())
 #endif
     {
-        lib.setFileName(QLatin1String("resolv"));
+        lib.setFileName("resolv"_L1);
         lib.load();
     }
 
@@ -228,7 +230,7 @@ QString QHostInfo::localDomainName()
 #if defined(_PATH_RESCONF)
     resolvconf.setFileName(QFile::decodeName(_PATH_RESCONF));
 #else
-    resolvconf.setFileName(QLatin1String("/etc/resolv.conf"));
+    resolvconf.setFileName("/etc/resolv.conf"_L1);
 #endif
     if (!resolvconf.open(QIODevice::ReadOnly))
         return QString();       // failure

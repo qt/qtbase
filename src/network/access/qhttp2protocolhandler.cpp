@@ -65,6 +65,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 namespace
 {
 
@@ -239,8 +241,7 @@ void QHttp2ProtocolHandler::_q_uploadDataReadyRead()
     auto &stream = activeStreams[streamID];
 
     if (!sendDATA(stream)) {
-        finishStreamWithError(stream, QNetworkReply::UnknownNetworkError,
-                              QLatin1String("failed to send DATA"));
+        finishStreamWithError(stream, QNetworkReply::UnknownNetworkError, "failed to send DATA"_L1);
         sendRST_STREAM(streamID, INTERNAL_ERROR);
         markAsReset(streamID);
         deleteActiveStream(streamID);
@@ -354,8 +355,7 @@ bool QHttp2ProtocolHandler::sendRequest()
     for (auto it = requests.begin(), endIt = requests.end(); it != endIt;) {
         const auto &pair = *it;
         const QString scheme(pair.first.url().scheme());
-        if (scheme == QLatin1String("preconnect-http")
-            || scheme == QLatin1String("preconnect-https")) {
+        if (scheme == "preconnect-http"_L1 || scheme == "preconnect-https"_L1) {
             m_connection->preConnectFinished();
             emit pair.second->finished();
             it = requests.erase(it);
@@ -410,14 +410,14 @@ bool QHttp2ProtocolHandler::sendRequest()
         Stream &newStream = activeStreams[newStreamID];
         if (!sendHEADERS(newStream)) {
             finishStreamWithError(newStream, QNetworkReply::UnknownNetworkError,
-                                  QLatin1String("failed to send HEADERS frame(s)"));
+                                  "failed to send HEADERS frame(s)"_L1);
             deleteActiveStream(newStreamID);
             continue;
         }
 
         if (newStream.data() && !sendDATA(newStream)) {
             finishStreamWithError(newStream, QNetworkReply::UnknownNetworkError,
-                                  QLatin1String("failed to send DATA frame(s)"));
+                                  "failed to send DATA frame(s)"_L1);
             sendRST_STREAM(newStreamID, INTERNAL_ERROR);
             markAsReset(newStreamID);
             deleteActiveStream(newStreamID);
@@ -616,8 +616,7 @@ void QHttp2ProtocolHandler::handleDATA()
         auto &stream = activeStreams[streamID];
 
         if (qint32(inboundFrame.payloadSize()) > stream.recvWindow) {
-            finishStreamWithError(stream, QNetworkReply::ProtocolFailure,
-                                  QLatin1String("flow control error"));
+            finishStreamWithError(stream, QNetworkReply::ProtocolFailure, "flow control error"_L1);
             sendRST_STREAM(streamID, FLOW_CONTROL_ERROR);
             markAsReset(streamID);
             deleteActiveStream(streamID);
@@ -891,7 +890,7 @@ void QHttp2ProtocolHandler::handleGOAWAY()
     // successful completion.
     if (errorCode == HTTP2_NO_ERROR) {
         error = QNetworkReply::ContentReSendError;
-        message = QLatin1String("Server stopped accepting new streams before this stream was established");
+        message = "Server stopped accepting new streams before this stream was established"_L1;
     }
 
     for (quint32 id = lastStreamID; id < nextID; id += 2) {
@@ -931,7 +930,7 @@ void QHttp2ProtocolHandler::handleWINDOW_UPDATE()
         auto &stream = activeStreams[streamID];
         if (!valid || sum_will_overflow(stream.sendWindow, delta)) {
             finishStreamWithError(stream, QNetworkReply::ProtocolFailure,
-                                  QLatin1String("invalid WINDOW_UPDATE delta"));
+                                  "invalid WINDOW_UPDATE delta"_L1);
             sendRST_STREAM(streamID, PROTOCOL_ERROR);
             markAsReset(streamID);
             deleteActiveStream(streamID);
@@ -986,7 +985,7 @@ void QHttp2ProtocolHandler::handleContinuedHEADERS()
                 // (these streams are in halfClosedLocal or open state) or
                 // remote-reserved streams from a server's PUSH_PROMISE.
                 finishStreamWithError(stream, QNetworkReply::ProtocolFailure,
-                                      QLatin1String("HEADERS on invalid stream"));
+                                      "HEADERS on invalid stream"_L1);
                 sendRST_STREAM(streamID, CANCEL);
                 markAsReset(streamID);
                 deleteActiveStream(streamID);
@@ -1077,7 +1076,7 @@ bool QHttp2ProtocolHandler::acceptSetting(Http2::Settings identifier, quint32 ne
         for (auto id : brokenStreams) {
             auto &stream = activeStreams[id];
             finishStreamWithError(stream, QNetworkReply::ProtocolFailure,
-                                  QLatin1String("SETTINGS window overflow"));
+                                  "SETTINGS window overflow"_L1);
             sendRST_STREAM(id, PROTOCOL_ERROR);
             markAsReset(id);
             deleteActiveStream(id);
@@ -1491,7 +1490,7 @@ void QHttp2ProtocolHandler::resumeSuspendedStreams()
         Stream &stream = activeStreams[streamID];
         if (!sendDATA(stream)) {
             finishStreamWithError(stream, QNetworkReply::UnknownNetworkError,
-                                  QLatin1String("failed to send DATA"));
+                                  "failed to send DATA"_L1);
             sendRST_STREAM(streamID, INTERNAL_ERROR);
             markAsReset(streamID);
             deleteActiveStream(streamID);

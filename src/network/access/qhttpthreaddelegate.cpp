@@ -52,6 +52,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static QNetworkReply::NetworkError statusCodeFromHttp(int httpStatusCode, const QUrl &url)
 {
     QNetworkReply::NetworkError code;
@@ -128,14 +130,12 @@ static QByteArray makeCacheKey(QUrl &url, QNetworkProxy *proxy, const QString &p
     QString result;
     QUrl copy = url;
     QString scheme = copy.scheme();
-    bool isEncrypted = scheme == QLatin1String("https")
-                       || scheme == QLatin1String("preconnect-https");
+    bool isEncrypted = scheme == "https"_L1 || scheme == "preconnect-https"_L1;
     copy.setPort(copy.port(isEncrypted ? 443 : 80));
-    if (scheme == QLatin1String("preconnect-http")) {
-        copy.setScheme(QLatin1String("http"));
-    } else if (scheme == QLatin1String("preconnect-https")) {
-        copy.setScheme(QLatin1String("https"));
-    }
+    if (scheme == "preconnect-http"_L1)
+        copy.setScheme("http"_L1);
+    else if (scheme == "preconnect-https"_L1)
+        copy.setScheme("https"_L1);
     result = copy.toString(QUrl::RemoveUserInfo | QUrl::RemovePath |
                            QUrl::RemoveQuery | QUrl::RemoveFragment | QUrl::FullyEncoded);
 
@@ -145,12 +145,12 @@ static QByteArray makeCacheKey(QUrl &url, QNetworkProxy *proxy, const QString &p
 
         switch (proxy->type()) {
         case QNetworkProxy::Socks5Proxy:
-            key.setScheme(QLatin1String("proxy-socks5"));
+            key.setScheme("proxy-socks5"_L1);
             break;
 
         case QNetworkProxy::HttpProxy:
         case QNetworkProxy::HttpCachingProxy:
-            key.setScheme(QLatin1String("proxy-http"));
+            key.setScheme("proxy-http"_L1);
             break;
 
         default:

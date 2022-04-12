@@ -49,6 +49,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QT_IMPL_METATYPE_EXTERN_TAGGED(QNetworkRequest::KnownHeaders, QNetworkRequest__KnownHeaders)
 
 QNetworkReplyFileImplPrivate::QNetworkReplyFileImplPrivate()
@@ -82,7 +84,7 @@ QNetworkReplyFileImpl::QNetworkReplyFileImpl(QNetworkAccessManager *manager, con
     d->managerPrivate = manager->d_func();
 
     QUrl url = req.url();
-    if (url.host() == QLatin1String("localhost"))
+    if (url.host() == "localhost"_L1)
         url.setHost(QString());
 
 #if !defined(Q_OS_WIN)
@@ -98,18 +100,18 @@ QNetworkReplyFileImpl::QNetworkReplyFileImpl(QNetworkAccessManager *manager, con
     }
 #endif
     if (url.path().isEmpty())
-        url.setPath(QLatin1String("/"));
+        url.setPath("/"_L1);
     setUrl(url);
 
     QString fileName = url.toLocalFile();
     if (fileName.isEmpty()) {
         const QString scheme = url.scheme();
-        if (scheme == QLatin1String("qrc")) {
+        if (scheme == "qrc"_L1) {
             fileName = u':' + url.path();
         } else {
 #if defined(Q_OS_ANDROID)
-            if (scheme == QLatin1String("assets"))
-                fileName = QLatin1String("assets:") + url.path();
+            if (scheme == "assets"_L1)
+                fileName = "assets:"_L1 + url.path();
             else
 #endif
                 fileName = url.toString(QUrl::RemoveAuthority | QUrl::RemoveFragment | QUrl::RemoveQuery);
@@ -224,7 +226,7 @@ qint64 QNetworkReplyFileImpl::readData(char *data, qint64 maxlen)
         return -1;
     else {
         setAttribute(QNetworkRequest::HttpStatusCodeAttribute, 200);
-        setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, QLatin1String("OK"));
+        setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, "OK"_L1);
         return ret;
     }
 }

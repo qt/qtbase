@@ -399,6 +399,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QSslSocketGlobalData
 {
 public:
@@ -2085,12 +2087,12 @@ void QSslSocketPrivate::init()
 */
 bool QSslSocketPrivate::verifyProtocolSupported(const char *where)
 {
-    QLatin1String protocolName("DTLS");
+    auto protocolName = "DTLS"_L1;
     switch (configuration.protocol) {
     case QSsl::UnknownProtocol:
         // UnknownProtocol, according to our docs, is for cipher whose protocol is unknown.
         // Should not be used when configuring QSslSocket.
-        protocolName = QLatin1String("UnknownProtocol");
+        protocolName = "UnknownProtocol"_L1;
         Q_FALLTHROUGH();
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
@@ -3078,7 +3080,7 @@ bool QSslSocketPrivate::isMatchingHostname(const QString &cn, const QString &hos
 
     // Reject wildcard character embedded within the A-labels or U-labels of an internationalized
     // domain name (RFC6125 section 7.2)
-    if (cn.startsWith(QLatin1String("xn--"), Qt::CaseInsensitive))
+    if (cn.startsWith("xn--"_L1, Qt::CaseInsensitive))
         return false;
 
     // Check characters preceding * (if any) match

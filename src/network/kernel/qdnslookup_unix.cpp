@@ -67,6 +67,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #if QT_CONFIG(library)
 
 #if defined(Q_OS_OPENBSD)
@@ -111,7 +113,7 @@ static bool resolveLibraryInternal()
     if (!lib.load())
 #endif
     {
-        lib.setFileName(QLatin1String("resolv"));
+        lib.setFileName("resolv"_L1);
         lib.load();
     }
 

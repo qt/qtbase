@@ -161,6 +161,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(lcTlsBackendSchannel, "qt.tlsbackend.schannel");
 
 // Defined in qsslsocket_qt.cpp.
@@ -213,7 +215,7 @@ long QSchannelBackend::tlsLibraryVersionNumber() const
 QString QSchannelBackend::tlsLibraryVersionString() const
 {
     const auto os = QOperatingSystemVersion::current();
-    return QLatin1String("Secure Channel, %1 %2.%3.%4")
+    return "Secure Channel, %1 %2.%3.%4"_L1
             .arg(os.name(),
                  QString::number(os.majorVersion()),
                  QString::number(os.minorVersion()),
@@ -227,7 +229,7 @@ long QSchannelBackend::tlsLibraryBuildVersionNumber() const
 
 QString QSchannelBackend::tlsLibraryBuildVersionString() const
 {
-    return QLatin1String("Secure Channel (NTDDI: 0x%1)")
+    return "Secure Channel (NTDDI: 0x%1)"_L1
             .arg(QString::number(NTDDI_VERSION, 16).toUpper());
 }
 
@@ -571,11 +573,11 @@ bool isCertificateAuthority(const QList<QSslCertificateExtension> &extensions)
 {
     auto it = std::find_if(extensions.cbegin(), extensions.cend(),
                            [](const QSslCertificateExtension &extension) {
-                               return extension.name() == QLatin1String("basicConstraints");
+                               return extension.name() == "basicConstraints"_L1;
                            });
     if (it != extensions.cend()) {
         QVariantMap basicConstraints = it->value().toMap();
-        return basicConstraints.value(QLatin1String("ca"), false).toBool();
+        return basicConstraints.value("ca"_L1, false).toBool();
     }
     return false;
 }
@@ -2245,7 +2247,7 @@ bool TlsCryptographSchannel::verifyCertContext(CERT_CONTEXT *certContext)
         if (element->TrustStatus.dwErrorStatus & CERT_TRUST_INVALID_BASIC_CONSTRAINTS) {
             auto it = std::find_if(extensions.cbegin(), extensions.cend(),
                                    [](const QSslCertificateExtension &extension) {
-                                       return extension.name() == QLatin1String("basicConstraints");
+                                       return extension.name() == "basicConstraints"_L1;
                                    });
             if (it != extensions.cend()) {
                 // @Note: This is actually one of two errors:
@@ -2253,7 +2255,7 @@ bool TlsCryptographSchannel::verifyCertContext(CERT_CONTEXT *certContext)
                 // or the chain path length has been exceeded."
                 QVariantMap basicConstraints = it->value().toMap();
                 QSslError error;
-                if (i > 0 && !basicConstraints.value(QLatin1String("ca"), false).toBool())
+                if (i > 0 && !basicConstraints.value("ca"_L1, false).toBool())
                     error = QSslError(QSslError::InvalidPurpose, certificate);
                 else
                     error = QSslError(QSslError::PathLengthExceeded, certificate);

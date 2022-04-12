@@ -44,6 +44,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QHttpProtocolHandler::QHttpProtocolHandler(QHttpNetworkConnectionChannel *channel)
     : QAbstractProtocolHandler(channel)
 {
@@ -273,8 +275,7 @@ bool QHttpProtocolHandler::sendRequest()
             return false;
         }
         QString scheme = m_channel->request.url().scheme();
-        if (scheme == QLatin1String("preconnect-http")
-            || scheme == QLatin1String("preconnect-https")) {
+        if (scheme == "preconnect-http"_L1 || scheme == "preconnect-https"_L1) {
             m_channel->state = QHttpNetworkConnectionChannel::IdleState;
             m_reply->d_func()->state = QHttpNetworkReplyPrivate::AllDoneState;
             m_channel->allDone();

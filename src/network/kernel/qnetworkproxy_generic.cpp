@@ -51,6 +51,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static bool ignoreProxyFor(const QNetworkProxyQuery &query)
 {
     const QByteArray noProxy = qgetenv("no_proxy").trimmed();
@@ -101,11 +103,11 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
     const QString queryProtocol = query.protocolTag();
     QByteArray proxy_env;
 
-    if (queryProtocol == QLatin1String("http"))
+    if (queryProtocol == "http"_L1)
         proxy_env = qgetenv("http_proxy");
-    else if (queryProtocol == QLatin1String("https"))
+    else if (queryProtocol == "https"_L1)
         proxy_env = qgetenv("https_proxy");
-    else if (queryProtocol == QLatin1String("ftp"))
+    else if (queryProtocol == "ftp"_L1)
         proxy_env = qgetenv("ftp_proxy");
     else
         proxy_env = qgetenv("all_proxy");
@@ -117,16 +119,16 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
     if (!proxy_env.isEmpty()) {
         QUrl url = QUrl(QString::fromLocal8Bit(proxy_env));
         const QString scheme = url.scheme();
-        if (scheme == QLatin1String("socks5")) {
+        if (scheme == "socks5"_L1) {
             QNetworkProxy proxy(QNetworkProxy::Socks5Proxy, url.host(),
                     url.port() ? url.port() : 1080, url.userName(), url.password());
             proxyList << proxy;
-        } else if (scheme == QLatin1String("socks5h")) {
+        } else if (scheme == "socks5h"_L1) {
             QNetworkProxy proxy(QNetworkProxy::Socks5Proxy, url.host(),
                     url.port() ? url.port() : 1080, url.userName(), url.password());
             proxy.setCapabilities(QNetworkProxy::HostNameLookupCapability);
             proxyList << proxy;
-        } else if ((scheme.isEmpty() || scheme == QLatin1String("http"))
+        } else if ((scheme.isEmpty() || scheme == "http"_L1)
                   && query.queryType() != QNetworkProxyQuery::UdpSocket
                   && query.queryType() != QNetworkProxyQuery::TcpServer) {
             QNetworkProxy proxy(QNetworkProxy::HttpProxy, url.host(),

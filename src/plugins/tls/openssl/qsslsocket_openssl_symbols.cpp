@@ -81,6 +81,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*
     Note to maintainer:
     -------------------
@@ -628,12 +630,12 @@ static QStringList libraryPathList()
 #  else
     paths = QString::fromLatin1(qgetenv("LD_LIBRARY_PATH")).split(u':', Qt::SkipEmptyParts);
 #  endif
-    paths << QLatin1String("/lib") << QLatin1String("/usr/lib") << QLatin1String("/usr/local/lib");
-    paths << QLatin1String("/lib64") << QLatin1String("/usr/lib64") << QLatin1String("/usr/local/lib64");
-    paths << QLatin1String("/lib32") << QLatin1String("/usr/lib32") << QLatin1String("/usr/local/lib32");
+    paths << "/lib"_L1 << "/usr/lib"_L1 << "/usr/local/lib"_L1;
+    paths << "/lib64"_L1 << "/usr/lib64"_L1 << "/usr/local/lib64"_L1;
+    paths << "/lib32"_L1 << "/usr/lib32"_L1 << "/usr/local/lib32"_L1;
 
 #if defined(Q_OS_ANDROID)
-    paths << QLatin1String("/system/lib");
+    paths << "/system/lib"_L1;
 #elif defined(Q_OS_LINUX)
     // discover paths of already loaded libraries
     QDuplicateTracker<QString> loadedPaths;
@@ -665,12 +667,12 @@ static QStringList findAllLibs(QLatin1String filter)
 
 static QStringList findAllLibSsl()
 {
-    return findAllLibs(QLatin1String("libssl.*"));
+    return findAllLibs("libssl.*"_L1);
 }
 
 static QStringList findAllLibCrypto()
 {
-    return findAllLibs(QLatin1String("libcrypto.*"));
+    return findAllLibs("libcrypto.*"_L1);
 }
 # endif
 
@@ -721,8 +723,8 @@ static LoadedOpenSsl loadOpenSsl()
 #define QT_SSL_SUFFIX
 #endif
 
-    tryToLoadOpenSslWin32Library(QLatin1String("libssl-" QT_OPENSSL_VERSION QT_SSL_SUFFIX),
-                                 QLatin1String("libcrypto-" QT_OPENSSL_VERSION QT_SSL_SUFFIX), result);
+    tryToLoadOpenSslWin32Library("libssl-" QT_OPENSSL_VERSION QT_SSL_SUFFIX ""_L1,
+                                 "libcrypto-" QT_OPENSSL_VERSION QT_SSL_SUFFIX ""_L1, result);
 
 #undef QT_SSL_SUFFIX
     return result;
@@ -779,8 +781,8 @@ static LoadedOpenSsl loadOpenSsl()
 #endif
 #if defined(SHLIB_VERSION_NUMBER) && !defined(Q_OS_QNX) // on QNX, the libs are always libssl.so and libcrypto.so
     // first attempt: the canonical name is libssl.so.<SHLIB_VERSION_NUMBER>
-    libssl->setFileNameAndVersion(QLatin1String("ssl"), QLatin1String(SHLIB_VERSION_NUMBER));
-    libcrypto->setFileNameAndVersion(QLatin1String("crypto"), QLatin1String(SHLIB_VERSION_NUMBER));
+    libssl->setFileNameAndVersion("ssl"_L1, SHLIB_VERSION_NUMBER ""_L1);
+    libcrypto->setFileNameAndVersion("crypto"_L1, SHLIB_VERSION_NUMBER ""_L1);
     if (libcrypto->load() && libssl->load()) {
         // libssl.so.<SHLIB_VERSION_NUMBER> and libcrypto.so.<SHLIB_VERSION_NUMBER> found
         return result;
@@ -808,11 +810,11 @@ static LoadedOpenSsl loadOpenSsl()
 
     static QString suffix = QString::fromLatin1(openSSLSuffix("_1_1"));
 
-    libssl->setFileNameAndVersion(QLatin1String("ssl") + suffix, -1);
-    libcrypto->setFileNameAndVersion(QLatin1String("crypto") + suffix, -1);
+    libssl->setFileNameAndVersion("ssl"_L1 + suffix, -1);
+    libcrypto->setFileNameAndVersion("crypto"_L1 + suffix, -1);
 # else
-    libssl->setFileNameAndVersion(QLatin1String("ssl"), -1);
-    libcrypto->setFileNameAndVersion(QLatin1String("crypto"), -1);
+    libssl->setFileNameAndVersion("ssl"_L1, -1);
+    libcrypto->setFileNameAndVersion("crypto"_L1, -1);
 # endif
     if (libcrypto->load() && libssl->load()) {
         // libssl.so.0 and libcrypto.so.0 found

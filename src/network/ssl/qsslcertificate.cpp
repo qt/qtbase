@@ -151,6 +151,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QT_IMPL_METATYPE_EXTERN(QSslCertificate)
 
 QSslCertificatePrivate::QSslCertificatePrivate()
@@ -665,9 +667,9 @@ QList<QSslCertificate> QSslCertificate::fromPath(const QString &path,
 
 #if QT_CONFIG(regularexpression)
     if (syntax == PatternSyntax::Wildcard)
-        pos = pathPrefix.indexOf(QRegularExpression(QLatin1String("[*?[]")));
+        pos = pathPrefix.indexOf(QRegularExpression("[*?[]"_L1));
     else if (syntax == PatternSyntax::RegularExpression)
-        pos = sourcePath.indexOf(QRegularExpression(QLatin1String("[\\$\\(\\)\\*\\+\\.\\?\\[\\]\\^\\{\\}\\|]")));
+        pos = sourcePath.indexOf(QRegularExpression("[\\$\\(\\)\\*\\+\\.\\?\\[\\]\\^\\{\\}\\|]"_L1));
 #else
     if (syntax == PatternSyntax::Wildcard || syntax == PatternSyntax::RegExp)
         qWarning("Regular expression support is disabled in this build. Only fixed string can be searched");
@@ -698,7 +700,7 @@ QList<QSslCertificate> QSslCertificate::fromPath(const QString &path,
     // Special case - if the prefix ends up being nothing, use "." instead.
     int startIndex = 0;
     if (pathPrefix.isEmpty()) {
-        pathPrefix = QLatin1String(".");
+        pathPrefix = "."_L1;
         startIndex = 2;
     }
 

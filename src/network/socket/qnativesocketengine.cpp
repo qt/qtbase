@@ -135,6 +135,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 //#define QNATIVESOCKETENGINE_DEBUG
 
 #define Q_VOID
@@ -448,13 +450,13 @@ bool QNativeSocketEngine::initialize(QAbstractSocket::SocketType socketType, QAb
     // Create the socket
     if (!d->createNewSocket(socketType, protocol)) {
 #if defined (QNATIVESOCKETENGINE_DEBUG)
-        QString typeStr = QLatin1String("UnknownSocketType");
-        if (socketType == QAbstractSocket::TcpSocket) typeStr = QLatin1String("TcpSocket");
-        else if (socketType == QAbstractSocket::UdpSocket) typeStr = QLatin1String("UdpSocket");
-        else if (socketType == QAbstractSocket::SctpSocket) typeStr = QLatin1String("SctpSocket");
-        QString protocolStr = QLatin1String("UnknownProtocol");
-        if (protocol == QAbstractSocket::IPv4Protocol) protocolStr = QLatin1String("IPv4Protocol");
-        else if (protocol == QAbstractSocket::IPv6Protocol) protocolStr = QLatin1String("IPv6Protocol");
+        QString typeStr = "UnknownSocketType"_L1;
+        if (socketType == QAbstractSocket::TcpSocket) typeStr = "TcpSocket"_L1;
+        else if (socketType == QAbstractSocket::UdpSocket) typeStr = "UdpSocket"_L1;
+        else if (socketType == QAbstractSocket::SctpSocket) typeStr = "SctpSocket"_L1;
+        QString protocolStr = "UnknownProtocol"_L1;
+        if (protocol == QAbstractSocket::IPv4Protocol) protocolStr = "IPv4Protocol"_L1;
+        else if (protocol == QAbstractSocket::IPv6Protocol) protocolStr = "IPv6Protocol"_L1;
         qDebug("QNativeSocketEngine::initialize(type == %s, protocol == %s) failed: %s",
                typeStr.toLatin1().constData(), protocolStr.toLatin1().constData(), d->socketErrorString.toLatin1().constData());
 #endif

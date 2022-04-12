@@ -65,6 +65,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(lcTlsBackend, "qt.tlsbackend.ossl");
 
 Q_GLOBAL_STATIC(QRecursiveMutex, qt_opensslInitMutex)
@@ -80,9 +82,9 @@ static void q_loadCiphersForConnection(SSL *connection, QList<QSslCipher> &ciphe
             const auto ciph = QTlsBackendOpenSSL::qt_OpenSSL_cipher_to_QSslCipher(cipher);
             if (!ciph.isNull()) {
                 // Unconditionally exclude ADH and AECDH ciphers since they offer no MITM protection
-                if (!ciph.name().toLower().startsWith(QLatin1String("adh")) &&
-                    !ciph.name().toLower().startsWith(QLatin1String("exp-adh")) &&
-                    !ciph.name().toLower().startsWith(QLatin1String("aecdh"))) {
+                if (!ciph.name().toLower().startsWith("adh"_L1) &&
+                    !ciph.name().toLower().startsWith("exp-adh"_L1) &&
+                    !ciph.name().toLower().startsWith("aecdh"_L1)) {
                     ciphers << ciph;
 
                     if (ciph.usedBits() >= 128)
@@ -104,7 +106,7 @@ QString QTlsBackendOpenSSL::getErrorsFromOpenSsl()
     unsigned long errNum;
     while ((errNum = q_ERR_get_error())) {
         if (!errorString.isEmpty())
-            errorString.append(QLatin1String(", "));
+            errorString.append(", "_L1);
         q_ERR_error_string_n(errNum, buf, sizeof buf);
         errorString.append(QString::fromLatin1(buf)); // error is ascii according to man ERR_error_string
     }
@@ -226,7 +228,7 @@ void QTlsBackendOpenSSL::ensureCiphersAndCertsLoaded() const
     // check whether we can enable on-demand root-cert loading (i.e. check whether the sym links are there)
     const QList<QByteArray> dirs = QSslSocketPrivate::unixRootCertDirectories();
     QStringList symLinkFilter;
-    symLinkFilter << QLatin1String("[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].[0-9]");
+    symLinkFilter << "[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].[0-9]"_L1;
     for (const auto &dir : dirs) {
         QDirIterator iterator(QLatin1String(dir), symLinkFilter, QDir::Files);
         if (iterator.hasNext()) {

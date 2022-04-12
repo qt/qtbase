@@ -54,6 +54,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static bool isThreadingNeeded()
 {
     // Try to guess if the libproxy we linked to is from the libproxy project
@@ -221,14 +223,13 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
     for (const QUrl& url : rawProxies) {
         QNetworkProxy::ProxyType type;
         const QString scheme = url.scheme();
-        if (scheme == QLatin1String("http")) {
+        if (scheme == "http"_L1) {
             type = QNetworkProxy::HttpProxy;
-        } else if (scheme == QLatin1String("socks")
-              || scheme == QLatin1String("socks5")) {
+        } else if (scheme == "socks"_L1 || scheme == "socks5"_L1) {
             type = QNetworkProxy::Socks5Proxy;
-        } else if (scheme == QLatin1String("ftp")) {
+        } else if (scheme == "ftp"_L1) {
             type = QNetworkProxy::FtpCachingProxy;
-        } else if (scheme == QLatin1String("direct")) {
+        } else if (scheme == "direct"_L1) {
             type = QNetworkProxy::NoProxy;
             haveDirectConnection = true;
         } else {

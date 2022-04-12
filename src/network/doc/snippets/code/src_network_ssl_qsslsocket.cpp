@@ -48,6 +48,8 @@
 **
 ****************************************************************************/
 
+using namespace Qt::StringLiterals;
+
 //! [0]
 QSslSocket *socket = new QSslSocket(this);
 connect(socket, SIGNAL(encrypted()), this, SLOT(ready()));
@@ -107,7 +109,7 @@ if (socket->waitForEncrypted(1000))
 //! [5]
 
 //! [6]
-QList<QSslCertificate> cert = QSslCertificate::fromPath(QLatin1String("server-certificate.pem"));
+QList<QSslCertificate> cert = QSslCertificate::fromPath("server-certificate.pem"_L1);
 QSslError error(QSslError::SelfSignedCertificate, cert.at(0));
 QList<QSslError> expectedSslErrors;
 expectedSslErrors.append(error);

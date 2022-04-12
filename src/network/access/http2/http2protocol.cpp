@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QT_IMPL_METATYPE_EXTERN_TAGGED(Http2::Settings, Http2__Settings)
 
 Q_LOGGING_CATEGORY(QT_HTTP2, "qt.network.http2")
@@ -130,7 +132,7 @@ void qt_error(quint32 errorCode, QNetworkReply::NetworkError &error,
 {
     if (errorCode > quint32(HTTP_1_1_REQUIRED)) {
         error = QNetworkReply::ProtocolFailure;
-        errorMessage = QLatin1String("RST_STREAM with unknown error code (%1)");
+        errorMessage = "RST_STREAM with unknown error code (%1)"_L1;
         errorMessage = errorMessage.arg(errorCode);
         return;
     }
@@ -144,61 +146,61 @@ void qt_error(quint32 errorCode, QNetworkReply::NetworkError &error,
         break;
     case PROTOCOL_ERROR:
         error = QNetworkReply::ProtocolFailure;
-        errorMessage = QLatin1String("HTTP/2 protocol error");
+        errorMessage = "HTTP/2 protocol error"_L1;
         break;
     case INTERNAL_ERROR:
         error = QNetworkReply::InternalServerError;
-        errorMessage = QLatin1String("Internal server error");
+        errorMessage = "Internal server error"_L1;
         break;
     case FLOW_CONTROL_ERROR:
         error = QNetworkReply::ProtocolFailure;
-        errorMessage = QLatin1String("Flow control error");
+        errorMessage = "Flow control error"_L1;
         break;
     case SETTINGS_TIMEOUT:
         error = QNetworkReply::TimeoutError;
-        errorMessage = QLatin1String("SETTINGS ACK timeout error");
+        errorMessage = "SETTINGS ACK timeout error"_L1;
         break;
     case STREAM_CLOSED:
         error = QNetworkReply::ProtocolFailure;
-        errorMessage = QLatin1String("Server received frame(s) on a half-closed stream");
+        errorMessage = "Server received frame(s) on a half-closed stream"_L1;
         break;
     case FRAME_SIZE_ERROR:
         error = QNetworkReply::ProtocolFailure;
-        errorMessage = QLatin1String("Server received a frame with an invalid size");
+        errorMessage = "Server received a frame with an invalid size"_L1;
         break;
     case REFUSE_STREAM:
         error = QNetworkReply::ProtocolFailure;
-        errorMessage = QLatin1String("Server refused a stream");
+        errorMessage = "Server refused a stream"_L1;
         break;
     case CANCEL:
         error = QNetworkReply::ProtocolFailure;
-        errorMessage = QLatin1String("Stream is no longer needed");
+        errorMessage = "Stream is no longer needed"_L1;
         break;
     case COMPRESSION_ERROR:
         error = QNetworkReply::ProtocolFailure;
-        errorMessage = QLatin1String("Server is unable to maintain the "
-                                     "header compression context for the connection");
+        errorMessage = "Server is unable to maintain the "
+                       "header compression context for the connection"_L1;
         break;
     case CONNECT_ERROR:
         // TODO: in Qt6 we'll have to add more error codes in QNetworkReply.
         error = QNetworkReply::UnknownNetworkError;
-        errorMessage = QLatin1String("The connection established in response "
-                        "to a CONNECT request was reset or abnormally closed");
+        errorMessage = "The connection established in response "
+                       "to a CONNECT request was reset or abnormally closed"_L1;
         break;
     case ENHANCE_YOUR_CALM:
         error = QNetworkReply::UnknownServerError;
-        errorMessage = QLatin1String("Server dislikes our behavior, excessive load detected.");
+        errorMessage = "Server dislikes our behavior, excessive load detected."_L1;
         break;
     case INADEQUATE_SECURITY:
         error = QNetworkReply::ContentAccessDenied;
-        errorMessage = QLatin1String("The underlying transport has properties "
-                                     "that do not meet minimum security "
-                                     "requirements");
+        errorMessage = "The underlying transport has properties "
+                       "that do not meet minimum security "
+                       "requirements"_L1;
         break;
     case HTTP_1_1_REQUIRED:
         error = QNetworkReply::ProtocolFailure;
-        errorMessage = QLatin1String("Server requires that HTTP/1.1 "
-                                     "be used instead of HTTP/2.");
+        errorMessage = "Server requires that HTTP/1.1 "
+                       "be used instead of HTTP/2."_L1;
     }
 }
 

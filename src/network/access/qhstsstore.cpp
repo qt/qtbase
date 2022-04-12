@@ -52,6 +52,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static QString host_name_to_settings_key(const QString &hostName)
 {
     const QByteArray hostNameAsHex(hostName.toUtf8().toHex());
@@ -136,13 +138,13 @@ QString QHstsStore::absoluteFilePath(const QString &dirName)
 {
     const QDir dir(dirName.isEmpty() ? QStandardPaths::writableLocation(QStandardPaths::CacheLocation)
                                      : dirName);
-    return dir.absoluteFilePath(QLatin1String("hstsstore"));
+    return dir.absoluteFilePath("hstsstore"_L1);
 }
 
 void QHstsStore::beginHstsGroups()
 {
-    store.beginGroup(QLatin1String("StrictTransportSecurity"));
-    store.beginGroup(QLatin1String("Policies"));
+    store.beginGroup("StrictTransportSecurity"_L1);
+    store.beginGroup("Policies"_L1);
 }
 
 void QHstsStore::endHstsGroups()

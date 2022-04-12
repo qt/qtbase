@@ -70,6 +70,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 //#define QHOSTINFO_DEBUG
 
 QT_IMPL_METATYPE_EXTERN(QHostInfo)
@@ -536,7 +538,7 @@ QHostInfo QHostInfoAgent::lookup(const QString &hostName)
         QString tmp;
         QList<QHostAddress> addresses = results.addresses();
         for (int i = 0; i < addresses.count(); ++i) {
-            if (i != 0) tmp += QLatin1String(", ");
+            if (i != 0) tmp += ", "_L1;
             tmp += addresses.at(i).toString();
         }
         qDebug("QHostInfoAgent::fromName(): found %i entries for \"%s\": {%s}",

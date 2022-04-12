@@ -51,6 +51,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QNetworkAuthenticationCache : private QList<QNetworkAuthenticationCredential>,
                                     public QNetworkAccessCache::CacheableObject
 {
@@ -105,16 +107,16 @@ static QByteArray proxyAuthenticationKey(const QNetworkProxy &proxy, const QStri
 
     switch (proxy.type()) {
     case QNetworkProxy::Socks5Proxy:
-        key.setScheme(QLatin1String("proxy-socks5"));
+        key.setScheme("proxy-socks5"_L1);
         break;
 
     case QNetworkProxy::HttpProxy:
     case QNetworkProxy::HttpCachingProxy:
-        key.setScheme(QLatin1String("proxy-http"));
+        key.setScheme("proxy-http"_L1);
         break;
 
     case QNetworkProxy::FtpCachingProxy:
-        key.setScheme(QLatin1String("proxy-ftp"));
+        key.setScheme("proxy-ftp"_L1);
         break;
 
     case QNetworkProxy::DefaultProxy:

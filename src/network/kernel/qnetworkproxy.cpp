@@ -243,6 +243,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QT_IMPL_METATYPE_EXTERN(QNetworkProxy)
 
 class QSocks5SocketEngineHandler;
@@ -356,10 +358,8 @@ QList<QNetworkProxy> QGlobalNetworkProxy::proxyForQuery(const QNetworkProxyQuery
     // don't look for proxies for a local connection
     QHostAddress parsed;
     QString hostname = query.url().host();
-    if (hostname == QLatin1String("localhost")
-        || hostname.startsWith(QLatin1String("localhost."))
-        || (parsed.setAddress(hostname)
-            && (parsed.isLoopback()))) {
+    if (hostname == "localhost"_L1 || hostname.startsWith("localhost."_L1)
+            || (parsed.setAddress(hostname) && (parsed.isLoopback()))) {
         result << QNetworkProxy(QNetworkProxy::NoProxy);
         return result;
     }

@@ -67,6 +67,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QNetworkProxy;
 
 static inline bool isSeparator(char c)
@@ -182,7 +184,7 @@ QNetworkReplyHttpImpl::QNetworkReplyHttpImpl(QNetworkAccessManager* const manage
     d->outgoingData = outgoingData;
     d->url = request.url();
 #ifndef QT_NO_SSL
-    if (request.url().scheme() == QLatin1String("https"))
+    if (request.url().scheme() == "https"_L1)
         d->sslConfiguration.reset(new QSslConfiguration(request.sslConfiguration()));
 #endif
 
@@ -658,13 +660,11 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
     httpRequest.setRedirectCount(newHttpRequest.maximumRedirectsAllowed());
 
     QString scheme = url.scheme();
-    bool ssl = (scheme == QLatin1String("https")
-                || scheme == QLatin1String("preconnect-https"));
+    bool ssl = (scheme == "https"_L1 || scheme == "preconnect-https"_L1);
     q->setAttribute(QNetworkRequest::ConnectionEncryptedAttribute, ssl);
     httpRequest.setSsl(ssl);
 
-    bool preConnect = (scheme == QLatin1String("preconnect-http")
-                       || scheme == QLatin1String("preconnect-https"));
+    bool preConnect = (scheme == "preconnect-http"_L1 || scheme == "preconnect-https"_L1);
     httpRequest.setPreConnect(preConnect);
 
 #ifndef QT_NO_NETWORKPROXY
@@ -1235,13 +1235,12 @@ void QNetworkReplyHttpImplPrivate::onRedirected(const QUrl &redirectUrl, int htt
         // equal to "80", the port component value MUST be preserved;
         // otherwise, if the URI does not contain an explicit port
         // component, the UA MUST NOT add one.
-        url.setScheme(QLatin1String("https"));
+        url.setScheme("https"_L1);
         if (url.port() == 80)
             url.setPort(443);
     }
 
-    const bool isLessSafe = schemeBefore == QLatin1String("https")
-                            && url.scheme() == QLatin1String("http");
+    const bool isLessSafe = schemeBefore == "https"_L1 && url.scheme() == "http"_L1;
     if (httpRequest.redirectPolicy() == QNetworkRequest::NoLessSafeRedirectPolicy
         && isLessSafe) {
         error(QNetworkReply::InsecureRedirectError,
@@ -1341,7 +1340,7 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData(const QList<QPair<QByte
     // RFC6797, 8.1
     // If an HTTP response is received over insecure transport, the UA MUST
     // ignore any present STS header field(s).
-    if (url.scheme() == QLatin1String("https") && managerPrivate->stsEnabled)
+    if (url.scheme() == "https"_L1 && managerPrivate->stsEnabled)
         managerPrivate->stsCache.updateFromHeaders(hm, url);
 #endif
     // Download buffer
