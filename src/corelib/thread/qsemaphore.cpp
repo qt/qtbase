@@ -356,7 +356,12 @@ void QSemaphore::release(int n)
         quintptr nn = unsigned(n);
         if (futexHasWaiterCount)
             nn |= quint64(nn) << 32;    // token count replicated in high word
-        quintptr prevValue = u.fetchAndAddRelease(nn);
+        quintptr prevValue = u.loadRelaxed();
+        quintptr newValue;
+        do { // loop just to ensure the operations are done atomically
+            newValue = prevValue + nn;
+            newValue &= (futexNeedsWakeAllBit - 1);
+        } while (!u.testAndSetRelease(prevValue, newValue, prevValue));
         if (futexNeedsWake(prevValue)) {
 #ifdef FUTEX_OP
             if (futexHasWaiterCount) {
@@ -378,7 +383,6 @@ void QSemaphore::release(int n)
                 quint32 oparg = 0;
                 quint32 cmp = FUTEX_OP_CMP_NE;
                 quint32 cmparg = 0;
-                u.fetchAndAndRelease(futexNeedsWakeAllBit - 1);
                 futexWakeOp(*futexLow32(&u), n, INT_MAX, *futexHigh32(&u), FUTEX_OP(op, oparg, cmp, cmparg));
                 return;
             }
@@ -390,7 +394,6 @@ void QSemaphore::release(int n)
             //    its acquisition anyway, so it has to wait;
             // 2) it did not see the new counter value, in which case its
             //    futexWait will fail.
-            u.fetchAndAndRelease(futexNeedsWakeAllBit - 1);
             if (futexHasWaiterCount) {
                 futexWakeAll(*futexLow32(&u));
                 futexWakeAll(*futexHigh32(&u));
