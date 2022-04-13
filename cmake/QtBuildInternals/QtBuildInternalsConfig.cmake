@@ -643,15 +643,21 @@ function(qt_compute_relative_path_from_cmake_config_dir_to_prefix)
     #
     # Similar code exists in Qt6CoreConfigExtras.cmake.in and src/corelib/CMakeLists.txt which
     # might not be needed anymore.
+    if(CMAKE_STAGING_PREFIX)
+        set(__qt_prefix "${CMAKE_STAGING_PREFIX}")
+    else()
+        set(__qt_prefix "${CMAKE_INSTALL_PREFIX}")
+    endif()
+
     if(QT_WILL_INSTALL)
         get_filename_component(clean_config_prefix
-                               "${CMAKE_INSTALL_PREFIX}/${QT_CONFIG_INSTALL_DIR}" ABSOLUTE)
+                               "${__qt_prefix}/${QT_CONFIG_INSTALL_DIR}" ABSOLUTE)
     else()
         get_filename_component(clean_config_prefix "${QT_CONFIG_BUILD_DIR}" ABSOLUTE)
     endif()
     file(RELATIVE_PATH
          qt_path_from_cmake_config_dir_to_prefix
-         "${clean_config_prefix}" "${CMAKE_INSTALL_PREFIX}")
+         "${clean_config_prefix}" "${__qt_prefix}")
      set(qt_path_from_cmake_config_dir_to_prefix "${qt_path_from_cmake_config_dir_to_prefix}"
          PARENT_SCOPE)
 endfunction()
