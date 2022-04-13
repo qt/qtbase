@@ -76,6 +76,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 enum { debug = 0 };
 
 class QIBusPlatformInputContextPrivate
@@ -537,7 +539,7 @@ void QIBusPlatformInputContext::socketChanged(const QString &str)
     if (d->bus && d->bus->isValid())
         disconnect(d->bus);
     if (d->connection)
-        d->connection->disconnectFromBus(QLatin1String("QIBusProxy"));
+        d->connection->disconnectFromBus("QIBusProxy"_L1);
 
     m_timer.start(100);
 }
@@ -605,7 +607,7 @@ void QIBusPlatformInputContext::connectToContextSignals()
 
 static inline bool checkRunningUnderFlatpak()
 {
-    return !QStandardPaths::locate(QStandardPaths::RuntimeLocation, QLatin1String("flatpak-info")).isEmpty();
+    return !QStandardPaths::locate(QStandardPaths::RuntimeLocation, "flatpak-info"_L1).isEmpty();
 }
 
 static bool shouldConnectIbusPortal()
@@ -657,24 +659,24 @@ void QIBusPlatformInputContextPrivate::createBusProxy()
     QDBusReply<QDBusObjectPath> ic;
     if (usePortal) {
         portalBus = new QIBusProxyPortal(QLatin1String(ibusService),
-                                         QLatin1String("/org/freedesktop/IBus"),
+                                         "/org/freedesktop/IBus"_L1,
                                          *connection);
         if (!portalBus->isValid()) {
             qWarning("QIBusPlatformInputContext: invalid portal bus.");
             return;
         }
 
-        ic = portalBus->CreateInputContext(QLatin1String("QIBusInputContext"));
+        ic = portalBus->CreateInputContext("QIBusInputContext"_L1);
     } else {
         bus = new QIBusProxy(QLatin1String(ibusService),
-                             QLatin1String("/org/freedesktop/IBus"),
+                             "/org/freedesktop/IBus"_L1,
                              *connection);
         if (!bus->isValid()) {
             qWarning("QIBusPlatformInputContext: invalid bus.");
             return;
         }
 
-        ic = bus->CreateInputContext(QLatin1String("QIBusInputContext"));
+        ic = bus->CreateInputContext("QIBusInputContext"_L1);
     }
 
     serviceWatcher.removeWatchedService(ibusService);
@@ -743,7 +745,7 @@ QString QIBusPlatformInputContextPrivate::getSocketPath()
         qDebug() << "host=" << host << "displayNumber" << displayNumber;
 
     return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) +
-               QLatin1String("/ibus/bus/") +
+               "/ibus/bus/"_L1 +
                QLatin1String(QDBusConnection::localMachineId()) +
                u'-' + QString::fromLocal8Bit(host) + u'-' + QString::fromLocal8Bit(displayNumber);
 }
@@ -751,7 +753,7 @@ QString QIBusPlatformInputContextPrivate::getSocketPath()
 QDBusConnection *QIBusPlatformInputContextPrivate::createConnection()
 {
     if (usePortal)
-        return new QDBusConnection(QDBusConnection::connectToBus(QDBusConnection::SessionBus, QLatin1String("QIBusProxy")));
+        return new QDBusConnection(QDBusConnection::connectToBus(QDBusConnection::SessionBus, "QIBusProxy"_L1));
     QFile file(getSocketPath());
 
     if (!file.open(QFile::ReadOnly))
@@ -776,7 +778,7 @@ QDBusConnection *QIBusPlatformInputContextPrivate::createConnection()
     if (address.isEmpty() || pid < 0 || kill(pid, 0) != 0)
         return 0;
 
-    return new QDBusConnection(QDBusConnection::connectToBus(QString::fromLatin1(address), QLatin1String("QIBusProxy")));
+    return new QDBusConnection(QDBusConnection::connectToBus(QString::fromLatin1(address), "QIBusProxy"_L1));
 }
 
 QT_END_NAMESPACE

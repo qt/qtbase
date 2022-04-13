@@ -45,6 +45,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     \title Qt platform plugin for Windows
 
@@ -106,7 +108,7 @@ public:
 
 QPlatformIntegration *QWindowsIntegrationPlugin::create(const QString& system, const QStringList& paramList, int &, char **)
 {
-    if (system.compare(system, QLatin1String("windows"), Qt::CaseInsensitive) == 0)
+    if (system.compare(system, "windows"_L1, Qt::CaseInsensitive) == 0)
         return new QWindowsGdiIntegration(paramList);
     return nullptr;
 }

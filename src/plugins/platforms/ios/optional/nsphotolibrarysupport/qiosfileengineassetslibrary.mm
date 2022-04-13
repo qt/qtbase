@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static QThreadStorage<QString> g_iteratorCurrentUrl;
 static QThreadStorage<QPointer<QIOSAssetData> > g_assetDataCache;
 
@@ -249,7 +251,7 @@ public:
                 }
 
                 if (!asset)
-                    engine->setError(QFile::OpenError, QLatin1String("could not open image"));
+                    engine->setError(QFile::OpenError, "could not open image"_L1);
 
                 m_asset = [asset retain];
                 dispatch_semaphore_signal(semaphore);
@@ -377,7 +379,7 @@ bool QIOSFileEngineAssetsLibrary::close()
 QAbstractFileEngine::FileFlags QIOSFileEngineAssetsLibrary::fileFlags(QAbstractFileEngine::FileFlags type) const
 {
     QAbstractFileEngine::FileFlags flags;
-    const bool isDir = (m_assetUrl == QLatin1String("assets-library://"));
+    const bool isDir = (m_assetUrl == "assets-library://"_L1);
     const bool exists = isDir || m_assetUrl == g_iteratorCurrentUrl.localData() || loadAsset();
 
     if (!exists)
@@ -452,11 +454,11 @@ void QIOSFileEngineAssetsLibrary::setFileName(const QString &file)
     // QUrl::fromLocalFile() will remove double slashes. Since the asset url is
     // passed around as a file name in the app (and converted to/from a file url, e.g
     // in QFileDialog), we need to ensure that m_assetUrl ends up being valid.
-    int index = file.indexOf(QLatin1String("/asset"));
+    qsizetype index = file.indexOf("/asset"_L1);
     if (index == -1)
-        m_assetUrl = QLatin1String("assets-library://");
+        m_assetUrl = "assets-library://"_L1;
     else
-        m_assetUrl = QLatin1String("assets-library:/") + file.mid(index);
+        m_assetUrl = "assets-library:/"_L1 + file.mid(index);
 }
 
 #ifndef QT_NO_FILESYSTEMITERATOR

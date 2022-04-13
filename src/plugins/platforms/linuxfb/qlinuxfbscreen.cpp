@@ -65,6 +65,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static int openFramebufferDevice(const QString &dev)
 {
     int fd = -1;
@@ -308,11 +310,11 @@ QLinuxFbScreen::~QLinuxFbScreen()
 
 bool QLinuxFbScreen::initialize()
 {
-    QRegularExpression ttyRx(QLatin1String("tty=(.*)"));
-    QRegularExpression fbRx(QLatin1String("fb=(.*)"));
-    QRegularExpression mmSizeRx(QLatin1String("mmsize=(\\d+)x(\\d+)"));
-    QRegularExpression sizeRx(QLatin1String("size=(\\d+)x(\\d+)"));
-    QRegularExpression offsetRx(QLatin1String("offset=(\\d+)x(\\d+)"));
+    QRegularExpression ttyRx("tty=(.*)"_L1);
+    QRegularExpression fbRx("fb=(.*)"_L1);
+    QRegularExpression mmSizeRx("mmsize=(\\d+)x(\\d+)"_L1);
+    QRegularExpression sizeRx("size=(\\d+)x(\\d+)"_L1);
+    QRegularExpression offsetRx("offset=(\\d+)x(\\d+)"_L1);
 
     QString fbDevice, ttyDevice;
     QSize userMmSize;
@@ -322,7 +324,7 @@ bool QLinuxFbScreen::initialize()
     // Parse arguments
     for (const QString &arg : qAsConst(mArgs)) {
         QRegularExpressionMatch match;
-        if (arg == QLatin1String("nographicsmodeswitch"))
+        if (arg == "nographicsmodeswitch"_L1)
             doSwitchToGraphicsMode = false;
         else if (arg.contains(mmSizeRx, &match))
             userMmSize = QSize(match.captured(1).toInt(), match.captured(2).toInt());
@@ -337,9 +339,9 @@ bool QLinuxFbScreen::initialize()
     }
 
     if (fbDevice.isEmpty()) {
-        fbDevice = QLatin1String("/dev/fb0");
+        fbDevice = "/dev/fb0"_L1;
         if (!QFile::exists(fbDevice))
-            fbDevice = QLatin1String("/dev/graphics/fb0");
+            fbDevice = "/dev/graphics/fb0"_L1;
         if (!QFile::exists(fbDevice)) {
             qWarning("Unable to figure out framebuffer device. Specify it manually.");
             return false;

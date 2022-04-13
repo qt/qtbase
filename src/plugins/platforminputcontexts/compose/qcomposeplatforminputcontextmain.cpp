@@ -45,6 +45,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QComposePlatformInputContextPlugin : public QPlatformInputContextPlugin
 {
     Q_OBJECT
@@ -58,8 +60,8 @@ QComposeInputContext *QComposePlatformInputContextPlugin::create(const QString &
 {
     Q_UNUSED(paramList);
 
-    if (system.compare(system, QLatin1String("compose"), Qt::CaseInsensitive) == 0
-            || system.compare(system, QLatin1String("xim"), Qt::CaseInsensitive) == 0)
+    if (system.compare(system, "compose"_L1, Qt::CaseInsensitive) == 0
+            || system.compare(system, "xim"_L1, Qt::CaseInsensitive) == 0)
         return new QComposeInputContext;
     return nullptr;
 }

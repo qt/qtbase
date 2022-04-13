@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static void qRegisterApplicationStateNotifications()
 {
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
@@ -83,11 +85,11 @@ static void qRegisterApplicationStateNotifications()
     if (qt_apple_isApplicationExtension()) {
         // Extensions are not allowed to access UIApplication, so we assume the state is active
         QIOSApplicationState::handleApplicationStateChanged(UIApplicationStateActive,
-            QLatin1String("Extension loaded, assuming state is active"));
+            "Extension loaded, assuming state is active"_L1);
     } else {
         // Initialize correct startup state, which may not be the Qt default (inactive)
         UIApplicationState startupState = qt_apple_sharedApplication().applicationState;
-        QIOSApplicationState::handleApplicationStateChanged(startupState, QLatin1String("Application loaded"));
+        QIOSApplicationState::handleApplicationStateChanged(startupState, "Application loaded"_L1);
     }
 }
 Q_CONSTRUCTOR_FUNCTION(qRegisterApplicationStateNotifications)
@@ -96,7 +98,7 @@ QIOSApplicationState::QIOSApplicationState()
 {
     if (!qt_apple_isApplicationExtension()) {
         UIApplicationState startupState = qt_apple_sharedApplication().applicationState;
-        QIOSApplicationState::handleApplicationStateChanged(startupState, QLatin1String("Application launched"));
+        QIOSApplicationState::handleApplicationStateChanged(startupState, "Application launched"_L1);
     }
 }
 

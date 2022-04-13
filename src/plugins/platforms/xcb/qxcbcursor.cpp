@@ -55,6 +55,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 typedef int (*PtrXcursorLibraryLoadCursor)(void *, const char *);
 typedef char *(*PtrXcursorLibraryGetTheme)(void *);
 typedef int (*PtrXcursorLibrarySetTheme)(void *, const char *);
@@ -317,10 +319,10 @@ QXcbCursor::QXcbCursor(QXcbConnection *conn, QXcbScreen *screen)
 #if QT_CONFIG(xcb_xlib) && QT_CONFIG(library)
     static bool function_ptrs_not_initialized = true;
     if (function_ptrs_not_initialized) {
-        QLibrary xcursorLib(QLatin1String("Xcursor"), 1);
+        QLibrary xcursorLib("Xcursor"_L1, 1);
         bool xcursorFound = xcursorLib.load();
         if (!xcursorFound) { // try without the version number
-            xcursorLib.setFileName(QLatin1String("Xcursor"));
+            xcursorLib.setFileName("Xcursor"_L1);
             xcursorFound = xcursorLib.load();
         }
         if (xcursorFound) {

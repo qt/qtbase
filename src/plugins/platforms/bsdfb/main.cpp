@@ -43,6 +43,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QBsdFbIntegrationPlugin : public QPlatformIntegrationPlugin
 {
     Q_OBJECT
@@ -54,7 +56,7 @@ public:
 QPlatformIntegration* QBsdFbIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
     Q_UNUSED(paramList);
-    if (!system.compare(QLatin1String("bsdfb"), Qt::CaseInsensitive))
+    if (!system.compare("bsdfb"_L1, Qt::CaseInsensitive))
         return new QBsdFbIntegration(paramList);
 
     return nullptr;

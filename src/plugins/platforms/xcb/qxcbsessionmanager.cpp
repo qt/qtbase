@@ -55,6 +55,8 @@
 
 #include <cerrno> // ERANGE
 
+using namespace Qt::StringLiterals;
+
 class QSmSocketReceiver : public QObject
 {
     Q_OBJECT
@@ -228,11 +230,11 @@ static void sm_performSaveYourself(QXcbSessionManager *sm)
 
     // generate a restart and discard command that makes sense
     QStringList restart;
-    restart << argument0 << QLatin1String("-session") << sm->sessionId() + u'_' + sm->sessionKey();
+    restart << argument0 << "-session"_L1 << sm->sessionId() + u'_' + sm->sessionKey();
 
     QFileInfo fi(QCoreApplication::applicationFilePath());
     if (qAppName().compare(fi.fileName(), Qt::CaseInsensitive) != 0)
-        restart << QLatin1String("-name") << qAppName();
+        restart << "-name"_L1 << qAppName();
     sm->setRestartCommand(restart);
     QStringList discard;
     sm->setDiscardCommand(discard);

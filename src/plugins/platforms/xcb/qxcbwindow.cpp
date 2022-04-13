@@ -92,6 +92,8 @@ enum {
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(lcQpaWindow, "qt.qpa.window");
 
 Q_DECLARE_TYPEINFO(xcb_rectangle_t, Q_PRIMITIVE_TYPE);
@@ -2354,7 +2356,7 @@ bool QXcbWindow::startSystemMoveResize(const QPoint &pos, int edges)
     bool startedByTouch = connection()->startSystemMoveResizeForTouch(m_window, edges);
     if (startedByTouch) {
         const QString wmname = connection()->windowManagerName();
-        if (wmname != QLatin1String("kwin") && wmname != QLatin1String("openbox")) {
+        if (wmname != "kwin"_L1 && wmname != "openbox"_L1) {
             qCDebug(lcQpaXInputDevices) << "only KDE and OpenBox support startSystemMove/Resize which is triggered from touch events: XDG_CURRENT_DESKTOP="
                                         << qgetenv("XDG_CURRENT_DESKTOP");
             connection()->abortSystemMoveResize(m_window);

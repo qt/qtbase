@@ -43,6 +43,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QOffscreenIntegrationPlugin : public QPlatformIntegrationPlugin
 {
     Q_OBJECT
@@ -53,7 +55,7 @@ public:
 
 QPlatformIntegration *QOffscreenIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
-    if (!system.compare(QLatin1String("offscreen"), Qt::CaseInsensitive))
+    if (!system.compare("offscreen"_L1, Qt::CaseInsensitive))
         return QOffscreenIntegration::createOffscreenIntegration(paramList);
 
     return nullptr;

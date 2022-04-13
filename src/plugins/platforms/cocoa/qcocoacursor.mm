@@ -58,6 +58,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QCocoaCursor::QCocoaCursor()
 {
 }
@@ -284,15 +286,15 @@ NSCursor *QCocoaCursor::createCursorData(QCursor *cursor)
         return createCursorFromPixmap(pixmap);
         break; }
     case Qt::WaitCursor: {
-        QPixmap pixmap = QPixmap(QLatin1String(":/qt-project.org/mac/cursors/images/spincursor.png"));
+        QPixmap pixmap = QPixmap(":/qt-project.org/mac/cursors/images/spincursor.png"_L1);
         return createCursorFromPixmap(pixmap, hotspot);
         break; }
     case Qt::SizeAllCursor: {
-        QPixmap pixmap = QPixmap(QLatin1String(":/qt-project.org/mac/cursors/images/sizeallcursor.png"));
+        QPixmap pixmap = QPixmap(":/qt-project.org/mac/cursors/images/sizeallcursor.png"_L1);
         return createCursorFromPixmap(pixmap, QPoint(8, 8));
         break; }
     case Qt::BusyCursor: {
-        QPixmap pixmap = QPixmap(QLatin1String(":/qt-project.org/mac/cursors/images/waitcursor.png"));
+        QPixmap pixmap = QPixmap(":/qt-project.org/mac/cursors/images/waitcursor.png"_L1);
         return createCursorFromPixmap(pixmap, hotspot);
         break; }
 #define QT_USE_APPROXIMATE_CURSORS

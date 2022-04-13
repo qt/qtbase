@@ -58,6 +58,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QDBusArgument &operator <<(QDBusArgument &arg, const QXdgDesktopPortalFileDialog::FilterCondition &filterCondition)
 {
     arg.beginStructure();
@@ -182,29 +184,29 @@ void QXdgDesktopPortalFileDialog::openPortal()
 {
     Q_D(QXdgDesktopPortalFileDialog);
 
-    QDBusMessage message = QDBusMessage::createMethodCall(QLatin1String("org.freedesktop.portal.Desktop"),
-                                                          QLatin1String("/org/freedesktop/portal/desktop"),
-                                                          QLatin1String("org.freedesktop.portal.FileChooser"),
-                                                          d->saveFile ? QLatin1String("SaveFile") : QLatin1String("OpenFile"));
-    QString parentWindowId = QLatin1String("x11:") + QString::number(d->winId, 16);
+    QDBusMessage message = QDBusMessage::createMethodCall("org.freedesktop.portal.Desktop"_L1,
+                                                          "/org/freedesktop/portal/desktop"_L1,
+                                                          "org.freedesktop.portal.FileChooser"_L1,
+                                                          d->saveFile ? "SaveFile"_L1 : "OpenFile"_L1);
+    QString parentWindowId = "x11:"_L1 + QString::number(d->winId, 16);
 
     QVariantMap options;
     if (!d->acceptLabel.isEmpty())
-        options.insert(QLatin1String("accept_label"), d->acceptLabel);
+        options.insert("accept_label"_L1, d->acceptLabel);
 
-    options.insert(QLatin1String("modal"), d->modal);
-    options.insert(QLatin1String("multiple"), d->multipleFiles);
-    options.insert(QLatin1String("directory"), d->directoryMode);
+    options.insert("modal"_L1, d->modal);
+    options.insert("multiple"_L1, d->multipleFiles);
+    options.insert("directory"_L1, d->directoryMode);
 
     if (d->saveFile) {
         if (!d->directory.isEmpty())
-            options.insert(QLatin1String("current_folder"), QFile::encodeName(d->directory).append('\0'));
+            options.insert("current_folder"_L1, QFile::encodeName(d->directory).append('\0'));
 
         if (!d->selectedFiles.isEmpty()) {
             // current_file for the file to be pre-selected, current_name for the file name to be pre-filled
             // current_file accepts absolute path while current_name accepts just file name
-            options.insert(QLatin1String("current_file"), QFile::encodeName(d->selectedFiles.first()).append('\0'));
-            options.insert(QLatin1String("current_name"), QFileInfo(d->selectedFiles.first()).fileName());
+            options.insert("current_file"_L1, QFile::encodeName(d->selectedFiles.first()).append('\0'));
+            options.insert("current_name"_L1, QFileInfo(d->selectedFiles.first()).fileName());
         }
     }
 
@@ -281,12 +283,12 @@ void QXdgDesktopPortalFileDialog::openPortal()
     }
 
     if (!filterList.isEmpty())
-        options.insert(QLatin1String("filters"), QVariant::fromValue(filterList));
+        options.insert("filters"_L1, QVariant::fromValue(filterList));
 
     if (selectedFilterIndex != -1)
-        options.insert(QLatin1String("current_filter"), QVariant::fromValue(filterList[selectedFilterIndex]));
+        options.insert("current_filter"_L1, QVariant::fromValue(filterList[selectedFilterIndex]));
 
-    options.insert(QLatin1String("handle_token"), QStringLiteral("qt%1").arg(QRandomGenerator::global()->generate()));
+    options.insert("handle_token"_L1, QStringLiteral("qt%1").arg(QRandomGenerator::global()->generate()));
 
     // TODO choices a(ssa(ss)s)
     // List of serialized combo boxes to add to the file chooser.
@@ -302,8 +304,8 @@ void QXdgDesktopPortalFileDialog::openPortal()
         } else {
             QDBusConnection::sessionBus().connect(nullptr,
                                                   reply.value().path(),
-                                                  QLatin1String("org.freedesktop.portal.Request"),
-                                                  QLatin1String("Response"),
+                                                  "org.freedesktop.portal.Request"_L1,
+                                                  "Response"_L1,
                                                   this,
                                                   SLOT(gotResponse(uint,QVariantMap)));
         }
@@ -451,10 +453,10 @@ void QXdgDesktopPortalFileDialog::gotResponse(uint response, const QVariantMap &
     Q_D(QXdgDesktopPortalFileDialog);
 
     if (!response) {
-        if (results.contains(QLatin1String("uris")))
-            d->selectedFiles = results.value(QLatin1String("uris")).toStringList();
+        if (results.contains("uris"_L1))
+            d->selectedFiles = results.value("uris"_L1).toStringList();
 
-        if (results.contains(QLatin1String("current_filter"))) {
+        if (results.contains("current_filter"_L1)) {
             const Filter selectedFilter = qdbus_cast<Filter>(results.value(QStringLiteral("current_filter")));
             if (!selectedFilter.filterConditions.empty() && selectedFilter.filterConditions[0].type == MimeType) {
                 // s.a. QXdgDesktopPortalFileDialog::openPortal which basically does the inverse

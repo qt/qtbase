@@ -49,6 +49,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 
 QVncScreen::QVncScreen(const QStringList &args)
     : mArgs(args)
@@ -66,9 +68,9 @@ QVncScreen::~QVncScreen()
 
 bool QVncScreen::initialize()
 {
-    QRegularExpression sizeRx(QLatin1String("size=(\\d+)x(\\d+)"));
-    QRegularExpression mmSizeRx(QLatin1String("mmsize=(?<width>(\\d*\\.)?\\d+)x(?<height>(\\d*\\.)?\\d+)"));
-    QRegularExpression depthRx(QLatin1String("depth=(\\d+)"));
+    QRegularExpression sizeRx("size=(\\d+)x(\\d+)"_L1);
+    QRegularExpression mmSizeRx("mmsize=(?<width>(\\d*\\.)?\\d+)x(?<height>(\\d*\\.)?\\d+)"_L1);
+    QRegularExpression depthRx("depth=(\\d+)"_L1);
 
     mGeometry = QRect(0, 0, 1024, 768);
     mFormat = QImage::Format_ARGB32_Premultiplied;

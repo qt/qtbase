@@ -55,6 +55,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*****************************************************************************
    QMacPasteboard code
 *****************************************************************************/
@@ -180,7 +182,7 @@ OSStatus QMacPasteboard::promiseKeeper(PasteboardRef paste, PasteboardItemID id,
         }
     }
 
-    if (!promise.itemId && flavorAsQString == QLatin1String("com.trolltech.qt.MimeTypeName")) {
+    if (!promise.itemId && flavorAsQString == "com.trolltech.qt.MimeTypeName"_L1) {
         // we have promised this data, but won't be able to convert, so return null data.
         // This helps in making the application/x-qt-mime-type-name hidden from normal use.
         QByteArray ba;
@@ -328,7 +330,7 @@ QMacPasteboard::setMimeData(QMimeData *mime_src, DataRequestType dataRequestType
         // QMimeData sub classes reimplementing the formats() might not expose the
         // temporary "application/x-qt-mime-type-name" mimetype. So check the existence
         // of this mime type while doing drag and drop.
-        QString dummyMimeType(QLatin1String("application/x-qt-mime-type-name"));
+        QString dummyMimeType("application/x-qt-mime-type-name"_L1);
         if (!formats.contains(dummyMimeType)) {
             QByteArray dummyType = mime_src->data(dummyMimeType);
             if (!dummyType.isEmpty()) {
@@ -342,7 +344,7 @@ QMacPasteboard::setMimeData(QMimeData *mime_src, DataRequestType dataRequestType
                 // Hack: The Rtf handler converts incoming Rtf to Html. We do
                 // not want to convert outgoing Html to Rtf but instead keep
                 // posting it as Html. Skip the Rtf handler here.
-                if (c->convertorName() == QLatin1String("Rtf"))
+                if (c->convertorName() == "Rtf"_L1)
                     continue;
                 QString flavor(c->flavorFor(mimeType));
                 if (!flavor.isEmpty()) {
@@ -463,9 +465,9 @@ QMacPasteboard::retrieveData(const QString &format, QMetaType) const
             // Converting via PasteboardCopyItemFlavorData below will for some UITs result
             // in newlines mapping to '\r' instead of '\n'. To work around this we shortcut
             // the conversion via NSPasteboard's NSStringPboardType if possible.
-            if (c_flavor == QLatin1String("com.apple.traditional-mac-plain-text")
-             || c_flavor == QLatin1String("public.utf8-plain-text")
-             || c_flavor == QLatin1String("public.utf16-plain-text")) {
+            if (c_flavor == "com.apple.traditional-mac-plain-text"_L1
+             || c_flavor == "public.utf8-plain-text"_L1
+             || c_flavor == "public.utf16-plain-text"_L1) {
                 QString str = qt_mac_get_pasteboardString(paste);
                 if (!str.isEmpty())
                     return str;

@@ -63,9 +63,11 @@
 
 QT_USE_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static NSString *strippedText(QString s)
 {
-    s.remove(QLatin1String("..."));
+    s.remove("..."_L1);
     return QPlatformTheme::removeMnemonics(s).trimmed().toNSString();
 }
 
@@ -443,7 +445,7 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
 
     QStringList fileTypes;
     for (const QString &filter : *m_selectedNameFilter) {
-        if (!filter.startsWith(QLatin1String("*.")))
+        if (!filter.startsWith("*."_L1))
             continue;
 
         if (filter.contains(u'?'))

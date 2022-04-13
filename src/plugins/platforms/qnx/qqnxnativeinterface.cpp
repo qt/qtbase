@@ -60,6 +60,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QQnxNativeInterface::QQnxNativeInterface(QQnxIntegration *integration)
     : m_integration(integration)
 {
@@ -116,7 +118,7 @@ void QQnxNativeInterface::setWindowProperty(QPlatformWindow *window, const QStri
 {
     QQnxWindow *qnxWindow = static_cast<QQnxWindow*>(window);
 
-    if (name == QLatin1String("qnxWindowGroup")) {
+    if (name == "qnxWindowGroup"_L1) {
         if (value.isNull())
             qnxWindow->joinWindowGroup(QByteArray());
         else if (value.canConvert<QByteArray>())

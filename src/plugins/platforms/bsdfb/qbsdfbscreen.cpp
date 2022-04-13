@@ -66,6 +66,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 enum {
     DefaultDPI = 100
 };
@@ -152,10 +154,10 @@ QBsdFbScreen::~QBsdFbScreen()
 
 bool QBsdFbScreen::initialize()
 {
-    QRegularExpression fbRx(QLatin1String("fb=(.*)"));
-    QRegularExpression mmSizeRx(QLatin1String("mmsize=(\\d+)x(\\d+)"));
-    QRegularExpression sizeRx(QLatin1String("size=(\\d+)x(\\d+)"));
-    QRegularExpression offsetRx(QLatin1String("offset=(\\d+)x(\\d+)"));
+    QRegularExpression fbRx("fb=(.*)"_L1);
+    QRegularExpression mmSizeRx("mmsize=(\\d+)x(\\d+)"_L1);
+    QRegularExpression sizeRx("size=(\\d+)x(\\d+)"_L1);
+    QRegularExpression offsetRx("offset=(\\d+)x(\\d+)"_L1);
 
     QString fbDevice;
     QSize userMmSize;

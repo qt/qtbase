@@ -46,6 +46,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QCocoaIntegrationPlugin : public QPlatformIntegrationPlugin
 {
     Q_OBJECT
@@ -57,7 +59,7 @@ public:
 QPlatformIntegration * QCocoaIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
     QMacAutoReleasePool pool;
-    if (system.compare(QLatin1String("cocoa"), Qt::CaseInsensitive) == 0)
+    if (system.compare("cocoa"_L1, Qt::CaseInsensitive) == 0)
         return new QCocoaIntegration(paramList);
 
     return nullptr;

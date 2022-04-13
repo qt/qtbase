@@ -42,6 +42,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QXdgDesktopPortalThemePlugin : public QPlatformThemePlugin
 {
    Q_OBJECT
@@ -54,9 +56,9 @@ public:
 QPlatformTheme *QXdgDesktopPortalThemePlugin::create(const QString &key, const QStringList &params)
 {
     Q_UNUSED(params);
-    if (!key.compare(QLatin1String("xdgdesktopportal"), Qt::CaseInsensitive) ||
-        !key.compare(QLatin1String("flatpak"), Qt::CaseInsensitive) ||
-        !key.compare(QLatin1String("snap"), Qt::CaseInsensitive))
+    if (!key.compare("xdgdesktopportal"_L1, Qt::CaseInsensitive) ||
+        !key.compare("flatpak"_L1, Qt::CaseInsensitive) ||
+        !key.compare("snap"_L1, Qt::CaseInsensitive))
         return new QXdgDesktopPortalTheme;
 
     return nullptr;

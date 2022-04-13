@@ -51,6 +51,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static QImage::Format determineFormat(const FBInfo *fbinfo)
 {
     QImage::Format format = QImage::Format_Invalid;
@@ -109,9 +111,9 @@ QIntegrityFbScreen::~QIntegrityFbScreen()
 bool QIntegrityFbScreen::initialize()
 {
     Error err;
-    QRegularExpression fbRx(QLatin1String("fb=(.*)"));
-    QRegularExpression sizeRx(QLatin1String("size=(\\d+)x(\\d+)"));
-    QRegularExpression offsetRx(QLatin1String("offset=(\\d+)x(\\d+)"));
+    QRegularExpression fbRx("fb=(.*)"_L1);
+    QRegularExpression sizeRx("size=(\\d+)x(\\d+)"_L1);
+    QRegularExpression offsetRx("offset=(\\d+)x(\\d+)"_L1);
 
     QString fbDevice;
     QRect userGeometry;

@@ -58,11 +58,13 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QVncIntegration::QVncIntegration(const QStringList &paramList)
     : m_fontDb(new QGenericUnixFontDatabase),
       m_services(new QGenericUnixServices)
 {
-    QRegularExpression portRx(QLatin1String("port=(\\d+)"));
+    QRegularExpression portRx("port=(\\d+)"_L1);
     quint16 port = 5900;
     for (const QString &arg : paramList) {
         QRegularExpressionMatch match;

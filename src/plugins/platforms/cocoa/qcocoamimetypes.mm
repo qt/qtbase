@@ -46,6 +46,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QMacPasteboardMimeTraditionalMacPlainText : public QMacInternalPasteboardMime {
 public:
     QMacPasteboardMimeTraditionalMacPlainText() : QMacInternalPasteboardMime(MIME_ALL) { }
@@ -60,20 +62,20 @@ public:
 
 QString QMacPasteboardMimeTraditionalMacPlainText::convertorName()
 {
-    return QLatin1String("PlainText (traditional-mac-plain-text)");
+    return "PlainText (traditional-mac-plain-text)"_L1;
 }
 
 QString QMacPasteboardMimeTraditionalMacPlainText::flavorFor(const QString &mime)
 {
-    if (mime == QLatin1String("text/plain"))
-        return QLatin1String("com.apple.traditional-mac-plain-text");
+    if (mime == "text/plain"_L1)
+        return "com.apple.traditional-mac-plain-text"_L1;
     return QString();
 }
 
 QString QMacPasteboardMimeTraditionalMacPlainText::mimeFor(QString flav)
 {
-    if (flav == QLatin1String("com.apple.traditional-mac-plain-text"))
-        return QLatin1String("text/plain");
+    if (flav == "com.apple.traditional-mac-plain-text"_L1)
+        return "text/plain"_L1;
     return QString();
 }
 
@@ -88,7 +90,7 @@ QVariant QMacPasteboardMimeTraditionalMacPlainText::convertToMime(const QString 
         qWarning("QMacPasteboardMimeTraditionalMacPlainText: Cannot handle multiple member data");
     const QByteArray &firstData = data.first();
     QVariant ret;
-    if (flavor == QLatin1String("com.apple.traditional-mac-plain-text")) {
+    if (flavor == "com.apple.traditional-mac-plain-text"_L1) {
         return QString(QCFString(CFStringCreateWithBytes(kCFAllocatorDefault,
                                              reinterpret_cast<const UInt8 *>(firstData.constData()),
                                              firstData.size(), CFStringGetSystemEncoding(), false)));
@@ -102,7 +104,7 @@ QList<QByteArray> QMacPasteboardMimeTraditionalMacPlainText::convertFromMime(con
 {
     QList<QByteArray> ret;
     QString string = data.toString();
-    if (flavor == QLatin1String("com.apple.traditional-mac-plain-text"))
+    if (flavor == "com.apple.traditional-mac-plain-text"_L1)
         ret.append(string.toLatin1());
     return ret;
 }

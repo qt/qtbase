@@ -88,6 +88,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static inline QColor COLORREFToQColor(COLORREF cr)
 {
     return QColor(GetRValue(cr), GetGValue(cr), GetBValue(cr));
@@ -460,7 +462,7 @@ QWindowsTheme::~QWindowsTheme()
 
 static inline QStringList iconThemeSearchPaths()
 {
-    const QFileInfo appDir(QCoreApplication::applicationDirPath() + QLatin1String("/icons"));
+    const QFileInfo appDir(QCoreApplication::applicationDirPath() + "/icons"_L1);
     return appDir.isDir() ? QStringList(appDir.absoluteFilePath()) : QStringList();
 }
 
@@ -833,7 +835,7 @@ enum { // Shell image list ids
 
 static QString dirIconPixmapCacheKey(int iIcon, int iconSize, int imageListSize)
 {
-    QString key = QLatin1String("qt_dir_") + QString::number(iIcon);
+    QString key = "qt_dir_"_L1 + QString::number(iIcon);
     if (iconSize == SHGFI_LARGEICON)
         key += u'l';
     switch (imageListSize) {
@@ -924,7 +926,7 @@ QString QWindowsFileIconEngine::cacheKey() const
         || !suffix.compare(u"ico", Qt::CaseInsensitive)) {
         return QString();
     }
-    return QLatin1String("qt_.")
+    return "qt_."_L1
         + (suffix.isEmpty() ? fileInfo().fileName() : std::move(suffix).toUpper()); // handle "Makefile"                                    ;)
 }
 

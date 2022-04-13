@@ -44,6 +44,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QWindowsDirect2DIntegrationPlugin : public QPlatformIntegrationPlugin
 {
     Q_OBJECT
@@ -54,7 +56,7 @@ public:
 
 QPlatformIntegration *QWindowsDirect2DIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
-    if (system.compare(system, QLatin1String("direct2d"), Qt::CaseInsensitive) == 0)
+    if (system.compare(system, "direct2d"_L1, Qt::CaseInsensitive) == 0)
         return QWindowsDirect2DIntegration::create(paramList);
     return nullptr;
 }

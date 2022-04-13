@@ -43,6 +43,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QMinimalIntegrationPlugin : public QPlatformIntegrationPlugin
 {
     Q_OBJECT
@@ -53,7 +55,7 @@ public:
 
 QPlatformIntegration *QMinimalIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
-    if (!system.compare(QLatin1String("minimal"), Qt::CaseInsensitive))
+    if (!system.compare("minimal"_L1, Qt::CaseInsensitive))
         return new QMinimalIntegration(paramList);
 
     return 0;

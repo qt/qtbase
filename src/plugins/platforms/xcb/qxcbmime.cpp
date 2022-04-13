@@ -45,6 +45,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QXcbMime::QXcbMime()
     : QInternalMimeData()
 { }
@@ -63,11 +65,11 @@ QString QXcbMime::mimeAtomToString(QXcbConnection *connection, xcb_atom_t a)
     if (a == XCB_ATOM_STRING
         || a == connection->atom(QXcbAtom::UTF8_STRING)
         || a == connection->atom(QXcbAtom::TEXT))
-        return QLatin1String("text/plain");
+        return "text/plain"_L1;
 
     // special case for images
     if (a == XCB_ATOM_PIXMAP)
-        return QLatin1String("image/ppm");
+        return "image/ppm"_L1;
 
     QByteArray atomName = connection->atomName(a);
 
@@ -91,15 +93,15 @@ bool QXcbMime::mimeDataForAtom(QXcbConnection *connection, xcb_atom_t a, QMimeDa
     if ((a == connection->atom(QXcbAtom::UTF8_STRING)
          || a == XCB_ATOM_STRING
          || a == connection->atom(QXcbAtom::TEXT))
-        && QInternalMimeData::hasFormatHelper(QLatin1String("text/plain"), mimeData)) {
+        && QInternalMimeData::hasFormatHelper("text/plain"_L1, mimeData)) {
         if (a == connection->atom(QXcbAtom::UTF8_STRING)) {
-            *data = QInternalMimeData::renderDataHelper(QLatin1String("text/plain"), mimeData);
+            *data = QInternalMimeData::renderDataHelper("text/plain"_L1, mimeData);
             ret = true;
         } else if (a == XCB_ATOM_STRING ||
                    a == connection->atom(QXcbAtom::TEXT)) {
             // ICCCM says STRING is latin1
             *data = QString::fromUtf8(QInternalMimeData::renderDataHelper(
-                        QLatin1String("text/plain"), mimeData)).toLatin1();
+                        "text/plain"_L1, mimeData)).toLatin1();
             ret = true;
         }
         return ret;
@@ -110,18 +112,17 @@ bool QXcbMime::mimeDataForAtom(QXcbConnection *connection, xcb_atom_t a, QMimeDa
         *data = QInternalMimeData::renderDataHelper(atomName, mimeData);
         // mimeAtomToString() converts "text/x-moz-url" to "text/uri-list",
         // so QXcbConnection::atomName() has to be used.
-        if (atomName == QLatin1String("text/uri-list")
+        if (atomName == "text/uri-list"_L1
             && connection->atomName(a) == "text/x-moz-url") {
             const QString mozUri = QLatin1String(data->split('\n').constFirst()) + u'\n';
             *data = QByteArray(reinterpret_cast<const char *>(mozUri.data()),
                                mozUri.length() * 2);
-        } else if (atomName == QLatin1String("application/x-color"))
+        } else if (atomName == "application/x-color"_L1)
             *dataFormat = 16;
         ret = true;
     } else if ((a == XCB_ATOM_PIXMAP || a == XCB_ATOM_BITMAP) && mimeData->hasImage()) {
         ret = true;
-    } else if (atomName == QLatin1String("text/plain")
-               && mimeData->hasFormat(QLatin1String("text/uri-list"))) {
+    } else if (atomName == "text/plain"_L1 && mimeData->hasFormat("text/uri-list"_L1)) {
         // Return URLs also as plain text.
         *data = QInternalMimeData::renderDataHelper(atomName, mimeData);
         ret = true;
@@ -136,22 +137,22 @@ QList<xcb_atom_t> QXcbMime::mimeAtomsForFormat(QXcbConnection *connection, const
     atoms.append(connection->internAtom(format.toLatin1()));
 
     // special cases for strings
-    if (format == QLatin1String("text/plain")) {
+    if (format == "text/plain"_L1) {
         atoms.append(connection->atom(QXcbAtom::UTF8_STRING));
         atoms.append(XCB_ATOM_STRING);
         atoms.append(connection->atom(QXcbAtom::TEXT));
     }
 
     // special cases for uris
-    if (format == QLatin1String("text/uri-list")) {
+    if (format == "text/uri-list"_L1) {
         atoms.append(connection->internAtom("text/x-moz-url"));
         atoms.append(connection->internAtom("text/plain"));
     }
 
     //special cases for images
-    if (format == QLatin1String("image/ppm"))
+    if (format == "image/ppm"_L1)
         atoms.append(XCB_ATOM_PIXMAP);
-    if (format == QLatin1String("image/pbm"))
+    if (format == "image/pbm"_L1)
         atoms.append(XCB_ATOM_BITMAP);
 
     return atoms;
@@ -164,14 +165,14 @@ QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a,
     QString atomName = mimeAtomToString(connection, a);
 //    qDebug() << "mimeConvertDataToFormat" << format << atomName << data;
 
-    if (hasUtf8 && atomName == format + QLatin1String(";charset=utf-8")) {
+    if (hasUtf8 && atomName == format + ";charset=utf-8"_L1) {
         if (requestedType.id() == QMetaType::QString)
             return QString::fromUtf8(data);
         return data;
     }
 
     // special cases for string types
-    if (format == QLatin1String("text/plain")) {
+    if (format == "text/plain"_L1) {
         if (data.endsWith('\0'))
             data.chop(1);
         if (a == connection->atom(QXcbAtom::UTF8_STRING)) {
@@ -185,7 +186,7 @@ QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a,
     // Firefox uses UTF16 without BOM for text/x-moz-url, "text/html",
     // Google Chrome uses UTF16 without BOM for "text/x-moz-url",
     // UTF16 with BOM for "text/html".
-    if ((format == QLatin1String("text/html") || format == QLatin1String("text/uri-list"))
+    if ((format == "text/html"_L1 || format == "text/uri-list"_L1)
         && data.size() > 1) {
         const quint8 byte0 = data.at(0);
         const quint8 byte1 = data.at(1);
@@ -194,7 +195,7 @@ QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a,
             const QString str = QString::fromUtf16(
                   reinterpret_cast<const char16_t *>(data.constData()), data.size() / 2);
             if (!str.isNull()) {
-                if (format == QLatin1String("text/uri-list")) {
+                if (format == "text/uri-list"_L1) {
                     const auto urls = QStringView{str}.split(u'\n');
                     QList<QVariant> list;
                     list.reserve(urls.size());
@@ -224,7 +225,7 @@ QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a,
 
 #if 0 // ###
     // special case for images
-    if (format == QLatin1String("image/ppm")) {
+    if (format == "image/ppm"_L1) {
         if (a == XCB_ATOM_PIXMAP && data.size() == sizeof(Pixmap)) {
             Pixmap xpm = *((Pixmap*)data.data());
             if (!xpm)
@@ -261,7 +262,7 @@ xcb_atom_t QXcbMime::mimeAtomForFormat(QXcbConnection *connection, const QString
     *hasUtf8 = false;
 
     // find matches for string types
-    if (format == QLatin1String("text/plain")) {
+    if (format == "text/plain"_L1) {
         if (atoms.contains(connection->atom(QXcbAtom::UTF8_STRING)))
             return connection->atom(QXcbAtom::UTF8_STRING);
         if (atoms.contains(XCB_ATOM_STRING))
@@ -271,7 +272,7 @@ xcb_atom_t QXcbMime::mimeAtomForFormat(QXcbConnection *connection, const QString
     }
 
     // find matches for uri types
-    if (format == QLatin1String("text/uri-list")) {
+    if (format == "text/uri-list"_L1) {
         xcb_atom_t a = connection->internAtom(format.toLatin1());
         if (a && atoms.contains(a))
             return a;
@@ -281,7 +282,7 @@ xcb_atom_t QXcbMime::mimeAtomForFormat(QXcbConnection *connection, const QString
     }
 
     // find match for image
-    if (format == QLatin1String("image/ppm")) {
+    if (format == "image/ppm"_L1) {
         if (atoms.contains(XCB_ATOM_PIXMAP))
             return XCB_ATOM_PIXMAP;
     }
@@ -289,11 +290,11 @@ xcb_atom_t QXcbMime::mimeAtomForFormat(QXcbConnection *connection, const QString
     // for string/text requests try to use a format with a well-defined charset
     // first to avoid encoding problems
     if (requestedType.id() == QMetaType::QString
-        && format.startsWith(QLatin1String("text/"))
-        && !format.contains(QLatin1String("charset="))) {
+        && format.startsWith("text/"_L1)
+        && !format.contains("charset="_L1)) {
 
         QString formatWithCharset = format;
-        formatWithCharset.append(QLatin1String(";charset=utf-8"));
+        formatWithCharset.append(";charset=utf-8"_L1);
 
         xcb_atom_t a = connection->internAtom(std::move(formatWithCharset).toLatin1());
         if (a && atoms.contains(a)) {

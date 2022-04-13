@@ -53,6 +53,8 @@
 
 #define QT_XCB_HAS_TOUCHPAD_GESTURES (XCB_INPUT_MINOR_VERSION >= 4)
 
+using namespace Qt::StringLiterals;
+
 using qt_xcb_input_device_event_t = xcb_input_button_press_event_t;
 #if QT_XCB_HAS_TOUCHPAD_GESTURES
 using qt_xcb_input_pinch_event_t = xcb_input_gesture_pinch_begin_event_t;
@@ -371,42 +373,42 @@ void QXcbConnection::xi2SetupSlavePointerDevice(void *info, bool removeExisting,
 
     // But we need to be careful not to take the touch and tablet-button devices as tablets.
     QByteArray nameLower = nameRaw.toLower();
-    QString dbgType = QLatin1String("UNKNOWN");
+    QString dbgType = "UNKNOWN"_L1;
     if (nameLower.contains("eraser")) {
         isTablet = true;
         tabletData.pointerType = QPointingDevice::PointerType::Eraser;
-        dbgType = QLatin1String("eraser");
+        dbgType = "eraser"_L1;
     } else if (nameLower.contains("cursor") && !(nameLower.contains("cursor controls") && nameLower.contains("trackball"))) {
         isTablet = true;
         tabletData.pointerType = QPointingDevice::PointerType::Cursor;
-        dbgType = QLatin1String("cursor");
+        dbgType = "cursor"_L1;
     } else if (nameLower.contains("wacom") && nameLower.contains("finger touch")) {
         isTablet = false;
     } else if ((nameLower.contains("pen") || nameLower.contains("stylus")) && isTablet) {
         tabletData.pointerType = QPointingDevice::PointerType::Pen;
-        dbgType = QLatin1String("pen");
+        dbgType = "pen"_L1;
     } else if (nameLower.contains("wacom") && isTablet && !nameLower.contains("touch")) {
         // combined device (evdev) rather than separate pen/eraser (wacom driver)
         tabletData.pointerType = QPointingDevice::PointerType::Pen;
-        dbgType = QLatin1String("pen");
+        dbgType = "pen"_L1;
     } else if (nameLower.contains("aiptek") /* && device == QXcbAtom::KEYBOARD */) {
         // some "Genius" tablets
         isTablet = true;
         tabletData.pointerType = QPointingDevice::PointerType::Pen;
-        dbgType = QLatin1String("pen");
+        dbgType = "pen"_L1;
     } else if (nameLower.contains("waltop") && nameLower.contains("tablet")) {
         // other "Genius" tablets
         // WALTOP International Corp. Slim Tablet
         isTablet = true;
         tabletData.pointerType = QPointingDevice::PointerType::Pen;
-        dbgType = QLatin1String("pen");
+        dbgType = "pen"_L1;
     } else if (nameLower.contains("uc-logic") && isTablet) {
         tabletData.pointerType = QPointingDevice::PointerType::Pen;
-        dbgType = QLatin1String("pen");
+        dbgType = "pen"_L1;
     } else if (nameLower.contains("ugee")) {
         isTablet = true;
         tabletData.pointerType = QPointingDevice::PointerType::Pen;
-        dbgType = QLatin1String("pen");
+        dbgType = "pen"_L1;
     } else {
         isTablet = false;
     }

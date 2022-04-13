@@ -58,6 +58,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QEglFSCursor::QEglFSCursor(QPlatformScreen *screen)
   : m_visible(true),
     m_screen(static_cast<QEglFSScreen *>(screen)),
@@ -178,14 +180,14 @@ void QEglFSCursor::initCursorAtlas()
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     QJsonObject object = doc.object();
 
-    QString atlas = object.value(QLatin1String("image")).toString();
+    QString atlas = object.value("image"_L1).toString();
     Q_ASSERT(!atlas.isEmpty());
 
-    const int cursorsPerRow = object.value(QLatin1String("cursorsPerRow")).toDouble();
+    const int cursorsPerRow = object.value("cursorsPerRow"_L1).toDouble();
     Q_ASSERT(cursorsPerRow);
     m_cursorAtlas.cursorsPerRow = cursorsPerRow;
 
-    const QJsonArray hotSpots = object.value(QLatin1String("hotSpots")).toArray();
+    const QJsonArray hotSpots = object.value("hotSpots"_L1).toArray();
     Q_ASSERT(hotSpots.count() == Qt::LastCursor + 1);
     for (int i = 0; i < hotSpots.count(); i++) {
         QPoint hotSpot(hotSpots[i].toArray()[0].toDouble(), hotSpots[i].toArray()[1].toDouble());

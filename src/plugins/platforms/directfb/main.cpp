@@ -43,6 +43,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #ifdef DIRECTFB_GL_EGL
 #define QT_EGL_BACKEND_STRING(list) list << "directfbegl";
 #define QT_EGL_BACKEND_CREATE(list, out) \
@@ -66,7 +68,7 @@ QPlatformIntegration * QDirectFbIntegrationPlugin::create(const QString& system,
     Q_UNUSED(paramList);
     QDirectFbIntegration *integration = nullptr;
 
-    if (!system.compare(QLatin1String("directfb"), Qt::CaseInsensitive))
+    if (!system.compare("directfb"_L1, Qt::CaseInsensitive))
         integration = new QDirectFbIntegration;
     QT_EGL_BACKEND_CREATE(system, integration)
 

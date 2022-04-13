@@ -72,6 +72,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QLinuxFbIntegration::QLinuxFbIntegration(const QStringList &paramList)
     : m_primaryScreen(nullptr),
       m_fontDb(new QGenericUnixFontDatabase),
@@ -152,7 +154,7 @@ void QLinuxFbIntegration::createInputHandlers()
 {
 #if QT_CONFIG(libinput)
     if (!qEnvironmentVariableIntValue("QT_QPA_FB_NO_LIBINPUT")) {
-        new QLibInputHandler(QLatin1String("libinput"), QString());
+        new QLibInputHandler("libinput"_L1, QString());
         return;
     }
 #endif
@@ -160,16 +162,16 @@ void QLinuxFbIntegration::createInputHandlers()
 #if QT_CONFIG(tslib)
     bool useTslib = qEnvironmentVariableIntValue("QT_QPA_FB_TSLIB");
     if (useTslib)
-        new QTsLibMouseHandler(QLatin1String("TsLib"), QString());
+        new QTsLibMouseHandler("TsLib"_L1, QString());
 #endif
 
 #if QT_CONFIG(evdev)
-    m_kbdMgr = new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString(), this);
-    new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString(), this);
+    m_kbdMgr = new QEvdevKeyboardManager("EvdevKeyboard"_L1, QString(), this);
+    new QEvdevMouseManager("EvdevMouse"_L1, QString(), this);
 #if QT_CONFIG(tslib)
     if (!useTslib)
 #endif
-        new QEvdevTouchManager(QLatin1String("EvdevTouch"), QString() /* spec */, this);
+        new QEvdevTouchManager("EvdevTouch"_L1, QString() /* spec */, this);
 #endif
 }
 

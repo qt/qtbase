@@ -55,6 +55,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /* The MSVC compilers allows multi-byte characters, that has the behavior of
  * that each character gets shifted into position. 0x73524742 below is for MSVC
  * equivalent to doing 'sRGB', but this does of course not work
@@ -583,7 +585,7 @@ QVariant QWindowsMimeText::convertToMime(const QString &mime, LPDATAOBJECT pData
         QByteArray data = getData(CF_UNICODETEXT, pDataObj);
         if (!data.isEmpty()) {
             str = QString::fromWCharArray(reinterpret_cast<const wchar_t *>(data.constData()));
-            str.replace(QLatin1String("\r\n"), QLatin1String("\n"));
+            str.replace("\r\n"_L1, "\n"_L1);
         } else {
             data = getData(CF_TEXT, pDataObj);
             if (!data.isEmpty()) {

@@ -61,6 +61,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QBsdFbIntegration::QBsdFbIntegration(const QStringList &paramList)
 {
     m_fontDb.reset(new QGenericUnixFontDatabase);
@@ -139,7 +141,7 @@ void QBsdFbIntegration::createInputHandlers()
 #if QT_CONFIG(tslib)
     const bool useTslib = qEnvironmentVariableIntValue("QT_QPA_FB_TSLIB");
     if (useTslib)
-        new QTsLibMouseHandler(QLatin1String("TsLib"), QString());
+        new QTsLibMouseHandler("TsLib"_L1, QString());
 #endif
 }
 

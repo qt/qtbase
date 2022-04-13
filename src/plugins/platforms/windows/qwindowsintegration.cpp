@@ -101,6 +101,8 @@ static inline void initOpenGlBlacklistResources()
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     \class QWindowsIntegration
     \brief QPlatformIntegration implementation for Windows.
@@ -211,9 +213,9 @@ static inline unsigned parseOptions(const QStringList &paramList,
             options |= QWindowsIntegration::DontUseColorFonts;
         } else if (param == u"nomousefromtouch") {
             options |= QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch;
-        } else if (parseIntOption(param, QLatin1String("verbose"), 0, INT_MAX, &QWindowsContext::verbose)
-            || parseIntOption(param, QLatin1String("tabletabsoluterange"), 0, INT_MAX, tabletAbsoluteRange)
-            || parseIntOption(param, QLatin1String("dpiawareness"), QtWindows::ProcessDpiUnaware, QtWindows::ProcessPerMonitorV2DpiAware, dpiAwareness)) {
+        } else if (parseIntOption(param, "verbose"_L1, 0, INT_MAX, &QWindowsContext::verbose)
+            || parseIntOption(param, "tabletabsoluterange"_L1, 0, INT_MAX, tabletAbsoluteRange)
+            || parseIntOption(param, "dpiawareness"_L1, QtWindows::ProcessDpiUnaware, QtWindows::ProcessPerMonitorV2DpiAware, dpiAwareness)) {
         } else if (param == u"menus=native") {
             options |= QWindowsIntegration::AlwaysUseNativeMenus;
         } else if (param == u"menus=none") {

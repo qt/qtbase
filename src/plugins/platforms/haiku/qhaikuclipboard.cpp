@@ -46,6 +46,8 @@
 
 #include <Clipboard.h>
 
+using namespace Qt::StringLiterals;
+
 QHaikuClipboard::QHaikuClipboard()
     : m_systemMimeData(nullptr)
     , m_userMimeData(nullptr)
@@ -92,9 +94,9 @@ QMimeData *QHaikuClipboard::mimeData(QClipboard::Mode mode)
             const status_t status = clipboard->FindData(name, B_MIME_TYPE, &data, &dataLen);
             if (dataLen && (status == B_OK)) {
                 const QLatin1String format(name);
-                if (format == QLatin1String("text/plain")) {
+                if (format == "text/plain"_L1) {
                     m_systemMimeData->setText(QString::fromLocal8Bit(reinterpret_cast<const char*>(data), dataLen));
-                } else if (format == QLatin1String("text/html")) {
+                } else if (format == "text/html"_L1) {
                     m_systemMimeData->setHtml(QString::fromLocal8Bit(reinterpret_cast<const char*>(data), dataLen));
                 } else {
                     m_systemMimeData->setData(format, QByteArray(reinterpret_cast<const char*>(data), dataLen));

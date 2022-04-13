@@ -33,6 +33,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 void QWasmFontDatabase::populateFontDatabase()
 {
     // Load font file from resources. Currently
@@ -81,7 +83,7 @@ void QWasmFontDatabase::releaseHandle(void *handle)
 
 QFont QWasmFontDatabase::defaultFont() const
 {
-    return QFont(QLatin1String("Bitstream Vera Sans"));
+    return QFont("Bitstream Vera Sans"_L1);
 }
 
 QT_END_NAMESPACE

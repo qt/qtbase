@@ -66,6 +66,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QGtk3Dialog : public QWindow
 {
     Q_OBJECT
@@ -524,7 +526,7 @@ void QGtk3FileDialogHelper::setNameFilters(const QStringList &filters)
         const QString name = filter.left(filter.indexOf(u'('));
         const QStringList extensions = cleanFilterList(filter);
 
-        gtk_file_filter_set_name(gtkFilter, qUtf8Printable(name.isEmpty() ? extensions.join(QLatin1String(", ")) : name));
+        gtk_file_filter_set_name(gtkFilter, qUtf8Printable(name.isEmpty() ? extensions.join(", "_L1) : name));
         foreach (const QString &ext, extensions)
             gtk_file_filter_add_pattern(gtkFilter, qUtf8Printable(ext));
 

@@ -42,6 +42,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QEglFSIntegrationPlugin : public QPlatformIntegrationPlugin
 {
     Q_OBJECT
@@ -53,7 +55,7 @@ public:
 QPlatformIntegration* QEglFSIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
     Q_UNUSED(paramList);
-    if (!system.compare(QLatin1String("eglfs"), Qt::CaseInsensitive))
+    if (!system.compare("eglfs"_L1, Qt::CaseInsensitive))
         return new QEglFSIntegration;
 
     return nullptr;

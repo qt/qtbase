@@ -42,6 +42,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QMinimalEglIntegrationPlugin : public QPlatformIntegrationPlugin
 {
     Q_OBJECT
@@ -53,7 +55,7 @@ public:
 QPlatformIntegration* QMinimalEglIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
     Q_UNUSED(paramList);
-    if (!system.compare(QLatin1String("minimalegl"), Qt::CaseInsensitive))
+    if (!system.compare("minimalegl"_L1, Qt::CaseInsensitive))
         return new QMinimalEglIntegration;
 
     return 0;

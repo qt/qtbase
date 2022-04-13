@@ -69,10 +69,12 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(qLcEglDevDebug, "qt.qpa.egldeviceintegration")
 
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
-                          (QEglFSDeviceIntegrationFactoryInterface_iid, QLatin1String("/egldeviceintegrations"), Qt::CaseInsensitive))
+                          (QEglFSDeviceIntegrationFactoryInterface_iid, "/egldeviceintegrations"_L1, Qt::CaseInsensitive))
 
 QStringList QEglFSDeviceIntegrationFactory::keys()
 {
@@ -114,7 +116,7 @@ int QEglFSDeviceIntegration::framebufferIndex() const
 {
     int fbIndex = 0;
 #if QT_CONFIG(regularexpression)
-    QRegularExpression fbIndexRx(QLatin1String("fb(\\d+)"));
+    QRegularExpression fbIndexRx("fb(\\d+)"_L1);
     QFileInfo fbinfo(QString::fromLocal8Bit(fbDeviceName()));
     QRegularExpressionMatch match;
     if (fbinfo.isSymLink())

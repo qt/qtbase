@@ -94,6 +94,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(lcQpaWindows, "qt.qpa.windows")
 Q_LOGGING_CATEGORY(lcQpaEvents, "qt.qpa.events")
 Q_LOGGING_CATEGORY(lcQpaGl, "qt.qpa.gl")
@@ -544,28 +546,28 @@ QString QWindowsContext::registerWindowClass(const QWindow *w)
     }
     // Create a unique name for the flag combination
     QString cname = classNamePrefix();
-    cname += QLatin1String("QWindow");
+    cname += "QWindow"_L1;
     switch (type) {
     case Qt::Tool:
-        cname += QLatin1String("Tool");
+        cname += "Tool"_L1;
         break;
     case Qt::ToolTip:
-        cname += QLatin1String("ToolTip");
+        cname += "ToolTip"_L1;
         break;
     case Qt::Popup:
-        cname += QLatin1String("Popup");
+        cname += "Popup"_L1;
         break;
     default:
         break;
     }
     if (style & CS_DROPSHADOW)
-        cname += QLatin1String("DropShadow");
+        cname += "DropShadow"_L1;
     if (style & CS_SAVEBITS)
-        cname += QLatin1String("SaveBits");
+        cname += "SaveBits"_L1;
     if (style & CS_OWNDC)
-        cname += QLatin1String("OwnDC");
+        cname += "OwnDC"_L1;
     if (icon)
-        cname += QLatin1String("Icon");
+        cname += "Icon"_L1;
 
     return registerWindowClass(cname, qWindowsWndProc, style, GetSysColorBrush(COLOR_WINDOW), icon);
 }

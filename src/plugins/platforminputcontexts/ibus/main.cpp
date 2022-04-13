@@ -45,6 +45,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QIbusPlatformInputContextPlugin : public QPlatformInputContextPlugin
 {
     Q_OBJECT
@@ -58,7 +60,7 @@ QIBusPlatformInputContext *QIbusPlatformInputContextPlugin::create(const QString
 {
     Q_UNUSED(paramList);
 
-    if (system.compare(system, QLatin1String("ibus"), Qt::CaseInsensitive) == 0) {
+    if (system.compare(system, "ibus"_L1, Qt::CaseInsensitive) == 0) {
         qDBusRegisterMetaType<QIBusAttribute>();
         qDBusRegisterMetaType<QIBusAttributeList>();
         qDBusRegisterMetaType<QIBusText>();

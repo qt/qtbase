@@ -54,6 +54,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QXdgDesktopPortalThemePrivate : public QPlatformThemePrivate
 {
 public:
@@ -131,11 +133,11 @@ QXdgDesktopPortalTheme::QXdgDesktopPortalTheme()
         d->baseTheme = new QPlatformTheme;
 
     // Get information about portal version
-    QDBusMessage message = QDBusMessage::createMethodCall(QLatin1String("org.freedesktop.portal.Desktop"),
-                                                          QLatin1String("/org/freedesktop/portal/desktop"),
-                                                          QLatin1String("org.freedesktop.DBus.Properties"),
-                                                          QLatin1String("Get"));
-    message << QLatin1String("org.freedesktop.portal.FileChooser") << QLatin1String("version");
+    QDBusMessage message = QDBusMessage::createMethodCall("org.freedesktop.portal.Desktop"_L1,
+                                                          "/org/freedesktop/portal/desktop"_L1,
+                                                          "org.freedesktop.DBus.Properties"_L1,
+                                                          "Get"_L1);
+    message << "org.freedesktop.portal.FileChooser"_L1 << "version"_L1;
     QDBusPendingCall pendingCall = QDBusConnection::sessionBus().asyncCall(message);
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(pendingCall);
     QObject::connect(watcher, &QDBusPendingCallWatcher::finished, [d] (QDBusPendingCallWatcher *watcher) {
@@ -147,11 +149,11 @@ QXdgDesktopPortalTheme::QXdgDesktopPortalTheme()
     });
 
     // Get information about system theme preference
-    message = QDBusMessage::createMethodCall(QLatin1String("org.freedesktop.portal.Desktop"),
-                                             QLatin1String("/org/freedesktop/portal/desktop"),
-                                             QLatin1String("org.freedesktop.portal.Settings"),
-                                             QLatin1String("Read"));
-    message << QLatin1String("org.freedesktop.appearance") << QLatin1String("color-scheme");
+    message = QDBusMessage::createMethodCall("org.freedesktop.portal.Desktop"_L1,
+                                             "/org/freedesktop/portal/desktop"_L1,
+                                             "org.freedesktop.portal.Settings"_L1,
+                                             "Read"_L1);
+    message << "org.freedesktop.appearance"_L1 << "color-scheme"_L1;
 
     // this must not be asyncCall() because we have to set appearance now
     QDBusReply<QVariant> reply = QDBusConnection::sessionBus().call(message);

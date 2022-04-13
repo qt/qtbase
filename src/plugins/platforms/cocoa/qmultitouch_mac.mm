@@ -46,6 +46,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QHash<qint64, QCocoaTouch*> QCocoaTouch::_currentTouches;
 QHash<quint64, QPointingDevice*> QCocoaTouch::_touchDevices;
 QPointF QCocoaTouch::_screenReferencePos;
@@ -221,7 +223,7 @@ QPointingDevice *QCocoaTouch::getTouchDevice(QInputDevice::DeviceType type, quin
 {
     QPointingDevice *ret = _touchDevices.value(id);
     if (!ret) {
-        ret = new QPointingDevice(type == QInputDevice::DeviceType::TouchScreen ? QLatin1String("touchscreen") : QLatin1String("trackpad"),
+        ret = new QPointingDevice(type == QInputDevice::DeviceType::TouchScreen ? "touchscreen"_L1 : "trackpad"_L1,
                                   id, type, QPointingDevice::PointerType::Finger,
                                   QInputDevice::Capability::Position |
                                   QInputDevice::Capability::NormalizedPosition |

@@ -70,6 +70,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QCoreTextFontEngine;
 
 QIOSIntegration *QIOSIntegration::instance()
@@ -85,7 +87,7 @@ QIOSIntegration::QIOSIntegration()
     , m_inputContext(0)
     , m_platformServices(new QIOSServices)
     , m_accessibility(0)
-    , m_optionalPlugins(new QFactoryLoader(QIosOptionalPluginInterface_iid, QLatin1String("/platforms/darwin")))
+    , m_optionalPlugins(new QFactoryLoader(QIosOptionalPluginInterface_iid, "/platforms/darwin"_L1))
 {
     if (Q_UNLIKELY(!qt_apple_isApplicationExtension() && !qt_apple_sharedApplication())) {
         qFatal("Error: You are creating QApplication before calling UIApplicationMain.\n" \

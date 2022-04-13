@@ -60,6 +60,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static inline QDpi deviceDPI(HDC hdc)
 {
     return QDpi(GetDeviceCaps(hdc, LOGPIXELSX), GetDeviceCaps(hdc, LOGPIXELSY));
@@ -485,9 +487,9 @@ QPlatformScreen::SubpixelAntialiasingType QWindowsScreen::subpixelAntialiasingTy
 {
     QPlatformScreen::SubpixelAntialiasingType type = QPlatformScreen::subpixelAntialiasingTypeHint();
     if (type == QPlatformScreen::Subpixel_None) {
-        QSettings settings(QLatin1String(R"(HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Avalon.Graphics\DISPLAY1)"),
+        QSettings settings(R"(HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Avalon.Graphics\DISPLAY1)"_L1,
                            QSettings::NativeFormat);
-        int registryValue = settings.value(QLatin1String("PixelStructure"), -1).toInt();
+        int registryValue = settings.value("PixelStructure"_L1, -1).toInt();
         switch (registryValue) {
         case 0:
             type = QPlatformScreen::Subpixel_None;

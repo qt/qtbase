@@ -39,6 +39,8 @@
 
 // This file is included from qnsview.mm, and only used to organize the code
 
+using namespace Qt::StringLiterals;
+
 static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
 {
     // macOS will in many cases not report a deviceID (0 value).
@@ -60,7 +62,7 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
         return primaryDevice;
     } else {
         // Register a new device. Name and capabilities may need updating later.
-        const auto *device = new QPointingDevice(QLatin1String("mouse"), deviceID,
+        const auto *device = new QPointingDevice("mouse"_L1, deviceID,
             QInputDevice::DeviceType::Mouse, QPointingDevice::PointerType::Generic,
             QInputDevice::Capability::Scroll | QInputDevice::Capability::Position,
             1, 3, QString(), QPointingDeviceUniqueId(), QCocoaIntegration::instance());
@@ -770,7 +772,7 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
     if (theEvent.hasPreciseScrollingDeltas) {
         auto *devicePriv = QPointingDevicePrivate::get(const_cast<QPointingDevice *>(device));
         if (!devicePriv->capabilities.testFlag(QInputDevice::Capability::PixelScroll)) {
-            devicePriv->name = QLatin1String("trackpad or magic mouse");
+            devicePriv->name = "trackpad or magic mouse"_L1;
             devicePriv->deviceType = QInputDevice::DeviceType::TouchPad;
             devicePriv->capabilities |= QInputDevice::Capability::PixelScroll;
             qCDebug(lcInputDevices) << "mouse scrolling: updated capabilities" << device;

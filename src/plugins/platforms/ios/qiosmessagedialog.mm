@@ -49,6 +49,8 @@
 #include "quiview.h"
 #include "qiosmessagedialog.h"
 
+using namespace Qt::StringLiterals;
+
 QIOSMessageDialog::QIOSMessageDialog()
     : m_alertController(nullptr)
 {
@@ -73,7 +75,7 @@ inline QString QIOSMessageDialog::messageTextPlain()
     if (!detailedText.isEmpty())
         text += lineShift + detailedText;
 
-    text.replace(QLatin1String("<p>"), QStringLiteral("\n"), Qt::CaseInsensitive);
+    text.replace("<p>"_L1, QStringLiteral("\n"), Qt::CaseInsensitive);
     text.remove(QRegularExpression(QStringLiteral("<[^>]*>")));
 
     return text;

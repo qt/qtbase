@@ -42,6 +42,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QVkKhrDisplayIntegrationPlugin : public QPlatformIntegrationPlugin
 {
     Q_OBJECT
@@ -52,7 +54,7 @@ public:
 
 QPlatformIntegration *QVkKhrDisplayIntegrationPlugin::create(const QString &system, const QStringList &paramList)
 {
-    if (!system.compare(QLatin1String("vkkhrdisplay"), Qt::CaseInsensitive))
+    if (!system.compare("vkkhrdisplay"_L1, Qt::CaseInsensitive))
         return new QVkKhrDisplayIntegration(paramList);
 
     return 0;

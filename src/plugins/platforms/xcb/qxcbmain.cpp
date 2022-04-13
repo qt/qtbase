@@ -42,6 +42,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QXcbIntegrationPlugin : public QPlatformIntegrationPlugin
 {
    Q_OBJECT
@@ -52,7 +54,7 @@ public:
 
 QPlatformIntegration* QXcbIntegrationPlugin::create(const QString& system, const QStringList& parameters, int &argc, char **argv)
 {
-    if (!system.compare(QLatin1String("xcb"), Qt::CaseInsensitive)) {
+    if (!system.compare("xcb"_L1, Qt::CaseInsensitive)) {
         auto xcbIntegration = new QXcbIntegration(parameters, argc, argv);
         if (!xcbIntegration->hasConnection()) {
             delete xcbIntegration;

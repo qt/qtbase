@@ -49,6 +49,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static const int dragImageMaxChars = 26;
 
 QCocoaDrag::QCocoaDrag() :
@@ -131,7 +133,7 @@ Qt::DropAction QCocoaDrag::drag(QDrag *o)
     m_executed_drop_action = Qt::IgnoreAction;
 
     QMacPasteboard dragBoard(CFStringRef(NSPasteboardNameDrag), QMacInternalPasteboardMime::MIME_DND);
-    m_drag->mimeData()->setData(QLatin1String("application/x-qt-mime-type-name"), QByteArray("dummy"));
+    m_drag->mimeData()->setData("application/x-qt-mime-type-name"_L1, QByteArray("dummy"));
     dragBoard.setMimeData(m_drag->mimeData(), QMacPasteboard::LazyRequest);
 
     if (maybeDragMultipleItems())

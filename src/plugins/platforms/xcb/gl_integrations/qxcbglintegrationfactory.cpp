@@ -47,8 +47,10 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
-    (QXcbGlIntegrationFactoryInterface_iid, QLatin1String("/xcbglintegrations"), Qt::CaseInsensitive))
+    (QXcbGlIntegrationFactoryInterface_iid, "/xcbglintegrations"_L1, Qt::CaseInsensitive))
 
 QXcbGlIntegration *QXcbGlIntegrationFactory::create(const QString &platform)
 {

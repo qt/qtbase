@@ -100,16 +100,18 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 // Find out if our parent process is gdb by looking at the 'exe' symlink under /proc,.
 // or, for older Linuxes, read out 'cmdline'.
 static bool runningUnderDebugger()
 {
 #if defined(QT_DEBUG) && defined(Q_OS_LINUX)
-    const QString parentProc = QLatin1String("/proc/") + QString::number(getppid());
-    const QFileInfo parentProcExe(parentProc + QLatin1String("/exe"));
+    const QString parentProc = "/proc/"_L1 + QString::number(getppid());
+    const QFileInfo parentProcExe(parentProc + "/exe"_L1);
     if (parentProcExe.isSymLink())
-        return parentProcExe.symLinkTarget().endsWith(QLatin1String("/gdb"));
-    QFile f(parentProc + QLatin1String("/cmdline"));
+        return parentProcExe.symLinkTarget().endsWith("/gdb"_L1);
+    QFile f(parentProc + "/cmdline"_L1);
     if (!f.open(QIODevice::ReadOnly))
         return false;
     QByteArray s;
@@ -360,14 +362,14 @@ QAbstractEventDispatcher *QXcbIntegration::createEventDispatcher() const
 
 void QXcbIntegration::initialize()
 {
-    const QLatin1String defaultInputContext("compose");
+    const auto defaultInputContext = "compose"_L1;
     // Perform everything that may potentially need the event dispatcher (timers, socket
     // notifiers) here instead of the constructor.
     QString icStr = QPlatformInputContextFactory::requested();
     if (icStr.isNull())
         icStr = defaultInputContext;
     m_inputContext.reset(QPlatformInputContextFactory::create(icStr));
-    if (!m_inputContext && icStr != defaultInputContext && icStr != QLatin1String("none"))
+    if (!m_inputContext && icStr != defaultInputContext && icStr != "none"_L1)
         m_inputContext.reset(QPlatformInputContextFactory::create(defaultInputContext));
 
     connection()->keyboard()->initialize();

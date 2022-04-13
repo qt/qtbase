@@ -43,9 +43,11 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QPlatformIntegration *QQnxIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
-    if (!system.compare(QLatin1String("qnx"), Qt::CaseInsensitive)) {
+    if (!system.compare("qnx"_L1, Qt::CaseInsensitive)) {
         qqnxLgmonInit();
         return new QQnxIntegration(paramList);
     }

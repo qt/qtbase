@@ -41,6 +41,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QEglFSEmulatorScreen::QEglFSEmulatorScreen(const QJsonObject &screenDescription)
     : QEglFSScreen(eglGetDisplay(EGL_DEFAULT_DISPLAY))
     , m_id(0)
@@ -112,60 +114,60 @@ void QEglFSEmulatorScreen::initFromJsonObject(const QJsonObject &description)
 {
     QJsonValue value;
 
-    value = description.value(QLatin1String("id"));
+    value = description.value("id"_L1);
     if (!value.isUndefined() && value.isDouble())
         m_id = value.toInt();
 
-    value = description.value(QLatin1String("description"));
+    value = description.value("description"_L1);
     if (!value.isUndefined() && value.isString())
         m_description = value.toString();
 
-    value = description.value(QLatin1String("geometry"));
+    value = description.value("geometry"_L1);
     if (!value.isUndefined() && value.isObject()) {
         QJsonObject geometryObject = value.toObject();
-        value = geometryObject.value(QLatin1String("x"));
+        value = geometryObject.value("x"_L1);
         if (!value.isUndefined() && value.isDouble())
             m_geometry.setX(value.toInt());
-        value = geometryObject.value(QLatin1String("y"));
+        value = geometryObject.value("y"_L1);
         if (!value.isUndefined() && value.isDouble())
             m_geometry.setY(value.toInt());
-        value = geometryObject.value(QLatin1String("width"));
+        value = geometryObject.value("width"_L1);
         if (!value.isUndefined() && value.isDouble())
             m_geometry.setWidth(value.toInt());
-        value = geometryObject.value(QLatin1String("height"));
+        value = geometryObject.value("height"_L1);
         if (!value.isUndefined() && value.isDouble())
             m_geometry.setHeight(value.toInt());
     }
 
-    value = description.value(QLatin1String("depth"));
+    value = description.value("depth"_L1);
     if (!value.isUndefined() && value.isDouble())
         m_depth = value.toInt();
 
-    value = description.value(QLatin1String("format"));
+    value = description.value("format"_L1);
     if (!value.isUndefined() && value.isDouble())
         m_format = static_cast<QImage::Format>(value.toInt());
 
-    value = description.value(QLatin1String("physicalSize"));
+    value = description.value("physicalSize"_L1);
     if (!value.isUndefined() && value.isObject()) {
         QJsonObject physicalSizeObject = value.toObject();
-        value = physicalSizeObject.value(QLatin1String("width"));
+        value = physicalSizeObject.value("width"_L1);
         if (!value.isUndefined() && value.isDouble())
             m_physicalSize.setWidth(value.toInt());
-        value = physicalSizeObject.value(QLatin1String("height"));
+        value = physicalSizeObject.value("height"_L1);
         if (!value.isUndefined() && value.isDouble())
             m_physicalSize.setHeight(value.toInt());
     }
 
 
-    value = description.value(QLatin1String("refreshRate"));
+    value = description.value("refreshRate"_L1);
     if (!value.isUndefined() && value.isDouble())
         m_refreshRate = value.toDouble();
 
-    value = description.value(QLatin1String("nativeOrientation"));
+    value = description.value("nativeOrientation"_L1);
     if (!value.isUndefined() && value.isDouble())
         m_nativeOrientation = static_cast<Qt::ScreenOrientation>(value.toInt());
 
-    value = description.value(QLatin1String("orientation"));
+    value = description.value("orientation"_L1);
     if (!value.isUndefined() && value.isDouble())
         m_orientation = static_cast<Qt::ScreenOrientation>(value.toInt());
 }

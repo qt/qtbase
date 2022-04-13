@@ -42,9 +42,11 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QPlatformIntegration *QHaikuIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
-    if (!system.compare(QLatin1String("haiku"), Qt::CaseInsensitive))
+    if (!system.compare("haiku"_L1, Qt::CaseInsensitive))
         return new QHaikuIntegration(paramList);
 
     return nullptr;

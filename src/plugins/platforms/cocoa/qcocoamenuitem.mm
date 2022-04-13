@@ -58,6 +58,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static const char *application_menu_strings[] =
 {
     QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","About %1"),
@@ -220,7 +222,7 @@ static QPlatformMenuItem::MenuRole detectMenuRole(const QString &caption)
     const QString aboutString = QCoreApplication::translate("QCocoaMenuItem", "About");
     if (captionNoAmpersand.startsWith(aboutString, Qt::CaseInsensitive)
         || captionNoAmpersand.endsWith(aboutString, Qt::CaseInsensitive)) {
-        static const QRegularExpression qtRegExp(QLatin1String("qt$"), QRegularExpression::CaseInsensitiveOption);
+        static const QRegularExpression qtRegExp("qt$"_L1, QRegularExpression::CaseInsensitiveOption);
         if (captionNoAmpersand.contains(qtRegExp))
             return QPlatformMenuItem::AboutQtRole;
         return QPlatformMenuItem::AboutRole;
@@ -345,7 +347,7 @@ NSMenuItem *QCocoaMenuItem::sync()
 
     // Show multiple key sequences as part of the menu text.
     if (accel.count() > 1)
-        text += QLatin1String(" (") + accel.toString(QKeySequence::NativeText) + QLatin1String(")");
+        text += " ("_L1 + accel.toString(QKeySequence::NativeText) + ")"_L1;
 #endif
 
     m_native.title = QPlatformTheme::removeMnemonics(text).toNSString();

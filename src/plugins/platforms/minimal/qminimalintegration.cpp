@@ -72,6 +72,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QCoreTextFontEngine;
 
 static const char debugBackingStoreEnvironmentVariable[] = "QT_DEBUG_BACKINGSTORE";
@@ -80,11 +82,11 @@ static inline unsigned parseOptions(const QStringList &paramList)
 {
     unsigned options = 0;
     for (const QString &param : paramList) {
-        if (param == QLatin1String("enable_fonts"))
+        if (param == "enable_fonts"_L1)
             options |= QMinimalIntegration::EnableFonts;
-        else if (param == QLatin1String("freetype"))
+        else if (param == "freetype"_L1)
             options |= QMinimalIntegration::FreeTypeFontDatabase;
-        else if (param == QLatin1String("fontconfig"))
+        else if (param == "fontconfig"_L1)
             options |= QMinimalIntegration::FontconfigDatabase;
     }
     return options;

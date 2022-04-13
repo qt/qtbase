@@ -73,6 +73,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(lcQpaXInput, "qt.qpa.input")
 Q_LOGGING_CATEGORY(lcQpaXInputDevices, "qt.qpa.input.devices")
 Q_LOGGING_CATEGORY(lcQpaXInputEvents, "qt.qpa.input.events")
@@ -898,7 +900,7 @@ xcb_window_t QXcbConnection::qtSelectionOwner()
                           nullptr);                           // value list
 
         QXcbWindow::setWindowTitle(connection(), m_qtSelectionOwner,
-                                   QLatin1String("Qt Selection Owner for ") + QCoreApplication::applicationName());
+                                   "Qt Selection Owner for "_L1 + QCoreApplication::applicationName());
     }
     return m_qtSelectionOwner;
 }
@@ -1162,7 +1164,7 @@ QXcbGlIntegration *QXcbConnection::glIntegration() const
     QString glIntegrationName = QString::fromLocal8Bit(qgetenv("QT_XCB_GL_INTEGRATION"));
     if (!glIntegrationName.isEmpty()) {
         qCDebug(lcQpaGl) << "QT_XCB_GL_INTEGRATION is set to" << glIntegrationName;
-        if (glIntegrationName != QLatin1String("none")) {
+        if (glIntegrationName != "none"_L1) {
             glIntegrationNames.removeAll(glIntegrationName);
             glIntegrationNames.prepend(glIntegrationName);
         } else {

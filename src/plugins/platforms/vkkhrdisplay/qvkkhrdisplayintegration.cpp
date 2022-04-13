@@ -70,6 +70,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QVkKhrDisplayScreen : public QPlatformScreen
 {
 public:
@@ -321,7 +323,7 @@ void QVkKhrDisplayIntegration::createInputHandlers()
 {
 #if QT_CONFIG(libinput)
     if (!qEnvironmentVariableIntValue("QT_QPA_NO_LIBINPUT")) {
-        new QLibInputHandler(QLatin1String("libinput"), QString());
+        new QLibInputHandler("libinput"_L1, QString());
         return;
     }
 #endif
@@ -329,16 +331,16 @@ void QVkKhrDisplayIntegration::createInputHandlers()
 #if QT_CONFIG(tslib)
     bool useTslib = qEnvironmentVariableIntValue("QT_QPA_TSLIB");
     if (useTslib)
-        new QTsLibMouseHandler(QLatin1String("TsLib"), QString());
+        new QTsLibMouseHandler("TsLib"_L1, QString());
 #endif
 
 #if QT_CONFIG(evdev)
-    new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString(), this);
-    new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString(), this);
+    new QEvdevKeyboardManager("EvdevKeyboard"_L1, QString(), this);
+    new QEvdevMouseManager("EvdevMouse"_L1, QString(), this);
 #if QT_CONFIG(tslib)
     if (!useTslib)
 #endif
-        new QEvdevTouchManager(QLatin1String("EvdevTouch"), QString() /* spec */, this);
+        new QEvdevTouchManager("EvdevTouch"_L1, QString() /* spec */, this);
 #endif
 }
 

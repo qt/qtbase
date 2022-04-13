@@ -60,6 +60,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #if QT_CONFIG(xrender)
 
 class QXRenderTessellator : public QTessellator
@@ -451,7 +453,7 @@ static const uchar base_dither_matrix[DITHER_SIZE][DITHER_SIZE] = {
 static QPixmap qt_patternForAlpha(uchar alpha, int screen)
 {
     QPixmap pm;
-    QString key = QLatin1String("$qt-alpha-brush$")
+    QString key = "$qt-alpha-brush$"_L1
                   % HexString<uchar>(alpha)
                   % HexString<int>(screen);
 

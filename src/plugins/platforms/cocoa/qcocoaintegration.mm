@@ -80,6 +80,8 @@ static void initResources()
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(lcQpa, "qt.qpa", QtWarningMsg);
 
 static void logVersionInformation()
@@ -114,7 +116,7 @@ static QCocoaIntegration::Options parseOptions(const QStringList &paramList)
     QCocoaIntegration::Options options;
     for (const QString &param : paramList) {
 #ifndef QT_NO_FREETYPE
-        if (param == QLatin1String("fontengine=freetype"))
+        if (param == "fontengine=freetype"_L1)
             options |= QCocoaIntegration::UseFreeTypeFontEngine;
         else
 #endif

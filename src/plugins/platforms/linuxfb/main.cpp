@@ -42,6 +42,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QLinuxFbIntegrationPlugin : public QPlatformIntegrationPlugin
 {
     Q_OBJECT
@@ -53,7 +55,7 @@ public:
 QPlatformIntegration* QLinuxFbIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
     Q_UNUSED(paramList);
-    if (!system.compare(QLatin1String("linuxfb"), Qt::CaseInsensitive))
+    if (!system.compare("linuxfb"_L1, Qt::CaseInsensitive))
         return new QLinuxFbIntegration(paramList);
 
     return 0;

@@ -33,6 +33,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QWasmTheme::QWasmTheme()
 {
     for (auto family : QFontDatabase::families())
@@ -49,7 +51,7 @@ QWasmTheme::~QWasmTheme()
 QVariant QWasmTheme::themeHint(ThemeHint hint) const
 {
     if (hint == QPlatformTheme::StyleNames)
-        return QVariant(QStringList() << QLatin1String("Fusion"));
+        return QVariant(QStringList() << "Fusion"_L1);
     return QPlatformTheme::themeHint(hint);
 }
 

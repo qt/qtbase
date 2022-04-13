@@ -50,6 +50,8 @@
 #include "qiosoptionalplugininterface.h"
 #include "qiosdocumentpickercontroller.h"
 
+using namespace Qt::StringLiterals;
+
 QIOSFileDialog::QIOSFileDialog()
     : m_viewController(nullptr)
 {
@@ -74,7 +76,7 @@ bool QIOSFileDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality window
     QString directory = options()->initialDirectory().toLocalFile();
 
     if (acceptOpen) {
-        if (directory.startsWith(QLatin1String("assets-library:")))
+        if (directory.startsWith("assets-library:"_L1))
             return showImagePickerDialog(parent);
         else
             return showNativeDocumentPickerDialog(parent);

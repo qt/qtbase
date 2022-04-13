@@ -229,6 +229,8 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     Returns the model identifier of the device.
 */
@@ -321,12 +323,10 @@ QIOSScreen::~QIOSScreen()
 
 QString QIOSScreen::name() const
 {
-    if (m_uiScreen == [UIScreen mainScreen]) {
-        return QString::fromNSString([UIDevice currentDevice].model)
-            + QLatin1String(" built-in display");
-    } else {
-        return QLatin1String("External display");
-    }
+    if (m_uiScreen == [UIScreen mainScreen])
+        return QString::fromNSString([UIDevice currentDevice].model) + " built-in display"_L1;
+    else
+        return "External display"_L1;
 }
 
 void QIOSScreen::updateProperties()

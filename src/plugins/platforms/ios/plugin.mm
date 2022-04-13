@@ -43,6 +43,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QIOSIntegrationPlugin : public QPlatformIntegrationPlugin
 {
     Q_OBJECT
@@ -54,8 +56,8 @@ class QIOSIntegrationPlugin : public QPlatformIntegrationPlugin
 QPlatformIntegration * QIOSIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
     Q_UNUSED(paramList);
-    if (!system.compare(QLatin1String("ios"), Qt::CaseInsensitive)
-        || !system.compare(QLatin1String("tvos"), Qt::CaseInsensitive)) {
+    if (!system.compare("ios"_L1, Qt::CaseInsensitive)
+        || !system.compare("tvos"_L1, Qt::CaseInsensitive)) {
         return new QIOSIntegration;
     }
 

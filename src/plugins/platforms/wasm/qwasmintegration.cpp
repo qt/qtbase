@@ -61,6 +61,8 @@
 using namespace emscripten;
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static void addContainerElement(emscripten::val element)
 {
     QWasmIntegration::get()->addScreen(element);
@@ -296,12 +298,12 @@ Qt::WindowState QWasmIntegration::defaultWindowState(Qt::WindowFlags flags) cons
 
 QStringList QWasmIntegration::themeNames() const
 {
-    return QStringList() << QLatin1String("webassembly");
+    return QStringList() << "webassembly"_L1;
 }
 
 QPlatformTheme *QWasmIntegration::createPlatformTheme(const QString &name) const
 {
-    if (name == QLatin1String("webassembly"))
+    if (name == "webassembly"_L1)
         return new QWasmTheme;
     return QPlatformIntegration::createPlatformTheme(name);
 }

@@ -79,6 +79,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #ifndef QT_NO_DEBUG_STREAM
 /* Output UID (IID, CLSID) as C++ constants.
  * The constants are contained in the Windows SDK libs, but not for MinGW. */
@@ -666,13 +668,13 @@ QWindowsShellItem::IShellItems QWindowsShellItem::itemsFromItemArray(IShellItemA
 bool QWindowsShellItem::copyData(QIODevice *out, QString *errorMessage)
 {
     if (!canStream()) {
-        *errorMessage = QLatin1String("Item not streamable");
+        *errorMessage = "Item not streamable"_L1;
         return false;
     }
     IStream *istream = nullptr;
     HRESULT hr = m_item->BindToHandler(nullptr, BHID_Stream, IID_PPV_ARGS(&istream));
     if (FAILED(hr)) {
-        *errorMessage = QLatin1String("BindToHandler() failed: ")
+        *errorMessage = "BindToHandler() failed: "_L1
                         + QLatin1String(QWindowsContext::comErrorString(hr));
         return false;
     }
@@ -689,7 +691,7 @@ bool QWindowsShellItem::copyData(QIODevice *out, QString *errorMessage)
     }
     istream->Release();
     if (hr != S_OK && hr != S_FALSE) {
-        *errorMessage = QLatin1String("Read() failed: ")
+        *errorMessage = "Read() failed: "_L1
                         + QLatin1String(QWindowsContext::comErrorString(hr));
         return false;
     }
@@ -1439,14 +1441,14 @@ QString tempFilePattern(QString name)
 static QString createTemporaryItemCopy(QWindowsShellItem &qItem, QString *errorMessage)
 {
     if (!qItem.canStream()) {
-        *errorMessage = QLatin1String("Item not streamable");
+        *errorMessage = "Item not streamable"_L1;
         return QString();
     }
 
     QTemporaryFile targetFile(tempFilePattern(qItem.normalDisplay()));
     targetFile.setAutoRemove(false);
     if (!targetFile.open())  {
-        *errorMessage = QLatin1String("Cannot create temporary file: ")
+        *errorMessage = "Cannot create temporary file: "_L1
                         + targetFile.errorString();
         return QString();
     }

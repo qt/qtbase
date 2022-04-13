@@ -54,6 +54,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 enum { debug = 0 };
 
 class QWindowsShellExecuteThread : public QThread
@@ -111,8 +113,8 @@ static inline QString mailCommand()
     // Check if user has set preference, otherwise use default.
     QString keyName = QWinRegistryKey(HKEY_CURRENT_USER, mailUserKey)
                       .stringValue( L"Progid");
-    const QLatin1String mailto = keyName.isEmpty() ? QLatin1String("mailto") : QLatin1String();
-    keyName += mailto + QLatin1String("\\Shell\\Open\\Command");
+    const auto mailto = keyName.isEmpty() ? "mailto"_L1 : QLatin1String();
+    keyName += mailto + "\\Shell\\Open\\Command"_L1;
     if (debug)
         qDebug() << __FUNCTION__ << "keyName=" << keyName;
     const QString command = QWinRegistryKey(HKEY_CLASSES_ROOT, keyName).stringValue(L"");
@@ -146,7 +148,7 @@ static inline bool launchMail(const QUrl &url)
     }
     // Pass the url as the parameter. Should use QProcess::startDetached(),
     // but that cannot handle a Windows command line [yet].
-    command.replace(QLatin1String("%1"), url.toString(QUrl::FullyEncoded));
+    command.replace("%1"_L1, url.toString(QUrl::FullyEncoded));
     if (debug)
         qDebug() << __FUNCTION__ << "Launching" << command;
     //start the process

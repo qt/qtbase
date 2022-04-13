@@ -42,6 +42,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QIntegrityFbIntegrationPlugin : public QPlatformIntegrationPlugin
 {
     Q_OBJECT
@@ -53,7 +55,7 @@ public:
 QPlatformIntegration* QIntegrityFbIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
     Q_UNUSED(paramList);
-    if (!system.compare(QLatin1String("integrityfb"), Qt::CaseInsensitive))
+    if (!system.compare("integrityfb"_L1, Qt::CaseInsensitive))
         return new QIntegrityFbIntegration(paramList);
 
     return 0;

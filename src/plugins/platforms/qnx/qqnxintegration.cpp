@@ -106,24 +106,26 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QQnxIntegration *QQnxIntegration::ms_instance;
 
 static inline QQnxIntegration::Options parseOptions(const QStringList &paramList)
 {
     QQnxIntegration::Options options = QQnxIntegration::NoOptions;
-    if (!paramList.contains(QLatin1String("no-fullscreen"))) {
+    if (!paramList.contains("no-fullscreen"_L1)) {
         options |= QQnxIntegration::FullScreenApplication;
     }
 
-    if (paramList.contains(QLatin1String("flush-screen-context"))) {
+    if (paramList.contains("flush-screen-context"_L1)) {
         options |= QQnxIntegration::AlwaysFlushScreenContext;
     }
 
-    if (paramList.contains(QLatin1String("rootwindow"))) {
+    if (paramList.contains("rootwindow"_L1)) {
         options |= QQnxIntegration::RootWindow;
     }
 
-    if (!paramList.contains(QLatin1String("disable-EGL_KHR_surfaceless_context"))) {
+    if (!paramList.contains("disable-EGL_KHR_surfaceless_context"_L1)) {
         options |= QQnxIntegration::SurfacelessEGLContext;
     }
 
@@ -570,7 +572,7 @@ static bool getRequestedDisplays(QJsonArray &requestedDisplays)
 
     // Read the requested display order
     const QJsonObject object = doc.object();
-    requestedDisplays = object.value(QLatin1String("displayOrder")).toArray();
+    requestedDisplays = object.value("displayOrder"_L1).toArray();
 
     return true;
 }

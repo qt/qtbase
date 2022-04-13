@@ -136,6 +136,8 @@ static void finishCloseEvent(screen_event_t event)
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QQnxScreenEventHandler::QQnxScreenEventHandler(QQnxIntegration *integration)
     : m_qnxIntegration(integration)
     , m_lastButtonState(Qt::NoButton)
@@ -147,7 +149,7 @@ QQnxScreenEventHandler::QQnxScreenEventHandler(QQnxIntegration *integration)
 {
     // Create a touch device
     m_touchDevice = new QPointingDevice(
-            QLatin1String("touchscreen"), 1, QInputDevice::DeviceType::TouchScreen,
+            "touchscreen"_L1, 1, QInputDevice::DeviceType::TouchScreen,
             QPointingDevice::PointerType::Finger,
             QPointingDevice::Capability::Position | QPointingDevice::Capability::Area
                     | QPointingDevice::Capability::Pressure
@@ -155,7 +157,7 @@ QQnxScreenEventHandler::QQnxScreenEventHandler(QQnxIntegration *integration)
             MaximumTouchPoints, 8);
     QWindowSystemInterface::registerInputDevice(m_touchDevice);
 
-    m_mouseDevice = new QPointingDevice(QLatin1String("mouse"), 2, QInputDevice::DeviceType::Mouse,
+    m_mouseDevice = new QPointingDevice("mouse"_L1, 2, QInputDevice::DeviceType::Mouse,
                                         QPointingDevice::PointerType::Generic,
                                         QPointingDevice::Capability::Position, 1, 8);
     QWindowSystemInterface::registerInputDevice(m_mouseDevice);

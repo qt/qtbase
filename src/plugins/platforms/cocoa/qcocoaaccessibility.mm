@@ -47,6 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #ifndef QT_NO_ACCESSIBILITY
 
 QCocoaAccessibility::QCocoaAccessibility()
@@ -253,7 +255,7 @@ bool shouldBeIgnored(QAccessibleInterface *interface)
         // VoiceOver focusing on tool tips can be confusing. The contents of the
         // tool tip is available through the description attribute anyway, so
         // we disable accessibility for tool tips.
-        if (className == QLatin1String("QTipLabel"))
+        if (className == "QTipLabel"_L1)
             return true;
     }
 

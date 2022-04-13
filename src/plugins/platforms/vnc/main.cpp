@@ -43,6 +43,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QVncIntegrationPlugin : public QPlatformIntegrationPlugin
 {
     Q_OBJECT
@@ -53,7 +55,7 @@ public:
 
 QPlatformIntegration* QVncIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
-    if (!system.compare(QLatin1String("vnc"), Qt::CaseInsensitive))
+    if (!system.compare("vnc"_L1, Qt::CaseInsensitive))
         return new QVncIntegration(paramList);
 
     return nullptr;

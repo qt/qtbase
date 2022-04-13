@@ -74,6 +74,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QCoreTextFontEngine;
 
 template <typename BaseEventDispatcher>
@@ -176,7 +178,7 @@ std::optional<QJsonObject> QOffscreenIntegration::resolveConfigFileConfiguration
     QString configFilePath;
     for (const QString &param : paramList) {
         // Look for "configfile=/path/to/file/"
-        QString configPrefix(QLatin1String("configfile="));
+        QString configPrefix("configfile="_L1);
         if (param.startsWith(configPrefix)) {
             hasConfigFile = true;
             configFilePath = param.mid(configPrefix.length());
@@ -419,8 +421,8 @@ public:
 
     virtual const QFont *font(Font type = SystemFont) const override
     {
-        static QFont systemFont(QLatin1String("Sans Serif"), 9);
-        static QFont fixedFont(QLatin1String("monospace"), 9);
+        static QFont systemFont("Sans Serif"_L1, 9);
+        static QFont fixedFont("monospace"_L1, 9);
         switch (type) {
         case QPlatformTheme::SystemFont:
             return &systemFont;
