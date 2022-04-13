@@ -57,11 +57,18 @@ function(qt_generate_qconfig_cpp in_file out_file)
     # Expected output is something like
     #   C:/work/qt/install
     # so it includes a drive letter and forward slashes.
-    set(QT_CONFIGURE_PREFIX_PATH_STR "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
-    if(CMAKE_HOST_WIN32)
-        get_filename_component(
-            QT_CONFIGURE_PREFIX_PATH_STR
-            "${QT_CONFIGURE_PREFIX_PATH_STR}" REALPATH)
+    if(QT_FEATURE_relocatable)
+        # A relocatable Qt does not need a hardcoded prefix path.
+        # This makes reproducible builds a closer reality, because we don't embed a CI path
+        # into the binaries.
+        set(QT_CONFIGURE_PREFIX_PATH_STR "")
+    else()
+        set(QT_CONFIGURE_PREFIX_PATH_STR "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
+        if(CMAKE_HOST_WIN32)
+            get_filename_component(
+                QT_CONFIGURE_PREFIX_PATH_STR
+                "${QT_CONFIGURE_PREFIX_PATH_STR}" REALPATH)
+        endif()
     endif()
 
     configure_file(${in_file} ${out_file} @ONLY)
