@@ -109,6 +109,47 @@
 
     For more examples, refer to the \l{Qt Test Tutorial}.
 
+    \section1 Increasing Test Function Timeout
+
+    QtTest limits the run-time of each test to catch infinite loops and similar
+    bugs. By default, any test function call will be interrupted after five
+    minutes. For data-driven tests, this applies to each call with a distinct
+    data-tag. This timeout can be configured by setting the \c QTEST_FUNCTION_TIMEOUT
+    environment variable to the maximum number of milliseconds that is acceptable
+    for a single call to take. If a test takes longer than the configured timeout,
+    it is interrupted, and \c qFatal() is called. As a result, the test aborts by
+    default, as if it had crashed.
+
+    To set \c QTEST_FUNCTION_TIMEOUT from the command line on Linux or macOS, enter:
+
+    \badcode
+    QTEST_FUNCTION_TIMEOUT=900000
+    export QTEST_FUNCTION_TIMEOUT
+    \endcode
+
+    On Windows:
+    \badcode
+    SET QTEST_FUNCTION_TIMEOUT=900000
+    \endcode
+
+    Then run the test inside this environment.
+
+    Alternatively, you can set the environment variable programmatically in the
+    test code itself, for example by calling, from the
+    \l{Creating a Test}{initMain()} special method of your test class:
+
+    \badcode
+    qputenv("QTEST_FUNCTION_TIMEOUT", "900000");
+    \endcode
+
+    To calculate a suitable value for the timeout, see how long the test usually
+    takes and decide how much longer it can take without that being a symptom of
+    some problem. Convert that longer time to milliseconds to get the timeout value.
+    For example, if you decide that a test that takes several minutes could
+    reasonably take up to twenty minutes, for example on a slow machine,
+    multiply \c{20 * 60 * 1000 = 1200000} and set the environment variable to
+    \c 1200000 instead of the \c 900000 above.
+
     \if !defined(qtforpython)
     \section1 Building a Test
 
