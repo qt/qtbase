@@ -41,7 +41,7 @@ public:
     static void setOverrideWasmCursor(QCursor *windowCursor, QScreen *screen);
     static void clearOverrideWasmCursor(QScreen *screen);
 private:
-    QByteArray htmlCursorName;
+    QByteArray htmlCursorName = "default";
     void setWasmCursor(QScreen *screen, const QByteArray &name);
 };
 
