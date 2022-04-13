@@ -1,3 +1,10 @@
+# Computes a relative rpath between ${rpath} and ${install_location} using tokens
+# like $ORIGIN / @loader_path
+# Not all platforms support such tokens though, in which case the returned rpath will be invalid.
+#
+# install_location: a directory relative to CMAKE_INSTALL_PREFIX, where the binary will be installed
+# rpath:            an rpath to embed, can be either an absolute path or a path relative to
+# ${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBDIR}.
 function(qt_compute_relative_rpath_base rpath install_location out_var)
     set(install_lib_dir_absolute "${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBDIR}")
     get_filename_component(rpath_absolute "${rpath}"
@@ -37,23 +44,32 @@ function(qt_compute_relative_rpath_base rpath install_location out_var)
 endfunction()
 
 # Applies necessary rpaths to a target upon target installation.
-# No-op when targeting Windows, Android, or non-prefix builds.
+# No-op when targeting Windows, Android.
 #
-# If no RELATIVE_RPATH option is given, embeds an absolute path rpath to ${INSTALL_LIBDIR}.
-# If RELATIVE_RPATH is given, the INSTALL_PATH value is to compute the relative path from
-# ${INSTALL_LIBDIR} to wherever the target will be installed (the value of INSTALL_PATH).
-# It's the equivalent of qmake's relative_qt_rpath.
+# Since abf72395411b135054b5820f64f93dfbcda430b8 rpaths are also applied in non-prefix builds,
+# to address -rpath-link issues when cross-compiling, although this might not be needed anymore
+# due to 606124c5cceba0dd4a406a9278588b58bb9f9800.
+# See QTBUG-86533 for the whole saga.
+#
+# If no RELATIVE_RPATH option is given, embeds an absolute path rpath to
+# ${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBDIR} into the target.
+
+# If RELATIVE_RPATH is given, the INSTALL_PATH value is used to compute the relative path from
+# ${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBDIR} to wherever the target will be installed
+# (the value of INSTALL_PATH).
+# INSTALL_PATH is expected to be a relative directory where the binary / library will be installed.
+
+# RELATIVE_RPATH is the equivalent of qmake's relative_qt_rpath.
 # INSTALL_PATH is used to implement the equivalent of qmake's $$qtRelativeRPathBase().
 #
-# A cache variable QT_DISABLE_RPATH can be set to disable embedding any rpaths when installing.
+# QT_DISABLE_RPATH can be set to disable embedding any Qt specific rpaths.
 function(qt_apply_rpaths)
-    # No rpath support for win32 and android. Also no need to apply rpaths when doing a non-prefix
-    # build.
+    # No rpath support for win32 and android.
     if(WIN32 OR ANDROID)
         return()
     endif()
 
-    # Rpaths xplicitly disabled (like for uikit), equivalent to qmake's no_qt_rpath.
+    # Rpaths explicitly disabled (like for uikit), equivalent to qmake's no_qt_rpath.
     if(QT_DISABLE_RPATH)
         return()
     endif()
