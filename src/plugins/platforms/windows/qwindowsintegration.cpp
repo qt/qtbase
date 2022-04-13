@@ -157,7 +157,7 @@ struct QWindowsIntegrationPrivate
 };
 
 template <typename IntType>
-bool parseIntOption(const QString &parameter,const QLatin1String &option,
+bool parseIntOption(const QString &parameter,const QLatin1StringView &option,
                     IntType minimumValue, IntType maximumValue, IntType *target)
 {
     const int valueLength = parameter.size() - option.size() - 1;
@@ -643,12 +643,12 @@ QAbstractEventDispatcher * QWindowsIntegration::createEventDispatcher() const
 
 QStringList QWindowsIntegration::themeNames() const
 {
-    return QStringList(QLatin1String(QWindowsTheme::name));
+    return QStringList(QLatin1StringView(QWindowsTheme::name));
 }
 
 QPlatformTheme *QWindowsIntegration::createPlatformTheme(const QString &name) const
 {
-    if (name == QLatin1String(QWindowsTheme::name))
+    if (name == QLatin1StringView(QWindowsTheme::name))
         return new QWindowsTheme;
     return QPlatformIntegration::createPlatformTheme(name);
 }

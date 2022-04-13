@@ -179,7 +179,7 @@ public:
 
     static bool isTrayIconWindow(QWindow *window)
     {
-        return window->objectName() == QLatin1String("QSystemTrayIconSysWindow");
+        return window->objectName() == QLatin1StringView("QSystemTrayIconSysWindow");
     }
 
     virtual void create();

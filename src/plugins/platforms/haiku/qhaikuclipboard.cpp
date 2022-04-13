@@ -93,7 +93,7 @@ QMimeData *QHaikuClipboard::mimeData(QClipboard::Mode mode)
 
             const status_t status = clipboard->FindData(name, B_MIME_TYPE, &data, &dataLen);
             if (dataLen && (status == B_OK)) {
-                const QLatin1String format(name);
+                const QLatin1StringView format(name);
                 if (format == "text/plain"_L1) {
                     m_systemMimeData->setText(QString::fromLocal8Bit(reinterpret_cast<const char*>(data), dataLen));
                 } else if (format == "text/html"_L1) {

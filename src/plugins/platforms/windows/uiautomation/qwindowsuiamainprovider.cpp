@@ -421,7 +421,7 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
     case UIA_ClassNamePropertyId:
         // Class name.
         if (QObject *o = accessible->object()) {
-            QString className = QLatin1String(o->metaObject()->className());
+            QString className = QLatin1StringView(o->metaObject()->className());
             setVariantString(className, pRetVal);
         }
         break;

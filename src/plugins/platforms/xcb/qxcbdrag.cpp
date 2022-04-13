@@ -1330,14 +1330,14 @@ QVariant QXcbDropData::xdndObtainData(const QByteArray &format, QMetaType reques
     QXcbWindow *xcb_window = c->platformWindowFromId(drag->xdnd_dragsource);
     if (xcb_window && drag->currentDrag() && xcb_window->window()->type() != Qt::Desktop) {
         QMimeData *data = drag->currentDrag()->mimeData();
-        if (data->hasFormat(QLatin1String(format)))
-            result = data->data(QLatin1String(format));
+        if (data->hasFormat(QLatin1StringView(format)))
+            result = data->data(QLatin1StringView(format));
         return result;
     }
 
     QList<xcb_atom_t> atoms = drag->xdnd_types;
     bool hasUtf8 = false;
-    xcb_atom_t a = mimeAtomForFormat(c, QLatin1String(format), requestedType, atoms, &hasUtf8);
+    xcb_atom_t a = mimeAtomForFormat(c, QLatin1StringView(format), requestedType, atoms, &hasUtf8);
     if (a == XCB_NONE)
         return result;
 
@@ -1349,7 +1349,7 @@ QVariant QXcbDropData::xdndObtainData(const QByteArray &format, QMetaType reques
     result = c->clipboard()->getSelection(xdnd_selection, a, xdnd_selection, drag->targetTime());
 #endif
 
-    return mimeConvertToFormat(c, a, result, QLatin1String(format), requestedType, hasUtf8);
+    return mimeConvertToFormat(c, a, result, QLatin1StringView(format), requestedType, hasUtf8);
 }
 
 bool QXcbDropData::hasFormat_sys(const QString &format) const

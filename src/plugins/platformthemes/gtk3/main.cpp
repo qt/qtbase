@@ -54,7 +54,7 @@ public:
 QPlatformTheme *QGtk3ThemePlugin::create(const QString &key, const QStringList &params)
 {
     Q_UNUSED(params);
-    if (!key.compare(QLatin1String(QGtk3Theme::name), Qt::CaseInsensitive))
+    if (!key.compare(QLatin1StringView(QGtk3Theme::name), Qt::CaseInsensitive))
         return new QGtk3Theme;
 
     return nullptr;

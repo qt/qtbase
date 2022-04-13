@@ -113,7 +113,7 @@ static inline QString mailCommand()
     // Check if user has set preference, otherwise use default.
     QString keyName = QWinRegistryKey(HKEY_CURRENT_USER, mailUserKey)
                       .stringValue( L"Progid");
-    const auto mailto = keyName.isEmpty() ? "mailto"_L1 : QLatin1String();
+    const auto mailto = keyName.isEmpty() ? "mailto"_L1 : QLatin1StringView();
     keyName += mailto + "\\Shell\\Open\\Command"_L1;
     if (debug)
         qDebug() << __FUNCTION__ << "keyName=" << keyName;

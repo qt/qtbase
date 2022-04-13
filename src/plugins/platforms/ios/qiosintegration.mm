@@ -267,12 +267,12 @@ QVariant QIOSIntegration::styleHint(StyleHint hint) const
 
 QStringList QIOSIntegration::themeNames() const
 {
-    return QStringList(QLatin1String(QIOSTheme::name));
+    return QStringList(QLatin1StringView(QIOSTheme::name));
 }
 
 QPlatformTheme *QIOSIntegration::createPlatformTheme(const QString &name) const
 {
-    if (name == QLatin1String(QIOSTheme::name))
+    if (name == QLatin1StringView(QIOSTheme::name))
         return new QIOSTheme;
 
     return QPlatformIntegration::createPlatformTheme(name);

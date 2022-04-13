@@ -401,12 +401,12 @@ QCocoaDrag *QCocoaIntegration::drag() const
 
 QStringList QCocoaIntegration::themeNames() const
 {
-    return QStringList(QLatin1String(QCocoaTheme::name));
+    return QStringList(QLatin1StringView(QCocoaTheme::name));
 }
 
 QPlatformTheme *QCocoaIntegration::createPlatformTheme(const QString &name) const
 {
-    if (name == QLatin1String(QCocoaTheme::name))
+    if (name == QLatin1StringView(QCocoaTheme::name))
         return new QCocoaTheme;
     return QPlatformIntegration::createPlatformTheme(name);
 }

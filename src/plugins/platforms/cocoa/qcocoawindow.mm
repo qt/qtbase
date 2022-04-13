@@ -76,7 +76,7 @@ Q_LOGGING_CATEGORY(lcCocoaNotifications, "qt.qpa.cocoa.notifications");
 
 static void qRegisterNotificationCallbacks()
 {
-    static const QLatin1String notificationHandlerPrefix(Q_NOTIFICATION_PREFIX);
+    static const QLatin1StringView notificationHandlerPrefix(Q_NOTIFICATION_PREFIX);
 
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
 

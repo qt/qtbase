@@ -658,7 +658,7 @@ void QIBusPlatformInputContextPrivate::createBusProxy()
     const char* ibusService = usePortal ? "org.freedesktop.portal.IBus" : "org.freedesktop.IBus";
     QDBusReply<QDBusObjectPath> ic;
     if (usePortal) {
-        portalBus = new QIBusProxyPortal(QLatin1String(ibusService),
+        portalBus = new QIBusProxyPortal(QLatin1StringView(ibusService),
                                          "/org/freedesktop/IBus"_L1,
                                          *connection);
         if (!portalBus->isValid()) {
@@ -668,7 +668,7 @@ void QIBusPlatformInputContextPrivate::createBusProxy()
 
         ic = portalBus->CreateInputContext("QIBusInputContext"_L1);
     } else {
-        bus = new QIBusProxy(QLatin1String(ibusService),
+        bus = new QIBusProxy(QLatin1StringView(ibusService),
                              "/org/freedesktop/IBus"_L1,
                              *connection);
         if (!bus->isValid()) {
@@ -688,7 +688,7 @@ void QIBusPlatformInputContextPrivate::createBusProxy()
         return;
     }
 
-    context = new QIBusInputContextProxy(QLatin1String(ibusService), ic.value().path(), *connection);
+    context = new QIBusInputContextProxy(QLatin1StringView(ibusService), ic.value().path(), *connection);
 
     if (!context->isValid()) {
         qWarning("QIBusPlatformInputContext: invalid input context.");
@@ -746,7 +746,7 @@ QString QIBusPlatformInputContextPrivate::getSocketPath()
 
     return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) +
                "/ibus/bus/"_L1 +
-               QLatin1String(QDBusConnection::localMachineId()) +
+               QLatin1StringView(QDBusConnection::localMachineId()) +
                u'-' + QString::fromLocal8Bit(host) + u'-' + QString::fromLocal8Bit(displayNumber);
 }
 

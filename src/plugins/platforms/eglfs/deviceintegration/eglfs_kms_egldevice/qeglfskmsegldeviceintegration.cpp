@@ -262,7 +262,7 @@ QKmsDevice *QEglFSKmsEglDeviceIntegration::createDevice()
     if (Q_UNLIKELY(!deviceName))
         qFatal("Failed to query device name from EGLDevice");
 
-    return new QEglFSKmsEglDevice(this, screenConfig(), QLatin1String(deviceName));
+    return new QEglFSKmsEglDevice(this, screenConfig(), QLatin1StringView(deviceName));
 }
 
 bool QEglFSKmsEglDeviceIntegration::query_egl_device()

@@ -1036,7 +1036,7 @@ public:
         // Get substitute name
         static const char keyC[] = "HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows NT\\CurrentVersion\\FontSubstitutes";
         const QString familyName = QString::fromWCharArray(lf.lfFaceName);
-        const QString nameSubstitute = QSettings(QLatin1String(keyC), QSettings::NativeFormat).value(familyName, familyName).toString();
+        const QString nameSubstitute = QSettings(QLatin1StringView(keyC), QSettings::NativeFormat).value(familyName, familyName).toString();
         if (nameSubstitute != familyName) {
             const int nameSubstituteLength = qMin(nameSubstitute.length(), LF_FACESIZE - 1);
             memcpy(lf.lfFaceName, nameSubstitute.data(), size_t(nameSubstituteLength) * sizeof(wchar_t));

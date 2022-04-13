@@ -51,7 +51,7 @@ class QIOSFileEngineFactory : public QAbstractFileEngineHandler
 public:
     QAbstractFileEngine* create(const QString &fileName) const
     {
-        static QLatin1String assetsScheme("assets-library:");
+        static QLatin1StringView assetsScheme("assets-library:");
 
 #ifndef Q_OS_TVOS
         if (fileName.toLower().startsWith(assetsScheme))

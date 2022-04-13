@@ -114,7 +114,7 @@ bool QXcbMime::mimeDataForAtom(QXcbConnection *connection, xcb_atom_t a, QMimeDa
         // so QXcbConnection::atomName() has to be used.
         if (atomName == "text/uri-list"_L1
             && connection->atomName(a) == "text/x-moz-url") {
-            const QString mozUri = QLatin1String(data->split('\n').constFirst()) + u'\n';
+            const QString mozUri = QLatin1StringView(data->split('\n').constFirst()) + u'\n';
             *data = QByteArray(reinterpret_cast<const char *>(mozUri.data()),
                                mozUri.length() * 2);
         } else if (atomName == "application/x-color"_L1)

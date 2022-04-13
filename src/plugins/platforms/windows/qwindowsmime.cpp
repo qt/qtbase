@@ -1264,7 +1264,7 @@ static const char x_qt_windows_mime[] = "application/x-qt-windows-mime;value=\""
 
 static bool isCustomMimeType(const QString &mimeType)
 {
-    return mimeType.startsWith(QLatin1String(x_qt_windows_mime), Qt::CaseInsensitive);
+    return mimeType.startsWith(QLatin1StringView(x_qt_windows_mime), Qt::CaseInsensitive);
 }
 
 static QString customMimeType(const QString &mimeType, int *lindex = nullptr)
@@ -1346,7 +1346,7 @@ QString QLastResortMimes::mimeForFormat(const FORMATETC &formatetc) const
                     }
                 }
                 if (!ianaType)
-                    format = QLatin1String(x_qt_windows_mime) + clipFormat + u'"';
+                    format = QLatin1StringView(x_qt_windows_mime) + clipFormat + u'"';
                 else
                     format = clipFormat;
             }

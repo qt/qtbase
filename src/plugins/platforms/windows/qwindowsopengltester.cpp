@@ -218,13 +218,13 @@ QVariant GpuDescription::toVariant() const
     result.insert(QStringLiteral("deviceId"), QVariant(deviceId));
     result.insert(QStringLiteral("subSysId"),QVariant(subSysId));
     result.insert(QStringLiteral("revision"), QVariant(revision));
-    result.insert(QStringLiteral("driver"), QVariant(QLatin1String(driverName)));
+    result.insert(QStringLiteral("driver"), QVariant(QLatin1StringView(driverName)));
     result.insert(QStringLiteral("driverProduct"), QVariant(driverVersion.segmentAt(0)));
     result.insert(QStringLiteral("driverVersion"), QVariant(driverVersion.segmentAt(1)));
     result.insert(QStringLiteral("driverSubVersion"), QVariant(driverVersion.segmentAt(2)));
     result.insert(QStringLiteral("driverBuild"), QVariant(driverVersion.segmentAt(3)));
     result.insert(QStringLiteral("driverVersionString"), driverVersion.toString());
-    result.insert(QStringLiteral("description"), QVariant(QLatin1String(description)));
+    result.insert(QStringLiteral("description"), QVariant(QLatin1StringView(description)));
     result.insert(QStringLiteral("printable"), QVariant(toString()));
     return result;
 }

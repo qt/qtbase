@@ -635,7 +635,7 @@ QUrl QWindowsShellItem::url() const
         return urlV;
     // Last resort: encode the absolute desktop parsing id as data URL
     const QString data = QStringLiteral("data:text/plain;base64,")
-        + QLatin1String(desktopAbsoluteParsing().toLatin1().toBase64());
+        + QLatin1StringView(desktopAbsoluteParsing().toLatin1().toBase64());
     return QUrl(data);
 }
 
@@ -675,7 +675,7 @@ bool QWindowsShellItem::copyData(QIODevice *out, QString *errorMessage)
     HRESULT hr = m_item->BindToHandler(nullptr, BHID_Stream, IID_PPV_ARGS(&istream));
     if (FAILED(hr)) {
         *errorMessage = "BindToHandler() failed: "_L1
-                        + QLatin1String(QWindowsContext::comErrorString(hr));
+                        + QLatin1StringView(QWindowsContext::comErrorString(hr));
         return false;
     }
     enum : ULONG { bufSize = 102400 };
@@ -692,7 +692,7 @@ bool QWindowsShellItem::copyData(QIODevice *out, QString *errorMessage)
     istream->Release();
     if (hr != S_OK && hr != S_FALSE) {
         *errorMessage = "Read() failed: "_L1
-                        + QLatin1String(QWindowsContext::comErrorString(hr));
+                        + QLatin1StringView(QWindowsContext::comErrorString(hr));
         return false;
     }
     return true;

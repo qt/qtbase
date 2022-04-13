@@ -250,7 +250,7 @@ bool shouldBeIgnored(QAccessibleInterface *interface)
         return true;
 
     if (QObject * const object = interface->object()) {
-        const QString className = QLatin1String(object->metaObject()->className());
+        const QString className = QLatin1StringView(object->metaObject()->className());
 
         // VoiceOver focusing on tool tips can be confusing. The contents of the
         // tool tip is available through the description attribute anyway, so
