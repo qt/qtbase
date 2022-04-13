@@ -78,7 +78,7 @@ static bool checkTxt(const QByteArray &data) {
         return false;
     // Look for "********* Finished testing of tst_QTestName *********"
     static const QRegularExpression testTail("\\*+ +Finished testing of .+ +\\*+"_L1);
-    return testTail.match(QLatin1String(data)).hasMatch();
+    return testTail.match(QLatin1StringView(data)).hasMatch();
 }
 
 static bool checkCsv(const QByteArray &data) {
@@ -130,7 +130,7 @@ static bool checkTap(const QByteArray &data) {
         return false;
 
     static const QRegularExpression testTail("ok [0-9]* - cleanupTestCase\\(\\)"_L1);
-    return testTail.match(QLatin1String(data)).hasMatch();
+    return testTail.match(QLatin1StringView(data)).hasMatch();
 }
 
 struct Options
@@ -453,7 +453,7 @@ static bool isRunning() {
 
         return false;
     }
-    return output.indexOf(QLatin1String(" " + g_options.package.toUtf8())) > -1;
+    return output.indexOf(QLatin1StringView(" " + g_options.package.toUtf8())) > -1;
 }
 
 static bool waitToFinish()

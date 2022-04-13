@@ -189,14 +189,14 @@ static void setPaletteColor(const QVariantMap &object,
 
 QJsonObject AndroidStyle::loadStyleData()
 {
-    QString stylePath(QLatin1String(qgetenv("ANDROID_STYLE_PATH")));
+    QString stylePath(QLatin1StringView(qgetenv("ANDROID_STYLE_PATH")));
     const QLatin1Char slashChar('/');
     if (!stylePath.isEmpty() && !stylePath.endsWith(slashChar))
         stylePath += slashChar;
 
     Q_ASSERT(!stylePath.isEmpty());
 
-    QString androidTheme = QLatin1String(qgetenv("QT_ANDROID_THEME"));
+    QString androidTheme = QLatin1StringView(qgetenv("QT_ANDROID_THEME"));
     if (!androidTheme.isEmpty() && !androidTheme.endsWith(slashChar))
         androidTheme += slashChar;
 

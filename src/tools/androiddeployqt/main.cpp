@@ -2248,7 +2248,7 @@ bool createRcc(const Options &options)
     if (!res)
         return false;
 
-    QLatin1String noZstd;
+    QLatin1StringView noZstd;
     if (!options.isZstdCompressionEnabled)
         noZstd = "--no-zstd"_L1;
 
@@ -2982,7 +2982,7 @@ bool jarSignerSignPackage(const Options &options)
     }
 
     zipAlignTool = "%1%2 -f 4 %3 %4"_L1.arg(shellQuote(zipAlignTool),
-                                            options.verbose ? " -v"_L1 : QLatin1String(),
+                                            options.verbose ? " -v"_L1 : QLatin1StringView(),
                                             shellQuote(packagePath(options, UnsignedAPK)),
                                             shellQuote(packagePath(options, SignedAPK)));
 
@@ -3052,7 +3052,7 @@ bool signPackage(const Options &options)
     const QString verifyZipAlignCommandLine =
             "%1%2 -c 4 %3"_L1
                     .arg(shellQuote(zipAlignTool),
-                         options.verbose ? " -v"_L1 : QLatin1String(),
+                         options.verbose ? " -v"_L1 : QLatin1StringView(),
                          shellQuote(packagePath(options, UnsignedAPK)));
 
     if (zipalignRunner(verifyZipAlignCommandLine)) {
@@ -3073,7 +3073,7 @@ bool signPackage(const Options &options)
         const QString zipAlignCommandLine =
                 "%1%2 -f 4 %3 %4"_L1
                         .arg(shellQuote(zipAlignTool),
-                             options.verbose ? " -v"_L1 : QLatin1String(),
+                             options.verbose ? " -v"_L1 : QLatin1StringView(),
                              shellQuote(packagePath(options, UnsignedAPK)),
                              shellQuote(packagePath(options, SignedAPK)));
 
