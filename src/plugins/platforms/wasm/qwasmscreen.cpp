@@ -104,9 +104,10 @@ QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
     // apps/ages only, since Emscripten uses the main document to look up the element.
     // As a workaround for this, Emscripten supports registering custom mappings in the
     // "specialHTMLTargets" object. Add a mapping for the canvas for this screen.
-    EM_ASM({
-        specialHTMLTargets["!qtcanvas_" + $0] = Emval.toValue($1);
-    }, uint32_t(this), m_canvas.as_handle());
+    emscripten::val specialHtmlTargets = emscripten::val::module_property("specialHTMLTargets");
+
+    std::string id = std::string("!qtcanvas_") + std::to_string(uint32_t(this));
+    specialHtmlTargets.set(id, m_canvas.as_handle());
 
     // Install event handlers on the container/canvas. This must be
     // done after the canvas has been created above.
@@ -118,9 +119,10 @@ QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
 
 QWasmScreen::~QWasmScreen()
 {
-    EM_ASM({
-        specialHTMLTargets["!qtcanvas_" + $0] = undefined;
-    }, uint32_t(this));
+    emscripten::val specialHtmlTargets = emscripten::val::module_property("specialHTMLTargets");
+
+    std::string id = std::string("!qtcanvas_") + std::to_string(uint32_t(this));
+    specialHtmlTargets.set(id, emscripten::val::undefined());
 
     m_canvas.set(m_canvasResizeObserverCallbackContextPropertyName, emscripten::val(intptr_t(0)));
     destroy();
