@@ -47,7 +47,7 @@ enum { warnHeaderGeneration = 0 };
 static inline QString moduleHeader(const QString &module, const QString &header)
 {
     QString rc = module;
-    rc += QLatin1Char('/');
+    rc += u'/';
     rc += header;
     return rc;
 }
@@ -190,8 +190,8 @@ void WriteIncludes::insertInclude(const QString &header, bool global)
 
 void WriteIncludes::writeHeaders(const OrderedSet &headers, bool global)
 {
-    const QChar openingQuote = global ? QLatin1Char('<') : QLatin1Char('"');
-    const QChar closingQuote = global ? QLatin1Char('>') : QLatin1Char('"');
+    const QChar openingQuote = global ? u'<' : u'"';
+    const QChar closingQuote = global ? u'>' : u'"';
 
     // Check for the old headers 'qslider.h' and replace by 'QtGui/QSlider'
     for (const QString &header : headers) {

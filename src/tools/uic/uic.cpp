@@ -127,7 +127,7 @@ void Uic::writeCopyrightHeaderCpp(const DomUI *ui) const
 
 static inline bool isCppCommentChar(QChar c)
 {
-    return  c == QLatin1Char('/') || c == QLatin1Char('*');
+    return  c == u'/' || c == u'*';
 }
 
 static int leadingCppCommentCharCount(QStringView s)
@@ -142,13 +142,13 @@ void Uic::writeCopyrightHeaderPython(const DomUI *ui) const
 {
     QString comment = ui->elementComment();
     if (!comment.isEmpty()) {
-        const auto lines = QStringView{comment}.split(QLatin1Char('\n'));
+        const auto lines = QStringView{comment}.split(u'\n');
         for (const auto &line : lines) {
             if (const int leadingCommentChars = leadingCppCommentCharCount(line)) {
                  out << language::repeat(leadingCommentChars, '#')
                      << line.right(line.size() - leadingCommentChars);
             } else {
-                if (!line.startsWith(QLatin1Char('#')))
+                if (!line.startsWith(u'#'))
                     out << "# ";
                 out << line;
             }

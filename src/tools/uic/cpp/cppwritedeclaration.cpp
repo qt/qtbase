@@ -75,7 +75,7 @@ void WriteDeclaration::acceptUI(DomUI *node)
 
     QString exportMacro = node->elementExportMacro();
     if (!exportMacro.isEmpty())
-        exportMacro.append(QLatin1Char(' '));
+        exportMacro.append(u' ');
 
     QStringList namespaceList = qualifiedClassName.split(QLatin1String("::"));
     if (namespaceList.count()) {

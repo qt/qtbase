@@ -81,7 +81,7 @@ static WriteImports::ClassesPerModule defaultClasses()
 // module name "foo_rc" according to project conventions.
 static QString pythonResource(QString resource)
 {
-    const int lastSlash = resource.lastIndexOf(QLatin1Char('/'));
+    const qsizetype lastSlash = resource.lastIndexOf(u'/');
     if (lastSlash != -1)
         resource.remove(0, lastSlash + 1);
     if (resource.endsWith(QLatin1String(".qrc"))) {
@@ -223,7 +223,7 @@ void WriteImports::addPythonCustomWidget(const QString &className, const DomCust
     } else { // When we do have elementHeader, we know it's a relative import.
         QString modulePath = node->elementHeader()->text();
         // Replace the '/' by '.'
-        modulePath.replace(QLatin1Char('/'), QLatin1Char('.'));
+        modulePath.replace(u'/', u'.');
         // '.h' is added by default on headers for <customwidget>
         if (modulePath.endsWith(QLatin1String(".h")))
             modulePath.chop(2);

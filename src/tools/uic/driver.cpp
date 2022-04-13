@@ -152,7 +152,7 @@ QString Driver::normalizedName(const QString &name)
     QString result = name;
     std::replace_if(result.begin(), result.end(),
                     [] (QChar c) { return !c.isLetterOrNumber(); },
-                    QLatin1Char('_'));
+                    u'_');
     return result;
 }
 
@@ -190,7 +190,7 @@ QString Driver::qtify(const QString &name)
 {
     QString qname = name;
 
-    if (qname.at(0) == QLatin1Char('Q') || qname.at(0) == QLatin1Char('K'))
+    if (qname.at(0) == u'Q' || qname.at(0) == u'K')
         qname.remove(0, 1);
 
     for (int i = 0, size = qname.size(); i < size && qname.at(i).isUpper(); ++i)
@@ -201,8 +201,7 @@ QString Driver::qtify(const QString &name)
 
 static bool isAnsiCCharacter(QChar c)
 {
-    return (c.toUpper() >= QLatin1Char('A') && c.toUpper() <= QLatin1Char('Z'))
-           || c.isDigit() || c == QLatin1Char('_');
+    return (c.toUpper() >= u'A' && c.toUpper() <= u'Z') || c.isDigit() || c == u'_';
 }
 
 QString Driver::headerFileName() const
@@ -226,13 +225,13 @@ QString Driver::headerFileName(const QString &fileName)
     QString baseName = info.baseName();
     // Transform into a valid C++ identifier
     if (!baseName.isEmpty() && baseName.at(0).isDigit())
-        baseName.prepend(QLatin1Char('_'));
+        baseName.prepend(u'_');
     for (int i = 0; i < baseName.size(); ++i) {
         QChar c = baseName.at(i);
         if (!isAnsiCCharacter(c)) {
             // Replace character by its unicode value
             QString hex = QString::number(c.unicode(), 16);
-            baseName.replace(i, 1, QLatin1Char('_') + hex + QLatin1Char('_'));
+            baseName.replace(i, 1, u'_' + hex + u'_');
             i += hex.size() + 1;
         }
     }

@@ -74,7 +74,7 @@ struct Option
           forceStringConnectionSyntax(0),
           useStarImports(0),
           prefix(QLatin1String("Ui_"))
-    { indent.fill(QLatin1Char(' '), 4); }
+    { indent.fill(u' ', 4); }
 
     QString messagePrefix() const
     {

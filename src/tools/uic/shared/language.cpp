@@ -217,7 +217,7 @@ static int formatEscapedNumber(QTextStream &str, ushort value, int base, int wid
     const auto oldFieldWidth = str.fieldWidth();
     const auto oldFieldAlignment = str.fieldAlignment();
     const auto oldIntegerBase = str.integerBase();
-    str.setPadChar(QLatin1Char('0'));
+    str.setPadChar(u'0');
     str.setFieldWidth(width);
     str.setFieldAlignment(QTextStream::AlignRight);
     str.setIntegerBase(base);
@@ -405,7 +405,7 @@ enum OverloadUse {
 static void formatMemberFnPtr(QTextStream &str, const SignalSlot &s,
                               OverloadUse useQOverload = DontUseOverload)
 {
-    const int parenPos = s.signature.indexOf(QLatin1Char('('));
+    const qsizetype parenPos = s.signature.indexOf(u'(');
     Q_ASSERT(parenPos >= 0);
     const auto functionName = QStringView{s.signature}.left(parenPos);
 
@@ -469,7 +469,7 @@ void formatConnection(QTextStream &str, const SignalSlot &sender, const SignalSl
                 str << "[\"" << parameters << "\"]";
         }
         str << ".connect(" << receiver.name << '.'
-            << QStringView{receiver.signature}.left(receiver.signature.indexOf(QLatin1Char('(')))
+            << QStringView{receiver.signature}.left(receiver.signature.indexOf(u'('))
             << ')';
     }
         break;

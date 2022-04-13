@@ -983,7 +983,7 @@ void WriteInitialization::acceptLayout(DomLayout *node)
     m_layoutChain.pop();
 
     // Stretch? (Unless we are compiling for UIC3)
-    const QString numberNull = QString(QLatin1Char('0'));
+    const QString numberNull(u'0');
     writePropertyList(varName, QLatin1String("setStretch"), node->attributeStretch(), numberNull);
     writePropertyList(varName, QLatin1String("setRowStretch"), node->attributeRowStretch(), numberNull);
     writePropertyList(varName, QLatin1String("setColumnStretch"), node->attributeColumnStretch(), numberNull);
@@ -999,7 +999,7 @@ void WriteInitialization::writePropertyList(const QString &varName,
 {
     if (value.isEmpty())
         return;
-    const QStringList list = value.split(QLatin1Char(','));
+    const QStringList list = value.split(u',');
     const int count =  list.count();
     for (int i = 0; i < count; i++) {
         if (list.at(i) != defaultValue) {
@@ -1375,7 +1375,7 @@ void WriteInitialization::writeProperties(const QString &varName,
             if (p->hasAttributeStdset() && !p->attributeStdset())
                 varNewName += language::derefPointer + QLatin1String("viewport()");
             propertyValue = QLatin1String("QCursor(Qt") + language::qualifier
-                + p->elementCursorShape() + QLatin1Char(')');
+                + p->elementCursorShape() + u')';
             break;
         case DomProperty::Enum:
             propertyValue = p->elementEnum();
@@ -1479,17 +1479,17 @@ void WriteInitialization::writeProperties(const QString &varName,
             break;
         case DomProperty::UInt:
             propertyValue = QString::number(p->elementUInt());
-            propertyValue += QLatin1Char('u');
+            propertyValue += u'u';
             break;
         case DomProperty::LongLong:
             propertyValue = QLatin1String("Q_INT64_C(");
             propertyValue += QString::number(p->elementLongLong());
-            propertyValue += QLatin1Char(')');;
+            propertyValue += u')';
             break;
         case DomProperty::ULongLong:
             propertyValue = QLatin1String("Q_UINT64_C(");
             propertyValue += QString::number(p->elementULongLong());
-            propertyValue += QLatin1Char(')');
+            propertyValue += u')';
             break;
         case DomProperty::Float:
             propertyValue = QString::number(p->elementFloat(), 'f', 8);
@@ -2227,10 +2227,10 @@ void WriteInitialization::addQtFlagsInitializer(Item *item,
         const DomPropertyMap &properties, const QString &name, int column) const
 {
     if (const DomProperty *p = properties.value(name)) {
-        const QString orOperator = QLatin1Char('|') + language::qtQualifier;
+        const QString orOperator = u'|' + language::qtQualifier;
         QString v = p->elementSet();
         if (!v.isEmpty()) {
-            v.replace(QLatin1Char('|'), orOperator);
+            v.replace(u'|', orOperator);
             addInitializer(item, name, column, language::qtQualifier + v);
         }
     }
