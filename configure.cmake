@@ -626,6 +626,11 @@ qt_feature("c++2a" PUBLIC
     CONDITION QT_FEATURE_cxx20
 )
 qt_feature_config("c++2a" QMAKE_PUBLIC_QT_CONFIG)
+qt_feature("c++2b" PUBLIC
+    LABEL "C++2b"
+    AUTODETECT OFF
+)
+qt_feature_config("c++2b" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("c89"
     LABEL "C89"
 )
