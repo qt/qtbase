@@ -163,7 +163,7 @@ static bool readParseCache(ParseCacheMap &entries, const QString &parseCacheFile
     QString line;
     bool mmc_key_found = false;
     while (textStream.readLineInto(&line)) {
-        if (!line.startsWith(QLatin1Char(' '))) {
+        if (!line.startsWith(u' ')) {
             if (!mocEntries.isEmpty() || mmc_key_found || !mocIncludes.isEmpty()) {
                 entries.insert(source,
                                ParseCacheEntry { std::move(mocEntries), std::move(mocIncludes) });
@@ -348,7 +348,7 @@ int main(int argc, char **argv)
         const QString base = fileInfo.path() + fileInfo.completeBaseName();
         // 1a) erase header
         for (const auto &ext : headerExtList) {
-            const QString headerPath = base + QLatin1Char('.') + ext;
+            const QString headerPath = base + u'.' + ext;
             auto it = autoGenHeaders.find(headerPath);
             if (it != autoGenHeaders.end()) {
                 autoGenHeaders.erase(it);
@@ -368,7 +368,7 @@ int main(int argc, char **argv)
                     QFileInfo(mocFile.right(mocFile.size() - mocKeyLen)).completeBaseName();
             bool breakFree = false;
             for (auto &ext : headerExtList) {
-                const QString headerSuffix = headerBaseName + QLatin1Char('.') + ext;
+                const QString headerSuffix = headerBaseName + u'.' + ext;
                 for (auto it = autoGenHeaders.begin(); it != autoGenHeaders.end(); ++it) {
                     if (it.key().endsWith(headerSuffix)
                         && QFileInfo(it.key()).completeBaseName() == headerBaseName) {

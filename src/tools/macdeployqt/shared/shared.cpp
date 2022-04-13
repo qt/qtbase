@@ -311,15 +311,15 @@ FrameworkInfo parseOtoolLibraryLine(const QString &line, const QString &appBundl
                 for (QString &path : librarySearchPath) {
                     if (!path.endsWith("/"))
                         path += '/';
-                    QString nameInPath = path + parts.join(QLatin1Char('/'));
+                    QString nameInPath = path + parts.join(u'/');
                     if (QFile::exists(nameInPath)) {
-                        info.frameworkDirectory = path + partsCopy.join(QLatin1Char('/'));
+                        info.frameworkDirectory = path + partsCopy.join(u'/');
                         break;
                     }
                 }
                 if (currentPart.contains(".framework")) {
                     if (info.frameworkDirectory.isEmpty())
-                        info.frameworkDirectory = "/Library/Frameworks/" + partsCopy.join(QLatin1Char('/'));
+                        info.frameworkDirectory = "/Library/Frameworks/" + partsCopy.join(u'/');
                     if (!info.frameworkDirectory.endsWith("/"))
                         info.frameworkDirectory += "/";
                     state = FrameworkName;
@@ -327,7 +327,7 @@ FrameworkInfo parseOtoolLibraryLine(const QString &line, const QString &appBundl
                     continue;
                 } else if (currentPart.contains(".dylib")) {
                     if (info.frameworkDirectory.isEmpty())
-                        info.frameworkDirectory = "/usr/lib/" + partsCopy.join(QLatin1Char('/'));
+                        info.frameworkDirectory = "/usr/lib/" + partsCopy.join(u'/');
                     if (!info.frameworkDirectory.endsWith("/"))
                         info.frameworkDirectory += "/";
                     state = DylibName;
@@ -682,7 +682,7 @@ void recursiveCopyAndDeploy(const QString &appBundlePath, const QList<QString> &
 
     QStringList files = QDir(sourcePath).entryList(QStringList() << QStringLiteral("*"), QDir::Files | QDir::NoDotAndDotDot);
     for (const QString &file : files) {
-        const QString fileSourcePath = sourcePath + QLatin1Char('/') + file;
+        const QString fileSourcePath = sourcePath + u'/' + file;
 
         if (file.endsWith("_debug.dylib")) {
             continue; // Skip debug versions
@@ -703,7 +703,7 @@ void recursiveCopyAndDeploy(const QString &appBundlePath, const QList<QString> &
             QString fileDestinationPath = fileDestinationDir + file;
 
             // The .dylib symlink destination path:
-            QString linkDestinationPath = destinationPath + QLatin1Char('/') + file;
+            QString linkDestinationPath = destinationPath + u'/' + file;
 
             // The (relative) link; with a correct number of "../"'s.
             QString linkPath = QStringLiteral("PlugIns/quick/") + file;
@@ -721,14 +721,14 @@ void recursiveCopyAndDeploy(const QString &appBundlePath, const QList<QString> &
                 deployQtFrameworks(frameworks, appBundlePath, QStringList(fileDestinationPath), useDebugLibs, useLoaderPath);
             }
         } else {
-            QString fileDestinationPath = destinationPath + QLatin1Char('/') + file;
+            QString fileDestinationPath = destinationPath + u'/' + file;
             copyFilePrintStatus(fileSourcePath, fileDestinationPath);
         }
     }
 
     QStringList subdirs = QDir(sourcePath).entryList(QStringList() << QStringLiteral("*"), QDir::Dirs | QDir::NoDotAndDotDot);
     for (const QString &dir : subdirs) {
-        recursiveCopyAndDeploy(appBundlePath, rpaths, sourcePath + QLatin1Char('/') + dir, destinationPath + QLatin1Char('/') + dir);
+        recursiveCopyAndDeploy(appBundlePath, rpaths, sourcePath + u'/' + dir, destinationPath + u'/' + dir);
     }
 }
 
@@ -741,8 +741,8 @@ QString copyDylib(const FrameworkInfo &framework, const QString path)
 
     // Construct destination paths. The full path typically looks like
     // MyApp.app/Contents/Frameworks/libfoo.dylib
-    QString dylibDestinationDirectory = path + QLatin1Char('/') + framework.frameworkDestinationDirectory;
-    QString dylibDestinationBinaryPath = dylibDestinationDirectory + QLatin1Char('/') + framework.binaryName;
+    QString dylibDestinationDirectory = path + u'/' + framework.frameworkDestinationDirectory;
+    QString dylibDestinationBinaryPath = dylibDestinationDirectory + u'/' + framework.binaryName;
 
     // Create destination directory
     if (!QDir().mkpath(dylibDestinationDirectory)) {
@@ -768,9 +768,9 @@ QString copyFramework(const FrameworkInfo &framework, const QString path)
 
     // Construct destination paths. The full path typically looks like
     // MyApp.app/Contents/Frameworks/Foo.framework/Versions/5/QtFoo
-    QString frameworkDestinationDirectory = path + QLatin1Char('/') + framework.frameworkDestinationDirectory;
-    QString frameworkBinaryDestinationDirectory = frameworkDestinationDirectory + QLatin1Char('/') + framework.binaryDirectory;
-    QString frameworkDestinationBinaryPath = frameworkBinaryDestinationDirectory + QLatin1Char('/') + framework.binaryName;
+    QString frameworkDestinationDirectory = path + u'/' + framework.frameworkDestinationDirectory;
+    QString frameworkBinaryDestinationDirectory = frameworkDestinationDirectory + u'/' + framework.binaryDirectory;
+    QString frameworkDestinationBinaryPath = frameworkBinaryDestinationDirectory + u'/' + framework.binaryName;
 
     // Return if the framework has aleardy been deployed
     if (QDir(frameworkDestinationDirectory).exists() && !alwaysOwerwriteEnabled)
@@ -851,7 +851,7 @@ void changeInstallName(const QString &bundlePath, const FrameworkInfo &framework
         QString deployedInstallName;
         if (useLoaderPath) {
             deployedInstallName = QLatin1String("@loader_path/")
-                    + QFileInfo(binary).absoluteDir().relativeFilePath(absBundlePath + QLatin1Char('/') + framework.binaryDestinationDirectory + QLatin1Char('/') + framework.binaryName);
+                    + QFileInfo(binary).absoluteDir().relativeFilePath(absBundlePath + u'/' + framework.binaryDestinationDirectory + u'/' + framework.binaryName);
         } else {
             deployedInstallName = framework.deployedInstallName;
         }
@@ -1093,13 +1093,13 @@ void deployPlugins(const ApplicationBundleInfo &appBundleInfo, const QString &pl
 
     const auto addPlugins = [&pluginSourcePath,&pluginList,useDebugLibs](const QString &subDirectory,
             const std::function<bool(QString)> &predicate = std::function<bool(QString)>()) {
-        const QStringList libs = QDir(pluginSourcePath + QLatin1Char('/') + subDirectory)
+        const QStringList libs = QDir(pluginSourcePath + u'/' + subDirectory)
                 .entryList({QStringLiteral("*.dylib")});
         for (const QString &lib : libs) {
             if (lib.endsWith(QStringLiteral("_debug.dylib")) != useDebugLibs)
                 continue;
             if (!predicate || predicate(lib))
-                pluginList.append(subDirectory + QLatin1Char('/') + lib);
+                pluginList.append(subDirectory + u'/' + lib);
         }
     };
 
@@ -1362,10 +1362,10 @@ bool deployQmlImports(const QString &appBundlePath, DeploymentInfo deploymentInf
         // Create the destination path from the name
         // and version (grabbed from the source path)
         // ### let qmlimportscanner provide this.
-        name.replace(QLatin1Char('.'), QLatin1Char('/'));
+        name.replace(u'.', u'/');
         int secondTolast = path.length() - 2;
         QString version = path.mid(secondTolast);
-        if (version.startsWith(QLatin1Char('.')))
+        if (version.startsWith(u'.'))
             name.append(version);
 
         deployQmlImport(appBundlePath, deploymentInfo.rpathsUsed, path, name);

@@ -291,8 +291,7 @@ static inline QString findBinary(const QString &directory, Platform platform)
 
 static QString msgFileDoesNotExist(const QString & file)
 {
-    return QLatin1Char('"') + QDir::toNativeSeparators(file)
-        + QStringLiteral("\" does not exist.");
+    return u'"' + QDir::toNativeSeparators(file) + QStringLiteral("\" does not exist.");
 }
 
 enum CommandLineParseFlag {
@@ -483,7 +482,7 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
     options->libraries = !parser->isSet(noLibraryOption);
     options->translations = !parser->isSet(noTranslationOption);
     if (parser->isSet(translationOption))
-        options->languages = parser->value(translationOption).split(QLatin1Char(','));
+        options->languages = parser->value(translationOption).split(u',');
     options->systemD3dCompiler = !parser->isSet(noSystemD3DCompilerOption);
     options->quickImports = !parser->isSet(noQuickImportOption);
 
@@ -609,7 +608,7 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
         }
 
         if (!fi.isExecutable()) {
-            *errorMessage = QLatin1Char('"') + QDir::toNativeSeparators(qtpathsBinary)
+            *errorMessage = u'"' + QDir::toNativeSeparators(qtpathsBinary)
                     + QStringLiteral("\" is not an executable.");
             return CommandLineParseError;
         }
@@ -630,7 +629,7 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
     }
 
     if (!options->directory.isEmpty() && !fi.isFile()) { // -dir was specified - expecting file.
-        *errorMessage = QLatin1Char('"') + file + QStringLiteral("\" is not an executable file.");
+        *errorMessage = u'"' + file + QStringLiteral("\" is not an executable file.");
         return CommandLineParseError;
     }
 
@@ -641,7 +640,7 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
     } else {
         const QString binary = findBinary(fi.absoluteFilePath(), options->platform);
         if (binary.isEmpty()) {
-            *errorMessage = QStringLiteral("Unable to find binary in \"") + file + QLatin1Char('"');
+            *errorMessage = QStringLiteral("Unable to find binary in \"") + file + u'"';
             return CommandLineParseError;
         }
         options->directory = fi.absoluteFilePath();
@@ -660,7 +659,7 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
             const QStringList libraries =
                 findSharedLibraries(QDir(path), options->platform, MatchDebugOrRelease, QString());
             for (const QString &library : libraries)
-                options->binaries.append(path + QLatin1Char('/') + library);
+                options->binaries.append(path + u'/' + library);
         } else {
             options->binaries.append(path);
         }
@@ -672,10 +671,10 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
 // Simple line wrapping at 80 character boundaries.
 static inline QString lineBreak(QString s)
 {
-    for (int i = 80; i < s.size(); i += 80) {
-        const int lastBlank = s.lastIndexOf(QLatin1Char(' '), i);
+    for (qsizetype i = 80; i < s.size(); i += 80) {
+        const qsizetype lastBlank = s.lastIndexOf(u' ', i);
         if (lastBlank >= 0) {
-            s[lastBlank] = QLatin1Char('\n');
+            s[lastBlank] = u'\n';
             i = lastBlank + 1;
         }
     }
@@ -695,7 +694,7 @@ static inline QString helpText(const QCommandLineParser &p)
         "\n\nQt libraries can be added by passing their name (-xml) or removed by passing\n"
         "the name prepended by --no- (--no-xml). Available libraries:\n");
     moduleHelp += lineBreak(QString::fromLatin1(formatQtModules(0xFFFFFFFFFFFFFFFFull, true)));
-    moduleHelp += QLatin1Char('\n');
+    moduleHelp += u'\n';
     result.replace(moduleStart, argumentsStart - moduleStart, moduleHelp);
     return result;
 }
@@ -729,7 +728,7 @@ static bool findDependentQtLibraries(const QString &qtBinDir, const QString &bin
     const int start = result->size();
     for (const QString &lib : qAsConst(dependentLibs)) {
         if (isQtModule(lib)) {
-            const QString path = normalizeFileName(qtBinDir + QLatin1Char('/') + QFileInfo(lib).fileName());
+            const QString path = normalizeFileName(qtBinDir + u'/' + QFileInfo(lib).fileName());
             if (!result->contains(path))
                 result->append(path);
         }
@@ -764,7 +763,7 @@ private:
 
 static QString pdbFileName(QString libraryFileName)
 {
-    const int lastDot = libraryFileName.lastIndexOf(QLatin1Char('.')) + 1;
+    const qsizetype lastDot = libraryFileName.lastIndexOf(u'.') + 1;
     if (lastDot <= 0)
         return QString();
     libraryFileName.replace(lastDot, libraryFileName.size() - lastDot, QLatin1String("pdb"));
@@ -881,14 +880,14 @@ static inline quint64 qtModuleForPlugin(const QString &subDirName)
 static quint64 qtModule(QString module, const QString &infix)
 {
     // Match needle 'path/Qt6Core<infix><d>.dll' or 'path/libQt6Core<infix>.so.5.0'
-    const int lastSlashPos = module.lastIndexOf(QLatin1Char('/'));
+    const qsizetype lastSlashPos = module.lastIndexOf(u'/');
     if (lastSlashPos > 0)
         module.remove(0, lastSlashPos + 1);
     if (module.startsWith(QLatin1String("lib")))
         module.remove(0, 3);
     int endPos = infix.isEmpty() ? -1 : module.lastIndexOf(infix);
     if (endPos == -1)
-        endPos = module.indexOf(QLatin1Char('.')); // strip suffixes '.so.5.0'.
+        endPos = module.indexOf(u'.'); // strip suffixes '.so.5.0'.
     if (endPos > 0)
         module.truncate(endPos);
     // That should leave us with 'Qt6Core<d>'.
@@ -990,7 +989,7 @@ static QStringList translationNameFilters(quint64 modules, const QString &prefix
     for (const auto &qtModule : qtModuleEntries) {
         if ((qtModule.module & modules) && qtModule.translation) {
             const QString name = QLatin1String(qtModule.translation) +
-                                 QLatin1Char('_') +  prefix + QStringLiteral(".qm");
+                                 u'_' +  prefix + QStringLiteral(".qm");
             if (!result.contains(name))
                 result.push_back(name);
         }
@@ -1026,9 +1025,9 @@ static bool deployTranslations(const QString &sourcePath, quint64 usedQtModules,
         arguments.clear();
         const QString targetFile = QStringLiteral("qt_") + prefix + QStringLiteral(".qm");
         arguments.append(QStringLiteral("-o"));
-        const QString targetFilePath = absoluteTarget + QLatin1Char('/') + targetFile;
+        const QString targetFilePath = absoluteTarget + u'/' + targetFile;
         if (options.json)
-            options.json->addFile(sourcePath +  QLatin1Char('/') + targetFile, absoluteTarget);
+            options.json->addFile(sourcePath +  u'/' + targetFile, absoluteTarget);
         arguments.append(QDir::toNativeSeparators(targetFilePath));
         const QFileInfoList &langQmFiles = sourceDir.entryInfoList(translationNameFilters(usedQtModules, prefix));
         for (const QFileInfo &langQmFileFi : langQmFiles) {
@@ -1064,12 +1063,12 @@ struct DeployResult
 static QString libraryPath(const QString &libraryLocation, const char *name,
                            const QString &qtLibInfix, Platform platform, bool debug)
 {
-    QString result = libraryLocation + QLatin1Char('/');
+    QString result = libraryLocation + u'/';
     if (platform & WindowsBased) {
         result += QLatin1String(name);
         result += qtLibInfix;
         if (debug && platformHasDebugSuffix(platform))
-            result += QLatin1Char('d');
+            result += u'd';
     } else if (platform.testFlag(UnixBased)) {
         result += QStringLiteral("lib");
         result += QLatin1String(name);
@@ -1084,7 +1083,7 @@ static QString vcDebugRedistDir() { return QStringLiteral("Debug_NonRedist"); }
 static QString vcRedistDir()
 {
     const char vcDirVar[] = "VCINSTALLDIR";
-    const QChar slash(QLatin1Char('/'));
+    const QChar slash(u'/');
     QString vcRedistDirName = QDir::cleanPath(QFile::decodeName(qgetenv(vcDirVar)));
     if (vcRedistDirName.isEmpty()) {
         std::wcerr << "Warning: Cannot find Visual Studio installation directory, " << vcDirVar
@@ -1129,7 +1128,7 @@ static QStringList compilerRunTimeLibs(Platform platform, bool isDebug, unsigned
         }
         const QString binPath = QFileInfo(gcc).absolutePath();
         QStringList filters;
-        const QString suffix = QLatin1Char('*') + sharedLibrarySuffix(platform);
+        const QString suffix = u'*' + sharedLibrarySuffix(platform);
         for (auto minGwRuntime : minGwRuntimes)
             filters.append(QLatin1String(minGwRuntime) + suffix);
         const QFileInfoList &dlls = QDir(binPath).entryInfoList(filters, QDir::Files);
@@ -1159,11 +1158,11 @@ static QStringList compilerRunTimeLibs(Platform platform, bool isDebug, unsigned
             QString releaseRedistDir = vcRedistDirName;
             const QStringList countryCodes = vcRedistDir.entryList(QStringList(QStringLiteral("[0-9]*")), QDir::Dirs);
             if (!countryCodes.isEmpty()) // Pre MSVC2017
-                releaseRedistDir += QLatin1Char('/') + countryCodes.constFirst();
-            QFileInfo fi(releaseRedistDir + QLatin1Char('/') + QStringLiteral("vc_redist.")
+                releaseRedistDir += u'/' + countryCodes.constFirst();
+            QFileInfo fi(releaseRedistDir + u'/' + QStringLiteral("vc_redist.")
                          + machineArchString + QStringLiteral(".exe"));
             if (!fi.isFile()) { // Pre MSVC2017/15.5
-                fi.setFile(releaseRedistDir + QLatin1Char('/') + QStringLiteral("vcredist_")
+                fi.setFile(releaseRedistDir + u'/' + QStringLiteral("vcredist_")
                            + machineArchString + QStringLiteral(".exe"));
             }
             if (fi.isFile())
@@ -1187,7 +1186,7 @@ static QStringList compilerRunTimeLibs(Platform platform, bool isDebug, unsigned
 static inline int qtVersion(const QMap<QString, QString> &qtpathsVariables)
 {
     const QString versionString = qtpathsVariables.value(QStringLiteral("QT_VERSION"));
-    const QChar dot = QLatin1Char('.');
+    const QChar dot = u'.';
     const int majorVersion = versionString.section(dot, 0, 0).toInt();
     const int minorVersion = versionString.section(dot, 1, 1).toInt();
     const int patchVersion = versionString.section(dot, 2, 2).toInt();
@@ -1197,8 +1196,8 @@ static inline int qtVersion(const QMap<QString, QString> &qtpathsVariables)
 // Determine the Qt lib infix from the library path of "Qt6Core<qtblibinfix>[d].dll".
 static inline QString qtlibInfixFromCoreLibName(const QString &path, bool isDebug, Platform platform)
 {
-    const int startPos = path.lastIndexOf(QLatin1Char('/')) + 8;
-    int endPos = path.lastIndexOf(QLatin1Char('.'));
+    const qsizetype startPos = path.lastIndexOf(u'/') + 8;
+    qsizetype endPos = path.lastIndexOf(u'.');
     if (isDebug && (platform & WindowsBased))
         endPos--;
     return endPos > startPos ? path.mid(startPos, endPos - startPos) : QString();
@@ -1240,7 +1239,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
 {
     DeployResult result;
 
-    const QChar slash = QLatin1Char('/');
+    const QChar slash = u'/';
 
     const QString qtBinDir = qtpathsVariables.value(QStringLiteral("QT_INSTALL_BINS"));
     const QString libraryLocation = options.platform == Unix
@@ -1439,7 +1438,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
     }
 
     if (optVerboseLevel > 1)
-        std::wcout << "Plugins: " << plugins.join(QLatin1Char(',')) << '\n';
+        std::wcout << "Plugins: " << plugins.join(u',') << '\n';
 
     if ((result.deployedQtLibraries & QtGuiModule) && platformPlugin.isEmpty()) {
         *errorMessage =QStringLiteral("Unable to find the platform plugin.");
@@ -1480,7 +1479,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
             const QString qt6CoreName = QFileInfo(libraryPath(libraryLocation, "Qt6Core", qtLibInfix,
                                                               options.platform, result.isDebug)).fileName();
 #ifndef QT_RELOCATABLE
-            if (!patchQtCore(targetPath + QLatin1Char('/') + qt6CoreName, errorMessage)) {
+            if (!patchQtCore(targetPath + u'/' + qt6CoreName, errorMessage)) {
                 std::wcerr << "Warning: " << *errorMessage << '\n';
                 errorMessage->clear();
             }
@@ -1495,7 +1494,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
         QDir dir(targetPath);
         if (!dir.exists() && !dir.mkpath(QStringLiteral("."))) {
             *errorMessage = QLatin1String("Cannot create ") +
-                            QDir::toNativeSeparators(dir.absolutePath()) +  QLatin1Char('.');
+                            QDir::toNativeSeparators(dir.absolutePath()) +  u'.';
             return result;
         }
         for (const QString &plugin : plugins) {
@@ -1505,7 +1504,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
                 if (optVerboseLevel)
                     std::wcout << "Creating directory " << targetPath << ".\n";
                 if (!(options.updateFileFlags & SkipUpdateFile) && !dir.mkdir(targetDirName)) {
-                    *errorMessage = QStringLiteral("Cannot create ") + targetDirName +  QLatin1Char('.');
+                    *errorMessage = QStringLiteral("Cannot create ") + targetDirName +  u'.';
                     return result;
                 }
             }
@@ -1571,11 +1570,11 @@ static bool deployWebProcess(const QMap<QString, QString> &qtpathsVariables, con
     // Copy the web process and its dependencies
     const QString webProcess = webProcessBinary(binaryName, sourceOptions.platform);
     const QString webProcessSource = qtpathsVariables.value(QStringLiteral("QT_INSTALL_LIBEXECS"))
-            + QLatin1Char('/') + webProcess;
+            + u'/' + webProcess;
     if (!updateFile(webProcessSource, sourceOptions.directory, sourceOptions.updateFileFlags, sourceOptions.json, errorMessage))
         return false;
     Options options(sourceOptions);
-    options.binaries.append(options.directory + QLatin1Char('/') + webProcess);
+    options.binaries.append(options.directory + u'/' + webProcess);
     options.quickImports = false;
     options.translations = false;
     return deploy(options, qtpathsVariables, errorMessage);
@@ -1598,7 +1597,7 @@ static bool deployWebEngineCore(const QMap<QString, QString> &qtpathsVariables,
         return false;
     const QString resourcesSubDir = QStringLiteral("/resources");
     const QString resourcesSourceDir = qtpathsVariables.value(QStringLiteral("QT_INSTALL_DATA"))
-            + resourcesSubDir + QLatin1Char('/');
+            + resourcesSubDir + u'/';
     const QString resourcesTargetDir(options.directory + resourcesSubDir);
     if (!createDirectory(resourcesTargetDir, errorMessage))
         return false;
@@ -1628,7 +1627,7 @@ static bool deployWebEngineCore(const QMap<QString, QString> &qtpathsVariables,
                    << QDir::toNativeSeparators(enUSpak.absoluteFilePath()) << ".\n";
         return true;
     }
-    const QString webEngineTranslationsDir = options.translationsDirectory + QLatin1Char('/')
+    const QString webEngineTranslationsDir = options.translationsDirectory + u'/'
             + translations.fileName();
     if (!createDirectory(webEngineTranslationsDir, errorMessage))
         return false;

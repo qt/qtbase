@@ -190,7 +190,7 @@ static Tracepoint::Field::BackendType backendType(QString rawType)
 
     static const QRegularExpression constMatch(QStringLiteral("\\bconst\\b"));
     rawType.remove(constMatch);
-    rawType.remove(QLatin1Char('&'));
+    rawType.remove(u'&');
 
     static const QRegularExpression ptrMatch(QStringLiteral("\\s*\\*\\s*"));
     rawType.replace(ptrMatch, QStringLiteral("_ptr"));
@@ -291,14 +291,14 @@ Provider parseProvider(const QString &filename)
             continue;
         }
 
-        if (line.isEmpty() || line.startsWith(QLatin1Char('#')))
+        if (line.isEmpty() || line.startsWith(u'#'))
             continue;
 
         auto match = tracedef.match(line);
         if (match.hasMatch()) {
             const QString name = match.captured(1);
             const QString argsString = match.captured(2);
-            const QStringList args = argsString.split(QLatin1Char(','), Qt::SkipEmptyParts);
+            const QStringList args = argsString.split(u',', Qt::SkipEmptyParts);
 
             provider.tracepoints << parseTracepoint(name, args, filename, lineNumber);
         } else {

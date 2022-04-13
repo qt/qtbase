@@ -48,9 +48,9 @@ bool operator==(const QmlImportScanResult::Module &m1, const QmlImportScanResult
 QString QmlImportScanResult::Module::installPath(const QString &root) const
 {
     QString result = root;
-    const int lastSlashPos = relativePath.lastIndexOf(QLatin1Char('/'));
+    const qsizetype lastSlashPos = relativePath.lastIndexOf(u'/');
     if (lastSlashPos != -1) {
-        result += QLatin1Char('/');
+        result += u'/';
         result += QStringView{relativePath}.left(lastSlashPos);
     }
     return result;
@@ -121,7 +121,7 @@ QmlImportScanResult runQmlImportScanner(const QString &directory, const QStringL
     if (data.isNull() ) {
         *errorMessage = binary + QStringLiteral(" returned invalid JSON output: ")
                         + jsonParseError.errorString() + QStringLiteral(" :\"")
-                        + QString::fromLocal8Bit(stdOut) + QLatin1Char('"');
+                        + QString::fromLocal8Bit(stdOut) + u'"';
         return result;
     }
     const QJsonArray array = data.array();

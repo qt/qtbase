@@ -235,11 +235,11 @@ VkSpecParser::TypedName VkSpecParser::parseParamOrProto(const QString &tag)
         } else {
             auto text = m_reader.text().trimmed();
             if (!text.isEmpty()) {
-                if (text.startsWith(QLatin1Char('['))) {
+                if (text.startsWith(u'[')) {
                     t.typeSuffix += text;
                 } else {
                     if (!t.type.isEmpty())
-                        t.type += QLatin1Char(' ');
+                        t.type += u' ';
                     t.type += text;
                 }
             }
@@ -267,7 +267,7 @@ QString funcSig(const VkSpecParser::Command &c, const char *className = nullptr)
                                 (className ? className : ""), (className ? "::" : ""),
                                 qPrintable(c.cmd.name)));
     if (!c.args.isEmpty()) {
-        s += QLatin1Char('(');
+        s += u'(';
         bool first = true;
         for (const VkSpecParser::TypedName &a : c.args) {
             if (!first)
@@ -275,10 +275,10 @@ QString funcSig(const VkSpecParser::Command &c, const char *className = nullptr)
             else
                 first = false;
             s += QString::asprintf("%s%s%s%s", qPrintable(a.type),
-                                   (a.type.endsWith(QLatin1Char('*')) ? "" : " "),
+                                   (a.type.endsWith(u'*') ? "" : " "),
                                    qPrintable(a.name), qPrintable(a.typeSuffix));
         }
-        s += QLatin1Char(')');
+        s += u')';
     }
     return s;
 }
@@ -292,7 +292,7 @@ QString funcCall(const VkSpecParser::Command &c, int idx)
                                   qPrintable(c.cmd.name),
                                   idx);
     if (!c.args.isEmpty()) {
-        s += QLatin1Char('(');
+        s += u'(';
         bool first = true;
         for (const VkSpecParser::TypedName &a : c.args) {
             if (!first)
@@ -301,7 +301,7 @@ QString funcCall(const VkSpecParser::Command &c, int idx)
                 first = false;
             s += a.name;
         }
-        s += QLatin1Char(')');
+        s += u')';
     }
     return s;
 }

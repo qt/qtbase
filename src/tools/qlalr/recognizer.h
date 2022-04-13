@@ -63,7 +63,7 @@ protected: // scanner
       {
         ch = *_M_currentChar++;
 
-        if (ch == QLatin1Char('\n'))
+        if (ch == u'\n')
           ++_M_line;
       }
     else

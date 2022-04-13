@@ -169,8 +169,8 @@ QString RCCFileInfo::resourceName() const
 {
     QString resource = m_name;
     for (RCCFileInfo *p = m_parent; p; p = p->m_parent)
-        resource = resource.prepend(p->m_name + QLatin1Char('/'));
-    return QLatin1Char(':') + resource;
+        resource = resource.prepend(p->m_name + u'/');
+    return u':' + resource;
 }
 
 void RCCFileInfo::writeDataInfo(RCCResourceLibrary &lib)
@@ -499,7 +499,7 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
     const QString &fname, QString currentPath, bool listMode)
 {
     Q_ASSERT(m_errorDevice);
-    const QChar slash = QLatin1Char('/');
+    const QChar slash = u'/';
     if (!currentPath.isEmpty() && !currentPath.endsWith(slash))
         currentPath += slash;
 
@@ -734,7 +734,7 @@ bool RCCResourceLibrary::addFile(const QString &alias, const RCCFileInfo &file)
         m_root = new RCCFileInfo(QString(), QFileInfo(), QLocale::C, QLocale::AnyTerritory, RCCFileInfo::Directory);
 
     RCCFileInfo *parent = m_root;
-    const QStringList nodes = alias.split(QLatin1Char('/'));
+    const QStringList nodes = alias.split(u'/');
     for (int i = 1; i < nodes.size()-1; ++i) {
         const QString node = nodes.at(i);
         if (node.isEmpty())
@@ -845,7 +845,7 @@ QStringList RCCResourceLibrary::dataFiles() const
 // Determine map of resource identifier (':/newPrefix/images/p1.png') to file via recursion
 static void resourceDataFileMapRecursion(const RCCFileInfo *m_root, const QString &path, RCCResourceLibrary::ResourceDataFileMap &m)
 {
-    const QChar slash = QLatin1Char('/');
+    const QChar slash = u'/';
     const auto cend = m_root->m_children.constEnd();
     for (auto it = m_root->m_children.constBegin(); it != cend; ++it) {
         const RCCFileInfo *child = it.value();
@@ -862,7 +862,7 @@ RCCResourceLibrary::ResourceDataFileMap RCCResourceLibrary::resourceDataFileMap(
 {
     ResourceDataFileMap rc;
     if (m_root)
-        resourceDataFileMapRecursion(m_root, QString(QLatin1Char(':')),  rc);
+        resourceDataFileMapRecursion(m_root, QString(u':'),  rc);
     return rc;
 }
 
@@ -1348,7 +1348,7 @@ bool RCCResourceLibrary::writeInitializer()
         //write("\nQT_BEGIN_NAMESPACE\n");
         QString initNameStr = m_initName;
         if (!initNameStr.isEmpty()) {
-            initNameStr.prepend(QLatin1Char('_'));
+            initNameStr.prepend(u'_');
             auto isAsciiLetterOrNumber = [] (QChar c) -> bool {
                 ushort ch = c.unicode();
                 return (ch >= '0' && ch <= '9') ||
@@ -1358,7 +1358,7 @@ bool RCCResourceLibrary::writeInitializer()
             };
             for (QChar &c : initNameStr) {
                 if (!isAsciiLetterOrNumber(c))
-                    c = QLatin1Char('_');
+                    c = u'_';
             }
         }
         QByteArray initName = initNameStr.toLatin1();

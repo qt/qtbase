@@ -153,7 +153,7 @@ static QStringList argumentsFromCommandLineAndFile(const QStringList &arguments,
     allArguments.reserve(arguments.size());
     for (const QString &argument : arguments) {
         // "@file" doesn't start with a '-' so we can't use QCommandLineParser for it
-        if (argument.startsWith(QLatin1Char('@'))) {
+        if (argument.startsWith(u'@')) {
             QString optionsFile = argument;
             optionsFile.remove(0, 1);
             if (optionsFile.isEmpty()) {
@@ -354,7 +354,7 @@ int runMoc(int argc, char **argv)
         return collectJson(files, output, hasOptionFiles);
 
     if (files.count() > 1) {
-        error(qPrintable(QLatin1String("Too many input files specified: '") + files.join(QLatin1String("' '")) + QLatin1Char('\'')));
+        error(qPrintable(QLatin1String("Too many input files specified: '") + files.join(QLatin1String("' '")) + u'\''));
         parser.showHelp(1);
     } else if (!files.isEmpty()) {
         filename = files.first();
@@ -452,10 +452,10 @@ int runMoc(int argc, char **argv)
         moc.displayWarnings = moc.displayNotes = false;
 
     if (autoInclude) {
-        int spos = filename.lastIndexOf(QDir::separator());
-        int ppos = filename.lastIndexOf(QLatin1Char('.'));
+        qsizetype spos = filename.lastIndexOf(QDir::separator());
+        qsizetype ppos = filename.lastIndexOf(u'.');
         // spos >= -1 && ppos > spos => ppos >= 0
-        moc.noInclude = (ppos > spos && filename.at(ppos + 1).toLower() != QLatin1Char('h'));
+        moc.noInclude = (ppos > spos && filename.at(ppos + 1).toLower() != u'h');
     }
     if (defaultInclude) {
         if (moc.includePath.isEmpty()) {
@@ -484,13 +484,13 @@ int runMoc(int argc, char **argv)
 
     const auto metadata = parser.values(metadataOption);
     for (const QString &md : metadata) {
-        int split = md.indexOf(QLatin1Char('='));
+        qsizetype split = md.indexOf(u'=');
         QString key = md.left(split);
         QString value = md.mid(split + 1);
 
         if (split == -1 || key.isEmpty() || value.isEmpty()) {
             error("missing key or value for option '-M'");
-        } else if (key.indexOf(QLatin1Char('.')) != -1) {
+        } else if (key.indexOf(u'.') != -1) {
             // Don't allow keys with '.' for now, since we might need this
             // format later for more advanced meta data API
             error("A key cannot contain the letter '.' for option '-M'");

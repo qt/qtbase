@@ -249,7 +249,7 @@ bool updateFile(const QString &sourceFileName,
                 QString *errorMessage)
 {
     const QFileInfo sourceFileInfo(sourceFileName);
-    const QString targetFileName = targetDirectory + QLatin1Char('/') + sourceFileInfo.fileName();
+    const QString targetFileName = targetDirectory + u'/' + sourceFileInfo.fileName();
     if (optVerboseLevel > 1)
         std::wcout << "Checking " << sourceFileName << ", " << targetFileName << '\n';
 
@@ -263,7 +263,7 @@ bool updateFile(const QString &sourceFileName,
     if (sourceFileInfo.isSymLink()) {
         const QString sourcePath = sourceFileInfo.symLinkTarget();
         const QString relativeSource = QDir(sourceFileInfo.absolutePath()).relativeFilePath(sourcePath);
-        if (relativeSource.contains(QLatin1Char('/'))) {
+        if (relativeSource.contains(u'/')) {
             *errorMessage = QString::fromLatin1("Symbolic links across directories are not supported (%1).")
                             .arg(QDir::toNativeSeparators(sourceFileName));
             return false;
@@ -289,7 +289,7 @@ bool updateFile(const QString &sourceFileName,
                 return false;
             }
         } // target symbolic link exists
-        return createSymbolicLink(QFileInfo(targetDirectory + QLatin1Char('/') + relativeSource), sourceFileInfo.fileName(), errorMessage);
+        return createSymbolicLink(QFileInfo(targetDirectory + u'/' + relativeSource), sourceFileInfo.fileName(), errorMessage);
     } // Source is symbolic link
 
     if (sourceFileInfo.isDir()) {
@@ -323,7 +323,7 @@ bool updateFile(const QString &sourceFileName,
 
         const QStringList allEntries = directoryFileEntryFunction(dir) + dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
         for (const QString &entry : allEntries)
-            if (!updateFile(sourceFileName + QLatin1Char('/') + entry, directoryFileEntryFunction, targetFileName, flags, json, errorMessage))
+            if (!updateFile(sourceFileName + u'/' + entry, directoryFileEntryFunction, targetFileName, flags, json, errorMessage))
                 return false;
         // Remove empty directories, for example QML import folders for which the filter did not match.
         if (created && (flags & RemoveEmptyQmlDirectories)) {

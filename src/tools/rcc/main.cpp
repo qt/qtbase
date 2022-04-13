@@ -105,11 +105,11 @@ QString makefileEscape(const QString &filepath)
     // Always use forward slashes
     QString result = QDir::cleanPath(filepath);
     // Spaces are escaped with a backslash
-    result.replace(QLatin1Char(' '), QLatin1String("\\ "));
+    result.replace(u' ', QLatin1String("\\ "));
     // Pipes are escaped with a backslash
-    result.replace(QLatin1Char('|'), QLatin1String("\\|"));
+    result.replace(u'|', QLatin1String("\\|"));
     // Dollars are escaped with a dollar
-    result.replace(QLatin1Char('$'), QLatin1String("$$"));
+    result.replace(u'$', QLatin1String("$$"));
 
     return result;
 }
@@ -118,16 +118,16 @@ void writeDepFile(QIODevice &iodev, const QStringList &depsList, const QString &
 {
     QTextStream out(&iodev);
     out << qPrintable(makefileEscape(targetName));
-    out << QLatin1Char(':');
+    out << QChar(u':');
 
     // Write depfile
     for (int i = 0; i < depsList.size(); ++i) {
-        out << QLatin1Char(' ');
+        out << QChar(u' ');
 
         out << qPrintable(makefileEscape(depsList.at(i)));
     }
 
-    out << QLatin1Char('\n');
+    out << QChar(u'\n');
 }
 
 int runRcc(int argc, char *argv[])
@@ -244,8 +244,7 @@ int runRcc(int argc, char *argv[])
         library.setInitName(parser.value(nameOption));
     if (parser.isSet(rootOption)) {
         library.setResourceRoot(QDir::cleanPath(parser.value(rootOption)));
-        if (library.resourceRoot().isEmpty()
-                || library.resourceRoot().at(0) != QLatin1Char('/'))
+        if (library.resourceRoot().isEmpty() || library.resourceRoot().at(0) != u'/')
             errorMsg = QLatin1String("Root must start with a /");
     }
 

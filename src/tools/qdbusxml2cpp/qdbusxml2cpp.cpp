@@ -111,7 +111,7 @@ static void cleanInterfaces(QDBusIntrospection::Interfaces &interfaces)
 // produce a header name from the file name
 static QString header(const QString &name)
 {
-    QStringList parts = name.split(QLatin1Char(':'));
+    QStringList parts = name.split(u':');
     QString retval = parts.first();
 
     if (retval.isEmpty() || retval == QLatin1String("-"))
@@ -127,7 +127,7 @@ static QString header(const QString &name)
 // produce a cpp name from the file name
 static QString cpp(const QString &name)
 {
-    QStringList parts = name.split(QLatin1Char(':'));
+    QStringList parts = name.split(u':');
     QString retval = parts.last();
 
     if (retval.isEmpty() || retval == QLatin1String("-"))
@@ -180,7 +180,7 @@ static QString classNameForInterface(const QString &interface, ClassType classTy
     if (!globalClassName.isEmpty())
         return globalClassName;
 
-    const auto parts = QStringView{interface}.split(QLatin1Char('.'));
+    const auto parts = QStringView{interface}.split(u'.');
 
     QString retval;
     if (classType == Proxy) {
@@ -282,7 +282,7 @@ static QStringList makeArgNames(const QDBusIntrospection::Arguments &inputArgs,
         if (name.isEmpty())
             name = QString( QLatin1String("in%1") ).arg(i);
         else
-            name.replace(QLatin1Char('-'), QLatin1Char('_'));
+            name.replace(u'-', u'_');
         while (retval.contains(name))
             name += QLatin1String("_");
         retval << name;
@@ -293,7 +293,7 @@ static QStringList makeArgNames(const QDBusIntrospection::Arguments &inputArgs,
         if (name.isEmpty())
             name = QString( QLatin1String("out%1") ).arg(i);
         else
-            name.replace(QLatin1Char('-'), QLatin1Char('_'));
+            name.replace(u'-', u'_');
         while (retval.contains(name))
             name += QLatin1String("_");
         retval << name;
@@ -406,13 +406,13 @@ static QString stringify(const QString &data)
     QString retval;
     int i;
     for (i = 0; i < data.length(); ++i) {
-        retval += QLatin1Char('\"');
-        for ( ; i < data.length() && data[i] != QLatin1Char('\n') && data[i] != QLatin1Char('\r'); ++i)
-            if (data[i] == QLatin1Char('\"'))
+        retval += u'\"';
+        for ( ; i < data.length() && data[i] != u'\n' && data[i] != u'\r'; ++i)
+            if (data[i] == u'\"')
                 retval += QLatin1String("\\\"");
             else
                 retval += data[i];
-        if (i+1 < data.length() && data[i] == QLatin1Char('\r') && data[i+1] == QLatin1Char('\n'))
+        if (i+1 < data.length() && data[i] == u'\r' && data[i+1] == u'\n')
             i++;
         retval += QLatin1String("\\n\"\n");
     }
@@ -457,8 +457,8 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
     // include guards:
     QString includeGuard;
     if (!headerName.isEmpty() && headerName != QLatin1String("-")) {
-        includeGuard = headerName.toUpper().replace(QLatin1Char('.'), QLatin1Char('_'));
-        int pos = includeGuard.lastIndexOf(QLatin1Char('/'));
+        includeGuard = headerName.toUpper().replace(u'.', u'_');
+        qsizetype pos = includeGuard.lastIndexOf(u'/');
         if (pos != -1)
             includeGuard = includeGuard.mid(pos + 1);
     } else {
@@ -694,7 +694,7 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
             QStringList current;
             QString name;
             if (it != interfaces.constEnd()) {
-                current = it->constData()->name.split(QLatin1Char('.'));
+                current = it->constData()->name.split(u'.');
                 name = current.takeLast();
             }
 
@@ -705,15 +705,15 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
             // i parts matched
             // close last.arguments().count() - i namespaces:
             for (int j = i; j < last.count(); ++j)
-                hs << QString((last.count() - j - 1 + i) * 2, QLatin1Char(' ')) << "}" << Qt::endl;
+                hs << QString((last.count() - j - 1 + i) * 2, u' ') << "}" << Qt::endl;
 
             // open current.arguments().count() - i namespaces
             for (int j = i; j < current.count(); ++j)
-                hs << QString(j * 2, QLatin1Char(' ')) << "namespace " << current.at(j) << " {" << Qt::endl;
+                hs << QString(j * 2, u' ') << "namespace " << current.at(j) << " {" << Qt::endl;
 
             // add this class:
             if (!name.isEmpty()) {
-                hs << QString(current.count() * 2, QLatin1Char(' '))
+                hs << QString(current.count() * 2, u' ')
                    << "using " << name << " = ::" << classNameForInterface(it->constData()->name, Proxy)
                    << ";" << Qt::endl;
             }
@@ -770,8 +770,8 @@ static void writeAdaptor(const QString &filename, const QDBusIntrospection::Inte
     // include guards:
     QString includeGuard;
     if (!headerName.isEmpty() && headerName != QLatin1String("-")) {
-        includeGuard = headerName.toUpper().replace(QLatin1Char('.'), QLatin1Char('_'));
-        int pos = includeGuard.lastIndexOf(QLatin1Char('/'));
+        includeGuard = headerName.toUpper().replace(u'.', u'_');
+        qsizetype pos = includeGuard.lastIndexOf(u'/');
         if (pos != -1)
             includeGuard = includeGuard.mid(pos + 1);
     } else {
@@ -1143,7 +1143,7 @@ int main(int argc, char **argv)
     QStringList args = app.arguments();
     args.removeFirst();
     commandLine = QLatin1String(PROGRAMNAME " ");
-    commandLine += args.join(QLatin1Char(' '));
+    commandLine += args.join(u' ');
 
     if (!proxyFile.isEmpty() || adaptorFile.isEmpty())
         writeProxy(proxyFile, interfaces);

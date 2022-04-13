@@ -277,7 +277,7 @@ QString qDBusInterfaceFromClassDef(const ClassDef *mo)
 
     if (interface.startsWith(QLatin1String("QDBus"))) {
         interface.prepend(QLatin1String("org.qtproject.QtDBus."));
-    } else if (interface.startsWith(QLatin1Char('Q')) &&
+    } else if (interface.startsWith(u'Q') &&
                 interface.length() >= 2 && interface.at(1).isUpper()) {
         // assume it's Qt
         interface.prepend(QLatin1String("local.org.qtproject.Qt."));
@@ -364,7 +364,7 @@ static void parseCmdLine(QStringList &arguments)
         if (arg == QLatin1String("--help"))
             showHelp();
 
-        if (!arg.startsWith(QLatin1Char('-')))
+        if (!arg.startsWith(u'-'))
             continue;
 
         char c = arg.size() == 2 ? arg.at(1).toLatin1() : char(0);
@@ -419,7 +419,7 @@ static void parseCmdLine(QStringList &arguments)
             break;
 
         case 'o':
-            if (arguments.count() < i + 2 || arguments.at(i + 1).startsWith(QLatin1Char('-'))) {
+            if (arguments.count() < i + 2 || arguments.at(i + 1).startsWith(u'-')) {
                 printf("-o expects a filename\n");
                 exit(1);
             }
@@ -459,7 +459,7 @@ int main(int argc, char **argv)
     for (int i = 0; i < args.count(); ++i) {
         const QString arg = args.at(i);
 
-        if (arg.startsWith(QLatin1Char('-')))
+        if (arg.startsWith(u'-'))
             continue;
 
         QFile f(arg);

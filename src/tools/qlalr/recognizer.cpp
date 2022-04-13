@@ -83,9 +83,9 @@ int Recognizer::nextToken()
     {
       inp(); // skip "
       text.clear ();
-      while (! ch.isNull () && ch != QLatin1Char ('"'))
+      while (!ch.isNull () && ch != u'"')
         {
-          if (ch == QLatin1Char ('\\'))
+          if (ch == u'\\')
             {
               text += ch;
               inp();
@@ -94,7 +94,7 @@ int Recognizer::nextToken()
           inp ();
         }
 
-      if (ch == QLatin1Char ('"'))
+      if (ch == u'"')
         inp ();
       else
         qerr() << _M_input_file << ":" << _M_line << ": Warning. Expected `\"'" << Qt::endl;
@@ -103,11 +103,11 @@ int Recognizer::nextToken()
       return (token = STRING_LITERAL);
     }
 
-  else if (ch.isLetterOrNumber () || ch == QLatin1Char ('_'))
+  else if (ch.isLetterOrNumber () || ch == u'_')
     {
       text.clear ();
       do { text += ch; inp (); }
-      while (ch.isLetterOrNumber () || ch == QLatin1Char ('_') || ch == QLatin1Char ('.'));
+      while (ch.isLetterOrNumber () || ch == u'_' || ch == u'.');
       _M_current_value = text;
       return (token = ID);
     }
@@ -120,7 +120,7 @@ int Recognizer::nextToken()
       while (ch.isSpace ());
 
       do { text += ch; inp (); }
-      while (ch.isLetterOrNumber () || ch == QLatin1Char ('_') || ch == QLatin1Char ('-'));
+      while (ch.isLetterOrNumber () || ch == u'_' || ch == u'-');
 
       if (text == QLatin1String("token_prefix"))
         return (token = TOKEN_PREFIX);
@@ -158,23 +158,23 @@ int Recognizer::nextToken()
 
   inp ();
 
-  if (token == '-' && ch == QLatin1Char ('-'))
+  if (token == '-' && ch == u'-')
     {
       do { inp (); }
-      while (! ch.isNull () && ch != QLatin1Char ('\n'));
+      while (!ch.isNull () && ch != u'\n');
       goto Lagain;
     }
 
-  else if (token == ':' && ch == QLatin1Char (':'))
+  else if (token == ':' && ch == u':')
     {
       inp ();
-      if (ch != QLatin1Char ('='))
+      if (ch != u'=')
         return (token = ERROR);
       inp ();
       return (token = COLON);
     }
 
-  else if (token == '/' && ch == QLatin1Char (':'))
+  else if (token == '/' && ch == u':')
     {
       _M_action_line = _M_line;
 
@@ -191,13 +191,13 @@ int Recognizer::nextToken()
               token = ch.unicode ();
               inp ();
 
-              if (token == ':' && ch == QLatin1Char ('/'))
+              if (token == ':' && ch == u'/')
                 break;
 
               text += QLatin1Char (token);
             }
 
-          if (ch != QLatin1Char ('/'))
+          if (ch != u'/')
             return (token = ERROR);
 
           inp ();
@@ -212,7 +212,7 @@ int Recognizer::nextToken()
         }
     }
 
-  else if (token == '/' && ch == QLatin1Char ('.'))
+  else if (token == '/' && ch == u'.')
     {
       _M_action_line = _M_line;
 
@@ -230,13 +230,13 @@ int Recognizer::nextToken()
               token = ch.unicode ();
               inp ();
 
-              if (token == '.' && ch == QLatin1Char ('/'))
+              if (token == '.' && ch == u'/')
                 break;
 
               text += QLatin1Char (token);
             }
 
-          if (ch != QLatin1Char ('/'))
+          if (ch != u'/')
             return (token = ERROR);
 
           inp ();

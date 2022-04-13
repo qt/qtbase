@@ -112,7 +112,7 @@ QString CppGenerator::privateCopyrightHeader() const
 
 QString CppGenerator::startIncludeGuard(const QString &fileName)
 {
-    const QString normalized(QString(fileName).replace(QLatin1Char('.'), QLatin1Char('_')).toUpper());
+    const QString normalized(QString(fileName).replace(u'.', u'_').toUpper());
 
     return QString::fromLatin1("#ifndef %1\n"
                                "#define %2\n").arg(normalized, normalized);
@@ -120,7 +120,7 @@ QString CppGenerator::startIncludeGuard(const QString &fileName)
 
 QString CppGenerator::endIncludeGuard(const QString &fileName)
 {
-    const QString normalized(QString(fileName).replace(QLatin1Char('.'), QLatin1Char('_')).toUpper());
+    const QString normalized(QString(fileName).replace(u'.', u'_').toUpper());
 
     return QString::fromLatin1("#endif // %1\n").arg(normalized);
 }

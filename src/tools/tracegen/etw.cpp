@@ -146,7 +146,7 @@ static void writePrologue(QTextStream &stream, const QString &fileName, const Pr
     stream << "\n";
 
     if (!provider.prefixText.isEmpty())
-        stream << provider.prefixText.join(QLatin1Char('\n')) << "\n\n";
+        stream << provider.prefixText.join(u'\n') << "\n\n";
 
     stream << "#ifdef TRACEPOINT_DEFINE\n"
            << "/* " << guidString << " */\n"

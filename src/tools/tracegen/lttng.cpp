@@ -117,7 +117,7 @@ static void writePrologue(QTextStream &stream, const QString &fileName, const Pr
     stream << qtHeaders();
     stream << "\n";
     if (!provider.prefixText.isEmpty())
-        stream << provider.prefixText.join(QLatin1Char('\n')) << "\n\n";
+        stream << provider.prefixText.join(u'\n') << "\n\n";
     stream << "#endif\n\n";
 
     /* the first guard is the usual one, the second is required
