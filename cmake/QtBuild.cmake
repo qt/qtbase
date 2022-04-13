@@ -238,18 +238,16 @@ endif("${isSystemDir}" STREQUAL "-1")
 # Bottom line: No need to pass anything to CMAKE_INSTALL_RPATH.
 set(CMAKE_INSTALL_RPATH "" CACHE STRING "RPATH for installed binaries")
 
-# add the automatically determined parts of the RPATH
-# which point to directories outside the build tree to the install RPATH
+# By default, don't embed auto-determined RPATHs pointing to directories
+# outside of the build tree, into the installed binaries.
+# This ended up adding rpaths like ${CMAKE_INSTALL_PREFIX}/lib (or /Users/qt/work/install/lib into
+# the official libraries created by the CI) into the non-qtbase libraries, plugins, etc.
 #
-# TODO: Do we really want to use this option for official packages? Perhaps make it configurable
-# or remove it? This causes final installed binaries to contain an absolute path RPATH pointing
-# to ${CMAKE_INSTALL_PREFIX}/lib, which on the CI would be something like
-# /Users/qt/work/install/lib.
-# It doesn't seem necessary to me, given that qt_apply_rpaths already applies $ORIGIN-style
-# relocatable paths, but maybe i'm missing something, because the original commit that added the
-# option mentions it's needed in some cross-compilation scenario for program binaries that
-# link against QtCore.
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+# It should not be necessary, given that qt_apply_rpaths() already adds the necessary rpaths, either
+# relocatable ones or absolute ones, depending on what the platform supports.
+if(NOT QT_NO_DISABLE_CMAKE_INSTALL_RPATH_USE_LINK_PATH)
+    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+endif()
 
 # Ensure that GNUInstallDirs's CMAKE_INSTALL_LIBDIR points to the same lib dir that Qt was
 # configured with. Currently this is important for QML plugins, which embed an rpath based
