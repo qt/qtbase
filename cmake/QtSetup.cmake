@@ -110,7 +110,8 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_LINK_DEPENDS_NO_SHARED ON)
 
 # Detect non-prefix builds: either when the qtbase install prefix is set to the binary dir
-# or when a developer build is explicitly enabled and no install prefix is specified.
+# or when a developer build is explicitly enabled and no install prefix (or staging prefix)
+# is specified.
 # This detection only happens when building qtbase, and later is propagated via the generated
 # QtBuildInternalsExtra.cmake file.
 if (PROJECT_NAME STREQUAL "QtBase" AND NOT QT_BUILD_STANDALONE_TESTS)
@@ -118,8 +119,12 @@ if (PROJECT_NAME STREQUAL "QtBase" AND NOT QT_BUILD_STANDALONE_TESTS)
         # Handle both FEATURE_ and QT_FEATURE_ cases when they are specified on the command line
         # explicitly. It's possible for one to be set, but not the other, because
         # qtbase/configure.cmake is not processed by this point.
-        if(FEATURE_developer_build OR QT_FEATURE_developer_build
-            OR FEATURE_no_prefix OR QT_FEATURE_no_prefix)
+        if((FEATURE_developer_build
+            OR QT_FEATURE_developer_build
+            OR FEATURE_no_prefix
+            OR QT_FEATURE_no_prefix
+            )
+            AND NOT CMAKE_STAGING_PREFIX)
             # Handle non-prefix builds by setting the CMake install prefix to point to qtbase's
             # build dir. While building another repo (like qtsvg) the CMAKE_PREFIX_PATH should be
             # set on the command line to point to the qtbase build dir.
