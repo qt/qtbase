@@ -140,7 +140,7 @@ qt_configure_process_path(INSTALL_DESCRIPTIONSDIR
                          "${INSTALL_DATADIR}/modules"
                           "Module description files directory")
 
-if(CMAKE_CROSSCOMPILING AND NOT "${CMAKE_STAGING_PREFIX}" STREQUAL "")
+if(NOT "${CMAKE_STAGING_PREFIX}" STREQUAL "")
     set(QT_STAGING_PREFIX "${CMAKE_STAGING_PREFIX}")
 else()
     set(QT_STAGING_PREFIX "${CMAKE_INSTALL_PREFIX}")
