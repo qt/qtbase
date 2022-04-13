@@ -48,6 +48,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 namespace QtAndroidDialogHelpers {
 static jclass g_messageDialogHelperClass = nullptr;
 
@@ -74,7 +76,7 @@ static QString htmlText(QString text)
     if (Qt::mightBeRichText(text))
         return text;
     text.remove(u'\r');
-    return text.toHtmlEscaped().replace(u'\n', QLatin1String("<br />"));
+    return text.toHtmlEscaped().replace(u'\n', "<br />"_L1);
 }
 
 bool QAndroidPlatformMessageDialogHelper::show(Qt::WindowFlags windowFlags,

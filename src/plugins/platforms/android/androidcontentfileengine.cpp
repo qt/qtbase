@@ -47,6 +47,7 @@
 #include <QDebug>
 
 using namespace QNativeInterface;
+using namespace Qt::StringLiterals;
 
 AndroidContentFileEngine::AndroidContentFileEngine(const QString &f)
     : m_file(f)
@@ -175,9 +176,8 @@ AndroidContentFileEngineHandler::~AndroidContentFileEngineHandler() = default;
 
 QAbstractFileEngine* AndroidContentFileEngineHandler::create(const QString &fileName) const
 {
-    if (!fileName.startsWith(QLatin1String("content"))) {
+    if (!fileName.startsWith("content"_L1))
         return nullptr;
-    }
 
     return new AndroidContentFileEngine(fileName);
 }

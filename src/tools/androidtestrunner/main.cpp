@@ -47,6 +47,8 @@
 #define QT_POPEN_READ "r"
 #endif
 
+using namespace Qt::StringLiterals;
+
 static bool checkJunit(const QByteArray &data) {
     QXmlStreamReader reader{data};
     while (!reader.atEnd()) {
@@ -70,12 +72,12 @@ static bool checkJunit(const QByteArray &data) {
 }
 
 static bool checkTxt(const QByteArray &data) {
-    if (data.indexOf(QLatin1String("\nFAIL!  : ")) >= 0)
+    if (data.indexOf("\nFAIL!  : "_L1) >= 0)
         return false;
-    if (data.indexOf(QLatin1String("\nXPASS  : ")) >= 0)
+    if (data.indexOf("\nXPASS  : "_L1) >= 0)
         return false;
     // Look for "********* Finished testing of tst_QTestName *********"
-    static const QRegularExpression testTail(QLatin1String("\\*+ +Finished testing of .+ +\\*+"));
+    static const QRegularExpression testTail("\\*+ +Finished testing of .+ +\\*+"_L1);
     return testTail.match(QLatin1String(data)).hasMatch();
 }
 
@@ -118,7 +120,7 @@ static bool checkTeamcity(const QByteArray &data) {
     const QList<QByteArray> lines = data.trimmed().split('\n');
     if (lines.isEmpty())
         return false;
-    return lines.last().startsWith(QLatin1String("##teamcity[testSuiteFinished "));
+    return lines.last().startsWith("##teamcity[testSuiteFinished "_L1);
 }
 
 static bool checkTap(const QByteArray &data) {
@@ -127,7 +129,7 @@ static bool checkTap(const QByteArray &data) {
     if (data.indexOf("\nnot ok ") >= 0)
         return false;
 
-    static const QRegularExpression testTail(QLatin1String("ok [0-9]* - cleanupTestCase\\(\\)"));
+    static const QRegularExpression testTail("ok [0-9]* - cleanupTestCase\\(\\)"_L1);
     return testTail.match(QLatin1String(data)).hasMatch();
 }
 

@@ -43,14 +43,16 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QString QAndroidPlatformFontDatabase::fontDir() const
 {
-    return QLatin1String("/system/fonts");
+    return "/system/fonts"_L1;
 }
 
 QFont QAndroidPlatformFontDatabase::defaultFont() const
 {
-    return QFont(QLatin1String("Roboto"));
+    return QFont("Roboto"_L1);
 }
 
 void QAndroidPlatformFontDatabase::populateFontDatabase()
@@ -64,9 +66,9 @@ void QAndroidPlatformFontDatabase::populateFontDatabase()
     }
 
     QStringList nameFilters;
-    nameFilters << QLatin1String("*.ttf")
-                << QLatin1String("*.otf")
-                << QLatin1String("*.ttc");
+    nameFilters << "*.ttf"_L1
+                << "*.otf"_L1
+                << "*.ttc"_L1;
 
     const auto entries = dir.entryInfoList(nameFilters, QDir::Files);
     for (const QFileInfo &fi : entries) {

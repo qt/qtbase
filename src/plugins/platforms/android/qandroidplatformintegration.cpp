@@ -80,6 +80,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QSize QAndroidPlatformIntegration::m_defaultScreenSize = QSize(320, 455);
 QRect QAndroidPlatformIntegration::m_defaultAvailableGeometry = QRect(0, 0, 320, 455);
 QSize QAndroidPlatformIntegration::m_defaultPhysicalSize = QSize(50, 71);
@@ -286,9 +288,9 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
 static bool needsBasicRenderloopWorkaround()
 {
     static bool needsWorkaround =
-            QtAndroid::deviceName().compare(QLatin1String("samsung SM-T211"), Qt::CaseInsensitive) == 0
-            || QtAndroid::deviceName().compare(QLatin1String("samsung SM-T210"), Qt::CaseInsensitive) == 0
-            || QtAndroid::deviceName().compare(QLatin1String("samsung SM-T215"), Qt::CaseInsensitive) == 0;
+            QtAndroid::deviceName().compare("samsung SM-T211"_L1, Qt::CaseInsensitive) == 0
+            || QtAndroid::deviceName().compare("samsung SM-T210"_L1, Qt::CaseInsensitive) == 0
+            || QtAndroid::deviceName().compare("samsung SM-T215"_L1, Qt::CaseInsensitive) == 0;
     return needsWorkaround;
 }
 
@@ -457,7 +459,7 @@ Qt::WindowState QAndroidPlatformIntegration::defaultWindowState(Qt::WindowFlags 
     return QPlatformIntegration::defaultWindowState(flags);
 }
 
-static const QLatin1String androidThemeName("android");
+static const auto androidThemeName = "android"_L1;
 QStringList QAndroidPlatformIntegration::themeNames() const
 {
     return QStringList(QString(androidThemeName));

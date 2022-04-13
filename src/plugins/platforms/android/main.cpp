@@ -43,6 +43,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QAndroidIntegrationPlugin : public QPlatformIntegrationPlugin
 {
     Q_OBJECT
@@ -54,7 +56,7 @@ public:
 
 QPlatformIntegration *QAndroidIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
-    if (!system.compare(QLatin1String("android"), Qt::CaseInsensitive))
+    if (!system.compare("android"_L1, Qt::CaseInsensitive))
         return new QAndroidPlatformIntegration(paramList);
 
     return nullptr;

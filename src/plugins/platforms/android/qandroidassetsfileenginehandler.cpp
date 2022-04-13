@@ -49,14 +49,16 @@
 
 QT_BEGIN_NAMESPACE
 
-static const QLatin1String assetsPrefix("assets:");
+using namespace Qt::StringLiterals;
+
+static const auto assetsPrefix = "assets:"_L1;
 const static int prefixSize = 7;
 
 static inline QString cleanedAssetPath(QString file)
 {
     if (file.startsWith(assetsPrefix))
         file.remove(0, prefixSize);
-    file.replace(QLatin1String("//"), QLatin1String("/"));
+    file.replace("//"_L1, "/"_L1);
     if (file.startsWith(u'/'))
         file.remove(0, 1);
     if (file.endsWith(u'/'))
@@ -67,7 +69,7 @@ static inline QString cleanedAssetPath(QString file)
 static inline QString prefixedPath(QString path)
 {
     path = assetsPrefix + u'/' + path;
-    path.replace(QLatin1String("//"), QLatin1String("/"));
+    path.replace("//"_L1, "/"_L1);
     return path;
 }
 
@@ -157,7 +159,7 @@ public:
             }
         }
         m_path = assetsPrefix + u'/' + m_path + u'/';
-        m_path.replace(QLatin1String("//"), QLatin1String("/"));
+        m_path.replace("//"_L1, "/"_L1);
     }
 
     QString currentFileName() const
@@ -381,7 +383,7 @@ private:
     AAsset *m_assetFile = nullptr;
     AAssetManager *m_assetManager = nullptr;
     // initialize with a name that can't be used as a file name
-    QString m_fileName = QLatin1String(".");
+    QString m_fileName = "."_L1;
     bool m_isFolder = false;
 };
 
@@ -400,7 +402,7 @@ QAbstractFileEngine * AndroidAssetsFileEngineHandler::create(const QString &file
         return nullptr;
 
     QString path = fileName.mid(prefixSize);
-    path.replace(QLatin1String("//"), QLatin1String("/"));
+    path.replace("//"_L1, "/"_L1);
     if (path.startsWith(u'/'))
         path.remove(0, 1);
     if (path.endsWith(u'/'))

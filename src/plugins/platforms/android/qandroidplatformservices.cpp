@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QAndroidPlatformServices::QAndroidPlatformServices()
 {
     m_actionView = QJniObject::getStaticObjectField("android/content/Intent", "ACTION_VIEW",
@@ -80,7 +82,7 @@ bool QAndroidPlatformServices::openUrl(const QUrl &theUrl)
 
     // if the file is local, we need to pass the MIME type, otherwise Android
     // does not start an Intent to view this file
-    QLatin1String fileScheme("file");
+    const auto fileScheme = "file"_L1;
     if ((url.scheme().isEmpty() || url.scheme() == fileScheme) && QFile::exists(url.path())) {
         // a real URL including the scheme is needed, else the Intent can not be started
         url.setScheme(fileScheme);

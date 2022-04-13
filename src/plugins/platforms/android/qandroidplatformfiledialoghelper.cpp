@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 namespace QtAndroidFileDialogHelper {
 
 #define RESULT_OK -1
@@ -172,7 +174,7 @@ void QAndroidPlatformFileDialogHelper::setMimeTypes()
             mimeTypes.append(db.mimeTypeForFile(filter, QMimeDatabase::MatchExtension).name());
     }
 
-    const QString initialType = mimeTypes.size() == 1 ? mimeTypes.at(0) : QLatin1String("*/*");
+    const QString initialType = mimeTypes.size() == 1 ? mimeTypes.at(0) : "*/*"_L1;
     m_intent.callObjectMethod("setType", "(Ljava/lang/String;)Landroid/content/Intent;",
                               QJniObject::fromString(initialType).object());
 
