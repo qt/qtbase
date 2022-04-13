@@ -211,9 +211,9 @@ static QString shellQuoteUnix(const QString &arg)
 
     QString ret(arg);
     if (hasSpecialChars(ret, iqm)) {
-        ret.replace(QLatin1Char('\''), QStringLiteral("'\\''"));
-        ret.prepend(QLatin1Char('\''));
-        ret.append(QLatin1Char('\''));
+        ret.replace(u'\'', QStringLiteral("'\\''"));
+        ret.prepend(u'\'');
+        ret.append(u'\'');
     }
     return ret;
 }
@@ -241,18 +241,18 @@ static QString shellQuoteWin(const QString &arg)
         // The argument must not end with a \ since this would be interpreted
         // as escaping the quote -- rather put the \ behind the quote: e.g.
         // rather use "foo"\ than "foo\"
-        int i = ret.length();
-        while (i > 0 && ret.at(i - 1) == QLatin1Char('\\'))
+        qsizetype i = ret.length();
+        while (i > 0 && ret.at(i - 1) == u'\\')
             --i;
-        ret.insert(i, QLatin1Char('"'));
-        ret.prepend(QLatin1Char('"'));
+        ret.insert(i, u'"');
+        ret.prepend(u'"');
     }
     return ret;
 }
 
 static QString shellQuote(const QString &arg)
 {
-    if (QDir::separator() == QLatin1Char('\\'))
+    if (QDir::separator() == u'\\')
         return shellQuoteWin(arg);
     else
         return shellQuoteUnix(arg);

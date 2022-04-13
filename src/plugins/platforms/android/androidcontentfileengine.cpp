@@ -60,15 +60,15 @@ bool AndroidContentFileEngine::open(QIODevice::OpenMode openMode,
     Q_UNUSED(permissions);
     QString openModeStr;
     if (openMode & QFileDevice::ReadOnly) {
-        openModeStr += QLatin1Char('r');
+        openModeStr += u'r';
     }
     if (openMode & QFileDevice::WriteOnly) {
-        openModeStr += QLatin1Char('w');
+        openModeStr += u'w';
     }
     if (openMode & QFileDevice::Truncate) {
-        openModeStr += QLatin1Char('t');
+        openModeStr += u't';
     } else if (openMode & QFileDevice::Append) {
-        openModeStr += QLatin1Char('a');
+        openModeStr += u'a';
     }
 
     m_pfd = QJniObject::callStaticObjectMethod("org/qtproject/qt/android/QtNative",
@@ -152,7 +152,7 @@ QString AndroidContentFileEngine::fileName(FileName f) const
             return m_file;
         case BaseName:
         {
-            const int pos = m_file.lastIndexOf(QChar(QLatin1Char('/')));
+            const qsizetype pos = m_file.lastIndexOf(u'/');
             return m_file.mid(pos);
         }
         default:

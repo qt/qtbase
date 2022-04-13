@@ -328,7 +328,7 @@ namespace QtAndroid
         QString manufacturer = QJniObject::getStaticObjectField("android/os/Build", "MANUFACTURER", "Ljava/lang/String;").toString();
         QString model = QJniObject::getStaticObjectField("android/os/Build", "MODEL", "Ljava/lang/String;").toString();
 
-        return manufacturer + QLatin1Char(' ') + model;
+        return manufacturer + u' ' + model;
     }
 
     jint generateViewId()

@@ -73,8 +73,8 @@ static QString htmlText(QString text)
 {
     if (Qt::mightBeRichText(text))
         return text;
-    text.remove(QLatin1Char('\r'));
-    return text.toHtmlEscaped().replace(QLatin1Char('\n'), QLatin1String("<br />"));
+    text.remove(u'\r');
+    return text.toHtmlEscaped().replace(u'\n', QLatin1String("<br />"));
 }
 
 bool QAndroidPlatformMessageDialogHelper::show(Qt::WindowFlags windowFlags,

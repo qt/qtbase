@@ -181,12 +181,12 @@ namespace QtAndroidMenu
 
     static QString removeAmpersandEscapes(QString s)
     {
-        int i = 0;
+        qsizetype i = 0;
         while (i < s.size()) {
             ++i;
-            if (s.at(i-1) != QLatin1Char('&'))
+            if (s.at(i - 1) != u'&')
                 continue;
-            if (i < s.size() && s.at(i) == QLatin1Char('&'))
+            if (i < s.size() && s.at(i) == u'&')
                 ++i;
             s.remove(i-1,1);
         }

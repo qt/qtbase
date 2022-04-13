@@ -72,7 +72,7 @@ void QAndroidSystemLocale::getLocaleFromJava() const
     QString languageCode = javaLocaleObject.callObjectMethod("getLanguage", "()Ljava/lang/String;").toString();
     QString countryCode = javaLocaleObject.callObjectMethod("getCountry", "()Ljava/lang/String;").toString();
 
-    m_locale = QLocale(languageCode + QLatin1Char('_') + countryCode);
+    m_locale = QLocale(languageCode + u'_' + countryCode);
 }
 
 QVariant QAndroidSystemLocale::query(QueryType type, QVariant in) const

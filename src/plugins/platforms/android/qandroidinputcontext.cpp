@@ -1147,7 +1147,7 @@ void QAndroidInputContext::focusObjectStartComposing()
         return;
 
     // Composing strings containing newline characters are rare and may cause problems
-    if (m_composingText.contains(QLatin1Char('\n')))
+    if (m_composingText.contains(u'\n'))
         return;
 
     QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
@@ -1230,7 +1230,7 @@ jint QAndroidInputContext::getCursorCapsMode(jint /*reqModes*/)
         if (focusObjectIsComposing())
             surroundingText += QStringView{m_composingText}.left(m_composingCursor - m_composingTextStart);
         // Add a character to see if it is at the end of the sentence or not
-        QTextBoundaryFinder finder(QTextBoundaryFinder::Sentence, surroundingText + QLatin1Char('A'));
+        QTextBoundaryFinder finder(QTextBoundaryFinder::Sentence, surroundingText + u'A');
         finder.setPosition(surroundingText.length());
         if (finder.isAtBoundary())
             atWordBoundary = finder.isAtBoundary();
@@ -1450,7 +1450,7 @@ jboolean QAndroidInputContext::setComposingText(const QString &text, jint newCur
     const bool focusObjectWasComposing = focusObjectIsComposing();
 
     // Same checks as in focusObjectStartComposing()
-    if (!m_composingText.isEmpty() && !m_composingText.contains(QLatin1Char('\n'))
+    if (!m_composingText.isEmpty() && !m_composingText.contains(u'\n')
             && newAbsoluteCursorPos >= m_composingTextStart
             && newAbsoluteCursorPos <= m_composingTextStart + m_composingText.length())
         m_composingCursor = newAbsoluteCursorPos;
