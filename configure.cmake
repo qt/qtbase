@@ -473,11 +473,8 @@ qt_feature("developer-build" PRIVATE
 )
 qt_feature("no-prefix" PRIVATE
     LABEL "No prefix build"
-    # The var expansion on the right hand side is on purpose
-    # because the custom condition evaluator only expands the lhs
-    CONDITION (CMAKE_INSTALL_PREFIX STREQUAL "${QtBase_BINARY_DIR}")
-              OR CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT
-    AUTODETECT QT_FEATURE_developer_build
+    AUTODETECT NOT QT_WILL_INSTALL
+    CONDITION NOT QT_WILL_INSTALL
 )
 qt_feature("private_tests" PRIVATE
     LABEL "Developer build: private_tests"
