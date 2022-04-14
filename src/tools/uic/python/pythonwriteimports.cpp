@@ -139,7 +139,7 @@ WriteImports::WriteImports(Uic *uic) : WriteIncludesBase(uic),
     m_qtClasses(defaultClasses())
 {
     for (const auto &e : classInfoEntries())
-        m_classToModule.insert(QLatin1String(e.klass), QLatin1String(e.module));
+        m_classToModule.insert(QLatin1StringView(e.klass), QLatin1StringView(e.module));
 }
 
 void WriteImports::acceptUI(DomUI *node)

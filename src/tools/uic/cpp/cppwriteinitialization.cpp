@@ -58,7 +58,7 @@ namespace {
             return result;
         switch (pstyle->kind()) {
         case DomProperty::Number:
-            result = QLatin1String(language::toolbarArea(pstyle->elementNumber()));
+            result = QLatin1StringView(language::toolbarArea(pstyle->elementNumber()));
             break;
         case DomProperty::Enum:
             result = pstyle->elementEnum();
@@ -795,7 +795,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
     //
     // Special handling for qtableview/qtreeview fake header attributes
     //
-    static const QLatin1String realPropertyNames[] = {
+    static const QLatin1StringView realPropertyNames[] = {
         "visible"_L1,
         "cascadingSectionResizes"_L1,
         "minimumSectionSize"_L1,    // before defaultSectionSize
@@ -827,7 +827,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
                         WritePropertyIgnoreObjectName);
 
     } else if (cwi->extendsOneOf(className, tables)) {
-        static const QLatin1String headerPrefixes[] = {
+        static const QLatin1StringView headerPrefixes[] = {
             "horizontalHeader"_L1,
             "verticalHeader"_L1,
         };

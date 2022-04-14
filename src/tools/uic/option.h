@@ -73,13 +73,13 @@ struct Option
           forceMemberFnPtrConnectionSyntax(0),
           forceStringConnectionSyntax(0),
           useStarImports(0),
-          prefix(QLatin1String("Ui_"))
+          prefix(QLatin1StringView("Ui_"))
     { indent.fill(u' ', 4); }
 
     QString messagePrefix() const
     {
         return inputFile.isEmpty() ?
-               QString(QLatin1String("stdin")) :
+               QString(QLatin1StringView("stdin")) :
                QDir::toNativeSeparators(inputFile);
     }
 };

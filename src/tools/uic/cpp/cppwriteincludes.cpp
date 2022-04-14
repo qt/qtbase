@@ -64,9 +64,9 @@ WriteIncludes::WriteIncludes(Uic *uic) : WriteIncludesBase(uic),
     // for the "Phonon::Someclass" classes, however.
     const QString namespaceDelimiter = "::"_L1;
     for (const auto &e : classInfoEntries()) {
-        const QString klass = QLatin1String(e.klass);
-        const QString module = QLatin1String(e.module);
-        QLatin1String header = QLatin1String(e.header);
+        const QString klass = QLatin1StringView(e.klass);
+        const QString module = QLatin1StringView(e.module);
+        QLatin1StringView header = QLatin1StringView(e.header);
         if (klass.contains(namespaceDelimiter)) {
             m_classToHeader.insert(klass, moduleHeader(module, header));
         } else {

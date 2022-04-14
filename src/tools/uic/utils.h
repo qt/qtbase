@@ -37,7 +37,7 @@
 QT_BEGIN_NAMESPACE
 
 inline bool toBool(const QString &str)
-{ return str.toLower() == QLatin1String("true"); }
+{ return str.toLower() == QLatin1StringView("true"); }
 
 inline QString toString(const DomString *str)
 { return str ? str->text() : QString(); }
