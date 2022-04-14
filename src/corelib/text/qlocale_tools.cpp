@@ -401,30 +401,42 @@ double qt_asciiToDouble(const char *num, qsizetype numLen, bool &ok, int &proces
     return d;
 }
 
-/* Detect base if 0 and, if base is hex, skip over 0x prefix */
+/* Detect base if 0 and, if base is hex or bin, skip over 0x/0b prefixes */
 static auto scanPrefix(const char *p, const char *stop, int base)
 {
-    if (p < stop && *p >= '0' && *p <= '9') {
-        if (*p == '0') {
-            const char *x = p + 1;
-            if (x < stop && (*x == 'x' || *x == 'X')) {
-                if (base == 0)
-                    base = 16;
-                if (base == 16)
-                    p += 2;
-            } else if (base == 0) {
-                base = 8;
-            }
-        } else if (base == 0) {
-            base = 10;
-        }
-        Q_ASSERT(base);
-    }
     struct R
     {
         const char *next;
         int base;
     };
+    if (p < stop && *p >= '0' && *p <= '9') {
+        if (*p == '0') {
+            const char *x_or_b = p + 1;
+            if (x_or_b < stop) {
+                switch (*x_or_b) {
+                case 'b':
+                case 'B':
+                    if (base == 0)
+                        base = 2;
+                    if (base == 2)
+                        p += 2;
+                    return R{p, base};
+                case 'x':
+                case 'X':
+                    if (base == 0)
+                        base = 16;
+                    if (base == 16)
+                        p += 2;
+                    return R{p, base};
+                }
+            }
+            if (base == 0)
+                base = 8;
+        } else if (base == 0) {
+            base = 10;
+        }
+        Q_ASSERT(base);
+    }
     return R{p, base};
 }
 

@@ -7111,9 +7111,10 @@ QString QString::vasprintf(const char *cformat, va_list ap)
     If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
-    If \a base is 0, the C language convention is used: if the string
-    begins with "0x", base 16 is used; otherwise, if the string begins with "0",
-    base 8 is used; otherwise, base 10 is used.
+    If \a base is 0, the C language convention is used: if the string begins
+    with "0x", base 16 is used; otherwise, if the string begins with "0b", base
+    2 is used; otherwise, if the string begins with "0", base 8 is used;
+    otherwise, base 10 is used.
 
     The string conversion will always happen in the 'C' locale. For
     locale-dependent conversion use QLocale::toLongLong()
@@ -7123,6 +7124,8 @@ QString QString::vasprintf(const char *cformat, va_list ap)
     \snippet qstring/main.cpp 74
 
     This function ignores leading and trailing whitespace.
+
+    \note Support for the "0b" prefix was added in Qt 6.4.
 
     \sa number(), toULongLong(), toInt(), QLocale::toLongLong()
 */
@@ -7153,9 +7156,10 @@ qlonglong QString::toIntegral_helper(QStringView string, bool *ok, int base)
     If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
-    If \a base is 0, the C language convention is used: if the string
-    begins with "0x", base 16 is used; otherwise, if the string begins with "0",
-    base 8 is used; otherwise, base 10 is used.
+    If \a base is 0, the C language convention is used: if the string begins
+    with "0x", base 16 is used; otherwise, if the string begins with "0b", base
+    2 is used; otherwise, if the string begins with "0", base 8 is used;
+    otherwise, base 10 is used.
 
     The string conversion will always happen in the 'C' locale. For
     locale-dependent conversion use QLocale::toULongLong()
@@ -7165,6 +7169,8 @@ qlonglong QString::toIntegral_helper(QStringView string, bool *ok, int base)
     \snippet qstring/main.cpp 79
 
     This function ignores leading and trailing whitespace.
+
+    \note Support for the "0b" prefix was added in Qt 6.4.
 
     \sa number(), toLongLong(), QLocale::toULongLong()
 */
@@ -7196,9 +7202,10 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
     If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
-    If \a base is 0, the C language convention is used: if the string
-    begins with "0x", base 16 is used; otherwise, if the string begins with "0",
-    base 8 is used; otherwise, base 10 is used.
+    If \a base is 0, the C language convention is used: if the string begins
+    with "0x", base 16 is used; otherwise, if the string begins with "0b", base
+    2 is used; otherwise, if the string begins with "0", base 8 is used;
+    otherwise, base 10 is used.
 
     The string conversion will always happen in the 'C' locale. For
     locale-dependent conversion use QLocale::toLongLong()
@@ -7208,6 +7215,8 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
     \snippet qstring/main.cpp 73
 
     This function ignores leading and trailing whitespace.
+
+    \note Support for the "0b" prefix was added in Qt 6.4.
 
     \sa number(), toULong(), toInt(), QLocale::toInt()
 */
@@ -7222,9 +7231,10 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
     If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
-    If \a base is 0, the C language convention is used: if the string
-    begins with "0x", base 16 is used; otherwise, if the string begins with "0",
-    base 8 is used; otherwise, base 10 is used.
+    If \a base is 0, the C language convention is used: if the string begins
+    with "0x", base 16 is used; otherwise, if the string begins with "0b", base
+    2 is used; otherwise, if the string begins with "0", base 8 is used;
+    otherwise, base 10 is used.
 
     The string conversion will always happen in the 'C' locale. For
     locale-dependent conversion use QLocale::toULongLong()
@@ -7234,6 +7244,8 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
     \snippet qstring/main.cpp 78
 
     This function ignores leading and trailing whitespace.
+
+    \note Support for the "0b" prefix was added in Qt 6.4.
 
     \sa number(), QLocale::toUInt()
 */
@@ -7247,9 +7259,10 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
     If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
-    If \a base is 0, the C language convention is used: if the string
-    begins with "0x", base 16 is used; otherwise, if the string begins with "0",
-    base 8 is used; otherwise, base 10 is used.
+    If \a base is 0, the C language convention is used: if the string begins
+    with "0x", base 16 is used; otherwise, if the string begins with "0b", base
+    2 is used; otherwise, if the string begins with "0", base 8 is used;
+    otherwise, base 10 is used.
 
     The string conversion will always happen in the 'C' locale. For
     locale-dependent conversion use QLocale::toInt()
@@ -7259,6 +7272,8 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
     \snippet qstring/main.cpp 72
 
     This function ignores leading and trailing whitespace.
+
+    \note Support for the "0b" prefix was added in Qt 6.4.
 
     \sa number(), toUInt(), toDouble(), QLocale::toInt()
 */
@@ -7272,9 +7287,10 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
     If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
-    If \a base is 0, the C language convention is used: if the string
-    begins with "0x", base 16 is used; otherwise, if the string begins with "0",
-    base 8 is used; otherwise, base 10 is used.
+    If \a base is 0, the C language convention is used: if the string begins
+    with "0x", base 16 is used; otherwise, if the string begins with "0b", base
+    2 is used; otherwise, if the string begins with "0", base 8 is used;
+    otherwise, base 10 is used.
 
     The string conversion will always happen in the 'C' locale. For
     locale-dependent conversion use QLocale::toUInt()
@@ -7284,6 +7300,8 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
     \snippet qstring/main.cpp 77
 
     This function ignores leading and trailing whitespace.
+
+    \note Support for the "0b" prefix was added in Qt 6.4.
 
     \sa number(), toInt(), QLocale::toUInt()
 */
@@ -7298,9 +7316,10 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
     If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
-    If \a base is 0, the C language convention is used: if the string
-    begins with "0x", base 16 is used; otherwise, if the string begins with "0",
-    base 8 is used; otherwise, base 10 is used.
+    If \a base is 0, the C language convention is used: if the string begins
+    with "0x", base 16 is used; otherwise, if the string begins with "0b", base
+    2 is used; otherwise, if the string begins with "0", base 8 is used;
+    otherwise, base 10 is used.
 
     The string conversion will always happen in the 'C' locale. For
     locale-dependent conversion use QLocale::toShort()
@@ -7310,6 +7329,8 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
     \snippet qstring/main.cpp 76
 
     This function ignores leading and trailing whitespace.
+
+    \note Support for the "0b" prefix was added in Qt 6.4.
 
     \sa number(), toUShort(), toInt(), QLocale::toShort()
 */
@@ -7324,9 +7345,10 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
     If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
-    If \a base is 0, the C language convention is used: if the string
-    begins with "0x", base 16 is used; if the string begins with "0",
-    base 8 is used; otherwise, base 10 is used.
+    If \a base is 0, the C language convention is used: if the string begins
+    with "0x", base 16 is used; otherwise, if the string begins with "0b", base
+    2 is used; otherwise, if the string begins with "0", base 8 is used;
+    otherwise, base 10 is used.
 
     The string conversion will always happen in the 'C' locale. For
     locale-dependent conversion use QLocale::toUShort()
@@ -7336,6 +7358,8 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
     \snippet qstring/main.cpp 80
 
     This function ignores leading and trailing whitespace.
+
+    \note Support for the "0b" prefix was added in Qt 6.4.
 
     \sa number(), toShort(), QLocale::toUShort()
 */
@@ -10210,7 +10234,8 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 
     If \a base is 0, the base is determined automatically using the following
     rules: if the Latin-1 string begins with "0x", the rest of it is read as
-    hexadecimal (base 16); otherwise, if it begins with "0", the rest of it is
+    hexadecimal (base 16); otherwise, if it begins with "0b", the rest of it is
+    read as binary (base 2); otherwise, if it begins with "0", the rest of it is
     read as octal (base 8); otherwise it is read as decimal.
 
     Returns 0 if the conversion fails.
@@ -10225,6 +10250,8 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 
     This function ignores leading and trailing spacing characters.
 //! [latin1-numeric-conversion-note]
+
+    \note Support for the "0b" prefix was added in Qt 6.4.
 */
 
 /*!

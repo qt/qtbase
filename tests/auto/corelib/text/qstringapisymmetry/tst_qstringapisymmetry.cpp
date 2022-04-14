@@ -2654,14 +2654,13 @@ void tst_QStringApiSymmetry::toNumberWithBases_data()
         const char prefix[3];
         int base;
     } bases[] = {
-        { "",    2 }, // should be {"0b", 2}, but Qt lacks support for the 0b prefix (QTBUG-85002)
+        { "0b",  2 },
         { "0",   8 },
         { "",   10 },
         { "0x", 16 },
     };
 
     const auto check = [&](const char *input, qint64 n2, qint64 n8, qint64 n10, qint64 n16, bool result) {
-        
         for (const auto &e : bases) {
             const QString data = QLatin1StringView(e.prefix) + QString::fromUtf8(input);
             const auto row = [&](int base) {
@@ -2678,8 +2677,6 @@ void tst_QStringApiSymmetry::toNumberWithBases_data()
                         << data << base << select(e.base /* NOT base! */) << result;
             };
             row(e.base); // explicit base
-            if (e.base == 2)
-                continue; // Qt doesn't know 0b (yet, QTBUG-85002), so nothing to auto-detect 
             row(0);      // automatically detected base
         }
     };
