@@ -90,22 +90,22 @@ class QSqlQueryModelSql
 {
 public:
     // SQL keywords
-    inline const static QLatin1String as() { return QLatin1String("AS"); }
-    inline const static QLatin1String asc() { return QLatin1String("ASC"); }
-    inline const static QLatin1String comma() { return QLatin1String(","); }
-    inline const static QLatin1String desc() { return QLatin1String("DESC"); }
-    inline const static QLatin1String eq() { return QLatin1String("="); }
+    inline const static QLatin1StringView as() { return QLatin1StringView("AS"); }
+    inline const static QLatin1StringView asc() { return QLatin1StringView("ASC"); }
+    inline const static QLatin1StringView comma() { return QLatin1StringView(","); }
+    inline const static QLatin1StringView desc() { return QLatin1StringView("DESC"); }
+    inline const static QLatin1StringView eq() { return QLatin1StringView("="); }
     // "and" is a C++ keyword
-    inline const static QLatin1String et() { return QLatin1String("AND"); }
-    inline const static QLatin1String from() { return QLatin1String("FROM"); }
-    inline const static QLatin1String leftJoin() { return QLatin1String("LEFT JOIN"); }
-    inline const static QLatin1String on() { return QLatin1String("ON"); }
-    inline const static QLatin1String orderBy() { return QLatin1String("ORDER BY"); }
-    inline const static QLatin1String parenClose() { return QLatin1String(")"); }
-    inline const static QLatin1String parenOpen() { return QLatin1String("("); }
-    inline const static QLatin1String select() { return QLatin1String("SELECT"); }
-    inline const static QLatin1String sp() { return QLatin1String(" "); }
-    inline const static QLatin1String where() { return QLatin1String("WHERE"); }
+    inline const static QLatin1StringView et() { return QLatin1StringView("AND"); }
+    inline const static QLatin1StringView from() { return QLatin1StringView("FROM"); }
+    inline const static QLatin1StringView leftJoin() { return QLatin1StringView("LEFT JOIN"); }
+    inline const static QLatin1StringView on() { return QLatin1StringView("ON"); }
+    inline const static QLatin1StringView orderBy() { return QLatin1StringView("ORDER BY"); }
+    inline const static QLatin1StringView parenClose() { return QLatin1StringView(")"); }
+    inline const static QLatin1StringView parenOpen() { return QLatin1StringView("("); }
+    inline const static QLatin1StringView select() { return QLatin1StringView("SELECT"); }
+    inline const static QLatin1StringView sp() { return QLatin1StringView(" "); }
+    inline const static QLatin1StringView where() { return QLatin1StringView("WHERE"); }
 
     // Build expressions based on key words
     inline const static QString as(const QString &a, const QString &b) { return b.isEmpty() ? a : concat(concat(a, as()), b); }

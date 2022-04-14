@@ -1376,14 +1376,14 @@ QStringList QMYSQLDriver::tables(QSql::TableType type) const
     QStringList tl;
     QSqlQuery q(createResult());
     if (type & QSql::Tables) {
-        QString sql = "select table_name from information_schema.tables where table_schema = '"_L1 + QLatin1String(d->mysql->db) + "' and table_type = 'BASE TABLE'"_L1;
+        QString sql = "select table_name from information_schema.tables where table_schema = '"_L1 + QLatin1StringView(d->mysql->db) + "' and table_type = 'BASE TABLE'"_L1;
         q.exec(sql);
 
         while (q.next())
             tl.append(q.value(0).toString());
     }
     if (type & QSql::Views) {
-        QString sql = "select table_name from information_schema.tables where table_schema = '"_L1 + QLatin1String(d->mysql->db) + "' and table_type = 'VIEW'"_L1;
+        QString sql = "select table_name from information_schema.tables where table_schema = '"_L1 + QLatin1StringView(d->mysql->db) + "' and table_type = 'VIEW'"_L1;
         q.exec(sql);
 
         while (q.next())

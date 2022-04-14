@@ -1521,7 +1521,7 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
             unsigned char *data = PQescapeBytea((const unsigned char*)ba.constData(), ba.size(), &len);
 #endif
             r += u'\'';
-            r += QLatin1String((const char*)data);
+            r += QLatin1StringView((const char*)data);
             r += u'\'';
             qPQfreemem(data);
             break;
@@ -1658,7 +1658,7 @@ void QPSQLDriver::_q_handleNotification()
 
     PGnotify *notify = nullptr;
     while ((notify = PQnotifies(d->connection)) != nullptr) {
-        QString name(QLatin1String(notify->relname));
+        QString name(QLatin1StringView(notify->relname));
         if (d->seid.contains(name)) {
             QString payload;
 #if defined PG_VERSION_NUM && PG_VERSION_NUM-0 >= 70400

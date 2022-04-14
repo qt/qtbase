@@ -304,11 +304,13 @@ QSqlQuery& QSqlQuery::operator=(const QSqlQuery& other)
 static void qInit(QSqlQuery *q, const QString& query, const QSqlDatabase &db)
 {
     QSqlDatabase database = db;
-    if (!database.isValid())
-        database = QSqlDatabase::database(QLatin1String(QSqlDatabase::defaultConnection), false);
-    if (database.isValid()) {
-        *q = QSqlQuery(database.driver()->createResult());
+    if (!database.isValid()) {
+        database =
+                QSqlDatabase::database(QLatin1StringView(QSqlDatabase::defaultConnection), false);
     }
+    if (database.isValid())
+        *q = QSqlQuery(database.driver()->createResult());
+
     if (!query.isEmpty())
         q->exec(query);
 }

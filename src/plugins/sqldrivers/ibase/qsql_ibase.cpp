@@ -802,7 +802,7 @@ bool QIBaseResultPrivate::writeArray(int column, const QList<QVariant> &list)
 
     if (list.size() > arraySize) {
         error = "Array size mismatch: size of %1 is %2, size of provided list is %3"_L1;
-        error = error.arg(QLatin1String(sqlname)).arg(arraySize).arg(list.size());
+        error = error.arg(QLatin1StringView(sqlname)).arg(arraySize).arg(list.size());
         q->setLastError(QSqlError(error, ""_L1, QSqlError::StatementError));
         return false;
     }
@@ -810,7 +810,7 @@ bool QIBaseResultPrivate::writeArray(int column, const QList<QVariant> &list)
     if (!createArrayBuffer(ba.data(), list,
                            qIBaseTypeName(desc.array_desc_dtype, inda->sqlvar[column].sqlscale < 0),
                            0, &desc, error)) {
-        q->setLastError(QSqlError(error.arg(QLatin1String(sqlname)), ""_L1,
+        q->setLastError(QSqlError(error.arg(QLatin1StringView(sqlname)), ""_L1,
                         QSqlError::StatementError));
         return false;
     }
