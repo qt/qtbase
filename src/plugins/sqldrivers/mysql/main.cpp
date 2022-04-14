@@ -43,6 +43,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QMYSQLDriverPlugin : public QSqlDriverPlugin
 {
     Q_OBJECT
@@ -61,8 +63,7 @@ QMYSQLDriverPlugin::QMYSQLDriverPlugin()
 
 QSqlDriver* QMYSQLDriverPlugin::create(const QString &name)
 {
-    if (name == QLatin1String("QMYSQL") ||
-        name == QLatin1String("QMARIADB")) {
+    if (name == "QMYSQL"_L1 || name == "QMARIADB"_L1) {
         QMYSQLDriver* driver = new QMYSQLDriver();
         return driver;
     }

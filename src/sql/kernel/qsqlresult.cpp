@@ -55,6 +55,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QString QSqlResultPrivate::holderAt(int index) const
 {
     return holders.size() > index ? holders.at(index).holderName : fieldSerial(index);
@@ -62,7 +64,7 @@ QString QSqlResultPrivate::holderAt(int index) const
 
 QString QSqlResultPrivate::fieldSerial(int i) const
 {
-    return QString(QLatin1String(":%1")).arg(i);
+    return QString(":%1"_L1).arg(i);
 }
 
 static bool qIsAlnum(QChar ch)
@@ -118,7 +120,7 @@ QString QSqlResultPrivate::namedToPositionalBinding(const QString &query)
     // caller to make sure that it is not using named bindings for the wrong
     // parts of the query since Interbase uses them literally
     if (sqldriver->dbmsType() == QSqlDriver::Interbase &&
-        query.trimmed().startsWith(QLatin1String("EXECUTE BLOCK"), Qt::CaseInsensitive))
+        query.trimmed().startsWith("EXECUTE BLOCK"_L1, Qt::CaseInsensitive))
         return query;
 
     int n = query.size();
@@ -667,7 +669,7 @@ bool QSqlResult::exec()
         for (i = d->holders.count() - 1; i >= 0; --i) {
             holder = d->holders.at(i).holderName;
             val = d->values.value(d->indexes.value(holder).value(0,-1));
-            QSqlField f(QLatin1String(""), val.metaType());
+            QSqlField f(""_L1, val.metaType());
             if (QSqlResultPrivate::isVariantNull(val))
                 f.setValue(QVariant());
             else
@@ -684,7 +686,7 @@ bool QSqlResult::exec()
             if (i == -1)
                 continue;
             QVariant var = d->values.value(idx);
-            QSqlField f(QLatin1String(""), var.metaType());
+            QSqlField f(""_L1, var.metaType());
             if (QSqlResultPrivate::isVariantNull(var))
                 f.clear();
             else

@@ -53,6 +53,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 typedef QSqlTableModelSql Sql;
 
 QSqlTableModelPrivate::~QSqlTableModelPrivate()
@@ -333,7 +335,7 @@ void QSqlTableModel::setTable(const QString &tableName)
     d->initRecordAndPrimaryIndex();
 
     if (d->rec.count() == 0)
-        d->error = QSqlError(QLatin1String("Unable to find table ") + d->tableName, QString(),
+        d->error = QSqlError("Unable to find table "_L1 + d->tableName, QString(),
                              QSqlError::StatementError);
 
     // Remember the auto index column if there is one now.
@@ -493,9 +495,9 @@ QVariant QSqlTableModel::headerData(int section, Qt::Orientation orientation, in
     if (orientation == Qt::Vertical && role == Qt::DisplayRole) {
         const QSqlTableModelPrivate::Op op = d->cache.value(section).op();
         if (op == QSqlTableModelPrivate::Insert)
-            return QLatin1String("*");
+            return "*"_L1;
         else if (op == QSqlTableModelPrivate::Delete)
-            return QLatin1String("!");
+            return "!"_L1;
     }
     return QSqlQueryModel::headerData(section, orientation, role);
 }
@@ -657,8 +659,7 @@ bool QSqlTableModel::updateRowInTable(int row, const QSqlRecord &values)
                                                        whereValues, prepStatement);
 
     if (stmt.isEmpty() || where.isEmpty() || row < 0 || row >= rowCount()) {
-        d->error = QSqlError(QLatin1String("No Fields to update"), QString(),
-                                 QSqlError::StatementError);
+        d->error = QSqlError("No Fields to update"_L1, QString(), QSqlError::StatementError);
         return false;
     }
 
@@ -690,8 +691,7 @@ bool QSqlTableModel::insertRowIntoTable(const QSqlRecord &values)
                                                       rec, prepStatement);
 
     if (stmt.isEmpty()) {
-        d->error = QSqlError(QLatin1String("No Fields to update"), QString(),
-                                 QSqlError::StatementError);
+        d->error = QSqlError("No Fields to update"_L1, QString(), QSqlError::StatementError);
         return false;
     }
 
@@ -727,8 +727,7 @@ bool QSqlTableModel::deleteRowFromTable(int row)
                                                        prepStatement);
 
     if (stmt.isEmpty() || where.isEmpty()) {
-        d->error = QSqlError(QLatin1String("Unable to delete row"), QString(),
-                             QSqlError::StatementError);
+        d->error = QSqlError("Unable to delete row"_L1, QString(), QSqlError::StatementError);
         return false;
     }
 
@@ -1029,12 +1028,11 @@ QString QSqlTableModel::selectStatement() const
 {
     Q_D(const QSqlTableModel);
     if (d->tableName.isEmpty()) {
-        d->error = QSqlError(QLatin1String("No table name given"), QString(),
-                             QSqlError::StatementError);
+        d->error = QSqlError("No table name given"_L1, QString(), QSqlError::StatementError);
         return QString();
     }
     if (d->rec.isEmpty()) {
-        d->error = QSqlError(QLatin1String("Unable to find table ") + d->tableName, QString(),
+        d->error = QSqlError("Unable to find table "_L1 + d->tableName, QString(),
                              QSqlError::StatementError);
         return QString();
     }
@@ -1044,7 +1042,7 @@ QString QSqlTableModel::selectStatement() const
                                                       d->rec,
                                                       false);
     if (stmt.isEmpty()) {
-        d->error = QSqlError(QLatin1String("Unable to select fields from table ") + d->tableName,
+        d->error = QSqlError("Unable to select fields from table "_L1 + d->tableName,
                              QString(), QSqlError::StatementError);
         return stmt;
     }

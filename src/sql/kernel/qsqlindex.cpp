@@ -44,6 +44,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     \class QSqlIndex
     \brief The QSqlIndex class provides functions to manipulate and
@@ -176,7 +178,7 @@ QString QSqlIndex::createField(int i, const QString& prefix, bool verbose) const
         f += prefix + u'.';
     f += field(i).name();
     if (verbose)
-        f += u' ' + QString((isDescending(i) ? QLatin1String("DESC") : QLatin1String("ASC")));
+        f += u' ' + QString((isDescending(i) ? "DESC"_L1 : "ASC"_L1));
     return f;
 }
 

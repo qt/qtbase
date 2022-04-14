@@ -55,10 +55,12 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QSqlRelationalTableModelSql: public QSqlTableModelSql
 {
 public:
-    inline const static QString relTablePrefix(int i) { return QString::number(i).prepend(QLatin1String("relTblAl_")); }
+    inline const static QString relTablePrefix(int i) { return QString::number(i).prepend("relTblAl_"_L1); }
 };
 
 typedef QSqlRelationalTableModelSql Sql;

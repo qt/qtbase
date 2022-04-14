@@ -42,6 +42,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QSqlError &s)
 {
@@ -243,7 +245,7 @@ QString QSqlError::nativeErrorCode() const
 QString QSqlError::text() const
 {
     QString result = d->databaseError;
-    if (!d->databaseError.isEmpty() && !d->driverError.isEmpty() && !d->databaseError.endsWith(QLatin1String("\n")))
+    if (!d->databaseError.isEmpty() && !d->driverError.isEmpty() && !d->databaseError.endsWith("\n"_L1))
         result += u' ';
     result += d->driverError;
     return result;

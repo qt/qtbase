@@ -59,6 +59,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #define FBVERSION SQL_DIALECT_V6
 
 #ifndef SQLDA_CURRENT_VERSION
@@ -82,7 +84,7 @@ static bool getIBaseError(QString& msg, const ISC_STATUS* status, ISC_LONG &sqlc
     char buf[512];
     while(fb_interpret(buf, 512, &status)) {
         if (!msg.isEmpty())
-            msg += QLatin1String(" - ");
+            msg += " - "_L1;
         msg += QString::fromUtf8(buf);
     }
     return true;
@@ -686,8 +688,8 @@ static char* createArrayBuffer(char *buffer, const QList<QVariant> &list,
                     bounds[curDim].array_bound_lower + 1);
 
     if (list.size() != elements) { // size mismatch
-        error = QLatin1String("Expected size: %1. Supplied size: %2");
-        error = QLatin1String("Array size mismatch. Fieldname: %1 ")
+        error = "Expected size: %1. Supplied size: %2"_L1;
+        error = "Array size mismatch. Fieldname: %1 "_L1
                 + error.arg(elements).arg(list.size());
         return 0;
     }
@@ -696,7 +698,7 @@ static char* createArrayBuffer(char *buffer, const QList<QVariant> &list,
         for(i = 0; i < list.size(); ++i) {
 
           if (list.at(i).typeId() != QMetaType::QVariantList) { // dimensions mismatch
-              error = QLatin1String("Array dimensons mismatch. Fieldname: %1");
+              error = "Array dimensons mismatch. Fieldname: %1"_L1;
               return 0;
           }
 
@@ -799,16 +801,16 @@ bool QIBaseResultPrivate::writeArray(int column, const QList<QVariant> &list)
     ba.resize(int(bufLen));
 
     if (list.size() > arraySize) {
-        error = QLatin1String("Array size mismatch: size of %1 is %2, size of provided list is %3");
+        error = "Array size mismatch: size of %1 is %2, size of provided list is %3"_L1;
         error = error.arg(QLatin1String(sqlname)).arg(arraySize).arg(list.size());
-        q->setLastError(QSqlError(error, QLatin1String(""), QSqlError::StatementError));
+        q->setLastError(QSqlError(error, ""_L1, QSqlError::StatementError));
         return false;
     }
 
     if (!createArrayBuffer(ba.data(), list,
                            qIBaseTypeName(desc.array_desc_dtype, inda->sqlvar[column].sqlscale < 0),
                            0, &desc, error)) {
-        q->setLastError(QSqlError(error.arg(QLatin1String(sqlname)), QLatin1String(""),
+        q->setLastError(QSqlError(error.arg(QLatin1String(sqlname)), ""_L1,
                         QSqlError::StatementError));
         return false;
     }
@@ -972,9 +974,9 @@ bool QIBaseResult::exec()
         const QList<QVariant> &values = boundValues();
         int i;
         if (values.count() > d->inda->sqld) {
-            qWarning() << QLatin1String("QIBaseResult::exec: Parameter mismatch, expected") <<
-                          d->inda->sqld << QLatin1String(", got") << values.count() <<
-                          QLatin1String("parameters");
+            qWarning() << "QIBaseResult::exec: Parameter mismatch, expected"_L1 <<
+                          d->inda->sqld << ", got"_L1 << values.count() <<
+                          "parameters"_L1;
             return false;
         }
         int para = 0;
@@ -1370,11 +1372,11 @@ QSqlRecord QIBaseResult::record() const
         if (v.sqlscale < 0) {
             QSqlQuery q(driver()->createResult());
             q.setForwardOnly(true);
-            q.exec(QLatin1String("select b.RDB$FIELD_PRECISION, b.RDB$FIELD_SCALE, b.RDB$FIELD_LENGTH, a.RDB$NULL_FLAG "
+            q.exec("select b.RDB$FIELD_PRECISION, b.RDB$FIELD_SCALE, b.RDB$FIELD_LENGTH, a.RDB$NULL_FLAG "
                     "FROM RDB$RELATION_FIELDS a, RDB$FIELDS b "
                     "WHERE b.RDB$FIELD_NAME = a.RDB$FIELD_SOURCE "
-                    "AND a.RDB$RELATION_NAME = '") + QString::fromLatin1(v.relname, v.relname_length) + QLatin1String("' "
-                    "AND a.RDB$FIELD_NAME = '") + QString::fromLatin1(v.sqlname, v.sqlname_length) + QLatin1String("' "));
+                    "AND a.RDB$RELATION_NAME = '"_L1 + QString::fromLatin1(v.relname, v.relname_length) + "' "
+                    "AND a.RDB$FIELD_NAME = '"_L1 + QString::fromLatin1(v.sqlname, v.sqlname_length) + "' "_L1);
             if (q.first()) {
                 if (v.sqlscale < 0) {
                     f.setLength(q.value(0).toInt());
@@ -1462,7 +1464,7 @@ bool QIBaseDriver::open(const QString & db,
         if ((idx = tmp.indexOf(u'=')) != -1) {
             QString val = tmp.mid(idx + 1).simplified();
             QString opt = tmp.left(idx).simplified();
-            if (opt.toUpper() == QLatin1String("ISC_DPB_SQL_ROLE_NAME")) {
+            if (opt.toUpper() == "ISC_DPB_SQL_ROLE_NAME"_L1) {
                 role = val.toLocal8Bit();
                 role.truncate(255);
             }
@@ -1601,25 +1603,25 @@ QStringList QIBaseDriver::tables(QSql::TableType type) const
     QString typeFilter;
 
     if (type == QSql::SystemTables) {
-        typeFilter += QLatin1String("RDB$SYSTEM_FLAG != 0");
+        typeFilter += "RDB$SYSTEM_FLAG != 0"_L1;
     } else if (type == (QSql::SystemTables | QSql::Views)) {
-        typeFilter += QLatin1String("RDB$SYSTEM_FLAG != 0 OR RDB$VIEW_BLR NOT NULL");
+        typeFilter += "RDB$SYSTEM_FLAG != 0 OR RDB$VIEW_BLR NOT NULL"_L1;
     } else {
         if (!(type & QSql::SystemTables))
-            typeFilter += QLatin1String("RDB$SYSTEM_FLAG = 0 AND ");
+            typeFilter += "RDB$SYSTEM_FLAG = 0 AND "_L1;
         if (!(type & QSql::Views))
-            typeFilter += QLatin1String("RDB$VIEW_BLR IS NULL AND ");
+            typeFilter += "RDB$VIEW_BLR IS NULL AND "_L1;
         if (!(type & QSql::Tables))
-            typeFilter += QLatin1String("RDB$VIEW_BLR IS NOT NULL AND ");
+            typeFilter += "RDB$VIEW_BLR IS NOT NULL AND "_L1;
         if (!typeFilter.isEmpty())
             typeFilter.chop(5);
     }
     if (!typeFilter.isEmpty())
-        typeFilter.prepend(QLatin1String("where "));
+        typeFilter.prepend("where "_L1);
 
     QSqlQuery q(createResult());
     q.setForwardOnly(true);
-    if (!q.exec(QLatin1String("select rdb$relation_name from rdb$relations ") + typeFilter))
+    if (!q.exec("select rdb$relation_name from rdb$relations "_L1 + typeFilter))
         return res;
     while(q.next())
             res << q.value(0).toString().simplified();
@@ -1640,12 +1642,12 @@ QSqlRecord QIBaseDriver::record(const QString& tablename) const
         table = stripDelimiters(table, QSqlDriver::TableName);
     else
         table = table.toUpper();
-    q.exec(QLatin1String("SELECT a.RDB$FIELD_NAME, b.RDB$FIELD_TYPE, b.RDB$FIELD_LENGTH, "
+    q.exec("SELECT a.RDB$FIELD_NAME, b.RDB$FIELD_TYPE, b.RDB$FIELD_LENGTH, "
            "b.RDB$FIELD_SCALE, b.RDB$FIELD_PRECISION, a.RDB$NULL_FLAG "
            "FROM RDB$RELATION_FIELDS a, RDB$FIELDS b "
            "WHERE b.RDB$FIELD_NAME = a.RDB$FIELD_SOURCE "
-           "AND a.RDB$RELATION_NAME = '") + table + QLatin1String("' "
-           "ORDER BY a.RDB$FIELD_POSITION"));
+           "AND a.RDB$RELATION_NAME = '"_L1 + table + "' "
+           "ORDER BY a.RDB$FIELD_POSITION"_L1);
 
     while (q.next()) {
         int type = q.value(1).toInt();
@@ -1680,15 +1682,15 @@ QSqlIndex QIBaseDriver::primaryIndex(const QString &table) const
 
     QSqlQuery q(createResult());
     q.setForwardOnly(true);
-    q.exec(QLatin1String("SELECT a.RDB$INDEX_NAME, b.RDB$FIELD_NAME, d.RDB$FIELD_TYPE, d.RDB$FIELD_SCALE "
+    q.exec("SELECT a.RDB$INDEX_NAME, b.RDB$FIELD_NAME, d.RDB$FIELD_TYPE, d.RDB$FIELD_SCALE "
            "FROM RDB$RELATION_CONSTRAINTS a, RDB$INDEX_SEGMENTS b, RDB$RELATION_FIELDS c, RDB$FIELDS d "
            "WHERE a.RDB$CONSTRAINT_TYPE = 'PRIMARY KEY' "
-           "AND a.RDB$RELATION_NAME = '") + tablename +
-           QLatin1String(" 'AND a.RDB$INDEX_NAME = b.RDB$INDEX_NAME "
+           "AND a.RDB$RELATION_NAME = '"_L1 + tablename +
+           " 'AND a.RDB$INDEX_NAME = b.RDB$INDEX_NAME "
            "AND c.RDB$RELATION_NAME = a.RDB$RELATION_NAME "
            "AND c.RDB$FIELD_NAME = b.RDB$FIELD_NAME "
            "AND d.RDB$FIELD_NAME = c.RDB$FIELD_SOURCE "
-           "ORDER BY b.RDB$FIELD_POSITION"));
+           "ORDER BY b.RDB$FIELD_POSITION"_L1);
 
     while (q.next()) {
         QSqlField field(q.value(1).toString().simplified(),
@@ -1716,7 +1718,7 @@ QString QIBaseDriver::formatValue(const QSqlField &field, bool trimStrings) cons
                 QString::number(datetime.time().msec()).rightJustified(3, u'0', true) +
                 u'\'';
         else
-            return QLatin1String("NULL");
+            return "NULL"_L1;
     }
     case QMetaType::QTime: {
         QTime time = field.value().toTime();
@@ -1727,7 +1729,7 @@ QString QIBaseDriver::formatValue(const QSqlField &field, bool trimStrings) cons
                 QString::number(time.msec()).rightJustified(3, u'0', true) +
                 u'\'';
         else
-            return QLatin1String("NULL");
+            return "NULL"_L1;
     }
     case QMetaType::QDate: {
         QDate date = field.value().toDate();
@@ -1736,7 +1738,7 @@ QString QIBaseDriver::formatValue(const QSqlField &field, bool trimStrings) cons
                 QString::number(date.month()) + u'-' +
                 QString::number(date.day()) + u'\'';
             else
-                return QLatin1String("NULL");
+                return "NULL"_L1;
     }
     default:
         return QSqlDriver::formatValue(field, trimStrings);
@@ -1893,9 +1895,9 @@ QString QIBaseDriver::escapeIdentifier(const QString &identifier, IdentifierType
 {
     QString res = identifier;
     if (!identifier.isEmpty() && !identifier.startsWith(u'"') && !identifier.endsWith(u'"') ) {
-        res.replace(u'"', QLatin1String("\"\""));
+        res.replace(u'"', "\"\""_L1);
         res.prepend(u'"').append(u'"');
-        res.replace(u'.', QLatin1String("\".\""));
+        res.replace(u'.', "\".\""_L1);
     }
     return res;
 }

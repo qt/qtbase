@@ -43,6 +43,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QDB2DriverPlugin : public QSqlDriverPlugin
 {
     Q_OBJECT
@@ -61,7 +63,7 @@ QDB2DriverPlugin::QDB2DriverPlugin()
 
 QSqlDriver* QDB2DriverPlugin::create(const QString &name)
 {
-    if (name == QLatin1String("QDB2")) {
+    if (name == "QDB2"_L1) {
         QDB2Driver* driver = new QDB2Driver();
         return driver;
     }

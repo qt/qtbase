@@ -193,7 +193,7 @@ void QPSQLDriverPrivate::appendTables(QStringList &tl, QSqlQuery &t, QChar type)
     t.exec(query);
     while (t.next()) {
         QString schema = t.value(1).toString();
-        if (schema.isEmpty() || schema == QLatin1String("public"))
+        if (schema.isEmpty() || schema == "public"_L1)
             tl.append(t.value(0).toString());
         else
             tl.append(t.value(0).toString().prepend(u'.').prepend(schema));
@@ -316,7 +316,7 @@ static QSqlError qMakeError(const QString &err, QSqlError::ErrorType type,
         errorCode = QString::fromLatin1(PQresultErrorField(result, PG_DIAG_SQLSTATE));
         msg += QString::fromLatin1("(%1)").arg(errorCode);
     }
-    return QSqlError(QLatin1String("QPSQL: ") + err, msg, type, errorCode);
+    return QSqlError("QPSQL: "_L1 + err, msg, type, errorCode);
 }
 
 bool QPSQLResultPrivate::processResults()
@@ -863,7 +863,7 @@ static QString qCreateParamString(const QList<QVariant> &boundValues, const QSql
         else
             f.setValue(val);
         if (!params.isNull())
-            params.append(QLatin1String(", "));
+            params.append(", "_L1);
         params.append(driver->formatValue(f));
     }
     return params;
@@ -983,7 +983,7 @@ void QPSQLDriverPrivate::detectBackslashEscape()
         PGresult *result = exec(QStringLiteral("SELECT '\\\\' x"));
         int status = PQresultStatus(result);
         if (status == PGRES_COMMAND_OK || status == PGRES_TUPLES_OK)
-            if (QString::fromLatin1(PQgetvalue(result, 0, 0)) == QLatin1String("\\"))
+            if (QString::fromLatin1(PQgetvalue(result, 0, 0)) == "\\"_L1)
                 hasBackslashEscape = true;
         PQclear(result);
     }
@@ -1095,9 +1095,9 @@ QPSQLDriver::Protocol QPSQLDriverPrivate::getPSQLVersion()
 
     QPSQLDriver::Protocol clientVersion =
 #if defined(PG_MAJORVERSION)
-        qFindPSQLVersion(QLatin1String(PG_MAJORVERSION));
+        qFindPSQLVersion(PG_MAJORVERSION ""_L1);
 #elif defined(PG_VERSION)
-        qFindPSQLVersion(QLatin1String(PG_VERSION));
+        qFindPSQLVersion(PG_VERSION ""_L1);
 #else
         QPSQLDriver::VersionUnknown;
 #endif
@@ -1185,8 +1185,8 @@ bool QPSQLDriver::hasFeature(DriverFeature f) const
  */
 static QString qQuote(QString s)
 {
-    s.replace(u'\\', QLatin1String("\\\\"));
-    s.replace(u'\'', QLatin1String("\\'"));
+    s.replace(u'\\', "\\\\"_L1);
+    s.replace(u'\'', "\\'"_L1);
     s.append(u'\'').prepend(u'\'');
     return s;
 }
@@ -1202,15 +1202,15 @@ bool QPSQLDriver::open(const QString &db,
     close();
     QString connectString;
     if (!host.isEmpty())
-        connectString.append(QLatin1String("host=")).append(qQuote(host));
+        connectString.append("host="_L1).append(qQuote(host));
     if (!db.isEmpty())
-        connectString.append(QLatin1String(" dbname=")).append(qQuote(db));
+        connectString.append(" dbname="_L1).append(qQuote(db));
     if (!user.isEmpty())
-        connectString.append(QLatin1String(" user=")).append(qQuote(user));
+        connectString.append(" user="_L1).append(qQuote(user));
     if (!password.isEmpty())
-        connectString.append(QLatin1String(" password=")).append(qQuote(password));
+        connectString.append(" password="_L1).append(qQuote(password));
     if (port != -1)
-        connectString.append(QLatin1String(" port=")).append(qQuote(QString::number(port)));
+        connectString.append(" port="_L1).append(qQuote(QString::number(port)));
 
     // add any connect options - the server will handle error detection
     if (!connOpts.isEmpty()) {
@@ -1504,7 +1504,7 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
         case QMetaType::QString:
             r = QSqlDriver::formatValue(field, trimStrings);
             if (d->hasBackslashEscape)
-                r.replace(u'\\', QLatin1String("\\\\"));
+                r.replace(u'\\', "\\\\"_L1);
             break;
         case QMetaType::Bool:
             if (field.value().toBool())
@@ -1551,9 +1551,9 @@ QString QPSQLDriver::escapeIdentifier(const QString &identifier, IdentifierType)
 {
     QString res = identifier;
     if (!identifier.isEmpty() && !identifier.startsWith(u'"') && !identifier.endsWith(u'"') ) {
-        res.replace(u'"', QLatin1String("\"\""));
+        res.replace(u'"', "\"\""_L1);
         res.prepend(u'"').append(u'"');
-        res.replace(u'.', QLatin1String("\".\""));
+        res.replace(u'.', "\".\""_L1);
     }
     return res;
 }

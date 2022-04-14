@@ -55,9 +55,10 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
-                          (QSqlDriverFactoryInterface_iid,
-                           QLatin1String("/sqldrivers")))
+                          (QSqlDriverFactoryInterface_iid, "/sqldrivers"_L1))
 
 const char *QSqlDatabase::defaultConnection = const_cast<char *>("qt_sql_default_connection");
 

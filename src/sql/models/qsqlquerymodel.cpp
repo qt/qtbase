@@ -46,6 +46,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #define QSQL_PREFETCH 255
 
 void QSqlQueryModelPrivate::prefetch(int limit)
@@ -463,8 +465,7 @@ void QSqlQueryModel::setQuery(QSqlQuery &&query)
     d->atEnd = true;
 
     if (d->query.isForwardOnly()) {
-        d->error = QSqlError(QLatin1String("Forward-only queries "
-                                           "cannot be used in a data model"),
+        d->error = QSqlError("Forward-only queries cannot be used in a data model"_L1,
                              QString(), QSqlError::ConnectionError);
         endResetModel();
         return;

@@ -74,6 +74,8 @@ Q_DECLARE_METATYPE(sqlite3_stmt*)
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static QString _q_escapeIdentifier(const QString &identifier, QSqlDriver::IdentifierType type)
 {
     QString res = identifier;
@@ -82,10 +84,10 @@ static QString _q_escapeIdentifier(const QString &identifier, QSqlDriver::Identi
     if (identifier.contains(u'[') && identifier.contains(u']'))
         return res;
     if (!identifier.isEmpty() && !identifier.startsWith(u'"') && !identifier.endsWith(u'"')) {
-        res.replace(u'"', QLatin1String("\"\""));
+        res.replace(u'"', "\"\""_L1);
         res.prepend(u'"').append(u'"');
         if (type == QSqlDriver::TableName)
-            res.replace(u'.', QLatin1String("\".\""));
+            res.replace(u'.', "\".\""_L1);
     }
     return res;
 }
@@ -94,18 +96,16 @@ static int qGetColumnType(const QString &tpName)
 {
     const QString typeName = tpName.toLower();
 
-    if (typeName == QLatin1String("integer")
-        || typeName == QLatin1String("int"))
+    if (typeName == "integer"_L1 || typeName == "int"_L1)
         return QMetaType::Int;
-    if (typeName == QLatin1String("double")
-        || typeName == QLatin1String("float")
-        || typeName == QLatin1String("real")
-        || typeName.startsWith(QLatin1String("numeric")))
+    if (typeName == "double"_L1
+        || typeName == "float"_L1
+        || typeName == "real"_L1
+        || typeName.startsWith("numeric"_L1))
         return QMetaType::Double;
-    if (typeName == QLatin1String("blob"))
+    if (typeName == "blob"_L1)
         return QMetaType::QByteArray;
-    if (typeName == QLatin1String("boolean")
-        || typeName == QLatin1String("bool"))
+    if (typeName == "boolean"_L1 || typeName == "bool"_L1)
         return QMetaType::Bool;
     return QMetaType::QString;
 }
@@ -728,7 +728,7 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
     bool openUriOption = false;
     bool useExtendedResultCodes = true;
 #if QT_CONFIG(regularexpression)
-    static const QLatin1String regexpConnectOption = QLatin1String("QSQLITE_ENABLE_REGEXP");
+    static const auto regexpConnectOption = "QSQLITE_ENABLE_REGEXP"_L1;
     bool defineRegexp = false;
     int regexpCacheSize = 25;
 #endif
@@ -736,7 +736,7 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
     const auto opts = QStringView{conOpts}.split(u';');
     for (auto option : opts) {
         option = option.trimmed();
-        if (option.startsWith(QLatin1String("QSQLITE_BUSY_TIMEOUT"))) {
+        if (option.startsWith("QSQLITE_BUSY_TIMEOUT"_L1)) {
             option = option.mid(20).trimmed();
             if (option.startsWith(u'=')) {
                 bool ok;
@@ -744,13 +744,13 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
                 if (ok)
                     timeOut = nt;
             }
-        } else if (option == QLatin1String("QSQLITE_OPEN_READONLY")) {
+        } else if (option == "QSQLITE_OPEN_READONLY"_L1) {
             openReadOnlyOption = true;
-        } else if (option == QLatin1String("QSQLITE_OPEN_URI")) {
+        } else if (option == "QSQLITE_OPEN_URI"_L1) {
             openUriOption = true;
-        } else if (option == QLatin1String("QSQLITE_ENABLE_SHARED_CACHE")) {
+        } else if (option == "QSQLITE_ENABLE_SHARED_CACHE"_L1) {
             sharedCache = true;
-        } else if (option == QLatin1String("QSQLITE_NO_USE_EXTENDED_RESULT_CODES")) {
+        } else if (option == "QSQLITE_NO_USE_EXTENDED_RESULT_CODES"_L1) {
             useExtendedResultCodes = false;
         }
 #if QT_CONFIG(regularexpression)
@@ -841,7 +841,7 @@ bool QSQLiteDriver::beginTransaction()
         return false;
 
     QSqlQuery q(createResult());
-    if (!q.exec(QLatin1String("BEGIN"))) {
+    if (!q.exec("BEGIN"_L1)) {
         setLastError(QSqlError(tr("Unable to begin transaction"),
                                q.lastError().databaseText(), QSqlError::TransactionError));
         return false;
@@ -856,7 +856,7 @@ bool QSQLiteDriver::commitTransaction()
         return false;
 
     QSqlQuery q(createResult());
-    if (!q.exec(QLatin1String("COMMIT"))) {
+    if (!q.exec("COMMIT"_L1)) {
         setLastError(QSqlError(tr("Unable to commit transaction"),
                                q.lastError().databaseText(), QSqlError::TransactionError));
         return false;
@@ -871,7 +871,7 @@ bool QSQLiteDriver::rollbackTransaction()
         return false;
 
     QSqlQuery q(createResult());
-    if (!q.exec(QLatin1String("ROLLBACK"))) {
+    if (!q.exec("ROLLBACK"_L1)) {
         setLastError(QSqlError(tr("Unable to rollback transaction"),
                                q.lastError().databaseText(), QSqlError::TransactionError));
         return false;
@@ -889,14 +889,14 @@ QStringList QSQLiteDriver::tables(QSql::TableType type) const
     QSqlQuery q(createResult());
     q.setForwardOnly(true);
 
-    QString sql = QLatin1String("SELECT name FROM sqlite_master WHERE %1 "
-                                "UNION ALL SELECT name FROM sqlite_temp_master WHERE %1");
+    QString sql = "SELECT name FROM sqlite_master WHERE %1 "
+                  "UNION ALL SELECT name FROM sqlite_temp_master WHERE %1"_L1;
     if ((type & QSql::Tables) && (type & QSql::Views))
-        sql = sql.arg(QLatin1String("type='table' OR type='view'"));
+        sql = sql.arg("type='table' OR type='view'"_L1);
     else if (type & QSql::Tables)
-        sql = sql.arg(QLatin1String("type='table'"));
+        sql = sql.arg("type='table'"_L1);
     else if (type & QSql::Views)
-        sql = sql.arg(QLatin1String("type='view'"));
+        sql = sql.arg("type='view'"_L1);
     else
         sql.clear();
 
@@ -907,7 +907,7 @@ QStringList QSQLiteDriver::tables(QSql::TableType type) const
 
     if (type & QSql::SystemTables) {
         // there are no internal tables beside this one:
-        res.append(QLatin1String("sqlite_master"));
+        res.append("sqlite_master"_L1);
     }
 
     return res;
@@ -933,7 +933,7 @@ static QSqlIndex qGetTableInfo(QSqlQuery &q, const QString &tableName, bool only
             }
         }
     }
-    q.exec(QLatin1String("PRAGMA ") + schema + QLatin1String("table_info (") +
+    q.exec("PRAGMA "_L1 + schema + "table_info ("_L1 +
            _q_escapeIdentifier(table, QSqlDriver::TableName) + u')');
     QSqlIndex ind;
     while (q.next()) {
@@ -949,7 +949,7 @@ static QSqlIndex qGetTableInfo(QSqlQuery &q, const QString &tableName, bool only
         }
 
         QSqlField fld(q.value(1).toString(), QMetaType(qGetColumnType(typeName)), tableName);
-        if (isPk && (typeName == QLatin1String("integer")))
+        if (isPk && (typeName == "integer"_L1))
             // INTEGER PRIMARY KEY fields are auto-generated in sqlite
             // INT PRIMARY KEY is not the same as INTEGER PRIMARY KEY!
             fld.setAutoValue(true);

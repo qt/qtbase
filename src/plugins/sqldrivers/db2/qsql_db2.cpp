@@ -65,6 +65,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static const int COLNAMESIZE = 255;
 // Based on what is mentioned in the documentation here:
 // https://www.ibm.com/support/knowledgecenter/en/SSEPEK_10.0.0/sqlref/src/tpc/db2z_limits.html
@@ -554,13 +556,13 @@ static bool qMakeStatement(QDB2ResultPrivate* d, bool forwardOnly, bool setForwa
                             d->drv_d_func()->hDbc,
                             &d->hStmt);
         if (r != SQL_SUCCESS) {
-            qSqlWarning(QLatin1String("QDB2Result::reset: Unable to allocate statement handle"), d);
+            qSqlWarning("QDB2Result::reset: Unable to allocate statement handle"_L1, d);
             return false;
         }
     } else {
         r = SQLFreeStmt(d->hStmt, SQL_CLOSE);
         if (r != SQL_SUCCESS) {
-            qSqlWarning(QLatin1String("QDB2Result::reset: Unable to close statement handle"), d);
+            qSqlWarning("QDB2Result::reset: Unable to close statement handle"_L1, d);
             return false;
         }
     }
@@ -581,8 +583,8 @@ static bool qMakeStatement(QDB2ResultPrivate* d, bool forwardOnly, bool setForwa
     }
     if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO) {
         qSqlWarning(QString::fromLatin1("QDB2Result::reset: Unable to set %1 attribute.").arg(
-                     forwardOnly ? QLatin1String("SQL_CURSOR_FORWARD_ONLY")
-                                 : QLatin1String("SQL_CURSOR_STATIC")), d);
+                     forwardOnly ? "SQL_CURSOR_FORWARD_ONLY"_L1
+                                 : "SQL_CURSOR_STATIC"_L1), d);
         return false;
     }
     return true;
@@ -607,8 +609,7 @@ QDB2Result::~QDB2Result()
     if (d->hStmt) {
         SQLRETURN r = SQLFreeHandle(SQL_HANDLE_STMT, d->hStmt);
         if (r != SQL_SUCCESS)
-            qSqlWarning(QLatin1String("QDB2Driver: Unable to free statement handle ")
-                        + QString::number(r), d);
+            qSqlWarning("QDB2Driver: Unable to free statement handle "_L1 + QString::number(r), d);
     }
 }
 
@@ -1159,7 +1160,7 @@ int QDB2Result::numRowsAffected()
     if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO)
         return affectedRowCount;
     else
-        qSqlWarning(QLatin1String("QDB2Result::numRowsAffected: Unable to count affected rows"), d);
+        qSqlWarning("QDB2Result::numRowsAffected: Unable to count affected rows"_L1, d);
     return -1;
 }
 
@@ -1254,7 +1255,7 @@ bool QDB2Driver::open(const QString& db, const QString& user, const QString& pas
                         SQL_NULL_HANDLE,
                         &d->hEnv);
     if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO) {
-        qSqlWarning(QLatin1String("QDB2Driver::open: Unable to allocate environment"), d);
+        qSqlWarning("QDB2Driver::open: Unable to allocate environment"_L1, d);
         setOpenError(true);
         return false;
     }
@@ -1263,7 +1264,7 @@ bool QDB2Driver::open(const QString& db, const QString& user, const QString& pas
                         d->hEnv,
                         &d->hDbc);
     if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO) {
-        qSqlWarning(QLatin1String("QDB2Driver::open: Unable to allocate connection"), d);
+        qSqlWarning("QDB2Driver::open: Unable to allocate connection"_L1, d);
         setOpenError(true);
         return false;
     }
@@ -1285,10 +1286,10 @@ bool QDB2Driver::open(const QString& db, const QString& user, const QString& pas
 
         SQLULEN v = 0;
         r = SQL_SUCCESS;
-        if (opt == QLatin1String("SQL_ATTR_ACCESS_MODE")) {
-            if (val == QLatin1String("SQL_MODE_READ_ONLY")) {
+        if (opt == "SQL_ATTR_ACCESS_MODE"_L1) {
+            if (val == "SQL_MODE_READ_ONLY"_L1) {
                 v = SQL_MODE_READ_ONLY;
-            } else if (val == QLatin1String("SQL_MODE_READ_WRITE")) {
+            } else if (val == "SQL_MODE_READ_WRITE"_L1) {
                 v = SQL_MODE_READ_WRITE;
             } else {
                 qWarning("QDB2Driver::open: Unknown option value '%s'",
@@ -1296,10 +1297,10 @@ bool QDB2Driver::open(const QString& db, const QString& user, const QString& pas
                 continue;
             }
             r = SQLSetConnectAttr(d->hDbc, SQL_ATTR_ACCESS_MODE, reinterpret_cast<SQLPOINTER>(v), 0);
-        } else if (opt == QLatin1String("SQL_ATTR_LOGIN_TIMEOUT")) {
+        } else if (opt == "SQL_ATTR_LOGIN_TIMEOUT"_L1) {
             v = val.toUInt();
             r = SQLSetConnectAttr(d->hDbc, SQL_ATTR_LOGIN_TIMEOUT, reinterpret_cast<SQLPOINTER>(v), 0);
-        } else if (opt.compare(QLatin1String("PROTOCOL"), Qt::CaseInsensitive) == 0) {
+        } else if (opt.compare("PROTOCOL"_L1, Qt::CaseInsensitive) == 0) {
                         protocol = tmp;
         }
         else {
@@ -1312,15 +1313,15 @@ bool QDB2Driver::open(const QString& db, const QString& user, const QString& pas
     }
 
     if (protocol.isEmpty())
-        protocol = QLatin1String("PROTOCOL=TCPIP");
+        protocol = "PROTOCOL=TCPIP"_L1;
 
     if (port < 0 )
         port = 50000;
 
     QString connQStr;
-    connQStr =  protocol + QLatin1String(";DATABASE=") + db + QLatin1String(";HOSTNAME=") + host
-        + QLatin1String(";PORT=") + QString::number(port) + QLatin1String(";UID=") + user
-        + QLatin1String(";PWD=") + password;
+    connQStr =  protocol + ";DATABASE="_L1 + db + ";HOSTNAME="_L1 + host
+        + ";PORT="_L1 + QString::number(port) + ";UID="_L1 + user
+        + ";PWD="_L1 + password;
 
 
     SQLTCHAR connOut[SQL_MAX_OPTION_STRING_LENGTH];
@@ -1356,18 +1357,18 @@ void QDB2Driver::close()
         if (isOpen()) {
             r = SQLDisconnect(d->hDbc);
             if (r != SQL_SUCCESS)
-                qSqlWarning(QLatin1String("QDB2Driver::close: Unable to disconnect datasource"), d);
+                qSqlWarning("QDB2Driver::close: Unable to disconnect datasource"_L1, d);
         }
         r = SQLFreeHandle(SQL_HANDLE_DBC, d->hDbc);
         if (r != SQL_SUCCESS)
-            qSqlWarning(QLatin1String("QDB2Driver::close: Unable to free connection handle"), d);
+            qSqlWarning("QDB2Driver::close: Unable to free connection handle"_L1, d);
         d->hDbc = 0;
     }
 
     if (d->hEnv) {
         r = SQLFreeHandle(SQL_HANDLE_ENV, d->hEnv);
         if (r != SQL_SUCCESS)
-            qSqlWarning(QLatin1String("QDB2Driver::close: Unable to free environment handle"), d);
+            qSqlWarning("QDB2Driver::close: Unable to free environment handle"_L1, d);
         d->hEnv = 0;
     }
     setOpen(false);
@@ -1411,7 +1412,7 @@ QSqlRecord QDB2Driver::record(const QString& tableName) const
                                   d->hDbc,
                                   &hStmt);
     if (r != SQL_SUCCESS) {
-        qSqlWarning(QLatin1String("QDB2Driver::record: Unable to allocate handle"), d);
+        qSqlWarning("QDB2Driver::record: Unable to allocate handle"_L1, d);
         return fil;
     }
 
@@ -1434,7 +1435,7 @@ QSqlRecord QDB2Driver::record(const QString& tableName) const
                      0);
 
     if (r != SQL_SUCCESS)
-        qSqlWarning(QLatin1String("QDB2Driver::record: Unable to execute column list"), d);
+        qSqlWarning("QDB2Driver::record: Unable to execute column list"_L1, d);
     r = SQLFetchScroll(hStmt,
                         SQL_FETCH_NEXT,
                         0);
@@ -1449,7 +1450,7 @@ QSqlRecord QDB2Driver::record(const QString& tableName) const
 
     r = SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
     if (r != SQL_SUCCESS)
-        qSqlWarning(QLatin1String("QDB2Driver: Unable to free statement handle ")
+        qSqlWarning("QDB2Driver: Unable to free statement handle "_L1
                     + QString::number(r), d);
 
     return fil;
@@ -1468,7 +1469,7 @@ QStringList QDB2Driver::tables(QSql::TableType type) const
                                   d->hDbc,
                                   &hStmt);
     if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO) {
-        qSqlWarning(QLatin1String("QDB2Driver::tables: Unable to allocate handle"), d);
+        qSqlWarning("QDB2Driver::tables: Unable to allocate handle"_L1, d);
         return tl;
     }
     r = SQLSetStmtAttr(hStmt,
@@ -1478,11 +1479,11 @@ QStringList QDB2Driver::tables(QSql::TableType type) const
 
     QString tableType;
     if (type & QSql::Tables)
-        tableType += QLatin1String("TABLE,");
+        tableType += "TABLE,"_L1;
     if (type & QSql::Views)
-        tableType += QLatin1String("VIEW,");
+        tableType += "VIEW,"_L1;
     if (type & QSql::SystemTables)
-        tableType += QLatin1String("SYSTEM TABLE,");
+        tableType += "SYSTEM TABLE,"_L1;
     if (tableType.isEmpty())
         return tl;
     tableType.chop(1);
@@ -1498,7 +1499,7 @@ QStringList QDB2Driver::tables(QSql::TableType type) const
                    tableType.length());
 
     if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO)
-        qSqlWarning(QLatin1String("QDB2Driver::tables: Unable to execute table list"), d);
+        qSqlWarning("QDB2Driver::tables: Unable to execute table list"_L1, d);
     r = SQLFetchScroll(hStmt,
                         SQL_FETCH_NEXT,
                         0);
@@ -1522,7 +1523,7 @@ QStringList QDB2Driver::tables(QSql::TableType type) const
 
     r = SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
     if (r != SQL_SUCCESS)
-        qSqlWarning(QLatin1String("QDB2Driver::tables: Unable to free statement handle ")
+        qSqlWarning("QDB2Driver::tables: Unable to free statement handle "_L1
                     + QString::number(r), d);
     return tl;
 }
@@ -1540,7 +1541,7 @@ QSqlIndex QDB2Driver::primaryIndex(const QString& tablename) const
                                   d->hDbc,
                                   &hStmt);
     if (r != SQL_SUCCESS) {
-        qSqlWarning(QLatin1String("QDB2Driver::primaryIndex: Unable to list primary key"), d);
+        qSqlWarning("QDB2Driver::primaryIndex: Unable to list primary key"_L1, d);
         return index;
     }
     QString catalog, schema, table;
@@ -1591,7 +1592,7 @@ QSqlIndex QDB2Driver::primaryIndex(const QString& tablename) const
     }
     r = SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
     if (r!= SQL_SUCCESS)
-        qSqlWarning(QLatin1String("QDB2Driver: Unable to free statement handle ")
+        qSqlWarning("QDB2Driver: Unable to free statement handle "_L1
                     + QString::number(r), d);
     return index;
 }
@@ -1685,7 +1686,7 @@ bool QDB2Driver::setAutoCommit(bool autoCommit)
 QString QDB2Driver::formatValue(const QSqlField &field, bool trimStrings) const
 {
     if (field.isNull())
-        return QLatin1String("NULL");
+        return "NULL"_L1;
 
     switch (field.metaType().id()) {
         case QMetaType::QDateTime: {
@@ -1705,20 +1706,20 @@ QString QDB2Driver::formatValue(const QSqlField &field, bool trimStrings) const
                        + QString::number(tm.msec() * 1000).rightJustified(6, u'0', true)
                        + u'\'';
                 } else {
-                    return QLatin1String("NULL");
+                    return "NULL"_L1;
                 }
         }
         case QMetaType::QByteArray: {
             QByteArray ba = field.value().toByteArray();
             QString res;
-            res += QLatin1String("BLOB(X'");
+            res += "BLOB(X'"_L1;
             static const char hexchars[] = "0123456789abcdef";
             for (int i = 0; i < ba.size(); ++i) {
                 uchar s = (uchar) ba[i];
                 res += QLatin1Char(hexchars[s >> 4]);
                 res += QLatin1Char(hexchars[s & 0x0f]);
             }
-            res += QLatin1String("')");
+            res += "')"_L1;
             return res;
         }
         default:
@@ -1736,9 +1737,9 @@ QString QDB2Driver::escapeIdentifier(const QString &identifier, IdentifierType) 
 {
     QString res = identifier;
     if (!identifier.isEmpty() && !identifier.startsWith(u'"') && !identifier.endsWith(u'"') ) {
-        res.replace(u'"', QLatin1String("\"\""));
+        res.replace(u'"', "\"\""_L1);
         res.prepend(u'"').append(u'"');
-        res.replace(u'.', QLatin1String("\".\""));
+        res.replace(u'.', "\".\""_L1);
     }
     return res;
 }
