@@ -1146,7 +1146,7 @@ void Moc::generate(FILE *out, FILE *jsonOutput)
     if (jsonOutput) {
         QJsonObject mocData;
         mocData["outputRevision"_L1] = mocOutputRevision;
-        mocData["inputFile"_L1] = QLatin1String(fn.constData());
+        mocData["inputFile"_L1] = QLatin1StringView(fn.constData());
 
         QJsonArray classesJsonFormatted;
 
@@ -2052,7 +2052,7 @@ QJsonObject PropertyDef::toJson() const
 
     const auto jsonify = [&prop](const char *str, const QByteArray &member) {
         if (!member.isEmpty())
-            prop[QLatin1String(str)] = QString::fromUtf8(member);
+            prop[QLatin1StringView(str)] = QString::fromUtf8(member);
     };
 
     jsonify("member", member);
@@ -2071,7 +2071,7 @@ QJsonObject PropertyDef::toJson() const
             value = false;
         else
             value = QString::fromUtf8(boolOrString); // function name to query at run-time
-        prop[QLatin1String(str)] = value;
+        prop[QLatin1StringView(str)] = value;
     };
 
     jsonifyBoolOrString("designable", designable);

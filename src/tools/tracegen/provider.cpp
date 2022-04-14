@@ -177,7 +177,7 @@ static Tracepoint::Field::BackendType backendType(QString rawType)
         static const size_t tableSize = sizeof (typeTable) / sizeof (typeTable[0]);
 
         for (size_t i = 0; i < tableSize; ++i) {
-            if (rawType == QLatin1String(typeTable[i].type))
+            if (rawType == QLatin1StringView(typeTable[i].type))
                 return typeTable[i].backendType;
         }
 

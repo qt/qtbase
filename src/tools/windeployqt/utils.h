@@ -164,7 +164,7 @@ inline QString normalizeFileName(const QString &name) { return name; }
 static const char windowsSharedLibrarySuffix[] = ".dll";
 static const char unixSharedLibrarySuffix[] = ".so";
 
-inline QString sharedLibrarySuffix(Platform platform) { return QLatin1String((platform & WindowsBased) ? windowsSharedLibrarySuffix : unixSharedLibrarySuffix); }
+inline QString sharedLibrarySuffix(Platform platform) { return QLatin1StringView((platform & WindowsBased) ? windowsSharedLibrarySuffix : unixSharedLibrarySuffix); }
 bool isBuildDirectory(Platform platform, const QString &dirName);
 
 bool createSymbolicLink(const QFileInfo &source, const QString &target, QString *errorMessage);
@@ -293,7 +293,7 @@ bool updateFile(const QString &sourceFileName,
     } // Source is symbolic link
 
     if (sourceFileInfo.isDir()) {
-        if ((flags & SkipQmlDesignerSpecificsDirectories) && sourceFileInfo.fileName() == QLatin1String("designer")) {
+        if ((flags & SkipQmlDesignerSpecificsDirectories) && sourceFileInfo.fileName() == QLatin1StringView("designer")) {
             if (optVerboseLevel)
                 std::wcout << "Skipping " << QDir::toNativeSeparators(sourceFileName) << ".\n";
             return true;
@@ -329,7 +329,7 @@ bool updateFile(const QString &sourceFileName,
         if (created && (flags & RemoveEmptyQmlDirectories)) {
             QDir d(targetFileName);
             const QStringList entries = d.entryList(QStringList(), QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
-            if (entries.isEmpty() || (entries.size() == 1 && entries.first() == QLatin1String("qmldir"))) {
+            if (entries.isEmpty() || (entries.size() == 1 && entries.first() == QLatin1StringView("qmldir"))) {
                 if (!d.removeRecursively()) {
                     *errorMessage = QString::fromLatin1("Cannot remove empty directory %1.")
                             .arg(QDir::toNativeSeparators(targetFileName));

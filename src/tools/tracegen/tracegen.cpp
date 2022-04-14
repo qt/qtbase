@@ -75,8 +75,8 @@ static void parseArgs(int argc, char *argv[], Target *target, QString *inFile, Q
         usage(EXIT_FAILURE);
     }
 
-    *inFile = QLatin1String(argv[2]);
-    *outFile = QLatin1String(argv[3]);
+    *inFile = QLatin1StringView(argv[2]);
+    *outFile = QLatin1StringView(argv[3]);
 }
 
 int main(int argc, char *argv[])

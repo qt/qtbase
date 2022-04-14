@@ -183,7 +183,7 @@ static const char webEngineProcessC[] = "QtWebEngineProcess";
 
 static inline QString webProcessBinary(const char *binaryName, Platform p)
 {
-    const QString webProcess = QLatin1String(binaryName);
+    const QString webProcess = QLatin1StringView(binaryName);
     return (p & WindowsBased) ? webProcess + QStringLiteral(".exe") : webProcess;
 }
 
@@ -284,7 +284,7 @@ static inline QString findBinary(const QString &directory, Platform platform)
         QDir(QDir::cleanPath(directory)).entryInfoList(nameFilters, QDir::Files | QDir::Executable);
     for (const QFileInfo &binaryFi : binaries) {
         const QString binary = binaryFi.fileName();
-        if (!binary.contains(QLatin1String(webEngineProcessC), Qt::CaseInsensitive)) {
+        if (!binary.contains(QLatin1StringView(webEngineProcessC), Qt::CaseInsensitive)) {
             return binaryFi.absoluteFilePath();
         }
     }
@@ -457,8 +457,8 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
     enabledModuleOptions.reserve(qtModulesCount);
     disabledModuleOptions.reserve(qtModulesCount);
     for (int i = 0; i < qtModulesCount; ++i) {
-        const QString option = QLatin1String(qtModuleEntries[i].option);
-        const QString name = QLatin1String(qtModuleEntries[i].libraryName);
+        const QString option = QLatin1StringView(qtModuleEntries[i].option);
+        const QString name = QLatin1StringView(qtModuleEntries[i].libraryName);
         const QString enabledDescription = QStringLiteral("Add ") + name + QStringLiteral(" module.");
         CommandLineOptionPtr enabledOption(new QCommandLineOption(option, enabledDescription));
         parser->addOption(*enabledOption.data());
@@ -875,7 +875,7 @@ static inline quint64 qtModuleForPlugin(const QString &subDirName)
     const auto end = std::end(pluginModuleMappings);
     const auto result =
         std::find_if(std::begin(pluginModuleMappings), end,
-                     [&subDirName] (const PluginModuleMapping &m) { return subDirName == QLatin1String(m.directoryName); });
+                     [&subDirName] (const PluginModuleMapping &m) { return subDirName == QLatin1StringView(m.directoryName); });
     return result != end ? result->module : 0; // "designer"
 }
 
@@ -894,7 +894,7 @@ static quint64 qtModule(QString module, const QString &infix)
         module.truncate(endPos);
     // That should leave us with 'Qt6Core<d>'.
     for (const auto &qtModule : qtModuleEntries) {
-        const QLatin1String libraryName(qtModule.libraryName);
+        const QLatin1StringView libraryName(qtModule.libraryName);
         if (module == libraryName
             || (module.size() == libraryName.size() + 1 && module.startsWith(libraryName))) {
             return qtModule.module;
@@ -990,7 +990,7 @@ static QStringList translationNameFilters(quint64 modules, const QString &prefix
     QStringList result;
     for (const auto &qtModule : qtModuleEntries) {
         if ((qtModule.module & modules) && qtModule.translation) {
-            const QString name = QLatin1String(qtModule.translation) +
+            const QString name = QLatin1StringView(qtModule.translation) +
                                  u'_' +  prefix + QStringLiteral(".qm");
             if (!result.contains(name))
                 result.push_back(name);
@@ -1067,13 +1067,13 @@ static QString libraryPath(const QString &libraryLocation, const char *name,
 {
     QString result = libraryLocation + u'/';
     if (platform & WindowsBased) {
-        result += QLatin1String(name);
+        result += QLatin1StringView(name);
         result += qtLibInfix;
         if (debug && platformHasDebugSuffix(platform))
             result += u'd';
     } else if (platform.testFlag(UnixBased)) {
         result += QStringLiteral("lib");
-        result += QLatin1String(name);
+        result += QLatin1StringView(name);
         result += qtLibInfix;
     }
     result += sharedLibrarySuffix(platform);
@@ -1132,7 +1132,7 @@ static QStringList compilerRunTimeLibs(Platform platform, bool isDebug, unsigned
         QStringList filters;
         const QString suffix = u'*' + sharedLibrarySuffix(platform);
         for (auto minGwRuntime : minGwRuntimes)
-            filters.append(QLatin1String(minGwRuntime) + suffix);
+            filters.append(QLatin1StringView(minGwRuntime) + suffix);
         const QFileInfoList &dlls = QDir(binPath).entryInfoList(filters, QDir::Files);
         for (const QFileInfo &dllFi : dlls)
                 result.append(dllFi.absoluteFilePath());
@@ -1247,7 +1247,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
     const QString libraryLocation = options.platform == Unix
             ? qtpathsVariables.value(QStringLiteral("QT_INSTALL_LIBS"))
             : qtBinDir;
-    const QString infix = qtpathsVariables.value(QLatin1String(qmakeInfixKey));
+    const QString infix = qtpathsVariables.value(QLatin1StringView(qmakeInfixKey));
     const int version = qtVersion(qtpathsVariables);
     Q_UNUSED(version);
 
@@ -1334,12 +1334,12 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
                     if (optVerboseLevel > 1)
                         std::wcout << "Adding ICU version " << icuVersion << '\n';
                     QString icuLib = QStringLiteral("icudt") + icuVersion
-                            + QLatin1String(windowsSharedLibrarySuffix);;
+                            + QLatin1StringView(windowsSharedLibrarySuffix);;
                     // Some packages contain debug dlls of ICU libraries even though it's a C
                     // library and the official packages do not differentiate (QTBUG-87677)
                     if (result.isDebug) {
                         const QString icuLibCandidate = QStringLiteral("icudtd") + icuVersion
-                                + QLatin1String(windowsSharedLibrarySuffix);
+                                + QLatin1StringView(windowsSharedLibrarySuffix);
                         if (!findInPath(icuLibCandidate).isEmpty()) {
                             icuLib = icuLibCandidate;
                         }
@@ -1451,7 +1451,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
         const QStringList guiLibraries = findDependentLibraries(qtGuiLibrary, options.platform, errorMessage);
         const bool dependsOnOpenGl = !guiLibraries.filter(QStringLiteral("opengl32"), Qt::CaseInsensitive).isEmpty();
         if (options.softwareRasterizer && !dependsOnOpenGl) {
-            const QFileInfo softwareRasterizer(qtBinDir + slash + QStringLiteral("opengl32sw") + QLatin1String(windowsSharedLibrarySuffix));
+            const QFileInfo softwareRasterizer(qtBinDir + slash + QStringLiteral("opengl32sw") + QLatin1StringView(windowsSharedLibrarySuffix));
             if (softwareRasterizer.isFile())
                 deployedQtLibraries.append(softwareRasterizer.absoluteFilePath());
         }
@@ -1604,7 +1604,7 @@ static bool deployWebEngineCore(const QMap<QString, QString> &qtpathsVariables,
     if (!createDirectory(resourcesTargetDir, errorMessage))
         return false;
     for (auto installDataFile : installDataFiles) {
-        if (!updateFile(resourcesSourceDir + QLatin1String(installDataFile),
+        if (!updateFile(resourcesSourceDir + QLatin1StringView(installDataFile),
                         resourcesTargetDir, options.updateFileFlags, options.json, errorMessage)) {
             return false;
         }

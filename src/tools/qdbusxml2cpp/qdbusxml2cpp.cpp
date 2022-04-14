@@ -210,14 +210,14 @@ static QByteArray qtTypeName(const QString &where, const QString &signature,
     if (type == QMetaType::UnknownType) {
         QString annotationName = QString::fromLatin1("org.qtproject.QtDBus.QtTypeName");
         if (paramId >= 0)
-            annotationName += QString::fromLatin1(".%1%2").arg(QLatin1String(direction)).arg(paramId);
+            annotationName += QString::fromLatin1(".%1%2").arg(QLatin1StringView(direction)).arg(paramId);
         QString qttype = annotations.value(annotationName);
         if (!qttype.isEmpty())
             return std::move(qttype).toLatin1();
 
         QString oldAnnotationName = QString::fromLatin1("com.trolltech.QtDBus.QtTypeName");
         if (paramId >= 0)
-            oldAnnotationName += QString::fromLatin1(".%1%2").arg(QLatin1String(direction)).arg(paramId);
+            oldAnnotationName += QString::fromLatin1(".%1%2").arg(QLatin1StringView(direction)).arg(paramId);
         qttype = annotations.value(oldAnnotationName);
 
         if (qttype.isEmpty()) {
@@ -248,23 +248,23 @@ static QByteArray qtTypeName(const QString &where, const QString &signature,
 
 static QString nonConstRefArg(const QByteArray &arg)
 {
-    return QLatin1String(arg + " &");
+    return QLatin1StringView(arg + " &");
 }
 
 static QString templateArg(const QByteArray &arg)
 {
     if (!arg.endsWith('>'))
-        return QLatin1String(arg);
+        return QLatin1StringView(arg);
 
-    return QLatin1String(arg + ' ');
+    return QLatin1StringView(arg + ' ');
 }
 
 static QString constRefArg(const QByteArray &arg)
 {
     if (!arg.startsWith('Q'))
-        return QLatin1String(arg + ' ');
+        return QLatin1StringView(arg + ' ');
     else
-        return QString( "const %1 &"_L1 ).arg( QLatin1String(arg) );
+        return QString("const %1 &"_L1).arg(QLatin1StringView(arg));
 }
 
 static QStringList makeArgNames(const QDBusIntrospection::Arguments &inputArgs,

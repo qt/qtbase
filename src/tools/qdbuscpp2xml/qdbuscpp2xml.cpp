@@ -97,7 +97,7 @@ int qDBusParametersForMethod(const FunctionDef &mm, QList<QMetaType> &metaTypes,
 
 static inline QString typeNameToXml(const char *typeName)
 {
-    QString plain = QLatin1String(typeName);
+    QString plain = QLatin1StringView(typeName);
     return plain.toHtmlEscaped();
 }
 
@@ -157,7 +157,7 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
         const char *signature = QDBusMetaType::typeToSignature(QMetaType(types.at(j)));
         xml += QString::fromLatin1("      <arg %1type=\"%2\" direction=\"%3\"/>\n")
                 .arg(name,
-                     QLatin1String(signature),
+                     QLatin1StringView(signature),
                      isOutput ? "out"_L1 : "in"_L1);
 
         // do we need to describe this argument?
@@ -221,9 +221,9 @@ static QString generateInterfaceXml(const ClassDef *mo)
                 continue;
 
             retval += QString::fromLatin1("    <property name=\"%1\" type=\"%2\" access=\"%3\"")
-                      .arg(QLatin1String(mp.name),
-                           QLatin1String(signature),
-                           QLatin1String(accessvalues[access]));
+                      .arg(QLatin1StringView(mp.name),
+                           QLatin1StringView(signature),
+                           QLatin1StringView(accessvalues[access]));
 
             if (!QDBusMetaType::signatureToMetaType(signature).isValid()) {
                 retval += QString::fromLatin1(">\n      <annotation name=\"org.qtproject.QtDBus.QtTypeName\" value=\"%3\"/>\n    </property>\n")
@@ -272,7 +272,7 @@ QString qDBusInterfaceFromClassDef(const ClassDef *mo)
         if (cid.name == QCLASSINFO_DBUS_INTERFACE)
             return QString::fromUtf8(cid.value);
     }
-    interface = QLatin1String(mo->classname);
+    interface = QLatin1StringView(mo->classname);
     interface.replace("::"_L1, "."_L1);
 
     if (interface.startsWith("QDBus"_L1)) {

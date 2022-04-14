@@ -62,7 +62,7 @@ struct SubArray
 
 inline size_t qHash(const SubArray &key)
 {
-    return qHash(QLatin1String(key.array.constData() + key.from, key.len));
+    return qHash(QLatin1StringView(key.array.constData() + key.from, key.len));
 }
 
 

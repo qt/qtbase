@@ -496,7 +496,7 @@ QMap<QString, QString> queryQtPaths(const QString &qtpathsBinary, QString *error
                 if (pos >= 0) {
                     const QString infix = QString::fromUtf8(line.right(line.size() - pos - 1).trimmed());
                     if (!infix.isEmpty())
-                        result.insert(QLatin1String(qmakeInfixKey), infix);
+                        result.insert(QLatin1StringView(qmakeInfixKey), infix);
                 }
                 break;
             }
@@ -871,7 +871,7 @@ bool readPeExecutable(const QString &peExecutableFileName, QString *errorMessage
 QString findD3dCompiler(Platform platform, const QString &qtBinDir, unsigned wordSize)
 {
     const QString prefix = QStringLiteral("D3Dcompiler_");
-    const QString suffix = QLatin1String(windowsSharedLibrarySuffix);
+    const QString suffix = QLatin1StringView(windowsSharedLibrarySuffix);
     // Get the DLL from Kit 8.0 onwards
     const QString kitDir = QString::fromLocal8Bit(qgetenv("WindowsSdkDir"));
     if (!kitDir.isEmpty()) {

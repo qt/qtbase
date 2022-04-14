@@ -147,7 +147,7 @@ static QStringList types()
 static const StringEnum &parseLocationOrError(const QString &locationString)
 {
     for (const StringEnum &se : lookupTableData)
-        if (locationString == QLatin1String(se.stringvalue))
+        if (locationString == QLatin1StringView(se.stringvalue))
             return se;
 
     QString message = QStringLiteral("Unknown location: %1");
