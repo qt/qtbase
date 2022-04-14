@@ -352,7 +352,7 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
     preview->setFocus();
 }
 
-static inline void qt_setupActionIcon(QAction *action, QLatin1String name)
+static inline void qt_setupActionIcon(QAction *action, QLatin1StringView name)
 {
     const auto imagePrefix = ":/qt-project.org/dialogs/qprintpreviewdialog/images/"_L1;
     QIcon icon = QIcon::fromTheme(name);

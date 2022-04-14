@@ -277,8 +277,8 @@ void QCUPSSupport::setPagesPerSheetLayout(QPrinter *printer,  const PagesPerShee
     // WARNING: and it is the last one (before the "\0")!
     static const char pagesPerSheetData[][2] = { "1", "2", "4", "6", "9", {'1', '6'}, "\0" };
     static const char pageLayoutData[][5] = {"lrtb", "lrbt", "rlbt", "rltb", "btlr", "btrl", "tblr", "tbrl"};
-    setCupsOption(printer, QStringLiteral("number-up"), QLatin1String(pagesPerSheetData[pagesPerSheet]));
-    setCupsOption(printer, QStringLiteral("number-up-layout"), QLatin1String(pageLayoutData[pagesPerSheetLayout]));
+    setCupsOption(printer, QStringLiteral("number-up"), QLatin1StringView(pagesPerSheetData[pagesPerSheet]));
+    setCupsOption(printer, QStringLiteral("number-up-layout"), QLatin1StringView(pageLayoutData[pagesPerSheetLayout]));
 }
 
 void QCUPSSupport::setPageRange(QPrinter *printer, int pageFrom, int pageTo)
