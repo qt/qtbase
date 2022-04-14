@@ -48,6 +48,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*
     This function looks at two file names and returns the name of the
     infile with a path relative to outfile.
@@ -354,7 +356,7 @@ int runMoc(int argc, char **argv)
         return collectJson(files, output, hasOptionFiles);
 
     if (files.count() > 1) {
-        error(qPrintable(QLatin1String("Too many input files specified: '") + files.join(QLatin1String("' '")) + u'\''));
+        error(qPrintable("Too many input files specified: '"_L1 + files.join("' '"_L1) + u'\''));
         parser.showHelp(1);
     } else if (!files.isEmpty()) {
         filename = files.first();
@@ -390,7 +392,7 @@ int runMoc(int argc, char **argv)
     for (const QString &path : includePaths)
         pp.includes += Preprocessor::IncludePath(QFile::encodeName(path));
     QString compilerFlavor = parser.value(compilerFlavorOption);
-    if (compilerFlavor.isEmpty() || compilerFlavor == QLatin1String("unix")) {
+    if (compilerFlavor.isEmpty() || compilerFlavor == "unix"_L1) {
         // traditional Unix compilers use both CPATH and CPLUS_INCLUDE_PATH
         // $CPATH feeds to #include <...> and #include "...", whereas
         // CPLUS_INCLUDE_PATH is equivalent to GCC's -isystem, so we parse later
@@ -400,14 +402,14 @@ int runMoc(int argc, char **argv)
         const auto cplus_include_path = qgetenv("CPLUS_INCLUDE_PATH").split(QDir::listSeparator().toLatin1());
         for (const QByteArray &p : cplus_include_path)
             pp.includes += Preprocessor::IncludePath(p);
-    } else if (compilerFlavor == QLatin1String("msvc")) {
+    } else if (compilerFlavor == "msvc"_L1) {
         // MSVC uses one environment variable: INCLUDE
         const auto include = qgetenv("INCLUDE").split(QDir::listSeparator().toLatin1());
         for (const QByteArray &p : include)
             pp.includes += Preprocessor::IncludePath(p);
     } else {
-        error(qPrintable(QLatin1String("Unknown compiler flavor '") + compilerFlavor +
-                         QLatin1String("'; valid values are: msvc, unix.")));
+        error(qPrintable("Unknown compiler flavor '"_L1 + compilerFlavor +
+                         "'; valid values are: msvc, unix."_L1));
         parser.showHelp(1);
     }
 
@@ -446,9 +448,9 @@ int runMoc(int argc, char **argv)
         pp.macros.remove(macro);
     }
     const QStringList noNotesCompatValues = parser.values(noNotesWarningsCompatOption);
-    if (parser.isSet(noNotesOption) || noNotesCompatValues.contains(QLatin1String("n")))
+    if (parser.isSet(noNotesOption) || noNotesCompatValues.contains("n"_L1))
         moc.displayNotes = false;
-    if (parser.isSet(noWarningsOption) || noNotesCompatValues.contains(QLatin1String("w")))
+    if (parser.isSet(noWarningsOption) || noNotesCompatValues.contains("w"_L1))
         moc.displayWarnings = moc.displayNotes = false;
 
     if (autoInclude) {
@@ -564,7 +566,7 @@ int runMoc(int argc, char **argv)
         }
 
         if (parser.isSet(jsonOption)) {
-            const QString jsonOutputFileName = output + QLatin1String(".json");
+            const QString jsonOutputFileName = output + ".json"_L1;
             FILE *f;
 #if defined(_MSC_VER)
             if (_wfopen_s(&f, reinterpret_cast<const wchar_t *>(jsonOutputFileName.utf16()), L"w") != 0)
@@ -605,7 +607,7 @@ int runMoc(int argc, char **argv)
         if (parser.isSet(depFilePathOption)) {
             depOutputFileName = parser.value(depFilePathOption);
         } else if (outputToFile) {
-            depOutputFileName = output + QLatin1String(".d");
+            depOutputFileName = output + ".d"_L1;
         } else {
             fprintf(stderr, "moc: Writing to stdout, but no depfile path specified.\n");
         }

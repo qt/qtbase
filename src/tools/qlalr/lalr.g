@@ -198,6 +198,8 @@ protected:
 #include <cstring>
 #include <cctype>
 
+using namespace Qt::StringLiterals;
+
 Recognizer::Recognizer (Grammar *grammar, bool no_lines):
   tos(0),
   stack_size(0),
@@ -286,31 +288,31 @@ int Recognizer::nextToken()
       do { text += ch; inp (); }
       while (ch.isLetterOrNumber () || ch == u'_' || ch == u'-');
 
-      if (text == QLatin1String("token_prefix"))
+      if (text == "token_prefix"_L1)
         return (token = TOKEN_PREFIX);
-      else if (text == QLatin1String("merged_output"))
+      else if (text == "merged_output"_L1)
         return (token = MERGED_OUTPUT);
-      else if (text == QLatin1String("token"))
+      else if (text == "token"_L1)
         return (token = TOKEN);
-      else if (text == QLatin1String("start"))
+      else if (text == "start"_L1)
         return (token = START);
-      else if (text == QLatin1String("parser"))
+      else if (text == "parser"_L1)
         return (token = PARSER);
-      else if (text == QLatin1String("decl"))
+      else if (text == "decl"_L1)
         return (token = DECL_FILE);
-      else if (text == QLatin1String("impl"))
+      else if (text == "impl"_L1)
         return (token = IMPL_FILE);
-      else if (text == QLatin1String("expect"))
+      else if (text == "expect"_L1)
         return (token = EXPECT);
-      else if (text == QLatin1String("expect-rr"))
+      else if (text == "expect-rr"_L1)
         return (token = EXPECT_RR);
-      else if (text == QLatin1String("left"))
+      else if (text == "left"_L1)
         return (token = LEFT);
-      else if (text == QLatin1String("right"))
+      else if (text == "right"_L1)
         return (token = RIGHT);
-      else if (text == QLatin1String("nonassoc"))
+      else if (text == "nonassoc"_L1)
         return (token = NONASSOC);
-      else if (text == QLatin1String("prec"))
+      else if (text == "prec"_L1)
         return (token = PREC);
       else
         {
@@ -344,8 +346,8 @@ int Recognizer::nextToken()
 
       text.clear ();
       if (! _M_no_lines)
-        text += QLatin1String("\n#line ") + QString::number(_M_action_line) +
-                QLatin1String(" \"") + QDir::fromNativeSeparators(_M_input_file) + QLatin1String("\"\n");
+        text += "\n#line "_L1 + QString::number(_M_action_line) +
+                " \""_L1 + QDir::fromNativeSeparators(_M_input_file) + "\"\n"_L1;
       inp (); // skip ':'
 
       forever
@@ -372,7 +374,7 @@ int Recognizer::nextToken()
               return (token = DECL);
             }
           else
-            text += QLatin1String (":/");
+            text += ":/"_L1;
         }
     }
 
@@ -382,8 +384,8 @@ int Recognizer::nextToken()
 
       text.clear ();
       if (! _M_no_lines)
-        text += QLatin1String("\n#line ") + QString::number(_M_action_line) +
-                QLatin1String(" \"") + QDir::fromNativeSeparators(_M_input_file) + QLatin1String("\"\n");
+        text += "\n#line "_L1 + QString::number(_M_action_line) +
+                " \""_L1 + QDir::fromNativeSeparators(_M_input_file) + "\"\n"_L1;
 
       inp (); // skip ':'
 
@@ -411,7 +413,7 @@ int Recognizer::nextToken()
               return (token = IMPL);
             }
           else
-            text += QLatin1String ("./");
+            text += "./"_L1;
         }
     }
 

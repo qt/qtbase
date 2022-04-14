@@ -55,12 +55,14 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 int optVerboseLevel = 1;
 
 bool isBuildDirectory(Platform platform, const QString &dirName)
 {
     return (platform.testFlag(Msvc) || platform.testFlag(ClangMsvc))
-        && (dirName == QLatin1String("debug") || dirName == QLatin1String("release"));
+        && (dirName == "debug"_L1 || dirName == "release"_L1);
 }
 
 // Create a symbolic link by changing to the source directory to make sure the
@@ -175,7 +177,7 @@ QString findSdkTool(const QString &tool)
     QStringList paths = QString::fromLocal8Bit(qgetenv("PATH")).split(u';');
     const QByteArray sdkDir = qgetenv("WindowsSdkDir");
     if (!sdkDir.isEmpty())
-        paths.prepend(QDir::cleanPath(QString::fromLocal8Bit(sdkDir)) + QLatin1String("/Tools/x64"));
+        paths.prepend(QDir::cleanPath(QString::fromLocal8Bit(sdkDir)) + "/Tools/x64"_L1);
     return QStandardPaths::findExecutable(tool, paths);
 }
 
@@ -737,14 +739,14 @@ static inline MsvcDebugRuntimeResult checkMsvcDebugRuntime(const QStringList &de
 {
     for (const QString &lib : dependentLibraries) {
         qsizetype pos = 0;
-        if (lib.startsWith(QLatin1String("MSVCR"), Qt::CaseInsensitive)
-            || lib.startsWith(QLatin1String("MSVCP"), Qt::CaseInsensitive)
-            || lib.startsWith(QLatin1String("VCRUNTIME"), Qt::CaseInsensitive)) {
+        if (lib.startsWith("MSVCR"_L1, Qt::CaseInsensitive)
+            || lib.startsWith("MSVCP"_L1, Qt::CaseInsensitive)
+            || lib.startsWith("VCRUNTIME"_L1, Qt::CaseInsensitive)) {
             qsizetype lastDotPos = lib.lastIndexOf(u'.');
             pos = -1 == lastDotPos ? 0 : lastDotPos - 1;
         }
 
-        if (pos > 0 && lib.contains(QLatin1String("_app"), Qt::CaseInsensitive))
+        if (pos > 0 && lib.contains("_app"_L1, Qt::CaseInsensitive))
             pos -= 4;
 
         if (pos)

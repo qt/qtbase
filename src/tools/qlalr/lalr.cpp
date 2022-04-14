@@ -39,6 +39,8 @@
 #define QLALR_NO_DEBUG_INCLUDES
 #define QLALR_NO_DEBUG_LOOKAHEADS
 
+using namespace Qt::StringLiterals;
+
 QT_BEGIN_NAMESPACE
 QTextStream &qerr()
 {
@@ -194,11 +196,11 @@ Grammar::Grammar ():
   current_prec = 0;
   current_assoc = NonAssoc;
 
-  table_name = QLatin1String ("parser_table");
+  table_name = "parser_table"_L1;
 
   tk_end = intern ("$end");
   terminals.insert (tk_end);
-  spells.insert (tk_end, QLatin1String("end of file"));
+  spells.insert (tk_end, "end of file"_L1);
 
   /*tk_error= terminals.insert (intern ("error"))*/;
 }

@@ -51,6 +51,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 using AutoGenHeaderMap = QMap<QString, QString>;
 using AutoGenSourcesList = QList<QString>;
 
@@ -75,9 +77,9 @@ static bool readAutogenInfoJson(AutoGenHeaderMap &headers, AutoGenSourcesList &s
     }
 
     QJsonObject rootObject = doc.object();
-    QJsonValue headersValue = rootObject.value(QLatin1String("HEADERS"));
-    QJsonValue sourcesValue = rootObject.value(QLatin1String("SOURCES"));
-    QJsonValue headerExtValue = rootObject.value(QLatin1String("HEADER_EXTENSIONS"));
+    QJsonValue headersValue = rootObject.value("HEADERS"_L1);
+    QJsonValue sourcesValue = rootObject.value("SOURCES"_L1);
+    QJsonValue headerExtValue = rootObject.value("HEADER_EXTENSIONS"_L1);
 
     if (!headersValue.isArray() || !sourcesValue.isArray() || !headerExtValue.isArray()) {
         fprintf(stderr,
@@ -154,12 +156,12 @@ static bool readParseCache(ParseCacheMap &entries, const QString &parseCacheFile
     // ....
 
     QTextStream textStream(&file);
-    const QString mmcKey = QString(QLatin1String(" mmc:"));
-    const QString miuKey = QString(QLatin1String(" miu:"));
-    const QString uicKey = QString(QLatin1String(" uic:"));
-    const QString midKey = QString(QLatin1String(" mid:"));
-    const QString mdpKey = QString(QLatin1String(" mdp:"));
-    const QString udpKey = QString(QLatin1String(" udp:"));
+    const QString mmcKey = QString(" mmc:"_L1);
+    const QString miuKey = QString(" miu:"_L1);
+    const QString uicKey = QString(" uic:"_L1);
+    const QString midKey = QString(" mid:"_L1);
+    const QString mdpKey = QString(" mdp:"_L1);
+    const QString udpKey = QString(" udp:"_L1);
     QString line;
     bool mmc_key_found = false;
     while (textStream.readLineInto(&line)) {
@@ -356,12 +358,11 @@ int main(int argc, char **argv)
             }
         }
         // Add extra moc files
-        for (const auto &mocFile : it.value().mocFiles) {
-            jsonFileList.push_back(dir.filePath(mocFile) + QLatin1String(".json"));
-        }
+        for (const auto &mocFile : it.value().mocFiles)
+            jsonFileList.push_back(dir.filePath(mocFile) + ".json"_L1);
         // Add main moc files
         for (const auto &mocFile : it.value().mocIncludes) {
-            jsonFileList.push_back(dir.filePath(mocFile) + QLatin1String(".json"));
+            jsonFileList.push_back(dir.filePath(mocFile) + ".json"_L1);
             // 1b) Locate this header and delete it
             constexpr int mocKeyLen = 4; // length of "moc_"
             const QString headerBaseName =
@@ -394,8 +395,7 @@ int main(int argc, char **argv)
         const QString pathPrefix = !isMultiConfig
             ? QStringLiteral("../")
             : QString();
-        const QString jsonPath =
-                dir.filePath(pathPrefix + mapIt.value() + QLatin1String(".json"));
+        const QString jsonPath = dir.filePath(pathPrefix + mapIt.value() + ".json"_L1);
         jsonFileList.push_back(jsonPath);
     }
 

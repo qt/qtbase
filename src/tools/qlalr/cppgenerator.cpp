@@ -38,6 +38,8 @@
 
 #include <iterator>
 
+using namespace Qt::StringLiterals;
+
 namespace {
 
 void generateSeparator(int i, QTextStream &out)
@@ -64,7 +66,7 @@ void generateList(const QList<int> &list, QTextStream &out)
 
 QString CppGenerator::copyrightHeader() const
 {
-  return QLatin1String(
+  return
     "/****************************************************************************\n"
     "**\n"
     "** Copyright (C) 2016 The Qt Company Ltd.\n"
@@ -92,12 +94,12 @@ QString CppGenerator::copyrightHeader() const
     "** $QT_END_LICENSE$\n"
     "**\n"
     "****************************************************************************/\n"
-    "\n");
+    "\n"_L1;
 }
 
 QString CppGenerator::privateCopyrightHeader() const
 {
-  return QLatin1String(
+  return
     "//\n"
     "//  W A R N I N G\n"
     "//  -------------\n"
@@ -107,7 +109,7 @@ QString CppGenerator::privateCopyrightHeader() const
     "// version without notice, or even be removed.\n"
     "//\n"
     "// We mean it.\n"
-    "//\n");
+    "//\n"_L1;
 }
 
 QString CppGenerator::startIncludeGuard(const QString &fileName)
@@ -374,8 +376,8 @@ void CppGenerator::operator () ()
     }
 
   // default behaviour
-  QString declFileName = grammar.table_name.toLower () + QLatin1String("_p.h");
-  QString bitsFileName = grammar.table_name.toLower () + QLatin1String(".cpp");
+  QString declFileName = grammar.table_name.toLower () + "_p.h"_L1;
+  QString bitsFileName = grammar.table_name.toLower () + ".cpp"_L1;
 
   { // decls...
     QFile f (declFileName);
@@ -448,9 +450,9 @@ void CppGenerator::operator () ()
 
 QString CppGenerator::debugInfoProt() const
 {
-    QString prot = QLatin1String("QLALR_NO_");
+    QString prot = "QLALR_NO_"_L1;
     prot += grammar.table_name.toUpper();
-    prot += QLatin1String("_DEBUG_INFO");
+    prot += "_DEBUG_INFO"_L1;
     return prot;
 }
 
@@ -466,11 +468,11 @@ void CppGenerator::generateDecl (QTextStream &out)
       QString name = *t;
       int value = std::distance (grammar.names.begin (), t);
 
-      if (name == QLatin1String ("$end"))
-        name = QLatin1String ("EOF_SYMBOL");
+      if (name == "$end"_L1)
+        name = "EOF_SYMBOL"_L1;
 
-      else if (name == QLatin1String ("$accept"))
-        name = QLatin1String ("ACCEPT_SYMBOL");
+      else if (name == "$accept"_L1)
+        name = "ACCEPT_SYMBOL"_L1;
 
       else
         name.prepend (grammar.token_prefix);

@@ -46,6 +46,8 @@
 #include <qregularexpression.h>
 #include <qstring.h>
 
+using namespace Qt::StringLiterals;
+
 #ifdef TRACEGEN_DEBUG
 #include <qdebug.h>
 
@@ -197,10 +199,10 @@ static Tracepoint::Field::BackendType backendType(QString rawType)
     rawType = rawType.trimmed();
     rawType.replace(QStringLiteral(" "), QStringLiteral("_"));
 
-    if (rawType == QLatin1String("char_ptr"))
+    if (rawType == "char_ptr"_L1)
         return Tracepoint::Field::String;
 
-    if (rawType.endsWith(QLatin1String("_ptr")))
+    if (rawType.endsWith("_ptr"_L1))
         return Tracepoint::Field::Pointer;
 
     return backendType(rawType);
@@ -280,10 +282,10 @@ Provider parseProvider(const QString &filename)
     for (int lineNumber = 1; !s.atEnd(); ++lineNumber) {
         QString line = s.readLine().trimmed();
 
-        if (line == QLatin1String("{")) {
+        if (line == "{"_L1) {
             parsingPrefixText = true;
             continue;
-        } else if (parsingPrefixText && line == QLatin1String("}")) {
+        } else if (parsingPrefixText && line == "}"_L1) {
             parsingPrefixText = false;
             continue;
         } else if (parsingPrefixText) {

@@ -64,6 +64,7 @@ bool deployFramework = false;
 
 using std::cout;
 using std::endl;
+using namespace Qt::StringLiterals;
 
 bool operator==(const FrameworkInfo &a, const FrameworkInfo &b)
 {
@@ -850,7 +851,7 @@ void changeInstallName(const QString &bundlePath, const FrameworkInfo &framework
     for (const QString &binary : binaryPaths) {
         QString deployedInstallName;
         if (useLoaderPath) {
-            deployedInstallName = QLatin1String("@loader_path/")
+            deployedInstallName = "@loader_path/"_L1
                     + QFileInfo(binary).absoluteDir().relativeFilePath(absBundlePath + u'/' + framework.binaryDestinationDirectory + u'/' + framework.binaryName);
         } else {
             deployedInstallName = framework.deployedInstallName;
@@ -873,9 +874,9 @@ void addRPath(const QString &rpath, const QString &binaryPath)
 void deployRPaths(const QString &bundlePath, const QList<QString> &rpaths, const QString &binaryPath, bool useLoaderPath)
 {
     const QString absFrameworksPath = QFileInfo(bundlePath).absoluteFilePath()
-            + QLatin1String("/Contents/Frameworks");
+            + "/Contents/Frameworks"_L1;
     const QString relativeFrameworkPath = QFileInfo(binaryPath).absoluteDir().relativeFilePath(absFrameworksPath);
-    const QString loaderPathToFrameworks = QLatin1String("@loader_path/") + relativeFrameworkPath;
+    const QString loaderPathToFrameworks = "@loader_path/"_L1 + relativeFrameworkPath;
     bool rpathToFrameworksFound = false;
     QStringList args;
     QList<QString> binaryRPaths = getBinaryRPaths(binaryPath, false);
@@ -945,13 +946,10 @@ void stripAppBinary(const QString &bundlePath)
 bool DeploymentInfo::containsModule(const QString &module, const QString &libInFix) const
 {
     // Check for framework first
-    if (deployedFrameworks.contains(QLatin1String("Qt") + module + libInFix +
-                                    QLatin1String(".framework"))) {
+    if (deployedFrameworks.contains("Qt"_L1 + module + libInFix + ".framework"_L1))
         return true;
-    }
     // Check for dylib
-    const QRegularExpression dylibRegExp(QLatin1String("libQt[0-9]+") + module +
-                                         libInFix + QLatin1String(".[0-9]+.dylib"));
+    const QRegularExpression dylibRegExp("libQt[0-9]+"_L1 + module + libInFix + ".[0-9]+.dylib"_L1);
     return deployedFrameworks.filter(dylibRegExp).size() > 0;
 }
 

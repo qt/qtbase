@@ -54,6 +54,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 enum QtModule
 #if defined(Q_COMPILER_CLASS_ENUM) || defined(Q_CC_MSVC)
     : quint64
@@ -200,14 +202,14 @@ static QByteArray formatQtModules(quint64 mask, bool option = false)
 
 static Platform platformFromMkSpec(const QString &xSpec)
 {
-    if (xSpec == QLatin1String("linux-g++"))
+    if (xSpec == "linux-g++"_L1)
         return Unix;
-    if (xSpec.startsWith(QLatin1String("win32-"))) {
-        if (xSpec.contains(QLatin1String("clang-g++")))
+    if (xSpec.startsWith("win32-"_L1)) {
+        if (xSpec.contains("clang-g++"_L1))
             return WindowsDesktopClangMinGW;
-        if (xSpec.contains(QLatin1String("clang-msvc++")))
+        if (xSpec.contains("clang-msvc++"_L1))
             return WindowsDesktopClangMsvc;
-        return xSpec.contains(QLatin1String("g++")) ? WindowsDesktopMinGW : WindowsDesktopMsvc;
+        return xSpec.contains("g++"_L1) ? WindowsDesktopMinGW : WindowsDesktopMsvc;
     }
     return UnknownPlatform;
 }
@@ -306,10 +308,10 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
     using OptionPtrVector = QList<CommandLineOptionPtr>;
 
     parser->setSingleDashWordOptionMode(QCommandLineParser::ParseAsLongOptions);
-    parser->setApplicationDescription(QStringLiteral("Qt Deploy Tool ") + QLatin1String(QT_VERSION_STR)
-        + QLatin1String("\n\nThe simplest way to use windeployqt is to add the bin directory of your Qt\n"
+    parser->setApplicationDescription(QStringLiteral("Qt Deploy Tool ") + QT_VERSION_STR ""_L1
+        + "\n\nThe simplest way to use windeployqt is to add the bin directory of your Qt\n"
         "installation (e.g. <QT_DIR\\bin>) to the PATH variable and then run:\n  windeployqt <path-to-app-binary>\n\n"
-        "If your application uses Qt Quick, run:\n  windeployqt --qmldir <path-to-app-qml-files> <path-to-app-binary>"));
+        "If your application uses Qt Quick, run:\n  windeployqt --qmldir <path-to-app-qml-files> <path-to-app-binary>"_L1);
     const QCommandLineOption helpOption = parser->addHelpOption();
     parser->addVersionOption();
 
@@ -429,7 +431,7 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
     parser->addOption(suppressSoftwareRasterizerOption);
 
     QCommandLineOption listOption(QStringLiteral("list"),
-                                  QLatin1String("Print only the names of the files copied.\n"
+                                                "Print only the names of the files copied.\n"
                                                 "Available options:\n"
                                                 "  source:   absolute path of the source files\n"
                                                 "  target:   absolute path of the target files\n"
@@ -437,7 +439,7 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
                                                 "            to the target directory\n"
                                                 "  mapping:  outputs the source and the relative\n"
                                                 "            target, suitable for use within an\n"
-                                                "            Appx mapping file"),
+                                                "            Appx mapping file"_L1,
                                   QStringLiteral("option"));
     parser->addOption(listOption);
 
@@ -664,7 +666,7 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
             options->binaries.append(path);
         }
     }
-    options->translationsDirectory = options->directory + QLatin1String("/translations");
+    options->translationsDirectory = options->directory + "/translations"_L1;
     return 0;
 }
 
@@ -686,13 +688,13 @@ static inline QString helpText(const QCommandLineParser &p)
     QString result = p.helpText();
     // Replace the default-generated text which is too long by a short summary
     // explaining how to enable single libraries.
-    const int moduleStart = result.indexOf(QLatin1String("\n  --bluetooth"));
-    const int argumentsStart = result.lastIndexOf(QLatin1String("\nArguments:"));
+    const qsizetype moduleStart = result.indexOf("\n  --bluetooth"_L1);
+    const qsizetype argumentsStart = result.lastIndexOf("\nArguments:"_L1);
     if (moduleStart >= argumentsStart)
         return result;
-    QString moduleHelp = QLatin1String(
+    QString moduleHelp =
         "\n\nQt libraries can be added by passing their name (-xml) or removed by passing\n"
-        "the name prepended by --no- (--no-xml). Available libraries:\n");
+        "the name prepended by --no- (--no-xml). Available libraries:\n"_L1;
     moduleHelp += lineBreak(QString::fromLatin1(formatQtModules(0xFFFFFFFFFFFFFFFFull, true)));
     moduleHelp += u'\n';
     result.replace(moduleStart, argumentsStart - moduleStart, moduleHelp);
@@ -702,7 +704,7 @@ static inline QString helpText(const QCommandLineParser &p)
 static inline bool isQtModule(const QString &libName)
 {
     // Match Standard modules named Qt6XX.dll
-    if (libName.size() < 3 || !libName.startsWith(QLatin1String("Qt"), Qt::CaseInsensitive))
+    if (libName.size() < 3 || !libName.startsWith("Qt"_L1, Qt::CaseInsensitive))
         return false;
     const QChar version = libName.at(2);
     return version.isDigit() && (version.toLatin1() - '0') == QT_VERSION_MAJOR;
@@ -719,8 +721,8 @@ static bool findDependentQtLibraries(const QString &qtBinDir, const QString &bin
     if (directDependencyCount)
         *directDependencyCount = 0;
     if (!readExecutable(binary, platform, errorMessage, &dependentLibs, wordSize, isDebug, machineArch)) {
-        errorMessage->prepend(QLatin1String("Unable to find dependent libraries of ") +
-                              QDir::toNativeSeparators(binary) + QLatin1String(" :"));
+        errorMessage->prepend("Unable to find dependent libraries of "_L1 +
+                              QDir::toNativeSeparators(binary) + " :"_L1);
         return false;
     }
     // Filter out the Qt libraries. Note that depends.exe finds libs from optDirectory if we
@@ -766,7 +768,7 @@ static QString pdbFileName(QString libraryFileName)
     const qsizetype lastDot = libraryFileName.lastIndexOf(u'.') + 1;
     if (lastDot <= 0)
         return QString();
-    libraryFileName.replace(lastDot, libraryFileName.size() - lastDot, QLatin1String("pdb"));
+    libraryFileName.replace(lastDot, libraryFileName.size() - lastDot, "pdb"_L1);
     return libraryFileName;
 }
 static inline QStringList qmlCacheFileFilters()
@@ -883,7 +885,7 @@ static quint64 qtModule(QString module, const QString &infix)
     const qsizetype lastSlashPos = module.lastIndexOf(u'/');
     if (lastSlashPos > 0)
         module.remove(0, lastSlashPos + 1);
-    if (module.startsWith(QLatin1String("lib")))
+    if (module.startsWith("lib"_L1))
         module.remove(0, 3);
     int endPos = infix.isEmpty() ? -1 : module.lastIndexOf(infix);
     if (endPos == -1)
@@ -912,7 +914,7 @@ QStringList findQtPlugins(quint64 *usedQtModules, quint64 disabledQtModules,
         return QStringList();
     QDir pluginsDir(qtPluginsDirName);
     QStringList result;
-    const QFileInfoList &pluginDirs = pluginsDir.entryInfoList(QStringList(QLatin1String("*")), QDir::Dirs | QDir::NoDotAndDotDot);
+    const QFileInfoList &pluginDirs = pluginsDir.entryInfoList(QStringList("*"_L1), QDir::Dirs | QDir::NoDotAndDotDot);
     for (const QFileInfo &subDirFi : pluginDirs) {
         const QString subDirName = subDirFi.fileName();
         const quint64 module = qtModuleForPlugin(subDirName);
@@ -922,13 +924,13 @@ QStringList findQtPlugins(quint64 *usedQtModules, quint64 disabledQtModules,
                 : debugMatchModeIn;
             QDir subDir(subDirFi.absoluteFilePath());
             // Filter out disabled plugins
-            if ((disabledPlugins & QtVirtualKeyboardPlugin) && subDirName == QLatin1String("virtualkeyboard"))
+            if ((disabledPlugins & QtVirtualKeyboardPlugin) && subDirName == "virtualkeyboard"_L1)
                 continue;
-            if (disabledQtModules & QtQmlToolingModule && subDirName == QLatin1String("qmltooling"))
+            if (disabledQtModules & QtQmlToolingModule && subDirName == "qmltooling"_L1)
                 continue;
             // Filter for platform or any.
             QString filter;
-            const bool isPlatformPlugin = subDirName == QLatin1String("platforms");
+            const bool isPlatformPlugin = subDirName == "platforms"_L1;
             if (isPlatformPlugin) {
                 switch (platform) {
                 case WindowsDesktopMsvc:
@@ -942,13 +944,13 @@ QStringList findQtPlugins(quint64 *usedQtModules, quint64 disabledQtModules,
                     break;
                 }
             } else {
-                filter  = QLatin1String("*");
+                filter  = "*"_L1;
             }
             const QStringList plugins = findSharedLibraries(subDir, platform, debugMatchMode, filter);
             for (const QString &plugin : plugins) {
                 // Filter out disabled plugins
                 if ((disabledPlugins & QtVirtualKeyboardPlugin)
-                    && plugin.startsWith(QLatin1String("qtvirtualkeyboardplugin"))) {
+                    && plugin.startsWith("qtvirtualkeyboardplugin"_L1)) {
                     continue;
                 }
                 const QString pluginPath = subDir.absoluteFilePath(plugin);
@@ -1149,7 +1151,7 @@ static QStringList compilerRunTimeLibs(Platform platform, bool isDebug, unsigned
             if (vcRedistDir.cd(vcDebugRedistDir()) && vcRedistDir.cd(machineArchString)) {
                 const QStringList names = vcRedistDir.entryList(QStringList(QStringLiteral("Microsoft.VC*.DebugCRT")), QDir::Dirs);
                 if (!names.isEmpty() && vcRedistDir.cd(names.first())) {
-                    const QFileInfoList &dlls = vcRedistDir.entryInfoList(QStringList(QLatin1String("*.dll")));
+                    const QFileInfoList &dlls = vcRedistDir.entryInfoList(QStringList("*.dll"_L1));
                     for (const QFileInfo &dll : dlls)
                         redistFiles.append(dll.absoluteFilePath());
                 }
@@ -1493,7 +1495,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
             options.directory : options.pluginDirectory;
         QDir dir(targetPath);
         if (!dir.exists() && !dir.mkpath(QStringLiteral("."))) {
-            *errorMessage = QLatin1String("Cannot create ") +
+            *errorMessage = "Cannot create "_L1 +
                             QDir::toNativeSeparators(dir.absolutePath()) +  u'.';
             return result;
         }
@@ -1642,7 +1644,7 @@ QT_USE_NAMESPACE
 int main(int argc, char **argv)
 {
     QCoreApplication a(argc, argv);
-    QCoreApplication::setApplicationVersion(QLatin1String(QT_VERSION_STR));
+    QCoreApplication::setApplicationVersion(QT_VERSION_STR ""_L1);
 
     const QByteArray qtBinPath = QFile::encodeName(QDir::toNativeSeparators(QCoreApplication::applicationDirPath()));
     QByteArray path = qgetenv("PATH");

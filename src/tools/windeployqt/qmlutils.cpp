@@ -39,6 +39,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 bool operator==(const QmlImportScanResult::Module &m1, const QmlImportScanResult::Module &m2)
 {
     return m1.className.isEmpty() ? m1.name == m2.name : m1.className == m2.className;
@@ -128,7 +130,7 @@ QmlImportScanResult runQmlImportScanner(const QString &directory, const QStringL
     const int childCount = array.count();
     for (int c = 0; c < childCount; ++c) {
         const QJsonObject object = array.at(c).toObject();
-        if (object.value(QStringLiteral("type")).toString() == QLatin1String("module")) {
+        if (object.value(QStringLiteral("type")).toString() == "module"_L1) {
             const QString path = object.value(QStringLiteral("path")).toString();
             if (!path.isEmpty()) {
                 QmlImportScanResult::Module module;

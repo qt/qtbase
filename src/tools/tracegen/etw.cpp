@@ -47,9 +47,11 @@
 #include <qtextstream.h>
 #include <quuid.h>
 
+using namespace Qt::StringLiterals;
+
 static inline QString providerVar(const QString &providerName)
 {
-    return providerName + QLatin1String("_provider");
+    return providerName + "_provider"_L1;
 }
 
 static void writeEtwMacro(QTextStream &stream, const Tracepoint::Field &field)

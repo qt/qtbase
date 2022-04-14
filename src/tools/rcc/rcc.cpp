@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 enum {
     CONSTANT_USENAMESPACE = 1,
     CONSTANT_COMPRESSLEVEL_DEFAULT = -1,
@@ -445,14 +447,14 @@ qint64 RCCFileInfo::writeDataName(RCCResourceLibrary &lib, qint64 offset)
 ///////////////////////////////////////////////////////////
 
 RCCResourceLibrary::Strings::Strings() :
-   TAG_RCC(QLatin1String("RCC")),
-   TAG_RESOURCE(QLatin1String("qresource")),
-   TAG_FILE(QLatin1String("file")),
-   ATTRIBUTE_LANG(QLatin1String("lang")),
-   ATTRIBUTE_PREFIX(QLatin1String("prefix")),
-   ATTRIBUTE_ALIAS(QLatin1String("alias")),
-   ATTRIBUTE_THRESHOLD(QLatin1String("threshold")),
-   ATTRIBUTE_COMPRESS(QLatin1String("compress")),
+   TAG_RCC("RCC"_L1),
+   TAG_RESOURCE("qresource"_L1),
+   TAG_FILE("file"_L1),
+   ATTRIBUTE_LANG("lang"_L1),
+   ATTRIBUTE_PREFIX("prefix"_L1),
+   ATTRIBUTE_ALIAS("alias"_L1),
+   ATTRIBUTE_THRESHOLD("threshold"_L1),
+   ATTRIBUTE_COMPRESS("compress"_L1),
    ATTRIBUTE_COMPRESSALGO(QStringLiteral("compression-algorithm"))
 {
 }
@@ -520,12 +522,12 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
         case QXmlStreamReader::StartElement:
             if (reader.name() == m_strings.TAG_RCC) {
                 if (!tokens.isEmpty())
-                    reader.raiseError(QLatin1String("expected <RCC> tag"));
+                    reader.raiseError("expected <RCC> tag"_L1);
                 else
                     tokens.push(RccTag);
             } else if (reader.name() == m_strings.TAG_RESOURCE) {
                 if (tokens.isEmpty() || tokens.top() != RccTag) {
-                    reader.raiseError(QLatin1String("unexpected <RESOURCE> tag"));
+                    reader.raiseError("unexpected <RESOURCE> tag"_L1);
                 } else {
                     tokens.push(ResourceTag);
 
@@ -555,7 +557,7 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                 }
             } else if (reader.name() == m_strings.TAG_FILE) {
                 if (tokens.isEmpty() || tokens.top() != ResourceTag) {
-                    reader.raiseError(QLatin1String("unexpected <FILE> tag"));
+                    reader.raiseError("unexpected <FILE> tag"_L1);
                 } else {
                     tokens.push(FileTag);
 
@@ -587,7 +589,7 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                         reader.raiseError(errorString);
                 }
             } else {
-                reader.raiseError(QString(QLatin1String("unexpected tag: %1")).arg(reader.name().toString()));
+                reader.raiseError(QString("unexpected tag: %1"_L1).arg(reader.name().toString()));
             }
             break;
 
@@ -596,17 +598,17 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                 if (!tokens.isEmpty() && tokens.top() == RccTag)
                     tokens.pop();
                 else
-                    reader.raiseError(QLatin1String("unexpected closing tag"));
+                    reader.raiseError("unexpected closing tag"_L1);
             } else if (reader.name() == m_strings.TAG_RESOURCE) {
                 if (!tokens.isEmpty() && tokens.top() == ResourceTag)
                     tokens.pop();
                 else
-                    reader.raiseError(QLatin1String("unexpected closing tag"));
+                    reader.raiseError("unexpected closing tag"_L1);
             } else if (reader.name() == m_strings.TAG_FILE) {
                 if (!tokens.isEmpty() && tokens.top() == FileTag)
                     tokens.pop();
                 else
-                    reader.raiseError(QLatin1String("unexpected closing tag"));
+                    reader.raiseError("unexpected closing tag"_L1);
             }
             break;
 
@@ -614,7 +616,7 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
             if (reader.isWhitespace())
                 break;
             if (tokens.isEmpty() || tokens.top() != FileTag) {
-                reader.raiseError(QLatin1String("unexpected text"));
+                reader.raiseError("unexpected text"_L1);
             } else {
                 QString fileName = reader.text().toString();
                 if (fileName.isEmpty()) {
@@ -626,7 +628,7 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                     alias = fileName;
 
                 alias = QDir::cleanPath(alias);
-                while (alias.startsWith(QLatin1String("../")))
+                while (alias.startsWith("../"_L1))
                     alias.remove(0, 3);
                 alias = QDir::cleanPath(m_resourceRoot) + prefix + alias;
 
@@ -643,8 +645,7 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                     QDirIterator it(dir, QDirIterator::FollowSymlinks|QDirIterator::Subdirectories);
                     while (it.hasNext()) {
                         it.next();
-                        if (it.fileName() == QLatin1String(".")
-                            || it.fileName() == QLatin1String(".."))
+                        if (it.fileName() == "."_L1 || it.fileName() == ".."_L1)
                             continue;
                         filePaths.append(it.filePath());
                     }
@@ -793,8 +794,8 @@ bool RCCResourceLibrary::readFiles(bool listMode, QIODevice &errorDevice)
         QFile fileIn;
         QString fname = m_fileNames.at(i);
         QString pwd;
-        if (fname == QLatin1String("-")) {
-            fname = QLatin1String("(stdin)");
+        if (fname == "-"_L1) {
+            fname = "(stdin)"_L1;
             pwd = QDir::currentPath();
             fileIn.setFileName(fname);
             if (!fileIn.open(stdin, QIODevice::ReadOnly)) {
@@ -868,21 +869,21 @@ RCCResourceLibrary::ResourceDataFileMap RCCResourceLibrary::resourceDataFileMap(
 
 RCCResourceLibrary::CompressionAlgorithm RCCResourceLibrary::parseCompressionAlgorithm(QStringView value, QString *errorMsg)
 {
-    if (value == QLatin1String("best"))
+    if (value == "best"_L1)
         return CompressionAlgorithm::Best;
-    if (value == QLatin1String("zlib")) {
+    if (value == "zlib"_L1) {
 #ifdef QT_NO_COMPRESS
-        *errorMsg = QLatin1String("zlib support not compiled in");
+        *errorMsg = "zlib support not compiled in"_L1;
 #else
         return CompressionAlgorithm::Zlib;
 #endif
-    } else if (value == QLatin1String("zstd")) {
+    } else if (value == "zstd"_L1) {
 #if QT_CONFIG(zstd)
         return CompressionAlgorithm::Zstd;
 #else
-        *errorMsg = QLatin1String("Zstandard support not compiled in");
+        *errorMsg = "Zstandard support not compiled in"_L1;
 #endif
-    } else if (value != QLatin1String("none")) {
+    } else if (value != "none"_L1) {
         *errorMsg = QString::fromLatin1("Unknown compression algorithm '%1'").arg(value);
     }
 

@@ -40,6 +40,8 @@
 #include "helpers.h"
 #include <qdebug.h>
 
+using namespace Qt::StringLiterals;
+
 QString includeGuard(const QString &filename)
 {
     QString guard = filename.toUpper();
@@ -60,7 +62,7 @@ static QString joinArguments(const QList<Tracepoint::Argument> &args, T joinFunc
 
     for (const Tracepoint::Argument &arg : args) {
         if (!first)
-            ret += QLatin1String(", ");
+            ret += ", "_L1;
 
         ret += joinFunction(arg);
 
@@ -83,7 +85,7 @@ QString formatParameterList(const QList<Tracepoint::Argument> &args, ParamType t
         QString ret;
 
         for (const Tracepoint::Argument &arg : args)
-            ret += QLatin1String(", ") + arg.name;
+            ret += ", "_L1 + arg.name;
 
         return ret;
     }

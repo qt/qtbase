@@ -41,6 +41,8 @@
 #include <qdbusconnection.h>    // for the Export* flags
 #include <private/qdbusconnection_p.h>    // for the qDBusCheckAsyncTag
 
+using namespace Qt::StringLiterals;
+
 // copied from dbus-protocol.h:
 static const char docTypeHeader[] =
     "<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\" "
@@ -156,13 +158,13 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
         xml += QString::fromLatin1("      <arg %1type=\"%2\" direction=\"%3\"/>\n")
                 .arg(name,
                      QLatin1String(signature),
-                     isOutput ? QLatin1String("out") : QLatin1String("in"));
+                     isOutput ? "out"_L1 : "in"_L1);
 
         // do we need to describe this argument?
         if (!QDBusMetaType::signatureToMetaType(signature).isValid()) {
             const char *typeName = QMetaType(types.at(j)).name();
             xml += QString::fromLatin1("      <annotation name=\"org.qtproject.QtDBus.QtTypeName.%1%2\" value=\"%3\"/>\n")
-                    .arg(isOutput ? QLatin1String("Out") : QLatin1String("In"))
+                    .arg(isOutput ? "Out"_L1 : "In"_L1)
                     .arg(isOutput && !isSignal ? j - inputCount : j - 1)
                     .arg(typeNameToXml(typeName));
         }
@@ -180,12 +182,10 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
 
     if (qDBusCheckAsyncTag(mm.tag.constData()))
         // add the no-reply annotation
-        xml += QLatin1String("      <annotation name=\"" ANNOTATION_NO_WAIT "\""
-                              " value=\"true\"/>\n");
+        xml += "      <annotation name=\"" ANNOTATION_NO_WAIT "\" value=\"true\"/>\n"_L1;
 
     QString retval = xml;
-    retval += QString::fromLatin1("    </%1>\n")
-              .arg(isSignal ? QLatin1String("signal") : QLatin1String("method"));
+    retval += QString::fromLatin1("    </%1>\n").arg(isSignal ? "signal"_L1 : "method"_L1);
 
     return retval;
 }
@@ -229,7 +229,7 @@ static QString generateInterfaceXml(const ClassDef *mo)
                 retval += QString::fromLatin1(">\n      <annotation name=\"org.qtproject.QtDBus.QtTypeName\" value=\"%3\"/>\n    </property>\n")
                           .arg(typeNameToXml(mp.type.constData()));
             } else {
-                retval += QLatin1String("/>\n");
+                retval += "/>\n"_L1;
             }
         }
     }
@@ -273,16 +273,16 @@ QString qDBusInterfaceFromClassDef(const ClassDef *mo)
             return QString::fromUtf8(cid.value);
     }
     interface = QLatin1String(mo->classname);
-    interface.replace(QLatin1String("::"), QLatin1String("."));
+    interface.replace("::"_L1, "."_L1);
 
-    if (interface.startsWith(QLatin1String("QDBus"))) {
-        interface.prepend(QLatin1String("org.qtproject.QtDBus."));
+    if (interface.startsWith("QDBus"_L1)) {
+        interface.prepend("org.qtproject.QtDBus."_L1);
     } else if (interface.startsWith(u'Q') &&
                 interface.length() >= 2 && interface.at(1).isUpper()) {
         // assume it's Qt
-        interface.prepend(QLatin1String("local.org.qtproject.Qt."));
+        interface.prepend("local.org.qtproject.Qt."_L1);
     } else {
-        interface.prepend(QLatin1String("local."));
+        interface.prepend("local."_L1);
     }
 
     return interface;
@@ -361,7 +361,7 @@ static void parseCmdLine(QStringList &arguments)
     for (int i = 0; i < arguments.count(); ++i) {
         const QString arg = arguments.at(i);
 
-        if (arg == QLatin1String("--help"))
+        if (arg == "--help"_L1)
             showHelp();
 
         if (!arg.startsWith(u'-'))
