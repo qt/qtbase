@@ -1879,10 +1879,12 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
         fprintf(stdout, "Scanning for QML imports.\n");
 
     QString qmlImportScanner;
-    if (!options->qmlImportScannerBinaryPath.isEmpty())
+    if (!options->qmlImportScannerBinaryPath.isEmpty()) {
         qmlImportScanner = options->qmlImportScannerBinaryPath;
-    else
-        qmlImportScanner = options->qtInstallDirectory + QLatin1String("/bin/qmlimportscanner");
+    } else {
+        qmlImportScanner = options->qtInstallDirectory + QLatin1Char('/') + defaultLibexecDir()
+                + QLatin1String("/qmlimportscanner");
+    }
 #if defined(Q_OS_WIN32)
     qmlImportScanner += QLatin1String(".exe");
 #endif
