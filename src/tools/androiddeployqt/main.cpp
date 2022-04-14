@@ -1498,8 +1498,10 @@ bool updateLibsXml(Options *options)
 
                     plugin = qtDependency.relativePath;
                 }
-                if (qtDependency.relativePath.contains(QLatin1String("libQt5OpenGL"))
-                        || qtDependency.relativePath.contains(QLatin1String("libQt5Quick"))) {
+                if (qtDependency.relativePath.contains(
+                            QString::asprintf("libQt%dOpenGL", QT_VERSION_MAJOR))
+                    || qtDependency.relativePath.contains(
+                            QString::asprintf("libQt%dQuick", QT_VERSION_MAJOR))) {
                     options->usesOpenGL |= true;
                     break;
                 }
