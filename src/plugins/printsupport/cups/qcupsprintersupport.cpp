@@ -166,7 +166,7 @@ QStringList QCupsPrinterSupport::availablePrintDeviceIds() const
     for (int i = 0; i < count; ++i) {
         QString printerId = QString::fromLocal8Bit(dests[i].name);
         if (dests[i].instance)
-            printerId += QLatin1Char('/') + QString::fromLocal8Bit(dests[i].instance);
+            printerId += u'/' + QString::fromLocal8Bit(dests[i].instance);
         list.append(printerId);
     }
     cupsFreeDests(count, dests);
@@ -187,7 +187,7 @@ QString QCupsPrinterSupport::staticDefaultPrintDeviceId()
         if (dests[i].is_default) {
             printerId = QString::fromLocal8Bit(dests[i].name);
             if (dests[i].instance) {
-                printerId += QLatin1Char('/') + QString::fromLocal8Bit(dests[i].instance);
+                printerId += u'/' + QString::fromLocal8Bit(dests[i].instance);
                 break;
             }
         }

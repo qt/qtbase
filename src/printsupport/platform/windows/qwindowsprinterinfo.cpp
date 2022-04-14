@@ -84,7 +84,7 @@ extern QPrinter::PaperSize mapDevmodePaperSize(int s);
 //    QString output = QString::fromWCharArray(buffer);
 //    if (output != noPrinters) {
 //        // Filter out the name of the printer, which should be everything before a comma.
-//        QString printerName = output.split(QLatin1Char(',')).value(0);
+//        QString printerName = output.split(u',').value(0);
 //        QPrinterInfo printerInfo(printerName);
 //        printerInfo.d_ptr->isDefault = true;
 //        return printerInfo;

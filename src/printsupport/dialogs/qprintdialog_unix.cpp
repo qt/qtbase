@@ -1356,12 +1356,12 @@ QUnixPrintWidget::QUnixPrintWidget(QPrinter *printer, QWidget *parent)
     if (printer->outputFileName().isEmpty()) {
         QString home = QDir::homePath();
         QString cur = QDir::currentPath();
-        if (!home.endsWith(QLatin1Char('/')))
-            home += QLatin1Char('/');
+        if (!home.endsWith(u'/'))
+            home += u'/';
         if (!cur.startsWith(home))
             cur = home;
-        else if (!cur.endsWith(QLatin1Char('/')))
-            cur += QLatin1Char('/');
+        else if (!cur.endsWith(u'/'))
+            cur += u'/';
         if (QGuiApplication::platformName() == QStringLiteral("xcb")) {
             if (printer->docName().isEmpty()) {
                 cur += QStringLiteral("print.pdf");

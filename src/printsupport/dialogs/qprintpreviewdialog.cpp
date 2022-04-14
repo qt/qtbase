@@ -94,13 +94,13 @@ public:
     State validate(QString &input, int &pos) const override
     {
         bool replacePercent = false;
-        if (input.endsWith(QLatin1Char('%'))) {
+        if (input.endsWith(u'%')) {
             input = input.left(input.length() - 1);
             replacePercent = true;
         }
         State state = QDoubleValidator::validate(input, pos);
         if (replacePercent)
-            input += QLatin1Char('%');
+            input += u'%';
         const int num_size = 4;
         if (state == Intermediate) {
             int i = input.indexOf(QLocale::system().decimalPoint());
@@ -486,7 +486,7 @@ void QPrintPreviewDialogPrivate::updatePageNumLabel()
     int numPages = preview->pageCount();
     int maxChars = QString::number(numPages).length();
     pageNumLabel->setText(QString::fromLatin1("/ %1").arg(numPages));
-    int cyphersWidth = q->fontMetrics().horizontalAdvance(QString().fill(QLatin1Char('8'), maxChars));
+    int cyphersWidth = q->fontMetrics().horizontalAdvance(QString().fill(u'8', maxChars));
     int maxWidth = pageNumEdit->minimumSizeHint().width() + cyphersWidth;
     pageNumEdit->setMinimumWidth(maxWidth);
     pageNumEdit->setMaximumWidth(maxWidth);
@@ -577,8 +577,7 @@ void QPrintPreviewDialogPrivate::_q_print()
         QString suffix = QLatin1String(".pdf");
         QString fileName;
 #if QT_CONFIG(filedialog)
-        fileName = QFileDialog::getSaveFileName(q, title, printer->outputFileName(),
-                                                        QLatin1Char('*') + suffix);
+        fileName = QFileDialog::getSaveFileName(q, title, printer->outputFileName(), u'*' + suffix);
 #endif
         if (!fileName.isEmpty()) {
             if (QFileInfo(fileName).suffix().isEmpty())
@@ -630,7 +629,7 @@ void QPrintPreviewDialogPrivate::_q_zoomFactorChanged()
 {
     QString text = zoomFactor->lineEdit()->text();
     bool ok;
-    qreal factor = text.remove(QLatin1Char('%')).toFloat(&ok);
+    qreal factor = text.remove(u'%').toFloat(&ok);
     factor = qMax(qreal(1.0), qMin(qreal(1000.0), factor));
     if (ok) {
         preview->setZoomFactor(factor/100.0);

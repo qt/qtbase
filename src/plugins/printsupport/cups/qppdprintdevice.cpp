@@ -64,7 +64,7 @@ QPpdPrintDevice::QPpdPrintDevice(const QString &id)
     if (!id.isEmpty()) {
 
         // TODO For now each dest is an individual device
-        const auto parts = QStringView{id}.split(QLatin1Char('/'));
+        const auto parts = QStringView{id}.split(u'/');
         m_cupsName = parts.at(0).toUtf8();
         if (parts.size() > 1)
             m_cupsInstance = parts.at(1).toUtf8();

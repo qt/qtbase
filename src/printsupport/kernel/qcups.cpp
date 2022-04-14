@@ -231,7 +231,7 @@ QCUPSSupport::JobSheets QCUPSSupport::parseJobSheets(const QString &jobSheets)
 {
     JobSheets result;
 
-    const QStringList parts = jobSheets.split(QLatin1Char(','));
+    const QStringList parts = jobSheets.split(u',');
     if (parts.count() == 2) {
         result.startBannerPage = stringToBannerPage(parts[0]);
         result.endBannerPage = stringToBannerPage(parts[1]);
@@ -245,7 +245,7 @@ void QCUPSSupport::setBannerPages(QPrinter *printer, const BannerPage startBanne
     const QString startBanner = bannerPageToString(startBannerPage);
     const QString endBanner   = bannerPageToString(endBannerPage);
 
-    setCupsOption(printer, QStringLiteral("job-sheets"), startBanner + QLatin1Char(',') + endBanner);
+    setCupsOption(printer, QStringLiteral("job-sheets"), startBanner + u',' + endBanner);
 }
 
 void QCUPSSupport::setPageSet(QPrinter *printer, const PageSet pageSet)
