@@ -45,6 +45,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QCupsPrinterSupportPlugin : public QPlatformPrinterSupportPlugin
 {
     Q_OBJECT
@@ -62,7 +64,7 @@ QStringList QCupsPrinterSupportPlugin::keys() const
 
 QPlatformPrinterSupport *QCupsPrinterSupportPlugin::create(const QString &key)
 {
-    if (key.compare(key, QLatin1String("cupsprintersupport"), Qt::CaseInsensitive) == 0)
+    if (key.compare(key, "cupsprintersupport"_L1, Qt::CaseInsensitive) == 0)
         return new QCupsPrinterSupport;
     return 0;
 }

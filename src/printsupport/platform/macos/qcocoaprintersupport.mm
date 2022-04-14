@@ -57,6 +57,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QCocoaPrinterSupport::QCocoaPrinterSupport()
 { }
 
@@ -122,7 +124,7 @@ public:
 
 QPlatformPrinterSupport *QCocoaPrinterSupportPlugin::create(const QString &key)
 {
-    if (key.compare(key, QLatin1String("cocoaprintersupport"), Qt::CaseInsensitive) != 0)
+    if (key.compare(key, "cocoaprintersupport"_L1, Qt::CaseInsensitive) != 0)
         return 0;
 
     return new QCocoaPrinterSupport();

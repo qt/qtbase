@@ -59,6 +59,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 //extern void qt_win_eatMouseMove();
 
 class QPrintDialogPrivate : public QAbstractPrintDialogPrivate
@@ -164,8 +166,8 @@ static void qt_win_read_back_PRINTDLGEX(PRINTDLGEX *pd, QPrintDialog *pdlg, QPri
     d->engine->setGlobalDevMode(pd->hDevNames, pd->hDevMode);
 
     if (d->ep->printToFile && d->ep->fileName.isEmpty())
-        d->ep->fileName = QLatin1String("FILE:");
-    else if (!d->ep->printToFile && d->ep->fileName == QLatin1String("FILE:"))
+        d->ep->fileName = "FILE:"_L1;
+    else if (!d->ep->printToFile && d->ep->fileName == "FILE:"_L1)
         d->ep->fileName.clear();
 }
 

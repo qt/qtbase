@@ -46,6 +46,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #ifndef QT_NO_PRINTER
 
 extern QPrinter::PaperSize mapDevmodePaperSize(int s);
@@ -78,7 +80,7 @@ extern QPrinter::PaperSize mapDevmodePaperSize(int s);
 
 //QPrinterInfo QPrinterInfo::defaultPrinter()
 //{
-//    QString noPrinters(QLatin1String("qt_no_printers"));
+//    QString noPrinters("qt_no_printers"_L1);
 //    wchar_t buffer[256];
 //    GetProfileString(L"windows", L"device", (wchar_t*)noPrinters.utf16(), buffer, 256);
 //    QString output = QString::fromWCharArray(buffer);

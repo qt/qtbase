@@ -52,6 +52,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QWindowsPrinterSupport::QWindowsPrinterSupport()
     : QPlatformPrinterSupport()
 {
@@ -98,7 +100,7 @@ public:
 
 QPlatformPrinterSupport *QWindowsPrinterSupportPlugin::create(const QString &key)
 {
-    if (key.compare(key, QLatin1String("windowsprintsupport"), Qt::CaseInsensitive) == 0)
+    if (key.compare(key, "windowsprintsupport"_L1, Qt::CaseInsensitive) == 0)
         return new QWindowsPrinterSupport;
     return nullptr;
 }

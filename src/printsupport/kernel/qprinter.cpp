@@ -61,6 +61,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #define ABORT_IF_ACTIVE(location) \
     if (d->printEngine->printerState() == QPrinter::Active) { \
         qWarning("%s: Cannot be changed while printer is active", location); \
@@ -749,7 +751,7 @@ void QPrinter::setOutputFileName(const QString &fileName)
     ABORT_IF_ACTIVE("QPrinter::setOutputFileName");
 
     QFileInfo fi(fileName);
-    if (!fi.suffix().compare(QLatin1String("pdf"), Qt::CaseInsensitive))
+    if (!fi.suffix().compare("pdf"_L1, Qt::CaseInsensitive))
         setOutputFormat(QPrinter::PdfFormat);
     else if (fileName.isEmpty())
         setOutputFormat(QPrinter::NativeFormat);

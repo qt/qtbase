@@ -44,6 +44,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QT_IMPL_METATYPE_EXTERN_TAGGED(QCUPSSupport::JobHoldUntil,
                                QCUPSSupport__JobHoldUntil)
 QT_IMPL_METATYPE_EXTERN_TAGGED(QCUPSSupport::BannerPage,
@@ -129,17 +131,17 @@ static inline QString jobHoldToString(const QCUPSSupport::JobHoldUntil jobHold, 
 
 QCUPSSupport::JobHoldUntilWithTime QCUPSSupport::parseJobHoldUntil(const QString &jobHoldUntil)
 {
-    if (jobHoldUntil == QLatin1String("indefinite")) {
+    if (jobHoldUntil == "indefinite"_L1) {
         return { QCUPSSupport::Indefinite, QTime() };
-    } else if (jobHoldUntil == QLatin1String("day-time")) {
+    } else if (jobHoldUntil == "day-time"_L1) {
         return { QCUPSSupport::DayTime, QTime() };
-    } else if (jobHoldUntil == QLatin1String("night")) {
+    } else if (jobHoldUntil == "night"_L1) {
         return { QCUPSSupport::Night, QTime() };
-    } else if (jobHoldUntil == QLatin1String("second-shift")) {
+    } else if (jobHoldUntil == "second-shift"_L1) {
         return { QCUPSSupport::SecondShift, QTime() };
-    } else if (jobHoldUntil == QLatin1String("third-shift")) {
+    } else if (jobHoldUntil == "third-shift"_L1) {
         return { QCUPSSupport::ThirdShift, QTime() };
-    } else if (jobHoldUntil == QLatin1String("weekend")) {
+    } else if (jobHoldUntil == "weekend"_L1) {
         return { QCUPSSupport::Weekend, QTime() };
     }
 
@@ -216,13 +218,13 @@ static inline QString bannerPageToString(const QCUPSSupport::BannerPage bannerPa
 
 static inline QCUPSSupport::BannerPage stringToBannerPage(const QString &bannerPage)
 {
-    if (bannerPage == QLatin1String("none")) return QCUPSSupport::NoBanner;
-    else if (bannerPage == QLatin1String("standard")) return QCUPSSupport::Standard;
-    else if (bannerPage == QLatin1String("unclassified")) return QCUPSSupport::Unclassified;
-    else if (bannerPage == QLatin1String("confidential")) return QCUPSSupport::Confidential;
-    else if (bannerPage == QLatin1String("classified")) return QCUPSSupport::Classified;
-    else if (bannerPage == QLatin1String("secret")) return QCUPSSupport::Secret;
-    else if (bannerPage == QLatin1String("topsecret")) return QCUPSSupport::TopSecret;
+    if (bannerPage == "none"_L1) return QCUPSSupport::NoBanner;
+    else if (bannerPage == "standard"_L1) return QCUPSSupport::Standard;
+    else if (bannerPage == "unclassified"_L1) return QCUPSSupport::Unclassified;
+    else if (bannerPage == "confidential"_L1) return QCUPSSupport::Confidential;
+    else if (bannerPage == "classified"_L1) return QCUPSSupport::Classified;
+    else if (bannerPage == "secret"_L1) return QCUPSSupport::Secret;
+    else if (bannerPage == "topsecret"_L1) return QCUPSSupport::TopSecret;
 
     return QCUPSSupport::NoBanner;
 }

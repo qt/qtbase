@@ -53,6 +53,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 extern qreal qt_pointMultiplier(QPageLayout::Unit unit);
 
 class QPrintDialogPrivate : public QAbstractPrintDialogPrivate
@@ -135,7 +137,7 @@ QT_USE_NAMESPACE
             UInt8 localFile[2048];  // Assuming there's a POSIX file system here.
             CFURLGetFileSystemRepresentation(file, true, localFile, sizeof(localFile));
             auto outputFile = QFileInfo(QString::fromUtf8(reinterpret_cast<const char *>(localFile)));
-            if (outputFile.suffix() == QLatin1String("pdf"))
+            if (outputFile.suffix() == "pdf"_L1)
                 printer->setOutputFileName(outputFile.absoluteFilePath());
             else
                 qWarning() << "Can not print to file type" << outputFile.suffix();
@@ -144,7 +146,7 @@ QT_USE_NAMESPACE
             auto documentName = printer->docName();
             if (documentName.isEmpty())
                 documentName = QGuiApplication::applicationDisplayName();
-            auto fileName = printPreviews.filePath(QString(QLatin1String("%1.pdf")).arg(documentName));
+            auto fileName = printPreviews.filePath(QString("%1.pdf"_L1).arg(documentName));
             printer->setOutputFileName(fileName);
             // Ideally we would have a callback when the PDF engine is done writing
             // to the file, and open Preview in response to that. Lacking that, we
