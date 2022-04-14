@@ -1,3 +1,18 @@
+function(qt_internal_get_highest_android_sdk_build_tools_revision out_var build_tools_dir)
+  file(GLOB revisions RELATIVE "${build_tools_dir}" "${build_tools_dir}/*")
+  if(NOT revisions)
+    message(FATAL_ERROR "Cannot determine version of Android build tools. "
+      "Please specify ANDROID_SDK_BUILD_TOOLS_REVISION manually.")
+  endif()
+  set(highest_revision 1.0)
+  foreach(revision IN LISTS revisions)
+    if(revision VERSION_GREATER highest_revision)
+      set(highest_revision ${revision})
+    endif()
+  endforeach()
+  set(${out_var} ${highest_revision} PARENT_SCOPE)
+endfunction()
+
 if (NOT ${PROJECT_NAME}-MultiAbiBuild)
 
   set(ANDROID_ABIS armeabi-v7a arm64-v8a x86 x86_64)
@@ -37,6 +52,12 @@ if (NOT ${PROJECT_NAME}-MultiAbiBuild)
       VERBATIM)
   endif()
 
+  if("${ANDROID_SDK_BUILD_TOOLS_REVISION}" STREQUAL "")
+    qt_internal_get_highest_android_sdk_build_tools_revision(
+      ANDROID_SDK_BUILD_TOOLS_REVISION
+      "${ANDROID_SDK}/build-tools")
+  endif()
+
   # Write the android_<project_name>_deployment_settings.json file
   file(WRITE ${CMAKE_BINARY_DIR}/android_deployment_settings.json.in
 [=[{
@@ -57,6 +78,7 @@ if (NOT ${PROJECT_NAME}-MultiAbiBuild)
   "qml-root-path": "@CMAKE_CURRENT_SOURCE_DIR@",
   "qt": "@QT_DIR@",
   "sdk": "@ANDROID_SDK@",
+  "sdkBuildToolsRevision": "@ANDROID_SDK_BUILD_TOOLS_REVISION@",
   "stdcpp-path": "@ANDROID_TOOLCHAIN_ROOT@/sysroot/usr/lib/",
   "tool-prefix": "llvm",
   "toolchain-prefix": "llvm",
