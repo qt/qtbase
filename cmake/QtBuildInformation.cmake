@@ -8,7 +8,25 @@ function(qt_print_feature_summary)
                          OPTIONAL_PACKAGES_NOT_FOUND
                          RUNTIME_PACKAGES_NOT_FOUND
                          FATAL_ON_MISSING_REQUIRED_PACKAGES)
+    qt_internal_run_additional_summary_checks()
     qt_configure_print_summary()
+endfunction()
+
+function(qt_internal_run_additional_summary_checks)
+    get_property(
+        rpath_workaround_enabled
+        GLOBAL PROPERTY _qt_internal_staging_prefix_build_rpath_workaround)
+    if(rpath_workaround_enabled)
+        set(message
+            "Due to CMAKE_STAGING_PREFIX usage and an unfixed CMake bug,
+      to ensure correct build time rpaths, directory-level install
+      rules like ninja src/gui/install will not work.
+      Check QTBUG-102592 for further details.")
+        qt_configure_add_report_entry(
+            TYPE NOTE
+            MESSAGE "${message}"
+        )
+    endif()
 endfunction()
 
 function(qt_print_build_instructions)

@@ -111,4 +111,5 @@ function(qt_internal_finalize_app target)
     # Rpaths need to be applied in the finalizer, because the MACOSX_BUNDLE property might be
     # set after a qt_internal_add_app call.
     qt_apply_rpaths(TARGET "${target}" INSTALL_PATH "${INSTALL_BINDIR}" RELATIVE_RPATH)
+    qt_internal_apply_staging_prefix_build_rpath_workaround()
 endfunction()

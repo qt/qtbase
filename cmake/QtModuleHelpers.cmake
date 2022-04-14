@@ -726,6 +726,7 @@ set(QT_LIBINFIX \"${QT_LIBINFIX}\")")
 
     if(BUILD_SHARED_LIBS)
         qt_apply_rpaths(TARGET "${target}" INSTALL_PATH "${INSTALL_LIBDIR}" RELATIVE_RPATH)
+        qt_internal_apply_staging_prefix_build_rpath_workaround()
     endif()
 
     if (ANDROID AND NOT arg_HEADER_MODULE)

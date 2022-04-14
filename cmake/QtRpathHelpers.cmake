@@ -183,3 +183,54 @@ function(qt_apply_rpaths)
         set_property(TARGET "${target}" APPEND PROPERTY "${prop_name}" ${rpaths})
     endif()
 endfunction()
+
+# Overrides the CMAKE_STAGING_PREFIX in a subdirectory scope, to stop CMake from rewriting build
+# rpaths to point into the original staging prefix, and thus breaking running executables from
+# the build directory.
+# See details at https://bugreports.qt.io/browse/QTBUG-102592
+# and https://gitlab.kitware.com/cmake/cmake/-/issues/23421
+#
+# This macro is only meant to be called in functions like
+# qt_internal_add_module / qt_internal_add_tool to ensure the variable is set in the
+# subdirectory scope of the calling function, and not in the actual function scope (where the
+# variable assignment would have no effect).
+#
+# This is the best workaround we can currently do, but it comes with the disadvantage that calling
+# subdirectory-scoped install targets does not work anymore.
+# e.g. calling ninja src/gui/install will try to install to the fake prefix and fail.
+# A regular ninja install call works fine.
+#
+# Usage of this macro assumes there are no binaries or libraries added in the root CMakeLists.txt
+# of the project because that would mean the macro is called at root level scope, which would
+# break installation.
+#
+# The implementation has to be a macro, so we can propagate the variable into the calling
+# subdirectory scope. The implementation can't use return().
+macro(qt_internal_apply_staging_prefix_build_rpath_workaround)
+    set(__qt_internal_should_apply_staging_prefix_build_rpath_workaround TRUE)
+    # Allow an opt out.
+    if(QT_NO_STAGING_PREFIX_BUILD_RPATH_WORKAROUND)
+        set(__qt_internal_should_apply_staging_prefix_build_rpath_workaround FALSE)
+    endif()
+
+    # No need for workaround if CMAKE_STAGING_PREFIX is not set.
+    if(NOT CMAKE_STAGING_PREFIX)
+        set(__qt_internal_should_apply_staging_prefix_build_rpath_workaround FALSE)
+    endif()
+
+    # No rpath support for win32, android, ios, so nothing to do.
+    if(WIN32 OR ANDROID OR UIKIT)
+        set(__qt_internal_should_apply_staging_prefix_build_rpath_workaround FALSE)
+    endif()
+
+    # Set the staging prefix to a non-existent directory, which is unlikely to have permissions
+    # for installation.
+    # The verbose directory name is chosen to attract the user's attention in case if they end up
+    # calling a subdirectory-scope install file.
+    if(__qt_internal_should_apply_staging_prefix_build_rpath_workaround)
+        set_property(GLOBAL PROPERTY _qt_internal_staging_prefix_build_rpath_workaround TRUE)
+        set(CMAKE_STAGING_PREFIX
+            "/qt_fake_staging_prefix/check_qt_internal_apply_staging_prefix_build_rpath_workaround"
+            PARENT_SCOPE)
+    endif()
+endmacro()

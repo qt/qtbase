@@ -422,6 +422,7 @@ function(qt_internal_add_plugin target)
         )
         if(BUILD_SHARED_LIBS)
             qt_apply_rpaths(TARGET "${target}" INSTALL_PATH "${install_directory}" RELATIVE_RPATH)
+            qt_internal_apply_staging_prefix_build_rpath_workaround()
         endif()
     endif()
 

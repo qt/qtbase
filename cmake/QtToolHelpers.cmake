@@ -306,7 +306,7 @@ function(qt_internal_add_tool target_name)
         endif()
 
         qt_apply_rpaths(TARGET "${target_name}" INSTALL_PATH "${install_dir}" RELATIVE_RPATH)
-
+        qt_internal_apply_staging_prefix_build_rpath_workaround()
     endif()
 
     qt_enable_separate_debug_info(${target_name} "${install_dir}" QT_EXECUTABLE)
