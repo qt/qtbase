@@ -41,6 +41,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 int runUic(int argc, char *argv[])
 {
     qSetGlobalQHashSeed(0);    // set the hash seed to 0
@@ -134,15 +136,15 @@ int runUic(int argc, char *argv[])
     driver.option().includeFile = parser.value(includeOption);
     if (parser.isSet(connectionsOption)) {
         const auto value = parser.value(connectionsOption);
-        if (value == QLatin1String("pmf"))
+        if (value == "pmf"_L1)
             driver.option().forceMemberFnPtrConnectionSyntax = 1;
-        else if (value == QLatin1String("string"))
+        else if (value == "string"_L1)
             driver.option().forceStringConnectionSyntax = 1;
     }
 
     Language language = Language::Cpp;
     if (parser.isSet(generatorOption)) {
-        if (parser.value(generatorOption).compare(QLatin1String("python")) == 0)
+        if (parser.value(generatorOption).compare("python"_L1) == 0)
             language = Language::Python;
     }
     language::setLanguage(language);

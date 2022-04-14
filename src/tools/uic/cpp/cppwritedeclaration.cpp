@@ -39,6 +39,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 namespace {
     void openNameSpaces(const QStringList &namespaceList, QTextStream &output)
     {
@@ -77,7 +79,7 @@ void WriteDeclaration::acceptUI(DomUI *node)
     if (!exportMacro.isEmpty())
         exportMacro.append(u' ');
 
-    QStringList namespaceList = qualifiedClassName.split(QLatin1String("::"));
+    QStringList namespaceList = qualifiedClassName.split("::"_L1);
     if (namespaceList.count()) {
         className = namespaceList.last();
         namespaceList.removeLast();
@@ -89,7 +91,7 @@ void WriteDeclaration::acceptUI(DomUI *node)
     // In this case the generated Ui helper classes will also end up in
     // the Qt namespace (which is harmless, but not "pretty")
     const bool needsMacro = namespaceList.count() == 0
-        || namespaceList[0] == QLatin1String("qdesigner_internal");
+        || namespaceList[0] == "qdesigner_internal"_L1;
 
     if (needsMacro)
         m_output << "QT_BEGIN_NAMESPACE\n\n";
@@ -105,7 +107,7 @@ void WriteDeclaration::acceptUI(DomUI *node)
 
     const QStringList connections = m_uic->databaseInfo()->connections();
     for (const QString &connection : connections) {
-        if (connection != QLatin1String("(default)"))
+        if (connection != "(default)"_L1)
             m_output << m_option.indent << "QSqlDatabase " << connection << "Connection;\n";
     }
 
@@ -125,7 +127,7 @@ void WriteDeclaration::acceptUI(DomUI *node)
         m_output << "\n";
 
     if (m_option.generateNamespace && !m_option.prefix.isEmpty()) {
-        namespaceList.append(QLatin1String("Ui"));
+        namespaceList.append("Ui"_L1);
 
         openNameSpaces(namespaceList, m_output);
 
@@ -143,7 +145,7 @@ void WriteDeclaration::acceptUI(DomUI *node)
 
 void WriteDeclaration::acceptWidget(DomWidget *node)
 {
-    QString className = QLatin1String("QWidget");
+    QString className = "QWidget"_L1;
     if (node->hasAttributeClass())
         className = node->attributeClass();
 
@@ -160,7 +162,7 @@ void WriteDeclaration::acceptSpacer(DomSpacer *node)
 
 void WriteDeclaration::acceptLayout(DomLayout *node)
 {
-    QString className = QLatin1String("QLayout");
+    QString className = "QLayout"_L1;
     if (node->hasAttributeClass())
         className = node->attributeClass();
 

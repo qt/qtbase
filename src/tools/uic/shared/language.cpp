@@ -32,6 +32,8 @@
 
 namespace language {
 
+using namespace Qt::StringLiterals;
+
 static Encoding encoding = Encoding::Utf8;
 static Language _language = Language::Cpp;
 
@@ -42,29 +44,29 @@ void setLanguage(Language l)
     _language = l;
     switch (_language) {
     case Language::Cpp:
-        derefPointer = QLatin1String("->");
+        derefPointer = u"->"_s;
         listStart = '{';
         listEnd = '}';
-        nullPtr = QLatin1String("nullptr");
-        operatorNew = QLatin1String("new ");
-        qtQualifier = QLatin1String("Qt::");
-        qualifier = QLatin1String("::");
-        self = QLatin1String("");  // for testing: change to "this->";
-        eol = QLatin1String(";\n");
-        emptyString = QLatin1String("QString()");
+        nullPtr = u"nullptr"_s;
+        operatorNew = u"new "_s;
+        qtQualifier = u"Qt::"_s;
+        qualifier = u"::"_s;
+        self = u""_s;  // for testing: change to "this->";
+        eol = u";\n"_s;
+        emptyString = u"QString()"_s;
         encoding = Encoding::Utf8;
         break;
     case Language::Python:
-        derefPointer = QLatin1String(".");
+        derefPointer = u"."_s;
         listStart = '[';
         listEnd = ']';
-        nullPtr = QLatin1String("None");
-        operatorNew = QLatin1String("");
-        qtQualifier = QLatin1String("Qt.");
-        qualifier = QLatin1String(".");
-        self = QLatin1String("self.");
-        eol = QLatin1String("\n");
-        emptyString = QLatin1String("\"\"");
+        nullPtr = u"None"_s;
+        operatorNew = u""_s;
+        qtQualifier = u"Qt."_s;
+        qualifier = u"."_s;
+        self = u"self."_s;
+        eol = u"\n"_s;
+        emptyString = u"\"\""_s;
         encoding = Encoding::Unicode;
         break;
     }
@@ -81,9 +83,9 @@ QString self;
 QString eol;
 QString emptyString;
 
-QString cppQualifier = QLatin1String("::");
-QString cppTrue = QLatin1String("true");
-QString cppFalse = QLatin1String("false");
+QString cppQualifier = "::"_L1;
+QString cppTrue = "true"_L1;
+QString cppFalse = "false"_L1;
 
 QTextStream &operator<<(QTextStream &str, const qtConfig &c)
 {
@@ -125,7 +127,7 @@ const char *lookupEnum(const EnumLookup(&array)[N], int value, int defaultIndex 
 QString fixClassName(QString className)
 {
     if (language() == Language::Python)
-        className.replace(cppQualifier, QLatin1String("_"));
+        className.replace(cppQualifier, "_"_L1);
     return className;
 }
 

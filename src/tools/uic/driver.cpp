@@ -39,6 +39,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Driver::Driver()
     : m_stdout(stdout, QFile::WriteOnly | QFile::Text)
 {
@@ -172,7 +174,7 @@ QString Driver::unique(const QString &instanceName, const QString &className)
     } else if (!className.isEmpty()) {
         name = unique(qtify(className));
     } else {
-        name = unique(QLatin1String("var"));
+        name = unique("var"_L1);
     }
 
     if (alreadyUsed && !className.isEmpty()) {
@@ -209,7 +211,7 @@ QString Driver::headerFileName() const
     QString name = m_option.outputFile;
 
     if (name.isEmpty()) {
-        name = QLatin1String("ui_"); // ### use ui_ as prefix.
+        name = "ui_"_L1; // ### use ui_ as prefix.
         name.append(m_option.inputFile);
     }
 
@@ -219,7 +221,7 @@ QString Driver::headerFileName() const
 QString Driver::headerFileName(const QString &fileName)
 {
     if (fileName.isEmpty())
-        return headerFileName(QLatin1String("noname"));
+        return headerFileName("noname"_L1);
 
     QFileInfo info(fileName);
     QString baseName = info.baseName();
@@ -235,7 +237,7 @@ QString Driver::headerFileName(const QString &fileName)
             i += hex.size() + 1;
         }
     }
-    return baseName.toUpper() + QLatin1String("_H");
+    return baseName.toUpper() + "_H"_L1;
 }
 
 bool Driver::printDependencies(const QString &fileName)

@@ -33,6 +33,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 DatabaseInfo::DatabaseInfo() = default;
 
 void DatabaseInfo::acceptUI(DomUI *node)
@@ -50,11 +52,11 @@ void DatabaseInfo::acceptWidget(DomWidget *node)
 {
     QHash<QString, DomProperty*> properties = propertyMap(node->elementProperty());
 
-    DomProperty *frameworkCode = properties.value(QLatin1String("frameworkCode"));
+    DomProperty *frameworkCode = properties.value("frameworkCode"_L1);
     if (frameworkCode && toBool(frameworkCode->elementBool()) == false)
         return;
 
-    DomProperty *db = properties.value(QLatin1String("database"));
+    DomProperty *db = properties.value("database"_L1);
     if (db && db->elementStringList()) {
         QStringList info = db->elementStringList()->elementString();
         if (info.isEmpty() || info.constFirst().isEmpty())

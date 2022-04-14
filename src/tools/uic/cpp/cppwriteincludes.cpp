@@ -40,6 +40,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 enum { debugWriteIncludes = 0 };
 enum { warnHeaderGeneration = 0 };
 
@@ -60,7 +62,7 @@ WriteIncludes::WriteIncludes(Uic *uic) : WriteIncludesBase(uic),
     // When possible (no namespace) use the "QtModule/QClass" convention
     // and create a re-mapping of the old header "qclass.h" to it. Do not do this
     // for the "Phonon::Someclass" classes, however.
-    const QString namespaceDelimiter = QLatin1String("::");
+    const QString namespaceDelimiter = "::"_L1;
     for (const auto &e : classInfoEntries()) {
         const QString klass = QLatin1String(e.klass);
         const QString module = QLatin1String(e.module);
@@ -113,7 +115,7 @@ void WriteIncludes::insertIncludeForClass(const QString &className, QString head
         // Quick check by class name to detect includehints provided for custom widgets.
         // Remove namespaces
         QString lowerClassName = className.toLower();
-        static const QString namespaceSeparator = QLatin1String("::");
+        static const QString namespaceSeparator = "::"_L1;
         const int namespaceIndex = lowerClassName.lastIndexOf(namespaceSeparator);
         if (namespaceIndex != -1)
             lowerClassName.remove(0, namespaceIndex + namespaceSeparator.size());
@@ -126,7 +128,7 @@ void WriteIncludes::insertIncludeForClass(const QString &className, QString head
         if (!uic()->option().implicitIncludes)
             break;
         header = lowerClassName;
-        header += QLatin1String(".h");
+        header += ".h"_L1;
         if (warnHeaderGeneration) {
             qWarning("%s: Warning: generated header '%s' for class '%s'.",
                      qPrintable(uic()->option().messagePrefix()),
@@ -157,7 +159,7 @@ void WriteIncludes::addCppCustomWidget(const QString &className, const DomCustom
         QString header;
         bool global = false;
         if (!m_classToHeader.contains(className)) {
-            global = domHeader->attributeLocation().toLower() == QLatin1String("global");
+            global = domHeader->attributeLocation().toLower() == "global"_L1;
             header = domHeader->text();
         }
         insertIncludeForClass(className, header, global);
@@ -169,7 +171,7 @@ void WriteIncludes::acceptInclude(DomInclude *node)
 {
     bool global = true;
     if (node->hasAttributeLocation())
-        global = node->attributeLocation() == QLatin1String("global");
+        global = node->attributeLocation() == "global"_L1;
     insertInclude(node->text(), global);
 }
 

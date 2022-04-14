@@ -38,6 +38,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 namespace Python {
 
 WriteDeclaration::WriteDeclaration(Uic *uic)  :
@@ -51,7 +53,7 @@ WriteDeclaration::WriteDeclaration(Uic *uic)  :
 void WriteDeclaration::acceptUI(DomUI *node)
 {
     // remove any left-over C++ namespaces
-    const QString qualifiedClassName = QLatin1String("Ui_") + node->elementClass()
+    const QString qualifiedClassName = "Ui_"_L1 + node->elementClass()
         + m_option.postfix;
     m_output << "class " << language::fixClassName(qualifiedClassName) << "(object):\n";
 

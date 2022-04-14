@@ -41,6 +41,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 // Generate imports for Python. Note some things differ from C++:
 // - qItemView->header()->setFoo() does not require QHeaderView to be imported
 // - qLabel->setFrameShape(QFrame::Box) however requires QFrame to be imported
@@ -84,9 +86,9 @@ static QString pythonResource(QString resource)
     const qsizetype lastSlash = resource.lastIndexOf(u'/');
     if (lastSlash != -1)
         resource.remove(0, lastSlash + 1);
-    if (resource.endsWith(QLatin1String(".qrc"))) {
+    if (resource.endsWith(".qrc"_L1)) {
         resource.chop(4);
-        resource.append(QLatin1String("_rc"));
+        resource.append("_rc"_L1);
     }
     return resource;
 }
@@ -210,7 +212,7 @@ bool WriteImports::addQtClass(const QString &className)
 
 void WriteImports::addPythonCustomWidget(const QString &className, const DomCustomWidget *node)
 {
-    if (className.contains(QLatin1String("::")))
+    if (className.contains("::"_L1))
         return; // Exclude namespaced names (just to make tests pass).
 
     if (addQtClass(className))  // Qt custom widgets like QQuickWidget, QAxWidget, etc
@@ -225,7 +227,7 @@ void WriteImports::addPythonCustomWidget(const QString &className, const DomCust
         // Replace the '/' by '.'
         modulePath.replace(u'/', u'.');
         // '.h' is added by default on headers for <customwidget>
-        if (modulePath.endsWith(QLatin1String(".h")))
+        if (modulePath.endsWith(".h"_L1))
             modulePath.chop(2);
         insertClass(modulePath, className, &m_customWidgets);
     }
