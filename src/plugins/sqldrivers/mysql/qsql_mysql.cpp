@@ -116,8 +116,7 @@ static inline QVariant qDateTimeFromString(QString &val)
         return QVariant(QDateTime());
     if (val.length() == 14)
         // TIMESTAMPS have the format yyyyMMddhhmmss
-        val.insert(4, QLatin1Char('-')).insert(7, QLatin1Char('-')).insert(10,
-                    QLatin1Char('T')).insert(13, QLatin1Char(':')).insert(16, QLatin1Char(':'));
+        val.insert(4, u'-').insert(7, u'-').insert(10, u'T').insert(13, u':').insert(16, u':');
     return QVariant(QDateTime::fromString(val, Qt::ISODate));
 #endif
 }
@@ -1204,7 +1203,7 @@ bool QMYSQLDriver::open(const QString& db,
        stored procedure call will fail.
     */
     unsigned int optionFlags = CLIENT_MULTI_STATEMENTS;
-    const QStringList opts(connOpts.split(QLatin1Char(';'), Qt::SkipEmptyParts));
+    const QStringList opts(connOpts.split(u';', Qt::SkipEmptyParts));
     QString unixSocket;
     QString sslCert;
     QString sslCA;
@@ -1219,8 +1218,8 @@ bool QMYSQLDriver::open(const QString& db,
     // extract the real options from the string
     for (int i = 0; i < opts.count(); ++i) {
         QString tmp(opts.at(i).simplified());
-        int idx;
-        if ((idx = tmp.indexOf(QLatin1Char('='))) != -1) {
+        qsizetype idx;
+        if ((idx = tmp.indexOf(u'=')) != -1) {
             QString val = tmp.mid(idx + 1).simplified();
             QString opt = tmp.left(idx).simplified();
             if (opt == QLatin1String("UNIX_SOCKET"))
@@ -1508,7 +1507,7 @@ QString QMYSQLDriver::formatValue(const QSqlField &field, bool trimStrings) cons
                 QVarLengthArray<char, 512> buffer(ba.size() * 2 + 1);
                 auto escapedSize = mysql_real_escape_string(d->mysql, buffer.data(), ba.data(), ba.size());
                 r.reserve(escapedSize + 3);
-                r = QLatin1Char('\'') + QString::fromUtf8(buffer) + QLatin1Char('\'');
+                r = u'\'' + QString::fromUtf8(buffer) + u'\'';
                 break;
             } else {
                 qWarning("QMYSQLDriver::formatValue: Database not open");
@@ -1521,11 +1520,11 @@ QString QMYSQLDriver::formatValue(const QSqlField &field, bool trimStrings) cons
                 // it's because the MySQL server is too old for prepared queries
                 // in the first place, so it won't understand timezones either.
                 // Besides, MYSQL_TIME does not support timezones, so match it.
-                r = QLatin1Char('\'') +
+                r = u'\'' +
                         dt.date().toString(Qt::ISODate) +
-                        QLatin1Char('T') +
+                        u'T' +
                         dt.time().toString(Qt::ISODate) +
-                        QLatin1Char('\'');
+                        u'\'';
             }
             break;
         default:
@@ -1538,9 +1537,9 @@ QString QMYSQLDriver::formatValue(const QSqlField &field, bool trimStrings) cons
 QString QMYSQLDriver::escapeIdentifier(const QString &identifier, IdentifierType) const
 {
     QString res = identifier;
-    if (!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('`')) && !identifier.endsWith(QLatin1Char('`')) ) {
-        res.prepend(QLatin1Char('`')).append(QLatin1Char('`'));
-        res.replace(QLatin1Char('.'), QLatin1String("`.`"));
+    if (!identifier.isEmpty() && !identifier.startsWith(u'`') && !identifier.endsWith(u'`') ) {
+        res.prepend(u'`').append(u'`');
+        res.replace(u'.', QLatin1String("`.`"));
     }
     return res;
 }
@@ -1549,8 +1548,8 @@ bool QMYSQLDriver::isIdentifierEscaped(const QString &identifier, IdentifierType
 {
     Q_UNUSED(type);
     return identifier.size() > 2
-        && identifier.startsWith(QLatin1Char('`')) //left delimited
-        && identifier.endsWith(QLatin1Char('`')); //right delimited
+        && identifier.startsWith(u'`') //left delimited
+        && identifier.endsWith(u'`'); //right delimited
 }
 
 QT_END_NAMESPACE

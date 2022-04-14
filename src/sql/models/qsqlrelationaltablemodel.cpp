@@ -528,7 +528,7 @@ QString QSqlRelationalTableModelPrivate::fullyQualifiedFieldName(const QString &
 {
     QString ret;
     ret.reserve(tableName.size() + fieldName.size() + 1);
-    ret.append(tableName).append(QLatin1Char('.')).append(fieldName);
+    ret.append(tableName).append(u'.').append(fieldName);
 
     return ret;
 }

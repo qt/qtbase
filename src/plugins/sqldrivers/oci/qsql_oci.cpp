@@ -2225,11 +2225,11 @@ bool QOCIDriver::hasFeature(DriverFeature f) const
 
 static void qParseOpts(const QString &options, QOCIDriverPrivate *d)
 {
-    const QStringList opts(options.split(QLatin1Char(';'), Qt::SkipEmptyParts));
+    const QStringList opts(options.split(u';', Qt::SkipEmptyParts));
     for (int i = 0; i < opts.count(); ++i) {
         const QString tmp(opts.at(i));
-        int idx;
-        if ((idx = tmp.indexOf(QLatin1Char('='))) == -1) {
+        qsizetype idx;
+        if ((idx = tmp.indexOf(u'=')) == -1) {
             qWarning("QOCIDriver::parseArgs: Invalid parameter: '%s'",
                      tmp.toLocal8Bit().constData());
             continue;
@@ -2467,7 +2467,7 @@ static QString make_where_clause(const QString &user, Expression e)
         "WMSYS",
     };
     static const char joinC[][4] = { "or" , "and" };
-    static constexpr QLatin1Char bang[] = { QLatin1Char(' '), QLatin1Char('!') };
+    static constexpr QLatin1Char bang[] = { u' ', u'!' };
 
     const QLatin1String join(joinC[e]);
 
@@ -2478,7 +2478,7 @@ static QString make_where_clause(const QString &user, Expression e)
     for (const auto &sysUser : sysUsers) {
         const QLatin1String l1(sysUser);
         if (l1 != user)
-            result += QLatin1String("owner ") + bang[e] + QLatin1String("= '") + l1 + QLatin1String("' ") + join + QLatin1Char(' ');
+            result += QLatin1String("owner ") + bang[e] + QLatin1String("= '") + l1 + QLatin1String("' ") + join + u' ';
     }
 
     result.chop(join.size() + 2); // remove final " <join> "
@@ -2508,7 +2508,7 @@ QStringList QOCIDriver::tables(QSql::TableType type) const
         t.exec(tableQuery + where);
         while (t.next()) {
             if (t.value(0).toString().toUpper() != user.toUpper())
-                tl.append(t.value(0).toString() + QLatin1Char('.') + t.value(1).toString());
+                tl.append(t.value(0).toString() + u'.' + t.value(1).toString());
             else
                 tl.append(t.value(1).toString());
         }
@@ -2518,7 +2518,7 @@ QStringList QOCIDriver::tables(QSql::TableType type) const
         t.exec(synonymQuery + where);
         while (t.next()) {
             if (t.value(0).toString() != d->user)
-                tl.append(t.value(0).toString() + QLatin1Char('.') + t.value(1).toString());
+                tl.append(t.value(0).toString() + u'.' + t.value(1).toString());
             else
                 tl.append(t.value(1).toString());
         }
@@ -2529,7 +2529,7 @@ QStringList QOCIDriver::tables(QSql::TableType type) const
         t.exec(query + where);
         while (t.next()) {
             if (t.value(0).toString().toUpper() != d->user.toUpper())
-                tl.append(t.value(0).toString() + QLatin1Char('.') + t.value(1).toString());
+                tl.append(t.value(0).toString() + u'.' + t.value(1).toString());
             else
                 tl.append(t.value(1).toString());
         }
@@ -2544,7 +2544,7 @@ QStringList QOCIDriver::tables(QSql::TableType type) const
         t.exec(tableQuery + where);
         while (t.next()) {
             if (t.value(0).toString().toUpper() != user.toUpper())
-                tl.append(t.value(0).toString() + QLatin1Char('.') + t.value(1).toString());
+                tl.append(t.value(0).toString() + u'.' + t.value(1).toString());
             else
                 tl.append(t.value(1).toString());
         }
@@ -2554,7 +2554,7 @@ QStringList QOCIDriver::tables(QSql::TableType type) const
         t.exec(synonymQuery + where);
         while (t.next()) {
             if (t.value(0).toString() != d->user)
-                tl.append(t.value(0).toString() + QLatin1Char('.') + t.value(1).toString());
+                tl.append(t.value(0).toString() + u'.' + t.value(1).toString());
             else
                 tl.append(t.value(1).toString());
         }
@@ -2565,7 +2565,7 @@ QStringList QOCIDriver::tables(QSql::TableType type) const
 void qSplitTableAndOwner(const QString & tname, QString * tbl,
                           QString * owner)
 {
-    int i = tname.indexOf(QLatin1Char('.')); // prefixed with owner?
+    qsizetype i = tname.indexOf(u'.'); // prefixed with owner?
     if (i != -1) {
         *tbl = tname.right(tname.length() - i - 1);
         *owner = tname.left(i);
@@ -2601,7 +2601,7 @@ QSqlRecord QOCIDriver::record(const QString& tablename) const
     else
         table = table.toUpper();
 
-    tmpStmt = stmt.arg(QLatin1Char('\'') + table + QLatin1Char('\''));
+    tmpStmt = stmt.arg(u'\'' + table + u'\'');
     if (owner.isEmpty()) {
         owner = d->user;
     }
@@ -2611,15 +2611,14 @@ QSqlRecord QOCIDriver::record(const QString& tablename) const
     else
         owner = owner.toUpper();
 
-    tmpStmt += QLatin1String(" and a.owner='") + owner + QLatin1Char('\'');
+    tmpStmt += QLatin1String(" and a.owner='") + owner + u'\'';
     t.setForwardOnly(true);
     t.exec(tmpStmt);
     if (!t.next()) { // try and see if the tablename is a synonym
         stmt = stmt + QLatin1String(" join all_synonyms b "
                               "on a.owner=b.table_owner and a.table_name=b.table_name "
                               "where b.owner='") + owner +
-                      QLatin1String("' and b.synonym_name='") + table +
-                      QLatin1Char('\'');
+                      QLatin1String("' and b.synonym_name='") + table + u'\'';
         t.setForwardOnly(true);
         t.exec(stmt);
         if (t.next())
@@ -2670,7 +2669,7 @@ QSqlIndex QOCIDriver::primaryIndex(const QString& tablename) const
     else
         table = table.toUpper();
 
-    tmpStmt = stmt + QLatin1String(" and a.table_name='") + table + QLatin1Char('\'');
+    tmpStmt = stmt + QLatin1String(" and a.table_name='") + table + u'\'';
     if (owner.isEmpty()) {
         owner = d->user;
     }
@@ -2680,7 +2679,7 @@ QSqlIndex QOCIDriver::primaryIndex(const QString& tablename) const
     else
         owner = owner.toUpper();
 
-    tmpStmt += QLatin1String(" and a.owner='") + owner + QLatin1Char('\'');
+    tmpStmt += QLatin1String(" and a.owner='") + owner + u'\'';
     t.setForwardOnly(true);
     t.exec(tmpStmt);
 
@@ -2704,7 +2703,7 @@ QSqlIndex QOCIDriver::primaryIndex(const QString& tablename) const
             tt.exec(QLatin1String("select data_type from all_tab_columns where table_name='") +
                      t.value(2).toString() + QLatin1String("' and column_name='") +
                      t.value(0).toString() + QLatin1String("' and owner='") +
-                     owner + QLatin1Char('\''));
+                     owner + u'\'');
             if (!tt.next()) {
                 return QSqlIndex();
             }
@@ -2724,11 +2723,11 @@ QString QOCIDriver::formatValue(const QSqlField &field, bool trimStrings) const
         QString datestring;
         if (datetime.isValid()) {
             datestring = QLatin1String("TO_DATE('") + QString::number(datetime.date().year())
-                         + QLatin1Char('-')
-                         + QString::number(datetime.date().month()) + QLatin1Char('-')
-                         + QString::number(datetime.date().day()) + QLatin1Char(' ')
-                         + QString::number(datetime.time().hour()) + QLatin1Char(':')
-                         + QString::number(datetime.time().minute()) + QLatin1Char(':')
+                         + u'-'
+                         + QString::number(datetime.date().month()) + u'-'
+                         + QString::number(datetime.date().day()) + u' '
+                         + QString::number(datetime.time().hour()) + u':'
+                         + QString::number(datetime.time().minute()) + u':'
                          + QString::number(datetime.time().second())
                          + QLatin1String("','YYYY-MM-DD HH24:MI:SS')");
         } else {
@@ -2741,8 +2740,8 @@ QString QOCIDriver::formatValue(const QSqlField &field, bool trimStrings) const
         QString datestring;
         if (datetime.isValid()) {
             datestring = QLatin1String("TO_DATE('")
-                         + QString::number(datetime.time().hour()) + QLatin1Char(':')
-                         + QString::number(datetime.time().minute()) + QLatin1Char(':')
+                         + QString::number(datetime.time().hour()) + u':'
+                         + QString::number(datetime.time().minute()) + u':'
                          + QString::number(datetime.time().second())
                          + QLatin1String("','HH24:MI:SS')");
         } else {
@@ -2755,8 +2754,8 @@ QString QOCIDriver::formatValue(const QSqlField &field, bool trimStrings) const
         QString datestring;
         if (date.isValid()) {
             datestring = QLatin1String("TO_DATE('") + QString::number(date.year()) +
-                         QLatin1Char('-') +
-                         QString::number(date.month()) + QLatin1Char('-') +
+                         u'-' +
+                         QString::number(date.month()) + u'-' +
                          QString::number(date.day()) + QLatin1String("','YYYY-MM-DD')");
         } else {
             datestring = QLatin1String("NULL");
@@ -2779,9 +2778,9 @@ QString QOCIDriver::escapeIdentifier(const QString &identifier, IdentifierType t
 {
     QString res = identifier;
     if (!identifier.isEmpty() && !isIdentifierEscaped(identifier, type)) {
-        res.replace(QLatin1Char('"'), QLatin1String("\"\""));
-        res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
-        res.replace(QLatin1Char('.'), QLatin1String("\".\""));
+        res.replace(u'"', QLatin1String("\"\""));
+        res.prepend(u'"').append(u'"');
+        res.replace(u'.', QLatin1String("\".\""));
     }
     return res;
 }

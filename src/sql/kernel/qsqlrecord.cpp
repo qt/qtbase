@@ -76,7 +76,7 @@ QString QSqlRecordPrivate::createField(int index, const QString &prefix) const
 {
     QString f;
     if (!prefix.isEmpty())
-        f = prefix + QLatin1Char('.');
+        f = prefix + u'.';
     f += fields.at(index).name();
     return f;
 }
@@ -234,7 +234,7 @@ int QSqlRecord::indexOf(const QString& name) const
 {
     QStringView tableName;
     QStringView fieldName(name);
-    const int idx = name.indexOf(QLatin1Char('.'));
+    const qsizetype idx = name.indexOf(u'.');
     if (idx != -1) {
         tableName = fieldName.left(idx);
         fieldName = fieldName.mid(idx + 1);

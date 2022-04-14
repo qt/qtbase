@@ -188,7 +188,7 @@ static QString qDB2Warn(const QDB2DriverPrivate* d, QStringList *errorCodes = nu
         errorCode = 0;
     }
     if (!error.isEmpty())
-        error += QLatin1Char(' ');
+        error += u' ';
     error += qWarnDB2Handle(SQL_HANDLE_DBC, d->hDbc, &errorCode);
     if (errorCodes && errorCode != 0)
         *errorCodes << QString::number(errorCode);
@@ -204,14 +204,14 @@ static QString qDB2Warn(const QDB2ResultPrivate* d, QStringList *errorCodes = nu
         errorCode = 0;
     }
     if (!error.isEmpty())
-        error += QLatin1Char(' ');
+        error += u' ';
     error += qWarnDB2Handle(SQL_HANDLE_DBC, d->drv_d_func()->hDbc, &errorCode);
     if (errorCodes && errorCode != 0) {
         *errorCodes << QString::number(errorCode);
         errorCode = 0;
     }
     if (!error.isEmpty())
-        error += QLatin1Char(' ');
+        error += u' ';
     error += qWarnDB2Handle(SQL_HANDLE_STMT, d->hStmt, &errorCode);
     if (errorCodes && errorCode != 0)
         *errorCodes << QString::number(errorCode);
@@ -236,7 +236,7 @@ static QSqlError qMakeError(const QString& err, QSqlError::ErrorType type,
     QStringList errorCodes;
     const QString error = qDB2Warn(p, &errorCodes);
     return QSqlError(QStringLiteral("QDB2: ") + err, error, type,
-                     errorCodes.join(QLatin1Char(';')));
+                     errorCodes.join(u';'));
 }
 
 static QSqlError qMakeError(const QString& err, QSqlError::ErrorType type,
@@ -245,7 +245,7 @@ static QSqlError qMakeError(const QString& err, QSqlError::ErrorType type,
     QStringList errorCodes;
     const QString error = qDB2Warn(p, &errorCodes);
     return QSqlError(QStringLiteral("QDB2: ") + err, error, type,
-                     errorCodes.join(QLatin1Char(';')));
+                     errorCodes.join(u';'));
 }
 
 static QMetaType qDecodeDB2Type(SQLSMALLINT sqltype)
@@ -500,7 +500,7 @@ static void qSplitTableQualifier(const QString & qualifier, QString * catalog,
 {
     if (!catalog || !schema || !table)
         return;
-    QStringList l = qualifier.split(QLatin1Char('.'));
+    QStringList l = qualifier.split(u'.');
     if (l.count() > 3)
         return; // can't possibly be a valid table qualifier
     int i = 0, n = l.count();
@@ -1270,11 +1270,11 @@ bool QDB2Driver::open(const QString& db, const QString& user, const QString& pas
 
     QString protocol;
     // Set connection attributes
-    const QStringList opts(connOpts.split(QLatin1Char(';'), Qt::SkipEmptyParts));
+    const QStringList opts(connOpts.split(u';', Qt::SkipEmptyParts));
     for (int i = 0; i < opts.count(); ++i) {
         const QString tmp(opts.at(i));
         int idx;
-        if ((idx = tmp.indexOf(QLatin1Char('='))) == -1) {
+        if ((idx = tmp.indexOf(u'=')) == -1) {
             qWarning("QDB2Driver::open: Illegal connect option value '%s'",
                      tmp.toLocal8Bit().constData());
             continue;
@@ -1513,7 +1513,7 @@ QStringList QDB2Driver::tables(QSql::TableType type) const
             user = user.toUpper();
 
         if (userVal != user)
-            fieldVal = userVal + QLatin1Char('.') + fieldVal;
+            fieldVal = userVal + u'.' + fieldVal;
         tl.append(fieldVal);
         r = SQLFetchScroll(hStmt,
                             SQL_FETCH_NEXT,
@@ -1694,16 +1694,16 @@ QString QDB2Driver::formatValue(const QSqlField &field, bool trimStrings) const
                 QDate dt = field.value().toDateTime().date();
                 QTime tm = field.value().toDateTime().time();
                 // Dateformat has to be "yyyy-MM-dd hh:mm:ss", with leading zeroes if month or day < 10
-                return QLatin1Char('\'') + QString::number(dt.year()) + QLatin1Char('-')
-                       + QString::number(dt.month()) + QLatin1Char('-')
-                       + QString::number(dt.day()) + QLatin1Char('-')
-                       + QString::number(tm.hour()) + QLatin1Char('.')
-                       + QString::number(tm.minute()).rightJustified(2, QLatin1Char('0'), true)
-                       + QLatin1Char('.')
-                       + QString::number(tm.second()).rightJustified(2, QLatin1Char('0'), true)
-                       + QLatin1Char('.')
-                       + QString::number(tm.msec() * 1000).rightJustified(6, QLatin1Char('0'), true)
-                       + QLatin1Char('\'');
+                return u'\'' + QString::number(dt.year()) + u'-'
+                       + QString::number(dt.month()) + u'-'
+                       + QString::number(dt.day()) + u'-'
+                       + QString::number(tm.hour()) + u'.'
+                       + QString::number(tm.minute()).rightJustified(2, u'0', true)
+                       + u'.'
+                       + QString::number(tm.second()).rightJustified(2, u'0', true)
+                       + u'.'
+                       + QString::number(tm.msec() * 1000).rightJustified(6, u'0', true)
+                       + u'\'';
                 } else {
                     return QLatin1String("NULL");
                 }
@@ -1735,10 +1735,10 @@ QVariant QDB2Driver::handle() const
 QString QDB2Driver::escapeIdentifier(const QString &identifier, IdentifierType) const
 {
     QString res = identifier;
-    if (!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('"')) && !identifier.endsWith(QLatin1Char('"')) ) {
-        res.replace(QLatin1Char('"'), QLatin1String("\"\""));
-        res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
-        res.replace(QLatin1Char('.'), QLatin1String("\".\""));
+    if (!identifier.isEmpty() && !identifier.startsWith(u'"') && !identifier.endsWith(u'"') ) {
+        res.replace(u'"', QLatin1String("\"\""));
+        res.prepend(u'"').append(u'"');
+        res.replace(u'.', QLatin1String("\".\""));
     }
     return res;
 }

@@ -423,8 +423,8 @@ bool QSqlDriver::isIdentifierEscaped(const QString &identifier, IdentifierType t
 {
     Q_UNUSED(type);
     return identifier.size() > 2
-        && identifier.startsWith(QLatin1Char('"')) //left delimited
-        && identifier.endsWith(QLatin1Char('"')); //right delimited
+        && identifier.startsWith(u'"') //left delimited
+        && identifier.endsWith(u'"'); //right delimited
 }
 
 /*!
@@ -497,7 +497,7 @@ QString QSqlDriver::sqlStatement(StatementType type, const QString &tableName,
     case WhereStatement:
     {
         const QString tableNamePrefix = tableNameString.isEmpty()
-                                            ? QString() : tableNameString + QLatin1Char('.');
+                                            ? QString() : tableNameString + u'.';
         for (int i = 0; i < rec.count(); ++i) {
             if (!rec.isGenerated(i))
                 continue;
@@ -518,9 +518,9 @@ QString QSqlDriver::sqlStatement(StatementType type, const QString &tableName,
         for (i = 0; i < rec.count(); ++i) {
             if (!rec.isGenerated(i))
                 continue;
-            s.append(prepareIdentifier(rec.fieldName(i), QSqlDriver::FieldName, this)).append(QLatin1Char('='));
+            s.append(prepareIdentifier(rec.fieldName(i), QSqlDriver::FieldName, this)).append(u'=');
             if (preparedStatement)
-                s.append(QLatin1Char('?'));
+                s.append(u'?');
             else
                 s.append(formatValue(rec.field(i)));
             s.append(QLatin1String(", "));
@@ -541,7 +541,7 @@ QString QSqlDriver::sqlStatement(StatementType type, const QString &tableName,
                 continue;
             s.append(prepareIdentifier(rec.fieldName(i), QSqlDriver::FieldName, this)).append(QLatin1String(", "));
             if (preparedStatement)
-                vals.append(QLatin1Char('?'));
+                vals.append(u'?');
             else
                 vals.append(formatValue(rec.field(i)));
             vals.append(QLatin1String(", "));
@@ -550,8 +550,8 @@ QString QSqlDriver::sqlStatement(StatementType type, const QString &tableName,
             s.clear();
         } else {
             vals.chop(2); // remove trailing comma
-            s[s.length() - 2] = QLatin1Char(')');
-            s.append(QLatin1String("VALUES (")).append(vals).append(QLatin1Char(')'));
+            s[s.length() - 2] = u')';
+            s.append(QLatin1String("VALUES (")).append(vals).append(u')');
         }
         break; }
     }
@@ -610,22 +610,19 @@ QString QSqlDriver::formatValue(const QSqlField &field, bool trimStrings) const
 #if QT_CONFIG(datestring)
         case QMetaType::QDate:
             if (field.value().toDate().isValid())
-                r = QLatin1Char('\'') + field.value().toDate().toString(Qt::ISODate)
-                    + QLatin1Char('\'');
+                r = u'\'' + field.value().toDate().toString(Qt::ISODate) + u'\'';
             else
                 r = nullTxt;
             break;
         case QMetaType::QTime:
             if (field.value().toTime().isValid())
-                r =  QLatin1Char('\'') + field.value().toTime().toString(Qt::ISODate)
-                     + QLatin1Char('\'');
+                r =  u'\'' + field.value().toTime().toString(Qt::ISODate) + u'\'';
             else
                 r = nullTxt;
             break;
         case QMetaType::QDateTime:
             if (field.value().toDateTime().isValid())
-                r = QLatin1Char('\'') +
-                    field.value().toDateTime().toString(Qt::ISODate) + QLatin1Char('\'');
+                r = u'\'' + field.value().toDateTime().toString(Qt::ISODate) + u'\'';
             else
                 r = nullTxt;
             break;
@@ -641,8 +638,8 @@ QString QSqlDriver::formatValue(const QSqlField &field, bool trimStrings) const
                 result.truncate(end);
             }
             /* escape the "'" character */
-            result.replace(QLatin1Char('\''), QLatin1String("''"));
-            r = QLatin1Char('\'') + result + QLatin1Char('\'');
+            result.replace(u'\'', QLatin1String("''"));
+            r = u'\'' + result + u'\'';
             break;
         }
         case QMetaType::Bool:
@@ -658,7 +655,7 @@ QString QSqlDriver::formatValue(const QSqlField &field, bool trimStrings) const
                     res += QLatin1Char(hexchars[s >> 4]);
                     res += QLatin1Char(hexchars[s & 0x0f]);
                 }
-                r = QLatin1Char('\'') + res +  QLatin1Char('\'');
+                r = u'\'' + res +  u'\'';
                 break;
             }
         }

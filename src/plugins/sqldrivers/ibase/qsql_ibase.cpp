@@ -1453,13 +1453,13 @@ bool QIBaseDriver::open(const QString & db,
     if (isOpen())
         close();
 
-    const QStringList opts(connOpts.split(QLatin1Char(';'), Qt::SkipEmptyParts));
+    const QStringList opts(connOpts.split(u';', Qt::SkipEmptyParts));
 
     QByteArray role;
     for (int i = 0; i < opts.count(); ++i) {
         QString tmp(opts.at(i).simplified());
-        int idx;
-        if ((idx = tmp.indexOf(QLatin1Char('='))) != -1) {
+        qsizetype idx;
+        if ((idx = tmp.indexOf(u'=')) != -1) {
             QString val = tmp.mid(idx + 1).simplified();
             QString opt = tmp.left(idx).simplified();
             if (opt.toUpper() == QLatin1String("ISC_DPB_SQL_ROLE_NAME")) {
@@ -1500,7 +1500,7 @@ bool QIBaseDriver::open(const QString & db,
 
     QString ldb;
     if (!host.isEmpty())
-        ldb += host + portString + QLatin1Char(':');
+        ldb += host + portString + u':';
     ldb += db;
     isc_attach_database(d->status, 0, const_cast<char *>(ldb.toLocal8Bit().constData()),
                         &d->ibase, ba.size(), ba.data());
@@ -1707,34 +1707,34 @@ QString QIBaseDriver::formatValue(const QSqlField &field, bool trimStrings) cons
     case QMetaType::QDateTime: {
         QDateTime datetime = field.value().toDateTime();
         if (datetime.isValid())
-            return QLatin1Char('\'') + QString::number(datetime.date().year()) + QLatin1Char('-') +
-                QString::number(datetime.date().month()) + QLatin1Char('-') +
-                QString::number(datetime.date().day()) + QLatin1Char(' ') +
-                QString::number(datetime.time().hour()) + QLatin1Char(':') +
-                QString::number(datetime.time().minute()) + QLatin1Char(':') +
-                QString::number(datetime.time().second()) + QLatin1Char('.') +
-                QString::number(datetime.time().msec()).rightJustified(3, QLatin1Char('0'), true) +
-                QLatin1Char('\'');
+            return u'\'' + QString::number(datetime.date().year()) + u'-' +
+                QString::number(datetime.date().month()) + u'-' +
+                QString::number(datetime.date().day()) + u' ' +
+                QString::number(datetime.time().hour()) + u':' +
+                QString::number(datetime.time().minute()) + u':' +
+                QString::number(datetime.time().second()) + u'.' +
+                QString::number(datetime.time().msec()).rightJustified(3, u'0', true) +
+                u'\'';
         else
             return QLatin1String("NULL");
     }
     case QMetaType::QTime: {
         QTime time = field.value().toTime();
         if (time.isValid())
-            return QLatin1Char('\'') + QString::number(time.hour()) + QLatin1Char(':') +
-                QString::number(time.minute()) + QLatin1Char(':') +
-                QString::number(time.second()) + QLatin1Char('.') +
-                QString::number(time.msec()).rightJustified(3, QLatin1Char('0'), true) +
-                QLatin1Char('\'');
+            return u'\'' + QString::number(time.hour()) + u':' +
+                QString::number(time.minute()) + u':' +
+                QString::number(time.second()) + u'.' +
+                QString::number(time.msec()).rightJustified(3, u'0', true) +
+                u'\'';
         else
             return QLatin1String("NULL");
     }
     case QMetaType::QDate: {
         QDate date = field.value().toDate();
         if (date.isValid())
-            return QLatin1Char('\'') + QString::number(date.year()) + QLatin1Char('-') +
-                QString::number(date.month()) + QLatin1Char('-') +
-                QString::number(date.day()) + QLatin1Char('\'');
+            return u'\'' + QString::number(date.year()) + u'-' +
+                QString::number(date.month()) + u'-' +
+                QString::number(date.day()) + u'\'';
             else
                 return QLatin1String("NULL");
     }
@@ -1892,10 +1892,10 @@ void QIBaseDriver::qHandleEventNotification(void *updatedResultBuffer)
 QString QIBaseDriver::escapeIdentifier(const QString &identifier, IdentifierType) const
 {
     QString res = identifier;
-    if (!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('"')) && !identifier.endsWith(QLatin1Char('"')) ) {
-        res.replace(QLatin1Char('"'), QLatin1String("\"\""));
-        res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
-        res.replace(QLatin1Char('.'), QLatin1String("\".\""));
+    if (!identifier.isEmpty() && !identifier.startsWith(u'"') && !identifier.endsWith(u'"') ) {
+        res.replace(u'"', QLatin1String("\"\""));
+        res.prepend(u'"').append(u'"');
+        res.replace(u'.', QLatin1String("\".\""));
     }
     return res;
 }

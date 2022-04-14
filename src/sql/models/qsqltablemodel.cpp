@@ -1002,7 +1002,7 @@ QString QSqlTableModel::orderByClause() const
     //we can safely escape the field because it would have been obtained from the database
     //and have the correct case
     QString field = d->db.driver()->escapeIdentifier(d->tableName, QSqlDriver::TableName)
-            + QLatin1Char('.')
+            + u'.'
             + d->db.driver()->escapeIdentifier(f.name(), QSqlDriver::FieldName);
     field = d->sortOrder == Qt::AscendingOrder ? Sql::asc(field) : Sql::desc(field);
     return Sql::orderBy(field);

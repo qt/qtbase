@@ -101,6 +101,8 @@ Q_DECLARE_METATYPE(PGresult*)
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 inline void qPQfreemem(void *buffer)
 {
     PQfreemem(buffer);
@@ -194,7 +196,7 @@ void QPSQLDriverPrivate::appendTables(QStringList &tl, QSqlQuery &t, QChar type)
         if (schema.isEmpty() || schema == QLatin1String("public"))
             tl.append(t.value(0).toString());
         else
-            tl.append(t.value(0).toString().prepend(QLatin1Char('.')).prepend(schema));
+            tl.append(t.value(0).toString().prepend(u'.').prepend(schema));
     }
 }
 
@@ -290,7 +292,7 @@ public:
     Q_DECLARE_SQLDRIVER_PRIVATE(QPSQLDriver)
     using QSqlResultPrivate::QSqlResultPrivate;
 
-    QString fieldSerial(int i) const override { return QLatin1Char('$') + QString::number(i + 1); }
+    QString fieldSerial(int i) const override { return u'$' + QString::number(i + 1); }
     void deallocatePreparedStmt();
 
     std::queue<PGresult*> nextResultSets;
@@ -1183,9 +1185,9 @@ bool QPSQLDriver::hasFeature(DriverFeature f) const
  */
 static QString qQuote(QString s)
 {
-    s.replace(QLatin1Char('\\'), QLatin1String("\\\\"));
-    s.replace(QLatin1Char('\''), QLatin1String("\\'"));
-    s.append(QLatin1Char('\'')).prepend(QLatin1Char('\''));
+    s.replace(u'\\', QLatin1String("\\\\"));
+    s.replace(u'\'', QLatin1String("\\'"));
+    s.append(u'\'').prepend(u'\'');
     return s;
 }
 
@@ -1213,8 +1215,8 @@ bool QPSQLDriver::open(const QString &db,
     // add any connect options - the server will handle error detection
     if (!connOpts.isEmpty()) {
         QString opt = connOpts;
-        opt.replace(QLatin1Char(';'), QLatin1Char(' '), Qt::CaseInsensitive);
-        connectString.append(QLatin1Char(' ')).append(opt);
+        opt.replace(';'_L1, ' '_L1, Qt::CaseInsensitive);
+        connectString.append(u' ').append(opt);
     }
 
     d->connection = PQconnectdb(std::move(connectString).toLocal8Bit().constData());
@@ -1335,9 +1337,9 @@ QStringList QPSQLDriver::tables(QSql::TableType type) const
     t.setForwardOnly(true);
 
     if (type & QSql::Tables)
-        const_cast<QPSQLDriverPrivate*>(d)->appendTables(tl, t, QLatin1Char('r'));
+        const_cast<QPSQLDriverPrivate*>(d)->appendTables(tl, t, u'r');
     if (type & QSql::Views)
-        const_cast<QPSQLDriverPrivate*>(d)->appendTables(tl, t, QLatin1Char('v'));
+        const_cast<QPSQLDriverPrivate*>(d)->appendTables(tl, t, u'v');
     if (type & QSql::SystemTables) {
         t.exec(QStringLiteral("SELECT relname FROM pg_class WHERE (relkind = 'r') "
                               "AND (relname LIKE 'pg_%') "));
@@ -1350,7 +1352,7 @@ QStringList QPSQLDriver::tables(QSql::TableType type) const
 
 static void qSplitTableName(QString &tablename, QString &schema)
 {
-    int dot = tablename.indexOf(QLatin1Char('.'));
+    qsizetype dot = tablename.indexOf(u'.');
     if (dot == -1)
         return;
     schema = tablename.left(dot);
@@ -1438,8 +1440,8 @@ QSqlRecord QPSQLDriver::record(const QString &tablename) const
             precision = -1;
         }
         QString defVal = query.value(5).toString();
-        if (!defVal.isEmpty() && defVal.at(0) == QLatin1Char('\'')) {
-            const int end = defVal.lastIndexOf(QLatin1Char('\''));
+        if (!defVal.isEmpty() && defVal.at(0) == u'\'') {
+            const qsizetype end = defVal.lastIndexOf(u'\'');
             if (end > 0)
                 defVal = defVal.mid(1, end - 1);
         }
@@ -1479,9 +1481,9 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
                 // we force the value to be considered with a timezone information, and we force it to be UTC
                 // this is safe since postgresql stores only the UTC value and not the timezone offset (only used
                 // while parsing), so we have correct behavior in both case of with timezone and without tz
-                r = QStringLiteral("TIMESTAMP WITH TIME ZONE ") + QLatin1Char('\'') +
+                r = QStringLiteral("TIMESTAMP WITH TIME ZONE ") + u'\'' +
                         QLocale::c().toString(field.value().toDateTime().toUTC(), u"yyyy-MM-ddThh:mm:ss.zzz") +
-                        QLatin1Char('Z') + QLatin1Char('\'');
+                        u'Z' + u'\'';
             } else {
                 r = nullStr();
             }
@@ -1492,7 +1494,7 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
         case QMetaType::QTime:
 #if QT_CONFIG(datestring)
             if (field.value().toTime().isValid()) {
-                r = QLatin1Char('\'') + field.value().toTime().toString(u"hh:mm:ss.zzz") + QLatin1Char('\'');
+                r = u'\'' + field.value().toTime().toString(u"hh:mm:ss.zzz") + u'\'';
             } else
 #endif
             {
@@ -1502,7 +1504,7 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
         case QMetaType::QString:
             r = QSqlDriver::formatValue(field, trimStrings);
             if (d->hasBackslashEscape)
-                r.replace(QLatin1Char('\\'), QLatin1String("\\\\"));
+                r.replace(u'\\', QLatin1String("\\\\"));
             break;
         case QMetaType::Bool:
             if (field.value().toBool())
@@ -1518,9 +1520,9 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
 #else
             unsigned char *data = PQescapeBytea((const unsigned char*)ba.constData(), ba.size(), &len);
 #endif
-            r += QLatin1Char('\'');
+            r += u'\'';
             r += QLatin1String((const char*)data);
-            r += QLatin1Char('\'');
+            r += u'\'';
             qPQfreemem(data);
             break;
         }
@@ -1535,7 +1537,7 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
                 r = QSqlDriver::formatValue(field, trimStrings);
             break;
         case QMetaType::QUuid:
-            r = QLatin1Char('\'') + field.value().toString() + QLatin1Char('\'');
+            r = u'\'' + field.value().toString() + u'\'';
             break;
         default:
             r = QSqlDriver::formatValue(field, trimStrings);
@@ -1548,10 +1550,10 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
 QString QPSQLDriver::escapeIdentifier(const QString &identifier, IdentifierType) const
 {
     QString res = identifier;
-    if (!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('"')) && !identifier.endsWith(QLatin1Char('"')) ) {
-        res.replace(QLatin1Char('"'), QLatin1String("\"\""));
-        res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
-        res.replace(QLatin1Char('.'), QLatin1String("\".\""));
+    if (!identifier.isEmpty() && !identifier.startsWith(u'"') && !identifier.endsWith(u'"') ) {
+        res.replace(u'"', QLatin1String("\"\""));
+        res.prepend(u'"').append(u'"');
+        res.replace(u'.', QLatin1String("\".\""));
     }
     return res;
 }

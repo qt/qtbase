@@ -244,7 +244,7 @@ QString QSqlError::text() const
 {
     QString result = d->databaseError;
     if (!d->databaseError.isEmpty() && !d->driverError.isEmpty() && !d->databaseError.endsWith(QLatin1String("\n")))
-        result += QLatin1Char(' ');
+        result += u' ';
     result += d->driverError;
     return result;
 }

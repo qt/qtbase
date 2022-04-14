@@ -147,7 +147,7 @@ public:
     QChar quoteChar();
 private:
     bool isQuoteInitialized = false;
-    QChar quote = QLatin1Char('"');
+    QChar quote = u'"';
 };
 
 class QODBCResultPrivate;
@@ -263,7 +263,7 @@ static QString qWarnODBCHandle(int handleType, SQLHANDLE handle, int *nativeCode
             const QString tmpstore = fromSQLTCHAR(description_, msgLen);
             if (result != tmpstore) {
                 if (!result.isEmpty())
-                    result += QLatin1Char(' ');
+                    result += u' ';
                 result += tmpstore;
             }
         } else if (r == SQL_ERROR || r == SQL_INVALID_HANDLE) {
@@ -284,7 +284,7 @@ static QString qODBCWarn(const SQLHANDLE hStmt, const SQLHANDLE envHandle = 0,
         const QString dMessage = qWarnODBCHandle(SQL_HANDLE_DBC, pDbC, nativeCode);
         if (!dMessage.isEmpty()) {
             if (!result.isEmpty())
-                result += QLatin1Char(' ');
+                result += u' ';
             result += dMessage;
         }
     }
@@ -292,7 +292,7 @@ static QString qODBCWarn(const SQLHANDLE hStmt, const SQLHANDLE envHandle = 0,
         const QString hMessage = qWarnODBCHandle(SQL_HANDLE_STMT, hStmt, nativeCode);
         if (!hMessage.isEmpty()) {
             if (!result.isEmpty())
-                result += QLatin1Char(' ');
+                result += u' ';
             result += hMessage;
         }
     }
@@ -761,7 +761,7 @@ QChar QODBCDriverPrivate::quoteChar()
         if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO)
             quote = QChar(driverResponse[0]);
         else
-            quote = QLatin1Char('"');
+            quote = u'"';
         isQuoteInitialized = true;
     }
     return quote;
@@ -771,12 +771,12 @@ QChar QODBCDriverPrivate::quoteChar()
 bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
 {
     // Set any connection attributes
-    const QStringList opts(connOpts.split(QLatin1Char(';'), Qt::SkipEmptyParts));
+    const QStringList opts(connOpts.split(u';', Qt::SkipEmptyParts));
     SQLRETURN r = SQL_SUCCESS;
     for (int i = 0; i < opts.count(); ++i) {
         const QString tmp(opts.at(i));
         int idx;
-        if ((idx = tmp.indexOf(QLatin1Char('='))) == -1) {
+        if ((idx = tmp.indexOf(u'=')) == -1) {
             qWarning() << "QODBCDriver::open: Illegal connect option value '" << tmp << '\'';
             continue;
         }
@@ -880,7 +880,7 @@ void QODBCDriverPrivate::splitTableQualifier(const QString & qualifier, QString 
         table = qualifier;
         return;
     }
-    QStringList l = qualifier.split(QLatin1Char('.'));
+    QStringList l = qualifier.split(u'.');
     if (l.count() > 3)
         return; // can't possibly be a valid table qualifier
     int i = 0, n = l.count();
@@ -2267,7 +2267,7 @@ void QODBCDriverPrivate::checkHasMultiResults()
                              SQLSMALLINT(driverResponse.size() * sizeof(SQLTCHAR)),
                              &length);
     if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO)
-        hasMultiResultSets = fromSQLTCHAR(driverResponse, length/sizeof(SQLTCHAR)).startsWith(QLatin1Char('Y'));
+        hasMultiResultSets = fromSQLTCHAR(driverResponse, length/sizeof(SQLTCHAR)).startsWith(u'Y');
 }
 
 void QODBCDriverPrivate::checkDateTimePrecision()
@@ -2398,7 +2398,7 @@ QStringList QODBCDriver::tables(QSql::TableType type) const
     if (tableType.isEmpty())
         return tl;
 
-    QString joinedTableTypeString = tableType.join(QLatin1Char(','));
+    QString joinedTableTypeString = tableType.join(u',');
 
     r = SQLTables(hStmt,
                    NULL,
@@ -2636,11 +2636,11 @@ QString QODBCDriver::formatValue(const QSqlField &field,
             QTime tm = field.value().toDateTime().time();
             // Dateformat has to be "yyyy-MM-dd hh:mm:ss", with leading zeroes if month or day < 10
             r = QLatin1String("{ ts '") +
-                QString::number(dt.year()) + QLatin1Char('-') +
-                QString::number(dt.month()).rightJustified(2, QLatin1Char('0'), true) +
-                QLatin1Char('-') +
-                QString::number(dt.day()).rightJustified(2, QLatin1Char('0'), true) +
-                QLatin1Char(' ') +
+                QString::number(dt.year()) + u'-' +
+                QString::number(dt.month()).rightJustified(2, u'0', true) +
+                u'-' +
+                QString::number(dt.day()).rightJustified(2, u'0', true) +
+                u' ' +
                 tm.toString() +
                 QLatin1String("' }");
         } else
@@ -2675,7 +2675,7 @@ QString QODBCDriver::escapeIdentifier(const QString &identifier, IdentifierType)
     if (!identifier.isEmpty() && !identifier.startsWith(quote) && !identifier.endsWith(quote) ) {
         res.replace(quote, QString(quote)+QString(quote));
         res.prepend(quote).append(quote);
-        res.replace(QLatin1Char('.'), QString(quote)+QLatin1Char('.')+QString(quote));
+        res.replace(u'.', QString(quote) + u'.' +QString(quote));
     }
     return res;
 }

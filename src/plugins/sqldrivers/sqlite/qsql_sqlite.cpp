@@ -79,13 +79,13 @@ static QString _q_escapeIdentifier(const QString &identifier, QSqlDriver::Identi
     QString res = identifier;
     // If it contains [ and ] then we assume it to be escaped properly already as this indicates
     // the syntax is exactly how it should be
-    if (identifier.contains(QLatin1Char('[')) && identifier.contains(QLatin1Char(']')))
+    if (identifier.contains(u'[') && identifier.contains(u']'))
         return res;
-    if (!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('"')) && !identifier.endsWith(QLatin1Char('"'))) {
-        res.replace(QLatin1Char('"'), QLatin1String("\"\""));
-        res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
+    if (!identifier.isEmpty() && !identifier.startsWith(u'"') && !identifier.endsWith(u'"')) {
+        res.replace(u'"', QLatin1String("\"\""));
+        res.prepend(u'"').append(u'"');
         if (type == QSqlDriver::TableName)
-            res.replace(QLatin1Char('.'), QLatin1String("\".\""));
+            res.replace(u'.', QLatin1String("\".\""));
     }
     return res;
 }
@@ -209,10 +209,10 @@ void QSQLiteResultPrivate::initColumns(bool emptyResultset)
     for (int i = 0; i < nCols; ++i) {
         QString colName = QString(reinterpret_cast<const QChar *>(
                     sqlite3_column_name16(stmt, i))
-                    ).remove(QLatin1Char('"'));
+                    ).remove(u'"');
         const QString tableName = QString(reinterpret_cast<const QChar *>(
                             sqlite3_column_table_name16(stmt, i))
-                            ).remove(QLatin1Char('"'));
+                            ).remove(u'"');
         // must use typeName for resolving the type to match QSqliteDriver::record
         QString typeName = QString(reinterpret_cast<const QChar *>(
                     sqlite3_column_decltype16(stmt, i)));
@@ -733,12 +733,12 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
     int regexpCacheSize = 25;
 #endif
 
-    const auto opts = QStringView{conOpts}.split(QLatin1Char(';'));
+    const auto opts = QStringView{conOpts}.split(u';');
     for (auto option : opts) {
         option = option.trimmed();
         if (option.startsWith(QLatin1String("QSQLITE_BUSY_TIMEOUT"))) {
             option = option.mid(20).trimmed();
-            if (option.startsWith(QLatin1Char('='))) {
+            if (option.startsWith(u'=')) {
                 bool ok;
                 const int nt = option.mid(1).trimmed().toInt(&ok);
                 if (ok)
@@ -758,7 +758,7 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
             option = option.mid(regexpConnectOption.size()).trimmed();
             if (option.isEmpty()) {
                 defineRegexp = true;
-            } else if (option.startsWith(QLatin1Char('='))) {
+            } else if (option.startsWith(u'=')) {
                 bool ok = false;
                 const int cacheSize = option.mid(1).trimmed().toInt(&ok);
                 if (ok) {
@@ -917,15 +917,15 @@ static QSqlIndex qGetTableInfo(QSqlQuery &q, const QString &tableName, bool only
 {
     QString schema;
     QString table(tableName);
-    const int indexOfSeparator = tableName.indexOf(QLatin1Char('.'));
+    const qsizetype indexOfSeparator = tableName.indexOf(u'.');
     if (indexOfSeparator > -1) {
-        const int indexOfCloseBracket = tableName.indexOf(QLatin1Char(']'));
+        const qsizetype indexOfCloseBracket = tableName.indexOf(u']');
         if (indexOfCloseBracket != tableName.size() - 1) {
             // Handles a case like databaseName.tableName
             schema = tableName.left(indexOfSeparator + 1);
             table = tableName.mid(indexOfSeparator + 1);
         } else {
-            const int indexOfOpenBracket = tableName.lastIndexOf(QLatin1Char('['), indexOfCloseBracket);
+            const qsizetype indexOfOpenBracket = tableName.lastIndexOf(u'[', indexOfCloseBracket);
             if (indexOfOpenBracket > 0) {
                 // Handles a case like databaseName.[tableName]
                 schema = tableName.left(indexOfOpenBracket);
@@ -934,7 +934,7 @@ static QSqlIndex qGetTableInfo(QSqlQuery &q, const QString &tableName, bool only
         }
     }
     q.exec(QLatin1String("PRAGMA ") + schema + QLatin1String("table_info (") +
-           _q_escapeIdentifier(table, QSqlDriver::TableName) + QLatin1Char(')'));
+           _q_escapeIdentifier(table, QSqlDriver::TableName) + u')');
     QSqlIndex ind;
     while (q.next()) {
         bool isPk = q.value(5).toInt();
@@ -942,8 +942,8 @@ static QSqlIndex qGetTableInfo(QSqlQuery &q, const QString &tableName, bool only
             continue;
         QString typeName = q.value(2).toString().toLower();
         QString defVal = q.value(4).toString();
-        if (!defVal.isEmpty() && defVal.at(0) == QLatin1Char('\'')) {
-            const int end = defVal.lastIndexOf(QLatin1Char('\''));
+        if (!defVal.isEmpty() && defVal.at(0) == u'\'') {
+            const int end = defVal.lastIndexOf(u'\'');
             if (end > 0)
                 defVal = defVal.mid(1, end - 1);
         }

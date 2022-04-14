@@ -173,11 +173,10 @@ QString QSqlIndex::createField(int i, const QString& prefix, bool verbose) const
 {
     QString f;
     if (!prefix.isEmpty())
-        f += prefix + QLatin1Char('.');
+        f += prefix + u'.';
     f += field(i).name();
     if (verbose)
-        f += QLatin1Char(' ') + QString((isDescending(i)
-                    ? QLatin1String("DESC") : QLatin1String("ASC")));
+        f += u' ' + QString((isDescending(i) ? QLatin1String("DESC") : QLatin1String("ASC")));
     return f;
 }
 
