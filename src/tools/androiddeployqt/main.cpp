@@ -47,6 +47,7 @@
 #include <QMap>
 
 #include <depfile_shared.h>
+#include <shellquote_shared.h>
 
 #include <algorithm>
 
@@ -249,77 +250,6 @@ static const QHash<QByteArray, QByteArray> elfArchitectures = {
     {"x86_64", "x86_64"}
 };
 
-// Copy-pasted from qmake/library/ioutil.cpp
-inline static bool hasSpecialChars(const QString &arg, const uchar (&iqm)[16])
-{
-    for (int x = arg.length() - 1; x >= 0; --x) {
-        ushort c = arg.unicode()[x].unicode();
-        if ((c < sizeof(iqm) * 8) && (iqm[c / 8] & (1 << (c & 7))))
-            return true;
-    }
-    return false;
-}
-
-static QString shellQuoteUnix(const QString &arg)
-{
-    // Chars that should be quoted (TM). This includes:
-    static const uchar iqm[] = {
-        0xff, 0xff, 0xff, 0xff, 0xdf, 0x07, 0x00, 0xd8,
-        0x00, 0x00, 0x00, 0x38, 0x01, 0x00, 0x00, 0x78
-    }; // 0-32 \'"$`<>|;&(){}*?#!~[]
-
-    if (!arg.length())
-        return "\"\""_L1;
-
-    QString ret(arg);
-    if (hasSpecialChars(ret, iqm)) {
-        ret.replace(u'\'', "'\\''"_L1);
-        ret.prepend(u'\'');
-        ret.append(u'\'');
-    }
-    return ret;
-}
-
-static QString shellQuoteWin(const QString &arg)
-{
-    // Chars that should be quoted (TM). This includes:
-    // - control chars & space
-    // - the shell meta chars "&()<>^|
-    // - the potential separators ,;=
-    static const uchar iqm[] = {
-        0xff, 0xff, 0xff, 0xff, 0x45, 0x13, 0x00, 0x78,
-        0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x10
-    };
-
-    if (!arg.length())
-        return "\"\""_L1;
-
-    QString ret(arg);
-    if (hasSpecialChars(ret, iqm)) {
-        // Quotes are escaped and their preceding backslashes are doubled.
-        // It's impossible to escape anything inside a quoted string on cmd
-        // level, so the outer quoting must be "suspended".
-        ret.replace(QRegularExpression("(\\\\*)\""_L1), "\"\\1\\1\\^\"\""_L1);
-        // The argument must not end with a \ since this would be interpreted
-        // as escaping the quote -- rather put the \ behind the quote: e.g.
-        // rather use "foo"\ than "foo\"
-        qsizetype i = ret.length();
-        while (i > 0 && ret.at(i - 1) == u'\\')
-            --i;
-        ret.insert(i, u'"');
-        ret.prepend(u'"');
-    }
-    return ret;
-}
-
-static QString shellQuote(const QString &arg)
-{
-    if (QDir::separator() == u'\\')
-        return shellQuoteWin(arg);
-    else
-        return shellQuoteUnix(arg);
-}
-
 QString architectureFromName(const QString &name)
 {
     QRegularExpression architecture(QStringLiteral("_(armeabi-v7a|arm64-v8a|x86|x86_64).so$"));
@@ -361,8 +291,6 @@ static QString llvmReadobjPath(const Options &options)
                                    options.toolchainPrefix,
                                    options.ndkHost));
 }
-
-
 
 QString fileArchitecture(const Options &options, const QString &path)
 {
