@@ -625,7 +625,7 @@ Options parseOptions()
 }
 
 void printHelp()
-{//                 "012345678901234567890123456789012345678901234567890123456789012345678901"
+{
     fprintf(stderr, "Syntax: %s --output <destination> [options]\n"
                     "\n"
                     "  Creates an Android package in the build directory <destination> and\n"
@@ -3143,7 +3143,6 @@ int main(int argc, char *argv[])
         fprintf(stdout, "[TIMING] %lld ns: Read input file\n", options.timer.nsecsElapsed());
 
     fprintf(stdout,
-//          "012345678901234567890123456789012345678901234567890123456789012345678901"
             "Generating Android Package\n"
             "  Input file: %s\n"
             "  Output directory: %s\n"

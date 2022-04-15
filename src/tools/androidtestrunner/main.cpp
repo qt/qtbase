@@ -324,7 +324,7 @@ static bool parseOptions()
 }
 
 static void printHelp()
-{//                 "012345678901234567890123456789012345678901234567890123456789012345678901"
+{
     fprintf(stderr, "Syntax: %s <options> -- [TESTARGS] \n"
                     "\n"
                     "  Creates an Android package in a temp directory <destination> and\n"
