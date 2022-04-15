@@ -2502,63 +2502,6 @@ QStringList getLibraryProjectsInOutputFolder(const Options &options)
     return ret;
 }
 
-bool createAndroidProject(const Options &options)
-{
-    if (options.verbose)
-        fprintf(stdout, "Running Android tool to create package definition.\n");
-
-    QString androidToolExecutable = options.sdkPath + "/tools/android"_L1;
-#if defined(Q_OS_WIN32)
-    androidToolExecutable += ".bat"_L1;
-#endif
-
-    if (!QFile::exists(androidToolExecutable)) {
-        fprintf(stderr, "Cannot find Android tool: %s\n", qPrintable(androidToolExecutable));
-        return false;
-    }
-
-    QString androidTool = "%1 update project --path %2 --target %3 --name QtApp"_L1
-                            .arg(shellQuote(androidToolExecutable))
-                            .arg(shellQuote(options.outputDirectory))
-                            .arg(shellQuote(options.androidPlatform));
-
-    if (options.verbose)
-        fprintf(stdout, "  -- Command: %s\n", qPrintable(androidTool));
-
-    FILE *androidToolCommand = openProcess(androidTool);
-    if (androidToolCommand == 0) {
-        fprintf(stderr, "Cannot run command '%s'\n", qPrintable(androidTool));
-        return false;
-    }
-
-    pclose(androidToolCommand);
-
-    // If the project has subprojects inside the current folder, we need to also run android update on these.
-    const QStringList libraryProjects = getLibraryProjectsInOutputFolder(options);
-    for (const QString &libraryProject : libraryProjects) {
-        if (options.verbose)
-            fprintf(stdout, "Updating subproject %s\n", qPrintable(libraryProject));
-
-        androidTool = "%1 update lib-project --path %2 --target %3"_L1
-                .arg(shellQuote(androidToolExecutable))
-                .arg(shellQuote(libraryProject))
-                .arg(shellQuote(options.androidPlatform));
-
-        if (options.verbose)
-            fprintf(stdout, "  -- Command: %s\n", qPrintable(androidTool));
-
-        FILE *androidToolCommand = popen(androidTool.toLocal8Bit().constData(), QT_POPEN_READ);
-        if (androidToolCommand == 0) {
-            fprintf(stderr, "Cannot run command '%s'\n", qPrintable(androidTool));
-            return false;
-        }
-
-        pclose(androidToolCommand);
-    }
-
-    return true;
-}
-
 QString findInPath(const QString &fileName)
 {
     const QString path = QString::fromLocal8Bit(qgetenv("PATH"));
@@ -3152,7 +3095,7 @@ enum ErrorCode
     CannotCopyAndroidExtraLibs = 10,
     CannotCopyAndroidSources = 11,
     CannotUpdateAndroidFiles = 12,
-    CannotCreateAndroidProject = 13,
+    CannotCreateAndroidProject = 13, // Not used anymore
     CannotBuildAndroidProject = 14,
     CannotSignPackage = 15,
     CannotInstallApk = 16,
