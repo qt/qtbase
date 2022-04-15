@@ -329,19 +329,48 @@ QString architectureFromName(const QString &name)
     return match.captured(1);
 }
 
+static QString execSuffixAppended(QString path)
+{
+#if defined(Q_OS_WIN32)
+    path += ".exe"_L1;
+#endif
+    return path;
+}
+
+static QString batSuffixAppended(QString path)
+{
+#if defined(Q_OS_WIN32)
+    path += ".bat"_L1;
+#endif
+    return path;
+}
+
+QString defaultLibexecDir()
+{
+#ifdef Q_OS_WIN32
+    return "bin"_L1;
+#else
+    return "libexec"_L1;
+#endif
+}
+
+static QString llvmReadobjPath(const Options &options)
+{
+    return execSuffixAppended("%1/toolchains/%2/prebuilt/%3/bin/llvm-readobj"_L1
+                              .arg(options.ndkPath,
+                                   options.toolchainPrefix,
+                                   options.ndkHost));
+}
+
+
+
 QString fileArchitecture(const Options &options, const QString &path)
 {
     auto arch = architectureFromName(path);
     if (!arch.isEmpty())
         return arch;
 
-    QString readElf = "%1/toolchains/%2/prebuilt/%3/bin/llvm-readobj"_L1.arg(options.ndkPath,
-                                                                             options.toolchainPrefix,
-                                                                             options.ndkHost);
-#if defined(Q_OS_WIN32)
-    readElf += ".exe"_L1;
-#endif
-
+    QString readElf = llvmReadobjPath(options);
     if (!QFile::exists(readElf)) {
         fprintf(stderr, "Command does not exist: %s\n", qPrintable(readElf));
         return {};
@@ -1853,13 +1882,7 @@ bool readAndroidDependencyXml(Options *options,
 
 QStringList getQtLibsFromElf(const Options &options, const QString &fileName)
 {
-    QString readElf = "%1/toolchains/%2/prebuilt/%3/bin/llvm-readobj"_L1.arg(options.ndkPath,
-                                                                             options.toolchainPrefix,
-                                                                             options.ndkHost);
-#if defined(Q_OS_WIN32)
-    readElf += ".exe"_L1;
-#endif
-
+    QString readElf = llvmReadobjPath(options);
     if (!QFile::exists(readElf)) {
         fprintf(stderr, "Command does not exist: %s\n", qPrintable(readElf));
         return QStringList();
@@ -1951,15 +1974,6 @@ bool readDependenciesFromElf(Options *options,
     return true;
 }
 
-QString defaultLibexecDir()
-{
-#ifdef Q_OS_WIN32
-    return QStringLiteral("bin");
-#else
-    return QStringLiteral("libexec");
-#endif
-}
-
 bool goodToCopy(const Options *options, const QString &file, QStringList *unmetDependencies);
 bool checkQmlFileInRootPaths(const Options *options, const QString &absolutePath);
 
@@ -1972,12 +1986,9 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
     if (!options->qmlImportScannerBinaryPath.isEmpty()) {
         qmlImportScanner = options->qmlImportScannerBinaryPath;
     } else {
-        qmlImportScanner = options->qtInstallDirectory + u'/' + defaultLibexecDir()
-                + "/qmlimportscanner"_L1;
+        qmlImportScanner = execSuffixAppended(options->qtInstallDirectory + u'/'
+                                              + defaultLibexecDir() + "/qmlimportscanner"_L1);
     }
-#if defined(Q_OS_WIN32)
-    qmlImportScanner += ".exe"_L1;
-#endif
 
     QStringList importPaths;
     importPaths += shellQuote(options->qtInstallDirectory + "/qml"_L1);
@@ -2227,14 +2238,12 @@ bool createRcc(const Options &options)
 
 
     QString rcc;
-    if (!options.rccBinaryPath.isEmpty())
+    if (!options.rccBinaryPath.isEmpty()) {
         rcc = options.rccBinaryPath;
-    else
-        rcc = options.qtInstallDirectory + u'/' + defaultLibexecDir() + "/rcc"_L1;
-
-#if defined(Q_OS_WIN32)
-    rcc += ".exe"_L1;
-#endif
+    } else {
+        rcc = execSuffixAppended(options.qtInstallDirectory + u'/' + defaultLibexecDir() +
+                                 "/rcc"_L1);
+    }
 
     if (!QFile::exists(rcc)) {
         fprintf(stderr, "rcc not found: %s\n", qPrintable(rcc));
@@ -2358,11 +2367,7 @@ bool containsApplicationBinary(Options *options)
 
 FILE *runAdb(const Options &options, const QString &arguments)
 {
-    QString adb = options.sdkPath + "/platform-tools/adb"_L1;
-#if defined(Q_OS_WIN32)
-    adb += ".exe"_L1;
-#endif
-
+    QString adb = execSuffixAppended(options.sdkPath + "/platform-tools/adb"_L1);
     if (!QFile::exists(adb)) {
         fprintf(stderr, "Cannot find adb tool: %s\n", qPrintable(adb));
         return 0;
@@ -2636,10 +2641,8 @@ bool buildAndroidProject(const Options &options)
     if (!mergeGradleProperties(gradlePropertiesPath, gradleProperties))
         return false;
 
-#if defined(Q_OS_WIN32)
-    QString gradlePath(options.outputDirectory + "gradlew.bat"_L1);
-#else
-    QString gradlePath(options.outputDirectory + "gradlew"_L1);
+    QString gradlePath = batSuffixAppended(options.outputDirectory + "gradlew"_L1);
+#ifndef Q_OS_WIN32
     {
         QFile f(gradlePath);
         if (!f.setPermissions(f.permissions() | QFileDevice::ExeUser))
@@ -2820,6 +2823,22 @@ bool copyStdCpp(Options *options)
     return copyFileIfNewer(stdCppPath, destinationFile, *options);
 }
 
+static QString zipalignPath(const Options &options, bool *ok)
+{
+    *ok = true;
+    QString zipAlignTool = execSuffixAppended(options.sdkPath + "/tools/zipalign"_L1);
+    if (!QFile::exists(zipAlignTool)) {
+        zipAlignTool = execSuffixAppended(options.sdkPath + "/build-tools/"_L1 +
+                                          options.sdkBuildToolsVersion + "/zipalign"_L1);
+        if (!QFile::exists(zipAlignTool)) {
+            fprintf(stderr, "zipalign tool not found: %s\n", qPrintable(zipAlignTool));
+            *ok = false;
+        }
+    }
+
+    return zipAlignTool;
+}
+
 bool jarSignerSignPackage(const Options &options)
 {
     if (options.verbose)
@@ -2830,12 +2849,7 @@ bool jarSignerSignPackage(const Options &options)
     if (jdkPath.isEmpty())
         jdkPath = QString::fromLocal8Bit(qgetenv("JAVA_HOME"));
 
-#if defined(Q_OS_WIN32)
-    QString jarSignerTool = "jarsigner.exe"_L1;
-#else
-    QString jarSignerTool = "jarsigner"_L1;
-#endif
-
+    QString jarSignerTool = execSuffixAppended("jarsigner"_L1);
     if (jdkPath.isEmpty() || !QFile::exists(jdkPath + "/bin/"_L1 + jarSignerTool))
         jarSignerTool = findInPath(jarSignerTool);
     else
@@ -2912,21 +2926,10 @@ bool jarSignerSignPackage(const Options &options)
     if (options.buildAAB && !signPackage(packagePath(options, AAB)))
         return false;
 
-    QString zipAlignTool = options.sdkPath + "/tools/zipalign"_L1;
-#if defined(Q_OS_WIN32)
-    zipAlignTool += ".exe"_L1;
-#endif
-
-    if (!QFile::exists(zipAlignTool)) {
-        zipAlignTool = options.sdkPath + "/build-tools/"_L1 + options.sdkBuildToolsVersion + "/zipalign"_L1;
-#if defined(Q_OS_WIN32)
-        zipAlignTool += ".exe"_L1;
-#endif
-        if (!QFile::exists(zipAlignTool)) {
-            fprintf(stderr, "zipalign tool not found: %s\n", qPrintable(zipAlignTool));
-            return false;
-        }
-    }
+    bool ok;
+    QString zipAlignTool = zipalignPath(options, &ok);
+    if (!ok)
+        return false;
 
     zipAlignTool = "%1%2 -f 4 %3 %4"_L1.arg(shellQuote(zipAlignTool),
                                             options.verbose ? " -v"_L1 : QLatin1StringView(),
@@ -2956,31 +2959,18 @@ bool jarSignerSignPackage(const Options &options)
 
 bool signPackage(const Options &options)
 {
-    QString apksignerTool = options.sdkPath + "/build-tools/"_L1 + options.sdkBuildToolsVersion + "/apksigner"_L1;
-#if defined(Q_OS_WIN32)
-    apksignerTool += ".bat"_L1;
-#endif
-
+    const QString apksignerTool = batSuffixAppended(options.sdkPath + "/build-tools/"_L1 +
+                                              options.sdkBuildToolsVersion + "/apksigner"_L1);
     if (options.jarSigner || !QFile::exists(apksignerTool))
         return jarSignerSignPackage(options);
 
-    // APKs signed with apksigner must not be changed after they're signed, therefore we need to zipalign it before we sign it.
+    // APKs signed with apksigner must not be changed after they're signed,
+    // therefore we need to zipalign it before we sign it.
 
-    QString zipAlignTool = options.sdkPath + "/tools/zipalign"_L1;
-#if defined(Q_OS_WIN32)
-    zipAlignTool += ".exe"_L1;
-#endif
-
-    if (!QFile::exists(zipAlignTool)) {
-        zipAlignTool = options.sdkPath + "/build-tools/"_L1 + options.sdkBuildToolsVersion + "/zipalign"_L1;
-#if defined(Q_OS_WIN32)
-        zipAlignTool += ".exe"_L1;
-#endif
-        if (!QFile::exists(zipAlignTool)) {
-            fprintf(stderr, "zipalign tool not found: %s\n", qPrintable(zipAlignTool));
-            return false;
-        }
-    }
+    bool ok;
+    QString zipAlignTool = zipalignPath(options, &ok);
+    if (!ok)
+        return false;
 
     auto zipalignRunner = [](const QString &zipAlignCommandLine) {
         FILE *zipAlignCommand = openProcess(zipAlignCommandLine);
