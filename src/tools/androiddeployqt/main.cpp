@@ -2602,15 +2602,16 @@ static GradleProperties readGradleProperties(const QString &path)
 
 static bool mergeGradleProperties(const QString &path, GradleProperties properties)
 {
-    QFile::remove(path + u'~');
-    QFile::rename(path, path + u'~');
+    const QString oldPathStr = path + u'~';
+    QFile::remove(oldPathStr);
+    QFile::rename(path, oldPathStr);
     QFile file(path);
     if (!file.open(QIODevice::Truncate | QIODevice::WriteOnly | QIODevice::Text)) {
         fprintf(stderr, "Can't open file: %s for writing\n", qPrintable(file.fileName()));
         return false;
     }
 
-    QFile oldFile(path + u'~');
+    QFile oldFile(oldPathStr);
     if (oldFile.open(QIODevice::ReadOnly)) {
         while (!oldFile.atEnd()) {
             QByteArray line(oldFile.readLine());
@@ -2626,6 +2627,7 @@ static bool mergeGradleProperties(const QString &path, GradleProperties properti
             file.write(line);
         }
         oldFile.close();
+        QFile::remove(oldPathStr);
     }
 
     for (GradleProperties::const_iterator it = properties.begin(); it != properties.end(); ++it)
