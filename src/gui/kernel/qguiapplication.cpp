@@ -2585,11 +2585,25 @@ void QGuiApplicationPrivate::processSafeAreaMarginsChangedEvent(QWindowSystemInt
 void QGuiApplicationPrivate::processThemeChanged(QWindowSystemInterfacePrivate::ThemeChangeEvent *tce)
 {
     if (self)
-        self->notifyThemeChanged();
+        self->handleThemeChanged();
     if (QWindow *window  = tce->window.data()) {
         QEvent e(QEvent::ThemeChange);
         QGuiApplication::sendSpontaneousEvent(window, &e);
     }
+}
+
+void QGuiApplicationPrivate::handleThemeChanged()
+{
+    updatePalette();
+
+    QAbstractFileIconProviderPrivate::clearIconTypeCache();
+
+    if (!(applicationResourceFlags & ApplicationFontExplicitlySet)) {
+        const auto locker = qt_scoped_lock(applicationFontMutex);
+        clearFontUnlocked();
+        initFontUnlocked();
+    }
+    initThemeHints();
 }
 
 void QGuiApplicationPrivate::processGeometryChangeEvent(QWindowSystemInterfacePrivate::GeometryChangeEvent *e)
@@ -4196,20 +4210,6 @@ QPoint QGuiApplicationPrivate::QLastCursorPosition::toPoint() const noexcept
     if (Q_UNLIKELY(qIsInf(thePoint.x())))
         return QPoint(std::numeric_limits<int>::max(), std::numeric_limits<int>::max());
     return thePoint.toPoint();
-}
-
-void QGuiApplicationPrivate::notifyThemeChanged()
-{
-    updatePalette();
-
-    QAbstractFileIconProviderPrivate::clearIconTypeCache();
-
-    if (!(applicationResourceFlags & ApplicationFontExplicitlySet)) {
-        const auto locker = qt_scoped_lock(applicationFontMutex);
-        clearFontUnlocked();
-        initFontUnlocked();
-    }
-    initThemeHints();
 }
 
 #if QT_CONFIG(draganddrop)

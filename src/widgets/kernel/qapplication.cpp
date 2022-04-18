@@ -4045,9 +4045,9 @@ void QApplicationPrivate::translateTouchCancel(const QPointingDevice *device, ul
     }
 }
 
-void QApplicationPrivate::notifyThemeChanged()
+void QApplicationPrivate::handleThemeChanged()
 {
-    QGuiApplicationPrivate::notifyThemeChanged();
+    QGuiApplicationPrivate::handleThemeChanged();
 
     qt_init_tooltip_palette();
 }

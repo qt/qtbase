@@ -331,7 +331,7 @@ public:
     static void updatePalette();
 
 protected:
-    virtual void notifyThemeChanged();
+    virtual void handleThemeChanged();
 
     static bool setPalette(const QPalette &palette);
     virtual QPalette basePalette() const;

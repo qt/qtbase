@@ -165,7 +165,7 @@ public:
     static QStyle *app_style;
 
 protected:
-    void notifyThemeChanged() override;
+    void handleThemeChanged() override;
 
     QPalette basePalette() const override;
     void handlePaletteChanged(const char *className = nullptr) override;
