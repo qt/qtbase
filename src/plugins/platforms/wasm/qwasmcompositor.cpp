@@ -215,9 +215,6 @@ void QWasmCompositor::addWindow(QWasmWindow *window, QWasmWindow *parentWindow)
     else
         m_compositedWindows[parentWindow].childWindows.append(window);
 
-    if (!QGuiApplication::focusWindow()) {
-        window->requestActivateWindow();
-    }
     notifyTopWindowChanged(window);
 }
 
