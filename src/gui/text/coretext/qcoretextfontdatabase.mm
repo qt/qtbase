@@ -245,7 +245,7 @@ void QCoreTextFontDatabase::invalidate()
 
     qDeleteAll(m_themeFonts);
     m_themeFonts.clear();
-    QWindowSystemInterface::handleThemeChange<QWindowSystemInterface::SynchronousDelivery>(nullptr);
+    QWindowSystemInterface::handleThemeChange<QWindowSystemInterface::SynchronousDelivery>();
 }
 
 struct FontDescription {

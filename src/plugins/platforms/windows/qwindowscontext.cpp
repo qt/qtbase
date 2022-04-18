@@ -1164,8 +1164,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
             }
             if (integration->darkModeHandling().testFlag(QWindowsApplication::DarkModeStyle)) {
                 QWindowsTheme::instance()->refresh();
-                for (QWindowsWindow *w : d->m_windows)
-                    QWindowSystemInterface::handleThemeChange(w->window());
+                QWindowSystemInterface::handleThemeChange();
             }
         }
         return d->m_screenManager.handleScreenChanges();

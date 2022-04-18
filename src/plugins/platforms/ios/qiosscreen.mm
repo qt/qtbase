@@ -217,7 +217,7 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
         if (self.screen == UIScreen.mainScreen) {
             if (previousTraitCollection.userInterfaceStyle != self.traitCollection.userInterfaceStyle) {
                 QIOSTheme::initializeSystemPalette();
-                QWindowSystemInterface::handleThemeChange<QWindowSystemInterface::SynchronousDelivery>(nullptr);
+                QWindowSystemInterface::handleThemeChange<QWindowSystemInterface::SynchronousDelivery>();
             }
         }
     }

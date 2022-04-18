@@ -2586,10 +2586,11 @@ void QGuiApplicationPrivate::processThemeChanged(QWindowSystemInterfacePrivate::
 {
     if (self)
         self->handleThemeChanged();
-    if (QWindow *window  = tce->window.data()) {
-        QEvent e(QEvent::ThemeChange);
-        QGuiApplication::sendSpontaneousEvent(window, &e);
-    }
+
+    QEvent themeChangeEvent(QEvent::ThemeChange);
+    const QWindowList windows = tce->window ? QWindowList{tce->window} : window_list;
+    for (auto *window : windows)
+        QGuiApplication::sendSpontaneousEvent(window, &themeChangeEvent);
 }
 
 void QGuiApplicationPrivate::handleThemeChanged()
