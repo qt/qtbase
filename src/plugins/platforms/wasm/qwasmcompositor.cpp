@@ -1082,7 +1082,11 @@ bool QWasmCompositor::processMouse(int eventType, const EmscriptenMouseEvent *mo
 
         if (htmlWindow && pressedButtons.testFlag(Qt::NoButton)) {
 
-            if (htmlWindow->isPointOnResizeRegion(globalPoint)) {
+            Qt::WindowStates windowState = htmlWindow->window()->windowState();
+            bool isResizable = !(windowState.testFlag(Qt::WindowMaximized) || windowState.testFlag(Qt::WindowFullScreen));
+            bool isOnResizeRegion = htmlWindow->isPointOnResizeRegion(globalPoint);
+
+            if (isResizable && isOnResizeRegion) {
                 QCursor resizingCursor = eventTranslator->cursorForMode(htmlWindow->resizeModeAtPoint(globalPoint));
 
                 if (resizingCursor != window2->cursor()) {
