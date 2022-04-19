@@ -32,6 +32,9 @@
 
 
 QT_BEGIN_NAMESPACE
+
+using namespace Qt::StringLiterals;
+
 #ifdef QFORMINTERNAL_NAMESPACE
 using namespace QFormInternal;
 #endif
@@ -60,133 +63,133 @@ void DomUI::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("version")) {
+        if (name == u"version"_s) {
             setAttributeVersion(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("language")) {
+        if (name == u"language"_s) {
             setAttributeLanguage(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("displayname")) {
+        if (name == u"displayname"_s) {
             setAttributeDisplayname(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("idbasedtr")) {
-            setAttributeIdbasedtr(attribute.value() == QLatin1String("true"));
+        if (name == u"idbasedtr"_s) {
+            setAttributeIdbasedtr(attribute.value() == u"true"_s);
             continue;
         }
-        if (name == QLatin1String("connectslotsbyname")) {
-            setAttributeConnectslotsbyname(attribute.value() == QLatin1String("true"));
+        if (name == u"connectslotsbyname"_s) {
+            setAttributeConnectslotsbyname(attribute.value() == u"true"_s);
             continue;
         }
-        if (name == QLatin1String("stdsetdef")) {
+        if (name == u"stdsetdef"_s) {
             setAttributeStdsetdef(attribute.value().toInt());
             continue;
         }
-        if (name == QLatin1String("stdSetDef")) {
+        if (name == u"stdSetDef"_s) {
             setAttributeStdSetDef(attribute.value().toInt());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("author"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"author"_s, Qt::CaseInsensitive)) {
                 setElementAuthor(reader.readElementText());
                 continue;
             }
-            if (!tag.compare(QLatin1String("comment"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"comment"_s, Qt::CaseInsensitive)) {
                 setElementComment(reader.readElementText());
                 continue;
             }
-            if (!tag.compare(QLatin1String("exportmacro"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"exportmacro"_s, Qt::CaseInsensitive)) {
                 setElementExportMacro(reader.readElementText());
                 continue;
             }
-            if (!tag.compare(QLatin1String("class"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"class"_s, Qt::CaseInsensitive)) {
                 setElementClass(reader.readElementText());
                 continue;
             }
-            if (!tag.compare(QLatin1String("widget"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"widget"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomWidget();
                 v->read(reader);
                 setElementWidget(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("layoutdefault"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"layoutdefault"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomLayoutDefault();
                 v->read(reader);
                 setElementLayoutDefault(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("layoutfunction"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"layoutfunction"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomLayoutFunction();
                 v->read(reader);
                 setElementLayoutFunction(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("pixmapfunction"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"pixmapfunction"_s, Qt::CaseInsensitive)) {
                 setElementPixmapFunction(reader.readElementText());
                 continue;
             }
-            if (!tag.compare(QLatin1String("customwidgets"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"customwidgets"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomCustomWidgets();
                 v->read(reader);
                 setElementCustomWidgets(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("tabstops"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"tabstops"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomTabStops();
                 v->read(reader);
                 setElementTabStops(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("images"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"images"_s, Qt::CaseInsensitive)) {
                 qWarning("Omitting deprecated element <images>.");
                 reader.skipCurrentElement();
                 continue;
             }
-            if (!tag.compare(QLatin1String("includes"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"includes"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomIncludes();
                 v->read(reader);
                 setElementIncludes(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("resources"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"resources"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomResources();
                 v->read(reader);
                 setElementResources(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("connections"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"connections"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomConnections();
                 v->read(reader);
                 setElementConnections(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("designerdata"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"designerdata"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomDesignerData();
                 v->read(reader);
                 setElementDesignerdata(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("slots"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"slots"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomSlots();
                 v->read(reader);
                 setElementSlots(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("buttongroups"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"buttongroups"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomButtonGroups();
                 v->read(reader);
                 setElementButtonGroups(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -202,73 +205,73 @@ void DomUI::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("ui") : tagName.toLower());
 
     if (hasAttributeVersion())
-        writer.writeAttribute(QStringLiteral("version"), attributeVersion());
+        writer.writeAttribute(u"version"_s, attributeVersion());
 
     if (hasAttributeLanguage())
-        writer.writeAttribute(QStringLiteral("language"), attributeLanguage());
+        writer.writeAttribute(u"language"_s, attributeLanguage());
 
     if (hasAttributeDisplayname())
-        writer.writeAttribute(QStringLiteral("displayname"), attributeDisplayname());
+        writer.writeAttribute(u"displayname"_s, attributeDisplayname());
 
     if (hasAttributeIdbasedtr())
-        writer.writeAttribute(QStringLiteral("idbasedtr"), (attributeIdbasedtr() ? QLatin1String("true") : QLatin1String("false")));
+        writer.writeAttribute(u"idbasedtr"_s, (attributeIdbasedtr() ? u"true"_s : u"false"_s));
 
     if (hasAttributeConnectslotsbyname())
-        writer.writeAttribute(QStringLiteral("connectslotsbyname"), (attributeConnectslotsbyname() ? QLatin1String("true") : QLatin1String("false")));
+        writer.writeAttribute(u"connectslotsbyname"_s, (attributeConnectslotsbyname() ? u"true"_s : u"false"_s));
 
     if (hasAttributeStdsetdef())
-        writer.writeAttribute(QStringLiteral("stdsetdef"), QString::number(attributeStdsetdef()));
+        writer.writeAttribute(u"stdsetdef"_s, QString::number(attributeStdsetdef()));
 
     if (hasAttributeStdSetDef())
-        writer.writeAttribute(QStringLiteral("stdsetdef"), QString::number(attributeStdSetDef()));
+        writer.writeAttribute(u"stdsetdef"_s, QString::number(attributeStdSetDef()));
 
     if (m_children & Author)
-        writer.writeTextElement(QStringLiteral("author"), m_author);
+        writer.writeTextElement(u"author"_s, m_author);
 
     if (m_children & Comment)
-        writer.writeTextElement(QStringLiteral("comment"), m_comment);
+        writer.writeTextElement(u"comment"_s, m_comment);
 
     if (m_children & ExportMacro)
-        writer.writeTextElement(QStringLiteral("exportmacro"), m_exportMacro);
+        writer.writeTextElement(u"exportmacro"_s, m_exportMacro);
 
     if (m_children & Class)
-        writer.writeTextElement(QStringLiteral("class"), m_class);
+        writer.writeTextElement(u"class"_s, m_class);
 
     if (m_children & Widget)
-        m_widget->write(writer, QStringLiteral("widget"));
+        m_widget->write(writer, u"widget"_s);
 
     if (m_children & LayoutDefault)
-        m_layoutDefault->write(writer, QStringLiteral("layoutdefault"));
+        m_layoutDefault->write(writer, u"layoutdefault"_s);
 
     if (m_children & LayoutFunction)
-        m_layoutFunction->write(writer, QStringLiteral("layoutfunction"));
+        m_layoutFunction->write(writer, u"layoutfunction"_s);
 
     if (m_children & PixmapFunction)
-        writer.writeTextElement(QStringLiteral("pixmapfunction"), m_pixmapFunction);
+        writer.writeTextElement(u"pixmapfunction"_s, m_pixmapFunction);
 
     if (m_children & CustomWidgets)
-        m_customWidgets->write(writer, QStringLiteral("customwidgets"));
+        m_customWidgets->write(writer, u"customwidgets"_s);
 
     if (m_children & TabStops)
-        m_tabStops->write(writer, QStringLiteral("tabstops"));
+        m_tabStops->write(writer, u"tabstops"_s);
 
     if (m_children & Includes)
-        m_includes->write(writer, QStringLiteral("includes"));
+        m_includes->write(writer, u"includes"_s);
 
     if (m_children & Resources)
-        m_resources->write(writer, QStringLiteral("resources"));
+        m_resources->write(writer, u"resources"_s);
 
     if (m_children & Connections)
-        m_connections->write(writer, QStringLiteral("connections"));
+        m_connections->write(writer, u"connections"_s);
 
     if (m_children & Designerdata)
-        m_designerdata->write(writer, QStringLiteral("designerdata"));
+        m_designerdata->write(writer, u"designerdata"_s);
 
     if (m_children & Slots)
-        m_slots->write(writer, QStringLiteral("slots"));
+        m_slots->write(writer, u"slots"_s);
 
     if (m_children & ButtonGroups)
-        m_buttonGroups->write(writer, QStringLiteral("buttongroups"));
+        m_buttonGroups->write(writer, u"buttongroups"_s);
 
     writer.writeEndElement();
 }
@@ -582,13 +585,13 @@ void DomIncludes::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("include"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"include"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomInclude();
                 v->read(reader);
                 m_include.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -604,7 +607,7 @@ void DomIncludes::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("includes") : tagName.toLower());
 
     for (DomInclude *v : m_include)
-        v->write(writer, QStringLiteral("include"));
+        v->write(writer, u"include"_s);
 
     writer.writeEndElement();
 }
@@ -622,22 +625,22 @@ void DomInclude::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("location")) {
+        if (name == u"location"_s) {
             setAttributeLocation(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("impldecl")) {
+        if (name == u"impldecl"_s) {
             setAttributeImpldecl(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -657,10 +660,10 @@ void DomInclude::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("include") : tagName.toLower());
 
     if (hasAttributeLocation())
-        writer.writeAttribute(QStringLiteral("location"), attributeLocation());
+        writer.writeAttribute(u"location"_s, attributeLocation());
 
     if (hasAttributeImpldecl())
-        writer.writeAttribute(QStringLiteral("impldecl"), attributeImpldecl());
+        writer.writeAttribute(u"impldecl"_s, attributeImpldecl());
 
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -679,24 +682,24 @@ void DomResources::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("name")) {
+        if (name == u"name"_s) {
             setAttributeName(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("include"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"include"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomResource();
                 v->read(reader);
                 m_include.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -712,10 +715,10 @@ void DomResources::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("resources") : tagName.toLower());
 
     if (hasAttributeName())
-        writer.writeAttribute(QStringLiteral("name"), attributeName());
+        writer.writeAttribute(u"name"_s, attributeName());
 
     for (DomResource *v : m_include)
-        v->write(writer, QStringLiteral("include"));
+        v->write(writer, u"include"_s);
 
     writer.writeEndElement();
 }
@@ -733,18 +736,18 @@ void DomResource::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("location")) {
+        if (name == u"location"_s) {
             setAttributeLocation(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -760,7 +763,7 @@ void DomResource::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("resource") : tagName.toLower());
 
     if (hasAttributeLocation())
-        writer.writeAttribute(QStringLiteral("location"), attributeLocation());
+        writer.writeAttribute(u"location"_s, attributeLocation());
 
     writer.writeEndElement();
 }
@@ -782,42 +785,42 @@ void DomActionGroup::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("name")) {
+        if (name == u"name"_s) {
             setAttributeName(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("action"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"action"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomAction();
                 v->read(reader);
                 m_action.append(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("actiongroup"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"actiongroup"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomActionGroup();
                 v->read(reader);
                 m_actionGroup.append(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("property"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"property"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomProperty();
                 v->read(reader);
                 m_property.append(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("attribute"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"attribute"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomProperty();
                 v->read(reader);
                 m_attribute.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -833,19 +836,19 @@ void DomActionGroup::write(QXmlStreamWriter &writer, const QString &tagName) con
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("actiongroup") : tagName.toLower());
 
     if (hasAttributeName())
-        writer.writeAttribute(QStringLiteral("name"), attributeName());
+        writer.writeAttribute(u"name"_s, attributeName());
 
     for (DomAction *v : m_action)
-        v->write(writer, QStringLiteral("action"));
+        v->write(writer, u"action"_s);
 
     for (DomActionGroup *v : m_actionGroup)
-        v->write(writer, QStringLiteral("actiongroup"));
+        v->write(writer, u"actiongroup"_s);
 
     for (DomProperty *v : m_property)
-        v->write(writer, QStringLiteral("property"));
+        v->write(writer, u"property"_s);
 
     for (DomProperty *v : m_attribute)
-        v->write(writer, QStringLiteral("attribute"));
+        v->write(writer, u"attribute"_s);
 
     writer.writeEndElement();
 }
@@ -887,34 +890,34 @@ void DomAction::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("name")) {
+        if (name == u"name"_s) {
             setAttributeName(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("menu")) {
+        if (name == u"menu"_s) {
             setAttributeMenu(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("property"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"property"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomProperty();
                 v->read(reader);
                 m_property.append(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("attribute"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"attribute"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomProperty();
                 v->read(reader);
                 m_attribute.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -930,16 +933,16 @@ void DomAction::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("action") : tagName.toLower());
 
     if (hasAttributeName())
-        writer.writeAttribute(QStringLiteral("name"), attributeName());
+        writer.writeAttribute(u"name"_s, attributeName());
 
     if (hasAttributeMenu())
-        writer.writeAttribute(QStringLiteral("menu"), attributeMenu());
+        writer.writeAttribute(u"menu"_s, attributeMenu());
 
     for (DomProperty *v : m_property)
-        v->write(writer, QStringLiteral("property"));
+        v->write(writer, u"property"_s);
 
     for (DomProperty *v : m_attribute)
-        v->write(writer, QStringLiteral("attribute"));
+        v->write(writer, u"attribute"_s);
 
     writer.writeEndElement();
 }
@@ -963,18 +966,18 @@ void DomActionRef::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("name")) {
+        if (name == u"name"_s) {
             setAttributeName(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -990,7 +993,7 @@ void DomActionRef::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("actionref") : tagName.toLower());
 
     if (hasAttributeName())
-        writer.writeAttribute(QStringLiteral("name"), attributeName());
+        writer.writeAttribute(u"name"_s, attributeName());
 
     writer.writeEndElement();
 }
@@ -1008,30 +1011,30 @@ void DomButtonGroup::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("name")) {
+        if (name == u"name"_s) {
             setAttributeName(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("property"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"property"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomProperty();
                 v->read(reader);
                 m_property.append(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("attribute"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"attribute"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomProperty();
                 v->read(reader);
                 m_attribute.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -1047,13 +1050,13 @@ void DomButtonGroup::write(QXmlStreamWriter &writer, const QString &tagName) con
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("buttongroup") : tagName.toLower());
 
     if (hasAttributeName())
-        writer.writeAttribute(QStringLiteral("name"), attributeName());
+        writer.writeAttribute(u"name"_s, attributeName());
 
     for (DomProperty *v : m_property)
-        v->write(writer, QStringLiteral("property"));
+        v->write(writer, u"property"_s);
 
     for (DomProperty *v : m_attribute)
-        v->write(writer, QStringLiteral("attribute"));
+        v->write(writer, u"attribute"_s);
 
     writer.writeEndElement();
 }
@@ -1082,13 +1085,13 @@ void DomButtonGroups::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("buttongroup"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"buttongroup"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomButtonGroup();
                 v->read(reader);
                 m_buttonGroup.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -1104,7 +1107,7 @@ void DomButtonGroups::write(QXmlStreamWriter &writer, const QString &tagName) co
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("buttongroups") : tagName.toLower());
 
     for (DomButtonGroup *v : m_buttonGroup)
-        v->write(writer, QStringLiteral("buttongroup"));
+        v->write(writer, u"buttongroup"_s);
 
     writer.writeEndElement();
 }
@@ -1127,13 +1130,13 @@ void DomCustomWidgets::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("customwidget"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"customwidget"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomCustomWidget();
                 v->read(reader);
                 m_customWidget.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -1149,7 +1152,7 @@ void DomCustomWidgets::write(QXmlStreamWriter &writer, const QString &tagName) c
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("customwidgets") : tagName.toLower());
 
     for (DomCustomWidget *v : m_customWidget)
-        v->write(writer, QStringLiteral("customwidget"));
+        v->write(writer, u"customwidget"_s);
 
     writer.writeEndElement();
 }
@@ -1167,18 +1170,18 @@ void DomHeader::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("location")) {
+        if (name == u"location"_s) {
             setAttributeLocation(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -1198,7 +1201,7 @@ void DomHeader::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("header") : tagName.toLower());
 
     if (hasAttributeLocation())
-        writer.writeAttribute(QStringLiteral("location"), attributeLocation());
+        writer.writeAttribute(u"location"_s, attributeLocation());
 
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -1220,66 +1223,66 @@ void DomCustomWidget::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("class"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"class"_s, Qt::CaseInsensitive)) {
                 setElementClass(reader.readElementText());
                 continue;
             }
-            if (!tag.compare(QLatin1String("extends"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"extends"_s, Qt::CaseInsensitive)) {
                 setElementExtends(reader.readElementText());
                 continue;
             }
-            if (!tag.compare(QLatin1String("header"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"header"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomHeader();
                 v->read(reader);
                 setElementHeader(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("sizehint"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"sizehint"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomSize();
                 v->read(reader);
                 setElementSizeHint(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("addpagemethod"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"addpagemethod"_s, Qt::CaseInsensitive)) {
                 setElementAddPageMethod(reader.readElementText());
                 continue;
             }
-            if (!tag.compare(QLatin1String("container"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"container"_s, Qt::CaseInsensitive)) {
                 setElementContainer(reader.readElementText().toInt());
                 continue;
             }
-            if (!tag.compare(QLatin1String("sizepolicy"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"sizepolicy"_s, Qt::CaseInsensitive)) {
                 qWarning("Omitting deprecated element <sizepolicy>.");
                 reader.skipCurrentElement();
                 continue;
             }
-            if (!tag.compare(QLatin1String("pixmap"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"pixmap"_s, Qt::CaseInsensitive)) {
                 setElementPixmap(reader.readElementText());
                 continue;
             }
-            if (!tag.compare(QLatin1String("script"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"script"_s, Qt::CaseInsensitive)) {
                 qWarning("Omitting deprecated element <script>.");
                 reader.skipCurrentElement();
                 continue;
             }
-            if (!tag.compare(QLatin1String("properties"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"properties"_s, Qt::CaseInsensitive)) {
                 qWarning("Omitting deprecated element <properties>.");
                 reader.skipCurrentElement();
                 continue;
             }
-            if (!tag.compare(QLatin1String("slots"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"slots"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomSlots();
                 v->read(reader);
                 setElementSlots(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("propertyspecifications"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"propertyspecifications"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomPropertySpecifications();
                 v->read(reader);
                 setElementPropertyspecifications(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -1295,31 +1298,31 @@ void DomCustomWidget::write(QXmlStreamWriter &writer, const QString &tagName) co
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("customwidget") : tagName.toLower());
 
     if (m_children & Class)
-        writer.writeTextElement(QStringLiteral("class"), m_class);
+        writer.writeTextElement(u"class"_s, m_class);
 
     if (m_children & Extends)
-        writer.writeTextElement(QStringLiteral("extends"), m_extends);
+        writer.writeTextElement(u"extends"_s, m_extends);
 
     if (m_children & Header)
-        m_header->write(writer, QStringLiteral("header"));
+        m_header->write(writer, u"header"_s);
 
     if (m_children & SizeHint)
-        m_sizeHint->write(writer, QStringLiteral("sizehint"));
+        m_sizeHint->write(writer, u"sizehint"_s);
 
     if (m_children & AddPageMethod)
-        writer.writeTextElement(QStringLiteral("addpagemethod"), m_addPageMethod);
+        writer.writeTextElement(u"addpagemethod"_s, m_addPageMethod);
 
     if (m_children & Container)
-        writer.writeTextElement(QStringLiteral("container"), QString::number(m_container));
+        writer.writeTextElement(u"container"_s, QString::number(m_container));
 
     if (m_children & Pixmap)
-        writer.writeTextElement(QStringLiteral("pixmap"), m_pixmap);
+        writer.writeTextElement(u"pixmap"_s, m_pixmap);
 
     if (m_children & Slots)
-        m_slots->write(writer, QStringLiteral("slots"));
+        m_slots->write(writer, u"slots"_s);
 
     if (m_children & Propertyspecifications)
-        m_propertyspecifications->write(writer, QStringLiteral("propertyspecifications"));
+        m_propertyspecifications->write(writer, u"propertyspecifications"_s);
 
     writer.writeEndElement();
 }
@@ -1474,22 +1477,22 @@ void DomLayoutDefault::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("spacing")) {
+        if (name == u"spacing"_s) {
             setAttributeSpacing(attribute.value().toInt());
             continue;
         }
-        if (name == QLatin1String("margin")) {
+        if (name == u"margin"_s) {
             setAttributeMargin(attribute.value().toInt());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -1505,10 +1508,10 @@ void DomLayoutDefault::write(QXmlStreamWriter &writer, const QString &tagName) c
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("layoutdefault") : tagName.toLower());
 
     if (hasAttributeSpacing())
-        writer.writeAttribute(QStringLiteral("spacing"), QString::number(attributeSpacing()));
+        writer.writeAttribute(u"spacing"_s, QString::number(attributeSpacing()));
 
     if (hasAttributeMargin())
-        writer.writeAttribute(QStringLiteral("margin"), QString::number(attributeMargin()));
+        writer.writeAttribute(u"margin"_s, QString::number(attributeMargin()));
 
     writer.writeEndElement();
 }
@@ -1520,22 +1523,22 @@ void DomLayoutFunction::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("spacing")) {
+        if (name == u"spacing"_s) {
             setAttributeSpacing(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("margin")) {
+        if (name == u"margin"_s) {
             setAttributeMargin(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -1551,10 +1554,10 @@ void DomLayoutFunction::write(QXmlStreamWriter &writer, const QString &tagName) 
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("layoutfunction") : tagName.toLower());
 
     if (hasAttributeSpacing())
-        writer.writeAttribute(QStringLiteral("spacing"), attributeSpacing());
+        writer.writeAttribute(u"spacing"_s, attributeSpacing());
 
     if (hasAttributeMargin())
-        writer.writeAttribute(QStringLiteral("margin"), attributeMargin());
+        writer.writeAttribute(u"margin"_s, attributeMargin());
 
     writer.writeEndElement();
 }
@@ -1570,11 +1573,11 @@ void DomTabStops::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("tabstop"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"tabstop"_s, Qt::CaseInsensitive)) {
                 m_tabStop.append(reader.readElementText());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -1590,7 +1593,7 @@ void DomTabStops::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("tabstops") : tagName.toLower());
 
     for (const QString &v : m_tabStop)
-        writer.writeTextElement(QStringLiteral("tabstop"), v);
+        writer.writeTextElement(u"tabstop"_s, v);
 
     writer.writeEndElement();
 }
@@ -1616,60 +1619,60 @@ void DomLayout::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("class")) {
+        if (name == u"class"_s) {
             setAttributeClass(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("name")) {
+        if (name == u"name"_s) {
             setAttributeName(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("stretch")) {
+        if (name == u"stretch"_s) {
             setAttributeStretch(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("rowstretch")) {
+        if (name == u"rowstretch"_s) {
             setAttributeRowStretch(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("columnstretch")) {
+        if (name == u"columnstretch"_s) {
             setAttributeColumnStretch(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("rowminimumheight")) {
+        if (name == u"rowminimumheight"_s) {
             setAttributeRowMinimumHeight(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("columnminimumwidth")) {
+        if (name == u"columnminimumwidth"_s) {
             setAttributeColumnMinimumWidth(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("property"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"property"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomProperty();
                 v->read(reader);
                 m_property.append(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("attribute"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"attribute"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomProperty();
                 v->read(reader);
                 m_attribute.append(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("item"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"item"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomLayoutItem();
                 v->read(reader);
                 m_item.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -1685,34 +1688,34 @@ void DomLayout::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("layout") : tagName.toLower());
 
     if (hasAttributeClass())
-        writer.writeAttribute(QStringLiteral("class"), attributeClass());
+        writer.writeAttribute(u"class"_s, attributeClass());
 
     if (hasAttributeName())
-        writer.writeAttribute(QStringLiteral("name"), attributeName());
+        writer.writeAttribute(u"name"_s, attributeName());
 
     if (hasAttributeStretch())
-        writer.writeAttribute(QStringLiteral("stretch"), attributeStretch());
+        writer.writeAttribute(u"stretch"_s, attributeStretch());
 
     if (hasAttributeRowStretch())
-        writer.writeAttribute(QStringLiteral("rowstretch"), attributeRowStretch());
+        writer.writeAttribute(u"rowstretch"_s, attributeRowStretch());
 
     if (hasAttributeColumnStretch())
-        writer.writeAttribute(QStringLiteral("columnstretch"), attributeColumnStretch());
+        writer.writeAttribute(u"columnstretch"_s, attributeColumnStretch());
 
     if (hasAttributeRowMinimumHeight())
-        writer.writeAttribute(QStringLiteral("rowminimumheight"), attributeRowMinimumHeight());
+        writer.writeAttribute(u"rowminimumheight"_s, attributeRowMinimumHeight());
 
     if (hasAttributeColumnMinimumWidth())
-        writer.writeAttribute(QStringLiteral("columnminimumwidth"), attributeColumnMinimumWidth());
+        writer.writeAttribute(u"columnminimumwidth"_s, attributeColumnMinimumWidth());
 
     for (DomProperty *v : m_property)
-        v->write(writer, QStringLiteral("property"));
+        v->write(writer, u"property"_s);
 
     for (DomProperty *v : m_attribute)
-        v->write(writer, QStringLiteral("attribute"));
+        v->write(writer, u"attribute"_s);
 
     for (DomLayoutItem *v : m_item)
-        v->write(writer, QStringLiteral("item"));
+        v->write(writer, u"item"_s);
 
     writer.writeEndElement();
 }
@@ -1760,52 +1763,52 @@ void DomLayoutItem::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("row")) {
+        if (name == u"row"_s) {
             setAttributeRow(attribute.value().toInt());
             continue;
         }
-        if (name == QLatin1String("column")) {
+        if (name == u"column"_s) {
             setAttributeColumn(attribute.value().toInt());
             continue;
         }
-        if (name == QLatin1String("rowspan")) {
+        if (name == u"rowspan"_s) {
             setAttributeRowSpan(attribute.value().toInt());
             continue;
         }
-        if (name == QLatin1String("colspan")) {
+        if (name == u"colspan"_s) {
             setAttributeColSpan(attribute.value().toInt());
             continue;
         }
-        if (name == QLatin1String("alignment")) {
+        if (name == u"alignment"_s) {
             setAttributeAlignment(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("widget"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"widget"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomWidget();
                 v->read(reader);
                 setElementWidget(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("layout"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"layout"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomLayout();
                 v->read(reader);
                 setElementLayout(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("spacer"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"spacer"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomSpacer();
                 v->read(reader);
                 setElementSpacer(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -1821,34 +1824,34 @@ void DomLayoutItem::write(QXmlStreamWriter &writer, const QString &tagName) cons
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("layoutitem") : tagName.toLower());
 
     if (hasAttributeRow())
-        writer.writeAttribute(QStringLiteral("row"), QString::number(attributeRow()));
+        writer.writeAttribute(u"row"_s, QString::number(attributeRow()));
 
     if (hasAttributeColumn())
-        writer.writeAttribute(QStringLiteral("column"), QString::number(attributeColumn()));
+        writer.writeAttribute(u"column"_s, QString::number(attributeColumn()));
 
     if (hasAttributeRowSpan())
-        writer.writeAttribute(QStringLiteral("rowspan"), QString::number(attributeRowSpan()));
+        writer.writeAttribute(u"rowspan"_s, QString::number(attributeRowSpan()));
 
     if (hasAttributeColSpan())
-        writer.writeAttribute(QStringLiteral("colspan"), QString::number(attributeColSpan()));
+        writer.writeAttribute(u"colspan"_s, QString::number(attributeColSpan()));
 
     if (hasAttributeAlignment())
-        writer.writeAttribute(QStringLiteral("alignment"), attributeAlignment());
+        writer.writeAttribute(u"alignment"_s, attributeAlignment());
 
     switch (kind()) {
     case Widget:
         if (m_widget != nullptr)
-            m_widget->write(writer, QStringLiteral("widget"));
+            m_widget->write(writer, u"widget"_s);
         break;
 
     case Layout:
         if (m_layout != nullptr)
-            m_layout->write(writer, QStringLiteral("layout"));
+            m_layout->write(writer, u"layout"_s);
         break;
 
     case Spacer:
         if (m_spacer != nullptr)
-            m_spacer->write(writer, QStringLiteral("spacer"));
+            m_spacer->write(writer, u"spacer"_s);
         break;
 
     default:
@@ -1911,13 +1914,13 @@ void DomRow::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("property"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"property"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomProperty();
                 v->read(reader);
                 m_property.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -1933,7 +1936,7 @@ void DomRow::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("row") : tagName.toLower());
 
     for (DomProperty *v : m_property)
-        v->write(writer, QStringLiteral("property"));
+        v->write(writer, u"property"_s);
 
     writer.writeEndElement();
 }
@@ -1956,13 +1959,13 @@ void DomColumn::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("property"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"property"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomProperty();
                 v->read(reader);
                 m_property.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -1978,7 +1981,7 @@ void DomColumn::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("column") : tagName.toLower());
 
     for (DomProperty *v : m_property)
-        v->write(writer, QStringLiteral("property"));
+        v->write(writer, u"property"_s);
 
     writer.writeEndElement();
 }
@@ -2002,34 +2005,34 @@ void DomItem::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("row")) {
+        if (name == u"row"_s) {
             setAttributeRow(attribute.value().toInt());
             continue;
         }
-        if (name == QLatin1String("column")) {
+        if (name == u"column"_s) {
             setAttributeColumn(attribute.value().toInt());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("property"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"property"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomProperty();
                 v->read(reader);
                 m_property.append(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("item"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"item"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomItem();
                 v->read(reader);
                 m_item.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -2045,16 +2048,16 @@ void DomItem::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("item") : tagName.toLower());
 
     if (hasAttributeRow())
-        writer.writeAttribute(QStringLiteral("row"), QString::number(attributeRow()));
+        writer.writeAttribute(u"row"_s, QString::number(attributeRow()));
 
     if (hasAttributeColumn())
-        writer.writeAttribute(QStringLiteral("column"), QString::number(attributeColumn()));
+        writer.writeAttribute(u"column"_s, QString::number(attributeColumn()));
 
     for (DomProperty *v : m_property)
-        v->write(writer, QStringLiteral("property"));
+        v->write(writer, u"property"_s);
 
     for (DomItem *v : m_item)
-        v->write(writer, QStringLiteral("item"));
+        v->write(writer, u"item"_s);
 
     writer.writeEndElement();
 }
@@ -2102,104 +2105,104 @@ void DomWidget::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("class")) {
+        if (name == u"class"_s) {
             setAttributeClass(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("name")) {
+        if (name == u"name"_s) {
             setAttributeName(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("native")) {
-            setAttributeNative(attribute.value() == QLatin1String("true"));
+        if (name == u"native"_s) {
+            setAttributeNative(attribute.value() == u"true"_s);
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("class"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"class"_s, Qt::CaseInsensitive)) {
                 m_class.append(reader.readElementText());
                 continue;
             }
-            if (!tag.compare(QLatin1String("property"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"property"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomProperty();
                 v->read(reader);
                 m_property.append(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("script"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"script"_s, Qt::CaseInsensitive)) {
                 qWarning("Omitting deprecated element <script>.");
                 reader.skipCurrentElement();
                 continue;
             }
-            if (!tag.compare(QLatin1String("widgetdata"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"widgetdata"_s, Qt::CaseInsensitive)) {
                 qWarning("Omitting deprecated element <widgetdata>.");
                 reader.skipCurrentElement();
                 continue;
             }
-            if (!tag.compare(QLatin1String("attribute"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"attribute"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomProperty();
                 v->read(reader);
                 m_attribute.append(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("row"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"row"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomRow();
                 v->read(reader);
                 m_row.append(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("column"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"column"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomColumn();
                 v->read(reader);
                 m_column.append(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("item"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"item"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomItem();
                 v->read(reader);
                 m_item.append(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("layout"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"layout"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomLayout();
                 v->read(reader);
                 m_layout.append(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("widget"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"widget"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomWidget();
                 v->read(reader);
                 m_widget.append(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("action"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"action"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomAction();
                 v->read(reader);
                 m_action.append(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("actiongroup"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"actiongroup"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomActionGroup();
                 v->read(reader);
                 m_actionGroup.append(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("addaction"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"addaction"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomActionRef();
                 v->read(reader);
                 m_addAction.append(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("zorder"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"zorder"_s, Qt::CaseInsensitive)) {
                 m_zOrder.append(reader.readElementText());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -2215,49 +2218,49 @@ void DomWidget::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("widget") : tagName.toLower());
 
     if (hasAttributeClass())
-        writer.writeAttribute(QStringLiteral("class"), attributeClass());
+        writer.writeAttribute(u"class"_s, attributeClass());
 
     if (hasAttributeName())
-        writer.writeAttribute(QStringLiteral("name"), attributeName());
+        writer.writeAttribute(u"name"_s, attributeName());
 
     if (hasAttributeNative())
-        writer.writeAttribute(QStringLiteral("native"), (attributeNative() ? QLatin1String("true") : QLatin1String("false")));
+        writer.writeAttribute(u"native"_s, (attributeNative() ? u"true"_s : u"false"_s));
 
     for (const QString &v : m_class)
-        writer.writeTextElement(QStringLiteral("class"), v);
+        writer.writeTextElement(u"class"_s, v);
 
     for (DomProperty *v : m_property)
-        v->write(writer, QStringLiteral("property"));
+        v->write(writer, u"property"_s);
 
     for (DomProperty *v : m_attribute)
-        v->write(writer, QStringLiteral("attribute"));
+        v->write(writer, u"attribute"_s);
 
     for (DomRow *v : m_row)
-        v->write(writer, QStringLiteral("row"));
+        v->write(writer, u"row"_s);
 
     for (DomColumn *v : m_column)
-        v->write(writer, QStringLiteral("column"));
+        v->write(writer, u"column"_s);
 
     for (DomItem *v : m_item)
-        v->write(writer, QStringLiteral("item"));
+        v->write(writer, u"item"_s);
 
     for (DomLayout *v : m_layout)
-        v->write(writer, QStringLiteral("layout"));
+        v->write(writer, u"layout"_s);
 
     for (DomWidget *v : m_widget)
-        v->write(writer, QStringLiteral("widget"));
+        v->write(writer, u"widget"_s);
 
     for (DomAction *v : m_action)
-        v->write(writer, QStringLiteral("action"));
+        v->write(writer, u"action"_s);
 
     for (DomActionGroup *v : m_actionGroup)
-        v->write(writer, QStringLiteral("actiongroup"));
+        v->write(writer, u"actiongroup"_s);
 
     for (DomActionRef *v : m_addAction)
-        v->write(writer, QStringLiteral("addaction"));
+        v->write(writer, u"addaction"_s);
 
     for (const QString &v : m_zOrder)
-        writer.writeTextElement(QStringLiteral("zorder"), v);
+        writer.writeTextElement(u"zorder"_s, v);
 
     writer.writeEndElement();
 }
@@ -2345,24 +2348,24 @@ void DomSpacer::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("name")) {
+        if (name == u"name"_s) {
             setAttributeName(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("property"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"property"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomProperty();
                 v->read(reader);
                 m_property.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -2378,10 +2381,10 @@ void DomSpacer::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("spacer") : tagName.toLower());
 
     if (hasAttributeName())
-        writer.writeAttribute(QStringLiteral("name"), attributeName());
+        writer.writeAttribute(u"name"_s, attributeName());
 
     for (DomProperty *v : m_property)
-        v->write(writer, QStringLiteral("property"));
+        v->write(writer, u"property"_s);
 
     writer.writeEndElement();
 }
@@ -2399,30 +2402,30 @@ void DomColor::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("alpha")) {
+        if (name == u"alpha"_s) {
             setAttributeAlpha(attribute.value().toInt());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("red"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"red"_s, Qt::CaseInsensitive)) {
                 setElementRed(reader.readElementText().toInt());
                 continue;
             }
-            if (!tag.compare(QLatin1String("green"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"green"_s, Qt::CaseInsensitive)) {
                 setElementGreen(reader.readElementText().toInt());
                 continue;
             }
-            if (!tag.compare(QLatin1String("blue"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"blue"_s, Qt::CaseInsensitive)) {
                 setElementBlue(reader.readElementText().toInt());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -2438,16 +2441,16 @@ void DomColor::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("color") : tagName.toLower());
 
     if (hasAttributeAlpha())
-        writer.writeAttribute(QStringLiteral("alpha"), QString::number(attributeAlpha()));
+        writer.writeAttribute(u"alpha"_s, QString::number(attributeAlpha()));
 
     if (m_children & Red)
-        writer.writeTextElement(QStringLiteral("red"), QString::number(m_red));
+        writer.writeTextElement(u"red"_s, QString::number(m_red));
 
     if (m_children & Green)
-        writer.writeTextElement(QStringLiteral("green"), QString::number(m_green));
+        writer.writeTextElement(u"green"_s, QString::number(m_green));
 
     if (m_children & Blue)
-        writer.writeTextElement(QStringLiteral("blue"), QString::number(m_blue));
+        writer.writeTextElement(u"blue"_s, QString::number(m_blue));
 
     writer.writeEndElement();
 }
@@ -2495,24 +2498,24 @@ void DomGradientStop::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("position")) {
+        if (name == u"position"_s) {
             setAttributePosition(attribute.value().toDouble());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("color"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"color"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomColor();
                 v->read(reader);
                 setElementColor(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -2528,10 +2531,10 @@ void DomGradientStop::write(QXmlStreamWriter &writer, const QString &tagName) co
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("gradientstop") : tagName.toLower());
 
     if (hasAttributePosition())
-        writer.writeAttribute(QStringLiteral("position"), QString::number(attributePosition(), 'f', 15));
+        writer.writeAttribute(u"position"_s, QString::number(attributePosition(), 'f', 15));
 
     if (m_children & Color)
-        m_color->write(writer, QStringLiteral("color"));
+        m_color->write(writer, u"color"_s);
 
     writer.writeEndElement();
 }
@@ -2569,72 +2572,72 @@ void DomGradient::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("startx")) {
+        if (name == u"startx"_s) {
             setAttributeStartX(attribute.value().toDouble());
             continue;
         }
-        if (name == QLatin1String("starty")) {
+        if (name == u"starty"_s) {
             setAttributeStartY(attribute.value().toDouble());
             continue;
         }
-        if (name == QLatin1String("endx")) {
+        if (name == u"endx"_s) {
             setAttributeEndX(attribute.value().toDouble());
             continue;
         }
-        if (name == QLatin1String("endy")) {
+        if (name == u"endy"_s) {
             setAttributeEndY(attribute.value().toDouble());
             continue;
         }
-        if (name == QLatin1String("centralx")) {
+        if (name == u"centralx"_s) {
             setAttributeCentralX(attribute.value().toDouble());
             continue;
         }
-        if (name == QLatin1String("centraly")) {
+        if (name == u"centraly"_s) {
             setAttributeCentralY(attribute.value().toDouble());
             continue;
         }
-        if (name == QLatin1String("focalx")) {
+        if (name == u"focalx"_s) {
             setAttributeFocalX(attribute.value().toDouble());
             continue;
         }
-        if (name == QLatin1String("focaly")) {
+        if (name == u"focaly"_s) {
             setAttributeFocalY(attribute.value().toDouble());
             continue;
         }
-        if (name == QLatin1String("radius")) {
+        if (name == u"radius"_s) {
             setAttributeRadius(attribute.value().toDouble());
             continue;
         }
-        if (name == QLatin1String("angle")) {
+        if (name == u"angle"_s) {
             setAttributeAngle(attribute.value().toDouble());
             continue;
         }
-        if (name == QLatin1String("type")) {
+        if (name == u"type"_s) {
             setAttributeType(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("spread")) {
+        if (name == u"spread"_s) {
             setAttributeSpread(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("coordinatemode")) {
+        if (name == u"coordinatemode"_s) {
             setAttributeCoordinateMode(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("gradientstop"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"gradientstop"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomGradientStop();
                 v->read(reader);
                 m_gradientStop.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -2650,46 +2653,46 @@ void DomGradient::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("gradient") : tagName.toLower());
 
     if (hasAttributeStartX())
-        writer.writeAttribute(QStringLiteral("startx"), QString::number(attributeStartX(), 'f', 15));
+        writer.writeAttribute(u"startx"_s, QString::number(attributeStartX(), 'f', 15));
 
     if (hasAttributeStartY())
-        writer.writeAttribute(QStringLiteral("starty"), QString::number(attributeStartY(), 'f', 15));
+        writer.writeAttribute(u"starty"_s, QString::number(attributeStartY(), 'f', 15));
 
     if (hasAttributeEndX())
-        writer.writeAttribute(QStringLiteral("endx"), QString::number(attributeEndX(), 'f', 15));
+        writer.writeAttribute(u"endx"_s, QString::number(attributeEndX(), 'f', 15));
 
     if (hasAttributeEndY())
-        writer.writeAttribute(QStringLiteral("endy"), QString::number(attributeEndY(), 'f', 15));
+        writer.writeAttribute(u"endy"_s, QString::number(attributeEndY(), 'f', 15));
 
     if (hasAttributeCentralX())
-        writer.writeAttribute(QStringLiteral("centralx"), QString::number(attributeCentralX(), 'f', 15));
+        writer.writeAttribute(u"centralx"_s, QString::number(attributeCentralX(), 'f', 15));
 
     if (hasAttributeCentralY())
-        writer.writeAttribute(QStringLiteral("centraly"), QString::number(attributeCentralY(), 'f', 15));
+        writer.writeAttribute(u"centraly"_s, QString::number(attributeCentralY(), 'f', 15));
 
     if (hasAttributeFocalX())
-        writer.writeAttribute(QStringLiteral("focalx"), QString::number(attributeFocalX(), 'f', 15));
+        writer.writeAttribute(u"focalx"_s, QString::number(attributeFocalX(), 'f', 15));
 
     if (hasAttributeFocalY())
-        writer.writeAttribute(QStringLiteral("focaly"), QString::number(attributeFocalY(), 'f', 15));
+        writer.writeAttribute(u"focaly"_s, QString::number(attributeFocalY(), 'f', 15));
 
     if (hasAttributeRadius())
-        writer.writeAttribute(QStringLiteral("radius"), QString::number(attributeRadius(), 'f', 15));
+        writer.writeAttribute(u"radius"_s, QString::number(attributeRadius(), 'f', 15));
 
     if (hasAttributeAngle())
-        writer.writeAttribute(QStringLiteral("angle"), QString::number(attributeAngle(), 'f', 15));
+        writer.writeAttribute(u"angle"_s, QString::number(attributeAngle(), 'f', 15));
 
     if (hasAttributeType())
-        writer.writeAttribute(QStringLiteral("type"), attributeType());
+        writer.writeAttribute(u"type"_s, attributeType());
 
     if (hasAttributeSpread())
-        writer.writeAttribute(QStringLiteral("spread"), attributeSpread());
+        writer.writeAttribute(u"spread"_s, attributeSpread());
 
     if (hasAttributeCoordinateMode())
-        writer.writeAttribute(QStringLiteral("coordinatemode"), attributeCoordinateMode());
+        writer.writeAttribute(u"coordinatemode"_s, attributeCoordinateMode());
 
     for (DomGradientStop *v : m_gradientStop)
-        v->write(writer, QStringLiteral("gradientstop"));
+        v->write(writer, u"gradientstop"_s);
 
     writer.writeEndElement();
 }
@@ -2725,36 +2728,36 @@ void DomBrush::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("brushstyle")) {
+        if (name == u"brushstyle"_s) {
             setAttributeBrushStyle(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("color"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"color"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomColor();
                 v->read(reader);
                 setElementColor(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("texture"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"texture"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomProperty();
                 v->read(reader);
                 setElementTexture(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("gradient"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"gradient"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomGradient();
                 v->read(reader);
                 setElementGradient(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -2770,22 +2773,22 @@ void DomBrush::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("brush") : tagName.toLower());
 
     if (hasAttributeBrushStyle())
-        writer.writeAttribute(QStringLiteral("brushstyle"), attributeBrushStyle());
+        writer.writeAttribute(u"brushstyle"_s, attributeBrushStyle());
 
     switch (kind()) {
     case Color:
         if (m_color != nullptr)
-            m_color->write(writer, QStringLiteral("color"));
+            m_color->write(writer, u"color"_s);
         break;
 
     case Texture:
         if (m_texture != nullptr)
-            m_texture->write(writer, QStringLiteral("texture"));
+            m_texture->write(writer, u"texture"_s);
         break;
 
     case Gradient:
         if (m_gradient != nullptr)
-            m_gradient->write(writer, QStringLiteral("gradient"));
+            m_gradient->write(writer, u"gradient"_s);
         break;
 
     default:
@@ -2846,24 +2849,24 @@ void DomColorRole::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("role")) {
+        if (name == u"role"_s) {
             setAttributeRole(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("brush"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"brush"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomBrush();
                 v->read(reader);
                 setElementBrush(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -2879,10 +2882,10 @@ void DomColorRole::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("colorrole") : tagName.toLower());
 
     if (hasAttributeRole())
-        writer.writeAttribute(QStringLiteral("role"), attributeRole());
+        writer.writeAttribute(u"role"_s, attributeRole());
 
     if (m_children & Brush)
-        m_brush->write(writer, QStringLiteral("brush"));
+        m_brush->write(writer, u"brush"_s);
 
     writer.writeEndElement();
 }
@@ -2923,19 +2926,19 @@ void DomColorGroup::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("colorrole"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"colorrole"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomColorRole();
                 v->read(reader);
                 m_colorRole.append(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("color"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"color"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomColor();
                 v->read(reader);
                 m_color.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -2951,10 +2954,10 @@ void DomColorGroup::write(QXmlStreamWriter &writer, const QString &tagName) cons
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("colorgroup") : tagName.toLower());
 
     for (DomColorRole *v : m_colorRole)
-        v->write(writer, QStringLiteral("colorrole"));
+        v->write(writer, u"colorrole"_s);
 
     for (DomColor *v : m_color)
-        v->write(writer, QStringLiteral("color"));
+        v->write(writer, u"color"_s);
 
     writer.writeEndElement();
 }
@@ -2984,25 +2987,25 @@ void DomPalette::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("active"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"active"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomColorGroup();
                 v->read(reader);
                 setElementActive(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("inactive"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"inactive"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomColorGroup();
                 v->read(reader);
                 setElementInactive(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("disabled"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"disabled"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomColorGroup();
                 v->read(reader);
                 setElementDisabled(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -3018,13 +3021,13 @@ void DomPalette::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("palette") : tagName.toLower());
 
     if (m_children & Active)
-        m_active->write(writer, QStringLiteral("active"));
+        m_active->write(writer, u"active"_s);
 
     if (m_children & Inactive)
-        m_inactive->write(writer, QStringLiteral("inactive"));
+        m_inactive->write(writer, u"inactive"_s);
 
     if (m_children & Disabled)
-        m_disabled->write(writer, QStringLiteral("disabled"));
+        m_disabled->write(writer, u"disabled"_s);
 
     writer.writeEndElement();
 }
@@ -3103,47 +3106,47 @@ void DomFont::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("family"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"family"_s, Qt::CaseInsensitive)) {
                 setElementFamily(reader.readElementText());
                 continue;
             }
-            if (!tag.compare(QLatin1String("pointsize"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"pointsize"_s, Qt::CaseInsensitive)) {
                 setElementPointSize(reader.readElementText().toInt());
                 continue;
             }
-            if (!tag.compare(QLatin1String("weight"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"weight"_s, Qt::CaseInsensitive)) {
                 setElementWeight(reader.readElementText().toInt());
                 continue;
             }
-            if (!tag.compare(QLatin1String("italic"), Qt::CaseInsensitive)) {
-                setElementItalic(reader.readElementText() == QLatin1String("true"));
+            if (!tag.compare(u"italic"_s, Qt::CaseInsensitive)) {
+                setElementItalic(reader.readElementText() == u"true"_s);
                 continue;
             }
-            if (!tag.compare(QLatin1String("bold"), Qt::CaseInsensitive)) {
-                setElementBold(reader.readElementText() == QLatin1String("true"));
+            if (!tag.compare(u"bold"_s, Qt::CaseInsensitive)) {
+                setElementBold(reader.readElementText() == u"true"_s);
                 continue;
             }
-            if (!tag.compare(QLatin1String("underline"), Qt::CaseInsensitive)) {
-                setElementUnderline(reader.readElementText() == QLatin1String("true"));
+            if (!tag.compare(u"underline"_s, Qt::CaseInsensitive)) {
+                setElementUnderline(reader.readElementText() == u"true"_s);
                 continue;
             }
-            if (!tag.compare(QLatin1String("strikeout"), Qt::CaseInsensitive)) {
-                setElementStrikeOut(reader.readElementText() == QLatin1String("true"));
+            if (!tag.compare(u"strikeout"_s, Qt::CaseInsensitive)) {
+                setElementStrikeOut(reader.readElementText() == u"true"_s);
                 continue;
             }
-            if (!tag.compare(QLatin1String("antialiasing"), Qt::CaseInsensitive)) {
-                setElementAntialiasing(reader.readElementText() == QLatin1String("true"));
+            if (!tag.compare(u"antialiasing"_s, Qt::CaseInsensitive)) {
+                setElementAntialiasing(reader.readElementText() == u"true"_s);
                 continue;
             }
-            if (!tag.compare(QLatin1String("stylestrategy"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"stylestrategy"_s, Qt::CaseInsensitive)) {
                 setElementStyleStrategy(reader.readElementText());
                 continue;
             }
-            if (!tag.compare(QLatin1String("kerning"), Qt::CaseInsensitive)) {
-                setElementKerning(reader.readElementText() == QLatin1String("true"));
+            if (!tag.compare(u"kerning"_s, Qt::CaseInsensitive)) {
+                setElementKerning(reader.readElementText() == u"true"_s);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -3159,34 +3162,34 @@ void DomFont::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("font") : tagName.toLower());
 
     if (m_children & Family)
-        writer.writeTextElement(QStringLiteral("family"), m_family);
+        writer.writeTextElement(u"family"_s, m_family);
 
     if (m_children & PointSize)
-        writer.writeTextElement(QStringLiteral("pointsize"), QString::number(m_pointSize));
+        writer.writeTextElement(u"pointsize"_s, QString::number(m_pointSize));
 
     if (m_children & Weight)
-        writer.writeTextElement(QStringLiteral("weight"), QString::number(m_weight));
+        writer.writeTextElement(u"weight"_s, QString::number(m_weight));
 
     if (m_children & Italic)
-        writer.writeTextElement(QStringLiteral("italic"), (m_italic ? QLatin1String("true") : QLatin1String("false")));
+        writer.writeTextElement(u"italic"_s, (m_italic ? u"true"_s : u"false"_s));
 
     if (m_children & Bold)
-        writer.writeTextElement(QStringLiteral("bold"), (m_bold ? QLatin1String("true") : QLatin1String("false")));
+        writer.writeTextElement(u"bold"_s, (m_bold ? u"true"_s : u"false"_s));
 
     if (m_children & Underline)
-        writer.writeTextElement(QStringLiteral("underline"), (m_underline ? QLatin1String("true") : QLatin1String("false")));
+        writer.writeTextElement(u"underline"_s, (m_underline ? u"true"_s : u"false"_s));
 
     if (m_children & StrikeOut)
-        writer.writeTextElement(QStringLiteral("strikeout"), (m_strikeOut ? QLatin1String("true") : QLatin1String("false")));
+        writer.writeTextElement(u"strikeout"_s, (m_strikeOut ? u"true"_s : u"false"_s));
 
     if (m_children & Antialiasing)
-        writer.writeTextElement(QStringLiteral("antialiasing"), (m_antialiasing ? QLatin1String("true") : QLatin1String("false")));
+        writer.writeTextElement(u"antialiasing"_s, (m_antialiasing ? u"true"_s : u"false"_s));
 
     if (m_children & StyleStrategy)
-        writer.writeTextElement(QStringLiteral("stylestrategy"), m_styleStrategy);
+        writer.writeTextElement(u"stylestrategy"_s, m_styleStrategy);
 
     if (m_children & Kerning)
-        writer.writeTextElement(QStringLiteral("kerning"), (m_kerning ? QLatin1String("true") : QLatin1String("false")));
+        writer.writeTextElement(u"kerning"_s, (m_kerning ? u"true"_s : u"false"_s));
 
     writer.writeEndElement();
 }
@@ -3309,15 +3312,15 @@ void DomPoint::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("x"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"x"_s, Qt::CaseInsensitive)) {
                 setElementX(reader.readElementText().toInt());
                 continue;
             }
-            if (!tag.compare(QLatin1String("y"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"y"_s, Qt::CaseInsensitive)) {
                 setElementY(reader.readElementText().toInt());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -3333,10 +3336,10 @@ void DomPoint::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("point") : tagName.toLower());
 
     if (m_children & X)
-        writer.writeTextElement(QString(QLatin1Char('x')), QString::number(m_x));
+        writer.writeTextElement(u"x"_s, QString::number(m_x));
 
     if (m_children & Y)
-        writer.writeTextElement(QString(QLatin1Char('y')), QString::number(m_y));
+        writer.writeTextElement(u"y"_s, QString::number(m_y));
 
     writer.writeEndElement();
 }
@@ -3371,23 +3374,23 @@ void DomRect::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("x"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"x"_s, Qt::CaseInsensitive)) {
                 setElementX(reader.readElementText().toInt());
                 continue;
             }
-            if (!tag.compare(QLatin1String("y"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"y"_s, Qt::CaseInsensitive)) {
                 setElementY(reader.readElementText().toInt());
                 continue;
             }
-            if (!tag.compare(QLatin1String("width"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"width"_s, Qt::CaseInsensitive)) {
                 setElementWidth(reader.readElementText().toInt());
                 continue;
             }
-            if (!tag.compare(QLatin1String("height"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"height"_s, Qt::CaseInsensitive)) {
                 setElementHeight(reader.readElementText().toInt());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -3403,16 +3406,16 @@ void DomRect::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("rect") : tagName.toLower());
 
     if (m_children & X)
-        writer.writeTextElement(QString(QLatin1Char('x')), QString::number(m_x));
+        writer.writeTextElement(u"x"_s, QString::number(m_x));
 
     if (m_children & Y)
-        writer.writeTextElement(QString(QLatin1Char('y')), QString::number(m_y));
+        writer.writeTextElement(u"y"_s, QString::number(m_y));
 
     if (m_children & Width)
-        writer.writeTextElement(QStringLiteral("width"), QString::number(m_width));
+        writer.writeTextElement(u"width"_s, QString::number(m_width));
 
     if (m_children & Height)
-        writer.writeTextElement(QStringLiteral("height"), QString::number(m_height));
+        writer.writeTextElement(u"height"_s, QString::number(m_height));
 
     writer.writeEndElement();
 }
@@ -3468,22 +3471,22 @@ void DomLocale::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("language")) {
+        if (name == u"language"_s) {
             setAttributeLanguage(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("country")) {
+        if (name == u"country"_s) {
             setAttributeCountry(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -3499,10 +3502,10 @@ void DomLocale::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("locale") : tagName.toLower());
 
     if (hasAttributeLanguage())
-        writer.writeAttribute(QStringLiteral("language"), attributeLanguage());
+        writer.writeAttribute(u"language"_s, attributeLanguage());
 
     if (hasAttributeCountry())
-        writer.writeAttribute(QStringLiteral("country"), attributeCountry());
+        writer.writeAttribute(u"country"_s, attributeCountry());
 
     writer.writeEndElement();
 }
@@ -3514,38 +3517,38 @@ void DomSizePolicy::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("hsizetype")) {
+        if (name == u"hsizetype"_s) {
             setAttributeHSizeType(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("vsizetype")) {
+        if (name == u"vsizetype"_s) {
             setAttributeVSizeType(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("hsizetype"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"hsizetype"_s, Qt::CaseInsensitive)) {
                 setElementHSizeType(reader.readElementText().toInt());
                 continue;
             }
-            if (!tag.compare(QLatin1String("vsizetype"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"vsizetype"_s, Qt::CaseInsensitive)) {
                 setElementVSizeType(reader.readElementText().toInt());
                 continue;
             }
-            if (!tag.compare(QLatin1String("horstretch"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"horstretch"_s, Qt::CaseInsensitive)) {
                 setElementHorStretch(reader.readElementText().toInt());
                 continue;
             }
-            if (!tag.compare(QLatin1String("verstretch"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"verstretch"_s, Qt::CaseInsensitive)) {
                 setElementVerStretch(reader.readElementText().toInt());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -3561,22 +3564,22 @@ void DomSizePolicy::write(QXmlStreamWriter &writer, const QString &tagName) cons
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("sizepolicy") : tagName.toLower());
 
     if (hasAttributeHSizeType())
-        writer.writeAttribute(QStringLiteral("hsizetype"), attributeHSizeType());
+        writer.writeAttribute(u"hsizetype"_s, attributeHSizeType());
 
     if (hasAttributeVSizeType())
-        writer.writeAttribute(QStringLiteral("vsizetype"), attributeVSizeType());
+        writer.writeAttribute(u"vsizetype"_s, attributeVSizeType());
 
     if (m_children & HSizeType)
-        writer.writeTextElement(QStringLiteral("hsizetype"), QString::number(m_hSizeType));
+        writer.writeTextElement(u"hsizetype"_s, QString::number(m_hSizeType));
 
     if (m_children & VSizeType)
-        writer.writeTextElement(QStringLiteral("vsizetype"), QString::number(m_vSizeType));
+        writer.writeTextElement(u"vsizetype"_s, QString::number(m_vSizeType));
 
     if (m_children & HorStretch)
-        writer.writeTextElement(QStringLiteral("horstretch"), QString::number(m_horStretch));
+        writer.writeTextElement(u"horstretch"_s, QString::number(m_horStretch));
 
     if (m_children & VerStretch)
-        writer.writeTextElement(QStringLiteral("verstretch"), QString::number(m_verStretch));
+        writer.writeTextElement(u"verstretch"_s, QString::number(m_verStretch));
 
     writer.writeEndElement();
 }
@@ -3633,15 +3636,15 @@ void DomSize::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("width"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"width"_s, Qt::CaseInsensitive)) {
                 setElementWidth(reader.readElementText().toInt());
                 continue;
             }
-            if (!tag.compare(QLatin1String("height"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"height"_s, Qt::CaseInsensitive)) {
                 setElementHeight(reader.readElementText().toInt());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -3657,10 +3660,10 @@ void DomSize::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("size") : tagName.toLower());
 
     if (m_children & Width)
-        writer.writeTextElement(QStringLiteral("width"), QString::number(m_width));
+        writer.writeTextElement(u"width"_s, QString::number(m_width));
 
     if (m_children & Height)
-        writer.writeTextElement(QStringLiteral("height"), QString::number(m_height));
+        writer.writeTextElement(u"height"_s, QString::number(m_height));
 
     writer.writeEndElement();
 }
@@ -3695,19 +3698,19 @@ void DomDate::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("year"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"year"_s, Qt::CaseInsensitive)) {
                 setElementYear(reader.readElementText().toInt());
                 continue;
             }
-            if (!tag.compare(QLatin1String("month"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"month"_s, Qt::CaseInsensitive)) {
                 setElementMonth(reader.readElementText().toInt());
                 continue;
             }
-            if (!tag.compare(QLatin1String("day"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"day"_s, Qt::CaseInsensitive)) {
                 setElementDay(reader.readElementText().toInt());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -3723,13 +3726,13 @@ void DomDate::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("date") : tagName.toLower());
 
     if (m_children & Year)
-        writer.writeTextElement(QStringLiteral("year"), QString::number(m_year));
+        writer.writeTextElement(u"year"_s, QString::number(m_year));
 
     if (m_children & Month)
-        writer.writeTextElement(QStringLiteral("month"), QString::number(m_month));
+        writer.writeTextElement(u"month"_s, QString::number(m_month));
 
     if (m_children & Day)
-        writer.writeTextElement(QStringLiteral("day"), QString::number(m_day));
+        writer.writeTextElement(u"day"_s, QString::number(m_day));
 
     writer.writeEndElement();
 }
@@ -3775,19 +3778,19 @@ void DomTime::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("hour"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"hour"_s, Qt::CaseInsensitive)) {
                 setElementHour(reader.readElementText().toInt());
                 continue;
             }
-            if (!tag.compare(QLatin1String("minute"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"minute"_s, Qt::CaseInsensitive)) {
                 setElementMinute(reader.readElementText().toInt());
                 continue;
             }
-            if (!tag.compare(QLatin1String("second"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"second"_s, Qt::CaseInsensitive)) {
                 setElementSecond(reader.readElementText().toInt());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -3803,13 +3806,13 @@ void DomTime::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("time") : tagName.toLower());
 
     if (m_children & Hour)
-        writer.writeTextElement(QStringLiteral("hour"), QString::number(m_hour));
+        writer.writeTextElement(u"hour"_s, QString::number(m_hour));
 
     if (m_children & Minute)
-        writer.writeTextElement(QStringLiteral("minute"), QString::number(m_minute));
+        writer.writeTextElement(u"minute"_s, QString::number(m_minute));
 
     if (m_children & Second)
-        writer.writeTextElement(QStringLiteral("second"), QString::number(m_second));
+        writer.writeTextElement(u"second"_s, QString::number(m_second));
 
     writer.writeEndElement();
 }
@@ -3855,31 +3858,31 @@ void DomDateTime::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("hour"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"hour"_s, Qt::CaseInsensitive)) {
                 setElementHour(reader.readElementText().toInt());
                 continue;
             }
-            if (!tag.compare(QLatin1String("minute"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"minute"_s, Qt::CaseInsensitive)) {
                 setElementMinute(reader.readElementText().toInt());
                 continue;
             }
-            if (!tag.compare(QLatin1String("second"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"second"_s, Qt::CaseInsensitive)) {
                 setElementSecond(reader.readElementText().toInt());
                 continue;
             }
-            if (!tag.compare(QLatin1String("year"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"year"_s, Qt::CaseInsensitive)) {
                 setElementYear(reader.readElementText().toInt());
                 continue;
             }
-            if (!tag.compare(QLatin1String("month"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"month"_s, Qt::CaseInsensitive)) {
                 setElementMonth(reader.readElementText().toInt());
                 continue;
             }
-            if (!tag.compare(QLatin1String("day"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"day"_s, Qt::CaseInsensitive)) {
                 setElementDay(reader.readElementText().toInt());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -3895,22 +3898,22 @@ void DomDateTime::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("datetime") : tagName.toLower());
 
     if (m_children & Hour)
-        writer.writeTextElement(QStringLiteral("hour"), QString::number(m_hour));
+        writer.writeTextElement(u"hour"_s, QString::number(m_hour));
 
     if (m_children & Minute)
-        writer.writeTextElement(QStringLiteral("minute"), QString::number(m_minute));
+        writer.writeTextElement(u"minute"_s, QString::number(m_minute));
 
     if (m_children & Second)
-        writer.writeTextElement(QStringLiteral("second"), QString::number(m_second));
+        writer.writeTextElement(u"second"_s, QString::number(m_second));
 
     if (m_children & Year)
-        writer.writeTextElement(QStringLiteral("year"), QString::number(m_year));
+        writer.writeTextElement(u"year"_s, QString::number(m_year));
 
     if (m_children & Month)
-        writer.writeTextElement(QStringLiteral("month"), QString::number(m_month));
+        writer.writeTextElement(u"month"_s, QString::number(m_month));
 
     if (m_children & Day)
-        writer.writeTextElement(QStringLiteral("day"), QString::number(m_day));
+        writer.writeTextElement(u"day"_s, QString::number(m_day));
 
     writer.writeEndElement();
 }
@@ -3991,34 +3994,34 @@ void DomStringList::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("notr")) {
+        if (name == u"notr"_s) {
             setAttributeNotr(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("comment")) {
+        if (name == u"comment"_s) {
             setAttributeComment(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("extracomment")) {
+        if (name == u"extracomment"_s) {
             setAttributeExtraComment(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("id")) {
+        if (name == u"id"_s) {
             setAttributeId(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("string"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"string"_s, Qt::CaseInsensitive)) {
                 m_string.append(reader.readElementText());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -4034,19 +4037,19 @@ void DomStringList::write(QXmlStreamWriter &writer, const QString &tagName) cons
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("stringlist") : tagName.toLower());
 
     if (hasAttributeNotr())
-        writer.writeAttribute(QStringLiteral("notr"), attributeNotr());
+        writer.writeAttribute(u"notr"_s, attributeNotr());
 
     if (hasAttributeComment())
-        writer.writeAttribute(QStringLiteral("comment"), attributeComment());
+        writer.writeAttribute(u"comment"_s, attributeComment());
 
     if (hasAttributeExtraComment())
-        writer.writeAttribute(QStringLiteral("extracomment"), attributeExtraComment());
+        writer.writeAttribute(u"extracomment"_s, attributeExtraComment());
 
     if (hasAttributeId())
-        writer.writeAttribute(QStringLiteral("id"), attributeId());
+        writer.writeAttribute(u"id"_s, attributeId());
 
     for (const QString &v : m_string)
-        writer.writeTextElement(QStringLiteral("string"), v);
+        writer.writeTextElement(u"string"_s, v);
 
     writer.writeEndElement();
 }
@@ -4064,22 +4067,22 @@ void DomResourcePixmap::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("resource")) {
+        if (name == u"resource"_s) {
             setAttributeResource(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("alias")) {
+        if (name == u"alias"_s) {
             setAttributeAlias(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -4099,10 +4102,10 @@ void DomResourcePixmap::write(QXmlStreamWriter &writer, const QString &tagName) 
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("resourcepixmap") : tagName.toLower());
 
     if (hasAttributeResource())
-        writer.writeAttribute(QStringLiteral("resource"), attributeResource());
+        writer.writeAttribute(u"resource"_s, attributeResource());
 
     if (hasAttributeAlias())
-        writer.writeAttribute(QStringLiteral("alias"), attributeAlias());
+        writer.writeAttribute(u"alias"_s, attributeAlias());
 
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -4127,70 +4130,70 @@ void DomResourceIcon::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("theme")) {
+        if (name == u"theme"_s) {
             setAttributeTheme(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("resource")) {
+        if (name == u"resource"_s) {
             setAttributeResource(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("normaloff"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"normaloff"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomResourcePixmap();
                 v->read(reader);
                 setElementNormalOff(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("normalon"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"normalon"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomResourcePixmap();
                 v->read(reader);
                 setElementNormalOn(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("disabledoff"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"disabledoff"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomResourcePixmap();
                 v->read(reader);
                 setElementDisabledOff(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("disabledon"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"disabledon"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomResourcePixmap();
                 v->read(reader);
                 setElementDisabledOn(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("activeoff"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"activeoff"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomResourcePixmap();
                 v->read(reader);
                 setElementActiveOff(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("activeon"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"activeon"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomResourcePixmap();
                 v->read(reader);
                 setElementActiveOn(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("selectedoff"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"selectedoff"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomResourcePixmap();
                 v->read(reader);
                 setElementSelectedOff(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("selectedon"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"selectedon"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomResourcePixmap();
                 v->read(reader);
                 setElementSelectedOn(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -4210,34 +4213,34 @@ void DomResourceIcon::write(QXmlStreamWriter &writer, const QString &tagName) co
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("resourceicon") : tagName.toLower());
 
     if (hasAttributeTheme())
-        writer.writeAttribute(QStringLiteral("theme"), attributeTheme());
+        writer.writeAttribute(u"theme"_s, attributeTheme());
 
     if (hasAttributeResource())
-        writer.writeAttribute(QStringLiteral("resource"), attributeResource());
+        writer.writeAttribute(u"resource"_s, attributeResource());
 
     if (m_children & NormalOff)
-        m_normalOff->write(writer, QStringLiteral("normaloff"));
+        m_normalOff->write(writer, u"normaloff"_s);
 
     if (m_children & NormalOn)
-        m_normalOn->write(writer, QStringLiteral("normalon"));
+        m_normalOn->write(writer, u"normalon"_s);
 
     if (m_children & DisabledOff)
-        m_disabledOff->write(writer, QStringLiteral("disabledoff"));
+        m_disabledOff->write(writer, u"disabledoff"_s);
 
     if (m_children & DisabledOn)
-        m_disabledOn->write(writer, QStringLiteral("disabledon"));
+        m_disabledOn->write(writer, u"disabledon"_s);
 
     if (m_children & ActiveOff)
-        m_activeOff->write(writer, QStringLiteral("activeoff"));
+        m_activeOff->write(writer, u"activeoff"_s);
 
     if (m_children & ActiveOn)
-        m_activeOn->write(writer, QStringLiteral("activeon"));
+        m_activeOn->write(writer, u"activeon"_s);
 
     if (m_children & SelectedOff)
-        m_selectedOff->write(writer, QStringLiteral("selectedoff"));
+        m_selectedOff->write(writer, u"selectedoff"_s);
 
     if (m_children & SelectedOn)
-        m_selectedOn->write(writer, QStringLiteral("selectedon"));
+        m_selectedOn->write(writer, u"selectedon"_s);
 
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -4428,30 +4431,30 @@ void DomString::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("notr")) {
+        if (name == u"notr"_s) {
             setAttributeNotr(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("comment")) {
+        if (name == u"comment"_s) {
             setAttributeComment(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("extracomment")) {
+        if (name == u"extracomment"_s) {
             setAttributeExtraComment(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("id")) {
+        if (name == u"id"_s) {
             setAttributeId(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -4471,16 +4474,16 @@ void DomString::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("string") : tagName.toLower());
 
     if (hasAttributeNotr())
-        writer.writeAttribute(QStringLiteral("notr"), attributeNotr());
+        writer.writeAttribute(u"notr"_s, attributeNotr());
 
     if (hasAttributeComment())
-        writer.writeAttribute(QStringLiteral("comment"), attributeComment());
+        writer.writeAttribute(u"comment"_s, attributeComment());
 
     if (hasAttributeExtraComment())
-        writer.writeAttribute(QStringLiteral("extracomment"), attributeExtraComment());
+        writer.writeAttribute(u"extracomment"_s, attributeExtraComment());
 
     if (hasAttributeId())
-        writer.writeAttribute(QStringLiteral("id"), attributeId());
+        writer.writeAttribute(u"id"_s, attributeId());
 
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -4496,15 +4499,15 @@ void DomPointF::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("x"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"x"_s, Qt::CaseInsensitive)) {
                 setElementX(reader.readElementText().toDouble());
                 continue;
             }
-            if (!tag.compare(QLatin1String("y"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"y"_s, Qt::CaseInsensitive)) {
                 setElementY(reader.readElementText().toDouble());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -4520,10 +4523,10 @@ void DomPointF::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("pointf") : tagName.toLower());
 
     if (m_children & X)
-        writer.writeTextElement(QString(QLatin1Char('x')), QString::number(m_x, 'f', 15));
+        writer.writeTextElement(u"x"_s, QString::number(m_x, 'f', 15));
 
     if (m_children & Y)
-        writer.writeTextElement(QString(QLatin1Char('y')), QString::number(m_y, 'f', 15));
+        writer.writeTextElement(u"y"_s, QString::number(m_y, 'f', 15));
 
     writer.writeEndElement();
 }
@@ -4558,23 +4561,23 @@ void DomRectF::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("x"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"x"_s, Qt::CaseInsensitive)) {
                 setElementX(reader.readElementText().toDouble());
                 continue;
             }
-            if (!tag.compare(QLatin1String("y"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"y"_s, Qt::CaseInsensitive)) {
                 setElementY(reader.readElementText().toDouble());
                 continue;
             }
-            if (!tag.compare(QLatin1String("width"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"width"_s, Qt::CaseInsensitive)) {
                 setElementWidth(reader.readElementText().toDouble());
                 continue;
             }
-            if (!tag.compare(QLatin1String("height"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"height"_s, Qt::CaseInsensitive)) {
                 setElementHeight(reader.readElementText().toDouble());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -4590,16 +4593,16 @@ void DomRectF::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("rectf") : tagName.toLower());
 
     if (m_children & X)
-        writer.writeTextElement(QString(QLatin1Char('x')), QString::number(m_x, 'f', 15));
+        writer.writeTextElement(u"x"_s, QString::number(m_x, 'f', 15));
 
     if (m_children & Y)
-        writer.writeTextElement(QString(QLatin1Char('y')), QString::number(m_y, 'f', 15));
+        writer.writeTextElement(u"y"_s, QString::number(m_y, 'f', 15));
 
     if (m_children & Width)
-        writer.writeTextElement(QStringLiteral("width"), QString::number(m_width, 'f', 15));
+        writer.writeTextElement(u"width"_s, QString::number(m_width, 'f', 15));
 
     if (m_children & Height)
-        writer.writeTextElement(QStringLiteral("height"), QString::number(m_height, 'f', 15));
+        writer.writeTextElement(u"height"_s, QString::number(m_height, 'f', 15));
 
     writer.writeEndElement();
 }
@@ -4656,15 +4659,15 @@ void DomSizeF::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("width"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"width"_s, Qt::CaseInsensitive)) {
                 setElementWidth(reader.readElementText().toDouble());
                 continue;
             }
-            if (!tag.compare(QLatin1String("height"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"height"_s, Qt::CaseInsensitive)) {
                 setElementHeight(reader.readElementText().toDouble());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -4680,10 +4683,10 @@ void DomSizeF::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("sizef") : tagName.toLower());
 
     if (m_children & Width)
-        writer.writeTextElement(QStringLiteral("width"), QString::number(m_width, 'f', 15));
+        writer.writeTextElement(u"width"_s, QString::number(m_width, 'f', 15));
 
     if (m_children & Height)
-        writer.writeTextElement(QStringLiteral("height"), QString::number(m_height, 'f', 15));
+        writer.writeTextElement(u"height"_s, QString::number(m_height, 'f', 15));
 
     writer.writeEndElement();
 }
@@ -4718,11 +4721,11 @@ void DomChar::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("unicode"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"unicode"_s, Qt::CaseInsensitive)) {
                 setElementUnicode(reader.readElementText().toInt());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -4738,7 +4741,7 @@ void DomChar::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("char") : tagName.toLower());
 
     if (m_children & Unicode)
-        writer.writeTextElement(QStringLiteral("unicode"), QString::number(m_unicode));
+        writer.writeTextElement(u"unicode"_s, QString::number(m_unicode));
 
     writer.writeEndElement();
 }
@@ -4765,13 +4768,13 @@ void DomUrl::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("string"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"string"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomString();
                 v->read(reader);
                 setElementString(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -4787,7 +4790,7 @@ void DomUrl::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("url") : tagName.toLower());
 
     if (m_children & String)
-        m_string->write(writer, QStringLiteral("string"));
+        m_string->write(writer, u"string"_s);
 
     writer.writeEndElement();
 }
@@ -4900,196 +4903,196 @@ void DomProperty::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("name")) {
+        if (name == u"name"_s) {
             setAttributeName(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("stdset")) {
+        if (name == u"stdset"_s) {
             setAttributeStdset(attribute.value().toInt());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("bool"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"bool"_s, Qt::CaseInsensitive)) {
                 setElementBool(reader.readElementText());
                 continue;
             }
-            if (!tag.compare(QLatin1String("color"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"color"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomColor();
                 v->read(reader);
                 setElementColor(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("cstring"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"cstring"_s, Qt::CaseInsensitive)) {
                 setElementCstring(reader.readElementText());
                 continue;
             }
-            if (!tag.compare(QLatin1String("cursor"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"cursor"_s, Qt::CaseInsensitive)) {
                 setElementCursor(reader.readElementText().toInt());
                 continue;
             }
-            if (!tag.compare(QLatin1String("cursorshape"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"cursorshape"_s, Qt::CaseInsensitive)) {
                 setElementCursorShape(reader.readElementText());
                 continue;
             }
-            if (!tag.compare(QLatin1String("enum"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"enum"_s, Qt::CaseInsensitive)) {
                 setElementEnum(reader.readElementText());
                 continue;
             }
-            if (!tag.compare(QLatin1String("font"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"font"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomFont();
                 v->read(reader);
                 setElementFont(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("iconset"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"iconset"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomResourceIcon();
                 v->read(reader);
                 setElementIconSet(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("pixmap"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"pixmap"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomResourcePixmap();
                 v->read(reader);
                 setElementPixmap(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("palette"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"palette"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomPalette();
                 v->read(reader);
                 setElementPalette(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("point"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"point"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomPoint();
                 v->read(reader);
                 setElementPoint(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("rect"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"rect"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomRect();
                 v->read(reader);
                 setElementRect(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("set"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"set"_s, Qt::CaseInsensitive)) {
                 setElementSet(reader.readElementText());
                 continue;
             }
-            if (!tag.compare(QLatin1String("locale"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"locale"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomLocale();
                 v->read(reader);
                 setElementLocale(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("sizepolicy"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"sizepolicy"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomSizePolicy();
                 v->read(reader);
                 setElementSizePolicy(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("size"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"size"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomSize();
                 v->read(reader);
                 setElementSize(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("string"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"string"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomString();
                 v->read(reader);
                 setElementString(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("stringlist"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"stringlist"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomStringList();
                 v->read(reader);
                 setElementStringList(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("number"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"number"_s, Qt::CaseInsensitive)) {
                 setElementNumber(reader.readElementText().toInt());
                 continue;
             }
-            if (!tag.compare(QLatin1String("float"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"float"_s, Qt::CaseInsensitive)) {
                 setElementFloat(reader.readElementText().toFloat());
                 continue;
             }
-            if (!tag.compare(QLatin1String("double"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"double"_s, Qt::CaseInsensitive)) {
                 setElementDouble(reader.readElementText().toDouble());
                 continue;
             }
-            if (!tag.compare(QLatin1String("date"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"date"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomDate();
                 v->read(reader);
                 setElementDate(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("time"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"time"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomTime();
                 v->read(reader);
                 setElementTime(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("datetime"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"datetime"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomDateTime();
                 v->read(reader);
                 setElementDateTime(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("pointf"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"pointf"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomPointF();
                 v->read(reader);
                 setElementPointF(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("rectf"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"rectf"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomRectF();
                 v->read(reader);
                 setElementRectF(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("sizef"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"sizef"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomSizeF();
                 v->read(reader);
                 setElementSizeF(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("longlong"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"longlong"_s, Qt::CaseInsensitive)) {
                 setElementLongLong(reader.readElementText().toLongLong());
                 continue;
             }
-            if (!tag.compare(QLatin1String("char"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"char"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomChar();
                 v->read(reader);
                 setElementChar(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("url"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"url"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomUrl();
                 v->read(reader);
                 setElementUrl(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("uint"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"uint"_s, Qt::CaseInsensitive)) {
                 setElementUInt(reader.readElementText().toUInt());
                 continue;
             }
-            if (!tag.compare(QLatin1String("ulonglong"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"ulonglong"_s, Qt::CaseInsensitive)) {
                 setElementULongLong(reader.readElementText().toULongLong());
                 continue;
             }
-            if (!tag.compare(QLatin1String("brush"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"brush"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomBrush();
                 v->read(reader);
                 setElementBrush(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -5105,163 +5108,163 @@ void DomProperty::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("property") : tagName.toLower());
 
     if (hasAttributeName())
-        writer.writeAttribute(QStringLiteral("name"), attributeName());
+        writer.writeAttribute(u"name"_s, attributeName());
 
     if (hasAttributeStdset())
-        writer.writeAttribute(QStringLiteral("stdset"), QString::number(attributeStdset()));
+        writer.writeAttribute(u"stdset"_s, QString::number(attributeStdset()));
 
     switch (kind()) {
     case Bool:
-        writer.writeTextElement(QStringLiteral("bool"), elementBool());
+        writer.writeTextElement(u"bool"_s, elementBool());
         break;
 
     case Color:
         if (m_color != nullptr)
-            m_color->write(writer, QStringLiteral("color"));
+            m_color->write(writer, u"color"_s);
         break;
 
     case Cstring:
-        writer.writeTextElement(QStringLiteral("cstring"), elementCstring());
+        writer.writeTextElement(u"cstring"_s, elementCstring());
         break;
 
     case Cursor:
-        writer.writeTextElement(QStringLiteral("cursor"), QString::number(elementCursor()));
+        writer.writeTextElement(u"cursor"_s, QString::number(elementCursor()));
         break;
 
     case CursorShape:
-        writer.writeTextElement(QStringLiteral("cursorShape"), elementCursorShape());
+        writer.writeTextElement(u"cursorShape"_s, elementCursorShape());
         break;
 
     case Enum:
-        writer.writeTextElement(QStringLiteral("enum"), elementEnum());
+        writer.writeTextElement(u"enum"_s, elementEnum());
         break;
 
     case Font:
         if (m_font != nullptr)
-            m_font->write(writer, QStringLiteral("font"));
+            m_font->write(writer, u"font"_s);
         break;
 
     case IconSet:
         if (m_iconSet != nullptr)
-            m_iconSet->write(writer, QStringLiteral("iconset"));
+            m_iconSet->write(writer, u"iconset"_s);
         break;
 
     case Pixmap:
         if (m_pixmap != nullptr)
-            m_pixmap->write(writer, QStringLiteral("pixmap"));
+            m_pixmap->write(writer, u"pixmap"_s);
         break;
 
     case Palette:
         if (m_palette != nullptr)
-            m_palette->write(writer, QStringLiteral("palette"));
+            m_palette->write(writer, u"palette"_s);
         break;
 
     case Point:
         if (m_point != nullptr)
-            m_point->write(writer, QStringLiteral("point"));
+            m_point->write(writer, u"point"_s);
         break;
 
     case Rect:
         if (m_rect != nullptr)
-            m_rect->write(writer, QStringLiteral("rect"));
+            m_rect->write(writer, u"rect"_s);
         break;
 
     case Set:
-        writer.writeTextElement(QStringLiteral("set"), elementSet());
+        writer.writeTextElement(u"set"_s, elementSet());
         break;
 
     case Locale:
         if (m_locale != nullptr)
-            m_locale->write(writer, QStringLiteral("locale"));
+            m_locale->write(writer, u"locale"_s);
         break;
 
     case SizePolicy:
         if (m_sizePolicy != nullptr)
-            m_sizePolicy->write(writer, QStringLiteral("sizepolicy"));
+            m_sizePolicy->write(writer, u"sizepolicy"_s);
         break;
 
     case Size:
         if (m_size != nullptr)
-            m_size->write(writer, QStringLiteral("size"));
+            m_size->write(writer, u"size"_s);
         break;
 
     case String:
         if (m_string != nullptr)
-            m_string->write(writer, QStringLiteral("string"));
+            m_string->write(writer, u"string"_s);
         break;
 
     case StringList:
         if (m_stringList != nullptr)
-            m_stringList->write(writer, QStringLiteral("stringlist"));
+            m_stringList->write(writer, u"stringlist"_s);
         break;
 
     case Number:
-        writer.writeTextElement(QStringLiteral("number"), QString::number(elementNumber()));
+        writer.writeTextElement(u"number"_s, QString::number(elementNumber()));
         break;
 
     case Float:
-        writer.writeTextElement(QStringLiteral("float"), QString::number(elementFloat(), 'f', 8));
+        writer.writeTextElement(u"float"_s, QString::number(elementFloat(), 'f', 8));
         break;
 
     case Double:
-        writer.writeTextElement(QStringLiteral("double"), QString::number(elementDouble(), 'f', 15));
+        writer.writeTextElement(u"double"_s, QString::number(elementDouble(), 'f', 15));
         break;
 
     case Date:
         if (m_date != nullptr)
-            m_date->write(writer, QStringLiteral("date"));
+            m_date->write(writer, u"date"_s);
         break;
 
     case Time:
         if (m_time != nullptr)
-            m_time->write(writer, QStringLiteral("time"));
+            m_time->write(writer, u"time"_s);
         break;
 
     case DateTime:
         if (m_dateTime != nullptr)
-            m_dateTime->write(writer, QStringLiteral("datetime"));
+            m_dateTime->write(writer, u"datetime"_s);
         break;
 
     case PointF:
         if (m_pointF != nullptr)
-            m_pointF->write(writer, QStringLiteral("pointf"));
+            m_pointF->write(writer, u"pointf"_s);
         break;
 
     case RectF:
         if (m_rectF != nullptr)
-            m_rectF->write(writer, QStringLiteral("rectf"));
+            m_rectF->write(writer, u"rectf"_s);
         break;
 
     case SizeF:
         if (m_sizeF != nullptr)
-            m_sizeF->write(writer, QStringLiteral("sizef"));
+            m_sizeF->write(writer, u"sizef"_s);
         break;
 
     case LongLong:
-        writer.writeTextElement(QStringLiteral("longLong"), QString::number(elementLongLong()));
+        writer.writeTextElement(u"longLong"_s, QString::number(elementLongLong()));
         break;
 
     case Char:
         if (m_char != nullptr)
-            m_char->write(writer, QStringLiteral("char"));
+            m_char->write(writer, u"char"_s);
         break;
 
     case Url:
         if (m_url != nullptr)
-            m_url->write(writer, QStringLiteral("url"));
+            m_url->write(writer, u"url"_s);
         break;
 
     case UInt:
-        writer.writeTextElement(QStringLiteral("UInt"), QString::number(elementUInt()));
+        writer.writeTextElement(u"UInt"_s, QString::number(elementUInt()));
         break;
 
     case ULongLong:
-        writer.writeTextElement(QStringLiteral("uLongLong"), QString::number(elementULongLong()));
+        writer.writeTextElement(u"uLongLong"_s, QString::number(elementULongLong()));
         break;
 
     case Brush:
         if (m_brush != nullptr)
-            m_brush->write(writer, QStringLiteral("brush"));
+            m_brush->write(writer, u"brush"_s);
         break;
 
     default:
@@ -5660,13 +5663,13 @@ void DomConnections::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("connection"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"connection"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomConnection();
                 v->read(reader);
                 m_connection.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -5682,7 +5685,7 @@ void DomConnections::write(QXmlStreamWriter &writer, const QString &tagName) con
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("connections") : tagName.toLower());
 
     for (DomConnection *v : m_connection)
-        v->write(writer, QStringLiteral("connection"));
+        v->write(writer, u"connection"_s);
 
     writer.writeEndElement();
 }
@@ -5704,29 +5707,29 @@ void DomConnection::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("sender"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"sender"_s, Qt::CaseInsensitive)) {
                 setElementSender(reader.readElementText());
                 continue;
             }
-            if (!tag.compare(QLatin1String("signal"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"signal"_s, Qt::CaseInsensitive)) {
                 setElementSignal(reader.readElementText());
                 continue;
             }
-            if (!tag.compare(QLatin1String("receiver"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"receiver"_s, Qt::CaseInsensitive)) {
                 setElementReceiver(reader.readElementText());
                 continue;
             }
-            if (!tag.compare(QLatin1String("slot"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"slot"_s, Qt::CaseInsensitive)) {
                 setElementSlot(reader.readElementText());
                 continue;
             }
-            if (!tag.compare(QLatin1String("hints"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"hints"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomConnectionHints();
                 v->read(reader);
                 setElementHints(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -5742,19 +5745,19 @@ void DomConnection::write(QXmlStreamWriter &writer, const QString &tagName) cons
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("connection") : tagName.toLower());
 
     if (m_children & Sender)
-        writer.writeTextElement(QStringLiteral("sender"), m_sender);
+        writer.writeTextElement(u"sender"_s, m_sender);
 
     if (m_children & Signal)
-        writer.writeTextElement(QStringLiteral("signal"), m_signal);
+        writer.writeTextElement(u"signal"_s, m_signal);
 
     if (m_children & Receiver)
-        writer.writeTextElement(QStringLiteral("receiver"), m_receiver);
+        writer.writeTextElement(u"receiver"_s, m_receiver);
 
     if (m_children & Slot)
-        writer.writeTextElement(QStringLiteral("slot"), m_slot);
+        writer.writeTextElement(u"slot"_s, m_slot);
 
     if (m_children & Hints)
-        m_hints->write(writer, QStringLiteral("hints"));
+        m_hints->write(writer, u"hints"_s);
 
     writer.writeEndElement();
 }
@@ -5837,13 +5840,13 @@ void DomConnectionHints::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("hint"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"hint"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomConnectionHint();
                 v->read(reader);
                 m_hint.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -5859,7 +5862,7 @@ void DomConnectionHints::write(QXmlStreamWriter &writer, const QString &tagName)
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("connectionhints") : tagName.toLower());
 
     for (DomConnectionHint *v : m_hint)
-        v->write(writer, QStringLiteral("hint"));
+        v->write(writer, u"hint"_s);
 
     writer.writeEndElement();
 }
@@ -5877,26 +5880,26 @@ void DomConnectionHint::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("type")) {
+        if (name == u"type"_s) {
             setAttributeType(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("x"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"x"_s, Qt::CaseInsensitive)) {
                 setElementX(reader.readElementText().toInt());
                 continue;
             }
-            if (!tag.compare(QLatin1String("y"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"y"_s, Qt::CaseInsensitive)) {
                 setElementY(reader.readElementText().toInt());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -5912,13 +5915,13 @@ void DomConnectionHint::write(QXmlStreamWriter &writer, const QString &tagName) 
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("connectionhint") : tagName.toLower());
 
     if (hasAttributeType())
-        writer.writeAttribute(QStringLiteral("type"), attributeType());
+        writer.writeAttribute(u"type"_s, attributeType());
 
     if (m_children & X)
-        writer.writeTextElement(QString(QLatin1Char('x')), QString::number(m_x));
+        writer.writeTextElement(u"x"_s, QString::number(m_x));
 
     if (m_children & Y)
-        writer.writeTextElement(QString(QLatin1Char('y')), QString::number(m_y));
+        writer.writeTextElement(u"y"_s, QString::number(m_y));
 
     writer.writeEndElement();
 }
@@ -5957,13 +5960,13 @@ void DomDesignerData::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("property"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"property"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomProperty();
                 v->read(reader);
                 m_property.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -5979,7 +5982,7 @@ void DomDesignerData::write(QXmlStreamWriter &writer, const QString &tagName) co
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("designerdata") : tagName.toLower());
 
     for (DomProperty *v : m_property)
-        v->write(writer, QStringLiteral("property"));
+        v->write(writer, u"property"_s);
 
     writer.writeEndElement();
 }
@@ -6002,15 +6005,15 @@ void DomSlots::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("signal"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"signal"_s, Qt::CaseInsensitive)) {
                 m_signal.append(reader.readElementText());
                 continue;
             }
-            if (!tag.compare(QLatin1String("slot"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"slot"_s, Qt::CaseInsensitive)) {
                 m_slot.append(reader.readElementText());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -6026,10 +6029,10 @@ void DomSlots::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("slots") : tagName.toLower());
 
     for (const QString &v : m_signal)
-        writer.writeTextElement(QStringLiteral("signal"), v);
+        writer.writeTextElement(u"signal"_s, v);
 
     for (const QString &v : m_slot)
-        writer.writeTextElement(QStringLiteral("slot"), v);
+        writer.writeTextElement(u"slot"_s, v);
 
     writer.writeEndElement();
 }
@@ -6060,19 +6063,19 @@ void DomPropertySpecifications::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            if (!tag.compare(QLatin1String("tooltip"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"tooltip"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomPropertyToolTip();
                 v->read(reader);
                 m_tooltip.append(v);
                 continue;
             }
-            if (!tag.compare(QLatin1String("stringpropertyspecification"), Qt::CaseInsensitive)) {
+            if (!tag.compare(u"stringpropertyspecification"_s, Qt::CaseInsensitive)) {
                 auto *v = new DomStringPropertySpecification();
                 v->read(reader);
                 m_stringpropertyspecification.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -6088,10 +6091,10 @@ void DomPropertySpecifications::write(QXmlStreamWriter &writer, const QString &t
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("propertyspecifications") : tagName.toLower());
 
     for (DomPropertyToolTip *v : m_tooltip)
-        v->write(writer, QStringLiteral("tooltip"));
+        v->write(writer, u"tooltip"_s);
 
     for (DomStringPropertySpecification *v : m_stringpropertyspecification)
-        v->write(writer, QStringLiteral("stringpropertyspecification"));
+        v->write(writer, u"stringpropertyspecification"_s);
 
     writer.writeEndElement();
 }
@@ -6115,18 +6118,18 @@ void DomPropertyToolTip::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("name")) {
+        if (name == u"name"_s) {
             setAttributeName(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -6142,7 +6145,7 @@ void DomPropertyToolTip::write(QXmlStreamWriter &writer, const QString &tagName)
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("propertytooltip") : tagName.toLower());
 
     if (hasAttributeName())
-        writer.writeAttribute(QStringLiteral("name"), attributeName());
+        writer.writeAttribute(u"name"_s, attributeName());
 
     writer.writeEndElement();
 }
@@ -6154,26 +6157,26 @@ void DomStringPropertySpecification::read(QXmlStreamReader &reader)
     const QXmlStreamAttributes &attributes = reader.attributes();
     for (const QXmlStreamAttribute &attribute : attributes) {
         const auto name = attribute.name();
-        if (name == QLatin1String("name")) {
+        if (name == u"name"_s) {
             setAttributeName(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("type")) {
+        if (name == u"type"_s) {
             setAttributeType(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("notr")) {
+        if (name == u"notr"_s) {
             setAttributeNotr(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name);
+        reader.raiseError("Unexpected attribute "_L1 + name);
     }
 
     while (!reader.hasError()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const auto tag = reader.name();
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError("Unexpected element "_L1 + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -6189,13 +6192,13 @@ void DomStringPropertySpecification::write(QXmlStreamWriter &writer, const QStri
     writer.writeStartElement(tagName.isEmpty() ? QStringLiteral("stringpropertyspecification") : tagName.toLower());
 
     if (hasAttributeName())
-        writer.writeAttribute(QStringLiteral("name"), attributeName());
+        writer.writeAttribute(u"name"_s, attributeName());
 
     if (hasAttributeType())
-        writer.writeAttribute(QStringLiteral("type"), attributeType());
+        writer.writeAttribute(u"type"_s, attributeType());
 
     if (hasAttributeNotr())
-        writer.writeAttribute(QStringLiteral("notr"), attributeNotr());
+        writer.writeAttribute(u"notr"_s, attributeNotr());
 
     writer.writeEndElement();
 }
