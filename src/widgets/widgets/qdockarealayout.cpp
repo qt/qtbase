@@ -2452,28 +2452,33 @@ QRect QDockAreaLayout::gapRect(QInternal::DockPosition dockPos) const
 {
     Q_ASSERT_X(mainWindow, "QDockAreaLayout::gapRect", "Called without valid mainWindow pointer.");
 
+    // Determine gap size depending on MainWindow size (QTBUG-101657)
+    const QSize gapSize = (mainWindow->size()/2).boundedTo(QSize(EmptyDropAreaSize, EmptyDropAreaSize));
+
     // Warn if main window is too small to create proper docks.
-    // Do not fail because this can be triggered by the user.
-    if (mainWindow->height() < (2 * EmptyDropAreaSize)) {
-        qCWarning(lcQpaDockWidgets, "QDockAreaLayout::gapRect: Main window height %i is too small. Docking will not be possible.",
-                  mainWindow->height());
+    // Do not fail because this can be triggered by a user making MainWindow too small
+    if (mainWindow->height() < (2 * sep)) {
+        qCWarning(lcQpaDockWidgets,
+            "QDockAreaLayout::gapRect: Main window height %i is too small. Docking will not be possible.",
+            mainWindow->height());
 
     }
-    if (mainWindow->width() < (2 * EmptyDropAreaSize)) {
-        qCWarning(lcQpaDockWidgets, "QDockAreaLayout::gapRect: Main window width %i is too small. Docking will not be possible.",
-                   mainWindow->width());
+    if (mainWindow->width() < (2 * sep)) {
+        qCWarning(lcQpaDockWidgets,
+            "QDockAreaLayout::gapRect: Main window width %i is too small. Docking will not be possible.",
+            mainWindow->width());
     }
 
     // Calculate rectangle of requested dock
     switch (dockPos) {
     case QInternal::LeftDock:
-        return QRect(rect.left(), rect.top(), EmptyDropAreaSize, rect.height());
+        return QRect(rect.left(), rect.top(), gapSize.width(), rect.height());
     case QInternal::RightDock:
-        return QRect(rect.right() - EmptyDropAreaSize, rect.top(), EmptyDropAreaSize, rect.height());
+        return QRect(rect.right() - gapSize.width(), rect.top(), gapSize.width(), rect.height());
     case QInternal::TopDock:
-        return QRect(rect.left(), rect.top(), rect.width(), EmptyDropAreaSize);
+        return QRect(rect.left(), rect.top(), rect.width(), gapSize.height());
     case QInternal::BottomDock:
-        return QRect(rect.left(), rect.bottom() - EmptyDropAreaSize, rect.width(), EmptyDropAreaSize);
+        return QRect(rect.left(), rect.bottom() - gapSize.height(), rect.width(), gapSize.height());
     case QInternal::DockCount:
         break;
     }
