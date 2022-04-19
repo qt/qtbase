@@ -495,8 +495,9 @@ void QQuaternion::getEulerAngles(float *pitch, float *yaw, float *roll) const
     // https://ingmec.ual.es/~jlblanco/papers/jlblanco2010geometry3D_techrep.pdf
     // "A tutorial on SE(3) transformation parameterizations and on-manifold optimization".
 
-    // Normalize values even if the length is below the margin. Otherwise we might fail
-    // to detect Gimbal lock due to cumulative errors.
+    // We can only detect Gimbal lock when we normalize, which we can't do when
+    // length is nearly zero. Do so before multiplying co-ordinates, to avoid
+    // underflow.
     const float len = length();
     const bool rescale = !qFuzzyIsNull(len);
     const float xps = rescale ? xp / len : xp;
