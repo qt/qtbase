@@ -226,6 +226,7 @@ private:
                              xcb_randr_get_output_info_reply_t *outputInfo);
     void destroyScreen(QXcbScreen *screen);
     void initializeScreens(bool initialized);
+    void initializeScreensWithoutXRandR(xcb_screen_iterator_t *it, int screenNumber, QXcbScreen **primaryScreen);
     void initializeScreensFromOutput(xcb_screen_iterator_t *it, int screenNumber, QXcbScreen **primaryScreen);
 
     void updateScreen_monitor(QXcbScreen *screen, xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp_t timestamp = XCB_NONE);
