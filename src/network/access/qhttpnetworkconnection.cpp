@@ -265,8 +265,9 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
         const qint64 contentLength = request.contentLength();
         const qint64 uploadDeviceSize = uploadByteDevice->size();
         if (contentLength != -1 && uploadDeviceSize != -1) {
-            // both values known, take the smaller one.
-            request.setContentLength(qMin(uploadDeviceSize, contentLength));
+            // Both values known: use the smaller one.
+            if (uploadDeviceSize < contentLength)
+                request.setContentLength(uploadDeviceSize);
         } else if (contentLength == -1 && uploadDeviceSize != -1) {
             // content length not supplied by user, but the upload device knows it
             request.setContentLength(uploadDeviceSize);
