@@ -353,6 +353,10 @@ void QXcbConnection::initializeScreens(bool initialized)
             initializeScreensFromMonitor(&it, xcbScreenNumber, &primaryScreen, initialized);
         else if (isAtLeastXRandR12())
             initializeScreensFromOutput(&it, xcbScreenNumber, &primaryScreen);
+        else {
+            qWarning("There is no XRandR 1.2 and later version available. There will be only fake screen(s) to use.");
+            initializeScreensWithoutXRandR(&it, xcbScreenNumber, &primaryScreen);
+        }
 
         xcb_screen_next(&it);
         ++xcbScreenNumber;
@@ -383,6 +387,26 @@ void QXcbConnection::initializeScreens(bool initialized)
         if (!m_screens.isEmpty())
             qCDebug(lcQpaScreen) << "initializeScreens: primary output is" << qAsConst(m_screens).first()->name();
     }
+}
+
+void QXcbConnection::initializeScreensWithoutXRandR(xcb_screen_iterator_t *it, int xcbScreenNumber, QXcbScreen **primaryScreen)
+{
+    // XRandR extension is missing, then create a fake/legacy screen.
+    xcb_screen_t *xcbScreen = it->data;
+    QXcbVirtualDesktop *virtualDesktop = new QXcbVirtualDesktop(this, xcbScreen, xcbScreenNumber);
+    m_virtualDesktops.append(virtualDesktop);
+    QList<QPlatformScreen *> siblings;
+
+    QXcbScreen *screen = new QXcbScreen(this, virtualDesktop, XCB_NONE, nullptr);
+    qCDebug(lcQpaScreen) << "created fake screen" << screen;
+    m_screens << screen;
+
+    if (primaryScreenNumber() == xcbScreenNumber) {
+        *primaryScreen = screen;
+        (*primaryScreen)->setPrimary(true);
+    }
+    siblings << screen;
+    virtualDesktop->setScreens(std::move(siblings));
 }
 
 void QXcbConnection::initializeScreensFromOutput(xcb_screen_iterator_t *it, int xcbScreenNumber, QXcbScreen **primaryScreen)
