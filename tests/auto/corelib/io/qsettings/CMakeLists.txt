@@ -10,8 +10,6 @@ set(qsettings_resource_files
     "resourcefile.ini"
     "resourcefile2.ini"
     "resourcefile3.ini"
-    "resourcefile4.ini"
-    "resourcefile5.ini"
     "resourcefile6.plist"
     "withcomments.ini"
     "float.ini"
