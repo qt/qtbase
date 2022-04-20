@@ -20,8 +20,6 @@ set(qsettings_resource_files
 qt_internal_add_test(tst_qsettings
     SOURCES
         tst_qsettings.cpp
-    DEFINES
-        QT_DISABLE_DEPRECATED_BEFORE=0
     INCLUDE_DIRECTORIES
         ../../kernel/qmetatype
     PUBLIC_LIBRARIES

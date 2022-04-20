@@ -949,7 +949,7 @@ void tst_QSettings::testIniParsing()
     if ( settings.status() == QSettings::NoError ) { // else no point proceeding
         QVariant v = settings.value(key);
         if (expect.isValid())
-            QVERIFY(v.canConvert(expect.type()));
+            QVERIFY(v.canConvert(expect.metaType()));
         // check some types so as to give prettier error messages
         if ( v.typeId() == QMetaType::QString ) {
             QCOMPARE(v.toString(), expect.toString());
@@ -1177,7 +1177,7 @@ template<int MetaTypeId>
 static void testMetaTypesHelper(QSettings::Format format)
 {
     typedef typename MetaEnumToType<MetaTypeId>::Type Type;
-    const char *key = QMetaType::typeName(MetaTypeId);
+    const char *key = QMetaType(MetaTypeId).name();
     Type *value = TestValueFactory<MetaTypeId>::create();
     QVariant inputVariant = QVariant::fromValue(*value);
 
@@ -1196,8 +1196,8 @@ static void testMetaTypesHelper(QSettings::Format format)
         QSettings settings(format, scope, organization, applicationName);
         QVariant outputVariant = settings.value(key);
         if (MetaTypeId != QMetaType::QVariant)
-            QVERIFY(outputVariant.canConvert(MetaTypeId));
-        if (outputVariant.type() != inputVariant.type())
+            QVERIFY(outputVariant.canConvert(QMetaType(MetaTypeId)));
+        if (outputVariant.typeId() != inputVariant.typeId())
             qWarning() << "type mismatch between" << inputVariant << "and" << outputVariant;
         QCOMPARE(qvariant_cast<Type >(outputVariant), *value);
     }
@@ -1236,7 +1236,7 @@ void tst_QSettings::testMetaTypes_data()
 #define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
     { \
         const char *formatName = QMetaEnum::fromType<QSettings::Format>().valueToKey(formats[i]); \
-        const char *typeName = QMetaType::typeName(QMetaType::MetaTypeName); \
+        const char *typeName = QMetaType(QMetaType::MetaTypeName).name(); \
         QTest::newRow(QString("%1:%2").arg(formatName).arg(typeName).toLatin1().constData()) \
             << QSettings::Format(formats[i]) << int(QMetaType::MetaTypeName); \
     }
