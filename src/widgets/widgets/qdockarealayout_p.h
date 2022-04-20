@@ -235,7 +235,7 @@ public:
     QRect centralWidgetRect;
     QDockAreaLayout(QMainWindow *win);
     QDockAreaLayoutInfo docks[4];
-    int sep; // separator extent
+    int sep; // margin between a dock widget and its frame
     bool fallbackToSizeHints; //determines if we should use the sizehint for the dock areas (true until the layout is restored or the separator is moved by user)
     mutable QList<QWidget *> separatorWidgets;
 
