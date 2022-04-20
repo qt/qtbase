@@ -154,6 +154,10 @@ qt_internal_extend_target(Bootstrap
 ## Scopes:
 #####################################################################
 
+qt_internal_extend_target(Bootstrap CONDITION QT_USE_BOOTSTRAP_SOURCE_COPY
+    INCLUDE_DIRECTORIES "${QtBase_SOURCE_DIR}/src/corelib/tools"  # for qcryptographichash.cpp
+)
+
 qt_internal_extend_target(Bootstrap CONDITION UNIX
     SOURCES
         ../../corelib/io/qfilesystemengine_unix.cpp
