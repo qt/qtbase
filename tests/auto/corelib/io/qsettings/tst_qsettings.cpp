@@ -1300,18 +1300,19 @@ void tst_QSettings::testVariantTypes()
         QCOMPARE(settings.value("empty"), QVariant());
     }
 
-#define testVal(key, val, tp, rtype) \
+#define testValue(key, actual, expected) do { \
     { \
         QSettings settings1(format, QSettings::UserScope, "software.org", "KillerAPP"); \
-        settings1.setValue(key, QVariant::fromValue(val)); \
+        settings1.setValue(key, QVariant::fromValue(actual)); \
     } \
     QConfFile::clearCache(); \
     { \
         QSettings settings2(format, QSettings::UserScope, "software.org", "KillerAPP"); \
         QVariant v = settings2.value(key); \
-        QVERIFY(qvariant_cast<tp >(v) == val); \
-        QVERIFY(v.type() == QVariant::rtype); \
-    }
+        QCOMPARE(v.metaType().id(), QMetaType::expected); \
+        QCOMPARE(qvariant_cast<decltype(actual)>(v), actual); \
+    } \
+} while (0)
 
     typedef QMap<QString, QVariant> TestVariantMap;
 
@@ -1319,54 +1320,52 @@ void tst_QSettings::testVariantTypes()
     m2.insert("ene", "due");
     m2.insert("rike", "fake");
     m2.insert("borba", "dorba");
-    testVal("key2", m2, TestVariantMap, Map);
+    testValue("customMap", m2, QVariantMap);
 
     QStringList l2;
 
     l2 << "ene" << "due" << "@Point(1 2)" << "@fake";
-    testVal("key3", l2, QStringList, StringList);
+    testValue("stringsAt", l2, QStringList);
 
     l2.clear();
     l2 << "ene" << "due" << "rike" << "fake";
-    testVal("key3", l2, QStringList, StringList);
+    testValue("strings", l2, QStringList);
 
     QList<QVariant> l3;
     QDate date = QDate::currentDate();
     QTime time = QTime::currentTime();
     l3 << QString("ene") << 10 << QVariant::fromValue(QColor(1, 2, 3)) << QVariant(QRect(1, 2, 3, 4))
         << QVariant(QSize(4, 56)) << QVariant(QPoint(4, 2)) << true << false << date << time;
-    testVal("key3", l3, QVariantList, List);
+    testValue("mixedList", l3, QVariantList);
 
-    testVal("key4", QString("hello"), QString, String);
-    testVal("key5", QColor(1, 2, 3), QColor, Color);
-    testVal("key6", QRect(1, 2, 3, 4), QRect, Rect);
-    testVal("key7", QSize(4, 56), QSize, Size);
-    testVal("key8", QPoint(4, 2), QPoint, Point);
-    testVal("key10", date, QDate, Date);
-    testVal("key11", time, QTime, Time);
-    testVal("key12", QByteArray("foo bar"), QByteArray, ByteArray);
+    testValue("string", QString("hello"), QString);
+    testValue("color", QColor(1, 2, 3), QColor);
+    testValue("rect", QRect(1, 2, 3, 4), QRect);
+    testValue("size", QSize(4, 56), QSize);
+    testValue("point", QPoint(4, 2), QPoint);
+    testValue("date", date, QDate);
+    testValue("time", time, QTime);
+    testValue("byteArray", QByteArray("foo bar"), QByteArray);
 
     QList<QVariant> l4;
     l4 << QVariant(m2) << QVariant(l2) << QVariant(l3);
-    testVal("key13", l4, QVariantList, List);
+    testValue("collectList", l4, QVariantList);
 
     QDateTime dt = QDateTime::currentDateTime();
     dt.setOffsetFromUtc(3600);
-    testVal("key14", dt, QDateTime, DateTime);
+    testValue("dateTime", dt, QDateTime);
 
 #if QT_CONFIG(shortcut)
     // We store key sequences as strings instead of binary variant blob, for improved
     // readability in the resulting format.
-    if (format >= QSettings::InvalidFormat) {
-        testVal("keysequence", QKeySequence(Qt::ControlModifier + Qt::Key_F1), QKeySequence, KeySequence);
-    } else {
-        testVal("keysequence",
-                QKeySequence(Qt::ControlModifier + Qt::Key_F1).toString(QKeySequence::NativeText),
-                QString, String);
-    }
+    QKeySequence seq(Qt::ControlModifier | Qt::Key_F1);
+    if (format >= QSettings::InvalidFormat)
+        testValue("keySequence", seq, QKeySequence);
+    else
+        testValue("keySequence", seq.toString(QKeySequence::NativeText), QString);
 #endif // QT_CONFIG(shortcut)
 
-#undef testVal
+#undef testValue
 }
 #endif
 
