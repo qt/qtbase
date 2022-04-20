@@ -693,7 +693,7 @@ static QPoint calcPosition(const QWindow *w, const QWindowCreationContextPtr &co
 {
     const QPoint orgPos(context->frameX - invMargins.left(), context->frameY - invMargins.top());
 
-    if (!w || (!w->isTopLevel() && w->surfaceType() != QWindow::OpenGLSurface))
+    if (!w || w->type() != Qt::Window)
         return orgPos;
 
     // Workaround for QTBUG-50371
