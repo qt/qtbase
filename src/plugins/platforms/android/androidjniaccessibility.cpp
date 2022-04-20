@@ -433,10 +433,13 @@ if (!clazz) { \
                 desc = iface->text(QAccessible::Value);
                 hasValue = !desc.isEmpty();
             }
-            if (!hasValue) {
-                if (!desc.isEmpty())
-                    desc.append(QChar(QChar::Space));
-                desc.append(textFromValue(iface));
+            if (!hasValue && iface->valueInterface()) {
+                const QString valueStr = textFromValue(iface);
+                if (!valueStr.isEmpty()) {
+                    if (!desc.isEmpty())
+                        desc.append(QChar(QChar::Space));
+                    desc.append(valueStr);
+                }
             }
         }
         return desc;
