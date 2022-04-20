@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -31,7 +31,8 @@
 #ifndef TST_QMETATYPE_H
 #define TST_QMETATYPE_H
 
-#include <qmetatype.h>
+#include <QtCore>
+
 #include <float.h>
 
 #define FOR_EACH_PRIMITIVE_METATYPE(F) \

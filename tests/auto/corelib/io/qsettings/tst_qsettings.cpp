@@ -26,26 +26,21 @@
 **
 ****************************************************************************/
 
-
 #include <QTest>
 
 #include <QtCore/QSettings>
 #include <private/qsettings_p.h>
+
+#include "tst_qmetatype_common.h"
+
 #include <QtCore/QCoreApplication>
-#include <QtCore/QDateTime>
-#include <QtCore/QtGlobal>
-#include <QtCore/QMetaType>
-#include <QtCore/QString>
 #include <QtCore/QDir>
+#include <QtCore/QtGlobal>
 #include <QtCore/QThread>
 #include <QtCore/QSysInfo>
 #if QT_CONFIG(shortcut)
 #  include <QtGui/QKeySequence>
 #endif
-
-#include <QtCore>
-#include <QtGui>
-#include "tst_qmetatype_common.h"
 
 #include <cctype>
 #include <stdlib.h>
