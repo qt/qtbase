@@ -1276,6 +1276,30 @@ FOR_EACH_CORE_METATYPE(RETURN_CREATE_FUNCTION)
 #ifdef QT_BUILD_INTERNAL
 void tst_QSettings::testVariantTypes()
 {
+    QFETCH(QSettings::Format, format);
+
+    {
+        QSettings settings(format, QSettings::UserScope, "software.org", "KillerAPP");
+        QVERIFY(!settings.contains("empty"));
+        QCOMPARE(settings.value("empty"), QVariant());
+
+        settings.setValue("empty", QVariant());
+        QVERIFY(settings.contains("empty"));
+        QCOMPARE(settings.value("empty"), QVariant());
+
+        settings.setValue("empty", QVariant(1));
+        QVERIFY(settings.contains("empty"));
+        QCOMPARE(settings.value("empty"), QVariant(1));
+
+        settings.setValue("empty", QVariant());
+        QVERIFY(settings.contains("empty"));
+        QCOMPARE(settings.value("empty"), QVariant());
+
+        settings.remove("empty");
+        QVERIFY(!settings.contains("empty"));
+        QCOMPARE(settings.value("empty"), QVariant());
+    }
+
 #define testVal(key, val, tp, rtype) \
     { \
         QSettings settings1(format, QSettings::UserScope, "software.org", "KillerAPP"); \
@@ -1290,8 +1314,6 @@ void tst_QSettings::testVariantTypes()
     }
 
     typedef QMap<QString, QVariant> TestVariantMap;
-
-    QFETCH(QSettings::Format, format);
 
     TestVariantMap m2;
     m2.insert("ene", "due");
@@ -1323,28 +1345,6 @@ void tst_QSettings::testVariantTypes()
     testVal("key10", date, QDate, Date);
     testVal("key11", time, QTime, Time);
     testVal("key12", QByteArray("foo bar"), QByteArray, ByteArray);
-
-    {
-        QSettings settings(format, QSettings::UserScope, "software.org", "KillerAPP");
-        QVERIFY(!settings.contains("key99"));
-        QCOMPARE(settings.value("key99"), QVariant());
-
-        settings.setValue("key99", QVariant());
-        QVERIFY(settings.contains("key99"));
-        QCOMPARE(settings.value("key99"), QVariant());
-
-        settings.setValue("key99", QVariant(1));
-        QVERIFY(settings.contains("key99"));
-        QCOMPARE(settings.value("key99"), QVariant(1));
-
-        settings.setValue("key99", QVariant());
-        QVERIFY(settings.contains("key99"));
-        QCOMPARE(settings.value("key99"), QVariant());
-
-        settings.remove("key99");
-        QVERIFY(!settings.contains("key99"));
-        QCOMPARE(settings.value("key99"), QVariant());
-    }
 
     QList<QVariant> l4;
     l4 << QVariant(m2) << QVariant(l2) << QVariant(l3);
