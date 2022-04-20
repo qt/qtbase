@@ -129,6 +129,13 @@ public class QtNative
         }
     };
 
+    public static boolean isStarted()
+    {
+        boolean hasActivity = m_activity != null && m_activityDelegate != null;
+        boolean hasService = m_service != null && m_serviceDelegate != null;
+        return m_started && (hasActivity || hasService);
+    }
+
     private static ClassLoader m_classLoader = null;
     public static ClassLoader classLoader()
     {
@@ -700,9 +707,10 @@ public class QtNative
     public static native void quitQtCoreApplication();
     public static native void quitQtAndroidPlugin();
     public static native void terminateQt();
+    public static native boolean updateNativeActivity();
     // application methods
 
-    private static void quitApp()
+    public static void quitApp()
     {
         runAction(new Runnable() {
             @Override
@@ -712,6 +720,8 @@ public class QtNative
                      m_activity.finish();
                  if (m_service != null)
                      m_service.stopSelf();
+
+                 m_started = false;
             }
         });
     }

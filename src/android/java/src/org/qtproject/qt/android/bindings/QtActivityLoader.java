@@ -47,6 +47,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.Window;
 
+import org.qtproject.qt.android.QtNative;
 
 import java.lang.reflect.Field;
 
@@ -113,9 +114,20 @@ public class QtActivityLoader extends QtLoader {
         }
 
         m_activity.requestWindowFeature(Window.FEATURE_ACTION_BAR);
+        if (QtNative.isStarted()) {
+            boolean updated = QtNative.activityDelegate().updateActivity(m_activity);
+            if (!updated) {
+                //  could not update the activity so restart the application
+                Intent intent = Intent.makeRestartActivityTask(m_activity.getComponentName());
+                m_activity.startActivity(intent);
+                QtNative.quitApp();
+                Runtime.getRuntime().exit(0);
+            }
 
-        if (QtApplication.m_delegateObject != null && QtApplication.onCreate != null) {
-            QtApplication.invokeDelegateMethod(QtApplication.onCreate, savedInstanceState);
+            // there can only be a valid delegate object if the QtNative was started.
+            if (QtApplication.m_delegateObject != null && QtApplication.onCreate != null)
+                QtApplication.invokeDelegateMethod(QtApplication.onCreate, savedInstanceState);
+
             return;
         }
 
@@ -124,15 +136,14 @@ public class QtActivityLoader extends QtLoader {
         ENVIRONMENT_VARIABLES += "\tQT_ANDROID_THEME=" + QT_ANDROID_DEFAULT_THEME
                 + "/\tQT_ANDROID_THEME_DISPLAY_DPI=" + m_displayDensity + "\t";
 
-        if (null == m_activity.getLastNonConfigurationInstance()) {
-            if (m_contextInfo.metaData.containsKey("android.app.background_running")
-                    && m_contextInfo.metaData.getBoolean("android.app.background_running")) {
-                ENVIRONMENT_VARIABLES += "QT_BLOCK_EVENT_LOOPS_WHEN_SUSPENDED=0\t";
-            } else {
-                ENVIRONMENT_VARIABLES += "QT_BLOCK_EVENT_LOOPS_WHEN_SUSPENDED=1\t";
-            }
-
-            startApp(true);
+        if (m_contextInfo.metaData.containsKey("android.app.background_running")
+                && m_contextInfo.metaData.getBoolean("android.app.background_running")) {
+            ENVIRONMENT_VARIABLES += "QT_BLOCK_EVENT_LOOPS_WHEN_SUSPENDED=0\t";
+        } else {
+            ENVIRONMENT_VARIABLES += "QT_BLOCK_EVENT_LOOPS_WHEN_SUSPENDED=1\t";
         }
+
+        startApp(true);
+
     }
 }

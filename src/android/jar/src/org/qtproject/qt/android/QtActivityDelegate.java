@@ -594,6 +594,100 @@ public class QtActivityDelegate
         }
     }
 
+    private final DisplayManager.DisplayListener displayListener = new DisplayManager.DisplayListener()
+    {
+        @Override
+        public void onDisplayAdded(int displayId) { }
+
+        private boolean isSimilarRotation(int r1, int r2)
+        {
+         return (r1 == r2)
+                || (r1 == Surface.ROTATION_0 && r2 == Surface.ROTATION_180)
+                || (r1 == Surface.ROTATION_180 && r2 == Surface.ROTATION_0)
+                || (r1 == Surface.ROTATION_90 && r2 == Surface.ROTATION_270)
+                || (r1 == Surface.ROTATION_270 && r2 == Surface.ROTATION_90);
+        }
+
+        @Override
+        public void onDisplayChanged(int displayId)
+        {
+            Display display = (Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
+                 ? m_activity.getWindowManager().getDefaultDisplay()
+                 : m_activity.getDisplay();
+            m_currentRotation = display.getRotation();
+            m_layout.setActivityDisplayRotation(m_currentRotation);
+            // Process orientation change only if it comes after the size
+            // change, or if the screen is rotated by 180 degrees.
+            // Otherwise it will be processed in QtLayout.
+            if (isSimilarRotation(m_currentRotation, m_layout.displayRotation()))
+                QtNative.handleOrientationChanged(m_currentRotation, m_nativeOrientation);
+
+            float refreshRate = display.getRefreshRate();
+            QtNative.handleRefreshRateChanged(refreshRate);
+        }
+
+        @Override
+        public void onDisplayRemoved(int displayId) { }
+    };
+
+    public boolean updateActivity(Activity activity)
+    {
+        try {
+            // set new activity
+            loadActivity(activity);
+
+            // update the new activity content view to old layout
+            ViewGroup layoutParent = (ViewGroup)m_layout.getParent();
+            if (layoutParent != null)
+                layoutParent.removeView(m_layout);
+
+            m_activity.setContentView(m_layout);
+
+            // force c++ native activity object to update
+            return QtNative.updateNativeActivity();
+        } catch (Exception e) {
+            Log.w(QtNative.QtTAG, "Failed to update the activity.");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private void loadActivity(Activity activity)
+        throws NoSuchMethodException, PackageManager.NameNotFoundException
+    {
+        m_activity = activity;
+
+        QtNative.setActivity(m_activity, this);
+        setActionBarVisibility(false);
+
+        Class<?> activityClass = m_activity.getClass();
+        m_super_dispatchKeyEvent =
+                activityClass.getMethod("super_dispatchKeyEvent", KeyEvent.class);
+        m_super_onRestoreInstanceState =
+                activityClass.getMethod("super_onRestoreInstanceState", Bundle.class);
+        m_super_onRetainNonConfigurationInstance =
+                activityClass.getMethod("super_onRetainNonConfigurationInstance");
+        m_super_onSaveInstanceState =
+                activityClass.getMethod("super_onSaveInstanceState", Bundle.class);
+        m_super_onKeyDown =
+                activityClass.getMethod("super_onKeyDown", Integer.TYPE, KeyEvent.class);
+        m_super_onKeyUp =
+                activityClass.getMethod("super_onKeyUp", Integer.TYPE, KeyEvent.class);
+        m_super_onConfigurationChanged =
+                activityClass.getMethod("super_onConfigurationChanged", Configuration.class);
+        m_super_onActivityResult =
+                activityClass.getMethod("super_onActivityResult", Integer.TYPE, Integer.TYPE, Intent.class);
+        m_super_onWindowFocusChanged =
+                activityClass.getMethod("super_onWindowFocusChanged", Boolean.TYPE);
+        m_super_dispatchGenericMotionEvent =
+                activityClass.getMethod("super_dispatchGenericMotionEvent", MotionEvent.class);
+
+        m_softInputMode = m_activity.getPackageManager().getActivityInfo(m_activity.getComponentName(), 0).softInputMode;
+
+        DisplayManager displayManager = (DisplayManager)m_activity.getSystemService(Context.DISPLAY_SERVICE);
+        displayManager.registerDisplayListener(displayListener, null);
+    }
+
     public boolean loadApplication(Activity activity, ClassLoader classLoader, Bundle loaderParams)
     {
         /// check parameters integrity
@@ -603,10 +697,14 @@ public class QtActivityDelegate
             return false;
         }
 
-        m_activity = activity;
-        setActionBarVisibility(false);
-        QtNative.setActivity(m_activity, this);
-        QtNative.setClassLoader(classLoader);
+        try {
+            loadActivity(activity);
+            QtNative.setClassLoader(classLoader);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+
         if (loaderParams.containsKey(STATIC_INIT_CLASSES_KEY)) {
             for (String className: Objects.requireNonNull(loaderParams.getStringArray(STATIC_INIT_CLASSES_KEY))) {
                 if (className.length() == 0)
@@ -651,22 +749,6 @@ public class QtActivityDelegate
                                                loaderParams.getBoolean(EXTRACT_STYLE_MINIMAL_KEY));
         }
 
-        try {
-            m_super_dispatchKeyEvent = m_activity.getClass().getMethod("super_dispatchKeyEvent", KeyEvent.class);
-            m_super_onRestoreInstanceState = m_activity.getClass().getMethod("super_onRestoreInstanceState", Bundle.class);
-            m_super_onRetainNonConfigurationInstance = m_activity.getClass().getMethod("super_onRetainNonConfigurationInstance");
-            m_super_onSaveInstanceState = m_activity.getClass().getMethod("super_onSaveInstanceState", Bundle.class);
-            m_super_onKeyDown = m_activity.getClass().getMethod("super_onKeyDown", Integer.TYPE, KeyEvent.class);
-            m_super_onKeyUp = m_activity.getClass().getMethod("super_onKeyUp", Integer.TYPE, KeyEvent.class);
-            m_super_onConfigurationChanged = m_activity.getClass().getMethod("super_onConfigurationChanged", Configuration.class);
-            m_super_onActivityResult = m_activity.getClass().getMethod("super_onActivityResult", Integer.TYPE, Integer.TYPE, Intent.class);
-            m_super_onWindowFocusChanged = m_activity.getClass().getMethod("super_onWindowFocusChanged", Boolean.TYPE);
-            m_super_dispatchGenericMotionEvent = m_activity.getClass().getMethod("super_dispatchGenericMotionEvent", MotionEvent.class);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-
         QtNative.setEnvironmentVariables(loaderParams.getString(ENVIRONMENT_VARIABLES_KEY));
         QtNative.setEnvironmentVariable("QT_ANDROID_FONTS_MONOSPACE",
                                         "Droid Sans Mono;Droid Sans;Droid Sans Fallback");
@@ -682,52 +764,6 @@ public class QtActivityDelegate
             m_applicationParameters = loaderParams.getString(APPLICATION_PARAMETERS_KEY);
         else
             m_applicationParameters = "";
-
-        try {
-            m_softInputMode = m_activity.getPackageManager().getActivityInfo(m_activity.getComponentName(), 0).softInputMode;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        DisplayManager.DisplayListener displayListener = new DisplayManager.DisplayListener() {
-            @Override
-            public void onDisplayAdded(int displayId) { }
-
-            private boolean isSimilarRotation(int r1, int r2)
-            {
-                return (r1 == r2)
-                       || (r1 == Surface.ROTATION_0 && r2 == Surface.ROTATION_180)
-                       || (r1 == Surface.ROTATION_180 && r2 == Surface.ROTATION_0)
-                       || (r1 == Surface.ROTATION_90 && r2 == Surface.ROTATION_270)
-                       || (r1 == Surface.ROTATION_270 && r2 == Surface.ROTATION_90);
-            }
-
-            @Override
-            public void onDisplayChanged(int displayId) {
-                Display display = (Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
-                        ? m_activity.getWindowManager().getDefaultDisplay()
-                        : m_activity.getDisplay();
-                m_currentRotation = display.getRotation();
-                m_layout.setActivityDisplayRotation(m_currentRotation);
-                // Process orientation change only if it comes after the size
-                // change, or if the screen is rotated by 180 degrees.
-                // Otherwise it will be processed in QtLayout.
-                if (isSimilarRotation(m_currentRotation, m_layout.displayRotation()))
-                    QtNative.handleOrientationChanged(m_currentRotation, m_nativeOrientation);
-                float refreshRate = display.getRefreshRate();
-                QtNative.handleRefreshRateChanged(refreshRate);
-            }
-
-            @Override
-            public void onDisplayRemoved(int displayId) { }
-        };
-
-        try {
-            DisplayManager displayManager = (DisplayManager) m_activity.getSystemService(Context.DISPLAY_SERVICE);
-            displayManager.registerDisplayListener(displayListener, null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
         m_mainLib = QtNative.loadMainLibrary(m_mainLib, nativeLibsDir);
         return m_mainLib != null;
