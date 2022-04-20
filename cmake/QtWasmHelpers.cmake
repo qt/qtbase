@@ -1,4 +1,5 @@
 
+# WARNING must keep in sync with wasm-emscripten/qmake.conf!
 function (qt_internal_setup_wasm_target_properties wasmTarget)
 
     target_link_options("${wasmTarget}" INTERFACE
