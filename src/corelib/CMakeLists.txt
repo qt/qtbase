@@ -949,6 +949,7 @@ qt_internal_extend_target(Core CONDITION ANDROID
     SOURCES
         io/qstandardpaths_android.cpp
         io/qstorageinfo_unix.cpp
+        kernel/qjnitypes.h
         kernel/qjnienvironment.cpp kernel/qjnienvironment.h
         kernel/qjniobject.cpp kernel/qjniobject.h
         kernel/qjnihelpers.cpp kernel/qjnihelpers_p.h

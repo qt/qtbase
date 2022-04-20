@@ -1,0 +1,318 @@
+/****************************************************************************
+**
+** Copyright (C) 2022 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the QtCore module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
+** packaging of this file. Please review the following information to
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#ifndef QJNITYPES_H
+#define QJNITYPES_H
+
+#include <QtCore/qglobal.h>
+
+#if defined(Q_QDOC) || defined(Q_OS_ANDROID)
+#include <jni.h>
+
+QT_BEGIN_NAMESPACE
+
+namespace QtJniTypes
+{
+
+// a constexpr type for string literals of any character width, aware of the length
+// of the string.
+template<size_t N_WITH_NULL, typename BaseType = char>
+struct String
+{
+    BaseType m_data[N_WITH_NULL] = {};
+
+    constexpr String() noexcept {}
+    // Can be instantiated (only) with a string literal
+    constexpr explicit String(const BaseType (&data)[N_WITH_NULL]) noexcept
+    {
+        for (size_t i = 0; i < N_WITH_NULL - 1; ++i)
+            m_data[i] = data[i];
+    }
+
+    constexpr BaseType at(size_t i) const { return m_data[i]; }
+    constexpr BaseType operator[](size_t i) const { return at(i); }
+    static constexpr size_t size() noexcept { return N_WITH_NULL; }
+    constexpr operator const BaseType *() const noexcept { return m_data; }
+    constexpr const BaseType *data() const noexcept { return m_data; }
+    template<size_t N2_WITH_NULL>
+    constexpr bool startsWith(const BaseType (&lit)[N2_WITH_NULL]) const noexcept
+    {
+        if constexpr (N2_WITH_NULL > N_WITH_NULL) {
+            return false;
+        } else {
+            for (size_t i = 0; i < N2_WITH_NULL - 1; ++i) {
+                if (m_data[i] != lit[i])
+                    return false;
+            }
+        }
+        return true;
+    }
+    constexpr bool startsWith(BaseType c) const noexcept
+    {
+        return N_WITH_NULL > 1 && m_data[0] == c;
+    }
+    template<size_t N2_WITH_NULL>
+    constexpr bool endsWith(const BaseType (&lit)[N2_WITH_NULL]) const noexcept
+    {
+        if constexpr (N2_WITH_NULL > N_WITH_NULL) {
+            return false;
+        } else {
+            for (size_t i = 0; i < N2_WITH_NULL; ++i) {
+                if (m_data[N_WITH_NULL - i - 1] != lit[N2_WITH_NULL - i - 1])
+                    return false;
+            }
+        }
+        return true;
+    }
+    constexpr bool endsWith(BaseType c) const noexcept
+    {
+        return N_WITH_NULL > 1 && m_data[N_WITH_NULL - 2] == c;
+    }
+
+    template<size_t N2_WITH_NULL>
+    friend inline constexpr bool operator==(const String<N_WITH_NULL> &lhs,
+                                            const String<N2_WITH_NULL> &rhs) noexcept
+    {
+        if constexpr (N_WITH_NULL != N2_WITH_NULL) {
+            return false;
+        } else {
+            for (size_t i = 0; i < N_WITH_NULL - 1; ++i) {
+                if (lhs.at(i) != rhs.at(i))
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    template<size_t N2_WITH_NULL>
+    friend inline constexpr bool operator!=(const String<N_WITH_NULL> &lhs,
+                                            const String<N2_WITH_NULL> &rhs) noexcept
+    {
+        return !operator==(lhs, rhs);
+    }
+
+    template<size_t N2_WITH_NULL>
+    friend inline constexpr bool operator==(const String<N_WITH_NULL> &lhs,
+                                            const BaseType (&rhs)[N2_WITH_NULL]) noexcept
+    {
+        return operator==(lhs, String<N2_WITH_NULL>(rhs));
+    }
+    template<size_t N2_WITH_NULL>
+    friend inline constexpr bool operator==(const BaseType (&lhs)[N2_WITH_NULL],
+                                            const String<N_WITH_NULL> &rhs) noexcept
+    {
+        return operator==(String<N2_WITH_NULL>(lhs), rhs);
+    }
+
+    template<size_t N2_WITH_NULL>
+    friend inline constexpr bool operator!=(const String<N_WITH_NULL> &lhs,
+                                            const BaseType (&rhs)[N2_WITH_NULL]) noexcept
+    {
+        return operator!=(lhs, String<N2_WITH_NULL>(rhs));
+    }
+    template<size_t N2_WITH_NULL>
+    friend inline constexpr bool operator!=(const BaseType (&lhs)[N2_WITH_NULL],
+                                            const String<N_WITH_NULL> &rhs) noexcept
+    {
+        return operator!=(String<N2_WITH_NULL>(lhs), rhs);
+    }
+
+    template<size_t N2_WITH_NULL>
+    friend inline constexpr auto operator+(const String<N_WITH_NULL> &lhs,
+                                           const String<N2_WITH_NULL> &rhs) noexcept
+    {
+        char data[N_WITH_NULL + N2_WITH_NULL - 1] = {};
+        for (size_t i = 0; i < N_WITH_NULL - 1; ++i)
+            data[i] = lhs[i];
+        for (size_t i = 0; i < N2_WITH_NULL - 1; ++i)
+            data[N_WITH_NULL - 1 + i] = rhs[i];
+        return String<N_WITH_NULL + N2_WITH_NULL - 1>(data);
+    }
+};
+
+
+// Helper types that allow us to disable variadic overloads that would conflict
+// with overloads that take a const char*.
+template<typename T, size_t N = 0> struct IsStringType : std::false_type {};
+template<> struct IsStringType<const char*, 0> : std::true_type {};
+template<size_t N> struct IsStringType<String<N>> : std::true_type {};
+template<size_t N> struct IsStringType<const char[N]> : std::true_type {};
+
+template<bool flag = false>
+static void staticAssertTypeMismatch()
+{
+    static_assert(flag, "The used type is not supported by this template call. "
+                        "Use a JNI based type instead.");
+}
+
+template<typename T>
+constexpr auto typeSignature()
+{
+    if constexpr(std::is_same<T, jobject>::value)
+        return String("Ljava/lang/Object;");
+    else if constexpr(std::is_same<T, jclass>::value)
+        return String("Ljava/lang/Class;");
+    else if constexpr(std::is_same<T, jstring>::value)
+        return String("Ljava/lang/String;");
+    else if constexpr(std::is_same<T, jobjectArray>::value)
+        return String("[Ljava/lang/Object;");
+    else if constexpr(std::is_same<T, jthrowable>::value)
+        return String("Ljava/lang/Throwable;");
+    else if constexpr(std::is_same<T, jbooleanArray>::value)
+        return String("[Z");
+    else if constexpr(std::is_same<T, jbyteArray>::value)
+        return String("[B");
+    else if constexpr(std::is_same<T, jshortArray>::value)
+        return String("[S");
+    else if constexpr(std::is_same<T, jintArray>::value)
+        return String("[I");
+    else if constexpr(std::is_same<T, jlongArray>::value)
+        return String("[J");
+    else if constexpr(std::is_same<T, jfloatArray>::value)
+        return String("[F");
+    else if constexpr(std::is_same<T, jdoubleArray>::value)
+        return String("[D");
+    else if constexpr(std::is_same<T, jcharArray>::value)
+        return String("[C");
+    else if constexpr(std::is_same<T, jboolean>::value)
+        return String("Z");
+    else if constexpr(std::is_same<T, bool>::value)
+        return String("Z");
+    else if constexpr(std::is_same<T, jbyte>::value)
+        return String("B");
+    else if constexpr(std::is_same<T, jchar>::value)
+        return String("C");
+    else if constexpr(std::is_same<T, char>::value)
+        return String("C");
+    else if constexpr(std::is_same<T, jshort>::value)
+        return String("S");
+    else if constexpr(std::is_same<T, short>::value)
+        return String("S");
+    else if constexpr(std::is_same<T, jint>::value)
+        return String("I");
+    else if constexpr(std::is_same<T, int>::value)
+        return String("I");
+    else if constexpr(std::is_same<T, uint>::value)
+        return String("I");
+    else if constexpr(std::is_same<T, jlong>::value)
+        return String("J");
+    else if constexpr(std::is_same<T, long>::value)
+        return String("J");
+    else if constexpr(std::is_same<T, jfloat>::value)
+        return String("F");
+    else if constexpr(std::is_same<T, float>::value)
+        return String("F");
+    else if constexpr(std::is_same<T, jdouble>::value)
+        return String("D");
+    else if constexpr(std::is_same<T, double>::value)
+        return String("D");
+    else if constexpr(std::is_same<T, void>::value)
+        return String("V");
+    else if constexpr(IsStringType<T>::value)
+        static_assert(!IsStringType<T>::value, "Don't use a literal type, call data!");
+    else
+        staticAssertTypeMismatch();
+}
+
+template<typename T>
+static constexpr bool isPrimitiveType()
+{
+    return typeSignature<T>().size() == 2;
+}
+
+template<typename T>
+static constexpr bool isObjectType()
+{
+    if constexpr(std::is_convertible<T, jobject>::value) {
+        return true;
+    } else {
+        constexpr auto signature = typeSignature<T>();
+        return signature.startsWith('L') && signature.endsWith(';');
+    }
+}
+
+template<typename T>
+static constexpr void assertPrimitiveType()
+{
+    static_assert(isPrimitiveType<T>(), "Type needs to be a primitive JNI type!");
+}
+
+template<typename T>
+static constexpr void assertObjectType()
+{
+    static_assert(isObjectType<T>(),
+                  "Type needs to be a JNI object type (convertible to jobject, or with "
+                  "an object type signature registered)!");
+}
+
+template<typename T>
+static constexpr void assertType()
+{
+    static_assert(isPrimitiveType<T>() || isObjectType<T>(),
+                  "Type needs to be a JNI type!");
+}
+
+template<typename R, typename ...Args>
+static constexpr auto methodSignature()
+{
+    return (String("(") +
+                ... + typeSignature<std::decay_t<Args>>())
+            + String(")")
+            + typeSignature<R>();
+}
+
+template<typename T>
+static constexpr auto fieldSignature()
+{
+    return QtJniTypes::typeSignature<T>();
+}
+
+template<typename ...Args>
+static constexpr auto constructorSignature()
+{
+    return methodSignature<void, Args...>();
+}
+
+} // namespace QtJniTypes
+
+QT_END_NAMESPACE
+
+#endif
+
+#endif // QJNITYPES_H
