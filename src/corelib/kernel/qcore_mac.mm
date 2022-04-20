@@ -196,6 +196,27 @@ os_log_t AppleUnifiedLogger::cachedLog(const QString &subsystem, const QString &
 
 // -------------------------------------------------------------------------
 
+QDebug operator<<(QDebug dbg, id obj)
+{
+    if (!obj) {
+        // Match NSLog
+        dbg << "(null)";
+        return dbg;
+    }
+
+    for (Class cls = object_getClass(obj); cls; cls = class_getSuperclass(cls)) {
+        if (cls == NSObject.class) {
+            dbg << static_cast<NSObject*>(obj);
+            return dbg;
+        }
+    }
+
+    // Match NSObject.debugDescription
+    const QDebugStateSaver saver(dbg);
+    dbg.nospace() << '<' << object_getClassName(obj) << ": " << static_cast<void*>(obj) << '>';
+    return dbg;
+}
+
 QDebug operator<<(QDebug dbg, const NSObject *nsObject)
 {
     return dbg << (nsObject ?

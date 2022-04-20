@@ -530,6 +530,7 @@ inline QDebug operator<<(QDebug debug, QKeyCombination combination)
 
 QT_END_NAMESPACE
 Q_FORWARD_DECLARE_CF_TYPE(CFString);
+typedef struct objc_object *id;
 Q_FORWARD_DECLARE_OBJC_CLASS(NSObject);
 QT_FOR_EACH_CORE_FOUNDATION_TYPE(QT_FORWARD_DECLARE_CF_TYPE)
 QT_FOR_EACH_MUTABLE_CORE_FOUNDATION_TYPE(QT_FORWARD_DECLARE_MUTABLE_CF_TYPE)
@@ -554,6 +555,7 @@ QT_BEGIN_NAMESPACE
     }
 
 // Defined in qcore_mac_objc.mm
+Q_CORE_EXPORT QDebug operator<<(QDebug, id obj);
 Q_CORE_EXPORT QDebug operator<<(QDebug, const NSObject *);
 Q_CORE_EXPORT QDebug operator<<(QDebug, CFStringRef);
 
