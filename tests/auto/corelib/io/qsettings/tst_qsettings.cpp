@@ -1327,20 +1327,17 @@ void tst_QSettings::testVariantTypes()
     m2.insert("borba", "dorba");
     testValue("customMap", m2, QVariantMap);
 
-    QStringList l2;
-
-    l2 << "ene" << "due" << "@Point(1 2)" << "@fake";
+    QStringList l2 { "ene", "due", "@Point(1 2)", "@fake" };
     testValue("stringsAt", l2, QStringList);
 
-    l2.clear();
-    l2 << "ene" << "due" << "rike" << "fake";
+    l2 = { "ene", "due", "rike", "fake" };
     testValue("strings", l2, QStringList);
 
-    QList<QVariant> l3;
     QDate date = QDate::currentDate();
     QTime time = QTime::currentTime();
-    l3 << QString("ene") << 10 << QVariant::fromValue(QColor(1, 2, 3)) << QVariant(QRect(1, 2, 3, 4))
-        << QVariant(QSize(4, 56)) << QVariant(QPoint(4, 2)) << true << false << date << time;
+    QList<QVariant> l3 { QString("ene"), 10, QVariant::fromValue(QColor(1, 2, 3)),
+            QVariant(QRect(1, 2, 3, 4)), QVariant(QSize(4, 56)), QVariant(QPoint(4, 2)),
+            true, false, date, time };
     testValue("mixedList", l3, QVariantList);
 
     testValue("string", QString("hello"), QString);
@@ -1352,8 +1349,7 @@ void tst_QSettings::testVariantTypes()
     testValue("time", time, QTime);
     testValue("byteArray", QByteArray("foo bar"), QByteArray);
 
-    QList<QVariant> l4;
-    l4 << QVariant(m2) << QVariant(l2) << QVariant(l3);
+    QList<QVariant> l4 { QVariant(m2), QVariant(l2), QVariant(l3) };
     testValue("collectList", l4, QVariantList);
 
     QDateTime dt = QDateTime::currentDateTime();
