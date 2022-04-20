@@ -103,6 +103,16 @@ static inline bool canWriteNativeSystemSettings()
 
 static const char insufficientPermissionSkipMessage[] = "Insufficient permissions for this test.";
 
+static void populateWithFormats()
+{
+    QTest::addColumn<QSettings::Format>("format");
+
+    QTest::newRow("native") << QSettings::NativeFormat;
+    QTest::newRow("ini") << QSettings::IniFormat;
+    QTest::newRow("custom1") << QSettings::CustomFormat1;
+    QTest::newRow("custom2") << QSettings::CustomFormat2;
+}
+
 class tst_QSettings : public QObject
 {
     Q_OBJECT
@@ -115,7 +125,7 @@ public slots:
     void cleanup() { cleanupTestFiles(); }
 private slots:
     void getSetCheck();
-    void ctor_data();
+    void ctor_data() { populateWithFormats(); }
     void ctor();
     void beginGroup();
     void setValue();
@@ -127,16 +137,16 @@ private slots:
     void syncAlternateDataStream();
 #endif
     void setFallbacksEnabled();
-    void setFallbacksEnabled_data();
-    void fromFile_data();
+    void setFallbacksEnabled_data() { populateWithFormats(); }
+    void fromFile_data() { populateWithFormats(); }
     void fromFile();
-    void testArrays_data();
+    void testArrays_data() { populateWithFormats(); }
     void testArrays();
-    void testCaseSensitivity_data();
+    void testCaseSensitivity_data() { populateWithFormats(); }
     void testCaseSensitivity();
     void testErrorHandling_data();
     void testErrorHandling();
-    void testChildKeysAndGroups_data();
+    void testChildKeysAndGroups_data() { populateWithFormats(); }
     void testChildKeysAndGroups();
     void testUpdateRequestEvent();
     void testThreadSafety();
@@ -149,7 +159,7 @@ private slots:
 #ifdef Q_OS_MAC
     void fileName();
 #endif
-    void isWritable_data();
+    void isWritable_data() { populateWithFormats(); }
     void isWritable();
     void registerFormat();
     void setPath();
@@ -163,23 +173,23 @@ private slots:
 #endif
 
 #ifdef QT_BUILD_INTERNAL
-    void allKeys_data();
+    void allKeys_data() { populateWithFormats(); }
     void allKeys();
-    void childGroups_data();
+    void childGroups_data() { populateWithFormats(); }
     void childGroups();
-    void childKeys_data();
+    void childKeys_data() { populateWithFormats(); }
     void childKeys();
     void testIniParsing_data();
     void testIniParsing();
     void testEscapes();
     void testNormalizedKey_data();
     void testNormalizedKey();
-    void testVariantTypes_data();
+    void testVariantTypes_data() { populateWithFormats(); }
     void testVariantTypes();
     void testMetaTypes_data();
     void testMetaTypes();
 #endif
-    void rainersSyncBugOnMac_data();
+    void rainersSyncBugOnMac_data() { populateWithFormats(); }
     void rainersSyncBugOnMac();
     void recursionBug();
 
@@ -279,16 +289,6 @@ static bool writeCustom3File(QIODevice &device, const QSettings::SettingsMap &ma
     return true;
 }
 
-static void populateWithFormats()
-{
-    QTest::addColumn<QSettings::Format>("format");
-
-    QTest::newRow("native") << QSettings::NativeFormat;
-    QTest::newRow("ini") << QSettings::IniFormat;
-    QTest::newRow("custom1") << QSettings::CustomFormat1;
-    QTest::newRow("custom2") << QSettings::CustomFormat2;
-}
-
 tst_QSettings::tst_QSettings()
     : m_canWriteNativeSystemSettings(canWriteNativeSystemSettings())
 {
@@ -359,11 +359,6 @@ void tst_QSettings::cleanupTestFiles()
 /*
     Test the constructors and the assignment operator.
 */
-
-void tst_QSettings::ctor_data()
-{
-    populateWithFormats();
-}
 
 void tst_QSettings::ctor()
 {
@@ -1276,11 +1271,6 @@ FOR_EACH_CORE_METATYPE(RETURN_CREATE_FUNCTION)
 
     TypeTestFunctionGetter::get(type)(format);
 }
-
-void tst_QSettings::testVariantTypes_data()
-{
-    populateWithFormats();
-}
 #endif
 
 #ifdef QT_BUILD_INTERNAL
@@ -1359,6 +1349,7 @@ void tst_QSettings::testVariantTypes()
     QList<QVariant> l4;
     l4 << QVariant(m2) << QVariant(l2) << QVariant(l3);
     testVal("key13", l4, QVariantList, List);
+
     QDateTime dt = QDateTime::currentDateTime();
     dt.setOffsetFromUtc(3600);
     testVal("key14", dt, QDateTime, DateTime);
@@ -1863,11 +1854,6 @@ void tst_QSettings::syncAlternateDataStream()
 }
 #endif
 
-void tst_QSettings::setFallbacksEnabled_data()
-{
-    populateWithFormats();
-}
-
 void tst_QSettings::setFallbacksEnabled()
 {
     QFETCH(QSettings::Format, format);
@@ -1950,11 +1936,6 @@ void tst_QSettings::setFallbacksEnabled()
     QCOMPARE(settings1.value("key 5").toString(), QString(""));
     QVERIFY(settings1.contains("key 1"));
     QVERIFY(!settings1.contains("key 5"));
-}
-
-void tst_QSettings::testChildKeysAndGroups_data()
-{
-    populateWithFormats();
 }
 
 void tst_QSettings::testChildKeysAndGroups()
@@ -2351,11 +2332,6 @@ void tst_QSettings::trailingWhitespace()
     }
 }
 
-void tst_QSettings::fromFile_data()
-{
-    populateWithFormats();
-}
-
 void tst_QSettings::fromFile()
 {
     QFETCH(QSettings::Format, format);
@@ -2423,11 +2399,6 @@ static bool containsSubList(QStringList mom, QStringList son)
             return false;
     }
     return true;
-}
-
-void tst_QSettings::testArrays_data()
-{
-    populateWithFormats();
 }
 
 /*
@@ -2877,11 +2848,6 @@ void tst_QSettings::testEscapes()
 }
 #endif
 
-void tst_QSettings::testCaseSensitivity_data()
-{
-    populateWithFormats();
-}
-
 void tst_QSettings::testCaseSensitivity()
 {
     QFETCH(QSettings::Format, format);
@@ -3031,11 +2997,6 @@ void tst_QSettings::fileName()
 }
 #endif
 
-void tst_QSettings::isWritable_data()
-{
-    populateWithFormats();
-}
-
 void tst_QSettings::isWritable()
 {
     QFETCH(QSettings::Format, format);
@@ -3086,13 +3047,6 @@ void tst_QSettings::isWritable()
         }
     }
 }
-
-#ifdef QT_BUILD_INTERNAL
-void tst_QSettings::childGroups_data()
-{
-    populateWithFormats();
-}
-#endif
 
 #ifdef QT_BUILD_INTERNAL
 void tst_QSettings::childGroups()
@@ -3164,13 +3118,6 @@ void tst_QSettings::childGroups()
 #endif
 
 #ifdef QT_BUILD_INTERNAL
-void tst_QSettings::childKeys_data()
-{
-    populateWithFormats();
-}
-#endif
-
-#ifdef QT_BUILD_INTERNAL
 void tst_QSettings::childKeys()
 {
     QFETCH(QSettings::Format, format);
@@ -3234,13 +3181,6 @@ void tst_QSettings::childKeys()
         childKeys.sort();
         QCOMPARE(childKeys, QStringList() << "alpha" << "beta" << "gamma");
     }
-}
-#endif
-
-#ifdef QT_BUILD_INTERNAL
-void tst_QSettings::allKeys_data()
-{
-    populateWithFormats();
 }
 #endif
 
@@ -3503,11 +3443,6 @@ void tst_QSettings::dontReorderIniKeysNeedlessly()
     outFile2.close();
 }
 #endif
-
-void tst_QSettings::rainersSyncBugOnMac_data()
-{
-    ctor_data();
-}
 
 void tst_QSettings::rainersSyncBugOnMac()
 {
