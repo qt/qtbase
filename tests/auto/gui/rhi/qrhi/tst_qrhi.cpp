@@ -407,7 +407,8 @@ void tst_QRhi::create()
             QRhi::TextureArrays,
             QRhi::Tessellation,
             QRhi::GeometryShader,
-            QRhi::TextureArrayRange
+            QRhi::TextureArrayRange,
+            QRhi::NonFillPolygonMode
         };
         for (size_t i = 0; i <sizeof(features) / sizeof(QRhi::Feature); ++i)
             rhi->isFeatureSupported(features[i]);

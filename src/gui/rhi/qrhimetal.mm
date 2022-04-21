@@ -635,6 +635,8 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return false;
     case QRhi::TextureArrayRange:
         return false;
+    case QRhi::NonFillPolygonMode:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;

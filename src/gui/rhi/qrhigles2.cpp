@@ -1281,6 +1281,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return caps.geometryShader;
     case QRhi::TextureArrayRange:
         return false;
+    case QRhi::NonFillPolygonMode:
+        return !caps.gles;
     default:
         Q_UNREACHABLE();
         return false;

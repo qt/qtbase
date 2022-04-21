@@ -1697,7 +1697,8 @@ public:
         TextureArrays,
         Tessellation,
         GeometryShader,
-        TextureArrayRange
+        TextureArrayRange,
+        NonFillPolygonMode
     };
 
     enum BeginFrameFlag {

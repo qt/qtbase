@@ -702,6 +702,8 @@ bool QRhiVulkan::create(QRhi::Flags flags)
     caps.tessellation = physDevFeatures.tessellationShader;
     caps.geometryShader = physDevFeatures.geometryShader;
 
+    caps.nonFillPolygonMode = physDevFeatures.fillModeNonSolid;
+
     if (!importedAllocator) {
         VmaVulkanFunctions afuncs;
         afuncs.vkGetPhysicalDeviceProperties = wrap_vkGetPhysicalDeviceProperties;
@@ -4330,6 +4332,8 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
         return caps.geometryShader;
     case QRhi::TextureArrayRange:
         return true;
+    case QRhi::NonFillPolygonMode:
+        return caps.nonFillPolygonMode;
     default:
         Q_UNREACHABLE();
         return false;

@@ -892,6 +892,7 @@ public:
         bool tessellation = false;
         bool vulkan11OrHigher = false;
         bool geometryShader = false;
+        bool nonFillPolygonMode = false;
     } caps;
 
     VkPipelineCache pipelineCache = VK_NULL_HANDLE;

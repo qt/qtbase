@@ -744,6 +744,12 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     it does not map well to all graphics APIs, and it is only meant to provide
     support for special cases anyhow. In practice the feature can be expected to
     be supported with Direct3D 11 and Vulkan.
+
+    \value NonFillPolygonMode Indicates that setting a PolygonMode other than
+    the default Fill is supported for QRhiGraphicsPipeline. A common use case
+    for changing the mode to Line is to get wireframe rendering. This however
+    is not available as a core OpenGL ES feature, and is optional with Vulkan
+    as well as some mobile GPUs may not offer the feature.
  */
 
 /*!
@@ -4324,7 +4330,10 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
     the fill mode used when rasterizing polygons.  Polygons may be drawn as
     solids (Fill), or as a wire mesh (Line).
 
-    \note OpenGL ES does not support Polygon Mode
+    Support for non-fill polygon modes is optional and is indicated by the
+    QRhi::NonFillPolygonMode feature. With OpenGL ES and some Vulkan
+    implementations the feature will likely be reported as unspported, which
+    then means values other than Fill cannot be used.
 
     \value Fill The interior of the polygon is filled (default)
     \value Line Boundary edges of the polygon are drawn as line segments.

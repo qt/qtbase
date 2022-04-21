@@ -576,6 +576,8 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return false;
     case QRhi::TextureArrayRange:
         return true;
+    case QRhi::NonFillPolygonMode:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
