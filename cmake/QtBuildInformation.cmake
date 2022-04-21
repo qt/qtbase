@@ -98,7 +98,12 @@ function(qt_configure_print_summary)
                 "-- Configure with --log-level=STATUS or higher to increase the output verbosity.")
         endif()
 
+        # Need 2 flushes to ensure no interleaved input is printed due to a mix of message(STATUS)
+        # and message(NOTICE) calls.
+        execute_process(COMMAND ${CMAKE_COMMAND} -E echo " ")
         message(STATUS "Configure summary:\n${__qt_configure_reports}")
+        execute_process(COMMAND ${CMAKE_COMMAND} -E echo " ")
+
         file(APPEND "${summary_file}" "${__qt_configure_reports}")
     endif()
     if(__qt_configure_notes)
