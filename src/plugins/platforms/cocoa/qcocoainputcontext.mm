@@ -118,7 +118,15 @@ void QCocoaInputContext::commit()
 
     QMacAutoReleasePool pool;
     [view unmarkText];
+
     [view.inputContext discardMarkedText];
+    if (view.inputContext != NSTextInputContext.currentInputContext) {
+        // discardMarkedText will activate the TSM document of the given input context,
+        // which may not match the current input context. To ensure the current input
+        // context is not left in an inconsistent state with a deactivated document
+        // we need to manually activate it here.
+        [NSTextInputContext.currentInputContext activate];
+    }
 }
 
 
