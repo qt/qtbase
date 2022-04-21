@@ -680,6 +680,7 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
     httpRequest.setRedirectPolicy(redirectPolicy);
 
     httpRequest.setPriority(convert(newHttpRequest.priority()));
+    loadingFromCache = false;
 
     switch (operation) {
     case QNetworkAccessManager::GetOperation:
