@@ -116,7 +116,6 @@ void QCocoaInputContext::commit()
     if (!view)
         return;
 
-    QMacAutoReleasePool pool;
     [view unmarkText];
 
     [view.inputContext discardMarkedText];
@@ -147,7 +146,6 @@ void QCocoaInputContext::reset()
     if (!view)
         return;
 
-    QMacAutoReleasePool pool;
     if (NSTextInputContext *ctxt = [NSTextInputContext currentInputContext]) {
         [ctxt discardMarkedText];
         [view unmarkText];
