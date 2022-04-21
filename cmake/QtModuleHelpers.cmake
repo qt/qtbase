@@ -381,7 +381,7 @@ function(qt_internal_add_module target)
             else()
                 qt_install(
                     FILES ${module_headers_qpa}
-                    DESTINATION "${module_install_interface_versioned_inner_include_dir}/qpa")
+                    DESTINATION "${module_install_interface_qpa_include_dir}")
             endif()
         endif()
     endif()
@@ -855,6 +855,7 @@ endfunction()
 #  * foo_versioned_include_dir with the value "QtCore/6.2.0"
 #  * foo_versioned_inner_include_dir with the value "QtCore/6.2.0/QtCore"
 #  * foo_private_include_dir with the value "QtCore/6.2.0/QtCore/private"
+#  * foo_qpa_include_dir with the value "QtCore/6.2.0/QtCore/qpa"
 #  * foo_interface_name the interface name of the module stored in _qt_module_interface_name
 #    property, e.g. Core.
 #
@@ -874,6 +875,9 @@ endfunction()
 #  * foo_<build|install>_private_include_dir with
 #    qtbase_build_dir/include/QtCore/6.2.0/QtCore/private for build interface and
 #    include/QtCore/6.2.0/QtCore/private for install interface.
+#  * foo_<build|install>_qpa_include_dir with
+#    qtbase_build_dir/include/QtCore/6.2.0/QtCore/qpa for build interface and
+#    include/QtCore/6.2.0/QtCore/qpa for install interface.
 # The following values are set by the function and might be useful in caller's scope:
 #  * repo_install_interface_include_dir contains path to the top-level repository include directory,
 #    e.g. qtbase_build_dir/include
@@ -906,6 +910,8 @@ the different base name for the module info variables.")
         "${${result}_versioned_include_dir}/${${result}_include_name}")
     set("${result}_private_include_dir"
         "${${result}_versioned_inner_include_dir}/private")
+    set("${result}_qpa_include_dir"
+        "${${result}_versioned_inner_include_dir}/qpa")
 
     # Module build interface directories
     set(repo_build_interface_include_dir "${QT_BUILD_DIR}/include")
@@ -917,6 +923,8 @@ the different base name for the module info variables.")
         "${repo_build_interface_include_dir}/${${result}_versioned_inner_include_dir}")
     set("${result}_build_interface_private_include_dir"
         "${repo_build_interface_include_dir}/${${result}_private_include_dir}")
+    set("${result}_build_interface_qpa_include_dir"
+        "${repo_build_interface_include_dir}/${${result}_qpa_include_dir}")
 
     # Module install interface direcotries
     set(repo_install_interface_include_dir "${INSTALL_INCLUDEDIR}")
@@ -928,6 +936,8 @@ the different base name for the module info variables.")
         "${repo_install_interface_include_dir}/${${result}_versioned_inner_include_dir}")
     set("${result}_install_interface_private_include_dir"
         "${repo_install_interface_include_dir}/${${result}_private_include_dir}")
+    set("${result}_install_interface_qpa_include_dir"
+        "${repo_install_interface_include_dir}/${${result}_qpa_include_dir}")
 
     set("${result}" "${module}" PARENT_SCOPE)
     set("${result}_versioned" "${module_versioned}" PARENT_SCOPE)
@@ -940,6 +950,7 @@ the different base name for the module info variables.")
     set("${result}_versioned_inner_include_dir"
         "${${result}_versioned_inner_include_dir}" PARENT_SCOPE)
     set("${result}_private_include_dir" "${${result}_private_include_dir}" PARENT_SCOPE)
+    set("${result}_qpa_include_dir" "${${result}_qpa_include_dir}" PARENT_SCOPE)
     set("${result}_interface_name" "${module_interface_name}" PARENT_SCOPE)
 
     # Setting module build interface directories in parent scope
@@ -952,6 +963,8 @@ the different base name for the module info variables.")
         "${${result}_build_interface_versioned_inner_include_dir}" PARENT_SCOPE)
     set("${result}_build_interface_private_include_dir"
         "${${result}_build_interface_private_include_dir}" PARENT_SCOPE)
+    set("${result}_build_interface_qpa_include_dir"
+        "${${result}_build_interface_qpa_include_dir}" PARENT_SCOPE)
 
     # Setting module install interface directories in parent scope
     set(repo_install_interface_include_dir "${repo_install_interface_include_dir}" PARENT_SCOPE)
@@ -963,6 +976,8 @@ the different base name for the module info variables.")
         "${${result}_install_interface_versioned_inner_include_dir}" PARENT_SCOPE)
     set("${result}_install_interface_private_include_dir"
         "${${result}_install_interface_private_include_dir}" PARENT_SCOPE)
+    set("${result}_install_interface_qpa_include_dir"
+        "${${result}_install_interface_qpa_include_dir}" PARENT_SCOPE)
 endfunction()
 
 # Generate a module description file based on the template in ModuleDescription.json.in
