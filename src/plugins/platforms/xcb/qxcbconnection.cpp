@@ -81,8 +81,8 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     m_drag = new QXcbDrag(this);
 #endif
 
-    m_startupId = qgetenv("DESKTOP_STARTUP_ID");
-    if (!m_startupId.isNull())
+    setStartupId(qgetenv("DESKTOP_STARTUP_ID"));
+    if (!startupId().isNull())
         qunsetenv("DESKTOP_STARTUP_ID");
 
     const int focusInDelay = 100;
@@ -771,6 +771,28 @@ void QXcbConnection::setMousePressWindow(QXcbWindow *w)
     m_mousePressWindow = w;
 }
 
+QByteArray QXcbConnection::startupId() const
+{
+    return m_startupId;
+}
+void QXcbConnection::setStartupId(const QByteArray &nextId)
+{
+    m_startupId = nextId;
+    if (m_clientLeader) {
+        if (!nextId.isEmpty())
+            xcb_change_property(xcb_connection(),
+                                XCB_PROP_MODE_REPLACE,
+                                clientLeader(),
+                                atom(QXcbAtom::_NET_STARTUP_ID),
+                                atom(QXcbAtom::UTF8_STRING),
+                                8,
+                                nextId.length(),
+                                nextId.constData());
+        else
+            xcb_delete_property(xcb_connection(), clientLeader(), atom(QXcbAtom::_NET_STARTUP_ID));
+    }
+}
+
 void QXcbConnection::grabServer()
 {
     if (m_canGrabServer)
@@ -917,6 +939,8 @@ xcb_window_t QXcbConnection::clientLeader()
                                 session.constData());
         }
 #endif
+
+        setStartupId(startupId());
     }
     return m_clientLeader;
 }
