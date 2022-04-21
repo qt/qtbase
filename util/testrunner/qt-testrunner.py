@@ -106,6 +106,12 @@ VERBOSE_ENV = {
 NO_RERUN_FUNCTIONS = {
     "initTestCase", "init", "cleanup", "cleanupTestCase"
 }
+# The following tests do not write XML log files properly. qt-testrunner will
+# not try to append "-o" to their command-line or re-run failed testcases.
+# Only add tests here if absolutely necessary!
+NON_XML_GENERATING_TESTS = {
+    "tst_selftests",    # qtestlib's selftests are using an external test framework (Catch) that does not support -o argument
+}
 
 
 def parse_args():
@@ -187,10 +193,8 @@ Default flags: --max-repeats 5 --passes-needed 1
         L.info("Detected androidtestrunner, test will be handled specially. Detected test basename: %s",
                args.test_basename)
 
-    # The qtestlib selftests are implemented using an external test library
-    # (Catch), and they don't support the same command-line options.
-    if args.test_basename == "tst_selftests":
-        L.info("Detected special test not able to generate XML log! Will not repeat individual testcases.")
+    if args.test_basename in NON_XML_GENERATING_TESTS:
+        L.info("Detected special test not able to generate XML log! Will not parse it and will not repeat individual testcases")
         args.no_extra_args = True
         args.max_repeats = 0
 
