@@ -735,11 +735,24 @@ bool QIOSInputContext::inputMethodAccepted() const
 */
 void QIOSInputContext::reset()
 {
-    qImDebug("updating Qt::ImQueryAll and unmarking text");
+    qImDebug("releasing text responder");
+
+    // UIKit will sometimes, for unknown reasons, unset the input delegate on the
+    // current text responder. This seems to happen as a result of us calling
+    // [self.inputDelegate textDidChange:self] from [m_textResponder reset].
+    // But it won't be set to nil directly, only after a character is typed on
+    // the input panel after the reset. This strange behavior seems to be related
+    // to us overriding [QUIView setInteraction] to ignore UITextInteraction. If we
+    // didn't do that, the delegate would be kept. But not overriding that function
+    // has its own share of issues, so it seems better to keep that way for now.
+    // Instead, we choose to recreate the text responder as a brute-force solution
+    // until we have better knowledge of what is going on (or implement the new
+    // UITextInteraction protocol).
+    [m_textResponder reset];
+    [m_textResponder autorelease];
+    m_textResponder = nullptr;
 
     update(Qt::ImQueryAll);
-
-    [m_textResponder reset];
 }
 
 /*!
