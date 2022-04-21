@@ -1979,8 +1979,9 @@ namespace
                     value != QLatin1String("right") &&
                     value != QLatin1String("center")
                 ) {
+                    qCDebug(lcAccessibilityAtspi) << "Unknown text-align attribute value \""
+                                                  << value << "\" cannot be translated to AT-SPI.";
                     value = QString();
-                    qCDebug(lcAccessibilityAtspi) << "Unknown text-align attribute value \"" << value << "\" cannot be translated to AT-SPI.";
                 }
             }
         } else if (ia2Name == QLatin1String("font-size")) {
@@ -1992,8 +1993,9 @@ namespace
                 value != QLatin1String("italic") &&
                 value != QLatin1String("oblique")
             ) {
+                qCDebug(lcAccessibilityAtspi) << "Unknown font-style attribute value \"" << value
+                                              << "\" cannot be translated to AT-SPI.";
                 value = QString();
-                qCDebug(lcAccessibilityAtspi) << "Unknown font-style attribute value \"" << value << "\" cannot be translated to AT-SPI.";
             }
         } else if (ia2Name == QLatin1String("text-underline-type")) {
             name = QStringLiteral("underline");
@@ -2001,8 +2003,9 @@ namespace
                 value != QLatin1String("single") &&
                 value != QLatin1String("double")
             ) {
+                qCDebug(lcAccessibilityAtspi) << "Unknown text-underline-type attribute value \""
+                                              << value << "\" cannot be translated to AT-SPI.";
                 value = QString();
-                qCDebug(lcAccessibilityAtspi) << "Unknown text-underline-type attribute value \"" << value << "\" cannot be translated to AT-SPI.";
             }
         } else if (ia2Name == QLatin1String("font-weight")) {
             name = QStringLiteral("weight");
@@ -2017,8 +2020,9 @@ namespace
                 value != QLatin1String("super") &&
                 value != QLatin1String("sub")
             ) {
+                qCDebug(lcAccessibilityAtspi) << "Unknown text-position attribute value \"" << value
+                                              << "\" cannot be translated to AT-SPI.";
                 value = QString();
-                qCDebug(lcAccessibilityAtspi) << "Unknown text-position attribute value \"" << value << "\" cannot be translated to AT-SPI.";
             }
         } else if (ia2Name == QLatin1String("writing-mode")) {
             name = QStringLiteral("direction");
@@ -2031,8 +2035,9 @@ namespace
                 value = QStringLiteral("rtl");
                 qCDebug(lcAccessibilityAtspi) << "writing-mode attribute value \"tb\" translated only w.r.t. horizontal direction; vertical direction ignored";
             } else {
+                qCDebug(lcAccessibilityAtspi) << "Unknown writing-mode attribute value \"" << value
+                                              << "\" cannot be translated to AT-SPI.";
                 value = QString();
-                qCDebug(lcAccessibilityAtspi) << "Unknown writing-mode attribute value \"" << value << "\" cannot be translated to AT-SPI.";
             }
         } else if (ia2Name == QLatin1String("language")) {
             // OK - ATK has no docs on the format of the value, IAccessible2 has reasonable format - leave it at that now
