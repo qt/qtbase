@@ -136,8 +136,6 @@ void QCocoaInputContext::reset()
 {
     qCDebug(lcQpaInputMethods) << "Resetting input method";
 
-    QPlatformInputContext::reset();
-
     if (!m_focusWindow)
         return;
 

@@ -979,7 +979,6 @@ void QAndroidInputContext::setFocusObject(QObject *object)
         m_focusObject = object;
         reset();
     }
-    QPlatformInputContext::setFocusObject(object);
     updateSelectionHandles();
 }
 

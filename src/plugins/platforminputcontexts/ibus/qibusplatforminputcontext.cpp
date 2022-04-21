@@ -180,8 +180,6 @@ void QIBusPlatformInputContext::invokeAction(QInputMethod::Action a, int)
 
 void QIBusPlatformInputContext::reset()
 {
-    QPlatformInputContext::reset();
-
     if (!d->busConnected)
         return;
 
@@ -192,8 +190,6 @@ void QIBusPlatformInputContext::reset()
 
 void QIBusPlatformInputContext::commit()
 {
-    QPlatformInputContext::commit();
-
     if (!d->busConnected)
         return;
 
@@ -242,7 +238,6 @@ void QIBusPlatformInputContext::update(Qt::InputMethodQueries q)
 
         d->context->SetSurroundingText(dbusText, cursorPosition, anchorPosition);
     }
-    QPlatformInputContext::update(q);
 }
 
 void QIBusPlatformInputContext::cursorRectChanged()

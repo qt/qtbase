@@ -197,7 +197,6 @@ bool QWindowsInputContext::hasCapability(Capability capability) const
 
 void QWindowsInputContext::reset()
 {
-    QPlatformInputContext::reset();
     if (!m_compositionContext.hwnd)
         return;
     qCDebug(lcQpaInputMethods) << __FUNCTION__;
@@ -335,7 +334,6 @@ void QWindowsInputContext::update(Qt::InputMethodQueries queries)
 {
     if (queries & Qt::ImEnabled)
         updateEnabled();
-    QPlatformInputContext::update(queries);
 }
 
 void QWindowsInputContext::cursorRectChanged()
