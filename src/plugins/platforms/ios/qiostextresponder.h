@@ -63,6 +63,8 @@ QT_END_NAMESPACE
 
 - (instancetype)initWithInputContext:(QT_PREPEND_NAMESPACE(QIOSInputContext) *)context;
 - (BOOL)needsKeyboardReconfigure:(Qt::InputMethodQueries)updatedProperties;
+- (void)reset;
+- (void)commit;
 
 - (void)notifyInputDelegate:(Qt::InputMethodQueries)updatedProperties;
 

@@ -490,6 +490,18 @@
     return [super needsKeyboardReconfigure:updatedProperties];
 }
 
+- (void)reset
+{
+    [self setMarkedText:@"" selectedRange:NSMakeRange(0, 0)];
+    [self notifyInputDelegate:Qt::ImSurroundingText];
+}
+
+- (void)commit
+{
+    [self unmarkText];
+    [self notifyInputDelegate:Qt::ImSurroundingText];
+}
+
 // -------------------------------------------------------------------------
 
 #ifndef QT_NO_SHORTCUT
