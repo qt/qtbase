@@ -2911,7 +2911,7 @@ static int systemTimeYearMatching(int year)
     static constexpr int forLeapEarly[] = { 1984, 1996, 1980, 1992, 1976, 1988, 1972 };
     static constexpr int regularEarly[] = { 1978, 1973, 1974, 1975, 1970, 1971, 1977 };
 #else // First year fully in 32-bit time_t range is 1902
-    static constexpr int forLeapEarly[] = { 1928, 1912, 1924, 1908, 1916, 1904, 1920 };
+    static constexpr int forLeapEarly[] = { 1928, 1912, 1924, 1908, 1920, 1904, 1916 };
     static constexpr int regularEarly[] = { 1905, 1906, 1907, 1902, 1903, 1909, 1910 };
 #endif
     static constexpr int forLeapLate[] = { 2012, 2024, 2036, 2020, 2032, 2016, 2028 };
