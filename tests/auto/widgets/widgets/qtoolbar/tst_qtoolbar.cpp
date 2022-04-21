@@ -22,6 +22,8 @@
 #include <qlabel.h>
 #include <private/qtoolbarextension_p.h>
 
+#include <QtWidgets/private/qapplication_p.h>
+
 QT_FORWARD_DECLARE_CLASS(QAction)
 
 class tst_QToolBar : public QObject
@@ -1020,7 +1022,7 @@ void tst_QToolBar::accel()
     QSignalSpy spy(action, SIGNAL(triggered(bool)));
 
     mw.show();
-    QApplication::setActiveWindow(&mw);
+    QApplicationPrivate::setActiveWindow(&mw);
     QVERIFY(QTest::qWaitForWindowActive(&mw));
 
     QTest::keyClick(&mw, Qt::Key_T, Qt::AltModifier);

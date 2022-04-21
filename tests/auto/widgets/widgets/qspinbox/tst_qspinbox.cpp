@@ -29,6 +29,8 @@
 #include <QProxyStyle>
 #include <QScreen>
 
+#include <QtWidgets/private/qapplication_p.h>
+
 #if QT_CONFIG(shortcut)
 #  include <QKeySequence>
 #endif
@@ -925,7 +927,7 @@ void tst_QSpinBox::editingFinished()
     layout->addWidget(box2);
 
     testFocusWidget.show();
-    QApplication::setActiveWindow(&testFocusWidget);
+    QApplicationPrivate::setActiveWindow(&testFocusWidget);
     QVERIFY(QTest::qWaitForWindowActive(&testFocusWidget));
     box->activateWindow();
     box->setFocus();
@@ -977,7 +979,7 @@ void tst_QSpinBox::editingFinished()
     testFocusWidget.show();
     QVERIFY(QTest::qWaitForWindowActive(&testFocusWidget));
     box->setKeyboardTracking(false);
-    qApp->setActiveWindow(&testFocusWidget);
+    QApplicationPrivate::setActiveWindow(&testFocusWidget);
     testFocusWidget.activateWindow();
     box->setFocus();
     QTRY_VERIFY(box->hasFocus());
@@ -1104,7 +1106,7 @@ void tst_QSpinBox::specialValue()
     spin.setValue(50);
     topWidget.show();
     //make sure we have the focus (even if editingFinished fails)
-    qApp->setActiveWindow(&topWidget);
+    QApplicationPrivate::setActiveWindow(&topWidget);
     topWidget.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&topWidget));
     spin.setFocus();
@@ -1209,7 +1211,7 @@ void tst_QSpinBox::taskQTBUG_5008_textFromValueAndValidate()
     spinbox.show();
     spinbox.activateWindow();
     spinbox.setFocus();
-    QApplication::setActiveWindow(&spinbox);
+    QApplicationPrivate::setActiveWindow(&spinbox);
     QVERIFY(QTest::qWaitForWindowActive(&spinbox));
     QVERIFY(spinbox.hasFocus());
     QTRY_COMPARE(static_cast<QWidget *>(&spinbox), QApplication::activeWindow());

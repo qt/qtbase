@@ -12,6 +12,7 @@
 #include <QTest>
 #include <QTreeWidget>
 #include <QtWidgets/private/qheaderview_p.h>
+#include <QtWidgets/private/qapplication_p.h>
 
 using BoolList = QList<bool>;
 using IntList = QList<int>;
@@ -1612,7 +1613,7 @@ void tst_QHeaderView::focusPolicy()
 
     widget.show();
     widget.setFocus(Qt::OtherFocusReason);
-    QApplication::setActiveWindow(&widget);
+    QApplicationPrivate::setActiveWindow(&widget);
     widget.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&widget));
     QVERIFY(widget.hasFocus());
@@ -3609,7 +3610,7 @@ void tst_QHeaderView::statusTips()
     headerView.setGeometry(QRect(QPoint(QGuiApplication::primaryScreen()->geometry().center() - QPoint(250, 250)),
                            QSize(500, 500)));
     headerView.show();
-    QApplication::setActiveWindow(&headerView);
+    QApplicationPrivate::setActiveWindow(&headerView);
     QVERIFY(QTest::qWaitForWindowActive(&headerView));
 
     // Ensure it is moved away first and then moved to the relevant section

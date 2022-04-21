@@ -14,6 +14,8 @@
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformtheme.h>
 
+#include <QtWidgets/private/qapplication_p.h>
+
 #include "qgroupbox.h"
 
 class tst_QGroupBox : public QObject
@@ -460,7 +462,7 @@ void tst_QGroupBox::propagateFocus()
     QGroupBox box;
     QLineEdit lineEdit(&box);
     box.show();
-    QApplication::setActiveWindow(&box);
+    QApplicationPrivate::setActiveWindow(&box);
     QVERIFY(QTest::qWaitForWindowActive(&box));
     box.setFocus();
     QTRY_COMPARE(qApp->focusWidget(), static_cast<QWidget*>(&lineEdit));

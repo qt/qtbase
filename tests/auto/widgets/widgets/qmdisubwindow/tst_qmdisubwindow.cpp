@@ -25,6 +25,8 @@
 #include <QSignalSpy>
 #include <QList>
 
+#include <QtWidgets/private/qapplication_p.h>
+
 QT_BEGIN_NAMESPACE
 extern bool qt_tab_all_widgets();
 QT_END_NAMESPACE
@@ -382,7 +384,7 @@ void tst_QMdiSubWindow::mainWindowSupport()
     mainWindow.setCentralWidget(workspace);
     mainWindow.show();
     mainWindow.menuBar()->setVisible(true);
-    QApplication::setActiveWindow(&mainWindow);
+    QApplicationPrivate::setActiveWindow(&mainWindow);
     bool nativeMenuBar = mainWindow.menuBar()->isNativeMenuBar();
 
     // QMainWindow's window title is empty, so on a platform which does NOT have a native menubar,
@@ -508,7 +510,7 @@ void tst_QMdiSubWindow::emittingOfSignals()
     workspace.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     workspace.show();
     QCoreApplication::processEvents();
-    QApplication::setActiveWindow(&workspace);
+    QApplicationPrivate::setActiveWindow(&workspace);
     QMdiSubWindow *window = qobject_cast<QMdiSubWindow *>(workspace.addSubWindow(new QWidget));
     QCoreApplication::processEvents();
     window->show();
@@ -1134,7 +1136,7 @@ void tst_QMdiSubWindow::restoreFocus()
     topArea.show();
     box->show();
 
-    QApplication::setActiveWindow(&topArea);
+    QApplicationPrivate::setActiveWindow(&topArea);
     QMdiSubWindow *expectedFocusWindow = nestedWorkspace->subWindowList().last();
     QVERIFY(expectedFocusWindow);
     QVERIFY(expectedFocusWindow->widget());
@@ -1226,7 +1228,7 @@ void tst_QMdiSubWindow::restoreFocusOverCreation()
     subWidget1->m_lineEdit2->setFocus();
     subWindow1->show();
     mdiArea.show();
-    QApplication::setActiveWindow(&mdiArea);
+    QApplicationPrivate::setActiveWindow(&mdiArea);
     QVERIFY(QTest::qWaitForWindowActive(&mdiArea));
     QCOMPARE(QApplication::focusWidget(), subWidget1->m_lineEdit2);
 
@@ -1256,7 +1258,7 @@ void tst_QMdiSubWindow::changeFocusWithTab()
     mdiArea.show();
     QCOMPARE(mdiArea.subWindowList().count(), 1);
 
-    QApplication::setActiveWindow(&mdiArea);
+    QApplicationPrivate::setActiveWindow(&mdiArea);
     QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(firstLineEdit));
 
     // Next
@@ -1951,7 +1953,7 @@ void tst_QMdiSubWindow::task_182852()
     mainWindow.setCentralWidget(workspace);
     mainWindow.show();
     mainWindow.menuBar()->setVisible(true);
-    QApplication::setActiveWindow(&mainWindow);
+    QApplicationPrivate::setActiveWindow(&mainWindow);
     if (mainWindow.menuBar()->isNativeMenuBar())
         return; // The main window's title is not overwritten if we have a native menubar (macOS, Unity etc.)
 

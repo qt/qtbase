@@ -1746,6 +1746,8 @@ void QApplicationPrivate::notifyLayoutDirectionChange()
 }
 
 /*!
+    \internal
+
     \fn void QApplication::setActiveWindow(QWidget* active)
 
     Sets the active window to the \a active widget in response to a system
@@ -1763,7 +1765,14 @@ void QApplicationPrivate::notifyLayoutDirectionChange()
 
     \sa activeWindow(), QWidget::activateWindow()
 */
+#if QT_DEPRECATED_SINCE(6,4)
 void QApplication::setActiveWindow(QWidget* act)
+{
+    QApplicationPrivate::setActiveWindow(act);
+}
+#endif
+
+void QApplicationPrivate::setActiveWindow(QWidget* act)
 {
     QWidget* window = act?act->window():nullptr;
 
@@ -1781,8 +1790,8 @@ void QApplication::setActiveWindow(QWidget* act)
     QWidgetList toBeDeactivated;
 
     if (QApplicationPrivate::active_window) {
-        if (style()->styleHint(QStyle::SH_Widget_ShareActivation, nullptr, QApplicationPrivate::active_window)) {
-            const QWidgetList list = topLevelWidgets();
+        if (QApplication::style()->styleHint(QStyle::SH_Widget_ShareActivation, nullptr, QApplicationPrivate::active_window)) {
+            const QWidgetList list = QApplication::topLevelWidgets();
             for (auto *w : list) {
                 if (w->isVisible() && w->isActiveWindow())
                     toBeDeactivated.append(w);
@@ -1803,8 +1812,8 @@ void QApplication::setActiveWindow(QWidget* act)
     QApplicationPrivate::active_window = window;
 
     if (QApplicationPrivate::active_window) {
-        if (style()->styleHint(QStyle::SH_Widget_ShareActivation, nullptr, QApplicationPrivate::active_window)) {
-            const QWidgetList list = topLevelWidgets();
+        if (QApplication::style()->styleHint(QStyle::SH_Widget_ShareActivation, nullptr, QApplicationPrivate::active_window)) {
+            const QWidgetList list = QApplication::topLevelWidgets();
             for (auto *w : list) {
                 if (w->isVisible() && w->isActiveWindow())
                     toBeActivated.append(w);
@@ -1822,14 +1831,14 @@ void QApplication::setActiveWindow(QWidget* act)
 
     for (int i = 0; i < toBeActivated.size(); ++i) {
         QWidget *w = toBeActivated.at(i);
-        sendSpontaneousEvent(w, &windowActivate);
-        sendSpontaneousEvent(w, &activationChange);
+        QApplication::sendSpontaneousEvent(w, &windowActivate);
+        QApplication::sendSpontaneousEvent(w, &activationChange);
     }
 
     for(int i = 0; i < toBeDeactivated.size(); ++i) {
         QWidget *w = toBeDeactivated.at(i);
-        sendSpontaneousEvent(w, &windowDeactivate);
-        sendSpontaneousEvent(w, &activationChange);
+        QApplication::sendSpontaneousEvent(w, &windowDeactivate);
+        QApplication::sendSpontaneousEvent(w, &activationChange);
     }
 
     if (QApplicationPrivate::popupWidgets == nullptr) { // !inPopupMode()
@@ -1892,7 +1901,7 @@ void QApplicationPrivate::notifyActiveWindowChange(QWindow *previous)
 #endif
     QWindow *focusWindow = QGuiApplicationPrivate::focus_window;
     QWidget *focusWidget = qt_tlw_for_window(focusWindow);
-    QApplication::setActiveWindow(focusWidget);
+    QApplicationPrivate::setActiveWindow(focusWidget);
     // QTBUG-37126, Active X controls may set the focus on native child widgets.
     if (focusWindow && focusWidget && focusWindow != focusWidget->windowHandle()) {
         if (QWidgetWindow *widgetWindow = qobject_cast<QWidgetWindow *>(focusWindow))

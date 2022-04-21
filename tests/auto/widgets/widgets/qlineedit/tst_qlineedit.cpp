@@ -3712,7 +3712,7 @@ void tst_QLineEdit::task174640_editingFinished()
     layout->addWidget(le2);
 
     mw.show();
-    QApplication::setActiveWindow(&mw);
+    QApplicationPrivate::setActiveWindow(&mw);
     mw.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&mw));
     QCOMPARE(&mw, QApplication::activeWindow());
@@ -3820,7 +3820,7 @@ void tst_QLineEdit::task210502_caseInsensitiveInlineCompletion()
     completer.setCompletionMode(QCompleter::InlineCompletion);
     lineEdit.setCompleter(&completer);
     lineEdit.show();
-    QApplication::setActiveWindow(&lineEdit);
+    QApplicationPrivate::setActiveWindow(&lineEdit);
     QVERIFY(QTest::qWaitForWindowActive(&lineEdit));
     lineEdit.setFocus();
     QTRY_VERIFY(lineEdit.hasFocus());
@@ -3921,7 +3921,7 @@ void tst_QLineEdit::task241436_passwordEchoOnEditRestoreEchoMode()
     testWidget->setFocus();
     centerOnScreen(testWidget);
     testWidget->show();
-    QApplication::setActiveWindow(testWidget);
+    QApplicationPrivate::setActiveWindow(testWidget);
     QVERIFY(QTest::qWaitForWindowActive(testWidget));
     QVERIFY(testWidget->hasFocus());
 
@@ -3972,7 +3972,7 @@ void tst_QLineEdit::taskQTBUG_4401_enterKeyClearsPassword()
     testWidget->selectAll();
     centerOnScreen(testWidget);
     testWidget->show();
-    QApplication::setActiveWindow(testWidget);
+    QApplicationPrivate::setActiveWindow(testWidget);
     QVERIFY(QTest::qWaitForWindowActive(testWidget));
 
     QTest::keyPress(testWidget, Qt::Key_Enter);
@@ -4055,7 +4055,7 @@ void tst_QLineEdit::taskQTBUG_7395_readOnlyShortcut()
 
     le.show();
     QVERIFY(QTest::qWaitForWindowExposed(&le));
-    QApplication::setActiveWindow(&le);
+    QApplicationPrivate::setActiveWindow(&le);
     QVERIFY(QTest::qWaitForWindowActive(&le));
     le.setFocus();
     QTRY_VERIFY(le.hasFocus());
@@ -4077,7 +4077,7 @@ void tst_QLineEdit::QTBUG697_paletteCurrentColorGroup()
     le.setPalette(p);
 
     le.show();
-    QApplication::setActiveWindow(&le);
+    QApplicationPrivate::setActiveWindow(&le);
     QVERIFY(QTest::qWaitForWindowActive(&le));
     le.setFocus();
     QTRY_VERIFY(le.hasFocus());
@@ -4545,7 +4545,7 @@ void tst_QLineEdit::clearButton()
     l->addWidget(listView);
     testWidget.move(300, 300);
     testWidget.show();
-    qApp->setActiveWindow(&testWidget);
+    QApplicationPrivate::setActiveWindow(&testWidget);
     QVERIFY(QTest::qWaitForWindowActive(&testWidget));
     // Flip the clear button on,off, trying to detect crashes.
     filterLineEdit->setClearButtonEnabled(true);

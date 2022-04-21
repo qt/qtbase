@@ -103,6 +103,8 @@ public:
     void initialize();
     void process_cmdline();
 
+    static void setActiveWindow(QWidget* act);
+
     static bool inPopupMode();
     bool popupActive() override { return inPopupMode(); }
     bool closeAllPopups() override;

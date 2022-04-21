@@ -34,6 +34,7 @@
 #include <qscreen.h>
 
 #include <QtWidgets/private/qabstractitemdelegate_p.h>
+#include <QtWidgets/private/qapplication_p.h>
 
 Q_DECLARE_METATYPE(QAbstractItemDelegate::EndEditHint)
 
@@ -745,7 +746,7 @@ void tst_QItemDelegate::dateTimeEditor()
     widget.setItem(0, 2, item3);
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
-    QApplication::setActiveWindow(&widget);
+    QApplicationPrivate::setActiveWindow(&widget);
 
     widget.editItem(item1);
 
@@ -761,7 +762,7 @@ void tst_QItemDelegate::dateTimeEditor()
     timeEditor->setTime(time.addSecs(60));
 
     widget.clearFocus();
-    qApp->setActiveWindow(&widget);
+    QApplicationPrivate::setActiveWindow(&widget);
     widget.setFocus();
     widget.editItem(item2);
 
@@ -1025,7 +1026,7 @@ void tst_QItemDelegate::decoration()
     TestItemDelegate delegate;
     table.setItemDelegate(&delegate);
     table.show();
-    QApplication::setActiveWindow(&table);
+    QApplicationPrivate::setActiveWindow(&table);
     QVERIFY(QTest::qWaitForWindowActive(&table));
 
     QVariant value;
@@ -1280,7 +1281,7 @@ void tst_QItemDelegate::enterKey()
     QListView view;
     view.setModel(&model);
     view.show();
-    QApplication::setActiveWindow(&view);
+    QApplicationPrivate::setActiveWindow(&view);
     view.setFocus();
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
@@ -1340,7 +1341,7 @@ void tst_QItemDelegate::task257859_finalizeEdit()
     QListView view;
     view.setModel(&model);
     view.show();
-    QApplication::setActiveWindow(&view);
+    QApplicationPrivate::setActiveWindow(&view);
     view.setFocus();
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
@@ -1402,7 +1403,7 @@ void tst_QItemDelegate::comboBox()
     widget.setItem(0, 0, item1);
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
-    QApplication::setActiveWindow(&widget);
+    QApplicationPrivate::setActiveWindow(&widget);
 
     widget.editItem(item1);
 
@@ -1467,7 +1468,7 @@ void tst_QItemDelegate::testLineEditValidation()
     view.setItemDelegate(&delegate);
     view.show();
     view.setFocus();
-    QApplication::setActiveWindow(&view);
+    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QPointer<QLineEdit> editor;

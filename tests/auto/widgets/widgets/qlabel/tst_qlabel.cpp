@@ -18,6 +18,8 @@
 #include <qmath.h>
 #include <private/qlabel_p.h>
 
+#include <QtWidgets/private/qapplication_p.h>
+
 class Widget : public QWidget
 {
     Q_OBJECT
@@ -165,7 +167,7 @@ void tst_QLabel::setBuddy()
     layout->addWidget(test_edit);
     layout->addWidget(test_edit2);
     test_box->show();
-    qApp->setActiveWindow(test_box);
+    QApplicationPrivate::setActiveWindow(test_box);
     QVERIFY(test_box->isActiveWindow());
 
     test_label->setBuddy( test_edit );

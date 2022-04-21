@@ -9,6 +9,8 @@
 #include <QStyleHints>
 #include <QScreen>
 
+#include <QtWidgets/private/qapplication_p.h>
+
 QT_BEGIN_NAMESPACE
 
 QWidgetBaselineTest::QWidgetBaselineTest()
@@ -97,7 +99,7 @@ void QWidgetBaselineTest::makeVisible()
 {
     Q_ASSERT(window);
     window->show();
-    QApplication::setActiveWindow(window);
+    QApplicationPrivate::setActiveWindow(window);
     QVERIFY(QTest::qWaitForWindowActive(window));
     // explicitly unset focus, the test needs to control when focus is shown
     if (window->focusWidget())

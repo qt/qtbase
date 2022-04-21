@@ -21,6 +21,7 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 
+#include <QtWidgets/private/qapplication_p.h>
 #include <QtWidgets/private/qdialog_p.h>
 
 #if defined(Q_OS_WIN) && defined(interface)
@@ -914,7 +915,7 @@ void tst_QAccessibility::applicationTest()
 
     QWidget widget;
     widget.show();
-    qApp->setActiveWindow(&widget);
+    QApplicationPrivate::setActiveWindow(&widget);
     QVERIFY(QTest::qWaitForWindowActive(&widget));
 
     QAccessibleInterface *widgetIface = QAccessible::queryAccessibleInterface(&widget);
@@ -941,7 +942,7 @@ void tst_QAccessibility::mainWindowTest()
     auto mw = mwHolder.get();
     mw->resize(300, 200);
     mw->show(); // triggers layout
-    qApp->setActiveWindow(mw);
+    QApplicationPrivate::setActiveWindow(mw);
 
     QLatin1String name = QLatin1String("I am the main window");
     mw->setWindowTitle(name);
@@ -1958,7 +1959,7 @@ void tst_QAccessibility::mdiSubWindowTest()
     {
     QMdiArea mdiArea;
     mdiArea.show();
-    qApp->setActiveWindow(&mdiArea);
+    QApplicationPrivate::setActiveWindow(&mdiArea);
     QVERIFY(QTest::qWaitForWindowActive(&mdiArea));
 
 
@@ -2026,7 +2027,7 @@ void tst_QAccessibility::mdiSubWindowTest()
     testWindow->setEnabled(false);
     QVERIFY(interface->state().disabled);
     testWindow->setEnabled(true);
-    qApp->setActiveWindow(&mdiArea);
+    QApplicationPrivate::setActiveWindow(&mdiArea);
     mdiArea.setActiveSubWindow(testWindow);
     testWindow->setFocus();
     QVERIFY(testWindow->isAncestorOf(qApp->focusWidget()));

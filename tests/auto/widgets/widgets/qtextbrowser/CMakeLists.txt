@@ -28,6 +28,7 @@ qt_internal_add_test(tst_qtextbrowser
     LIBRARIES
         Qt::Gui
         Qt::Widgets
+        Qt::WidgetsPrivate
     TESTDATA ${test_data}
 )
 

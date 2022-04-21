@@ -14,6 +14,7 @@ qt_internal_add_test(tst_qmenubar
         Qt::Gui
         Qt::TestPrivate
         Qt::Widgets
+        Qt::WidgetsPrivate
 )
 
 ## Scopes:

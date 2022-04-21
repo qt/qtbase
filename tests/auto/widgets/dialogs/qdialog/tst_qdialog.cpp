@@ -22,6 +22,8 @@
 #include <qpa/qplatformtheme.h>
 #include <qpa/qplatformtheme_p.h>
 
+#include <QtWidgets/private/qapplication_p.h>
+
 QT_FORWARD_DECLARE_CLASS(QDialog)
 
 // work around function being protected
@@ -133,7 +135,7 @@ void tst_QDialog::defaultButtons()
     pushThree->setAutoDefault(false);
 
     testWidget.show();
-    QApplication::setActiveWindow(&testWidget);
+    QApplicationPrivate::setActiveWindow(&testWidget);
     QVERIFY(QTest::qWaitForWindowExposed(&testWidget));
 
     push->setDefault(true);

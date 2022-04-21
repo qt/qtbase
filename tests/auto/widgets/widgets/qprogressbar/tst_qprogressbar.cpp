@@ -11,6 +11,8 @@
 #include <qtimer.h>
 #include <QStyleFactory>
 
+#include <QtWidgets/private/qapplication_p.h>
+
 class tst_QProgressBar : public QObject
 {
 Q_OBJECT
@@ -223,7 +225,7 @@ void tst_QProgressBar::setMinMaxRepaint()
     pbar.setFormat("%v");
     pbar.move(300, 300);
     pbar.show();
-    qApp->setActiveWindow(&pbar);
+    QApplicationPrivate::setActiveWindow(&pbar);
     QVERIFY(QTest::qWaitForWindowActive(&pbar));
 
     // No repaint when setting minimum to the current minimum

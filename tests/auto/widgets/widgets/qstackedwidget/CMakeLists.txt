@@ -13,4 +13,5 @@ qt_internal_add_test(tst_qstackedwidget
     LIBRARIES
         Qt::Gui
         Qt::Widgets
+        Qt::WidgetsPrivate
 )

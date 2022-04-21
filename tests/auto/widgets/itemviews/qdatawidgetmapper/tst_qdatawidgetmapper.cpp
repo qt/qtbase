@@ -11,6 +11,8 @@
 #include <QTextEdit>
 #include <QVBoxLayout>
 
+#include <QtWidgets/private/qapplication_p.h>
+
 class tst_QDataWidgetMapper: public QObject
 {
     Q_OBJECT
@@ -418,7 +420,7 @@ void tst_QDataWidgetMapper::textEditDoesntChangeFocusOnTab_qtbug3305()
 
     container.show();
 
-    QApplication::setActiveWindow(&container);
+    QApplicationPrivate::setActiveWindow(&container);
     QVERIFY(QTest::qWaitForWindowActive(&container));
 
     int closeEditorSpyCount = 0;

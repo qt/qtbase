@@ -13,4 +13,5 @@ qt_internal_add_test(tst_qtooltip
     LIBRARIES
         Qt::Gui
         Qt::Widgets
+        Qt::WidgetsPrivate
 )

@@ -19,6 +19,8 @@
 #include <qsettings.h>
 #endif
 
+#include <QtWidgets/private/qapplication_p.h>
+
 class SpecialRadioButton: public QRadioButton
 {
 public:
@@ -120,7 +122,7 @@ void tst_QButtonGroup::arrowKeyNavigation()
     layout.addWidget(&g2);
 
     dlg.show();
-    qApp->setActiveWindow(&dlg);
+    QApplicationPrivate::setActiveWindow(&dlg);
     QVERIFY(QTest::qWaitForWindowActive(&dlg));
 
     bt1.setFocus();
@@ -202,7 +204,7 @@ void tst_QButtonGroup::keyNavigationPushButtons()
     buttonGroup->addButton(pb3);
 
     dlg.show();
-    qApp->setActiveWindow(&dlg);
+    QApplicationPrivate::setActiveWindow(&dlg);
     if (!QTest::qWaitForWindowActive(&dlg))
         QSKIP("Window activation failed, skipping test");
 
@@ -433,7 +435,7 @@ void tst_QButtonGroup::task106609()
     qRegisterMetaType<QAbstractButton*>("QAbstractButton*");
     QSignalSpy spy1(buttons, SIGNAL(buttonClicked(QAbstractButton*)));
 
-    QApplication::setActiveWindow(&dlg);
+    QApplicationPrivate::setActiveWindow(&dlg);
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&dlg));
 
     radio1->setFocus();

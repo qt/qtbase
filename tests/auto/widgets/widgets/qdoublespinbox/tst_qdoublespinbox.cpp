@@ -22,6 +22,8 @@
 #include <QStyle>
 #include <QProxyStyle>
 
+#include <QtWidgets/private/qapplication_p.h>
+
 class DoubleSpinBox : public QDoubleSpinBox
 {
     Q_OBJECT
@@ -1145,7 +1147,7 @@ void tst_QDoubleSpinBox::taskQTBUG_5008_textFromValueAndValidate()
     spinbox.show();
     spinbox.activateWindow();
     spinbox.setFocus();
-    QApplication::setActiveWindow(&spinbox);
+    QApplicationPrivate::setActiveWindow(&spinbox);
     QVERIFY(QTest::qWaitForWindowActive(&spinbox));
     QCOMPARE(static_cast<QWidget *>(&spinbox), QApplication::activeWindow());
     QTRY_VERIFY(spinbox.hasFocus());

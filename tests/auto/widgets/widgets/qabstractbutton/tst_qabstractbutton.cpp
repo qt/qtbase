@@ -19,6 +19,8 @@
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformtheme.h>
 
+#include <QtWidgets/private/qapplication_p.h>
+
 class tst_QAbstractButton : public QObject
 {
     Q_OBJECT
@@ -478,7 +480,7 @@ void tst_QAbstractButton::setShortcut()
 
     QKeySequence seq( Qt::Key_A );
     testWidget->setShortcut( seq );
-    QApplication::setActiveWindow(testWidget);
+    QApplicationPrivate::setActiveWindow(testWidget);
     testWidget->activateWindow();
     // must be active to get shortcuts
     QVERIFY(QTest::qWaitForWindowActive(testWidget));
@@ -639,7 +641,7 @@ void tst_QAbstractButton::keyNavigation()
     }
 
     widget.show();
-    qApp->setActiveWindow(&widget);
+    QApplicationPrivate::setActiveWindow(&widget);
     widget.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&widget));
 

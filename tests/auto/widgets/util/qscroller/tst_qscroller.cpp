@@ -8,6 +8,8 @@
 #include <QtGui/private/qeventpoint_p.h>
 #include <qpa/qwindowsysteminterface.h>
 
+#include <QtWidgets/private/qapplication_p.h>
+
 // #include <QDebug>
 
 class tst_QScrollerWidget : public QWidget
@@ -321,7 +323,7 @@ void tst_QScroller::scrollTo()
 {
     QScopedPointer<tst_QScrollerWidget> sw(new tst_QScrollerWidget);
     sw->show();
-    QApplication::setActiveWindow(sw.data());
+    QApplicationPrivate::setActiveWindow(sw.data());
     if (!QTest::qWaitForWindowExposed(sw.data()) || !QTest::qWaitForWindowActive(sw.data()))
         QSKIP("Failed to show and activate window");
 
@@ -353,7 +355,7 @@ void tst_QScroller::scroll()
     QScroller::grabGesture(sw.data(), QScroller::TouchGesture);
     sw->setGeometry(100, 100, 400, 300);
     sw->show();
-    QApplication::setActiveWindow(sw.data());
+    QApplicationPrivate::setActiveWindow(sw.data());
     if (!QTest::qWaitForWindowExposed(sw.data()) || !QTest::qWaitForWindowActive(sw.data()))
         QSKIP("Failed to show and activate window");
 
@@ -394,7 +396,7 @@ void tst_QScroller::overshoot()
     QScroller::grabGesture(sw.data(), QScroller::TouchGesture);
     sw->setGeometry(100, 100, 400, 300);
     sw->show();
-    QApplication::setActiveWindow(sw.data());
+    QApplicationPrivate::setActiveWindow(sw.data());
     if (!QTest::qWaitForWindowExposed(sw.data()) || !QTest::qWaitForWindowActive(sw.data()))
         QSKIP("Failed to show and activate window");
 

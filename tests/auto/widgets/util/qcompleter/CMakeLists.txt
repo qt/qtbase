@@ -14,6 +14,7 @@ qt_internal_add_test(tst_qcompleter
         Qt::Gui
         Qt::TestPrivate
         Qt::Widgets
+        Qt::WidgetsPrivate
 )
 
 #### Keys ignored in scope 1:.:.:qcompleter.pro:<TRUE>:

@@ -18,6 +18,8 @@
 #include <qscreen.h>
 #include <qsignalspy.h>
 
+#include <QtWidgets/private/qapplication_p.h>
+
 typedef QList<QGraphicsItem *> QGraphicsItemList;
 
 class EventSpy : public QObject
@@ -1371,7 +1373,7 @@ void tst_QGraphicsWidget::setTabOrder()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
-    QApplication::setActiveWindow(&view);
+    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QGraphicsWidget *lastItem = nullptr;
@@ -1443,7 +1445,7 @@ void tst_QGraphicsWidget::setTabOrderAndReparent()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
-    QApplication::setActiveWindow(&view);
+    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCOMPARE(QApplication::activeWindow(), (QWidget*)&view);
 
@@ -1573,7 +1575,7 @@ void tst_QGraphicsWidget::verifyFocusChain()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
-    QApplication::setActiveWindow(&view);
+    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     {
@@ -1665,7 +1667,7 @@ void tst_QGraphicsWidget::verifyFocusChain()
         w1_2->setFocusPolicy(Qt::StrongFocus);
         scene.addItem(w1_2);
         window->show();
-        QApplication::setActiveWindow(window.data());
+        QApplicationPrivate::setActiveWindow(window.data());
         QVERIFY(QTest::qWaitForWindowActive(window.data()));
 
         lineEdit->setFocus();
@@ -1719,7 +1721,7 @@ void tst_QGraphicsWidget::updateFocusChainWhenChildDie()
     view.resize(200, 150);
     view.move(availableGeometry.topLeft() + QPoint(50, 50));
     view.show();
-    QApplication::setActiveWindow(&view);
+    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     // delete item in focus chain with no focus and verify chain
@@ -2679,7 +2681,7 @@ void tst_QGraphicsWidget::task250119_shortcutContext()
     QGraphicsView view;
     view.setScene(&scene);
     view.show();
-    QApplication::setActiveWindow(&view);
+    QApplicationPrivate::setActiveWindow(&view);
     QTRY_COMPARE(QApplication::activeWindow(), (QWidget*)&view);
 
 

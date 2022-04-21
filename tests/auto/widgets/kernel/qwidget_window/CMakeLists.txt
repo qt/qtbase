@@ -16,4 +16,5 @@ qt_internal_add_test(tst_qwidget_window
         Qt::GuiPrivate
         Qt::TestPrivate
         Qt::Widgets
+        Qt::WidgetsPrivate
 )

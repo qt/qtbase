@@ -12,5 +12,6 @@ qt_internal_add_test(tst_baseline_widgets
     LIBRARIES
         Qt::Gui
         Qt::Widgets
+        Qt::WidgetsPrivate
         Qt::Network
 )

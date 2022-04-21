@@ -15,6 +15,8 @@
 #include <qscreen.h>
 #include <qlabel.h>
 
+#include <QtWidgets/private/qapplication_p.h>
+
 class tst_QToolButton : public QObject
 {
 Q_OBJECT
@@ -118,7 +120,7 @@ void tst_QToolButton::triggered()
     toolButton->setDefaultAction(defaultAction);
 
     mainWidget.show();
-    QApplication::setActiveWindow(&mainWidget);
+    QApplicationPrivate::setActiveWindow(&mainWidget);
     QVERIFY(QTest::qWaitForWindowActive(&mainWidget));
 
     defaultAction->trigger();
@@ -179,7 +181,7 @@ void tst_QToolButton::task176137_autoRepeatOfAction()
     label->move(0, 50);
 
     mainWidget.show();
-    QApplication::setActiveWindow(&mainWidget);
+    QApplicationPrivate::setActiveWindow(&mainWidget);
     QVERIFY(QTest::qWaitForWindowActive(&mainWidget));
 
     QSignalSpy spy(&action,SIGNAL(triggered()));

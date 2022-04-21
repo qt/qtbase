@@ -31,6 +31,8 @@
 #include "../../../shared/platforminputcontext.h"
 #include <private/qinputmethod_p.h>
 
+#include <QtWidgets/private/qapplication_p.h>
+
 #if defined(Q_OS_WIN)
 #include <QtCore/qt_windows.h>
 #define Q_CHECK_PAINTEVENTS \
@@ -1292,7 +1294,7 @@ void tst_QGraphicsScene::removeItem()
     view.setWindowTitle(QTest::currentTestFunction());
     view.setFixedSize(150, 150);
     view.show();
-    QApplication::setActiveWindow(&view);
+    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QTest::mouseMove(view.windowHandle(), view.mapFromScene(hoverItem->scenePos() + QPointF(20, 20)));
     QTRY_VERIFY(!hoverItem->isHovered);
@@ -1600,7 +1602,7 @@ void tst_QGraphicsScene::hoverEvents_siblings()
     view.rotate(10);
     view.scale(1.7, 1.7);
     view.show();
-    QApplication::setActiveWindow(&view);
+    QApplicationPrivate::setActiveWindow(&view);
     view.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
@@ -1670,7 +1672,7 @@ void tst_QGraphicsScene::hoverEvents_parentChild()
     view.rotate(10);
     view.scale(1.7, 1.7);
     view.show();
-    QApplication::setActiveWindow(&view);
+    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseMove);
@@ -2849,7 +2851,7 @@ void tst_QGraphicsScene::update2()
     view.resize(m_testSize);
     view.setScene(&scene);
     view.show();
-    QApplication::setActiveWindow(&view);
+    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(view.repaints >= 1);
     view.repaints = 0;
@@ -3039,7 +3041,7 @@ void tst_QGraphicsScene::tabFocus_emptyScene()
     widget.setLayout(layout);
     widget.setWindowTitle(QTest::currentTestFunction());
     widget.show();
-    QApplication::setActiveWindow(&widget);
+    QApplicationPrivate::setActiveWindow(&widget);
     widget.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&widget));
 
@@ -3091,7 +3093,7 @@ void tst_QGraphicsScene::tabFocus_sceneWithFocusableItems()
     widget.setWindowTitle(QTest::currentTestFunction());
     widget.setLayout(layout);
     widget.show();
-    QApplication::setActiveWindow(&widget);
+    QApplicationPrivate::setActiveWindow(&widget);
     widget.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&widget));
 
@@ -3145,7 +3147,7 @@ void tst_QGraphicsScene::tabFocus_sceneWithFocusableItems()
 
     // Check that the correct item regains focus.
     widget.show();
-    QApplication::setActiveWindow(&widget);
+    QApplicationPrivate::setActiveWindow(&widget);
     widget.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&widget));
     QVERIFY(view->hasFocus());
@@ -3229,7 +3231,7 @@ void tst_QGraphicsScene::tabFocus_sceneWithFocusWidgets()
     widget.setWindowTitle(QTest::currentTestFunction());
     widget.setLayout(layout);
     widget.show();
-    QApplication::setActiveWindow(&widget);
+    QApplicationPrivate::setActiveWindow(&widget);
     widget.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&widget));
 
@@ -3268,7 +3270,7 @@ void tst_QGraphicsScene::tabFocus_sceneWithFocusWidgets()
     widget.hide();
     QTest::qWait(15);
     widget.show();
-    QApplication::setActiveWindow(&widget);
+    QApplicationPrivate::setActiveWindow(&widget);
     widget.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&widget));
     QTRY_VERIFY(widget1->hasFocus());
@@ -3317,7 +3319,7 @@ void tst_QGraphicsScene::tabFocus_sceneWithNestedFocusWidgets()
     widget.setWindowTitle(QTest::currentTestFunction());
     widget.setLayout(layout);
     widget.show();
-    QApplication::setActiveWindow(&widget);
+    QApplicationPrivate::setActiveWindow(&widget);
     widget.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&widget));
 
@@ -3402,7 +3404,7 @@ void tst_QGraphicsScene::tabFocus_sceneWithNestedFocusWidgets()
     widget.hide();
     QTest::qWait(12);
     widget.show();
-    QApplication::setActiveWindow(&widget);
+    QApplicationPrivate::setActiveWindow(&widget);
     widget.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&widget));
     QTRY_VERIFY(widget1->hasFocus());
@@ -3820,7 +3822,7 @@ void tst_QGraphicsScene::inputMethod()
     view.resize(m_testSize);
     view.show();
     view.setWindowTitle(QTest::currentTestFunction());
-    QApplication::setActiveWindow(&view);
+    QApplicationPrivate::setActiveWindow(&view);
     view.setFocus();
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCOMPARE(QApplication::activeWindow(), &view);
@@ -4064,7 +4066,7 @@ void tst_QGraphicsScene::isActive()
         view1->setVisible(false);
 
         toplevel1.show();
-        QApplication::setActiveWindow(&toplevel1);
+        QApplicationPrivate::setActiveWindow(&toplevel1);
         QVERIFY(QTest::qWaitForWindowActive(&toplevel1));
         QCOMPARE(QApplication::activeWindow(), &toplevel1);
 
@@ -4093,7 +4095,7 @@ void tst_QGraphicsScene::isActive()
         QVERIFY(!scene2.hasFocus());
 
         toplevel1.show();
-        QApplication::setActiveWindow(&toplevel1);
+        QApplicationPrivate::setActiveWindow(&toplevel1);
         QVERIFY(QTest::qWaitForWindowActive(&toplevel1));
         QCOMPARE(QApplication::activeWindow(), &toplevel1);
 
@@ -4133,7 +4135,7 @@ void tst_QGraphicsScene::isActive()
 
         toplevel2.move(m_availableGeometry.topLeft() + QPoint(50, 50));
         toplevel2.show();
-        QApplication::setActiveWindow(&toplevel2);
+        QApplicationPrivate::setActiveWindow(&toplevel2);
         QVERIFY(QTest::qWaitForWindowActive(&toplevel2));
         QCOMPARE(QApplication::activeWindow(), &toplevel2);
 
@@ -4183,7 +4185,7 @@ void tst_QGraphicsScene::isActive()
         topLevelView.move(toplevel2.geometry().topRight() + QPoint(100, 50));
         topLevelView.resize(m_testSize);
         topLevelView.show();
-        QApplication::setActiveWindow(&topLevelView);
+        QApplicationPrivate::setActiveWindow(&topLevelView);
         topLevelView.setFocus();
         QVERIFY(QTest::qWaitForWindowActive(&topLevelView));
         QCOMPARE(QApplication::activeWindow(), &topLevelView);
@@ -4211,7 +4213,7 @@ void tst_QGraphicsScene::isActive()
         QVERIFY(scene1.hasFocus());
         QVERIFY(!scene2.hasFocus());
 
-        QApplication::setActiveWindow(&toplevel2);
+        QApplicationPrivate::setActiveWindow(&toplevel2);
         QVERIFY(QTest::qWaitForWindowActive(&toplevel2));
 
         QVERIFY(!scene1.isActive());
@@ -4241,7 +4243,7 @@ void tst_QGraphicsScene::isActive()
 
 
         toplevel3.show();
-        QApplication::setActiveWindow(&toplevel3);
+        QApplicationPrivate::setActiveWindow(&toplevel3);
         QVERIFY(QTest::qWaitForWindowActive(&toplevel3));
         QCOMPARE(QApplication::activeWindow(), &toplevel3);
 
@@ -4354,7 +4356,7 @@ void tst_QGraphicsScene::removeFullyTransparentItem()
     view.resize(m_testSize);
     view.setScene(&scene);
     view.show();
-    QApplication::setActiveWindow(&view);
+    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCoreApplication::processEvents(); // Process all queued paint events
 
@@ -4812,7 +4814,7 @@ void tst_QGraphicsScene::focusOnTouch()
     rect->setFlag(QGraphicsItem::ItemIsFocusable, true);
 
     view.show();
-    QApplication::setActiveWindow(&view);
+    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QVERIFY(!rect->hasFocus());
@@ -4913,7 +4915,7 @@ void tst_QGraphicsScene::taskQTBUG_16401_focusItem()
     rect->setFlag(QGraphicsItem::ItemIsFocusable);
 
     view.show();
-    QApplication::setActiveWindow(&view);
+    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QVERIFY(!scene.focusItem());
@@ -4955,7 +4957,7 @@ void tst_QGraphicsScene::taskQTBUG_42915_focusNextPrevChild()
     widget2->setFocusPolicy(Qt::NoFocus);
 
     view.show();
-    QApplication::setActiveWindow(&view);
+    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QTest::keyEvent(QTest::Click, &view, Qt::Key_Tab);

@@ -15,4 +15,5 @@ qt_internal_add_test(tst_qdialog
         Qt::Gui
         Qt::GuiPrivate
         Qt::Widgets
+        Qt::WidgetsPrivate
 )

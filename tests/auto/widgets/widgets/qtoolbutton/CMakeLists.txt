@@ -13,4 +13,5 @@ qt_internal_add_test(tst_qtoolbutton
     LIBRARIES
         Qt::Gui
         Qt::Widgets
+        Qt::WidgetsPrivate
 )

@@ -11,6 +11,8 @@
 #include <QHBoxLayout>
 #include <qlineedit.h>
 
+#include <QtWidgets/private/qapplication_p.h>
+
 class tst_QStackedWidget : public QObject
 {
 Q_OBJECT
@@ -157,7 +159,7 @@ void tst_QStackedWidget::dynamicPages()
     le11->setFocus();   // set focus to second widget in the page
     sw->resize(200, 200);
     sw->show();
-    qApp->setActiveWindow(sw);
+    QApplicationPrivate::setActiveWindow(sw);
     QVERIFY(QTest::qWaitForWindowActive(sw));
     QTRY_COMPARE(QApplication::focusWidget(), le11);
 

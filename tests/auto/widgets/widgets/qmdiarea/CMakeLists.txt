@@ -17,6 +17,7 @@ qt_internal_add_test(tst_qmdiarea
         Qt::Gui
         Qt::GuiPrivate
         Qt::Widgets
+        Qt::WidgetsPrivate
 )
 
 ## Scopes:

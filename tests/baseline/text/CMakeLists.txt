@@ -14,6 +14,7 @@ qt_internal_add_test(tst_baseline_text
     LIBRARIES
         Qt::Gui
         Qt::Widgets
+        Qt::WidgetsPrivate
         Qt::Network
     TESTDATA ${test_data}
 )

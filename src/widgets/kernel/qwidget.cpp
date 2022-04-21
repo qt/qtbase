@@ -2315,7 +2315,7 @@ void QWidgetPrivate::deactivateWidgetCleanup()
     Q_Q(QWidget);
     // If this was the active application window, reset it
     if (QApplication::activeWindow() == q)
-        QApplication::setActiveWindow(nullptr);
+        QApplicationPrivate::setActiveWindow(nullptr);
     // If the is the active mouse press widget, reset it
     if (q == qt_button_down)
         qt_button_down = nullptr;
@@ -12278,7 +12278,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
         qApp->d_func()->closePopup(this);
 
     if (this == QApplicationPrivate::active_window)
-        QApplication::setActiveWindow(nullptr);
+        QApplicationPrivate::setActiveWindow(nullptr);
     if (QWidget::mouseGrabber() == this)
         releaseMouse();
     if (QWidget::keyboardGrabber() == this)

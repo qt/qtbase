@@ -16,6 +16,8 @@
 #include <qpa/qplatformintegration.h>
 #include <private/qguiapplication_p.h>
 
+#include <QtWidgets/private/qapplication_p.h>
+
 QT_FORWARD_DECLARE_CLASS(QWidget)
 
 class FocusLineEdit : public QLineEdit
@@ -112,7 +114,7 @@ void tst_QFocusEvent::initWidget()
 {
     // On X11 we have to ensure the event was processed before doing any checking, on Windows
     // this is processed straight away.
-    QApplication::setActiveWindow(testFocusWidget);
+    QApplicationPrivate::setActiveWindow(testFocusWidget);
     childFocusWidgetOne->setFocus(); // The first lineedit should have focus
     QVERIFY(QTest::qWaitForWindowActive(testFocusWidget));
     QTRY_VERIFY(childFocusWidgetOne->hasFocus());
@@ -310,7 +312,7 @@ void tst_QFocusEvent::checkReason_ActiveWindow()
     QVERIFY(QTest::qWaitForWindowExposed(d));
 
     d->activateWindow(); // ### CDE
-    QApplication::setActiveWindow(d);
+    QApplicationPrivate::setActiveWindow(d);
     QVERIFY(QTest::qWaitForWindowActive(d));
 
     QTRY_VERIFY(childFocusWidgetOne->focusOutEventRecieved);

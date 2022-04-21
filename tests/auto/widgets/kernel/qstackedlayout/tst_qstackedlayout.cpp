@@ -11,6 +11,8 @@
 #include <QPushButton>
 #include <QSignalSpy>
 
+#include <QtWidgets/private/qapplication_p.h>
+
 class tst_QStackedLayout : public QObject
 {
     Q_OBJECT
@@ -287,7 +289,7 @@ void tst_QStackedLayout::keepFocusAfterSetCurrent()
     stackLayout->setCurrentIndex(0);
 
     testWidget->show();
-    QApplication::setActiveWindow(testWidget);
+    QApplicationPrivate::setActiveWindow(testWidget);
     QVERIFY(QTest::qWaitForWindowActive(testWidget));
 
     edit1->setFocus();

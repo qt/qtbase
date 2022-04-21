@@ -38,6 +38,8 @@
 #include <QFileDialog>
 #include <QFileSystemModel>
 
+#include <QtWidgets/private/qapplication_p.h>
+
 #if defined(Q_OS_UNIX)
 #include <unistd.h> // for pathconf() on OS X
 #ifdef QT_BUILD_INTERNAL
@@ -1118,7 +1120,7 @@ void tst_QFiledialog::focus()
     QFileDialog fd;
     fd.setDirectory(QDir::currentPath());
     fd.show();
-    QApplication::setActiveWindow(&fd);
+    QApplicationPrivate::setActiveWindow(&fd);
     QVERIFY(QTest::qWaitForWindowActive(&fd));
     QCOMPARE(fd.isVisible(), true);
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd));

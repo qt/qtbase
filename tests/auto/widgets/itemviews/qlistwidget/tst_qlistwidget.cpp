@@ -10,6 +10,8 @@
 #include <QTest>
 #include <private/qlistwidget_p.h>
 
+#include <QtWidgets/private/qapplication_p.h>
+
 using IntList = QList<int>;
 
 class tst_QListWidget : public QObject
@@ -1746,7 +1748,7 @@ void tst_QListWidget::QTBUG14363_completerWithAnyKeyPressedEditTriggers()
     new QListWidgetItem(QLatin1String("completer"), &listWidget);
     listWidget.show();
     listWidget.setCurrentItem(item);
-    QApplication::setActiveWindow(&listWidget);
+    QApplicationPrivate::setActiveWindow(&listWidget);
     QVERIFY(QTest::qWaitForWindowActive(&listWidget));
     listWidget.setFocus();
     QCOMPARE(QApplication::focusWidget(), &listWidget);

@@ -12,12 +12,14 @@
 #include <qtextbrowser.h>
 #include <qtextobject.h>
 
+#include <QtWidgets/private/qapplication_p.h>
+
 class TestBrowser : public QTextBrowser
 {
 public:
     inline TestBrowser() {
         show();
-        QApplication::setActiveWindow(this);
+        QApplicationPrivate::setActiveWindow(this);
         activateWindow();
         setFocus();
         QVERIFY(QTest::qWaitForWindowActive(this));

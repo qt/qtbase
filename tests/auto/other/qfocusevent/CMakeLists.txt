@@ -14,4 +14,5 @@ qt_internal_add_test(tst_qfocusevent
         Qt::Gui
         Qt::GuiPrivate
         Qt::Widgets
+        Qt::WidgetsPrivate
 )

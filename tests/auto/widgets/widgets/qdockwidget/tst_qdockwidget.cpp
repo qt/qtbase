@@ -18,6 +18,8 @@
 
 Q_LOGGING_CATEGORY(lcTestDockWidget, "qt.widgets.tests.qdockwidget")
 
+#include <QtWidgets/private/qapplication_p.h>
+
 bool hasFeature(QDockWidget *dockwidget, QDockWidget::DockWidgetFeature feature)
 { return (dockwidget->features() & feature) == feature; }
 
@@ -1157,7 +1159,7 @@ void tst_QDockWidget::createTestWidgets(QMainWindow* &mainWindow, QPointer<QWidg
     d1->show();
     d2->show();
     mainWindow->show();
-    QApplication::setActiveWindow(mainWindow);
+    QApplicationPrivate::setActiveWindow(mainWindow);
 
 }
 

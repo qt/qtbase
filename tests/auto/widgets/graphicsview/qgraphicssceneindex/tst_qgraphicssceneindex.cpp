@@ -8,6 +8,7 @@
 #include <private/qgraphicsscenebsptreeindex_p.h>
 #include <private/qgraphicssceneindex_p.h>
 #include <private/qgraphicsscenelinearindex_p.h>
+#include <QtWidgets/private/qapplication_p.h>
 
 class tst_QGraphicsSceneIndex : public QObject
 {
@@ -290,7 +291,7 @@ void tst_QGraphicsSceneIndex::removeItems()
     QGraphicsView view(&scene);
     view.resize(600, 600);
     view.show();
-    QApplication::setActiveWindow(&view);
+    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     scene.removeItem(widgetChild1);
@@ -322,7 +323,7 @@ void tst_QGraphicsSceneIndex::clear()
 
     QGraphicsView view(&scene);
     view.show();
-    qApp->setActiveWindow(&view);
+    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
     scene.clear();
 

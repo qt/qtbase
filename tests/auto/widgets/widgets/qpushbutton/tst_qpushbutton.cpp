@@ -19,6 +19,8 @@
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformtheme.h>
 
+#include <QtWidgets/private/qapplication_p.h>
+
 class tst_QPushButton : public QObject
 {
 Q_OBJECT
@@ -336,7 +338,7 @@ void tst_QPushButton::setAccel()
 
     // The shortcut will not be activated unless the button is in a active
     // window and has focus
-    QApplication::setActiveWindow(testWidget);
+    QApplicationPrivate::setActiveWindow(testWidget);
     testWidget->setFocus();
     QVERIFY(QTest::qWaitForWindowActive(testWidget));
     QTest::keyClick( testWidget, 'A', Qt::AltModifier );
@@ -602,7 +604,7 @@ void tst_QPushButton::taskQTBUG_20191_shortcutWithKeypadModifer()
     dialog.setLayout(layout);
     dialog.show();
     QVERIFY(QTest::qWaitForWindowExposed(&dialog));
-    QApplication::setActiveWindow(&dialog);
+    QApplicationPrivate::setActiveWindow(&dialog);
 
     // add shortcut '5' to button1 and test with keyboard and keypad '5' keys
     QSignalSpy spy1(button1, SIGNAL(clicked()));
@@ -649,7 +651,7 @@ void tst_QPushButton::emitReleasedAfterChange()
     dialog.setLayout(layout);
     dialog.show();
     QVERIFY(QTest::qWaitForWindowExposed(&dialog));
-    QApplication::setActiveWindow(&dialog);
+    QApplicationPrivate::setActiveWindow(&dialog);
     button1->setFocus();
 
     QSignalSpy spy(button1, SIGNAL(released()));
