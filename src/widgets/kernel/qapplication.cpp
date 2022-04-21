@@ -1908,7 +1908,6 @@ QWidget *qt_tlw_for_window(QWindow *wnd)
 
 void QApplicationPrivate::notifyActiveWindowChange(QWindow *previous)
 {
-    Q_UNUSED(previous);
 #ifndef Q_OS_MACOS
     // Some delayed focus event to ignore, unless we are on cocoa where
     // popups can be opened via right-click on inactive applications
@@ -1925,6 +1924,20 @@ void QApplicationPrivate::notifyActiveWindowChange(QWindow *previous)
                 if (widget->inherits("QAxHostWidget"))
                     widget->setFocus(Qt::ActiveWindowFocusReason);
     }
+
+    // QApplication::setActiveWindow() will deliver window activation events for
+    // QWidgetWindows. But for other subclasses of QWindow (like QQuickWindow), we
+    // need to send them explicitly, like we do from the base class implementation.
+    if (previous && !qobject_cast<QWidgetWindow *>(previous)) {
+        QEvent de(QEvent::WindowDeactivate);
+        QCoreApplication::sendEvent(previous, &de);
+    }
+
+    if (focusWindow && !qobject_cast<QWidgetWindow *>(focusWindow)) {
+        QEvent ae(QEvent::WindowActivate);
+        QCoreApplication::sendEvent(focusWindow, &ae);
+    }
+
     // don't call base class to avoid double delivery of WindowActivate/Deactivate events
 }
 
