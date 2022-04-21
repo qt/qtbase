@@ -151,6 +151,7 @@ public:
 
         _NET_STARTUP_INFO,
         _NET_STARTUP_INFO_BEGIN,
+        _NET_STARTUP_ID,
 
         _NET_SUPPORTING_WM_CHECK,
 

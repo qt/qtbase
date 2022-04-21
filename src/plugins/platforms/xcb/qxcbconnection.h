@@ -206,9 +206,8 @@ public:
     QXcbWindow *mousePressWindow() const { return m_mousePressWindow; }
     void setMousePressWindow(QXcbWindow *);
 
-    QByteArray startupId() const { return m_startupId; }
-    void setStartupId(const QByteArray &nextId) { m_startupId = nextId; }
-    void clearStartupId() { m_startupId.clear(); }
+    QByteArray startupId() const;
+    void setStartupId(const QByteArray &nextId);
 
     void grabServer();
     void ungrabServer();
