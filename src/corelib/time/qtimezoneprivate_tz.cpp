@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2019 Crimson AS <info@crimson.no>
 ** Copyright (C) 2013 John Layt <jlayt@kde.org>
 ** Contact: https://www.qt.io/licensing/
@@ -125,7 +125,7 @@ static QTzTimeZoneHash loadTzTimeZones()
 }
 
 // Hash of available system tz files as loaded by loadTzTimeZones()
-Q_GLOBAL_STATIC_WITH_ARGS(const QTzTimeZoneHash, tzZones, (loadTzTimeZones()));
+Q_GLOBAL_STATIC(const QTzTimeZoneHash, tzZones, loadTzTimeZones());
 
 /*
     The following is copied and modified from tzfile.h which is in the public domain.

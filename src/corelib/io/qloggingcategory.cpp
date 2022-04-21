@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -43,9 +43,7 @@
 QT_BEGIN_NAMESPACE
 
 const char qtDefaultCategoryName[] = "default";
-
-Q_GLOBAL_STATIC_WITH_ARGS(QLoggingCategory, qtDefaultCategory,
-                          (qtDefaultCategoryName))
+Q_GLOBAL_STATIC(QLoggingCategory, qtDefaultCategory, qtDefaultCategoryName)
 
 #ifndef Q_ATOMIC_INT8_IS_SUPPORTED
 static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)

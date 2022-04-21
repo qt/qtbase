@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -69,7 +69,7 @@ static jobject g_jActivity = nullptr;
 static jobject g_jService = nullptr;
 static jobject g_jClassLoader = nullptr;
 
-Q_GLOBAL_STATIC_WITH_ARGS(QtAndroidPrivate::OnBindListener*, g_onBindListener, (nullptr));
+Q_GLOBAL_STATIC(QtAndroidPrivate::OnBindListener *, g_onBindListener, nullptr);
 Q_GLOBAL_STATIC(QMutex, g_onBindListenerMutex);
 Q_GLOBAL_STATIC(QSemaphore, g_waitForServiceSetupSemaphore);
 Q_GLOBAL_STATIC(QAtomicInt, g_serviceSetupLockers);

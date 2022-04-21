@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -769,7 +769,7 @@ void QAbstractItemModelPrivate::invalidatePersistentIndex(const QModelIndex &ind
 }
 
 using DefaultRoleNames = QHash<int, QByteArray>;
-Q_GLOBAL_STATIC_WITH_ARGS(DefaultRoleNames, qDefaultRoleNames, (
+Q_GLOBAL_STATIC(DefaultRoleNames, qDefaultRoleNames,
     {
         { Qt::DisplayRole,    "display"    },
         { Qt::DecorationRole, "decoration" },
@@ -777,7 +777,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(DefaultRoleNames, qDefaultRoleNames, (
         { Qt::ToolTipRole,    "toolTip"    },
         { Qt::StatusTipRole,  "statusTip"  },
         { Qt::WhatsThisRole,  "whatsThis"  },
-    }))
+    })
 
 const QHash<int,QByteArray> &QAbstractItemModelPrivate::defaultRoleNames()
 {

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Ivan Komissarov <ABBAPOH@gmail.com>
+** Copyright (C) 2022 The Qt Company Ltd.
+** Copyright (C) 2015 Ivan Komissarov <ABBAPOH@gmail.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -399,7 +400,7 @@ QList<QStorageInfo> QStorageInfo::mountedVolumes()
     return QStorageInfoPrivate::mountedVolumes();
 }
 
-Q_GLOBAL_STATIC_WITH_ARGS(QStorageInfo, getRoot, (QStorageInfoPrivate::root()))
+Q_GLOBAL_STATIC(QStorageInfo, getRoot, QStorageInfoPrivate::root())
 
 /*!
     Returns a QStorageInfo object that represents the system root volume.
