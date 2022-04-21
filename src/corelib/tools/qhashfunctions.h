@@ -144,8 +144,16 @@ Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(std::nullptr_t, size_t seed 
 
 // (some) Qt types
 Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(const QChar key, size_t seed = 0) noexcept { return qHash(key.unicode(), seed); }
+
+#if QT_CORE_REMOVED_SINCE(6, 4)
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION size_t qHash(const QByteArray &key, size_t seed = 0) noexcept;
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION size_t qHash(const QByteArrayView &key, size_t seed = 0) noexcept;
+#else
+Q_CORE_EXPORT Q_DECL_PURE_FUNCTION size_t qHash(QByteArrayView key, size_t seed = 0) noexcept;
+inline Q_DECL_PURE_FUNCTION size_t qHash(const QByteArray &key, size_t seed = 0 QT6_ONLY(, int = 0)) noexcept
+{ return qHash(qToByteArrayViewIgnoringNull(key), seed); }
+#endif
+
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION size_t qHash(QStringView key, size_t seed = 0) noexcept;
 #if QT_STRINGVIEW_LEVEL < 2
 inline Q_DECL_PURE_FUNCTION size_t qHash(const QString &key, size_t seed = 0) noexcept

@@ -170,6 +170,18 @@ QCalendar::QCalendar(QLatin1StringView name)
     : QCalendar(QAnyStringView{name}) {}
 
 
+#include "qhashfunctions.h"
+
+size_t qHash(const QByteArray &key, size_t seed) noexcept
+{
+    return qHashBits(key.constData(), size_t(key.size()), seed);
+}
+
+size_t qHash(const QByteArrayView &key, size_t seed) noexcept
+{
+    return qHashBits(key.constData(), size_t(key.size()), seed);
+}
+
 #include "qobject.h"
 
 void QObject::setObjectName(const QString &name)
