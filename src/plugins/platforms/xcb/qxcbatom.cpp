@@ -150,6 +150,7 @@ static const char *xcb_atomnames = {
 
     "_NET_STARTUP_INFO\0"
     "_NET_STARTUP_INFO_BEGIN\0"
+    "_NET_STARTUP_ID\0"
 
     "_NET_SUPPORTING_WM_CHECK\0"
 
