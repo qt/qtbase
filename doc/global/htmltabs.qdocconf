@@ -43,7 +43,7 @@ macro.endtabcontent.HTML = "</div>"
 
 HTML.extraimages += template/style/htmltabs.css
 
-HTML.headerstyle += \
+HTML.headerstyles += \
     "  <link rel=\"stylesheet\" type=\"text/css\" href=\"images/htmltabs.css\" />\n"
 
 HTML.headerscripts += \
