@@ -36,6 +36,8 @@
 #
 #      ./util/testrunner/tests/tst_testrunner.py -v [--debug]
 #
+# ======== qt-testrunner ========
+#
 # This script wraps the execution of a Qt test executable, for example
 # tst_whatever, and tries to iron out unpredictable test failures.
 # In particular:
@@ -207,10 +209,14 @@ def parse_log(results_file) -> List[WhatFailed]:
     except FileNotFoundError:
         L.error("XML log file not found: %s", results_file)
         raise
-    except ET.ParseError:
+    except Exception as e:
         L.error("Failed to parse the XML log file: %s", results_file)
         with open(results_file, "rb") as f:
-            L.error("File Contents:\n%s\n\n", f.read().decode("utf-8", "ignore"))
+            if os.stat(f.fileno()).st_size == 0:
+                L.error("    File is empty")
+            else:
+                L.error("    File Contents:\n%s\n\n",
+                        f.read().decode("utf-8", "ignore"))
         raise
 
     root = tree.getroot()
@@ -369,9 +375,8 @@ def main():
             break    # all is fine, goto re-running individual failed testcases
 
         except Exception as e:
-            L.exception("The test executable CRASHed uncontrollably!"
-                        " Details about where we caught the problem:",
-                        exc_info=e)
+            L.error("exception:%s %s", type(e).__name__, e)
+            L.error("The test executable probably crashed, see above for details")
 
     if args.max_repeats == 0:
         sys.exit(2)          # Some tests failed but no re-runs were asked
@@ -385,10 +390,8 @@ def main():
                                         what_failed, args.max_repeats, args.passes_needed,
                                         dryrun=args.dry_run, timeout=args.timeout)
         except Exception as e:
-            L.exception("The test executable CRASHed uncontrollably!"
-                        " Details about where we caught the problem:",
-                        exc_info=e)
-            L.error("Test re-run exited unxpectedly, aborting!")
+            L.error("exception:%s %s", type(e).__name__, e)
+            L.error("The testcase re-run probably crashed, giving up")
             sys.exit(3)                                    # Test re-run CRASH
 
         if not ret:
