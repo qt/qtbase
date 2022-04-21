@@ -43,6 +43,57 @@ set(__qt_chainload_toolchain_file \"\${__qt_initially_configured_toolchain_file}
         list(APPEND init_platform "set(CMAKE_SYSTEM_PROCESSOR arm64 CACHE STRING \"\")")
     endif()
 
+    if("${QT_QMAKE_TARGET_MKSPEC}" STREQUAL "linux-g++-32" AND NOT QT_NO_AUTO_DETECT_LINUX_X86)
+        set(__qt_toolchain_common_flags_init "-m32")
+
+        if(NOT QT_NO_OVERRIDE_LANG_FLAGS_INIT)
+            list(APPEND init_platform
+                "if(NOT QT_NO_OVERRIDE_LANG_FLAGS_INIT)")
+
+            list(APPEND init_platform
+                "    set(__qt_toolchain_common_flags_init \"-m32\")")
+            list(APPEND init_platform
+                "    set(CMAKE_C_FLAGS_INIT \"\${__qt_toolchain_common_flags_init}\")")
+            list(APPEND init_platform
+                "    set(CMAKE_CXX_FLAGS_INIT \"\${__qt_toolchain_common_flags_init}\")")
+            list(APPEND init_platform
+                "    set(CMAKE_ASM_FLAGS_INIT \"\${__qt_toolchain_common_flags_init}\")")
+
+            list(APPEND init_platform "endif()")
+        endif()
+
+        # Ubuntu-specific paths are used below.
+        # See comments of qt_auto_detect_linux_x86() for details.
+        if(NOT QT_NO_OVERRIDE_CMAKE_IGNORE_PATH)
+            list(APPEND init_platform
+                "if(NOT QT_NO_OVERRIDE_CMAKE_IGNORE_PATH)")
+
+            get_property(linux_x86_ignore_path GLOBAL PROPERTY _qt_internal_linux_x86_ignore_path)
+
+            string(REPLACE ";" "LITERAL_SEMICOLON"
+                linux_x86_ignore_path "${linux_x86_ignore_path}")
+
+            list(APPEND init_platform
+                "    set(CMAKE_IGNORE_PATH \"${linux_x86_ignore_path}\")")
+
+            list(APPEND init_platform "endif()")
+        endif()
+
+        if(NOT QT_NO_OVERRIDE_PKG_CONFIG_LIBDIR)
+            list(APPEND init_platform
+                "if(NOT QT_NO_OVERRIDE_PKG_CONFIG_LIBDIR)")
+
+            get_property(pc_config_libdir GLOBAL PROPERTY _qt_internal_linux_x86_pc_config_libdir)
+
+            list(APPEND init_platform
+                "    set(ENV{PKG_CONFIG_LIBDIR} \"${pc_config_libdir}\")")
+            list(APPEND init_platform
+                "    set(ENV{PKG_CONFIG_DIR} \"\")")
+
+            list(APPEND init_platform "endif()")
+        endif()
+    endif()
+
     # By default we don't want to allow mixing compilers for building different repositories, so we
     # embed the initially chosen compilers into the toolchain.
     # This is because on Windows compilers aren't easily mixed.
