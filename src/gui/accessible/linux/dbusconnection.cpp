@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -136,9 +136,8 @@ void DBusConnection::serviceRegistered()
             emit enabledChanged(m_enabled);
         } else {
             QDBusConnection c = QDBusConnection::sessionBus();
-            QDBusMessage m = QDBusMessage::createMethodCall(QLatin1String("org.a11y.Bus"),
-                                                            QLatin1String("/org/a11y/bus"),
-                                                            QLatin1String("org.a11y.Bus"), QLatin1String("GetAddress"));
+            QDBusMessage m = QDBusMessage::createMethodCall(A11Y_SERVICE, A11Y_PATH, A11Y_SERVICE,
+                                                            QLatin1String("GetAddress"));
             c.callWithCallback(m, this, SLOT(connectA11yBus(QString)), SLOT(dbusError(QDBusError)));
         }
     }
