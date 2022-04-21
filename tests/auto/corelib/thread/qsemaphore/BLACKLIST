@@ -1,8 +1,2 @@
 [tryAcquireWithTimeout]
-osx
-[tryAcquireWithTimeout:0.2s]
-windows
-macos
-[tryAcquireWithTimeout:2s]
-windows
 macos
