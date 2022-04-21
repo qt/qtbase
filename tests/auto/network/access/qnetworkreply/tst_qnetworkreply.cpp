@@ -496,6 +496,7 @@ private Q_SLOTS:
     void ioHttpCookiesDuringRedirect();
     void ioHttpRedirect_data();
     void ioHttpRedirect();
+    void ioHttpRedirectWithCache();
     void ioHttpRedirectFromLocalToRemote();
     void ioHttpRedirectPostPut_data();
     void ioHttpRedirectPostPut();
@@ -8862,6 +8863,64 @@ void tst_QNetworkReply::ioHttpRedirect()
     QNetworkReplyPtr reply(manager.get(request));
     // Set policy back to what it was
     manager.setRedirectPolicy(oldRedirectPolicy);
+
+    QCOMPARE(waitForFinish(reply), int(Success));
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
+    QVERIFY(validateRedirectedResponseHeaders(reply));
+}
+
+/*
+    Test that, if we load a redirect from cache, we don't treat the request to
+    the destination of the redirect as a redirect.
+
+    If it was treated as a redirect the finished() signal was never emitted!
+*/
+void tst_QNetworkReply::ioHttpRedirectWithCache()
+{
+    // Disallow caching the result so that the second request must also send the request
+    QByteArray http200ResponseNoCache = "HTTP/1.1 200 OK\r\n"
+                                        "Content-Type: text/plain\r\n"
+                                        "Cache-Control: no-cache\r\n"
+                                        "\r\nHello";
+
+    MiniHttpServer target(http200ResponseNoCache, false);
+    QUrl targetUrl("http://localhost/");
+    targetUrl.setPort(target.serverPort());
+
+    // A cache-able redirect reply
+    QString redirectReply = QStringLiteral("HTTP/1.1 308\r\n"
+                                           "Content-Type: text/plain\r\n"
+                                           "location: %1\r\n"
+                                           "Cache-Control: max-age=3600\r\n"
+                                           "\r\nYou're being redirected").arg(targetUrl.toString());
+    MiniHttpServer redirectServer(redirectReply.toLatin1(), false);
+    QUrl url("http://localhost/");
+    url.setPort(redirectServer.serverPort());
+
+    QTemporaryDir tempDir(QDir::tempPath() + "/tmp_cache_28035");
+    QVERIFY2(tempDir.isValid(), qPrintable(tempDir.errorString()));
+    tempDir.setAutoRemove(true);
+
+    QNetworkDiskCache *diskCache = new QNetworkDiskCache();
+    diskCache->setCacheDirectory(tempDir.path());
+    // Manager takes ownership of the cache:
+    manager.setCache(diskCache);
+    QCOMPARE(diskCache->cacheSize(), 0);
+
+    // Send the first request, we end up caching the redirect reply
+    QNetworkRequest request(url);
+    QNetworkReplyPtr reply(manager.get(request));
+
+    QCOMPARE(waitForFinish(reply), int(Success));
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
+    QVERIFY(validateRedirectedResponseHeaders(reply));
+
+    QVERIFY(diskCache->cacheSize() != 0);
+
+    // Now for the second request, we will use the cache, and we test that the finished()
+    // signal is still emitted.
+    request.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
+    reply.reset(manager.get(request));
 
     QCOMPARE(waitForFinish(reply), int(Success));
     QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
