@@ -957,12 +957,7 @@ size_t qHashBits(const void *p, size_t size, size_t seed) noexcept
     return siphash(reinterpret_cast<const uchar *>(p), size, seed, seed2);
 }
 
-size_t qHash(const QByteArray &key, size_t seed) noexcept
-{
-    return qHashBits(key.constData(), size_t(key.size()), seed);
-}
-
-size_t qHash(const QByteArrayView &key, size_t seed) noexcept
+size_t qHash(QByteArrayView key, size_t seed) noexcept
 {
     return qHashBits(key.constData(), size_t(key.size()), seed);
 }
