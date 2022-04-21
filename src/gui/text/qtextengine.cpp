@@ -1354,10 +1354,6 @@ void QTextEngine::shapeLine(const QScriptLine &line)
     }
 }
 
-#if QT_CONFIG(harfbuzz)
-extern bool qt_useHarfbuzzNG(); // defined in qfontengine.cpp
-#endif
-
 static void applyVisibilityRules(ushort ucs, QGlyphLayout *glyphs, uint glyphPosition, QFontEngine *fontEngine)
 {
     // hide characters that should normally be invisible
@@ -1517,7 +1513,7 @@ void QTextEngine::shapeText(int item) const
     }
 
 #if QT_CONFIG(harfbuzz)
-    if (Q_LIKELY(shapingEnabled && qt_useHarfbuzzNG())) {
+    if (Q_LIKELY(shapingEnabled)) {
         si.num_glyphs = shapeTextWithHarfbuzzNG(si, string, itemLength, fontEngine, itemBoundaries, kerningEnabled, letterSpacing != 0);
     } else
 #endif
@@ -1578,8 +1574,7 @@ void QTextEngine::shapeText(int item) const
     QGlyphLayout glyphs = shapedGlyphs(&si);
 
 #if QT_CONFIG(harfbuzz)
-    if (Q_LIKELY(qt_useHarfbuzzNG()))
-        qt_getJustificationOpportunities(string, itemLength, si, glyphs, logClusters(&si));
+    qt_getJustificationOpportunities(string, itemLength, si, glyphs, logClusters(&si));
 #endif
 
     if (letterSpacing != 0) {
