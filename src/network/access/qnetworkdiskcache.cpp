@@ -536,7 +536,7 @@ qint64 QNetworkDiskCache::expire()
         }
     }
 
-    int removedFiles = 0;
+    [[maybe_unused]] int removedFiles = 0; // used under QNETWORKDISKCACHE_DEBUG
     qint64 goal = (maximumCacheSize() * 9) / 10;
     QMultiMap<QDateTime, QString>::const_iterator i = cacheItems.constBegin();
     while (i != cacheItems.constEnd()) {
