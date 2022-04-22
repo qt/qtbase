@@ -112,7 +112,7 @@
 QT_BEGIN_NAMESPACE
 
 
-Q_OPENGL_EXPORT QImage qt_imageForBrush(int brushStyle, bool invert);
+Q_GUI_EXPORT QImage qt_imageForBrush(int brushStyle, bool invert);
 
 ////////////////////////////////// Private Methods //////////////////////////////////////////
 
