@@ -211,13 +211,13 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
 {
     setObjectName(QLatin1String("Evdev Touch Handler"));
 
-    const QStringList args = spec.split(QLatin1Char(':'));
+    const QStringList args = spec.split(u':');
     int rotationAngle = 0;
     bool invertx = false;
     bool inverty = false;
     for (int i = 0; i < args.count(); ++i) {
         if (args.at(i).startsWith(QLatin1String("rotate"))) {
-            QString rotateArg = args.at(i).section(QLatin1Char('='), 1, 1);
+            QString rotateArg = args.at(i).section(u'=', 1, 1);
             bool ok;
             uint argValue = rotateArg.toUInt(&ok);
             if (ok) {

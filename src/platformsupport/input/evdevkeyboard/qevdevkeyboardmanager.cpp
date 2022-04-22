@@ -124,7 +124,7 @@ void QEvdevKeyboardManager::loadKeymap(const QString &file)
         // Restore the default, which is either the built-in keymap or
         // the one given in the plugin spec.
         QString keymapFromSpec;
-        const auto specs = QStringView{m_spec}.split(QLatin1Char(':'));
+        const auto specs = QStringView{m_spec}.split(u':');
         for (const auto &arg : specs) {
             if (arg.startsWith(QLatin1String("keymap=")))
                 keymapFromSpec = arg.mid(7).toString();

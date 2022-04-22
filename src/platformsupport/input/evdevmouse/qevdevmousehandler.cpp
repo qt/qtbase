@@ -75,7 +75,7 @@ std::unique_ptr<QEvdevMouseHandler> QEvdevMouseHandler::create(const QString &de
     int grab = 0;
     bool abs = false;
 
-    const auto args = QStringView{specification}.split(QLatin1Char(':'));
+    const auto args = QStringView{specification}.split(u':');
     for (const auto &arg : args) {
         if (arg == QLatin1String("nocompress"))
             compression = false;

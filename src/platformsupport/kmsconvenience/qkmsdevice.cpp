@@ -462,7 +462,7 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
         if (plane.possibleCrtcs & (1 << output.crtc_index)) {
             output.available_planes.append(plane);
             planeListStr.append(QString::number(plane.id));
-            planeListStr.append(QLatin1Char(' '));
+            planeListStr.append(u' ');
 
             // Choose the first primary plane that is not already assigned to
             // another screen's associated crtc.
@@ -509,9 +509,9 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
     if (qEnvironmentVariableIsSet("QT_QPA_EGLFS_KMS_PLANES_FOR_CRTCS")) {
         const QString val = qEnvironmentVariable("QT_QPA_EGLFS_KMS_PLANES_FOR_CRTCS");
         qCDebug(qLcKmsDebug, "crtc_id:plane_id override list: %s", qPrintable(val));
-        const QStringList crtcPlanePairs = val.split(QLatin1Char(':'));
+        const QStringList crtcPlanePairs = val.split(u':');
         for (const QString &crtcPlanePair : crtcPlanePairs) {
-            const QStringList values = crtcPlanePair.split(QLatin1Char(','));
+            const QStringList values = crtcPlanePair.split(u',');
             if (values.count() == 2 && uint(values[0].toInt()) == output.crtc_id) {
                 uint planeId = values[1].toInt();
                 for (QKmsPlane &kmsplane : m_planes) {

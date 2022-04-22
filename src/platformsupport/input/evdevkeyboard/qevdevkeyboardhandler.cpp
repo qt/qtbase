@@ -121,7 +121,7 @@ std::unique_ptr<QEvdevKeyboardHandler> QEvdevKeyboardHandler::create(const QStri
     bool enableCompose = false;
     int grab = 0;
 
-    const auto args = QStringView{specification}.split(QLatin1Char(':'));
+    const auto args = QStringView{specification}.split(u':');
     for (const auto &arg : args) {
         if (arg.startsWith(QLatin1String("keymap=")))
             keymapFile = arg.mid(7).toString();

@@ -47,7 +47,7 @@ ParsedSpecification parseSpecification(const QString &specification)
 {
     ParsedSpecification result;
 
-    result.args = QStringView{specification}.split(QLatin1Char(':'));
+    result.args = QStringView{specification}.split(u':');
 
     for (const auto &arg : qAsConst(result.args)) {
         if (arg.startsWith(QLatin1String("/dev/"))) {
@@ -55,7 +55,7 @@ ParsedSpecification parseSpecification(const QString &specification)
             result.devices.append(arg.toString());
         } else {
             // build new specification without /dev/ elements
-            result.spec += arg + QLatin1Char(':');
+            result.spec += arg + u':';
         }
     }
 

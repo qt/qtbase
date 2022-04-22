@@ -107,7 +107,7 @@ QStringList QDeviceDiscoveryStatic::scanConnectedDevices()
         dir.setPath(QString::fromLatin1(QT_EVDEV_DEVICE_PATH));
         const auto deviceFiles = dir.entryList();
         for (const QString &deviceFile : deviceFiles) {
-            QString absoluteFilePath = dir.absolutePath() + QLatin1Char('/') + deviceFile;
+            QString absoluteFilePath = dir.absolutePath() + u'/' + deviceFile;
             if (checkDeviceType(absoluteFilePath))
                 devices << absoluteFilePath;
         }
@@ -118,7 +118,7 @@ QStringList QDeviceDiscoveryStatic::scanConnectedDevices()
         dir.setPath(QString::fromLatin1(QT_DRM_DEVICE_PATH));
         const auto deviceFiles = dir.entryList();
         for (const QString &deviceFile : deviceFiles) {
-            QString absoluteFilePath = dir.absolutePath() + QLatin1Char('/') + deviceFile;
+            QString absoluteFilePath = dir.absolutePath() + u'/' + deviceFile;
             if (checkDeviceType(absoluteFilePath))
                 devices << absoluteFilePath;
         }
