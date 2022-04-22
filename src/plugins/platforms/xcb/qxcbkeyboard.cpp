@@ -257,7 +257,7 @@ struct xkb_keymap *QXcbKeyboard::keymapFromCore(const KeysymModifierMap &keysymM
             const int maxGroup1 = 4; // We only support 4 shift states anyway
             const int maxGroup2 = 2; // Only 3rd and 4th keysym are group 2
             xcb_keysym_t symbolsGroup1[maxGroup1];
-            xcb_keysym_t symbolsGroup2[maxGroup2];
+            xcb_keysym_t symbolsGroup2[maxGroup2] = { XKB_KEY_NoSymbol, XKB_KEY_NoSymbol };
             for (int i = 0; i < maxGroup1 + maxGroup2; i++) {
                 xcb_keysym_t sym = i < keysymsPerKeycode ? codeMap[i] : XKB_KEY_NoSymbol;
                 if (mapGroup2ToLevel3) {
