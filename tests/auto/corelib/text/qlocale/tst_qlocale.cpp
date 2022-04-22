@@ -2962,6 +2962,12 @@ void tst_QLocale::uiLanguages_data()
     QTest::newRow("zh_Hans_CN")
         << QLocale(QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China)
         << QStringList{QString("zh-Hans-CN"), QString("zh-CN"), QString("zh")};
+
+    // TODO: test actual system backends correctly handle locales with
+    // script-specificity (script listed first is the default, in CLDR v40):
+    // az_{Latn,Cyrl}_AZ, bs_{Latn,Cyrl}_BA, sr_{Cyrl,Latn}_{BA,RS,XK,UZ},
+    // sr_{Latn,Cyrl}_ME, ff_{Latn,Adlm}_{BF,CM,GH,GM,GN,GW,LR,MR,NE,NG,SL,SN},
+    // shi_{Tfng,Latn}_MA, vai_{Vaii,Latn}_LR, zh_{Hant,Hans}_{MO,HK}
 }
 
 void tst_QLocale::uiLanguages()

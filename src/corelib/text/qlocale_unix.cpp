@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -280,14 +280,15 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         else
             lst = languages.split(u':');
 
-        // Inadequate for various cases of a language that's written in more
-        // than one script in the same country, e.g. Sindhi in India.
-        // However, can clients of the UILanguage query cope if we include script ?
         for (int i = 0; i < lst.size(); ++i) {
-            QStringView lang, cntry;
-            if (qt_splitLocaleName(lst.at(i), &lang, nullptr, &cntry)) {
-                d->uiLanguages.append(
-                    cntry.size() ? lang % u'-' % cntry : lang.toString());
+            QStringView language, script, territory;
+            if (qt_splitLocaleName(lst.at(i), &language, &script, &territory)) {
+                QString joined = language.isEmpty() ? u"und"_qs : language.toString();
+                if (!script.isEmpty())
+                    joined += u'-' + script;
+                if (!territory.isEmpty())
+                    joined += u'-' + territory;
+                d->uiLanguages.append(joined);
             }
         }
         return d->uiLanguages.isEmpty() ? QVariant() : QVariant(d->uiLanguages);
