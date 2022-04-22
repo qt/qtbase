@@ -4424,10 +4424,10 @@ QString QLocale::formattedDataSize(qint64 bytes, int precision, DataSizeFormats 
     The return value represents locale names that the user expects to see the
     UI translation in.
 
-    Most like you do not need to use this function directly, but just pass the
+    Most likely you do not need to use this function directly, but just pass the
     QLocale object to the QTranslator::load() function.
 
-    The first item in the list is the most preferred one.
+    Earlier items in the list are to be preferred over later ones.
 
     \sa QTranslator, bcp47Name()
 */
@@ -4435,8 +4435,11 @@ QStringList QLocale::uiLanguages() const
 {
     QStringList uiLanguages;
     QList<QLocale> locales;
-#ifndef QT_NO_SYSTEMLOCALE
-    if (d->m_data == &systemLocaleData) {
+#ifdef QT_NO_SYSTEMLOCALE
+    constexpr bool isSystem = false;
+#else
+    const bool isSystem = d->m_data == &systemLocaleData;
+    if (isSystem) {
         uiLanguages = systemLocale()->query(QSystemLocale::UILanguages).toStringList();
         // ... but we need to include likely-adjusted forms of each of those, too:
         for (const auto &entry : std::as_const(uiLanguages))
@@ -4455,7 +4458,7 @@ QStringList QLocale::uiLanguages() const
 
         int j;
         QByteArray prior;
-        if (i < uiLanguages.size()) {
+        if (isSystem && i < uiLanguages.size()) {
             // Adding likely-adjusted forms to system locale's list.
             // Name the locale is derived from:
             prior = uiLanguages.at(i).toLatin1();
@@ -4466,7 +4469,7 @@ QStringList QLocale::uiLanguages() const
             uiLanguages.append(locale.name());
             continue;
         } else {
-            // Plain locale, not system locale; just append.
+            // Plain locale or empty system uiLanguages; just append.
             const QString name = locale.bcp47Name();
             uiLanguages.append(name);
             prior = name.toLatin1();
@@ -4477,9 +4480,11 @@ QStringList QLocale::uiLanguages() const
         const QLocaleId min = max.withLikelySubtagsRemoved();
         id.script_id = 0; // For re-use as script-less variant.
 
-        // Include version with all likely sub-tags (last) if distinct from the rest:
-        if (max != min && max != id && max.name() != prior)
-            uiLanguages.insert(j, QString::fromLatin1(max.name()));
+        // Include minimal version (last) unless it's what our locale is derived from:
+        if (min.name() != prior)
+            uiLanguages.insert(j, QString::fromLatin1(min.name()));
+        else if (!isSystem)
+            --j; // bcp47Name() matches min(): put more specific forms *before* it.
 
         // Include scriptless version if likely-equivalent and distinct:
         if (data->m_script_id && id != min && id.name() != prior
@@ -4487,9 +4492,9 @@ QStringList QLocale::uiLanguages() const
             uiLanguages.insert(j, QString::fromLatin1(id.name()));
         }
 
-        // Include minimal version (first) unless it's what our locale is derived from:
-        if (min.name() != prior)
-            uiLanguages.insert(j, QString::fromLatin1(min.name()));
+        // Include version with all likely sub-tags (first) if distinct from the rest:
+        if (max != min && max != id && max.name() != prior)
+            uiLanguages.insert(j, QString::fromLatin1(max.name()));
     }
     return uiLanguages;
 }

@@ -2937,31 +2937,31 @@ void tst_QLocale::uiLanguages_data()
 
     QTest::newRow("en_US")
         << QLocale("en_US")
-        << QStringList{QString("en"), QString("en-US"), QString("en-Latn-US")};
+        << QStringList{QString("en-Latn-US"), QString("en-US"), QString("en")};
 
     QTest::newRow("en_Latn_US")
         << QLocale("en_Latn_US") // Specifying the default script makes no difference
-        << QStringList{QString("en"), QString("en-US"), QString("en-Latn-US")};
+        << QStringList{QString("en-Latn-US"), QString("en-US"), QString("en")};
 
     QTest::newRow("en_GB")
         << QLocale("en_GB")
-        << QStringList{QString("en-GB"), QString("en-Latn-GB")};
+        << QStringList{QString("en-Latn-GB"), QString("en-GB")};
 
     QTest::newRow("en_Dsrt_US")
         << QLocale("en_Dsrt_US")
-        << QStringList{QString("en-Dsrt"), QString("en-Dsrt-US")};
+        << QStringList{QString("en-Dsrt-US"), QString("en-Dsrt")};
 
     QTest::newRow("ru_RU")
         << QLocale("ru_RU")
-        << QStringList{QString("ru"), QString("ru-RU"), QString("ru-Cyrl-RU")};
+        << QStringList{QString("ru-Cyrl-RU"), QString("ru-RU"), QString("ru")};
 
     QTest::newRow("zh_Hant")
         << QLocale("zh_Hant")
-        << QStringList{QString("zh-TW"), QString("zh-Hant-TW")};
+        << QStringList{QString("zh-Hant-TW"), QString("zh-TW")};
 
     QTest::newRow("zh_Hans_CN")
         << QLocale(QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China)
-        << QStringList{QString("zh"), QString("zh-CN"), QString("zh-Hans-CN")};
+        << QStringList{QString("zh-Hans-CN"), QString("zh-CN"), QString("zh")};
 }
 
 void tst_QLocale::uiLanguages()
@@ -3281,19 +3281,19 @@ void tst_QLocale::systemLocale_data()
 
     QTest::addRow("catalan")
         << QString("ca") << QLocale::Catalan
-        << QStringList{QStringLiteral("ca"), QStringLiteral("ca-ES"), QStringLiteral("ca-Latn-ES")};
+        << QStringList{QStringLiteral("ca"), QStringLiteral("ca-Latn-ES"), QStringLiteral("ca-ES")};
     QTest::addRow("ukrainian")
         << QString("uk") << QLocale::Ukrainian
-        << QStringList{QStringLiteral("uk"), QStringLiteral("uk-UA"), QStringLiteral("uk-Cyrl-UA")};
+        << QStringList{QStringLiteral("uk"), QStringLiteral("uk-Cyrl-UA"), QStringLiteral("uk-UA")};
     QTest::addRow("german")
         << QString("de") << QLocale::German
-        << QStringList{QStringLiteral("de"), QStringLiteral("de-DE"), QStringLiteral("de-Latn-DE")};
+        << QStringList{QStringLiteral("de"), QStringLiteral("de-Latn-DE"), QStringLiteral("de-DE")};
     QTest::addRow("chinese-min")
         << QString("zh") << QLocale::Chinese
-        << QStringList{QStringLiteral("zh"), QStringLiteral("zh-CN"), QStringLiteral("zh-Hans-CN")};
+        << QStringList{QStringLiteral("zh"), QStringLiteral("zh-Hans-CN"), QStringLiteral("zh-CN")};
     QTest::addRow("chinese-full")
         << QString("zh-Hans-CN") << QLocale::Chinese
-        << QStringList{QStringLiteral("zh-Hans-CN"), QStringLiteral("zh"), QStringLiteral("zh-CN")};
+        << QStringList{QStringLiteral("zh-Hans-CN"), QStringLiteral("zh-CN"), QStringLiteral("zh")};
 }
 
 void tst_QLocale::systemLocale()
