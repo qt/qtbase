@@ -199,7 +199,7 @@ QRgba64 QColorTransform::map(QRgba64 rgba64) const
         c.z = d->colorSpaceOut->trc[2].applyInverse(c.z);
     }
 
-    return QRgba64::fromRgba64(c.x * 65535, c.y * 65535, c.z * 65535, rgba64.alpha());
+    return QRgba64::fromRgba64(c.x * 65535.f + 0.5f, c.y * 65535.f + 0.5f, c.z * 65535.f + 0.5f, rgba64.alpha());
 }
 
 /*!
