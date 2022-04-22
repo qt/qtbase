@@ -3018,10 +3018,10 @@ QSize QDockAreaLayout::minimumStableSize() const
  */
 QRect QDockAreaLayout::constrainedRect(QRect rect, QWidget* widget)
 {
-    QScreen *screen;
+    QScreen *screen = nullptr;
     if (QGuiApplication::primaryScreen()->virtualSiblings().size() > 1)
         screen = QGuiApplication::screenAt(rect.topLeft());
-    else
+    if (!screen)
         screen = widget->screen();
 
     const QRect screenRect = screen->geometry();
