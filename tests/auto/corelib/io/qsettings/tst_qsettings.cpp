@@ -1300,19 +1300,24 @@ void tst_QSettings::testVariantTypes()
         QCOMPARE(settings.value("empty"), QVariant());
     }
 
-#define testValue(key, actual, expected) do { \
-    { \
-        QSettings settings1(format, QSettings::UserScope, "software.org", "KillerAPP"); \
-        settings1.setValue(key, QVariant::fromValue(actual)); \
-    } \
-    QConfFile::clearCache(); \
-    { \
-        QSettings settings2(format, QSettings::UserScope, "software.org", "KillerAPP"); \
-        QVariant v = settings2.value(key); \
-        QCOMPARE(v.metaType().id(), QMetaType::expected); \
-        QCOMPARE(qvariant_cast<decltype(actual)>(v), actual); \
-    } \
-} while (0)
+    auto checker = [format](const char *key, auto value, QMetaType::Type expected) {
+        {
+            QSettings settings(format, QSettings::UserScope, "software.org", "KillerAPP");
+            settings.setValue(key, QVariant::fromValue(value));
+        }
+        QConfFile::clearCache();
+        {
+            QSettings settings(format, QSettings::UserScope, "software.org", "KillerAPP");
+            QVariant actual = settings.value(key);
+            QCOMPARE(actual.metaType().id(), expected);
+            QCOMPARE(qvariant_cast<decltype(value)>(actual), value);
+        }
+    };
+#define testValue(key, supplied, expected) do { \
+        checker(key, supplied, QMetaType::expected); \
+        if (QTest::currentTestFailed()) \
+            return; \
+    } while (0)
 
     typedef QMap<QString, QVariant> TestVariantMap;
 
