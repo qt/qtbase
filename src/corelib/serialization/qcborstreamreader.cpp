@@ -565,7 +565,7 @@ public:
     CborValue currentElement;
     QCborError lastError = {};
 
-    QByteArray::size_type bufferStart;
+    QByteArray::size_type bufferStart = 0;
     bool corrupt = false;
 
     QCborStreamReaderPrivate(const QByteArray &data)
@@ -787,7 +787,7 @@ inline void QCborStreamReader::preparse()
    \sa addData(), isValid()
  */
 QCborStreamReader::QCborStreamReader()
-    : QCborStreamReader(QByteArray())
+    : d(new QCborStreamReaderPrivate({})), type_(Invalid)
 {
 }
 
