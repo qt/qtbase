@@ -3837,10 +3837,12 @@ QTextLineItemIterator::QTextLineItemIterator(QTextEngine *_eng, int _lineNum, co
 
     x += eng->alignLine(line);
 
-    QVarLengthArray<uchar> levels(nItems);
-    for (int i = 0; i < nItems; ++i)
-        levels[i] = eng->layoutData->items.at(i + firstItem).analysis.bidiLevel;
-    QTextEngine::bidiReorder(nItems, levels.data(), visualOrder.data());
+    if (nItems > 0) {
+        QVarLengthArray<uchar> levels(nItems);
+        for (int i = 0; i < nItems; ++i)
+            levels[i] = eng->layoutData->items.at(i + firstItem).analysis.bidiLevel;
+        QTextEngine::bidiReorder(nItems, levels.data(), visualOrder.data());
+    }
 
     eng->shapeLine(line);
 }
