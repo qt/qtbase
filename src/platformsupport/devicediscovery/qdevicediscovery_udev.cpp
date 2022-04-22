@@ -54,6 +54,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(lcDD, "qt.qpa.input")
 
 QDeviceDiscovery *QDeviceDiscovery::create(QDeviceTypes types, QObject *parent)
@@ -140,9 +142,9 @@ QStringList QDeviceDiscoveryUDev::scanConnectedDevices()
         const char *syspath = udev_list_entry_get_name(entry);
         udev_device *udevice = udev_device_new_from_syspath(m_udev, syspath);
         QString candidate = QString::fromUtf8(udev_device_get_devnode(udevice));
-        if ((m_types & Device_InputMask) && candidate.startsWith(QLatin1String(QT_EVDEV_DEVICE)))
+        if ((m_types & Device_InputMask) && candidate.startsWith(QT_EVDEV_DEVICE ""_L1))
             devices << candidate;
-        if ((m_types & Device_VideoMask) && candidate.startsWith(QLatin1String(QT_DRM_DEVICE))) {
+        if ((m_types & Device_VideoMask) && candidate.startsWith(QT_DRM_DEVICE ""_L1)) {
             if (m_types & Device_DRM_PrimaryGPU) {
                 udev_device *pci = udev_device_get_parent_with_subsystem_devtype(udevice, "pci", 0);
                 if (pci) {
@@ -186,9 +188,9 @@ void QDeviceDiscoveryUDev::handleUDevNotification()
 
     const char *subsystem;
     devNode = QString::fromUtf8(str);
-    if (devNode.startsWith(QLatin1String(QT_EVDEV_DEVICE)))
+    if (devNode.startsWith(QT_EVDEV_DEVICE ""_L1))
         subsystem = "input";
-    else if (devNode.startsWith(QLatin1String(QT_DRM_DEVICE)))
+    else if (devNode.startsWith(QT_DRM_DEVICE ""_L1))
         subsystem = "drm";
     else goto cleanup;
 

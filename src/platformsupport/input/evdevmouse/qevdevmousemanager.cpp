@@ -53,6 +53,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_DECLARE_LOGGING_CATEGORY(qLcEvdevMouse)
 
 QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specification, QObject *parent)
@@ -69,9 +71,9 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
     m_spec = std::move(parsed.spec);
 
     for (const auto &arg : qAsConst(parsed.args)) {
-        if (arg.startsWith(QLatin1String("xoffset="))) {
+        if (arg.startsWith("xoffset="_L1)) {
             m_xoffset = arg.mid(8).toInt();
-        } else if (arg.startsWith(QLatin1String("yoffset="))) {
+        } else if (arg.startsWith("yoffset="_L1)) {
             m_yoffset = arg.mid(8).toInt();
         }
     }

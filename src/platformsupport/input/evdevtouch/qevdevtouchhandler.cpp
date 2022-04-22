@@ -77,6 +77,8 @@ extern "C" {
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(qLcEvdevTouch, "qt.qpa.input")
 Q_LOGGING_CATEGORY(qLcEvents, "qt.qpa.input.events")
 
@@ -209,14 +211,14 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
       , m_mtdev(nullptr)
 #endif
 {
-    setObjectName(QLatin1String("Evdev Touch Handler"));
+    setObjectName("Evdev Touch Handler"_L1);
 
     const QStringList args = spec.split(u':');
     int rotationAngle = 0;
     bool invertx = false;
     bool inverty = false;
     for (int i = 0; i < args.count(); ++i) {
-        if (args.at(i).startsWith(QLatin1String("rotate"))) {
+        if (args.at(i).startsWith("rotate"_L1)) {
             QString rotateArg = args.at(i).section(u'=', 1, 1);
             bool ok;
             uint argValue = rotateArg.toUInt(&ok);
@@ -230,9 +232,9 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
                     break;
                 }
             }
-        } else if (args.at(i) == QLatin1String("invertx")) {
+        } else if (args.at(i) == "invertx"_L1) {
             invertx = true;
-        } else if (args.at(i) == QLatin1String("inverty")) {
+        } else if (args.at(i) == "inverty"_L1) {
             inverty = true;
         }
     }
@@ -323,7 +325,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
     }
 
     // Fix up the coordinate ranges for am335x in case the kernel driver does not have them fixed.
-    if (d->hw_name == QLatin1String("ti-tsc")) {
+    if (d->hw_name == "ti-tsc"_L1) {
         if (d->hw_range_x_min == 0 && d->hw_range_x_max == 4095) {
             d->hw_range_x_min = 165;
             d->hw_range_x_max = 4016;

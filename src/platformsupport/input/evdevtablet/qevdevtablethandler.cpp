@@ -54,6 +54,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(qLcEvdevTablet, "qt.qpa.input")
 
 class QEvdevTabletData
@@ -171,7 +173,7 @@ QEvdevTabletHandler::QEvdevTabletHandler(const QString &device, const QString &s
 {
     Q_UNUSED(spec);
 
-    setObjectName(QLatin1String("Evdev Tablet Handler"));
+    setObjectName("Evdev Tablet Handler"_L1);
 
     qCDebug(qLcEvdevTablet, "evdevtablet: using %ls", qUtf16Printable(device));
 

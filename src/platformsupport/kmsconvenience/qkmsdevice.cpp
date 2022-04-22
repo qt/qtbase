@@ -53,6 +53,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(qLcKmsDebug, "qt.qpa.eglfs.kms")
 
 enum OutputConfiguration {
@@ -1062,7 +1064,7 @@ void QKmsScreenConfig::loadConfig()
 
     const QJsonObject object = doc.object();
 
-    const QString headlessStr = object.value(QLatin1String("headless")).toString();
+    const QString headlessStr = object.value("headless"_L1).toString();
     const QByteArray headless = headlessStr.toUtf8();
     QSize headlessSize;
     if (sscanf(headless.constData(), "%dx%d", &headlessSize.rwidth(), &headlessSize.rheight()) == 2) {
@@ -1072,22 +1074,22 @@ void QKmsScreenConfig::loadConfig()
         m_headless = false;
     }
 
-    m_hwCursor = object.value(QLatin1String("hwcursor")).toBool(m_hwCursor);
-    m_pbuffers = object.value(QLatin1String("pbuffers")).toBool(m_pbuffers);
-    m_devicePath = object.value(QLatin1String("device")).toString();
-    m_separateScreens = object.value(QLatin1String("separateScreens")).toBool(m_separateScreens);
+    m_hwCursor = object.value("hwcursor"_L1).toBool(m_hwCursor);
+    m_pbuffers = object.value("pbuffers"_L1).toBool(m_pbuffers);
+    m_devicePath = object.value("device"_L1).toString();
+    m_separateScreens = object.value("separateScreens"_L1).toBool(m_separateScreens);
 
-    const QString vdOriString = object.value(QLatin1String("virtualDesktopLayout")).toString();
+    const QString vdOriString = object.value("virtualDesktopLayout"_L1).toString();
     if (!vdOriString.isEmpty()) {
-        if (vdOriString == QLatin1String("horizontal"))
+        if (vdOriString == "horizontal"_L1)
             m_virtualDesktopLayout = VirtualDesktopLayoutHorizontal;
-        else if (vdOriString == QLatin1String("vertical"))
+        else if (vdOriString == "vertical"_L1)
             m_virtualDesktopLayout = VirtualDesktopLayoutVertical;
         else
             qCWarning(qLcKmsDebug) << "Unknown virtualDesktopOrientation value" << vdOriString;
     }
 
-    const QJsonArray outputs = object.value(QLatin1String("outputs")).toArray();
+    const QJsonArray outputs = object.value("outputs"_L1).toArray();
     for (int i = 0; i < outputs.size(); i++) {
         const QVariantMap outputSettings = outputs.at(i).toObject().toVariantMap();
 

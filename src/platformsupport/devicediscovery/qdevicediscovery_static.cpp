@@ -83,6 +83,8 @@ static bool testBit(long bit, const long *field)
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(lcDD, "qt.qpa.input")
 
 QDeviceDiscovery *QDeviceDiscovery::create(QDeviceTypes types, QObject *parent)
@@ -139,7 +141,7 @@ bool QDeviceDiscoveryStatic::checkDeviceType(const QString &device)
 
     qCDebug(lcDD) << "doing static device discovery for " << device;
 
-    if ((m_types & Device_DRM) && device.contains(QLatin1String(QT_DRM_DEVICE_PREFIX))) {
+    if ((m_types & Device_DRM) && device.contains(QT_DRM_DEVICE_PREFIX ""_L1)) {
         QT_CLOSE(fd);
         return true;
     }

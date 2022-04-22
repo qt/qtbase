@@ -47,6 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static QOutputMapping *s_outputMapping = nullptr;
 
 QOutputMapping *QOutputMapping::get()
@@ -104,7 +106,7 @@ bool QDefaultOutputMapping::load()
 
     // What we are interested is the virtualIndex and touchDevice properties for
     // each element in the outputs array.
-    const QJsonArray outputs = doc.object().value(QLatin1String("outputs")).toArray();
+    const QJsonArray outputs = doc.object().value("outputs"_L1).toArray();
     for (int i = 0; i < outputs.size(); ++i) {
         const QVariantMap output = outputs.at(i).toObject().toVariantMap();
         if (!output.contains(QStringLiteral("touchDevice")))

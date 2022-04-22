@@ -51,16 +51,18 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(qLcTsLib, "qt.qpa.input")
 
 QTsLibMouseHandler::QTsLibMouseHandler(const QString &key,
                                        const QString &specification,
                                        QObject *parent)
     : QObject(parent),
-    m_rawMode(!key.compare(QLatin1String("TslibRaw"), Qt::CaseInsensitive))
+    m_rawMode(!key.compare("TslibRaw"_L1, Qt::CaseInsensitive))
 {
     qCDebug(qLcTsLib) << "Initializing tslib plugin" << key << specification;
-    setObjectName(QLatin1String("TSLib Mouse Handler"));
+    setObjectName("TSLib Mouse Handler"_L1);
 
     m_dev = ts_setup(nullptr, 1);
     if (!m_dev) {

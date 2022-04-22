@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_DECLARE_LOGGING_CATEGORY(qLcEvdevKey)
 
 QEvdevKeyboardManager::QEvdevKeyboardManager(const QString &key, const QString &specification, QObject *parent)
@@ -126,7 +128,7 @@ void QEvdevKeyboardManager::loadKeymap(const QString &file)
         QString keymapFromSpec;
         const auto specs = QStringView{m_spec}.split(u':');
         for (const auto &arg : specs) {
-            if (arg.startsWith(QLatin1String("keymap=")))
+            if (arg.startsWith("keymap="_L1))
                 keymapFromSpec = arg.mid(7).toString();
         }
         for (const auto &keyboard : m_keyboards) {

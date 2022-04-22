@@ -41,6 +41,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 namespace QEvdevUtil {
 
 ParsedSpecification parseSpecification(const QString &specification)
@@ -50,7 +52,7 @@ ParsedSpecification parseSpecification(const QString &specification)
     result.args = QStringView{specification}.split(u':');
 
     for (const auto &arg : qAsConst(result.args)) {
-        if (arg.startsWith(QLatin1String("/dev/"))) {
+        if (arg.startsWith("/dev/"_L1)) {
             // if device is specified try to use it
             result.devices.append(arg.toString());
         } else {

@@ -64,6 +64,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(qLcEvdevMouse, "qt.qpa.input")
 
 std::unique_ptr<QEvdevMouseHandler> QEvdevMouseHandler::create(const QString &device, const QString &specification)
@@ -77,13 +79,13 @@ std::unique_ptr<QEvdevMouseHandler> QEvdevMouseHandler::create(const QString &de
 
     const auto args = QStringView{specification}.split(u':');
     for (const auto &arg : args) {
-        if (arg == QLatin1String("nocompress"))
+        if (arg == "nocompress"_L1)
             compression = false;
-        else if (arg.startsWith(QLatin1String("dejitter=")))
+        else if (arg.startsWith("dejitter="_L1))
             jitterLimit = arg.mid(9).toInt();
-        else if (arg.startsWith(QLatin1String("grab=")))
+        else if (arg.startsWith("grab="_L1))
             grab = arg.mid(5).toInt();
-        else if (arg == QLatin1String("abs"))
+        else if (arg == "abs"_L1)
             abs = true;
     }
 
@@ -101,7 +103,7 @@ std::unique_ptr<QEvdevMouseHandler> QEvdevMouseHandler::create(const QString &de
 QEvdevMouseHandler::QEvdevMouseHandler(const QString &device, int fd, bool abs, bool compression, int jitterLimit)
     : m_device(device), m_fd(fd), m_abs(abs), m_compression(compression)
 {
-    setObjectName(QLatin1String("Evdev Mouse Handler"));
+    setObjectName("Evdev Mouse Handler"_L1);
 
     m_jitterLimitSquared = jitterLimit * jitterLimit;
 
