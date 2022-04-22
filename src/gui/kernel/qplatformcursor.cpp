@@ -619,7 +619,7 @@ void QPlatformCursorImage::set(const uchar *data, const uchar *mask,
     int p = 0;
     int d, m;
 
-    int x = -1, w = 0;
+    int x = -1;
 
     uchar *cursor_data = cursorImage.bits();
     qsizetype bpl = cursorImage.bytesPerLine();
@@ -641,15 +641,11 @@ void QPlatformCursorImage::set(const uchar *data, const uchar *mask,
                     x = j*8+b;
                 else if (x >= 0 && !m) {
                     x = -1;
-                    w = 0;
                 }
-                if (m)
-                    w++;
             }
         }
         if (x >= 0) {
             x = -1;
-            w = 0;
         }
         cursor_data += bpl;
     }

@@ -219,7 +219,6 @@ void QEvdevMouseHandler::readMouseData()
     int n = 0;
     bool posChanged = false, btnChanged = false;
     bool pendingMouseEvent = false;
-    int eventCompressCount = 0;
     forever {
         int result = QT_READ(m_fd, reinterpret_cast<char *>(buffer) + n, sizeof(buffer) - n);
 
@@ -326,7 +325,6 @@ void QEvdevMouseHandler::readMouseData()
                 posChanged = false;
                 if (m_compression) {
                     pendingMouseEvent = true;
-                    eventCompressCount++;
                 } else {
                     sendMouseEvent();
                 }

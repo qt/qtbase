@@ -1367,7 +1367,6 @@ static qsizetype indic_nextSyllableBoundary(QChar::Script script, const char16_t
 static void indicAttributes(QChar::Script script, const char16_t *text, qsizetype from, qsizetype len, QCharAttributes *attributes)
 {
     qsizetype end = from + len;
-    const char16_t *uc = text + from;
     attributes += from;
     qsizetype i = 0;
     while (i < len) {
@@ -1379,7 +1378,6 @@ static void indicAttributes(QChar::Script script, const char16_t *text, qsizetyp
         i++;
         while (i < boundary) {
             attributes[i].graphemeBoundary = false;
-            ++uc;
             ++i;
         }
         assert(i == boundary);
@@ -1634,7 +1632,6 @@ finish:
 static void tibetanAttributes(QChar::Script script, const char16_t *text, qsizetype from, qsizetype len, QCharAttributes *attributes)
 {
     qsizetype end = from + len;
-    const char16_t *uc = text + from;
     qsizetype i = 0;
     Q_UNUSED(script);
     attributes += from;
@@ -1648,7 +1645,6 @@ static void tibetanAttributes(QChar::Script script, const char16_t *text, qsizet
         i++;
         while (i < boundary) {
             attributes[i].graphemeBoundary = false;
-            ++uc;
             ++i;
         }
         assert(i == boundary);
@@ -1849,7 +1845,6 @@ static qsizetype myanmar_nextSyllableBoundary(const char16_t *s, qsizetype start
 static void myanmarAttributes(QChar::Script script, const char16_t *text, qsizetype from, qsizetype len, QCharAttributes *attributes)
 {
     qsizetype end = from + len;
-    const char16_t *uc = text + from;
     qsizetype i = 0;
     Q_UNUSED(script);
     attributes += from;
@@ -1865,7 +1860,6 @@ static void myanmarAttributes(QChar::Script script, const char16_t *text, qsizet
     i++;
     while (i < boundary) {
         attributes[i].graphemeBoundary = false;
-        ++uc;
         ++i;
     }
     assert(i == boundary);
@@ -2185,7 +2179,6 @@ static qsizetype khmer_nextSyllableBoundary(const char16_t *s, qsizetype start, 
 static void khmerAttributes(QChar::Script script, const char16_t *text, qsizetype from, qsizetype len, QCharAttributes *attributes)
 {
     qsizetype end = from + len;
-    const char16_t *uc = text + from;
     qsizetype i = 0;
     Q_UNUSED(script);
     attributes += from;
@@ -2199,7 +2192,6 @@ static void khmerAttributes(QChar::Script script, const char16_t *text, qsizetyp
     i++;
     while ( i < boundary ) {
         attributes[i].graphemeBoundary = false;
-        ++uc;
         ++i;
     }
     assert( i == boundary );
