@@ -14,6 +14,12 @@ class QColor;
 class QRgba64;
 class QColorSpacePrivate;
 class QColorTransformPrivate;
+class qfloat16;
+template<typename T>
+class QRgbaFloat;
+typedef QRgbaFloat<qfloat16> QRgbaFloat16;
+typedef QRgbaFloat<float> QRgbaFloat32;
+
 QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QColorTransformPrivate, Q_GUI_EXPORT)
 
 class QColorTransform
@@ -35,6 +41,8 @@ public:
 
     Q_GUI_EXPORT QRgb map(QRgb argb) const;
     Q_GUI_EXPORT QRgba64 map(QRgba64 rgba64) const;
+    Q_GUI_EXPORT QRgbaFloat16 map(QRgbaFloat16 rgbafp16) const;
+    Q_GUI_EXPORT QRgbaFloat32 map(QRgbaFloat32 rgbafp32) const;
     Q_GUI_EXPORT QColor map(const QColor &color) const;
 
     friend bool operator==(const QColorTransform &ct1, const QColorTransform &ct2)

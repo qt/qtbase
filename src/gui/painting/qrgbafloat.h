@@ -94,6 +94,14 @@ public:
         const FastType ia = 1.0f / a;
         return QRgbaFloat{r * ia, g * ia, b * ia, a};
     }
+    constexpr bool operator==(QRgbaFloat f) const
+    {
+        return r == f.r && g == f.g && b == f.b && a == f.a;
+    }
+    constexpr bool operator!=(QRgbaFloat f) const
+    {
+        return !(*this == f);
+    }
 };
 
 typedef QRgbaFloat<qfloat16> QRgbaFloat16;

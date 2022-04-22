@@ -31,6 +31,7 @@
 
 #include <qcolorspace.h>
 #include <qcolortransform.h>
+#include <qrgbafloat.h>
 #include <QtGui/private/qcolortransform_p.h>
 
 class tst_QColorTransform : public QObject
@@ -45,6 +46,10 @@ private slots:
     void mapRGB32();
     void mapRGB64_data();
     void mapRGB64();
+    void mapRGBAFP16x4_data();
+    void mapRGBAFP16x4();
+    void mapRGBAFP32x4_data();
+    void mapRGBAFP32x4();
     void mapQColor_data();
     void mapQColor();
     void mapRGB32Prepared_data();
@@ -180,6 +185,94 @@ void tst_QColorTransform::mapRGB64()
     result = transform.map(testColor);
     QCOMPARE(result.blue(), 0xffff);
     QCOMPARE(result.alpha(), 0xffff);
+}
+
+void tst_QColorTransform::mapRGBAFP16x4_data()
+{
+    mapRGB32_data();
+}
+
+void tst_QColorTransform::mapRGBAFP16x4()
+{
+    QFETCH(QColorTransform, transform);
+    QFETCH(bool, sharesRed);
+
+    QRgbaFloat16 testColor = QRgbaFloat16::fromRgba(128, 64, 32, 255);
+    QRgbaFloat16 result = transform.map(testColor);
+    QVERIFY(result.red() > result.green());
+    QVERIFY(result.green() > result.blue());
+    QCOMPARE(result.alpha(), 1.0f);
+    if (transform.isIdentity())
+        QVERIFY(result == testColor);
+    else
+        QVERIFY(result != testColor);
+
+    testColor = QRgbaFloat16{0.0f, 0.0f, 0.0f, 1.0f};
+    result = transform.map(testColor);
+    QCOMPARE(result, testColor);
+
+    testColor = QRgbaFloat16{1.0f, 1.0f, 1.0f, 1.0f};
+    result = transform.map(testColor);
+    QCOMPARE(result, testColor);
+
+    testColor = QRgbaFloat16{1.0f, 1.0f, 0.0f, 1.0f};
+    result = transform.map(testColor);
+    QCOMPARE(result.alpha(), 1.0f);
+    if (sharesRed)
+        QCOMPARE(result.red(), 1.0f);
+
+    testColor = QRgbaFloat16{0.0f, 1.0f, 1.0f, 1.0f};
+    result = transform.map(testColor);
+    // QRgbaFloat16 might overflow blue if we convert to a smaller gamut:
+    QCOMPARE(result.blue16(), 65535);
+    QCOMPARE(result.alpha(), 1.0f);
+}
+
+void tst_QColorTransform::mapRGBAFP32x4_data()
+{
+    mapRGB32_data();
+}
+
+void tst_QColorTransform::mapRGBAFP32x4()
+{
+    QFETCH(QColorTransform, transform);
+    QFETCH(bool, sharesRed);
+
+    QRgbaFloat32 testColor = QRgbaFloat32::fromRgba(128, 64, 32, 255);
+    QRgbaFloat32 result = transform.map(testColor);
+    QVERIFY(result.red() > result.green());
+    QVERIFY(result.green() > result.blue());
+    QCOMPARE(result.alpha(), 1.0f);
+    if (transform.isIdentity())
+        QVERIFY(result == testColor);
+    else
+        QVERIFY(result != testColor);
+
+    testColor = QRgbaFloat32{0.0f, 0.0f, 0.0f, 1.0f};
+    result = transform.map(testColor);
+    QCOMPARE(result.red(), 0.0f);
+    QCOMPARE(result.green(), 0.0f);
+    QCOMPARE(result.blue(), 0.0f);
+    QCOMPARE(result.alpha(), 1.0f);
+
+    testColor = QRgbaFloat32{1.0f, 1.0f, 1.0f, 1.0f};
+    result = transform.map(testColor);
+    QCOMPARE(result.red(), 1.0f);
+    QCOMPARE(result.green(), 1.0f);
+    QCOMPARE(result.blue(), 1.0f);
+    QCOMPARE(result.alpha(), 1.0f);
+
+    testColor = QRgbaFloat32{1.0f, 1.0f, 0.0f, 1.0f};
+    result = transform.map(testColor);
+    QCOMPARE(result.alpha(), 1.0f);
+    if (sharesRed)
+        QCOMPARE(result.red(), 1.0f);
+
+    testColor = QRgbaFloat32{0.0f, 1.0f, 1.0f, 1.0f};
+    result = transform.map(testColor);
+    // QRgbaFloat16 might overflow blue if we convert to a smaller gamut:
+    QCOMPARE(result.blue16(), 65535);
+    QCOMPARE(result.alpha(), 1.0f);
 }
 
 void tst_QColorTransform::mapQColor_data()

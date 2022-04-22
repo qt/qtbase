@@ -223,6 +223,48 @@ QRgba64 QColorTransform::map(QRgba64 rgba64) const
 }
 
 /*!
+    Applies the color transformation on the QRgbaFloat16 value \a rgbafp16.
+
+    The input should be opaque or unpremultiplied.
+    \since 6.4
+*/
+QRgbaFloat16 QColorTransform::map(QRgbaFloat16 rgbafp16) const
+{
+    if (!d)
+        return rgbafp16;
+    QColorVector c;
+    c.x = d->colorSpaceIn->trc[0].applyExtended(rgbafp16.r);
+    c.y = d->colorSpaceIn->trc[1].applyExtended(rgbafp16.g);
+    c.z = d->colorSpaceIn->trc[2].applyExtended(rgbafp16.b);
+    c = d->colorMatrix.map(c);
+    rgbafp16.r = d->colorSpaceOut->trc[0].applyInverseExtended(c.x);
+    rgbafp16.g = d->colorSpaceOut->trc[1].applyInverseExtended(c.y);
+    rgbafp16.b = d->colorSpaceOut->trc[2].applyInverseExtended(c.z);
+    return rgbafp16;
+}
+
+/*!
+    Applies the color transformation on the QRgbaFloat32 value \a rgbafp32.
+
+    The input should be opaque or unpremultiplied.
+    \since 6.4
+*/
+QRgbaFloat32 QColorTransform::map(QRgbaFloat32 rgbafp32) const
+{
+    if (!d)
+        return rgbafp32;
+    QColorVector c;
+    c.x = d->colorSpaceIn->trc[0].applyExtended(rgbafp32.r);
+    c.y = d->colorSpaceIn->trc[1].applyExtended(rgbafp32.g);
+    c.z = d->colorSpaceIn->trc[2].applyExtended(rgbafp32.b);
+    c = d->colorMatrix.map(c);
+    rgbafp32.r = d->colorSpaceOut->trc[0].applyInverseExtended(c.x);
+    rgbafp32.g = d->colorSpaceOut->trc[1].applyInverseExtended(c.y);
+    rgbafp32.b = d->colorSpaceOut->trc[2].applyInverseExtended(c.z);
+    return rgbafp32;
+}
+
+/*!
     Applies the color transformation on the QColor value \a color.
 
 */
