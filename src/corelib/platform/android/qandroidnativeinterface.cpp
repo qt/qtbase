@@ -251,7 +251,7 @@ static void runPendingCppRunnables(JNIEnv */*env*/, jobject /*obj*/)
 bool QtAndroidPrivate::registerNativeInterfaceNatives()
 {
 #if QT_CONFIG(future) && !defined(QT_NO_QOBJECT)
-    JNINativeMethod methods = {"runPendingCppRunnables", "()V", (void *)runPendingCppRunnables};
+    const JNINativeMethod methods = {"runPendingCppRunnables", "()V", (void *)runPendingCppRunnables};
     return QJniEnvironment().registerNativeMethods(qtNativeClassName, &methods, 1);
 #else
     return true;

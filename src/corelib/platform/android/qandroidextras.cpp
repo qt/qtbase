@@ -1312,7 +1312,7 @@ bool QtAndroidPrivate::registerPermissionNatives()
     if (QtAndroidPrivate::androidSdkVersion() < 23)
         return true;
 
-    JNINativeMethod methods[] = {
+    const JNINativeMethod methods[] = {
         {"sendRequestPermissionsResult", "(I[Ljava/lang/String;[I)V",
          reinterpret_cast<void *>(sendRequestPermissionsResult)
         }};
