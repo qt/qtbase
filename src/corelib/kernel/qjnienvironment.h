@@ -44,6 +44,7 @@
 
 #if defined(Q_QDOC) || defined(Q_OS_ANDROID)
 #include <jni.h>
+#include <QtCore/qjnitypes.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -60,9 +61,29 @@ public:
     JNIEnv *jniEnv() const;
     jclass findClass(const char *className);
     jmethodID findMethod(jclass clazz, const char *methodName, const char *signature);
+    template<typename ...Args>
+    jmethodID findMethod(jclass clazz, const char *methodName) {
+        constexpr auto signature = QtJniTypes::methodSignature<Args...>();
+        return findMethod(clazz, methodName, signature.data());
+    }
     jmethodID findStaticMethod(jclass clazz, const char *methodName, const char *signature);
+    template<typename ...Args>
+    jmethodID findStaticMethod(jclass clazz, const char *methodName) {
+        constexpr auto signature = QtJniTypes::methodSignature<Args...>();
+        return findStaticMethod(clazz, methodName, signature.data());
+    }
     jfieldID findField(jclass clazz, const char *fieldName, const char *signature);
+    template<typename T>
+    jfieldID findField(jclass clazz, const char *fieldName) {
+        constexpr auto signature = QtJniTypes::fieldSignature<T>();
+        return findField(clazz, fieldName, signature.data());
+    }
     jfieldID findStaticField(jclass clazz, const char *fieldName, const char *signature);
+    template<typename T>
+    jfieldID findStaticField(jclass clazz, const char *fieldName) {
+        constexpr auto signature = QtJniTypes::fieldSignature<T>();
+        return findStaticField(clazz, fieldName, signature.data());
+    }
     static JavaVM *javaVM();
     bool registerNativeMethods(const char *className, const JNINativeMethod methods[], int size);
     bool registerNativeMethods(jclass clazz, const JNINativeMethod methods[], int size);

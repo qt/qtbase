@@ -76,54 +76,76 @@ using namespace Qt::StringLiterals;
 
     \section1 Method Signatures
 
-    For functions that take no arguments, QJniObject provides convenience functions that will use
-    the correct signature based on the provided template type. For example:
+    QJniObject provides convenience functions that will use the correct signature based on the
+    provided template types. For functions that only return and take \l {JNI types}, the
+    signature can be generate at compile time:
 
     \code
     jint x = QJniObject::callMethod<jint>("getSize");
     QJniObject::callMethod<void>("touch");
+    jint ret = jString1.callMethod<jint>("compareToIgnoreCase", jString2.object<jstring>());
     \endcode
 
-    In other cases you will need to supply the signature yourself, and it is important that the
-    signature matches the function you want to call. The signature structure is
-    \c "(ArgumentsTypes)ReturnType". Array types in the signature must have the \c {[} prefix,
-    and the fully-qualified \c Object type names must have the \c L prefix and the \c ; suffix.
+    These functions are variadic templates, and the compiler will deduce the template arguments
+    from the actual argument types. In many situations, only the return type needs to be provided
+    explicitly.
 
-    The example below demonstrates how to call two different static functions:
+    For functions that take other argument types, you need to supply the signature yourself. It is
+    important that the signature matches the function you want to call. The example below
+    demonstrates how to call different static functions:
 
     \code
     // Java class
     package org.qtproject.qt;
     class TestClass
     {
-       static String fromNumber(int x) { ... }
-       static String[] stringArray(String s1, String s2) { ... }
+        static TestClass create() { ... }
+        static String fromNumber(int x) { ... }
+        static String[] stringArray(String s1, String s2) { ... }
     }
     \endcode
 
-    The signature for the first function is \c {"(I)Ljava/lang/String;"}:
+    The signature structure is \c "(ArgumentsTypes)ReturnType". Array types in the signature
+    must have the \c {[} prefix, and the fully-qualified \c Object type names must have the
+    \c L prefix and the \c ; suffix. The signature for the \c create function is
+    \c {"()Lorg/qtproject/qt/TestClass;}. The signatures for the second and third functions
+    are \c {"(I)Ljava/lang/String;"} and
+    \c {"(Ljava/lang/String;Ljava/lang/String;)[Ljava/lang/String;"}, respectively.
+
+    We can call the \c create() function like this:
+
+    \code
+    // C++ code
+    QJniObject testClass = QJniObject::callStaticObjectMethod("org/qtproject/qt/TestClass",
+                                                              "create",
+                                                              "()Lorg/qtproject/qt/TestClass;");
+    \endcode
+
+    For the second and third function we can rely on QJniObject's template methods to create
+    the implicit signature string, but we can also pass the signature string explicitly:
 
     \code
     // C++ code
     QJniObject stringNumber = QJniObject::callStaticObjectMethod("org/qtproject/qt/TestClass",
-                                                                 "fromNumber"
-                                                                 "(I)Ljava/lang/String;",
-                                                                 10);
+                                                                 "fromNumber",
+                                                                 "(I)Ljava/lang/String;", 10);
     \endcode
 
-    and the signature for the second function is
-    \c {"(Ljava/lang/String;Ljava/lang/String;)[Ljava/lang/String;"}:
+    For the implicit signature creation to work we need to specify the return type explicitly:
 
     \code
     // C++ code
     QJniObject string1 = QJniObject::fromString("String1");
     QJniObject string2 = QJniObject::fromString("String2");
-    QJniObject stringArray = QJniObject::callStaticObjectMethod("org/qtproject/qt/TestClass",
+    QJniObject stringArray = QJniObject::callStaticObjectMethod<jstringArray>(
+                                                                "org/qtproject/qt/TestClass",
                                                                 "stringArray"
-                                                                "(Ljava/lang/String;Ljava/lang/String;)[Ljava/lang/String;"
                                                                 string1.object<jstring>(),
                                                                 string2.object<jstring>());
     \endcode
+
+    Note that while he first template parameter specifies the return type of the Java
+    function, the method will still return a QJniObject.
 
     \section1 Handling Java Exception
 
@@ -403,9 +425,12 @@ jmethodID QJniObject::getMethodID(JNIEnv *env,
     return id;
 }
 
-void QJniObject::callVoidMethodV(JNIEnv *env, jmethodID id, va_list args) const
+void QJniObject::callVoidMethodV(JNIEnv *env, jmethodID id, ...) const
 {
+    va_list args;
+    va_start(args, id);
     env->CallVoidMethodV(d->m_jobject, id, args);
+    va_end(args);
 }
 
 jmethodID QJniObject::getCachedMethodID(JNIEnv *env,
@@ -620,6 +645,22 @@ QJniObject::QJniObject(const char *className, const char *signature, ...)
     }
 }
 
+/*!
+    \fn template<typename ...Args> QJniObject::QJniObject(const char *className, Args &&...args)
+    \since 6.4
+
+    Constructs a new JNI object by calling the constructor of \a className with
+    the arguments \a args. This constructor is only available if all \a args are
+    known \l {JNI Types}.
+
+    \code
+    QJniEnvironment env;
+    char* str = "Hello";
+    jstring myJStringArg = env->NewStringUTF(str);
+    QJniObject myNewJavaString("java/lang/String", myJStringArg);
+    \endcode
+*/
+
 QJniObject::QJniObject(const char *className, const char *signature, const QVaListPrivate &args)
     : d(new QJniObjectPrivate())
 {
@@ -670,6 +711,21 @@ QJniObject::QJniObject(jclass clazz, const char *signature, ...)
         }
     }
 }
+
+/*!
+    \fn template<typename ...Args> QJniObject::QJniObject(jclass clazz, Args &&...args)
+    \since 6.4
+
+    Constructs a new JNI object from \a clazz by calling the constructor with
+    the arguments \a args. This constructor is only available if all \a args are
+    known \l {JNI Types}.
+
+    \code
+    QJniEnvironment env;
+    jclass myClazz = env.findClass("org/qtproject/qt/TestClass");
+    QJniObject(myClazz, 3);
+    \endcode
+*/
 
 /*!
     Constructs a new JNI object by calling the default constructor of \a clazz.
@@ -883,10 +939,11 @@ QJniObject QJniObject::callStaticObjectMethodV(jclass clazz,
 }
 
 /*!
-    \fn template <typename T> T QJniObject::callMethod(const char *methodName, const char *signature, ...) const
+    \fn template <typename Ret, typename ...Args> Ret QJniObject::callMethod(const char *methodName, const char *signature, Args &&...args) const
+    \since 6.4
 
     Calls the object's method \a methodName with \a signature specifying the types of any
-    subsequent arguments.
+    subsequent arguments \a args.
 
     \code
     QJniObject myJavaStrin("org/qtproject/qt/TestClass");
@@ -896,21 +953,25 @@ QJniObject QJniObject::callStaticObjectMethodV(jclass clazz,
 */
 
 /*!
-    \fn template <typename T> T QJniObject::callMethod(const char *methodName) const
+    \fn template <typename Ret, typename ...Args> Ret QJniObject::callMethod(const char *methodName, Args &&...args) const
+    \since 6.4
 
-    Calls the method \a methodName and returns the value.
+    Calls the method \a methodName with arguments \a args and returns the value.
 
     \code
     QJniObject myJavaStrin("org/qtproject/qt/TestClass");
     jint size = myJavaString.callMethod<jint>("length");
     \endcode
+
+    The method signature is deduced at compile time from \c Ret and the types of \a args.
 */
 
 /*!
-    \fn template <typename T> T QJniObject::callStaticMethod(const char *className, const char *methodName, const char *signature, ...)
+    \fn template <typename Ret, typename ...Args> Ret QJniObject::callStaticMethod(const char *className, const char *methodName, const char *signature, Args &&...args)
+    \since 6.4
 
     Calls the static method \a methodName from class \a className with \a signature
-    specifying the types of any subsequent arguments.
+    specifying the types of any subsequent arguments \a args.
 
     \code
     jint a = 2;
@@ -920,17 +981,21 @@ QJniObject QJniObject::callStaticObjectMethodV(jclass clazz,
 */
 
 /*!
-    \fn template <typename T> T QJniObject::callStaticMethod(const char *className, const char *methodName)
+    \fn template <typename Ret, typename ...Args> Ret QJniObject::callStaticMethod(const char *className, const char *methodName, Args &&...args)
+    \since 6.4
 
-    Calls the static method \a methodName on class \a className and returns the value.
+    Calls the static method \a methodName on class \a className with arguments \a args,
+    and returns the value of type \c Ret.
 
     \code
     jint value = QJniObject::callStaticMethod<jint>("MyClass", "staticMethod");
     \endcode
+
+    The method signature is deduced at compile time from \c Ret and the types of \a args.
 */
 
 /*!
-    \fn template <typename T> T QJniObject::callStaticMethod(jclass clazz, const char *methodName, const char *signature, ...)
+    \fn template <typename Ret, typename ...Args> Ret QJniObject::callStaticMethod(jclass clazz, const char *methodName, const char *signature, Args &&...args)
 
     Calls the static method \a methodName from \a clazz with \a signature
     specifying the types of any subsequent arguments.
@@ -945,7 +1010,8 @@ QJniObject QJniObject::callStaticObjectMethodV(jclass clazz,
 */
 
 /*!
-    \fn template <typename T> T QJniObject::callStaticMethod(jclass clazz, jmethodID methodId, ...)
+    \fn template <typename Ret, typename ...Args> Ret QJniObject::callStaticMethod(jclass clazz, jmethodID methodId, Args &&...args)
+    \since 6.4
 
     Calls the static method identified by \a methodId from the class \a clazz
     with any subsequent arguments. Useful when \a clazz and \a methodId are
@@ -964,7 +1030,8 @@ QJniObject QJniObject::callStaticObjectMethodV(jclass clazz,
 */
 
 /*!
-    \fn template <typename T> T QJniObject::callStaticMethod(jclass clazz, const char *methodName)
+    \fn template <typename Ret, typename ...Args> Ret QJniObject::callStaticMethod(jclass clazz, const char *methodName, Args &&...args)
+    \since 6.4
 
     Calls the static method \a methodName on \a clazz and returns the value.
 
@@ -973,6 +1040,8 @@ QJniObject QJniObject::callStaticObjectMethodV(jclass clazz,
     jclass javaMathClass = env.findClass("java/lang/Math");
     jdouble randNr = QJniObject::callStaticMethod<jdouble>(javaMathClass, "random");
     \endcode
+
+    The method signature is deduced at compile time from \c Ret and the types of \a args.
 */
 
 /*!
@@ -1090,32 +1159,40 @@ QJniObject QJniObject::callStaticObjectMethod(jclass clazz, jmethodID methodId, 
 }
 
 /*!
-    \fn QJniObject QJniObject::callObjectMethod(const char *methodName) const
+    \fn template<typename Ret, typename ...Args> QJniObject QJniObject::callObjectMethod(const char *methodName, Args &&...args) const
+    \since 6.4
 
-    Calls the Java objects method \a methodName and returns a new QJniObject for
-    the returned Java object.
+    Calls the Java objects method \a methodName with arguments \a args and returns a
+    new QJniObject for the returned Java object.
 
     \code
     QJniObject myJavaString = QJniObject::fromString("Hello, Java");
     QJniObject myJavaString2 = myJavaString1.callObjectMethod<jstring>("toString");
     \endcode
+
+    The method signature is deduced at compile time from \c Ret and the types of \a args.
 */
 
 /*!
-    \fn QJniObject QJniObject::callStaticObjectMethod(const char *className, const char *methodName)
+    \fn template<typename Ret, typename ...Args> QJniObject QJniObject::callStaticObjectMethod(const char *className, const char *methodName, Args &&...args)
+    \since 6.4
 
-    Calls the static method with \a methodName on the class \a className.
+    Calls the static method with \a methodName on the class \a className, passing
+    arguments \a args, and returns a new QJniObject for the returned Java object.
 
     \code
     QJniObject string = QJniObject::callStaticObjectMethod<jstring>("CustomClass", "getClassName");
     \endcode
+
+    The method signature is deduced at compile time from \c Ret and the types of \a args.
 */
 
 /*!
-    \fn QJniObject QJniObject::callStaticObjectMethod(jclass clazz, const char *methodName)
+    \fn template<typename Ret, typename ...Args> QJniObject QJniObject::callStaticObjectMethod(jclass clazz, const char *methodName, Args &&...args)
+    \since 6.4
 
-    Calls the static method with \a methodName on \a clazz.
-
+    Calls the static method with \a methodName on \a clazz, passing arguments \a args,
+    and returns a new QJniObject for the returned Java object.
 */
 
 /*!

@@ -202,6 +202,10 @@ void tst_QJniEnvironment::findMethod()
     jmethodID methodId = env.findMethod(clazz, "toString", "()Ljava/lang/String;");
     QVERIFY(methodId != nullptr);
 
+    // existing method
+    methodId = env.findMethod<jstring>(clazz, "toString");
+    QVERIFY(methodId != nullptr);
+
     // invalid signature
     jmethodID invalid = env.findMethod(clazz, "unknown", "()I");
     QVERIFY(invalid == nullptr);
@@ -219,6 +223,10 @@ void tst_QJniEnvironment::findStaticMethod()
     jmethodID staticMethodId = env.findStaticMethod(clazz, "parseInt", "(Ljava/lang/String;)I");
     QVERIFY(staticMethodId != nullptr);
 
+    // existing method
+    staticMethodId = env.findStaticMethod<jint, jstring>(clazz, "parseInt");
+    QVERIFY(staticMethodId != nullptr);
+
     QJniObject parameter = QJniObject::fromString("123");
     jint result = QJniObject::callStaticMethod<jint>(clazz, staticMethodId,
                                                      parameter.object<jstring>());
@@ -226,6 +234,8 @@ void tst_QJniEnvironment::findStaticMethod()
 
     // invalid method
     jmethodID invalid = env.findStaticMethod(clazz, "unknown", "()I");
+    QVERIFY(invalid == nullptr);
+    invalid = env.findStaticMethod<jint>(clazz, "unknown");
     QVERIFY(invalid == nullptr);
     // check that all exceptions are already cleared
     QVERIFY(!env.checkAndClearExceptions());
@@ -239,6 +249,8 @@ void tst_QJniEnvironment::findField()
 
     // valid field
     jfieldID validId = env.findField(clazz, "INT_FIELD", "I");
+    QVERIFY(validId != nullptr);
+    validId = env.findField<jint>(clazz, "INT_FIELD");
     QVERIFY(validId != nullptr);
 
     jmethodID constructorId = env.findMethod(clazz, "<init>", "()V");
@@ -264,6 +276,8 @@ void tst_QJniEnvironment::findStaticField()
 
     // valid field
     jfieldID validId = env.findStaticField(clazz, "S_INT_FIELD", "I");
+    QVERIFY(validId != nullptr);
+    validId = env.findStaticField<jint>(clazz, "S_INT_FIELD");
     QVERIFY(validId != nullptr);
 
     int size = env->GetStaticIntField(clazz, validId);

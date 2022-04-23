@@ -232,6 +232,16 @@ jmethodID QJniEnvironment::findMethod(jclass clazz, const char *methodName, cons
 }
 
 /*!
+    \fn template<typename ...Args> jmethodId QJniEnvironment::findMethod(jclass clazz, const char *methodName)
+    \since 6.4
+
+    Searches for an instance method of a class \a clazz. The method is specified
+    by its \a methodName, the signature is deduced from the template parameters.
+
+    Returns the method ID or \c nullptr if the method is not found.
+*/
+
+/*!
     Searches for a static method of a class \a clazz. The method is specified
     by its \a methodName and \a signature.
 
@@ -265,9 +275,28 @@ jmethodID QJniEnvironment::findStaticMethod(jclass clazz, const char *methodName
     return nullptr;
 }
 
+/*!
+    \fn template<typename ...Args> jmethodId QJniEnvironment::findStaticMethod(jclass clazz, const char *methodName)
+    \since 6.4
+
+    Searches for an instance method of a class \a clazz. The method is specified
+    by its \a methodName, the signature is deduced from the template parameters.
+
+    Returns the method ID or \c nullptr if the method is not found.
+
+    \code
+    QJniEnvironment env;
+    jclass javaClass = env.findClass("org/qtproject/example/android/CustomClass");
+    jmethodID methodId = env.findStaticMethod<void, jstring>(javaClass, "staticJavaMethod");
+    QJniObject javaMessage = QJniObject::fromString("findStaticMethod example");
+    QJniObject::callStaticMethod<void>(javaClass,
+                                       methodId,
+                                       javaMessage.object<jstring>());
+    \endcode
+*/
 
 /*!
-    Searches for an member field of a class \a clazz. The field is specified
+    Searches for a member field of a class \a clazz. The field is specified
     by its \a fieldName and \a signature.
 
     Returns the field ID or \c nullptr if the field is not found.
@@ -287,6 +316,16 @@ jfieldID QJniEnvironment::findField(jclass clazz, const char *fieldName, const c
 
     return nullptr;
 }
+
+/*!
+    \fn template<typename T> jfieldID QJniEnvironment::findField(jclass clazz, const char *fieldName)
+    \since 6.4
+
+    Searches for a member field of a class \a clazz. The field is specified
+    by its \a fieldName. The signature of the field is deduced from the template parameter.
+
+    Returns the field ID or \c nullptr if the field is not found.
+*/
 
 /*!
     Searches for a static field of a class \a clazz. The field is specified
@@ -309,6 +348,16 @@ jfieldID QJniEnvironment::findStaticField(jclass clazz, const char *fieldName, c
 
     return nullptr;
 }
+
+/*!
+    \fn template<typename T> jfieldID QJniEnvironment::findStaticField(jclass clazz, const char *fieldName)
+    \since 6.4
+
+    Searches for a static field of a class \a clazz. The field is specified
+    by its \a fieldName. The signature of the field is deduced from the template parameter.
+
+    Returns the field ID or \c nullptr if the field is not found.
+*/
 
 /*!
     \fn JavaVM *QJniEnvironment::javaVM()
