@@ -18,22 +18,22 @@
 # Note that these macros work with the online template only.
 #
 # Example:
-# \if(onlinedocs)
-#   \tab {build-qt-app}{tab-cmake}{CMake}{selected}
+# \if defined(onlinedocs)
+#   \tab {build-qt-app}{tab-cmake}{CMake}{checked}
 #   \tab {build-qt-app}{tab-qmake}{qmake}{}
 #   \tabcontent {tab-cmake}
 # \else
 #   \section1 Using CMake
 # \endif
 #   CMake-specific instructions go here
-# \if(onlinedocs)
+# \if defined(onlinedocs)
 #   \endtabcontent
 #   \tabcontent {tab-qmake}
 # \else
 #   \section1 Using qmake
 # \endif
 #   qmake-specific instructions go here
-# \if(onlinedocs)
+# \if defined(onlinedocs)
 #   \endtabcontent
 # \endif
 
