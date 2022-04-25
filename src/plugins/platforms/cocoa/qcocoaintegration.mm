@@ -82,11 +82,6 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQpa, "qt.qpa", QtWarningMsg);
 
-// Lives here so that the linker is forced to include the QCocoaWindowManager
-// object file also in static builds.
-static void initializeWindowManager() { Q_UNUSED(QCocoaWindowManager::instance()); }
-Q_CONSTRUCTOR_FUNCTION(initializeWindowManager)
-
 static void logVersionInformation()
 {
     if (!lcQpa().isInfoEnabled())
