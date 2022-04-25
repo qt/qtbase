@@ -112,6 +112,7 @@ public:
 
     void _q_headerDataChanged() { doDelayedItemsLayout(); }
     void _q_scrollerStateChanged();
+    void _q_delegateSizeHintChanged(const QModelIndex &index);
 
     void fetchMore();
 
