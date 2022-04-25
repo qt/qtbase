@@ -863,25 +863,6 @@ HWND QWindowsContext::createDummyWindow(const QString &classNameIn,
                           HWND_MESSAGE, nullptr, static_cast<HINSTANCE>(GetModuleHandle(nullptr)), nullptr);
 }
 
-// Re-engineered from the inline function _com_error::ErrorMessage().
-// We cannot use it directly since it uses swprintf_s(), which is not
-// present in the MSVCRT.DLL found on Windows XP (QTBUG-35617).
-static inline QString errorMessageFromComError(const _com_error &comError)
-{
-     TCHAR *message = nullptr;
-     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-                   nullptr, DWORD(comError.Error()), MAKELANGID(LANG_NEUTRAL,SUBLANG_DEFAULT),
-                   message, 0, nullptr);
-     if (message) {
-         const QString result = QString::fromWCharArray(message).trimmed();
-         LocalFree(static_cast<HLOCAL>(message));
-         return result;
-     }
-     if (const WORD wCode = comError.WCode())
-         return QString::asprintf("IDispatch error #%u", uint(wCode));
-     return QString::asprintf("Unknown error 0x0%x", uint(comError.Error()));
-}
-
 /*!
     \brief Common COM error strings.
 */
@@ -950,7 +931,7 @@ QByteArray QWindowsContext::comErrorString(HRESULT hr)
     }
     _com_error error(hr);
     result += QByteArrayLiteral(" (");
-    result += errorMessageFromComError(error).toUtf8();
+    result += QString::fromWCharArray(error.ErrorMessage()).toUtf8();
     result += ')';
     return result;
 }
