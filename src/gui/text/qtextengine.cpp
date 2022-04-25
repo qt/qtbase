@@ -2282,6 +2282,12 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
             if (feCache.prevScaledFontEngine) {
                 scaledEngine = feCache.prevScaledFontEngine;
             } else {
+                // GCC 12 gets confused about QFontEngine::ref, for some non-obvious reason
+                //  warning: ‘unsigned int __atomic_or_fetch_4(volatile void*, unsigned int, int)’ writing 4 bytes
+                //  into a region of size 0 overflows the destination [-Wstringop-overflow=]
+                QT_WARNING_PUSH
+                QT_WARNING_DISABLE_GCC("-Wstringop-overflow")
+
                 QFontEngine *scEngine = rawFont.d->fontEngine->cloneWithSize(smallCapsFraction * rawFont.pixelSize());
                 scEngine->ref.ref();
                 scaledEngine = QFontEngineMulti::createMultiFontEngine(scEngine, script);
@@ -2291,6 +2297,7 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
                 if (!scEngine->ref.deref())
                     delete scEngine;
 
+                QT_WARNING_POP
             }
         }
     } else
