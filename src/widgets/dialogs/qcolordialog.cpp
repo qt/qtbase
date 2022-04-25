@@ -1906,8 +1906,8 @@ bool QColorDialogPrivate::canBeNativeDialog() const
         return false;
     }
 
-    QLatin1String staticName(QColorDialog::staticMetaObject.className());
-    QLatin1String dynamicName(q->metaObject()->className());
+    QLatin1StringView staticName(QColorDialog::staticMetaObject.className());
+    QLatin1StringView dynamicName(q->metaObject()->className());
     return (staticName == dynamicName);
 }
 

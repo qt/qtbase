@@ -303,7 +303,8 @@ public:
     {}
 
     static bool isSeparator(const QModelIndex &index) {
-        return index.data(Qt::AccessibleDescriptionRole).toString() == QLatin1String("separator");
+        return index.data(Qt::AccessibleDescriptionRole).toString()
+                == QLatin1StringView("separator");
     }
     static void setSeparator(QAbstractItemModel *model, const QModelIndex &index) {
         model->setData(index, QString::fromLatin1("separator"), Qt::AccessibleDescriptionRole);

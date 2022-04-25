@@ -490,13 +490,13 @@ void QLineEdit::setClearButtonEnabled(bool enable)
     if (enable) {
         QAction *clearAction = new QAction(d->clearButtonIcon(), QString(), this);
         clearAction->setEnabled(!isReadOnly());
-        clearAction->setObjectName(QLatin1String(clearButtonActionNameC));
+        clearAction->setObjectName(QLatin1StringView(clearButtonActionNameC));
 
         int flags = QLineEditPrivate::SideWidgetClearButton | QLineEditPrivate::SideWidgetFadeInWithText;
         auto widgetAction = d->addAction(clearAction, nullptr, QLineEdit::TrailingPosition, flags);
         widgetAction->setVisible(!text().isEmpty());
     } else {
-        QAction *clearAction = findChild<QAction *>(QLatin1String(clearButtonActionNameC));
+        QAction *clearAction = findChild<QAction *>(QLatin1StringView(clearButtonActionNameC));
         Q_ASSERT(clearAction);
         d->removeAction(clearAction);
         delete clearAction;
@@ -509,7 +509,7 @@ void QLineEdit::setClearButtonEnabled(bool enable)
 bool QLineEdit::isClearButtonEnabled() const
 {
 #if QT_CONFIG(action)
-    return findChild<QAction *>(QLatin1String(clearButtonActionNameC));
+    return findChild<QAction *>(QLatin1StringView(clearButtonActionNameC));
 #else
     return false;
 #endif

@@ -1207,7 +1207,7 @@ QPixmap QPixmapStylePrivate::getCachedPixmap(QPixmapStyle::ControlDescriptor con
 
     const QString sizeString = QString::number(size.width()) % u'*'
             % QString::number(size.height());
-    const QString key = QLatin1String(q->metaObject()->className()) % QString::number(control)
+    const QString key = QLatin1StringView(q->metaObject()->className()) % QString::number(control)
             % u'@' % sizeString;
 
     QPixmap result;

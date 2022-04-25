@@ -287,7 +287,7 @@ void QAccessibleWidget::addControllingSignal(const QString &signal)
     QByteArray s = QMetaObject::normalizedSignature(signal.toLatin1());
     if (Q_UNLIKELY(object()->metaObject()->indexOfSignal(s) < 0))
         qWarning("Signal %s unknown in %s", s.constData(), object()->metaObject()->className());
-    d->primarySignals << QLatin1String(s);
+    d->primarySignals << QLatin1StringView(s);
 }
 
 static inline bool isAncestor(const QObject *obj, const QObject *child)

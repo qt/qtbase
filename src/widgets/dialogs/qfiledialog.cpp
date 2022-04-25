@@ -724,8 +724,8 @@ bool QFileDialogPrivate::canBeNativeDialog() const
         return false;
     }
 
-    QLatin1String staticName(QFileDialog::staticMetaObject.className());
-    QLatin1String dynamicName(q->metaObject()->className());
+    QLatin1StringView staticName(QFileDialog::staticMetaObject.className());
+    QLatin1StringView dynamicName(q->metaObject()->className());
     return (staticName == dynamicName);
 }
 
@@ -2839,7 +2839,7 @@ void QFileDialogPrivate::saveSettings()
     settings.setValue("history"_L1, historyUrls);
     settings.setValue("lastVisited"_L1, lastVisitedDir()->toString());
     const QMetaEnum &viewModeMeta = q->metaObject()->enumerator(q->metaObject()->indexOfEnumerator("ViewMode"));
-    settings.setValue("viewMode"_L1, QLatin1String(viewModeMeta.key(q->viewMode())));
+    settings.setValue("viewMode"_L1, QLatin1StringView(viewModeMeta.key(q->viewMode())));
     settings.setValue("qtVersion"_L1, QT_VERSION_STR ""_L1);
 }
 

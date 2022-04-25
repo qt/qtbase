@@ -763,7 +763,7 @@ class AttributeFormatterRef {
 public:
     template <typename RHS>
     void operator=(RHS &&rhs)
-    { string += QLatin1String(key) + u':' + std::forward<RHS>(rhs) + u';'; }
+    { string += QLatin1StringView(key) + u':' + std::forward<RHS>(rhs) + u';'; }
 };
 
 /*!

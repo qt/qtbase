@@ -180,7 +180,7 @@ static QString int2string(int num, int base, int ndigits, bool *oflow)
                 len = ndigits - len;
                 if (len > 0)
                     s += QString(len, u' ');
-                s += QLatin1String(p);
+                s += QLatin1StringView(p);
             }
             break;
     }

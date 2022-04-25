@@ -1051,7 +1051,7 @@ QRenderRule::QRenderRule(const QList<Declaration> &declarations, const QObject *
         } else if (decl.d->propertyId == UnknownProperty) {
             bool knownStyleHint = false;
             for (int i = 0; i < numKnownStyleHints; i++) {
-                QLatin1String styleHint(knownStyleHints[i]);
+                QLatin1StringView styleHint(knownStyleHints[i]);
                 if (decl.d->property.compare(styleHint) == 0) {
                     QString hintName = QString(styleHint);
                     QVariant hintValue;
@@ -1893,7 +1893,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, int element, quint6
     }
 
 
-    const QString part = QLatin1String(knownPseudoElements[element].name);
+    const QString part = QLatin1StringView(knownPseudoElements[element].name);
     QList<Declaration> decls = declarations(rules, part, state);
     QRenderRule newRule(decls, obj);
     cache[state] = newRule;
@@ -2199,7 +2199,7 @@ bool QStyleSheetStyle::hasStyleRule(const QObject *obj, int part) const
         return result;
     }
 
-    QString pseudoElement = QLatin1String(knownPseudoElements[part].name);
+    QString pseudoElement = QLatin1StringView(knownPseudoElements[part].name);
     for (int i = 0; i < rules.count(); i++) {
         const Selector& selector = rules.at(i).selectors.at(0);
         if (pseudoElement.compare(selector.pseudoElement(), Qt::CaseInsensitive) == 0) {
@@ -5501,7 +5501,7 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
 /*!
     \internal
 */
-static QLatin1String propertyNameForStandardPixmap(QStyle::StandardPixmap sp)
+static QLatin1StringView propertyNameForStandardPixmap(QStyle::StandardPixmap sp)
 {
     switch (sp) {
         case QStyle::SP_TitleBarMenuButton: return "titlebar-menu-icon"_L1;
