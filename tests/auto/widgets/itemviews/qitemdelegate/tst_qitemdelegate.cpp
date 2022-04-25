@@ -357,9 +357,8 @@ void tst_QItemDelegate::editorKeyPress()
 
     QTest::keyClicks(editor, expected);
     QTest::keyClick(editor, Qt::Key_Enter);
-    QApplication::processEvents();
 
-    QCOMPARE(index.data().toString(), expected);
+    QTRY_COMPARE(index.data().toString(), expected);
 }
 
 void tst_QItemDelegate::doubleEditorNegativeInput()
