@@ -51,6 +51,7 @@
 #if QT_CONFIG(vulkan)
 #include "qcocoavulkaninstance.h"
 #endif
+#include "qcocoawindowmanager.h"
 
 #include <QtCore/QScopedPointer>
 #include <qpa/qplatformintegration.h>
@@ -155,6 +156,8 @@ private:
     mutable QCocoaVulkanInstance *mCocoaVulkanInstance = nullptr;
 #endif
     QHash<QWindow *, NSToolbar *> mToolbars;
+
+    QCocoaWindowManager m_windowManager;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCocoaIntegration::Options)
