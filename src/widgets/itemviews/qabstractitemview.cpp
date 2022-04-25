@@ -2936,8 +2936,10 @@ void QAbstractItemView::closeEditor(QWidget *editor, QAbstractItemDelegate::EndE
         bool isPersistent = d->persistent.contains(editor);
         bool hadFocus = editor->hasFocus();
         QModelIndex index = d->indexForEditor(editor);
-        if (!index.isValid())
+        if (!index.isValid()) {
+            qWarning("QAbstractItemView::closeEditor called with an editor that does not belong to this view");
             return; // the editor was not registered
+        }
 
         // start a timer that expires immediately when we return to the event loop
         // to identify whether this close was triggered by a mousepress-initiated
@@ -3015,8 +3017,10 @@ void QAbstractItemView::commitData(QWidget *editor)
     if (!editor || !d->itemDelegate || d->currentlyCommittingEditor)
         return;
     QModelIndex index = d->indexForEditor(editor);
-    if (!index.isValid())
+    if (!index.isValid()) {
+        qWarning("QAbstractItemView::commitData called with an editor that does not belong to this view");
         return;
+    }
     d->currentlyCommittingEditor = editor;
     QAbstractItemDelegate *delegate = itemDelegateForIndex(index);
     editor->removeEventFilter(delegate);
