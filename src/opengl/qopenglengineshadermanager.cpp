@@ -454,11 +454,9 @@ QOpenGLEngineShaderProg *QOpenGLEngineSharedShaders::findProgramInCache(const QO
             if (!inCache)
                 shaderCache.store(newProg->program, QOpenGLContext::currentContext());
         } else {
-            QString error;
-            error = QLatin1String("Shader program failed to link")
-                    + QLatin1String("  Error Log:\n")
-                    + QLatin1String("    ") + newProg->program->log();
-            qWarning() << error;
+            qWarning("Shader program failed to link\n"
+                    "  Error Log:\n"
+                    "    %ls", qUtf16Printable(newProg->program->log()));
             break;
         }
 

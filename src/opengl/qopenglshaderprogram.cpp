@@ -61,6 +61,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     \class QOpenGLShaderProgram
     \brief The QOpenGLShaderProgram class allows OpenGL shader programs to be linked and used.
@@ -398,7 +400,7 @@ bool QOpenGLShaderPrivate::compile(QOpenGLShader *q)
         if (logBuffer)
             log = QString::fromLatin1(logBuffer);
         else
-            log = QLatin1String("failed");
+            log = u"failed"_s;
 
         if (name.isEmpty())
             qWarning("QOpenGLShader::compile(%s): %s", type, qPrintable(log));
@@ -579,7 +581,7 @@ static QVersionDirectivePosition findVersionDirectivePosition(const char *source
         case CommentEnding:
             if (*c == '/')
                 state = Normal;
-            else if (*c != QLatin1Char('*'))
+            else if (*c != u'*')
                 state = MultiLineComment;
             break;
         }
