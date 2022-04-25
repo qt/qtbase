@@ -119,20 +119,21 @@ QNetworkManagerInterface::NMConnectivityState QNetworkManagerInterface::connecti
     return QNetworkManagerInterface::NM_CONNECTIVITY_UNKNOWN;
 }
 
-static QDBusInterface getPrimaryDevice(const QDBusObjectPath &devicePath)
+static std::optional<QDBusInterface> getPrimaryDevice(const QDBusObjectPath &devicePath)
 {
     const QDBusInterface connection(NM_DBUS_SERVICE, devicePath.path(),
                                     NM_CONNECTION_DBUS_INTERFACE, QDBusConnection::systemBus());
     if (!connection.isValid())
-        return QDBusInterface({}, {});
+        return std::nullopt;
 
     const auto devicePaths = connection.property("Devices").value<QList<QDBusObjectPath>>();
     if (devicePaths.isEmpty())
-        return QDBusInterface({}, {});
+        return std::nullopt;
 
     const QDBusObjectPath primaryDevicePath = devicePaths.front();
-    return QDBusInterface(NM_DBUS_SERVICE, primaryDevicePath.path(), NM_DEVICE_DBUS_INTERFACE,
-                          QDBusConnection::systemBus());
+    return std::make_optional<QDBusInterface>(NM_DBUS_SERVICE, primaryDevicePath.path(),
+                                              NM_DEVICE_DBUS_INTERFACE,
+                                              QDBusConnection::systemBus());
 }
 
 std::optional<QDBusObjectPath> QNetworkManagerInterface::primaryConnectionDevicePath() const
@@ -160,10 +161,12 @@ auto QNetworkManagerInterface::meteredState() const -> NMMetered
 auto QNetworkManagerInterface::extractDeviceType(const QDBusObjectPath &devicePath) const
         -> NMDeviceType
 {
-    QDBusInterface primaryDevice = getPrimaryDevice(devicePath);
-    if (!primaryDevice.isValid())
+    const auto primaryDevice = getPrimaryDevice(devicePath);
+    if (!primaryDevice)
         return NM_DEVICE_TYPE_UNKNOWN;
-    const QVariant deviceType = primaryDevice.property("DeviceType");
+    if (!primaryDevice->isValid())
+        return NM_DEVICE_TYPE_UNKNOWN;
+    const QVariant deviceType = primaryDevice->property("DeviceType");
     if (!deviceType.isValid())
         return NM_DEVICE_TYPE_UNKNOWN;
     return static_cast<NMDeviceType>(deviceType.toUInt());
@@ -172,10 +175,12 @@ auto QNetworkManagerInterface::extractDeviceType(const QDBusObjectPath &devicePa
 auto QNetworkManagerInterface::extractDeviceMetered(const QDBusObjectPath &devicePath) const
         -> NMMetered
 {
-    QDBusInterface primaryDevice = getPrimaryDevice(devicePath);
-    if (!primaryDevice.isValid())
+    const auto primaryDevice = getPrimaryDevice(devicePath);
+    if (!primaryDevice)
         return NM_METERED_UNKNOWN;
-    const QVariant metered = primaryDevice.property("Metered");
+    if (!primaryDevice->isValid())
+        return NM_METERED_UNKNOWN;
+    const QVariant metered = primaryDevice->property("Metered");
     if (!metered.isValid())
         return NM_METERED_UNKNOWN;
     return static_cast<NMMetered>(metered.toUInt());
