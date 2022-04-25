@@ -13,7 +13,6 @@ input[type="radio"],
 input[type="radio"] ~ .tabcontent {
   display: none;
   margin: 0;
-  padding: 0;
 }
 
 input[type="radio"] + label {
@@ -44,10 +43,16 @@ input[type="radio"]:checked + label {
 
 /* Some styling for the content */
 div.tabcontent {
-  padding-left: 10px;
-  padding-top: 2px;
   border-left: 3px solid #ccc;
   border-top: 1px solid #ccc;
+}
+
+div.tabcontent >:first-child:not(.pre) {
+  padding-top: 2px;
+}
+
+div.tabcontent >:not(.pre) {
+  padding-left: 10px;
 }
 
 div.tabcontent pre {
