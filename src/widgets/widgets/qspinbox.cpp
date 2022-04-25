@@ -977,9 +977,8 @@ void QDoubleSpinBox::setDecimals(int decimals)
     This virtual function is used by the spin box whenever it needs to
     display the given \a value. The default implementation returns a string
     containing \a value printed using QWidget::locale().toString(\a value,
-    QLatin1Char('f'), decimals()) and will remove the thousand
-    separator unless setGroupSeparatorShown() is set. Reimplementations may
-    return anything.
+    \c u'f', decimals()) and will remove the thousand separator unless
+    setGroupSeparatorShown() is set. Reimplementations may return anything.
 
     Note: QDoubleSpinBox does not call this function for
     specialValueText() and that neither prefix() nor suffix() should
@@ -1131,7 +1130,7 @@ QVariant QSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
                        || (max >= 0 && copy == QLatin1String("+")))) {
         state = QValidator::Intermediate;
         QSBDEBUG() << __FILE__ << __LINE__<< "num is set to" << num;
-    } else if (copy.startsWith(QLatin1Char('-')) && min >= 0) {
+    } else if (copy.startsWith(u'-') && min >= 0) {
         state = QValidator::Invalid; // special-case -0 will be interpreted as 0 and thus not be invalid with a range from 0-100
     } else {
         bool ok = false;
@@ -1291,15 +1290,15 @@ QVariant QDoubleSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
         goto end;
     case 1:
         if (copy.at(0) == locale.decimalPoint()
-            || (plus && copy.at(0) == QLatin1Char('+'))
-            || (minus && copy.at(0) == QLatin1Char('-'))) {
+            || (plus && copy.at(0) == u'+')
+            || (minus && copy.at(0) == u'-')) {
             state = QValidator::Intermediate;
             goto end;
         }
         break;
     case 2:
         if (copy.at(1) == locale.decimalPoint()
-            && ((plus && copy.at(0) == QLatin1Char('+')) || (minus && copy.at(0) == QLatin1Char('-')))) {
+            && ((plus && copy.at(0) == u'+') || (minus && copy.at(0) == u'-'))) {
             state = QValidator::Intermediate;
             goto end;
         }

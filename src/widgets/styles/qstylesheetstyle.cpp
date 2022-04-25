@@ -1567,7 +1567,7 @@ public:
 #endif
         QStringList result;
         do {
-            result += QString::fromLatin1(metaObject->className()).replace(QLatin1Char(':'), QLatin1Char('-'));
+            result += QString::fromLatin1(metaObject->className()).replace(u':', u'-');
             metaObject = metaObject->superClass();
         } while (metaObject != nullptr);
         return result;
@@ -1592,8 +1592,8 @@ public:
             if (!value.isValid()) {
                 if (name == "class"_L1) {
                     QString className = QString::fromLatin1(obj->metaObject()->className());
-                    if (className.contains(QLatin1Char(':')))
-                        className.replace(QLatin1Char(':'), QLatin1Char('-'));
+                    if (className.contains(u':'))
+                        className.replace(u':', u'-');
                     valueStr = className;
                 } else if (name == "style"_L1) {
                     QWidget *w = qobject_cast<QWidget *>(obj);
@@ -1616,7 +1616,7 @@ public:
         if (value.isValid()) {
             valueStr = (value.userType() == QMetaType::QStringList
                         || value.userType() == QMetaType::QVariantList)
-                        ? value.toStringList().join(QLatin1Char(' '))
+                        ? value.toStringList().join(u' ')
                         : value.toString();
         }
         cache[name] = valueStr;
@@ -1718,7 +1718,7 @@ QList<QCss::StyleRule> QStyleSheetStyle::styleRules(const QObject *obj) const
         if (objCacheIt == styleSheetCaches->styleSheetCache.constEnd()) {
             parser.init(styleSheet);
             if (!parser.parse(&ss)) {
-                parser.init(QLatin1String("* {") + styleSheet + QLatin1Char('}'));
+                parser.init(QLatin1String("* {") + styleSheet + u'}');
                 if (Q_UNLIKELY(!parser.parse(&ss)))
                    qWarning() << "Could not parse stylesheet of object" << o;
             }
@@ -3961,7 +3961,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                     int text_flags = Qt::AlignLeft | Qt::AlignVCenter | Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine;
                     if (!styleHint(SH_UnderlineShortcut, &mi, w))
                         text_flags |= Qt::TextHideMnemonic;
-                    int t = s.indexOf(QLatin1Char('\t'));
+                    qsizetype t = s.indexOf(u'\t');
                     if (t >= 0) {
                         QRect vShortcutRect = visualRect(opt->direction, mi.rect,
                             QRect(textRect.topRight(), QPoint(mi.rect.right(), textRect.bottom())));
@@ -5365,7 +5365,7 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
             }
             if ((pe == PseudoElement_Item) && (subRule.hasBox() || subRule.hasBorder() || subRule.hasFont)) {
                 QSize sz(csz);
-                if (mi->text.contains(QLatin1Char('\t')))
+                if (mi->text.contains(u'\t'))
                     sz.rwidth() += 12; //as in QCommonStyle
                 if (!mi->icon.isNull()) {
                     const int pmSmall = pixelMetric(PM_SmallIconSize);

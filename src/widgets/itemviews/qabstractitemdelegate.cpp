@@ -605,7 +605,7 @@ QString QAbstractItemDelegatePrivate::textForRole(Qt::ItemDataRole role, const Q
     default: {
         text = value.toString();
         if (role == Qt::DisplayRole)
-            text.replace(QLatin1Char('\n'), QChar::LineSeparator);
+            text.replace(u'\n', QChar::LineSeparator);
         break;
     }
     }

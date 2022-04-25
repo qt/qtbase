@@ -1408,7 +1408,7 @@ void QTextEdit::keyPressEvent(QKeyEvent *e)
         if (cursor.atBlockStart()
             && (d->autoFormatting & AutoBulletList)
             && (text.length() == 1)
-            && (text.at(0) == QLatin1Char('-') || text.at(0) == QLatin1Char('*'))
+            && (text.at(0) == u'-' || text.at(0) == u'*')
             && (!cursor.currentList())) {
 
             d->createAutoBulletList();

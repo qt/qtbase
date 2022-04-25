@@ -983,7 +983,7 @@ static bool completeOnLoaded(const QFileSystemModel *model,
     if (prefixSize == pathSize)
         return path.compare(prefix, caseSensitivity) == 0 && isRoot(model, path);
     // The user is typing something within that directory and is not in a subdirectory yet.
-    const auto separator = QLatin1Char('/');
+    const auto separator = u'/';
     return prefix.startsWith(path, caseSensitivity) && prefix.at(pathSize) == separator
         && !QStringView{prefix}.right(prefixSize - pathSize - 1).contains(separator);
 }
@@ -1893,7 +1893,7 @@ QStringList QCompleter::splitPath(const QString& path) const
         parts[0].prepend(QLatin1String("\\\\"));
 #else
     if (pathCopy[0] == sep) // readd the "/" at the beginning as the split removed it
-        parts[0] = QLatin1Char('/');
+        parts[0] = u'/';
 #endif
 
     return parts;

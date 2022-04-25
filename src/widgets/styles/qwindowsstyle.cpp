@@ -1190,7 +1190,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
             QStringView s(menuitem->text);
             if (!s.isEmpty()) {                     // draw text
                 p->save();
-                int t = s.indexOf(QLatin1Char('\t'));
+                qsizetype t = s.indexOf(u'\t');
                 int text_flags = Qt::AlignVCenter | Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine;
                 if (!proxy()->styleHint(SH_UnderlineShortcut, menuitem, widget))
                     text_flags |= Qt::TextHideMnemonic;
@@ -2348,7 +2348,7 @@ QSize QWindowsStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             }
             int maxpmw = mi->maxIconWidth;
             int tabSpacing = 20;
-            if (mi->text.contains(QLatin1Char('\t')))
+            if (mi->text.contains(u'\t'))
                 w += tabSpacing;
             else if (mi->menuItemType == QStyleOptionMenuItem::SubMenu)
                 w += 2 * QWindowsStylePrivate::windowsArrowHMargin;

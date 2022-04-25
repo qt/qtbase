@@ -112,18 +112,18 @@ static QString buddyString(const QWidget *widget)
 /* This function will return the offset of the '&' in the text that would be
    preceding the accelerator character.
    If this text does not have an accelerator, -1 will be returned. */
-static int qt_accAmpIndex(const QString &text)
+static qsizetype qt_accAmpIndex(const QString &text)
 {
 #ifndef QT_NO_SHORTCUT
     if (text.isEmpty())
         return -1;
 
-    int fa = 0;
-    while ((fa = text.indexOf(QLatin1Char('&'), fa)) != -1) {
+    qsizetype fa = 0;
+    while ((fa = text.indexOf(u'&', fa)) != -1) {
         ++fa;
         if (fa < text.length()) {
             // ignore "&&"
-            if (text.at(fa) == QLatin1Char('&')) {
+            if (text.at(fa) == u'&') {
 
                 ++fa;
                 continue;
@@ -144,7 +144,7 @@ static int qt_accAmpIndex(const QString &text)
 QString qt_accStripAmp(const QString &text)
 {
     QString newText(text);
-    int ampIndex = qt_accAmpIndex(newText);
+    qsizetype ampIndex = qt_accAmpIndex(newText);
     if (ampIndex != -1)
         newText.remove(ampIndex, 1);
 
@@ -154,7 +154,7 @@ QString qt_accStripAmp(const QString &text)
 QString qt_accHotKey(const QString &text)
 {
 #ifndef QT_NO_SHORTCUT
-    int ampIndex = qt_accAmpIndex(text);
+    qsizetype ampIndex = qt_accAmpIndex(text);
     if (ampIndex != -1)
         return QKeySequence(Qt::ALT).toString(QKeySequence::NativeText) + text.at(ampIndex + 1);
 #else

@@ -159,7 +159,7 @@ QStyleOptionMenuItem QComboMenuDelegate::getStyleOption(const QStyleOptionViewIt
                                     qvariant_cast<QBrush>(index.data(Qt::BackgroundRole)));
     }
     menuOption.text = index.model()->data(index, Qt::DisplayRole).toString()
-                           .replace(QLatin1Char('&'), QLatin1String("&&"));
+                           .replace(u'&', QLatin1String("&&"));
     menuOption.reservedShortcutWidth = 0;
     menuOption.maxIconWidth =  option.decorationSize.width() + 4;
     menuOption.menuRect = option.rect;
@@ -398,7 +398,7 @@ QSize QComboBoxPrivate::recomputeSizeHint(QSize &sh) const
             case QComboBox::AdjustToContents:
             case QComboBox::AdjustToContentsOnFirstShow:
                 if (count == 0) {
-                    sh.rwidth() = 7 * fm.horizontalAdvance(QLatin1Char('x'));
+                    sh.rwidth() = 7 * fm.horizontalAdvance(u'x');
                 } else {
                     for (int i = 0; i < count; ++i) {
                         if (!q->itemIcon(i).isNull()) {
@@ -418,7 +418,7 @@ QSize QComboBoxPrivate::recomputeSizeHint(QSize &sh) const
                 hasIcon = !q->itemIcon(i).isNull();
         }
         if (minimumContentsLength > 0)
-            sh.setWidth(qMax(sh.width(), minimumContentsLength * fm.horizontalAdvance(QLatin1Char('X')) + (hasIcon ? iconSize.width() + 4 : 0)));
+            sh.setWidth(qMax(sh.width(), minimumContentsLength * fm.horizontalAdvance(u'X') + (hasIcon ? iconSize.width() + 4 : 0)));
         if (!placeholderText.isEmpty())
             sh.setWidth(qMax(sh.width(), fm.boundingRect(placeholderText).width()));
 

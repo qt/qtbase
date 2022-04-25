@@ -10611,7 +10611,7 @@ void QGraphicsSimpleTextItemPrivate::updateBoundingRect()
         br = QRectF();
     } else {
         QString tmp = text;
-        tmp.replace(QLatin1Char('\n'), QChar::LineSeparator);
+        tmp.replace(u'\n', QChar::LineSeparator);
         QStackTextEngine engine(tmp, font);
         QTextLayout layout(&engine);
         br = setupTextLayout(&layout);
@@ -10772,7 +10772,7 @@ void QGraphicsSimpleTextItem::paint(QPainter *painter, const QStyleOptionGraphic
     painter->setFont(d->font);
 
     QString tmp = d->text;
-    tmp.replace(QLatin1Char('\n'), QChar::LineSeparator);
+    tmp.replace(u'\n', QChar::LineSeparator);
     QStackTextEngine engine(tmp, d->font);
     QTextLayout layout(&engine);
 

@@ -206,7 +206,7 @@ QWizardField::QWizardField(QWizardPage *page, const QString &spec, QObject *obje
     : page(page), name(spec), mandatory(false), object(object), property(property),
       changedSignal(changedSignal)
 {
-    if (name.endsWith(QLatin1Char('*'))) {
+    if (name.endsWith(u'*')) {
         name.chop(1);
         mandatory = true;
     }

@@ -974,7 +974,7 @@ void QWidgetLineControl::removeSelectedText()
 */
 void QWidgetLineControl::parseInputMask(const QString &maskFields)
 {
-    int delimiter = maskFields.indexOf(QLatin1Char(';'));
+    qsizetype delimiter = maskFields.indexOf(u';');
     if (maskFields.isEmpty() || delimiter == 0) {
         if (m_maskData) {
             m_maskData.reset();
@@ -985,11 +985,11 @@ void QWidgetLineControl::parseInputMask(const QString &maskFields)
     }
 
     if (delimiter == -1) {
-        m_blank = QLatin1Char(' ');
+        m_blank = u' ';
         m_inputMask = maskFields;
     } else {
         m_inputMask = maskFields.left(delimiter);
-        m_blank = (delimiter + 1 < maskFields.length()) ? maskFields[delimiter + 1] : QLatin1Char(' ');
+        m_blank = (delimiter + 1 < maskFields.length()) ? maskFields[delimiter + 1] : u' ';
     }
 
     // calculate m_maxLength / m_maskData length
@@ -1008,10 +1008,8 @@ void QWidgetLineControl::parseInputMask(const QString &maskFields)
            continue;
         }
 
-        if (c != QLatin1Char('\\') && c != QLatin1Char('!') &&
-             c != QLatin1Char('<') && c != QLatin1Char('>') &&
-             c != QLatin1Char('{') && c != QLatin1Char('}') &&
-             c != QLatin1Char('[') && c != QLatin1Char(']'))
+        if (c != u'\\' && c != u'!' && c != u'<' && c != u'>' &&
+             c != u'{' && c != u'}' && c != u'[' && c != u']')
             m_maxLength++;
     }
 
@@ -1030,13 +1028,13 @@ void QWidgetLineControl::parseInputMask(const QString &maskFields)
             m_maskData[index].caseMode = m;
             index++;
             escape = false;
-        } else if (c == QLatin1Char('<')) {
-                m = MaskInputData::Lower;
-        } else if (c == QLatin1Char('>')) {
+        } else if (c == u'<') {
+            m = MaskInputData::Lower;
+        } else if (c == u'>') {
             m = MaskInputData::Upper;
-        } else if (c == QLatin1Char('!')) {
+        } else if (c == u'!') {
             m = MaskInputData::NoCaseMode;
-        } else if (c != QLatin1Char('{') && c != QLatin1Char('}') && c != QLatin1Char('[') && c != QLatin1Char(']')) {
+        } else if (c != u'{' && c != u'}' && c != u'[' && c != u']') {
             switch (c.unicode()) {
             case 'A':
             case 'a':
@@ -1124,23 +1122,23 @@ bool QWidgetLineControl::isValidInput(QChar key, QChar mask) const
             return true;
         break;
     case '#':
-        if (key.isNumber() || key == QLatin1Char('+') || key == QLatin1Char('-') || key == m_blank)
+        if (key.isNumber() || key == u'+' || key == u'-' || key == m_blank)
             return true;
         break;
     case 'B':
-        if (key == QLatin1Char('0') || key == QLatin1Char('1'))
+        if (key == u'0' || key == u'1')
             return true;
         break;
     case 'b':
-        if (key == QLatin1Char('0') || key == QLatin1Char('1') || key == m_blank)
+        if (key == u'0' || key == u'1' || key == m_blank)
             return true;
         break;
     case 'H':
-        if (key.isNumber() || (key >= QLatin1Char('a') && key <= QLatin1Char('f')) || (key >= QLatin1Char('A') && key <= QLatin1Char('F')))
+        if (key.isNumber() || (key >= u'a' && key <= u'f') || (key >= u'A' && key <= u'F'))
             return true;
         break;
     case 'h':
-        if (key.isNumber() || (key >= QLatin1Char('a') && key <= QLatin1Char('f')) || (key >= QLatin1Char('A') && key <= QLatin1Char('F')) || key == m_blank)
+        if (key.isNumber() || (key >= u'a' && key <= u'f') || (key >= u'A' && key <= u'F') || key == m_blank)
             return true;
         break;
     default:

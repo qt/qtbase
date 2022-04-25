@@ -95,7 +95,7 @@ public:
 
     inline static QString replaceNewLine(QString text)
         {
-            text.replace(QLatin1Char('\n'), QChar::LineSeparator);
+            text.replace(u'\n', QChar::LineSeparator);
             return text;
         }
 

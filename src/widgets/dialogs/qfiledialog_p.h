@@ -182,7 +182,7 @@ public:
     {
 #if defined(Q_OS_WIN)
         QString n(path);
-        n.replace(QLatin1Char('\\'), QLatin1Char('/'));
+        n.replace(u'\\', u'/');
         return n;
 #else // the compile should optimize away this
         return path;

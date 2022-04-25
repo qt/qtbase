@@ -179,18 +179,18 @@ static QString int2string(int num, int base, int ndigits, bool *oflow)
                 } while (n != 0);
                 len = ndigits - len;
                 if (len > 0)
-                    s += QString(len, QLatin1Char(' '));
+                    s += QString(len, u' ');
                 s += QLatin1String(p);
             }
             break;
     }
     if (negative) {
         for (int i=0; i<(int)s.length(); i++) {
-            if (s[i] != QLatin1Char(' ')) {
+            if (s[i] != u' ') {
                 if (i != 0) {
-                    s[i-1] = QLatin1Char('-');
+                    s[i-1] = u'-';
                 } else {
-                    s.insert(0, QLatin1Char('-'));
+                    s.insert(0, u'-');
                 }
                 break;
             }
@@ -217,10 +217,10 @@ static QString double2string(double num, int base, int ndigits, bool *oflow)
         int nd = ndigits;
         do {
             s = QString::asprintf("%*.*g", ndigits, nd, num);
-            int i = s.indexOf(QLatin1Char('e'));
-            if (i > 0 && s[i+1]==QLatin1Char('+')) {
-                s[i] = QLatin1Char(' ');
-                s[i+1] = QLatin1Char('e');
+            qsizetype i = s.indexOf(u'e');
+            if (i > 0 && s[i+1]==u'+') {
+                s[i] = u' ';
+                s[i+1] = u'e';
             }
         } while (nd-- && (int)s.length() > ndigits);
     }
@@ -408,9 +408,9 @@ void QLCDNumber::setDigitCount(int numDigits)
     }
     if (d->digitStr.isNull()) {                  // from constructor
         d->ndigits = numDigits;
-        d->digitStr.fill(QLatin1Char(' '), d->ndigits);
+        d->digitStr.fill(u' ', d->ndigits);
         d->points.fill(0, d->ndigits);
-        d->digitStr[d->ndigits - 1] = QLatin1Char('0'); // "0" is the default number
+        d->digitStr[d->ndigits - 1] = u'0'; // "0" is the default number
     } else {
         bool doDisplay = d->ndigits == 0;
         if (numDigits == d->ndigits)             // no change
@@ -420,7 +420,7 @@ void QLCDNumber::setDigitCount(int numDigits)
         if (numDigits > d->ndigits) {            // expand
             dif = numDigits - d->ndigits;
             QString buf;
-            buf.fill(QLatin1Char(' '), dif);
+            buf.fill(u' ', dif);
             d->digitStr.insert(0, buf);
             d->points.resize(numDigits);
             for (i=numDigits-1; i>=dif; i--)
@@ -722,18 +722,18 @@ void QLCDNumberPrivate::internalSetString(const QString& s)
         if (len == ndigits)
             buffer = s;
         else
-            buffer = s.right(ndigits).rightJustified(ndigits, QLatin1Char(' '));
+            buffer = s.right(ndigits).rightJustified(ndigits, u' ');
     } else {
         int  index = -1;
         bool lastWasPoint = true;
         newPoints.clearBit(0);
         for (i=0; i<len; i++) {
-            if (s[i] == QLatin1Char('.')) {
+            if (s[i] == u'.') {
                 if (lastWasPoint) {           // point already set for digit?
                     if (index == ndigits - 1) // no more digits
                         break;
                     index++;
-                    buffer[index] = QLatin1Char(' ');        // 2 points in a row, add space
+                    buffer[index] = u' ';        // 2 points in a row, add space
                 }
                 newPoints.setBit(index);        // set decimal point
                 lastWasPoint = true;
@@ -753,7 +753,7 @@ void QLCDNumberPrivate::internalSetString(const QString& s)
                                    newPoints.testBit(i));
             }
             for(i=0; i<ndigits-index-1; i++) {
-                buffer[i] = QLatin1Char(' ');
+                buffer[i] = u' ';
                 newPoints.clearBit(i);
             }
         }

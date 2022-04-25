@@ -85,7 +85,7 @@
 #include "qkeysequence.h"
 #define ACCEL_KEY(k) (!QCoreApplication::testAttribute(Qt::AA_DontShowShortcutsInContextMenus) \
                       && !QGuiApplicationPrivate::instance()->shortcutMap.hasShortcutForKeySequence(k) ? \
-                      QLatin1Char('\t') + QKeySequence(k).toString(QKeySequence::NativeText) : QString())
+                      u'\t' + QKeySequence(k).toString(QKeySequence::NativeText) : QString())
 #else
 #define ACCEL_KEY(k) QString()
 #endif
@@ -697,7 +697,7 @@ QSize QLineEdit::sizeHint() const
     int h = qMax(fm.height(), qMax(14, iconSize - 2)) + 2 * QLineEditPrivate::verticalMargin
             + tm.top() + tm.bottom()
             + d->topmargin + d->bottommargin;
-    int w = fm.horizontalAdvance(QLatin1Char('x')) * 17 + 2 * QLineEditPrivate::horizontalMargin
+    int w = fm.horizontalAdvance(u'x') * 17 + 2 * QLineEditPrivate::horizontalMargin
             + tm.left() + tm.right()
             + d->leftmargin + d->rightmargin; // "some"
     QStyleOptionFrame opt;

@@ -4391,7 +4391,7 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
             case SC_GroupBoxLabel: {
                 QFontMetrics fontMetrics = groupBox->fontMetrics;
                 int th = fontMetrics.height();
-                int tw = fontMetrics.size(Qt::TextShowMnemonic, groupBox->text + QLatin1Char(' ')).width();
+                int tw = fontMetrics.size(Qt::TextShowMnemonic, groupBox->text + u' ').width();
                 int marg = (groupBox->features & QStyleOptionFrame::Flat) ? 0 : 8;
                 ret = groupBox->rect.adjusted(marg, 0, -marg, 0);
 
@@ -4926,7 +4926,7 @@ QSize QCommonStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                     h = qMax(h, mi->icon.actualSize(QSize(iconExtent, iconExtent)).height() + 4);
                 }
             }
-            if (mi->text.contains(QLatin1Char('\t')))
+            if (mi->text.contains(u'\t'))
                 w += 12;
             if (maxpmw > 0)
                 w += maxpmw + 6;

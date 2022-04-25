@@ -567,7 +567,7 @@ QSize QFontComboBox::sizeHint() const
 {
     QSize sz = QComboBox::sizeHint();
     QFontMetrics fm(font());
-    sz.setWidth(fm.horizontalAdvance(QLatin1Char('m'))*14);
+    sz.setWidth(fm.horizontalAdvance(u'm') * 14);
     return sz;
 }
 

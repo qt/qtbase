@@ -906,7 +906,7 @@ QSize QAbstractSpinBox::sizeHint() const
         int h = d->edit->sizeHint().height();
         int w = 0;
         QString s;
-        QString fixedContent =  d->prefix + d->suffix + QLatin1Char(' ');
+        QString fixedContent =  d->prefix + d->suffix + u' ';
         s = d->textFromValue(d->minimum);
         s.truncate(18);
         s += fixedContent;
@@ -946,7 +946,7 @@ QSize QAbstractSpinBox::minimumSizeHint() const
         int w = 0;
 
         QString s;
-        QString fixedContent =  d->prefix + QLatin1Char(' ');
+        QString fixedContent =  d->prefix + u' ';
         s = d->textFromValue(d->minimum);
         s.truncate(18);
         s += fixedContent;

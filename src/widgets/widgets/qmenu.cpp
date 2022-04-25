@@ -432,7 +432,7 @@ void QMenuPrivate::updateActionRects(const QRect &screen) const
                 sz = QSize(2, 2);
             } else {
                 QString s = action->text();
-                int t = s.indexOf(QLatin1Char('\t'));
+                qsizetype t = s.indexOf(u'\t');
                 if (t != -1) {
                     tabWidth = qMax(int(tabWidth), qfm.horizontalAdvance(s.mid(t+1)));
                     s = s.left(t);
@@ -1637,10 +1637,10 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
     QString textAndAccel = action->text();
 #ifndef QT_NO_SHORTCUT
     if ((action->isShortcutVisibleInContextMenu() || !d->isContextMenu())
-            && textAndAccel.indexOf(QLatin1Char('\t')) == -1) {
+            && textAndAccel.indexOf(u'\t') == -1) {
         QKeySequence seq = action->shortcut();
         if (!seq.isEmpty())
-            textAndAccel += QLatin1Char('\t') + seq.toString(QKeySequence::NativeText);
+            textAndAccel += u'\t' + seq.toString(QKeySequence::NativeText);
     }
 #endif
     option->text = textAndAccel;

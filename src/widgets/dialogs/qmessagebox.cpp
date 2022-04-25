@@ -1497,19 +1497,19 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
         if (e == QKeySequence::Copy) {
             const QLatin1String separator("---------------------------\n");
             QString textToCopy;
-            textToCopy += separator + windowTitle() + QLatin1Char('\n') + separator // title
-                          + d->label->text() + QLatin1Char('\n') + separator;       // text
+            textToCopy += separator + windowTitle() + u'\n' + separator // title
+                          + d->label->text() + u'\n' + separator;       // text
 
             if (d->informativeLabel)
-                textToCopy += d->informativeLabel->text() + QLatin1Char('\n') + separator;
+                textToCopy += d->informativeLabel->text() + u'\n' + separator;
 
             const QList<QAbstractButton *> buttons = d->buttonBox->buttons();
             for (const auto *button : buttons)
                 textToCopy += button->text() + QLatin1String("   ");
-            textToCopy += QLatin1Char('\n') + separator;
+            textToCopy += u'\n' + separator;
 #if QT_CONFIG(textedit)
             if (d->detailsText)
-                textToCopy += d->detailsText->text() + QLatin1Char('\n') + separator;
+                textToCopy += d->detailsText->text() + u'\n' + separator;
 #endif
             QGuiApplication::clipboard()->setText(textToCopy);
             return;

@@ -100,7 +100,7 @@
 #include <qkeysequence.h>
 #define ACCEL_KEY(k) (!QCoreApplication::testAttribute(Qt::AA_DontShowShortcutsInContextMenus) \
                       && !QGuiApplicationPrivate::instance()->shortcutMap.hasShortcutForKeySequence(k) ? \
-                      QLatin1Char('\t') + QKeySequence(k).toString(QKeySequence::NativeText) : QString())
+                      u'\t' + QKeySequence(k).toString(QKeySequence::NativeText) : QString())
 
 #else
 #define ACCEL_KEY(k) QString()
@@ -682,7 +682,7 @@ void QWidgetTextControlPrivate::_q_contentsChanged(int from, int charsRemoved, i
         QString newText = tmp.selectedText();
 
         // always report the right number of removed chars, but in lack of the real string use spaces
-        QString oldText = QString(charsRemoved, QLatin1Char(' '));
+        QString oldText = QString(charsRemoved, u' ');
 
         QAccessibleEvent *ev = nullptr;
         if (charsRemoved == 0) {
@@ -1449,7 +1449,7 @@ QRectF QWidgetTextControlPrivate::rectForPosition(int position) const
             if (relativePos < line.textLength() - line.textStart())
                 w = line.cursorToX(relativePos + 1) - x;
             else
-                w = QFontMetrics(block.layout()->font()).horizontalAdvance(QLatin1Char(' ')); // in sync with QTextLine::draw()
+                w = QFontMetrics(block.layout()->font()).horizontalAdvance(u' '); // in sync with QTextLine::draw()
         }
         r = QRectF(layoutPos.x() + x, layoutPos.y() + line.y(),
                    cursorWidth + w, line.height());
@@ -2198,7 +2198,7 @@ QVariant QWidgetTextControl::inputMethodQuery(Qt::InputMethodQuery property, QVa
             tmpCursor.movePosition(QTextCursor::NextBlock);
             if (tmpCursor.blockNumber() == currentBlock)
                 break;
-            result += QLatin1Char('\n') + tmpCursor.block().text();
+            result += u'\n' + tmpCursor.block().text();
         }
         return QVariant(result);
     }
@@ -2219,7 +2219,7 @@ QVariant QWidgetTextControl::inputMethodQuery(Qt::InputMethodQuery property, QVa
         }
         QString result;
         while (numBlocks) {
-            result += tmpCursor.block().text() + QLatin1Char('\n');
+            result += tmpCursor.block().text() + u'\n';
             tmpCursor.movePosition(QTextCursor::NextBlock);
             --numBlocks;
         }

@@ -670,7 +670,7 @@ void JavaStyle::drawControl(ControlElement control, const QStyleOption *option,
                      textRect);
             QString s = menuitem->text;
             if (!s.isEmpty()) {
-                int t = s.indexOf(QLatin1Char('\t'));
+                qsizetype t = s.indexOf(u'\t');
                 int text_flags = Qt::AlignVCenter | Qt::TextShowMnemonic |
                  Qt::TextDontClip | Qt::TextSingleLine;
                 if (!styleHint(SH_UnderlineShortcut, menuitem, widget))
@@ -2727,7 +2727,7 @@ QSize JavaStyle::sizeFromContents(ContentsType type,
             if (!menuItem->text.isEmpty()) {
                 QFontMetrics metrics(menuItem->font);
                 QString text = menuItem->text;
-                text.remove(QLatin1Char('\t'));
+                text.remove(u'\t');
                 QRect textRect = metrics.boundingRect(text);
                 width += textRect.width();
                 if (height < textRect.height())

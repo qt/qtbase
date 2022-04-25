@@ -1065,9 +1065,9 @@ QSize QDateTimeEdit::sizeHint() const
         int h = d->edit->sizeHint().height();
         int w = 0;
         QString s;
-        s = d->textFromValue(d->minimum) + QLatin1Char(' ');
+        s = d->textFromValue(d->minimum) + u' ';
         w = qMax<int>(w, fm.horizontalAdvance(s));
-        s = d->textFromValue(d->maximum) + QLatin1Char(' ');
+        s = d->textFromValue(d->maximum) + u' ';
         w = qMax<int>(w, fm.horizontalAdvance(s));
         if (d->specialValueText.size()) {
             s = d->specialValueText;
@@ -1950,7 +1950,7 @@ int QDateTimeEditPrivate::nextPrevSection(int current, bool forward) const
 
 void QDateTimeEditPrivate::clearSection(int index)
 {
-    const QLatin1Char space(' ');
+    const auto space = u' ';
     int cursorPos = edit->cursorPosition();
     const QSignalBlocker blocker(edit);
     QString t = edit->text();

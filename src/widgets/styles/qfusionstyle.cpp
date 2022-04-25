@@ -1693,7 +1693,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             QStringView s(menuitem->text);
             if (!s.isEmpty()) {                     // draw text
                 p->save();
-                const int tabIndex = s.indexOf(QLatin1Char('\t'));
+                const qsizetype tabIndex = s.indexOf(u'\t');
                 int text_flags = Qt::AlignVCenter | Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine;
                 if (!proxy()->styleHint(SH_UnderlineShortcut, menuitem, widget))
                     text_flags |= Qt::TextHideMnemonic;
@@ -3185,7 +3185,7 @@ QSize QFusionStyle::sizeFromContents(ContentsType type, const QStyleOption *opti
     case CT_MenuItem:
         if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
             int w = size.width(); // Don't rely of QCommonStyle's width calculation here
-            if (menuItem->text.contains(QLatin1Char('\t')))
+            if (menuItem->text.contains(u'\t'))
                 w += menuItem->reservedShortcutWidth;
             else if (menuItem->menuItemType == QStyleOptionMenuItem::SubMenu)
                 w += 2 * QStyleHelper::dpiScaled(QFusionStylePrivate::menuArrowHMargin, option);

@@ -189,8 +189,8 @@ QString QTextBrowserPrivate::findFile(const QUrl &name) const
         return fileName;
 
     for (QString path : qAsConst(searchPaths)) {
-        if (!path.endsWith(QLatin1Char('/')))
-            path.append(QLatin1Char('/'));
+        if (!path.endsWith(u'/'))
+            path.append(u'/');
         path.append(fileName);
         if (QFileInfo(path).isReadable())
             return path;
@@ -336,7 +336,7 @@ void QTextBrowserPrivate::setSource(const QUrl &url, QTextDocument::ResourceType
             qWarning("QTextBrowser: No document for %s", url.toString().toLatin1().constData());
 
         if (q->isVisible()) {
-            const QStringView firstTag = QStringView{txt}.left(txt.indexOf(QLatin1Char('>')) + 1);
+            const QStringView firstTag = QStringView{txt}.left(txt.indexOf(u'>') + 1);
             if (firstTag.startsWith(QLatin1String("<qt")) && firstTag.contains(QLatin1String("type")) && firstTag.contains(QLatin1String("detail"))) {
 #ifndef QT_NO_CURSOR
                 QGuiApplication::restoreOverrideCursor();

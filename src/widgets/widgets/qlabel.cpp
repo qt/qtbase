@@ -616,7 +616,7 @@ QSize QLabelPrivate::sizeForWidth(int w) const
         int m = indent;
 
         if (m < 0 && q->frameWidth()) // no indent, but we do have a frame
-            m = fm.horizontalAdvance(QLatin1Char('x')) - margin*2;
+            m = fm.horizontalAdvance(u'x') - margin*2;
         if (m > 0) {
             if ((align & Qt::AlignLeft) || (align & Qt::AlignRight))
                 hextra += m;
@@ -1244,7 +1244,7 @@ void QLabelPrivate::updateShortcut()
     // But then we do want to hide the ampersands, so we can't use shortcutId.
     hasShortcut = false;
 
-    if (!text.contains(QLatin1Char('&')))
+    if (!text.contains(u'&'))
         return;
     hasShortcut = true;
     shortcutId = q->grabShortcut(QKeySequence::mnemonic(text));
@@ -1513,7 +1513,7 @@ QRect QLabelPrivate::documentRect() const
                                                           : q->layoutDirection(), QFlag(this->align));
     int m = indent;
     if (m < 0 && q->frameWidth()) // no indent, but we do have a frame
-        m = q->fontMetrics().horizontalAdvance(QLatin1Char('x')) / 2 - margin;
+        m = q->fontMetrics().horizontalAdvance(u'x') / 2 - margin;
     if (m > 0) {
         if (align & Qt::AlignLeft)
             cr.setLeft(cr.left() + m);

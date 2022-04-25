@@ -1205,10 +1205,10 @@ QPixmap QPixmapStylePrivate::getCachedPixmap(QPixmapStyle::ControlDescriptor con
 {
     Q_Q(const QPixmapStyle);
 
-    const QString sizeString = QString::number(size.width()) % QLatin1Char('*')
+    const QString sizeString = QString::number(size.width()) % u'*'
             % QString::number(size.height());
     const QString key = QLatin1String(q->metaObject()->className()) % QString::number(control)
-            % QLatin1Char('@') % sizeString;
+            % u'@' % sizeString;
 
     QPixmap result;
 

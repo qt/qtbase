@@ -1105,7 +1105,7 @@ void QMenuBar::keyPressEvent(QKeyEvent *e)
                 QAction *act = d->actions.at(i);
                 QString s = act->text();
                 if (!s.isEmpty()) {
-                    int ampersand = s.indexOf(QLatin1Char('&'));
+                    qsizetype ampersand = s.indexOf(u'&');
                     if (ampersand >= 0) {
                         if (s[ampersand+1].toUpper() == c) {
                             clashCount++;

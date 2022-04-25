@@ -963,10 +963,10 @@ void QFileDialog::setDirectory(const QString &directory)
         d->qFileDialogUi->newFolderButton->setEnabled(d->model->flags(root) & Qt::ItemIsDropEnabled);
         if (root != d->rootIndex()) {
 #if QT_CONFIG(fscompleter)
-            if (directory.endsWith(QLatin1Char('/')))
+            if (directory.endsWith(u'/'))
                 d->completer->setCompletionPrefix(newDirectory);
             else
-                d->completer->setCompletionPrefix(newDirectory + QLatin1Char('/'));
+                d->completer->setCompletionPrefix(newDirectory + u'/');
 #endif
             d->setRootIndex(root);
         }
@@ -1065,7 +1065,7 @@ static inline QString fileFromPath(const QString &rootPath, QString path)
     if (path.at(0) == QDir::separator()
 #ifdef Q_OS_WIN
             //On Windows both cases can happen
-            || path.at(0) == QLatin1Char('/')
+            || path.at(0) == u'/'
 #endif
             ) {
             path.remove(0, 1);
@@ -1089,8 +1089,8 @@ void QFileDialog::selectFile(const QString &filename)
         if (QFileInfo(filename).isRelative()) {
             url = d->options->initialDirectory();
             QString path = url.path();
-            if (!path.endsWith(QLatin1Char('/')))
-                path += QLatin1Char('/');
+            if (!path.endsWith(u'/'))
+                path += u'/';
             url.setPath(path + filename);
         } else {
             url = QUrl::fromLocalFile(filename);
@@ -1139,7 +1139,7 @@ void QFileDialog::selectUrl(const QUrl &url)
 #ifdef Q_OS_UNIX
 Q_AUTOTEST_EXPORT QString qt_tildeExpansion(const QString &path)
 {
-    if (!path.startsWith(QLatin1Char('~')))
+    if (!path.startsWith(u'~'))
         return path;
     int separatorPosition = path.indexOf(QDir::separator());
     if (separatorPosition < 0)
@@ -1185,7 +1185,7 @@ QStringList QFileDialogPrivate::typedFiles() const
     Q_Q(const QFileDialog);
     QStringList files;
     QString editText = lineEdit()->text();
-    if (!editText.contains(QLatin1Char('"'))) {
+    if (!editText.contains(u'"')) {
 #ifdef Q_OS_UNIX
         const QString prefix = q->directory().absolutePath() + QDir::separator();
         if (QFile::exists(prefix + editText))
@@ -1199,7 +1199,7 @@ QStringList QFileDialogPrivate::typedFiles() const
     } else {
         // " is used to separate files like so: "file1" "file2" "file3" ...
         // ### need escape character for filenames with quotes (")
-        QStringList tokens = editText.split(QLatin1Char('\"'));
+        QStringList tokens = editText.split(u'\"');
         for (int i=0; i<tokens.size(); ++i) {
             if ((i % 2) == 0)
                 continue; // Every even token is a separator
@@ -1252,7 +1252,7 @@ QStringList QFileDialogPrivate::addDefaultSuffixToFiles(const QStringList &files
         // if the filename has no suffix, add the default suffix
         const QString defaultSuffix = options->defaultSuffix();
         if (!defaultSuffix.isEmpty() && !info.isDir() && !info.fileName().contains(u'.'))
-            name += QLatin1Char('.') + defaultSuffix;
+            name += u'.' + defaultSuffix;
 
         if (info.isAbsolute()) {
             files.append(name);
@@ -1261,8 +1261,8 @@ QStringList QFileDialogPrivate::addDefaultSuffixToFiles(const QStringList &files
             // This check is needed since we might be at the root directory
             // and on Windows it already ends with slash.
             QString path = rootPath();
-            if (!path.endsWith(QLatin1Char('/')))
-                path += QLatin1Char('/');
+            if (!path.endsWith(u'/'))
+                path += u'/';
             path += name;
             files.append(path);
         }
@@ -1352,8 +1352,8 @@ QStringList qt_make_filter_list(const QString &filter)
         return QStringList();
 
     QString sep(QLatin1String(";;"));
-    if (!filter.contains(sep) && filter.contains(QLatin1Char('\n')))
-        sep = QLatin1Char('\n');
+    if (!filter.contains(sep) && filter.contains(u'\n'))
+        sep = u'\n';
 
     return filter.split(sep);
 }
@@ -1554,8 +1554,8 @@ static QString nameFilterForMime(const QString &mimeType)
         if (mime.isDefault()) {
             return QFileDialog::tr("All files (*)");
         } else {
-            const QString patterns = mime.globPatterns().join(QLatin1Char(' '));
-            return mime.comment() + QLatin1String(" (") + patterns + QLatin1Char(')');
+            const QString patterns = mime.globPatterns().join(u' ');
+            return mime.comment() + QLatin1String(" (") + patterns + u')';
         }
     }
     return QString();
@@ -3625,7 +3625,7 @@ void QFileDialogPrivate::_q_deleteCurrent()
 
 void QFileDialogPrivate::_q_autoCompleteFileName(const QString &text)
 {
-    if (text.startsWith(QLatin1String("//")) || text.startsWith(QLatin1Char('\\'))) {
+    if (text.startsWith(QLatin1String("//")) || text.startsWith(u'\\')) {
         qFileDialogUi->listView->selectionModel()->clearSelection();
         return;
     }
@@ -3667,7 +3667,7 @@ void QFileDialogPrivate::_q_updateOkButton()
     const QStringList files = q->selectedFiles();
     QString lineEditText = lineEdit()->text();
 
-    if (lineEditText.startsWith(QLatin1String("//")) || lineEditText.startsWith(QLatin1Char('\\'))) {
+    if (lineEditText.startsWith(QLatin1String("//")) || lineEditText.startsWith(u'\\')) {
         button->setEnabled(true);
         updateOkButtonText();
         return;
@@ -3697,7 +3697,7 @@ void QFileDialogPrivate::_q_updateOkButton()
             if (info.isDir()) {
                 fileDir = info.canonicalFilePath();
             } else {
-                fileDir = fn.mid(0, fn.lastIndexOf(QLatin1Char('/')));
+                fileDir = fn.mid(0, fn.lastIndexOf(u'/'));
                 fileName = fn.mid(fileDir.length() + 1);
             }
             if (lineEditText.contains(QLatin1String(".."))) {
@@ -3875,11 +3875,11 @@ void QFileDialogPrivate::_q_selectionChanged()
         allFiles.append(index.data().toString());
     }
     if (allFiles.count() > 1)
-        for (int i = 0; i < allFiles.count(); ++i) {
-            allFiles.replace(i, QString(QLatin1Char('"') + allFiles.at(i) + QLatin1Char('"')));
+        for (qsizetype i = 0; i < allFiles.count(); ++i) {
+            allFiles.replace(i, QString(u'"' + allFiles.at(i) + u'"'));
     }
 
-    QString finalFiles = allFiles.join(QLatin1Char(' '));
+    QString finalFiles = allFiles.join(u' ');
     if (!finalFiles.isEmpty() && !lineEdit()->hasFocus() && lineEdit()->isVisible())
         lineEdit()->setText(finalFiles);
     else
@@ -4003,11 +4003,11 @@ bool QFileDialogPrivate::itemViewKeyboardEvent(QKeyEvent *event) {
 QString QFileDialogPrivate::getEnvironmentVariable(const QString &string)
 {
 #ifdef Q_OS_UNIX
-    if (string.size() > 1 && string.startsWith(QLatin1Char('$'))) {
+    if (string.size() > 1 && string.startsWith(u'$')) {
         return QString::fromLocal8Bit(qgetenv(QStringView{string}.mid(1).toLatin1().constData()));
     }
 #else
-    if (string.size() > 2 && string.startsWith(QLatin1Char('%')) && string.endsWith(QLatin1Char('%'))) {
+    if (string.size() > 2 && string.startsWith(u'%') && string.endsWith(u'%')) {
         return QString::fromLocal8Bit(qgetenv(QStringView{string}.mid(1, string.size() - 2).toLatin1().constData()));
     }
 #endif
@@ -4196,7 +4196,7 @@ QString QFSCompleter::pathFromIndex(const QModelIndex &index) const
         if (currentLocation == QDir::separator())
             return path.mid(currentLocation.length());
 #endif
-        if (currentLocation.endsWith(QLatin1Char('/')))
+        if (currentLocation.endsWith(u'/'))
             return path.mid(currentLocation.length());
         else
             return path.mid(currentLocation.length()+1);
@@ -4247,7 +4247,7 @@ QStringList QFSCompleter::splitPath(const QString &path) const
 #endif
 
 #if defined(Q_OS_WIN)
-    bool startsFromRoot = !parts.isEmpty() && parts[0].endsWith(QLatin1Char(':'));
+    bool startsFromRoot = !parts.isEmpty() && parts[0].endsWith(u':');
 #else
     bool startsFromRoot = pathCopy[0] == sep;
 #endif
@@ -4259,7 +4259,7 @@ QStringList QFSCompleter::splitPath(const QString &path) const
             dirModel = sourceModel;
         QString currentLocation = QDir::toNativeSeparators(dirModel->rootPath());
 #if defined(Q_OS_WIN)
-        if (currentLocation.endsWith(QLatin1Char(':')))
+        if (currentLocation.endsWith(u':'))
             currentLocation.append(sep);
 #endif
         if (currentLocation.contains(sep) && path != currentLocation) {

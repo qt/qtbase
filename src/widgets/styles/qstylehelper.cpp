@@ -75,7 +75,7 @@ QString uniqueName(const QString &key, const QStyleOption *option, const QSize &
     if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
         tmp = tmp % HexString<uint>(spinBox->buttonSymbols)
                   % HexString<uint>(spinBox->stepEnabled)
-                  % QLatin1Char(spinBox->frame ? '1' : '0'); ;
+                  % QChar(spinBox->frame ? u'1' : u'0');
     }
 #endif // QT_CONFIG(spinbox)
 

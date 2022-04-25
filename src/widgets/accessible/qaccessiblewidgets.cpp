@@ -761,7 +761,7 @@ class AttributeFormatterRef {
 public:
     template <typename RHS>
     void operator=(RHS &&rhs)
-    { string += QLatin1String(key) + QLatin1Char(':') + std::forward<RHS>(rhs) + QLatin1Char(';'); }
+    { string += QLatin1String(key) + u':' + std::forward<RHS>(rhs) + u';'; }
 };
 
 /*!
@@ -769,7 +769,7 @@ public:
     \brief Small string-builder class that supports a map-like API to serialize key-value pairs.
     \code
     AttributeFormatter attrs;
-    attrs["foo"] = QLatinString("hello") + world + QLatin1Char('!');
+    attrs["foo"] = QLatinString("hello") + world + u'!';
     \endcode
     The key type is always \c{const char*}, and the right-hand-side can
     be any QStringBuilder expression.
@@ -858,7 +858,7 @@ QString QAccessibleTextWidget::attributes(int offset, int *startOffset, int *end
         family = family.replace(u'=', QLatin1String("\\="));
         family = family.replace(u';', QLatin1String("\\;"));
         family = family.replace(u'\"', QLatin1String("\\\""));
-        attrs["font-family"] = QLatin1Char('"') + family + QLatin1Char('"');
+        attrs["font-family"] = u'"' + family + u'"';
     }
 
     int fontSize = int(charFormatFont.pointSize());
@@ -966,7 +966,7 @@ QString QAccessibleTextWidget::text(int startOffset, int endOffset) const
     cursor.setPosition(startOffset, QTextCursor::MoveAnchor);
     cursor.setPosition(endOffset, QTextCursor::KeepAnchor);
 
-    return cursor.selectedText().replace(QChar(QChar::ParagraphSeparator), QLatin1Char('\n'));
+    return cursor.selectedText().replace(QChar(QChar::ParagraphSeparator), u'\n');
 }
 
 QPoint QAccessibleTextWidget::scrollBarPosition() const

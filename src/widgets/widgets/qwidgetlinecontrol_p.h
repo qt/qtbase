@@ -323,8 +323,8 @@ public:
         QString mask;
         if (m_maskData) {
             mask = m_inputMask;
-            if (m_blank != QLatin1Char(' ')) {
-                mask += QLatin1Char(';');
+            if (m_blank != u' ') {
+                mask += u';';
                 mask += m_blank;
             }
         }

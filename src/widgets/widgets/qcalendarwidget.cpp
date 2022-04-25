@@ -75,7 +75,7 @@ namespace {
 
 static QString formatNumber(int number, int fieldWidth)
 {
-    return QString::number(number).rightJustified(fieldWidth, QLatin1Char('0'));
+    return QString::number(number).rightJustified(fieldWidth, u'0');
 }
 
 class QCalendarDateSectionValidator
@@ -544,7 +544,7 @@ void QCalendarDateValidator::setFormat(const QString &format)
     clear();
 
     int pos = 0;
-    const QLatin1Char quote('\'');
+    const auto quote = u'\'';
     bool quoting = false;
     QString separator;
     while (pos < format.size()) {
@@ -560,13 +560,13 @@ void QCalendarDateValidator::setFormat(const QString &format)
                 quoting = false;
             } else {
                 QCalendarDateSectionValidator *validator = nullptr;
-                if (nextChar == QLatin1Char('d')) {
+                if (nextChar == u'd') {
                     offset = qMin(4, countRepeat(format, pos));
                     validator = &m_dayValidator;
-                } else if (nextChar == QLatin1Char('M')) {
+                } else if (nextChar == u'M') {
                     offset = qMin(4, countRepeat(format, pos));
                     validator = &m_monthValidator;
-                } else if (nextChar == QLatin1Char('y')) {
+                } else if (nextChar == u'y') {
                     offset = qMin(4, countRepeat(format, pos));
                     validator = &m_yearValidator;
                 } else {
