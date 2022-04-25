@@ -175,13 +175,11 @@ bool QCocoaDrag::maybeDragMultipleItems()
 
     const QMacAutoReleasePool pool;
 
-    NSWindow *theWindow = [m_lastEvent window];
-    Q_ASSERT(theWindow);
-
-    if (![theWindow.contentView respondsToSelector:@selector(draggingSession:sourceOperationMaskForDraggingContext:)])
+    NSView *view = m_lastView ? m_lastView : m_lastEvent.window.contentView;
+    if (![view respondsToSelector:@selector(draggingSession:sourceOperationMaskForDraggingContext:)])
         return false;
 
-    auto *sourceView = static_cast<NSView<NSDraggingSource>*>(theWindow.contentView);
+    auto *sourceView = static_cast<NSView<NSDraggingSource>*>(view);
 
     const auto &qtUrls = m_drag->mimeData()->urls();
     NSPasteboard *dragBoard = [NSPasteboard pasteboardWithName:NSPasteboardNameDrag];
