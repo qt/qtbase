@@ -216,6 +216,8 @@ OtoolInfo findDependencyInfo(const QString &binaryPath)
     for (const QString &outputLine : outputLines) {
         const auto match = regexp.match(outputLine);
         if (match.hasMatch()) {
+            if (match.captured(1) == info.installName)
+                continue; // Another arch reference to the same binary
             DylibInfo dylib;
             dylib.binaryPath = match.captured(1);
             dylib.compatibilityVersion = QVersionNumber::fromString(match.captured(2));
