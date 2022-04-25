@@ -55,6 +55,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     \class QTabWidget
     \brief The QTabWidget class provides a stack of tabbed widgets.
@@ -226,14 +228,14 @@ void QTabWidgetPrivate::init()
     Q_Q(QTabWidget);
 
     stack = new QStackedWidget(q);
-    stack->setObjectName(QLatin1String("qt_tabwidget_stackedwidget"));
+    stack->setObjectName("qt_tabwidget_stackedwidget"_L1);
     stack->setLineWidth(0);
     // hack so that QMacStyle::layoutSpacing() can detect tab widget pages
     stack->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred, QSizePolicy::TabWidget));
 
     QObject::connect(stack, SIGNAL(widgetRemoved(int)), q, SLOT(_q_removeTab(int)));
     QTabBar *tabBar = new QTabBar(q);
-    tabBar->setObjectName(QLatin1String("qt_tabwidget_tabbar"));
+    tabBar->setObjectName("qt_tabwidget_tabbar"_L1);
     tabBar->setDrawBase(false);
     q->setTabBar(tabBar);
 

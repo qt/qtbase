@@ -97,6 +97,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     Initialize \a option with the values from this QLineEdit. This method
     is useful for subclasses when they need a QStyleOptionFrame, but don't want
@@ -2111,7 +2113,7 @@ void QLineEdit::paintEvent(QPaintEvent *)
 void QLineEdit::dragMoveEvent(QDragMoveEvent *e)
 {
     Q_D(QLineEdit);
-    if (!d->control->isReadOnly() && e->mimeData()->hasFormat(QLatin1String("text/plain"))) {
+    if (!d->control->isReadOnly() && e->mimeData()->hasFormat("text/plain"_L1)) {
         e->acceptProposedAction();
         d->control->moveCursor(d->xToPos(e->position().toPoint().x()), false);
         d->cursorVisible = true;
@@ -2215,7 +2217,7 @@ QMenu *QLineEdit::createStandardContextMenu()
 {
     Q_D(QLineEdit);
     QMenu *popup = new QMenu(this);
-    popup->setObjectName(QLatin1String("qt_edit_menu"));
+    popup->setObjectName("qt_edit_menu"_L1);
     QAction *action = nullptr;
 
     if (!isReadOnly()) {

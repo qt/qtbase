@@ -61,6 +61,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 extern QString qt_setWindowTitle_helperHelper(const QString&, const QWidget*); // qwidget.cpp
 
 // qmainwindow.cpp
@@ -285,7 +287,7 @@ bool QDockWidgetLayout::wmSupportsNativeWindowDeco()
 #if defined(Q_OS_ANDROID)
     return false;
 #else
-    static const bool xcb = !QGuiApplication::platformName().compare(QLatin1String("xcb"), Qt::CaseInsensitive);
+    static const bool xcb = !QGuiApplication::platformName().compare("xcb"_L1, Qt::CaseInsensitive);
     return !xcb;
 #endif
 }
@@ -659,12 +661,12 @@ void QDockWidgetPrivate::init()
     layout->setSizeConstraint(QLayout::SetMinAndMaxSize);
 
     QAbstractButton *button = new QDockWidgetTitleButton(q);
-    button->setObjectName(QLatin1String("qt_dockwidget_floatbutton"));
+    button->setObjectName("qt_dockwidget_floatbutton"_L1);
     QObject::connect(button, SIGNAL(clicked()), q, SLOT(_q_toggleTopLevel()));
     layout->setWidgetForRole(QDockWidgetLayout::FloatButton, button);
 
     button = new QDockWidgetTitleButton(q);
-    button->setObjectName(QLatin1String("qt_dockwidget_closebutton"));
+    button->setObjectName("qt_dockwidget_closebutton"_L1);
     QObject::connect(button, SIGNAL(clicked()), q, SLOT(close()));
     layout->setWidgetForRole(QDockWidgetLayout::CloseButton, button);
 

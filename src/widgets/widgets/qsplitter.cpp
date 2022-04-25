@@ -62,6 +62,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 //#define QSPLITTER_DEBUG
 
 QSplitterPrivate::~QSplitterPrivate()
@@ -873,7 +875,7 @@ QSplitterLayoutStruct *QSplitterPrivate::insertWidget(int index, QWidget *w)
     } else {
         sls = new QSplitterLayoutStruct;
         QSplitterHandle *newHandle = q->createHandle();
-        newHandle->setObjectName(QLatin1String("qt_splithandle_") + w->objectName());
+        newHandle->setObjectName("qt_splithandle_"_L1 + w->objectName());
         sls->handle = newHandle;
         sls->widget = w;
         w->lower();
@@ -1340,7 +1342,7 @@ void QSplitter::setRubberBand(int pos)
         QBoolBlocker b(d->blockChildAdd);
         d->rubberBand = new QRubberBand(QRubberBand::Line, this);
         // For accessibility to identify this special widget.
-        d->rubberBand->setObjectName(QLatin1String("qt_rubberband"));
+        d->rubberBand->setObjectName("qt_rubberband"_L1);
     }
 
     const QRect newGeom = d->orient == Qt::Horizontal ? QRect(QPoint(pos + hw / 2 - rBord, r.y()), QSize(2 * rBord, r.height()))

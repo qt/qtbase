@@ -69,6 +69,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 // --- QDateTimeEdit ---
 
 /*!
@@ -2518,21 +2520,21 @@ void QDateTimeEditPrivate::init(const QVariant &var)
         updateTimeSpec();
         q->setDisplayFormat(defaultDateFormat);
         if (sectionNodes.isEmpty()) // ### safeguard for broken locale
-            q->setDisplayFormat(QLatin1String("dd/MM/yyyy"));
+            q->setDisplayFormat("dd/MM/yyyy"_L1);
         break;
     case QMetaType::QDateTime:
         value = var;
         updateTimeSpec();
         q->setDisplayFormat(defaultDateTimeFormat);
         if (sectionNodes.isEmpty()) // ### safeguard for broken locale
-            q->setDisplayFormat(QLatin1String("dd/MM/yyyy hh:mm:ss"));
+            q->setDisplayFormat("dd/MM/yyyy hh:mm:ss"_L1);
         break;
     case QMetaType::QTime:
         value = QDateTime(QDATETIMEEDIT_DATE_INITIAL, var.toTime());
         updateTimeSpec();
         q->setDisplayFormat(defaultTimeFormat);
         if (sectionNodes.isEmpty()) // ### safeguard for broken locale
-            q->setDisplayFormat(QLatin1String("hh:mm:ss"));
+            q->setDisplayFormat("hh:mm:ss"_L1);
         break;
     default:
         Q_ASSERT_X(0, "QDateTimeEditPrivate::init", "Internal error");
@@ -2636,7 +2638,7 @@ void QDateTimeEditPrivate::initCalendarPopup(QCalendarWidget *cw)
     Q_Q(QDateTimeEdit);
     if (!monthCalendar) {
         monthCalendar = new QCalendarPopup(q, cw, calendar);
-        monthCalendar->setObjectName(QLatin1String("qt_datetimedit_calendar"));
+        monthCalendar->setObjectName("qt_datetimedit_calendar"_L1);
         QObject::connect(monthCalendar, SIGNAL(newDateSelected(QDate)), q, SLOT(setDate(QDate)));
         QObject::connect(monthCalendar, SIGNAL(hidingCalendar(QDate)), q, SLOT(setDate(QDate)));
         QObject::connect(monthCalendar, SIGNAL(activated(QDate)), q, SLOT(setDate(QDate)));

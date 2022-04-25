@@ -119,6 +119,7 @@
 QT_BEGIN_NAMESPACE
 
 using namespace QNativeInterface::Private;
+using namespace Qt::StringLiterals;
 
 Q_LOGGING_CATEGORY(lcWidgetPainting, "qt.widgets.painting", QtWarningMsg);
 
@@ -6021,7 +6022,7 @@ QString QWidget::windowTitle() const
         if (!d->extra->topextra->caption.isEmpty())
             return d->extra->topextra->caption;
         if (!d->extra->topextra->filePath.isEmpty())
-            return QFileInfo(d->extra->topextra->filePath).fileName() + QLatin1String("[*]");
+            return QFileInfo(d->extra->topextra->filePath).fileName() + "[*]"_L1;
     }
     return QString();
 }
@@ -6045,7 +6046,7 @@ QString qt_setWindowTitle_helperHelper(const QString &title, const QWidget *widg
     if (cap.isEmpty())
         return cap;
 
-    QLatin1String placeHolder("[*]");
+    const auto placeHolder = "[*]"_L1;
     int index = cap.indexOf(placeHolder);
 
     // here the magic begins
@@ -6069,7 +6070,7 @@ QString qt_setWindowTitle_helperHelper(const QString &title, const QWidget *widg
         index = cap.indexOf(placeHolder, index);
     }
 
-    cap.replace(QLatin1String("[*][*]"), placeHolder);
+    cap.replace("[*][*]"_L1, placeHolder);
 
     return cap;
 }
@@ -11456,7 +11457,7 @@ void QWidgetPrivate::setWindowModified_helper()
         return;
     bool on = q->testAttribute(Qt::WA_WindowModified);
     if (!platformWindow->setWindowModified(on)) {
-        if (Q_UNLIKELY(on && !q->windowTitle().contains(QLatin1String("[*]"))))
+        if (Q_UNLIKELY(on && !q->windowTitle().contains("[*]"_L1)))
             qWarning("QWidget::setWindowModified: The window title does not contain a '[*]' placeholder");
         setWindowTitle_helper(q->windowTitle());
         setWindowIconText_helper(q->windowIconText());

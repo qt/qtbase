@@ -68,6 +68,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     \class QAbstractScrollArea
     \brief The QAbstractScrollArea widget provides a scrolling area with
@@ -282,11 +284,11 @@ void QAbstractScrollAreaPrivate::init()
 {
     Q_Q(QAbstractScrollArea);
     viewport = new QWidget(q);
-    viewport->setObjectName(QLatin1String("qt_scrollarea_viewport"));
+    viewport->setObjectName("qt_scrollarea_viewport"_L1);
     viewport->setBackgroundRole(QPalette::Base);
     viewport->setAutoFillBackground(true);
     scrollBarContainers[Qt::Horizontal] = new QAbstractScrollAreaScrollBarContainer(Qt::Horizontal, q);
-    scrollBarContainers[Qt::Horizontal]->setObjectName(QLatin1String("qt_scrollarea_hcontainer"));
+    scrollBarContainers[Qt::Horizontal]->setObjectName("qt_scrollarea_hcontainer"_L1);
     hbar = scrollBarContainers[Qt::Horizontal]->scrollBar;
     hbar->setRange(0,0);
     scrollBarContainers[Qt::Horizontal]->setVisible(false);
@@ -294,7 +296,7 @@ void QAbstractScrollAreaPrivate::init()
     QObject::connect(hbar, SIGNAL(valueChanged(int)), q, SLOT(_q_hslide(int)));
     QObject::connect(hbar, SIGNAL(rangeChanged(int,int)), q, SLOT(_q_showOrHideScrollBars()), Qt::QueuedConnection);
     scrollBarContainers[Qt::Vertical] = new QAbstractScrollAreaScrollBarContainer(Qt::Vertical, q);
-    scrollBarContainers[Qt::Vertical]->setObjectName(QLatin1String("qt_scrollarea_vcontainer"));
+    scrollBarContainers[Qt::Vertical]->setObjectName("qt_scrollarea_vcontainer"_L1);
     vbar = scrollBarContainers[Qt::Vertical]->scrollBar;
     vbar->setRange(0,0);
     scrollBarContainers[Qt::Vertical]->setVisible(false);

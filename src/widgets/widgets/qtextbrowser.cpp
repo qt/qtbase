@@ -58,6 +58,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static inline bool shouldEnableInputMethod(QTextBrowser *texbrowser)
 {
 #if defined (Q_OS_ANDROID)
@@ -169,14 +171,14 @@ Q_DECLARE_TYPEINFO(QTextBrowserPrivate::HistoryEntry, Q_RELOCATABLE_TYPE);
 QString QTextBrowserPrivate::findFile(const QUrl &name) const
 {
     QString fileName;
-    if (name.scheme() == QLatin1String("qrc")) {
-        fileName = QLatin1String(":/") + name.path();
+    if (name.scheme() == "qrc"_L1) {
+        fileName = ":/"_L1 + name.path();
     } else if (name.scheme().isEmpty()) {
         fileName = name.path();
     } else {
 #if defined(Q_OS_ANDROID)
-        if (name.scheme() == QLatin1String("assets"))
-            fileName = QLatin1String("assets:") + name.path();
+        if (name.scheme() == "assets"_L1)
+            fileName = "assets:"_L1 + name.path();
         else
 #endif
             fileName = name.toLocalFile();
@@ -207,7 +209,7 @@ QUrl QTextBrowserPrivate::resolveUrl(const QUrl &url) const
     // For the second case QUrl can merge "#someanchor" with "foo.html"
     // correctly to "foo.html#someanchor"
     if (!(currentURL.isRelative()
-          || (currentURL.scheme() == QLatin1String("file")
+          || (currentURL.scheme() == "file"_L1
               && !QFileInfo(currentURL.toLocalFile()).isAbsolute()))
           || (url.hasFragment() && url.path().isEmpty())) {
         return currentURL.resolved(url);
@@ -245,11 +247,11 @@ void QTextBrowserPrivate::_q_activateAnchor(const QString &href)
 
 #ifndef QT_NO_DESKTOPSERVICES
     bool isFileScheme =
-            url.scheme() == QLatin1String("file")
+            url.scheme() == "file"_L1
 #if defined(Q_OS_ANDROID)
-            || url.scheme() == QLatin1String("assets")
+            || url.scheme() == "assets"_L1
 #endif
-            || url.scheme() == QLatin1String("qrc");
+            || url.scheme() == "qrc"_L1;
     if ((openExternalLinks && !isFileScheme && !url.isRelative())
         || (url.isRelative() && !currentURL.isRelative() && !isFileScheme)) {
         QDesktopServices::openUrl(url);
@@ -304,9 +306,9 @@ void QTextBrowserPrivate::setSource(const QUrl &url, QTextDocument::ResourceType
     QString fileName = url.fileName();
     if (type == QTextDocument::UnknownResource) {
 #if QT_CONFIG(textmarkdownreader)
-        if (fileName.endsWith(QLatin1String(".md")) ||
-                fileName.endsWith(QLatin1String(".mkd")) ||
-                fileName.endsWith(QLatin1String(".markdown")))
+        if (fileName.endsWith(".md"_L1) ||
+                fileName.endsWith(".mkd"_L1) ||
+                fileName.endsWith(".markdown"_L1))
             type = QTextDocument::MarkdownResource;
         else
 #endif
@@ -337,7 +339,7 @@ void QTextBrowserPrivate::setSource(const QUrl &url, QTextDocument::ResourceType
 
         if (q->isVisible()) {
             const QStringView firstTag = QStringView{txt}.left(txt.indexOf(u'>') + 1);
-            if (firstTag.startsWith(QLatin1String("<qt")) && firstTag.contains(QLatin1String("type")) && firstTag.contains(QLatin1String("detail"))) {
+            if (firstTag.startsWith("<qt"_L1) && firstTag.contains("type"_L1) && firstTag.contains("detail"_L1)) {
 #ifndef QT_NO_CURSOR
                 QGuiApplication::restoreOverrideCursor();
 #endif

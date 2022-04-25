@@ -93,6 +93,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #ifndef QT_NO_ACCESSIBILITY
 
 extern QList<QWidget*> childWidgets(const QWidget *widget);
@@ -120,9 +122,9 @@ QAccessibleButton::QAccessibleButton(QWidget *w)
     // FIXME: The checkable state of the button is dynamic,
     // while we only update the controlling signal once :(
     if (button()->isCheckable())
-        addControllingSignal(QLatin1String("toggled(bool)"));
+        addControllingSignal("toggled(bool)"_L1);
     else
-        addControllingSignal(QLatin1String("clicked()"));
+        addControllingSignal("clicked()"_L1);
 }
 
 /*! Returns the button. */
@@ -687,8 +689,8 @@ QStringList QAccessibleGroupBox::keyBindingsForAction(const QString &) const
 QAccessibleLineEdit::QAccessibleLineEdit(QWidget *w, const QString &name)
 : QAccessibleWidget(w, QAccessible::EditableText, name)
 {
-    addControllingSignal(QLatin1String("textChanged(const QString&)"));
-    addControllingSignal(QLatin1String("returnPressed()"));
+    addControllingSignal("textChanged(const QString&)"_L1);
+    addControllingSignal("returnPressed()"_L1);
 }
 
 /*! Returns the line edit. */

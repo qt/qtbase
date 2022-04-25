@@ -56,6 +56,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QToolBoxButton : public QAbstractButton
 {
     Q_OBJECT
@@ -351,7 +353,7 @@ int QToolBox::insertItem(int index, QWidget *widget, const QIcon &icon, const QS
     auto &c = *newPage;
     c.widget = widget;
     c.button = new QToolBoxButton(this);
-    c.button->setObjectName(QLatin1String("qt_toolbox_toolboxbutton"));
+    c.button->setObjectName("qt_toolbox_toolboxbutton"_L1);
     connect(c.button, SIGNAL(clicked()), this, SLOT(_q_buttonClicked()));
 
     c.sv = new QScrollArea(this);

@@ -62,6 +62,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 namespace {
 struct Message {
     QString content;
@@ -188,11 +190,11 @@ static void jump(QtMsgType t, const QMessageLogContext & /*context*/, const QStr
     if (!qtMessageHandler)
         return;
 
-    QString rich = QLatin1String("<p><b>") + msgType2i18nString(t) + QLatin1String("</b></p>")
+    QString rich = "<p><b>"_L1 + msgType2i18nString(t) + "</b></p>"_L1
                    + Qt::convertFromPlainText(m, Qt::WhiteSpaceNormal);
 
     // ### work around text engine quirk
-    if (rich.endsWith(QLatin1String("</p>")))
+    if (rich.endsWith("</p>"_L1))
         rich.chop(4);
 
     if (!metFatal) {

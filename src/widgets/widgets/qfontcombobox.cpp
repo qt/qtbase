@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static QFontDatabase::WritingSystem writingSystemFromScript(QLocale::Script script)
 {
     switch (script) {
@@ -287,7 +289,7 @@ void QFontFamilyDelegate::paint(QPainter *painter,
 
     const QString sampleText = comboPrivate->sampleTextForFontFamily.value(text, comboPrivate->sampleTextForWritingSystem.value(system));
     if (system != QFontDatabase::Any || !sampleText.isEmpty()) {
-        int w = painter->fontMetrics().horizontalAdvance(text + QLatin1String("  "));
+        int w = painter->fontMetrics().horizontalAdvance(text + "  "_L1);
         painter->setFont(font2);
         const QString sample = !sampleText.isEmpty() ? sampleText : QFontDatabase::writingSystemSample(system);
         if (option.direction == Qt::RightToLeft)
@@ -350,7 +352,7 @@ void QFontComboBoxPrivate::_q_updateModel()
                 continue;
         }
         result += list.at(i);
-        if (list.at(i) == fi.family() || list.at(i).startsWith(fi.family() + QLatin1String(" [")))
+        if (list.at(i) == fi.family() || list.at(i).startsWith(fi.family() + " ["_L1))
             offset = result.count() - 1;
     }
     list = result;

@@ -72,6 +72,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     \class QAbstractSpinBox
     \brief The QAbstractSpinBox class provides a spinbox and a line edit to
@@ -1096,7 +1098,7 @@ void QAbstractSpinBox::keyPressEvent(QKeyEvent *event)
 
     case Qt::Key_U:
         if (event->modifiers() & Qt::ControlModifier
-            && QGuiApplication::platformName() == QLatin1String("xcb")) { // only X11
+            && QGuiApplication::platformName() == "xcb"_L1) { // only X11
             event->accept();
             if (!isReadOnly())
                 clear();
@@ -1625,7 +1627,7 @@ void QAbstractSpinBoxPrivate::init()
     Q_Q(QAbstractSpinBox);
 
     q->setLineEdit(new QLineEdit(q));
-    edit->setObjectName(QLatin1String("qt_spinbox_lineedit"));
+    edit->setObjectName("qt_spinbox_lineedit"_L1);
     validator = new QSpinBoxValidator(q, this);
     edit->setValidator(validator);
 
@@ -1969,7 +1971,7 @@ QVariant QAbstractSpinBoxPrivate::calculateAdaptiveDecimalStep(int steps) const
 QSpinBoxValidator::QSpinBoxValidator(QAbstractSpinBox *qp, QAbstractSpinBoxPrivate *dp)
     : QValidator(qp), qptr(qp), dptr(dp)
 {
-    setObjectName(QLatin1String("qt_spinboxvalidator"));
+    setObjectName("qt_spinboxvalidator"_L1);
 }
 
 /*!

@@ -76,6 +76,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QString qt_accStripAmp(const QString &text);
 QString qt_accHotKey(const QString &text);
 
@@ -517,9 +519,9 @@ QAccessibleAbstractScrollArea::elementType(QWidget *widget) const
         return Self;
     if (widget == abstractScrollArea()->viewport())
         return Viewport;
-    if (widget->objectName() == QLatin1String("qt_scrollarea_hcontainer"))
+    if (widget->objectName() == "qt_scrollarea_hcontainer"_L1)
         return HorizontalContainer;
-    if (widget->objectName() == QLatin1String("qt_scrollarea_vcontainer"))
+    if (widget->objectName() == "qt_scrollarea_vcontainer"_L1)
         return VerticalContainer;
     if (widget == abstractScrollArea()->cornerWidget())
         return CornerWidget;

@@ -60,6 +60,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QLabelPrivate::QLabelPrivate()
     : QFramePrivate(),
       sh(),
@@ -1555,11 +1557,11 @@ void QLabelPrivate::ensureTextPopulated() const
                 int from = 0;
                 bool found = false;
                 QTextCursor cursor;
-                while (!(cursor = control->document()->find((QLatin1String("&")), from)).isNull()) {
+                while (!(cursor = control->document()->find(("&"_L1), from)).isNull()) {
                     cursor.deleteChar(); // remove the ampersand
                     cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
                     from = cursor.position();
-                    if (!found && cursor.selectedText() != QLatin1String("&")) { //not a second &
+                    if (!found && cursor.selectedText() != "&"_L1) { //not a second &
                         found = true;
                         shortcutCursor = cursor;
                     }

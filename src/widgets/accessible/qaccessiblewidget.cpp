@@ -68,6 +68,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static QList<QWidget*> childWidgets(const QWidget *widget)
 {
     QList<QWidget*> widgets;
@@ -78,8 +80,8 @@ static QList<QWidget*> childWidgets(const QWidget *widget)
 #if QT_CONFIG(menu)
             && !qobject_cast<QMenu*>(w)
 #endif
-            && w->objectName() != QLatin1String("qt_rubberband")
-            && w->objectName() != QLatin1String("qt_spinbox_lineedit"))
+            && w->objectName() != "qt_rubberband"_L1
+            && w->objectName() != "qt_spinbox_lineedit"_L1)
             widgets.append(w);
     }
     return widgets;
@@ -148,7 +150,7 @@ QString qt_accStripAmp(const QString &text)
     if (ampIndex != -1)
         newText.remove(ampIndex, 1);
 
-    return newText.replace(QLatin1String("&&"), QLatin1String("&"));
+    return newText.replace("&&"_L1, "&"_L1);
 }
 
 QString qt_accHotKey(const QString &text)

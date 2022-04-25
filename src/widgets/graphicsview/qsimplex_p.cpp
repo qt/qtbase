@@ -46,6 +46,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
   \internal
   \class QSimplex
@@ -354,7 +356,7 @@ void QSimplex::dumpMatrix()
 {
     qDebug("---- Simplex Matrix ----\n");
 
-    QString str(QLatin1String("       "));
+    QString str("       "_L1);
     for (int j = 0; j < columns; ++j)
         str += QString::fromLatin1("  <%1 >").arg(j, 2);
     qDebug("%s", qPrintable(str));

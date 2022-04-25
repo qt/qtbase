@@ -52,6 +52,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QProgressBarPrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QProgressBar)
@@ -89,7 +91,7 @@ QProgressBarPrivate::QProgressBarPrivate()
 void QProgressBarPrivate::initDefaultFormat()
 {
     if (defaultFormat)
-        format = QLatin1String("%p") + locale.percent();
+        format = "%p"_L1 + locale.percent();
 }
 
 void QProgressBarPrivate::init()
@@ -152,10 +154,9 @@ bool QProgressBarPrivate::repaintRequired() const
 
     const auto totalSteps = qint64(maximum) - minimum;
     if (textVisible) {
-        if ((format.contains(QLatin1String("%v"))))
+        if (format.contains("%v"_L1))
             return true;
-        if ((format.contains(QLatin1String("%p"))
-             && valueDifference >= qAbs(totalSteps / 100)))
+        if (format.contains("%p"_L1) && valueDifference >= qAbs(totalSteps / 100))
             return true;
     }
 
@@ -468,19 +469,19 @@ QString QProgressBar::text() const
     QString result = d->format;
     QLocale locale = d->locale; // Omit group separators for compatibility with previous versions that were non-localized.
     locale.setNumberOptions(locale.numberOptions() | QLocale::OmitGroupSeparator);
-    result.replace(QLatin1String("%m"), locale.toString(totalSteps));
-    result.replace(QLatin1String("%v"), locale.toString(d->value));
+    result.replace("%m"_L1, locale.toString(totalSteps));
+    result.replace("%v"_L1, locale.toString(d->value));
 
     // If max and min are equal and we get this far, it means that the
     // progress bar has one step and that we are on that step. Return
     // 100% here in order to avoid division by zero further down.
     if (totalSteps == 0) {
-        result.replace(QLatin1String("%p"), locale.toString(100));
+        result.replace("%p"_L1, locale.toString(100));
         return result;
     }
 
     const auto progress = static_cast<int>((qint64(d->value) - d->minimum) * 100.0 / totalSteps);
-    result.replace(QLatin1String("%p"), locale.toString(progress));
+    result.replace("%p"_L1, locale.toString(progress));
     return result;
 }
 

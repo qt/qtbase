@@ -110,6 +110,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 // could go into QTextCursor...
 static QTextLine currentTextLine(const QTextCursor &cursor)
 {
@@ -2709,8 +2711,8 @@ bool QWidgetTextControl::canInsertFromMimeData(const QMimeData *source) const
     if (d->acceptRichText)
         return (source->hasText() && !source->text().isEmpty())
             || source->hasHtml()
-            || source->hasFormat(QLatin1String("application/x-qrichtext"))
-            || source->hasFormat(QLatin1String("application/x-qt-richtext"));
+            || source->hasFormat("application/x-qrichtext"_L1)
+            || source->hasFormat("application/x-qt-richtext"_L1);
     else
         return source->hasText() && !source->text().isEmpty();
 }
@@ -2724,10 +2726,10 @@ void QWidgetTextControl::insertFromMimeData(const QMimeData *source)
     bool hasData = false;
     QTextDocumentFragment fragment;
 #ifndef QT_NO_TEXTHTMLPARSER
-    if (source->hasFormat(QLatin1String("application/x-qrichtext")) && d->acceptRichText) {
+    if (source->hasFormat("application/x-qrichtext"_L1) && d->acceptRichText) {
         // x-qrichtext is always UTF-8 (taken from Qt3 since we don't use it anymore).
-        const QString richtext = QLatin1String("<meta name=\"qrichtext\" content=\"1\" />")
-                + QString::fromUtf8(source->data(QLatin1String("application/x-qrichtext")));
+        const QString richtext = "<meta name=\"qrichtext\" content=\"1\" />"_L1
+                + QString::fromUtf8(source->data("application/x-qrichtext"_L1));
         fragment = QTextDocumentFragment::fromHtml(richtext, d->doc);
         hasData = true;
     } else if (source->hasHtml() && d->acceptRichText) {
@@ -3479,7 +3481,7 @@ void QTextEditMimeData::setup() const
 {
     QTextEditMimeData *that = const_cast<QTextEditMimeData *>(this);
 #ifndef QT_NO_TEXTHTMLPARSER
-    that->setData(QLatin1String("text/html"), fragment.toHtml().toUtf8());
+    that->setData("text/html"_L1, fragment.toHtml().toUtf8());
 #endif
 #ifndef QT_NO_TEXTODFWRITER
     {
@@ -3487,7 +3489,7 @@ void QTextEditMimeData::setup() const
         QTextDocumentWriter writer(&buffer, "ODF");
         writer.write(fragment);
         buffer.close();
-        that->setData(QLatin1String("application/vnd.oasis.opendocument.text"), buffer.data());
+        that->setData("application/vnd.oasis.opendocument.text"_L1, buffer.data());
     }
 #endif
     that->setText(fragment.toRawText());

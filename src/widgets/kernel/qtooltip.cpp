@@ -62,6 +62,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     \class QToolTip
 
@@ -372,7 +374,7 @@ void QTipLabel::placeTip(const QPoint &pos, QWidget *w)
         //the stylesheet need to know the real parent
         QTipLabel::instance->setProperty("_q_stylesheet_parent", QVariant::fromValue(w));
         //we force the style to be the QStyleSheetStyle, and force to clear the cache as well.
-        QTipLabel::instance->setStyleSheet(QLatin1String("/* */"));
+        QTipLabel::instance->setStyleSheet("/* */"_L1);
 
         // Set up for cleaning up this later...
         QTipLabel::instance->styleSheetParent = w;
@@ -492,7 +494,7 @@ void QToolTip::showText(const QPoint &pos, const QString &text, QWidget *w, cons
         QWidgetPrivate::get(QTipLabel::instance)->setScreen(QTipLabel::getTipScreen(pos, w));
         QTipLabel::instance->setTipRect(w, rect);
         QTipLabel::instance->placeTip(pos, w);
-        QTipLabel::instance->setObjectName(QLatin1String("qtooltip_label"));
+        QTipLabel::instance->setObjectName("qtooltip_label"_L1);
 
 #if QT_CONFIG(effects)
         if (QApplication::isEffectEnabled(Qt::UI_FadeTooltip))

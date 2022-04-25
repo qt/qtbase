@@ -82,6 +82,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 namespace {
 class QColorLuminancePicker;
 class QColorPicker;
@@ -1666,7 +1668,7 @@ void QColorDialogPrivate::releaseColorPicking()
 #endif
     q->releaseKeyboard();
     q->setMouseTracking(false);
-    lblScreenColorInfo->setText(QLatin1String("\n"));
+    lblScreenColorInfo->setText("\n"_L1);
     addCusBt->setDisabled(false);
     buttons->setDisabled(false);
     screenColorPickerButton->setDisabled(false);
@@ -1734,7 +1736,7 @@ void QColorDialogPrivate::initWidgets()
         if (supportsColorPicking()) {
             screenColorPickerButton = new QPushButton();
             leftLay->addWidget(screenColorPickerButton);
-            lblScreenColorInfo = new QLabel(QLatin1String("\n"));
+            lblScreenColorInfo = new QLabel("\n"_L1);
             leftLay->addWidget(lblScreenColorInfo);
             q->connect(screenColorPickerButton, SIGNAL(clicked()), SLOT(_q_pickScreenColor()));
         } else {

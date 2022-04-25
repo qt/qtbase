@@ -72,6 +72,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #if defined(Q_OS_WIN)
 HMENU qt_getWindowsSystemMenu(const QWidget *w)
 {
@@ -270,16 +272,16 @@ void QMessageBoxPrivate::init(const QString &title, const QString &text)
     Q_Q(QMessageBox);
 
     label = new QLabel;
-    label->setObjectName(QLatin1String("qt_msgbox_label"));
+    label->setObjectName("qt_msgbox_label"_L1);
     label->setTextInteractionFlags(Qt::TextInteractionFlags(q->style()->styleHint(QStyle::SH_MessageBox_TextInteractionFlags, nullptr, q)));
     label->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
     label->setOpenExternalLinks(true);
     iconLabel = new QLabel(q);
-    iconLabel->setObjectName(QLatin1String("qt_msgboxex_icon_label"));
+    iconLabel->setObjectName("qt_msgboxex_icon_label"_L1);
     iconLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     buttonBox = new QDialogButtonBox;
-    buttonBox->setObjectName(QLatin1String("qt_msgbox_buttonbox"));
+    buttonBox->setObjectName("qt_msgbox_buttonbox"_L1);
     buttonBox->setCenterButtons(q->style()->styleHint(QStyle::SH_MessageBox_CenterButtons, nullptr, q));
     QObject::connect(buttonBox, SIGNAL(clicked(QAbstractButton*)),
                      q, SLOT(_q_buttonClicked(QAbstractButton*)));
@@ -1495,7 +1497,7 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
 
 #if defined(Q_OS_WIN)
         if (e == QKeySequence::Copy) {
-            const QLatin1String separator("---------------------------\n");
+            const auto separator = "---------------------------\n"_L1;
             QString textToCopy;
             textToCopy += separator + windowTitle() + u'\n' + separator // title
                           + d->label->text() + u'\n' + separator;       // text
@@ -1505,7 +1507,7 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
 
             const QList<QAbstractButton *> buttons = d->buttonBox->buttons();
             for (const auto *button : buttons)
-                textToCopy += button->text() + QLatin1String("   ");
+                textToCopy += button->text() + "   "_L1;
             textToCopy += u'\n' + separator;
 #if QT_CONFIG(textedit)
             if (d->detailsText)
@@ -1870,7 +1872,7 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
     translatedTextAboutQtCaption = QMessageBox::tr(
         "<h3>About Qt</h3>"
         "<p>This program uses Qt version %1.</p>"
-        ).arg(QLatin1String(QT_VERSION_STR));
+        ).arg(QT_VERSION_STR ""_L1);
     //: Leave this text untranslated or include a verbatim copy of it below
     //: and note that it is the authoritative version in case of doubt.
     const QString translatedTextAboutQtText = QMessageBox::tr(
@@ -1904,7 +1906,7 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
     msgBox->setText(translatedTextAboutQtCaption);
     msgBox->setInformativeText(translatedTextAboutQtText);
 
-    QPixmap pm(QLatin1String(":/qt-project.org/qmessagebox/images/qtlogo-64.png"));
+    QPixmap pm(":/qt-project.org/qmessagebox/images/qtlogo-64.png"_L1);
     if (!pm.isNull())
         msgBox->setIconPixmap(pm);
 
@@ -2565,7 +2567,7 @@ void QMessageBox::setInformativeText(const QString &text)
     } else {
         if (!d->informativeLabel) {
             QLabel *label = new QLabel;
-            label->setObjectName(QLatin1String("qt_msgbox_informativelabel"));
+            label->setObjectName("qt_msgbox_informativelabel"_L1);
             label->setTextInteractionFlags(Qt::TextInteractionFlags(style()->styleHint(QStyle::SH_MessageBox_TextInteractionFlags, nullptr, this)));
             label->setAlignment(Qt::AlignTop | Qt::AlignLeft);
             label->setOpenExternalLinks(true);

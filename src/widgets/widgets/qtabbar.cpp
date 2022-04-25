@@ -1550,7 +1550,7 @@ static QString computeElidedText(Qt::TextElideMode mode, const QString &text)
     if (text.length() <= 3)
         return text;
 
-    static const QLatin1String Ellipses("...");
+    static const auto Ellipses = "..."_L1;
     QString ret;
     switch (mode) {
     case Qt::ElideRight:

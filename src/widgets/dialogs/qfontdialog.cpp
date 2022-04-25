@@ -63,6 +63,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QFontListView : public QListView
 {
     Q_OBJECT
@@ -228,7 +230,7 @@ void QFontDialogPrivate::init()
     sampleEdit->setAlignment(Qt::AlignCenter);
     // Note that the sample text is *not* translated with tr(), as the
     // characters used depend on the charset encoding.
-    sampleEdit->setText(QLatin1String("AaBbYyZz"));
+    sampleEdit->setText("AaBbYyZz"_L1);
     hbox->addWidget(sampleEdit);
 
     writingSystemCombo = new QComboBox(q);
@@ -326,7 +328,7 @@ void QFontDialogPrivate::init()
 
     familyList->setFocus();
     retranslateStrings();
-    sampleEdit->setObjectName(QLatin1String("qt_fontDialog_sampleEdit"));
+    sampleEdit->setObjectName("qt_fontDialog_sampleEdit"_L1);
 }
 
 /*!
@@ -583,20 +585,20 @@ void QFontDialogPrivate::updateStyles()
                  }
             }
             if (!found && first) {
-                if (cstyle.contains(QLatin1String("Italic"))) {
-                    cstyle.replace(QLatin1String("Italic"), QLatin1String("Oblique"));
+                if (cstyle.contains("Italic"_L1)) {
+                    cstyle.replace("Italic"_L1, "Oblique"_L1);
                     first = false;
                     goto redo;
-                } else if (cstyle.contains(QLatin1String("Oblique"))) {
-                    cstyle.replace(QLatin1String("Oblique"), QLatin1String("Italic"));
+                } else if (cstyle.contains("Oblique"_L1)) {
+                    cstyle.replace("Oblique"_L1, "Italic"_L1);
                     first = false;
                     goto redo;
-                } else if (cstyle.contains(QLatin1String("Regular"))) {
-                    cstyle.replace(QLatin1String("Regular"), QLatin1String("Normal"));
+                } else if (cstyle.contains("Regular"_L1)) {
+                    cstyle.replace("Regular"_L1, "Normal"_L1);
                     first = false;
                     goto redo;
-                } else if (cstyle.contains(QLatin1String("Normal"))) {
-                    cstyle.replace(QLatin1String("Normal"), QLatin1String("Regular"));
+                } else if (cstyle.contains("Normal"_L1)) {
+                    cstyle.replace("Normal"_L1, "Regular"_L1);
                     first = false;
                     goto redo;
                 }

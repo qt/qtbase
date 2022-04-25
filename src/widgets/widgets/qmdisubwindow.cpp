@@ -174,6 +174,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 using namespace QMdi;
 
 static const QStyle::SubControl SubControls[] =
@@ -286,7 +288,7 @@ QString QMdiSubWindowPrivate::originalWindowTitle()
     if (originalTitle.isNull()) {
         originalTitle = originalWindowTitleHelper();
         if (originalTitle.isNull())
-            originalTitle = QLatin1String("");
+            originalTitle = ""_L1;
     }
     return originalTitle;
 }
@@ -1919,7 +1921,7 @@ void QMdiSubWindowPrivate::enterRubberBandMode()
     if (!rubberBand) {
         rubberBand = new QRubberBand(QRubberBand::Rectangle, q->parentWidget());
         // For accessibility to identify this special widget.
-        rubberBand->setObjectName(QLatin1String("qt_rubberband"));
+        rubberBand->setObjectName("qt_rubberband"_L1);
     }
     QPoint rubberBandPos = q->mapToParent(QPoint(0, 0));
     rubberBand->setGeometry(rubberBandPos.x(), rubberBandPos.y(),
@@ -2216,7 +2218,7 @@ void QMdiSubWindowPrivate::updateInternalWindowTitle()
     Q_Q(QMdiSubWindow);
     if (q->isWindowModified()) {
         windowTitle = q->windowTitle();
-        windowTitle.replace(QLatin1String("[*]"), QLatin1String("*"));
+        windowTitle.replace("[*]"_L1, "*"_L1);
     } else {
         windowTitle = qt_setWindowTitle_helperHelper(q->windowTitle(), q);
     }
@@ -2334,10 +2336,8 @@ void QMdiSubWindow::setWidget(QWidget *widget)
         d->updateWindowTitle(true);
         isWindowModified = d->baseWidget->isWindowModified();
     }
-    if (!this->isWindowModified() && isWindowModified
-            && windowTitle().contains(QLatin1String("[*]"))) {
+    if (!this->isWindowModified() && isWindowModified && windowTitle().contains("[*]"_L1))
         setWindowModified(isWindowModified);
-    }
     d->lastChildWindowTitle = d->baseWidget->windowTitle();
     d->ignoreWindowTitleChange = false;
 
@@ -2770,7 +2770,7 @@ bool QMdiSubWindow::eventFilter(QObject *object, QEvent *event)
         bool windowModified = d->baseWidget->isWindowModified();
         if (!windowModified && d->baseWidget->windowTitle() != windowTitle())
             break;
-        if (windowTitle().contains(QLatin1String("[*]")))
+        if (windowTitle().contains("[*]"_L1))
             setWindowModified(windowModified);
         break;
     }
@@ -2871,7 +2871,7 @@ bool QMdiSubWindow::event(QEvent *event)
         d->updateInternalWindowTitle();
         break;
     case QEvent::ModifiedChange:
-        if (!windowTitle().contains(QLatin1String("[*]")))
+        if (!windowTitle().contains("[*]"_L1))
             break;
 #if QT_CONFIG(menubar)
         if (maximizedButtonsWidget() && d->controlContainer->menuBar() && d->controlContainer->menuBar()

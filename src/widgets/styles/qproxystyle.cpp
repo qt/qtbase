@@ -48,6 +48,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     \class QProxyStyle
 
@@ -106,7 +108,7 @@ void QProxyStylePrivate::ensureBaseStyle() const
         baseStyle = QStyleFactory::create(QApplicationPrivate::desktopStyleKey());
 
     if (!baseStyle) // Fallback to windows style
-        baseStyle = QStyleFactory::create(QLatin1String("windows"));
+        baseStyle = QStyleFactory::create("windows"_L1);
 
     baseStyle->setProxy(const_cast<QProxyStyle*>(q));
     baseStyle->setParent(const_cast<QProxyStyle*>(q)); // Take ownership

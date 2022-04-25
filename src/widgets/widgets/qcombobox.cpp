@@ -87,6 +87,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QComboBoxPrivate::QComboBoxPrivate()
     : QWidgetPrivate(),
       shownOnce(false),
@@ -158,8 +160,7 @@ QStyleOptionMenuItem QComboMenuDelegate::getStyleOption(const QStyleOptionViewIt
         menuOption.palette.setBrush(QPalette::All, QPalette::Window,
                                     qvariant_cast<QBrush>(index.data(Qt::BackgroundRole)));
     }
-    menuOption.text = index.model()->data(index, Qt::DisplayRole).toString()
-                           .replace(u'&', QLatin1String("&&"));
+    menuOption.text = index.model()->data(index, Qt::DisplayRole).toString().replace(u'&', "&&"_L1);
     menuOption.reservedShortcutWidth = 0;
     menuOption.maxIconWidth =  option.decorationSize.width() + 4;
     menuOption.menuRect = option.rect;

@@ -128,7 +128,7 @@ public:
     QVariant value, minimum, maximum, singleStep;
     QRect hoverRect;
 
-    mutable QString cachedText = QLatin1String("\x01");
+    mutable QString cachedText = { u'\x01' };
     mutable QVariant cachedValue;
     mutable QSize cachedSizeHint, cachedMinimumSizeHint;
     QLineEdit *edit = nullptr;

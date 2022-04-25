@@ -121,6 +121,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static qreal qt_getDevicePixelRatio(const QWidget *widget)
 {
     return widget ? widget->devicePixelRatio() : qApp->devicePixelRatio();
@@ -732,7 +734,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
             QRect r = opt->rect;
             int size = qMin(r.height(), r.width());
             QPixmap pixmap;
-            QString pixmapName = QStyleHelper::uniqueName(QLatin1String("$qt_ia-")
+            QString pixmapName = QStyleHelper::uniqueName("$qt_ia-"_L1
                                                           % QLatin1String(metaObject()->className()), opt, QSize(size, size))
                                  % HexString<uint>(pe);
             if (!QPixmapCache::find(pixmapName, &pixmap)) {
@@ -2586,7 +2588,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
             const bool vertical = !(pb->state & QStyle::State_Horizontal);
             if (!vertical) {
                 if (pb->textVisible)
-                    textw = qMax(pb->fontMetrics.horizontalAdvance(pb->text), pb->fontMetrics.horizontalAdvance(QLatin1String("100%"))) + 6;
+                    textw = qMax(pb->fontMetrics.horizontalAdvance(pb->text), pb->fontMetrics.horizontalAdvance("100%"_L1)) + 6;
             }
 
             if ((pb->textAlignment & Qt::AlignCenter) == 0) {
@@ -5468,145 +5470,139 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
         switch (sp) {
         case SP_DialogYesButton:
         case SP_DialogOkButton:
-            pixmap = QIcon::fromTheme(QLatin1String("dialog-ok")).pixmap(16);
+            pixmap = QIcon::fromTheme("dialog-ok"_L1).pixmap(16);
             break;
         case SP_DialogApplyButton:
-            pixmap = QIcon::fromTheme(QLatin1String("dialog-ok-apply")).pixmap(16);
+            pixmap = QIcon::fromTheme("dialog-ok-apply"_L1).pixmap(16);
             break;
         case SP_DialogDiscardButton:
-            pixmap = QIcon::fromTheme(QLatin1String("edit-delete")).pixmap(16);
+            pixmap = QIcon::fromTheme("edit-delete"_L1).pixmap(16);
             break;
         case SP_DialogCloseButton:
-            pixmap = QIcon::fromTheme(QLatin1String("dialog-close")).pixmap(16);
+            pixmap = QIcon::fromTheme("dialog-close"_L1).pixmap(16);
             break;
         case SP_DirHomeIcon:
-            pixmap = QIcon::fromTheme(QLatin1String("user-home")).pixmap(16);
+            pixmap = QIcon::fromTheme("user-home"_L1).pixmap(16);
             break;
         case SP_MessageBoxInformation:
-            pixmap = QIcon::fromTheme(QLatin1String("messagebox_info")).pixmap(16);
+            pixmap = QIcon::fromTheme("messagebox_info"_L1).pixmap(16);
             break;
         case SP_MessageBoxWarning:
-            pixmap = QIcon::fromTheme(QLatin1String("messagebox_warning")).pixmap(16);
+            pixmap = QIcon::fromTheme("messagebox_warning"_L1).pixmap(16);
             break;
         case SP_MessageBoxCritical:
-            pixmap = QIcon::fromTheme(QLatin1String("messagebox_critical")).pixmap(16);
+            pixmap = QIcon::fromTheme("messagebox_critical"_L1).pixmap(16);
             break;
         case SP_MessageBoxQuestion:
-            pixmap = QIcon::fromTheme(QLatin1String("help")).pixmap(16);
+            pixmap = QIcon::fromTheme("help"_L1).pixmap(16);
             break;
         case SP_DialogOpenButton:
         case SP_DirOpenIcon:
-            pixmap = QIcon::fromTheme(QLatin1String("folder-open")).pixmap(16);
+            pixmap = QIcon::fromTheme("folder-open"_L1).pixmap(16);
             break;
         case SP_FileIcon:
-            pixmap = QIcon::fromTheme(QLatin1String("text-x-generic"),
-                                      QIcon::fromTheme(QLatin1String("empty"))).pixmap(16);
+            pixmap = QIcon::fromTheme("text-x-generic"_L1, QIcon::fromTheme("empty"_L1)).pixmap(16);
             break;
         case SP_DirClosedIcon:
         case SP_DirIcon:
-                pixmap = QIcon::fromTheme(QLatin1String("folder")).pixmap(16);
+                pixmap = QIcon::fromTheme("folder"_L1).pixmap(16);
                 break;
         case SP_DriveFDIcon:
-                pixmap = QIcon::fromTheme(QLatin1String("media-floppy"),
-                                          QIcon::fromTheme(QLatin1String("3floppy_unmount"))).pixmap(16);
+                pixmap = QIcon::fromTheme("media-floppy"_L1,
+                                          QIcon::fromTheme("3floppy_unmount"_L1)).pixmap(16);
                 break;
         case SP_ComputerIcon:
-                pixmap = QIcon::fromTheme(QLatin1String("computer"),
-                                          QIcon::fromTheme(QLatin1String("system"))).pixmap(16);
+                pixmap = QIcon::fromTheme("computer"_L1, QIcon::fromTheme("system"_L1)).pixmap(16);
                 break;
         case SP_DesktopIcon:
-                pixmap = QIcon::fromTheme(QLatin1String("user-desktop"),
-                                          QIcon::fromTheme(QLatin1String("desktop"))).pixmap(16);
+                pixmap = QIcon::fromTheme("user-desktop"_L1,
+                                          QIcon::fromTheme("desktop"_L1)).pixmap(16);
                 break;
         case SP_TrashIcon:
-                pixmap = QIcon::fromTheme(QLatin1String("user-trash"),
-                                          QIcon::fromTheme(QLatin1String("trashcan_empty"))).pixmap(16);
+                pixmap = QIcon::fromTheme("user-trash"_L1,
+                                          QIcon::fromTheme("trashcan_empty"_L1)).pixmap(16);
                 break;
         case SP_DriveCDIcon:
         case SP_DriveDVDIcon:
-                pixmap = QIcon::fromTheme(QLatin1String("media-optical"),
-                                          QIcon::fromTheme(QLatin1String("cdrom_unmount"))).pixmap(16);
+                pixmap = QIcon::fromTheme("media-optical"_L1,
+                                          QIcon::fromTheme("cdrom_unmount"_L1)).pixmap(16);
                 break;
         case SP_DriveHDIcon:
-                pixmap = QIcon::fromTheme(QLatin1String("drive-harddisk"),
-                                          QIcon::fromTheme(QLatin1String("hdd_unmount"))).pixmap(16);
+                pixmap = QIcon::fromTheme("drive-harddisk"_L1,
+                                          QIcon::fromTheme("hdd_unmount"_L1)).pixmap(16);
                 break;
         case SP_FileDialogToParent:
-                pixmap = QIcon::fromTheme(QLatin1String("go-up"),
-                                          QIcon::fromTheme(QLatin1String("up"))).pixmap(16);
+                pixmap = QIcon::fromTheme("go-up"_L1, QIcon::fromTheme("up"_L1)).pixmap(16);
                 break;
         case SP_FileDialogNewFolder:
-                pixmap = QIcon::fromTheme(QLatin1String("folder_new")).pixmap(16);
+                pixmap = QIcon::fromTheme("folder_new"_L1).pixmap(16);
                 break;
         case SP_ArrowUp:
-                pixmap = QIcon::fromTheme(QLatin1String("go-up"),
-                                          QIcon::fromTheme(QLatin1String("up"))).pixmap(16);
+                pixmap = QIcon::fromTheme("go-up"_L1,
+                                          QIcon::fromTheme("up"_L1)).pixmap(16);
                 break;
         case SP_ArrowDown:
-                pixmap = QIcon::fromTheme(QLatin1String("go-down"),
-                                          QIcon::fromTheme(QLatin1String("down"))).pixmap(16);
+                pixmap = QIcon::fromTheme("go-down"_L1, QIcon::fromTheme("down"_L1)).pixmap(16);
                 break;
         case SP_ArrowRight:
-                pixmap = QIcon::fromTheme(QLatin1String("go-next"),
-                                          QIcon::fromTheme(QLatin1String("forward"))).pixmap(16);
+                pixmap = QIcon::fromTheme("go-next"_L1, QIcon::fromTheme("forward"_L1)).pixmap(16);
                 break;
         case SP_ArrowLeft:
-                pixmap = QIcon::fromTheme(QLatin1String("go-previous"),
-                                          QIcon::fromTheme(QLatin1String("back"))).pixmap(16);
+                pixmap = QIcon::fromTheme("go-previous"_L1, QIcon::fromTheme("back"_L1)).pixmap(16);
                 break;
         case SP_FileDialogDetailedView:
-                pixmap = QIcon::fromTheme(QLatin1String("view_detailed")).pixmap(16);
+                pixmap = QIcon::fromTheme("view_detailed"_L1).pixmap(16);
                 break;
         case SP_FileDialogListView:
-                pixmap = QIcon::fromTheme(QLatin1String("view_icon")).pixmap(16);
+                pixmap = QIcon::fromTheme("view_icon"_L1).pixmap(16);
                 break;
         case SP_BrowserReload:
-                pixmap = QIcon::fromTheme(QLatin1String("reload")).pixmap(16);
+                pixmap = QIcon::fromTheme("reload"_L1).pixmap(16);
                 break;
         case SP_BrowserStop:
-                pixmap = QIcon::fromTheme(QLatin1String("process-stop")).pixmap(16);
+                pixmap = QIcon::fromTheme("process-stop"_L1).pixmap(16);
                 break;
         case SP_MediaPlay:
-                pixmap = QIcon::fromTheme(QLatin1String("media-playback-start")).pixmap(16);
+                pixmap = QIcon::fromTheme("media-playback-start"_L1).pixmap(16);
                 break;
         case SP_MediaPause:
-                pixmap = QIcon::fromTheme(QLatin1String("media-playback-pause")).pixmap(16);
+                pixmap = QIcon::fromTheme("media-playback-pause"_L1).pixmap(16);
                 break;
         case SP_MediaStop:
-                pixmap = QIcon::fromTheme(QLatin1String("media-playback-stop")).pixmap(16);
+                pixmap = QIcon::fromTheme("media-playback-stop"_L1).pixmap(16);
                 break;
         case SP_MediaSeekForward:
-                pixmap = QIcon::fromTheme(QLatin1String("media-seek-forward")).pixmap(16);
+                pixmap = QIcon::fromTheme("media-seek-forward"_L1).pixmap(16);
                 break;
         case SP_MediaSeekBackward:
-                pixmap = QIcon::fromTheme(QLatin1String("media-seek-backward")).pixmap(16);
+                pixmap = QIcon::fromTheme("media-seek-backward"_L1).pixmap(16);
                 break;
         case SP_MediaSkipForward:
-                pixmap = QIcon::fromTheme(QLatin1String("media-skip-forward")).pixmap(16);
+                pixmap = QIcon::fromTheme("media-skip-forward"_L1).pixmap(16);
                 break;
         case SP_MediaSkipBackward:
-                pixmap = QIcon::fromTheme(QLatin1String("media-skip-backward")).pixmap(16);
+                pixmap = QIcon::fromTheme("media-skip-backward"_L1).pixmap(16);
                 break;
         case SP_DialogResetButton:
-                pixmap = QIcon::fromTheme(QLatin1String("edit-clear")).pixmap(24);
+                pixmap = QIcon::fromTheme("edit-clear"_L1).pixmap(24);
                 break;
         case SP_DialogHelpButton:
-                pixmap = QIcon::fromTheme(QLatin1String("help-contents")).pixmap(24);
+                pixmap = QIcon::fromTheme("help-contents"_L1).pixmap(24);
                 break;
         case SP_DialogNoButton:
         case SP_DialogCancelButton:
-                pixmap = QIcon::fromTheme(QLatin1String("dialog-cancel"),
-                                         QIcon::fromTheme(QLatin1String("process-stop"))).pixmap(24);
+                pixmap = QIcon::fromTheme("dialog-cancel"_L1,
+                                         QIcon::fromTheme("process-stop"_L1)).pixmap(24);
                 break;
         case SP_DialogSaveButton:
-                pixmap = QIcon::fromTheme(QLatin1String("document-save")).pixmap(24);
+                pixmap = QIcon::fromTheme("document-save"_L1).pixmap(24);
                 break;
         case SP_FileLinkIcon:
-            pixmap = QIcon::fromTheme(QLatin1String("emblem-symbolic-link")).pixmap(16);
+            pixmap = QIcon::fromTheme("emblem-symbolic-link"_L1).pixmap(16);
             if (!pixmap.isNull()) {
-                QPixmap fileIcon = QIcon::fromTheme(QLatin1String("text-x-generic")).pixmap(16);
+                QPixmap fileIcon = QIcon::fromTheme("text-x-generic"_L1).pixmap(16);
                 if (fileIcon.isNull())
-                    fileIcon = QIcon::fromTheme(QLatin1String("empty")).pixmap(16);
+                    fileIcon = QIcon::fromTheme("empty"_L1).pixmap(16);
                 if (!fileIcon.isNull()) {
                     QPainter painter(&fileIcon);
                     painter.drawPixmap(0, 0, 16, 16, pixmap);
@@ -5615,9 +5611,9 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
             }
             break;
         case SP_DirLinkIcon:
-                pixmap = QIcon::fromTheme(QLatin1String("emblem-symbolic-link")).pixmap(16);
+                pixmap = QIcon::fromTheme("emblem-symbolic-link"_L1).pixmap(16);
                 if (!pixmap.isNull()) {
-                    QPixmap dirIcon = QIcon::fromTheme(QLatin1String("folder")).pixmap(16);
+                    QPixmap dirIcon = QIcon::fromTheme("folder"_L1).pixmap(16);
                     if (!dirIcon.isNull()) {
                         QPainter painter(&dirIcon);
                         painter.drawPixmap(0, 0, 16, 16, pixmap);
@@ -5663,103 +5659,103 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
             return proxy()->standardPixmap(SP_ArrowRight, option, widget);
         return proxy()->standardPixmap(SP_ArrowLeft, option, widget);
     case SP_ArrowLeft:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/left-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/left-16.png"_L1);
     case SP_ArrowRight:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/right-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/right-16.png"_L1);
     case SP_ArrowUp:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/up-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/up-16.png"_L1);
     case SP_ArrowDown:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/down-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/down-16.png"_L1);
     case SP_FileDialogToParent:
         return proxy()->standardPixmap(SP_ArrowUp, option, widget);
     case SP_FileDialogNewFolder:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/newdirectory-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/newdirectory-16.png"_L1);
     case SP_FileDialogDetailedView:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/viewdetailed-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/viewdetailed-16.png"_L1);
     case SP_FileDialogInfoView:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/fileinfo-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/fileinfo-16.png"_L1);
     case SP_FileDialogContentsView:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/filecontents-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/filecontents-16.png"_L1);
     case SP_FileDialogListView:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/viewlist-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/viewlist-16.png"_L1);
     case SP_FileDialogBack:
         return proxy()->standardPixmap(SP_ArrowBack, option, widget);
     case SP_DriveHDIcon:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/harddrive-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/harddrive-16.png"_L1);
     case SP_TrashIcon:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/trash-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/trash-16.png"_L1);
     case SP_DriveFDIcon:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/floppy-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/floppy-16.png"_L1);
     case SP_DriveNetIcon:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/networkdrive-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/networkdrive-16.png"_L1);
     case SP_DesktopIcon:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/desktop-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/desktop-16.png"_L1);
     case SP_ComputerIcon:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/computer-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/computer-16.png"_L1);
     case SP_DriveCDIcon:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/cdr-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/cdr-16.png"_L1);
     case SP_DriveDVDIcon:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/dvd-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/dvd-16.png"_L1);
     case SP_DirHomeIcon:
     case SP_DirOpenIcon:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/diropen-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/diropen-16.png"_L1);
     case SP_DirIcon:
     case SP_DirClosedIcon:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/dirclosed-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/dirclosed-16.png"_L1);
     case SP_DirLinkIcon:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/dirlink-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/dirlink-16.png"_L1);
     case SP_FileIcon:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/file-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/file-16.png"_L1);
     case SP_FileLinkIcon:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/filelink-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/filelink-16.png"_L1);
     case SP_DialogOkButton:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-ok-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/standardbutton-ok-16.png"_L1);
     case SP_DialogCancelButton:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-cancel-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/standardbutton-cancel-16.png"_L1);
     case SP_DialogHelpButton:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-help-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/standardbutton-help-16.png"_L1);
     case SP_DialogOpenButton:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-open-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/standardbutton-open-16.png"_L1);
     case SP_DialogSaveButton:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-save-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/standardbutton-save-16.png"_L1);
     case SP_DialogCloseButton:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-close-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/standardbutton-close-16.png"_L1);
     case SP_DialogApplyButton:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-apply-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/standardbutton-apply-16.png"_L1);
     case SP_DialogResetButton:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-clear-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/standardbutton-clear-16.png"_L1);
     case SP_DialogDiscardButton:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-delete-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/standardbutton-delete-16.png"_L1);
     case SP_DialogYesButton:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-yes-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/standardbutton-yes-16.png"_L1);
     case SP_DialogNoButton:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-no-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/standardbutton-no-16.png"_L1);
     case SP_BrowserReload:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/refresh-24.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/refresh-24.png"_L1);
     case SP_BrowserStop:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/stop-24.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/stop-24.png"_L1);
     case SP_MediaPlay:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-play-32.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/media-play-32.png"_L1);
     case SP_MediaPause:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-pause-32.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/media-pause-32.png"_L1);
     case SP_MediaStop:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-stop-32.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/media-stop-32.png"_L1);
     case SP_MediaSeekForward:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-seek-forward-32.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/media-seek-forward-32.png"_L1);
     case SP_MediaSeekBackward:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-seek-backward-32.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/media-seek-backward-32.png"_L1);
     case SP_MediaSkipForward:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-skip-forward-32.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/media-skip-forward-32.png"_L1);
     case SP_MediaSkipBackward:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-skip-backward-32.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/media-skip-backward-32.png"_L1);
     case SP_MediaVolume:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-volume-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/media-volume-16.png"_L1);
     case SP_MediaVolumeMuted:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-volume-muted-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/media-volume-muted-16.png"_L1);
     case SP_LineEditClearButton:
         return QPixmap(clearText16IconPath());
     case SP_TabCloseButton:
-        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-closetab-16.png"));
+        return QPixmap(":/qt-project.org/styles/commonstyle/images/standardbutton-closetab-16.png"_L1);
 #endif // QT_NO_IMAGEFORMAT_PNG
     default:
         break;
@@ -5883,134 +5879,132 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
     if (QGuiApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty()) {
         switch (standardIcon) {
         case SP_DirHomeIcon:
-                icon = QIcon::fromTheme(QLatin1String("user-home"));
+                icon = QIcon::fromTheme("user-home"_L1);
                 break;
         case SP_MessageBoxInformation:
-                icon = QIcon::fromTheme(QLatin1String("dialog-information"));
+                icon = QIcon::fromTheme("dialog-information"_L1);
                 break;
         case SP_MessageBoxWarning:
-                icon = QIcon::fromTheme(QLatin1String("dialog-warning"));
+                icon = QIcon::fromTheme("dialog-warning"_L1);
                 break;
         case SP_MessageBoxCritical:
-                icon = QIcon::fromTheme(QLatin1String("dialog-error"));
+                icon = QIcon::fromTheme("dialog-error"_L1);
                 break;
         case SP_MessageBoxQuestion:
-                icon = QIcon::fromTheme(QLatin1String("dialog-question"));
+                icon = QIcon::fromTheme("dialog-question"_L1);
                 break;
         case SP_DialogOpenButton:
         case SP_DirOpenIcon:
-                icon = QIcon::fromTheme(QLatin1String("folder-open"));
+                icon = QIcon::fromTheme("folder-open"_L1);
                 break;
         case SP_DialogSaveButton:
-                icon = QIcon::fromTheme(QLatin1String("document-save"));
+                icon = QIcon::fromTheme("document-save"_L1);
                 break;
         case SP_DialogApplyButton:
-                icon = QIcon::fromTheme(QLatin1String("dialog-ok-apply"));
+                icon = QIcon::fromTheme("dialog-ok-apply"_L1);
                 break;
         case SP_DialogYesButton:
         case SP_DialogOkButton:
-                icon = QIcon::fromTheme(QLatin1String("dialog-ok"));
+                icon = QIcon::fromTheme("dialog-ok"_L1);
                 break;
         case SP_DialogDiscardButton:
-                icon = QIcon::fromTheme(QLatin1String("edit-delete"));
+                icon = QIcon::fromTheme("edit-delete"_L1);
                 break;
         case SP_DialogResetButton:
-                icon = QIcon::fromTheme(QLatin1String("edit-clear"));
+                icon = QIcon::fromTheme("edit-clear"_L1);
                 break;
         case SP_DialogHelpButton:
-                icon = QIcon::fromTheme(QLatin1String("help-contents"));
+                icon = QIcon::fromTheme("help-contents"_L1);
                 break;
         case SP_FileIcon:
-                icon = QIcon::fromTheme(QLatin1String("text-x-generic"));
+                icon = QIcon::fromTheme("text-x-generic"_L1);
                 break;
         case SP_DirClosedIcon:
         case SP_DirIcon:
-                icon = QIcon::fromTheme(QLatin1String("folder"));
+                icon = QIcon::fromTheme("folder"_L1);
                 break;
         case SP_DriveFDIcon:
-                icon = QIcon::fromTheme(QLatin1String("floppy_unmount"));
+                icon = QIcon::fromTheme("floppy_unmount"_L1);
                 break;
         case SP_ComputerIcon:
-                icon = QIcon::fromTheme(QLatin1String("computer"),
-                                        QIcon::fromTheme(QLatin1String("system")));
+                icon = QIcon::fromTheme("computer"_L1, QIcon::fromTheme("system"_L1));
                 break;
         case SP_DesktopIcon:
-                icon = QIcon::fromTheme(QLatin1String("user-desktop"));
+                icon = QIcon::fromTheme("user-desktop"_L1);
                 break;
         case SP_TrashIcon:
-                icon = QIcon::fromTheme(QLatin1String("user-trash"));
+                icon = QIcon::fromTheme("user-trash"_L1);
                 break;
         case SP_DriveCDIcon:
         case SP_DriveDVDIcon:
-                icon = QIcon::fromTheme(QLatin1String("media-optical"));
+                icon = QIcon::fromTheme("media-optical"_L1);
                 break;
         case SP_DriveHDIcon:
-                icon = QIcon::fromTheme(QLatin1String("drive-harddisk"));
+                icon = QIcon::fromTheme("drive-harddisk"_L1);
                 break;
         case SP_FileDialogToParent:
-                icon = QIcon::fromTheme(QLatin1String("go-up"));
+                icon = QIcon::fromTheme("go-up"_L1);
                 break;
         case SP_FileDialogNewFolder:
-                icon = QIcon::fromTheme(QLatin1String("folder-new"));
+                icon = QIcon::fromTheme("folder-new"_L1);
                 break;
         case SP_ArrowUp:
-                icon = QIcon::fromTheme(QLatin1String("go-up"));
+                icon = QIcon::fromTheme("go-up"_L1);
                 break;
         case SP_ArrowDown:
-                icon = QIcon::fromTheme(QLatin1String("go-down"));
+                icon = QIcon::fromTheme("go-down"_L1);
                 break;
         case SP_ArrowRight:
-                icon = QIcon::fromTheme(QLatin1String("go-next"));
+                icon = QIcon::fromTheme("go-next"_L1);
                 break;
         case SP_ArrowLeft:
-                icon = QIcon::fromTheme(QLatin1String("go-previous"));
+                icon = QIcon::fromTheme("go-previous"_L1);
                 break;
         case SP_DialogNoButton:
         case SP_DialogCancelButton:
-                icon = QIcon::fromTheme(QLatin1String("dialog-cancel"),
-                                        QIcon::fromTheme(QLatin1String("process-stop")));
+                icon = QIcon::fromTheme("dialog-cancel"_L1, QIcon::fromTheme("process-stop"_L1));
                 break;
         case SP_DialogCloseButton:
-                icon = QIcon::fromTheme(QLatin1String("window-close"));
+                icon = QIcon::fromTheme("window-close"_L1);
                 break;
         case SP_FileDialogDetailedView:
-                icon = QIcon::fromTheme(QLatin1String("view-list-details"));
+                icon = QIcon::fromTheme("view-list-details"_L1);
                 break;
         case SP_FileDialogListView:
-                icon = QIcon::fromTheme(QLatin1String("view-list-icons"));
+                icon = QIcon::fromTheme("view-list-icons"_L1);
                 break;
         case SP_BrowserReload:
-                icon = QIcon::fromTheme(QLatin1String("view-refresh"));
+                icon = QIcon::fromTheme("view-refresh"_L1);
                 break;
         case SP_BrowserStop:
-                icon = QIcon::fromTheme(QLatin1String("process-stop"));
+                icon = QIcon::fromTheme("process-stop"_L1);
                 break;
         case SP_MediaPlay:
-                icon = QIcon::fromTheme(QLatin1String("media-playback-start"));
+                icon = QIcon::fromTheme("media-playback-start"_L1);
                 break;
         case SP_MediaPause:
-                icon = QIcon::fromTheme(QLatin1String("media-playback-pause"));
+                icon = QIcon::fromTheme("media-playback-pause"_L1);
                 break;
         case SP_MediaStop:
-                icon = QIcon::fromTheme(QLatin1String("media-playback-stop"));
+                icon = QIcon::fromTheme("media-playback-stop"_L1);
                 break;
         case SP_MediaSeekForward:
-                icon = QIcon::fromTheme(QLatin1String("media-seek-forward"));
+                icon = QIcon::fromTheme("media-seek-forward"_L1);
                 break;
         case SP_MediaSeekBackward:
-                icon = QIcon::fromTheme(QLatin1String("media-seek-backward"));
+                icon = QIcon::fromTheme("media-seek-backward"_L1);
                 break;
         case SP_MediaSkipForward:
-                icon = QIcon::fromTheme(QLatin1String("media-skip-forward"));
+                icon = QIcon::fromTheme("media-skip-forward"_L1);
                 break;
         case SP_MediaSkipBackward:
-                icon = QIcon::fromTheme(QLatin1String("media-skip-backward"));
+                icon = QIcon::fromTheme("media-skip-backward"_L1);
                 break;
         case SP_MediaVolume:
-                icon = QIcon::fromTheme(QLatin1String("audio-volume-medium"));
+                icon = QIcon::fromTheme("audio-volume-medium"_L1);
                 break;
         case SP_MediaVolumeMuted:
-                icon = QIcon::fromTheme(QLatin1String("audio-volume-muted"));
+                icon = QIcon::fromTheme("audio-volume-muted"_L1);
                 break;
         case SP_ArrowForward:
             if (rtl)
@@ -6022,7 +6016,7 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
             return QCommonStyle::standardIcon(SP_ArrowLeft, option, widget);
         case SP_FileLinkIcon:
             {
-                QIcon linkIcon = QIcon::fromTheme(QLatin1String("emblem-symbolic-link"));
+                QIcon linkIcon = QIcon::fromTheme("emblem-symbolic-link"_L1);
                 if (!linkIcon.isNull()) {
                     QIcon baseIcon = QCommonStyle::standardIcon(SP_FileIcon, option, widget);
                     const QList<QSize> sizes = baseIcon.availableSizes(QIcon::Normal, QIcon::Off);
@@ -6039,7 +6033,7 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
             break;
         case SP_DirLinkIcon:
             {
-                QIcon linkIcon = QIcon::fromTheme(QLatin1String("emblem-symbolic-link"));
+                QIcon linkIcon = QIcon::fromTheme("emblem-symbolic-link"_L1);
                 if (!linkIcon.isNull()) {
                     QIcon baseIcon = QCommonStyle::standardIcon(SP_DirIcon, option, widget);
                     const QList<QSize> sizes = baseIcon.availableSizes(QIcon::Normal, QIcon::Off);
@@ -6114,7 +6108,7 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
                 const QList<QSize> sizes = theme->themeHint(QPlatformTheme::IconPixmapSizes).value<QList<QSize> >();
                 for (const QSize &size : sizes) {
                     QPixmap mainIcon;
-                    const QString cacheKey = QLatin1String("qt_mac_constructQIconFromIconRef") + QString::number(standardIcon) + QString::number(size.width());
+                    const QString cacheKey = "qt_mac_constructQIconFromIconRef"_L1 + QString::number(standardIcon) + QString::number(size.width());
                     if (standardIcon >= QStyle::SP_CustomBase) {
                         mainIcon = theme->standardPixmap(sp, QSizeF(size));
                     } else if (QPixmapCache::find(cacheKey, &mainIcon) == false) {
@@ -6158,88 +6152,88 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
                      titleBarSizes, sizeof(titleBarSizes)/sizeof(titleBarSizes[0]), icon);
         break;
      case SP_FileDialogNewFolder:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/newdirectory-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/newdirectory-32.png"), QSize(32, 32));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/newdirectory-128.png"), QSize(128, 128));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/newdirectory-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/newdirectory-32.png"_L1, QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/newdirectory-128.png"_L1, QSize(128, 128));
         break;
     case SP_FileDialogBack:
         return QCommonStyle::standardIcon(SP_ArrowBack, option, widget);
     case SP_FileDialogToParent:
         return QCommonStyle::standardIcon(SP_ArrowUp, option, widget);
     case SP_FileDialogDetailedView:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/viewdetailed-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/viewdetailed-32.png"), QSize(32, 32));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/viewdetailed-128.png"), QSize(128, 128));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/viewdetailed-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/viewdetailed-32.png"_L1, QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/viewdetailed-128.png"_L1, QSize(128, 128));
         break;
     case SP_FileDialogInfoView:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/fileinfo-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/fileinfo-32.png"), QSize(32, 32));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/fileinfo-128.png"), QSize(128, 128));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/fileinfo-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/fileinfo-32.png"_L1, QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/fileinfo-128.png"_L1, QSize(128, 128));
         break;
     case SP_FileDialogContentsView:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/filecontents-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/filecontents-32.png"), QSize(32, 32));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/filecontents-128.png"), QSize(128, 128));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/filecontents-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/filecontents-32.png"_L1, QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/filecontents-128.png"_L1, QSize(128, 128));
         break;
     case SP_FileDialogListView:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/viewlist-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/viewlist-32.png"), QSize(32, 32));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/viewlist-128.png"), QSize(128, 128));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/viewlist-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/viewlist-32.png"_L1, QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/viewlist-128.png"_L1, QSize(128, 128));
         break;
     case SP_DialogOkButton:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-ok-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-ok-32.png"), QSize(32, 32));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-ok-128.png"), QSize(128, 128));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-ok-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-ok-32.png"_L1, QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-ok-128.png"_L1, QSize(128, 128));
         break;
     case SP_DialogCancelButton:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-cancel-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-cancel-32.png"), QSize(32, 32));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-cancel-128.png"), QSize(128, 128));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-cancel-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-cancel-32.png"_L1, QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-cancel-128.png"_L1, QSize(128, 128));
         break;
     case SP_DialogHelpButton:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-help-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-help-32.png"), QSize(32, 32));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-help-128.png"), QSize(128, 128));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-help-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-help-32.png"_L1, QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-help-128.png"_L1, QSize(128, 128));
         break;
     case SP_DialogOpenButton:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-open-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-open-32.png"), QSize(32, 32));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-open-128.png"), QSize(128, 128));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-open-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-open-32.png"_L1, QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-open-128.png"_L1, QSize(128, 128));
         break;
     case SP_DialogSaveButton:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-save-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-save-32.png"), QSize(32, 32));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-save-128.png"), QSize(128, 128));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-save-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-save-32.png"_L1, QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-save-128.png"_L1, QSize(128, 128));
         break;
     case SP_DialogCloseButton:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-close-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-close-32.png"), QSize(32, 32));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-close-128.png"), QSize(128, 128));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-close-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-close-32.png"_L1, QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-close-128.png"_L1, QSize(128, 128));
         break;
     case SP_DialogApplyButton:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-apply-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-apply-32.png"), QSize(32, 32));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-apply-128.png"), QSize(128, 128));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-apply-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-apply-32.png"_L1, QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-apply-128.png"_L1, QSize(128, 128));
         break;
     case SP_DialogResetButton:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-clear-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-clear-32.png"), QSize(32, 32));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-clear-128.png"), QSize(128, 128));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-clear-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-clear-32.png"_L1, QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-clear-128.png"_L1, QSize(128, 128));
         break;
     case SP_DialogDiscardButton:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-delete-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-delete-32.png"), QSize(32, 32));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-delete-128.png"), QSize(128, 128));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-delete-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-delete-32.png"_L1, QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-delete-128.png"_L1, QSize(128, 128));
         break;
     case SP_DialogYesButton:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-yes-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-yes-32.png"), QSize(32, 32));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-yes-128.png"), QSize(128, 128));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-yes-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-yes-32.png"_L1, QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-yes-128.png"_L1, QSize(128, 128));
         break;
     case SP_DialogNoButton:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-no-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-no-32.png"), QSize(32, 32));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-no-128.png"), QSize(128, 128));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-no-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-no-32.png"_L1, QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/standardbutton-no-128.png"_L1, QSize(128, 128));
         break;
     case SP_ArrowForward:
         if (rtl)
@@ -6250,106 +6244,106 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
             return QCommonStyle::standardIcon(SP_ArrowRight, option, widget);
         return QCommonStyle::standardIcon(SP_ArrowLeft, option, widget);
     case SP_ArrowLeft:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/left-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/left-32.png"), QSize(32, 32));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/left-128.png"), QSize(128, 128));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/left-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/left-32.png"_L1, QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/left-128.png"_L1, QSize(128, 128));
         break;
     case SP_ArrowRight:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/right-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/right-32.png"), QSize(32, 32));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/right-128.png"), QSize(128, 128));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/right-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/right-32.png"_L1, QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/right-128.png"_L1, QSize(128, 128));
         break;
     case SP_ArrowUp:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/up-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/up-32.png"), QSize(32, 32));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/up-128.png"), QSize(128, 128));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/up-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/up-32.png"_L1, QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/up-128.png"_L1, QSize(128, 128));
         break;
     case SP_ArrowDown:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/down-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/down-32.png"), QSize(32, 32));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/down-128.png"), QSize(128, 128));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/down-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/down-32.png"_L1, QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/down-128.png"_L1, QSize(128, 128));
         break;
    case SP_DirHomeIcon:
    case SP_DirIcon:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/dirclosed-16.png"),
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/dirclosed-16.png"_L1,
                      QSize(), QIcon::Normal, QIcon::Off);
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/diropen-16.png"),
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/diropen-16.png"_L1,
                      QSize(), QIcon::Normal, QIcon::On);
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/dirclosed-32.png"),
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/dirclosed-32.png"_L1,
                      QSize(32, 32), QIcon::Normal, QIcon::Off);
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/diropen-32.png"),
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/diropen-32.png"_L1,
                      QSize(32, 32), QIcon::Normal, QIcon::On);
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/dirclosed-128.png"),
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/dirclosed-128.png"_L1,
                      QSize(128, 128), QIcon::Normal, QIcon::Off);
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/diropen-128.png"),
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/diropen-128.png"_L1,
                      QSize(128, 128), QIcon::Normal, QIcon::On);
         break;
     case SP_DriveCDIcon:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/cdr-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/cdr-32.png"), QSize(32, 32));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/cdr-128.png"), QSize(128, 128));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/cdr-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/cdr-32.png"_L1, QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/cdr-128.png"_L1, QSize(128, 128));
         break;
     case SP_DriveDVDIcon:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/dvd-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/dvd-32.png"), QSize(32, 32));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/dvd-128.png"), QSize(128, 128));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/dvd-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/dvd-32.png"_L1, QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/dvd-128.png"_L1, QSize(128, 128));
         break;
     case SP_FileIcon:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/file-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/file-32.png"), QSize(32, 32));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/file-128.png"), QSize(128, 128));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/file-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/file-32.png"_L1, QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/file-128.png"_L1, QSize(128, 128));
         break;
     case SP_FileLinkIcon:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/filelink-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/filelink-32.png"), QSize(32, 32));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/filelink-128.png"), QSize(128, 128));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/filelink-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/filelink-32.png"_L1, QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/filelink-128.png"_L1, QSize(128, 128));
         break;
     case SP_TrashIcon:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/trash-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/trash-32.png"), QSize(32, 32));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/trash-128.png"), QSize(128, 128));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/trash-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/trash-32.png"_L1, QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/trash-128.png"_L1, QSize(128, 128));
         break;
     case SP_BrowserReload:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/refresh-24.png"), QSize(24, 24));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/refresh-32.png"), QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/refresh-24.png"_L1, QSize(24, 24));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/refresh-32.png"_L1, QSize(32, 32));
         break;
     case SP_BrowserStop:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/stop-24.png"), QSize(24, 24));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/stop-32.png"), QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/stop-24.png"_L1, QSize(24, 24));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/stop-32.png"_L1, QSize(32, 32));
         break;
     case SP_MediaPlay:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-play-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-play-32.png"), QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-play-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-play-32.png"_L1, QSize(32, 32));
         break;
     case SP_MediaPause:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-pause-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-pause-32.png"), QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-pause-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-pause-32.png"_L1, QSize(32, 32));
         break;
     case SP_MediaStop:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-stop-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-stop-32.png"), QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-stop-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-stop-32.png"_L1, QSize(32, 32));
         break;
     case SP_MediaSeekForward:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-seek-forward-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-seek-forward-32.png"), QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-seek-forward-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-seek-forward-32.png"_L1, QSize(32, 32));
         break;
     case SP_MediaSeekBackward:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-seek-backward-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-seek-backward-32.png"), QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-seek-backward-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-seek-backward-32.png"_L1, QSize(32, 32));
         break;
     case SP_MediaSkipForward:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-skip-forward-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-skip-forward-32.png"), QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-skip-forward-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-skip-forward-32.png"_L1, QSize(32, 32));
         break;
     case SP_MediaSkipBackward:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-skip-backward-16.png"), QSize(16, 16));
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-skip-backward-32.png"), QSize(32, 32));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-skip-backward-16.png"_L1, QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-skip-backward-32.png"_L1, QSize(32, 32));
         break;
     case SP_MediaVolume:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-volume-16.png"), QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-volume-16.png"_L1, QSize(16, 16));
         break;
     case SP_MediaVolumeMuted:
-        icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-volume-muted-16.png"), QSize(16, 16));
+        icon.addFile(":/qt-project.org/styles/commonstyle/images/media-volume-muted-16.png"_L1, QSize(16, 16));
         break;
     case SP_TitleBarCloseButton:
         addIconFiles(iconResourcePrefix() + QStringLiteral("closedock-"),
@@ -6359,7 +6353,7 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
 #  ifndef QT_NO_IMAGEFORMAT_XPM
         icon.addPixmap(titleBarMenuCachedPixmapFromXPM());
 #  endif
-        icon.addFile(QLatin1String(":/qt-project.org/qmessagebox/images/qtlogo-64.png"));
+        icon.addFile(":/qt-project.org/qmessagebox/images/qtlogo-64.png"_L1);
         break;
     case SP_TitleBarNormalButton:
         addIconFiles(iconResourcePrefix() + QStringLiteral("normalizedockup-"),

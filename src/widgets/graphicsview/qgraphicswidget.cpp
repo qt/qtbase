@@ -67,6 +67,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /*!
     \class QGraphicsWidget
     \brief The QGraphicsWidget class is the base class for all widget
@@ -2401,7 +2403,7 @@ void QGraphicsWidget::dumpFocusChain()
             qWarning("Found a focus chain that is not circular, (next == 0)");
             break;
         }
-        qDebug() << i++ << QString::number(uint(next), 16) << next->className() << next->data(0) << QString::fromLatin1("focusItem:%1").arg(next->hasFocus() ? '1' : '0') << QLatin1String("next:") << next->d_func()->focusNext->data(0) << QLatin1String("prev:") << next->d_func()->focusPrev->data(0);
+        qDebug() << i++ << QString::number(uint(next), 16) << next->className() << next->data(0) << QString::fromLatin1("focusItem:%1").arg(next->hasFocus() ? '1' : '0') << "next:"_L1 << next->d_func()->focusNext->data(0) << "prev:"_L1 << next->d_func()->focusPrev->data(0);
         if (visited.contains(next)) {
             qWarning("Already visited this node. However, I expected to dump until I found myself.");
             break;

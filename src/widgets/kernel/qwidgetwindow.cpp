@@ -55,6 +55,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_WIDGETS_EXPORT extern bool qt_tab_all_widgets();
 
 Q_WIDGETS_EXPORT QWidget *qt_button_down = nullptr; // widget got last button-down
@@ -1159,8 +1161,8 @@ void QWidgetWindow::updateObjectName()
 {
     QString name = m_widget->objectName();
     if (name.isEmpty())
-        name = QString::fromUtf8(m_widget->metaObject()->className()) + QLatin1String("Class");
-    name += QLatin1String("Window");
+        name = QString::fromUtf8(m_widget->metaObject()->className()) + "Class"_L1;
+    name += "Window"_L1;
     setObjectName(name);
 }
 

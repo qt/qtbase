@@ -166,6 +166,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QCompletionModel::QCompletionModel(QCompleterPrivate *c, QObject *parent)
     : QAbstractProxyModel(*new QCompletionModelPrivate, parent),
       c(c), showAll(false)
@@ -1878,9 +1880,9 @@ QStringList QCompleter::splitPath(const QString& path) const
 
     QString pathCopy = QDir::toNativeSeparators(path);
 #if defined(Q_OS_WIN)
-    if (pathCopy == QLatin1String("\\") || pathCopy == QLatin1String("\\\\"))
+    if (pathCopy == "\\"_L1 || pathCopy == "\\\\"_L1)
         return QStringList(pathCopy);
-    const bool startsWithDoubleSlash = pathCopy.startsWith(QLatin1String("\\\\"));
+    const bool startsWithDoubleSlash = pathCopy.startsWith("\\\\"_L1);
     if (startsWithDoubleSlash)
         pathCopy = pathCopy.mid(2);
 #endif
@@ -1890,7 +1892,7 @@ QStringList QCompleter::splitPath(const QString& path) const
 
 #if defined(Q_OS_WIN)
     if (startsWithDoubleSlash)
-        parts[0].prepend(QLatin1String("\\\\"));
+        parts[0].prepend("\\\\"_L1);
 #else
     if (pathCopy[0] == sep) // readd the "/" at the beginning as the split removed it
         parts[0] = u'/';

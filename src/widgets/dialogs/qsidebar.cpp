@@ -53,6 +53,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 void QSideBarDelegate::initStyleOption(QStyleOptionViewItem *option,
                                          const QModelIndex &index) const
 {
@@ -82,7 +84,7 @@ QUrlModel::QUrlModel(QObject *parent) : QStandardItemModel(parent), showFullPath
 */
 QStringList QUrlModel::mimeTypes() const
 {
-    return QStringList(QLatin1String("text/uri-list"));
+    return QStringList("text/uri-list"_L1);
 }
 
 /*!
@@ -247,7 +249,7 @@ void QUrlModel::addUrls(const QList<QUrl> &list, int row, bool move)
     row = qMin(row, rowCount());
     for (int i = list.count() - 1; i >= 0; --i) {
         QUrl url = list.at(i);
-        if (!url.isValid() || url.scheme() != QLatin1String("file"))
+        if (!url.isValid() || url.scheme() != "file"_L1)
             continue;
         //this makes sure the url is clean
         const QString cleanUrl = QDir::cleanPath(url.toLocalFile());

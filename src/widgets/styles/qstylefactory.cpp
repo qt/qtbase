@@ -50,8 +50,10 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
-    (QStyleFactoryInterface_iid, QLatin1String("/styles"), Qt::CaseInsensitive))
+    (QStyleFactoryInterface_iid, "/styles"_L1, Qt::CaseInsensitive))
 
 /*!
     \class QStyleFactory
@@ -91,17 +93,17 @@ QStyle *QStyleFactory::create(const QString& key)
     QStyle *ret = nullptr;
     QString style = key.toLower();
 #if QT_CONFIG(style_windows)
-    if (style == QLatin1String("windows"))
+    if (style == "windows"_L1)
         ret = new QWindowsStyle;
     else
 #endif
 #if QT_CONFIG(style_fusion)
-    if (style == QLatin1String("fusion"))
+    if (style == "fusion"_L1)
         ret = new QFusionStyle;
     else
 #endif
 #if defined(Q_OS_MACOS) && QT_DEPRECATED_SINCE(6, 0)
-    if (style == QLatin1String("macintosh")) {
+    if (style == "macintosh"_L1) {
         qWarning() << "The style key 'macintosh' is deprecated. Please use 'macos' instead.";
         style = QStringLiteral("macos");
     } else
@@ -132,12 +134,12 @@ QStringList QStyleFactory::keys()
     for (PluginKeyMap::const_iterator it = keyMap.constBegin(); it != cend; ++it)
         list.append(it.value());
 #if QT_CONFIG(style_windows)
-    if (!list.contains(QLatin1String("Windows")))
-        list << QLatin1String("Windows");
+    if (!list.contains("Windows"_L1))
+        list << "Windows"_L1;
 #endif
 #if QT_CONFIG(style_fusion)
-    if (!list.contains(QLatin1String("Fusion")))
-        list << QLatin1String("Fusion");
+    if (!list.contains("Fusion"_L1))
+        list << "Fusion"_L1;
 #endif
     return list;
 }

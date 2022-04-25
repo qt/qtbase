@@ -806,9 +806,9 @@ QHash<QStyle::SubControl, QRect> QStyleSheetStyle::titleBarLayout(const QWidget 
     const bool isMaximized = tb->titleBarState & Qt::WindowMaximized;
     QRenderRule subRule = renderRule(w, tb);
     QRect cr = subRule.contentsRect(tb->rect);
-    QList<QVariant> layout = subRule.styleHint(QLatin1String("button-layout")).toList();
+    QList<QVariant> layout = subRule.styleHint("button-layout"_L1).toList();
     if (layout.isEmpty())
-        layout = subControlLayout(QLatin1String("I(T)HSmMX"));
+        layout = subControlLayout("I(T)HSmMX"_L1);
 
     int offsets[3] = { 0, 0, 0 };
     enum Where { Left, Right, Center, NoWhere } where = Left;
@@ -1024,7 +1024,7 @@ QRenderRule::QRenderRule(const QList<Declaration> &declarations, const QObject *
             int cuts[4];
 
             decl.borderImageValue(&uri, cuts, &horizStretch, &vertStretch);
-            if (uri.isEmpty() || uri == QLatin1String("none")) {
+            if (uri.isEmpty() || uri == "none"_L1) {
                 if (bd && bd->bi)
                     bd->bi->pixmap = QPixmap();
             } else {
@@ -1046,7 +1046,7 @@ QRenderRule::QRenderRule(const QList<Declaration> &declarations, const QObject *
             int role = decl.d->values.at(0).variant.toInt();
             if (role >= Value_FirstColorRole && role <= Value_LastColorRole)
                 defaultBackground = palette.color((QPalette::ColorRole)(role-Value_FirstColorRole));
-        } else if (decl.d->property.startsWith(QLatin1String("qproperty-"), Qt::CaseInsensitive)) {
+        } else if (decl.d->property.startsWith("qproperty-"_L1, Qt::CaseInsensitive)) {
             // intentionally left blank...
         } else if (decl.d->propertyId == UnknownProperty) {
             bool knownStyleHint = false;
@@ -1055,11 +1055,11 @@ QRenderRule::QRenderRule(const QList<Declaration> &declarations, const QObject *
                 if (decl.d->property.compare(styleHint) == 0) {
                     QString hintName = QString(styleHint);
                     QVariant hintValue;
-                    if (hintName.endsWith(QLatin1String("alignment"))) {
+                    if (hintName.endsWith("alignment"_L1)) {
                         hintValue = (int) decl.alignmentValue();
-                    } else if (hintName.endsWith(QLatin1String("color"))) {
+                    } else if (hintName.endsWith("color"_L1)) {
                         hintValue = (int) decl.colorValue().rgba();
-                    } else if (hintName.endsWith(QLatin1String("size"))) {
+                    } else if (hintName.endsWith("size"_L1)) {
                         // Check only for the 'em' case
                         const QString valueString = decl.d->values.at(0).variant.toString();
                         const bool isEmSize = valueString.endsWith(u"em", Qt::CaseInsensitive);
@@ -1089,9 +1089,9 @@ QRenderRule::QRenderRule(const QList<Declaration> &declarations, const QObject *
                             // Normal case where we receive a 'px' or 'pt' unit
                             hintValue = decl.sizeValue();
                         }
-                    } else if (hintName.endsWith(QLatin1String("icon"))) {
+                    } else if (hintName.endsWith("icon"_L1)) {
                         hintValue = decl.iconValue();
-                    } else if (hintName == QLatin1String("button-layout")
+                    } else if (hintName == "button-layout"_L1
                                 && decl.d->values.count() != 0 && decl.d->values.at(0).type == Value::String) {
                         hintValue = subControlLayout(decl.d->values.at(0).variant.toString());
                     } else {
@@ -1563,7 +1563,7 @@ public:
         const QMetaObject *metaObject = OBJECT_PTR(node)->metaObject();
 #if QT_CONFIG(tooltip)
         if (qstrcmp(metaObject->className(), "QTipLabel") == 0)
-            return QStringList(QLatin1String("QToolTip"));
+            return QStringList("QToolTip"_L1);
 #endif
         QStringList result;
         do {
@@ -1629,7 +1629,7 @@ public:
         const QMetaObject *metaObject = OBJECT_PTR(node)->metaObject();
 #if QT_CONFIG(tooltip)
         if (qstrcmp(metaObject->className(), "QTipLabel") == 0)
-            return nodeName == QLatin1String("QToolTip");
+            return nodeName == "QToolTip"_L1;
 #endif
         do {
             const ushort *uc = (const ushort *)nodeName.constData();
@@ -1694,7 +1694,7 @@ QList<QCss::StyleRule> QStyleSheetStyle::styleRules(const QObject *obj) const
         QHash<const void *, StyleSheet>::const_iterator appCacheIt = styleSheetCaches->styleSheetCache.constFind(qApp);
         if (appCacheIt == styleSheetCaches->styleSheetCache.constEnd()) {
             QString ss = qApp->styleSheet();
-            if (ss.startsWith(QLatin1String("file:///")))
+            if (ss.startsWith("file:///"_L1))
                 ss.remove(0, 8);
             parser.init(ss, qApp->styleSheet() != ss);
             if (Q_UNLIKELY(!parser.parse(&appSs)))
@@ -1718,7 +1718,7 @@ QList<QCss::StyleRule> QStyleSheetStyle::styleRules(const QObject *obj) const
         if (objCacheIt == styleSheetCaches->styleSheetCache.constEnd()) {
             parser.init(styleSheet);
             if (!parser.parse(&ss)) {
-                parser.init(QLatin1String("* {") + styleSheet + u'}');
+                parser.init("* {"_L1 + styleSheet + u'}');
                 if (Q_UNLIKELY(!parser.parse(&ss)))
                    qWarning() << "Could not parse stylesheet of object" << o;
             }
@@ -1855,9 +1855,9 @@ static void qt_check_if_internal_object(const QObject **obj, int *element)
     Q_UNUSED(element);
 #else
     if (*obj && qstrcmp((*obj)->metaObject()->className(), "QDockWidgetTitleButton") == 0) {
-        if ((*obj)->objectName() == QLatin1String("qt_dockwidget_closebutton")) {
+        if ((*obj)->objectName() == "qt_dockwidget_closebutton"_L1) {
             *element = PseudoElement_DockWidgetCloseButton;
-        } else if ((*obj)->objectName() == QLatin1String("qt_dockwidget_floatbutton")) {
+        } else if ((*obj)->objectName() == "qt_dockwidget_floatbutton"_L1) {
             *element = PseudoElement_DockWidgetFloatButton;
         }
         *obj = (*obj)->parent();
@@ -2673,7 +2673,7 @@ void QStyleSheetStyle::setProperties(QWidget *w)
         QDuplicateTracker<QString> propertySet(decls.size());
         for (int i = decls.count() - 1; i >= 0; --i) {
             const QString property = decls.at(i).d->property;
-            if (!property.startsWith(QLatin1String("qproperty-"), Qt::CaseInsensitive))
+            if (!property.startsWith("qproperty-"_L1, Qt::CaseInsensitive))
                 continue;
             if (!propertySet.hasSeen(property))
                 finals.append(i);
@@ -3510,9 +3510,9 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
         if (hasStyleRule(w, PseudoElement_MdiCloseButton)
             || hasStyleRule(w, PseudoElement_MdiNormalButton)
             || hasStyleRule(w, PseudoElement_MdiMinButton)) {
-            QList<QVariant> layout = rule.styleHint(QLatin1String("button-layout")).toList();
+            QList<QVariant> layout = rule.styleHint("button-layout"_L1).toList();
             if (layout.isEmpty())
-                layout = subControlLayout(QLatin1String("mNX"));
+                layout = subControlLayout("mNX"_L1);
 
             QStyleOptionComplex optCopy(*opt);
             optCopy.subControls = { };
@@ -5170,9 +5170,8 @@ int QStyleSheetStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const 
     case PM_MessageBoxIconSize:
     case PM_ButtonIconSize:
     case PM_SmallIconSize:
-        if (rule.hasStyleHint(QLatin1String("icon-size"))) {
-            return rule.styleHint(QLatin1String("icon-size")).toSize().width();
-        }
+        if (rule.hasStyleHint("icon-size"_L1))
+            return rule.styleHint("icon-size"_L1).toSize().width();
         break;
 
     case PM_DockWidgetTitleMargin: {
@@ -5458,9 +5457,9 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
                 && !hasStyleRule(w, PseudoElement_MdiMinButton))
                 break;
 
-            QList<QVariant> layout = rule.styleHint(QLatin1String("button-layout")).toList();
+            QList<QVariant> layout = rule.styleHint("button-layout"_L1).toList();
             if (layout.isEmpty())
-                layout = subControlLayout(QLatin1String("mNX"));
+                layout = subControlLayout("mNX"_L1);
 
             int width = 0, height = 0;
             for (int i = 0; i < layout.count(); i++) {
@@ -5505,62 +5504,62 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
 static QLatin1String propertyNameForStandardPixmap(QStyle::StandardPixmap sp)
 {
     switch (sp) {
-        case QStyle::SP_TitleBarMenuButton: return QLatin1String("titlebar-menu-icon");
-        case QStyle::SP_TitleBarMinButton: return QLatin1String("titlebar-minimize-icon");
-        case QStyle::SP_TitleBarMaxButton: return QLatin1String("titlebar-maximize-icon");
-        case QStyle::SP_TitleBarCloseButton: return QLatin1String("titlebar-close-icon");
-        case QStyle::SP_TitleBarNormalButton: return QLatin1String("titlebar-normal-icon");
-        case QStyle::SP_TitleBarShadeButton: return QLatin1String("titlebar-shade-icon");
-        case QStyle::SP_TitleBarUnshadeButton: return QLatin1String("titlebar-unshade-icon");
-        case QStyle::SP_TitleBarContextHelpButton: return QLatin1String("titlebar-contexthelp-icon");
-        case QStyle::SP_DockWidgetCloseButton: return QLatin1String("dockwidget-close-icon");
-        case QStyle::SP_MessageBoxInformation: return QLatin1String("messagebox-information-icon");
-        case QStyle::SP_MessageBoxWarning: return QLatin1String("messagebox-warning-icon");
-        case QStyle::SP_MessageBoxCritical: return QLatin1String("messagebox-critical-icon");
-        case QStyle::SP_MessageBoxQuestion: return QLatin1String("messagebox-question-icon");
-        case QStyle::SP_DesktopIcon: return QLatin1String("desktop-icon");
-        case QStyle::SP_TrashIcon: return QLatin1String("trash-icon");
-        case QStyle::SP_ComputerIcon: return QLatin1String("computer-icon");
-        case QStyle::SP_DriveFDIcon: return QLatin1String("floppy-icon");
-        case QStyle::SP_DriveHDIcon: return QLatin1String("harddisk-icon");
-        case QStyle::SP_DriveCDIcon: return QLatin1String("cd-icon");
-        case QStyle::SP_DriveDVDIcon: return QLatin1String("dvd-icon");
-        case QStyle::SP_DriveNetIcon: return QLatin1String("network-icon");
-        case QStyle::SP_DirOpenIcon: return QLatin1String("directory-open-icon");
-        case QStyle::SP_DirClosedIcon: return QLatin1String("directory-closed-icon");
-        case QStyle::SP_DirLinkIcon: return QLatin1String("directory-link-icon");
-        case QStyle::SP_FileIcon: return QLatin1String("file-icon");
-        case QStyle::SP_FileLinkIcon: return QLatin1String("file-link-icon");
-        case QStyle::SP_FileDialogStart: return QLatin1String("filedialog-start-icon");
-        case QStyle::SP_FileDialogEnd: return QLatin1String("filedialog-end-icon");
-        case QStyle::SP_FileDialogToParent: return QLatin1String("filedialog-parent-directory-icon");
-        case QStyle::SP_FileDialogNewFolder: return QLatin1String("filedialog-new-directory-icon");
-        case QStyle::SP_FileDialogDetailedView: return QLatin1String("filedialog-detailedview-icon");
-        case QStyle::SP_FileDialogInfoView: return QLatin1String("filedialog-infoview-icon");
-        case QStyle::SP_FileDialogContentsView: return QLatin1String("filedialog-contentsview-icon");
-        case QStyle::SP_FileDialogListView: return QLatin1String("filedialog-listview-icon");
-        case QStyle::SP_FileDialogBack: return QLatin1String("filedialog-backward-icon");
-        case QStyle::SP_DirIcon: return QLatin1String("directory-icon");
-        case QStyle::SP_DialogOkButton: return QLatin1String("dialog-ok-icon");
-        case QStyle::SP_DialogCancelButton: return QLatin1String("dialog-cancel-icon");
-        case QStyle::SP_DialogHelpButton: return QLatin1String("dialog-help-icon");
-        case QStyle::SP_DialogOpenButton: return QLatin1String("dialog-open-icon");
-        case QStyle::SP_DialogSaveButton: return QLatin1String("dialog-save-icon");
-        case QStyle::SP_DialogCloseButton: return QLatin1String("dialog-close-icon");
-        case QStyle::SP_DialogApplyButton: return QLatin1String("dialog-apply-icon");
-        case QStyle::SP_DialogResetButton: return QLatin1String("dialog-reset-icon");
-        case QStyle::SP_DialogDiscardButton: return QLatin1String("dialog-discard-icon");
-        case QStyle::SP_DialogYesButton: return QLatin1String("dialog-yes-icon");
-        case QStyle::SP_DialogNoButton: return QLatin1String("dialog-no-icon");
-        case QStyle::SP_ArrowUp: return QLatin1String("uparrow-icon");
-        case QStyle::SP_ArrowDown: return QLatin1String("downarrow-icon");
-        case QStyle::SP_ArrowLeft: return QLatin1String("leftarrow-icon");
-        case QStyle::SP_ArrowRight: return QLatin1String("rightarrow-icon");
-        case QStyle::SP_ArrowBack: return QLatin1String("backward-icon");
-        case QStyle::SP_ArrowForward: return QLatin1String("forward-icon");
-        case QStyle::SP_DirHomeIcon: return QLatin1String("home-icon");
-        case QStyle::SP_LineEditClearButton: return QLatin1String("lineedit-clear-button-icon");
-        default: return QLatin1String("");
+        case QStyle::SP_TitleBarMenuButton: return "titlebar-menu-icon"_L1;
+        case QStyle::SP_TitleBarMinButton: return "titlebar-minimize-icon"_L1;
+        case QStyle::SP_TitleBarMaxButton: return "titlebar-maximize-icon"_L1;
+        case QStyle::SP_TitleBarCloseButton: return "titlebar-close-icon"_L1;
+        case QStyle::SP_TitleBarNormalButton: return "titlebar-normal-icon"_L1;
+        case QStyle::SP_TitleBarShadeButton: return "titlebar-shade-icon"_L1;
+        case QStyle::SP_TitleBarUnshadeButton: return "titlebar-unshade-icon"_L1;
+        case QStyle::SP_TitleBarContextHelpButton: return "titlebar-contexthelp-icon"_L1;
+        case QStyle::SP_DockWidgetCloseButton: return "dockwidget-close-icon"_L1;
+        case QStyle::SP_MessageBoxInformation: return "messagebox-information-icon"_L1;
+        case QStyle::SP_MessageBoxWarning: return "messagebox-warning-icon"_L1;
+        case QStyle::SP_MessageBoxCritical: return "messagebox-critical-icon"_L1;
+        case QStyle::SP_MessageBoxQuestion: return "messagebox-question-icon"_L1;
+        case QStyle::SP_DesktopIcon: return "desktop-icon"_L1;
+        case QStyle::SP_TrashIcon: return "trash-icon"_L1;
+        case QStyle::SP_ComputerIcon: return "computer-icon"_L1;
+        case QStyle::SP_DriveFDIcon: return "floppy-icon"_L1;
+        case QStyle::SP_DriveHDIcon: return "harddisk-icon"_L1;
+        case QStyle::SP_DriveCDIcon: return "cd-icon"_L1;
+        case QStyle::SP_DriveDVDIcon: return "dvd-icon"_L1;
+        case QStyle::SP_DriveNetIcon: return "network-icon"_L1;
+        case QStyle::SP_DirOpenIcon: return "directory-open-icon"_L1;
+        case QStyle::SP_DirClosedIcon: return "directory-closed-icon"_L1;
+        case QStyle::SP_DirLinkIcon: return "directory-link-icon"_L1;
+        case QStyle::SP_FileIcon: return "file-icon"_L1;
+        case QStyle::SP_FileLinkIcon: return "file-link-icon"_L1;
+        case QStyle::SP_FileDialogStart: return "filedialog-start-icon"_L1;
+        case QStyle::SP_FileDialogEnd: return "filedialog-end-icon"_L1;
+        case QStyle::SP_FileDialogToParent: return "filedialog-parent-directory-icon"_L1;
+        case QStyle::SP_FileDialogNewFolder: return "filedialog-new-directory-icon"_L1;
+        case QStyle::SP_FileDialogDetailedView: return "filedialog-detailedview-icon"_L1;
+        case QStyle::SP_FileDialogInfoView: return "filedialog-infoview-icon"_L1;
+        case QStyle::SP_FileDialogContentsView: return "filedialog-contentsview-icon"_L1;
+        case QStyle::SP_FileDialogListView: return "filedialog-listview-icon"_L1;
+        case QStyle::SP_FileDialogBack: return "filedialog-backward-icon"_L1;
+        case QStyle::SP_DirIcon: return "directory-icon"_L1;
+        case QStyle::SP_DialogOkButton: return "dialog-ok-icon"_L1;
+        case QStyle::SP_DialogCancelButton: return "dialog-cancel-icon"_L1;
+        case QStyle::SP_DialogHelpButton: return "dialog-help-icon"_L1;
+        case QStyle::SP_DialogOpenButton: return "dialog-open-icon"_L1;
+        case QStyle::SP_DialogSaveButton: return "dialog-save-icon"_L1;
+        case QStyle::SP_DialogCloseButton: return "dialog-close-icon"_L1;
+        case QStyle::SP_DialogApplyButton: return "dialog-apply-icon"_L1;
+        case QStyle::SP_DialogResetButton: return "dialog-reset-icon"_L1;
+        case QStyle::SP_DialogDiscardButton: return "dialog-discard-icon"_L1;
+        case QStyle::SP_DialogYesButton: return "dialog-yes-icon"_L1;
+        case QStyle::SP_DialogNoButton: return "dialog-no-icon"_L1;
+        case QStyle::SP_ArrowUp: return "uparrow-icon"_L1;
+        case QStyle::SP_ArrowDown: return "downarrow-icon"_L1;
+        case QStyle::SP_ArrowLeft: return "leftarrow-icon"_L1;
+        case QStyle::SP_ArrowRight: return "rightarrow-icon"_L1;
+        case QStyle::SP_ArrowBack: return "backward-icon"_L1;
+        case QStyle::SP_ArrowForward: return "forward-icon"_L1;
+        case QStyle::SP_DirHomeIcon: return "home-icon"_L1;
+        case QStyle::SP_LineEditClearButton: return "lineedit-clear-button-icon"_L1;
+        default: return ""_L1;
     }
 }
 
@@ -5616,25 +5615,25 @@ int QStyleSheetStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWi
     QRenderRule rule = renderRule(w, opt);
     QString s;
     switch (sh) {
-        case SH_LineEdit_PasswordCharacter: s = QLatin1String("lineedit-password-character"); break;
-        case SH_LineEdit_PasswordMaskDelay: s = QLatin1String("lineedit-password-mask-delay"); break;
-        case SH_DitherDisabledText: s = QLatin1String("dither-disabled-text"); break;
-        case SH_EtchDisabledText: s = QLatin1String("etch-disabled-text"); break;
-        case SH_ItemView_ActivateItemOnSingleClick: s = QLatin1String("activate-on-singleclick"); break;
-        case SH_ItemView_ShowDecorationSelected: s = QLatin1String("show-decoration-selected"); break;
-        case SH_Table_GridLineColor: s = QLatin1String("gridline-color"); break;
-        case SH_DialogButtonLayout: s = QLatin1String("button-layout"); break;
-        case SH_ToolTipLabel_Opacity: s = QLatin1String("opacity"); break;
-        case SH_ComboBox_Popup: s = QLatin1String("combobox-popup"); break;
-        case SH_ComboBox_ListMouseTracking: s = QLatin1String("combobox-list-mousetracking"); break;
-        case SH_MenuBar_AltKeyNavigation: s = QLatin1String("menubar-altkey-navigation"); break;
-        case SH_Menu_Scrollable: s = QLatin1String("menu-scrollable"); break;
-        case SH_DrawMenuBarSeparator: s = QLatin1String("menubar-separator"); break;
-        case SH_MenuBar_MouseTracking: s = QLatin1String("mouse-tracking"); break;
-        case SH_SpinBox_ClickAutoRepeatRate: s = QLatin1String("spinbox-click-autorepeat-rate"); break;
-        case SH_SpinControls_DisableOnBounds: s = QLatin1String("spincontrol-disable-on-bounds"); break;
-        case SH_MessageBox_TextInteractionFlags: s = QLatin1String("messagebox-text-interaction-flags"); break;
-        case SH_ToolButton_PopupDelay: s = QLatin1String("toolbutton-popup-delay"); break;
+        case SH_LineEdit_PasswordCharacter: s = "lineedit-password-character"_L1; break;
+        case SH_LineEdit_PasswordMaskDelay: s = "lineedit-password-mask-delay"_L1; break;
+        case SH_DitherDisabledText: s = "dither-disabled-text"_L1; break;
+        case SH_EtchDisabledText: s = "etch-disabled-text"_L1; break;
+        case SH_ItemView_ActivateItemOnSingleClick: s = "activate-on-singleclick"_L1; break;
+        case SH_ItemView_ShowDecorationSelected: s = "show-decoration-selected"_L1; break;
+        case SH_Table_GridLineColor: s = "gridline-color"_L1; break;
+        case SH_DialogButtonLayout: s = "button-layout"_L1; break;
+        case SH_ToolTipLabel_Opacity: s = "opacity"_L1; break;
+        case SH_ComboBox_Popup: s = "combobox-popup"_L1; break;
+        case SH_ComboBox_ListMouseTracking: s = "combobox-list-mousetracking"_L1; break;
+        case SH_MenuBar_AltKeyNavigation: s = "menubar-altkey-navigation"_L1; break;
+        case SH_Menu_Scrollable: s = "menu-scrollable"_L1; break;
+        case SH_DrawMenuBarSeparator: s = "menubar-separator"_L1; break;
+        case SH_MenuBar_MouseTracking: s = "mouse-tracking"_L1; break;
+        case SH_SpinBox_ClickAutoRepeatRate: s = "spinbox-click-autorepeat-rate"_L1; break;
+        case SH_SpinControls_DisableOnBounds: s = "spincontrol-disable-on-bounds"_L1; break;
+        case SH_MessageBox_TextInteractionFlags: s = "messagebox-text-interaction-flags"_L1; break;
+        case SH_ToolButton_PopupDelay: s = "toolbutton-popup-delay"_L1; break;
         case SH_ToolBox_SelectedPageTitleBold:
             if (renderRule(w, opt, PseudoElement_ToolBoxTab).hasFont)
                 return 0;
@@ -5643,12 +5642,12 @@ int QStyleSheetStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWi
             if (rule.hasPalette() && rule.palette()->foreground.style() != Qt::NoBrush)
                 return rule.palette()->foreground.color().rgba();
             break;
-        case SH_ScrollView_FrameOnlyAroundContents: s = QLatin1String("scrollview-frame-around-contents"); break;
-        case SH_ScrollBar_ContextMenu: s = QLatin1String("scrollbar-contextmenu"); break;
-        case SH_ScrollBar_LeftClickAbsolutePosition: s = QLatin1String("scrollbar-leftclick-absolute-position"); break;
-        case SH_ScrollBar_MiddleClickAbsolutePosition: s = QLatin1String("scrollbar-middleclick-absolute-position"); break;
-        case SH_ScrollBar_RollBetweenButtons: s = QLatin1String("scrollbar-roll-between-buttons"); break;
-        case SH_ScrollBar_ScrollWhenPointerLeavesControl: s = QLatin1String("scrollbar-scroll-when-pointer-leaves-control"); break;
+        case SH_ScrollView_FrameOnlyAroundContents: s = "scrollview-frame-around-contents"_L1; break;
+        case SH_ScrollBar_ContextMenu: s = "scrollbar-contextmenu"_L1; break;
+        case SH_ScrollBar_LeftClickAbsolutePosition: s = "scrollbar-leftclick-absolute-position"_L1; break;
+        case SH_ScrollBar_MiddleClickAbsolutePosition: s = "scrollbar-middleclick-absolute-position"_L1; break;
+        case SH_ScrollBar_RollBetweenButtons: s = "scrollbar-roll-between-buttons"_L1; break;
+        case SH_ScrollBar_ScrollWhenPointerLeavesControl: s = "scrollbar-scroll-when-pointer-leaves-control"_L1; break;
         case SH_TabBar_Alignment:
 #if QT_CONFIG(tabwidget)
             if (qobject_cast<const QTabWidget *>(w)) {
@@ -5657,7 +5656,7 @@ int QStyleSheetStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWi
                     return rule.position()->position;
             }
 #endif // QT_CONFIG(tabwidget)
-            s = QLatin1String("alignment");
+            s = "alignment"_L1;
             break;
 #if QT_CONFIG(tabbar)
         case SH_TabBar_CloseButtonPosition:
@@ -5671,8 +5670,8 @@ int QStyleSheetStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWi
             }
             break;
 #endif
-        case SH_TabBar_ElideMode: s = QLatin1String("tabbar-elide-mode"); break;
-        case SH_TabBar_PreferNoArrows: s = QLatin1String("tabbar-prefer-no-arrows"); break;
+        case SH_TabBar_ElideMode: s = "tabbar-elide-mode"_L1; break;
+        case SH_TabBar_PreferNoArrows: s = "tabbar-prefer-no-arrows"_L1; break;
         case SH_ComboBox_PopupFrameStyle:
 #if QT_CONFIG(combobox)
             if (qobject_cast<const QComboBox *>(w)) {
@@ -5686,8 +5685,8 @@ int QStyleSheetStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWi
             }
 #endif // QT_CONFIG(combobox)
             break;
-        case SH_DialogButtonBox_ButtonsHaveIcons: s = QLatin1String("dialogbuttonbox-buttons-have-icons"); break;
-        case SH_Workspace_FillSpaceOnMaximize: s = QLatin1String("mdi-fill-space-on-maximize"); break;
+        case SH_DialogButtonBox_ButtonsHaveIcons: s = "dialogbuttonbox-buttons-have-icons"_L1; break;
+        case SH_Workspace_FillSpaceOnMaximize: s = "mdi-fill-space-on-maximize"_L1; break;
         case SH_TitleBar_NoBorder:
             if (rule.hasBorder())
                 return !rule.border()->borders[LeftEdge];
@@ -5698,10 +5697,10 @@ int QStyleSheetStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWi
                 return 1;
             break;
                                    }
-        case SH_ItemView_ArrowKeysNavigateIntoChildren: s = QLatin1String("arrow-keys-navigate-into-children"); break;
-        case SH_ItemView_PaintAlternatingRowColorsForEmptyArea: s = QLatin1String("paint-alternating-row-colors-for-empty-area"); break;
-        case SH_TitleBar_ShowToolTipsOnButtons: s = QLatin1String("titlebar-show-tooltips-on-buttons"); break;
-        case SH_Widget_Animation_Duration: s = QLatin1String("widget-animation-duration"); break;
+        case SH_ItemView_ArrowKeysNavigateIntoChildren: s = "arrow-keys-navigate-into-children"_L1; break;
+        case SH_ItemView_PaintAlternatingRowColorsForEmptyArea: s = "paint-alternating-row-colors-for-empty-area"_L1; break;
+        case SH_TitleBar_ShowToolTipsOnButtons: s = "titlebar-show-tooltips-on-buttons"_L1; break;
+        case SH_Widget_Animation_Duration: s = "widget-animation-duration"_L1; break;
         case SH_ScrollBar_Transient:
             if (!rule.hasNativeBorder() || rule.hasBox())
                 return 0;
@@ -6024,9 +6023,9 @@ QRect QStyleSheetStyle::subControlRect(ComplexControl cc, const QStyleOptionComp
         if (hasStyleRule(w, PseudoElement_MdiCloseButton)
             || hasStyleRule(w, PseudoElement_MdiNormalButton)
             || hasStyleRule(w, PseudoElement_MdiMinButton)) {
-            QList<QVariant> layout = rule.styleHint(QLatin1String("button-layout")).toList();
+            QList<QVariant> layout = rule.styleHint("button-layout"_L1).toList();
             if (layout.isEmpty())
-                layout = subControlLayout(QLatin1String("mNX"));
+                layout = subControlLayout("mNX"_L1);
 
             int x = 0, width = 0;
             QRenderRule subRule;
@@ -6350,7 +6349,7 @@ void QStyleSheetStyle::updateStyleSheetFont(QWidget* w) const
 {
     // Qt's fontDialog relies on the font of the sample edit for its selection,
     // we should never override it.
-    if (w->objectName() == QLatin1String("qt_fontDialog_sampleEdit"))
+    if (w->objectName() == "qt_fontDialog_sampleEdit"_L1)
         return;
 
     QWidget *container = containerWidget(w);
@@ -6448,7 +6447,7 @@ Qt::Alignment QStyleSheetStyle::resolveAlignment(Qt::LayoutDirection layDir, Qt:
 // (and hence has the correct object name).
 bool QStyleSheetStyle::isNaturalChild(const QObject *obj)
 {
-    if (obj->objectName().startsWith(QLatin1String("qt_")))
+    if (obj->objectName().startsWith("qt_"_L1))
         return true;
 
     return false;

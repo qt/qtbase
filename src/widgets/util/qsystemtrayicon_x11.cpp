@@ -66,6 +66,8 @@
 #ifndef QT_NO_SYSTEMTRAYICON
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static inline unsigned long locateSystemTray()
 {
     return (unsigned long)QGuiApplication::platformNativeInterface()->nativeResourceForScreen(QByteArrayLiteral("traywindow"), QGuiApplication::primaryScreen());
@@ -321,7 +323,7 @@ bool QSystemTrayIconPrivate::isSystemTrayAvailable_sys()
 
     // no QPlatformSystemTrayIcon so fall back to default xcb platform behavior
     const QString platform = QGuiApplication::platformName();
-    if (platform.compare(QLatin1String("xcb"), Qt::CaseInsensitive) == 0)
+    if (platform.compare("xcb"_L1, Qt::CaseInsensitive) == 0)
        return locateSystemTray();
     return false;
 }

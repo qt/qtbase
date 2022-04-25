@@ -52,6 +52,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #define RANGE 4
 
 static bool resizeHorizontalDirectionFixed = false;
@@ -219,7 +221,7 @@ void QWidgetResizeHandler::mouseMoveEvent(QMouseEvent *e)
     QPoint pp = globalPos - moveOffset;
 
     // Workaround for window managers which refuse to move a tool window partially offscreen.
-    if (QGuiApplication::platformName() == QLatin1String("xcb")) {
+    if (QGuiApplication::platformName() == "xcb"_L1) {
         const QRect desktop = QWidgetPrivate::availableScreenGeometry(widget);
         pp.rx() = qMax(pp.x(), desktop.left());
         pp.ry() = qMax(pp.y(), desktop.top());

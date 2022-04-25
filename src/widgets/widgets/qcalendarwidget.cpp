@@ -63,6 +63,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 enum {
     RowCount = 6,
     ColumnCount = 7,
@@ -105,9 +107,9 @@ protected:
 QString QCalendarDateSectionValidator::highlightString(const QString &str, int pos)
 {
     if (pos == 0)
-        return QLatin1String("<b>") + str + QLatin1String("</b>");
+        return "<b>"_L1 + str + "</b>"_L1;
     int startPos = str.length() - pos;
-    return QStringView{str}.mid(0, startPos) + QLatin1String("<b>") + QStringView{str}.mid(startPos, pos) + QLatin1String("</b>");
+    return QStringView{str}.mid(0, startPos) + "<b>"_L1 + QStringView{str}.mid(startPos, pos) + "</b>"_L1;
 
 }
 
@@ -1758,7 +1760,7 @@ void QCalendarWidgetPrivate::createNavigationBar(QWidget *widget)
 {
     Q_Q(QCalendarWidget);
     navBarBackground = new QWidget(widget);
-    navBarBackground->setObjectName(QLatin1String("qt_calendar_navigationbar"));
+    navBarBackground->setObjectName("qt_calendar_navigationbar"_L1);
     navBarBackground->setAutoFillBackground(true);
     navBarBackground->setBackgroundRole(QPalette::Highlight);
 
@@ -1819,11 +1821,11 @@ void QCalendarWidgetPrivate::createNavigationBar(QWidget *widget)
     monthButton->setFocusPolicy(Qt::NoFocus);
 
     //set names for the header controls.
-    prevMonth->setObjectName(QLatin1String("qt_calendar_prevmonth"));
-    nextMonth->setObjectName(QLatin1String("qt_calendar_nextmonth"));
-    monthButton->setObjectName(QLatin1String("qt_calendar_monthbutton"));
-    yearButton->setObjectName(QLatin1String("qt_calendar_yearbutton"));
-    yearEdit->setObjectName(QLatin1String("qt_calendar_yearedit"));
+    prevMonth->setObjectName("qt_calendar_prevmonth"_L1);
+    nextMonth->setObjectName("qt_calendar_nextmonth"_L1);
+    monthButton->setObjectName("qt_calendar_monthbutton"_L1);
+    yearButton->setObjectName("qt_calendar_yearbutton"_L1);
+    yearEdit->setObjectName("qt_calendar_yearedit"_L1);
 
     updateMonthMenu();
     showMonth(m_model->m_date.year(m_model->m_calendar), m_model->m_date.month(m_model->m_calendar));
@@ -2135,7 +2137,7 @@ QCalendarWidget::QCalendarWidget(QWidget *parent)
     d->m_model->m_dayFormats.insert(Qt::Saturday, fmt);
     d->m_model->m_dayFormats.insert(Qt::Sunday, fmt);
     d->m_view = new QCalendarView(this);
-    d->m_view->setObjectName(QLatin1String("qt_calendar_calendarview"));
+    d->m_view->setObjectName("qt_calendar_calendarview"_L1);
     d->m_view->setModel(d->m_model);
     d->m_model->setView(d->m_view);
     d->m_view->setSelectionBehavior(QAbstractItemView::SelectItems);
@@ -2278,7 +2280,7 @@ QSize QCalendarWidget::minimumSizeHint() const
         headerW += monthW + buttonDecoMargin;
 
         fm = d->yearButton->fontMetrics();
-        headerW += fm.boundingRect(QLatin1String("5555")).width() + buttonDecoMargin;
+        headerW += fm.boundingRect("5555"_L1).width() + buttonDecoMargin;
 
         headerSize = QSize(headerW, headerH);
     }

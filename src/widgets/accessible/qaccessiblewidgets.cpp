@@ -96,6 +96,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QString qt_accStripAmp(const QString &text);
 QString qt_accHotKey(const QString &text);
 
@@ -114,8 +116,8 @@ QList<QWidget*> childWidgets(const QWidget *widget)
 #if QT_CONFIG(menu)
               && !qobject_cast<QMenu*>(w)
 #endif
-              && objectName != QLatin1String("qt_rubberband")
-              && objectName != QLatin1String("qt_qmainwindow_extended_splitter")) {
+              && objectName != "qt_rubberband"_L1
+              && objectName != "qt_qmainwindow_extended_splitter"_L1) {
             widgets.append(w);
         }
     }
@@ -432,7 +434,7 @@ QString QAccessibleMdiSubWindow::text(QAccessible::Text textType) const
 {
     if (textType == QAccessible::Name) {
         QString title = mdiSubWindow()->windowTitle();
-        title.replace(QLatin1String("[*]"), QLatin1String(""));
+        title.replace("[*]"_L1, ""_L1);
         return title;
     }
     return QAccessibleWidget::text(textType);
@@ -570,7 +572,7 @@ QCalendarWidget *QAccessibleCalendarWidget::calendarWidget() const
 QAbstractItemView *QAccessibleCalendarWidget::calendarView() const
 {
     for (QObject *child : calendarWidget()->children()) {
-        if (child->objectName() == QLatin1String("qt_calendar_calendarview"))
+        if (child->objectName() == "qt_calendar_calendarview"_L1)
             return static_cast<QAbstractItemView *>(child);
     }
     return nullptr;
@@ -579,7 +581,7 @@ QAbstractItemView *QAccessibleCalendarWidget::calendarView() const
 QWidget *QAccessibleCalendarWidget::navigationBar() const
 {
     for (QObject *child : calendarWidget()->children()) {
-        if (child->objectName() == QLatin1String("qt_calendar_navigationbar"))
+        if (child->objectName() == "qt_calendar_navigationbar"_L1)
             return static_cast<QWidget *>(child);
     }
     return nullptr;
@@ -852,12 +854,12 @@ QString QAccessibleTextWidget::attributes(int offset, int *startOffset, int *end
     AttributeFormatter attrs;
     QString family = charFormatFont.families().value(0, QString());
     if (!family.isEmpty()) {
-        family = family.replace(u'\\', QLatin1String("\\\\"));
-        family = family.replace(u':', QLatin1String("\\:"));
-        family = family.replace(u',', QLatin1String("\\,"));
-        family = family.replace(u'=', QLatin1String("\\="));
-        family = family.replace(u';', QLatin1String("\\;"));
-        family = family.replace(u'\"', QLatin1String("\\\""));
+        family = family.replace(u'\\', "\\\\"_L1);
+        family = family.replace(u':', "\\:"_L1);
+        family = family.replace(u',', "\\,"_L1);
+        family = family.replace(u'=', "\\="_L1);
+        family = family.replace(u';', "\\;"_L1);
+        family = family.replace(u'\"', "\\\""_L1);
         attrs["font-family"] = u'"' + family + u'"';
     }
 

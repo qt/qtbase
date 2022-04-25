@@ -45,11 +45,13 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 QToolBarExtension::QToolBarExtension(QWidget *parent)
     : QToolButton(parent)
     , m_orientation(Qt::Horizontal)
 {
-    setObjectName(QLatin1String("qt_toolbar_ext_button"));
+    setObjectName("qt_toolbar_ext_button"_L1);
     setAutoRaise(true);
     setOrientation(m_orientation);
     setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);

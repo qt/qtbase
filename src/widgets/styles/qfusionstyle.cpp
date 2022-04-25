@@ -93,6 +93,7 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
 using namespace QStyleHelper;
 
 enum Direction {
@@ -259,7 +260,7 @@ static void qt_fusion_draw_arrow(Qt::ArrowType type, QPainter *painter, const QS
     const int size = qMin(arrowMax, rectMax);
 
     QPixmap cachePixmap;
-    QString cacheKey = QStyleHelper::uniqueName(QLatin1String("fusion-arrow"), option, rect.size())
+    QString cacheKey = QStyleHelper::uniqueName("fusion-arrow"_L1, option, rect.size())
             % HexString<uint>(type)
             % HexString<uint>(color.rgba());
     if (!QPixmapCache::find(cacheKey, &cachePixmap)) {
@@ -390,7 +391,7 @@ QFusionStylePrivate::QFusionStylePrivate()
 */
 QFusionStyle::QFusionStyle() : QCommonStyle(*new QFusionStylePrivate)
 {
-    setObjectName(QLatin1String("Fusion"));
+    setObjectName("Fusion"_L1);
 }
 
 /*!
@@ -470,7 +471,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
     // No frame drawn
     case PE_FrameGroupBox:
     {
-        QPixmap pixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/fusion_groupbox.png"));
+        QPixmap pixmap(":/qt-project.org/styles/commonstyle/images/fusion_groupbox.png"_L1);
         int topMargin = 0;
         auto control = qobject_cast<const QGroupBox *>(widget);
         if (control && !control->isCheckable() && control->title().isEmpty()) {
@@ -1271,7 +1272,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
         // Draws the header in tables.
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
             const QStyleOptionHeaderV2 *headerV2 = qstyleoption_cast<const QStyleOptionHeaderV2 *>(option);
-            QString pixmapName = QStyleHelper::uniqueName(QLatin1String("headersection"), option, option->rect.size());
+            QString pixmapName = QStyleHelper::uniqueName("headersection"_L1, option, option->rect.size());
             pixmapName += QString::number(- int(header->position));
             pixmapName += QString::number(- int(header->orientation));
             if (headerV2)
@@ -1988,7 +1989,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
             QPixmap cache;
-            QString pixmapName = QStyleHelper::uniqueName(QLatin1String("spinbox"), spinBox, spinBox->rect.size());
+            QString pixmapName = QStyleHelper::uniqueName("spinbox"_L1, spinBox, spinBox->rect.size());
             if (!QPixmapCache::find(pixmapName, &cache)) {
 
                 cache = styleCachePixmap(spinBox->rect.size());
@@ -2698,15 +2699,15 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
             bool sunken = comboBox->state & State_On; // play dead, if combobox has no items
             bool isEnabled = (comboBox->state & State_Enabled);
             QPixmap cache;
-            QString pixmapName = QStyleHelper::uniqueName(QLatin1String("combobox"), option, comboBox->rect.size());
+            QString pixmapName = QStyleHelper::uniqueName("combobox"_L1, option, comboBox->rect.size());
             if (sunken)
-                pixmapName += QLatin1String("-sunken");
+                pixmapName += "-sunken"_L1;
             if (comboBox->editable)
-                pixmapName += QLatin1String("-editable");
+                pixmapName += "-editable"_L1;
             if (isEnabled)
-                pixmapName += QLatin1String("-enabled");
+                pixmapName += "-enabled"_L1;
             if (!comboBox->frame)
-                pixmapName += QLatin1String("-frameless");
+                pixmapName += "-frameless"_L1;
 
             if (!QPixmapCache::find(pixmapName, &cache)) {
                 cache = styleCachePixmap(comboBox->rect.size());
@@ -2819,7 +2820,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 grooveColor.setHsv(buttonColor.hue(),
                                    qMin(255, (int)(buttonColor.saturation())),
                                    qMin(255, (int)(buttonColor.value()*0.9)));
-                QString groovePixmapName = QStyleHelper::uniqueName(QLatin1String("slider_groove"), option, groove.size());
+                QString groovePixmapName = QStyleHelper::uniqueName("slider_groove"_L1, option, groove.size());
                 QRect pixmapRect(0, 0, groove.width(), groove.height());
 
                 // draw background groove
@@ -2850,7 +2851,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
 
                 // draw blue groove highlight
                 QRect clipRect;
-                groovePixmapName += QLatin1String("_blue");
+                groovePixmapName += "_blue"_L1;
                 if (!QPixmapCache::find(groovePixmapName, &cache)) {
                     cache = styleCachePixmap(pixmapRect.size());
                     cache.fill(Qt::transparent);
@@ -2957,7 +2958,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
             }
             // draw handle
             if ((option->subControls & SC_SliderHandle) ) {
-                QString handlePixmapName = QStyleHelper::uniqueName(QLatin1String("slider_handle"), option, handle.size());
+                QString handlePixmapName = QStyleHelper::uniqueName("slider_handle"_L1, option, handle.size());
                 if (!QPixmapCache::find(handlePixmapName, &cache)) {
                     cache = styleCachePixmap(handle.size());
                     cache.fill(Qt::transparent);

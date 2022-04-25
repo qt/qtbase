@@ -51,6 +51,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 //#define QSPINBOX_QSBDEBUG
 #ifdef QSPINBOX_QSBDEBUG
 #  define QSBDEBUG qDebug
@@ -518,7 +520,7 @@ QString QSpinBox::textFromValue(int value) const
     QString str;
 
     if (d->displayIntegerBase != 10) {
-        const QLatin1String prefix = value < 0 ? QLatin1String("-") : QLatin1String();
+        const auto prefix = value < 0 ? "-"_L1 : ""_L1;
         str = prefix + QString::number(qAbs(value), d->displayIntegerBase);
     } else {
         str = locale().toString(value);
@@ -1126,8 +1128,8 @@ QVariant QSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
     int num = min;
 
     if (max != min && (copy.isEmpty()
-                       || (min < 0 && copy == QLatin1String("-"))
-                       || (max >= 0 && copy == QLatin1String("+")))) {
+                       || (min < 0 && copy == "-"_L1)
+                       || (max >= 0 && copy == "+"_L1))) {
         state = QValidator::Intermediate;
         QSBDEBUG() << __FILE__ << __LINE__<< "num is set to" << num;
     } else if (copy.startsWith(u'-') && min >= 0) {

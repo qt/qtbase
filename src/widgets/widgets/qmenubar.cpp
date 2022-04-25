@@ -71,6 +71,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 class QMenuBarExtension : public QToolButton
 {
 public:
@@ -83,7 +85,7 @@ public:
 QMenuBarExtension::QMenuBarExtension(QWidget *parent)
     : QToolButton(parent)
 {
-    setObjectName(QLatin1String("qt_menubar_ext_button"));
+    setObjectName("qt_menubar_ext_button"_L1);
     setAutoRaise(true);
 #if QT_CONFIG(menu)
     setPopupMode(QToolButton::InstantPopup);

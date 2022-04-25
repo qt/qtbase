@@ -132,6 +132,8 @@ static void initResources()
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 // Helper macro for static functions to check on the existence of the application class.
 #define CHECK_QAPP_INSTANCE(...) \
     if (Q_LIKELY(QCoreApplication::instance())) { \
@@ -411,10 +413,10 @@ void QApplicationPrivate::process_cmdline()
             // obsolete argument
 #ifndef QT_NO_STYLE_STYLESHEET
         } else if (strcmp(arg, "-stylesheet") == 0 && i < argc -1) {
-            styleSheet = QLatin1String("file:///");
+            styleSheet = "file:///"_L1;
             styleSheet.append(QString::fromLocal8Bit(argv[++i]));
         } else if (strncmp(arg, "-stylesheet=", 12) == 0) {
-            styleSheet = QLatin1String("file:///");
+            styleSheet = "file:///"_L1;
             styleSheet.append(QString::fromLocal8Bit(arg + 12));
 #endif
         } else if (qstrcmp(arg, "-widgetcount") == 0) {
@@ -551,7 +553,7 @@ void QApplicationPrivate::initialize()
             } else {
                 qWarning("QApplication: invalid style override '%s' passed, ignoring it.\n"
                     "\tAvailable styles: %s", qPrintable(styleOverride),
-                    qPrintable(QStyleFactory::keys().join(QLatin1String(", "))));
+                    qPrintable(QStyleFactory::keys().join(", "_L1)));
             }
         }
 

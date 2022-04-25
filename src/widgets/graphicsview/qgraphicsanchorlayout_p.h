@@ -269,42 +269,44 @@ struct AnchorVertexPair : public AnchorVertex {
 #ifdef QT_DEBUG
 inline QString AnchorVertex::toString() const
 {
+    using namespace Qt::StringLiterals;
+
     if (!m_item)
         return QString::fromLatin1("NULL_%1").arg(quintptr(this));
 
     QString edge;
     switch (m_edge) {
     case Qt::AnchorLeft:
-        edge = QLatin1String("Left");
+        edge = "Left"_L1;
         break;
     case Qt::AnchorHorizontalCenter:
-        edge = QLatin1String("HorizontalCenter");
+        edge = "HorizontalCenter"_L1;
         break;
     case Qt::AnchorRight:
-        edge = QLatin1String("Right");
+        edge = "Right"_L1;
         break;
     case Qt::AnchorTop:
-        edge = QLatin1String("Top");
+        edge = "Top"_L1;
         break;
     case Qt::AnchorVerticalCenter:
-        edge = QLatin1String("VerticalCenter");
+        edge = "VerticalCenter"_L1;
         break;
     case Qt::AnchorBottom:
-        edge = QLatin1String("Bottom");
+        edge = "Bottom"_L1;
         break;
     default:
-        edge = QLatin1String("None");
+        edge = "None"_L1;
         break;
     }
     QString itemName;
     if (m_item->isLayout()) {
-        itemName = QLatin1String("layout");
+        itemName = "layout"_L1;
     } else {
         if (QGraphicsItem *item = m_item->graphicsItem()) {
             itemName = item->data(0).toString();
         }
     }
-    edge.insert(0, QLatin1String("%1_"));
+    edge.insert(0, "%1_"_L1);
     return edge.arg(itemName);
 }
 #endif

@@ -41,42 +41,44 @@
 
 #include <QtGui>
 
+using namespace Qt::StringLiterals;
+
 //! [0]
 QCustomPixmapStyle::QCustomPixmapStyle() :
     QPixmapStyle()
 {
 //! [1]
     addDescriptor(PB_Enabled,
-                  QLatin1String("://button/core_button_inactive.png"),
+                  "://button/core_button_inactive.png"_L1,
                   QMargins(13, 13, 13, 13),
                   QTileRules(Qt::RepeatTile, Qt::StretchTile));
 //! [1]
     addDescriptor(PB_Checked,
-                  QLatin1String("://button/core_button_enabled_selected.png"),
+                  "://button/core_button_enabled_selected.png"_L1,
                   QMargins(13, 13, 13, 13),
                   QTileRules(Qt::RepeatTile, Qt::StretchTile));
     addDescriptor(PB_Pressed,
-                  QLatin1String("://button/core_button_pressed.png"),
+                  "://button/core_button_pressed.png"_L1,
                   QMargins(13, 13, 13, 13),
                   QTileRules(Qt::RepeatTile, Qt::StretchTile));
     addDescriptor(PB_Disabled,
-                  QLatin1String("://button/core_button_disabled.png"),
+                  "://button/core_button_disabled.png"_L1,
                   QMargins(13, 13, 13, 13),
                   QTileRules(Qt::RepeatTile, Qt::StretchTile));
     addDescriptor(PB_PressedDisabled,
-                  QLatin1String("://button/core_button_disabled_selected.png"),
+                  "://button/core_button_disabled_selected.png"_L1,
                   QMargins(13, 13, 13, 13),
                   QTileRules(Qt::RepeatTile, Qt::StretchTile));
 
 //! [2]
     addDescriptor(LE_Enabled,
-                  QLatin1String("://lineedit/core_textinput_bg.png"),
+                  "://lineedit/core_textinput_bg.png"_L1,
                   QMargins(8, 8, 8, 8));
     addDescriptor(LE_Disabled,
-                  QLatin1String("://lineedit/core_textinput_bg_disabled.png"),
+                  "://lineedit/core_textinput_bg_disabled.png"_L1,
                   QMargins(8, 8, 8, 8));
     addDescriptor(LE_Focused,
-                  QLatin1String("://lineedit/core_textinput_bg_highlight.png"),
+                  "://lineedit/core_textinput_bg_highlight.png"_L1,
                   QMargins(8, 8, 8, 8));
 
     copyDescriptor(LE_Enabled, TE_Enabled);

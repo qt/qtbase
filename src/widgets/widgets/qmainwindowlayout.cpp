@@ -84,6 +84,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 extern QMainWindowLayout *qt_mainwindow_layout(const QMainWindow *window);
 
 /******************************************************************************
@@ -100,14 +102,14 @@ static void dumpLayout(QTextStream &qout, const QDockAreaLayoutItem &item, QStri
             << "pos: " << item.pos << " size:" << item.size
             << " gap:" << (item.flags & QDockAreaLayoutItem::GapItem)
             << " keepSize:" << (item.flags & QDockAreaLayoutItem::KeepSize) << '\n';
-    indent += QLatin1String("  ");
+    indent += "  "_L1;
     if (item.widgetItem != nullptr) {
         qout << indent << "widget: "
             << item.widgetItem->widget()->metaObject()->className()
             << " \"" << item.widgetItem->widget()->windowTitle() << "\"\n";
     } else if (item.subinfo != nullptr) {
         qout << indent << "subinfo:\n";
-        dumpLayout(qout, *item.subinfo, indent + QLatin1String("  "));
+        dumpLayout(qout, *item.subinfo, indent + "  "_L1);
     } else if (item.placeHolderItem != nullptr) {
         QRect r = item.placeHolderItem->topLevelRect;
         qout << indent << "placeHolder: "
@@ -138,11 +140,11 @@ static void dumpLayout(QTextStream &qout, const QDockAreaLayoutInfo &layout, QSt
 #endif
             << '\n';
 
-    indent += QLatin1String("  ");
+    indent += "  "_L1;
 
     for (int i = 0; i < layout.item_list.count(); ++i) {
         qout << indent << "Item: " << i << '\n';
-        dumpLayout(qout, layout.item_list.at(i), indent + QLatin1String("  "));
+        dumpLayout(qout, layout.item_list.at(i), indent + "  "_L1);
     }
 }
 
@@ -155,13 +157,13 @@ static void dumpLayout(QTextStream &qout, const QDockAreaLayout &layout)
             << layout.rect.height() << '\n';
 
     qout << "TopDockArea:\n";
-    dumpLayout(qout, layout.docks[QInternal::TopDock], QLatin1String("  "));
+    dumpLayout(qout, layout.docks[QInternal::TopDock], "  "_L1);
     qout << "LeftDockArea:\n";
-    dumpLayout(qout, layout.docks[QInternal::LeftDock], QLatin1String("  "));
+    dumpLayout(qout, layout.docks[QInternal::LeftDock], "  "_L1);
     qout << "RightDockArea:\n";
-    dumpLayout(qout, layout.docks[QInternal::RightDock], QLatin1String("  "));
+    dumpLayout(qout, layout.docks[QInternal::RightDock], "  "_L1);
     qout << "BottomDockArea:\n";
-    dumpLayout(qout, layout.docks[QInternal::BottomDock], QLatin1String("  "));
+    dumpLayout(qout, layout.docks[QInternal::BottomDock], "  "_L1);
 }
 
 QDebug operator<<(QDebug debug, const QDockAreaLayout &layout)
@@ -1893,7 +1895,7 @@ QWidget *QMainWindowLayout::getSeparatorWidget()
         result = new QWidget(parentWidget());
         result->setAttribute(Qt::WA_MouseNoMask, true);
         result->setAutoFillBackground(false);
-        result->setObjectName(QLatin1String("qt_qmainwindow_extended_splitter"));
+        result->setObjectName("qt_qmainwindow_extended_splitter"_L1);
     }
     usedSeparatorWidgets.insert(result);
     return result;
@@ -2444,7 +2446,7 @@ QMainWindowLayout::QMainWindowLayout(QMainWindow *mainwindow, QLayout *parentLay
 #endif // QT_CONFIG(dockwidget)
     pluggingWidget = nullptr;
 
-    setObjectName(mainwindow->objectName() + QLatin1String("_layout"));
+    setObjectName(mainwindow->objectName() + "_layout"_L1);
 }
 
 QMainWindowLayout::~QMainWindowLayout()
@@ -2727,7 +2729,7 @@ void QMainWindowLayout::updateGapIndicator()
         if (!gapIndicator) {
             gapIndicator = new QRubberBand(QRubberBand::Rectangle, expectedParent);
             // For accessibility to identify this special widget.
-            gapIndicator->setObjectName(QLatin1String("qt_rubberband"));
+            gapIndicator->setObjectName("qt_rubberband"_L1);
         } else if (gapIndicator->parent() != expectedParent) {
             gapIndicator->setParent(expectedParent);
         }

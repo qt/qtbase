@@ -65,6 +65,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 #ifndef QT_NO_ACCESSIBILITY
 
 #if QT_CONFIG(spinbox)
@@ -253,7 +255,7 @@ QAccessibleSpinBox::QAccessibleSpinBox(QWidget *w)
 : QAccessibleAbstractSpinBox(w)
 {
     Q_ASSERT(spinBox());
-    addControllingSignal(QLatin1String("valueChanged(int)"));
+    addControllingSignal("valueChanged(int)"_L1);
 }
 
 /*!
@@ -270,7 +272,7 @@ QAccessibleDoubleSpinBox::QAccessibleDoubleSpinBox(QWidget *widget)
     : QAccessibleAbstractSpinBox(widget)
 {
     Q_ASSERT(qobject_cast<QDoubleSpinBox *>(widget));
-    addControllingSignal(QLatin1String("valueChanged(double)"));
+    addControllingSignal("valueChanged(double)"_L1);
 }
 
 /*!
@@ -307,7 +309,7 @@ QAccessibleScrollBar::QAccessibleScrollBar(QWidget *w)
 : QAccessibleAbstractSlider(w, QAccessible::ScrollBar)
 {
     Q_ASSERT(scrollBar());
-    addControllingSignal(QLatin1String("valueChanged(int)"));
+    addControllingSignal("valueChanged(int)"_L1);
 }
 
 /*! Returns the scroll bar. */
@@ -342,7 +344,7 @@ QAccessibleSlider::QAccessibleSlider(QWidget *w)
 : QAccessibleAbstractSlider(w)
 {
     Q_ASSERT(slider());
-    addControllingSignal(QLatin1String("valueChanged(int)"));
+    addControllingSignal("valueChanged(int)"_L1);
 }
 
 /*! Returns the slider. */
@@ -410,7 +412,7 @@ QAccessibleDial::QAccessibleDial(QWidget *widget)
     : QAccessibleAbstractSlider(widget, QAccessible::Dial)
 {
     Q_ASSERT(qobject_cast<QDial *>(widget));
-    addControllingSignal(QLatin1String("valueChanged(int)"));
+    addControllingSignal("valueChanged(int)"_L1);
 }
 
 QString QAccessibleDial::text(QAccessible::Text textType) const

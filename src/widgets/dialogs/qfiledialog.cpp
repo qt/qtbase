@@ -88,6 +88,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_GLOBAL_STATIC(QUrl, lastVisitedDir)
 
 /*!
@@ -1351,7 +1353,7 @@ QStringList qt_make_filter_list(const QString &filter)
     if (filter.isEmpty())
         return QStringList();
 
-    QString sep(QLatin1String(";;"));
+    QString sep(";;"_L1);
     if (!filter.contains(sep) && filter.contains(u'\n'))
         sep = u'\n';
 
@@ -1555,7 +1557,7 @@ static QString nameFilterForMime(const QString &mimeType)
             return QFileDialog::tr("All files (*)");
         } else {
             const QString patterns = mime.globPatterns().join(u' ');
-            return mime.comment() + QLatin1String(" (") + patterns + u')';
+            return mime.comment() + " ("_L1 + patterns + u')';
         }
     }
     return QString();
@@ -1898,7 +1900,7 @@ void QFileDialogComboBox::setHistory(const QStringList &paths)
     //On windows the popup display the "C:\", convert to nativeSeparators
     const QUrl url = idx.isValid()
                    ? QUrl::fromLocalFile(QDir::toNativeSeparators(idx.data(QFileSystemModel::FilePathRole).toString()))
-                   : QUrl(QLatin1String("file:"));
+                   : QUrl("file:"_L1);
     if (url.isValid())
         list.append(url);
     urlModel->setUrls(list);
@@ -2730,7 +2732,7 @@ void QFileDialog::accept()
     QString lineEditText = d->lineEdit()->text();
     // "hidden feature" type .. and then enter, and it will move up a dir
     // special case for ".."
-    if (lineEditText == QLatin1String("..")) {
+    if (lineEditText == ".."_L1) {
         d->_q_navigateToParent();
         const QSignalBlocker blocker(d->qFileDialogUi->fileNameEdit);
         d->lineEdit()->selectAll();
@@ -2821,37 +2823,37 @@ void QFileDialog::accept()
 void QFileDialogPrivate::saveSettings()
 {
     Q_Q(QFileDialog);
-    QSettings settings(QSettings::UserScope, QLatin1String("QtProject"));
-    settings.beginGroup(QLatin1String("FileDialog"));
+    QSettings settings(QSettings::UserScope, "QtProject"_L1);
+    settings.beginGroup("FileDialog"_L1);
 
     if (usingWidgets()) {
-        settings.setValue(QLatin1String("sidebarWidth"), qFileDialogUi->splitter->sizes().constFirst());
-        settings.setValue(QLatin1String("shortcuts"), QUrl::toStringList(qFileDialogUi->sidebar->urls()));
-        settings.setValue(QLatin1String("treeViewHeader"), qFileDialogUi->treeView->header()->saveState());
+        settings.setValue("sidebarWidth"_L1, qFileDialogUi->splitter->sizes().constFirst());
+        settings.setValue("shortcuts"_L1, QUrl::toStringList(qFileDialogUi->sidebar->urls()));
+        settings.setValue("treeViewHeader"_L1, qFileDialogUi->treeView->header()->saveState());
     }
     QStringList historyUrls;
     const QStringList history = q->history();
     historyUrls.reserve(history.size());
     for (const QString &path : history)
         historyUrls << QUrl::fromLocalFile(path).toString();
-    settings.setValue(QLatin1String("history"), historyUrls);
-    settings.setValue(QLatin1String("lastVisited"), lastVisitedDir()->toString());
+    settings.setValue("history"_L1, historyUrls);
+    settings.setValue("lastVisited"_L1, lastVisitedDir()->toString());
     const QMetaEnum &viewModeMeta = q->metaObject()->enumerator(q->metaObject()->indexOfEnumerator("ViewMode"));
-    settings.setValue(QLatin1String("viewMode"), QLatin1String(viewModeMeta.key(q->viewMode())));
-    settings.setValue(QLatin1String("qtVersion"), QLatin1String(QT_VERSION_STR));
+    settings.setValue("viewMode"_L1, QLatin1String(viewModeMeta.key(q->viewMode())));
+    settings.setValue("qtVersion"_L1, QT_VERSION_STR ""_L1);
 }
 
 bool QFileDialogPrivate::restoreFromSettings()
 {
     Q_Q(QFileDialog);
-    QSettings settings(QSettings::UserScope, QLatin1String("QtProject"));
-    if (!settings.childGroups().contains(QLatin1String("FileDialog")))
+    QSettings settings(QSettings::UserScope, "QtProject"_L1);
+    if (!settings.childGroups().contains("FileDialog"_L1))
         return false;
-    settings.beginGroup(QLatin1String("FileDialog"));
+    settings.beginGroup("FileDialog"_L1);
 
-    q->setDirectoryUrl(lastVisitedDir()->isEmpty() ? settings.value(QLatin1String("lastVisited")).toUrl() : *lastVisitedDir());
+    q->setDirectoryUrl(lastVisitedDir()->isEmpty() ? settings.value("lastVisited"_L1).toUrl() : *lastVisitedDir());
 
-    QByteArray viewModeStr = settings.value(QLatin1String("viewMode")).toString().toLatin1();
+    QByteArray viewModeStr = settings.value("viewMode"_L1).toString().toLatin1();
     const QMetaEnum &viewModeMeta = q->metaObject()->enumerator(q->metaObject()->indexOfEnumerator("ViewMode"));
     bool ok = false;
     int viewMode = viewModeMeta.keyToValue(viewModeStr.constData(), &ok);
@@ -2859,21 +2861,21 @@ bool QFileDialogPrivate::restoreFromSettings()
         viewMode = QFileDialog::List;
     q->setViewMode(static_cast<QFileDialog::ViewMode>(viewMode));
 
-    sidebarUrls = QUrl::fromStringList(settings.value(QLatin1String("shortcuts")).toStringList());
-    headerData = settings.value(QLatin1String("treeViewHeader")).toByteArray();
+    sidebarUrls = QUrl::fromStringList(settings.value("shortcuts"_L1).toStringList());
+    headerData = settings.value("treeViewHeader"_L1).toByteArray();
 
     if (!usingWidgets())
         return true;
 
     QStringList history;
-    const auto urlStrings = settings.value(QLatin1String("history")).toStringList();
+    const auto urlStrings = settings.value("history"_L1).toStringList();
     for (const QString &urlStr : urlStrings) {
         QUrl url(urlStr);
         if (url.isLocalFile())
             history << url.toLocalFile();
     }
 
-    return restoreWidgetState(history, settings.value(QLatin1String("sidebarWidth"), -1).toInt());
+    return restoreWidgetState(history, settings.value("sidebarWidth"_L1, -1).toInt());
 }
 #endif // settings
 
@@ -2955,8 +2957,8 @@ void QFileDialogPrivate::init(const QFileDialogArgs &args)
     // Try to restore from the FileDialog settings group; if it fails, fall back
     // to the pre-5.5 QByteArray serialized settings.
     if (!restoreFromSettings()) {
-        const QSettings settings(QSettings::UserScope, QLatin1String("QtProject"));
-        q->restoreState(settings.value(QLatin1String("Qt/filedialog")).toByteArray());
+        const QSettings settings(QSettings::UserScope, "QtProject"_L1);
+        q->restoreState(settings.value("Qt/filedialog"_L1).toByteArray());
     }
 #endif
 
@@ -2992,7 +2994,7 @@ void QFileDialogPrivate::createWidgets()
     model = new QFileSystemModel(q);
     model->setIconProvider(&defaultIconProvider);
     model->setFilter(options->filter());
-    model->setObjectName(QLatin1String("qt_filesystem_model"));
+    model->setObjectName("qt_filesystem_model"_L1);
     if (QPlatformFileDialogHelper *helper = platformFileDialogHelper())
         model->setNameFilterDisables(helper->defaultNameFilterDisables());
     else
@@ -3011,7 +3013,7 @@ void QFileDialogPrivate::createWidgets()
     qFileDialogUi->setupUi(q);
 
     QList<QUrl> initialBookmarks;
-    initialBookmarks << QUrl(QLatin1String("file:"))
+    initialBookmarks << QUrl("file:"_L1)
                      << QUrl::fromLocalFile(QDir::homePath());
     qFileDialogUi->sidebar->setModelAndUrls(model, initialBookmarks);
     QFileDialog::connect(qFileDialogUi->sidebar, SIGNAL(goToUrl(QUrl)),
@@ -3069,10 +3071,10 @@ void QFileDialogPrivate::createWidgets()
     qFileDialogUi->treeView->setModel(model);
     QHeaderView *treeHeader = qFileDialogUi->treeView->header();
     QFontMetrics fm(q->font());
-    treeHeader->resizeSection(0, fm.horizontalAdvance(QLatin1String("wwwwwwwwwwwwwwwwwwwwwwwwww")));
-    treeHeader->resizeSection(1, fm.horizontalAdvance(QLatin1String("128.88 GB")));
-    treeHeader->resizeSection(2, fm.horizontalAdvance(QLatin1String("mp3Folder")));
-    treeHeader->resizeSection(3, fm.horizontalAdvance(QLatin1String("10/29/81 02:02PM")));
+    treeHeader->resizeSection(0, fm.horizontalAdvance("wwwwwwwwwwwwwwwwwwwwwwwwww"_L1));
+    treeHeader->resizeSection(1, fm.horizontalAdvance("128.88 GB"_L1));
+    treeHeader->resizeSection(2, fm.horizontalAdvance("mp3Folder"_L1));
+    treeHeader->resizeSection(3, fm.horizontalAdvance("10/29/81 02:02PM"_L1));
     treeHeader->setContextMenuPolicy(Qt::ActionsContextMenu);
 
     QActionGroup *showActionGroup = new QActionGroup(q);
@@ -3119,8 +3121,8 @@ void QFileDialogPrivate::createWidgets()
     // Try to restore from the FileDialog settings group; if it fails, fall back
     // to the pre-5.5 QByteArray serialized settings.
     if (!restoreFromSettings()) {
-        const QSettings settings(QSettings::UserScope, QLatin1String("QtProject"));
-        q->restoreState(settings.value(QLatin1String("Qt/filedialog")).toByteArray());
+        const QSettings settings(QSettings::UserScope, "QtProject"_L1);
+        q->restoreState(settings.value("Qt/filedialog"_L1).toByteArray());
     }
 #endif
 
@@ -3306,7 +3308,7 @@ void QFileDialogPrivate::createMenuActions()
     // ### TODO add Desktop & Computer actions
 
     QAction *goToParent =  new QAction(q);
-    goToParent->setObjectName(QLatin1String("qt_goto_parent_action"));
+    goToParent->setObjectName("qt_goto_parent_action"_L1);
 #ifndef QT_NO_SHORTCUT
     goToParent->setShortcut(Qt::CTRL | Qt::Key_Up);
 #endif
@@ -3315,21 +3317,21 @@ void QFileDialogPrivate::createMenuActions()
 
     renameAction = new QAction(q);
     renameAction->setEnabled(false);
-    renameAction->setObjectName(QLatin1String("qt_rename_action"));
+    renameAction->setObjectName("qt_rename_action"_L1);
     QObject::connect(renameAction, SIGNAL(triggered()), q, SLOT(_q_renameCurrent()));
 
     deleteAction = new QAction(q);
     deleteAction->setEnabled(false);
-    deleteAction->setObjectName(QLatin1String("qt_delete_action"));
+    deleteAction->setObjectName("qt_delete_action"_L1);
     QObject::connect(deleteAction, SIGNAL(triggered()), q, SLOT(_q_deleteCurrent()));
 
     showHiddenAction = new QAction(q);
-    showHiddenAction->setObjectName(QLatin1String("qt_show_hidden_action"));
+    showHiddenAction->setObjectName("qt_show_hidden_action"_L1);
     showHiddenAction->setCheckable(true);
     QObject::connect(showHiddenAction, SIGNAL(triggered()), q, SLOT(_q_showHidden()));
 
     newFolderAction = new QAction(q);
-    newFolderAction->setObjectName(QLatin1String("qt_new_folder_action"));
+    newFolderAction->setObjectName("qt_new_folder_action"_L1);
     QObject::connect(newFolderAction, SIGNAL(triggered()), q, SLOT(_q_createDirectory()));
 }
 
@@ -3625,7 +3627,7 @@ void QFileDialogPrivate::_q_deleteCurrent()
 
 void QFileDialogPrivate::_q_autoCompleteFileName(const QString &text)
 {
-    if (text.startsWith(QLatin1String("//")) || text.startsWith(u'\\')) {
+    if (text.startsWith("//"_L1) || text.startsWith(u'\\')) {
         qFileDialogUi->listView->selectionModel()->clearSelection();
         return;
     }
@@ -3667,7 +3669,7 @@ void QFileDialogPrivate::_q_updateOkButton()
     const QStringList files = q->selectedFiles();
     QString lineEditText = lineEdit()->text();
 
-    if (lineEditText.startsWith(QLatin1String("//")) || lineEditText.startsWith(u'\\')) {
+    if (lineEditText.startsWith("//"_L1) || lineEditText.startsWith(u'\\')) {
         button->setEnabled(true);
         updateOkButtonText();
         return;
@@ -3675,7 +3677,7 @@ void QFileDialogPrivate::_q_updateOkButton()
 
     if (files.isEmpty()) {
         enableButton = false;
-    } else if (lineEditText == QLatin1String("..")) {
+    } else if (lineEditText == ".."_L1) {
         isOpenDirectory = true;
     } else {
         switch (fileMode) {
@@ -3700,7 +3702,7 @@ void QFileDialogPrivate::_q_updateOkButton()
                 fileDir = fn.mid(0, fn.lastIndexOf(u'/'));
                 fileName = fn.mid(fileDir.length() + 1);
             }
-            if (lineEditText.contains(QLatin1String(".."))) {
+            if (lineEditText.contains(".."_L1)) {
                 fileDir = info.canonicalFilePath();
                 fileName = info.fileName();
             }
@@ -4037,7 +4039,7 @@ void QFileDialogComboBox::showPopup()
         idx = idx.parent();
     }
     // add "my computer"
-    list.append(QUrl(QLatin1String("file:")));
+    list.append(QUrl("file:"_L1));
     urlModel->addUrls(list, 0);
     idx = model()->index(model()->rowCount() - 1, 0);
 
@@ -4212,9 +4214,9 @@ QStringList QFSCompleter::splitPath(const QString &path) const
     QString pathCopy = QDir::toNativeSeparators(path);
     QChar sep = QDir::separator();
 #if defined(Q_OS_WIN)
-    if (pathCopy == QLatin1String("\\") || pathCopy == QLatin1String("\\\\"))
+    if (pathCopy == "\\"_L1 || pathCopy == "\\\\"_L1)
         return QStringList(pathCopy);
-    QString doubleSlash(QLatin1String("\\\\"));
+    QString doubleSlash("\\\\"_L1);
     if (pathCopy.startsWith(doubleSlash))
         pathCopy = pathCopy.mid(2);
     else
@@ -4264,9 +4266,7 @@ QStringList QFSCompleter::splitPath(const QString &path) const
 #endif
         if (currentLocation.contains(sep) && path != currentLocation) {
             QStringList currentLocationList = splitPath(currentLocation);
-            while (!currentLocationList.isEmpty()
-                   && parts.count() > 0
-                   && parts.at(0) == QLatin1String("..")) {
+            while (!currentLocationList.isEmpty() && parts.count() > 0 && parts.at(0) == ".."_L1) {
                 parts.removeFirst();
                 currentLocationList.removeLast();
             }

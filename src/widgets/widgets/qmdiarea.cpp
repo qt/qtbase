@@ -176,6 +176,7 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
 using namespace QMdi;
 
 // Asserts in debug mode, gives warning otherwise.
@@ -277,7 +278,7 @@ static inline QString tabTextFor(QMdiSubWindow *subWindow)
 
     QString title = subWindow->windowTitle();
     if (subWindow->isWindowModified()) {
-        title.replace(QLatin1String("[*]"), QLatin1String("*"));
+        title.replace("[*]"_L1, "*"_L1);
     } else {
         extern QString qt_setWindowTitle_helperHelper(const QString&, const QWidget*);
         title = qt_setWindowTitle_helperHelper(title, subWindow);
@@ -1515,7 +1516,7 @@ void QMdiAreaPrivate::highlightNextSubWindow(int increaseFactor)
     if (!rubberBand) {
         rubberBand = new QRubberBand(QRubberBand::Rectangle, q);
         // For accessibility to identify this special widget.
-        rubberBand->setObjectName(QLatin1String("qt_rubberband"));
+        rubberBand->setObjectName("qt_rubberband"_L1);
         rubberBand->setWindowFlags(rubberBand->windowFlags() | Qt::WindowStaysOnTopHint);
     }
 #endif

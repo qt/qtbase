@@ -51,6 +51,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 // To ensure that all variables inside the simplex solver are non-negative,
 // we limit the size of anchors in the interval [-limit, limit]. Then before
 // sending them to the simplex solver we add "limit" as an offset, so that
@@ -609,7 +611,7 @@ QSimplexConstraint *GraphPath::constraint(const GraphPath &path) const
 #ifdef QT_DEBUG
 QString GraphPath::toString() const
 {
-    QString string(QLatin1String("Path: "));
+    QString string("Path: "_L1);
     for (AnchorData *edge : positives)
         string += QString::fromLatin1(" (+++) %1").arg(edge->toString());
 
