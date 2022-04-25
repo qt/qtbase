@@ -45,6 +45,10 @@
 #include <QtCore/qthread.h>
 #include <private/qthreadpool_p.h>
 
+#ifdef Q_PROCESSOR_X86
+#  include <immintrin.h>        // for _mm_pause()
+#endif
+
 #ifdef interface
 #  undef interface
 #endif
@@ -106,9 +110,14 @@ static inline int switch_from_to(QAtomicInt &a, int from, int to)
 {
     int newValue;
     int expected = a.loadRelaxed();
-    do {
+    for (;;) {
         newValue = (expected & ~from) | to;
-    } while (!a.testAndSetRelaxed(expected, newValue, expected));
+        if (a.testAndSetRelaxed(expected, newValue, expected))
+            break;
+#ifdef Q_PROCESSOR_X86
+        _mm_pause();
+#endif
+    }
     return newValue;
 }
 
