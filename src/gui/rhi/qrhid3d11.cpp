@@ -39,6 +39,7 @@
 
 #include "qrhid3d11_p_p.h"
 #include "qshader_p.h"
+#include "vs_test_p.h"
 #include "cs_tdr_p.h"
 #include <QWindow>
 #include <qmath.h>
@@ -326,9 +327,21 @@ bool QRhiD3D11::create(QRhi::Flags flags)
             qWarning("Failed to create D3D11 device and context: %s", qPrintable(comErrorMessage(hr)));
             return false;
         }
-        if (SUCCEEDED(ctx->QueryInterface(__uuidof(ID3D11DeviceContext1), reinterpret_cast<void **>(&context)))) {
-            ctx->Release();
+
+        // Test if creating a Shader Model 5.0 vertex shader works; we want to
+        // fail already in create() if that's not the case.
+        ID3D11VertexShader *testShader = nullptr;
+        if (SUCCEEDED(dev->CreateVertexShader(g_testVertexShader, sizeof(g_testVertexShader), nullptr, &testShader))) {
+            testShader->Release();
         } else {
+            qWarning("D3D11 smoke test failed (failed to create vertex shader)");
+            ctx->Release();
+            return false;
+        }
+
+        const bool supports11_1 = SUCCEEDED(ctx->QueryInterface(__uuidof(ID3D11DeviceContext1), reinterpret_cast<void **>(&context)));
+        ctx->Release();
+        if (!supports11_1) {
             qWarning("ID3D11DeviceContext1 not supported");
             return false;
         }
