@@ -162,7 +162,7 @@ namespace QTest {
         // Replace insignificant digits before the decimal point with zeros.
         beforeDecimalPoint.chop(beforeRemove);
         for (int i = 0; i < beforeRemove; ++i) {
-            beforeDecimalPoint.append(QLatin1Char('0'));
+            beforeDecimalPoint.append(u'0');
         }
 
         int afterUse = significantDigits - beforeUse;
@@ -172,9 +172,8 @@ namespace QTest {
             ++afterUse;
 
             int i = 0;
-            while (i < afterDecimalPoint.length() && afterDecimalPoint.at(i) == QLatin1Char('0')) {
+            while (i < afterDecimalPoint.length() && afterDecimalPoint.at(i) == u'0')
                 ++i;
-            }
 
             afterUse += i;
         }
@@ -182,8 +181,8 @@ namespace QTest {
         int afterRemove = afterDecimalPoint.length() - afterUse;
         afterDecimalPoint.chop(afterRemove);
 
-        QChar separator = QLatin1Char(',');
-        QChar decimalPoint = QLatin1Char('.');
+        QChar separator = u',';
+        QChar decimalPoint = u'.';
 
         // insert thousands separators
         int length = beforeDecimalPoint.length();

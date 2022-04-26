@@ -272,8 +272,8 @@ void QJUnitTestLogger::addFailure(QTest::LogElementType elementType,
     failureElement->addAttribute(QTest::AI_Type, failureType);
 
     // Assume the first line is the message, and the remainder are details
-    QString message = failureDescription.section(QLatin1Char('\n'), 0, 0);
-    QString details = failureDescription.section(QLatin1Char('\n'), 1);
+    QString message = failureDescription.section(u'\n', 0, 0);
+    QString details = failureDescription.section(u'\n', 1);
 
     failureElement->addAttribute(QTest::AI_Message, message.toUtf8().constData());
 

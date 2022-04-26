@@ -2328,7 +2328,7 @@ QSharedPointer<QTemporaryDir> QTest::qExtractTestData(const QString &dirName)
           return result;
 
       const QString dataPath = tempDir->path();
-      const QString resourcePath = QLatin1Char(':') + dirName;
+      const QString resourcePath = u':' + dirName;
       const QFileInfo fileInfo(resourcePath);
 
       if (!fileInfo.isDir()) {
@@ -2346,7 +2346,7 @@ QSharedPointer<QTemporaryDir> QTest::qExtractTestData(const QString &dirName)
           QFileInfo fileInfo = it.nextFileInfo();
 
           if (!fileInfo.isDir()) {
-              const QString destination = dataPath + QLatin1Char('/') + QStringView{fileInfo.filePath()}.mid(resourcePath.length());
+              const QString destination = dataPath + u'/' + QStringView{fileInfo.filePath()}.mid(resourcePath.length());
               QFileInfo destinationFileInfo(destination);
               QDir().mkpath(destinationFileInfo.path());
               if (!QFile::copy(fileInfo.filePath(), destination)) {
@@ -2391,7 +2391,7 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
         }
 #endif // Q_OS_WIN
         else if (QTestLog::verboseLevel() >= 2) {
-            const QString candidate = QDir::toNativeSeparators(QCoreApplication::applicationDirPath() + QLatin1Char('/') + base);
+            const QString candidate = QDir::toNativeSeparators(QCoreApplication::applicationDirPath() + u'/' + base);
             QTestLog::info(qPrintable(
                 QLatin1String("testdata %1 not found relative to test binary [%2]; "
                               "checking next location").arg(base, candidate)),
@@ -2456,7 +2456,7 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
 
     // 5. Try current directory
     if (found.isEmpty()) {
-        const QString candidate = QDir::currentPath() + QLatin1Char('/') + base;
+        const QString candidate = QDir::currentPath() + u'/' + base;
         if (QFileInfo::exists(candidate)) {
             found = candidate;
         } else if (QTestLog::verboseLevel() >= 2) {
@@ -2469,7 +2469,7 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
 
     // 6. Try main source directory
     if (found.isEmpty()) {
-        const QString candidate = QTest::mainSourcePath % QLatin1Char('/') % base;
+        const QString candidate = QTest::mainSourcePath % u'/' % base;
         if (QFileInfo::exists(candidate)) {
             found = candidate;
         } else if (QTestLog::verboseLevel() >= 2) {
@@ -2482,7 +2482,7 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
 
     // 7. Try the supplied source directory
     if (found.isEmpty() && sourcedir) {
-        const QString candidate = QFile::decodeName(sourcedir) % QLatin1Char('/') % base;
+        const QString candidate = QFile::decodeName(sourcedir) % u'/' % base;
         if (QFileInfo::exists(candidate)) {
             found = candidate;
         } else if (QTestLog::verboseLevel() >= 2) {

@@ -140,7 +140,7 @@ void QAppleTestLogger::addIncident(IncidentTypes type, const char *description,
 
     QString message = testIdentifier();
     if (qstrlen(description))
-        message += QLatin1Char('\n') % QString::fromLatin1(description);
+        message += u'\n' % QString::fromLatin1(description);
 
     AppleUnifiedLogger::messageHandler(messageData.messageType, context, message, subsystem());
 }

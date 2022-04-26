@@ -148,7 +148,7 @@ namespace QTest {
             // ignore an optional whitespace at the end of str
             // (the space was added automatically by ~QDebug() until Qt 5.3,
             //  so autotests still might expect it)
-            if (expected.endsWith(QLatin1Char(' ')))
+            if (expected.endsWith(u' '))
                 return actual == QStringView{expected}.left(expected.length() - 1);
 
             return false;
@@ -328,10 +328,10 @@ void QTestLog::printUnhandledIgnoreMessages()
     QTest::IgnoreResultList *list = QTest::ignoreResultList;
     while (list) {
         if (list->pattern.userType() == QMetaType::QString) {
-            message = QStringLiteral("Did not receive message: \"") + list->pattern.toString() + QLatin1Char('"');
+            message = QStringLiteral("Did not receive message: \"") + list->pattern.toString() + u'"';
         } else {
 #if QT_CONFIG(regularexpression)
-            message = QStringLiteral("Did not receive any message matching: \"") + list->pattern.toRegularExpression().pattern() + QLatin1Char('"');
+            message = QStringLiteral("Did not receive any message matching: \"") + list->pattern.toRegularExpression().pattern() + u'"';
 #endif
         }
         FOREACH_TEST_LOGGER
