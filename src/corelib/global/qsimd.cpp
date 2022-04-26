@@ -44,6 +44,9 @@
 
 #include "qsimd_p.h"
 #include "qalgorithms.h"
+
+#include <array>            // for std::size
+
 #include <stdio.h>
 #include <string.h>
 
