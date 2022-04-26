@@ -109,30 +109,21 @@ void QWasmWindow::setGeometry(const QRect &rect)
         if (r.y() < yMin)
             r.moveTop(yMin);
     }
-    QWindowSystemInterface::handleGeometryChange(window(), r);
     QPlatformWindow::setGeometry(r);
+    QWindowSystemInterface::handleGeometryChange(window(), r);
     invalidate();
 }
 
 void QWasmWindow::setVisible(bool visible)
 {
-    QRect newGeom;
-
-    if (visible) {
-        const bool forceFullScreen = !m_needsCompositor;//make gl apps fullscreen for now
-
-        if (forceFullScreen || (m_windowState & Qt::WindowFullScreen))
-            newGeom = platformScreen()->geometry();
-        else if (m_windowState & Qt::WindowMaximized)
-            newGeom = platformScreen()->availableGeometry();
-    }
-
+    if (visible)
+        applyWindowState();
     m_compositor->setVisible(this, visible);
+}
 
-    if (!newGeom.isEmpty())
-        setGeometry(newGeom); // may or may not generate an expose
-
-    invalidate();
+bool QWasmWindow::isVisible()
+{
+    return window()->isVisible();
 }
 
 QMargins QWasmWindow::frameMargins() const
@@ -215,12 +206,10 @@ void QWasmWindow::injectMouseReleased(const QPoint &local, const QPoint &global,
 
     if (maxButtonRect().contains(global) && m_activeControl == QWasmCompositor::SC_TitleBarMaxButton) {
         window()->setWindowState(Qt::WindowMaximized);
-        platformScreen()->resizeMaximizedWindows();
     }
 
     if (normButtonRect().contains(global) && m_activeControl == QWasmCompositor::SC_TitleBarNormalButton) {
         window()->setWindowState(Qt::WindowNoState);
-        setGeometry(normalGeometry());
     }
 
     m_activeControl = QWasmCompositor::SC_None;
@@ -371,15 +360,49 @@ QWasmCompositor::SubControls QWasmWindow::activeSubControl() const
     return m_activeControl;
 }
 
-void QWasmWindow::setWindowState(Qt::WindowStates states)
+void QWasmWindow::setWindowState(Qt::WindowStates newState)
 {
-    m_windowState = Qt::WindowNoState;
-    if (states & Qt::WindowMinimized)
-        m_windowState = Qt::WindowMinimized;
-    else if (states & Qt::WindowFullScreen)
-        m_windowState = Qt::WindowFullScreen;
-    else if (states & Qt::WindowMaximized)
-        m_windowState = Qt::WindowMaximized;
+    const Qt::WindowStates oldState = m_windowState;
+    bool isActive = oldState.testFlag(Qt::WindowActive);
+
+    if (newState.testFlag(Qt::WindowMinimized)) {
+        newState.setFlag(Qt::WindowMinimized, false);
+        qWarning("Qt::WindowMinimized is not implemented in wasm");
+    }
+
+    // Always keep OpenGL apps fullscreen
+    if (!m_needsCompositor && !newState.testFlag(Qt::WindowFullScreen)) {
+        newState.setFlag(Qt::WindowFullScreen, true);
+        qWarning("Qt::WindowFullScreen must be set for OpenGL surfaces");
+    }
+
+    // Ignore WindowActive flag in comparison, as we want to preserve it either way
+    if ((newState & ~Qt::WindowActive) == (oldState & ~Qt::WindowActive))
+        return;
+
+    newState.setFlag(Qt::WindowActive, isActive);
+
+    m_previousWindowState = oldState;
+    m_windowState = newState;
+
+    if (isVisible()) {
+        applyWindowState();
+    }
+}
+
+void QWasmWindow::applyWindowState()
+{
+    QRect newGeom;
+
+    if (m_windowState.testFlag(Qt::WindowFullScreen))
+        newGeom = platformScreen()->geometry();
+    else if (m_windowState.testFlag(Qt::WindowMaximized))
+        newGeom = platformScreen()->availableGeometry();
+    else
+        newGeom = normalGeometry();
+
+    QWindowSystemInterface::handleWindowStateChanged(window(), m_windowState, m_previousWindowState);
+    setGeometry(newGeom);
 }
 
 QRect QWasmWindow::normalGeometry() const
