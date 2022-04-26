@@ -490,7 +490,7 @@ bool QTestResult::compare(bool success, const char *failureMsg,
 }
 
 bool QTestResult::compare(bool success, const char *failureMsg,
-                          QStringView val1, const QLatin1String &val2,
+                          QStringView val1, const QLatin1StringView &val2,
                           const char *actual, const char *expected,
                           const char *file, int line)
 {
@@ -498,7 +498,7 @@ bool QTestResult::compare(bool success, const char *failureMsg,
 }
 
 bool QTestResult::compare(bool success, const char *failureMsg,
-                          const QLatin1String & val1, QStringView val2,
+                          const QLatin1StringView & val1, QStringView val2,
                           const char *actual, const char *expected,
                           const char *file, int line)
 {

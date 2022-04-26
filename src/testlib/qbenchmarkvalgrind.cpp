@@ -93,7 +93,7 @@ qint64 QBenchmarkValgrindUtils::extractResult(const QString &fileName)
     bool valSeen = false;
     QRegularExpression rxValue(u"^summary: (\\d+)"_s);
     while (!file.atEnd()) {
-        const QString line(QLatin1String(file.readLine()));
+        const QString line(QLatin1StringView(file.readLine()));
         QRegularExpressionMatch match = rxValue.match(line);
         if (match.hasMatch()) {
             bool ok;

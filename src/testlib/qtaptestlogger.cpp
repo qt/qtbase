@@ -338,7 +338,7 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
                     QString message = match.captured(u"message");
                     QString expected;
                     QString actual;
-                    const auto parenthesize = [&match](QLatin1String key) -> QString {
+                    const auto parenthesize = [&match](QLatin1StringView key) -> QString {
                         return " ("_L1 % match.captured(key) % u')';
                     };
                     const QString actualExpression = parenthesize("actualexpression"_L1);

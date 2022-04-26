@@ -428,10 +428,10 @@ namespace QTest
     Q_TESTLIB_EXPORT bool qCompare(QStringView t1, QStringView t2,
                                    const char *actual, const char *expected,
                                    const char *file, int line);
-    Q_TESTLIB_EXPORT bool qCompare(QStringView t1, const QLatin1String &t2,
+    Q_TESTLIB_EXPORT bool qCompare(QStringView t1, const QLatin1StringView &t2,
                                    const char *actual, const char *expected,
                                    const char *file, int line);
-    Q_TESTLIB_EXPORT bool qCompare(const QLatin1String &t1, QStringView t2,
+    Q_TESTLIB_EXPORT bool qCompare(const QLatin1StringView &t1, QStringView t2,
                                    const char *actual, const char *expected,
                                    const char *file, int line);
     inline bool qCompare(const QString &t1, const QString &t2,
@@ -440,13 +440,13 @@ namespace QTest
     {
         return qCompare(QStringView(t1), QStringView(t2), actual, expected, file, line);
     }
-    inline bool qCompare(const QString &t1, const QLatin1String &t2,
+    inline bool qCompare(const QString &t1, const QLatin1StringView &t2,
                          const char *actual, const char *expected,
                          const char *file, int line)
     {
         return qCompare(QStringView(t1), t2, actual, expected, file, line);
     }
-    inline bool qCompare(const QLatin1String &t1, const QString &t2,
+    inline bool qCompare(const QLatin1StringView &t1, const QString &t2,
                          const char *actual, const char *expected,
                          const char *file, int line)
     {

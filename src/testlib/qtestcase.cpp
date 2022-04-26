@@ -330,7 +330,7 @@ public:
     static QMetaMethod findMethod(const QObject *obj, const char *signature);
 
 private:
-    bool invokeTest(int index, QLatin1String tag, WatchDog *watchDog) const;
+    bool invokeTest(int index, QLatin1StringView tag, WatchDog *watchDog) const;
     void invokeTestOnData(int index) const;
 
     QMetaMethod m_initTestCaseMethod; // might not exist, check isValid().
@@ -449,7 +449,7 @@ static void qPrintTestSlots(FILE *stream, const char *filter = nullptr)
         QMetaMethod sl = QTest::currentTestObject->metaObject()->method(i);
         if (isValidSlot(sl)) {
             const QByteArray signature = sl.methodSignature();
-            if (!filter || QLatin1String(signature).contains(QLatin1String(filter), Qt::CaseInsensitive))
+            if (!filter || QLatin1StringView(signature).contains(QLatin1StringView(filter), Qt::CaseInsensitive))
                 fprintf(stream, "%s\n", signature.constData());
         }
     }
@@ -485,7 +485,7 @@ static void qPrintDataTags(FILE *stream)
             const int dataCount = table.dataCount();
             localTags.reserve(dataCount);
             for (int j = 0; j < dataCount; ++j)
-                localTags << QLatin1String(table.testData(j)->dataTag());
+                localTags << QLatin1StringView(table.testData(j)->dataTag());
 
             // Print all tag combinations:
             if (gTable->dataCount() == 0) {
@@ -964,7 +964,7 @@ void TestMethods::invokeTestOnData(int index) const
                 QBenchmarkTestMethodData::current->result = QBenchmarkResult();
                 QBenchmarkTestMethodData::current->resultAccepted = false;
 
-                QBenchmarkGlobalData::current->context.tag = QLatin1String(
+                QBenchmarkGlobalData::current->context.tag = QLatin1StringView(
                     QTestResult::currentDataTag() ? QTestResult::currentDataTag() : "");
 
                 invokeOk = m_methods[index].invoke(QTest::currentTestObject, Qt::DirectConnection);
@@ -1151,13 +1151,13 @@ public:
     If the function was successfully called, true is returned, otherwise
     false.
 */
-bool TestMethods::invokeTest(int index, QLatin1String tag, WatchDog *watchDog) const
+bool TestMethods::invokeTest(int index, QLatin1StringView tag, WatchDog *watchDog) const
 {
     QBenchmarkTestMethodData benchmarkData;
     QBenchmarkTestMethodData::current = &benchmarkData;
 
     const QByteArray &name = m_methods[index].name();
-    QBenchmarkGlobalData::current->context.slotName = QLatin1String(name) + "()"_L1;
+    QBenchmarkGlobalData::current->context.slotName = QLatin1StringView(name) + "()"_L1;
 
     char member[512];
     QTestTable table;
@@ -1171,7 +1171,8 @@ bool TestMethods::invokeTest(int index, QLatin1String tag, WatchDog *watchDog) c
         return globalDataCount ? gTable->testData(index)->dataTag() : nullptr;
     };
 
-    const auto dataTagMatches = [](QLatin1String tag, QLatin1String local, QLatin1String global) {
+    const auto dataTagMatches = [](QLatin1StringView tag, QLatin1StringView local,
+                                   QLatin1StringView global) {
         if (tag.isEmpty()) // No tag specified => run all data sets for this function
             return true;
         if (tag == local || tag == global) // Equal to either => run it
@@ -1212,8 +1213,8 @@ bool TestMethods::invokeTest(int index, QLatin1String tag, WatchDog *watchDog) c
         do {
             QTestResult::setSkipCurrentTest(false);
             QTestResult::setBlacklistCurrentTest(false);
-            if (dataTagMatches(tag, QLatin1String(dataTag(curDataIndex)),
-                               QLatin1String(globalDataTag(curGlobalDataIndex)))) {
+            if (dataTagMatches(tag, QLatin1StringView(dataTag(curDataIndex)),
+                               QLatin1StringView(globalDataTag(curGlobalDataIndex)))) {
                 foundFunction = true;
 
                 QTestPrivate::checkBlackLists(name.constData(), dataTag(curDataIndex),
@@ -1574,7 +1575,7 @@ void TestMethods::invokeTests(QObject *testObject) const
                 const char *data = nullptr;
                 if (i < QTest::testTags.size() && !QTest::testTags.at(i).isEmpty())
                     data = qstrdup(QTest::testTags.at(i).toLatin1().constData());
-                const bool ok = invokeTest(i, QLatin1String(data), watchDog.data());
+                const bool ok = invokeTest(i, QLatin1StringView(data), watchDog.data());
                 delete [] data;
                 if (!ok)
                     break;
@@ -2826,11 +2827,11 @@ bool QTest::qCompare(QStringView t1, QStringView t2, const char *actual, const c
                                 t1, t2, actual, expected, file, line);
 }
 
-/*! \fn bool QTest::qCompare(QStringView t1, const QLatin1String &t2, const char *actual, const char *expected, const char *file, int line)
+/*!
     \internal
     \since 5.14
 */
-bool QTest::qCompare(QStringView t1, const QLatin1String &t2, const char *actual, const char *expected,
+bool QTest::qCompare(QStringView t1, const QLatin1StringView &t2, const char *actual, const char *expected,
                      const char *file, int line)
 {
     return QTestResult::compare(t1 == t2,
@@ -2838,11 +2839,11 @@ bool QTest::qCompare(QStringView t1, const QLatin1String &t2, const char *actual
                                 t1, t2, actual, expected, file, line);
 }
 
-/*! \fn bool QTest::qCompare(const QLatin1String &t1, QStringView t2, const char *actual, const char *expected, const char *file, int line)
+/*!
     \internal
     \since 5.14
 */
-bool QTest::qCompare(const QLatin1String &t1, QStringView t2, const char *actual, const char *expected,
+bool QTest::qCompare(const QLatin1StringView &t1, QStringView t2, const char *actual, const char *expected,
                      const char *file, int line)
 {
     return QTestResult::compare(t1 == t2,
@@ -2855,12 +2856,12 @@ bool QTest::qCompare(const QLatin1String &t1, QStringView t2, const char *actual
     \since 5.14
 */
 
-/*! \fn bool QTest::qCompare(const QString &t1, const QLatin1String &t2, const char *actual, const char *expected, const char *file, int line)
+/*! \fn bool QTest::qCompare(const QString &t1, const QLatin1StringView &t2, const char *actual, const char *expected, const char *file, int line)
     \internal
     \since 5.14
 */
 
-/*! \fn bool QTest::qCompare(const QLatin1String &t1, const QString &t2, const char *actual, const char *expected, const char *file, int line)
+/*! \fn bool QTest::qCompare(const QLatin1StringView &t1, const QString &t2, const char *actual, const char *expected, const char *file, int line)
     \internal
     \since 5.14
 */
@@ -3152,11 +3153,11 @@ bool QTest::compare_string_helper(const char *t1, const char *t2, const char *ac
     \internal
 */
 
-/*! \fn bool QTest::qCompare(const QString &t1, const QLatin1String &t2, const char *actual, const char *expected, const char *file, int line)
+/*! \fn bool QTest::qCompare(const QString &t1, const QLatin1StringView &t2, const char *actual, const char *expected, const char *file, int line)
     \internal
 */
 
-/*! \fn bool QTest::qCompare(const QLatin1String &t1, const QString &t2, const char *actual, const char *expected, const char *file, int line)
+/*! \fn bool QTest::qCompare(const QLatin1StringView &t1, const QString &t2, const char *actual, const char *expected, const char *file, int line)
     \internal
 */
 

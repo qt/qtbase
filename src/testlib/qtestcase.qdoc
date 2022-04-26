@@ -1139,7 +1139,7 @@
 */
 
 /*!
-    \fn char *QTest::toString(const QLatin1String &string)
+    \fn char *QTest::toString(const QLatin1StringView &string)
     \overload
 
     Returns a textual representation of the given \a string.

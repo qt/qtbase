@@ -90,7 +90,7 @@ template<> inline char *toString(const QString &str)
     return toString(QStringView(str));
 }
 
-template<> inline char *toString(const QLatin1String &str)
+template<> inline char *toString(const QLatin1StringView &str)
 {
     return toString(QString(str));
 }
@@ -206,7 +206,7 @@ template<> inline char *toString(const QRectF &s)
 template<> inline char *toString(const QUrl &uri)
 {
     if (!uri.isValid())
-        return qstrdup(qPrintable(QLatin1String("Invalid URL: ") + uri.errorString()));
+        return qstrdup(qPrintable(QLatin1StringView("Invalid URL: ") + uri.errorString()));
     return qstrdup(uri.toEncoded().constData());
 }
 
@@ -408,14 +408,14 @@ inline char *toString(std::nullptr_t)
 }
 
 template<>
-inline bool qCompare(QString const &t1, QLatin1String const &t2, const char *actual,
-                    const char *expected, const char *file, int line)
+inline bool qCompare(QString const &t1, QLatin1StringView const &t2, const char *actual,
+                     const char *expected, const char *file, int line)
 {
     return qCompare(t1, QString(t2), actual, expected, file, line);
 }
 template<>
-inline bool qCompare(QLatin1String const &t1, QString const &t2, const char *actual,
-                    const char *expected, const char *file, int line)
+inline bool qCompare(QLatin1StringView const &t1, QString const &t2, const char *actual,
+                     const char *expected, const char *file, int line)
 {
     return qCompare(QString(t1), t2, actual, expected, file, line);
 }
