@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 /**************************************************************
  *
  * QDomBuilder
@@ -269,23 +271,23 @@ bool QDomParser::parseProlog()
         switch (reader->tokenType()) {
         case QXmlStreamReader::StartDocument:
             if (!reader->documentVersion().isEmpty()) {
-                QString value(QLatin1String("version='"));
+                QString value(u"version='"_s);
                 value += reader->documentVersion();
                 value += u'\'';
                 if (!reader->documentEncoding().isEmpty()) {
-                    value += QLatin1String(" encoding='");
+                    value += u" encoding='"_s;
                     value += reader->documentEncoding();
                     value += u'\'';
                 }
                 if (reader->isStandaloneDocument()) {
-                    value += QLatin1String(" standalone='yes'");
+                    value += u" standalone='yes'"_s;
                 } else {
                     // TODO: Add standalone='no', if 'standalone' is specified. With the current
                     // QXmlStreamReader there is no way to figure out if it was specified or not.
                     // QXmlStreamReader needs to be modified for handling that case correctly.
                 }
 
-                if (!domBuilder.processingInstruction(QLatin1String("xml"), value)) {
+                if (!domBuilder.processingInstruction(u"xml"_s, value)) {
                     domBuilder.fatalError(
                             QDomParser::tr("Error occurred while processing XML declaration"));
                     return false;
