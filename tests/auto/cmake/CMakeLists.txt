@@ -277,7 +277,11 @@ include(test_plugin_shared_static_flavor.cmake)
 _qt_internal_test_expect_pass(tst_qaddpreroutine
                               BINARY tst_qaddpreroutine)
 
-_qt_internal_test_expect_pass(test_static_resources
-                              BINARY "${CMAKE_CTEST_COMMAND}"
-                              BINARY_ARGS "-V")
+# TODO: Creates too long file paths on windows
+# QTBUG-102864
+if(NOT CMAKE_HOST_WIN32)
+    _qt_internal_test_expect_pass(test_static_resources
+                                  BINARY "${CMAKE_CTEST_COMMAND}"
+                                  BINARY_ARGS "-V")
+endif()
 _qt_internal_test_expect_pass(test_qt_extract_metatypes)
