@@ -119,13 +119,16 @@ QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
 
 QWasmScreen::~QWasmScreen()
 {
-    emscripten::val specialHtmlTargets = emscripten::val::module_property("specialHTMLTargets");
+    // Delete the compositor before removing the screen from specialHTMLTargets,
+    // since its destructor needs to look up the target when deregistering
+    // event handlers.
+    m_compositor = nullptr;
 
+    emscripten::val specialHtmlTargets = emscripten::val::module_property("specialHTMLTargets");
     std::string id = std::string("!qtcanvas_") + std::to_string(uint32_t(this));
     specialHtmlTargets.set(id, emscripten::val::undefined());
 
     m_canvas.set(m_canvasResizeObserverCallbackContextPropertyName, emscripten::val(intptr_t(0)));
-    destroy();
 }
 
 void QWasmScreen::destroy()
