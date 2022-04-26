@@ -50,6 +50,7 @@ public:
 
     void setGeometry(const QRect &) override;
     void setVisible(bool visible) override;
+    bool isVisible();
     QMargins frameMargins() const override;
 
     WId winId() const override;
@@ -88,6 +89,7 @@ public:
     QWasmCompositor::SubControls activeSubControl() const;
 
     void setWindowState(Qt::WindowStates state) override;
+    void applyWindowState();
     bool setKeyboardGrabEnabled(bool) override { return false; }
     bool setMouseGrabEnabled(bool) override { return false; }
 
@@ -103,7 +105,8 @@ protected:
     QWasmBackingStore *m_backingStore = nullptr;
     QRect m_normalGeometry {0, 0, 0 ,0};
 
-    Qt::WindowState m_windowState = Qt::WindowNoState;
+    Qt::WindowStates m_windowState = Qt::WindowNoState;
+    Qt::WindowStates m_previousWindowState = Qt::WindowNoState;
     QWasmCompositor::SubControls m_activeControl = QWasmCompositor::SC_None;
     WId m_winid = 0;
     bool m_hasTitle = false;
