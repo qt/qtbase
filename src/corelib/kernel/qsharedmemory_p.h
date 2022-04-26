@@ -64,7 +64,7 @@ namespace QSharedMemoryPrivate
 {
     int createUnixKeyFile(const QString &fileName);
     QString makePlatformSafeKey(const QString &key,
-            const QString &prefix = QLatin1String("qipc_sharedmemory_"));
+            const QString &prefix = QStringLiteral("qipc_sharedmemory_"));
 }
 
 QT_END_NAMESPACE
@@ -141,7 +141,7 @@ public:
 
     static int createUnixKeyFile(const QString &fileName);
     static QString makePlatformSafeKey(const QString &key,
-            const QString &prefix = QLatin1String("qipc_sharedmemory_"));
+            const QString &prefix = QStringLiteral("qipc_sharedmemory_"));
 #ifdef Q_OS_WIN
     Qt::HANDLE handle();
 #elif defined(QT_POSIX_IPC)

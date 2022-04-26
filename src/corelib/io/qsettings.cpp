@@ -244,7 +244,7 @@ namespace {
     {
         return QUtf8::convertToUnicode(out, QByteArrayView(v));
     }
-    QChar *write(QChar *out, QLatin1String v)
+    QChar *write(QChar *out, QLatin1StringView v)
     {
         for (char ch : v)
             *out++ = QLatin1Char(ch);
