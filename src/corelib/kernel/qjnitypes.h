@@ -227,7 +227,8 @@ static constexpr bool isObjectType()
         return true;
     } else {
         constexpr auto signature = typeSignature<T>();
-        return signature.startsWith('L') && signature.endsWith(';');
+        return (signature.startsWith('L') || signature.startsWith('['))
+             && signature.endsWith(';');
     }
 }
 
@@ -273,7 +274,34 @@ static constexpr auto constructorSignature()
     return methodSignature<void, Args...>();
 }
 
+// A generic thin wrapper around jobject, convertible to jobject.
+// We need this as a baseclass so that QJniObject can be implicitly
+// constructed from the various subclasses - we can't provide an
+// operator QJniObject() here as the class is not declared.
+struct Object
+{
+    jobject _object;
+    constexpr operator jobject() const { return _object; }
+};
+
 } // namespace QtJniTypes
+
+#define Q_DECLARE_JNI_TYPE(Type, Signature)                      \
+namespace QtJniTypes {                                          \
+struct Type : Object                                            \
+{                                                               \
+    constexpr Type(jobject o) noexcept : Object{o} {}           \
+};                                                              \
+}                                                               \
+template<>                                                      \
+constexpr auto QtJniTypes::typeSignature<QtJniTypes::Type>()    \
+{                                                               \
+    static_assert((Signature[0] == 'L' || Signature[0] == '[')  \
+                && Signature[sizeof(Signature) - 2] == ';',     \
+                "Type signature needs to start with 'L' or '['" \
+                " and end with ';'");                           \
+    return QtJniTypes::String(Signature);                       \
+}                                                               \
 
 QT_END_NAMESPACE
 

@@ -18,8 +18,12 @@
 #include <jni.h>
 #include <functional>
 #include <QtCore/private/qglobal_p.h>
+#include <QtCore/qcoreapplication_platform.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_JNI_TYPE(Activity, "Landroid/app/Activity;")
+Q_DECLARE_JNI_TYPE(Service, "Landroid/app/Service;")
 
 namespace QtAndroidPrivate
 {
@@ -66,9 +70,9 @@ namespace QtAndroidPrivate
         virtual jobject onBind(jobject intent) = 0;
     };
 
-    Q_CORE_EXPORT jobject activity();
-    Q_CORE_EXPORT jobject service();
-    Q_CORE_EXPORT jobject context();
+    Q_CORE_EXPORT QtJniTypes::Activity activity();
+    Q_CORE_EXPORT QtJniTypes::Service service();
+    Q_CORE_EXPORT QtJniTypes::Context context();
     Q_CORE_EXPORT JavaVM *javaVM();
     Q_CORE_EXPORT jint initJNI(JavaVM *vm, JNIEnv *env);
     Q_CORE_EXPORT jclass findClass(const char *className, JNIEnv *env);

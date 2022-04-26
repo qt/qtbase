@@ -43,9 +43,9 @@ static jmethodID m_loadClassMethodID = nullptr;
 static AAssetManager *m_assetManager = nullptr;
 static jobject m_assets = nullptr;
 static jobject m_resourcesObj = nullptr;
-static jobject m_activityObject = nullptr;
+static QtJniTypes::Activity m_activityObject = nullptr;
 static jmethodID m_createSurfaceMethodID = nullptr;
-static jobject m_serviceObject = nullptr;
+static QtJniTypes::Service m_serviceObject = nullptr;
 static jmethodID m_setSurfaceGeometryMethodID = nullptr;
 static jmethodID m_destroySurfaceMethodID = nullptr;
 
@@ -159,12 +159,12 @@ namespace QtAndroid
         return m_applicationClass;
     }
 
-    jobject activity()
+    QtJniTypes::Activity activity()
     {
         return m_activityObject;
     }
 
-    jobject service()
+    QtJniTypes::Service service()
     {
         return m_serviceObject;
     }

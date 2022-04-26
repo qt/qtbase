@@ -38,14 +38,14 @@ static QBasicMutex g_pendingRunnablesMutex;
 QT_DEFINE_NATIVE_INTERFACE(QAndroidApplication);
 
 /*!
-     \fn jobject QNativeInterface::QAndroidApplication::context()
+    \fn jobject QNativeInterface::QAndroidApplication::context()
 
     Returns the Android context as a \c jobject. The context is an \c Activity
     if the main activity object is valid. Otherwise, the context is a \c Service.
 
     \since 6.2
 */
-jobject QNativeInterface::QAndroidApplication::context()
+QtJniTypes::Context QNativeInterface::QAndroidApplication::context()
 {
     return QtAndroidPrivate::context();
 }

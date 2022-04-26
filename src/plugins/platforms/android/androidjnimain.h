@@ -11,6 +11,7 @@
 #include <android/asset_manager.h>
 
 #include <QImage>
+#include <private/qjnihelpers_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -49,8 +50,8 @@ namespace QtAndroid
     jobject assets();
     AAssetManager *assetManager();
     jclass applicationClass();
-    jobject activity();
-    jobject service();
+    QtJniTypes::Activity activity();
+    QtJniTypes::Service service();
 
     // Keep synchronized with flags in ActivityDelegate.java
     enum SystemUiVisibility {

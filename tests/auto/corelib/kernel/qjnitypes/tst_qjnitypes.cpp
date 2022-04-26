@@ -40,6 +40,11 @@ static_assert(QtJniTypes::typeSignature<QtJavaWrapper>() == "Lorg/qtproject/qt/a
 static_assert(QtJniTypes::typeSignature<QtJavaWrapper>() != "Ljava/lang/Object;");
 static_assert(!(QtJniTypes::typeSignature<QtJavaWrapper>() == "X"));
 
+Q_DECLARE_JNI_TYPE(JavaType, "Lorg/qtproject/qt/JavaType;");
+static_assert(QtJniTypes::typeSignature<QtJniTypes::JavaType>() == "Lorg/qtproject/qt/JavaType;");
+Q_DECLARE_JNI_TYPE(ArrayType, "[Lorg/qtproject/qt/ArrayType;")
+static_assert(QtJniTypes::typeSignature<QtJniTypes::ArrayType>() == "[Lorg/qtproject/qt/ArrayType;");
+
 static_assert(QtJniTypes::fieldSignature<jint>() == "I");
 static_assert(QtJniTypes::fieldSignature<jint>() != "X");
 static_assert(QtJniTypes::fieldSignature<jint>() != "Ljava/lang/Object;");
@@ -57,6 +62,8 @@ static_assert(QtJniTypes::methodSignature<void, jint>() == "(I)V");
 static_assert(QtJniTypes::methodSignature<void, jint, jstring>() == "(ILjava/lang/String;)V");
 static_assert(QtJniTypes::methodSignature<jlong, jint, jclass>() == "(ILjava/lang/Class;)J");
 static_assert(QtJniTypes::methodSignature<jobject, jint, jstring>() == "(ILjava/lang/String;)Ljava/lang/Object;");
+static_assert(QtJniTypes::methodSignature<QtJniTypes::JavaType, jint, jstring>()
+                                      == "(ILjava/lang/String;)Lorg/qtproject/qt/JavaType;");
 
 static_assert(QtJniTypes::isPrimitiveType<jint>());
 static_assert(QtJniTypes::isPrimitiveType<void>());
@@ -66,6 +73,7 @@ static_assert(!QtJniTypes::isPrimitiveType<QtCustomJniObject>());
 static_assert(!QtJniTypes::isObjectType<jint>());
 static_assert(!QtJniTypes::isObjectType<void>());
 static_assert(QtJniTypes::isObjectType<jobject>());
+static_assert(QtJniTypes::isObjectType<jobjectArray>());
 static_assert(QtJniTypes::isObjectType<QtCustomJniObject>());
 
 static_assert(QtJniTypes::String("ABCDE").startsWith("ABC"));
@@ -86,6 +94,7 @@ static_assert(!QtJniTypes::String("ABCDE").endsWith('F'));
 
 void tst_QJniTypes::initTestCase()
 {
+
 }
 
 QTEST_MAIN(tst_QJniTypes)

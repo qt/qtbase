@@ -289,18 +289,18 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
     return JNI_OK;
 }
 
-jobject QtAndroidPrivate::activity()
+QtJniTypes::Activity QtAndroidPrivate::activity()
 {
     QReadLocker locker(g_updateMutex());
     return g_jActivity;
 }
 
-jobject QtAndroidPrivate::service()
+QtJniTypes::Service QtAndroidPrivate::service()
 {
     return g_jService;
 }
 
-jobject QtAndroidPrivate::context()
+QtJniTypes::Context QtAndroidPrivate::context()
 {
     QReadLocker locker(g_updateMutex());
     if (g_jActivity)
