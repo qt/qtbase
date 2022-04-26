@@ -105,7 +105,7 @@ QT_BEGIN_NAMESPACE
 */
 static void qt_split_namespace(QString& prefix, QString& name, const QString& qName, bool hasURI)
 {
-    int i = qName.indexOf(QLatin1Char(':'));
+    qsizetype i = qName.indexOf(u':');
     if (i == -1) {
         if (hasURI)
             prefix = QLatin1String("");
@@ -175,7 +175,7 @@ static QString fixedXmlName(const QString &_name, bool *ok, bool namespaces = fa
 
     *ok = true;
     if (namespaces && !prefix.isEmpty())
-        return prefix + QLatin1Char(':') + result;
+        return prefix + u':' + result;
     return result;
 }
 
@@ -309,13 +309,12 @@ static QString fixedPubidLiteral(const QString &data, bool *ok)
         return QString();
     }
 
-    if (result.indexOf(QLatin1Char('\'')) != -1
-        && result.indexOf(QLatin1Char('"')) != -1) {
+    if (result.indexOf(u'\'') != -1 && result.indexOf(u'"') != -1) {
         if (QDomImplementationPrivate::invalidDataPolicy == QDomImplementation::ReturnNullNode) {
             *ok = false;
             return QString();
         } else {
-            result.remove(QLatin1Char('\''));
+            result.remove(u'\'');
         }
     }
 
@@ -335,13 +334,12 @@ static QString fixedSystemLiteral(const QString &data, bool *ok)
 
     QString result = data;
 
-    if (result.indexOf(QLatin1Char('\'')) != -1
-        && result.indexOf(QLatin1Char('"')) != -1) {
+    if (result.indexOf(u'\'') != -1 && result.indexOf(u'"') != -1) {
         if (QDomImplementationPrivate::invalidDataPolicy == QDomImplementation::ReturnNullNode) {
             *ok = false;
             return QString();
         } else {
-            result.remove(QLatin1Char('\''));
+            result.remove(u'\'');
         }
     }
 
@@ -1627,7 +1625,7 @@ QString QDomNode::nodeName() const
         return QString();
 
     if (!IMPL->prefix.isEmpty())
-        return IMPL->prefix + QLatin1Char(':') + IMPL->name;
+        return IMPL->prefix + u':' + IMPL->name;
     return IMPL->name;
 }
 
@@ -3080,9 +3078,7 @@ QDomNodePrivate* QDomDocumentTypePrivate::appendChild(QDomNodePrivate* newChild)
 
 static QString quotedValue(const QString &data)
 {
-    QChar quote = data.indexOf(QLatin1Char('\'')) == -1
-                    ? QLatin1Char('\'')
-                    : QLatin1Char('"');
+    QChar quote = data.indexOf(u'\'') == -1 ? u'\'' : u'"';
     return quote + data + quote;
 }
 
@@ -3666,19 +3662,19 @@ static QString encodeText(const QString &str,
     while (i < len) {
         const QChar ati(retval.at(i));
 
-        if (ati == QLatin1Char('<')) {
+        if (ati == u'<') {
             retval.replace(i, 1, QLatin1String("&lt;"));
             len += 3;
             i += 4;
-        } else if (encodeQuotes && (ati == QLatin1Char('"'))) {
+        } else if (encodeQuotes && (ati == u'"')) {
             retval.replace(i, 1, QLatin1String("&quot;"));
             len += 5;
             i += 6;
-        } else if (ati == QLatin1Char('&')) {
+        } else if (ati == u'&') {
             retval.replace(i, 1, QLatin1String("&amp;"));
             len += 4;
             i += 5;
-        } else if (ati == QLatin1Char('>') && i >= 2 && retval[i - 1] == QLatin1Char(']') && retval[i - 2] == QLatin1Char(']')) {
+        } else if (ati == u'>' && i >= 2 && retval[i - 1] == u']' && retval[i - 2] == u']') {
             retval.replace(i, 1, QLatin1String("&gt;"));
             len += 3;
             i += 4;
@@ -3686,7 +3682,7 @@ static QString encodeText(const QString &str,
                    (ati == QChar(0xA) ||
                     ati == QChar(0xD) ||
                     ati == QChar(0x9))) {
-            const QString replacement(QLatin1String("&#x") + QString::number(ati.unicode(), 16) + QLatin1Char(';'));
+            const QString replacement(QLatin1String("&#x") + QString::number(ati.unicode(), 16) + u';');
             retval.replace(i, 1, replacement);
             i += replacement.length();
             len += replacement.length() - 1;
@@ -4049,7 +4045,7 @@ QString QDomElementPrivate::text()
 void QDomElementPrivate::save(QTextStream& s, int depth, int indent) const
 {
     if (!(prev && prev->isText()))
-        s << QString(indent < 1 ? 0 : depth * indent, QLatin1Char(' '));
+        s << QString(indent < 1 ? 0 : depth * indent, u' ');
 
     QString qName(name);
     QString nsDecl(QLatin1String(""));
@@ -4067,10 +4063,10 @@ void QDomElementPrivate::save(QTextStream& s, int depth, int indent) const
         if (prefix.isEmpty()) {
             nsDecl = QLatin1String(" xmlns");
         } else {
-            qName = prefix + QLatin1Char(':') + name;
+            qName = prefix + u':' + name;
             nsDecl = QLatin1String(" xmlns:") + prefix;
         }
-        nsDecl += QLatin1String("=\"") + encodeText(namespaceURI) + QLatin1Char('\"');
+        nsDecl += QLatin1String("=\"") + encodeText(namespaceURI) + u'\"';
     }
     s << '<' << qName << nsDecl;
 
@@ -4117,7 +4113,7 @@ void QDomElementPrivate::save(QTextStream& s, int depth, int indent) const
                 s << Qt::endl;
         }
         QDomNodePrivate::save(s, depth + 1, indent); if (!last->isText())
-            s << QString(indent < 1 ? 0 : depth * indent, QLatin1Char(' '));
+            s << QString(indent < 1 ? 0 : depth * indent, u' ');
 
         s << "</" << qName << '>';
     } else {
@@ -4803,10 +4799,10 @@ void QDomCommentPrivate::save(QTextStream& s, int depth, int indent) const
 {
     /* We don't output whitespace if we would pollute a text node. */
     if (!(prev && prev->isText()))
-        s << QString(indent < 1 ? 0 : depth * indent, QLatin1Char(' '));
+        s << QString(indent < 1 ? 0 : depth * indent, u' ');
 
     s << "<!--" << value;
-    if (value.endsWith(QLatin1Char('-')))
+    if (value.endsWith(u'-'))
         s << ' '; // Ensures that XML comment doesn't end with --->
     s << "-->";
 
@@ -5211,7 +5207,7 @@ static QByteArray encodeEntity(const QByteArray& str)
 void QDomEntityPrivate::save(QTextStream& s, int, int) const
 {
     QString _name = name;
-    if (_name.startsWith(QLatin1Char('%')))
+    if (_name.startsWith(u'%'))
         _name = QLatin1String("% ") + _name.mid(1);
 
     if (m_sys.isNull() && m_pub.isNull()) {

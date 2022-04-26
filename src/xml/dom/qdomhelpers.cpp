@@ -271,11 +271,11 @@ bool QDomParser::parseProlog()
             if (!reader->documentVersion().isEmpty()) {
                 QString value(QLatin1String("version='"));
                 value += reader->documentVersion();
-                value += QLatin1Char('\'');
+                value += u'\'';
                 if (!reader->documentEncoding().isEmpty()) {
                     value += QLatin1String(" encoding='");
                     value += reader->documentEncoding();
-                    value += QLatin1Char('\'');
+                    value += u'\'';
                 }
                 if (reader->isStandaloneDocument()) {
                     value += QLatin1String(" standalone='yes'");
