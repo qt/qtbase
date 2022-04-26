@@ -53,6 +53,8 @@
 
 #include <initializer_list>
 
+using namespace Qt::StringLiterals;
+
 // dummy
 class TestBenchmark : public QObject
 {
@@ -225,8 +227,8 @@ QTest::qSleep(250);
 //! [27]
 void TestBenchmark::simple()
 {
-    QString str1 = QLatin1String("This is a test string");
-    QString str2 = QLatin1String("This is a test string");
+    QString str1 = u"This is a test string"_s;
+    QString str2 = u"This is a test string"_s;
     QCOMPARE(str1.localeAwareCompare(str2), 0);
     QBENCHMARK {
         str1.localeAwareCompare(str2);

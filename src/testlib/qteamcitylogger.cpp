@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 namespace QTest {
 
     static const char *incidentType2String(QAbstractTestLogger::IncidentTypes type)
@@ -119,13 +121,13 @@ void QTeamCityLogger::startLogging()
 
     flowID = tcEscapedString(QString::fromUtf8(QTestResult::currentTestObjectName()));
 
-    QString str = QLatin1String("##teamcity[testSuiteStarted name='%1' flowId='%1']\n").arg(flowID);
+    QString str = "##teamcity[testSuiteStarted name='%1' flowId='%1']\n"_L1.arg(flowID);
     outputString(qPrintable(str));
 }
 
 void QTeamCityLogger::stopLogging()
 {
-    QString str = QLatin1String("##teamcity[testSuiteFinished name='%1' flowId='%1']\n").arg(flowID);
+    QString str = "##teamcity[testSuiteFinished name='%1' flowId='%1']\n"_L1.arg(flowID);
     outputString(qPrintable(str));
 
     QAbstractTestLogger::stopLogging();
@@ -153,7 +155,7 @@ void QTeamCityLogger::addIncident(IncidentTypes type, const char *description,
     QString tmpFuncName = escapedTestFuncName();
 
     if (tmpFuncName != currTestFuncName) {
-        buf = QLatin1String("##teamcity[testStarted name='%1' flowId='%2']\n").arg(tmpFuncName, flowID);
+        buf = "##teamcity[testStarted name='%1' flowId='%2']\n"_L1.arg(tmpFuncName, flowID);
         outputString(qPrintable(buf));
     }
 
@@ -168,27 +170,27 @@ void QTeamCityLogger::addIncident(IncidentTypes type, const char *description,
 
     // Test failed
     if (type == Fail || type == XPass) {
-        QString messageText(QLatin1String("Failure!"));
+        QString messageText(u"Failure!"_s);
 
         if (file)
-            messageText += QLatin1String(" |[Loc: %1(%2)|]").arg(QString::fromUtf8(file)).arg(line);
+            messageText += " |[Loc: %1(%2)|]"_L1.arg(QString::fromUtf8(file)).arg(line);
 
-        buf = QLatin1String("##teamcity[testFailed name='%1' message='%2' details='%3' flowId='%4']\n")
+        buf = "##teamcity[testFailed name='%1' message='%2' details='%3' flowId='%4']\n"_L1
                         .arg(tmpFuncName, messageText, detailedText, flowID);
 
         outputString(qPrintable(buf));
     } else if (type == Skip) {
         if (file)
-            detailedText.append(QLatin1String(" |[Loc: %1(%2)|]").arg(QString::fromUtf8(file)).arg(line));
+            detailedText.append(" |[Loc: %1(%2)|]"_L1.arg(QString::fromUtf8(file)).arg(line));
 
-        buf = QLatin1String("##teamcity[testIgnored name='%1' message='%2' flowId='%3']\n")
+        buf = "##teamcity[testIgnored name='%1' message='%2' flowId='%3']\n"_L1
                 .arg(escapedTestFuncName(), detailedText, flowID);
 
         outputString(qPrintable(buf));
     }
 
     if (!pendingMessages.isEmpty()) {
-        buf = QLatin1String("##teamcity[testStdOut name='%1' out='%2' flowId='%3']\n")
+        buf = "##teamcity[testStdOut name='%1' out='%2' flowId='%3']\n"_L1
                 .arg(tmpFuncName, pendingMessages, flowID);
 
         outputString(qPrintable(buf));
@@ -196,7 +198,7 @@ void QTeamCityLogger::addIncident(IncidentTypes type, const char *description,
         pendingMessages.clear();
     }
 
-    buf = QLatin1String("##teamcity[testFinished name='%1' flowId='%2']\n").arg(tmpFuncName, flowID);
+    buf = "##teamcity[testFinished name='%1' flowId='%2']\n"_L1.arg(tmpFuncName, flowID);
     outputString(qPrintable(buf));
 }
 
@@ -223,22 +225,22 @@ QString QTeamCityLogger::tcEscapedString(const QString &str) const
     for (QChar ch : str) {
         switch (ch.toLatin1()) {
         case '\n':
-            formattedString.append(QLatin1String("|n"));
+            formattedString.append("|n"_L1);
             break;
         case '\r':
-            formattedString.append(QLatin1String("|r"));
+            formattedString.append("|r"_L1);
             break;
         case '|':
-            formattedString.append(QLatin1String("||"));
+            formattedString.append("||"_L1);
             break;
         case '[':
-            formattedString.append(QLatin1String("|["));
+            formattedString.append("|["_L1);
             break;
         case ']':
-            formattedString.append(QLatin1String("|]"));
+            formattedString.append("|]"_L1);
             break;
         case '\'':
-            formattedString.append(QLatin1String("|'"));
+            formattedString.append("|'"_L1);
             break;
         default:
             formattedString.append(ch);
@@ -262,16 +264,16 @@ void QTeamCityLogger::addPendingMessage(const char *type, const QString &msg, co
     QString pendMessage;
 
     if (!pendingMessages.isEmpty())
-        pendMessage += QLatin1String("|n");
+        pendMessage += "|n"_L1;
 
     if (file) {
-        pendMessage += QLatin1String("%1 |[Loc: %2(%3)|]: %4")
-                                .arg(QString::fromUtf8(type), QString::fromUtf8(file))
-                                .arg(line)
-                                .arg(msg);
+        pendMessage += "%1 |[Loc: %2(%3)|]: %4"_L1
+                .arg(QString::fromUtf8(type), QString::fromUtf8(file))
+                .arg(line)
+                .arg(msg);
 
     } else {
-        pendMessage += QLatin1String("%1: %2").arg(QString::fromUtf8(type), msg);
+        pendMessage += "%1: %2"_L1.arg(QString::fromUtf8(type), msg);
     }
 
     pendingMessages.append(pendMessage);

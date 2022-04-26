@@ -48,6 +48,9 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+using namespace Qt::StringLiterals;
+
 /*! \internal
     \class QTapTestLogger
     \inmodule QtTest
@@ -316,15 +319,14 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
 #if QT_CONFIG(regularexpression)
                 // This is fragile, but unfortunately testlib doesn't plumb
                 // the expected and actual values to the loggers (yet).
-                static QRegularExpression verifyRegex(
-                    QLatin1String("^'(?<actualexpression>.*)' returned "
-                                  "(?<actual>\\w+).+\\((?<message>.*)\\)$"));
+                static QRegularExpression verifyRegex(u"^'(?<actualexpression>.*)' returned "
+                                                      "(?<actual>\\w+).+\\((?<message>.*)\\)$"_s);
 
                 static QRegularExpression compareRegex(
-                    QLatin1String("^(?<message>.*)\n"
-                                  "\\s*Actual\\s+\\((?<actualexpression>.*)\\)\\s*: (?<actual>.*)\n"
-                                  "\\s*Expected\\s+\\((?<expectedexpresssion>.*)\\)\\s*: "
-                                  "(?<expected>.*)$"));
+                            u"^(?<message>.*)\n"
+                            "\\s*Actual\\s+\\((?<actualexpression>.*)\\)\\s*: (?<actual>.*)\n"
+                            "\\s*Expected\\s+\\((?<expectedexpresssion>.*)\\)\\s*: "
+                            "(?<expected>.*)$"_s);
 
                 QString descriptionString = QString::fromUtf8(description);
                 QRegularExpressionMatch match = verifyRegex.match(descriptionString);
@@ -333,26 +335,24 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
                     match = compareRegex.match(descriptionString);
 
                 if (match.hasMatch()) {
-                    QString message = match.captured(QLatin1String("message"));
+                    QString message = match.captured(u"message");
                     QString expected;
                     QString actual;
                     const auto parenthesize = [&match](QLatin1String key) -> QString {
-                        return QLatin1String(" (") % match.captured(key) % u')';
+                        return " ("_L1 % match.captured(key) % u')';
                     };
-                    const QString actualExpression
-                        = parenthesize(QLatin1String("actualexpression"));
+                    const QString actualExpression = parenthesize("actualexpression"_L1);
 
                     if (isVerify) {
-                        actual = match.captured(QLatin1String("actual")).toLower()
-                            % actualExpression;
-                        expected = QLatin1String(actual.startsWith(QLatin1String("true "))
-                                                 ? "false" : "true") % actualExpression;
+                        actual = match.captured(u"actual").toLower() % actualExpression;
+                        expected = (actual.startsWith("true "_L1) ? "false"_L1 : "true"_L1)
+                                % actualExpression;
                         if (message.isEmpty())
-                            message = QLatin1String("Verification failed");
+                            message = u"Verification failed"_s;
                     } else {
-                        expected = match.captured(QLatin1String("expected"))
-                            % parenthesize(QLatin1String("expectedexpresssion"));
-                        actual = match.captured(QLatin1String("actual")) % actualExpression;
+                        expected = match.captured(u"expected")
+                            % parenthesize("expectedexpresssion"_L1);
+                        actual = match.captured(u"actual") % actualExpression;
                     }
 
                     QTestCharBuffer diagnosticsYamlish;

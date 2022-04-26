@@ -72,6 +72,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 namespace QTest {
 
     static const char *incidentType2String(QAbstractTestLogger::IncidentTypes type)
@@ -148,9 +150,9 @@ namespace QTest {
     template <typename T> QString formatResult(T number, int significantDigits)
     {
         if (number < T(0))
-            return QLatin1String("NAN");
+            return u"NAN"_s;
         if (number == T(0))
-            return QLatin1String("0");
+            return u"0"_s;
 
         QString beforeDecimalPoint = QString::number(qint64(number), 'f', 0);
         QString afterDecimalPoint = QString::number(number, 'f', 20);
@@ -168,7 +170,7 @@ namespace QTest {
         int afterUse = significantDigits - beforeUse;
 
         // leading zeroes after the decimal point does not count towards the digit use.
-        if (beforeDecimalPoint == QLatin1String("0") && afterDecimalPoint.isEmpty() == false) {
+        if (beforeDecimalPoint == u'0' && !afterDecimalPoint.isEmpty()) {
             ++afterUse;
 
             int i = 0;

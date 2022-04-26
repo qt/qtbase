@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 // Returns \c true if valgrind is available.
 bool QBenchmarkValgrindUtils::haveValgrind()
 {
@@ -57,7 +59,7 @@ bool QBenchmarkValgrindUtils::haveValgrind()
     return false;
 #else
     QProcess process;
-    process.start(QLatin1String("valgrind"), QStringList(QLatin1String("--version")));
+    process.start(u"valgrind"_s, QStringList(u"--version"_s));
     return process.waitForStarted() && process.waitForFinished(-1);
 #endif
 }
@@ -89,7 +91,7 @@ qint64 QBenchmarkValgrindUtils::extractResult(const QString &fileName)
 
     qint64 val = -1;
     bool valSeen = false;
-    QRegularExpression rxValue(QLatin1String("^summary: (\\d+)"));
+    QRegularExpression rxValue(u"^summary: (\\d+)"_s);
     while (!file.atEnd()) {
         const QString line(QLatin1String(file.readLine()));
         QRegularExpressionMatch match = rxValue.match(line);
@@ -169,22 +171,20 @@ QString QBenchmarkValgrindUtils::outFileBase(qint64 pid)
 bool QBenchmarkValgrindUtils::runCallgrindSubProcess(const QStringList &origAppArgs, int &exitCode)
 {
     const QString &execFile = origAppArgs.at(0);
-    QStringList args;
-    args << QLatin1String("--tool=callgrind") << QLatin1String("--instr-atstart=yes")
-         << QLatin1String("--quiet")
-         << execFile << QLatin1String("-callgrindchild");
+    QStringList args{ u"--tool=callgrind"_s, u"--instr-atstart=yes"_s,
+                      u"--quiet"_s, execFile, u"-callgrindchild"_s };
 
     // pass on original arguments that make sense (e.g. avoid wasting time producing output
     // that will be ignored anyway) ...
     for (int i = 1; i < origAppArgs.size(); ++i) {
         const QString &arg = origAppArgs.at(i);
-        if (arg == QLatin1String("-callgrind"))
+        if (arg == "-callgrind"_L1)
             continue;
         args << arg; // ok to pass on
     }
 
     QProcess process;
-    process.start(QLatin1String("valgrind"), args);
+    process.start(u"valgrind"_s, args);
     process.waitForStarted(-1);
     QBenchmarkGlobalData::current->callgrindOutFileBase =
         QBenchmarkValgrindUtils::outFileBase(process.processId());
