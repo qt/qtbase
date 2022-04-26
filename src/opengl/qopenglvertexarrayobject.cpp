@@ -274,7 +274,7 @@ void QOpenGLVertexArrayObjectPrivate::destroy()
         vao = 0;
     }
 
-    if (oldContext && oldContextSurface) {
+    if (oldContext && oldContextSurface && oldContextSurface->surfaceHandle()) {
         if (!oldContext->makeCurrent(oldContextSurface))
             qWarning("QOpenGLVertexArrayObject::destroy() failed to restore current context");
     }

@@ -110,7 +110,7 @@ void QEglFSWindow::create()
 #ifndef QT_NO_OPENGL
     QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
     if (screen->primarySurface() != EGL_NO_SURFACE) {
-        if (Q_UNLIKELY(!isRaster() || !compositor->targetWindow())) {
+        if (Q_UNLIKELY(isRaster() != (compositor->targetWindow() != nullptr))) {
 #  ifndef Q_OS_ANDROID
             // We can have either a single OpenGL window or multiple raster windows.
             // Other combinations cannot work.
@@ -137,21 +137,30 @@ void QEglFSWindow::create()
     screen->setPrimarySurface(m_surface);
 
 #ifndef QT_NO_OPENGL
-    if (isRaster()) {
+    compositor->setTargetWindow(window(), screen->rawGeometry());
+    compositor->setRotation(qEnvironmentVariableIntValue("QT_QPA_EGLFS_ROTATION"));
+#endif
+}
+
+void QEglFSWindow::setBackingStore(QOpenGLCompositorBackingStore *backingStore)
+{
+#ifndef QT_NO_OPENGL
+    if (!m_rasterCompositingContext) {
         m_rasterCompositingContext = new QOpenGLContext;
         m_rasterCompositingContext->setShareContext(qt_gl_global_share_context());
         m_rasterCompositingContext->setFormat(m_format);
         m_rasterCompositingContext->setScreen(window()->screen());
         if (Q_UNLIKELY(!m_rasterCompositingContext->create()))
             qFatal("EGLFS: Failed to create compositing context");
-        compositor->setTarget(m_rasterCompositingContext, window(), screen->rawGeometry());
-        compositor->setRotation(qEnvironmentVariableIntValue("QT_QPA_EGLFS_ROTATION"));
         // If there is a "root" window into which raster and QOpenGLWidget content is
         // composited, all other contexts must share with its context.
         if (!qt_gl_global_share_context())
             qt_gl_set_global_share_context(m_rasterCompositingContext);
     }
-#endif // QT_NO_OPENGL
+    QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
+    compositor->setTargetContext(m_rasterCompositingContext);
+#endif
+    m_backingStore = backingStore;
 }
 
 void QEglFSWindow::destroy()
@@ -352,7 +361,7 @@ WId QEglFSWindow::winId() const
 
 void QEglFSWindow::setOpacity(qreal)
 {
-    if (!isRaster())
+    if (!isRaster() && !backingStore())
         qWarning("QEglFSWindow: Cannot set opacity for non-raster windows");
 
     // Nothing to do here. The opacity is stored in the QWindow.

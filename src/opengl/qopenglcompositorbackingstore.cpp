@@ -40,7 +40,6 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QWindow>
 #include <QtGui/QPainter>
-#include <QtGui/QOffscreenSurface>
 #include <qpa/qplatformbackingstore.h>
 #include <private/qwindow_p.h>
 #include <private/qrhi_p.h>
@@ -90,31 +89,12 @@ QOpenGLCompositorBackingStore::QOpenGLCompositorBackingStore(QWindow *window)
 
 QOpenGLCompositorBackingStore::~QOpenGLCompositorBackingStore()
 {
-    if (m_bsTexture) {
-        QOpenGLContext *ctx = QOpenGLContext::currentContext();
-        // With render-to-texture-widgets QWidget makes sure the TLW's shareContext() is
-        // made current before destroying backingstores. That is however not the case for
-        // windows with regular widgets only.
-        QScopedPointer<QOffscreenSurface> tempSurface;
-        if (!ctx) {
-            ctx = QOpenGLCompositor::instance()->context();
-            if (ctx) {
-                tempSurface.reset(new QOffscreenSurface);
-                tempSurface->setFormat(ctx->format());
-                tempSurface->create();
-                ctx->makeCurrent(tempSurface.data());
-            }
-        }
-
-        if (m_bsTextureContext && ctx && ctx->shareGroup() == m_bsTextureContext->shareGroup()) {
-            delete m_bsTextureWrapper;
-            glDeleteTextures(1, &m_bsTexture);
-        } else {
-            qWarning("QOpenGLCompositorBackingStore: Texture is not valid in the current context");
-        }
-
-        if (tempSurface && ctx)
-            ctx->doneCurrent();
+    if (m_bsTexture && m_rhi) {
+        delete m_bsTextureWrapper;
+        // Contexts are sharing resources, won't matter which one is
+        // current here, use the rhi's shortcut.
+        m_rhi->makeThreadLocalNativeContextCurrent();
+        glDeleteTextures(1, &m_bsTexture);
     }
 
     delete m_textures; // this does not actually own any GL resources
@@ -137,8 +117,6 @@ void QOpenGLCompositorBackingStore::updateTexture()
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_image.width(), m_image.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-        m_bsTextureWrapper = m_rhi->newTexture(QRhiTexture::RGBA8, m_image.size());
-        m_bsTextureWrapper->createFrom({m_bsTexture, 0});
     } else {
         glBindTexture(GL_TEXTURE_2D, m_bsTexture);
     }
@@ -185,6 +163,11 @@ void QOpenGLCompositorBackingStore::updateTexture()
 
         m_dirty = QRegion();
     }
+
+    if (!m_bsTextureWrapper) {
+        m_bsTextureWrapper = m_rhi->newTexture(QRhiTexture::RGBA8, m_image.size());
+        m_bsTextureWrapper->createFrom({m_bsTexture, 0});
+    }
 }
 
 void QOpenGLCompositorBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
@@ -194,15 +177,25 @@ void QOpenGLCompositorBackingStore::flush(QWindow *window, const QRegion &region
     Q_UNUSED(region);
     Q_UNUSED(offset);
 
+    m_rhi = rhi();
+    if (!m_rhi) {
+        setRhiConfig(QPlatformBackingStoreRhiConfig(QPlatformBackingStoreRhiConfig::OpenGL));
+        m_rhi = rhi();
+    }
+    Q_ASSERT(m_rhi);
+
     QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
     QOpenGLContext *dstCtx = compositor->context();
-    Q_ASSERT(dstCtx);
+    if (!dstCtx)
+        return;
 
     QWindow *dstWin = compositor->targetWindow();
     if (!dstWin)
         return;
 
-    dstCtx->makeCurrent(dstWin);
+    if (!dstCtx->makeCurrent(dstWin))
+        return;
+
     updateTexture();
     m_textures->clear();
     m_textures->appendTexture(nullptr, m_bsTextureWrapper, window->geometry());
@@ -223,16 +216,23 @@ QPlatformBackingStore::FlushResult QOpenGLCompositorBackingStore::rhiFlush(QWind
     Q_UNUSED(translucentBackground);
 
     m_rhi = rhi();
+    if (!m_rhi) {
+        setRhiConfig(QPlatformBackingStoreRhiConfig(QPlatformBackingStoreRhiConfig::OpenGL));
+        m_rhi = rhi();
+    }
+    Q_ASSERT(m_rhi);
 
     QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
     QOpenGLContext *dstCtx = compositor->context();
-    Q_ASSERT(dstCtx); // setTarget() must have been called before, e.g. from QEGLFSWindow
+    if (!dstCtx)
+        return FlushFailed;
 
     QWindow *dstWin = compositor->targetWindow();
     if (!dstWin)
         return FlushFailed;
 
-    dstCtx->makeCurrent(dstWin);
+    if (!dstCtx->makeCurrent(dstWin))
+        return FlushFailed;
 
     QWindowPrivate::get(window)->lastComposeTime.start();
 

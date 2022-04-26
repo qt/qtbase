@@ -103,12 +103,11 @@ public:
     void invalidateSurface() override;
     virtual void resetSurface();
 
+    bool isRaster() const;
+
 #ifndef QT_NO_OPENGL
     QOpenGLCompositorBackingStore *backingStore() { return m_backingStore; }
-    void setBackingStore(QOpenGLCompositorBackingStore *backingStore) { m_backingStore = backingStore; }
-#endif
-    bool isRaster() const;
-#ifndef QT_NO_OPENGL
+    void setBackingStore(QOpenGLCompositorBackingStore *backingStore);
     QWindow *sourceWindow() const override;
     const QPlatformTextureList *textures() const override;
     void endCompositing() override;

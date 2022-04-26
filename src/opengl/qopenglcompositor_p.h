@@ -83,7 +83,8 @@ public:
     static QOpenGLCompositor *instance();
     static void destroy();
 
-    void setTarget(QOpenGLContext *context, QWindow *window, const QRect &nativeTargetGeometry);
+    void setTargetWindow(QWindow *window, const QRect &nativeTargetGeometry);
+    void setTargetContext(QOpenGLContext *context);
     void setRotation(int degrees);
     QOpenGLContext *context() const { return m_context; }
     QWindow *targetWindow() const { return m_targetWindow; }

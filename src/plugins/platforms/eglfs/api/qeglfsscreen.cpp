@@ -201,7 +201,8 @@ QPixmap QEglFSScreen::grabWindow(WId wid, int x, int y, int width, int height) c
 
     QImage img;
 
-    if (static_cast<QEglFSWindow *>(windows.first()->sourceWindow()->handle())->isRaster()) {
+    QEglFSWindow *primaryWin = static_cast<QEglFSWindow *>(windows.first()->sourceWindow()->handle());
+    if (primaryWin->isRaster() || primaryWin->backingStore()) {
         // Request the compositor to render everything into an FBO and read it back. This
         // is of course slow, but it's safe and reliable. It will not include the mouse
         // cursor, which is a plus.

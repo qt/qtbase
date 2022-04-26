@@ -94,12 +94,15 @@ QOpenGLCompositor::~QOpenGLCompositor()
     compositor = 0;
 }
 
-void QOpenGLCompositor::setTarget(QOpenGLContext *context, QWindow *targetWindow,
-                                  const QRect &nativeTargetGeometry)
+void QOpenGLCompositor::setTargetWindow(QWindow *targetWindow, const QRect &nativeTargetGeometry)
 {
-    m_context = context;
     m_targetWindow = targetWindow;
     m_nativeTargetGeometry = nativeTargetGeometry;
+}
+
+void QOpenGLCompositor::setTargetContext(QOpenGLContext *context)
+{
+    m_context = context;
 }
 
 void QOpenGLCompositor::setRotation(int degrees)
