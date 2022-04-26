@@ -1740,7 +1740,7 @@ static bool android_default_message_handler(QtMsgType type,
     // If application name is a tag ensure it has no spaces
     // If a category is defined, use it as an Android logging tag
     __android_log_print(priority, isDefaultCategory(context.category) ?
-                        qPrintable(QCoreApplication::applicationName().replace(" ", "_")) : context.category,
+                        qPrintable(QCoreApplication::applicationName().replace(u' ', u'_')) : context.category,
                         "%s\n", qPrintable(formattedMessage));
 
     return true; // Prevent further output to stderr
