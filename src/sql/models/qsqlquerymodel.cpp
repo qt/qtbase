@@ -702,3 +702,5 @@ QModelIndex QSqlQueryModel::indexInQuery(const QModelIndex &item) const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qsqlquerymodel.cpp"

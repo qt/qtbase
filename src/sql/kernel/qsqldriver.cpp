@@ -845,3 +845,5 @@ bool QSqlDriver::cancelQuery()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qsqldriver.cpp"
