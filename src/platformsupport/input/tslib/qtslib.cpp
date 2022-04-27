@@ -126,3 +126,5 @@ void QTsLibMouseHandler::readMouseData()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qtslib_p.cpp"
