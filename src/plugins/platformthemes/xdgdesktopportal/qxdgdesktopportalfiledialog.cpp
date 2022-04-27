@@ -472,3 +472,5 @@ void QXdgDesktopPortalFileDialog::gotResponse(uint response, const QVariantMap &
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qxdgdesktopportalfiledialog_p.cpp"
