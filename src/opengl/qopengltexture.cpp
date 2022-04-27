@@ -4872,3 +4872,5 @@ QDebug operator<<(QDebug debug, const QOpenGLTexture *t)
 #endif // QT_NO_DEBUG_STREAM
 
 QT_END_NAMESPACE
+
+#include "moc_qopengltexture.cpp"

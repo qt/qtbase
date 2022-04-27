@@ -306,3 +306,5 @@ void QOpenGLCompositor::changeWindowIndex(QOpenGLCompositorWindow *window, int n
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qopenglcompositor_p.cpp"
