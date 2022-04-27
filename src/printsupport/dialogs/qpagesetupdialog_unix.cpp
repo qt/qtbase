@@ -750,4 +750,6 @@ int QPageSetupDialog::exec()
 
 QT_END_NAMESPACE
 
+#include "moc_qpagesetupdialog_unix_p.cpp"
+
 #include "moc_qpagesetupdialog.cpp"

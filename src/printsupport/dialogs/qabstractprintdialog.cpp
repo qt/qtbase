@@ -431,3 +431,5 @@ void QPrintDialog::open(QObject *receiver, const char *member)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qabstractprintdialog.cpp"
