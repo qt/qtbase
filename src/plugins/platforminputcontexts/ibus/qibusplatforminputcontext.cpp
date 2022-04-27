@@ -785,3 +785,5 @@ QDBusConnection *QIBusPlatformInputContextPrivate::createConnection()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qibusplatforminputcontext.cpp"
