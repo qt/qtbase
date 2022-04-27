@@ -1,6 +1,6 @@
 TARGET  = qico
 
-HEADERS += main.h qicohandler.h
+HEADERS += qicohandler.h
 SOURCES += main.cpp qicohandler.cpp
 OTHER_FILES += ico.json
 QT += core-private

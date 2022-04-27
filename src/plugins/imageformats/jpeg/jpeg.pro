@@ -3,7 +3,7 @@ TARGET  = qjpeg
 QT += core-private gui-private
 
 SOURCES += main.cpp qjpeghandler.cpp
-HEADERS += main.h qjpeghandler_p.h
+HEADERS += qjpeghandler_p.h
 
 qtConfig(system-jpeg) {
     QMAKE_USE += libjpeg
