@@ -130,8 +130,8 @@ function(_qt_internal_create_moc_command infile outfile moc_flags moc_options
         set(targetincludes "$<TARGET_PROPERTY:${moc_target},INCLUDE_DIRECTORIES>")
         set(targetdefines "$<TARGET_PROPERTY:${moc_target},COMPILE_DEFINITIONS>")
 
-        set(targetincludes "$<$<BOOL:${targetincludes}>:-I$<JOIN:${targetincludes},\n-I>\n>")
-        set(targetdefines "$<$<BOOL:${targetdefines}>:-D$<JOIN:${targetdefines},\n-D>\n>")
+        set(targetincludes "$<$<BOOL:${targetincludes}>:-I$<JOIN:$<REMOVE_DUPLICATES:${targetincludes}>,\n-I>\n>")
+        set(targetdefines "$<$<BOOL:${targetdefines}>:-D$<JOIN:$<REMOVE_DUPLICATES:${targetdefines}>,\n-D>\n>")
 
         file (GENERATE
             OUTPUT ${_moc_parameters_file}
