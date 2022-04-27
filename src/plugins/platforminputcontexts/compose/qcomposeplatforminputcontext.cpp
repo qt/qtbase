@@ -171,3 +171,5 @@ void QComposeInputContext::update(Qt::InputMethodQueries q)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qcomposeplatforminputcontext.cpp"
