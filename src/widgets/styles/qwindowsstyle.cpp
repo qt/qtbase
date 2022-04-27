@@ -373,7 +373,10 @@ static QScreen *screenOf(const QWidget *w)
 // and account for secondary screens with differing logical DPI.
 qreal QWindowsStylePrivate::nativeMetricScaleFactor(const QWidget *widget)
 {
-    qreal result = qreal(1) / QWindowsStylePrivate::devicePixelRatio(widget);
+    const QPlatformScreen *screen = screenOf(widget)->handle();
+    const qreal scale = screen ? (screen->logicalDpi().first / screen->logicalBaseDpi().first)
+                               : QWindowsStylePrivate::appDevicePixelRatio();
+    qreal result = qreal(1) / scale;
     if (QGuiApplicationPrivate::screen_list.size() > 1) {
         const QScreen *primaryScreen = QGuiApplication::primaryScreen();
         const QScreen *screen = screenOf(widget);
