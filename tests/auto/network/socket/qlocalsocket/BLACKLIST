@@ -3,5 +3,8 @@
 android
 [processConnection]
 android
+windows
 [verifySocketOptions]
 android
+[threadedConnection]
+windows
