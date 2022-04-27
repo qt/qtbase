@@ -1464,3 +1464,5 @@ QSqlRecord QSqlTableModel::primaryValues(int row) const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qsqltablemodel.cpp"
