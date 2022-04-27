@@ -629,3 +629,5 @@ void QTlsBackendOpenSSL::forceAutotestSecurityLevel()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qtlsbackend_openssl_p.cpp"
