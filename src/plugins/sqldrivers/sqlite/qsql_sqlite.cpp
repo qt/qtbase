@@ -1066,3 +1066,5 @@ QT_WARNING_POP
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qsql_sqlite_p.cpp"
