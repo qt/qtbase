@@ -258,3 +258,5 @@ bool QDeviceDiscoveryUDev::checkDeviceType(udev_device *dev)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qdevicediscovery_udev_p.cpp"
