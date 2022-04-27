@@ -980,3 +980,5 @@ void QEvdevTouchScreenHandlerThread::filterAndSendTouchPoints()
 
 
 QT_END_NAMESPACE
+
+#include "moc_qevdevtouchhandler_p.cpp"
