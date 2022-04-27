@@ -562,3 +562,5 @@ void QTuioHandler::process2DObjFseq(const QOscMessage &message)
 
 QT_END_NAMESPACE
 
+#include "moc_qtuiohandler_p.cpp"
+
