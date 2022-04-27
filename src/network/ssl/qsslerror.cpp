@@ -390,3 +390,5 @@ QDebug operator<<(QDebug debug, const QSslError::SslError &error)
 #endif
 
 QT_END_NAMESPACE
+
+#include "moc_qsslerror.cpp"

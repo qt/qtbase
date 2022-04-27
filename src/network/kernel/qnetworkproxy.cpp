@@ -1612,4 +1612,6 @@ QDebug operator<<(QDebug debug, const QNetworkProxyQuery &proxyQuery)
 
 QT_END_NAMESPACE
 
+#include "moc_qnetworkproxy.cpp"
+
 #endif // QT_NO_NETWORKPROXY
