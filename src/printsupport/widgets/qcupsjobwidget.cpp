@@ -261,3 +261,5 @@ QCUPSSupport::BannerPage QCupsJobWidget::endBannerPage() const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qcupsjobwidget_p.cpp"
