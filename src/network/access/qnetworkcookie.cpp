@@ -1125,3 +1125,5 @@ QDebug operator<<(QDebug s, const QNetworkCookie &cookie)
 #endif
 
 QT_END_NAMESPACE
+
+#include "moc_qnetworkcookie.cpp"
