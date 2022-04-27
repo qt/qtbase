@@ -75,6 +75,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static void saveCoverageTool(const char * appname, bool testfailed, bool installedTestCoverage)
 {
 #ifdef __COVERAGESCANNER__
@@ -328,10 +330,11 @@ void QTestLog::printUnhandledIgnoreMessages()
     QTest::IgnoreResultList *list = QTest::ignoreResultList;
     while (list) {
         if (list->pattern.userType() == QMetaType::QString) {
-            message = QStringLiteral("Did not receive message: \"") + list->pattern.toString() + u'"';
+            message = "Did not receive message: \"%1\""_L1.arg(list->pattern.toString());
         } else {
 #if QT_CONFIG(regularexpression)
-            message = QStringLiteral("Did not receive any message matching: \"") + list->pattern.toRegularExpression().pattern() + u'"';
+            message = "Did not receive any message matching: \"%1\""_L1.arg(
+                    list->pattern.toRegularExpression().pattern());
 #endif
         }
         FOREACH_TEST_LOGGER
