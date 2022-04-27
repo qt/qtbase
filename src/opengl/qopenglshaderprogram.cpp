@@ -3812,3 +3812,5 @@ bool QOpenGLShaderProgramPrivate::linkBinary()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qopenglshaderprogram.cpp"

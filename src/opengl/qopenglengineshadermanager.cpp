@@ -893,3 +893,5 @@ bool QOpenGLEngineShaderManager::useCorrectShaderProg()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qopenglengineshadermanager_p.cpp"
