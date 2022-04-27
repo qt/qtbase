@@ -2608,9 +2608,12 @@ int QSortFilterProxyModel::sortColumn() const
 
 /*!
     \since 4.5
-    \brief the order currently used for sorting
+    \return the order currently used for sorting
 
-    This returns the most recently used sort order.
+    This returns the most recently used sort order. The default value is
+    Qt::AscendingOrder.
+
+    \sa sort()
 */
 Qt::SortOrder QSortFilterProxyModel::sortOrder() const
 {
