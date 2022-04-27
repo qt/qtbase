@@ -10,7 +10,7 @@ qt_internal_add_plugin(QJpegPlugin
     OUTPUT_NAME qjpeg
     PLUGIN_TYPE imageformats
     SOURCES
-        main.cpp main.h
+        main.cpp
         qjpeghandler.cpp qjpeghandler_p.h
     LIBRARIES
         Qt::Core

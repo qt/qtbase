@@ -37,7 +37,8 @@
 **
 ****************************************************************************/
 
-#include "main.h"
+#include <qimageiohandler.h>
+#include <qstringlist.h>
 
 #ifdef QT_NO_IMAGEFORMAT_JPEG
 #undef QT_NO_IMAGEFORMAT_JPEG
@@ -45,6 +46,15 @@
 #include <qjpeghandler_p.h>
 
 QT_BEGIN_NAMESPACE
+
+class QJpegPlugin : public QImageIOPlugin
+{
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QImageIOHandlerFactoryInterface" FILE "jpeg.json")
+public:
+    Capabilities capabilities(QIODevice *device, const QByteArray &format) const override;
+    QImageIOHandler *create(QIODevice *device, const QByteArray &format = QByteArray()) const override;
+};
 
 QImageIOPlugin::Capabilities QJpegPlugin::capabilities(QIODevice *device, const QByteArray &format) const
 {
@@ -72,3 +82,5 @@ QImageIOHandler *QJpegPlugin::create(QIODevice *device, const QByteArray &format
 }
 
 QT_END_NAMESPACE
+
+#include "main.moc"

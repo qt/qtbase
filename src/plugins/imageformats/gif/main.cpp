@@ -40,8 +40,6 @@
 #include <qimageiohandler.h>
 #include <qstringlist.h>
 
-#include "main.h"
-
 #ifdef QT_NO_IMAGEFORMAT_GIF
 #undef QT_NO_IMAGEFORMAT_GIF
 #endif
@@ -49,6 +47,17 @@
 
 QT_BEGIN_NAMESPACE
 
+class QGifPlugin : public QImageIOPlugin
+{
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QImageIOHandlerFactoryInterface" FILE "gif.json")
+public:
+    QGifPlugin();
+    ~QGifPlugin();
+
+    Capabilities capabilities(QIODevice *device, const QByteArray &format) const override;
+    QImageIOHandler *create(QIODevice *device, const QByteArray &format = QByteArray()) const override;
+};
 
 QGifPlugin::QGifPlugin()
 {
@@ -74,3 +83,5 @@ QImageIOHandler *QGifPlugin::create(QIODevice *device, const QByteArray &format)
 }
 
 QT_END_NAMESPACE
+
+#include "main.moc"
