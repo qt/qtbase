@@ -1066,3 +1066,5 @@ void QSQLiteDriver::handleNotification(const QString &tableName, qint64 rowid)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qsql_sqlite_p.cpp"
