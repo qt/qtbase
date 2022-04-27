@@ -145,3 +145,5 @@ void QNetworkManagerInterface::setProperties(const QString &interfaceName,
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qnetworkmanagerservice.cpp"
