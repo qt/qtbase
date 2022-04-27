@@ -845,3 +845,5 @@ int QSqlDriver::maximumIdentifierLength(QSqlDriver::IdentifierType type) const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qsqldriver.cpp"
