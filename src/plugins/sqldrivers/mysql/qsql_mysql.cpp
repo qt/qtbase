@@ -1597,3 +1597,5 @@ bool QMYSQLDriver::isIdentifierEscaped(const QString &identifier, IdentifierType
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qsql_mysql_p.cpp"
