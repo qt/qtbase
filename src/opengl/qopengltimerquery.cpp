@@ -878,3 +878,5 @@ void QOpenGLTimeMonitor::reset()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qopengltimerquery.cpp"

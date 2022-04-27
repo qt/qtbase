@@ -696,3 +696,5 @@ QPaintDevice *QOpenGLWindow::redirected(QPoint *) const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qopenglwindow.cpp"
