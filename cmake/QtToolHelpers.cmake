@@ -120,7 +120,7 @@ function(qt_internal_add_tool target_name)
             # This should never happen, serves as an assert.
             message(FATAL_ERROR
                 "Neither QT_HOST_PATH_CMAKE_DIR nor "
-                "Qt${PROJECT_VERSION_MAJOR}HostInfo_DIR} available.")
+                "Qt${PROJECT_VERSION_MAJOR}HostInfo_DIR available.")
         endif()
         set(CMAKE_PREFIX_PATH "${qt_host_path_cmake_dir_absolute}")
 
