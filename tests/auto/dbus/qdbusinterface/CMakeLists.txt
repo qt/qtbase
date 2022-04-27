@@ -38,4 +38,6 @@ qt_internal_extend_target(tst_qdbusinterface CONDITION NOT QT_FEATURE_dbus_linke
         ../../../../src/dbus/qdbus_symbols.cpp
 )
 
+add_dependencies(tst_qdbusinterface qmyserver_qdbusinterface)
+
 # special case end
