@@ -88,3 +88,5 @@ QTlsPrivate::X509DerReaderPtr QTlsBackendCertOnly::X509DerReader() const
 
 QT_END_NAMESPACE
 
+#include "moc_qtlsbackend_cert_p.cpp"
+
