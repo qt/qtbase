@@ -2593,9 +2593,12 @@ void QSortFilterProxyModel::sort(int column, Qt::SortOrder order)
 
 /*!
     \since 4.5
-    \brief the column currently used for sorting
+    \return the column currently used for sorting
 
-    This returns the most recently used sort column.
+    This returns the most recently used sort column. The default value is -1,
+    which means that this proxy model does not sort.
+
+    \sa sort()
 */
 int QSortFilterProxyModel::sortColumn() const
 {
@@ -2937,6 +2940,8 @@ void QSortFilterProxyModel::setFilterFixedString(const QString &pattern)
     QComboBox.
 
     The default value is true.
+
+    \sa sortColumn()
 */
 bool QSortFilterProxyModel::dynamicSortFilter() const
 {
