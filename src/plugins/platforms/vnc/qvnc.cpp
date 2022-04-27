@@ -684,3 +684,5 @@ inline QImage QVncServer::screenImage() const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qvnc_p.cpp"

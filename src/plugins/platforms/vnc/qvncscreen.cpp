@@ -214,3 +214,5 @@ QFbScreen::Flags QVncScreen::flags() const
 
 QT_END_NAMESPACE
 
+#include "moc_qvncscreen.cpp"
+
