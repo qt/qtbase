@@ -995,6 +995,7 @@ bool QWasmCompositor::processMouse(int eventType, const EmscriptenMouseEvent *mo
 
     QPoint localPoint = window2->mapFromGlobal(globalPoint);
     bool interior = window2->geometry().contains(globalPoint);
+    bool blocked = QGuiApplicationPrivate::instance()->isWindowBlocked(window2);
 
     if (mouseInCanvas) {
         if (windowUnderMouse != window2 && interior) {
@@ -1005,6 +1006,10 @@ bool QWasmCompositor::processMouse(int eventType, const EmscriptenMouseEvent *mo
     }
 
     QWasmWindow *htmlWindow = static_cast<QWasmWindow*>(window2->handle());
+    Qt::WindowStates windowState = htmlWindow->window()->windowState();
+    bool isResizable = !(windowState.testFlag(Qt::WindowMaximized) ||
+                         windowState.testFlag(Qt::WindowFullScreen));
+
     switch (eventType) {
     case EMSCRIPTEN_EVENT_MOUSEDOWN:
     {
@@ -1024,8 +1029,10 @@ bool QWasmCompositor::processMouse(int eventType, const EmscriptenMouseEvent *mo
         // 2 = right mouse button, usually right click
         // from: https://w3c.github.io/uievents/#dom-mouseevent-button
         if (mouseEvent->button == 0) {
-            if (!(htmlWindow->m_windowState & Qt::WindowFullScreen) && !(htmlWindow->m_windowState & Qt::WindowMaximized)) {
-                if (htmlWindow && window2->flags().testFlag(Qt::WindowTitleHint) && htmlWindow->isPointOnTitle(globalPoint))
+            if (!blocked && !(htmlWindow->m_windowState & Qt::WindowFullScreen)
+                    && !(htmlWindow->m_windowState & Qt::WindowMaximized)) {
+                if (htmlWindow && window2->flags().testFlag(Qt::WindowTitleHint)
+                        && htmlWindow->isPointOnTitle(globalPoint))
                     draggedWindow = window2;
                 else if (htmlWindow && htmlWindow->isPointOnResizeRegion(globalPoint)) {
                     draggedWindow = window2;
@@ -1068,11 +1075,9 @@ bool QWasmCompositor::processMouse(int eventType, const EmscriptenMouseEvent *mo
 
         if (htmlWindow && pressedButtons.testFlag(Qt::NoButton)) {
 
-            Qt::WindowStates windowState = htmlWindow->window()->windowState();
-            bool isResizable = !(windowState.testFlag(Qt::WindowMaximized) || windowState.testFlag(Qt::WindowFullScreen));
             bool isOnResizeRegion = htmlWindow->isPointOnResizeRegion(globalPoint);
 
-            if (isResizable && isOnResizeRegion) {
+            if (isResizable && isOnResizeRegion && !blocked) {
                 QCursor resizingCursor = eventTranslator->cursorForMode(htmlWindow->resizeModeAtPoint(globalPoint));
 
                 if (resizingCursor != window2->cursor()) {
