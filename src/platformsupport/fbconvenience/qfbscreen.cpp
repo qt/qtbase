@@ -259,3 +259,5 @@ QFbScreen::Flags QFbScreen::flags() const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qfbscreen_p.cpp"

@@ -210,3 +210,5 @@ void QFbCursor::updateMouseStatus()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qfbcursor_p.cpp"
