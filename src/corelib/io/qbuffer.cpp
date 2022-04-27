@@ -42,6 +42,8 @@
 #include "private/qiodevice_p.h"
 #include <limits>
 
+#include <limits>
+
 QT_BEGIN_NAMESPACE
 
 /** QBufferPrivate **/
