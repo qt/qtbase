@@ -466,3 +466,5 @@ QPixmap QLinuxFbDrmScreen::grabWindow(WId wid, int x, int y, int width, int heig
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qlinuxfbdrmscreen.cpp"
