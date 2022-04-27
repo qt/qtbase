@@ -210,3 +210,5 @@ void QFbVtHandler::handleInt()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qfbvthandler_p.cpp"
