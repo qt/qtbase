@@ -1056,3 +1056,5 @@ bool QAbstractItemModelTesterPrivate::compare(const T1 &t1, const T2 &t2,
 
 
 QT_END_NAMESPACE
+
+#include "moc_qabstractitemmodeltester.cpp"
