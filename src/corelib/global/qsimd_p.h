@@ -391,6 +391,35 @@ static inline quint64 qCpuFeatures()
 #define qCpuHasFeature(feature)     (((qCompilerCpuFeatures & CpuFeature ## feature) == CpuFeature ## feature) \
                                      || ((qCpuFeatures() & CpuFeature ## feature) == CpuFeature ## feature))
 
+/*
+    Small wrapper around x86's PAUSE instruction.
+
+    This is completely different from QThread::yieldCurrentThread(), which is
+    an OS-level operation that takes the whole thread off the CPU.
+
+    This is just preventing one SMT thread from filling a core's pipeline with
+    speculated further loop iterations (which need to be expensively flushed on
+    final success) when it could just give those pipeline slots to a second SMT
+    thread that can do something useful with the core, such as unblocking this
+    SMT thread :)
+
+    So, instead of
+
+        while (!condition)
+            ;
+
+    it's better to use
+
+        while (!condition)
+            qYieldCpu();
+*/
+static inline void qYieldCpu()
+{
+#if defined(Q_PROCESSOR_X86)
+    _mm_pause();
+#endif
+}
+
 inline bool qHasHwrng()
 {
 #if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND)
