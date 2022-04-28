@@ -75,3 +75,9 @@ osx
 macos
 [backgroundRequestConnectInBackground]
 osx
+# QTBUG-102952
+[autoDeleteReplies]
+opensuse-leap
+# QTBUG-102952
+[autoDeleteRepliesAttribute]
+opensuse-leap
