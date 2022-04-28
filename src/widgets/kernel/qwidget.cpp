@@ -112,10 +112,6 @@
 
 #include <sstream>
 
-// widget/widget data creation count
-//#define QWIDGET_EXTRA_DEBUG
-//#define ALIEN_DEBUG
-
 QT_BEGIN_NAMESPACE
 
 using namespace QNativeInterface::Private;
@@ -1212,11 +1208,6 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
 
     if (QApplicationPrivate::testAttribute(Qt::AA_NativeWindows))
         setAttribute(Qt::WA_NativeWindow);
-
-#ifdef ALIEN_DEBUG
-    qDebug() << "QWidget::create:" << this << "parent:" << parentWidget()
-             << "Alien?" << !testAttribute(Qt::WA_NativeWindow);
-#endif
 
     d->updateIsOpaque();
 
@@ -2409,9 +2400,6 @@ WId QWidget::winId() const
     if (!data->in_destructor
         && (!testAttribute(Qt::WA_WState_Created) || !internalWinId()))
     {
-#ifdef ALIEN_DEBUG
-        qDebug() << "QWidget::winId: creating native window for" << this;
-#endif
         QWidget *that = const_cast<QWidget*>(this);
         that->setAttribute(Qt::WA_NativeWindow);
         that->d_func()->createWinId();
@@ -2424,9 +2412,6 @@ void QWidgetPrivate::createWinId()
 {
     Q_Q(QWidget);
 
-#ifdef ALIEN_DEBUG
-    qDebug() << "QWidgetPrivate::createWinId for" << q;
-#endif
     const bool forceNativeWindow = q->testAttribute(Qt::WA_NativeWindow);
     if (!q->testAttribute(Qt::WA_WState_Created) || (forceNativeWindow && !q->internalWinId())) {
         if (!q->isWindow()) {
@@ -2497,10 +2482,6 @@ Ensures that the widget has a window system identifier, i.e. that it is known to
 void QWidget::createWinId()
 {
     Q_D(QWidget);
-#ifdef ALIEN_DEBUG
-    qDebug()  << "QWidget::createWinId" << this;
-#endif
-//    qWarning("QWidget::createWinId is obsolete, please fix your code.");
     d->createWinId();
 }
 

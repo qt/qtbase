@@ -119,8 +119,6 @@
 #include <algorithm>
 #include <iterator>
 
-//#define ALIEN_DEBUG
-
 static void initResources()
 {
     Q_INIT_RESOURCE(qstyle);
@@ -2033,9 +2031,7 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave, con
 
     if ((!enter && !leave) || (enter == leave))
         return;
-#ifdef ALIEN_DEBUG
-    qDebug() << "QApplicationPrivate::dispatchEnterLeave, ENTER:" << enter << "LEAVE:" << leave;
-#endif
+
     QWidgetList leaveList;
     QWidgetList enterList;
 
@@ -2342,9 +2338,6 @@ QWidget *QApplicationPrivate::pickMouseReceiver(QWidget *candidate, const QPoint
     if (mouseGrabber && mouseGrabber != candidate) {
         receiver = mouseGrabber;
         *pos = receiver->mapFromGlobal(candidate->mapToGlobal(windowPos));
-#ifdef ALIEN_DEBUG
-        qDebug() << "  ** receiver adjusted to:" << receiver << "pos:" << pos;
-#endif
     }
 
     return receiver;
@@ -2407,13 +2400,6 @@ bool QApplicationPrivate::sendMouseEvent(QWidget *receiver, QMouseEvent *event,
 
         }
     }
-
-#ifdef ALIEN_DEBUG
-    qDebug() << "QApplicationPrivate::sendMouseEvent: receiver:" << receiver
-             << "pos:" << event->position() << "alien" << alienWidget << "button down"
-             << *buttonDown << "last" << lastMouseReceiver << "leave after release"
-             << leaveAfterRelease;
-#endif
 
     // We need this quard in case someone opens a modal dialog / popup. If that's the case
     // leaveAfterRelease is set to null, but we shall not update lastMouseReceiver.
