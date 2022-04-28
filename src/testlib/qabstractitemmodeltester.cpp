@@ -744,7 +744,7 @@ void QAbstractItemModelTesterPrivate::columnsMoved(const QModelIndex &sourcePare
     MODELTESTER_COMPARE(changeInFlight, ChangeInFlight::ColumnsMoved);
     changeInFlight = ChangeInFlight::None;
 
-    qCDebug(lcModelTest) << "columnsAboutToBeMoved"
+    qCDebug(lcModelTest) << "columnsMoved"
                          << "sourceStart=" << sourceStart << "sourceEnd=" << sourceEnd
                          << "sourceParent=" << sourceParent
                          << "sourceParent data=" << model->data(sourceParent).toString()
@@ -854,7 +854,7 @@ void QAbstractItemModelTesterPrivate::rowsAboutToBeMoved(const QModelIndex &sour
                          << "sourceParent=" << sourceParent
                          << "sourceParent data=" << model->data(sourceParent).toString()
                          << "destinationParent=" << destinationParent
-                         << "destinationColumn=" << destinationRow;
+                         << "destinationRow=" << destinationRow;
 }
 
 void QAbstractItemModelTesterPrivate::rowsMoved(const QModelIndex &sourceParent, int sourceStart,
@@ -869,7 +869,7 @@ void QAbstractItemModelTesterPrivate::rowsMoved(const QModelIndex &sourceParent,
                          << "sourceParent=" << sourceParent
                          << "sourceParent data=" << model->data(sourceParent).toString()
                          << "destinationParent=" << destinationParent
-                         << "destinationColumn=" << destinationRow;
+                         << "destinationRow=" << destinationRow;
 }
 
 void QAbstractItemModelTesterPrivate::layoutAboutToBeChanged()
