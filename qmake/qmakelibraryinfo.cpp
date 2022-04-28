@@ -169,17 +169,22 @@ static QLibraryInfoPrivate::LocationInfo defaultLocationInfo(int loc)
     return result;
 }
 
+static QString libraryInfoPath(QLibraryInfo::LibraryPath location)
+{
+    return QLibraryInfoPrivate::path(location, QLibraryInfoPrivate::UsedFromQtBinDir);
+}
+
 static QString storedPath(int loc)
 {
     QString result;
     if (loc < QMakeLibraryInfo::FirstHostPath) {
-        result = QLibraryInfo::path(static_cast<QLibraryInfo::LibraryPath>(loc));
+        result = libraryInfoPath(static_cast<QLibraryInfo::LibraryPath>(loc));
     } else if (loc <= QMakeLibraryInfo::LastHostPath) {
         if (loc == QMakeLibraryInfo::HostDataPath) {
             // Handle QT_HOST_DATADIR specially. It is not necessarily equal to QT_INSTALL_DATA.
             result = QT_HOST_DATADIR;
         } else {
-            result = QLibraryInfo::path(hostToTargetPathEnum(loc));
+            result = libraryInfoPath(hostToTargetPathEnum(loc));
         }
     } else if (loc == QMakeLibraryInfo::SysrootPath) {
         // empty result

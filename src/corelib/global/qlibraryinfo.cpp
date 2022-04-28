@@ -369,7 +369,7 @@ static HMODULE getWindowsModuleHandle()
 }
 #endif // Q_OS_WIN
 
-static QString getRelocatablePrefix()
+static QString getRelocatablePrefix(QLibraryInfoPrivate::UsageMode usageMode)
 {
     QString prefixPath;
 
@@ -377,7 +377,14 @@ static QString getRelocatablePrefix()
     // For regular builds, the prefix will be relative to the location of the QtCore shared library.
 #if defined(QT_STATIC)
     prefixPath = prefixFromAppDirHelper();
+    if (usageMode == QLibraryInfoPrivate::UsedFromQtBinDir) {
+        // For Qt tools in a static build, we must chop off the bin directory.
+        constexpr QByteArrayView binDir = qt_configure_strs.viewAt(QLibraryInfo::BinariesPath - 1);
+        constexpr size_t binDirLength = binDir.size() + 1;
+        prefixPath.chop(binDirLength);
+    }
 #elif defined(Q_OS_DARWIN) && QT_CONFIG(framework)
+    Q_UNUSED(usageMode);
 #ifndef QT_LIBINFIX
     #define QT_LIBINFIX ""
 #endif
@@ -416,11 +423,13 @@ static QString getRelocatablePrefix()
 
     prefixPath = QDir::cleanPath(prefixDir);
 #elif QT_CONFIG(dlopen)
+    Q_UNUSED(usageMode);
     Dl_info info;
     int result = dladdr(reinterpret_cast<void *>(&QLibraryInfo::isDebugBuild), &info);
     if (result > 0 && info.dli_fname)
         prefixPath = prefixFromQtCoreLibraryHelper(QString::fromLocal8Bit(info.dli_fname));
 #elif defined(Q_OS_WIN)
+    Q_UNUSED(usageMode);
     HMODULE hModule = getWindowsModuleHandle();
     const int kBufferSize = 4096;
     wchar_t buffer[kBufferSize];
@@ -484,11 +493,12 @@ static QString getRelocatablePrefix()
 }
 #endif
 
-static QString getPrefix()
+static QString getPrefix(QLibraryInfoPrivate::UsageMode usageMode)
 {
 #if QT_CONFIG(relocatable)
-    return getRelocatablePrefix();
+    return getRelocatablePrefix(usageMode);
 #else
+    Q_UNUSED(usageMode);
     return QString::fromLocal8Bit(QT_CONFIGURE_PREFIX_PATH);
 #endif
 }
@@ -555,7 +565,19 @@ QLibraryInfoPrivate::LocationInfo QLibraryInfoPrivate::locationInfo(QLibraryInfo
 */
 QString QLibraryInfo::path(LibraryPath p)
 {
-    const LibraryPath loc = p;
+    return QLibraryInfoPrivate::path(p);
+}
+
+
+/*
+    Returns the path specified by \a p.
+
+    The usage mode can be set to UsedFromQtBinDir to enable special handling for executables that
+    live in <install-prefix>/bin.
+ */
+QString QLibraryInfoPrivate::path(QLibraryInfo::LibraryPath p, UsageMode usageMode)
+{
+    const QLibraryInfo::LibraryPath loc = p;
     QString ret;
     bool fromConf = false;
 #if QT_CONFIG(settings)
@@ -605,12 +627,12 @@ QString QLibraryInfo::path(LibraryPath p)
 #endif // settings
 
     if (!fromConf) {
-        if (loc == PrefixPath) {
-            ret = getPrefix();
+        if (loc == QLibraryInfo::PrefixPath) {
+            ret = getPrefix(usageMode);
         } else if (int(loc) <= qt_configure_strs.count()) {
             ret = QString::fromLocal8Bit(qt_configure_strs.viewAt(loc - 1));
 #ifndef Q_OS_WIN // On Windows we use the registry
-        } else if (loc == SettingsPath) {
+        } else if (loc == QLibraryInfo::SettingsPath) {
             // Use of volatile is a hack to discourage compilers from calling
             // strlen(), in the inlined fromLocal8Bit(const char *)'s body, at
             // compile-time, as Qt installers binary-patch the path, replacing
@@ -623,11 +645,11 @@ QString QLibraryInfo::path(LibraryPath p)
 
     if (!ret.isEmpty() && QDir::isRelativePath(ret)) {
         QString baseDir;
-        if (loc == PrefixPath) {
+        if (loc == QLibraryInfo::PrefixPath) {
             baseDir = prefixFromAppDirHelper();
         } else {
             // we make any other path absolute to the prefix directory
-            baseDir = path(PrefixPath);
+            baseDir = path(QLibraryInfo::PrefixPath, usageMode);
         }
         ret = QDir::cleanPath(baseDir + u'/' + ret);
     }

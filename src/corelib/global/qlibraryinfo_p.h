@@ -79,6 +79,13 @@ public:
     };
 
     static LocationInfo locationInfo(QLibraryInfo::LibraryPath loc);
+
+    enum UsageMode {
+        RegularUsage,
+        UsedFromQtBinDir
+    };
+
+    static QString path(QLibraryInfo::LibraryPath p, UsageMode usageMode = RegularUsage);
 };
 
 QT_END_NAMESPACE
