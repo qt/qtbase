@@ -1328,6 +1328,12 @@ void QXcbWindow::setWindowIcon(const QIcon &icon)
     }
 
     if (!icon_data.isEmpty()) {
+        // Ignore icon exceeding maximum xcb request length
+        if (icon_data.size() > xcb_get_maximum_request_length(xcb_connection())) {
+            qWarning("Ignoring window icon: Size %llu exceeds maximum xcb request length %u.",
+                     icon_data.size(), xcb_get_maximum_request_length(xcb_connection()));
+            return;
+        }
         xcb_change_property(xcb_connection(),
                             XCB_PROP_MODE_REPLACE,
                             m_window,
