@@ -37,7 +37,7 @@ EMULATOR_EXEC="$ANDROID_SDK_ROOT/emulator/emulator"
 ADB_EXEC="$ANDROID_SDK_ROOT/platform-tools/adb"
 if [ -z "${ANDROID_EMULATOR}" ]
 then
-    EMULATOR_NAME="@x86emulator"
+    EMULATOR_NAME="@emulator_x86_api_23"
 else
     EMULATOR_NAME="$ANDROID_EMULATOR"
 fi
