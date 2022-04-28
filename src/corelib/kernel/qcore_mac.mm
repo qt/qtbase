@@ -133,7 +133,7 @@ bool AppleUnifiedLogger::messageHandler(QtMsgType msgType, const QMessageLogCont
 
     const bool isDefault = !context.category || !strcmp(context.category, "default");
     os_log_t log = isDefault ? OS_LOG_DEFAULT :
-        cachedLog(subsystem, QString::fromLatin1(context.category));
+        os_log_create(subsystem.toLatin1().constData(), context.category);
     os_log_type_t logType = logTypeForMessageType(msgType);
 
     if (!os_log_type_enabled(log, logType))
@@ -167,29 +167,6 @@ os_log_type_t AppleUnifiedLogger::logTypeForMessageType(QtMsgType msgType)
     }
 
     return OS_LOG_TYPE_DEFAULT;
-}
-
-os_log_t AppleUnifiedLogger::cachedLog(const QString &subsystem, const QString &category)
-{
-    static QBasicMutex mutex;
-    const auto locker = qt_scoped_lock(mutex);
-
-    static QHash<QPair<QString, QString>, os_log_t> logs;
-    const auto cacheKey = qMakePair(subsystem, category);
-    os_log_t log = logs.value(cacheKey);
-
-    if (!log) {
-        log = os_log_create(subsystem.toLatin1().constData(),
-            category.toLatin1().constData());
-        logs.insert(cacheKey, log);
-
-        // Technically we should release the os_log_t resource when done
-        // with it, but since we don't know when a category is disabled
-        // we keep all cached os_log_t instances until shutdown, where
-        // the OS will clean them up for us.
-    }
-
-    return log;
 }
 
 #endif // QT_USE_APPLE_UNIFIED_LOGGING
