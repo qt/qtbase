@@ -57,6 +57,7 @@ private slots:
     void scale();
     void shear();
     void translate();
+    void createTextItem();
 };
 
 tst_QGraphicsItem::tst_QGraphicsItem()
@@ -227,6 +228,16 @@ void tst_QGraphicsItem::translate()
     const QTransform translate = QTransform::fromTranslate(100, 100);
     QBENCHMARK {
         item->setTransform(translate, true);
+    }
+}
+
+void tst_QGraphicsItem::createTextItem()
+{
+    // Ensure QFontDatabase loaded the font beforehand
+    QFontInfo(qApp->font()).family();
+    const QString text = "This is some text";
+    QBENCHMARK {
+        QGraphicsTextItem item(text);
     }
 }
 

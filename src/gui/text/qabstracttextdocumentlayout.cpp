@@ -435,7 +435,8 @@ void QAbstractTextDocumentLayout::registerHandler(int objectType, QObject *compo
     if (!iface)
         return; // ### print error message on terminal?
 
-    connect(component, SIGNAL(destroyed(QObject*)), this, SLOT(_q_handlerDestroyed(QObject*)));
+    QObjectPrivate::connect(component, &QObject::destroyed, d,
+                            &QAbstractTextDocumentLayoutPrivate::_q_handlerDestroyed);
 
     QTextObjectHandler h;
     h.iface = iface;
@@ -456,7 +457,8 @@ void QAbstractTextDocumentLayout::unregisterHandler(int objectType, QObject *com
     const auto it = d->handlers.constFind(objectType);
     if (it != d->handlers.cend() && (!component || component == it->component)) {
         if (component)
-            disconnect(component, SIGNAL(destroyed(QObject*)), this, SLOT(_q_handlerDestroyed(QObject*)));
+            QObjectPrivate::disconnect(component, &QObject::destroyed, d,
+                                       &QAbstractTextDocumentLayoutPrivate::_q_handlerDestroyed);
         d->handlers.erase(it);
     }
 }
