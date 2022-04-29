@@ -276,13 +276,8 @@ protected:
 
 private:
     Q_DISABLE_COPY_MOVE(QWidgetTextControl)
-    Q_PRIVATE_SLOT(d_func(), void _q_updateCurrentCharFormatAndSelection())
-    Q_PRIVATE_SLOT(d_func(), void _q_emitCursorPosChanged(const QTextCursor &))
     Q_PRIVATE_SLOT(d_func(), void _q_deleteSelected())
     Q_PRIVATE_SLOT(d_func(), void _q_copyLink())
-    Q_PRIVATE_SLOT(d_func(), void _q_updateBlock(const QTextBlock &))
-    Q_PRIVATE_SLOT(d_func(), void _q_documentLayoutChanged())
-    Q_PRIVATE_SLOT(d_func(), void _q_contentsChanged(int, int, int))
 };
 
 
