@@ -191,9 +191,6 @@ QT_WARNING_DISABLE_INTEL(103)
 #  else
 #    define QT_FUNCTION_TARGET(x)
 #  endif
-#elif defined(Q_PROCESSOR_ARM)
-#  define QT_COMPILER_SUPPORTS_HERE(x)    ((__ARM_FEATURE_ ## x) || (__ ## x ## __))
-#  define QT_FUNCTION_TARGET(x)
 #else
 #  define QT_COMPILER_SUPPORTS_HERE(x)    (__ ## x ## __)
 #  define QT_FUNCTION_TARGET(x)
