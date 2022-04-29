@@ -40,6 +40,7 @@
 #include "qbuffer.h"
 #include <QtCore/qmetaobject.h>
 #include "private/qiodevice_p.h"
+#include <limits>
 
 QT_BEGIN_NAMESPACE
 
