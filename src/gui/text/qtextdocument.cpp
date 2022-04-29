@@ -634,6 +634,41 @@ bool QTextDocument::useDesignMetrics() const
     return d->defaultTextOption.useDesignMetrics();
 }
 
+
+/*!
+    \property QTextDocument::layoutEnabled
+    \since 6.4
+    \brief whether QTextDocument should recalculate the layout after every change
+
+    If this property is set to true, any change triggers a laying out of the
+    document, which makes everything work as expected, but takes time.
+
+    Temporarily disabling the layout process can save time when making multiple changes
+    (not just text content, but also default font, default text option....)
+    so that the document is only laid out once in the end. This can be useful when the
+    text width or page size isn't yet known, for instance.
+
+    By default, this property is \c true.
+
+    \sa setTextWidth
+*/
+
+void QTextDocument::setLayoutEnabled(bool b)
+{
+    Q_D(QTextDocument);
+    if (d->layoutEnabled == b)
+        return;
+    d->layoutEnabled = b;
+    if (b && d->lout)
+        d->lout->documentChanged(0, 0, d->length());
+}
+
+bool QTextDocument::isLayoutEnabled() const
+{
+    Q_D(const QTextDocument);
+    return d->layoutEnabled;
+}
+
 /*!
     \since 4.2
 

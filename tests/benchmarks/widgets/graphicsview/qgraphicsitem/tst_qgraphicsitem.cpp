@@ -35,6 +35,7 @@ private slots:
     void translate();
     void createTextItem();
     void createTextItemZeroWidth();
+    void createTextItemNoLayouting();
 };
 
 tst_QGraphicsItem::tst_QGraphicsItem()
@@ -232,6 +233,23 @@ void tst_QGraphicsItem::createTextItemZeroWidth()
         option.setAlignment(Qt::AlignHCenter);
         item.document()->setDefaultTextOption(option);
         // And (in a real app) set actual text width here
+    }
+}
+
+void tst_QGraphicsItem::createTextItemNoLayouting()
+{
+    // Ensure QFontDatabase loaded the font beforehand
+    QFontInfo(qApp->font()).family();
+    const QString text = "This is some text";
+    QBENCHMARK {
+        QGraphicsTextItem item;
+        item.document()->setLayoutEnabled(false);
+        // Prepare everything
+        item.setPlainText(text);
+        QTextOption option = item.document()->defaultTextOption();
+        option.setAlignment(Qt::AlignHCenter);
+        item.document()->setDefaultTextOption(option);
+        // And (in a real app) enable layouting here
     }
 }
 
