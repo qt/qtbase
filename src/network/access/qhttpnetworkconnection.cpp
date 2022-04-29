@@ -1279,11 +1279,10 @@ void QHttpNetworkConnectionPrivate::_q_hostLookupFinished(const QHostInfo &info)
                 emitReplyError(channels[0].socket, currentReply, QNetworkReply::HostNotFoundError);
             }
         } else {
-            // Should not happen: we start a host lookup before sending a request,
-            // so it's natural to have requests either in HTTP/2 queue, or in low/high
-            // priority queues.
-            qWarning("QHttpNetworkConnectionPrivate::_q_hostLookupFinished"
-                     " could not de-queue request, failed to report HostNotFoundError");
+            // We can end up here if a request has been aborted or otherwise failed (e.g. timeout)
+            // before the host lookup was finished.
+            qDebug("QHttpNetworkConnectionPrivate::_q_hostLookupFinished"
+                   " could not de-queue request, failed to report HostNotFoundError");
             networkLayerState = QHttpNetworkConnectionPrivate::Unknown;
         }
     }
