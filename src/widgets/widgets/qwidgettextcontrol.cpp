@@ -446,11 +446,11 @@ void QWidgetTextControlPrivate::setContent(Qt::TextFormat format, const QString 
     if (!doc) {
         if (document) {
             doc = document;
-            clearDocument = false;
         } else {
             palette = QApplication::palette("QWidgetTextControl");
             doc = new QTextDocument(q);
         }
+        clearDocument = false;
         _q_documentLayoutChanged();
         cursor = QTextCursor(doc);
 
