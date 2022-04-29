@@ -192,13 +192,13 @@ inline Qt::HANDLE QThread::currentThreadId() noexcept
     static_assert(sizeof(tid) == sizeof(void*));
     // See https://akkadia.org/drepper/tls.pdf for x86 ABI
 #if defined(Q_PROCESSOR_X86_32) && defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID) // x86 32-bit always uses GS
-    __asm__("movl %%gs:0, %0" : "=r" (tid) : : );
+    __asm__("movl %%gs:%c1, %0" : "=r" (tid) : "i" (2 * sizeof(void*)) : );
 #elif defined(Q_PROCESSOR_X86_64) && defined(Q_OS_DARWIN64)
     // 64bit macOS uses GS, see https://github.com/apple/darwin-xnu/blob/master/libsyscall/os/tsd.h
     __asm__("movq %%gs:0, %0" : "=r" (tid) : : );
 #elif defined(Q_PROCESSOR_X86_64) && (defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)) && !defined(Q_OS_ANDROID)
     // x86_64 Linux, BSD uses FS
-    __asm__("movq %%fs:0, %0" : "=r" (tid) : : );
+    __asm__("movq %%fs:%c1, %0" : "=r" (tid) : "i" (2 * sizeof(void*)) : );
 #elif defined(Q_PROCESSOR_X86_64) && defined(Q_OS_WIN)
     // See https://en.wikipedia.org/wiki/Win32_Thread_Information_Block
     // First get the pointer to the TIB
