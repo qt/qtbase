@@ -626,7 +626,7 @@ uint64_t QT_MANGLE_NAMESPACE(qDetectCpuFeatures)()
     bool runningOnValgrind = false;
 #endif
     if (Q_UNLIKELY(!runningOnValgrind && minFeatureTest != 0 && (f & minFeatureTest) != minFeatureTest)) {
-        quint64 missing = minFeatureTest & ~f;
+        quint64 missing = minFeatureTest & ~quint64(f);
         fprintf(stderr, "Incompatible processor. This Qt build requires the following features:\n   ");
         for (uint i = 0; i < std::size(features_indices); ++i) {
             if (missing & (Q_UINT64_C(1) << i))
