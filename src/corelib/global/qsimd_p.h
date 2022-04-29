@@ -392,7 +392,7 @@ static inline quint64 qCpuFeatures()
                                      || ((qCpuFeatures() & CpuFeature ## feature) == CpuFeature ## feature))
 
 /*
-    Small wrapper around x86's PAUSE instruction.
+    Small wrapper around x86's PAUSE and ARM's YIELD instructions.
 
     This is completely different from QThread::yieldCurrentThread(), which is
     an OS-level operation that takes the whole thread off the CPU.
@@ -417,6 +417,21 @@ static inline void qYieldCpu()
 {
 #if defined(Q_PROCESSOR_X86)
     _mm_pause();
+#elif defined(Q_PROCESSOR_ARM)
+#  if __has_builtin(__builtin_arm_yield) /* e.g. Clang */
+    __builtin_arm_yield();
+#  elif defined(Q_OS_INTEGRITY) || \
+        (defined(Q_CC_GNU) && !defined(Q_CC_CLANG))
+    /*
+       - Integrity is missing the arm_acle.h header
+       - GCC doesn't have __yield() in arm_acle.h
+         https://stackoverflow.com/a/70076751/134841
+         https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105416
+    */
+    asm volatile("yield"); /* this works everywhere */
+#  else
+    __yield(); /* this is what should work everywhere */
+#  endif
 #endif
 }
 
