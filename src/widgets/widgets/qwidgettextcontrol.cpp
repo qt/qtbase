@@ -455,15 +455,20 @@ void QWidgetTextControlPrivate::setContent(Qt::TextFormat format, const QString 
 
 // ####        doc->documentLayout()->setPaintDevice(viewport);
 
-        QObject::connect(doc, SIGNAL(contentsChanged()), q, SLOT(_q_updateCurrentCharFormatAndSelection()));
-        QObject::connect(doc, SIGNAL(cursorPositionChanged(QTextCursor)), q, SLOT(_q_emitCursorPosChanged(QTextCursor)));
-        QObject::connect(doc, SIGNAL(documentLayoutChanged()), q, SLOT(_q_documentLayoutChanged()));
+        QObjectPrivate::connect(doc, &QTextDocument::contentsChanged, this,
+                                &QWidgetTextControlPrivate::_q_updateCurrentCharFormatAndSelection);
+        QObjectPrivate::connect(doc, &QTextDocument::cursorPositionChanged, this,
+                                &QWidgetTextControlPrivate::_q_emitCursorPosChanged);
+        QObjectPrivate::connect(doc, &QTextDocument::documentLayoutChanged, this,
+                                &QWidgetTextControlPrivate::_q_documentLayoutChanged);
 
         // convenience signal forwards
-        QObject::connect(doc, SIGNAL(undoAvailable(bool)), q, SIGNAL(undoAvailable(bool)));
-        QObject::connect(doc, SIGNAL(redoAvailable(bool)), q, SIGNAL(redoAvailable(bool)));
-        QObject::connect(doc, SIGNAL(modificationChanged(bool)), q, SIGNAL(modificationChanged(bool)));
-        QObject::connect(doc, SIGNAL(blockCountChanged(int)), q, SIGNAL(blockCountChanged(int)));
+        QObject::connect(doc, &QTextDocument::undoAvailable, q, &QWidgetTextControl::undoAvailable);
+        QObject::connect(doc, &QTextDocument::redoAvailable, q, &QWidgetTextControl::redoAvailable);
+        QObject::connect(doc, &QTextDocument::modificationChanged, q,
+                         &QWidgetTextControl::modificationChanged);
+        QObject::connect(doc, &QTextDocument::blockCountChanged, q,
+                         &QWidgetTextControl::blockCountChanged);
     }
 
     bool previousUndoRedoState = doc->isUndoRedoEnabled();
@@ -525,7 +530,8 @@ void QWidgetTextControlPrivate::setContent(Qt::TextFormat format, const QString 
     q->ensureCursorVisible();
     emit q->cursorPositionChanged();
 
-    QObject::connect(doc, SIGNAL(contentsChange(int,int,int)), q, SLOT(_q_contentsChanged(int,int,int)), Qt::UniqueConnection);
+    QObjectPrivate::connect(doc, &QTextDocument::contentsChange, this,
+                            &QWidgetTextControlPrivate::_q_contentsChanged, Qt::UniqueConnection);
 }
 
 void QWidgetTextControlPrivate::startDrag()
@@ -705,10 +711,12 @@ void QWidgetTextControlPrivate::_q_documentLayoutChanged()
 {
     Q_Q(QWidgetTextControl);
     QAbstractTextDocumentLayout *layout = doc->documentLayout();
-    QObject::connect(layout, SIGNAL(update(QRectF)), q, SIGNAL(updateRequest(QRectF)));
-    QObject::connect(layout, SIGNAL(updateBlock(QTextBlock)), q, SLOT(_q_updateBlock(QTextBlock)));
-    QObject::connect(layout, SIGNAL(documentSizeChanged(QSizeF)), q, SIGNAL(documentSizeChanged(QSizeF)));
-
+    QObject::connect(layout, &QAbstractTextDocumentLayout::update, q,
+                     &QWidgetTextControl::updateRequest);
+    QObjectPrivate::connect(layout, &QAbstractTextDocumentLayout::updateBlock, this,
+                            &QWidgetTextControlPrivate::_q_updateBlock);
+    QObject::connect(layout, &QAbstractTextDocumentLayout::documentSizeChanged, q,
+                     &QWidgetTextControl::documentSizeChanged);
 }
 
 void QWidgetTextControlPrivate::setCursorVisible(bool visible)
