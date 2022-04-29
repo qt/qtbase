@@ -283,7 +283,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         for (int i = 0; i < lst.size(); ++i) {
             QStringView language, script, territory;
             if (qt_splitLocaleName(lst.at(i), &language, &script, &territory)) {
-                QString joined = language.isEmpty() ? u"und"_qs : language.toString();
+                QString joined = language.isEmpty() ? u"und"_s : language.toString();
                 if (!script.isEmpty())
                     joined += u'-' + script;
                 if (!territory.isEmpty())

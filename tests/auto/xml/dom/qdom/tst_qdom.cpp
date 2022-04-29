@@ -43,6 +43,8 @@
 QT_FORWARD_DECLARE_CLASS(QDomDocument)
 QT_FORWARD_DECLARE_CLASS(QDomNode)
 
+using namespace Qt::StringLiterals;
+
 class tst_QDom : public QObject
 {
     Q_OBJECT
@@ -1445,7 +1447,7 @@ void tst_QDom::roundTripAttributes() const
 void tst_QDom::roundTripCDATA() const
 {
     const QString input = u"<?xml version='1.0' encoding='UTF-8'?>\n"
-                          "<content><![CDATA[]]></content>\n"_qs;
+                          "<content><![CDATA[]]></content>\n"_s;
     QString errorMsg;
     QDomDocument doc;
     QVERIFY(doc.setContent(input, false, &errorMsg));

@@ -36,6 +36,8 @@
 #   include <qt_windows.h>
 #endif
 
+using namespace Qt::StringLiterals;
+
 class tst_QDateTime : public QObject
 {
     Q_OBJECT
@@ -2943,9 +2945,9 @@ void tst_QDateTime::fromStringStringFormat_data()
 
     // Two tests derived from malformed ASN.1 strings (QTBUG-84349):
     QTest::newRow("ASN.1:UTC")
-        << u"22+221102233Z"_qs << u"yyMMddHHmmsst"_qs << QDateTime();
+        << u"22+221102233Z"_s << u"yyMMddHHmmsst"_s << QDateTime();
     QTest::newRow("ASN.1:Generalized")
-        << u"9922+221102233Z"_qs << u"yyyyMMddHHmmsst"_qs << QDateTime();
+        << u"9922+221102233Z"_s << u"yyyyMMddHHmmsst"_s << QDateTime();
 
     // fuzzer test
     QTest::newRow("integer overflow found by fuzzer")

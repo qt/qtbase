@@ -2024,15 +2024,15 @@ void tst_QLocale::toDateTime_data()
 
     QTest::newRow("short-ss") // QTBUG-102199: trips over an assert in CET
         << "C" << QDateTime() // Single-digit seconds does not match ss format.
-        << u"ddd, d MMM yyyy HH:mm:ss"_qs << u"Sun, 29 Mar 2020 02:26:3"_qs << true;
+        << u"ddd, d MMM yyyy HH:mm:ss"_s << u"Sun, 29 Mar 2020 02:26:3"_s << true;
 
     QTest::newRow("short-ss-Z") // Same, but with a valid date-time:
         << "C" << QDateTime()
-        << u"ddd, d MMM yyyy HH:mm:ss t"_qs << u"Sun, 29 Mar 2020 02:26:3 Z"_qs << false;
+        << u"ddd, d MMM yyyy HH:mm:ss t"_s << u"Sun, 29 Mar 2020 02:26:3 Z"_s << false;
 
     QTest::newRow("s-Z") // Same, but with a format that accepts the single digit:
         << "C" << QDateTime(QDate(2020, 3, 29), QTime(2, 26, 3), Qt::UTC)
-        << u"ddd, d MMM yyyy HH:mm:s t"_qs << u"Sun, 29 Mar 2020 02:26:3 Z"_qs << false;
+        << u"ddd, d MMM yyyy HH:mm:s t"_s << u"Sun, 29 Mar 2020 02:26:3 Z"_s << false;
 
     QTest::newRow("RFC-1123")
         << "C" << QDateTime(QDate(2007, 11, 1), QTime(18, 8, 30))

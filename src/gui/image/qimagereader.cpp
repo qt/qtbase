@@ -172,6 +172,7 @@
 QT_BEGIN_NAMESPACE
 
 using namespace QImageReaderWriterHelpers;
+using namespace Qt::StringLiterals;
 
 static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
                                                 const QByteArray &format,
@@ -1248,7 +1249,7 @@ bool QImageReader::read(QImage *image)
     // read the image
     QString filename = fileName();
     if (Q_TRACE_ENABLED(QImageReader_read_before_reading)) {
-        Q_TRACE(QImageReader_read_before_reading, this, filename.isEmpty() ? u"unknown"_qs : filename);
+        Q_TRACE(QImageReader_read_before_reading, this, filename.isEmpty() ? u"unknown"_s : filename);
     }
 
     const bool result = d->handler->read(image);
