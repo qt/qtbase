@@ -43,11 +43,8 @@
 
 #include <QtCore/qatomic.h>
 #include <QtCore/qthread.h>
+#include <QtCore/private/qsimd_p.h> // for qYieldCpu()
 #include <private/qthreadpool_p.h>
-
-#ifdef Q_PROCESSOR_X86
-#  include <immintrin.h>        // for _mm_pause()
-#endif
 
 #ifdef interface
 #  undef interface
@@ -108,17 +105,11 @@ static inline int switch_off(QAtomicInt &a, int which)
 
 static inline int switch_from_to(QAtomicInt &a, int from, int to)
 {
-    int newValue;
-    int expected = a.loadRelaxed();
-    for (;;) {
-        newValue = (expected & ~from) | to;
-        if (a.testAndSetRelaxed(expected, newValue, expected))
-            break;
-#ifdef Q_PROCESSOR_X86
-        _mm_pause();
-#endif
-    }
-    return newValue;
+    const auto adjusted = [&](int old) { return (old & ~from) | to; };
+    int value = a.loadRelaxed();
+    while (!a.testAndSetRelaxed(value, adjusted(value), value))
+        qYieldCpu();
+    return value;
 }
 
 void QFutureInterfaceBase::cancel()
