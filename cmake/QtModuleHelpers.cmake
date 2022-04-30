@@ -177,7 +177,6 @@ function(qt_internal_add_module target)
 
     set(property_prefix "INTERFACE_")
     if(NOT arg_HEADER_MODULE)
-        qt_set_common_target_properties(${target})
         set(property_prefix "")
     endif()
 
@@ -292,6 +291,8 @@ function(qt_internal_add_module target)
                 OUTPUT_NAME "${INSTALL_CMAKE_NAMESPACE}${module_interface_name}${QT_LIBINFIX}"
             )
         endif()
+
+        qt_set_common_target_properties(${target})
 
         if (WIN32 AND BUILD_SHARED_LIBS)
             _qt_internal_generate_win32_rc_file(${target})

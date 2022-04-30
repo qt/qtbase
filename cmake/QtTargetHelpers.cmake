@@ -650,8 +650,12 @@ function(qt_internal_set_compile_pdb_names target)
     if(MSVC)
         get_target_property(target_type ${target} TYPE)
         if(target_type STREQUAL "STATIC_LIBRARY" OR target_type STREQUAL "OBJECT_LIBRARY")
-            set_target_properties(${target} PROPERTIES COMPILE_PDB_NAME "${INSTALL_CMAKE_NAMESPACE}${target}")
-            set_target_properties(${target} PROPERTIES COMPILE_PDB_NAME_DEBUG "${INSTALL_CMAKE_NAMESPACE}${target}d")
+            get_target_property(output_name ${target} OUTPUT_NAME)
+            if(NOT output_name)
+                set(output_name "${INSTALL_CMAKE_NAMESPACE}${target}")
+            endif()
+            set_target_properties(${target} PROPERTIES COMPILE_PDB_NAME "${output_name}")
+            set_target_properties(${target} PROPERTIES COMPILE_PDB_NAME_DEBUG "${output_name}d")
         endif()
     endif()
 endfunction()
@@ -712,8 +716,9 @@ function(qt_internal_install_pdb_files target install_dir_path)
                         "Can't install pdb file for static library ${target}. "
                         "The ARCHIVE_OUTPUT_DIRECTORY path is not known.")
             endif()
-            set(pdb_name "${INSTALL_CMAKE_NAMESPACE}${target}$<$<CONFIG:Debug>:d>.pdb")
-            qt_path_join(compile_time_pdb_file_path "${lib_dir}" "${pdb_name}")
+            get_target_property(pdb_name "${target}" COMPILE_PDB_NAME)
+            qt_path_join(compile_time_pdb_file_path
+                         "${lib_dir}" "${pdb_name}$<$<CONFIG:Debug>:d>.pdb")
 
             qt_install(FILES "${compile_time_pdb_file_path}"
                        DESTINATION "${install_dir_path}" OPTIONAL)
@@ -725,8 +730,9 @@ function(qt_internal_install_pdb_files target install_dir_path)
                     qt_path_join(pdb_dir "${pdb_dir}" "$<CONFIG>")
                 endif()
             endif()
-            set(pdb_name "${INSTALL_CMAKE_NAMESPACE}${target}$<$<CONFIG:Debug>:d>.pdb")
-            qt_path_join(compile_time_pdb_file_path "${pdb_dir}" "${pdb_name}")
+            get_target_property(pdb_name "${target}" COMPILE_PDB_NAME)
+            qt_path_join(compile_time_pdb_file_path
+                         "${pdb_dir}" "${pdb_name}$<$<CONFIG:Debug>:d>.pdb")
 
             qt_install(FILES "${compile_time_pdb_file_path}"
                 DESTINATION "${install_dir_path}" OPTIONAL)

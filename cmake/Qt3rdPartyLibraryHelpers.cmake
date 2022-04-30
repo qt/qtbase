@@ -162,10 +162,6 @@ function(qt_internal_add_3rdparty_library target)
 
     qt_internal_add_common_qt_library_helper(${target} ${library_helper_args})
 
-    if(NOT arg_INTERFACE)
-        qt_set_common_target_properties(${target})
-    endif()
-
     set_target_properties(${target} PROPERTIES
         _qt_module_interface_name "${target}"
     )
@@ -194,6 +190,10 @@ function(qt_internal_add_3rdparty_library target)
     set_target_properties(${target} PROPERTIES
         OUTPUT_NAME "${INSTALL_CMAKE_NAMESPACE}${target}"
     )
+
+    if(NOT arg_INTERFACE)
+        qt_set_common_target_properties(${target})
+    endif()
 
     if(NOT arg_SKIP_AUTOMOC)
         qt_autogen_tools_initial_setup(${target})

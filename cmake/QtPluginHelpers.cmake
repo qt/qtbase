@@ -117,7 +117,6 @@ function(qt_internal_add_plugin target)
         endif()
     endif()
 
-    qt_set_common_target_properties(${target})
     qt_set_target_info_properties(${target} ${ARGN} TARGET_VERSION "${arg_VERSION}")
 
     # Override the OUTPUT_NAME that qt6_add_plugin() set, we need to account for
@@ -139,6 +138,7 @@ function(qt_internal_add_plugin target)
         endif()
     endif()
 
+    qt_set_common_target_properties("${target}")
     qt_internal_add_target_aliases("${target}")
     qt_skip_warnings_are_errors_when_repo_unclean("${target}")
     _qt_internal_apply_strict_cpp("${target}")
