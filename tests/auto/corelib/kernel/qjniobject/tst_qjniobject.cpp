@@ -201,6 +201,17 @@ void tst_QJniObject::callMethodTest()
         jlong ret = longObject.callMethod<jlong>("longValue");
         QCOMPARE(ret, jLong);
     }
+
+    // as of Qt 6.4, callMethod works with an object type as well!
+    {
+        const QString qString = QLatin1String("Hello, Java");
+        QJniObject jString = QJniObject::fromString(qString);
+        const QString qStringRet = jString.callMethod<jstring>("toUpperCase").toString();
+        QCOMPARE(qString.toUpper(), qStringRet);
+
+        QJniObject subString = jString.callMethod<jstring>("substring", 0, 4);
+        QCOMPARE(subString.toString(), qString.mid(0, 4));
+    }
 }
 
 void tst_QJniObject::callObjectMethodTest()
@@ -316,6 +327,17 @@ void tst_QJniObject::callStaticObjectMethod()
     returnedString = returnValue.toString();
 
     QCOMPARE(returnedString, QString::fromLatin1("test format"));
+
+    // from 6.4 on we can use callStaticMethod
+    returnValue = QJniObject::callStaticMethod<jstring>(cls,
+                                                        "format",
+                                                        formatString.object<jstring>(),
+                                                        jobjectArray(0));
+    QVERIFY(returnValue.isValid());
+
+    returnedString = returnValue.toString();
+
+    QCOMPARE(returnedString, QString::fromLatin1("test format"));
 }
 
 void tst_QJniObject::callStaticObjectMethodById()
@@ -336,6 +358,15 @@ void tst_QJniObject::callStaticObjectMethodById()
     QVERIFY(returnValue.isValid());
 
     QString returnedString = returnValue.toString();
+
+    QCOMPARE(returnedString, QString::fromLatin1("test format"));
+
+    // from Qt 6.4 on we can use callStaticMethod as well
+    returnValue = QJniObject::callStaticMethod<jstring>(
+            cls, id, formatString.object<jstring>(), jobjectArray(0));
+    QVERIFY(returnValue.isValid());
+
+    returnedString = returnValue.toString();
 
     QCOMPARE(returnedString, QString::fromLatin1("test format"));
 }

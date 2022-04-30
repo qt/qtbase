@@ -903,24 +903,26 @@ QJniObject QJniObject::callStaticObjectMethodV(jclass clazz,
 }
 
 /*!
-    \fn template <typename Ret, typename ...Args> Ret QJniObject::callMethod(const char *methodName, const char *signature, Args &&...args) const
+    \fn template <typename Ret, typename ...Args> auto QJniObject::callMethod(const char *methodName, const char *signature, Args &&...args) const
     \since 6.4
 
     Calls the object's method \a methodName with \a signature specifying the types of any
-    subsequent arguments \a args.
+    subsequent arguments \a args, and returns the value (unless \c Ret is \c void). If \c Ret
+    is a jobject type, then the returned value will be a QJniObject.
 
     \code
     QJniObject myJavaStrin("org/qtproject/qt/TestClass");
     jint index = myJavaString.callMethod<jint>("indexOf", "(I)I", 0x0051);
     \endcode
-
 */
 
 /*!
-    \fn template <typename Ret, typename ...Args> Ret QJniObject::callMethod(const char *methodName, Args &&...args) const
+    \fn template <typename Ret, typename ...Args> auto QJniObject::callMethod(const char *methodName, Args &&...args) const
     \since 6.4
 
-    Calls the method \a methodName with arguments \a args and returns the value.
+    Calls the method \a methodName with arguments \a args and returns the value
+    (unless \c Ret is \c void). If \c Ret is a jobject type, then the returned value
+    will be a QJniObject.
 
     \code
     QJniObject myJavaStrin("org/qtproject/qt/TestClass");
@@ -931,11 +933,13 @@ QJniObject QJniObject::callStaticObjectMethodV(jclass clazz,
 */
 
 /*!
-    \fn template <typename Ret, typename ...Args> Ret QJniObject::callStaticMethod(const char *className, const char *methodName, const char *signature, Args &&...args)
+    \fn template <typename Ret, typename ...Args> auto QJniObject::callStaticMethod(const char *className, const char *methodName, const char *signature, Args &&...args)
     \since 6.4
 
     Calls the static method \a methodName from class \a className with \a signature
-    specifying the types of any subsequent arguments \a args.
+    specifying the types of any subsequent arguments \a args. Returns the result of
+    the method (unless \c Ret is \c void). If \c Ret is a jobject type, then the
+    returned value will be a QJniObject.
 
     \code
     jint a = 2;
@@ -945,11 +949,12 @@ QJniObject QJniObject::callStaticObjectMethodV(jclass clazz,
 */
 
 /*!
-    \fn template <typename Ret, typename ...Args> Ret QJniObject::callStaticMethod(const char *className, const char *methodName, Args &&...args)
+    \fn template <typename Ret, typename ...Args> auto QJniObject::callStaticMethod(const char *className, const char *methodName, Args &&...args)
     \since 6.4
 
     Calls the static method \a methodName on class \a className with arguments \a args,
-    and returns the value of type \c Ret.
+    and returns the value of type \c Ret (unless \c Ret is \c void). If \c Ret
+    is a jobject type, then the returned value will be a QJniObject.
 
     \code
     jint value = QJniObject::callStaticMethod<jint>("MyClass", "staticMethod");
@@ -959,10 +964,12 @@ QJniObject QJniObject::callStaticObjectMethodV(jclass clazz,
 */
 
 /*!
-    \fn template <typename Ret, typename ...Args> Ret QJniObject::callStaticMethod(jclass clazz, const char *methodName, const char *signature, Args &&...args)
+    \fn template <typename Ret, typename ...Args> auto QJniObject::callStaticMethod(jclass clazz, const char *methodName, const char *signature, Args &&...args)
 
     Calls the static method \a methodName from \a clazz with \a signature
-    specifying the types of any subsequent arguments.
+    specifying the types of any subsequent arguments. Returns the result of
+    the method (unless \c Ret is \c void). If \c Ret is a jobject type, then the
+    returned value will be a QJniObject.
 
     \code
     QJniEnvironment env;
@@ -974,12 +981,15 @@ QJniObject QJniObject::callStaticObjectMethodV(jclass clazz,
 */
 
 /*!
-    \fn template <typename Ret, typename ...Args> Ret QJniObject::callStaticMethod(jclass clazz, jmethodID methodId, Args &&...args)
+    \fn template <typename Ret, typename ...Args> auto QJniObject::callStaticMethod(jclass clazz, jmethodID methodId, Args &&...args)
     \since 6.4
 
     Calls the static method identified by \a methodId from the class \a clazz
-    with any subsequent arguments. Useful when \a clazz and \a methodId are
-    already cached from previous operations.
+    with any subsequent arguments, and returns the value of type \c Ret (unless
+    \c Ret is \c void). If \c Ret is a jobject type, then the returned value will
+    be a QJniObject.
+
+    Useful when \a clazz and \a methodId are already cached from previous operations.
 
     \code
     QJniEnvironment env;
@@ -994,10 +1004,12 @@ QJniObject QJniObject::callStaticObjectMethodV(jclass clazz,
 */
 
 /*!
-    \fn template <typename Ret, typename ...Args> Ret QJniObject::callStaticMethod(jclass clazz, const char *methodName, Args &&...args)
+    \fn template <typename Ret, typename ...Args> auto QJniObject::callStaticMethod(jclass clazz, const char *methodName, Args &&...args)
     \since 6.4
 
-    Calls the static method \a methodName on \a clazz and returns the value.
+    Calls the static method \a methodName on \a clazz and returns the value of type \c Ret
+    (unless c Ret is \c void).  If \c Ret if a jobject type, then the returned value will
+    be a QJniObject.
 
     \code
     QJniEnvironment env;
