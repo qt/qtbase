@@ -188,7 +188,7 @@ static QLibraryScanResult qt_find_pattern(const char *s, qsizetype s_len, QStrin
         static_assert(pattern == magic);
         return qMakeStaticByteArrayMatcher(pattern);
     }();
-    qsizetype i = matcher.indexIn(s, s_len);
+    qsizetype i = matcher.indexIn({s, s_len});
     if (i < 0) {
         *errMsg = QLibrary::tr("'%1' is not a Qt plugin").arg(*errMsg);
         return QLibraryScanResult{};
