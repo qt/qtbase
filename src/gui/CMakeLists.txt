@@ -880,7 +880,7 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_vulkan
         vulkan/qplatformvulkaninstance.cpp vulkan/qplatformvulkaninstance.h
         vulkan/qvulkandefaultinstance.cpp vulkan/qvulkandefaultinstance_p.h
         vulkan/qvulkanfunctions.cpp
-        vulkan/qvulkaninstance.cpp vulkan/qvulkaninstance.h
+        vulkan/qvulkaninstance.cpp vulkan/qvulkaninstance.h vulkan/qvulkaninstance_p.h
         vulkan/qvulkanwindow.cpp vulkan/qvulkanwindow.h vulkan/qvulkanwindow_p.h
 )
 if(QT_FEATURE_vulkan)

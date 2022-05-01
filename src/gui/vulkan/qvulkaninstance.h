@@ -223,6 +223,7 @@ public:
     void removeDebugOutputFilter(DebugFilter filter);
 
 private:
+    friend class QVulkanInstancePrivate;
     QScopedPointer<QVulkanInstancePrivate> d_ptr;
     Q_DISABLE_COPY(QVulkanInstance)
 };

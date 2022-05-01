@@ -37,8 +37,7 @@
 **
 ****************************************************************************/
 
-#include "qvulkaninstance.h"
-#include <private/qvulkanfunctions_p.h>
+#include "qvulkaninstance_p.h"
 #include <qpa/qplatformvulkaninstance.h>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformnativeinterface.h>
@@ -244,32 +243,6 @@ QT_BEGIN_NAMESPACE
 
     \value NoDebugOutputRedirect Disables Vulkan debug output (\c{VK_EXT_debug_report}) redirection to qDebug.
 */
-
-class QVulkanInstancePrivate
-{
-public:
-    QVulkanInstancePrivate(QVulkanInstance *q)
-        : q_ptr(q),
-          vkInst(VK_NULL_HANDLE),
-          errorCode(VK_SUCCESS)
-    { }
-    ~QVulkanInstancePrivate() { reset(); }
-
-    bool ensureVulkan();
-    void reset();
-
-    QVulkanInstance *q_ptr;
-    QScopedPointer<QPlatformVulkanInstance> platformInst;
-    VkInstance vkInst;
-    QVulkanInstance::Flags flags;
-    QByteArrayList layers;
-    QByteArrayList extensions;
-    QVersionNumber apiVersion;
-    VkResult errorCode;
-    QScopedPointer<QVulkanFunctions> funcs;
-    QHash<VkDevice, QVulkanDeviceFunctions *> deviceFuncs;
-    QList<QVulkanInstance::DebugFilter> debugFilters;
-};
 
 bool QVulkanInstancePrivate::ensureVulkan()
 {
