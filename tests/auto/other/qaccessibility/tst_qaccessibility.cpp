@@ -1403,9 +1403,7 @@ void tst_QAccessibility::tabWidgetTest()
 
     QAccessibleInterface* stackChild1Interface = stackWidgetInterface->child(0);
     QVERIFY(stackChild1Interface);
-#ifndef Q_CC_INTEL
     QCOMPARE(stackChild1Interface->childCount(), 0);
-#endif
     QCOMPARE(stackChild1Interface->role(), QAccessible::StaticText);
     QCOMPARE(stackChild1Interface->text(QAccessible::Name), QLatin1String("Page 1"));
     QCOMPARE(label1, stackChild1Interface->object());
@@ -1413,9 +1411,7 @@ void tst_QAccessibility::tabWidgetTest()
     // Navigation in stack widgets should be consistent
     QAccessibleInterface* parent = stackChild1Interface->parent();
     QVERIFY(parent);
-#ifndef Q_CC_INTEL
     QCOMPARE(parent->childCount(), 2);
-#endif
     QCOMPARE(parent->role(), QAccessible::LayeredPane);
 
     QAccessibleInterface* stackChild2Interface = stackWidgetInterface->child(1);
@@ -1427,9 +1423,7 @@ void tst_QAccessibility::tabWidgetTest()
 
     parent = stackChild2Interface->parent();
     QVERIFY(parent);
-#ifndef Q_CC_INTEL
     QCOMPARE(parent->childCount(), 2);
-#endif
     QCOMPARE(parent->role(), QAccessible::LayeredPane);
 
     QTestAccessibility::clearEvents();

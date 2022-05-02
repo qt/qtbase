@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2022 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2022 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -105,15 +105,10 @@
 #  define Q_DECL_IMPORT __declspec(dllimport)
 #  define QT_MAKE_UNCHECKED_ARRAY_ITERATOR(x) stdext::make_unchecked_array_iterator(x) // Since _MSC_VER >= 1800
 #  define QT_MAKE_CHECKED_ARRAY_ITERATOR(x, N) stdext::make_checked_array_iterator(x, size_t(N)) // Since _MSC_VER >= 1500
-/* Intel C++ disguising as Visual C++: the `using' keyword avoids warnings */
-#  if defined(__INTEL_COMPILER)
 #    undef Q_CC_MSVC_ONLY
 #    ifdef Q_CC_CLANG_ONLY
 #      undef Q_CC_CLANG_ONLY
 #    endif
-#    define Q_DECL_VARIABLE_DEPRECATED
-#    define Q_CC_INTEL  __INTEL_COMPILER
-#  endif
 
 #elif defined(__BORLANDC__) || defined(__TURBOC__)
 #  define Q_CC_BOR
@@ -148,19 +143,7 @@
 #  if defined(__MINGW32__)
 #    define Q_CC_MINGW
 #  endif
-#  if defined(__INTEL_COMPILER)
-/* Intel C++ also masquerades as GCC */
-#    define Q_CC_INTEL      (__INTEL_COMPILER)
-#    ifdef __clang__
-/* Intel C++ masquerades as Clang masquerading as GCC */
-#      define Q_CC_CLANG    305
-#    endif
-#    define Q_ASSUME_IMPL(expr)  __assume(expr)
-#    define Q_UNREACHABLE_IMPL() __builtin_unreachable()
-#    if __INTEL_COMPILER >= 1300 && !defined(__APPLE__)
-#      define Q_DECL_DEPRECATED_X(text) __attribute__ ((__deprecated__(text)))
-#    endif
-#  elif defined(__clang__)
+#  if defined(__clang__)
 /* Clang also masquerades as GCC */
 #    if defined(__apple_build_version__)
       // The Clang version reported by Apple Clang in __clang_major__
@@ -348,10 +331,6 @@
    compiler is using its own set of rules. Forget it. */
 #  elif defined(__KCC)
 #    define Q_CC_KAI
-
-/* Using the `using' keyword avoids Intel C++ for Linux warnings */
-#  elif defined(__INTEL_COMPILER)
-#    define Q_CC_INTEL      (__INTEL_COMPILER)
 
 /* Uses CFront, make sure to read the manual how to tweak templates. */
 #  elif defined(__ghs)
@@ -565,82 +544,7 @@
 #  endif
 #endif
 
-#if defined(Q_CC_INTEL) && !defined(Q_CC_MSVC)
-#  define Q_COMPILER_RESTRICTED_VLA
-#  define Q_COMPILER_VARIADIC_MACROS // C++11 feature supported as an extension in other modes, too
-#  if __INTEL_COMPILER < 1200
-#    define Q_NO_TEMPLATE_FRIENDS
-#  endif
-#  if __INTEL_COMPILER >= 1310 && !defined(_WIN32)
-//    ICC supports C++14 binary literals in C, C++98, and C++11 modes
-//    at least since 13.1, but I can't test further back
-#     define Q_COMPILER_BINARY_LITERALS
-#  endif
-#  if __cplusplus >= 201103L || defined(__INTEL_CXX11_MODE__)
-#    if __INTEL_COMPILER >= 1200
-#      define Q_COMPILER_AUTO_TYPE
-#      define Q_COMPILER_CLASS_ENUM
-#      define Q_COMPILER_DECLTYPE
-#      define Q_COMPILER_DEFAULT_MEMBERS
-#      define Q_COMPILER_DELETE_MEMBERS
-#      define Q_COMPILER_EXTERN_TEMPLATES
-#      define Q_COMPILER_LAMBDA
-#      define Q_COMPILER_RVALUE_REFS
-#      define Q_COMPILER_STATIC_ASSERT
-#      define Q_COMPILER_VARIADIC_MACROS
-#    endif
-#    if __INTEL_COMPILER >= 1210
-#      define Q_COMPILER_ATTRIBUTES
-#      define Q_COMPILER_AUTO_FUNCTION
-#      define Q_COMPILER_NULLPTR
-#      define Q_COMPILER_TEMPLATE_ALIAS
-#      ifndef _CHAR16T      // MSVC headers
-#        define Q_COMPILER_UNICODE_STRINGS
-#      endif
-#      define Q_COMPILER_VARIADIC_TEMPLATES
-#    endif
-#    if __INTEL_COMPILER >= 1300
-#      define Q_COMPILER_ATOMICS
-//       constexpr support is only partial
-//#      define Q_COMPILER_CONSTEXPR
-#      define Q_COMPILER_INITIALIZER_LISTS
-#      define Q_COMPILER_UNIFORM_INIT
-#      define Q_COMPILER_NOEXCEPT
-#    endif
-#    if __INTEL_COMPILER >= 1400
-//       causes issues with QArrayData and QtPrivate::RefCount - Intel issue ID 6000056211, bug DPD200534796
-//#      define Q_COMPILER_CONSTEXPR
-#      define Q_COMPILER_DELEGATING_CONSTRUCTORS
-#      define Q_COMPILER_EXPLICIT_CONVERSIONS
-#      define Q_COMPILER_EXPLICIT_OVERRIDES
-#      define Q_COMPILER_NONSTATIC_MEMBER_INIT
-#      define Q_COMPILER_RANGE_FOR
-#      define Q_COMPILER_RAW_STRINGS
-#      define Q_COMPILER_REF_QUALIFIERS
-#      define Q_COMPILER_UNICODE_STRINGS
-#      define Q_COMPILER_UNRESTRICTED_UNIONS
-#    endif
-#    if __INTEL_COMPILER >= 1500
-#      if __INTEL_COMPILER * 100 + __INTEL_COMPILER_UPDATE >= 150001
-//       the bug mentioned above is fixed in 15.0.1
-#        define Q_COMPILER_CONSTEXPR
-#      endif
-#      define Q_COMPILER_ALIGNAS
-#      define Q_COMPILER_ALIGNOF
-#      define Q_COMPILER_INHERITING_CONSTRUCTORS
-#      define Q_COMPILER_THREAD_LOCAL
-#      define Q_COMPILER_UDL
-#    endif
-#  elif defined(__STDC_VERSION__) && __STDC_VERSION__ > 199901L
-//   C11 features supported. Only tested with ICC 17 and up.
-#    define Q_COMPILER_STATIC_ASSERT
-#    if __has_include(<threads.h>)
-#      define Q_COMPILER_THREAD_LOCAL
-#    endif
-#  endif
-#endif
-
-#if defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
+#if defined(Q_CC_CLANG)
 /* General C++ features */
 #  define Q_COMPILER_RESTRICTED_VLA
 #  if __has_feature(attribute_deprecated_with_message)
@@ -803,7 +707,7 @@
 #    define Q_DECL_UNUSED __attribute__((__unused__))
 #  endif
 #  define Q_DECL_UNUSED_MEMBER Q_DECL_UNUSED
-#endif //  defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
+#endif //  defined(Q_CC_CLANG)
 
 #if defined(Q_CC_GNU_ONLY)
 #  define Q_COMPILER_RESTRICTED_VLA
@@ -1010,7 +914,7 @@
 #   endif // !_HAS_CONSTEXPR
 #  endif // !__GLIBCXX__ && !_LIBCPP_VERSION
 # endif // Q_OS_QNX
-# if (defined(Q_CC_CLANG) || defined(Q_CC_INTEL)) && defined(Q_OS_MAC) && defined(__GNUC_LIBSTD__) \
+# if defined(Q_CC_CLANG) && defined(Q_OS_MAC) && defined(__GNUC_LIBSTD__) \
     && ((__GNUC_LIBSTD__-0) * 100 + __GNUC_LIBSTD_MINOR__-0 <= 402)
 // Apple has not updated libstdc++ since 2007, which means it does not have
 // <initializer_list> or std::move. Let's disable these features
@@ -1019,13 +923,6 @@
 #  undef Q_COMPILER_REF_QUALIFIERS
 // Also disable <atomic>, since it's clearly not there
 #  undef Q_COMPILER_ATOMICS
-# endif
-# if defined(Q_CC_CLANG) && defined(Q_CC_INTEL) && Q_CC_INTEL >= 1500
-// ICC 15.x and 16.0 have their own implementation of std::atomic, which is activated when in Clang mode
-// (probably because libc++'s <atomic> on OS X failed to compile), but they're missing some
-// critical definitions. (Reported as Intel Issue ID 6000117277)
-#  define __USE_CONSTEXPR 1
-#  define __USE_NOEXCEPT 1
 # endif
 #endif
 
@@ -1240,30 +1137,7 @@
  */
 
 #define QT_DO_PRAGMA(text)                      _Pragma(#text)
-#if defined(Q_CC_INTEL) && defined(Q_CC_MSVC)
-/* icl.exe: Intel compiler on Windows */
-#  undef QT_DO_PRAGMA                           /* not needed */
-#  define QT_WARNING_PUSH                       __pragma(warning(push))
-#  define QT_WARNING_POP                        __pragma(warning(pop))
-#  define QT_WARNING_DISABLE_MSVC(number)
-#  define QT_WARNING_DISABLE_INTEL(number)      __pragma(warning(disable: number))
-#  define QT_WARNING_DISABLE_CLANG(text)
-#  define QT_WARNING_DISABLE_GCC(text)
-#  define QT_WARNING_DISABLE_DEPRECATED         QT_WARNING_DISABLE_INTEL(1478 1786)
-#  define QT_WARNING_DISABLE_FLOAT_COMPARE      QT_WARNING_DISABLE_INTEL(1572)
-#  define QT_WARNING_DISABLE_INVALID_OFFSETOF
-#elif defined(Q_CC_INTEL)
-/* icc: Intel compiler on Linux or OS X */
-#  define QT_WARNING_PUSH                       QT_DO_PRAGMA(warning(push))
-#  define QT_WARNING_POP                        QT_DO_PRAGMA(warning(pop))
-#  define QT_WARNING_DISABLE_INTEL(number)      QT_DO_PRAGMA(warning(disable: number))
-#  define QT_WARNING_DISABLE_MSVC(number)
-#  define QT_WARNING_DISABLE_CLANG(text)
-#  define QT_WARNING_DISABLE_GCC(text)
-#  define QT_WARNING_DISABLE_DEPRECATED         QT_WARNING_DISABLE_INTEL(1478 1786)
-#  define QT_WARNING_DISABLE_FLOAT_COMPARE      QT_WARNING_DISABLE_INTEL(1572)
-#  define QT_WARNING_DISABLE_INVALID_OFFSETOF
-#elif defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
+#if defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
 #  undef QT_DO_PRAGMA                           /* not needed */
 #  define QT_WARNING_PUSH                       __pragma(warning(push))
 #  define QT_WARNING_POP                        __pragma(warning(pop))

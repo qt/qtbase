@@ -270,10 +270,10 @@ void tst_QByteArrayView::constExpr() const
         static_assert(!bv2.empty());
         static_assert(bv2.size() == 5);
     }
-#if !defined(Q_CC_GNU) || defined(Q_CC_CLANG) || defined(Q_CC_INTEL)
+#if !defined(Q_CC_GNU) || defined(Q_CC_CLANG)
     // Below checks are disabled because of a compilation issue with GCC and
     // -fsanitize=undefined. See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=71962.
-    // Note: Q_CC_GNU is also defined for Clang and ICC, so we need to check those too.
+    // Note: Q_CC_GNU is also defined for Clang, so we need to check that too.
     {
         static constexpr char hello[] = "Hello";
         constexpr QByteArrayView bv(hello);

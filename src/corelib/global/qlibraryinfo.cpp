@@ -207,37 +207,7 @@ static bool havePaths() {
 QLibraryInfo::QLibraryInfo()
 { }
 
-#if defined(Q_CC_INTEL) // must be before GNU, Clang and MSVC because ICC/ICL claim to be them
-#  ifdef __INTEL_CLANG_COMPILER
-#    define ICC_COMPAT "Clang"
-#  elif defined(__INTEL_MS_COMPAT_LEVEL)
-#    define ICC_COMPAT "Microsoft"
-#  elif defined(__GNUC__)
-#    define ICC_COMPAT "GCC"
-#  else
-#    define ICC_COMPAT "no"
-#  endif
-#  if __INTEL_COMPILER == 1300
-#    define ICC_VERSION "13.0"
-#  elif __INTEL_COMPILER == 1310
-#    define ICC_VERSION "13.1"
-#  elif __INTEL_COMPILER == 1400
-#    define ICC_VERSION "14.0"
-#  elif __INTEL_COMPILER == 1500
-#    define ICC_VERSION "15.0"
-#  else
-#    define ICC_VERSION QT_STRINGIFY(__INTEL_COMPILER)
-#  endif
-#  ifdef __INTEL_COMPILER_UPDATE
-#    define COMPILER_STRING "Intel(R) C++ " ICC_VERSION "." QT_STRINGIFY(__INTEL_COMPILER_UPDATE) \
-                            " build " QT_STRINGIFY(__INTEL_COMPILER_BUILD_DATE) " [" \
-                            ICC_COMPAT " compatibility]"
-#  else
-#    define COMPILER_STRING "Intel(R) C++ " ICC_VERSION \
-                            " build " QT_STRINGIFY(__INTEL_COMPILER_BUILD_DATE) " [" \
-                            ICC_COMPAT " compatibility]"
-#  endif
-#elif defined(Q_CC_CLANG) // must be before GNU, because clang claims to be GNU too
+#if defined(Q_CC_CLANG) // must be before GNU, because clang claims to be GNU too
 #  ifdef __apple_build_version__ // Apple clang has other version numbers
 #    define COMPILER_STRING "Clang " __clang_version__ " (Apple)"
 #  else

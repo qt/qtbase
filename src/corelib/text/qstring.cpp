@@ -360,7 +360,7 @@ extern "C" void qt_fromlatin1_mips_asm_unroll8 (char16_t*, const char*, uint);
 extern "C" void qt_toLatin1_mips_dsp_asm(uchar *dst, const char16_t *src, int length);
 #endif
 
-#if defined(__SSE2__) && defined(Q_CC_GNU) && !defined(Q_CC_INTEL)
+#if defined(__SSE2__) && defined(Q_CC_GNU)
 #  if defined(__SANITIZE_ADDRESS__) && Q_CC_GNU < 800 && !defined(Q_CC_CLANG)
 #     warning "The __attribute__ on below will likely cause a build failure with your GCC version. Your choices are:"
 #     warning "1) disable ASan;"

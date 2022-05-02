@@ -678,7 +678,7 @@ bool TestLogger::shouldIgnoreTest(const QString &test) const
         return true;
 #endif
 
-#if defined(QT_NO_EXCEPTIONS) || defined(Q_CC_INTEL) || defined(Q_OS_WIN)
+#if defined(QT_NO_EXCEPTIONS) || defined(Q_OS_WIN)
     // Disable this test on Windows or for Intel compiler, as the run-times
     // will popup dialogs with warnings that uncaught exceptions were thrown
     if (test == "exceptionthrow")

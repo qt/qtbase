@@ -185,7 +185,7 @@ QT_WARNING_DISABLE_INTEL(103)
 #  else
 #    define QT_COMPILER_SUPPORTS_HERE(x)    ((__ ## x ## __) || QT_COMPILER_SUPPORTS(x))
 #  endif
-#  if defined(Q_CC_GNU) && !defined(Q_CC_INTEL)
+#  if defined(Q_CC_GNU)
      /* GCC requires attributes for a function */
 #    define QT_FUNCTION_TARGET(x)  __attribute__((__target__(QT_FUNCTION_TARGET_STRING_ ## x)))
 #  else
@@ -204,7 +204,7 @@ QT_WARNING_DISABLE_INTEL(103)
 #    define __SSE__                         1
 #  endif
 
-#  if defined(Q_OS_WIN) && defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && !defined(Q_CC_CLANG)
+#  if defined(Q_OS_WIN) && defined(Q_CC_GNU) && !defined(Q_CC_CLANG)
 // 64-bit GCC on Windows does not support AVX, so we hack around it by forcing
 // it to emit unaligned loads & stores
 // See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=49001
@@ -227,7 +227,7 @@ asm(
 );
 #  endif
 
-#  if defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && !defined(Q_OS_WASM)
+#  if defined(Q_CC_GNU) && !defined(Q_OS_WASM)
 // GCC 4.4 and Clang 2.8 added a few more intrinsics there
 #    include <x86intrin.h>
 #  endif

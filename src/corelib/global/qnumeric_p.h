@@ -59,7 +59,7 @@
 #include <limits>
 #include <type_traits>
 
-#if !defined(Q_CC_MSVC) && (defined(Q_OS_QNX) || defined(Q_CC_INTEL))
+#if !defined(Q_CC_MSVC) && defined(Q_OS_QNX)
 #  include <math.h>
 #  ifdef isnan
 #    define QT_MATH_H_DEFINES_MACROS

@@ -1728,9 +1728,13 @@ bool qSharedBuild() noexcept
 /*!
     \macro Q_CC_INTEL
     \relates <QtGlobal>
+    \obsolete
 
-    Defined if the application is compiled using Intel C++ for Linux,
-    Intel C++ for Windows.
+    This macro used to be defined if the application was compiled with the old
+    Intel C++ compiler for Linux, macOS or Windows. The new oneAPI C++ compiler
+    is just a build of Clang and therefore does not define this macro.
+
+    \sa Q_CC_CLANG
 */
 
 /*!
@@ -3382,7 +3386,7 @@ void qAbort()
     // [support.start.term]). So we bypass std::abort() and directly
     // terminate the application.
 
-#  if defined(Q_CC_MSVC) && !defined(Q_CC_INTEL)
+#  if defined(Q_CC_MSVC)
     if (IsProcessorFeaturePresent(PF_FASTFAIL_AVAILABLE))
         __fastfail(FAST_FAIL_FATAL_APP_EXIT);
 #  else

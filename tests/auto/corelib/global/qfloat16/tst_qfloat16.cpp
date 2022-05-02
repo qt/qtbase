@@ -213,13 +213,7 @@ void tst_qfloat16::qNaN()
     QVERIFY(qIsNaN(nan));
     QVERIFY(qIsNaN(nan + one));
     QVERIFY(qIsNaN(-nan));
-#ifdef Q_CC_INTEL
-    QEXPECT_FAIL("", "ICC optimizes zero * anything to zero", Continue);
-#endif
     QVERIFY(qIsNaN(nan * zero));
-#ifdef Q_CC_INTEL
-    QEXPECT_FAIL("", "ICC optimizes zero * anything to zero", Continue);
-#endif
     QVERIFY(qIsNaN(Bounds::infinity() * zero));
 
     QVERIFY(!nan.isNormal());

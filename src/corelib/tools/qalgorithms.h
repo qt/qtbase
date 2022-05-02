@@ -78,7 +78,7 @@ namespace QAlgorithmsPrivate {
 #  if (defined __apple_build_version__ &&  __clang_major__ >= 7) || (Q_CC_CLANG >= 307)
 #    define QT_HAS_CONSTEXPR_BUILTINS
 #  endif
-#elif defined(Q_CC_MSVC) && !defined(Q_CC_INTEL) && !defined(Q_PROCESSOR_ARM)
+#elif defined(Q_CC_MSVC) && !defined(Q_PROCESSOR_ARM)
 #  define QT_HAS_CONSTEXPR_BUILTINS
 #elif defined(Q_CC_GNU)
 #  define QT_HAS_CONSTEXPR_BUILTINS

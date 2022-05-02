@@ -123,7 +123,7 @@ private:
     template <typename Char>
     static qsizetype lengthHelperPointer(const Char *str) noexcept
     {
-#if defined(Q_CC_GNU) && !defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
+#if defined(Q_CC_GNU) && !defined(Q_CC_CLANG)
         if (__builtin_constant_p(*str)) {
             qsizetype result = 0;
             while (*str++ != u'\0')

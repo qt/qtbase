@@ -109,7 +109,7 @@ void tst_QSizePolicy::constExpr()
 {
 /* gcc < 4.8.0 has problems with init'ing variant members in constexpr ctors */
 /* https://gcc.gnu.org/bugzilla/show_bug.cgi?id=54922 */
-#if !defined(Q_CC_GNU) || defined(Q_CC_INTEL) || defined(Q_CC_CLANG) || Q_CC_GNU >= 408
+#if !defined(Q_CC_GNU) || defined(Q_CC_CLANG) || Q_CC_GNU >= 408
     // check that certain ctors are constexpr (compile-only):
     { constexpr QSizePolicy sp; Q_UNUSED(sp); }
     { constexpr QSizePolicy sp = QSizePolicy(); Q_UNUSED(sp); }

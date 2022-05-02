@@ -71,7 +71,7 @@ QT_BEGIN_NAMESPACE
 
 #if defined(Q_CC_GNU)
 #  define Q_DECL_RESTRICT __restrict__
-#  if defined(Q_PROCESSOR_X86_32) && defined(Q_CC_GNU) && !defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
+#  if defined(Q_PROCESSOR_X86_32) && defined(Q_CC_GNU) && !defined(Q_CC_CLANG)
 #    define Q_DECL_VECTORCALL __attribute__((sseregparm,regparm(3)))
 #  else
 #    define Q_DECL_VECTORCALL

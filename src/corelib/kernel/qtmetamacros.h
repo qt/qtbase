@@ -129,12 +129,7 @@ QT_BEGIN_NAMESPACE
 #define QT_TR_FUNCTIONS
 #endif
 
-#if defined(Q_CC_INTEL)
-// Cannot redefine the visibility of a method in an exported class
-# define Q_DECL_HIDDEN_STATIC_METACALL
-#else
-# define Q_DECL_HIDDEN_STATIC_METACALL Q_DECL_HIDDEN
-#endif
+#define Q_DECL_HIDDEN_STATIC_METACALL Q_DECL_HIDDEN
 
 #if defined(Q_CC_CLANG)
 #  if Q_CC_CLANG >= 1100
@@ -142,13 +137,13 @@ QT_BEGIN_NAMESPACE
 #  elif Q_CC_CLANG >= 306
 #    define Q_OBJECT_NO_OVERRIDE_WARNING    QT_WARNING_DISABLE_CLANG("-Winconsistent-missing-override")
 #  endif
-#elif defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && Q_CC_GNU >= 501
+#elif defined(Q_CC_GNU) && Q_CC_GNU >= 501
 #  define Q_OBJECT_NO_OVERRIDE_WARNING      QT_WARNING_DISABLE_GCC("-Wsuggest-override")
 #else
 #  define Q_OBJECT_NO_OVERRIDE_WARNING
 #endif
 
-#if defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && Q_CC_GNU >= 600
+#if defined(Q_CC_GNU) && Q_CC_GNU >= 600
 #  define Q_OBJECT_NO_ATTRIBUTES_WARNING    QT_WARNING_DISABLE_GCC("-Wattributes")
 #else
 #  define Q_OBJECT_NO_ATTRIBUTES_WARNING

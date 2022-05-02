@@ -7064,7 +7064,7 @@ void tst_QObject::checkArgumentsForNarrowing()
 {
     // Clang and ICC masquerade as GCC, so introduce a more strict define
     // for exactly GCC (to exclude/include it from some tests).
-#if defined(Q_CC_GNU) && !defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
+#if defined(Q_CC_GNU) && !defined(Q_CC_CLANG)
 #define Q_CC_EXACTLY_GCC Q_CC_GNU
 #endif
 

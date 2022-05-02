@@ -359,7 +359,7 @@ void Q_DECL_VECTORCALL qt_memfillXX_avx2(uchar *dest, __m256i value256, qsizetyp
 
 void qt_memfill64_avx2(quint64 *dest, quint64 value, qsizetype count)
 {
-#if defined(Q_CC_GNU) && !defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
+#if defined(Q_CC_GNU) && !defined(Q_CC_CLANG)
     // work around https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80820
     __m128i value64 = _mm_set_epi64x(0, value); // _mm_cvtsi64_si128(value);
 #  ifdef Q_PROCESSOR_X86_64

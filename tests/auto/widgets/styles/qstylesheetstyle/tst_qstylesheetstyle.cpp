@@ -984,7 +984,7 @@ void tst_QStyleSheetStyle::focusColors()
     // ten pixels of the right color requires quite a many characters, as the
     // majority of the pixels will have slightly different colors due to the
     // anti-aliasing effect.
-#if !defined(Q_OS_WIN32) && !(defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(Q_CC_INTEL))
+#if !defined(Q_OS_WIN32) && !(defined(Q_OS_LINUX) && defined(Q_CC_GNU))
     QSKIP("This is a fragile test which fails on many esoteric platforms because of focus problems"
           " (for example, QTBUG-33959)."
           "That doesn't mean that the feature doesn't work in practice.");
