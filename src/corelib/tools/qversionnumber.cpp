@@ -531,7 +531,8 @@ QDataStream& operator>>(QDataStream &in, QVersionNumber &version)
 QDebug operator<<(QDebug debug, const QVersionNumber &version)
 {
     QDebugStateSaver saver(debug);
-    debug.noquote() << version.toString();
+    debug.nospace().noquote();
+    debug << "QVersionNumber(" << version.toString() << ")";
     return debug;
 }
 #endif
