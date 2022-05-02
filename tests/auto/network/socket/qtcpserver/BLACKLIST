@@ -11,6 +11,8 @@ osx
 windows-7sp1
 windows-10
 [serverAddress]
+# QTBUG-103056
+qnx
 windows-7sp1
 windows-10
 
