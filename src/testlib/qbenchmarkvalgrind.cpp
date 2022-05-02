@@ -48,6 +48,7 @@
 #include <QtCore/qset.h>
 #include <QtTest/private/callgrind_p.h>
 
+#include <charconv>
 #include <optional>
 
 QT_BEGIN_NAMESPACE
@@ -92,15 +93,18 @@ qint64 QBenchmarkValgrindUtils::extractResult(const QString &fileName)
     Q_UNUSED(openOk);
 
     std::optional<qint64> val = std::nullopt;
-    QRegularExpression rxValue(u"^summary: (\\d+)"_s);
     while (!file.atEnd()) {
-        const QString line(QLatin1StringView(file.readLine()));
-        QRegularExpressionMatch match = rxValue.match(line);
-        if (match.hasMatch()) {
-            bool ok;
-            val = match.captured(1).toLongLong(&ok);
-            Q_ASSERT(ok);
-            break;
+        const QByteArray line = file.readLine();
+        constexpr QByteArrayView tag = "summary: ";
+        if (line.startsWith(tag)) {
+            const auto maybeNumber = line.data() + tag.size();
+            const auto end = line.data() + line.size();
+            qint64 v;
+            const auto r = std::from_chars(maybeNumber, end, v);
+            if (r.ec == std::errc{}) {
+                val = v;
+                break;
+            }
         }
     }
     if (Q_UNLIKELY(!val))
