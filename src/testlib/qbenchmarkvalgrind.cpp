@@ -48,6 +48,8 @@
 #include <QtCore/qset.h>
 #include <QtTest/private/callgrind_p.h>
 
+#include <optional>
+
 QT_BEGIN_NAMESPACE
 
 // Returns \c true if valgrind is available.
@@ -87,8 +89,7 @@ qint64 QBenchmarkValgrindUtils::extractResult(const QString &fileName)
     Q_ASSERT(openOk);
     Q_UNUSED(openOk);
 
-    qint64 val = -1;
-    bool valSeen = false;
+    std::optional<qint64> val = std::nullopt;
     QRegularExpression rxValue(QLatin1String("^summary: (\\d+)"));
     while (!file.atEnd()) {
         const QString line(QLatin1String(file.readLine()));
@@ -97,13 +98,12 @@ qint64 QBenchmarkValgrindUtils::extractResult(const QString &fileName)
             bool ok;
             val = match.captured(1).toLongLong(&ok);
             Q_ASSERT(ok);
-            valSeen = true;
             break;
         }
     }
-    if (Q_UNLIKELY(!valSeen))
+    if (Q_UNLIKELY(!val))
         qFatal("Failed to extract result");
-    return val;
+    return *val;
 }
 
 // Gets the newest file name (i.e. the one with the highest integer suffix).
