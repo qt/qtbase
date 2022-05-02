@@ -1929,9 +1929,18 @@ void tst_QTextStream::char16_t_operators_FromDevice_data()
 // ------------------------------------------------------------------------------
 void tst_QTextStream::char16_t_operators_FromDevice()
 {
+    QFETCH(QByteArray, input);
     QFETCH(const QChar, qchar_output);
     QFETCH(const QByteArray, write_output);
     const char16_t char16_t_output = qchar_output.unicode();
+
+    QBuffer buf(&input);
+    buf.open(QBuffer::ReadOnly);
+    QTextStream stream(&buf);
+    stream.setEncoding(QStringConverter::Latin1);
+    char16_t tmp;
+    stream >> tmp;
+    QCOMPARE(tmp, qchar_output);
 
     QBuffer writeBuf;
     writeBuf.open(QBuffer::WriteOnly);

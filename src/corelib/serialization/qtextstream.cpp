@@ -1996,6 +1996,14 @@ QTextStream &QTextStream::operator>>(char &c)
 }
 
 /*!
+    \fn QTextStream &QTextStream::operator>>(char16_t &c)
+    \overload
+    \since 6.4
+
+    Reads a character from the stream and stores it in \a c.
+*/
+
+/*!
     Reads an integer from the stream and stores it in \a i, then
     returns a reference to the QTextStream. The number is cast to
     the correct type before it is stored. If no number was detected on

@@ -153,6 +153,8 @@ public:
 
     QTextStream &operator>>(QChar &ch);
     QTextStream &operator>>(char &ch);
+    QTextStream &operator>>(char16_t &ch)
+    { QChar c; *this >> c; ch = c.unicode(); return *this; }
     QTextStream &operator>>(signed short &i);
     QTextStream &operator>>(unsigned short &i);
     QTextStream &operator>>(signed int &i);
