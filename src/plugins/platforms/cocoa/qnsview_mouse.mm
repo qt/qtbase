@@ -605,8 +605,8 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
     // in time (s_windowUnderMouse). The latter is also used to also send out enter/leave
     // events when the application is activated/deactivated.
 
-    // Top-level windows generate enter events for sub-windows.
-    if (!m_platformWindow->isContentView())
+    // Root (top level or embedded) windows generate enter events for sub-windows
+    if (!m_platformWindow->isContentView() && !m_platformWindow->isEmbedded())
         return;
 
     QPointF windowPoint;
@@ -632,8 +632,8 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
     if (!m_platformWindow)
         return;
 
-    // Top-level windows generate leave events for sub-windows.
-    if (!m_platformWindow->isContentView())
+    // Root (top level or embedded) windows generate enter events for sub-windows
+    if (!m_platformWindow->isContentView() && !m_platformWindow->isEmbedded())
         return;
 
     QCocoaWindow *windowToLeave = QCocoaWindow::s_windowUnderMouse;
