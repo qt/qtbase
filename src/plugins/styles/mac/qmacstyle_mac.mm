@@ -3790,7 +3790,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     btn.palette.setColor(QPalette::ButtonText, Qt::white);
             }
 
-            if (!isDarkMode() && QOperatingSystemVersion::current() > QOperatingSystemVersion::MacOSBigSur) {
+            if (isEnabled && !isDarkMode() && QOperatingSystemVersion::current() > QOperatingSystemVersion::MacOSBigSur) {
                 if (!isDefault && !(btn.state & State_On)) {
                     // On macOS 12 it's a gray button, white text color (if set in the
                     // previous statement) would be almost invisible.
