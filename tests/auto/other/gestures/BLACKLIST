@@ -9,29 +9,42 @@ opensuse-leap
 # QTBUG-67254
 opensuse-42.3
 [graphicsItemGesture]
+# QTBUG-103054
+ubuntu-20
 ubuntu-18.04
 rhel-7.4
 rhel-7.6
 sles-15
 rhel-8.4
 [graphicsItemTreeGesture]
+# QTBUG-103054
+ubuntu-20
 ubuntu-18.04
 [graphicsView]
+# QTBUG-103054
+ubuntu-20
 ubuntu-18.04
 rhel-7.4
 rhel-7.6
 sles-15
 rhel-8.4
 [explicitGraphicsObjectTarget]
+# QTBUG-103054
+ubuntu-20
 ubuntu-18.04
 rhel-7.4
 rhel-7.6
 sles-15
 rhel-8.4
 [autoCancelGestures2]
+# QTBUG-103054
+ubuntu-20
 ubuntu-18.04
 rhel-7.4
 rhel-7.6
 sles-15
 rhel-8.4
 
+#QTBUG-103054
+[testReuseCanceledGestures]
+ubuntu-20
