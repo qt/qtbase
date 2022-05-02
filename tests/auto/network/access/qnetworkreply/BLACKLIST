@@ -4,6 +4,8 @@ linux
 [getFromHttpIntoBuffer]
 osx
 [ioPostToHttpFromSocket]
+# QTBUG-103109
+qnx
 osx
 [ioHttpRedirectMultipartPost]
 b2qt
