@@ -6,6 +6,8 @@ android
 [closeAndDelete]
 macos
 [floatingTabs]
+# QTBUG-103091
+qnx
 macos
 [closeAndDelete]
 b2qt
