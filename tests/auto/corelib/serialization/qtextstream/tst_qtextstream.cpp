@@ -94,6 +94,8 @@ private slots:
     // char operators
     void QChar_operators_FromDevice_data();
     void QChar_operators_FromDevice();
+    void char16_t_operators_FromDevice_data();
+    void char16_t_operators_FromDevice();
     void char_operators_FromDevice_data();
     void char_operators_FromDevice();
 
@@ -1912,6 +1914,31 @@ void tst_QTextStream::QChar_operators_FromDevice()
     QTextStream writeStream(&writeBuf);
     writeStream.setEncoding(QStringConverter::Latin1);
     writeStream << qchar_output;
+    writeStream.flush();
+
+    QCOMPARE(writeBuf.buffer().size(), write_output.size());
+    QCOMPARE(writeBuf.buffer().constData(), write_output.constData());
+}
+
+// ------------------------------------------------------------------------------
+void tst_QTextStream::char16_t_operators_FromDevice_data()
+{
+    generateOperatorCharData(false);
+}
+
+// ------------------------------------------------------------------------------
+void tst_QTextStream::char16_t_operators_FromDevice()
+{
+    QFETCH(const QChar, qchar_output);
+    QFETCH(const QByteArray, write_output);
+    const char16_t char16_t_output = qchar_output.unicode();
+
+    QBuffer writeBuf;
+    writeBuf.open(QBuffer::WriteOnly);
+
+    QTextStream writeStream(&writeBuf);
+    writeStream.setEncoding(QStringConverter::Latin1);
+    writeStream << char16_t_output;
     writeStream.flush();
 
     QCOMPARE(writeBuf.buffer().size(), write_output.size());

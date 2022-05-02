@@ -169,6 +169,7 @@ public:
 
     QTextStream &operator<<(QChar ch);
     QTextStream &operator<<(char ch);
+    QTextStream &operator<<(char16_t ch) { return *this << QChar(ch); }
     QTextStream &operator<<(signed short i);
     QTextStream &operator<<(unsigned short i);
     QTextStream &operator<<(signed int i);
