@@ -1,6 +1,4 @@
 # This function is used to define a "Qt tool", such as moc, uic or rcc.
-# The BOOTSTRAP option allows building it as standalone program, otherwise
-# it will be linked against QtCore.
 #
 # USER_FACING can be passed to mark the tool as a program that is supposed to be
 # started directly by users.
@@ -28,13 +26,19 @@
 #     TOOLS_TARGET
 #         Specifies the module this tool belongs to. The module's Qt6${module}Tools.cmake file
 #         will then contain targets for this tool.
-#
+#     CORE_LIBRARY
+#         The argument accepts 'Bootstrap' or 'None' values. If the argument value is set to
+#         'Bootstrap' the Qt::Bootstrap library is linked to the executable instead of Qt::Core.
+#         The 'None' value points that core library is not necessary and avoids linking neither
+#         Qt::Core or Qt::Bootstrap libraries. Otherwise the Qt::Core library will be publically
+#         linked to the executable target by default.
 function(qt_internal_add_tool target_name)
     qt_tool_target_to_name(name ${target_name})
-    set(option_keywords BOOTSTRAP NO_INSTALL USER_FACING INSTALL_VERSIONED_LINK EXCEPTIONS)
+    set(option_keywords NO_INSTALL USER_FACING INSTALL_VERSIONED_LINK EXCEPTIONS)
     set(one_value_keywords
         TOOLS_TARGET
         INSTALL_DIR
+        CORE_LIBRARY
         ${__default_target_info_args})
     set(multi_value_keywords
         EXTRA_CMAKE_FILES
@@ -172,16 +176,10 @@ function(qt_internal_add_tool target_name)
     endif()
 
     set(disable_autogen_tools "${arg_DISABLE_AUTOGEN_TOOLS}")
-    if (arg_BOOTSTRAP)
-        set(corelib ${QT_CMAKE_EXPORT_NAMESPACE}::Bootstrap)
+    set(corelib "")
+    if(arg_CORE_LIBRARY STREQUAL "Bootstrap" OR arg_CORE_LIBRARY STREQUAL "None")
+        set(corelib CORE_LIBRARY ${arg_CORE_LIBRARY})
         list(APPEND disable_autogen_tools "uic" "moc" "rcc")
-    else()
-        set(corelib ${QT_CMAKE_EXPORT_NAMESPACE}::Core)
-    endif()
-
-    set(bootstrap "")
-    if(arg_BOOTSTRAP)
-        set(bootstrap BOOTSTRAP)
     endif()
 
     set(exceptions "")
@@ -198,7 +196,6 @@ function(qt_internal_add_tool target_name)
 
     qt_internal_add_executable("${target_name}"
         OUTPUT_DIRECTORY "${output_dir}"
-        ${bootstrap}
         ${exceptions}
         NO_INSTALL
         SOURCES ${arg_SOURCES}
@@ -207,7 +204,7 @@ function(qt_internal_add_tool target_name)
         DEFINES
             QT_USE_QSTRINGBUILDER
             ${arg_DEFINES}
-        PUBLIC_LIBRARIES ${corelib}
+        ${corelib}
         LIBRARIES ${arg_LIBRARIES} Qt::PlatformToolInternal
         COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
         LINK_OPTIONS ${arg_LINK_OPTIONS}
@@ -237,7 +234,7 @@ function(qt_internal_add_tool target_name)
 
     if(TARGET host_tools)
         add_dependencies(host_tools "${target_name}")
-        if(bootstrap)
+        if(arg_CORE_LIBRARY STREQUAL "Bootstrap")
             add_dependencies(bootstrap_tools "${target_name}")
         endif()
     endif()

@@ -484,7 +484,6 @@ set(__default_target_info_args
 # and qt_internal_add_test_helper.
 set(__qt_internal_add_executable_optional_args
     GUI
-    BOOTSTRAP
     NO_INSTALL
     EXCEPTIONS
     DELAY_RC
@@ -492,6 +491,7 @@ set(__qt_internal_add_executable_optional_args
     QT_APP
 )
 set(__qt_internal_add_executable_single_args
+    CORE_LIBRARY
     OUTPUT_DIRECTORY
     INSTALL_DIRECTORY
     VERSION

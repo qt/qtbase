@@ -1,6 +1,13 @@
 # This function creates a CMake target for a generic console or GUI binary.
 # Please consider to use a more specific version target like the one created
 # by qt_add_test or qt_add_tool below.
+# One-value Arguments:
+#     CORE_LIBRARY
+#         The argument accepts 'Bootstrap' or 'None' values. If the argument value is set to
+#         'Bootstrap' the Qt::Bootstrap library is linked to the executable instead of Qt::Core.
+#         The 'None' value points that core library is not necessary and avoids linking neither
+#         Qt::Core or Qt::Bootstrap libraries. Otherwise the Qt::Core library will be publically
+#         linked to the executable target by default.
 function(qt_internal_add_executable name)
     qt_parse_all_arguments(arg "qt_internal_add_executable"
         "${__qt_internal_add_executable_optional_args}"
@@ -85,8 +92,10 @@ function(qt_internal_add_executable name)
     qt_skip_warnings_are_errors_when_repo_unclean("${name}")
 
     set(extra_libraries "")
-    if(NOT arg_BOOTSTRAP)
-        set(extra_libraries "Qt::Core")
+    if(arg_CORE_LIBRARY STREQUAL "Bootstrap")
+        list(APPEND extra_libraries ${QT_CMAKE_EXPORT_NAMESPACE}::Bootstrap)
+    elseif(NOT arg_CORE_LIBRARY STREQUAL "None")
+        list(APPEND extra_libraries ${QT_CMAKE_EXPORT_NAMESPACE}::Core)
     endif()
 
     set(private_includes
