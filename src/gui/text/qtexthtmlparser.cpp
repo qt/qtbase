@@ -321,7 +321,7 @@ static const struct QTextHtmlEntity { const char name[9]; char16_t code; } entit
 };
 static_assert(MAX_ENTITY == sizeof entities / sizeof *entities);
 
-#if defined(Q_CC_MSVC) && _MSC_VER < 1600
+#if defined(Q_CC_MSVC_ONLY) && _MSC_VER < 1600
 bool operator<(const QTextHtmlEntity &entity1, const QTextHtmlEntity &entity2)
 {
     return QLatin1String(entity1.name) < QLatin1String(entity2.name);

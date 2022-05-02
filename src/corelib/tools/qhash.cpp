@@ -252,7 +252,7 @@ static uint64_t siphash(const uint8_t *in, uint64_t inlen, const uint64_t seed)
     }
 
 
-#if defined(Q_CC_GNU) && Q_CC_GNU >= 700
+#if defined(Q_CC_GNU_ONLY) && Q_CC_GNU >= 700
     QT_WARNING_DISABLE_GCC("-Wimplicit-fallthrough")
 #endif
     switch (left) {
@@ -356,7 +356,7 @@ static uint siphash(const uint8_t *in, uint inlen, const uint seed)
         v0 ^= m;
     }
 
-#if defined(Q_CC_GNU) && Q_CC_GNU >= 700
+#if defined(Q_CC_GNU_ONLY) && Q_CC_GNU >= 700
     QT_WARNING_DISABLE_GCC("-Wimplicit-fallthrough")
 #endif
     switch (left) {

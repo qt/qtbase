@@ -137,7 +137,7 @@ QT_WARNING_POP
 } // namespace QtPrivate
 
 QT_WARNING_PUSH
-#if defined(Q_CC_GNU) && __GNUC__ == 9
+#if defined(Q_CC_GNU_ONLY) && __GNUC__ == 9
 QT_WARNING_DISABLE_GCC("-Wstringop-overflow")
 #endif
 template<typename T, int SizeString, int SizeOffsets>
