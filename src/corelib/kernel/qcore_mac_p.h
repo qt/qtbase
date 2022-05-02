@@ -113,6 +113,9 @@ kern_return_t IOObjectRelease(io_object_t object);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSObject);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSString);
 
+// @compatibility_alias doesn't work with categories or their methods
+#define QtExtras QT_MANGLE_NAMESPACE(QtExtras)
+
 QT_BEGIN_NAMESPACE
 template <typename T, typename U, auto RetainFunction, auto ReleaseFunction>
 class QAppleRefCounted
