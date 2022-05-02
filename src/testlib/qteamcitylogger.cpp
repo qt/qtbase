@@ -268,9 +268,8 @@ void QTeamCityLogger::addPendingMessage(const char *type, const QString &msg, co
 
     if (file) {
         pendMessage += "%1 |[Loc: %2(%3)|]: %4"_L1
-                .arg(QString::fromUtf8(type), QString::fromUtf8(file))
-                .arg(line)
-                .arg(msg);
+                .arg(QString::fromUtf8(type), QString::fromUtf8(file),
+                     QString::number(line), msg);
 
     } else {
         pendMessage += "%1: %2"_L1.arg(QString::fromUtf8(type), msg);
