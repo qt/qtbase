@@ -72,6 +72,11 @@ Q_GUI_EXPORT CGBitmapInfo qt_mac_bitmapInfoForImage(const QImage &image);
 Q_GUI_EXPORT QPixmap qt_mac_toQPixmap(const NSImage *image, const QSizeF &size);
 
 QT_END_NAMESPACE
+
+// @compatibility_alias doesn't work with categories or their methods
+#define imageFromQImage QT_MANGLE_NAMESPACE(imageFromQImage)
+#define imageFromQIcon QT_MANGLE_NAMESPACE(imageFromQIcon)
+
 @interface NSImage (QtExtras)
 + (instancetype)imageFromQImage:(const QT_PREPEND_NAMESPACE(QImage) &)image;
 + (instancetype)imageFromQIcon:(const QT_PREPEND_NAMESPACE(QIcon) &)icon;
