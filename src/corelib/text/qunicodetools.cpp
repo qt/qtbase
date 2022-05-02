@@ -700,9 +700,8 @@ static void getLineBreaks(const char16_t *string, qsizetype len, QCharAttributes
         }
 
         if (Q_UNLIKELY(lcls == QUnicodeTables::LineBreak_ZWJ)) {
-            // LB8a: ZWJ x (ID | EB | EM)
-            if (ncls == QUnicodeTables::LineBreak_ID || ncls == QUnicodeTables::LineBreak_EB || ncls == QUnicodeTables::LineBreak_EM)
-                goto next;
+            // LB8a: ZWJ x
+            goto next;
         }
 
         // LB25: do not break lines inside numbers
