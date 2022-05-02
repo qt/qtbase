@@ -1189,7 +1189,7 @@ constexpr std::underlying_type_t<Enum> qToUnderlying(Enum e) noexcept
 # endif
 #elif defined(__has_cpp_attribute) && __has_cpp_attribute(clang::require_constant_initialization)
 # define Q_CONSTINIT [[clang::require_constant_initialization]]
-#elif defined(Q_CC_GNU) && Q_CC_GNU >= 1000
+#elif defined(Q_CC_GNU_ONLY) && Q_CC_GNU >= 1000
 # define Q_CONSTINIT __constinit
 #else
 # define Q_CONSTINIT

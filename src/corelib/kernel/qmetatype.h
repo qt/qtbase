@@ -2204,7 +2204,7 @@ constexpr auto typenameHelper()
         constexpr int suffix = sizeof("]");
 #endif
 
-#if (defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && !defined(Q_CC_CLANG) && Q_CC_GNU < 804)
+#if defined(Q_CC_GNU_ONLY) && Q_CC_GNU_ONLY < 804
         auto func = Q_FUNC_INFO;
         const char *begin = func + prefix;
         const char *end = func + sizeof(Q_FUNC_INFO) - suffix;
