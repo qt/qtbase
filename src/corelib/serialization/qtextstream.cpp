@@ -2288,6 +2288,15 @@ QTextStream &QTextStream::operator<<(char c)
 }
 
 /*!
+    \fn QTextStream &QTextStream::operator<<(char16_t c)
+    \overload
+    \since 6.3.1
+
+    Writes the Unicode character \a c to the stream, then returns a
+    reference to the QTextStream.
+*/
+
+/*!
     Writes the integer number \a i to the stream, then returns a
     reference to the QTextStream. By default, the number is stored in
     decimal form, but you can also set the base by calling
