@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -83,11 +83,14 @@
 #  endif
 
 #elif defined(_MSC_VER)
-#  ifdef __clang__
-#    define Q_CC_CLANG ((__clang_major__ * 100) + __clang_minor__)
-#  endif
 #  define Q_CC_MSVC (_MSC_VER)
 #  define Q_CC_MSVC_NET
+#  define Q_CC_MSVC_ONLY Q_CC_MSVC
+#  ifdef __clang__
+#    undef Q_CC_MSVC_ONLY
+#    define Q_CC_CLANG ((__clang_major__ * 100) + __clang_minor__)
+#    define Q_CC_CLANG_ONLY Q_CC_CLANG
+#  endif
 #  define Q_OUTOFLINE_TEMPLATE inline
 #  define Q_COMPILER_MANGLES_RETURN_TYPE
 #  define Q_FUNC_INFO __FUNCSIG__
@@ -104,6 +107,10 @@
 #  define QT_MAKE_CHECKED_ARRAY_ITERATOR(x, N) stdext::make_checked_array_iterator(x, size_t(N)) // Since _MSC_VER >= 1500
 /* Intel C++ disguising as Visual C++: the `using' keyword avoids warnings */
 #  if defined(__INTEL_COMPILER)
+#    undef Q_CC_MSVC_ONLY
+#    ifdef Q_CC_CLANG_ONLY
+#      undef Q_CC_CLANG_ONLY
+#    endif
 #    define Q_DECL_VARIABLE_DEPRECATED
 #    define Q_CC_INTEL  __INTEL_COMPILER
 #  endif
@@ -181,6 +188,7 @@
        // Non-Apple Clang, so we trust the versions reported
 #      define Q_CC_CLANG ((__clang_major__ * 100) + __clang_minor__)
 #    endif
+#    define Q_CC_CLANG_ONLY Q_CC_CLANG
 #    if __has_builtin(__builtin_assume)
 #      define Q_ASSUME_IMPL(expr)   __builtin_assume(expr)
 #    else
@@ -203,6 +211,7 @@
 #    endif
 #  else
 /* Plain GCC */
+#    define Q_CC_GNU_ONLY Q_CC_GNU
 #    if Q_CC_GNU >= 405
 #      define Q_ASSUME_IMPL(expr)  if (expr){} else __builtin_unreachable()
 #      define Q_UNREACHABLE_IMPL() __builtin_unreachable()
@@ -791,7 +800,7 @@
 #  define Q_DECL_UNUSED_MEMBER Q_DECL_UNUSED
 #endif //  defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
 
-#if defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && !defined(Q_CC_CLANG)
+#if defined(Q_CC_GNU_ONLY)
 #  define Q_COMPILER_RESTRICTED_VLA
 #  if Q_CC_GNU >= 403
 //   GCC supports binary literals in C, C++98 and C++11 modes
