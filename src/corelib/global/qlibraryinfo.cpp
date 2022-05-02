@@ -208,11 +208,7 @@ QLibraryInfo::QLibraryInfo()
 { }
 
 #if defined(Q_CC_CLANG) // must be before GNU, because clang claims to be GNU too
-#  ifdef __apple_build_version__ // Apple clang has other version numbers
-#    define COMPILER_STRING "Clang " __clang_version__ " (Apple)"
-#  else
-#    define COMPILER_STRING "Clang " __clang_version__
-#  endif
+#  define COMPILER_STRING __VERSION__       /* already includes the compiler's name */
 #elif defined(Q_CC_GHS)
 #  define COMPILER_STRING "GHS " QT_STRINGIFY(__GHS_VERSION_NUMBER)
 #elif defined(Q_CC_GNU)
