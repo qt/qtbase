@@ -3301,18 +3301,22 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                         rule.drawBackground(p, toolOpt.rect);
                 }
 
-                // Let base or windows style draw the button
-                // set drawDropDown and drawMenuIndicator flags to false,
-                // unless customDropDownArrow needs to be drawn
-                if (rule.baseStyleCanDraw() && !(tool->features & QStyleOptionToolButton::Arrow)) {
-                    baseStyle()->drawComplexControl(cc, &toolOpt, p, w);
-                } else {
-                    QWindowsStyle::drawComplexControl(cc, &toolOpt, p, w);
-                }
-                if (!customDropDownArrow) {
-                    drawDropDown      = false;
+                QStyleOptionToolButton nativeToolOpt(toolOpt);
+                // don't draw natively if we have a custom rule for menu indicators and/or buttons
+                if (customMenuIndicator)
+                    nativeToolOpt.features &= ~(QStyleOptionToolButton::Menu | QStyleOptionToolButton::HasMenu);
+                if (customDropDown || customDropDownArrow)
+                    nativeToolOpt.features &= ~(QStyleOptionToolButton::Menu | QStyleOptionToolButton::HasMenu | QStyleOptionToolButton::MenuButtonPopup);
+                // Let base or windows style draw the button, which will include the menu-button
+                if (rule.baseStyleCanDraw() && !(tool->features & QStyleOptionToolButton::Arrow))
+                    baseStyle()->drawComplexControl(cc, &nativeToolOpt, p, w);
+                else
+                    QWindowsStyle::drawComplexControl(cc, &nativeToolOpt, p, w);
+                // if we did draw natively, don't draw custom
+                if (nativeToolOpt.features & (QStyleOptionToolButton::Menu | QStyleOptionToolButton::HasMenu))
                     drawMenuIndicator = false;
-                }
+                if (nativeToolOpt.features & QStyleOptionToolButton::MenuButtonPopup && !customDropDownArrow)
+                    drawDropDown = false;
             } else {
                 rule.drawRule(p, opt->rect);
                 toolOpt.rect = rule.contentsRect(opt->rect);
@@ -3349,7 +3353,8 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                 }
             } else if (drawMenuIndicator) {
                 QRenderRule subRule = renderRule(w, opt, PseudoElement_ToolButtonMenuIndicator);
-                QRect r = subRule.hasGeometry()
+
+                QRect r = subRule.hasGeometry() || subRule.hasPosition()
                         ? positionRect(w, subRule, PseudoElement_ToolButtonMenuIndicator, toolOpt.rect, toolOpt.direction)
                         : subRule.contentsRect(opt->rect);
                 if (subRule.hasDrawable()) {
