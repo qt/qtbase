@@ -109,8 +109,10 @@ using namespace Qt::StringLiterals;
 using QtMiscUtils::toHexUpper;
 using QtMiscUtils::fromHex;
 
-#ifdef Q_OS_UNIX
 namespace {
+enum DebuggerProgram { None, Gdb, Lldb };
+
+#ifdef Q_OS_UNIX
 static struct iovec IoVec(struct iovec vec)
 {
     return vec;
@@ -186,10 +188,10 @@ static struct iovec asyncSafeToString(int n, AsyncSafeIntBuffer &&result = Qt::U
     r.iov_len = ptr - result.array.data();
     return r;
 };
-}
 #endif // Q_OS_UNIX
+} // unnamed namespace
 
-static bool debuggerPresent()
+static bool alreadyDebugging()
 {
 #if defined(Q_OS_LINUX)
     int fd = open("/proc/self/status", O_RDONLY);
@@ -263,10 +265,9 @@ static void disableCoreDump()
 }
 Q_CONSTRUCTOR_FUNCTION(disableCoreDump);
 
-static std::array<char, 512> stackTraceCommand = {};
+static DebuggerProgram debugger = None;
 static void prepareStackTrace()
 {
-    stackTraceCommand[0] = '\0';
 
     bool ok = false;
     const int disableStackDump = qEnvironmentVariableIntValue("QTEST_DISABLE_STACK_DUMP", &ok);
@@ -285,19 +286,15 @@ static void prepareStackTrace()
 
     // prepare the command to be run (our PID shouldn't change!)
 #  ifdef Q_OS_LINUX
-    qsnprintf(stackTraceCommand.data(), stackTraceCommand.size(),
-              "gdb --nx --batch --pid %d -ex 'thread apply all bt' 1>&2",
-              static_cast<int>(getpid()));
+    debugger = Gdb;
 #  elif defined(Q_OS_MACOS)
-    qsnprintf(stackTraceCommand.data(), stackTraceCommand.size(),
-              "lldb --batch --no-lldbinit -p %d -o 'bt all' 1>&2",
-              static_cast<int>(getpid()));
+    debugger = Lldb;
 #  endif
 }
 
 [[maybe_unused]] static void generateStackTrace()
 {
-    if (stackTraceCommand[0] == '\0' || debuggerPresent())
+    if (debugger == None || alreadyDebugging())
         return;
 
 #if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
@@ -307,13 +304,31 @@ static void prepareStackTrace()
                   "ms, total time: ", asyncSafeToString(msecsTotalTime),
                   "ms, dumping stack ===\n");
 
+    // execlp() requires null-termination, so call the default constructor
+    AsyncSafeIntBuffer pidbuffer;
+    asyncSafeToString(getpid(), std::move(pidbuffer));
+
     // Note: POSIX.1-2001 still has fork() in the list of async-safe functions,
     // but in a future edition, it might be removed. It would be safer to wake
     // up a babysitter thread to launch the debugger.
     pid_t pid = fork();
     if (pid == 0) {
         // child process
-        execl("/bin/sh", "/bin/sh", "-c", stackTraceCommand.data(), nullptr);
+        (void) dup2(STDERR_FILENO, STDOUT_FILENO); // redirect stdout to stderr
+
+        switch (debugger) {
+        case None:
+            Q_UNREACHABLE();
+            break;
+        case Gdb:
+            execlp("gdb", "gdb", "--nx", "--batch", "-ex", "thread apply all bt",
+                   "--pid", pidbuffer.array.data(), nullptr);
+            break;
+        case Lldb:
+            execlp("lldb", "lldb", "--no-lldbinit", "--batch", "-o", "bt all",
+                   "--attach-pid", pidbuffer.array.data(), nullptr);
+            break;
+        }
         _exit(1);
     } else if (pid < 0) {
         writeToStderr("Failed to start debugger.\n");
@@ -1615,7 +1630,7 @@ void TestMethods::invokeTests(QObject *testObject) const
         m_initTestCaseDataMethod.invoke(testObject, Qt::DirectConnection);
 
     QScopedPointer<WatchDog> watchDog;
-    if (!debuggerPresent()
+    if (!alreadyDebugging()
 #if QT_CONFIG(valgrind)
         && QBenchmarkGlobalData::current->mode() != QBenchmarkGlobalData::CallgrindChildProcess
 #endif
