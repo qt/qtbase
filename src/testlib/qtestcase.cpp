@@ -1935,6 +1935,8 @@ public:
     }
 
 private:
+    Q_DISABLE_COPY_MOVE(FatalSignalHandler)
+
 #  ifdef SA_SIGINFO
     static void signal(int signum, siginfo_t * /* info */, void * /* ucontext */)
 #  else
@@ -2105,10 +2107,10 @@ int QTest::qRun()
     } else
 #endif
     {
-        QScopedPointer<FatalSignalHandler> handler;
+        std::optional<FatalSignalHandler> handler;
         prepareStackTrace();
         if (!noCrashHandler)
-            handler.reset(new FatalSignalHandler);
+            handler.emplace();
 
         TestMethods::MetaMethods commandLineMethods;
         commandLineMethods.reserve(static_cast<size_t>(QTest::testFunctions.size()));
