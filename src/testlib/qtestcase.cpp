@@ -80,6 +80,9 @@
 #include <QtCore/private/qcore_unix_p.h>
 
 #include <errno.h>
+#if __has_include(<paths.h>)
+# include <paths.h>
+#endif
 #include <signal.h>
 #include <time.h>
 #include <sys/mman.h>
@@ -88,6 +91,9 @@
 #include <unistd.h>
 # if !defined(Q_OS_INTEGRITY)
 #  include <sys/resource.h>
+# endif
+# ifndef _PATH_DEFPATH
+#  define _PATH_DEFPATH     "/usr/bin:/bin"
 # endif
 # ifndef SIGSTKSZ
 #  define SIGSTKSZ          0       /* we have code to set the minimum */
@@ -288,12 +294,52 @@ static void prepareStackTrace()
         return; // LLDB will fail to provide a valid stack trace
 #endif
 
-    // prepare the command to be run (our PID shouldn't change!)
-#  ifdef Q_OS_LINUX
-    debugger = Gdb;
-#  elif defined(Q_OS_MACOS)
-    debugger = Lldb;
+#ifdef Q_OS_UNIX
+    // like QStandardPaths::findExecutable(), but simpler
+    auto hasExecutable = [](const char *execname) {
+        std::string candidate;
+        std::string path;
+        if (const char *p = getenv("PATH"); p && *p)
+            path = p;
+        else
+            path = _PATH_DEFPATH;
+        for (const char *p = std::strtok(&path[0], ":'"); p; p = std::strtok(nullptr, ":")) {
+            candidate = p;
+            candidate += '/';
+            candidate += execname;
+            if (QT_ACCESS(candidate.data(), X_OK) == 0)
+                return true;
+        }
+        return false;
+    };
+
+    static constexpr DebuggerProgram debuggerSearchOrder[] = {
+#  if defined(Q_OS_QNX) || (defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID))
+        Gdb, Lldb
+#  else
+        Lldb, Gdb
 #  endif
+    };
+    for (DebuggerProgram candidate : debuggerSearchOrder) {
+        switch (candidate) {
+        case None:
+            Q_UNREACHABLE();
+            break;
+        case Gdb:
+            if (hasExecutable("gdb")) {
+                debugger = Gdb;
+                return;
+            }
+            break;
+        case Lldb:
+            if (hasExecutable("lldb")) {
+                debugger = Lldb;
+                return;
+            }
+            break;
+        }
+    }
+#endif // Q_OS_UNIX
 }
 
 [[maybe_unused]] static void generateStackTrace()
@@ -301,7 +347,7 @@ static void prepareStackTrace()
     if (debugger == None || alreadyDebugging())
         return;
 
-#if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_WASM) && !defined(Q_OS_INTEGRITY)
     const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
     const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
     writeToStderr("\n=== Received signal at function time: ", asyncSafeToString(msecsFunctionTime),
@@ -341,7 +387,7 @@ static void prepareStackTrace()
         EINTR_LOOP(ret, waitpid(pid, nullptr, 0));
     }
     writeToStderr("=== End of stack trace ===\n");
-#endif
+#endif // Q_OS_UNIX && !Q_OS_WASM
 }
 
 static bool installCoverageTool(const char * appname, const char * testname)
