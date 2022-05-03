@@ -441,7 +441,7 @@ static xkb_layout_index_t lockedGroup(quint16 state)
 
 void QXcbKeyboard::updateXKBStateFromCore(quint16 state)
 {
-    if (m_config && !connection()->hasXKB()) {
+    if (m_config) {
         struct xkb_state *xkbState = m_xkbState.get();
         xkb_mod_mask_t modsDepressed = xkb_state_serialize_mods(xkbState, XKB_STATE_MODS_DEPRESSED);
         xkb_mod_mask_t modsLatched = xkb_state_serialize_mods(xkbState, XKB_STATE_MODS_LATCHED);
@@ -463,7 +463,7 @@ void QXcbKeyboard::updateXKBStateFromCore(quint16 state)
 
 void QXcbKeyboard::updateXKBStateFromXI(void *modInfo, void *groupInfo)
 {
-    if (m_config && !connection()->hasXKB()) {
+    if (m_config) {
         auto *mods = static_cast<xcb_input_modifier_info_t *>(modInfo);
         auto *group = static_cast<xcb_input_group_info_t *>(groupInfo);
         const xkb_state_component changedComponents
