@@ -1893,7 +1893,7 @@ class FatalSignalHandler
 {
 public:
     static constexpr std::array fatalSignals = {
-        SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGBUS, SIGFPE, SIGSEGV, SIGPIPE, SIGTERM
+        SIGHUP, SIGINT, SIGQUIT, SIGABRT, SIGILL, SIGBUS, SIGFPE, SIGSEGV, SIGPIPE, SIGTERM
     };
     static constexpr std::array crashingSignals = {
         // Crash signals are special, because if we return from the handler
