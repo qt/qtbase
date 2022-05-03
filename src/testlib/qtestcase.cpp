@@ -1839,6 +1839,15 @@ public:
     static constexpr std::array fatalSignals = {
         SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGBUS, SIGFPE, SIGSEGV, SIGPIPE, SIGTERM
     };
+    static constexpr std::array crashingSignals = {
+        // Crash signals are special, because if we return from the handler
+        // without adjusting the machine state, the same instruction that
+        // originally caused the crash will get re-executed and will thus cause
+        // the same crash again. This is useful if our parent process logs the
+        // exit result or if core dumps are enabled: the core file will point
+        // to the actual instruction that crashed.
+        SIGILL, SIGBUS, SIGFPE, SIGSEGV
+    };
     using OldActionsArray = std::array<struct sigaction, fatalSignals.size()>;
 
     FatalSignalHandler()
@@ -1938,6 +1947,28 @@ private:
         writeToStderr("Received signal ", asyncSafeToString(signum),
                "\n         Function time: ", asyncSafeToString(msecsFunctionTime),
                "ms Total time: ", asyncSafeToString(msecsTotalTime), "ms\n");
+
+        bool isCrashingSignal =
+                std::find(crashingSignals.begin(), crashingSignals.end(), signum) != crashingSignals.end();
+
+        // chain back to the previous handler, if any
+        for (size_t i = 0; i < fatalSignals.size(); ++i) {
+            struct sigaction &act = oldActions()[i];
+            if (signum != fatalSignals[i])
+                continue;
+
+            // restore the handler (if SA_RESETHAND hasn't done the job for us)
+            if (SA_RESETHAND == 0 || act.sa_handler != SIG_DFL || act.sa_flags)
+                (void) sigaction(signum, &act, nullptr);
+
+            if (!isCrashingSignal)
+                raise(signum);
+
+            // signal is blocked, so it'll be delivered when we return
+            return;
+        }
+
+        // we shouldn't reach here!
         std::abort();
     }
 
