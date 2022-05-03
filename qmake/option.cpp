@@ -224,7 +224,7 @@ Option::parseCommandLine(QStringList &args, QMakeCmdLineParserState &state)
                     fprintf(stdout,
                             "QMake version %s\n"
                             "Using Qt version %s in %s\n",
-                            QMAKE_VERSION_STR, QT_VERSION_STR,
+                            QMAKE_VERSION_STR, qVersion(),
                             QMakeLibraryInfo::path(QLibraryInfo::LibrariesPath)
                                     .toLatin1()
                                     .constData());

@@ -100,9 +100,7 @@ void QMakeProperty::reload()
 #ifdef QMAKE_VERSION_STR
     m_values["QMAKE_VERSION"] = ProString(QMAKE_VERSION_STR);
 #endif
-#ifdef QT_VERSION_STR
-    m_values["QT_VERSION"] = ProString(QT_VERSION_STR);
-#endif
+    m_values["QT_VERSION"] = ProString(qVersion());
 }
 
 QMakeProperty::~QMakeProperty()
@@ -168,9 +166,7 @@ int QMakeProperty::queryProperty(const QStringList &optionProperties,
 #ifdef QMAKE_VERSION_STR
         specialProps.append("QMAKE_VERSION");
 #endif
-#ifdef QT_VERSION_STR
         specialProps.append("QT_VERSION");
-#endif
         for (const QString &prop : qAsConst(specialProps)) {
             ProString val = value(ProKey(prop));
             ProString pval = value(ProKey(prop + "/raw"));
