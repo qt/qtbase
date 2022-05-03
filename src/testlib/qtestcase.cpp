@@ -88,6 +88,9 @@
 # if !defined(Q_OS_INTEGRITY)
 #  include <sys/resource.h>
 # endif
+# ifndef SA_RESETHAND
+#  define SA_RESETHAND      0
+# endif
 #endif
 
 #if defined(Q_OS_MACOS)
@@ -1843,16 +1846,14 @@ public:
 
         struct sigaction act;
         memset(&act, 0, sizeof(act));
+        // Remove the handler after it is invoked.
+        act.sa_flags = SA_RESETHAND;
+
 #  ifdef SA_SIGINFO
         act.sa_flags |= SA_SIGINFO;
         act.sa_sigaction = FatalSignalHandler::actionHandler;
 #  else
         act.sa_handler = FatalSignalHandler::regularHandler;
-#  endif
-
-        // Remove the handler after it is invoked.
-#  if !defined(Q_OS_INTEGRITY)
-        act.sa_flags = SA_RESETHAND;
 #  endif
 
     // tvOS/watchOS both define SA_ONSTACK (in sys/signal.h) but mark sigaltstack() as
@@ -1954,14 +1955,6 @@ private:
                "\n         Function time: ", asyncSafeToString(msecsFunctionTime),
                "ms Total time: ", asyncSafeToString(msecsTotalTime), "ms\n");
         std::abort();
-#  if defined(Q_OS_INTEGRITY)
-        {
-            struct sigaction act;
-            memset(&act, 0, sizeof(struct sigaction));
-            act.sa_handler = SIG_DFL;
-            sigaction(signum, &act, NULL);
-        }
-#  endif
     }
 
     [[maybe_unused]] static void regularHandler(int signum)
