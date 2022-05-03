@@ -77,10 +77,13 @@
 #include <qt_windows.h> // for Sleep
 #endif
 #ifdef Q_OS_UNIX
+#include <QtCore/private/qcore_unix_p.h>
+
 #include <errno.h>
 #include <signal.h>
 #include <time.h>
 #include <sys/uio.h>
+#include <sys/wait.h>
 #include <unistd.h>
 # if !defined(Q_OS_INTEGRITY)
 #  include <sys/resource.h>
@@ -232,7 +235,6 @@ static bool debuggerPresent()
 #endif
 }
 
-#if !defined(Q_OS_WASM)
 static bool hasSystemCrashReporter()
 {
 #if defined(Q_OS_MACOS)
@@ -258,17 +260,18 @@ static void disableCoreDump()
 }
 Q_CONSTRUCTOR_FUNCTION(disableCoreDump);
 
-static void stackTrace()
+static std::array<char, 512> stackTraceCommand = {};
+static void prepareStackTrace()
 {
+    stackTraceCommand[0] = '\0';
+
     bool ok = false;
     const int disableStackDump = qEnvironmentVariableIntValue("QTEST_DISABLE_STACK_DUMP", &ok);
     if (ok && disableStackDump)
         return;
 
-    if (debuggerPresent() || hasSystemCrashReporter())
+    if (hasSystemCrashReporter())
         return;
-
-#if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
 
 #if defined(Q_OS_MACOS)
     #define CSR_ALLOW_UNRESTRICTED_FS (1 << 1)
@@ -277,14 +280,10 @@ static void stackTrace()
         return; // LLDB will fail to provide a valid stack trace
 #endif
 
-    const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
-    const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
-    fprintf(stderr, "\n=== Received signal at function time: %dms, total time: %dms, dumping stack ===\n",
-            msecsFunctionTime, msecsTotalTime);
-
+    // prepare the command to be run (our PID shouldn't change!)
 #  ifdef Q_OS_LINUX
-    char cmd[512];
-    qsnprintf(cmd, 512, "gdb --pid %d 1>&2 2>/dev/null <<EOF\n"
+    qsnprintf(stackTraceCommand.data(), stackTraceCommand.size(),
+                        "gdb --pid %d 1>&2 2>/dev/null <<EOF\n"
                         "set prompt\n"
                         "set height 0\n"
                         "thread apply all where full\n"
@@ -292,24 +291,45 @@ static void stackTrace()
                         "quit\n"
                         "EOF\n",
               static_cast<int>(getpid()));
-    if (system(cmd) == -1)
-        fprintf(stderr, "calling gdb failed\n");
-    fprintf(stderr, "=== End of stack trace ===\n");
 #  elif defined(Q_OS_MACOS)
-    char cmd[512];
-    qsnprintf(cmd, 512, "lldb -p %d 1>&2 2>/dev/null <<EOF\n"
+    qsnprintf(stackTraceCommand.data(), stackTraceCommand.size(),
+                        "lldb -p %d 1>&2 2>/dev/null <<EOF\n"
                         "bt all\n"
                         "quit\n"
                         "EOF\n",
               static_cast<int>(getpid()));
-    if (system(cmd) == -1)
-        fprintf(stderr, "calling lldb failed\n");
-    fprintf(stderr, "=== End of stack trace ===\n");
 #  endif
+}
 
+[[maybe_unused]] static void generateStackTrace()
+{
+    if (stackTraceCommand[0] == '\0' || debuggerPresent())
+        return;
+
+#if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
+    const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
+    const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
+    writeToStderr("\n=== Received signal at function time: ", asyncSafeToString(msecsFunctionTime),
+                  "ms, total time: ", asyncSafeToString(msecsTotalTime),
+                  "ms, dumping stack ===\n");
+
+    // Note: POSIX.1-2001 still has fork() in the list of async-safe functions,
+    // but in a future edition, it might be removed. It would be safer to wake
+    // up a babysitter thread to launch the debugger.
+    pid_t pid = fork();
+    if (pid == 0) {
+        // child process
+        execl("/bin/sh", "/bin/sh", "-c", stackTraceCommand.data(), nullptr);
+        _exit(1);
+    } else if (pid < 0) {
+        writeToStderr("Failed to start debugger.\n");
+    } else {
+        int ret;
+        EINTR_LOOP(ret, waitpid(pid, nullptr, 0));
+    }
+    writeToStderr("=== End of stack trace ===\n");
 #endif
 }
-#endif // !Q_OS_WASM
 
 static bool installCoverageTool(const char * appname, const char * testname)
 {
@@ -1168,9 +1188,7 @@ public:
             case TestFunctionStart:
             case TestFunctionEnd:
                 if (Q_UNLIKELY(!waitFor(locker, e))) {
-#ifndef Q_OS_WASM
-                    stackTrace();
-#endif
+                    generateStackTrace();
                     qFatal("Test function timed out");
                 }
             }
@@ -1921,7 +1939,7 @@ private:
         const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
         const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
         if (signum != SIGINT) {
-            stackTrace();
+            generateStackTrace();
             if (qEnvironmentVariableIsSet("QTEST_PAUSE_ON_CRASH")) {
                 writeToStderr("Pausing process ", asyncSafeToString(getpid()),
                        " for debugging\n");
@@ -2079,6 +2097,7 @@ int QTest::qRun()
 #endif
     {
         QScopedPointer<FatalSignalHandler> handler;
+        prepareStackTrace();
         if (!noCrashHandler)
             handler.reset(new FatalSignalHandler);
 
