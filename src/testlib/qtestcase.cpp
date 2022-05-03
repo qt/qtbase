@@ -82,11 +82,15 @@
 #include <errno.h>
 #include <signal.h>
 #include <time.h>
+#include <sys/mman.h>
 #include <sys/uio.h>
 #include <sys/wait.h>
 #include <unistd.h>
 # if !defined(Q_OS_INTEGRITY)
 #  include <sys/resource.h>
+# endif
+# ifndef SIGSTKSZ
+#  define SIGSTKSZ          0       /* we have code to set the minimum */
 # endif
 # ifndef SA_RESETHAND
 #  define SA_RESETHAND      0
@@ -1865,33 +1869,13 @@ public:
         oldActions().fill(act);
 
         // Remove the handler after it is invoked.
-        act.sa_flags = SA_RESETHAND;
+        act.sa_flags = SA_RESETHAND | setupAlternateStack();
 
 #  ifdef SA_SIGINFO
         act.sa_flags |= SA_SIGINFO;
         act.sa_sigaction = FatalSignalHandler::actionHandler;
 #  else
         act.sa_handler = FatalSignalHandler::regularHandler;
-#  endif
-
-    // tvOS/watchOS both define SA_ONSTACK (in sys/signal.h) but mark sigaltstack() as
-    // unavailable (__WATCHOS_PROHIBITED __TVOS_PROHIBITED in signal.h)
-#  if defined(SA_ONSTACK) && !defined(Q_OS_TVOS) && !defined(Q_OS_WATCHOS)
-        // Let the signal handlers use an alternate stack
-        // This is necessary if SIGSEGV is to catch a stack overflow
-#    if defined(Q_CC_GNU) && defined(Q_OF_ELF)
-        // Put the alternate stack in the .lbss (large BSS) section so that it doesn't
-        // interfere with normal .bss symbols
-        __attribute__((section(".lbss.altstack"), aligned(4096)))
-#    endif
-        static QVarLengthArray<char, 32 * 1024> alternateStack;
-        alternateStack.resize(qMax(SIGSTKSZ, alternateStack.size()));
-        stack_t stack;
-        stack.ss_flags = 0;
-        stack.ss_size = alternateStack.size();
-        stack.ss_sp = alternateStack.data();
-        sigaltstack(&stack, nullptr);
-        act.sa_flags |= SA_ONSTACK;
 #  endif
 
         // Block all fatal signals in our signal handler so we don't try to close
@@ -1926,6 +1910,8 @@ public:
             if (isOurs(action))
                 sigaction(fatalSignals[i], &act, nullptr);
         }
+
+        freeAlternateStack();
     }
 
 private:
@@ -1935,6 +1921,64 @@ private:
     {
         Q_CONSTINIT static OldActionsArray oldActions {};
         return oldActions;
+    }
+
+    auto alternateStackSize()
+    {
+        struct R { size_t size, pageSize; };
+        static constexpr size_t MinStackSize = 32 * 1024;
+        size_t pageSize = sysconf(_SC_PAGESIZE);
+        size_t size = SIGSTKSZ;
+        if (size < MinStackSize) {
+            size = MinStackSize;
+        } else {
+            // round up to a page
+            size = (size + pageSize - 1) & -pageSize;
+        }
+
+        return R{ size + pageSize, pageSize };
+    }
+
+    int setupAlternateStack()
+    {
+        // tvOS/watchOS both define SA_ONSTACK (in sys/signal.h) but mark sigaltstack() as
+        // unavailable (__WATCHOS_PROHIBITED __TVOS_PROHIBITED in signal.h)
+#  if defined(SA_ONSTACK) && !defined(Q_OS_TVOS) && !defined(Q_OS_WATCHOS)
+        // Let the signal handlers use an alternate stack
+        // This is necessary if SIGSEGV is to catch a stack overflow
+        auto r = alternateStackSize();
+        int flags = MAP_PRIVATE | MAP_ANONYMOUS;
+#    ifdef MAP_STACK
+        flags |= MAP_STACK;
+#    endif
+        alternateStackBase = mmap(nullptr, r.size, PROT_READ | PROT_WRITE, flags, -1, 0);
+        if (alternateStackBase == MAP_FAILED)
+            return 0;
+
+        // mark the bottom page inaccessible, to catch a handler stack overflow
+        (void) mprotect(alternateStackBase, r.pageSize, PROT_NONE);
+
+        stack_t stack;
+        stack.ss_flags = 0;
+        stack.ss_size = r.size - r.pageSize;
+        stack.ss_sp = static_cast<char *>(alternateStackBase) + r.pageSize;
+        sigaltstack(&stack, nullptr);
+        return SA_ONSTACK;
+#  else
+        return 0;
+#  endif
+    }
+
+    void freeAlternateStack()
+    {
+#  if defined(SA_ONSTACK) && !defined(Q_OS_TVOS) && !defined(Q_OS_WATCHOS)
+        if (alternateStackBase != MAP_FAILED) {
+            stack_t stack = {};
+            stack.ss_flags = SS_DISABLE;
+            sigaltstack(&stack, nullptr);
+            munmap(alternateStackBase, alternateStackSize().size);
+        }
+#  endif
     }
 
     static void actionHandler(int signum, siginfo_t * /* info */, void * /* ucontext */)
@@ -1982,6 +2026,8 @@ private:
     {
         actionHandler(signum, nullptr, nullptr);
     }
+
+    void *alternateStackBase = MAP_FAILED;
     static bool pauseOnCrash;
 };
 bool FatalSignalHandler::pauseOnCrash = false;
