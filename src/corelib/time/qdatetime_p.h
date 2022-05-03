@@ -1,4 +1,4 @@
-// Copyright (C) 2021 The Qt Company Ltd.
+// Copyright (C) 2022 The Qt Company Ltd.
 // Copyright (C) 2016 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
@@ -75,6 +75,17 @@ public:
         TimeSpecShift = 4,
     };
 
+    struct ZoneState {
+        qint64 when; // ms after zone/local 1970 start
+        int offset = 0; // seconds
+        DaylightStatus dst = UnknownDaylightTime;
+        bool valid = false;
+
+        ZoneState(qint64 local) : when(local) {}
+        ZoneState(qint64 w, int o, DaylightStatus d, bool v = true)
+            : when(w), offset(o), dst(d), valid(v) {}
+    };
+
     static QDateTime::Data create(QDate toDate, QTime toTime, Qt::TimeSpec toSpec,
                                   int offsetSeconds);
 
@@ -87,8 +98,8 @@ public:
                                         QString *abbreviation = nullptr);
 #endif // timezone
 
-    static bool epochMSecsToLocalTime(qint64 msecs, QDate *localDate, QTime *localTime,
-                                      DaylightStatus *daylightStatus = nullptr);
+    static ZoneState expressUtcAsLocal(qint64 utcMSecs);
+
     static qint64 localMSecsToEpochMSecs(qint64 localMsecs,
                                          DaylightStatus *daylightStatus,
                                          QDate *localDate = nullptr, QTime *localTime = nullptr,
