@@ -49,6 +49,9 @@ private slots:
     void tst_QScrollArea_data();
     void tst_QScrollArea();
 
+    void tst_QTreeView_data();
+    void tst_QTreeView();
+
 private:
     QDir styleSheetDir;
 };
@@ -168,6 +171,50 @@ void tst_Stylesheet::tst_QScrollArea()
 
     makeVisible();
     QBASELINE_TEST(takeSnapshot());
+}
+
+void tst_Stylesheet::tst_QTreeView_data()
+{
+    loadTestFiles();
+}
+
+void tst_Stylesheet::tst_QTreeView()
+{
+    QHBoxLayout *layout = new QHBoxLayout;
+    QTreeWidget *tw = new QTreeWidget();
+    tw->header()->hide();
+    layout->addWidget(tw);
+
+    for (int i = 0; i < 6; ++i) {
+        QTreeWidgetItem *topLevelItem = new QTreeWidgetItem(tw, QStringList{QString("top %1").arg(i)});
+        switch (i) {
+        case 0:
+        case 3:
+            topLevelItem->setCheckState(0, Qt::Unchecked);
+            break;
+        case 1:
+        case 4:
+            topLevelItem->setCheckState(0, Qt::Checked);
+            break;
+        case 2:
+        case 5:
+            topLevelItem->setCheckState(0, Qt::PartiallyChecked);
+            topLevelItem->setExpanded(true);
+            for (int j = 0; j < 2; ++j) {
+                QTreeWidgetItem *childItem = new QTreeWidgetItem(topLevelItem, QStringList{QString("child %1").arg(j)});
+                childItem->setCheckState(0, j % 2 ? Qt::Unchecked : Qt::Checked);
+            }
+            break;
+        }
+        topLevelItem->setDisabled(i > 2);
+    }
+    testWindow()->setLayout(layout);
+    tw->setRootIsDecorated(true);
+    makeVisible();
+
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "rootDecorated");
+    tw->setRootIsDecorated(false);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "rootNotDecorated");
 }
 
 #define main _realmain
