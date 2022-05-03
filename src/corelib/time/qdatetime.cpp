@@ -2692,30 +2692,29 @@ static bool qt_localtime(qint64 msecsSinceEpoch, QDate *localDate, QTime *localT
     }
 }
 
-// Converts an msecs value into a date and time
+// Converts milliseconds since the start of 1970 into a date and/or time:
+static qint64 msecsToJulianDay(qint64 msecs)
+{
+    return JULIAN_DAY_FOR_EPOCH + QRoundingDown::qDiv(msecs, MSECS_PER_DAY);
+}
+
+static QDate msecsToDate(qint64 msecs)
+{
+    return QDate::fromJulianDay(msecsToJulianDay(msecs));
+}
+
+static QTime msecsToTime(qint64 msecs)
+{
+    return QTime::fromMSecsSinceStartOfDay(QRoundingDown::qMod(msecs, MSECS_PER_DAY));
+}
+
 static void msecsToTime(qint64 msecs, QDate *date, QTime *time)
 {
-    qint64 jd = JULIAN_DAY_FOR_EPOCH;
-    qint64 ds = 0;
-
-    if (msecs >= MSECS_PER_DAY || msecs <= -MSECS_PER_DAY) {
-        jd += msecs / MSECS_PER_DAY;
-        msecs %= MSECS_PER_DAY;
-    }
-
-    if (msecs < 0) {
-        ds = MSECS_PER_DAY - msecs - 1;
-        jd -= ds / MSECS_PER_DAY;
-        ds = ds % MSECS_PER_DAY;
-        ds = MSECS_PER_DAY - ds - 1;
-    } else {
-        ds = msecs;
-    }
-
+    qint64 days = QRoundingDown::qDiv(msecs, MSECS_PER_DAY);
     if (date)
-        *date = QDate::fromJulianDay(jd);
+        *date = QDate::fromJulianDay(JULIAN_DAY_FOR_EPOCH + days);
     if (time)
-        *time = QTime::fromMSecsSinceStartOfDay(ds);
+        *time = QTime::fromMSecsSinceStartOfDay(msecs - days * MSECS_PER_DAY);
 }
 
 // Converts a date/time value into msecs
@@ -3790,9 +3789,7 @@ QDate QDateTime::date() const
     auto status = getStatus(d);
     if (!status.testFlag(QDateTimePrivate::ValidDate))
         return QDate();
-    QDate dt;
-    msecsToTime(getMSecs(d), &dt, nullptr);
-    return dt;
+    return msecsToDate(getMSecs(d));
 }
 
 /*!
@@ -3806,9 +3803,7 @@ QTime QDateTime::time() const
     auto status = getStatus(d);
     if (!status.testFlag(QDateTimePrivate::ValidTime))
         return QTime();
-    QTime tm;
-    msecsToTime(getMSecs(d), nullptr, &tm);
-    return tm;
+    return msecsToTime(getMSecs(d));
 }
 
 /*!
