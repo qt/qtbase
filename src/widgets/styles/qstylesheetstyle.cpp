@@ -4368,13 +4368,37 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                                                            vopt->state & QStyle::State_Selected ? QPalette::Highlight : QPalette::Base);
                 QWindowsStyle::drawControl(ce, &optCopy, p, w);
             } else {
+                p->save();
                 if (hasStyleRule(w, PseudoElement_Indicator)) {
-                    subRule.configurePalette(&optCopy.palette, vopt->state & QStyle::State_Selected ? QPalette::HighlightedText : QPalette::Text,
-                                                            vopt->state & QStyle::State_Selected ? QPalette::Highlight : QPalette::Base);
-                } else {
-                    subRule.configurePalette(&optCopy.palette, QPalette::Text, QPalette::NoRole);
+                    // there is a rule for the indicator, but no rule for the item itself (otherwise
+                    // the previous path would have been taken); only draw the indicator using the
+                    // rule (via QWindows/QCommonStyle), then let the base style handle the rest.
+                    QStyleOptionViewItem optIndicator(*vopt);
+                    subRule.configurePalette(&optIndicator.palette,
+                                            vopt->state & QStyle::State_Selected
+                                                        ? QPalette::HighlightedText
+                                                        : QPalette::Text,
+                                            vopt->state & QStyle::State_Selected
+                                                        ? QPalette::Highlight
+                                                        : QPalette::Base);
+                    // only draw the indicator; no text or background
+                    optIndicator.backgroundBrush = Qt::NoBrush; // no background
+                    optIndicator.text.clear();
+                    QWindowsStyle::drawControl(ce, &optIndicator, p, w);
+                    // Now draw text, background, and highlight, but not the indicator  with the
+                    // base style. Since we can't turn off HasCheckIndicator to prevent the base
+                    // style from drawing the check indicator again (it would change how the item
+                    // gets laid out) we have to clip the indicator that's already been painted.
+                    const QRect checkRect = subElementRect(QStyle::SE_ItemViewItemCheckIndicator,
+                                                           &optIndicator, w);
+                    const QRegion clipRegion = QRegion(p->hasClipping() ? p->clipRegion()
+                                                                        : QRegion(optIndicator.rect))
+                                             - checkRect;
+                    p->setClipRegion(clipRegion);
                 }
+                subRule.configurePalette(&optCopy.palette, QPalette::Text, QPalette::NoRole);
                 baseStyle()->drawControl(ce, &optCopy, p, w);
+                p->restore();
             }
             return;
         }

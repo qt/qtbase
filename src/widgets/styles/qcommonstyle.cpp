@@ -2268,7 +2268,9 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
     case CE_ItemViewItem:
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             p->save();
-            p->setClipRect(opt->rect);
+            // the style calling this might want to clip, so respect any region already set
+            const QRegion clipRegion = p->hasClipping() ? (p->clipRegion() & opt->rect) : opt->rect;
+            p->setClipRegion(clipRegion);
 
             QRect checkRect = proxy()->subElementRect(SE_ItemViewItemCheckIndicator, vopt, widget);
             QRect iconRect = proxy()->subElementRect(SE_ItemViewItemDecoration, vopt, widget);

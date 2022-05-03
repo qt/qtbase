@@ -1,0 +1,18 @@
+QTreeWidget::indicator:indeterminate {
+    background: red
+}
+QTreeWidget::indicator:indeterminate:disabled {
+    background: pink
+}
+QTreeWidget::indicator:checked {
+    background: green
+}
+QTreeWidget::indicator:checked:disabled {
+    background: lightgreen
+}
+QTreeWidget::indicator:unchecked {
+    background: blue
+}
+QTreeWidget::indicator:unchecked:disabled {
+    background: lightblue
+};
