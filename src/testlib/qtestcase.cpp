@@ -1670,6 +1670,9 @@ void TestMethods::invokeTests(QObject *testObject) const
     QSignalDumper::endDump();
 }
 
+} // namespace QTest
+
+namespace {
 #if defined(Q_OS_WIN)
 
 // Helper class for resolving symbol names by dynamically loading "dbghelp.dll".
@@ -1970,7 +1973,7 @@ private:
 bool FatalSignalHandler::pauseOnCrash = false;
 #endif // defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
 
-} // namespace
+} // unnamed namespace
 
 static void initEnvironment()
 {
