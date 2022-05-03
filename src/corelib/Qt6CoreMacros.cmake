@@ -930,10 +930,26 @@ function(_qt_internal_set_xcode_product_bundle_identifier target)
     endif()
 endfunction()
 
+function(_qt_internal_set_xcode_targeted_device_family target)
+    if(NOT CMAKE_XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY
+            AND NOT QT_NO_SET_XCODE_TARGETED_DEVICE_FAMILY)
+        get_target_property(existing_device_family
+            "${target}" XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY)
+        if(NOT existing_device_family)
+            set(device_family_iphone_and_ipad "1,2")
+            set_target_properties("${target}"
+                                  PROPERTIES
+                                  XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY
+                                  "${device_family_iphone_and_ipad}")
+        endif()
+    endif()
+endfunction()
+
 function(_qt_internal_finalize_ios_app target)
     _qt_internal_set_xcode_development_team_id("${target}")
     _qt_internal_set_xcode_bundle_identifier("${target}")
     _qt_internal_set_xcode_product_bundle_identifier("${target}")
+    _qt_internal_set_xcode_targeted_device_family("${target}")
 
     _qt_internal_handle_ios_launch_screen("${target}")
     _qt_internal_set_placeholder_apple_bundle_version("${target}")
