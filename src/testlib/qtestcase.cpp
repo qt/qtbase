@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2022 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2022 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -82,12 +82,20 @@
 #include <QtTest/private/qappletestlogger_p.h>
 #endif
 
-#include <cmath>
-#include <numeric>
 #include <algorithm>
-#include <mutex>
+#include <array>
+#if !defined(Q_OS_INTEGRITY) || __GHS_VERSION_NUMBER > 202014
+#  include <charconv>
+#else
+// Broken implementation, causes link failures just by #include'ing!
+#  undef __cpp_lib_to_chars     // in case <version> was included
+#endif
 #include <chrono>
+#include <cmath>
+#include <limits>
 #include <memory>
+#include <mutex>
+#include <numeric>
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -108,6 +116,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <time.h>
+#include <sys/uio.h>
 #include <unistd.h>
 # if !defined(Q_OS_INTEGRITY)
 #  include <sys/resource.h>
@@ -129,6 +138,86 @@ using namespace Qt::StringLiterals;
 
 using QtMiscUtils::toHexUpper;
 using QtMiscUtils::fromHex;
+
+#ifdef Q_OS_UNIX
+namespace {
+static struct iovec IoVec(struct iovec vec)
+{
+    return vec;
+}
+static struct iovec IoVec(const char *str)
+{
+    struct iovec r = {};
+    r.iov_base = const_cast<char *>(str);
+    r.iov_len = strlen(str);
+    return r;
+}
+
+template <typename... Args> static void writeToStderr(Args &&... args)
+{
+    struct iovec vec[] = { IoVec(std::forward<Args>(args))... };
+    ::writev(STDERR_FILENO, vec, std::size(vec));
+}
+
+// async-signal-safe conversion from int to string
+struct AsyncSafeIntBuffer
+{
+    // digits10 + 1 for all possible digits
+    // +1 for the sign
+    // +1 for the terminating null
+    static constexpr int Digits10 = std::numeric_limits<int>::digits10 + 3;
+    std::array<char, Digits10> array;
+    constexpr AsyncSafeIntBuffer() : array{} {}     // initializes array
+    AsyncSafeIntBuffer(Qt::Initialization) {}       // leaves array uninitialized
+};
+
+static struct iovec asyncSafeToString(int n, AsyncSafeIntBuffer &&result = Qt::Uninitialized)
+{
+    char *ptr = result.array.data();
+    if (false) {
+#ifdef __cpp_lib_to_chars
+    } else if (auto r = std::to_chars(ptr, ptr + result.array.size(), n, 10); r.ec == std::errc{}) {
+        ptr = r.ptr;
+#endif
+    } else {
+        // handle the sign
+        if (n < 0) {
+            *ptr++ = '-';
+            n = -n;
+        }
+
+        // find the highest power of the base that is less than this number
+        static constexpr int StartingDivider = ([]() {
+            int divider = 1;
+            for (int i = 0; i < std::numeric_limits<int>::digits10; ++i)
+                divider *= 10;
+            return divider;
+        }());
+        int divider = StartingDivider;
+        while (divider && n < divider)
+            divider /= 10;
+
+        // now convert to string
+        while (divider > 1) {
+            int quot = n / divider;
+            n = n % divider;
+            divider /= 10;
+            *ptr++ = quot + '0';
+        }
+        *ptr++ = n + '0';
+    }
+
+#ifndef QT_NO_DEBUG
+    // this isn't necessary, it just helps in the debugger
+    *ptr = '\0';
+#endif
+    struct iovec r;
+    r.iov_base = result.array.data();
+    r.iov_len = ptr - result.array.data();
+    return r;
+};
+}
+#endif // Q_OS_UNIX
 
 static bool debuggerPresent()
 {
@@ -1870,13 +1959,16 @@ private:
         if (signum != SIGINT) {
             stackTrace();
             if (qEnvironmentVariableIsSet("QTEST_PAUSE_ON_CRASH")) {
-                fprintf(stderr, "Pausing process %d for debugging\n", getpid());
+                writeToStderr("Pausing process ", asyncSafeToString(getpid()),
+                       " for debugging\n");
                 raise(SIGSTOP);
             }
         }
-        qFatal("Received signal %d\n"
-               "         Function time: %dms Total time: %dms",
-               signum, msecsFunctionTime, msecsTotalTime);
+
+        writeToStderr("Received signal ", asyncSafeToString(signum),
+               "\n         Function time: ", asyncSafeToString(msecsFunctionTime),
+               "ms Total time: ", asyncSafeToString(msecsTotalTime), "ms\n");
+        std::abort();
 #  if defined(Q_OS_INTEGRITY)
         {
             struct sigaction act;
