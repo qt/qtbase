@@ -1560,13 +1560,13 @@ void QWindowsWindow::initialize()
     if (w->type() != Qt::Desktop) {
         const Qt::WindowState state = w->windowState();
         const QRect obtainedGeometry(creationContext->obtainedPos, creationContext->obtainedSize);
+        QPlatformScreen *obtainedScreen = screenForGeometry(obtainedGeometry);
+        if (obtainedScreen && screen() != obtainedScreen)
+            QWindowSystemInterface::handleWindowScreenChanged<QWindowSystemInterface::SynchronousDelivery>(w, obtainedScreen->screen());
         if (state != Qt::WindowMaximized && state != Qt::WindowFullScreen
             && creationContext->requestedGeometryIn != obtainedGeometry) {
             QWindowSystemInterface::handleGeometryChange<QWindowSystemInterface::SynchronousDelivery>(w, obtainedGeometry);
         }
-        QPlatformScreen *obtainedScreen = screenForGeometry(obtainedGeometry);
-        if (obtainedScreen && screen() != obtainedScreen)
-            QWindowSystemInterface::handleWindowScreenChanged<QWindowSystemInterface::SynchronousDelivery>(w, obtainedScreen->screen());
     }
     QWindowsWindow::setSavedDpi(GetDpiForWindow(handle()));
 }
