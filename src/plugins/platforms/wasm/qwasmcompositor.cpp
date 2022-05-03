@@ -1341,6 +1341,7 @@ void QWasmCompositor::enterWindow(QWindow *window, const QPoint &localPoint, con
 }
 bool QWasmCompositor::processMouseEnter(const EmscriptenMouseEvent *mouseEvent)
 {
+    Q_UNUSED(mouseEvent)
     // mouse has entered the canvas area
     mouseInCanvas = true;
     return true;
