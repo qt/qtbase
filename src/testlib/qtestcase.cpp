@@ -1782,6 +1782,7 @@ public:
         SetErrorMode(SetErrorMode(0) | SEM_NOGPFAULTERRORBOX);
         SetUnhandledExceptionFilter(windowsFaultHandler);
 #elif defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
+        pauseOnCrash = qEnvironmentVariableIsSet("QTEST_PAUSE_ON_CRASH");
         sigemptyset(&handledSignals);
 
         const int fatalSignals[] = {
@@ -1940,7 +1941,7 @@ private:
         const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
         if (signum != SIGINT) {
             generateStackTrace();
-            if (qEnvironmentVariableIsSet("QTEST_PAUSE_ON_CRASH")) {
+            if (pauseOnCrash) {
                 writeToStderr("Pausing process ", asyncSafeToString(getpid()),
                        " for debugging\n");
                 raise(SIGSTOP);
@@ -1962,8 +1963,12 @@ private:
     }
 
     sigset_t handledSignals;
+    static bool pauseOnCrash;
 #endif // defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
 };
+#if defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
+bool FatalSignalHandler::pauseOnCrash = false;
+#endif // defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
 
 } // namespace
 
