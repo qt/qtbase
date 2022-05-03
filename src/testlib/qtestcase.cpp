@@ -1845,9 +1845,9 @@ public:
         memset(&act, 0, sizeof(act));
 #  ifdef SA_SIGINFO
         act.sa_flags |= SA_SIGINFO;
-        act.sa_sigaction = FatalSignalHandler::signal;
+        act.sa_sigaction = FatalSignalHandler::actionHandler;
 #  else
-        act.sa_handler = FatalSignalHandler::signal;
+        act.sa_handler = FatalSignalHandler::regularHandler;
 #  endif
 
         // Remove the handler after it is invoked.
@@ -1916,9 +1916,9 @@ public:
 
         auto isOurs = [](const struct sigaction &old) {
 #  ifdef SA_SIGINFO
-            return (old.sa_flags & SA_SIGINFO) && old.sa_sigaction == FatalSignalHandler::signal;
+            return (old.sa_flags & SA_SIGINFO) && old.sa_sigaction == FatalSignalHandler::actionHandler;
 #  else
-            return old.sa_handler == FatalSignalHandler::signal;
+            return old.sa_handler == FatalSignalHandler::regularHandler;
 #  endif
         };
         struct sigaction action;
@@ -1937,11 +1937,7 @@ public:
 private:
     Q_DISABLE_COPY_MOVE(FatalSignalHandler)
 
-#  ifdef SA_SIGINFO
-    static void signal(int signum, siginfo_t * /* info */, void * /* ucontext */)
-#  else
-    static void signal(int signum)
-#endif
+    static void actionHandler(int signum, siginfo_t * /* info */, void * /* ucontext */)
     {
         const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
         const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
@@ -1966,6 +1962,11 @@ private:
             sigaction(signum, &act, NULL);
         }
 #  endif
+    }
+
+    [[maybe_unused]] static void regularHandler(int signum)
+    {
+        actionHandler(signum, nullptr, nullptr);
     }
 
     sigset_t handledSignals;
