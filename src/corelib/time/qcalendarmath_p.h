@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -62,10 +62,17 @@ namespace QRoundingDown {
   From C++11 onwards, integer division is defined to round towards zero, so we
   can rely on that when implementing this. This is only used with denominator b
   > 0, so we only have to treat negative numerator, a, specially.
+
+  If a is a multiple of b, adding 1 before and subtracting it after dividing by
+  b gets us to where we should be (albeit by an eccentric path), since the
+  adding caused rounding up, undone by the subtracting. Otherwise, adding 1
+  doesn't change the result of dividing by b; and we want one less than that
+  result. This is equivalent to subtracting b - 1 and simply dividing, except
+  when that subtraction would underflow.
 */
 
 template<typename Int> constexpr Int qDiv(Int a, unsigned b)
-{ return (a - (a < 0 ? int(b - 1) : 0)) / int(b); }
+{ return a < 0 ? (a + 1) / int(b) - 1 : a / int(b); }
 
 template<typename Int> constexpr Int qMod(Int a, unsigned b)
 { return a - qDiv(a, b) * b; }
