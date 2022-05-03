@@ -75,6 +75,7 @@ private slots:
     void testOwnership();
     void testBehindTheScenesDeletion();
     void testUnparenting();
+    void testReparenting();
     void testUnparentReparent();
     void testActivation();
     void testAncestorChange();
@@ -231,12 +232,12 @@ void tst_QWindowContainer::testActivation()
 
 void tst_QWindowContainer::testUnparenting()
 {
-    QWindow *window = new QWindow();
+    QPointer<QWindow> window(new QWindow());
     QScopedPointer<QWidget> container(QWidget::createWindowContainer(window));
     container->setWindowTitle(QTest::currentTestFunction());
     container->setGeometry(m_availableGeometry.x() + 100, m_availableGeometry.y() + 100, 200, 100);
 
-    window->setParent(0);
+    window->setParent(nullptr);
 
     container->show();
 
@@ -244,6 +245,26 @@ void tst_QWindowContainer::testUnparenting()
 
     // Window should not be made visible by container..
     QVERIFY(!window->isVisible());
+
+    container.reset();
+    QVERIFY(window);
+    delete window;
+}
+
+void tst_QWindowContainer::testReparenting()
+{
+    QPointer<QWindow> window1(new QWindow());
+    QScopedPointer<QWindow> window2(new QWindow());
+    QScopedPointer<QWidget> container(QWidget::createWindowContainer(window1));
+
+    window1->setParent(window2.data());
+
+    // Not deleted with container
+    container.reset();
+    QVERIFY(window1);
+    // but deleted with new parent
+    window2.reset();
+    QVERIFY(!window1);
 }
 
 void tst_QWindowContainer::testUnparentReparent()
