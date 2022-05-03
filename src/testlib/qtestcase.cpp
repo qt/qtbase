@@ -286,20 +286,11 @@ static void prepareStackTrace()
     // prepare the command to be run (our PID shouldn't change!)
 #  ifdef Q_OS_LINUX
     qsnprintf(stackTraceCommand.data(), stackTraceCommand.size(),
-                        "gdb --pid %d 1>&2 2>/dev/null <<EOF\n"
-                        "set prompt\n"
-                        "set height 0\n"
-                        "thread apply all where full\n"
-                        "detach\n"
-                        "quit\n"
-                        "EOF\n",
+              "gdb --nx --batch --pid %d -ex 'thread apply all bt' 1>&2",
               static_cast<int>(getpid()));
 #  elif defined(Q_OS_MACOS)
     qsnprintf(stackTraceCommand.data(), stackTraceCommand.size(),
-                        "lldb -p %d 1>&2 2>/dev/null <<EOF\n"
-                        "bt all\n"
-                        "quit\n"
-                        "EOF\n",
+              "lldb --batch --no-lldbinit -p %d -o 'bt all' 1>&2",
               static_cast<int>(getpid()));
 #  endif
 }
