@@ -732,7 +732,7 @@ QRegion QGraphicsViewPrivate::rubberBandRegion(const QWidget *widget, const QRec
     option.shape = QRubberBand::Rectangle;
 
     QRegion tmp;
-    tmp += rect;
+    tmp += rect.adjusted(-1, -1, 1, 1);
     if (widget->style()->styleHint(QStyle::SH_RubberBand_Mask, &option, widget, &mask))
         tmp &= mask.region;
     return tmp;
