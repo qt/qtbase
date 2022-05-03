@@ -32,6 +32,8 @@ set(qt_framework_search_path_inserted FALSE)
 foreach(line ${lines})
     if(line MATCHES "^RCC_OBJECTS = (.*)")
         set(rcc_objects ${CMAKE_MATCH_1})
+    elseif(line MATCHES "^QMAKE_PRL_TARGET_PATH_FOR_CMAKE = (.*)")
+        set(target_library_path "${CMAKE_MATCH_1}")
     elseif(line MATCHES "^QMAKE_PRL_LIBS_FOR_CMAKE = (.*)")
         unset(adjusted_libs)
         foreach(lib ${CMAKE_MATCH_1})
@@ -74,7 +76,22 @@ foreach(line ${lines})
             endif()
         endforeach()
         if(rcc_objects)
-            list(PREPEND adjusted_libs ${rcc_objects})
+            set(libs_to_prepend ${rcc_objects})
+
+            # By default, when qmake processes prl files, it first puts the processed library
+            # on the link line, followed by all values specified in QMAKE_PRL_LIBS.
+            # Because we add the resource object files into QMAKE_PRL_LIBS, this means they will
+            # also appear on the link line after the library.
+            # This causes issues on Linux because the linker may discard unreferenced symbols from
+            # the library, which are referenced by the resource object files.
+            # We can't control the placement of the library in relation to QMAKE_PRL_LIBS, but we
+            # can add the library one more time in QMAKE_PRL_LIBS, after the object files.
+            # qmake's UnixMakefileGenerator::findLibraries then takes care of deduplication, which
+            # keeps the last occurrence of the library on the link line, the one after the object
+            # files.
+            list(APPEND libs_to_prepend "${target_library_path}")
+
+            list(PREPEND adjusted_libs ${libs_to_prepend})
         endif()
         list(JOIN adjusted_libs " " adjusted_libs_for_qmake)
         string(APPEND content "QMAKE_PRL_LIBS = ${adjusted_libs_for_qmake}\n")
