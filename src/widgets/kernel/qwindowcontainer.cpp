@@ -191,6 +191,7 @@ QWindowContainer::QWindowContainer(QWindow *embeddedWindow, QWidget *parent, Qt:
     d->fakeParent.setObjectName(windowName + "ContainerFakeParent"_L1);
 
     d->window->setParent(&d->fakeParent);
+    d->window->parent()->installEventFilter(this);
     d->window->setFlag(Qt::SubWindow);
 
     setAcceptDrops(true);
@@ -243,6 +244,26 @@ void QWindowContainer::focusWindowChanged(QWindow *focusWindow)
     \internal
  */
 
+bool QWindowContainer::eventFilter(QObject *o, QEvent *e)
+{
+    Q_D(QWindowContainer);
+    if (!d->window)
+        return false;
+
+    if (e->type() == QEvent::ChildRemoved) {
+        QChildEvent *ce = static_cast<QChildEvent *>(e);
+        if (ce->child() == d->window) {
+            o->removeEventFilter(this);
+            d->window = nullptr;
+        }
+    }
+    return false;
+}
+
+/*!
+    \internal
+ */
+
 bool QWindowContainer::event(QEvent *e)
 {
     Q_D(QWindowContainer);
@@ -251,12 +272,6 @@ bool QWindowContainer::event(QEvent *e)
 
     QEvent::Type type = e->type();
     switch (type) {
-    case QEvent::ChildRemoved: {
-        QChildEvent *ce = static_cast<QChildEvent *>(e);
-        if (ce->child() == d->window)
-            d->window = nullptr;
-        break;
-    }
     // The only thing we are interested in is making sure our sizes stay
     // in sync, so do a catch-all case.
     case QEvent::Resize:
@@ -271,10 +286,13 @@ bool QWindowContainer::event(QEvent *e)
     case QEvent::Show:
         d->updateUsesNativeWidgets();
         if (d->isStillAnOrphan()) {
+            d->window->parent()->removeEventFilter(this);
             d->window->setParent(d->usesNativeWidgets
                                  ? windowHandle()
                                  : window()->windowHandle());
             d->fakeParent.destroy();
+            if (d->window->parent())
+                d->window->parent()->installEventFilter(this);
         }
         if (d->window->parent()) {
             d->markParentChain();
@@ -345,7 +363,10 @@ static void qwindowcontainer_traverse(QWidget *parent, qwindowcontainer_traverse
 void QWindowContainer::toplevelAboutToBeDestroyed(QWidget *parent)
 {
     if (QWindowContainerPrivate *d = QWindowContainerPrivate::get(parent)) {
+        if (d->window->parent())
+            d->window->parent()->removeEventFilter(parent);
         d->window->setParent(&d->fakeParent);
+        d->window->parent()->installEventFilter(parent);
     }
     qwindowcontainer_traverse(parent, toplevelAboutToBeDestroyed);
 }
@@ -363,7 +384,9 @@ void QWindowContainer::parentWasChanged(QWidget *parent)
                 tld->createTLSysExtra();
                 Q_ASSERT(toplevel->windowHandle());
             }
+            d->window->parent()->removeEventFilter(parent);
             d->window->setParent(toplevel->windowHandle());
+            toplevel->windowHandle()->installEventFilter(parent);
             d->fakeParent.destroy();
             d->updateGeometry();
         }
