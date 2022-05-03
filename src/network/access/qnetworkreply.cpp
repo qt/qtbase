@@ -298,7 +298,7 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     \fn void QNetworkReply::redirected(const QUrl &url)
     \since 5.6
 
-    This signal is emitted if the QNetworkRequest::ManualRedirectPolicy was
+    This signal is emitted if the QNetworkRequest::ManualRedirectPolicy was not
     set in the request and the server responded with a 3xx status (specifically
     301, 302, 303, 305, 307 or 308 status code) with a valid url in the location
     header, indicating a HTTP redirect. The \a url parameter contains the new
