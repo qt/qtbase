@@ -1159,6 +1159,11 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_mimetype
         mimetypes/qmimetypeparser.cpp mimetypes/qmimetypeparser_p.h
 )
 
+qt_internal_extend_target(Core CONDITION QT_FEATURE_permissions
+    SOURCES
+        kernel/qpermissions.cpp kernel/qpermissions.h kernel/qpermissions_p.h
+)
+
 #### Keys ignored in scope 171:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_mimetype:
 # MIME_DATABASE = "mimetypes/mime/packages/freedesktop.org.xml"
 # OTHER_FILES = "$$MIME_DATABASE"

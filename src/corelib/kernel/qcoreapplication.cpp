@@ -42,6 +42,10 @@
 #include <private/qlocking_p.h>
 #include <private/qhooks_p.h>
 
+#if QT_CONFIG(permissions)
+#include <private/qpermissions_p.h>
+#endif
+
 #ifndef QT_NO_QOBJECT
 #if defined(Q_OS_UNIX)
 # if defined(Q_OS_DARWIN)
@@ -2658,6 +2662,125 @@ QString QCoreApplication::applicationVersion()
 {
     return coreappdata() ? coreappdata()->applicationVersion : QString();
 }
+
+#if QT_CONFIG(permissions) || defined(Q_QDOC)
+
+/*!
+    Checks the status of the given \a permission
+
+    If the result is Qt::PermissionStatus::Undetermined then permission should be
+    requested via requestPermission() to determine the user's intent.
+
+    \since 6.5
+    \sa requestPermission(), {Application Permissions}
+*/
+Qt::PermissionStatus QCoreApplication::checkPermission(const QPermission &permission)
+{
+    return QPermissions::Private::checkPermission(permission);
+}
+
+/*!
+    \fn template<typename Functor> void QCoreApplication::requestPermission(
+        const QPermission &permission, Functor functor)
+
+    Requests the given \a permission.
+
+    \include permissions.qdocinc requestPermission-functor
+
+    The \a functor can be a free-standing or static member function:
+
+    \code
+    qApp->requestPermission(QCameraPermission{}, &permissionUpdated);
+    \endcode
+
+    or a lambda:
+
+    \code
+    qApp->requestPermission(QCameraPermission{}, [](const QPermission &permission) {
+    });
+    \endcode
+
+    \include permissions.qdocinc requestPermission-postamble
+
+    \since 6.5
+    \sa checkPermission(), {Application Permissions}
+*/
+
+/*!
+    \fn template<typename Functor> void QCoreApplication::requestPermission(
+        const QPermission &permission, const QObject *context,
+        Functor functor)
+
+    Requests the given \a permission, in the context of \a context.
+
+    \include permissions.qdocinc requestPermission-functor
+
+    The \a functor can be a free-standing or static member function:
+
+    \code
+    qApp->requestPermission(QCameraPermission{}, context, &permissionUpdated);
+    \endcode
+
+    a lambda:
+
+    \code
+    qApp->requestPermission(QCameraPermission{}, context, [](const QPermission &permission) {
+    });
+    \endcode
+
+    or a slot in the \a context object:
+
+    \code
+    qApp->requestPermission(QCameraPermission{}, this, &CamerWidget::permissionUpdated);
+    \endcode
+
+    If \a context is destroyed before the request completes,
+    the \a functor will not be called.
+
+    \include permissions.qdocinc requestPermission-postamble
+
+    \since 6.5
+    \overload
+    \sa checkPermission(), {Application Permissions}
+*/
+
+/*!
+    \internal
+
+    Called by the various requestPermission overloads to perform the request.
+
+    Calls the functor encapsulated in the \a slotObj in the given \a context
+    (which may be \c nullptr).
+*/
+void QCoreApplication::requestPermission(const QPermission &requestedPermission,
+    QtPrivate::QSlotObjectBase *slotObj, const QObject *context)
+{
+    if (QThread::currentThread() != QCoreApplicationPrivate::mainThread()) {
+        qWarning(lcPermissions, "Permissions can only be requested from the GUI (main) thread");
+        return;
+    }
+
+    Q_ASSERT(slotObj);
+
+    QPermissions::Private::requestPermission(requestedPermission, [=](Qt::PermissionStatus status) {
+        Q_ASSERT_X(status != Qt::PermissionStatus::Undetermined, "QPermission",
+            "QCoreApplication::requestPermission() should never return Undetermined");
+        if (status == Qt::PermissionStatus::Undetermined)
+            status = Qt::PermissionStatus::Denied;
+
+        if (QCoreApplication::self) {
+            QPermission permission = requestedPermission;
+            permission.m_status = status;
+
+            void *argv[] = { nullptr, &permission };
+            slotObj->call(const_cast<QObject*>(context), argv);
+        }
+
+        slotObj->destroyIfLastRef();
+    });
+}
+
+#endif // QT_CONFIG(permissions)
 
 #if QT_CONFIG(library)
 

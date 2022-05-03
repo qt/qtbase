@@ -1,0 +1,51 @@
+// Copyright (C) 2022 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+//! [requestPermission-functor]
+    When the request is ready, \a functor will be called as
+    \c {functor(const QPermission &permission)}, with
+    \c permission describing the result of the request.
+//! [requestPermission-functor]
+
+//! [requestPermission-postamble]
+    If the user explicitly grants the application the requested \a permission,
+    or the \a permission is known to not require user authorization on the given
+    platform, the status will be Qt::PermissionStatus::Granted.
+
+    If the user explicitly denies the application the requested \a permission,
+    or the \a permission is known to not be accessible or applicable to applications
+    on the given platform, the status will be Qt::PermissionStatus::Denied.
+
+    The result of a request will never be Qt::PermissionStatus::Undetermined.
+
+    \note Permissions can only be requested from the main thread.
+//! [requestPermission-postamble]
+
+//! [permission-metadata]
+    \inmodule QtCore
+    \inheaderfile QPermissions
+    \ingroup permissions
+    \since 6.5
+    \sa QPermission,
+        QCoreApplication::requestPermission(),
+        QCoreApplication::checkPermission(),
+        {Application Permissions}
+//! [permission-metadata]
+
+//! [begin-usage-declarations]
+    To request this permission at runtime, the following platform
+    specific usage declarations have to be made at build time:
+
+    \table
+      \header
+        \li Platform
+        \li Type
+        \li
+//! [begin-usage-declarations]
+
+//! [end-usage-declarations]
+    \endtable
+
+    Please see the individual usage declaration types for how
+    to add them to your project.
+//! [end-usage-declarations]

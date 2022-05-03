@@ -1708,6 +1708,12 @@ namespace Qt {
         PassThrough
     };
 
+    enum class PermissionStatus {
+        Undetermined,
+        Granted,
+        Denied,
+    };
+
     // QTBUG-48701
     enum ReturnByValueConstant { ReturnByValue }; // ### Qt 7: Remove me
 
@@ -1803,6 +1809,7 @@ namespace Qt {
     Q_ENUM_NS(ChecksumType)
     Q_ENUM_NS(HighDpiScaleFactorRoundingPolicy)
     Q_ENUM_NS(TabFocusBehavior)
+    Q_ENUM_NS(PermissionStatus)
 #endif // Q_DOC
 
 }

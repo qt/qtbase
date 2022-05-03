@@ -3296,6 +3296,31 @@
 */
 
 /*!
+    \enum Qt::PermissionStatus
+
+    This enum describes the possible statuses of a permissions.
+
+    \value Undetermined
+        The permission status is not yet known. Permission should be requested
+        via QCoreApplication::requestPermission() to determine the actual status.
+        This status will never be the result of requesting a permission.
+
+    \value Granted
+        The user has explicitly granted the application the permission,
+        or the permission is known to not require user authorization on
+        the given platform.
+
+    \value Denied
+        The user has explicitly denied the application the requested permission,
+        or the permission is known to not be accessible or applicable to applications
+        on the given platform.
+
+    \since 6.5
+    \sa QCoreApplication::requestPermission(), QCoreApplication::checkPermission(),
+        {Application Permissions}
+*/
+
+/*!
   \enum Qt::ReturnByValueConstant
   \since 5.15
 

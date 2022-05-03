@@ -968,6 +968,12 @@ qt_feature("poll-exit-on-error" PUBLIC
     PURPOSE "Exit on error instead of just printing the error code and continue."
 )
 qt_feature_definition("poll-exit-on-error" "QT_POLL_EXIT_ON_ERROR")
+qt_feature("permissions" PUBLIC
+    SECTION "Utilities"
+    LABEL "Application permissions"
+    PURPOSE "Provides support for requesting user permission to access restricted data or APIs"
+    DISABLE ON
+)
 qt_configure_add_summary_section(NAME "Qt Core")
 qt_configure_add_summary_entry(ARGS "backtrace")
 qt_configure_add_summary_entry(ARGS "doubleconversion")
@@ -998,6 +1004,7 @@ qt_configure_add_summary_entry(
     ARGS "forkfd_pidfd"
     CONDITION LINUX
 )
+qt_configure_add_summary_entry(ARGS "permissions")
 qt_configure_end_summary_section() # end of "Qt Core" section
 qt_configure_add_report_entry(
     TYPE NOTE

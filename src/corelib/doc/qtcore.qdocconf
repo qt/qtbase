@@ -34,7 +34,8 @@ headerdirs  += ..
 
 sourcedirs  += .. \
                 ../../tools/androiddeployqt \
-                ../../android/templates
+                ../../android/templates \
+                src/includes
 
 exampledirs += \
                ../ \
