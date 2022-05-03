@@ -1771,20 +1771,70 @@ DebugSymbolResolver::Symbol DebugSymbolResolver::resolveSymbol(DWORD64 address) 
     return result;
 }
 
-#endif // Q_OS_WIN
-
-class FatalSignalHandler
+class WindowsFaultHandler
 {
 public:
-    FatalSignalHandler()
+    WindowsFaultHandler()
     {
-#if defined(Q_OS_WIN)
 #  if !defined(Q_CC_MINGW)
         _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
 #  endif
         SetErrorMode(SetErrorMode(0) | SEM_NOGPFAULTERRORBOX);
         SetUnhandledExceptionFilter(windowsFaultHandler);
+    }
+
+private:
+    static LONG WINAPI windowsFaultHandler(struct _EXCEPTION_POINTERS *exInfo)
+    {
+        enum { maxStackFrames = 100 };
+        char appName[MAX_PATH];
+        if (!GetModuleFileNameA(NULL, appName, MAX_PATH))
+            appName[0] = 0;
+        const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
+        const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
+        const void *exceptionAddress = exInfo->ExceptionRecord->ExceptionAddress;
+        printf("A crash occurred in %s.\n"
+               "Function time: %dms Total time: %dms\n\n"
+               "Exception address: 0x%p\n"
+               "Exception code   : 0x%lx\n",
+               appName, msecsFunctionTime, msecsTotalTime,
+               exceptionAddress, exInfo->ExceptionRecord->ExceptionCode);
+
+        DebugSymbolResolver resolver(GetCurrentProcess());
+        if (resolver.isValid()) {
+            DebugSymbolResolver::Symbol exceptionSymbol = resolver.resolveSymbol(DWORD64(exceptionAddress));
+            if (exceptionSymbol.name) {
+                printf("Nearby symbol    : %s\n", exceptionSymbol.name);
+                delete [] exceptionSymbol.name;
+            }
+            void *stack[maxStackFrames];
+            fputs("\nStack:\n", stdout);
+            const unsigned frameCount = CaptureStackBackTrace(0, DWORD(maxStackFrames), stack, NULL);
+            for (unsigned f = 0; f < frameCount; ++f)     {
+                DebugSymbolResolver::Symbol symbol = resolver.resolveSymbol(DWORD64(stack[f]));
+                if (symbol.name) {
+                    printf("#%3u: %s() - 0x%p\n", f + 1, symbol.name, (const void *)symbol.address);
+                    delete [] symbol.name;
+                } else {
+                    printf("#%3u: Unable to obtain symbol\n", f + 1);
+                }
+            }
+        }
+
+        fputc('\n', stdout);
+        fflush(stdout);
+
+        return EXCEPTION_EXECUTE_HANDLER;
+    }
+};
+using FatalSignalHandler = WindowsFaultHandler;
+
 #elif defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
+class FatalSignalHandler
+{
+public:
+    FatalSignalHandler()
+    {
         pauseOnCrash = qEnvironmentVariableIsSet("QTEST_PAUSE_ON_CRASH");
         sigemptyset(&handledSignals);
 
@@ -1854,12 +1904,10 @@ public:
             else // Restore non-default handler:
                 sigaction(signal, &oldact, nullptr);
         }
-#endif // defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
     }
 
     ~FatalSignalHandler()
     {
-#if defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
         // Restore the default signal handler in place of ours.
         // If ours has been replaced, leave the replacement alone.
         struct sigaction act;
@@ -1884,56 +1932,9 @@ public:
             if (isOurs(action))
                 sigaction(signum, &act, nullptr);
         }
-#endif
     }
 
 private:
-#if defined(Q_OS_WIN)
-    static LONG WINAPI windowsFaultHandler(struct _EXCEPTION_POINTERS *exInfo)
-    {
-        enum { maxStackFrames = 100 };
-        char appName[MAX_PATH];
-        if (!GetModuleFileNameA(NULL, appName, MAX_PATH))
-            appName[0] = 0;
-        const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
-        const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
-        const void *exceptionAddress = exInfo->ExceptionRecord->ExceptionAddress;
-        printf("A crash occurred in %s.\n"
-               "Function time: %dms Total time: %dms\n\n"
-               "Exception address: 0x%p\n"
-               "Exception code   : 0x%lx\n",
-               appName, msecsFunctionTime, msecsTotalTime,
-               exceptionAddress, exInfo->ExceptionRecord->ExceptionCode);
-
-        DebugSymbolResolver resolver(GetCurrentProcess());
-        if (resolver.isValid()) {
-            DebugSymbolResolver::Symbol exceptionSymbol = resolver.resolveSymbol(DWORD64(exceptionAddress));
-            if (exceptionSymbol.name) {
-                printf("Nearby symbol    : %s\n", exceptionSymbol.name);
-                delete [] exceptionSymbol.name;
-            }
-            void *stack[maxStackFrames];
-            fputs("\nStack:\n", stdout);
-            const unsigned frameCount = CaptureStackBackTrace(0, DWORD(maxStackFrames), stack, NULL);
-            for (unsigned f = 0; f < frameCount; ++f)     {
-                DebugSymbolResolver::Symbol symbol = resolver.resolveSymbol(DWORD64(stack[f]));
-                if (symbol.name) {
-                    printf("#%3u: %s() - 0x%p\n", f + 1, symbol.name, (const void *)symbol.address);
-                    delete [] symbol.name;
-                } else {
-                    printf("#%3u: Unable to obtain symbol\n", f + 1);
-                }
-            }
-        }
-
-        fputc('\n', stdout);
-        fflush(stdout);
-
-        return EXCEPTION_EXECUTE_HANDLER;
-    }
-#endif // defined(Q_OS_WIN)
-
-#if defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
 #  ifdef SA_SIGINFO
     static void signal(int signum, siginfo_t * /* info */, void * /* ucontext */)
 #  else
@@ -1967,11 +1968,11 @@ private:
 
     sigset_t handledSignals;
     static bool pauseOnCrash;
-#endif // defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
 };
-#if defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
 bool FatalSignalHandler::pauseOnCrash = false;
-#endif // defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
+#else // Q_OS_WASM or weird systems
+class FatalSignalHandler {};
+#endif // Q_OS_* choice
 
 } // unnamed namespace
 
