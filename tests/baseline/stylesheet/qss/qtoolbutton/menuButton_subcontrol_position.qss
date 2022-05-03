@@ -1,0 +1,4 @@
+QToolButton::menu-indicator {
+    subcontrol-position: right center;
+    subcontrol-origin: padding;
+}
