@@ -1836,16 +1836,19 @@ using FatalSignalHandler = WindowsFaultHandler;
 class FatalSignalHandler
 {
 public:
+    static constexpr std::array fatalSignals = {
+        SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGBUS, SIGFPE, SIGSEGV, SIGPIPE, SIGTERM
+    };
+    using OldActionsArray = std::array<struct sigaction, fatalSignals.size()>;
+
     FatalSignalHandler()
     {
         pauseOnCrash = qEnvironmentVariableIsSet("QTEST_PAUSE_ON_CRASH");
-        sigemptyset(&handledSignals);
-
-        const int fatalSignals[] = {
-             SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGBUS, SIGFPE, SIGSEGV, SIGPIPE, SIGTERM };
-
         struct sigaction act;
         memset(&act, 0, sizeof(act));
+        act.sa_handler = SIG_DFL;
+        oldActions().fill(act);
+
         // Remove the handler after it is invoked.
         act.sa_flags = SA_RESETHAND;
 
@@ -1882,39 +1885,14 @@ public:
         for (int signal : fatalSignals)
             sigaddset(&act.sa_mask, signal);
 
-        // The destructor can only restore SIG_DFL, so only register for signals
-        // that had default handling previously.
-        const auto isDefaultHandler = [](const struct sigaction &old) {
-#  ifdef SA_SIGINFO
-            // void sa_sigaction(int, siginfo_t *, void *) is never the default:
-            if (old.sa_flags & SA_SIGINFO)
-                return false;
-#  endif
-            // Otherwise, the handler is void sa_handler(int) but may be
-            // SIG_DFL (default action) or SIG_IGN (ignore signal):
-            return old.sa_handler == SIG_DFL;
-        };
-
-        struct sigaction oldact;
-        for (int signal : fatalSignals) {
-            // Registering reveals the existing handler:
-            if (sigaction(signal, &act, &oldact))
-                continue; // Failed to set our handler; nothing to restore.
-            if (isDefaultHandler(oldact))
-                sigaddset(&handledSignals, signal);
-            else // Restore non-default handler:
-                sigaction(signal, &oldact, nullptr);
-        }
+        for (size_t i = 0; i < fatalSignals.size(); ++i)
+            sigaction(fatalSignals[i], &act, &oldActions()[i]);
     }
 
     ~FatalSignalHandler()
     {
-        // Restore the default signal handler in place of ours.
+        // Restore the default signal handlers in place of ours.
         // If ours has been replaced, leave the replacement alone.
-        struct sigaction act;
-        memset(&act, 0, sizeof(act));
-        act.sa_handler = SIG_DFL;
-
         auto isOurs = [](const struct sigaction &old) {
 #  ifdef SA_SIGINFO
             return (old.sa_flags & SA_SIGINFO) && old.sa_sigaction == FatalSignalHandler::actionHandler;
@@ -1924,19 +1902,25 @@ public:
         };
         struct sigaction action;
 
-        for (int signum = 1; signum < 32; ++signum) {
-            if (!sigismember(&handledSignals, signum))
-                continue;
-            if (sigaction(signum, nullptr, &action))
+        for (size_t i = 0; i < fatalSignals.size(); ++i) {
+            struct sigaction &act = oldActions()[i];
+            if (act.sa_flags == 0 && act.sa_handler == SIG_DFL)
+                continue; // Already the default
+            if (sigaction(fatalSignals[i], nullptr, &action))
                 continue; // Failed to query present handler
-
             if (isOurs(action))
-                sigaction(signum, &act, nullptr);
+                sigaction(fatalSignals[i], &act, nullptr);
         }
     }
 
 private:
     Q_DISABLE_COPY_MOVE(FatalSignalHandler)
+
+    static OldActionsArray &oldActions()
+    {
+        Q_CONSTINIT static OldActionsArray oldActions {};
+        return oldActions;
+    }
 
     static void actionHandler(int signum, siginfo_t * /* info */, void * /* ucontext */)
     {
@@ -1961,8 +1945,6 @@ private:
     {
         actionHandler(signum, nullptr, nullptr);
     }
-
-    sigset_t handledSignals;
     static bool pauseOnCrash;
 };
 bool FatalSignalHandler::pauseOnCrash = false;
