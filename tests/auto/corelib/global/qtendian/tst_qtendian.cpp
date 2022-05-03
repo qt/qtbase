@@ -30,11 +30,17 @@
 #include <QTest>
 #include <QtCore/qendian.h>
 #include <QtCore/private/qendian_p.h>
-
+#include <QtCore/qsysinfo.h>
 
 class tst_QtEndian: public QObject
 {
     Q_OBJECT
+public:
+    enum Signedness {
+        Unsigned,
+        Signed
+    };
+    Q_ENUM(Signedness);
 
 private slots:
     void fromBigEndian();
@@ -55,6 +61,9 @@ private slots:
     void endianIntegers();
 
     void endianBitfields();
+
+    void endianBitfieldUnions_data();
+    void endianBitfieldUnions();
 };
 
 struct TestData
@@ -382,6 +391,101 @@ void tst_QtEndian::endianBitfields()
 
     QCOMPARE(u.bottom, -8);
 }
+
+template<template<typename... Accessors> typename Union, template<int, int, typename> typename Member>
+void testBitfieldUnion()
+{
+    using upper = Member<21, 11, uint>;
+    using lower = Member<10, 11, uint>;
+    using bottom = Member<0, 10, int>;
+
+    using UnionType = Union<upper, lower, bottom>;
+    UnionType u;
+
+    u.template set<upper>(200);
+    QCOMPARE(u.template get<upper>(), 200U);
+    u.template set<lower>(1000);
+    u.template set<bottom>(-8);
+    QCOMPARE(u.template get<lower>(), 1000U);
+    QCOMPARE(u.template get<upper>(), 200U);
+
+    u.template set<lower>(u.template get<lower>() + u.template get<upper>());
+    QCOMPARE(u.template get<upper>(), 200U);
+    QCOMPARE(u.template get<lower>(), 1200U);
+
+    u.template set<upper>(65536 + 7);
+    u.template set<lower>(65535);
+    QCOMPARE(u.template get<lower>(), 65535U & ((1<<11) - 1));
+    QCOMPARE(u.template get<upper>(), 7U);
+
+    QCOMPARE(u.template get<bottom>(), -8);
+
+    UnionType u2(QSpecialIntegerBitfieldZero);
+    QCOMPARE(u2.data(), 0U);
+
+    UnionType u3(42U);
+    QCOMPARE(u3.data(), 42U);
+
+    using BEUintAccessor =  QSpecialIntegerAccessor<QBigEndianStorageType<uint>, 21, 11>;
+    using LEUintAccessor =  QSpecialIntegerAccessor<QLittleEndianStorageType<uint>, 21, 11>;
+    using BEIntAccessor =  QSpecialIntegerAccessor<QBigEndianStorageType<int>, 0, 10>;
+    using LEIntAccessor =  QSpecialIntegerAccessor<QLittleEndianStorageType<int>, 0, 10>;
+
+    if constexpr (std::is_same_v<BEUintAccessor, upper>) {
+        QCOMPARE(u.template get<BEUintAccessor>(), 7U);
+    } else if constexpr (std::is_same_v<LEUintAccessor, upper>) {
+        QCOMPARE(u.template get<LEUintAccessor>(), 7U);
+    } else if constexpr (std::is_same_v<BEIntAccessor, bottom>) {
+        QCOMPARE(u.template get<BEIntAccessor>(), -8);
+    } else if constexpr (std::is_same_v<LEIntAccessor, bottom>) {
+        QCOMPARE(u.template get<LEIntAccessor>(), -8);
+    } else {
+        QFAIL("none of the manually defined accessors match");
+    }
+}
+
+void tst_QtEndian::endianBitfieldUnions_data()
+{
+    QTest::addColumn<QSysInfo::Endian>("byteOrder");
+    QTest::addColumn<Signedness>("signedness");
+
+    QTest::addRow("little endian unsigned") << QSysInfo::LittleEndian << Unsigned;
+    QTest::addRow("little endian signed") << QSysInfo::LittleEndian << Signed;
+    QTest::addRow("big endian unsigned") << QSysInfo::BigEndian << Unsigned;
+    QTest::addRow("big endian signed") << QSysInfo::BigEndian << Signed;
+}
+
+void tst_QtEndian::endianBitfieldUnions()
+{
+    QFETCH(QSysInfo::Endian, byteOrder);
+    QFETCH(Signedness, signedness);
+
+    switch (byteOrder) {
+    case QSysInfo::LittleEndian:
+        switch (signedness) {
+        case Unsigned:
+            testBitfieldUnion<quint32_le_bitfield_union, quint32_le_bitfield_member>();
+            return;
+        case Signed:
+            testBitfieldUnion<qint32_le_bitfield_union, qint32_le_bitfield_member>();
+            return;
+        }
+        Q_UNREACHABLE();
+        return;
+    case QSysInfo::BigEndian:
+        switch (signedness) {
+        case Unsigned:
+            testBitfieldUnion<quint32_be_bitfield_union, quint32_be_bitfield_member>();
+            return;
+        case Signed:
+            testBitfieldUnion<qint32_be_bitfield_union, qint32_be_bitfield_member>();
+            return;
+        }
+        Q_UNREACHABLE();
+        return;
+    }
+}
+
 
 QTEST_MAIN(tst_QtEndian)
 #include "tst_qtendian.moc"
