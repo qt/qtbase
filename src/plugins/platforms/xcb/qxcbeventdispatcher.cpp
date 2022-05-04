@@ -149,3 +149,5 @@ QAbstractEventDispatcher *QXcbEventDispatcher::createEventDispatcher(QXcbConnect
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qxcbeventdispatcher.cpp"

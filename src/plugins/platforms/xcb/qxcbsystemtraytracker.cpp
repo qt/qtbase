@@ -168,3 +168,5 @@ xcb_visualid_t QXcbSystemTrayTracker::netSystemTrayVisual()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qxcbsystemtraytracker.cpp"
