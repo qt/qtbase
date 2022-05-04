@@ -191,17 +191,17 @@ static bool hasSystemCrashReporter()
 
 static void disableCoreDump()
 {
+#ifdef RLIMIT_CORE
     bool ok = false;
     const int disableCoreDump = qEnvironmentVariableIntValue("QTEST_DISABLE_CORE_DUMP", &ok);
     if (ok && disableCoreDump) {
-#if defined(Q_OS_UNIX) && !defined(Q_OS_INTEGRITY)
         struct rlimit limit;
         limit.rlim_cur = 0;
         limit.rlim_max = 0;
         if (setrlimit(RLIMIT_CORE, &limit) != 0)
             qWarning("Failed to disable core dumps: %d", errno);
-#endif
     }
+#endif
 }
 Q_CONSTRUCTOR_FUNCTION(disableCoreDump);
 
