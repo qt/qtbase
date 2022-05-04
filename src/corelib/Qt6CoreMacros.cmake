@@ -889,7 +889,7 @@ function(_qt_internal_set_placeholder_apple_bundle_version target)
     endif()
 endfunction()
 
-function(_qt_internal_finalize_ios_app target)
+function(_qt_internal_set_xcode_development_team_id target)
     # If user hasn't provided a development team id, try to find the first one specified
     # in the Xcode preferences.
     if(NOT CMAKE_XCODE_ATTRIBUTE_DEVELOPMENT_TEAM AND NOT QT_NO_SET_XCODE_DEVELOPMENT_TEAM_ID)
@@ -900,7 +900,9 @@ function(_qt_internal_finalize_ios_app target)
                                   PROPERTIES XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "${team_id}")
         endif()
     endif()
+endfunction()
 
+function(_qt_internal_set_xcode_bundle_identifier target)
     # If user hasn't provided a bundle identifier for the app, get a default identifier
     # using the default bundle prefix from Xcode preferences and add it to the generated
     # Info.plist file.
@@ -912,17 +914,26 @@ function(_qt_internal_finalize_ios_app target)
                                   PROPERTIES MACOSX_BUNDLE_GUI_IDENTIFIER "${bundle_id}")
         endif()
     endif()
+endfunction()
 
+function(_qt_internal_set_xcode_product_bundle_identifier target)
     # Reuse the same bundle identifier for the Xcode property.
     if(NOT CMAKE_XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER
             AND NOT QT_NO_SET_XCODE_BUNDLE_IDENTIFIER)
         get_target_property(existing_id "${target}" XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER)
         if(NOT existing_id)
+            _qt_internal_get_default_ios_bundle_identifier(bundle_id)
             set_target_properties("${target}"
                                   PROPERTIES XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER
                                   "${bundle_id}")
         endif()
     endif()
+endfunction()
+
+function(_qt_internal_finalize_ios_app target)
+    _qt_internal_set_xcode_development_team_id("${target}")
+    _qt_internal_set_xcode_bundle_identifier("${target}")
+    _qt_internal_set_xcode_product_bundle_identifier("${target}")
 
     _qt_internal_handle_ios_launch_screen("${target}")
     _qt_internal_set_placeholder_apple_bundle_version("${target}")
