@@ -421,3 +421,5 @@ void QXcbBasicConnection::initializeXKB()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qxcbconnection_basic.cpp"

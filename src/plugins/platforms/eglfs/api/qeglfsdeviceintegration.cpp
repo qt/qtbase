@@ -365,3 +365,5 @@ EGLConfig QEglFSDeviceIntegration::chooseConfig(EGLDisplay display, const QSurfa
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qeglfsdeviceintegration_p.cpp"
