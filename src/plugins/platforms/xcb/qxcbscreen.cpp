@@ -714,7 +714,10 @@ void QXcbScreen::setMonitor(xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp
         m_sizeMillimeters = virtualDesktop()->physicalSize();
 
     m_outputName = getName(monitorInfo);
-    m_primary = monitorInfo->primary;
+    if (connection()->primaryScreenNumber() == virtualDesktop()->number() && monitorInfo->primary)
+        m_primary = true;
+    else
+        m_primary = false;
 
     m_cursor = new QXcbCursor(connection(), this);
 

@@ -262,14 +262,14 @@ private:
                              xcb_randr_get_output_info_reply_t *outputInfo);
     void destroyScreen(QXcbScreen *screen);
     void initializeScreens(bool initialized);
-    void initializeScreensFromOutput(xcb_screen_iterator_t *it, int screenNumber, QXcbScreen *primaryScreen);
+    void initializeScreensFromOutput(xcb_screen_iterator_t *it, int screenNumber, QXcbScreen **primaryScreen);
 
     void updateScreen_monitor(QXcbScreen *screen, xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp_t timestamp = XCB_NONE);
     QXcbScreen *createScreen_monitor(QXcbVirtualDesktop *virtualDesktop,
                                      xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp_t timestamp = XCB_NONE);
     QXcbVirtualDesktop* virtualDesktopForNumber(int n) const;
     QXcbScreen* findScreenForMonitorInfo(const QList<QPlatformScreen *> &screens, xcb_randr_monitor_info_t *monitorInfo);
-    void initializeScreensFromMonitor(xcb_screen_iterator_t *it, int screenNumber, QXcbScreen *primaryScreen, bool initialized);
+    void initializeScreensFromMonitor(xcb_screen_iterator_t *it, int screenNumber, QXcbScreen **primaryScreen, bool initialized);
 
     bool compressEvent(xcb_generic_event_t *event) const;
     inline bool timeGreaterThan(xcb_timestamp_t a, xcb_timestamp_t b) const
