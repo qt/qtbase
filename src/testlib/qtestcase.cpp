@@ -71,6 +71,7 @@
 #endif
 
 #ifdef Q_OS_WIN
+# include <iostream>
 # if !defined(Q_CC_MINGW) || (defined(Q_CC_MINGW) && defined(__MINGW64_VERSION_MAJOR))
 #  include <crtdbg.h>
 # endif
@@ -198,6 +199,17 @@ static struct iovec asyncSafeToString(int n, AsyncSafeIntBuffer &&result = Qt::U
     r.iov_len = ptr - result.array.data();
     return r;
 };
+#elif defined(Q_OS_WIN)
+// Windows doesn't need to be async-safe
+template <typename... Args> static void writeToStderr(Args &&... args)
+{
+    (std::cerr << ... << args);
+}
+
+static std::string asyncSafeToString(int n)
+{
+    return std::to_string(n);
+}
 #endif // Q_OS_UNIX
 } // unnamed namespace
 
@@ -341,17 +353,21 @@ static void prepareStackTrace()
 #endif // Q_OS_UNIX
 }
 
-[[maybe_unused]] static void generateStackTrace()
+static void printTestRunTime()
+{
+    const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
+    const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
+    writeToStderr("\n         Function time: ", asyncSafeToString(msecsFunctionTime),
+                  "ms, total time: ", asyncSafeToString(msecsTotalTime), "ms\n");
+}
+
+static void generateStackTrace()
 {
     if (debugger == None || alreadyDebugging())
         return;
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_WASM) && !defined(Q_OS_INTEGRITY)
-    const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
-    const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
-    writeToStderr("\n=== Received signal at function time: ", asyncSafeToString(msecsFunctionTime),
-                  "ms, total time: ", asyncSafeToString(msecsTotalTime),
-                  "ms, dumping stack ===\n");
+    writeToStderr("\n=== Stack trace ===\n");
 
     // execlp() requires null-termination, so call the default constructor
     AsyncSafeIntBuffer pidbuffer;
@@ -385,6 +401,7 @@ static void prepareStackTrace()
         int ret;
         EINTR_LOOP(ret, waitpid(pid, nullptr, 0));
     }
+
     writeToStderr("=== End of stack trace ===\n");
 #endif // Q_OS_UNIX && !Q_OS_WASM
 }
@@ -1246,6 +1263,8 @@ public:
             case TestFunctionStart:
             case TestFunctionEnd:
                 if (Q_UNLIKELY(!waitFor(locker, e))) {
+                    fflush(stderr);
+                    printTestRunTime();
                     generateStackTrace();
                     qFatal("Test function timed out");
                 }
@@ -2036,8 +2055,9 @@ private:
 
     static void actionHandler(int signum, siginfo_t * /* info */, void * /* ucontext */)
     {
-        const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
-        const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
+        writeToStderr("Received signal ", asyncSafeToString(signum), "\n");
+        printTestRunTime();
+
         if (signum != SIGINT) {
             generateStackTrace();
             if (pauseOnCrash) {
@@ -2046,10 +2066,6 @@ private:
                 raise(SIGSTOP);
             }
         }
-
-        writeToStderr("Received signal ", asyncSafeToString(signum),
-               "\n         Function time: ", asyncSafeToString(msecsFunctionTime),
-               "ms Total time: ", asyncSafeToString(msecsTotalTime), "ms\n");
 
         bool isCrashingSignal =
                 std::find(crashingSignals.begin(), crashingSignals.end(), signum) != crashingSignals.end();
