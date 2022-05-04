@@ -2074,12 +2074,48 @@ private:
 #  endif
     }
 
-    static void actionHandler(int signum, siginfo_t * /* info */, void * /* ucontext */)
+    template <typename T> static
+    std::enable_if_t<sizeof(std::declval<T>().si_pid) + sizeof(std::declval<T>().si_uid) >= 1>
+    printSentSignalInfo(T *info)
+    {
+        writeToStderr(" sent by PID ", asyncSafeToString(info->si_pid),
+                      " UID ", asyncSafeToString(info->si_uid));
+    }
+    static void printSentSignalInfo(...) {}
+
+    template <typename T> static
+    std::enable_if_t<sizeof(std::declval<T>().si_addr) >= 1> printCrashingSignalInfo(T *info)
+    {
+        using HexString = std::array<char, sizeof(quintptr) * 2>;
+        auto toHexString = [](quintptr u, HexString &&r = {}) {
+            int shift = sizeof(quintptr) * 8 - 4;
+            for (size_t i = 0; i < sizeof(quintptr) * 2; ++i, shift -= 4)
+                r[i] = QtMiscUtils::toHexLower(u >> shift);
+            struct iovec vec;
+            vec.iov_base = r.data();
+            vec.iov_len = r.size();
+            return vec;
+        };
+        writeToStderr(", code ", asyncSafeToString(info->si_code),
+                      ", for address 0x", toHexString(quintptr(info->si_addr)));
+    }
+    static void printCrashingSignalInfo(...) {}
+
+    static void actionHandler(int signum, siginfo_t *info, void * /* ucontext */)
     {
         writeToStderr("Received signal ", asyncSafeToString(signum),
-                      " (SIG", signalName(signum), ")\n");
-        printTestRunTime();
+                      " (SIG", signalName(signum), ")");
 
+        bool isCrashingSignal =
+                std::find(crashingSignals.begin(), crashingSignals.end(), signum) != crashingSignals.end();
+        if (isCrashingSignal && (!info || info->si_code <= 0))
+            isCrashingSignal = false;       // wasn't sent by the kernel, so it's not really a crash
+        if (isCrashingSignal)
+            printCrashingSignalInfo(info);
+        else if (info && (info->si_code == SI_USER || info->si_code == SI_QUEUE))
+            printSentSignalInfo(info);
+
+        printTestRunTime();
         if (signum != SIGINT) {
             generateStackTrace();
             if (pauseOnCrash) {
@@ -2088,9 +2124,6 @@ private:
                 raise(SIGSTOP);
             }
         }
-
-        bool isCrashingSignal =
-                std::find(crashingSignals.begin(), crashingSignals.end(), signum) != crashingSignals.end();
 
         // chain back to the previous handler, if any
         for (size_t i = 0; i < fatalSignals.size(); ++i) {
