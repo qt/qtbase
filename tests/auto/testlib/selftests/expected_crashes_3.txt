@@ -1,8 +1,5 @@
 ********* Start testing of tst_Crashes *********
 Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_Crashes::initTestCase()
-QFATAL : tst_Crashes::crash() Received signal 11
-         Function time: ms Total time: ms
-FAIL!  : tst_Crashes::crash() Received a fatal error.
-Totals: 1 passed, 1 failed, 0 skipped, 0 blacklisted
-********* Finished testing of tst_Crashes *********
+Received signal 11 (SIGSEGV), code 1, for address 0x0000000000000004
+         Function time: ms, total time: ms
