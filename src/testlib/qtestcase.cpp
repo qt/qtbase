@@ -1910,9 +1910,40 @@ using FatalSignalHandler = WindowsFaultHandler;
 class FatalSignalHandler
 {
 public:
+#  define OUR_SIGNALS(F)    \
+        F(HUP)              \
+        F(INT)              \
+        F(QUIT)             \
+        F(ABRT)             \
+        F(ILL)              \
+        F(BUS)              \
+        F(FPE)              \
+        F(SEGV)             \
+        F(PIPE)             \
+        F(TERM)             \
+        /**/
+#  define CASE_LABEL(S)             case SIG ## S:  return QT_STRINGIFY(S);
+#  define ENUMERATE_SIGNALS(S)      SIG ## S,
+    static const char *signalName(int signum) noexcept
+    {
+        switch (signum) {
+        OUR_SIGNALS(CASE_LABEL)
+        }
+
+#  if defined(__GLIBC_MINOR__) && (__GLIBC_MINOR__ >= 32 || __GLIBC__ > 2)
+        // get the other signal names from glibc 2.32
+        // (accessing the sys_sigabbrev variable causes linker warnings)
+        if (const char *p = sigabbrev_np(signum))
+            return p;
+#  endif
+        return "???";
+    }
     static constexpr std::array fatalSignals = {
-        SIGHUP, SIGINT, SIGQUIT, SIGABRT, SIGILL, SIGBUS, SIGFPE, SIGSEGV, SIGPIPE, SIGTERM
+        OUR_SIGNALS(ENUMERATE_SIGNALS)
     };
+#  undef CASE_LABEL
+#  undef ENUMERATE_SIGNALS
+
     static constexpr std::array crashingSignals = {
         // Crash signals are special, because if we return from the handler
         // without adjusting the machine state, the same instruction that
@@ -2047,7 +2078,8 @@ private:
 
     static void actionHandler(int signum, siginfo_t * /* info */, void * /* ucontext */)
     {
-        writeToStderr("Received signal ", asyncSafeToString(signum), "\n");
+        writeToStderr("Received signal ", asyncSafeToString(signum),
+                      " (SIG", signalName(signum), ")\n");
         printTestRunTime();
 
         if (signum != SIGINT) {
