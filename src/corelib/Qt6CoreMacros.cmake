@@ -945,11 +945,27 @@ function(_qt_internal_set_xcode_targeted_device_family target)
     endif()
 endfunction()
 
+function(_qt_internal_set_xcode_code_sign_style target)
+    if(NOT CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_STYLE
+            AND NOT QT_NO_SET_XCODE_CODE_SIGN_STYLE)
+        get_target_property(existing_code_style
+            "${target}" XCODE_ATTRIBUTE_CODE_SIGN_STYLE)
+        if(NOT existing_code_style)
+            set(existing_code_style "Automatic")
+            set_target_properties("${target}"
+                                  PROPERTIES
+                                  XCODE_ATTRIBUTE_CODE_SIGN_STYLE
+                                  "${existing_code_style}")
+        endif()
+    endif()
+endfunction()
+
 function(_qt_internal_finalize_ios_app target)
     _qt_internal_set_xcode_development_team_id("${target}")
     _qt_internal_set_xcode_bundle_identifier("${target}")
     _qt_internal_set_xcode_product_bundle_identifier("${target}")
     _qt_internal_set_xcode_targeted_device_family("${target}")
+    _qt_internal_set_xcode_code_sign_style("${target}")
 
     _qt_internal_handle_ios_launch_screen("${target}")
     _qt_internal_set_placeholder_apple_bundle_version("${target}")
