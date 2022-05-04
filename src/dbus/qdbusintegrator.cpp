@@ -1135,7 +1135,13 @@ void QDBusConnectionPrivate::closeConnection()
         }
     }
 
-    qDeleteAll(pendingCalls);
+    for (auto it = pendingCalls.begin(); it != pendingCalls.end(); ++it) {
+        auto call = *it;
+        if (!call->ref.deref()) {
+            delete call;
+        }
+    }
+    pendingCalls.clear();
 
     // Disconnect all signals from signal hooks and from the object tree to
     // avoid QObject::destroyed being sent to dbus daemon thread which has
