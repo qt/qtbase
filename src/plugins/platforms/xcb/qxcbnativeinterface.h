@@ -138,8 +138,6 @@ signals:
 private:
     const QByteArray m_nativeEventType = QByteArrayLiteral("xcb_generic_event_t");
 
-    xcb_atom_t m_sysTraySelectionAtom = XCB_ATOM_NONE;
-
     static QXcbScreen *qPlatformScreenForWindow(QWindow *window);
 
     QList<QXcbNativeInterfaceHandler *> m_handlers;
