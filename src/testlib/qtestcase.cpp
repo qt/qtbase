@@ -259,7 +259,7 @@ static bool hasSystemCrashReporter()
 #endif
 }
 
-static void disableCoreDump()
+static void maybeDisableCoreDump()
 {
 #ifdef RLIMIT_CORE
     bool ok = false;
@@ -273,7 +273,6 @@ static void disableCoreDump()
     }
 #endif
 }
-Q_CONSTRUCTOR_FUNCTION(disableCoreDump);
 
 static DebuggerProgram debugger = None;
 static void prepareStackTrace()
@@ -2143,6 +2142,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 void QTest::qInit(QObject *testObject, int argc, char **argv)
 {
     initEnvironment();
+    maybeDisableCoreDump();
     QBenchmarkGlobalData::current = new QBenchmarkGlobalData;
 
 #if defined(Q_OS_MACOS)
