@@ -400,3 +400,5 @@ bool QXcbEventQueue::isCloseConnectionEvent(const xcb_generic_event_t *event)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qxcbeventqueue.cpp"

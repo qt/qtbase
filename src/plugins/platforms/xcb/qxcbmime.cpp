@@ -310,3 +310,5 @@ xcb_atom_t QXcbMime::mimeAtomForFormat(QXcbConnection *connection, const QString
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qxcbmime.cpp"

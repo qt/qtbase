@@ -48,3 +48,5 @@ QXcbScrollingDevicePrivate::QXcbScrollingDevicePrivate(const QString &name, qint
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qxcbscrollingdevice_p.cpp"
