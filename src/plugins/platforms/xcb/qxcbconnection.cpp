@@ -1199,3 +1199,5 @@ void QXcbConnectionGrabber::release()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qxcbconnection.cpp"
