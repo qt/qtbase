@@ -394,19 +394,7 @@ qreal QWasmWindow::devicePixelRatio() const
 
 void QWasmWindow::requestUpdate()
 {
-    if (m_compositor) {
-        m_compositor->requestUpdateWindow(this, QWasmCompositor::UpdateRequestDelivery);
-        return;
-    }
-
-    static auto frame = [](double time, void *context) -> int {
-        Q_UNUSED(time);
-        QWasmWindow *window = static_cast<QWasmWindow *>(context);
-        window->m_requestAnimationFrameId = -1;
-        window->deliverUpdateRequest();
-        return 0;
-    };
-    m_requestAnimationFrameId = emscripten_request_animation_frame(frame, this);
+    m_compositor->requestUpdateWindow(this, QWasmCompositor::UpdateRequestDelivery);
 }
 
 bool QWasmWindow::hasTitleBar() const
