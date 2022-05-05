@@ -78,12 +78,12 @@ static inline QString testSuiteWarning()
     str << "\nCannot find the shared-mime-info test suite\nin the parent of: "
         << QDir::toNativeSeparators(QDir::currentPath()) << "\n"
            "cd " << QDir::toNativeSeparators(QStringLiteral("tests/auto/corelib/mimetypes/qmimedatabase")) << "\n"
-           "wget https://gitlab.freedesktop.org/xdg/shared-mime-info/-/archive/2.1/shared-mime-info-2.1.zip\n"
-           "unzip shared-mime-info-2.1.zip\n";
+           "wget https://gitlab.freedesktop.org/xdg/shared-mime-info/-/archive/2.2/shared-mime-info-2.2.zip\n"
+           "unzip shared-mime-info-2.2.zip\n";
 #ifdef Q_OS_WIN
-    str << "mkdir testfiles\nxcopy /s shared-mime-info-2.1 s-m-i\n";
+    str << "mkdir testfiles\nxcopy /s shared-mime-info-2.2 s-m-i\n";
 #else
-    str << "ln -s shared-mime-info-2.1 s-m-i\n";
+    str << "ln -s shared-mime-info-2.2 s-m-i\n";
 #endif
     return result;
 }
@@ -616,7 +616,7 @@ void tst_QMimeDatabase::allMimeTypes()
     QVERIFY(!lst.isEmpty());
 
     // Hardcoding this is the only way to check both providers find the same number of mimetypes.
-    QCOMPARE(lst.count(), 811);
+    QCOMPARE(lst.count(), 851);
 
     foreach (const QMimeType &mime, lst) {
         const QString name = mime.name();
