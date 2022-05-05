@@ -250,7 +250,7 @@ public:
     uchar firstByte;
     qint64 nbytesread;
     QString readBuffer;
-    int readBufferPos;
+    qsizetype readBufferPos;
     QXmlStreamSimpleStack<uint> putStack;
     struct Entity {
         Entity() = default;
