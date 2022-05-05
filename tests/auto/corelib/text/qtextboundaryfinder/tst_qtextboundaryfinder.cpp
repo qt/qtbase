@@ -445,9 +445,9 @@ void tst_QTextBoundaryFinder::wordBoundaries_manual_data()
     {
         QString testString(QString::fromUtf8("This is     a sample buffer.Please test me .     He's don't Le'Clerk."));
         QList<int> expectedBreakPositions, expectedStartPositions, expectedEndPositions;
-        expectedBreakPositions << 0 << 4 << 5 << 7 << 8 << 9 << 10 << 11 << 12 << 13 << 14 << 20 << 21 << 27
-                               << 28 << 34 << 35 << 39 << 40 << 42 << 43 << 44 << 45 << 46 << 47 << 48
-                               << 49 << 53 << 54 << 59 << 60 << 68 << 69;
+        expectedBreakPositions << 0 << 4 << 5 << 7 << 12 << 13 << 14 << 20 << 21 << 27 << 28 << 34
+                               << 35 << 39 << 40 << 42 << 43 << 44 << 49 << 53 << 54 << 59 << 60
+                               << 68 << 69;
         expectedStartPositions << 0 << 5 << 12 << 14 << 21 << 28 << 35 << 40 << 49 << 54 << 60;
         expectedEndPositions   << 4 << 7 << 13 << 20 << 27 << 34 << 39 << 42 << 53 << 59 << 68;
 
