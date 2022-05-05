@@ -983,7 +983,7 @@
 ÷ 0020 ÷ 231A ÷	#  ÷ [0.2] SPACE (WSegSpace) ÷ [999.0] WATCH (ExtPict) ÷ [0.3]
 ÷ 0020 × 0308 ÷ 231A ÷	#  ÷ [0.2] SPACE (WSegSpace) × [4.0] COMBINING DIAERESIS (Extend_FE) ÷ [999.0] WATCH (ExtPict) ÷ [0.3]
 ÷ 0020 × 0020 ÷	#  ÷ [0.2] SPACE (WSegSpace) × [3.4] SPACE (WSegSpace) ÷ [0.3]
-# ÷ 0020 × 0308 ÷ 0020 ÷	#  ÷ [0.2] SPACE (WSegSpace) × [4.0] COMBINING DIAERESIS (Extend_FE) ÷ [999.0] SPACE (WSegSpace) ÷ [0.3]
+÷ 0020 × 0308 ÷ 0020 ÷	#  ÷ [0.2] SPACE (WSegSpace) × [4.0] COMBINING DIAERESIS (Extend_FE) ÷ [999.0] SPACE (WSegSpace) ÷ [0.3]
 ÷ 0020 × 00AD ÷	#  ÷ [0.2] SPACE (WSegSpace) × [4.0] SOFT HYPHEN (Format_FE) ÷ [0.3]
 ÷ 0020 × 0308 × 00AD ÷	#  ÷ [0.2] SPACE (WSegSpace) × [4.0] COMBINING DIAERESIS (Extend_FE) × [4.0] SOFT HYPHEN (Format_FE) ÷ [0.3]
 ÷ 0020 × 0300 ÷	#  ÷ [0.2] SPACE (WSegSpace) × [4.0] COMBINING GRAVE ACCENT (Extend_FE) ÷ [0.3]
