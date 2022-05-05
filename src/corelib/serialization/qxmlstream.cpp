@@ -957,7 +957,7 @@ inline uint QXmlStreamReaderPrivate::peekChar()
   */
 bool QXmlStreamReaderPrivate::scanUntil(const char *str, short tokenToInject)
 {
-    int pos = textBuffer.size();
+    const qsizetype pos = textBuffer.size();
     const auto oldLineNumber = lineNumber;
 
     uint c;
@@ -1005,7 +1005,7 @@ bool QXmlStreamReaderPrivate::scanUntil(const char *str, short tokenToInject)
 
 bool QXmlStreamReaderPrivate::scanString(const char *str, short tokenToInject, bool requireSpace)
 {
-    int n = 0;
+    qsizetype n = 0;
     while (str[n]) {
         uint c = getChar();
         if (c != ushort(str[n])) {
@@ -1018,12 +1018,11 @@ bool QXmlStreamReaderPrivate::scanString(const char *str, short tokenToInject, b
         }
         ++n;
     }
-    for (int i = 0; i < n; ++i)
-        textBuffer += QChar(ushort(str[i]));
+    textBuffer += QLatin1StringView(str, n);
     if (requireSpace) {
         int s = fastScanSpace();
         if (!s || atEnd) {
-            int pos = textBuffer.size() - n - s;
+            qsizetype pos = textBuffer.size() - n - s;
             putString(textBuffer, pos);
             textBuffer.resize(pos);
             return false;
@@ -1229,7 +1228,7 @@ inline int QXmlStreamReaderPrivate::fastScanContentCharList()
             return n;
         case ']': {
             isWhitespace = false;
-            int pos = textBuffer.size();
+            const qsizetype pos = textBuffer.size();
             textBuffer += QChar(ushort(c));
             ++n;
             while ((c = getChar()) == ']') {
@@ -1344,7 +1343,7 @@ inline int QXmlStreamReaderPrivate::fastScanName(int *prefix)
 
     if (prefix)
         *prefix = 0;
-    int pos = textBuffer.size() - n;
+    qsizetype pos = textBuffer.size() - n;
     putString(textBuffer, pos);
     textBuffer.resize(pos);
     return 0;
@@ -1415,7 +1414,7 @@ inline int QXmlStreamReaderPrivate::fastScanNMTOKEN()
         }
     }
 
-    int pos = textBuffer.size() - n;
+    qsizetype pos = textBuffer.size() - n;
     putString(textBuffer, pos);
     textBuffer.resize(pos);
 
@@ -1467,7 +1466,7 @@ void QXmlStreamReaderPrivate::putReplacementInAttributeValue(QStringView s)
 
 uint QXmlStreamReaderPrivate::getChar_helper()
 {
-    const int BUFFER_SIZE = 8192;
+    constexpr qsizetype BUFFER_SIZE = 8192;
     characterOffset += readBufferPos;
     readBufferPos = 0;
     if (readBuffer.size())
@@ -1708,7 +1707,7 @@ void QXmlStreamReaderPrivate::checkPublicLiteral(QStringView publicId)
 
     const ushort *data = reinterpret_cast<const ushort *>(publicId.constData());
     uchar c = 0;
-    int i;
+    qsizetype i;
     for (i = publicId.size() - 1; i >= 0; --i) {
         if (data[i] < 256)
             switch ((c = data[i])) {
@@ -2300,7 +2299,7 @@ QXmlStreamAttribute::QXmlStreamAttribute(const QString &namespaceUri, const QStr
  */
 QXmlStreamAttribute::QXmlStreamAttribute(const QString &qualifiedName, const QString &value)
 {
-    int colon = qualifiedName.indexOf(u':');
+    qsizetype colon = qualifiedName.indexOf(u':');
     m_name = qualifiedName.mid(colon + 1);
     m_qualifiedName = qualifiedName;
     m_value = value;
