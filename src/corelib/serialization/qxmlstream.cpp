@@ -2945,8 +2945,7 @@ void QXmlStreamWriterPrivate::writeEscaped(const QString &s, bool escapeWhitespa
 {
     QString escaped;
     escaped.reserve(s.size());
-    for ( int i = 0; i < s.size(); ++i ) {
-        QChar c = s.at(i);
+    for (QChar c : s) {
         switch (c.unicode()) {
         case '<':
             escaped.append(QLatin1String("&lt;"));
@@ -3724,9 +3723,8 @@ void QXmlStreamWriter::writeCurrentToken(const QXmlStreamReader &reader)
         break;
     case QXmlStreamReader::StartElement: {
         writeStartElement(reader.namespaceUri().toString(), reader.name().toString());
-        QXmlStreamNamespaceDeclarations namespaceDeclarations = reader.namespaceDeclarations();
-        for (int i = 0; i < namespaceDeclarations.size(); ++i) {
-            const QXmlStreamNamespaceDeclaration &namespaceDeclaration = namespaceDeclarations.at(i);
+        const QXmlStreamNamespaceDeclarations decls = reader.namespaceDeclarations();
+        for (const auto &namespaceDeclaration : decls) {
             writeNamespace(namespaceDeclaration.namespaceUri().toString(),
                            namespaceDeclaration.prefix().toString());
         }
