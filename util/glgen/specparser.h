@@ -118,7 +118,7 @@ inline bool operator < (const VersionProfile &lhs, const VersionProfile &rhs)
     return (lhs.version < rhs.version);
 }
 
-inline size_t Hash(const VersionProfile &v)
+inline size_t qHash(const VersionProfile &v)
 {
     return qHash(static_cast<int>(v.profile * 1000) + v.version.major * 100 + v.version.minor * 10);
 }

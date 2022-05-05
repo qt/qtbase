@@ -1,4 +1,5 @@
 QT       -= gui
+QT       += core5compat
 CONFIG   += cmdline
 
 # Uncomment following to enable debug output

@@ -290,7 +290,7 @@ void LegacySpecParser::parseFunctions(QTextStream &stream)
         }
     }
 
-    m_versions = versions.toList();
+    m_versions = versions.values();
     std::sort(m_versions.begin(), m_versions.end());
 }
 
