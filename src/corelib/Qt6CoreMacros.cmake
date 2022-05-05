@@ -799,35 +799,98 @@ function(_qt_internal_find_ios_development_team_id out_var)
                             -x -c "print IDEProvisioningTeams" "${xcode_preferences_path}"
                     OUTPUT_VARIABLE teams_xml
                     ERROR_VARIABLE plist_error)
+
+    # Parsing state.
+    set(is_free "")
+    set(current_team_id "")
+    set(parsing_is_free FALSE)
+    set(parsing_team_id FALSE)
+    set(first_team_id "")
+
+    # Parse the xml output and return the first encountered non-free team id. If no non-free team id
+    # is found, return the first encountered free team id.
+    # If no team is found, return an empty string.
+    #
+    # Example input:
+    #<plist version="1.0">
+    #<dict>
+    #    <key>marty@planet.local</key>
+    #    <array>
+    #        <dict>
+    #            <key>isFreeProvisioningTeam</key>
+    #            <false/>
+    #            <key>teamID</key>
+    #            <string>AAA</string>
+    #            ...
+    #        </dict>
+    #        <dict>
+    #            <key>isFreeProvisioningTeam</key>
+    #            <true/>
+    #            <key>teamID</key>
+    #            <string>BBB</string>
+    #            ...
+    #        </dict>
+    #    </array>
+    #</dict>
+    #</plist>
     if(teams_xml AND NOT plist_error)
         string(REPLACE "\n" ";" teams_xml_lines "${teams_xml}")
+
         foreach(xml_line ${teams_xml_lines})
-            if(xml_line MATCHES "<key>(.+)</key>")
-                set(first_account "${CMAKE_MATCH_1}")
-                string(STRIP "${first_account}" first_account)
-                break()
+            string(STRIP "${xml_line}" xml_line)
+            if(xml_line STREQUAL "<dict>")
+                # Clean any previously found values when a new team dict is matched.
+                set(is_free "")
+                set(current_team_id "")
+
+            elseif(xml_line STREQUAL "<key>isFreeProvisioningTeam</key>")
+                set(parsing_is_free TRUE)
+
+            elseif(parsing_is_free)
+                set(parsing_is_free FALSE)
+
+                if(xml_line MATCHES "true")
+                    set(is_free TRUE)
+                else()
+                    set(is_free FALSE)
+                endif()
+
+            elseif(xml_line STREQUAL "<key>teamID</key>")
+                set(parsing_team_id TRUE)
+
+            elseif(parsing_team_id)
+                set(parsing_team_id FALSE)
+                if(xml_line MATCHES "<string>([^<]+)</string>")
+                    set(current_team_id "${CMAKE_MATCH_1}")
+                else()
+                    continue()
+                endif()
+
+                string(STRIP "${current_team_id}" current_team_id)
+
+                # If this is the first team id we found so far, remember that, regardless if's free
+                # or not.
+                if(NOT first_team_id AND current_team_id)
+                    set(first_team_id "${current_team_id}")
+                endif()
+
+                # Break early if we found a non-free team id and use it, because we prefer
+                # a non-free team for signing, just like qmake.
+                if(NOT is_free AND current_team_id)
+                    set(first_team_id "${current_team_id}")
+                    break()
+                endif()
             endif()
         endforeach()
     endif()
 
-    if(NOT first_account)
+    if(NOT first_team_id)
         message(DEBUG "Failed to extract an Xcode development team id.")
-        return()
-    endif()
-
-    # Extract the first team ID
-    execute_process(COMMAND "/usr/libexec/PlistBuddy"
-                            -c "print IDEProvisioningTeams:${first_account}:0:teamID"
-                            "${xcode_preferences_path}"
-                    OUTPUT_VARIABLE team_id
-                    ERROR_VARIABLE team_id_error)
-    if(team_id AND NOT team_id_error)
-        message(DEBUG "Successfully extracted the first encountered Xcode development team id.")
-        string(STRIP "${team_id}" team_id)
-        set_property(GLOBAL PROPERTY _qt_internal_ios_development_team_id "${team_id}")
-        set("${out_var}" "${team_id}" PARENT_SCOPE)
-    else()
         set("${out_var}" "" PARENT_SCOPE)
+    else()
+        message(DEBUG "Successfully extracted the first encountered Xcode development team id.")
+        set_property(GLOBAL PROPERTY _qt_internal_ios_development_team_id "${first_team_id}")
+        set("${out_var}" "${first_team_id}" PARENT_SCOPE)
     endif()
 endfunction()
 
