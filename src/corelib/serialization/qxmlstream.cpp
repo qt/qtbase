@@ -2850,7 +2850,7 @@ public:
     void write(const XmlStringRef &);
     void write(const QString &);
     void writeEscaped(const QString &, bool escapeWhitespace = false);
-    void write(const char *s, int len);
+    void write(const char *s, qsizetype len);
     template <int N> void write(const char (&s)[N]) { write(s, N - 1); }
     bool finishStartElement(bool contents = true);
     void writeStartElement(const QString &namespaceUri, const QString &name);
@@ -2986,7 +2986,7 @@ void QXmlStreamWriterPrivate::writeEscaped(const QString &s, bool escapeWhitespa
 }
 
 // Writes utf8
-void QXmlStreamWriterPrivate::write(const char *s, int len)
+void QXmlStreamWriterPrivate::write(const char *s, qsizetype len)
 {
     if (device) {
         if (hasIoError)
