@@ -273,6 +273,8 @@ static void getWordBreaks(const char16_t *string, qsizetype len, QCharAttributes
     } currentWordType = WordTypeNone;
 
     QUnicodeTables::WordBreakClass cls = QUnicodeTables::WordBreak_LF; // to meet WB1
+    auto real_cls = cls; // Unaffected by WB4
+
     for (qsizetype i = 0; i != len; ++i) {
         qsizetype pos = i;
         char32_t ucs4 = string[i];
@@ -302,12 +304,18 @@ static void getWordBreaks(const char16_t *string, qsizetype len, QCharAttributes
         uchar action = WB::breakTable[cls][ncls];
         switch (action) {
         case WB::Break:
+            if (Q_UNLIKELY(real_cls == QUnicodeTables::WordBreak_ZWJ
+                           && prop->graphemeBreakClass
+                                   == QUnicodeTables::GraphemeBreak_Extended_Pictographic)) {
+                // WB3c: ZWJ × \p{Extended_Pictographic}
+                action = WB::NoBreak;
+            }
             break;
         case WB::NoBreak:
             if (Q_UNLIKELY(ncls == QUnicodeTables::WordBreak_Extend || ncls == QUnicodeTables::WordBreak_ZWJ || ncls == QUnicodeTables::WordBreak_Format)) {
                 // WB4: X(Extend|Format)* -> X
-                if (cls != QUnicodeTables::WordBreak_ZWJ) // WB3c
-                    continue;
+                real_cls = ncls;
+                continue;
             }
             if (Q_UNLIKELY(cls == QUnicodeTables::WordBreak_RegionalIndicator)) {
                 // WB15/WB16: break between pairs of Regional indicator
@@ -371,6 +379,8 @@ static void getWordBreaks(const char16_t *string, qsizetype len, QCharAttributes
                 break;
             }
         }
+
+        real_cls = ncls;
     }
 
     if (currentWordType != WordTypeNone)
