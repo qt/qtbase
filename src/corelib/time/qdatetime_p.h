@@ -76,9 +76,10 @@ public:
     };
 
     struct ZoneState {
-        qint64 when; // ms after zone/local 1970 start
+        qint64 when; // ms after zone/local 1970 start; may be revised from the input time.
         int offset = 0; // seconds
         DaylightStatus dst = UnknownDaylightTime;
+        // Other fields are set, if possible, even when valid is false due to spring-forward.
         bool valid = false;
 
         ZoneState(qint64 local) : when(local) {}
@@ -92,18 +93,13 @@ public:
 #if QT_CONFIG(timezone)
     static QDateTime::Data create(QDate toDate, QTime toTime, const QTimeZone & timeZone);
 
-    static qint64 zoneMSecsToEpochMSecs(qint64 msecs, const QTimeZone &zone,
-                                        DaylightStatus *hint = nullptr,
-                                        QDate *localDate = nullptr, QTime *localTime = nullptr,
-                                        QString *abbreviation = nullptr);
+    static ZoneState zoneStateAtMillis(const QTimeZone &zone, qint64 millis, DaylightStatus dst);
 #endif // timezone
 
     static ZoneState expressUtcAsLocal(qint64 utcMSecs);
 
-    static qint64 localMSecsToEpochMSecs(qint64 localMsecs,
-                                         DaylightStatus *daylightStatus,
-                                         QDate *localDate = nullptr, QTime *localTime = nullptr,
-                                         QString *abbreviation = nullptr);
+    static ZoneState localStateAtMillis(qint64 millis, DaylightStatus dst);
+    static QString localNameAtMillis(qint64 millis, DaylightStatus dst); // empty if unknown
 
     StatusFlags m_status = StatusFlag(Qt::LocalTime << TimeSpecShift);
     qint64 m_msecs = 0;
