@@ -287,6 +287,11 @@ static void getWordBreaks(const char16_t *string, qsizetype len, QCharAttributes
                 // WB15/WB16: break between pairs of Regional indicator
                 ncls = QUnicodeTables::WordBreak_Any;
             }
+            if (Q_UNLIKELY(ncls == QUnicodeTables::WordBreak_WSegSpace
+                           && real_cls != QUnicodeTables::WordBreak_WSegSpace)) {
+                // WB3d should not be affected by WB4
+                action = WB::Break;
+            }
             break;
         case WB::Lookup:
         case WB::LookupW:
@@ -325,6 +330,8 @@ static void getWordBreaks(const char16_t *string, qsizetype len, QCharAttributes
         }
 
         cls = ncls;
+        real_cls = ncls;
+
         if (action == WB::Break) {
             attributes[pos].wordBreak = true;
             if (currentWordType != WordTypeNone)
@@ -345,8 +352,6 @@ static void getWordBreaks(const char16_t *string, qsizetype len, QCharAttributes
                 break;
             }
         }
-
-        real_cls = ncls;
     }
 
     if (currentWordType != WordTypeNone)
