@@ -3775,7 +3775,7 @@ bool QDateTime::isNull() const
 bool QDateTime::isValid() const
 {
     auto status = getStatus(d);
-    return status.testAnyFlag(QDateTimePrivate::ValidDateTime);
+    return status.testFlag(QDateTimePrivate::ValidDateTime);
 }
 
 /*!
