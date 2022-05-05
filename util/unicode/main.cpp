@@ -346,10 +346,6 @@ static const char *word_break_class_string =
     "    WordBreak_MidNum,\n"
     "    WordBreak_Numeric,\n"
     "    WordBreak_ExtendNumLet,\n"
-    "    WordBreak_E_Base,\n"
-    "    WordBreak_E_Modifier,\n"
-    "    WordBreak_Glue_After_Zwj,\n"
-    "    WordBreak_E_Base_GAZ,\n"
     "    WordBreak_WSegSpace,\n"
     "\n"
     "    NumWordBreakClasses\n"
@@ -374,10 +370,6 @@ enum WordBreakClass {
     WordBreak_MidNum,
     WordBreak_Numeric,
     WordBreak_ExtendNumLet,
-    WordBreak_E_Base,
-    WordBreak_E_Modifier,
-    WordBreak_Glue_After_Zwj,
-    WordBreak_E_Base_GAZ,
     WordBreak_WSegSpace,
 
     WordBreak_Unassigned
@@ -409,10 +401,6 @@ static void initWordBreak()
         { WordBreak_MidNum, "MidNum" },
         { WordBreak_Numeric, "Numeric" },
         { WordBreak_ExtendNumLet, "ExtendNumLet" },
-        { WordBreak_E_Base, "E_Base" },
-        { WordBreak_E_Modifier, "E_Modifier" },
-        { WordBreak_Glue_After_Zwj, "Glue_After_Zwj" },
-        { WordBreak_E_Base_GAZ, "E_Base_GAZ" },
         { WordBreak_WSegSpace, "WSegSpace" },
         { WordBreak_Unassigned, 0 }
     };

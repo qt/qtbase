@@ -107,10 +107,6 @@ enum WordBreakClass {
     WordBreak_MidNum,
     WordBreak_Numeric,
     WordBreak_ExtendNumLet,
-    WordBreak_E_Base,
-    WordBreak_E_Modifier,
-    WordBreak_Glue_After_Zwj,
-    WordBreak_E_Base_GAZ,
     WordBreak_WSegSpace,
 
     NumWordBreakClasses
