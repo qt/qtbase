@@ -604,6 +604,8 @@ static void getLineBreaks(const char16_t *string, qsizetype len, QCharAttributes
 
     QUnicodeTables::LineBreakClass lcls = QUnicodeTables::LineBreak_LF; // to meet LB10
     QUnicodeTables::LineBreakClass cls = lcls;
+    const QUnicodeTables::Properties *lastProp = QUnicodeTables::properties(U'\n');
+
     for (qsizetype i = 0; i != len; ++i) {
         qsizetype pos = i;
         char32_t ucs4 = string[i];
@@ -707,6 +709,14 @@ static void getLineBreaks(const char16_t *string, qsizetype len, QCharAttributes
             goto next;
         }
 
+        if (Q_UNLIKELY(ncls == QUnicodeTables::LineBreak_EM
+                       && lastProp->category == QChar::Other_NotAssigned
+                       && lastProp->graphemeBreakClass
+                               == QUnicodeTables::GraphemeBreak_Extended_Pictographic)) {
+            // LB30b: [\p{Extended_Pictographic}&\p{Cn}] × EM
+            goto next;
+        }
+
         // for South East Asian chars that require a complex analysis, the Unicode
         // standard recommends to treat them as AL. tailoring that do dictionary analysis can override
         if (Q_UNLIKELY(cls >= QUnicodeTables::LineBreak_SA))
@@ -745,6 +755,7 @@ static void getLineBreaks(const char16_t *string, qsizetype len, QCharAttributes
 
     next:
         cls = ncls;
+        lastProp = prop;
     next_no_cls_update:
         lcls = ncls;
     }
