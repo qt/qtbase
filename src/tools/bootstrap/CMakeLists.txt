@@ -8,120 +8,78 @@
 # The bootstrap library has a few manual tweaks compared to other
 # libraries.
 qt_add_library(Bootstrap STATIC)
-
-option(QT_USE_BOOTSTRAP_SOURCE_COPY "Use copies of source files for building the bootstrap lib."
-    ${QT_FEATURE_private_tests})
-
-if(QT_USE_BOOTSTRAP_SOURCE_COPY)
-    # To avoid unnecessary rebuilds whenever a source file of the bootstrap library is touched, we
-    # use a copy of the corelib sources. This copy can be updated manually by building the target
-    # 'update_bootstrap_sources'.
-
-    set(source_root ${CMAKE_CURRENT_BINARY_DIR}/srccopy)
-    if(NOT IS_DIRECTORY "${source_root}")
-        file(COPY "${QtBase_SOURCE_DIR}/src/corelib" DESTINATION "${source_root}")
-    endif()
-
-    file(GLOB_RECURSE source_files
-        LIST_DIRECTORIES FALSE
-        RELATIVE "${QtBase_SOURCE_DIR}/src/corelib"
-        "${QtBase_SOURCE_DIR}/src/corelib/*")
-
-    set(copy_commands)
-    set(allowed_extensions .c .cpp .h .mm)
-    foreach(f IN LISTS source_files)
-        get_filename_component(ext "${f}" LAST_EXT)
-        if(NOT ext IN_LIST allowed_extensions)
-            continue()
-        endif()
-        list(APPEND copy_commands
-            COMMAND "${CMAKE_COMMAND}" -E
-            copy_if_different "${QtBase_SOURCE_DIR}/src/corelib/${f}"
-                              "${source_root}/corelib/${f}")
-    endforeach()
-    set(info_msg "Please run 'cmake --build .' twice, to ensure all relevant files are rebuilt due")
-    string(APPEND info_msg " to the bootstrap source file copy.")
-    add_custom_target(update_bootstrap_sources
-        ${copy_commands}
-        COMMAND ${CMAKE_COMMAND} -E echo "${info_msg}"
-        VERBATIM)
-else()
-    # Directly use the files in the source tree.
-    set(source_root ../..)
-endif()
-
 # special case end
 qt_internal_extend_target(Bootstrap
     SOURCES
-        ${source_root}/corelib/global/qendian.cpp
-        ${source_root}/corelib/global/qfloat16.cpp
-        ${source_root}/corelib/global/qglobal.cpp
-        ${source_root}/corelib/global/qlogging.cpp
-        ${source_root}/corelib/global/qmalloc.cpp
-        ${source_root}/corelib/global/qnumeric.cpp
-        ${source_root}/corelib/global/qoperatingsystemversion.cpp
-        ${source_root}/corelib/global/qrandom.cpp
-        ${source_root}/corelib/io/qabstractfileengine.cpp
-        ${source_root}/corelib/io/qbuffer.cpp
-        ${source_root}/corelib/io/qdebug.cpp
-        ${source_root}/corelib/io/qdir.cpp
-        ${source_root}/corelib/io/qdiriterator.cpp
-        ${source_root}/corelib/io/qfile.cpp
-        ${source_root}/corelib/io/qfiledevice.cpp
-        ${source_root}/corelib/io/qfileinfo.cpp
-        ${source_root}/corelib/io/qfilesystemengine.cpp
-        ${source_root}/corelib/io/qfilesystementry.cpp
-        ${source_root}/corelib/io/qfsfileengine.cpp
-        ${source_root}/corelib/io/qfsfileengine_iterator.cpp
-        ${source_root}/corelib/io/qiodevice.cpp
-        ${source_root}/corelib/io/qloggingcategory.cpp
-        ${source_root}/corelib/io/qloggingregistry.cpp
-        ${source_root}/corelib/io/qresource.cpp
-        ${source_root}/corelib/io/qsavefile.cpp
-        ${source_root}/corelib/io/qstandardpaths.cpp
-        ${source_root}/corelib/kernel/qcoreapplication.cpp
-        ${source_root}/corelib/kernel/qcoreglobaldata.cpp
-        ${source_root}/corelib/kernel/qiterable.cpp
-        ${source_root}/corelib/kernel/qmetacontainer.cpp
-        ${source_root}/corelib/kernel/qmetatype.cpp
-        ${source_root}/corelib/kernel/qsystemerror.cpp
-        ${source_root}/corelib/kernel/qvariant.cpp
-        ${source_root}/corelib/plugin/quuid.cpp
-        ${source_root}/corelib/serialization/qcborcommon.cpp
-        ${source_root}/corelib/serialization/qcborstreamwriter.cpp
-        ${source_root}/corelib/serialization/qcborvalue.cpp
-        ${source_root}/corelib/serialization/qdatastream.cpp
-        ${source_root}/corelib/serialization/qjsonarray.cpp
-        ${source_root}/corelib/serialization/qjsoncbor.cpp
-        ${source_root}/corelib/serialization/qjsondocument.cpp
-        ${source_root}/corelib/serialization/qjsonobject.cpp
-        ${source_root}/corelib/serialization/qjsonparser.cpp
-        ${source_root}/corelib/serialization/qjsonvalue.cpp
-        ${source_root}/corelib/serialization/qjsonwriter.cpp
-        ${source_root}/corelib/serialization/qtextstream.cpp
-        ${source_root}/corelib/text/qbytearray.cpp
-        ${source_root}/corelib/text/qbytearraylist.cpp
-        ${source_root}/corelib/text/qbytearraymatcher.cpp
-        ${source_root}/corelib/text/qlocale.cpp
-        ${source_root}/corelib/text/qlocale_tools.cpp
-        ${source_root}/corelib/text/qregularexpression.cpp
-        ${source_root}/corelib/text/qstring.cpp
-        ${source_root}/corelib/text/qstringbuilder.cpp
-        ${source_root}/corelib/text/qstringconverter.cpp
-        ${source_root}/corelib/text/qstringlist.cpp
-        ${source_root}/corelib/text/qvsnprintf.cpp
-        ${source_root}/corelib/time/qcalendar.cpp
-        ${source_root}/corelib/time/qdatetime.cpp
-        ${source_root}/corelib/time/qgregoriancalendar.cpp
-        ${source_root}/corelib/time/qromancalendar.cpp
-        ${source_root}/corelib/tools/qarraydata.cpp
-        ${source_root}/corelib/tools/qbitarray.cpp
-        ${source_root}/corelib/tools/qcommandlineoption.cpp
-        ${source_root}/corelib/tools/qcommandlineparser.cpp
-        ${source_root}/corelib/tools/qcryptographichash.cpp
-        ${source_root}/corelib/tools/qhash.cpp
-        ${source_root}/corelib/tools/qringbuffer.cpp
-        ${source_root}/corelib/tools/qversionnumber.cpp
+        ../../corelib/global/qendian.cpp
+        ../../corelib/global/qfloat16.cpp
+        ../../corelib/global/qglobal.cpp
+        ../../corelib/global/qlogging.cpp
+        ../../corelib/global/qmalloc.cpp
+        ../../corelib/global/qnumeric.cpp
+        ../../corelib/global/qoperatingsystemversion.cpp
+        ../../corelib/global/qrandom.cpp
+        ../../corelib/io/qabstractfileengine.cpp
+        ../../corelib/io/qbuffer.cpp
+        ../../corelib/io/qdebug.cpp
+        ../../corelib/io/qdir.cpp
+        ../../corelib/io/qdiriterator.cpp
+        ../../corelib/io/qfile.cpp
+        ../../corelib/io/qfiledevice.cpp
+        ../../corelib/io/qfileinfo.cpp
+        ../../corelib/io/qfilesystemengine.cpp
+        ../../corelib/io/qfilesystementry.cpp
+        ../../corelib/io/qfsfileengine.cpp
+        ../../corelib/io/qfsfileengine_iterator.cpp
+        ../../corelib/io/qiodevice.cpp
+        ../../corelib/io/qloggingcategory.cpp
+        ../../corelib/io/qloggingregistry.cpp
+        ../../corelib/io/qresource.cpp
+        ../../corelib/io/qsavefile.cpp
+        ../../corelib/io/qstandardpaths.cpp
+        ../../corelib/kernel/qcoreapplication.cpp
+        ../../corelib/kernel/qcoreglobaldata.cpp
+        ../../corelib/kernel/qiterable.cpp
+        ../../corelib/kernel/qmetacontainer.cpp
+        ../../corelib/kernel/qmetatype.cpp
+        ../../corelib/kernel/qsystemerror.cpp
+        ../../corelib/kernel/qvariant.cpp
+        ../../corelib/plugin/quuid.cpp
+        ../../corelib/serialization/qcborcommon.cpp
+        ../../corelib/serialization/qcborstreamwriter.cpp
+        ../../corelib/serialization/qcborvalue.cpp
+        ../../corelib/serialization/qdatastream.cpp
+        ../../corelib/serialization/qjsonarray.cpp
+        ../../corelib/serialization/qjsoncbor.cpp
+        ../../corelib/serialization/qjsondocument.cpp
+        ../../corelib/serialization/qjsonobject.cpp
+        ../../corelib/serialization/qjsonparser.cpp
+        ../../corelib/serialization/qjsonvalue.cpp
+        ../../corelib/serialization/qjsonwriter.cpp
+        ../../corelib/serialization/qtextstream.cpp
+        ../../corelib/text/qbytearray.cpp
+        ../../corelib/text/qbytearraylist.cpp
+        ../../corelib/text/qbytearraymatcher.cpp
+        ../../corelib/text/qlocale.cpp
+        ../../corelib/text/qlocale_tools.cpp
+        ../../corelib/text/qregularexpression.cpp
+        ../../corelib/text/qstring.cpp
+        ../../corelib/text/qstringbuilder.cpp
+        ../../corelib/text/qstringconverter.cpp
+        ../../corelib/text/qstringlist.cpp
+        ../../corelib/text/qvsnprintf.cpp
+        ../../corelib/time/qcalendar.cpp
+        ../../corelib/time/qdatetime.cpp
+        ../../corelib/time/qgregoriancalendar.cpp
+        ../../corelib/time/qromancalendar.cpp
+        ../../corelib/tools/qarraydata.cpp
+        ../../corelib/tools/qbitarray.cpp
+        ../../corelib/tools/qcommandlineoption.cpp
+        ../../corelib/tools/qcommandlineparser.cpp
+        ../../corelib/tools/qcryptographichash.cpp
+        ../../corelib/tools/qhash.cpp
+        ../../corelib/tools/qringbuffer.cpp
+        ../../corelib/tools/qversionnumber.cpp
     DEFINES
         HAVE_CONFIG_H
         QT_TYPESAFE_FLAGS
@@ -153,10 +111,6 @@ qt_internal_extend_target(Bootstrap
 
 ## Scopes:
 #####################################################################
-
-qt_internal_extend_target(Bootstrap CONDITION QT_USE_BOOTSTRAP_SOURCE_COPY
-    INCLUDE_DIRECTORIES "${QtBase_SOURCE_DIR}/src/corelib/tools"  # for qcryptographichash.cpp
-)
 
 qt_internal_extend_target(Bootstrap CONDITION UNIX
     SOURCES
