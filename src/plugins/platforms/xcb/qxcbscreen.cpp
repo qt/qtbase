@@ -713,7 +713,6 @@ void QXcbScreen::setMonitor(xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp
     if (m_sizeMillimeters.isEmpty())
         m_sizeMillimeters = virtualDesktop()->physicalSize();
 
-    QByteArray ba = connection()->atomName(monitorInfo->name);
     m_outputName = getName(monitorInfo);
     m_primary = monitorInfo->primary;
 
