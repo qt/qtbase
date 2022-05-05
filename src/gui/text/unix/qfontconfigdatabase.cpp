@@ -588,6 +588,8 @@ void QFontconfigDatabase::populateFontDatabase()
         fonts = FcFontList(nullptr, pattern, os);
         FcObjectSetDestroy(os);
         FcPatternDestroy(pattern);
+        if (!fonts)
+            return;
     }
 
     for (int i = 0; i < fonts->nfont; i++)
