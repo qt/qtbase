@@ -39,8 +39,11 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace {
 enum Tag { Tag_End = 1, Tag_SourceText16, Tag_Translation, Tag_Context16, Tag_Obsolete1,
            Tag_SourceText, Tag_Context, Tag_Comment, Tag_Obsolete2 };
+}
+
 /*
 $ mcookie
 3cb86418caef9c95cd211cbf60a1bddd

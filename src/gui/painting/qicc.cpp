@@ -20,6 +20,8 @@
 QT_BEGIN_NAMESPACE
 Q_LOGGING_CATEGORY(lcIcc, "qt.gui.icc", QtWarningMsg)
 
+namespace QIcc {
+
 struct ICCProfileHeader
 {
     quint32_be profileSize;
@@ -104,7 +106,9 @@ enum class Tag : quint32 {
     aabg = IccTag('a', 'a', 'b', 'g'),
 };
 
-inline size_t qHash(const Tag &key, size_t seed = 0)
+} // namespace QIcc
+
+inline size_t qHash(const QIcc::Tag &key, size_t seed = 0)
 {
     return qHash(quint32(key), seed);
 }
