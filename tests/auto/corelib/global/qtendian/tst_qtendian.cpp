@@ -35,8 +35,6 @@ private slots:
     void endianIntegers_data();
     void endianIntegers();
 
-    void endianBitfields();
-
     void endianBitfieldUnions_data();
     void endianBitfieldUnions();
 };
@@ -342,33 +340,6 @@ void tst_QtEndian::endianIntegers()
     QCOMPARE(*reinterpret_cast<quint32_le*>(&vu32), vu32);
     QCOMPARE(*reinterpret_cast<quint64_le*>(&vu64), vu64);
 #endif
-}
-
-void tst_QtEndian::endianBitfields()
-{
-    union {
-        quint32_be_bitfield<21, 11> upper;
-        quint32_be_bitfield<10, 11> lower;
-        qint32_be_bitfield<0, 10> bottom;
-    } u;
-
-    u.upper = 200;
-    QCOMPARE(u.upper, 200U);
-    u.lower = 1000;
-    u.bottom = -8;
-    QCOMPARE(u.lower, 1000U);
-    QCOMPARE(u.upper, 200U);
-
-    u.lower += u.upper;
-    QCOMPARE(u.upper, 200U);
-    QCOMPARE(u.lower, 1200U);
-
-    u.upper = 65536 + 7;
-    u.lower = 65535;
-    QCOMPARE(u.lower, 65535U & ((1<<11) - 1));
-    QCOMPARE(u.upper, 7U);
-
-    QCOMPARE(u.bottom, -8);
 }
 
 template<template<typename... Accessors> typename Union, template<int, int, typename> typename Member>
