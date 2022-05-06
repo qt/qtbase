@@ -484,14 +484,14 @@ bool QXmlStreamReaderPrivate::parse()
         case 88: {
             if (referenceToUnparsedEntityDetected && !standalone)
                 break;
-            int n = dtdAttributes.size();
+            qsizetype n = dtdAttributes.size();
             XmlStringRef tagName = addToStringStorage(symName(3));
             while (n--) {
                 DtdAttribute &dtdAttribute = dtdAttributes[n];
                 if (!dtdAttribute.tagName.isNull())
                     break;
                 dtdAttribute.tagName = tagName;
-                for (int i = 0; i < n; ++i) {
+                for (qsizetype i = 0; i < n; ++i) {
                     if ((dtdAttributes[i].tagName.isNull() || dtdAttributes[i].tagName == tagName)
                         && dtdAttributes[i].attributeQualifiedName == dtdAttribute.attributeQualifiedName) {
                         dtdAttribute.attributeQualifiedName.clear(); // redefined, delete it
