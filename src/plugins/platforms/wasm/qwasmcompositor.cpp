@@ -238,6 +238,7 @@ void QWasmCompositor::removeWindow(QWasmWindow *window)
 
     m_windowStack.removeAll(window);
     m_compositedWindows.remove(window);
+    m_requestUpdateWindows.remove(window);
 
     if (!m_windowStack.isEmpty() && !QGuiApplication::focusWindow()) {
         auto lastWindow = m_windowStack.last();
