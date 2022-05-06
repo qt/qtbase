@@ -1215,9 +1215,9 @@ attribute ::= qname space_opt EQ space_opt attribute_value;
                 if (normalize) {
                     // normalize attribute value (simplify and trim)
                     const qsizetype pos = textBuffer.size();
-                    int n = 0;
+                    qsizetype n = 0;
                     bool wasSpace = true;
-                    for (int i = 0; i < attribute.value.len; ++i) {
+                    for (qsizetype i = 0; i < attribute.value.len; ++i) {
                         QChar c = textBuffer.at(attribute.value.pos + i);
                         if (c.unicode() == ' ') {
                             if (wasSpace)
