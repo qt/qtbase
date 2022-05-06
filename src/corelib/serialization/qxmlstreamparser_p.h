@@ -768,8 +768,7 @@ bool QXmlStreamReaderPrivate::parse()
 
                 XmlStringRef attributeQualifiedName = symName(1);
                 bool normalize = false;
-                for (int a = 0; a < dtdAttributes.size(); ++a) {
-                    DtdAttribute &dtdAttribute = dtdAttributes[a];
+                for (const DtdAttribute &dtdAttribute : std::as_const(dtdAttributes)) {
                     if (!dtdAttribute.isCDATA
                         && dtdAttribute.tagName == qualifiedName
                         && dtdAttribute.attributeQualifiedName == attributeQualifiedName
