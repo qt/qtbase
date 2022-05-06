@@ -17,9 +17,14 @@ function(qt_internal_create_wrapper_scripts)
     endif()
 
     if(generate_unix)
-        configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake.in"
+        if(IOS)
+            set(infix ".ios")
+        else()
+            set(infix "")
+        endif()
+        configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake${infix}.in"
                        "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake" @ONLY
-                        NEWLINE_STYLE LF)
+                       NEWLINE_STYLE LF)
         qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake"
                    DESTINATION "${INSTALL_BINDIR}")
     endif()
