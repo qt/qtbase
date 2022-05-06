@@ -393,7 +393,7 @@ function QtLoader(config)
                 return;
 
             if (config.stderrEnabled)
-                console.log(text)
+                console.warn(text)
         };
 
         // Error handling: set status to "Exited", update crashed and
