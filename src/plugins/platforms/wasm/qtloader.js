@@ -386,12 +386,6 @@ function QtLoader(config)
                 console.log(text)
         };
         self.moduleConfig.printErr = self.moduleConfig.printErr || function(text) {
-            // Filter out OpenGL getProcAddress warnings. Qt tries to resolve
-            // all possible function/extension names at startup which causes
-            // emscripten to spam the console log with warnings.
-            if (text.startsWith !== undefined && text.startsWith("bad name in getProcAddress:"))
-                return;
-
             if (config.stderrEnabled)
                 console.warn(text)
         };
