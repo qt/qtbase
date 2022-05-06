@@ -40,7 +40,7 @@
 #  include <qt_windows.h>
 #endif
 
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_ANDROID) || defined(Q_OS_WASM)
 #  include <netinet/in.h>
 #endif
 
