@@ -586,7 +586,8 @@ enum Action {
     IndirectBreak, IB = IndirectBreak,
     CombiningIndirectBreak, CI = CombiningIndirectBreak,
     CombiningProhibitedBreak, CP = CombiningProhibitedBreak,
-    ProhibitedBreakAfterHebrewPlusHyphen, HH = ProhibitedBreakAfterHebrewPlusHyphen
+    ProhibitedBreakAfterHebrewPlusHyphen, HH = ProhibitedBreakAfterHebrewPlusHyphen,
+    IndirectBreakIfNarrow, IN = IndirectBreakIfNarrow, // For LB30
 };
 
 static const uchar breakTable[QUnicodeTables::LineBreak_ZWJ][QUnicodeTables::LineBreak_ZWJ] = {
@@ -602,9 +603,9 @@ static const uchar breakTable[QUnicodeTables::LineBreak_ZWJ][QUnicodeTables::Lin
 /* IS */ { DB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, IB, IB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
 /* PR */ { DB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, IB, IB, IB, IB, IB, IB, IB, DB, DB, PB, CI, PB, IB, IB, IB, IB, IB, DB, DB, IB, IB },
 /* PO */ { DB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, IB, IB, IB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* NU */ { IB, PB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* AL */ { IB, PB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
-/* HL */ { IB, PB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, DB, IB, CI, CI, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* NU */ { IN, PB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* AL */ { IN, PB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
+/* HL */ { IN, PB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, DB, IB, CI, CI, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
 /* ID */ { DB, PB, PB, IB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
 /* IN */ { DB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
 /* HY */ { HH, PB, PB, IB, HH, IB, PB, PB, PB, HH, HH, IB, HH, HH, HH, IB, IB, IB, HH, HH, PB, CI, PB, HH, HH, HH, HH, HH, HH, DB, DB, DB },
@@ -780,6 +781,19 @@ static void getLineBreaks(const char16_t *string, qsizetype len, QCharAttributes
         case LB::ProhibitedBreakAfterHebrewPlusHyphen:
             if (lcls != QUnicodeTables::LineBreak_HL)
                 attributes[pos].lineBreak = true;
+            break;
+        case LB::IndirectBreakIfNarrow:
+            switch (static_cast<QUnicodeTables::EastAsianWidth>(prop->eastAsianWidth)) {
+            default:
+                if (lcls != QUnicodeTables::LineBreak_SP)
+                    break;
+                Q_FALLTHROUGH();
+            case QUnicodeTables::EastAsianWidth::F:
+            case QUnicodeTables::EastAsianWidth::W:
+            case QUnicodeTables::EastAsianWidth::H:
+                attributes[pos].lineBreak = true;
+                break;
+            }
             break;
         case LB::ProhibitedBreak:
             // nothing to do
