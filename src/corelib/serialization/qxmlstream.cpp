@@ -1292,14 +1292,14 @@ inline int QXmlStreamReaderPrivate::fastScanContentCharList()
     return n;
 }
 
-inline int QXmlStreamReaderPrivate::fastScanName(int *prefix)
+inline int QXmlStreamReaderPrivate::fastScanName(qint16 *prefix)
 {
     int n = 0;
     uint c;
     while ((c = getChar()) != StreamEOF) {
         if (n >= 4096) {
             // This is too long to be a sensible name, and
-            // can exhaust memory
+            // can exhaust memory, or the range of decltype(*prefix)
             return 0;
         }
         switch (c) {
@@ -1338,7 +1338,7 @@ inline int QXmlStreamReaderPrivate::fastScanName(int *prefix)
         case ':':
             if (prefix) {
                 if (*prefix == 0) {
-                    *prefix = n+2;
+                    *prefix = qint16(n + 2);
                 } else { // only one colon allowed according to the namespace spec.
                     putChar(c);
                     return n;
