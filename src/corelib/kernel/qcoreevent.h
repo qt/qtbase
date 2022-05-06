@@ -317,7 +317,8 @@ public:
 
         TabletTrackingChange = 219,             // tablet tracking state has changed
 
-        WindowAboutToChangeInternal = 220,      // internal for QQuickWidget and texture-based widgets
+        // GraphicsSceneLeave = 220,
+        WindowAboutToChangeInternal = 221,      // internal for QQuickWidget and texture-based widgets
 
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event
