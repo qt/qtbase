@@ -572,7 +572,7 @@ bool QXmlStreamReaderPrivate::parse()
 
         case 96: {
             setType(QXmlStreamReader::ProcessingInstruction);
-            int pos = sym(4).pos + sym(4).len;
+            const qsizetype pos = sym(4).pos + sym(4).len;
             processingInstructionTarget = symString(3);
             if (scanUntil("?>")) {
                 processingInstructionData = XmlStringRef(&textBuffer, pos, textBuffer.size() - pos - 2);
@@ -611,7 +611,7 @@ bool QXmlStreamReaderPrivate::parse()
 
         case 100: {
             setType(QXmlStreamReader::Comment);
-            int pos = sym(1).pos + 4;
+            const qsizetype pos = sym(1).pos + 4;
             text = XmlStringRef(&textBuffer, pos, textBuffer.size() - pos - 3);
         } break;
 
@@ -619,7 +619,7 @@ bool QXmlStreamReaderPrivate::parse()
             setType(QXmlStreamReader::Characters);
             isCDATA = true;
             isWhitespace = false;
-            int pos = sym(2).pos;
+            const qsizetype pos = sym(2).pos;
             if (scanUntil("]]>", -1)) {
                 text = XmlStringRef(&textBuffer, pos, textBuffer.size() - pos - 3);
             } else {
@@ -778,7 +778,7 @@ bool QXmlStreamReaderPrivate::parse()
                 }
                 if (normalize) {
                     // normalize attribute value (simplify and trim)
-                    int pos = textBuffer.size();
+                    const qsizetype pos = textBuffer.size();
                     int n = 0;
                     bool wasSpace = true;
                     for (int i = 0; i < attribute.value.len; ++i) {
