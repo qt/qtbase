@@ -64,7 +64,8 @@ inline void QTestEventLoop::enterLoopMSecs(int ms)
         return;
 
     QEventLoop l;
-    timerId = startTimer(ms);
+    // if tests want to measure sub-second precision, use a precise timer
+    timerId = startTimer(ms, ms < 1000 ? Qt::PreciseTimer : Qt::CoarseTimer);
 
     loop = &l;
     l.exec();
