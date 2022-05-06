@@ -43,7 +43,8 @@ struct Properties {
     ushort joining             : 3;
     signed short digitValue    : 5;
     signed short mirrorDiff    : 16;
-    ushort unicodeVersion      : 8; /* 5 used */
+    ushort unicodeVersion      : 5; /* 5 used */
+    ushort eastAsianWidth      : 3; /* 3 used */
     ushort nfQuickCheck        : 8;
 #ifdef Q_OS_WASM
     unsigned char              : 0; //wasm 64 packing trick
@@ -67,6 +68,15 @@ Q_CORE_EXPORT const Properties * QT_FASTCALL properties(char32_t ucs4) noexcept;
 Q_CORE_EXPORT const Properties * QT_FASTCALL properties(char16_t ucs2) noexcept;
 
 static_assert(sizeof(Properties) == 20);
+
+enum class EastAsianWidth : unsigned int {
+    A,
+    F,
+    H,
+    N,
+    Na,
+    W,
+};
 
 enum GraphemeBreakClass {
     GraphemeBreak_Any,
@@ -178,6 +188,10 @@ inline IdnaStatus idnaStatus(QChar ch) noexcept
 Q_CORE_EXPORT QStringView QT_FASTCALL idnaMapping(char32_t usc4) noexcept;
 inline QStringView idnaMapping(QChar ch) noexcept
 { return idnaMapping(ch.unicode()); }
+
+Q_CORE_EXPORT EastAsianWidth QT_FASTCALL eastAsianWidth(char32_t ucs4) noexcept;
+inline EastAsianWidth eastAsianWidth(QChar ch) noexcept
+{ return eastAsianWidth(ch.unicode()); }
 
 } // namespace QUnicodeTables
 
