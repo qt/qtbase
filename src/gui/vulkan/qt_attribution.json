@@ -9,7 +9,7 @@
 
         "Homepage": "https://www.khronos.org/",
         "Version": "1.2.166",
-        "License": "MIT License",
+        "License": "Apache License 2.0 or MIT License",
         "LicenseId": "Apache-2.0 OR MIT",
         "LicenseFile": "LICENSE.txt",
         "Copyright": "Copyright (c) 2015-2020 The Khronos Group Inc."
