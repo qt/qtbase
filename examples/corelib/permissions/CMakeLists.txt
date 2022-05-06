@@ -12,13 +12,17 @@ set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/corelib/permissions")
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets)
 
 qt_add_executable(permissions
+    MANUAL_FINALIZATION
     main.cpp
 )
 
 set_target_properties(permissions PROPERTIES
     MACOSX_BUNDLE TRUE
     MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist"
+    QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android"
 )
+
+qt_finalize_executable(permissions)
 
 target_link_libraries(permissions PUBLIC
     Qt::Core

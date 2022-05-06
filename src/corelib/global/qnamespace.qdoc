@@ -3315,6 +3315,13 @@
         or the permission is known to not be accessible or applicable to applications
         on the given platform.
 
+        \note On Android, there is no \c Undetermined status by the platform's APIs.
+            Thus, if a permission is denied for an app,
+            \l QCoreApplication::checkPermission() returns \c Undetermined
+            by default until \l QCoreApplication::requestPermission() is called.
+            After that \l QCoreApplication::checkPermission() reports a non \c Undetermined
+            status.
+
     \since 6.5
     \sa QCoreApplication::requestPermission(), QCoreApplication::checkPermission(),
         {Application Permissions}

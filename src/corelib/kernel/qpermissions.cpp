@@ -280,6 +280,10 @@ QMetaType QPermission::type() const
         \li Apple
         \li \l{apple-usage-description}{Usage description}
         \li \c NSCameraUsageDescription
+      \row
+        \li Android
+        \li \l{android-uses-permission}{\c{uses-permission}}
+        \li \c android.permission.CAMERA
     \include permissions.qdocinc end-usage-declarations
 
     \include permissions.qdocinc permission-metadata
@@ -298,6 +302,10 @@ QT_DEFINE_PERMISSION_SPECIAL_FUNCTIONS(QCameraPermission)
         \li Apple
         \li \l{apple-usage-description}{Usage description}
         \li \c NSMicrophoneUsageDescription
+      \row
+        \li Android
+        \li \l{android-uses-permission}{\c{uses-permission}}
+        \li \c android.permission.RECORD_AUDIO
     \include permissions.qdocinc end-usage-declarations
 
     \include permissions.qdocinc permission-metadata
@@ -316,6 +324,10 @@ QT_DEFINE_PERMISSION_SPECIAL_FUNCTIONS(QMicrophonePermission)
         \li Apple
         \li \l{apple-usage-description}{Usage description}
         \li \c NSBluetoothAlwaysUsageDescription
+      \row
+        \li Android
+        \li \l{android-uses-permission}{\c{uses-permission}}
+        \li \c android.permission.BLUETOOTH
     \include permissions.qdocinc end-usage-declarations
 
     \include permissions.qdocinc permission-metadata
@@ -341,6 +353,17 @@ QT_DEFINE_PERMISSION_SPECIAL_FUNCTIONS(QBluetoothPermission)
         \li \c NSLocationWhenInUseUsageDescription, and
             \c NSLocationAlwaysUsageDescription if requesting
             QLocationPermission::Always
+      \row
+        \li Android
+        \li \l{android-uses-permission}{\c{uses-permission}}
+        \li \list
+                \li \c android.permission.ACCESS_FINE_LOCATION for QLocationPermission::Precise
+                \li \c android.permission.ACCESS_COARSE_LOCATION for QLocationPermission::Approximate
+                \li \c android.permission.ACCESS_BACKGROUND_LOCATION for QLocationPermission::Always
+            \endlist
+            \note QLocationPermission::Always \c uses-permission string has
+                to be combined with one or both of QLocationPermission::Precise
+                and QLocationPermission::Approximate strings.
     \include permissions.qdocinc end-usage-declarations
 
     \include permissions.qdocinc permission-metadata
@@ -425,6 +448,11 @@ QLocationPermission::Availability QLocationPermission::availability() const
         \li Apple
         \li \l{apple-usage-description}{Usage description}
         \li \c NSContactsUsageDescription
+      \row
+        \li Android
+        \li \l{android-uses-permission}{\c{uses-permission}}
+        \li \c android.permission.READ_CONTACTS. \c android.permission.WRITE_CONTACTS if
+            QContactsPermission::isReadOnly() is set to \c false.
     \include permissions.qdocinc end-usage-declarations
 
     \include permissions.qdocinc permission-metadata
@@ -468,6 +496,11 @@ bool QContactsPermission::isReadOnly() const
         \li Apple
         \li \l{apple-usage-description}{Usage description}
         \li \c NSCalendarsUsageDescription
+      \row
+        \li Android
+        \li \l{android-uses-permission}{\c{uses-permission}}
+        \li \c android.permission.READ_CALENDAR. \c android.permission.WRITE_CALENDAR if
+            QContactsPermission::isReadOnly() is set to \c false.
     \include permissions.qdocinc end-usage-declarations
 
     \include permissions.qdocinc permission-metadata

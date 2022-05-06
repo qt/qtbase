@@ -225,21 +225,6 @@ namespace QtAndroidPrivate
                                    BindFlags flags = BindFlag::None);
 
 #if QT_CONFIG(future)
-    enum PermissionType {
-        Camera,
-        Microphone,
-        Bluetooth,
-        Location,
-        PreciseLocation,
-        BackgroundLocation,
-        PreciseBackgroundLocation,
-        BodySensors,
-        PhysicalActivity,
-        Contacts,
-        Storage,
-        Calendar
-    };
-
     enum PermissionResult {
         Undetermined,
         Authorized,
@@ -247,12 +232,9 @@ namespace QtAndroidPrivate
     };
 
     Q_CORE_EXPORT QFuture<QtAndroidPrivate::PermissionResult>
-    requestPermission(QtAndroidPrivate::PermissionType permission);
-    Q_CORE_EXPORT QFuture<QtAndroidPrivate::PermissionResult>
     requestPermission(const QString &permission);
-
-    Q_CORE_EXPORT QFuture<QtAndroidPrivate::PermissionResult>
-    checkPermission(QtAndroidPrivate::PermissionType permission);
+    QFuture<QtAndroidPrivate::PermissionResult>
+    requestPermissions(const QStringList &permissions);
     Q_CORE_EXPORT QFuture<QtAndroidPrivate::PermissionResult>
     checkPermission(const QString &permission);
 #endif

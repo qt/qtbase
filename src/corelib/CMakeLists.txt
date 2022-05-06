@@ -1225,6 +1225,11 @@ if(QT_FEATURE_permissions AND APPLE)
     )
 endif()
 
+qt_internal_extend_target(Core CONDITION QT_FEATURE_permissions AND ANDROID
+    SOURCES
+        kernel/qpermissions_android.cpp
+)
+
 #### Keys ignored in scope 171:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_mimetype:
 # MIME_DATABASE = "mimetypes/mime/packages/freedesktop.org.xml"
 # OTHER_FILES = "$$MIME_DATABASE"
