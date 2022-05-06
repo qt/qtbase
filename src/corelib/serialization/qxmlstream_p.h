@@ -410,7 +410,7 @@ public:
     int stack_size;
     struct Value {
         qsizetype pos;  // offset into textBuffer
-        int len;
+        qsizetype len;  // length incl. prefix (if any)
         qint16 prefix;  // prefix of a name (as in "prefix:name") limited to 4k in fastScanName()
         ushort c;
     };
@@ -504,11 +504,11 @@ public:
 
     // scan optimization functions. Not strictly necessary but LALR is
     // not very well suited for scanning fast
-    int fastScanLiteralContent();
-    int fastScanSpace();
-    int fastScanContentCharList();
-    int fastScanName(qint16 *prefix = nullptr);
-    inline int fastScanNMTOKEN();
+    qsizetype fastScanLiteralContent();
+    qsizetype fastScanSpace();
+    qsizetype fastScanContentCharList();
+    qsizetype fastScanName(qint16 *prefix = nullptr);
+    inline qsizetype fastScanNMTOKEN();
 
 
     bool parse();

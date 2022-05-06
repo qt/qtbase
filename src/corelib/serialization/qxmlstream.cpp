@@ -1020,7 +1020,7 @@ bool QXmlStreamReaderPrivate::scanString(const char *str, short tokenToInject, b
     }
     textBuffer += QLatin1StringView(str, n);
     if (requireSpace) {
-        int s = fastScanSpace();
+        const qsizetype s = fastScanSpace();
         if (!s || atEnd) {
             qsizetype pos = textBuffer.size() - n - s;
             putString(textBuffer, pos);
@@ -1132,9 +1132,9 @@ bool QXmlStreamReaderPrivate::scanAttType()
  encountered.
 
  */
-inline int QXmlStreamReaderPrivate::fastScanLiteralContent()
+inline qsizetype QXmlStreamReaderPrivate::fastScanLiteralContent()
 {
-    int n = 0;
+    qsizetype n = 0;
     uint c;
     while ((c = getChar()) != StreamEOF) {
         switch (ushort(c)) {
@@ -1182,9 +1182,9 @@ inline int QXmlStreamReaderPrivate::fastScanLiteralContent()
     return n;
 }
 
-inline int QXmlStreamReaderPrivate::fastScanSpace()
+inline qsizetype QXmlStreamReaderPrivate::fastScanSpace()
 {
-    int n = 0;
+    qsizetype n = 0;
     uint c;
     while ((c = getChar()) != StreamEOF) {
         switch (c) {
@@ -1215,9 +1215,9 @@ inline int QXmlStreamReaderPrivate::fastScanSpace()
   Used for text nodes essentially. That is, characters appearing
   inside elements.
  */
-inline int QXmlStreamReaderPrivate::fastScanContentCharList()
+inline qsizetype QXmlStreamReaderPrivate::fastScanContentCharList()
 {
-    int n = 0;
+    qsizetype n = 0;
     uint c;
     while ((c = getChar()) != StreamEOF) {
         switch (ushort(c)) {
@@ -1279,9 +1279,9 @@ inline int QXmlStreamReaderPrivate::fastScanContentCharList()
     return n;
 }
 
-inline int QXmlStreamReaderPrivate::fastScanName(qint16 *prefix)
+inline qsizetype QXmlStreamReaderPrivate::fastScanName(qint16 *prefix)
 {
-    int n = 0;
+    qsizetype n = 0;
     uint c;
     while ((c = getChar()) != StreamEOF) {
         if (n >= 4096) {
@@ -1400,9 +1400,9 @@ static inline NameChar fastDetermineNameChar(QChar ch)
     return NotName;
 }
 
-inline int QXmlStreamReaderPrivate::fastScanNMTOKEN()
+inline qsizetype QXmlStreamReaderPrivate::fastScanNMTOKEN()
 {
-    int n = 0;
+    qsizetype n = 0;
     uint c;
     while ((c = getChar()) != StreamEOF) {
         if (fastDetermineNameChar(QChar(c)) == NotName) {
