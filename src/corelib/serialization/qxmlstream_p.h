@@ -409,7 +409,7 @@ public:
     int tos;
     int stack_size;
     struct Value {
-        int pos;
+        qsizetype pos;  // offset into textBuffer
         int len;
         int prefix;
         ushort c;
