@@ -219,6 +219,8 @@
 #ifndef QXMLSTREAMPARSER_P_H
 #define QXMLSTREAMPARSER_P_H
 
+QT_BEGIN_NAMESPACE
+
 #ifndef QT_NO_XMLSTREAMREADER
 
 bool QXmlStreamReaderPrivate::parse()
@@ -1550,6 +1552,8 @@ nmtoken ::= COLON;
 }
 
 #endif
+
+QT_END_NAMESPACE
 
 #endif
 
