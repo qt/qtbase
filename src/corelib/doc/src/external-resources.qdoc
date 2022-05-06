@@ -121,3 +121,13 @@
     \externalpage https://cmake.org/cmake/help/latest/module/FetchContent.html#command:fetchcontent_makeavailable
     \title FetchContent_MakeAvailable()
 */
+
+/*!
+    \externalpage https://cmake.org/cmake/help/latest/prop_gbl/USE_FOLDERS.html
+    \title USE_FOLDERS
+*/
+
+/*!
+    \externalpage https://cmake.org/cmake/help/latest/prop_tgt/FOLDER.html
+    \title FOLDER
+*/

@@ -425,6 +425,42 @@ For more information, see \l{https://emscripten.org/docs/porting/pthreads.html}{
 */
 
 /*!
+\group cmake-global-properties-qtcore
+\title CMake Global Properties in Qt6 Core
+
+\l{CMake Commands in Qt6 Core}{CMake Commands} know about the following global
+CMake properties:
+
+\sa{CMake Property Reference}
+*/
+
+/*!
+\page cmake-global-property-QT_TARGETS_FOLDER.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-global-properties-qtcore
+
+\title QT_TARGETS_FOLDER
+\target cmake-global-property-QT_TARGETS_FOLDER
+
+\brief Sets the FOLDER property for Qt-internal targets.
+
+\cmakepropertysince 6.5
+\preliminarycmakeproperty
+
+Name of the \l FOLDER for internal targets that are added by Qt's CMake
+commands.
+
+By default, this property is not set.
+
+This property only has an effect if CMake's \l USE_FOLDERS property is \c{ON}.
+
+You can use the \l{qt6_standard_project_setup}{qt_standard_project_setup}
+function to enable folder support and initialize the \c{QT_TARGETS_FOLDER}.
+
+\sa{qt6_standard_project_setup}{qt_standard_project_setup}
+*/
+
+/*!
 \page cmake-target-property-QT_WASM_INITIAL_MEMORY.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore

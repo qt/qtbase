@@ -1459,6 +1459,13 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     endfunction()
 endif()
 
+function(_qt_internal_assign_to_internal_targets_folder target)
+    get_property(folder_name GLOBAL PROPERTY QT_TARGETS_FOLDER)
+    if(NOT "${folder_name}" STREQUAL "")
+        set_property(TARGET ${target} PROPERTY FOLDER "${folder_name}")
+    endif()
+endfunction()
+
 function(qt6_extract_metatypes target)
 
     get_target_property(existing_meta_types_file ${target} INTERFACE_QT_META_TYPES_BUILD_FILE)
@@ -1586,6 +1593,7 @@ function(qt6_extract_metatypes target)
                 COMMAND_EXPAND_LISTS
             )
             add_dependencies(${target}_automoc_json_extraction ${target}_autogen)
+            _qt_internal_assign_to_internal_targets_folder(${target}_automoc_json_extraction)
         else()
             set(cmake_autogen_timestamp_file
                 "${target_binary_dir}/${target}_autogen/timestamp"
@@ -2648,6 +2656,7 @@ function(qt6_add_plugin target)
     if(target_type STREQUAL "MODULE_LIBRARY")
         if(NOT TARGET qt_internal_plugins)
             add_custom_target(qt_internal_plugins)
+            _qt_internal_assign_to_internal_targets_folder(qt_internal_plugins)
         endif()
         add_dependencies(qt_internal_plugins ${target})
     endif()
@@ -3097,6 +3106,22 @@ macro(qt6_standard_project_setup)
                 set(CMAKE_AUTO${auto_set} TRUE)
             endif()
         endforeach()
+
+        # Enable folder support for IDEs. A future CMake version might enable this by default.
+        # See CMake issue #21695.
+        get_property(__qt_use_folders GLOBAL PROPERTY USE_FOLDERS)
+        if(__qt_use_folders OR "${__qt_use_folders}" STREQUAL "")
+            set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+            get_property(__qt_qt_targets_folder GLOBAL PROPERTY QT_TARGETS_FOLDER)
+            if("${__qt_qt_targets_folder}" STREQUAL "")
+                set(__qt_qt_targets_folder QtInternalTargets)
+                set_property(GLOBAL PROPERTY QT_TARGETS_FOLDER ${__qt_qt_targets_folder})
+            endif()
+            get_property(__qt_autogen_targets_folder GLOBAL PROPERTY AUTOGEN_TARGETS_FOLDERS)
+            if("${__qt_autogen_targets_folder}" STREQUAL "")
+                set_property(GLOBAL PROPERTY AUTOGEN_TARGETS_FOLDER ${__qt_qt_targets_folder})
+            endif()
+        endif()
     endif()
 endmacro()
 

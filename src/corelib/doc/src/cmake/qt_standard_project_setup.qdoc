@@ -42,6 +42,9 @@ have been defined. It does the following things:
     \c{${CMAKE_CURRENT_BINARY_DIR}}.
 \li When target platforms other than Apple or Windows, \c{CMAKE_INSTALL_RPATH}
     will be augmented as described below.
+\li CMake's \l USE_FOLDERS property is set to \c{ON}, and \l QT_TARGET_FOLDER is
+    set to \c{QtInternalTargets}. IDEs that support folders will display
+    Qt-internal targets in this folder.
 \endlist
 
 On platforms that support \c{RPATH} (other than Apple platforms), two values
@@ -56,6 +59,9 @@ removed. In practice, these two values ensure that executables and libraries
 will find their link-time dependencies, assuming projects install them to the
 default locations the \l{install(TARGETS)} command uses when no destination is
 explicitly provided.
+
+To disable folder support for IDEs, set \l USE_FOLDERS to \c OFF before or after
+the call to \c{qt_standard_project_setup}.
 
 The \c{qt_standard_project_setup()} command can effectively be disabled by
 setting the \l{QT_NO_STANDARD_PROJECT_SETUP} variable to true.
