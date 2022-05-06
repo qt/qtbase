@@ -411,7 +411,7 @@ public:
     struct Value {
         qsizetype pos;  // offset into textBuffer
         int len;
-        int prefix;
+        qint16 prefix;  // prefix of a name (as in "prefix:name") limited to 4k in fastScanName()
         ushort c;
     };
 
@@ -507,7 +507,7 @@ public:
     int fastScanLiteralContent();
     int fastScanSpace();
     int fastScanContentCharList();
-    int fastScanName(int *prefix = nullptr);
+    int fastScanName(qint16 *prefix = nullptr);
     inline int fastScanNMTOKEN();
 
 
