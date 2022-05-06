@@ -55,7 +55,7 @@ class QWasmScreen : public QObject, public QPlatformScreen
 public:
     QWasmScreen(const emscripten::val &containerOrCanvas);
     ~QWasmScreen();
-    void destroy();
+    void deleteScreen();
 
     static QWasmScreen *get(QPlatformScreen *screen);
     static QWasmScreen *get(QScreen *screen);

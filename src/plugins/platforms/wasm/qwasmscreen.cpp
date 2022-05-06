@@ -131,9 +131,10 @@ QWasmScreen::~QWasmScreen()
     m_canvas.set(m_canvasResizeObserverCallbackContextPropertyName, emscripten::val(intptr_t(0)));
 }
 
-void QWasmScreen::destroy()
+void QWasmScreen::deleteScreen()
 {
     m_compositor->destroy();
+    QWindowSystemInterface::handleScreenRemoved(this);
 }
 
 QWasmScreen *QWasmScreen::get(QPlatformScreen *screen)

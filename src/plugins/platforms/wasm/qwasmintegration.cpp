@@ -196,7 +196,8 @@ QWasmIntegration::~QWasmIntegration()
     delete m_drag;
 
     for (const auto &elementAndScreen : m_screens)
-        QWindowSystemInterface::handleScreenRemoved(elementAndScreen.second);
+        elementAndScreen.second->deleteScreen();
+
     m_screens.clear();
 
     s_instance = nullptr;
@@ -338,10 +339,7 @@ void QWasmIntegration::removeScreen(const emscripten::val &element)
         qWarning() << "Attempting to remove non-existing screen for element" << QWasmString::toQString(element["id"]);;
         return;
     }
-    QWasmScreen *exScreen = it->second;
-    m_screens.erase(it);
-    exScreen->destroy(); // clean up before deleting the screen
-    QWindowSystemInterface::handleScreenRemoved(exScreen);
+    it->second->deleteScreen();
 }
 
 void QWasmIntegration::resizeScreen(const emscripten::val &element)
