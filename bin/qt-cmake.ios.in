@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# The directory of this script is the expanded absolute path of the "$qt_prefix/bin" directory.
+script_dir_path=`dirname $0`
+script_dir_path=`(cd "$script_dir_path"; /bin/pwd)`
+
+# Try to use original cmake, otherwise to make it relocatable, use any cmake found in PATH.
+original_cmake_path="@CMAKE_COMMAND@"
+cmake_path=$original_cmake_path
+if ! test -f "$cmake_path"; then
+    cmake_path="cmake"
+fi
+
+# Find the qt toolchain relative to the absolute bin dir path where the script is located.
+toolchain_path="$script_dir_path/@__GlobalConfig_relative_path_from_bin_dir_to_cmake_config_dir@/qt.toolchain.cmake"
+
+# Specify Xcode as the default generator by assigning it to the CMAKE_GENERATOR env var.
+# An explicit -G or -D CMAKE_GENERATOR given on the command line will still take precedence.
+export CMAKE_GENERATOR=Xcode
+
+# Run cmake.
+exec "$cmake_path" -DCMAKE_TOOLCHAIN_FILE="$toolchain_path" @__qt_cmake_extra@ "$@"
