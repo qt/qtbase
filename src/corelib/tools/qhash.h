@@ -280,7 +280,7 @@ struct Span {
     // When a node gets inserted, the first free entry is being picked, removed
     // from the singly linked list and the Node gets constructed in place.
     struct Entry {
-        typename std::aligned_storage<sizeof(Node), alignof(Node)>::type storage;
+        struct { alignas(Node) unsigned char data[sizeof(Node)]; } storage;
 
         unsigned char &nextFree() { return *reinterpret_cast<unsigned char *>(&storage); }
         Node &node() { return *reinterpret_cast<Node *>(&storage); }
