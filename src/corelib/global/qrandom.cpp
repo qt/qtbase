@@ -353,16 +353,17 @@ struct QRandomGenerator::SystemAndGlobalGenerators
     //    the state in case another thread tries to lock the mutex. It's not
     //    a common scenario, but since sizeof(QRandomGenerator) >= 2560, the
     //    overhead is actually acceptable.
-    // 2) We use both alignas and std::aligned_storage<..., 64> because
-    //    some implementations of std::aligned_storage can't align to more
-    //    than a primitive type's alignment.
+    // 2) We use both alignas(T) and alignas(64) because some implementations
+    //    can't align to more than a primitive type's alignment.
     // 3) We don't store the entire system QRandomGenerator, only the space
     //    used by the QRandomGenerator::type member. This is fine because we
     //    (ab)use the common initial sequence exclusion to aliasing rules.
     QBasicMutex globalPRNGMutex;
     struct ShortenedSystem { uint type; } system_;
     SystemGenerator sys;
-    alignas(64) std::aligned_storage<sizeof(QRandomGenerator64), 64>::type global_;
+    alignas(64) struct {
+        alignas(QRandomGenerator64) uchar data[sizeof(QRandomGenerator64)];
+    } global_;
 
     constexpr SystemAndGlobalGenerators()
         : globalPRNGMutex{}, system_{0}, sys{}, global_{}
