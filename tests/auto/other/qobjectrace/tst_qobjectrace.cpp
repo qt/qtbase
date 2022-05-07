@@ -32,6 +32,8 @@
 
 #include <QtTest/private/qemulationdetector_p.h>
 
+#include <optional>
+
 enum { OneMinute = 60 * 1000,
        TwoMinutes = OneMinute * 2 };
 
@@ -347,17 +349,13 @@ void tst_QObjectRace::blockingQueuedDestroyRace()
 
     while (iteration++ < MinIterations || !timer.hasExpired()) {
         // Manually allocate some storage, and create a receiver in there
-        std::aligned_storage<
-                sizeof(BlockingQueuedDestroyRaceObject),
-                alignof(BlockingQueuedDestroyRaceObject)
-            >::type storage;
+        std::optional<BlockingQueuedDestroyRaceObject> receiver;
 
-        auto *receiver = reinterpret_cast<BlockingQueuedDestroyRaceObject *>(&storage);
-        new (receiver) BlockingQueuedDestroyRaceObject(BlockingQueuedDestroyRaceObject::Behavior::Normal);
+        receiver.emplace(BlockingQueuedDestroyRaceObject::Behavior::Normal);
 
         // Connect it to the sender via BlockingQueuedConnection
         QVERIFY(connect(&sender, &BlockingQueuedDestroyRaceObject::aSignal,
-                        receiver, &BlockingQueuedDestroyRaceObject::aSlot,
+                        &*receiver, &BlockingQueuedDestroyRaceObject::aSlot,
                         Qt::BlockingQueuedConnection));
 
         const auto emitUntilDestroyed = [&sender] {
@@ -379,15 +377,13 @@ void tst_QObjectRace::blockingQueuedDestroyRace()
         // - the metacall event to be posted to a destroyed object;
         // - the metacall event to be posted to the wrong object.
         // In both cases we hope to catch the race by crashing.
-        receiver->~BlockingQueuedDestroyRaceObject();
-        new (receiver) BlockingQueuedDestroyRaceObject(BlockingQueuedDestroyRaceObject::Behavior::Crash);
+        receiver.reset();
+        receiver.emplace(BlockingQueuedDestroyRaceObject::Behavior::Crash);
 
         // Flush events
         QTest::qWait(0);
 
         thread->wait();
-
-        receiver->~BlockingQueuedDestroyRaceObject();
     }
 #endif
 }
