@@ -55,6 +55,13 @@ void QKeySequenceEditPrivate::init()
 
     lineEdit = new QLineEdit(q);
     lineEdit->setObjectName(QStringLiteral("qt_keysequenceedit_lineedit"));
+    lineEdit->setClearButtonEnabled(false);
+    q->connect(lineEdit, &QLineEdit::textChanged, [q](const QString& text) {
+        // Clear the shortcut if the user clicked on the clear icon
+        if (text.isEmpty())
+            q->clear();
+    });
+
     keyNum = 0;
     prevKey = -1;
     releaseTimer = 0;
@@ -73,8 +80,6 @@ void QKeySequenceEditPrivate::init()
     q->setFocusPolicy(Qt::StrongFocus);
     q->setAttribute(Qt::WA_MacShowFocusRect, true);
     q->setAttribute(Qt::WA_InputMethodEnabled, false);
-
-    // TODO: add clear button
 }
 
 int QKeySequenceEditPrivate::translateModifiers(Qt::KeyboardModifiers state, const QString &text)
@@ -173,6 +178,31 @@ QKeySequence QKeySequenceEdit::keySequence() const
     Q_D(const QKeySequenceEdit);
 
     return d->keySequence;
+}
+
+/*!
+    \property QKeySequenceEdit::clearButtonEnabled
+    \brief Whether the key sequence edit displays a clear button when it is not
+    empty.
+
+    If enabled, the key sequence edit displays a trailing \e clear button when
+    it contains some text, otherwise the line edit does not show a clear button
+    (the default).
+
+    \since 6.4
+*/
+void QKeySequenceEdit::setClearButtonEnabled(bool enable)
+{
+    Q_D(QKeySequenceEdit);
+
+    d->lineEdit->setClearButtonEnabled(enable);
+}
+
+bool QKeySequenceEdit::isClearButtonEnabled() const
+{
+    Q_D(const QKeySequenceEdit);
+
+    return d->lineEdit->isClearButtonEnabled();
 }
 
 void QKeySequenceEdit::setKeySequence(const QKeySequence &keySequence)

@@ -54,6 +54,7 @@ class Q_WIDGETS_EXPORT QKeySequenceEdit : public QWidget
     Q_OBJECT
     Q_PROPERTY(QKeySequence keySequence READ keySequence WRITE setKeySequence
                NOTIFY keySequenceChanged USER true)
+    Q_PROPERTY(bool clearButtonEnabled READ isClearButtonEnabled WRITE setClearButtonEnabled)
 
 public:
     explicit QKeySequenceEdit(QWidget *parent = nullptr);
@@ -61,6 +62,9 @@ public:
     ~QKeySequenceEdit();
 
     QKeySequence keySequence() const;
+
+    void setClearButtonEnabled(bool enable);
+    bool isClearButtonEnabled() const;
 
 public Q_SLOTS:
     void setKeySequence(const QKeySequence &keySequence);
