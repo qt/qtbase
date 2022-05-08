@@ -1138,7 +1138,8 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::SettingChangedEvent: {
         QWindowsWindow::settingsChanged();
         // Only refresh the window theme if the user changes the personalize settings.
-        if (wParam == 0 && wcscmp(reinterpret_cast<LPCWSTR>(lParam), L"ImmersiveColorSet") == 0) {
+        if ((wParam == 0) && (lParam != 0) // lParam sometimes may be NULL.
+            && (wcscmp(reinterpret_cast<LPCWSTR>(lParam), L"ImmersiveColorSet") == 0)) {
             const bool darkMode = QWindowsTheme::queryDarkMode();
             if (darkMode != QWindowsContextPrivate::m_darkMode) {
                 QWindowsContextPrivate::m_darkMode = darkMode;
