@@ -216,6 +216,7 @@ qt_internal_add_module(Core
         time/qcalendarbackend_p.h
         time/qcalendarmath_p.h
         time/qdatetime.cpp time/qdatetime.h time/qdatetime_p.h
+        time/qlocaltime.cpp time/qlocaltime_p.h
         time/qgregoriancalendar.cpp time/qgregoriancalendar_p.h
         time/qjuliancalendar.cpp time/qjuliancalendar_p.h
         time/qmilankoviccalendar.cpp time/qmilankoviccalendar_p.h

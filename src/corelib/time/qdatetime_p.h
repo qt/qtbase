@@ -111,6 +111,22 @@ public:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDateTimePrivate::StatusFlags)
 
+namespace QtPrivate {
+namespace DateTimeConstants {
+
+constexpr qint64 SECS_PER_MIN = 60;
+constexpr qint64 SECS_PER_HOUR = SECS_PER_MIN * 60;
+constexpr qint64 SECS_PER_DAY = SECS_PER_HOUR * 24;
+
+constexpr qint64 MSECS_PER_SEC = 1000;
+constexpr qint64 MSECS_PER_MIN = SECS_PER_MIN * MSECS_PER_SEC;
+constexpr qint64 MSECS_PER_HOUR = SECS_PER_HOUR * MSECS_PER_SEC;
+constexpr qint64 MSECS_PER_DAY = SECS_PER_DAY * MSECS_PER_SEC;
+
+constexpr qint64 JULIAN_DAY_FOR_EPOCH = 2440588; // result of QDate(1970, 1, 1).toJulianDay()
+}
+}
+
 QT_END_NAMESPACE
 
 #endif // QDATETIME_P_H

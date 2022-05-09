@@ -71,6 +71,7 @@ qt_internal_extend_target(Bootstrap
         ../../corelib/time/qcalendar.cpp
         ../../corelib/time/qdatetime.cpp
         ../../corelib/time/qgregoriancalendar.cpp
+        ../../corelib/time/qlocaltime.cpp
         ../../corelib/time/qromancalendar.cpp
         ../../corelib/tools/qarraydata.cpp
         ../../corelib/tools/qbitarray.cpp

@@ -20,6 +20,7 @@
 #include "private/qcore_mac_p.h"
 #endif
 #include "private/qgregoriancalendar_p.h"
+#include "private/qlocaltime_p.h"
 #include "private/qnumeric_p.h"
 #include "private/qstringiterator_p.h"
 #if QT_CONFIG(timezone)
@@ -35,20 +36,13 @@
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
+using namespace QtPrivate::DateTimeConstants;
 
 /*****************************************************************************
   Date/Time Constants
  *****************************************************************************/
 
-constexpr qint64 SECS_PER_DAY = 86400;
-constexpr qint64 MSECS_PER_DAY = 86400000;
-constexpr qint64 SECS_PER_HOUR = 3600;
-constexpr qint64 MSECS_PER_HOUR = 3600000;
-constexpr qint64 SECS_PER_MIN = 60;
-constexpr qint64 MSECS_PER_MIN = 60000;
-constexpr qint64 MSECS_PER_SEC = 1000;
 constexpr qint64 TIME_T_MAX = std::numeric_limits<time_t>::max();
-constexpr qint64 JULIAN_DAY_FOR_EPOCH = 2440588; // result of julianDayFromDate(1970, 1, 1)
 
 /*****************************************************************************
   QDate static helper functions
@@ -2564,73 +2558,6 @@ static inline bool callMkTime(tm *local, time_t *secs)
     return good;
 }
 
-namespace {
-bool qtLocalTime(time_t utc, struct tm *local)
-{
-    // localtime() is specified to work as if it called tzset().
-    // localtime_r() does not have this constraint, so make an explicit call.
-    // The explicit call should also request a re-parse of timezone info.
-    qTzSet();
-#if defined(Q_OS_WIN)
-    return !localtime_s(local, &utc);
-#elif QT_CONFIG(thread) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
-    // Use the reentrant version of localtime() where available
-    // as is thread-safe and doesn't use a shared static data area
-    if (tm *res = localtime_r(&utc, local)) {
-        Q_ASSERT(res == local);
-        return true;
-    }
-    return false;
-#else
-    // Returns shared static data which may be overwritten at any time
-    // So copy the result asap
-    if (tm *res = localtime(&utc)) {
-        *local = *res;
-        return true;
-    }
-    return false;
-#endif
-}
-
-// Calls the platform variant of localtime() for the given utcMillis, and
-// returns the local milliseconds, offset from UTC and DST status.
-QDateTimePrivate::ZoneState utcToLocal(qint64 utcMillis)
-{
-    const int signFix = utcMillis % MSECS_PER_SEC && utcMillis < 0 ? 1 : 0;
-    const time_t epochSeconds = utcMillis / MSECS_PER_SEC - signFix;
-    const int msec = utcMillis % MSECS_PER_SEC + signFix * MSECS_PER_SEC;
-    Q_ASSERT(msec >= 0 && msec < MSECS_PER_SEC);
-    if (qint64(epochSeconds) * MSECS_PER_SEC + msec != utcMillis)
-        return {utcMillis};
-
-    tm local;
-    if (!qtLocalTime(epochSeconds, &local))
-        return {utcMillis};
-
-    qint64 jd;
-    if (Q_UNLIKELY(!QGregorianCalendar::julianFromParts(qYearFromTmYear(local.tm_year),
-                                                        local.tm_mon + 1, local.tm_mday, &jd))) {
-        return {utcMillis};
-    }
-    const qint64 daySeconds
-        = local.tm_hour * SECS_PER_HOUR + local.tm_min * SECS_PER_MIN + local.tm_sec;
-    Q_ASSERT(0 <= daySeconds && daySeconds < SECS_PER_DAY);
-    qint64 localSeconds, localMillis;
-    if (Q_UNLIKELY(
-            mul_overflow(jd - JULIAN_DAY_FOR_EPOCH, std::integral_constant<qint64, SECS_PER_DAY>(),
-                         &localSeconds)
-            || add_overflow(localSeconds, daySeconds, &localSeconds)
-            || mul_overflow(localSeconds, std::integral_constant<qint64, MSECS_PER_SEC>(),
-                            &localMillis)
-            || add_overflow(localMillis, qint64(msec), &localMillis))) {
-        return {utcMillis};
-    }
-    const auto dst
-        = local.tm_isdst ? QDateTimePrivate::DaylightTime : QDateTimePrivate::StandardTime;
-    return { localMillis, int(localSeconds - epochSeconds), dst };
-}
-}
-
 // Converts milliseconds since the start of 1970 into a date and/or time:
 static qint64 msecsToJulianDay(qint64 msecs)
 {
@@ -2903,7 +2830,7 @@ QDateTimePrivate::ZoneState QDateTimePrivate::expressUtcAsLocal(qint64 utcMSecs)
     ZoneState result{utcMSecs};
     // Within the time_t supported range, localtime() can handle it:
     if (millisInSystemRange(utcMSecs)) {
-        result = utcToLocal(utcMSecs);
+        result = QLocalTime::utcToLocal(utcMSecs);
         if (result.valid)
             return result;
     }
@@ -2935,7 +2862,7 @@ QDateTimePrivate::ZoneState QDateTimePrivate::expressUtcAsLocal(qint64 utcMSecs)
         return result;
     }
 
-    result = utcToLocal(fakeUtc);
+    result = QLocalTime::utcToLocal(fakeUtc);
     // Now correct result.when for the use of the fake date:
     if (!result.valid || add_overflow(result.when, diffMillis, &result.when)) {
         // If utcToLocal() failed, its return has the fake when; restore utcMSecs.
