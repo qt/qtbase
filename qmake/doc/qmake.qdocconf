@@ -50,8 +50,6 @@ depends += \
     qtquick \
     qtquickcontrols \
     qtquickdialogs \
-    qtscript \
-    qtscripttools \
     qtsensors \
     qtserialport \
     qtsql \
@@ -59,9 +57,6 @@ depends += \
     qttestlib \
     qtuitools \
     qtwidgets \
-    qtwinextras \
-    qtx11extras \
-    qtxml \
-    qtxmlpatterns
+    qtxml
 
 navigation.landingpage = "qmake Manual"
