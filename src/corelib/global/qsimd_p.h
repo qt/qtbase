@@ -338,7 +338,7 @@ enum CPUFeatures {
 #endif
 };
 
-static const quint64 qCompilerCpuFeatures = 0
+static const uint64_t qCompilerCpuFeatures = 0
 #if defined __ARM_NEON__
         | CpuFeatureNEON
 #endif
