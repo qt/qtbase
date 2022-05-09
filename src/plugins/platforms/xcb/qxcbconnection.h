@@ -296,7 +296,7 @@ private:
         QSizeF size;                         // device size in mm
         bool providesTouchOrientation = false;
     };
-    TouchDeviceData *populateTouchDevices(void *info, QXcbScrollingDevicePrivate *scrollingDeviceP);
+    TouchDeviceData *populateTouchDevices(void *info, QXcbScrollingDevicePrivate *scrollingDeviceP, bool *used = nullptr);
     TouchDeviceData *touchDeviceForId(int id);
     void xi2HandleEvent(xcb_ge_event_t *event);
     void xi2HandleGesturePinchEvent(void *event);
