@@ -179,9 +179,6 @@ set(__qt_chainload_toolchain_file \"\${__qt_initially_configured_toolchain_file}
         if(UIKIT)
             list(APPEND init_platform
                 "set(CMAKE_SYSTEM_NAME \"${CMAKE_SYSTEM_NAME}\" CACHE STRING \"\")")
-            list(APPEND init_platform "if(CMAKE_GENERATOR STREQUAL \"Xcode\" AND NOT QT_NO_XCODE_EMIT_EPN)")
-            list(APPEND init_platform "    set_property(GLOBAL PROPERTY XCODE_EMIT_EFFECTIVE_PLATFORM_NAME OFF)")
-            list(APPEND init_platform "endif()")
         endif()
     elseif(ANDROID)
         list(APPEND init_platform
