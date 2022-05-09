@@ -175,6 +175,7 @@ private:
 Q_CORE_EXPORT bool qt_mac_applicationIsInDarkMode();
 Q_CORE_EXPORT bool qt_mac_runningUnderRosetta();
 Q_CORE_EXPORT std::optional<uint32_t> qt_mac_sipConfiguration();
+Q_CORE_EXPORT void qt_mac_ensureResponsible();
 #endif
 
 #ifndef QT_NO_DEBUG_STREAM

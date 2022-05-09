@@ -19,6 +19,7 @@
 #include <objc/runtime.h>
 #include <mach-o/dyld.h>
 #include <sys/sysctl.h>
+#include <spawn.h>
 
 #include <qdebug.h>
 
@@ -33,6 +34,12 @@
 extern "C" {
 typedef uint32_t csr_config_t;
 extern int csr_get_active_config(csr_config_t *) __attribute__((weak_import));
+
+int responsibility_spawnattrs_setdisclaim(posix_spawnattr_t attrs, int disclaim)
+__attribute__((availability(macos,introduced=10.14),weak_import));
+pid_t responsibility_get_pid_responsible_for_pid(pid_t) __attribute__((weak_import));
+char *** _NSGetArgv();
+extern char **environ;
 }
 #endif
 
@@ -382,6 +389,52 @@ std::optional<uint32_t> qt_mac_sipConfiguration()
     }();
     return configuration;
 }
+
+#define CHECK_SPAWN(expr) \
+    if (int err = (expr)) { \
+        posix_spawnattr_destroy(&attr); \
+        return; \
+    }
+
+void qt_mac_ensureResponsible()
+{
+#if !defined(QT_APPLE_NO_PRIVATE_APIS)
+    if (!responsibility_get_pid_responsible_for_pid || !responsibility_spawnattrs_setdisclaim)
+        return;
+
+    auto pid = getpid();
+    if (responsibility_get_pid_responsible_for_pid(pid) == pid)
+        return; // Already responsible
+
+    posix_spawnattr_t attr = {};
+    CHECK_SPAWN(posix_spawnattr_init(&attr));
+
+    // Behave as exec
+    short flags = POSIX_SPAWN_SETEXEC;
+
+    // Reset signal mask
+    sigset_t no_signals;
+    sigemptyset(&no_signals);
+    CHECK_SPAWN(posix_spawnattr_setsigmask(&attr, &no_signals));
+    flags |= POSIX_SPAWN_SETSIGMASK;
+
+    // Reset all signals to their default handlers
+    sigset_t all_signals;
+    sigfillset(&all_signals);
+    CHECK_SPAWN(posix_spawnattr_setsigdefault(&attr, &all_signals));
+    flags |= POSIX_SPAWN_SETSIGDEF;
+
+    CHECK_SPAWN(posix_spawnattr_setflags(&attr, flags));
+
+    if (@available(macOS 10.14, *))
+        CHECK_SPAWN(responsibility_spawnattrs_setdisclaim(&attr, 1));
+
+    char **argv = *_NSGetArgv();
+    posix_spawnp(&pid, argv[0], nullptr, &attr, argv, environ);
+    posix_spawnattr_destroy(&attr);
+#endif
+}
+
 #endif
 
 bool qt_apple_isApplicationExtension()
