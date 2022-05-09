@@ -442,6 +442,16 @@ QRect QPolygon::boundingRect() const
     return QRect(QPoint(minx,miny), QPoint(maxx,maxy));
 }
 
+/*!
+    \fn QPolygon::toPolygonF() const
+    \since 6.4
+
+    Returns this polygon as a polygon with floating point accuracy.
+
+    \sa QPolygonF::toPolygon()
+*/
+
+
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QPolygon &a)
 {

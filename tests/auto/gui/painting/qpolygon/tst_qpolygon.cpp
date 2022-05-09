@@ -41,6 +41,7 @@ class tst_QPolygon : public QObject
 
 private slots:
     void constructors();
+    void toPolygonF();
     void boundingRect_data();
     void boundingRect();
     void boundingRectF_data();
@@ -78,6 +79,17 @@ void tst_QPolygon::constructors()
     constructors_helperF(pointFList);
     constructors_helperF(std::move(pointFList));
     constructors_helperF(QRectF(1, 2, 3, 4));
+}
+
+void tst_QPolygon::toPolygonF()
+{
+    const QPolygon p = {{1, 1}, {-1, 1}, {-1, -1}, {1, -1}};
+    auto pf = p.toPolygonF();
+    static_assert(std::is_same_v<decltype(pf), QPolygonF>);
+    QCOMPARE(pf.size(), p.size());
+    auto p2 = pf.toPolygon();
+    static_assert(std::is_same_v<decltype(p2), QPolygon>);
+    QCOMPARE(p, p2);
 }
 
 void tst_QPolygon::boundingRect_data()

@@ -51,6 +51,8 @@ class QTransform;
 class QRect;
 class QVariant;
 
+class QPolygonF;
+
 // We export each out-of-line method individually to prevent MSVC from
 // exporting the whole QList class.
 class QPolygon : public QList<QPoint>
@@ -91,6 +93,8 @@ public:
     [[nodiscard]] Q_GUI_EXPORT QPolygon subtracted(const QPolygon &r) const;
 
     Q_GUI_EXPORT bool intersects(const QPolygon &r) const;
+
+    [[nodiscard]] inline QPolygonF toPolygonF() const;
 };
 Q_DECLARE_SHARED(QPolygon)
 
@@ -158,6 +162,8 @@ public:
     Q_GUI_EXPORT bool intersects(const QPolygonF &r) const;
 };
 Q_DECLARE_SHARED(QPolygonF)
+
+QPolygonF QPolygon::toPolygonF() const { return QPolygonF(*this); }
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QPolygonF &);
