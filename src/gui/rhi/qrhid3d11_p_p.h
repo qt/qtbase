@@ -532,9 +532,6 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
         currentGraphicsPipeline = nullptr;
         currentComputePipeline = nullptr;
         currentPipelineGeneration = 0;
-        resetCachedShaderResourceState();
-    }
-    void resetCachedShaderResourceState() {
         currentGraphicsSrb = nullptr;
         currentComputeSrb = nullptr;
         currentSrbGeneration = 0;
