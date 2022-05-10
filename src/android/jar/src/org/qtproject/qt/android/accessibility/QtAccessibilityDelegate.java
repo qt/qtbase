@@ -193,9 +193,10 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         return true;
     }
 
-    public void notifyLocationChange()
+    public void notifyLocationChange(int viewId)
     {
-        invalidateVirtualViewId(m_focusedVirtualViewId);
+        if (m_focusedVirtualViewId == viewId)
+            invalidateVirtualViewId(m_focusedVirtualViewId);
     }
 
     public void notifyObjectHide(int viewId, int parentId)
