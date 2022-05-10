@@ -1,0 +1,24 @@
+qt-testrunner.py is a script that can wrap the execution of every test in Qt
+in order to iron out common issues with testing. It can be turned on by
+setting the environment variable TESTRUNNER=/path/to/qt-testrunner.py before
+invoking ctest.
+
+It is commonly in use in Coin, the Continuous Integration system of Qt.
+
+It offers the following functionality
++ Reads the XML test log and understands exactly which function of the test failed.
++ Checks the exit code and if needed repeats only the failed function of the test.
++ Appends output argument to it: "-o file.xml"
++ In case the test is executed multiple times
+  - the previous output files are saved
+  - the verbosity level is increased
+
+The script itself has a testsuite that is simply run by invoking
+
+qtbase/util/testrunner/tests/tst_testrunner.py
+
+Please *run this manually* before submitting a change to qt-testrunner and
+make sure it's passing. The reason it does not run automatically during the
+usual qtbase test run, is because
++ the test run should not depend on Python
++ we don't want to wrap the testrunner tests with testrunner.
