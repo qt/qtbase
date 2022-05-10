@@ -7,7 +7,8 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
     "SHELL:-s EXPORTED_RUNTIME_METHODS=[UTF16ToString,stringToUTF16,specialHTMLTargets]"
     "SHELL:-s USE_WEBGL2=1"
     "--bind"
-    "SHELL:-s FETCH=1")
+    "SHELL:-s FETCH=1"
+    "SHELL:-s WASM_BIGINT=1")
 
     # Enable MODULARIZE and set EXPORT_NAME, which makes it possible to
     # create application instances using a global constructor function,
