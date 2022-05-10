@@ -1,32 +1,7 @@
-/****************************************************************************
-**
-** Copyright (C) 2022 The Qt Company Ltd.
-** Copyright (C) 2022 Intel Corporation.
-** Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.com>
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the test suite of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:GPL-EXCEPT$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3 as published by the Free Software
-** Foundation with exceptions as appearing in the file LICENSE.GPL3-EXCEPT
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2022 The Qt Company Ltd.
+// Copyright (C) 2022 Intel Corporation.
+// Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.com>
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include <qdebug.h>
 #include <qglobal.h>
@@ -669,16 +644,16 @@ void tst_qmessagehandler::qMessagePattern_data()
 
     // %{file} is tricky because of shadow builds
     QTest::newRow("basic") << "%{type} %{appname} %{line} %{function} %{message}" << true << (QList<QByteArray>()
-            << "debug  39 T::T static constructor"
+            << "debug  14 T::T static constructor"
             //  we can't be sure whether the QT_MESSAGE_PATTERN is already destructed
             << "static destructor"
-            << "debug tst_qlogging 60 MyClass::myFunction from_a_function 34"
-            << "debug tst_qlogging 70 main qDebug"
-            << "info tst_qlogging 71 main qInfo"
-            << "warning tst_qlogging 72 main qWarning"
-            << "critical tst_qlogging 73 main qCritical"
-            << "warning tst_qlogging 76 main qDebug with category"
-            << "debug tst_qlogging 80 main qDebug2");
+            << "debug tst_qlogging 35 MyClass::myFunction from_a_function 34"
+            << "debug tst_qlogging 45 main qDebug"
+            << "info tst_qlogging 46 main qInfo"
+            << "warning tst_qlogging 47 main qWarning"
+            << "critical tst_qlogging 48 main qCritical"
+            << "warning tst_qlogging 51 main qDebug with category"
+            << "debug tst_qlogging 55 main qDebug2");
 
 
     QTest::newRow("invalid") << "PREFIX: %{unknown} %{message}" << false << (QList<QByteArray>()
