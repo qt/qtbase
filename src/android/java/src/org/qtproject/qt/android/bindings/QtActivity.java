@@ -1133,9 +1133,9 @@ public class QtActivity extends Activity
         QtNative.activityDelegate().updateSelection(selStart, selEnd, candidatesStart, candidatesEnd);
     }
 
-    public void notifyAccessibilityLocationChange()
+    public void notifyAccessibilityLocationChange(int viewId)
     {
-        QtNative.activityDelegate().notifyAccessibilityLocationChange();
+        QtNative.activityDelegate().notifyAccessibilityLocationChange(viewId);
     }
 
     public void notifyObjectHide(int viewId, int parentId)
