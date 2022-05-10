@@ -66,7 +66,7 @@ function(qt_internal_try_compile_binary_for_strip binary_out_var)
 endfunction()
 
 # When using the MinGW 11.2.0 toolchain, cmake --install --strip as used by
-# qt-cmake-private-intstall.cmake, removes the .gnu_debuglink section in binaries and thus
+# qt-cmake-private-install.cmake, removes the .gnu_debuglink section in binaries and thus
 # breaks the separate debug info feature.
 #
 # Generate a wrapper shell script that passes an option to keep the debug section.
@@ -86,16 +86,26 @@ function(qt_internal_generate_binary_strip_wrapper)
         return()
     endif()
 
-    # To make reconfiguration more robust when QT_INTERNAL_STRIP_SUPPORTS_KEEP_SECTION is manually
-    # removed, make sure to always find the original strip first, by first removing the cached var
-    # and then finding the binary again.
-    unset(CMAKE_STRIP CACHE)
-    include(CMakeFindBinUtils)
+    # Backup the original strip path on very first configuration call.
+    # The value might have been determined by CMake via CMakeDetermineCXXCompiler ->
+    # CMakeFindBinUtils -> find_program(), or it might have been set by a toolchain file.
+    if(NOT QT_INTERNAL_ORIGINAL_CMAKE_STRIP AND CMAKE_STRIP)
+        set(QT_INTERNAL_ORIGINAL_CMAKE_STRIP "${CMAKE_STRIP}" CACHE INTERNAL
+            "Original strip binary")
+    endif()
+
+    message(STATUS "CMAKE_STRIP (original): ${QT_INTERNAL_ORIGINAL_CMAKE_STRIP}")
 
     # Target Linux and MinGW.
     if((UNIX OR MINGW)
             AND NOT APPLE
+            AND NOT ANDROID
             AND CMAKE_STRIP)
+
+        # To make reconfiguration more robust when QT_INTERNAL_STRIP_SUPPORTS_KEEP_SECTION is
+        # manually removed, make sure to always restore the original strip first, by
+        # re-assigning the original value.
+        set(CMAKE_STRIP "${QT_INTERNAL_ORIGINAL_CMAKE_STRIP}" CACHE STRING "")
 
         # Getting path to a binary we can run strip on.
         qt_internal_try_compile_binary_for_strip(valid_binary_path)
@@ -127,7 +137,7 @@ function(qt_internal_generate_binary_strip_wrapper)
 
         message(DEBUG
             "qt_internal_generate_binary_strip_wrapper:\n"
-            "original strip: ${CMAKE_STRIP}\n"
+            "original strip: ${QT_INTERNAL_ORIGINAL_CMAKE_STRIP}\n"
             "strip probe output: ${strip_probe_output}\n"
             "strip result: ${strip_result_var}\n"
             "keep section supported: ${keep_section_supported}\n"
@@ -173,15 +183,15 @@ function(qt_internal_generate_binary_strip_wrapper)
 
         set(wrapper_out "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/${script_name}${wrapper_extension}")
 
-        set(original_strip "${CMAKE_STRIP}")
+        # Used in the template file.
+        set(original_strip "${QT_INTERNAL_ORIGINAL_CMAKE_STRIP}")
 
         configure_file("${wrapper_in}" "${wrapper_out}" @ONLY)
 
-        # Backup the original strip path for informational purposes.
-        set(QT_INTERNAL_ORIGINAL_STRIP "${original_strip}" CACHE INTERNAL "Original strip binary")
-
         # Override the strip binary to be used by CMake install target.
         set(CMAKE_STRIP "${wrapper_out}" CACHE INTERNAL "Custom Qt strip wrapper")
+
+        message(STATUS "CMAKE_STRIP (used by Qt): ${CMAKE_STRIP}")
     endif()
 endfunction()
 
