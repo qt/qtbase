@@ -65,7 +65,6 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
     target_link_options("${wasmTarget}" INTERFACE $<$<CONFIG:Debug>:
         "SHELL:-s DEMANGLE_SUPPORT=1"
         "SHELL:-s GL_DEBUG=1"
-        "SHELL:-s ASSERTIONS=2"
         --profiling-funcs>)
 
     # target_link_options("${wasmTarget}" INTERFACE "SHELL:-s LIBRARY_DEBUG=1") # print out library calls, verbose
