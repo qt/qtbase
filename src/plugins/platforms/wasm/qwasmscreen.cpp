@@ -78,9 +78,14 @@ QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
     // apps/ages only, since Emscripten uses the main document to look up the element.
     // As a workaround for this, Emscripten supports registering custom mappings in the
     // "specialHTMLTargets" object. Add a mapping for the canvas for this screen.
-    emscripten::val specialHtmlTargets = emscripten::val::module_property("specialHTMLTargets");
-    std::string id = std::string("!qtcanvas_") + std::to_string(uint32_t(this));
-    specialHtmlTargets.set(id, m_canvas);
+    //
+    // This functionality is gated on "specialHTMLTargets" being available as a module
+    // property. One way to ensure this is the case is to add it to EXPORTED_RUNTIME_METHODS.
+    // Qt does not currently do this by default since if added it _must_ be used in order
+    // to avoid an undefined reference error at startup, and there are cases when Qt won't use
+    // it, for example if QGuiApplication is not usded.
+    if (hasSpecialHtmlTargets())
+         emscripten::val::module_property("specialHTMLTargets").set(canvasSpecialHtmlTargetId(), m_canvas);
 
     // Install event handlers on the container/canvas. This must be
     // done after the canvas has been created above.
@@ -97,9 +102,9 @@ QWasmScreen::~QWasmScreen()
     // event handlers.
     m_compositor = nullptr;
 
-    emscripten::val specialHtmlTargets = emscripten::val::module_property("specialHTMLTargets");
-    std::string id = std::string("!qtcanvas_") + std::to_string(uint32_t(this));
-    specialHtmlTargets.set(id, emscripten::val::undefined());
+    if (hasSpecialHtmlTargets())
+        emscripten::val::module_property("specialHTMLTargets")
+            .set(canvasSpecialHtmlTargetId(), emscripten::val::undefined());
 
     m_canvas.set(m_canvasResizeObserverCallbackContextPropertyName, emscripten::val(intptr_t(0)));
 }
@@ -146,13 +151,33 @@ QString QWasmScreen::canvasId() const
     return QWasmString::toQString(m_canvas["id"]);
 }
 
-// Returns the canvas _target_ id, for use with Emscripten's
-// event registration functions. The target id is a globally
-// unique id, unlike the html element id which is only unique
-// within one html document. See specialHtmlTargets.
+// Returns the canvas _target_ id, for use with Emscripten's event registration
+// functions. This either based on the id registered in specialHtmlTargets, or
+// on the canvas id.
 QString QWasmScreen::canvasTargetId() const
 {
-    return QStringLiteral("!qtcanvas_") + QString::number(int32_t(this));
+    if (hasSpecialHtmlTargets())
+        return QString::fromStdString(canvasSpecialHtmlTargetId());
+    else
+        return QStringLiteral("#") + canvasId();
+}
+
+std::string QWasmScreen::canvasSpecialHtmlTargetId() const
+{
+    // Return a globally unique id for the canvas. We can choose any string,
+    // as long as it starts with a "!".
+    return std::string("!qtcanvas_") + std::to_string(uint32_t(this));
+}
+
+bool QWasmScreen::hasSpecialHtmlTargets() const
+{
+    static bool gotIt = []{
+        // specialHTMLTargets is a JavaScript Array if available. Note that it is
+        // an abort() function if not, so a simple isUndefined() test wont't work here.
+        return emscripten::val::module_property("specialHTMLTargets")
+               ["constructor"]["name"].as<std::string>() == std::string("Array");
+    }();
+    return gotIt;
 }
 
 QRect QWasmScreen::geometry() const

@@ -11,6 +11,7 @@
 #include "emscripten.h"
 #include <emscripten/html5.h>
 #include <emscripten/threading.h>
+#include <emscripten/val.h>
 
 QT_BEGIN_NAMESPACE
 
