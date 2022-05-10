@@ -5468,7 +5468,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
         QWidgetEffectSourcePrivate *sourced = static_cast<QWidgetEffectSourcePrivate *>
                                                          (source->d_func());
         if (!sourced->context) {
-            const QRegion effectRgn(rgn.boundingRect());
+            const QRegion effectRgn((flags & UseEffectRegionBounds) ? rgn.boundingRect() : rgn);
             QWidgetPaintContext context(pdev, effectRgn, offset, flags, sharedPainter, repaintManager);
             sourced->context = &context;
             if (!sharedPainter) {
@@ -5500,6 +5500,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
         }
     }
 #endif // QT_CONFIG(graphicseffect)
+    flags = flags & ~UseEffectRegionBounds;
 
     const bool alsoOnScreen = flags & DrawPaintOnScreen;
     const bool recursive = flags & DrawRecursive;
