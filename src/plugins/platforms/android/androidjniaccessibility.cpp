@@ -132,9 +132,9 @@ namespace QtAndroidAccessibility
         return iface;
     }
 
-    void notifyLocationChange()
+    void notifyLocationChange(uint accessibilityObjectId)
     {
-        QtAndroid::notifyAccessibilityLocationChange();
+        QtAndroid::notifyAccessibilityLocationChange(accessibilityObjectId);
     }
 
     static int parentId_helper(int objectId); // forward declaration

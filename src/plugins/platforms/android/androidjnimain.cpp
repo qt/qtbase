@@ -210,9 +210,10 @@ namespace QtAndroid
         QJniObject::callStaticMethod<void>(m_applicationClass, "setSystemUiVisibility", "(I)V", jint(uiVisibility));
     }
 
-    void notifyAccessibilityLocationChange()
+    void notifyAccessibilityLocationChange(uint accessibilityObjectId)
     {
-        QJniObject::callStaticMethod<void>(m_applicationClass, "notifyAccessibilityLocationChange");
+        QJniObject::callStaticMethod<void>(m_applicationClass, "notifyAccessibilityLocationChange",
+                                           "(I)V", accessibilityObjectId);
     }
 
     void notifyObjectHide(uint accessibilityObjectId, uint parentObjectId)
