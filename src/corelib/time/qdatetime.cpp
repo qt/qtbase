@@ -2717,15 +2717,6 @@ static QTime msecsToTime(qint64 msecs)
     return QTime::fromMSecsSinceStartOfDay(QRoundingDown::qMod(msecs, MSECS_PER_DAY));
 }
 
-static void msecsToTime(qint64 msecs, QDate *date, QTime *time)
-{
-    qint64 days = QRoundingDown::qDiv(msecs, MSECS_PER_DAY);
-    if (date)
-        *date = QDate::fromJulianDay(JULIAN_DAY_FOR_EPOCH + days);
-    if (time)
-        *time = QTime::fromMSecsSinceStartOfDay(msecs - days * MSECS_PER_DAY);
-}
-
 // Converts a date/time value into msecs
 static qint64 timeToMSecs(QDate date, QTime time)
 {
@@ -2952,9 +2943,8 @@ QString QDateTimePrivate::localNameAtMillis(qint64 millis, DaylightStatus dst)
     QString abbreviation;
     bool valid = false;
     if (millisInSystemRange(millis, MSECS_PER_DAY)) {
-        QDate dt;
-        QTime tm;
-        msecsToTime(millis, &dt, &tm);
+        QDate dt = msecsToDate(millis);
+        QTime tm = msecsToTime(millis);
         qt_mktime(&dt, &tm, &dst, &abbreviation, &valid);
         if (valid)
             return abbreviation;
@@ -2987,9 +2977,8 @@ QDateTimePrivate::ZoneState QDateTimePrivate::localStateAtMillis(qint64 millis, 
     // case it does fall in the range and gets useful information:
     bool valid = false;
     if (millisInSystemRange(millis, MSECS_PER_DAY)) {
-        QDate dt;
-        QTime tm;
-        msecsToTime(millis, &dt, &tm);
+        QDate dt = msecsToDate(millis);
+        QTime tm = msecsToTime(millis);
         const qint64 utc = qt_mktime(&dt, &tm, &dst, nullptr, &valid);
         if (valid && millisInSystemRange(utc)) {
             // mktime() worked and the result falls in its valid range, so use its results
@@ -3341,18 +3330,15 @@ static void setDateTime(QDateTimeData &d, QDate date, QTime time)
 
 static QPair<QDate, QTime> getDateTime(const QDateTimeData &d)
 {
-    QPair<QDate, QTime> result;
-    qint64 msecs = getMSecs(d);
     auto status = getStatus(d);
-    msecsToTime(msecs, &result.first, &result.second);
-
-    if (!status.testFlag(QDateTimePrivate::ValidDate))
-        result.first = QDate();
-
-    if (!status.testFlag(QDateTimePrivate::ValidTime))
-        result.second = QTime();
-
-    return result;
+    const qint64 msecs = getMSecs(d);
+    const qint64 days = QRoundingDown::qDiv(msecs, MSECS_PER_DAY);
+    return { status.testFlag(QDateTimePrivate::ValidDate)
+            ? QDate::fromJulianDay(JULIAN_DAY_FOR_EPOCH + days)
+            : QDate(),
+            status.testFlag(QDateTimePrivate::ValidTime)
+            ? QTime::fromMSecsSinceStartOfDay(msecs - days * MSECS_PER_DAY)
+            : QTime() };
 }
 
 /*****************************************************************************
