@@ -18,13 +18,15 @@ function(qt_internal_create_wrapper_scripts)
 
     if(generate_unix)
         configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake.in"
-                       "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake" @ONLY)
+                       "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake" @ONLY
+                        NEWLINE_STYLE LF)
         qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake"
                    DESTINATION "${INSTALL_BINDIR}")
     endif()
     if(generate_non_unix)
         configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake.bat.in"
-                       "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake.bat" @ONLY)
+                       "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake.bat" @ONLY
+                       NEWLINE_STYLE CRLF)
         qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake.bat"
                    DESTINATION "${INSTALL_BINDIR}")
     endif()
@@ -40,13 +42,15 @@ function(qt_internal_create_wrapper_scripts)
     set(__qt_cmake_extra "-G\"${CMAKE_GENERATOR}\"")
     if(generate_unix)
         configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake.in"
-            "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake-private" @ONLY)
+            "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake-private" @ONLY
+            NEWLINE_STYLE LF)
         qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake-private"
                DESTINATION "${INSTALL_BINDIR}")
     endif()
     if(generate_non_unix)
         configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake.bat.in"
-            "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake-private.bat" @ONLY)
+            "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake-private.bat" @ONLY
+            NEWLINE_STYLE CRLF)
         qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake-private.bat"
                DESTINATION "${INSTALL_BINDIR}")
     endif()
@@ -64,13 +68,15 @@ function(qt_internal_create_wrapper_scripts)
         __relative_path_to_cmake_scripts_dir)
     if(generate_unix)
         configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-configure-module.in"
-            "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-configure-module" @ONLY)
+            "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-configure-module" @ONLY
+            NEWLINE_STYLE LF)
         qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-configure-module"
             DESTINATION "${INSTALL_BINDIR}")
     endif()
     if(generate_non_unix)
         configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-configure-module.bat.in"
-            "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-configure-module.bat" @ONLY)
+            "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-configure-module.bat" @ONLY
+            NEWLINE_STYLE CRLF)
         qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-configure-module.bat"
             DESTINATION "${INSTALL_BINDIR}")
     endif()
@@ -113,7 +119,8 @@ function(qt_internal_create_wrapper_scripts)
         set(__qt_cmake_standalone_passed_args "\"$@\" -DPWD=\"$PWD\"")
 
         configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake-standalone-test.in"
-                       "${QT_BUILD_DIR}/${__qt_cmake_standalone_test_bin_path}")
+            "${QT_BUILD_DIR}/${__qt_cmake_standalone_test_bin_path}"
+            NEWLINE_STYLE LF)
         qt_install(PROGRAMS "${QT_BUILD_DIR}/${__qt_cmake_standalone_test_bin_path}"
                    DESTINATION "${INSTALL_BINDIR}")
     endif()
@@ -127,7 +134,8 @@ function(qt_internal_create_wrapper_scripts)
         set(__qt_cmake_standalone_passed_args "%* -DPWD=\"%CD%\"")
 
         configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake-standalone-test.in"
-                       "${QT_BUILD_DIR}/${__qt_cmake_standalone_test_bin_path}")
+            "${QT_BUILD_DIR}/${__qt_cmake_standalone_test_bin_path}"
+            NEWLINE_STYLE CRLF)
         qt_install(PROGRAMS "${QT_BUILD_DIR}/${__qt_cmake_standalone_test_bin_path}"
                    DESTINATION "${INSTALL_BINDIR}")
     endif()
@@ -179,14 +187,16 @@ function(qt_internal_create_qt_configure_tests_wrapper_script)
 
     if(generate_unix)
         configure_file("${CMAKE_CURRENT_SOURCE_DIR}/libexec/${script_name}.in"
-            "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/${script_name}" @ONLY)
+            "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/${script_name}" @ONLY
+            NEWLINE_STYLE LF)
 
         qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/${script_name}"
                    DESTINATION "${INSTALL_LIBEXECDIR}")
     endif()
     if(generate_non_unix)
         configure_file("${CMAKE_CURRENT_SOURCE_DIR}/libexec/${script_name}.bat.in"
-            "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/${script_name}.bat" @ONLY)
+            "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/${script_name}.bat" @ONLY
+            NEWLINE_STYLE CRLF)
 
         qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/${script_name}.bat"
                    DESTINATION "${INSTALL_LIBEXECDIR}")
