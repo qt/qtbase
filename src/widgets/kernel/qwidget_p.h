@@ -229,7 +229,8 @@ public:
         DontSubtractOpaqueChildren = 0x10,
         DontDrawOpaqueChildren = 0x20,
         DontDrawNativeChildren = 0x40,
-        DontSetCompositionMode = 0x80
+        DontSetCompositionMode = 0x80,
+        UseEffectRegionBounds = 0x100
     };
     Q_DECLARE_FLAGS(DrawWidgetFlags, DrawWidgetFlag)
     Q_FLAG(DrawWidgetFlags)
