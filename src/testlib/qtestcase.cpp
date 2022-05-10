@@ -1223,6 +1223,26 @@ public:
 #endif
 
 
+static void printUnknownDataTagError(QLatin1String name, QLatin1String tag,
+                                     const QTestTable &lTable, const QTestTable &gTable)
+{
+    fprintf(stderr, "Unknown testdata for function %s(): '%s'\n", name.data(), tag.data());
+    const int localDataCount = lTable.dataCount();
+    if (localDataCount) {
+        fputs("Available test-specific data tags:\n", stderr);
+        for (int i = 0; i < localDataCount; ++i)
+            fprintf(stderr, "\t%s\n", lTable.testData(i)->dataTag());
+    }
+    const int globalDataCount = gTable.dataCount();
+    if (globalDataCount) {
+        fputs("Available global data tags:\n", stderr);
+        for (int i = 0; i < globalDataCount; ++i)
+            fprintf(stderr, "\t%s\n", gTable.testData(i)->dataTag());
+    }
+    if (localDataCount == 0 && globalDataCount == 0)
+        fputs("Function has no data tags\n", stderr);
+}
+
 /*!
     \internal
 
@@ -1282,13 +1302,6 @@ bool TestMethods::invokeTest(int index, QLatin1String tag, WatchDog *watchDog) c
             return dataCount ? table.testData(index)->dataTag() : nullptr;
         };
 
-        // Data tag requested but none available?
-        if (!tag.isEmpty() && !dataCount && !globalDataCount) {
-            fprintf(stderr, "Unknown test data tag for function %s(): '%s'\n"
-                    "Function has no testdata.\n", name.constData(), tag.data());
-            return false;
-        }
-
         /* For each entry in this test's data table, do: */
         do {
             QTestResult::setSkipCurrentTest(false);
@@ -1296,7 +1309,6 @@ bool TestMethods::invokeTest(int index, QLatin1String tag, WatchDog *watchDog) c
             if (dataTagMatches(tag, QLatin1String(dataTag(curDataIndex)),
                                QLatin1String(globalDataTag(curGlobalDataIndex)))) {
                 foundFunction = true;
-
                 QTestPrivate::checkBlackLists(name.constData(), dataTag(curDataIndex),
                                               globalDataTag(curGlobalDataIndex));
 
@@ -1321,20 +1333,9 @@ bool TestMethods::invokeTest(int index, QLatin1String tag, WatchDog *watchDog) c
     } while (curGlobalDataIndex < globalDataCount);
 
     if (!tag.isEmpty() && !foundFunction) {
-        fprintf(stderr, "Unknown testdata for function %s(): '%s'\n", name.constData(), tag.data());
-        if (table.dataCount()) {
-            fputs("Available test-specific data tags:\n", stderr);
-            for (int i = 0; i < table.dataCount(); ++i)
-                fprintf(stderr, "\t%s\n", table.testData(i)->dataTag());
-        }
-        if (globalDataCount) {
-            fputs("Available global data tags:\n", stderr);
-            for (int i = 0; i < globalDataCount; ++i)
-                fprintf(stderr, "\t%s\n", gTable->testData(i)->dataTag());
-        }
-        return false;
+        printUnknownDataTagError(QLatin1String(name), tag, table, *gTable);
+        QTestResult::addFailure(qPrintable(QLatin1String("Data tag not found: %1").arg(tag)));
     }
-
     QTestResult::finishedCurrentTestFunction();
     QTestResult::setSkipCurrentTest(false);
     QTestResult::setBlacklistCurrentTest(false);
