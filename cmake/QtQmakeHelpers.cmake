@@ -149,16 +149,18 @@ HostSpec=${QT_QMAKE_HOST_MKSPEC}
     foreach(host_type ${hosts})
         foreach(tool_name qmake qtpaths)
             set(wrapper_extension)
+            set(newline_style LF)
 
             if(host_type STREQUAL "non-unix")
                 set(wrapper_extension ".bat")
+                set(newline_style CRLF)
             endif()
 
             set(wrapper_in_file
                 "${CMAKE_CURRENT_SOURCE_DIR}/bin/qmake-and-qtpaths-wrapper${wrapper_extension}.in")
 
             set(wrapper "preliminary/${wrapper_prefix}${tool_name}${wrapper_extension}")
-            configure_file("${wrapper_in_file}" "${wrapper}" @ONLY)
+            configure_file("${wrapper_in_file}" "${wrapper}" @ONLY NEWLINE_STYLE ${newline_style})
             qt_copy_or_install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/${wrapper}"
                 DESTINATION "${INSTALL_BINDIR}")
         endforeach()
