@@ -66,6 +66,9 @@ unix {
     }
 }
 
+# Will automatically add plugins, so run first
+contains(QT_CONFIG, permissions): load(permissions)
+
 # qmake variables cannot contain dashes, so normalize the names first
 CLEAN_QT = $$replace(QT, -private$, _private)
 CLEAN_QT_PRIVATE = $$replace(QT_PRIVATE, -private$, _private)

@@ -50,6 +50,15 @@ if(ANDROID_PLATFORM)
     endif()
 endif()
 
+if(QT_FEATURE_permissions AND APPLE)
+    if(NOT QT_NO_CREATE_TARGETS)
+        set_property(TARGET ${__qt_core_target} APPEND PROPERTY
+            INTERFACE_QT_EXECUTABLE_FINALIZERS
+                _qt_internal_darwin_permission_finalizer
+        )
+    endif()
+endif()
+
 if(EMSCRIPTEN)
     set_property(GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS TRUE)
     include("${CMAKE_CURRENT_LIST_DIR}/@QT_CMAKE_EXPORT_NAMESPACE@WasmMacros.cmake")

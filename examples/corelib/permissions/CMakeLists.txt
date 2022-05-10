@@ -15,6 +15,11 @@ qt_add_executable(permissions
     main.cpp
 )
 
+set_target_properties(permissions PROPERTIES
+    MACOSX_BUNDLE TRUE
+    MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist"
+)
+
 target_link_libraries(permissions PUBLIC
     Qt::Core
     Qt::Gui
@@ -26,3 +31,8 @@ install(TARGETS permissions
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
     LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )
+
+if(APPLE AND NOT CMAKE_GENERATOR STREQUAL "Xcode")
+    add_custom_command(TARGET permissions
+        POST_BUILD COMMAND codesign -s - permissions.app)
+endif()

@@ -712,6 +712,30 @@ function(qt6_finalize_target target)
     endif()
 endfunction()
 
+function(_qt_internal_darwin_permission_finalizer target)
+    get_target_property(plist_file "${target}" MACOSX_BUNDLE_INFO_PLIST)
+    if(NOT plist_file)
+        return()
+    endif()
+    foreach(plugin_target IN LISTS QT_ALL_PLUGINS_FOUND_BY_FIND_PACKAGE_permissions)
+        set(versioned_plugin_target "${QT_CMAKE_EXPORT_NAMESPACE}::${plugin_target}")
+        get_target_property(usage_descriptions
+            ${versioned_plugin_target}
+            _qt_info_plist_usage_descriptions)
+        foreach(usage_description_key IN LISTS usage_descriptions)
+            execute_process(COMMAND "/usr/libexec/PlistBuddy"
+                -c "print ${usage_description_key}" "${plist_file}"
+                OUTPUT_VARIABLE usage_description
+                ERROR_VARIABLE plist_error)
+            if(usage_description AND NOT plist_error)
+                set_target_properties("${target}"
+                    PROPERTIES "_qt_has_${plugin_target}_usage_description" TRUE)
+                qt6_import_plugins(${target} INCLUDE ${versioned_plugin_target})
+            endif()
+        endforeach()
+    endforeach()
+endfunction()
+
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     function(qt_add_executable)
         qt6_add_executable(${ARGV})

@@ -1,0 +1,25 @@
+isEmpty(QMAKE_INFO_PLIST): \
+    return()
+
+for(plugin, QT_PLUGINS) {
+    !equals(QT_PLUGIN.$${plugin}.TYPE, permissions): \
+        next()
+
+    usage_descriptions = $$eval(QT_PLUGIN.$${plugin}.usage_descriptions)
+    for(usage_description_key, usage_descriptions) {
+        usage_description = $$system("/usr/libexec/PlistBuddy" \
+        "-c 'print $$usage_description_key' $$QMAKE_INFO_PLIST 2>/dev/null")
+        !isEmpty(usage_description): \
+            break()
+    }
+
+    isEmpty(usage_description): \
+        next()
+
+    request_flag = $$eval(QT_PLUGIN.$${plugin}.request_flag)
+
+    QTPLUGIN += $$plugin
+    QMAKE_LFLAGS += $$request_flag
+
+    QMAKE_INTERNAL_INCLUDED_FILES *= $$QMAKE_INFO_PLIST
+}

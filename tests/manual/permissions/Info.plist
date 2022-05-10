@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+
+    <key>CFBundleName</key>
+    <string>${MACOSX_BUNDLE_BUNDLE_NAME}</string>
+    <key>CFBundleIdentifier</key>
+    <string>${MACOSX_BUNDLE_GUI_IDENTIFIER}</string>
+    <key>CFBundleExecutable</key>
+    <string>${MACOSX_BUNDLE_EXECUTABLE_NAME}</string>
+
+    <key>CFBundleVersion</key>
+    <string>${MACOSX_BUNDLE_BUNDLE_VERSION}</string>
+    <key>CFBundleShortVersionString</key>
+    <string>${MACOSX_BUNDLE_SHORT_VERSION_STRING}</string>
+
+    <key>LSMinimumSystemVersion</key>
+    <string>${CMAKE_OSX_DEPLOYMENT_TARGET}</string>
+
+    <key>NSHumanReadableCopyright</key>
+    <string>${MACOSX_BUNDLE_COPYRIGHT}</string>
+
+    <key>CFBundleIconFile</key>
+    <string>${MACOSX_BUNDLE_ICON_FILE}</string>
+
+    <key>CFBundleDevelopmentRegion</key>
+    <string>English</string>
+
+    <key>NSSupportsAutomaticGraphicsSwitching</key>
+    <true/>
+
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>Testing BluetoothAlways</string>
+    <key>NSCalendarsUsageDescription</key>
+    <string>Testing Calendars</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Testing Camera</string>
+    <key>NSContactsUsageDescription</key>
+    <string>Testing Contacts</string>
+    <key>NSHealthShareUsageDescription</key>
+    <string>Testing HealthShare</string>
+    <key>NSHealthUpdateUsageDescription</key>
+    <string>Testing HealthUpdate</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>Testing LocationAlwaysAndWhenInUse</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>Testing LocationAlways</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Testing LocationWhenInUse</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Testing Microphone</string>
+
+</dict>
+</plist>

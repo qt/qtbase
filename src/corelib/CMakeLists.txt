@@ -1164,6 +1164,67 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_permissions
         kernel/qpermissions.cpp kernel/qpermissions.h kernel/qpermissions_p.h
 )
 
+if(QT_FEATURE_permissions AND APPLE)
+    qt_internal_extend_target(Core
+        SOURCES
+            kernel/qpermissions_darwin.mm
+            platform/darwin/qdarwinpermissionplugin.mm
+        PLUGIN_TYPES
+            permissions
+    )
+
+    foreach(permission Camera Microphone Bluetooth Contacts Calendar Location)
+        qt_internal_add_darwin_permission_plugin("${permission}")
+    endforeach()
+
+    # Camera
+    qt_internal_extend_target(QDarwinCameraPermissionPlugin
+        LIBRARIES ${FWAVFoundation}
+    )
+    set_property(TARGET QDarwinCameraPermissionPlugin PROPERTY
+        _qt_darwin_permissison_separate_request TRUE
+    )
+
+    # Microphone
+    qt_internal_extend_target(QDarwinMicrophonePermissionPlugin
+        LIBRARIES ${FWAVFoundation}
+    )
+    set_property(TARGET QDarwinMicrophonePermissionPlugin PROPERTY
+        _qt_darwin_permissison_separate_request TRUE
+    )
+
+    # Bluetooth
+    qt_internal_extend_target(QDarwinBluetoothPermissionPlugin
+        LIBRARIES ${FWCoreBluetooth}
+    )
+    set_property(TARGET QDarwinBluetoothPermissionPlugin PROPERTY
+        _qt_info_plist_usage_descriptions "NSBluetoothAlwaysUsageDescription"
+    )
+
+    # Contacts
+    qt_internal_extend_target(QDarwinContactsPermissionPlugin
+        LIBRARIES ${FWContacts}
+    )
+
+    # Calendar
+    qt_internal_extend_target(QDarwinCalendarPermissionPlugin
+        LIBRARIES ${FWEventKit}
+    )
+    set_property(TARGET QDarwinCalendarPermissionPlugin PROPERTY
+        _qt_info_plist_usage_descriptions "NSCalendarsUsageDescription"
+    )
+
+    # Location
+    qt_internal_extend_target(QDarwinLocationPermissionPlugin
+        LIBRARIES ${FWCoreLocation}
+    )
+    set_property(TARGET QDarwinLocationPermissionPlugin PROPERTY
+        _qt_info_plist_usage_descriptions
+            "NSLocationWhenInUseUsageDescription"
+            "NSLocationAlwaysUsageDescription"
+    )
+endif()
+
 #### Keys ignored in scope 171:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_mimetype:
 # MIME_DATABASE = "mimetypes/mime/packages/freedesktop.org.xml"
 # OTHER_FILES = "$$MIME_DATABASE"

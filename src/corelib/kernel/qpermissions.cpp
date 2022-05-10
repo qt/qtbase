@@ -276,6 +276,10 @@ QMetaType QPermission::type() const
     \section1 Requirements
 
     \include permissions.qdocinc begin-usage-declarations
+      \row
+        \li Apple
+        \li \l{apple-usage-description}{Usage description}
+        \li \c NSCameraUsageDescription
     \include permissions.qdocinc end-usage-declarations
 
     \include permissions.qdocinc permission-metadata
@@ -290,7 +294,10 @@ QT_DEFINE_PERMISSION_SPECIAL_FUNCTIONS(QCameraPermission)
     \section1 Requirements
 
     \include permissions.qdocinc begin-usage-declarations
-
+      \row
+        \li Apple
+        \li \l{apple-usage-description}{Usage description}
+        \li \c NSMicrophoneUsageDescription
     \include permissions.qdocinc end-usage-declarations
 
     \include permissions.qdocinc permission-metadata
@@ -305,6 +312,10 @@ QT_DEFINE_PERMISSION_SPECIAL_FUNCTIONS(QMicrophonePermission)
     \section1 Requirements
 
     \include permissions.qdocinc begin-usage-declarations
+      \row
+        \li Apple
+        \li \l{apple-usage-description}{Usage description}
+        \li \c NSBluetoothAlwaysUsageDescription
     \include permissions.qdocinc end-usage-declarations
 
     \include permissions.qdocinc permission-metadata
@@ -324,6 +335,12 @@ QT_DEFINE_PERMISSION_SPECIAL_FUNCTIONS(QBluetoothPermission)
     \section1 Requirements
 
     \include permissions.qdocinc begin-usage-declarations
+      \row
+        \li Apple
+        \li \l{apple-usage-description}{Usage description}
+        \li \c NSLocationWhenInUseUsageDescription, and
+            \c NSLocationAlwaysUsageDescription if requesting
+            QLocationPermission::Always
     \include permissions.qdocinc end-usage-declarations
 
     \include permissions.qdocinc permission-metadata
@@ -404,6 +421,10 @@ QLocationPermission::Availability QLocationPermission::availability() const
     \section1 Requirements
 
     \include permissions.qdocinc begin-usage-declarations
+      \row
+        \li Apple
+        \li \l{apple-usage-description}{Usage description}
+        \li \c NSContactsUsageDescription
     \include permissions.qdocinc end-usage-declarations
 
     \include permissions.qdocinc permission-metadata
@@ -443,6 +464,10 @@ bool QContactsPermission::isReadOnly() const
     \section1 Requirements
 
     \include permissions.qdocinc begin-usage-declarations
+      \row
+        \li Apple
+        \li \l{apple-usage-description}{Usage description}
+        \li \c NSCalendarsUsageDescription
     \include permissions.qdocinc end-usage-declarations
 
     \include permissions.qdocinc permission-metadata
@@ -472,6 +497,11 @@ bool QCalendarPermission::isReadOnly() const
     return d->isReadOnly;
 }
 
+/*!
+ * \internal
+*/
+
+QPermissionPlugin::~QPermissionPlugin() = default;
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, const QPermission &permission)

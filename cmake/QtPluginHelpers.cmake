@@ -507,3 +507,81 @@ function(qt_internal_get_module_for_plugin target target_type out_var)
     endforeach()
     message(FATAL_ERROR "The plug-in '${target}' does not belong to any Qt module.")
 endfunction()
+
+function(qt_internal_add_darwin_permission_plugin permission)
+    string(TOLOWER "${permission}" permission_lower)
+    string(TOUPPER "${permission}" permission_upper)
+    set(permission_source_file "platform/darwin/qdarwinpermissionplugin_${permission_lower}.mm")
+    set(plugin_target "QDarwin${permission}PermissionPlugin")
+    set(plugin_name "qdarwin${permission_lower}permission")
+    qt_internal_add_plugin(${plugin_target}
+        STATIC # Force static, even in shared builds
+        OUTPUT_NAME ${plugin_name}
+        PLUGIN_TYPE permissions
+        DEFAULT_IF FALSE
+        SOURCES
+            ${permission_source_file}
+        DEFINES
+            QT_DARWIN_PERMISSION_PLUGIN=${permission}
+        LIBRARIES
+            Qt::Core
+            Qt::CorePrivate
+    )
+
+    # Disable PCH since CMake falls over on single .mm source targets
+    set_target_properties(${plugin_target} PROPERTIES
+        DISABLE_PRECOMPILE_HEADERS ON
+    )
+
+    # Generate plugin JSON file
+    set(content "{ \"Permissions\": [ \"Q${permission}Permission\" ] }")
+    get_target_property(plugin_build_dir "${plugin_target}" BINARY_DIR)
+    set(output_file "${plugin_build_dir}/${plugin_target}.json")
+    qt_configure_file(OUTPUT "${output_file}" CONTENT "${content}")
+
+    # Associate required usage descriptions
+    set(usage_descriptions_property "_qt_info_plist_usage_descriptions")
+    set_target_properties(${plugin_target} PROPERTIES
+        ${usage_descriptions_property} "NS${permission}UsageDescription"
+    )
+    set_property(TARGET ${plugin_target} APPEND PROPERTY
+        EXPORT_PROPERTIES ${usage_descriptions_property}
+    )
+    set(usage_descriptions_genex "$<JOIN:$<TARGET_PROPERTY:${plugin_target},${usage_descriptions_property}>, >")
+    set(extra_plugin_pri_content
+        "QT_PLUGIN.${plugin_name}.usage_descriptions = ${usage_descriptions_genex}"
+    )
+
+    # Support granular check and request implementations
+    set(separate_request_source_file
+        "${plugin_build_dir}/qdarwinpermissionplugin_${permission_lower}_request.mm")
+    set(separate_request_genex
+        "$<BOOL:$<TARGET_PROPERTY:${plugin_target},_qt_darwin_permissison_separate_request>>")
+    file(GENERATE OUTPUT "${separate_request_source_file}" CONTENT
+        "
+        #define BUILDING_PERMISSION_REQUEST 1
+        #include \"${CMAKE_CURRENT_SOURCE_DIR}/${permission_source_file}\"
+        "
+        CONDITION "${separate_request_genex}"
+    )
+    target_sources(${plugin_target} PRIVATE
+        "$<${separate_request_genex}:${separate_request_source_file}>"
+    )
+    set_property(TARGET ${plugin_target} APPEND PROPERTY
+        EXPORT_PROPERTIES _qt_darwin_permissison_separate_request
+    )
+    set(permission_request_symbol "_QDarwin${permission}PermissionRequest")
+    set(permission_request_flag "-Wl,-u,${permission_request_symbol}")
+    set(has_usage_description_property "_qt_has_${plugin_target}_usage_description")
+    set(has_usage_description_genex "$<BOOL:$<TARGET_PROPERTY:${has_usage_description_property}>>")
+    target_link_options(${plugin_target} INTERFACE
+        "$<$<AND:${separate_request_genex},${has_usage_description_genex}>:${permission_request_flag}>")
+     list(APPEND extra_plugin_pri_content
+        "QT_PLUGIN.${plugin_name}.request_flag = $<${separate_request_genex}:${permission_request_flag}>"
+    )
+
+    # Expose properties to qmake
+    set_property(TARGET ${plugin_target} PROPERTY
+        QT_PLUGIN_PRI_EXTRA_CONTENT ${extra_plugin_pri_content}
+    )
+endfunction()

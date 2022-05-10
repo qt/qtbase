@@ -9,6 +9,8 @@
 #include <private/qglobal_p.h>
 #include <QtCore/qloggingcategory.h>
 
+#include <QtCore/QObject>
+
 #include <functional>
 
 QT_REQUIRE_CONFIG(permissions);
@@ -26,7 +28,7 @@ QT_REQUIRE_CONFIG(permissions);
 
 QT_BEGIN_NAMESPACE
 
-Q_DECLARE_LOGGING_CATEGORY(lcPermissions)
+Q_DECLARE_EXPORTED_LOGGING_CATEGORY(lcPermissions, Q_CORE_EXPORT)
 
 namespace QPermissions::Private
 {
@@ -35,6 +37,18 @@ namespace QPermissions::Private
     Qt::PermissionStatus checkPermission(const QPermission &permission);
     void requestPermission(const QPermission &permission, const PermissionCallback &callback);
 }
+
+#define QPermissionPluginInterface_iid "org.qt-project.QPermissionPluginInterface.6.5"
+
+class Q_CORE_EXPORT QPermissionPlugin : public QObject
+{
+public:
+    virtual ~QPermissionPlugin();
+
+    virtual Qt::PermissionStatus checkPermission(const QPermission &permission) = 0;
+    virtual void requestPermission(const QPermission &permission,
+        const QPermissions::Private::PermissionCallback &callback) = 0;
+};
 
 QT_END_NAMESPACE
 

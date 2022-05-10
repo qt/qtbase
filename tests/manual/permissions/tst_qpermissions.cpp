@@ -9,6 +9,11 @@
 #include <QtCore/qwaitcondition.h>
 #include <QtCore/qtimer.h>
 
+#if defined(Q_OS_MACOS) && defined(QT_BUILD_INTERNAL)
+#include <private/qcore_mac_p.h>
+Q_CONSTRUCTOR_FUNCTION(qt_mac_ensureResponsible);
+#endif
+
 class tst_QPermissions : public QObject
 {
     Q_OBJECT
