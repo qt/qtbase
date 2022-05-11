@@ -38,7 +38,9 @@
 ****************************************************************************/
 
 #include "qwindowsfontdatabase_p.h"
-#include "qwindowsfontdatabase_ft_p.h" // for default font
+#ifndef QT_NO_FREETYPE
+#  include "qwindowsfontdatabase_ft_p.h" // for default font
+#endif
 #include "qwindowsfontengine_p.h"
 #include <QtCore/qt_windows.h>
 
