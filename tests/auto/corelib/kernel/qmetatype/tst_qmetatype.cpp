@@ -593,6 +593,10 @@ void tst_QMetaType::normalizedTypes()
 #define TYPENAME_DATA(MetaTypeName, MetaTypeId, RealType)\
     QTest::newRow(#RealType) << int(QMetaType::MetaTypeName) << #RealType;
 
+namespace enumerations {
+    enum Test { a = 0 };
+}
+
 void tst_QMetaType::typeName_data()
 {
     QTest::addColumn<int>("aType");
@@ -629,6 +633,8 @@ void tst_QMetaType::typeName_data()
     // template instance class derived from Q_GADGET enabled class
     QTest::newRow("GadgetDerivedAndTyped<int>") << ::qMetaTypeId<GadgetDerivedAndTyped<int>>() << QString::fromLatin1("GadgetDerivedAndTyped<int>");
     QTest::newRow("GadgetDerivedAndTyped<int>*") << ::qMetaTypeId<GadgetDerivedAndTyped<int>*>() << QString::fromLatin1("GadgetDerivedAndTyped<int>*");
+
+    QTest::newRow("msvcKeywordPartOfName") << ::qMetaTypeId<enumerations::Test>() << QString::fromLatin1("enumerations::Test");
 }
 
 void tst_QMetaType::typeName()
