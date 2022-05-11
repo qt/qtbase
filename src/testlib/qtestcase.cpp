@@ -117,10 +117,10 @@ static struct iovec IoVec(const char *str)
     return r;
 }
 
-template <typename... Args> static void writeToStderr(Args &&... args)
+template <typename... Args> static ssize_t writeToStderr(Args &&... args)
 {
     struct iovec vec[] = { IoVec(std::forward<Args>(args))... };
-    ::writev(STDERR_FILENO, vec, std::size(vec));
+    return ::writev(STDERR_FILENO, vec, std::size(vec));
 }
 
 // async-signal-safe conversion from int to string
