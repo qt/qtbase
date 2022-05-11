@@ -1765,7 +1765,7 @@ private:
 #ifdef Q_CC_MSVC
         /// On MSVC, keywords like class or struct are not separated with spaces in constexpr
         /// context
-        if (msvcKw)
+        if (msvcKw && !is_ident_char(*b))
             return true;
 #endif
         Q_UNUSED(msvcKw);
