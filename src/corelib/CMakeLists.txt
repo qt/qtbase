@@ -51,14 +51,15 @@ qt_internal_add_module(Core
         global/qendian.cpp global/qendian.h global/qendian_p.h
         global/qflags.h
         global/qfloat16.cpp global/qfloat16.h
-        global/qglobal.cpp global/qglobal.h
+        global/qforeach.h
+        global/qglobal.cpp global/qglobal.h global/qglobal_p.h
         global/qglobalstatic.h
         global/qhooks.cpp global/qhooks_p.h
         global/qlibraryinfo.cpp global/qlibraryinfo.h global/qlibraryinfo_p.h
-        global/qlogging.cpp global/qlogging.h
+        global/qlogging.cpp global/qlogging.h global/qlogging_p.h
         global/qmalloc.cpp
         global/qnamespace.h # this header is specified on purpose so AUTOMOC processes it
-        global/qnativeinterface.h
+        global/qnativeinterface.h global/qnativeinterface_p.h
         global/qnumeric.cpp global/qnumeric.h global/qnumeric_p.h
         global/qoperatingsystemversion.cpp global/qoperatingsystemversion.h global/qoperatingsystemversion_p.h
         global/qprocessordetection.h
@@ -66,6 +67,7 @@ qt_internal_add_module(Core
         global/qsysinfo.h
         global/qsystemdetection.h
         global/qtnamespacemacros.h
+        global/qtrace_p.h
         global/qtypeinfo.h
         global/qvolatile_p.h
         global/q20algorithm.h
@@ -77,7 +79,7 @@ qt_internal_add_module(Core
         io/qdebug.cpp io/qdebug.h io/qdebug_p.h
         io/qdir.cpp io/qdir.h io/qdir_p.h
         io/qdiriterator.cpp io/qdiriterator.h
-        io/qfile.cpp io/qfile.h
+        io/qfile.cpp io/qfile.h io/qfile_p.h
         io/qfiledevice.cpp io/qfiledevice.h io/qfiledevice_p.h
         io/qfileinfo.cpp io/qfileinfo.h io/qfileinfo_p.h
         io/qfileselector.cpp io/qfileselector.h io/qfileselector_p.h
@@ -94,9 +96,9 @@ qt_internal_add_module(Core
         io/qloggingcategory.cpp io/qloggingcategory.h
         io/qloggingregistry.cpp io/qloggingregistry_p.h
         io/qnoncontiguousbytedevice.cpp io/qnoncontiguousbytedevice_p.h
-        io/qresource.cpp io/qresource_p.h
+        io/qresource.cpp io/qresource.h io/qresource_p.h
         io/qresource_iterator.cpp io/qresource_iterator_p.h
-        io/qsavefile.cpp io/qsavefile.h
+        io/qsavefile.cpp io/qsavefile.h io/qsavefile_p.h
         io/qstandardpaths.cpp io/qstandardpaths.h
         io/qstorageinfo.cpp io/qstorageinfo.h io/qstorageinfo_p.h
         io/qtemporarydir.cpp io/qtemporarydir.h
@@ -118,7 +120,7 @@ qt_internal_add_module(Core
         kernel/qcoreglobaldata.cpp kernel/qcoreglobaldata_p.h
         kernel/qdeadlinetimer.cpp kernel/qdeadlinetimer.h kernel/qdeadlinetimer_p.h
         kernel/qelapsedtimer.cpp kernel/qelapsedtimer.h
-        kernel/qeventloop.cpp kernel/qeventloop.h
+        kernel/qeventloop.cpp kernel/qeventloop.h kernel/qeventloop_p.h
         kernel/qfunctions_p.h
         kernel/qiterable.cpp kernel/qiterable.h kernel/qiterable_p.h
         kernel/qmath.cpp kernel/qmath.h
@@ -128,6 +130,7 @@ qt_internal_add_module(Core
         kernel/qmetaobjectbuilder.cpp kernel/qmetaobjectbuilder_p.h
         kernel/qmetatype.cpp kernel/qmetatype.h kernel/qmetatype_p.h
         kernel/qmimedata.cpp kernel/qmimedata.h
+        kernel/qtmetamacros.h
         kernel/qobject.cpp kernel/qobject.h kernel/qobject_p.h
         kernel/qobject_impl.h
         kernel/qobjectcleanuphandler.cpp kernel/qobjectcleanuphandler.h
@@ -207,6 +210,7 @@ qt_internal_add_module(Core
         thread/qrunnable.cpp thread/qrunnable.h
         thread/qthread.cpp thread/qthread.h
         thread/qthreadstorage.h
+        thread/qtsan_impl.h
         thread/qwaitcondition.h thread/qwaitcondition_p.h
         time/qcalendar.cpp time/qcalendar.h
         time/qcalendarbackend_p.h
@@ -488,6 +492,7 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_thread AND WIN32
 qt_internal_extend_target(Core CONDITION WIN32
     SOURCES
         global/qoperatingsystemversion_win.cpp global/qoperatingsystemversion_win_p.h
+        global/qt_windows.h
         io/qfilesystemengine_win.cpp
         io/qfsfileengine_win.cpp
         io/qlockfile_win.cpp

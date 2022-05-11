@@ -24,8 +24,8 @@ qt_internal_add_module(DBus
         qdbusintrospection.cpp qdbusintrospection_p.h
         qdbusmarshaller.cpp
         qdbusmessage.cpp qdbusmessage.h qdbusmessage_p.h
-        qdbusmetaobject.cpp
-        qdbusmetatype.cpp qdbusmetatype.h
+        qdbusmetaobject.cpp qdbusmetaobject_p.h
+        qdbusmetatype.cpp qdbusmetatype.h qdbusmetatype_p.h
         qdbusmisc.cpp
         qdbuspendingcall.cpp qdbuspendingcall.h qdbuspendingcall_p.h
         qdbuspendingreply.cpp qdbuspendingreply.h

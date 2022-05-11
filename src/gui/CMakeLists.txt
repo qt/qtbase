@@ -169,7 +169,8 @@ qt_internal_add_module(Gui
         painting/qfixed_p.h
         painting/qgrayraster.c painting/qgrayraster_p.h
         painting/qicc.cpp painting/qicc_p.h
-        painting/qimagescale.cpp
+        painting/qimagescale.cpp painting/qimagescale_p.h
+        painting/qmath_p.h
         painting/qmemrotate.cpp painting/qmemrotate_p.h
         painting/qoutlinemapper.cpp painting/qoutlinemapper_p.h
         painting/qpagedpaintdevice.cpp painting/qpagedpaintdevice.h painting/qpagedpaintdevice_p.h
@@ -187,7 +188,7 @@ qt_internal_add_module(Gui
         painting/qpathsimplifier.cpp painting/qpathsimplifier_p.h
         painting/qpdf.cpp painting/qpdf_p.h
         painting/qpdfwriter.cpp painting/qpdfwriter.h
-        painting/qpen.cpp painting/qpen.h
+        painting/qpen.cpp painting/qpen.h painting/qpen_p.h
         painting/qpixellayout.cpp painting/qpixellayout_p.h
         painting/qplatformbackingstore.cpp painting/qplatformbackingstore.h
         painting/qpolygon.cpp painting/qpolygon.h
@@ -349,6 +350,7 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_opengl
         kernel/qopenglcontext_platform.h
         kernel/qplatformopenglcontext.cpp kernel/qplatformopenglcontext.h
         opengl/qopengl.cpp opengl/qopengl.h opengl/qopengl_p.h
+        opengl/qopenglext.h
         opengl/qopenglextensions_p.h
         opengl/qopenglextrafunctions.h
         opengl/qopenglfunctions.cpp opengl/qopenglfunctions.h
@@ -401,8 +403,10 @@ qt_internal_extend_target(Gui CONDITION WIN32
         platform/windows/qwindowsguieventdispatcher.cpp platform/windows/qwindowsguieventdispatcher_p.h
         platform/windows/qwindowsmime_p.h
         platform/windows/qwindowsnativeinterface.cpp
+        rhi/cs_tdr_p.h
         rhi/qrhid3d11.cpp rhi/qrhid3d11_p.h
         rhi/qrhid3d11_p_p.h
+        rhi/vs_test_p.h
         text/windows/qwindowsfontdatabase.cpp text/windows/qwindowsfontdatabase_p.h
         text/windows/qwindowsfontdatabasebase.cpp text/windows/qwindowsfontdatabasebase_p.h
         text/windows/qwindowsfontengine.cpp text/windows/qwindowsfontengine_p.h
@@ -719,7 +723,7 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_textmarkdownwriter
 
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_cssparser
     SOURCES
-        painting/qcssutil.cpp
+        painting/qcssutil.cpp painting/qcssutil_p.h
         text/qcssparser.cpp text/qcssparser_p.h
 )
 
@@ -833,6 +837,7 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_undogroup
 
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_opengl AND QT_FEATURE_xlib AND NOT QT_FEATURE_opengles2
     SOURCES
+        opengl/qopengles2ext.h
         opengl/platform/unix/qglxconvenience.cpp opengl/platform/unix/qglxconvenience_p.h
     LIBRARIES
         X11::X11
@@ -876,6 +881,7 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_vulkan
     SOURCES
         rhi/qrhivulkan.cpp rhi/qrhivulkan_p.h
         rhi/qrhivulkan_p_p.h
+        rhi/qrhivulkanext_p.h
         vulkan/qbasicvulkanplatforminstance.cpp vulkan/qbasicvulkanplatforminstance_p.h
         vulkan/qplatformvulkaninstance.cpp vulkan/qplatformvulkaninstance.h
         vulkan/qvulkandefaultinstance.cpp vulkan/qvulkandefaultinstance_p.h
@@ -1044,7 +1050,7 @@ qt_internal_extend_target(Gui CONDITION IOS OR MACOS
 
 qt_internal_extend_target(Gui # special case CONDITION NOT GCC OR NOT QT_COMPILER_VERSION_MAJOR STREQUAL 5 # source subtraction gone wrong
     SOURCES
-        painting/qdrawhelper.cpp
+        painting/qdrawhelper.cpp painting/qdrawhelper_neon_p.h
     NO_PCH_SOURCES
         "painting/qdrawhelper.cpp"
 )

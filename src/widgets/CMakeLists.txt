@@ -35,7 +35,7 @@ qt_internal_add_module(Widgets
         styles/qpixmapstyle.cpp styles/qpixmapstyle_p.h
         styles/qpixmapstyle_p_p.h
         styles/qproxystyle.cpp styles/qproxystyle.h styles/qproxystyle_p.h
-        styles/qstyle.cpp styles/qstyle.h
+        styles/qstyle.cpp styles/qstyle.h styles/qstyle_p.h
         styles/qstylefactory.cpp styles/qstylefactory.h
         styles/qstylehelper.cpp styles/qstylehelper_p.h
         styles/qstyleoption.cpp styles/qstyleoption.h
@@ -760,6 +760,7 @@ qt_internal_extend_target(Widgets CONDITION QT_FEATURE_treewidget
     SOURCES
         itemviews/qtreewidget.cpp itemviews/qtreewidget.h itemviews/qtreewidget_p.h
         itemviews/qtreewidgetitemiterator.cpp itemviews/qtreewidgetitemiterator.h
+        itemviews/qtreewidgetitemiterator_p.h
 )
 
 qt_internal_extend_target(Widgets CONDITION QT_FEATURE_graphicsview

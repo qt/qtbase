@@ -39,8 +39,9 @@
 
 #include "qgenericunixeventdispatcher_p.h"
 #include "qunixeventdispatcher_qpa_p.h"
-#include "qeventdispatcher_glib_p.h"
-
+#if QT_CONFIG(glib)
+#   include "qeventdispatcher_glib_p.h"
+#endif
 QT_BEGIN_NAMESPACE
 
 class QAbstractEventDispatcher *QtGenericUnixDispatcher::createUnixEventDispatcher()

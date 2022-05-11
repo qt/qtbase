@@ -37,6 +37,7 @@ qt_internal_extend_target(InputSupportPrivate CONDITION QT_FEATURE_evdev
         evdevmouse/qevdevmousehandler.cpp evdevmouse/qevdevmousehandler_p.h
         evdevmouse/qevdevmousemanager.cpp evdevmouse/qevdevmousemanager_p.h
         evdevtouch/qevdevtouchhandler.cpp evdevtouch/qevdevtouchhandler_p.h
+        evdevtouch/qevdevtouchfilter_p.h
         evdevtouch/qevdevtouchmanager.cpp evdevtouch/qevdevtouchmanager_p.h
     INCLUDE_DIRECTORIES
         evdevtouch/../shared
