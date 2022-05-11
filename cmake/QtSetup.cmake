@@ -212,6 +212,14 @@ if(QT_BUILD_STANDALONE_TESTS)
 endif()
 set(BUILD_TESTING ${QT_BUILD_TESTS} CACHE INTERNAL "")
 
+# QT_BUILD_TOOLS_WHEN_CROSSCOMPILING -> QT_FORCE_BUILD_TOOLS
+# pre-6.4 compatibility flag (remove sometime in the future)
+if(CMAKE_CROSSCOMPILING AND QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+    message(WARNING "QT_BUILD_TOOLS_WHEN_CROSSCOMPILING is deprecated. "
+        "Please use QT_FORCE_BUILD_TOOLS instead.")
+    set(QT_FORCE_BUILD_TOOLS TRUE CACHE INTERNAL "" FORCE)
+endif()
+
 # When cross-building, we don't build tools by default. Sometimes this also covers Qt apps as well.
 # Like in qttools/assistant/assistant.pro, load(qt_app), which is guarded by a qtNomakeTools() call.
 

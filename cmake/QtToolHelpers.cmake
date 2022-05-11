@@ -481,13 +481,6 @@ endfunction()
 # Sets QT_WILL_BUILD_TOOLS if tools will be built and QT_WILL_RENAME_TOOL_TARGETS
 # if those tools have replaced naming.
 function(qt_check_if_tools_will_be_built)
-    if(CMAKE_CROSSCOMPILING AND QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
-        # pre-6.4 compatibility flag (remove sometime in the future)
-        message(WARNING "QT_BUILD_TOOLS_WHEN_CROSSCOMPILING is deprecated. "
-            "Please use QT_FORCE_BUILD_TOOLS instead.")
-        set(QT_FORCE_BUILD_TOOLS TRUE CACHE INTERNAL "" FORCE)
-    endif()
-
     # By default, we build our own tools unless we're cross-building.
     set(need_target_rename FALSE)
     if(CMAKE_CROSSCOMPILING)
