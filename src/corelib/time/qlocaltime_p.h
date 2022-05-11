@@ -24,6 +24,11 @@ QT_BEGIN_NAMESPACE
 namespace QLocalTime {
 // Support for QDateTime
 QDateTimePrivate::ZoneState utcToLocal(qint64 utcMillis);
+QString localTimeAbbbreviationAt(qint64 local, QDateTimePrivate::DaylightStatus dst);
+QDateTimePrivate::ZoneState mapLocalTime(qint64 local, QDateTimePrivate::DaylightStatus dst);
+
+struct SystemMillisRange { qint64 min, max; bool minClip, maxClip; };
+SystemMillisRange computeSystemMillisRange();
 }
 
 QT_END_NAMESPACE
