@@ -1036,12 +1036,23 @@ function(_qt_internal_set_xcode_code_sign_style target)
     endif()
 endfunction()
 
+function(_qt_internal_set_xcode_bundle_display_name target)
+    # We want the value of CFBundleDisplayName to be ${PRODUCT_NAME}, but we can't put that
+    # into the Info.plist.in template file directly, because the implicit configure_file(Info.plist)
+    # done by CMake is not using the @ONLY option, so CMake would treat the assignment as
+    # variable expansion. Escaping using backslashes does not help.
+    # Work around it by assigning the dollar char to a separate cache var, and expand it, so that
+    # the final value in the file will be ${PRODUCT_NAME}, to be evaluated at build time by Xcode.
+    set(QT_INTERNAL_DOLLAR_VAR "$" CACHE STRING "")
+endfunction()
+
 function(_qt_internal_finalize_ios_app target)
     _qt_internal_set_xcode_development_team_id("${target}")
     _qt_internal_set_xcode_bundle_identifier("${target}")
     _qt_internal_set_xcode_product_bundle_identifier("${target}")
     _qt_internal_set_xcode_targeted_device_family("${target}")
     _qt_internal_set_xcode_code_sign_style("${target}")
+    _qt_internal_set_xcode_bundle_display_name("${target}")
 
     _qt_internal_handle_ios_launch_screen("${target}")
     _qt_internal_set_placeholder_apple_bundle_version("${target}")
