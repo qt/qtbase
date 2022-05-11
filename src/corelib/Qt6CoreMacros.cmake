@@ -933,12 +933,30 @@ function(_qt_internal_get_ios_bundle_identifier_prefix out_var)
     endif()
 endfunction()
 
+function(_qt_internal_escape_rfc_1034_identifier value out_var)
+    # According to https://datatracker.ietf.org/doc/html/rfc1034#section-3.5
+    # we can only use letters, digits, dot (.) and hyphens (-).
+    # Underscores are not allowed.
+    string(REGEX REPLACE "[^A-Za-z0-9.]" "-" value "${value}")
+
+    set("${out_var}" "${value}" PARENT_SCOPE)
+endfunction()
+
 function(_qt_internal_get_default_ios_bundle_identifier out_var)
     _qt_internal_get_ios_bundle_identifier_prefix(prefix)
     if(NOT prefix)
         set(prefix "com.yourcompany")
     endif()
-    set("${out_var}" "${prefix}.\${PRODUCT_NAME:rfc1034identifier}" PARENT_SCOPE)
+
+    # Escape the prefix according to rfc 1034, it's important for code-signing. If an invalid
+    # identifier is used, calling xcodebuild on the command line says that no provisioning profile
+    # could be found, with no additional error message. If one opens the generated project with
+    # Xcode and clicks on 'Try again' to get a new profile, it shows a semi-useful error message
+    # that the identifier is invalid.
+    _qt_internal_escape_rfc_1034_identifier("${prefix}" prefix)
+
+    set(identifier "${prefix}.\${PRODUCT_NAME:rfc1034identifier}")
+    set("${out_var}" "${identifier}" PARENT_SCOPE)
 endfunction()
 
 function(_qt_internal_set_placeholder_apple_bundle_version target)
@@ -979,30 +997,55 @@ function(_qt_internal_set_xcode_development_team_id target)
 endfunction()
 
 function(_qt_internal_set_xcode_bundle_identifier target)
-    # If user hasn't provided a bundle identifier for the app, get a default identifier
-    # using the default bundle prefix from Xcode preferences and add it to the generated
-    # Info.plist file.
-    if(NOT MACOSX_BUNDLE_GUI_IDENTIFIER AND NOT QT_NO_SET_XCODE_BUNDLE_IDENTIFIER)
-        get_target_property(existing_id "${target}" MACOSX_BUNDLE_GUI_IDENTIFIER)
-        if(NOT existing_id)
-            _qt_internal_get_default_ios_bundle_identifier(bundle_id)
-            set_target_properties("${target}"
-                                  PROPERTIES MACOSX_BUNDLE_GUI_IDENTIFIER "${bundle_id}")
-        endif()
+    # Skip all logic if requested.
+    if(QT_NO_SET_XCODE_BUNDLE_IDENTIFIER)
+        return()
     endif()
-endfunction()
 
-function(_qt_internal_set_xcode_product_bundle_identifier target)
-    # Reuse the same bundle identifier for the Xcode property.
-    if(NOT CMAKE_XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER
-            AND NOT QT_NO_SET_XCODE_BUNDLE_IDENTIFIER)
-        get_target_property(existing_id "${target}" XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER)
-        if(NOT existing_id)
-            _qt_internal_get_default_ios_bundle_identifier(bundle_id)
-            set_target_properties("${target}"
-                                  PROPERTIES XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER
-                                  "${bundle_id}")
-        endif()
+    # There are two fields to consider: the CFBundleIdentifier key (CFBI) to be written to
+    # Info.plist
+    # and the PRODUCT_BUNDLE_IDENTIFIER (PBI) property to set in the Xcode project.
+    # The following logic enables the best out-of-the-box experience combined with maximum
+    # customization.
+    # 1) If values for both fields are not provided, assign ${PRODUCT_BUNDLE_IDENTIFIER} to CFBI
+    #    (which is expanded by xcodebuild at build time and will use the value of PBI) and
+    #    auto-compute a default PBI from Xcode's ${PRODUCT_NAME}.
+    # 2) If CFBI is set and PBI isn't, use given CFBI and keep PBI empty.
+    # 3) If PBI is set and CFBI isn't, assign ${PRODUCT_BUNDLE_IDENTIFIER} to CFBI and use
+    #    the given PBI.
+    # 4) If both are set, use both given values.
+    # TLDR:
+    # cfbi    pbi   -> result_cfbi result_pbi
+    # unset   unset    computed    computed
+    # set     unset    given_val   unset
+    # unset   set      computed    given_val
+    # set     set      given_val   given_val
+
+    get_target_property(existing_cfbi "${target}" MACOSX_BUNDLE_GUI_IDENTIFIER)
+    if(NOT MACOSX_BUNDLE_GUI_IDENTIFIER AND NOT existing_cfbi)
+        set(is_cfbi_given FALSE)
+    else()
+        set(is_cfbi_given TRUE)
+    endif()
+
+    if(NOT is_cfbi_given)
+        set_target_properties("${target}"
+                              PROPERTIES
+                              MACOSX_BUNDLE_GUI_IDENTIFIER "\${PRODUCT_BUNDLE_IDENTIFIER}")
+    endif()
+
+    get_target_property(existing_pbi "${target}" XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER)
+    if(NOT CMAKE_XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER AND NOT existing_pbi)
+        set(is_pbi_given FALSE)
+    else()
+        set(is_pbi_given TRUE)
+    endif()
+
+    if(NOT is_pbi_given AND NOT is_cfbi_given)
+        _qt_internal_get_default_ios_bundle_identifier(bundle_id)
+        set_target_properties("${target}"
+                              PROPERTIES
+                              XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "${bundle_id}")
     endif()
 endfunction()
 
@@ -1049,7 +1092,6 @@ endfunction()
 function(_qt_internal_finalize_ios_app target)
     _qt_internal_set_xcode_development_team_id("${target}")
     _qt_internal_set_xcode_bundle_identifier("${target}")
-    _qt_internal_set_xcode_product_bundle_identifier("${target}")
     _qt_internal_set_xcode_targeted_device_family("${target}")
     _qt_internal_set_xcode_code_sign_style("${target}")
     _qt_internal_set_xcode_bundle_display_name("${target}")
