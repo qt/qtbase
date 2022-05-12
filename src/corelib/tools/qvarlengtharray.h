@@ -96,6 +96,11 @@ protected:
         Q_ASSERT(n <= size() - pos);
     }
 
+    struct free_deleter {
+        void operator()(void *p) const noexcept { free(p); }
+    };
+    using malloced_ptr = std::unique_ptr<void, free_deleter>;
+
 public:
     using size_type = qsizetype;
 
@@ -731,10 +736,7 @@ Q_OUTOFLINE_TEMPLATE void QVLABase<T>::reallocate_impl(qsizetype prealloc, void 
     Q_ASSUME(copySize >= 0);
 
     if (aalloc != capacity()) {
-        struct free_deleter {
-            void operator()(void *p) const noexcept { free(p); }
-        };
-        std::unique_ptr<void, free_deleter> guard;
+        QVLABaseBase::malloced_ptr guard;
         void *newPtr;
         qsizetype newA;
         if (aalloc > prealloc) {
