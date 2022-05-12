@@ -217,8 +217,8 @@ void QFseventsFileSystemWatcherEngine::processEvent(ConstFSEventStreamRef stream
         lastReceivedEvent = qMax(lastReceivedEvent, eventIds[i]);
 
         QString path = QFile::decodeName(eventPaths[i]);
-        if (path.endsWith(QDir::separator()))
-            path = path.mid(0, path.size() - 1);
+        if (path.size() > 1 && path.endsWith(QDir::separator()))
+            path.chop(1);
 
         if (eFlags & kFSEventStreamEventFlagMustScanSubDirs) {
             DEBUG("\tmust rescan directory because of coalesced events");
@@ -346,8 +346,8 @@ QStringList QFseventsFileSystemWatcherEngine::addPaths(const QStringList &paths,
         auto sg = qScopeGuard([&]{ unhandled.push_back(path); });
         QString origPath = path.normalized(QString::NormalizationForm_C);
         QString realPath = origPath;
-        if (realPath.endsWith(QDir::separator()))
-            realPath = realPath.mid(0, realPath.size() - 1);
+        if (realPath.size() > 1 && realPath.endsWith(QDir::separator()))
+            realPath.chop(1);
         QString watchedPath, parentPath;
 
         realPath = QFileInfo(realPath).canonicalFilePath();
@@ -437,8 +437,8 @@ QStringList QFseventsFileSystemWatcherEngine::removePaths(const QStringList &pat
     for (const QString &origPath : paths) {
         auto sg = qScopeGuard([&]{ unhandled.push_back(origPath); });
         QString realPath = origPath;
-        if (realPath.endsWith(QDir::separator()))
-            realPath = realPath.mid(0, realPath.size() - 1);
+        if (realPath.size() > 1 && realPath.endsWith(QDir::separator()))
+            realPath.chop(1);
 
         QFileInfo fi(realPath);
         realPath = fi.canonicalFilePath();
