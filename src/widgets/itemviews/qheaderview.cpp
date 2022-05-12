@@ -1742,6 +1742,7 @@ QByteArray QHeaderView::saveState() const
     Q_D(const QHeaderView);
     QByteArray data;
     QDataStream stream(&data, QIODevice::WriteOnly);
+    stream.setVersion(QDataStream::Qt_5_0);
     stream << QHeaderViewPrivate::VersionMarker;
     stream << 0; // current version is 0
     d->write(stream);
@@ -1763,6 +1764,7 @@ bool QHeaderView::restoreState(const QByteArray &state)
         return false;
     QByteArray data = state;
     QDataStream stream(&data, QIODevice::ReadOnly);
+    stream.setVersion(QDataStream::Qt_5_0);
     int marker;
     int ver;
     stream >> marker;

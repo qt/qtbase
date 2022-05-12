@@ -1164,10 +1164,12 @@ bool QMainWindowLayoutState::restoreState(QDataStream &_stream,
     }
 
     QDataStream ds(copy);
+    ds.setVersion(_stream.version());
     if (!checkFormat(ds))
         return false;
 
     QDataStream stream(copy);
+    stream.setVersion(_stream.version());
 
     while (!stream.atEnd()) {
         uchar marker;

@@ -1650,6 +1650,7 @@ QByteArray QSplitter::saveState() const
     int version = 1;
     QByteArray data;
     QDataStream stream(&data, QIODevice::WriteOnly);
+    stream.setVersion(QDataStream::Qt_5_0);
 
     stream << qint32(SplitterMagic);
     stream << qint32(version);
@@ -1691,6 +1692,7 @@ bool QSplitter::restoreState(const QByteArray &state)
     int version = 1;
     QByteArray sd = state;
     QDataStream stream(&sd, QIODevice::ReadOnly);
+    stream.setVersion(QDataStream::Qt_5_0);
     QList<int> list;
     bool b;
     qint32 i;
