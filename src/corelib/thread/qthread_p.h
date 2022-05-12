@@ -73,23 +73,7 @@ public:
 
     inline QPostEventList() : QList<QPostEvent>(), recursion(0), startOffset(0), insertionOffset(0) { }
 
-    void addEvent(const QPostEvent &ev)
-    {
-        int priority = ev.priority;
-        if (isEmpty() ||
-            constLast().priority >= priority ||
-            insertionOffset >= size()) {
-            // optimization: we can simply append if the last event in
-            // the queue has higher or equal priority
-            append(ev);
-        } else {
-            // insert event in descending priority order, using upper
-            // bound for a given priority (to ensure proper ordering
-            // of events with the same priority)
-            QPostEventList::iterator at = std::upper_bound(begin() + insertionOffset, end(), ev);
-            insert(at, ev);
-        }
-    }
+    void addEvent(const QPostEvent &ev);
 
 private:
     //hides because they do not keep that list sorted. addEvent must be used

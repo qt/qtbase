@@ -19,6 +19,29 @@
 QT_BEGIN_NAMESPACE
 
 /*
+    QPostEventList
+*/
+
+void QPostEventList::addEvent(const QPostEvent &ev)
+{
+    int priority = ev.priority;
+    if (isEmpty() ||
+            constLast().priority >= priority ||
+            insertionOffset >= size()) {
+        // optimization: we can simply append if the last event in
+        // the queue has higher or equal priority
+        append(ev);
+    } else {
+        // insert event in descending priority order, using upper
+        // bound for a given priority (to ensure proper ordering
+        // of events with the same priority)
+        QPostEventList::iterator at = std::upper_bound(begin() + insertionOffset, end(), ev);
+        insert(at, ev);
+    }
+}
+
+
+/*
   QThreadData
 */
 
