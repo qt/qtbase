@@ -97,7 +97,7 @@ QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
     m_onContextMenu = std::make_unique<qstdweb::EventCallback>(m_canvas, "contextmenu", [](emscripten::val event){
         event.call<void>("preventDefault");
     });
-    
+
     // Create "specialHTMLTargets" mapping for the canvas. Normally, Emscripten
     // uses the html element id when targeting elements, for example when registering
     // event callbacks. However, this approach is limited to supporting single-document
@@ -105,9 +105,8 @@ QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
     // As a workaround for this, Emscripten supports registering custom mappings in the
     // "specialHTMLTargets" object. Add a mapping for the canvas for this screen.
     emscripten::val specialHtmlTargets = emscripten::val::module_property("specialHTMLTargets");
-
     std::string id = std::string("!qtcanvas_") + std::to_string(uint32_t(this));
-    specialHtmlTargets.set(id, m_canvas.as_handle());
+    specialHtmlTargets.set(id, m_canvas);
 
     // Install event handlers on the container/canvas. This must be
     // done after the canvas has been created above.
