@@ -664,6 +664,10 @@ static constexpr struct {
     { Qt::Key_TouchpadToggle,  QT_TRANSLATE_NOOP("QShortcut", "Touchpad Toggle") },
     { Qt::Key_TouchpadOn,  QT_TRANSLATE_NOOP("QShortcut", "Touchpad On") },
     { Qt::Key_TouchpadOff,  QT_TRANSLATE_NOOP("QShortcut", "Touchpad Off") },
+    { Qt::Key_Shift,  QT_TRANSLATE_NOOP("QShortcut", "Shift") },
+    { Qt::Key_Control,  QT_TRANSLATE_NOOP("QShortcut", "Control") },
+    { Qt::Key_Alt,  QT_TRANSLATE_NOOP("QShortcut", "Alt") },
+    { Qt::Key_Meta,  QT_TRANSLATE_NOOP("QShortcut", "Meta") },
 
 };
 static constexpr int numKeyNames = sizeof keyname / sizeof *keyname;

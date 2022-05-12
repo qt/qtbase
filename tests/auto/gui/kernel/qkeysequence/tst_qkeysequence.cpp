@@ -477,6 +477,10 @@ void tst_QKeySequence::toStringFromKeycode_data()
     QTest::newRow("Ctrl+Num+Del") << QKeySequence(Qt::ControlModifier | Qt::KeypadModifier | Qt::Key_Delete) << "Ctrl+Num+Del";
     QTest::newRow("Ctrl+Alt+Num+Del") << QKeySequence(Qt::ControlModifier | Qt::AltModifier | Qt::KeypadModifier | Qt::Key_Delete) << "Ctrl+Alt+Num+Del";
     QTest::newRow("Ctrl+Ins") << QKeySequence(Qt::ControlModifier | Qt::Key_Insert) << "Ctrl+Ins";
+    QTest::newRow("Ctrl") << QKeySequence(Qt::Key_Control) << "Control";
+    QTest::newRow("Alt") << QKeySequence(Qt::Key_Alt) << "Alt";
+    QTest::newRow("Shift") << QKeySequence(Qt::Key_Shift) << "Shift";
+    QTest::newRow("Meta") << QKeySequence(Qt::Key_Meta) << "Meta";
 }
 
 void tst_QKeySequence::toStringFromKeycode()
