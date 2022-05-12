@@ -2404,6 +2404,7 @@ static bool check_method_code(int code, const QObject *object, const char *metho
     return true;
 }
 
+Q_DECL_COLD_FUNCTION
 static void err_method_notfound(const QObject *object,
                                 const char *method, const char *func)
 {
@@ -2421,6 +2422,7 @@ static void err_method_notfound(const QObject *object,
                   object->metaObject()->className(), method + 1, loc ? " in " : "", loc ? loc : "");
 }
 
+Q_DECL_COLD_FUNCTION
 static void err_info_about_objects(const char *func, const QObject *sender, const QObject *receiver)
 {
     QString a = sender ? sender->objectName() : QString();
