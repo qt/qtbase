@@ -452,6 +452,7 @@ QByteArray QFileDialog::saveState() const
     int version = 4;
     QByteArray data;
     QDataStream stream(&data, QIODevice::WriteOnly);
+    stream.setVersion(QDataStream::Qt_5_0);
 
     stream << qint32(QFileDialogMagic);
     stream << qint32(version);
@@ -486,6 +487,7 @@ bool QFileDialog::restoreState(const QByteArray &state)
     Q_D(QFileDialog);
     QByteArray sd = state;
     QDataStream stream(&sd, QIODevice::ReadOnly);
+    stream.setVersion(QDataStream::Qt_5_0);
     if (stream.atEnd())
         return false;
     QStringList history;

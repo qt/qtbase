@@ -1256,6 +1256,7 @@ QByteArray QMainWindow::saveState(int version) const
 {
     QByteArray data;
     QDataStream stream(&data, QIODevice::WriteOnly);
+    stream.setVersion(QDataStream::Qt_5_0);
     stream << QMainWindowLayout::VersionMarker;
     stream << version;
     d_func()->layout->saveState(stream);
@@ -1284,6 +1285,7 @@ bool QMainWindow::restoreState(const QByteArray &state, int version)
         return false;
     QByteArray sd = state;
     QDataStream stream(&sd, QIODevice::ReadOnly);
+    stream.setVersion(QDataStream::Qt_5_0);
     int marker, v;
     stream >> marker;
     stream >> v;
