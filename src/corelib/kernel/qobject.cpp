@@ -2602,11 +2602,29 @@ void QObject::deleteLater()
   Signals and slots
  *****************************************************************************/
 
+namespace {
+// This class provides (per-thread) storage for qFlagLocation()
+class FlaggedDebugSignatures
+{
+    static constexpr uint Count = 2;
+
+    uint idx = 0;
+    const char *locations[Count] = {};
+
+public:
+    void store(const char* method)
+    { locations[idx++ % Count] = method; }
+
+    bool contains(const char *method) const
+    { return std::find(locations, locations + Count, method) != locations + Count; }
+};
+
+Q_THREAD_LOCAL_CONSTINIT static thread_local FlaggedDebugSignatures flaggedSignatures = {};
+} // unnamed namespace
+
 const char *qFlagLocation(const char *method)
 {
-    QThreadData *currentThreadData = QThreadData::current(false);
-    if (currentThreadData != nullptr)
-        currentThreadData->flaggedSignatures.store(method);
+    flaggedSignatures.store(method);
     return method;
 }
 
@@ -2618,7 +2636,7 @@ static int extract_code(const char *member)
 
 static const char *extract_location(const char *member)
 {
-    if (QThreadData::current()->flaggedSignatures.contains(member)) {
+    if (flaggedSignatures.contains(member)) {
         // signature includes location information after the first null-terminator
         const char *location = member + qstrlen(member) + 1;
         if (*location != '\0')

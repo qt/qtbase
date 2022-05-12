@@ -261,26 +261,6 @@ public:
         return canWait;
     }
 
-    // This class provides per-thread (by way of being a QThreadData
-    // member) storage for qFlagLocation()
-    class FlaggedDebugSignatures
-    {
-        static const uint Count = 2;
-
-        uint idx;
-        const char *locations[Count];
-
-    public:
-        FlaggedDebugSignatures() : idx(0)
-        { std::fill_n(locations, Count, static_cast<char*>(nullptr)); }
-
-        void store(const char* method)
-        { locations[idx++ % Count] = method; }
-
-        bool contains(const char *method) const
-        { return std::find(locations, locations + Count, method) != locations + Count; }
-    };
-
 private:
     QAtomicInt _ref;
 
@@ -294,7 +274,6 @@ public:
     QAtomicPointer<void> threadId;
     QAtomicPointer<QAbstractEventDispatcher> eventDispatcher;
     QList<void *> tls;
-    FlaggedDebugSignatures flaggedSignatures;
 
     bool quitNow;
     bool canWait;
