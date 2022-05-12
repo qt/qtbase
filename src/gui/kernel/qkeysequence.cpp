@@ -45,6 +45,7 @@ static const MacSpecialKey entries[] = {
     { Qt::Key_Return, 0x21B5 },
     { Qt::Key_Enter, 0x2324 },
     { Qt::Key_Delete, 0x2326 },
+    { Qt::Key_Clear, 0x2327 },
     { Qt::Key_Home, 0x2196 },
     { Qt::Key_End, 0x2198 },
     { Qt::Key_Left, 0x2190 },
@@ -58,6 +59,7 @@ static const MacSpecialKey entries[] = {
     { Qt::Key_Meta, kControlUnicode },
     { Qt::Key_Alt, kOptionUnicode },
     { Qt::Key_CapsLock, 0x21EA },
+    { Qt::Key_Eject, 0x23CF },
 };
 
 static bool operator<(const MacSpecialKey &entry, int key)
