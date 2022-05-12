@@ -32,11 +32,6 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmCompositor *compositor, QWasmBackingSt
 
     // Pure OpenGL windows draw directly using egl, disable the compositor.
     m_compositor->setEnabled(w->surfaceType() != QSurface::OpenGLSurface);
-
-    static std::unique_ptr<qstdweb::EventCallback> windowResizeEvent;
-    auto resizeCallback = [=](emscripten::val) { QPlatformWindow::requestActivateWindow();};
-    windowResizeEvent.reset(new qstdweb::EventCallback(emscripten::val::global("window"),
-    "resize", resizeCallback));
 }
 
 QWasmWindow::~QWasmWindow()
@@ -224,7 +219,6 @@ QRegion QWasmWindow::titleGeometry() const
 
 QRegion QWasmWindow::resizeRegion() const
 {
-    qDebug() << Q_FUNC_INFO;
     int border = borderWidth();
     QRegion result(window()->frameGeometry().adjusted(-border, -border, border, border));
     result -= window()->frameGeometry().adjusted(border, border, -border, -border);
@@ -399,7 +393,6 @@ qreal QWasmWindow::devicePixelRatio() const
 
 void QWasmWindow::requestUpdate()
 {
-    qDebug() << Q_FUNC_INFO;
     if (m_compositor) {
         m_compositor->requestUpdateWindow(this, QWasmCompositor::UpdateRequestDelivery);
         return;
@@ -434,7 +427,6 @@ bool QWasmWindow::windowIsPopupType(Qt::WindowFlags flags) const
 
 void QWasmWindow::requestActivateWindow()
 {
-      qDebug() << Q_FUNC_INFO;
     if (window()->isTopLevel())
         raise();
     QPlatformWindow::requestActivateWindow();
