@@ -2460,6 +2460,7 @@ static bool check_method_code(int code, const QObject *object,
     return true;
 }
 
+Q_DECL_COLD_FUNCTION
 static void err_method_notfound(const QObject *object,
                                 const char *method, const char *func)
 {
@@ -2481,6 +2482,7 @@ static void err_method_notfound(const QObject *object,
 }
 
 
+Q_DECL_COLD_FUNCTION
 static void err_info_about_objects(const char * func,
                                     const QObject * sender,
                                     const QObject * receiver)
