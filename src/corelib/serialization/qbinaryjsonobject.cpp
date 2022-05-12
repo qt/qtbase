@@ -74,7 +74,7 @@ void QBinaryJsonObject::insert(const QString &key, const QBinaryJsonValue &value
     if (!detach(requiredSize + sizeof(QBinaryJsonPrivate::offset))) // offset for the new index entry
         return;
 
-    if (!o->length)
+    if (!o->length())
         o->tableOffset = sizeof(QBinaryJsonPrivate::Object);
 
     bool keyExists = false;
@@ -87,18 +87,18 @@ void QBinaryJsonObject::insert(const QString &key, const QBinaryJsonValue &value
         return;
 
     QBinaryJsonPrivate::Entry *e = o->entryAt(pos);
-    e->value.type = value.t;
-    e->value.latinKey = latinKey;
-    e->value.latinOrIntValue = latinOrIntValue;
-    e->value.value = QBinaryJsonPrivate::Value::valueToStore(
-                value, reinterpret_cast<char *>(e) - reinterpret_cast<char *>(o) + valueOffset);
+    e->value.setType(value.t);
+    e->value.setIsLatinKey(latinKey);
+    e->value.setIsLatinOrIntValue(latinOrIntValue);
+    e->value.setValue(QBinaryJsonPrivate::Value::valueToStore(
+            value, reinterpret_cast<char *>(e) - reinterpret_cast<char *>(o) + valueOffset));
     QBinaryJsonPrivate::copyString(reinterpret_cast<char *>(e + 1), key, latinKey);
     if (valueSize) {
         QBinaryJsonPrivate::Value::copyData(value, reinterpret_cast<char *>(e) + valueOffset,
                                             latinOrIntValue);
     }
 
-    if (d->compactionCounter > 32U && d->compactionCounter >= unsigned(o->length) / 2U)
+    if (d->compactionCounter > 32U && d->compactionCounter >= unsigned(o->length()) / 2U)
         compact();
 }
 

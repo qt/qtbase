@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 QBinaryJsonValue::QBinaryJsonValue(QBinaryJsonPrivate::MutableData *data,
                                    QBinaryJsonPrivate::Base *parent,
                                    const QBinaryJsonPrivate::Value &v)
-    : t(QJsonValue::Type(uint(v.type)))
+    : t(QJsonValue::Type(uint(v.type())))
 {
     switch (t) {
     case QJsonValue::Undefined:

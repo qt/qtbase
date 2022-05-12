@@ -64,17 +64,17 @@ void MutableData::compact()
 
     Base *base = header->root();
     int reserve = 0;
-    if (base->is_object) {
+    if (base->isObject()) {
         auto *o = static_cast<Object *>(base);
-        for (uint i = 0; i < o->length; ++i)
+        for (uint i = 0; i < o->length(); ++i)
             reserve += o->entryAt(i)->usedStorage(o);
     } else {
         auto *a = static_cast<Array *>(base);
-        for (uint i = 0; i < a->length; ++i)
+        for (uint i = 0; i < a->length(); ++i)
             reserve += a->at(i)->usedStorage(a);
     }
 
-    uint size = sizeof(Base) + reserve + base->length * sizeof(offset);
+    uint size = sizeof(Base) + reserve + base->length() * sizeof(offset);
     uint alloc = sizeof(Header) + size;
     auto *h = reinterpret_cast<Header *>(malloc(alloc));
     Q_CHECK_PTR(h);
@@ -82,16 +82,19 @@ void MutableData::compact()
     h->version = 1;
     Base *b = h->root();
     b->size = size;
-    b->is_object = header->root()->is_object;
-    b->length = base->length;
+    if (header->root()->isObject())
+        b->setIsObject();
+    else
+        b->setIsArray();
+    b->setLength(base->length());
     b->tableOffset = reserve + sizeof(Array);
 
     uint offset = sizeof(Base);
-    if (b->is_object) {
+    if (b->isObject()) {
         const auto *o = static_cast<const Object *>(base);
         auto *no = static_cast<Object *>(b);
 
-        for (uint i = 0; i < o->length; ++i) {
+        for (uint i = 0; i < o->length(); ++i) {
             no->table()[i] = offset;
 
             const Entry *e = o->entryAt(i);
@@ -102,7 +105,7 @@ void MutableData::compact()
             uint dataSize = e->value.usedStorage(o);
             if (dataSize) {
                 memcpy(reinterpret_cast<char *>(no) + offset, e->value.data(o), dataSize);
-                ne->value.value = offset;
+                ne->value.setValue(offset);
                 offset += dataSize;
             }
         }
@@ -110,14 +113,14 @@ void MutableData::compact()
         const auto *a = static_cast<const Array *>(base);
         auto *na = static_cast<Array *>(b);
 
-        for (uint i = 0; i < a->length; ++i) {
+        for (uint i = 0; i < a->length(); ++i) {
             const Value *v = a->at(i);
             Value *nv = na->at(i);
             *nv = *v;
             uint dataSize = v->usedStorage(a);
             if (dataSize) {
                 memcpy(reinterpret_cast<char *>(na) + offset, v->data(a), dataSize);
-                nv->value = offset;
+                nv->setValue(offset);
                 offset += dataSize;
             }
         }
@@ -137,7 +140,7 @@ bool ConstData::isValid() const
 
     const Base *root = header->root();
     const uint maxSize = alloc - sizeof(Header);
-    return root->is_object
+    return root->isObject()
             ? static_cast<const Object *>(root)->isValid(maxSize)
             : static_cast<const Array *>(root)->isValid(maxSize);
 }
@@ -145,14 +148,14 @@ bool ConstData::isValid() const
 QJsonDocument ConstData::toJsonDocument() const
 {
     const Base *root = header->root();
-    return root->is_object
+    return root->isObject()
             ? QJsonDocument(static_cast<const Object *>(root)->toJsonObject())
             : QJsonDocument(static_cast<const Array *>(root)->toJsonArray());
 }
 
 uint Base::reserveSpace(uint dataSize, uint posInTable, uint numItems, bool replace)
 {
-    Q_ASSERT(posInTable <= length);
+    Q_ASSERT(posInTable <= length());
     if (size + dataSize >= Value::MaxSize) {
         qWarning("QJson: Document too large to store in data structure %d %d %d",
                  uint(size), dataSize, Value::MaxSize);
@@ -162,10 +165,10 @@ uint Base::reserveSpace(uint dataSize, uint posInTable, uint numItems, bool repl
     offset off = tableOffset;
     // move table to new position
     if (replace) {
-        memmove(reinterpret_cast<char *>(table()) + dataSize, table(), length * sizeof(offset));
+        memmove(reinterpret_cast<char *>(table()) + dataSize, table(), length() * sizeof(offset));
     } else {
         memmove(reinterpret_cast<char *>(table() + posInTable + numItems) + dataSize,
-                table() + posInTable, (length - posInTable) * sizeof(offset));
+                table() + posInTable, (length() - posInTable) * sizeof(offset));
         memmove(reinterpret_cast<char *>(table()) + dataSize, table(), posInTable * sizeof(offset));
     }
     tableOffset += dataSize;
@@ -173,7 +176,7 @@ uint Base::reserveSpace(uint dataSize, uint posInTable, uint numItems, bool repl
         table()[posInTable + i] = off;
     size += dataSize;
     if (!replace) {
-        length += numItems;
+        setLength(length() + numItems);
         size += numItems * sizeof(offset);
     }
     return off;
@@ -182,7 +185,7 @@ uint Base::reserveSpace(uint dataSize, uint posInTable, uint numItems, bool repl
 uint Object::indexOf(QStringView key, bool *exists) const
 {
     uint min = 0;
-    uint n = length;
+    uint n = length();
     while (n > 0) {
         uint half = n >> 1;
         uint middle = min + half;
@@ -193,7 +196,7 @@ uint Object::indexOf(QStringView key, bool *exists) const
             n -= half + 1;
         }
     }
-    if (min < length && *entryAt(min) == key) {
+    if (min < length() && *entryAt(min) == key) {
         *exists = true;
         return min;
     }
@@ -204,7 +207,7 @@ uint Object::indexOf(QStringView key, bool *exists) const
 QJsonObject Object::toJsonObject() const
 {
     QJsonObject object;
-    for (uint i = 0; i < length; ++i) {
+    for (uint i = 0; i < length(); ++i) {
         const Entry *e = entryAt(i);
         object.insert(e->key(), e->value.toJsonValue(this));
     }
@@ -213,11 +216,11 @@ QJsonObject Object::toJsonObject() const
 
 bool Object::isValid(uint maxSize) const
 {
-    if (size > maxSize || tableOffset + length * sizeof(offset) > size)
+    if (size > maxSize || tableOffset + length() * sizeof(offset) > size)
         return false;
 
     QString lastKey;
-    for (uint i = 0; i < length; ++i) {
+    for (uint i = 0; i < length(); ++i) {
         if (table()[i] + sizeof(Entry) >= tableOffset)
             return false;
         const Entry *e = entryAt(i);
@@ -237,18 +240,18 @@ QJsonArray Array::toJsonArray() const
 {
     QJsonArray array;
     const offset *values = table();
-    for (uint i = 0; i < length; ++i)
+    for (uint i = 0; i < length(); ++i)
         array.append(reinterpret_cast<const Value *>(values + i)->toJsonValue(this));
     return array;
 }
 
 bool Array::isValid(uint maxSize) const
 {
-    if (size > maxSize || tableOffset + length * sizeof(offset) > size)
+    if (size > maxSize || tableOffset + length() * sizeof(offset) > size)
         return false;
 
     const offset *values = table();
-    for (uint i = 0; i < length; ++i) {
+    for (uint i = 0; i < length(); ++i) {
         if (!reinterpret_cast<const Value *>(values + i)->isValid(this))
             return false;
     }
@@ -258,14 +261,14 @@ bool Array::isValid(uint maxSize) const
 uint Value::usedStorage(const Base *b) const
 {
     uint s = 0;
-    switch (type) {
+    switch (type()) {
     case QJsonValue::Double:
-        if (!latinOrIntValue)
+        if (!isLatinOrIntValue())
             s = sizeof(double);
         break;
     case QJsonValue::String: {
         const char *d = data(b);
-        s = latinOrIntValue
+        s = isLatinOrIntValue()
                 ? (sizeof(ushort)
                    + qFromLittleEndian(*reinterpret_cast<const ushort *>(d)))
                 : (sizeof(int)
@@ -286,7 +289,7 @@ uint Value::usedStorage(const Base *b) const
 
 QJsonValue Value::toJsonValue(const Base *b) const
 {
-    switch (type) {
+    switch (type()) {
     case QJsonValue::Null:
         return QJsonValue(QJsonValue::Null);
     case QJsonValue::Bool:
@@ -314,24 +317,24 @@ inline bool isValidValueOffset(uint offset, uint tableOffset)
 
 bool Value::isValid(const Base *b) const
 {
-    switch (type) {
+    switch (type()) {
     case QJsonValue::Null:
     case QJsonValue::Bool:
         return true;
     case QJsonValue::Double:
-        return latinOrIntValue || isValidValueOffset(value, b->tableOffset);
+        return isLatinOrIntValue() || isValidValueOffset(value(), b->tableOffset);
     case QJsonValue::String:
-        if (!isValidValueOffset(value, b->tableOffset))
+        if (!isValidValueOffset(value(), b->tableOffset))
             return false;
-        if (latinOrIntValue)
-            return asLatin1String(b).isValid(b->tableOffset - value);
-        return asString(b).isValid(b->tableOffset - value);
+        if (isLatinOrIntValue())
+            return asLatin1String(b).isValid(b->tableOffset - value());
+        return asString(b).isValid(b->tableOffset - value());
     case QJsonValue::Array:
-        return isValidValueOffset(value, b->tableOffset)
-            && static_cast<const Array *>(base(b))->isValid(b->tableOffset - value);
+        return isValidValueOffset(value(), b->tableOffset)
+                && static_cast<const Array *>(base(b))->isValid(b->tableOffset - value());
     case QJsonValue::Object:
-        return isValidValueOffset(value, b->tableOffset)
-            && static_cast<const Object *>(base(b))->isValid(b->tableOffset - value);
+        return isValidValueOffset(value(), b->tableOffset)
+                && static_cast<const Object *>(base(b))->isValid(b->tableOffset - value());
     default:
         return false;
     }
