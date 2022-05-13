@@ -946,6 +946,23 @@ function(_qt_internal_get_default_ios_bundle_identifier out_var)
     _qt_internal_get_ios_bundle_identifier_prefix(prefix)
     if(NOT prefix)
         set(prefix "com.yourcompany")
+
+        # For a better out-of-the-box experience, try to create a unique prefix by appending
+        # the sha1 of the team id, if one is found.
+        _qt_internal_find_ios_development_team_id(team_id)
+        if(team_id)
+            string(SHA1 hash "${team_id}")
+            string(SUBSTRING "${hash}" 0 8 infix)
+            string(APPEND prefix ".${infix}")
+        else()
+            message(WARNING
+                "No organization bundle identifier prefix could be retrieved from Xcode "
+                "preferences. This can lead to code signing issues due to a non-unique bundle "
+                "identifier. Please set up an organization prefix by creating a new project within "
+                "Xcode, or consider providing a custom bundle identifier by specifying the "
+                "XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER property."
+            )
+        endif()
     endif()
 
     # Escape the prefix according to rfc 1034, it's important for code-signing. If an invalid
