@@ -103,7 +103,7 @@ using namespace Qt::StringLiterals;
     \value Scroll
            Indicates that the device has a scroll capability.
 
-    \value PixelScroll \since 6.2
+    \value [since 6.2] PixelScroll
            Indicates that the device (usually a
            \l {QInputDevice::DeviceType::TouchPad}{touchpad})
            scrolls with \l {QWheelEvent::pixelDelta()}{pixel precision}.
