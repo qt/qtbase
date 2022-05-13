@@ -175,6 +175,7 @@ void RasterWindow::wheelEvent(QWheelEvent * ev)
     qDebug() << __PRETTY_FUNCTION__;
     QRasterWindow::wheelEvent(ev);
     incrementEventCount();
+    m_offset += ev->pixelDelta();
 }
 
 void RasterWindow::incrementEventCount()

@@ -39,17 +39,13 @@ QWasmCompositedWindow::QWasmCompositedWindow()
 
 // macOS CTRL <-> META switching. We most likely want to enable
 // the existing switching code in QtGui, but for now do it here.
+bool g_scrollingInvertedFromDevice = false;
 
-
-bool g_useNaturalScrolling = true; // natural scrolling is default on linux/windows
-
-static void mouseWheelEvent(emscripten::val event) {
-
-    emscripten::val wheelInterted = event["webkitDirectionInvertedFromDevice"];
-
-    if (wheelInterted.as<bool>()) {
-        g_useNaturalScrolling = true;
-    }
+static void mouseWheelEvent(emscripten::val event)
+{
+    emscripten::val wheelInverted = event["webkitDirectionInvertedFromDevice"];
+    if (wheelInverted.as<bool>())
+        g_scrollingInvertedFromDevice = true;
 }
 
 EMSCRIPTEN_BINDINGS(qtMouseModule) {
@@ -145,8 +141,6 @@ void QWasmCompositor::initEventHandlers()
     eventTranslator->g_usePlatformMacSpecifics
     = (QWasmIntegration::get()->platform == QWasmIntegration::MacOSPlatform);
     if (QWasmIntegration::get()->platform == QWasmIntegration::MacOSPlatform) {
-        g_useNaturalScrolling = false; // make this !default on macOS
-
         if (!emscripten::val::global("window")["safari"].isUndefined()) {
             val canvas = screen()->canvas();
             canvas.call<void>("addEventListener",
@@ -1203,10 +1197,10 @@ bool QWasmCompositor::processWheel(int eventType, const EmscriptenWheelEvent *wh
 
     int scrollFactor = 0;
     switch (wheelEvent->deltaMode) {
-        case DOM_DELTA_PIXEL://chrome safari
+        case DOM_DELTA_PIXEL:
             scrollFactor = 1;
             break;
-        case DOM_DELTA_LINE: //firefox
+        case DOM_DELTA_LINE:
             scrollFactor = 12;
             break;
         case DOM_DELTA_PAGE:
@@ -1214,8 +1208,7 @@ bool QWasmCompositor::processWheel(int eventType, const EmscriptenWheelEvent *wh
             break;
     };
 
-    if (g_useNaturalScrolling) //macOS platform has document oriented scrolling
-        scrollFactor = -scrollFactor;
+    scrollFactor = -scrollFactor; // Web scroll deltas are inverted from Qt deltas.
 
     Qt::KeyboardModifiers modifiers = eventTranslator->translateMouseEventModifier(&mouseEvent);
     QPoint targetPoint(mouseEvent.targetX, mouseEvent.targetY);
@@ -1231,9 +1224,13 @@ bool QWasmCompositor::processWheel(int eventType, const EmscriptenWheelEvent *wh
     if (wheelEvent->deltaY != 0) pixelDelta.setY(wheelEvent->deltaY * scrollFactor);
     if (wheelEvent->deltaX != 0) pixelDelta.setX(wheelEvent->deltaX * scrollFactor);
 
+    QPoint angleDelta = pixelDelta; // FIXME: convert from pixels?
+
     bool accepted = QWindowSystemInterface::handleWheelEvent(
             window2, QWasmIntegration::getTimestamp(), localPoint,
-            globalPoint, QPoint(), pixelDelta, modifiers);
+            globalPoint, pixelDelta, angleDelta, modifiers,
+            Qt::NoScrollPhase, Qt::MouseEventNotSynthesized,
+            g_scrollingInvertedFromDevice);
     return accepted;
 }
 
