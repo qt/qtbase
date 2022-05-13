@@ -124,7 +124,7 @@ QReadWriteLock::QReadWriteLock(RecursionMode recursionMode)
 */
 QReadWriteLock::~QReadWriteLock()
 {
-    auto d = d_ptr.loadRelaxed();
+    auto d = d_ptr.loadAcquire();
     if (isUncontendedLocked(d)) {
         qWarning("QReadWriteLock: destroying locked QReadWriteLock");
         return;
