@@ -332,8 +332,17 @@ function(qt_internal_add_test name)
         set(test_working_dir "")
         set(test_executable "${name}")
     elseif(WASM)
-        set(test_executable "${__qt_libexec_dir_absolute}/qt-wasmtestrunner.py")
-        list(APPEND extra_test_args "${name}.html")
+        # Test script expects html file
+        set(test_executable "${name}.html")
+
+        if(QT6_INSTALL_PREFIX)
+            set(QT_WASM_TESTRUNNER "${QT6_INSTALL_PREFIX}/${INSTALL_LIBEXECDIR}/qt-wasmtestrunner.py")
+        elseif(QT_BUILD_DIR)
+            set(QT_WASM_TESTRUNNER "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/qt-wasmtestrunner.py")
+        endif()
+        # This tells cmake to run the tests with this script, since wasm files can't be
+        # executed directly
+        set_property(TARGET "${name}" PROPERTY CROSSCOMPILING_EMULATOR "${QT_WASM_TESTRUNNER}")
     else()
         if(arg_QMLTEST AND NOT arg_SOURCES)
             set(test_working_dir "${CMAKE_CURRENT_SOURCE_DIR}")

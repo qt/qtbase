@@ -387,6 +387,12 @@ elseif(IOS)
         cmake/ios/LaunchScreen.storyboard
         DESTINATION "${__GlobalConfig_install_dir}/ios"
     )
+elseif(WASM)
+    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/util/wasm/wasmtestrunner/qt-wasmtestrunner.py"
+        "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/qt-wasmtestrunner.py" @ONLY)
+
+    qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/qt-wasmtestrunner.py"
+        DESTINATION "${INSTALL_LIBEXECDIR}")
 endif()
 
 # Install CI support files to libexec.
@@ -394,6 +400,4 @@ qt_path_join(__qt_libexec_install_dir "${QT_INSTALL_DIR}" "${INSTALL_LIBEXECDIR}
 qt_copy_or_install(FILES coin/instructions/qmake/ensure_pro_file.cmake
     DESTINATION "${__qt_libexec_install_dir}")
 qt_copy_or_install(PROGRAMS "util/testrunner/qt-testrunner.py"
-                   DESTINATION "${__qt_libexec_install_dir}")
-qt_copy_or_install(PROGRAMS "util/wasm/wasmtestrunner/qt-wasmtestrunner.py"
                    DESTINATION "${__qt_libexec_install_dir}")
