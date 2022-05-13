@@ -837,10 +837,14 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_undogroup
 
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_opengl AND QT_FEATURE_xlib AND NOT QT_FEATURE_opengles2
     SOURCES
-        opengl/qopengles2ext.h
         opengl/platform/unix/qglxconvenience.cpp opengl/platform/unix/qglxconvenience_p.h
     LIBRARIES
         X11::X11
+)
+
+qt_internal_extend_target(Gui CONDITION QT_FEATURE_opengles2
+    SOURCES
+        opengl/qopengles2ext.h
 )
 
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_egl AND QT_FEATURE_opengl
