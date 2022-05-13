@@ -1576,7 +1576,7 @@ void tst_QApplication::activateDeactivateEvent()
         int activateCount = 0;
         int deactivateCount = 0;
     protected:
-        bool event(QEvent *e)
+        bool event(QEvent *e) override
         {
             switch (e->type()) {
             case QEvent::WindowActivate:
