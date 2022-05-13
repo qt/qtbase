@@ -800,6 +800,11 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
         EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
         CONFIG_INSTALL_DIR "${config_install_dir}")
 
+    qt_internal_export_genex_properties(TARGETS ${target}
+        EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
+        CONFIG_INSTALL_DIR "${config_install_dir}"
+    )
+
     ### fixme: cmake is missing a built-in variable for this. We want to apply it only to modules and plugins
     # that belong to Qt.
     if(NOT arg_HEADER_MODULE)
