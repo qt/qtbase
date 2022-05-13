@@ -567,6 +567,36 @@ QRectF QWindowPrivate::closestAcceptableGeometry(const QRectF &rect) const
     return QRectF();
 }
 
+void QWindowPrivate::setMinOrMaxSize(QSize *oldSizeMember, const QSize &size,
+                                     std::function<void()> funcWidthChanged,
+                                     std::function<void()> funcHeightChanged)
+{
+    Q_Q(QWindow);
+    Q_ASSERT(oldSizeMember);
+    Q_ASSERT(funcWidthChanged && funcHeightChanged);
+    const QSize adjustedSize =
+            size.expandedTo(QSize(0, 0)).boundedTo(QSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX));
+    if (*oldSizeMember == adjustedSize)
+        return;
+    const bool widthChanged = adjustedSize.width() != oldSizeMember->width();
+    const bool heightChanged = adjustedSize.height() != oldSizeMember->height();
+    *oldSizeMember = adjustedSize;
+
+    if (platformWindow && q->isTopLevel())
+        platformWindow->propagateSizeHints();
+
+    if (widthChanged)
+        funcWidthChanged();
+    if (heightChanged)
+        funcHeightChanged();
+
+    // resize window if current size is outside of min and max limits
+    if (minimumSize.width() <= maximumSize.width()
+        || minimumSize.height() <= maximumSize.height()) {
+        q->resize(q->geometry().size().expandedTo(minimumSize).boundedTo(maximumSize));
+    }
+}
+
 /*!
     Sets the \a surfaceType of the window.
 
@@ -1531,17 +1561,9 @@ QSize QWindow::sizeIncrement() const
 void QWindow::setMinimumSize(const QSize &size)
 {
     Q_D(QWindow);
-    QSize adjustedSize = QSize(qBound(0, size.width(), QWINDOWSIZE_MAX), qBound(0, size.height(), QWINDOWSIZE_MAX));
-    if (d->minimumSize == adjustedSize)
-        return;
-    QSize oldSize = d->minimumSize;
-    d->minimumSize = adjustedSize;
-    if (d->platformWindow && isTopLevel())
-        d->platformWindow->propagateSizeHints();
-    if (d->minimumSize.width() != oldSize.width())
-        emit minimumWidthChanged(d->minimumSize.width());
-    if (d->minimumSize.height() != oldSize.height())
-        emit minimumHeightChanged(d->minimumSize.height());
+    d->setMinOrMaxSize(
+            &d->minimumSize, size, [=]() { emit minimumWidthChanged(d->minimumSize.width()); },
+            [=]() { emit minimumHeightChanged(d->minimumSize.height()); });
 }
 
 /*!
@@ -1618,17 +1640,9 @@ void QWindow::setMinimumHeight(int h)
 void QWindow::setMaximumSize(const QSize &size)
 {
     Q_D(QWindow);
-    QSize adjustedSize = QSize(qBound(0, size.width(), QWINDOWSIZE_MAX), qBound(0, size.height(), QWINDOWSIZE_MAX));
-    if (d->maximumSize == adjustedSize)
-        return;
-    QSize oldSize = d->maximumSize;
-    d->maximumSize = adjustedSize;
-    if (d->platformWindow && isTopLevel())
-        d->platformWindow->propagateSizeHints();
-    if (d->maximumSize.width() != oldSize.width())
-        emit maximumWidthChanged(d->maximumSize.width());
-    if (d->maximumSize.height() != oldSize.height())
-        emit maximumHeightChanged(d->maximumSize.height());
+    d->setMinOrMaxSize(
+            &d->maximumSize, size, [=]() { emit maximumWidthChanged(d->maximumSize.width()); },
+            [=]() { emit maximumHeightChanged(d->maximumSize.height()); });
 }
 
 /*!

@@ -1610,6 +1610,17 @@ void tst_QWindow::sizes()
     QCOMPARE(minimumHeightSpy.count(), 1);
     QCOMPARE(maximumWidthSpy.count(), 1);
     QCOMPARE(maximumHeightSpy.count(), 1);
+
+    // test if min and max limits will change the size
+    QVERIFY(window.minimumWidth() < 50 && window.maximumWidth() > 80);
+    QVERIFY(window.minimumHeight() < 50 && window.maximumHeight() > 80);
+    window.resize(50, 50);
+    QCOMPARE(window.size(), QSize(50, 50));
+    window.setMinimumSize(QSize(60, 60));
+    QCOMPARE(window.size(), QSize(60, 60));
+    window.resize(80, 80);
+    window.setMaximumSize(QSize(70, 70));
+    QCOMPARE(window.size(), QSize(70, 70));
 }
 
 class CloseOnCloseEventWindow : public QWindow

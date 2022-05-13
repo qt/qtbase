@@ -73,6 +73,10 @@ public:
     virtual void clearFocusObject();
     virtual QRectF closestAcceptableGeometry(const QRectF &rect) const;
 
+    void setMinOrMaxSize(QSize *oldSizeMember, const QSize &size,
+                         std::function<void()> funcWidthChanged,
+                         std::function<void()> funcHeightChanged);
+
     virtual void processSafeAreaMarginsChanged() {}
 
     virtual bool participatesInLastWindowClosed() const;
