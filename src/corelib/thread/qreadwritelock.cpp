@@ -445,7 +445,7 @@ void QReadWriteLock::unlock()
 /*! \internal  Helper for QWaitCondition::wait */
 QReadWriteLock::StateForWaitCondition QReadWriteLock::stateForWaitCondition() const
 {
-    QReadWriteLockPrivate *d = d_ptr.loadRelaxed();
+    QReadWriteLockPrivate *d = d_ptr.loadAcquire();
     switch (quintptr(d) & StateMask) {
     case StateLockedForRead: return LockedForRead;
     case StateLockedForWrite: return LockedForWrite;
