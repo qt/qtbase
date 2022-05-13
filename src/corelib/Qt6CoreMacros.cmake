@@ -2076,7 +2076,12 @@ function(_qt_internal_process_resource target resourceName)
         string(APPEND qrcContents "${file}</file>\n")
         list(APPEND files "${file}")
 
-        get_source_file_property(target_dependency ${file} QT_RESOURCE_TARGET_DEPENDENCY)
+        set(scope_args)
+        if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
+            set(scope_args TARGET_DIRECTORY ${target})
+        endif()
+        get_source_file_property(
+            target_dependency ${file} ${scope_args} _qt_resource_target_dependency)
         if (NOT target_dependency)
             list(APPEND resource_dependencies ${file})
         else()
