@@ -73,8 +73,7 @@ static const int kControlUnicode = 0x2303;
 static const int kOptionUnicode = 0x2325;
 static const int kCommandUnicode = 0x2318;
 
-static const int NumEntries = 21;
-static const MacSpecialKey entries[NumEntries] = {
+static const MacSpecialKey entries[] = {
     { Qt::Key_Escape, 0x238B },
     { Qt::Key_Tab, 0x21E5 },
     { Qt::Key_Backtab, 0x21E4 },
@@ -96,6 +95,7 @@ static const MacSpecialKey entries[NumEntries] = {
     { Qt::Key_Alt, kOptionUnicode },
     { Qt::Key_CapsLock, 0x21EA },
 };
+static const int NumEntries = std::size(entries);
 
 static bool operator<(const MacSpecialKey &entry, int key)
 {
