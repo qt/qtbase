@@ -21,7 +21,6 @@
 #include "QtCore/qlist.h"
 #include "QtCore/qobject.h"
 #include "QtCore/qpointer.h"
-#include "QtCore/qreadwritelock.h"
 #include "QtCore/qsharedpointer.h"
 #include "QtCore/qvariant.h"
 #include "QtCore/qproperty.h"

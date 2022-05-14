@@ -19,6 +19,7 @@
 #if QT_CONFIG(commandlineparser)
 #include "QtCore/qcommandlineoption.h"
 #endif
+#include "QtCore/qreadwritelock.h"
 #include "QtCore/qtranslator.h"
 #if QT_CONFIG(settings)
 #include "QtCore/qsettings.h"
