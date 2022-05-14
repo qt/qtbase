@@ -445,6 +445,12 @@ endif()
 #)
 # special case end
 
+qt_internal_extend_target(Core
+    CONDITION ( TEST_architecture_arch STREQUAL i386 ) OR
+        ( TEST_architecture_arch STREQUAL x86_64 )
+    SOURCES
+        global/qsimd_x86_p.h
+)
 qt_internal_extend_target(Core CONDITION ANDROID
     SOURCES
         kernel/qsharedmemory_android.cpp
