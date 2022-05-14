@@ -4,7 +4,9 @@
 
 #include <QtCore/QCoreApplication>
 #include <QTest>
+#if defined(Q_OS_WIN32)
 #include <QWinEventNotifier>
+#endif
 #include <QAbstractEventDispatcher>
 
 /* Custom event dispatcher to ensure we don't receive any spontaneous events */

@@ -6,7 +6,9 @@
 #include <QSignalSpy>
 #include <QSemaphore>
 #include <QAbstractEventDispatcher>
+#if defined(Q_OS_WIN32)
 #include <QWinEventNotifier>
+#endif
 
 #include <qcoreapplication.h>
 #include <qelapsedtimer.h>
