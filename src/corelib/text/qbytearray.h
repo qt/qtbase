@@ -430,8 +430,8 @@ public:
     void shrink_to_fit() { squeeze(); }
     iterator erase(const_iterator first, const_iterator last);
 
-    static inline QByteArray fromStdString(const std::string &s);
-    inline std::string toStdString() const;
+    static QByteArray fromStdString(const std::string &s);
+    std::string toStdString() const;
 
     inline qsizetype size() const noexcept { return d->size; }
 #if QT_DEPRECATED_SINCE(6, 4)
@@ -566,12 +566,6 @@ inline QByteArray &QByteArray::setNum(ulong n, int base)
 { return setNum(qulonglong(n), base); }
 inline QByteArray &QByteArray::setNum(float n, char format, int precision)
 { return setNum(double(n), format, precision); }
-
-inline std::string QByteArray::toStdString() const
-{ return std::string(constData(), length()); }
-
-inline QByteArray QByteArray::fromStdString(const std::string &s)
-{ return QByteArray(s.data(), qsizetype(s.size())); }
 
 #if !defined(QT_NO_DATASTREAM) || defined(QT_BOOTSTRAPPED)
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QByteArray &);

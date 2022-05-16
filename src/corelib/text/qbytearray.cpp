@@ -4561,6 +4561,10 @@ QByteArray QByteArray::fromPercentEncoding(const QByteArray &input, char percent
 
     \sa toStdString(), QString::fromStdString()
 */
+QByteArray QByteArray::fromStdString(const std::string &s)
+{
+    return QByteArray(s.data(), qsizetype(s.size()));
+}
 
 /*!
     \fn std::string QByteArray::toStdString() const
@@ -4574,6 +4578,10 @@ QByteArray QByteArray::fromPercentEncoding(const QByteArray &input, char percent
 
     \sa fromStdString(), QString::toStdString()
 */
+std::string QByteArray::toStdString() const
+{
+    return std::string(data(), size_t(size()));
+}
 
 /*!
     \since 4.4
