@@ -2606,17 +2606,15 @@ namespace {
 // This class provides (per-thread) storage for qFlagLocation()
 class FlaggedDebugSignatures
 {
-    static constexpr uint Count = 2;
-
     uint idx = 0;
-    const char *locations[Count] = {};
+    std::array<const char *, 2> locations = {}; // one for the SIGNAL, one for the SLOT
 
 public:
-    void store(const char* method)
-    { locations[idx++ % Count] = method; }
+    void store(const char* method) noexcept
+    { locations[idx++ % locations.size()] = method; }
 
-    bool contains(const char *method) const
-    { return std::find(locations, locations + Count, method) != locations + Count; }
+    bool contains(const char *method) const noexcept
+    { return std::find(locations.begin(), locations.end(), method) != locations.end(); }
 };
 
 Q_THREAD_LOCAL_CONSTINIT static thread_local FlaggedDebugSignatures flaggedSignatures = {};
