@@ -119,7 +119,28 @@ static QByteArray qGssapiContinue(QAuthenticatorPrivate *ctx, QByteArrayView cha
 
   \section2 SPNEGO/Negotiate
 
-  This authentication mechanism currently supports no incoming or outgoing options.
+  \table
+    \header
+        \li Option
+        \li Direction
+        \li Type
+        \li Description
+    \row
+        \li \tt{spn}
+        \li Outgoing
+        \li QString
+        \li Provides a custom SPN.
+  \endtable
+
+  This authentication mechanism currently supports no incoming options.
+
+  The \c{spn} property is used on Windows clients when an SSPI library is used.
+  If the property is not set, a default SPN will be used. The default SPN on
+  Windows is \c {HTTP/<hostname>}.
+
+  Other operating systems use GSSAPI libraries. For that it is expected that
+  KDC is set up, and the credentials can be fetched from it. The backend always
+  uses \c {HTTPS@<hostname>} as an SPN.
 
   \sa QSslSocket
 */
@@ -1623,8 +1644,11 @@ static QByteArray qSspiContinue(QAuthenticatorPrivate *ctx, QAuthenticatorPrivat
     responseBuf.cbBuffer   = 0;
 
     // Calculate target (SPN for Negotiate, empty for NTLM)
-    std::wstring targetNameW = (method == QAuthenticatorPrivate::Negotiate
-                                ? "HTTP/"_L1 + host : QString()).toStdWString();
+    QString targetName = ctx->options.value("spn"_L1).toString();
+    if (targetName.isEmpty())
+        targetName = "HTTP/"_L1 + host;
+    const std::wstring targetNameW = (method == QAuthenticatorPrivate::Negotiate
+                                      ? targetName : QString()).toStdWString();
 
     // Generate our challenge-response message
     SECURITY_STATUS secStatus = pSecurityFunctionTable->InitializeSecurityContext(
