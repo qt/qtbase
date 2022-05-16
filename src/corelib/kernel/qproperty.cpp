@@ -245,6 +245,24 @@ QPropertyBindingPrivate::~QPropertyBindingPrivate()
                         + QPropertyBindingPrivate::getSizeEnsuringAlignment());
 }
 
+void QPropertyBindingPrivate::clearDependencyObservers() {
+    for (size_t i = 0; i < qMin(dependencyObserverCount, inlineDependencyObservers.size()); ++i) {
+        QPropertyObserverPointer p{&inlineDependencyObservers[i]};
+        p.unlink_fast();
+    }
+    if (heapObservers)
+        heapObservers->clear();
+    dependencyObserverCount = 0;
+}
+
+QPropertyObserverPointer QPropertyBindingPrivate::allocateDependencyObserver_slow()
+{
+    ++dependencyObserverCount;
+    if (!heapObservers)
+        heapObservers.reset(new std::vector<QPropertyObserver>());
+    return {&heapObservers->emplace_back()};
+}
+
 void QPropertyBindingPrivate::unlinkAndDeref()
 {
     clearDependencyObservers();

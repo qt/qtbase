@@ -295,15 +295,7 @@ public:
         return observers;
     }
 
-    void clearDependencyObservers() {
-        for (size_t i = 0; i < qMin(dependencyObserverCount, inlineDependencyObservers.size()); ++i) {
-            QPropertyObserverPointer p{&inlineDependencyObservers[i]};
-            p.unlink_fast();
-        }
-        if (heapObservers)
-            heapObservers->clear();
-        dependencyObserverCount = 0;
-    }
+    void clearDependencyObservers();
 
     Q_ALWAYS_INLINE QPropertyObserverPointer allocateDependencyObserver() {
         if (dependencyObserverCount < inlineDependencyObservers.size()) {
@@ -313,13 +305,7 @@ public:
         return allocateDependencyObserver_slow();
     }
 
-    Q_NEVER_INLINE QPropertyObserverPointer allocateDependencyObserver_slow()
-    {
-        ++dependencyObserverCount;
-        if (!heapObservers)
-            heapObservers.reset(new std::vector<QPropertyObserver>());
-        return {&heapObservers->emplace_back()};
-    }
+    QPropertyObserverPointer allocateDependencyObserver_slow();
 
     QPropertyBindingSourceLocation sourceLocation() const
     {
