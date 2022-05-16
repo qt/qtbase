@@ -405,7 +405,7 @@ void tst_QTextMarkdownImporter::avoidBlankLineAtBeginning_data()
 
     QTest::newRow("Text block") << QString("Markdown text") << 1;
     QTest::newRow("Headline") << QString("Markdown text\n============") << 1;
-    QTest::newRow("Code block") << QString("    Markdown text") << 2;
+    QTest::newRow("Code block") << QString("    Markdown text") << 1;
     QTest::newRow("Unordered list") << QString("* Markdown text") << 1;
     QTest::newRow("Ordered list") << QString("1. Markdown text") << 1;
     QTest::newRow("Blockquote") << QString("> Markdown text") << 1;
@@ -526,18 +526,17 @@ void tst_QTextMarkdownImporter::fencedCodeBlocks_data()
     QTest::addColumn<QString>("expectedFenceChar");
     QTest::addColumn<QString>("rewrite");
 
-    // TODO shouldn't add empty blocks: QTBUG-101031
     QTest::newRow("backtick fence with language")
             << "```pseudocode\nprint('hello world\\n')\n```\n"
-            << 2 << 0 << "pseudocode" << "`"
+            << 1 << 0 << "pseudocode" << "`"
             << "```pseudocode\nprint('hello world\\n')\n```\n\n";
     QTest::newRow("tilde fence with language")
             << "~~~pseudocode\nprint('hello world\\n')\n~~~\n"
-            << 2 << 0 << "pseudocode" << "~"
+            << 1 << 0 << "pseudocode" << "~"
             << "~~~pseudocode\nprint('hello world\\n')\n~~~\n\n";
     QTest::newRow("embedded backticks")
             << "```\nnone `one` ``two``\n```\nplain\n```\n```three``` ````four````\n```\nplain\n"
-            << 4 << 2 << QString() << "`"
+            << 2 << 2 << QString() << "`"
             << "```\nnone `one` ``two``\n```\nplain\n\n```\n```three``` ````four````\n```\nplain\n\n";
 }
 

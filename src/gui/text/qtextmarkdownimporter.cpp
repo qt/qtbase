@@ -532,6 +532,14 @@ int QTextMarkdownImporter::cbText(int textType, const char *text, unsigned size)
     case MD_BLOCK_TD:
         m_nonEmptyTableCells.append(m_tableCol);
         break;
+    case MD_BLOCK_CODE:
+        if (s == Newline) {
+            // defer a blank line until we see something else in the code block,
+            // to avoid ending every code block with a gratuitous blank line
+            m_needsInsertBlock = true;
+            s = QString();
+        }
+        break;
     default:
         break;
     }
@@ -569,8 +577,6 @@ int QTextMarkdownImporter::cbText(int textType, const char *text, unsigned size)
                       << "bindent" << bfmt.indent() << "tindent" << bfmt.textIndent()
                       << "margins" << bfmt.leftMargin() << bfmt.topMargin() << bfmt.bottomMargin() << bfmt.rightMargin();
     }
-    qCDebug(lcMD) << textType << "in block" << m_blockType << s << "in list?" << m_cursor->currentList()
-                  << "indent" << m_cursor->blockFormat().indent();
     return 0; // no error
 }
 

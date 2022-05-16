@@ -519,7 +519,7 @@ void tst_QTextMarkdownWriter::fromHtml_data()
         "![foo](/url \"title\")\n\n";
     QTest::newRow("code") <<
         "<pre class=\"language-pseudocode\">\n#include \"foo.h\"\n\nblock {\n    statement();\n}\n\n</pre>" <<
-        "```pseudocode\n#include \"foo.h\"\n\nblock {\n    statement();\n}\n```\n\n";
+        "```pseudocode\n#include \"foo.h\"\n\nblock {\n    statement();\n}\n\n```\n\n";
     // TODO
 //    QTest::newRow("escaped number and paren after double newline") <<
 //        "<p>(The first sentence of this paragraph is a line, the next paragraph has a number</p>13) but that's not part of an ordered list" <<
