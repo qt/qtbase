@@ -56,7 +56,7 @@
         NSMenuItem *appItem = [[[NSMenuItem alloc] init] autorelease];
         appItem.title = appName;
         [theMenu addItem:appItem];
-        appMenu = [[NSMenu alloc] initWithTitle:appName];
+        appMenu = [[QCocoaNSMenu alloc] initWithoutPlatformMenu:appName];
         appItem.submenu = appMenu;
 
         // About Application
