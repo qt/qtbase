@@ -50,6 +50,7 @@ Now let's have an indented code block:
     }
 
 and end with a fenced code block:
+
 ~~~pseudocode
 #include <something.h>
 #include <else.h>

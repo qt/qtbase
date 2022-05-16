@@ -156,11 +156,11 @@ void QTextMarkdownWriter::writeFrame(const QTextFrame *frame)
                 for (int col = cell.column(); col < spanEndCol; ++col)
                     m_stream << "|";
             } else if (m_fencedCodeBlock && ending) {
-                m_stream << m_linePrefix << QString(m_wrappedLineIndent, Space)
+                m_stream << Newline << m_linePrefix << QString(m_wrappedLineIndent, Space)
                          << m_codeBlockFence << Newline << Newline;
                 m_codeBlockFence.clear();
             } else if (m_indentedCodeBlock && nextIsDifferent) {
-                m_stream << Newline;
+                m_stream << Newline << Newline;
             } else if (endingCol > 0) {
                 if (block.textList() || block.blockFormat().hasProperty(QTextFormat::BlockCodeLanguage)) {
                     m_stream << Newline;
