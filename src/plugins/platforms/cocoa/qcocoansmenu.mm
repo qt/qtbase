@@ -87,6 +87,13 @@ static NSString *qt_mac_removePrivateUnicode(NSString *string)
     return self;
 }
 
+- (instancetype)initWithoutPlatformMenu:(NSString *)title
+{
+    if (self = [super initWithTitle:title])
+        self.delegate = [QCocoaNSMenuDelegate sharedMenuDelegate];
+    return self;
+}
+
 - (QCocoaMenu *)platformMenu
 {
     return _platformMenu.data();
