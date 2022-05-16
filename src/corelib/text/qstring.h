@@ -1519,7 +1519,7 @@ inline QString QString::fromStdU16String(const std::u16string &s)
 { return fromUtf16(s.data(), int(s.size())); }
 
 inline std::u16string QString::toStdU16String() const
-{ return std::u16string(reinterpret_cast<const char16_t*>(utf16()), length()); }
+{ return std::u16string(reinterpret_cast<const char16_t*>(data()), length()); }
 
 inline QString QString::fromStdU32String(const std::u32string &s)
 { return fromUcs4(s.data(), int(s.size())); }
