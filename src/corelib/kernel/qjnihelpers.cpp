@@ -8,6 +8,7 @@
 #include "qlist.h"
 #include "qmutex.h"
 #include "qsemaphore.h"
+#include "qreadwritelock.h"
 #include <QtCore/private/qcoreapplication_p.h>
 
 #include <android/log.h>
