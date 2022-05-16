@@ -56,7 +56,6 @@
 #include <QtCore/qatomic.h>
 #include <QtCore/qdeadlinetimer.h>
 #include <QtCore/qlist.h>
-#include <QtCore/qreadwritelock.h>
 #include <QtCore/qstring.h>
 #include <QtNetwork/qhostaddress.h>
 #include <QtNetwork/qabstractsocket.h>
