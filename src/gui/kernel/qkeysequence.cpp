@@ -59,7 +59,6 @@ static const MacSpecialKey entries[] = {
     { Qt::Key_Alt, kOptionUnicode },
     { Qt::Key_CapsLock, 0x21EA },
 };
-static const int NumEntries = std::size(entries);
 
 static bool operator<(const MacSpecialKey &entry, int key)
 {
@@ -71,12 +70,11 @@ static bool operator<(int key, const MacSpecialKey &entry)
     return key < entry.key;
 }
 
-static const MacSpecialKey * const MacSpecialKeyEntriesEnd = entries + NumEntries;
 
 QChar qt_macSymbolForQtKey(int key)
 {
-    const MacSpecialKey *i = std::lower_bound(entries, MacSpecialKeyEntriesEnd, key);
-    if ((i == MacSpecialKeyEntriesEnd) || (key < *i))
+    const auto i = std::lower_bound(std::begin(entries), std::end(entries), key);
+    if (i == std::end(entries) || key < *i)
         return QChar();
     ushort macSymbol = i->macSymbol;
     if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)
@@ -93,8 +91,7 @@ QChar qt_macSymbolForQtKey(int key)
 static int qtkeyForMacSymbol(const QChar ch)
 {
     const ushort unicode = ch.unicode();
-    for (int i = 0; i < NumEntries; ++i) {
-        const MacSpecialKey &entry = entries[i];
+    for (const MacSpecialKey &entry : entries) {
         if (entry.macSymbol == unicode) {
             int key = entry.key;
             if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)
