@@ -64,6 +64,7 @@ QT_DECLARE_NAMESPACED_OBJC_INTERFACE(QCocoaNSMenuDelegate, NSObject <NSMenuDeleg
 QT_DECLARE_NAMESPACED_OBJC_INTERFACE(QCocoaNSMenu, NSMenu
 @property (readonly, nonatomic) QCocoaMenu *platformMenu;
 - (instancetype)initWithPlatformMenu:(QCocoaMenu *)menu;
+- (instancetype)initWithoutPlatformMenu:(NSString *)menu;
 )
 
 QT_DECLARE_NAMESPACED_OBJC_INTERFACE(QCocoaNSMenuItem, NSMenuItem
