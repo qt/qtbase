@@ -67,6 +67,9 @@ private slots:
     void pathological_data();
     void pathological();
 
+private:
+    bool isMainFontFixed();
+
 public:
     enum CharFormat {
         Normal = 0x0,
@@ -83,6 +86,18 @@ public:
 
 Q_DECLARE_METATYPE(tst_QTextMarkdownImporter::CharFormats)
 Q_DECLARE_OPERATORS_FOR_FLAGS(tst_QTextMarkdownImporter::CharFormats)
+
+bool tst_QTextMarkdownImporter::isMainFontFixed()
+{
+    bool ret = QFontInfo(QGuiApplication::font()).fixedPitch();
+    if (ret) {
+        qCWarning(lcTests) << "QFontDatabase::GeneralFont is monospaced: markdown writing is likely to use too many backticks";
+        qCWarning(lcTests) << "system fonts: fixed" << QFontDatabase::systemFont(QFontDatabase::FixedFont)
+                           << "fixed?" << QFontInfo(QFontDatabase::systemFont(QFontDatabase::FixedFont)).fixedPitch()
+                           << "general" << QFontDatabase::systemFont(QFontDatabase::GeneralFont);
+    }
+    return ret;
+}
 
 void tst_QTextMarkdownImporter::headingBulletsContinuations()
 {
@@ -274,6 +289,8 @@ void tst_QTextMarkdownImporter::lists()
     }
     QCOMPARE(itemCount, expectedItemCount);
     QCOMPARE(emptyItems, expectedEmptyItems);
+    if (doc.toMarkdown() != rewrite && isMainFontFixed())
+        QEXPECT_FAIL("", "fixed-pitch main font (QTBUG-103484)", Continue);
     QCOMPARE(doc.toMarkdown(), rewrite);
 }
 
