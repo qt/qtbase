@@ -404,7 +404,7 @@ constexpr QAnyStringView::QAnyStringView(QLatin1StringView str) noexcept
 constexpr QLatin1StringView QAnyStringView::asLatin1StringView() const
 {
     Q_ASSERT(isLatin1());
-    return {m_data_utf8, int(size())};
+    return {m_data_utf8, size()};
 }
 
 template <typename Visitor>
@@ -1240,8 +1240,7 @@ ushort QStringView::toUShort(bool *ok, int base) const
 template <bool UseChar8T>
 QString QBasicUtf8StringView<UseChar8T>::toString() const
 {
-    Q_ASSERT(size() == int(size()));
-    return QString::fromUtf8(data(), int(size()));
+    return QString::fromUtf8(data(), size());
 }
 
 //
@@ -1502,7 +1501,7 @@ inline std::string QString::toStdString() const
 { return toUtf8().toStdString(); }
 
 inline QString QString::fromStdString(const std::string &s)
-{ return fromUtf8(s.data(), int(s.size())); }
+{ return fromUtf8(s.data(), qsizetype(s.size())); }
 
 inline std::wstring QString::toStdWString() const
 {
@@ -1513,16 +1512,16 @@ inline std::wstring QString::toStdWString() const
 }
 
 inline QString QString::fromStdWString(const std::wstring &s)
-{ return fromWCharArray(s.data(), int(s.size())); }
+{ return fromWCharArray(s.data(), qsizetype(s.size())); }
 
 inline QString QString::fromStdU16String(const std::u16string &s)
-{ return fromUtf16(s.data(), int(s.size())); }
+{ return fromUtf16(s.data(), qsizetype(s.size())); }
 
 inline std::u16string QString::toStdU16String() const
 { return std::u16string(reinterpret_cast<const char16_t*>(data()), length()); }
 
 inline QString QString::fromStdU32String(const std::u32string &s)
-{ return fromUcs4(s.data(), int(s.size())); }
+{ return fromUcs4(s.data(), qsizetype(s.size())); }
 
 inline std::u32string QString::toStdU32String() const
 {
