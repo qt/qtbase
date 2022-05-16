@@ -12,7 +12,7 @@ MODULE_EXT_HEADERS = $$PWD/src/jpeglib.h \
                      $$PWD/src/jconfig.h \
                      $$PWD/src/jmorecfg.h
 
-INCLUDEPATH += $$PWD $$PWD/src
+INCLUDEPATH += $$PWD/src
 
 load(qt_helper_lib)
 

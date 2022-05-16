@@ -154,6 +154,7 @@ public class QtActivityDelegate
     private CursorHandle m_leftSelectionHandle;
     private CursorHandle m_rightSelectionHandle;
     private EditPopupMenu m_editPopupMenu;
+    private boolean m_isPluginRunning = false;
 
     public void setFullScreen(boolean enterFullScreen)
     {
@@ -188,6 +189,11 @@ public class QtActivityDelegate
             m_fullScreen = false;
             setFullScreen(true);
         }
+    }
+
+    public boolean isKeyboardVisible()
+    {
+        return m_keyboardIsVisible;
     }
 
     // input method hints - must be kept in sync with QTDIR/src/corelib/global/qnamespace.h
@@ -233,7 +239,6 @@ public class QtActivityDelegate
 
     private QtAccessibilityDelegate m_accessibilityDelegate = null;
 
-
     public boolean setKeyboardVisibility(boolean visibility, long timeStamp)
     {
         if (m_showHideTimeStamp > timeStamp)
@@ -243,7 +248,7 @@ public class QtActivityDelegate
         if (m_keyboardIsVisible == visibility)
             return false;
         m_keyboardIsVisible = visibility;
-        QtNative.keyboardVisibilityChanged(m_keyboardIsVisible);
+        QtNative.keyboardVisibilityUpdated(m_keyboardIsVisible);
 
         if (visibility == false)
             updateFullScreen(); // Hiding the keyboard clears the immersive mode, so we need to set it again.
@@ -352,8 +357,12 @@ public class QtActivityDelegate
                 inputType |= android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
             }
 
-            if ((inputHints & ImhMultiLine) != 0)
+            if ((inputHints & ImhMultiLine) != 0) {
                 inputType |= android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE;
+                // Clear imeOptions for Multi-Line Type
+                // User should be able to insert new line in such case
+                imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_DONE;
+            }
             if ((inputHints & (ImhNoPredictiveText | ImhSensitiveData | ImhHiddenText)) != 0)
                 inputType |= android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
 
@@ -883,6 +892,11 @@ public class QtActivityDelegate
         m_accessibilityDelegate.notifyObjectFocus(viewId);
     }
 
+    public void notifyQtAndroidPluginRunning(boolean running)
+    {
+        m_isPluginRunning = running;
+    }
+
     public void initializeAccessibility()
     {
         m_accessibilityDelegate = new QtAccessibilityDelegate(m_activity, m_layout, this);
@@ -990,7 +1004,7 @@ public class QtActivityDelegate
 
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
-        if (!m_started)
+        if (!m_started || !m_isPluginRunning)
             return false;
 
         m_metaState = MetaKeyKeyListener.handleKeyDown(m_metaState, keyCode, event);
@@ -1024,7 +1038,7 @@ public class QtActivityDelegate
 
     public boolean onKeyUp(int keyCode, KeyEvent event)
     {
-        if (!m_started)
+        if (!m_started || !m_isPluginRunning)
             return false;
 
         if ((keyCode == KeyEvent.KEYCODE_VOLUME_UP

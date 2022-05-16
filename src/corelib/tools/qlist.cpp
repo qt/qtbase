@@ -2017,7 +2017,7 @@ void **QListData::erase(void **xi)
 
     \include containers-range-constructor.qdocinc
 
-    \sa fromSet(), toVector(), QVector::toList()
+    \sa toVector(), QVector::toList()
 */
 
 /*! \fn template <class T> QVector<T> QList<T>::toVector() const
@@ -2030,60 +2030,90 @@ void **QListData::erase(void **xi)
 
     \include containers-range-constructor.qdocinc
 
-    \sa toSet(), fromVector(), QVector::fromList()
+    \sa  fromVector(), QVector::fromList()
 */
 
 /*! \fn template <class T> QList<T> QList<T>::fromSet(const QSet<T> &set)
+    \obsolete
 
     Returns a QList object with the data contained in \a set. The
     order of the elements in the QList is undefined.
 
-    Example:
-
-    \snippet code/src_corelib_tools_qlistdata.cpp 23
-
     \include containers-range-constructor.qdocinc
 
-    \sa fromVector(), toSet(), QSet::toList()
+    \oldcode
+    QSet<int> set;
+    // ...
+    QList<int> list = QList<int>::fromSet(set);
+    \newcode
+    QSet<int> set;
+    // ...
+    QList<int> list(set.begin(), set.end());
+    \endcode
+
+    \sa QList(InputIterator, InputIterator), fromVector(), toSet(), QSet::toList()
 */
 
 /*! \fn template <class T> QSet<T> QList<T>::toSet() const
+    \obsolete
 
     Returns a QSet object with the data contained in this QList.
     Since QSet doesn't allow duplicates, the resulting QSet might be
     smaller than the original list was.
 
-    Example:
-
-    \snippet code/src_corelib_tools_qlistdata.cpp 24
-
     \include containers-range-constructor.qdocinc
 
-    \sa toVector(), fromSet(), QSet::fromList()
+    \oldcode
+    QStringList list;
+    // ...
+    QSet<QString> set = list.toSet();
+    \newcode
+    QStringList list;
+    // ...
+    QSet<QString> set(list.begin(), list.end());
+    \endcode
+
+    \sa QSet::QSet(InputIterator, InputIterator), toVector(), fromSet(), QSet::fromList()
 */
 
 /*! \fn template <class T> QList<T> QList<T>::fromStdList(const std::list<T> &list)
+    \obsolete
 
     Returns a QList object with the data contained in \a list. The
     order of the elements in the QList is the same as in \a list.
 
-    Example:
-
-    \snippet code/src_corelib_tools_qlistdata.cpp 25
-
     \include containers-range-constructor.qdocinc
 
-    \sa toStdList(), QVector::fromStdVector()
+    \oldcode
+    std::list<double> stdlist;
+    // ...
+    QList<double> list = QList<double>::fromStdList(stdlist);
+    \newcode
+    std::list<double> stdlist;
+    // ...
+    QList<double> list(stdlist.begin(), stdlist.end());
+    \endcode
+
+    \sa QList(InputIterator, InputIterator), toStdList(), QVector::fromStdVector()
 */
 
 /*! \fn template <class T> std::list<T> QList<T>::toStdList() const
+    \obsolete
 
     Returns a std::list object with the data contained in this QList.
     Example:
 
-    \snippet code/src_corelib_tools_qlistdata.cpp 26
-
     \include containers-range-constructor.qdocinc
+
+    \oldcode
+    QList<double> list;
+    // ...
+    std::list<double> stdlist = list.toStdList();
+    \newcode
+    QList<double> list;
+    // ...
+    std::list<double> stdlist(list.begin(), list.end());
+    \endcode
 
     \sa fromStdList(), QVector::toStdVector()
 */

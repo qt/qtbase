@@ -400,6 +400,9 @@ function(qt5_add_big_resources outfiles)
         add_library(rcc_object_${outfilename} OBJECT ${tmpoutfile})
         set_target_properties(rcc_object_${outfilename} PROPERTIES AUTOMOC OFF)
         set_target_properties(rcc_object_${outfilename} PROPERTIES AUTOUIC OFF)
+
+        target_link_libraries(rcc_object_${outfilename} PUBLIC Qt5::Core)
+
         add_dependencies(rcc_object_${outfilename} big_resources_${outfilename})
         # The modification of TARGET_OBJECTS needs the following change in cmake
         # https://gitlab.kitware.com/cmake/cmake/commit/93c89bc75ceee599ba7c08b8fe1ac5104942054f

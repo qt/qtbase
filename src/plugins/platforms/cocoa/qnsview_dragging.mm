@@ -297,7 +297,9 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
     Q_ASSERT(nativeDrag);
     nativeDrag->exitDragLoop();
-    nativeDrag->setAcceptedAction(qt_mac_mapNSDragOperation(operation));
+    // for internal drag'n'drop, don't override the action the drop event accepted
+    if (!nativeDrag->currentDrag())
+        nativeDrag->setAcceptedAction(qt_mac_mapNSDragOperation(operation));
 
     // Qt starts drag-and-drop on a mouse button press event. Cococa in
     // this case won't send the matching release event, so we have to

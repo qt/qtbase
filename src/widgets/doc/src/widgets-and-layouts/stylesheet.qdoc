@@ -2167,7 +2167,7 @@
            subclasses, QAbstractSpinBox subclasses, QCheckBox,
            QComboBox, QFrame, QGroupBox, QLabel, QLineEdit, QMenu,
            QMenuBar, QPushButton, QRadioButton, QSizeGrip, QSpinBox,
-           QSplitter, QStatusBar, QTextEdit, and QToolTip.
+           QSplitter, QStatusBar, QTextEdit, QToolButton, and QToolTip.
 
            If this property is not specified, the minimum height is
            derived based on the widget's contents and the style.
@@ -2178,6 +2178,9 @@
            Example:
 
            \snippet code/doc_src_stylesheet.qdoc 66
+
+           \note Setting this property might allow widgets to shrink
+           smaller than the space required for the contents.
 
            See also \l{#min-width-prop}{min-width}.
 
@@ -2190,7 +2193,7 @@
            subclasses, QAbstractSpinBox subclasses, QCheckBox,
            QComboBox, QFrame, QGroupBox, QLabel, QLineEdit, QMenu,
            QMenuBar, QPushButton, QRadioButton, QSizeGrip, QSpinBox,
-           QSplitter, QStatusBar, QTextEdit, and QToolTip.
+           QSplitter, QStatusBar, QTextEdit, QToolButton, and QToolTip.
 
            If this property is not specified, the minimum width is
            derived based on the widget's contents and the style.
@@ -2201,6 +2204,9 @@
            Example:
 
            \snippet code/doc_src_stylesheet.qdoc 67
+
+           \note Setting this property might allow widgets to shrink
+           smaller than the space required for the contents.
 
            See also \l{#min-height-prop}{min-height}.
 

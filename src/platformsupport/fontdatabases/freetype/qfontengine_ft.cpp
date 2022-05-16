@@ -903,7 +903,7 @@ int QFontEngineFT::loadFlags(QGlyphSet *set, GlyphFormat format, int flags,
 static inline bool areMetricsTooLarge(const QFontEngineFT::GlyphInfo &info)
 {
     // false if exceeds QFontEngineFT::Glyph metrics
-    return info.width > 0xFF || info.height > 0xFF;
+    return info.width > 0xFF || info.height > 0xFF  || info.linearAdvance > 0x7FFF;
 }
 
 static inline void transformBoundingBox(int *left, int *top, int *right, int *bottom, FT_Matrix *matrix)
@@ -1051,6 +1051,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
         info.height = TRUNC(top - bottom);
 
         // If any of the metrics are too large to fit, don't cache them
+        // Also, avoid integer overflow when linearAdvance is to large to fit in a signed short
         if (areMetricsTooLarge(info))
             return nullptr;
 

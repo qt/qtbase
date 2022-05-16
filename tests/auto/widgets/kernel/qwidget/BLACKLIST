@@ -12,6 +12,7 @@ ubuntu-16.04
 rhel-7.6
 opensuse-leap
 ubuntu
+sles
 [raise]
 opensuse-leap
 # QTBUG-68175
@@ -37,6 +38,7 @@ ubuntu-16.04
 rhel-7.6
 opensuse-leap
 ubuntu
+sles-15
 [windowState]
 # QTBUG-75270
 winrt

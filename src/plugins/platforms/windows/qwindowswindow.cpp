@@ -2156,6 +2156,7 @@ QWindowsWindowData QWindowsWindow::setWindowFlags_sys(Qt::WindowFlags wt,
     QWindowsWindowData result = m_data;
     result.flags = creationData.flags;
     result.embedded = creationData.embedded;
+    result.hasFrame = (creationData.style & (WS_DLGFRAME | WS_THICKFRAME));
     return result;
 }
 

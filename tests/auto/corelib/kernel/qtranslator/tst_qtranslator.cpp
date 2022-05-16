@@ -29,6 +29,7 @@
 #include <QtTest/QtTest>
 #include <qtranslator.h>
 #include <qfile.h>
+#include <qtemporarydir.h>
 
 class tst_QTranslator : public QObject
 {
@@ -43,6 +44,7 @@ private slots:
 
     void load_data();
     void load();
+    void loadLocale();
     void threadLoad();
     void testLanguageChange();
     void plural();
@@ -152,6 +154,73 @@ void tst_QTranslator::load()
         QCOMPARE(tor.translate("QPushButton", "Hello world!"), translation);
         QCOMPARE(tor.filePath(), path);
         QCOMPARE(tor.language(), language);
+    }
+}
+
+void tst_QTranslator::loadLocale()
+{
+    QLocale locale;
+    auto localeName = locale.uiLanguages().value(0).replace('-', '_');
+    if (localeName.isEmpty())
+        QSKIP("This test requires at least one available UI language.");
+
+    QByteArray ba;
+    {
+        QFile file(":/tst_qtranslator/hellotr_la.qm");
+        QVERIFY2(file.open(QFile::ReadOnly), qPrintable(file.errorString()));
+        ba = file.readAll();
+        QVERIFY(!ba.isEmpty());
+    }
+
+    QTemporaryDir dir;
+    QVERIFY(dir.isValid());
+
+    auto path = dir.path();
+    QFile file(path + "/dummy");
+    QVERIFY2(file.open(QFile::WriteOnly), qPrintable(file.errorString()));
+    QCOMPARE(file.write(ba), ba.size());
+    file.close();
+
+    /*
+        Test the following order:
+
+        /tmp/tmpDir/foo-en_US.qm
+        /tmp/tmpDir/foo-en_US
+        /tmp/tmpDir/foo-en.qm
+        /tmp/tmpDir/foo-en
+        /tmp/tmpDir/foo.qm
+        /tmp/tmpDir/foo-
+        /tmp/tmpDir/foo
+    */
+
+    QStringList files;
+    while (true) {
+        files.append(path + "/foo-" + localeName + ".qm");
+        QVERIFY2(file.copy(files.last()), qPrintable(file.errorString()));
+
+        files.append(path + "/foo-" + localeName);
+        QVERIFY2(file.copy(files.last()), qPrintable(file.errorString()));
+
+        int rightmost = localeName.lastIndexOf(QLatin1Char('_'));
+        if (rightmost <= 0)
+            break;
+        localeName.truncate(rightmost);
+    }
+
+    files.append(path + "/foo.qm");
+    QVERIFY2(file.copy(files.last()), qPrintable(file.errorString()));
+
+    files.append(path + "/foo-");
+    QVERIFY2(file.copy(files.last()), qPrintable(file.errorString()));
+
+    files.append(path + "/foo");
+    QVERIFY2(file.rename(files.last()), qPrintable(file.errorString()));
+
+    QTranslator tor;
+    for (const auto &filePath : files) {
+        QVERIFY(tor.load(locale, "foo", "-", path, ".qm"));
+        QCOMPARE(tor.filePath(), filePath);
+        QVERIFY2(file.remove(filePath), qPrintable(file.errorString()));
     }
 }
 

@@ -788,6 +788,7 @@ bool QThreadPool::contains(const QThread *thread) const
     const QThreadPoolThread *poolThread = qobject_cast<const QThreadPoolThread *>(thread);
     if (!poolThread)
         return false;
+    QMutexLocker locker(&d->mutex);
     return d->allThreads.contains(const_cast<QThreadPoolThread *>(poolThread));
 }
 

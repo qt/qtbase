@@ -39,9 +39,9 @@
 QT_BEGIN_NAMESPACE
 
 static const char *standardImports =
-R"I(from PySide2.QtCore import *
-from PySide2.QtGui import *
-from PySide2.QtWidgets import *
+R"I(from PySide2.QtCore import *  # type: ignore
+from PySide2.QtGui import *  # type: ignore
+from PySide2.QtWidgets import *  # type: ignore
 )I";
 
 // Change the name of a qrc file "dir/foo.qrc" file to the Python

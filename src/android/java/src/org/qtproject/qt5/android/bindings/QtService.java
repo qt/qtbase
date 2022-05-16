@@ -39,7 +39,10 @@ package org.qtproject.qt5.android.bindings;
 import android.app.Service;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.os.Bundle;
 import android.os.IBinder;
+
+import org.qtproject.qt5.android.QtNative;
 
 public class QtService extends Service
 {
@@ -153,4 +156,14 @@ public class QtService extends Service
         return super.onUnbind(intent);
     }
     //---------------------------------------------------------------------------
+
+    public boolean loadApplication(Service service, ClassLoader classLoader, Bundle loaderParams)
+    {
+        return QtNative.serviceDelegate().loadApplication(service, classLoader, loaderParams);
+    }
+
+    public boolean startApplication()
+    {
+       return QtNative.serviceDelegate().startApplication();
+    }
 }

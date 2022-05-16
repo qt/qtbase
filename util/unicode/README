@@ -4,8 +4,8 @@ To update:
 * Find the data (UAX #44, UCD; not the XML version) at
   ftp://www.unicode.org/Public/zipped/$Version/
 * Unpack the zip file; for each file in data/, replace with the new
-  version; find the *BreakProperty.txt in auxiliary/. (These last are
-  only in the zip, not in the web-space's unpacked versions.)
+  version; find the *BreakProperty.txt in auxiliary/ and emoji-data.txt
+  in emoji/.
 * In tst_QTextBoundaryFinder's data/ sub-directory, update its files
   from the auxiliary/ sub-directory of the UCD data.
 * If needed, add an entry to enum QChar::UnicodeVersion for the new

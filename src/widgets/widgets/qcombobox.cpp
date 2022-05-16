@@ -547,8 +547,6 @@ QComboBoxPrivateContainer::QComboBoxPrivateContainer(QAbstractItemView *itemView
         setLineWidth(1);
     }
 
-    setFrameStyle(combo->style()->styleHint(QStyle::SH_ComboBox_PopupFrameStyle, &opt, combo));
-
     if (top) {
         layout->insertWidget(0, top);
         connect(top, SIGNAL(doScroll(int)), this, SLOT(scrollItemView(int)));
@@ -561,7 +559,7 @@ QComboBoxPrivateContainer::QComboBoxPrivateContainer(QAbstractItemView *itemView
     // Some styles (Mac) have a margin at the top and bottom of the popup.
     layout->insertSpacing(0, 0);
     layout->addSpacing(0);
-    updateTopBottomMargin();
+    updateStyleSettings();
 }
 
 void QComboBoxPrivateContainer::scrollItemView(int action)
@@ -744,14 +742,20 @@ void QComboBoxPrivateContainer::updateTopBottomMargin()
     boxLayout->invalidate();
 }
 
+void QComboBoxPrivateContainer::updateStyleSettings()
+{
+    // add scroller arrows if style needs them
+    QStyleOptionComboBox opt = comboStyleOption();
+    view->setMouseTracking(combo->style()->styleHint(QStyle::SH_ComboBox_ListMouseTracking, &opt, combo) ||
+                           combo->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, combo));
+    setFrameStyle(combo->style()->styleHint(QStyle::SH_ComboBox_PopupFrameStyle, &opt, combo));
+    updateTopBottomMargin();
+}
+
 void QComboBoxPrivateContainer::changeEvent(QEvent *e)
 {
-    if (e->type() == QEvent::StyleChange) {
-        QStyleOptionComboBox opt = comboStyleOption();
-        view->setMouseTracking(combo->style()->styleHint(QStyle::SH_ComboBox_ListMouseTracking, &opt, combo) ||
-                               combo->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, combo));
-        setFrameStyle(combo->style()->styleHint(QStyle::SH_ComboBox_PopupFrameStyle, &opt, combo));
-    }
+    if (e->type() == QEvent::StyleChange)
+        updateStyleSettings();
 
     QFrame::changeEvent(e);
 }
@@ -2896,13 +2900,15 @@ void QComboBox::showPopup()
         QGuiApplication::inputMethod()->reset();
     }
 
-    QScrollBar *sb = view()->horizontalScrollBar();
-    Qt::ScrollBarPolicy policy = view()->horizontalScrollBarPolicy();
-    bool needHorizontalScrollBar = (policy == Qt::ScrollBarAsNeeded || policy == Qt::ScrollBarAlwaysOn)
-                                   && sb->minimum() < sb->maximum();
-    if (needHorizontalScrollBar) {
+    const QScrollBar *sb = view()->horizontalScrollBar();
+    const auto needHorizontalScrollBar = [this, sb]{
+        const Qt::ScrollBarPolicy policy = view()->horizontalScrollBarPolicy();
+        return (policy == Qt::ScrollBarAsNeeded || policy == Qt::ScrollBarAlwaysOn)
+               && sb->minimum() < sb->maximum();
+    };
+    const bool neededHorizontalScrollBar = needHorizontalScrollBar();
+    if (neededHorizontalScrollBar)
         listRect.adjust(0, 0, 0, sb->height());
-    }
 
     // Hide the scrollers here, so that the listrect gets the full height of the container
     // If the scrollers are truly needed, the later call to container->updateScrollers()
@@ -2945,6 +2951,11 @@ void QComboBox::showPopup()
         }
     }
     container->show();
+    if (!neededHorizontalScrollBar && needHorizontalScrollBar()) {
+        listRect.adjust(0, 0, 0, sb->height());
+        container->setGeometry(listRect);
+    }
+
     container->updateScrollers();
     view()->setFocus();
 
@@ -3114,6 +3125,8 @@ void QComboBox::changeEvent(QEvent *e)
     Q_D(QComboBox);
     switch (e->type()) {
     case QEvent::StyleChange:
+        if (d->container)
+            d->container->updateStyleSettings();
         d->updateDelegate();
 #ifdef Q_OS_MAC
     case QEvent::MacSizeChange:

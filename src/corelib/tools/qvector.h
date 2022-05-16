@@ -523,7 +523,7 @@ QVector<T>::QVector(int asize, const T &t)
         d = Data::allocate(asize);
         Q_CHECK_PTR(d);
         d->size = asize;
-        T* i = d->end();
+        auto i = d->end();
         while (i != d->begin())
             new (--i) T(t);
     } else {

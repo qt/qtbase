@@ -42,7 +42,7 @@ SLJIT_API_FUNC_ATTRIBUTE const char* sljit_get_platform_name(void)
 typedef sljit_uw sljit_ins;
 
 /* Instruction tags (most significant halfword). */
-const sljit_ins sljit_ins_const = (sljit_ins)1 << 48;
+static const sljit_ins sljit_ins_const = (sljit_ins)1 << 48;
 
 static const sljit_u8 reg_map[SLJIT_NUMBER_OF_REGISTERS + 4] = {
 	14, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 0, 1
@@ -66,22 +66,22 @@ typedef sljit_uw sljit_gpr;
  * will be retired ASAP (TODO: carenas)
  */
 
-const sljit_gpr r0 = 0;	/* reg_map[SLJIT_NUMBER_OF_REGISTERS + 2]: 0 in address calculations; reserved */
-const sljit_gpr r1 = 1;	/* reg_map[SLJIT_NUMBER_OF_REGISTERS + 3]: reserved */
-const sljit_gpr r2 = 2;	/* reg_map[1]: 1st argument */
-const sljit_gpr r3 = 3;	/* reg_map[2]: 2nd argument */
-const sljit_gpr r4 = 4;	/* reg_map[3]: 3rd argument */
-const sljit_gpr r5 = 5;	/* reg_map[4]: 4th argument */
-const sljit_gpr r6 = 6;	/* reg_map[5]: 5th argument; 1st saved register */
-const sljit_gpr r7 = 7;	/* reg_map[6] */
-const sljit_gpr r8 = 8;	/* reg_map[7] */
-const sljit_gpr r9 = 9;	/* reg_map[8] */
-const sljit_gpr r10 = 10;	/* reg_map[9] */
-const sljit_gpr r11 = 11;	/* reg_map[10] */
-const sljit_gpr r12 = 12;	/* reg_map[11]: GOT */
-const sljit_gpr r13 = 13;	/* reg_map[12]: Literal Pool pointer */
-const sljit_gpr r14 = 14;	/* reg_map[0]: return address and flag register */
-const sljit_gpr r15 = 15;	/* reg_map[SLJIT_NUMBER_OF_REGISTERS + 1]: stack pointer */
+static const sljit_gpr r0 = 0;		/* reg_map[SLJIT_NUMBER_OF_REGISTERS + 2]: 0 in address calculations; reserved */
+static const sljit_gpr r1 = 1;		/* reg_map[SLJIT_NUMBER_OF_REGISTERS + 3]: reserved */
+static const sljit_gpr r2 = 2;		/* reg_map[1]: 1st argument */
+static const sljit_gpr r3 = 3;		/* reg_map[2]: 2nd argument */
+static const sljit_gpr r4 = 4;		/* reg_map[3]: 3rd argument */
+static const sljit_gpr r5 = 5;		/* reg_map[4]: 4th argument */
+static const sljit_gpr r6 = 6;		/* reg_map[5]: 5th argument; 1st saved register */
+static const sljit_gpr r7 = 7;		/* reg_map[6] */
+static const sljit_gpr r8 = 8;		/* reg_map[7] */
+static const sljit_gpr r9 = 9;		/* reg_map[8] */
+static const sljit_gpr r10 = 10;	/* reg_map[9] */
+static const sljit_gpr r11 = 11;	/* reg_map[10] */
+static const sljit_gpr r12 = 12;	/* reg_map[11]: GOT */
+static const sljit_gpr r13 = 13;	/* reg_map[12]: Literal Pool pointer */
+static const sljit_gpr r14 = 14;	/* reg_map[0]: return address and flag register */
+static const sljit_gpr r15 = 15;	/* reg_map[SLJIT_NUMBER_OF_REGISTERS + 1]: stack pointer */
 
 /* WARNING: r12 and r13 shouldn't be used as per ABI recommendation */
 /* TODO(carenas): r12 might conflict in PIC code, reserve? */
@@ -100,8 +100,8 @@ const sljit_gpr r15 = 15;	/* reg_map[SLJIT_NUMBER_OF_REGISTERS + 1]: stack point
 /* Link registers. The normal link register is r14, but since
    we use that for flags we need to use r0 instead to do fast
    calls so that flags are preserved. */
-const sljit_gpr link_r = 14;     /* r14 */
-const sljit_gpr fast_link_r = 0; /* r0 */
+static const sljit_gpr link_r = 14;     /* r14 */
+static const sljit_gpr fast_link_r = 0; /* r0 */
 
 /* Flag register layout:
 
@@ -110,7 +110,7 @@ const sljit_gpr fast_link_r = 0; /* r0 */
    |      ZERO     | 0 | 0 |  C C  |///////|
    +---------------+---+---+-------+-------+
 */
-const sljit_gpr flag_r = 14; /* r14 */
+static const sljit_gpr flag_r = 14; /* r14 */
 
 struct sljit_s390x_const {
 	struct sljit_const const_; /* must be first */
@@ -1465,7 +1465,8 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op0(struct sljit_compiler *compile
 	op = GET_OPCODE(op) | (op & SLJIT_I32_OP);
 	switch (op) {
 	case SLJIT_BREAKPOINT:
-		/* TODO(mundaym): insert real breakpoint? */
+		/* The following invalid instruction is emitted by gdb. */
+		return push_inst(compiler, 0x0001 /* 2-byte trap */);
 	case SLJIT_NOP:
 		return push_inst(compiler, 0x0700 /* 2-byte nop */);
 	case SLJIT_LMUL_UW:

@@ -42,6 +42,8 @@
 
 #include <QtCore/qbytearray.h>
 
+#include <limits>
+
 QT_BEGIN_NAMESPACE
 
 

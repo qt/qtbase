@@ -157,6 +157,9 @@ private slots:
 
     void invalidFilterAndHeaderData_data() { generic_data(); }
     void invalidFilterAndHeaderData(); //QTBUG-23879
+
+    void sqlite_selectFromIdentifierWithDot_data() { generic_data("QSQLITE"); }
+    void sqlite_selectFromIdentifierWithDot();
 private:
     void generic_data(const QString& engine=QString());
     void generic_data_with_strategies(const QString& engine=QString());
@@ -308,33 +311,37 @@ void tst_QSqlTableModel::select()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    QSqlTableModel model(0, db);
-    model.setTable(test);
-    model.setSort(0, Qt::AscendingOrder);
-    QVERIFY_SQL(model, select());
+    QString withoutQuotes = test;
+    const QStringList tables = {test, withoutQuotes.remove(QLatin1Char('"'))};
+    for (const QString &tbl : tables) {
+        QSqlTableModel model(0, db);
+        model.setTable(tbl);
+        model.setSort(0, Qt::AscendingOrder);
+        QVERIFY_SQL(model, select());
 
-    QCOMPARE(model.rowCount(), 3);
-    QCOMPARE(model.columnCount(), 3);
+        QCOMPARE(model.rowCount(), 3);
+        QCOMPARE(model.columnCount(), 3);
 
-    QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
-    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
-    QCOMPARE(model.data(model.index(0, 2)).toInt(), 1);
-    QCOMPARE(model.data(model.index(0, 3)), QVariant());
+        QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+        QCOMPARE(model.data(model.index(0, 2)).toInt(), 1);
+        QCOMPARE(model.data(model.index(0, 3)), QVariant());
 
-    QCOMPARE(model.data(model.index(1, 0)).toInt(), 2);
-    QCOMPARE(model.data(model.index(1, 1)).toString(), QString("trond"));
-    QCOMPARE(model.data(model.index(1, 2)).toInt(), 2);
-    QCOMPARE(model.data(model.index(1, 3)), QVariant());
+        QCOMPARE(model.data(model.index(1, 0)).toInt(), 2);
+        QCOMPARE(model.data(model.index(1, 1)).toString(), QString("trond"));
+        QCOMPARE(model.data(model.index(1, 2)).toInt(), 2);
+        QCOMPARE(model.data(model.index(1, 3)), QVariant());
 
-    QCOMPARE(model.data(model.index(2, 0)).toInt(), 3);
-    QCOMPARE(model.data(model.index(2, 1)).toString(), QString("vohi"));
-    QCOMPARE(model.data(model.index(2, 2)).toInt(), 3);
-    QCOMPARE(model.data(model.index(2, 3)), QVariant());
+        QCOMPARE(model.data(model.index(2, 0)).toInt(), 3);
+        QCOMPARE(model.data(model.index(2, 1)).toString(), QString("vohi"));
+        QCOMPARE(model.data(model.index(2, 2)).toInt(), 3);
+        QCOMPARE(model.data(model.index(2, 3)), QVariant());
 
-    QCOMPARE(model.data(model.index(3, 0)), QVariant());
-    QCOMPARE(model.data(model.index(3, 1)), QVariant());
-    QCOMPARE(model.data(model.index(3, 2)), QVariant());
-    QCOMPARE(model.data(model.index(3, 3)), QVariant());
+        QCOMPARE(model.data(model.index(3, 0)), QVariant());
+        QCOMPARE(model.data(model.index(3, 1)), QVariant());
+        QCOMPARE(model.data(model.index(3, 2)), QVariant());
+        QCOMPARE(model.data(model.index(3, 3)), QVariant());
+    }
 }
 
 class SelectRowModel: public QSqlTableModel
@@ -2136,6 +2143,51 @@ void tst_QSqlTableModel::modelInAnotherThread()
     t.start();
     QTRY_VERIFY(t.isDone);
     QVERIFY(t.isFinished());
+}
+
+void tst_QSqlTableModel::sqlite_selectFromIdentifierWithDot()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    {
+        const auto fieldDot = qTableName("fieldDot", __FILE__, db);
+        tst_Databases::safeDropTable(db, fieldDot);
+        QSqlQuery qry(db);
+        QVERIFY_SQL(qry, exec("create table " + fieldDot + " (id int primary key, "
+                              "\"person.firstname\" varchar(20))"));
+        QVERIFY_SQL(qry, exec("insert into " + fieldDot + " values(1, 'Andy')"));
+        QSqlTableModel model(0, db);
+        model.setTable(fieldDot);
+        QVERIFY_SQL(model, select());
+        QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("Andy"));
+    }
+    const auto tableDot = QLatin1Char('[') + qTableName("table.dot", __FILE__, db) + QLatin1Char(']');
+    {
+        tst_Databases::safeDropTable(db, tableDot);
+        QSqlQuery qry(db);
+        QVERIFY_SQL(qry, exec("create table " + tableDot + " (id int primary key, "
+                              "\"person.firstname\" varchar(20))"));
+        QVERIFY_SQL(qry, exec("insert into " + tableDot + " values(1, 'Andy')"));
+        QSqlTableModel model(0, db);
+        model.setTable(tableDot);
+        QVERIFY_SQL(model, select());
+        QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("Andy"));
+    }
+    {
+        QSqlDatabase attachedDb = QSqlDatabase::addDatabase("QSQLITE", "attachedDb");
+        attachedDb.setDatabaseName(db.databaseName().replace("foo.db", "attached.db"));
+        QVERIFY(attachedDb.open());
+        QSqlQuery qry(attachedDb);
+        QVERIFY_SQL(qry, exec(QString("attach '%1' AS 'attached'").arg(db.databaseName())));
+        QSqlTableModel model(0, attachedDb);
+        model.setTable(QString("attached.%1").arg(tableDot));
+        QVERIFY_SQL(model, select());
+        QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("Andy"));
+    }
 }
 
 QTEST_MAIN(tst_QSqlTableModel)

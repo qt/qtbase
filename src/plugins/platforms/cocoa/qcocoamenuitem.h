@@ -117,6 +117,7 @@ public:
     inline bool isMerged() const { return m_merged; }
     inline bool isEnabled() const { return m_enabled && m_parentEnabled; }
     inline bool isSeparator() const { return m_isSeparator; }
+    inline bool isVisible() const { return m_isVisible; }
 
     QCocoaMenu *menu() const { return m_menu; }
     MenuRole effectiveRole() const;

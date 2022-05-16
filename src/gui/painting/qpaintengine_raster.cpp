@@ -2414,15 +2414,20 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
         QRectF targetBounds = s->matrix.mapRect(r);
         bool exceedsPrecision = r.width() > 0x7fff
                              || r.height() > 0x7fff
+                             || targetBounds.left() < -0x7fff
+                             || targetBounds.top() < -0x7fff
+                             || targetBounds.right() > 0x7fff
+                             || targetBounds.bottom() > 0x7fff
                              || targetBounds.width() > 0x7fff
                              || targetBounds.height() > 0x7fff
                              || s->matrix.m11() >= 512
                              || s->matrix.m22() >= 512;
-
         if (!exceedsPrecision && d->canUseFastImageBlending(d->rasterBuffer->compositionMode, img)) {
             if (s->matrix.type() > QTransform::TxScale) {
                 SrcOverTransformFunc func = qTransformFunctions[d->rasterBuffer->format][img.format()];
-                if (func && (!clip || clip->hasRectClip)) {
+                // The fast transform methods doesn't really work on small targets, see QTBUG-93475
+                // And it can't antialias the edges
+                if (func && (!clip || clip->hasRectClip) && !s->flags.antialiased && targetBounds.width() >= 16 && targetBounds.height() >= 16) {
                     func(d->rasterBuffer->buffer(), d->rasterBuffer->bytesPerLine(), img.bits(),
                          img.bytesPerLine(), r, sr, !clip ? d->deviceRect : clip->clipRect,
                          s->matrix, s->intOpacity);

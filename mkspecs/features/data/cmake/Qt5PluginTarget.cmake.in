@@ -86,15 +86,14 @@ string(CONCAT _plugin_genex
         \"${_user_specified_genex_versionless},\"
         # Add this plugin if all of the following are true:
         # 1) the list of explicitly included plugin types is empty
-        # 2) the QT_PLUGIN_EXTENDS property for the plugin is empty or equal to the current
-        #    module name
+        # 2) the QT_PLUGIN_EXTENDS property for the plugin is empty or equal to one of the modules
+        #    listed in the plugin's PLUGIN_EXTEND qmake variable
         # 3) the user hasn\'t explicitly excluded the plugin.
+        # TODO: Note that the current implementation of (2) is not entirely correct QTBUG-93501
         \"$<AND:\"
             \"$<STREQUAL:${_plugin_type_genex},>,\"
             \"$<OR:\"
-                # FIXME: The value of CMAKE_MODULE_NAME seems to be wrong (e.g for Svg plugin
-                # it should be Qt::Svg instead of Qt::Gui).
-                \"$<STREQUAL:$<TARGET_PROPERTY:Qt5::$${CMAKE_PLUGIN_NAME},QT_PLUGIN_EXTENDS>,Qt::$${CMAKE_MODULE_NAME}>,\"
+                $${CMAKE_PLUGIN_EXTENDS_GENEX_CHECK}
                 \"$<STREQUAL:$<TARGET_PROPERTY:Qt5::$${CMAKE_PLUGIN_NAME},QT_PLUGIN_EXTENDS>,>\"
             \">,\"
             \"$<NOT:$<IN_LIST:Qt5::$${CMAKE_PLUGIN_NAME},${_no_plugins_genex}>>,\"

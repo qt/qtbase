@@ -65,6 +65,7 @@ QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(const QHttpNetworkRequest
       withCredentials(other.withCredentials),
       ssl(other.ssl),
       preConnect(other.preConnect),
+      needResendWithCredentials(other.needResendWithCredentials),
       redirectCount(other.redirectCount),
       redirectPolicy(other.redirectPolicy),
       peerVerifyName(other.peerVerifyName)
@@ -92,7 +93,8 @@ bool QHttpNetworkRequestPrivate::operator==(const QHttpNetworkRequestPrivate &ot
         && (ssl == other.ssl)
         && (preConnect == other.preConnect)
         && (redirectPolicy == other.redirectPolicy)
-        && (peerVerifyName == other.peerVerifyName);
+        && (peerVerifyName == other.peerVerifyName)
+        && (needResendWithCredentials == other.needResendWithCredentials);
 }
 
 QByteArray QHttpNetworkRequest::methodName() const

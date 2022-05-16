@@ -258,7 +258,7 @@ struct QBidiAlgorithm {
         for (int i = 0; i < length; ++i) {
             int pos = i;
             uint uc = text[i].unicode();
-            if (QChar::isHighSurrogate(uc) && i < length - 1) {
+            if (QChar::isHighSurrogate(uc) && i < length - 1 && text[i + 1].isLowSurrogate()) {
                 ++i;
                 analysis[i].bidiDirection = QChar::DirNSM;
                 uc = QChar::surrogateToUcs4(ushort(uc), text[i].unicode());
@@ -2173,20 +2173,30 @@ void QTextEngine::itemize() const
         QTextDocumentPrivate::FragmentIterator end = p->find(block.position() + block.length() - 1); // -1 to omit the block separator char
         int format = it.value()->format;
 
+        int preeditPosition = s ? s->preeditPosition : INT_MAX;
         int prevPosition = 0;
         int position = prevPosition;
         while (1) {
             const QTextFragmentData * const frag = it.value();
             if (it == end || format != frag->format) {
-                if (s && position >= s->preeditPosition) {
+                if (s && position >= preeditPosition) {
                     position += s->preeditText.length();
-                    s = nullptr;
+                    preeditPosition = INT_MAX;
                 }
                 Q_ASSERT(position <= length);
                 QFont::Capitalization capitalization =
                         formatCollection()->charFormat(format).hasProperty(QTextFormat::FontCapitalization)
                         ? formatCollection()->charFormat(format).fontCapitalization()
                         : formatCollection()->defaultFont().capitalization();
+                if (s) {
+                    for (const auto &range : qAsConst(s->formats)) {
+                        if (range.start >= prevPosition && range.start < position && range.format.hasProperty(QTextFormat::FontCapitalization)) {
+                            itemizer.generate(prevPosition, range.start - prevPosition, capitalization);
+                            itemizer.generate(range.start, range.length, range.format.fontCapitalization());
+                            prevPosition = range.start + range.length;
+                        }
+                    }
+                }
                 itemizer.generate(prevPosition, position - prevPosition, capitalization);
                 if (it == end) {
                     if (position < length)

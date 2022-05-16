@@ -32,13 +32,14 @@ windows-10
 # QTBUG-66247
 b2qt
 windows-10 msvc-2015
-ubuntu
-rhel
+linux
 [ioHttpRedirectPolicy]
 opensuse-leap
 b2qt
 ubuntu
 windows-10
+sles-15
+opensuse-15.1
 [putToFtp]
 windows-10
 [putWithServerClosingConnectionImmediately]

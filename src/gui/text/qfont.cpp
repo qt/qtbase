@@ -220,8 +220,10 @@ QFontPrivate::~QFontPrivate()
     if (engineData && !engineData->ref.deref())
         delete engineData;
     engineData = nullptr;
-    if (scFont && scFont != this)
-        scFont->ref.deref();
+    if (scFont && scFont != this) {
+        if (!scFont->ref.deref())
+            delete scFont;
+    }
     scFont = nullptr;
 }
 
@@ -630,8 +632,10 @@ void QFont::detach()
         if (d->engineData && !d->engineData->ref.deref())
             delete d->engineData;
         d->engineData = nullptr;
-        if (d->scFont && d->scFont != d.data())
-            d->scFont->ref.deref();
+        if (d->scFont && d->scFont != d.data()) {
+            if (!d->scFont->ref.deref())
+                delete d->scFont;
+        }
         d->scFont = nullptr;
         return;
     }

@@ -115,7 +115,7 @@ public class QtServiceDelegate
         QtNative.setService(m_service, this);
         QtNative.setClassLoader(classLoader);
 
-        QtNative.setApplicationDisplayMetrics(10, 10, 10, 10, 120, 120, 1.0, 1.0);
+        QtNative.setApplicationDisplayMetrics(10, 10, 10, 10, 120, 120, 1.0, 1.0, false);
 
         if (loaderParams.containsKey(STATIC_INIT_CLASSES_KEY)) {
             for (String className: loaderParams.getStringArray(STATIC_INIT_CLASSES_KEY)) {

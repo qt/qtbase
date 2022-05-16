@@ -875,7 +875,7 @@ QTzTimeZoneCacheEntry QTzTimeZoneCache::fetchEntry(const QByteArray &ianaId)
 void QTzTimeZonePrivate::init(const QByteArray &ianaId)
 {
     static QTzTimeZoneCache tzCache;
-    const auto &entry = tzCache.fetchEntry(ianaId);
+    auto entry = tzCache.fetchEntry(ianaId);
     if (entry.m_tranTimes.isEmpty() && entry.m_posixRule.isEmpty())
         return; // Invalid after all !
 

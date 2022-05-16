@@ -357,47 +357,31 @@ void QSemaphore::release(int n)
         quintptr prevValue = u.fetchAndAddRelease(nn);
         if (futexNeedsWake(prevValue)) {
 #ifdef FUTEX_OP
-            if (!futexHasWaiterCount) {
-                /*
-                   On 32-bit systems, all waiters are waiting on the same address,
-                   so we'll wake them all and ask the kernel to clear the high bit.
-
-                   atomic {
-                      int oldval = u;
-                      u = oldval & ~(1 << 31);
-                      futexWake(u, INT_MAX);
-                      if (oldval == 0)       // impossible condition
-                          futexWake(u, INT_MAX);
-                   }
-                */
-                quint32 op = FUTEX_OP_ANDN | FUTEX_OP_OPARG_SHIFT;
-                quint32 oparg = 31;
-                quint32 cmp = FUTEX_OP_CMP_EQ;
-                quint32 cmparg = 0;
-                futexWakeOp(u, INT_MAX, INT_MAX, u, FUTEX_OP(op, oparg, cmp, cmparg));
-            } else {
+            if (futexHasWaiterCount) {
                 /*
                    On 64-bit systems, the single-token waiters wait on the low half
                    and the multi-token waiters wait on the upper half. So we ask
                    the kernel to wake up n single-token waiters and all multi-token
-                   waiters (if any), then clear the multi-token wait bit.
+                   waiters (if any), and clear the multi-token wait bit.
 
                    atomic {
                       int oldval = *upper;
-                      *upper = oldval & ~(1 << 31);
+                      *upper = oldval | 0;
                       futexWake(lower, n);
-                      if (oldval < 0)   // sign bit set
+                      if (oldval != 0)   // always true
                           futexWake(upper, INT_MAX);
                    }
                 */
-                quint32 op = FUTEX_OP_ANDN | FUTEX_OP_OPARG_SHIFT;
-                quint32 oparg = 31;
-                quint32 cmp = FUTEX_OP_CMP_LT;
+                quint32 op = FUTEX_OP_OR;
+                quint32 oparg = 0;
+                quint32 cmp = FUTEX_OP_CMP_NE;
                 quint32 cmparg = 0;
+                u.fetchAndAndRelease(futexNeedsWakeAllBit - 1);
                 futexWakeOp(*futexLow32(&u), n, INT_MAX, *futexHigh32(&u), FUTEX_OP(op, oparg, cmp, cmparg));
+                return;
             }
-#else
-            // Unset the bit and wake everyone. There are two possibibilies
+#endif
+            // Unset the bit and wake everyone. There are two possibilities
             // under which a thread can set the bit between the AND and the
             // futexWake:
             // 1) it did see the new counter value, but it wasn't enough for
@@ -405,8 +389,12 @@ void QSemaphore::release(int n)
             // 2) it did not see the new counter value, in which case its
             //    futexWait will fail.
             u.fetchAndAndRelease(futexNeedsWakeAllBit - 1);
-            futexWakeAll(u);
-#endif
+            if (futexHasWaiterCount) {
+                futexWakeAll(*futexLow32(&u));
+                futexWakeAll(*futexHigh32(&u));
+            } else {
+                futexWakeAll(u);
+            }
         }
         return;
     }

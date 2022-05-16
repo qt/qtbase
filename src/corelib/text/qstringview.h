@@ -244,7 +244,8 @@ public:
     }
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QStringView mid(qsizetype pos, qsizetype n) const
     {
-        return QStringView(m_data + qBound(qsizetype(0), pos, m_size), qBound(qsizetype(0), pos + n, m_size) - qBound(qsizetype(0), pos, m_size));
+        return QStringView(m_data + qBound(qsizetype(0), pos, m_size),
+            n == -1 ? m_size - pos : qBound(qsizetype(0), pos + n, m_size) - qBound(qsizetype(0), pos, m_size));
     }
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QStringView left(qsizetype n) const
     {

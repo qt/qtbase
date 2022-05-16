@@ -1071,17 +1071,32 @@
 */
 
 /*! \fn template <class T> QList<T> QSet<T>::toList() const
+    \obsolete
 
     Returns a new QList containing the elements in the set. The
     order of the elements in the QList is undefined.
 
-    Example:
-
-    \snippet code/doc_src_qset.cpp 13
-
     \include containers-range-constructor.qdocinc
 
-    \sa fromList(), QList::fromSet()
+    \oldcode
+    QSet<QString> set;
+    // ...
+    QList<QString> list = set.toList();
+    \newcode
+    QSet<QString> set;
+    // ...
+    QList<QString> list(set.begin(), set.end());
+    \endcode
+
+    or
+
+    \code
+    QSet<QString> set;
+    // ...
+    QList<QString> list = set.values();
+    \endcode
+
+    \sa QList::QList(InputIterator, InputIterator), values(), fromList(), QList::fromSet()
 */
 
 /*! \fn template <class T> QList<T> QSet<T>::values() const
@@ -1089,28 +1104,44 @@
     Returns a new QList containing the elements in the set. The
     order of the elements in the QList is undefined.
 
-    This is the same as toList().
-
     \include containers-range-constructor.qdocinc
 
-    \sa fromList(), QList::fromSet()
+    \oldcode
+    QSet<QString> set;
+    // ...
+    QList<QString> list = set.values();
+    \newcode
+    QSet<QString> set;
+    // ...
+    QList<QString> list(set.begin(), set.end());
+    \endcode
+
+
+    \sa QList::QList(InputIterator, InputIterator)
 */
 
 
 /*! \fn template <class T> QSet<T> QSet<T>::fromList(const QList<T> &list)
+    \obsolete
 
     Returns a new QSet object containing the data contained in \a
     list. Since QSet doesn't allow duplicates, the resulting QSet
     might be smaller than the \a list, because QList can contain
     duplicates.
 
-    Example:
-
-    \snippet code/doc_src_qset.cpp 14
-
     \include containers-range-constructor.qdocinc
 
-    \sa toList(), QList::toSet()
+    \oldcode
+    QStringList list;
+    // ...
+    QSet<QString> set = QSet<QString>::fromList(list);
+    \newcode
+    QStringList list;
+    // ...
+    QSet<QString> set(list.begin(), list.end());
+    \endcode
+
+    \sa QSet(InputIterator, InputIterator), values(), QList::toSet()
 */
 
 /*!

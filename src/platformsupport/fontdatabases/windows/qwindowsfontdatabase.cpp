@@ -1038,7 +1038,9 @@ static bool addFontToDatabase(QString familyName,
     const QString foundryName; // No such concept.
     const bool fixed = !(textmetric->tmPitchAndFamily & TMPF_FIXED_PITCH);
     const bool ttf = (textmetric->tmPitchAndFamily & TMPF_TRUETYPE);
-    const bool scalable = textmetric->tmPitchAndFamily & (TMPF_VECTOR|TMPF_TRUETYPE);
+    const bool unreliableTextMetrics = type == 0;
+    const bool scalable = (textmetric->tmPitchAndFamily & (TMPF_VECTOR|TMPF_TRUETYPE))
+                          && !unreliableTextMetrics;
     const int size = scalable ? SMOOTH_SCALABLE : textmetric->tmHeight;
     const QFont::Style style = textmetric->tmItalic ? QFont::StyleItalic : QFont::StyleNormal;
     const bool antialias = false;
@@ -1118,13 +1120,13 @@ static bool addFontToDatabase(QString familyName,
                                         style, stretch, antialias, scalable, size, fixed, writingSystems, createFontFile(faceName));
 
     // add fonts windows can generate for us:
-    if (weight <= QFont::DemiBold && styleName.isEmpty())
+    if (weight <= QFont::DemiBold)
         QPlatformFontDatabase::registerFont(familyName, QString(), foundryName, QFont::Bold,
                                             style, stretch, antialias, scalable, size, fixed, writingSystems, createFontFile(faceName));
-    if (style != QFont::StyleItalic && styleName.isEmpty())
+    if (style != QFont::StyleItalic)
         QPlatformFontDatabase::registerFont(familyName, QString(), foundryName, weight,
                                             QFont::StyleItalic, stretch, antialias, scalable, size, fixed, writingSystems, createFontFile(faceName));
-    if (weight <= QFont::DemiBold && style != QFont::StyleItalic && styleName.isEmpty())
+    if (weight <= QFont::DemiBold && style != QFont::StyleItalic)
         QPlatformFontDatabase::registerFont(familyName, QString(), foundryName, QFont::Bold,
                                             QFont::StyleItalic, stretch, antialias, scalable, size, fixed, writingSystems, createFontFile(faceName));
 

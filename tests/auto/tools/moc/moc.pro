@@ -19,6 +19,7 @@ HEADERS += using-namespaces.h no-keywords.h task87883.h c-comments.h backslash-n
            task234909.h task240368.h pure-virtual-signals.h cxx11-enums.h \
            cxx11-final-classes.h \
            cxx11-explicit-override-control.h \
+           cxx11-trailing-return.h \
            forward-declared-param.h \
            parse-defines.h \
            function-with-attributes.h \

@@ -1334,6 +1334,10 @@ void tst_QUrl::fromLocalFile_data()
                 << QString(QString("//somehost") + suffix).replace('/', '\\')
                 << QString("file://somehost") + suffix
                 << QString(suffix);
+        QTest::addRow("windows-backslash-extlen-%s", pathDescription)
+                << QString(QString("//?") + suffix).replace('/', '\\')
+                << QString("file:////%3F") + suffix
+                << QString("//?") + suffix;
 #endif
         QTest::addRow("windows-extlen-%s", pathDescription)
                 << QString("//?") + suffix

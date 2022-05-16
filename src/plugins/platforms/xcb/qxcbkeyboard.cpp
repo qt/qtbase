@@ -60,11 +60,11 @@ Qt::KeyboardModifiers QXcbKeyboard::translateModifiers(int s) const
         ret |= Qt::ShiftModifier;
     if (s & XCB_MOD_MASK_CONTROL)
         ret |= Qt::ControlModifier;
-    if (s & rmod_masks.alt)
+    if ((s & rmod_masks.alt) == rmod_masks.alt)
         ret |= Qt::AltModifier;
-    if (s & rmod_masks.meta)
+    if ((s & rmod_masks.meta) == rmod_masks.meta)
         ret |= Qt::MetaModifier;
-    if (s & rmod_masks.altgr)
+    if ((s & rmod_masks.altgr) == rmod_masks.altgr)
         ret |= Qt::GroupSwitchModifier;
     return ret;
 }

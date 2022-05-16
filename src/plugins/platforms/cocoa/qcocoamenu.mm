@@ -294,9 +294,13 @@ void QCocoaMenu::syncSeparatorsCollapsible(bool enable)
 
         for (NSMenuItem *item in m_nativeMenu.itemArray) {
             if (item.separatorItem) {
-                if (auto *cocoaItem = qt_objc_cast<QCocoaNSMenuItem *>(item).platformMenuItem)
-                    cocoaItem->setVisible(!previousIsSeparator);
-                item.hidden = previousIsSeparator;
+                // hide item if previous was a separator, or if it's explicitly hidden
+                bool itemVisible = !previousIsSeparator;
+                if (auto *cocoaItem = qt_objc_cast<QCocoaNSMenuItem *>(item).platformMenuItem) {
+                    cocoaItem->setVisible(!previousIsSeparator && cocoaItem->isVisible());
+                    itemVisible = cocoaItem->isVisible();
+                }
+                item.hidden = !itemVisible;
             }
 
             if (!item.hidden) {

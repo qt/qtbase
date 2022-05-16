@@ -1141,4 +1141,13 @@ public class QtActivity extends Activity
     {
         QtNative.activityDelegate().notifyObjectFocus(viewId);
     }
+    public boolean isKeyboardVisible()
+    {
+        return QtNative.activityDelegate().isKeyboardVisible();
+    }
+
+    public void notifyQtAndroidPluginRunning(boolean running)
+    {
+        QtNative.activityDelegate().notifyQtAndroidPluginRunning(running);
+    }
 }

@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2020-11-09 from the
+    This part of the file was generated on 2021-04-26 from the
     Common Locale Data Repository v38
 
     http://www.unicode.org/cldr/
