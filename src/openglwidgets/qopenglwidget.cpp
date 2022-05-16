@@ -1264,6 +1264,9 @@ void QOpenGLWidget::resizeEvent(QResizeEvent *e)
         return;
 
     d->recreateFbo();
+    // Make sure our own context is current before invoking user overrides. If
+    // the fbo was recreated then there's a chance something else is current now.
+    makeCurrent();
     resizeGL(width(), height());
     d->sendPaintEvent(QRect(QPoint(0, 0), size()));
 }
