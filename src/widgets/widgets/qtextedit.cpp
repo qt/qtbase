@@ -1521,7 +1521,7 @@ void QTextEditPrivate::relayoutDocument()
         QVariant alignmentProperty = doc->documentLayout()->property("contentHasAlignment");
         if (alignmentProperty.userType() == QMetaType::Bool && !alignmentProperty.toBool()) {
 
-            width = 0;
+            width = -1;
         }
     }
 

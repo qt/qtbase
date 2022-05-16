@@ -5,6 +5,7 @@
 #include <QGraphicsItem>
 #include <QGraphicsScene>
 #include <QGraphicsView>
+#include <QTextDocument>
 
 class tst_QGraphicsItem : public QObject
 {
@@ -33,6 +34,7 @@ private slots:
     void shear();
     void translate();
     void createTextItem();
+    void createTextItemZeroWidth();
 };
 
 tst_QGraphicsItem::tst_QGraphicsItem()
@@ -213,6 +215,23 @@ void tst_QGraphicsItem::createTextItem()
     const QString text = "This is some text";
     QBENCHMARK {
         QGraphicsTextItem item(text);
+    }
+}
+
+void tst_QGraphicsItem::createTextItemZeroWidth()
+{
+    // Ensure QFontDatabase loaded the font beforehand
+    QFontInfo(qApp->font()).family();
+    const QString text = "This is some text";
+    QBENCHMARK {
+        QGraphicsTextItem item;
+        item.document()->setTextWidth(0);
+        // Prepare everything
+        item.setPlainText(text);
+        QTextOption option = item.document()->defaultTextOption();
+        option.setAlignment(Qt::AlignHCenter);
+        item.document()->setDefaultTextOption(option);
+        // And (in a real app) set actual text width here
     }
 }
 
