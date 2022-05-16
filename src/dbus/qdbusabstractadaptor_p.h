@@ -22,7 +22,6 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qobject.h>
-#include <QtCore/qreadwritelock.h>
 #include <QtCore/qvariant.h>
 #include "private/qobject_p.h"
 
