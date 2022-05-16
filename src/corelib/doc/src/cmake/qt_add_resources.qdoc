@@ -52,6 +52,7 @@ qt_add_resources(<TARGET> <RESOURCE_NAME>
                   [PREFIX <PATH>]
                   [LANG <LANGUAGE>]
                   [BASE <PATH>]
+                  [OUTPUT_TARGETS <VARIABLE_NAME>]
                   [FILES ...] [OPTIONS ...])
 \endcode
 
@@ -91,6 +92,11 @@ example, if \c BASE is \c{"assets"} and \c FILES is
 
 Alias settings for files need to be set via the \c QT_RESOURCE_ALIAS source file
 property.
+
+When using this command with static libraries, one or more special targets will
+be generated. Should you wish to perform additional processing on these targets,
+pass a variable name to the \c OUTPUT_TARGETS parameter. The \c qt_add_resources
+function stores the names of the special targets in the specified variable.
 
 \section1 Arguments of both variants
 
