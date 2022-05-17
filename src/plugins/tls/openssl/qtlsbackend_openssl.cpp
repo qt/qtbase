@@ -119,8 +119,8 @@ void QTlsBackendOpenSSL::logAndClearErrorQueue()
 
 void QTlsBackendOpenSSL::clearErrorQueue()
 {
-    const auto errs = getErrorsFromOpenSsl();
-    Q_UNUSED(errs);
+    while (q_ERR_get_error())
+        ;
 }
 
 bool QTlsBackendOpenSSL::ensureLibraryLoaded()
