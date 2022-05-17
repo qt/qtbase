@@ -72,7 +72,7 @@ QString QTlsBackendOpenSSL::getErrorsFromOpenSsl()
         if (!errorString.isEmpty())
             errorString.append(", "_L1);
         q_ERR_error_string_n(errNum, buf, sizeof buf);
-        errorString.append(QString::fromLatin1(buf)); // error is ascii according to man ERR_error_string
+        errorString.append(QLatin1StringView(buf)); // error is ascii according to man ERR_error_string
     }
     return errorString;
 }
