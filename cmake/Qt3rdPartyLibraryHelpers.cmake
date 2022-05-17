@@ -164,7 +164,13 @@ function(qt_internal_add_3rdparty_library target)
 
     set_target_properties(${target} PROPERTIES
         _qt_module_interface_name "${target}"
+        _qt_package_version "${PROJECT_VERSION}"
     )
+
+    set_property(TARGET ${target}
+                 APPEND PROPERTY
+                 EXPORT_PROPERTIES "_qt_module_interface_name;_qt_package_version")
+
     qt_internal_add_qt_repo_known_module(${target})
     qt_internal_add_target_aliases(${target})
     _qt_internal_apply_strict_cpp(${target})

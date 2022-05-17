@@ -525,7 +525,18 @@ macro(qt_build_repo_impl_find_package_tests)
     # Do this before adding src, because there might be test related conditions
     # in source.
     if (QT_BUILD_TESTS AND NOT QT_BUILD_STANDALONE_TESTS)
-        find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Test)
+        # When looking for the Test package, do it using the Qt6 package version, in case if
+        # PROJECT_VERSION is following a different versioning scheme.
+        if(Qt6_VERSION)
+            set(_qt_build_repo_impl_find_package_tests_version "${Qt6_VERSION}")
+        else()
+            set(_qt_build_repo_impl_find_package_tests_version "${PROJECT_VERSION}")
+        endif()
+
+        find_package(Qt6
+            "${_qt_build_repo_impl_find_package_tests_version}"
+            CONFIG REQUIRED COMPONENTS Test)
+        unset(_qt_build_repo_impl_find_package_tests_version)
     endif()
 endmacro()
 
@@ -625,7 +636,15 @@ macro(qt_build_tests)
         unset(_qt_tests_config_file_name)
 
         # Of course we always need the test module as well.
-        find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Test)
+        # When looking for the Test package, do it using the Qt6 package version, in case if
+        # PROJECT_VERSION is following a different versioning scheme.
+        if(Qt6_VERSION)
+            set(_qt_build_tests_package_version "${Qt6_VERSION}")
+        else()
+            set(_qt_build_tests_package_version "${PROJECT_VERSION}")
+        endif()
+        find_package(Qt6 "${_qt_build_tests_package_version}" CONFIG REQUIRED COMPONENTS Test)
+        unset(_qt_build_tests_package_version)
 
         # Set language standards after finding Core, because that's when the relevant
         # feature variables are available, and the call in QtSetup is too early when building

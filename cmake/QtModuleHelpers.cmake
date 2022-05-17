@@ -153,8 +153,11 @@ function(qt_internal_add_module target)
 
     set_target_properties(${target} PROPERTIES
         _qt_module_interface_name "${arg_MODULE_INTERFACE_NAME}"
+        _qt_package_version "${PROJECT_VERSION}"
     )
-    set_property(TARGET ${target} APPEND PROPERTY EXPORT_PROPERTIES _qt_module_interface_name)
+    set_property(TARGET ${target}
+                 APPEND PROPERTY
+                 EXPORT_PROPERTIES "_qt_module_interface_name;_qt_package_version")
 
     qt_internal_module_info(module "${target}")
     qt_internal_add_qt_repo_known_module("${target}")
@@ -238,9 +241,12 @@ function(qt_internal_add_module target)
         add_library("${target_private}" INTERFACE)
         qt_internal_add_target_aliases("${target_private}")
         set_target_properties(${target_private} PROPERTIES
-            _qt_config_module_name ${arg_CONFIG_MODULE_NAME}_private)
+            _qt_config_module_name ${arg_CONFIG_MODULE_NAME}_private
+            _qt_package_version "${PROJECT_VERSION}"
+        )
         set_property(TARGET "${target_private}" APPEND PROPERTY
-                     EXPORT_PROPERTIES _qt_config_module_name)
+                     EXPORT_PROPERTIES "_qt_config_module_name;_qt_package_version"
+        )
     endif()
 
     if(NOT arg_HEADER_MODULE)

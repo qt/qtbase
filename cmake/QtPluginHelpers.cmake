@@ -119,6 +119,13 @@ function(qt_internal_add_plugin target)
 
     qt_set_target_info_properties(${target} ${ARGN} TARGET_VERSION "${arg_VERSION}")
 
+    set_target_properties(${target} PROPERTIES
+        _qt_package_version "${PROJECT_VERSION}"
+    )
+    set_property(TARGET ${target}
+                 APPEND PROPERTY
+                 EXPORT_PROPERTIES "_qt_package_version")
+
     # Override the OUTPUT_NAME that qt6_add_plugin() set, we need to account for
     # QT_LIBINFIX, which is specific to building Qt.
     # Make sure the Qt6 plugin library names are like they were in Qt5 qmake land.
