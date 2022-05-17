@@ -12690,15 +12690,7 @@ void QWidget::activateWindow()
 */
 int QWidget::metric(PaintDeviceMetric m) const
 {
-    QWindow *topLevelWindow = nullptr;
-    QScreen *screen = nullptr;
-    if (QWidget *topLevel = window()) {
-        topLevelWindow = topLevel->windowHandle();
-        if (topLevelWindow)
-            screen = topLevelWindow->screen();
-    }
-    if (!screen && QGuiApplication::primaryScreen())
-        screen = QGuiApplication::primaryScreen();
+    QScreen *screen = this->screen();
 
     if (!screen) {
         if (m == PdmDpiX || m == PdmDpiY)
@@ -12733,12 +12725,11 @@ int QWidget::metric(PaintDeviceMetric m) const
     } else if (m == PdmPhysicalDpiY) {
         return qRound(screen->physicalDotsPerInchY());
     } else if (m == PdmDevicePixelRatio) {
-        return topLevelWindow ? topLevelWindow->devicePixelRatio() : qApp->devicePixelRatio();
+        return screen->devicePixelRatio();
     } else if (m == PdmDevicePixelRatioScaled) {
-        return (QPaintDevice::devicePixelRatioFScale() *
-                (topLevelWindow ? topLevelWindow->devicePixelRatio() : qApp->devicePixelRatio()));
+        return QPaintDevice::devicePixelRatioFScale() * screen->devicePixelRatio();
     } else {
-        val = QPaintDevice::metric(m);// XXX
+        val = QPaintDevice::metric(m);
     }
     return val;
 }
