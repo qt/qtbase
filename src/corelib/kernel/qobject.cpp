@@ -1818,7 +1818,7 @@ void QObject::moveToThread(QThread *targetThread)
     QThreadData *currentData = QThreadData::current();
     QThreadData *targetData = targetThread ? QThreadData::get2(targetThread) : nullptr;
     QThreadData *thisThreadData = d->threadData.loadAcquire();
-    if (!thisThreadData->thread.loadAcquire() && currentData == targetData) {
+    if (!thisThreadData->thread.loadRelaxed() && currentData == targetData) {
         // one exception to the rule: we allow moving objects with no thread affinity to the current thread
         currentData = d->threadData;
     } else if (thisThreadData != currentData) {
