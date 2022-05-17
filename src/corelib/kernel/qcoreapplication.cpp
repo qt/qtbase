@@ -1026,7 +1026,7 @@ bool QCoreApplication::notifyInternal2(QObject *receiver, QEvent *event)
     // equivalent to QThreadData::current(), just without the function
     // call overhead.
     QObjectPrivate *d = receiver->d_func();
-    QThreadData *threadData = d->threadData;
+    QThreadData *threadData = d->threadData.loadAcquire();
     QScopedScopeLevelCounter scopeLevelCounter(threadData);
     if (!selfRequired)
         return doNotify(receiver, event);
@@ -1337,7 +1337,7 @@ int QCoreApplication::exec()
     if (!QCoreApplicationPrivate::checkInstance("exec"))
         return -1;
 
-    QThreadData *threadData = self->d_func()->threadData;
+    QThreadData *threadData = self->d_func()->threadData.loadAcquire();
     if (threadData != QThreadData::current()) {
         qWarning("%s::exec: Must be called from the main thread", self->metaObject()->className());
         return -1;

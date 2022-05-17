@@ -3674,7 +3674,7 @@ QObjectPrivate::Connection *QMetaObjectPrivate::connect(const QObject *sender,
     c->sender = s;
     c->signal_index = signal_index;
     c->receiver.storeRelaxed(r);
-    QThreadData *td = r->d_func()->threadData;
+    QThreadData *td = r->d_func()->threadData.loadAcquire();
     td->ref();
     c->receiverThreadData.storeRelaxed(td);
     c->method_relative = method_index;
@@ -5304,7 +5304,7 @@ QMetaObject::Connection QObjectPrivate::connectImpl(const QObject *sender, int s
     std::unique_ptr<QObjectPrivate::Connection> c{new QObjectPrivate::Connection};
     c->sender = s;
     c->signal_index = signal_index;
-    QThreadData *td = r->d_func()->threadData;
+    QThreadData *td = r->d_func()->threadData.loadAcquire();
     td->ref();
     c->receiverThreadData.storeRelaxed(td);
     c->receiver.storeRelaxed(r);
