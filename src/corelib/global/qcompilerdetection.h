@@ -884,78 +884,37 @@
 # endif
 #endif
 
-/*
- * C++11 keywords and expressions
- */
-#ifdef Q_COMPILER_NULLPTR
-# define Q_NULLPTR         nullptr
-#else
-# define Q_NULLPTR         NULL
-#endif
-
-#ifdef Q_COMPILER_DEFAULT_MEMBERS
-#  define Q_DECL_EQ_DEFAULT = default
-#else
-#  define Q_DECL_EQ_DEFAULT
-#endif
-
-#ifdef Q_COMPILER_DELETE_MEMBERS
-# define Q_DECL_EQ_DELETE = delete
-#else
-# define Q_DECL_EQ_DELETE
-#endif
-
 // Don't break code that is already using Q_COMPILER_DEFAULT_DELETE_MEMBERS
 #if defined(Q_COMPILER_DEFAULT_MEMBERS) && defined(Q_COMPILER_DELETE_MEMBERS)
 #  define Q_COMPILER_DEFAULT_DELETE_MEMBERS
 #endif
 
-#if defined Q_COMPILER_CONSTEXPR
-# if defined(__cpp_constexpr) && __cpp_constexpr-0 >= 201304
-#  define Q_DECL_CONSTEXPR constexpr
-#  define Q_DECL_RELAXED_CONSTEXPR constexpr
-#  define Q_CONSTEXPR constexpr
-#  define Q_RELAXED_CONSTEXPR constexpr
-# else
-#  define Q_DECL_CONSTEXPR constexpr
-#  define Q_DECL_RELAXED_CONSTEXPR
-#  define Q_CONSTEXPR constexpr
-#  define Q_RELAXED_CONSTEXPR const
-# endif
+/*
+ * Compatibility macros for C++11/14 keywords and expressions.
+ * Don't use in new code and port away whenever you have a chance.
+ */
+#define Q_ALIGNOF(x)                alignof(x)
+#define Q_DECL_ALIGN(n)             alignas(n)
+#define Q_DECL_NOTHROW              Q_DECL_NOEXCEPT
+#ifdef __cplusplus
+# define Q_CONSTEXPR                constexpr
+# define Q_DECL_CONSTEXPR           constexpr
+# define Q_DECL_EQ_DEFAULT          = default
+# define Q_DECL_EQ_DELETE           = delete
+# define Q_DECL_FINAL               final
+# define Q_DECL_NOEXCEPT            noexcept
+# define Q_DECL_NOEXCEPT_EXPR(x)    noexcept(x)
+# define Q_DECL_OVERRIDE            override
+# define Q_DECL_RELAXED_CONSTEXPR   constexpr
+# define Q_NULLPTR                  nullptr
+# define Q_RELAXED_CONSTEXPR        constexpr
 #else
+# define Q_CONSTEXPR                const
 # define Q_DECL_CONSTEXPR
-# define Q_DECL_RELAXED_CONSTEXPR
-# define Q_CONSTEXPR const
-# define Q_RELAXED_CONSTEXPR const
-#endif
-
-#ifdef Q_COMPILER_EXPLICIT_OVERRIDES
-# define Q_DECL_OVERRIDE override
-# define Q_DECL_FINAL final
-#else
-# ifndef Q_DECL_OVERRIDE
-#  define Q_DECL_OVERRIDE
-# endif
-# ifndef Q_DECL_FINAL
-#  define Q_DECL_FINAL
-# endif
-#endif
-
-#ifdef Q_COMPILER_NOEXCEPT
-# define Q_DECL_NOEXCEPT noexcept
-# define Q_DECL_NOEXCEPT_EXPR(x) noexcept(x)
-#else
 # define Q_DECL_NOEXCEPT
-# define Q_DECL_NOEXCEPT_EXPR(x)
-#endif
-#define Q_DECL_NOTHROW Q_DECL_NOEXCEPT
-
-#ifndef Q_ALIGNOF
-# define Q_ALIGNOF(x)  alignof(x)
-#endif
-
-#ifndef Q_DECL_ALIGN
-# define Q_DECL_ALIGN(n)   alignas(n)
+# define Q_DECL_RELAXED_CONSTEXPR
+# define Q_NULLPTR                  NULL
+# define Q_RELAXED_CONSTEXPR        const
 #endif
 
 #if __has_cpp_attribute(nodiscard) && (!defined(Q_CC_CLANG) || __cplusplus > 201402L) // P0188R1
