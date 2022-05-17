@@ -598,6 +598,7 @@ void QXcbScreen::setMonitor(xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp
     m_crtcs.clear();
     m_output = XCB_NONE;
     m_crtc = XCB_NONE;
+    m_singlescreen = false;
 
     if (!monitorInfo) {
         m_monitor = nullptr;
