@@ -3282,7 +3282,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                 if (customDropDownArrow)
                     toolOpt.features &= ~(QStyleOptionToolButton::Menu | QStyleOptionToolButton::HasMenu);
             }
-            const bool customMenuIndicator = (!customDropDown && drawMenuIndicator)
+            const bool customMenuIndicator = (!drawDropDown && drawMenuIndicator)
                                           && hasStyleRule(w, PseudoElement_ToolButtonMenuIndicator);
             if (customMenuIndicator)
                 toolOpt.features &= ~QStyleOptionToolButton::HasMenu;
@@ -3354,9 +3354,9 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
             } else if (drawMenuIndicator) {
                 QRenderRule subRule = renderRule(w, opt, PseudoElement_ToolButtonMenuIndicator);
 
-                QRect r = subRule.hasGeometry() || subRule.hasPosition()
-                        ? positionRect(w, subRule, PseudoElement_ToolButtonMenuIndicator, toolOpt.rect, toolOpt.direction)
-                        : subRule.contentsRect(opt->rect);
+                // content padding does not impact the indicator, so use the original rect to
+                // calculate position of the sub element within the toplevel rule
+                QRect r = positionRect(w, rule, subRule, PseudoElement_ToolButtonMenuIndicator, opt->rect, toolOpt.direction);
                 if (subRule.hasDrawable()) {
                     subRule.drawRule(p, r);
                 } else {
@@ -3397,7 +3397,6 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                 }
                 subRule.drawRule(p, arrowRect);
             }
-
             return;
         }
         break;
