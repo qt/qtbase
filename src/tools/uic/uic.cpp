@@ -88,7 +88,7 @@ void Uic::writeCopyrightHeaderCpp(const DomUI *ui) const
 {
     QString comment = ui->elementComment();
     if (!comment.isEmpty())
-        out << comment << "\n";
+        out << "/*\n" << comment << "\n*/\n\n";
 
     out << "/********************************************************************************\n";
     out << "** Form generated from reading UI file '" << QFileInfo(opt.inputFile).fileName() << "'\n";
