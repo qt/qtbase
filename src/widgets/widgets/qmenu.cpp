@@ -2351,6 +2351,15 @@ void QMenuPrivate::popup(const QPoint &p, QAction *atAction, PositionFunction po
         lastContextMenu = contextMenu;
     }
 
+    // Until QWidget::metric accepts the screen set on a widget (without having a window handle)
+    // we need to make sure we get a window handle. This must be done near here because
+    // we want the screen to be correctly set and items to be marked dirty.
+    // (and screen set could 'fail' on oldscreen == newScreen if created before causing the
+    // itemsDirty not to be set though needed to get the correct size on first show).
+    if (!windowHandle()) {
+        createWinId();
+    }
+
 #if QT_CONFIG(menubar)
     // if this menu is part of a chain attached to a QMenuBar, set the
     // _NET_WM_WINDOW_TYPE_DROPDOWN_MENU X11 window type
