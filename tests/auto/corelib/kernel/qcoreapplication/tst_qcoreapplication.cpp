@@ -7,6 +7,7 @@
 #include <QtCore/QtCore>
 #include <QTest>
 
+#include <private/qabstracteventdispatcher_p.h> // for qGlobalPostedEventsCount()
 #include <private/qcoreapplication_p.h>
 #include <private/qeventloop_p.h>
 #include <private/qthread_p.h>
@@ -512,10 +513,6 @@ void tst_QCoreApplication::applicationPid()
 {
     QVERIFY(QCoreApplication::applicationPid() > 0);
 }
-
-QT_BEGIN_NAMESPACE
-Q_CORE_EXPORT uint qGlobalPostedEventsCount();
-QT_END_NAMESPACE
 
 class GlobalPostedEventsCountObject : public QObject
 {

@@ -3,6 +3,7 @@
 
 #include "qeventdispatcher_wasm_p.h"
 
+#include <QtCore/private/qabstracteventdispatcher_p.h> // for qGlobalPostedEventsCount()
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qthread.h>
 #include <QtCore/qsocketnotifier.h>
@@ -14,7 +15,6 @@
 QT_BEGIN_NAMESPACE
 
 // using namespace emscripten;
-extern int qGlobalPostedEventsCount(); // from qapplication.cpp
 
 Q_LOGGING_CATEGORY(lcEventDispatcher, "qt.eventdispatcher");
 Q_LOGGING_CATEGORY(lcEventDispatcherTimers, "qt.eventdispatcher.timers");

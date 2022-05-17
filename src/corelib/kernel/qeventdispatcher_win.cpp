@@ -18,8 +18,6 @@
 
 QT_BEGIN_NAMESPACE
 
-extern uint qGlobalPostedEventsCount();
-
 #ifndef TIME_KILL_SYNCHRONOUS
 #  define TIME_KILL_SYNCHRONOUS 0x0100
 #endif
