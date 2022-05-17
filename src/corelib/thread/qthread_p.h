@@ -101,9 +101,9 @@ public:
     int recursion;
 
     // sendOffset == the current event to start sending
-    int startOffset;
+    qsizetype startOffset;
     // insertionOffset == set by sendPostedEvents to tell postEvent() where to start insertions
-    int insertionOffset;
+    qsizetype insertionOffset;
 
     QMutex mutex;
 
