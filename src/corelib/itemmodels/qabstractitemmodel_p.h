@@ -145,10 +145,12 @@ template <typename T>
 T legacyEnumValueFromModelData(const QVariant &data)
 {
     static_assert(std::is_enum_v<T>);
-    if (data.userType() == qMetaTypeId<T>())
+    if (data.userType() == qMetaTypeId<T>()) {
         return data.value<T>();
-    else if (data.userType() == qMetaTypeId<int>())
+    } else if (std::is_same_v<std::underlying_type_t<T>, int> ||
+               std::is_same_v<std::underlying_type_t<T>, uint>) {
         return T(data.toInt());
+    }
 
     return T();
 }
@@ -156,10 +158,12 @@ T legacyEnumValueFromModelData(const QVariant &data)
 template <typename T>
 T legacyFlagValueFromModelData(const QVariant &data)
 {
-    if (data.userType() == qMetaTypeId<T>())
+    if (data.userType() == qMetaTypeId<T>()) {
         return data.value<T>();
-    else if (data.userType() == qMetaTypeId<int>())
+    } else if (std::is_same_v<std::underlying_type_t<typename T::enum_type>, int> ||
+               std::is_same_v<std::underlying_type_t<typename T::enum_type>, uint>) {
         return T::fromInt(data.toInt());
+    }
 
     return T();
 }
