@@ -259,6 +259,13 @@ void QXcbConnection::updateScreen_monitor(QXcbScreen *screen, xcb_randr_monitor_
         screen->virtualDesktop()->setPrimaryScreen(screen);
         QWindowSystemInterface::handlePrimaryScreenChanged(screen);
     }
+    else
+    {
+        m_screens.removeOne(screen);
+        m_screens.append(screen);
+        screen->virtualDesktop()->removeScreen(screen);
+        screen->virtualDesktop()->addScreen(screen);
+    }
     qCDebug(lcQpaScreen) << "updateScreen_monitor: update" << screen << "(Primary:" << screen->isPrimary() << ")";
 }
 
