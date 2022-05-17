@@ -502,12 +502,6 @@
  */
 #define Q_COMPILER_THREADSAFE_STATICS
 
-#ifdef __cplusplus
-#  if __cplusplus < 201103L && !defined(Q_CC_MSVC)
-#    error Qt requires a C++11 compiler and yours does not seem to be that.
-#  endif
-#endif
-
 #if defined(Q_CC_CLANG)
 /* General C++ features */
 #  define Q_COMPILER_RESTRICTED_VLA
