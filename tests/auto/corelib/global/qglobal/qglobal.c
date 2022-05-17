@@ -51,7 +51,8 @@ int tst_QtVersion()
     return QT_VERSION;
 }
 
-const char *tst_qVersion() Q_DECL_NOEXCEPT
+const char *tst_qVersion() Q_DECL_NOEXCEPT;
+const char *tst_qVersion()
 {
 #if !defined(QT_NAMESPACE)
     return qVersion();

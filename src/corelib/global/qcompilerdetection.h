@@ -911,10 +911,14 @@
 #else
 # define Q_CONSTEXPR                const
 # define Q_DECL_CONSTEXPR
-# define Q_DECL_NOEXCEPT
 # define Q_DECL_RELAXED_CONSTEXPR
 # define Q_NULLPTR                  NULL
 # define Q_RELAXED_CONSTEXPR        const
+# ifdef Q_CC_GNU
+#  define Q_DECL_NOEXCEPT           __attribute__((__nothrow__))
+# else
+#  define Q_DECL_NOEXCEPT
+# endif
 #endif
 
 #if __has_cpp_attribute(nodiscard) && (!defined(Q_CC_CLANG) || __cplusplus > 201402L) // P0188R1
