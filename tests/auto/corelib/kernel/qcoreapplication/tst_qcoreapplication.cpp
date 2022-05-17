@@ -520,7 +520,7 @@ class GlobalPostedEventsCountObject : public QObject
     Q_OBJECT
 
 public:
-    QList<int> globalPostedEventsCount;
+    QList<qsizetype> globalPostedEventsCount;
 
     bool event(QEvent *event) override
     {
@@ -537,7 +537,7 @@ void tst_QCoreApplication::globalPostedEventsCount()
     TestApplication app(argc, argv);
 
     QCoreApplication::sendPostedEvents();
-    QCOMPARE(qGlobalPostedEventsCount(), 0u);
+    QCOMPARE(qGlobalPostedEventsCount(), qsizetype(0));
 
     GlobalPostedEventsCountObject x;
     QCoreApplication::postEvent(&x, new QEvent(QEvent::User));
@@ -545,17 +545,12 @@ void tst_QCoreApplication::globalPostedEventsCount()
     QCoreApplication::postEvent(&x, new QEvent(QEvent::User));
     QCoreApplication::postEvent(&x, new QEvent(QEvent::User));
     QCoreApplication::postEvent(&x, new QEvent(QEvent::User));
-    QCOMPARE(qGlobalPostedEventsCount(), 5u);
+    QCOMPARE(qGlobalPostedEventsCount(), qsizetype(5));
 
     QCoreApplication::sendPostedEvents();
-    QCOMPARE(qGlobalPostedEventsCount(), 0u);
+    QCOMPARE(qGlobalPostedEventsCount(), qsizetype(0));
 
-    QList<int> expected = QList<int>()
-                          << 4
-                          << 3
-                          << 2
-                          << 1
-                          << 0;
+    const QList<qsizetype> expected = {4, 3, 2, 1, 0};
     QCOMPARE(x.globalPostedEventsCount, expected);
 }
 #endif // QT_BUILD_INTERNAL

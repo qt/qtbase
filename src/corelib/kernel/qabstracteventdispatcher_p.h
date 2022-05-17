@@ -20,7 +20,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_AUTOTEST_EXPORT uint qGlobalPostedEventsCount();
+Q_AUTOTEST_EXPORT qsizetype qGlobalPostedEventsCount();
 
 class Q_CORE_EXPORT QAbstractEventDispatcherPrivate : public QObjectPrivate
 {

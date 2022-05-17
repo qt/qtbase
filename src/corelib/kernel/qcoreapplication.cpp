@@ -321,10 +321,10 @@ Q_CONSTINIT bool QCoreApplicationPrivate::is_app_running = false;
  // app closing down if true
 Q_CONSTINIT bool QCoreApplicationPrivate::is_app_closing = false;
 
-uint qGlobalPostedEventsCount()
+qsizetype qGlobalPostedEventsCount()
 {
-    QThreadData *currentThreadData = QThreadData::current();
-    return currentThreadData->postEventList.size() - currentThreadData->postEventList.startOffset;
+    const QPostEventList &l = QThreadData::current()->postEventList;
+    return l.size() - l.startOffset;
 }
 
 Q_CONSTINIT QAbstractEventDispatcher *QCoreApplicationPrivate::eventDispatcher = nullptr;
