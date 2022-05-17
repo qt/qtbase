@@ -323,8 +323,8 @@ static void qt_call_pre_routines()
         // the function to be executed every time QCoreApplication is created.
         list = *preRList;
     }
-    for (int i = 0; i < list.count(); ++i)
-        list.at(i)();
+    for (QtCleanUpFunction f : std::as_const(list))
+        f();
 }
 
 void Q_CORE_EXPORT qt_call_post_routines()
@@ -506,8 +506,7 @@ void QCoreApplicationPrivate::cleanupThreadData()
 
         // need to clear the state of the mainData, just in case a new QCoreApplication comes along.
         const auto locker = qt_scoped_lock(thisThreadData->postEventList.mutex);
-        for (int i = 0; i < thisThreadData->postEventList.size(); ++i) {
-            const QPostEvent &pe = thisThreadData->postEventList.at(i);
+        for (const QPostEvent &pe : std::as_const(thisThreadData->postEventList)) {
             if (pe.event) {
                 --pe.receiver->d_func()->postedEvents;
                 pe.event->m_posted = false;
@@ -1641,8 +1640,7 @@ bool QCoreApplication::compressEvent(QEvent *event, QObject *receiver, QPostEven
     // compress posted timers to this object.
     if (event->type() == QEvent::Timer && receiver->d_func()->postedEvents > 0) {
         int timerId = ((QTimerEvent *) event)->timerId();
-        for (int i=0; i<postedEvents->size(); ++i) {
-            const QPostEvent &e = postedEvents->at(i);
+        for (const QPostEvent &e : std::as_const(*postedEvents)) {
             if (e.receiver == receiver && e.event && e.event->type() == QEvent::Timer
                 && ((QTimerEvent *) e.event)->timerId() == timerId) {
                 delete event;
@@ -1665,8 +1663,7 @@ bool QCoreApplication::compressEvent(QEvent *event, QObject *receiver, QPostEven
     }
 
     if (event->type() == QEvent::Quit && receiver->d_func()->postedEvents > 0) {
-        for (int i = 0; i < postedEvents->size(); ++i) {
-            const QPostEvent &cur = postedEvents->at(i);
+        for (const QPostEvent &cur : std::as_const(*postedEvents)) {
             if (cur.receiver != receiver
                     || cur.event == nullptr
                     || cur.event->type() != event->type())
@@ -1950,8 +1947,7 @@ void QCoreApplicationPrivate::removePostedEvent(QEvent * event)
 #endif
     }
 
-    for (int i = 0; i < data->postEventList.size(); ++i) {
-        const QPostEvent & pe = data->postEventList.at(i);
+    for (const QPostEvent &pe : std::as_const(data->postEventList)) {
         if (pe.event == event) {
 #ifndef QT_NO_DEBUG
             qWarning("QCoreApplication::removePostedEvent: Event of type %d deleted while posted to %s %s",
