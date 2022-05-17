@@ -238,6 +238,7 @@ qt_copy_or_install(FILES
                    cmake/QtGenerateExtPri.cmake
                    cmake/QtGenerateLibHelpers.cmake
                    cmake/QtGenerateLibPri.cmake
+                   cmake/QtGenerateVersionScript.cmake
                    cmake/QtGlobalStateHelpers.cmake
                    cmake/QtHeadersClean.cmake
                    cmake/QtInstallHelpers.cmake

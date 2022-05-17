@@ -1,14 +1,34 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
+# This function generates LD version script for the target and uses it in the target linker line.
+# Function has two modes dependending on the specified arguments.
+# Arguments:
+#    PRIVATE_HEADERS specifies the list of header files that are used to generate
+#       Qt_<version>_PRIVATE_API section. Requires perl.
+#    PRIVATE_CONTENT_FILE specifies the pre-cooked content of Qt_<version>_PRIVATE_API section.
+#       Requires the content file available at build time.
 function(qt_internal_add_linker_version_script target)
-    qt_parse_all_arguments(arg "qt_internal_add_linker" "" "" "PRIVATE_HEADERS" ${ARGN})
+    qt_parse_all_arguments(arg "qt_internal_add_linker_version_script"
+        ""
+        "PRIVATE_CONTENT_FILE"
+        "PRIVATE_HEADERS"
+        ${ARGN}
+    )
 
-    if (TEST_ld_version_script)
+    if(arg_PRIVATE_CONTENT_FILE AND arg_PRIVATE_HEADERS)
+        message(FATAL_ERROR "Both PRIVATE_CONTENT_FILE and PRIVATE_HEADERS are specified.")
+    endif()
+
+    if(TEST_ld_version_script)
         set(contents "Qt_${PROJECT_VERSION_MAJOR}_PRIVATE_API {\n    qt_private_api_tag*;\n")
-        foreach(ph ${arg_PRIVATE_HEADERS})
-            string(APPEND contents "    @FILE:${ph}@\n")
-        endforeach()
+        if(arg_PRIVATE_HEADERS)
+            foreach(ph ${arg_PRIVATE_HEADERS})
+                string(APPEND contents "    @FILE:${ph}@\n")
+            endforeach()
+        else()
+            string(APPEND contents "@PRIVATE_CONTENT@")
+        endif()
         string(APPEND contents "};\n")
         set(current "Qt_${PROJECT_VERSION_MAJOR}")
         if (QT_NAMESPACE STREQUAL "")
@@ -33,16 +53,31 @@ function(qt_internal_add_linker_version_script target)
 
         file(GENERATE OUTPUT "${infile}" CONTENT "${contents}")
 
-        qt_ensure_perl()
-
-        set(generator_command "${HOST_PERL}"
-            "${QT_MKSPECS_DIR}/features/data/unix/findclasslist.pl"
-            "<" "${infile}" ">" "${outfile}"
-        )
-        set(generator_dependencies
-            "${infile}"
-            "${QT_MKSPECS_DIR}/features/data/unix/findclasslist.pl"
-        )
+        if(arg_PRIVATE_HEADERS)
+            qt_ensure_perl()
+            set(generator_command "${HOST_PERL}"
+                "${QT_MKSPECS_DIR}/features/data/unix/findclasslist.pl"
+                "<" "${infile}" ">" "${outfile}"
+            )
+            set(generator_dependencies
+                "${infile}"
+                "${QT_MKSPECS_DIR}/features/data/unix/findclasslist.pl"
+            )
+        else()
+            if(NOT arg_PRIVATE_CONTENT_FILE)
+                set(arg_PRIVATE_CONTENT_FILE "")
+            endif()
+            set(generator_command ${CMAKE_COMMAND}
+                "-DIN_FILE=${infile}"
+                "-DPRIVATE_CONTENT_FILE=${arg_PRIVATE_CONTENT_FILE}"
+                "-DOUT_FILE=${outfile}"
+                -P "${QT_CMAKE_DIR}/QtGenerateVersionScript.cmake"
+            )
+            set(generator_dependencies
+                "${arg_PRIVATE_CONTENT_FILE}"
+                "${QT_CMAKE_DIR}/QtGenerateVersionScript.cmake"
+            )
+        endif()
 
         add_custom_command(
             OUTPUT "${outfile}"
