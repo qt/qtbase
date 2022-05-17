@@ -948,13 +948,13 @@ public class QtNative
         return m_activityDelegate.isKeyboardVisible() && !m_isKeyboardHiding;
     }
 
-    private static void notifyAccessibilityLocationChange()
+    private static void notifyAccessibilityLocationChange(final int viewId)
     {
         runAction(new Runnable() {
             @Override
             public void run() {
                 if (m_activityDelegate != null) {
-                    m_activityDelegate.notifyAccessibilityLocationChange();
+                    m_activityDelegate.notifyAccessibilityLocationChange(viewId);
                 }
             }
         });

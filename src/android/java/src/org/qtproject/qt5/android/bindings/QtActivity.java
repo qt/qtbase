@@ -1122,9 +1122,9 @@ public class QtActivity extends Activity
         QtNative.activityDelegate().setFullScreen(enterFullScreen);
     }
 
-    public void notifyAccessibilityLocationChange()
+    public void notifyAccessibilityLocationChange(int viewId)
     {
-        QtNative.activityDelegate().notifyAccessibilityLocationChange();
+        QtNative.activityDelegate().notifyAccessibilityLocationChange(viewId);
     }
 
     public void notifyObjectHide(int viewId, int parentId)

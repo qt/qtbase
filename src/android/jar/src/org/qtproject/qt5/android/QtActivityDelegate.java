@@ -894,11 +894,11 @@ public class QtActivityDelegate
         m_splashScreen.startAnimation(fadeOut);
     }
 
-    public void notifyAccessibilityLocationChange()
+    public void notifyAccessibilityLocationChange(int viewId)
     {
         if (m_accessibilityDelegate == null)
             return;
-        m_accessibilityDelegate.notifyLocationChange();
+        m_accessibilityDelegate.notifyLocationChange(viewId);
     }
 
     public void notifyObjectHide(int viewId, int parentId)

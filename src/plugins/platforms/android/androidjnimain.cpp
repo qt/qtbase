@@ -225,9 +225,11 @@ namespace QtAndroid
         m_statusBarShowing = false;
     }
 
-    void notifyAccessibilityLocationChange()
+    void notifyAccessibilityLocationChange(uint accessibilityObjectId)
     {
-        QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass, "notifyAccessibilityLocationChange");
+        QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass,
+                                                  "notifyAccessibilityLocationChange",
+                                                  "(I)V", accessibilityObjectId);
     }
 
     void notifyObjectHide(uint accessibilityObjectId, uint parentObjectId)
