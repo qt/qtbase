@@ -78,7 +78,7 @@ static QScreen *findScreenForVirtualDesktop(int virtualDesktopNumber)
     application.
 
     \warning This class is only available on X11. For querying
-    per-screen information in a portable way, use QDesktopWidget.
+    per-screen information in a portable way, use QScreen.
 */
 
 /*!
@@ -104,7 +104,7 @@ bool QX11Info::isPlatformX11()
 
     The \a screen argument is an X screen number. Be aware that if
     the user's system uses Xinerama (as opposed to traditional X11
-    multiscreen), there is only one X screen. Use QDesktopWidget to
+    multiscreen), there is only one X screen. Use QScreen to
     query for information about Xinerama screens.
 
     \sa appDpiY()
@@ -131,7 +131,7 @@ int QX11Info::appDpiX(int screen)
 
     The \a screen argument is an X screen number. Be aware that if
     the user's system uses Xinerama (as opposed to traditional X11
-    multiscreen), there is only one X screen. Use QDesktopWidget to
+    multiscreen), there is only one X screen. Use QScreen to
     query for information about Xinerama screens.
 
     \sa appDpiX()
@@ -157,7 +157,7 @@ int QX11Info::appDpiY(int screen)
 
     The \a screen argument is an X screen number. Be aware that if
     the user's system uses Xinerama (as opposed to traditional X11
-    multiscreen), there is only one X screen. Use QDesktopWidget to
+    multiscreen), there is only one X screen. Use QScreen to
     query for information about Xinerama screens.
 */
 quint32 QX11Info::appRootWindow(int screen)
@@ -186,7 +186,7 @@ quint32 QX11Info::appRootWindow(int screen)
     are combined in one X11 screen. This means this method returns the
     same number for each of the physical monitors. In such a setup you
     are interested in the monitor information as provided by the X11
-    RandR extension. This is available through QDesktopWidget and QScreen.
+    RandR extension. This is available through QScreen.
 
     \sa display()
 */
