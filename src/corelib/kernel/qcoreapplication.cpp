@@ -1140,7 +1140,7 @@ bool QCoreApplicationPrivate::sendThroughApplicationEventFilters(QObject *receiv
             QObject *obj = extraData->eventFilters.at(i);
             if (!obj)
                 continue;
-            if (obj->d_func()->threadData != threadData) {
+            if (obj->d_func()->threadData.loadRelaxed() != threadData.loadRelaxed()) {
                 qWarning("QCoreApplication: Application event filter cannot be in a different thread.");
                 continue;
             }
@@ -1158,7 +1158,7 @@ bool QCoreApplicationPrivate::sendThroughObjectEventFilters(QObject *receiver, Q
             QObject *obj = receiver->d_func()->extraData->eventFilters.at(i);
             if (!obj)
                 continue;
-            if (obj->d_func()->threadData != receiver->d_func()->threadData) {
+            if (obj->d_func()->threadData.loadRelaxed() != receiver->d_func()->threadData.loadRelaxed()) {
                 qWarning("QCoreApplication: Object event filter cannot be in a different thread.");
                 continue;
             }
@@ -1678,7 +1678,7 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
         event_type = 0;
     }
 
-    if (receiver && receiver->d_func()->threadData != data) {
+    if (receiver && receiver->d_func()->threadData.loadRelaxed() != data) {
         qWarning("QCoreApplication::sendPostedEvents: Cannot send "
                  "posted events for objects in another thread");
         return;
