@@ -572,9 +572,9 @@ void QCoreApplicationPrivate::initLocale()
     if (Q_UNLIKELY(strcmp(codec, "UTF-8") != 0 && strcmp(codec, "utf8") != 0)) {
         QByteArray oldLocale = locale;
         QByteArray newLocale = setlocale(LC_CTYPE, nullptr);
-        if (int dot = newLocale.indexOf('.'); dot != -1)
+        if (qsizetype dot = newLocale.indexOf('.'); dot != -1)
             newLocale.truncate(dot);    // remove encoding, if any
-        if (int at = newLocale.indexOf('@'); at != -1)
+        if (qsizetype at = newLocale.indexOf('@'); at != -1)
             newLocale.truncate(at);     // remove variant, as the old de_DE@euro
         newLocale += ".UTF-8";
         newLocale = setlocale(LC_CTYPE, newLocale);
@@ -790,7 +790,7 @@ void QCoreApplicationPrivate::init()
             // have been removed. Once the original list is exhausted we know all the remaining
             // items have been added.
             QStringList newPaths(q->libraryPaths());
-            for (int i = manualPaths->length(), j = appPaths->length(); i > 0 || j > 0; qt_noop()) {
+            for (qsizetype i = manualPaths->length(), j = appPaths->length(); i > 0 || j > 0; qt_noop()) {
                 if (--j < 0) {
                     newPaths.prepend((*manualPaths)[--i]);
                 } else if (--i < 0) {
@@ -1136,7 +1136,7 @@ bool QCoreApplicationPrivate::sendThroughApplicationEventFilters(QObject *receiv
 
     if (extraData) {
         // application event filters are only called for objects in the GUI thread
-        for (int i = 0; i < extraData->eventFilters.size(); ++i) {
+        for (qsizetype i = 0; i < extraData->eventFilters.size(); ++i) {
             QObject *obj = extraData->eventFilters.at(i);
             if (!obj)
                 continue;
@@ -1154,7 +1154,7 @@ bool QCoreApplicationPrivate::sendThroughApplicationEventFilters(QObject *receiv
 bool QCoreApplicationPrivate::sendThroughObjectEventFilters(QObject *receiver, QEvent *event)
 {
     if (receiver != QCoreApplication::instance() && receiver->d_func()->extraData) {
-        for (int i = 0; i < receiver->d_func()->extraData->eventFilters.size(); ++i) {
+        for (qsizetype i = 0; i < receiver->d_func()->extraData->eventFilters.size(); ++i) {
             QObject *obj = receiver->d_func()->extraData->eventFilters.at(i);
             if (!obj)
                 continue;
@@ -1413,7 +1413,7 @@ void QCoreApplication::exit(int returnCode)
         return;
     QThreadData *data = self->d_func()->threadData.loadRelaxed();
     data->quitNow = true;
-    for (int i = 0; i < data->eventLoops.size(); ++i) {
+    for (qsizetype i = 0; i < data->eventLoops.size(); ++i) {
         QEventLoop *eventLoop = data->eventLoops.at(i);
         eventLoop->exit(returnCode);
     }
@@ -1702,8 +1702,8 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
 
     // okay. here is the tricky loop. be careful about optimizing
     // this, it looks the way it does for good reasons.
-    int startOffset = data->postEventList.startOffset;
-    int &i = (!event_type && !receiver) ? data->postEventList.startOffset : startOffset;
+    qsizetype startOffset = data->postEventList.startOffset;
+    qsizetype &i = (!event_type && !receiver) ? data->postEventList.startOffset : startOffset;
     data->postEventList.insertionOffset = data->postEventList.size();
 
     // Exception-safe cleaning up without the need for a try/catch block
@@ -1852,10 +1852,10 @@ void QCoreApplication::removePostedEvents(QObject *receiver, int eventType)
     //we will collect all the posted events for the QObject
     //and we'll delete after the mutex was unlocked
     QVarLengthArray<QEvent*> events;
-    int n = data->postEventList.size();
-    int j = 0;
+    qsizetype n = data->postEventList.size();
+    qsizetype j = 0;
 
-    for (int i = 0; i < n; ++i) {
+    for (qsizetype i = 0; i < n; ++i) {
         const QPostEvent &pe = data->postEventList.at(i);
 
         if ((!receiver || pe.receiver == receiver)
@@ -2141,8 +2141,8 @@ bool QCoreApplication::removeTranslator(QTranslator *translationFile)
 static void replacePercentN(QString *result, int n)
 {
     if (n >= 0) {
-        int percentPos = 0;
-        int len = 0;
+        qsizetype percentPos = 0;
+        qsizetype len = 0;
         while ((percentPos = result->indexOf(u'%', percentPos + len)) != -1) {
             len = 1;
             if (percentPos + len == result->length())
