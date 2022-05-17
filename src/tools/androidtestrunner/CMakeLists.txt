@@ -14,8 +14,8 @@ qt_internal_add_tool(${target_name}
         QT_NO_CAST_FROM_ASCII
         QT_NO_CAST_TO_ASCII
         QT_NO_FOREACH
-    PUBLIC_LIBRARIES
-        Qt::Gui
+    LIBRARIES
+        Qt::Core
 )
 set_target_properties(${target_name} PROPERTIES
     WIN32_EXECUTABLE FALSE
