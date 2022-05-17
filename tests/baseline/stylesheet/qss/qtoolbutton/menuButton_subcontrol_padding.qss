@@ -1,0 +1,12 @@
+QToolButton {
+    border: 5px solid #9e9e9e;
+    background: #ffffff;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+QToolButton[popupMode=InstantPopup] {
+    padding-right: 75px;
+}
+QToolButton::menu-indicator {
+    subcontrol-position: right;
+};
