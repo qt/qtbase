@@ -514,6 +514,7 @@ void tst_QCoreApplication::applicationPid()
     QVERIFY(QCoreApplication::applicationPid() > 0);
 }
 
+#ifdef QT_BUILD_INTERNAL
 class GlobalPostedEventsCountObject : public QObject
 {
     Q_OBJECT
@@ -557,6 +558,7 @@ void tst_QCoreApplication::globalPostedEventsCount()
                           << 0;
     QCOMPARE(x.globalPostedEventsCount, expected);
 }
+#endif // QT_BUILD_INTERNAL
 
 class ProcessEventsAlwaysSendsPostedEventsObject : public QObject
 {

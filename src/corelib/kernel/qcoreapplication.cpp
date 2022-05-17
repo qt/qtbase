@@ -321,7 +321,7 @@ Q_CONSTINIT bool QCoreApplicationPrivate::is_app_running = false;
  // app closing down if true
 Q_CONSTINIT bool QCoreApplicationPrivate::is_app_closing = false;
 
-Q_CORE_EXPORT uint qGlobalPostedEventsCount()
+uint qGlobalPostedEventsCount()
 {
     QThreadData *currentThreadData = QThreadData::current();
     return currentThreadData->postEventList.size() - currentThreadData->postEventList.startOffset;

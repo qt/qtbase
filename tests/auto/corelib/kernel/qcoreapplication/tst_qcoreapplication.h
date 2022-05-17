@@ -22,7 +22,9 @@ private slots:
     void deliverInDefinedOrder();
 #endif
     void applicationPid();
+#ifdef QT_BUILD_INTERNAL
     void globalPostedEventsCount();
+#endif
     void processEventsAlwaysSendsPostedEvents();
 #ifdef Q_OS_WIN
     void sendPostedEventsInNativeLoop();
