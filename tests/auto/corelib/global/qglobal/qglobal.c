@@ -3,15 +3,6 @@
 
 #include <QtCore/qglobal.h>
 
-#if __has_include(<stdbool.h>) || __STDC_VERSION__ >= 199901L
-#  include <stdbool.h>
-#else
-#  undef true
-#  define true 1
-#  undef false
-#  define false 0
-#endif
-
 #ifdef Q_COMPILER_THREAD_LOCAL
 #  include <threads.h>
 #endif

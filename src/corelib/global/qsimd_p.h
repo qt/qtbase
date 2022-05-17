@@ -330,7 +330,6 @@ static constexpr auto memory_order_relaxed = std::memory_order_relaxed;
 extern "C" {
 #else
 #  include <stdatomic.h>
-#  include <stdbool.h>
 #  define Q_ATOMIC(T)   _Atomic(T)
 #endif
 
