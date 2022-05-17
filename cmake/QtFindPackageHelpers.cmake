@@ -316,6 +316,68 @@ function(qt_internal_is_lib_part_of_qt6_package lib out_var)
     endif()
 endfunction()
 
+# Try to get the CMake package version of a Qt target.
+#
+# Query the target's _qt_package_version property, or try to read it from the CMake package version
+# variable set from calling find_package(Qt6${target}).
+# Not all targets will have a find_package _VERSION variable, for example if the target is an
+# executable.
+# A heuristic is used to handle QtFooPrivate module targets.
+# If no version can be found, fall back to ${PROJECT_VERSION} and issue a warning.
+function(qt_internal_get_package_version_of_target target package_version_out_var)
+    qt_internal_is_lib_part_of_qt6_package("${target}" is_part_of_qt6)
+
+    if(is_part_of_qt6)
+        # When building qtbase, Qt6_VERSION is not set (unless examples are built in-tree,
+        # non-ExternalProject). Use the Platform target's version instead which would be the
+        # equivalent.
+        if(TARGET "${QT_CMAKE_EXPORT_NAMESPACE}::Platform")
+            get_target_property(package_version
+                "${QT_CMAKE_EXPORT_NAMESPACE}::Platform" _qt_package_version)
+        endif()
+        if(NOT package_version)
+            set(package_version "${${QT_CMAKE_EXPORT_NAMESPACE}_VERSION}")
+        endif()
+    else()
+        # Try to get the version from the target.
+        # Try the Private target first and if it doesn't exist, try the non-Private target later.
+        if(TARGET "${QT_CMAKE_EXPORT_NAMESPACE}::${target}")
+            get_target_property(package_version
+                "${QT_CMAKE_EXPORT_NAMESPACE}::${target}" _qt_package_version)
+        endif()
+
+        # Try to get the version from the corresponding package version variable.
+        if(NOT package_version)
+            set(package_version "${${QT_CMAKE_EXPORT_NAMESPACE}${target}_VERSION}")
+        endif()
+
+        # Try non-Private target.
+        if(NOT package_version AND target MATCHES "(.*)Private$")
+            set(target "${CMAKE_MATCH_1}")
+        endif()
+
+        if(NOT package_version AND TARGET "${QT_CMAKE_EXPORT_NAMESPACE}::${target}")
+            get_target_property(package_version
+                "${QT_CMAKE_EXPORT_NAMESPACE}::${target}" _qt_package_version)
+        endif()
+
+        if(NOT package_version)
+            set(package_version "${${QT_CMAKE_EXPORT_NAMESPACE}${target}_VERSION}")
+        endif()
+    endif()
+
+    if(NOT package_version)
+        set(package_version "${PROJECT_VERSION}")
+        if(FEATURE_developer_build)
+            message(WARNING
+                "Could not determine package version of target ${target}. "
+                "Defaulting to project version ${PROJECT_VERSION}.")
+        endif()
+    endif()
+
+    set(${package_version_out_var} "${package_version}" PARENT_SCOPE)
+endfunction()
+
 # This function stores the list of Qt targets a library depend on,
 # along with their version info, for usage in ${target}Depends.cmake file
 function(qt_register_target_dependencies target public_libs private_libs)
@@ -348,10 +410,12 @@ function(qt_register_target_dependencies target public_libs private_libs)
         if ("${lib}" MATCHES "^Qt::(.*)")
             set(lib "${CMAKE_MATCH_1}")
             qt_internal_is_lib_part_of_qt6_package("${lib}" is_part_of_qt6)
+
+            qt_internal_get_package_version_of_target("${lib}" package_version)
             if (is_part_of_qt6)
-                list(APPEND target_deps "Qt6\;${PROJECT_VERSION}")
+                list(APPEND target_deps "Qt6\;${package_version}")
             else()
-                list(APPEND target_deps "${INSTALL_CMAKE_NAMESPACE}${lib}\;${PROJECT_VERSION}")
+                list(APPEND target_deps "${INSTALL_CMAKE_NAMESPACE}${lib}\;${package_version}")
             endif()
         endif()
     endforeach()
@@ -372,7 +436,8 @@ function(qt_register_target_dependencies target public_libs private_libs)
                 qt_internal_is_lib_part_of_qt6_package("${lib}" is_part_of_qt6)
                 get_target_property(lib_type "${lib_namespaced}" TYPE)
                 if(NOT lib_type STREQUAL "STATIC_LIBRARY" AND NOT is_part_of_qt6)
-                    list(APPEND target_deps "${INSTALL_CMAKE_NAMESPACE}${lib}\;${PROJECT_VERSION}")
+                    qt_internal_get_package_version_of_target("${lib}" package_version)
+                    list(APPEND target_deps "${INSTALL_CMAKE_NAMESPACE}${lib}\;${package_version}")
                 endif()
             endif()
         endforeach()

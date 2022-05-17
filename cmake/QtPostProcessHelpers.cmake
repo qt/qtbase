@@ -209,9 +209,10 @@ function(qt_internal_create_module_depends_file target)
             # Make the ModuleTool package depend on dep's ModuleTool package.
             list(FIND tool_deps_seen ${dep} dep_seen)
             if(dep_seen EQUAL -1 AND ${dep} IN_LIST QT_KNOWN_MODULES_WITH_TOOLS)
+                qt_internal_get_package_version_of_target("${dep}" dep_package_version)
                 list(APPEND tool_deps_seen ${dep})
                 list(APPEND tool_deps
-                            "${INSTALL_CMAKE_NAMESPACE}${dep}Tools\;${PROJECT_VERSION}")
+                            "${INSTALL_CMAKE_NAMESPACE}${dep}Tools\;${dep_package_version}")
             endif()
         endif()
     endforeach()
@@ -220,8 +221,9 @@ function(qt_internal_create_module_depends_file target)
 
     # Add dependency to the main ModuleTool package to ModuleDependencies file.
     if(${target} IN_LIST QT_KNOWN_MODULES_WITH_TOOLS)
+        qt_internal_get_package_version_of_target("${target}" main_module_tool_package_version)
         list(APPEND main_module_tool_deps
-            "${INSTALL_CMAKE_NAMESPACE}${target}Tools\;${PROJECT_VERSION}")
+            "${INSTALL_CMAKE_NAMESPACE}${target}Tools\;${main_module_tool_package_version}")
     endif()
 
     foreach(dep ${target_deps})
@@ -259,6 +261,10 @@ function(qt_internal_create_module_depends_file target)
         qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} ${path_suffix})
         qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${path_suffix})
 
+        # All module packages should look for the Qt6 package version that qtbase was originally
+        # built as.
+        qt_internal_get_package_version_of_target(Platform main_qt_package_version)
+
         # Configure and install ModuleDependencies file.
         configure_file(
             "${QT_CMAKE_DIR}/QtModuleDependencies.cmake.in"
@@ -272,6 +278,9 @@ function(qt_internal_create_module_depends_file target)
             COMPONENT Devel
         )
 
+        message(TRACE "Recorded dependencies for module: ${target}\n"
+            "    Qt dependencies: ${target_deps}\n"
+            "    3rd-party dependencies: ${third_party_deps}")
     endif()
     if(tool_deps)
         # The value of the property will be used by qt_export_tools.
@@ -330,6 +339,10 @@ function(qt_internal_create_plugin_depends_file target)
             DESTINATION "${config_install_dir}"
             COMPONENT Devel
         )
+
+        message(TRACE "Recorded dependencies for plugin: ${target}\n"
+            "    Qt dependencies: ${target_deps}\n"
+            "    3rd-party dependencies: ${third_party_deps}")
     endif()
 endfunction()
 
@@ -774,6 +787,10 @@ function(qt_internal_create_config_file_for_standalone_tests)
     # Create a Config file that calls find_package on the modules that were built as part
     # of the current repo. This is used for standalone tests.
     qt_internal_get_standalone_tests_config_file_name(tests_config_file_name)
+
+    # Standalone tests Config files should follow the main versioning scheme.
+    qt_internal_get_package_version_of_target(Platform main_qt_package_version)
+
     configure_file(
         "${QT_CMAKE_DIR}/QtStandaloneTestsConfig.cmake.in"
         "${config_build_dir}/${tests_config_file_name}"

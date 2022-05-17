@@ -19,6 +19,13 @@ function(qt_internal_setup_public_platform_target)
         )
     target_compile_definitions(Platform INTERFACE ${QT_PLATFORM_DEFINITIONS})
 
+    set_target_properties(Platform PROPERTIES
+        _qt_package_version "${PROJECT_VERSION}"
+    )
+    set_property(TARGET Platform
+                 APPEND PROPERTY
+                 EXPORT_PROPERTIES "_qt_package_version")
+
     # When building on android we need to link against the logging library
     # in order to satisfy linker dependencies. Both of these libraries are part of
     # the NDK.

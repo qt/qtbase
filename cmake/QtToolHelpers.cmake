@@ -220,6 +220,13 @@ function(qt_internal_add_tool target_name)
     _qt_internal_apply_strict_cpp("${target_name}")
     qt_internal_adjust_main_config_runtime_output_dir("${target_name}" "${output_dir}")
 
+    set_target_properties(${target_name} PROPERTIES
+        _qt_package_version "${PROJECT_VERSION}"
+    )
+    set_property(TARGET ${target_name}
+                 APPEND PROPERTY
+                 EXPORT_PROPERTIES "_qt_package_version")
+
     if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.19.0" AND QT_FEATURE_debug_and_release)
         set_property(TARGET "${target_name}"
             PROPERTY EXCLUDE_FROM_ALL "$<NOT:$<CONFIG:${QT_MULTI_CONFIG_FIRST_CONFIG}>>")
@@ -335,6 +342,8 @@ function(qt_export_tools module_name)
     set(extra_cmake_files "")
     set(extra_cmake_includes "")
 
+    set(first_tool_package_version "")
+
     foreach(tool_name ${QT_KNOWN_MODULE_${module_name}_TOOLS})
         # Specific tools can have package dependencies.
         # e.g. qtwaylandscanner depends on WaylandScanner (non-qt package).
@@ -366,6 +375,13 @@ endif()
 ")
         list(APPEND tool_targets "${QT_CMAKE_EXPORT_NAMESPACE}::${tool_name}")
         list(APPEND tool_targets_non_prefixed "${tool_name}")
+
+        if(NOT first_tool_package_version)
+            qt_internal_get_package_version_of_target("${tool_name}" tool_package_version)
+            if(tool_package_version)
+                set(first_tool_package_version "${tool_package_version}")
+            endif()
+        endif()
     endforeach()
 
     string(APPEND extra_cmake_statements
@@ -411,9 +427,30 @@ endif()
         "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
         INSTALL_DESTINATION "${config_install_dir}"
     )
+
+    # There might be Tools packages which don't have a corresponding real module_name target, like
+    # WaylandScannerTools.
+    # In that case we'll use the package version of the first tool that belongs to that package.
+    if(TARGET "${module_name}")
+        qt_internal_get_package_version_of_target("${module_name}" tools_package_version)
+    elseif(first_tool_package_version)
+        set(tools_package_version "${first_tool_package_version}")
+    else()
+        # This should never happen, because tools_package_version should always have at least some
+        # value. Issue an assertion message just in case the pre-condition ever changes.
+        set(tools_package_version "${PROJECT_VERSION}")
+        if(FEATURE_developer_build)
+            message(WARNING
+                "Could not determine package version of tools package ${module_name}. "
+                "Defaulting to project version ${PROJECT_VERSION}.")
+        endif()
+    endif()
+    message(TRACE
+        "Exporting tools package ${module_name}Tools with package version ${tools_package_version}"
+        "\n     included targets: ${tool_targets_non_prefixed}")
     write_basic_package_version_file(
         "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigVersionImpl.cmake"
-        VERSION ${PROJECT_VERSION}
+        VERSION "${tools_package_version}"
         COMPATIBILITY AnyNewerVersion
         ARCH_INDEPENDENT
     )
