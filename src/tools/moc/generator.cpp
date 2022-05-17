@@ -539,7 +539,7 @@ void Generator::generateCode()
     bool needsComma = false;
     const bool requireCompleteness = requireCompleteTypes || cdef->requireCompleteMethodTypes;
     if (!requireCompleteness) {
-        fprintf(out, "qt_incomplete_metaTypeArray<qt_meta_stringdata_%s_t\n", qualifiedClassNameIdentifier.constData());
+        fprintf(out, "qt_incomplete_metaTypeArray<qt_meta_stringdata_%s_t", qualifiedClassNameIdentifier.constData());
         needsComma = true;
     } else {
         fprintf(out, "qt_metaTypeArray<\n");
@@ -547,18 +547,22 @@ void Generator::generateCode()
     // metatypes for properties
     for (int i = 0; i < cdef->propertyList.count(); ++i) {
         const PropertyDef &p = cdef->propertyList.at(i);
+        if (needsComma)
+            fputs(",\n    ", out);
         if (requireCompleteness)
-            fprintf(out, "%s%s", needsComma ? ", " : "", p.type.data());
+            fputs(p.type.data(), out);
         else
-            fprintf(out, "%sQtPrivate::TypeAndForceComplete<%s, std::true_type>", needsComma ? ", " : "", p.type.data());
+            fprintf(out, "QtPrivate::TypeAndForceComplete<%s, std::true_type>", p.type.data());
         needsComma = true;
     }
     // type name for the Q_OJBECT/GADGET itself, void for namespaces
     auto ownType = !cdef->hasQNamespace ? cdef->classname.data() : "void";
+    if (needsComma)
+        fputs(",\n    ", out);
     if (requireCompleteness)
-        fprintf(out, "%s%s", needsComma ? ", " : "", ownType);
+         fputs(ownType, out);
     else
-        fprintf(out, "%sQtPrivate::TypeAndForceComplete<%s, std::true_type>", needsComma ? ", " : "", ownType);
+        fprintf(out, "QtPrivate::TypeAndForceComplete<%s, std::true_type>", ownType);
 
     // metatypes for all exposed methods
     // no need to check for needsComma any longer, as we always need one due to the classname being present
@@ -567,14 +571,14 @@ void Generator::generateCode()
         for (int i = 0; i< methodContainer.count(); ++i) {
             const FunctionDef& fdef = methodContainer.at(i);
             if (requireCompleteness)
-                fprintf(out, ", %s", fdef.type.name.data());
+                fprintf(out, ",\n    %s", fdef.type.name.data());
             else
-                fprintf(out, ", QtPrivate::TypeAndForceComplete<%s, std::false_type>", fdef.type.name.data());
+                fprintf(out, ",\n    QtPrivate::TypeAndForceComplete<%s, std::false_type>", fdef.type.name.data());
             for (const auto &argument: fdef.arguments) {
                 if (requireCompleteness)
                     fprintf(out, ", %s", argument.type.name.data());
                 else
-                    fprintf(out, ", QtPrivate::TypeAndForceComplete<%s, std::false_type>", argument.type.name.data());
+                    fprintf(out, ",\n    QtPrivate::TypeAndForceComplete<%s, std::false_type>", argument.type.name.data());
             }
         }
         fprintf(out, "\n");
@@ -583,12 +587,11 @@ void Generator::generateCode()
         const FunctionDef& fdef = cdef->constructorList.at(i);
         for (const auto &argument: fdef.arguments) {
             if (requireCompleteness)
-                fprintf(out, ", %s", argument.type.name.data());
+                fprintf(out, ",\n    %s", argument.type.name.data());
             else
-                fprintf(out, ", QtPrivate::TypeAndForceComplete<%s, std::false_type>", argument.type.name.data());
+                fprintf(out, ",\n    QtPrivate::TypeAndForceComplete<%s, std::false_type>", argument.type.name.data());
         }
     }
-    fprintf(out, "\n");
     fprintf(out, ">,\n");
 
     fprintf(out, "    nullptr\n} };\n\n");
