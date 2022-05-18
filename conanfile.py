@@ -20,8 +20,8 @@ def add_cmake_prefix_path(conan_file: ConanFile, dep: str) -> None:
         raise QtConanError("Unable to find dependency: {0}".format(dep))
     dep_cpp_info = conan_file.deps_cpp_info[dep]
     cmake_args_str = str(conan_file.options.get_safe("cmake_args_qtbase", default=""))
-    formatted_cmake_args_str = conan_file._shared.append_cmake_prefix_path(
-        cmake_args_str, dep_cpp_info.rootpath
+    formatted_cmake_args_str = conan_file._shared.append_cmake_arg(
+        cmake_args_str, "CMAKE_PREFIX_PATH", dep_cpp_info.rootpath
     )
     print("Adjusted cmake args for qtbase build: {0}".format(formatted_cmake_args_str))
     setattr(conan_file.options, "cmake_args_qtbase", formatted_cmake_args_str)
@@ -128,6 +128,14 @@ class QtBase(ConanFile):
                 print("Setting 3rd party package requirement: {0}".format(requirement))
                 self.requires(requirement)
 
+    def _resolve_qt_host_path(self) -> str:
+        # When cross-building the user needs to pass 'qt_host_path' which is transformed to
+        # QT_HOST_PATH later on. Resolve the exact path.
+        qt_host_path = self.options.get_safe("qt_host_path")
+        if qt_host_path is None:
+            raise QtConanError("Expected 'qt_host_path' option in cross-build context")
+        return str(Path(os.path.expandvars(str(qt_host_path))).expanduser().resolve(strict=True))
+
     def configure(self):
         if self.settings.compiler == "gcc" and tools.Version(self.settings.compiler.version) < "8":
             raise ConanInvalidConfiguration("Qt6 does not support GCC before 8")
@@ -214,6 +222,14 @@ class QtBase(ConanFile):
             else:
                 raise QtConanError("Unknown build_type: {0}".format(self.settings.build_type))
 
+        if tools.cross_building(conanfile=self):
+            # pass the QT_HOST_PATH as CMake argument so the user does not need to export it
+            cmake_args_qtbase = str(self.options.get_safe("cmake_args_qtbase", default=""))
+            formatted_cmake_args_qtbase = self._shared.append_cmake_arg(
+                cmake_args_qtbase, "QT_HOST_PATH", self._resolve_qt_host_path()
+            )
+            setattr(self.options, "cmake_args_qtbase", formatted_cmake_args_qtbase)
+
         if self.settings.os == "Android":
             if self.options.get_safe("android_sdk_version") == None:
                 cmake_args_qtbase = str(self.options.get_safe("cmake_args_qtbase"))
@@ -241,13 +257,7 @@ class QtBase(ConanFile):
     def package_info(self):
         self._shared.package_info(self)
         if tools.cross_building(conanfile=self):
-            qt_host_path = self.options.get_safe("qt_host_path")
-            if qt_host_path is None:
-                raise QtConanError("Unable to cross-compile, 'qt_host_path' option missing?")
-            resolved_qt_host_path = str(
-                Path(os.path.expandvars(str(qt_host_path))).expanduser().resolve(strict=True)
-            )
-            self.env_info.QT_HOST_PATH.append(resolved_qt_host_path)
+            self.env_info.QT_HOST_PATH.append(self._resolve_qt_host_path())
 
     def package_id(self):
         # https://docs.conan.io/en/latest/creating_packages/define_abi_compatibility.html
