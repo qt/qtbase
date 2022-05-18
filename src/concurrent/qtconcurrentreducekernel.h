@@ -5,7 +5,6 @@
 #define QTCONCURRENT_REDUCEKERNEL_H
 
 #include <QtConcurrent/qtconcurrent_global.h>
-#include <QtConcurrent/qtconcurrentfunctionwrappers.h>
 
 #if !defined(QT_NO_CONCURRENT) || defined(Q_CLANG_QDOC)
 
@@ -20,6 +19,17 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace QtPrivate {
+
+template<typename Sequence>
+struct SequenceHolder
+{
+    SequenceHolder(const Sequence &s) : sequence(s) { }
+    SequenceHolder(Sequence &&s) : sequence(std::move(s)) { }
+    Sequence sequence;
+};
+
+}
 
 namespace QtConcurrent {
 
