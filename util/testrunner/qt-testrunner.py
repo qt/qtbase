@@ -83,7 +83,9 @@ NO_RERUN_FUNCTIONS = {
 # not try to append "-o" to their command-line or re-run failed testcases.
 # Only add tests here if absolutely necessary!
 NON_XML_GENERATING_TESTS = {
-    "tst_selftests",    # qtestlib's selftests are using an external test framework (Catch) that does not support -o argument
+    "tst_selftests",                # qtestlib's selftests are using an external test framework (Catch) that does not support -o argument
+    "tst_QDoc",                     # Some of QDoc's tests are using an external test framework (Catch) that does not support -o argument
+    "tst_QDoc_Catch_Generators",    # Some of QDoc's tests are using an external test framework (Catch) that does not support -o argument
 }
 
 
