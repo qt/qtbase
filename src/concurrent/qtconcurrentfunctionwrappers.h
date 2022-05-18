@@ -41,6 +41,7 @@
 #define QTCONCURRENT_FUNCTIONWRAPPERS_H
 
 #include <QtConcurrent/qtconcurrentcompilertest.h>
+#include <QtConcurrent/qtconcurrentreducekernel.h>
 #include <QtCore/QStringList>
 
 #include <tuple>
@@ -143,6 +144,11 @@ struct ReduceResultType<T(C::*)(U) noexcept>
 };
 #endif
 
+template <class InitialValueType, class ResultType>
+inline constexpr bool isInitialValueCompatible_v = std::conjunction_v<
+        std::is_convertible<InitialValueType, ResultType>,
+        std::negation<std::is_same<std::decay_t<InitialValueType>, QtConcurrent::ReduceOption>>>;
+
 // -- MapSequenceResultType
 
 template <class InputSequence, class MapFunctor>
@@ -169,14 +175,6 @@ struct MapSequenceResultType<InputSequence<T...>, MapFunctor>
 };
 
 #endif // QT_NO_TEMPLATE_TEMPLATE_PARAMETER
-
-template<typename Sequence>
-struct SequenceHolder
-{
-    SequenceHolder(const Sequence &s) : sequence(s) { }
-    SequenceHolder(Sequence &&s) : sequence(std::move(s)) { }
-    Sequence sequence;
-};
 
 } // namespace QtPrivate.
 

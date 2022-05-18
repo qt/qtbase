@@ -54,6 +54,7 @@ private slots:
     void mappedReducedInitialValueThreadPool();
     void mappedReducedInitialValueWithMoveOnlyCallable();
     void mappedReducedDifferentTypeInitialValue();
+    void mappedReduceOptionConvertableToResultType();
     void assignResult();
     void functionOverloads();
     void noExceptFunctionOverloads();
@@ -1519,6 +1520,51 @@ void tst_QtConcurrentMap::mappedReducedDifferentTypeInitialValue()
     CHECK_FAIL("lambda-function");
     testMappedReducedInitialValue(numberList, sumOfSquares, lambdaSquare, lambdaSumReduce, intInitial);
     CHECK_FAIL("lambda-lambda");
+}
+
+void tst_QtConcurrentMap::mappedReduceOptionConvertableToResultType()
+{
+    const QList<int> intList { 1, 2, 3 };
+    const int sum = 12;
+    QThreadPool p;
+    ReduceOption ro = OrderedReduce;
+
+    // With container
+    QCOMPARE(QtConcurrent::mappedReduced(intList, multiplyBy2, intSumReduce, ro).result(), sum);
+    QCOMPARE(QtConcurrent::blockingMappedReduced(intList, multiplyBy2, intSumReduce, ro), sum);
+
+    // With iterators
+    QCOMPARE(QtConcurrent::mappedReduced(intList.begin(), intList.end(), multiplyBy2, intSumReduce,
+                                         ro).result(), sum);
+    QCOMPARE(QtConcurrent::blockingMappedReduced(intList.begin(), intList.end(), multiplyBy2,
+                                                 intSumReduce, ro), sum);
+
+    // With custom QThreadPool;
+    QCOMPARE(QtConcurrent::mappedReduced(&p, intList, multiplyBy2, intSumReduce, ro).result(), sum);
+    QCOMPARE(QtConcurrent::blockingMappedReduced(&p, intList, multiplyBy2, intSumReduce, ro), sum);
+    QCOMPARE(QtConcurrent::mappedReduced(&p, intList.begin(), intList.end(), multiplyBy2,
+                                         intSumReduce, ro).result(), sum);
+    QCOMPARE(QtConcurrent::blockingMappedReduced(&p, intList.begin(), intList.end(), multiplyBy2,
+                                                 intSumReduce, ro), sum);
+
+    // The same as above, but specify the result type explicitly (this invokes different overloads)
+    QCOMPARE(QtConcurrent::mappedReduced<int>(intList, multiplyBy2, intSumReduce, ro).result(),
+             sum);
+    QCOMPARE(QtConcurrent::blockingMappedReduced<int>(intList, multiplyBy2, intSumReduce, ro), sum);
+
+    QCOMPARE(QtConcurrent::mappedReduced<int>(intList.begin(), intList.end(), multiplyBy2,
+                                              intSumReduce, ro).result(), sum);
+    QCOMPARE(QtConcurrent::blockingMappedReduced<int>(intList.begin(), intList.end(), multiplyBy2,
+                                                      intSumReduce, ro), sum);
+
+    QCOMPARE(QtConcurrent::mappedReduced<int>(&p, intList, multiplyBy2, intSumReduce, ro).result(),
+             sum);
+    QCOMPARE(QtConcurrent::blockingMappedReduced<int>(&p, intList, multiplyBy2, intSumReduce, ro),
+             sum);
+    QCOMPARE(QtConcurrent::mappedReduced<int>(&p, intList.begin(), intList.end(), multiplyBy2,
+                                              intSumReduce, ro).result(), sum);
+    QCOMPARE(QtConcurrent::blockingMappedReduced<int>(&p, intList.begin(), intList.end(),
+                                                      multiplyBy2, intSumReduce, ro), sum);
 }
 
 int sleeper(int val)

@@ -51,6 +51,7 @@ private slots:
     void filteredReducedInitialValueThreadPool();
     void filteredReducedInitialValueWithMoveOnlyCallables();
     void filteredReducedDifferentTypeInitialValue();
+    void filteredReduceOptionConvertableToResultType();
     void resultAt();
     void incrementalResults();
     void noDetach();
@@ -1254,6 +1255,56 @@ void tst_QtConcurrentFilter::filteredReducedDifferentTypeInitialValue()
     CHECK_FAIL("lambda-function");
     testFilteredReducedInitialValue(numberList, sum, lambdaIsEven, lambdaSumReduce, initial);
     CHECK_FAIL("lambda-lambda");
+}
+
+void tst_QtConcurrentFilter::filteredReduceOptionConvertableToResultType()
+{
+    const QList<int> intList { 1, 2, 3 };
+    const int sum = 4;
+    QThreadPool p;
+    ReduceOption ro = OrderedReduce;
+
+    // With container
+    QCOMPARE(QtConcurrent::filteredReduced(intList, keepOddIntegers, intSumReduce, ro).result(),
+             sum);
+    QCOMPARE(QtConcurrent::blockingFilteredReduced(intList, keepOddIntegers, intSumReduce, ro),
+             sum);
+
+    // With iterators
+    QCOMPARE(QtConcurrent::filteredReduced(intList.begin(), intList.end(), keepOddIntegers,
+                                           intSumReduce, ro).result(), sum);
+    QCOMPARE(QtConcurrent::blockingFilteredReduced(intList.begin(), intList.end(), keepOddIntegers,
+                                                   intSumReduce, ro), sum);
+
+    // With custom QThreadPool;
+    QCOMPARE(QtConcurrent::filteredReduced(&p, intList, keepOddIntegers, intSumReduce, ro).result(),
+             sum);
+    QCOMPARE(QtConcurrent::blockingFilteredReduced(&p, intList, keepOddIntegers, intSumReduce, ro),
+             sum);
+    QCOMPARE(QtConcurrent::filteredReduced(&p, intList.begin(), intList.end(), keepOddIntegers,
+                                           intSumReduce, ro).result(), sum);
+    QCOMPARE(QtConcurrent::blockingFilteredReduced(&p, intList.begin(), intList.end(),
+                                                   keepOddIntegers, intSumReduce, ro), sum);
+
+    // The same as above, but specify the result type explicitly (this invokes different overloads)
+    QCOMPARE(QtConcurrent::filteredReduced<int>(intList, keepOddIntegers, intSumReduce,
+                                                ro).result(), sum);
+    QCOMPARE(QtConcurrent::blockingFilteredReduced<int>(intList, keepOddIntegers, intSumReduce, ro),
+             sum);
+
+    QCOMPARE(QtConcurrent::filteredReduced<int>(intList.begin(), intList.end(), keepOddIntegers,
+                                                intSumReduce, ro).result(), sum);
+    QCOMPARE(QtConcurrent::blockingFilteredReduced<int>(intList.begin(), intList.end(),
+                                                        keepOddIntegers, intSumReduce, ro), sum);
+
+    QCOMPARE(QtConcurrent::filteredReduced<int>(&p, intList, keepOddIntegers, intSumReduce,
+                                                ro).result(), sum);
+    QCOMPARE(QtConcurrent::blockingFilteredReduced<int>(&p, intList, keepOddIntegers, intSumReduce,
+                                                        ro), sum);
+    QCOMPARE(QtConcurrent::filteredReduced<int>(&p, intList.begin(), intList.end(), keepOddIntegers,
+                                                intSumReduce, ro).result(),sum);
+    QCOMPARE(QtConcurrent::blockingFilteredReduced<int>(&p, intList.begin(), intList.end(),
+                                                        keepOddIntegers, intSumReduce, ro), sum);
 }
 
 bool filterfn(int i)
