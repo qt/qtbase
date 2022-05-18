@@ -32,13 +32,26 @@ function(qt_internal_add_linker_version_script target)
 
         qt_ensure_perl()
 
-        add_custom_command(TARGET "${target}" PRE_LINK
-            COMMAND "${HOST_PERL}" "${QT_MKSPECS_DIR}/features/data/unix/findclasslist.pl" < "${infile}" > "${outfile}"
-            BYPRODUCTS "${outfile}" DEPENDS "${infile}"
+        set(generator_command "${HOST_PERL}"
+            "${QT_MKSPECS_DIR}/features/data/unix/findclasslist.pl"
+            "<" "${infile}" ">" "${outfile}"
+        )
+        set(generator_dependencies
+            "${infile}"
+            "${QT_MKSPECS_DIR}/features/data/unix/findclasslist.pl"
+        )
+
+        add_custom_command(
+            OUTPUT "${outfile}"
+            COMMAND ${generator_command}
+            DEPENDS ${generator_dependencies}
             WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-            COMMENT "Generating version linker script"
-            VERBATIM)
-        target_link_options("${target}" PRIVATE "-Wl,--version-script,${outfile}")
+            COMMENT "Generating version linker script for target ${target}"
+            VERBATIM
+        )
+        add_custom_target(${target}_version_script DEPENDS ${outfile})
+        add_dependencies(${target} ${target}_version_script)
+        target_link_options(${target} PRIVATE "-Wl,--version-script,${outfile}")
     endif()
 endfunction()
 
