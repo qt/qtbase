@@ -1,4 +1,4 @@
-// Copyright (C) 2016 The Qt Company Ltd.
+// Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 #include <QtCore/qtextboundaryfinder.h>
 #include <QtCore/qvarlengtharray.h>
@@ -87,11 +87,11 @@ static void init(QTextBoundaryFinder::BoundaryType type, QStringView str, QCharA
                            Such a break opportunity might also be an item boundary
                            (either StartOfItem, EndOfItem, or combination of both),
                            a mandatory line break, or a soft hyphen.
-  \value StartOfItem  Since 5.0. The boundary finder is at the start of
+  \value [since 5.0] StartOfItem The boundary finder is at the start of
                       a grapheme, a word, a sentence, or a line.
-  \value EndOfItem  Since 5.0. The boundary finder is at the end of
+  \value [since 5.0] EndOfItem The boundary finder is at the end of
                     a grapheme, a word, a sentence, or a line.
-  \value MandatoryBreak  Since 5.0. The boundary finder is at the end of line
+  \value [since 5.0] MandatoryBreak The boundary finder is at the end of line
                          (can occur for a Line boundary type only).
   \value SoftHyphen  The boundary finder is at the soft hyphen
                      (can occur for a Line boundary type only).

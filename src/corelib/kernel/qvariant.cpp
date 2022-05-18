@@ -1,4 +1,4 @@
-// Copyright (C) 2021 The Qt Company Ltd.
+// Copyright (C) 2022 The Qt Company Ltd.
 // Copyright (C) 2021 Intel Corporation.
 // Copyright (C) 2015 Olivier Goffart <ogoffart@woboq.com>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
@@ -366,7 +366,7 @@ static void customClear(QVariant::Private *d)
     \value EasingCurve a QEasingCurve
     \value Uuid a QUuid
     \value ModelIndex a QModelIndex
-    \value PersistentModelIndex a QPersistentModelIndex (since 5.5)
+    \value [since 5.5] PersistentModelIndex a QPersistentModelIndex
     \value Font  a QFont
     \value Hash a QVariantHash
     \value Icon  a QIcon

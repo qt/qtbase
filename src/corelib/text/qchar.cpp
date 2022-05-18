@@ -1,4 +1,4 @@
-// Copyright (C) 2021 The Qt Company Ltd.
+// Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 // Don't define it while compiling this module, or USERS of Qt will
@@ -154,16 +154,16 @@ QT_BEGIN_NAMESPACE
     \value Unicode_6_0  Version 6.0
     \value Unicode_6_1  Version 6.1
     \value Unicode_6_2  Version 6.2
-    \value Unicode_6_3  Version 6.3  Since Qt 5.3
-    \value Unicode_7_0  Version 7.0  Since Qt 5.5
-    \value Unicode_8_0  Version 8.0  Since Qt 5.6
-    \value Unicode_9_0  Version 9.0  Since Qt 5.11
-    \value Unicode_10_0 Version 10.0 Since Qt 5.11
-    \value Unicode_11_0 Version 11.0 Since Qt 5.15
-    \value Unicode_12_0 Version 12.0 Since Qt 5.15
-    \value Unicode_12_1 Version 12.1 Since Qt 5.15
-    \value Unicode_13_0 Version 13.0 Since Qt 5.15
-    \value Unicode_14_0 Version 14.0 Since Qt 6.3
+    \value [since 5.3] Unicode_6_3  Version 6.3
+    \value [since 5.5] Unicode_7_0  Version 7.0
+    \value [since 5.6] Unicode_8_0  Version 8.0
+    \value [since 5.11] Unicode_9_0  Version 9.0
+    \value [since 5.11] Unicode_10_0 Version 10.0
+    \value [since 5.15] Unicode_11_0 Version 11.0
+    \value [since 5.15] Unicode_12_0 Version 12.0
+    \value [since 5.15] Unicode_12_1 Version 12.1
+    \value [since 5.15] Unicode_13_0 Version 13.0
+    \value [since 6.3] Unicode_14_0 Version 14.0
     \value Unicode_Unassigned  The value is not assigned to any character
                                in version 8.0 of Unicode.
 
@@ -263,18 +263,18 @@ QT_BEGIN_NAMESPACE
     \value Script_Common     For characters that may be used with multiple scripts
                              and that do not inherit their script from the preceding characters.
 
-    \value Script_Adlam Since Qt 5.11
-    \value Script_Ahom Since Qt 5.6
-    \value Script_AnatolianHieroglyphs Since Qt 5.6
+    \value [since 5.11] Script_Adlam
+    \value [since 5.6] Script_Ahom
+    \value [since 5.6] Script_AnatolianHieroglyphs
     \value Script_Arabic
     \value Script_Armenian
     \value Script_Avestan
     \value Script_Balinese
     \value Script_Bamum
-    \value Script_BassaVah Since Qt 5.5
+    \value [since 5.5] Script_BassaVah
     \value Script_Batak
     \value Script_Bengali
-    \value Script_Bhaiksuki Since Qt 5.11
+    \value [since 5.11] Script_Bhaiksuki
     \value Script_Bopomofo
     \value Script_Brahmi
     \value Script_Braille
@@ -282,38 +282,38 @@ QT_BEGIN_NAMESPACE
     \value Script_Buhid
     \value Script_CanadianAboriginal
     \value Script_Carian
-    \value Script_CaucasianAlbanian Since Qt 5.5
+    \value [since 5.5] Script_CaucasianAlbanian
     \value Script_Chakma
     \value Script_Cham
     \value Script_Cherokee
-    \value Script_Chorasmian Since Qt 5.15
+    \value [since 5.15] Script_Chorasmian
     \value Script_Coptic
     \value Script_Cuneiform
     \value Script_Cypriot
-    \value Script_CyproMinoan Since Qt 6.3
+    \value [since 6.3] Script_CyproMinoan
     \value Script_Cyrillic
     \value Script_Deseret
     \value Script_Devanagari
-    \value Script_DivesAkuru Since Qt 5.15
-    \value Script_Dogra Since Qt 5.15
-    \value Script_Duployan Since Qt 5.5
+    \value [since 5.15] Script_DivesAkuru
+    \value [since 5.15] Script_Dogra
+    \value [since 5.5] Script_Duployan
     \value Script_EgyptianHieroglyphs
-    \value Script_Elbasan Since Qt 5.5
-    \value Script_Elymaic Since Qt 5.15
+    \value [since 5.5] Script_Elbasan
+    \value [since 5.15] Script_Elymaic
     \value Script_Ethiopic
     \value Script_Georgian
     \value Script_Glagolitic
     \value Script_Gothic
-    \value Script_Grantha Since Qt 5.5
+    \value [since 5.5] Script_Grantha
     \value Script_Greek
     \value Script_Gujarati
-    \value Script_GunjalaGondi Since Qt 5.15
+    \value [since 5.15] Script_GunjalaGondi
     \value Script_Gurmukhi
     \value Script_Han
     \value Script_Hangul
-    \value Script_HanifiRohingya Since Qt 5.15
+    \value [since 5.15] Script_HanifiRohingya
     \value Script_Hanunoo
-    \value Script_Hatran Since Qt 5.6
+    \value [since 5.6] Script_Hatran
     \value Script_Hebrew
     \value Script_Hiragana
     \value Script_ImperialAramaic
@@ -325,76 +325,76 @@ QT_BEGIN_NAMESPACE
     \value Script_Katakana
     \value Script_KayahLi
     \value Script_Kharoshthi
-    \value Script_KhitanSmallScript Since Qt 5.15
+    \value [since 5.15] Script_KhitanSmallScript
     \value Script_Khmer
-    \value Script_Khojki Since Qt 5.5
-    \value Script_Khudawadi Since Qt 5.5
+    \value [since 5.5] Script_Khojki
+    \value [since 5.5] Script_Khudawadi
     \value Script_Lao
     \value Script_Latin
     \value Script_Lepcha
     \value Script_Limbu
-    \value Script_LinearA Since Qt 5.5
+    \value [since 5.5] Script_LinearA
     \value Script_LinearB
     \value Script_Lisu
     \value Script_Lycian
     \value Script_Lydian
-    \value Script_Mahajani Since Qt 5.5
-    \value Script_Makasar Since Qt 5.15
+    \value [since 5.5] Script_Mahajani
+    \value [since 5.15] Script_Makasar
     \value Script_Malayalam
     \value Script_Mandaic
-    \value Script_Manichaean Since Qt 5.5
-    \value Script_Marchen Since Qt 5.11
-    \value Script_MasaramGondi Since Qt 5.11
-    \value Script_Medefaidrin Since Qt 5.15
+    \value [since 5.5] Script_Manichaean
+    \value [since 5.11] Script_Marchen
+    \value [since 5.11] Script_MasaramGondi
+    \value [since 5.15] Script_Medefaidrin
     \value Script_MeeteiMayek
-    \value Script_MendeKikakui Since Qt 5.5
+    \value [since 5.5] Script_MendeKikakui
     \value Script_MeroiticCursive
     \value Script_MeroiticHieroglyphs
     \value Script_Miao
-    \value Script_Modi Since Qt 5.5
+    \value [since 5.5] Script_Modi
     \value Script_Mongolian
-    \value Script_Mro Since Qt 5.5
-    \value Script_Multani Since Qt 5.6
+    \value [since 5.5] Script_Mro
+    \value [since 5.6] Script_Multani
     \value Script_Myanmar
-    \value Script_Nabataean Since Qt 5.5
-    \value Script_Nandinagari Since Qt 5.15
-    \value Script_Newa Since Qt 5.11
+    \value [since 5.5] Script_Nabataean
+    \value [since 5.15] Script_Nandinagari
+    \value [since 5.11] Script_Newa
     \value Script_NewTaiLue
     \value Script_Nko
-    \value Script_Nushu Since Qt 5.11
-    \value Script_NyiakengPuachueHmong Since Qt 5.15
+    \value [since 5.11] Script_Nushu
+    \value [since 5.15] Script_NyiakengPuachueHmong
     \value Script_Ogham
     \value Script_OlChiki
-    \value Script_OldHungarian Since Qt 5.6
+    \value [since 5.6] Script_OldHungarian
     \value Script_OldItalic
-    \value Script_OldNorthArabian Since Qt 5.5
-    \value Script_OldPermic Since Qt 5.5
+    \value [since 5.5] Script_OldNorthArabian
+    \value [since 5.5] Script_OldPermic
     \value Script_OldPersian
-    \value Script_OldSogdian Since Qt 5.15
+    \value [since 5.15] Script_OldSogdian
     \value Script_OldSouthArabian
     \value Script_OldTurkic
-    \value Script_OldUyghur Since Qt 6.3
+    \value [since 6.3] Script_OldUyghur
     \value Script_Oriya
-    \value Script_Osage Since Qt 5.11
+    \value [since 5.11] Script_Osage
     \value Script_Osmanya
-    \value Script_PahawhHmong Since Qt 5.5
-    \value Script_Palmyrene Since Qt 5.5
-    \value Script_PauCinHau Since Qt 5.5
+    \value [since 5.5] Script_PahawhHmong
+    \value [since 5.5] Script_Palmyrene
+    \value [since 5.5] Script_PauCinHau
     \value Script_PhagsPa
     \value Script_Phoenician
-    \value Script_PsalterPahlavi Since Qt 5.5
+    \value [since 5.5] Script_PsalterPahlavi
     \value Script_Rejang
     \value Script_Runic
     \value Script_Samaritan
     \value Script_Saurashtra
     \value Script_Sharada
     \value Script_Shavian
-    \value Script_Siddham Since Qt 5.5
-    \value Script_SignWriting Since Qt 5.6
+    \value [since 5.5] Script_Siddham
+    \value [since 5.6] Script_SignWriting
     \value Script_Sinhala
-    \value Script_Sogdian Since Qt 5.15
+    \value [since 5.15] Script_Sogdian
     \value Script_SoraSompeng
-    \value Script_Soyombo Since Qt 5.11
+    \value [since 5.11] Script_Soyombo
     \value Script_Sundanese
     \value Script_SylotiNagri
     \value Script_Syriac
@@ -405,23 +405,23 @@ QT_BEGIN_NAMESPACE
     \value Script_TaiViet
     \value Script_Takri
     \value Script_Tamil
-    \value Script_Tangut Since Qt 5.11
-    \value Script_Tangsa Since Qt 6.3
+    \value [since 5.11] Script_Tangut
+    \value [since 6.3] Script_Tangsa
     \value Script_Telugu
     \value Script_Thaana
     \value Script_Thai
     \value Script_Tibetan
     \value Script_Tifinagh
-    \value Script_Tirhuta Since Qt 5.5
-    \value Script_Toto Since Qt 6.3
+    \value [since 5.5] Script_Tirhuta
+    \value [since 6.3] Script_Toto
     \value Script_Ugaritic
     \value Script_Vai
-    \value Script_Vithkuqi Since Qt 6.3
-    \value Script_Wancho Since Qt 5.15
-    \value Script_WarangCiti Since Qt 5.5
-    \value Script_Yezidi Since Qt 5.15
+    \value [since 6.3] Script_Vithkuqi
+    \value [since 5.15] Script_Wancho
+    \value [since 5.5] Script_WarangCiti
+    \value [since 5.15] Script_Yezidi
     \value Script_Yi
-    \value Script_ZanabazarSquare Since Qt 5.11
+    \value [since 5.11] Script_ZanabazarSquare
 
     \omitvalue ScriptCount
 
@@ -446,18 +446,18 @@ QT_BEGIN_NAMESPACE
     \value DirEN
     \value DirES
     \value DirET
-    \value DirFSI Since Qt 5.3
+    \value [since 5.3] DirFSI
     \value DirL
     \value DirLRE
-    \value DirLRI Since Qt 5.3
+    \value [since 5.3] DirLRI
     \value DirLRO
     \value DirNSM
     \value DirON
     \value DirPDF
-    \value DirPDI Since Qt 5.3
+    \value [since 5.3] DirPDI
     \value DirR
     \value DirRLE
-    \value DirRLI Since Qt 5.3
+    \value [since 5.3] DirRLI
     \value DirRLO
     \value DirS
     \value DirWS
@@ -563,7 +563,7 @@ QT_BEGIN_NAMESPACE
     \value ByteOrderSwapped
     \value ParagraphSeparator
     \value LineSeparator
-    \value VisualTabCharacter Used to represent a tabulation as a horizontal arrow. Since 6.2.
+    \value [since 6.2] VisualTabCharacter Used to represent a tabulation as a horizontal arrow.
     \value LastValidCodePoint
 */
 

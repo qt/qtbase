@@ -1,4 +1,4 @@
-// Copyright (C) 2020 The Qt Company Ltd.
+// Copyright (C) 2022 The Qt Company Ltd.
 // Copyright (C) 2016 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
@@ -163,7 +163,7 @@ QT_BEGIN_NAMESPACE
     \value PolishRequest                    The widget should be polished.
     \value QueryWhatsThis                   The widget should accept the event if it has "What's This?" help (QHelpEvent).
     \value Quit                             The application has exited.
-    \value ReadOnlyChange                   Widget's read-only state has changed (since Qt 5.4).
+    \value [since 5.4] ReadOnlyChange       Widget's read-only state has changed.
     \value RequestSoftwareInputPanel        A widget wants to open a software input panel (SIP).
     \value Resize                           Widget's size changed (QResizeEvent).
     \value ScrollPrepare                    The object needs to fill in its geometry information (QScrollPrepareEvent).
@@ -190,7 +190,7 @@ QT_BEGIN_NAMESPACE
     \omitvalue OkRequest
     \value TabletEnterProximity             Wacom tablet enter proximity event (QTabletEvent), sent to QApplication.
     \value TabletLeaveProximity             Wacom tablet leave proximity event (QTabletEvent), sent to QApplication.
-    \value TabletTrackingChange             The Wacom tablet tracking state has changed (since Qt 5.9).
+    \value [since 5.9] TabletTrackingChange The Wacom tablet tracking state has changed.
     \omitvalue ThemeChange
     \value ThreadChange                     The object is moved to another thread. This is the last event sent to this object in the previous thread. See QObject::moveToThread().
     \value Timer                            Regular timer events (QTimerEvent).

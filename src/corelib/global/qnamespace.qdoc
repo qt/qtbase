@@ -1,4 +1,4 @@
-// Copyright (C) 2021 The Qt Company Ltd.
+// Copyright (C) 2022 The Qt Company Ltd.
 // Copyright (C) 2020 Klaralvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
@@ -1283,7 +1283,7 @@
     to this top level window. This attribute has no effect on non-X11
     platforms.
 
-    \value WA_AlwaysStackOnTop Since Qt 5.4, this value forces QOpenGLWidget and
+    \value [since 5.4] WA_AlwaysStackOnTop Forces QOpenGLWidget and
     QQuickWidget to be drawn last, on top of other widgets. Ignored for other
     type of widgets. Setting this attribute breaks the stacking order, but
     allows having a semi-transparent OpenGL widget with other widgets visible
@@ -3090,8 +3090,8 @@
     the Qt::GestureStarted state and ending with a gesture in the
     Qt::GestureFinished or Qt::GestureCanceled states.
 
-    \value IgnoredGesturesPropagateToParent Since Qt 4.7, this flag allows you
-    to fine-tune gesture event propagation. By setting the flag when
+    \value [since 4.7] IgnoredGesturesPropagateToParent Allows fine-tuning of
+    gesture event propagation. By setting the flag when
     \l{QGraphicsObject::grabGesture()}{grabbing} a gesture all ignored partial
     gestures will propagate to their parent items.
 
