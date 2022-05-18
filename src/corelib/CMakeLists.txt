@@ -1230,6 +1230,12 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_permissions AND ANDROID
         kernel/qpermissions_android.cpp
 )
 
+qt_internal_extend_target(Core CONDITION QT_FEATURE_permissions AND WASM
+    SOURCES
+        kernel/qpermissions_wasm.cpp
+)
+
+
 #### Keys ignored in scope 171:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_mimetype:
 # MIME_DATABASE = "mimetypes/mime/packages/freedesktop.org.xml"
 # OTHER_FILES = "$$MIME_DATABASE"

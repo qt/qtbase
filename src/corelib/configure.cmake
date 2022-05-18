@@ -951,7 +951,7 @@ qt_feature("permissions" PUBLIC
     SECTION "Utilities"
     LABEL "Application permissions"
     PURPOSE "Provides support for requesting user permission to access restricted data or APIs"
-    CONDITION APPLE OR ANDROID
+    CONDITION APPLE OR ANDROID OR WASM
 )
 qt_configure_add_summary_section(NAME "Qt Core")
 qt_configure_add_summary_entry(ARGS "backtrace")
