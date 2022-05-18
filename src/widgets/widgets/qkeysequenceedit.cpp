@@ -283,9 +283,8 @@ void QKeySequenceEdit::keyPressEvent(QKeyEvent *e)
     d->key[d->keyNum] = QKeyCombination::fromCombined(nextKey);
     d->keyNum++;
 
-    QKeySequence key(d->key[0], d->key[1], d->key[2], d->key[3]);
-    d->keySequence = key;
-    QString text = key.toString(QKeySequence::NativeText);
+    d->rebuildKeySequence();
+    QString text = d->keySequence.toString(QKeySequence::NativeText);
     if (d->keyNum < QKeySequencePrivate::MaxKeyCount) {
         //: This text is an "unfinished" shortcut, expands like "Ctrl+A, ..."
         text = tr("%1, ...").arg(text);

@@ -36,6 +36,8 @@ public:
     int translateModifiers(Qt::KeyboardModifiers state, const QString &text);
     void resetState();
     void finishEditing();
+    void rebuildKeySequence()
+    { keySequence = QKeySequence(key[0], key[1], key[2], key[3]); }
 
     QLineEdit *lineEdit;
     QKeySequence keySequence;
