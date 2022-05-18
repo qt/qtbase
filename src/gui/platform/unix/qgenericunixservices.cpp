@@ -5,6 +5,9 @@
 #include <QtGui/private/qtguiglobal_p.h>
 #include "qguiapplication.h"
 #include "qwindow.h"
+#include <QtGui/qpa/qplatformwindow_p.h>
+#include <QtGui/qpa/qplatformwindow.h>
+#include <QtGui/qpa/qplatformnativeinterface.h>
 
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
@@ -128,8 +131,13 @@ static inline bool detectWebBrowser(const QByteArray &desktop,
     return false;
 }
 
-static inline bool launch(const QString &launcher, const QUrl &url)
+static inline bool launch(const QString &launcher, const QUrl &url,
+                          const QString &xdgActivationToken)
 {
+    if (!xdgActivationToken.isEmpty()) {
+        qputenv("XDG_ACTIVATION_TOKEN", xdgActivationToken.toUtf8());
+    }
+
     const QString command = launcher + u' ' + QLatin1StringView(url.toEncoded());
     if (debug)
         qDebug("Launching %s", qPrintable(command));
@@ -145,6 +153,9 @@ static inline bool launch(const QString &launcher, const QUrl &url)
 #endif
     if (!ok)
         qWarning("Launch failed (%s)", qPrintable(command));
+
+    qunsetenv("XDG_ACTIVATION_TOKEN");
+
     return ok;
 }
 
@@ -154,7 +165,8 @@ static inline bool checkNeedPortalSupport()
     return !QStandardPaths::locate(QStandardPaths::RuntimeLocation, "flatpak-info"_L1).isEmpty() || qEnvironmentVariableIsSet("SNAP");
 }
 
-static inline QDBusMessage xdgDesktopPortalOpenFile(const QUrl &url, const QString &parentWindow)
+static inline QDBusMessage xdgDesktopPortalOpenFile(const QUrl &url, const QString &parentWindow,
+                                                    const QString &xdgActivationToken)
 {
     // DBus signature:
     // OpenFile (IN   s      parent_window,
@@ -176,7 +188,11 @@ static inline QDBusMessage xdgDesktopPortalOpenFile(const QUrl &url, const QStri
         QDBusUnixFileDescriptor descriptor;
         descriptor.giveFileDescriptor(fd);
 
-        const QVariantMap options = {{"writable"_L1, true}};
+        QVariantMap options = { { "writable"_L1, true } };
+
+        if (!xdgActivationToken.isEmpty()) {
+            options.insert("activation_token"_L1, xdgActivationToken);
+        }
 
         message << parentWindow << QVariant::fromValue(descriptor) << options;
 
@@ -185,12 +201,14 @@ static inline QDBusMessage xdgDesktopPortalOpenFile(const QUrl &url, const QStri
 #else
     Q_UNUSED(url);
     Q_UNUSED(parentWindow)
+    Q_UNUSED(xdgActivationToken)
 #endif
 
     return QDBusMessage::createError(QDBusError::InternalError, qt_error_string());
 }
 
-static inline QDBusMessage xdgDesktopPortalOpenUrl(const QUrl &url, const QString &parentWindow)
+static inline QDBusMessage xdgDesktopPortalOpenUrl(const QUrl &url, const QString &parentWindow,
+                                                   const QString &xdgActivationToken)
 {
     // DBus signature:
     // OpenURI (IN   s      parent_window,
@@ -208,12 +226,19 @@ static inline QDBusMessage xdgDesktopPortalOpenUrl(const QUrl &url, const QStrin
                                                           "org.freedesktop.portal.OpenURI"_L1,
                                                           "OpenURI"_L1);
     // FIXME parent_window_id and handle writable option
-    message << parentWindow << url.toString() << QVariantMap();
+    QVariantMap options;
+
+    if (!xdgActivationToken.isEmpty()) {
+        options.insert("activation_token"_L1, xdgActivationToken);
+    }
+
+    message << parentWindow << url.toString() << options;
 
     return QDBusConnection::sessionBus().call(message);
 }
 
-static inline QDBusMessage xdgDesktopPortalSendEmail(const QUrl &url, const QString &parentWindow)
+static inline QDBusMessage xdgDesktopPortalSendEmail(const QUrl &url, const QString &parentWindow,
+                                                     const QString &xdgActivationToken)
 {
     // DBus signature:
     // ComposeEmail (IN   s      parent_window,
@@ -247,6 +272,10 @@ static inline QDBusMessage xdgDesktopPortalSendEmail(const QUrl &url, const QStr
 
     options.insert("attachment_fds"_L1, QVariant::fromValue(attachments));
 #endif
+
+    if (!xdgActivationToken.isEmpty()) {
+        options.insert("activation_token"_L1, xdgActivationToken);
+    }
 
     QDBusMessage message = QDBusMessage::createMethodCall("org.freedesktop.portal.Desktop"_L1,
                                                           "/org/freedesktop/portal/desktop"_L1,
@@ -392,60 +421,111 @@ QByteArray QGenericUnixServices::desktopEnvironment() const
     return result;
 }
 
+template<typename F>
+void runWithXdgActivationToken(F &&functionToCall)
+{
+    QWindow *window = qGuiApp->focusWindow();
+
+    if (!window) {
+        return;
+    }
+
+    auto waylandApp = dynamic_cast<QNativeInterface::QWaylandApplication *>(
+            qGuiApp->platformNativeInterface());
+    auto waylandWindow =
+            dynamic_cast<QNativeInterface::Private::QWaylandWindow *>(window->handle());
+
+    if (!waylandWindow || !waylandApp) {
+        return;
+    }
+
+    waylandWindow->requestXdgActivationToken(waylandApp->lastInputSerial());
+    QObject::connect(waylandWindow,
+                     &QNativeInterface::Private::QWaylandWindow::xdgActivationTokenCreated,
+                     waylandWindow, functionToCall, Qt::SingleShotConnection);
+}
+
 bool QGenericUnixServices::openUrl(const QUrl &url)
 {
-    if (url.scheme() == "mailto"_L1) {
-#if QT_CONFIG(dbus)
+    auto openUrlInternal = [this](const QUrl &url, const QString &xdgActivationToken) {
+        if (url.scheme() == "mailto"_L1) {
+#  if QT_CONFIG(dbus)
+            if (checkNeedPortalSupport()) {
+                const QString parentWindow = QGuiApplication::focusWindow()
+                        ? portalWindowIdentifier(QGuiApplication::focusWindow())
+                        : QString();
+                QDBusError error = xdgDesktopPortalSendEmail(url, parentWindow, xdgActivationToken);
+                if (!error.isValid())
+                    return true;
+
+                // service not running, fall back
+            }
+#  endif
+            return openDocument(url);
+        }
+
+#  if QT_CONFIG(dbus)
         if (checkNeedPortalSupport()) {
             const QString parentWindow = QGuiApplication::focusWindow()
                     ? portalWindowIdentifier(QGuiApplication::focusWindow())
                     : QString();
-            QDBusError error = xdgDesktopPortalSendEmail(url, parentWindow);
+            QDBusError error = xdgDesktopPortalOpenUrl(url, parentWindow, xdgActivationToken);
             if (!error.isValid())
                 return true;
-
-            // service not running, fall back
         }
-#endif
-        return openDocument(url);
-    }
+#  endif
 
-#if QT_CONFIG(dbus)
-    if (checkNeedPortalSupport()) {
-        const QString parentWindow = QGuiApplication::focusWindow()
-                ? portalWindowIdentifier(QGuiApplication::focusWindow())
-                : QString();
-        QDBusError error = xdgDesktopPortalOpenUrl(url, parentWindow);
-        if (!error.isValid())
-            return true;
-    }
-#endif
+        if (m_webBrowser.isEmpty()
+            && !detectWebBrowser(desktopEnvironment(), true, &m_webBrowser)) {
+            qWarning("Unable to detect a web browser to launch '%s'", qPrintable(url.toString()));
+            return false;
+        }
+        return launch(m_webBrowser, url, xdgActivationToken);
+    };
 
-    if (m_webBrowser.isEmpty() && !detectWebBrowser(desktopEnvironment(), true, &m_webBrowser)) {
-        qWarning("Unable to detect a web browser to launch '%s'", qPrintable(url.toString()));
-        return false;
+    if (QGuiApplication::platformName().startsWith("wayland"_L1)) {
+        runWithXdgActivationToken(
+                [openUrlInternal, url](const QString &token) { openUrlInternal(url, token); });
+
+        return true;
+
+    } else {
+        return openUrlInternal(url, QString());
     }
-    return launch(m_webBrowser, url);
 }
 
 bool QGenericUnixServices::openDocument(const QUrl &url)
 {
-#if QT_CONFIG(dbus)
-    if (checkNeedPortalSupport()) {
-        const QString parentWindow = QGuiApplication::focusWindow()
-                ? portalWindowIdentifier(QGuiApplication::focusWindow())
-                : QString();
-        QDBusError error = xdgDesktopPortalOpenFile(url, parentWindow);
-        if (!error.isValid())
-            return true;
-    }
-#endif
+    auto openDocumentInternal = [this](const QUrl &url, const QString &xdgActivationToken) {
 
-    if (m_documentLauncher.isEmpty() && !detectWebBrowser(desktopEnvironment(), false, &m_documentLauncher)) {
-        qWarning("Unable to detect a launcher for '%s'", qPrintable(url.toString()));
-        return false;
+#  if QT_CONFIG(dbus)
+        if (checkNeedPortalSupport()) {
+            const QString parentWindow = QGuiApplication::focusWindow()
+                    ? portalWindowIdentifier(QGuiApplication::focusWindow())
+                    : QString();
+            QDBusError error = xdgDesktopPortalOpenFile(url, parentWindow, xdgActivationToken);
+            if (!error.isValid())
+                return true;
+        }
+#  endif
+
+        if (m_documentLauncher.isEmpty()
+            && !detectWebBrowser(desktopEnvironment(), false, &m_documentLauncher)) {
+            qWarning("Unable to detect a launcher for '%s'", qPrintable(url.toString()));
+            return false;
+        }
+        return launch(m_documentLauncher, url, xdgActivationToken);
+    };
+
+    if (QGuiApplication::platformName().startsWith("wayland"_L1)) {
+        runWithXdgActivationToken([openDocumentInternal, url](const QString &token) {
+            openDocumentInternal(url, token);
+        });
+
+        return true;
+    } else {
+        return openDocumentInternal(url, QString());
     }
-    return launch(m_documentLauncher, url);
 }
 
 #else
