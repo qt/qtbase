@@ -239,8 +239,8 @@ void QTextDocumentFragmentPrivate::insert(QTextCursor &_cursor) const
     static functions, fromPlainText() and fromHtml().
 
     The contents of a document fragment can be obtained as raw text
-    by using the toRawText() function, or it can be obtained as HTML
-    with toHtml().
+    by using the toRawText() function, as ASCII with toPlainText(),
+    as HTML with toHtml(), or as Markdown with toMarkdown().
 */
 
 /*!
@@ -337,8 +337,7 @@ bool QTextDocumentFragment::isEmpty() const
     If you need the precise contents of the document, use toRawText()
     instead.
 
-
-    \sa toHtml(), toRawText()
+    \sa toHtml(), toMarkdown(), toRawText()
 */
 QString QTextDocumentFragment::toPlainText() const
 {
@@ -353,7 +352,7 @@ QString QTextDocumentFragment::toPlainText() const
     formatting information).
 
     \since 6.4
-    \sa toHtml(), toPlainText()
+    \sa toHtml(), toMarkdown(), toPlainText()
 */
 QString QTextDocumentFragment::toRawText() const
 {
@@ -370,7 +369,7 @@ QString QTextDocumentFragment::toRawText() const
 
     Returns the contents of the document fragment as HTML.
 
-    \sa toPlainText(), QTextDocument::toHtml()
+    \sa toPlainText(), toMarkdown(), QTextDocument::toHtml()
 */
 QString QTextDocumentFragment::toHtml() const
 {
