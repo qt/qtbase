@@ -1945,7 +1945,8 @@ QString defaultLibexecDir()
 }
 
 bool goodToCopy(const Options *options, const QString &file, QStringList *unmetDependencies);
-bool checkQmlFileInRootPaths(const Options *options, const QString &absolutePath);
+bool checkCanImportFromRootPaths(const Options *options, const QString &absolutePath,
+                                 const QUrl &moduleUrl);
 
 bool scanImports(Options *options, QSet<QString> *usedDependencies)
 {
@@ -2086,7 +2087,9 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
             if (!absolutePath.endsWith(QLatin1Char('/')))
                 absolutePath += QLatin1Char('/');
 
-            if (checkQmlFileInRootPaths(options, absolutePath)) {
+            const QUrl url(object.value(QLatin1String("name")).toString());
+
+            if (checkCanImportFromRootPaths(options, info.absolutePath(), url)) {
                 if (options->verbose)
                     fprintf(stdout, "    -- Skipping because path is in QML root path.\n");
                 continue;
@@ -2178,10 +2181,12 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
     return true;
 }
 
-bool checkQmlFileInRootPaths(const Options *options, const QString &absolutePath)
+bool checkCanImportFromRootPaths(const Options *options, const QString &absolutePath,
+                                 const QUrl &moduleUrl)
 {
+    const QString pathFromUrl = QLatin1String("/") + moduleUrl.toString().replace(QLatin1Char('.'), QLatin1Char('/'));
     for (auto rootPath : options->rootPaths) {
-        if (absolutePath.startsWith(rootPath))
+        if ((rootPath + pathFromUrl) == absolutePath)
             return true;
     }
     return false;
