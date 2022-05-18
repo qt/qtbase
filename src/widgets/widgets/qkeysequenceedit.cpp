@@ -136,6 +136,9 @@ QKeySequenceEdit::~QKeySequenceEdit()
     \brief This property contains the currently chosen key sequence.
 
     The shortcut can be changed by the user or via setter function.
+
+    \note If the QKeySequence is longer than the maximumSequenceLength
+    property, the key sequence is truncated.
 */
 QKeySequence QKeySequenceEdit::keySequence() const
 {
@@ -169,6 +172,43 @@ bool QKeySequenceEdit::isClearButtonEnabled() const
     return d->lineEdit->isClearButtonEnabled();
 }
 
+/*!
+    \property QKeySequenceEdit::maximumSequenceLength
+    \brief The maximum sequence length.
+
+    The value is clamped to [1-4] inclusive, i.e. the maximum value of the
+    maximum sequence length is 4 driven by QKeySequence. The minimum value is
+    1, which can be useful for single sequence, like a typical shortcut.
+
+    The QKeySequence stored in QKeySequenceEdit is truncated if longer than the
+    value of this property.
+
+    \since 6.5
+*/
+qsizetype QKeySequenceEdit::maximumSequenceLength() const
+{
+    Q_D(const QKeySequenceEdit);
+    return d->maximumSequenceLength;
+}
+
+void QKeySequenceEdit::setMaximumSequenceLength(qsizetype count)
+{
+    Q_D(QKeySequenceEdit);
+
+    if (count < 1 || count > QKeySequencePrivate::MaxKeyCount) {
+        qWarning("QKeySequenceEdit: maximumSequenceLength %lld is out of range (1..%d)",
+                 qlonglong(count), QKeySequencePrivate::MaxKeyCount);
+        return;
+    }
+    d->maximumSequenceLength = int(count);
+    if (d->keyNum > count) {
+        for (qsizetype i = d->keyNum; i < count; ++i)
+            d->key[i] = QKeyCombination::fromCombined(0);
+        d->keyNum = count;
+        d->rebuildKeySequence();
+    }
+}
+
 void QKeySequenceEdit::setKeySequence(const QKeySequence &keySequence)
 {
     Q_D(QKeySequenceEdit);
@@ -178,16 +218,24 @@ void QKeySequenceEdit::setKeySequence(const QKeySequence &keySequence)
     if (d->keySequence == keySequence)
         return;
 
-    d->keySequence = keySequence;
+    const auto desiredCount = keySequence.count();
+    if (desiredCount > d->maximumSequenceLength) {
+        qWarning("QKeySequenceEdit: setting a key sequence of length %d "
+                 "when maximumSequenceLength is %d, truncating.",
+                 desiredCount, d->maximumSequenceLength);
+    }
 
-    d->key[0] = d->key[1] = d->key[2] = d->key[3] = QKeyCombination::fromCombined(0);
-    d->keyNum = keySequence.count();
+    d->keyNum = std::min(desiredCount, d->maximumSequenceLength);
     for (int i = 0; i < d->keyNum; ++i)
         d->key[i] = keySequence[i];
+    for (int i = d->keyNum; i < QKeySequencePrivate::MaxKeyCount; ++i)
+        d->key[i] = QKeyCombination::fromCombined(0);
 
-    d->lineEdit->setText(keySequence.toString(QKeySequence::NativeText));
+    d->rebuildKeySequence();
 
-    emit keySequenceChanged(keySequence);
+    d->lineEdit->setText(d->keySequence.toString(QKeySequence::NativeText));
+
+    emit keySequenceChanged(d->keySequence);
 }
 
 /*!
@@ -255,7 +303,7 @@ void QKeySequenceEdit::keyPressEvent(QKeyEvent *e)
             return;
     }
 
-    if (d->keyNum >= QKeySequencePrivate::MaxKeyCount)
+    if (d->keyNum >= d->maximumSequenceLength)
         return;
 
     if (e->modifiers() & Qt::ShiftModifier) {
@@ -285,7 +333,7 @@ void QKeySequenceEdit::keyPressEvent(QKeyEvent *e)
 
     d->rebuildKeySequence();
     QString text = d->keySequence.toString(QKeySequence::NativeText);
-    if (d->keyNum < QKeySequencePrivate::MaxKeyCount) {
+    if (d->keyNum < d->maximumSequenceLength) {
         //: This text is an "unfinished" shortcut, expands like "Ctrl+A, ..."
         text = tr("%1, ...").arg(text);
     }
@@ -301,7 +349,7 @@ void QKeySequenceEdit::keyReleaseEvent(QKeyEvent *e)
     Q_D(QKeySequenceEdit);
 
     if (d->prevKey == e->key()) {
-        if (d->keyNum < QKeySequencePrivate::MaxKeyCount)
+        if (d->keyNum < d->maximumSequenceLength)
             d->releaseTimer = startTimer(1000);
         else
             d->finishEditing();
