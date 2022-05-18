@@ -41,6 +41,7 @@
 #define QTCONCURRENT_FUNCTIONWRAPPERS_H
 
 #include <QtConcurrent/qtconcurrentcompilertest.h>
+#include <QtConcurrent/qtconcurrentreducekernel.h>
 #include <QtCore/qfuture.h>
 
 #include <tuple>
@@ -157,6 +158,11 @@ inline constexpr bool isIterator_v<T, std::void_t<typename std::iterator_traits<
 template <class Callable, class Sequence>
 using isInvocable = std::is_invocable<Callable, typename std::decay_t<Sequence>::value_type>;
 
+template <class InitialValueType, class ResultType>
+inline constexpr bool isInitialValueCompatible_v = std::conjunction_v<
+        std::is_convertible<InitialValueType, ResultType>,
+        std::negation<std::is_same<std::decay_t<InitialValueType>, QtConcurrent::ReduceOption>>>;
+
 template<class Callable, class Enable = void>
 struct ReduceResultTypeHelper
 {
@@ -198,14 +204,6 @@ struct MapSequenceResultType<InputSequence<T...>, MapFunctor>
 };
 
 #endif // QT_NO_TEMPLATE_TEMPLATE_PARAMETER
-
-template<typename Sequence>
-struct SequenceHolder
-{
-    SequenceHolder(const Sequence &s) : sequence(s) { }
-    SequenceHolder(Sequence &&s) : sequence(std::move(s)) { }
-    Sequence sequence;
-};
 
 } // namespace QtPrivate.
 

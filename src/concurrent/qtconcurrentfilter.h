@@ -109,7 +109,8 @@ template <typename ResultType, typename Sequence, typename KeepFunctor, typename
 #else
 template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor,
           typename InitialValueType,
-          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+          std::enable_if_t<QtPrivate::isInitialValueCompatible_v<InitialValueType, ResultType>,
+                           int> = 0>
 #endif
 QFuture<ResultType> filteredReduced(QThreadPool *pool,
                                     Sequence &&sequence,
@@ -131,7 +132,8 @@ template <typename ResultType, typename Sequence, typename KeepFunctor, typename
 #else
 template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor,
           typename InitialValueType,
-          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+          std::enable_if_t<QtPrivate::isInitialValueCompatible_v<InitialValueType, ResultType>,
+                           int> = 0>
 #endif
 QFuture<ResultType> filteredReduced(Sequence &&sequence,
                                     KeepFunctor &&keep,
@@ -180,7 +182,8 @@ template <typename Sequence, typename KeepFunctor, typename ReduceFunctor,
           typename InitialValueType,
           std::enable_if_t<QtPrivate::isInvocable<KeepFunctor, Sequence>::value, int> = 0,
           typename ResultType = typename QtPrivate::ReduceResultTypeHelper<ReduceFunctor>::type,
-          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+          std::enable_if_t<QtPrivate::isInitialValueCompatible_v<InitialValueType, ResultType>,
+                           int> = 0>
 QFuture<ResultType> filteredReduced(QThreadPool *pool,
                                     Sequence &&sequence,
                                     KeepFunctor &&keep,
@@ -199,7 +202,8 @@ template <typename Sequence, typename KeepFunctor, typename ReduceFunctor,
           typename InitialValueType,
           std::enable_if_t<QtPrivate::isInvocable<KeepFunctor, Sequence>::value, int> = 0,
           typename ResultType = typename QtPrivate::ReduceResultTypeHelper<ReduceFunctor>::type,
-          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+          std::enable_if_t<QtPrivate::isInitialValueCompatible_v<InitialValueType, ResultType>,
+                           int> = 0>
 QFuture<ResultType> filteredReduced(Sequence &&sequence,
                                     KeepFunctor &&keep,
                                     ReduceFunctor &&reduce,
@@ -247,7 +251,8 @@ template <typename ResultType, typename Iterator, typename KeepFunctor, typename
 #else
 template <typename ResultType, typename Iterator, typename KeepFunctor, typename ReduceFunctor,
           typename InitialValueType,
-          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+          std::enable_if_t<QtPrivate::isInitialValueCompatible_v<InitialValueType, ResultType>,
+                           int> = 0>
 #endif
 QFuture<ResultType> filteredReduced(QThreadPool *pool,
                                     Iterator begin,
@@ -269,7 +274,8 @@ template <typename ResultType, typename Iterator, typename KeepFunctor, typename
 #else
 template <typename ResultType, typename Iterator, typename KeepFunctor, typename ReduceFunctor,
           typename InitialValueType,
-          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+          std::enable_if_t<QtPrivate::isInitialValueCompatible_v<InitialValueType, ResultType>,
+                           int> = 0>
 #endif
 QFuture<ResultType> filteredReduced(Iterator begin,
                                     Iterator end,
@@ -317,7 +323,8 @@ QFuture<ResultType> filteredReduced(Iterator begin,
 template <typename Iterator, typename KeepFunctor, typename ReduceFunctor,
           typename ResultType = typename QtPrivate::ReduceResultTypeHelper<ReduceFunctor>::type,
           typename InitialValueType,
-          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+          std::enable_if_t<QtPrivate::isInitialValueCompatible_v<InitialValueType, ResultType>,
+                           int> = 0>
 QFuture<ResultType> filteredReduced(QThreadPool *pool,
                                     Iterator begin,
                                     Iterator end,
@@ -336,7 +343,8 @@ template <typename Iterator, typename KeepFunctor, typename ReduceFunctor,
           std::enable_if_t<QtPrivate::isIterator_v<Iterator>, int> = 0,
           typename ResultType = typename QtPrivate::ReduceResultTypeHelper<ReduceFunctor>::type,
           typename InitialValueType,
-          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+          std::enable_if_t<QtPrivate::isInitialValueCompatible_v<InitialValueType, ResultType>,
+                           int> = 0>
 QFuture<ResultType> filteredReduced(Iterator begin,
                                     Iterator end,
                                     KeepFunctor &&keep,
@@ -436,7 +444,8 @@ template <typename ResultType, typename Sequence, typename KeepFunctor, typename
 #else
 template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor,
           typename InitialValueType,
-          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+          std::enable_if_t<QtPrivate::isInitialValueCompatible_v<InitialValueType, ResultType>,
+                           int> = 0>
 #endif
 ResultType blockingFilteredReduced(QThreadPool *pool,
                                    Sequence &&sequence,
@@ -459,7 +468,8 @@ template <typename ResultType, typename Sequence, typename KeepFunctor, typename
 #else
 template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor,
           typename InitialValueType,
-          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+          std::enable_if_t<QtPrivate::isInitialValueCompatible_v<InitialValueType, ResultType>,
+                           int> = 0>
 #endif
 ResultType blockingFilteredReduced(Sequence &&sequence,
                                    KeepFunctor &&keep,
@@ -511,7 +521,8 @@ template <typename Sequence, typename KeepFunctor, typename ReduceFunctor,
           typename InitialValueType,
           std::enable_if_t<QtPrivate::isInvocable<KeepFunctor, Sequence>::value, int> = 0,
           typename ResultType = typename QtPrivate::ReduceResultTypeHelper<ReduceFunctor>::type,
-          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+          std::enable_if_t<QtPrivate::isInitialValueCompatible_v<InitialValueType, ResultType>,
+                           int> = 0>
 ResultType blockingFilteredReduced(QThreadPool *pool,
                                    Sequence &&sequence,
                                    KeepFunctor &&keep,
@@ -531,7 +542,8 @@ template <typename Sequence, typename KeepFunctor, typename ReduceFunctor,
           typename InitialValueType,
           std::enable_if_t<QtPrivate::isInvocable<KeepFunctor, Sequence>::value, int> = 0,
           typename ResultType = typename QtPrivate::ReduceResultTypeHelper<ReduceFunctor>::type,
-          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+          std::enable_if_t<QtPrivate::isInitialValueCompatible_v<InitialValueType, ResultType>,
+                           int> = 0>
 ResultType blockingFilteredReduced(Sequence &&sequence,
                                    KeepFunctor &&keep,
                                    ReduceFunctor &&reduce,
@@ -583,7 +595,8 @@ template <typename ResultType, typename Iterator, typename KeepFunctor, typename
 #else
 template <typename ResultType, typename Iterator, typename KeepFunctor, typename ReduceFunctor,
           typename InitialValueType,
-          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+          std::enable_if_t<QtPrivate::isInitialValueCompatible_v<InitialValueType, ResultType>,
+                           int> = 0>
 #endif
 ResultType blockingFilteredReduced(QThreadPool *pool,
                                    Iterator begin,
@@ -606,7 +619,8 @@ template <typename ResultType, typename Iterator, typename KeepFunctor, typename
 #else
 template <typename ResultType, typename Iterator, typename KeepFunctor, typename ReduceFunctor,
           typename InitialValueType,
-          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+          std::enable_if_t<QtPrivate::isInitialValueCompatible_v<InitialValueType, ResultType>,
+                           int> = 0>
 #endif
 ResultType blockingFilteredReduced(Iterator begin,
                                    Iterator end,
@@ -657,7 +671,8 @@ ResultType blockingFilteredReduced(Iterator begin,
 template <typename Iterator, typename KeepFunctor, typename ReduceFunctor,
           typename ResultType = typename QtPrivate::ReduceResultTypeHelper<ReduceFunctor>::type,
           typename InitialValueType,
-          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+          std::enable_if_t<QtPrivate::isInitialValueCompatible_v<InitialValueType, ResultType>,
+                           int> = 0>
 ResultType blockingFilteredReduced(QThreadPool *pool,
                                    Iterator begin,
                                    Iterator end, KeepFunctor &&keep,
@@ -676,7 +691,8 @@ template <typename Iterator, typename KeepFunctor, typename ReduceFunctor,
           std::enable_if_t<QtPrivate::isIterator_v<Iterator>, int> = 0,
           typename ResultType = typename QtPrivate::ReduceResultTypeHelper<ReduceFunctor>::type,
           typename InitialValueType,
-          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+          std::enable_if_t<QtPrivate::isInitialValueCompatible_v<InitialValueType, ResultType>,
+                           int> = 0>
 ResultType blockingFilteredReduced(Iterator begin,
                                    Iterator end,
                                    KeepFunctor &&keep,
