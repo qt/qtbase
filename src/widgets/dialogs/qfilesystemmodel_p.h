@@ -213,7 +213,8 @@ public:
         bool isVisible = false;
     };
 
-    QFileSystemModelPrivate() = default;
+    QFileSystemModelPrivate();
+    ~QFileSystemModelPrivate();
     void init();
     /*
       \internal
