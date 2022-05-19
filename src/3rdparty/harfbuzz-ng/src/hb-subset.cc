@@ -52,7 +52,10 @@
 #include "hb-ot-layout-gpos-table.hh"
 #include "hb-ot-var-gvar-table.hh"
 #include "hb-ot-var-hvar-table.hh"
+#include "hb-ot-math-table.hh"
 #include "hb-repacker.hh"
+
+using OT::Layout::GSUB::GSUB;
 
 /**
  * SECTION:hb-subset
@@ -103,20 +106,16 @@ _repack (hb_tag_t tag, const hb_serialize_context_t& c)
   if (!c.offset_overflow ())
     return c.copy_blob ();
 
-  hb_vector_t<char> buf;
-  int buf_size = c.end - c.start;
-  if (unlikely (!buf.alloc (buf_size)))
+  hb_blob_t* result = hb_resolve_overflows (c.object_graph (), tag);
+
+  if (unlikely (!result))
+  {
+    DEBUG_MSG (SUBSET, nullptr, "OT::%c%c%c%c offset overflow resolution failed.",
+               HB_UNTAG (tag));
     return nullptr;
+  }
 
-  hb_serialize_context_t repacked ((void *) buf, buf_size);
-  hb_resolve_overflows (c.object_graph (), &repacked);
-
-  if (unlikely (repacked.in_error ()))
-    // TODO(garretrieger): refactor so we can share the resize/retry logic with the subset
-    //                     portion.
-    return nullptr;
-
-  return repacked.copy_blob ();
+  return result;
 }
 
 template<typename TableType>
@@ -305,6 +304,7 @@ _subset_table (hb_subset_plan_t *plan, hb_tag_t tag)
   case HB_OT_TAG_CPAL: return _subset<const OT::CPAL> (plan);
   case HB_OT_TAG_CBLC: return _subset<const OT::CBLC> (plan);
   case HB_OT_TAG_CBDT: return true; /* skip CBDT, handled by CBLC */
+  case HB_OT_TAG_MATH: return _subset<const OT::MATH> (plan);
 
 #ifndef HB_NO_SUBSET_CFF
   case HB_OT_TAG_cff1: return _subset<const OT::cff1> (plan);
@@ -314,7 +314,7 @@ _subset_table (hb_subset_plan_t *plan, hb_tag_t tag)
 
 #ifndef HB_NO_SUBSET_LAYOUT
   case HB_OT_TAG_GDEF: return _subset<const OT::GDEF> (plan);
-  case HB_OT_TAG_GSUB: return _subset<const OT::GSUB> (plan);
+  case HB_OT_TAG_GSUB: return _subset<const GSUB> (plan);
   case HB_OT_TAG_GPOS: return _subset<const OT::GPOS> (plan);
   case HB_OT_TAG_gvar: return _subset<const OT::gvar> (plan);
   case HB_OT_TAG_HVAR: return _subset<const OT::HVAR> (plan);
@@ -345,9 +345,33 @@ hb_subset_or_fail (hb_face_t *source, const hb_subset_input_t *input)
 {
   if (unlikely (!input || !source)) return hb_face_get_empty ();
 
-  hb_subset_plan_t *plan = hb_subset_plan_create (source, input);
-  if (unlikely (plan->in_error ())) {
-    hb_subset_plan_destroy (plan);
+  hb_subset_plan_t *plan = hb_subset_plan_create_or_fail (source, input);
+  if (unlikely (!plan)) {
+    return nullptr;
+  }
+
+  hb_face_t * result = hb_subset_plan_execute_or_fail (plan);
+  hb_subset_plan_destroy (plan);
+  return result;
+}
+
+
+/**
+ * hb_subset_plan_execute_or_fail:
+ * @plan: a subsetting plan.
+ *
+ * Executes the provided subsetting @plan.
+ *
+ * Return value:
+ * on success returns a reference to generated font subset. If the subsetting operation fails
+ * returns nullptr.
+ *
+ * Since: 4.0.0
+ **/
+hb_face_t *
+hb_subset_plan_execute_or_fail (hb_subset_plan_t *plan)
+{
+  if (unlikely (!plan || plan->in_error ())) {
     return nullptr;
   }
 
@@ -355,7 +379,7 @@ hb_subset_or_fail (hb_face_t *source, const hb_subset_input_t *input)
   bool success = true;
   hb_tag_t table_tags[32];
   unsigned offset = 0, num_tables = ARRAY_LENGTH (table_tags);
-  while ((hb_face_get_table_tags (source, offset, &num_tables, table_tags), num_tables))
+  while ((hb_face_get_table_tags (plan->source, offset, &num_tables, table_tags), num_tables))
   {
     for (unsigned i = 0; i < num_tables; ++i)
     {
@@ -369,8 +393,5 @@ hb_subset_or_fail (hb_face_t *source, const hb_subset_input_t *input)
   }
 end:
 
-  hb_face_t *result = success ? hb_face_reference (plan->dest) : nullptr;
-
-  hb_subset_plan_destroy (plan);
-  return result;
+  return success ? hb_face_reference (plan->dest) : nullptr;
 }

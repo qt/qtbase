@@ -68,8 +68,6 @@ struct code_pair_t
 typedef hb_vector_t<unsigned char> str_buff_t;
 struct str_buff_vec_t : hb_vector_t<str_buff_t>
 {
-  void fini () { SUPER::fini_deep (); }
-
   unsigned int total_size () const
   {
     unsigned int size = 0;
@@ -373,7 +371,7 @@ struct Dict : UnsizedByteStr
   {
     TRACE_SERIALIZE (this);
     for (unsigned int i = 0; i < dictval.get_count (); i++)
-      if (unlikely (!opszr.serialize (c, dictval[i], hb_forward<Ts> (ds)...)))
+      if (unlikely (!opszr.serialize (c, dictval[i], std::forward<Ts> (ds)...)))
 	return_trace (false);
 
     return_trace (true);
