@@ -72,10 +72,7 @@ class QKeySequencePrivate
 {
 public:
     enum { MaxKeyCount = 4 }; // also used in QKeySequenceEdit
-    inline QKeySequencePrivate() : ref(1)
-    {
-        std::fill_n(key, uint(MaxKeyCount), 0);
-    }
+    constexpr QKeySequencePrivate() : ref(1), key{} {}
     inline QKeySequencePrivate(const QKeySequencePrivate &copy) : ref(1)
     {
         std::copy(copy.key, copy.key + MaxKeyCount,
