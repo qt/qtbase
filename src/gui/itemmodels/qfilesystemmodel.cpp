@@ -2069,6 +2069,10 @@ QStringList QFileSystemModelPrivate::unwatchPathsAt(const QModelIndex &index)
 }
 #endif // filesystemwatcher && Q_OS_WIN
 
+QFileSystemModelPrivate::QFileSystemModelPrivate() = default;
+
+QFileSystemModelPrivate::~QFileSystemModelPrivate() = default;
+
 /*!
     \internal
 */
