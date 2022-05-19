@@ -32,12 +32,12 @@ struct MacSpecialKey {
 
 // Unicode code points for the glyphs associated with these keys
 // Defined by Carbon headers but not anywhere in Cocoa
-static const int kShiftUnicode = 0x21E7;
-static const int kControlUnicode = 0x2303;
-static const int kOptionUnicode = 0x2325;
-static const int kCommandUnicode = 0x2318;
+static constexpr int kShiftUnicode = 0x21E7;
+static constexpr int kControlUnicode = 0x2303;
+static constexpr int kOptionUnicode = 0x2325;
+static constexpr int kCommandUnicode = 0x2318;
 
-static const MacSpecialKey entries[] = {
+static constexpr MacSpecialKey entries[] = {
     { Qt::Key_Escape, 0x238B },
     { Qt::Key_Tab, 0x21E5 },
     { Qt::Key_Backtab, 0x21E4 },
@@ -62,14 +62,14 @@ static const MacSpecialKey entries[] = {
     { Qt::Key_Eject, 0x23CF },
 };
 
-static bool operator<(const MacSpecialKey &entry, int key)
+static constexpr bool operator<(const MacSpecialKey &lhs, int rhs)
 {
-    return entry.key < key;
+    return lhs.key < rhs;
 }
 
-static bool operator<(int key, const MacSpecialKey &entry)
+static constexpr bool operator<(int lhs, const MacSpecialKey &rhs)
 {
-    return key < entry.key;
+    return lhs < rhs.key;
 }
 
 
@@ -375,7 +375,7 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     similar to the native text on Windows and X11.
 */
 
-static const struct {
+static constexpr struct {
     int key;
     const char name[25];
 } keyname[] = {
@@ -1226,10 +1226,10 @@ QString QKeySequencePrivate::encodeString(int key, QKeySequence::SequenceFormat 
         // for us, which means that we have to adjust our order here.
         // The upshot is a lot more infrastructure to keep the number of
         // if tests down and the code relatively clean.
-        static const int ModifierOrder[] = { Qt::META, Qt::ALT, Qt::SHIFT, Qt::CTRL, 0 };
-        static const int QtKeyOrder[] = { Qt::Key_Meta, Qt::Key_Alt, Qt::Key_Shift, Qt::Key_Control, 0 };
-        static const int DontSwapModifierOrder[] = { Qt::CTRL, Qt::ALT, Qt::SHIFT, Qt::META, 0 };
-        static const int DontSwapQtKeyOrder[] = { Qt::Key_Control, Qt::Key_Alt, Qt::Key_Shift, Qt::Key_Meta, 0 };
+        static constexpr int ModifierOrder[] = { Qt::META, Qt::ALT, Qt::SHIFT, Qt::CTRL, 0 };
+        static constexpr int QtKeyOrder[] = { Qt::Key_Meta, Qt::Key_Alt, Qt::Key_Shift, Qt::Key_Control, 0 };
+        static constexpr int DontSwapModifierOrder[] = { Qt::CTRL, Qt::ALT, Qt::SHIFT, Qt::META, 0 };
+        static constexpr int DontSwapQtKeyOrder[] = { Qt::Key_Control, Qt::Key_Alt, Qt::Key_Shift, Qt::Key_Meta, 0 };
         const int *modifierOrder;
         const int *qtkeyOrder;
         if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
