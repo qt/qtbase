@@ -429,12 +429,10 @@ Options parseOptions()
                     fprintf(stdout,
                             "Using package signing path and alias values found from the "
                             "environment variables.\n");
-                    options.releasePackage = true;
                     options.keyStore = keyStore;
                     options.keyStoreAlias = storeAlias;
                 }
             } else {
-                options.releasePackage = true;
                 options.keyStore = arguments.at(++i);
                 options.keyStoreAlias = arguments.at(++i);
             }
@@ -573,8 +571,7 @@ void printHelp()
                     "       package will be signed with a debug key.\n"
                     "\n"
                     "    --sign <url/to/keystore> <alias>: Signs the package with the\n"
-                    "       specified keystore, alias and store password. Also implies the\n"
-                    "       --release option.\n"
+                    "       specified keystore, alias and store password.\n"
                     "       Optional arguments for use with signing:\n"
                     "         --storepass <password>: Keystore password.\n"
                     "         --storetype <type>: Keystore type.\n"
