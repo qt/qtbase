@@ -7,13 +7,54 @@
 #include <qstringconverter.h>
 #include <qthreadpool.h>
 
+#include <array>
+
+enum CodecLimitation {
+    AsciiOnly,
+    Latin1Only,
+    FullUnicode
+};
+
+#ifdef Q_OS_WIN
+#  include <qt_windows.h>
+static bool localeIsUtf8()
+{
+    return GetACP() == CP_UTF8;
+}
+#else
+static constexpr bool localeIsUtf8()
+{
+    return true;
+}
+#endif
+
 using namespace Qt::StringLiterals;
+
+struct Codec
+{
+    const char name[12];
+    QStringConverter::Encoding code;
+    CodecLimitation limitation = FullUnicode;
+};
+static const std::array codes = {
+    Codec{ "UTF-8", QStringConverter::Utf8 },
+    Codec{ "UTF-16", QStringConverter::Utf16 },
+    Codec{ "UTF-16-le", QStringConverter::Utf16LE },
+    Codec{ "UTF-16-be", QStringConverter::Utf16BE },
+    Codec{ "UTF-32", QStringConverter::Utf32 },
+    Codec{ "UTF-32-le", QStringConverter::Utf32LE },
+    Codec{ "UTF-32-be", QStringConverter::Utf32BE },
+    Codec{ "Latin-1", QStringConverter::Latin1, Latin1Only },
+    Codec{ "System", QStringConverter::System, localeIsUtf8() ? FullUnicode : AsciiOnly }
+};
 
 class tst_QStringConverter : public QObject
 {
     Q_OBJECT
 
 private slots:
+    void initTestCase();
+
     void threadSafety();
 
     void constructByName();
@@ -132,24 +173,11 @@ void tst_QStringConverter::roundtrip_data()
     QTest::addColumn<QString>("utf16");
     QTest::addColumn<QStringConverter::Encoding>("code");
 
-    const struct {
-        QStringConverter::Encoding code;
-        const char *name;
-    } codes[] = {
-        { QStringConverter::Utf8, "UTF-8" },
-        { QStringConverter::Utf16, "UTF-16" },
-        { QStringConverter::Utf16LE, "UTF-16-le" },
-        { QStringConverter::Utf16BE, "UTF-16-be" },
-        { QStringConverter::Utf32, "UTF-32" },
-        { QStringConverter::Utf32LE, "UTF-32-le" },
-        { QStringConverter::Utf32BE, "UTF-32-be" },
-        // Latin1, System: not guaranteed to be able to represent arbitrary Unicode.
-    };
     // TODO: include flag variations, too.
 
     for (const auto code : codes) {
         QTest::addRow("empty-%s", code.name) << u""_s << code.code;
-        {
+        if (code.limitation == FullUnicode) {
             const char32_t zeroVal = 0x11136; // Unicode's representation of Chakma zero
             const QChar data[] = {
                 QChar::highSurrogate(zeroVal), QChar::lowSurrogate(zeroVal),
@@ -1869,6 +1897,14 @@ public:
         }
     }
 };
+
+void tst_QStringConverter::initTestCase()
+{
+    if (localeIsUtf8())
+        qInfo("System locale is UTF-8");
+    else
+        qInfo("System locale is not UTF-8");
+}
 
 void tst_QStringConverter::threadSafety()
 {
