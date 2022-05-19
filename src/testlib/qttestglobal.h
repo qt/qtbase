@@ -23,6 +23,15 @@ QT_BEGIN_NAMESPACE
 namespace QTest
 {
     enum TestFailMode { Abort = 1, Continue = 2 };
+    enum class ComparisonOperation {
+        CustomCompare, /* Used for QCOMPARE() */
+        Equal,
+        NotEqual,
+        LessThan,
+        LessThanOrEqual,
+        GreaterThan,
+        GreaterThanOrEqual,
+    };
 }
 
 QT_END_NAMESPACE

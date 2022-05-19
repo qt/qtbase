@@ -58,6 +58,7 @@ set(subprograms
     differentexec
     exceptionthrow
     expectfail
+    extendedcompare
     failcleanup
     faildatatype
     failfetchtype

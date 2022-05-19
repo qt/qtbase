@@ -311,22 +311,34 @@ bool QTestResult::verify(bool statement, const char *statementStr,
     return checkStatement(statement, msg, file, line);
 }
 
+static const char *leftArgNameForOp(QTest::ComparisonOperation op)
+{
+    return op == QTest::ComparisonOperation::CustomCompare ? "Actual   " : "Left   ";
+}
+
+static const char *rightArgNameForOp(QTest::ComparisonOperation op)
+{
+    return op == QTest::ComparisonOperation::CustomCompare ? "Expected " : "Right  ";
+}
+
 // Format failures using the toString() template
 template <class Actual, class Expected>
 void formatFailMessage(char *msg, size_t maxMsgLen,
                        const char *failureMsg,
                        const Actual &val1, const Expected &val2,
-                       const char *actual, const char *expected)
+                       const char *actual, const char *expected,
+                       QTest::ComparisonOperation op)
 {
     auto val1S = QTest::toString(val1);
     auto val2S = QTest::toString(val2);
 
     size_t len1 = mbstowcs(nullptr, actual, maxMsgLen);    // Last parameter is not ignored on QNX
     size_t len2 = mbstowcs(nullptr, expected, maxMsgLen);  // (result is never larger than this).
-    qsnprintf(msg, maxMsgLen, "%s\n   Actual   (%s)%*s %s\n   Expected (%s)%*s %s",
-              failureMsg,
-              actual, qMax(len1, len2) - len1 + 1, ":", val1S ? val1S : "<null>",
-              expected, qMax(len1, len2) - len2 + 1, ":", val2S ? val2S : "<null>");
+    qsnprintf(msg, maxMsgLen, "%s\n   %s(%s)%*s %s\n   %s(%s)%*s %s", failureMsg,
+              leftArgNameForOp(op), actual, qMax(len1, len2) - len1 + 1, ":",
+              val1S ? val1S : "<null>",
+              rightArgNameForOp(op), expected, qMax(len1, len2) - len2 + 1, ":",
+              val2S ? val2S : "<null>");
 
     delete [] val1S;
     delete [] val2S;
@@ -336,14 +348,16 @@ void formatFailMessage(char *msg, size_t maxMsgLen,
 void formatFailMessage(char *msg, size_t maxMsgLen,
                        const char *failureMsg,
                        const char *val1, const char *val2,
-                       const char *actual, const char *expected)
+                       const char *actual, const char *expected,
+                       QTest::ComparisonOperation op)
 {
     size_t len1 = mbstowcs(nullptr, actual, maxMsgLen);    // Last parameter is not ignored on QNX
     size_t len2 = mbstowcs(nullptr, expected, maxMsgLen);  // (result is never larger than this).
-    qsnprintf(msg, maxMsgLen, "%s\n   Actual   (%s)%*s %s\n   Expected (%s)%*s %s",
-              failureMsg,
-              actual, qMax(len1, len2) - len1 + 1, ":", val1 ? val1 : "<null>",
-              expected, qMax(len1, len2) - len2 + 1, ":", val2 ? val2 : "<null>");
+    qsnprintf(msg, maxMsgLen, "%s\n   %s(%s)%*s %s\n   %s(%s)%*s %s", failureMsg,
+              leftArgNameForOp(op), actual, qMax(len1, len2) - len1 + 1, ":",
+              val1 ? val1 : "<null>",
+              rightArgNameForOp(op), expected, qMax(len1, len2) - len2 + 1, ":",
+              val2 ? val2 : "<null>");
 }
 
 template <class Actual, class Expected>
@@ -382,7 +396,8 @@ static bool compareHelper(bool success, const char *failureMsg,
         return checkStatement(success, msg, file, line);
     }
 
-    formatFailMessage(msg, maxMsgLen, failureMsg, val1, val2, actual, expected);
+    formatFailMessage(msg, maxMsgLen, failureMsg, val1, val2, actual, expected,
+                      QTest::ComparisonOperation::CustomCompare);
 
     return checkStatement(success, msg, file, line);
 }
@@ -518,6 +533,85 @@ void QTestResult::setCurrentAppName(const char *appName)
 const char *QTestResult::currentAppName()
 {
     return ::currentAppName;
+}
+
+static const char *macroNameForOp(QTest::ComparisonOperation op)
+{
+    using namespace QTest;
+    switch (op) {
+    case ComparisonOperation::CustomCompare:
+        return "QCOMPARE"; /* not used */
+    case ComparisonOperation::Equal:
+        return "QCOMPARE_EQ";
+    case ComparisonOperation::NotEqual:
+        return "QCOMPARE_NE";
+    case ComparisonOperation::LessThan:
+        return "QCOMPARE_LT";
+    case ComparisonOperation::LessThanOrEqual:
+        return "QCOMPARE_LE";
+    case ComparisonOperation::GreaterThan:
+        return "QCOMPARE_GT";
+    case ComparisonOperation::GreaterThanOrEqual:
+        return "QCOMPARE_GE";
+    }
+    Q_UNREACHABLE();
+    return "";
+}
+
+static const char *failureMessageForOp(QTest::ComparisonOperation op)
+{
+    using namespace QTest;
+    switch (op) {
+    case ComparisonOperation::CustomCompare:
+        return "Compared values are not the same"; /* not used */
+    case ComparisonOperation::Equal:
+        return "Left value is expected to be equal to right value, but is not";
+    case ComparisonOperation::NotEqual:
+        return "Left value is expected to be different from right value, but is not";
+    case ComparisonOperation::LessThan:
+        return "Left value is expected to be less than right value, but is not";
+    case ComparisonOperation::LessThanOrEqual:
+        return "Left value is expected to be less than or equal to right value, but is not";
+    case ComparisonOperation::GreaterThan:
+        return "Left value is expected to be greater than right value, but is not";
+    case ComparisonOperation::GreaterThanOrEqual:
+        return "Left value is expected to be greater than or equal to right value, but is not";
+    }
+    Q_UNREACHABLE();
+    return "";
+}
+
+bool QTestResult::reportResult(bool success, qxp::function_ref<const char *()> lhs,
+                               qxp::function_ref<const char *()> rhs,
+                               const char *lhsExpr, const char *rhsExpr,
+                               QTest::ComparisonOperation op, const char *file, int line)
+{
+    const size_t maxMsgLen = 1024;
+    char msg[maxMsgLen] = {'\0'};
+
+    QTEST_ASSERT(lhsExpr);
+    QTEST_ASSERT(rhsExpr);
+
+    if (QTestLog::verboseLevel() >= 2) {
+        qsnprintf(msg, maxMsgLen, "%s(%s, %s)", macroNameForOp(op), lhsExpr, rhsExpr);
+        QTestLog::info(msg, file, line);
+    }
+
+    if (success) {
+        if (QTest::expectFailMode) {
+            qsnprintf(msg, maxMsgLen, "%s(%s, %s) returned TRUE unexpectedly.",
+                      macroNameForOp(op), lhsExpr, rhsExpr);
+        }
+        return checkStatement(success, msg, file, line);
+    }
+
+    const std::unique_ptr<const char[]> lhsPtr{ lhs() };
+    const std::unique_ptr<const char[]> rhsPtr{ rhs() };
+
+    formatFailMessage(msg, maxMsgLen, failureMessageForOp(op), lhsPtr.get(), rhsPtr.get(),
+                      lhsExpr, rhsExpr, op);
+
+    return checkStatement(success, msg, file, line);
 }
 
 QT_END_NAMESPACE

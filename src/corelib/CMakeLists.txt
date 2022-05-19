@@ -75,6 +75,7 @@ qt_internal_add_module(Core
         global/q23functional.h
         global/qxpfunctional.h
         global/q20iterator.h
+        global/qxpfunctional.h
         io/qabstractfileengine.cpp io/qabstractfileengine_p.h
         io/qbuffer.cpp io/qbuffer.h
         io/qdataurl.cpp io/qdataurl_p.h

@@ -1,0 +1,716 @@
+  <Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QtBuild/>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+  </Environment>
+  <TestFunction name="initTestCase">
+    <Incident type="pass" file="" line="0" />
+    <Duration msecs="0"/>
+  </TestFunction>
+  <TestFunction name="compareInts">
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[EQ:left == right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[EQ:left < right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be equal to right value, but is not
+   Left   (lhs): 1
+   Right  (rhs): 2]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[EQ:left > right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be equal to right value, but is not
+   Left   (lhs): 2
+   Right  (rhs): 1]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[NE:left == right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be different from right value, but is not
+   Left   (lhs): 1
+   Right  (rhs): 1]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[NE:left < right]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[NE:left > right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[LT:left == right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be less than right value, but is not
+   Left   (lhs): 1
+   Right  (rhs): 1]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[LT:left < right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[LT:left > right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be less than right value, but is not
+   Left   (lhs): 2
+   Right  (rhs): 1]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[LE:left == right]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[LE:left < right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[LE:left > right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be less than or equal to right value, but is not
+   Left   (lhs): 2
+   Right  (rhs): 1]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[GT:left == right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be greater than right value, but is not
+   Left   (lhs): 1
+   Right  (rhs): 1]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[GT:left < right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be greater than right value, but is not
+   Left   (lhs): 1
+   Right  (rhs): 2]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[GT:left > right]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[GE:left == right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[GE:left < right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be greater than or equal to right value, but is not
+   Left   (lhs): 1
+   Right  (rhs): 2]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[GE:left > right]]></DataTag>
+    </Incident>
+    <Duration msecs="0"/>
+  </TestFunction>
+  <TestFunction name="compareFloats">
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[EQ:left == right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[EQ:left < right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be equal to right value, but is not
+   Left   (lhs): 1
+   Right  (rhs): 1.1]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[EQ:left > right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be equal to right value, but is not
+   Left   (lhs): 1.1
+   Right  (rhs): 1]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[NE:left == right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be different from right value, but is not
+   Left   (lhs): 1
+   Right  (rhs): 1]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[NE:left < right]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[NE:left > right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[LT:left == right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be less than right value, but is not
+   Left   (lhs): 1
+   Right  (rhs): 1]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[LT:left < right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[LT:left > right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be less than right value, but is not
+   Left   (lhs): 1.1
+   Right  (rhs): 1]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[LE:left == right]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[LE:left < right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[LE:left > right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be less than or equal to right value, but is not
+   Left   (lhs): 1.1
+   Right  (rhs): 1]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[GT:left == right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be greater than right value, but is not
+   Left   (lhs): 1
+   Right  (rhs): 1]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[GT:left < right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be greater than right value, but is not
+   Left   (lhs): 1
+   Right  (rhs): 1.1]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[GT:left > right]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[GE:left == right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[GE:left < right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be greater than or equal to right value, but is not
+   Left   (lhs): 1
+   Right  (rhs): 1.1]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[GE:left > right]]></DataTag>
+    </Incident>
+    <Duration msecs="0"/>
+  </TestFunction>
+  <TestFunction name="compareDoubles">
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[EQ:left == right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[EQ:left < right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be equal to right value, but is not
+   Left   (lhs): 0
+   Right  (rhs): 0.1]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[EQ:left > right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be equal to right value, but is not
+   Left   (lhs): 0.1
+   Right  (rhs): 0]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[NE:left == right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be different from right value, but is not
+   Left   (lhs): 0
+   Right  (rhs): 0]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[NE:left < right]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[NE:left > right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[LT:left == right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be less than right value, but is not
+   Left   (lhs): 0
+   Right  (rhs): 0]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[LT:left < right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[LT:left > right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be less than right value, but is not
+   Left   (lhs): 0.1
+   Right  (rhs): 0]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[LE:left == right]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[LE:left < right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[LE:left > right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be less than or equal to right value, but is not
+   Left   (lhs): 0.1
+   Right  (rhs): 0]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[GT:left == right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be greater than right value, but is not
+   Left   (lhs): 0
+   Right  (rhs): 0]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[GT:left < right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be greater than right value, but is not
+   Left   (lhs): 0
+   Right  (rhs): 0.1]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[GT:left > right]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[GE:left == right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[GE:left < right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be greater than or equal to right value, but is not
+   Left   (lhs): 0
+   Right  (rhs): 0.1]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[GE:left > right]]></DataTag>
+    </Incident>
+    <Duration msecs="0"/>
+  </TestFunction>
+  <TestFunction name="comparePointers">
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[EQ:left == right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[EQ:left < right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be equal to right value, but is not
+   Left   (lhs): 1
+   Right  (rhs): 2]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[EQ:left > right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be equal to right value, but is not
+   Left   (lhs): 2
+   Right  (rhs): 1]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[NE:left == right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be different from right value, but is not
+   Left   (lhs): 1
+   Right  (rhs): 1]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[NE:left < right]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[NE:left > right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[LT:left == right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be less than right value, but is not
+   Left   (lhs): 1
+   Right  (rhs): 1]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[LT:left < right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[LT:left > right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be less than right value, but is not
+   Left   (lhs): 2
+   Right  (rhs): 1]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[LE:left == right]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[LE:left < right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[LE:left > right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be less than or equal to right value, but is not
+   Left   (lhs): 2
+   Right  (rhs): 1]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[GT:left == right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be greater than right value, but is not
+   Left   (lhs): 1
+   Right  (rhs): 1]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[GT:left < right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be greater than right value, but is not
+   Left   (lhs): 1
+   Right  (rhs): 2]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[GT:left > right]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[GE:left == right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[GE:left < right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be greater than or equal to right value, but is not
+   Left   (lhs): 1
+   Right  (rhs): 2]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[GE:left > right]]></DataTag>
+    </Incident>
+    <Duration msecs="0"/>
+  </TestFunction>
+  <TestFunction name="compareToNullptr">
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[EQ:left == right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[EQ:left < right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be equal to right value, but is not
+   Left   (lhs): "nullptr"
+   Right  (rhs): 1]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[EQ:left > right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be equal to right value, but is not
+   Left   (lhs): 1
+   Right  (rhs): "nullptr"]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[NE:left == right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be different from right value, but is not
+   Left   (lhs): "nullptr"
+   Right  (rhs): "nullptr"]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[NE:left < right]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[NE:left > right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[LT:left == right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be less than right value, but is not
+   Left   (lhs): "nullptr"
+   Right  (rhs): "nullptr"]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[LT:left < right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[LT:left > right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be less than right value, but is not
+   Left   (lhs): 1
+   Right  (rhs): "nullptr"]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[LE:left == right]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[LE:left < right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[LE:left > right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be less than or equal to right value, but is not
+   Left   (lhs): 1
+   Right  (rhs): "nullptr"]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[GT:left == right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be greater than right value, but is not
+   Left   (lhs): "nullptr"
+   Right  (rhs): "nullptr"]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[GT:left < right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be greater than right value, but is not
+   Left   (lhs): "nullptr"
+   Right  (rhs): 1]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[GT:left > right]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[GE:left == right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[GE:left < right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be greater than or equal to right value, but is not
+   Left   (lhs): "nullptr"
+   Right  (rhs): 1]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[GE:left > right]]></DataTag>
+    </Incident>
+    <Duration msecs="0"/>
+  </TestFunction>
+  <TestFunction name="compareUnregistereEnum">
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[EQ:left == right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[EQ:left < right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be equal to right value, but is not
+   Left   (lhs): 0
+   Right  (rhs): 1]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[EQ:left > right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be equal to right value, but is not
+   Left   (lhs): 1
+   Right  (rhs): 0]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[NE:left == right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be different from right value, but is not
+   Left   (lhs): 0
+   Right  (rhs): 0]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[NE:left < right]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[NE:left > right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[LT:left == right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be less than right value, but is not
+   Left   (lhs): 0
+   Right  (rhs): 0]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[LT:left < right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[LT:left > right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be less than right value, but is not
+   Left   (lhs): 1
+   Right  (rhs): 0]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[LE:left == right]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[LE:left < right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[LE:left > right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be less than or equal to right value, but is not
+   Left   (lhs): 1
+   Right  (rhs): 0]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[GT:left == right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be greater than right value, but is not
+   Left   (lhs): 0
+   Right  (rhs): 0]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[GT:left < right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be greater than right value, but is not
+   Left   (lhs): 0
+   Right  (rhs): 1]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[GT:left > right]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[GE:left == right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[GE:left < right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be greater than or equal to right value, but is not
+   Left   (lhs): 0
+   Right  (rhs): 1]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[GE:left > right]]></DataTag>
+    </Incident>
+    <Duration msecs="0"/>
+  </TestFunction>
+  <TestFunction name="compareRegistereEnum">
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[EQ:left == right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[EQ:left < right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be equal to right value, but is not
+   Left   (lhs): Monday
+   Right  (rhs): Sunday]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[EQ:left > right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be equal to right value, but is not
+   Left   (lhs): Sunday
+   Right  (rhs): Monday]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[NE:left == right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be different from right value, but is not
+   Left   (lhs): Monday
+   Right  (rhs): Monday]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[NE:left < right]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[NE:left > right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[LT:left == right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be less than right value, but is not
+   Left   (lhs): Monday
+   Right  (rhs): Monday]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[LT:left < right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[LT:left > right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be less than right value, but is not
+   Left   (lhs): Sunday
+   Right  (rhs): Monday]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[LE:left == right]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[LE:left < right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[LE:left > right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be less than or equal to right value, but is not
+   Left   (lhs): Sunday
+   Right  (rhs): Monday]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[GT:left == right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be greater than right value, but is not
+   Left   (lhs): Monday
+   Right  (rhs): Monday]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[GT:left < right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be greater than right value, but is not
+   Left   (lhs): Monday
+   Right  (rhs): Sunday]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[GT:left > right]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[GE:left == right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[GE:left < right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be greater than or equal to right value, but is not
+   Left   (lhs): Monday
+   Right  (rhs): Sunday]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[GE:left > right]]></DataTag>
+    </Incident>
+    <Duration msecs="0"/>
+  </TestFunction>
+  <TestFunction name="compareCustomTypes">
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[EQ:left == right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[EQ:left < right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be equal to right value, but is not
+   Left   (lhs): MyClass(1)
+   Right  (rhs): MyClass(2)]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[EQ:left > right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be equal to right value, but is not
+   Left   (lhs): MyClass(2)
+   Right  (rhs): MyClass(1)]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[NE:left == right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be different from right value, but is not
+   Left   (lhs): MyClass(1)
+   Right  (rhs): MyClass(1)]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[NE:left < right]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[NE:left > right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[LT:left == right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be less than right value, but is not
+   Left   (lhs): MyClass(1)
+   Right  (rhs): MyClass(1)]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[LT:left < right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[LT:left > right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be less than right value, but is not
+   Left   (lhs): MyClass(2)
+   Right  (rhs): MyClass(1)]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[LE:left == right]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[LE:left < right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[LE:left > right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be less than or equal to right value, but is not
+   Left   (lhs): MyClass(2)
+   Right  (rhs): MyClass(1)]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[GT:left == right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be greater than right value, but is not
+   Left   (lhs): MyClass(1)
+   Right  (rhs): MyClass(1)]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[GT:left < right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be greater than right value, but is not
+   Left   (lhs): MyClass(1)
+   Right  (rhs): MyClass(2)]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[GT:left > right]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[GE:left == right]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[GE:left < right]]></DataTag>
+      <Description><![CDATA[Left value is expected to be greater than or equal to right value, but is not
+   Left   (lhs): MyClass(1)
+   Right  (rhs): MyClass(2)]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[GE:left > right]]></DataTag>
+    </Incident>
+    <Duration msecs="0"/>
+  </TestFunction>
+  <TestFunction name="checkComparisonForTemporaryObjects">
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[EQ]]></DataTag>
+      <Description><![CDATA[Left value is expected to be equal to right value, but is not
+   Left   (getClassForValue(0).getValuePointer()): MyClass(2) on memory address with index 0
+   Right  (getClassForValue(1).getValuePointer()): MyClass(1) on memory address with index 1]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[NE]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[LT]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[LE]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[GT]]></DataTag>
+      <Description><![CDATA[Left value is expected to be greater than right value, but is not
+   Left   (getClassForValue(0).getValuePointer()): MyClass(2) on memory address with index 0
+   Right  (getClassForValue(1).getValuePointer()): MyClass(1) on memory address with index 1]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[GE]]></DataTag>
+      <Description><![CDATA[Left value is expected to be greater than or equal to right value, but is not
+   Left   (getClassForValue(0).getValuePointer()): MyClass(2) on memory address with index 0
+   Right  (getClassForValue(1).getValuePointer()): MyClass(1) on memory address with index 1]]></Description>
+    </Incident>
+    <Duration msecs="0"/>
+  </TestFunction>
+  <TestFunction name="cleanupTestCase">
+    <Incident type="pass" file="" line="0" />
+    <Duration msecs="0"/>
+  </TestFunction>
+  <Duration msecs="0"/>

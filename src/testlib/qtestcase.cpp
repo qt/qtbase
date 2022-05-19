@@ -1728,6 +1728,14 @@ void TestMethods::invokeTests(QObject *testObject) const
     QSignalDumper::endDump();
 }
 
+bool reportResult(bool success, qxp::function_ref<const char *()> lhs,
+                  qxp::function_ref<const char *()> rhs,
+                  const char *lhsExpr, const char *rhsExpr,
+                  ComparisonOperation op, const char *file, int line)
+{
+    return QTestResult::reportResult(success, lhs, rhs, lhsExpr, rhsExpr, op, file, line);
+}
+
 } // namespace QTest
 
 namespace {

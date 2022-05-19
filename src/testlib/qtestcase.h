@@ -13,6 +13,7 @@
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qtemporarydir.h>
 #include <QtCore/qthread.h>
+#include <QtCore/qxpfunctional.h>
 
 #include <string.h>
 
@@ -54,6 +55,32 @@ do {\
         return;\
 } while (false)
 
+// A wrapper lambda is introduced to extend the lifetime of lhs and rhs in
+// case they are temporary objects.
+// We also use IILE to prevent potential name clashes and shadowing of variables
+// from user code. A drawback of the approach is that it looks ugly :(
+#define QCOMPARE_OP_IMPL(lhs, rhs, op, opId) \
+do { \
+    if (![](auto &&qt_lhs_arg, auto &&qt_rhs_arg) { \
+        /* assumes that op does not actually move from qt_{lhs, rhs}_arg */ \
+        return QTest::reportResult(std::forward<decltype(qt_lhs_arg)>(qt_lhs_arg) \
+                                   op \
+                                   std::forward<decltype(qt_rhs_arg)>(qt_rhs_arg), \
+                                   [&qt_lhs_arg] { return QTest::toString(qt_lhs_arg); }, \
+                                   [&qt_rhs_arg] { return QTest::toString(qt_rhs_arg); }, \
+                                   #lhs, #rhs, QTest::ComparisonOperation::opId, \
+                                   __FILE__, __LINE__); \
+    }(lhs, rhs)) { \
+        return; \
+    } \
+} while (false)
+
+#define QCOMPARE_EQ(lhs, rhs) QCOMPARE_OP_IMPL(lhs, rhs, ==, Equal)
+#define QCOMPARE_NE(lhs, rhs) QCOMPARE_OP_IMPL(lhs, rhs, !=, NotEqual)
+#define QCOMPARE_LT(lhs, rhs) QCOMPARE_OP_IMPL(lhs, rhs, <, LessThan)
+#define QCOMPARE_LE(lhs, rhs) QCOMPARE_OP_IMPL(lhs, rhs, <=, LessThanOrEqual)
+#define QCOMPARE_GT(lhs, rhs) QCOMPARE_OP_IMPL(lhs, rhs, >, GreaterThan)
+#define QCOMPARE_GE(lhs, rhs) QCOMPARE_OP_IMPL(lhs, rhs, >=, GreaterThanOrEqual)
 
 #ifndef QT_NO_EXCEPTIONS
 
@@ -574,6 +601,11 @@ namespace QTest
         return qCompare(actual, *static_cast<const T *>(QTest::qElementData(elementName,
                        qMetaTypeId<T>())), actualStr, expected, file, line);
     }
+
+    Q_TESTLIB_EXPORT bool reportResult(bool success, qxp::function_ref<const char*()> lhs,
+                                       qxp::function_ref<const char*()> rhs,
+                                       const char *lhsExpr, const char *rhsExpr,
+                                       ComparisonOperation op, const char *file, int line);
 }
 
 #undef QTEST_COMPARE_DECL

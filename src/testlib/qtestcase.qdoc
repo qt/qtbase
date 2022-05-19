@@ -22,8 +22,10 @@
    You can use \l QVERIFY2() when it is practical and valuable to put additional
    information into the test failure report.
 
+//! [macro-usage-limitation]
    \note This macro can only be used in a test function that is invoked
    by the test framework.
+//! [macro-usage-limitation]
 
    For example, the following code shows this macro being used to verify that a
    \l QSignalSpy object is valid:
@@ -34,7 +36,8 @@
    \c QVERIFY(x == y), because it reports both the expected and actual value
    when the comparison fails.
 
-   \sa QCOMPARE(), QTRY_VERIFY(), QSignalSpy, QEXPECT_FAIL()
+   \sa QCOMPARE(), QTRY_VERIFY(), QSignalSpy, QEXPECT_FAIL(), QCOMPARE_EQ(),
+       QCOMPARE_NE(), QCOMPARE_LT(), QCOMPARE_LE(), QCOMPARE_GT(), QCOMPARE_GE()
 */
 
 /*! \macro QVERIFY2(condition, message)
@@ -73,7 +76,8 @@
     \c {FAIL! : tst_QFile::open_write() 'opened' returned FALSE.
         (open /tmp/qt.a3B42Cd: No space left on device)}
 
-    \sa QVERIFY(), QCOMPARE(), QEXPECT_FAIL()
+    \sa QVERIFY(), QCOMPARE(), QEXPECT_FAIL(), QCOMPARE_EQ(), QCOMPARE_NE(),
+        QCOMPARE_LT(), QCOMPARE_LE(), QCOMPARE_GT(), QCOMPARE_GE()
 */
 
 /*! \macro QCOMPARE(actual, expected)
@@ -114,11 +118,12 @@
    delimiters:
    \snippet code/src_qtestlib_qtestcase.cpp 35
 
-   \note QCOMPARE() can only be used in a test function that is invoked
-   by the test framework.
+   \include qtestcase.qdoc macro-usage-limitation
 
-   For your own classes, you can use \l QTest::toString() to format values for
-   outputting into the test log.
+//! [to-string-overload-desc]
+   For your own classes, you can overload \l QTest::toString() to format values
+   for output into the test log.
+//! [to-string-overload-desc]
 
    Example:
    \snippet code/src_qtestlib_qtestcase_snippet.cpp 34
@@ -127,7 +132,141 @@
    be released with \c delete[] (rather than \c free() or plain \c delete) once
    the calling code is done with it.
 
-   \sa QVERIFY(), QTRY_COMPARE(), QTest::toString(), QEXPECT_FAIL()
+   \sa QVERIFY(), QTRY_COMPARE(), QTest::toString(), QEXPECT_FAIL(),
+       QCOMPARE_EQ(), QCOMPARE_NE(), QCOMPARE_LT(), QCOMPARE_LE(),
+       QCOMPARE_GT(), QCOMPARE_GE()
+*/
+
+/*! \macro QCOMPARE_EQ(left, right)
+    \since 6.4
+
+    \relates QTest
+
+    The QCOMPARE_EQ() macro checks that \a left is equal to \a right using
+    the equality operator. If that is true, execution continues. If not, a
+    failure is recorded in the test log and the test function returns without
+    attempting any later checks.
+
+    It is generally similar to calling \c {QVERIFY(left == right);}
+    but prints a formatted error message reporting \a left and \a right argument
+    expressions and values in case of failure.
+
+    \include qtestcase.qdoc macro-usage-limitation
+
+    \include qtestcase.qdoc to-string-overload-desc
+
+    \note Unlike QCOMPARE(), this macro does not provide overloads for custom
+    types and pointers. So passing e.g. two \c {const char *} values as
+    parameters will compare \e pointers, while QCOMPARE() does a comparison of
+    C-style strings.
+
+    \sa QCOMPARE(), QCOMPARE_NE(), QCOMPARE_LT(), QCOMPARE_LE(), QCOMPARE_GT(),
+        QCOMPARE_GE()
+*/
+
+/*! \macro QCOMPARE_NE(left, right)
+    \since 6.4
+
+    \relates QTest
+
+    The QCOMPARE_NE() macro checks that \a left is not equal to \a right using
+    the inequality operator. If that is true, execution continues. If not, a
+    failure is recorded in the test log and the test function returns without
+    attempting any later checks.
+
+    It is generally similar to calling \c {QVERIFY(left != right);}
+    but prints a formatted error message reporting \a left and \a right argument
+    expressions and values in case of failure.
+
+    \include qtestcase.qdoc macro-usage-limitation
+
+    \include qtestcase.qdoc to-string-overload-desc
+
+    \sa QCOMPARE_EQ(), QCOMPARE_LT(), QCOMPARE_LE(), QCOMPARE_GT(), QCOMPARE_GE()
+*/
+
+/*! \macro QCOMPARE_LT(left, right)
+    \since 6.4
+
+    \relates QTest
+
+    The QCOMPARE_LT() macro checks that \a left is less than \a right using the
+    less-than operator. If that is true, execution continues. If not, a failure
+    is recorded in the test log and the test function returns without attempting
+    any later checks.
+
+    It is generally similar to calling \c {QVERIFY(left < right);}
+    but prints a formatted error message reporting \a left and \a right argument
+    expressions and values in case of failure.
+
+    \include qtestcase.qdoc macro-usage-limitation
+
+    \include qtestcase.qdoc to-string-overload-desc
+
+    \sa QCOMPARE_EQ(), QCOMPARE_NE(), QCOMPARE_LE(), QCOMPARE_GT(), QCOMPARE_GE()
+*/
+
+/*! \macro QCOMPARE_LE(left, right)
+    \since 6.4
+
+    \relates QTest
+
+    The QCOMPARE_LE() macro checks that \a left is at most \a right using the
+    less-than-or-equal-to operator. If that is true, execution continues. If
+    not, a failure is recorded in the test log and the test function returns
+    without attempting any later checks.
+
+    It is generally similar to calling \c {QVERIFY(left <= right);}
+    but prints a formatted error message reporting \a left and \a right argument
+    expressions and values in case of failure.
+
+    \include qtestcase.qdoc macro-usage-limitation
+
+    \include qtestcase.qdoc to-string-overload-desc
+
+    \sa QCOMPARE_EQ(), QCOMPARE_NE(), QCOMPARE_LT(), QCOMPARE_GT(), QCOMPARE_GE()
+*/
+
+/*! \macro QCOMPARE_GT(left, right)
+    \since 6.4
+
+    \relates QTest
+
+    The QCOMPARE_GT() macro checks that \a left is greater than \a right using
+    the greater-than operator. If that is true, execution continues. If not, a
+    failure is recorded in the test log and the test function returns without
+    attempting any later checks.
+
+    It is generally similar to calling \c {QVERIFY(left > right);}
+    but prints a formatted error message reporting \a left and \a right argument
+    expressions and values in case of failure.
+
+    \include qtestcase.qdoc macro-usage-limitation
+
+    \include qtestcase.qdoc to-string-overload-desc
+
+    \sa QCOMPARE_EQ(), QCOMPARE_NE(), QCOMPARE_LT(), QCOMPARE_LE(), QCOMPARE_GE()
+*/
+
+/*! \macro QCOMPARE_GE(left, right)
+    \since 6.4
+
+    \relates QTest
+
+    The QCOMPARE_GE() macro checks that \a left is at least \a right using the
+    greater-than-or-equal-to operator. If that is true, execution continues. If
+    not, a failure is recorded in the test log and the test function returns
+    without attempting any later checks.
+
+    It is generally similar to calling \c {QVERIFY(left >= right);}
+    but prints a formatted error message reporting \a left and \a right argument
+    expressions and values in case of failure.
+
+    \include qtestcase.qdoc macro-usage-limitation
+
+    \include qtestcase.qdoc to-string-overload-desc
+
+    \sa QCOMPARE_EQ(), QCOMPARE_NE(), QCOMPARE_LT(), QCOMPARE_LE(), QCOMPARE_GT()
 */
 
 /*! \macro QVERIFY_EXCEPTION_THROWN(expression, exceptiontype)
