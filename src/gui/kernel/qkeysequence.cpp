@@ -18,6 +18,7 @@
 #endif
 
 #include <algorithm>
+#include <q20algorithm.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -62,6 +63,11 @@ static constexpr MacSpecialKey entries[] = {
     { Qt::Key_Eject, 0x23CF },
 };
 
+static constexpr bool operator<(const MacSpecialKey &lhs, const MacSpecialKey &rhs)
+{
+    return lhs.key < rhs.key;
+}
+
 static constexpr bool operator<(const MacSpecialKey &lhs, int rhs)
 {
     return lhs.key < rhs;
@@ -72,6 +78,7 @@ static constexpr bool operator<(int lhs, const MacSpecialKey &rhs)
     return lhs < rhs.key;
 }
 
+static_assert(q20::is_sorted(std::begin(entries), std::end(entries)));
 
 QChar qt_macSymbolForQtKey(int key)
 {
