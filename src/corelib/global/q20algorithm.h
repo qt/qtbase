@@ -26,6 +26,34 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace q20 {
+// like std::is_sorted{,_until} (ie. constexpr)
+#ifdef __cpp_lib_constexpr_algorithms
+using std::is_sorted_until;
+using std::is_sorted;
+#else
+template <typename ForwardIterator, typename BinaryPredicate = std::less<>>
+constexpr ForwardIterator
+is_sorted_until(ForwardIterator first, ForwardIterator last, BinaryPredicate p = {})
+{
+    if (first == last)
+        return first;
+    auto prev = first;
+    while (++first != last) {
+        if (p(*first, *prev))
+            return first;
+        prev = first;
+    }
+    return first;
+}
+template <typename ForwardIterator, typename BinaryPredicate = std::less<>>
+constexpr bool is_sorted(ForwardIterator first, ForwardIterator last, BinaryPredicate p = {})
+{
+    return q20::is_sorted_until(first, last, p) == last;
+}
+#endif
+}
+
 namespace q20::ranges {
 // like std::ranges::{any,all,none}_of, just unconstrained, so no range-overload
 #ifdef __cpp_lib_ranges
