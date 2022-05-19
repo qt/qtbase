@@ -39,6 +39,8 @@ private slots:
     void environment_QT_SCREEN_SCALE_FACTORS_data();
     void environment_QT_SCREEN_SCALE_FACTORS();
     void environment_QT_USE_PHYSICAL_DPI();
+    void environment_QT_SCALE_FACTOR_ROUNDING_POLICY();
+    void application_setScaleFactorRoundingPolicy();
     void screenAt_data();
     void screenAt();
     void screenGeometry_data();
@@ -187,6 +189,7 @@ void tst_QHighDpi::cleanup()
     qunsetenv("QT_SCALE_FACTOR");
     qunsetenv("QT_SCREEN_SCALE_FACTORS");
     qunsetenv("QT_USE_PHYSICAL_DPI");
+    qunsetenv("QT_SCALE_FACTOR_ROUNDING_POLICY");
 }
 
 void tst_QHighDpi::qhighdpiscaling_data()
@@ -348,6 +351,59 @@ void tst_QHighDpi::environment_QT_USE_PHYSICAL_DPI()
         QCOMPARE(screen->logicalDotsPerInch(), 96);
         QWindow window(screen);
         QCOMPARE(window.devicePixelRatio(), expextedDpr);
+    }
+}
+
+void tst_QHighDpi::environment_QT_SCALE_FACTOR_ROUNDING_POLICY()
+{
+    QList<qreal> dpiValues { 96, 144, 192 };
+
+    qputenv("QT_SCALE_FACTOR_ROUNDING_POLICY", "PassThrough");
+    {
+        std::unique_ptr<QGuiApplication> app(createStandardOffscreenApp(dpiValues));
+        for (int i = 0; i < dpiValues.count(); ++i)
+            QCOMPARE(app->screens()[i]->devicePixelRatio(), dpiValues[i] / qreal(96));
+    }
+
+    qputenv("QT_SCALE_FACTOR_ROUNDING_POLICY", "Round");
+    {
+        std::unique_ptr<QGuiApplication> app(createStandardOffscreenApp(dpiValues));
+        for (int i = 0; i < dpiValues.count(); ++i)
+            QCOMPARE(app->screens()[i]->devicePixelRatio(), qRound(dpiValues[i] / qreal(96)));
+    }
+
+    qunsetenv("QT_SCALE_FACTOR_ROUNDING_POLICY");
+    {
+        std::unique_ptr<QGuiApplication> app(createStandardOffscreenApp(dpiValues));
+        for (int i = 0; i < dpiValues.count(); ++i)
+            QCOMPARE(app->screens()[i]->devicePixelRatio(), dpiValues[i] / qreal(96));
+    }
+}
+
+void tst_QHighDpi::application_setScaleFactorRoundingPolicy()
+{
+    QList<qreal> dpiValues { 96, 144, 192 };
+    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::Round);
+    {
+        std::unique_ptr<QGuiApplication> app(createStandardOffscreenApp(dpiValues));
+        for (int i = 0; i < dpiValues.count(); ++i)
+            QCOMPARE(app->screens()[i]->devicePixelRatio(), qRound(dpiValues[i] / qreal(96)));
+    }
+
+    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+    {
+        std::unique_ptr<QGuiApplication> app(createStandardOffscreenApp(dpiValues));
+        for (int i = 0; i < dpiValues.count(); ++i)
+            QCOMPARE(app->screens()[i]->devicePixelRatio(), dpiValues[i] / qreal(96));
+    }
+
+    // Verify that environment overrides app setting
+    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::Round);
+    qputenv("QT_SCALE_FACTOR_ROUNDING_POLICY", "PassThrough");
+    {
+        std::unique_ptr<QGuiApplication> app(createStandardOffscreenApp(dpiValues));
+        for (int i = 0; i < dpiValues.count(); ++i)
+            QCOMPARE(app->screens()[i]->devicePixelRatio(), dpiValues[i] / qreal(96));
     }
 }
 
