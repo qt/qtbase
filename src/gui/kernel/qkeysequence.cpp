@@ -25,7 +25,7 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 
 #if defined(Q_OS_MACOS) || defined(Q_CLANG_QDOC)
-static bool qt_sequence_no_mnemonics = true;
+Q_CONSTINIT static bool qt_sequence_no_mnemonics = true;
 struct MacSpecialKey {
     int key;
     ushort macSymbol;
@@ -117,7 +117,7 @@ static int qtkeyForMacSymbol(const QChar ch)
 }
 
 #else
-static bool qt_sequence_no_mnemonics = false;
+Q_CONSTINIT static bool qt_sequence_no_mnemonics = false;
 #endif
 
 /*!
@@ -797,7 +797,7 @@ QKeySequence::QKeySequence(StandardKey key)
 */
 QKeySequence::QKeySequence()
 {
-    static QKeySequencePrivate shared_empty;
+    Q_CONSTINIT static QKeySequencePrivate shared_empty;
     d = &shared_empty;
     d->ref.ref();
 }
