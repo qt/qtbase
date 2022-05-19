@@ -20,6 +20,7 @@ qt_internal_add_3rdparty_library(BundledHarfbuzz
         src/hb-buffer-deserialize-json.hh
         src/hb-buffer-deserialize-text.hh
         src/hb-buffer-serialize.cc
+        src/hb-buffer-verify.cc
         src/hb-cache.hh
         src/hb-common.h
         src/hb-debug.hh
@@ -51,6 +52,7 @@ qt_internal_add_3rdparty_library(BundledHarfbuzz
         src/hb-subset-cff2.cc
         src/hb-subset-input.cc
         src/hb-subset-plan.cc
+        src/hb-subset-repacker.cc src/hb-subset-repacker.h
         src/hb-unicode.cc src/hb-unicode.h src/hb-unicode.hh
         src/hb-utf.hh
         src/hb-version.h
@@ -156,6 +158,7 @@ qt_internal_extend_target(BundledHarfbuzz CONDITION TRUE # special case
         src/hb-ot-shape-normalize.cc src/hb-ot-shape-normalize.hh
         src/hb-ot-tag.cc
         src/hb-ot-var.cc src/hb-ot-var.h
+        src/hb-ot-var-common.hh
         src/hb-ot-var-avar-table.hh
         src/hb-ot-var-fvar-table.hh
         src/hb-ot-var-hvar-table.hh
