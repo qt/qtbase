@@ -388,6 +388,10 @@ function(qt6_android_add_apk_target target)
         COMMENT "Copying ${target} binary to apk folder"
     )
 
+    if(QT_ANDROID_SIGN_APK)
+        set(sign_apk "--sign")
+    endif()
+
     set(extra_args "")
     if(QT_INTERNAL_NO_ANDROID_RCC_BUNDLE_CLEANUP)
         list(APPEND extra_args "--no-rcc-bundle-cleanup")
@@ -422,6 +426,7 @@ function(qt6_android_add_apk_target target)
                 --apk "${apk_final_file_path}"
                 --depfile "${dep_file_path}"
                 --builddir "${relative_to_dir}"
+                ${sign_apk}
                 ${extra_args}
             COMMENT "Creating APK for ${target}"
             DEPENDS "${target}" "${deployment_file}" ${extra_deps}
@@ -439,6 +444,7 @@ function(qt6_android_add_apk_target target)
                 --input ${deployment_file}
                 --output ${apk_final_dir}
                 --apk ${apk_final_file_path}
+                ${sign_apk}
                 ${extra_args}
             COMMENT "Creating APK for ${target}"
         )
