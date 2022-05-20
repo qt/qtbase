@@ -403,9 +403,11 @@ function(qt_internal_add_module target)
             "${module_build_interface_include_dir}/${module_include_name}Depends")
         if(is_framework)
             if(NOT is_interface_lib)
-                set(public_headers_to_copy "${module_headers_public}" "${module_depends_header}")
-                qt_copy_framework_headers(${target} PUBLIC "${public_headers_to_copy}")
-                qt_copy_framework_headers(${target} PRIVATE "${module_headers_private}")
+                qt_copy_framework_headers(${target}
+                    PUBLIC "${module_headers_public};${module_depends_header}"
+                    PRIVATE "${module_headers_private}"
+                    QPA "${module_headers_qpa}"
+                )
             endif()
         else()
             set_property(TARGET ${target} APPEND PROPERTY PUBLIC_HEADER "${module_headers_public}")
@@ -418,13 +420,9 @@ function(qt_internal_add_module target)
         endif()
 
         if(module_headers_qpa)
-            if(is_framework)
-                qt_copy_framework_headers(${target} QPA "${module_headers_qpa}")
-            else()
-                qt_install(
-                    FILES ${module_headers_qpa}
-                    DESTINATION "${module_install_interface_qpa_include_dir}")
-            endif()
+            qt_install(
+                FILES ${module_headers_qpa}
+                DESTINATION "${module_install_interface_qpa_include_dir}")
         endif()
     endif()
 

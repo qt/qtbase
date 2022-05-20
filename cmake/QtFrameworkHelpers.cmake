@@ -64,42 +64,37 @@ function(qt_copy_framework_headers target)
         return()
     endif()
 
-    set(options PUBLIC PRIVATE QPA)
+    set(options)
     set(oneValueArgs)
-    set(multiValueArgs)
-    cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    set(multiValueArgs PUBLIC PRIVATE QPA)
+    cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     qt_internal_get_framework_info(fw ${target})
-    set(fw_output_header_dir "${fw_versioned_header_dir}")
-    if(ARG_PRIVATE)
-        set(fw_output_header_dir "${fw_private_module_header_dir}/private")
-    elseif(ARG_QPA)
-        set(fw_output_header_dir "${fw_private_module_header_dir}/qpa")
-    endif()
-
     get_target_property(output_dir ${target} LIBRARY_OUTPUT_DIRECTORY)
-    set(fw_output_header_dir "${output_dir}/${fw_output_header_dir}")
+    set(output_dir_PUBLIC "${output_dir}/${fw_versioned_header_dir}")
+    set(output_dir_PRIVATE "${output_dir}/${fw_private_module_header_dir}/private")
+    set(output_dir_QPA "${output_dir}/${fw_private_module_header_dir}/qpa")
+
 
     set(out_files)
-    foreach(hdr IN LISTS ARG_UNPARSED_ARGUMENTS)
-        get_filename_component(in_file_path ${hdr} ABSOLUTE)
-        get_filename_component(in_file_name ${hdr} NAME)
-        set(out_file_path "${fw_output_header_dir}/${in_file_name}")
-        add_custom_command(
-            OUTPUT ${out_file_path}
-            DEPENDS ${in_file_path}
-            COMMAND ${CMAKE_COMMAND} -E make_directory "${fw_output_header_dir}"
-            COMMAND ${CMAKE_COMMAND} -E copy "${in_file_path}" "${fw_output_header_dir}"
-            VERBATIM)
-        list(APPEND out_files ${out_file_path})
+    foreach(type IN ITEMS PUBLIC PRIVATE QPA)
+        set(fw_output_header_dir "${output_dir_${type}}")
+        foreach(hdr IN LISTS arg_${type})
+            get_filename_component(in_file_path ${hdr} ABSOLUTE)
+            get_filename_component(in_file_name ${hdr} NAME)
+            set(out_file_path "${fw_output_header_dir}/${in_file_name}")
+            add_custom_command(
+                OUTPUT ${out_file_path}
+                DEPENDS ${in_file_path}
+                COMMAND ${CMAKE_COMMAND} -E make_directory "${fw_output_header_dir}"
+                COMMAND ${CMAKE_COMMAND} -E copy "${in_file_path}" "${fw_output_header_dir}"
+                VERBATIM)
+            list(APPEND out_files ${out_file_path})
+        endforeach()
     endforeach()
 
-    get_target_property(fw_copied_headers ${target} QT_COPIED_FRAMEWORK_HEADERS)
-    if(NOT fw_copied_headers)
-        set(fw_copied_headers "")
-    endif()
-    list(APPEND fw_copied_headers ${out_files})
-    set_target_properties(${target} PROPERTIES QT_COPIED_FRAMEWORK_HEADERS "${fw_copied_headers}")
+    set_property(TARGET ${target} APPEND PROPERTY
+        QT_COPIED_FRAMEWORK_HEADERS "${out_files}")
 endfunction()
 
 function(qt_finalize_framework_headers_copy target)
