@@ -313,9 +313,10 @@ void tst_QHighDpi::environment_QT_SCREEN_SCALE_FACTORS()
     QFETCH(QByteArray, environment);
     QFETCH(QList<qreal>, expectedDprValues);
 
+    qputenv("QT_SCREEN_SCALE_FACTORS", environment);
+
     // Verify that setting QT_SCREEN_SCALE_FACTORS overrides the from-platform-screen-DPI DPR.
     {
-        qputenv("QT_SCREEN_SCALE_FACTORS", environment);
         std::unique_ptr<QGuiApplication> app(createStandardOffscreenApp(platformScreenDpi));
         int i = 0;
         for (QScreen *screen : app->screens()) {
@@ -325,6 +326,18 @@ void tst_QHighDpi::environment_QT_SCREEN_SCALE_FACTORS()
             QCOMPARE(screen->logicalDotsPerInch(), 96);
             QWindow window(screen);
             QCOMPARE(window.devicePixelRatio(), expextedDpr);
+        }
+    }
+
+    // Verify that setHighDpiScaleFactorRoundingPolicy applies to QT_SCREEN_SCALE_FACTORS as well
+    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::Round);
+    {
+        std::unique_ptr<QGuiApplication> app(createStandardOffscreenApp(platformScreenDpi));
+        int i = 0;
+        for (QScreen *screen : app->screens()) {
+            qreal expectedRounderDpr = qRound(expectedDprValues[i++]);
+            qreal windowDpr = QWindow(screen).devicePixelRatio();
+            QCOMPARE(windowDpr, expectedRounderDpr);
         }
     }
 }

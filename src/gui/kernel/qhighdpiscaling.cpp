@@ -540,8 +540,10 @@ static const char scaleFactorProperty[] = "_q_scaleFactor";
 /*
     Sets a per-screen scale factor.
 */
-void QHighDpiScaling::setScreenFactor(QScreen *screen, qreal factor)
+void QHighDpiScaling::setScreenFactor(QScreen *screen, qreal rawFactor)
 {
+    qreal factor = roundScaleFactor(rawFactor);
+
     if (!qFuzzyCompare(factor, qreal(1))) {
         m_screenFactorSet = true;
         m_active = true;
