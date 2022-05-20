@@ -2157,9 +2157,14 @@ static QString readVersionRegistryString(const wchar_t *subKey)
             .stringValue(subKey);
 }
 
-static inline QString windows10ReleaseId()
+static inline QString windowsDisplayVersion()
 {
-    return readVersionRegistryString(L"ReleaseId");
+    // https://tickets.puppetlabs.com/browse/FACT-3058
+    // The "ReleaseId" key stopped updating since Windows 10 20H2.
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows10_20H2)
+        return readVersionRegistryString(L"DisplayVersion");
+    else
+        return readVersionRegistryString(L"ReleaseId");
 }
 
 static QString winSp_helper()
@@ -2880,9 +2885,9 @@ QString QSysInfo::prettyProductName()
     return result + " ("_L1 + versionString + u')';
 #  else
     // (resembling winver.exe): Windows 10 "Windows 10 Version 1809"
-    const auto releaseId = windows10ReleaseId();
-    if (!releaseId.isEmpty())
-        result += " Version "_L1 + releaseId;
+    const auto displayVersion = windowsDisplayVersion();
+    if (!displayVersion.isEmpty())
+        result += " Version "_L1 + displayVersion;
     return result;
 #  endif // Windows
 #elif defined(Q_OS_HAIKU)
