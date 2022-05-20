@@ -9,6 +9,7 @@
 
 #include <array>
 
+static constexpr bool IsBigEndian = QSysInfo::ByteOrder == QSysInfo::BigEndian;
 enum CodecLimitation {
     AsciiOnly,
     Latin1Only,
@@ -48,6 +49,16 @@ static const std::array codes = {
     Codec{ "System", QStringConverter::System, localeIsUtf8() ? FullUnicode : AsciiOnly }
 };
 
+static const std::array encodedBoms = {
+    QByteArrayView("\xef\xbb\xbf"),                         // Utf8,
+    QByteArrayView(IsBigEndian ? "\xfe\xff" : "\xff\xfe"),  // Utf16,
+    QByteArrayView("\xff\xfe"),                             // Utf16LE,
+    QByteArrayView("\xfe\xff"),                             // Utf16BE,
+    QByteArrayView(IsBigEndian ? "\0\0\xfe\xff" : "\xff\xfe\0", 4), // Utf32,
+    QByteArrayView("\xff\xfe\0", 4),                        // Utf32LE,
+    QByteArrayView("\0\0\xfe\xff", 4),                      // Utf32BE,
+};
+
 struct TestString
 {
     const char *description;
@@ -78,7 +89,7 @@ static const std::array testStrings = {
 
 #define ROW(name, string)       TestString{ name, u8"" string, u"" string }
     ROW("euro", "€"),
-    //ROW("bom", "\ufeff"),     // Can't test this because QString::fromUtf8 consumes it
+    ROW("character+bom", "b\ufeff"),
     ROW("replacement", "\ufffd"),
     ROW("supplementary-plane", "\U00010203"),
     ROW("mahjong", "\U0001f000\U0001f001\U0001f002\U0001f003\U0001f004\U0001f005"
@@ -120,6 +131,8 @@ private slots:
 
     void utf8bom_data();
     void utf8bom();
+    void roundtripBom_data();
+    void roundtripBom();
 
     void utf8stateful_data();
     void utf8stateful();
@@ -266,8 +279,6 @@ void tst_QStringConverter::roundtrip_data()
     QTest::addColumn<QStringView>("utf16");
     QTest::addColumn<QStringConverter::Encoding>("code");
 
-    // TODO: include flag variations, too.
-
     for (const auto code : codes) {
         for (const TestString &s : testStrings) {
             // rules:
@@ -299,8 +310,24 @@ void tst_QStringConverter::roundtrip()
     QStringEncoder out(code);
     QByteArray encoded = out.encode(utf16);
     QStringDecoder back(code);
-    const QString decoded = back.decode(encoded);
+    QString decoded = back.decode(encoded);
     QCOMPARE(decoded, utf16);
+
+    // test some flags
+    QStringConverter::Flags flag = QStringEncoder::Flag::Stateless;
+    {
+        QStringEncoder out2(code, flag);
+        QStringDecoder back2(code, flag);
+        decoded = back2.decode(out2.encode(utf16));
+        QCOMPARE(decoded, utf16);
+    }
+    flag |= QStringConverter::Flag::ConvertInvalidToNull;
+    {
+        QStringEncoder out2(code, flag);
+        QStringDecoder back2(code, flag);
+        decoded = back2.decode(out2.encode(utf16));
+        QCOMPARE(decoded, utf16);
+    }
 
     if (utf16.isEmpty())
         return;
@@ -314,6 +341,11 @@ void tst_QStringConverter::roundtrip()
     }
     QCOMPARE(out.encode(uniString), encoded);
     QCOMPARE(back.decode(encoded), uniString);
+
+    QStringEncoder out2(code, flag);
+    QStringDecoder back2(code, flag);
+    decoded = back2.decode(out2.encode(uniString));
+    QCOMPARE(decoded, uniString);
 }
 
 void tst_QStringConverter::nonFlaggedCodepointFFFF() const
@@ -1492,6 +1524,51 @@ void tst_QStringConverter::utf8bom()
     QStringDecoder decoder(QStringDecoder::Utf8);
 
     QCOMPARE(decoder(data), result);
+}
+
+// someone set us up the BOM!
+void tst_QStringConverter::roundtripBom_data()
+{
+    QTest::addColumn<QStringView>("utf16");
+    QTest::addColumn<QStringConverter::Encoding>("code");
+
+    for (const auto code : codes) {
+        if (size_t(code.code) >= encodedBoms.size())
+            break;
+        if (code.limitation != FullUnicode)
+            continue;           // can't represent BOM
+
+        for (const TestString &s : testStrings) {
+            if (s.utf16.isEmpty())
+                continue;
+            QTest::addRow("%s:%s", code.name, s.description) << s.utf16 << code.code;
+        }
+    }
+}
+
+void tst_QStringConverter::roundtripBom()
+{
+    QFETCH(QStringView, utf16);
+    QFETCH(QStringConverter::Encoding, code);
+    QByteArray encodedBom = encodedBoms[code].toByteArray();
+    QChar bom = QChar::ByteOrderMark;
+
+    // QStringConverter defaults to producing no BOM, but interpreting it if it
+    // is there
+
+    QStringEncoder encoderWithoutBom(code);
+    QStringEncoder encoderWithBom(code, QStringEncoder::Flag::WriteBom);
+    QByteArray encodedWithoutBom = encoderWithoutBom(utf16);
+    QByteArray encodedWithBom = encoderWithBom(utf16);
+    QCOMPARE(encodedWithBom, encodedBom + encodedWithoutBom);
+
+    QStringDecoder decoderWithoutBom(code, QStringDecoder::Flag::ConvertInitialBom);
+    QStringDecoder decoderWithBom(code);
+    QString decoded = decoderWithBom(encodedWithBom);
+    QCOMPARE(decoded, utf16);
+
+    decoded = decoderWithoutBom(encodedWithBom);
+    QCOMPARE(decoded, bom + utf16.toString());
 }
 
 void tst_QStringConverter::utf8stateful_data()
