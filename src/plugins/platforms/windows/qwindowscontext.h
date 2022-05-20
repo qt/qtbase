@@ -157,7 +157,7 @@ public:
     static void setTabletAbsoluteRange(int a);
     void setProcessDpiAwareness(QtWindows::ProcessDpiAwareness dpiAwareness);
     static int processDpiAwareness();
-    void setProcessDpiV2Awareness();
+    bool setProcessDpiV2Awareness();
 
     static bool isDarkMode();
 
