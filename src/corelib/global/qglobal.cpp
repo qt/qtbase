@@ -3003,18 +3003,10 @@ QByteArray QSysInfo::machineUniqueId()
     }
 #elif defined(Q_OS_WIN)
     // Let's poke at the registry
-    // ### Qt 6: Use new helpers from qwinregistry.cpp (once bootstrap builds are obsolete)
-    HKEY key = NULL;
-    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Cryptography", 0, KEY_READ | KEY_WOW64_64KEY, &key)
-            == ERROR_SUCCESS) {
-        wchar_t buffer[UuidStringLen + 1];
-        DWORD size = sizeof(buffer);
-        bool ok = (RegQueryValueEx(key, L"MachineGuid", NULL, NULL, (LPBYTE)buffer, &size) ==
-                   ERROR_SUCCESS);
-        RegCloseKey(key);
-        if (ok)
-            return QStringView(buffer, (size - 1) / 2).toLatin1();
-    }
+    const QString machineGuid = QWinRegistryKey(HKEY_LOCAL_MACHINE, LR"(SOFTWARE\Microsoft\Cryptography)")
+                                .stringValue(u"MachineGuid"_s);
+    if (!machineGuid.isEmpty())
+        return machineGuid.toLatin1();
 #endif
     return QByteArray();
 }
