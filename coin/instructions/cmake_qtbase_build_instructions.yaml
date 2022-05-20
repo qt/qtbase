@@ -1,9 +1,13 @@
 type: Group
 instructions:
+  - type: ChangeDirectory
+    directory: "{{.SourceDir}}"
   - type: MakeDirectory
     directory: .git
+  - type: MakeDirectory
+    directory: "{{.SourceDir}}_build"
   - type: SetBuildDirectory
-    directory: "{{.SourceDir}}"
+    directory: "{{.SourceDir}}_build"
   - type: ChangeDirectory
     directory: "{{.BuildDir}}"
 
