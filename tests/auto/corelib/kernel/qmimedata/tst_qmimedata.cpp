@@ -72,12 +72,19 @@ void tst_QMimeData::data() const
     mimeData.setData("text/plain", "pirates");
     QCOMPARE(mimeData.data("text/plain"), QByteArray("pirates"));
     QCOMPARE(mimeData.data("text/html").length(), 0);
+    QCOMPARE(mimeData.data("text/markdown").length(), 0);
 
     // html time
     mimeData.setData("text/html", "ninjas");
     QCOMPARE(mimeData.data("text/html"), QByteArray("ninjas"));
     QCOMPARE(mimeData.data("text/plain"), QByteArray("pirates")); // make sure text not damaged
     QCOMPARE(mimeData.data("text/html"), mimeData.html().toLatin1());
+
+    // markdown time
+    mimeData.setData("text/markdown", "vikings");
+    QCOMPARE(mimeData.data("text/markdown"), QByteArray("vikings"));
+    QCOMPARE(mimeData.data("text/html"), QByteArray("ninjas"));
+    QCOMPARE(mimeData.data("text/plain"), QByteArray("pirates"));
 }
 
 void tst_QMimeData::formats() const
@@ -91,6 +98,10 @@ void tst_QMimeData::formats() const
     // set html, verify
     mimeData.setData("text/html", "ninjas");
     QCOMPARE(mimeData.formats(), QStringList() << "text/plain" << "text/html");
+
+    // set markdown, verify
+    mimeData.setData("text/markdown", "vikings");
+    QCOMPARE(mimeData.formats(), QStringList() << "text/plain" << "text/html" << "text/markdown");
 
     // clear, verify
     mimeData.clear();

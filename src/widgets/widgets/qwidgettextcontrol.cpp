@@ -24,6 +24,7 @@
 #endif
 #include "qtextdocument.h"
 #include "private/qtextdocument_p.h"
+#include "private/qtextdocumentfragment_p.h"
 #include "qtextlist.h"
 #include "private/qwidgettextcontrol_p.h"
 #if QT_CONFIG(style_stylesheet)
@@ -2697,6 +2698,13 @@ void QWidgetTextControl::insertFromMimeData(const QMimeData *source)
 
     bool hasData = false;
     QTextDocumentFragment fragment;
+#if QT_CONFIG(textmarkdownreader)
+    if (source->formats().first() == "text/markdown"_L1) {
+        auto s = QString::fromUtf8(source->data("text/markdown"_L1));
+        fragment = QTextDocumentFragment::fromMarkdown(s);
+        hasData = true;
+    } else
+#endif
 #ifndef QT_NO_TEXTHTMLPARSER
     if (source->hasFormat("application/x-qrichtext"_L1) && d->acceptRichText) {
         // x-qrichtext is always UTF-8 (taken from Qt3 since we don't use it anymore).
@@ -2707,16 +2715,15 @@ void QWidgetTextControl::insertFromMimeData(const QMimeData *source)
     } else if (source->hasHtml() && d->acceptRichText) {
         fragment = QTextDocumentFragment::fromHtml(source->html(), d->doc);
         hasData = true;
-    } else {
-        QString text = source->text();
+    }
+#endif // QT_NO_TEXTHTMLPARSER
+    if (!hasData) {
+        const QString text = source->text();
         if (!text.isNull()) {
             fragment = QTextDocumentFragment::fromPlainText(text);
             hasData = true;
         }
     }
-#else
-    fragment = QTextDocumentFragment::fromPlainText(source->text());
-#endif // QT_NO_TEXTHTMLPARSER
 
     if (hasData)
         d->cursor.insertFragment(fragment);
@@ -3434,6 +3441,9 @@ QStringList QTextEditMimeData::formats() const
 {
     if (!fragment.isEmpty())
         return QStringList() << u"text/plain"_s << u"text/html"_s
+#if QT_CONFIG(textmarkdownwriter)
+            << u"text/markdown"_s
+#endif
 #ifndef QT_NO_TEXTODFWRITER
             << u"application/vnd.oasis.opendocument.text"_s
 #endif
@@ -3454,6 +3464,9 @@ void QTextEditMimeData::setup() const
     QTextEditMimeData *that = const_cast<QTextEditMimeData *>(this);
 #ifndef QT_NO_TEXTHTMLPARSER
     that->setData("text/html"_L1, fragment.toHtml().toUtf8());
+#endif
+#if QT_CONFIG(textmarkdownwriter)
+    that->setData("text/markdown"_L1, fragment.toMarkdown().toUtf8());
 #endif
 #ifndef QT_NO_TEXTODFWRITER
     {
