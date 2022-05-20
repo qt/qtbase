@@ -107,11 +107,10 @@ public:
     An object of this class, obtained from QGuiApplication, provides access to certain global
     user interface parameters of the current platform.
 
-    Access is read only; typically the platform itself provides the user a way to tune these
-    parameters.
-
-    Access to these parameters are useful when implementing custom user interface components, in that
-    they allow the components to exhibit the same behaviour and feel as other components.
+    Access to most settings is read only. The platform itself usually provides the user with
+    ways to tune these parameters. Authors of custom user interface components should read
+    relevant settings to allow the components to exhibit the same behavior and feel as other
+    components.
 
     \sa QGuiApplication::styleHints()
  */
