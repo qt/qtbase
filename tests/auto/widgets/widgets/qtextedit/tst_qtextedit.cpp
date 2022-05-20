@@ -114,7 +114,13 @@ private slots:
     void moveCursor();
 #ifndef QT_NO_CLIPBOARD
     void mimeDataReimplementations();
+#ifndef QT_NO_TEXTHTMLPARSER
+    void mimeTypesAvailableFromRichText();
 #endif
+#if QT_CONFIG(textmarkdownreader)
+    void mimeTypesAvailableFromMarkdown();
+#endif
+#endif // QT_NO_CLIPBOARD
     void ctrlEnterShouldInsertLineSeparator_NOT();
     void shiftEnterShouldInsertLineSeparator();
     void selectWordsFromStringsContainingSeparators_data();
@@ -150,6 +156,7 @@ private slots:
     void setDocumentPreservesPalette();
 #endif
     void pasteFromQt3RichText();
+    void pasteFromMarkdown();
     void noWrapBackgrounds();
     void preserveCharFormatAfterUnchangingSetPosition();
     void twoSameInputMethodEvents();
@@ -193,6 +200,7 @@ private:
     void createSelection();
     int blockCount() const;
     void compareWidgetAndImage(QTextEdit &widget, const QString &imageFileName);
+    bool isMainFontFixed();
 
     QTextEdit *ed;
     qreal rootFrameMargin;
@@ -1480,7 +1488,63 @@ void tst_QTextEdit::mimeDataReimplementations()
     QCOMPARE(ed.insertCallCount, 1);
 #endif
 }
+
+#ifndef QT_NO_TEXTHTMLPARSER
+void tst_QTextEdit::mimeTypesAvailableFromRichText()
+{
+    MyTextEdit ed;
+    ed.setHtml("<i>Hello <b>World</b></i>");
+    ed.selectAll();
+    ed.copy();
+    const auto *mimeData = QApplication::clipboard()->mimeData();
+    qCDebug(lcTests) << "available mime types" << mimeData->formats();
+    QVERIFY(mimeData->formats().contains("text/plain"));
+#if QT_CONFIG(textmarkdownwriter)
+    QVERIFY(mimeData->formats().contains("text/markdown"));
+    const QByteArray expectedMarkdown = "*Hello **World***\n\n";
+    if (mimeData->data("text/markdown") != expectedMarkdown && isMainFontFixed())
+        QEXPECT_FAIL("", "fixed-pitch main font (QTBUG-103484)", Continue);
+    QCOMPARE(mimeData->data("text/markdown"), expectedMarkdown);
 #endif
+#ifndef QT_NO_TEXTHTMLPARSER
+    QVERIFY(mimeData->formats().contains("text/html"));
+    QVERIFY(mimeData->hasHtml());
+#endif
+#ifndef QT_NO_TEXTODFWRITER
+    QVERIFY(mimeData->formats().contains("application/vnd.oasis.opendocument.text"));
+#endif
+}
+#endif // QT_NO_TEXTHTMLPARSER
+
+#if QT_CONFIG(textmarkdownreader)
+void tst_QTextEdit::mimeTypesAvailableFromMarkdown()
+{
+    MyTextEdit ed;
+    const QString md("# TODO\n\n- [x] Fix bugs\n- [ ] Have a beer\n");
+    ed.setMarkdown(md);
+    ed.selectAll();
+    ed.copy();
+    const auto *mimeData = QApplication::clipboard()->mimeData();
+    qCDebug(lcTests) << "available mime types" << mimeData->formats();
+    QVERIFY(mimeData->formats().contains("text/plain"));
+#if QT_CONFIG(textmarkdownwriter)
+    QVERIFY(mimeData->formats().contains("text/markdown"));
+    if (mimeData->data("text/markdown") != md && isMainFontFixed())
+        QEXPECT_FAIL("", "fixed-pitch main font (QTBUG-103484)", Continue);
+    QCOMPARE(mimeData->data("text/markdown"), md);
+#endif
+#ifndef QT_NO_TEXTHTMLPARSER
+    QVERIFY(mimeData->formats().contains("text/html"));
+    QVERIFY(mimeData->hasHtml());
+    QVERIFY(mimeData->html().contains("checked")); // <li class=\"checked\" ...
+#endif
+#ifndef QT_NO_TEXTODFWRITER
+    QVERIFY(mimeData->formats().contains("application/vnd.oasis.opendocument.text"));
+#endif
+}
+#endif // textmarkdownreader
+
+#endif // QT_NO_CLIPBOARD
 
 void tst_QTextEdit::ctrlEnterShouldInsertLineSeparator_NOT()
 {
@@ -2133,6 +2197,18 @@ void tst_QTextEdit::compareWidgetAndImage(QTextEdit &widget, const QString &imag
     }
 }
 
+bool tst_QTextEdit::isMainFontFixed()
+{
+    bool ret = QFontInfo(QGuiApplication::font()).fixedPitch();
+    if (ret) {
+        qCWarning(lcTests) << "QFontDatabase::GeneralFont is monospaced: markdown writing is likely to use too many backticks";
+        qCWarning(lcTests) << "system fonts: fixed" << QFontDatabase::systemFont(QFontDatabase::FixedFont)
+                           << "fixed?" << QFontInfo(QFontDatabase::systemFont(QFontDatabase::FixedFont)).fixedPitch()
+                           << "general" << QFontDatabase::systemFont(QFontDatabase::GeneralFont);
+    }
+    return ret;
+}
+
 void tst_QTextEdit::cursorRect()
 {
     ed->show();
@@ -2197,6 +2273,24 @@ void tst_QTextEdit::pasteFromQt3RichText()
     static_cast<PublicTextEdit *>(ed)->publicInsertFromMimeData(&mimeData);
 
     QCOMPARE(ed->toPlainText(), QString::fromLatin1("  QTextEdit is an  "));
+}
+
+void tst_QTextEdit::pasteFromMarkdown()
+{
+    QByteArray richtext("*This* text is **rich**");
+
+    QMimeData mimeData;
+    mimeData.setData("text/markdown", richtext);
+
+    static_cast<PublicTextEdit *>(ed)->publicInsertFromMimeData(&mimeData);
+
+    QCOMPARE(ed->toPlainText(), "This text is rich");
+#if QT_CONFIG(textmarkdownwriter)
+    const auto expectedMarkdown = QString::fromLatin1(richtext + "\n\n");
+    if (ed->toMarkdown() != expectedMarkdown && isMainFontFixed())
+        QEXPECT_FAIL("", "fixed-pitch main font (QTBUG-103484)", Continue);
+    QCOMPARE(ed->toMarkdown(), expectedMarkdown);
+#endif
 }
 
 void tst_QTextEdit::noWrapBackgrounds()
