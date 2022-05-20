@@ -814,6 +814,8 @@ bool QPicture::exec(QPainter *painter, QDataStream &s, int nrecords)
                                    bool(ul & QPainter::Antialiasing));
             painter->setRenderHint(QPainter::SmoothPixmapTransform,
                                    bool(ul & QPainter::SmoothPixmapTransform));
+            painter->setRenderHint(QPainter::NonCosmeticBrushPatterns,
+                                   bool(ul & QPainter::NonCosmeticBrushPatterns));
             break;
         case QPicturePrivate::PdcSetCompositionMode:
             s >> ul;

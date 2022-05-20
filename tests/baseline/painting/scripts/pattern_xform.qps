@@ -1,0 +1,78 @@
+# Version: 1
+# CheckVsReference: 5%
+
+#define basic block off screen
+save
+translate -1000 -1000
+begin_block drawrects
+setBrush green Dense4Pattern
+drawRect 0 0 40 40
+setBrush green DiagCrossPattern
+drawRect 40 0 40 40
+setBrush green VerPattern
+brushRotate 30
+drawRect 80 0 40 40
+save
+setPen brush 40 SolidLine FlatCap
+setBrush NoBrush
+drawLine 120 20 160 20
+restore
+end_block
+restore
+
+begin_block hintsuite
+save
+setRenderHint NonCosmeticBrushPatterns false
+setRenderHint SmoothPixmapTransform false
+translate 10 10
+repeat_block drawrects
+
+setRenderHint NonCosmeticBrushPatterns false
+setRenderHint SmoothPixmapTransform true
+translate 0 50
+repeat_block drawrects
+
+setRenderHint NonCosmeticBrushPatterns true
+setRenderHint SmoothPixmapTransform false
+translate 0 50
+repeat_block drawrects
+
+setRenderHint NonCosmeticBrushPatterns true
+setRenderHint SmoothPixmapTransform true
+translate 0 50
+repeat_block drawrects
+restore
+end_block
+
+save
+translate 0 200
+scale 2 2
+repeat_block hintsuite
+restore
+
+save
+translate 500 0
+scale 1.5 2.5
+rotate_y 60
+repeat_block hintsuite
+restore
+
+
+translate 0 650
+setBrush blue CrossPattern
+setPen red
+setRenderHint NonCosmeticBrushPatterns false
+
+begin_block dots
+save
+drawRect 0 0 50 50
+setBrushOrigin 12 0
+drawRect 50 0 50 50
+scale 2 1
+drawRect 50 0 50 50
+restore
+end_block dots
+
+setRenderHint NonCosmeticBrushPatterns true
+translate 0 60
+repeat_block dots

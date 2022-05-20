@@ -175,6 +175,12 @@ const char *PaintCommands::imageFormatTable[] = {
     "RGBA32FPx4_Premultiplied",
 };
 
+const char *PaintCommands::renderHintTable[] = {
+    "Antialiasing",
+    "SmoothPixmapTransform",
+    "NonCosmeticBrushPatterns"
+};
+
 int PaintCommands::translateEnum(const char *table[], const QString &pattern, int limit)
 {
     QByteArray p = pattern.toLatin1().toLower();
@@ -313,7 +319,7 @@ void PaintCommands::staticInit()
                       "pen_setCosmetic true");
     DECL_PAINTCOMMAND("setRenderHint", command_setRenderHint,
                       "^setRenderHint\\s+([\\w_0-9]*)\\s*(\\w*)$",
-                      "setRenderHint <Antialiasing|SmoothPixmapTransform> <true|false>",
+                      "setRenderHint <hint> <true|false>",
                       "setRenderHint Antialiasing true");
     DECL_PAINTCOMMAND("clearRenderHint", command_clearRenderHint,
                       "^clearRenderHint$",
@@ -665,6 +671,7 @@ void PaintCommands::staticInit()
     ADD_ENUMLIST("image formats", imageFormatTable);
     ADD_ENUMLIST("coordinate modes", coordinateMethodTable);
     ADD_ENUMLIST("size modes", sizeModeTable);
+    ADD_ENUMLIST("render hints", renderHintTable);
 }
 
 #undef DECL_PAINTCOMMAND
@@ -2240,18 +2247,27 @@ void PaintCommands::command_setPen2(QRegularExpressionMatch re)
 void PaintCommands::command_setRenderHint(QRegularExpressionMatch re)
 {
     QString hintString = re.captured(1).toLower();
-    bool on = re.captured(2).isEmpty() || re.captured(2).toLower() == "true";
-    if (hintString.contains("antialiasing")) {
-        if (m_verboseMode)
-            printf(" -(lance) setRenderHint Antialiasing\n");
+    QString setting = re.captured(2).toLower();
 
-        m_painter->setRenderHint(QPainter::Antialiasing, on);
+    bool on = setting.isEmpty() || setting == "true" || setting == "on";
+    QPainter::RenderHint hint;
+    int hintIdx = -1;
+    if (hintString.contains("antialiasing")) {
+        hintIdx = 0;
+        hint = QPainter::Antialiasing;
     } else if (hintString.contains("smoothpixmaptransform")) {
+        hintIdx = 1;
+        hint = QPainter::SmoothPixmapTransform;
+    } else if (hintString.contains("noncosmeticbrushpatterns")) {
+        hintIdx = 2;
+        hint = QPainter::NonCosmeticBrushPatterns;
+    }
+    if (hintIdx >= 0) {
         if (m_verboseMode)
-            printf(" -(lance) setRenderHint SmoothPixmapTransform\n");
-        m_painter->setRenderHint(QPainter::SmoothPixmapTransform, on);
+            printf(" -(lance) setRenderHint %s %s\n", renderHintTable[hintIdx], on ? "true" : "false");
+        m_painter->setRenderHint(hint, on);
     } else {
-        fprintf(stderr, "ERROR(setRenderHint): unknown hint '%s'\n", qPrintable(hintString));
+        fprintf(stderr, "ERROR(setRenderHint): unknown hint '%s'\n", qPrintable(re.captured(1)));
     }
 }
 
@@ -2260,6 +2276,7 @@ void PaintCommands::command_clearRenderHint(QRegularExpressionMatch /*re*/)
 {
     m_painter->setRenderHint(QPainter::Antialiasing, false);
     m_painter->setRenderHint(QPainter::SmoothPixmapTransform, false);
+    m_painter->setRenderHint(QPainter::NonCosmeticBrushPatterns, false);
     if (m_verboseMode)
         printf(" -(lance) clearRenderHint\n");
 }

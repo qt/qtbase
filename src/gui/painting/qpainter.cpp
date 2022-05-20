@@ -1412,6 +1412,12 @@ void QPainterPrivate::updateState(QPainterState *newState)
     JPEG compression.
     This value was added in Qt 5.13.
 
+    \value NonCosmeticBrushPatterns When painting with a brush with one of the predefined pattern
+    styles, transform the pattern too, along with the object being painted. The default is to treat
+    the pattern as cosmetic, so that the pattern pixels will map directly to device pixels,
+    independently of any active transformations.
+    This value was added in Qt 6.4.
+
     \sa renderHints(), setRenderHint(), {QPainter#Rendering
     Quality}{Rendering Quality}, {Concentric Circles Example}
 

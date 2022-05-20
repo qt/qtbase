@@ -426,12 +426,12 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
     d->rasterizer->setClipRect(d->deviceRect);
 
     s->penData.init(d->rasterBuffer.data(), this);
-    s->penData.setup(s->pen.brush(), s->intOpacity, s->composition_mode);
+    s->penData.setup(s->pen.brush(), s->intOpacity, s->composition_mode, s->flags.cosmetic_brush);
     s->stroker = &d->basicStroker;
     d->basicStroker.setClipRect(d->deviceRect);
 
     s->brushData.init(d->rasterBuffer.data(), this);
-    s->brushData.setup(s->brush, s->intOpacity, s->composition_mode);
+    s->brushData.setup(s->brush, s->intOpacity, s->composition_mode, s->flags.cosmetic_brush);
 
     d->rasterBuffer->compositionMode = QPainter::CompositionMode_SourceOver;
 
@@ -523,6 +523,7 @@ QRasterPaintEngineState::QRasterPaintEngineState()
     flags.fast_text = true;
     flags.tx_noshear = true;
     flags.fast_images = true;
+    flags.cosmetic_brush = true;
 
     clip = nullptr;
     flags.has_clip_ownership = false;
@@ -621,7 +622,8 @@ void QRasterPaintEngine::updatePen(const QPen &pen)
     s->strokeFlags = 0;
 
     s->penData.clip = d->clip();
-    s->penData.setup(pen_style == Qt::NoPen ? QBrush() : pen.brush(), s->intOpacity, s->composition_mode);
+    s->penData.setup(pen_style == Qt::NoPen ? QBrush() : pen.brush(), s->intOpacity,
+                     s->composition_mode, s->flags.cosmetic_brush);
 
     if (s->strokeFlags & QRasterPaintEngine::DirtyTransform
         || pen.brush().transform().type() >= QTransform::TxNone) {
@@ -720,7 +722,7 @@ void QRasterPaintEngine::updateBrush(const QBrush &brush)
     QRasterPaintEngineState *s = state();
     // must set clip prior to setup, as setup uses it...
     s->brushData.clip = d->clip();
-    s->brushData.setup(brush, s->intOpacity, s->composition_mode);
+    s->brushData.setup(brush, s->intOpacity, s->composition_mode, s->flags.cosmetic_brush);
     if (s->fillFlags & DirtyTransform
         || brush.transform().type() >= QTransform::TxNone)
         d_func()->updateMatrixData(&s->brushData, brush, d->brushMatrix());
@@ -807,14 +809,16 @@ void QRasterPaintEngine::renderHintsChanged()
 
     bool was_aa = s->flags.antialiased;
     bool was_bilinear = s->flags.bilinear;
+    bool was_cosmetic_brush = s->flags.cosmetic_brush;
 
     s->flags.antialiased = bool(s->renderHints & QPainter::Antialiasing);
     s->flags.bilinear = bool(s->renderHints & QPainter::SmoothPixmapTransform);
+    s->flags.cosmetic_brush = !bool(s->renderHints & QPainter::NonCosmeticBrushPatterns);
 
     if (was_aa != s->flags.antialiased)
         s->strokeFlags |= DirtyHints;
 
-    if (was_bilinear != s->flags.bilinear) {
+    if (was_bilinear != s->flags.bilinear || was_cosmetic_brush != s->flags.cosmetic_brush) {
         s->strokeFlags |= DirtyPen;
         s->fillFlags |= DirtyBrush;
     }
@@ -4472,7 +4476,8 @@ void QSpanData::init(QRasterBuffer *rb, const QRasterPaintEngine *pe)
 
 Q_GUI_EXPORT extern QImage qt_imageForBrush(int brushStyle, bool invert);
 
-void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode compositionMode)
+void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode compositionMode,
+                      bool isCosmetic)
 {
     Qt::BrushStyle brushStyle = qbrush_style(brush);
     cachedGradient.reset();
@@ -4579,7 +4584,7 @@ void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode 
         if (!tempImage)
             tempImage = new QImage();
         *tempImage = rasterBuffer->colorizeBitmap(qt_imageForBrush(brushStyle, true), brush.color());
-        initTexture(tempImage, alpha, QTextureData::Pattern);
+        initTexture(tempImage, alpha, isCosmetic ? QTextureData::Pattern : QTextureData::Tiled);
         break;
     case Qt::TexturePattern:
         type = Texture;

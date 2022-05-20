@@ -54,6 +54,7 @@ public:
         SmoothPixmapTransform = 0x04,
         VerticalSubpixelPositioning = 0x08,
         LosslessImageRendering = 0x40,
+        NonCosmeticBrushPatterns = 0x80
     };
     Q_ENUM(RenderHint)
 

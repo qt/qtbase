@@ -345,7 +345,7 @@ struct QSpanData
 
 
     void init(QRasterBuffer *rb, const QRasterPaintEngine *pe);
-    void setup(const QBrush &brush, int alpha, QPainter::CompositionMode compositionMode);
+    void setup(const QBrush &brush, int alpha, QPainter::CompositionMode compositionMode, bool isCosmetic);
     void setupMatrix(const QTransform &matrix, int bilinear);
     void initTexture(const QImage *image, int alpha, QTextureData::Type = QTextureData::Plain, const QRect &sourceRect = QRect());
     void adjustSpanMethods();

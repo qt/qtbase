@@ -76,6 +76,7 @@ public:
         uint fast_text : 1;
         uint tx_noshear : 1;
         uint fast_images : 1;
+        uint cosmetic_brush : 1;
     };
 
     union {

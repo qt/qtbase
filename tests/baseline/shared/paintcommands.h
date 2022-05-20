@@ -280,6 +280,7 @@ private:
     static const char *compositionModeTable[];
     static const char *imageFormatTable[];
     static const char *sizeModeTable[];
+    static const char *renderHintTable[];
     static int translateEnum(const char *table[], const QString &pattern, int limit);
 
     // utility

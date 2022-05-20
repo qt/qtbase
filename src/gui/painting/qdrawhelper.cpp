@@ -3581,20 +3581,20 @@ static const CompositionFunctionFP *functionForModeFP = qt_functionForModeFP_C;
 static TextureBlendType getBlendType(const QSpanData *data)
 {
     TextureBlendType ft;
-    if (data->txop <= QTransform::TxTranslate)
-        if (data->texture.type == QTextureData::Tiled || data->texture.type == QTextureData::Pattern)
+    if (data->texture.type == QTextureData::Pattern)
+        ft = BlendTiled;
+    else if (data->txop <= QTransform::TxTranslate)
+        if (data->texture.type == QTextureData::Tiled)
             ft = BlendTiled;
         else
             ft = BlendUntransformed;
     else if (data->bilinear)
-        if (data->texture.type == QTextureData::Tiled || data->texture.type == QTextureData::Pattern)
+        if (data->texture.type == QTextureData::Tiled)
             ft = BlendTransformedBilinearTiled;
         else
             ft = BlendTransformedBilinear;
     else
-        if (data->texture.type == QTextureData::Pattern)
-            ft = BlendTiled;
-        else if (data->texture.type == QTextureData::Tiled)
+        if (data->texture.type == QTextureData::Tiled)
             ft = BlendTransformedTiled;
         else
             ft = BlendTransformed;
