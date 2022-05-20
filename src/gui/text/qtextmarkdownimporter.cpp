@@ -539,8 +539,6 @@ int QTextMarkdownImporter::cbText(int textType, const char *text, unsigned size)
                     QString::number(bfmt.intProperty(QTextFormat::BlockQuoteLevel));
         if (bfmt.hasProperty(QTextFormat::BlockCodeLanguage))
             debugInfo += "in a code block"_L1;
-        if (m_cursor->currentList())
-            debugInfo += "in a list"_L1;
         qCDebug(lcMD) << textType << "in block" << m_blockType << s << qPrintable(debugInfo)
                       << "bindent" << bfmt.indent() << "tindent" << bfmt.textIndent()
                       << "margins" << bfmt.leftMargin() << bfmt.topMargin() << bfmt.bottomMargin() << bfmt.rightMargin();
