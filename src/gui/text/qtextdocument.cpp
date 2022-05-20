@@ -2372,6 +2372,8 @@ QString QTextHtmlExporter::toHtml(ExportMode mode)
     html += "<style type=\"text/css\">\n"_L1;
     html += "p, li { white-space: pre-wrap; }\n"_L1;
     html += "hr { height: 1px; border-width: 0; }\n"_L1;
+    html += "li.unchecked::marker { content: \"\\2610\"; }\n"_L1;
+    html += "li.checked::marker { content: \"\\2612\"; }\n"_L1;
     html += "</style>"_L1;
     html += "</head><body"_L1;
 
@@ -3038,7 +3040,7 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
 
             html += " style=\""_L1;
             html += styleString;
-            html += "\">"_L1;
+            html += "\">\n"_L1;
         }
 
         html += "<li"_L1;
@@ -3050,6 +3052,18 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
             html += u'\"';
 
             defaultCharFormat.merge(block.charFormat());
+        }
+        if (block.blockFormat().hasProperty(QTextFormat::BlockMarker)) {
+            switch (block.blockFormat().marker()) {
+            case QTextBlockFormat::MarkerType::Checked:
+                html += " class=\"checked\""_L1;
+                break;
+            case QTextBlockFormat::MarkerType::Unchecked:
+                html += " class=\"unchecked\""_L1;
+                break;
+            case QTextBlockFormat::MarkerType::NoMarker:
+                break;
+            }
         }
     }
 

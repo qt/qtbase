@@ -1636,6 +1636,14 @@ void QTextHtmlParser::applyAttributes(const QStringList &attributes)
                     }
                 }
                 break;
+            case Html_li:
+                if (key == "class"_L1) {
+                    if (value == "unchecked"_L1)
+                        node->blockFormat.setMarker(QTextBlockFormat::MarkerType::Unchecked);
+                    else if (value == "checked"_L1)
+                        node->blockFormat.setMarker(QTextBlockFormat::MarkerType::Checked);
+                }
+                break;
             case Html_a:
                 if (key == "href"_L1)
                     node->charFormat.setAnchorHref(value);

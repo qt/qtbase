@@ -502,6 +502,9 @@ void tst_QTextMarkdownWriter::fromHtml_data()
     QTest::newRow("preformats with embedded backticks") <<
         "<pre>none `one` ``two``</pre>plain<pre>```three``` ````four````</pre>plain" <<
         "```\nnone `one` ``two``\n\n```\nplain\n\n```\n```three``` ````four````\n\n```\nplain\n\n";
+    QTest::newRow("list items with and without checkboxes") <<
+        "<ul><li>bullet</li><li class=\"unchecked\">unchecked item</li><li class=\"checked\">checked item</li></ul>" <<
+        "- bullet\n- [ ] unchecked item\n- [x] checked item\n";
 }
 
 void tst_QTextMarkdownWriter::fromHtml()
