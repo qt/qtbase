@@ -3705,7 +3705,7 @@ void QTextDocumentLayout::draw(QPainter *painter, const PaintContext &context)
     }
 
     QFixed width = fd->size.width;
-    if (d->document->pageSize().width() == -1 && d->viewportRect.isValid()) {
+    if (d->document->pageSize().width() == 0 && d->viewportRect.isValid()) {
         // we're in NoWrap mode, meaning the frame should expand to the viewport
         // so that backgrounds are drawn correctly
         fd->size.width = qMax(width, QFixed::fromReal(d->viewportRect.right()));
@@ -3754,7 +3754,7 @@ void QTextDocumentLayout::documentChanged(int from, int oldLength, int length)
      for (; blockIt.isValid() && blockIt != endIt; blockIt = blockIt.next())
          blockIt.clearLayout();
 
-    if (!d->docPrivate->canLayout())
+    if (d->docPrivate->pageSize.isNull())
         return;
 
     QRectF updateRect;
@@ -4032,7 +4032,7 @@ QRectF QTextDocumentLayout::tableCellBoundingRect(QTextTable *table, const QText
 QRectF QTextDocumentLayout::tableBoundingRect(QTextTable *table) const
 {
     Q_D(const QTextDocumentLayout);
-    if (!d->docPrivate->canLayout())
+    if (d->docPrivate->pageSize.isNull())
         return QRectF();
     d->ensureLayoutFinished();
 
@@ -4059,7 +4059,7 @@ QRectF QTextDocumentLayout::tableBoundingRect(QTextTable *table) const
 QRectF QTextDocumentLayout::frameBoundingRect(QTextFrame *frame) const
 {
     Q_D(const QTextDocumentLayout);
-    if (!d->docPrivate->canLayout())
+    if (d->docPrivate->pageSize.isNull())
         return QRectF();
     d->ensureLayoutFinished();
     return d->frameBoundingRectInternal(frame);
@@ -4088,7 +4088,7 @@ QRectF QTextDocumentLayoutPrivate::frameBoundingRectInternal(QTextFrame *frame) 
 QRectF QTextDocumentLayout::blockBoundingRect(const QTextBlock &block) const
 {
     Q_D(const QTextDocumentLayout);
-    if (!d->docPrivate->canLayout() || !block.isValid() || !block.isVisible())
+    if (d->docPrivate->pageSize.isNull() || !block.isValid() || !block.isVisible())
         return QRectF();
     d->ensureLayoutedByPosition(block.position() + block.length());
     QTextFrame *frame = d->document->frameAt(block.position());

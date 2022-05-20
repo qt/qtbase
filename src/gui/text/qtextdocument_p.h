@@ -291,11 +291,6 @@ public:
         return get(object->document());
     }
 
-    // Only test the width for 0:
-    // * setTextWidth(x) leads to height -1, which is valid
-    // * the default page size of (-1, -1) means size determined from contents, this is valid too
-    bool canLayout() const { return layoutEnabled && !qIsNull(pageSize.width()); }
-
 private:
     QTextDocumentPrivate(const QTextDocumentPrivate& m);
     QTextDocumentPrivate& operator= (const QTextDocumentPrivate& m);
@@ -342,7 +337,6 @@ private:
 
 public:
     bool inContentsChange;
-    bool layoutEnabled = true;
     QTextOption defaultTextOption;
     Qt::CursorMoveStyle defaultCursorMoveStyle;
 #ifndef QT_NO_CSSPARSER

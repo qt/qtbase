@@ -62,7 +62,6 @@ class Q_GUI_EXPORT QTextDocument : public QObject
     Q_PROPERTY(QSizeF pageSize READ pageSize WRITE setPageSize)
     Q_PROPERTY(QFont defaultFont READ defaultFont WRITE setDefaultFont)
     Q_PROPERTY(bool useDesignMetrics READ useDesignMetrics WRITE setUseDesignMetrics)
-    Q_PROPERTY(bool layoutEnabled READ isLayoutEnabled WRITE setLayoutEnabled)
     Q_PROPERTY(QSizeF size READ size)
     Q_PROPERTY(qreal textWidth READ textWidth WRITE setTextWidth)
     Q_PROPERTY(int blockCount READ blockCount)
@@ -218,9 +217,6 @@ public:
 
     void setUseDesignMetrics(bool b);
     bool useDesignMetrics() const;
-
-    void setLayoutEnabled(bool b);
-    bool isLayoutEnabled() const;
 
     void drawContents(QPainter *painter, const QRectF &rect = QRectF());
 
