@@ -74,6 +74,7 @@ static const std::array testStrings = {
                 "This is a standard US-ASCII message" u"",
                 AsciiOnly
     },
+    TestString{ "ascii-with-carriage-return", "a\rb", u"a\rb", AsciiOnly },
     TestString{ "ascii-with-control",
                 "\1This\2is\3an\4US-ASCII\020 message interspersed with control chars",
                 "\1This\2is\3an\4US-ASCII\020 message interspersed with control chars" u"",
@@ -90,6 +91,11 @@ static const std::array testStrings = {
 #define ROW(name, string)       TestString{ name, u8"" string, u"" string }
     ROW("euro", "€"),
     ROW("character+bom", "b\ufeff"),
+    /* Check that the codec does NOT flag EFBFBF.
+     * This is a regression test; see QTBUG-33229
+     */
+    ROW("last-bmp", "\uffff"),
+    ROW("character+last-bmp", "b\uffff"),
     ROW("replacement", "\ufffd"),
     ROW("supplementary-plane", "\U00010203"),
     ROW("mahjong", "\U0001f000\U0001f001\U0001f002\U0001f003\U0001f004\U0001f005"
@@ -121,10 +127,7 @@ private slots:
     void roundtrip_data();
     void roundtrip();
 
-    void nonFlaggedCodepointFFFF() const;
     void flagF7808080() const;
-    void nonFlaggedEFBFBF() const;
-    void decode0D() const;
 
     void utf8Codec_data();
     void utf8Codec();
@@ -348,23 +351,6 @@ void tst_QStringConverter::roundtrip()
     QCOMPARE(decoded, uniString);
 }
 
-void tst_QStringConverter::nonFlaggedCodepointFFFF() const
-{
-    //Check that the code point 0xFFFF (=non-character code 0xEFBFBF) is not flagged
-    const QChar ch(0xFFFF);
-
-    QStringEncoder encoder(QStringEncoder::Utf8);
-    QVERIFY(encoder.isValid());
-
-    const QByteArray asDecoded = encoder(QStringView(&ch, 1));
-    QCOMPARE(asDecoded, QByteArray("\357\277\277"));
-
-    QByteArray ffff("\357\277\277");
-    QStringDecoder decoder(QStringEncoder::Utf8, QStringDecoder::Flag::ConvertInvalidToNull);
-    QVERIFY(decoder.isValid());
-    QVERIFY(decoder(ffff) == QString(1, ch));
-}
-
 void tst_QStringConverter::flagF7808080() const
 {
     /* This test case stems from test not-wf-sa-170, tests/qxmlstream/XML-Test-Suite/xmlconf/xmltest/not-wf/sa/166.xml,
@@ -393,45 +379,6 @@ void tst_QStringConverter::flagF7808080() const
     QVERIFY(decoder.isValid());
 
     QCOMPARE(decoder(input), QString(input.size(), QChar(0)));
-}
-
-void tst_QStringConverter::nonFlaggedEFBFBF() const
-{
-    /* Check that the codec does NOT flag EFBFBF.
-     * This is a regression test; see QTBUG-33229
-     */
-    QByteArray validInput;
-    validInput.resize(3);
-    validInput[0] = char(0xEF);
-    validInput[1] = char(0xBF);
-    validInput[2] = char(0xBF);
-
-    {
-        QStringDecoder decoder(QStringEncoder::Utf8, QStringDecoder::Flag::ConvertInvalidToNull);
-        QVERIFY(decoder.isValid());
-        QVERIFY(decoder(validInput) == QString::fromUtf8(QByteArray::fromHex("EFBFBF")));
-    }
-
-    // Check that 0xEFBFBF is correctly decoded when preceded by an arbitrary character
-    {
-        QByteArray start("B");
-        start.append(validInput);
-
-        QStringDecoder decoder(QStringEncoder::Utf8, QStringDecoder::Flag::ConvertInvalidToNull);
-        QVERIFY(decoder.isValid());
-        QVERIFY(decoder(start) == QString::fromUtf8(QByteArray("B").append(QByteArray::fromHex("EFBFBF"))));
-    }
-}
-
-void tst_QStringConverter::decode0D() const
-{
-    QByteArray input;
-    input.resize(3);
-    input[0] = 'A';
-    input[1] = '\r';
-    input[2] = 'B';
-
-    QCOMPARE(QString::fromUtf8(input.constData()).toUtf8(), input);
 }
 
 static QString fromInvalidUtf8Sequence(const QByteArray &ba)
