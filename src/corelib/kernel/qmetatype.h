@@ -1562,7 +1562,7 @@ struct SharedPointerMetaTypeIdHelper<SMART_POINTER<T>, true> \
 }; \
 template<typename T> \
 struct MetaTypeSmartPointerHelper<SMART_POINTER<T> , \
-        typename std::enable_if<IsPointerToTypeDerivedFromQObject<T*>::Value>::type> \
+        typename std::enable_if<IsPointerToTypeDerivedFromQObject<T*>::Value && !std::is_const_v<T>>::type> \
 { \
     static bool registerConverter() \
     { \

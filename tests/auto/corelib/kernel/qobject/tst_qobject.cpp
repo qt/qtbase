@@ -8238,5 +8238,22 @@ void tst_QObject::emitToDestroyedClass()
 static_assert(QtPrivate::HasQ_OBJECT_Macro<tst_QObject>::Value);
 static_assert(!QtPrivate::HasQ_OBJECT_Macro<SiblingDeleter>::Value);
 
+Q_DECLARE_SMART_POINTER_METATYPE(std::shared_ptr)
+Q_DECLARE_SMART_POINTER_METATYPE(std::unique_ptr)
+
+
+// QTBUG-103741: OK to use smart pointers to const QObject in signals/slots
+class SenderWithSharedPointerConstQObject : public QObject
+{
+    Q_OBJECT
+
+signals:
+    void aSignal1(const QSharedPointer<const QObject> &);
+    void aSignal2(const QWeakPointer<const QObject> &);
+    void aSignal3(const QPointer<const QObject> &);
+    void aSignal4(const std::shared_ptr<const QObject> &);
+    void aSignal5(const std::unique_ptr<const QObject> &);
+};
+
 QTEST_MAIN(tst_QObject)
 #include "tst_qobject.moc"
