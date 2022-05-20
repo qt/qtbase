@@ -79,7 +79,7 @@ read_32bit_value() {
 
 otool_args=
 otool() {
-    command otool $otool_args $*
+    command otool $otool_args "$@"
 }
 
 declare -a extra_classnames_files
@@ -197,13 +197,13 @@ if [ "${mach_header[0]}" != "MH_MAGIC_64" ]; then
     exit 1
 fi
 
-architectures=$(otool -f -v $target | grep architecture)
+architectures=$(otool -f -v "$target" | grep architecture)
 
 setup_arch() {
     arch="$1"
     if [ ! -z "$arch" ]; then
         otool_args="-arch $arch"
-        offset=$(otool -f -v $target | grep -A 6 "architecture $arch" | grep offset)
+        offset=$(otool -f -v "$target" | grep -A 6 "architecture $arch" | grep offset)
         offset="${offset##*( )}"
         arch_offset="$(echo $offset | cut -d ' ' -f 2)"
         echo "🤖 Processing architecture '$arch' at offset $arch_offset..."
