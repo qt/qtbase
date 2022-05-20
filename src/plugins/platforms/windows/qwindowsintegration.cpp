@@ -223,16 +223,20 @@ void QWindowsIntegrationPrivate::parseOptions(QWindowsIntegration *q, const QStr
 
     if (!dpiAwarenessSet) { // Set only once in case of repeated instantiations of QGuiApplication.
         if (!QCoreApplication::testAttribute(Qt::AA_PluginApplication)) {
-
-            // DpiAwareV2 requires using new API
             if (dpiAwareness == QtWindows::ProcessPerMonitorV2DpiAware) {
-                m_context.setProcessDpiV2Awareness();
-                qCDebug(lcQpaWindows)
-                    << __FUNCTION__ << "DpiAwareness: DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2";
-            } else {
+                // DpiAwareV2 requires using new API
+                if (m_context.setProcessDpiV2Awareness()) {
+                    qCDebug(lcQpaWindows, "DpiAwareness: DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2");
+                    dpiAwarenessSet = true;
+                } else {
+                    // fallback to old API
+                    dpiAwareness = QtWindows::ProcessPerMonitorDpiAware;
+                }
+            }
+
+            if (!dpiAwarenessSet) {
                 m_context.setProcessDpiAwareness(dpiAwareness);
-                qCDebug(lcQpaWindows)
-                    << __FUNCTION__ << "DpiAwareness=" << dpiAwareness
+                qCDebug(lcQpaWindows) << "DpiAwareness=" << dpiAwareness
                     << "effective process DPI awareness=" << QWindowsContext::processDpiAwareness();
             }
         }
