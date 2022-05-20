@@ -29,6 +29,13 @@
 #include "qvarlengtharray.h"
 #include "private/qlocking_p.h"
 
+#if !defined(QT_APPLE_NO_PRIVATE_APIS)
+extern "C" {
+typedef uint32_t csr_config_t;
+extern int csr_get_active_config(csr_config_t *) __attribute__((weak_import));
+}
+#endif
+
 QT_BEGIN_NAMESPACE
 
 // --------------------------------------------------------------------------
@@ -343,6 +350,12 @@ bool qt_mac_runningUnderRosetta()
 std::optional<uint32_t> qt_mac_sipConfiguration()
 {
     static auto configuration = []() -> std::optional<uint32_t> {
+#if !defined(QT_APPLE_NO_PRIVATE_APIS)
+        csr_config_t config;
+        if (csr_get_active_config && csr_get_active_config(&config) == 0)
+            return config;
+#endif
+
         QIOType<io_registry_entry_t> nvram = IORegistryEntryFromPath(kIOMasterPortDefault, "IODeviceTree:/options");
         if (!nvram) {
             qWarning("Failed to locate NVRAM entry in IO registry");
@@ -351,10 +364,8 @@ std::optional<uint32_t> qt_mac_sipConfiguration()
 
         QCFType<CFTypeRef> csrConfig = IORegistryEntryCreateCFProperty(nvram,
             CFSTR("csr-active-config"), kCFAllocatorDefault, IOOptionBits{});
-        if (!csrConfig) {
-            qWarning("Failed to locate SIP config in NVRAM");
-            return {};
-        }
+        if (!csrConfig)
+            return {}; // SIP config is not available
 
         if (auto type = CFGetTypeID(csrConfig); type != CFDataGetTypeID()) {
             qWarning() << "Unexpected SIP config type" << CFCopyTypeIDDescription(type);
