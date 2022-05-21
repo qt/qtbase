@@ -98,12 +98,14 @@ static void callbackFromJava(JNIEnv *env, jobject /*thiz*/, jstring value)
     Q_UNUSED(env)
     registerNativesString = QJniObject(value).toString();
 }
+Q_JNI_DECLARE_NATIVE_METHOD(callbackFromJava);
 
 static void callbackFromJavaNoCtor(JNIEnv *env, jobject /*thiz*/, jstring value)
 {
     Q_UNUSED(env)
     registerNativesString = QJniObject(value).toString();
 }
+Q_JNI_DECLARE_NATIVE_METHOD(callbackFromJavaNoCtor);
 
 void tst_QJniEnvironment::registerNativeMethods()
 {
@@ -111,11 +113,9 @@ void tst_QJniEnvironment::registerNativeMethods()
     QJniEnvironment env;
 
     {
-        const JNINativeMethod methods[] {
-          {"callbackFromJava", "(Ljava/lang/String;)V", reinterpret_cast<void *>(callbackFromJava)}
-        };
-
-        QVERIFY(env.registerNativeMethods(javaTestClass, methods, 1));
+        QVERIFY(env.registerNativeMethods(javaTestClass, {
+            Q_JNI_NATIVE_METHOD(callbackFromJava)
+        }));
 
         QJniObject::callStaticMethod<void>(javaTestClass,
                                            "appendJavaToString",
@@ -127,10 +127,9 @@ void tst_QJniEnvironment::registerNativeMethods()
 
     // No default constructor in class
     {
-        const JNINativeMethod methods[] {{"callbackFromJavaNoCtor", "(Ljava/lang/String;)V",
-           reinterpret_cast<void *>(callbackFromJavaNoCtor)}};
-
-        QVERIFY(env.registerNativeMethods(javaTestClassNoCtor, methods, 1));
+        QVERIFY(env.registerNativeMethods(javaTestClassNoCtor, {
+            Q_JNI_NATIVE_METHOD(callbackFromJavaNoCtor)
+        }));
 
         QJniObject::callStaticMethod<void>(javaTestClassNoCtor,
                                            "appendJavaToString",
@@ -146,17 +145,16 @@ static void intCallbackFromJava(JNIEnv *env, jobject /*thiz*/, jint value)
     Q_UNUSED(env)
     registerNativeInteger = static_cast<int>(value);
 }
+Q_JNI_DECLARE_NATIVE_METHOD(intCallbackFromJava);
 
 void tst_QJniEnvironment::registerNativeMethodsByJclass()
 {
-    const JNINativeMethod methods[] {
-        { "intCallbackFromJava", "(I)V", reinterpret_cast<void *>(intCallbackFromJava) }
-    };
-
     QJniEnvironment env;
     jclass clazz = env.findClass(javaTestClass);
     QVERIFY(clazz != 0);
-    QVERIFY(env.registerNativeMethods(clazz, methods, 1));
+    QVERIFY(env.registerNativeMethods(clazz, {
+        Q_JNI_NATIVE_METHOD(intCallbackFromJava)
+    }));
 
     QCOMPARE(registerNativeInteger, 0);
 

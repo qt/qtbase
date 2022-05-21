@@ -274,6 +274,18 @@ static constexpr auto constructorSignature()
     return methodSignature<void, Args...>();
 }
 
+template<typename Ret, typename ...Args>
+static constexpr auto nativeMethodSignature(Ret (*)(JNIEnv *, jobject, Args...))
+{
+    return methodSignature<Ret, Args...>();
+}
+
+template<typename Ret, typename ...Args>
+static constexpr auto nativeMethodSignature(Ret (*)(JNIEnv *, jclass, Args...))
+{
+    return methodSignature<Ret, Args...>();
+}
+
 // A generic thin wrapper around jobject, convertible to jobject.
 // We need this as a baseclass so that QJniObject can be implicitly
 // constructed from the various subclasses - we can't provide an
@@ -302,6 +314,18 @@ constexpr auto QtJniTypes::typeSignature<QtJniTypes::Type>()    \
                 " and end with ';'");                           \
     return QtJniTypes::String(Signature);                       \
 }                                                               \
+
+#define Q_JNI_DECLARE_NATIVE_METHOD(Method)                     \
+namespace QtJniMethods {                                        \
+static constexpr auto Method##_signature =                      \
+    QtJniTypes::nativeMethodSignature(Method);                  \
+static const JNINativeMethod Method##_method = {                \
+    #Method, Method##_signature.data(),                         \
+    reinterpret_cast<void *>(Method)                            \
+};                                                              \
+}                                                               \
+
+#define Q_JNI_NATIVE_METHOD(Method) QtJniMethods::Method##_method
 
 QT_END_NAMESPACE
 

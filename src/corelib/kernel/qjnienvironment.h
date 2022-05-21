@@ -52,6 +52,16 @@ public:
     bool registerNativeMethods(const char *className, const JNINativeMethod methods[], int size);
     bool registerNativeMethods(jclass clazz, const JNINativeMethod methods[], int size);
 
+    bool registerNativeMethods(const char *className, std::initializer_list<JNINativeMethod> methods)
+    {
+        return registerNativeMethods(className, std::data(methods), methods.size());
+    }
+
+    bool registerNativeMethods(jclass clazz, std::initializer_list<JNINativeMethod> methods)
+    {
+        return registerNativeMethods(clazz, std::data(methods), methods.size());
+    }
+
 #if QT_DEPRECATED_SINCE(6, 2)
     // ### Qt 7: remove
     QT_DEPRECATED_VERSION_X_6_2("Use the overload with a const JNINativeMethod[] instead.")
