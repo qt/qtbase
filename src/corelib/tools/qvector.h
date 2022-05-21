@@ -43,6 +43,12 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qcontainerfwd.h>
 
+#if 0
+#pragma qt_class(QVector)
+#pragma qt_class(QMutableVectorIterator)
+#pragma qt_class(QVectorIterator)
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #if !defined(QT_NO_JAVA_STYLE_ITERATORS)
