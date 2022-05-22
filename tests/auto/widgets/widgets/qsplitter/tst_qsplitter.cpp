@@ -83,6 +83,8 @@ private slots:
     void replaceWidget();
     void replaceWidgetWithSplitterChild_data();
     void replaceWidgetWithSplitterChild();
+    void replaceWidgetWhileHidden_data();
+    void replaceWidgetWhileHidden();
     void handleMinimumWidth();
 
     // task-specific tests below me:
@@ -852,6 +854,47 @@ void tst_QSplitter::replaceWidgetWithSplitterChild()
         QCOMPARE(sp.count(), count);
         QCOMPARE(sp.sizes(), sizes);
     }
+}
+
+void tst_QSplitter::replaceWidgetWhileHidden_data()
+{
+    QTest::addColumn<bool>("splitterVisible");
+    QTest::addColumn<bool>("widgetVisible");
+
+    QTest::addRow("visibleToVisible") << true << true;
+    QTest::addRow("hiddenToVisible") << true << false;
+    QTest::addRow("visibleToHidden") << false << true;
+    QTest::addRow("hiddenToHidden") << false << false;
+}
+
+void tst_QSplitter::replaceWidgetWhileHidden()
+{
+    QFETCH(bool, splitterVisible);
+    QFETCH(bool, widgetVisible);
+
+    MyFriendlySplitter splitter;
+
+    splitter.addWidget(new QLabel("One"));
+    splitter.addWidget(new QLabel("Two"));
+
+    if (splitterVisible) {
+        splitter.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&splitter));
+    }
+    QWidget *newWidget = new QLabel("Three");
+    if (!widgetVisible)
+        newWidget->hide();
+
+    const bool wasExplicitHide = !widgetVisible && newWidget->testAttribute(Qt::WA_WState_ExplicitShowHide);
+    splitter.replaceWidget(1, newWidget);
+
+    QCOMPARE(!widgetVisible && newWidget->testAttribute(Qt::WA_WState_ExplicitShowHide), wasExplicitHide);
+
+    if (!splitterVisible) {
+        splitter.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&splitter));
+    }
+    QCOMPARE(widgetVisible, newWidget->isVisible());
 }
 
 void tst_QSplitter::handleMinimumWidth()
