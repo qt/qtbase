@@ -2504,7 +2504,7 @@ void QTextLine::draw(QPainter *painter, const QPointF &position) const
     draw_internal(painter, position, nullptr);
 }
 
-void QTextLine::draw_internal(QPainter *p, const QPointF &pos,
+void QTextLine::draw_internal(QPainter *p, const QPointF &origPos,
                               const QTextLayout::FormatRange *selection) const
 {
 #ifndef QT_NO_RAWFONT
@@ -2522,7 +2522,7 @@ void QTextLine::draw_internal(QPainter *p, const QPointF &pos,
             && selection->start + selection->length > line.from) {
 
             const qreal lineHeight = line.height().toReal();
-            QRectF r(pos.x() + line.x.toReal(), pos.y() + line.y.toReal(),
+            QRectF r(origPos.x() + line.x.toReal(), origPos.y() + line.y.toReal(),
                      lineHeight / 2, QFontMetrics(eng->font()).horizontalAdvance(QLatin1Char(' ')));
             setPenAndDrawBackground(p, QPen(), selection->format, r);
             p->setPen(pen);
@@ -2530,9 +2530,13 @@ void QTextLine::draw_internal(QPainter *p, const QPointF &pos,
         return;
     }
 
-    static QRectF maxFixedRect(QPointF(-QFIXED_MAX, -QFIXED_MAX), QPointF(QFIXED_MAX, QFIXED_MAX));
-    if (!maxFixedRect.contains(pos))
-        return;
+    static QRectF maxFixedRect(-QFIXED_MAX / 2, -QFIXED_MAX / 2, QFIXED_MAX, QFIXED_MAX);
+    const bool xlateToFixedRange = !maxFixedRect.contains(origPos);
+    QPointF pos;
+    if (Q_LIKELY(!xlateToFixedRange))
+        pos = origPos;
+    else
+        p->translate(origPos);
 
     QTextLineItemIterator iterator(eng, index, pos, selection);
     QFixed lineBase = line.base();
@@ -2724,6 +2728,9 @@ void QTextLine::draw_internal(QPainter *p, const QPointF &pos,
         }
     }
     eng->drawDecorations(p);
+
+    if (xlateToFixedRange)
+        p->translate(-origPos);
 
     if (eng->hasFormats())
         p->setPen(pen);
