@@ -4,6 +4,12 @@ accept_configuration:
   property: features
   not_contains_value: Disable
 
+machine_type:
+    Build:
+        cores: 4
+    Test:
+        cores: 4
+
 instructions:
   Build:
     - !include "{{qt/qtbase}}/coin_qtbase_build_template_v2.yaml"
