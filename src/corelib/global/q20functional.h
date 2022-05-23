@@ -23,6 +23,8 @@
 // We mean it.
 //
 
+#include <functional>
+
 QT_BEGIN_NAMESPACE
 
 namespace q20 {
