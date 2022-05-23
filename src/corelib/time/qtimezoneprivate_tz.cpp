@@ -483,7 +483,7 @@ PosixZone PosixZone::parse(const char *&pos, const char *end)
     Q_ASSERT(pos < end);
 
     if (*pos == '<') {
-        nameBegin = pos + 1;    // skip the '<'
+        ++nameBegin;    // skip the '<'
         nameEnd = nameBegin;
         while (nameEnd < end && *nameEnd != '>') {
             // POSIX says only alphanumeric, but we allow anything
@@ -491,7 +491,6 @@ PosixZone PosixZone::parse(const char *&pos, const char *end)
         }
         pos = nameEnd + 1;      // skip the '>'
     } else {
-        nameBegin = pos;
         nameEnd = nameBegin;
         while (nameEnd < end && asciiIsLetter(*nameEnd))
             ++nameEnd;
