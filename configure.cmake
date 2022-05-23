@@ -188,9 +188,9 @@ qt_config_compiler_supports_flag_test(optimize_debug
     FLAG "-Og"
 )
 
-qt_config_compiler_supports_flag_test(no_extern_direct_access
+qt_config_compile_test(no_extern_direct_access
     LABEL "-mno-direct-extern-access support"
-    FLAG "-mno-direct-extern-access"
+    PROJECT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/direct_extern_access"
 )
 
 qt_config_linker_supports_flag_test(enable_new_dtags
