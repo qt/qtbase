@@ -387,6 +387,15 @@ QTimeZone::QTimeZone(const QTimeZone &other)
 }
 
 /*!
+    Move constructor of this from \a other.
+*/
+
+QTimeZone::QTimeZone(QTimeZone &&other) noexcept
+    : d(std::move(other.d))
+{
+}
+
+/*!
     Destroys the time zone.
 */
 

@@ -286,9 +286,10 @@ class Q_CORE_EXPORT QDateTime
 
         Data() noexcept;
         Data(Qt::TimeSpec);
-        Data(const Data &other);
-        Data(Data &&other);
-        Data &operator=(const Data &other);
+        Data(const Data &other) noexcept;
+        Data(Data &&other) noexcept;
+        Data &operator=(const Data &other) noexcept;
+        Data &operator=(Data &&other) noexcept { swap(other); return *this; }
         ~Data();
 
         void swap(Data &other) noexcept

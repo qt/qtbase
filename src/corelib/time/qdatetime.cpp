@@ -2980,7 +2980,7 @@ inline QDateTime::Data::Data(Qt::TimeSpec spec)
     }
 }
 
-inline QDateTime::Data::Data(const Data &other)
+inline QDateTime::Data::Data(const Data &other) noexcept
     : d(other.d)
 {
     if (!isShort()) {
@@ -2997,7 +2997,7 @@ inline QDateTime::Data::Data(const Data &other)
     }
 }
 
-inline QDateTime::Data::Data(Data &&other)
+inline QDateTime::Data::Data(Data &&other) noexcept
     : d(other.d)
 {
     // reset the other to a short state
@@ -3006,7 +3006,7 @@ inline QDateTime::Data::Data(Data &&other)
     other.d = dummy.d;
 }
 
-inline QDateTime::Data &QDateTime::Data::operator=(const Data &other)
+inline QDateTime::Data &QDateTime::Data::operator=(const Data &other) noexcept
 {
     if (d == other.d)
         return *this;

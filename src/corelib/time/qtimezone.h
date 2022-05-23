@@ -62,6 +62,7 @@ public:
               const QString &abbreviation, QLocale::Territory territory = QLocale::AnyTerritory,
               const QString &comment = QString());
     QTimeZone(const QTimeZone &other);
+    QTimeZone(QTimeZone &&other) noexcept;
     ~QTimeZone();
 
     QTimeZone &operator=(const QTimeZone &other);
