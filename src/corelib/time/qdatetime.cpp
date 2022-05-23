@@ -4672,21 +4672,19 @@ QTime QTime::currentTime()
 
 QDateTime QDateTime::currentDateTime()
 {
-    QTime t;
     SYSTEMTIME st = {};
     GetLocalTime(&st);
     QDate d(st.wYear, st.wMonth, st.wDay);
-    t.mds = msecsFromDecomposed(st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+    QTime t(msecsFromDecomposed(st.wHour, st.wMinute, st.wSecond, st.wMilliseconds));
     return QDateTime(d, t);
 }
 
 QDateTime QDateTime::currentDateTimeUtc()
 {
-    QTime t;
     SYSTEMTIME st = {};
     GetSystemTime(&st);
     QDate d(st.wYear, st.wMonth, st.wDay);
-    t.mds = msecsFromDecomposed(st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+    QTime t(msecsFromDecomposed(st.wHour, st.wMinute, st.wSecond, st.wMilliseconds));
     return QDateTime(d, t, Qt::UTC);
 }
 
