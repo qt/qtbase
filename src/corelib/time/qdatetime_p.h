@@ -113,9 +113,10 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QDateTimePrivate::StatusFlags)
 
 namespace QtPrivate {
 namespace DateTimeConstants {
+constexpr qint64 MINS_PER_HOUR = 60;
 
 constexpr qint64 SECS_PER_MIN = 60;
-constexpr qint64 SECS_PER_HOUR = SECS_PER_MIN * 60;
+constexpr qint64 SECS_PER_HOUR = SECS_PER_MIN * MINS_PER_HOUR;
 constexpr qint64 SECS_PER_DAY = SECS_PER_HOUR * 24;
 
 constexpr qint64 MSECS_PER_SEC = 1000;

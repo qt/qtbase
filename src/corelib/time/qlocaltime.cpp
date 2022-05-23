@@ -32,6 +32,11 @@ namespace {
 constexpr int tmYearFromQYear(int year) { return year - (year < 0 ? 1899 : 1900); }
 constexpr int qYearFromTmYear(int year) { return year + (year < -1899 ? 1899 : 1900); }
 
+constexpr inline qint64 tmSecsWithinDay(const struct tm &when)
+{
+    return (when.tm_hour * MINS_PER_HOUR + when.tm_min) * SECS_PER_MIN + when.tm_sec;
+}
+
 /* If mktime() returns -1, is it really an error ?
 
    It might return -1 because we're looking at the last second of 1969 and
@@ -240,7 +245,7 @@ int getCurrentStandardUtcOffset()
 #ifdef Q_OS_WIN
     TIME_ZONE_INFORMATION tzInfo;
     GetTimeZoneInformation(&tzInfo);
-    return -tzInfo.Bias * 60;
+    return -tzInfo.Bias * SECS_PER_MIN;
 #else
     qTzSet();
     const time_t curr = time(nullptr);
@@ -298,8 +303,7 @@ QDateTimePrivate::ZoneState utcToLocal(qint64 utcMillis)
                                                         local.tm_mon + 1, local.tm_mday, &jd))) {
         return {utcMillis};
     }
-    const qint64 daySeconds
-        = (local.tm_hour * 60 + local.tm_min) * 60 + local.tm_sec;
+    const qint64 daySeconds = tmSecsWithinDay(local);
     Q_ASSERT(0 <= daySeconds && daySeconds < SECS_PER_DAY);
     qint64 localSeconds, localMillis;
     if (Q_UNLIKELY(
@@ -351,7 +355,7 @@ QDateTimePrivate::ZoneState mapLocalTime(qint64 local, QDateTimePrivate::Dayligh
                        &jd))) {
         return {local, offset, dst, false};
     }
-    qint64 daySecs = tmLocal.tm_sec + 60 * (tmLocal.tm_min + 60 * tmLocal.tm_hour);
+    qint64 daySecs = tmSecsWithinDay(tmLocal);
     Q_ASSERT(0 <= daySecs && daySecs < SECS_PER_DAY);
     if (daySecs > 0 && jd < JULIAN_DAY_FOR_EPOCH) {
         ++jd;

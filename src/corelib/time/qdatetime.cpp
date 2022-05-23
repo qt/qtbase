@@ -1984,7 +1984,7 @@ bool QTime::setHMS(int h, int m, int s, int ms)
         mds = NullTime;                // make this invalid
         return false;
     }
-    mds = (h * SECS_PER_HOUR + m * SECS_PER_MIN + s) * MSECS_PER_SEC + ms;
+    mds = ((h * MINS_PER_HOUR + m) * SECS_PER_MIN + s) * MSECS_PER_SEC + ms;
     Q_ASSERT(mds >= 0 && mds < MSECS_PER_DAY);
     return true;
 }
@@ -2194,13 +2194,13 @@ static QTime fromIsoTimeString(QStringView string, Qt::DateFormat format, bool *
     if (string.size() > 2) {
         if (string[2] == u':' && string.size() > 4)
             minute = readInt(string.sliced(3, 2));
-        if (!minute.ok || minute.value >= 60)
+        if (!minute.ok || minute.value >= MINS_PER_HOUR)
             return QTime();
     } else if (format == Qt::TextDate) { // Requires minutes
         return QTime();
     } else if (frac.ok) {
         Q_ASSERT(!(fraction < 0.0) && fraction < 1.0);
-        fraction *= 60;
+        fraction *= MINS_PER_HOUR;
         minute.value = qulonglong(fraction);
         fraction -= minute.value;
     }
@@ -2209,13 +2209,13 @@ static QTime fromIsoTimeString(QStringView string, Qt::DateFormat format, bool *
     if (string.size() > 5) {
         if (string[5] == u':' && string.size() == 8)
             second = readInt(string.sliced(6, 2));
-        if (!second.ok || second.value >= 60)
+        if (!second.ok || second.value >= SECS_PER_MIN)
             return QTime();
     } else if (frac.ok) {
         if (format == Qt::TextDate) // Doesn't allow fraction of minutes
             return QTime();
         Q_ASSERT(!(fraction < 0.0) && fraction < 1.0);
-        fraction *= 60;
+        fraction *= SECS_PER_MIN;
         second.value = qulonglong(fraction);
         fraction -= second.value;
     }
@@ -2229,9 +2229,9 @@ static QTime fromIsoTimeString(QStringView string, Qt::DateFormat format, bool *
         // into other fields, do so:
         if (isMidnight24 || hour.value < 23 || minute.value < 59 || second.value < 59) {
             msec = 0;
-            if (++second.value == 60) {
+            if (++second.value == SECS_PER_MIN) {
                 second.value = 0;
-                if (++minute.value == 60) {
+                if (++minute.value == MINS_PER_HOUR) {
                     minute.value = 0;
                     ++hour.value;
                     // May need to propagate further via isMidnight24, see below
@@ -2388,7 +2388,8 @@ QTime QTime::fromString(const QString &string, QStringView format)
 
 bool QTime::isValid(int h, int m, int s, int ms)
 {
-    return uint(h) < 24 && uint(m) < 60 && uint(s) < SECS_PER_MIN && uint(ms) < MSECS_PER_SEC;
+    return (uint(h) < 24 && uint(m) < MINS_PER_HOUR && uint(s) < SECS_PER_MIN
+            && uint(ms) < MSECS_PER_SEC);
 }
 
 /*****************************************************************************
