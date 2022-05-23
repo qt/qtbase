@@ -56,11 +56,13 @@ protected:
 private:
     bool isMainThreadEventDispatcher();
     bool isSecondaryThreadEventDispatcher();
+    static bool isValidEventDispatcherPointer(QEventDispatcherWasm *eventDispatcher);
 
     void handleApplicationExec();
     void handleDialogExec();
     void pollForNativeEvents();
-    bool waitForForEvents();
+    bool wait(int timeout = -1);
+    bool wakeEventDispatcherThread();
     static void callProcessEvents(void *eventDispatcher);
 
     void processTimers();
@@ -76,9 +78,10 @@ private:
     static void socketMessage(int fd, void *context);
     static void socketClose(int fd, void *context);
 
-#if QT_CONFIG(thread)
-    void runOnMainThread(std::function<void(void)> fn);
-#endif
+    static void run(std::function<void(void)> fn);
+    static void runAsync(std::function<void(void)> fn);
+    static void runOnMainThread(std::function<void(void)> fn);
+    static void runOnMainThreadAsync(std::function<void(void)> fn);
 
     static QEventDispatcherWasm *g_mainThreadEventDispatcher;
 
@@ -96,8 +99,13 @@ private:
     std::condition_variable m_moreEvents;
 
     static QVector<QEventDispatcherWasm *> g_secondaryThreadEventDispatchers;
-    static std::mutex g_secondaryThreadEventDispatchersMutex;
+    static std::mutex g_staticDataMutex;
+
+    // Note on mutex usage: the global g_staticDataMutex protects the global (g_ prefixed) data,
+    // while the per eventdispatcher m_mutex protects the state accociated with blocking and waking
+    // that eventdispatcher thread. The locking order is g_staticDataMutex first, then m_mutex.
 #endif
+
     static std::multimap<int, QSocketNotifier *> g_socketNotifiers;
 };
 
