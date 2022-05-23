@@ -44,8 +44,9 @@ using namespace QtPrivate::DateTimeConstants;
 /*****************************************************************************
   QDate static helper functions
  *****************************************************************************/
+static_assert(std::is_trivially_copyable_v<QCalendar::YearMonthDay>);
 
-static inline QDate fixedDate(QCalendar::YearMonthDay &&parts, QCalendar cal)
+static inline QDate fixedDate(QCalendar::YearMonthDay parts, QCalendar cal)
 {
     if ((parts.year < 0 && !cal.isProleptic()) || (parts.year == 0 && !cal.hasYearZero()))
         return QDate();
@@ -54,7 +55,7 @@ static inline QDate fixedDate(QCalendar::YearMonthDay &&parts, QCalendar cal)
     return cal.dateFromParts(parts);
 }
 
-static inline QDate fixedDate(QCalendar::YearMonthDay &&parts)
+static inline QDate fixedDate(QCalendar::YearMonthDay parts)
 {
     if (parts.year) {
         parts.day = qMin(parts.day, QGregorianCalendar::monthLength(parts.month, parts.year));
@@ -1299,7 +1300,7 @@ QDate QDate::addMonths(int nmonths, QCalendar cal) const
         count = (++parts.year || cal.hasYearZero()) ? cal.monthsInYear(parts.year) : 0;
     }
 
-    return fixedDate(std::move(parts), cal);
+    return fixedDate(parts, cal);
 }
 
 /*!
@@ -1331,7 +1332,7 @@ QDate QDate::addMonths(int nmonths) const
             ++parts.year;
     }
 
-    return fixedDate(std::move(parts));
+    return fixedDate(parts);
 }
 
 /*!
@@ -1364,7 +1365,7 @@ QDate QDate::addYears(int nyears, QCalendar cal) const
     if (!cal.hasYearZero() && ((old_y > 0) != (parts.year > 0) || !parts.year))
         parts.year += nyears > 0 ? +1 : -1;
 
-    return fixedDate(std::move(parts), cal);
+    return fixedDate(parts, cal);
 }
 
 /*!
@@ -1387,7 +1388,7 @@ QDate QDate::addYears(int nyears) const
     if ((old_y > 0) != (parts.year > 0) || !parts.year)
         parts.year += nyears > 0 ? +1 : -1;
 
-    return fixedDate(std::move(parts));
+    return fixedDate(parts);
 }
 
 /*!
