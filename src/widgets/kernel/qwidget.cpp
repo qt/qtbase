@@ -12697,41 +12697,42 @@ int QWidget::metric(PaintDeviceMetric m) const
               return 72;
         return QPaintDevice::metric(m);
     }
-    int val;
-    if (m == PdmWidth) {
-        val = data->crect.width();
-    } else if (m == PdmWidthMM) {
-        val = data->crect.width() * screen->physicalSize().width() / screen->geometry().width();
-    } else if (m == PdmHeight) {
-        val = data->crect.height();
-    } else if (m == PdmHeightMM) {
-        val = data->crect.height() * screen->physicalSize().height() / screen->geometry().height();
-    } else if (m == PdmDepth) {
+
+    switch (m) {
+    case PdmWidth:
+        return data->crect.width();
+    case PdmWidthMM:
+        return data->crect.width() * screen->physicalSize().width() / screen->geometry().width();
+    case PdmHeight:
+        return data->crect.height();
+    case PdmHeightMM:
+        return data->crect.height() * screen->physicalSize().height() / screen->geometry().height();
+    case PdmDepth:
         return screen->depth();
-    } else if (m == PdmDpiX) {
+    case PdmDpiX:
         for (const QWidget *p = this; p; p = p->parentWidget()) {
             if (p->d_func()->extra && p->d_func()->extra->customDpiX)
                 return p->d_func()->extra->customDpiX;
         }
         return qRound(screen->logicalDotsPerInchX());
-    } else if (m == PdmDpiY) {
+    case PdmDpiY:
         for (const QWidget *p = this; p; p = p->parentWidget()) {
             if (p->d_func()->extra && p->d_func()->extra->customDpiY)
                 return p->d_func()->extra->customDpiY;
         }
         return qRound(screen->logicalDotsPerInchY());
-    } else if (m == PdmPhysicalDpiX) {
+    case PdmPhysicalDpiX:
         return qRound(screen->physicalDotsPerInchX());
-    } else if (m == PdmPhysicalDpiY) {
+    case PdmPhysicalDpiY:
         return qRound(screen->physicalDotsPerInchY());
-    } else if (m == PdmDevicePixelRatio) {
+    case PdmDevicePixelRatio:
         return screen->devicePixelRatio();
-    } else if (m == PdmDevicePixelRatioScaled) {
+    case PdmDevicePixelRatioScaled:
         return QPaintDevice::devicePixelRatioFScale() * screen->devicePixelRatio();
-    } else {
-        val = QPaintDevice::metric(m);
+    default:
+        break;
     }
-    return val;
+    return QPaintDevice::metric(m);
 }
 
 /*!
