@@ -762,7 +762,7 @@ QTimeZone::OffsetDataList QTimeZone::transitions(const QDateTime &fromDateTime,
 
 QByteArray QTimeZone::systemTimeZoneId()
 {
-    const QByteArray sys = global_tz->backend->systemTimeZoneId();
+    QByteArray sys = global_tz->backend->systemTimeZoneId();
     if (!sys.isEmpty())
         return sys;
     // The system zone, despite the empty ID, may know its real ID anyway:
