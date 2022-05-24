@@ -188,7 +188,7 @@ namespace QtAndroidAccessibility
         return result;
     }
 
-    static QRect screenRect_helper(int objectId)
+    static QRect screenRect_helper(int objectId, bool clip = true)
     {
         QRect rect;
         QAccessibleInterface *iface = interfaceFromId(objectId);
@@ -196,7 +196,7 @@ namespace QtAndroidAccessibility
             rect = QHighDpi::toNativePixels(iface->rect(), iface->window());
         }
         // If the widget is not fully in-bound in its parent then we have to clip the rectangle to draw
-        if (iface && iface->parent() && iface->parent()->isValid()) {
+        if (clip && iface && iface->parent() && iface->parent()->isValid()) {
             const auto parentRect = QHighDpi::toNativePixels(iface->parent()->rect(), iface->parent()->window());
             rect = rect.intersected(parentRect);
         }
@@ -298,23 +298,43 @@ namespace QtAndroidAccessibility
     static jboolean scrollForward(JNIEnv */*env*/, jobject /*thiz*/, jint objectId)
     {
         bool result = false;
+
+        const auto& ids = childIdListForAccessibleObject_helper(objectId);
+        if (ids.isEmpty())
+            return false;
+
+        const int firstChildId = ids.first();
+        const QRect oldPosition = screenRect_helper(firstChildId, false);
+
         if (m_accessibilityContext) {
             runInObjectContext(m_accessibilityContext, [objectId]() {
                 return scroll_helper(objectId, QAccessibleActionInterface::increaseAction());
             }, &result);
         }
-        return result;
+
+        // Don't check for position change if the call was not successful
+        return result && oldPosition != screenRect_helper(firstChildId, false);
     }
 
     static jboolean scrollBackward(JNIEnv */*env*/, jobject /*thiz*/, jint objectId)
     {
         bool result = false;
+
+        const auto& ids = childIdListForAccessibleObject_helper(objectId);
+        if (ids.isEmpty())
+            return false;
+
+        const int firstChildId = ids.first();
+        const QRect oldPosition = screenRect_helper(firstChildId, false);
+
         if (m_accessibilityContext) {
             runInObjectContext(m_accessibilityContext, [objectId]() {
                 return scroll_helper(objectId, QAccessibleActionInterface::decreaseAction());
             }, &result);
         }
-        return result;
+
+        // Don't check for position change if the call was not successful
+        return result && oldPosition != screenRect_helper(firstChildId, false);
     }
 
 
