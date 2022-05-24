@@ -6,7 +6,7 @@
 
     "Description": "HarfBuzz is an OpenType text shaping engine.",
     "Homepage": "http://harfbuzz.org",
-    "Version": "3.0.0",
+    "Version": "4.2.1",
 
     "License": "MIT License",
     "LicenseId": "MIT",
