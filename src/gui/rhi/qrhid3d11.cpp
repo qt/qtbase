@@ -161,7 +161,7 @@ static IDXGIFactory1 *createDXGIFactory1()
 
 bool QRhiD3D11::create(QRhi::Flags flags)
 {
-    Q_UNUSED(flags);
+    rhiFlags = flags;
 
     uint devFlags = 0;
     if (debugLayer)
@@ -538,7 +538,7 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::ReadBackAnyTextureFormat:
         return true;
     case QRhi::PipelineCacheDataLoadSave:
-        return false;
+        return true;
     case QRhi::ImageDataStride:
         return true;
     case QRhi::RenderBufferImport:
@@ -628,6 +628,7 @@ bool QRhiD3D11::makeThreadLocalNativeContextCurrent()
 void QRhiD3D11::releaseCachedResources()
 {
     clearShaderCache();
+    m_bytecodeCache.clear();
 }
 
 bool QRhiD3D11::isDeviceLost() const
@@ -635,14 +636,159 @@ bool QRhiD3D11::isDeviceLost() const
     return deviceLost;
 }
 
+struct QD3D11PipelineCacheDataHeader
+{
+    quint32 rhiId;
+    quint32 arch;
+    // no need for driver specifics
+    quint32 count;
+    quint32 dataSize;
+};
+
 QByteArray QRhiD3D11::pipelineCacheData()
 {
-    return QByteArray();
+    QByteArray data;
+    if (m_bytecodeCache.isEmpty())
+        return data;
+
+    QD3D11PipelineCacheDataHeader header;
+    memset(&header, 0, sizeof(header));
+    header.rhiId = pipelineCacheRhiId();
+    header.arch = quint32(sizeof(void*));
+    header.count = m_bytecodeCache.count();
+
+    const size_t dataOffset = sizeof(header);
+    size_t dataSize = 0;
+    for (auto it = m_bytecodeCache.cbegin(), end = m_bytecodeCache.cend(); it != end; ++it) {
+        BytecodeCacheKey key = it.key();
+        QByteArray bytecode = it.value();
+        dataSize +=
+                  sizeof(quint32) + key.sourceHash.size()
+                + sizeof(quint32) + key.target.size()
+                + sizeof(quint32) + key.entryPoint.size()
+                + sizeof(quint32) // compileFlags
+                + sizeof(quint32) + bytecode.size();
+    }
+
+    QByteArray buf(dataOffset + dataSize, Qt::Uninitialized);
+    char *p = buf.data() + dataOffset;
+    for (auto it = m_bytecodeCache.cbegin(), end = m_bytecodeCache.cend(); it != end; ++it) {
+        BytecodeCacheKey key = it.key();
+        QByteArray bytecode = it.value();
+
+        quint32 i = key.sourceHash.size();
+        memcpy(p, &i, 4);
+        p += 4;
+        memcpy(p, key.sourceHash.constData(), key.sourceHash.size());
+        p += key.sourceHash.size();
+
+        i = key.target.size();
+        memcpy(p, &i, 4);
+        p += 4;
+        memcpy(p, key.target.constData(), key.target.size());
+        p += key.target.size();
+
+        i = key.entryPoint.size();
+        memcpy(p, &i, 4);
+        p += 4;
+        memcpy(p, key.entryPoint.constData(), key.entryPoint.size());
+        p += key.entryPoint.size();
+
+        quint32 f = key.compileFlags;
+        memcpy(p, &f, 4);
+        p += 4;
+
+        i = bytecode.size();
+        memcpy(p, &i, 4);
+        p += 4;
+        memcpy(p, bytecode.constData(), bytecode.size());
+        p += bytecode.size();
+    }
+    Q_ASSERT(p == buf.data() + dataOffset + dataSize);
+
+    header.dataSize = quint32(dataSize);
+    memcpy(buf.data(), &header, sizeof(header));
+
+    return buf;
 }
 
 void QRhiD3D11::setPipelineCacheData(const QByteArray &data)
 {
-    Q_UNUSED(data);
+    if (data.isEmpty())
+        return;
+
+    const size_t headerSize = sizeof(QD3D11PipelineCacheDataHeader);
+    if (data.size() < qsizetype(headerSize)) {
+        qWarning("setPipelineCacheData: Invalid blob size (header incomplete)");
+        return;
+    }
+    const size_t dataOffset = headerSize;
+    QD3D11PipelineCacheDataHeader header;
+    memcpy(&header, data.constData(), headerSize);
+
+    const quint32 rhiId = pipelineCacheRhiId();
+    if (header.rhiId != rhiId) {
+        qWarning("setPipelineCacheData: The data is for a different QRhi version or backend (%u, %u)",
+                 rhiId, header.rhiId);
+        return;
+    }
+    const quint32 arch = quint32(sizeof(void*));
+    if (header.arch != arch) {
+        qWarning("setPipelineCacheData: Architecture does not match (%u, %u)",
+                 arch, header.arch);
+        return;
+    }
+    if (header.count == 0)
+        return;
+
+    if (data.size() < qsizetype(dataOffset + header.dataSize)) {
+        qWarning("setPipelineCacheData: Invalid blob size (data incomplete)");
+        return;
+    }
+
+    m_bytecodeCache.clear();
+
+    const char *p = data.constData() + dataOffset;
+    for (quint32 i = 0; i < header.count; ++i) {
+        quint32 len = 0;
+        memcpy(&len, p, 4);
+        p += 4;
+        QByteArray sourceHash(len, Qt::Uninitialized);
+        memcpy(sourceHash.data(), p, len);
+        p += len;
+
+        memcpy(&len, p, 4);
+        p += 4;
+        QByteArray target(len, Qt::Uninitialized);
+        memcpy(target.data(), p, len);
+        p += len;
+
+        memcpy(&len, p, 4);
+        p += 4;
+        QByteArray entryPoint(len, Qt::Uninitialized);
+        memcpy(entryPoint.data(), p, len);
+        p += len;
+
+        quint32 flags;
+        memcpy(&flags, p, 4);
+        p += 4;
+
+        memcpy(&len, p, 4);
+        p += 4;
+        QByteArray bytecode(len, Qt::Uninitialized);
+        memcpy(bytecode.data(), p, len);
+        p += len;
+
+        BytecodeCacheKey cacheKey;
+        cacheKey.sourceHash = sourceHash;
+        cacheKey.target = target;
+        cacheKey.entryPoint = entryPoint;
+        cacheKey.compileFlags = flags;
+
+        m_bytecodeCache.insert(cacheKey, bytecode);
+    }
+
+    qCDebug(QRHI_LOG_INFO, "Seeded bytecode cache with %d shaders", int(m_bytecodeCache.count()));
 }
 
 QRhiRenderBuffer *QRhiD3D11::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
@@ -4002,8 +4148,16 @@ static pD3DCompile resolveD3DCompile()
     return nullptr;
 }
 
-static QByteArray compileHlslShaderSource(const QShader &shader, QShader::Variant shaderVariant, UINT flags,
-                                          QString *error, QShaderKey *usedShaderKey)
+static inline QByteArray sourceHash(const QByteArray &source)
+{
+    // taken from the GL backend, use the same mechanism to get a key
+    QCryptographicHash keyBuilder(QCryptographicHash::Sha1);
+    keyBuilder.addData(source);
+    return keyBuilder.result().toHex();
+}
+
+QByteArray QRhiD3D11::compileHlslShaderSource(const QShader &shader, QShader::Variant shaderVariant, uint flags,
+                                              QString *error, QShaderKey *usedShaderKey)
 {
     QShaderKey key = { QShader::DxbcShader, 50, shaderVariant };
     QShaderCode dxbc = shader.shader(key);
@@ -4019,6 +4173,9 @@ static QByteArray compileHlslShaderSource(const QShader &shader, QShader::Varian
         qWarning() << "No HLSL (shader model 5.0) code found in baked shader" << shader;
         return QByteArray();
     }
+
+    if (usedShaderKey)
+        *usedShaderKey = key;
 
     const char *target;
     switch (shader.stage()) {
@@ -4045,6 +4202,17 @@ static QByteArray compileHlslShaderSource(const QShader &shader, QShader::Varian
         return QByteArray();
     }
 
+    BytecodeCacheKey cacheKey;
+    if (rhiFlags.testFlag(QRhi::EnablePipelineCacheDataSave)) {
+        cacheKey.sourceHash = sourceHash(hlslSource.shader());
+        cacheKey.target = target;
+        cacheKey.entryPoint = hlslSource.entryPoint();
+        cacheKey.compileFlags = flags;
+        auto cacheIt = m_bytecodeCache.constFind(cacheKey);
+        if (cacheIt != m_bytecodeCache.constEnd())
+            return cacheIt.value();
+    }
+
     static const pD3DCompile d3dCompile = resolveD3DCompile();
     if (d3dCompile == nullptr) {
         qWarning("Unable to resolve function D3DCompile()");
@@ -4066,13 +4234,14 @@ static QByteArray compileHlslShaderSource(const QShader &shader, QShader::Varian
         return QByteArray();
     }
 
-    if (usedShaderKey)
-        *usedShaderKey = key;
-
     QByteArray result;
     result.resize(int(bytecode->GetBufferSize()));
     memcpy(result.data(), bytecode->GetBufferPointer(), size_t(result.size()));
     bytecode->Release();
+
+    if (rhiFlags.testFlag(QRhi::EnablePipelineCacheDataSave))
+        m_bytecodeCache.insert(cacheKey, result);
+
     return result;
 }
 
@@ -4180,8 +4349,8 @@ bool QD3D11GraphicsPipeline::create()
             if (m_flags.testFlag(CompileShadersWithDebugInfo))
                 compileFlags |= D3DCOMPILE_DEBUG;
 
-            const QByteArray bytecode = compileHlslShaderSource(shaderStage.shader(), shaderStage.shaderVariant(), compileFlags,
-                                                                &error, &shaderKey);
+            const QByteArray bytecode = rhiD->compileHlslShaderSource(shaderStage.shader(), shaderStage.shaderVariant(), compileFlags,
+                                                                      &error, &shaderKey);
             if (bytecode.isEmpty()) {
                 qWarning("HLSL shader compilation failed: %s", qPrintable(error));
                 return false;
@@ -4315,8 +4484,8 @@ bool QD3D11ComputePipeline::create()
         if (m_flags.testFlag(CompileShadersWithDebugInfo))
             compileFlags |= D3DCOMPILE_DEBUG;
 
-        const QByteArray bytecode = compileHlslShaderSource(m_shaderStage.shader(), m_shaderStage.shaderVariant(), compileFlags,
-                                                            &error, &shaderKey);
+        const QByteArray bytecode = rhiD->compileHlslShaderSource(m_shaderStage.shader(), m_shaderStage.shaderVariant(), compileFlags,
+                                                                  &error, &shaderKey);
         if (bytecode.isEmpty()) {
             qWarning("HLSL compute shader compilation failed: %s", qPrintable(error));
             return false;

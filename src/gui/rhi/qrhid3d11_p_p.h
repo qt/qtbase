@@ -679,7 +679,10 @@ public:
     void finishActiveReadbacks();
     void reportLiveObjects(ID3D11Device *device);
     void clearShaderCache();
+    QByteArray compileHlslShaderSource(const QShader &shader, QShader::Variant shaderVariant, uint flags,
+                                       QString *error, QShaderKey *usedShaderKey);
 
+    QRhi::Flags rhiFlags;
     bool debugLayer = false;
     bool importedDeviceAndContext = false;
     ID3D11Device *dev = nullptr;
@@ -751,10 +754,44 @@ public:
         void releaseResources();
         void activate();
     } deviceCurse;
+
+    // This is what gets exposed as the "pipeline cache", not that that concept
+    // applies anyway. Here we are just storing the DX bytecode for a shader so
+    // we can skip the HLSL->DXBC compilation when the QShader has HLSL source
+    // code and the same shader source has already been compiled before.
+    // m_shaderCache seemingly does the same, but this here does not care about
+    // the ID3D11*Shader, this is just about the bytecode and about allowing
+    // the data to be serialized to persistent storage and then reloaded in
+    // future runs of the app, or when creating another QRhi, etc.
+    struct BytecodeCacheKey {
+        QByteArray sourceHash;
+        QByteArray target;
+        QByteArray entryPoint;
+        uint compileFlags;
+    };
+    QHash<BytecodeCacheKey, QByteArray> m_bytecodeCache;
 };
 
 Q_DECLARE_TYPEINFO(QRhiD3D11::TextureReadback, Q_RELOCATABLE_TYPE);
 Q_DECLARE_TYPEINFO(QRhiD3D11::BufferReadback, Q_RELOCATABLE_TYPE);
+
+inline bool operator==(const QRhiD3D11::BytecodeCacheKey &a, const QRhiD3D11::BytecodeCacheKey &b) noexcept
+{
+    return a.sourceHash == b.sourceHash
+            && a.target == b.target
+            && a.entryPoint == b.entryPoint
+            && a.compileFlags == b.compileFlags;
+}
+
+inline bool operator!=(const QRhiD3D11::BytecodeCacheKey &a, const QRhiD3D11::BytecodeCacheKey &b) noexcept
+{
+    return !(a == b);
+}
+
+inline size_t qHash(const QRhiD3D11::BytecodeCacheKey &k, size_t seed = 0) noexcept
+{
+    return qHash(k.sourceHash, seed) ^ qHash(k.target) ^ qHash(k.entryPoint) ^ k.compileFlags;
+}
 
 QT_END_NAMESPACE
 

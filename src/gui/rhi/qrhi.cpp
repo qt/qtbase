@@ -433,16 +433,24 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
 
     \value EnablePipelineCacheDataSave Enables retrieving the pipeline cache
     contents, where applicable. When not set, pipelineCacheData() will return
-    an empty blob always. Opting in is relevant in particular with backends
-    where additional, potentially time consuming work is needed to maintain the
-    data structures with the serialized, binary versions of shader programs. An
-    example is OpenGL, where the "pipeline cache" is simulated by retrieving
-    and loading shader program binaries. With backends where retrieving and
-    restoring the pipeline cache contents is not supported, the flag has no
-    effect. With some backends (such as, OpenGL) there are additional,
-    disk-based caching mechanisms for shader binaries. Writing to those may get
-    disabled whenever this flag is set since storing program binaries (OpenGL)
-    to multiple caches is not sensible.
+    an empty blob always. With backends where retrieving and restoring the
+    pipeline cache contents is not supported, the flag has no effect and the
+    serialized cache data is always empty. The flag provides an opt-in
+    mechanism because the cost of maintaining the related data structures is
+    not insignificant with some backends. With Vulkan this feature maps
+    directly to VkPipelineCache, vkGetPipelineCacheData and
+    VkPipelineCacheCreateInfo::pInitialData. With D3D11 there is no real
+    pipline cache, but the results of HLSL->DXBC compilations are stored and
+    can be serialized/deserialized via this mechanism. This allows skipping the
+    time consuming D3DCompile() in future runs of the applications for shaders
+    that come with HLSL source instead of offline pre-compiled bytecode. This
+    can provide a huge boost in startup and load times, if there is a lot of
+    HLSL source compilation happening. With OpenGL the "pipeline cache" is
+    simulated by retrieving and loading shader program binaries (if supported
+    by the driver). With OpenGL there are additional, disk-based caching
+    mechanisms for shader/program binaries provided by Qt. Writing to those may
+    get disabled whenever this flag is set since storing program binaries to
+    multiple caches is not sensible.
  */
 
 /*!
@@ -6860,7 +6868,9 @@ bool QRhi::isDeviceLost() const
 
     By saving and then, in subsequent runs of the same application, reloading
     the cache data, pipeline and shader creation times can potentially be
-    accelerated.
+    reduced. What exactly the cache and its serialized version includes is not
+    specified, is always specific to the backend used, and in some cases also
+    dependent on the particular implementation of the graphics API.
 
     When the PipelineCacheDataLoadSave is reported as unsupported, the returned
     QByteArray is empty.
@@ -6869,14 +6879,19 @@ bool QRhi::isDeviceLost() const
     create(), the returned QByteArray may be empty, even when the
     PipelineCacheDataLoadSave feature is supported.
 
-    When the returned data is non-empty, it is always specific to the QRhi
-    backend, the graphics device, and the driver implementation in use. QRhi
+    When the returned data is non-empty, it is always specific to the Qt
+    version and QRhi backend. In addition, in some cases there is a strong
+    dependency to the graphics device and the exact driver version used. QRhi
     takes care of adding the appropriate header and safeguards that ensure that
-    the data can always be passed safely to setPipelineCacheData().
+    the data can always be passed safely to setPipelineCacheData(), therefore
+    attempting to load data from a run on another version of a driver will be
+    handled safely and gracefully.
 
     \note Calling releaseCachedResources() may, depending on the backend, clear
     the pipeline data collected. A subsequent call to this function may then
     not return any data.
+
+    See EnablePipelineCacheDataSave for further details about this feature.
 
     \sa setPipelineCacheData(), create(), isFeatureSupported()
  */
@@ -6891,13 +6906,14 @@ QByteArray QRhi::pipelineCacheData()
     When the PipelineCacheDataLoadSave is reported as unsupported, the function
     is safe to call, but has no effect.
 
-    The blob returned by pipelineCacheData() is always specific to a QRhi
-    backend, a graphics device, and a given version of the graphics driver.
-    QRhi takes care of adding the appropriate header and safeguards that ensure
-    that the data can always be passed safely to this function. If there is a
-    mismatch, e.g. because the driver has been upgraded to a newer version, or
-    because the data was generated from a different QRhi backend, a warning is
-    printed and \a data is safely ignored.
+    The blob returned by pipelineCacheData() is always specific to the Qt
+    version, the QRhi backend, and, in some cases, also to the graphics device,
+    and a given version of the graphics driver. QRhi takes care of adding the
+    appropriate header and safeguards that ensure that the data can always be
+    passed safely to this function. If there is a mismatch, e.g. because the
+    driver has been upgraded to a newer version, or because the data was
+    generated from a different QRhi backend, a warning is printed and \a data
+    is safely ignored.
 
     With Vulkan, this maps directly to VkPipelineCache. Calling this function
     creates a new Vulkan pipeline cache object, with its initial data sourced
@@ -6905,10 +6921,26 @@ QByteArray QRhi::pipelineCacheData()
     created QRhiGraphicsPipeline and QRhiComputePipeline objects, thus
     accelerating, potentially, the pipeline creation.
 
+    With other APIs there is no real pipeline cache, but they may provide a
+    cache with bytecode from shader compilations (D3D) or program binaries
+    (OpenGL). In applications that perform a lot of shader compilation from
+    source at run time this can provide a significant boost in subsequent runs
+    if the "pipeline cache" is pre-seeded from an earlier run using this
+    function.
+
     \note QRhi cannot give any guarantees that \a data has an effect on the
     pipeline and shader creation performance. With APIs like Vulkan, it is up
     to the driver to decide if \a data is used for some purpose, or if it is
     ignored.
+
+    See EnablePipelineCacheDataSave for further details about this feature.
+
+    \note This mechanism offered by QRhi is independent of the drivers' own
+    internal caching mechanism, if any. This means that, depending on the
+    graphics API and its implementation, the exact effects of retrieving and
+    then reloading \a data are not predictable. Improved performance may not be
+    visible at all in case other caching mechanisms outside of Qt's control are
+    already active.
 
     \sa pipelineCacheData(), isFeatureSupported()
  */
