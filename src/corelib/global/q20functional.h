@@ -41,6 +41,19 @@ struct identity
 #endif // __cpp_lib_ranges
 } // namespace q20
 
+namespace q20 {
+// like std::remove_cvref(_t)
+#ifdef __cpp_lib_remove_cvref
+using std::remove_cvref;
+using std::remove_cvref_t;
+#else
+template <typename T>
+struct remove_cvref : std::remove_cv<std::remove_reference_t<T>> {};
+template <typename T>
+using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
+#endif // __cpp_lib_remove_cvref
+}
+
 QT_END_NAMESPACE
 
 #endif /* Q20FUNCTIONAL_H */
