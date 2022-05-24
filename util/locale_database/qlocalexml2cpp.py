@@ -123,7 +123,7 @@ class StringData:
         if len(self.data) > 0xffff:
             raise ValueError(f'Data is too big ({len(self.data)}) for quint16 index to its end!',
                              self.name)
-        fd.write(f"\nstatic const char16_t {self.name}[] = {{\n")
+        fd.write(f"\nstatic constexpr char16_t {self.name}[] = {{\n")
         fd.write(wrap_list(self.data))
         fd.write("\n};\n")
 
@@ -168,7 +168,7 @@ class LocaleDataWriter (LocaleSourceEditor):
         likely = sorted(likely, key=keyLikely)
 
         i = 0
-        self.writer.write('static const QLocaleId likely_subtags[] = {\n')
+        self.writer.write('static constexpr QLocaleId likely_subtags[] = {\n')
         for had, have, got, give in likely:
             i += 1
             self.writer.write('    {{ {:3d}, {:3d}, {:3d} }}'.format(*have))
@@ -178,7 +178,7 @@ class LocaleDataWriter (LocaleSourceEditor):
         self.writer.write('};\n\n')
 
     def localeIndex(self, indices):
-        self.writer.write('static const quint16 locale_index[] = {\n')
+        self.writer.write('static constexpr quint16 locale_index[] = {\n')
         for index, name in indices:
             self.writer.write(f'{index:6d}, // {name}\n')
         self.writer.write('     0 // trailing 0\n')
@@ -199,7 +199,7 @@ class LocaleDataWriter (LocaleSourceEditor):
         endonyms_data = StringData('endonyms_data')
 
         # Locale data
-        self.writer.write('static const QLocaleData locale_data[] = {\n')
+        self.writer.write('static constexpr QLocaleData locale_data[] = {\n')
         # Table headings: keep each label centred in its field, matching line_format:
         self.writer.write('   // '
                           # Width 6 + comma
@@ -349,7 +349,7 @@ class LocaleDataWriter (LocaleSourceEditor):
 
     @staticmethod
     def __writeNameData(out, book, form):
-        out(f'static const char {form}_name_list[] =\n')
+        out(f'static constexpr char {form}_name_list[] =\n')
         out('"Default\\0"\n')
         for key, value in book.items():
             if key == 0:
@@ -357,7 +357,7 @@ class LocaleDataWriter (LocaleSourceEditor):
             out(f'"{value[0]}\\0"\n')
         out(';\n\n')
 
-        out(f'static const quint16 {form}_name_index[] = {{\n')
+        out(f'static constexpr quint16 {form}_name_index[] = {{\n')
         out(f'     0, // Any{form.capitalize()}\n')
         index = 8
         for key, value in book.items():
@@ -370,7 +370,7 @@ class LocaleDataWriter (LocaleSourceEditor):
 
     @staticmethod
     def __writeCodeList(out, book, form, width):
-        out(f'static const unsigned char {form}_code_list[] =\n')
+        out(f'static constexpr unsigned char {form}_code_list[] =\n')
         for key, value in book.items():
             code = value[1]
             code += r'\0' * max(width - len(code), 0)
@@ -406,7 +406,7 @@ class CalendarDataWriter (LocaleSourceEditor):
     def write(self, calendar, locales, names):
         months_data = StringData('months_data')
 
-        self.writer.write('static const QCalendarLocale locale_data[] = {\n')
+        self.writer.write('static constexpr QCalendarLocale locale_data[] = {\n')
         self.writer.write(
             '     //'
             # IDs, width 7 (6 + comma)

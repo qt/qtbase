@@ -263,7 +263,7 @@ class ByteArrayData:
         return index
 
     def write(self, out, name):
-        out(f'\nstatic const char {name}[] = {{\n')
+        out(f'\nstatic constexpr char {name}[] = {{\n')
         out(wrap_list(self.data))
         out('\n};\n')
 
@@ -294,7 +294,7 @@ class ZoneIdWriter (SourceFileEditor):
 
         # Write Windows/IANA table
         out('// Windows ID Key, Territory Enum, IANA ID Index\n')
-        out('static const QZoneData zoneDataTable[] = {\n')
+        out('static constexpr QZoneData zoneDataTable[] = {\n')
         for index, data in sorted(windowsIds.items()):
             out('    {{ {:6d},{:6d},{:6d} }}, // {} / {}\n'.format(
                     data['windowsKey'], data['territoryId'],
@@ -305,7 +305,7 @@ class ZoneIdWriter (SourceFileEditor):
 
         # Write Windows ID key table
         out('// Windows ID Key, Windows ID Index, IANA ID Index, UTC Offset\n')
-        out('static const QWindowsData windowsDataTable[] = {\n')
+        out('static constexpr QWindowsData windowsDataTable[] = {\n')
         for index, pair in enumerate(windowsIdList, 1):
             out('    {{ {:6d},{:6d},{:6d},{:6d} }}, // {}\n'.format(
                     index,
@@ -317,7 +317,7 @@ class ZoneIdWriter (SourceFileEditor):
 
         # Write UTC ID key table
         out('// IANA ID Index, UTC Offset\n')
-        out('static const QUtcData utcDataTable[] = {\n')
+        out('static constexpr QUtcData utcDataTable[] = {\n')
         for pair in utcIdList:
             out('    {{ {:6d},{:6d} }}, // {}\n'.format(
                     ianaIdData.append(pair[0]), pair[1], pair[0]))
