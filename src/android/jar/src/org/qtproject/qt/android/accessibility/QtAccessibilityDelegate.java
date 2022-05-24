@@ -43,6 +43,7 @@ package org.qtproject.qt.android.accessibility;
 import android.accessibilityservice.AccessibilityService;
 import android.app.Activity;
 import android.graphics.Rect;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -51,6 +52,7 @@ import android.view.ViewParent;
 import android.text.TextUtils;
 
 import android.view.accessibility.*;
+import android.view.accessibility.AccessibilityNodeInfo.CollectionInfo;
 import android.view.MotionEvent;
 import android.view.View.OnHoverListener;
 
@@ -444,6 +446,13 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         int[] ids = QtNativeAccessibility.childIdListForAccessibleObject(virtualViewId);
         for (int i = 0; i < ids.length; ++i)
             node.addChild(m_view, ids[i]);
+        if (node.isScrollable()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                node.setCollectionInfo(new CollectionInfo(ids.length, 1, false));
+            } else {
+                node.setCollectionInfo(CollectionInfo.obtain(ids.length, 1, false));
+            }
+        }
 
         return node;
     }
