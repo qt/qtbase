@@ -86,6 +86,7 @@ private slots:
     void keepPendingUpdateRequests();
     void activateDeactivateEvent();
     void qobject_castOnDestruction();
+    void touchToMouseTranslationByPopup();
 
 private:
     QPoint m_availableTopLeft;
@@ -950,6 +951,9 @@ public:
             if (spinLoopWhenPressed)
                 QCoreApplication::processEvents();
         }
+        if (closeOnTap)
+            this->close();
+
     }
     void mouseReleaseEvent(QMouseEvent *event) override
     {
@@ -1017,6 +1021,8 @@ public:
                     touchPressLocalPos = point.position();
                     touchPressGlobalPos = point.globalPosition();
                 }
+                if (closeOnTap)
+                    this->close();
                 break;
             case QEventPoint::State::Released:
                 ++touchReleasedCount;
@@ -1073,6 +1079,8 @@ public:
 
     const QPointingDevice *mouseDevice = nullptr;
     const QPointingDevice *touchDevice = nullptr;
+
+    bool closeOnTap = false;
 };
 
 static void simulateMouseClick(QWindow *target, const QPointF &local, const QPointF &global)
@@ -1157,18 +1165,14 @@ void tst_QWindow::touchToMouseTranslation()
     QVERIFY(QTest::qWaitForWindowExposed(&window));
 
     QList<QWindowSystemInterface::TouchPoint> points;
-    QWindowSystemInterface::TouchPoint tp1, tp2, tp3;
+    QWindowSystemInterface::TouchPoint tp1, tp2;
     const QRectF pressArea(101, 102, 4, 4);
-    const QRectF pressArea1(107, 110, 4, 4);
     const QRectF moveArea(105, 108, 4, 4);
     tp1.id = 1;
     tp1.state = QEventPoint::State::Pressed;
     tp1.area = QHighDpi::toNativePixels(pressArea, &window);
     tp2.id = 2;
     tp2.state = QEventPoint::State::Pressed;
-    tp3.id = 3;
-    tp3.state = QEventPoint::State::Pressed;
-    tp3.area = QHighDpi::toNativePixels(pressArea1, &window);
     points << tp1 << tp2;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
     // Now an update but with changed list order. The mouse event should still
@@ -1241,40 +1245,6 @@ void tst_QWindow::touchToMouseTranslation()
 
     points.clear();
     points.append(tp2);
-    points[0].state = QEventPoint::State::Released;
-    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
-    QCoreApplication::processEvents();
-    points.clear();
-    points.append(tp1);
-    points[0].state = QEventPoint::State::Released;
-    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
-    QCoreApplication::processEvents();
-    QTRY_COMPARE(window.mouseReleaseButton, 1);
-
-    points.clear();
-    points.append(tp1);
-    points[0].state = QEventPoint::State::Pressed;
-    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
-    QCoreApplication::processEvents();
-    points.clear();
-    points.append(tp2);
-    points[0].state = QEventPoint::State::Pressed;
-    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
-    QCoreApplication::processEvents();
-    points.clear();
-    points.append(tp3);
-    points[0].state = QEventPoint::State::Pressed;
-    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
-    QCoreApplication::processEvents();
-    QTRY_COMPARE(window.mousePressButton, 1);
-
-    points.clear();
-    points.append(tp2);
-    points[0].state = QEventPoint::State::Released;
-    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
-    QCoreApplication::processEvents();
-    points.clear();
-    points.append(tp3);
     points[0].state = QEventPoint::State::Released;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
     QCoreApplication::processEvents();
@@ -2768,6 +2738,36 @@ void tst_QWindow::qobject_castOnDestruction()
         QVERIFY(!dynamic_cast<QWindow *>(object));
         QVERIFY(!object->isWindowType());
     });
+}
+
+void tst_QWindow::touchToMouseTranslationByPopup()
+{
+    InputTestWindow window;
+    window.setTitle(QLatin1String(QTest::currentTestFunction()));
+    window.ignoreTouch = true;
+    window.setGeometry(QRect(m_availableTopLeft, m_testWindowSize));
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    InputTestWindow popupWindow;
+    popupWindow.setGeometry(QRect(m_availableTopLeft + QPoint(20, 20),
+                                  QSize(m_testWindowSize.width(), m_testWindowSize.height() / 2)));
+    popupWindow.setFlag(Qt::Popup);
+    popupWindow.setTransientParent(&window);
+    popupWindow.ignoreTouch = true;
+    popupWindow.closeOnTap = true;
+    popupWindow.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&popupWindow));
+
+    QTest::touchEvent(&popupWindow, touchDevice).press(0, {1, 1}, &window);
+    QVERIFY(!popupWindow.isVisible());
+
+    // Omit touchpoint 0: because the popup was closed, touchpoint0.release is not sent.
+    const QPoint tp1(50, 1);
+    QTest::touchEvent(&window, touchDevice).press(1, tp1, &window);
+    QTRY_COMPARE(window.mousePressButton, int(Qt::LeftButton));
+    QTest::touchEvent(&window, touchDevice).release(1, tp1, &window);
+    QTRY_COMPARE(window.mouseReleaseButton, int(Qt::LeftButton));
 }
 
 #include <tst_qwindow.moc>
