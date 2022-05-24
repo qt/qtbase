@@ -1992,8 +1992,8 @@ int QTest::qRun()
                         tfB.constData());
                 qPrintTestSlots(stderr, tfB.constData());
                 QTestResult::setCurrentTestFunction(tfB.constData());
-                QTestResult::addFailure(qPrintable(
-                                            QLatin1String("Function not found: %1").arg(tf)));
+                QTestResult::addFailure(
+                    qPrintable(QLatin1String("Function not found: %1").arg(tf)));
                 QTestResult::finishedCurrentTestFunction();
                 // Ditch the tag that came with tf as test function:
                 QTest::testTags.remove(commandLineMethods.size());
