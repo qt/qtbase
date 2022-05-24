@@ -1958,18 +1958,33 @@ int QTest::qRun()
         if (!noCrashHandler)
             handler.reset(new FatalSignalHandler);
 
+        bool seenBad = false;
         TestMethods::MetaMethods commandLineMethods;
         for (const QString &tf : qAsConst(QTest::testFunctions)) {
-                const QByteArray tfB = tf.toLatin1();
-                const QByteArray signature = tfB + QByteArrayLiteral("()");
-                QMetaMethod m = TestMethods::findMethod(currentTestObject, signature.constData());
-                if (!m.isValid() || !isValidSlot(m)) {
-                    fprintf(stderr, "Unknown test function: '%s'. Possible matches:\n", tfB.constData());
-                    qPrintTestSlots(stderr, tfB.constData());
-                    fprintf(stderr, "\n%s -functions\nlists all available test functions.\n", QTestResult::currentAppName());
-                    exit(1);
-                }
+            const QByteArray tfB = tf.toLatin1();
+            const QByteArray signature = tfB + QByteArrayLiteral("()");
+            QMetaMethod m = TestMethods::findMethod(currentTestObject, signature.constData());
+            if (m.isValid() && isValidSlot(m)) {
                 commandLineMethods.push_back(m);
+            } else {
+                fprintf(stderr, "Unknown test function: '%s'. Possible matches:\n",
+                        tfB.constData());
+                qPrintTestSlots(stderr, tfB.constData());
+                QTestResult::setCurrentTestFunction(tfB.constData());
+                QTestResult::addFailure(qPrintable(
+                                            QLatin1String("Function not found: %1").arg(tf)));
+                QTestResult::finishedCurrentTestFunction();
+                // Ditch the tag that came with tf as test function:
+                QTest::testTags.remove(commandLineMethods.size());
+                seenBad = true;
+            }
+        }
+        if (seenBad) {
+            // Provide relevant help to do better next time:
+            fprintf(stderr, "\n%s -functions\nlists all available test functions.\n\n",
+                    QTestResult::currentAppName());
+            if (commandLineMethods.empty()) // All requested functions missing.
+                return 1;
         }
         TestMethods test(currentTestObject, commandLineMethods);
         test.invokeTests(currentTestObject);
