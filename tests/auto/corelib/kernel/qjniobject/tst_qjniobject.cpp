@@ -135,6 +135,11 @@ void tst_QJniObject::ctor()
     }
 
     {
+        QJniObject object = QJniObject::construct<jstring>();
+        QVERIFY(object.isValid());
+    }
+
+    {
         QJniObject string = QJniObject::fromString(QLatin1String("Hello, Java"));
         QJniObject object("java/lang/String", "(Ljava/lang/String;)V", string.object<jstring>());
         QVERIFY(object.isValid());
@@ -143,7 +148,7 @@ void tst_QJniObject::ctor()
 
     {
         QJniObject string = QJniObject::fromString(QLatin1String("Hello, Java"));
-        QJniObject object("java/lang/String", string.object<jstring>());
+        QJniObject object = QJniObject::construct<jstring>(string.object<jstring>());
         QVERIFY(object.isValid());
         QCOMPARE(string.toString(), object.toString());
     }

@@ -65,6 +65,7 @@ void tst_QJniEnvironment::jniEnv()
         // try to find an existing class with QJniEnvironment
         QJniEnvironment env;
         QVERIFY(env.findClass("java/lang/Object"));
+        QVERIFY(env.findClass<jstring>());
 
         // try to find a nonexistent class
         QVERIFY(!env.findClass("this/doesnt/Exist"));
@@ -98,14 +99,14 @@ static void callbackFromJava(JNIEnv *env, jobject /*thiz*/, jstring value)
     Q_UNUSED(env)
     registerNativesString = QJniObject(value).toString();
 }
-Q_JNI_DECLARE_NATIVE_METHOD(callbackFromJava);
+Q_DECLARE_JNI_NATIVE_METHOD(callbackFromJava);
 
 static void callbackFromJavaNoCtor(JNIEnv *env, jobject /*thiz*/, jstring value)
 {
     Q_UNUSED(env)
     registerNativesString = QJniObject(value).toString();
 }
-Q_JNI_DECLARE_NATIVE_METHOD(callbackFromJavaNoCtor);
+Q_DECLARE_JNI_NATIVE_METHOD(callbackFromJavaNoCtor);
 
 void tst_QJniEnvironment::registerNativeMethods()
 {
@@ -145,7 +146,7 @@ static void intCallbackFromJava(JNIEnv *env, jobject /*thiz*/, jint value)
     Q_UNUSED(env)
     registerNativeInteger = static_cast<int>(value);
 }
-Q_JNI_DECLARE_NATIVE_METHOD(intCallbackFromJava);
+Q_DECLARE_JNI_NATIVE_METHOD(intCallbackFromJava);
 
 void tst_QJniEnvironment::registerNativeMethodsByJclass()
 {

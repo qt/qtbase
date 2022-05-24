@@ -24,6 +24,8 @@ public:
     JNIEnv &operator*() const;
     JNIEnv *jniEnv() const;
     jclass findClass(const char *className);
+    template<typename Class>
+    jclass findClass() { return findClass(QtJniTypes::className<Class>().data()); }
     jmethodID findMethod(jclass clazz, const char *methodName, const char *signature);
     template<typename ...Args>
     jmethodID findMethod(jclass clazz, const char *methodName) {

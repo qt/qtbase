@@ -214,6 +214,21 @@ constexpr auto typeSignature()
         staticAssertTypeMismatch();
 }
 
+template<bool flag = false>
+static void staticAssertClassNotRegistered()
+{
+    static_assert(flag, "Class not registered, use Q_DECLARE_JNI_CLASS");
+}
+
+template<typename T>
+constexpr auto className()
+{
+    if constexpr(std::is_same<T, jstring>::value)
+        return String("java/lang/String");
+    else
+        staticAssertClassNotRegistered();
+}
+
 template<typename T>
 static constexpr bool isPrimitiveType()
 {
@@ -298,13 +313,17 @@ struct Object
 
 } // namespace QtJniTypes
 
-#define Q_DECLARE_JNI_TYPE(Type, Signature)                      \
+#define Q_DECLARE_JNI_TYPE_HELPER(Type)                         \
 namespace QtJniTypes {                                          \
 struct Type : Object                                            \
 {                                                               \
     constexpr Type(jobject o) noexcept : Object{o} {}           \
 };                                                              \
 }                                                               \
+
+
+#define Q_DECLARE_JNI_TYPE(Type, Signature)                     \
+Q_DECLARE_JNI_TYPE_HELPER(Type)                                 \
 template<>                                                      \
 constexpr auto QtJniTypes::typeSignature<QtJniTypes::Type>()    \
 {                                                               \
@@ -315,7 +334,23 @@ constexpr auto QtJniTypes::typeSignature<QtJniTypes::Type>()    \
     return QtJniTypes::String(Signature);                       \
 }                                                               \
 
-#define Q_JNI_DECLARE_NATIVE_METHOD(Method)                     \
+#define Q_DECLARE_JNI_CLASS(Type, Signature)                    \
+Q_DECLARE_JNI_TYPE_HELPER(Type)                                 \
+template<>                                                      \
+constexpr auto QtJniTypes::className<QtJniTypes::Type>()        \
+{                                                               \
+    return QtJniTypes::String(Signature);                       \
+}                                                               \
+template<>                                                      \
+constexpr auto QtJniTypes::typeSignature<QtJniTypes::Type>()    \
+{                                                               \
+    return QtJniTypes::String("L")                              \
+         + QtJniTypes::String(Signature)                        \
+         + QtJniTypes::String(";");                             \
+}                                                               \
+
+
+#define Q_DECLARE_JNI_NATIVE_METHOD(Method)                     \
 namespace QtJniMethods {                                        \
 static constexpr auto Method##_signature =                      \
     QtJniTypes::nativeMethodSignature(Method);                  \

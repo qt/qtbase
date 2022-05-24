@@ -45,6 +45,14 @@ public:
     inline QJniObject(QtJniTypes::Object wrapper) noexcept : QJniObject(jobject(wrapper)) {}
     ~QJniObject();
 
+    template<typename Class, typename ...Args>
+    static inline QJniObject construct(Args &&...args)
+    {
+        return QJniObject(QtJniTypes::className<Class>().data(),
+                          QtJniTypes::constructorSignature<Args...>().data(),
+                          std::forward<Args>(args)...);
+    }
+
     jobject object() const;
     template <typename T> T object() const
     {

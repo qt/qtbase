@@ -14,6 +14,7 @@ public:
 
 private slots:
     void initTestCase();
+    void nativeMethod();
 };
 
 struct QtJavaWrapper {};
@@ -44,6 +45,11 @@ Q_DECLARE_JNI_TYPE(JavaType, "Lorg/qtproject/qt/JavaType;");
 static_assert(QtJniTypes::typeSignature<QtJniTypes::JavaType>() == "Lorg/qtproject/qt/JavaType;");
 Q_DECLARE_JNI_TYPE(ArrayType, "[Lorg/qtproject/qt/ArrayType;")
 static_assert(QtJniTypes::typeSignature<QtJniTypes::ArrayType>() == "[Lorg/qtproject/qt/ArrayType;");
+
+static_assert(QtJniTypes::className<jstring>() == "java/lang/String");
+
+Q_DECLARE_JNI_CLASS(QtTextToSpeech, "org/qtproject/qt/android/speech/QtTextToSpeech")
+static_assert(QtJniTypes::className<QtJniTypes::QtTextToSpeech>() == "org/qtproject/qt/android/speech/QtTextToSpeech");
 
 static_assert(QtJniTypes::fieldSignature<jint>() == "I");
 static_assert(QtJniTypes::fieldSignature<jint>() != "X");
@@ -95,6 +101,22 @@ static_assert(!QtJniTypes::String("ABCDE").endsWith('F'));
 void tst_QJniTypes::initTestCase()
 {
 
+}
+
+static bool nativeFunction(JNIEnv *, jclass, int, jstring, long)
+{
+    return true;
+}
+Q_DECLARE_JNI_NATIVE_METHOD(nativeFunction)
+
+static_assert(QtJniTypes::nativeMethodSignature(nativeFunction) == "(ILjava/lang/String;J)Z");
+
+void tst_QJniTypes::nativeMethod()
+{
+    const auto method = Q_JNI_NATIVE_METHOD(nativeFunction);
+    QVERIFY(method.fnPtr == nativeFunction);
+    QCOMPARE(method.name, "nativeFunction");
+    QCOMPARE(method.signature, "(ILjava/lang/String;J)Z");
 }
 
 QTEST_MAIN(tst_QJniTypes)
