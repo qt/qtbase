@@ -593,16 +593,25 @@ Q_TESTLIB_EXPORT bool printAvailableFunctions = false;
 Q_TESTLIB_EXPORT QStringList testFunctions;
 Q_TESTLIB_EXPORT QStringList testTags;
 
-static void qPrintTestSlots(FILE *stream, const char *filter = nullptr)
+static bool qPrintTestSlots(FILE *stream, const char *filter = nullptr, const char *preamble = "")
 {
+    const auto matches = [filter](const QByteArray &s) {
+        return !filter || QLatin1StringView(s).contains(QLatin1StringView(filter),
+                                                        Qt::CaseInsensitive);
+    };
+    bool matched = false;
     for (int i = 0; i < QTest::currentTestObject->metaObject()->methodCount(); ++i) {
         QMetaMethod sl = QTest::currentTestObject->metaObject()->method(i);
         if (isValidSlot(sl)) {
             const QByteArray signature = sl.methodSignature();
-            if (!filter || QLatin1StringView(signature).contains(QLatin1StringView(filter), Qt::CaseInsensitive))
-                fprintf(stream, "%s\n", signature.constData());
+            if (matches(signature)) {
+                fprintf(stream, "%s%s\n", preamble, signature.constData());
+                preamble = "";
+                matched = true;
+            }
         }
     }
+    return matched;
 }
 
 static void qPrintDataTags(FILE *stream)
@@ -2307,9 +2316,9 @@ int QTest::qRun()
             if (m.isValid() && isValidSlot(m)) {
                 commandLineMethods.push_back(m);
             } else {
-                fprintf(stderr, "Unknown test function: '%s'. Possible matches:\n",
-                        tfB.constData());
-                qPrintTestSlots(stderr, tfB.constData());
+                fprintf(stderr, "Unknown test function: '%s'.", tfB.constData());
+                if (!qPrintTestSlots(stderr, tfB.constData(), " Possible matches:\n"))
+                    fputc('\n', stderr);
                 QTestResult::setCurrentTestFunction(tfB.constData());
                 QTestResult::addFailure(qPrintable("Function not found: %1"_L1.arg(tf)));
                 QTestResult::finishedCurrentTestFunction();
