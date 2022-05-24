@@ -2107,6 +2107,11 @@ QT_END_INCLUDE_NAMESPACE
 static const char *osVer_helper(QOperatingSystemVersion version = QOperatingSystemVersion::current())
 {
 #ifdef Q_OS_MACOS
+    if (version.majorVersion() == 12)
+        return "Monterey";
+    // Compare against predefined constant to handle 10.16/11.0
+    if (QOperatingSystemVersion::MacOSBigSur.version().isPrefixOf(version.version()))
+        return "Big Sur";
     if (version.majorVersion() == 10) {
         switch (version.minorVersion()) {
         case 9:
@@ -2121,13 +2126,15 @@ static const char *osVer_helper(QOperatingSystemVersion version = QOperatingSyst
             return "High Sierra";
         case 14:
             return "Mojave";
+        case 15:
+            return "Catalina";
         }
     }
     // unknown, future version
 #else
     Q_UNUSED(version);
 #endif
-    return 0;
+    return nullptr;
 }
 #endif
 
@@ -2216,7 +2223,7 @@ static const char *osVer_helper(QOperatingSystemVersion version = QOperatingSyst
     }
 #undef Q_WINVER
     // unknown, future version
-    return 0;
+    return nullptr;
 }
 
 #endif
