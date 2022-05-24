@@ -9,7 +9,7 @@ QT_BEGIN_NAMESPACE
 
 namespace QUnicodeTables {
 
-static const unsigned short uc_property_trie[] = {
+static constexpr unsigned short uc_property_trie[] = {
     // [0x0..0x11000)
 
     6256, 6288, 6320, 6352, 6384, 6416, 6448, 6480,
@@ -7003,7 +7003,7 @@ static const unsigned short uc_property_trie[] = {
     3170, 3170, 3170, 3170, 3170, 3170, 3163, 3163
 };
 
-static const Properties uc_properties[] = {
+static constexpr Properties uc_properties[] = {
     { 9, 18, 0, 0, -1, 0, 1, 3, 0,  { {0, 0}, {0, 0}, {0, 0}, {0, 0} }, 3, 0, 21, 0, 0, 2 },
     { 9, 8, 0, 0, -1, 0, 1, 3, 0,  { {0, 0}, {0, 0}, {0, 0}, {0, 0} }, 3, 0, 17, 5, 0, 2 },
     { 9, 7, 0, 0, -1, 0, 1, 3, 0,  { {0, 0}, {0, 0}, {0, 0}, {0, 0} }, 2, 2, 37, 2, 0, 2 },
@@ -10232,7 +10232,7 @@ Q_CORE_EXPORT EastAsianWidth QT_FASTCALL eastAsianWidth(char32_t ucs4) noexcept
     return static_cast<EastAsianWidth>(qGetProp(ucs4)->eastAsianWidth);
 }
 
-static const unsigned short specialCaseMap[] = {
+static constexpr unsigned short specialCaseMap[] = {
     0x0, // placeholder
     0x1, 0x2c65,
     0x1, 0x2c66,
@@ -10539,9 +10539,9 @@ static const unsigned short specialCaseMap[] = {
     0x1, 0xa64b
 };
 
-const unsigned int MaxSpecialCaseLength = 3;
+constexpr unsigned int MaxSpecialCaseLength = 3;
 
-static const unsigned short uc_decomposition_trie[] = {
+static constexpr unsigned short uc_decomposition_trie[] = {
     // 0 - 0x3400
 
     1548, 1548, 1548, 1548, 1548, 1548, 1548, 1548,
@@ -12461,7 +12461,7 @@ static const unsigned short uc_decomposition_trie[] = {
         ? uc_decomposition_trie[uc_decomposition_trie[((ucs4 - 0x3400) >> 8) + 0x340] + (ucs4 & 0xff)] \
         : 0xffff)
 
-static const unsigned short uc_decomposition_map[] = {
+static constexpr unsigned short uc_decomposition_map[] = {
     0x103, 0x20, 0x210, 0x20, 0x308, 0x109, 0x61, 0x210,
     0x20, 0x304, 0x109, 0x32, 0x109, 0x33, 0x210, 0x20,
     0x301, 0x110, 0x3bc, 0x210, 0x20, 0x327, 0x109, 0x31,
@@ -14285,7 +14285,7 @@ static const unsigned short uc_decomposition_map[] = {
     0x9f16, 0x101, 0x9f3b, 0x201, 0xd869, 0xde00
 };
 
-static const unsigned short uc_ligature_trie[] = {
+static constexpr unsigned short uc_ligature_trie[] = {
     // 0 - 0x3100
 
     631, 631, 631, 631, 631, 631, 631, 631,
@@ -14715,7 +14715,7 @@ static const unsigned short uc_ligature_trie[] = {
         ? uc_ligature_trie[uc_ligature_trie[((ucs4 - 0x3100) >> 8) + 0x188] + (ucs4 & 0xff)] \
         : 0xffff)
 
-static const unsigned short uc_ligature_map[] = {
+static constexpr unsigned short uc_ligature_map[] = {
     0x54, 0x41, 0xc0, 0x45, 0xc8, 0x49, 0xcc, 0x4e,
     0x1f8, 0x4f, 0xd2, 0x55, 0xd9, 0x57, 0x1e80, 0x59,
     0x1ef2, 0x61, 0xe0, 0x65, 0xe8, 0x69, 0xec, 0x6e,
@@ -14971,7 +14971,7 @@ struct NormalizationCorrection {
     int version;
 };
 
-static const NormalizationCorrection uc_normalization_corrections[] = {
+static constexpr NormalizationCorrection uc_normalization_corrections[] = {
     { 0xf951, 0x96fb, 6 },
     { 0x2f868, 0x2136a, 7 },
     { 0x2f874, 0x5f33, 7 },
@@ -14983,7 +14983,7 @@ static const NormalizationCorrection uc_normalization_corrections[] = {
 enum { NumNormalizationCorrections = 6 };
 enum { NormalizationCorrectionsVersionMax = 7 };
 
-static const char16_t idnaMappingData[] = {
+static constexpr char16_t idnaMappingData[] = {
     0x31, 0x31, 0x65e5, 0x31, 0x31, 0x6708, 0x31, 0x31, 0x70b9, 0x31, 0x32, 0x65e5,
     0x31, 0x32, 0x6708, 0x31, 0x32, 0x70b9, 0x31, 0x33, 0x65e5, 0x31, 0x33, 0x70b9,
     0x31, 0x34, 0x65e5, 0x31, 0x34, 0x70b9, 0x31, 0x35, 0x65e5, 0x31, 0x35, 0x70b9,
@@ -15070,7 +15070,7 @@ struct IdnaMapEntry {
 };
 static_assert(sizeof(IdnaMapEntry) == 8);
 
-static const IdnaMapEntry idnaMap[] = {
+static constexpr IdnaMapEntry idnaMap[] = {
     { 0xaa, 1, { 0x61, 0 } },
     { 0xb2, 1, { 0x32, 0 } },
     { 0xb3, 1, { 0x33, 0 } },

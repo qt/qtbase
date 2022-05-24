@@ -1705,7 +1705,7 @@ static QByteArray createNormalizationCorrections()
            "    int version;\n"
            "};\n\n"
 
-           "static const NormalizationCorrection uc_normalization_corrections[] = {\n";
+           "static constexpr NormalizationCorrection uc_normalization_corrections[] = {\n";
 
     int maxVersion = 0;
     int numCorrections = 0;
@@ -2721,7 +2721,7 @@ static QByteArray createIdnaMapping()
     qsizetype memoryUsage = 0;
 
     QByteArray out =
-        "static const char16_t idnaMappingData[] = {";
+        "static constexpr char16_t idnaMappingData[] = {";
 
     int col = 0;
     for (auto c : idnaMappingData) {
@@ -2746,7 +2746,7 @@ static QByteArray createIdnaMapping()
         "    char16_t ucs[2]; // ucs[0] is offset if size > 2\n"
         "};\n"
         "static_assert(sizeof(IdnaMapEntry) == 8);\n\n"
-        "static const IdnaMapEntry idnaMap[] = {\n";
+        "static constexpr IdnaMapEntry idnaMap[] = {\n";
 
     for (auto i = idnaMappingTable.keyValueBegin(); i != idnaMappingTable.keyValueEnd(); i++) {
         const QString &mapping = i->second;
@@ -2915,7 +2915,7 @@ static QByteArray createPropertyInfo()
     Q_ASSERT(blockMap.size() == BMP_END/BMP_BLOCKSIZE +(SMP_END-BMP_END)/SMP_BLOCKSIZE); // 0x1870
     Q_ASSERT(blockMap.last() + blockMap.size() < (1<<(sizeof(unsigned short)*8)));
 
-    QByteArray out = "static const unsigned short uc_property_trie[] = {\n";
+    QByteArray out = "static constexpr unsigned short uc_property_trie[] = {\n";
     // First write the map from blockId to indices of unique blocks:
     out += "    // [0x0..0x" + QByteArray::number(BMP_END, 16) + ")";
     for (int i = 0; i < BMP_END/BMP_BLOCKSIZE; ++i) {
@@ -2968,7 +2968,7 @@ static QByteArray createPropertyInfo()
         out.chop(2);
     out += "\n};\n\n";
 
-    out += "static const Properties uc_properties[] = {";
+    out += "static constexpr Properties uc_properties[] = {";
     // keep in sync with the property declaration
     for (int i = 0; i < uniqueProperties.size(); ++i) {
         const PropertyFlags &p = uniqueProperties.at(i);
@@ -3116,7 +3116,7 @@ static QByteArray createSpecialCaseMap()
     qDebug("createSpecialCaseMap:");
 
     QByteArray out
-         = "static const unsigned short specialCaseMap[] = {\n"
+         = "static constexpr unsigned short specialCaseMap[] = {\n"
            "    0x0, // placeholder";
 
     int i = 1;
@@ -3132,7 +3132,7 @@ static QByteArray createSpecialCaseMap()
         maxN = std::max(maxN, n);
     }
     out.chop(1);
-    out += "\n};\n\nconst unsigned int MaxSpecialCaseLength = ";
+    out += "\n};\n\nconstexpr unsigned int MaxSpecialCaseLength = ";
     out += QByteArray::number(maxN);
     out += ";\n\n";
 
@@ -3264,7 +3264,7 @@ static QByteArray createCompositionInfo()
 
     Q_ASSERT(blockMap.last() + blockMap.size() < (1<<(sizeof(unsigned short)*8)));
 
-    QByteArray out = "static const unsigned short uc_decomposition_trie[] = {\n";
+    QByteArray out = "static constexpr unsigned short uc_decomposition_trie[] = {\n";
     // first write the map
     out += "    // 0 - 0x" + QByteArray::number(BMP_END, 16);
     for (int i = 0; i < BMP_END/BMP_BLOCKSIZE; ++i) {
@@ -3328,7 +3328,7 @@ static QByteArray createCompositionInfo()
            + QByteArray::number(SMP_BLOCKSIZE-1, 16) + ")] \\\n"
            "        : 0xffff)\n\n";
 
-    out += "static const unsigned short uc_decomposition_map[] = {";
+    out += "static constexpr unsigned short uc_decomposition_map[] = {";
     for (int i = 0; i < decompositions.size(); ++i) {
         if (!(i % 8)) {
             if (out.endsWith(' '))
@@ -3464,7 +3464,7 @@ static QByteArray createLigatureInfo()
 
     Q_ASSERT(blockMap.last() + blockMap.size() < (1<<(sizeof(unsigned short)*8)));
 
-    QByteArray out = "static const unsigned short uc_ligature_trie[] = {\n";
+    QByteArray out = "static constexpr unsigned short uc_ligature_trie[] = {\n";
     // first write the map
     out += "    // 0 - 0x" + QByteArray::number(BMP_END, 16);
     for (int i = 0; i < BMP_END/BMP_BLOCKSIZE; ++i) {
@@ -3528,7 +3528,7 @@ static QByteArray createLigatureInfo()
            + QByteArray::number(SMP_BLOCKSIZE-1, 16) + ")] \\\n"
            "        : 0xffff)\n\n";
 
-    out += "static const unsigned short uc_ligature_map[] = {";
+    out += "static constexpr unsigned short uc_ligature_map[] = {";
     for (int i = 0; i < ligatures.size(); ++i) {
         if (!(i % 8)) {
             if (out.endsWith(' '))
