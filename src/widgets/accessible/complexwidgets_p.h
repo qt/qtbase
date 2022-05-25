@@ -138,6 +138,8 @@ public:
 
     QString text(QAccessible::Text t) const override;
 
+    QAccessible::State state() const override;
+
     // QAccessibleActionInterface
     QStringList actionNames() const override;
     QString localizedActionDescription(const QString &actionName) const override;

@@ -378,9 +378,10 @@ HRESULT QWindowsUiaMainProvider::GetPatternProvider(PATTERNID idPattern, IUnknow
         break;
     case UIA_ExpandCollapsePatternId:
         // Menu items with submenus.
-        if (accessible->role() == QAccessible::MenuItem
+        if ((accessible->role() == QAccessible::MenuItem
                 && accessible->childCount() > 0
-                && accessible->child(0)->role() == QAccessible::PopupMenu) {
+                && accessible->child(0)->role() == QAccessible::PopupMenu)
+            || accessible->role() == QAccessible::ComboBox) {
             *pRetVal = new QWindowsUiaExpandCollapseProvider(id());
         }
         break;
