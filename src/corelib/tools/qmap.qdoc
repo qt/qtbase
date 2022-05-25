@@ -449,9 +449,7 @@
 /*! \fn template <class Key, class T> QList<T> QMap<Key, T>::values() const
 
     Returns a list containing all the values in the map, in ascending
-    order of their keys. If a key is associated with multiple values,
-    all of its values will be in the list, and not just the most
-    recently inserted one.
+    order of their keys.
 
     This function creates a new list, in \l {linear time}. The time and memory
     use that entails can be avoided by iterating from \l keyValueBegin() to
