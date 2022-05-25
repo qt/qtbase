@@ -122,6 +122,7 @@ public:
         data(encodeBindingStatus(status)) {}
     explicit BindingStatusOrList(List *list) noexcept : data(encodeList(list)) {}
 
+    // requires external synchronization:
     QBindingStatus *addObjectUnlessAlreadyStatus(QObject *object);
     void setStatusAndClearList(QBindingStatus *status) noexcept;
 
@@ -133,17 +134,21 @@ public:
     static bool isList(quintptr data) noexcept { return data & 1; }
     static bool isNull(quintptr data) noexcept { return data == 0; }
 
+    // thread-safe:
     QBindingStatus *bindingStatus() const noexcept
     {
-        if (isBindingStatus(data))
-            return reinterpret_cast<QBindingStatus *>(data);
+        // synchronizes-with the store-release in setStatusAndClearList():
+        const auto d = data.load(std::memory_order_acquire);
+        if (isBindingStatus(d))
+            return reinterpret_cast<QBindingStatus *>(d);
         else
             return nullptr;
     }
 
+    // requires external synchronization:
     List *list() const noexcept
     {
-        return decodeList(data);
+        return decodeList(data.load(std::memory_order_relaxed));
     }
 
 private:
@@ -165,7 +170,7 @@ private:
         return quintptr(list) | 1;
     }
 
-    quintptr data;
+    std::atomic<quintptr> data;
 };
 
 } // namespace QtPrivate
@@ -241,8 +246,6 @@ public:
 
     QBindingStatus *bindingStatus()
     {
-
-        QMutexLocker lock(&mutex);
         return m_statusOrPendingObjects.bindingStatus();
     }
 

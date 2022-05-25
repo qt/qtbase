@@ -519,7 +519,8 @@ void QtPrivate::BindingStatusOrList::setStatusAndClearList(QBindingStatus *statu
             QObjectPrivate::get(obj)->reinitBindingStorageAfterThreadMove();
         delete pendingObjects;
     }
-    data = encodeBindingStatus(status);
+    // synchronizes-with the load-acquire in bindingStatus():
+    data.store(encodeBindingStatus(status), std::memory_order_release);
 }
 
 /*!
@@ -568,14 +569,13 @@ int QThread::exec()
  */
 QBindingStatus *QtPrivate::BindingStatusOrList::addObjectUnlessAlreadyStatus(QObject *object)
 {
-
     if (auto status = bindingStatus())
         return status;
     List *objectList = list();
     if (!objectList) {
         objectList = new List();
         objectList->reserve(8);
-        data = encodeList(objectList);
+        data.store(encodeList(objectList), std::memory_order_relaxed);
     }
     objectList->push_back(object);
     return nullptr;
@@ -583,6 +583,8 @@ QBindingStatus *QtPrivate::BindingStatusOrList::addObjectUnlessAlreadyStatus(QOb
 
 QBindingStatus *QThreadPrivate::addObjectWithPendingBindingStatusChange(QObject *obj)
 {
+    if (auto status = m_statusOrPendingObjects.bindingStatus())
+        return status;
     QMutexLocker lock(&mutex);
     return m_statusOrPendingObjects.addObjectUnlessAlreadyStatus(obj);
 }
