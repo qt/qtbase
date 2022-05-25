@@ -30,7 +30,9 @@ class QTextureFileDataPrivate;
 class Q_GUI_EXPORT QTextureFileData
 {
 public:
-    QTextureFileData();
+    enum Mode { ByteArrayMode, ImageMode };
+
+    QTextureFileData(Mode mode = ByteArrayMode);
     QTextureFileData(const QTextureFileData &other);
     QTextureFileData &operator=(const QTextureFileData &other);
     ~QTextureFileData();
@@ -42,6 +44,7 @@ public:
 
     QByteArray data() const;
     void setData(const QByteArray &data);
+    void setData(const QImage &image, int level = 0, int face = 0);
 
     int dataOffset(int level = 0, int face = 0) const;
     void setDataOffset(int offset, int level = 0, int face = 0);
@@ -77,6 +80,7 @@ public:
 
 private:
     QSharedDataPointer<QTextureFileDataPrivate> d;
+    friend Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QTextureFileData &d);
 };
 
 Q_DECLARE_TYPEINFO(QTextureFileData, Q_RELOCATABLE_TYPE);
