@@ -4,6 +4,7 @@
 #ifndef MANDELBROTWIDGET_H
 #define MANDELBROTWIDGET_H
 
+#include <QGestureEvent>
 #include <QPixmap>
 #include <QWidget>
 #include "renderthread.h"
@@ -18,6 +19,7 @@ public:
     MandelbrotWidget(QWidget *parent = nullptr);
 
 protected:
+    QSize sizeHint() const override { return {1024, 768}; };
     void paintEvent(QPaintEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
@@ -27,6 +29,9 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
+#ifndef QT_NO_GESTURES
+    bool event(QEvent *event) override;
+#endif
 
 private slots:
     void updatePixmap(const QImage &image, double scaleFactor);
@@ -34,6 +39,9 @@ private slots:
 
 private:
     void scroll(int deltaX, int deltaY);
+#ifndef QT_NO_GESTURES
+    bool gestureEvent(QGestureEvent *event);
+#endif
 
     RenderThread thread;
     QPixmap pixmap;

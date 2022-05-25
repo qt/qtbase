@@ -37,11 +37,7 @@ int main(int argc, char *argv[])
     }
 
     MandelbrotWidget widget;
-    const auto geometry = widget.screen()->availableGeometry();
-    widget.resize((2 * geometry.size()) / 3);
-    const auto pos = (geometry.size() - widget.size()) / 2;
-    widget.move(geometry.topLeft() + QPoint(pos.width(), pos.height()));
-
+    widget.grabGesture(Qt::PinchGesture);
     widget.show();
     return app.exec();
 }
