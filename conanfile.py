@@ -132,7 +132,7 @@ class QtBase(ConanFile):
         # When cross-building the user needs to pass 'qt_host_path' which is transformed to
         # QT_HOST_PATH later on. Resolve the exact path.
         qt_host_path = self.options.get_safe("qt_host_path")
-        if qt_host_path is None:
+        if not qt_host_path:
             raise QtConanError("Expected 'qt_host_path' option in cross-build context")
         return str(Path(os.path.expandvars(str(qt_host_path))).expanduser().resolve(strict=True))
 
