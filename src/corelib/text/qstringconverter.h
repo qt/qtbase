@@ -62,12 +62,23 @@ public:
 #endif
 
     qsizetype requiredSpace(qsizetype inputLength) const
-    { return iface->fromUtf16Len(inputLength); }
+    { return iface ? iface->fromUtf16Len(inputLength) : 0; }
     char *appendToBuffer(char *out, QStringView in)
-    { return iface->fromUtf16(out, in, &state); }
+    {
+        if (!iface) {
+            state.invalidChars = 1;
+            return out;
+        }
+        return iface->fromUtf16(out, in, &state);
+    }
 private:
     QByteArray encodeAsByteArray(QStringView in)
     {
+        if (!iface) {
+            // ensure that hasError returns true
+            state.invalidChars = 1;
+            return {};
+        }
         QByteArray result(iface->fromUtf16Len(in.size()), Qt::Uninitialized);
         char *out = result.data();
         out = iface->fromUtf16(out, in, &state);
@@ -120,12 +131,23 @@ public:
 #endif
 
     qsizetype requiredSpace(qsizetype inputLength) const
-    { return iface->toUtf16Len(inputLength); }
+    { return iface ? iface->toUtf16Len(inputLength) : 0; }
     QChar *appendToBuffer(QChar *out, QByteArrayView ba)
-    { return iface->toUtf16(out, ba, &state); }
+    {
+        if (!iface) {
+            state.invalidChars = 1;
+            return out;
+        }
+        return iface->toUtf16(out, ba, &state);
+    }
 private:
     QString decodeAsString(QByteArrayView in)
     {
+        if (!iface) {
+            // ensure that hasError returns true
+            state.invalidChars = 1;
+            return {};
+        }
         QString result(iface->toUtf16Len(in.size()), Qt::Uninitialized);
         const QChar *out = iface->toUtf16(result.data(), in, &state);
         result.truncate(out - result.constData());

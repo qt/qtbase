@@ -120,6 +120,8 @@ private slots:
 
     void constructByName();
 
+    void invalidConverter();
+
     void convertUtf8_data();
     void convertUtf8();
     void convertUtf8CharByChar_data() { convertUtf8_data(); }
@@ -179,6 +181,60 @@ void tst_QStringConverter::constructByName()
     decoder = QStringDecoder("utf-16");
     QVERIFY(decoder.isValid());
     QVERIFY(!strcmp(decoder.name(), "UTF-16"));
+}
+
+void tst_QStringConverter::invalidConverter()
+{
+    // QStringEncoder tests
+    {
+        QStringEncoder encoder;
+        QVERIFY(!encoder.isValid());
+        QVERIFY(!encoder.name());
+        QByteArray encoded = encoder(u"Some text");
+        QVERIFY(encoded.isEmpty());
+        QVERIFY(encoder.hasError());
+
+        encoder.resetState();
+        QVERIFY(!encoder.hasError());
+
+        encoded = encoder.encode(u"More text");
+        QVERIFY(encoded.isEmpty());
+        QVERIFY(encoder.hasError());
+        QCOMPARE(encoder.requiredSpace(42), 0);
+
+        encoder.resetState();
+        QVERIFY(!encoder.hasError());
+        char buffer[100];
+        char *position = encoder.appendToBuffer(buffer, u"Even more");
+        QCOMPARE(position, buffer);
+        QVERIFY(encoder.hasError());
+    }
+
+    // QStringDecoder tests
+    {
+        QStringDecoder decoder;
+        QVERIFY(!decoder.name());
+        QVERIFY(!decoder.isValid());
+        QString decoded = decoder("Some text");
+        QVERIFY(decoded.isEmpty());
+        QVERIFY(decoder.hasError());
+
+        decoder.resetState();
+        QVERIFY(!decoder.hasError());
+
+        decoded = decoder.decode("More text");
+        QVERIFY(decoded.isEmpty());
+        QVERIFY(decoder.hasError());
+
+        QCOMPARE(decoder.requiredSpace(42), 0);
+
+        decoder.resetState();
+        QVERIFY(!decoder.hasError());
+        QChar buffer[100];
+        QChar *position = decoder.appendToBuffer(buffer, "Even more");
+        QCOMPARE(position, buffer);
+        QVERIFY(decoder.hasError());
+    }
 }
 
 void tst_QStringConverter::convertUtf8_data()
