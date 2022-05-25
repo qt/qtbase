@@ -303,6 +303,11 @@
 
     \snippet threads/mandelbrot/mandelbrotwidget.cpp 13
 
+    Pinch to zoom has been implemented with QGesture as outlined in
+    \l{Gestures in Widgets and Graphics View}.
+
+    \snippet threads/mandelbrot/mandelbrotwidget.cpp gesture1
+
     When the user presses the left mouse button, we store the mouse
     pointer position in \c lastDragPos.
 

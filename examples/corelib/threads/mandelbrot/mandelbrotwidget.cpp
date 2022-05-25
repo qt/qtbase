@@ -3,8 +3,9 @@
 
 #include "mandelbrotwidget.h"
 
-#include <QPainter>
+#include <QGesture>
 #include <QKeyEvent>
+#include <QPainter>
 
 #include <math.h>
 
@@ -26,8 +27,7 @@ MandelbrotWidget::MandelbrotWidget(QWidget *parent) :
     pixmapScale(DefaultScale),
     curScale(DefaultScale)
 {
-    help = tr("Use mouse wheel or the '+' and '-' keys to zoom. "
-              "Press and hold left mouse button to scroll.");
+    help = tr("Zoom with mouse wheel, +/- keys or pinch.  Scroll with arrow keys or by dragging.");
     connect(&thread, &RenderThread::renderedImage,
             this, &MandelbrotWidget::updatePixmap);
 
@@ -46,7 +46,7 @@ void MandelbrotWidget::paintEvent(QPaintEvent * /* event */)
 
     if (pixmap.isNull()) {
         painter.setPen(Qt::white);
-        painter.drawText(rect(), Qt::AlignCenter, tr("Rendering initial image, please wait..."));
+        painter.drawText(rect(), Qt::AlignCenter|Qt::TextWordWrap, tr("Rendering initial image, please wait..."));
 //! [2] //! [3]
         return;
 //! [3] //! [4]
@@ -80,17 +80,31 @@ void MandelbrotWidget::paintEvent(QPaintEvent * /* event */)
     }
 //! [8] //! [9]
 
-    QString text = help;
-    if (!info.isEmpty())
-        text += ' ' + info;
     QFontMetrics metrics = painter.fontMetrics();
-    int textWidth = metrics.horizontalAdvance(text);
+    if (!info.isEmpty()){
+        int infoWidth = metrics.horizontalAdvance(info);
+        int infoHeight = metrics.height();
+
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(QColor(0, 0, 0, 127));
+        infoHeight = (infoWidth/width()+1) * (infoHeight + 5);
+        painter.drawRect((width() - infoWidth) / 2 - 5, 0, infoWidth + 10, infoHeight);
+
+        painter.setPen(Qt::white);
+        painter.drawText(rect(), Qt::AlignHCenter|Qt::AlignTop|Qt::TextWordWrap, info);
+    }
+
+    int helpWidth = metrics.horizontalAdvance(help);
+    int helpHeight = metrics.height();
 
     painter.setPen(Qt::NoPen);
     painter.setBrush(QColor(0, 0, 0, 127));
-    painter.drawRect((width() - textWidth) / 2 - 5, 0, textWidth + 10, metrics.lineSpacing() + 5);
+    helpHeight = (helpWidth/width()+1) * (helpHeight + 5);
+    painter.drawRect((width() - helpWidth) / 2 - 5, height()-helpHeight, helpWidth + 10, helpHeight);
+
     painter.setPen(Qt::white);
-    painter.drawText((width() - textWidth) / 2, metrics.leading() + metrics.ascent(), text);
+    painter.drawText(rect(), Qt::AlignHCenter|Qt::AlignBottom|Qt::TextWordWrap, help);
+
 }
 //! [9]
 
@@ -211,3 +225,24 @@ void MandelbrotWidget::scroll(int deltaX, int deltaY)
     thread.render(centerX, centerY, curScale, size(), devicePixelRatio());
 }
 //! [18]
+
+//! [gesture1]
+#ifndef QT_NO_GESTURES
+bool MandelbrotWidget::gestureEvent(QGestureEvent *event)
+{
+    if (auto *pinch = static_cast<QPinchGesture *>(event->gesture(Qt::PinchGesture))) {
+        if (pinch->changeFlags().testFlag(QPinchGesture::ScaleFactorChanged))
+            zoom(1.0 / pinch->scaleFactor());
+        return true;
+    }
+    return false;
+}
+
+bool MandelbrotWidget::event(QEvent *event)
+{
+    if (event->type() == QEvent::Gesture)
+        return gestureEvent(static_cast<QGestureEvent*>(event));
+    return QWidget::event(event);
+}
+#endif
+//! [gesture1]
