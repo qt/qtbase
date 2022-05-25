@@ -8,6 +8,11 @@ function(qt_internal_set_warnings_are_errors_flags target target_scope)
                 # We do mixed enum arithmetic all over the place:
                 list(APPEND flags -Wno-error=deprecated-enum-enum-conversion)
             endif()
+            if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "14.0.0")
+                # Clang 14 introduced these two but we are not clean for it.
+                list(APPEND flags -Wno-error=deprecated-copy-with-user-provided-copy)
+                list(APPEND flags -Wno-error=unused-but-set-variable)
+            endif()
         endif()
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         # using GCC
