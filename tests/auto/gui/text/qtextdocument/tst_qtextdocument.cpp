@@ -180,6 +180,8 @@ private slots:
     void insertHtmlWithComments_data();
     void insertHtmlWithComments();
 
+    void delayedLayout();
+
 private:
     void backgroundImage_checkExpectedHtml(const QTextDocument &doc);
     void buildRegExpData();
@@ -3929,6 +3931,25 @@ void tst_QTextDocument::insertHtmlWithComments()
     }
 
     QCOMPARE(blockContent, expectedBlocks);
+}
+
+void tst_QTextDocument::delayedLayout()
+{
+    QTextDocument doc;
+    doc.setHtml("<html>Foobar</html>");
+    QCOMPARE(doc.blockCount(), 1);
+
+    doc.setLayoutEnabled(false);
+
+    // Force creation of a layout
+    QVERIFY(doc.documentLayout());
+
+    QTextBlock block = doc.begin();
+    QTextLayout *layout = block.layout();
+    QCOMPARE(layout->lineCount(), 0); // layout didn't happen yet
+
+    doc.setLayoutEnabled(true);
+    QCOMPARE(layout->lineCount(), 1); // layout happened
 }
 
 QTEST_MAIN(tst_QTextDocument)

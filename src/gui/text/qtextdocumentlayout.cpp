@@ -3754,7 +3754,7 @@ void QTextDocumentLayout::documentChanged(int from, int oldLength, int length)
      for (; blockIt.isValid() && blockIt != endIt; blockIt = blockIt.next())
          blockIt.clearLayout();
 
-    if (d->docPrivate->pageSize.isNull())
+    if (!d->docPrivate->canLayout())
         return;
 
     QRectF updateRect;
@@ -4032,7 +4032,7 @@ QRectF QTextDocumentLayout::tableCellBoundingRect(QTextTable *table, const QText
 QRectF QTextDocumentLayout::tableBoundingRect(QTextTable *table) const
 {
     Q_D(const QTextDocumentLayout);
-    if (d->docPrivate->pageSize.isNull())
+    if (!d->docPrivate->canLayout())
         return QRectF();
     d->ensureLayoutFinished();
 
@@ -4059,7 +4059,7 @@ QRectF QTextDocumentLayout::tableBoundingRect(QTextTable *table) const
 QRectF QTextDocumentLayout::frameBoundingRect(QTextFrame *frame) const
 {
     Q_D(const QTextDocumentLayout);
-    if (d->docPrivate->pageSize.isNull())
+    if (!d->docPrivate->canLayout())
         return QRectF();
     d->ensureLayoutFinished();
     return d->frameBoundingRectInternal(frame);
@@ -4088,7 +4088,7 @@ QRectF QTextDocumentLayoutPrivate::frameBoundingRectInternal(QTextFrame *frame) 
 QRectF QTextDocumentLayout::blockBoundingRect(const QTextBlock &block) const
 {
     Q_D(const QTextDocumentLayout);
-    if (d->docPrivate->pageSize.isNull() || !block.isValid() || !block.isVisible())
+    if (!d->docPrivate->canLayout() || !block.isValid() || !block.isVisible())
         return QRectF();
     d->ensureLayoutedByPosition(block.position() + block.length());
     QTextFrame *frame = d->document->frameAt(block.position());

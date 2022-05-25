@@ -291,6 +291,8 @@ public:
         return get(object->document());
     }
 
+    bool canLayout() const { return layoutEnabled && !pageSize.isNull(); }
+
 private:
     QTextDocumentPrivate(const QTextDocumentPrivate& m);
     QTextDocumentPrivate& operator= (const QTextDocumentPrivate& m);
@@ -337,6 +339,7 @@ private:
 
 public:
     bool inContentsChange;
+    bool layoutEnabled = true;
     QTextOption defaultTextOption;
     Qt::CursorMoveStyle defaultCursorMoveStyle;
 #ifndef QT_NO_CSSPARSER
