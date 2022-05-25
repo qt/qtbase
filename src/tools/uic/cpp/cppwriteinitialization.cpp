@@ -1128,18 +1128,35 @@ QString WriteInitialization::writeStringListProperty(const DomStringList *list) 
 {
     QString propertyValue;
     QTextStream str(&propertyValue);
-    str << "QStringList()";
-    const QStringList values = list->elementString();
-    if (values.isEmpty())
-        return propertyValue;
-    if (needsTranslation(list)) {
-        const QString comment = list->attributeComment();
-        for (int i = 0; i < values.size(); ++i)
-            str << '\n' << m_indent << "    << " << trCall(values.at(i), comment);
-    } else {
-        for (int i = 0; i < values.size(); ++i)
-            str << " << " << language::qstring(values.at(i), m_dindent);
+    char trailingDelimiter = '}';
+    switch (language::language()) {
+     case Language::Cpp:
+        str << "QStringList{";
+        break;
+    case Language::Python:
+       str << '[';
+       trailingDelimiter = ']';
+       break;
     }
+    const QStringList values = list->elementString();
+    if (!values.isEmpty()) {
+        if (needsTranslation(list)) {
+            const QString comment = list->attributeComment();
+            const qsizetype last = values.size() - 1;
+            for (qsizetype i = 0; i <= last; ++i) {
+                str << '\n' << m_indent << "    " << trCall(values.at(i), comment);
+                if (i != last)
+                    str << ',';
+            }
+        } else {
+            for (qsizetype i = 0; i < values.size(); ++i) {
+                if (i)
+                    str << ", ";
+                str << language::qstring(values.at(i), m_dindent);
+            }
+        }
+    }
+    str << trailingDelimiter;
     return propertyValue;
 }
 
