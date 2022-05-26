@@ -1640,23 +1640,20 @@ bool QFileSystemEngine::setCurrentPath(const QFileSystemEntry &entry)
 
 QFileSystemEntry QFileSystemEngine::currentPath()
 {
-    QString ret;
-    DWORD size = 0;
-    wchar_t currentName[PATH_MAX];
-    size = ::GetCurrentDirectory(PATH_MAX, currentName);
-    if (size != 0) {
-        if (size > PATH_MAX) {
-            wchar_t *newCurrentName = new wchar_t[size];
-            if (::GetCurrentDirectory(size, newCurrentName) != 0)
-                ret = QString::fromWCharArray(newCurrentName, size);
-            delete [] newCurrentName;
-        } else {
-            ret = QString::fromWCharArray(currentName, size);
-        }
+    QString ret(PATH_MAX, Qt::Uninitialized);
+    DWORD size = GetCurrentDirectoryW(PATH_MAX, reinterpret_cast<wchar_t *>(ret.data()));
+    if (size > PATH_MAX) {
+        // try again after enlarging the buffer
+        ret.resize(size);
+        size = GetCurrentDirectoryW(size, reinterpret_cast<wchar_t *>(ret.data()));
+
+        // note: the current directory may have changed underneath us; if the
+        // new one is even bigger, we may return a truncated string!
     }
-    if (ret.length() >= 2 && ret[1] == u':')
+    if (size >= 2 && ret.at(1) == u':')
         ret[0] = ret.at(0).toUpper(); // Force uppercase drive letters.
-    return QFileSystemEntry(ret, QFileSystemEntry::FromNativePath());
+    ret.resize(size);
+    return QFileSystemEntry(std::move(ret), QFileSystemEntry::FromNativePath());
 }
 
 //static
