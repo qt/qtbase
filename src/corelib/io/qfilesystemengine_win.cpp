@@ -1297,7 +1297,7 @@ QFileSystemEntry QFileSystemEngine::currentPath()
     if (size != 0) {
         if (size > PATH_MAX) {
             wchar_t *newCurrentName = new wchar_t[size];
-            if (::GetCurrentDirectory(PATH_MAX, newCurrentName) != 0)
+            if (::GetCurrentDirectory(size, newCurrentName) != 0)
                 ret = QString::fromWCharArray(newCurrentName, size);
             delete [] newCurrentName;
         } else {
