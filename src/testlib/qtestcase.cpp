@@ -1878,36 +1878,35 @@ private:
         const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
         const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
         const void *exceptionAddress = exInfo->ExceptionRecord->ExceptionAddress;
-        printf("A crash occurred in %s.\n"
-               "Function time: %dms Total time: %dms\n\n"
-               "Exception address: 0x%p\n"
-               "Exception code   : 0x%lx\n",
-               appName, msecsFunctionTime, msecsTotalTime,
-               exceptionAddress, exInfo->ExceptionRecord->ExceptionCode);
+        fprintf(stderr, "A crash occurred in %s.\n"
+                        "Function time: %dms Total time: %dms\n\n"
+                        "Exception address: 0x%p\n"
+                        "Exception code   : 0x%lx\n",
+                appName, msecsFunctionTime, msecsTotalTime,
+                exceptionAddress, exInfo->ExceptionRecord->ExceptionCode);
 
         DebugSymbolResolver resolver(GetCurrentProcess());
         if (resolver.isValid()) {
             DebugSymbolResolver::Symbol exceptionSymbol = resolver.resolveSymbol(DWORD64(exceptionAddress));
             if (exceptionSymbol.name) {
-                printf("Nearby symbol    : %s\n", exceptionSymbol.name);
+                fprintf(stderr, "Nearby symbol    : %s\n", exceptionSymbol.name);
                 delete [] exceptionSymbol.name;
             }
             void *stack[maxStackFrames];
-            fputs("\nStack:\n", stdout);
+            fputs("\nStack:\n", stderr);
             const unsigned frameCount = CaptureStackBackTrace(0, DWORD(maxStackFrames), stack, NULL);
             for (unsigned f = 0; f < frameCount; ++f)     {
                 DebugSymbolResolver::Symbol symbol = resolver.resolveSymbol(DWORD64(stack[f]));
                 if (symbol.name) {
-                    printf("#%3u: %s() - 0x%p\n", f + 1, symbol.name, (const void *)symbol.address);
+                    fprintf(stderr, "#%3u: %s() - 0x%p\n", f + 1, symbol.name, (const void *)symbol.address);
                     delete [] symbol.name;
                 } else {
-                    printf("#%3u: Unable to obtain symbol\n", f + 1);
+                    fprintf(stderr, "#%3u: Unable to obtain symbol\n", f + 1);
                 }
             }
         }
 
-        fputc('\n', stdout);
-        fflush(stdout);
+        fputc('\n', stderr);
 
         return EXCEPTION_EXECUTE_HANDLER;
     }
