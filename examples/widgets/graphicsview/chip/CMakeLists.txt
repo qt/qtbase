@@ -10,7 +10,7 @@ endif()
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/graphicsview/chip")
 
 find_package(Qt6
-    REQUIRED COMPONENTS Core Gui OpenGL Widgets
+    REQUIRED COMPONENTS Core Gui Widgets
     OPTIONAL_COMPONENTS PrintSupport
 )
 
