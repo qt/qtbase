@@ -742,9 +742,8 @@ QSslConfiguration QNetworkRequest::sslConfiguration() const
 /*!
     Sets this network request's SSL configuration to be \a config. The
     settings that apply are the private key, the local certificate,
-    the SSL protocol (SSLv2, SSLv3, TLSv1.0 where applicable), the CA
-    certificates and the ciphers that the SSL backend is allowed to
-    use.
+    the TLS protocol (e.g. TLS 1.3), the CA certificates and the ciphers that
+    the SSL backend is allowed to use.
 
     \sa sslConfiguration(), QSslConfiguration::defaultConfiguration()
 */
