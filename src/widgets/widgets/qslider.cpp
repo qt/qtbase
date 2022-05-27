@@ -392,8 +392,6 @@ void QSlider::mouseMoveEvent(QMouseEvent *ev)
     }
     ev->accept();
     int newPosition = d->pixelPosToRangeValue(d->pick(ev->position().toPoint()) - d->clickOffset);
-    QStyleOptionSlider opt;
-    initStyleOption(&opt);
     setSliderPosition(newPosition);
 }
 
