@@ -54,10 +54,10 @@
 
     QSslSocket establishes a secure, encrypted TCP connection you can
     use for transmitting encrypted data. It can operate in both client
-    and server mode, and it supports modern SSL protocols, including
-    SSL 3 and TLS 1.2. By default, QSslSocket uses only SSL protocols
+    and server mode, and it supports modern TLS protocols, including
+    TLS 1.3. By default, QSslSocket uses only TLS protocols
     which are considered to be secure (QSsl::SecureProtocols), but you can
-    change the SSL protocol by calling setProtocol() as long as you do
+    change the TLS protocol by calling setProtocol() as long as you do
     it before the handshake has started.
 
     SSL encryption operates on top of the existing TCP stream after
