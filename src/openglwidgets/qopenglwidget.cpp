@@ -164,7 +164,7 @@ QT_BEGIN_NAMESPACE
 
   \section1 Code Examples
 
-  To get started, the simplest QOpenGLWidget subclass could like like the following:
+  To get started, the simplest QOpenGLWidget subclass could look like the following:
 
   \snippet code/doc_gui_widgets_qopenglwidget.cpp 0
 
