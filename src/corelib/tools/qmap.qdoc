@@ -87,24 +87,14 @@
 
     The items are traversed in ascending key order.
 
-    Normally, a QMap allows only one value per key. If you call
+    A QMap allows only one value per key. If you call
     insert() with a key that already exists in the QMap, the
     previous value will be erased. For example:
 
     \snippet code/src_corelib_tools_qmap.cpp 9
 
     However, you can store multiple values per key by using
-    QMultiMap. If you want
-    to retrieve all the values for a single key, you can use
-    values(const Key &key), which returns a QList<T>:
-
-    \snippet code/src_corelib_tools_qmap.cpp 10
-
-    Another approach is to call
-    find() to get the STL-style iterator for the first item with a
-    key and iterate from there:
-
-    \snippet code/src_corelib_tools_qmap.cpp 11
+    QMultiMap.
 
     If you only need to extract the values from a map (not the keys),
     you can also use \l{foreach}:
@@ -318,9 +308,7 @@
     the value associated with it.
 
     If the item does not exist in the map, the function simply
-    returns a \l{default-constructed value}. If there are multiple
-    items for \a key in the map, only the most recently inserted one
-    is removed and returned.
+    returns a \l{default-constructed value}.
 
     If you don't use the return value, remove() is more efficient.
 
@@ -370,9 +358,7 @@
 
     If the map contains no item with key \a key, the function inserts
     a \l{default-constructed value} into the map with key \a key, and
-    returns a reference to it. If the map contains multiple items
-    with key \a key, this function returns a reference to the most
-    recently inserted value.
+    returns a reference to it.
 
     \sa insert(), value()
 */
@@ -771,9 +757,6 @@
 
     If a key is common to both maps, its value will be replaced with
     the value stored in \a map.
-
-    \note If \a map contains multiple entries with the same key then the
-    final value of the key is undefined.
 
     \sa QMultiMap::insert()
 */
