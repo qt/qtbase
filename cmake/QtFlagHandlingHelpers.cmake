@@ -238,11 +238,8 @@ function(qt_set_language_standards)
         set(CMAKE_CXX_STANDARD 17 PARENT_SCOPE)
     endif()
 
-    if (c_std_11 IN_LIST CMAKE_C_COMPILE_FEATURES)
-        set(CMAKE_C_STANDARD 11 PARENT_SCOPE)
-    elseif (c_std_99 IN_LIST CMAKE_C_COMPILE_FEATURES)
-        set(CMAKE_C_STANDARD 99 PARENT_SCOPE)
-    endif()
+    set(CMAKE_C_STANDARD 11 PARENT_SCOPE)
+    set(CMAKE_C_STANDARD_REQUIRED ON PARENT_SCOPE)
 endfunction()
 
 function(qt_set_language_standards_interface_compile_features target)
