@@ -19,6 +19,8 @@
 #include <emscripten/val.h>
 #include <cstdint>
 #include <functional>
+#include <QtCore/qglobal.h>
+
 
 QT_BEGIN_NAMESPACE
 
@@ -37,7 +39,7 @@ namespace qstdweb {
     class Uint8Array;
     class EventCallback;
 
-    class ArrayBuffer {
+    class Q_CORE_EXPORT ArrayBuffer {
     public:
         explicit ArrayBuffer(uint32_t size);
         explicit ArrayBuffer(const emscripten::val &arrayBuffer);
@@ -49,7 +51,7 @@ namespace qstdweb {
         emscripten::val m_arrayBuffer = emscripten::val::undefined();
     };
 
-    class Blob {
+    class Q_CORE_EXPORT Blob {
     public:
         explicit Blob(const emscripten::val &blob);
         uint32_t size() const;
@@ -62,7 +64,7 @@ namespace qstdweb {
         emscripten::val m_blob = emscripten::val::undefined();
     };
 
-    class File {
+    class Q_CORE_EXPORT File {
     public:
         File() = default;
         explicit File(const emscripten::val &file);
@@ -79,7 +81,7 @@ namespace qstdweb {
         emscripten::val m_file = emscripten::val::undefined();
     };
 
-    class FileList {
+    class Q_CORE_EXPORT FileList {
     public:
         FileList() = default;
         explicit FileList(const emscripten::val &fileList);
@@ -93,7 +95,7 @@ namespace qstdweb {
         emscripten::val m_fileList = emscripten::val::undefined();
     };
 
-    class FileReader {
+    class Q_CORE_EXPORT FileReader {
     public:
         ArrayBuffer result() const;
         void readAsArrayBuffer(const Blob &blob) const;
@@ -110,7 +112,7 @@ namespace qstdweb {
         std::unique_ptr<EventCallback> m_onAbort;
     };
 
-    class Uint8Array {
+    class Q_CORE_EXPORT Uint8Array {
     public:
         static Uint8Array heap();
         explicit Uint8Array(const emscripten::val &uint8Array);
@@ -134,7 +136,7 @@ namespace qstdweb {
         emscripten::val m_uint8Array = emscripten::val::undefined();
     };
 
-    class EventCallback
+    class Q_CORE_EXPORT EventCallback
     {
     public:
         EventCallback() = default;
