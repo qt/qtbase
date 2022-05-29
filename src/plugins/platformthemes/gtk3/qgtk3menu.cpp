@@ -85,6 +85,7 @@ QGtk3MenuItem::QGtk3MenuItem()
       m_checkable(false),
       m_checked(false),
       m_enabled(true),
+      m_exclusive(false),
       m_underline(false),
       m_invalid(true),
       m_menu(nullptr),
