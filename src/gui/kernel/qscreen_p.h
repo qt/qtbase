@@ -64,12 +64,12 @@ class QScreenPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QScreen)
 public:
-    void setPlatformScreen(QPlatformScreen *screen);
     void updateHighDpi()
     {
         geometry = platformScreen->deviceIndependentGeometry();
         availableGeometry = QHighDpi::fromNative(platformScreen->availableGeometry(), QHighDpiScaling::factor(platformScreen), geometry.topLeft());
     }
+    void updateLogicalDpi();
 
     void updatePrimaryOrientation();
     void updateGeometriesWithSignals();
