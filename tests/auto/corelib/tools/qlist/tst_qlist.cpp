@@ -5,7 +5,7 @@
 #include <QAtomicInt>
 #include <QThread>
 #include <QSemaphore>
-#include <QScopedValueRollback>
+#include <private/qatomicscopedvaluerollback_p.h>
 #include <qlist.h>
 
 
@@ -3181,7 +3181,7 @@ void tst_QList::emplaceReturnsIterator()
 
 void tst_QList::emplaceFront() const
 {
-    QScopedValueRollback<QAtomicInt> rollback(Movable::counter, 0);
+    QAtomicScopedValueRollback rollback(Movable::counter, 0);
 
     QList<Movable> vec;
     vec.emplaceFront('b');
@@ -3206,7 +3206,7 @@ void tst_QList::emplaceFrontReturnsRef() const
 
 void tst_QList::emplaceBack()
 {
-    QScopedValueRollback<QAtomicInt> rollback(Movable::counter, 0);
+    QAtomicScopedValueRollback rollback(Movable::counter, 0);
 
     QList<Movable> vec;
 
