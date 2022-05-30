@@ -281,25 +281,53 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
             const char *indent = isExpectedFail ? YAML_INDENT YAML_INDENT YAML_INDENT : YAML_INDENT;
             if (!ok) {
 #if QT_CONFIG(regularexpression)
+                enum class OperationType {
+                    Unknown,
+                    Compare,    /* Plain old QCOMPARE */
+                    Verify,     /* QVERIFY */
+                    CompareOp,  /* QCOMPARE_OP */
+                };
+
                 // This is fragile, but unfortunately testlib doesn't plumb
                 // the expected and actual values to the loggers (yet).
-                static QRegularExpression verifyRegex(u"^'(?<actualexpression>.*)' returned "
-                                                      "(?<actual>\\w+).+\\((?<message>.*)\\)$"_s);
+                static const QRegularExpression verifyRegex(
+                            u"^'(?<actualexpression>.*)' returned "
+                            "(?<actual>\\w+).+\\((?<message>.*)\\)$"_s);
 
-                static QRegularExpression compareRegex(
+                static const QRegularExpression compareRegex(
                             u"^(?<message>.*)\n"
                             "\\s*Actual\\s+\\((?<actualexpression>.*)\\)\\s*: (?<actual>.*)\n"
                             "\\s*Expected\\s+\\((?<expectedexpresssion>.*)\\)\\s*: "
                             "(?<expected>.*)$"_s);
 
-                QString descriptionString = QString::fromUtf8(description);
-                QRegularExpressionMatch match = verifyRegex.match(descriptionString);
-                const bool isVerify = match.hasMatch();
-                if (!isVerify)
-                    match = compareRegex.match(descriptionString);
+                static const QRegularExpression compareOpRegex(
+                            u"^(?<message>.*)\n"
+                            "\\s*Left\\s+\\((?<actualexpression>.*)\\)\\s*: (?<actual>.*)\n"
+                            "\\s*Right\\s+\\((?<expectedexpresssion>.*)\\)\\s*: "
+                            "(?<expected>.*)$"_s);
 
-                if (match.hasMatch()) {
+                const QString descriptionString = QString::fromUtf8(description);
+                QRegularExpressionMatch match = verifyRegex.match(descriptionString);
+
+                OperationType opType = OperationType::Unknown;
+                if (match.hasMatch())
+                    opType = OperationType::Verify;
+
+                if (opType == OperationType::Unknown) {
+                    match = compareRegex.match(descriptionString);
+                    if (match.hasMatch())
+                        opType = OperationType::Compare;
+                }
+
+                if (opType == OperationType::Unknown) {
+                    match = compareOpRegex.match(descriptionString);
+                    if (match.hasMatch())
+                        opType = OperationType::CompareOp;
+                }
+
+                if (opType != OperationType::Unknown) {
                     QString message = match.captured(u"message");
+                    QLatin1StringView comparisonType;
                     QString expected;
                     QString actual;
                     const auto parenthesize = [&match](QLatin1StringView key) -> QString {
@@ -307,15 +335,44 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
                     };
                     const QString actualExpression = parenthesize("actualexpression"_L1);
 
-                    if (isVerify) {
+                    if (opType == OperationType::Verify) {
+                        comparisonType = "QVERIFY"_L1;
                         actual = match.captured(u"actual").toLower() % actualExpression;
                         expected = (actual.startsWith("true "_L1) ? "false"_L1 : "true"_L1)
                                 % actualExpression;
                         if (message.isEmpty())
                             message = u"Verification failed"_s;
-                    } else {
+                    } else if (opType == OperationType::Compare) {
+                        comparisonType = "QCOMPARE"_L1;
                         expected = match.captured(u"expected")
                             % parenthesize("expectedexpresssion"_L1);
+                        actual = match.captured(u"actual") % actualExpression;
+                    } else {
+                        struct ComparisonInfo {
+                            const char *comparisonType;
+                            const char *comparisonStringOp;
+                        };
+                        // get a proper comparison type based on the error message
+                        const auto info = [](const QString &err) -> ComparisonInfo {
+                            if (err.contains("different"_L1))
+                                return { "QCOMPARE_NE", "!= " };
+                            else if (err.contains("less than or equal to"_L1))
+                                return { "QCOMPARE_LE", "<= " };
+                            else if (err.contains("greater than or equal to"_L1))
+                                return { "QCOMPARE_GE", ">= " };
+                            else if (err.contains("less than"_L1))
+                                return { "QCOMPARE_LT", "< " };
+                            else if (err.contains("greater than"_L1))
+                                return { "QCOMPARE_GT", "> " };
+                            else if (err.contains("to be equal to"_L1))
+                                return { "QCOMPARE_EQ", "== " };
+                            else
+                                return { "Unknown", "" };
+                        }(message);
+                        comparisonType = QLatin1StringView(info.comparisonType);
+                        expected = QLatin1StringView(info.comparisonStringOp)
+                                    % match.captured(u"expected")
+                                    % parenthesize("expectedexpresssion"_L1);
                         actual = match.captured(u"actual") % actualExpression;
                     }
 
@@ -329,7 +386,7 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
                                        "%sfound: %s\n"
                                        "%sexpected: %s\n"
                                        "%sactual: %s\n",
-                                       indent, isVerify ? "QVERIFY" : "QCOMPARE",
+                                       indent, comparisonType.latin1(),
                                        indent, qPrintable(message),
                                        indent, qPrintable(expected), indent, qPrintable(actual),
                                        indent, qPrintable(expected), indent, qPrintable(actual)
