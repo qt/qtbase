@@ -66,6 +66,7 @@ protected:
 
 Q_SIGNALS:
     void newConnection();
+    void pendingConnectionAvailable(QPrivateSignal);
     void acceptError(QAbstractSocket::SocketError socketError);
 
 private:

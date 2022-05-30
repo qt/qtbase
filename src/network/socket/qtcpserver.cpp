@@ -18,7 +18,9 @@
 
     Call listen() to have the server listen for incoming connections.
     The newConnection() signal is then emitted each time a client
-    connects to the server.
+    connects to the server. When the client connection has been added
+    to the pending connection queue using the addPendingConnection()
+    function, the pendingConnectionAvailable() signal is emitted.
 
     Call nextPendingConnection() to accept the pending connection as
     a connected QTcpSocket. The function returns a pointer to a
@@ -47,9 +49,19 @@
 
 /*! \fn void QTcpServer::newConnection()
 
-    This signal is emitted every time a new connection is available.
+    This signal is emitted every time a new connection is available, regardless
+    of whether it has been added to the pending connections queue or not.
 
     \sa hasPendingConnections(), nextPendingConnection()
+*/
+
+/*! \fn void QTcpServer::pendingConnectionAvailable()
+
+    This signal is emitted every time a new connection has been added to the
+    pending connections queue.
+
+    \sa hasPendingConnections(), nextPendingConnection()
+    \since 6.4
 */
 
 /*! \fn void QTcpServer::acceptError(QAbstractSocket::SocketError socketError)
@@ -182,10 +194,12 @@ void QTcpServerPrivate::readNotification()
 #if defined (QTCPSERVER_DEBUG)
         qDebug("QTcpServerPrivate::_q_processIncomingConnection() accepted socket %i", descriptor);
 #endif
+        QPointer<QTcpServer> that = q;
         q->incomingConnection(descriptor);
 
-        QPointer<QTcpServer> that = q;
-        emit q->newConnection();
+        if (that)
+            emit q->newConnection();
+
         if (!that || !q->isListening())
             return;
     }
@@ -572,14 +586,17 @@ void QTcpServer::incomingConnection(qintptr socketDescriptor)
 
     \note Don't forget to call this member from reimplemented
     incomingConnection() if you do not want to break the
-    Pending Connections mechanism.
+    Pending Connections mechanism. This function emits the
+    pendingConnectionAvailable() signal after the socket has been
+    added.
 
-    \sa incomingConnection()
+    \sa incomingConnection(), pendingConnectionAvailable()
     \since 4.7
 */
 void QTcpServer::addPendingConnection(QTcpSocket* socket)
 {
     d_func()->pendingConnections.append(socket);
+    emit pendingConnectionAvailable(QPrivateSignal());
 }
 
 /*!

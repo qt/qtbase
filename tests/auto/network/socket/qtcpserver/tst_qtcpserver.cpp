@@ -94,6 +94,9 @@ private slots:
 
     void pauseAccepting();
 
+    void pendingConnectionAvailable_data();
+    void pendingConnectionAvailable();
+
 private:
     bool shouldSkipIpv6TestsForBrokenGetsockopt();
 #ifdef SHOULD_CHECK_SYSCALL_SUPPORT
@@ -1056,6 +1059,74 @@ void tst_QTcpServer::pauseAccepting()
     }
     QVERIFY(spy.wait());
     QCOMPARE(spy.count(), 6);
+}
+
+
+// Only adds the socket to the pending connections list after emitNextSocket is
+// called. It's very artificial, but it allows us to test the behavior of
+// the pendingConnectionAvailable signal when a server doesn't add the socket
+// during the incomingConnection virtual function.
+class DerivedServer : public QTcpServer
+{
+public:
+    explicit DerivedServer(QObject *parent = nullptr)
+        : QTcpServer(parent)
+    {
+    }
+
+    void emitNextSocket()
+    {
+        if (m_socketDescriptors.isEmpty())
+            return;
+        auto *socket = new QTcpSocket(this);
+        socket->setSocketDescriptor(m_socketDescriptors.back());
+        m_socketDescriptors.pop_back();
+        addPendingConnection(socket);
+    }
+protected:
+    void incomingConnection(qintptr socketDescriptor) override
+    {
+        m_socketDescriptors.push_back(socketDescriptor);
+    }
+private:
+    QList<qintptr> m_socketDescriptors;
+};
+
+void tst_QTcpServer::pendingConnectionAvailable_data()
+{
+    QTest::addColumn<bool>("useDerivedServer");
+    QTest::newRow("QTcpServer") << false;
+    QTest::newRow("DerivedServer") << true;
+}
+
+void tst_QTcpServer::pendingConnectionAvailable()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        QSKIP("This feature does not differentiate with or without proxy");
+    QFETCH(bool, useDerivedServer);
+
+    QTcpServer *server = useDerivedServer ? new DerivedServer : new QTcpServer;
+    if (!server->listen(QHostAddress::LocalHost, 0)) {
+        qWarning() << "Server failed to listen:" << server->errorString();
+        QSKIP("Server failed to listen");
+    }
+    QSignalSpy newConnectionSpy(server, &QTcpServer::newConnection);
+    QSignalSpy pendingConnectionSpy(server, &QTcpServer::pendingConnectionAvailable);
+
+    QTcpSocket socket;
+    socket.connectToHost(QHostAddress::LocalHost, server->serverPort());
+
+    QVERIFY(newConnectionSpy.wait());
+    QVERIFY(socket.waitForConnected());
+    QCOMPARE(socket.state(), QTcpSocket::ConnectedState);
+
+    int expectedPendingConnections = useDerivedServer ? 0 : 1;
+    QCOMPARE(pendingConnectionSpy.count(), expectedPendingConnections);
+
+    if (useDerivedServer)
+        static_cast<DerivedServer *>(server)->emitNextSocket();
+    QCOMPARE(pendingConnectionSpy.count(), 1);
 }
 
 QTEST_MAIN(tst_QTcpServer)
