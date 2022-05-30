@@ -1261,15 +1261,12 @@ void QColor::getRgbF(float *r, float *g, float *b, float *a) const
     if (!r || !g || !b)
         return;
 
-    if (cspec == Invalid)
-        return;
-
-    if (cspec != Rgb && cspec != ExtendedRgb) {
+    if (cspec != Invalid && cspec != Rgb && cspec != ExtendedRgb) {
         toRgb().getRgbF(r, g, b, a);
         return;
     }
 
-    if (cspec == Rgb) {
+    if (cspec == Rgb || cspec == Invalid) {
         *r = ct.argb.red   / float(USHRT_MAX);
         *g = ct.argb.green / float(USHRT_MAX);
         *b = ct.argb.blue  / float(USHRT_MAX);
