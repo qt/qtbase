@@ -432,9 +432,10 @@ bool QFontEngine::processHheaTable() const
 {
     QByteArray hhea = getSfntTable(MAKE_TAG('h', 'h', 'e', 'a'));
     if (hhea.size() >= 10) {
-        qint16 ascent = qFromBigEndian<qint16>(hhea.constData() + 4);
-        qint16 descent = qFromBigEndian<qint16>(hhea.constData() + 6);
-        qint16 leading = qFromBigEndian<qint16>(hhea.constData() + 8);
+        auto ptr = hhea.constData();
+        qint16 ascent = qFromBigEndian<qint16>(ptr + 4);
+        qint16 descent = qFromBigEndian<qint16>(ptr + 6);
+        qint16 leading = qFromBigEndian<qint16>(ptr + 8);
 
         // Some fonts may have invalid HHEA data. We detect this and bail out.
         if (ascent == 0 && descent == 0)
@@ -473,12 +474,13 @@ bool QFontEngine::processOS2Table() const
 {
     QByteArray os2 = getSfntTable(MAKE_TAG('O', 'S', '/', '2'));
     if (os2.size() >= 78) {
-        quint16 fsSelection = qFromBigEndian<quint16>(os2.constData() + 62);
-        qint16 typoAscent = qFromBigEndian<qint16>(os2.constData() + 68);
-        qint16 typoDescent = qFromBigEndian<qint16>(os2.constData() + 70);
-        qint16 typoLineGap = qFromBigEndian<qint16>(os2.constData() + 72);
-        quint16 winAscent = qFromBigEndian<quint16>(os2.constData() + 74);
-        quint16 winDescent = qFromBigEndian<quint16>(os2.constData() + 76);
+        auto ptr = os2.constData();
+        quint16 fsSelection = qFromBigEndian<quint16>(ptr + 62);
+        qint16 typoAscent = qFromBigEndian<qint16>(ptr + 68);
+        qint16 typoDescent = qFromBigEndian<qint16>(ptr + 70);
+        qint16 typoLineGap = qFromBigEndian<qint16>(ptr + 72);
+        quint16 winAscent = qFromBigEndian<quint16>(ptr + 74);
+        quint16 winDescent = qFromBigEndian<quint16>(ptr + 76);
 
         enum { USE_TYPO_METRICS = 0x80 };
         QFixed unitsPerEm = emSquareSize();
