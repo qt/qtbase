@@ -38,7 +38,7 @@ public:
     bool simpleGammaCorrection() const;
     bool isIdentity() const;
 
-    void prepare();
+    Q_GUI_EXPORT void prepare();
     enum TransformFlag {
         Unpremultiplied = 0,
         InputOpaque = 1,

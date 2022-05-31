@@ -159,9 +159,15 @@ QRgb QColorTransform::map(QRgb argb) const
         return argb;
     constexpr float f = 1.0f / 255.0f;
     QColorVector c = { qRed(argb) * f, qGreen(argb) * f, qBlue(argb) * f };
-    c.x = d->colorSpaceIn->trc[0].apply(c.x);
-    c.y = d->colorSpaceIn->trc[1].apply(c.y);
-    c.z = d->colorSpaceIn->trc[2].apply(c.z);
+    if (d->colorSpaceIn->lut.generated.loadAcquire()) {
+        c.x = d->colorSpaceIn->lut[0]->toLinear(c.x);
+        c.y = d->colorSpaceIn->lut[1]->toLinear(c.y);
+        c.z = d->colorSpaceIn->lut[2]->toLinear(c.z);
+    } else {
+        c.x = d->colorSpaceIn->trc[0].apply(c.x);
+        c.y = d->colorSpaceIn->trc[1].apply(c.y);
+        c.z = d->colorSpaceIn->trc[2].apply(c.z);
+    }
     c = d->colorMatrix.map(c);
     c.x = std::max(0.0f, std::min(1.0f, c.x));
     c.y = std::max(0.0f, std::min(1.0f, c.y));
@@ -190,9 +196,15 @@ QRgba64 QColorTransform::map(QRgba64 rgba64) const
         return rgba64;
     constexpr float f = 1.0f / 65535.0f;
     QColorVector c = { rgba64.red() * f, rgba64.green() * f, rgba64.blue() * f };
-    c.x = d->colorSpaceIn->trc[0].apply(c.x);
-    c.y = d->colorSpaceIn->trc[1].apply(c.y);
-    c.z = d->colorSpaceIn->trc[2].apply(c.z);
+    if (d->colorSpaceIn->lut.generated.loadAcquire()) {
+        c.x = d->colorSpaceIn->lut[0]->toLinear(c.x);
+        c.y = d->colorSpaceIn->lut[1]->toLinear(c.y);
+        c.z = d->colorSpaceIn->lut[2]->toLinear(c.z);
+    } else {
+        c.x = d->colorSpaceIn->trc[0].apply(c.x);
+        c.y = d->colorSpaceIn->trc[1].apply(c.y);
+        c.z = d->colorSpaceIn->trc[2].apply(c.z);
+    }
     c = d->colorMatrix.map(c);
     c.x = std::max(0.0f, std::min(1.0f, c.x));
     c.y = std::max(0.0f, std::min(1.0f, c.y));
