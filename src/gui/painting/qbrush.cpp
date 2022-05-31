@@ -54,6 +54,7 @@
 #include <QtCore/qnumeric.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qmutex.h>
+#include <QtCore/private/qoffsetstringarray_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -985,7 +986,7 @@ bool QBrush::operator==(const QBrush &b) const
 */
 QDebug operator<<(QDebug dbg, const QBrush &b)
 {
-    static const char BRUSH_STYLES[][24] = {
+    static constexpr auto BRUSH_STYLES = qOffsetStringArray(
      "NoBrush",
      "SolidPattern",
      "Dense1Pattern",
@@ -1006,7 +1007,7 @@ QDebug operator<<(QDebug dbg, const QBrush &b)
      "ConicalGradientPattern",
      "", "", "", "", "", "",
      "TexturePattern" // 24
-    };
+    );
 
     QDebugStateSaver saver(dbg);
     dbg.nospace() << "QBrush(" << b.color() << ',' << BRUSH_STYLES[b.style()] << ')';
