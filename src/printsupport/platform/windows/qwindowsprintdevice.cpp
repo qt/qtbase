@@ -27,25 +27,6 @@ static inline uint qwcsnlen(const wchar_t *str, uint maxlen)
     return length;
 }
 
-static QPrint::InputSlot paperBinToInputSlot(int windowsId, const QString &name)
-{
-    QPrint::InputSlot slot;
-    slot.name = name;
-    int i;
-    for (i = 0; inputSlotMap[i].id != QPrint::CustomInputSlot; ++i) {
-        if (inputSlotMap[i].windowsId == windowsId) {
-            slot.key = inputSlotMap[i].key;
-            slot.id = inputSlotMap[i].id;
-            slot.windowsId = inputSlotMap[i].windowsId;
-            return slot;
-        }
-    }
-    slot.key = inputSlotMap[i].key;
-    slot.id = inputSlotMap[i].id;
-    slot.windowsId = windowsId;
-    return slot;
-}
-
 static LPDEVMODE getDevmode(HANDLE hPrinter, const QString &printerId)
 {
     LPWSTR printerIdUtf16 = const_cast<LPWSTR>(reinterpret_cast<LPCWSTR>(printerId.utf16()));
@@ -333,7 +314,7 @@ void QWindowsPrintDevice::loadInputSlots() const
             for (int i = 0; i < int(binCount); ++i) {
                 wchar_t *binName = binNames.data() + (i * 24);
                 QString name = QString::fromWCharArray(binName, qwcsnlen(binName, 24));
-                m_inputSlots.append(paperBinToInputSlot(bins[i], name));
+                m_inputSlots.append(QPrintUtils::paperBinToInputSlot(bins[i], name));
             }
 
         }
@@ -352,7 +333,8 @@ QPrint::InputSlot QWindowsPrintDevice::defaultInputSlot() const
     if (LPDEVMODE pDevMode = getDevmode(m_hPrinter, m_id)) {
         // Get the default input slot
         if (pDevMode->dmFields & DM_DEFAULTSOURCE) {
-            QPrint::InputSlot tempSlot = paperBinToInputSlot(pDevMode->dmDefaultSource, QString());
+            QPrint::InputSlot tempSlot =
+                    QPrintUtils::paperBinToInputSlot(pDevMode->dmDefaultSource, QString());
             const auto inputSlots = supportedInputSlots();
             for (const QPrint::InputSlot &slot : inputSlots) {
                 if (slot.key == tempSlot.key) {

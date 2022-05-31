@@ -11,7 +11,7 @@ qt_internal_add_module(PrintSupport
         kernel/qplatformprintdevice.cpp kernel/qplatformprintdevice.h
         kernel/qplatformprintersupport.cpp kernel/qplatformprintersupport.h
         kernel/qplatformprintplugin.cpp kernel/qplatformprintplugin.h
-        kernel/qprint_p.h
+        kernel/qprint.cpp kernel/qprint_p.h
         kernel/qprintdevice.cpp kernel/qprintdevice_p.h
         kernel/qprintengine.h
         kernel/qprintengine_pdf.cpp kernel/qprintengine_pdf_p.h
