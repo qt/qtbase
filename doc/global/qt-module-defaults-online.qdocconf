@@ -12,7 +12,7 @@ HTML.footer = \
     "   <a href=\"http://www.gnu.org/licenses/fdl.html\">GNU Free Documentation" \
     "   License version 1.3</a> as published by the Free Software Foundation. " \
     "   Qt and respective logos are <a href=\"https://doc.qt.io/qt/trademarks.html\">" \
-    "   trademarks</a> of The Qt Company Ltd. in Finland and/or other countries\n"
+    "   trademarks</a> of The Qt Company Ltd. in Finland and/or other countries\n" \
     "   worldwide. All other trademarks are property of their respective owners. </p>\n"
 
 #include standard set of macros and C++ defines and ignores
