@@ -2049,20 +2049,8 @@ QStringConverter::encodingForData(QByteArrayView data, char16_t expectedFirstCha
     return std::nullopt;
 }
 
-/*!
-    Tries to determine the encoding of the HTML in \a data by looking at leading byte
-    order marks or a charset specifier in the HTML meta tag. If the optional is empty,
-    the encoding specified is not supported by QStringConverter. If no encoding is
-    detected, the method returns Utf8.
-*/
-std::optional<QStringConverter::Encoding> QStringConverter::encodingForHtml(QByteArrayView data)
+static QByteArray parseHtmlMetaForEncoding(QByteArrayView data)
 {
-    // determine charset
-    auto encoding = encodingForData(data);
-    if (encoding)
-        // trust the initial BOM
-        return encoding;
-
     static constexpr auto metaSearcher = qMakeStaticByteArrayMatcher("meta ");
     static constexpr auto charsetSearcher = qMakeStaticByteArrayMatcher("charset=");
 
@@ -2089,13 +2077,61 @@ std::optional<QStringConverter::Encoding> QStringConverter::encodingForHtml(QByt
                     if (name == "unicode") // QTBUG-41998, ICU will return UTF-16.
                         name = QByteArrayLiteral("UTF-8");
                     if (!name.isEmpty())
-                        return encodingForName(name);
+                        return name;
                 }
             }
         }
     }
+    return QByteArray();
+}
+
+/*!
+    Tries to determine the encoding of the HTML in \a data by looking at leading byte
+    order marks or a charset specifier in the HTML meta tag. If the optional is empty,
+    the encoding specified is not supported by QStringConverter. If no encoding is
+    detected, the method returns Utf8.
+
+    \sa QStringDecoder::decoderForHtml()
+*/
+std::optional<QStringConverter::Encoding> QStringConverter::encodingForHtml(QByteArrayView data)
+{
+    // determine charset
+    std::optional<QStringConverter::Encoding> encoding = encodingForData(data);
+    if (encoding)
+        // trust the initial BOM
+        return encoding;
+
+    QByteArray encodingTag = parseHtmlMetaForEncoding(data);
+    if (!encodingTag.isEmpty())
+        return encodingForName(encodingTag);
+
     return Utf8;
 }
+
+/*!
+    Tries to determine the encoding of the HTML in \a data by looking at leading byte
+    order marks or a charset specifier in the HTML meta tag and returns a QStringDecoder
+    matching the encoding. If the returned decoder is not valid,
+    the encoding specified is not supported by QStringConverter. If no encoding is
+    detected, the method returns a decoder for Utf8.
+
+    \sa isValid()
+*/
+QStringDecoder QStringDecoder::decoderForHtml(QByteArrayView data)
+{
+    // determine charset
+    std::optional<QStringConverter::Encoding> encoding = encodingForData(data);
+    if (encoding)
+        // trust the initial BOM
+        return QStringDecoder(encoding.value());
+
+    QByteArray encodingTag = parseHtmlMetaForEncoding(data);
+    if (!encodingTag.isEmpty())
+        return QStringDecoder(encodingTag);
+
+    return QStringDecoder(Utf8);
+}
+
 
 /*!
     Returns the canonical name for encoding \a e.

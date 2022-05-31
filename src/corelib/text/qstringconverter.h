@@ -140,6 +140,9 @@ public:
         }
         return iface->toUtf16(out, ba, &state);
     }
+
+    Q_CORE_EXPORT static QStringDecoder decoderForHtml(QByteArrayView data);
+
 private:
     QString decodeAsString(QByteArrayView in)
     {

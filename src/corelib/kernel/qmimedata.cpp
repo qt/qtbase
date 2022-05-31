@@ -127,10 +127,9 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QMetaType ty
             if (ba.isNull())
                 return QVariant();
             if (format == "text/html"_L1) {
-                auto encoding = QStringConverter::encodingForHtml(ba);
-                if (encoding) {
-                    QStringDecoder toUtf16(*encoding);
-                    return QString(toUtf16(ba));
+                QStringDecoder decoder = QStringDecoder::decoderForHtml(ba);
+                if (decoder.isValid()) {
+                    return QString(decoder(ba));
                 }
                 // fall back to utf8
             }
