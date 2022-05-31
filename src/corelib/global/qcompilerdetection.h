@@ -1132,11 +1132,10 @@
     } while (false)
 
 #define Q_ASSUME(Expr) \
-    do {\
-        const bool valueOfExpression = Expr;\
+    [] (bool valueOfExpression) {\
         Q_ASSERT_X(valueOfExpression, "Q_ASSUME()", "Assumption in Q_ASSUME(\"" #Expr "\") was not correct");\
         Q_ASSUME_IMPL(valueOfExpression);\
-    } while (false)
+    }(Expr)
 
 #if defined(__cplusplus)
 #if __has_cpp_attribute(clang::fallthrough)
