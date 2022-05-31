@@ -288,12 +288,11 @@ void QTextBrowserPrivate::setSource(const QUrl &url, QTextDocument::ResourceType
         } else if (data.userType() == QMetaType::QByteArray) {
             QByteArray ba = data.toByteArray();
             if (type == QTextDocument::HtmlResource) {
-                auto encoding = QStringConverter::encodingForHtml(ba);
-                if (!encoding)
+                auto decoder = QStringDecoder::decoderForHtml(ba);
+                if (!decoder.isValid())
                     // fall back to utf8
-                    encoding = QStringDecoder::Utf8;
-                QStringDecoder toUtf16(*encoding);
-                txt = toUtf16(ba);
+                    decoder = QStringDecoder(QStringDecoder::Utf8);
+                txt = decoder(ba);
             } else {
                 txt = QString::fromUtf8(ba);
             }
