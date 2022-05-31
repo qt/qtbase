@@ -1565,8 +1565,9 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                 }
                 painter->setPen(shadow.lighter(106));
                 const bool reverse = menuItem->direction == Qt::RightToLeft;
-                painter->drawLine(menuItem->rect.left() + margin + (reverse ? 0 : w), menuItem->rect.center().y(),
-                                  menuItem->rect.right() - margin - (reverse ? w : 0), menuItem->rect.center().y());
+                qreal y = menuItem->rect.center().y() + 0.5f;
+                painter->drawLine(QPointF(menuItem->rect.left() + margin + (reverse ? 0 : w), y),
+                                  QPointF(menuItem->rect.right() - margin - (reverse ? w : 0), y));
                 painter->restore();
                 break;
             }
