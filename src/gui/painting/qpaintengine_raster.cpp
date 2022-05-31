@@ -2294,6 +2294,7 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
             || d->rasterBuffer->compositionMode == QPainter::CompositionMode_Source))
     {
         RotationType rotationType = qRotationType(s->matrix);
+        Q_ASSUME(d->rasterBuffer->format < QImage::NImageFormats);
         const QPixelLayout::BPP plBpp = qPixelLayouts[d->rasterBuffer->format].bpp;
 
         if (rotationType != NoRotation && qMemRotateFunctions[plBpp][rotationType] && img.rect().contains(sr.toAlignedRect())) {
