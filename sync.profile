@@ -62,10 +62,6 @@
     "qutf8stringview.h" => "QUtf8StringView",
 );
 %deprecatedheaders = (
-    "QtGui" =>  {
-        "QGenericPlugin" => "QtGui/QGenericPlugin",
-        "QGenericPluginFactory" => "QtGui/QGenericPluginFactory"
-    },
     "QtSql" => {
         "qsql.h" => "QtSql/qtsqlglobal.h"
     },
