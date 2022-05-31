@@ -679,10 +679,11 @@ void QXcbScreen::setMonitor(xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp
         m_sizeMillimeters = virtualDesktop()->physicalSize();
 
     m_outputName = getName(monitorInfo);
-    if (connection()->primaryScreenNumber() == virtualDesktop()->number() && monitorInfo->primary)
-        m_primary = true;
-    else
-        m_primary = false;
+    m_primary = false;
+    if (connection()->primaryScreenNumber() == virtualDesktop()->number()) {
+        if (monitorInfo->primary || isPrimaryInXScreen())
+            m_primary = true;
+    }
 
     m_cursor = new QXcbCursor(connection(), this);
 
@@ -699,6 +700,17 @@ QString QXcbScreen::defaultName()
     name = QString::fromLocal8Bit(displayName) + u'.'
             + QString::number(m_virtualDesktop->number());
     return name;
+}
+
+bool QXcbScreen::isPrimaryInXScreen()
+{
+    auto primary = Q_XCB_REPLY(xcb_randr_get_output_primary, connection()->xcb_connection(), root());
+    if (!primary)
+        qWarning("failed to get the primary output of the screen");
+
+    const bool isPrimary = primary ? (m_monitor ? m_outputs.contains(primary->output) : m_output == primary->output) : false;
+
+    return isPrimary;
 }
 
 QXcbScreen::~QXcbScreen()

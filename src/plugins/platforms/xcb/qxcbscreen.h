@@ -161,6 +161,7 @@ public:
     void setCrtc(xcb_randr_crtc_t crtc) { m_crtc = crtc; }
     void setMonitor(xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp_t timestamp = XCB_NONE);
     QString defaultName();
+    bool isPrimaryInXScreen();
 
     void windowShown(QXcbWindow *window);
     QString windowManagerName() const { return m_virtualDesktop->windowManagerName(); }
