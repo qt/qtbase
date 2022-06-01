@@ -329,6 +329,17 @@ unsigned int __stdcall QT_ENSURE_STACK_ALIGNED_FOR_SSE QThreadPrivate::start(voi
     return 0;
 }
 
+/*
+    For regularly terminating threads, this will be called and executed by the thread as the
+    last code before the thread exits. In that case, \a arg is the current QThread.
+
+    However, this function will also be called by QThread::terminate (as well as wait() and
+    setTerminationEnabled) to give Qt a chance to update the terminated thread's state and
+    process pending DeleteLater events for objects that live in the terminated thread. And for
+    adopted thread, this method is called by the thread watcher.
+
+    In those cases, \a arg will not be the current thread.
+*/
 void QThreadPrivate::finish(void *arg, bool lockAnyway) noexcept
 {
     QThread *thr = reinterpret_cast<QThread *>(arg);
@@ -340,7 +351,7 @@ void QThreadPrivate::finish(void *arg, bool lockAnyway) noexcept
     void **tls_data = reinterpret_cast<void **>(&d->data->tls);
     locker.unlock();
     emit thr->finished(QThread::QPrivateSignal());
-    QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+    QCoreApplicationPrivate::sendPostedEvents(nullptr, QEvent::DeferredDelete, d->data);
     QThreadStorageData::finish(tls_data);
     locker.relock();
 
