@@ -15,6 +15,11 @@ class QXdgDesktopPortalFileDialog : public QPlatformFileDialogHelper
     Q_OBJECT
     Q_DECLARE_PRIVATE(QXdgDesktopPortalFileDialog)
 public:
+    enum FallbackType {
+        GenericFallback,
+        OpenFallback
+    };
+
     enum ConditionType : uint {
         GlobalPattern = 0,
         MimeType = 1
@@ -33,7 +38,7 @@ public:
     };
     typedef QList<Filter> FilterList;
 
-    QXdgDesktopPortalFileDialog(QPlatformFileDialogHelper *nativeFileDialog = nullptr);
+    QXdgDesktopPortalFileDialog(QPlatformFileDialogHelper *nativeFileDialog = nullptr, uint fileChooserPortalVersion = 0);
     ~QXdgDesktopPortalFileDialog();
 
     bool defaultNameFilterDisables() const override;
@@ -56,8 +61,8 @@ private Q_SLOTS:
 
 private:
     void initializeDialog();
-    void openPortal();
-    bool useNativeFileDialog() const;
+    void openPortal(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent);
+    bool useNativeFileDialog(FallbackType fallbackType = GenericFallback) const;
 
     QScopedPointer<QXdgDesktopPortalFileDialogPrivate> d_ptr;
 };
