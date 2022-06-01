@@ -121,7 +121,7 @@ public:
     QString selectedMimeTypeFilter;
     QString selectedNameFilter;
     QStringList selectedFiles;
-    QPlatformFileDialogHelper *nativeFileDialog = nullptr;
+    std::unique_ptr<QPlatformFileDialogHelper> nativeFileDialog;
 };
 
 QXdgDesktopPortalFileDialog::QXdgDesktopPortalFileDialog(QPlatformFileDialogHelper *nativeFileDialog)
@@ -131,8 +131,8 @@ QXdgDesktopPortalFileDialog::QXdgDesktopPortalFileDialog(QPlatformFileDialogHelp
     Q_D(QXdgDesktopPortalFileDialog);
 
     if (d->nativeFileDialog) {
-        connect(d->nativeFileDialog, SIGNAL(accept()), this, SIGNAL(accept()));
-        connect(d->nativeFileDialog, SIGNAL(reject()), this, SIGNAL(reject()));
+        connect(d->nativeFileDialog.get(), SIGNAL(accept()), this, SIGNAL(accept()));
+        connect(d->nativeFileDialog.get(), SIGNAL(reject()), this, SIGNAL(reject()));
     }
 }
 
