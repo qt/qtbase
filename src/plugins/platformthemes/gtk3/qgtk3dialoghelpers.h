@@ -35,9 +35,6 @@ public:
     void setCurrentColor(const QColor &color) override;
     QColor currentColor() const override;
 
-private Q_SLOTS:
-    void onAccepted();
-
 private:
     static void onColorChanged(QGtk3ColorDialogHelper *helper);
     void applyOptions();
@@ -65,9 +62,6 @@ public:
     void setFilter() override;
     void selectNameFilter(const QString &filter) override;
     QString selectedNameFilter() const override;
-
-private Q_SLOTS:
-    void onAccepted();
 
 private:
     static void onSelectionChanged(GtkDialog *dialog, QGtk3FileDialogHelper *helper);
@@ -101,9 +95,6 @@ public:
 
     void setCurrentFont(const QFont &font) override;
     QFont currentFont() const override;
-
-private Q_SLOTS:
-    void onAccepted();
 
 private:
     static void onFontChanged(QGtk3FontDialogHelper *helper);
