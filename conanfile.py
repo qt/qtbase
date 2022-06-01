@@ -222,14 +222,6 @@ class QtBase(ConanFile):
             else:
                 raise QtConanError("Unknown build_type: {0}".format(self.settings.build_type))
 
-        if tools.cross_building(conanfile=self):
-            # pass the QT_HOST_PATH as CMake argument so the user does not need to export it
-            cmake_args_qtbase = str(self.options.get_safe("cmake_args_qtbase", default=""))
-            formatted_cmake_args_qtbase = self._shared.append_cmake_arg(
-                cmake_args_qtbase, "QT_HOST_PATH", self._resolve_qt_host_path()
-            )
-            setattr(self.options, "cmake_args_qtbase", formatted_cmake_args_qtbase)
-
         if self.settings.os == "Android":
             if self.options.get_safe("android_sdk_version") == None:
                 cmake_args_qtbase = str(self.options.get_safe("cmake_args_qtbase"))
