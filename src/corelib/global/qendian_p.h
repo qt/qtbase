@@ -139,7 +139,12 @@ public:
 
     static constexpr UnsignedType mask() noexcept
     {
-        return ((UnsignedType(1) << width) - 1) << pos;
+        if constexpr (width == sizeof(UnsignedType) * 8) {
+            static_assert(pos == 0);
+            return ~UnsignedType(0);
+        } else {
+            return ((UnsignedType(1) << width) - 1) << pos;
+        }
     }
 
 private:
