@@ -91,6 +91,9 @@ private slots:
     void create();
     void createDestruction();
     void threadIdReuse();
+
+    void terminateAndPrematureDestruction();
+    void terminateAndDoubleDestruction();
 };
 
 enum { one_minute = 60 * 1000, five_minutes = 5 * one_minute };
@@ -1717,6 +1720,81 @@ void tst_QThread::threadIdReuse()
     if (!threadIdReused) {
         QSKIP("Thread ID was not reused");
     }
+}
+
+class WaitToRun_Thread : public QThread
+{
+    Q_OBJECT
+public:
+    void run() override
+    {
+        emit running();
+        QThread::exec();
+    }
+
+Q_SIGNALS:
+    void running();
+};
+
+
+void tst_QThread::terminateAndPrematureDestruction()
+{
+    WaitToRun_Thread thread;
+    QSignalSpy spy(&thread, &WaitToRun_Thread::running);
+    thread.start();
+    QVERIFY(spy.wait(500));
+
+    QScopedPointer<QObject> obj(new QObject);
+    QPointer<QObject> pObj(obj.data());
+    obj->deleteLater();
+
+    thread.terminate();
+    QVERIFY2(pObj, "object was deleted prematurely!");
+    thread.wait(500);
+}
+
+void tst_QThread::terminateAndDoubleDestruction()
+{
+    class ChildObject : public QObject
+    {
+    public:
+        ChildObject(QObject *parent)
+            : QObject(parent)
+        {
+            QSignalSpy spy(&thread, &WaitToRun_Thread::running);
+            thread.start();
+            spy.wait(500);
+        }
+
+        ~ChildObject()
+        {
+            QVERIFY2(!inDestruction, "Double object destruction!");
+            inDestruction = true;
+            thread.terminate();
+            thread.wait(500);
+        }
+
+        bool inDestruction = false;
+        WaitToRun_Thread thread;
+    };
+
+    class TestObject : public QObject
+    {
+    public:
+        TestObject()
+            : child(new ChildObject(this))
+        {
+        }
+
+        ~TestObject()
+        {
+            child->deleteLater();
+        }
+
+        ChildObject *child = nullptr;
+    };
+
+    TestObject obj;
 }
 
 QTEST_MAIN(tst_QThread)
