@@ -200,11 +200,12 @@ QPlatformDialogHelper* QXdgDesktopPortalTheme::createPlatformDialogHelper(Dialog
 {
     Q_D(const QXdgDesktopPortalTheme);
 
-    if (type == FileDialog) {
+    if (type == FileDialog && d->fileChooserPortalVersion) {
         // Older versions of FileChooser portal don't support opening directories, therefore we fallback
         // to native file dialog opened inside the sandbox to open a directory.
-        if (d->fileChooserPortalVersion < 3 && d->baseTheme->usePlatformNativeDialog(type))
-            return new QXdgDesktopPortalFileDialog(static_cast<QPlatformFileDialogHelper*>(d->baseTheme->createPlatformDialogHelper(type)));
+        if (d->baseTheme->usePlatformNativeDialog(type))
+            return new QXdgDesktopPortalFileDialog(static_cast<QPlatformFileDialogHelper*>(d->baseTheme->createPlatformDialogHelper(type)),
+                                                   d->fileChooserPortalVersion);
 
         return new QXdgDesktopPortalFileDialog;
     }
