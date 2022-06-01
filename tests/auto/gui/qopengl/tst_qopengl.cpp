@@ -7,7 +7,9 @@
 #include <QtOpenGL/qopengltextureblitter.h>
 #include <QtOpenGL/QOpenGLVertexArrayObject>
 #include <QtOpenGL/QOpenGLBuffer>
-#include <QtOpenGL/QOpenGLFunctions_4_2_Core>
+#if !QT_CONFIG(opengles2)
+#  include <QtOpenGL/QOpenGLFunctions_4_2_Core>
+#endif
 #include <QtOpenGL/QOpenGLVersionFunctionsFactory>
 #include <QtGui/private/qopenglcontext_p.h>
 #include <QtGui/QOpenGLFunctions>

@@ -10,8 +10,11 @@
 #include <QtGui/qguiapplication.h>
 
 #include <QtOpenGL/QOpenGLVersionFunctionsFactory>
-#include <QtOpenGL/qopenglfunctions_3_0.h>
-#include <QtOpenGL/qopenglfunctions_3_2_core.h>
+
+#if !QT_CONFIG(opengles2)
+#  include <QtOpenGL/qopenglfunctions_3_0.h>
+#  include <QtOpenGL/qopenglfunctions_3_2_core.h>
+#endif
 
 #include <private/qopenglcontext_p.h>
 #include <private/qopenglextensions_p.h>
