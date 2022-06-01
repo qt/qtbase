@@ -29,12 +29,13 @@
     <canvas id="qtcanvas"></canvas>
 
     <script type='text/javascript'>
+        let qtLoader = undefined;
         function init() {
           var spinner = document.querySelector('#qtspinner');
           var canvas = document.querySelector('#qtcanvas');
           var status = document.querySelector('#qtstatus')
 
-          var qtLoader = QtLoader({
+          qtLoader = QtLoader({
               canvasElements : [canvas],
               showLoader: function(loaderStatus) {
                   spinner.style.display = 'block';

@@ -27,6 +27,7 @@ class WasmTestRunner:
         self.host = 'localhost'
         self.webserver = None
         self.webthread = None
+        self.exit_code = 0
 
         paths = ['html_path', 'browser_path', 'chromedriver_path', 'tmp_dir']
 
@@ -58,6 +59,8 @@ class WasmTestRunner:
             self.run_wasm_webdriver()
 
         self.shutdown_threaded_webserver()
+
+        return self.exit_code
 
     def run_webserver(self):
         webroot = self.html_path.parent.resolve()
@@ -91,16 +94,16 @@ class WasmTestRunner:
         driver = webdriver.Chrome(desired_capabilities=d, service=ser)
         driver.get(url)
 
-        timeout = 15
-        test_done = False
+        app_state = ''
 
-        while not test_done and timeout != 0:
-            # HACK : we don't know for sure how long each test takes
-            # so just sleep a bit here until we get desired result
-            # The test may never produce 'Finished testing' (eg. crash),
-            # so we need a timeout as well
+        while app_state != 'Exited':
+            # HACK: Optimally, we would want the program to report back to us
+            # when it changes state and prints logs
+            # Unfortunately, that's rather difficult, so we resort to polling it
+            # at a given interval instead, which is adjustable
             time.sleep(1)
-            timeout = timeout - 1
+            app_state = self.get_loader_variable(driver, 'status')
+
             for entry in driver.get_log('browser'):
                 regex = re.compile(r'[^"]*"(.*)".*')
                 match = regex.match(entry['message'])
@@ -108,8 +111,9 @@ class WasmTestRunner:
                 if match is not None:
                     console_line = match.group(1)
                     print(console_line)
-                    if 'Finished testing' in console_line:
-                        test_done = True
+
+        if self.get_loader_variable(driver, 'crashed'):
+            self.exit_code = 1
 
     def run_wasm_browser(self):
         if not hasattr(self, 'browser_path'):
@@ -151,6 +155,10 @@ class WasmTestRunner:
             if 'Finished testing' in str_line:
                 self.browser_process.kill()
                 break
+
+    @staticmethod
+    def get_loader_variable(driver, varname: str):
+        return driver.execute_script('return qtLoader.' + varname)
 
     def create_tmp_dir(self):
         if not self.tmp_dir.exists():
@@ -206,8 +214,8 @@ def main():
     args = vars(parser.parse_args())
 
     test_runner = WasmTestRunner(args)
-    test_runner.run()
+    return test_runner.run()
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
