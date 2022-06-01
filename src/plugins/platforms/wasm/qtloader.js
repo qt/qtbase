@@ -61,6 +61,8 @@
 //      Optional exited element constructor function.
 //  showError : function(crashed, exitCode, containerElement)
 //      Optional error element constructor function.
+//  statusChanged : function(newStatus)
+//      Optional callback called when the status of the app has changed
 //
 //  path : <string>
 //      Prefix path for wasm file, realative to the loading HMTL file.
@@ -232,13 +234,19 @@ function QtLoader(config)
 
     self.restartCount = 0;
 
+    function handleError(error) {
+        self.error = error;
+        setStatus("Error");
+        console.error(error);
+    }
+
     function fetchResource(filePath) {
         var fullPath = config.path + filePath;
         return fetch(fullPath).then(function(response) {
             if (!response.ok) {
-                self.error = response.status + " " + response.statusText + " " + response.url;
-                setStatus("Error");
-                return Promise.reject(self.error)
+                let err = response.status + " " + response.statusText + " " + response.url;
+                handleError(err);
+                return Promise.reject(err)
             } else {
                 return response;
             }
@@ -287,13 +295,11 @@ function QtLoader(config)
 
         // Check for Wasm & WebGL support; set error and return before downloading resources if missing
         if (!webAssemblySupported()) {
-            self.error = "Error: WebAssembly is not supported"
-            setStatus("Error");
+            handleError("Error: WebAssembly is not supported");
             return;
         }
         if (!webGLSupported()) {
-            self.error = "Error: WebGL is not supported"
-            setStatus("Error");
+            handleError("Error: WebGL is not supported");
             return;
         }
 
@@ -319,8 +325,9 @@ function QtLoader(config)
         Promise.all([emscriptenModuleSourcePromise, wasmModulePromise]).then(function(){
             completeLoadEmscriptenModule(applicationName, emscriptenModuleSource, wasmModule);
         }).catch(function(error) {
-            self.error = error;
-            setStatus("Error");
+            handleError(error);
+            // An error here is fatal, abort
+            self.moduleConfig.onAbort(error)
         });
     }
 
@@ -333,8 +340,7 @@ function QtLoader(config)
             WebAssembly.instantiate(wasmModule, imports).then(function(instance) {
                 successCallback(instance, wasmModule);
             }, function(error) {
-                self.error = error;
-                setStatus("Error");
+                handleError(error)
             });
             return {};
         };
@@ -418,8 +424,7 @@ function QtLoader(config)
             // Restart by readling the emscripten app module.
             ++self.restartCount;
             if (self.restartCount > config.restartLimit) {
-                self.error = "Error: This application has crashed too many times and has been disabled. Reload the page to try again."
-                setStatus("Error");
+                handleError("Error: This application has crashed too many times and has been disabled. Reload the page to try again.");
                 return;
             }
             loadEmscriptenModule(applicationName);
