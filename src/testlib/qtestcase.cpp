@@ -123,7 +123,7 @@ using QtMiscUtils::fromHex;
 namespace {
 enum DebuggerProgram { None, Gdb, Lldb };
 
-#ifdef Q_OS_UNIX
+#if defined(Q_OS_UNIX) && (!defined(Q_OS_WASM) || QT_CONFIG(thread))
 static struct iovec IoVec(struct iovec vec)
 {
     return vec;
@@ -210,7 +210,7 @@ static std::string asyncSafeToString(int n)
 {
     return std::to_string(n);
 }
-#endif // Q_OS_UNIX
+#endif // defined(Q_OS_UNIX)
 } // unnamed namespace
 
 static bool alreadyDebugging()
@@ -353,6 +353,7 @@ static void prepareStackTrace()
 #endif // Q_OS_UNIX
 }
 
+#if !defined(Q_OS_WASM) || QT_CONFIG(thread)
 static void printTestRunTime()
 {
     const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
@@ -366,7 +367,7 @@ static void generateStackTrace()
     if (debugger == None || alreadyDebugging())
         return;
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_WASM) && !defined(Q_OS_INTEGRITY)
+#  if defined(Q_OS_UNIX) && !defined(Q_OS_WASM) && !defined(Q_OS_INTEGRITY)
     writeToStderr("\n=== Stack trace ===\n");
 
     // execlp() requires null-termination, so call the default constructor
@@ -403,8 +404,9 @@ static void generateStackTrace()
     }
 
     writeToStderr("=== End of stack trace ===\n");
-#endif // Q_OS_UNIX && !Q_OS_WASM
+#  endif // Q_OS_UNIX && !Q_OS_WASM
 }
+#endif  // !defined(Q_OS_WASM) || QT_CONFIG(thread)
 
 static bool installCoverageTool(const char * appname, const char * testname)
 {
@@ -1287,7 +1289,7 @@ public:
     void testFinished() {};
 };
 
-#endif
+#endif  // QT_CONFIG(thread)
 
 
 /*!
