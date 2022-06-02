@@ -203,18 +203,16 @@ QWindowsDialogHelperBase<BaseClass>::~QWindowsDialogHelperBase()
 template <class BaseClass>
 void QWindowsDialogHelperBase<BaseClass>::cleanupThread()
 {
-    if (m_thread) { // Thread may be running if the dialog failed to close.
-        if (m_thread->isRunning())
-            m_thread->wait(500);
-        if (m_thread->isRunning()) {
-            m_thread->terminate();
-            m_thread->wait(300);
-            if (m_thread->isRunning())
-                qCCritical(lcQpaDialogs) <<__FUNCTION__ << "Failed to terminate thread.";
-            else
-                qCWarning(lcQpaDialogs) << __FUNCTION__ << "Thread terminated.";
-        }
-        delete m_thread;
+    if (m_thread) {
+        // Thread may be running if the dialog failed to close. Give it a bit
+        // to exit, but let it be a memory leak if that fails. We must not
+        // terminate the thread, it might be stuck in Comdlg32 or an IModalWindow
+        // implementation, and we might end up dead-locking the application if the thread
+        // holds a mutex or critical section.
+        if (m_thread->wait(500))
+            delete m_thread;
+        else
+            qCCritical(lcQpaDialogs) <<__FUNCTION__ << "Thread failed to finish.";
         m_thread = nullptr;
     }
 }
