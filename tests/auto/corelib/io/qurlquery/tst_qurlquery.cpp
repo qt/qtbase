@@ -1,4 +1,5 @@
-// Copyright (C) 2016 Intel Corporation.
+// Copyright (C) 2022 The Qt Company Ltd.
+// Copyright (C) 2012 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include <QtCore/QUrlQuery>
@@ -7,6 +8,8 @@
 typedef QList<QPair<QString, QString> > QueryItems;
 Q_DECLARE_METATYPE(QueryItems)
 Q_DECLARE_METATYPE(QUrl::ComponentFormattingOptions)
+
+using namespace Qt::StringLiterals;
 
 class tst_QUrlQuery : public QObject
 {
@@ -42,42 +45,27 @@ private Q_SLOTS:
     void old_hasQueryItem();
 };
 
-static QString prettyElement(const QString &key, const QString &value)
+static QString prettyPair(const QPair<QString, QString> &pair)
 {
-    QString result;
-    if (key.isNull())
-        result += "null -> ";
-    else
-        result += '"' + key + "\" -> ";
-    if (value.isNull())
-        result += "null";
-    else
-        result += '"' + value + '"';
-    return result;
+    const auto represent = [](const QString &s) {
+        return s.isNull() ? u"null"_s : u'"' + s + u'"';
+    };
+    return represent(pair.first) + " -> "_L1 + represent(pair.second);
 }
 
-static QString prettyPair(QList<QPair<QString, QString> >::const_iterator it)
+static QByteArray prettyList(const QueryItems &items)
 {
-    return prettyElement(it->first, it->second);
-}
-
-template <typename T>
-static QByteArray prettyList(const T &items)
-{
-    QString result = "(";
-    bool first = true;
-    typename T::const_iterator it = items.constBegin();
-    for ( ; it != items.constEnd(); ++it) {
-        if (!first)
-            result += ", ";
-        first = false;
-        result += prettyPair(it);
-    }
-    result += QLatin1Char(')');
+    if (items.isEmpty())
+        return "()";
+    auto it = items.constBegin();
+    QString result = u'(' + prettyPair(*it);
+    for (++it; it != items.constEnd(); ++it)
+        result += ", "_L1 + prettyPair(*it);
+    result += u')';
     return result.toLocal8Bit();
 }
 
-static bool compare(const QList<QPair<QString, QString> > &actual, const QueryItems &expected,
+static bool compare(const QueryItems &actual, const QueryItems &expected,
                     const char *actualStr, const char *expectedStr, const char *file, int line)
 {
     return QTest::compare_helper(actual == expected, "Compared values are not the same",
