@@ -1,4 +1,4 @@
-// Copyright (C) 2016 The Qt Company Ltd.
+// Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 #include <QCoreApplication>
@@ -39,15 +39,20 @@ void myCategoryFilter(QLoggingCategory *);
 //![20]
 
 //![21]
-QLoggingCategory::CategoryFilter oldCategoryFilter;
+static QLoggingCategory::CategoryFilter oldCategoryFilter = nullptr;
 
 void myCategoryFilter(QLoggingCategory *category)
 {
-    // configure driver.usb category here, otherwise forward to to default filter.
+    // For a category set up after this filter is installed, we first set it up
+    // with the old filter. This ensures that any driver.usb logging configured
+    // by the user is kept, aside from the one level we override; and any new
+    // categories we're not interested in get configured by the old filter.
+    if (oldCategoryFilter)
+        oldCategoryFilter(category);
+
+    // Tweak driver.usb's logging, over-riding the default filter:
     if (qstrcmp(category->categoryName(), "driver.usb") == 0)
         category->setEnabled(QtDebugMsg, true);
-    else
-        oldCategoryFilter(category);
 }
 //![21]
 
@@ -60,8 +65,6 @@ int main(int argc, char *argv[])
 //![2]
 
 //![22]
-
-// ...
 oldCategoryFilter = QLoggingCategory::installFilter(myCategoryFilter);
 //![22]
 
