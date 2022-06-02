@@ -25,6 +25,36 @@ private slots:
     void quint64Tst() { numeric<quint64>(); }
     void qint64Tst_data() { numeric_data<qint64>(); }
     void qint64Tst() { numeric<qint64>(); }
+
+private:
+    template <typename T> void compare();
+    template <typename T> void compare_eq();
+
+private slots:
+    void floatCompare_data() { numeric_data<float>(); }
+    void floatCompare() { compare<float>(); }
+    void floatCompareEq_data() { numeric_data<float>(); }
+    void floatCompareEq() { compare_eq<float>(); }
+    void doubleCompare_data() { numeric_data<double>(); }
+    void doubleCompare() { compare<double>(); }
+    void doubleCompareEq_data() { numeric_data<double>(); }
+    void doubleCompareEq() { compare_eq<double>(); }
+    void intCompare_data() { numeric_data<int>(); }
+    void intCompare() { compare<int>(); }
+    void intCompareEq_data() { numeric_data<int>(); }
+    void intCompareEq() { compare_eq<int>(); }
+    void unsignedCompare_data() { numeric_data<unsigned>(); }
+    void unsignedCompare() { compare<unsigned>(); }
+    void unsignedCompareEq_data() { numeric_data<unsigned>(); }
+    void unsignedCompareEq() { compare_eq<unsigned>(); }
+    void quint64Compare_data() { numeric_data<quint64>(); }
+    void quint64Compare() { compare<quint64>(); }
+    void quint64CompareEq_data() { numeric_data<quint64>(); }
+    void quint64CompareEq() { compare_eq<quint64>(); }
+    void qint64Compare_data() { numeric_data<qint64>(); }
+    void qint64Compare() { compare<qint64>(); }
+    void qint64CompareEq_data() { numeric_data<qint64>(); }
+    void qint64CompareEq() { compare_eq<qint64>(); }
 };
 
 template <typename T>
@@ -72,6 +102,31 @@ void tst_toString::numeric()
     QBENCHMARK {
         auto tst = QTest::toString(datum);
         delete [] tst;
+    }
+}
+
+template <typename T>
+void tst_toString::compare()
+{
+    QFETCH(T, datum);
+
+    QBENCHMARK {
+        QCOMPARE(datum, datum);
+    }
+}
+
+template <typename T>
+void tst_toString::compare_eq()
+{
+    QFETCH(T, datum);
+
+    if constexpr (std::numeric_limits<T>::has_quiet_NaN) {
+        if (qIsNaN(datum))
+            QSKIP("Unlike QCOMPARE, QCOMPARE_EQ doesn't handle NaN specially");
+    }
+
+    QBENCHMARK {
+        QCOMPARE_EQ(datum, datum);
     }
 }
 
