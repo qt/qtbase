@@ -142,6 +142,8 @@ static inline bool detectWebBrowser(const QByteArray &desktop,
     }
 
     if (desktop == QByteArray("KDE")) {
+        if (checkExecutable(QStringLiteral("kde-open5"), browser))
+            return true;
         // Konqueror launcher
         if (checkExecutable(QStringLiteral("kfmclient"), browser)) {
             browser->append(QLatin1String(" exec"));
