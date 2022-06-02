@@ -709,6 +709,36 @@
     </Incident>
     <Duration msecs="0"/>
   </TestFunction>
+  <TestFunction name="checkComparisonWithTimeout">
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[EQ]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[NE]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[LT]]></DataTag>
+      <Description><![CDATA[Left value is expected to be less than right value, but is not
+   Left   (c)                         : ClassWithDeferredSetter(1)
+   Right  (ClassWithDeferredSetter(0)): ClassWithDeferredSetter(0)]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[LE]]></DataTag>
+      <Description><![CDATA[Left value is expected to be less than or equal to right value, but is not
+   Left   (c)                          : ClassWithDeferredSetter(1)
+   Right  (ClassWithDeferredSetter(-1)): ClassWithDeferredSetter(-1)]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
+      <DataTag><![CDATA[GT]]></DataTag>
+      <Description><![CDATA[Left value is expected to be greater than right value, but is not
+   Left   (c)                         : ClassWithDeferredSetter(1)
+   Right  (ClassWithDeferredSetter(1)): ClassWithDeferredSetter(1)]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[GE]]></DataTag>
+    </Incident>
+    <Duration msecs="0"/>
+  </TestFunction>
   <TestFunction name="cleanupTestCase">
     <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>

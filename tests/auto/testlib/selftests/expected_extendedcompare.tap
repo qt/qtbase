@@ -976,8 +976,47 @@ not ok 151 - checkComparisonForTemporaryObjects(GE)
   file: qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp
   line: 0
   ...
-ok 152 - cleanupTestCase()
-1..152
-# tests 152
-# pass 77
-# fail 75
+ok 152 - checkComparisonWithTimeout(EQ)
+ok 153 - checkComparisonWithTimeout(NE)
+not ok 154 - checkComparisonWithTimeout(LT)
+  ---
+  type: QCOMPARE_LT
+  message: Left value is expected to be less than right value, but is not
+  wanted: < ClassWithDeferredSetter(0) (ClassWithDeferredSetter(0))
+  found: ClassWithDeferredSetter(1) (c)
+  expected: < ClassWithDeferredSetter(0) (ClassWithDeferredSetter(0))
+  actual: ClassWithDeferredSetter(1) (c)
+  at: tst_ExtendedCompare::checkComparisonWithTimeout() (qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp
+  line: 0
+  ...
+not ok 155 - checkComparisonWithTimeout(LE)
+  ---
+  type: QCOMPARE_LE
+  message: Left value is expected to be less than or equal to right value, but is not
+  wanted: <= ClassWithDeferredSetter(-1) (ClassWithDeferredSetter(-1))
+  found: ClassWithDeferredSetter(1) (c)
+  expected: <= ClassWithDeferredSetter(-1) (ClassWithDeferredSetter(-1))
+  actual: ClassWithDeferredSetter(1) (c)
+  at: tst_ExtendedCompare::checkComparisonWithTimeout() (qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp
+  line: 0
+  ...
+not ok 156 - checkComparisonWithTimeout(GT)
+  ---
+  type: QCOMPARE_GT
+  message: Left value is expected to be greater than right value, but is not
+  wanted: > ClassWithDeferredSetter(1) (ClassWithDeferredSetter(1))
+  found: ClassWithDeferredSetter(1) (c)
+  expected: > ClassWithDeferredSetter(1) (ClassWithDeferredSetter(1))
+  actual: ClassWithDeferredSetter(1) (c)
+  at: tst_ExtendedCompare::checkComparisonWithTimeout() (qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp
+  line: 0
+  ...
+ok 157 - checkComparisonWithTimeout(GE)
+ok 158 - cleanupTestCase()
+1..158
+# tests 158
+# pass 80
+# fail 78

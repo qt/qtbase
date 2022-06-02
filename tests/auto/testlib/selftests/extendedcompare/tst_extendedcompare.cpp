@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include <QTest>
+#include <QtCore/qtimer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -143,6 +144,7 @@ private slots:
     void compareCustomTypes_data();
     void compareCustomTypes();
     void checkComparisonForTemporaryObjects();
+    void checkComparisonWithTimeout();
 };
 
 void tst_ExtendedCompare::initTestCase_data()
@@ -270,6 +272,58 @@ void tst_ExtendedCompare::checkComparisonForTemporaryObjects()
     QFETCH_GLOBAL(QTest::ComparisonOperation, operation);
     COMPARE_WITH_TYPE(operation, getClassForValue(0).getValuePointer(),
                       getClassForValue(1).getValuePointer());
+}
+
+class ClassWithDeferredSetter : public MyClass
+{
+public:
+    ClassWithDeferredSetter(int value) : MyClass(value) {}
+
+    void setValueDeferred(int value)
+    {
+        QTimer::singleShot(100, [this, value] { setValue(value); });
+    }
+};
+
+namespace QTest {
+
+char *toString(const ClassWithDeferredSetter &val)
+{
+    char *msg = new char[128];
+    qsnprintf(msg, 128, "ClassWithDeferredSetter(%d)", val.value());
+    return msg;
+}
+
+} // namespace QTest
+
+void tst_ExtendedCompare::checkComparisonWithTimeout()
+{
+    QFETCH_GLOBAL(QTest::ComparisonOperation, operation);
+    ClassWithDeferredSetter c(0);
+    c.setValueDeferred(1);
+    switch (operation) {
+    case QTest::ComparisonOperation::Equal:
+        QTRY_COMPARE_EQ_WITH_TIMEOUT(c, ClassWithDeferredSetter(1), 300);
+        break;
+    case QTest::ComparisonOperation::NotEqual:
+        QTRY_COMPARE_NE_WITH_TIMEOUT(c, ClassWithDeferredSetter(0), 300);
+        break;
+    case QTest::ComparisonOperation::LessThan:
+        QTRY_COMPARE_LT_WITH_TIMEOUT(c, ClassWithDeferredSetter(0), 300);
+        break;
+    case QTest::ComparisonOperation::LessThanOrEqual:
+        QTRY_COMPARE_LE_WITH_TIMEOUT(c, ClassWithDeferredSetter(-1), 300);
+        break;
+    case QTest::ComparisonOperation::GreaterThan:
+        QTRY_COMPARE_GT_WITH_TIMEOUT(c, ClassWithDeferredSetter(1), 300);
+        break;
+    case QTest::ComparisonOperation::GreaterThanOrEqual:
+        QTRY_COMPARE_GE_WITH_TIMEOUT(c, ClassWithDeferredSetter(1), 300);
+        break;
+    case QTest::ComparisonOperation::CustomCompare:
+        QFAIL("Unexpected comparison operation");
+        break;
+    }
 }
 
 QT_END_NAMESPACE

@@ -204,6 +204,42 @@ do { \
 
 #define QTRY_COMPARE(expr, expected) QTRY_COMPARE_WITH_TIMEOUT((expr), expected, 5000)
 
+#define QTRY_COMPARE_OP_WITH_TIMEOUT_IMPL(left, right, op, opId, timeout) \
+do { \
+    QTRY_IMPL(((left) op (right)), timeout); \
+    QCOMPARE_OP_IMPL(left, right, op, opId); \
+} while (false)
+
+#define QTRY_COMPARE_EQ_WITH_TIMEOUT(left, right, timeout) \
+    QTRY_COMPARE_OP_WITH_TIMEOUT_IMPL(left, right, ==, Equal, timeout)
+
+#define QTRY_COMPARE_EQ(left, right) QTRY_COMPARE_EQ_WITH_TIMEOUT(left, right, 5000)
+
+#define QTRY_COMPARE_NE_WITH_TIMEOUT(left, right, timeout) \
+    QTRY_COMPARE_OP_WITH_TIMEOUT_IMPL(left, right, !=, NotEqual, timeout)
+
+#define QTRY_COMPARE_NE(left, right) QTRY_COMPARE_NE_WITH_TIMEOUT(left, right, 5000)
+
+#define QTRY_COMPARE_LT_WITH_TIMEOUT(left, right, timeout) \
+    QTRY_COMPARE_OP_WITH_TIMEOUT_IMPL(left, right, <, LessThan, timeout)
+
+#define QTRY_COMPARE_LT(left, right) QTRY_COMPARE_LT_WITH_TIMEOUT(left, right, 5000)
+
+#define QTRY_COMPARE_LE_WITH_TIMEOUT(left, right, timeout) \
+    QTRY_COMPARE_OP_WITH_TIMEOUT_IMPL(left, right, <=, LessThanOrEqual, timeout)
+
+#define QTRY_COMPARE_LE(left, right) QTRY_COMPARE_LE_WITH_TIMEOUT(left, right, 5000)
+
+#define QTRY_COMPARE_GT_WITH_TIMEOUT(left, right, timeout) \
+    QTRY_COMPARE_OP_WITH_TIMEOUT_IMPL(left, right, >, GreaterThan, timeout)
+
+#define QTRY_COMPARE_GT(left, right) QTRY_COMPARE_GT_WITH_TIMEOUT(left, right, 5000)
+
+#define QTRY_COMPARE_GE_WITH_TIMEOUT(left, right, timeout) \
+    QTRY_COMPARE_OP_WITH_TIMEOUT_IMPL(left, right, >=, GreaterThanOrEqual, timeout)
+
+#define QTRY_COMPARE_GE(left, right) QTRY_COMPARE_GE_WITH_TIMEOUT(left, right, 5000)
+
 #define QSKIP_INTERNAL(statement) \
 do {\
     QTest::qSkip(static_cast<const char *>(statement), __FILE__, __LINE__);\

@@ -376,6 +376,21 @@ FAIL!  : tst_ExtendedCompare::checkComparisonForTemporaryObjects(GE) Left value 
    Left   (getClassForValue(0).getValuePointer()): MyClass(2) on memory address with index 0
    Right  (getClassForValue(1).getValuePointer()): MyClass(1) on memory address with index 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
+PASS   : tst_ExtendedCompare::checkComparisonWithTimeout(EQ)
+PASS   : tst_ExtendedCompare::checkComparisonWithTimeout(NE)
+FAIL!  : tst_ExtendedCompare::checkComparisonWithTimeout(LT) Left value is expected to be less than right value, but is not
+   Left   (c)                         : ClassWithDeferredSetter(1)
+   Right  (ClassWithDeferredSetter(0)): ClassWithDeferredSetter(0)
+   Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
+FAIL!  : tst_ExtendedCompare::checkComparisonWithTimeout(LE) Left value is expected to be less than or equal to right value, but is not
+   Left   (c)                          : ClassWithDeferredSetter(1)
+   Right  (ClassWithDeferredSetter(-1)): ClassWithDeferredSetter(-1)
+   Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
+FAIL!  : tst_ExtendedCompare::checkComparisonWithTimeout(GT) Left value is expected to be greater than right value, but is not
+   Left   (c)                         : ClassWithDeferredSetter(1)
+   Right  (ClassWithDeferredSetter(1)): ClassWithDeferredSetter(1)
+   Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
+PASS   : tst_ExtendedCompare::checkComparisonWithTimeout(GE)
 PASS   : tst_ExtendedCompare::cleanupTestCase()
-Totals: 77 passed, 75 failed, 0 skipped, 0 blacklisted, 0ms
+Totals: 80 passed, 78 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_ExtendedCompare *********
