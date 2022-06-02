@@ -321,7 +321,8 @@ bool QTestResult::verify(bool statement, const char *statementStr,
 {
     QTEST_ASSERT(statementStr);
 
-    char msg[1024] = {'\0'};
+    char msg[1024];
+    msg[0] = '\0';
 
     if (QTestLog::verboseLevel() >= 2) {
         qsnprintf(msg, 1024, "QVERIFY(%s)", statementStr);
@@ -379,7 +380,8 @@ static bool compareHelper(bool success, const char *failureMsg,
                           bool hasValues = true)
 {
     const size_t maxMsgLen = 1024;
-    char msg[maxMsgLen] = {'\0'};
+    char msg[maxMsgLen];
+    msg[0] = '\0';
 
     QTEST_ASSERT(expected);
     QTEST_ASSERT(actual);
