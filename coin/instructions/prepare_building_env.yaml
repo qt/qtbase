@@ -408,6 +408,27 @@ instructions:
       contains_value: WarningsAreErrors
 
   - type: Group
+    enable_if:
+      condition: property
+      property: features
+      contains_value: UseAddressSanitizer
+    instructions:
+    - type: AppendToEnvironmentVariable
+      variableName: COMMON_CMAKE_ARGS
+      variableValue: " -DFEATURE_sanitize_address=ON"
+      disable_if:
+        condition: property
+        property: features
+        contains_value: UseConfigure
+    - type: AppendToEnvironmentVariable
+      variableName: CONFIGURE_ARGS
+      variableValue: " -sanitize address"
+      enable_if:
+        condition: property
+        property: features
+        contains_value: UseConfigure
+
+  - type: Group
     instructions:
       - type: AppendToEnvironmentVariable
         variableName: COMMON_CMAKE_ARGS
