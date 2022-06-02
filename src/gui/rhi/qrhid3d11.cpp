@@ -8,6 +8,7 @@
 #include <QWindow>
 #include <qmath.h>
 #include <private/qsystemlibrary_p.h>
+#include <QtCore/qcryptographichash.h>
 
 #include <d3dcompiler.h>
 #include <comdef.h>
