@@ -38,3 +38,13 @@
 
     The \l{Qt Core} page contains information about how to use the module.
 */
+
+/*!
+    \module QtCorePrivate
+    \title Qt Core Private C++ Classes
+    \qtcmakepackage CorePrivate
+    \qtvariable core-private
+
+    \brief Provides private core functionality.
+    \preliminary
+*/
