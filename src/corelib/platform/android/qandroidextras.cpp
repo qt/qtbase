@@ -118,7 +118,7 @@ QAndroidBinder QAndroidParcelPrivate::readBinder() const
 /*!
     \class QAndroidParcel
     \preliminary
-    \inmodule QtCore
+    \inmodule QtCorePrivate
     \brief Wraps the most important methods of Android Parcel class.
 
     The QAndroidParcel is a convenience class that wraps the most important
@@ -234,7 +234,7 @@ QJniObject QAndroidParcel::handle() const
 /*!
     \class QAndroidBinder
     \preliminary
-    \inmodule QtCore
+    \inmodule QtCorePrivate
     \brief Wraps the most important methods of Android Binder class.
 
     The QAndroidBinder is a convenience class that wraps the most important
@@ -371,7 +371,7 @@ QJniObject QAndroidBinder::handle() const
 /*!
     \class QAndroidServiceConnection
     \preliminary
-    \inmodule QtCore
+    \inmodule QtCorePrivate
     \brief Wraps the most important methods of Android ServiceConnection class.
 
     The QAndroidServiceConnection is a convenience abstract class which wraps the
@@ -497,7 +497,7 @@ public:
 /*!
   \class QAndroidActivityResultReceiver
   \preliminary
-  \inmodule QtCore
+  \inmodule QtCorePrivate
   \since 6.2
   \brief Interface used for callbacks from onActivityResult() in the main Android activity.
 
@@ -592,7 +592,7 @@ public:
 /*!
     \class QAndroidService
     \preliminary
-    \inmodule QtCore
+    \inmodule QtCorePrivate
     \brief Wraps the most important methods of Android Service class.
 
     The QAndroidService is a convenience class that wraps the most important
@@ -661,7 +661,7 @@ QAndroidBinder* QAndroidService::onBind(const QAndroidIntent &/*intent*/)
 /*!
     \class QAndroidIntent
     \preliminary
-    \inmodule QtCore
+    \inmodule QtCorePrivate
     \brief Wraps the most important methods of Android Intent class.
 
     The QAndroidIntent is a convenience class that wraps the most important
