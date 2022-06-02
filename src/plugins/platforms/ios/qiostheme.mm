@@ -140,7 +140,7 @@ QVariant QIOSTheme::themeHint(ThemeHint hint) const
 QPlatformTheme::Appearance QIOSTheme::appearance() const
 {
     if (@available(ios 12, *)) {
-        if (UIWindow *window = qt_apple_sharedApplication().keyWindow) {
+        if (UIWindow *window = qt_apple_sharedApplication().windows.lastObject) {
             return window.rootViewController.traitCollection.userInterfaceStyle
                     == UIUserInterfaceStyleDark
                     ? QPlatformTheme::Appearance::Dark
