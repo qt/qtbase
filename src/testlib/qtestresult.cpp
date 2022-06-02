@@ -629,7 +629,8 @@ bool QTestResult::reportResult(bool success, qxp::function_ref<const char *()> l
                                const char *failureMessage)
 {
     const size_t maxMsgLen = 1024;
-    char msg[maxMsgLen] = {'\0'};
+    char msg[maxMsgLen];
+    msg[0] = '\0';
 
     QTEST_ASSERT(lhsExpr);
     QTEST_ASSERT(rhsExpr);
