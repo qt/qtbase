@@ -9,13 +9,14 @@ setBrush green Dense4Pattern
 drawRect 0 0 40 40
 setBrush green DiagCrossPattern
 drawRect 40 0 40 40
-setBrush green VerPattern
+setBrush green HorPattern
 brushRotate 30
 drawRect 80 0 40 40
+fillRect 120 0 40 40
 save
 setPen brush 40 SolidLine FlatCap
 setBrush NoBrush
-drawLine 120 20 160 20
+drawLine 160 20 200 20
 restore
 end_block
 restore

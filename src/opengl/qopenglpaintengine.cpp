@@ -304,6 +304,7 @@ void QOpenGL2PaintEngineExPrivate::updateBrushUniforms()
         return;
 
     QTransform brushQTransform = currentBrush.transform();
+    bool isCosmetic = false;
 
     if (style == Qt::SolidPattern) {
         QColor col = qt_premultiplyColor(currentBrush.color(), (GLfloat)q->state()->opacity);
@@ -320,6 +321,8 @@ void QOpenGL2PaintEngineExPrivate::updateBrushUniforms()
 
             QVector2D halfViewportSize(width*0.5, height*0.5);
             shaderManager->currentProgram()->setUniformValue(location(QOpenGLEngineShaderManager::HalfViewportSize), halfViewportSize);
+
+            isCosmetic = !q->painter()->testRenderHint(QPainter::NonCosmeticBrushPatterns);
         }
         else if (style == Qt::LinearGradientPattern) {
             const QLinearGradient *g = static_cast<const QLinearGradient *>(currentBrush.gradient());
@@ -394,8 +397,12 @@ void QOpenGL2PaintEngineExPrivate::updateBrushUniforms()
             qWarning("QOpenGL2PaintEngineEx: Unimplemented fill style");
 
         const QPointF &brushOrigin = q->state()->brushOrigin;
-        QTransform matrix = q->state()->matrix;
+        QTransform matrix;
+        if (!isCosmetic)
+            matrix = q->state()->matrix;
         matrix.translate(brushOrigin.x(), brushOrigin.y());
+        if (!isCosmetic)
+            matrix = brushQTransform * matrix;
 
         QTransform translate(1, 0, 0, 1, -translationPoint.x(), -translationPoint.y());
         qreal m22 = -1;
@@ -405,7 +412,7 @@ void QOpenGL2PaintEngineExPrivate::updateBrushUniforms()
             dy = 0;
         }
         QTransform gl_to_qt(1, 0, 0, m22, 0, dy);
-        QTransform inv_matrix = gl_to_qt * (brushQTransform * matrix).inverted() * translate;
+        QTransform inv_matrix = gl_to_qt * matrix.inverted() * translate;
 
         shaderManager->currentProgram()->setUniformValue(location(QOpenGLEngineShaderManager::BrushTransform), inv_matrix);
         shaderManager->currentProgram()->setUniformValue(location(QOpenGLEngineShaderManager::BrushTexture), QT_BRUSH_TEXTURE_UNIT);
@@ -818,8 +825,11 @@ void QOpenGL2PaintEngineExPrivate::fill(const QVectorPath& path)
     }
 
     // Might need to call updateMatrix to re-calculate inverseScale
-    if (matrixDirty)
+    if (matrixDirty) {
         updateMatrix();
+        if (currentBrush.style() > Qt::SolidPattern)
+            brushUniformsDirty = true;
+    }
 
     const bool supportsElementIndexUint = funcs.hasOpenGLExtension(QOpenGLExtensions::ElementIndexUint);
 
@@ -1419,7 +1429,12 @@ void QOpenGL2PaintEngineExPrivate::stroke(const QVectorPath &path, const QPen &p
 
 void QOpenGL2PaintEngineEx::penChanged() { }
 void QOpenGL2PaintEngineEx::brushChanged() { }
-void QOpenGL2PaintEngineEx::brushOriginChanged() { }
+
+void QOpenGL2PaintEngineEx::brushOriginChanged()
+{
+    Q_D(QOpenGL2PaintEngineEx);
+    d->brushUniformsDirty = true;
+}
 
 void QOpenGL2PaintEngineEx::opacityChanged()
 {
@@ -1462,7 +1477,7 @@ void QOpenGL2PaintEngineEx::renderHintsChanged()
     d->lastTextureUsed = GLuint(-1);
 
     d->brushTextureDirty = true;
-//    qDebug("QOpenGL2PaintEngineEx::renderHintsChanged() not implemented!");
+    d->brushUniformsDirty = true;
 }
 
 void QOpenGL2PaintEngineEx::transformChanged()

@@ -1081,6 +1081,9 @@ void QPdfEngine::updateState(const QPaintEngineState &state)
 
     QPaintEngine::DirtyFlags flags = state.state();
 
+    if (flags & DirtyHints)
+        flags |= DirtyBrush;
+
     if (flags & DirtyTransform)
         d->stroker.matrix = state.transform();
 
@@ -2714,18 +2717,22 @@ int QPdfEnginePrivate::addBrushPattern(const QTransform &m, bool *specifyColor, 
     *specifyColor = true;
     *gStateObject = 0;
 
-    QTransform matrix = m;
+    const Qt::BrushStyle style = brush.style();
+    const bool isCosmetic = style >= Qt::Dense1Pattern && style <= Qt::DiagCrossPattern
+                            && !q->painter()->testRenderHint(QPainter::NonCosmeticBrushPatterns);
+    QTransform matrix;
+    if (!isCosmetic)
+        matrix = m;
     matrix.translate(brushOrigin.x(), brushOrigin.y());
     matrix = matrix * pageMatrix();
-    //qDebug() << brushOrigin << matrix;
 
-    Qt::BrushStyle style = brush.style();
     if (style == Qt::LinearGradientPattern || style == Qt::RadialGradientPattern) {// && style <= Qt::ConicalGradientPattern) {
         *specifyColor = false;
         return gradientBrush(brush, matrix, gStateObject);
     }
 
-    matrix = brush.transform() * matrix;
+    if (!isCosmetic)
+        matrix = brush.transform() * matrix;
 
     if ((!brush.isOpaque() && brush.style() < Qt::LinearGradientPattern) || opacity != 1.0)
         *gStateObject = addConstantAlphaObject(qRound(brush.color().alpha() * opacity),

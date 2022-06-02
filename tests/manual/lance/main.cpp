@@ -191,6 +191,7 @@ int main(int argc, char **argv)
 
     DeviceType type = WidgetType;
     QSurfaceFormat contextFormat;
+    contextFormat.setStencilBufferSize(8);
     bool checkers_background = true;
 
     QImage::Format imageFormat = QImage::Format_ARGB32_Premultiplied;
