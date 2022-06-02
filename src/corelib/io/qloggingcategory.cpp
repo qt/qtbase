@@ -381,19 +381,37 @@ QLoggingCategory *QLoggingCategory::defaultCategory()
 */
 
 /*!
-    Installs a function \a filter that is used to determine which categories
-    and message types should be enabled. Returns a pointer to the previous
-    installed filter.
+    \brief Take control of how logging categories are configured.
 
-    Every QLoggingCategory object created is passed to the filter, and the
-    filter is free to change the respective category configuration with
-    \l setEnabled().
+    Installs a function \a filter that is used to determine which categories and
+    message types should be enabled. If \a filter is \nullptr, the default
+    message filter is reinstated. Returns a pointer to the previously-installed
+    filter.
+
+    Every QLoggingCategory object that already exists is passed to the filter
+    before \c installFilter() returns, and the filter is free to change each
+    category's configuration with \l setEnabled(). Any category it doesn't
+    change will retain the configuration it was given by the prior filter, so
+    the new filter does not need to delegate to the prior filter during this
+    initial pass over existing categories.
+
+    Any new categories added later will be passed to the new filter; a filter
+    that only aims to tweak the configuration of a select few categories, rather
+    than completely overriding the logging policy, can first pass the new
+    category to the prior filter, to give it its standard configuration, and
+    then tweak that as desired, if it is one of the categories of specific
+    interest to the filter. The code that installs the new filter can record the
+    return from \c installFilter() for the filter to use in such later calls.
 
     When you define your filter, note that it can be called from different threads; but never
     concurrently. This filter cannot call any static functions from QLoggingCategory.
 
     Example:
     \snippet qloggingcategory/main.cpp 21
+
+    installed (in \c{main()}, for example) by
+
+    \snippet qloggingcategory/main.cpp 22
 
     Alternatively, you can configure the default filter via \l setFilterRules().
  */
