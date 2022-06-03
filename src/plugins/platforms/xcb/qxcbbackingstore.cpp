@@ -866,6 +866,7 @@ void QXcbBackingStore::render(xcb_window_t window, const QRegion &region, const 
 }
 
 QPlatformBackingStore::FlushResult QXcbBackingStore::rhiFlush(QWindow *window,
+                                                              qreal sourceDevicePixelRatio,
                                                               const QRegion &region,
                                                               const QPoint &offset,
                                                               QPlatformTextureList *textures,
@@ -876,7 +877,7 @@ QPlatformBackingStore::FlushResult QXcbBackingStore::rhiFlush(QWindow *window,
 
     m_image->flushScrolledRegion(true);
 
-    QPlatformBackingStore::rhiFlush(window, region, offset, textures, translucentBackground);
+    QPlatformBackingStore::rhiFlush(window, sourceDevicePixelRatio, region, offset, textures, translucentBackground);
 
     QXcbWindow *platformWindow = static_cast<QXcbWindow *>(window->handle());
     if (platformWindow->needsSync()) {

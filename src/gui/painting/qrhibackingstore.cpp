@@ -40,7 +40,7 @@ void QRhiBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
 
     static QPlatformTextureList emptyTextureList;
     bool translucentBackground = m_image.hasAlphaChannel();
-    rhiFlush(window, region, offset, &emptyTextureList, translucentBackground);
+    rhiFlush(window, window->devicePixelRatio(), region, offset, &emptyTextureList, translucentBackground);
 }
 
 QT_END_NAMESPACE

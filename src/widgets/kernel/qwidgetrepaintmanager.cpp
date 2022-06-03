@@ -1050,6 +1050,7 @@ void QWidgetRepaintManager::flush(QWidget *widget, const QRegion &region, QPlatf
 
         QPlatformBackingStore::FlushResult flushResult;
         flushResult = store->handle()->rhiFlush(widget->windowHandle(),
+                                                widget->devicePixelRatio(),
                                                 region,
                                                 offset,
                                                 widgetTextures,

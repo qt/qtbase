@@ -44,6 +44,7 @@ public:
     QImage toImage() const override;
 
     FlushResult rhiFlush(QWindow *window,
+                         qreal sourceDevicePixelRatio,
                          const QRegion &region,
                          const QPoint &offset,
                          QPlatformTextureList *textures,
