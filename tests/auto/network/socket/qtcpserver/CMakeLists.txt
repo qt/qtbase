@@ -1,4 +1,4 @@
 # Generated from qtcpserver.pro.
 
-add_subdirectory(test)
 add_subdirectory(crashingServer)
+add_subdirectory(test)

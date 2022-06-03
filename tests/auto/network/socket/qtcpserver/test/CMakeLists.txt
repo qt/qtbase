@@ -13,6 +13,10 @@ qt_internal_add_test(tst_qtcpserver
     QT_TEST_SERVER_LIST "danted" "cyrus" "squid" "ftp-proxy" # special case
 )
 
+add_dependencies(tst_qtcpserver
+    crashingServer
+)
+
 #### Keys ignored in scope 1:.:.:test.pro:<TRUE>:
 # MOC_DIR = "tmp"
 
