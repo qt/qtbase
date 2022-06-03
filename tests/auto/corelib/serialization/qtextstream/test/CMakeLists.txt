@@ -22,6 +22,10 @@ qt_internal_add_test(tst_qtextstream
     QT_TEST_SERVER_LIST "cyrus"
 )
 
+if(QT_FEATURE_sanitize_address)
+    set_property(TEST tst_qtextstream APPEND PROPERTY ENVIRONMENT "QTEST_FUNCTION_TIMEOUT=900000")
+endif()
+
 # Resources:
 set(qtextstream_resource_files
     "../resources/big_endian/"
