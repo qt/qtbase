@@ -237,6 +237,7 @@ function(qt_set_language_standards)
     else()
         set(CMAKE_CXX_STANDARD 17 PARENT_SCOPE)
     endif()
+    set(CMAKE_CXX_STANDARD_REQUIRED ON PARENT_SCOPE)
 
     set(CMAKE_C_STANDARD 11 PARENT_SCOPE)
     set(CMAKE_C_STANDARD_REQUIRED ON PARENT_SCOPE)

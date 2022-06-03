@@ -929,17 +929,21 @@ function(qt_config_compile_test name)
 
         if(NOT DEFINED HAVE_${name})
             set(_save_CMAKE_C_STANDARD "${CMAKE_C_STANDARD}")
+            set(_save_CMAKE_C_STANDARD_REQUIRED "${CMAKE_C_STANDARD_REQUIRED}")
             set(_save_CMAKE_CXX_STANDARD "${CMAKE_CXX_STANDARD}")
+            set(_save_CMAKE_CXX_STANDARD_REQUIRED "${CMAKE_CXX_STANDARD_REQUIRED}")
             set(_save_CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS}")
             set(_save_CMAKE_TRY_COMPILE_PLATFORM_VARIABLES "${CMAKE_TRY_COMPILE_PLATFORM_VARIABLES}")
 
             if(arg_C_STANDARD)
                set(CMAKE_C_STANDARD "${arg_C_STANDARD}")
+               set(CMAKE_C_STANDARD_REQUIRED OFF)
             endif()
 
             if(arg_CXX_STANDARD)
                 if(${arg_CXX_STANDARD} LESS 23 OR ${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.20")
                     set(CMAKE_CXX_STANDARD "${arg_CXX_STANDARD}")
+                    set(CMAKE_CXX_STANDARD_REQUIRED OFF)
                 endif()
             endif()
 
@@ -971,7 +975,9 @@ function(qt_config_compile_test name)
             set(CMAKE_REQUIRED_LIBRARIES "${_save_CMAKE_REQUIRED_LIBRARIES}")
 
             set(CMAKE_C_STANDARD "${_save_CMAKE_C_STANDARD}")
+            set(CMAKE_C_STANDARD_REQUIRED "${_save_CMAKE_C_STANDARD_REQUIRED}")
             set(CMAKE_CXX_STANDARD "${_save_CMAKE_CXX_STANDARD}")
+            set(CMAKE_CXX_STANDARD_REQUIRED "${_save_CMAKE_CXX_STANDARD_REQUIRED}")
             set(CMAKE_REQUIRED_FLAGS "${_save_CMAKE_REQUIRED_FLAGS}")
             set(CMAKE_TRY_COMPILE_PLATFORM_VARIABLES "${_save_CMAKE_TRY_COMPILE_PLATFORM_VARIABLES}")
         endif()
@@ -1008,7 +1014,9 @@ function(qt_get_platform_try_compile_vars out_var)
 
     # Pass language standard flags.
     list(APPEND flags "CMAKE_C_STANDARD")
+    list(APPEND flags "CMAKE_C_STANDARD_REQUIRED")
     list(APPEND flags "CMAKE_CXX_STANDARD")
+    list(APPEND flags "CMAKE_CXX_STANDARD_REQUIRED")
 
     # Pass -stdlib=libc++ on if necessary
     if (INPUT_stdlib_libcpp OR QT_FEATURE_stdlib_libcpp)
