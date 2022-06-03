@@ -855,7 +855,7 @@ public class QtActivityDelegate
                 m_splashScreenSticky = info.metaData.containsKey("android.app.splash_screen_sticky") && info.metaData.getBoolean("android.app.splash_screen_sticky");
                 int id = info.metaData.getInt(splashScreenKey);
                 m_splashScreen = new ImageView(m_activity);
-                m_splashScreen.setImageDrawable(m_activity.getResources().getDrawable(id));
+                m_splashScreen.setImageDrawable(m_activity.getResources().getDrawable(id, m_activity.getTheme()));
                 m_splashScreen.setScaleType(ImageView.ScaleType.FIT_XY);
                 m_splashScreen.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                 m_layout.addView(m_splashScreen);
@@ -1294,7 +1294,7 @@ public class QtActivityDelegate
             if (attr.type >= TypedValue.TYPE_FIRST_COLOR_INT && attr.type <= TypedValue.TYPE_LAST_COLOR_INT) {
                 m_activity.getWindow().setBackgroundDrawable(new ColorDrawable(attr.data));
             } else {
-                m_activity.getWindow().setBackgroundDrawable(m_activity.getResources().getDrawable(attr.resourceId));
+                m_activity.getWindow().setBackgroundDrawable(m_activity.getResources().getDrawable(attr.resourceId, m_activity.getTheme()));
             }
             if (m_dummyView != null) {
                 m_layout.removeView(m_dummyView);
