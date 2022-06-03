@@ -12,5 +12,9 @@ int main(int, char **)
             || !QFile::exists(":/resource2.txt")) {
         return -1;
     }
+
+    // Avoid leaks
+    QResource::unregisterResource(RESOURCE1_FULL_PATH);
+    QResource::unregisterResource(RESOURCE2_FULL_PATH);
     return 0;
 }

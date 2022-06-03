@@ -9,6 +9,7 @@ int main(int argc, char **argv)
     if (QResource::registerResource("rcc_file.rcc") &&
         QFile::exists("://resource_file.txt") && QFile::exists("://resource_file_two.txt"))
     {
+        QResource::unregisterResource("rcc_file.rcc");          // avoid leaks
         return 0;
     }
 
