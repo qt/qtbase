@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -36,24 +36,12 @@ class tst_QDateTime : public QObject
 {
     Q_OBJECT
 
-    enum : qint64
-    {
-        SECS_PER_DAY = 86400,
-        MSECS_PER_DAY = 86400000,
-        JULIAN_DAY_1950 = 2433283,
-        JULIAN_DAY_1960 = 2436935,
-        JULIAN_DAY_1970 = 2440588, // Epoch
-        JULIAN_DAY_2010 = 2455198,
-        JULIAN_DAY_2011 = 2455563,
-        JULIAN_DAY_2020 = 2458850,
-        JULIAN_DAY_2050 = 2469808,
-        JULIAN_DAY_2060 = 2473460
-    };
-
     static QList<QDateTime> daily(qint64 start, qint64 end);
     static QList<QDateTime> norse(qint64 start, qint64 end);
+    void decade_data();
 
 private Q_SLOTS:
+    void create_data() { decade_data(); }
     void create();
     void isNull();
     void isValid();
@@ -62,12 +50,10 @@ private Q_SLOTS:
     void timeSpec();
     void offsetFromUtc();
     void timeZoneAbbreviation();
+    void toMSecsSinceEpoch_data() { decade_data(); }
     void toMSecsSinceEpoch();
-    void toMSecsSinceEpoch1950();
-    void toMSecsSinceEpoch2050();
+    void toMSecsSinceEpochTz_data() { decade_data(); }
     void toMSecsSinceEpochTz();
-    void toMSecsSinceEpoch1950Tz();
-    void toMSecsSinceEpoch2050Tz();
     void setDate();
     void setTime();
     void setTimeSpec();
@@ -102,6 +88,33 @@ private Q_SLOTS:
     void fromMSecsSinceEpochTz();
 };
 
+constexpr qint64 SECS_PER_DAY = 86400;
+constexpr qint64 MSECS_PER_DAY = 86400000;
+constexpr qint64 JULIAN_DAY_1 = 1721426;
+constexpr qint64 JULIAN_DAY_11 = 1725078;
+constexpr qint64 JULIAN_DAY_1890 = 2411369;
+constexpr qint64 JULIAN_DAY_1900 = 2415021;
+constexpr qint64 JULIAN_DAY_1950 = 2433283;
+constexpr qint64 JULIAN_DAY_1960 = 2436935;
+constexpr qint64 JULIAN_DAY_1970 = 2440588; // Epoch
+constexpr qint64 JULIAN_DAY_2010 = 2455198;
+constexpr qint64 JULIAN_DAY_2011 = 2455563;
+constexpr qint64 JULIAN_DAY_2020 = 2458850;
+constexpr qint64 JULIAN_DAY_2050 = 2469808;
+constexpr qint64 JULIAN_DAY_2060 = 2473460;
+
+void tst_QDateTime::decade_data()
+{
+    QTest::addColumn<qint64>("startJd");
+    QTest::addColumn<qint64>("stopJd");
+
+    QTest::newRow("first-decade-CE") << JULIAN_DAY_1 << JULIAN_DAY_11;
+    QTest::newRow("1890s") << JULIAN_DAY_1890 << JULIAN_DAY_1900;
+    QTest::newRow("1950s") << JULIAN_DAY_1950 << JULIAN_DAY_1960;
+    QTest::newRow("2010s") << JULIAN_DAY_2010 << JULIAN_DAY_2020;
+    QTest::newRow("2050s") << JULIAN_DAY_2050 << JULIAN_DAY_2060;
+}
+
 QList<QDateTime> tst_QDateTime::daily(qint64 start, qint64 end)
 {
     QList<QDateTime> list;
@@ -123,9 +136,12 @@ QList<QDateTime> tst_QDateTime::norse(qint64 start, qint64 end)
 
 void tst_QDateTime::create()
 {
+    QFETCH(const qint64, startJd);
+    QFETCH(const qint64, stopJd);
+    const QTime noon = QTime::fromMSecsSinceStartOfDay(43200);
     QBENCHMARK {
-        for (int jd = JULIAN_DAY_2010; jd < JULIAN_DAY_2020; ++jd) {
-            QDateTime test(QDate::fromJulianDay(jd), QTime::fromMSecsSinceStartOfDay(0));
+        for (int jd = startJd; jd < stopJd; ++jd) {
+            QDateTime test(QDate::fromJulianDay(jd), noon);
             Q_UNUSED(test);
         }
     }
@@ -196,25 +212,9 @@ void tst_QDateTime::timeZoneAbbreviation()
 
 void tst_QDateTime::toMSecsSinceEpoch()
 {
-    const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
-    QBENCHMARK {
-        for (const QDateTime &test : list)
-            test.toMSecsSinceEpoch();
-    }
-}
-
-void tst_QDateTime::toMSecsSinceEpoch1950()
-{
-    const auto list = daily(JULIAN_DAY_1950, JULIAN_DAY_1960);
-    QBENCHMARK {
-        for (const QDateTime &test : list)
-            test.toMSecsSinceEpoch();
-    }
-}
-
-void tst_QDateTime::toMSecsSinceEpoch2050()
-{
-    const auto list = daily(JULIAN_DAY_2050, JULIAN_DAY_2060);
+    QFETCH(const qint64, startJd);
+    QFETCH(const qint64, stopJd);
+    const auto list = daily(startJd, stopJd);
     QBENCHMARK {
         for (const QDateTime &test : list)
             test.toMSecsSinceEpoch();
@@ -223,30 +223,11 @@ void tst_QDateTime::toMSecsSinceEpoch2050()
 
 void tst_QDateTime::toMSecsSinceEpochTz()
 {
-    qint64 result;
-    const auto list = norse(JULIAN_DAY_2010, JULIAN_DAY_2020);
-    QBENCHMARK {
-        for (const QDateTime &test : list)
-            result = test.toMSecsSinceEpoch();
-    }
-    Q_UNUSED(result);
-}
+    QFETCH(const qint64, startJd);
+    QFETCH(const qint64, stopJd);
+    const auto list = norse(startJd, stopJd);
 
-void tst_QDateTime::toMSecsSinceEpoch1950Tz()
-{
     qint64 result;
-    const auto list = norse(JULIAN_DAY_1950, JULIAN_DAY_1960);
-    QBENCHMARK {
-        for (const QDateTime &test : list)
-            result = test.toMSecsSinceEpoch();
-    }
-    Q_UNUSED(result);
-}
-
-void tst_QDateTime::toMSecsSinceEpoch2050Tz()
-{
-    qint64 result;
-    const auto list = norse(JULIAN_DAY_2050, JULIAN_DAY_2060);
     QBENCHMARK {
         for (const QDateTime &test : list)
             result = test.toMSecsSinceEpoch();
