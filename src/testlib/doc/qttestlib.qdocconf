@@ -41,7 +41,8 @@ sources     += ../../corelib/kernel/qtestsupport_core.cpp \
 exampledirs += ../../../examples/qtestlib \
                .. \
                . \
-               snippets
+               snippets \
+               includes
 
 excludedirs += ../../../examples/widgets/doc
 
