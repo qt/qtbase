@@ -939,12 +939,17 @@ function(_qt_internal_configure_android_multiabi_target target)
             "-DQT_ADDITIONAL_HOST_PACKAGES_PREFIX_PATH=${escaped_host_packages_prefix_path}")
     endif()
 
-    if(NOT ANDROID_SDK_ROOT STREQUAL "")
+    if(ANDROID_SDK_ROOT)
         list(APPEND extra_cmake_args "-DANDROID_SDK_ROOT=${ANDROID_SDK_ROOT}")
     endif()
 
-    if(NOT ANDROID_NDK_ROOT STREQUAL "")
+    # ANDROID_NDK_ROOT is invented by Qt and is what the qt toolchain file expects
+    if(ANDROID_NDK_ROOT)
         list(APPEND extra_cmake_args "-DANDROID_NDK_ROOT=${ANDROID_NDK_ROOT}")
+
+    # ANDROID_NDK is passed by Qt Creator and is also present in the android toolchain file.
+    elseif(ANDROID_NDK)
+        list(APPEND extra_cmake_args "-DANDROID_NDK_ROOT=${ANDROID_NDK}")
     endif()
 
     set(missing_qt_abi_toolchains "")
