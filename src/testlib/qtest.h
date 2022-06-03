@@ -421,7 +421,7 @@ bool _q_compareSequence(ActualIterator actualIt, ActualIterator actualEnd,
             delete [] val2;
         }
     }
-    return compare_helper(isOk, msg, nullptr, nullptr, actual, expected, file, line);
+    return compare_helper(isOk, msg, actual, expected, file, line);
 }
 
 namespace Internal {

@@ -7,7 +7,10 @@
   </properties>
   <testcase name="initTestCase" classname="tst_TestLib" time="@TEST_DURATION@"/>
   <testcase name="basics" classname="tst_TestLib" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared QObject pointers are not the same"/>
+    <failure type="fail" message="Compared QObject pointers are not the same">
+      <![CDATA[   Actual   (QTest::testObject()): tst_TestLib/"TestObject"
+   Expected (nullptr)            : <null>]]>
+    </failure>
   </testcase>
   <testcase name="delays" classname="tst_TestLib" time="@TEST_DURATION@"/>
   <testcase name="reals(zero)" classname="tst_TestLib" time="@TEST_DURATION@"/>

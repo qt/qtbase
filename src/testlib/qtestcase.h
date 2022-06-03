@@ -405,10 +405,26 @@ namespace QTest
     Q_TESTLIB_EXPORT Qt::Key asciiToKey(char ascii);
     Q_TESTLIB_EXPORT char keyToAscii(Qt::Key key);
 
+    // ### TODO: remove QTestResult::compare() overload that takes char * values
+    // when this overload is removed.
+#if QT_DEPRECATED_SINCE(6, 4)
+    QT_DEPRECATED_VERSION_X_6_4("use an overload that takes function_ref as parameters, "
+                                "or an overload that takes only failure message, if you "
+                                "do not need to stringify the values")
     Q_TESTLIB_EXPORT bool compare_helper(bool success, const char *failureMsg,
-                                         char *val1, char *val2,
+                                         char *actualVal, char *expectedVal,
                                          const char *actual, const char *expected,
                                          const char *file, int line);
+#endif // QT_DEPRECATED_SINCE(6, 4)
+    Q_TESTLIB_EXPORT bool compare_helper(bool success, const char *failureMsg,
+                                         qxp::function_ref<const char*()> actualVal,
+                                         qxp::function_ref<const char*()> expectedVal,
+                                         const char *actual, const char *expected,
+                                         const char *file, int line);
+    Q_TESTLIB_EXPORT bool compare_helper(bool success, const char *failureMsg,
+                                         const char *actual, const char *expected,
+                                         const char *file, int line);
+
     Q_TESTLIB_EXPORT void addColumnInternal(int id, const char *name);
 
     template <typename T>
@@ -484,42 +500,48 @@ namespace QTest
                                    const char *expected, const char *file, int line)
     {
         return compare_helper(t1 == t2, "Compared pointers are not the same",
-                              toString(t1), toString(t2), actual, expected, file, line);
+                              [t1] { return toString(t1); }, [t2] { return toString(t2); },
+                              actual, expected, file, line);
     }
 
     inline bool compare_ptr_helper(const volatile QObject *t1, const volatile QObject *t2, const char *actual,
                                    const char *expected, const char *file, int line)
     {
         return compare_helper(t1 == t2, "Compared QObject pointers are not the same",
-                              toString(t1), toString(t2), actual, expected, file, line);
+                              [t1] { return toString(t1); }, [t2] { return toString(t2); },
+                              actual, expected, file, line);
     }
 
     inline bool compare_ptr_helper(const volatile QObject *t1, std::nullptr_t, const char *actual,
                                    const char *expected, const char *file, int line)
     {
         return compare_helper(t1 == nullptr, "Compared QObject pointers are not the same",
-                              toString(t1), toString(nullptr), actual, expected, file, line);
+                              [t1] { return toString(t1); }, [] { return toString(nullptr); },
+                              actual, expected, file, line);
     }
 
     inline bool compare_ptr_helper(std::nullptr_t, const volatile QObject *t2, const char *actual,
                                    const char *expected, const char *file, int line)
     {
         return compare_helper(nullptr == t2, "Compared QObject pointers are not the same",
-                              toString(nullptr), toString(t2), actual, expected, file, line);
+                              [] { return toString(nullptr); }, [t2] { return toString(t2); },
+                              actual, expected, file, line);
     }
 
     inline bool compare_ptr_helper(const volatile void *t1, std::nullptr_t, const char *actual,
                                    const char *expected, const char *file, int line)
     {
         return compare_helper(t1 == nullptr, "Compared pointers are not the same",
-                              toString(t1), toString(nullptr), actual, expected, file, line);
+                              [t1] { return toString(t1); }, [] { return toString(nullptr); },
+                              actual, expected, file, line);
     }
 
     inline bool compare_ptr_helper(std::nullptr_t, const volatile void *t2, const char *actual,
                                    const char *expected, const char *file, int line)
     {
         return compare_helper(nullptr == t2, "Compared pointers are not the same",
-                              toString(nullptr), toString(t2), actual, expected, file, line);
+                              [] { return toString(nullptr); }, [t2] { return toString(t2); },
+                              actual, expected, file, line);
     }
 
     Q_TESTLIB_EXPORT bool compare_string_helper(const char *t1, const char *t2, const char *actual,
@@ -551,7 +573,8 @@ namespace QTest
                          const char *file, int line)
     {
         return compare_helper(t1 == t2, "Compared values are not the same",
-                              toString(t1), toString(t2), actual, expected, file, line);
+                              [&t1] { return toString(t1); }, [&t2] { return toString(t2); },
+                              actual, expected, file, line);
     }
 
     inline bool qCompare(double const &t1, float const &t2, const char *actual,

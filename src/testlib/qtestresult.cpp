@@ -402,6 +402,38 @@ static bool compareHelper(bool success, const char *failureMsg,
     return checkStatement(success, msg, file, line);
 }
 
+// A simplified version of compareHelper that does not use string
+// representations of the values, and prints only failureMsg when the
+// comparison fails.
+static bool compareHelper(bool success, const char *failureMsg,
+                          const char *actual, const char *expected,
+                          const char *file, int line)
+{
+    const size_t maxMsgLen = 1024;
+    char msg[maxMsgLen];
+    msg[0] = '\0';
+
+    QTEST_ASSERT(expected);
+    QTEST_ASSERT(actual);
+    // failureMsg can be null, if we do not use it
+    QTEST_ASSERT(success || failureMsg);
+
+    if (QTestLog::verboseLevel() >= 2) {
+        qsnprintf(msg, maxMsgLen, "QCOMPARE(%s, %s)", actual, expected);
+        QTestLog::info(msg, file, line);
+    }
+
+    if (success) {
+        if (QTest::expectFailMode) {
+            qsnprintf(msg, maxMsgLen, "QCOMPARE(%s, %s) returned TRUE unexpectedly.",
+                      actual, expected);
+        }
+        return checkStatement(success, msg, file, line);
+    }
+
+    return checkStatement(success, failureMsg, file, line);
+}
+
 bool QTestResult::compare(bool success, const char *failureMsg,
                           char *val1, char *val2,
                           const char *actual, const char *expected,
@@ -484,6 +516,15 @@ bool QTestResult::compare(bool success, const char *failureMsg,
                           const char *file, int line)
 {
     return compareHelper(success, failureMsg, val1, val2, actual, expected, file, line);
+}
+
+// Simplified version of compare() that does not take the values, because they
+// can't be converted to strings (or the user didn't want to do that).
+bool QTestResult::compare(bool success, const char *failureMsg,
+                          const char *actual, const char *expeceted,
+                          const char *file, int line)
+{
+    return compareHelper(success, failureMsg, actual, expeceted, file, line);
 }
 
 void QTestResult::addFailure(const char *message, const char *file, int line)
@@ -584,7 +625,8 @@ static const char *failureMessageForOp(QTest::ComparisonOperation op)
 bool QTestResult::reportResult(bool success, qxp::function_ref<const char *()> lhs,
                                qxp::function_ref<const char *()> rhs,
                                const char *lhsExpr, const char *rhsExpr,
-                               QTest::ComparisonOperation op, const char *file, int line)
+                               QTest::ComparisonOperation op, const char *file, int line,
+                               const char *failureMessage)
 {
     const size_t maxMsgLen = 1024;
     char msg[maxMsgLen] = {'\0'};
@@ -608,7 +650,10 @@ bool QTestResult::reportResult(bool success, qxp::function_ref<const char *()> l
     const std::unique_ptr<const char[]> lhsPtr{ lhs() };
     const std::unique_ptr<const char[]> rhsPtr{ rhs() };
 
-    formatFailMessage(msg, maxMsgLen, failureMessageForOp(op), lhsPtr.get(), rhsPtr.get(),
+    if (!failureMessage)
+        failureMessage = failureMessageForOp(op);
+
+    formatFailMessage(msg, maxMsgLen, failureMessage, lhsPtr.get(), rhsPtr.get(),
                       lhsExpr, rhsExpr, op);
 
     return checkStatement(success, msg, file, line);

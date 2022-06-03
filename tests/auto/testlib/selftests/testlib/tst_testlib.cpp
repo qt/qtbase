@@ -14,13 +14,25 @@
 
 class tst_TestLib : public QObject
 {
-Q_OBJECT
+    Q_OBJECT
+
+public:
+    tst_TestLib();
+
 private slots:
     void basics() const;
     void delays() const;
     void reals_data() const;
     void reals() const;
 };
+
+tst_TestLib::tst_TestLib()
+{
+    // Set object name, so that it's printed out when some comparison fails.
+    // Othewise object address will be printed, which will not allow
+    // tst_sefltest to compare the output with expected.
+    setObjectName("TestObject");
+}
 
 void tst_TestLib::basics() const
 {

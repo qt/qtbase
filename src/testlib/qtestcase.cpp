@@ -2904,7 +2904,9 @@ void QTest::setMainSourcePath(const char *file, const char *builddir)
     QTest::mainSourcePath = fi.absolutePath();
 }
 
+#if QT_DEPRECATED_SINCE(6, 4)
 /*! \internal
+    \deprecated [6.4]
     This function is called by various specializations of QTest::qCompare
     to decide whether to report a failure and to produce verbose test output.
 
@@ -2912,15 +2914,61 @@ void QTest::setMainSourcePath(const char *file, const char *builddir)
     will be output if the compare fails.  If the compare succeeds, failureMsg
     will not be output.
 
-    If the caller has already passed a failure message showing the compared
-    values, or if those values cannot be stringified, val1 and val2 can be null.
+    Using this function is not optimal, because it requires the string
+    representations of \a actualVal and \a expectedVal to be pre-calculated,
+    even though they will be used only if the comparison fails. Prefer using the
+    \l compare_helper() overload that takes qxp::function_ref() for such cases.
+
+    If the caller creates a custom failure message showing the compared values,
+    or if those values cannot be stringified, use the overload of the function
+    that takes no \a actualVal and \a expecetedVal parameters.
 */
 bool QTest::compare_helper(bool success, const char *failureMsg,
-                           char *val1, char *val2,
+                           char *actualVal, char *expectedVal,
                            const char *actual, const char *expected,
                            const char *file, int line)
 {
-    return QTestResult::compare(success, failureMsg, val1, val2, actual, expected, file, line);
+    return QTestResult::compare(success, failureMsg, actualVal, expectedVal,
+                                actual, expected, file, line);
+}
+#endif // QT_DEPRECATED_SINCE(6, 4)
+
+/*! \internal
+    This function is called by various specializations of QTest::qCompare
+    to decide whether to report a failure and to produce verbose test output.
+
+    The \a failureMsg parameter can be \c {nullptr}, in which case a default
+    message will be output if the compare fails. If the comparison succeeds,
+    \a failureMsg will not be output.
+
+    This overload of the function uses qxp::function_ref to defer conversion of
+    \a actualVal and \a expectedVal to strings until that is really needed
+    (when the comparison fails). This speeds up test case execution on success.
+*/
+bool QTest::compare_helper(bool success, const char *failureMsg,
+                           qxp::function_ref<const char *()> actualVal,
+                           qxp::function_ref<const char *()> expectedVal,
+                           const char *actual, const char *expected,
+                           const char *file, int line)
+{
+    return QTestResult::reportResult(success, actualVal, expectedVal, actual, expected,
+                                     QTest::ComparisonOperation::CustomCompare,
+                                     file, line, failureMsg);
+}
+
+/*! \internal
+    This function is called by various specializations of QTest::qCompare
+    to decide whether to report a failure and to produce verbose test output.
+
+    This overload should be used when there is no string representation of
+    actual and expected values, so only the \a failureMsg is shown when the
+    comparison fails. Because of that, \a failureMsg can't be \c {nullptr}.
+    If the comparison succeeds, \a failureMsg will not be output.
+*/
+bool QTest::compare_helper(bool success, const char *failureMsg, const char *actual,
+                           const char *expected, const char *file, int line)
+{
+    return QTestResult::compare(success, failureMsg, actual, expected, file, line);
 }
 
 template <typename T>
@@ -2950,7 +2998,8 @@ bool QTest::qCompare(qfloat16 const &t1, qfloat16 const &t2, const char *actual,
 {
     return compare_helper(floatingCompare(t1, t2),
                           "Compared qfloat16s are not the same (fuzzy compare)",
-                          toString(t1), toString(t2), actual, expected, file, line);
+                          [&t1] { return toString(t1); }, [&t2] { return toString(t2); },
+                          actual, expected, file, line);
 }
 
 /*! \fn bool QTest::qCompare(const float &t1, const float &t2, const char *actual, const char *expected, const char *file, int line)
@@ -3272,7 +3321,8 @@ bool QTest::compare_string_helper(const char *t1, const char *t2, const char *ac
                                   const char *expected, const char *file, int line)
 {
     return compare_helper(qstrcmp(t1, t2) == 0, "Compared strings are not the same",
-                          toString(t1), toString(t2), actual, expected, file, line);
+                          [t1] { return toString(t1); }, [t2] { return toString(t2); },
+                          actual, expected, file, line);
 }
 
 /*!

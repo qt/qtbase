@@ -69,7 +69,8 @@ static bool compare(const QueryItems &actual, const QueryItems &expected,
                     const char *actualStr, const char *expectedStr, const char *file, int line)
 {
     return QTest::compare_helper(actual == expected, "Compared values are not the same",
-                                 qstrdup(prettyList(actual)), qstrdup(prettyList(expected).data()),
+                                 [&actual] { return qstrdup(prettyList(actual).constData()); },
+                                 [&expected] { return qstrdup(prettyList(expected).constData()); },
                                  actualStr, expectedStr, file, line);
 }
 

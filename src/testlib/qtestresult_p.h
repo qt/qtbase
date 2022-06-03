@@ -42,6 +42,9 @@ public:
     static void setBlacklistCurrentTest(bool b);
 
     static void addFailure(const char *message, const char *file = nullptr, int line = 0);
+    // ### TODO: Remove this overload when deprecated QTest::compare_overload
+    // is removed. Can't declare it deprecated, because it will unconditionally
+    // provide warnings.
     static bool compare(bool success, const char *failureMsg,
                         char *val1, char *val2,
                         const char *actual, const char *expected,
@@ -80,6 +83,9 @@ public:
                         QStringView val1, const QLatin1StringView &val2,
                         const char *actual, const char *expected,
                         const char *file, int line);
+    static bool compare(bool success, const char *failureMsg,
+                        const char *actual, const char *expeceted,
+                        const char *file, int line);
     static void setCurrentGlobalTestData(QTestData *data);
     static void setCurrentTestData(QTestData *data);
     static void setCurrentTestFunction(const char *func);
@@ -99,7 +105,8 @@ public:
     static bool reportResult(bool success, qxp::function_ref<const char *()> lhs,
                              qxp::function_ref<const char *()> rhs,
                              const char *lhsExpr, const char *rhsExpr,
-                             QTest::ComparisonOperation op, const char *file, int line);
+                             QTest::ComparisonOperation op, const char *file, int line,
+                             const char *failureMessage = nullptr);
 
 private:
     Q_DISABLE_COPY(QTestResult)
