@@ -395,6 +395,7 @@ void QCALayerBackingStore::windowDestroyed(QObject *object)
 }
 
 QPlatformBackingStore::FlushResult QCALayerBackingStore::rhiFlush(QWindow *window,
+                                                                  qreal sourceDevicePixelRatio,
                                                                   const QRegion &region,
                                                                   const QPoint &offset,
                                                                   QPlatformTextureList *textures,
@@ -407,7 +408,7 @@ QPlatformBackingStore::FlushResult QCALayerBackingStore::rhiFlush(QWindow *windo
 
     finalizeBackBuffer();
 
-    return QPlatformBackingStore::rhiFlush(window, region, offset, textures, translucentBackground);
+    return QPlatformBackingStore::rhiFlush(window, sourceDevicePixelRatio, region, offset, textures, translucentBackground);
 }
 
 QImage QCALayerBackingStore::toImage() const

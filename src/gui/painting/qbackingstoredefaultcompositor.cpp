@@ -129,26 +129,25 @@ QRhiTexture *QBackingStoreDefaultCompositor::toTexture(const QImage &sourceImage
     return m_texture;
 }
 
-static inline QRect deviceRect(const QRect &rect, QWindow *window)
+static inline QRect scaledRect(const QRect &rect, qreal factor)
 {
-    return QRect(rect.topLeft() * window->devicePixelRatio(),
-                 rect.size() * window->devicePixelRatio());
+    return QRect(rect.topLeft() * factor, rect.size() * factor);
 }
 
-static inline QPoint deviceOffset(const QPoint &pt, QWindow *window)
+static inline QPoint scaledOffset(const QPoint &pt, qreal factor)
 {
-    return pt * window->devicePixelRatio();
+    return pt * factor;
 }
 
-static QRegion deviceRegion(const QRegion &region, QWindow *window, const QPoint &offset)
+static QRegion scaledRegion(const QRegion &region, qreal factor, const QPoint &offset)
 {
-    if (offset.isNull() && window->devicePixelRatio() <= 1)
+    if (offset.isNull() && factor <= 1)
         return region;
 
     QVarLengthArray<QRect, 4> rects;
     rects.reserve(region.rectCount());
     for (const QRect &rect : region)
-        rects.append(deviceRect(rect.translated(offset), window));
+        rects.append(scaledRect(rect.translated(offset), factor));
 
     QRegion deviceRegion;
     deviceRegion.setRects(rects.constData(), rects.count());
@@ -236,12 +235,12 @@ static bool prepareDrawForRenderToTextureWidget(const QPlatformTextureList *text
     const QRect clippedRectInWindow = rectInWindow & clipRect.translated(rectInWindow.topLeft());
     const QRect srcRect = toBottomLeftRect(clipRect, rectInWindow.height());
 
-    *target = targetTransform(deviceRect(clippedRectInWindow, window),
+    *target = targetTransform(scaledRect(clippedRectInWindow, window->devicePixelRatio()),
                               deviceWindowRect,
                               invertTargetY);
 
-    *source = sourceTransform(deviceRect(srcRect, window),
-                              deviceRect(rectInWindow, window).size(),
+    *source = sourceTransform(scaledRect(srcRect, window->devicePixelRatio()),
+                              scaledRect(rectInWindow, window->devicePixelRatio()).size(),
                               invertSource ? SourceTransformOrigin::TopLeft : SourceTransformOrigin::BottomLeft);
 
     return true;
@@ -431,6 +430,7 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
                                                                          QRhi *rhi,
                                                                          QRhiSwapChain *swapchain,
                                                                          QWindow *window,
+                                                                         qreal sourceDevicePixelRatio,
                                                                          const QRegion &region,
                                                                          const QPoint &offset,
                                                                          QPlatformTextureList *textures,
@@ -479,7 +479,7 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
             const QImage::Format format = QImage::toImageFormat(graphicsBuffer->format());
             const QSize size = graphicsBuffer->size();
             QImage wrapperImage(graphicsBuffer->data(), size.width(), size.height(), graphicsBuffer->bytesPerLine(), format);
-            toTexture(wrapperImage, rhi, resourceUpdates, deviceRegion(region, window, offset), &flags);
+            toTexture(wrapperImage, rhi, resourceUpdates, scaledRegion(region, sourceDevicePixelRatio, offset), &flags);
             gotTextureFromGraphicsBuffer = true;
             graphicsBuffer->unlock();
             if (graphicsBuffer->origin() == QPlatformGraphicsBuffer::OriginBottomLeft)
@@ -487,7 +487,7 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
         }
     }
     if (!gotTextureFromGraphicsBuffer)
-        toTexture(backingStore, rhi, resourceUpdates, deviceRegion(region, window, offset), &flags);
+        toTexture(backingStore, rhi, resourceUpdates, scaledRegion(region, sourceDevicePixelRatio, offset), &flags);
 
     ensureResources(swapchain, resourceUpdates);
 
@@ -497,8 +497,9 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
     if (flags & QPlatformBackingStore::TextureFlip)
         origin = SourceTransformOrigin::BottomLeft;
 
-    const QRect deviceWindowRect = deviceRect(QRect(QPoint(), window->size()), window);
-    const QPoint deviceWindowOffset = deviceOffset(offset, window);
+    const qreal dpr = window->devicePixelRatio();
+    const QRect deviceWindowRect = scaledRect(QRect(QPoint(), window->size()), dpr);
+    const QPoint deviceWindowOffset = scaledOffset(offset, dpr);
 
     const bool invertTargetY = rhi->clipSpaceCorrMatrix().data()[5] < 0.0f;
     const bool invertSource = rhi->isYUpInFramebuffer() != rhi->isYUpInNDC();

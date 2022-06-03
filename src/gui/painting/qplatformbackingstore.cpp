@@ -181,13 +181,14 @@ void QPlatformBackingStore::flush(QWindow *window, const QRegion &region, const 
     \sa flush()
  */
 QPlatformBackingStore::FlushResult QPlatformBackingStore::rhiFlush(QWindow *window,
+                                                                   qreal sourceDevicePixelRatio,
                                                                    const QRegion &region,
                                                                    const QPoint &offset,
                                                                    QPlatformTextureList *textures,
                                                                    bool translucentBackground)
 {
     return d_ptr->compositor.flush(this, d_ptr->rhiSupport.rhi(), d_ptr->rhiSupport.swapChainForWindow(window),
-                                   window, region, offset, textures, translucentBackground);
+                                   window, sourceDevicePixelRatio, region, offset, textures, translucentBackground);
 }
 
 /*!

@@ -168,6 +168,7 @@ void QOpenGLCompositorBackingStore::flush(QWindow *window, const QRegion &region
 }
 
 QPlatformBackingStore::FlushResult QOpenGLCompositorBackingStore::rhiFlush(QWindow *window,
+                                                                           qreal sourceDevicePixelRatio,
                                                                            const QRegion &region,
                                                                            const QPoint &offset,
                                                                            QPlatformTextureList *textures,
@@ -178,6 +179,7 @@ QPlatformBackingStore::FlushResult QOpenGLCompositorBackingStore::rhiFlush(QWind
     Q_UNUSED(region);
     Q_UNUSED(offset);
     Q_UNUSED(translucentBackground);
+    Q_UNUSED(sourceDevicePixelRatio);
 
     m_rhi = rhi();
     if (!m_rhi) {

@@ -24,6 +24,7 @@ public:
     QPaintDevice *paintDevice() override;
     void flush(QWindow *window, const QRegion &region, const QPoint &offset) override;
     FlushResult rhiFlush(QWindow *window,
+                         qreal sourceDevicePixelRatio,
                          const QRegion &region,
                          const QPoint &offset,
                          QPlatformTextureList *textures,

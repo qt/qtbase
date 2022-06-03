@@ -154,6 +154,7 @@ public:
     virtual void flush(QWindow *window, const QRegion &region, const QPoint &offset);
 
     virtual FlushResult rhiFlush(QWindow *window,
+                                 qreal sourceDevicePixelRatio,
                                  const QRegion &region,
                                  const QPoint &offset,
                                  QPlatformTextureList *textures,
