@@ -418,7 +418,7 @@ qt_config_compile_test(renameat2
 #include <fcntl.h>
 #include <stdio.h>
 
-int main(void)
+int main(int, char **argv)
 {
     /* BEGIN TEST: */
 renameat2(AT_FDCWD, argv[1], AT_FDCWD, argv[2], RENAME_NOREPLACE | RENAME_WHITEOUT);
