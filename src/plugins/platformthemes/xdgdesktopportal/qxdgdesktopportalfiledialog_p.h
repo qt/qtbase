@@ -57,6 +57,7 @@ private Q_SLOTS:
 private:
     void initializeDialog();
     void openPortal();
+    bool useNativeFileDialog() const;
 
     QScopedPointer<QXdgDesktopPortalFileDialogPrivate> d_ptr;
 };
