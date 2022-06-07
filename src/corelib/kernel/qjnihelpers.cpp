@@ -48,6 +48,7 @@
 #include "qcoreapplication.h"
 #include <QtCore/qrunnable.h>
 
+#include <QReadWriteLock>
 #include <deque>
 #include <memory>
 
@@ -80,6 +81,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QtAndroidPrivate::OnBindListener*, g_onBindListener, (
 Q_GLOBAL_STATIC(QMutex, g_onBindListenerMutex);
 Q_GLOBAL_STATIC(QSemaphore, g_waitForServiceSetupSemaphore);
 Q_GLOBAL_STATIC(QAtomicInt, g_serviceSetupLockers);
+Q_GLOBAL_STATIC(QReadWriteLock, g_updateMutex);
 
 class PermissionsResultClass : public QObject
 {
@@ -326,6 +328,41 @@ static void setNativeActivity(JNIEnv *env, jclass, jobject activity)
     }
 }
 
+static jboolean updateNativeActivity(JNIEnv *env, jclass = nullptr)
+{
+
+    jclass jQtNative = env->FindClass("org/qtproject/qt5/android/QtNative");
+    if (exceptionCheck(env))
+        return JNI_FALSE;
+
+    jmethodID activityMethodID =
+            env->GetStaticMethodID(jQtNative, "activity", "()Landroid/app/Activity;");
+    if (exceptionCheck(env))
+        return JNI_FALSE;
+
+    jobject activity = env->CallStaticObjectMethod(jQtNative, activityMethodID);
+    if (exceptionCheck(env))
+        return JNI_FALSE;
+
+    QWriteLocker locker(g_updateMutex());
+
+    if (g_jActivity) {
+        env->DeleteGlobalRef(g_jActivity);
+        g_jActivity = nullptr;
+    }
+
+    if (activity) {
+        g_jActivity = env->NewGlobalRef(activity);
+        env->DeleteLocalRef(activity);
+    }
+
+    env->DeleteLocalRef(jQtNative);
+    if (exceptionCheck(env))
+        return JNI_FALSE;
+
+    return JNI_TRUE;
+}
+
 static void setNativeService(JNIEnv *env, jclass, jobject service)
 {
     if (g_jService != 0)
@@ -402,6 +439,7 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
         {"setNativeActivity", "(Landroid/app/Activity;)V", reinterpret_cast<void *>(setNativeActivity)},
         {"setNativeService", "(Landroid/app/Service;)V", reinterpret_cast<void *>(setNativeService)},
         {"sendRequestPermissionsResult", "(I[Ljava/lang/String;[I)V", reinterpret_cast<void *>(sendRequestPermissionsResult)},
+        {"updateNativeActivity", "()Z", reinterpret_cast<void *>(updateNativeActivity) },
     };
 
     const bool regOk = (env->RegisterNatives(jQtNative, methods, sizeof(methods) / sizeof(methods[0])) == JNI_OK);
@@ -423,6 +461,7 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
 
 jobject QtAndroidPrivate::activity()
 {
+    QReadLocker locker(g_updateMutex());
     return g_jActivity;
 }
 
@@ -433,12 +472,13 @@ jobject QtAndroidPrivate::service()
 
 jobject QtAndroidPrivate::context()
 {
+    QReadLocker locker(g_updateMutex());
     if (g_jActivity)
         return g_jActivity;
     if (g_jService)
         return g_jService;
 
-    return 0;
+    return nullptr;
 }
 
 JavaVM *QtAndroidPrivate::javaVM()
