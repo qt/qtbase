@@ -456,6 +456,7 @@
 */
 
 /*! \macro QTRY_COMPARE_EQ_WITH_TIMEOUT(left, right, timeout)
+    \since 6.4
     \relates QTest
 
     This macro is similar to QCOMPARE_EQ(), but performs the comparison of the
@@ -470,6 +471,7 @@
 */
 
 /*! \macro QTRY_COMPARE_EQ(left, right)
+    \since 6.4
     \relates QTest
 
     Performs comparison of \a left and \a right values by invoking
@@ -481,6 +483,7 @@
 */
 
 /*! \macro QTRY_COMPARE_NE_WITH_TIMEOUT(left, right, timeout)
+    \since 6.4
     \relates QTest
 
     This macro is similar to QCOMPARE_NE(), but performs the comparison of the
@@ -495,6 +498,7 @@
 */
 
 /*! \macro QTRY_COMPARE_NE(left, right)
+    \since 6.4
     \relates QTest
 
     Performs comparison of \a left and \a right values by invoking
@@ -506,6 +510,7 @@
 */
 
 /*! \macro QTRY_COMPARE_LT_WITH_TIMEOUT(left, right, timeout)
+    \since 6.4
     \relates QTest
 
     This macro is similar to QCOMPARE_LT(), but performs the comparison of the
@@ -520,6 +525,7 @@
 */
 
 /*! \macro QTRY_COMPARE_LT(left, right)
+    \since 6.4
     \relates QTest
 
     Performs comparison of \a left and \a right values by invoking
@@ -531,6 +537,7 @@
 */
 
 /*! \macro QTRY_COMPARE_LE_WITH_TIMEOUT(left, right, timeout)
+    \since 6.4
     \relates QTest
 
     This macro is similar to QCOMPARE_LE(), but performs the comparison of the
@@ -545,6 +552,7 @@
 */
 
 /*! \macro QTRY_COMPARE_LE(left, right)
+    \since 6.4
     \relates QTest
 
     Performs comparison of \a left and \a right values by invoking
@@ -556,6 +564,7 @@
 */
 
 /*! \macro QTRY_COMPARE_GT_WITH_TIMEOUT(left, right, timeout)
+    \since 6.4
     \relates QTest
 
     This macro is similar to QCOMPARE_GT(), but performs the comparison of the
@@ -570,6 +579,7 @@
 */
 
 /*! \macro QTRY_COMPARE_GT(left, right)
+    \since 6.4
     \relates QTest
 
     Performs comparison of \a left and \a right values by invoking
@@ -581,6 +591,7 @@
 */
 
 /*! \macro QTRY_COMPARE_GE_WITH_TIMEOUT(left, right, timeout)
+    \since 6.4
     \relates QTest
 
     This macro is similar to QCOMPARE_GE(), but performs the comparison of the
@@ -595,6 +606,7 @@
 */
 
 /*! \macro QTRY_COMPARE_GE(left, right)
+    \since 6.4
     \relates QTest
 
     Performs comparison of \a left and \a right values by invoking

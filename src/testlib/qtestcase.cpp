@@ -2950,6 +2950,7 @@ bool QTest::compare_helper(bool success, const char *failureMsg,
 #endif // QT_DEPRECATED_SINCE(6, 4)
 
 /*! \internal
+    \since 6.4
     This function is called by various specializations of QTest::qCompare
     to decide whether to report a failure and to produce verbose test output.
 
@@ -2973,6 +2974,7 @@ bool QTest::compare_helper(bool success, const char *failureMsg,
 }
 
 /*! \internal
+    \since 6.4
     This function is called by various specializations of QTest::qCompare
     to decide whether to report a failure and to produce verbose test output.
 
