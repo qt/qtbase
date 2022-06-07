@@ -3579,7 +3579,7 @@ void QMenu::internalDelayedPopup()
     const QRect actionRect(d->actionRect(d->currentAction));
     QPoint subMenuPos(mapToGlobal(QPoint(actionRect.right() + subMenuOffset + 1, actionRect.top())));
     if (subMenuPos.x() > screen.right())
-        subMenuPos.setX(QCursor::pos().x());
+        subMenuPos.setX(geometry().left());
 
     const auto &subMenuActions = d->activeMenu->actions();
     if (!subMenuActions.isEmpty()) {
