@@ -3820,8 +3820,8 @@ void tst_QFile::moveToTrash_data()
 
 void tst_QFile::moveToTrash()
 {
-#ifdef Q_OS_ANDROID
-    QSKIP("Android doesn't implement a trash bin");
+#if defined(Q_OS_ANDROID) or defined(Q_OS_WEBOS)
+    QSKIP("This platform doesn't implement a trash bin");
 #endif
     QFETCH(QString, source);
     QFETCH(bool, create);
