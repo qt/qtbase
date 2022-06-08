@@ -83,8 +83,9 @@
 #define Q_XDG_PLATFORM
 #endif
 
-#if !defined(QT_NO_STANDARDPATHS) && (defined(Q_XDG_PLATFORM) || defined(QT_PLATFORM_UIKIT))
-#define QSETTINGS_USE_QSTANDARDPATHS
+#if !defined(QT_NO_STANDARDPATHS)                                                                  \
+        && (defined(Q_XDG_PLATFORM) || defined(QT_PLATFORM_UIKIT) || defined(Q_OS_ANDROID))
+#    define QSETTINGS_USE_QSTANDARDPATHS
 #endif
 
 // ************************************************************************
@@ -1344,6 +1345,15 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
     }
 
 #ifndef QT_BOOTSTRAPPED
+    QString lockFileName = confFile->name + QLatin1String(".lock");
+
+#    if defined(Q_OS_ANDROID) && defined(QSETTINGS_USE_QSTANDARDPATHS)
+    // On android and if it is a content URL put the lock file in a
+    // writable location to prevent permissions issues and invalid paths.
+    if (confFile->name.startsWith(QLatin1String("content:")))
+        lockFileName = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)
+                + QFileInfo(lockFileName).fileName();
+#    endif
     /*
         Use a lockfile in order to protect us against other QSettings instances
         trying to write the same settings at the same time.
@@ -1351,7 +1361,7 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
         We only need to lock if we are actually writing as only concurrent writes are a problem.
         Concurrent read and write are not a problem because the writing operation is atomic.
     */
-    QLockFile lockFile(confFile->name + QLatin1String(".lock"));
+    QLockFile lockFile(lockFileName);
     if (!readOnly && !lockFile.lock() && atomicSyncOnly) {
         setStatus(QSettings::AccessError);
         return;
@@ -1429,6 +1439,11 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
 #if !defined(QT_BOOTSTRAPPED) && QT_CONFIG(temporaryfile)
         QSaveFile sf(confFile->name);
         sf.setDirectWriteFallback(!atomicSyncOnly);
+#    ifdef Q_OS_ANDROID
+        // QSaveFile requires direct write when using content scheme URL in Android
+        if (confFile->name.startsWith(QLatin1String("content:")))
+            sf.setDirectWriteFallback(true);
+#    endif
 #else
         QFile sf(confFile->name);
 #endif
