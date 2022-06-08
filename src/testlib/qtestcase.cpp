@@ -1460,8 +1460,6 @@ char *formatString(const char *prefix, const char *suffix, size_t numArguments, 
 }
 
 /*!
-  \fn char* QTest::toHexRepresentation(const char *ba, int length)
-
   Returns a pointer to a string that is the string \a ba represented
   as a space-separated sequence of hex characters. If the input is
   considered too long, it is truncated. A trucation is indicated in
@@ -1471,7 +1469,7 @@ char *formatString(const char *prefix, const char *suffix, size_t numArguments, 
 
   \a length is the length of the string \a ba.
 */
-char *toHexRepresentation(const char *ba, int length)
+char *toHexRepresentation(const char *ba, qsizetype length)
 {
     if (length == 0)
         return qstrdup("");
@@ -1483,12 +1481,12 @@ char *toHexRepresentation(const char *ba, int length)
      * maxLen can't be for example 200 because Qt Test is sprinkled with fixed
      * size char arrays.
      * */
-    const int maxLen = 50;
-    const int len = qMin(maxLen, length);
+    const qsizetype maxLen = 50;
+    const qsizetype len = qMin(maxLen, length);
     char *result = nullptr;
 
     if (length > maxLen) {
-        const int size = len * 3 + 4;
+        const qsizetype size = len * 3 + 4;
         result = new char[size];
 
         char *const forElipsis = result + size - 5;
@@ -1499,13 +1497,13 @@ char *toHexRepresentation(const char *ba, int length)
         result[size - 1] = '\0';
     }
     else {
-        const int size = len * 3;
+        const qsizetype size = len * 3;
         result = new char[size];
         result[size - 1] = '\0';
     }
 
-    int i = 0;
-    int o = 0;
+    qsizetype i = 0;
+    qsizetype o = 0;
 
     while (true) {
         const char at = ba[i];
@@ -1530,7 +1528,7 @@ char *toHexRepresentation(const char *ba, int length)
     Returns the same QByteArray but with only the ASCII characters still shown;
     everything else is replaced with \c {\xHH}.
 */
-char *toPrettyCString(const char *p, int length)
+char *toPrettyCString(const char *p, qsizetype length)
 {
     bool trimmed = false;
     auto buffer = std::make_unique<char[]>(256);
