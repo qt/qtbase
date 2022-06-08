@@ -155,7 +155,6 @@ QJsonArray::QJsonArray() = default;
 QJsonArray::QJsonArray(QCborContainerPrivate *array)
     : a(array)
 {
-    Q_ASSERT(array);
 }
 
 /*!
