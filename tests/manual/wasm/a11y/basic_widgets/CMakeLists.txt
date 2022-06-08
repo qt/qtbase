@@ -1,6 +1,10 @@
 qt_internal_add_manual_test(a11y_basic_widgets
     GUI
     SOURCES
+        tabswidget.cpp
+        tabswidget.h
+        basica11ywidget.h
+        basica11ywidget.cpp
         main.cpp
     LIBRARIES
         Qt::Core
