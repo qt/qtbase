@@ -354,7 +354,7 @@ double qt_asciiToDouble(const char *num, qsizetype numLen, bool &ok, int &proces
     constexpr auto maxDigitsForULongLong = 1 + std::numeric_limits<unsigned long long>::digits10;
     // need to ensure that we don't read more than numLen of input:
     char fmt[1 + maxDigitsForULongLong + 4 + 1];
-    sprintf(fmt, "%s%llu%s", "%", static_cast<unsigned long long>(numLen), "lf%n");
+    qsnprintf(fmt, sizeof fmt, "%s%llu%s", "%", static_cast<unsigned long long>(numLen), "lf%n");
 
     if (qDoubleSscanf(num, QT_CLOCALE, fmt, &d, &processed) < 1)
         processed = 0;
