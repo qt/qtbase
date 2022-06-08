@@ -103,7 +103,6 @@ QJsonObject::QJsonObject() = default;
 QJsonObject::QJsonObject(QCborContainerPrivate *object)
     : o(object)
 {
-    Q_ASSERT(o);
 }
 
 /*!
