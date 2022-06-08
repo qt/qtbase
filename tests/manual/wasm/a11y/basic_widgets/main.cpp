@@ -1,26 +1,9 @@
-// Copyright (C) 2019 The Qt Company Ltd.
+// Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
+#include <QApplication>
 #include <QtWidgets>
-
-class BasicA11yWidget: public QWidget
-{
-public:
-    BasicA11yWidget() {
-
-        QVBoxLayout *layout = new QVBoxLayout();
-
-        layout->addWidget(new QLabel("This is a text label"));
-        layout->addWidget(new QPushButton("This is a push button"));
-        layout->addWidget(new QCheckBox("This is a check box"));
-
-        // TODO: Add more widgets
-
-        layout->addStretch();
-
-        setLayout(layout);
-    }
-};
+#include "basica11ywidget.h"
 
 int main(int argc, char **argv)
 {
@@ -31,3 +14,4 @@ int main(int argc, char **argv)
 
     return app.exec();
 }
+

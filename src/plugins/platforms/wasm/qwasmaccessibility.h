@@ -12,6 +12,7 @@
 #include <QLoggingCategory>
 
 #include <map>
+#include <emscripten/bind.h>
 
 Q_DECLARE_LOGGING_CATEGORY(lcQpaAccessibility)
 
@@ -47,12 +48,19 @@ private:
     void handleStaticTextUpdate(QAccessibleEvent *event);
     void handleButtonUpdate(QAccessibleEvent *event);
     void handleCheckBoxUpdate(QAccessibleEvent *event);
+    void handleDialogUpdate(QAccessibleEvent *event);
+    void handleMenuUpdate(QAccessibleEvent *event);
+    void handleToolUpdate(QAccessibleEvent *event);
+    void handleLineEditUpdate(QAccessibleEvent *event);
+    void setHtmlElementTextNameLE(QAccessibleInterface *iface);
+
 
     void populateAccessibilityTree(QAccessibleInterface *iface);
     void notifyAccessibilityUpdate(QAccessibleEvent *event) override;
     void setRootObject(QObject *o) override;
     void initialize() override;
     void cleanup() override;
+
 
 private:
     static QWasmAccessibility *s_instance;
