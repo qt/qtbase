@@ -346,8 +346,8 @@ namespace QTest
     template <class... Types>
     inline char *toString(const std::tuple<Types...> &tuple);
 
-    Q_TESTLIB_EXPORT char *toHexRepresentation(const char *ba, int length);
-    Q_TESTLIB_EXPORT char *toPrettyCString(const char *unicode, int length);
+    Q_TESTLIB_EXPORT char *toHexRepresentation(const char *ba, qsizetype length);
+    Q_TESTLIB_EXPORT char *toPrettyCString(const char *unicode, qsizetype length);
     Q_TESTLIB_EXPORT char *toPrettyUnicode(QStringView string);
     Q_TESTLIB_EXPORT char *toString(const char *);
     Q_TESTLIB_EXPORT char *toString(const volatile void *);
