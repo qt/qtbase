@@ -540,6 +540,15 @@ void tst_QResourceEngine::checkUnregisterResource()
     QVERIFY(QFile::exists(file_check));
     QVERIFY(QResource::unregisterResource(rcc_file, root));
     QVERIFY(!QFile::exists(file_check));
+    {
+        // QTBUG-86088
+        QVERIFY(QResource::registerResource(rcc_file, root));
+        QFile file(file_check);
+        QVERIFY(file.open(QFile::ReadOnly));
+        QVERIFY(!QResource::unregisterResource(rcc_file, root));
+        file.close();
+        QVERIFY(!QFile::exists(file_check));
+    }
     QVERIFY(QResource::registerResource(rcc_file, root));
     QVERIFY(QFile::exists(file_check));
     QFileInfo fileInfo(file_check);
