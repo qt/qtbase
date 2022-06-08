@@ -785,15 +785,20 @@ void tst_QtJson::testValueObject()
 void tst_QtJson::testValueArray()
 {
     QJsonArray array;
+    QJsonArray otherArray = {"wrong value"};
+    QJsonValue value(array);
+    QCOMPARE(value.toArray(), array);
+    QCOMPARE(value.toArray(otherArray), array);
+
     array.append(999.);
     array.append(QLatin1String("test"));
     array.append(true);
-
-    QJsonValue value(array);
+    value = array;
 
     // if we don't modify the original JsonArray, toArray()
     // on the JsonValue should return the same object (non-detached).
     QCOMPARE(value.toArray(), array);
+    QCOMPARE(value.toArray(otherArray), array);
 
     // if we modify the original array, it should detach
     array.append(QLatin1String("test"));
@@ -803,14 +808,23 @@ void tst_QtJson::testValueArray()
 void tst_QtJson::testObjectNested()
 {
     QJsonObject inner, outer;
+    QJsonObject otherObject = {{"wrong key", "wrong value"}};
+    QJsonValue v = inner;
+    QCOMPARE(v.toObject(), inner);
+    QCOMPARE(v.toObject(otherObject), inner);
+
     inner.insert("number", 999.);
     outer.insert("nested", inner);
 
     // if we don't modify the original JsonObject, value()
     // should return the same object (non-detached).
     QJsonObject value = outer.value("nested").toObject();
+    v = value;
     QCOMPARE(value, inner);
     QCOMPARE(value.value("number").toDouble(), 999.);
+    QCOMPARE(v.toObject(), inner);
+    QCOMPARE(v.toObject(otherObject), inner);
+    QCOMPARE(v["number"].toDouble(), 999.);
 
     // if we modify the original object, it should detach and not
     // affect the nested object
