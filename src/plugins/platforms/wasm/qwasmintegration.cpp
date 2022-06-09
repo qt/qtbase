@@ -8,6 +8,7 @@
 #include "qwasmopenglcontext.h"
 #include "qwasmtheme.h"
 #include "qwasmclipboard.h"
+#include "qwasmaccessibility.h"
 #include "qwasmservices.h"
 #include "qwasmoffscreensurface.h"
 #include "qwasmstring.h"
@@ -79,7 +80,8 @@ QWasmIntegration *QWasmIntegration::s_instance;
 QWasmIntegration::QWasmIntegration()
     : m_fontDb(nullptr),
       m_desktopServices(nullptr),
-      m_clipboard(new QWasmClipboard)
+      m_clipboard(new QWasmClipboard),
+      m_accessibility(new QWasmAccessibility)
 {
     s_instance = this;
 
@@ -170,6 +172,7 @@ QWasmIntegration::~QWasmIntegration()
     if (m_platformInputContext)
         delete m_platformInputContext;
     delete m_drag;
+    delete m_accessibility;
 
     for (const auto &elementAndScreen : m_screens)
         elementAndScreen.second->deleteScreen();
@@ -298,6 +301,14 @@ QPlatformClipboard* QWasmIntegration::clipboard() const
 {
     return m_clipboard;
 }
+
+#ifndef QT_NO_ACCESSIBILITY
+QPlatformAccessibility *QWasmIntegration::accessibility() const
+{
+    return m_accessibility;
+}
+#endif
+
 
 void QWasmIntegration::addScreen(const emscripten::val &element)
 {

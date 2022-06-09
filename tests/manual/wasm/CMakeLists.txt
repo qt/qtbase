@@ -1,5 +1,6 @@
 add_subdirectory(eventloop)
 add_subdirectory(rasterwindow)
+add_subdirectory(a11y)
 if(QT_FEATURE_widgets)
 add_subdirectory(cursors)
 add_subdirectory(localfiles)

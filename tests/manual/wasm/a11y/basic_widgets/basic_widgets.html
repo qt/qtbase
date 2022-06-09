@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+
+<script src="a11y_basic_widgets.js" async></script>
+
+<script>
+    window.onload = async () => {
+        let qt_instance = await createQtAppInstance({
+            qtContainerElements: [document.getElementById("qt_container")],
+        });
+    }
+</script>
+
+
+</head>
+
+<body>
+    <h1>Qt Accessibility Tester</H1>
+    <div id="qt_container" style="width:640px; height:640px"></div>
+</body>
+
+</html>

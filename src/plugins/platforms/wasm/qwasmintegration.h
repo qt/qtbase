@@ -33,6 +33,7 @@ class QWasmScreen;
 class QWasmCompositor;
 class QWasmBackingStore;
 class QWasmClipboard;
+class QWasmAccessibility;
 class QWasmServices;
 
 class QWasmIntegration : public QObject, public QPlatformIntegration
@@ -66,6 +67,9 @@ public:
     QPlatformTheme *createPlatformTheme(const QString &name) const override;
     QPlatformServices *services() const override;
     QPlatformClipboard *clipboard() const override;
+#ifndef QT_NO_ACCESSIBILITY
+    QPlatformAccessibility *accessibility() const override;
+#endif
     void initialize() override;
     QPlatformInputContext *inputContext() const override;
 
@@ -94,6 +98,8 @@ private:
     mutable QHash<QWindow *, QWasmBackingStore *> m_backingStores;
     QList<QPair<emscripten::val, QWasmScreen *>> m_screens;
     mutable QWasmClipboard *m_clipboard;
+    mutable QWasmAccessibility *m_accessibility;
+
     qreal m_fontDpi = -1;
     mutable QScopedPointer<QPlatformInputContext> m_inputContext;
     static QWasmIntegration *s_instance;

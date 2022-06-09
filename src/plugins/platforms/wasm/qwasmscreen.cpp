@@ -51,8 +51,15 @@ QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
         style.set("height", std::string("100%"));
     }
 
-    // Configure canvas
     emscripten::val style = m_canvas["style"];
+
+    // Configure container and canvas for accessibility support: set "position: relative"
+    // so that a11y child elements can be positioned with "position: absolute", and hide
+    // the canvas from screen readers.
+    m_container["style"].set("position", std::string("relative"));
+    m_canvas.call<void>("setAttribute", std::string("aria-hidden"), std::string("true")); // FIXME make the canvas non-focusable, as required by the aria-hidden role
+    style.set("z-index", std::string("1")); // a11y elements are at 0
+
     style.set("border", std::string("0px none"));
     style.set("background-color", std::string("white"));
 
@@ -122,6 +129,8 @@ QWasmScreen *QWasmScreen::get(QPlatformScreen *screen)
 
 QWasmScreen *QWasmScreen::get(QScreen *screen)
 {
+    if (!screen)
+        return nullptr;
     return get(screen->handle());
 }
 

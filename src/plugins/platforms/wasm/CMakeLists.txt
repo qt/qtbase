@@ -11,6 +11,7 @@ qt_internal_add_plugin(QWasmIntegrationPlugin
     STATIC
     SOURCES
         main.cpp
+        qwasmaccessibility.cpp qwasmaccessibility.h
         qwasmclipboard.cpp qwasmclipboard.h
         qwasmcompositor.cpp qwasmcompositor.h
         qwasmcursor.cpp qwasmcursor.h
