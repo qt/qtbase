@@ -1946,12 +1946,22 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
     }
 
     QStringList importPaths;
-    importPaths += shellQuote(options->qtInstallDirectory + "/qml"_L1);
 
+    // In Conan's case, qtInstallDirectory will point only to qtbase installed files, which
+    // lacks a qml directory. We don't want to pass it as an import path if it doesn't exist
+    // because it will cause qmlimportscanner to fail.
+    // This also covers the case when only qtbase is installed in a regular Qt build.
+    const QString mainImportPath = options->qtInstallDirectory + "/qml"_L1;
+    if (QDir().exists(mainImportPath))
+        importPaths += shellQuote(mainImportPath);
+
+    // These are usually provided by CMake in the deployment json file from paths specified
+    // in CMAKE_FIND_ROOT_PATH. They might not have qml modules.
     for (const QString &prefix : options->extraPrefixDirs)
         if (QDir().exists(prefix + "/qml"_L1))
             importPaths += shellQuote(prefix + "/qml"_L1);
 
+    // These are provided by both CMake and qmake.
     for (const QString &qmlImportPath : qAsConst(options->qmlImportPaths)) {
         if (QDir().exists(qmlImportPath)) {
             importPaths += shellQuote(qmlImportPath);
