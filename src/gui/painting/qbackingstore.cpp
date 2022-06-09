@@ -25,11 +25,32 @@ public:
     {
     }
 
+    // Returns the DPR for the backing store. This is the DPR for the QWindow,
+    // possibly rounded up to the nearest integer.
+    qreal backingStoreDevicePixelRatio() const
+    {
+        // Note: keep in sync with QWidget::metric()!
+        qreal windowDpr = window->devicePixelRatio();
+        return downscale ? std::ceil(windowDpr) : windowDpr;
+    }
+
+    // Returns the factor used for converting from device independent to native
+    // backing store sizes. Normally this is just the gui scale factor, however
+    // if the backing store rounds the DPR up to the nearest integer then we also
+    // need to account for the factor introduced by that rounding.
+    qreal deviceIndependentToNativeFactor() const
+    {
+        const qreal roundingFactor = backingStoreDevicePixelRatio() / window->devicePixelRatio();
+        const qreal guiFactor = QHighDpiScaling::factor(window);
+        return roundingFactor * guiFactor;
+    }
+
     QWindow *window;
     QPlatformBackingStore *platformBackingStore = nullptr;
     QScopedPointer<QImage> highDpiBackingstore;
     QRegion staticContents;
     QSize size;
+    bool downscale = qEnvironmentVariableIntValue("QT_WIDGETS_HIGHDPI_DOWNSCALE") > 0;
 };
 
 /*!
@@ -94,12 +115,14 @@ QWindow* QBackingStore::window() const
 
 void QBackingStore::beginPaint(const QRegion &region)
 {
+    const qreal dpr = d_ptr->backingStoreDevicePixelRatio();
+
     if (d_ptr->highDpiBackingstore &&
-        d_ptr->highDpiBackingstore->devicePixelRatio() != d_ptr->window->devicePixelRatio())
+        d_ptr->highDpiBackingstore->devicePixelRatio() != dpr)
         resize(size());
 
     QPlatformBackingStore *platformBackingStore = handle();
-    platformBackingStore->beginPaint(QHighDpi::toNativeLocalRegion(region, d_ptr->window));
+    platformBackingStore->beginPaint(QHighDpi::scale(region, d_ptr->deviceIndependentToNativeFactor()));
 
     // When QtGui is applying a high-dpi scale factor the backing store
     // creates a "large" backing store image. This image needs to be
@@ -118,8 +141,7 @@ void QBackingStore::beginPaint(const QRegion &region)
             d_ptr->highDpiBackingstore.reset(
                 new QImage(source->bits(), source->width(), source->height(), source->bytesPerLine(), source->format()));
 
-            qreal targetDevicePixelRatio = d_ptr->window->devicePixelRatio();
-            d_ptr->highDpiBackingstore->setDevicePixelRatio(targetDevicePixelRatio);
+            d_ptr->highDpiBackingstore->setDevicePixelRatio(dpr);
         }
     }
 }
@@ -184,13 +206,15 @@ void QBackingStore::flush(const QRegion &region, QWindow *window, const QPoint &
 
     Q_ASSERT(window == topLevelWindow || topLevelWindow->isAncestorOf(window, QWindow::ExcludeTransients));
 
-    QRegion nativeRegion = QHighDpi::toNativeLocalRegion(region, window);
+    const qreal toNativeFactor = d_ptr->deviceIndependentToNativeFactor();
+
+    QRegion nativeRegion = QHighDpi::scale(region, toNativeFactor);
     QPoint nativeOffset;
     if (!offset.isNull()) {
-        nativeOffset = QHighDpi::toNativeLocalPosition(offset, window);
+        nativeOffset = QHighDpi::scale(offset, toNativeFactor);
         // Under fractional DPR, rounding of region and offset may accumulate to an off-by-one
         QPoint topLeft = region.boundingRect().topLeft() + offset;
-        QPoint nativeTopLeft = QHighDpi::toNativeLocalPosition(topLeft, window);
+        QPoint nativeTopLeft = QHighDpi::scale(topLeft, toNativeFactor);
         QPoint diff = nativeTopLeft - (nativeRegion.boundingRect().topLeft() + nativeOffset);
         Q_ASSERT(qMax(qAbs(diff.x()), qAbs(diff.y())) <= 1);
         nativeRegion.translate(diff);
@@ -206,7 +230,7 @@ void QBackingStore::flush(const QRegion &region, QWindow *window, const QPoint &
 void QBackingStore::resize(const QSize &size)
 {
     d_ptr->size = size;
-    handle()->resize(QHighDpi::toNativePixels(size, d_ptr->window), d_ptr->staticContents);
+    handle()->resize(QHighDpi::scale(size, d_ptr->deviceIndependentToNativeFactor()), d_ptr->staticContents);
 }
 
 /*!
@@ -228,13 +252,13 @@ bool QBackingStore::scroll(const QRegion &area, int dx, int dy)
     // Disable scrolling for non-integer scroll deltas. For this case
     // the existing rendered pixels can't be re-used, and we return
     // false to signal that a repaint is needed.
-    const qreal nativeDx = QHighDpi::toNativePixels(qreal(dx), d_ptr->window);
-    const qreal nativeDy = QHighDpi::toNativePixels(qreal(dy), d_ptr->window);
+    const qreal toNativeFactor = d_ptr->deviceIndependentToNativeFactor();
+    const qreal nativeDx = QHighDpi::scale(qreal(dx), toNativeFactor);
+    const qreal nativeDy = QHighDpi::scale(qreal(dy), toNativeFactor);
     if (qFloor(nativeDx) != nativeDx || qFloor(nativeDy) != nativeDy)
         return false;
 
-    return handle()->scroll(QHighDpi::toNativeLocalRegion(area, d_ptr->window),
-                                               nativeDx, nativeDy);
+    return handle()->scroll(QHighDpi::scale(area, toNativeFactor), nativeDx, nativeDy);
 }
 
 /*!

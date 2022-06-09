@@ -12698,6 +12698,17 @@ int QWidget::metric(PaintDeviceMetric m) const
         return QPaintDevice::metric(m);
     }
 
+    auto resolveDevicePixelRatio = [this, screen]() -> qreal {
+
+        // Note: keep in sync with QBackingStorePrivate::backingStoreDevicePixelRatio()!
+        static bool downscale = qEnvironmentVariableIntValue("QT_WIDGETS_HIGHDPI_DOWNSCALE") > 0;
+        QWindow *window = this->window()->windowHandle();
+        if (downscale && window)
+            return std::ceil(window->devicePixelRatio());
+
+        return screen->devicePixelRatio();
+    };
+
     switch (m) {
     case PdmWidth:
         return data->crect.width();
@@ -12726,9 +12737,9 @@ int QWidget::metric(PaintDeviceMetric m) const
     case PdmPhysicalDpiY:
         return qRound(screen->physicalDotsPerInchY());
     case PdmDevicePixelRatio:
-        return screen->devicePixelRatio();
+        return resolveDevicePixelRatio();
     case PdmDevicePixelRatioScaled:
-        return QPaintDevice::devicePixelRatioFScale() * screen->devicePixelRatio();
+        return QPaintDevice::devicePixelRatioFScale() * resolveDevicePixelRatio();
     default:
         break;
     }

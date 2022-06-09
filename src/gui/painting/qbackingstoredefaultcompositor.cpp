@@ -408,7 +408,7 @@ void QBackingStoreDefaultCompositor::ensureResources(QRhiSwapChain *swapchain, Q
     }
 
     if (!m_sampler) {
-        m_sampler = m_rhi->newSampler(QRhiSampler::Nearest, QRhiSampler::Nearest, QRhiSampler::None,
+        m_sampler = m_rhi->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None,
                                       QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge);
         if (!m_sampler->create())
             qWarning("QBackingStoreDefaultCompositor: Failed to create sampler");
@@ -506,7 +506,8 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
     if (m_texture) {
         // The backingstore is for the entire tlw.
         // In case of native children offset tells the position relative to the tlw.
-        const QRect srcRect = toBottomLeftRect(deviceWindowRect.translated(deviceWindowOffset), m_texture->pixelSize().height());
+        const QRect textureRect = QRect(QPoint(), m_texture->pixelSize());
+        const QRect srcRect = toBottomLeftRect(textureRect.translated(deviceWindowOffset), m_texture->pixelSize().height());
         const QMatrix3x3 source = sourceTransform(srcRect, m_texture->pixelSize(), origin);
         QMatrix4x4 target; // identity
         if (invertTargetY)
