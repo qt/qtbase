@@ -1306,6 +1306,10 @@ void Moc::parsePropertyAttributes(PropertyDef &propDef)
             v = lexem();
             if (l != "REVISION")
                 error(1);
+        } else if (test(DEFAULT)) {
+            v = lexem();
+            if (l != "READ")
+                error(1);
         } else {
             next(IDENTIFIER);
             v = lexem();
@@ -1382,6 +1386,12 @@ void Moc::parsePropertyAttributes(PropertyDef &propDef)
         const QByteArray msg = "Property declaration " + propDef.name
                 + " is both BINDable and CONSTANT. CONSTANT will be ignored.";
         propDef.constant = false;
+        warning(msg.constData());
+    }
+    if (propDef.read == "default" && propDef.bind.isNull()) {
+        const QByteArray msg = "Property declaration " + propDef.name
+                + " is not BINDable but default-READable. READ will be ignored.";
+        propDef.read = "";
         warning(msg.constData());
     }
 }

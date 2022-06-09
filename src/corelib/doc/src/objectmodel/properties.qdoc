@@ -44,7 +44,9 @@
     specified. It is for reading the property value. Ideally, a const function
     is used for this purpose, and it must return either the property's type or a
     const reference to that type. e.g., QWidget::focus is a read-only
-    property with \c READ function, QWidget::hasFocus().
+    property with \c READ function, QWidget::hasFocus(). If a \c BINDABLE is
+    specified, you can write \c{READ default} to have the \c READ accessor
+    generated from the \c BINDABLE.
 
     \li A \c WRITE accessor function is optional. It is for setting the
     property value. It must return void and must take exactly one

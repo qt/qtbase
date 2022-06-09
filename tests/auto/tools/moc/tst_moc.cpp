@@ -743,6 +743,7 @@ private slots:
     void observerMetaCall();
     void setQPRopertyBinding();
     void privateQPropertyShim();
+    void readThroughBindable();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -4327,6 +4328,44 @@ void tst_Moc::privateQPropertyShim()
     // moc generates correct code for plain QProperty in PIMPL
     testObject.setTestProperty2(42);
     QCOMPARE(testObject.priv.testProperty2.value(), 42);
+}
+
+
+class BindableOnly : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int score BINDABLE scoreBindable READ default)
+public:
+    BindableOnly(QObject *parent = nullptr)
+        : QObject(parent)
+        , m_score(4)
+    {}
+    QBindable<int> scoreBindable() { return QBindable<int>(&m_score); }
+private:
+    QProperty<int> m_score;
+};
+
+
+void tst_Moc::readThroughBindable()
+{
+    BindableOnly o;
+
+    QCOMPARE(o.scoreBindable().value(), 4);
+    QCOMPARE(o.property("score").toInt(), 4);
+    o.scoreBindable().setValue(5);
+    QCOMPARE(o.scoreBindable().value(), 5);
+    QCOMPARE(o.property("score").toInt(), 5);
+
+
+    const QMetaObject *mo = o.metaObject();
+    const int i = mo->indexOfProperty("score");
+    QVERIFY(i > 0);
+
+    QMetaProperty p = mo->property(i);
+    QCOMPARE(p.name(), "score");
+
+    QVERIFY(p.isValid());
+    QCOMPARE(p.read(&o), 5);
 }
 
 QTEST_MAIN(tst_Moc)
