@@ -15,7 +15,7 @@
 QT_BEGIN_NAMESPACE
 
 
-#ifndef QT_NO_SHAREDMEMORY
+#if QT_CONFIG(sharedmemory)
 
 class QSharedMemoryPrivate;
 
@@ -78,7 +78,7 @@ public:
     const void* constData() const;
     const void *data() const;
 
-#ifndef QT_NO_SYSTEMSEMAPHORE
+#if QT_CONFIG(systemsemaphore)
     bool lock();
     bool unlock();
 #endif
@@ -93,7 +93,7 @@ private:
 #endif
 };
 
-#endif // QT_NO_SHAREDMEMORY
+#endif // QT_CONFIG(sharedmemory)
 
 QT_END_NAMESPACE
 

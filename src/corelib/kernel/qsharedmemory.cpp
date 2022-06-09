@@ -26,7 +26,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-#if !(defined(QT_NO_SHAREDMEMORY) && defined(QT_NO_SYSTEMSEMAPHORE))
+#if QT_CONFIG(sharedmemory) || QT_CONFIG(systemsemaphore)
 /*!
     \internal
 
@@ -76,9 +76,9 @@ QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
     return QDir::tempPath() + u'/' + result;
 #endif
 }
-#endif // QT_NO_SHAREDMEMORY && QT_NO_SHAREDMEMORY
+#endif // QT_CONFIG(sharedmemory) || QT_CONFIG(systemsemaphore)
 
-#ifndef QT_NO_SHAREDMEMORY
+#if QT_CONFIG(sharedmemory)
 
 /*!
   \class QSharedMemory
@@ -283,7 +283,7 @@ bool QSharedMemoryPrivate::initKey()
 {
     if (!cleanHandle())
         return false;
-#ifndef QT_NO_SYSTEMSEMAPHORE
+#if QT_CONFIG(systemsemaphore)
     systemSemaphore.setKey(QString(), 1);
     systemSemaphore.setKey(key, 1);
     if (systemSemaphore.error() != QSystemSemaphore::NoError) {
@@ -370,7 +370,7 @@ bool QSharedMemory::create(qsizetype size, AccessMode mode)
     if (!d->initKey())
         return false;
 
-#ifndef QT_NO_SYSTEMSEMAPHORE
+#if QT_CONFIG(systemsemaphore)
 #ifndef Q_OS_WIN
     // Take ownership and force set initialValue because the semaphore
     // might have already existed from a previous crash.
@@ -379,7 +379,7 @@ bool QSharedMemory::create(qsizetype size, AccessMode mode)
 #endif
 
     QString function = "QSharedMemory::create"_L1;
-#ifndef QT_NO_SYSTEMSEMAPHORE
+#if QT_CONFIG(systemsemaphore)
     QSharedMemoryLocker lock(this);
     if (!d->key.isNull() && !d->tryLocker(&lock, function))
         return false;
@@ -443,7 +443,7 @@ bool QSharedMemory::attach(AccessMode mode)
 
     if (isAttached() || !d->initKey())
         return false;
-#ifndef QT_NO_SYSTEMSEMAPHORE
+#if QT_CONFIG(systemsemaphore)
     QSharedMemoryLocker lock(this);
     if (!d->key.isNull() && !d->tryLocker(&lock, "QSharedMemory::attach"_L1))
         return false;
@@ -483,7 +483,7 @@ bool QSharedMemory::detach()
     if (!isAttached())
         return false;
 
-#ifndef QT_NO_SYSTEMSEMAPHORE
+#if QT_CONFIG(systemsemaphore)
     QSharedMemoryLocker lock(this);
     if (!d->key.isNull() && !d->tryLocker(&lock, "QSharedMemory::detach"_L1))
         return false;
@@ -531,7 +531,7 @@ const void *QSharedMemory::data() const
     return d->memory;
 }
 
-#ifndef QT_NO_SYSTEMSEMAPHORE
+#if QT_CONFIG(systemsemaphore)
 /*!
   This is a semaphore that locks the shared memory segment for access
   by this process and returns \c true. If another process has locked the
@@ -581,7 +581,7 @@ bool QSharedMemory::unlock()
     d->error = QSharedMemory::LockError;
     return false;
 }
-#endif // QT_NO_SYSTEMSEMAPHORE
+#endif // QT_CONFIG(systemsemaphore)
 
 /*!
   \enum QSharedMemory::SharedMemoryError
@@ -638,7 +638,7 @@ QString QSharedMemory::errorString() const
     return d->errorString;
 }
 
-#endif // QT_NO_SHAREDMEMORY
+#endif // QT_CONFIG(sharedmemory)
 
 QT_END_NAMESPACE
 

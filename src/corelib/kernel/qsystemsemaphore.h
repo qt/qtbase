@@ -11,7 +11,7 @@
 QT_BEGIN_NAMESPACE
 
 
-#ifndef QT_NO_SYSTEMSEMAPHORE
+#if QT_CONFIG(systemsemaphore)
 
 class QSystemSemaphorePrivate;
 
@@ -53,7 +53,7 @@ private:
     QScopedPointer<QSystemSemaphorePrivate> d;
 };
 
-#endif // QT_NO_SYSTEMSEMAPHORE
+#endif // QT_CONFIG(systemsemaphore)
 
 QT_END_NAMESPACE
 

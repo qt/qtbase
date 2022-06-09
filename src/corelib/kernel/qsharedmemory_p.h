@@ -19,8 +19,8 @@
 
 #include <QtCore/qstring.h>
 
-#ifdef QT_NO_SHAREDMEMORY
-#    ifndef QT_NO_SYSTEMSEMAPHORE
+#if !QT_CONFIG(sharedmemory)
+#    if QT_CONFIG(systemsemaphore)
 
 QT_BEGIN_NAMESPACE
 
@@ -48,7 +48,7 @@ QT_END_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_SYSTEMSEMAPHORE
+#if QT_CONFIG(systemsemaphore)
 /*!
   Helper class
   */
@@ -78,7 +78,7 @@ public:
 private:
     QSharedMemory *q_sm;
 };
-#endif // QT_NO_SYSTEMSEMAPHORE
+#endif // QT_CONFIG(systemsemaphore)
 
 class Q_AUTOTEST_EXPORT QSharedMemoryPrivate
 #ifndef QT_NO_QOBJECT
@@ -98,7 +98,7 @@ public:
     QString nativeKey;
     QSharedMemory::SharedMemoryError error;
     QString errorString;
-#ifndef QT_NO_SYSTEMSEMAPHORE
+#if QT_CONFIG(systemsemaphore)
     QSystemSemaphore systemSemaphore;
     bool lockedByMe;
 #endif
@@ -121,7 +121,7 @@ public:
 
     void setErrorString(QLatin1StringView function);
 
-#ifndef QT_NO_SYSTEMSEMAPHORE
+#if QT_CONFIG(systemsemaphore)
     bool tryLocker(QSharedMemoryLocker *locker, const QString &function) {
         if (!locker->lock()) {
             errorString = QSharedMemory::tr("%1: unable to lock").arg(function);
@@ -130,7 +130,7 @@ public:
         }
         return true;
     }
-#endif // QT_NO_SYSTEMSEMAPHORE
+#endif // QT_CONFIG(systemsemaphore)
 
 private:
 #ifdef Q_OS_WIN
@@ -144,7 +144,7 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_SHAREDMEMORY
+#endif // QT_CONFIG(sharedmemory)
 
 #endif // QSHAREDMEMORY_P_H
 

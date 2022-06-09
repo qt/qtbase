@@ -6,7 +6,7 @@
 
 #include <qdebug.h>
 
-#ifndef QT_NO_SYSTEMSEMAPHORE
+#if QT_CONFIG(systemsemaphore)
 
 QT_BEGIN_NAMESPACE
 
@@ -44,4 +44,4 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_SYSTEMSEMAPHORE
+#endif // QT_CONFIG(systemsemaphore)

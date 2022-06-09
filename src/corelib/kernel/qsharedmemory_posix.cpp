@@ -14,7 +14,7 @@
 
 #ifdef QT_POSIX_IPC
 
-#ifndef QT_NO_SHAREDMEMORY
+#if QT_CONFIG(sharedmemory)
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -195,6 +195,6 @@ bool QSharedMemoryPrivate::detach()
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_SHAREDMEMORY
+#endif // QT_CONFIG(sharedmemory)
 
 #endif // QT_POSIX_IPC

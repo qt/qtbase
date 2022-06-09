@@ -5,12 +5,12 @@
 #include "qsharedmemory_p.h"
 #include <qdebug.h>
 
-#ifndef QT_NO_SHAREDMEMORY
+#if QT_CONFIG(sharedmemory)
 QT_BEGIN_NAMESPACE
 
 QSharedMemoryPrivate::QSharedMemoryPrivate()
     : QObjectPrivate(), memory(0), size(0), error(QSharedMemory::NoError),
-#ifndef QT_NO_SYSTEMSEMAPHORE
+#if QT_CONFIG(systemsemaphore)
       systemSemaphore(QString()), lockedByMe(false),
 #endif
       unix_key(0)
@@ -29,18 +29,18 @@ key_t QSharedMemoryPrivate::handle()
     return 0;
 }
 
-#endif // QT_NO_SHAREDMEMORY
+#endif // QT_CONFIG(sharedmemory)
 
-#if !(defined(QT_NO_SHAREDMEMORY) && defined(QT_NO_SYSTEMSEMAPHORE))
+#if QT_CONFIG(sharedmemory) || QT_CONFIG(systemsemaphore)
 int QSharedMemoryPrivate::createUnixKeyFile(const QString &fileName)
 {
     Q_UNUSED(fileName);
     Q_UNIMPLEMENTED();
     return 0;
 }
-#endif // QT_NO_SHAREDMEMORY && QT_NO_SYSTEMSEMAPHORE
+#endif // QT_CONFIG(sharedmemory) || QT_CONFIG(systemsemaphore)
 
-#ifndef QT_NO_SHAREDMEMORY
+#if QT_CONFIG(sharedmemory)
 
 bool QSharedMemoryPrivate::cleanHandle()
 {
@@ -71,4 +71,4 @@ bool QSharedMemoryPrivate::detach()
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_SHAREDMEMORY
+#endif // QT_CONFIG(sharedmemory)

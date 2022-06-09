@@ -17,7 +17,7 @@
 
 #include "qsystemsemaphore.h"
 
-#ifndef QT_NO_SYSTEMSEMAPHORE
+#if QT_CONFIG(systemsemaphore)
 
 #include "qcoreapplication.h"
 #include "qsharedmemory_p.h"
@@ -78,7 +78,7 @@ public:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_SYSTEMSEMAPHORE
+#endif // QT_CONFIG(systemsemaphore)
 
 #endif // QSYSTEMSEMAPHORE_P_H
 

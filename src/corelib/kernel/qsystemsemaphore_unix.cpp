@@ -7,7 +7,7 @@
 #include <qdebug.h>
 #include <qcoreapplication.h>
 
-#ifndef QT_NO_SYSTEMSEMAPHORE
+#if QT_CONFIG(systemsemaphore)
 
 #include <sys/types.h>
 #ifndef QT_POSIX_IPC
@@ -70,4 +70,4 @@ void QSystemSemaphorePrivate::setErrorString(const QString &function)
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_SYSTEMSEMAPHORE
+#endif // QT_CONFIG(systemsemaphore)

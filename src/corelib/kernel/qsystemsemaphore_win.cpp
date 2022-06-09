@@ -11,7 +11,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-#ifndef QT_NO_SYSTEMSEMAPHORE
+#if QT_CONFIG(systemsemaphore)
 
 QSystemSemaphorePrivate::QSystemSemaphorePrivate() :
         semaphore(0), error(QSystemSemaphore::NoError)
@@ -97,6 +97,6 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
     return true;
 }
 
-#endif //QT_NO_SYSTEMSEMAPHORE
+#endif // QT_CONFIG(systemsemaphore)
 
 QT_END_NAMESPACE

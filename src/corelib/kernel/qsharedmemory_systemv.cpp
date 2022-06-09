@@ -13,18 +13,18 @@
 
 #ifndef QT_POSIX_IPC
 
-#ifndef QT_NO_SHAREDMEMORY
+#if QT_CONFIG(sharedmemory)
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#endif //QT_NO_SHAREDMEMORY
+#endif // QT_CONFIG(sharedmemory)
 
 #include "private/qcore_unix_p.h"
 
-#ifndef QT_NO_SHAREDMEMORY
+#if QT_CONFIG(sharedmemory)
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -63,9 +63,9 @@ key_t QSharedMemoryPrivate::handle()
     return unix_key;
 }
 
-#endif // QT_NO_SHAREDMEMORY
+#endif // QT_CONFIG(sharedmemory)
 
-#if !(defined(QT_NO_SHAREDMEMORY) && defined(QT_NO_SYSTEMSEMAPHORE))
+#if QT_CONFIG(sharedmemory) || QT_CONFIG(systemsemaphore)
 /*!
     \internal
     Creates the unix file if needed.
@@ -88,9 +88,9 @@ int QT_PREPEND_NAMESPACE(QSharedMemoryPrivate)::createUnixKeyFile(const QString 
     }
     return 1;
 }
-#endif // QT_NO_SHAREDMEMORY && QT_NO_SYSTEMSEMAPHORE
+#endif // QT_CONFIG(sharedmemory) || QT_CONFIG(systemsemaphore)
 
-#ifndef QT_NO_SHAREDMEMORY
+#if QT_CONFIG(sharedmemory)
 
 bool QSharedMemoryPrivate::cleanHandle()
 {
@@ -221,6 +221,6 @@ bool QSharedMemoryPrivate::detach()
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_SHAREDMEMORY
+#endif // QT_CONFIG(sharedmemory)
 
 #endif // QT_POSIX_IPC

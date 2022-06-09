@@ -10,7 +10,7 @@
 
 #include <errno.h>
 
-#ifndef QT_NO_SHAREDMEMORY
+#if QT_CONFIG(sharedmemory)
 #include <sys/types.h>
 #ifndef QT_POSIX_IPC
 #include <sys/ipc.h>
@@ -21,11 +21,11 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#endif //QT_NO_SHAREDMEMORY
+#endif // QT_CONFIG(sharedmemory)
 
 #include "private/qcore_unix_p.h"
 
-#ifndef QT_NO_SHAREDMEMORY
+#if QT_CONFIG(sharedmemory)
 QT_BEGIN_NAMESPACE
 
 QSharedMemoryPrivate::QSharedMemoryPrivate() :
@@ -33,7 +33,7 @@ QSharedMemoryPrivate::QSharedMemoryPrivate() :
     QObjectPrivate(),
 #endif
     memory(nullptr), size(0), error(QSharedMemory::NoError),
-#ifndef QT_NO_SYSTEMSEMAPHORE
+#if QT_CONFIG(systemsemaphore)
       systemSemaphore(QString()), lockedByMe(false),
 #endif
 #ifndef QT_POSIX_IPC
@@ -77,4 +77,4 @@ void QSharedMemoryPrivate::setErrorString(QLatin1StringView function)
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_SHAREDMEMORY
+#endif // QT_CONFIG(sharedmemory)

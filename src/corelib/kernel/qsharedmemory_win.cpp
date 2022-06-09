@@ -11,7 +11,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-#ifndef QT_NO_SHAREDMEMORY
+#if QT_CONFIG(sharedmemory)
 
 QSharedMemoryPrivate::QSharedMemoryPrivate() :
 #ifndef QT_NO_QOBJECT
@@ -151,7 +151,6 @@ bool QSharedMemoryPrivate::detach()
     return cleanHandle();
 }
 
-#endif //QT_NO_SHAREDMEMORY
-
+#endif // QT_CONFIG(sharedmemory)
 
 QT_END_NAMESPACE

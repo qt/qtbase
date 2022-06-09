@@ -10,7 +10,7 @@
 
 #ifndef QT_POSIX_IPC
 
-#ifndef QT_NO_SYSTEMSEMAPHORE
+#if QT_CONFIG(systemsemaphore)
 
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -72,7 +72,7 @@ key_t QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode mode)
     }
     createdFile = (1 == built);
 
-#if !defined(QT_NO_SHAREDMEMORY) && !defined(QT_POSIX_IPC) && !defined(Q_OS_ANDROID)
+#if QT_CONFIG(sharedmemory) && !defined(QT_POSIX_IPC) && !defined(Q_OS_ANDROID)
     // Get the unix key for the created file
     unix_key = ftok(QFile::encodeName(fileName).constData(), 'Q');
 #endif
@@ -185,6 +185,6 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_SYSTEMSEMAPHORE
+#endif // QT_CONFIG(systemsemaphore)
 
 #endif // QT_POSIX_IPC

@@ -12,7 +12,7 @@
 
 #ifdef QT_POSIX_IPC
 
-#ifndef QT_NO_SYSTEMSEMAPHORE
+#if QT_CONFIG(systemsemaphore)
 
 #include <sys/types.h>
 #include <fcntl.h>
@@ -147,6 +147,6 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_SYSTEMSEMAPHORE
+#endif // QT_CONFIG(systemsemaphore)
 
 #endif // QT_POSIX_IPC
