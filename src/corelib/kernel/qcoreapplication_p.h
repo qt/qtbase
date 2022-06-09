@@ -56,7 +56,7 @@ public:
         Gui
     };
 
-    QCoreApplicationPrivate(int &aargc,  char **aargv, uint flags);
+    QCoreApplicationPrivate(int &aargc,  char **aargv, uint);
 
     // If not inheriting from QObjectPrivate: force this class to be polymorphic
 #ifdef QT_NO_QOBJECT
@@ -156,7 +156,6 @@ public:
     static bool setuidAllowed;
     static uint attribs;
     static inline bool testAttribute(uint flag) { return attribs & (1 << flag); }
-    static int app_compile_version;
 
     void processCommandLineArguments();
     QString qmljs_debug_arguments; // a string containing arguments for js/qml debugging.

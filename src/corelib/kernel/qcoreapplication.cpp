@@ -108,12 +108,6 @@ using namespace Qt::StringLiterals;
 extern QString qAppFileName();
 #endif
 
-#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
-# error "Bump QCoreApplicatoinPrivate::app_compile_version to QT_VERSION_CHECK(7, 0, 0)"
-#endif
-// We don't know exactly, but it's at least 6.0.0:
-Q_CONSTINIT int QCoreApplicationPrivate::app_compile_version = QT_VERSION_CHECK(6, 0, 0);
-
 Q_CONSTINIT bool QCoreApplicationPrivate::setuidAllowed = false;
 
 #if !defined(Q_OS_WIN)
@@ -399,7 +393,7 @@ static inline bool contains(int argc, char **argv, const char *needle)
 }
 #endif // Q_OS_WIN
 
-QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint flags)
+QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint)
     :
 #ifndef QT_NO_QOBJECT
       QObjectPrivate(),
@@ -419,7 +413,6 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
     , q_ptr(nullptr)
 #endif
 {
-    app_compile_version = flags & 0xffffff;
     static const char *const empty = "";
     if (argc == 0 || argv == nullptr) {
         argc = 0;
