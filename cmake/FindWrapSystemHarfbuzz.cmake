@@ -28,22 +28,37 @@ if(harfbuzz_FOUND AND TARGET "${__harfbuzz_target_name}")
 endif()
 
 if(__harfbuzz_broken_config_file OR NOT __harfbuzz_found)
-    list(PREPEND WrapSystemHarfbuzz_REQUIRED_VARS HARFBUZZ_LIBRARIES HARFBUZZ_INCLUDE_DIRS)
-
     find_package(PkgConfig QUIET)
     pkg_check_modules(PC_HARFBUZZ harfbuzz IMPORTED_TARGET)
     if(PC_HARFBUZZ_FOUND)
-        find_path(HARFBUZZ_INCLUDE_DIRS
-            NAMES harfbuzz/hb.h
-            HINTS ${PC_HARFBUZZ_INCLUDEDIR})
-        find_library(HARFBUZZ_LIBRARIES
-            NAMES harfbuzz
-            HINTS ${PC_HARFBUZZ_LIBDIR})
-
         set(__harfbuzz_target_name "PkgConfig::PC_HARFBUZZ")
-        set(__harfbuzz_found TRUE)
+        set(__harfbuzz_find_include_dirs_hints
+            HINTS ${PC_HARFBUZZ_INCLUDEDIR})
+        set(__harfbuzz_find_library_hints
+            HINTS ${PC_HARFBUZZ_LIBDIR})
         if(PC_HARFBUZZ_VERSION)
             set(WrapSystemHarfbuzz_VERSION "${PC_HARFBUZZ_VERSION}")
+        endif()
+    else()
+        set(__harfbuzz_target_name "Harfbuzz::Harfbuzz")
+    endif()
+
+    find_path(HARFBUZZ_INCLUDE_DIRS
+        NAMES harfbuzz/hb.h
+        ${__harfbuzz_find_include_dirs_hints})
+    find_library(HARFBUZZ_LIBRARIES
+        NAMES harfbuzz
+        ${__harfbuzz_find_library_hints})
+
+    if(HARFBUZZ_INCLUDE_DIRS AND HARFBUZZ_LIBRARIES)
+        set(__harfbuzz_found TRUE)
+        if(NOT PC_HARFBUZZ_FOUND)
+            add_library(${__harfbuzz_target_name} UNKNOWN IMPORTED)
+            list(TRANSFORM HARFBUZZ_INCLUDE_DIRS APPEND "/harfbuzz")
+            set_target_properties(${__harfbuzz_target_name} PROPERTIES
+                IMPORTED_LOCATION "${HARFBUZZ_LIBRARIES}"
+                INTERFACE_INCLUDE_DIRECTORIES "${HARFBUZZ_INCLUDE_DIRS}"
+            )
         endif()
     endif()
 endif()
@@ -58,6 +73,8 @@ if(WrapSystemHarfbuzz_FOUND)
                           INTERFACE "${__harfbuzz_target_name}")
 endif()
 unset(__harfbuzz_target_name)
+unset(__harfbuzz_find_include_dirs_hints)
+unset(__harfbuzz_find_library_hints)
 unset(__harfbuzz_found)
 unset(__harfbuzz_include_dir)
 unset(__harfbuzz_broken_config_file)
