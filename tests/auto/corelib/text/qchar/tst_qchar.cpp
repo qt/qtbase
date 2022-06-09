@@ -42,8 +42,10 @@ private slots:
     void mirroredChar();
     void decomposition();
     void script();
+#if !defined(Q_OS_WASM)
     void normalization_data();
     void normalization();
+#endif // !defined(Q_OS_WASM)
     void normalization_manual();
     void normalizationCorrections();
     void unicodeVersion();
@@ -759,6 +761,8 @@ void tst_QChar::script()
     QVERIFY(QChar::script(0xe0100) == QChar::Script_Inherited);
 }
 
+// wasm is limited in reading filesystems, so omit this test for now
+#if !defined(Q_OS_WASM)
 void tst_QChar::normalization_data()
 {
     QTest::addColumn<QStringList>("columns");
@@ -881,6 +885,7 @@ void tst_QChar::normalization()
         // #################
 
 }
+#endif // !defined(Q_OS_WASM)
 
 void tst_QChar::normalization_manual()
 {
