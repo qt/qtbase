@@ -1,4 +1,13 @@
 function(qt_print_feature_summary)
+    if(QT_SUPERBUILD)
+        qt_internal_set_message_log_level(message_log_level)
+        if(message_log_level)
+            # In a top-level build, ensure that the feature_summary is affected by the
+            # selected log-level.
+            set(CMAKE_MESSAGE_LOG_LEVEL "${message_log_level}")
+        endif()
+    endif()
+
     include(FeatureSummary)
     # Show which packages were found.
     feature_summary(INCLUDE_QUIET_PACKAGES
@@ -35,6 +44,15 @@ function(qt_print_build_instructions)
        QT_BUILD_STANDALONE_TESTS)
 
         return()
+    endif()
+
+    if(QT_SUPERBUILD)
+        qt_internal_set_message_log_level(message_log_level)
+        if(message_log_level)
+            # In a top-level build, ensure that qt_print_build_instructions is affected by the
+            # selected log-level.
+            set(CMAKE_MESSAGE_LOG_LEVEL "${message_log_level}")
+        endif()
     endif()
 
     set(build_command "cmake --build . --parallel")
