@@ -45,6 +45,11 @@ qt_internal_add_module(Network
         ssl/qssl.cpp ssl/qssl.h ssl/qssl_p.h
         ssl/qsslcertificate.cpp ssl/qsslcertificate.h ssl/qsslcertificate_p.h
         ssl/qsslcertificateextension.cpp ssl/qsslcertificateextension.h ssl/qsslcertificateextension_p.h
+        ssl/qsslcipher.h
+        ssl/qsslconfiguration.h
+        ssl/qsslerror.h
+        ssl/qsslkey.h
+        ssl/qsslsocket.h
         ssl/qtlsbackend.cpp ssl/qtlsbackend_p.h
     DEFINES
         QT_NO_FOREACH
@@ -322,14 +327,14 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_system_proxies
 qt_internal_extend_target(Network CONDITION QT_FEATURE_ssl
     SOURCES
         ssl/qocspresponse.cpp ssl/qocspresponse.h ssl/qocspresponse_p.h
-        ssl/qsslcipher.cpp ssl/qsslcipher.h ssl/qsslcipher_p.h
-        ssl/qsslconfiguration.cpp ssl/qsslconfiguration.h ssl/qsslconfiguration_p.h
+        ssl/qsslcipher.cpp ssl/qsslcipher_p.h
+        ssl/qsslconfiguration.cpp ssl/qsslconfiguration_p.h
         ssl/qssldiffiehellmanparameters.cpp ssl/qssldiffiehellmanparameters.h ssl/qssldiffiehellmanparameters_p.h
         ssl/qsslellipticcurve.cpp ssl/qsslellipticcurve.h
-        ssl/qsslerror.cpp ssl/qsslerror.h
-        ssl/qsslkey.h ssl/qsslkey_p.cpp ssl/qsslkey_p.h
+        ssl/qsslerror.cpp
+        ssl/qsslkey_p.cpp ssl/qsslkey_p.h
         ssl/qsslpresharedkeyauthenticator.cpp ssl/qsslpresharedkeyauthenticator.h ssl/qsslpresharedkeyauthenticator_p.h
-        ssl/qsslsocket.cpp ssl/qsslsocket.h ssl/qsslsocket_p.h
+        ssl/qsslsocket.cpp ssl/qsslsocket_p.h
         ssl/qsslserver.cpp ssl/qsslserver.h ssl/qsslserver_p.h
 )
 
