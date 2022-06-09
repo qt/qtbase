@@ -22,6 +22,7 @@ bool g_qtScaleFactor = false;
 bool g_qtUsePhysicalDpi = false;
 bool g_qtFontDpi = false;
 bool g_qtScaleFactorRoundingPolicy = false;
+bool g_qtHighDpiDownscale = false;
 bool g_displayEvents = false;
 
 
@@ -136,7 +137,7 @@ public:
         if (g_displayEvents)
             layout->addWidget(eventsLabel);
 
-        bool activeEnvironment = g_qtScaleFactor || g_qtUsePhysicalDpi || g_qtFontDpi || g_qtScaleFactorRoundingPolicy;
+        bool activeEnvironment = g_qtScaleFactor || g_qtUsePhysicalDpi || g_qtFontDpi || g_qtScaleFactorRoundingPolicy || g_qtHighDpiDownscale;
         if (activeEnvironment) {
             layout->addWidget(new QLabel("Active Environment:"));
             if (g_qtScaleFactor) {
@@ -155,7 +156,10 @@ public:
                 QString text = QString("QT_SCALE_FACTOR_ROUNDING_POLICY=") + qgetenv("QT_SCALE_FACTOR_ROUNDING_POLICY");
                 layout->addWidget(new QLabel(text));
             }
-
+            if (g_qtHighDpiDownscale) {
+                QString text = QString("QT_WIDGETS_HIGHDPI_DOWNSCALE=") + qgetenv("QT_WIDGETS_HIGHDPI_DOWNSCALE");
+                layout->addWidget(new QLabel(text));
+            }
         }
 
         auto updateValues = [=]() {
@@ -244,6 +248,7 @@ int main(int argc, char **argv) {
     g_qtUsePhysicalDpi = qgetenv("QT_USE_PHYSICAL_DPI") == QByteArray("1");
     g_qtFontDpi = qEnvironmentVariableIsSet("QT_FONT_DPI");
     g_qtScaleFactorRoundingPolicy = qEnvironmentVariableIsSet("QT_SCALE_FACTOR_ROUNDING_POLICY");
+    g_qtHighDpiDownscale = qEnvironmentVariableIsSet("QT_WIDGETS_HIGHDPI_DOWNSCALE");
 
     QApplication app(argc, argv);
 
