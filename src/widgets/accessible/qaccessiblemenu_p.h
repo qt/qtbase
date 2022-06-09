@@ -21,7 +21,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 
 #if QT_CONFIG(menu)
 class QMenu;
@@ -103,5 +103,5 @@ private:
 #endif // QT_CONFIG(menu)
 
 QT_END_NAMESPACE
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 #endif // QACCESSIBLEMENU_H

@@ -13,7 +13,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 
 QCocoaAccessibility::QCocoaAccessibility()
 {
@@ -366,7 +366,7 @@ id getValueAttribute(QAccessibleInterface *interface)
 
 } // namespace QCocoaAccessible
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 QT_END_NAMESPACE
 

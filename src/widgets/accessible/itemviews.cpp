@@ -16,7 +16,7 @@
 #endif
 #include <private/qwidget_p.h>
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 
 QT_BEGIN_NAMESPACE
 
@@ -1235,4 +1235,4 @@ QHeaderView *QAccessibleTableHeaderCell::headerView() const
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)

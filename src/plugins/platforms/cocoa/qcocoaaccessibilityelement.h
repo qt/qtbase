@@ -4,9 +4,9 @@
 #ifndef QCOCOAACCESIBILITYELEMENT_H
 #define QCOCOAACCESIBILITYELEMENT_H
 
-#ifndef QT_NO_ACCESSIBILITY
+#include <QtGui/qtguiglobal.h>
 
-#include <QtCore/qglobal.h>
+#if QT_CONFIG(accessibility)
 
 #include <QtCore/private/qcore_mac_p.h>
 #include <QtGui/qaccessible.h>
@@ -16,6 +16,6 @@ QT_DECLARE_NAMESPACED_OBJC_INTERFACE(QMacAccessibilityElement, NSObject <NSAcces
 + (instancetype)elementWithId:(QAccessible::Id)anId;
 )
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 #endif // QCOCOAACCESIBILITYELEMENT_H

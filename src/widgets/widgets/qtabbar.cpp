@@ -21,7 +21,7 @@
 #include "qwhatsthis.h"
 #endif
 #include "private/qtextengine_p.h"
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include "qaccessible.h"
 #endif
 #ifdef Q_OS_MACOS
@@ -390,7 +390,7 @@ void QTabBarPrivate::init()
 #endif
         q->setFocusPolicy(Qt::TabFocus);
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     leftB->setAccessibleName(QTabBar::tr("Scroll Left"));
     rightB->setAccessibleName(QTabBar::tr("Scroll Right"));
 #endif
@@ -1416,7 +1416,7 @@ void QTabBar::setCurrentIndex(int index)
             d->layoutTab(oldIndex);
         }
         d->layoutTab(index);
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
         if (QAccessible::isActive()) {
             if (hasFocus()) {
                 QAccessibleEvent focusEvent(this, QAccessible::Focus);
@@ -2803,7 +2803,7 @@ QWidget *QTabBar::tabButton(int index, ButtonPosition position) const
     return nullptr;
 }
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 /*!
     Sets the accessibleName of the tab at position \a index to \a name.
 */
@@ -2829,7 +2829,7 @@ QString QTabBar::accessibleTabName(int index) const
         return tab->accessibleName;
     return QString();
 }
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 CloseButton::CloseButton(QWidget *parent)
     : QAbstractButton(parent)

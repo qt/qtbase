@@ -48,7 +48,7 @@
 #if QT_CONFIG(whatsthis)
 #include <QtWidgets/QWhatsThis>
 #endif
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include <QtGui/qaccessible_base.h>
 #endif
 
@@ -475,7 +475,7 @@ void QApplicationPrivate::init()
     initialize();
     eventDispatcher->startingUp();
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     // factory for accessible interfaces for widgets shipped with Qt
     QAccessible::installFactory(&qAccessibleFactory);
 #endif

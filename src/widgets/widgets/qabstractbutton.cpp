@@ -16,7 +16,7 @@
 #include "qpainter.h"
 #include "qapplication.h"
 #include "qstyle.h"
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include "qaccessible.h"
 #endif
 #include <qpa/qplatformtheme.h>
@@ -490,7 +490,7 @@ void QAbstractButton::setText(const QString &text)
     d->sizeHint = QSize();
     update();
     updateGeometry();
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     QAccessibleEvent event(this, QAccessible::NameChanged);
     QAccessible::updateAccessibility(&event);
 #endif
@@ -614,7 +614,7 @@ void QAbstractButton::setChecked(bool checked)
         d->emitToggled(checked);
 
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     QAccessible::State s;
     s.checked = true;
     QAccessibleStateChangeEvent event(this, s);

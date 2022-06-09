@@ -34,7 +34,7 @@
 #include <qpa/qplatformtheme.h>
 #include "private/qdialog_p.h"
 #include "private/qguiapplication_p.h"
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include "qaccessible.h"
 #endif
 
@@ -812,7 +812,7 @@ void QDialog::setVisible(bool visible)
             }
         }
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
         QAccessibleEvent event(this, QAccessible::DialogStart);
         QAccessible::updateAccessibility(&event);
 #endif
@@ -821,7 +821,7 @@ void QDialog::setVisible(bool visible)
         if (testAttribute(Qt::WA_WState_ExplicitShowHide) && testAttribute(Qt::WA_WState_Hidden))
             return;
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
         if (isVisible()) {
             QAccessibleEvent event(this, QAccessible::DialogEnd);
             QAccessible::updateAccessibility(&event);

@@ -363,7 +363,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMouseMoveHelper);
 #include "qnsview_keys.mm"
 #include "qnsview_complextext.mm"
 #include "qnsview_menus.mm"
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include "qnsview_accessibility.mm"
 #endif
 

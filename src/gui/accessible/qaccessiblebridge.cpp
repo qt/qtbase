@@ -3,7 +3,7 @@
 
 #include "qaccessiblebridge.h"
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 
 QT_BEGIN_NAMESPACE
 
@@ -104,4 +104,4 @@ QT_END_NAMESPACE
 
 #include "moc_qaccessiblebridge.cpp"
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)

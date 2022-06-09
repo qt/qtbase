@@ -1,19 +1,17 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-
-#ifndef QT_NO_ACCESSIBILITY
 #ifndef QACCESSIBLE_BASE_H
 #define QACCESSIBLE_BASE_H
 
+#include <QtGui/qtguiglobal.h>
+#if QT_CONFIG(accessibility)
 
 #if 0
 // QAccessible class is handled in qaccessible.h
 #pragma qt_sync_stop_processing
 #endif
 
-#include <QtCore/qglobal.h>
-#include <QtGui/qtguiglobal.h>
 #include <QtCore/qobjectdefs.h>
 
 #include <cstring> // memset, memcmp
@@ -407,5 +405,5 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QAccessible::Relation)
 
 QT_END_NAMESPACE
 
-#endif // QACCESSIBLE_BASE_H
 #endif // QT_CONFIG(accessibility)
+#endif // QACCESSIBLE_BASE_H

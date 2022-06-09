@@ -20,7 +20,7 @@
 #include <qpa/qplatformtheme.h>
 #include "private/qtextdocumentlayout_p.h"
 #include "qdebug.h"
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include "qaccessible.h"
 #endif
 
@@ -366,7 +366,7 @@ QWhatsThisPrivate::QWhatsThisPrivate()
         QGuiApplication::setOverrideCursor(Qt::WhatsThisCursor);
 #endif
     }
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     QAccessibleEvent event(this, QAccessible::ContextHelpStart);
     QAccessible::updateAccessibility(&event);
 #endif
@@ -381,7 +381,7 @@ QWhatsThisPrivate::~QWhatsThisPrivate()
 #ifndef QT_NO_CURSOR
     QGuiApplication::restoreOverrideCursor();
 #endif
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     QAccessibleEvent event(this, QAccessible::ContextHelpEnd);
     QAccessible::updateAccessibility(&event);
 #endif

@@ -26,7 +26,7 @@ QT_REQUIRE_CONFIG(itemviews);
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 
 class QAccessibleTableCell;
 class QAccessibleTableHeaderCell;
@@ -264,7 +264,7 @@ private:
 };
 
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 QT_END_NAMESPACE
 

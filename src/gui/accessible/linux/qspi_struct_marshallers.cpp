@@ -10,7 +10,7 @@
 
 #include "qspiaccessiblebridge_p.h"
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 QT_BEGIN_NAMESPACE
 
 QT_IMPL_METATYPE_EXTERN(QSpiIntList)
@@ -216,4 +216,4 @@ void qSpiInitializeStructTypes()
 }
 
 QT_END_NAMESPACE
-#endif //QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)

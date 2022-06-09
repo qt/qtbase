@@ -6,7 +6,7 @@
 
 #include <qpa/qplatformaccessibility.h>
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 
 QT_BEGIN_NAMESPACE
 

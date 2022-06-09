@@ -14,7 +14,7 @@
 #endif
 #include <QtCore/qelapsedtimer.h>
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include "qaccessible.h"
 #endif
 #include <limits.h>

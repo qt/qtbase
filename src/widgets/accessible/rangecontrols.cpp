@@ -31,7 +31,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 
 #if QT_CONFIG(spinbox)
 QAccessibleAbstractSpinBox::QAccessibleAbstractSpinBox(QWidget *w)
@@ -393,6 +393,6 @@ QDial *QAccessibleDial::dial() const
 }
 #endif // QT_CONFIG(dial)
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 QT_END_NAMESPACE

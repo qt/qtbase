@@ -38,7 +38,7 @@ public:
     ~QWidgetWindow();
 
     QWidget *widget() const { return m_widget; }
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     QAccessibleInterface *accessibleRoot() const override;
 #endif
 

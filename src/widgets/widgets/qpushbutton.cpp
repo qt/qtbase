@@ -24,7 +24,7 @@
 #include "qdialogbuttonbox.h"
 #endif
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include "qaccessible.h"
 #endif
 
@@ -334,7 +334,7 @@ void QPushButton::setDefault(bool enable)
     }
 #endif
     update();
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     QAccessible::State s;
     s.defaultButton = true;
     QAccessibleStateChangeEvent event(this, s);

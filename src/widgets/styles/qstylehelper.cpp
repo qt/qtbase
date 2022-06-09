@@ -89,7 +89,7 @@ Q_WIDGETS_EXPORT qreal dpiScaled(qreal value, const QStyleOption *option)
     return dpiScaled(value, dpi(option));
 }
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 bool isInstanceOf(QObject *obj, QAccessible::Role role)
 {
     bool match = false;
@@ -110,7 +110,7 @@ bool hasAncestor(QObject *obj, QAccessible::Role role)
     }
     return found;
 }
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 
 #if QT_CONFIG(dial)

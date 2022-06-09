@@ -30,7 +30,7 @@
 #include <private/qapplication_p.h>
 #include <private/qguiapplication_p.h>
 #include <private/qscrollbar_p.h>
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include <qaccessible.h>
 #endif
 #if QT_CONFIG(gestures) && QT_CONFIG(scroller)
@@ -1131,7 +1131,7 @@ void QAbstractItemView::reset()
     setRootIndex(QModelIndex());
     if (d->selectionModel)
         d->selectionModel->reset();
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     if (QAccessible::isActive()) {
         QAccessibleTableModelChangeEvent accessibleEvent(this, QAccessibleTableModelChangeEvent::ModelReset);
         QAccessible::updateAccessibility(&accessibleEvent);
@@ -3398,7 +3398,7 @@ void QAbstractItemView::dataChanged(const QModelIndex &topLeft, const QModelInde
         }
     }
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     if (QAccessible::isActive()) {
         QAccessibleTableModelChangeEvent accessibleEvent(this, QAccessibleTableModelChangeEvent::DataChanged);
         accessibleEvent.setFirstRow(topLeft.row());
@@ -3526,7 +3526,7 @@ void QAbstractItemViewPrivate::_q_rowsRemoved(const QModelIndex &index, int star
     if (q->isVisible())
         q->updateEditorGeometries();
     q->setState(QAbstractItemView::NoState);
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     if (QAccessible::isActive()) {
         QAccessibleTableModelChangeEvent accessibleEvent(q, QAccessibleTableModelChangeEvent::RowsRemoved);
         accessibleEvent.setFirstRow(start);
@@ -3617,7 +3617,7 @@ void QAbstractItemViewPrivate::_q_columnsRemoved(const QModelIndex &index, int s
     if (q->isVisible())
         q->updateEditorGeometries();
     q->setState(QAbstractItemView::NoState);
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     if (QAccessible::isActive()) {
         QAccessibleTableModelChangeEvent accessibleEvent(q, QAccessibleTableModelChangeEvent::ColumnsRemoved);
         accessibleEvent.setFirstColumn(start);
@@ -3640,7 +3640,7 @@ void QAbstractItemViewPrivate::_q_rowsInserted(const QModelIndex &index, int sta
     Q_UNUSED(start);
     Q_UNUSED(end);
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     Q_Q(QAbstractItemView);
     if (QAccessible::isActive()) {
         QAccessibleTableModelChangeEvent accessibleEvent(q, QAccessibleTableModelChangeEvent::RowsInserted);
@@ -3666,7 +3666,7 @@ void QAbstractItemViewPrivate::_q_columnsInserted(const QModelIndex &index, int 
     Q_Q(QAbstractItemView);
     if (q->isVisible())
         q->updateEditorGeometries();
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     if (QAccessible::isActive()) {
         QAccessibleTableModelChangeEvent accessibleEvent(q, QAccessibleTableModelChangeEvent::ColumnsInserted);
         accessibleEvent.setFirstColumn(start);
@@ -3694,7 +3694,7 @@ void QAbstractItemViewPrivate::_q_modelDestroyed()
 void QAbstractItemViewPrivate::_q_layoutChanged()
 {
     doDelayedItemsLayout();
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     Q_Q(QAbstractItemView);
     if (QAccessible::isActive()) {
         QAccessibleTableModelChangeEvent accessibleEvent(q, QAccessibleTableModelChangeEvent::ModelReset);

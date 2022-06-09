@@ -7,7 +7,7 @@
 
 #include "private/qwidget_p.h"
 #include "private/qapplication_p.h"
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include <QtGui/qaccessible.h>
 #endif
 #include <private/qwidgetrepaintmanager_p.h>
@@ -136,7 +136,7 @@ QWidgetWindow::~QWidgetWindow()
 {
 }
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 QAccessibleInterface *QWidgetWindow::accessibleRoot() const
 {
     if (m_widget)
@@ -211,7 +211,7 @@ bool QWidgetWindow::event(QEvent *event)
         handleFocusInEvent(static_cast<QFocusEvent *>(event));
         Q_FALLTHROUGH();
     case QEvent::FocusOut: {
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
         QAccessible::State state;
         state.active = true;
         QAccessibleStateChangeEvent ev(m_widget, state);

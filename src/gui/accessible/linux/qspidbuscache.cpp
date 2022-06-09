@@ -5,7 +5,7 @@
 #include "qspidbuscache_p.h"
 #include "qspiaccessiblebridge_p.h"
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include "cache_adaptor.h"
 
 #define QSPI_OBJECT_PATH_CACHE "/org/a11y/atspi/cache"
@@ -56,4 +56,4 @@ QSpiAccessibleCacheArray QSpiDBusCache::GetItems()
 QT_END_NAMESPACE
 
 #include "moc_qspidbuscache_p.cpp"
-#endif //QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)

@@ -48,9 +48,9 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
 #include <QtGui/QOffscreenSurface>
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include <qpa/qplatformaccessibility.h>
-#ifndef QT_NO_ACCESSIBILITY_ATSPI_BRIDGE
+#if QT_CONFIG(accessibility_atspi_bridge)
 #include <QtGui/private/qspiaccessiblebridge_p.h>
 #endif
 #endif
@@ -383,7 +383,7 @@ QPlatformInputContext *QXcbIntegration::inputContext() const
     return m_inputContext.data();
 }
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 QPlatformAccessibility *QXcbIntegration::accessibility() const
 {
 #if !defined(QT_NO_ACCESSIBILITY_ATSPI_BRIDGE)

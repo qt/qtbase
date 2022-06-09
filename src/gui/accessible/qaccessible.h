@@ -8,11 +8,11 @@
 #pragma qt_class(QAccessible)
 #endif
 
-#include <QtGui/qtguiglobal.h>
-
-#ifndef QT_NO_ACCESSIBILITY
 #ifndef QACCESSIBLE_H
 #define QACCESSIBLE_H
+#include <QtGui/qtguiglobal.h>
+
+#if QT_CONFIG(accessibility)
 
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qdebug.h>
@@ -588,5 +588,5 @@ Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleEvent &ev);
 
 QT_END_NAMESPACE
 
+#endif // QT_CONFIG(accessibility)
 #endif // QACCESSIBLE_H
-#endif //!QT_NO_ACCESSIBILITY

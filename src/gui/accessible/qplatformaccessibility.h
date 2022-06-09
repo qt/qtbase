@@ -14,7 +14,7 @@
 
 #include <QtGui/qtguiglobal.h>
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 
 #include <QtCore/qobject.h>
 #include <QtGui/qaccessible.h>
@@ -42,6 +42,6 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 #endif // QPLATFORMACCESSIBILITY_H

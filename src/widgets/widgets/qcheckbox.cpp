@@ -9,7 +9,7 @@
 #include "qstyle.h"
 #include "qstyleoption.h"
 #include "qevent.h"
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include "qaccessible.h"
 #endif
 
@@ -211,7 +211,7 @@ Qt::CheckState QCheckBox::checkState() const
 void QCheckBox::setCheckState(Qt::CheckState state)
 {
     Q_D(QCheckBox);
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     bool noChange = d->noChange;
 #endif
     if (state == Qt::PartiallyChecked) {
@@ -229,7 +229,7 @@ void QCheckBox::setCheckState(Qt::CheckState state)
         emit stateChanged(state);
     }
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     if (noChange != d->noChange) {
         QAccessible::State s;
         s.checkStateMixed = true;

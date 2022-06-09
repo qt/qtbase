@@ -15,7 +15,7 @@
 #include <qdebug.h>
 #include <QMetaMethod>
 #include <private/qscrollbar_p.h>
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include <qaccessible.h>
 #endif
 
@@ -3992,7 +3992,7 @@ void QTreeView::currentChanged(const QModelIndex &current, const QModelIndex &pr
             viewport()->update(currentRect);
         }
     }
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     if (QAccessible::isActive() && current.isValid()) {
         Q_D(QTreeView);
 
@@ -4010,7 +4010,7 @@ void QTreeView::selectionChanged(const QItemSelection &selected,
                                  const QItemSelection &deselected)
 {
     QAbstractItemView::selectionChanged(selected, deselected);
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     if (QAccessible::isActive()) {
         Q_D(QTreeView);
 

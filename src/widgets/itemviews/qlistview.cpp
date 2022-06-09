@@ -5,7 +5,7 @@
 #include "qlistview.h"
 
 #include <qabstractitemdelegate.h>
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include <qaccessible.h>
 #endif
 #include <qapplication.h>
@@ -3392,7 +3392,7 @@ void QIconModeViewBase::updateContentsSize()
 */
 void QListView::currentChanged(const QModelIndex &current, const QModelIndex &previous)
 {
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     if (QAccessible::isActive()) {
         if (current.isValid()) {
             int entry = visualIndex(current);
@@ -3411,7 +3411,7 @@ void QListView::currentChanged(const QModelIndex &current, const QModelIndex &pr
 void QListView::selectionChanged(const QItemSelection &selected,
                                  const QItemSelection &deselected)
 {
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     if (QAccessible::isActive()) {
         // ### does not work properly for selection ranges.
         QModelIndex sel = selected.indexes().value(0);

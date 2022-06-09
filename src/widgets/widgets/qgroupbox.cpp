@@ -14,7 +14,7 @@
 #include "qstyle.h"
 #include "qstyleoption.h"
 #include "qstylepainter.h"
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include "qaccessible.h"
 #endif
 #include <private/qwidget_p.h>
@@ -200,7 +200,7 @@ void QGroupBox::setTitle(const QString &title)
 
     update();
     updateGeometry();
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     QAccessibleEvent event(this, QAccessible::NameChanged);
     QAccessible::updateAccessibility(&event);
 #endif
@@ -609,7 +609,7 @@ void QGroupBox::setChecked(bool b)
         update();
         d->checked = b;
         d->_q_setChildrenEnabled(b);
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
         QAccessible::State st;
         st.checked = true;
         QAccessibleStateChangeEvent e(this, st);

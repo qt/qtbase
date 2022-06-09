@@ -16,7 +16,7 @@
 #include "dbusconnection_p.h"
 #include "qspi_struct_marshallers_p.h"
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include "deviceeventcontroller_adaptor.h"
 
 QT_BEGIN_NAMESPACE
@@ -268,4 +268,4 @@ RoleNames QSpiAccessibleBridge::namesForRole(QAccessible::Role role)
 QT_END_NAMESPACE
 
 #include "moc_qspiaccessiblebridge_p.cpp"
-#endif //QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)

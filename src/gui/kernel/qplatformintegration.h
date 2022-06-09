@@ -129,7 +129,7 @@ public:
     virtual QPlatformDrag *drag() const;
 #endif
     virtual QPlatformInputContext *inputContext() const;
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     virtual QPlatformAccessibility *accessibility() const;
 #endif
 
