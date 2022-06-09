@@ -69,7 +69,7 @@ public:
     QCoreTextFontDatabase *fontDatabase() const override;
     QCocoaNativeInterface *nativeInterface() const override;
     QPlatformInputContext *inputContext() const override;
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     QCocoaAccessibility *accessibility() const override;
 #endif
 #ifndef QT_NO_CLIPBOARD
@@ -104,7 +104,7 @@ private:
     QScopedPointer<QCoreTextFontDatabase> mFontDb;
 
     QScopedPointer<QPlatformInputContext> mInputContext;
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     QScopedPointer<QCocoaAccessibility> mAccessibility;
 #endif
     QScopedPointer<QPlatformTheme> mPlatformTheme;

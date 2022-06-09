@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 
 extern QList<QWidget*> childWidgets(const QWidget *widget);
 
@@ -951,6 +951,6 @@ QWindowContainer *QAccessibleWindowContainer::container() const
     return static_cast<QWindowContainer *>(widget());
 }
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 QT_END_NAMESPACE

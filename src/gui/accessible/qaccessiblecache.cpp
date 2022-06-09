@@ -5,7 +5,7 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qloggingcategory.h>
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 
 QT_BEGIN_NAMESPACE
 

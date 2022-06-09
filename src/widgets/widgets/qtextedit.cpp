@@ -22,7 +22,7 @@
 #endif
 #include <qstyle.h>
 #include <qtimer.h>
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include <qaccessible.h>
 #endif
 #include "private/qtextdocumentlayout_p.h"
@@ -192,7 +192,7 @@ void QTextEditPrivate::_q_cursorPositionChanged()
 {
     Q_Q(QTextEdit);
     emit q->cursorPositionChanged();
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     QAccessibleTextCursorEvent event(q, q->textCursor().position());
     QAccessible::updateAccessibility(&event);
 #endif

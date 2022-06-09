@@ -18,7 +18,7 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <QtWidgets/qaccessiblewidget.h>
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 
 #include <QtCore/QPointer>
 #include <QtCore/QPair>
@@ -283,7 +283,7 @@ public:
 };
 #endif // QT_CONFIG(mainwindow)
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 QT_END_NAMESPACE
 

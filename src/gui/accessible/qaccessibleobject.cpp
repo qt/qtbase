@@ -3,7 +3,7 @@
 
 #include "qaccessibleobject.h"
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 
 #include <QtGui/QGuiApplication>
 #include <QtGui/QWindow>
@@ -203,4 +203,4 @@ QAccessible::State QAccessibleApplication::state() const
 
 QT_END_NAMESPACE
 
-#endif //QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)

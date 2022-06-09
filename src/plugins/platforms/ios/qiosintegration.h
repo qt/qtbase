@@ -52,7 +52,7 @@ public:
     QPlatformNativeInterface *nativeInterface() const override;
 
     QPointingDevice *touchDevice();
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     QPlatformAccessibility *accessibility() const override;
 #endif
 

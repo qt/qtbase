@@ -1564,7 +1564,7 @@ void QMessageBox::showEvent(QShowEvent *e)
     d->detectEscapeButton();
     d->updateSize();
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     QAccessibleEvent event(this, QAccessible::Alert);
     QAccessible::updateAccessibility(&event);
 #endif

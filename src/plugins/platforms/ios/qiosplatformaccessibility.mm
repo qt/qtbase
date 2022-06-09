@@ -3,7 +3,7 @@
 
 #include "qiosplatformaccessibility.h"
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 
 #include <QtGui/QtGui>
 #include "qioswindow.h"

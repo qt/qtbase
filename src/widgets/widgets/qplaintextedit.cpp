@@ -422,7 +422,7 @@ void QPlainTextEditPrivate::_q_cursorPositionChanged()
 {
     pageUpDownLastCursorYIsValid = false;
     Q_Q(QPlainTextEdit);
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     QAccessibleTextCursorEvent ev(q, q->textCursor().position());
     QAccessible::updateAccessibility(&ev);
 #endif

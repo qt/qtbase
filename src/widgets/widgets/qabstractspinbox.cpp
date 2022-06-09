@@ -22,7 +22,7 @@
 #include <qpalette.h>
 #include <qstylepainter.h>
 #include <qdebug.h>
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 # include <qaccessible.h>
 #endif
 
@@ -1020,7 +1020,7 @@ void QAbstractSpinBox::keyPressEvent(QKeyEvent *event)
                 d->updateState(up, true);
             }
         }
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
         QAccessibleValueChangeEvent event(this, d->value);
         QAccessible::updateAccessibility(&event);
 #endif
@@ -1651,7 +1651,7 @@ void QAbstractSpinBoxPrivate::updateState(bool up, bool fromKeyboard /* = false 
             steps *= 10;
         q->stepBy(steps);
         spinClickThresholdTimerId = q->startTimer(spinClickThresholdTimerInterval);
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
         QAccessibleValueChangeEvent event(q, value);
         QAccessible::updateAccessibility(&event);
 #endif

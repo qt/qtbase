@@ -342,7 +342,7 @@ QPlatformInputContext *QPlatformIntegration::inputContext() const
     return nullptr;
 }
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 
 /*!
   Returns the platforms accessibility.

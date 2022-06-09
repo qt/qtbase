@@ -16,7 +16,7 @@
 #include <qslider.h>
 #include <private/qabstractslider_p.h>
 #include <private/qmath_p.h>
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include "qaccessible.h"
 #endif
 #include <qmath.h>

@@ -15,7 +15,7 @@
 
 QT_USE_NAMESPACE
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 
 /**
  * Converts between absolute character offsets and line numbers of a
@@ -616,4 +616,4 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 
 @end
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)

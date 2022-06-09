@@ -18,7 +18,7 @@
 #include "private/qstylesheetstyle_p.h"
 #include <qmath.h>
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include <qaccessible.h>
 #endif
 
@@ -304,7 +304,7 @@ void QLabel::setText(const QString &text)
 
     d->updateLabel();
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     if (accessibleName().isEmpty()) {
         QAccessibleEvent event(this, QAccessible::NameChanged);
         QAccessible::updateAccessibility(&event);

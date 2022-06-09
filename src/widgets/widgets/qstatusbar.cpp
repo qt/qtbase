@@ -18,7 +18,7 @@
 #include "qmainwindow.h"
 #endif
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include "qaccessible.h"
 #endif
 
@@ -583,7 +583,7 @@ void QStatusBar::hideOrShow()
 
     emit messageChanged(d->tempItem);
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     if (QAccessible::isActive()) {
         QAccessibleEvent event(this, QAccessible::NameChanged);
         QAccessible::updateAccessibility(&event);

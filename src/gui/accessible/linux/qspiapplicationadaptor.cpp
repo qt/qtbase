@@ -8,7 +8,7 @@
 #include <QtDBus/qdbuspendingreply.h>
 #include <qdebug.h>
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include "deviceeventcontroller_adaptor.h"
 #include "atspi/atspi-constants.h"
 
@@ -202,4 +202,4 @@ QT_END_NAMESPACE
 
 #include "moc_qspiapplicationadaptor_p.cpp"
 
-#endif //QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)

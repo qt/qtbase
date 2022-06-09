@@ -161,7 +161,7 @@ class Q_WIDGETS_EXPORT QWidget : public QObject, public QPaintDevice
 #if QT_CONFIG(whatsthis)
     Q_PROPERTY(QString whatsThis READ whatsThis WRITE setWhatsThis)
 #endif
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     Q_PROPERTY(QString accessibleName READ accessibleName WRITE setAccessibleName)
     Q_PROPERTY(QString accessibleDescription READ accessibleDescription WRITE setAccessibleDescription)
 #endif
@@ -396,7 +396,7 @@ public:
     void setWhatsThis(const QString &);
     QString whatsThis() const;
 #endif
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     QString accessibleName() const;
     void setAccessibleName(const QString &name);
     QString accessibleDescription() const;

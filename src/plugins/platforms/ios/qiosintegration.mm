@@ -247,7 +247,7 @@ QPointingDevice *QIOSIntegration::touchDevice()
     return m_touchDevice;
 }
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 QPlatformAccessibility *QIOSIntegration::accessibility() const
 {
     if (!m_accessibility)

@@ -317,7 +317,7 @@ static const int closeButtonSize = 14;
 static const qreal closeButtonCornerRadius = 2.0;
 #endif // QT_CONFIG(tabbar)
 
-#ifndef QT_NO_ACCESSIBILITY // This ifdef to avoid "unused function" warning.
+#if QT_CONFIG(accessibility) // This ifdef to avoid "unused function" warning.
 QBrush brushForToolButton(bool isOnKeyWindow)
 {
     // When a toolbutton in a toolbar is in the 'ON' state, we draw a
@@ -328,7 +328,7 @@ QBrush brushForToolButton(bool isOnKeyWindow)
 
     return isOnKeyWindow ? QColor(0, 0, 0, 28) : QColor(0, 0, 0, 21);
 }
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 
 static const int headerSectionArrowHeight = 6;
@@ -2866,7 +2866,7 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
     case SH_ScrollBar_Transient:
         if ((qobject_cast<const QScrollBar *>(w) && w->parent() &&
                 qobject_cast<QAbstractScrollArea*>(w->parent()->parent()))
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
                 || (opt && QStyleHelper::hasAncestor(opt->styleObject, QAccessible::ScrollBar))
 #endif
         ) {
@@ -3541,7 +3541,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         if (const QStyleOptionToolButton *tb = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
             QStyleOptionToolButton myTb = *tb;
             myTb.state &= ~State_AutoRaise;
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
             if (QStyleHelper::hasAncestor(opt->styleObject, QAccessible::ToolBar)) {
                 QRect cr = tb->rect;
                 int shiftX = 0;
@@ -3631,7 +3631,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     QCommonStyle::drawControl(ce, &myTb, p, w);
                 }
             } else
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
             {
                 QCommonStyle::drawControl(ce, &myTb, p, w);
             }
@@ -5701,7 +5701,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
     case CC_ToolButton:
         if (const QStyleOptionToolButton *tb
                 = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
             if (QStyleHelper::hasAncestor(opt->styleObject, QAccessible::ToolBar)) {
                 if (tb->subControls & SC_ToolButtonMenu) {
                     QStyleOption arrowOpt = *tb;
@@ -5727,7 +5727,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 }
                 proxy()->drawControl(CE_ToolButtonLabel, opt, p, widget);
             } else
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
             {
                 auto bflags = tb->state;
                 if (tb->subControls & SC_ToolButton)
@@ -6209,7 +6209,7 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
     case CC_ToolButton:
         ret = QCommonStyle::subControlRect(cc, opt, sc, widget);
         if (sc == SC_ToolButtonMenu) {
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
             if (QStyleHelper::hasAncestor(opt->styleObject, QAccessible::ToolBar))
                 ret.adjust(-toolButtonArrowMargin, 0, 0, 0);
 #endif

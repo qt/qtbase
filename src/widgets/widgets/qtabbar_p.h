@@ -119,7 +119,7 @@ public:
 #if QT_CONFIG(whatsthis)
         QString whatsThis;
 #endif
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
         QString accessibleName;
 #endif
         QIcon icon;

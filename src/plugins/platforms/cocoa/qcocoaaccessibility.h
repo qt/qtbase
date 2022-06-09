@@ -4,7 +4,9 @@
 #ifndef QCOCOAACCESIBILITY_H
 #define QCOCOAACCESIBILITY_H
 
-#ifndef QT_NO_ACCESSIBILITY
+#include <QtGui/qtguiglobal.h>
+
+#if QT_CONFIG(accessibility)
 
 #include <qpa/qplatformaccessibility.h>
 
@@ -58,6 +60,6 @@ id getValueAttribute(QAccessibleInterface *interface);
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 #endif // QCOCOAACCESIBILITY_H

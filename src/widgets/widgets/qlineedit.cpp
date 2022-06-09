@@ -35,7 +35,7 @@
 #endif
 #include <private/qwidgettextcontrol_p.h>
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include "qaccessible.h"
 #endif
 #if QT_CONFIG(itemviews)
@@ -1341,7 +1341,7 @@ void QLineEdit::setReadOnly(bool enable)
         QEvent event(QEvent::ReadOnlyChange);
         QCoreApplication::sendEvent(this, &event);
         update();
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
         QAccessible::State changedState;
         changedState.readOnly = true;
         QAccessibleStateChangeEvent ev(this, changedState);

@@ -466,7 +466,7 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
         }
         break;
     case PE_Frame: {
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
         if (QStyleHelper::isInstanceOf(option->styleObject, QAccessible::EditableText)
                 || QStyleHelper::isInstanceOf(option->styleObject, QAccessible::StaticText) ||
 #else
@@ -639,7 +639,7 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
                 newStyle = !qobject_cast<const QTableView*>(view);
                 selectionBehavior = view->selectionBehavior();
                 selectionMode = view->selectionMode();
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
             } else if (!widget) {
                 newStyle = !QStyleHelper::hasAncestor(option->styleObject, QAccessible::MenuItem) ;
 #endif

@@ -56,7 +56,7 @@
 #include <QMenu>
 #endif
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 
 QT_BEGIN_NAMESPACE
 
@@ -1118,4 +1118,4 @@ QMainWindow *QAccessibleMainWindow::mainWindow() const
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)

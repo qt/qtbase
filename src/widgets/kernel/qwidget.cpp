@@ -21,7 +21,7 @@
 #include "qwidget.h"
 #include "qstyleoption.h"
 #include "qstylehints.h"
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 # include "qaccessible.h"
 #endif
 #include <qpa/qplatformwindow.h>
@@ -6512,7 +6512,7 @@ void QWidget::setFocus(Qt::FocusReason reason)
         f->d_func()->updateFocusChild();
 
         QApplicationPrivate::setFocusWidget(f, reason);
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
         // menus update the focus manually and this would create bogus events
         if (!(f->inherits("QMenuBar") || f->inherits("QMenu") || f->inherits("QMenuItem")))
         {
@@ -6687,7 +6687,7 @@ void QWidget::clearFocus()
     if (hasFocus()) {
         // Update proxy state
         QApplicationPrivate::setFocusWidget(nullptr, Qt::OtherFocusReason);
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
         QAccessibleEvent event(this, QAccessible::Focus);
         QAccessible::updateAccessibility(&event);
 #endif
@@ -7962,7 +7962,7 @@ void QWidgetPrivate::show_helper()
     if (!isEmbedded && q->windowType() == Qt::Popup)
         qApp->d_func()->openPopup(q);
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     if (q->windowType() != Qt::ToolTip) {    // Tooltips are read aloud twice in MS narrator.
         QAccessibleEvent event(q, QAccessible::ObjectShow);
         QAccessible::updateAccessibility(&event);
@@ -8108,7 +8108,7 @@ void QWidgetPrivate::hide_helper()
     if (QWidgetRepaintManager *repaintManager = maybeRepaintManager())
         repaintManager->removeDirtyWidget(q);
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     if (wasVisible) {
         QAccessibleEvent event(q, QAccessible::ObjectHide);
         QAccessible::updateAccessibility(&event);
@@ -8356,7 +8356,7 @@ void QWidgetPrivate::hideChildren(bool spontaneous)
             }
         }
         qApp->d_func()->sendSyntheticEnterLeave(widget);
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
         if (!spontaneous) {
             QAccessibleEvent event(widget, QAccessible::ObjectHide);
             QAccessible::updateAccessibility(&event);
@@ -9262,7 +9262,7 @@ void QWidget::changeEvent(QEvent * event)
     switch(event->type()) {
     case QEvent::EnabledChange: {
         update();
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
         QAccessible::State s;
         s.disabled = true;
         QAccessibleStateChangeEvent event(this, s);
@@ -11515,7 +11515,7 @@ QString QWidget::whatsThis() const
 }
 #endif // QT_CONFIG(whatsthis)
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 /*!
   \property QWidget::accessibleName
 
@@ -11580,7 +11580,7 @@ QString QWidget::accessibleDescription() const
     Q_D(const QWidget);
     return d->accessibleDescription;
 }
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 #ifndef QT_NO_SHORTCUT
 /*!

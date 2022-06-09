@@ -419,7 +419,7 @@ Q_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
     \sa QAccessibleInterface::interface_cast(), QAccessibleTextInterface, QAccessibleValueInterface, QAccessibleActionInterface, QAccessibleTableInterface, QAccessibleTableCellInterface
 */
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 
 /*!
     Destroys the QAccessibleInterface.
@@ -2985,7 +2985,7 @@ QAccessibleHyperlinkInterface::~QAccessibleHyperlinkInterface()
 
 }
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 QT_END_NAMESPACE
 

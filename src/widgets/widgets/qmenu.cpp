@@ -15,7 +15,7 @@
 #include "qpainter.h"
 #include <qpa/qplatformtheme.h>
 #include "qapplication.h"
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 # include "qaccessible.h"
 #endif
 #if QT_CONFIG(effects)
@@ -1462,7 +1462,7 @@ void QMenuPrivate::activateAction(QAction *action, QAction::ActionEvent action_e
 
 
     if (action_e == QAction::Hover) {
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
         if (QAccessible::isActive()) {
             int actionIndex = indexOf(action);
             QAccessibleEvent focusEvent(q, QAccessible::Focus);
@@ -2540,7 +2540,7 @@ void QMenuPrivate::popup(const QPoint &p, QAction *atAction, PositionFunction po
         q->show();
     }
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     QAccessibleEvent event(q, QAccessible::PopupMenuStart);
     QAccessible::updateAccessibility(&event);
 #endif
@@ -2669,7 +2669,7 @@ void QMenu::hideEvent(QHideEvent *)
     if (d->eventLoop)
         d->eventLoop->exit();
     d->setCurrentAction(nullptr);
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     QAccessibleEvent event(this, QAccessible::PopupMenuEnd);
     QAccessible::updateAccessibility(&event);
 #endif

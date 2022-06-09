@@ -45,7 +45,7 @@
 # include <private/qeffects_p.h>
 #endif
 #include <private/qstyle_p.h>
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include "qaccessible.h"
 #endif
 
@@ -1082,7 +1082,7 @@ void QComboBoxPrivate::_q_dataChanged(const QModelIndex &topLeft, const QModelIn
             emit q->currentTextChanged(text);
         }
         q->update();
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
         QAccessibleValueChangeEvent event(q, text);
         QAccessible::updateAccessibility(&event);
 #endif
@@ -1385,7 +1385,7 @@ void QComboBoxPrivate::_q_emitCurrentIndexChanged(const QModelIndex &index)
     // signal lineEdit.textChanged already connected to signal currentTextChanged, so don't emit double here
     if (!lineEdit)
         emit q->currentTextChanged(text);
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     QAccessibleValueChangeEvent event(q, text);
     QAccessible::updateAccessibility(&event);
 #endif
@@ -2867,7 +2867,7 @@ void QComboBox::clear()
 {
     Q_D(QComboBox);
     d->model->removeRows(0, d->model->rowCount(d->root), d->root);
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     QAccessibleValueChangeEvent event(this, QString());
     QAccessible::updateAccessibility(&event);
 #endif
@@ -2881,7 +2881,7 @@ void QComboBox::clearEditText()
     Q_D(QComboBox);
     if (d->lineEdit)
         d->lineEdit->clear();
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     QAccessibleValueChangeEvent event(this, QString());
     QAccessible::updateAccessibility(&event);
 #endif
@@ -2895,7 +2895,7 @@ void QComboBox::setEditText(const QString &text)
     Q_D(QComboBox);
     if (d->lineEdit)
         d->lineEdit->setText(text);
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     QAccessibleValueChangeEvent event(this, text);
     QAccessible::updateAccessibility(&event);
 #endif

@@ -3,7 +3,7 @@
 
 #include "qaccessiblewidget.h"
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 
 #include "qapplication.h"
 #if QT_CONFIG(groupbox)
@@ -498,4 +498,4 @@ void *QAccessibleWidget::interface_cast(QAccessible::InterfaceType t)
 
 QT_END_NAMESPACE
 
-#endif //QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)

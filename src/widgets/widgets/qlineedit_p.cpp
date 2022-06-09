@@ -15,7 +15,7 @@
 #  include "qwidgetaction.h"
 #endif
 #include "qclipboard.h"
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include "qaccessible.h"
 #endif
 #ifndef QT_NO_IM
@@ -143,7 +143,7 @@ void QLineEditPrivate::_q_selectionChanged()
     }
 
     emit q->selectionChanged();
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     QAccessibleTextSelectionEvent ev(q, control->selectionStart(), control->selectionEnd());
     ev.setCursorPosition(control->cursorPosition());
     QAccessible::updateAccessibility(&ev);

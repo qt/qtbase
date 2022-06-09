@@ -15,7 +15,7 @@
 //  "ruler"    "autocomplete"  "edit bar" "embedded component"  "entry"    "caption"
 //  "heading"  "page"  "section"  "redundant object"  "form"  "input method window"  "menu"
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 QT_BEGIN_NAMESPACE
 
 quint64 spiStatesFromQState(QAccessible::State state)
@@ -113,4 +113,4 @@ AtspiRelationType qAccessibleRelationToAtSpiRelation(QAccessible::Relation relat
 }
 
 QT_END_NAMESPACE
-#endif //QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)

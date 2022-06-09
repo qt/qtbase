@@ -131,10 +131,10 @@ void QAndroidPlatformNativeInterface::customEvent(QEvent *event)
     QAndroidPlatformIntegration *api = static_cast<QAndroidPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
     QtAndroid::setAndroidPlatformIntegration(api);
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     // Android accessibility activation event might have been already received
     api->accessibility()->setActive(QtAndroidAccessibility::isActive());
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
     if (!m_running) {
         m_running = true;
@@ -145,7 +145,7 @@ void QAndroidPlatformNativeInterface::customEvent(QEvent *event)
 
 QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &paramList)
     : m_touchDevice(nullptr)
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     , m_accessibility(nullptr)
 #endif
 {
@@ -179,9 +179,9 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
 
     m_androidSystemLocale = new QAndroidSystemLocale;
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
         m_accessibility = new QAndroidPlatformAccessibility();
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
     QJniObject javaActivity(QtAndroid::activity());
     if (!javaActivity.isValid())
@@ -463,7 +463,7 @@ void QAndroidPlatformIntegration::flushPendingUpdates()
     }
 }
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 QPlatformAccessibility *QAndroidPlatformIntegration::accessibility() const
 {
     return m_accessibility;

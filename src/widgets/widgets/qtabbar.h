@@ -140,7 +140,7 @@ public:
     bool changeCurrentOnDrag() const;
     void setChangeCurrentOnDrag(bool change);
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     QString accessibleTabName(int index) const;
     void setAccessibleTabName(int index, const QString &name);
 #endif
@@ -179,7 +179,7 @@ protected:
     void timerEvent(QTimerEvent *event) override;
     virtual void initStyleOption(QStyleOptionTab *option, int tabIndex) const;
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     friend class QAccessibleTabBar;
 #endif
 private:

@@ -30,7 +30,7 @@
 #include <QtCore/qlibraryinfo.h>
 #include <QtCore/private/qnumeric_p.h>
 #include <QtDebug>
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include "qaccessible.h"
 #endif
 #include <qpalette.h>
@@ -1853,7 +1853,7 @@ QFunctionPointer QGuiApplication::platformFunction(const QByteArray &function)
 */
 int QGuiApplication::exec()
 {
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     QAccessible::setRootObject(qApp);
 #endif
     return QCoreApplication::exec();

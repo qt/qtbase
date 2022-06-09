@@ -7,7 +7,7 @@
 #import <UIKit/UIKit.h>
 #import <QtGui/QtGui>
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 
 @interface QT_MANGLE_NAMESPACE(QMacAccessibilityElement) : UIAccessibilityElement
 

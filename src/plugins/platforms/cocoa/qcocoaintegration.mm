@@ -94,7 +94,7 @@ QCocoaIntegration *QCocoaIntegration::mInstance = nullptr;
 QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
     : mOptions(parseOptions(paramList))
     , mFontDb(nullptr)
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     , mAccessibility(new QCocoaAccessibility)
 #endif
 #ifndef QT_NO_CLIPBOARD
@@ -344,7 +344,7 @@ QPlatformInputContext *QCocoaIntegration::inputContext() const
     return mInputContext.data();
 }
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 QCocoaAccessibility *QCocoaIntegration::accessibility() const
 {
     return mAccessibility.data();

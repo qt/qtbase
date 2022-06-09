@@ -11,7 +11,7 @@
 QT_BEGIN_NAMESPACE
 
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 
 class QAccessibleInterface;
 class QAccessibleEvent;
@@ -36,7 +36,7 @@ public:
     virtual QAccessibleBridge *create(const QString &key) = 0;
 };
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 QT_END_NAMESPACE
 

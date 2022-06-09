@@ -13,7 +13,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 
 /* accessiblebridge plugin discovery stuff */
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, bridgeloader,
@@ -105,6 +105,6 @@ void QPlatformAccessibility::setActive(bool active)
     QAccessible::setActive(active);
 }
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 QT_END_NAMESPACE

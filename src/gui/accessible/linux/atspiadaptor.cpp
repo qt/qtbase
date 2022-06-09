@@ -12,7 +12,7 @@
 
 #include <QtCore/qloggingcategory.h>
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include "socket_interface.h"
 #include "qspi_constant_mappings_p.h"
 #include <QtGui/private/qaccessiblebridgeutils_p.h>
@@ -2437,4 +2437,4 @@ bool AtSpiAdaptor::tableInterface(QAccessibleInterface *interface, const QString
 QT_END_NAMESPACE
 
 #include "moc_atspiadaptor_p.cpp"
-#endif //QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)

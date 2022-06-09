@@ -68,7 +68,7 @@ public:
 
     QPlatformInputContext *inputContext() const override;
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     QPlatformAccessibility *accessibility() const override;
 #endif
 
@@ -110,7 +110,7 @@ private:
 
     QScopedPointer<QPlatformInputContext> m_inputContext;
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     mutable QScopedPointer<QPlatformAccessibility> m_accessibility;
 #endif
 

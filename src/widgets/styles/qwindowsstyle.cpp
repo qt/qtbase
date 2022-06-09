@@ -571,12 +571,12 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
                 ret = 1;
             }
         }
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
         if (!ret && opt && opt->type == QStyleOption::SO_MenuItem
             && QStyleHelper::isInstanceOf(opt->styleObject, QAccessible::MenuItem)
             && opt->styleObject->property("_q_showUnderlined").toBool())
             ret = 1;
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
         break;
     }
 #endif // Q_OS_WIN

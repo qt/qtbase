@@ -18,7 +18,7 @@
 
 #include "qwindow_p.h"
 #include "qguiapplication_p.h"
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #  include "qaccessible.h"
 #endif
 #include "qhighdpiscaling_p.h"
@@ -2424,7 +2424,7 @@ bool QWindow::event(QEvent *ev)
 
     case QEvent::FocusIn: {
         focusInEvent(static_cast<QFocusEvent *>(ev));
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
         QAccessible::State state;
         state.active = true;
         QAccessibleStateChangeEvent event(this, state);
@@ -2434,7 +2434,7 @@ bool QWindow::event(QEvent *ev)
 
     case QEvent::FocusOut: {
         focusOutEvent(static_cast<QFocusEvent *>(ev));
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
         QAccessible::State state;
         state.active = true;
         QAccessibleStateChangeEvent event(this, state);

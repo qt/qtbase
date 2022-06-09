@@ -3,7 +3,7 @@
 
 #include "quiaccessibilityelement.h"
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 
 #include "private/qaccessiblecache_p.h"
 #include "private/qcore_mac_p.h"

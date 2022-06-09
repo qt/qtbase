@@ -82,7 +82,7 @@ public:
     QPlatformNativeInterface *nativeInterface() const override;
     QPlatformServices *services() const override;
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     virtual QPlatformAccessibility *accessibility() const override;
 #endif
 
@@ -132,7 +132,7 @@ private:
 #endif
 
     QAndroidSystemLocale *m_androidSystemLocale;
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     mutable QPlatformAccessibility *m_accessibility;
 #endif
 

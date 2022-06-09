@@ -19,7 +19,7 @@
 #include <private/qtableview_p.h>
 #include <private/qheaderview_p.h>
 #include <private/qscrollbar_p.h>
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include <qaccessible.h>
 #endif
 
@@ -3457,7 +3457,7 @@ void QTableViewPrivate::selectColumn(int column, bool anchor)
  */
 void QTableView::currentChanged(const QModelIndex &current, const QModelIndex &previous)
 {
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     if (QAccessible::isActive()) {
         if (current.isValid()) {
             Q_D(QTableView);
@@ -3479,7 +3479,7 @@ void QTableView::selectionChanged(const QItemSelection &selected,
 {
     Q_D(QTableView);
     Q_UNUSED(d);
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     if (QAccessible::isActive()) {
         // ### does not work properly for selection ranges.
         QModelIndex sel = selected.indexes().value(0);
