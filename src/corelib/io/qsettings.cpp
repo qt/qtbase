@@ -1631,7 +1631,7 @@ bool QConfFileSettingsPrivate::readIniFile(QByteArrayView data,
                 currentSection.clear();
             } else {
                 if (iniSection.compare("%general", Qt::CaseInsensitive) == 0) {
-                    currentSection = QLatin1StringView(iniSection.constData() + 1);
+                    currentSection = QLatin1StringView(iniSection.constData() + 1, iniSection.size() - 1);
                 } else {
                     currentSection.clear();
                     iniUnescapedKey(iniSection, currentSection);
