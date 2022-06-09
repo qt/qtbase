@@ -1898,18 +1898,18 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
     // because it will cause qmlimportscanner to fail.
     // This also covers the case when only qtbase is installed in a regular Qt build.
     const QString mainImportPath = options->qtInstallDirectory + QLatin1String("/qml");
-    if (QDir().exists(mainImportPath))
+    if (QFile::exists(mainImportPath))
         importPaths += shellQuote(mainImportPath);
 
     // These are usually provided by CMake in the deployment json file from paths specified
     // in CMAKE_FIND_ROOT_PATH. They might not have qml modules.
     for (const QString &prefix : options->extraPrefixDirs)
-        if (QDir().exists(prefix + QLatin1String("/qml")))
+        if (QFile::exists(prefix + QLatin1String("/qml")))
             importPaths += shellQuote(prefix + QLatin1String("/qml"));
 
     // These are provided by both CMake and qmake.
     for (const QString &qmlImportPath : qAsConst(options->qmlImportPaths)) {
-        if (QDir().exists(qmlImportPath)) {
+        if (QFile::exists(qmlImportPath)) {
             importPaths += shellQuote(qmlImportPath);
         } else {
             fprintf(stderr, "Warning: QML import path %s does not exist.\n",
