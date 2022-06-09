@@ -32,18 +32,19 @@ if(__harfbuzz_broken_config_file OR NOT __harfbuzz_found)
 
     find_package(PkgConfig QUIET)
     pkg_check_modules(PC_HARFBUZZ harfbuzz IMPORTED_TARGET)
+    if(PC_HARFBUZZ_FOUND)
+        find_path(HARFBUZZ_INCLUDE_DIRS
+            NAMES harfbuzz/hb.h
+            HINTS ${PC_HARFBUZZ_INCLUDEDIR})
+        find_library(HARFBUZZ_LIBRARIES
+            NAMES harfbuzz
+            HINTS ${PC_HARFBUZZ_LIBDIR})
 
-    find_path(HARFBUZZ_INCLUDE_DIRS
-              NAMES harfbuzz/hb.h
-              HINTS ${PC_HARFBUZZ_INCLUDEDIR})
-    find_library(HARFBUZZ_LIBRARIES
-                NAMES harfbuzz
-                HINTS ${PC_HARFBUZZ_LIBDIR})
-
-    set(__harfbuzz_target_name "PkgConfig::PC_HARFBUZZ")
-    set(__harfbuzz_found TRUE)
-    if(PC_HARFBUZZ_VERSION)
-        set(WrapSystemHarfbuzz_VERSION "${PC_HARFBUZZ_VERSION}")
+        set(__harfbuzz_target_name "PkgConfig::PC_HARFBUZZ")
+        set(__harfbuzz_found TRUE)
+        if(PC_HARFBUZZ_VERSION)
+            set(WrapSystemHarfbuzz_VERSION "${PC_HARFBUZZ_VERSION}")
+        endif()
     endif()
 endif()
 
