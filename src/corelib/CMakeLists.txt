@@ -208,10 +208,17 @@ qt_internal_add_module(Core
         text/qunicodetools.cpp text/qunicodetools_p.h
         text/qutf8stringview.h
         text/qvsnprintf.cpp
+        thread/qatomic.h
+        thread/qatomic_bootstrap.h
+        thread/qatomic_cxx11.h
+        thread/qbasicatomic.h
+        thread/qgenericatomic.h
+        thread/qlocking_p.h
         thread/qmutex.h
+        thread/qorderedmutexlocker_p.h
         thread/qreadwritelock.h
         thread/qrunnable.cpp thread/qrunnable.h
-        thread/qthread.cpp thread/qthread.h
+        thread/qthread.cpp thread/qthread.h thread/qthread_p.h
         thread/qthreadstorage.h
         thread/qtsan_impl.h
         thread/qwaitcondition.h thread/qwaitcondition_p.h
@@ -643,18 +650,11 @@ qt_internal_extend_target(Core CONDITION UNIX
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_thread
     SOURCES
-        thread/qatomic.cpp thread/qatomic.h
-        thread/qatomic_bootstrap.h
-        thread/qatomic_cxx11.h
-        thread/qbasicatomic.h
+        thread/qatomic.cpp
         thread/qfutex_p.h
-        thread/qgenericatomic.h
-        thread/qlocking_p.h
         thread/qmutex.cpp thread/qmutex_p.h
-        thread/qorderedmutexlocker_p.h
         thread/qreadwritelock.cpp thread/qreadwritelock_p.h
         thread/qsemaphore.cpp thread/qsemaphore.h
-        thread/qthread_p.h
         thread/qthreadpool.cpp thread/qthreadpool.h thread/qthreadpool_p.h
         thread/qthreadstorage.cpp
 )
