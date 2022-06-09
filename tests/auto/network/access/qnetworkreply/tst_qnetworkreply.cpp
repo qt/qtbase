@@ -14,6 +14,7 @@
 #include <QWaitCondition>
 #include <QScopeGuard>
 #include <QBuffer>
+#include <QMap>
 
 #include <QtCore/qlist.h>
 #include <QtCore/qset.h>
