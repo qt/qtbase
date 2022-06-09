@@ -164,9 +164,10 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
        for users of different languages. Translations are made in the
        "QShortcut" context.
     \li For hard-coded shortcuts, integer key codes can be specified with
-       a combination of values defined by the Qt::Key and Qt::Modifier enum
-       values. Each key code consists of a single Qt::Key value and zero or
-       more modifiers, such as Qt::SHIFT, Qt::CTRL, Qt::ALT and Qt::META.
+       a combination of values defined by the Qt::Key and Qt::KeyboardModifier
+       enum values. Each key code consists of a single Qt::Key value and zero
+       or more modifiers, such as Qt::ShiftModifier, Qt::ControlModifier,
+       Qt::AltModifier and Qt::MetaModifier.
     \endlist
 
     For example, \uicontrol{Ctrl P} might be a sequence used as a shortcut for
@@ -833,8 +834,8 @@ static_assert(QKeySequencePrivate::MaxKeyCount == 4, "Change docs and ctor impl 
     \a k3 and \a k4.
 
     The key codes are listed in Qt::Key and can be combined with
-    modifiers (see Qt::Modifier) such as Qt::SHIFT, Qt::CTRL,
-    Qt::ALT, or Qt::META.
+    modifiers (see Qt::KeyboardModifier) such as Qt::ShiftModifier,
+    Qt::ControlModifier, Qt::AltModifier, or Qt::MetaModifier.
 */
 QKeySequence::QKeySequence(int k1, int k2, int k3, int k4)
 {
