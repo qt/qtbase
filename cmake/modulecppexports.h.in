@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the @module@ module of the Qt Toolkit.
@@ -53,9 +53,9 @@
 #endif
 
 #ifdef QT_@module_define_infix@_BUILD_REMOVED_API
-#define QT_@module_define_infix@_REMOVED_SINCE(major, minor) QT_DEPRECATED_SINCE(major, minor)
+#  define QT_@module_define_infix@_REMOVED_SINCE(major, minor) QT_DEPRECATED_SINCE(major, minor)
 #else
-#define QT_@module_define_infix@_REMOVED_SINCE(major, minor) 0
+#  define QT_@module_define_infix@_REMOVED_SINCE(major, minor) 0
 #endif
 
 #endif // @header_base_name_upper@_H
