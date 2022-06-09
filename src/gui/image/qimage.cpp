@@ -99,7 +99,7 @@ QImageData * QImageData::create(const QSize &size, QImage::Format format)
     if (size.isEmpty() || format <= QImage::Format_Invalid || format >= QImage::NImageFormats)
         return nullptr;                             // invalid parameter(s)
 
-    Q_TRACE_SCOPE(QImageData_create, size, format);
+    Q_TRACE_SCOPE(QImageData_create, size, static_cast<int>(format));
 
     int width = size.width();
     int height = size.height();

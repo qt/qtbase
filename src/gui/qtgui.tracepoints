@@ -15,7 +15,7 @@ QFontDatabase_load(const QStringList &family, int pointSize)
 QFontDatabase_loadEngine(const QStringList &families, int pointSize)
 QFontDatabasePrivate_addAppFont(const QString &fileName)
 
-QImageData_create_entry(const QSize &size, QImage::Format format)
+QImageData_create_entry(const QSize &size, int format)
 QImageData_create_exit()
 QImage_copy_entry(const QRect& r)
 QImage_copy_exit()
