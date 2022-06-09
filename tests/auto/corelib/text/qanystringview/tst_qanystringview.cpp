@@ -66,6 +66,14 @@
 #  define ONLY_WIN(expr) QSKIP("This is a Windows-only test")
 #endif
 
+#ifdef __cpp_impl_three_way_comparison
+#  define ONLY_3WAY(expr) expr
+#else
+#  define ONLY_3WAY(expr) \
+    QSKIP("This test requires C++20 spaceship operator (<=>) " \
+          "support enabled in the standard library.")
+#endif
+
 template <typename T>
 constexpr inline bool CanConvert = std::is_convertible_v<T, QAnyStringView>;
 
@@ -313,6 +321,7 @@ private Q_SLOTS:
     void fromQStringBuilder_QString_QString() const { fromQStringBuilder(u"1"_qs % u"2"_qs, u"12"); }
 
     void comparison();
+    void compare3way();
 
 private:
     template <typename StringBuilder>
@@ -640,6 +649,28 @@ void tst_QAnyStringView::comparison()
     QCOMPARE(QAnyStringView::compare(aa, upperAa, Qt::CaseInsensitive), 0);
     QVERIFY(QAnyStringView::compare(aa, bb) < 0);
     QVERIFY(QAnyStringView::compare(bb, aa) > 0);
+}
+
+void tst_QAnyStringView::compare3way()
+{
+#define COMPARE_3WAY(lhs, rhs, res) \
+    do { \
+        const auto qt_3way_cmp_res = (lhs) <=> (rhs); \
+        static_assert(std::is_same_v<decltype(qt_3way_cmp_res), decltype(res)>); \
+        QCOMPARE(std::is_eq(qt_3way_cmp_res), std::is_eq(res)); \
+        QCOMPARE(std::is_lt(qt_3way_cmp_res), std::is_lt(res)); \
+        QCOMPARE(std::is_gt(qt_3way_cmp_res), std::is_gt(res)); \
+    } while (false)
+
+    ONLY_3WAY(
+    const QAnyStringView aa = u"aa";
+    const QAnyStringView upperAa = u"AA";
+    const QAnyStringView bb = u"bb";
+    COMPARE_3WAY(aa, aa, std::strong_ordering::equal);
+    COMPARE_3WAY(aa, bb, std::strong_ordering::less);
+    COMPARE_3WAY(bb, aa, std::strong_ordering::greater)
+    );
+#undef COMPARE_3WAY
 }
 
 QTEST_APPLESS_MAIN(tst_QAnyStringView)
