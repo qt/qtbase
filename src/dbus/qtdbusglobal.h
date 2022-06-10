@@ -4,6 +4,10 @@
 #ifndef QTDBUSGLOBAL_H
 #define QTDBUSGLOBAL_H
 
+#if 0
+#pragma qt_deprecates(qdbusmacros.h)
+#endif
+
 #include <QtCore/qglobal.h>
 #include <QtCore/qmetatype.h>
 #include <QtCore/qvariant.h>
