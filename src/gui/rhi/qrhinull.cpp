@@ -151,7 +151,7 @@ QRhiDriverInfo QRhiNull::driverInfo() const
     return info;
 }
 
-QRhiMemAllocStats QRhiNull::graphicsMemoryAllocationStatistics()
+QRhiStats QRhiNull::statistics()
 {
     return {};
 }

@@ -52,6 +52,8 @@ private slots:
     void rhiTestDataOpenGL();
     void create_data();
     void create();
+    void stats_data();
+    void stats();
     void nativeHandles_data();
     void nativeHandles();
     void nativeHandlesImportVulkan();
@@ -397,6 +399,38 @@ void tst_QRhi::create()
 
         rhi.reset();
         QCOMPARE(cleanupOk, 1);
+    }
+}
+
+void tst_QRhi::stats_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::stats()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing statistics getter");
+
+    QRhiStats stats = rhi->statistics();
+    qDebug() << stats;
+    QCOMPARE(stats.totalPipelineCreationTime, 0);
+
+    if (impl == QRhi::Vulkan) {
+        QScopedPointer<QRhiBuffer> buf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, 32768));
+        QVERIFY(buf->create());
+        QScopedPointer<QRhiTexture> tex(rhi->newTexture(QRhiTexture::RGBA8, QSize(1024, 1024)));
+        QVERIFY(tex->create());
+
+        stats = rhi->statistics();
+        qDebug() << stats;
+        QVERIFY(stats.allocCount > 0);
+        QVERIFY(stats.blockCount > 0);
+        QVERIFY(stats.usedBytes > 0);
     }
 }
 

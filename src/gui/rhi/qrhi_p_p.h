@@ -18,6 +18,7 @@
 #include "qrhi_p.h"
 #include <QBitArray>
 #include <QAtomicInt>
+#include <QElapsedTimer>
 #include <QLoggingCategory>
 #include <QtCore/qset.h>
 #include <QtCore/qvarlengtharray.h>
@@ -131,7 +132,7 @@ public:
     virtual int resourceLimit(QRhi::ResourceLimit limit) const = 0;
     virtual const QRhiNativeHandles *nativeHandles() = 0;
     virtual QRhiDriverInfo driverInfo() const = 0;
-    virtual QRhiMemAllocStats graphicsMemoryAllocationStatistics() = 0;
+    virtual QRhiStats statistics() = 0;
     virtual bool makeThreadLocalNativeContextCurrent() = 0;
     virtual void releaseCachedResources() = 0;
     virtual bool isDeviceLost() const = 0;
@@ -201,6 +202,21 @@ public:
         return (quint32(implType) << 24) | ver;
     }
 
+    void pipelineCreationStart()
+    {
+        pipelineCreationTimer.start();
+    }
+
+    void pipelineCreationEnd()
+    {
+        accumulatedPipelineCreationTime += pipelineCreationTimer.elapsed();
+    }
+
+    qint64 totalPipelineCreationTime() const
+    {
+        return accumulatedPipelineCreationTime;
+    }
+
     QRhi *q;
 
     static const int MAX_SHADER_CACHE_ENTRIES = 128;
@@ -219,6 +235,8 @@ private:
     QSet<QRhiResource *> pendingDeleteResources;
     QVarLengthArray<QRhi::CleanupCallback, 4> cleanupCallbacks;
     QVarLengthArray<QRhi::GpuFrameTimeCallback, 4> gpuFrameTimeCallbacks;
+    QElapsedTimer pipelineCreationTimer;
+    qint64 accumulatedPipelineCreationTime = 0;
 
     friend class QRhi;
     friend class QRhiResourceUpdateBatchPrivate;

@@ -615,9 +615,11 @@ QRhiDriverInfo QRhiD3D11::driverInfo() const
     return driverInfoStruct;
 }
 
-QRhiMemAllocStats QRhiD3D11::graphicsMemoryAllocationStatistics()
+QRhiStats QRhiD3D11::statistics()
 {
-    return {};
+    QRhiStats result;
+    result.totalPipelineCreationTime = totalPipelineCreationTime();
+    return result;
 }
 
 bool QRhiD3D11::makeThreadLocalNativeContextCurrent()
@@ -4252,6 +4254,7 @@ bool QD3D11GraphicsPipeline::create()
         destroy();
 
     QRHI_RES_RHI(QRhiD3D11);
+    rhiD->pipelineCreationStart();
     if (!rhiD->sanityCheckGraphicsPipeline(this))
         return false;
 
@@ -4438,6 +4441,7 @@ bool QD3D11GraphicsPipeline::create()
         } // else leave inputLayout set to nullptr; that's valid and it avoids a debug layer warning about an input layout with 0 elements
     }
 
+    rhiD->pipelineCreationEnd();
     generation += 1;
     rhiD->registerResource(this);
     return true;
@@ -4473,6 +4477,7 @@ bool QD3D11ComputePipeline::create()
         destroy();
 
     QRHI_RES_RHI(QRhiD3D11);
+    rhiD->pipelineCreationStart();
 
     auto cacheIt = rhiD->m_shaderCache.constFind(m_shaderStage);
     if (cacheIt != rhiD->m_shaderCache.constEnd()) {
@@ -4508,6 +4513,7 @@ bool QD3D11ComputePipeline::create()
 
     cs.shader->AddRef();
 
+    rhiD->pipelineCreationEnd();
     generation += 1;
     rhiD->registerResource(this);
     return true;

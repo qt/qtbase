@@ -4353,16 +4353,19 @@ QRhiDriverInfo QRhiVulkan::driverInfo() const
     return driverInfoStruct;
 }
 
-QRhiMemAllocStats QRhiVulkan::graphicsMemoryAllocationStatistics()
+QRhiStats QRhiVulkan::statistics()
 {
     VmaStats stats;
     vmaCalculateStats(toVmaAllocator(allocator), &stats);
-    return {
-        stats.total.blockCount,
-        stats.total.allocationCount,
-        stats.total.usedBytes,
-        stats.total.unusedBytes
-    };
+
+    QRhiStats result;
+    result.totalPipelineCreationTime = totalPipelineCreationTime();
+    result.blockCount = stats.total.blockCount;
+    result.allocCount = stats.total.allocationCount;
+    result.usedBytes = stats.total.usedBytes;
+    result.unusedBytes = stats.total.unusedBytes;
+
+    return result;
 }
 
 bool QRhiVulkan::makeThreadLocalNativeContextCurrent()
@@ -6844,6 +6847,7 @@ bool QVkGraphicsPipeline::create()
         destroy();
 
     QRHI_RES_RHI(QRhiVulkan);
+    rhiD->pipelineCreationStart();
     if (!rhiD->sanityCheckGraphicsPipeline(this))
         return false;
 
@@ -7081,6 +7085,7 @@ bool QVkGraphicsPipeline::create()
         return false;
     }
 
+    rhiD->pipelineCreationEnd();
     lastActiveFrameSlot = -1;
     generation += 1;
     rhiD->registerResource(this);
@@ -7125,6 +7130,7 @@ bool QVkComputePipeline::create()
         destroy();
 
     QRHI_RES_RHI(QRhiVulkan);
+    rhiD->pipelineCreationStart();
     if (!rhiD->ensurePipelineCache())
         return false;
 
@@ -7176,6 +7182,7 @@ bool QVkComputePipeline::create()
         return false;
     }
 
+    rhiD->pipelineCreationEnd();
     lastActiveFrameSlot = -1;
     generation += 1;
     rhiD->registerResource(this);

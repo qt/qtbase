@@ -1583,18 +1583,19 @@ Q_DECLARE_TYPEINFO(QRhiDriverInfo, Q_RELOCATABLE_TYPE);
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiDriverInfo &);
 #endif
 
-struct Q_GUI_EXPORT QRhiMemAllocStats
+struct Q_GUI_EXPORT QRhiStats
 {
+    qint64 totalPipelineCreationTime = 0;
     quint32 blockCount = 0;
     quint32 allocCount = 0;
     quint64 usedBytes = 0;
     quint64 unusedBytes = 0;
 };
 
-Q_DECLARE_TYPEINFO(QRhiMemAllocStats, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiStats, Q_RELOCATABLE_TYPE);
 
 #ifndef QT_NO_DEBUG_STREAM
-Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiMemAllocStats &);
+Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiStats &);
 #endif
 
 struct Q_GUI_EXPORT QRhiInitParams
@@ -1795,7 +1796,7 @@ public:
     QByteArray pipelineCacheData();
     void setPipelineCacheData(const QByteArray &data);
 
-    QRhiMemAllocStats graphicsMemoryAllocationStatistics() const;
+    QRhiStats statistics() const;
 
 protected:
     QRhi();

@@ -1302,9 +1302,11 @@ QRhiDriverInfo QRhiGles2::driverInfo() const
     return driverInfoStruct;
 }
 
-QRhiMemAllocStats QRhiGles2::graphicsMemoryAllocationStatistics()
+QRhiStats QRhiGles2::statistics()
 {
-    return {};
+    QRhiStats result;
+    result.totalPipelineCreationTime = totalPipelineCreationTime();
+    return result;
 }
 
 bool QRhiGles2::makeThreadLocalNativeContextCurrent()
@@ -5454,6 +5456,7 @@ bool QGles2GraphicsPipeline::create()
     if (!rhiD->ensureContext())
         return false;
 
+    rhiD->pipelineCreationStart();
     if (!rhiD->sanityCheckGraphicsPipeline(this))
         return false;
 
@@ -5574,6 +5577,7 @@ bool QGles2GraphicsPipeline::create()
     currentSrb = nullptr;
     currentSrbGeneration = 0;
 
+    rhiD->pipelineCreationEnd();
     generation += 1;
     rhiD->registerResource(this);
     return true;
@@ -5619,6 +5623,8 @@ bool QGles2ComputePipeline::create()
 
     if (!rhiD->ensureContext())
         return false;
+
+    rhiD->pipelineCreationStart();
 
     const QShaderDescription csDesc = m_shaderStage.shader().description();
     QShader::SeparateToCombinedImageSamplerMappingList csSamplerMappingList;
@@ -5675,6 +5681,7 @@ bool QGles2ComputePipeline::create()
     currentSrb = nullptr;
     currentSrbGeneration = 0;
 
+    rhiD->pipelineCreationEnd();
     generation += 1;
     rhiD->registerResource(this);
     return true;

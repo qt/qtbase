@@ -6962,7 +6962,7 @@ void QRhi::setPipelineCacheData(const QByteArray &data)
 }
 
 /*!
-    \struct QRhiMemAllocStats
+    \struct QRhiStats
     \internal
     \inmodule QtGui
 
@@ -6970,10 +6970,12 @@ void QRhi::setPipelineCacheData(const QByteArray &data)
  */
 
 #ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug dbg, const QRhiMemAllocStats &info)
+QDebug operator<<(QDebug dbg, const QRhiStats &info)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "QRhiMemAllocStats(blockCount=" << info.blockCount
+    dbg.nospace() << "QRhiStats("
+                  << "totalPipelineCreationTime=" << info.totalPipelineCreationTime
+                  << " blockCount=" << info.blockCount
                   << " allocCount=" << info.allocCount
                   << " usedBytes=" << info.usedBytes
                   << " unusedBytes=" << info.unusedBytes
@@ -6983,21 +6985,46 @@ QDebug operator<<(QDebug dbg, const QRhiMemAllocStats &info)
 #endif
 
 /*!
-    Gathers and returns some statistics about the memory allocation of graphics
-    resources. Only supported with some backends. With graphics APIs where
-    there is no lower level control over resource memory allocations, this will
-    never be supported and all fields in the results are 0.
+    Gathers and returns statistics about the timings and allocations of
+    graphics resources.
 
-    With Vulkan, the values are valid always, and are queried from the
-    underlying memory allocator library. This gives an insight into the memory
-    requirements of the active buffers and textures.
+    Data about memory allocations is only available with some backends, where
+    such operations are under Qt's control. With graphics APIs where there is
+    no lower level control over resource memory allocations, this will never be
+    supported and all relevant fields in the results are 0.
 
-    \note Gathering the data may not be free, and therefore the function should
-    not be called at a high frequency.
+    With Vulkan in particular, the values are valid always, and are queried
+    from the underlying memory allocator library. This gives an insight into
+    the memory requirements of the active buffers and textures.
+
+    \warning Gathering some of the data may be an expensive operation, and
+    therefore the function must not be called at a high frequency.
+
+    Additional data, such as the total time in milliseconds spent in graphics
+    and compute pipeline creation (which usually involves shader compilation or
+    cache lookups, and potentially expensive processing) is available with most
+    backends.
+
+    \note The elapsed times for operations such as pipeline creation may be
+    affected by various factors. The results should not be compared between
+    different backends since the concept of "pipelines" and what exactly
+    happens under the hood during, for instance, a call to
+    QRhiGraphicsPipeline::create(), differ greatly between graphics APIs and
+    their implementations.
+
+    \note Additionally, many drivers will likely employ various caching
+    strategies for shaders, programs, pipelines. (independently of Qt's own
+    similar facilities, such as setPipelineCacheData() or the OpenGL-specific
+    program binary disk cache). Because such internal behavior is transparent
+    to the API client, Qt and QRhi have no knowledge or control over the exact
+    caching strategy, persistency, invalidation of the cached data, etc. When
+    reading timings, such as the time spent on pipeline creation, the potential
+    presence and unspecified behavior of driver-level caching mechanisms should
+    be kept in mind.
  */
-QRhiMemAllocStats QRhi::graphicsMemoryAllocationStatistics() const
+QRhiStats QRhi::statistics() const
 {
-    return d->graphicsMemoryAllocationStatistics();
+    return d->statistics();
 }
 
 /*!

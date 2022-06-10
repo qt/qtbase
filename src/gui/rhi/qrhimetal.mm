@@ -658,9 +658,11 @@ QRhiDriverInfo QRhiMetal::driverInfo() const
     return driverInfoStruct;
 }
 
-QRhiMemAllocStats QRhiMetal::graphicsMemoryAllocationStatistics()
+QRhiStats QRhiMetal::statistics()
 {
-    return {};
+    QRhiStats result;
+    result.totalPipelineCreationTime = totalPipelineCreationTime();
+    return result;
 }
 
 bool QRhiMetal::makeThreadLocalNativeContextCurrent()
@@ -3586,6 +3588,7 @@ bool QMetalGraphicsPipeline::create()
         destroy();
 
     QRHI_RES_RHI(QRhiMetal);
+    rhiD->pipelineCreationStart();
     if (!rhiD->sanityCheckGraphicsPipeline(this))
         return false;
 
@@ -3772,6 +3775,7 @@ bool QMetalGraphicsPipeline::create()
     d->depthBias = float(m_depthBias);
     d->slopeScaledDepthBias = m_slopeScaledDepthBias;
 
+    rhiD->pipelineCreationEnd();
     lastActiveFrameSlot = -1;
     generation += 1;
     rhiD->registerResource(this);
@@ -3811,6 +3815,7 @@ bool QMetalComputePipeline::create()
         destroy();
 
     QRHI_RES_RHI(QRhiMetal);
+    rhiD->pipelineCreationStart();
 
     auto cacheIt = rhiD->d->shaderCache.constFind(m_shaderStage);
     if (cacheIt != rhiD->d->shaderCache.constEnd()) {
@@ -3858,6 +3863,7 @@ bool QMetalComputePipeline::create()
         return false;
     }
 
+    rhiD->pipelineCreationEnd();
     lastActiveFrameSlot = -1;
     generation += 1;
     rhiD->registerResource(this);
