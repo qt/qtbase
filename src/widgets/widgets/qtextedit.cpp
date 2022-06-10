@@ -2083,7 +2083,7 @@ void QTextEdit::setCursorWidth(int width)
     \brief whether the text edit accepts rich text insertions by the user
     \since 4.1
 
-    When this propery is set to false text edit will accept only
+    When this property is set to false text edit will accept only
     plain text input from the user. For example through clipboard or drag and drop.
 
     This property's default is true.

@@ -91,7 +91,7 @@ is used extensively in
 [Qt Assistant](http://doc.qt.io/qt-5/qtassistant-index.html). Hyperlinks are
 automatically created when an HTML file is imported into an editor. Since the
 rich text framework supports hyperlinks natively, they can also be created
-programatically.
+programmatically.
 
 ## Undo and Redo
 

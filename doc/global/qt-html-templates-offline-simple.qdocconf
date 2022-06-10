@@ -23,7 +23,7 @@ HTML.navigationseparator = \
     "<span class=\"naviSeparator\">  &#9702;  </span>\n"
 
 # Add some padding around code snippets, as we cannot
-# currectly style them for QTextBrowser using only CSS.
+# correctly style them for QTextBrowser using only CSS.
 codeindent         = 1
 codeprefix         = "\n"
 codesuffix         = "\n"

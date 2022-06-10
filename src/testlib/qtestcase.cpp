@@ -1065,7 +1065,7 @@ QBenchmarkResult qMedian(const QList<QBenchmarkResult> &container)
 
     const int middle = count / 2;
 
-    // ### handle even-sized containers here by doing an aritmetic mean of the two middle items.
+    // ### handle even-sized containers here by doing an arithmetic mean of the two middle items.
     return containerCopy.at(middle);
 }
 
@@ -2166,7 +2166,7 @@ static void initEnvironment()
     test that was executed with qExec() can't run another test via qExec() and
     threads are not allowed to call qExec() simultaneously.
 
-    If you have programatically created the arguments, as opposed to getting them
+    If you have programmatically created the arguments, as opposed to getting them
     from the arguments in \c main(), it is likely of interest to use
     QTest::qExec(QObject *, const QStringList &) since it is Unicode safe.
 

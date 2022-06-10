@@ -3079,7 +3079,7 @@ void tst_QFuture::cancelContinuations()
 
 #ifndef QT_NO_EXCEPTIONS
     // The chain is cancelled in the middle of execution of continuations,
-    // while there's an exception in the chain, which is handeled inside
+    // while there's an exception in the chain, which is handled inside
     // the continuations.
     {
         QPromise<int> promise;

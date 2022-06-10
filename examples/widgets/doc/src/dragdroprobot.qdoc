@@ -295,7 +295,7 @@
 
     This snippet has a somewhat random outcome: once in a while, a special
     image is assigned to the drag object's mime data. The pixmap is also
-    assiged as the drag object's pixmap. This will ensure that you can see the
+    assigned as the drag object's pixmap. This will ensure that you can see the
     image that is being dragged as a pixmap under the mouse cursor.
 
     \snippet graphicsview/dragdroprobot/coloritem.cpp 7

@@ -119,7 +119,7 @@ QWasmIntegration::QWasmIntegration()
         }
     } else if (!qtCanvasElements.isUndefined()) {
         qWarning() << "The qtCanvaseElements property is deprecated. Qt will stop reading"
-                   << "it in some future veresion, please use qtContainerElements instead";
+                   << "it in some future version, please use qtContainerElements instead";
         emscripten::val length = qtCanvasElements["length"];
         int count = length.as<int>();
         for (int i = 0; i < count; ++i)

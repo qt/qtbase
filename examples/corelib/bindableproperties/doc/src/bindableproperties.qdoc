@@ -125,7 +125,7 @@
 
     \snippet bindableproperties/bindablesubscription/bindableuser.h bindable-user-class
 
-    The second differenece is in the implementation of these calsses. First of
+    The second difference is in the implementation of these classes. First of
     all, the dependencies between \c subscription and \c user are now tracked via
     binding expressions:
 

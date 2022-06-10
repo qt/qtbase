@@ -145,7 +145,7 @@ QCocoaTouch::getCurrentTouchPointList(NSEvent *event, bool acceptSingleTouch)
 
     // Next: sadly, we need to check that our touch hash is in
     // sync with cocoa. This is typically not the case after a system
-    // gesture happend (like a four-finger-swipe to show expose).
+    // gesture happened (like a four-finger-swipe to show expose).
 
     if (_touchCount != _currentTouches.size()) {
         // Remove all instances, and basically start from scratch:

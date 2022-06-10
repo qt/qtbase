@@ -613,7 +613,7 @@ void QEventDispatcherWasm::socketError(int socket, int err, const char* msg, voi
     // Emscripten makes socket callbacks while the main thread is busy-waiting for a mutex,
     // which can cause deadlocks if the callback code also tries to lock the same mutex.
     // This is most easily reproducible by adding print statements, where each print requires
-    // taking a mutex lock. Work around this by runnign the callback asynchronously, i.e. by using
+    // taking a mutex lock. Work around this by running the callback asynchronously, i.e. by using
     // a native zero-timer, to make sure the main thread stack is completely unwond before calling
     // the Qt handler.
     // It is currently unclear if this problem is caused by code in Qt or in Emscripten, or
@@ -702,7 +702,7 @@ void QEventDispatcherWasm::setSocketState(int socket, bool setReadyRead, bool se
     state.readyRead |= setReadyRead;
     state.readyWrite |= setReadyWrite;
 
-    // Wake any waiters for the given readyness. The waiter consumes
+    // Wake any waiters for the given readiness. The waiter consumes
     // the ready state, returning the socket to not-ready.
     if (QEventDispatcherWasm *waiter = state.waiter)
         if ((state.readyRead && state.waitForReadyRead) || (state.readyWrite && state.waitForReadyWrite))
@@ -828,7 +828,7 @@ void QEventDispatcherWasm::runOnMainThread(std::function<void(void)> fn)
     fn();
 }
 
-// Runs a function on the main thread. The function alwas runs asynchronously,
+// Runs a function on the main thread. The function always runs asynchronously,
 // also if the calling thread is the main thread.
 void QEventDispatcherWasm::runOnMainThreadAsync(std::function<void(void)> fn)
 {

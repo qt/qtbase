@@ -372,7 +372,7 @@ void QMYSQLResult::cleanup()
     if (d->result)
         mysql_free_result(d->result);
 
-// must iterate trough leftover result sets from multi-selects or stored procedures
+// must iterate through leftover result sets from multi-selects or stored procedures
 // if this isn't done subsequent queries will fail with "Commands out of sync"
     while (driver() && d->drv_d_func()->mysql && mysql_next_result(d->drv_d_func()->mysql) == 0) {
         MYSQL_RES *res = mysql_store_result(d->drv_d_func()->mysql);

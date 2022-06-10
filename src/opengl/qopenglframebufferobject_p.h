@@ -34,8 +34,8 @@ public:
     {
 #if !QT_CONFIG(opengles2)
         // There is nothing that says QOpenGLFramebufferObjectFormat needs a current
-        // context, so we need a fallback just to be safe, even though in pratice there
-        // will usually be a context current.
+        // context, so we need a fallback just to be safe, even though in practice there
+        // will usually be a current context.
         QOpenGLContext *ctx = QOpenGLContext::currentContext();
         const bool isES = ctx ? ctx->isOpenGLES() : QOpenGLContext::openGLModuleType() != QOpenGLContext::LibGL;
         internal_format = isES ? GL_RGBA : GL_RGBA8;

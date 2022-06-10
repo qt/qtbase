@@ -423,7 +423,7 @@ void Continuation<Function, ResultType, ParentResultType>::runFunction()
                 fulfillPromiseWithResult();
             } else {
                 // This assert normally should never fail, this is to make sure
-                // that nothing unexpected happend.
+                // that nothing unexpected happened.
                 static_assert(std::is_invocable_v<Function, QFuture<ParentResultType>>,
                               "The continuation is not invocable with the provided arguments");
                 fulfillPromise(parentFuture);
@@ -438,7 +438,7 @@ void Continuation<Function, ResultType, ParentResultType>::runFunction()
                 fulfillVoidPromise();
             } else {
                 // This assert normally should never fail, this is to make sure
-                // that nothing unexpected happend.
+                // that nothing unexpected happened.
                 static_assert(std::is_invocable_v<Function, QFuture<ParentResultType>>,
                               "The continuation is not invocable with the provided arguments");
                 function(parentFuture);

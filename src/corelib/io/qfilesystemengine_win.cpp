@@ -565,7 +565,7 @@ QNativeFilePermissions::QNativeFilePermissions(std::optional<QFileDevice::Permis
     Return pointer to a \c SECURITY_ATTRIBUTES object describing the permissions.
 
     The returned pointer many be null if default permissions were requested or
-    during bootstrap. The calles must call \c isOk() to check if the object
+    during bootstrap. The callers must call \c isOk() to check if the object
     was successfully constructed before using this method.
 */
 SECURITY_ATTRIBUTES *QNativeFilePermissions::securityAttributes()
@@ -1157,7 +1157,7 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
                 // Check for generic permissions and file-specific bits that most closely
                 // represent POSIX permissions.
 
-                // Contants like FILE_GENERIC_{READ,WRITE,EXECUTE} cannot be used
+                // Constants like FILE_GENERIC_{READ,WRITE,EXECUTE} cannot be used
                 // here because they contain permission bits shared between all of them.
                 if (accessMask & (GENERIC_READ | FILE_READ_DATA))
                     data.entryFlags |= readFlags;

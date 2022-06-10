@@ -78,7 +78,7 @@ enum DebugSymbolsType
 {
     UnknownSymbols   = 0,    // Unknown.
     NoSymbols        = 1,    // No usable symbols.
-    LinkedSymbols    = 2,    // Link to symols available.
+    LinkedSymbols    = 2,    // Link to symbols available.
     BuildIdSymbols   = 4,    // BuildId available.
     PlainSymbols     = 8,    // Ordinary symbols available.
     FastSymbols      = 16    // Dwarf index available.

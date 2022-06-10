@@ -1258,7 +1258,7 @@ bool QPSQLDriver::commitTransaction()
     // XXX
     // This hack is used to tell if the transaction has succeeded for the protocol versions of
     // PostgreSQL below. For 7.x and other protocol versions we are left in the dark.
-    // This hack can dissapear once there is an API to query this sort of information.
+    // This hack can disappear once there is an API to query this sort of information.
     if (d->pro >= QPSQLDriver::Version8) {
         transaction_failed = qstrcmp(PQcmdStatus(res), "ROLLBACK") == 0;
     }

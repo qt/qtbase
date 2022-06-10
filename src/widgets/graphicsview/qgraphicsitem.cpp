@@ -3213,7 +3213,7 @@ bool QGraphicsItem::filtersChildEvents() const
     \since 4.6
 
     If \a enabled is true, this item is set to filter all events for
-    all its children (i.e., all events intented for any of its
+    all its children (i.e., all events intended for any of its
     children are instead sent to this item); otherwise, if \a enabled
     is false, this item will only handle its own events. The default
     value is false.
@@ -3255,7 +3255,7 @@ bool QGraphicsItem::handlesChildEvents() const
     \deprecated
 
     If \a enabled is true, this item is set to handle all events for
-    all its children (i.e., all events intented for any of its
+    all its children (i.e., all events intended for any of its
     children are instead sent to this item); otherwise, if \a enabled
     is false, this item will only handle its own events. The default
     value is false.

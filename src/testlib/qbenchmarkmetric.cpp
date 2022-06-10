@@ -111,7 +111,7 @@ const char * QTest::benchmarkMetricName(QBenchmarkMetric metric)
 
 /*!
   \since 4.7
-  Retuns the units of measure for the specified \a metric.
+  Returns the units of measure for the specified \a metric.
  */
 const char * QTest::benchmarkMetricUnit(QBenchmarkMetric metric)
 {

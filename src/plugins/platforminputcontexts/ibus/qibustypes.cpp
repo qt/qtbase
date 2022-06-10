@@ -178,7 +178,7 @@ QList<QInputMethodEvent::Attribute> QIBusAttributeList::imAttributes() const
     QHash<QPair<int, int>, QTextCharFormat> rangeAttrs;
     const int numAttributes = attributes.size();
 
-    // Merge text fomats for identical ranges into a single QTextFormat.
+    // Merge text formats for identical ranges into a single QTextFormat.
     for (int i = 0; i < numAttributes; ++i) {
         const QIBusAttribute &attr = attributes.at(i);
         const QTextCharFormat &format = attr.format();

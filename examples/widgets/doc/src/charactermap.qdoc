@@ -171,7 +171,7 @@ QScrollArea provides a viewport onto the \c CharacterWidget when we set
 its widget and handles much of the work needed to provide a scrolling
 viewport.
 
-The font combo box is automatically popuplated with a list of available
+The font combo box is automatically populated with a list of available
 fonts. We list the available styles for the current font in the style
 combobox using the following function:
 

@@ -84,7 +84,7 @@
     \l{TreeItem::data}{data()} function to read entries in the \c itemData
     list and a \l{TreeItem::setData}{setData()} function to allow them to
     be modified.
-    As with other functions in the item, this simplifies the implemention
+    As with other functions in the item, this simplifies the implementation
     of the model's \l{QAbstractItemModel::}{data()} and
     \l{QAbstractItemModel::}{setData()} functions.
 

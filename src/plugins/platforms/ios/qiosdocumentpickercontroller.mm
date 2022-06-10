@@ -71,7 +71,7 @@
 
     // "Called on the delegate when the user has taken action to dismiss the
     // presentation successfully, after all animations are finished.
-    // This is not called if the presentation is dismissed programatically."
+    // This is not called if the presentation is dismissed programmatically."
 
     // So if document picker's view was dismissed, for example by swiping it away,
     // we got this method called. But not if the dialog was cancelled or a file

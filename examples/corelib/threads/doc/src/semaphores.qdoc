@@ -39,7 +39,7 @@
 
     \snippet threads/semaphores/semaphores.cpp 0
 
-    \c DataSize is the amout of data that the producer will generate.
+    \c DataSize is the amount of data that the producer will generate.
     To keep the example as simple as possible, we make it a constant.
     \c BufferSize is the size of the circular buffer. It is less than
     \c DataSize, meaning that at some point the producer will reach

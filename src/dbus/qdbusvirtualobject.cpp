@@ -39,7 +39,7 @@ QT_END_NAMESPACE
 
     This function needs to handle all messages to the path of the
     virtual object, when the SubPath option is specified.
-    The service, path, interface and methos are all part of the \a message.
+    The service, path, interface and methods are all part of the \a message.
     Parameter \a connection is the connection handle.
     Must return \c true when the message is handled, otherwise \c false (will generate dbus error message).
 */

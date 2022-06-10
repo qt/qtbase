@@ -151,7 +151,7 @@ void QOpenGL2PaintEngineExPrivate::useSimpleShader()
 
     \note Any code or Qt API that internally activates or binds will
     not affect the cache used by this function, which means they will
-    lead to inconsisent state. QPainter::beginNativePainting() takes
+    lead to inconsistent state. QPainter::beginNativePainting() takes
     care of resetting the cache, so for user–code this is fine, but
     internally in the paint engine care must be taken to not call
     functions that may activate or bind under our feet.

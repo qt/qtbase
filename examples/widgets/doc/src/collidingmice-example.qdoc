@@ -137,7 +137,7 @@
 
     Because the complexity of arbitrary shape-shape intersection grows
     with an order of magnitude when the shapes are complex, this
-    operation can be noticably time consuming. An alternative approach
+    operation can be noticeably time consuming. An alternative approach
     is to reimplement the \l
     {QGraphicsItem::collidesWithItem()}{collidesWithItem()} function
     to provide your own custom item and shape collision algorithm.

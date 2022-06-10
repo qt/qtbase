@@ -252,13 +252,13 @@ void Uint8Array::set(const Uint8Array &source)
     m_uint8Array.call<void>("set", source.m_uint8Array); // copies source content
 }
 
-// Copies the Uint8Array conent to a destination on the heap
+// Copies the Uint8Array content to a destination on the heap
 void Uint8Array::copyTo(char *destination) const
 {
     Uint8Array(destination, length()).set(*this);
 }
 
-// Copies the Uint8Array conent to a destination on the heap
+// Copies the Uint8Array content to a destination on the heap
 void Uint8Array::copy(char *destination, const Uint8Array &source)
 {
     Uint8Array(destination, source.length()).set(source);

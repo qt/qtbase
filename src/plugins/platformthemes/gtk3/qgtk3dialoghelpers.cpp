@@ -22,7 +22,7 @@
 
 // The size of the preview we display for selected image files. We set height
 // larger than width because generally there is more free space vertically
-// than horiztonally (setting the preview image will alway expand the width of
+// than horizontally (setting the preview image will always expand the width of
 // the dialog, but usually not the height). The image's aspect ratio will always
 // be preserved.
 #define PREVIEW_WIDTH 256

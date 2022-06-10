@@ -51,7 +51,7 @@ static void executeBlockWithoutAnimation(Block block)
 // -------------------------------------------------------------------------
 /**
   QIOSEditMenu is just a wrapper class around UIMenuController to
-  ease showing and hiding it correcly.
+  ease showing and hiding it correctly.
   */
 @interface QIOSEditMenu : NSObject
 @property (nonatomic, assign) BOOL visible;
@@ -792,7 +792,7 @@ static void executeBlockWithoutAnimation(Block block)
     SelectionPair selection = querySelection();
     int touchTextPos = QPlatformInputContext::queryFocusObject(Qt::ImCursorPosition, touchPoint).toInt();
 
-    // Ensure that the handels cannot be dragged past each other
+    // Ensure that the handles cannot be dragged past each other
     if (_dragOnCursor)
         selection.second = (touchTextPos > selection.first) ? touchTextPos : selection.first + 1;
     else
@@ -920,7 +920,7 @@ static void executeBlockWithoutAnimation(Block block)
         // But note, we only want to hide the menu, and not clear the selection.
         // Only when the user taps inside the input area do we want to clear the
         // selection as well. This is different from native behavior, but done so
-        // deliberatly for cross-platform consistency. This will let the user click on
+        // deliberately for cross-platform consistency. This will let the user click on
         // e.g "Bold" and "Italic" buttons elsewhere in the UI to modify the selected text.
         return;
     }
@@ -933,7 +933,7 @@ static void executeBlockWithoutAnimation(Block block)
     }
 
     // When no menu is showing, and the touch is inside the input
-    // area, we check if we should show it. We wan't to do so if
+    // area, we check if we should show it. We want to do so if
     // the tap doesn't result in the cursor changing position.
     _cursorPosOnPress = QInputMethod::queryFocusObject(Qt::ImCursorPosition, QVariant()).toInt();
 }

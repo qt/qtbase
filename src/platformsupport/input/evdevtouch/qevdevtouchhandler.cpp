@@ -901,7 +901,7 @@ void QEvdevTouchScreenHandlerThread::filterAndSendTouchPoints()
 
     } else {
         // Update our estimate for the touch rate. We're making the assumption
-        // that this value will be mostly accurate with the occational bump,
+        // that this value will be mostly accurate with the occasional bump,
         // so we're weighting the existing value high compared to the update.
         const double ratio = 0.9;
         m_touchRate = sqrt(m_touchRate * m_touchRate * ratio + touchDelta * touchDelta * (1.0 - ratio));

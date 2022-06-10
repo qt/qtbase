@@ -249,7 +249,7 @@ int getCurrentStandardUtcOffset()
 #else
     qTzSet();
     const time_t curr = time(nullptr);
-    /* Set t to the UTC represntation of curr; the time whose local standard
+    /* Set t to the UTC representation of curr; the time whose local standard
        time representation coincides with that differs from curr by local time's
        standard offset.  Note that gmtime() leaves the tm_isdst flag set to 0,
        so mktime() will, even if local time is currently using DST, return the

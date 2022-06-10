@@ -205,7 +205,7 @@
 {
     // The initial frame computed during startup may happen before the view has
     // a window, meaning our calculations above will be wrong. We ensure that the
-    // frame is set correctly once we have a window to base our calulations on.
+    // frame is set correctly once we have a window to base our calculations on.
     [self setFrame:self.window.bounds];
 }
 
@@ -405,7 +405,7 @@
     // Prevent recursion caused by updating the status bar appearance (position
     // or visibility), which in turn may cause a layout of our subviews, and
     // a reset of window-states, which themselves affect the view controller
-    // properties such as the statusbar visibilty.
+    // properties such as the statusbar visibility.
     if (m_updatingProperties)
         return;
 

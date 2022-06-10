@@ -860,7 +860,7 @@ bool QFutureInterfaceBase::isChainCanceled() const
     while (parent) {
         // If the future is in Canceled state because it had an exception, we want to
         // continue checking the chain of parents for cancellation, otherwise if the exception
-        // is handeled inside the chain, it won't be interrupted even though cancellation has
+        // is handled inside the chain, it won't be interrupted even though cancellation has
         // been requested.
         if ((parent->state.loadRelaxed() & Canceled) && !parent->hasException)
             return true;

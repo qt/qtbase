@@ -305,7 +305,7 @@
     receive tablet proximity events and forward them to \c TabletCanvas.
     The \c TabletEnterProximity and \c TabletLeaveProximity events are sent to
     the QApplication object, while other tablet events are sent to the QWidget's
-    \c event() hander, which sends them on to \l{QWidget::}{tabletEvent()}.
+    \c event() handler, which sends them on to \l{QWidget::}{tabletEvent()}.
 
 
     \section1 TabletApplication Class Implementation

@@ -429,7 +429,7 @@ QDBusConnection &QDBusConnection::operator=(const QDBusConnection &other)
 }
 
 /*!
-    Opens a connection of type \a type to one of the known busses and
+    Opens a connection of type \a type to one of the known buses and
     associate with it the connection name \a name. Returns a
     QDBusConnection object associated with that connection.
 */

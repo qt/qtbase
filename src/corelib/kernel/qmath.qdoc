@@ -170,7 +170,7 @@
 
     This is as for the two-argument and three-argument forms, supported by
     std::hypot(), but with as many numeric parameters as you care to pass to
-    it. Uses \a first and each of the \a rest as co-ordinates, performing a
+    it. Uses \a first and each of the \a rest as coordinates, performing a
     calculation equivalent to squaring each, summing and returning the square
     root, save that underflow and overflow are avoided as far as possible.
 

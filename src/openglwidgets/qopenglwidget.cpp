@@ -145,7 +145,7 @@ QT_BEGIN_NAMESPACE
   loading which means applications are not directly linking to an GL
   implementation and thus direct function calls are not feasible.
 
-  In paintGL() the current context is always accessible by caling
+  In paintGL() the current context is always accessible by calling
   QOpenGLContext::currentContext(). From this context an already initialized,
   ready-to-be-used QOpenGLFunctions instance is retrievable by calling
   QOpenGLContext::functions(). An alternative to prefixing every GL call is to
@@ -1425,7 +1425,7 @@ bool QOpenGLWidget::event(QEvent *e)
         if (isHidden())
             break;
         Q_FALLTHROUGH();
-    case QEvent::Show: // reparenting may not lead to a resize so reinitalize on Show too
+    case QEvent::Show: // reparenting may not lead to a resize so reinitialize on Show too
         if (d->initialized && !d->wrapperTexture && window()->windowHandle()) {
             // Special case: did grabFramebuffer() for a hidden widget that then became visible.
             // Recreate all resources since the context now needs to share with the TLW's.

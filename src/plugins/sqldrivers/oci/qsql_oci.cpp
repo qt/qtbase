@@ -1563,7 +1563,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVariantList &boundValues, bool a
         }
     }
 
-    //finaly we can execute
+    //finally we can execute
     r = OCIStmtExecute(d->svc, d->sql, d->err,
                        arrayBind ? 1 : columns[0].recordCount,
                        0, NULL, NULL,

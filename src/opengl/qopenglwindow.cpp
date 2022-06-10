@@ -554,7 +554,7 @@ void QOpenGLWindow::resizeGL(int w, int h)
 
   \note When using a partial update behavior, like \c PartialUpdateBlend, the
   output of the previous paintGL() call is preserved and, after the additional
-  drawing perfomed in the current invocation of the function, the content is
+  drawing performed in the current invocation of the function, the content is
   blitted or blended over the content drawn directly to the window in
   paintUnderGL().
 

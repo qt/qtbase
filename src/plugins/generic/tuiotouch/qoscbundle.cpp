@@ -65,7 +65,7 @@ QOscBundle::QOscBundle(const QByteArray &data)
 
     if (oscTimeEpoch == 0 && oscTimePico == 1) {
         // "The time tag value consisting of 63 zero bits followed by a
-        // one in the least signifigant bit is a special case meaning
+        // one in the least significant bit is a special case meaning
         // "immediately.""
         isImmediate = true;
     }

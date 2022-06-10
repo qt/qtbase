@@ -146,7 +146,7 @@
     rendering parameters in local variables. As usual, we protect
     accesses to the member variables using the class's mutex. Storing
     the member variables in local variables allows us to minimize the
-    amout of code that needs to be protected by a mutex. This ensures
+    amount of code that needs to be protected by a mutex. This ensures
     that the main thread will never have to block for too long when
     it needs to access \c{RenderThread}'s member variables (e.g., in
     \c render()).

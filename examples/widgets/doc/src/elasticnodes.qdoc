@@ -331,7 +331,7 @@
     collection of small items that all move around, it's unnecessary for
     Graphics View to waste time finding accurate update regions, so we set the
     QGraphicsView::BoundingRectViewportUpdate viewport update mode. The default
-    would work fine, but this mode is noticably faster for this example.
+    would work fine, but this mode is noticeably faster for this example.
 
     To improve rendering quality, we set QPainter::Antialiasing.
 

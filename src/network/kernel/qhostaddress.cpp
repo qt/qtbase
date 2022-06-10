@@ -784,7 +784,7 @@ bool QHostAddress::operator==(const QHostAddress &other) const
     Returns \c true if this host address is the same as the \a other address
     given; otherwise returns \c false.
 
-    The parameter \a mode controls which conversions are preformed between addresses
+    The parameter \a mode controls which conversions are performed between addresses
     of differing protocols. If no \a mode is given, \c TolerantConversion is performed
     by default.
 

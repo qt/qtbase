@@ -173,7 +173,7 @@ bool QWasmScreen::hasSpecialHtmlTargets() const
 {
     static bool gotIt = []{
         // specialHTMLTargets is a JavaScript Array if available. Note that it is
-        // an abort() function if not, so a simple isUndefined() test wont't work here.
+        // an abort() function if not, so a simple isUndefined() test won't work here.
         return emscripten::val::module_property("specialHTMLTargets")
                ["constructor"]["name"].as<std::string>() == std::string("Array");
     }();
@@ -286,7 +286,7 @@ void QWasmScreen::updateQScreenAndCanvasRenderSize()
     m_canvas.set("width", canvasSize.width());
     m_canvas.set("height", canvasSize.height());
 
-    // Returns the html elments document/body position
+    // Returns the html elements document/body position
     auto getElementBodyPosition = [](const emscripten::val &element) -> QPoint {
         emscripten::val bodyRect = element["ownerDocument"]["body"].call<emscripten::val>("getBoundingClientRect");
         emscripten::val canvasRect = element.call<emscripten::val>("getBoundingClientRect");

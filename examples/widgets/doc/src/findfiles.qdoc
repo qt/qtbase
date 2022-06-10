@@ -218,7 +218,7 @@
     \snippet dialogs/findfiles/window.cpp 10
 
     The private \c createComboBox() function is also called from the
-    contructor. We create a QComboBox with the given text, and make it
+    constructor. We create a QComboBox with the given text, and make it
     editable.
 
     When the user enters a new string in an editable combobox, the

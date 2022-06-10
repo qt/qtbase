@@ -14,7 +14,7 @@
 
     The example consists of a single class, \c TableEditor, which is a
     custom dialog widget that allows the user to modify data stored in
-    a database. We will first review the class definiton and how to
+    a database. We will first review the class definition and how to
     use the class, then we will take a look at the implementation.
 
     \section1 TableEditor Class Definition
@@ -40,7 +40,7 @@
     We are also going to show how a table view can be used to cache
     any changes to the data until the user explicitly requests to
     submit them. For that reason we need to declare a \c submit() slot
-    in additon to the model and the editor's buttons.
+    in addition to the model and the editor's buttons.
 
     \table 100%
     \header \li Connecting to a Database

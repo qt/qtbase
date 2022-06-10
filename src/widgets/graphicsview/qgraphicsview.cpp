@@ -3804,7 +3804,7 @@ bool QGraphicsView::isTransformed() const
 
     \snippet code/src_gui_graphicsview_qgraphicsview.cpp 7
 
-    To simplify interation with items using a transformed view, QGraphicsView
+    To simplify interaction with items using a transformed view, QGraphicsView
     provides mapTo... and mapFrom... functions that can translate between
     scene and view coordinates. For example, you can call mapToScene() to map
     a view coordinate to a floating point scene coordinate, or mapFromScene()

@@ -752,7 +752,7 @@ static inline QStringList qmlCacheFileFilters()
 }
 
 // File entry filter function for updateFile() that returns a list of files for
-// QML import trees: DLLs (matching debgug) and .qml/,js, etc.
+// QML import trees: DLLs (matching debug) and .qml/,js, etc.
 class QmlDirectoryFileEntryFunction {
 public:
     enum Flags {
