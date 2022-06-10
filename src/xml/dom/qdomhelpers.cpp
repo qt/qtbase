@@ -300,6 +300,35 @@ inline QString stringRefToString(const QStringRef &stringRef)
     return stringRef.isNull() ? QString() : stringRef.toString();
 }
 
+QString QDomBuilder::dtdInternalSubset(const QString &dtd)
+{
+    // https://www.w3.org/TR/xml/#NT-intSubset
+    // doctypedecl: '<!DOCTYPE' S Name (S ExternalID)? S? ('[' intSubset ']' S?)? '>'
+    const QString &name = doc->doctype()->name;
+    QStringView tmp = QStringView(dtd).mid(dtd.indexOf(name) + name.size());
+
+    const QString &publicId = doc->doctype()->publicId;
+    if (!publicId.isEmpty())
+        tmp = tmp.mid(tmp.indexOf(publicId) + publicId.size());
+
+    const QString &systemId = doc->doctype()->systemId;
+    if (!systemId.isEmpty())
+        tmp = tmp.mid(tmp.indexOf(systemId) + systemId.size());
+
+    const qsizetype obra = tmp.indexOf(u'[');
+    const qsizetype cbra = tmp.lastIndexOf(u']');
+    if (obra >= 0 && cbra >= 0)
+        return tmp.left(cbra).mid(obra + 1).toString();
+
+    return QString();
+}
+
+bool QDomBuilder::parseDTD(const QString &dtd)
+{
+    doc->doctype()->internalSubset = dtdInternalSubset(dtd);
+    return true;
+}
+
 bool QDomBuilder::startElement(const QString &nsURI, const QString &qName,
                                const QXmlStreamAttributes &atts)
 {
@@ -520,6 +549,8 @@ bool QDomParser::parseProlog()
                         QDomParser::tr("Error occurred while processing document type declaration"));
                 return false;
             }
+            if (!domBuilder.parseDTD(reader->text().toString()))
+                return false;
             if (!parseMarkupDecl())
                 return false;
             break;
