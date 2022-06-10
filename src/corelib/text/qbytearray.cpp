@@ -3870,19 +3870,21 @@ QByteArray QByteArray::toBase64(Base64Options options) const
     const char padchar = '=';
     qsizetype padlen = 0;
 
-    QByteArray tmp((size() + 2) / 3 * 4, Qt::Uninitialized);
+    const qsizetype sz = size();
+
+    QByteArray tmp((sz + 2) / 3 * 4, Qt::Uninitialized);
 
     qsizetype i = 0;
     char *out = tmp.data();
-    while (i < size()) {
+    while (i < sz) {
         // encode 3 bytes at a time
         int chunk = 0;
         chunk |= int(uchar(data()[i++])) << 16;
-        if (i == size()) {
+        if (i == sz) {
             padlen = 2;
         } else {
             chunk |= int(uchar(data()[i++])) << 8;
-            if (i == size())
+            if (i == sz)
                 padlen = 1;
             else
                 chunk |= int(uchar(data()[i++]));
