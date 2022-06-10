@@ -6,6 +6,11 @@
 # include <QtCore/qglobal.h>
 #endif
 
+#if 0
+#pragma qt_sync_skip_header_check
+#pragma qt_sync_stop_processing
+#endif
+
 #ifndef QCOMPILERDETECTION_H
 #define QCOMPILERDETECTION_H
 
