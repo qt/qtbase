@@ -21,7 +21,7 @@
 // We mean it.
 //
 
-#include <QtCore/q20functional.h>
+#include <QtCore/q23functional.h>
 #include <type_traits>
 #include <utility>
 
@@ -99,7 +99,8 @@ public:
     Q_IMPLICIT function_ref_base(F* f) noexcept
         : m_bound_entity(f),
           m_thunk_ptr([](BoundEntityType ctx, ArgTypes&&... args) noexcept(noex) -> R {
-                return reinterpret_cast<F*>(ctx.fun)(std::forward<ArgTypes>(args)...);
+                return q23::invoke_r<R>(reinterpret_cast<F*>(ctx.fun),
+                                        std::forward<ArgTypes>(args)...);
             })
     {}
 
@@ -115,7 +116,8 @@ public:
         : m_bound_entity(std::addressof(f)),
           m_thunk_ptr([](BoundEntityType ctx, ArgTypes&&... args) noexcept(noex) -> R {
                 using That = copy_const_t<Const, std::remove_reference_t<F>>;
-                return (*static_cast<That*>(ctx.obj))(std::forward<ArgTypes>(args)...);
+                return q23::invoke_r<R>(*static_cast<That*>(ctx.obj),
+                                        std::forward<ArgTypes>(args)...);
             })
     {}
 

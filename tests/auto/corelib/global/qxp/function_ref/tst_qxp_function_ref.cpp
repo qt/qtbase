@@ -42,6 +42,7 @@ private Q_SLOTS:
     void basics();
     void constOverloads();
     void constExpr();
+    void voidReturning();
     void ctad();
 };
 
@@ -194,6 +195,45 @@ int  i_f_i_ex(int i) { return i; }
 void v_f_i_ex(int)   {}
 int  i_f_v_ex()      { return 42; }
 void v_f_v_ex()      {}
+
+void tst_qxp_function_ref::voidReturning()
+{
+    // check that "casting" int to void returns works:
+
+    using Fi = qxp::function_ref<void(int)>;
+    using Fv = qxp::function_ref<void()>;
+
+    {
+        Fi fi = i_f_i_nx;
+        fi(42);
+        Fv fv = i_f_v_nx;
+        fv();
+    }
+
+    {
+        Fi fi = i_f_i_ex;
+        fi(42);
+        Fv fv = i_f_v_ex;
+        fv();
+    }
+
+    // now with lambdas
+
+    bool ok = false; // prevent lambdas from decaying to function pointers
+    {
+        Fi fi = [&](int i) noexcept { return i + int(ok); };
+        fi(42);
+        Fv fv = [&]() noexcept { return int(ok); };
+        fv();
+    }
+
+    {
+        Fi fi = [&](int i) { return i + int(ok); };
+        fi(42);
+        Fv fv = [&]() { return int(ok); };
+        fv();
+    }
+}
 
 void tst_qxp_function_ref::ctad()
 {
