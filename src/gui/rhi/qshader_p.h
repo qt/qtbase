@@ -187,7 +187,9 @@ inline bool operator!=(const QShader &lhs, const QShader &rhs) noexcept
 }
 
 Q_GUI_EXPORT bool operator==(const QShaderVersion &lhs, const QShaderVersion &rhs) noexcept;
+Q_GUI_EXPORT bool operator<(const QShaderVersion &lhs, const QShaderVersion &rhs) noexcept;
 Q_GUI_EXPORT bool operator==(const QShaderKey &lhs, const QShaderKey &rhs) noexcept;
+Q_GUI_EXPORT bool operator<(const QShaderKey &lhs, const QShaderKey &rhs) noexcept;
 Q_GUI_EXPORT bool operator==(const QShaderCode &lhs, const QShaderCode &rhs) noexcept;
 
 inline bool operator!=(const QShaderVersion &lhs, const QShaderVersion &rhs) noexcept

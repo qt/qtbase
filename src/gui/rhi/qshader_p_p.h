@@ -17,7 +17,7 @@
 
 #include "qshader_p.h"
 #include <QtCore/QAtomicInt>
-#include <QtCore/QHash>
+#include <QtCore/QMap>
 #include <QtCore/QDebug>
 
 QT_BEGIN_NAMESPACE
@@ -54,9 +54,10 @@ struct Q_GUI_EXPORT QShaderPrivate
     int qsbVersion = QSB_VERSION;
     QShader::Stage stage = QShader::VertexStage;
     QShaderDescription desc;
-    QHash<QShaderKey, QShaderCode> shaders;
-    QHash<QShaderKey, QShader::NativeResourceBindingMap> bindings;
-    QHash<QShaderKey, QShader::SeparateToCombinedImageSamplerMappingList> combinedImageMap;
+    // QMap not QHash because we need to be able to iterate based on sorted keys
+    QMap<QShaderKey, QShaderCode> shaders;
+    QMap<QShaderKey, QShader::NativeResourceBindingMap> bindings;
+    QMap<QShaderKey, QShader::SeparateToCombinedImageSamplerMappingList> combinedImageMap;
 };
 
 QT_END_NAMESPACE

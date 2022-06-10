@@ -18,6 +18,7 @@ private slots:
     void genVariants();
     void shaderDescImplicitSharing();
     void bakedShaderImplicitSharing();
+    void sortedKeys();
     void mslResourceMapping();
     void serializeShaderDesc();
     void comparison();
@@ -236,6 +237,16 @@ void tst_QShader::bakedShaderImplicitSharing()
         QCOMPARE(d1.uniformBlocks().count(), 1);
         QVERIFY(s0 != s1);
     }
+}
+
+void tst_QShader::sortedKeys()
+{
+    QShader s = getShader(QLatin1String(":/data/texture_all_v4.frag.qsb"));
+    QVERIFY(s.isValid());
+    QList<QShaderKey> availableShaders = s.availableShaders();
+    QCOMPARE(availableShaders.count(), 7);
+    std::sort(availableShaders.begin(), availableShaders.end());
+    QCOMPARE(availableShaders, s.availableShaders());
 }
 
 void tst_QShader::mslResourceMapping()

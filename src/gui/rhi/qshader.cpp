@@ -564,6 +564,22 @@ size_t qHash(const QShaderVersion &s, size_t seed) noexcept
 #endif
 
 /*!
+    Establishes a sorting order between the two QShaderVersion \a lhs and \a rhs.
+
+    \relates QShaderVersion
+ */
+bool operator<(const QShaderVersion &lhs, const QShaderVersion &rhs) noexcept
+{
+    if (lhs.version() < rhs.version())
+        return true;
+
+    if (lhs.version() == rhs.version())
+        return int(lhs.flags()) < int(rhs.flags());
+
+    return false;
+}
+
+/*!
     \internal
     \fn bool operator!=(const QShaderVersion &lhs, const QShaderVersion &rhs)
 
@@ -582,6 +598,28 @@ bool operator==(const QShaderKey &lhs, const QShaderKey &rhs) noexcept
 {
     return lhs.source() == rhs.source() && lhs.sourceVersion() == rhs.sourceVersion()
             && lhs.sourceVariant() == rhs.sourceVariant();
+}
+
+/*!
+    Establishes a sorting order between the two keys \a lhs and \a rhs.
+
+    \relates QShaderKey
+ */
+bool operator<(const QShaderKey &lhs, const QShaderKey &rhs) noexcept
+{
+    if (int(lhs.source()) < int(rhs.source()))
+        return true;
+
+    if (int(lhs.source()) == int(rhs.source())) {
+        if (lhs.sourceVersion() < rhs.sourceVersion())
+            return true;
+        if (lhs.sourceVersion() == rhs.sourceVersion()) {
+            if (int(lhs.sourceVariant()) < int(rhs.sourceVariant()))
+                return true;
+        }
+    }
+
+    return false;
 }
 
 /*!
