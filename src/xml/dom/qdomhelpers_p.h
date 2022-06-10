@@ -81,6 +81,7 @@ public:
     bool startEntity(const QString &name);
     bool endEntity();
     bool startDTD(const QString &name, const QString &publicId, const QString &systemId);
+    bool parseDTD(const QString &dtd);
     bool comment(const QString &characters);
     bool externalEntityDecl(const QString &name, const QString &publicId, const QString &systemId);
     bool notationDecl(const QString &name, const QString &publicId, const QString &systemId);
@@ -97,6 +98,8 @@ public:
     int errorColumn;
 
 private:
+    QString dtdInternalSubset(const QString &dtd);
+
     QDomDocumentPrivate *doc;
     QDomNodePrivate *node;
     QXmlStreamReader *reader;
