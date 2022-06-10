@@ -78,6 +78,7 @@ private slots:
     void setUsesScrollButtons();
 
     void removeLastTab();
+    void removeLastVisibleTab();
 
     void closeButton();
 
@@ -479,6 +480,39 @@ void tst_QTabBar::removeLastTab()
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.at(0).at(0).toInt(), -1);
     spy.clear();
+}
+
+void tst_QTabBar::removeLastVisibleTab()
+{
+    QTabBar tabbar;
+    tabbar.setSelectionBehaviorOnRemove(QTabBar::SelectionBehavior::SelectRightTab);
+
+    int invisible = tabbar.addTab("invisible");
+    int visible = tabbar.addTab("visible");
+    tabbar.setCurrentIndex(visible);
+    tabbar.adjustSize();
+
+    tabbar.setTabVisible(invisible, false);
+    {
+        QSignalSpy spy(&tabbar, SIGNAL(currentChanged(int)));
+        tabbar.removeTab(visible);
+        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.at(0).at(0).toInt(), -1);
+        QCOMPARE(tabbar.currentIndex(), -1);
+    }
+
+    tabbar.setSelectionBehaviorOnRemove(QTabBar::SelectionBehavior::SelectLeftTab);
+    visible = tabbar.insertTab(0, "visible");
+    ++invisible;
+    QVERIFY(!tabbar.isTabVisible(invisible));
+    tabbar.setCurrentIndex(visible);
+    {
+        QSignalSpy spy(&tabbar, SIGNAL(currentChanged(int)));
+        tabbar.removeTab(visible);
+        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.at(0).at(0).toInt(), -1);
+        QCOMPARE(tabbar.currentIndex(), -1);
+    }
 }
 
 void tst_QTabBar::closeButton()
