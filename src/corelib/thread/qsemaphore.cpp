@@ -484,7 +484,7 @@ bool QSemaphore::tryAcquire(int n, int timeout)
 
     It is equivalent to calling \c{tryAcquire(1, timeout)}, where the call
     times out on the given \a timeout value. The function returns \c true
-    on accquiring the resource successfully.
+    on acquiring the resource successfully.
 
     \sa tryAcquire(), try_acquire(), try_acquire_until()
 */

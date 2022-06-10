@@ -1333,7 +1333,7 @@ void QListView::setSelection(const QRect &rect, QItemSelectionModel::SelectionFl
     if (!d->selectionModel)
         return;
 
-    // if we are wrapping, we can only selecte inside the contents rectangle
+    // if we are wrapping, we can only select inside the contents rectangle
     int w = qMax(d->contentsSize().width(), d->viewport->width());
     int h = qMax(d->contentsSize().height(), d->viewport->height());
     if (d->wrap && !QRect(0, 0, w, h).intersects(rect))

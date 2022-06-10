@@ -30,7 +30,7 @@
 #include <functional>
 
 // In less fortunate cases one may need to build on a system with dev headers
-// from the dark ages. Let's pull a GL and define the missing stuff outselves.
+// from the dark ages. Let's pull a GL and define the missing stuff ourselves.
 
 #ifndef DRM_PLANE_TYPE_OVERLAY
 #define DRM_PLANE_TYPE_OVERLAY 0

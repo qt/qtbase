@@ -178,7 +178,7 @@
     making each shape item appear at its defined position. But
     remember to translate the coordinate system back when the item is
     drawn, otherwise the next shape item will appear at a position
-    relative to the item we drawed last.
+    relative to the item drawn last.
 
     \snippet widgets/tooltips/sortingbox.cpp 10
 

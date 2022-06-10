@@ -10,7 +10,7 @@
     \image frozencolumn-example.png "Screenshot of the example"
 
     We use Qt's model/view framework to implement a table with its first
-    column frozen. This technique can be aplied to several columns or rows,
+    column frozen. This technique can be applied to several columns or rows,
     as long as they are on the edge of the table.
 
     The model/view framework allows for one model to be displayed in different

@@ -200,7 +200,7 @@
     is started. We start the event loop by calling the application's
     \l{QApplication::}{exec()} function; the result returned by this function
     is used as the return value from the \c main() function. At this point,
-    it becomes apparent why we instanciated \c AddressBook on the stack: It
+    it becomes apparent why we instantiated \c AddressBook on the stack: It
     will now go out of scope. Therefore, \c AddressBook and all its child widgets
     will be deleted, thus preventing memory leaks.
 */

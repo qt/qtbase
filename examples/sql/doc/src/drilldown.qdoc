@@ -283,7 +283,7 @@
 
     The \c findWindow() function, on the other hand, is frequently
     used. It is called from the \c showInformation() function to
-    detemine whether a window is already created for the given
+    determine whether a window is already created for the given
     item (whenever we create an \c InformationWindow object, we
     store a reference to it in the \c informationWindows list). The
     latter function is in turn called from our custom \c

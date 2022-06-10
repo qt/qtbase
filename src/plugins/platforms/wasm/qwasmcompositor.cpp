@@ -422,7 +422,7 @@ void QWasmCompositor::requestUpdateWindow(QWasmWindow *window, UpdateRequestDeli
     requestUpdate();
 }
 
-// Requests an upate/new frame using RequestAnimationFrame
+// Requests an update/new frame using RequestAnimationFrame
 void QWasmCompositor::requestUpdate()
 {
     if (m_requestAnimationFrameId != -1)

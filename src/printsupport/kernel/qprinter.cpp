@@ -431,7 +431,7 @@ public:
 
   Note the difference between Point and DevicePixel. The Point unit is
   defined to be 1/72th of an inch, while the DevicePixel unit is
-  resolution dependant and is based on the actual pixels, or dots, on
+  resolution dependent and is based on the actual pixels, or dots, on
   the printer.
 */
 

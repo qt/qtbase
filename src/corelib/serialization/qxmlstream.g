@@ -52,7 +52,7 @@
 %token IMPLIED "IMPLIED"
 %token FIXED "FIXED"
 
--- conent spec
+-- content spec
 %token EMPTY "EMPTY"
 %token ANY "ANY"
 %token PCDATA "PCDATA"

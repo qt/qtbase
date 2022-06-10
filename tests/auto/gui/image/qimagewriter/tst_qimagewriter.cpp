@@ -102,7 +102,7 @@ void tst_QImageWriter::getSetCheck()
 
     QCOMPARE((QIODevice *) var1, obj1.device());
     // The class should possibly handle a 0-pointer as a device, since
-    // there is a default contructor, so it's "handling" a 0 device by default.
+    // there is a default constructor, so it's "handling" a 0 device by default.
     // For example: QMovie::setDevice(0) works just fine
     obj1.setDevice((QIODevice *)0);
     QCOMPARE((QIODevice *) 0, obj1.device());

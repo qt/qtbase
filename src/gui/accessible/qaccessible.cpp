@@ -275,7 +275,7 @@ Q_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
     \value AlertMessage     An object that is used to alert the user.
     \value Animation        An object that displays an animation.
     \value Application      The application's main window.
-    \value Assistant        An object that provids interactive help.
+    \value Assistant        An object that provides interactive help.
     \value Border           An object that represents a border.
     \value ButtonDropDown   A button that drops down a list of items.
     \value ButtonDropGrid   A button that drops down a grid.

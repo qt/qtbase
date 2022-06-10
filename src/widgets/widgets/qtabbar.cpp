@@ -926,7 +926,7 @@ int QTabBar::addTab(const QIcon& icon, const QString &text)
 
 /*!
     Inserts a new tab with text \a text at position \a index. If \a
-    index is out of range, the new tab is appened. Returns the new
+    index is out of range, the new tab is appended. Returns the new
     tab's index.
 */
 int QTabBar::insertTab(int index, const QString &text)
@@ -1404,7 +1404,7 @@ void QTabBar::setCurrentIndex(int index)
         // If the size hint depends on whether the tab is selected (for instance a style
         // sheet rule that sets a bold font on the 'selected' tab) then we need to
         // re-layout the entire tab bar. To minimize the cost, do that only if the
-        // size hint changes for the tab that becomes the current tab (the old curent tab
+        // size hint changes for the tab that becomes the current tab (the old current tab
         // will most certainly do the same). QTBUG-6905
         if (tabRect(index).size() != tabSizeHint(index))
             d->layoutTabs();

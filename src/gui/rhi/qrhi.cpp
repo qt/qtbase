@@ -4304,7 +4304,7 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
 
     Support for non-fill polygon modes is optional and is indicated by the
     QRhi::NonFillPolygonMode feature. With OpenGL ES and some Vulkan
-    implementations the feature will likely be reported as unspported, which
+    implementations the feature will likely be reported as unsupported, which
     then means values other than Fill cannot be used.
 
     \value Fill The interior of the polygon is filled (default)
@@ -4571,7 +4571,7 @@ QRhiResource::Type QRhiGraphicsPipeline::resourceType() const
 
 /*!
     \enum QRhiSwapChain::Format
-    Decribes the swapchain format. The default format is SDR.
+    Describes the swapchain format. The default format is SDR.
 
     \value SDR 8-bit RGBA or BGRA, depending on the backend and platform. With
     OpenGL ES in particular, it could happen that the platform provides less

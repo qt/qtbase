@@ -32,7 +32,7 @@ class CursorView extends ImageView
         mHandle = handle;
     }
 
-    // Called when the handle was moved programatically , with the delta amount in pixels
+    // Called when the handle was moved programmatically , with the delta amount in pixels
     public void adjusted(int dx, int dy) {
         m_offsetX += dx;
         m_offsetY += dy;

@@ -52,7 +52,7 @@ namespace QTestPrivate {
 
     /*! \internal
         \class AppNapDisabler
-        \brief Disables App Nap by registereing a bacground activity.
+        \brief Disables App Nap by registering a background activity.
 
         App Nap remains disabled as long as the AppNapDisabler instance
         exists.

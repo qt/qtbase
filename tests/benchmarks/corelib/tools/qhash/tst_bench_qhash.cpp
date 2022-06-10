@@ -72,7 +72,7 @@ void tst_QHash::initTestCase()
     // lots of strings with alphabetical characters, vaguely reminiscent of
     // a dictionary.
     //
-    // this programatically generates a series like:
+    // this programmatically generates a series like:
     //  AAAAAA
     //  AAAAAB
     //  AAAAAC

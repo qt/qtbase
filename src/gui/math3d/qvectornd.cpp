@@ -179,7 +179,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn void QVector2D::normalize()
 
-    Normalizes the currect vector in place. Nothing happens if this
+    Normalizes the current vector in place. Nothing happens if this
     vector is a null vector or the length of the vector is very close to 1.
 
     \sa length(), normalized()
@@ -656,7 +656,7 @@ QDataStream &operator>>(QDataStream &stream, QVector2D &vector)
 /*!
     \fn void QVector3D::normalize()
 
-    Normalizes the currect vector in place. Nothing happens if this
+    Normalizes the current vector in place. Nothing happens if this
     vector is a null vector or the length of the vector is very close to 1.
 
     \sa length(), normalized()
@@ -1332,7 +1332,7 @@ QDataStream &operator>>(QDataStream &stream, QVector3D &vector)
 /*!
     \fn void QVector4D::normalize()
 
-    Normalizes the currect vector in place. Nothing happens if this
+    Normalizes the current vector in place. Nothing happens if this
     vector is a null vector or the length of the vector is very close to 1.
 
     \sa length(), normalized()

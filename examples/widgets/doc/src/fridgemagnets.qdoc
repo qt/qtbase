@@ -67,7 +67,7 @@
     constructor, or by using the \l{QPainter::}{begin()} method as we
     do in this example. The \l{QPainter::}{end()} method deactivates
     it. Note that the latter function is called automatically upon
-    destruction when the painter is actived by its constructor. The
+    destruction when the painter is activated by its constructor. The
     QPainter::Antialiasing render hint ensures that the paint engine
     will antialias the edges of primitives if possible.
 

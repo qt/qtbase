@@ -49,7 +49,7 @@ public:
     void release();
     static QReadWriteLockPrivate *allocate();
 
-    // Recusive mutex handling
+    // Recursive mutex handling
     Qt::HANDLE currentWriter = {};
 
     struct Reader {

@@ -1050,7 +1050,7 @@ void QAbstractButton::keyPressEvent(QKeyEvent *e)
             // cleaned up when fixing task 194373. It's here to ensure that we
             // keep compatibility outside QAbstractItemView.
             d->moveFocus(e->key());
-            if (hasFocus()) // nothing happend, propagate
+            if (hasFocus()) // nothing happened, propagate
                 e->ignore();
         } else {
             // Prefer parent widget, use this if parent is absent

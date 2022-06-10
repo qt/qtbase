@@ -160,7 +160,7 @@
     \snippet blockingfortuneclient/blockingclient.cpp 1
 
     The requestNewFortune() slot calls FortuneThread::requestNewFortune(),
-    which \e shedules the request. When the thread has received a new fortune
+    which \e schedules the request. When the thread has received a new fortune
     and emits newFortune(), our showFortune() slot is called:
 
     \snippet blockingfortuneclient/blockingclient.cpp 2

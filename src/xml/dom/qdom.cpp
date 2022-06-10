@@ -4134,7 +4134,7 @@ void QDomElementPrivate::save(QTextStream& s, int depth, int indent) const
     n.toText().data() directly on the node, because the node may not
     be a text element.
 
-    You can get a list of all the decendents of an element which have
+    You can get a list of all the descendents of an element which have
     a specified tag name with elementsByTagName() or
     elementsByTagNameNS().
 

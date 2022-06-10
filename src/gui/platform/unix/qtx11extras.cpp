@@ -360,7 +360,7 @@ bool QX11Info::isCompositingManagerRunning(int screen)
 }
 
 /*!
-    Returns a new peeker id or -1 if some interal error has occurred.
+    Returns a new peeker id or -1 if some internal error has occurred.
     Each peeker id is associated with an index in the buffered native
     event queue.
 
@@ -391,7 +391,7 @@ qint32 QX11Info::generatePeekerId()
     Removes \a peekerId, which was earlier obtained via generatePeekerId().
 
     Returns \c true on success or \c false if unknown peeker id was
-    provided or some interal error has occurred.
+    provided or some internal error has occurred.
 
     \sa generatePeekerId()
 */

@@ -1696,7 +1696,7 @@ TlsKey *X509Certificate::publicKey() const
 /*!
     \class TlsCryptograph
     \internal (Network-private)
-    \brief TlsCryptograph is an abstract class, that allows a TLS pluging to implement QSslSocket.
+    \brief TlsCryptograph is an abstract class, that allows a TLS plugin to implement QSslSocket.
 
     This abstract base class provides an interface that must be reimplemented by a TLS plugin,
     that supports QSslSocket. A class, implementing TlsCryptograph's interface, is responsible

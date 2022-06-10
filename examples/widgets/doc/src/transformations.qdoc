@@ -48,8 +48,8 @@
     coordinate system around the origin (called shearing) using the
     QPainter::shear() function.
 
-    All the tranformation operations operate on QPainter's
-    tranformation matrix that you can retrieve using the
+    All the transformation operations operate on QPainter's
+    transformation matrix that you can retrieve using the
     QPainter::worldTransform() function. A matrix transforms a point in the
     plane to another point. For more information about the
     transformation matrix, see the \l {Coordinate System} and
@@ -265,11 +265,11 @@
     \snippet painting/transformations/window.cpp 1
 
     Then we create the \c RenderArea widgets that will render their
-    shapes with coordinate tranformations. By default the applied
+    shapes with coordinate transformations. By default the applied
     operation is \uicontrol {No Transformation}, i.e. the shapes are
     rendered within the default coordinate system. We create and
     initialize the associated \l {QComboBox}es with items
-    corresponding to the various transformation operations decribed by
+    corresponding to the various transformation operations described by
     the global \c Operation enum.
 
     We also connect the \l {QComboBox}es' \l
@@ -335,10 +335,10 @@
     also has good support for coordinate transformations. With the
     Transformations application you can scale, rotate and translate
     QPainter's coordinate system.  The order in which these
-    tranformations are applied is essential for the result.
+    transformations are applied is essential for the result.
 
-    All the tranformation operations operate on QPainter's
-    tranformation matrix. For more information about the
+    All the transformation operations operate on QPainter's
+    transformation matrix. For more information about the
     transformation matrix, see the \l {Coordinate System} and
     QTransform documentation.
 

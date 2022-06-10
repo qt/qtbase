@@ -127,7 +127,7 @@
           all color components so it can be defined to colorp or lowp depending upon
           the implementation.
 
-    So there are differnt frament shader main functions, depending on the
+    So there are different fragment shader main functions, depending on the
     number & type of pipelines the fragment needs to go through.
 
     The choice of which main() fragment shader string to use depends on:

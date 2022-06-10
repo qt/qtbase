@@ -4105,7 +4105,7 @@ void tst_QLineEdit::QTBUG13520_textNotVisible()
     QString sometext("01-ST16-01SIL-MPL001wfgsdfgsdgsdfgsdfgsdfgsdfgsdfg");
     le.setText(sometext);
     le.setCursorPosition(0);
-    QTest::qWait(100); //just make sure we get he lineedit correcly painted
+    QTest::qWait(100); //just make sure we get he lineedit correctly painted
 
     auto expectedCursorCoordinate = le.width() - le.fontMetrics().horizontalAdvance(sometext);
     // cursor does not leave widget to the left:

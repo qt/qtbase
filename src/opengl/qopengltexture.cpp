@@ -3253,7 +3253,7 @@ bool QOpenGLTexture::isFixedSamplePositions() const
     create the mutable storage. You can use the other
     allocateStorage() overload to specify exactly the pixel format
     and the pixel type to use when allocating mutable storage;
-    this is particulary useful under certain OpenGL ES implementations
+    this is particularly useful under certain OpenGL ES implementations
     (notably, OpenGL ES 2), where the pixel format and the pixel type
     used at allocation time must perfectly match the format
     and the type passed to any subsequent setData() call.
@@ -3318,7 +3318,7 @@ bool QOpenGLTexture::isStorageAllocated() const
     Attempts to create a texture view onto this texture. A texture
     view is somewhat analogous to a view in SQL in that it presents
     a restricted or reinterpreted view of the original data. Texture
-    views do not allocate any more server-side storage, insted relying
+    views do not allocate any more server-side storage, instead relying
     on the storage buffer of the source texture.
 
     Texture views are only available when using immutable storage. For
@@ -4421,7 +4421,7 @@ float QOpenGLTexture::maximumAnisotropy() const
 }
 
 /*!
-    Sets the wrap (or repeat mode) for all texture dimentions to \a mode.
+    Sets the wrap (or repeat mode) for all texture dimensions to \a mode.
 
     \sa wrapMode()
 */

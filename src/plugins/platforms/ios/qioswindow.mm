@@ -68,7 +68,7 @@ QIOSWindow::~QIOSWindow()
     // According to the UIResponder documentation, Cocoa Touch should react to system interruptions
     // that "might cause the view to be removed from the window" by sending touchesCancelled, but in
     // practice this doesn't seem to happen when removing the view from its superview. To ensure that
-    // Qt's internal state for touch and mouse handling is kept consistent, we therefor have to force
+    // Qt's internal state for touch and mouse handling is kept consistent, we therefore have to force
     // cancellation of all touch events.
     [m_view touchesCancelled:[NSSet set] withEvent:0];
 
@@ -259,7 +259,7 @@ void QIOSWindow::requestActivateWindow()
 {
     // Note that several windows can be active at the same time if they exist in the same
     // hierarchy (transient children). But only one window can be QGuiApplication::focusWindow().
-    // Dispite the name, 'requestActivateWindow' means raise and transfer focus to the window:
+    // Despite the name, 'requestActivateWindow' means raise and transfer focus to the window:
     if (blockedByModal())
         return;
 

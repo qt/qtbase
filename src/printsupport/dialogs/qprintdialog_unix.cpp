@@ -675,7 +675,7 @@ void QPrintDialogPrivate::selectPrinter(const QPrinter::OutputFormat outputForma
             options.grayscale->setChecked(true);
 
         // duplex priorities to be as follows:
-        // 1) a user-selected duplex value in the dialog has highest prority
+        // 1) a user-selected duplex value in the dialog has highest priority
         // 2) duplex value set in the QPrinter
         QPrint::DuplexMode duplex;
         if (explicitDuplexMode != QPrint::DuplexAuto && supportedDuplexMode.contains(explicitDuplexMode))

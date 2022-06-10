@@ -545,7 +545,7 @@ void QGraphicsSceneIndex::clear()
 
 /*!
     This method is called when an \a item has been deleted.
-    The default implementation call removeItem. Be carefull,
+    The default implementation calls removeItem. Be careful,
     if your implementation of removeItem use pure virtual method
     of QGraphicsItem like boundingRect(), then you should reimplement
     this method.

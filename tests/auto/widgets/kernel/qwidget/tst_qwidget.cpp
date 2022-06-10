@@ -10253,7 +10253,7 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
     QTRY_COMPARE(child.numEnterEvents, 1);
     QCOMPARE(child.numMouseMoveEvents, 0);
 
-    // Sending synthetic enter/leave trough the parent's mousePressEvent handler.
+    // Sending synthetic enter/leave through the parent's mousePressEvent handler.
     parent.child = &child;
 
     child.hide();

@@ -1440,7 +1440,7 @@ void QWindowCreationContext::applyToMinMaxInfo(MINMAXINFO *mmi) const
     \list
     \li Raster type: handleWmPaint() is implemented to
        to bitblt the image. The DC can be accessed
-       via getDC/Relase DC, which has a special handling
+       via getDC/releaseDC, which has special handling
        when within a paint event (in that case, the DC obtained
        from BeginPaint() is returned).
 

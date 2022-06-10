@@ -151,7 +151,7 @@ QPlatformServices *QPlatformIntegration::services() const
 /*!
     \enum QPlatformIntegration::Capability
 
-    Capabilities are used to determing specific features of a platform integration
+    Capabilities are used to determine specific features of a platform integration
 
     \value ThreadedPixmaps The platform uses a pixmap implementation that is reentrant
     and can be used from multiple threads, like the raster paint engine and QImage based

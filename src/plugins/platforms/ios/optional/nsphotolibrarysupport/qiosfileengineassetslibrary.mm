@@ -188,7 +188,7 @@ public:
 
         // We can only load images from the asset library async. And this might take time, since it
         // involves showing the authorization dialog. But the QFile API is synchronuous, so we need to
-        // wait until we have access to the data. [ALAssetLibrary assetForUrl:] will shedule a block on
+        // wait until we have access to the data. [ALAssetLibrary assetForUrl:] will schedule a block on
         // the current thread. But instead of spinning the event loop to force the block to execute, we
         // wrap the call inside a synchronuous dispatch queue so that it executes on another thread.
         dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);

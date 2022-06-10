@@ -264,7 +264,7 @@ void QPageSetupWidget::initUnits()
     m_ui.unitCombo->addItem(tr("Didot (DD)"), QVariant::fromValue(QPageLayout::Didot));
     m_ui.unitCombo->addItem(tr("Cicero (CC)"), QVariant::fromValue(QPageLayout::Cicero));
 
-    // Initailly default to locale measurement system, mm if metric, in otherwise
+    // Initially default to locale measurement system, mm if metric, in otherwise
     m_ui.unitCombo->setCurrentIndex(QLocale().measurementSystem() != QLocale::MetricSystem);
 }
 

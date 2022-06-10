@@ -111,7 +111,7 @@
 
 // By keeping the responder (QIOSTextInputResponder in this case)
 // retained, we ensure that all messages sent to the view during
-// its lifetime in a window hierarcy will be able to traverse the
+// its lifetime in a window hierarchy will be able to traverse the
 // responder chain.
 - (void)willMoveToWindow:(UIWindow *)window
 {
