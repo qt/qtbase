@@ -32,9 +32,9 @@
 #include "QtCore/qurl.h"
 #include "QtNetwork/private/qauthenticator_p.h"
 #include "QtNetwork/qsslconfiguration.h"
-#include "QtNetwork/private/http2protocol_p.h"
 
 #if QT_CONFIG(http)
+#include "QtNetwork/private/http2protocol_p.h"
 #include "qhttpmultipart.h"
 #include "qhttpmultipart_p.h"
 #include "qnetworkreplyhttpimpl_p.h"
