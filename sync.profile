@@ -51,7 +51,6 @@
     "qnamespace.h" => "Qt",
     "qnumeric.h" => "QtNumeric",
     "qvulkanfunctions.h" => "QVulkanFunctions,QVulkanDeviceFunctions",
-    "qgl.h" => "QGL",
     "qtsqlglobal.h" => "QSql",
     "qssl.h" => "QSsl",
     "qtest.h" => "QTest",
