@@ -6,7 +6,7 @@
 #         The argument accepts 'Bootstrap' or 'None' values. If the argument value is set to
 #         'Bootstrap' the Qt::Bootstrap library is linked to the executable instead of Qt::Core.
 #         The 'None' value points that core library is not necessary and avoids linking neither
-#         Qt::Core or Qt::Bootstrap libraries. Otherwise the Qt::Core library will be publically
+#         Qt::Core or Qt::Bootstrap libraries. Otherwise the Qt::Core library will be publicly
 #         linked to the executable target by default.
 function(qt_internal_add_executable name)
     qt_parse_all_arguments(arg "qt_internal_add_executable"

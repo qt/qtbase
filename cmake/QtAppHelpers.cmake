@@ -53,7 +53,7 @@ function(qt_internal_add_app target)
     # but don't enable macOS bundles.
     # Bundles are enabled in a separate set_target_properties call if an Info.plist file
     # is provided.
-    # Similary, the Windows GUI flag is disabled in a separate call
+    # Similarly, the Windows GUI flag is disabled in a separate call
     # if CONFIG += console was encountered during conversion.
     set_target_properties("${target}" PROPERTIES WIN32_EXECUTABLE TRUE)
 

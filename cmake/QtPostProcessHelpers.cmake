@@ -227,7 +227,7 @@ function(qt_internal_create_module_depends_file target)
     foreach(dep ${target_deps})
         if(NOT dep MATCHES ".+Private$" AND
            dep MATCHES "${INSTALL_CMAKE_NAMESPACE}(.+)")
-            # target_deps cointains elements that are a pair of target name and version,
+            # target_deps contains elements that are a pair of target name and version,
             # e.g. 'Core\;6.2'
             # After the extracting from the target_deps list, the element becomes a list itself,
             # because it loses escape symbol before the semicolon, so ${CMAKE_MATCH_1} is the list:
@@ -764,7 +764,7 @@ function(qt_internal_create_config_file_for_standalone_tests)
         return()
     endif()
 
-    # Ceate a Config file that calls find_package on the modules that were built as part
+    # Create a Config file that calls find_package on the modules that were built as part
     # of the current repo. This is used for standalone tests.
     qt_internal_get_standalone_tests_config_file_name(tests_config_file_name)
     configure_file(

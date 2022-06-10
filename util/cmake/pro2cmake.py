@@ -5027,7 +5027,7 @@ def main() -> None:
             cmake_api_version = args.api_version
         else:
             # Otherwise detect the api version in the old CMakeLists.txt
-            # if it exsists.
+            # if it exists.
             detected_cmake_api_version = detect_cmake_api_version_used_in_file_content(
                 file_relative_path
             )

@@ -25,7 +25,7 @@ macro(qt_find_package)
     # found as part of a find_dependency() call from a ModuleDependencies.cmake file (or similar),
     # and the provided target is also found, that means this might have been an unnecessary
     # qt_find_package() call, because the dependency was already found via some other transitive
-    # dependency. Return early, so that CMake doesn't fail wiht an error with trying to promote the
+    # dependency. Return early, so that CMake doesn't fail with an error with trying to promote the
     # targets to be global. This behavior is not enabled by default, because there are cases
     # when a regular find_package() (non qt_) can find a package (Freetype -> PNG), and a subsequent
     # qt_find_package(PNG PROVIDED_TARGET PNG::PNG) still needs to succeed and register the provided

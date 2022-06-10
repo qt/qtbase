@@ -38,7 +38,7 @@ if(__qt_chainload_toolchain_file)
                           "${__qt_chainload_toolchain_file}" REALPATH)
     if(__qt_chainload_toolchain_file_real_path STREQUAL CMAKE_CURRENT_LIST_FILE)
         message(FATAL_ERROR
-                "Woah, the Qt toolchain file tried to include itself recusively! '${__qt_chainload_toolchain_file}' "
+                "Woah, the Qt toolchain file tried to include itself recursively! '${__qt_chainload_toolchain_file}' "
                 "Make sure to remove qtbase/CMakeCache.txt and reconfigure qtbase with 'cmake' "
                 "rather than 'qt-cmake', and then you can reconfigure your own project."
         )

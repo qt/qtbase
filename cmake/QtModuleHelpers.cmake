@@ -927,7 +927,7 @@ the different base name for the module info variables.")
     set("${result}_build_interface_qpa_include_dir"
         "${repo_build_interface_include_dir}/${${result}_qpa_include_dir}")
 
-    # Module install interface direcotries
+    # Module install interface directories
     set(repo_install_interface_include_dir "${INSTALL_INCLUDEDIR}")
     set("${result}_install_interface_include_dir"
         "${repo_install_interface_include_dir}/${${result}_include_name}")

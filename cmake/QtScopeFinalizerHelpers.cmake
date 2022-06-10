@@ -8,7 +8,7 @@
 # because CMake's handling of empty list elements is a cruel joke.
 # For CMake < 3.18 the function qt_watch_current_list_dir must know about the finalizer.
 #
-# When using CMake 3.19 or higher, no more INGORE parameters are passed. Instead we
+# When using CMake 3.19 or higher, no more IGNORE parameters are passed. Instead we
 # use cmake_language(DEFER CALL) and pass arguments as usual.
 # qt_watch_current_list_dir also doesn't need to know about the finalizer
 function(qt_add_list_file_finalizer func)

@@ -919,10 +919,10 @@ function(_qt_internal_get_ios_bundle_identifier_prefix out_var)
                     OUTPUT_VARIABLE prefix
                     ERROR_VARIABLE prefix_error)
     if(prefix AND NOT prefix_error)
-        message(DEBUG "Successfully extracted the default bundle indentifier prefix.")
+        message(DEBUG "Successfully extracted the default bundle identifier prefix.")
         string(STRIP "${prefix}" prefix)
     else()
-        message(DEBUG "Failed to extract the default bundle indentifier prefix.")
+        message(DEBUG "Failed to extract the default bundle identifier prefix.")
     endif()
 
     if(prefix AND NOT prefix_error)

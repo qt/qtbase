@@ -480,7 +480,7 @@ endif()
 
         # INTERFACE libraries don't have IMPORTED_LOCATION-like properties.
         # OBJECT libraries have properties like IMPORTED_OBJECTS instead.
-        # Skip the rest of the procesing for those.
+        # Skip the rest of the processing for those.
         if(target_type STREQUAL "INTERFACE_LIBRARY" OR target_type STREQUAL "OBJECT_LIBRARY")
             continue()
         endif()
@@ -664,12 +664,12 @@ endfunction()
 #
 # MSVC generates 2 types of pdb files:
 #  - compile-time generated pdb files (compile flag /Zi + /Fd<pdb_name>)
-#  - link-time genereated pdb files (link flag /debug + /PDB:<pdb_name>)
+#  - link-time generated pdb files (link flag /debug + /PDB:<pdb_name>)
 #
 # CMake allows changing the names of each of those pdb file types by setting
 # the COMPILE_PDB_NAME_<CONFIG> and PDB_NAME_<CONFIG> properties. If they are
 # left empty, CMake will compute the default names itself (or rather in certain cases
-# leave it up to te compiler), without actually setting the property values.
+# leave it up to the compiler), without actually setting the property values.
 #
 # For installation purposes, CMake only provides a generator expression to the
 # link time pdb file path, not the compile path one, which means we have to compute the
