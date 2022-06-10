@@ -120,6 +120,8 @@ private slots:
     void cloneDTD_QTBUG8398() const;
     void DTDNotationDecl();
     void DTDEntityDecl();
+    void DTDInternalSubset() const;
+    void DTDInternalSubset_data() const;
     void QTBUG49113_dontCrashWithNegativeIndex() const;
 
     void cleanupTestCase() const;
@@ -2065,6 +2067,70 @@ void tst_QDom::QTBUG49113_dontCrashWithNegativeIndex() const
     QDomElement elem = doc.appendChild(doc.createElement("root")).toElement();
     QDomNode node = elem.attributes().item(-1);
     QVERIFY(node.isNull());
+}
+
+void tst_QDom::DTDInternalSubset() const
+{
+    QFETCH( QString, doc );
+    QFETCH( QString, internalSubset );
+    QXmlStreamReader reader(doc);
+    QDomDocument document;
+    QVERIFY(document.setContent(&reader, true));
+
+    QCOMPARE(document.doctype().internalSubset(), internalSubset);
+}
+
+void tst_QDom::DTDInternalSubset_data() const
+{
+    QTest::addColumn<QString>("doc");
+    QTest::addColumn<QString>("internalSubset");
+
+    QTest::newRow("data1") << "<?xml version='1.0'?>\n"
+                              "<!DOCTYPE note SYSTEM '/[abcd].dtd'>\n"
+                              "<note/>\n"
+                           << "" ;
+
+    QTest::newRow("data2") << "<?xml version='1.0'?>\n"
+                              "<!DOCTYPE note PUBLIC '-/freedesktop' 'https://[abcd].dtd'>\n"
+                              "<note/>\n"
+                           << "" ;
+
+    const QString internalSubset0(
+                "<!-- open brackets comment [ -->\n"
+                "<!-- colse brackets comment ] -->\n"
+                );
+    QTest::newRow("data3") << "<?xml version='1.0'?>\n"
+                              "<!DOCTYPE note ["
+                              + internalSubset0 +
+                              "]>\n"
+                              "<note/>\n"
+                           << internalSubset0;
+
+    const QString internalSubset1(
+                "<!ENTITY obra '['>\n"
+                "<!ENTITY cbra ']'>\n"
+                );
+    QTest::newRow("data4") << "<?xml version='1.0'?>\n"
+                              "<!DOCTYPE note ["
+                              + internalSubset1 +
+                              "]>\n"
+                              "<note/>\n"
+                           << internalSubset1;
+
+    QTest::newRow("data5") << "<?xml version='1.0'?>\n"
+          "<!DOCTYPE note  PUBLIC '-/freedesktop' 'https://[abcd].dtd' ["
+          + internalSubset0
+          + "]>\n"
+          "<note/>\n"
+       << internalSubset0;
+
+    QTest::newRow("data6") << "<?xml version='1.0'?>\n"
+          "<!DOCTYPE note  PUBLIC '-/freedesktop' "
+            "'2001:db8:130F:0000:0000:09C0:876A:130B://[abcd].dtd' ["
+          + internalSubset0
+          + "]>\n"
+          "<note/>\n"
+       << internalSubset0;
 }
 
 QTEST_MAIN(tst_QDom)
