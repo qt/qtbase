@@ -1236,7 +1236,7 @@ void Generator::generateStaticMetacall()
                 fprintf(out, "            *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< %s >(); break;\n", lastKey.constData());
         }
         fprintf(out, "        }\n");
-        fprintf(out, "    }\n");
+        fprintf(out, "    } ");
         isUsed_a = true;
         needElse = true;
     }
