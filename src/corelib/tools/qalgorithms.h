@@ -4,6 +4,10 @@
 #ifndef QALGORITHMS_H
 #define QALGORITHMS_H
 
+#if 0
+#pragma qt_class(QtAlgorithms)
+#endif
+
 #include <QtCore/qglobal.h>
 
 #if __has_include(<bit>) && __cplusplus > 201703L

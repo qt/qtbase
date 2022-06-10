@@ -3,6 +3,10 @@
 #ifndef QUTF8STRINGVIEW_H
 #define QUTF8STRINGVIEW_H
 
+#if 0
+#pragma qt_class(QUtf8StringView)
+#endif
+
 #include <QtCore/qstringalgorithms.h>
 #include <QtCore/qstringfwd.h>
 #include <QtCore/qarraydata.h> // for QContainerImplHelper

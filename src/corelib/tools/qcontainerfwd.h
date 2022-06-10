@@ -6,6 +6,10 @@
 #ifndef QCONTAINERFWD_H
 #define QCONTAINERFWD_H
 
+#if 0
+#pragma qt_class(QtContainerFwd)
+#endif
+
 // std headers can unfortunately not be forward declared
 #include <utility>
 

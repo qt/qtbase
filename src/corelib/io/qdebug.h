@@ -5,6 +5,10 @@
 #ifndef QDEBUG_H
 #define QDEBUG_H
 
+#if 0
+#pragma qt_class(QtDebug)
+#endif
+
 #include <QtCore/qcontainerfwd.h>
 #include <QtCore/qtextstream.h>
 #include <QtCore/qstring.h>

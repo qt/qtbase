@@ -4,6 +4,10 @@
 #ifndef QNUMERIC_H
 #define QNUMERIC_H
 
+#if 0
+#pragma qt_class(QtNumeric)
+#endif
+
 #include <QtCore/qglobal.h>
 #include <cmath>
 #include <limits>

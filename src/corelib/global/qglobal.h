@@ -5,6 +5,11 @@
 #ifndef QGLOBAL_H
 #define QGLOBAL_H
 
+#if 0
+#pragma qt_class(QtGlobal)
+#pragma qt_class(QIntegerForSize)
+#endif
+
 #ifdef __cplusplus
 #  include <type_traits>
 #  include <cstddef>

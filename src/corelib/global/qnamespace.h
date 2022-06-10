@@ -5,6 +5,10 @@
 #ifndef QNAMESPACE_H
 #define QNAMESPACE_H
 
+#if 0
+#pragma qt_class(Qt)
+#endif
+
 #include <QtCore/qglobal.h>
 #include <QtCore/qtmetamacros.h>
 

@@ -5,6 +5,10 @@
 #ifndef QPLUGIN_H
 #define QPLUGIN_H
 
+#if 0
+#pragma qt_class(QtPlugin)
+#endif
+
 #include <QtCore/qobject.h>
 #include <QtCore/qpointer.h>
 #include <QtCore/qjsonobject.h>

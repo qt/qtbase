@@ -5,6 +5,10 @@
 #ifndef QTEST_H
 #define QTEST_H
 
+#if 0
+#pragma qt_class(QTest)
+#endif
+
 #include <QtTest/qttestglobal.h>
 #include <QtTest/qtestcase.h>
 #include <QtTest/qtestdata.h>

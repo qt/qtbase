@@ -5,6 +5,10 @@
 #ifndef QENDIAN_H
 #define QENDIAN_H
 
+#if 0
+#pragma qt_class(QtEndian)
+#endif
+
 #include <QtCore/qfloat16.h>
 #include <QtCore/qglobal.h>
 

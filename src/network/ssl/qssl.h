@@ -5,6 +5,10 @@
 #ifndef QSSL_H
 #define QSSL_H
 
+#if 0
+#pragma qt_class(QSsl)
+#endif
+
 #include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/QFlags>
 

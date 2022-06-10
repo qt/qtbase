@@ -4,6 +4,10 @@
 #ifndef QTCONCURRENT_RUN_H
 #define QTCONCURRENT_RUN_H
 
+#if 0
+#pragma qt_class(QtConcurrentRun)
+#endif
+
 #include <QtConcurrent/qtconcurrentcompilertest.h>
 
 #if !defined(QT_NO_CONCURRENT) || defined(Q_CLANG_QDOC)

@@ -4,6 +4,10 @@
 #ifndef QTCONCURRENT_FILTER_H
 #define QTCONCURRENT_FILTER_H
 
+#if 0
+#pragma qt_class(QtConcurrentFilter)
+#endif
+
 #include <QtConcurrent/qtconcurrent_global.h>
 
 #if !defined(QT_NO_CONCURRENT) || defined(Q_CLANG_QDOC)

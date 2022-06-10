@@ -4,6 +4,10 @@
 #ifndef QTCONCURRENT_MAP_H
 #define QTCONCURRENT_MAP_H
 
+#if 0
+#pragma qt_class(QtConcurrentMap)
+#endif
+
 #include <QtConcurrent/qtconcurrent_global.h>
 
 #if !defined(QT_NO_CONCURRENT) || defined(Q_CLANG_QDOC)

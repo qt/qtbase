@@ -4,6 +4,10 @@
 #ifndef QEVENT_H
 #define QEVENT_H
 
+#if 0
+#pragma qt_class(QtEvents)
+#endif
+
 #include <QtGui/qtguiglobal.h>
 
 #include <QtCore/qcoreevent.h>

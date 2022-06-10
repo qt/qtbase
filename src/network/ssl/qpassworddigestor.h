@@ -4,6 +4,10 @@
 #ifndef QPASSWORDDIGESTOR_H
 #define QPASSWORDDIGESTOR_H
 
+#if 0
+#pragma qt_class(QPasswordDigestor)
+#endif
+
 #include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/QByteArray>
 #include <QtCore/QCryptographicHash>
