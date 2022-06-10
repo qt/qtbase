@@ -1086,8 +1086,6 @@ void QTabBar::removeTab(int index)
                     break;
                 case SelectLeftTab:
                     newIndex = qBound(d->firstVisible, index-1, d->lastVisible);
-                    if (newIndex < 0)
-                        newIndex = 0;
                     break;
                 default:
                     break;
@@ -1098,6 +1096,9 @@ void QTabBar::removeTab(int index)
                     int bump = d->tabList.at(newIndex)->lastTab;
                     setCurrentIndex(newIndex);
                     d->tabList.at(newIndex)->lastTab = bump;
+                } else {
+                    // we had a valid current index, but there are no visible tabs left
+                    emit currentChanged(-1);
                 }
             } else {
                 emit currentChanged(-1);
@@ -1955,8 +1956,6 @@ void QTabBarPrivate::calculateFirstLastVisible(int index, bool visible, bool rem
                     break;
                 }
             }
-            if (firstVisible < 0)
-                firstVisible = 0;
         }
         if (remove || (index == lastVisible)) {
             lastVisible = -1;
