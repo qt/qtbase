@@ -187,7 +187,7 @@ endfunction()
 # to ON. This is helpful if you want to use internal CMake tools within tests, like memory or
 # sanitizer checks. See https://cmake.org/cmake/help/v3.19/manual/ctest.1.html#ctest-memcheck-step
 # Arguments:
-#    BUILTIN_TESTDATA the option forces adding the provded TESTDATA to resources.
+#    BUILTIN_TESTDATA the option forces adding the provided TESTDATA to resources.
 function(qt_internal_add_test name)
     # EXCEPTIONS is a noop as they are enabled by default.
     set(optional_args
@@ -646,7 +646,7 @@ endfunction()
 
 # This function creates an executable for use as a helper program with tests. Some
 # tests launch separate programs to test certain input/output behavior.
-# Specify OVERRIDE_OUTPUT_DIRECTORY if you dont' want to place the helper in the parent directory,
+# Specify OVERRIDE_OUTPUT_DIRECTORY if you don't want to place the helper in the parent directory,
 # in which case you should specify OUTPUT_DIRECTORY "/foo/bar" manually.
 function(qt_internal_add_test_helper name)
 

@@ -3,8 +3,9 @@
 # output-file is relative to ${CMAKE_CURRENT_BINARY_DIR}
 #
 # This function is similar to file(GENERATE OUTPUT) except it writes the content
-# to the file at configure time, rather than at generate time. Once CMake 3.18 is released, it can use file(CONFIGURE) in its implmenetation. Until then, it
-# uses configure_file() with a generic input file as source, when used with the CONTENT signature.
+# to the file at configure time, rather than at generate time. Once CMake 3.18 is released, it can
+# use file(CONFIGURE) in its implementation. Until then, it  uses configure_file() with a generic
+# input file as source, when used with the CONTENT signature.
 function(qt_configure_file)
     qt_parse_all_arguments(arg "qt_configure_file" "" "OUTPUT;INPUT;CONTENT" "" ${ARGN})
 

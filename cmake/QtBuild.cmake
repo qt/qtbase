@@ -159,7 +159,7 @@ function(qt_internal_set_up_global_paths)
     #
     # These values should be prepended to file paths in commands or properties,
     # in order to correctly place generated Config files, generated Targets files,
-    # excutables / libraries, when copying / installing files, etc.
+    # executables / libraries, when copying / installing files, etc.
     #
     # The build dir variables will always be absolute paths.
     # The QT_INSTALL_DIR variable will have a relative path in a prefix build,

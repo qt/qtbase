@@ -1191,7 +1191,7 @@ qt_configure_add_report_entry(
 # special case begin
 # qt_configure_add_report_entry(
 #     TYPE ERROR
-#     MESSAGE "Debug build wihtout Release build is not currently supported on ios see QTBUG-71990. Use -debug-and-release."
+#     MESSAGE "Debug build without Release build is not currently supported on ios see QTBUG-71990. Use -debug-and-release."
 #     CONDITION IOS AND QT_FEATURE_debug AND NOT QT_FEATURE_debug_and_release
 # )
 # special case end

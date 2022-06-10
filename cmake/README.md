@@ -132,7 +132,7 @@ Compiling for a target architecture that's different than the host requires one 
 host. This "host build" is needed because the process of building Qt involves the compilation of
 intermediate code generator tools, that in turn are called to produce source code that needs to be
 compiled into the final libraries. These tools are built using Qt itself and they need to run on the
-machine you're building on, regardless of the architecure you are targeting.
+machine you're building on, regardless of the architecture you are targeting.
 
 Build Qt regularly for your host system and install it into a directory of your choice using the
 ``CMAKE_INSTALL_PREFIX`` variable. You are free to disable the build of tests and examples by

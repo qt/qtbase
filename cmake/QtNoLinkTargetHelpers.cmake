@@ -26,7 +26,7 @@ function(qt_create_nolink_target target dependee_target)
         add_library("${nolink_target}" INTERFACE)
         set(prefixed_nolink_target "${target}_nolink")
 
-        # Whe configuring an example with qmake, if QtGui is built with Vulkan support but the
+        # When configuring an example with qmake, if QtGui is built with Vulkan support but the
         # user's machine where Qt is installed doesn't have Vulkan, qmake doesn't fail saying
         # that vulkan is not installed. Instead it silently configures and just doesn't add
         # the include headers.

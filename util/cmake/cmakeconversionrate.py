@@ -21,7 +21,7 @@ def _parse_commandline():
     )
     parser.add_argument(
         "binary_directory",
-        metavar="<CMake build direcotry>",
+        metavar="<CMake build directory>",
         type=str,
         help="The CMake build directory (might be empty)",
     )
