@@ -27,6 +27,8 @@ exampledirs             = snippets
 
 tagfile = qmake.tags
 
+macro.qtbug = "\\l{https://bugreports.qt.io/browse/\1}{\1}"
+
 depends += \
     activeqt \
     qt3d \

@@ -991,3 +991,20 @@ win32-g++:contains(QMAKE_HOST.arch, x86_64):{
     ...
 }
 #! [187]
+
+#! [188]
+translations_en.files = $$PWD/en.lproj/InfoPlist.strings
+translations_en.path = en.lproj
+QMAKE_BUNDLE_DATA += translations_en
+#! [188]
+
+#! [189]
+# Approach 1
+translations_en.files = $$PWD/InfoPlist.strings
+translations_en.path = en.lproj
+
+# Approach 2
+translations_de.files = $$PWD/de.lproj/InfoPlist.strings
+
+QMAKE_BUNDLE_DATA += translations_en translations_de
+#! [189]

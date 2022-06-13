@@ -1894,6 +1894,33 @@
     See \l{Platform Notes#Creating Frameworks}{Platform Notes} for
     more information about creating library bundles.
 
+    A project can also use this variable to bundle application translation
+    files. The exact syntax depends on whether the project is using Xcode's
+    legacy build system or its new build system.
+
+    For example when the following project snippet is built using the
+    legacy build system:
+
+    \snippet code/doc_src_qmake-manual.pro 188
+
+    Xcode will ignore the original location of \c InfoPlist.strings
+    and the file will placed into the bundle \c Resources directory
+    under the provided \c translations_en.path path, so
+    \c Resources/en.lproj/InfoPlist.strings
+
+    With the new build system, the relative location of the file is
+    preserved, which means the file will incorrectly be placed under
+    \c Resources/en.lproj/en.lproj/InfoPlist.strings
+
+    To ensure correct file placement, the project can either move
+    the original file not to be in a sub-directory or it can choose
+    not to specify the \c translations_en.path variable.
+
+    \snippet code/doc_src_qmake-manual.pro 189
+
+    See \qtbug QTBUG-98417 for more details on how the Xcode build
+    system changed its behavior in bundling translation files.
+
     \section1 QMAKE_BUNDLE_EXTENSION
 
     \note This variable is used on \macos, iOS, tvOS, and watchOS only.
