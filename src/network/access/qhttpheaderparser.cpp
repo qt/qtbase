@@ -1,4 +1,4 @@
-// Copyright (C) 2021 The Qt Company Ltd.
+// Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qhttpheaderparser_p.h"
@@ -6,12 +6,6 @@
 #include <algorithm>
 
 QT_BEGIN_NAMESPACE
-
-// both constants are taken from the default settings of Apache
-// see: http://httpd.apache.org/docs/2.2/mod/core.html#limitrequestfieldsize and
-// http://httpd.apache.org/docs/2.2/mod/core.html#limitrequestfields
-static const int MAX_HEADER_FIELD_SIZE = 8 * 1024;
-static const int MAX_HEADER_FIELDS = 100;
 
 QHttpHeaderParser::QHttpHeaderParser()
     : statusCode(100) // Required by tst_QHttpNetworkConnection::ignoresslerror(failure)
@@ -55,19 +49,22 @@ bool QHttpHeaderParser::parseHeaders(QByteArrayView header)
     while (int tail = header.endsWith("\n\r\n") ? 2 : header.endsWith("\n\n") ? 1 : 0)
         header.chop(tail);
 
+    if (header.size() - (header.endsWith("\r\n") ? 2 : 1) > maxTotalSize)
+        return false;
+
     QList<QPair<QByteArray, QByteArray>> result;
     while (header.size()) {
         const int colon = header.indexOf(':');
         if (colon == -1) // if no colon check if empty headers
             return result.size() == 0 && (header == "\n" || header == "\r\n");
-        if (result.size() >= MAX_HEADER_FIELDS)
+        if (result.size() >= maxFieldCount)
             return false;
         QByteArrayView name = header.first(colon);
         if (!fieldNameCheck(name))
             return false;
         header = header.sliced(colon + 1);
         QByteArray value;
-        int valueSpace = MAX_HEADER_FIELD_SIZE - name.size() - 1;
+        qsizetype valueSpace = maxFieldSize - name.size() - 1;
         do {
             const int endLine = header.indexOf('\n');
             Q_ASSERT(endLine != -1);
@@ -84,7 +81,7 @@ bool QHttpHeaderParser::parseHeaders(QByteArrayView header)
             }
             header = header.sliced(endLine + 1);
         } while (hSpaceStart(header));
-        Q_ASSERT(name.size() + 1 + value.size() <= MAX_HEADER_FIELD_SIZE);
+        Q_ASSERT(name.size() + 1 + value.size() <= maxFieldSize);
         result.append(qMakePair(name.toByteArray(), value));
     }
 
