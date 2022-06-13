@@ -779,13 +779,6 @@ void *QScreen::resolveInterface(const char *name, int revision) const
 }
 
 #ifndef QT_NO_DEBUG_STREAM
-
-static inline void formatRect(QDebug &debug, const QRect r)
-{
-    debug << r.width() << 'x' << r.height()
-        << Qt::forcesign << r.x() << r.y() << Qt::noforcesign;
-}
-
 Q_GUI_EXPORT QDebug operator<<(QDebug debug, const QScreen *screen)
 {
     const QDebugStateSaver saver(debug);
@@ -796,10 +789,8 @@ Q_GUI_EXPORT QDebug operator<<(QDebug debug, const QScreen *screen)
         if (debug.verbosity() > 2) {
             if (screen == QGuiApplication::primaryScreen())
                 debug << ", primary";
-            debug << ", geometry=";
-            formatRect(debug, screen->geometry());
-            debug << ", available=";
-            formatRect(debug, screen->availableGeometry());
+            debug << ", geometry=" << screen->geometry();
+            debug << ", available=" << screen->availableGeometry();
             debug << ", logical DPI=" << screen->logicalDotsPerInchX()
                 << ',' << screen->logicalDotsPerInchY()
                 << ", physical DPI=" << screen->physicalDotsPerInchX()
