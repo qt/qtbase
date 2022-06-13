@@ -56,7 +56,7 @@ public:
         Gui
     };
 
-    QCoreApplicationPrivate(int &aargc,  char **aargv, uint);
+    QCoreApplicationPrivate(int &aargc,  char **aargv);
 
     // If not inheriting from QObjectPrivate: force this class to be polymorphic
 #ifdef QT_NO_QOBJECT

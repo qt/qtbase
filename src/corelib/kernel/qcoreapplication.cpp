@@ -393,7 +393,7 @@ static inline bool contains(int argc, char **argv, const char *needle)
 }
 #endif // Q_OS_WIN
 
-QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint)
+QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv)
     :
 #ifndef QT_NO_QOBJECT
       QObjectPrivate(),
@@ -707,13 +707,13 @@ QCoreApplication::QCoreApplication(QCoreApplicationPrivate &p)
 */
 QCoreApplication::QCoreApplication(int &argc, char **argv
 #ifndef Q_QDOC
-                                   , int _internal
+                                   , int
 #endif
                                    )
 #ifdef QT_NO_QOBJECT
-    : d_ptr(new QCoreApplicationPrivate(argc, argv, _internal))
+    : d_ptr(new QCoreApplicationPrivate(argc, argv))
 #else
-    : QObject(*new QCoreApplicationPrivate(argc, argv, _internal))
+    : QObject(*new QCoreApplicationPrivate(argc, argv))
 #endif
 {
     d_func()->q_ptr = this;

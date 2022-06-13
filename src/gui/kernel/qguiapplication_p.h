@@ -57,7 +57,7 @@ class Q_GUI_EXPORT QGuiApplicationPrivate : public QCoreApplicationPrivate
 {
     Q_DECLARE_PUBLIC(QGuiApplication)
 public:
-    QGuiApplicationPrivate(int &argc, char **argv, int flags);
+    QGuiApplicationPrivate(int &argc, char **argv);
     ~QGuiApplicationPrivate();
 
     void init();
