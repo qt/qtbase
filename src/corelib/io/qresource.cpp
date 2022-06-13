@@ -167,7 +167,6 @@ struct QResourceGlobalData
 {
     QRecursiveMutex resourceMutex;
     ResourceList resourceList;
-    QStringList resourceSearchPaths;
 };
 Q_GLOBAL_STATIC(QResourceGlobalData, resourceGlobalData)
 
@@ -176,9 +175,6 @@ static inline QRecursiveMutex &resourceMutex()
 
 static inline ResourceList *resourceList()
 { return &resourceGlobalData->resourceList; }
-
-static inline QStringList *resourceSearchPaths()
-{ return &resourceGlobalData->resourceSearchPaths; }
 
 /*!
     \class QResource
@@ -360,16 +356,10 @@ void QResourcePrivate::ensureInitialized() const
     if (path.startsWith(u'/')) {
         that->load(path.toString());
     } else {
-        const auto locker = qt_scoped_lock(resourceMutex());
-        QStringList searchPaths = *resourceSearchPaths();
-        searchPaths << ""_L1;
-        for (int i = 0; i < searchPaths.size(); ++i) {
-            const QString searchPath(searchPaths.at(i) + u'/' + path);
-            if (that->load(searchPath)) {
-                that->absoluteFilePath = u':' + searchPath;
-                break;
-            }
-        }
+        // Should we search QDir::searchPath() before falling back to root ?
+        const QString searchPath(u'/' + path);
+        if (that->load(searchPath))
+            that->absoluteFilePath = u':' + searchPath;
     }
 }
 
