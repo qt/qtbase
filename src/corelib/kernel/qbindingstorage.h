@@ -50,6 +50,7 @@ public:
     ~QBindingStorage();
 
     bool isEmpty() { return !d; }
+    bool isValid() const noexcept { return bindingStatus; }
 
     const QBindingStatus *status(QtPrivate::QBindingStatusAccessToken) const;
 
