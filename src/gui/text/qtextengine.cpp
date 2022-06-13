@@ -1443,15 +1443,17 @@ void QTextEngine::shapeText(int item) const
 
     bool kerningEnabled;
     bool letterSpacingIsAbsolute;
-    bool shapingEnabled;
+    bool shapingEnabled = false;
     QFixed letterSpacing, wordSpacing;
 #ifndef QT_NO_RAWFONT
     if (useRawFont) {
         QTextCharFormat f = format(&si);
         QFont font = f.font();
         kerningEnabled = font.kerning();
+#  if QT_CONFIG(harfbuzz)
         shapingEnabled = QFontEngine::scriptRequiresOpenType(QChar::Script(si.analysis.script))
                 || (font.styleStrategy() & QFont::PreferNoShaping) == 0;
+#  endif
         wordSpacing = QFixed::fromReal(font.wordSpacing());
         letterSpacing = QFixed::fromReal(font.letterSpacing());
         letterSpacingIsAbsolute = true;
@@ -1460,8 +1462,10 @@ void QTextEngine::shapeText(int item) const
     {
         QFont font = this->font(si);
         kerningEnabled = font.d->kerning;
+#if QT_CONFIG(harfbuzz)
         shapingEnabled = QFontEngine::scriptRequiresOpenType(QChar::Script(si.analysis.script))
                 || (font.d->request.styleStrategy & QFont::PreferNoShaping) == 0;
+#endif
         letterSpacingIsAbsolute = font.d->letterSpacingIsAbsolute;
         letterSpacing = font.d->letterSpacing;
         wordSpacing = font.d->wordSpacing;
