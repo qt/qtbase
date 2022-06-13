@@ -219,6 +219,7 @@ QCocoaScreen::~QCocoaScreen()
          dispatch_release(m_displayLinkSource);
 }
 
+#if QT_MACOS_DEPLOYMENT_TARGET_BELOW(__MAC_10_15)
 static QString displayName(CGDirectDisplayID displayID)
 {
     QIOType<io_iterator_t> iterator;
@@ -250,6 +251,7 @@ static QString displayName(CGDirectDisplayID displayID)
 
     return QString();
 }
+#endif
 
 void QCocoaScreen::update(CGDirectDisplayID displayId)
 {
@@ -296,7 +298,10 @@ void QCocoaScreen::update(CGDirectDisplayID displayId)
     float refresh = CGDisplayModeGetRefreshRate(displayMode);
     m_refreshRate = refresh > 0 ? refresh : 60.0;
 
-    m_name = displayName(m_displayId);
+    if (@available(macOS 10.15, *))
+        m_name = QString::fromNSString(nsScreen.localizedName);
+    else
+        m_name = displayName(m_displayId);
 
     const bool didChangeGeometry = m_geometry != previousGeometry || m_availableGeometry != previousAvailableGeometry;
 
