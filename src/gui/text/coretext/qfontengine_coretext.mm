@@ -539,7 +539,11 @@ glyph_metrics_t QCoreTextFontEngine::alphaMapBoundingBox(glyph_t glyph, const QF
         return QFontEngine::alphaMapBoundingBox(glyph, subPixelPosition, matrix, format);
 
     glyph_metrics_t br = boundingBox(glyph);
-    qcoretextfontengine_scaleMetrics(br, matrix);
+
+    QTransform xform = matrix;
+    if (fontDef.stretch != 100 && fontDef.stretch != QFont::AnyStretch)
+        xform.scale(fontDef.stretch / 100.0, 1.0);
+    qcoretextfontengine_scaleMetrics(br, xform);
 
     // Normalize width and height
     if (br.width < 0)
@@ -884,8 +888,9 @@ void QCoreTextFontEngine::loadAdvancesForGlyphs(QVarLengthArray<CGGlyph> &cgGlyp
     QVarLengthArray<CGSize> advances(numGlyphs);
     CTFontGetAdvancesForGlyphs(ctfont, kCTFontOrientationHorizontal, cgGlyphs.data(), advances.data(), numGlyphs);
 
+    qreal stretch = fontDef.stretch != QFont::AnyStretch ? fontDef.stretch / 100.0 : 1.0;
     for (int i = 0; i < numGlyphs; ++i)
-        glyphs->advances[i] = QFixed::fromReal(advances[i].width);
+        glyphs->advances[i] = QFixed::fromReal(advances[i].width * stretch);
 }
 
 QFontEngine::FaceId QCoreTextFontEngine::faceId() const
