@@ -26,6 +26,8 @@ QVariant QWasmTheme::themeHint(ThemeHint hint) const
 {
     if (hint == QPlatformTheme::StyleNames)
         return QVariant(QStringList() << "Fusion"_L1);
+    if (hint == QPlatformTheme::UiEffects)
+        return QVariant(int(HoverEffect));
     return QPlatformTheme::themeHint(hint);
 }
 
