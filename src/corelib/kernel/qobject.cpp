@@ -970,6 +970,16 @@ QObject::~QObject()
     d->wasDeleted = true;
     d->blockSig = 0; // unblock signals so we always emit destroyed()
 
+    if (!d->bindingStorage.isValid()) {
+        // this might be the case after an incomplete thread-move
+        // remove this object from the pending list in that case
+        if (QThread *ownThread = thread()) {
+            auto *privThread = static_cast<QThreadPrivate *>(
+                        QObjectPrivate::get(ownThread));
+            privThread->removeObjectWithPendingBindingStatusChange(this);
+        }
+    }
+
     // If we reached this point, we need to clear the binding data
     // as the corresponding properties are no longer useful
     d->clearBindingStorage();
