@@ -112,7 +112,7 @@ QApplicationPrivate *QApplicationPrivate::self = nullptr;
 bool QApplicationPrivate::autoSipEnabled = true;
 
 QApplicationPrivate::QApplicationPrivate(int &argc, char **argv)
-    : QApplicationPrivateBase(argc, argv)
+    : QGuiApplicationPrivate(argc, argv)
 {
     application_type = QApplicationPrivate::Gui;
 

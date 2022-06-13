@@ -58,9 +58,7 @@ extern QClipboard *qt_clipboard;
 typedef QHash<QByteArray, QFont> FontHash;
 Q_WIDGETS_EXPORT FontHash *qt_app_fonts_hash();
 
-#define QApplicationPrivateBase QGuiApplicationPrivate
-
-class Q_WIDGETS_EXPORT QApplicationPrivate : public QApplicationPrivateBase
+class Q_WIDGETS_EXPORT QApplicationPrivate : public QGuiApplicationPrivate
 {
     Q_DECLARE_PUBLIC(QApplication)
 public:
