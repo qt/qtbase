@@ -96,7 +96,6 @@
 
     \image graphicsview-parentchild.png
 
-    \target Transformations
     \section1 Transformations
 
     QGraphicsItem supports projective transformations in addition to its base
