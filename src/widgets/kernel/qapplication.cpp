@@ -111,8 +111,8 @@ QApplicationPrivate *QApplicationPrivate::self = nullptr;
 
 bool QApplicationPrivate::autoSipEnabled = true;
 
-QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, int flags)
-    : QApplicationPrivateBase(argc, argv, flags)
+QApplicationPrivate::QApplicationPrivate(int &argc, char **argv)
+    : QApplicationPrivateBase(argc, argv)
 {
     application_type = QApplicationPrivate::Gui;
 
@@ -442,9 +442,9 @@ void QApplicationPrivate::process_cmdline()
 #ifdef Q_QDOC
 QApplication::QApplication(int &argc, char **argv)
 #else
-QApplication::QApplication(int &argc, char **argv, int _internal)
+QApplication::QApplication(int &argc, char **argv, int)
 #endif
-    : QGuiApplication(*new QApplicationPrivate(argc, argv, _internal))
+    : QGuiApplication(*new QApplicationPrivate(argc, argv))
 {
     Q_D(QApplication);
     d->init();

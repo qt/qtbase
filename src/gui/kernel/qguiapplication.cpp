@@ -621,9 +621,9 @@ static QWindowGeometrySpecification windowGeometrySpecification = Q_WINDOW_GEOME
 #ifdef Q_QDOC
 QGuiApplication::QGuiApplication(int &argc, char **argv)
 #else
-QGuiApplication::QGuiApplication(int &argc, char **argv, int flags)
+QGuiApplication::QGuiApplication(int &argc, char **argv, int)
 #endif
-    : QCoreApplication(*new QGuiApplicationPrivate(argc, argv, flags))
+    : QCoreApplication(*new QGuiApplicationPrivate(argc, argv))
 {
     d_func()->init();
 
@@ -686,8 +686,8 @@ QGuiApplication::~QGuiApplication()
     QGuiApplicationPrivate::tabletDevicePoints.clear();
 }
 
-QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags)
-    : QCoreApplicationPrivate(argc, argv, flags),
+QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv)
+    : QCoreApplicationPrivate(argc, argv),
       inputMethod(nullptr),
       lastTouchType(QEvent::TouchEnd),
       ownGlobalShareContext(false)
