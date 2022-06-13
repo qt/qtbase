@@ -1325,6 +1325,9 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::DpiChangedEvent:
         platformWindow->handleDpiChanged(hwnd, wParam, lParam);
         return true;
+    case QtWindows::DpiChangedAfterParentEvent:
+        platformWindow->handleDpiChangedAfterParent(hwnd);
+        return true;
 #if QT_CONFIG(sessionmanager)
     case QtWindows::QueryEndSessionApplicationEvent: {
         QWindowsSessionManager *sessionManager = platformSessionManager();

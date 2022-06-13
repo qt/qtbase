@@ -2007,6 +2007,14 @@ void QWindowsWindow::handleDpiChanged(HWND hwnd, WPARAM wParam, LPARAM lParam)
     }
 }
 
+void QWindowsWindow::handleDpiChangedAfterParent(HWND hwnd)
+{
+    // FIXME: refactor, do we really need this?
+    setSavedDpi(GetDpiForWindow(hwnd));
+
+    checkForScreenChanged(QWindowsWindow::FromDpiChange);
+}
+
 static QRect normalFrameGeometry(HWND hwnd)
 {
     WINDOWPLACEMENT wp;
@@ -2150,12 +2158,14 @@ static inline bool equalDpi(const QDpi &d1, const QDpi &d2)
 
 void QWindowsWindow::checkForScreenChanged(ScreenChangeMode mode)
 {
-    if (parent() || QWindowsScreenManager::isSingleScreen())
+    if ((parent() && !parent()->isForeignWindow()) || QWindowsScreenManager::isSingleScreen())
         return;
 
     QPlatformScreen *currentScreen = screen();
+    auto topLevel = isTopLevel_sys() ? m_data.hwnd : GetAncestor(m_data.hwnd, GA_ROOT);
     const QWindowsScreen *newScreen =
-        QWindowsContext::instance()->screenManager().screenForHwnd(m_data.hwnd);
+        QWindowsContext::instance()->screenManager().screenForHwnd(topLevel);
+
     if (newScreen == nullptr || newScreen == currentScreen)
         return;
     // For screens with different DPI: postpone until WM_DPICHANGE
