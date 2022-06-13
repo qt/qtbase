@@ -134,6 +134,7 @@ enum WindowsEventType // Simplify event types
     ExitSizeMoveEvent = WindowEventFlag + 23,
     PointerActivateWindowEvent = WindowEventFlag + 24,
     DpiScaledSizeEvent = WindowEventFlag + 25,
+    DpiChangedAfterParentEvent = WindowEventFlag + 27,
     MouseEvent = MouseEventFlag + 1,
     MouseWheelEvent = MouseEventFlag + 2,
     CursorEvent = MouseEventFlag + 3,
@@ -321,6 +322,8 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
         return HIWORD(wParamIn) ? QtWindows::AcceleratorCommandEvent : QtWindows::MenuCommandEvent;
     case WM_DPICHANGED:
         return QtWindows::DpiChangedEvent;
+    case WM_DPICHANGED_AFTERPARENT:
+        return QtWindows::DpiChangedAfterParentEvent;
     case WM_GETDPISCALEDSIZE:
         return QtWindows::DpiScaledSizeEvent;
     case WM_ENTERSIZEMOVE:

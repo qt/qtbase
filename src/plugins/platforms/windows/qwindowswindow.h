@@ -322,6 +322,7 @@ public:
     void handleCompositionSettingsChanged();
     void handleDpiScaledSize(WPARAM wParam, LPARAM lParam, LRESULT *result);
     void handleDpiChanged(HWND hwnd, WPARAM wParam, LPARAM lParam);
+    void handleDpiChangedAfterParent(HWND hwnd);
 
     static void displayChanged();
     static void settingsChanged();
