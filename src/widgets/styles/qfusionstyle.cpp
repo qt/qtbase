@@ -1726,7 +1726,8 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                 p->setFont(font);
                 const QFontMetrics fontMetrics(font);
                 const QString textToDraw = fontMetrics.elidedText(s.left(tabIndex).toString(),
-                                                                  Qt::ElideMiddle, vTextRect.width());
+                                                                  Qt::ElideMiddle, vTextRect.width(),
+                                                                  text_flags);
                 if (dis && !act && proxy()->styleHint(SH_EtchDisabledText, option, widget)) {
                     p->setPen(menuitem->palette.light().color());
                     p->drawText(vTextRect.adjusted(1, 1, 1, 1), text_flags, textToDraw);
