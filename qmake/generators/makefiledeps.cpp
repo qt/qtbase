@@ -365,13 +365,21 @@ static bool matchWhileUnsplitting(const char *buffer, int buffer_len, int start,
     return true;
 }
 
-/* Advance from an opening quote at buffer[offset] to the matching close quote. */
+/* Advance from an opening quote at buffer[offset] to the matching close quote.
+   If an apostrophe turns out to be a digit-separator in a numeric literal,
+   rather than the start of a character literal, treat it as both the open and
+   the close quote of the "string" that isn't there.
+*/
 static int scanPastString(char *buffer, int buffer_len, int offset, int *lines)
 {
     // http://en.cppreference.com/w/cpp/language/string_literal
     // It might be a C++11 raw string.
     bool israw = false;
-    if (buffer[offset] == '"' && offset > 0) {
+
+    Q_ASSERT(offset < buffer_len);
+    if (offset <= 0) {
+        // skip, neither of these special cases applies here
+    } else if (buffer[offset] == '"') {
         int explore = offset - 1;
         bool prefix = false; // One of L, U, u or u8 may appear before R
         bool saw8 = false; // Partial scan of u8
@@ -414,6 +422,19 @@ static int scanPastString(char *buffer, int buffer_len, int offset, int *lines)
         if (israw && explore >= 0
             && (isalnum(buffer[explore]) || buffer[explore] == '_')) {
             israw = false;
+        }
+
+    } else {
+        // Is this apostrophe a digit separator rather than the start of a
+        // character literal ? If so, there was no string to scan past, so
+        // treat the apostrophe as both open and close.
+        Q_ASSERT(buffer[offset] == '\'' && offset > 0);
+        // Wrap std::isdigit() to package the casting to unsigned char.
+        const auto isDigit = [](unsigned char c) { return std::isdigit(c); };
+        if (isDigit(buffer[offset - 1]) && offset + 1 < buffer_len && isDigit(buffer[offset + 1])) {
+            // One exception: u8'0' is a perfectly good character literal.
+            if (offset < 2 || buffer[offset - 1] != '8' || buffer[offset - 2] != 'u')
+                return offset;
         }
     }
 
