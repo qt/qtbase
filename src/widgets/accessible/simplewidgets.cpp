@@ -79,6 +79,8 @@
 #ifndef QT_NO_PICTURE
 #include <QtGui/qpicture.h>
 #endif
+#include <qmessagebox.h>
+#include <qdialogbuttonbox.h>
 #include <qstyle.h>
 #include <qstyleoption.h>
 #include <qtextdocument.h>
@@ -983,6 +985,47 @@ QAccessibleInterface *QAccessibleWindowContainer::child(int i) const
 QWindowContainer *QAccessibleWindowContainer::container() const
 {
     return static_cast<QWindowContainer *>(widget());
+}
+
+/*!
+    \internal
+    Implements QAccessibleWidget for QMessageBox
+*/
+QAccessibleMessageBox::QAccessibleMessageBox(QWidget *widget)
+    : QAccessibleWidget(widget, QAccessible::AlertMessage)
+{
+    Q_ASSERT(qobject_cast<QMessageBox *>(widget));
+}
+
+QMessageBox *QAccessibleMessageBox::messageBox() const
+{
+    return static_cast<QMessageBox *>(widget());
+}
+
+QString QAccessibleMessageBox::text(QAccessible::Text t) const
+{
+    QString str;
+
+    switch (t) {
+    case QAccessible::Name:
+        str = QAccessibleWidget::text(t);
+        if (str.isEmpty()) // implies no title text is set
+            str = messageBox()->text();
+        break;
+    case QAccessible::Description:
+        str = widget()->accessibleDescription();
+        break;
+    case QAccessible::Value:
+        str = messageBox()->text();
+        break;
+    case QAccessible::Help:
+        str = messageBox()->informativeText();
+        break;
+    default:
+        break;
+    }
+
+    return str;
 }
 
 #endif // QT_NO_ACCESSIBILITY

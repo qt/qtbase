@@ -63,6 +63,7 @@ class QAbstractButton;
 class QLineEdit;
 class QToolButton;
 class QGroupBox;
+class QMessageBox;
 class QProgressBar;
 
 #if QT_CONFIG(abstractbutton)
@@ -223,6 +224,16 @@ public:
 
 private:
     QWindowContainer *container() const;
+};
+
+class QAccessibleMessageBox : public QAccessibleWidget
+{
+public:
+    explicit QAccessibleMessageBox(QWidget *widget);
+
+    QString text(QAccessible::Text t) const override;
+
+    QMessageBox *messageBox() const;
 };
 
 #endif // QT_NO_ACCESSIBILITY

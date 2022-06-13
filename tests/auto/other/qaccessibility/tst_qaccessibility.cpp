@@ -46,6 +46,8 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 
+#include <QtWidgets/private/qdialog_p.h>
+
 #if defined(Q_OS_WIN) && defined(interface)
 #   undef interface
 #endif
@@ -243,6 +245,9 @@ private slots:
 #endif
     void bridgeTest();
     void focusChild();
+
+    void messageBoxTest_data();
+    void messageBoxTest();
 
 protected slots:
     void onClicked();
@@ -4227,6 +4232,105 @@ void tst_QAccessibility::focusChild()
     }
 }
 
+void tst_QAccessibility::messageBoxTest_data()
+{
+    QTest::addColumn<QMessageBox::Icon>("icon");
+    QTest::addColumn<QMessageBox::StandardButtons>("buttons");
+    QTest::addColumn<QString>("title");
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<QString>("infoText");
+    QTest::addColumn<QString>("details");
+    QTest::addColumn<bool>("checkbox");
+    QTest::addColumn<bool>("textInteractive");
+
+    QTest::addRow("Information") << QMessageBox::Information
+                                 << QMessageBox::StandardButtons(QMessageBox::Ok)
+                                 << "Information"
+                                 << "Here, have some information."
+                                 << QString()
+                                 << QString()
+                                 << false
+                                 << false;
+
+    QTest::addRow("Warning") << QMessageBox::Warning
+                                 << QMessageBox::StandardButtons(QMessageBox::Ok | QMessageBox::Cancel)
+                                 << "Warning"
+                                 << "This is a dangerous operation!"
+                                 << "Ok or Cancel?"
+                                 << QString()
+                                 << true
+                                 << false;
+
+    QTest::addRow("Error") << QMessageBox::Critical
+                                 << QMessageBox::StandardButtons(QMessageBox::Abort | QMessageBox::Retry | QMessageBox::Ignore)
+                                 << "Error"
+                                 << "Operation failed for http://example.com"
+                                 << "You have to decide what to do"
+                                 << "Detailed log output"
+                                 << false
+                                 << true;
+}
+
+void tst_QAccessibility::messageBoxTest()
+{
+    QFETCH(QMessageBox::Icon, icon);
+    QFETCH(QMessageBox::StandardButtons, buttons);
+    QFETCH(QString, title);
+    QFETCH(QString, text);
+    QFETCH(QString, infoText);
+    QFETCH(QString, details);
+    QFETCH(bool, checkbox);
+    QFETCH(bool, textInteractive);
+
+    QMessageBox box(icon, title, text, buttons);
+
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&box);
+    QVERIFY(iface);
+    QCOMPARE(iface->role(), QAccessible::AlertMessage);
+#ifndef Q_OS_DARWIN // macOS message boxes show no title
+    QCOMPARE(iface->text(QAccessible::Name), title);
+#endif
+    QCOMPARE(iface->text(QAccessible::Value), text);
+
+    int expectedChildCount = 3;
+    QCOMPARE(iface->childCount(), expectedChildCount);
+
+    if (textInteractive)
+        box.setTextInteractionFlags(Qt::TextBrowserInteraction);
+
+    if (!infoText.isEmpty()) {
+        box.setInformativeText(infoText);
+        QCOMPARE(iface->childCount(), ++expectedChildCount);
+    }
+    QCOMPARE(iface->text(QAccessible::Help), infoText);
+
+    if (!details.isEmpty()) {
+        box.setDetailedText(details);
+        QCOMPARE(iface->childCount(), ++expectedChildCount);
+    }
+    if (checkbox) {
+        box.setCheckBox(new QCheckBox("Don't show again"));
+        QCOMPARE(iface->childCount(), ++expectedChildCount);
+    }
+
+    QTestAccessibility::clearEvents();
+
+    QDialogPrivate *boxPrivate = static_cast<QDialogPrivate *>(QDialogPrivate::get(&box));
+    if (!boxPrivate->canBeNativeDialog()) {
+        // platforms that use a native message box will not emit accessibility events
+        box.show();
+
+        QAccessibleEvent showEvent(&box, QAccessible::DialogStart);
+        QVERIFY(QTestAccessibility::containsEvent(&showEvent));
+
+        box.hide();
+
+        QAccessibleEvent hideEvent(&box, QAccessible::DialogEnd);
+        QVERIFY(QTestAccessibility::containsEvent(&hideEvent));
+    }
+
+    QTestAccessibility::clearEvents();
+}
 
 QTEST_MAIN(tst_QAccessibility)
 #include "tst_qaccessibility.moc"
