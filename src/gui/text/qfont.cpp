@@ -798,22 +798,11 @@ QString QFont::family() const
     available a family will be set using the \l{QFont}{font matching}
     algorithm.
 
-    This will split the family string on a comma and call setFamilies() with the
-    resulting list. To preserve a font that uses a comma in it's name then use
-    setFamilies() directly. From Qt 6.2 this behavior will no longer happen and
-    \a family will be passed as a single family.
-
     \sa family(), setStyleHint(), setFamilies(), families(), QFontInfo
 */
 void QFont::setFamily(const QString &family)
 {
-#ifdef QT_DEBUG
-    if (family.contains(u',')) {
-        qWarning("From Qt 6.2, QFont::setFamily() will no long split the family string on the comma"
-                 " and will keep it as a single family");
-    }
-#endif
-    setFamilies(splitIntoFamilies(family));
+    setFamilies(QStringList(family));
 }
 
 /*!
