@@ -351,13 +351,17 @@ void tst_QStringConverter::roundtrip_data()
         }
 
         if (code.limitation == FullUnicode) {
-            const char32_t zeroVal = 0x11136; // Unicode's representation of Chakma zero
-            for (int i = 0; i < 10; ++i) {
-                QChar data[] = {
-                    QChar::highSurrogate(zeroVal + i), QChar::lowSurrogate(zeroVal + i),
-                };
-                QTest::addRow("%s:Chakma-digit-%d", code.name, i) << QStringView(data) << code.code;
-            }
+            using Digits = std::array<QChar, 2>;
+            using DigitsArray = std::array<Digits, 10>;
+            static constexpr DigitsArray chakmaDigits = []() {
+                const char32_t zeroVal = 0x11136; // Unicode's representation of Chakma zero
+                DigitsArray r;
+                for (int i = 0; i < int(r.size()); ++i)
+                    r[i] = { QChar::highSurrogate(zeroVal + i), QChar::lowSurrogate(zeroVal + i) };
+                return r;
+            }();
+            for (int i = 0; i < int(chakmaDigits.size()); ++i)
+                QTest::addRow("%s:Chakma-digit-%d", code.name, i) << QStringView(chakmaDigits[i]) << code.code;
         }
     }
 }
