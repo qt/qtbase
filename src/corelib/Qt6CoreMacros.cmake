@@ -2020,6 +2020,19 @@ function(_qt_internal_expose_source_file_to_ide target file)
     else()
         set_property(TARGET ${ide_target} APPEND PROPERTY SOURCES "${file}")
     endif()
+
+    set(scope_args)
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
+        set(scope_args TARGET_DIRECTORY "${target}")
+    endif()
+    get_source_file_property(
+        target_dependency "${file}" ${scope_args} _qt_resource_target_dependency)
+    if(target_dependency)
+        if(NOT TARGET "${target_dependency}")
+            message(FATAL_ERROR "Target dependency on source file ${file} is not a cmake target.")
+        endif()
+        add_dependencies(${ide_target} ${target_dependency})
+    endif()
 endfunction()
 
 #
