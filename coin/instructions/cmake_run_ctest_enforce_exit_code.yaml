@@ -10,11 +10,7 @@ instructions:
       equals_value: Windows
   - type: EnvironmentVariable
     variableName: TESTRUNNER
-    variableValue: "{{.InstallDir}}/libexec/qt-testrunner.py --"
-    disable_if:
-      condition: property
-      property: host.os
-      equals_value: Windows
+    variableValue: "{{.Env.LIBEXEC_INSTALL_DIR}}qt-testrunner.py --"
   - type: AppendToEnvironmentVariable
     variableName: TESTRUNNER
     variableValue: " {{.SourceDir}}/coin_qnx_qemu_runner.sh"
@@ -22,13 +18,6 @@ instructions:
       condition: property
       property: target.osVersion
       in_values: [QNX_710]
-  - type: EnvironmentVariable
-    variableName: TESTRUNNER
-    variableValue: "{{.InstallDir}}\\bin\\qt-testrunner.py --"
-    enable_if:
-      condition: property
-      property: host.os
-      equals_value: Windows
   - type: Group
     enable_if:
       condition: property
@@ -42,7 +31,7 @@ instructions:
       # Override qt-testrunner as we don't want to gather test statistics
       # because many tests FAIL when built with ASAN.
       variableName: TESTRUNNER
-      variableValue: "{{.InstallDir}}/libexec/sanitizer-testrunner.py"
+      variableValue: "{{.Env.LIBEXEC_INSTALL_DIR}}sanitizer-testrunner.py"
   - type: EnvironmentVariable
     variableName: COIN_CTEST_RESULTSDIR
     variableValue: "{{.AgentWorkingDir}}\\testresults"

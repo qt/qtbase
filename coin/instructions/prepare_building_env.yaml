@@ -26,6 +26,20 @@ instructions:
       property: host.os
       equals_value: Windows
 
+  - type: EnvironmentVariable
+    variableName: LIBEXEC_INSTALL_DIR
+    variableValue: "{{.InstallDir}}\\bin\\"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+  - type: EnvironmentVariable
+    variableName: LIBEXEC_INSTALL_DIR
+    variableValue: "{{.InstallDir}}/libexec/"
+    disable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
 
   # Export ICC specific env. variables
   - type: Group
