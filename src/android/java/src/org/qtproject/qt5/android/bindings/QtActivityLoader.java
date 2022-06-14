@@ -47,6 +47,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.Window;
 
+import org.qtproject.qt5.android.QtNative;
 
 import java.lang.reflect.Field;
 
