@@ -488,12 +488,12 @@ void QXcbConnection::printXcbError(const char *message, xcb_generic_error_t *err
     uint clamped_error_code = qMin<uint>(error->error_code, (sizeof(xcb_errors) / sizeof(xcb_errors[0])) - 1);
     uint clamped_major_code = qMin<uint>(error->major_code, (sizeof(xcb_protocol_request_codes) / sizeof(xcb_protocol_request_codes[0])) - 1);
 
-    qCWarning(lcQpaXcb, "%s: %d (%s), sequence: %d, resource id: %d, major code: %d (%s), minor code: %d",
-             message,
-             int(error->error_code), xcb_errors[clamped_error_code],
-             int(error->sequence), int(error->resource_id),
-             int(error->major_code), xcb_protocol_request_codes[clamped_major_code],
-             int(error->minor_code));
+    qCDebug(lcQpaXcb, "%s: %d (%s), sequence: %d, resource id: %d, major code: %d (%s), minor code: %d",
+            message,
+            int(error->error_code), xcb_errors[clamped_error_code],
+            int(error->sequence), int(error->resource_id),
+            int(error->major_code), xcb_protocol_request_codes[clamped_major_code],
+            int(error->minor_code));
 }
 
 static Qt::MouseButtons translateMouseButtons(int s)
