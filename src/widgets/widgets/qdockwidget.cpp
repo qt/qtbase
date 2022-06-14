@@ -20,6 +20,7 @@
 #include <private/qstylesheetstyle_p.h>
 #include <qpa/qplatformtheme.h>
 
+#include <private/qhighdpiscaling_p.h>
 #include "qdockwidget_p.h"
 #include "qmainwindowlayout_p.h"
 
@@ -752,6 +753,8 @@ void QDockWidgetPrivate::initDrag(const QPoint &pos, bool nca)
 
     state = new QDockWidgetPrivate::DragState;
     state->pressPos = pos;
+    state->globalPressPos = q->mapToGlobal(pos);
+    state->widgetInitialPos = q->pos();
     state->dragging = false;
     state->widgetItem = nullptr;
     state->ownWidgetItem = false;
@@ -981,7 +984,31 @@ bool QDockWidgetPrivate::mouseMoveEvent(QMouseEvent *event)
     if (state && state->dragging && !state->nca) {
         QMargins windowMargins = q->window()->windowHandle()->frameMargins();
         QPoint windowMarginOffset = QPoint(windowMargins.left(), windowMargins.top());
-        QPoint pos = event->globalPosition().toPoint() - state->pressPos - windowMarginOffset;
+
+        // TODO maybe use QScreen API (if/when available) to simplify the below code.
+        const QScreen *orgWdgScreen = QGuiApplication::screenAt(state->widgetInitialPos);
+        const QScreen *screenFrom = QGuiApplication::screenAt(state->globalPressPos);
+        const QScreen *screenTo = QGuiApplication::screenAt(event->globalPosition().toPoint());
+        const QScreen *wdgScreen = q->screen();
+
+        QPoint pos;
+        if (Q_LIKELY(screenFrom && screenTo && wdgScreen && orgWdgScreen)) {
+            const QPoint nativeWdgOrgPos = QHighDpiScaling::mapPositionToNative(
+                    state->widgetInitialPos, orgWdgScreen->handle());
+            const QPoint nativeTo = QHighDpiScaling::mapPositionToNative(
+                    event->globalPosition().toPoint(), screenTo->handle());
+            const QPoint nativeFrom = QHighDpiScaling::mapPositionToNative(state->globalPressPos,
+                                                                           screenFrom->handle());
+
+            // Calculate new nativePos based on startPos + mouse delta move.
+            const QPoint nativeNewPos = nativeWdgOrgPos + (nativeTo - nativeFrom);
+
+            pos = QHighDpiScaling::mapPositionFromNative(nativeNewPos, wdgScreen->handle())
+                    - windowMarginOffset;
+        } else {
+            // Fallback in the unlikely case that source and target screens could not be established
+            pos = event->globalPosition().toPoint() - state->pressPos - windowMarginOffset;
+        }
 
         QDockWidgetGroupWindow *floatingTab = qobject_cast<QDockWidgetGroupWindow*>(parent);
         if (floatingTab && !q->isFloating())
