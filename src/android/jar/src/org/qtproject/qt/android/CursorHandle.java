@@ -162,12 +162,14 @@ public class CursorHandle implements ViewTreeObserver.OnPreDrawListener
         final int[] layoutLocation = new int[2];
         m_layout.getLocationOnScreen(layoutLocation);
 
-        // This value is used for handling split screen case
+        // These values are used for handling split screen case
         final int[] activityLocation = new int[2];
+        final int[] activityLocationInWindow = new int[2];
         m_activity.getWindow().getDecorView().getLocationOnScreen(activityLocation);
+        m_activity.getWindow().getDecorView().getLocationInWindow(activityLocationInWindow);
 
         int x2 = x + layoutLocation[0] - activityLocation[0];
-        int y2 = y + layoutLocation[1] + m_yShift - activityLocation[1];
+        int y2 = y + layoutLocation[1] + m_yShift + (activityLocationInWindow[1] - activityLocation[1]);
 
         if (m_id == QtNative.IdCursorHandle) {
             x2 -= m_popup.getWidth() / 2 ;
