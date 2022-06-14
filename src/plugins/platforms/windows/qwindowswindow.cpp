@@ -640,13 +640,18 @@ static inline void fixTopLevelWindowFlags(Qt::WindowFlags &flags)
         flags |= Qt::FramelessWindowHint;
 }
 
-static QScreen *screenForName(const QWindow *w, const QString &name)
+static QScreen *screenForDeviceName(const QWindow *w, const QString &name)
 {
+    const auto getDeviceName = [](const QScreen *screen) -> QString {
+        if (const auto s = static_cast<const QWindowsScreen *>(screen->handle()))
+            return s->data().deviceName;
+        return {};
+    };
     QScreen *winScreen = w ? w->screen() : QGuiApplication::primaryScreen();
-    if (winScreen && winScreen->name() != name) {
+    if (winScreen && getDeviceName(winScreen) != name) {
         const auto screens = winScreen->virtualSiblings();
         for (QScreen *screen : screens) {
-            if (screen->name() == name)
+            if (getDeviceName(screen) == name)
                 return screen;
         }
     }
@@ -1663,7 +1668,7 @@ QScreen *QWindowsWindow::forcedScreenForGLWindow(const QWindow *w)
         forceToScreen = GpuDescription::detect().gpuSuitableScreen;
         m_screenForGLInitialized = true;
     }
-    return forceToScreen.isEmpty() ? nullptr : screenForName(w, forceToScreen);
+    return forceToScreen.isEmpty() ? nullptr : screenForDeviceName(w, forceToScreen);
 }
 
 // Returns topmost QWindowsWindow ancestor even if there are embedded windows in the chain.
