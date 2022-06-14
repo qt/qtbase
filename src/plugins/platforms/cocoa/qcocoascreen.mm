@@ -72,6 +72,18 @@ void QCocoaScreen::initializeScreens()
 */
 void QCocoaScreen::updateScreens()
 {
+    // Adding, updating, or removing a screen below might trigger
+    // Qt or the application to move a window to a different screen,
+    // recursing back here via QCocoaWindow::windowDidChangeScreen.
+    // The update code is not re-entrant, so bail out if we end up
+    // in this situation. The screens will stabilize eventually.
+    static bool updatingScreens = false;
+    if (updatingScreens) {
+        qCInfo(lcQpaScreen) << "Skipping screen update, already updating";
+        return;
+    }
+    QBoolBlocker recursionGuard(updatingScreens);
+
     uint32_t displayCount = 0;
     if (CGGetOnlineDisplayList(0, nullptr, &displayCount) != kCGErrorSuccess)
         qFatal("Failed to get number of online displays");
