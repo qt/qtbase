@@ -65,6 +65,7 @@ public class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, View.O
     private View m_layout = null;
     private EditContextView m_view = null;
     private PopupWindow m_popup = null;
+    private Activity m_activity;
     private int m_posX;
     private int m_posY;
     private int m_buttons;
@@ -74,6 +75,7 @@ public class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, View.O
 
     public EditPopupMenu(Activity activity, View layout)
     {
+        m_activity = activity;
         m_view = new EditContextView(activity, this);
         m_view.addOnLayoutChangeListener(this);
 
@@ -103,11 +105,17 @@ public class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, View.O
         initOverlay();
 
         m_view.updateButtons(buttons);
-        final int[] location = new int[2];
-        m_layout.getLocationOnScreen(location);
+        final int[] layoutLocation = new int[2];
+        m_layout.getLocationOnScreen(layoutLocation);
 
-        int x2 = x + location[0];
-        int y2 = y + location[1];
+        // These values are used for handling split screen case
+        final int[] activityLocation = new int[2];
+        final int[] activityLocationInWindow = new int[2];
+        m_activity.getWindow().getDecorView().getLocationOnScreen(activityLocation);
+        m_activity.getWindow().getDecorView().getLocationInWindow(activityLocationInWindow);
+
+        int x2 = x + layoutLocation[0] - activityLocation[0];
+        int y2 = y + layoutLocation[1] + (activityLocationInWindow[1] - activityLocation[1]);
 
         x2 -= m_view.getWidth() / 2 ;
 
