@@ -161,15 +161,17 @@ void tst_QVulkan::vulkan11()
                     QByteArray deviceUuid = QByteArray::fromRawData((const char *) deviceIdProps.deviceUUID, VK_UUID_SIZE).toHex();
                     QByteArray driverUuid = QByteArray::fromRawData((const char *) deviceIdProps.driverUUID, VK_UUID_SIZE).toHex();
                     qDebug() << "deviceUUID" << deviceUuid << "driverUUID" << driverUuid;
+                    const bool deviceUuidZero = std::find_if(deviceUuid.cbegin(), deviceUuid.cend(), [](char c) -> bool { return c; }) == deviceUuid.cend();
+                    const bool driverUuidZero = std::find_if(driverUuid.cbegin(), driverUuid.cend(), [](char c) -> bool { return c; }) == driverUuid.cend();
                     // deviceUUID cannot be all zero as per spec
-                    bool seenNonZero = false;
-                    for (int i = 0; i < VK_UUID_SIZE; ++i) {
-                        if (deviceIdProps.deviceUUID[i]) {
-                            seenNonZero = true;
-                            break;
-                        }
+                    if (!driverUuidZero) {
+                        // ...but then there are implementations such as some
+                        // versions of Mesa lavapipe, that returns all zeroes
+                        // for both uuids. skip the check if the driver uuid
+                        // was zero too.
+                        // https://gitlab.freedesktop.org/mesa/mesa/-/issues/5875
+                        QVERIFY(!deviceUuidZero);
                     }
-                    QVERIFY(seenNonZero);
                 } else {
                     qDebug("Physical device is not Vulkan 1.1 capable");
                 }
