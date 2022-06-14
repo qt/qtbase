@@ -41,6 +41,8 @@ class QDockWidgetPrivate : public QWidgetPrivate
 
     struct DragState {
         QPoint pressPos;
+        QPoint globalPressPos;
+        QPoint widgetInitialPos;
         bool dragging;
         QLayoutItem *widgetItem;
         bool ownWidgetItem;
