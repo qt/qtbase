@@ -790,54 +790,54 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
         style = WS_CHILD;
     }
 
-        // if (!testAttribute(Qt::WA_PaintUnclipped))
-        // ### Commented out for now as it causes some problems, but
-        // this should be correct anyway, so dig some more into this
+    // if (!testAttribute(Qt::WA_PaintUnclipped))
+    // ### Commented out for now as it causes some problems, but
+    // this should be correct anyway, so dig some more into this
 #ifdef Q_FLATTEN_EXPOSE
-        if (windowIsOpenGL(w)) // a bit incorrect since the is-opengl status may change from false to true at any time later on
-            style |= WS_CLIPSIBLINGS | WS_CLIPCHILDREN; // see SetPixelFormat
+    if (windowIsOpenGL(w)) // a bit incorrect since the is-opengl status may change from false to true at any time later on
+        style |= WS_CLIPSIBLINGS | WS_CLIPCHILDREN; // see SetPixelFormat
 #else
-        style |= WS_CLIPSIBLINGS | WS_CLIPCHILDREN ;
+    style |= WS_CLIPSIBLINGS | WS_CLIPCHILDREN ;
 #endif
-        if (topLevel) {
-            if ((type == Qt::Window || dialog || tool)) {
-                if (!(flags & Qt::FramelessWindowHint)) {
-                    style |= WS_POPUP;
-                    if (flags & Qt::MSWindowsFixedSizeDialogHint) {
-                        style |= WS_DLGFRAME;
-                    } else {
-                        style |= WS_THICKFRAME;
-                    }
-                    if (flags & Qt::WindowTitleHint)
-                        style |= WS_CAPTION; // Contains WS_DLGFRAME
+    if (topLevel) {
+        if ((type == Qt::Window || dialog || tool)) {
+            if (!(flags & Qt::FramelessWindowHint)) {
+                style |= WS_POPUP;
+                if (flags & Qt::MSWindowsFixedSizeDialogHint) {
+                    style |= WS_DLGFRAME;
+                } else {
+                    style |= WS_THICKFRAME;
                 }
-                if (flags & Qt::WindowSystemMenuHint)
-                    style |= WS_SYSMENU;
-                else if (dialog && (flags & Qt::WindowCloseButtonHint) && !(flags & Qt::FramelessWindowHint)) {
-                    style |= WS_SYSMENU | WS_BORDER; // QTBUG-2027, dialogs without system menu.
-                    exStyle |= WS_EX_DLGMODALFRAME;
-                }
-                const bool showMinimizeButton = flags & Qt::WindowMinimizeButtonHint;
-                if (showMinimizeButton)
-                    style |= WS_MINIMIZEBOX;
-                const bool showMaximizeButton = shouldShowMaximizeButton(w, flags);
-                if (showMaximizeButton)
-                    style |= WS_MAXIMIZEBOX;
-                if (showMinimizeButton || showMaximizeButton)
-                    style |= WS_SYSMENU;
-                if (tool)
-                    exStyle |= WS_EX_TOOLWINDOW;
-                if ((flags & Qt::WindowContextHelpButtonHint) && !showMinimizeButton
-                    && !showMaximizeButton)
-                    exStyle |= WS_EX_CONTEXTHELP;
-            } else {
-                 exStyle |= WS_EX_TOOLWINDOW;
+                if (flags & Qt::WindowTitleHint)
+                    style |= WS_CAPTION; // Contains WS_DLGFRAME
             }
+            if (flags & Qt::WindowSystemMenuHint)
+                style |= WS_SYSMENU;
+            else if (dialog && (flags & Qt::WindowCloseButtonHint) && !(flags & Qt::FramelessWindowHint)) {
+                style |= WS_SYSMENU | WS_BORDER; // QTBUG-2027, dialogs without system menu.
+                exStyle |= WS_EX_DLGMODALFRAME;
+            }
+            const bool showMinimizeButton = flags & Qt::WindowMinimizeButtonHint;
+            if (showMinimizeButton)
+                style |= WS_MINIMIZEBOX;
+            const bool showMaximizeButton = shouldShowMaximizeButton(w, flags);
+            if (showMaximizeButton)
+                style |= WS_MAXIMIZEBOX;
+            if (showMinimizeButton || showMaximizeButton)
+                style |= WS_SYSMENU;
+            if (tool)
+                exStyle |= WS_EX_TOOLWINDOW;
+            if ((flags & Qt::WindowContextHelpButtonHint) && !showMinimizeButton
+                && !showMaximizeButton)
+                exStyle |= WS_EX_CONTEXTHELP;
+        } else {
+             exStyle |= WS_EX_TOOLWINDOW;
+        }
 
-            // make mouse events fall through this window
-            // NOTE: WS_EX_TRANSPARENT flag can make mouse inputs fall through a layered window
-            if (flagsIn & Qt::WindowTransparentForInput)
-                exStyle |= WS_EX_LAYERED | WS_EX_TRANSPARENT;
+        // make mouse events fall through this window
+        // NOTE: WS_EX_TRANSPARENT flag can make mouse inputs fall through a layered window
+        if (flagsIn & Qt::WindowTransparentForInput)
+            exStyle |= WS_EX_LAYERED | WS_EX_TRANSPARENT;
     }
 }
 
