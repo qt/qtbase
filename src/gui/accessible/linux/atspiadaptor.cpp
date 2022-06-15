@@ -1066,6 +1066,11 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
 
                 notifyStateChange(iface, "enabled"_L1, enabled);
                 notifyStateChange(iface, "sensitive"_L1, enabled);
+            } else if (stateChange.focused) {
+                QAccessibleInterface *iface = event->accessibleInterface();
+                QAccessible::State state = iface->state();
+                bool focused = state.focused;
+                notifyStateChange(iface, "focused"_L1, focused);
             }
         }
         break;
