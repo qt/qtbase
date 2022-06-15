@@ -2170,7 +2170,11 @@ void QComboBoxPrivate::setCurrentIndex(const QModelIndex &mi)
         }
         updateLineEditGeometry();
     }
-    if (indexChanged) {
+    // If the model was reset to an empty, currentIndex will be invalidated
+    // (because it's a QPersistentModelIndex), but the index change will never
+    // be advertised. So we need an explicit check for such condition.
+    const bool modelResetToEmpty = !normalized.isValid() && indexBeforeChange != -1;
+    if (indexChanged || modelResetToEmpty) {
         q->update();
         _q_emitCurrentIndexChanged(currentIndex);
     }
