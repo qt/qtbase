@@ -58,6 +58,10 @@ generates object files (\c .o, \c .obj) files instead of C++ source code.
 This allows to embed bigger resources, where compiling to C++ sources and then
 to binaries would be too time consuming or memory intensive.
 
+\note The \c{file1.qrc} will not be treated as a source file by Qt Creator. It
+needs to be added as a source file to a CMake target and have the property
+\c{SKIP_AUTORCC} set to \c{ON}.
+
 \section1 Arguments
 
 You can set additional \c{OPTIONS} that should be added to the \c{rcc} calls.

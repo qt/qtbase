@@ -20,6 +20,11 @@ qt_add_resources(myapp "images"
 #! [qt_add_big_resources]
 set(SOURCES main.cpp)
 qt_add_big_resources(SOURCES big_resource.qrc)
+
+# Have big_resource.qrc treated as a source file by Qt Creator
+list(APPEND SOURCES big_resource.qrc)
+set_property(SOURCE big_resource.qrc PROPERTY SKIP_AUTORCC ON)
+
 add_executable(myapp ${SOURCES})
 #! [qt_add_big_resources]
 
