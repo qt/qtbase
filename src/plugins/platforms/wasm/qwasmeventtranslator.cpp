@@ -24,9 +24,9 @@
 
 #include <iostream>
 
-using namespace emscripten;
-
 QT_BEGIN_NAMESPACE
+
+using namespace emscripten;
 
 typedef struct emkb2qt {
     const char *em;

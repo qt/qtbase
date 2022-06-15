@@ -14,9 +14,10 @@
 
 #include <iostream>
 
-Q_GUI_EXPORT int qt_defaultDpiX();
 
 QT_BEGIN_NAMESPACE
+
+Q_GUI_EXPORT int qt_defaultDpiX();
 
 QWasmWindow::QWasmWindow(QWindow *w, QWasmCompositor *compositor, QWasmBackingStore *backingStore)
     : QPlatformWindow(w),

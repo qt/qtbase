@@ -3,6 +3,8 @@
 
 #include "qwasmoffscreensurface.h"
 
+QT_BEGIN_NAMESPACE
+
 QWasmOffscrenSurface::QWasmOffscrenSurface(QOffscreenSurface *offscreenSurface)
     :QPlatformOffscreenSurface(offscreenSurface)
 {
@@ -13,3 +15,5 @@ QWasmOffscrenSurface::~QWasmOffscrenSurface()
 {
 
 }
+
+QT_END_NAMESPACE

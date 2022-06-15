@@ -13,6 +13,8 @@
 #include <qwindow.h>
 #include <QKeySequence>
 #include <qpa/qwindowsysteminterface.h>
+
+QT_BEGIN_NAMESPACE
 using namespace qstdweb;
 
 static void inputCallback(emscripten::val event)
@@ -162,3 +164,5 @@ int QWasmInputContext::androidKeyboardCallback(int eventType,
 
     return true;
 }
+
+QT_END_NAMESPACE

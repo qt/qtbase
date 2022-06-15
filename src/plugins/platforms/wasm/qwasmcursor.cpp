@@ -11,6 +11,7 @@
 #include <emscripten/emscripten.h>
 #include <emscripten/bind.h>
 
+QT_BEGIN_NAMESPACE
 using namespace emscripten;
 
 void QWasmCursor::changeCursor(QCursor *windowCursor, QWindow *window)
@@ -133,3 +134,5 @@ void QWasmCursor::clearOverrideWasmCursor(QScreen *screen)
     QWasmCursor *wCursor = static_cast<QWasmCursor *>(QWasmScreen::get(screen)->cursor());
     wCursor->setWasmCursor(screen, wCursor->htmlCursorName);
 }
+
+QT_END_NAMESPACE

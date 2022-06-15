@@ -12,6 +12,8 @@
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 
+QT_BEGIN_NAMESPACE
+
 class QWasmClipboard : public QObject, public QPlatformClipboard
 {
 public:
@@ -35,5 +37,7 @@ public:
     bool m_isListener;
     bool isSafari;
 };
+
+QT_END_NAMESPACE
 
 #endif // QWASMCLIPBOARD_H

@@ -15,6 +15,8 @@
 // We mean it.
 //
 
+QT_BEGIN_NAMESPACE
+
 /* XPM */
 static const char * const qt_menu_xpm[] = {
 "16 16 72 1",
@@ -153,5 +155,5 @@ static const char * const qt_normalizeup_xpm[] = {
 ".######...",
 ".........."};
 
-
+QT_END_NAMESPACE
 #endif // QWASMSTYLEPIXMAPS_P_H
