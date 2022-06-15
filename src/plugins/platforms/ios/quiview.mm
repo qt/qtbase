@@ -22,6 +22,7 @@
 #include <qpa/qwindowsysteminterface_p.h>
 
 Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
+Q_LOGGING_CATEGORY(lcQpaInputEvents, "qt.qpa.input.events")
 
 namespace {
 inline ulong getTimeStamp(UIEvent *event)
@@ -54,6 +55,9 @@ inline ulong getTimeStamp(UIEvent *event)
     UITouch *m_activePencilTouch;
     int m_nextTouchId;
     NSMutableArray<UIAccessibilityElement *> *m_accessibleElements;
+    UIPanGestureRecognizer *m_scrollGestureRecognizer;
+    CGPoint m_lastScrollCursorPos;
+    CGPoint m_lastScrollDelta;
 }
 
 + (void)load
@@ -86,6 +90,23 @@ inline ulong getTimeStamp(UIEvent *event)
     if (self = [self initWithFrame:window->geometry().toCGRect()]) {
         self.platformWindow = window;
         m_accessibleElements = [[NSMutableArray<UIAccessibilityElement *> alloc] init];
+        m_scrollGestureRecognizer = [[UIPanGestureRecognizer alloc]
+                                      initWithTarget:self
+                                      action:@selector(handleScroll:)];
+        // The gesture recognizer should only care about scroll gestures (for now)
+        // Set allowedTouchTypes to empty array here to not interfere with touch events
+        // handled by the UIView. Scroll gestures, even those coming from touch devices,
+        // such as trackpads will still be received as they are not touch events
+        m_scrollGestureRecognizer.allowedTouchTypes = [NSArray array];
+#if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_13_4)
+        if (@available(ios 13.4, *)) {
+            m_scrollGestureRecognizer.allowedScrollTypesMask = UIScrollTypeMaskAll;
+        }
+#endif
+        m_scrollGestureRecognizer.maximumNumberOfTouches = 0;
+        m_lastScrollDelta = CGPointZero;
+        m_lastScrollCursorPos = CGPointZero;
+        [self addGestureRecognizer:m_scrollGestureRecognizer];
     }
 
     return self;
@@ -143,6 +164,7 @@ inline ulong getTimeStamp(UIEvent *event)
 - (void)dealloc
 {
     [m_accessibleElements release];
+    [m_scrollGestureRecognizer release];
 
     [super dealloc];
 }
@@ -702,6 +724,65 @@ inline ulong getTimeStamp(UIEvent *event)
     return QIOSInputContext::instance()->inputMethodAccepted() ?
         UIEditingInteractionConfigurationDefault : UIEditingInteractionConfigurationNone;
 }
+
+#if QT_CONFIG(wheelevent)
+- (void)handleScroll:(UIPanGestureRecognizer *)recognizer
+{
+    if (!self.platformWindow->window())
+        return;
+
+    if (!self.canBecomeFirstResponder)
+        return;
+
+    CGPoint translation = [recognizer translationInView:self];
+    CGFloat deltaX = translation.x - m_lastScrollDelta.x;
+    CGFloat deltaY = translation.y - m_lastScrollDelta.y;
+
+    QPoint angleDelta;
+    // From QNSView implementation:
+    // "Since deviceDelta is delivered as pixels rather than degrees, we need to
+    // convert from pixels to degrees in a sensible manner.
+    // It looks like 1/4 degrees per pixel behaves most native.
+    // (NB: Qt expects the unit for delta to be 8 per degree):"
+    const int pixelsToDegrees = 2; // 8 * 1/4
+    angleDelta.setX(deltaX * pixelsToDegrees);
+    angleDelta.setY(deltaY * pixelsToDegrees);
+
+    QPoint pixelDelta;
+    pixelDelta.setX(deltaX);
+    pixelDelta.setY(deltaY);
+
+    NSTimeInterval time_stamp = [[NSProcessInfo processInfo] systemUptime];
+    ulong qt_timestamp = time_stamp * 1000;
+
+    Qt::KeyboardModifiers qt_modifierFlags = Qt::NoModifier;
+#if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_13_4)
+    if (@available(ios 13.4, *))
+        qt_modifierFlags = QAppleKeyMapper::fromUIKitModifiers(recognizer.modifierFlags);
+#endif
+
+    if (recognizer.state == UIGestureRecognizerStateBegan)
+        // locationInView: doesn't return the cursor position at the time of the wheel event,
+        // but rather gives us the position with the deltas applied, so we need to save the
+        // cursor position at the beginning of the gesture
+        m_lastScrollCursorPos = [recognizer locationInView:self];
+
+    if (recognizer.state != UIGestureRecognizerStateEnded) {
+        m_lastScrollDelta.x = translation.x;
+        m_lastScrollDelta.y = translation.y;
+    } else {
+        m_lastScrollDelta = CGPointZero;
+    }
+
+    QPoint qt_local = QPointF::fromCGPoint(m_lastScrollCursorPos).toPoint();
+    QPoint qt_global = self.platformWindow->mapToGlobal(qt_local);
+
+    qCInfo(lcQpaInputEvents).nospace() << "wheel event" << " at " << qt_local
+    << " pixelDelta=" << pixelDelta << " angleDelta=" << angleDelta;
+
+    QWindowSystemInterface::handleWheelEvent(self.platformWindow->window(), qt_timestamp, qt_local, qt_global, pixelDelta, angleDelta, qt_modifierFlags);
+}
+#endif // QT_CONFIG(wheelevent)
 
 @end
 
