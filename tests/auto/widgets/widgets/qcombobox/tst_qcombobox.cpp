@@ -146,6 +146,7 @@ private slots:
     void checkEmbeddedLineEditWhenStyleSheetIsSet();
     void propagateStyleChanges();
     void buttonPressKeys();
+    void clearModel();
 
 private:
     PlatformInputContext m_platformInputContext;
@@ -3591,6 +3592,38 @@ void tst_QComboBox::buttonPressKeys()
         QTRY_VERIFY(comboBox.view()->isVisible());
         comboBox.hidePopup();
     }
+}
+
+void tst_QComboBox::clearModel()
+{
+    using namespace Qt::StringLiterals;
+    QStringListModel model({ "one"_L1, "two"_L1, "three"_L1 });
+
+    QComboBox combo;
+    combo.setModel(&model);
+    combo.setCurrentIndex(1);
+
+    QCOMPARE(combo.currentIndex(), 1);
+    QCOMPARE(combo.currentText(), model.index(1).data().toString());
+
+    QSignalSpy indexSpy(&combo, &QComboBox::currentIndexChanged);
+    QSignalSpy textSpy(&combo, &QComboBox::currentTextChanged);
+
+    QVERIFY(indexSpy.isEmpty());
+    QVERIFY(textSpy.isEmpty());
+
+    model.setStringList({});
+
+    QCOMPARE(indexSpy.count(), 1);
+    const int index = indexSpy.takeFirst().at(0).toInt();
+    QCOMPARE(index, -1);
+
+    QCOMPARE(textSpy.count(), 1);
+    const QString text = textSpy.takeFirst().at(0).toString();
+    QCOMPARE(text, QString());
+
+    QCOMPARE(combo.currentIndex(), -1);
+    QCOMPARE(combo.currentText(), QString());
 }
 
 QTEST_MAIN(tst_QComboBox)
