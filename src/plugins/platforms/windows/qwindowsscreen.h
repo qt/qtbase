@@ -92,6 +92,7 @@ private:
 
 class QWindowsScreenManager
 {
+    Q_DISABLE_COPY_MOVE(QWindowsScreenManager)
 public:
     using WindowsScreenList = QList<QWindowsScreen *>;
 
