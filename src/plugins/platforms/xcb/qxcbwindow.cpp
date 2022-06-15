@@ -515,6 +515,8 @@ void QXcbWindow::destroy()
 
 void QXcbWindow::setGeometry(const QRect &rect)
 {
+    setWindowState(Qt::WindowNoState);
+
     QPlatformWindow::setGeometry(rect);
 
     propagateSizeHints();
