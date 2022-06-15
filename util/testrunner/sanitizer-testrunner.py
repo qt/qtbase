@@ -32,7 +32,7 @@ issues_detected = False
 for line in f:
     if proc:
         # We don't want the stderr of the subprocess to disappear, so print it.
-        print(line, file=sys.stderr, end="")
+        print(line, file=sys.stderr, end="", flush=True)
     if detect_ASAN.match(line):
         issues_detected = True
 f.close()
