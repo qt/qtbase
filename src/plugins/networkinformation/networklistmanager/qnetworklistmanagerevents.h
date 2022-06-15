@@ -17,6 +17,7 @@
 
 #if QT_CONFIG(cpp_winrt)
 #include <winrt/base.h>
+#include <QtCore/private/qfactorycacheregistration_p.h>
 #endif
 
 using namespace Microsoft::WRL;

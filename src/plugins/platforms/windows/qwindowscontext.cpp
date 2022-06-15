@@ -45,6 +45,7 @@
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/quuid.h>
 #include <QtCore/private/qwinregistry_p.h>
+#include <QtCore/private/qfactorycacheregistration_p.h>
 
 #include <QtGui/private/qwindowsguieventdispatcher_p.h>
 
@@ -221,8 +222,12 @@ QWindowsContext::~QWindowsContext()
         DestroyWindow(d->m_powerDummyWindow);
 
     unregisterWindowClasses();
-    if (d->m_oleInitializeResult == S_OK || d->m_oleInitializeResult == S_FALSE)
+    if (d->m_oleInitializeResult == S_OK || d->m_oleInitializeResult == S_FALSE) {
+#ifdef QT_USE_FACTORY_CACHE_REGISTRATION
+        detail::QWinRTFactoryCacheRegistration::clearAllCaches();
+#endif
         OleUninitialize();
+    }
 
     d->m_screenManager.clearScreens(); // Order: Potentially calls back to the windows.
     if (d->m_displayContext)
