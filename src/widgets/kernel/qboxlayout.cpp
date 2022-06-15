@@ -449,6 +449,7 @@ int QBoxLayoutPrivate::validateIndex(int index) const
     if (index < 0)
         return list.count(); // append
 
+    Q_ASSERT_X(index >= 0 && index <= list.count(), "QBoxLayout::insert", "index out of range");
     return index;
 }
 
