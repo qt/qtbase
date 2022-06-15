@@ -382,7 +382,7 @@ const QOperatingSystemVersion QOperatingSystemVersion::Windows8_1 =
 
 /*!
     \variable QOperatingSystemVersion::Windows10
-    \brief a version corresponding to Windows 10 (version 10.0).
+    \brief a version corresponding to general Windows 10 (version 10.0).
     \since 5.9
  */
 const QOperatingSystemVersion QOperatingSystemVersion::Windows10 =
@@ -390,50 +390,70 @@ const QOperatingSystemVersion QOperatingSystemVersion::Windows10 =
 
 /*!
     \variable QOperatingSystemVersion::Windows10_1809
-    \brief a version corresponding to Windows 10 1809 (version 10.0.17763).
+    \brief a version corresponding to Windows 10 October 2018 Update
+           Version 1809 (version 10.0.17763).
     \since 6.3
  */
 
 /*!
     \variable QOperatingSystemVersion::Windows10_1903
-    \brief a version corresponding to Windows 10 1903 (version 10.0.18362).
+    \brief a version corresponding to Windows 10 May 2019 Update
+           Version 1903 (version 10.0.18362).
     \since 6.3
  */
 
 /*!
     \variable QOperatingSystemVersion::Windows10_1909
-    \brief a version corresponding to Windows 10 1909 (version 10.0.18363).
+    \brief a version corresponding to Windows 10 November 2019 Update
+           Version 1909 (version 10.0.18363).
     \since 6.3
  */
 
 /*!
     \variable QOperatingSystemVersion::Windows10_2004
-    \brief a version corresponding to Windows 10 2004 (version 10.0.19041).
+    \brief a version corresponding to Windows 10 May 2020 Update
+           Version 2004 (version 10.0.19041).
     \since 6.3
  */
 
 /*!
     \variable QOperatingSystemVersion::Windows10_20H2
-    \brief a version corresponding to Windows 10 20H2 (version 10.0.19042).
+    \brief a version corresponding to Windows 10 October 2020 Update
+           Version 20H2 (version 10.0.19042).
     \since 6.3
  */
 
 /*!
     \variable QOperatingSystemVersion::Windows10_21H1
-    \brief a version corresponding to Windows 10 21H1 (version 10.0.19043).
+    \brief a version corresponding to Windows 10 May 2021 Update
+           Version 21H1 (version 10.0.19043).
     \since 6.3
  */
 
 /*!
     \variable QOperatingSystemVersion::Windows10_21H2
-    \brief a version corresponding to Windows 10 21H2 (version 10.0.19044).
+    \brief a version corresponding to Windows 10 November 2021 Update
+           Version 21H2 (version 10.0.19044).
     \since 6.3
  */
 
 /*!
     \variable QOperatingSystemVersion::Windows11
-    \brief a version corresponding to Windows 11 (version 10.0.22000).
+    \brief a version corresponding to the initial release of Windows 11
+           (version 10.0.22000).
     \since 6.3
+ */
+
+/*!
+    \variable QOperatingSystemVersion::Windows11_21H2
+    \brief a version corresponding to Windows 11 Version 21H2 (version 10.0.22000).
+    \since 6.4
+ */
+
+/*!
+    \variable QOperatingSystemVersion::Windows11_22H2
+    \brief a version corresponding to Windows 11 Version 22H2 (version 10.0.22621).
+    \since 6.4
  */
 
 /*!
