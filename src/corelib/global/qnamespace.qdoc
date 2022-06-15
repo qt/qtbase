@@ -2190,6 +2190,14 @@
     \value MSWindowsOwnDC  Gives the window its own display
            context on Windows.
 
+    \value MSWindowsNoRedirectionBitmap This flag is useful to windows that
+           only use 3D graphics API to do the rendering, such as D3D11.
+           This flag was introduced in Qt 6.4
+
+           \note Changing this flag after the native window has been created will
+           have no effect. You can only enable it before the native window is
+           actually created.
+
     \value BypassWindowManagerHint This flag can be used to indicate to the platform plugin
            that "all" window manager protocols should be disabled. This flag will behave
            different depending on what operating system the application is running on and

@@ -841,8 +841,11 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
 
         // make mouse events fall through this window
         // NOTE: WS_EX_TRANSPARENT flag can make mouse inputs fall through a layered window
-        if (flagsIn & Qt::WindowTransparentForInput)
+        if (flags & Qt::WindowTransparentForInput)
             exStyle |= WS_EX_LAYERED | WS_EX_TRANSPARENT;
+
+        if (flags & Qt::MSWindowsNoRedirectionBitmap)
+            exStyle |= WS_EX_NOREDIRECTIONBITMAP;
     }
 }
 
