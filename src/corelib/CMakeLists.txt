@@ -973,6 +973,12 @@ qt_internal_extend_target(Core CONDITION ANDROID
         platform/android/qandroidnativeinterface.cpp
 )
 
+qt_internal_extend_target(Core CONDITION WIN32
+    SOURCES
+        platform/windows/qfactorycacheregistration_p.h
+        platform/windows/qfactorycacheregistration.cpp
+)
+
 qt_internal_extend_target(Core CONDITION HAIKU AND NOT ANDROID
     SOURCES
         io/qstandardpaths_haiku.cpp
