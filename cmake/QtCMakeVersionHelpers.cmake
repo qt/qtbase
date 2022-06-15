@@ -189,6 +189,12 @@ function(qt_internal_warn_about_buggy_cmake_versions)
     # https://gitlab.kitware.com/cmake/cmake/-/issues/16776
     list(APPEND unsuitable_versions "3.21.0")
 
+    # Changing a C++ source file can trigger rebuilds of a lot of other source files that might
+    # include AUTOGEN'ed headers or sources.
+    # https://gitlab.kitware.com/cmake/cmake/-/issues/22531
+    # Fixed in 3.21.2.
+    list(APPEND unsuitable_versions "3.21.1")
+
     # qt_ensure_perl fails to find perl in host PATH via find_program
     # due to Android Platform module setting CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH to OFF
     # Fixed in 3.20.6, 3.21.3. not a problem in CMake versions earlier than 3.20.0
