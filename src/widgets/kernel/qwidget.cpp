@@ -6513,11 +6513,15 @@ void QWidget::setFocus(Qt::FocusReason reason)
 
         QApplicationPrivate::setFocusWidget(f, reason);
 #if QT_CONFIG(accessibility)
-        // menus update the focus manually and this would create bogus events
-        if (!(f->inherits("QMenuBar") || f->inherits("QMenu") || f->inherits("QMenuItem")))
-        {
-            QAccessibleEvent event(f, QAccessible::Focus);
-            QAccessible::updateAccessibility(&event);
+        // If the widget gets focus because its window becomes active, then the accessibility
+        // subsystem is already informed about the window opening, and also knows which child
+        // within the window has focus. Don't interrupt it by emitting another focus event.
+        if (reason != Qt::ActiveWindowFocusReason) {
+            // menus update the focus manually and this would create bogus events
+            if (!(f->inherits("QMenuBar") || f->inherits("QMenu") || f->inherits("QMenuItem"))) {
+                QAccessibleEvent event(f, QAccessible::Focus);
+                QAccessible::updateAccessibility(&event);
+            }
         }
 #endif
 #if QT_CONFIG(graphicsview)
