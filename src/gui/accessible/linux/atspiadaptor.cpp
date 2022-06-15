@@ -2239,9 +2239,7 @@ bool AtSpiAdaptor::tableInterface(QAccessibleInterface *interface, const QString
         return false;
     }
 
-    if (0) {
-    // properties
-    } else if (function == "GetCaption"_L1) {
+    if (function == "GetCaption"_L1) {
         QAccessibleInterface * captionInterface= interface->tableInterface()->caption();
         if (captionInterface) {
             QSpiObjectReference ref = QSpiObjectReference(connection, QDBusObjectPath(pathForInterface(captionInterface)));
