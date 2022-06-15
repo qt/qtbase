@@ -12,6 +12,8 @@
 #include <emscripten/html5.h>
 #include <emscripten/emscripten.h>
 
+QT_BEGIN_NAMESPACE
+
 class QWasmInputContext : public QPlatformInputContext
 {
     Q_DISABLE_COPY(QWasmInputContext)
@@ -41,5 +43,7 @@ private:
                                        const EmscriptenKeyboardEvent *keyEvent, void *userData);
     bool inputPanelIsOpen = false;
 };
+
+QT_END_NAMESPACE
 
 #endif // QWASMINPUTCONTEXT_H

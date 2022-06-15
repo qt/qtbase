@@ -5,6 +5,7 @@
 #define QWASMCURSOR_H
 
 #include <qpa/qplatformcursor.h>
+QT_BEGIN_NAMESPACE
 
 class QWasmCursor : public QPlatformCursor
 {
@@ -18,5 +19,7 @@ private:
     QByteArray htmlCursorName = "default";
     void setWasmCursor(QScreen *screen, const QByteArray &name);
 };
+
+QT_END_NAMESPACE
 
 #endif

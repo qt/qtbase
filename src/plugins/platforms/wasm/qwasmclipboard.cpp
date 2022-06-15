@@ -16,6 +16,7 @@
 #include <QBuffer>
 #include <QString>
 
+QT_BEGIN_NAMESPACE
 using namespace emscripten;
 
 static void pasteClipboardData(emscripten::val format, emscripten::val dataPtr)
@@ -438,3 +439,4 @@ void QWasmClipboard::writeToClipboard(const QMimeData *data)
     val document = val::global("document");
     document.call<val>("execCommand", val("copy"));
 }
+QT_END_NAMESPACE

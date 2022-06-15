@@ -32,8 +32,10 @@
 // this is where EGL headers are pulled in, make sure it is last
 #include "qwasmscreen.h"
 #include <private/qsimpledrag_p.h>
-using namespace emscripten;
+
 QT_BEGIN_NAMESPACE
+
+using namespace emscripten;
 
 using namespace Qt::StringLiterals;
 

@@ -20,9 +20,9 @@
 #include <QtGui/qguiapplication.h>
 #include <private/qhighdpiscaling_p.h>
 
-using namespace emscripten;
-
 QT_BEGIN_NAMESPACE
+
+using namespace emscripten;
 
 const char * QWasmScreen::m_canvasResizeObserverCallbackContextPropertyName = "data-qtCanvasResizeObserverCallbackContext";
 
