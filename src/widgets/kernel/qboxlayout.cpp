@@ -124,6 +124,7 @@ public:
 
     void effectiveMargins(int *left, int *top, int *right, int *bottom) const;
     QLayoutItem* replaceAt(int index, QLayoutItem*) override;
+    int validateIndex(int index) const;
 };
 
 QBoxLayoutPrivate::~QBoxLayoutPrivate()
@@ -443,6 +444,13 @@ QLayoutItem* QBoxLayoutPrivate::replaceAt(int index, QLayoutItem *item)
     return r;
 }
 
+int QBoxLayoutPrivate::validateIndex(int index) const
+{
+    if (index < 0)
+        return list.count(); // append
+
+    return index;
+}
 
 /*!
     \class QBoxLayout
@@ -847,9 +855,7 @@ void QBoxLayout::addItem(QLayoutItem *item)
 void QBoxLayout::insertItem(int index, QLayoutItem *item)
 {
     Q_D(QBoxLayout);
-    if (index < 0)                                // append
-        index = d->list.count();
-
+    index = d->validateIndex(index);
     QBoxLayoutItem *it = new QBoxLayoutItem(item);
     d->list.insert(index, it);
     invalidate();
@@ -867,9 +873,7 @@ void QBoxLayout::insertItem(int index, QLayoutItem *item)
 void QBoxLayout::insertSpacing(int index, int size)
 {
     Q_D(QBoxLayout);
-    if (index < 0)                                // append
-        index = d->list.count();
-
+    index = d->validateIndex(index);
     QLayoutItem *b;
     if (horz(d->dir))
         b = QLayoutPrivate::createSpacerItem(this, size, 0, QSizePolicy::Fixed, QSizePolicy::Minimum);
@@ -892,9 +896,7 @@ void QBoxLayout::insertSpacing(int index, int size)
 void QBoxLayout::insertStretch(int index, int stretch)
 {
     Q_D(QBoxLayout);
-    if (index < 0)                                // append
-        index = d->list.count();
-
+    index = d->validateIndex(index);
     QLayoutItem *b;
     if (horz(d->dir))
         b = QLayoutPrivate::createSpacerItem(this, 0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
@@ -919,9 +921,7 @@ void QBoxLayout::insertStretch(int index, int stretch)
 void QBoxLayout::insertSpacerItem(int index, QSpacerItem *spacerItem)
 {
     Q_D(QBoxLayout);
-    if (index < 0)                                // append
-        index = d->list.count();
-
+    index = d->validateIndex(index);
     QBoxLayoutItem *it = new QBoxLayoutItem(spacerItem);
     it->magic = true;
     d->list.insert(index, it);
@@ -943,8 +943,7 @@ void QBoxLayout::insertLayout(int index, QLayout *layout, int stretch)
         return;
     if (!adoptLayout(layout))
         return;
-    if (index < 0)                                // append
-        index = d->list.count();
+    index = d->validateIndex(index);
     QBoxLayoutItem *it = new QBoxLayoutItem(layout, stretch);
     d->list.insert(index, it);
     invalidate();
@@ -977,8 +976,7 @@ void QBoxLayout::insertWidget(int index, QWidget *widget, int stretch,
     if (!d->checkWidget(widget))
          return;
     addChildWidget(widget);
-    if (index < 0)                                // append
-        index = d->list.count();
+    index = d->validateIndex(index);
     QWidgetItem *b = QLayoutPrivate::createWidgetItem(this, widget);
     b->setAlignment(alignment);
 
