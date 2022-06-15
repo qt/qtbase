@@ -68,7 +68,8 @@ QWasmCompositor::QWasmCompositor(QWasmScreen *screen)
     touchDevice = new QPointingDevice(
             "touchscreen", 1, QInputDevice::DeviceType::TouchScreen,
             QPointingDevice::PointerType::Finger,
-            QPointingDevice::Capability::Position | QPointingDevice::Capability::Area | QPointingDevice::Capability::NormalizedPosition,
+            QPointingDevice::Capability::Position | QPointingDevice::Capability::Area
+                | QPointingDevice::Capability::NormalizedPosition,
             10, 0);
     QWindowSystemInterface::registerInputDevice(touchDevice);
 }
@@ -655,7 +656,8 @@ void QWasmCompositor::drawItemPixmap(QPainter *painter, const QRect &rect, int a
     QRect aligned = QRect(x, y, w, h);
     QRect inter = aligned.intersected(rect);
 
-    painter->drawPixmap(inter.x(), inter.y(), pixmap, inter.x() - aligned.x(), inter.y() - aligned.y(), inter.width() * scale, inter.height() *scale);
+    painter->drawPixmap(inter.x(), inter.y(), pixmap, inter.x() - aligned.x(),
+                        inter.y() - aligned.y(), inter.width() * scale, inter.height() *scale);
 }
 
 
@@ -1316,10 +1318,12 @@ void QWasmCompositor::leaveWindow(QWindow *window)
     windowUnderMouse = nullptr;
     QWindowSystemInterface::handleLeaveEvent<QWindowSystemInterface::SynchronousDelivery>(window);
 }
+
 void QWasmCompositor::enterWindow(QWindow *window, const QPoint &localPoint, const QPoint &globalPoint)
 {
     QWindowSystemInterface::handleEnterEvent<QWindowSystemInterface::SynchronousDelivery>(window, localPoint, globalPoint);
 }
+
 bool QWasmCompositor::processMouseEnter(const EmscriptenMouseEvent *mouseEvent)
 {
     Q_UNUSED(mouseEvent)
@@ -1327,6 +1331,7 @@ bool QWasmCompositor::processMouseEnter(const EmscriptenMouseEvent *mouseEvent)
     mouseInCanvas = true;
     return true;
 }
+
 bool QWasmCompositor::processMouseLeave()
 {
     mouseInCanvas = false;
