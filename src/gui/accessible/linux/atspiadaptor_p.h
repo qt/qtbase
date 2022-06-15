@@ -31,7 +31,6 @@ QT_REQUIRE_CONFIG(accessibility);
 QT_BEGIN_NAMESPACE
 
 class QAccessibleInterface;
-class QSpiAccessibleInterface;
 class QSpiApplicationAdaptor;
 
 
