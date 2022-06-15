@@ -606,7 +606,7 @@ void QWindowsTheme::refreshFonts()
     if (!QGuiApplication::desktopSettingsAware())
         return;
     NONCLIENTMETRICS ncm;
-    auto screenManager = QWindowsContext::instance()->screenManager();
+    auto &screenManager = QWindowsContext::instance()->screenManager();
     QWindowsContext::nonClientMetricsForScreen(&ncm, screenManager.screens().value(0));
     qCDebug(lcQpaWindows) << __FUNCTION__ << ncm;
     const QFont menuFont = QWindowsFontDatabase::LOGFONT_to_QFont(ncm.lfMenuFont);
