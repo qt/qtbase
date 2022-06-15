@@ -1059,7 +1059,7 @@ QMargins QWindowsGeometryHint::frame(const QWindow *w, HWND hwnd, DWORD style, D
         return {};
     if (QWindowsScreenManager::isSingleScreen())
         return frameOnPrimaryScreen(w, style, exStyle);
-    auto screenManager = QWindowsContext::instance()->screenManager();
+    auto &screenManager = QWindowsContext::instance()->screenManager();
     auto screen = screenManager.screenForHwnd(hwnd);
     if (!screen)
         screen = screenManager.screens().value(0);
@@ -1086,7 +1086,7 @@ QMargins QWindowsGeometryHint::frame(const QWindow *w, const QRect &geometry,
         return frameOnPrimaryScreen(w, style, exStyle);
     }
     qreal dpi = 96;
-    auto screenManager = QWindowsContext::instance()->screenManager();
+    auto &screenManager = QWindowsContext::instance()->screenManager();
     auto screen = screenManager.screenAtDp(geometry.center());
     if (!screen)
         screen = screenManager.screens().value(0);
