@@ -96,6 +96,8 @@ public:
     using WindowsScreenList = QList<QWindowsScreen *>;
 
     QWindowsScreenManager();
+    void initialize();
+    ~QWindowsScreenManager();
 
     void clearScreens();
 
@@ -110,6 +112,7 @@ public:
 private:
     void removeScreen(int index);
 
+    HWND m_displayChangeObserver = nullptr;
     WindowsScreenList m_screens;
 };
 
