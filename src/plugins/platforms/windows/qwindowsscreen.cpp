@@ -517,8 +517,45 @@ QPlatformScreen::SubpixelAntialiasingType QWindowsScreen::subpixelAntialiasingTy
     \internal
 */
 
+extern "C" LRESULT QT_WIN_CALLBACK qDisplayChangeObserverWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    if (message == WM_DISPLAYCHANGE) {
+        qCDebug(lcQpaScreen) << "Handling WM_DISPLAYCHANGE";
+        if (QWindowsTheme *t = QWindowsTheme::instance())
+            t->displayChanged();
+        QWindowsWindow::displayChanged();
+        QWindowsContext::instance()->screenManager().handleScreenChanges();
+    }
+
+    return DefWindowProc(hwnd, message, wParam, lParam);
+}
+
 QWindowsScreenManager::QWindowsScreenManager() = default;
 
+void QWindowsScreenManager::initialize()
+{
+    qCDebug(lcQpaScreen) << "Initializing screen manager";
+
+    auto className = QWindowsContext::instance()->registerWindowClass(
+        QWindowsContext::classNamePrefix() + QLatin1String("ScreenChangeObserverWindow"),
+        qDisplayChangeObserverWndProc);
+
+    // HWND_MESSAGE windows do not get WM_DISPLAYCHANGE, so we need to create
+    // a real top level window that we never show.
+    m_displayChangeObserver = CreateWindowEx(0, reinterpret_cast<LPCWSTR>(className.utf16()),
+        nullptr, WS_TILED, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+        nullptr, nullptr, GetModuleHandle(nullptr), nullptr);
+    Q_ASSERT(m_displayChangeObserver);
+
+    qCDebug(lcQpaScreen) << "Created display change observer" << m_displayChangeObserver;
+
+    handleScreenChanges();
+}
+
+QWindowsScreenManager::~QWindowsScreenManager()
+{
+    DestroyWindow(m_displayChangeObserver);
+}
 
 bool QWindowsScreenManager::isSingleScreen()
 {

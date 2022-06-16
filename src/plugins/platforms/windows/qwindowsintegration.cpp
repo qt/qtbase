@@ -298,7 +298,7 @@ QWindowsIntegration::QWindowsIntegration(const QStringList &paramList) :
 #if QT_CONFIG(clipboard)
     d->m_clipboard.registerViewer();
 #endif
-    d->m_context.screenManager().handleScreenChanges();
+    d->m_context.screenManager().initialize();
     d->m_context.setDetectAltGrModifier((d->m_options & DetectAltGrModifier) != 0);
 }
 

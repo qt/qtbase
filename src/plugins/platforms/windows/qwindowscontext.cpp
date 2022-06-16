@@ -105,6 +105,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 Q_LOGGING_CATEGORY(lcQpaAccessibility, "qt.qpa.accessibility")
 Q_LOGGING_CATEGORY(lcQpaUiAutomation, "qt.qpa.uiautomation")
 Q_LOGGING_CATEGORY(lcQpaTrayIcon, "qt.qpa.trayicon")
+Q_LOGGING_CATEGORY(lcQpaScreen, "qt.qpa.screen")
 
 int QWindowsContext::verbose = 0;
 
@@ -1125,12 +1126,6 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
 #else
         return false;
 #endif
-    case QtWindows::DisplayChangedEvent:
-        if (QWindowsTheme *t = QWindowsTheme::instance())
-            t->displayChanged();
-        QWindowsWindow::displayChanged();
-        d->m_screenManager.handleScreenChanges();
-        return false;
     case QtWindows::SettingChangedEvent: {
         QWindowsWindow::settingsChanged();
         const bool darkMode = QWindowsTheme::queryDarkMode();

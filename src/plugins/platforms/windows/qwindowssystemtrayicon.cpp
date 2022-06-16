@@ -130,9 +130,6 @@ static int indexOfHwnd(HWND hwnd)
 extern "C" LRESULT QT_WIN_CALLBACK qWindowsTrayIconWndProc(HWND hwnd, UINT message,
                                                            WPARAM wParam, LPARAM lParam)
 {
-    // QTBUG-79248: Trigger screen update if there are no other windows.
-    if (message == WM_DPICHANGED && QGuiApplication::topLevelWindows().isEmpty())
-        QWindowsContext::instance()->screenManager().handleScreenChanges();
     if (message == MYWM_TASKBARCREATED || message == MYWM_NOTIFYICON
         || message == WM_INITMENU || message == WM_INITMENUPOPUP
         || message == WM_CLOSE || message == WM_COMMAND) {
