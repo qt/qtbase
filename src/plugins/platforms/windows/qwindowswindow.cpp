@@ -1966,7 +1966,6 @@ void QWindowsWindow::handleDpiScaledSize(WPARAM wParam, LPARAM lParam, LRESULT *
 void QWindowsWindow::handleDpiChanged(HWND hwnd, WPARAM wParam, LPARAM lParam)
 {
     const UINT dpi = HIWORD(wParam);
-    const qreal scale = qreal(dpi) / qreal(savedDpi());
     setSavedDpi(dpi);
 
     // Send screen change first, so that the new screen is set during any following resize
@@ -1995,24 +1994,21 @@ void QWindowsWindow::handleDpiChanged(HWND hwnd, WPARAM wParam, LPARAM lParam)
                      prcNewWindow->right - prcNewWindow->left,
                      prcNewWindow->bottom - prcNewWindow->top, SWP_NOZORDER | SWP_NOACTIVATE);
     }
-
-    // Scale child QPlatformWindow size. Windows sends WM_DPICHANGE to top-level windows only.
-    for (QWindow *childWindow : window()->findChildren<QWindow *>()) {
-        QWindowsWindow *platformChildWindow = static_cast<QWindowsWindow *>(childWindow->handle());
-        if (!platformChildWindow)
-            continue;
-        QRect currentGeometry = platformChildWindow->geometry();
-        QRect scaledGeometry = QRect(currentGeometry.topLeft() * scale, currentGeometry.size() * scale);
-        platformChildWindow->setGeometry(scaledGeometry);
-    }
 }
 
 void QWindowsWindow::handleDpiChangedAfterParent(HWND hwnd)
 {
-    // FIXME: refactor, do we really need this?
-    setSavedDpi(GetDpiForWindow(hwnd));
+    const UINT dpi = GetDpiForWindow(hwnd);
+    const qreal scale = qreal(dpi) / qreal(savedDpi());
+    setSavedDpi(dpi);
 
     checkForScreenChanged(QWindowsWindow::FromDpiChange);
+
+    // Child windows do not get WM_GETDPISCALEDSIZE messages to inform
+    // Windows about the new size, so we need to manually scale them.
+    QRect currentGeometry = geometry();
+    QRect scaledGeometry = QRect(currentGeometry.topLeft() * scale, currentGeometry.size() * scale);
+    setGeometry(scaledGeometry);
 }
 
 static QRect normalFrameGeometry(HWND hwnd)
