@@ -20,6 +20,7 @@
 #ifndef QT_NO_SESSIONMANAGER
 #include "qxcbsessionmanager.h"
 #endif
+#include "qxcbxsettings.h"
 
 #include <xcb/xcb.h>
 
@@ -423,12 +424,30 @@ QPlatformTheme *QXcbIntegration::createPlatformTheme(const QString &name) const
     return QGenericUnixTheme::createUnixTheme(name);
 }
 
+#define RETURN_VALID_XSETTINGS(key) { \
+    auto value = connection()->primaryScreen()->xSettings()->setting(key); \
+    if (value.isValid()) return value; \
+}
+
 QVariant QXcbIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
 {
     switch (hint) {
-    case QPlatformIntegration::CursorFlashTime:
-    case QPlatformIntegration::KeyboardInputInterval:
+    case QPlatformIntegration::CursorFlashTime: {
+        bool ok = false;
+        // If cursor blinking is off, returns 0 to keep the cursor awlays display.
+        if (connection()->primaryScreen()->xSettings()->setting(QByteArrayLiteral("Net/CursorBlink")).toInt(&ok) == 0 && ok)
+            return 0;
+
+        RETURN_VALID_XSETTINGS(QByteArrayLiteral("Net/CursorBlinkTime"));
+        break;
+    }
     case QPlatformIntegration::MouseDoubleClickInterval:
+        RETURN_VALID_XSETTINGS(QByteArrayLiteral("Net/DoubleClickTime"));
+        break;
+    case QPlatformIntegration::MouseDoubleClickDistance:
+        RETURN_VALID_XSETTINGS(QByteArrayLiteral("Net/DoubleClickDistance"));
+        break;
+    case QPlatformIntegration::KeyboardInputInterval:
     case QPlatformIntegration::StartDragTime:
     case QPlatformIntegration::KeyboardAutoRepeatRate:
     case QPlatformIntegration::PasswordMaskDelay:
@@ -438,6 +457,8 @@ QVariant QXcbIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
         // TODO using various xcb, gnome or KDE settings
         break; // Not implemented, use defaults
     case QPlatformIntegration::StartDragDistance: {
+        RETURN_VALID_XSETTINGS(QByteArrayLiteral("Net/DndDragThreshold"));
+
         // The default (in QPlatformTheme::defaultThemeHint) is 10 pixels, but
         // on a high-resolution screen it makes sense to increase it.
         qreal dpi = 100.0;

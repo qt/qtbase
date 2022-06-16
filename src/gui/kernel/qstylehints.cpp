@@ -122,7 +122,7 @@ int QStyleHints::mouseDoubleClickDistance() const
     Q_D(const QStyleHints);
     return d->m_mouseDoubleClickDistance >= 0 ?
                 d->m_mouseDoubleClickDistance :
-                themeableHint(QPlatformTheme::MouseDoubleClickDistance).toInt();
+                themeableHint(QPlatformTheme::MouseDoubleClickDistance, QPlatformIntegration::MouseDoubleClickDistance).toInt();
 }
 
 /*!

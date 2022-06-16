@@ -408,6 +408,8 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
         return QPlatformTheme::defaultThemeHint(QPlatformTheme::WheelScrollLines);
     case MouseQuickSelectionThreshold:
         return QPlatformTheme::defaultThemeHint(QPlatformTheme::MouseQuickSelectionThreshold);
+    case MouseDoubleClickDistance:
+        return QPlatformTheme::defaultThemeHint(QPlatformTheme::MouseDoubleClickDistance);
     }
 
     return 0;
