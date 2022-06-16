@@ -1310,7 +1310,7 @@ QDomDocumentPrivate* QDomNodePrivate::ownerDocument()
     QDomNodePrivate* p = this;
     while (p && !p->isDocument()) {
         if (!p->hasParent)
-            return (QDomDocumentPrivate*)p->ownerNode;
+            return static_cast<QDomDocumentPrivate *>(p->ownerNode);
         p = p->parent();
     }
 
@@ -1338,7 +1338,7 @@ static void qNormalizeNode(QDomNodePrivate* n)
                 n->removeChild(p);
                 p = tmp;
             } else {
-                t = (QDomTextPrivate*)p;
+                t = static_cast<QDomTextPrivate *>(p);
                 p = p->next;
             }
         } else {
@@ -1378,7 +1378,7 @@ void QDomNodePrivate::setLocation(int lineNumber, int columnNumber)
  *
  **************************************************************/
 
-#define IMPL ((QDomNodePrivate*)impl)
+#define IMPL static_cast<QDomNodePrivate *>(impl)
 
 /*!
     \class QDomNode
@@ -2647,7 +2647,7 @@ bool QDomNamedNodeMapPrivate::containsNS(const QString& nsURI, const QString & l
  *
  **************************************************************/
 
-#define IMPL ((QDomNamedNodeMapPrivate*)impl)
+#define IMPL static_cast<QDomNamedNodeMapPrivate *>(impl)
 
 /*!
     \class QDomNamedNodeMap
@@ -2782,7 +2782,7 @@ QDomNode QDomNamedNodeMap::setNamedItem(const QDomNode& newNode)
 {
     if (!impl)
         return QDomNode();
-    return QDomNode(IMPL->setNamedItem((QDomNodePrivate*)newNode.impl));
+    return QDomNode(IMPL->setNamedItem(static_cast<QDomNodePrivate *>(newNode.impl)));
 }
 
 /*!
@@ -2844,7 +2844,7 @@ QDomNode QDomNamedNodeMap::setNamedItemNS(const QDomNode& newNode)
 {
     if (!impl)
         return QDomNode();
-    return QDomNode(IMPL->setNamedItemNS((QDomNodePrivate*)newNode.impl));
+    return QDomNode(IMPL->setNamedItemNS(static_cast<QDomNodePrivate *>(newNode.impl)));
 }
 
 /*!
@@ -3087,7 +3087,7 @@ void QDomDocumentTypePrivate::save(QTextStream& s, int, int indent) const
  *
  **************************************************************/
 
-#define IMPL ((QDomDocumentTypePrivate*)impl)
+#define IMPL static_cast<QDomDocumentTypePrivate *>(impl)
 
 /*!
     \class QDomDocumentType
@@ -3141,7 +3141,7 @@ QDomDocumentType::QDomDocumentType(QDomDocumentTypePrivate* n)
 */
 QDomDocumentType& QDomDocumentType::operator= (const QDomDocumentType& n)
 {
-    return (QDomDocumentType&) QDomNode::operator=(n);
+    return static_cast<QDomDocumentType &>(QDomNode::operator=(n));
 }
 
 /*!
@@ -3321,7 +3321,7 @@ QDomDocumentFragment::QDomDocumentFragment(const QDomDocumentFragment& x)
 */
 QDomDocumentFragment& QDomDocumentFragment::operator= (const QDomDocumentFragment& x)
 {
-    return (QDomDocumentFragment&) QDomNode::operator=(x);
+    return static_cast<QDomDocumentFragment &>(QDomNode::operator=(x));
 }
 
 /*!
@@ -3395,7 +3395,7 @@ void QDomCharacterDataPrivate::appendData(const QString& arg)
  *
  **************************************************************/
 
-#define IMPL ((QDomCharacterDataPrivate*)impl)
+#define IMPL static_cast<QDomCharacterDataPrivate *>(impl)
 
 /*!
     \class QDomCharacterData
@@ -3455,7 +3455,7 @@ QDomCharacterData::QDomCharacterData(QDomCharacterDataPrivate* n)
 */
 QDomCharacterData& QDomCharacterData::operator= (const QDomCharacterData& x)
 {
-    return (QDomCharacterData&) QDomNode::operator=(x);
+    return static_cast<QDomCharacterData &>(QDomNode::operator=(x));
 }
 
 /*!
@@ -3694,7 +3694,7 @@ void QDomAttrPrivate::save(QTextStream& s, int, int) const
  *
  **************************************************************/
 
-#define IMPL ((QDomAttrPrivate*)impl)
+#define IMPL static_cast<QDomAttrPrivate *>(impl)
 
 /*!
     \class QDomAttr
@@ -3764,7 +3764,7 @@ QDomAttr::QDomAttr(QDomAttrPrivate* n)
 */
 QDomAttr& QDomAttr::operator= (const QDomAttr& x)
 {
-    return (QDomAttr&) QDomNode::operator=(x);
+    return static_cast<QDomAttr &>(QDomNode::operator=(x));
 }
 
 /*!
@@ -3800,7 +3800,7 @@ QDomElement QDomAttr::ownerElement() const
     Q_ASSERT(impl->parent());
     if (!impl->parent()->isElement())
         return QDomElement();
-    return QDomElement((QDomElementPrivate*)(impl->parent()));
+    return QDomElement(static_cast<QDomElementPrivate *>(impl->parent()));
 }
 
 /*!
@@ -3945,12 +3945,12 @@ void QDomElementPrivate::removeAttribute(const QString& aname)
 
 QDomAttrPrivate* QDomElementPrivate::attributeNode(const QString& aname)
 {
-    return (QDomAttrPrivate*)m_attr->namedItem(aname);
+    return static_cast<QDomAttrPrivate *>(m_attr->namedItem(aname));
 }
 
 QDomAttrPrivate* QDomElementPrivate::attributeNodeNS(const QString& nsURI, const QString& localName)
 {
-    return (QDomAttrPrivate*)m_attr->namedItemNS(nsURI, localName);
+    return static_cast<QDomAttrPrivate *>(m_attr->namedItemNS(nsURI, localName));
 }
 
 QDomAttrPrivate* QDomElementPrivate::setAttributeNode(QDomAttrPrivate* newAttr)
@@ -3962,7 +3962,7 @@ QDomAttrPrivate* QDomElementPrivate::setAttributeNode(QDomAttrPrivate* newAttr)
 
     newAttr->setParent(this);
 
-    return (QDomAttrPrivate*)n;
+    return static_cast<QDomAttrPrivate *>(n);
 }
 
 QDomAttrPrivate* QDomElementPrivate::setAttributeNodeNS(QDomAttrPrivate* newAttr)
@@ -3974,12 +3974,12 @@ QDomAttrPrivate* QDomElementPrivate::setAttributeNodeNS(QDomAttrPrivate* newAttr
     // Referencing is done by the maps
     m_attr->setNamedItem(newAttr);
 
-    return (QDomAttrPrivate*)n;
+    return static_cast<QDomAttrPrivate *>(n);
 }
 
 QDomAttrPrivate* QDomElementPrivate::removeAttributeNode(QDomAttrPrivate* oldAttr)
 {
-    return (QDomAttrPrivate*)m_attr->removeNamedItem(oldAttr->nodeName());
+    return static_cast<QDomAttrPrivate *>(m_attr->removeNamedItem(oldAttr->nodeName()));
 }
 
 bool QDomElementPrivate::hasAttribute(const QString& aname)
@@ -4001,7 +4001,7 @@ QString QDomElementPrivate::text()
         if (p->isText() || p->isCDATASection())
             t += p->nodeValue();
         else if (p->isElement())
-            t += ((QDomElementPrivate*)p)->text();
+            t += static_cast<QDomElementPrivate *>(p)->text();
         p = p->next;
     }
 
@@ -4098,7 +4098,7 @@ void QDomElementPrivate::save(QTextStream& s, int depth, int indent) const
  *
  **************************************************************/
 
-#define IMPL ((QDomElementPrivate*)impl)
+#define IMPL static_cast<QDomElementPrivate *>(impl)
 
 /*!
     \class QDomElement
@@ -4187,7 +4187,7 @@ QDomElement::QDomElement(QDomElementPrivate* n)
 */
 QDomElement& QDomElement::operator= (const QDomElement& x)
 {
-    return (QDomElement&) QDomNode::operator=(x);
+    return static_cast<QDomElement &>(QDomNode::operator=(x));
 }
 
 /*!
@@ -4373,7 +4373,7 @@ QDomAttr QDomElement::setAttributeNode(const QDomAttr& newAttr)
 {
     if (!impl)
         return QDomAttr();
-    return QDomAttr(IMPL->setAttributeNode(((QDomAttrPrivate*)newAttr.impl)));
+    return QDomAttr(IMPL->setAttributeNode(static_cast<QDomAttrPrivate *>(newAttr.impl)));
 }
 
 /*!
@@ -4385,7 +4385,7 @@ QDomAttr QDomElement::removeAttributeNode(const QDomAttr& oldAttr)
 {
     if (!impl)
         return QDomAttr(); // ### should this return oldAttr?
-    return QDomAttr(IMPL->removeAttributeNode(((QDomAttrPrivate*)oldAttr.impl)));
+    return QDomAttr(IMPL->removeAttributeNode(static_cast<QDomAttrPrivate *>(oldAttr.impl)));
 }
 
 /*!
@@ -4547,7 +4547,7 @@ QDomAttr QDomElement::setAttributeNodeNS(const QDomAttr& newAttr)
 {
     if (!impl)
         return QDomAttr();
-    return QDomAttr(IMPL->setAttributeNodeNS(((QDomAttrPrivate*)newAttr.impl)));
+    return QDomAttr(IMPL->setAttributeNodeNS(static_cast<QDomAttrPrivate *>(newAttr.impl)));
 }
 
 /*!
@@ -4651,7 +4651,7 @@ void QDomTextPrivate::save(QTextStream& s, int, int) const
  *
  **************************************************************/
 
-#define IMPL ((QDomTextPrivate*)impl)
+#define IMPL static_cast<QDomTextPrivate *>(impl)
 
 /*!
     \class QDomText
@@ -4707,7 +4707,7 @@ QDomText::QDomText(QDomTextPrivate* n)
 */
 QDomText& QDomText::operator= (const QDomText& x)
 {
-    return (QDomText&) QDomNode::operator=(x);
+    return static_cast<QDomText &>(QDomNode::operator=(x));
 }
 
 /*!
@@ -4838,7 +4838,7 @@ QDomComment::QDomComment(QDomCommentPrivate* n)
 */
 QDomComment& QDomComment::operator= (const QDomComment& x)
 {
-    return (QDomComment&) QDomNode::operator=(x);
+    return static_cast<QDomComment &>(QDomNode::operator=(x));
 }
 
 /*!
@@ -4946,7 +4946,7 @@ QDomCDATASection::QDomCDATASection(QDomCDATASectionPrivate* n)
 */
 QDomCDATASection& QDomCDATASection::operator= (const QDomCDATASection& x)
 {
-    return (QDomCDATASection&) QDomNode::operator=(x);
+    return static_cast<QDomCDATASection &>(QDomNode::operator=(x));
 }
 
 /*!
@@ -5005,7 +5005,7 @@ void QDomNotationPrivate::save(QTextStream& s, int, int) const
  *
  **************************************************************/
 
-#define IMPL ((QDomNotationPrivate*)impl)
+#define IMPL static_cast<QDomNotationPrivate *>(impl)
 
 /*!
     \class QDomNotation
@@ -5070,7 +5070,7 @@ QDomNotation::QDomNotation(QDomNotationPrivate* n)
 */
 QDomNotation& QDomNotation::operator= (const QDomNotation& x)
 {
-    return (QDomNotation&) QDomNode::operator=(x);
+    return static_cast<QDomNotation &>(QDomNode::operator=(x));
 }
 
 /*!
@@ -5198,7 +5198,7 @@ void QDomEntityPrivate::save(QTextStream& s, int, int) const
  *
  **************************************************************/
 
-#define IMPL ((QDomEntityPrivate*)impl)
+#define IMPL static_cast<QDomEntityPrivate *>(impl)
 
 /*!
     \class QDomEntity
@@ -5267,7 +5267,7 @@ QDomEntity::QDomEntity(QDomEntityPrivate* n)
 */
 QDomEntity& QDomEntity::operator= (const QDomEntity& x)
 {
-    return (QDomEntity&) QDomNode::operator=(x);
+    return static_cast<QDomEntity &>(QDomNode::operator=(x));
 }
 
 /*!
@@ -5419,7 +5419,7 @@ QDomEntityReference::QDomEntityReference(QDomEntityReferencePrivate* n)
 */
 QDomEntityReference& QDomEntityReference::operator= (const QDomEntityReference& x)
 {
-    return (QDomEntityReference&) QDomNode::operator=(x);
+    return static_cast<QDomEntityReference &>(QDomNode::operator=(x));
 }
 
 /*!
@@ -5536,7 +5536,7 @@ QDomProcessingInstruction::QDomProcessingInstruction(QDomProcessingInstructionPr
 */
 QDomProcessingInstruction& QDomProcessingInstruction::operator= (const QDomProcessingInstruction& x)
 {
-    return (QDomProcessingInstruction&) QDomNode::operator=(x);
+    return static_cast<QDomProcessingInstruction &>(QDomNode::operator=(x));
 }
 
 /*!
@@ -5716,7 +5716,7 @@ QDomElementPrivate* QDomDocumentPrivate::createElementNS(const QString &nsURI, c
 
 QDomDocumentFragmentPrivate* QDomDocumentPrivate::createDocumentFragment()
 {
-    QDomDocumentFragmentPrivate *f = new QDomDocumentFragmentPrivate(this, (QDomNodePrivate*)nullptr);
+    QDomDocumentFragmentPrivate *f = new QDomDocumentFragmentPrivate(this, nullptr);
     f->ref.deref();
     return f;
 }
@@ -5814,34 +5814,38 @@ QDomNodePrivate* QDomDocumentPrivate::importNode(QDomNodePrivate *importedNode, 
     QDomNodePrivate *node = nullptr;
     switch (importedNode->nodeType()) {
         case QDomNode::AttributeNode:
-            node = new QDomAttrPrivate((QDomAttrPrivate*)importedNode, true);
+            node = new QDomAttrPrivate(static_cast<QDomAttrPrivate *>(importedNode), true);
             break;
         case QDomNode::DocumentFragmentNode:
-            node = new QDomDocumentFragmentPrivate((QDomDocumentFragmentPrivate*)importedNode, deep);
+            node = new QDomDocumentFragmentPrivate(
+                    static_cast<QDomDocumentFragmentPrivate *>(importedNode), deep);
             break;
         case QDomNode::ElementNode:
-            node = new QDomElementPrivate((QDomElementPrivate*)importedNode, deep);
+            node = new QDomElementPrivate(static_cast<QDomElementPrivate *>(importedNode), deep);
             break;
         case QDomNode::EntityNode:
-            node = new QDomEntityPrivate((QDomEntityPrivate*)importedNode, deep);
+            node = new QDomEntityPrivate(static_cast<QDomEntityPrivate *>(importedNode), deep);
             break;
         case QDomNode::EntityReferenceNode:
-            node = new QDomEntityReferencePrivate((QDomEntityReferencePrivate*)importedNode, false);
+            node = new QDomEntityReferencePrivate(
+                    static_cast<QDomEntityReferencePrivate *>(importedNode), false);
             break;
         case QDomNode::NotationNode:
-            node = new QDomNotationPrivate((QDomNotationPrivate*)importedNode, deep);
+            node = new QDomNotationPrivate(static_cast<QDomNotationPrivate *>(importedNode), deep);
             break;
         case QDomNode::ProcessingInstructionNode:
-            node = new QDomProcessingInstructionPrivate((QDomProcessingInstructionPrivate*)importedNode, deep);
+            node = new QDomProcessingInstructionPrivate(
+                    static_cast<QDomProcessingInstructionPrivate *>(importedNode), deep);
             break;
         case QDomNode::TextNode:
-            node = new QDomTextPrivate((QDomTextPrivate*)importedNode, deep);
+            node = new QDomTextPrivate(static_cast<QDomTextPrivate *>(importedNode), deep);
             break;
         case QDomNode::CDATASectionNode:
-            node = new QDomCDATASectionPrivate((QDomCDATASectionPrivate*)importedNode, deep);
+            node = new QDomCDATASectionPrivate(static_cast<QDomCDATASectionPrivate *>(importedNode),
+                                               deep);
             break;
         case QDomNode::CommentNode:
-            node = new QDomCommentPrivate((QDomCommentPrivate*)importedNode, deep);
+            node = new QDomCommentPrivate(static_cast<QDomCommentPrivate *>(importedNode), deep);
             break;
         default:
             break;
@@ -5928,7 +5932,7 @@ void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNod
  *
  **************************************************************/
 
-#define IMPL ((QDomDocumentPrivate*)impl)
+#define IMPL static_cast<QDomDocumentPrivate *>(impl)
 
 /*!
     \class QDomDocument
@@ -6034,7 +6038,7 @@ QDomDocument::QDomDocument(const QString& name)
 */
 QDomDocument::QDomDocument(const QDomDocumentType& doctype)
 {
-    impl = new QDomDocumentPrivate((QDomDocumentTypePrivate*)(doctype.impl));
+    impl = new QDomDocumentPrivate(static_cast<QDomDocumentTypePrivate *>(doctype.impl));
 }
 
 /*!
@@ -6063,7 +6067,7 @@ QDomDocument::QDomDocument(QDomDocumentPrivate* x)
 */
 QDomDocument& QDomDocument::operator= (const QDomDocument& x)
 {
-    return (QDomDocument&) QDomNode::operator=(x);
+    return static_cast<QDomDocument &>(QDomNode::operator=(x));
 }
 
 /*!
@@ -6630,7 +6634,7 @@ QDomElement QDomDocument::elementById(const QString& /*elementId*/)
 QDomAttr QDomNode::toAttr() const
 {
     if (impl && impl->isAttr())
-        return QDomAttr(((QDomAttrPrivate*)impl));
+        return QDomAttr(static_cast<QDomAttrPrivate *>(impl));
     return QDomAttr();
 }
 
@@ -6643,7 +6647,7 @@ QDomAttr QDomNode::toAttr() const
 QDomCDATASection QDomNode::toCDATASection() const
 {
     if (impl && impl->isCDATASection())
-        return QDomCDATASection(((QDomCDATASectionPrivate*)impl));
+        return QDomCDATASection(static_cast<QDomCDATASectionPrivate *>(impl));
     return QDomCDATASection();
 }
 
@@ -6656,7 +6660,7 @@ QDomCDATASection QDomNode::toCDATASection() const
 QDomDocumentFragment QDomNode::toDocumentFragment() const
 {
     if (impl && impl->isDocumentFragment())
-        return QDomDocumentFragment(((QDomDocumentFragmentPrivate*)impl));
+        return QDomDocumentFragment(static_cast<QDomDocumentFragmentPrivate *>(impl));
     return QDomDocumentFragment();
 }
 
@@ -6669,7 +6673,7 @@ QDomDocumentFragment QDomNode::toDocumentFragment() const
 QDomDocument QDomNode::toDocument() const
 {
     if (impl && impl->isDocument())
-        return QDomDocument(((QDomDocumentPrivate*)impl));
+        return QDomDocument(static_cast<QDomDocumentPrivate *>(impl));
     return QDomDocument();
 }
 
@@ -6682,7 +6686,7 @@ QDomDocument QDomNode::toDocument() const
 QDomDocumentType QDomNode::toDocumentType() const
 {
     if (impl && impl->isDocumentType())
-        return QDomDocumentType(((QDomDocumentTypePrivate*)impl));
+        return QDomDocumentType(static_cast<QDomDocumentTypePrivate *>(impl));
     return QDomDocumentType();
 }
 
@@ -6695,7 +6699,7 @@ QDomDocumentType QDomNode::toDocumentType() const
 QDomElement QDomNode::toElement() const
 {
     if (impl && impl->isElement())
-        return QDomElement(((QDomElementPrivate*)impl));
+        return QDomElement(static_cast<QDomElementPrivate *>(impl));
     return QDomElement();
 }
 
@@ -6708,7 +6712,7 @@ QDomElement QDomNode::toElement() const
 QDomEntityReference QDomNode::toEntityReference() const
 {
     if (impl && impl->isEntityReference())
-        return QDomEntityReference(((QDomEntityReferencePrivate*)impl));
+        return QDomEntityReference(static_cast<QDomEntityReferencePrivate *>(impl));
     return QDomEntityReference();
 }
 
@@ -6721,7 +6725,7 @@ QDomEntityReference QDomNode::toEntityReference() const
 QDomText QDomNode::toText() const
 {
     if (impl && impl->isText())
-        return QDomText(((QDomTextPrivate*)impl));
+        return QDomText(static_cast<QDomTextPrivate *>(impl));
     return QDomText();
 }
 
@@ -6734,7 +6738,7 @@ QDomText QDomNode::toText() const
 QDomEntity QDomNode::toEntity() const
 {
     if (impl && impl->isEntity())
-        return QDomEntity(((QDomEntityPrivate*)impl));
+        return QDomEntity(static_cast<QDomEntityPrivate *>(impl));
     return QDomEntity();
 }
 
@@ -6747,7 +6751,7 @@ QDomEntity QDomNode::toEntity() const
 QDomNotation QDomNode::toNotation() const
 {
     if (impl && impl->isNotation())
-        return QDomNotation(((QDomNotationPrivate*)impl));
+        return QDomNotation(static_cast<QDomNotationPrivate *>(impl));
     return QDomNotation();
 }
 
@@ -6760,7 +6764,7 @@ QDomNotation QDomNode::toNotation() const
 QDomProcessingInstruction QDomNode::toProcessingInstruction() const
 {
     if (impl && impl->isProcessingInstruction())
-        return QDomProcessingInstruction(((QDomProcessingInstructionPrivate*)impl));
+        return QDomProcessingInstruction(static_cast<QDomProcessingInstructionPrivate *>(impl));
     return QDomProcessingInstruction();
 }
 
@@ -6773,7 +6777,7 @@ QDomProcessingInstruction QDomNode::toProcessingInstruction() const
 QDomCharacterData QDomNode::toCharacterData() const
 {
     if (impl && impl->isCharacterData())
-        return QDomCharacterData(((QDomCharacterDataPrivate*)impl));
+        return QDomCharacterData(static_cast<QDomCharacterDataPrivate *>(impl));
     return QDomCharacterData();
 }
 
@@ -6786,7 +6790,7 @@ QDomCharacterData QDomNode::toCharacterData() const
 QDomComment QDomNode::toComment() const
 {
     if (impl && impl->isComment())
-        return QDomComment(((QDomCommentPrivate*)impl));
+        return QDomComment(static_cast<QDomCommentPrivate *>(impl));
     return QDomComment();
 }
 
