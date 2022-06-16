@@ -1138,8 +1138,8 @@ bool QWasmCompositor::processKeyboard(int eventType, const EmscriptenKeyboardEve
         case EMSCRIPTEN_EVENT_KEYPRESS:
         case EMSCRIPTEN_EVENT_KEYDOWN: // down
             keyType = QEvent::KeyPress;
-            keyText = this->eventTranslator->getKeyText(keyEvent);
             qtKey = this->eventTranslator->getKey(keyEvent);
+            keyText = this->eventTranslator->getKeyText(keyEvent, qtKey);
             break;
         case EMSCRIPTEN_EVENT_KEYUP: // up
             keyType = QEvent::KeyRelease;
