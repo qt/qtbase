@@ -725,7 +725,7 @@ function(_qt_internal_add_android_deployment_list_property out_var json_key)
             "${add_comma_genex}${add_quote_genex}"
                 "$<JOIN:"
                     "${property_genex},"
-                    "\",\""
+                    "\"$<COMMA>\""
                 ">"
             "${add_quote_genex}"
         )
@@ -748,7 +748,7 @@ function(_qt_internal_add_android_deployment_multi_value_property out_var json_k
     string(JOIN "" list_join_genex
         "$<JOIN:"
             "${property_genex},"
-            ","
+            "$<COMMA>"
         ">"
     )
     string(APPEND ${out_var}
