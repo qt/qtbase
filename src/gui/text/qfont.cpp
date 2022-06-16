@@ -784,7 +784,7 @@ QFont &QFont::operator=(const QFont &font)
 */
 QString QFont::family() const
 {
-    return d->request.families.isEmpty() ? QString() : d->request.families.first();
+    return d->request.families.isEmpty() ? QString() : d->request.families.constFirst();
 }
 
 /*!
