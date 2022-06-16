@@ -172,10 +172,14 @@ std::string QWasmScreen::canvasSpecialHtmlTargetId() const
 bool QWasmScreen::hasSpecialHtmlTargets() const
 {
     static bool gotIt = []{
-        // specialHTMLTargets is a JavaScript Array if available. Note that it is
-        // an abort() function if not, so a simple isUndefined() test won't work here.
-        return emscripten::val::module_property("specialHTMLTargets")
-               ["constructor"]["name"].as<std::string>() == std::string("Array");
+        // Enable use of specialHTMLTargets, if available
+        emscripten::val htmlTargets = emscripten::val::module_property("specialHTMLTargets");
+        if (htmlTargets.isUndefined())
+            return false;
+
+        // Check that the object has the expected type - it can also be
+        // defined as an abort() function which prints an error on usage.
+        return htmlTargets["constructor"]["name"].as<std::string>() == std::string("Array");
     }();
     return gotIt;
 }
