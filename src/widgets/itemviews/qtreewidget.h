@@ -104,6 +104,8 @@ public:
     QT_DEPRECATED_VERSION_X_6_4("Use the overload taking Qt::Alignment")
     inline void setTextAlignment(int column, int alignment)
         { setData(column, Qt::TextAlignmentRole, alignment); }
+    inline void setTextAlignment(int column, Qt::AlignmentFlag alignment)
+        { setData(column, Qt::TextAlignmentRole, QVariant::fromValue(Qt::Alignment(alignment))); }
 #endif
     inline void setTextAlignment(int column, Qt::Alignment alignment)
         { setData(column, Qt::TextAlignmentRole, QVariant::fromValue(alignment)); }

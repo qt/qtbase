@@ -1294,6 +1294,11 @@ void QTableWidgetItem::setFlags(Qt::ItemFlags aflags)
 */
 
 /*!
+  \fn void QTableWidgetItem::setTextAlignment(Qt::AlignmentFlag alignment)
+  \internal
+*/
+
+/*!
     Constructs a table item of the specified \a type that does not belong
     to any table.
 
