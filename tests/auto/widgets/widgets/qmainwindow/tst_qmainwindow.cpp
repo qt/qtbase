@@ -1363,14 +1363,19 @@ void tst_QMainWindow::restoreState()
     dw.setObjectName(QLatin1String("dock"));
     mw.addDockWidget(Qt::LeftDockWidgetArea, &dw);
 
+    QWidgetPrivate *tbp = QWidgetPrivate::get(&tb);
+    QVERIFY(tbp->widgetItem);
+
     QByteArray state;
 
     state = mw.saveState();
     QVERIFY(mw.restoreState(state));
+    QVERIFY(tbp->widgetItem);
 
     state = mw.saveState(1);
     QVERIFY(!mw.restoreState(state));
     QVERIFY(mw.restoreState(state, 1));
+    QVERIFY(tbp->widgetItem);
 }
 
 //tests the restoration of the previous versions of window settings
