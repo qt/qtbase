@@ -1367,6 +1367,11 @@ bool QTreeWidgetItem::isFirstColumnSpanned() const
 */
 
 /*!
+  \fn void QTreeWidgetItem::setTextAlignment(int column, Qt::AlignmentFlag alignment)
+  \internal
+*/
+
+/*!
     \fn int QTreeWidgetItem::indexOfChild(QTreeWidgetItem *child) const
 
     Returns the index of the given \a child in the item's list of children.

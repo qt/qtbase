@@ -1087,6 +1087,11 @@ void QListWidgetItem::setFlags(Qt::ItemFlags aflags)
 */
 
 /*!
+    \fn void QListWidgetItem::setTextAlignment(Qt::AlignmentFlag alignment)
+    \internal
+*/
+
+/*!
     \fn void QListWidgetItem::setBackground(const QBrush &brush)
     \since 4.2
 
