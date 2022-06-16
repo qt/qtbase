@@ -221,7 +221,13 @@ void QPrintDialogPrivate::openCocoaPrintPanel(Qt::WindowModality modality)
         printInfo = static_cast<QMacPrintEngine *>(printer->printEngine())->printInfo();
         [printInfo retain];
     } else {
-        printInfo = [NSPrintInfo.sharedPrintInfo retain];
+        const QPageLayout pageLayout = printer->pageLayout();
+        // initialize the printInfo using the dictionary from the application-wide print info
+        const auto dictionary = [NSPrintInfo.sharedPrintInfo dictionary];
+        printInfo = [[NSPrintInfo alloc] initWithDictionary:dictionary];
+        printInfo.orientation = pageLayout.orientation() == QPageLayout::Landscape
+                              ? NSPaperOrientationLandscape : NSPaperOrientationPortrait;
+        printInfo.paperSize = pageLayout.pageSize().size(QPageSize::Point).toCGSize();
     }
 
     // It seems the only way that PM lets you use all is if the minimum
