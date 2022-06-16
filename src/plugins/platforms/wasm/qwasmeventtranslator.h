@@ -36,7 +36,7 @@ public:
     static Qt::MouseButton translateMouseButton(unsigned short button);
     static QCursor cursorForMode(QWasmCompositor::ResizeMode mode);
 
-    QString getKeyText(const EmscriptenKeyboardEvent *keyEvent);
+    QString getKeyText(const EmscriptenKeyboardEvent *keyEvent, Qt::Key key);
     Qt::Key getKey(const EmscriptenKeyboardEvent *keyEvent);
     void setStickyDeadKey(const EmscriptenKeyboardEvent *keyEvent);
 

@@ -18,6 +18,7 @@
 #include <private/qmakearray_p.h>
 #include <QtCore/qnamespace.h>
 #include <QCursor>
+#include <QtCore/private/qstringiterator_p.h>
 
 #include <emscripten/bind.h>
 
@@ -229,9 +230,9 @@ Qt::Key QWasmEventTranslator::translateEmscriptKey(const EmscriptenKeyboardEvent
 
     if (qtKey == Qt::Key_unknown) {
         // cast to unicode key
-        QString str = QString::fromUtf8(emscriptKey->key);
-        ushort c = str.unicode()->toUpper().unicode(); // uppercase
-        qtKey = static_cast<Qt::Key>(c);
+        QString str = QString::fromUtf8(emscriptKey->key).toUpper();
+        QStringIterator i(str);
+        qtKey = static_cast<Qt::Key>(i.next(0));
     }
 
     return qtKey;
@@ -364,11 +365,9 @@ QCursor QWasmEventTranslator::cursorForMode(QWasmCompositor::ResizeMode m)
     return Qt::ArrowCursor;
 }
 
-QString QWasmEventTranslator::getKeyText(const EmscriptenKeyboardEvent *keyEvent)
+QString QWasmEventTranslator::getKeyText(const EmscriptenKeyboardEvent *keyEvent, Qt::Key qtKey)
 {
     QString keyText;
-    Qt::Key qtKey = translateEmscriptKey(keyEvent);
-    //Qt::KeyboardModifiers modifiers = translateKeyboardEventModifier(keyEvent);
 
     if (m_emDeadKey != Qt::Key_unknown) {
         Qt::Key transformedKey = translateDeadKey(m_emDeadKey, qtKey);
@@ -394,7 +393,8 @@ QString QWasmEventTranslator::getKeyText(const EmscriptenKeyboardEvent *keyEvent
             }
         }
     }
-
+    if (keyText.isEmpty())
+        keyText = QString::fromUtf8(keyEvent->key);
     return keyText;
 }
 
