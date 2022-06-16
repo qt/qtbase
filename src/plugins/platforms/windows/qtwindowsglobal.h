@@ -140,8 +140,7 @@ enum WindowsEventType // Simplify event types
     InputMethodRequest = InputMethodEventFlag + 6,
     ThemeChanged = ThemingEventFlag + 1,
     CompositionSettingsChanged = ThemingEventFlag + 2,
-    DisplayChangedEvent = 437,
-    SettingChangedEvent = DisplayChangedEvent + 1,
+    SettingChangedEvent = 438,
     ScrollEvent = GenericEventFlag + 1,
     ContextMenu = 123,
     GestureEvent = 124,
@@ -258,8 +257,6 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
     // http://msdn.microsoft.com/en-us/library/ms695534(v=vs.85).aspx
     case WM_SETTINGCHANGE:
         return QtWindows::SettingChangedEvent;
-    case WM_DISPLAYCHANGE:
-        return QtWindows::DisplayChangedEvent;
     case WM_THEMECHANGED:
     case WM_SYSCOLORCHANGE: // Handle color change as theme change (QTBUG-34170).
     case WM_DWMCOLORIZATIONCOLORCHANGED:
