@@ -266,7 +266,7 @@ void QXdgDesktopPortalFileDialog::openPortal(Qt::WindowFlags windowFlags, Qt::Wi
 
     QDBusPendingCall pendingCall = QDBusConnection::sessionBus().asyncCall(message);
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(pendingCall);
-    connect(watcher, &QDBusPendingCallWatcher::finished, this, [=] (QDBusPendingCallWatcher *watcher) {
+    connect(watcher, &QDBusPendingCallWatcher::finished, this, [this, d, windowFlags, windowModality, parent] (QDBusPendingCallWatcher *watcher) {
         QDBusPendingReply<QDBusObjectPath> reply = *watcher;
         // Any error means the dialog is not shown and we need to fallback
         d->failedToOpen = reply.isError();
