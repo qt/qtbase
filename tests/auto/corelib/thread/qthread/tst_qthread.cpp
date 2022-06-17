@@ -19,6 +19,8 @@
 #include <qdebug.h>
 #include <qmetaobject.h>
 #include <qscopeguard.h>
+#include <private/qobject_p.h>
+#include <private/qthread_p.h>
 
 #ifdef Q_OS_UNIX
 #include <pthread.h>
@@ -68,6 +70,7 @@ private slots:
     void adoptedThreadExecFinished();
     void adoptMultipleThreads();
     void adoptMultipleThreadsOverlap();
+    void adoptedThreadBindingStatus();
 
     void exitAndStart();
     void exitAndExec();
@@ -939,6 +942,20 @@ void tst_QThread::adoptMultipleThreadsOverlap()
     QTestEventLoop::instance().enterLoop(5);
     QVERIFY(!QTestEventLoop::instance().timeout());
     QCOMPARE(recorder.activationCount.loadRelaxed(), numThreads);
+}
+
+void tst_QThread::adoptedThreadBindingStatus()
+{
+    NativeThreadWrapper nativeThread;
+    nativeThread.setWaitForStop();
+
+    nativeThread.startAndWait();
+    QVERIFY(nativeThread.qthread);
+    auto privThread = static_cast<QThreadPrivate *>(QObjectPrivate::get(nativeThread.qthread));
+    QVERIFY(privThread->m_statusOrPendingObjects.bindingStatus());
+
+    nativeThread.stop();
+    nativeThread.join();
 }
 
 // Disconnects on WinCE
