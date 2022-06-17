@@ -22,6 +22,7 @@
 
 #include <QtCore/private/qobject_p.h>
 #include <QtCore/qelapsedtimer.h>
+#include <QtCore/qxpfunctional.h>
 #include <QtGui/QIcon>
 
 QT_BEGIN_NAMESPACE
@@ -74,8 +75,8 @@ public:
     virtual QRectF closestAcceptableGeometry(const QRectF &rect) const;
 
     void setMinOrMaxSize(QSize *oldSizeMember, const QSize &size,
-                         std::function<void()> funcWidthChanged,
-                         std::function<void()> funcHeightChanged);
+                         qxp::function_ref<void()> funcWidthChanged,
+                         qxp::function_ref<void()> funcHeightChanged);
 
     virtual void processSafeAreaMarginsChanged() {}
 

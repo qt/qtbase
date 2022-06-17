@@ -568,12 +568,11 @@ QRectF QWindowPrivate::closestAcceptableGeometry(const QRectF &rect) const
 }
 
 void QWindowPrivate::setMinOrMaxSize(QSize *oldSizeMember, const QSize &size,
-                                     std::function<void()> funcWidthChanged,
-                                     std::function<void()> funcHeightChanged)
+                                     qxp::function_ref<void()> funcWidthChanged,
+                                     qxp::function_ref<void()> funcHeightChanged)
 {
     Q_Q(QWindow);
     Q_ASSERT(oldSizeMember);
-    Q_ASSERT(funcWidthChanged && funcHeightChanged);
     const QSize adjustedSize =
             size.expandedTo(QSize(0, 0)).boundedTo(QSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX));
     if (*oldSizeMember == adjustedSize)
