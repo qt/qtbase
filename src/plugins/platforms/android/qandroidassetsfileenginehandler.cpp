@@ -88,6 +88,7 @@ struct AssetItem {
     }
     Type type = Type::File;
     QString name;
+    qint64 size = -1;
 };
 
 using AssetItemList = QList<AssetItem>;
@@ -265,8 +266,7 @@ public:
     {
         if (!m_assetInfo || m_assetInfo->type != AssetItem::Type::File || (openMode & QIODevice::WriteOnly))
             return false;
-        if (m_assetFile)
-            return true;
+        close();
         m_assetFile = AAssetManager_open(m_assetManager, m_fileName.toUtf8(), AASSET_MODE_BUFFER);
         return m_assetFile;
     }
@@ -283,8 +283,8 @@ public:
 
     qint64 size() const override
     {
-        if (m_assetFile)
-            return AAsset_getLength(m_assetFile);
+        if (m_assetInfo)
+            return m_assetInfo->size;
         return -1;
     }
 
@@ -388,6 +388,7 @@ public:
 
         if (m_assetFile) {
             m_assetInfo->type = AssetItem::Type::File;
+            m_assetInfo->size = AAsset_getLength(m_assetFile);
         } else {
             auto *assetDir = AAssetManager_openDir(m_assetManager, m_fileName.toUtf8());
             if (assetDir) {
