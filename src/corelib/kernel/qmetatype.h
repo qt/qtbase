@@ -2353,6 +2353,20 @@ struct QDataStreamOperatorForType <T, false>
     static constexpr QMetaTypeInterface::DataStreamInFn dataStreamIn = nullptr;
 };
 
+// Performance optimization:
+//
+// Don't add all these symbols to the dynamic symbol tables on ELF systems and
+// on Darwin. Each library is going to have a copy anyway and QMetaType already
+// copes with some of these being "hidden" (see QMetaType::idHelper()). We may
+// as well let the linker know it can always use the local copy.
+//
+// This is currently not enabled for GCC due to
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=106023
+
+#if !defined(Q_OS_WIN) && defined(Q_CC_CLANG)
+#  pragma GCC visibility push(hidden)
+#endif
+
 template<typename S>
 class QMetaTypeForType
 {
@@ -2450,6 +2464,9 @@ struct QMetaTypeInterfaceWrapper
     };
 };
 
+#if !defined(Q_OS_WIN) && defined(Q_CC_CLANG)
+#  pragma GCC visibility pop
+#endif
 
 template<>
 class QMetaTypeInterfaceWrapper<void>
