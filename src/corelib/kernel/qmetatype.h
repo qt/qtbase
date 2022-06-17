@@ -2370,7 +2370,6 @@ public:
         /*.legacyRegisterOp=*/ nullptr
     };
 };
-#undef QT_METATYPE_CONSTEXPRLAMDA
 
 /*
  MSVC instantiates extern templates
