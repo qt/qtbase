@@ -522,6 +522,14 @@ void tst_QMetaType::operatorEqAcrossLibs()
     QCOMPARE(QByteArray(lib2Type.name()), QByteArray(localType.name()));
     QCOMPARE(lib1Type, localType);
     QCOMPARE(lib2Type, localType);
+
+#if !defined(Q_OS_WIN) && !defined(Q_OS_INTEGRITY)
+    if (actualTypeId < QMetaType::FirstGuiType && actualTypeId != QMetaType::Void) {
+        // for built-in QtCore types, we expect the interfaces to be the same too
+        QCOMPARE(lib1Iface, localIface);
+        QCOMPARE(lib2Iface, localIface);
+    }
+#endif
 }
 
 class WithPrivateDTor {
