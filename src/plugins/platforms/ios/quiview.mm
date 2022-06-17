@@ -466,7 +466,10 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
         QWindowSystemInterface::handleTouchEvent<QWindowSystemInterface::AsynchronousDelivery>(
             self.platformWindow->window(), timeStamp, iosIntegration->touchDevice(), m_activeTouches.values());
     } else {
-        QWindowSystemInterface::handleTouchEvent<QWindowSystemInterface::SynchronousDelivery>(
+        // Send the touch event asynchronously, as the application might spin a recursive
+        // event loop in response to the touch event (a dialog e.g.), which will deadlock
+        // the UIKit event delivery system (QTBUG-98651).
+        QWindowSystemInterface::handleTouchEvent<QWindowSystemInterface::AsynchronousDelivery>(
             self.platformWindow->window(), timeStamp, iosIntegration->touchDevice(), m_activeTouches.values());
     }
 }
@@ -572,7 +575,12 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     NSTimeInterval timestamp = event ? event.timestamp : [[NSProcessInfo processInfo] systemUptime];
 
     QIOSIntegration *iosIntegration = static_cast<QIOSIntegration *>(QGuiApplicationPrivate::platformIntegration());
-    QWindowSystemInterface::handleTouchCancelEvent(self.platformWindow->window(), ulong(timestamp * 1000), iosIntegration->touchDevice());
+
+    // Send the touch event asynchronously, as the application might spin a recursive
+    // event loop in response to the touch event (a dialog e.g.), which will deadlock
+    // the UIKit event delivery system (QTBUG-98651).
+    QWindowSystemInterface::handleTouchCancelEvent<QWindowSystemInterface::AsynchronousDelivery>(
+        self.platformWindow->window(), ulong(timestamp * 1000), iosIntegration->touchDevice());
 }
 
 - (int)mapPressTypeToKey:(UIPress*)press withModifiers:(Qt::KeyboardModifiers)qtModifiers text:(QString &)text
