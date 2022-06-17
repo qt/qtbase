@@ -2193,6 +2193,7 @@ void QBindingStorage::clear()
 {
     QBindingStoragePrivate(d).destroy();
     d = nullptr;
+    bindingStatus = nullptr;
 }
 
 void QBindingStorage::registerDependency_helper(const QUntypedPropertyData *data) const

@@ -79,6 +79,7 @@ private slots:
 
     void noFakeDependencies();
     void threadSafety();
+    void threadSafety2();
 
     void bindablePropertyWithInitialization();
     void noDoubleNotification();
@@ -1694,7 +1695,7 @@ void tst_QProperty::threadSafety()
     auto child1 = new ThreadSafetyTester(obj1);
     obj1->moveToThread(&workerThread);
     const auto mainThreadBindingStatus = QtPrivate::getBindingStatus({});
-    QCOMPARE(qGetBindingStorage(child1)->status({}), mainThreadBindingStatus);
+    QCOMPARE(qGetBindingStorage(child1)->status({}), nullptr);
     workerThread.start();
 
     bool correctStatus = false;
@@ -1741,6 +1742,41 @@ void tst_QProperty::threadSafety()
     QCOMPARE(obj2->objectName(), "moved");
     obj3->setObjectName("moved again");
     QCOMPARE(obj3->objectName(), "moved again");
+}
+
+class QPropertyUsingThread : public QThread
+{
+public:
+    QPropertyUsingThread(QObject **dest, QThread *destThread) : dest(dest), destThread(destThread) {}
+    void run() override
+    {
+        scopedObj1.reset(new ThreadSafetyTester());
+        scopedObj1->setObjectName("test");
+        QObject *child = new ThreadSafetyTester(scopedObj1.get());
+        child->setObjectName("child");
+        exec();
+        scopedObj1->moveToThread(destThread);
+        *dest = scopedObj1.release();
+    }
+    std::unique_ptr<ThreadSafetyTester> scopedObj1;
+    QObject **dest;
+    QThread *destThread;
+};
+
+void tst_QProperty::threadSafety2()
+{
+    std::unique_ptr<QObject> movedObj;
+    {
+        QObject *tmp = nullptr;
+        QPropertyUsingThread workerThread(&tmp, QThread::currentThread());
+        workerThread.start();
+        workerThread.quit();
+        workerThread.wait();
+        movedObj.reset(tmp);
+    }
+
+    QCOMPARE(movedObj->objectName(), "test");
+    QCOMPARE(movedObj->children().first()->objectName(), "child");
 }
 
 struct CustomType
