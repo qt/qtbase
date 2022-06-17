@@ -129,8 +129,9 @@ QAdoptedThread::QAdoptedThread(QThreadData *data)
     d_func()->running = true;
     d_func()->finished = false;
     init();
+    d_func()->m_statusOrPendingObjects.setStatusAndClearList(
+                QtPrivate::getBindingStatus({}));
 #endif
-
     // fprintf(stderr, "new QAdoptedThread = %p\n", this);
 }
 
