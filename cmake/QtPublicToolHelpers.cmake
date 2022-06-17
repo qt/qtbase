@@ -22,7 +22,7 @@ function(__qt_internal_get_tool_imported_location out_var tool)
     get_target_property(configs ${target} IMPORTED_CONFIGURATIONS)
     list(TRANSFORM configs PREPEND _)
     # Well-known configuration types
-    list(APPEND
+    list(APPEND configs
         _RELWITHDEBINFO
         _RELEASE
         _MINSIZEREL
