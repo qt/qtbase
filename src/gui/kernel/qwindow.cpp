@@ -1562,8 +1562,8 @@ void QWindow::setMinimumSize(const QSize &size)
 {
     Q_D(QWindow);
     d->setMinOrMaxSize(
-            &d->minimumSize, size, [=]() { emit minimumWidthChanged(d->minimumSize.width()); },
-            [=]() { emit minimumHeightChanged(d->minimumSize.height()); });
+            &d->minimumSize, size, [this, d]() { emit minimumWidthChanged(d->minimumSize.width()); },
+            [this, d]() { emit minimumHeightChanged(d->minimumSize.height()); });
 }
 
 /*!
@@ -1641,8 +1641,8 @@ void QWindow::setMaximumSize(const QSize &size)
 {
     Q_D(QWindow);
     d->setMinOrMaxSize(
-            &d->maximumSize, size, [=]() { emit maximumWidthChanged(d->maximumSize.width()); },
-            [=]() { emit maximumHeightChanged(d->maximumSize.height()); });
+            &d->maximumSize, size, [this, d]() { emit maximumWidthChanged(d->maximumSize.width()); },
+            [this, d]() { emit maximumHeightChanged(d->maximumSize.height()); });
 }
 
 /*!
