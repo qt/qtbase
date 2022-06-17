@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include "tst_qmetatype.h"
-#include "tst_qvariant_common.h"
+#include "tst_qmetatype_libs.h"
 
 #include <QtCore/private/qmetaobjectbuilder_p.h>
 
@@ -412,6 +412,116 @@ void tst_QMetaType::operatorEq()
     QCOMPARE(typeB == typeA, eq);
     QCOMPARE(typeA != typeB, !eq);
     QCOMPARE(typeB != typeA, !eq);
+
+#if !defined(Q_OS_WIN) && !defined(Q_OS_INTEGRITY)
+    // for built-in types or locally-defined types, this must also hold true
+    if (eq)
+        QCOMPARE(typeA.iface(), typeB.iface());
+#endif
+}
+
+void tst_QMetaType::operatorEq2_data()
+{
+    create_data();
+}
+
+void tst_QMetaType::operatorEq2()
+{
+    QFETCH(int, type);
+    QMetaType fromType1, fromType2;
+    QMetaType fromId1(type), fromId2(type);
+
+    switch (type) {
+    case QMetaType::UnknownType:
+        break;
+#define GET_METATYPE_FROM_TYPE(MetaTypeName, MetaTypeId, RealType)       \
+    case QMetaType::MetaTypeName:                           \
+        fromType1 = QMetaType::fromType<RealType>();        \
+        fromType2 = QMetaType::fromType<RealType>();        \
+        break;
+FOR_EACH_CORE_METATYPE(GET_METATYPE_FROM_TYPE)
+#undef GET_METATYPE_FROM_TYPE
+    }
+
+    // sanity check
+    QCOMPARE(fromId1.id(), type);
+    QCOMPARE(fromId2.id(), type);
+
+    // confirm that they're all equal
+    QCOMPARE(fromId1, fromId2);
+    QCOMPARE(fromType1, fromType2);
+    QCOMPARE(fromType1, fromId1);
+    QCOMPARE(fromType2, fromId2);
+
+#if !defined(Q_OS_WIN) && !defined(Q_OS_INTEGRITY)
+    // for built-in types (other than void), this must be true
+    if (type != QMetaType::Void) {
+        QCOMPARE(fromType1.iface(), fromId1.iface());
+        QCOMPARE(fromType2.iface(), fromId1.iface());
+    }
+#endif
+}
+
+#define DECLARE_LIB_FUNCTION(TYPE, ID)              \
+    Q_DECL_IMPORT QMetaType metatype_ ## TYPE();
+namespace Lib1 { FOR_EACH_METATYPE_LIBS(DECLARE_LIB_FUNCTION) }
+namespace Lib2 { FOR_EACH_METATYPE_LIBS(DECLARE_LIB_FUNCTION) }
+#undef DECLARE_LIB_FUNCTION
+
+using LibMetatypeFunction = QMetaType (*)();
+void tst_QMetaType::operatorEqAcrossLibs_data()
+{
+    QTest::addColumn<int>("builtinTypeId");
+    QTest::addColumn<QMetaType>("localType");
+    QTest::addColumn<LibMetatypeFunction>("lib1Function");
+    QTest::addColumn<LibMetatypeFunction>("lib2Function");
+
+#define ADD_ROW(TYPE, ID)                           \
+    QTest::addRow(QT_STRINGIFY(TYPE))   << int(ID)  \
+        << QMetaType::fromType<TYPE>()              \
+        << &Lib1::metatype_ ## TYPE                 \
+        << &Lib2::metatype_ ## TYPE;
+FOR_EACH_METATYPE_LIBS(ADD_ROW)
+#undef ADD_ROW
+}
+
+void tst_QMetaType::operatorEqAcrossLibs()
+{
+    QFETCH(int, builtinTypeId);
+    QFETCH(QMetaType, localType);
+    QFETCH(LibMetatypeFunction, lib1Function);
+    QFETCH(LibMetatypeFunction, lib2Function);
+
+    QMetaType lib1Type = lib1Function();
+    QMetaType lib2Type = lib2Function();
+
+    const QtPrivate::QMetaTypeInterface *localIface = localType.iface();
+    const QtPrivate::QMetaTypeInterface *lib1Iface = lib1Type.iface();
+    const QtPrivate::QMetaTypeInterface *lib2Iface = lib2Type.iface();
+
+    // DO THIS FIRST:
+    // if this isn't a built-in type, then the QMetaTypeInterface::typeId is
+    // initially set to 0
+    QCOMPARE(lib1Type, lib2Type);
+
+    int actualTypeId = localType.id();
+    bool builtinTypeExpected = builtinTypeId != QMetaType::UnknownType;
+    bool builtinTypeActually = actualTypeId < QMetaType::User;
+
+    qDebug() << "QMetaType for type" << QByteArray(localType.name())
+             << "(type ID" << (actualTypeId >= 0x1000 ? Qt::hex : Qt::dec) << actualTypeId << ')'
+             << (builtinTypeActually ? "IS" : "is NOT") << "a built-in type;"
+             << "local interface:" << static_cast<const void *>(localIface)
+             << "lib1 interface:" << static_cast<const void *>(lib1Iface)
+             << "lib2 interface:" << static_cast<const void *>(lib2Iface);
+
+    QCOMPARE(builtinTypeActually, builtinTypeExpected);
+    QCOMPARE(lib1Type.id(), actualTypeId);
+    QCOMPARE(lib2Type.id(), actualTypeId);
+    QCOMPARE(QByteArray(lib1Type.name()), QByteArray(localType.name()));
+    QCOMPARE(QByteArray(lib2Type.name()), QByteArray(localType.name()));
+    QCOMPARE(lib1Type, localType);
+    QCOMPARE(lib2Type, localType);
 }
 
 class WithPrivateDTor {

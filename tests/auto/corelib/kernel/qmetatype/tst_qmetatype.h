@@ -108,6 +108,10 @@ private slots:
     void fromType();
     void operatorEq_data();
     void operatorEq();
+    void operatorEq2_data();
+    void operatorEq2();
+    void operatorEqAcrossLibs_data();
+    void operatorEqAcrossLibs();
     void typesWithInaccessibleDTors();
     void voidIsNotUnknown();
     void typeNameNormalization();
