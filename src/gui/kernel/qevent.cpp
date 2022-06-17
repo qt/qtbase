@@ -897,6 +897,7 @@ Qt::MouseEventFlags QMouseEvent::flags() const
 
 /*!
     \fn QPoint QMouseEvent::pos() const
+    \deprecated [6.0] Use position() instead.
 
     Returns the position of the mouse cursor, relative to the widget
     that received the event.
