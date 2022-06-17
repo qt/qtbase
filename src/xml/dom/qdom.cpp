@@ -58,7 +58,7 @@
 #include <qdebug.h>
 #include <qxmlstream.h>
 #include <private/qduplicatetracker_p.h>
-
+#include <private/qstringiterator_p.h>
 
 #include <stdio.h>
 #include <limits>
@@ -190,10 +190,11 @@ static QString fixedCharData(const QString &data, bool *ok)
     }
 
     QString result;
-    for (int i = 0; i < data.size(); ++i) {
-        QChar c = data.at(i);
+    QStringIterator it(data);
+    while (it.hasNext()) {
+        const char32_t c = it.next(QChar::Null);
         if (QXmlUtils::isChar(c)) {
-            result.append(c);
+            result.append(QChar::fromUcs4(c));
         } else if (QDomImplementationPrivate::invalidDataPolicy == QDomImplementation::ReturnNullNode) {
             *ok = false;
             return QString();
