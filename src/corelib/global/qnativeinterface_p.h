@@ -21,7 +21,7 @@
 QT_BEGIN_NAMESPACE
 
 namespace QtPrivate {
-Q_CORE_EXPORT Q_DECLARE_LOGGING_CATEGORY(lcNativeInterface)
+Q_DECLARE_EXPORTED_LOGGING_CATEGORY(lcNativeInterface, Q_CORE_EXPORT)
 }
 
 // Provides a definition for the interface destructor

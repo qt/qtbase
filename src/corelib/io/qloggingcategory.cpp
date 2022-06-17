@@ -51,6 +51,9 @@ static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
 
     \snippet qloggingcategory/main.cpp 1
 
+    There is also the Q_DECLARE_EXPORTED_LOGGING_CATEGORY() macro in
+    order to use a logging category across library boundaries.
+
     Category names are free text; to configure categories using \l{Logging Rules}, their
     names should follow this convention:
     \list
@@ -574,7 +577,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
 */
 /*!
     \macro Q_DECLARE_LOGGING_CATEGORY(name)
-    \sa Q_LOGGING_CATEGORY()
+    \sa Q_LOGGING_CATEGORY(), Q_DECLARE_EXPORTED_LOGGING_CATEGORY()
     \relates QLoggingCategory
     \since 5.2
 
@@ -585,8 +588,31 @@ void QLoggingCategory::setFilterRules(const QString &rules)
 */
 
 /*!
+    \macro Q_DECLARE_EXPORTED_LOGGING_CATEGORY(name, EXPORT_MACRO)
+    \sa Q_LOGGING_CATEGORY(), Q_DECLARE_LOGGING_CATEGORY()
+    \relates QLoggingCategory
+    \since 6.5
+
+    Declares a logging category \a name. The macro can be used to declare
+    a common logging category shared in different parts of the program.
+
+    This works exactly like Q_DECLARE_LOGGING_CATEGORY(). However,
+    the logging category declared by this macro is additionally
+    qualified with \a EXPORT_MACRO. This is useful if the logging
+    category needs to be exported from a dynamic library.
+
+    For example:
+
+    \code
+    Q_DECLARE_EXPORTED_LOGGING_CATEGORY("lib.core", LIB_EXPORT_MACRO)
+    \endcode
+
+    This macro must be used outside of a class or function.
+*/
+
+/*!
     \macro Q_LOGGING_CATEGORY(name, string)
-    \sa Q_DECLARE_LOGGING_CATEGORY()
+    \sa Q_DECLARE_LOGGING_CATEGORY(), Q_DECLARE_EXPORTED_LOGGING_CATEGORY()
     \relates QLoggingCategory
     \since 5.2
 
