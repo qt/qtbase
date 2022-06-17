@@ -2302,6 +2302,7 @@ void QBindingStorage::clear()
 {
     QBindingStoragePrivate(d).destroy();
     d = nullptr;
+    bindingStatus = nullptr;
 }
 
 // ### Unused, retained for BC with 6.0

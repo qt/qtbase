@@ -1670,9 +1670,9 @@ void QObjectPrivate::moveToThread_helper()
     Q_Q(QObject);
     QEvent e(QEvent::ThreadChange);
     QCoreApplication::sendEvent(q, &e);
+    bindingStorage.clear();
     for (int i = 0; i < children.size(); ++i) {
         QObject *child = children.at(i);
-        child->d_func()->bindingStorage.clear();
         child->d_func()->moveToThread_helper();
     }
 }
