@@ -54,7 +54,7 @@ bool QHttpHeaderParser::parseHeaders(QByteArrayView header)
 
     QList<QPair<QByteArray, QByteArray>> result;
     while (header.size()) {
-        const int colon = header.indexOf(':');
+        const qsizetype colon = header.indexOf(':');
         if (colon == -1) // if no colon check if empty headers
             return result.size() == 0 && (header == "\n" || header == "\r\n");
         if (result.size() >= maxFieldCount)
@@ -66,7 +66,7 @@ bool QHttpHeaderParser::parseHeaders(QByteArrayView header)
         QByteArray value;
         qsizetype valueSpace = maxFieldSize - name.size() - 1;
         do {
-            const int endLine = header.indexOf('\n');
+            const qsizetype endLine = header.indexOf('\n');
             Q_ASSERT(endLine != -1);
             auto line = header.first(endLine); // includes space
             valueSpace -= line.size() - (line.endsWith('\r') ? 1 : 0);
@@ -115,7 +115,7 @@ bool QHttpHeaderParser::parseStatus(QByteArrayView status)
     minorVersion = status.at(dotPos + 1) - '0';
 
     int i = spacePos;
-    int j = status.indexOf(' ', i + 1);
+    qsizetype j = status.indexOf(' ', i + 1);
     const QByteArrayView code = j > i ? status.sliced(i + 1, j - i - 1)
                                       : status.sliced(i + 1);
 
