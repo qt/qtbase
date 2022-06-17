@@ -2975,12 +2975,13 @@ QMetaType::QMetaType(int typeId) : QMetaType(interfaceForType(typeId)) {}
 */
 
 namespace QtPrivate {
-#if !defined(QT_BOOTSTRAPPED) && !defined(Q_CC_MSVC)
+#if !defined(QT_BOOTSTRAPPED) && !defined(Q_CC_MSVC) && !defined(Q_OS_INTEGRITY)
 
 // Explicit instantiation definition
-#define QT_METATYPE_DECLARE_TEMPLATE_ITER(TypeName, Id, Name) \
-    template class QMetaTypeForType<Name>;
-QT_FOR_EACH_STATIC_PRIMITIVE_TYPE(QT_METATYPE_DECLARE_TEMPLATE_ITER)
+#define QT_METATYPE_DECLARE_TEMPLATE_ITER(TypeName, Id, Name)   \
+    template class QMetaTypeForType<Name>;                      \
+    template struct QMetaTypeInterfaceWrapper<Name>;
+QT_FOR_EACH_STATIC_PRIMITIVE_NON_VOID_TYPE(QT_METATYPE_DECLARE_TEMPLATE_ITER)
 QT_FOR_EACH_STATIC_PRIMITIVE_POINTER(QT_METATYPE_DECLARE_TEMPLATE_ITER)
 QT_FOR_EACH_STATIC_CORE_CLASS(QT_METATYPE_DECLARE_TEMPLATE_ITER)
 QT_FOR_EACH_STATIC_CORE_POINTER(QT_METATYPE_DECLARE_TEMPLATE_ITER)
