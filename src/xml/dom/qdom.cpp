@@ -62,7 +62,7 @@
 #include <qdebug.h>
 #include <qxmlstream.h>
 #include <private/qduplicatetracker_p.h>
-
+#include <private/qstringiterator_p.h>
 
 #include <stdio.h>
 #include <limits>
@@ -192,11 +192,26 @@ static QString fixedCharData(const QString &data, bool *ok)
         return data;
     }
 
+    // Copied from QChar::fromUcs4() implementation in Qt 6
+    auto fromUcs4 = [](char32_t c) noexcept {
+        struct R {
+            char16_t chars[2];
+            operator QStringView() const noexcept { return {begin(), end()}; }
+            qsizetype size() const noexcept { return chars[1] ? 2 : 1; }
+            const char16_t *begin() const noexcept { return chars; }
+            const char16_t *end() const noexcept { return begin() + size(); }
+        };
+        if (QChar::requiresSurrogates(c))
+            return R{{QChar::highSurrogate(c), QChar::lowSurrogate(c)}};
+        return R{{char16_t(c), u'\0'}};
+    };
+
     QString result;
-    for (int i = 0; i < data.size(); ++i) {
-        QChar c = data.at(i);
+    QStringIterator it(data);
+    while (it.hasNext()) {
+        const char32_t c = it.next(QChar::Null);
         if (QXmlUtils::isChar(c)) {
-            result.append(c);
+            result.append(fromUcs4(c));
         } else if (QDomImplementationPrivate::invalidDataPolicy == QDomImplementation::ReturnNullNode) {
             *ok = false;
             return QString();

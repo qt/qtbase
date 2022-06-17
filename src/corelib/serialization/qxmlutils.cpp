@@ -271,13 +271,16 @@ bool QXmlUtils::isLetter(const QChar c)
     \sa {http://www.w3.org/TR/REC-xml/#NT-Char},
            {Extensible Markup Language (XML) 1.0 (Fourth Edition), [2] Char}
  */
-bool QXmlUtils::isChar(const QChar c)
+bool QXmlUtils::isChar(const char32_t c)
 {
-    return (c.unicode() >= 0x0020 && c.unicode() <= 0xD7FF)
-           || c.unicode() == 0x0009
-           || c.unicode() == 0x000A
-           || c.unicode() == 0x000D
-           || (c.unicode() >= 0xE000 && c.unicode() <= 0xFFFD);
+    // The valid range is defined by https://www.w3.org/TR/REC-xml/#NT-Char as following:
+    // Char ::= #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+    return (c >= 0x0020 && c <= 0xD7FF)
+           || c == 0x0009
+           || c == 0x000A
+           || c == 0x000D
+           || (c >= 0xE000 && c <= 0xFFFD)
+           || (c >= 0x10000 && c <= 0x10FFFF);
 }
 
 /*!

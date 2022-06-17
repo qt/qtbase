@@ -34,6 +34,7 @@
 #include <QFile>
 #include <QList>
 #include <QRegExp>
+#include <QScopeGuard>
 #include <QTextStream>
 #include <QtTest/QtTest>
 #include <QtXml>
@@ -85,6 +86,7 @@ private slots:
     void invalidQualifiedName();
     void invalidCharData_data();
     void invalidCharData();
+    void nonBMPCharacters();
 
     void roundTripAttributes() const;
     void normalizeEndOfLine() const;
@@ -1392,6 +1394,10 @@ void tst_QDom::invalidCharData_data()
     QTest::newRow( "f<o&o" )   << QString("f<o&o")     << true  << true  << true  << QString("f<o&o");
     QTest::newRow( "empty" )   << QString()            << true  << true  << true  << QString();
     QTest::newRow("f\\x07o\\x02")<< QString("f\x07o\x02")<< true  << true  << false << QString("fo");
+
+    const QChar pair[2] = { QChar(0xdc00), QChar(0xe000) };
+    QString invalid(pair, 2);
+    QTest::newRow("\\xdc00\\xe000") << invalid << true << true << false << invalid.right(1);
 }
 
 void tst_QDom::invalidCharData()
@@ -1433,6 +1439,22 @@ void tst_QDom::invalidCharData()
             QCOMPARE(text_elt.nodeValue(), in_text);
         }
     }
+}
+
+void tst_QDom::nonBMPCharacters()
+{
+    const auto invalidDataPolicy = QDomImplementation::invalidDataPolicy();
+    auto resetInvalidDataPolicy = qScopeGuard(
+            [invalidDataPolicy] { QDomImplementation::setInvalidDataPolicy(invalidDataPolicy); });
+    QDomImplementation::setInvalidDataPolicy(QDomImplementation::DropInvalidChars);
+
+    const QString input = QStringLiteral("<text>Supplementary Plane: 𝄞 😂 🀄 🀶 🃪 🃋</text>");
+
+    QString errorMsg;
+    QDomDocument doc;
+    doc.setContent(input, &errorMsg);
+    QVERIFY(errorMsg.isEmpty());
+    QCOMPARE(doc.toString(-1), input);
 }
 
 void tst_QDom::roundTripAttributes() const

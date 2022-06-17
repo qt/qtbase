@@ -69,7 +69,7 @@ class Q_CORE_EXPORT QXmlUtils
 {
 public:
     static bool isEncName(QStringView encName);
-    static bool isChar(const QChar c);
+    static bool isChar(const char32_t c);
     static bool isNameChar(const QChar c);
     static bool isLetter(const QChar c);
     static bool isNCName(QStringView ncName);
