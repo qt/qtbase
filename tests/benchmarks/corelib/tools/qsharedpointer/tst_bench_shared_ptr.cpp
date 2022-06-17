@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2021 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -39,6 +40,18 @@
 #if __has_include(<boost/shared_ptr.hpp>)
 #  include <boost/shared_ptr.hpp>
 #  include <boost/make_shared.hpp>
+
+#  ifdef BOOST_NO_EXCEPTIONS
+// https://stackoverflow.com/a/9530546/134841
+// https://www.boost.org/doc/libs/1_79_0/libs/throw_exception/doc/html/throw_exception.html#throw_exception
+BOOST_NORETURN void boost::throw_exception(const std::exception &) { std::terminate(); }
+#    if BOOST_VERSION >= 107300
+// https://www.boost.org/doc/libs/1_79_0/libs/throw_exception/doc/html/throw_exception.html#changes_in_1_73_0
+BOOST_NORETURN void boost::throw_exception(const std::exception &, const boost::source_location &)
+{ std::terminate(); }
+#    endif // Boost v1.73
+#  endif // BOOST_NO_EXCEPTIONS
+
 #  define ONLY_IF_BOOST(x) x
 #else
 #  define ONLY_IF_BOOST(x) QSKIP("This benchmark requires Boost.SharedPtr.")
