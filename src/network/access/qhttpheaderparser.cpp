@@ -31,7 +31,7 @@ static bool fieldNameCheck(QByteArrayView name)
                 || otherCharacters.contains(c);
     };
 
-    return name.size() > 0 && std::all_of(name.begin(), name.end(), fieldNameChar);
+    return !name.empty() && std::all_of(name.begin(), name.end(), fieldNameChar);
 }
 
 bool QHttpHeaderParser::parseHeaders(QByteArrayView header)
@@ -43,7 +43,7 @@ bool QHttpHeaderParser::parseHeaders(QByteArrayView header)
         return h.startsWith(' ') || h.startsWith('\t');
     };
     // Headers, if non-empty, start with a non-space and end with a newline:
-    if (hSpaceStart(header) || (header.size() && !header.endsWith('\n')))
+    if (hSpaceStart(header) || (!header.empty() && !header.endsWith('\n')))
         return false;
 
     while (int tail = header.endsWith("\n\r\n") ? 2 : header.endsWith("\n\n") ? 1 : 0)
@@ -53,10 +53,10 @@ bool QHttpHeaderParser::parseHeaders(QByteArrayView header)
         return false;
 
     QList<QPair<QByteArray, QByteArray>> result;
-    while (header.size()) {
+    while (!header.empty()) {
         const int colon = header.indexOf(':');
         if (colon == -1) // if no colon check if empty headers
-            return result.size() == 0 && (header == "\n" || header == "\r\n");
+            return result.empty() && (header == "\n" || header == "\r\n");
         if (result.size() >= maxFieldCount)
             return false;
         QByteArrayView name = header.first(colon);
@@ -73,7 +73,7 @@ bool QHttpHeaderParser::parseHeaders(QByteArrayView header)
             if (valueSpace < 0)
                 return false;
             line = line.trimmed();
-            if (line.size()) {
+            if (!line.empty()) {
                 if (value.size())
                     value += ' ' + line.toByteArray();
                 else
@@ -119,7 +119,7 @@ bool QHttpHeaderParser::parseStatus(QByteArrayView status)
     const QByteArrayView code = j > i ? status.sliced(i + 1, j - i - 1)
                                       : status.sliced(i + 1);
 
-    bool ok;
+    bool ok = false;
     statusCode = code.toInt(&ok);
 
     reasonPhrase = j > i ? QString::fromLatin1(status.sliced(j + 1))
@@ -148,8 +148,7 @@ QByteArray QHttpHeaderParser::combinedHeaderValue(const QByteArray &name, const 
     const QList<QByteArray> allValues = headerFieldValues(name);
     if (allValues.isEmpty())
         return defaultValue;
-    else
-        return allValues.join(", ");
+    return allValues.join(", ");
 }
 
 QList<QByteArray> QHttpHeaderParser::headerFieldValues(const QByteArray &name) const
