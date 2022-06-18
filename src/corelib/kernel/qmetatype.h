@@ -878,13 +878,6 @@ namespace QtPrivate
         static constexpr MetaObjectFn metaObjectFunction = nullptr;
     };
 #ifndef QT_NO_QOBJECT
-    template<>
-    struct MetaObjectForType<void>
-    {
-        static constexpr const QMetaObject *value() { return nullptr; }
-        using MetaObjectFn = const QMetaObject *(*)(const QMetaTypeInterface *);
-        static constexpr MetaObjectFn metaObjectFunction = nullptr;
-    };
     template<typename T>
     struct MetaObjectForType<T*, typename std::enable_if<IsPointerToTypeDerivedFromQObject<T*>::Value>::type>
     {
