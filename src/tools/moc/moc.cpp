@@ -1103,6 +1103,12 @@ void Moc::generate(FILE *out, FILE *jsonOutput)
             " much.)\"\n", QT_VERSION_STR);
     fprintf(out, "#endif\n\n");
 
+#if QT_VERSION <= QT_VERSION_CHECK(7, 0, 0)
+    fprintf(out, "#ifndef Q_CONSTINIT\n"
+            "#define Q_CONSTINIT\n"
+            "#endif\n\n");
+#endif
+
     fprintf(out, "QT_BEGIN_MOC_NAMESPACE\n");
     fprintf(out, "QT_WARNING_PUSH\n");
     fprintf(out, "QT_WARNING_DISABLE_DEPRECATED\n");
