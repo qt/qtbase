@@ -75,8 +75,11 @@ struct QMetaTypeCustomRegistry
     // index of first empty (unregistered) type in registry, if any.
     int firstEmpty = 0;
 
-    int registerCustomType(const QtPrivate::QMetaTypeInterface *ti)
+    int registerCustomType(const QtPrivate::QMetaTypeInterface *cti)
     {
+        // we got here because cti->typeId is 0, so this is a custom meta type
+        // (not read-only)
+        auto ti = const_cast<QtPrivate::QMetaTypeInterface *>(cti);
         {
             QWriteLocker l(&lock);
             if (int id = ti->typeId.loadRelaxed())
@@ -789,9 +792,11 @@ bool QMetaType::isOrdered() const
 void QMetaType::unregisterMetaType(QMetaType type)
 {
     if (type.d_ptr && type.d_ptr->typeId.loadRelaxed() >= QMetaType::User) {
+        // this is a custom meta type (not read-only)
+        auto d = const_cast<QtPrivate::QMetaTypeInterface *>(type.d_ptr);
         if (auto reg = customTypeRegistry())
-            reg->unregisterDynamicType(type.d_ptr->typeId.loadRelaxed());
-        type.d_ptr->typeId.storeRelease(0);
+            reg->unregisterDynamicType(d->typeId.loadRelaxed());
+        d->typeId.storeRelease(0);
     }
 }
 

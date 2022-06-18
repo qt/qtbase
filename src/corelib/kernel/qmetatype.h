@@ -225,6 +225,20 @@ struct QMetaObject;
 namespace QtPrivate
 {
 
+class QMetaTypeInterface;
+
+// MSVC is the only supported compiler that includes the type of a variable in
+// its mangled form, so it's not binary-compatible to drop the const in
+// QMetaTypeInterfaceWrapper::metaType for it, which means we must keep the
+// mutable field until Qt 7.
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED) || !defined(Q_CC_MSVC)
+#  define QMTI_MUTABLE
+using NonConstMetaTypeInterface = QMetaTypeInterface;
+#else
+#  define QMTI_MUTABLE mutable
+using NonConstMetaTypeInterface = const QMetaTypeInterface;
+#endif
+
 class QMetaTypeInterface
 {
 public:
@@ -232,7 +246,7 @@ public:
     ushort alignment;
     uint size;
     uint flags;
-    mutable QBasicAtomicInt typeId;
+    QMTI_MUTABLE QBasicAtomicInt typeId;
 
     using MetaObjectFn = const QMetaObject *(*)(const QMetaTypeInterface *);
     MetaObjectFn metaObjectFn;
@@ -261,6 +275,7 @@ public:
     using LegacyRegisterOp = void (*)();
     LegacyRegisterOp legacyRegisterOp;
 };
+#undef QMTI_MUTABLE
 
 /*!
     This template is used for implicit conversion from type From to type To.
@@ -2326,7 +2341,13 @@ public:
 template<typename T>
 struct QMetaTypeInterfaceWrapper
 {
-    static inline constexpr const QMetaTypeInterface metaType = {
+    // if the type ID for T is known at compile-time, then we can declare
+    // the QMetaTypeInterface object const; otherwise, we declare it as
+    // non-const and the .typeId is updated by QMetaType::idHelper().
+    static constexpr bool IsConstMetaTypeInterface = !!BuiltinMetaType<T>::value;
+    using InterfaceType = std::conditional_t<IsConstMetaTypeInterface, const QMetaTypeInterface, NonConstMetaTypeInterface>;
+
+    static inline InterfaceType metaType = {
         /*.revision=*/ 0,
         /*.alignment=*/ alignof(T),
         /*.size=*/ sizeof(T),
