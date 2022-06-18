@@ -278,6 +278,7 @@ private slots:
     void focusItemChangedSignal();
     void minimumRenderSize();
     void focusOnTouch();
+    void clearSelection();
 
     // task specific tests below me
     void task139710_bspTreeCrash();
@@ -4858,6 +4859,53 @@ void tst_QGraphicsScene::focusOnTouch()
 
     QApplication::sendEvent(&scene, &event);
     QVERIFY(rect->hasFocus());
+}
+
+void tst_QGraphicsScene::clearSelection()
+{
+    class AlwaysSelectedItem : public QGraphicsRectItem
+    {
+    public:
+        using QGraphicsRectItem::QGraphicsRectItem;
+    protected:
+        QVariant itemChange(GraphicsItemChange change, const QVariant& value)
+        {
+            if (change == ItemSelectedChange)
+                return true;
+            return QGraphicsRectItem::itemChange(change, value);
+        }
+    };
+    QGraphicsScene scene;
+    QSignalSpy spy(&scene, &QGraphicsScene::selectionChanged);
+
+    QGraphicsRectItem *regularRect = new QGraphicsRectItem;
+    regularRect->setFlag(QGraphicsItem::ItemIsSelectable);
+    regularRect->setRect(0, 0, 50, 50);
+    regularRect->setSelected(true);
+    AlwaysSelectedItem *selectedRect = new AlwaysSelectedItem;
+    selectedRect->setFlag(QGraphicsItem::ItemIsSelectable);
+    selectedRect->setRect(50, 50, 50, 50);
+    selectedRect->setSelected(true);
+    scene.addItem(regularRect);
+    scene.addItem(selectedRect);
+
+    QCOMPARE(spy.count(), 2);
+
+    QCOMPARE(scene.selectedItems().count(), 2);
+    scene.clearSelection();
+    QVERIFY(!regularRect->isSelected());
+    QVERIFY(selectedRect->isSelected());
+    QCOMPARE(scene.selectedItems().count(), 1);
+    QCOMPARE(spy.count(), 3);
+
+    delete regularRect;
+    QCOMPARE(spy.count(), 3);
+
+    scene.clearSelection();
+    QCOMPARE(spy.count(), 3);
+
+    delete selectedRect;
+    QCOMPARE(spy.count(), 4);
 }
 
 void tst_QGraphicsScene::taskQTBUG_15977_renderWithDeviceCoordinateCache()
