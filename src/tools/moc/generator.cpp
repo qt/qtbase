@@ -257,8 +257,32 @@ void Generator::generateCode()
     fprintf(out, "namespace {\n");
 
 //
+// Build the strings using QtMocHelpers::StringData
+//
+
+    fprintf(out, "\n#ifdef QT_MOC_HAS_STRINGDATA\n"
+                 "struct qt_meta_stringdata_%s_t {};\n"
+                 "static constexpr auto qt_meta_stringdata_%s = QtMocHelpers::stringData(",
+            qualifiedClassNameIdentifier.constData(), qualifiedClassNameIdentifier.constData());
+    {
+        char comma = 0;
+        for (const QByteArray &str : strings) {
+            if (comma)
+                fputc(comma, out);
+            printStringWithIndentation(out, str);
+            comma = ',';
+        }
+    }
+    fprintf(out, "\n);\n"
+            "#else  // !QT_MOC_HAS_STRING_DATA\n");
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
+    fprintf(out, "#error \"qtmochelpers.h not found or too old.\"\n");
+#else
+//
 // Build stringdata struct
 //
+
     fprintf(out, "struct qt_meta_stringdata_%s_t {\n", qualifiedClassNameIdentifier.constData());
     fprintf(out, "    uint offsetsAndSizes[%d];\n", int(strings.size() * 2));
     for (int i = 0; i < strings.size(); ++i) {
@@ -302,7 +326,9 @@ void Generator::generateCode()
 // Terminate stringdata struct
     fprintf(out, "\n};\n");
     fprintf(out, "#undef QT_MOC_LITERAL\n");
+#endif // Qt 6.9
 
+    fprintf(out, "#endif // !QT_MOC_HAS_STRING_DATA\n");
     fprintf(out, "} // unnamed namespace\n\n");
 
 //
