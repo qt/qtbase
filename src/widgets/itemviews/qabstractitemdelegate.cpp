@@ -117,8 +117,8 @@ QT_BEGIN_NAMESPACE
     The second approach is to handle user events directly by reimplementing
     editorEvent().
 
-    \sa {model-view-programming}{Model/View Programming}, QStyledItemDelegate,
-        {Pixelator Example}, QStyledItemDelegate, QStyle
+    \sa {model-view-programming}{Model/View Programming}, {Pixelator Example},
+        QStyledItemDelegate, QStyle
 */
 
 /*!
