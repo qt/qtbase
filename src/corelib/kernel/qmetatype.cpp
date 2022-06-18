@@ -79,8 +79,8 @@ struct QMetaTypeCustomRegistry
     {
         {
             QWriteLocker l(&lock);
-            if (ti->typeId)
-                return ti->typeId;
+            if (int id = ti->typeId.loadRelaxed())
+                return id;
             QByteArray name =
 #ifndef QT_NO_QOBJECT
                     QMetaObject::normalizedType
@@ -101,11 +101,11 @@ struct QMetaTypeCustomRegistry
                 registry.append(ti);
                 firstEmpty = registry.size();
             }
-            ti->typeId = firstEmpty + QMetaType::User;
+            ti->typeId.storeRelaxed(firstEmpty + QMetaType::User);
         }
         if (ti->legacyRegisterOp)
             ti->legacyRegisterOp();
-        return ti->typeId;
+        return ti->typeId.loadRelaxed();
     };
 
     void unregisterDynamicType(int id)
