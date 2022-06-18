@@ -485,6 +485,10 @@ void tst_QThread::terminate()
 #if defined(Q_OS_ANDROID)
     QSKIP("Thread termination is not supported on Android.");
 #endif
+#if defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)
+    QSKIP("Thread termination might result in stack underflow address sanitizer errors.")
+#endif
+
     Terminate_Thread thread;
     {
         QMutexLocker locker(&thread.mutex);
@@ -551,6 +555,10 @@ void tst_QThread::terminated()
 #if defined(Q_OS_ANDROID)
     QSKIP("Thread termination is not supported on Android.");
 #endif
+#if defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)
+    QSKIP("Thread termination might result in stack underflow address sanitizer errors.")
+#endif
+
     SignalRecorder recorder;
     Terminate_Thread thread;
     connect(&thread, SIGNAL(finished()), &recorder, SLOT(slot()), Qt::DirectConnection);
@@ -1766,6 +1774,10 @@ Q_SIGNALS:
 
 void tst_QThread::terminateAndPrematureDestruction()
 {
+#if defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)
+    QSKIP("Thread termination might result in stack underflow address sanitizer errors.")
+#endif
+
     WaitToRun_Thread thread;
     QSignalSpy spy(&thread, &WaitToRun_Thread::running);
     thread.start();
@@ -1782,6 +1794,10 @@ void tst_QThread::terminateAndPrematureDestruction()
 
 void tst_QThread::terminateAndDoubleDestruction()
 {
+#if defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)
+    QSKIP("Thread termination might result in stack underflow address sanitizer errors.")
+#endif
+
     class ChildObject : public QObject
     {
     public:
