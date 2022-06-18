@@ -25,12 +25,6 @@
 # define QT_END_NAMESPACE
 # define QT_BEGIN_INCLUDE_NAMESPACE
 # define QT_END_INCLUDE_NAMESPACE
-#ifndef QT_BEGIN_MOC_NAMESPACE
-# define QT_BEGIN_MOC_NAMESPACE
-#endif
-#ifndef QT_END_MOC_NAMESPACE
-# define QT_END_MOC_NAMESPACE
-#endif
 # define QT_FORWARD_DECLARE_CLASS(name) class name;
 # define QT_FORWARD_DECLARE_STRUCT(name) struct name;
 
@@ -42,12 +36,6 @@
 # define QT_END_NAMESPACE }
 # define QT_BEGIN_INCLUDE_NAMESPACE }
 # define QT_END_INCLUDE_NAMESPACE namespace QT_NAMESPACE {
-#ifndef QT_BEGIN_MOC_NAMESPACE
-# define QT_BEGIN_MOC_NAMESPACE QT_USE_NAMESPACE
-#endif
-#ifndef QT_END_MOC_NAMESPACE
-# define QT_END_MOC_NAMESPACE
-#endif
 # define QT_FORWARD_DECLARE_CLASS(name) \
     QT_BEGIN_NAMESPACE class name; QT_END_NAMESPACE \
     using QT_PREPEND_NAMESPACE(name);
@@ -81,6 +69,14 @@ namespace QT_NAMESPACE {}
 # define QT_END_INCLUDE_NAMESPACE
 
 #endif /* __cplusplus */
+
+/* ### Qt 6.9 (or later): remove *_MOC_* macros (moc does not need them since 6.5) */
+#ifndef QT_BEGIN_MOC_NAMESPACE
+# define QT_BEGIN_MOC_NAMESPACE QT_USE_NAMESPACE
+#endif
+#ifndef QT_END_MOC_NAMESPACE
+# define QT_END_MOC_NAMESPACE
+#endif
 
 /* silence syncqt warning */
 QT_BEGIN_NAMESPACE

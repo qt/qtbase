@@ -1091,6 +1091,16 @@ void Moc::generate(FILE *out, FILE *jsonOutput)
     for (const QByteArray &qtContainer : qtContainers)
         fprintf(out, "#include <QtCore/%s>\n", qtContainer.constData());
 
+    fprintf(out, "\n%s#include <QtCore/qtmochelpers.h>\n%s\n",
+#if QT_VERSION <= QT_VERSION_CHECK(6, 9, 0)
+            "#if __has_include(<QtCore/qtmochelpers.h>)\n",
+            "#else\n"
+            "QT_BEGIN_MOC_NAMESPACE\n"
+            "#endif\n"
+#else
+            "", ""
+#endif
+    );
 
     fprintf(out, "#if !defined(Q_MOC_OUTPUT_REVISION)\n"
             "#error \"The header file '%s' doesn't include <QObject>.\"\n", fn.constData());
@@ -1107,7 +1117,6 @@ void Moc::generate(FILE *out, FILE *jsonOutput)
             "#endif\n\n");
 #endif
 
-    fprintf(out, "QT_BEGIN_MOC_NAMESPACE\n");
     fprintf(out, "QT_WARNING_PUSH\n");
     fprintf(out, "QT_WARNING_DISABLE_DEPRECATED\n");
     fprintf(out, "QT_WARNING_DISABLE_GCC(\"-Wuseless-cast\")\n");
@@ -1120,7 +1129,6 @@ void Moc::generate(FILE *out, FILE *jsonOutput)
     fputs("", out);
 
     fprintf(out, "QT_WARNING_POP\n");
-    fprintf(out, "QT_END_MOC_NAMESPACE\n");
 
     if (jsonOutput) {
         QJsonObject mocData;
