@@ -1085,7 +1085,6 @@ void Moc::generate(FILE *out, FILE *jsonOutput)
     if (classList.size() && classList.constFirst().classname == "Qt")
         fprintf(out, "#include <QtCore/qobject.h>\n");
 
-    fprintf(out, "#include <QtCore/qbytearray.h>\n"); // For QByteArrayData
     fprintf(out, "#include <QtCore/qmetatype.h>\n");  // For QMetaType::Type
     if (mustIncludeQPluginH)
         fprintf(out, "#include <QtCore/qplugin.h>\n");
