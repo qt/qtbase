@@ -257,7 +257,7 @@ void Generator::generateCode()
             "    uint(sizeof(qt_meta_stringdata_%s_t::offsetsAndSizes) + ofs), len \n",
             qualifiedClassNameIdentifier.constData());
 
-    fprintf(out, "static const qt_meta_stringdata_%s_t qt_meta_stringdata_%s = {\n",
+    fprintf(out, "Q_CONSTINIT static const qt_meta_stringdata_%s_t qt_meta_stringdata_%s = {\n",
             qualifiedClassNameIdentifier.constData(), qualifiedClassNameIdentifier.constData());
     fprintf(out, "    {");
     {
@@ -329,7 +329,7 @@ void Generator::generateCode()
 //
 
     int index = MetaObjectPrivateFieldCount;
-    fprintf(out, "static const uint qt_meta_data_%s[] = {\n", qualifiedClassNameIdentifier.constData());
+    fprintf(out, "Q_CONSTINIT static const uint qt_meta_data_%s[] = {\n", qualifiedClassNameIdentifier.constData());
     fprintf(out, "\n // content:\n");
     fprintf(out, "    %4d,       // revision\n", int(QMetaObjectPrivate::OutputRevision));
     fprintf(out, "    %4d,       // classname\n", stridx(cdef->qualified));
@@ -506,7 +506,7 @@ void Generator::generateCode()
 //
 
     if (!extraList.isEmpty()) {
-        fprintf(out, "static const QMetaObject::SuperData qt_meta_extradata_%s[] = {\n",
+        fprintf(out, "Q_CONSTINIT static const QMetaObject::SuperData qt_meta_extradata_%s[] = {\n",
                 qualifiedClassNameIdentifier.constData());
         for (int i = 0; i < extraList.count(); ++i) {
             fprintf(out, "    QMetaObject::SuperData::link<%s::staticMetaObject>(),\n", extraList.at(i).constData());
@@ -517,7 +517,9 @@ void Generator::generateCode()
 //
 // Finally create and initialize the static meta object
 //
-    fprintf(out, "const QMetaObject %s::staticMetaObject = { {\n", cdef->qualified.constData());
+    fprintf(out, "%sconst QMetaObject %s::staticMetaObject = { {\n",
+            // ### FIXME: gadgets are not constinit on Windows!
+            cdef->hasQGadget ? "" : "Q_CONSTINIT ", cdef->qualified.constData());
 
     if (isQObject)
         fprintf(out, "    nullptr,\n");
@@ -1612,7 +1614,7 @@ void Generator::generatePluginMetaData()
 
     // compatibility with Qt 6.0-6.2
     fprintf(out, "#else\nQT_PLUGIN_METADATA_SECTION\n"
-          "static constexpr unsigned char qt_pluginMetaData_%s[] = {\n"
+          "Q_CONSTINIT static constexpr unsigned char qt_pluginMetaData_%s[] = {\n"
           "    'Q', 'T', 'M', 'E', 'T', 'A', 'D', 'A', 'T', 'A', ' ', '!',\n"
           "    // metadata version, Qt version, architectural requirements\n"
           "    0, QT_VERSION_MAJOR, QT_VERSION_MINOR, qPluginArchRequirements(),",
