@@ -220,7 +220,7 @@ void Generator::generateCode()
 //
     const int constCharArraySizeLimit = 65535;
     fprintf(out, "struct qt_meta_stringdata_%s_t {\n", qualifiedClassNameIdentifier.constData());
-    fprintf(out, "    const uint offsetsAndSize[%d];\n", int(strings.size()*2));
+    fprintf(out, "    uint offsetsAndSizes[%d];\n", int(strings.size() * 2));
     {
         int stringDataLength = 0;
         int stringDataCounter = 0;
@@ -523,7 +523,7 @@ void Generator::generateCode()
         fprintf(out, "    QtPrivate::MetaObjectForType<%s>::value(),\n", purestSuperClass.constData());
     else
         fprintf(out, "    nullptr,\n");
-    fprintf(out, "    qt_meta_stringdata_%s.offsetsAndSize,\n"
+    fprintf(out, "    qt_meta_stringdata_%s.offsetsAndSizes,\n"
             "    qt_meta_data_%s,\n", qualifiedClassNameIdentifier.constData(),
             qualifiedClassNameIdentifier.constData());
     if (hasStaticMetaCall)
