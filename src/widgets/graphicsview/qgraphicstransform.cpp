@@ -593,6 +593,6 @@ void QGraphicsRotation::applyTo(QMatrix4x4 *matrix) const
     \sa QGraphicsRotation::axis
 */
 
-#include "moc_qgraphicstransform.cpp"
-
 QT_END_NAMESPACE
+
+#include "moc_qgraphicstransform.cpp"
