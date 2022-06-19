@@ -4268,6 +4268,6 @@ void *QGuiApplication::resolveInterface(const char *name, int revision) const
     return QCoreApplication::resolveInterface(name, revision);
 }
 
-#include "moc_qguiapplication.cpp"
-
 QT_END_NAMESPACE
+
+#include "moc_qguiapplication.cpp"

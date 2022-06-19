@@ -1299,6 +1299,6 @@ void *QOpenGLContext::resolveInterface(const char *name, int revision) const
     return nullptr;
 }
 
-#include "moc_qopenglcontext.cpp"
-
 QT_END_NAMESPACE
+
+#include "moc_qopenglcontext.cpp"
