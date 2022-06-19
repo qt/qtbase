@@ -565,6 +565,12 @@ uint64_t QT_MANGLE_NAMESPACE(qDetectCpuFeatures)()
     // automatically by compilers, we can just add runtime check.
     minFeatureTest &= ~(CpuFeatureAES|CpuFeatureCRC32);
 #endif
+#if defined(Q_PROCESSOR_X86_64) && defined(cpu_feature_shstk)
+    // Controlflow Enforcement Technology (CET) is an OS-assisted
+    // hardware-feature, meaning the CPUID bit may be disabled if the OS
+    // doesn't support it, but that's ok.
+    minFeatureTest &= ~CpuFeatureSHSTK;
+#endif
     QCpuFeatureType f = detectProcessorFeatures();
 
     // Intentionally NOT qgetenv (this code runs too early)
