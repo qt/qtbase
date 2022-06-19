@@ -762,6 +762,21 @@ QJniObject::QJniObject(jobject object)
 }
 
 /*!
+    \fn template<typename Class, typename ...Args> static inline QJniObject construct(Args &&...args)
+    \since 6.4
+
+    Constructs an instance of the Java class that is the equivalent of \c Class and
+    returns a QJniObject containing the JNI object. The arguments in \a args are
+    passed to the Java constructor.
+
+    \code
+    QJniObject javaString = QJniObject::construct<jstring>();
+    \endcode
+
+    This function is only available if all \a args are known \l {JNI Types}.
+*/
+
+/*!
     \brief Get a JNI object from a jobject variant and do the necessary
     exception clearing and delete the local reference before returning.
     The JNI object can be null if there was an exception.
