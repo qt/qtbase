@@ -246,6 +246,10 @@ void Generator::generateCode()
     registerPropertyStrings();
     registerEnumStrings();
 
+    const bool hasStaticMetaCall =
+            (cdef->hasQObject || !cdef->methodList.isEmpty()
+             || !cdef->propertyList.isEmpty() || !cdef->constructorList.isEmpty());
+
     QByteArray qualifiedClassNameIdentifier = cdef->qualified;
     qualifiedClassNameIdentifier.replace(':', '_');
 
@@ -410,15 +414,6 @@ void Generator::generateCode()
     fprintf(out, "\n       0        // eod\n};\n\n");
 
 //
-// Generate internal qt_static_metacall() function
-//
-    const bool hasStaticMetaCall =
-            (cdef->hasQObject || !cdef->methodList.isEmpty()
-             || !cdef->propertyList.isEmpty() || !cdef->constructorList.isEmpty());
-    if (hasStaticMetaCall)
-        generateStaticMetacall();
-
-//
 // Build extra array
 //
     QList<QByteArray> extraList;
@@ -577,6 +572,12 @@ void Generator::generateCode()
     fprintf(out, "\n    >,\n");
 
     fprintf(out, "    nullptr\n} };\n\n");
+
+//
+// Generate internal qt_static_metacall() function
+//
+    if (hasStaticMetaCall)
+        generateStaticMetacall();
 
     if (!cdef->hasQObject)
         return;
@@ -1403,7 +1404,7 @@ void Generator::generateStaticMetacall()
     if (!isUsed_a)
         fprintf(out, "    (void)_a;\n");
 
-    fprintf(out, "}\n\n");
+    fprintf(out, "}\n");
 }
 
 void Generator::generateSignal(FunctionDef *def,int index)
