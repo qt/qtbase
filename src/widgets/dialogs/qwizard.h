@@ -23,7 +23,7 @@ class Q_WIDGETS_EXPORT QWizard : public QDialog
     Q_PROPERTY(Qt::TextFormat titleFormat READ titleFormat WRITE setTitleFormat)
     Q_PROPERTY(Qt::TextFormat subTitleFormat READ subTitleFormat WRITE setSubTitleFormat)
     Q_PROPERTY(int startId READ startId WRITE setStartId)
-    Q_PROPERTY(int currentId READ currentId NOTIFY currentIdChanged)
+    Q_PROPERTY(int currentId READ currentId WRITE setCurrentId NOTIFY currentIdChanged)
 
 public:
     enum WizardButton {
