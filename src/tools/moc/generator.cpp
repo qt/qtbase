@@ -542,63 +542,62 @@ void Generator::generateCode()
     else
         fprintf(out, "    qt_meta_extradata_%s,\n", qualifiedClassNameIdentifier.constData());
 
-    bool needsComma = false;
+    const char *comma = "";
     const bool requireCompleteness = requireCompleteTypes || cdef->requireCompleteMethodTypes;
+    auto stringForType = [requireCompleteness](const QByteArray &type, bool forceComplete) -> QByteArray {
+        const char *forceCompleteType = forceComplete ? ", std::true_type>" : ", std::false_type>";
+        if (requireCompleteness)
+            return type;
+        return "QtPrivate::TypeAndForceComplete<" % type % forceCompleteType;
+    };
     if (!requireCompleteness) {
-        fprintf(out, "qt_incomplete_metaTypeArray<qt_meta_stringdata_%s_t", qualifiedClassNameIdentifier.constData());
-        needsComma = true;
+        fprintf(out, "    qt_incomplete_metaTypeArray<qt_meta_stringdata_%s_t", qualifiedClassNameIdentifier.constData());
+        comma = ",";
     } else {
-        fprintf(out, "qt_metaTypeArray<\n");
+        fprintf(out, "    qt_metaTypeArray<");
     }
     // metatypes for properties
     for (int i = 0; i < cdef->propertyList.count(); ++i) {
         const PropertyDef &p = cdef->propertyList.at(i);
-        if (needsComma)
-            fputs(",\n    ", out);
-        if (requireCompleteness)
-            fputs(p.type.data(), out);
-        else
-            fprintf(out, "QtPrivate::TypeAndForceComplete<%s, std::true_type>", p.type.data());
-        needsComma = true;
+        fprintf(out, "%s\n        // property '%s'\n        %s",
+                comma, p.name.constData(), stringForType(p.type, true).constData());
+        comma = ",";
     }
+
     // type name for the Q_OJBECT/GADGET itself, void for namespaces
     auto ownType = !cdef->hasQNamespace ? cdef->classname.data() : "void";
-    if (needsComma)
-        fputs(",\n    ", out);
-    if (requireCompleteness)
-         fputs(ownType, out);
-    else
-        fprintf(out, "QtPrivate::TypeAndForceComplete<%s, std::true_type>", ownType);
+    fprintf(out, "%s\n        // Q_OBJECT / Q_GADGET\n        %s",
+            comma, stringForType(ownType, true).constData());
+    comma = ",";
 
     // metatypes for all exposed methods
-    // no need to check for needsComma any longer, as we always need one due to the classname being present
+    // because we definitely printed something above, this section doesn't need comma control
     for (const QList<FunctionDef> &methodContainer :
     { cdef->signalList, cdef->slotList, cdef->methodList }) {
         for (int i = 0; i< methodContainer.count(); ++i) {
             const FunctionDef& fdef = methodContainer.at(i);
-            if (requireCompleteness)
-                fprintf(out, ",\n    %s", fdef.type.name.data());
-            else
-                fprintf(out, ",\n    QtPrivate::TypeAndForceComplete<%s, std::false_type>", fdef.type.name.data());
-            for (const auto &argument: fdef.arguments) {
-                if (requireCompleteness)
-                    fprintf(out, ", %s", argument.type.name.data());
-                else
-                    fprintf(out, ",\n    QtPrivate::TypeAndForceComplete<%s, std::false_type>", argument.type.name.data());
-            }
+            fprintf(out, ",\n        // method '%s'\n        %s",
+                    fdef.name.constData(), stringForType(fdef.type.name, false).constData());
+            for (const auto &argument: fdef.arguments)
+                fprintf(out, ",\n        %s", stringForType(argument.type.name, false).constData());
         }
-        fprintf(out, "\n");
     }
+
+    // but constructors have no return types, so this needs comma control again
     for (int i = 0; i< cdef->constructorList.count(); ++i) {
         const FunctionDef& fdef = cdef->constructorList.at(i);
+        if (fdef.arguments.isEmpty())
+            continue;
+
+        fprintf(out, "%s\n        // constructor '%s'", comma, fdef.name.constData());
+        comma = "";
         for (const auto &argument: fdef.arguments) {
-            if (requireCompleteness)
-                fprintf(out, ",\n    %s", argument.type.name.data());
-            else
-                fprintf(out, ",\n    QtPrivate::TypeAndForceComplete<%s, std::false_type>", argument.type.name.data());
+            fprintf(out, "%s\n        %s", comma,
+                    stringForType(argument.type.name, false).constData());
+            comma = ",";
         }
     }
-    fprintf(out, ">,\n");
+    fprintf(out, "\n    >,\n");
 
     fprintf(out, "    nullptr\n} };\n\n");
 
