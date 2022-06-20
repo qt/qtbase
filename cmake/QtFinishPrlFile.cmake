@@ -89,7 +89,28 @@ foreach(line ${lines})
             # qmake's UnixMakefileGenerator::findLibraries then takes care of deduplication, which
             # keeps the last occurrence of the library on the link line, the one after the object
             # files.
-            list(APPEND libs_to_prepend "${target_library_path}")
+            qt_internal_path_is_relative_to_qt_lib_path(
+                "${target_library_path}" "${QT_LIB_DIRS}" lib_is_a_qt_module relative_lib)
+            if(NOT lib_is_a_qt_module)
+                qt_internal_path_is_relative_to_qt_lib_path(
+                    "${target_library_path}" "${QT_PLUGIN_DIRS}" lib_is_a_qt_plugin relative_lib)
+            endif()
+            if(NOT lib_is_a_qt_module AND NOT lib_is_a_qt_plugin)
+                message(AUTHOR_WARNING
+                    "Could not determine relative path for library ${target_library_path} when "
+                    "generating prl file contents. An absolute path will be embedded, which "
+                    "will cause issues if the Qt installation is relocated.")
+                list(APPEND libs_to_prepend "${target_library_path}")
+            else()
+                set(qmake_lib_path_prefix "$$[QT_PRL_INVALID_QMAKE_VARIABLE]")
+                if(lib_is_a_qt_module)
+                    set(qmake_lib_path_prefix "$$[QT_INSTALL_LIBS]")
+                elseif(lib_is_a_qt_plugin)
+                    set(qmake_lib_path_prefix "$$[QT_INSTALL_PLUGINS]")
+                endif()
+                qt_strip_library_version_suffix(relative_lib "${relative_lib}")
+                list(APPEND libs_to_prepend "${qmake_lib_path_prefix}/${relative_lib}")
+            endif()
 
             list(PREPEND adjusted_libs ${libs_to_prepend})
         endif()
