@@ -60,6 +60,10 @@ to binaries would be too time consuming or memory intensive.
 
 \note This macro is only available if using \c{CMake} 3.9 or later.
 
+\warning This command is not supported when building for iOS, use
+\l qt_add_resources instead.
+See \l{https://bugreports.qt.io/browse/QTBUG-103497}{QTBUG-103497} for details.
+
 \section1 Arguments
 
 You can set additional \c{OPTIONS} that should be added to the \c{rcc} calls.
