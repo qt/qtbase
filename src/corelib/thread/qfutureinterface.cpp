@@ -829,18 +829,6 @@ void QFutureInterfaceBase::setContinuation(std::function<void(const QFutureInter
     }
 }
 
-void QFutureInterfaceBase::cleanContinuation()
-{
-    if (!d)
-        return;
-
-    // This is called when the associated QPromise is being destroyed.
-    // Clear the continuation, to make sure it doesn't keep any ref-counted
-    // copies of this, so that the allocated memory can be freed.
-    QMutexLocker lock(&d->continuationMutex);
-    d->continuation = nullptr;
-}
-
 void QFutureInterfaceBase::runContinuation() const
 {
     QMutexLocker lock(&d->continuationMutex);
