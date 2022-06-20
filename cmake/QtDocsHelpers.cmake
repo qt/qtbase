@@ -94,6 +94,7 @@ function(qt_internal_add_docs)
     add_custom_target(qattributionsscanner_${target}
         COMMAND ${qtattributionsscanner_bin}
         ${PROJECT_SOURCE_DIR}
+        --basedir "${PROJECT_SOURCE_DIR}/.."
         --filter "QDocModule=${doc_target}"
         -o "${target_bin_dir}/codeattributions.qdoc"
     )
