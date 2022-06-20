@@ -39,7 +39,7 @@ public:
         // potential waits
         if (d.d && !(d.loadState() & QFutureInterfaceBase::State::Finished)) {
             d.cancelAndFinish(); // cancel and finalize the state
-            d.cleanContinuation();
+            d.runContinuation();
         }
     }
 
