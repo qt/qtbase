@@ -1327,7 +1327,20 @@ void QTextLayout::drawCursor(QPainter *p, const QPointF &pos, int cursorPosition
     QPainter::CompositionMode origCompositionMode = p->compositionMode();
     if (p->paintEngine()->hasFeature(QPaintEngine::RasterOpModes))
         p->setCompositionMode(QPainter::RasterOp_NotDestination);
-    p->fillRect(QRectF(x, y, qreal(width), (base + cursorDescent).toReal()), p->pen().brush());
+    const QTransform &deviceTransform = p->deviceTransform();
+    const qreal xScale = deviceTransform.m11();
+    if (deviceTransform.type() != QTransform::TxScale || std::trunc(xScale) == xScale) {
+        p->fillRect(QRectF(x, y, qreal(width), (base + cursorDescent).toReal()), p->pen().brush());
+    } else {
+        // Ensure consistently rendered cursor width under fractional scaling
+        const QPen origPen = p->pen();
+        QPen pen(origPen.brush(), qRound(width * xScale), Qt::SolidLine, Qt::FlatCap);
+        pen.setCosmetic(true);
+        const qreal center = x + qreal(width) / 2;
+        p->setPen(pen);
+        p->drawLine(QPointF(center, y), QPointF(center, y + (base + cursorDescent).toReal()));
+        p->setPen(origPen);
+    }
     p->setCompositionMode(origCompositionMode);
     if (toggleAntialiasing)
         p->setRenderHint(QPainter::Antialiasing, false);
