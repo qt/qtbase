@@ -440,10 +440,8 @@ void QXcbWindow::create()
     setWindowFlags(window()->flags());
     setWindowTitle(window()->title());
 
-#if QT_CONFIG(xcb_xlib)
     // force sync to read outstanding requests - see QTBUG-29106
-    XSync(static_cast<Display*>(platformScreen->connection()->xlib_display()), false);
-#endif
+    connection()->sync();
 
 #if QT_CONFIG(draganddrop)
     connection()->drag()->dndEnable(this, true);
