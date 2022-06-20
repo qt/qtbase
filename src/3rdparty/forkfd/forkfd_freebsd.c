@@ -29,6 +29,8 @@
 
 #include "forkfd_atomic.h"
 
+#undef SYSTEM_FORKFD_CAN_VFORK
+
 // in forkfd.c
 static int convertForkfdWaitFlagsToWaitFlags(int ffdoptions);
 static void convertStatusToForkfdInfo(int status, struct forkfd_info *info);
