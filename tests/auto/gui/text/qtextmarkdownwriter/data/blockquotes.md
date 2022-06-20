@@ -13,8 +13,7 @@ MacFarlane writes:
 > > as readable as possible. The idea is that a Markdown-formatted document should
 > > be publishable as-is, as plain text, without looking like it's been marked up
 > > with tags or formatting instructions. ( 
-> > [http://daringfireball.net/projects/markdown/](http://daringfireball.net/projects/markdown/)
-> > )
+> > <http://daringfireball.net/projects/markdown/> )
 
 > The point can be illustrated by comparing a sample of AsciiDoc with an
 > equivalent sample of Markdown. Here is a sample of AsciiDoc from the AsciiDoc
