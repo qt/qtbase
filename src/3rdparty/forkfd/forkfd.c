@@ -99,6 +99,7 @@
 
 static int system_has_forkfd(void);
 static int system_forkfd(int flags, pid_t *ppid, int *system);
+static int system_vforkfd(int flags, pid_t *ppid, int (*)(void *), void *, int *system);
 static int system_forkfd_wait(int ffd, struct forkfd_info *info, int ffdwoptions, struct rusage *rusage);
 
 static int disable_fork_fallback(void)
@@ -595,46 +596,7 @@ static int create_pipe(int filedes[], int flags)
 }
 
 #ifndef FORKFD_NO_FORKFD
-/**
- * @brief forkfd returns a file descriptor representing a child process
- * @return a file descriptor, or -1 in case of failure
- *
- * forkfd() creates a file descriptor that can be used to be notified of when a
- * child process exits. This file descriptor can be monitored using select(2),
- * poll(2) or similar mechanisms.
- *
- * The @a flags parameter can contain the following values ORed to change the
- * behaviour of forkfd():
- *
- * @li @c FFD_NONBLOCK Set the O_NONBLOCK file status flag on the new open file
- * descriptor. Using this flag saves extra calls to fnctl(2) to achieve the same
- * result.
- *
- * @li @c FFD_CLOEXEC Set the close-on-exec (FD_CLOEXEC) flag on the new file
- * descriptor. You probably want to set this flag, since forkfd() does not work
- * if the original parent process dies.
- *
- * @li @c FFD_USE_FORK Tell forkfd() to actually call fork() instead of a
- * different system implementation that may be available. On systems where a
- * different implementation is available, its behavior may differ from that of
- * fork(), such as not calling the functions registered with pthread_atfork().
- * If that's necessary, pass this flag.
- *
- * The file descriptor returned by forkfd() supports the following operations:
- *
- * @li read(2) When the child process exits, then the buffer supplied to
- * read(2) is used to return information about the status of the child in the
- * form of one @c siginfo_t structure. The buffer must be at least
- * sizeof(siginfo_t) bytes. The return value of read(2) is the total number of
- * bytes read.
- *
- * @li poll(2), select(2) (and similar) The file descriptor is readable (the
- * select(2) readfds argument; the poll(2) POLLIN flag) if the child has exited
- * or signalled via SIGCHLD.
- *
- * @li close(2) When the file descriptor is no longer required it should be closed.
- */
-int forkfd(int flags, pid_t *ppid)
+static int forkfd_fork_fallback(int flags, pid_t *ppid)
 {
     Header *header;
     ProcessInfo *info;
@@ -646,15 +608,6 @@ int forkfd(int flags, pid_t *ppid)
 #ifdef __linux__
     int efd;
 #endif
-
-    if (disable_fork_fallback())
-        flags &= ~FFD_USE_FORK;
-
-    if ((flags & FFD_USE_FORK) == 0) {
-        fd = system_forkfd(flags, ppid, &ret);
-        if (ret || disable_fork_fallback())
-            return fd;
-    }
 
     (void) pthread_once(&forkfd_initialization, forkfd_initialize);
 
@@ -763,6 +716,112 @@ err_free:
     /* free the info pointer */
     freeInfo(header, info);
     return -1;
+}
+
+/**
+ * @brief forkfd returns a file descriptor representing a child process
+ * @return a file descriptor, or -1 in case of failure
+ *
+ * forkfd() creates a file descriptor that can be used to be notified of when a
+ * child process exits. This file descriptor can be monitored using select(2),
+ * poll(2) or similar mechanisms.
+ *
+ * The @a flags parameter can contain the following values ORed to change the
+ * behaviour of forkfd():
+ *
+ * @li @c FFD_NONBLOCK Set the O_NONBLOCK file status flag on the new open file
+ * descriptor. Using this flag saves extra calls to fnctl(2) to achieve the same
+ * result.
+ *
+ * @li @c FFD_CLOEXEC Set the close-on-exec (FD_CLOEXEC) flag on the new file
+ * descriptor. You probably want to set this flag, since forkfd() does not work
+ * if the original parent process dies.
+ *
+ * @li @c FFD_USE_FORK Tell forkfd() to actually call fork() instead of a
+ * different system implementation that may be available. On systems where a
+ * different implementation is available, its behavior may differ from that of
+ * fork(), such as not calling the functions registered with pthread_atfork().
+ * If that's necessary, pass this flag.
+ *
+ * The file descriptor returned by forkfd() supports the following operations:
+ *
+ * @li read(2) When the child process exits, then the buffer supplied to
+ * read(2) is used to return information about the status of the child in the
+ * form of one @c siginfo_t structure. The buffer must be at least
+ * sizeof(siginfo_t) bytes. The return value of read(2) is the total number of
+ * bytes read.
+ *
+ * @li poll(2), select(2) (and similar) The file descriptor is readable (the
+ * select(2) readfds argument; the poll(2) POLLIN flag) if the child has exited
+ * or signalled via SIGCHLD.
+ *
+ * @li close(2) When the file descriptor is no longer required it should be closed.
+ */
+int forkfd(int flags, pid_t *ppid)
+{
+    int fd;
+    if (disable_fork_fallback())
+        flags &= ~FFD_USE_FORK;
+
+    if ((flags & FFD_USE_FORK) == 0) {
+        int system_forkfd_works;
+        fd = system_forkfd(flags, ppid, &system_forkfd_works);
+        if (system_forkfd_works || disable_fork_fallback())
+            return fd;
+    }
+
+    return forkfd_fork_fallback(flags, ppid);
+}
+
+/**
+ * @brief vforkfd returns a file descriptor representing a child process
+ * @return a file descriptor, or -1 in case of failure
+ *
+ * vforkfd() operates in the same way as forkfd() and the @a flags and @a ppid
+ * arguments are the same. See the forkfd() documentation for details on the
+ * possible values and information on the returned file descriptor.
+ *
+ * This function does not return @c FFD_CHILD_PROCESS. Instead, the function @a
+ * childFn is called in the child process with the @a token parameter as
+ * argument. If that function returns, its return value will be passed to
+ * _exit(2).
+ *
+ * This function differs from forkfd() the same way that vfork() differs from
+ * fork(): the parent process may be suspended while the child is has not yet
+ * called _exit(2) or execve(2). Additionally, on some systems, the child
+ * process may share memory with the parent process the same way an auxiliary
+ * thread would, so extreme care should be employed on what functions the child
+ * process uses before termination.
+ *
+ * The @c FFD_USE_FORK flag retains its behavior as described in the forkfd()
+ * documentation, including that of actually using fork(2) and no other
+ * implementation.
+ *
+ * Currently, only on Linux will this function have any behavior different from
+ * forkfd(). In all other systems, it is equivalent to the following code:
+ *
+ * @code
+ *     int ffd = forkfd(flags, &pid);
+ *     if (ffd == FFD_CHILD_PROCESS)
+ *         _exit(childFn(token));
+ * @endcode
+ */
+int vforkfd(int flags, pid_t *ppid, int (*childFn)(void *), void *token)
+{
+    int fd;
+    if ((flags & FFD_USE_FORK) == 0) {
+        int system_forkfd_works;
+        fd = system_vforkfd(flags, ppid, childFn, token, &system_forkfd_works);
+        if (system_forkfd_works || disable_fork_fallback())
+            return fd;
+    }
+
+    fd = forkfd_fork_fallback(flags, ppid);
+    if (fd == FFD_CHILD_PROCESS) {
+        /* child process */
+        _exit(childFn(token));
+    }
+    return fd;
 }
 #endif // FORKFD_NO_FORKFD
 
@@ -889,3 +948,16 @@ int system_forkfd_wait(int ffd, struct forkfd_info *info, int options, struct ru
     return -1;
 }
 #endif
+#ifndef SYSTEM_FORKFD_CAN_VFORK
+int system_vforkfd(int flags, pid_t *ppid, int (*childFn)(void *), void *token, int *system)
+{
+    /* we don't have a way to vfork(), so fake it */
+    int ret = system_forkfd(flags, ppid, system);
+    if (ret == FFD_CHILD_PROCESS) {
+        /* child process */
+        _exit(childFn(token));
+    }
+    return ret;
+}
+#endif
+#undef SYSTEM_FORKFD_CAN_VFORK

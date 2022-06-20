@@ -452,6 +452,15 @@ void QProcessPrivate::startProcess()
         workingDirPtr = encodedWorkingDirectory.constData();
     }
 
+    // Start the child.
+    auto execChild1 = [this, workingDirPtr, &argv, &envp]() {
+        execChild(workingDirPtr, argv.pointers.get(), envp.pointers.get());
+    };
+    auto execChild2 = [](void *lambda) {
+        static_cast<decltype(execChild1) *>(lambda)->operator()();
+        return -1;
+    };
+
     int ffdflags = FFD_CLOEXEC;
 
     // QTBUG-86285
@@ -460,7 +469,7 @@ void QProcessPrivate::startProcess()
 #endif
 
     pid_t childPid;
-    forkfd = ::forkfd(ffdflags , &childPid);
+    forkfd = ::vforkfd(ffdflags , &childPid, execChild2, &execChild1);
     int lastForkErrno = errno;
 
     if (forkfd == -1) {
@@ -473,12 +482,6 @@ void QProcessPrivate::startProcess()
                         QProcess::tr("Resource error (fork failure): %1").arg(qt_error_string(lastForkErrno)));
         cleanup();
         return;
-    }
-
-    // Start the child.
-    if (forkfd == FFD_CHILD_PROCESS) {
-        execChild(workingDirPtr, argv.pointers.get(), envp.pointers.get());
-        ::_exit(-1);
     }
 
     pid = qint64(childPid);

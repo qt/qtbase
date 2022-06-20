@@ -53,6 +53,7 @@ struct forkfd_info {
 };
 
 int forkfd(int flags, pid_t *ppid);
+int vforkfd(int flags, pid_t *ppid, int (*childFn)(void *), void *token);
 int forkfd_wait4(int ffd, struct forkfd_info *info, int options, struct rusage *rusage);
 static inline int forkfd_wait(int ffd, struct forkfd_info *info, struct rusage *rusage)
 {
