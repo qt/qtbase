@@ -221,16 +221,20 @@ void tst_qxp_function_ref::voidReturning()
 
     bool ok = false; // prevent lambdas from decaying to function pointers
     {
-        Fi fi = [&](int i) noexcept { return i + int(ok); };
+        auto lambda1 = [&](int i) noexcept { return i + int(ok); };
+        Fi fi = lambda1;
         fi(42);
-        Fv fv = [&]() noexcept { return int(ok); };
+        auto lambda2 = [&]() noexcept { return int(ok); };
+        Fv fv = lambda2;
         fv();
     }
 
     {
-        Fi fi = [&](int i) { return i + int(ok); };
+        auto lambda1 = [&](int i) { return i + int(ok); };
+        Fi fi = lambda1;
         fi(42);
-        Fv fv = [&]() { return int(ok); };
+        auto lambda2 = [&]() { return int(ok); };
+        Fv fv = lambda2;
         fv();
     }
 }
@@ -261,7 +265,8 @@ void tst_qxp_function_ref::ctad()
 
 #if 0 // no deduction guides for the non-function-pointer case, so no CTAD for lambdas
     {
-        qxp::function_ref f = [](int i) -> int { return i; };
+        auto lambda = [](int i) -> int { return i; };
+        qxp::function_ref f = lambda;
         static_assert(std::is_same_v<decltype(f),
                                      qxp::function_ref<int(int)>>);
     }
