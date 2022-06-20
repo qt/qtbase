@@ -38,6 +38,10 @@ to binaries would be too time consuming or memory intensive.
 needs to be added as a source file to a CMake target and have the property
 \c{SKIP_AUTORCC} set to \c{ON}.
 
+\warning This command is not supported when building for iOS, use
+\l qt_add_resources instead.
+See \l{https://bugreports.qt.io/browse/QTBUG-103497}{QTBUG-103497} for details.
+
 \section1 Arguments
 
 You can set additional \c{OPTIONS} that should be added to the \c{rcc} calls.
