@@ -2153,7 +2153,6 @@ void tst_QTextEdit::setDocumentPreservesPalette()
     QWidgetTextControl *control = ed->findChild<QWidgetTextControl *>();
     QVERIFY(control);
 
-    QPalette defaultPal = ed->palette();
     QPalette whitePal = ed->palette();
     whitePal.setColor(QPalette::Active, QPalette::Text, Qt::white);
 
