@@ -5,7 +5,7 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
     target_link_options("${wasmTarget}" INTERFACE
     "SHELL:-s ERROR_ON_UNDEFINED_SYMBOLS=1"
     "SHELL:-s EXPORTED_RUNTIME_METHODS=[UTF16ToString,stringToUTF16]"
-    "SHELL:-s USE_WEBGL2=1"
+    "SHELL:-s MAX_WEBGL_VERSION=2"
     "SHELL:-s FETCH=1"
     "SHELL:-s WASM_BIGINT=1")
 
@@ -23,16 +23,6 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
     #simd
     if (QT_FEATURE_sse2)
         target_compile_options("${wasmTarget}" INTERFACE -O2 -msimd128 -msse -msse2)
-    endif()
-
-    if (QT_FEATURE_opengles3)
-        target_link_options("${wasmTarget}" INTERFACE "SHELL:-s FULL_ES3=1")
-
-        target_link_options("${wasmTarget}" INTERFACE "SHELL:-s FULL_ES3=1"
-            "SHELL:-s MAX_WEBGL_VERSION=2"
-            "SHELL:-s WEBGL2_BACKWARDS_COMPATIBILITY_EMULATION=1")
-    else()
-        target_link_options("${wasmTarget}" INTERFACE "SHELL:-s FULL_ES2=1")
     endif()
 
     set(disable_exceptions_catching 1)
