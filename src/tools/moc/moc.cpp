@@ -1107,6 +1107,7 @@ void Moc::generate(FILE *out, FILE *jsonOutput)
     fprintf(out, "QT_BEGIN_MOC_NAMESPACE\n");
     fprintf(out, "QT_WARNING_PUSH\n");
     fprintf(out, "QT_WARNING_DISABLE_DEPRECATED\n");
+    fprintf(out, "QT_WARNING_DISABLE_GCC(\"-Wuseless-cast\")\n");
 
     fputs("", out);
     for (i = 0; i < classList.size(); ++i) {
