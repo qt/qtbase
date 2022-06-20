@@ -484,13 +484,19 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
             m_stream << s;
             col += s.length();
         } else if (fmt.hasProperty(QTextFormat::AnchorHref)) {
-            QString s = u'[' + fragmentText + "]("_L1 +
-                    fmt.property(QTextFormat::AnchorHref).toString();
-            if (fmt.hasProperty(QTextFormat::TextToolTip)) {
-                s += Space;
-                s += createLinkTitle(fmt.property(QTextFormat::TextToolTip).toString());
+            const auto href = fmt.property(QTextFormat::AnchorHref).toString();
+            const bool hasToolTip = fmt.hasProperty(QTextFormat::TextToolTip);
+            QString s;
+            if (!hasToolTip && href == fragmentText && !QUrl(href, QUrl::StrictMode).scheme().isEmpty()) {
+                s = u'<' + href + u'>';
+            } else {
+                s = u'[' + fragmentText + "]("_L1 + href;
+                if (hasToolTip) {
+                    s += Space;
+                    s += createLinkTitle(fmt.property(QTextFormat::TextToolTip).toString());
+                }
+                s += u')';
             }
-            s += u')';
             if (wrap && col + s.length() > ColumnLimit) {
                 m_stream << Newline << wrapIndentString;
                 col = m_wrappedLineIndent;
