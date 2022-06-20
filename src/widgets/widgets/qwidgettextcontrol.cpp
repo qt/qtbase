@@ -3433,9 +3433,9 @@ void QUnicodeControlCharacterMenu::menuActionTriggered()
 QStringList QTextEditMimeData::formats() const
 {
     if (!fragment.isEmpty())
-        return QStringList() << QString::fromLatin1("text/plain") << QString::fromLatin1("text/html")
+        return QStringList() << u"text/plain"_s << u"text/html"_s
 #ifndef QT_NO_TEXTODFWRITER
-            << QString::fromLatin1("application/vnd.oasis.opendocument.text")
+            << u"application/vnd.oasis.opendocument.text"_s
 #endif
         ;
     else
