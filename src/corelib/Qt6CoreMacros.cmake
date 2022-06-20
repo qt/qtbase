@@ -410,6 +410,18 @@ endif()
 # qt6_add_big_resources(outfiles inputfile ... )
 
 function(qt6_add_big_resources outfiles )
+    if(CMAKE_GENERATOR STREQUAL "Xcode" AND IOS)
+        message(WARNING
+            "Due to CMake limitations, qt6_add_big_resources can't be used when building for iOS. "
+            "See https://bugreports.qt.io/browse/QTBUG-103497 for details. "
+            "Falling back to using qt6_add_resources. "
+            "Consider using qt6_add_resources directly to silence this warning."
+        )
+        qt6_add_resources(${ARGV})
+        set(${outfiles} ${${outfiles}} PARENT_SCOPE)
+        return()
+    endif()
+
     if (CMAKE_VERSION VERSION_LESS 3.9)
         message(FATAL_ERROR, "qt6_add_big_resources requires CMake 3.9 or newer")
     endif()
