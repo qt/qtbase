@@ -139,6 +139,12 @@ ${prl_step1_content_libs}
              "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_LIBDIR}")
     endif()
 
+    set(qt_plugin_dirs "${QT_BUILD_DIR}/${INSTALL_PLUGINSDIR}")
+    if(QT_WILL_INSTALL)
+        list(APPEND qt_plugin_dirs
+             "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_PLUGINSDIR}")
+    endif()
+
     foreach(config ${configs})
         # Output file for dependency tracking, and which will contain the final content.
         qt_path_join(prl_step2_path
@@ -173,6 +179,7 @@ ${prl_step1_content_libs}
                     "-DLIBRARY_SUFFIXES=${library_suffixes}"
                     "-DLINK_LIBRARY_FLAG=${link_library_flag}"
                     "-DQT_LIB_DIRS=${qt_lib_dirs}"
+                    "-DQT_PLUGIN_DIRS=${qt_plugin_dirs}"
                     "-DIMPLICIT_LINK_DIRECTORIES=${implicit_link_directories}"
                     -P "${QT_CMAKE_DIR}/QtFinishPrlFile.cmake"
             VERBATIM
