@@ -18,6 +18,8 @@
 
 #include <QtGui/private/qedidparser_p.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 class QXcbConnection;
@@ -212,7 +214,7 @@ private:
     QRect m_availableGeometry;
     QColorSpace m_colorSpace;
     Qt::ScreenOrientation m_orientation = Qt::PrimaryOrientation;
-    QXcbCursor *m_cursor;
+    std::unique_ptr<QXcbCursor> m_cursor;
     qreal m_refreshRate = 60.0;
     QEdidParser m_edid;
 

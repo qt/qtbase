@@ -499,6 +499,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
     , m_crtc(output ? output->crtc : XCB_NONE)
     , m_outputName(getOutputName(output))
     , m_outputSizeMillimeters(output ? QSize(output->mm_width, output->mm_height) : QSize())
+    , m_cursor(std::make_unique<QXcbCursor>(connection, this))
 {
     if (connection->isAtLeastXRandR12()) {
         xcb_randr_select_input(xcb_connection(), screen()->root, true);
@@ -518,8 +519,6 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
 
     if (m_sizeMillimeters.isEmpty())
         m_sizeMillimeters = virtualDesktop->physicalSize();
-
-    m_cursor = new QXcbCursor(connection, this);
 
     updateColorSpaceAndEdid();
 }
@@ -585,6 +584,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
     : QXcbObject(connection)
     , m_virtualDesktop(virtualDesktop)
     , m_monitor(monitorInfo)
+    , m_cursor(std::make_unique<QXcbCursor>(connection, this))
 {
     setMonitor(monitorInfo, timestamp);
 }
@@ -683,8 +683,6 @@ void QXcbScreen::setMonitor(xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp
     else
         m_primary = false;
 
-    m_cursor = new QXcbCursor(connection(), this);
-
     updateColorSpaceAndEdid();
 }
 
@@ -702,7 +700,6 @@ QString QXcbScreen::defaultName()
 
 QXcbScreen::~QXcbScreen()
 {
-    delete m_cursor;
 }
 
 QString QXcbScreen::getOutputName(xcb_randr_get_output_info_reply_t *outputInfo)
@@ -869,7 +866,7 @@ QDpi QXcbScreen::logicalDpi() const
 
 QPlatformCursor *QXcbScreen::cursor() const
 {
-    return m_cursor;
+    return m_cursor.get();
 }
 
 void QXcbScreen::setOutput(xcb_randr_output_t outputId,
