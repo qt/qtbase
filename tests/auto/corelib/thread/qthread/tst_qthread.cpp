@@ -486,7 +486,7 @@ void tst_QThread::terminate()
     QSKIP("Thread termination is not supported on Android.");
 #endif
 #if defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)
-    QSKIP("Thread termination might result in stack underflow address sanitizer errors.")
+    QSKIP("Thread termination might result in stack underflow address sanitizer errors.");
 #endif
 
     Terminate_Thread thread;
@@ -556,7 +556,7 @@ void tst_QThread::terminated()
     QSKIP("Thread termination is not supported on Android.");
 #endif
 #if defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)
-    QSKIP("Thread termination might result in stack underflow address sanitizer errors.")
+    QSKIP("Thread termination might result in stack underflow address sanitizer errors.");
 #endif
 
     SignalRecorder recorder;
@@ -1775,7 +1775,7 @@ Q_SIGNALS:
 void tst_QThread::terminateAndPrematureDestruction()
 {
 #if defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)
-    QSKIP("Thread termination might result in stack underflow address sanitizer errors.")
+    QSKIP("Thread termination might result in stack underflow address sanitizer errors.");
 #endif
 
     WaitToRun_Thread thread;
@@ -1795,7 +1795,7 @@ void tst_QThread::terminateAndPrematureDestruction()
 void tst_QThread::terminateAndDoubleDestruction()
 {
 #if defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)
-    QSKIP("Thread termination might result in stack underflow address sanitizer errors.")
+    QSKIP("Thread termination might result in stack underflow address sanitizer errors.");
 #endif
 
     class ChildObject : public QObject
