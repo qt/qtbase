@@ -15,6 +15,9 @@ include(compat.qdocconf)
 include(fileextensions.qdocconf)
 include(qt-html-templates-online.qdocconf)
 
+#override macros for online use
+include(macros-online.qdocconf)
+
 #extra configuration data DITA information
 include(config.qdocconf)
 
