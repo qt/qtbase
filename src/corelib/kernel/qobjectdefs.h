@@ -369,6 +369,7 @@ struct Q_CORE_EXPORT QMetaObject
     }
 
     struct SuperData {
+        using Getter = const QMetaObject *(*)();
         const QMetaObject *direct;
         SuperData() = default;
         constexpr SuperData(std::nullptr_t) : direct(nullptr) {}
@@ -377,7 +378,6 @@ struct Q_CORE_EXPORT QMetaObject
         constexpr const QMetaObject *operator->() const { return operator const QMetaObject *(); }
 
 #ifdef QT_NO_DATA_RELOCATION
-        using Getter = const QMetaObject *(*)();
         Getter indirect = nullptr;
         constexpr SuperData(Getter g) : direct(nullptr), indirect(g) {}
         constexpr operator const QMetaObject *() const
@@ -385,6 +385,7 @@ struct Q_CORE_EXPORT QMetaObject
         template <const QMetaObject &MO> static constexpr SuperData link()
         { return SuperData(QMetaObject::staticMetaObject<MO>); }
 #else
+        constexpr SuperData(Getter g) : direct(g()) {}
         constexpr operator const QMetaObject *() const
         { return direct; }
         template <const QMetaObject &MO> static constexpr SuperData link()

@@ -489,16 +489,15 @@ void Generator::generateCode()
 //
 // Finally create and initialize the static meta object
 //
-    fprintf(out, "%sconst QMetaObject %s::staticMetaObject = { {\n",
-            // ### FIXME: gadgets are not constinit on Windows!
-            cdef->hasQGadget ? "" : "Q_CONSTINIT ", cdef->qualified.constData());
+    fprintf(out, "Q_CONSTINIT const QMetaObject %s::staticMetaObject = { {\n",
+            cdef->qualified.constData());
 
     if (isQObject)
         fprintf(out, "    nullptr,\n");
     else if (cdef->superclassList.size() && !cdef->hasQGadget && !cdef->hasQNamespace) // for qobject, we know the super class must have a static metaobject
         fprintf(out, "    QMetaObject::SuperData::link<%s::staticMetaObject>(),\n", purestSuperClass.constData());
     else if (cdef->superclassList.size()) // for gadgets we need to query at compile time for it
-        fprintf(out, "    QtPrivate::MetaObjectForType<%s>::value(),\n", purestSuperClass.constData());
+        fprintf(out, "    QtPrivate::MetaObjectForType<%s>::value,\n", purestSuperClass.constData());
     else
         fprintf(out, "    nullptr,\n");
     fprintf(out, "    qt_meta_stringdata_%s.offsetsAndSizes,\n"
