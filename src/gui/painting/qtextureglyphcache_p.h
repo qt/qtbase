@@ -114,7 +114,8 @@ public:
                   int numGlyphs,
                   const glyph_t *glyphs,
                   const QFixedPoint *positions,
-                  QPainter::RenderHints renderHints = QPainter::RenderHints());
+                  QPainter::RenderHints renderHints = QPainter::RenderHints(),
+                  bool includeGlyphCacheScale = false);
     bool hasPendingGlyphs() const { return !m_pendingGlyphs.isEmpty(); }
     void fillInPendingGlyphs();
 

@@ -96,7 +96,8 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine,
                                   int numGlyphs,
                                   const glyph_t *glyphs,
                                   const QFixedPoint *positions,
-                                  QPainter::RenderHints renderHints)
+                                  QPainter::RenderHints renderHints,
+                                  bool includeGlyphCacheScale)
 {
 #ifdef CACHE_DEBUG
     printf("Populating with %d glyphs\n", numGlyphs);
@@ -125,6 +126,9 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine,
         m_cy = padding;
     }
 
+    qreal glyphCacheScaleX = transform().m11();
+    qreal glyphCacheScaleY = transform().m22();
+
     QHash<GlyphAndSubPixelPosition, Coord> listItemCoordinates;
     int rowHeight = 0;
 
@@ -135,6 +139,10 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine,
         QFixedPoint subPixelPosition;
         if (supportsSubPixelPositions) {
             QFixedPoint pos = positions != nullptr ? positions[i] : QFixedPoint();
+            if (includeGlyphCacheScale) {
+                pos = QFixedPoint(QFixed::fromReal(pos.x.toReal() * glyphCacheScaleX),
+                                  QFixed::fromReal(pos.y.toReal() * glyphCacheScaleY));
+            }
             subPixelPosition = fontEngine->subPixelPositionFor(pos);
             if (!verticalSubPixelPositions)
                 subPixelPosition.y = 0;
