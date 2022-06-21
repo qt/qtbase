@@ -283,7 +283,8 @@ enum inlineExpansionOption {
 };
 enum linkerDebugOption {
     linkerDebugOptionNone,
-    linkerDebugOptionFastLink
+    linkerDebugOptionFastLink,
+    linkerDebugOptionFull
 };
 enum linkIncrementalType {
     linkIncrementalDefault,

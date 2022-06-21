@@ -1504,10 +1504,22 @@ bool VCLinkerTool::parseOption(const char* option)
         }else
             EnableUAC = _True;
         break;
-    case 0x3389797: // /DEBUG[:FASTLINK]
-        GenerateDebugInformation = _True;
-        if (config->CompilerVersion >= NET2015 && strcmp(option + 7, "FASTLINK") == 0)
-            DebugInfoOption = linkerDebugOptionFastLink;
+    case 0x3389797: // /DEBUG[:{FASTLINK|FULL|NONE}]
+        if (config->CompilerVersion >= NET2015) {
+            const char *str = option + 7;
+            if (qstricmp(str, "fastlink") == 0)
+                DebugInfoOption = linkerDebugOptionFastLink;
+            else if (qstricmp(str, "full") == 0)
+                DebugInfoOption = linkerDebugOptionFull;
+            else if (qstricmp(str, "none") == 0)
+                DebugInfoOption = linkerDebugOptionNone;
+            else
+                AdditionalOptions += option;
+        }
+        if (DebugInfoOption == linkerDebugOptionNone)
+            GenerateDebugInformation = _False;
+        else
+            GenerateDebugInformation = _True;
         break;
     case 0x0033896: // /DEF:filename
         ModuleDefinitionFile = option+5;
