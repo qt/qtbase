@@ -1166,6 +1166,8 @@ static inline QString toString(triState genDebugInfo, linkerDebugOption option)
     case _True:
         if (option == linkerDebugOptionFastLink)
             return "DebugFastLink";
+        else if (option == linkerDebugOptionFull)
+            return "DebugFull";
         return "true";
     }
     return QString();
