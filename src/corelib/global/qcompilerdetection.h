@@ -60,7 +60,6 @@
 #  define Q_FUNC_INFO __FUNCSIG__
 #  define Q_ASSUME_IMPL(expr) __assume(expr)
 #  define Q_UNREACHABLE_IMPL() __assume(0)
-#  define Q_NORETURN __declspec(noreturn)
 #  define Q_DECL_EXPORT __declspec(dllexport)
 #  define Q_DECL_IMPORT __declspec(dllimport)
 #  define QT_MAKE_UNCHECKED_ARRAY_ITERATOR(x) stdext::make_unchecked_array_iterator(x) // Since _MSC_VER >= 1800
@@ -926,6 +925,11 @@
 #if __has_cpp_attribute(maybe_unused)
 #  undef Q_DECL_UNUSED
 #  define Q_DECL_UNUSED [[maybe_unused]]
+#endif
+
+#if __has_cpp_attribute(noreturn)
+#  undef Q_NORETURN
+#  define Q_NORETURN [[noreturn]]
 #endif
 
 #if __has_cpp_attribute(deprecated)
