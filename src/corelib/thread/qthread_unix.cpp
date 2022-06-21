@@ -413,7 +413,7 @@ int QThread::idealThreadCount() noexcept
         cores = (int)psd.psd_proc_cnt;
     }
 #elif (defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)) || defined(Q_OS_FREEBSD)
-#  ifdef Q_OS_FREEBSD
+#  if defined(Q_OS_FREEBSD) && !defined(CPU_COUNT_S)
 #    define CPU_COUNT_S(setsize, cpusetp)   ((int)BIT_COUNT(setsize, cpusetp))
     // match the Linux API for simplicity
     using cpu_set_t = cpuset_t;
