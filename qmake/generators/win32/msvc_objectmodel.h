@@ -356,6 +356,7 @@ enum optWin98Type {
 enum optLinkTimeCodeGenType {
     optLTCGDefault,
     optLTCGEnabled,
+    optLTCGIncremental,
     optLTCGInstrument,
     optLTCGOptimize,
     optLTCGUpdate
