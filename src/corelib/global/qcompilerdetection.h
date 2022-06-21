@@ -61,10 +61,6 @@
 #  define Q_ASSUME_IMPL(expr) __assume(expr)
 #  define Q_UNREACHABLE_IMPL() __assume(0)
 #  define Q_NORETURN __declspec(noreturn)
-#  define Q_DECL_DEPRECATED __declspec(deprecated)
-#  ifndef Q_CC_CLANG
-#    define Q_DECL_DEPRECATED_X(text) __declspec(deprecated(text))
-#  endif
 #  define Q_DECL_EXPORT __declspec(dllexport)
 #  define Q_DECL_IMPORT __declspec(dllimport)
 #  define QT_MAKE_UNCHECKED_ARRAY_ITERATOR(x) stdext::make_unchecked_array_iterator(x) // Since _MSC_VER >= 1800
