@@ -488,7 +488,7 @@ void QProcessPrivate::startProcess()
     int ffdflags = FFD_CLOEXEC;
 
     // QTBUG-86285
-#if !QT_CONFIG(forkfd_pidfd)
+#if defined(Q_OS_LINUX) && !QT_CONFIG(forkfd_pidfd)
     ffdflags |= FFD_USE_FORK;
 #endif
 
