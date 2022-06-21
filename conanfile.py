@@ -8,7 +8,7 @@ import re
 import shutil
 from functools import lru_cache
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Union
 
 
 class QtConanError(Exception):
@@ -128,13 +128,22 @@ class QtBase(ConanFile):
                 print("Setting 3rd party package requirement: {0}".format(requirement))
                 self.requires(requirement)
 
-    def _resolve_qt_host_path(self) -> str:
-        # When cross-building the user needs to pass 'qt_host_path' which is transformed to
-        # QT_HOST_PATH later on. Resolve the exact path.
-        qt_host_path = self.options.get_safe("qt_host_path")
-        if not qt_host_path:
-            raise QtConanError("Expected 'qt_host_path' option in cross-build context")
-        return str(Path(os.path.expandvars(str(qt_host_path))).expanduser().resolve(strict=True))
+    def _resolve_qt_host_path(self) -> Union[str, None]:
+        """
+        Attempt to resolve QT_HOST_PATH.
+
+        When cross-building the user needs to pass 'qt_host_path' which is transformed to
+        QT_HOST_PATH later on. Resolve the exact path if possible.
+
+        Returns:
+            string: The resolved QT_HOST_PATH or None if unable to determine it.
+        """
+        _host_p = self.options.get_safe("qt_host_path")
+        if _host_p:
+            return str(Path(os.path.expandvars(str(_host_p))).expanduser().resolve(strict=True))
+        else:
+            print("Warning: 'qt_host_path' option was not given in cross-build context")
+            return None
 
     def configure(self):
         if self.settings.compiler == "gcc" and tools.Version(self.settings.compiler.version) < "8":
@@ -249,7 +258,9 @@ class QtBase(ConanFile):
     def package_info(self):
         self._shared.package_info(self)
         if tools.cross_building(conanfile=self):
-            self.env_info.QT_HOST_PATH.append(self._resolve_qt_host_path())
+            qt_host_path = self._resolve_qt_host_path()
+            if qt_host_path:
+                self.env_info.QT_HOST_PATH.append(qt_host_path)
 
     def package_id(self):
         # https://docs.conan.io/en/latest/creating_packages/define_abi_compatibility.html
