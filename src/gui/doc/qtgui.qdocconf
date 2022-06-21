@@ -40,7 +40,8 @@ depends += \
     qmake \
     qtcmake \
     qttestlib \
-    qtplatformintegration
+    qtplatformintegration \
+    qthelp
 
 headerdirs  += ..
 
