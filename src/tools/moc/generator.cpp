@@ -269,7 +269,7 @@ void Generator::generateCode()
     // QByteArrayData being defined. This calculation relies on the
     // QByteArrayData::data() implementation returning simply "this + offset".
     fprintf(out, "#define QT_MOC_LITERAL(ofs, len) \\\n"
-            "    uint(offsetof(qt_meta_stringdata_%s_t, stringdata0) + ofs), len \n",
+            "    uint(sizeof(qt_meta_stringdata_%s_t::offsetsAndSizes) + ofs), len \n",
             qualifiedClassNameIdentifier.constData());
 
     fprintf(out, "static const qt_meta_stringdata_%s_t qt_meta_stringdata_%s = {\n",
