@@ -1481,10 +1481,25 @@ QRhi::FrameOpResult QRhiMetal::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
 
     const bool needsPresent = !flags.testFlag(QRhi::SkipPresent);
     if (needsPresent) {
-        auto drawable = swapChainD->d->curDrawable;
-        [swapChainD->cbWrapper.d->cb addScheduledHandler:^(id<MTLCommandBuffer>) {
-            [drawable present];
-        }];
+        // beginFrame-endFrame without a render pass inbetween means there is no
+        // drawable, handle this gracefully because presentDrawable does not like
+        // null arguments.
+        if (id<CAMetalDrawable> drawable = swapChainD->d->curDrawable) {
+            // QTBUG-103415: while the docs suggest the following two approaches are
+            // equivalent, there is a difference in case a frame is recorded earlier than
+            // (i.e. not in response to) the next CVDisplayLink callback. Therefore, stick
+            // with presentDrawable, which gives results identical to OpenGL, and all other
+            // platforms, i.e. throttles to vsync as expected, meaning constant 15-17 ms with
+            // a 60 Hz screen, no jumps with smaller intervals, regardless of when the frame
+            // is submitted by the app)
+#if 1
+            [swapChainD->cbWrapper.d->cb presentDrawable: drawable];
+#else
+            [swapChainD->cbWrapper.d->cb addScheduledHandler:^(id<MTLCommandBuffer>) {
+                [drawable present];
+            }];
+#endif
+        }
     }
 
     // Must not hold on to the drawable, regardless of needsPresent
