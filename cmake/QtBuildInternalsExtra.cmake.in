@@ -84,6 +84,8 @@ set(QT_BUILD_BENCHMARKS @QT_BUILD_BENCHMARKS@ CACHE BOOL "Build Qt Benchmarks")
 set(QT_BUILD_MANUAL_TESTS @QT_BUILD_MANUAL_TESTS@ CACHE BOOL "Build Qt manual tests")
 set(QT_BUILD_MINIMAL_STATIC_TESTS @QT_BUILD_MINIMAL_STATIC_TESTS@ CACHE BOOL
     "Build minimal subset of tests for static Qt builds")
+set(QT_BUILD_MINIMAL_ANDROID_MULTI_ABI_TESTS @QT_BUILD_MINIMAL_ANDROID_MULTI_ABI_TESTS@ CACHE BOOL
+    "Build minimal subset of tests for Android multi-ABI Qt builds")
 
 set(QT_BUILD_TESTS_BY_DEFAULT @QT_BUILD_TESTS_BY_DEFAULT@ CACHE BOOL
     "Should tests be built as part of the default 'all' target.")

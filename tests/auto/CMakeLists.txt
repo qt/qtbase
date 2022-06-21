@@ -22,6 +22,14 @@ if(UIKIT)
     return()
 endif()
 
+# Limit set of tests to run for Android multi-ABI Qt builds.
+if(QT_BUILD_MINIMAL_ANDROID_MULTI_ABI_TESTS)
+    add_subdirectory(corelib/kernel/qmath)
+    add_subdirectory(widgets/effects/qpixmapfilter)
+    add_subdirectory(corelib/platform)
+    return()
+endif()
+
 # Only configure a single auto test for wasm for now
 # Since the linking step at this point is prohibitively long (static linking)
 if(WASM)

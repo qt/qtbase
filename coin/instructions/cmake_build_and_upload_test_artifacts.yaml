@@ -48,6 +48,15 @@ instructions:
       property: features
       contains_value: "MinimalStaticTests"
 
+  # Inform CMake to build just a minimal set of tests for Android multi-ABI Qt builds.
+  - type: AppendToEnvironmentVariable
+    variableName: COIN_CMAKE_ARGS
+    variableValue: " -DQT_BUILD_MINIMAL_ANDROID_MULTI_ABI_TESTS=ON"
+    enable_if:
+      condition: property
+      property: features
+      contains_value: "MinimalAndroidMultiABITests"
+
   - !include "{{qt/qtbase}}/call_cmake_for_standalone_tests.yaml"
   - type: ExecuteCommand
     command: "{{.Env.TESTS_ENV_PREFIX}} cmake --build . --parallel -v"

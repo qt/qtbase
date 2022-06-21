@@ -253,6 +253,8 @@ unset(_qt_build_examples_as_external)
 
 option(QT_BUILD_MANUAL_TESTS "Build Qt manual tests" OFF)
 option(QT_BUILD_MINIMAL_STATIC_TESTS "Build minimal subset of tests for static Qt builds" OFF)
+option(QT_BUILD_MINIMAL_ANDROID_MULTI_ABI_TESTS
+    "Build minimal subset of tests for Android multi-ABI Qt builds" OFF)
 
 ## Path used to find host tools, either when cross-compiling or just when using the tools from
 ## a different host build.
