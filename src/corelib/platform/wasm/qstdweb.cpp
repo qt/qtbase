@@ -3,7 +3,10 @@
 
 #include "qstdweb_p.h"
 
+#include <QtCore/qcoreapplication.h>
+#include <QtCore/qfile.h>
 #include <emscripten/bind.h>
+#include <emscripten/emscripten.h>
 #include <cstdint>
 #include <iostream>
 
@@ -11,7 +14,187 @@ QT_BEGIN_NAMESPACE
 
 namespace qstdweb {
 
+const char makeContextfulPromiseFunctionName[] = "makePromise";
+
 typedef double uint53_t; // see Number.MAX_SAFE_INTEGER
+namespace {
+enum class CallbackType {
+        Then,
+        Catch,
+        Finally,
+};
+
+void validateCallbacks(const PromiseCallbacks& callbacks) {
+    Q_ASSERT(!!callbacks.catchFunc || !!callbacks.finallyFunc || !!callbacks.thenFunc);
+}
+
+void injectScript(const std::string& source, const std::string& injectionName)
+{
+    using namespace emscripten;
+
+    auto script = val::global("document").call<val>("createElement", val("script"));
+    auto head = val::global("document").call<val>("getElementsByTagName", val("head"));
+
+    script.call<void>("setAttribute", val("qtinjection"), val(injectionName));
+    script.set("innerText", val(source));
+
+    head[0].call<void>("appendChild", std::move(script));
+}
+
+using PromiseContext = int;
+
+class WebPromiseManager
+{
+public:
+    static const char contextfulPromiseSupportObjectName[];
+
+    static const char webPromiseManagerCallbackThunkExportName[];
+
+    WebPromiseManager();
+    ~WebPromiseManager();
+
+    WebPromiseManager(const WebPromiseManager& other) = delete;
+    WebPromiseManager(WebPromiseManager&& other) = delete;
+    WebPromiseManager& operator=(const WebPromiseManager& other) = delete;
+    WebPromiseManager& operator=(WebPromiseManager&& other) = delete;
+
+    void adoptPromise(emscripten::val target, PromiseCallbacks callbacks);
+
+    static WebPromiseManager* get();
+
+    static void callbackThunk(emscripten::val callbackType, emscripten::val context, emscripten::val result);
+
+private:
+    static std::optional<CallbackType> parseCallbackType(emscripten::val callbackType);
+
+    void subscribeToJsPromiseCallbacks(const PromiseCallbacks& callbacks, emscripten::val jsContextfulPromise);
+    void callback(CallbackType type, emscripten::val context, emscripten::val result);
+
+    void registerPromise(PromiseContext context, PromiseCallbacks promise);
+    void unregisterPromise(PromiseContext context);
+
+    QHash<PromiseContext, PromiseCallbacks> m_promiseRegistry;
+    int m_nextContextId = 0;
+};
+
+static void qStdWebCleanup()
+{
+    auto window = emscripten::val::global("window");
+    auto contextfulPromiseSupport = window[WebPromiseManager::contextfulPromiseSupportObjectName];
+    if (contextfulPromiseSupport.isUndefined())
+        return;
+
+    contextfulPromiseSupport.call<void>("removeRef");
+}
+
+const char WebPromiseManager::webPromiseManagerCallbackThunkExportName[] = "qtStdWebWebPromiseManagerCallbackThunk";
+const char WebPromiseManager::contextfulPromiseSupportObjectName[] = "qtContextfulPromiseSupport";
+
+Q_GLOBAL_STATIC(WebPromiseManager, webPromiseManager)
+
+WebPromiseManager::WebPromiseManager()
+{
+    QFile injection(QStringLiteral(":/injections/qtcontextfulpromise_injection.js"));
+    if (!injection.open(QIODevice::ReadOnly))
+        qFatal("Missing resource");
+    injectScript(injection.readAll().toStdString(), "contextfulpromise");
+    qAddPostRoutine(&qStdWebCleanup);
+}
+
+std::optional<CallbackType>
+WebPromiseManager::parseCallbackType(emscripten::val callbackType)
+{
+    if (!callbackType.isString())
+        return std::nullopt;
+
+    const std::string data = callbackType.as<std::string>();
+    if (data == "then")
+        return CallbackType::Then;
+    if (data == "catch")
+        return CallbackType::Catch;
+    if (data == "finally")
+        return CallbackType::Finally;
+    return std::nullopt;
+}
+
+WebPromiseManager::~WebPromiseManager() = default;
+
+WebPromiseManager *WebPromiseManager::get()
+{
+    return webPromiseManager();
+}
+
+void WebPromiseManager::callbackThunk(emscripten::val callbackType,
+                                      emscripten::val context,
+                                      emscripten::val result)
+{
+    auto parsedCallbackType = parseCallbackType(callbackType);
+    if (!parsedCallbackType) {
+        qFatal("Bad callback type");
+    }
+    WebPromiseManager::get()->callback(*parsedCallbackType, context, std::move(result));
+}
+
+void WebPromiseManager::subscribeToJsPromiseCallbacks(const PromiseCallbacks& callbacks, emscripten::val jsContextfulPromiseObject) {
+    using namespace emscripten;
+
+    if (Q_LIKELY(callbacks.thenFunc))
+        jsContextfulPromiseObject = jsContextfulPromiseObject.call<val>("then");
+    if (callbacks.catchFunc)
+        jsContextfulPromiseObject = jsContextfulPromiseObject.call<val>("catch");
+    if (callbacks.finallyFunc)
+        jsContextfulPromiseObject = jsContextfulPromiseObject.call<val>("finally");
+}
+
+void WebPromiseManager::callback(CallbackType type, emscripten::val context, emscripten::val result)
+{
+    auto found = m_promiseRegistry.find(context.as<PromiseContext>());
+    if (found == m_promiseRegistry.end()) {
+        return;
+    }
+
+    bool expectingOtherCallbacks;
+    switch (type) {
+        case CallbackType::Then:
+            found->thenFunc(result);
+            // At this point, if there is no finally function, we are sure that the Catch callback won't be issued.
+            expectingOtherCallbacks = !!found->finallyFunc;
+            break;
+        case CallbackType::Catch:
+            found->catchFunc(result);
+            expectingOtherCallbacks = !!found->finallyFunc;
+            break;
+        case CallbackType::Finally:
+            found->finallyFunc();
+            expectingOtherCallbacks = false;
+            break;
+    }
+
+    if (!expectingOtherCallbacks)
+        unregisterPromise(context.as<int>());
+}
+
+void WebPromiseManager::registerPromise(PromiseContext context, PromiseCallbacks callbacks)
+{
+    m_promiseRegistry.emplace(context, std::move(callbacks));
+}
+
+void WebPromiseManager::unregisterPromise(PromiseContext context)
+{
+    m_promiseRegistry.remove(context);
+}
+
+void WebPromiseManager::adoptPromise(emscripten::val target, PromiseCallbacks callbacks) {
+    emscripten::val context(m_nextContextId++);
+
+    auto jsContextfulPromise = emscripten::val::global("window")
+        [contextfulPromiseSupportObjectName].call<emscripten::val>(
+            makeContextfulPromiseFunctionName, target, context,
+            emscripten::val::module_property(webPromiseManagerCallbackThunkExportName));
+    subscribeToJsPromiseCallbacks(callbacks, jsContextfulPromise);
+    registerPromise(context.as<int>(), std::move(callbacks));
+}
+}  // namespace
 
 ArrayBuffer::ArrayBuffer(uint32_t size)
 {
@@ -165,6 +348,10 @@ File FileList::item(int index) const
 File FileList::operator[](int index) const
 {
     return item(index);
+}
+
+emscripten::val FileList::val() {
+    return m_fileList;
 }
 
 ArrayBuffer FileReader::result() const
@@ -322,6 +509,61 @@ std::string EventCallback::contextPropertyName(const std::string &eventName)
 
 EMSCRIPTEN_BINDINGS(qtStdwebCalback) {
     emscripten::function("qtStdWebEventCallbackActivate", &EventCallback::activate);
+    emscripten::function(WebPromiseManager::webPromiseManagerCallbackThunkExportName, &WebPromiseManager::callbackThunk);
+}
+
+namespace Promise {
+    void adoptPromise(emscripten::val promiseObject, PromiseCallbacks callbacks) {
+        validateCallbacks(callbacks);
+
+        WebPromiseManager::get()->adoptPromise(
+            std::move(promiseObject), std::move(callbacks));
+    }
+
+    void all(std::vector<emscripten::val> promises, PromiseCallbacks callbacks) {
+        struct State {
+            std::map<int, emscripten::val> results;
+            int remainingThenCallbacks;
+            int remainingFinallyCallbacks;
+        };
+
+        validateCallbacks(callbacks);
+
+        auto state = std::make_shared<State>();
+        state->remainingThenCallbacks = state->remainingFinallyCallbacks = promises.size();
+
+        for (size_t i = 0; i < promises.size(); ++i) {
+            PromiseCallbacks individualPromiseCallback;
+            if (callbacks.thenFunc) {
+                individualPromiseCallback.thenFunc = [i, state, callbacks](emscripten::val partialResult) mutable {
+                    state->results.emplace(i, std::move(partialResult));
+                    if (!--(state->remainingThenCallbacks)) {
+                        std::vector<emscripten::val> transformed;
+                        for (auto& data : state->results) {
+                            transformed.push_back(std::move(data.second));
+                        }
+                        callbacks.thenFunc(emscripten::val::array(std::move(transformed)));
+                    }
+                };
+            }
+            if (callbacks.catchFunc) {
+                individualPromiseCallback.catchFunc = [state, callbacks](emscripten::val error) mutable {
+                    callbacks.catchFunc(error);
+                };
+            }
+            individualPromiseCallback.finallyFunc = [state, callbacks]() mutable {
+                if (!--(state->remainingFinallyCallbacks)) {
+                    if (callbacks.finallyFunc)
+                        callbacks.finallyFunc();
+                    // Explicitly reset here for verbosity, this would have been done automatically with the
+                    // destruction of the adopted promise in WebPromiseManager.
+                    state.reset();
+                }
+            };
+
+            adoptPromise(std::move(promises.at(i)), std::move(individualPromiseCallback));
+        }
+    }
 }
 
 } // namespace qstdweb

@@ -19,83 +19,6 @@
 QT_BEGIN_NAMESPACE
 using namespace emscripten;
 
-static void pasteClipboardData(emscripten::val format, emscripten::val dataPtr)
-{
-    QString formatString = QWasmString::toQString(format);
-    QByteArray dataArray = QByteArray::fromStdString(dataPtr.as<std::string>());
-
-    QMimeData *mMimeData = new QMimeData;
-    mMimeData->setData(formatString, dataArray);
-
-    QWasmClipboard::qWasmClipboardPaste(mMimeData);
-//    QWasmIntegration::get()->getWasmClipboard()->isPaste = false;
-}
-
-static void qClipboardPasteResolve(emscripten::val blob)
-{
-    // read Blob here
-
-    auto fileReader = std::make_shared<qstdweb::FileReader>();
-    auto _blob = qstdweb::Blob(blob);
-    QString formatString = QString::fromStdString(_blob.type());
-
-    fileReader->readAsArrayBuffer(_blob);
-    char *chunkBuffer = nullptr;
-    qstdweb::ArrayBuffer result = fileReader->result();
-    qstdweb::Uint8Array(result).copyTo(chunkBuffer);
-    QMimeData *mMimeData = new QMimeData;
-    mMimeData->setData(formatString, chunkBuffer);
-    QWasmClipboard::qWasmClipboardPaste(mMimeData);
-}
-
-static void qClipboardPromiseResolve(emscripten::val clipboardItems)
-{
-    int itemsCount = clipboardItems["length"].as<int>();
-
-    for (int i = 0; i < itemsCount; i++) {
-        int typesCount = clipboardItems[i]["types"]["length"].as<int>(); // ClipboardItem
-
-        std::string mimeFormat = clipboardItems[i]["types"][0].as<std::string>();
-
-        if (mimeFormat.find(std::string("text")) != std::string::npos) {
-            // simple val object, no further processing
-
-            val navigator = val::global("navigator");
-            val textPromise = navigator["clipboard"].call<val>("readText");
-            val readTextResolve = val::global("Module")["qtClipboardTextPromiseResolve"];
-            textPromise.call<val>("then", readTextResolve);
-
-        } else {
-            //  binary types require additional processing
-            for (int j = 0; j < typesCount; j++) {
-                val pasteResolve = emscripten::val::module_property("qtClipboardPasteResolve");
-                val pasteException = emscripten::val::module_property("qtClipboardPromiseException");
-
-                // get the blob
-                clipboardItems[i]
-                        .call<val>("getType", clipboardItems[i]["types"][j])
-                        .call<val>("then", pasteResolve)
-                        .call<val>("catch", pasteException);
-            }
-        }
-    }
-}
-
-static void qClipboardCopyPromiseResolve(emscripten::val something)
-{
-    Q_UNUSED(something)
-    qWarning() << "copy succeeeded";
-}
-
-
-static emscripten::val qClipboardPromiseException(emscripten::val something)
-{
-    qWarning() << "clipboard error"
-               << QString::fromStdString(something["name"].as<std::string>())
-            << QString::fromStdString(something["message"].as<std::string>());
-    return something;
-}
-
 static void commonCopyEvent(val event)
 {
     QMimeData *_mimes = QWasmIntegration::get()->getWasmClipboard()->mimeData(QClipboard::Clipboard);
@@ -215,24 +138,10 @@ static void qClipboardPasteTo(val dataTransfer)
     QWasmIntegration::get()->getWasmClipboard()->m_isListener = false;
 }
 
-static void qClipboardTextPromiseResolve(emscripten::val clipdata)
-{
-    pasteClipboardData(emscripten::val("text/plain"), clipdata);
-}
-
 EMSCRIPTEN_BINDINGS(qtClipboardModule) {
-    function("qtPasteClipboardData", &pasteClipboardData);
-
-    function("qtClipboardTextPromiseResolve", &qClipboardTextPromiseResolve);
-    function("qtClipboardPromiseResolve", &qClipboardPromiseResolve);
-
-    function("qtClipboardCopyPromiseResolve", &qClipboardCopyPromiseResolve);
-    function("qtClipboardPromiseException", &qClipboardPromiseException);
-
     function("qtClipboardCutTo", &qClipboardCutTo);
     function("qtClipboardCopyTo", &qClipboardCopyTo);
     function("qtClipboardPasteTo", &qClipboardPasteTo);
-    function("qtClipboardPasteResolve", &qClipboardPasteResolve);
 }
 
 QWasmClipboard::QWasmClipboard() :
@@ -419,14 +328,18 @@ void QWasmClipboard::writeToClipboardApi()
         // break;
     }
 
-    val copyResolve = emscripten::val::module_property("qtClipboardCopyPromiseResolve");
-    val copyException = emscripten::val::module_property("qtClipboardPromiseException");
-
     val navigator = val::global("navigator");
-    navigator["clipboard"]
-            .call<val>("write", clipboardWriteArray)
-            .call<val>("then", copyResolve)
-            .call<val>("catch", copyException);
+
+    qstdweb::Promise::make(
+        navigator["clipboard"], "write",
+        {
+            .catchFunc = [](emscripten::val error) {
+                qWarning() << "clipboard error"
+                    << QString::fromStdString(error["name"].as<std::string>())
+                    << QString::fromStdString(error["message"].as<std::string>());
+            }
+        },
+        clipboardWriteArray);
 }
 
 void QWasmClipboard::writeToClipboard(const QMimeData *data)

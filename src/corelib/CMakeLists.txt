@@ -1359,3 +1359,18 @@ if(APPLE AND QT_FEATURE_framework AND QT_FEATURE_separate_debug_info)
         DESTINATION "${dsym_script_install_dir}"
     )
 endif()
+
+if(WASM)
+    set(wasm_injections
+        "${CMAKE_CURRENT_SOURCE_DIR}/platform/wasm/qtcontextfulpromise_injection.js"
+    )
+
+    qt_internal_add_resource(Core "wasminjections"
+        PREFIX
+            "/injections"
+        BASE
+            "${CMAKE_CURRENT_SOURCE_DIR}/platform/wasm"
+        FILES
+            ${wasm_injections}
+    )
+endif()

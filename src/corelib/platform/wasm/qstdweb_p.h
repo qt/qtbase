@@ -19,12 +19,14 @@
 #include <emscripten/val.h>
 #include <cstdint>
 #include <functional>
+#include "initializer_list"
 #include <QtCore/qglobal.h>
-
+#include "QtCore/qhash.h"
 
 QT_BEGIN_NAMESPACE
 
 namespace qstdweb {
+    extern const char makeContextfulPromiseFunctionName[];
 
     // DOM API in C++, implemented using emscripten val.h and bind.h.
     // This is private API and can be extended and changed as needed.
@@ -152,6 +154,34 @@ namespace qstdweb {
         emscripten::val m_element = emscripten::val::undefined();
         std::string m_eventName;
         std::function<void(emscripten::val)> m_fn;
+    };
+
+    struct PromiseCallbacks
+    {
+        std::function<void(emscripten::val)> thenFunc;
+        std::function<void(emscripten::val)> catchFunc;
+        std::function<void()> finallyFunc;
+    };
+
+    namespace Promise {
+        void adoptPromise(emscripten::val promise, PromiseCallbacks callbacks);
+
+        template<typename... Args>
+        void make(emscripten::val target,
+                  QString methodName,
+                  PromiseCallbacks callbacks,
+                  Args... args)
+        {
+            emscripten::val promiseObject = target.call<emscripten::val>(
+                methodName.toStdString().c_str(), std::forward<Args>(args)...);
+            if (promiseObject.isUndefined() || promiseObject["constructor"]["name"].as<std::string>() != "Promise") {
+                 qFatal("This function did not return a promise");
+            }
+
+            adoptPromise(std::move(promiseObject), std::move(callbacks));
+        }
+
+        void all(std::vector<emscripten::val> promises, PromiseCallbacks callbacks);
     };
 }
 
