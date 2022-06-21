@@ -13,6 +13,7 @@ find_library(GSSAPI_LIBRARIES
              NAMES
              GSS # framework
              gss # solaris
+             gssapi # FreeBSD
              gssapi_krb5
              HINTS ${PC_GSSAPI_LIBDIR}
 )
