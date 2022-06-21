@@ -410,7 +410,7 @@ VCCLCompilerTool::VCCLCompilerTool()
         CompileForArchitecture(archUnknown),
         InterworkCalls(unset),
         EnablePREfast(unset),
-        DisplayFullPaths(unset),
+        DisplayFullPaths(_False),
         MultiProcessorCompilation(unset),
         GenerateXMLDocumentationFiles(unset),
         CreateHotpatchableImage(unset)
