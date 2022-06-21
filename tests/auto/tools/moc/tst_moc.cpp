@@ -744,7 +744,7 @@ private slots:
     void observerMetaCall();
     void setQPRopertyBinding();
     void privateQPropertyShim();
-    void readThroughBindable();
+    void readWriteThroughBindable();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -4339,7 +4339,7 @@ void tst_Moc::privateQPropertyShim()
 class BindableOnly : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int score BINDABLE scoreBindable READ default)
+    Q_PROPERTY(int score BINDABLE scoreBindable READ default WRITE default)
 public:
     BindableOnly(QObject *parent = nullptr)
         : QObject(parent)
@@ -4350,27 +4350,64 @@ private:
     QProperty<int> m_score;
 };
 
-
-void tst_Moc::readThroughBindable()
+class BindableAndNotifyable : public QObject
 {
-    BindableOnly o;
+    Q_OBJECT
+    Q_PROPERTY(int score BINDABLE scoreBindable NOTIFY scoreChanged READ default WRITE default)
+public:
+    BindableAndNotifyable(QObject *parent = nullptr)
+        : QObject(parent)
+        , m_score(4)
+    {}
+    QBindable<int> scoreBindable() { return QBindable<int>(&m_score); }
+signals:
+    void scoreChanged();
+private:
+    QProperty<int> m_score;
+};
 
-    QCOMPARE(o.scoreBindable().value(), 4);
-    QCOMPARE(o.property("score").toInt(), 4);
-    o.scoreBindable().setValue(5);
-    QCOMPARE(o.scoreBindable().value(), 5);
-    QCOMPARE(o.property("score").toInt(), 5);
-
-
-    const QMetaObject *mo = o.metaObject();
-    const int i = mo->indexOfProperty("score");
-    QVERIFY(i > 0);
-
-    QMetaProperty p = mo->property(i);
-    QCOMPARE(p.name(), "score");
-
-    QVERIFY(p.isValid());
-    QCOMPARE(p.read(&o), 5);
+void tst_Moc::readWriteThroughBindable()
+{
+    {
+        BindableOnly o;
+        QCOMPARE(o.scoreBindable().value(), 4);
+        QCOMPARE(o.property("score").toInt(), 4);
+        o.scoreBindable().setValue(5);
+        QCOMPARE(o.scoreBindable().value(), 5);
+        QCOMPARE(o.property("score").toInt(), 5);
+        const QMetaObject *mo = o.metaObject();
+        const int i = mo->indexOfProperty("score");
+        QVERIFY(i > 0);
+        QMetaProperty p = mo->property(i);
+        QCOMPARE(p.name(), "score");
+        QVERIFY(p.isValid());
+        QVERIFY(p.isWritable());
+        QCOMPARE(p.read(&o), 5);
+        QVERIFY(o.setProperty("score", 6));
+        QCOMPARE(o.property("score").toInt(), 6);
+        QVERIFY(p.write(&o, 7));
+        QCOMPARE(p.read(&o), 7);
+    }
+    {
+        BindableAndNotifyable o;
+        QCOMPARE(o.scoreBindable().value(), 4);
+        QCOMPARE(o.property("score").toInt(), 4);
+        o.scoreBindable().setValue(5);
+        QCOMPARE(o.scoreBindable().value(), 5);
+        QCOMPARE(o.property("score").toInt(), 5);
+        const QMetaObject *mo = o.metaObject();
+        const int i = mo->indexOfProperty("score");
+        QVERIFY(i > 0);
+        QMetaProperty p = mo->property(i);
+        QCOMPARE(p.name(), "score");
+        QVERIFY(p.isValid());
+        QVERIFY(p.isWritable());
+        QCOMPARE(p.read(&o), 5);
+        QVERIFY(o.setProperty("score", 6));
+        QCOMPARE(o.property("score").toInt(), 6);
+        QVERIFY(p.write(&o, 7));
+        QCOMPARE(p.read(&o), 7);
+    }
 }
 
 QTEST_MAIN(tst_Moc)

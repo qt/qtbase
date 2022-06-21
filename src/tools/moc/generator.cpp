@@ -1315,6 +1315,12 @@ void Generator::generateStaticMetacall()
                 if (cdef->enumDeclarations.value(p.type, false)) {
                     fprintf(out, "        case %d: %s%s(QFlag(*reinterpret_cast<int*>(_v))); break;\n",
                             propindex, prefix.constData(), p.write.constData());
+                } else if (p.write == "default") {
+                    fprintf(out, "        case %d: {\n", propindex);
+                    fprintf(out, "            %s%s().setValue(*reinterpret_cast< %s*>(_v));\n",
+                            prefix.constData(), p.bind.constData(), p.type.constData());
+                    fprintf(out, "            break;\n");
+                    fprintf(out, "        }\n");
                 } else if (!p.write.isEmpty()) {
                     fprintf(out, "        case %d: %s%s(*reinterpret_cast< %s*>(_v)); break;\n",
                             propindex, prefix.constData(), p.write.constData(), p.type.constData());

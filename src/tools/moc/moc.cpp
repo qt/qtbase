@@ -1301,7 +1301,7 @@ void Moc::parsePropertyAttributes(PropertyDef &propDef)
                 error(1);
         } else if (test(DEFAULT)) {
             v = lexem();
-            if (l != "READ")
+            if (l != "READ" && l != "WRITE")
                 error(1);
         } else {
             next(IDENTIFIER);
@@ -1385,6 +1385,12 @@ void Moc::parsePropertyAttributes(PropertyDef &propDef)
         const QByteArray msg = "Property declaration " + propDef.name
                 + " is not BINDable but default-READable. READ will be ignored.";
         propDef.read = "";
+        warning(msg.constData());
+    }
+    if (propDef.write == "default" && propDef.bind.isNull()) {
+        const QByteArray msg = "Property declaration " + propDef.name
+                + " is not BINDable but default-WRITEable. WRITE will be ignored.";
+        propDef.write = "";
         warning(msg.constData());
     }
 }

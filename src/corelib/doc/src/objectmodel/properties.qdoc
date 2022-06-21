@@ -53,7 +53,12 @@
     argument, either of the property's type or a pointer or reference
     to that type. e.g., QWidget::enabled has the \c WRITE function
     QWidget::setEnabled().  Read-only properties do not need \c WRITE
-    functions. e.g., QWidget::focus has no \c WRITE function.
+    functions. e.g., QWidget::focus has no \c WRITE function. If you specify
+    both a \c BINDABLE and \c{WRITE default}, a \c WRITE accessor will be
+    generated from the \c BINDABLE. The generated \c WRITE accessor will \e not
+    explicitly emit any signal declared with \c NOTIFY. You should register
+    the signal as change handler to the \c BINDABLE, for example using
+    \l{Q_OBJECT_BINDABLE_PROPERTY}.
 
     \li A \c MEMBER variable association is required if no \c READ accessor
     function is specified. This makes the given member variable
