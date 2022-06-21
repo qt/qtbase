@@ -1567,24 +1567,28 @@ bool VCLinkerTool::parseOption(const char* option)
     case 0x0d745c8: // /LIBPATH:dir
         AdditionalLibraryDirectories += option+9;
         break;
-    case 0x0341877: // /LTCG[:NOSTATUS|:STATUS]
-        config->WholeProgramOptimization = _True;
-        if (config->CompilerVersion >= NET2005) {
-            LinkTimeCodeGeneration = optLTCGEnabled;
-            if(*(option+5) == ':') {
-                const char* str = option+6;
-                if (*str == 'S')
-                    ShowProgress = linkProgressAll;
-                else if (qstricmp(str, "pginstrument") == 0)
-                    LinkTimeCodeGeneration = optLTCGInstrument;
-                else if (qstricmp(str, "pgoptimize") == 0)
-                    LinkTimeCodeGeneration = optLTCGOptimize;
-                else if (qstricmp(str, "pgupdate") == 0)
-                    LinkTimeCodeGeneration = optLTCGUpdate;
-            }
-        } else {
-            AdditionalOptions.append(option);
+    case 0x0341877: // /LTCG[:{INCREMENTAL|NOSTATUS|STATUS|OFF}]
+        //             /LTCG:{PGINSTRUMENT|PGOPTIMIZE|PGUPDATE}
+        LinkTimeCodeGeneration = optLTCGEnabled;
+        if (*(option + 5) == ':') {
+            const char* str = option + 6;
+            if (qstricmp(str, "status") == 0)
+                ShowProgress = linkProgressAll;
+            else if (qstricmp(str, "off") == 0)
+                LinkTimeCodeGeneration = optLTCGDefault;
+            else if (qstricmp(str, "incremental") == 0)
+                LinkTimeCodeGeneration = optLTCGIncremental;
+            else if (qstricmp(str, "pginstrument") == 0)
+                LinkTimeCodeGeneration = optLTCGInstrument;
+            else if (qstricmp(str, "pgoptimize") == 0)
+                LinkTimeCodeGeneration = optLTCGOptimize;
+            else if (qstricmp(str, "pgupdate") == 0)
+                LinkTimeCodeGeneration = optLTCGUpdate;
+            else
+                AdditionalOptions.append(option);
         }
+        if (LinkTimeCodeGeneration != optLTCGDefault)
+            config->WholeProgramOptimization = _True;
         break;
     case 0x379ED25:
     case 0x157cf65: // /MACHINE:{AM33|ARM|CEE|IA64|X86|M32R|MIPS|MIPS16|MIPSFPU|MIPSFPU16|MIPSR41XX|PPC|SH3|SH4|SH5|THUMB|TRICORE}
