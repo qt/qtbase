@@ -762,7 +762,7 @@ QJniObject::QJniObject(jobject object)
 }
 
 /*!
-    \fn template<typename Class, typename ...Args> static inline QJniObject construct(Args &&...args)
+    \fn template<typename Class, typename ...Args> static inline QJniObject QJniObject::construct(Args &&...args)
     \since 6.4
 
     Constructs an instance of the Java class that is the equivalent of \c Class and
