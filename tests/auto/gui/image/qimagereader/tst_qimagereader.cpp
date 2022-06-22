@@ -487,8 +487,11 @@ void tst_QImageReader::setScaledClipRect()
     QImageReader originalReader(prefix + fileName);
     originalReader.setScaledSize(QSize(300, 300));
     QImage originalImage = originalReader.read();
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive) && format.contains("svg"))
-        QEXPECT_FAIL("", "This fails on Wayland, see QTBUG-100917.", Abort);
+    if (format.contains("svg")) {
+        // rendering of subrect may yield slight rounding differences, truncate them away
+        image.convertTo(QImage::Format_RGB444);
+        originalImage.convertTo(QImage::Format_RGB444);
+    }
     QCOMPARE(originalImage.copy(newRect), image);
 }
 
