@@ -36,6 +36,7 @@ typedef void* VkPhysicalDevice;
 typedef void* VkDevice;
 // enums
 typedef int VkResult;
+typedef int VkFormat;
 typedef int VkImageLayout;
 typedef int VkDebugReportFlagsEXT;
 typedef int VkDebugReportObjectTypeEXT;
