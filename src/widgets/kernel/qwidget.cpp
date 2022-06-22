@@ -8915,8 +8915,18 @@ bool QWidget::event(QEvent *event)
                 Qt::InputMethodQuery q = (Qt::InputMethodQuery)(int)(queries & (1<<i));
                 if (q) {
                     QVariant v = inputMethodQuery(q);
-                    if (q == Qt::ImEnabled && !v.isValid() && isEnabled())
-                        v = QVariant(true); // special case for Qt4 compatibility
+                    if (q == Qt::ImEnabled && !v.isValid() && isEnabled()) {
+                        // Qt:ImEnabled was added in Qt 5.3. So not all widgets support it, even
+                        // if they implement IM otherwise (and override inputMethodQuery()).
+                        // So for legacy reasons, we need to check by other means if IM is supported when
+                        // Qt::ImEnabled is not implemented (the query returns an invalid QVariant).
+                        // Since QWidget implements inputMethodQuery(), and return valid values for
+                        // some of the IM properties, we cannot just query for Qt::ImQueryAll.
+                        // Instead we assume that if a widget supports IM, it will implement
+                        // Qt::ImSurroundingText (which is not implemented by QWidget).
+                        const bool imEnabledFallback = inputMethodQuery(Qt::ImSurroundingText).isValid();
+                        v = QVariant(imEnabledFallback);
+                    }
                     query->setValue(q, v);
                 }
             }

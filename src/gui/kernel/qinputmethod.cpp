@@ -435,7 +435,11 @@ QVariant QInputMethod::queryFocusObject(Qt::InputMethodQuery query, const QVaria
                                                         Q_ARG(Qt::InputMethodQuery, query),
                                                         Q_ARG(QVariant, argument));
         Q_ASSERT(ok);
-        return retval;
+        if (retval.isValid())
+            return retval;
+
+        // If the new API didn't have an answer to the query, we fall
+        // back to use the old event-based API.
     }
 
     QInputMethodQueryEvent queryEvent(query);
