@@ -969,6 +969,7 @@ add_custom_command(
 
 qt_internal_extend_target(Gui CONDITION WASM
     SOURCES
+        platform/wasm/qlocalfileapi.cpp platform/wasm/qlocalfileapi_p.h
         platform/wasm/qwasmlocalfileaccess.cpp platform/wasm/qwasmlocalfileaccess_p.h
 )
 
