@@ -1,8 +1,5 @@
 qt_add_plugin(pnp_extrafilters
     CLASS_NAME ExtraFiltersPlugin
-)
-
-target_sources(pnp_extrafilters PRIVATE
     extrafiltersplugin.cpp extrafiltersplugin.h
 )
 

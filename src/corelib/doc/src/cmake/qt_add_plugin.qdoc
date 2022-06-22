@@ -21,6 +21,7 @@ qt_add_plugin(target
               [SHARED | STATIC]
               [CLASS_NAME class_name]
               [OUTPUT_TARGETS variable_name]
+              sources...
 )
 \endcode
 
@@ -36,6 +37,9 @@ CMake \c{add_library()} command when defining a Qt plugin target.
 By default, the plugin will be created as a \c STATIC library if Qt was built
 statically, or as a \c MODULE library otherwise. You can override this default
 by explicitly providing the \c STATIC or \c SHARED option.
+
+Any \c{sources} provided will be passed through to the internal call to
+\c{add_library()}.
 
 \note Non-static plugins are meant to be loaded dynamically at runtime, not
 linked to at build time. CMake differentiates between these two scenarios by

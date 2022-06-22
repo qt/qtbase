@@ -1,8 +1,5 @@
 qt_add_plugin(simplestyleplugin
     CLASS_NAME SimpleStylePlugin
-)
-
-target_sources(simplestyleplugin PRIVATE
     simplestyle.cpp simplestyle.h
     simplestyleplugin.cpp simplestyleplugin.h
 )

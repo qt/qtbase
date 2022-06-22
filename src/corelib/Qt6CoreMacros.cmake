@@ -2328,7 +2328,7 @@ function(qt6_add_plugin target)
         set(type_to_create MODULE)
     endif()
 
-    _qt_internal_add_library(${target} ${type_to_create})
+    _qt_internal_add_library(${target} ${type_to_create} ${arg_UNPARSED_ARGUMENTS})
 
     get_target_property(target_type "${target}" TYPE)
     if (target_type STREQUAL "STATIC_LIBRARY")

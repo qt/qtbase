@@ -1,8 +1,5 @@
 qt_add_plugin(echoplugin
     CLASS_NAME EchoPlugin
-)
-
-target_sources(echoplugin PRIVATE
     echoplugin.cpp echoplugin.h
 )
 
