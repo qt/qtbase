@@ -131,6 +131,27 @@ static inline uint lengthOfEscapedString(const QByteArray &str)
     return str.length() - extra;
 }
 
+// Prints \a s to \a out, breaking it into lines of at most ColumnWidth. The
+// opening and closing quotes are NOT included (it's up to the caller).
+static void printStringWithIndentation(FILE *out, const QByteArray &s)
+{
+    static constexpr int ColumnWidth = 72;
+    int len = s.length();
+    int idx = 0;
+
+    do {
+        int spanLen = qMin(ColumnWidth - 2, len - idx);
+        // don't cut escape sequences at the end of a line
+        int backSlashPos = s.lastIndexOf('\\', idx + spanLen - 1);
+        if (backSlashPos >= idx) {
+            int escapeLen = lengthOfEscapeSequence(s, backSlashPos);
+            spanLen = qBound(spanLen, backSlashPos + escapeLen - idx, len - idx);
+        }
+        fprintf(out, "\n    \"%.*s\"", spanLen, s.constData() + idx);
+        idx += spanLen;
+    } while (idx < len);
+}
+
 void Generator::strreg(const QByteArray &s)
 {
     if (!strings.contains(s))
@@ -256,23 +277,11 @@ void Generator::generateCode()
 //
 // Build stringdata struct
 //
-    const int constCharArraySizeLimit = 65535;
     fprintf(out, "struct qt_meta_stringdata_%s_t {\n", qualifiedClassNameIdentifier.constData());
     fprintf(out, "    uint offsetsAndSizes[%d];\n", int(strings.size() * 2));
-    {
-        int stringDataLength = 0;
-        int stringDataCounter = 0;
-        for (int i = 0; i < strings.size(); ++i) {
-            int thisLength = lengthOfEscapedString(strings.at(i)) + 1;
-            stringDataLength += thisLength;
-            if (stringDataLength / constCharArraySizeLimit) {
-                // save previous stringdata and start computing the next one.
-                fprintf(out, "    char stringdata%d[%d];\n", stringDataCounter++, stringDataLength - thisLength);
-                stringDataLength = thisLength;
-            }
-        }
-        fprintf(out, "    char stringdata%d[%d];\n", stringDataCounter, stringDataLength);
-
+    for (int i = 0; i < strings.size(); ++i) {
+        int thisLength = lengthOfEscapedString(strings.at(i)) + 1;
+        fprintf(out, "    char stringdata%d[%d];\n", i, thisLength);
     }
     fprintf(out, "};\n");
 
@@ -297,56 +306,19 @@ void Generator::generateCode()
 
             idx += len + 1;
         }
-        fprintf(out, "\n    },\n");
+        fprintf(out, "\n    }");
     }
 
 //
-// Build stringdata array
+// Build stringdata arrays
 //
-    fprintf(out, "    \"");
-    int col = 0;
-    int len = 0;
-    int stringDataLength = 0;
-    for (int i = 0; i < strings.size(); ++i) {
-        QByteArray s = strings.at(i);
-        len = s.length();
-        stringDataLength += len + 1;
-        if (stringDataLength >= constCharArraySizeLimit) {
-            fprintf(out, "\",\n    \"");
-            stringDataLength = len + 1;
-            col = 0;
-        } else if (i)
-            fputs("\\0", out); // add \0 at the end of each string
-
-        if (col && col + len >= 72) {
-            fprintf(out, "\"\n    \"");
-            col = 0;
-        } else if (len && s.at(0) >= '0' && s.at(0) <= '9') {
-            fprintf(out, "\"\"");
-            len += 2;
-        }
-        int idx = 0;
-        while (idx < s.length()) {
-            if (idx > 0) {
-                col = 0;
-                fprintf(out, "\"\n    \"");
-            }
-            int spanLen = qMin(70, s.length() - idx);
-            // don't cut escape sequences at the end of a line
-            int backSlashPos = s.lastIndexOf('\\', idx + spanLen - 1);
-            if (backSlashPos >= idx) {
-                int escapeLen = lengthOfEscapeSequence(s, backSlashPos);
-                spanLen = qBound(spanLen, backSlashPos + escapeLen - idx, s.length() - idx);
-            }
-            fprintf(out, "%.*s", spanLen, s.constData() + idx);
-            idx += spanLen;
-            col += spanLen;
-        }
-        col += len + 2;
+    for (const QByteArray &s : qAsConst(strings)) {
+        fputc(',', out);
+        printStringWithIndentation(out, s);
     }
 
 // Terminate stringdata struct
-    fprintf(out, "\"\n};\n");
+    fprintf(out, "\n};\n");
     fprintf(out, "#undef QT_MOC_LITERAL\n\n");
 
 //
