@@ -369,6 +369,8 @@ private slots:
 
     void focusProxy();
     void focusProxyAndInputMethods();
+    void imEnabledNotImplemented();
+
 #ifdef QT_BUILD_INTERNAL
     void scrollWithoutBackingStore();
 #endif
@@ -10980,6 +10982,35 @@ void tst_QWidget::focusProxyAndInputMethods()
     QVERIFY(toplevel->hasFocus());
     QVERIFY(child->hasFocus());
     QCOMPARE(qApp->focusObject(), toplevel.data());
+}
+
+void tst_QWidget::imEnabledNotImplemented()
+{
+    // Check that a plain widget doesn't report that it supports IM. Only
+    // widgets that implements either Qt::ImEnabled, or the Qt4 backup
+    // solution, Qt::ImSurroundingText, should do so.
+    QWidget topLevel;
+    QWidget plain(&topLevel);
+    QLineEdit edit(&topLevel);
+    topLevel.show();
+
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    QApplication::setActiveWindow(&topLevel);
+    QVERIFY(QTest::qWaitForWindowActive(&topLevel));
+
+    // A plain widget should return false for ImEnabled
+    plain.setFocus(Qt::OtherFocusReason);
+    QCOMPARE(QApplication::focusWidget(), &plain);
+    QVariant imEnabled = QApplication::inputMethod()->queryFocusObject(Qt::ImEnabled, QVariant());
+    QVERIFY(imEnabled.isValid());
+    QVERIFY(!imEnabled.toBool());
+
+    // But a lineedit should return true
+    edit.setFocus(Qt::OtherFocusReason);
+    QCOMPARE(QApplication::focusWidget(), &edit);
+    imEnabled = QApplication::inputMethod()->queryFocusObject(Qt::ImEnabled, QVariant());
+    QVERIFY(imEnabled.isValid());
+    QVERIFY(imEnabled.toBool());
 }
 
 #ifdef QT_BUILD_INTERNAL
