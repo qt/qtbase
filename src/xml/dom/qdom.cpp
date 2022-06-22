@@ -3139,11 +3139,7 @@ QDomDocumentType::QDomDocumentType(QDomDocumentTypePrivate* n)
     will also change the other. If you want to make a deep copy, use
     cloneNode().
 */
-QDomDocumentType& QDomDocumentType::operator= (const QDomDocumentType& n)
-{
-    return static_cast<QDomDocumentType &>(QDomNode::operator=(n));
-}
-
+QDomDocumentType &QDomDocumentType::operator=(const QDomDocumentType &n) = default;
 /*!
     Returns the name of the document type as specified in the
     &lt;!DOCTYPE name&gt; tag.
@@ -3319,10 +3315,7 @@ QDomDocumentFragment::QDomDocumentFragment(const QDomDocumentFragment& x)
     will also change the other. If you want to make a deep copy, use
     cloneNode().
 */
-QDomDocumentFragment& QDomDocumentFragment::operator= (const QDomDocumentFragment& x)
-{
-    return static_cast<QDomDocumentFragment &>(QDomNode::operator=(x));
-}
+QDomDocumentFragment &QDomDocumentFragment::operator=(const QDomDocumentFragment &x) = default;
 
 /*!
     \fn QDomNode::NodeType QDomDocumentFragment::nodeType() const
@@ -3453,10 +3446,7 @@ QDomCharacterData::QDomCharacterData(QDomCharacterDataPrivate* n)
     will also change the other. If you want to make a deep copy, use
     cloneNode().
 */
-QDomCharacterData& QDomCharacterData::operator= (const QDomCharacterData& x)
-{
-    return static_cast<QDomCharacterData &>(QDomNode::operator=(x));
-}
+QDomCharacterData &QDomCharacterData::operator=(const QDomCharacterData &x) = default;
 
 /*!
     Returns the string stored in this object.
@@ -3762,10 +3752,7 @@ QDomAttr::QDomAttr(QDomAttrPrivate* n)
     will also change the other. If you want to make a deep copy, use
     cloneNode().
 */
-QDomAttr& QDomAttr::operator= (const QDomAttr& x)
-{
-    return static_cast<QDomAttr &>(QDomNode::operator=(x));
-}
+QDomAttr &QDomAttr::operator=(const QDomAttr &x) = default;
 
 /*!
     Returns the attribute's name.
@@ -4185,10 +4172,7 @@ QDomElement::QDomElement(QDomElementPrivate* n)
     will also change the other. If you want to make a deep copy, use
     cloneNode().
 */
-QDomElement& QDomElement::operator= (const QDomElement& x)
-{
-    return static_cast<QDomElement &>(QDomNode::operator=(x));
-}
+QDomElement &QDomElement::operator=(const QDomElement &x) = default;
 
 /*!
     \fn QDomNode::NodeType QDomElement::nodeType() const
@@ -4705,10 +4689,7 @@ QDomText::QDomText(QDomTextPrivate* n)
     will also change the other. If you want to make a deep copy, use
     cloneNode().
 */
-QDomText& QDomText::operator= (const QDomText& x)
-{
-    return static_cast<QDomText &>(QDomNode::operator=(x));
-}
+QDomText &QDomText::operator=(const QDomText &x) = default;
 
 /*!
     \fn QDomNode::NodeType QDomText::nodeType() const
@@ -4836,10 +4817,7 @@ QDomComment::QDomComment(QDomCommentPrivate* n)
     will also change the other. If you want to make a deep copy, use
     cloneNode().
 */
-QDomComment& QDomComment::operator= (const QDomComment& x)
-{
-    return static_cast<QDomComment &>(QDomNode::operator=(x));
-}
+QDomComment &QDomComment::operator=(const QDomComment &x) = default;
 
 /*!
     \fn QDomNode::NodeType QDomComment::nodeType() const
@@ -4944,10 +4922,7 @@ QDomCDATASection::QDomCDATASection(QDomCDATASectionPrivate* n)
     will also change the other. If you want to make a deep copy, use
     cloneNode().
 */
-QDomCDATASection& QDomCDATASection::operator= (const QDomCDATASection& x)
-{
-    return static_cast<QDomCDATASection &>(QDomNode::operator=(x));
-}
+QDomCDATASection &QDomCDATASection::operator=(const QDomCDATASection &x) = default;
 
 /*!
     \fn QDomNode::NodeType QDomCDATASection::nodeType() const
@@ -5068,10 +5043,7 @@ QDomNotation::QDomNotation(QDomNotationPrivate* n)
     will also change the other. If you want to make a deep copy, use
     cloneNode().
 */
-QDomNotation& QDomNotation::operator= (const QDomNotation& x)
-{
-    return static_cast<QDomNotation &>(QDomNode::operator=(x));
-}
+QDomNotation &QDomNotation::operator=(const QDomNotation &x) = default;
 
 /*!
     \fn QDomNode::NodeType QDomNotation::nodeType() const
@@ -5265,10 +5237,7 @@ QDomEntity::QDomEntity(QDomEntityPrivate* n)
     will also change the other. If you want to make a deep copy, use
     cloneNode().
 */
-QDomEntity& QDomEntity::operator= (const QDomEntity& x)
-{
-    return static_cast<QDomEntity &>(QDomNode::operator=(x));
-}
+QDomEntity &QDomEntity::operator=(const QDomEntity &x) = default;
 
 /*!
     \fn QDomNode::NodeType QDomEntity::nodeType() const
@@ -5417,10 +5386,7 @@ QDomEntityReference::QDomEntityReference(QDomEntityReferencePrivate* n)
     will also change the other. If you want to make a deep copy, use
     cloneNode().
 */
-QDomEntityReference& QDomEntityReference::operator= (const QDomEntityReference& x)
-{
-    return static_cast<QDomEntityReference &>(QDomNode::operator=(x));
-}
+QDomEntityReference &QDomEntityReference::operator=(const QDomEntityReference &x) = default;
 
 /*!
     \fn QDomNode::NodeType QDomEntityReference::nodeType() const
@@ -5534,10 +5500,8 @@ QDomProcessingInstruction::QDomProcessingInstruction(QDomProcessingInstructionPr
     will also change the other. If you want to make a deep copy, use
     cloneNode().
 */
-QDomProcessingInstruction& QDomProcessingInstruction::operator= (const QDomProcessingInstruction& x)
-{
-    return static_cast<QDomProcessingInstruction &>(QDomNode::operator=(x));
-}
+QDomProcessingInstruction &
+QDomProcessingInstruction::operator=(const QDomProcessingInstruction &x) = default;
 
 /*!
     \fn QDomNode::NodeType QDomProcessingInstruction::nodeType() const
@@ -6065,10 +6029,7 @@ QDomDocument::QDomDocument(QDomDocumentPrivate* x)
     will also change the other. If you want to make a deep copy, use
     cloneNode().
 */
-QDomDocument& QDomDocument::operator= (const QDomDocument& x)
-{
-    return static_cast<QDomDocument &>(QDomNode::operator=(x));
-}
+QDomDocument &QDomDocument::operator=(const QDomDocument &x) = default;
 
 /*!
     Destroys the object and frees its resources.
