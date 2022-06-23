@@ -243,6 +243,12 @@ inline QDebugIfHasDebugStream<T> operator<<(QDebug debug, const std::list<T, All
     return QtPrivate::printSequentialContainer(debug, "std::list", vec);
 }
 
+template <typename T>
+inline QDebugIfHasDebugStream<T> operator<<(QDebug debug, std::initializer_list<T> list)
+{
+    return QtPrivate::printSequentialContainer(debug, "std::initializer_list", list);
+}
+
 template <typename Key, typename T, typename Compare, typename Alloc>
 inline QDebugIfHasDebugStream<Key, T> operator<<(QDebug debug, const std::map<Key, T, Compare, Alloc> &map)
 {
