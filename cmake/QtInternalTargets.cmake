@@ -284,7 +284,7 @@ if(QT_FEATURE_intelcet)
         )
     else()
         target_compile_options(PlatformCommonInternal INTERFACE
-            -fcf-protection
+            -fcf-protection=full
         )
     endif()
 endif()

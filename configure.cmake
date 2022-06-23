@@ -983,7 +983,7 @@ qt_feature("relocatable" PRIVATE
     CONDITION QT_FEATURE_dlopen OR WIN32 OR NOT QT_FEATURE_shared
 )
 qt_feature("intelcet" PRIVATE
-    LABEL "Using Intel CET"
+    LABEL "Using Intel Control-flow Enforcement Technology (CET)"
     CONDITION ( INPUT_intelcet STREQUAL yes ) OR TEST_intelcet
 )
 qt_configure_add_summary_build_type_and_config()
