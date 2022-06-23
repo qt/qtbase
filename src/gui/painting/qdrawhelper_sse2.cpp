@@ -533,66 +533,42 @@ void qt_scale_image_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
         return qt_scale_image_argb32_on_argb32(destPixels, dbpl, srcPixels, sbpl, srch, targetRect, sourceRect, clip, const_alpha);
     }
 
-    qreal sx = targetRect.width() / (qreal) sourceRect.width();
-    qreal sy = targetRect.height() / (qreal) sourceRect.height();
+    qreal sx = sourceRect.width() / (qreal)targetRect.width();
+    qreal sy = sourceRect.height() / (qreal)targetRect.height();
 
-    int ix = 0x00010000 / sx;
-    int iy = 0x00010000 / sy;
+    const int ix = 0x00010000 * sx;
+    const int iy = 0x00010000 * sy;
 
-    int cx1 = clip.x();
-    int cx2 = clip.x() + clip.width();
-    int cy1 = clip.top();
-    int cy2 = clip.y() + clip.height();
-
-    int tx1 = qRound(targetRect.left());
-    int tx2 = qRound(targetRect.right());
-    int ty1 = qRound(targetRect.top());
-    int ty2 = qRound(targetRect.bottom());
-
-    if (tx2 < tx1)
-        qSwap(tx2, tx1);
-    if (ty2 < ty1)
-        qSwap(ty2, ty1);
-
-    if (tx1 < cx1)
-        tx1 = cx1;
-    if (tx2 >= cx2)
-        tx2 = cx2;
-
-    if (tx1 >= tx2)
+    QRect tr = targetRect.normalized().toRect();
+    tr = tr.intersected(clip);
+    if (tr.isEmpty())
         return;
-
-    if (ty1 < cy1)
-        ty1 = cy1;
-    if (ty2 >= cy2)
-       ty2 = cy2;
-    if (ty1 >= ty2)
-        return;
-
-    int h = ty2 - ty1;
-    int w = tx2 - tx1;
+    const int tx1 = tr.left();
+    const int ty1 = tr.top();
+    int h = tr.height();
+    int w = tr.width();
 
     quint32 basex;
     quint32 srcy;
 
     if (sx < 0) {
-        int dstx = qFloor((tx1 + qreal(0.5) - targetRect.right()) * ix) + 1;
+        int dstx = qFloor((tx1 + qreal(0.5) - targetRect.right()) * sx * 65536) + 1;
         basex = quint32(sourceRect.right() * 65536) + dstx;
     } else {
-        int dstx = qCeil((tx1 + qreal(0.5) - targetRect.left()) * ix) - 1;
+        int dstx = qCeil((tx1 + qreal(0.5) - targetRect.left()) * sx * 65536) - 1;
         basex = quint32(sourceRect.left() * 65536) + dstx;
     }
     if (sy < 0) {
-        int dsty = qFloor((ty1 + qreal(0.5) - targetRect.bottom()) * iy) + 1;
+        int dsty = qFloor((ty1 + qreal(0.5) - targetRect.bottom()) * sy * 65536) + 1;
         srcy = quint32(sourceRect.bottom() * 65536) + dsty;
     } else {
-        int dsty = qCeil((ty1 + qreal(0.5) - targetRect.top()) * iy) - 1;
+        int dsty = qCeil((ty1 + qreal(0.5) - targetRect.top()) * sy * 65536) - 1;
         srcy = quint32(sourceRect.top() * 65536) + dsty;
     }
 
     quint32 *dst = ((quint32 *) (destPixels + ty1 * dbpl)) + tx1;
 
-    const __m128i nullVector = _mm_set1_epi32(0);
+    const __m128i nullVector = _mm_setzero_si128();
     const __m128i half = _mm_set1_epi16(0x80);
     const __m128i one = _mm_set1_epi16(0xff);
     const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
