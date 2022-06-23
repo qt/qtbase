@@ -249,6 +249,9 @@ void Generator::generateCode()
     QByteArray qualifiedClassNameIdentifier = cdef->qualified;
     qualifiedClassNameIdentifier.replace(':', '_');
 
+    // ensure the qt_meta_stringdata_XXXX_t type is local
+    fprintf(out, "namespace {\n");
+
 //
 // Build stringdata struct
 //
@@ -294,7 +297,9 @@ void Generator::generateCode()
 
 // Terminate stringdata struct
     fprintf(out, "\n};\n");
-    fprintf(out, "#undef QT_MOC_LITERAL\n\n");
+    fprintf(out, "#undef QT_MOC_LITERAL\n");
+
+    fprintf(out, "} // unnamed namespace\n\n");
 
 //
 // build the data array
