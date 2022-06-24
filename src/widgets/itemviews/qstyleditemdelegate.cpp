@@ -576,8 +576,9 @@ void QStyledItemDelegate::setItemEditorFactory(QItemEditorFactory *factory)
         \li \uicontrol Esc
     \endlist
 
-    If the \a editor's type is QTextEdit or QPlainTextEdit then \uicontrol Enter and
-    \uicontrol Return keys are \e not handled.
+    If the \a editor's type is QTextEdit or QPlainTextEdit then \uicontrol Tab,
+    \uicontrol Backtab, \uicontrol Enter and \uicontrol Return keys are \e not
+    handled.
 
     In the case of \uicontrol Tab, \uicontrol Backtab, \uicontrol Enter and \uicontrol Return
     key press events, the \a editor's data is committed to the model
