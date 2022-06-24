@@ -591,7 +591,7 @@ void QExpandingLineEdit::resizeToContents()
         int hintWidth = minimumWidth() + fontMetrics().horizontalAdvance(displayText());
         int parentWidth = parent->width();
         int maxWidth = isRightToLeft() ? position.x() + oldWidth : parentWidth - position.x();
-        int newWidth = qBound(originalWidth, hintWidth, maxWidth);
+        int newWidth = qBound(qMin(originalWidth, maxWidth), hintWidth, maxWidth);
         if (widgetOwnsGeometry)
             setMaximumWidth(newWidth);
         if (isRightToLeft())
