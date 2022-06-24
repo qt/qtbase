@@ -21,6 +21,8 @@ private slots:
     void testKeys();
     void testLineEditContents();
     void testMaximumSequenceLength();
+    void testFinishingKeyCombinations_data();
+    void testFinishingKeyCombinations();
 };
 
 void tst_QKeySequenceEdit::testSetters()
@@ -121,6 +123,44 @@ void tst_QKeySequenceEdit::testLineEditContents()
 
     edit.setKeySequence(QKeySequence());
     QCOMPARE(le->text(), QString());
+}
+
+void tst_QKeySequenceEdit::testFinishingKeyCombinations_data()
+{
+    QTest::addColumn<Qt::Key>("key");
+    QTest::addColumn<Qt::KeyboardModifiers>("modifiers");
+    QTest::addColumn<QKeySequence>("keySequence");
+
+    QTest::newRow("1") << Qt::Key_Backtab << Qt::KeyboardModifiers(Qt::NoModifier) << QKeySequence("Backtab");
+    QTest::newRow("2") << Qt::Key_Tab << Qt::KeyboardModifiers(Qt::NoModifier) << QKeySequence("Tab");
+    QTest::newRow("3") << Qt::Key_Return << Qt::KeyboardModifiers(Qt::NoModifier) << QKeySequence("Return");
+    QTest::newRow("4") << Qt::Key_Enter << Qt::KeyboardModifiers(Qt::NoModifier) << QKeySequence("Enter");
+    QTest::newRow("5") << Qt::Key_Enter << Qt::KeyboardModifiers(Qt::ShiftModifier) << QKeySequence("Shift+Enter");
+}
+
+void tst_QKeySequenceEdit::testFinishingKeyCombinations()
+{
+    QFETCH(Qt::Key, key);
+    QFETCH(Qt::KeyboardModifiers, modifiers);
+    QFETCH(QKeySequence, keySequence);
+    QKeySequenceEdit edit;
+
+    QSignalSpy spy(&edit, SIGNAL(editingFinished()));
+    QCOMPARE(spy.count(), 0);
+
+    edit.setFinishingKeyCombinations({QKeyCombination(modifiers, key)});
+    QTest::keyPress(&edit, key, modifiers);
+    QTest::keyRelease(&edit, key, modifiers);
+
+    QCOMPARE(edit.keySequence(), QKeySequence());
+    QTRY_COMPARE(spy.count(), 1);
+
+    edit.setFinishingKeyCombinations({});
+    QTest::keyPress(&edit, key, modifiers);
+    QTest::keyRelease(&edit, key, modifiers);
+
+    QCOMPARE(edit.keySequence(), keySequence);
+    QTRY_COMPARE(spy.count(), 2);
 }
 
 QTEST_MAIN(tst_QKeySequenceEdit)

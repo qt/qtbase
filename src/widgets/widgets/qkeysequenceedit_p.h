@@ -46,6 +46,7 @@ public:
     QKeyCombination key[QKeySequencePrivate::MaxKeyCount];
     int prevKey;
     int releaseTimer;
+    QList<QKeyCombination> finishingKeyCombinations;
 };
 
 QT_END_NAMESPACE

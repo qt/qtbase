@@ -29,6 +29,7 @@ void QKeySequenceEditPrivate::init()
     keyNum = 0;
     prevKey = -1;
     releaseTimer = 0;
+    finishingKeyCombinations = {Qt::Key_Tab, Qt::Key_Backtab};
 
     QVBoxLayout *layout = new QVBoxLayout(q);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -209,6 +210,31 @@ void QKeySequenceEdit::setMaximumSequenceLength(qsizetype count)
     }
 }
 
+/*!
+    \property QKeySequenceEdit::finishingKeyCombinations
+    \brief The list of key combinations that finish editing the key sequences.
+
+    Any combination in the list will finish the editing of key sequences.
+    All other key combinations can be recorded as part of a key sequence. By
+    default, Qt::Key_Tab and Qt::Key_Backtab will finish recording the key
+    sequence.
+
+    \since 6.5
+*/
+void QKeySequenceEdit::setFinishingKeyCombinations(const QList<QKeyCombination> &finishingKeyCombinations)
+{
+    Q_D(QKeySequenceEdit);
+
+    d->finishingKeyCombinations = finishingKeyCombinations;
+}
+
+QList<QKeyCombination> QKeySequenceEdit::finishingKeyCombinations() const
+{
+    Q_D(const QKeySequenceEdit);
+
+    return d->finishingKeyCombinations;
+}
+
 void QKeySequenceEdit::setKeySequence(const QKeySequence &keySequence)
 {
     Q_D(QKeySequenceEdit);
@@ -260,13 +286,23 @@ void QKeySequenceEdit::clear()
 */
 bool QKeySequenceEdit::event(QEvent *e)
 {
+    Q_D(const QKeySequenceEdit);
+
     switch (e->type()) {
     case QEvent::Shortcut:
         return true;
     case QEvent::ShortcutOverride:
         e->accept();
         return true;
-    default :
+    case QEvent::KeyPress: {
+            QKeyEvent *ke = static_cast<QKeyEvent *>(e);
+            if (!d->finishingKeyCombinations.contains(ke->keyCombination())) {
+                keyPressEvent(ke);
+                return true;
+            }
+        }
+        break;
+    default:
         break;
     }
 
@@ -279,6 +315,11 @@ bool QKeySequenceEdit::event(QEvent *e)
 void QKeySequenceEdit::keyPressEvent(QKeyEvent *e)
 {
     Q_D(QKeySequenceEdit);
+
+    if (d->finishingKeyCombinations.contains(e->keyCombination())) {
+        d->finishEditing();
+        return;
+    }
 
     int nextKey = e->key();
 
