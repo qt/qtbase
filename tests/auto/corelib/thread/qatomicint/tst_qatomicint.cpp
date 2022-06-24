@@ -161,23 +161,19 @@ void tst_QAtomicInt::warningFreeHelper()
     constexprFunctionsHelperTemplate<QBasicAtomicInteger<long int> >();
     constexprFunctionsHelperTemplate<QBasicAtomicInteger<unsigned long int> >();
 
-#ifdef Q_ATOMIC_INT16_IS_SUPPORTED
     warningFreeHelperTemplate<qint16, QBasicAtomicInteger<qint16> >();
     warningFreeHelperTemplate<quint16, QBasicAtomicInteger<quint16> >();
     constexprFunctionsHelperTemplate<QBasicAtomicInteger<qint16> >();
     constexprFunctionsHelperTemplate<QBasicAtomicInteger<quint16> >();
     warningFreeHelperTemplate<qint16, QBasicAtomicInteger<char16_t> >();
     constexprFunctionsHelperTemplate<QBasicAtomicInteger<char16_t> >();
-#endif
 
-#ifdef Q_ATOMIC_INT8_IS_SUPPORTED
     warningFreeHelperTemplate<char, QBasicAtomicInteger<char> >();
     warningFreeHelperTemplate<signed char, QBasicAtomicInteger<signed char> >();
     warningFreeHelperTemplate<unsigned char, QBasicAtomicInteger<unsigned char> >();
     constexprFunctionsHelperTemplate<QBasicAtomicInteger<char> >();
     constexprFunctionsHelperTemplate<QBasicAtomicInteger<signed char> >();
     constexprFunctionsHelperTemplate<QBasicAtomicInteger<unsigned char> >();
-#endif
 
 #ifdef Q_ATOMIC_INT64_IS_SUPPORTED
 #if !defined(__i386__) || (defined(Q_CC_GNU) && defined(__OPTIMIZE__))
@@ -205,17 +201,9 @@ void tst_QAtomicInt::alignment()
     static_assert(alignof(QBasicAtomicInt) == alignof(TypeInStruct<int>));
     static_assert(alignof(QBasicAtomicInt) == alignof(TypeInStruct<int>));
 
-#ifdef Q_ATOMIC_INT32_IS_SUPPORTED
     QCOMPARE(alignof(QBasicAtomicInteger<int>), alignof(TypeInStruct<int>));
-#endif
-
-#ifdef Q_ATOMIC_INT16_IS_SUPPORTED
     QCOMPARE(alignof(QBasicAtomicInteger<short>), alignof(TypeInStruct<short>));
-#endif
-
-#ifdef Q_ATOMIC_INT8_IS_SUPPORTED
     QCOMPARE(alignof(QBasicAtomicInteger<char>), alignof(TypeInStruct<char>));
-#endif
 
 #if !defined(Q_PROCESSOR_X86_32) && defined(Q_ATOMIC_INT64_IS_SUPPORTED)
     // The alignment is different on x86_32
@@ -493,7 +481,6 @@ void tst_QAtomicInt::testAndSet()
         QTEST(atomic.testAndSetOrdered(expected, newval), "result");
     }
 
-#ifdef Q_ATOMIC_INT32_IS_SUPPORTED
     QFETCH(bool, result);
     // the new implementation has the version that loads the current value
 
@@ -528,7 +515,6 @@ void tst_QAtomicInt::testAndSet()
         if (!result)
             QCOMPARE(currentval, value);
     }
-#endif
 }
 
 void tst_QAtomicInt::isFetchAndStoreNative()

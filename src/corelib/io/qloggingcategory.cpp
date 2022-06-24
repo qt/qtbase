@@ -9,18 +9,6 @@ QT_BEGIN_NAMESPACE
 const char qtDefaultCategoryName[] = "default";
 Q_GLOBAL_STATIC(QLoggingCategory, qtDefaultCategory, qtDefaultCategoryName)
 
-#ifndef Q_ATOMIC_INT8_IS_SUPPORTED
-static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
-{
-    const int bit = 1 << shift;
-
-    if (enable)
-        atomic->fetchAndOrRelaxed(bit);
-    else
-        atomic->fetchAndAndRelaxed(~bit);
-}
-#endif
-
 /*!
     \class QLoggingCategory
     \inmodule QtCore
@@ -288,17 +276,10 @@ bool QLoggingCategory::isEnabled(QtMsgType msgtype) const
 void QLoggingCategory::setEnabled(QtMsgType type, bool enable)
 {
     switch (type) {
-#ifdef Q_ATOMIC_INT8_IS_SUPPORTED
     case QtDebugMsg: bools.enabledDebug.storeRelaxed(enable); break;
     case QtInfoMsg: bools.enabledInfo.storeRelaxed(enable); break;
     case QtWarningMsg: bools.enabledWarning.storeRelaxed(enable); break;
     case QtCriticalMsg: bools.enabledCritical.storeRelaxed(enable); break;
-#else
-    case QtDebugMsg: setBoolLane(&enabled, enable, DebugShift); break;
-    case QtInfoMsg: setBoolLane(&enabled, enable, InfoShift); break;
-    case QtWarningMsg: setBoolLane(&enabled, enable, WarningShift); break;
-    case QtCriticalMsg: setBoolLane(&enabled, enable, CriticalShift); break;
-#endif
     case QtFatalMsg: break;
     }
 }
