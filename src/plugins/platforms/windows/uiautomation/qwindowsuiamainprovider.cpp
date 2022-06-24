@@ -345,7 +345,8 @@ HRESULT QWindowsUiaMainProvider::GetPatternProvider(PATTERNID idPattern, IUnknow
         if ((accessible->role() == QAccessible::MenuItem
                 && accessible->childCount() > 0
                 && accessible->child(0)->role() == QAccessible::PopupMenu)
-            || accessible->role() == QAccessible::ComboBox) {
+            || accessible->role() == QAccessible::ComboBox
+            || (accessible->role() == QAccessible::TreeItem && accessible->state().expandable)) {
             *pRetVal = new QWindowsUiaExpandCollapseProvider(id());
         }
         break;
