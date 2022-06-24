@@ -3164,15 +3164,36 @@ void QDropEvent::setDropAction(Qt::DropAction action)
 */
 
 /*!
+    \fn QPointF QDropEvent::position() const
+    \since 6.0
+
+    Returns the position where the drop was made.
+*/
+
+/*!
     \fn Qt::MouseButtons QDropEvent::mouseButtons() const
     \deprecated [6.0] Use buttons() instead.
 
-    Returns the mouse buttons that are pressed..
+    Returns the mouse buttons that are pressed.
+*/
+
+/*!
+    \fn Qt::MouseButtons QDropEvent::buttons() const
+    \since 6.0
+
+    Returns the mouse buttons that are pressed.
 */
 
 /*!
     \fn Qt::KeyboardModifiers QDropEvent::keyboardModifiers() const
     \deprecated [6.0] Use modifiers() instead.
+
+    Returns the modifier keys that are pressed.
+*/
+
+/*!
+    \fn Qt::KeyboardModifiers QDropEvent::modifiers() const
+    \since 6.0
 
     Returns the modifier keys that are pressed.
 */
