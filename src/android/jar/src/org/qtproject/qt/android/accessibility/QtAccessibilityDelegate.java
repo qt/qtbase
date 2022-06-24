@@ -263,10 +263,14 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
 
     public boolean sendEventForVirtualViewId(int virtualViewId, int eventType)
     {
-        if ((virtualViewId == INVALID_ID) || !m_manager.isEnabled()) {
-            Log.w(TAG, "sendEventForVirtualViewId for invalid view");
+        final AccessibilityEvent event = getEventForVirtualViewId(virtualViewId, eventType);
+        return sendAccessibilityEvent(event);
+    }
+
+    public boolean sendAccessibilityEvent(AccessibilityEvent event)
+    {
+        if (event == null)
             return false;
-        }
 
         final ViewGroup group = (ViewGroup) m_view.getParent();
         if (group == null) {
@@ -274,15 +278,18 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
             return false;
         }
 
-        final AccessibilityEvent event;
-        event = getEventForVirtualViewId(virtualViewId, eventType);
         return group.requestSendAccessibilityEvent(m_view, event);
     }
 
     public void invalidateVirtualViewId(int virtualViewId)
     {
-        if (virtualViewId != INVALID_ID)
-            sendEventForVirtualViewId(virtualViewId, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+        final AccessibilityEvent event = getEventForVirtualViewId(virtualViewId, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+
+        if (event == null)
+            return;
+
+        event.setContentChangeTypes(AccessibilityEvent.CONTENT_CHANGE_TYPE_SUBTREE);
+        sendAccessibilityEvent(event);
     }
 
     private void setHoveredVirtualViewId(int virtualViewId)
@@ -299,6 +306,11 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
 
     private AccessibilityEvent getEventForVirtualViewId(int virtualViewId, int eventType)
     {
+        if ((virtualViewId == INVALID_ID) || !m_manager.isEnabled()) {
+            Log.w(TAG, "getEventForVirtualViewId for invalid view");
+            return null;
+        }
+
         final AccessibilityEvent event = AccessibilityEvent.obtain(eventType);
 
         event.setEnabled(true);
