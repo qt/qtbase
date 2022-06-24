@@ -571,13 +571,14 @@ void qt_scale_image_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
 
         __m128i srcxVector = _mm_set_epi32(srcx, srcx + ix, srcx + ix + ix, srcx + ix + ix + ix);
 
-        for (; x<w - 3; x += 4) {
-            union Vect_buffer { __m128i vect; quint32 i[4]; };
-            Vect_buffer addr;
-            addr.vect = _mm_srli_epi32(srcxVector, 16);
+        for (; x < (w - 3); x += 4) {
+            const int idx0 = _mm_extract_epi16(srcxVector, 1);
+            const int idx1 = _mm_extract_epi16(srcxVector, 3);
+            const int idx2 = _mm_extract_epi16(srcxVector, 5);
+            const int idx3 = _mm_extract_epi16(srcxVector, 7);
             srcxVector = _mm_add_epi32(srcxVector, ixVector);
 
-            const __m128i srcVector = _mm_set_epi32(src[addr.i[0]], src[addr.i[1]], src[addr.i[2]], src[addr.i[3]]);
+            const __m128i srcVector = _mm_set_epi32(src[idx0], src[idx1], src[idx2], src[idx3]);
             BLEND_SOURCE_OVER_ARGB32_SSE2_helper(dst, srcVector, nullVector, half, one, colorMask, alphaMask);
         }
 
