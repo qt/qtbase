@@ -32,6 +32,12 @@
 #include <limits.h>
 #include <wchar.h>
 
+#if !defined(Q_ATOMIC_INT8_IS_SUPPORTED)
+#  error "QAtomicInteger for 8-bit types must be supported!"
+#endif
+#if !defined(Q_ATOMIC_INT16_IS_SUPPORTED)
+#  error "QAtomicInteger for 16-bit types must be supported!"
+#endif
 #if !defined(Q_ATOMIC_INT32_IS_SUPPORTED)
 #  error "QAtomicInteger for 32-bit types must be supported!"
 #endif
@@ -40,31 +46,21 @@
 #endif
 
 // always supported types:
+#define TYPE_SUPPORTED_char         1
+#define TYPE_SUPPORTED_uchar        1
+#define TYPE_SUPPORTED_schar        1
+#define TYPE_SUPPORTED_short        1
+#define TYPE_SUPPORTED_ushort       1
+#define TYPE_SUPPORTED_char16_t     1
+#define TYPE_SUPPORTED_wchar_t      1
 #define TYPE_SUPPORTED_int          1
 #define TYPE_SUPPORTED_uint         1
 #define TYPE_SUPPORTED_long         1
 #define TYPE_SUPPORTED_ulong        1
 #define TYPE_SUPPORTED_qptrdiff     1
 #define TYPE_SUPPORTED_quintptr     1
-#if (defined(__SIZEOF_WCHAR_T__) && (__SIZEOF_WCHAR_T__-0) > 2) \
-    || (defined(WCHAR_MAX) && (WCHAR_MAX-0 > 0x10000))
-#  define TYPE_SUPPORTED_wchar_t    1
-#endif
-#define TYPE_SUPPORTED_char32_t   1
+#define TYPE_SUPPORTED_char32_t     1
 
-#ifdef Q_ATOMIC_INT8_IS_SUPPORTED
-#  define TYPE_SUPPORTED_char       1
-#  define TYPE_SUPPORTED_uchar      1
-#  define TYPE_SUPPORTED_schar      1
-#endif
-#ifdef Q_ATOMIC_INT16_IS_SUPPORTED
-#  define TYPE_SUPPORTED_short      1
-#  define TYPE_SUPPORTED_ushort     1
-#  define TYPE_SUPPORTED_char16_t 1
-#  ifndef TYPE_SUPPORTED_wchar_t
-#    define TYPE_SUPPORTED_wchar_t  1
-#  endif
-#endif
 #ifdef Q_ATOMIC_INT64_IS_SUPPORTED
 #  define TYPE_SUPPORTED_qlonglong  1
 #  define TYPE_SUPPORTED_qulonglong 1

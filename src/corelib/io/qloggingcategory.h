@@ -19,17 +19,11 @@ public:
     bool isEnabled(QtMsgType type) const;
     void setEnabled(QtMsgType type, bool enable);
 
-#ifdef Q_ATOMIC_INT8_IS_SUPPORTED
     bool isDebugEnabled() const { return bools.enabledDebug.loadRelaxed(); }
     bool isInfoEnabled() const { return bools.enabledInfo.loadRelaxed(); }
     bool isWarningEnabled() const { return bools.enabledWarning.loadRelaxed(); }
     bool isCriticalEnabled() const { return bools.enabledCritical.loadRelaxed(); }
-#else
-    bool isDebugEnabled() const { return enabled.loadRelaxed() >> DebugShift & 1; }
-    bool isInfoEnabled() const { return enabled.loadRelaxed() >> InfoShift & 1; }
-    bool isWarningEnabled() const { return enabled.loadRelaxed() >> WarningShift & 1; }
-    bool isCriticalEnabled() const { return enabled.loadRelaxed() >> CriticalShift & 1; }
-#endif
+
     const char *categoryName() const { return name; }
 
     // allows usage of both factory method and variable in qCX macros
@@ -49,19 +43,11 @@ private:
     Q_DECL_UNUSED_MEMBER void *d; // reserved for future use
     const char *name;
 
-#ifdef Q_BIG_ENDIAN
-    enum { DebugShift = 0, WarningShift = 8, CriticalShift = 16, InfoShift = 24 };
-#else
-    enum { DebugShift = 24, WarningShift = 16, CriticalShift = 8, InfoShift = 0};
-#endif
-
     struct AtomicBools {
-#ifdef Q_ATOMIC_INT8_IS_SUPPORTED
         QBasicAtomicInteger<bool> enabledDebug;
         QBasicAtomicInteger<bool> enabledWarning;
         QBasicAtomicInteger<bool> enabledCritical;
         QBasicAtomicInteger<bool> enabledInfo;
-#endif
     };
     union {
         AtomicBools bools;

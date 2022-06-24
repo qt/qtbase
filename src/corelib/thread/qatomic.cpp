@@ -39,11 +39,11 @@
        \li pointer size: qintptr, quintptr, qptrdiff
     \endlist
 
-    Of the list above, only the 32-bit- and pointer-sized instantiations are guaranteed to
-    work on all platforms. Support for other sizes depends on the compiler and
-    processor architecture the code is being compiled for. To test whether the
-    other types are supported, check the macro \c Q_ATOMIC_INT\e{nn}_IS_SUPPORTED,
-    where \c{\e{nn}} is the number of bits desired.
+    Of the list above, only the 8-bit, 16-bit, 32-bit- and pointer-sized
+    instantiations are guaranteed to work on all platforms. Support for other
+    sizes depends on the compiler and processor architecture the code is being
+    compiled for. To test whether the 64-bit types are supported on 32-bit
+    platforms, check the macro \c Q_ATOMIC_INT64_IS_SUPPORTED.
 
     \section1 The Atomic API
 
@@ -950,9 +950,16 @@
 
     This macro is defined if atomic integers of size \e{nn} (in bits) are
     supported in this compiler / architecture combination.
-    Q_ATOMIC_INT32_IS_SUPPORTED is always defined.
 
     \e{nn} is the size of the integer, in bits (8, 16, 32 or 64).
+
+    The following macros always defined:
+
+    \list
+    \li Q_ATOMIC_INT8_IS_SUPPORTED
+    \li Q_ATOMIC_INT16_IS_SUPPORTED
+    \li Q_ATOMIC_INT32_IS_SUPPORTED
+    \endlist
 */
 
 /*!
@@ -1653,6 +1660,12 @@
 */
 
 // static checks
+#ifndef Q_ATOMIC_INT8_IS_SUPPORTED
+#  error "Q_ATOMIC_INT8_IS_SUPPORTED must be defined"
+#endif
+#ifndef Q_ATOMIC_INT16_IS_SUPPORTED
+#  error "Q_ATOMIC_INT16_IS_SUPPORTED must be defined"
+#endif
 #ifndef Q_ATOMIC_INT32_IS_SUPPORTED
 #  error "Q_ATOMIC_INT32_IS_SUPPORTED must be defined"
 #endif
@@ -1671,22 +1684,19 @@ static_assert(sizeof(QAtomicInteger<quintptr>));
 static_assert(sizeof(QAtomicInteger<qptrdiff>));
 static_assert(sizeof(QAtomicInteger<char32_t>));
 
-#ifdef Q_ATOMIC_INT16_IS_SUPPORTED
 static_assert(sizeof(QAtomicInteger<short>));
 static_assert(sizeof(QAtomicInteger<unsigned short>));
-#  if WCHAR_MAX < 0x10000
 static_assert(sizeof(QAtomicInteger<wchar_t>));
-#  endif
 static_assert(sizeof(QAtomicInteger<char16_t>));
-#endif
+
+static_assert(sizeof(QAtomicInteger<char>));
+static_assert(sizeof(QAtomicInteger<unsigned char>));
+static_assert(sizeof(QAtomicInteger<signed char>));
+static_assert(sizeof(QAtomicInteger<bool>));
 
 #ifdef Q_ATOMIC_INT64_IS_SUPPORTED
 static_assert(sizeof(QAtomicInteger<qint64>));
 static_assert(sizeof(QAtomicInteger<quint64>));
-#endif
-
-#if WCHAR_MAX == INT_MAX
-static_assert(sizeof(QAtomicInteger<wchar_t>));
 #endif
 
 QT_END_NAMESPACE
