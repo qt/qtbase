@@ -578,6 +578,17 @@ bool Moc::parseMaybeFunction(const ClassDef *cdef, FunctionDef *def)
     return true;
 }
 
+inline void handleDefaultArguments(QList<FunctionDef> *functionList, FunctionDef &function)
+{
+    // support a function with a default argument by pretending there is an
+    // overload without the argument (the original function is the overload with
+    // all arguments present)
+    while (function.arguments.size() > 0 && function.arguments.constLast().isDefault) {
+        function.wasCloned = true;
+        function.arguments.removeLast();
+        *functionList += function;
+    }
+}
 
 void Moc::parse()
 {
@@ -895,11 +906,7 @@ void Moc::parse()
                         if (funcDef.isConstructor) {
                             if ((access == FunctionDef::Public) && funcDef.isInvokable) {
                                 def.constructorList += funcDef;
-                                while (funcDef.arguments.size() > 0 && funcDef.arguments.constLast().isDefault) {
-                                    funcDef.wasCloned = true;
-                                    funcDef.arguments.removeLast();
-                                    def.constructorList += funcDef;
-                                }
+                                handleDefaultArguments(&def.constructorList, funcDef);
                             }
                         } else if (funcDef.isDestructor) {
                             // don't care about destructors
@@ -908,29 +915,17 @@ void Moc::parse()
                                 def.publicList += funcDef;
                             if (funcDef.isSlot) {
                                 def.slotList += funcDef;
-                                while (funcDef.arguments.size() > 0 && funcDef.arguments.constLast().isDefault) {
-                                    funcDef.wasCloned = true;
-                                    funcDef.arguments.removeLast();
-                                    def.slotList += funcDef;
-                                }
+                                handleDefaultArguments(&def.slotList, funcDef);
                                 if (funcDef.revision > 0)
                                     ++def.revisionedMethods;
                             } else if (funcDef.isSignal) {
                                 def.signalList += funcDef;
-                                while (funcDef.arguments.size() > 0 && funcDef.arguments.constLast().isDefault) {
-                                    funcDef.wasCloned = true;
-                                    funcDef.arguments.removeLast();
-                                    def.signalList += funcDef;
-                                }
+                                handleDefaultArguments(&def.signalList, funcDef);
                                 if (funcDef.revision > 0)
                                     ++def.revisionedMethods;
                             } else if (funcDef.isInvokable) {
                                 def.methodList += funcDef;
-                                while (funcDef.arguments.size() > 0 && funcDef.arguments.constLast().isDefault) {
-                                    funcDef.wasCloned = true;
-                                    funcDef.arguments.removeLast();
-                                    def.methodList += funcDef;
-                                }
+                                handleDefaultArguments(&def.methodList, funcDef);
                                 if (funcDef.revision > 0)
                                     ++def.revisionedMethods;
                             }
@@ -1180,11 +1175,7 @@ void Moc::parseSlots(ClassDef *def, FunctionDef::Access access)
             ++def->revisionedMethods;
         }
         def->slotList += funcDef;
-        while (funcDef.arguments.size() > 0 && funcDef.arguments.constLast().isDefault) {
-            funcDef.wasCloned = true;
-            funcDef.arguments.removeLast();
-            def->slotList += funcDef;
-        }
+        handleDefaultArguments(&def->slotList, funcDef);
     }
 }
 
@@ -1228,11 +1219,7 @@ void Moc::parseSignals(ClassDef *def)
             ++def->revisionedMethods;
         }
         def->signalList += funcDef;
-        while (funcDef.arguments.size() > 0 && funcDef.arguments.constLast().isDefault) {
-            funcDef.wasCloned = true;
-            funcDef.arguments.removeLast();
-            def->signalList += funcDef;
-        }
+        handleDefaultArguments(&def->signalList, funcDef);
     }
 }
 
@@ -1667,11 +1654,7 @@ void Moc::parseSlotInPrivate(ClassDef *def, FunctionDef::Access access)
     funcDef.access = access;
     parseFunction(&funcDef, true);
     def->slotList += funcDef;
-    while (funcDef.arguments.size() > 0 && funcDef.arguments.constLast().isDefault) {
-        funcDef.wasCloned = true;
-        funcDef.arguments.removeLast();
-        def->slotList += funcDef;
-    }
+    handleDefaultArguments(&def->slotList, funcDef);
     if (funcDef.revision > 0)
         ++def->revisionedMethods;
 
