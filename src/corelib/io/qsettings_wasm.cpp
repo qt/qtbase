@@ -13,6 +13,8 @@
 
 #include <QFileInfo>
 #include <QDir>
+#include <QList>
+
 #include <emscripten.h>
 
 QT_BEGIN_NAMESPACE
@@ -27,6 +29,7 @@ public:
     QWasmSettingsPrivate(QSettings::Scope scope, const QString &organization,
                         const QString &application);
     ~QWasmSettingsPrivate();
+    static QWasmSettingsPrivate *get(void *userData);
 
     std::optional<QVariant> get(const QString &key) const override;
     QStringList children(const QString &prefix, ChildSpec spec) const override;
@@ -43,14 +46,19 @@ public:
 private:
     QString databaseName;
     QString id;
+    static QList<QWasmSettingsPrivate *> liveSettings;
 };
+
+QList<QWasmSettingsPrivate *> QWasmSettingsPrivate::liveSettings;
 
 static void QWasmSettingsPrivate_onLoad(void *userData, void *dataPtr, int size)
 {
-    QWasmSettingsPrivate *wasm = reinterpret_cast<QWasmSettingsPrivate *>(userData);
+    QWasmSettingsPrivate *settings = QWasmSettingsPrivate::get(userData);
+    if (!settings)
+        return;
 
-    QFile file(wasm->fileName());
-    QFileInfo fileInfo(wasm->fileName());
+    QFile file(settings->fileName());
+    QFileInfo fileInfo(settings->fileName());
     QDir dir(fileInfo.path());
     if (!dir.exists())
         dir.mkpath(fileInfo.path());
@@ -58,32 +66,29 @@ static void QWasmSettingsPrivate_onLoad(void *userData, void *dataPtr, int size)
     if (file.open(QFile::WriteOnly)) {
         file.write(reinterpret_cast<char *>(dataPtr), size);
         file.close();
-        wasm->setReady();
+        settings->setReady();
     }
 }
 
 static void QWasmSettingsPrivate_onError(void *userData)
 {
-    QWasmSettingsPrivate *wasm = reinterpret_cast<QWasmSettingsPrivate *>(userData);
-    if (wasm)
-        wasm->setStatus(QSettings::AccessError);
+    if (QWasmSettingsPrivate *settings = QWasmSettingsPrivate::get(userData))
+        settings->setStatus(QSettings::AccessError);
 }
 
 static void QWasmSettingsPrivate_onStore(void *userData)
 {
-    QWasmSettingsPrivate *wasm = reinterpret_cast<QWasmSettingsPrivate *>(userData);
-    if (wasm)
-        wasm->setStatus(QSettings::NoError);
+    if (QWasmSettingsPrivate *settings = QWasmSettingsPrivate::get(userData))
+        settings->setStatus(QSettings::NoError);
 }
 
 static void QWasmSettingsPrivate_onCheck(void *userData, int exists)
 {
-    QWasmSettingsPrivate *wasm = reinterpret_cast<QWasmSettingsPrivate *>(userData);
-    if (wasm) {
+    if (QWasmSettingsPrivate *settings = QWasmSettingsPrivate::get(userData)) {
         if (exists)
-            wasm->loadLocal(wasm->fileName().toLocal8Bit());
+            settings->loadLocal(settings->fileName().toLocal8Bit());
         else
-            wasm->setReady();
+            settings->setReady();
     }
 }
 
@@ -114,6 +119,8 @@ QWasmSettingsPrivate::QWasmSettingsPrivate(QSettings::Scope scope, const QString
                                            const QString &application)
     : QConfFileSettingsPrivate(QSettings::NativeFormat, scope, organization, application)
 {
+    liveSettings.push_back(this);
+
     setStatus(QSettings::AccessError); // access error until sandbox gets loaded
     databaseName = organization;
     id = application;
@@ -127,6 +134,14 @@ QWasmSettingsPrivate::QWasmSettingsPrivate(QSettings::Scope scope, const QString
 
 QWasmSettingsPrivate::~QWasmSettingsPrivate()
 {
+    liveSettings.removeAll(this);
+}
+
+QWasmSettingsPrivate *QWasmSettingsPrivate::get(void *userData)
+{
+    if (QWasmSettingsPrivate::liveSettings.contains(userData))
+        return reinterpret_cast<QWasmSettingsPrivate *>(userData);
+    return nullptr;
 }
 
  void QWasmSettingsPrivate::initAccess()
