@@ -371,6 +371,16 @@ void QKeySequenceEdit::timerEvent(QTimerEvent *e)
     QWidget::timerEvent(e);
 }
 
+/*!
+    \reimp
+*/
+void QKeySequenceEdit::focusOutEvent(QFocusEvent *e)
+{
+    Q_D(QKeySequenceEdit);
+    d->finishEditing();
+    QWidget::focusOutEvent(e);
+}
+
 QT_END_NAMESPACE
 
 #include "moc_qkeysequenceedit.cpp"

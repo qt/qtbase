@@ -48,6 +48,7 @@ protected:
     void keyPressEvent(QKeyEvent *) override;
     void keyReleaseEvent(QKeyEvent *) override;
     void timerEvent(QTimerEvent *) override;
+    void focusOutEvent(QFocusEvent *) override;
 
 private:
     Q_DISABLE_COPY(QKeySequenceEdit)
