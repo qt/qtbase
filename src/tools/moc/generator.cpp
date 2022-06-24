@@ -1351,13 +1351,13 @@ void Generator::generateStaticMetacall()
             fprintf(out, "        switch (_id) {\n");
             for (int propindex = 0; propindex < cdef->propertyList.size(); ++propindex) {
                 const PropertyDef &p = cdef->propertyList.at(propindex);
-                if (!p.reset.endsWith(')'))
+                if (p.reset.isEmpty())
                     continue;
                 QByteArray prefix = "_t->";
                 if (p.inPrivateClass.size()) {
                     prefix += p.inPrivateClass + "->";
                 }
-                fprintf(out, "        case %d: %s%s; break;\n",
+                fprintf(out, "        case %d: %s%s(); break;\n",
                         propindex, prefix.constData(), p.reset.constData());
             }
             fprintf(out, "        default: break;\n");

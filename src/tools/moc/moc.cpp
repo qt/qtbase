@@ -1335,7 +1335,7 @@ void Moc::parsePropertyAttributes(PropertyDef &propDef)
             if (l == "READ")
                 propDef.read = v;
             else if (l == "RESET")
-                propDef.reset = v + v2;
+                propDef.reset = v;
             else if (l == "REVISION") {
                 bool ok = false;
                 const int minor = v.toInt(&ok);
