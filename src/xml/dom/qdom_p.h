@@ -425,8 +425,8 @@ public:
     QDomDocumentPrivate(QDomDocumentPrivate *n, bool deep);
     ~QDomDocumentPrivate();
 
-    bool setContent(QXmlStreamReader *reader, bool namespaceProcessing, QString *errorMsg,
-                    int *errorLine, int *errorColumn);
+    QDomDocument::ParseResult setContent(QXmlStreamReader *reader,
+                                         QDomDocument::ParseOptions options);
 
     // Attributes
     QDomDocumentTypePrivate *doctype() { return type.data(); }

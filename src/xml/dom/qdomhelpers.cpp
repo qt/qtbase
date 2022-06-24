@@ -22,13 +22,9 @@ using namespace Qt::StringLiterals;
  *
  **************************************************************/
 
-QDomBuilder::QDomBuilder(QDomDocumentPrivate *d, QXmlStreamReader *r, bool namespaceProcessing)
-    : errorLine(0),
-      errorColumn(0),
-      doc(d),
-      node(d),
-      reader(r),
-      nsProcessing(namespaceProcessing)
+QDomBuilder::QDomBuilder(QDomDocumentPrivate *d, QXmlStreamReader *r,
+                         QDomDocument::ParseOptions options)
+    : errorLine(0), errorColumn(0), doc(d), node(d), reader(r), parseOptions(options)
 {
     Q_ASSERT(doc);
     Q_ASSERT(reader);
@@ -84,6 +80,8 @@ bool QDomBuilder::parseDTD(const QString &dtd)
 bool QDomBuilder::startElement(const QString &nsURI, const QString &qName,
                                const QXmlStreamAttributes &atts)
 {
+    const bool nsProcessing =
+            parseOptions.testFlag(QDomDocument::ParseOption::UseNamespaceProcessing);
     QDomNodePrivate *n =
             nsProcessing ? doc->createElementNS(nsURI, qName) : doc->createElement(qName);
     if (!n)
@@ -232,8 +230,9 @@ bool QDomBuilder::notationDecl(const QString &name, const QString &publicId,
  *
  **************************************************************/
 
-QDomParser::QDomParser(QDomDocumentPrivate *d, QXmlStreamReader *r, bool namespaceProcessing)
-    : reader(r), domBuilder(d, r, namespaceProcessing)
+QDomParser::QDomParser(QDomDocumentPrivate *d, QXmlStreamReader *r,
+                       QDomDocument::ParseOptions options)
+    : reader(r), domBuilder(d, r, options)
 {
 }
 

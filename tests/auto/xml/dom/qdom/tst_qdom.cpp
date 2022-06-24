@@ -30,6 +30,9 @@ private slots:
     void namespacedAttributes() const;
     void setContent_data();
     void setContent();
+    void setContentOverloads();
+    void parseOptions();
+    void parseResult();
     void toString_01_data();
     void toString_01();
     void toString_02_data();
@@ -187,6 +190,126 @@ void tst_QDom::setContent()
     QVERIFY( domDoc1.setContent( doc ) );
     QVERIFY( domDoc2.setContent( eRes ) );
     QVERIFY( compareDocuments( domDoc1, domDoc2 ) );
+
+    // Test overload taking a QAnyStringView
+    QDomDocument domFromStringView;
+    QStringView stringView(doc);
+    QVERIFY(domFromStringView.setContent(stringView));
+    QVERIFY(compareDocuments(domFromStringView, domDoc));
+
+    // Test overload taking a QByteArray
+    QDomDocument domFromByteArary;
+    QByteArray byteArray = doc.toUtf8();
+    QVERIFY(domFromByteArary.setContent(byteArray));
+    QVERIFY(compareDocuments(domFromByteArary, domDoc));
+
+    // Test overload taking a QIODevice
+    QDomDocument domFromIODevice;
+    QBuffer buffer(&byteArray);
+    QVERIFY(buffer.open(QIODevice::ReadOnly));
+    QVERIFY(domFromIODevice.setContent(&buffer));
+    QVERIFY(compareDocuments(domFromIODevice, domDoc));
+}
+
+void tst_QDom::setContentOverloads()
+{
+    QDomDocument doc;
+    QString errorMessage;
+
+    QByteArray data("<a>test</a>");
+    QString text = QString::fromLatin1(data);
+    QXmlStreamReader reader(data);
+
+    QBuffer buffer(&data);
+    QVERIFY(buffer.open(QIODevice::ReadOnly));
+
+    QVERIFY(doc.setContent(data));
+    QVERIFY(doc.setContent(data.data()));
+    QVERIFY(doc.setContent(text));
+    QVERIFY(doc.setContent(&reader));
+    QVERIFY(doc.setContent(&buffer));
+    buffer.reset();
+
+    // With parse options
+    QVERIFY(doc.setContent(data, QDomDocument::ParseOption::Default));
+    QVERIFY(doc.setContent(data.data(), QDomDocument::ParseOption::Default));
+    QVERIFY(doc.setContent(text, QDomDocument::ParseOption::Default));
+    QVERIFY(doc.setContent(&reader, QDomDocument::ParseOption::Default));
+    QVERIFY(doc.setContent(&buffer, QDomDocument::ParseOption::Default));
+    buffer.reset();
+
+    // With output param
+    QVERIFY(doc.setContent(data, &errorMessage));
+    QVERIFY(doc.setContent(text, &errorMessage));
+    QVERIFY(doc.setContent(&buffer, &errorMessage));
+    buffer.reset();
+    // There's no setContent(QXmlStreamReader *, QString *, int *, int *) overload
+    // QVERIFY(doc.setContent(&reader, &errorMessage));
+
+    // With namespace processing param
+    QVERIFY(doc.setContent(data, false));
+    QVERIFY(doc.setContent(text, false));
+    QVERIFY(doc.setContent(&reader, false));
+    QVERIFY(doc.setContent(&buffer, false));
+    buffer.reset();
+
+    // With namespace processing and output params
+    QVERIFY(doc.setContent(data, false, &errorMessage));
+    QVERIFY(doc.setContent(text, false, &errorMessage));
+    QVERIFY(doc.setContent(&reader, false, &errorMessage));
+    QVERIFY(doc.setContent(&buffer, false, &errorMessage));
+    buffer.reset();
+}
+
+void tst_QDom::parseOptions()
+{
+    QString input = u"<doc xmlns:ns='http://example.com/'>"
+                    "<ns:nested/>"
+                    "</doc>"_s;
+    {
+        QDomDocument document;
+        QVERIFY(document.setContent(input, QDomDocument::ParseOption::Default));
+        const QDomElement docElement = document.firstChildElement("doc");
+        QVERIFY(!docElement.isNull());
+        const QDomElement nestedElement = docElement.firstChildElement();
+        QCOMPARE(nestedElement.nodeName(), "ns:nested");
+        QVERIFY(!nestedElement.isNull());
+        QVERIFY(nestedElement.localName().isEmpty());
+        QVERIFY(nestedElement.prefix().isEmpty());
+        QVERIFY(nestedElement.namespaceURI().isEmpty());
+    }
+    {
+        QDomDocument document;
+        QVERIFY(document.setContent(input, QDomDocument::ParseOption::UseNamespaceProcessing));
+        const QDomElement docElement = document.firstChildElement("doc");
+        QVERIFY(!docElement.isNull());
+        const QDomElement nestedElement = docElement.firstChildElement("nested");
+        QVERIFY(!nestedElement.isNull());
+        QCOMPARE(nestedElement.nodeName(), "ns:nested");
+        QCOMPARE(nestedElement.localName(), "nested");
+        QCOMPARE(nestedElement.prefix(), "ns");
+        QCOMPARE(nestedElement.namespaceURI(), "http://example.com/");
+    }
+}
+
+void tst_QDom::parseResult()
+{
+    QString input = u"<doc xmlns:b='http://example.com/'>"
+                    "<b:element/>"_s;
+
+    QDomDocument document;
+    QDomDocument::ParseResult result = document.setContent(input);
+    QVERIFY(!result);
+    QVERIFY(!result.errorMessage.isEmpty());
+    QVERIFY(result.errorLine);
+    QVERIFY(result.errorColumn);
+
+    input.append("</doc>");
+    result = document.setContent(input);
+    QVERIFY(result);
+    QVERIFY(result.errorMessage.isEmpty());
+    QVERIFY(!result.errorLine);
+    QVERIFY(!result.errorColumn);
 }
 
 void tst_QDom::toString_01_data()
@@ -1624,7 +1747,7 @@ void tst_QDom::checkLiveness() const
 void tst_QDom::reportDuplicateAttributes() const
 {
     QDomDocument dd;
-    bool isSuccess = dd.setContent(QLatin1String("<test x=\"1\" x=\"2\"/>"));
+    bool isSuccess = bool(dd.setContent(QLatin1String("<test x=\"1\" x=\"2\"/>")));
     QVERIFY2(!isSuccess, "Duplicate attributes are well-formedness errors, and should be reported as such.");
 }
 
@@ -1892,7 +2015,7 @@ void tst_QDom::setContentWhitespace() const
 
     QDomDocument domDoc;
 
-    QCOMPARE(domDoc.setContent(doc), expectedValidity);
+    QCOMPARE(bool(domDoc.setContent(doc)), expectedValidity);
 
     if(expectedValidity)
         QCOMPARE(domDoc.documentElement().nodeName(), QString::fromLatin1("e"));
