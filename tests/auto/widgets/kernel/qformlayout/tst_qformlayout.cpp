@@ -1065,7 +1065,7 @@ void tst_QFormLayout::setLayout()
     // should be ignored and generate warnings
     QTest::ignoreMessage(QtWarningMsg, "QFormLayoutPrivate::setItem: Cell (3, 1) already occupied");
     layout.setLayout(3, QFormLayout::FieldRole, &l4);
-    QTest::ignoreMessage(QtWarningMsg, "QLayout::addChildLayout: layout \"\" already has a parent");
+    QTest::ignoreMessage(QtWarningMsg, "QLayout::addChildLayout: layout QHBoxLayout \"\" already has a parent");
     layout.setLayout(-1, QFormLayout::FieldRole, &l4);
     QCOMPARE(layout.count(), 3);
     QCOMPARE(layout.rowCount(), 6);
