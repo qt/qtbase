@@ -116,7 +116,7 @@ void tst_QBoxLayout::insertLayout()
     QCOMPARE(dummyParentLayout->count(), 1);
 
     // add subLayout to another layout
-    QTest::ignoreMessage(QtWarningMsg, "QLayout::addChildLayout: layout \"\" already has a parent");
+    QTest::ignoreMessage(QtWarningMsg, "QLayout::addChildLayout: layout QHBoxLayout \"\" already has a parent");
     vbox->addLayout(subLayout);
     QCOMPARE((subLayout->parent() == vbox), (vbox->count() == 1));
 }

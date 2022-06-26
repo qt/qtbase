@@ -709,24 +709,24 @@ QLayout::~QLayout()
 
 /*!
     This function is called from \c addLayout() or \c insertLayout() functions in
-    subclasses to add layout \a l as a sub-layout.
+    subclasses to add layout \a childLayout as a sub-layout.
 
     The only scenario in which you need to call it directly is if you
     implement a custom layout that supports nested layouts.
 
     \sa QBoxLayout::addLayout(), QBoxLayout::insertLayout(), QGridLayout::addLayout()
 */
-void QLayout::addChildLayout(QLayout *l)
+void QLayout::addChildLayout(QLayout *childLayout)
 {
-    if (Q_UNLIKELY(l->parent())) {
-        qWarning("QLayout::addChildLayout: layout \"%ls\" already has a parent",
-                 qUtf16Printable(l->objectName()));
+    if (Q_UNLIKELY(childLayout->parent())) {
+        qWarning("QLayout::addChildLayout: layout %s \"%ls\" already has a parent",
+                 childLayout->metaObject()->className(), qUtf16Printable(childLayout->objectName()));
         return;
     }
-    l->setParent(this);
+    childLayout->setParent(this);
 
     if (QWidget *mw = parentWidget()) {
-        l->d_func()->reparentChildWidgets(mw);
+        childLayout->d_func()->reparentChildWidgets(mw);
     }
 
 }
@@ -829,9 +829,10 @@ bool QLayoutPrivate::checkLayout(QLayout *otherLayout) const
     This function is called from \c addWidget() functions in
     subclasses to add \a w as a managed widget of a layout.
 
-    If \a w is already managed by a layout, this function will give a warning
-    and remove \a w from that layout. This function must therefore be
-    called before adding \a w to the layout's data structure.
+    If \a w is already managed by a layout, this function will produce
+    a warning, and remove \a w from that layout. This function must
+    therefore be called before adding \a w to the layout's data
+    structure.
 */
 void QLayout::addChildWidget(QWidget *w)
 {
