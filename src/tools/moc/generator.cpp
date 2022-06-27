@@ -1228,7 +1228,7 @@ void Generator::generateStaticMetacall()
                 fprintf(out, ") const;\n");
             else
                 fprintf(out, ");\n");
-            fprintf(out, "            if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&%s::%s)) {\n",
+            fprintf(out, "            if (_t _q_method = &%s::%s; *reinterpret_cast<_t *>(_a[1]) == _q_method) {\n",
                     cdef->classname.constData(), f.name.constData());
             fprintf(out, "                *result = %d;\n", methodindex);
             fprintf(out, "                return;\n");
