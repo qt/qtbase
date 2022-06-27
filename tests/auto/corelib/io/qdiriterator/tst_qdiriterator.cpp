@@ -18,9 +18,7 @@
 #define Q_NO_SYMLINKS
 #endif
 
-#if defined(Q_OS_WIN)
-#  include "../../../network-settings.h"
-#endif
+#include "../../../../shared/filesystem.h"
 
 #ifdef Q_OS_ANDROID
 #include <QStandardPaths>
@@ -563,11 +561,11 @@ void tst_QDirIterator::uncPaths_data()
 {
     QTest::addColumn<QString>("dirName");
     QTest::newRow("uncserver")
-            <<QString("//" + QtNetworkSettings::winServerName());
+            <<QString("//" + QTest::uncServerName());
     QTest::newRow("uncserver/testshare")
-            <<QString("//" + QtNetworkSettings::winServerName() + "/testshare");
+            <<QString("//" + QTest::uncServerName() + "/testshare");
     QTest::newRow("uncserver/testshare/tmp")
-            <<QString("//" + QtNetworkSettings::winServerName() + "/testshare/tmp");
+            <<QString("//" + QTest::uncServerName() + "/testshare/tmp");
 }
 void tst_QDirIterator::uncPaths()
 {

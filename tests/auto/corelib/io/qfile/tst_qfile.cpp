@@ -74,9 +74,7 @@ QT_END_NAMESPACE
 #  undef fileno
 #endif
 
-#if defined(Q_OS_WIN)
-#include "../../../network-settings.h"
-#endif
+#include "../../../../shared/filesystem.h"
 
 #ifndef STDIN_FILENO
 #define STDIN_FILENO 0
@@ -542,7 +540,7 @@ void tst_QFile::exists()
     QVERIFY(!file.exists());
 
 #if defined(Q_OS_WIN)
-    const QString uncPath = "//" + QtNetworkSettings::winServerName() + "/testshare/readme.txt";
+    const QString uncPath = "//" + QTest::uncServerName() + "/testshare/readme.txt";
     QFile unc(uncPath);
     QVERIFY2(unc.exists(), msgFileDoesNotExist(uncPath).constData());
 #endif
@@ -608,7 +606,7 @@ void tst_QFile::open_data()
         QTest::newRow("//./PhysicalDrive0") << QString("//./PhysicalDrive0") << int(QIODevice::ReadOnly)
                                             << false << QFile::OpenError;
     }
-    QTest::newRow("uncFile") << "//" + QtNetworkSettings::winServerName() + "/testshare/test.pri" << int(QIODevice::ReadOnly)
+    QTest::newRow("uncFile") << "//" + QTest::uncServerName() + "/testshare/test.pri" << int(QIODevice::ReadOnly)
                              << true << QFile::NoError;
 #endif
 }
@@ -682,7 +680,7 @@ void tst_QFile::size_data()
     QTest::newRow( "exist01" ) << m_testFile << (qint64)245;
 #if defined(Q_OS_WIN)
     // Only test UNC on Windows./
-    QTest::newRow("unc") << "//" + QString(QtNetworkSettings::winServerName() + "/testshare/test.pri") << (qint64)34;
+    QTest::newRow("unc") << "//" + QString(QTest::uncServerName() + "/testshare/test.pri") << (qint64)34;
 #endif
 }
 
@@ -1769,7 +1767,7 @@ void tst_QFile::largeUncFileSupport()
     qint64 size = Q_INT64_C(8589934592);
     qint64 dataOffset = Q_INT64_C(8589914592);
     QByteArray knownData("LargeFile content at offset 8589914592");
-    QString largeFile("//" + QtNetworkSettings::winServerName() + "/testsharelargefile/file.bin");
+    QString largeFile("//" + QTest::uncServerName() + "/testsharelargefile/file.bin");
     const QByteArray largeFileEncoded = QFile::encodeName(largeFile);
 
     {
@@ -2450,7 +2448,7 @@ void tst_QFile::writeLargeDataBlock_data()
 #if defined(Q_OS_WIN) && !defined(QT_NO_NETWORK)
     // Some semi-randomness to avoid collisions.
     QTest::newRow("unc file")
-        << QString("//" + QtNetworkSettings::winServerName() + "/TESTSHAREWRITABLE/largefile-%1-%2.txt")
+        << QString("//" + QTest::uncServerName() + "/TESTSHAREWRITABLE/largefile-%1-%2.txt")
         .arg(QHostInfo::localHostName())
         .arg(QTime::currentTime().msec()) << (int)OpenQFile;
 #endif
@@ -2883,7 +2881,7 @@ void tst_QFile::miscWithUncPathAsCurrentDir()
 {
 #if defined(Q_OS_WIN)
     QString current = QDir::currentPath();
-    const QString path = QLatin1String("//") + QtNetworkSettings::winServerName()
+    const QString path = QLatin1String("//") + QTest::uncServerName()
         + QLatin1String("/testshare");
     QVERIFY2(QDir::setCurrent(path), qPrintable(QDir::toNativeSeparators(path)));
     QFile file("test.pri");

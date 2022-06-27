@@ -25,6 +25,9 @@
 #ifndef SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE // MinGW
 #define SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE (0x2)
 #endif
+namespace QTest {
+    static QString uncServerName() { return qgetenv("COMPUTERNAME"); }
+}
 #endif
 
 // QTemporaryDir-based helper class for creating file-system hierarchies and cleaning up.

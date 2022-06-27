@@ -17,7 +17,6 @@
 
 #if defined(Q_OS_WIN)
 #include <QtCore/private/qfsfileengine_p.h>
-#include "../../../network-settings.h"
 #endif
 
 #if defined(Q_OS_WIN) && !defined(_WIN32_WINNT)
@@ -627,7 +626,7 @@ void tst_QDir::exists_data()
     QTest::newRow("simple dir") << (m_dataPath + "/resources") << true;
     QTest::newRow("simple dir with slash") << (m_dataPath + "/resources/") << true;
 #if defined(Q_OS_WIN)
-    const QString uncRoot = QStringLiteral("//") + QtNetworkSettings::winServerName();
+    const QString uncRoot = QStringLiteral("//") + QTest::uncServerName();
     QTest::newRow("unc 1") << uncRoot << true;
     QTest::newRow("unc 2") << uncRoot + QLatin1Char('/') << true;
     QTest::newRow("unc 3") << uncRoot + "/testshare" << true;
@@ -1020,7 +1019,7 @@ void tst_QDir::entryListSimple_data()
     QTest::newRow("simple dir with slash") << (m_dataPath + "/resources/") << 2;
 
 #if defined(Q_OS_WIN)
-    const QString uncRoot = QStringLiteral("//") + QtNetworkSettings::winServerName();
+    const QString uncRoot = QStringLiteral("//") + QTest::uncServerName();
     QTest::newRow("unc 1") << uncRoot << 2;
     QTest::newRow("unc 2") << uncRoot + QLatin1Char('/') << 2;
     QTest::newRow("unc 3") << uncRoot + "/testshare" << 2;
@@ -2393,7 +2392,7 @@ void tst_QDir::cdBelowRoot_data()
     const QString systemRoot = QString::fromLocal8Bit(qgetenv("SystemRoot"));
     QTest::newRow("windows-drive")
         << systemDrive << systemRoot.mid(3) << QDir::cleanPath(systemRoot);
-    const QString uncRoot = QStringLiteral("//") + QtNetworkSettings::winServerName();
+    const QString uncRoot = QStringLiteral("//") + QTest::uncServerName();
     const QString testDirectory = QStringLiteral("testshare");
     QTest::newRow("windows-share")
         << uncRoot << testDirectory << QDir::cleanPath(uncRoot + QLatin1Char('/') + testDirectory);
