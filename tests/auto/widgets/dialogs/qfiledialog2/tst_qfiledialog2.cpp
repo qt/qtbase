@@ -35,9 +35,7 @@
 #include <qpa/qplatformdialoghelper.h>
 #include <qpa/qplatformintegration.h>
 
-#if defined(Q_OS_WIN)
-#include "../../../network-settings.h"
-#endif
+#include "../../../../shared/filesystem.h"
 
 #if defined QT_BUILD_INTERNAL
 QT_BEGIN_NAMESPACE
@@ -256,7 +254,7 @@ void tst_QFileDialog2::unc()
 {
 #if defined(Q_OS_WIN)
     // Only test UNC on Windows./
-    QString dir("\\\\"  + QtNetworkSettings::winServerName() + "\\testsharewritable");
+    QString dir("\\\\"  + QTest::uncServerName() + "\\testsharewritable");
 #else
     QString dir(QDir::currentPath());
 #endif

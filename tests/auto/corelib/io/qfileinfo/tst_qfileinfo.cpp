@@ -31,9 +31,6 @@
 #endif
 #include <qplatformdefs.h>
 #include <qdebug.h>
-#if defined(Q_OS_WIN)
-#include "../../../network-settings.h"
-#endif
 #include <private/qfileinfo_p.h>
 #include "../../../../shared/filesystem.h"
 
@@ -383,7 +380,7 @@ void tst_QFileInfo::isDir_data()
     //QTest::newRow("drive 2") << "t:s" << false;
 #endif
 #if defined(Q_OS_WIN)
-    const QString uncRoot = QStringLiteral("//") + QtNetworkSettings::winServerName();
+    const QString uncRoot = QStringLiteral("//") + QTest::uncServerName();
     QTest::newRow("unc 1") << uncRoot << true;
     QTest::newRow("unc 2") << uncRoot + QLatin1Char('/') << true;
     QTest::newRow("unc 3") << uncRoot + "/testshare" << true;
@@ -426,7 +423,7 @@ void tst_QFileInfo::isRoot_data()
 #endif
 
 #if defined(Q_OS_WIN)
-    const QString uncRoot = QStringLiteral("//") + QtNetworkSettings::winServerName();
+    const QString uncRoot = QStringLiteral("//") + QTest::uncServerName();
     QTest::newRow("unc 1") << uncRoot << true;
     QTest::newRow("unc 2") << uncRoot + QLatin1Char('/') << true;
     QTest::newRow("unc 3") << uncRoot + "/testshare" << false;
@@ -470,7 +467,7 @@ void tst_QFileInfo::exists_data()
     QTest::newRow("simple dir with slash") << (m_resourcesDir + QLatin1Char('/')) << true;
 
 #if defined(Q_OS_WIN)
-    const QString uncRoot = QStringLiteral("//") + QtNetworkSettings::winServerName();
+    const QString uncRoot = QStringLiteral("//") + QTest::uncServerName();
     QTest::newRow("unc 1") << uncRoot << true;
     QTest::newRow("unc 2") << uncRoot + QLatin1Char('/') << true;
     QTest::newRow("unc 3") << uncRoot + "/testshare" << true;
@@ -1732,7 +1729,7 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
     {
         // Symlink to UNC share
         pwd.mkdir("unc");
-        QString uncTarget = QStringLiteral("//") + QtNetworkSettings::winServerName() + "/testshare";
+        QString uncTarget = QStringLiteral("//") + QTest::uncServerName() + "/testshare";
         QString uncSymlink = QDir::toNativeSeparators(pwd.absolutePath().append("\\unc\\link_to_unc"));
         QTest::newRow("UNC symlink")
             << NtfsTestResource(NtfsTestResource::SymLink, uncSymlink, uncTarget)
