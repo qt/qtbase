@@ -1036,11 +1036,14 @@ bool QDockWidgetPrivate::mouseMoveEvent(QMouseEvent *event)
 
             // Calculate new nativePos based on startPos + mouse delta move.
             const QPoint nativeNewPos = nativeWdgOrgPos + (nativeTo - nativeFrom);
-
             pos = QHighDpiScaling::mapPositionFromNative(nativeNewPos, wdgScreen->handle())
                     - windowMarginOffset;
         } else {
             // Fallback in the unlikely case that source and target screens could not be established
+            qCWarning(lcQpaDockWidgets)
+                    << "QDockWidget failed to find relevant screen info. screenFrom:" << screenFrom
+                    << "screenTo:" << screenTo << " wdgScreen:" << wdgScreen << "orgWdgScreen"
+                    << orgWdgScreen;
             pos = event->globalPosition().toPoint() - state->pressPos - windowMarginOffset;
         }
 
