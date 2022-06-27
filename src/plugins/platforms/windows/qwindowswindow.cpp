@@ -2002,6 +2002,8 @@ void QWindowsWindow::handleDpiChanged(HWND hwnd, WPARAM wParam, LPARAM lParam)
         if (!platformChildWindow)
             continue;
         QRect currentGeometry = platformChildWindow->geometry();
+        if (!platformChildWindow)
+                continue;
         QRect scaledGeometry = QRect(currentGeometry.topLeft() * scale, currentGeometry.size() * scale);
         platformChildWindow->setGeometry(scaledGeometry);
     }
