@@ -19,6 +19,8 @@ private slots:
     void initTestCase_data();
     void process_data();
     void process();
+    void includeStyle_data();
+    void includeStyle();
 };
 
 struct BasicTypeList {
@@ -233,6 +235,53 @@ void tst_qdbusxml2cpp::process()
         QVERIFY2(output.count(interfaceSearch) == 1, qPrintable(interfaceSearch.pattern() + "\nin\n" + output));
     else
         QVERIFY2(output.count(adaptorSearch) == 1, qPrintable(adaptorSearch.pattern() + "\nin\n" + output));
+}
+
+void tst_qdbusxml2cpp::includeStyle_data()
+{
+    QTest::addColumn<bool>("isGlobal");
+    QTest::addColumn<QByteArray>("expected");
+
+    QTest::newRow("localInclude") <<  false << QByteArray("#include \"test.hpp\"");
+    QTest::newRow("globalInclude") <<  true << QByteArray("#include <test.hpp>");
+}
+
+void tst_qdbusxml2cpp::includeStyle()
+{
+    QFETCH(bool, isGlobal);
+    QFETCH(QByteArray, expected);
+    QFETCH_GLOBAL(QString, commandLineArg);
+
+    // feed it our XML data
+    static const char xml[] =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
+            DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE // \n is included
+            "<node>\n"
+            "  <interface name=\"local.name.is.not.important\">\n"
+            "  </interface>\n"
+            "</node>\n";
+
+    // Run the tool
+    const QString binpath = QLibraryInfo::path(QLibraryInfo::BinariesPath);
+    const QString command = binpath + QLatin1String("/qdbusxml2cpp");
+    QProcess process;
+    process.start(command, QStringList() << commandLineArg << "-" << "-N" << (isGlobal ? "-I" : "-i") << "test.hpp");
+    QVERIFY2(process.waitForStarted(), qPrintable(process.errorString()));
+
+    process.write(xml, int(sizeof xml) - 1);
+    while (process.bytesToWrite())
+        QVERIFY2(process.waitForBytesWritten(), qPrintable(process.errorString()));
+
+    process.closeWriteChannel();
+    QVERIFY2(process.waitForFinished(), qPrintable(process.errorString()));
+
+    QByteArray errOutput = process.readAllStandardError();
+    QVERIFY2(errOutput.isEmpty(), errOutput);
+    QCOMPARE(process.exitCode(), 0);
+
+    QByteArray fullOutput = process.readAll();
+    QVERIFY(!fullOutput.isEmpty());
+    QVERIFY(fullOutput.contains(expected));
 }
 
 QTEST_MAIN(tst_qdbusxml2cpp)

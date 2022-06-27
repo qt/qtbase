@@ -37,6 +37,7 @@ static bool verbose;
 static bool includeMocs;
 static QString commandLine;
 static QStringList includes;
+static QStringList globalIncludes;
 static QStringList wantedInterfaces;
 
 static const char includeList[] =
@@ -459,6 +460,12 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
             cs << "#include \"" << include << "\"" << Qt::endl;
     }
 
+    for (const QString &include : qAsConst(globalIncludes)) {
+        hs << "#include <" << include << ">" << Qt::endl;
+        if (headerName.isEmpty())
+            cs << "#include <" << include << ">" << Qt::endl;
+    }
+
     hs << Qt::endl;
 
     if (cppName != headerName) {
@@ -772,6 +779,12 @@ static void writeAdaptor(const QString &filename, const QDBusIntrospection::Inte
             cs << "#include \"" << include << "\"" << Qt::endl;
     }
 
+    for (const QString &include : qAsConst(globalIncludes)) {
+        hs << "#include <" << include << ">" << Qt::endl;
+        if (headerName.isEmpty())
+            cs << "#include <" << include << ">" << Qt::endl;
+    }
+
     if (cppName != headerName) {
         if (!headerName.isEmpty() && headerName != "-"_L1)
             cs << "#include \"" << headerName << "\"" << Qt::endl;
@@ -1058,8 +1071,12 @@ int main(int argc, char **argv)
     parser.addOption(classNameOption);
 
     QCommandLineOption addIncludeOption(QStringList() << QStringLiteral("i") << QStringLiteral("include"),
-                QStringLiteral("Add #include to the output"), QStringLiteral("filename"));
+                QStringLiteral("Add #include \"filename\" to the output"), QStringLiteral("filename"));
     parser.addOption(addIncludeOption);
+
+    QCommandLineOption addGlobalIncludeOption(QStringList() << QStringLiteral("I") << QStringLiteral("global-include"),
+                QStringLiteral("Add #include <filename> to the output"), QStringLiteral("filename"));
+    parser.addOption(addGlobalIncludeOption);
 
     QCommandLineOption adapterParentOption(QStringLiteral("l"),
                 QStringLiteral("When generating an adaptor, use <classname> as the parent class"), QStringLiteral("classname"));
@@ -1086,6 +1103,7 @@ int main(int argc, char **argv)
     adaptorFile = parser.value(adapterCodeOption);
     globalClassName = parser.value(classNameOption);
     includes = parser.values(addIncludeOption);
+    globalIncludes = parser.values(addGlobalIncludeOption);
     parentClassName = parser.value(adapterParentOption);
     includeMocs = parser.isSet(mocIncludeOption);
     skipNamespaces = parser.isSet(noNamespaceOption);
