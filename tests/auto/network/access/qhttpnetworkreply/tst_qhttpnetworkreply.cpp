@@ -26,10 +26,10 @@
 **
 ****************************************************************************/
 
-
 #include <QTest>
 #include <QtCore/QBuffer>
 #include <QtCore/QByteArray>
+#include <QtCore/QStringBuilder>
 
 #include "private/qhttpnetworkconnection_p.h"
 
@@ -108,12 +108,6 @@ void tst_QHttpNetworkReply::parseHeader()
     }
 }
 
-// both constants are taken from the default settings of Apache
-// see: http://httpd.apache.org/docs/2.2/mod/core.html#limitrequestfieldsize and
-// http://httpd.apache.org/docs/2.2/mod/core.html#limitrequestfields
-const int MAX_HEADER_FIELD_SIZE = 8 * 1024;
-const int MAX_HEADER_FIELDS = 100;
-
 void tst_QHttpNetworkReply::parseHeaderVerification_data()
 {
     QTest::addColumn<QByteArray>("headers");
@@ -131,36 +125,66 @@ void tst_QHttpNetworkReply::parseHeaderVerification_data()
     QTest::newRow("missing-colon-3")
             << QByteArray("Content-Encoding: gzip\r\nContent-Length\r\n") << false;
     QTest::newRow("header-field-too-long")
-            << (QByteArray("Content-Type: ") + QByteArray(MAX_HEADER_FIELD_SIZE, 'a')
-                + QByteArray("\r\n"))
+            << (QByteArray("Content-Type: ")
+                + QByteArray(HeaderConstants::MAX_HEADER_FIELD_SIZE, 'a') + QByteArray("\r\n"))
             << false;
 
     QByteArray name = "Content-Type: ";
     QTest::newRow("max-header-field-size")
-            << (name + QByteArray(MAX_HEADER_FIELD_SIZE - name.size(), 'a') + QByteArray("\r\n"))
+            << (name + QByteArray(HeaderConstants::MAX_HEADER_FIELD_SIZE - name.size(), 'a')
+                + QByteArray("\r\n"))
             << true;
 
     QByteArray tooManyHeaders = QByteArray("Content-Type: text/html; charset=utf-8\r\n")
-                                        .repeated(MAX_HEADER_FIELDS + 1);
+                                        .repeated(HeaderConstants::MAX_HEADER_FIELDS + 1);
     QTest::newRow("too-many-headers") << tooManyHeaders << false;
 
-    QByteArray maxHeaders =
-            QByteArray("Content-Type: text/html; charset=utf-8\r\n").repeated(MAX_HEADER_FIELDS);
+    QByteArray maxHeaders = QByteArray("Content-Type: text/html; charset=utf-8\r\n")
+                                    .repeated(HeaderConstants::MAX_HEADER_FIELDS);
     QTest::newRow("max-headers") << maxHeaders << true;
 
-    QByteArray firstValue(MAX_HEADER_FIELD_SIZE / 2, 'a');
+    QByteArray firstValue(HeaderConstants::MAX_HEADER_FIELD_SIZE / 2, 'a');
     constexpr int obsFold = 1;
     QTest::newRow("max-continuation-size")
             << (name + firstValue + QByteArray("\r\n ")
-                + QByteArray(MAX_HEADER_FIELD_SIZE - name.size() - firstValue.size() - obsFold, 'b')
+                + QByteArray(HeaderConstants::MAX_HEADER_FIELD_SIZE - name.size()
+                                     - firstValue.size() - obsFold,
+                             'b')
                 + QByteArray("\r\n"))
             << true;
     QTest::newRow("too-long-continuation-size")
             << (name + firstValue + QByteArray("\r\n ")
-                + QByteArray(MAX_HEADER_FIELD_SIZE - name.size() - firstValue.size() - obsFold + 1,
+                + QByteArray(HeaderConstants::MAX_HEADER_FIELD_SIZE - name.size()
+                                     - firstValue.size() - obsFold + 1,
                              'b')
                 + QByteArray("\r\n"))
             << false;
+
+    auto appendLongHeaderElement = [](QByteArray &result, QByteArrayView name) {
+        const qsizetype size = result.size();
+        result += name;
+        result += ": ";
+        const qsizetype fieldValueStart = result.size();
+        result.resize(size + HeaderConstants::MAX_HEADER_FIELD_SIZE);
+        std::fill(result.begin() + fieldValueStart, result.end(), 'a');
+    };
+    QByteArray longHeader;
+    constexpr qsizetype TrailerLength = sizeof("\r\n\r\n") - 1; // we ignore the trailing newlines
+    longHeader.reserve(HeaderConstants::MAX_TOTAL_HEADER_SIZE + TrailerLength + 1);
+    appendLongHeaderElement(longHeader, "Location");
+    longHeader += "\r\n";
+    appendLongHeaderElement(longHeader, "WWW-Authenticate");
+    longHeader += "\r\nProxy-Authenticate: ";
+    const qsizetype fieldValueStart = longHeader.size();
+    longHeader.resize(HeaderConstants::MAX_TOTAL_HEADER_SIZE);
+    std::fill(longHeader.begin() + fieldValueStart, longHeader.end(), 'a');
+    longHeader += "\r\n\r\n";
+
+    // Test with headers which are just large enough to fit our MAX_TOTAL_HEADER_SIZE limit:
+    QTest::newRow("total-header-close-to-max-size") << longHeader << true;
+    // Now add another character to make the total header size exceed the limit:
+    longHeader.insert(HeaderConstants::MAX_TOTAL_HEADER_SIZE - TrailerLength, 'a');
+    QTest::newRow("total-header-too-large") << longHeader << false;
 }
 
 void tst_QHttpNetworkReply::parseHeaderVerification()
