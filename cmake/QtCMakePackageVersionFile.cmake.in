@@ -17,9 +17,17 @@ else()
 endif()
 
 if(__qt_disable_package_version_check)
+    # Don't show the warning needlessly if we know that we're doing an exact search, and the
+    # version found is not the exactly same.
+    if(${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION_EXACT
+        AND NOT PACKAGE_FIND_VERSION STREQUAL PACKAGE_VERSION)
+        set(QT_NO_PACKAGE_VERSION_INCOMPATIBLE_WARNING TRUE)
+    endif()
+
     # Warn if version check is disabled regardless if it's a Qt repo build or user project build.
     # Allow to opt out of warning.
-    if(__qt_package_version_incompatible AND NOT QT_NO_PACKAGE_VERSION_INCOMPATIBLE_WARNING)
+    if(__qt_package_version_incompatible AND NOT QT_NO_PACKAGE_VERSION_INCOMPATIBLE_WARNING
+       AND NOT ${CMAKE_FIND_PACKAGE_NAME}_FIND_QUIETLY)
         message(WARNING
             "Package ${PACKAGE_FIND_NAME} with version ${PACKAGE_VERSION} was accepted as "
             "compatible because QT_NO_PACKAGE_VERSION_CHECK was set to TRUE. There is no guarantee "
