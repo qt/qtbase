@@ -141,6 +141,8 @@ public:
             uint32_t i = static_cast<uint32_t>(std::floor(resultLargerThan * (m_tableSize - 1)));
             auto it = std::lower_bound(m_table16.cbegin() + i, m_table16.cend(), v);
             i = it - m_table16.cbegin();
+            if (i == 0)
+                return 0.0f;
             if (i >= m_tableSize - 1)
                 return 1.0f;
             const float y1 = m_table16[i - 1];
@@ -155,6 +157,8 @@ public:
             uint32_t i = static_cast<uint32_t>(std::floor(resultLargerThan * (m_tableSize - 1)));
             auto it = std::lower_bound(m_table8.cbegin() + i, m_table8.cend(), v);
             i = it - m_table8.cbegin();
+            if (i == 0)
+                return 0.0f;
             if (i >= m_tableSize - 1)
                 return 1.0f;
             const float y1 = m_table8[i - 1];
