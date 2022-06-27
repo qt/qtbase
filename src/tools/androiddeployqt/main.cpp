@@ -281,7 +281,7 @@ QString fileArchitecture(const Options &options, const QString &path)
         return {};
     }
 
-    readElf = "%1 -needed-libs %2"_L1.arg(shellQuote(readElf), shellQuote(path));
+    readElf = "%1 --needed-libs %2"_L1.arg(shellQuote(readElf), shellQuote(path));
 
     FILE *readElfCommand = openProcess(readElf);
     if (!readElfCommand) {
@@ -1843,7 +1843,7 @@ QStringList getQtLibsFromElf(const Options &options, const QString &fileName)
         return QStringList();
     }
 
-    readElf = "%1 -needed-libs %2"_L1.arg(shellQuote(readElf), shellQuote(fileName));
+    readElf = "%1 --needed-libs %2"_L1.arg(shellQuote(readElf), shellQuote(fileName));
 
     FILE *readElfCommand = openProcess(readElf);
     if (!readElfCommand) {
