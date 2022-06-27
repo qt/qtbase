@@ -1201,7 +1201,10 @@ QModelIndex QListView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
         }
         return d->closestIndex(initialRect, intersectVector);
     case MovePageUp: {
-        rect.moveTop(rect.top() - d->viewport->height() + 1 );
+        if (rect.height() >= d->viewport->height())
+           return moveCursor(QAbstractItemView::MoveUp, modifiers);
+
+        rect.moveTop(rect.top() - d->viewport->height() + 1);
         if (rect.top() < rect.height()) {
             rect.setTop(0);
             rect.setBottom(1);
@@ -1242,8 +1245,11 @@ QModelIndex QListView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
         }
         return d->closestIndex(initialRect, intersectVector);
     case MovePageDown: {
-        rect.moveTop(rect.top() + d->viewport->height() - 1 );
-        if (rect.bottom() > contents.height() - rect.height()){
+        if (rect.height() >= d->viewport->height())
+           return moveCursor(QAbstractItemView::MoveDown, modifiers);
+
+        rect.moveTop(rect.top() + d->viewport->height() - 1);
+        if (rect.bottom() > contents.height() - rect.height()) {
             rect.setTop(contents.height() - 1);
             rect.setBottom(contents.height());
         }
