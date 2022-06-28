@@ -12,7 +12,7 @@
 #include "qevent.h"
 #include "qtimer.h"
 #include "qlayout.h"
-#include "qpainter.h"
+#include "qstylepainter.h"
 #include <qpa/qplatformtheme.h>
 #include "qapplication.h"
 #if QT_CONFIG(accessibility)
@@ -2695,7 +2695,7 @@ void QMenu::paintEvent(QPaintEvent *e)
 {
     Q_D(QMenu);
     d->updateActionRects();
-    QPainter p(this);
+    QStylePainter p(this);
     QRegion emptyArea = QRegion(rect());
 
     QStyleOptionMenuItem menuOpt;
@@ -2704,7 +2704,7 @@ void QMenu::paintEvent(QPaintEvent *e)
     menuOpt.checkType = QStyleOptionMenuItem::NotCheckable;
     menuOpt.maxIconWidth = 0;
     menuOpt.reservedShortcutWidth = 0;
-    style()->drawPrimitive(QStyle::PE_PanelMenu, &menuOpt, &p, this);
+    p.drawPrimitive(QStyle::PE_PanelMenu, menuOpt);
 
     //calculate the scroll up / down rect
     const int fw = style()->pixelMetric(QStyle::PM_MenuPanelWidth, nullptr, this);
@@ -2772,7 +2772,7 @@ void QMenu::paintEvent(QPaintEvent *e)
         QStyleOptionMenuItem opt;
         initStyleOption(&opt, action);
         opt.rect = actionRect;
-        style()->drawControl(QStyle::CE_MenuItem, &opt, &p, this);
+        p.drawControl(QStyle::CE_MenuItem, opt);
     }
 
     emptyArea -= QRegion(scrollUpTearOffRect);
@@ -2806,7 +2806,7 @@ void QMenu::paintEvent(QPaintEvent *e)
         frame.state = QStyle::State_None;
         frame.lineWidth = style()->pixelMetric(QStyle::PM_MenuPanelWidth, &frame);
         frame.midLineWidth = 0;
-        style()->drawPrimitive(QStyle::PE_FrameMenu, &frame, &p, this);
+        p.drawPrimitive(QStyle::PE_FrameMenu, frame);
     }
 
     //finally the rest of the spaces
@@ -2816,7 +2816,7 @@ void QMenu::paintEvent(QPaintEvent *e)
     menuOpt.checkType = QStyleOptionMenuItem::NotCheckable;
     menuOpt.rect = rect();
     menuOpt.menuRect = rect();
-    style()->drawControl(QStyle::CE_MenuEmptyArea, &menuOpt, &p, this);
+    p.drawControl(QStyle::CE_MenuEmptyArea, menuOpt);
 }
 
 #if QT_CONFIG(wheelevent)
