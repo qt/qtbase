@@ -96,7 +96,13 @@ namespace QtAndroidAccessibility
     template <typename Func, typename Ret>
     void runInObjectContext(QObject *context, Func &&func, Ret *retVal)
     {
-        QMetaObject::invokeMethod(context, func, Qt::BlockingQueuedConnection, retVal);
+        if (!QtAndroid::blockEventLoopsWhenSuspended()
+            || QGuiApplication::applicationState() != Qt::ApplicationSuspended) {
+            QMetaObject::invokeMethod(context, func, Qt::BlockingQueuedConnection, retVal);
+        } else {
+            __android_log_print(ANDROID_LOG_WARN, m_qtTag,
+                                "Could not run accessibility call in object context, event loop suspended.");
+        }
     }
 
     void initialize()
