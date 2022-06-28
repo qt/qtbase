@@ -956,6 +956,10 @@ function(_qt_internal_configure_android_multiabi_target target)
         list(APPEND extra_cmake_args "-DANDROID_NDK_ROOT=${ANDROID_NDK}")
     endif()
 
+    if(CMAKE_MAKE_PROGRAM)
+        list(APPEND extra_cmake_args "-DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}")
+    endif()
+
     set(missing_qt_abi_toolchains "")
     set(previous_copy_apk_dependencies_target ${target})
     # Create external projects for each android ABI except the main one.
