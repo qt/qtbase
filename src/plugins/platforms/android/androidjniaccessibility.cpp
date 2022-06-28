@@ -166,6 +166,11 @@ namespace QtAndroidAccessibility
         QtAndroid::notifyValueChanged(accessibilityObjectId, value);
     }
 
+    void notifyScrolledEvent(uint accessiblityObjectId)
+    {
+        QtAndroid::notifyScrolledEvent(accessiblityObjectId);
+    }
+
     static QVarLengthArray<int, 8> childIdListForAccessibleObject_helper(int objectId)
     {
         QAccessibleInterface *iface = interfaceFromId(objectId);
