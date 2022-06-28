@@ -360,41 +360,55 @@ QXmlStreamReader::QXmlStreamReader(QIODevice *device)
 }
 
 /*!
-  Creates a new stream reader that reads from \a data.
+    \overload
 
-  \sa addData(), clear(), setDevice()
- */
-QXmlStreamReader::QXmlStreamReader(const QByteArray &data)
+    \fn QXmlStreamReader::QXmlStreamReader(const QByteArray &data)
+
+    Creates a new stream reader that reads from \a data.
+
+    \sa addData(), clear(), setDevice()
+*/
+
+/*!
+    Creates a new stream reader that reads from \a data.
+
+    \note In Qt versions prior to 6.5, this constructor was overloaded
+    for QString and \c {const char*}.
+
+    \sa addData(), clear(), setDevice()
+*/
+QXmlStreamReader::QXmlStreamReader(QAnyStringView data)
+    : d_ptr(new QXmlStreamReaderPrivate(this))
+{
+    Q_D(QXmlStreamReader);
+    data.visit([d](auto data) {
+        if constexpr (std::is_same_v<decltype(data), QStringView>) {
+            d->dataBuffer = data.toUtf8();
+            d->decoder = QStringDecoder(QStringDecoder::Utf8);
+            d->lockEncoding = true;
+        } else if constexpr (std::is_same_v<decltype(data), QLatin1StringView>) {
+            // Conversion to a QString is required, to avoid breaking
+            // pre-existing (before porting to QAnyStringView) behavior.
+            d->dataBuffer = QString::fromLatin1(data).toUtf8();
+            d->decoder = QStringDecoder(QStringDecoder::Utf8);
+            d->lockEncoding = true;
+        } else {
+            d->dataBuffer = QByteArray(data.data(), data.size());
+        }
+    });
+}
+
+/*!
+    \internal
+
+    Creates a new stream reader that reads from \a data.
+    Used by the weak constructor taking a QByteArray.
+*/
+QXmlStreamReader::QXmlStreamReader(const QByteArray &data, PrivateConsructorTag)
     : d_ptr(new QXmlStreamReaderPrivate(this))
 {
     Q_D(QXmlStreamReader);
     d->dataBuffer = data;
-}
-
-/*!
-  Creates a new stream reader that reads from \a data.
-
-  \sa addData(), clear(), setDevice()
- */
-QXmlStreamReader::QXmlStreamReader(const QString &data)
-    : d_ptr(new QXmlStreamReaderPrivate(this))
-{
-    Q_D(QXmlStreamReader);
-    d->dataBuffer = data.toUtf8();
-    d->decoder = QStringDecoder(QStringDecoder::Utf8);
-    d->lockEncoding = true;
-}
-
-/*!
-  Creates a new stream reader that reads from \a data.
-
-  \sa addData(), clear(), setDevice()
- */
-QXmlStreamReader::QXmlStreamReader(const char *data)
-    : d_ptr(new QXmlStreamReaderPrivate(this))
-{
-    Q_D(QXmlStreamReader);
-    d->dataBuffer = QByteArray(data);
 }
 
 /*!
@@ -443,14 +457,54 @@ QIODevice *QXmlStreamReader::device() const
     return d->device;
 }
 
+/*!
+    \overload
+
+    \fn void QXmlStreamReader::addData(const QByteArray &data)
+
+    Adds more \a data for the reader to read. This function does
+    nothing if the reader has a device().
+
+    \sa readNext(), clear()
+*/
 
 /*!
-  Adds more \a data for the reader to read. This function does
-  nothing if the reader has a device().
+    Adds more \a data for the reader to read. This function does
+    nothing if the reader has a device().
 
-  \sa readNext(), clear()
- */
-void QXmlStreamReader::addData(const QByteArray &data)
+    \note In Qt versions prior to 6.5, this function was overloaded
+    for QString and \c {const char*}.
+
+    \sa readNext(), clear()
+*/
+void QXmlStreamReader::addData(QAnyStringView data)
+{
+    Q_D(QXmlStreamReader);
+    data.visit([=](auto data) {
+        if constexpr (std::is_same_v<decltype(data), QStringView>) {
+            d->lockEncoding = true;
+            if (!d->decoder.isValid())
+                d->decoder = QStringDecoder(QStringDecoder::Utf8);
+            addDataImpl(data.toUtf8());
+        } else if constexpr (std::is_same_v<decltype(data), QLatin1StringView>) {
+            // Conversion to a QString is required, to avoid breaking
+            // pre-existing (before porting to QAnyStringView) behavior.
+            if (!d->decoder.isValid())
+                d->decoder = QStringDecoder(QStringDecoder::Utf8);
+            addDataImpl(QString::fromLatin1(data).toUtf8());
+        } else {
+            addDataImpl(QByteArray(data.data(), data.size()));
+        }
+    });
+}
+
+/*!
+    \internal
+
+    Adds more \a data for the reader to read. This function does
+    nothing if the reader has a device().
+*/
+void QXmlStreamReader::addDataImpl(const QByteArray &data)
 {
     Q_D(QXmlStreamReader);
     if (d->device) {
@@ -458,32 +512,6 @@ void QXmlStreamReader::addData(const QByteArray &data)
         return;
     }
     d->dataBuffer += data;
-}
-
-/*!
-  Adds more \a data for the reader to read. This function does
-  nothing if the reader has a device().
-
-  \sa readNext(), clear()
- */
-void QXmlStreamReader::addData(const QString &data)
-{
-    Q_D(QXmlStreamReader);
-    d->lockEncoding = true;
-    if (!d->decoder.isValid())
-        d->decoder = QStringDecoder(QStringDecoder::Utf8);
-    addData(data.toUtf8());
-}
-
-/*!
-  Adds more \a data for the reader to read. This function does
-  nothing if the reader has a device().
-
-  \sa readNext(), clear()
- */
-void QXmlStreamReader::addData(const char *data)
-{
-    addData(QByteArray(data));
 }
 
 /*!

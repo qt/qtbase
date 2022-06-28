@@ -16,6 +16,8 @@
 
 #include "qc14n.h"
 
+using namespace Qt::StringLiterals;
+
 Q_DECLARE_METATYPE(QXmlStreamReader::ReadElementTextBehaviour)
 
 static const char *const catalogFile = "XML-Test-Suite/xmlconf/finalCatalog.xml";
@@ -558,6 +560,7 @@ private slots:
     void setEntityResolver();
     void readFromQBuffer() const;
     void readFromQBufferInvalid() const;
+    void readFromLatin1String() const;
     void readNextStartElement() const;
     void readElementText() const;
     void readElementText_data() const;
@@ -1097,6 +1100,25 @@ void tst_QXmlStream::readFromQBufferInvalid() const
     }
 
     QVERIFY(reader.hasError());
+}
+
+void tst_QXmlStream::readFromLatin1String() const
+{
+    const auto in = "<a>M\xE5rten</a>"_L1;
+    {
+        QXmlStreamReader reader(in);
+        QVERIFY(reader.readNextStartElement());
+        QString text = reader.readElementText();
+        QCOMPARE(text, "M\xE5rten"_L1);
+    }
+    // Same as above, but with addData()
+    {
+        QXmlStreamReader reader;
+        reader.addData(in);
+        QVERIFY(reader.readNextStartElement());
+        QString text = reader.readElementText();
+        QCOMPARE(text, "M\xE5rten"_L1);
+    }
 }
 
 void tst_QXmlStream::readNextStartElement() const

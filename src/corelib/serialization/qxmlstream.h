@@ -197,16 +197,27 @@ public:
 
     QXmlStreamReader();
     explicit QXmlStreamReader(QIODevice *device);
+#if QT_CORE_REMOVED_SINCE(6, 5)
     explicit QXmlStreamReader(const QByteArray &data);
     explicit QXmlStreamReader(const QString &data);
     explicit QXmlStreamReader(const char * data);
+#endif // QT_CORE_REMOVED_SINCE(6, 5)
+    Q_WEAK_OVERLOAD
+    explicit QXmlStreamReader(const QByteArray &data)
+        : QXmlStreamReader(data, PrivateConsructorTag{}) { }
+    explicit QXmlStreamReader(QAnyStringView data);
     ~QXmlStreamReader();
 
     void setDevice(QIODevice *device);
     QIODevice *device() const;
+#if QT_CORE_REMOVED_SINCE(6, 5)
     void addData(const QByteArray &data);
     void addData(const QString &data);
     void addData(const char *data);
+#endif // QT_CORE_REMOVED_SINCE(6, 5)
+    Q_WEAK_OVERLOAD
+    void addData(const QByteArray &data) { addDataImpl(data); }
+    void addData(QAnyStringView data);
     void clear();
 
 
@@ -293,6 +304,10 @@ public:
     QXmlStreamEntityResolver *entityResolver() const;
 
 private:
+    struct PrivateConsructorTag { };
+    QXmlStreamReader(const QByteArray &data, PrivateConsructorTag);
+    void addDataImpl(const QByteArray &data);
+
     Q_DISABLE_COPY(QXmlStreamReader)
     Q_DECLARE_PRIVATE(QXmlStreamReader)
     QScopedPointer<QXmlStreamReaderPrivate> d_ptr;

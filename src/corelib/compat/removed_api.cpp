@@ -278,3 +278,38 @@ QT_WARNING_POP
 // order sections alphabetically to reduce chances of merge conflicts
 
 #endif // QT_CORE_REMOVED_SINCE(6, 4)
+
+#if QT_CORE_REMOVED_SINCE(6, 5)
+
+#include "qxmlstream.h"
+
+QXmlStreamReader::QXmlStreamReader(const QByteArray &data)
+    : QXmlStreamReader(data, PrivateConsructorTag{})
+{
+}
+
+QXmlStreamReader::QXmlStreamReader(const QString &data)
+    : QXmlStreamReader(qToAnyStringViewIgnoringNull(data))
+{
+}
+
+QXmlStreamReader::QXmlStreamReader(const char *data)
+    : QXmlStreamReader(QAnyStringView(data))
+{
+}
+
+void QXmlStreamReader::addData(const QByteArray &data)
+{
+    addData<>(data);
+}
+void QXmlStreamReader::addData(const QString &data)
+{
+    addData(qToAnyStringViewIgnoringNull(data));
+}
+
+void QXmlStreamReader::addData(const char *data)
+{
+    addData(QAnyStringView(data));
+}
+
+#endif // QT_CORE_REMOVED_SINCE(6, 5)
