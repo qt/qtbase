@@ -977,6 +977,14 @@ public class QtActivityDelegate
         m_accessibilityDelegate.notifyValueChanged(viewId, value);
     }
 
+    public void notifyScrolledEvent(int viewId)
+    {
+        if (m_accessibilityDelegate == null)
+            return;
+        m_accessibilityDelegate.notifyScrolledEvent(viewId);
+    }
+
+
     public void notifyQtAndroidPluginRunning(boolean running)
     {
         m_isPluginRunning = running;
