@@ -5529,6 +5529,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                     && !q->testAttribute(Qt::WA_OpaquePaintEvent) && !q->testAttribute(Qt::WA_NoSystemBackground)) {
                     beginBackingStorePainting();
                     QPainter p(q);
+                    p.setRenderHint(QPainter::SmoothPixmapTransform);
                     paintBackground(&p, toBePainted, (asRoot || onScreen) ? (flags | DrawAsRoot) : DrawWidgetFlags());
                     endBackingStorePainting();
                 }
