@@ -157,6 +157,11 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         return true;
     }
 
+    public void notifyScrolledEvent(int viewId)
+    {
+        sendEventForVirtualViewId(viewId, AccessibilityEvent.TYPE_VIEW_SCROLLED);
+    }
+
     public void notifyLocationChange(int viewId)
     {
         if (m_focusedVirtualViewId == viewId)
