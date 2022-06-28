@@ -234,6 +234,12 @@ namespace QtAndroid
                                            "(ILjava/lang/String;)V", accessibilityObjectId, value);
     }
 
+    void notifyScrolledEvent(uint accessibilityObjectId)
+    {
+        QJniObject::callStaticMethod<void>(m_applicationClass, "notifyScrolledEvent", "(I)V",
+                                           accessibilityObjectId);
+    }
+
     void notifyQtAndroidPluginRunning(bool running)
     {
         QJniObject::callStaticMethod<void>(m_applicationClass, "notifyQtAndroidPluginRunning","(Z)V", running);

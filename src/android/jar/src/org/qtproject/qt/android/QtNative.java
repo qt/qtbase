@@ -1020,6 +1020,18 @@ public class QtNative
         });
     }
 
+    private static void notifyScrolledEvent(final int viewId)
+    {
+        runAction(new Runnable() {
+            @Override
+            public void run() {
+                if (m_activityDelegate != null) {
+                    m_activityDelegate.notifyScrolledEvent(viewId);
+                }
+            }
+        });
+    }
+
     public static void notifyQtAndroidPluginRunning(final boolean running)
     {
         m_activityDelegate.notifyQtAndroidPluginRunning(running);
