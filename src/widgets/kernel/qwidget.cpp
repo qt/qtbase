@@ -5403,6 +5403,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                     beginBackingStorePainting();
 #endif
                     QPainter p(q);
+                    p.setRenderHint(QPainter::SmoothPixmapTransform);
                     paintBackground(&p, toBePainted, (asRoot || onScreen) ? (flags | DrawAsRoot) : DrawWidgetFlags());
 #ifndef QT_NO_OPENGL
                     endBackingStorePainting();
