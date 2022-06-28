@@ -97,6 +97,11 @@ private:
                                      QInputDevice::Capability::Position | QInputDevice::Capability::MouseEmulation);
 };
 
+static bool isPlatformWayland()
+{
+    return QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive);
+}
+
 void tst_QWindow::initTestCase()
 {
     // Size of reference window, 200 for < 2000, scale up for larger screens
@@ -108,6 +113,10 @@ void tst_QWindow::initTestCase()
     if (screenWidth > 2000)
         width = 100 * ((screenWidth + 500) / 1000);
     m_testWindowSize = QSize(width, width);
+
+    // Make sure test runs consistently on all compositors by force-disabling window decorations
+    if (isPlatformWayland())
+        qputenv("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1");
 }
 
 void tst_QWindow::cleanup()
@@ -484,11 +493,6 @@ static QString msgRectMismatch(const QRect &r1, const QRect &r2)
     QString result;
     QDebug(&result) << r1 << "!=" << r2;
     return result;
-}
-
-static bool isPlatformWayland()
-{
-    return QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive);
 }
 
 void tst_QWindow::positioning()
@@ -2538,8 +2542,6 @@ void tst_QWindow::requestUpdate()
     QCoreApplication::processEvents();
     QTRY_VERIFY(window.isExposed());
 
-    if (isPlatformWayland())
-        QEXPECT_FAIL("", "Wayland: This fails. See QTBUG-100889.", Abort);
     QCOMPARE(window.received(QEvent::UpdateRequest), 0);
 
     window.requestUpdate();
