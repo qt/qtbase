@@ -964,6 +964,14 @@ function(_qt_internal_configure_android_multiabi_target target)
         list(APPEND extra_cmake_args "-DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}")
     endif()
 
+    if(CMAKE_C_COMPILER_LAUNCHER)
+        list(APPEND extra_cmake_args "-DCMAKE_C_COMPILER_LAUNCHER=${CMAKE_C_COMPILER_LAUNCHER}")
+    endif()
+
+    if(CMAKE_CXX_COMPILER_LAUNCHER)
+        list(APPEND extra_cmake_args "-DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER}")
+    endif()
+
     set(missing_qt_abi_toolchains "")
     set(previous_copy_apk_dependencies_target ${target})
     # Create external projects for each android ABI except the main one.
