@@ -2236,6 +2236,9 @@ void tst_QWindow::modalWindowModallity()
 
 void tst_QWindow::modalWindowPosition()
 {
+    if (isPlatformWayland())
+        QSKIP("Window position not queryable on Wayland");
+
     QWindow window;
     window.setTitle(QLatin1String(QTest::currentTestFunction()));
     window.setGeometry(QRect(m_availableTopLeft + QPoint(100, 100), m_testWindowSize));
@@ -2244,8 +2247,6 @@ void tst_QWindow::modalWindowPosition()
     window.setModality(Qt::WindowModal);
     window.show();
     QVERIFY(QTest::qWaitForWindowExposed(&window));
-    if (isPlatformWayland())
-        QEXPECT_FAIL("", "Wayland: This fails. See QTBUG-100888.", Abort);
     QCOMPARE(window.geometry(), origGeo);
 }
 
