@@ -561,43 +561,6 @@ endif()
 _qt_internal_determine_if_host_info_package_needed(__qt_build_requires_host_info_package)
 _qt_internal_find_host_info_package("${__qt_build_requires_host_info_package}")
 
-# TODO: This block provides support for old variables. It should be removed once
-#       we remove all references to these variables in other Qt module repos.
-#       Prefer to use the provided commands to retrieve the relevant things instead.
-#       We won't have the queried command when we get here for qtbase (it is
-#       provided by the Core module), but we will for all other repos (which
-#       is all we need).
-if(COMMAND _qt_internal_get_add_plugin_keywords)
-    _qt_internal_get_add_plugin_keywords(
-        __qt_public_add_plugin_option_args
-        __qt_public_add_plugin_single_args
-        __qt_public_add_plugin_multi_args
-    )
-    qt_internal_get_internal_add_plugin_keywords(
-        __qt_internal_add_plugin_option_args
-        __qt_internal_add_plugin_single_args
-        __qt_internal_add_plugin_multi_args
-    )
-    set(__qt_add_plugin_optional_args
-        ${__qt_public_add_plugin_option_args}
-        ${__qt_internal_add_plugin_option_args}
-    )
-    set(__qt_add_plugin_single_args
-        ${__qt_public_add_plugin_single_args}
-        ${__qt_internal_add_plugin_single_args}
-    )
-    set(__qt_add_plugin_multi_args
-        ${__qt_public_add_plugin_multi_args}
-        ${__qt_internal_add_plugin_multi_args}
-    )
-    unset(__qt_public_add_plugin_option_args)
-    unset(__qt_public_add_plugin_single_args)
-    unset(__qt_public_add_plugin_multi_args)
-    unset(__qt_internal_add_plugin_option_args)
-    unset(__qt_internal_add_plugin_single_args)
-    unset(__qt_internal_add_plugin_multi_args)
-endif()
-
 # This sets up the poor man's scope finalizer mechanism.
 # For newer CMake versions, we use cmake_language(DEFER CALL) instead.
 if(CMAKE_VERSION VERSION_LESS "3.19.0")
