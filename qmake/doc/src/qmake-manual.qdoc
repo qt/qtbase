@@ -1203,8 +1203,10 @@
             By default, support is disabled.
     \row    \li c++2a \li Obsolete alias for c++20.
     \row    \li c++latest \li Support for the latest C++ language standard is
-            enabled that is supported by the compiler. By default, this option is
-            disabled.
+            enabled. This option is mostly useful for MSVC that supports a
+            \c{/std:c++latest} compiler argument. For other toolchains, this
+            option enables the latest C++ standard that is known to Qt. By
+            default, this option is disabled.
     \row    \li strict_c++ \li Disables support for C++ compiler extensions.
             By default, they are enabled.
     \row    \li depend_includepath \li Appending the value of INCLUDEPATH to
