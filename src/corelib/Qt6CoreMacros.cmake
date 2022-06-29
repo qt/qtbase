@@ -2402,23 +2402,7 @@ endmacro()
 function(qt6_add_plugin target)
     _qt_internal_get_add_plugin_keywords(opt_args single_args multi_args)
 
-    # TODO: Transitional use only, replaced by CLASS_NAME. Remove this once
-    #       all other repos have been updated to use CLASS_NAME.
-    list(APPEND single_args CLASSNAME)
-
     cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
-
-    # Handle the inconsistent CLASSNAME/CLASS_NAME keyword naming between commands
-    if(arg_CLASSNAME)
-        if(arg_CLASS_NAME AND NOT arg_CLASSNAME STREQUAL arg_CLASS_NAME)
-            message(FATAL_ERROR
-                "Both CLASSNAME and CLASS_NAME were given and were different. "
-                "Only one of the two should be used."
-            )
-        endif()
-        set(arg_CLASS_NAME "${arg_CLASSNAME}")
-        unset(arg_CLASSNAME)
-    endif()
 
     # Handle the inconsistent TYPE/PLUGIN_TYPE keyword naming between commands
     if(arg_TYPE)
