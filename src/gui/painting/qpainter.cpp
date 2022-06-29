@@ -39,6 +39,7 @@
 #include <private/qhexstring_p.h>
 #include <private/qguiapplication_p.h>
 #include <private/qrawfont_p.h>
+#include <private/qfont_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -5448,7 +5449,9 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
     QStaticTextPrivate *staticText_d =
             const_cast<QStaticTextPrivate *>(QStaticTextPrivate::get(&staticText));
 
-    if (font() != staticText_d->font) {
+    QFontPrivate *fp = QFontPrivate::get(font());
+    QFontPrivate *stfp = QFontPrivate::get(staticText_d->font);
+    if (font() != staticText_d->font || fp == nullptr || stfp == nullptr || fp->dpi != stfp->dpi) {
         staticText_d->font = font();
         staticText_d->needsRelayout = true;
     }

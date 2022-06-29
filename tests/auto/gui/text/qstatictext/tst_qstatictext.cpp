@@ -82,11 +82,6 @@ private:
 
 Q_DECLARE_METATYPE(QImage::Format);
 
-static bool isPlatformWayland()
-{
-    return QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive);
-}
-
 void tst_QStaticText::constructionAndDestruction()
 {
     QStaticText text("My text");
@@ -148,8 +143,6 @@ void tst_QStaticText::drawToPoint()
     }
 
     QVERIFY(imageDrawText.toImage() != m_whiteSquare);
-    if (isPlatformWayland())
-        QEXPECT_FAIL("", "Wayland: This fails. See QTBUG-100982.", Abort);
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
 
@@ -190,8 +183,6 @@ void tst_QStaticText::drawToRect()
 #endif
 
     QVERIFY(imageDrawText.toImage() != m_whiteSquare);
-    if (isPlatformWayland())
-        QEXPECT_FAIL("", "Wayland: This fails. See QTBUG-100982.", Abort);
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
 
@@ -246,13 +237,11 @@ void tst_QStaticText::compareToDrawText()
 
 #if defined(DEBUG_SAVE_IMAGE)
     imageDrawText.save("compareToDrawText_imageDrawText.png");
-    imageDrawStaticText.save("compareToDrawText_imageDrawStaticPlainText.png");
-    imageDrawStaticText.save("compareToDrawText_imageDrawStaticRichText.png");
+    imageDrawStaticPlainText.save("compareToDrawText_imageDrawStaticPlainText.png");
+    imageDrawStaticRichText.save("compareToDrawText_imageDrawStaticRichText.png");
 #endif
 
     QVERIFY(imageDrawText.toImage() != m_whiteSquare);
-    if (isPlatformWayland() && font == QFont())
-        QEXPECT_FAIL("", "Wayland: This fails. See QTBUG-100982.", Abort);
     QCOMPARE(imageDrawStaticPlainText, imageDrawText);
     QCOMPARE(imageDrawStaticRichText, imageDrawText);
 }
@@ -360,8 +349,6 @@ void tst_QStaticText::setFont()
 #endif
 
     QVERIFY(imageDrawText.toImage() != m_whiteSquare);
-    if (isPlatformWayland())
-        QEXPECT_FAIL("", "Wayland: This fails. See QTBUG-100982.", Abort);
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
 
@@ -385,8 +372,6 @@ void tst_QStaticText::setTextWidth()
     }
 
     QVERIFY(imageDrawText.toImage() != m_whiteSquare);
-    if (isPlatformWayland())
-        QEXPECT_FAIL("", "Wayland: This fails. See QTBUG-100982.", Abort);
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
 
@@ -414,8 +399,6 @@ void tst_QStaticText::translatedPainter()
     }
 
     QVERIFY(imageDrawText.toImage() != m_whiteSquare);
-    if (isPlatformWayland())
-        QEXPECT_FAIL("", "Wayland: This fails. See QTBUG-100982.", Abort);
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
 
@@ -456,8 +439,6 @@ void tst_QStaticText::rotatedPainter()
 
     if (!supportsTransformations())
       QEXPECT_FAIL("", "Graphics system does not support transformed text on this platform", Abort);
-    if (isPlatformWayland())
-        QEXPECT_FAIL("", "Wayland: This fails. See QTBUG-100982.", Abort);
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
 
@@ -488,8 +469,6 @@ void tst_QStaticText::scaledPainter()
 
     if (!supportsTransformations())
       QEXPECT_FAIL("", "Graphics system does not support transformed text on this platform", Abort);
-    if (isPlatformWayland())
-        QEXPECT_FAIL("", "Wayland: This fails. See QTBUG-100982.", Abort);
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
 
@@ -617,8 +596,6 @@ void tst_QStaticText::transformationChanged()
 
     if (!supportsTransformations())
       QEXPECT_FAIL("", "Graphics system does not support transformed text on this platform", Abort);
-    if (isPlatformWayland())
-        QEXPECT_FAIL("", "Wayland: This fails. See QTBUG-100982.", Abort);
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
 
