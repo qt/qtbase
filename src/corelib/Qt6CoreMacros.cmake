@@ -1431,10 +1431,6 @@ function(qt6_extract_metatypes target)
     endif()
 
     set(args_option
-        # TODO: Remove this once all leaf module usages of it are removed. It's now a no-op.
-        # It's original purpose was to skip installation of the metatypes file.
-        __QT_INTERNAL_NO_INSTALL
-
         # TODO: Move this into a separate internal function, so it doesn't pollute the public one.
         # When given, metatypes files will be installed into the default Qt
         # metatypes folder. Only to be used by the Qt build.
