@@ -1892,7 +1892,19 @@ bool QFontDatabase::hasFamily(const QString &family)
     QString parsedFamily, foundry;
     parseFontName(family, foundry, parsedFamily);
     const QString familyAlias = QFontDatabasePrivate::resolveFontFamilyAlias(parsedFamily);
-    return families().contains(familyAlias, Qt::CaseInsensitive);
+
+    QMutexLocker locker(fontDatabaseMutex());
+    QFontDatabasePrivate *d = QFontDatabasePrivate::ensureFontDatabase();
+
+    for (int i = 0; i < d->count; i++) {
+        QtFontFamily *f = d->families[i];
+        if (f->populated && f->count == 0)
+            continue;
+        if (familyAlias.compare(f->name, Qt::CaseInsensitive) == 0)
+            return true;
+    }
+
+    return false;
 }
 
 

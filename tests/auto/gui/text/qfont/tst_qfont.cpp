@@ -589,6 +589,11 @@ void tst_QFont::defaultFamily()
             break;
         }
     }
+
+#if defined(Q_OS_UNIX) && defined(QT_NO_FONTCONFIG)
+    QSKIP("This platform does not support checking for default font acceptability");
+#endif
+
 #ifdef Q_PROCESSOR_ARM_32
     if (QTestPrivate::isRunningArmOnX86())
         QEXPECT_FAIL("", "Fails on ARMv7 QEMU (QTQAINFRA-4127)", Continue);
