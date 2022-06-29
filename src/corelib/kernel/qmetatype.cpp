@@ -2577,6 +2577,20 @@ void QMetaType::registerNormalizedTypedef(const NS(QByteArray) & normalizedTypeN
     }
 }
 
+
+static const QtPrivate::QMetaTypeInterface *interfaceForTypeNoWarning(int typeId)
+{
+    const QtPrivate::QMetaTypeInterface *iface = nullptr;
+    if (typeId >= QMetaType::User) {
+        if (customTypeRegistry.exists())
+            iface = customTypeRegistry->getCustomType(typeId);
+    } else {
+        if (auto moduleHelper = qModuleHelperForType(typeId))
+            iface = moduleHelper->interfaceForType(typeId);
+    }
+    return iface;
+}
+
 /*!
     Returns \c true if the datatype with ID \a type is registered;
     otherwise returns \c false.
@@ -2585,7 +2599,7 @@ void QMetaType::registerNormalizedTypedef(const NS(QByteArray) & normalizedTypeN
 */
 bool QMetaType::isRegistered(int type)
 {
-    return QMetaType(type).isRegistered();
+    return interfaceForTypeNoWarning(type) != nullptr;
 }
 
 template <bool tryNormalizedType>
@@ -2943,15 +2957,7 @@ QMetaType QMetaType::fromName(QByteArrayView typeName)
 
 static const QtPrivate::QMetaTypeInterface *interfaceForType(int typeId)
 {
-    const QtPrivate::QMetaTypeInterface *iface = nullptr;
-    if (typeId >= QMetaType::User) {
-        if (customTypeRegistry.exists())
-            iface = customTypeRegistry->getCustomType(typeId);
-    } else {
-        if (auto moduleHelper = qModuleHelperForType(typeId))
-            iface = moduleHelper->interfaceForType(typeId);
-    }
-
+    const QtPrivate::QMetaTypeInterface *iface = interfaceForTypeNoWarning(typeId);
     if (!iface && typeId != QMetaType::UnknownType)
         qWarning("Trying to construct an instance of an invalid type, type id: %i", typeId);
 
