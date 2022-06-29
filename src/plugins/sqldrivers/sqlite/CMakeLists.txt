@@ -95,3 +95,8 @@ qt_internal_extend_target(QSQLiteDriverPlugin CONDITION NOT QT_FEATURE_dlopen AN
     DEFINES
         SQLITE_OMIT_LOAD_EXTENSION
 )
+
+qt_internal_extend_target(QSQLiteDriverPlugin CONDITION NOT QT_FEATURE_thread AND NOT QT_FEATURE_system_sqlite
+    DEFINES
+        SQLITE_THREADSAFE=0
+)

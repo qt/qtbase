@@ -939,7 +939,6 @@ qt_feature("printsupport" PRIVATE
 )
 qt_feature("sql" PRIVATE
     LABEL "Qt Sql"
-    CONDITION QT_FEATURE_thread AND NOT WASM
 )
 qt_feature("testlib" PRIVATE
     LABEL "Qt Testlib"
