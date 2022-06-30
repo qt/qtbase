@@ -724,7 +724,7 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_backtrace
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_system_doubleconversion
     LIBRARIES
-        WrapDoubleConversion::WrapDoubleConversion
+        WrapSystemDoubleConversion::WrapSystemDoubleConversion
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_doubleconversion AND NOT QT_FEATURE_system_doubleconversion
