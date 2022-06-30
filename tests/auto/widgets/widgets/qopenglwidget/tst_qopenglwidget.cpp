@@ -20,6 +20,8 @@
 #include <private/qstatictext_p.h>
 #include <private/qopengltextureglyphcache_p.h>
 #include <qpa/qplatformintegration.h>
+#include <private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
 
 class tst_QOpenGLWidget : public QObject
 {
@@ -652,8 +654,8 @@ void tst_QOpenGLWidget::stackWidgetOpaqueChildIsVisible()
 #ifdef Q_OS_ANDROID
     QSKIP("Crashes on Android, figure out why (QTBUG-102043)");
 #endif
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Platform does not support window activation");
     if (QGuiApplication::platformName().startsWith(QLatin1String("offscreen"), Qt::CaseInsensitive))
         QSKIP("Offscreen: This fails.");
 
