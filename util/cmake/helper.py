@@ -365,7 +365,8 @@ _library_map = [
     LibraryMapping("db2", "DB2", "DB2::DB2"),
     LibraryMapping("dbus", "WrapDBus1", "dbus-1", resultVariable="DBus1", extra=["1.2"]),
     LibraryMapping(
-        "doubleconversion", "WrapDoubleConversion", "WrapDoubleConversion::WrapDoubleConversion"
+        "doubleconversion", "WrapSystemDoubleConversion",
+        "WrapSystemDoubleConversion::WrapSystemDoubleConversion"
     ),
     LibraryMapping("dlt", "DLT", "DLT::DLT"),
     LibraryMapping("drm", "Libdrm", "Libdrm::Libdrm"),
