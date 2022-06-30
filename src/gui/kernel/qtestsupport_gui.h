@@ -12,7 +12,7 @@ QT_BEGIN_NAMESPACE
 
 class QWindow;
 
-Q_GUI_EXPORT  void qt_handleTouchEvent(QWindow *w, const QPointingDevice *device,
+Q_GUI_EXPORT bool qt_handleTouchEvent(QWindow *w, const QPointingDevice *device,
                                 const QList<QEventPoint> &points,
                                 Qt::KeyboardModifiers mods = Qt::NoModifier);
 
@@ -33,7 +33,7 @@ public:
     QTouchEventSequence& release(int touchId, const QPoint &pt, QWindow *window = nullptr);
     virtual QTouchEventSequence& stationary(int touchId);
 
-    virtual void commit(bool processEvents = true);
+    virtual bool commit(bool processEvents = true);
 
 protected:
     QTouchEventSequence(QWindow *window, QPointingDevice *aDevice, bool autoCommit);
