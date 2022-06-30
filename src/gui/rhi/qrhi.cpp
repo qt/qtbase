@@ -1846,19 +1846,22 @@ QRhiTextureUploadEntry::QRhiTextureUploadEntry(int layer, int level,
         QList<QRhiTextureUploadEntry> entries;
         for (int i = 0; i < 6; ++i)
           entries.append(QRhiTextureUploadEntry(i, 0, faces[i]));
-        QRhiTextureUploadDescription desc(entries);
+        QRhiTextureUploadDescription desc;
+        desc.setEntries(entries.cbegin(), entries.cend());
         resourceUpdates->uploadTexture(texture, desc);
     \endcode
 
     Another example that specifies mip images for a compressed texture:
 
     \badcode
-        QRhiTextureUploadDescription desc;
+        QList<QRhiTextureUploadEntry> entries;
         const int mipCount = rhi->mipLevelsForSize(compressedTexture->pixelSize());
         for (int level = 0; level < mipCount; ++level) {
             const QByteArray compressedDataForLevel = ..
-            desc.append(QRhiTextureUploadEntry(0, level, compressedDataForLevel));
+            entries.append(QRhiTextureUploadEntry(0, level, compressedDataForLevel));
         }
+        QRhiTextureUploadDescription desc;
+        desc.setEntries(entries.cbegin(), entries.cend());
         resourceUpdates->uploadTexture(compressedTexture, desc);
     \endcode
 
