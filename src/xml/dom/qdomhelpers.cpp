@@ -24,7 +24,7 @@ using namespace Qt::StringLiterals;
 
 QDomBuilder::QDomBuilder(QDomDocumentPrivate *d, QXmlStreamReader *r,
                          QDomDocument::ParseOptions options)
-    : errorLine(0), errorColumn(0), doc(d), node(d), reader(r), parseOptions(options)
+    : doc(d), node(d), reader(r), parseOptions(options)
 {
     Q_ASSERT(doc);
     Q_ASSERT(reader);
@@ -166,14 +166,9 @@ bool QDomBuilder::skippedEntity(const QString &name)
 
 void QDomBuilder::fatalError(const QString &message)
 {
-    errorMsg = message;
-    errorLine = static_cast<int>(reader->lineNumber());
-    errorColumn = static_cast<int>(reader->columnNumber());
-}
-
-QDomBuilder::ErrorInfo QDomBuilder::error() const
-{
-    return ErrorInfo(errorMsg, errorLine, errorColumn);
+    parseResult.errorMessage = message;
+    parseResult.errorLine = reader->lineNumber();
+    parseResult.errorColumn = reader->columnNumber();
 }
 
 bool QDomBuilder::startEntity(const QString &name)
@@ -239,11 +234,6 @@ QDomParser::QDomParser(QDomDocumentPrivate *d, QXmlStreamReader *r,
 bool QDomParser::parse()
 {
     return parseProlog() && parseBody();
-}
-
-QDomBuilder::ErrorInfo QDomParser::errorInfo() const
-{
-    return domBuilder.error();
 }
 
 bool QDomParser::parseProlog()

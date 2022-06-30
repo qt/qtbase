@@ -5625,10 +5625,8 @@ QDomDocument::ParseResult QDomDocumentPrivate::setContent(QXmlStreamReader *read
 
     QDomParser domParser(this, reader, options);
 
-    if (!domParser.parse()) {
-        const auto info = domParser.errorInfo();
-        return { std::get<0>(info), std::get<1>(info), std::get<2>(info) };
-    }
+    if (!domParser.parse())
+        return domParser.result();
     return {};
 }
 

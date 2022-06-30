@@ -54,17 +54,12 @@ public:
                             const QString &notationName);
 
     void fatalError(const QString &message);
-
-    using ErrorInfo = std::tuple<QString, int, int>;
-    ErrorInfo error() const;
-
-    QString errorMsg;
-    int errorLine;
-    int errorColumn;
+    QDomDocument::ParseResult result() const { return parseResult; }
 
 private:
     QString dtdInternalSubset(const QString &dtd);
 
+    QDomDocument::ParseResult parseResult;
     QDomDocumentPrivate *doc;
     QDomNodePrivate *node;
     QXmlStreamReader *reader;
@@ -85,7 +80,7 @@ public:
     QDomParser(QDomDocumentPrivate *d, QXmlStreamReader *r, QDomDocument::ParseOptions options);
 
     bool parse();
-    QDomBuilder::ErrorInfo errorInfo() const;
+    QDomDocument::ParseResult result() const { return domBuilder.result(); }
 
 private:
     bool parseProlog();
