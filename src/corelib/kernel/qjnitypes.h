@@ -349,16 +349,21 @@ constexpr auto QtJniTypes::typeSignature<QtJniTypes::Type>()    \
          + QtJniTypes::String(";");                             \
 }                                                               \
 
+#define Q_DECLARE_JNI_NATIVE_METHOD(...)                           \
+    QT_OVERLOADED_MACRO(QT_DECLARE_JNI_NATIVE_METHOD, __VA_ARGS__) \
 
-#define Q_DECLARE_JNI_NATIVE_METHOD(Method)                     \
+#define QT_DECLARE_JNI_NATIVE_METHOD_2(Method, Name)            \
 namespace QtJniMethods {                                        \
 static constexpr auto Method##_signature =                      \
     QtJniTypes::nativeMethodSignature(Method);                  \
 static const JNINativeMethod Method##_method = {                \
-    #Method, Method##_signature.data(),                         \
+    #Name, Method##_signature.data(),                           \
     reinterpret_cast<void *>(Method)                            \
 };                                                              \
 }                                                               \
+
+#define QT_DECLARE_JNI_NATIVE_METHOD_1(Method)                  \
+    QT_DECLARE_JNI_NATIVE_METHOD_2(Method, Method)              \
 
 #define Q_JNI_NATIVE_METHOD(Method) QtJniMethods::Method##_method
 
