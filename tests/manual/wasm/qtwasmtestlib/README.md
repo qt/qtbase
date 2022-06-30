@@ -14,7 +14,10 @@ Implementing a basic test case
 
 In the test cpp file, define the test functions as private slots. All test
 functions must call completeTestFunction() exactly once, or will time out
-otherwise. The can can be made after the test function itself has returned.
+otherwise. Subsequent calls to completeTestFunction will be disregarded.
+It is advised to use QWASMSUCCESS/QWASMFAIL for reporting the test execution
+status and QWASMCOMPARE/QWASMVERIFY to assert on test conditions. The call can
+be made after the test function itself has returned.
 
     class TestTest: public QObject
     {

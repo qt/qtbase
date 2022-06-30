@@ -14,10 +14,17 @@ enum TestResult {
     Pass,
     Fail,
 };
-void completeTestFunction(TestResult result = TestResult::Pass);
+
+std::string formatMessage(std::string_view file,
+                          int line,
+                          std::string_view message);
+
+void completeTestFunction(TestResult result, std::string message);
 void initTestCase(QObject *testObject, std::function<void ()> cleanup);
 template <typename App>
-void initTestCase(int argc, char **argv, std::shared_ptr<QObject> testObject)
+void initTestCase(int argc,
+                  char **argv,
+                std::shared_ptr<QObject> testObject)
 {
     auto app = std::make_shared<App>(argc, argv);
     auto cleanup = [testObject, app]() mutable {
@@ -28,8 +35,37 @@ void initTestCase(int argc, char **argv, std::shared_ptr<QObject> testObject)
     };
     initTestCase(testObject.get(), cleanup);
 }
+void verify(bool condition,
+            std::string_view conditionString,
+            std::string_view file,
+            int line);
 
+template<class L, class R>
+void compare(const L& lhs,
+             const R& rhs,
+             std::string_view lhsString,
+             std::string_view rhsString,
+             std::string_view file,
+             int line) {
+    if (lhs != rhs) {
+        completeTestFunction(
+            TestResult::Fail,
+            formatMessage(file, line, "Comparison failed: " + std::string(lhsString) + " == " + std::string(rhsString)));
+    }
 }
 
-#endif
+}  // namespace QtWasmTest
 
+#define QWASMVERIFY(condition) \
+    QtWasmTest::verify((condition), #condition, __FILE__, __LINE__);
+
+#define QWASMCOMPARE(left, right) \
+    QtWasmTest::compare((left), (right), #left, #right, __FILE__, __LINE__);
+
+#define QWASMSUCCESS() \
+    QtWasmTest::completeTestFunction(QtWasmTest::Pass, "")
+
+#define QWASMFAIL(message) \
+    QtWasmTest::completeTestFunction(QtWasmTest::Fail, QtWasmTest::formatMessage(__FILE__, __LINE__, message))
+
+#endif

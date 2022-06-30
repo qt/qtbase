@@ -10,9 +10,11 @@
 #include <emscripten/threading.h>
 
 namespace QtWasmTest {
-
+namespace {
 QObject *g_testObject = nullptr;
+std::string g_currentTestName;
 std::function<void ()> g_cleanup;
+}
 
 void runOnMainThread(std::function<void(void)> fn);
 static bool isValidSlot(const QMetaMethod &sl);
@@ -30,30 +32,36 @@ void initTestCase(QObject *testObject, std::function<void ()> cleanup)
     g_cleanup = cleanup;
 }
 
+void verify(bool condition, std::string_view conditionString, std::string_view file, int line)
+{
+    if (!condition) {
+        completeTestFunction(
+            TestResult::Fail,
+            formatMessage(file, line, "Condition failed: " + std::string(conditionString)));
+    }
+}
+
 // Completes the currently running test function with a result. This function is
 // thread-safe and call be called from any thread.
-void completeTestFunction(TestResult result)
+void completeTestFunction(TestResult result, std::string message)
 {
+
     // Report test result to JavaScript test runner, on the main thread
-    runOnMainThread([result](){
-        const char *resultString;
-        switch (result) {
-            case TestResult::Pass:
-                resultString = "PASS";
-            break;
-            case TestResult::Fail:
-                resultString = "FAIL";
-            break;
-        };
+    runOnMainThread([resultString = result == TestResult::Pass ? "PASS" : "FAIL", message](){
         EM_ASM({
-            completeTestFunction(UTF8ToString($0));
-        }, resultString);
+            completeTestFunction(UTF8ToString($0), UTF8ToString($1), UTF8ToString($2));
+        }, g_currentTestName.c_str(), resultString, message.c_str());
     });
 }
 
 //
 // Private API for the Javascript test runnner
 //
+
+std::string formatMessage(std::string_view file, int line, std::string_view message)
+{
+    return "[" + std::string(file) + ":" + QString::number(line).toStdString() + "] " + std::string(message);
+}
 
 void cleanupTestCase()
 {
@@ -83,6 +91,8 @@ std::string getTestFunctions()
 
 void runTestFunction(std::string name)
 {
+    g_currentTestName = name;
+    QMetaObject::invokeMethod(g_testObject, "init");
     QMetaObject::invokeMethod(g_testObject, name.c_str());
 }
 

@@ -68,72 +68,80 @@
 // is the part which enables async testing). Test functions which fail
 // to call completeTestFunction() will time out after 2000ms.
 //
-let g_maxTime = 2000;
-var g_timeoutId = undefined;
-var g_testResolve = undefined;
-var g_testResult = undefined;
+const g_maxTime = 2000;
 
-function completeTestFunction(result)
-{
-    // Reset timeout
-    if (g_timeoutId !== undefined) {
-        clearTimeout(g_timeoutId);
-        g_timeoutId = undefined;
+class TestFunction {
+    constructor(instance, name) {
+        this.instance = instance;
+        this.name = name;
+        this.resolve = undefined;
+        this.reject = undefined;
+        this.timeoutId = undefined;
     }
 
-    // Set test result directy, or resolve the pending promise
-    if (g_testResolve === undefined) {
-        g_testResult = result
-    } else {
-        g_testResolve(result);
-        g_testResolve = undefined;
+    complete(result, details) {
+        // Reset timeout
+        clearTimeout(this.timeoutId);
+        this.timeoutId = undefined;
+
+        const callback = result.startsWith('FAIL') ? this.reject : this.resolve;
+        callback(`${result}${details ? ': ' + details : ''}`);
     }
-}
 
-function runTestFunction(instance, name)
-{
-    if (g_timeoutId !== undefined)
-        console.log("existing timer found");
+    run() {
+        // Set timer which will catch test functions
+        // which fail to call completeTestFunction()
+        this.timeoutId = setTimeout(() => {
+            completeTestFunction(this.name, 'FAIL', `Timeout after ${g_maxTime} ms`)
+        }, g_maxTime);
 
-    // Set timer which will catch test functions
-    // which fail to call completeTestFunction()
-    g_timeoutId = setTimeout( () => {
-        if (g_timeoutId === undefined)
-            return;
-        g_timeoutId = undefined;
-        completeTestFunction("FAIL")
-    }, g_maxTime);
+        return new Promise((resolve, reject) => {
+            this.resolve = resolve;
+            this.reject = reject;
 
-    instance.runTestFunction(name);
-
-    // If the test function completed with a result immediately then return
-    // the result directly, otherwise return a Promise to the result.
-    if (g_testResult !== undefined) {
-        let result = g_testResult;
-        g_testResult = undefined;
-        return result;
-    } else {
-        return new Promise((resolve) => {
-            g_testResolve = resolve;
+            this.instance.runTestFunction(this.name);
         });
     }
+};
+
+function completeTestFunction(testFunctionName, result, details) {
+    if (!window.currentTestFunction || testFunctionName !== window.currentTestFunction.name)
+        return;
+
+    window.currentTestFunction.complete(result, details);
 }
 
-async function runTestCaseImpl(testFunctionStarted, testFunctionCompleted, qtContainers)
-{
-    // Create test case instance
-    let config = {
-        qtContainerElements : qtContainers || []
+async function runTestFunction(instance, name) {
+    if (window.currentTestFunction) {
+        throw new Error(`While trying to run ${name}: Last function hasn't yet finished`);
     }
-    let instance = await createQtAppInstance(config);
+    window.currentTestFunction = new TestFunction(instance, name);
+    try {
+        const result = await window.currentTestFunction.run();
+        return result;
+    } finally {
+        delete window.currentTestFunction;
+    }
+}
+
+async function runTestCaseImpl(testFunctionStarted, testFunctionCompleted, qtContainers) {
+    // Create test case instance
+    const config = {
+        qtContainerElements: qtContainers || []
+    }
+    const instance = await createQtAppInstance(config);
 
     // Run all test functions
-    let functionsString = instance.getTestFunctions();
-    let functions = functionsString.split(" ").filter(Boolean);
-    for (name of functions) {
+    const functionsString = instance.getTestFunctions();
+    const functions = functionsString.split(" ").filter(Boolean);
+    for (const name of functions) {
         testFunctionStarted(name);
-        let result = await runTestFunction(instance, name);
-        testFunctionCompleted(name, result);
+        try {
+            const result = await runTestFunction(instance, name);
+            testFunctionCompleted(result);
+        } catch (err) {
+            testFunctionCompleted(err.message ?? err);
+        }
     }
 
     // Cleanup
@@ -147,22 +155,13 @@ function testFunctionStarted(name) {
     g_htmlLogElement.innerHTML += line;
 }
 
-function testFunctionCompleted(name, status) {
-    var color = "black";
-    switch (status) {
-        case "PASS":
-            color = "green";
-        break;
-        case "FAIL":
-            color = "red";
-        break;
-    }
-    let line = "<text style='color:" + color + ";'>" + status + "</text><br>";
+function testFunctionCompleted(status) {
+    const color = status.startsWith("PASS") ? "green" : status.startsWith("FAIL") ? "red" : "black";
+    let line = `<span style='color: ${color};'>${status}</text><br>`;
     g_htmlLogElement.innerHTML += line;
 }
 
-async function runTestCase(htmlLogElement, qtContainers)
-{
+async function runTestCase(htmlLogElement, qtContainers) {
     g_htmlLogElement = htmlLogElement;
     try {
         await runTestCaseImpl(testFunctionStarted, testFunctionCompleted, qtContainers);
