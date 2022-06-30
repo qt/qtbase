@@ -6145,12 +6145,8 @@ bool QDomDocument::setContent(const QString& text, bool namespaceProcessing, QSt
     If a parse error occurs, this function returns \c false and the error
     message is placed in \c{*}\a{errorMsg}, the line number in
     \c{*}\a{errorLine} and the column number in \c{*}\a{errorColumn}
-    (unless the associated pointer is set to 0); otherwise this
-    function returns \c true. The various error messages are described in
-    the QXmlParseException class documentation. Note that, if you
-    want to display these error messages to your application's users,
-    they will be displayed in English unless they are explicitly
-    translated.
+    (unless the associated pointer is set to \c nullptr); otherwise this
+    function returns \c true.
 
     If \a namespaceProcessing is true, the function QDomNode::prefix()
     returns a string for all elements and attributes. It returns an
@@ -6202,7 +6198,7 @@ bool QDomDocument::setContent(const QByteArray &data, bool namespaceProcessing, 
     \note This method will try to open \a dev in read-only mode if it is not
     already open. In that case, the caller is responsible for calling close.
     This will change in Qt 7, which will no longer open \a dev. Applications
-    shoul therefore open the device themselves before calling setContent.
+    should therefore open the device themselves before calling setContent.
 */
 bool QDomDocument::setContent(QIODevice* dev, bool namespaceProcessing, QString *errorMsg, int *errorLine, int *errorColumn)
 {
@@ -6283,7 +6279,7 @@ bool QDomDocument::setContent(QIODevice* dev, QString *errorMsg, int *errorLine,
 
     If a parse error occurs, the error message is placed in \c{*}\a{errorMsg}, the line
     number in \c{*}\a{errorLine} and the column number in \c{*}\a{errorColumn} (unless
-    the associated pointer is set to 0).
+    the associated pointer is set to \c nullptr).
 
     \sa QXmlStreamReader
 */
