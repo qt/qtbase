@@ -178,7 +178,11 @@ void tst_QDom::setContent()
 
     QDomDocument domDoc;
     QXmlStreamReader reader(doc);
-    QVERIFY(domDoc.setContent(&reader, true));
+#if QT_DEPRECATED_SINCE(6, 8)
+    QT_IGNORE_DEPRECATIONS(domDoc.setContent(&reader, true);)
+#else
+    QVERIFY(domDoc.setContent(&reader, QDomDocument::ParseOption::UseNamespaceProcessing));
+#endif // QT_DEPRECATED_SINCE(6, 8)
 
     QString eRes;
     QTextStream ts( &eRes, QIODevice::WriteOnly );
@@ -240,6 +244,9 @@ void tst_QDom::setContentOverloads()
     QVERIFY(doc.setContent(&buffer, QDomDocument::ParseOption::Default));
     buffer.reset();
 
+#if QT_DEPRECATED_SINCE(6, 8)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     // With output param
     QVERIFY(doc.setContent(data, &errorMessage));
     QVERIFY(doc.setContent(text, &errorMessage));
@@ -261,6 +268,8 @@ void tst_QDom::setContentOverloads()
     QVERIFY(doc.setContent(&reader, false, &errorMessage));
     QVERIFY(doc.setContent(&buffer, false, &errorMessage));
     buffer.reset();
+QT_WARNING_POP
+#endif // QT_DEPRECATED_SINCE(6, 8)
 }
 
 void tst_QDom::parseOptions()
@@ -409,13 +418,11 @@ void tst_QDom::toString_01()
     QVERIFY2(f.open(QIODevice::ReadOnly), qPrintable(QString::fromLatin1("Failed to open file %1, file error: %2").arg(fileName).arg(f.error())));
 
     QDomDocument doc;
-    QString errorMsg;
-    int errorLine;
-    int errorCol;
-
-    QVERIFY(doc.setContent( &f, &errorMsg, &errorLine, &errorCol )); /*,
-        QString("QDomDocument::setContent() failed: %1 in line %2, column %3")
-                        .arg( errorMsg ).arg( errorLine ).arg( errorCol )); */
+    QDomDocument::ParseResult result = doc.setContent(&f, QDomDocument::ParseOption::Default);
+    QVERIFY2(result,
+             qPrintable(u"QDomDocument::setContent() failed (%1:%2): %3"_s.arg(result.errorLine)
+                                .arg(result.errorColumn)
+                                .arg(result.errorMessage)));
     // test toString()'s invariant with different indenting depths
     for ( int i=0; i<5; i++ ) {
         QString toStr = doc.toString( i );
@@ -675,17 +682,14 @@ void tst_QDom::saveWithSerialization() const
     QVERIFY(readDevice.open(QIODevice::ReadOnly));
 
     QDomDocument result;
+    QDomDocument::ParseResult parseResult =
+            result.setContent(&readDevice, QDomDocument::ParseOption::Default);
 
-    QString msg;
-    int line = 0;
-    int column = 0;
-
-    QVERIFY2(result.setContent(&readDevice, &msg, &line, &column),
+    QVERIFY2(parseResult,
              qPrintable(QString::fromLatin1("Failed: line %2, column %3: %4, content: %5")
-                                            .arg(QString::number(line),
-                                                 QString::number(column),
-                                                 msg,
-                                                 QString::fromUtf8(storage))));
+                                .arg(QString::number(parseResult.errorLine),
+                                     QString::number(parseResult.errorColumn),
+                                     parseResult.errorMessage, QString::fromUtf8(storage))));
     if (!compareDocuments(doc, result))
     {
         QCOMPARE(doc.toString(), result.toString());
@@ -1586,10 +1590,8 @@ void tst_QDom::nonBMPCharacters()
 
     const QString input = u"<text>Supplementary Plane: 𝄞 😂 🀄 🀶 🃪 🃋</text>"_qs;
 
-    QString errorMsg;
     QDomDocument doc;
-    doc.setContent(input, &errorMsg);
-    QVERIFY(errorMsg.isEmpty());
+    QVERIFY(doc.setContent(input, QDomDocument::ParseOption::Default));
     QCOMPARE(doc.toString(-1), input);
 }
 
@@ -1631,10 +1633,8 @@ void tst_QDom::roundTripCDATA() const
 {
     const QString input = u"<?xml version='1.0' encoding='UTF-8'?>\n"
                           "<content><![CDATA[]]></content>\n"_s;
-    QString errorMsg;
     QDomDocument doc;
-    QVERIFY(doc.setContent(input, false, &errorMsg));
-    QVERIFY(errorMsg.isEmpty());
+    QVERIFY(doc.setContent(input, QDomDocument::ParseOption::Default));
     QCOMPARE(doc.toString(), input);
 }
 
@@ -1646,7 +1646,7 @@ void tst_QDom::normalizeEndOfLine() const
     QVERIFY(buffer.open(QIODevice::ReadOnly));
 
     QDomDocument doc;
-    QVERIFY(doc.setContent(&buffer, true));
+    QVERIFY(doc.setContent(&buffer, QDomDocument::ParseOption::UseNamespaceProcessing));
 
     const QString expected(QLatin1String("<a>\nc\nc\na\na</a>"));
 
@@ -1663,7 +1663,7 @@ void tst_QDom::normalizeAttributes() const
     QVERIFY(buffer.open(QIODevice::ReadOnly));
 
     QDomDocument doc;
-    QVERIFY(doc.setContent(&buffer, true));
+    QVERIFY(doc.setContent(&buffer, QDomDocument::ParseOption::UseNamespaceProcessing));
     QCOMPARE(doc.documentElement().attribute(QLatin1String("attribute")), QString::fromLatin1("a a"));
 }
 
@@ -1707,17 +1707,18 @@ void tst_QDom::serializeNamespaces() const
     QDomDocument doc;
     QByteArray ba(input);
     QXmlStreamReader streamReader(input);
-    QVERIFY(doc.setContent(&streamReader, true));
+    QVERIFY(doc.setContent(&streamReader, QDomDocument::ParseOption::UseNamespaceProcessing));
     const QByteArray serialized(doc.toByteArray());
 
     QDomDocument doc2;
-    QVERIFY(doc2.setContent(doc.toString(), true));
+    QVERIFY(doc2.setContent(doc.toString(), QDomDocument::ParseOption::UseNamespaceProcessing));
 
     /* Here we test that it roundtrips. */
     QVERIFY(isDeepEqual(doc2, doc));
 
     QDomDocument doc3;
-    QVERIFY(doc3.setContent(QString::fromLatin1(serialized.constData()), true));
+    QVERIFY(doc3.setContent(QString::fromLatin1(serialized.constData()),
+                            QDomDocument::ParseOption::UseNamespaceProcessing));
 
     QVERIFY(isDeepEqual(doc3, doc));
 }
@@ -1743,7 +1744,7 @@ void tst_QDom::flagUndeclaredNamespace() const
     QDomDocument doc;
     QByteArray ba(input);
     QXmlStreamReader streamReader(ba);
-    QVERIFY(!doc.setContent(&streamReader, true));
+    QVERIFY(!doc.setContent(&streamReader, QDomDocument::ParseOption::UseNamespaceProcessing));
 }
 
 void tst_QDom::indentComments() const
@@ -1825,12 +1826,12 @@ void tst_QDom::namespacedAttributes() const
         "</xan:td>\n";
 
     QDomDocument one("document");
-    QString error;
-    bool docParsed = one.setContent(QByteArray(xml), true, &error);
-    QVERIFY2(docParsed, qPrintable(error));
+    QDomDocument::ParseResult result =
+            one.setContent(QByteArray(xml), QDomDocument::ParseOption::UseNamespaceProcessing);
+    QVERIFY2(result, qPrintable(result.errorMessage));
     QDomDocument two("document2");
-    docParsed = two.setContent(one.toByteArray(2), true, &error);
-    QVERIFY2(docParsed, qPrintable(error));
+    result = two.setContent(one.toByteArray(2), QDomDocument::ParseOption::UseNamespaceProcessing);
+    QVERIFY2(result, qPrintable(result.errorMessage));
 
     QVERIFY(isDeepEqual(one, two));
 }
@@ -1992,7 +1993,8 @@ void tst_QDom::crashInSetContent() const
     QDomImplementation::setInvalidDataPolicy(QDomImplementation::ReturnNullNode);
     QDomDocument docImport;
 
-    QCOMPARE(docImport.setContent(QLatin1String("<a:>text</a:>"), true), false);
+    QVERIFY(!docImport.setContent(QLatin1String("<a:>text</a:>"),
+                                  QDomDocument::ParseOption::UseNamespaceProcessing));
     QVERIFY(docImport.setContent(QLatin1String("<?xml version=\"1.0\"?><e/>")));
 }
 
@@ -2007,7 +2009,7 @@ void tst_QDom::doubleNamespaceDeclarations() const
     QVERIFY(file.open(QIODevice::ReadOnly));
 
     QXmlStreamReader streamReader(&file);
-    QVERIFY(doc.setContent(&streamReader, true));
+    QVERIFY(doc.setContent(&streamReader, QDomDocument::ParseOption::UseNamespaceProcessing));
 
     // tst_QDom relies on a specific QHash ordering, see QTBUG-25071
     QString docAsString = doc.toString(0);
@@ -2024,7 +2026,7 @@ void tst_QDom::setContentQXmlReaderOverload() const
 {
     QDomDocument doc;
     QXmlStreamReader streamReader(QByteArray("<e/>"));
-    doc.setContent(&streamReader, true);
+    doc.setContent(&streamReader, QDomDocument::ParseOption::UseNamespaceProcessing);
     QCOMPARE(doc.documentElement().nodeName(), QString::fromLatin1("e"));
 }
 
@@ -2130,7 +2132,7 @@ void tst_QDom::setContentUnopenedQIODevice() const
 
     // Note: the check below is expected to fail in Qt 7.
     // Fix the test and remove the obsolete code from setContent().
-    QVERIFY(doc.setContent(&buffer, true));
+    QVERIFY(doc.setContent(&buffer, QDomDocument::ParseOption::UseNamespaceProcessing));
     QCOMPARE(doc.toString().trimmed(), data);
 }
 
@@ -2236,7 +2238,7 @@ void tst_QDom::DTDInternalSubset() const
     QFETCH( QString, internalSubset );
     QXmlStreamReader reader(doc);
     QDomDocument document;
-    QVERIFY(document.setContent(&reader, true));
+    QVERIFY(document.setContent(&reader, QDomDocument::ParseOption::UseNamespaceProcessing));
 
     QCOMPARE(document.doctype().internalSubset(), internalSubset);
 }

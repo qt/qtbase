@@ -6031,8 +6031,12 @@ QDomDocument::~QDomDocument()
 {
 }
 
+#if QT_DEPRECATED_SINCE(6, 8)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 /*!
     \overload
+    \deprecated [6.8] Use the overloads taking ParseOptions instead.
 
     This function reads the XML document from the string \a text, returning
     true if the content was successfully parsed; otherwise returns \c false.
@@ -6048,6 +6052,8 @@ bool QDomDocument::setContent(const QString& text, bool namespaceProcessing,
 }
 
 /*!
+    \deprecated [6.8] Use the overload taking ParseOptions instead.
+
     This function parses the XML document from the byte array \a
     data and sets it as the content of the document. It tries to
     detect the encoding of the document as required by the XML
@@ -6125,6 +6131,7 @@ static inline void unpackParseResult(const QDomDocument::ParseResult &parseResul
 
 /*!
     \overload
+    \deprecated [6.8] Use the overload taking ParseOptions instead.
 
     This function reads the XML document from the IO device \a dev, returning
     true if the content was successfully parsed; otherwise returns \c false.
@@ -6144,6 +6151,7 @@ bool QDomDocument::setContent(QIODevice* dev, bool namespaceProcessing,
 
 /*!
     \overload
+    \deprecated [6.8] Use the overload returning ParseResult instead.
 
     This function reads the XML document from the string \a text, returning
     true if the content was successfully parsed; otherwise returns \c false.
@@ -6159,6 +6167,7 @@ bool QDomDocument::setContent(const QString& text, QString *errorMsg, int *error
 
 /*!
     \overload
+    \deprecated [6.8] Use the overload returning ParseResult instead.
 
     This function reads the XML document from the byte array \a buffer,
     returning true if the content was successfully parsed; otherwise returns
@@ -6173,7 +6182,7 @@ bool QDomDocument::setContent(const QByteArray& buffer, QString *errorMsg, int *
 
 /*!
     \overload
-    \deprecated
+    \deprecated [6.8] Use the overload returning ParseResult instead.
 
     This function reads the XML document from the IO device \a dev, returning
     true if the content was successfully parsed; otherwise returns \c false.
@@ -6188,6 +6197,7 @@ bool QDomDocument::setContent(QIODevice* dev, QString *errorMsg, int *errorLine,
 /*!
     \overload
     \since 5.15
+    \deprecated [6.8] Use the overload taking ParseOptions instead.
 
     This function reads the XML document from the QXmlStreamReader \a reader
     and parses it. Returns \c true if the content was successfully parsed;
@@ -6211,6 +6221,8 @@ bool QDomDocument::setContent(QXmlStreamReader *reader, bool namespaceProcessing
     unpackParseResult(result, errorMsg, errorLine, errorColumn);
     return bool(result);
 }
+QT_WARNING_POP
+#endif // QT_DEPRECATED_SINCE(6, 8)
 
 /*!
     \enum QDomDocument::ParseOption

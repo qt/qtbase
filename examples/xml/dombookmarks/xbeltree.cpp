@@ -53,17 +53,14 @@ void XbelTree::contextMenuEvent(QContextMenuEvent *event)
 
 bool XbelTree::read(QIODevice *device)
 {
-    QString errorStr;
-    int errorLine;
-    int errorColumn;
-
-    if (!domDocument.setContent(device, true, &errorStr, &errorLine,
-                                &errorColumn)) {
+    QDomDocument::ParseResult result =
+            domDocument.setContent(device, QDomDocument::ParseOption::UseNamespaceProcessing);
+    if (!result) {
         QMessageBox::information(window(), tr("DOM Bookmarks"),
                                  tr("Parse error at line %1, column %2:\n%3")
-                                 .arg(errorLine)
-                                 .arg(errorColumn)
-                                 .arg(errorStr));
+                                         .arg(result.errorLine)
+                                         .arg(result.errorColumn)
+                                         .arg(result.errorMessage));
         return false;
     }
 

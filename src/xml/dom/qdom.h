@@ -313,14 +313,23 @@ public:
     inline QDomNode::NodeType nodeType() const { return DocumentNode; }
 
     // Qt extensions
+#if QT_DEPRECATED_SINCE(6, 8)
+    QT_DEPRECATED_VERSION_X_6_8("Use the overload taking ParseOptions instead.")
     bool setContent(const QByteArray &text, bool namespaceProcessing, QString *errorMsg = nullptr, int *errorLine = nullptr, int *errorColumn = nullptr);
+    QT_DEPRECATED_VERSION_X_6_8("Use the overload taking ParseOptions instead.")
     bool setContent(const QString &text, bool namespaceProcessing, QString *errorMsg = nullptr, int *errorLine = nullptr, int *errorColumn = nullptr);
+    QT_DEPRECATED_VERSION_X_6_8("Use the overload taking ParseOptions instead.")
     bool setContent(QIODevice *dev, bool namespaceProcessing, QString *errorMsg = nullptr, int *errorLine = nullptr, int *errorColumn = nullptr);
+    QT_DEPRECATED_VERSION_X_6_8("Use the overload returning ParseResult instead.")
     bool setContent(const QByteArray &text, QString *errorMsg, int *errorLine = nullptr, int *errorColumn = nullptr);
+    QT_DEPRECATED_VERSION_X_6_8("Use the overload returning ParseResult instead.")
     bool setContent(const QString &text, QString *errorMsg, int *errorLine = nullptr, int *errorColumn = nullptr);
+    QT_DEPRECATED_VERSION_X_6_8("Use the overload returning ParseResult instead.")
     bool setContent(QIODevice *dev, QString *errorMsg, int *errorLine = nullptr, int *errorColumn = nullptr);
+    QT_DEPRECATED_VERSION_X_6_8("Use the overload taking ParseOptions instead.")
     bool setContent(QXmlStreamReader *reader, bool namespaceProcessing, QString *errorMsg = nullptr,
                     int *errorLine = nullptr, int *errorColumn = nullptr);
+#endif // QT_DEPRECATED_SINCE(6, 8)
 
     Q_WEAK_OVERLOAD
     ParseResult setContent(const QByteArray &data, ParseOptions options = ParseOption::Default)
