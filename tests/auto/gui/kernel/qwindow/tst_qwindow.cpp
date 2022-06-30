@@ -2074,8 +2074,6 @@ void tst_QWindow::initialSize()
     w.setTitle(QLatin1String(QTest::currentTestFunction()));
     w.setWidth(m_testWindowSize.width());
     w.showNormal();
-    if (isPlatformWayland())
-        QEXPECT_FAIL("", "Wayland: This fails. See QTBUG-66818.", Abort);
     QTRY_COMPARE(w.width(), m_testWindowSize.width());
     QTRY_VERIFY(w.height() > 0);
     }
