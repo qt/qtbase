@@ -56,9 +56,12 @@ else()
     include(SelectLibraryConfigurations)
     select_library_configurations(ZSTD)
 
+    if(PC_ZSTD_VERSION)
+        set(WrapZSTD_VERSION "${PC_ZSTD_VERSION}")
+    endif()
     find_package_handle_standard_args(WrapZSTD
                                       REQUIRED_VARS ZSTD_LIBRARIES ZSTD_INCLUDE_DIRS
-                                      VERSION_VAR PC_ZSTD_VERSION)
+                                      VERSION_VAR WrapZSTD_VERSION)
 
     if(WrapZSTD_FOUND AND NOT TARGET WrapZSTD::WrapZSTD)
       add_library(WrapZSTD::WrapZSTD UNKNOWN IMPORTED)
