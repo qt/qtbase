@@ -1640,15 +1640,21 @@
 */
 
 /*!
-  \fn void QTest::QTouchEventSequence::commit(bool processEvents)
+    \fn bool QTest::QTouchEventSequence::commit(bool processEvents)
 
-   Commits this sequence of touch events to the event system. Normally there is no need to call this
-   function because it is called from the destructor. However, if autoCommit is disabled, the events
-   only get committed upon explicitly calling this function.
+    Commits this touch event to the event system, and returns whether it was
+    accepted after delivery.
 
-   In special cases tests may want to disable the processing of the events. This can be achieved by
-   setting \a processEvents to false. This results in merely queuing the events, the event loop will
-   not be forced to process them.
+    Normally there is no need to call this function because it is called from
+    the destructor. However, if autoCommit is disabled, the events only get
+    committed upon explicitly calling this function. Another reason to call it
+    explicitly is to check the return value.
+
+    In special cases, tests may want to disable the processing of the event.
+    This can be achieved by setting \a processEvents to false. This results in
+    merely queuing the event: the event loop will not be forced to process it.
+
+    Returns whether the event was accepted after delivery.
 */
 
 /*!

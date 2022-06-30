@@ -1203,11 +1203,11 @@ namespace QTest
     }
 }
 
-Q_GUI_EXPORT void qt_handleTouchEvent(QWindow *window, const QPointingDevice *device,
+Q_GUI_EXPORT bool qt_handleTouchEvent(QWindow *window, const QPointingDevice *device,
                                 const QList<QEventPoint> &points,
                                 Qt::KeyboardModifiers mods = Qt::NoModifier)
 {
-    QWindowSystemInterface::handleTouchEvent<QWindowSystemInterface::SynchronousDelivery>(window, device,
+    return QWindowSystemInterface::handleTouchEvent<QWindowSystemInterface::SynchronousDelivery>(window, device,
         QWindowSystemInterfacePrivate::toNativeTouchPoints(points, window), mods);
 }
 

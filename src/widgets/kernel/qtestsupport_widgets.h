@@ -26,7 +26,7 @@ public:
     QTouchEventWidgetSequence& release(int touchId, const QPoint &pt, QWidget *widget = nullptr);
     QTouchEventWidgetSequence& stationary(int touchId) override;
 
-    void commit(bool processEvents = true) override;
+    bool commit(bool processEvents = true) override;
 
 private:
     QTouchEventWidgetSequence(QWidget *widget, QPointingDevice *aDevice, bool autoCommit);

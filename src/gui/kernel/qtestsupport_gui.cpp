@@ -92,17 +92,19 @@ QTouchEventSequence& QTouchEventSequence::stationary(int touchId)
     return *this;
 }
 
-void QTouchEventSequence::commit(bool processEvents)
+bool QTouchEventSequence::commit(bool processEvents)
 {
     if (points.isEmpty())
-        return;
+        return false;
     QThread::msleep(1);
+    bool ret = false;
     if (targetWindow)
-        qt_handleTouchEvent(targetWindow, device, points.values());
+        ret = qt_handleTouchEvent(targetWindow, device, points.values());
     if (processEvents)
         QCoreApplication::processEvents();
     previousPoints = points;
     points.clear();
+    return ret;
 }
 
 QTouchEventSequence::QTouchEventSequence(QWindow *window, QPointingDevice *aDevice, bool autoCommit)
