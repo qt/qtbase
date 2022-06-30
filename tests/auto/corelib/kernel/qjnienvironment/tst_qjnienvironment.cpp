@@ -101,6 +101,13 @@ static void callbackFromJava(JNIEnv *env, jobject /*thiz*/, jstring value)
 }
 Q_DECLARE_JNI_NATIVE_METHOD(callbackFromJava);
 
+static void tediouslyLongNamed_callbackFromJava(JNIEnv *env, jobject /*thiz*/, jstring value)
+{
+    Q_UNUSED(env)
+    registerNativesString = QJniObject(value).toString();
+}
+Q_DECLARE_JNI_NATIVE_METHOD(tediouslyLongNamed_callbackFromJava, namedCallbackFromJava)
+
 static void callbackFromJavaNoCtor(JNIEnv *env, jobject /*thiz*/, jstring value)
 {
     Q_UNUSED(env)
@@ -124,6 +131,20 @@ void tst_QJniEnvironment::registerNativeMethods()
                                             QtString.object<jstring>());
         QTest::qWait(200);
         QVERIFY(registerNativesString == QStringLiteral("From Java: Qt"));
+    }
+
+    // Named native function
+    {
+        QVERIFY(env.registerNativeMethods(javaTestClass, {
+            Q_JNI_NATIVE_METHOD(tediouslyLongNamed_callbackFromJava)
+        }));
+
+        QJniObject::callStaticMethod<void>(javaTestClass,
+                                           "namedAppendJavaToString",
+                                           "(Ljava/lang/String;)V",
+                                            QtString.object<jstring>());
+        QTest::qWait(200);
+        QVERIFY(registerNativesString == QStringLiteral("From Java (named): Qt"));
     }
 
     // No default constructor in class
