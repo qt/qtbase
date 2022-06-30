@@ -121,6 +121,11 @@ namespace QtAndroidInput
         return m_softwareKeyboardRect;
     }
 
+    int getSelectHandleWidth()
+    {
+        return QJNIObjectPrivate::callStaticMethod<jint>(applicationClass(), "getSelectHandleWidth");
+    }
+
     void updateHandles(int mode, QPoint editMenuPos, uint32_t editButtons, QPoint cursor, QPoint anchor, bool rtl)
     {
         QJNIObjectPrivate::callStaticMethod<void>(applicationClass(), "updateHandles", "(IIIIIIIIZ)V",
