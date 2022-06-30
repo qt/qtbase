@@ -451,8 +451,6 @@ void tst_QOpenGLWidget::requestUpdate()
 #ifdef Q_OS_ANDROID
     QSKIP("Crashes on Android, figure out why (QTBUG-102043)");
 #endif
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
 
     PaintCountWidget w;
     w.resize(640, 480);
