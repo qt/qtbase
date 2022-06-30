@@ -19,7 +19,9 @@ if((UNIX AND NOT QNX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
     # offerings
     qt_find_package(WrapBacktrace PROVIDED_TARGETS WrapBacktrace::WrapBacktrace MODULE_NAME core QMAKE_LIB backtrace)
 endif()
-qt_find_package(WrapDoubleConversion PROVIDED_TARGETS WrapDoubleConversion::WrapDoubleConversion MODULE_NAME core QMAKE_LIB doubleconversion)
+qt_find_package(WrapSystemDoubleConversion
+                PROVIDED_TARGETS WrapSystemDoubleConversion::WrapSystemDoubleConversion
+                MODULE_NAME core QMAKE_LIB doubleconversion)
 qt_find_package(GLIB2 PROVIDED_TARGETS GLIB2::GLIB2 MODULE_NAME core QMAKE_LIB glib)
 qt_find_package(ICU COMPONENTS i18n uc data PROVIDED_TARGETS ICU::i18n ICU::uc ICU::data MODULE_NAME core QMAKE_LIB icu)
 if(QT_FEATURE_dlopen)
@@ -531,7 +533,7 @@ qt_feature("doubleconversion" PUBLIC PRIVATE
 qt_feature_definition("doubleconversion" "QT_NO_DOUBLECONVERSION" NEGATE VALUE "1")
 qt_feature("system-doubleconversion" PRIVATE
     LABEL "  Using system DoubleConversion"
-    CONDITION QT_FEATURE_doubleconversion AND WrapDoubleConversion_FOUND
+    CONDITION QT_FEATURE_doubleconversion AND WrapSystemDoubleConversion_FOUND
     ENABLE INPUT_doubleconversion STREQUAL 'system'
     DISABLE INPUT_doubleconversion STREQUAL 'qt'
 )
