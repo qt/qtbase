@@ -1,36 +1,29 @@
 // Copyright (C) 2022 The Qt Company Ltd.
-// Copyright (C) 2016 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#include <QtCore/qtimer.h>
+#include <QtCore/QCoreApplication>
+#include <QtCore/QEvent>
+#include <QtCore/QMutex>
+#include <QtCore/QObject>
 #include <QtCore/private/qstdweb_p.h>
-#include <QTest>
-#include <emscripten.h>
-#include <emscripten/bind.h>
-#include <emscripten/val.h>
 
-#if defined(QT_HAVE_EMSCRIPTEN_ASYNCIFY)
-#define SKIP_IF_NO_ASYNCIFY()
-#else
-#define SKIP_IF_NO_ASYNCIFY() QSKIP("Needs QT_HAVE_EMSCRIPTEN_ASYNCIFY")
-#endif
+#include <qtwasmtestlib.h>
+#include <emscripten.h>
 
 using namespace emscripten;
 
-class tst_QStdWeb  : public QObject
+class WasmPromiseTest : public QObject
 {
     Q_OBJECT
-public:
-    tst_QStdWeb() : m_window(val::global("window")), m_testSupport(val::object()) {
-        instance = this;
 
+public:
+    WasmPromiseTest() : m_window(val::global("window")), m_testSupport(val::object()) {
         m_window.set("testSupport", m_testSupport);
     }
-    ~tst_QStdWeb() noexcept {}
+
+    ~WasmPromiseTest() noexcept {}
 
 private:
-    static tst_QStdWeb* instance;
-
     void init() {
         EM_ASM({
             testSupport.resolve = {};
@@ -54,7 +47,7 @@ private:
     val m_window;
     val m_testSupport;
 
-private Q_SLOTS:
+private slots:
     void simpleResolve();
     void multipleResolve();
     void simpleReject();
@@ -71,91 +64,88 @@ private Q_SLOTS:
     void allWithFinallyAndThrow();
 };
 
-tst_QStdWeb* tst_QStdWeb::instance = nullptr;
+class BarrierCallback {
+public:
+    BarrierCallback(int number, std::function<void()> onDone)
+        : m_remaining(number), m_onDone(std::move(onDone)) {}
 
-EM_ASYNC_JS(void, awaitCondition, (), {
-    await testSupport.waitConditionPromise;
-});
+    void operator()() {
+        if (!--m_remaining) {
+            m_onDone();
+        }
+    }
 
-void tst_QStdWeb::simpleResolve()
+private:
+    int m_remaining;
+    std::function<void()> m_onDone;
+};
+
+// Post event to the main thread and verify that it is processed.
+void WasmPromiseTest::simpleResolve()
 {
-    SKIP_IF_NO_ASYNCIFY();
-
     init();
 
     qstdweb::Promise::make(m_testSupport, "makeTestPromise", {
         .thenFunc = [](val result) {
-            QVERIFY(result.isString());
-            QCOMPARE("Some lovely data", result.as<std::string>());
-            EM_ASM({
-                testSupport.finishWaiting();
-            });
+            QWASMVERIFY(result.isString());
+            QWASMCOMPARE("Some lovely data", result.as<std::string>());
+
+            QWASMSUCCESS();
         },
         .catchFunc = [](val error) {
             Q_UNUSED(error);
-            QFAIL("Unexpected catch");
+
+            QWASMFAIL("Unexpected catch");
         }
     }, std::string("simpleResolve"));
 
     EM_ASM({
         testSupport.resolve["simpleResolve"]("Some lovely data");
     });
-
-    awaitCondition();
 }
 
-void tst_QStdWeb::multipleResolve()
+void WasmPromiseTest::multipleResolve()
 {
-    SKIP_IF_NO_ASYNCIFY();
-
     init();
 
-    qstdweb::Promise::make(m_testSupport, "makeTestPromise", {
-        .thenFunc = [](val result) {
-            QVERIFY(result.isString());
-            QCOMPARE("Data 1", result.as<std::string>());
+    auto onThen = std::make_shared<BarrierCallback>(3, []() {
+        QWASMSUCCESS();
+    });
 
-            EM_ASM({
-                if (!--testSupport.promisesLeft) {
-                    testSupport.finishWaiting();
-                }
-            });
+    qstdweb::Promise::make(m_testSupport, "makeTestPromise", {
+        .thenFunc = [=](val result) {
+            QWASMVERIFY(result.isString());
+            QWASMCOMPARE("Data 1", result.as<std::string>());
+
+            (*onThen)();
         },
         .catchFunc = [](val error) {
             Q_UNUSED(error);
-            QFAIL("Unexpected catch");
+            QWASMFAIL("Unexpected catch");
         }
     }, std::string("1"));
     qstdweb::Promise::make(m_testSupport, "makeTestPromise", {
-        .thenFunc = [](val result) {
-            QVERIFY(result.isString());
-            QCOMPARE("Data 2", result.as<std::string>());
+        .thenFunc = [=](val result) {
+            QWASMVERIFY(result.isString());
+            QWASMCOMPARE("Data 2", result.as<std::string>());
 
-            EM_ASM({
-                if (!--testSupport.promisesLeft) {
-                    testSupport.finishWaiting();
-                }
-            });
+            (*onThen)();
         },
         .catchFunc = [](val error) {
             Q_UNUSED(error);
-            QFAIL("Unexpected catch");
+            QWASMFAIL("Unexpected catch");
         }
     }, std::string("2"));
     qstdweb::Promise::make(m_testSupport, "makeTestPromise", {
-        .thenFunc = [](val result) {
-            QVERIFY(result.isString());
-            QCOMPARE("Data 3", result.as<std::string>());
+        .thenFunc = [=](val result) {
+            QWASMVERIFY(result.isString());
+            QWASMCOMPARE("Data 3", result.as<std::string>());
 
-            EM_ASM({
-                if (!--testSupport.promisesLeft) {
-                    testSupport.finishWaiting();
-                }
-            });
+            (*onThen)();
         },
         .catchFunc = [](val error) {
             Q_UNUSED(error);
-            QFAIL("Unexpected catch");
+            QWASMFAIL("Unexpected catch");
         }
     }, std::string("3"));
 
@@ -164,89 +154,70 @@ void tst_QStdWeb::multipleResolve()
         testSupport.resolve["1"]("Data 1");
         testSupport.resolve["2"]("Data 2");
     });
-
-    awaitCondition();
 }
 
-void tst_QStdWeb::simpleReject()
+void WasmPromiseTest::simpleReject()
 {
-    SKIP_IF_NO_ASYNCIFY();
-
     init();
 
     qstdweb::Promise::make(m_testSupport, "makeTestPromise", {
         .thenFunc = [](val result) {
             Q_UNUSED(result);
-            QFAIL("Unexpected then");
+            QWASMFAIL("Unexpected then");
         },
         .catchFunc = [](val result) {
-            QVERIFY(result.isString());
-            QCOMPARE("Evil error", result.as<std::string>());
-            EM_ASM({
-                testSupport.finishWaiting();
-            });
+            QWASMVERIFY(result.isString());
+            QWASMCOMPARE("Evil error", result.as<std::string>());
+            QWASMSUCCESS();
         }
     }, std::string("simpleReject"));
 
     EM_ASM({
         testSupport.reject["simpleReject"]("Evil error");
     });
-
-    awaitCondition();
 }
 
-void tst_QStdWeb::multipleReject()
+void WasmPromiseTest::multipleReject()
 {
-    SKIP_IF_NO_ASYNCIFY();
-
     init();
+    auto onThen = std::make_shared<BarrierCallback>(3, []() {
+        QWASMSUCCESS();
+    });
 
     qstdweb::Promise::make(m_testSupport, "makeTestPromise", {
         .thenFunc = [](val result) {
             Q_UNUSED(result);
-            QFAIL("Unexpected then");
+            QWASMFAIL("Unexpected then");
         },
-        .catchFunc = [](val error) {
-            QVERIFY(error.isString());
-            QCOMPARE("Error 1", error.as<std::string>());
+        .catchFunc = [=](val error) {
+            QWASMVERIFY(error.isString());
+            QWASMCOMPARE("Error 1", error.as<std::string>());
 
-            EM_ASM({
-                if (!--testSupport.promisesLeft) {
-                    testSupport.finishWaiting();
-                }
-            });
+            (*onThen)();
         }
     }, std::string("1"));
     qstdweb::Promise::make(m_testSupport, "makeTestPromise", {
         .thenFunc = [](val result) {
             Q_UNUSED(result);
-            QFAIL("Unexpected then");
+            QWASMFAIL("Unexpected then");
         },
-        .catchFunc = [](val error) {
-            QVERIFY(error.isString());
-            QCOMPARE("Error 2", error.as<std::string>());
+        .catchFunc = [=](val error) {
+            QWASMVERIFY(error.isString());
+            QWASMCOMPARE("Error 2", error.as<std::string>());
 
-            EM_ASM({
-                if (!--testSupport.promisesLeft) {
-                    testSupport.finishWaiting();
-                }
-            });
+            (*onThen)();
         }
     }, std::string("2"));
     qstdweb::Promise::make(m_testSupport, "makeTestPromise", {
         .thenFunc = [](val result) {
             Q_UNUSED(result);
-            QFAIL("Unexpected then");
+            QWASMFAIL("Unexpected then");
         },
-        .catchFunc = [](val error) {
-            QVERIFY(error.isString());
-            QCOMPARE("Error 3", error.as<std::string>());
+        .catchFunc = [=](val error) {
+            QWASMVERIFY(error.isString());
+            QWASMCOMPARE("Error 3", error.as<std::string>());
 
-            EM_ASM({
-                if (!--testSupport.promisesLeft) {
-                    testSupport.finishWaiting();
-                }
-            });
+            (*onThen)();
         }
     }, std::string("3"));
 
@@ -255,14 +226,10 @@ void tst_QStdWeb::multipleReject()
         testSupport.reject["1"]("Error 1");
         testSupport.reject["2"]("Error 2");
     });
-
-    awaitCondition();
 }
 
-void tst_QStdWeb::throwInThen()
+void WasmPromiseTest::throwInThen()
 {
-    SKIP_IF_NO_ASYNCIFY();
-
     init();
 
     qstdweb::Promise::make(m_testSupport, "makeTestPromise", {
@@ -273,69 +240,55 @@ void tst_QStdWeb::throwInThen()
             });
         },
         .catchFunc = [](val error) {
-            QCOMPARE("Expected error", error.as<std::string>());
-            EM_ASM({
-                testSupport.finishWaiting();
-            });
+            QWASMCOMPARE("Expected error", error.as<std::string>());
+            //QWASMSUCCESS();
+            QWASMFAIL("Other nasty problem");
         }
     }, std::string("throwInThen"));
 
     EM_ASM({
         testSupport.resolve["throwInThen"]();
     });
-
-    awaitCondition();
 }
 
-void tst_QStdWeb::bareFinally()
+void WasmPromiseTest::bareFinally()
 {
-    SKIP_IF_NO_ASYNCIFY();
-
     init();
 
     qstdweb::Promise::make(m_testSupport, "makeTestPromise", {
         .finallyFunc = []() {
-            EM_ASM({
-                testSupport.finishWaiting();
-            });
+            QWASMSUCCESS();
         }
     }, std::string("bareFinally"));
 
     EM_ASM({
         testSupport.resolve["bareFinally"]();
     });
-
-    awaitCondition();
 }
 
-void tst_QStdWeb::finallyWithThen()
+void WasmPromiseTest::finallyWithThen()
 {
-    SKIP_IF_NO_ASYNCIFY();
-
     init();
 
+    auto thenCalled = std::make_shared<bool>();
     qstdweb::Promise::make(m_testSupport, "makeTestPromise", {
-        .thenFunc = [] (val result) {
+        .thenFunc = [thenCalled] (val result) {
             Q_UNUSED(result);
+            *thenCalled = true;
         },
-        .finallyFunc = []() {
-            EM_ASM({
-                testSupport.finishWaiting();
-            });
+        .finallyFunc = [thenCalled]() {
+            QWASMVERIFY(*thenCalled);
+            QWASMSUCCESS();
         }
     }, std::string("finallyWithThen"));
 
     EM_ASM({
         testSupport.resolve["finallyWithThen"]();
     });
-
-    awaitCondition();
 }
 
-void tst_QStdWeb::finallyWithThrow()
+void WasmPromiseTest::finallyWithThrow()
 {
-    SKIP_IF_NO_ASYNCIFY();
-
     init();
 
     qstdweb::Promise::make(m_testSupport, "makeTestPromise", {
@@ -343,23 +296,17 @@ void tst_QStdWeb::finallyWithThrow()
             Q_UNUSED(error);
         },
         .finallyFunc = []() {
-            EM_ASM({
-                testSupport.finishWaiting();
-            });
+            QWASMSUCCESS();
         }
     }, std::string("finallyWithThrow"));
 
     EM_ASM({
         testSupport.reject["finallyWithThrow"]();
     });
-
-    awaitCondition();
 }
 
-void tst_QStdWeb::finallyWithThrowInThen()
+void WasmPromiseTest::finallyWithThrowInThen()
 {
-    SKIP_IF_NO_ASYNCIFY();
-
     init();
 
     qstdweb::Promise::make(m_testSupport, "makeTestPromise", {
@@ -370,109 +317,73 @@ void tst_QStdWeb::finallyWithThrowInThen()
             });
         },
         .catchFunc = [](val result) {
-            QVERIFY(result.isString());
-            QCOMPARE("Expected error", result.as<std::string>());
+            QWASMVERIFY(result.isString());
+            QWASMCOMPARE("Expected error", result.as<std::string>());
         },
         .finallyFunc = []() {
-            EM_ASM({
-                testSupport.finishWaiting();
-            });
+            QWASMSUCCESS();
         }
     }, std::string("bareFinallyWithThen"));
 
     EM_ASM({
         testSupport.resolve["bareFinallyWithThen"]();
     });
-
-    awaitCondition();
 }
 
-void tst_QStdWeb::nested()
+void WasmPromiseTest::nested()
 {
-    SKIP_IF_NO_ASYNCIFY();
-
     init();
 
     qstdweb::Promise::make(m_testSupport, "makeTestPromise", {
         .thenFunc = [this](val result) {
-            QVERIFY(result.isString());
-            QCOMPARE("Outer data", result.as<std::string>());
+            QWASMVERIFY(result.isString());
+            QWASMCOMPARE("Outer data", result.as<std::string>());
 
             qstdweb::Promise::make(m_testSupport, "makeTestPromise", {
                 .thenFunc = [this](val innerResult) {
-                    QVERIFY(innerResult.isString());
-                    QCOMPARE("Inner data", innerResult.as<std::string>());
+                    QWASMVERIFY(innerResult.isString());
+                    QWASMCOMPARE("Inner data", innerResult.as<std::string>());
 
                     qstdweb::Promise::make(m_testSupport, "makeTestPromise", {
                         .thenFunc = [](val innerResult) {
-                            QVERIFY(innerResult.isString());
-                            QCOMPARE("Innermost data", innerResult.as<std::string>());
+                            QWASMVERIFY(innerResult.isString());
+                            QWASMCOMPARE("Innermost data", innerResult.as<std::string>());
 
-                            EM_ASM({
-                                testSupport.finishWaiting();
-                            });
+                            QWASMSUCCESS();
                         },
                         .catchFunc = [](val error) {
                             Q_UNUSED(error);
-                            QFAIL("Unexpected catch");
+                            QWASMFAIL("Unexpected catch");
                         }
                     }, std::string("innermost"));
 
                     EM_ASM({
-                        testSupport.finishWaiting();
+                        testSupport.resolve["innermost"]("Innermost data");
                     });
                 },
                 .catchFunc = [](val error) {
                     Q_UNUSED(error);
-                    QFAIL("Unexpected catch");
+                    QWASMFAIL("Unexpected catch");
                 }
             }, std::string("inner"));
 
             EM_ASM({
-                testSupport.finishWaiting();
+                testSupport.resolve["inner"]("Inner data");
             });
         },
         .catchFunc = [](val error) {
             Q_UNUSED(error);
-            QFAIL("Unexpected catch");
+            QWASMFAIL("Unexpected catch");
         }
     }, std::string("outer"));
 
     EM_ASM({
         testSupport.resolve["outer"]("Outer data");
     });
-
-    awaitCondition();
-
-    EM_ASM({
-        testSupport.waitConditionPromise = new Promise((resolve, reject) => {
-            testSupport.finishWaiting = resolve;
-        });
-    });
-
-    EM_ASM({
-        testSupport.resolve["inner"]("Inner data");
-    });
-
-    awaitCondition();
-
-    EM_ASM({
-        testSupport.waitConditionPromise = new Promise((resolve, reject) => {
-            testSupport.finishWaiting = resolve;
-        });
-    });
-
-    EM_ASM({
-        testSupport.resolve["innermost"]("Innermost data");
-    });
-
-    awaitCondition();
 }
 
-void tst_QStdWeb::all()
+void WasmPromiseTest::all()
 {
-    SKIP_IF_NO_ASYNCIFY();
-
     init();
 
     val promise1 = m_testSupport.call<val>("makeTestPromise", val("promise1"));
@@ -484,18 +395,16 @@ void tst_QStdWeb::all()
 
     qstdweb::Promise::all({promise1, promise2, promise3}, {
         .thenFunc = [thenCalledOnce](val result) {
-            QVERIFY(*thenCalledOnce);
+            QWASMVERIFY(*thenCalledOnce);
             *thenCalledOnce = false;
 
-            QVERIFY(result.isArray());
-            QCOMPARE(3, result["length"].as<int>());
-            QCOMPARE("Data 1", result[0].as<std::string>());
-            QCOMPARE("Data 2", result[1].as<std::string>());
-            QCOMPARE("Data 3", result[2].as<std::string>());
+            QWASMVERIFY(result.isArray());
+            QWASMCOMPARE(3, result["length"].as<int>());
+            QWASMCOMPARE("Data 1", result[0].as<std::string>());
+            QWASMCOMPARE("Data 2", result[1].as<std::string>());
+            QWASMCOMPARE("Data 3", result[2].as<std::string>());
 
-            EM_ASM({
-                testSupport.finishWaiting();
-            });
+            QWASMSUCCESS();
         },
         .catchFunc = [](val result) {
             Q_UNUSED(result);
@@ -510,14 +419,10 @@ void tst_QStdWeb::all()
         testSupport.resolve["promise1"]("Data 1");
         testSupport.resolve["promise2"]("Data 2");
     });
-
-    awaitCondition();
 }
 
-void tst_QStdWeb::allWithThrow()
+void WasmPromiseTest::allWithThrow()
 {
-    SKIP_IF_NO_ASYNCIFY();
-
     init();
 
     val promise1 = m_testSupport.call<val>("makeTestPromise", val("promise1"));
@@ -530,16 +435,14 @@ void tst_QStdWeb::allWithThrow()
     qstdweb::Promise::all({promise1, promise2, promise3}, {
         .thenFunc = [](val result) {
             Q_UNUSED(result);
-            QFAIL("Unexpected then");
+            QWASMFAIL("Unexpected then");
         },
         .catchFunc = [catchCalledOnce](val result) {
-            QVERIFY(*catchCalledOnce);
+            QWASMVERIFY(*catchCalledOnce);
             *catchCalledOnce = false;
-            QVERIFY(result.isString());
-            QCOMPARE("Error 2", result.as<std::string>());
-            EM_ASM({
-                testSupport.finishWaiting();
-            });
+            QWASMVERIFY(result.isString());
+            QWASMCOMPARE("Error 2", result.as<std::string>());
+            QWASMSUCCESS();
         }
     });
 
@@ -548,14 +451,10 @@ void tst_QStdWeb::allWithThrow()
         testSupport.resolve["promise1"]("Data 1");
         testSupport.reject["promise2"]("Error 2");
     });
-
-    awaitCondition();
 }
 
-void tst_QStdWeb::allWithFinally()
+void WasmPromiseTest::allWithFinally()
 {
-    SKIP_IF_NO_ASYNCIFY();
-
     init();
 
     val promise1 = m_testSupport.call<val>("makeTestPromise", val("promise1"));
@@ -570,11 +469,9 @@ void tst_QStdWeb::allWithFinally()
             Q_UNUSED(result);
         },
         .finallyFunc = [finallyCalledOnce]() {
-            QVERIFY(*finallyCalledOnce);
+            QWASMVERIFY(*finallyCalledOnce);
             *finallyCalledOnce = false;
-            EM_ASM({
-                testSupport.finishWaiting();
-            });
+            QWASMSUCCESS();
         }
     });
 
@@ -583,14 +480,10 @@ void tst_QStdWeb::allWithFinally()
         testSupport.resolve["promise1"]("Data 1");
         testSupport.resolve["promise2"]("Data 2");
     });
-
-    awaitCondition();
 }
 
-void tst_QStdWeb::allWithFinallyAndThrow()
+void WasmPromiseTest::allWithFinallyAndThrow()
 {
-    SKIP_IF_NO_ASYNCIFY();
-
     init();
 
     val promise1 = m_testSupport.call<val>("makeTestPromise", val("promise1"));
@@ -608,11 +501,10 @@ void tst_QStdWeb::allWithFinallyAndThrow()
             });
         },
         .finallyFunc = [finallyCalledOnce]() {
-            QVERIFY(*finallyCalledOnce);
+            QWASMVERIFY(*finallyCalledOnce);
             *finallyCalledOnce = false;
-            EM_ASM({
-                testSupport.finishWaiting();
-            });
+            // QWASMSUCCESS();
+            QWASMFAIL("Some nasty problem");
         }
     });
 
@@ -621,9 +513,13 @@ void tst_QStdWeb::allWithFinallyAndThrow()
         testSupport.resolve["promise1"]("Data 1");
         testSupport.resolve["promise2"]("Data 2");
     });
-
-    awaitCondition();
 }
 
-QTEST_APPLESS_MAIN(tst_QStdWeb)
-#include "tst_qstdweb.moc"
+int main(int argc, char **argv)
+{
+    auto testObject = std::make_shared<WasmPromiseTest>();
+    QtWasmTest::initTestCase<QCoreApplication>(argc, argv, testObject);
+    return 0;
+}
+
+#include "promise_main.moc"
