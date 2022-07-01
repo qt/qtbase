@@ -124,6 +124,7 @@ bool QBasicDrag::eventFilter(QObject *o, QEvent *e)
         }
         case QEvent::MouseButtonRelease:
         {
+            QPointer<QObject> objGuard(o);
             disableEventFilter();
             if (canDrop()) {
                 QPoint nativePosition = getNativeMousePos(e, m_drag_icon_window);
@@ -133,6 +134,8 @@ bool QBasicDrag::eventFilter(QObject *o, QEvent *e)
                 cancel();
             }
             exitDndEventLoop();
+            if (!objGuard)
+                return true;
 
             // If a QShapedPixmapWindow (drag feedback) is being dragged along, the
             // mouse event's localPos() will be relative to that, which is useless.
