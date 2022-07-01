@@ -1009,14 +1009,14 @@ template <class T> inline T qgraphicsitem_cast(QGraphicsItem *item)
 {
     typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type Item;
     return int(Item::Type) == int(QGraphicsItem::Type)
-        || (item && int(Item::Type) == item->type()) ? static_cast<T>(item) : 0;
+        || (item && int(Item::Type) == item->type()) ? static_cast<T>(item) : nullptr;
 }
 
 template <class T> inline T qgraphicsitem_cast(const QGraphicsItem *item)
 {
     typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type Item;
     return int(Item::Type) == int(QGraphicsItem::Type)
-        || (item && int(Item::Type) == item->type()) ? static_cast<T>(item) : 0;
+        || (item && int(Item::Type) == item->type()) ? static_cast<T>(item) : nullptr;
 }
 
 #ifndef QT_NO_DEBUG_STREAM
