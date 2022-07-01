@@ -3480,11 +3480,6 @@ QByteArray QByteArray::rightJustified(qsizetype width, char fill, bool truncate)
     return result;
 }
 
-bool QByteArray::isNull() const noexcept
-{
-    return d->isNull();
-}
-
 auto QtPrivate::toSignedInteger(QByteArrayView data, int base) -> ParsedNumber<qlonglong>
 {
 #if defined(QT_CHECK_RANGE)

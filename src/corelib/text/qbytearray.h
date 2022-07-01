@@ -439,6 +439,7 @@ public:
     inline qsizetype count() const noexcept { return size(); }
 #endif
     inline qsizetype length() const noexcept { return size(); }
+    QT_CORE_INLINE_SINCE(6, 4)
     bool isNull() const noexcept;
 
     inline DataPointer &data_ptr() { return d; }
@@ -566,6 +567,13 @@ inline QByteArray &QByteArray::setNum(ulong n, int base)
 { return setNum(qulonglong(n), base); }
 inline QByteArray &QByteArray::setNum(float n, char format, int precision)
 { return setNum(double(n), format, precision); }
+
+#if QT_CORE_INLINE_IMPL_SINCE(6, 4)
+bool QByteArray::isNull() const noexcept
+{
+    return d->isNull();
+}
+#endif
 
 #if !defined(QT_NO_DATASTREAM) || defined(QT_BOOTSTRAPPED)
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QByteArray &);
