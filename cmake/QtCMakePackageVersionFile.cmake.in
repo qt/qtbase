@@ -1,8 +1,20 @@
 # Copyright (C) 2024 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Include the basic version config file to get results of regular version checking.
-include("${CMAKE_CURRENT_LIST_DIR}/@package_name@ConfigVersionImpl.cmake")
+# Store the base version config file location and the override file location.
+# The base one might be included by the override one, but it's up to the override implementation.
+set(__qt_version_base_impl_file
+    "${CMAKE_CURRENT_LIST_DIR}/@package_name@ConfigVersionImpl.cmake")
+
+# This might be overridden by the override code.
+set(__qt_version_should_include_base_impl_file TRUE)
+
+@QT_VERSION_OVERRIDE_CODE@
+
+# Include the base version config file to get results of regular CMake version checking.
+if(__qt_version_should_include_base_impl_file)
+    include(${__qt_version_base_impl_file})
+endif()
 
 set(__qt_disable_package_version_check FALSE)
 
@@ -66,3 +78,6 @@ unset(__qt_disable_package_version_check)
 unset(__qt_disable_package_version_check_due_to_developer_build)
 unset(__qt_package_version_message_prefix)
 unset(__qt_package_version_incompatible)
+unset(__qt_version_base_impl_file)
+unset(__qt_version_base_impl_package_version)
+unset(__qt_version_should_include_base_impl_file)

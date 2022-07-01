@@ -258,6 +258,7 @@ write_basic_package_version_file(
 qt_internal_write_qt_package_version_file(
     "${INSTALL_CMAKE_NAMESPACE}"
     "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ConfigVersion.cmake"
+    ALLOW_OVERRIDE_FILES
 )
 
 # Compute the reverse relative path from QtConfig.cmake to the install prefix
