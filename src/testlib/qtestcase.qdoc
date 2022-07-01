@@ -1597,6 +1597,13 @@
 */
 
 /*!
+    \fn char *QTest::toString(const QKeySequence &ks)
+    \overload
+    \since 6.5
+    Returns a textual representation of the key sequence \a ks.
+*/
+
+/*!
     \fn template <typename Tuple, int... I> char *QTest::toString(const Tuple &tuple, QtPrivate::IndexesList<I...> )
     \internal
     \since 5.12
