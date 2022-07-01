@@ -5456,11 +5456,12 @@ QRhi::Implementation QRhi::backend() const
 }
 
 /*!
-    \return the backend type as string for this QRhi.
+    \return a friendly name for the backend \a impl, usually the name of the 3D
+    API in use.
  */
-const char *QRhi::backendName() const
+const char *QRhi::backendName(Implementation impl)
 {
-    switch (d->implType) {
+    switch (impl) {
     case QRhi::Null:
         return "Null";
     case QRhi::Vulkan:
@@ -5474,7 +5475,15 @@ const char *QRhi::backendName() const
     }
 
     Q_UNREACHABLE();
-    return nullptr;
+    return "Unknown";
+}
+
+/*!
+    \return the backend type as string for this QRhi.
+ */
+const char *QRhi::backendName() const
+{
+    return backendName(d->implType);
 }
 
 /*!

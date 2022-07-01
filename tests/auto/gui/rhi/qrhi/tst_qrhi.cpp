@@ -255,6 +255,7 @@ void tst_QRhi::create()
 
         QCOMPARE(rhi->backend(), impl);
         QVERIFY(strcmp(rhi->backendName(), ""));
+        QVERIFY(!strcmp(rhi->backendName(), QRhi::backendName(rhi->backend())));
         QVERIFY(!rhi->driverInfo().deviceName.isEmpty());
         QCOMPARE(rhi->thread(), QThread::currentThread());
 

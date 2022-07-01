@@ -1701,6 +1701,7 @@ public:
 
     Implementation backend() const;
     const char *backendName() const;
+    static const char *backendName(Implementation impl);
     QRhiDriverInfo driverInfo() const;
     QThread *thread() const;
 

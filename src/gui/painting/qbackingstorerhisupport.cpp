@@ -232,25 +232,6 @@ QRhi::Implementation QBackingStoreRhiSupport::apiToRhiBackend(QPlatformBackingSt
     return QRhi::Null;
 }
 
-const char *QBackingStoreRhiSupport::apiName(QPlatformBackingStoreRhiConfig::Api api)
-{
-    switch (api) {
-    case QPlatformBackingStoreRhiConfig::OpenGL:
-        return "OpenGL";
-    case QPlatformBackingStoreRhiConfig::Metal:
-        return "Metal";
-    case QPlatformBackingStoreRhiConfig::Vulkan:
-        return "Vulkan";
-    case QPlatformBackingStoreRhiConfig::D3D11:
-        return "D3D11";
-    case QPlatformBackingStoreRhiConfig::Null:
-        return "Null";
-    default:
-        break;
-    }
-    return "Unknown";
-}
-
 bool QBackingStoreRhiSupport::checkForceRhi(QPlatformBackingStoreRhiConfig *outConfig, QSurface::SurfaceType *outType)
 {
     static QPlatformBackingStoreRhiConfig config;
@@ -304,7 +285,7 @@ bool QBackingStoreRhiSupport::checkForceRhi(QPlatformBackingStoreRhiConfig *outC
         }
 
         qCDebug(lcQpaBackingStore) << "Check for forced use of QRhi resulted in enable"
-                                   << config.isEnabled() << "with api" << apiName(config.api());
+                                   << config.isEnabled() << "with api" << QRhi::backendName(apiToRhiBackend(config.api()));
     }
 
     if (config.isEnabled()) {

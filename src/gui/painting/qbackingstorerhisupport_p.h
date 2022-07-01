@@ -44,7 +44,6 @@ public:
     static bool checkForceRhi(QPlatformBackingStoreRhiConfig *outConfig, QSurface::SurfaceType *outType);
 
     static QRhi::Implementation apiToRhiBackend(QPlatformBackingStoreRhiConfig::Api api);
-    static const char *apiName(QPlatformBackingStoreRhiConfig::Api api);
 
     QRhi *rhi() const { return m_rhi; }
 
