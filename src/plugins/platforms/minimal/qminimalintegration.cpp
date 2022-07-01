@@ -42,6 +42,7 @@
 
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/private/qguiapplication_p.h>
+#include <qpa/qplatformnativeinterface.h>
 #include <qpa/qplatformwindow.h>
 #include <qpa/qwindowsysteminterface.h>
 
@@ -189,6 +190,13 @@ QAbstractEventDispatcher *QMinimalIntegration::createEventDispatcher() const
 #else
     return createUnixEventDispatcher();
 #endif
+}
+
+QPlatformNativeInterface *QMinimalIntegration::nativeInterface() const
+{
+    if (!m_nativeInterface)
+        m_nativeInterface.reset(new QPlatformNativeInterface);
+    return m_nativeInterface.get();
 }
 
 QMinimalIntegration *QMinimalIntegration::instance()
