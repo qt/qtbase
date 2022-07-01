@@ -96,6 +96,10 @@ foreach(line ${lines})
                     "${target_library_path}" "${QT_PLUGIN_DIRS}" lib_is_a_qt_plugin relative_lib)
             endif()
             if(NOT lib_is_a_qt_module AND NOT lib_is_a_qt_plugin)
+                qt_internal_path_is_relative_to_qt_lib_path(
+                    "${target_library_path}" "${QT_QML_DIRS}" lib_is_a_qt_qml_plugin relative_lib)
+            endif()
+            if(NOT lib_is_a_qt_module AND NOT lib_is_a_qt_plugin AND NOT lib_is_a_qt_qml_plugin)
                 message(AUTHOR_WARNING
                     "Could not determine relative path for library ${target_library_path} when "
                     "generating prl file contents. An absolute path will be embedded, which "
@@ -107,6 +111,8 @@ foreach(line ${lines})
                     set(qmake_lib_path_prefix "$$[QT_INSTALL_LIBS]")
                 elseif(lib_is_a_qt_plugin)
                     set(qmake_lib_path_prefix "$$[QT_INSTALL_PLUGINS]")
+                elseif(lib_is_a_qt_qml_plugin)
+                    set(qmake_lib_path_prefix "$$[QT_INSTALL_QML]")
                 endif()
                 qt_strip_library_version_suffix(relative_lib "${relative_lib}")
                 list(APPEND libs_to_prepend "${qmake_lib_path_prefix}/${relative_lib}")
