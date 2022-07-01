@@ -582,6 +582,7 @@ void QWin32PrintEngine::drawPixmap(const QRectF &targetRect,
 
             QImage img(QSize(imgw, imgh), QImage::Format_RGB32);
             img.fill(Qt::white);
+            img.setDevicePixelRatio(pixmap.devicePixelRatio());
             QPainter painter(&img);
             painter.drawPixmap(0,0, pixmap, tileSize * x, tileSize * y, imgw, imgh);
             QPixmap p = QPixmap::fromImage(img);
