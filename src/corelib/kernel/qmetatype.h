@@ -491,6 +491,9 @@ public:
     friend bool operator!=(QMetaType a, QMetaType b) { return !(a == b); }
 
 #ifndef QT_NO_DEBUG_STREAM
+private:
+    friend Q_CORE_EXPORT QDebug operator<<(QDebug d, QMetaType m);
+public:
     bool debugStream(QDebug& dbg, const void *rhs);
     bool hasRegisteredDebugStreamOperator() const;
 

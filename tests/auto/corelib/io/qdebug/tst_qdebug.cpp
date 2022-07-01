@@ -14,8 +14,12 @@
 #include <QLine>
 #include <QMimeType>
 #include <QMimeDatabase>
+#include <QMetaType>
+
+using namespace Qt::StringLiterals;
 
 static_assert(QTypeTraits::has_ostream_operator_v<QDebug, int>);
+static_assert(QTypeTraits::has_ostream_operator_v<QDebug, QMetaType>);
 static_assert(QTypeTraits::has_ostream_operator_v<QDebug, QList<int>>);
 static_assert(QTypeTraits::has_ostream_operator_v<QDebug, QMap<int, QString>>);
 struct NonStreamable {};
@@ -54,6 +58,7 @@ private slots:
     void stateSaver() const;
     void veryLongWarningMessage() const;
     void qDebugQChar() const;
+    void qDebugQMetaType() const;
     void qDebugQString() const;
     void qDebugQStringView() const;
     void qDebugQUtf8StringView() const;
@@ -426,6 +431,25 @@ void tst_QDebug::qDebugQChar() const
     QCOMPARE(s_line, line);
     QCOMPARE(QString::fromLatin1(s_function), function);
 
+}
+
+void tst_QDebug::qDebugQMetaType() const
+{
+    QString file, function;
+    int line = 0;
+    MessageHandlerSetter mhs(myMessageHandler);
+    {
+        QDebug d = qDebug();
+        d << QMetaType::fromType<int>() << QMetaType::fromType<QString>();
+    }
+#ifndef QT_NO_MESSAGELOGCONTEXT
+    file = __FILE__; line = __LINE__ - 4; function = Q_FUNC_INFO;
+#endif
+    QCOMPARE(s_msgType, QtDebugMsg);
+    QCOMPARE(s_msg, R"(QMetaType(int) QMetaType(QString))"_L1);
+    QCOMPARE(QString::fromLatin1(s_file), file);
+    QCOMPARE(s_line, line);
+    QCOMPARE(QString::fromLatin1(s_function), function);
 }
 
 void tst_QDebug::qDebugQString() const

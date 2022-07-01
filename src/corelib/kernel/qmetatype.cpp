@@ -1704,6 +1704,17 @@ void QMetaType::unregisterConverterFunction(QMetaType from, QMetaType to)
 #ifndef QT_NO_DEBUG_STREAM
 
 /*!
+    \fn QDebug QMetaType::operator<<(QDebug d, QMetaType m)
+    \since 6.5
+    Writes the QMetaType \a m to the stream \a d, and returns the stream.
+*/
+QDebug operator<<(QDebug d, QMetaType m)
+{
+    const QDebugStateSaver saver(d);
+    return d.nospace() << "QMetaType(" << m.name() << ")";
+}
+
+/*!
     Streams the object at \a rhs to the debug stream \a dbg. Returns \c true
     on success, otherwise false.
     \since 5.2
