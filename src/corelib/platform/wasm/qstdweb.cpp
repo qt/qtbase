@@ -10,11 +10,11 @@
 #include <cstdint>
 #include <iostream>
 
+#include <unordered_map>
+
 QT_BEGIN_NAMESPACE
 
 namespace qstdweb {
-
-const char makeContextfulPromiseFunctionName[] = "makePromise";
 
 typedef double uint53_t; // see Number.MAX_SAFE_INTEGER
 namespace {
@@ -28,28 +28,166 @@ void validateCallbacks(const PromiseCallbacks& callbacks) {
     Q_ASSERT(!!callbacks.catchFunc || !!callbacks.finallyFunc || !!callbacks.thenFunc);
 }
 
-void injectScript(const std::string& source, const std::string& injectionName)
+using ThunkId = int;
+
+#define THUNK_NAME(type, i) callbackThunk##type##i
+
+// A resource pool for exported promise thunk functions. ThunkPool::poolSize sets of
+// 3 promise thunks (then, catch, finally) are exported and can be used by promises
+// in C++. To allocate a thunk, call allocateThunk. When a thunk is ready for use,
+// a callback with allocation RAII object ThunkAllocation will be returned. Deleting
+// the object frees the thunk and automatically makes any pending allocateThunk call
+// run its callback with a free thunk slot.
+class ThunkPool {
+public:
+    static constexpr size_t poolSize = 4;
+
+    // An allocation for a thunk function set. Following the RAII pattern, destruction of
+    // this objects frees a corresponding thunk pool entry.
+    // To actually make the thunks react to a js promise's callbacks, call bindToPromise.
+    class ThunkAllocation {
+    public:
+        ThunkAllocation(int thunkId, ThunkPool* pool) : m_thunkId(thunkId), m_pool(pool) {}
+        ~ThunkAllocation() {
+            m_pool->free(m_thunkId);
+        }
+
+        // The id of the underlaying thunk set
+        int id() const { return m_thunkId; }
+
+        // Binds the corresponding thunk set to the js promise 'target'.
+        void bindToPromise(emscripten::val target, const PromiseCallbacks& callbacks) {
+            using namespace emscripten;
+
+            if (Q_LIKELY(callbacks.thenFunc)) {
+                target = target.call<val>(
+                    "then",
+                    emscripten::val::module_property(thunkName(CallbackType::Then, id()).data()));
+            }
+            if (callbacks.catchFunc) {
+                target = target.call<val>(
+                    "catch",
+                    emscripten::val::module_property(thunkName(CallbackType::Catch, id()).data()));
+            }
+            if (callbacks.finallyFunc) {
+                target = target.call<val>(
+                    "finally",
+                    emscripten::val::module_property(thunkName(CallbackType::Finally, id()).data()));
+            }
+        }
+
+    private:
+        int m_thunkId;
+        ThunkPool* m_pool;
+    };
+
+    ThunkPool() {
+        std::iota(m_free.begin(), m_free.end(), 0);
+    }
+
+    void setThunkCallback(std::function<void(int, CallbackType, emscripten::val)> callback) {
+        m_callback = std::move(callback);
+    }
+
+    void allocateThunk(std::function<void(std::unique_ptr<ThunkAllocation>)> onAllocated) {
+        if (m_free.empty()) {
+            m_pendingAllocations.push_back(std::move(onAllocated));
+            return;
+        }
+
+        const int thunkId = m_free.back();
+        m_free.pop_back();
+        onAllocated(std::make_unique<ThunkAllocation>(thunkId, this));
+    }
+
+    static QByteArray thunkName(CallbackType type, size_t i) {
+        return QStringLiteral("promiseCallback%1%2").arg([type]() -> QString {
+            switch (type) {
+                case CallbackType::Then:
+                    return QStringLiteral("Then");
+                case CallbackType::Catch:
+                    return QStringLiteral("Catch");
+                case CallbackType::Finally:
+                    return QStringLiteral("Finally");
+            }
+        }()).arg(i).toLatin1();
+    }
+
+    static ThunkPool* get();
+
+#define THUNK(i) \
+    static void THUNK_NAME(Then, i)(emscripten::val result) \
+    { \
+        get()->onThunkCalled(i, CallbackType::Then, std::move(result)); \
+    } \
+    static void THUNK_NAME(Catch, i)(emscripten::val result) \
+    { \
+        get()->onThunkCalled(i, CallbackType::Catch, std::move(result)); \
+    } \
+    static void THUNK_NAME(Finally, i)() \
+    { \
+        get()->onThunkCalled(i, CallbackType::Finally, emscripten::val::undefined()); \
+    }
+
+    THUNK(0);
+    THUNK(1);
+    THUNK(2);
+    THUNK(3);
+
+#undef THUNK
+
+private:
+    void onThunkCalled(int index, CallbackType type, emscripten::val result) {
+        m_callback(index, type, std::move(result));
+    }
+
+    void free(int thunkId) {
+        if (m_pendingAllocations.empty()) {
+            // Return the thunk to the free pool
+            m_free.push_back(thunkId);
+            return;
+        }
+
+        // Take the next enqueued allocation and reuse the thunk
+        auto allocation = m_pendingAllocations.back();
+        m_pendingAllocations.pop_back();
+        allocation(std::make_unique<ThunkAllocation>(thunkId, this));
+    }
+
+    std::function<void(int, CallbackType, emscripten::val)> m_callback;
+
+    std::vector<int> m_free = std::vector<int>(poolSize);
+    std::vector<std::function<void(std::unique_ptr<ThunkAllocation>)>> m_pendingAllocations;
+};
+
+Q_GLOBAL_STATIC(ThunkPool, g_thunkPool)
+
+ThunkPool* ThunkPool::get()
 {
-    using namespace emscripten;
-
-    auto script = val::global("document").call<val>("createElement", val("script"));
-    auto head = val::global("document").call<val>("getElementsByTagName", val("head"));
-
-    script.call<void>("setAttribute", val("qtinjection"), val(injectionName));
-    script.set("innerText", val(source));
-
-    head[0].call<void>("appendChild", std::move(script));
+    return g_thunkPool;
 }
 
-using PromiseContext = int;
+#define CALLBACK_BINDING(i) \
+    emscripten::function(ThunkPool::thunkName(CallbackType::Then, i).data(), \
+                         &ThunkPool::THUNK_NAME(Then, i)); \
+    emscripten::function(ThunkPool::thunkName(CallbackType::Catch, i).data(), \
+                         &ThunkPool::THUNK_NAME(Catch, i)); \
+    emscripten::function(ThunkPool::thunkName(CallbackType::Finally, i).data(), \
+                         &ThunkPool::THUNK_NAME(Finally, i));
+
+EMSCRIPTEN_BINDINGS(qtThunkPool) {
+    CALLBACK_BINDING(0)
+    CALLBACK_BINDING(1)
+    CALLBACK_BINDING(2)
+    CALLBACK_BINDING(3)
+}
+
+#undef CALLBACK_BINDING
+#undef THUNK_NAME
 
 class WebPromiseManager
 {
 public:
-    static const char contextfulPromiseSupportObjectName[];
-
-    static const char webPromiseManagerCallbackThunkExportName[];
-
     WebPromiseManager();
     ~WebPromiseManager();
 
@@ -62,43 +200,30 @@ public:
 
     static WebPromiseManager* get();
 
-    static void callbackThunk(emscripten::val callbackType, emscripten::val context, emscripten::val result);
-
 private:
+    struct RegistryEntry {
+        PromiseCallbacks callbacks;
+        std::unique_ptr<ThunkPool::ThunkAllocation> allocation;
+    };
+
     static std::optional<CallbackType> parseCallbackType(emscripten::val callbackType);
 
-    void subscribeToJsPromiseCallbacks(const PromiseCallbacks& callbacks, emscripten::val jsContextfulPromise);
-    void callback(CallbackType type, emscripten::val context, emscripten::val result);
+    void subscribeToJsPromiseCallbacks(int i, const PromiseCallbacks& callbacks, emscripten::val jsContextfulPromise);
+    void promiseThunkCallback(int i, CallbackType type, emscripten::val result);
 
-    void registerPromise(PromiseContext context, PromiseCallbacks promise);
-    void unregisterPromise(PromiseContext context);
+    void registerPromise(std::unique_ptr<ThunkPool::ThunkAllocation> allocation, PromiseCallbacks promise);
+    void unregisterPromise(ThunkId context);
 
-    QHash<PromiseContext, PromiseCallbacks> m_promiseRegistry;
-    int m_nextContextId = 0;
+    std::array<RegistryEntry, ThunkPool::poolSize> m_promiseRegistry;
 };
-
-static void qStdWebCleanup()
-{
-    auto window = emscripten::val::global("window");
-    auto contextfulPromiseSupport = window[WebPromiseManager::contextfulPromiseSupportObjectName];
-    if (contextfulPromiseSupport.isUndefined())
-        return;
-
-    contextfulPromiseSupport.call<void>("removeRef");
-}
-
-const char WebPromiseManager::webPromiseManagerCallbackThunkExportName[] = "qtStdWebWebPromiseManagerCallbackThunk";
-const char WebPromiseManager::contextfulPromiseSupportObjectName[] = "qtContextfulPromiseSupport";
 
 Q_GLOBAL_STATIC(WebPromiseManager, webPromiseManager)
 
 WebPromiseManager::WebPromiseManager()
 {
-    QFile injection(QStringLiteral(":/injections/qtcontextfulpromise_injection.js"));
-    if (!injection.open(QIODevice::ReadOnly))
-        qFatal("Missing resource");
-    injectScript(injection.readAll().toStdString(), "contextfulpromise");
-    qAddPostRoutine(&qStdWebCleanup);
+    ThunkPool::get()->setThunkCallback(std::bind(
+        &WebPromiseManager::promiseThunkCallback, this,
+        std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 }
 
 std::optional<CallbackType>
@@ -124,75 +249,51 @@ WebPromiseManager *WebPromiseManager::get()
     return webPromiseManager();
 }
 
-void WebPromiseManager::callbackThunk(emscripten::val callbackType,
-                                      emscripten::val context,
-                                      emscripten::val result)
+void WebPromiseManager::promiseThunkCallback(int context, CallbackType type, emscripten::val result)
 {
-    auto parsedCallbackType = parseCallbackType(callbackType);
-    if (!parsedCallbackType) {
-        qFatal("Bad callback type");
-    }
-    WebPromiseManager::get()->callback(*parsedCallbackType, context, std::move(result));
-}
+    auto* promiseState = &m_promiseRegistry[context];
 
-void WebPromiseManager::subscribeToJsPromiseCallbacks(const PromiseCallbacks& callbacks, emscripten::val jsContextfulPromiseObject) {
-    using namespace emscripten;
-
-    if (Q_LIKELY(callbacks.thenFunc))
-        jsContextfulPromiseObject = jsContextfulPromiseObject.call<val>("then");
-    if (callbacks.catchFunc)
-        jsContextfulPromiseObject = jsContextfulPromiseObject.call<val>("catch");
-    if (callbacks.finallyFunc)
-        jsContextfulPromiseObject = jsContextfulPromiseObject.call<val>("finally");
-}
-
-void WebPromiseManager::callback(CallbackType type, emscripten::val context, emscripten::val result)
-{
-    auto found = m_promiseRegistry.find(context.as<PromiseContext>());
-    if (found == m_promiseRegistry.end()) {
-        return;
-    }
-
+    auto* callbacks = &promiseState->callbacks;
     bool expectingOtherCallbacks;
     switch (type) {
         case CallbackType::Then:
-            found->thenFunc(result);
+            callbacks->thenFunc(result);
             // At this point, if there is no finally function, we are sure that the Catch callback won't be issued.
-            expectingOtherCallbacks = !!found->finallyFunc;
+            expectingOtherCallbacks = !!callbacks->finallyFunc;
             break;
         case CallbackType::Catch:
-            found->catchFunc(result);
-            expectingOtherCallbacks = !!found->finallyFunc;
+            callbacks->catchFunc(result);
+            expectingOtherCallbacks = !!callbacks->finallyFunc;
             break;
         case CallbackType::Finally:
-            found->finallyFunc();
+            callbacks->finallyFunc();
             expectingOtherCallbacks = false;
             break;
     }
 
     if (!expectingOtherCallbacks)
-        unregisterPromise(context.as<int>());
+        unregisterPromise(context);
 }
 
-void WebPromiseManager::registerPromise(PromiseContext context, PromiseCallbacks callbacks)
+void WebPromiseManager::registerPromise(
+    std::unique_ptr<ThunkPool::ThunkAllocation> allocation,
+    PromiseCallbacks callbacks)
 {
-    m_promiseRegistry.emplace(context, std::move(callbacks));
+    const ThunkId id = allocation->id();
+    m_promiseRegistry[id] =
+        RegistryEntry {std::move(callbacks), std::move(allocation)};
 }
 
-void WebPromiseManager::unregisterPromise(PromiseContext context)
+void WebPromiseManager::unregisterPromise(ThunkId context)
 {
-    m_promiseRegistry.remove(context);
+    m_promiseRegistry[context] = {};
 }
 
 void WebPromiseManager::adoptPromise(emscripten::val target, PromiseCallbacks callbacks) {
-    emscripten::val context(m_nextContextId++);
-
-    auto jsContextfulPromise = emscripten::val::global("window")
-        [contextfulPromiseSupportObjectName].call<emscripten::val>(
-            makeContextfulPromiseFunctionName, target, context,
-            emscripten::val::module_property(webPromiseManagerCallbackThunkExportName));
-    subscribeToJsPromiseCallbacks(callbacks, jsContextfulPromise);
-    registerPromise(context.as<int>(), std::move(callbacks));
+    ThunkPool::get()->allocateThunk([=](std::unique_ptr<ThunkPool::ThunkAllocation> allocation) {
+        allocation->bindToPromise(std::move(target), callbacks);
+        registerPromise(std::move(allocation), std::move(callbacks));
+    });
 }
 }  // namespace
 
@@ -509,7 +610,6 @@ std::string EventCallback::contextPropertyName(const std::string &eventName)
 
 EMSCRIPTEN_BINDINGS(qtStdwebCalback) {
     emscripten::function("qtStdWebEventCallbackActivate", &EventCallback::activate);
-    emscripten::function(WebPromiseManager::webPromiseManagerCallbackThunkExportName, &WebPromiseManager::callbackThunk);
 }
 
 namespace Promise {
