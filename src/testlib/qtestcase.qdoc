@@ -113,7 +113,7 @@
    can be passed as expected value:
    \snippet code/src_qtestlib_qtestcase.cpp 34
 
-   Note that using initializer lists requires a defining a helper macro
+   Note that using initializer lists requires defining a helper macro
    to prevent the preprocessor from interpreting the commas as macro argument
    delimiters:
    \snippet code/src_qtestlib_qtestcase.cpp 35
