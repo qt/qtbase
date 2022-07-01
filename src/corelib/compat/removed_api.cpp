@@ -161,6 +161,8 @@ QByteArray QUrl::toAce(const QString &domain)
 
 #if QT_CORE_REMOVED_SINCE(6, 4)
 
+#include "qbytearray.h" // uses QT_CORE_INLINE_SINCE
+
 #include "qcalendar.h"
 
 QCalendar::QCalendar(QStringView name)
