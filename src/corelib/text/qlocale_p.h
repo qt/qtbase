@@ -494,8 +494,6 @@ enum { AsciiSpaceMask = (1u << (' ' - 1)) |
 
 QT_END_NAMESPACE
 
-// ### move to qstringview.h
-QT_DECL_METATYPE_EXTERN(QStringView, Q_CORE_EXPORT)
 // ### move to qnamespace.h
 QT_DECL_METATYPE_EXTERN_TAGGED(QList<Qt::DayOfWeek>, QList_Qt__DayOfWeek, Q_CORE_EXPORT)
 #ifndef QT_NO_SYSTEMLOCALE
