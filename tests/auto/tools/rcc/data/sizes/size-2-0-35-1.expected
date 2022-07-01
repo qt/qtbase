@@ -119,9 +119,18 @@ int QT_RCC_MANGLE_NAMESPACE(qCleanupResources)()
     return 1;
 }
 
+#ifdef __clang__
+#   pragma clang diagnostic push
+#   pragma clang diagnostic ignored "-Wexit-time-destructors"
+#endif
+
 namespace {
    struct initializer {
        initializer() { QT_RCC_MANGLE_NAMESPACE(qInitResources)(); }
        ~initializer() { QT_RCC_MANGLE_NAMESPACE(qCleanupResources)(); }
    } dummy;
 }
+
+#ifdef __clang__
+#   pragma clang diagnostic pop
+#endif

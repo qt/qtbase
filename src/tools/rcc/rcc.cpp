@@ -1454,6 +1454,11 @@ bool RCCResourceLibrary::writeInitializer()
         writeString("    return 1;\n");
         writeString("}\n\n");
 
+        // -Wexit-time-destructors was added to clang 3.0.0 in 2011.
+        writeString("#ifdef __clang__\n"
+                    "#   pragma clang diagnostic push\n"
+                    "#   pragma clang diagnostic ignored \"-Wexit-time-destructors\"\n"
+                    "#endif\n\n");
 
         writeString("namespace {\n"
                     "   struct initializer {\n");
@@ -1466,7 +1471,12 @@ bool RCCResourceLibrary::writeInitializer()
                            "       ~initializer() { " + cleanResources + "(); }\n");
         }
         writeString("   } dummy;\n"
-                    "}\n");
+                    "}\n\n");
+
+        writeString("#ifdef __clang__\n"
+                    "#   pragma clang diagnostic pop\n"
+                    "#endif\n");
+
 
     } else if (m_format == Binary) {
         int i = 4;
