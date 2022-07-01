@@ -34,13 +34,17 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceMap, devicesInProximity)
 
     // We use devicesInProximity because deviceID is typically 0,
     // so QInputDevicePrivate::fromId() won't work.
-    const auto *device = devicesInProximity->value(theEvent.deviceID);
-    if (!device) {
-        // Error: Unknown tablet device. Qt also gets into this state
-        // when running on a VM. This appears to be harmless; don't
-        // print a warning.
-        return false;
+    const auto deviceId = theEvent.deviceID;
+    const auto *device = devicesInProximity->value(deviceId);
+    if (!device && deviceId == 0) {
+        // Application started up with stylus in proximity already, so we missed the proximity event?
+        // Create a generic tablet device for now.
+        device = tabletToolInstance(theEvent);
+        devicesInProximity->insert(deviceId, device);
     }
+
+    if (Q_UNLIKELY(!device))
+        return false;
 
     bool down = (eventType != NSEventTypeMouseMoved);
 
