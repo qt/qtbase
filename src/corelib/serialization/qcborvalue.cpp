@@ -933,11 +933,16 @@ QCborContainerPrivate *QCborContainerPrivate::clone(QCborContainerPrivate *d, qs
     if (!d) {
         d = new QCborContainerPrivate;
     } else {
-        d = new QCborContainerPrivate(*d);
+        // in case QList::reserve throws
+        QExplicitlySharedDataPointer u(new QCborContainerPrivate(*d));
         if (reserved >= 0) {
-            d->elements.reserve(reserved);
-            d->compact(reserved);
+            u->elements.reserve(reserved);
+            u->compact(reserved);
         }
+
+        d = u.take();
+        d->ref.storeRelaxed(0);
+
         for (auto &e : qAsConst(d->elements)) {
             if (e.flags & Element::IsContainer)
                 e.container->ref.ref();
@@ -1478,6 +1483,8 @@ static Element decodeBasicValueFromCbor(QCborStreamReader &reader)
 // entries to account for key-value pairs.
 static qsizetype clampedContainerLength(const QCborStreamReader &reader)
 {
+    if (!reader.isLengthKnown())
+        return 0;
     int mapShift = reader.isMap() ? 1 : 0;
     quint64 shiftedMaxElements = MaximumPreallocatedElementCount >> mapShift;
     qsizetype len = qsizetype(qMin(reader.length(), shiftedMaxElements));
@@ -1492,15 +1499,12 @@ static inline QCborContainerPrivate *createContainerFromCbor(QCborStreamReader &
     }
 
     QCborContainerPrivate *d = nullptr;
-    if (reader.isLengthKnown()) {
-        if (qsizetype len = clampedContainerLength(reader)) {
-            d = new QCborContainerPrivate;
-            d->ref.storeRelaxed(1);
-            d->elements.reserve(len);
-        }
-    } else {
-        d = new QCborContainerPrivate;
-        d->ref.storeRelaxed(1);
+    {
+        // in case QList::reserve throws
+        QExplicitlySharedDataPointer u(new QCborContainerPrivate);
+        if (qsizetype len = clampedContainerLength(reader))
+            u->elements.reserve(len);
+        d = u.take();
     }
 
     reader.enterContainer();
