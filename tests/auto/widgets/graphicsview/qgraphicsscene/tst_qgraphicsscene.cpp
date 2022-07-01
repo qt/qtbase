@@ -4867,7 +4867,7 @@ void tst_QGraphicsScene::clearSelection()
     public:
         using QGraphicsRectItem::QGraphicsRectItem;
     protected:
-        QVariant itemChange(GraphicsItemChange change, const QVariant& value)
+        QVariant itemChange(GraphicsItemChange change, const QVariant& value) override
         {
             if (change == ItemSelectedChange)
                 return true;
