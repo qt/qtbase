@@ -40,8 +40,7 @@ enum { Endian = 0, Data = 1 };
 
 static const uchar utf8bom[] = { 0xef, 0xbb, 0xbf };
 
-#if (defined(__SSE2__) && defined(QT_COMPILER_SUPPORTS_SSE2)) \
-    || defined(__ARM_NEON__)
+#if defined(__SSE2__) || defined(__ARM_NEON__)
 static Q_ALWAYS_INLINE uint qBitScanReverse(unsigned v) noexcept
 {
 #if defined(__cpp_lib_int_pow2) && __cpp_lib_int_pow2 >= 202002L
@@ -57,7 +56,7 @@ static Q_ALWAYS_INLINE uint qBitScanReverse(unsigned v) noexcept
 }
 #endif
 
-#if defined(__SSE2__) && defined(QT_COMPILER_SUPPORTS_SSE2)
+#if defined(__SSE2__)
 static inline bool simdEncodeAscii(uchar *&dst, const char16_t *&nextAscii, const char16_t *&src, const char16_t *end)
 {
     // do sixteen characters at a time
