@@ -490,8 +490,6 @@ public:
     }
     friend bool operator!=(QMetaType a, QMetaType b) { return !(a == b); }
 
-public:
-
 #ifndef QT_NO_DEBUG_STREAM
     bool debugStream(QDebug& dbg, const void *rhs);
     bool hasRegisteredDebugStreamOperator() const;
