@@ -461,9 +461,12 @@ function(__qt_internal_include_plugin_packages target)
 
         list(APPEND "QT_ALL_PLUGINS_FOUND_BY_FIND_PACKAGE_${__plugin_type}" "${plugin_target}")
 
-        __qt_internal_add_static_plugin_linkage("${plugin_target}" "${_module_target}")
-        __qt_internal_add_static_plugin_import_macro(
-            "${plugin_target}" ${_module_target} "${target}")
+        # Auto-linkage should be set up only for static library builds.
+        if(NOT QT6_IS_SHARED_LIBS_BUILD)
+            __qt_internal_add_static_plugin_linkage("${plugin_target}" "${_module_target}")
+            __qt_internal_add_static_plugin_import_macro(
+                "${plugin_target}" ${_module_target} "${target}")
+        endif()
     endforeach()
 
     set("QT_ALL_PLUGINS_FOUND_BY_FIND_PACKAGE_${__plugin_type}"
