@@ -2,7 +2,7 @@ include(QtPostProcessHelpers)
 
 qt_internal_create_depends_files()
 qt_generate_build_internals_extra_cmake_code()
-qt_internal_create_plugins_files()
+qt_internal_create_plugins_auto_inclusion_files()
 qt_internal_create_config_file_for_standalone_tests()
 
 # Needs to run after qt_internal_create_depends_files.
