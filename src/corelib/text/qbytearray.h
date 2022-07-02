@@ -274,15 +274,15 @@ public:
     friend inline bool operator==(const QByteArray &a1, const QByteArray &a2) noexcept
     { return QByteArrayView(a1) == QByteArrayView(a2); }
     friend inline bool operator==(const QByteArray &a1, const char *a2) noexcept
-    { return a2 ? QtPrivate::compareMemory(a1, a2) == 0 : a1.isEmpty(); }
+    { return QByteArrayView(a1) == QByteArrayView(a2); }
     friend inline bool operator==(const char *a1, const QByteArray &a2) noexcept
-    { return a1 ? QtPrivate::compareMemory(a1, a2) == 0 : a2.isEmpty(); }
+    { return QByteArrayView(a1) == QByteArrayView(a2); }
     friend inline bool operator!=(const QByteArray &a1, const QByteArray &a2) noexcept
     { return !(a1==a2); }
     friend inline bool operator!=(const QByteArray &a1, const char *a2) noexcept
-    { return a2 ? QtPrivate::compareMemory(a1, a2) != 0 : !a1.isEmpty(); }
+    { return QByteArrayView(a1) != QByteArrayView(a2); }
     friend inline bool operator!=(const char *a1, const QByteArray &a2) noexcept
-    { return a1 ? QtPrivate::compareMemory(a1, a2) != 0 : !a2.isEmpty(); }
+    { return QByteArrayView(a1) != QByteArrayView(a2); }
     friend inline bool operator<(const QByteArray &a1, const QByteArray &a2) noexcept
     { return QtPrivate::compareMemory(QByteArrayView(a1), QByteArrayView(a2)) < 0; }
     friend inline bool operator<(const QByteArray &a1, const char *a2) noexcept
