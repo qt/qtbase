@@ -47,7 +47,9 @@
 #undef signals
 #include <gtk/gtk.h>
 
+#if QT_CONFIG(xcb_xlib)
 #include <X11/Xlib.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -94,13 +96,17 @@ QGtk3Theme::QGtk3Theme()
     else if (QGuiApplication::platformName() == QLatin1String("xcb"))
         gdk_set_allowed_backends("x11,wayland");
 
+#if QT_CONFIG(xcb_xlib)
     // gtk_init will reset the Xlib error handler, and that causes
     // Qt applications to quit on X errors. Therefore, we need to manually restore it.
     int (*oldErrorHandler)(Display *, XErrorEvent *) = XSetErrorHandler(nullptr);
+#endif
 
     gtk_init(nullptr, nullptr);
 
+#if QT_CONFIG(xcb_xlib)
     XSetErrorHandler(oldErrorHandler);
+#endif
 
     /* Initialize some types here so that Gtk+ does not crash when reading
      * the treemodel for GtkFontChooser.

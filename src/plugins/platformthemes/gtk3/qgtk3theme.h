@@ -40,6 +40,7 @@
 #ifndef QGTK3THEME_H
 #define QGTK3THEME_H
 
+#include <private/qtguiglobal_p.h>
 #include <private/qgenericunixthemes_p.h>
 
 QT_BEGIN_NAMESPACE
