@@ -42,6 +42,7 @@
 #include "qgtk3menu.h"
 #include <QVariant>
 #include <QtCore/qregularexpression.h>
+#include <QGuiApplication>
 
 #undef signals
 #include <gtk/gtk.h>
@@ -85,6 +86,14 @@ void gtkMessageHandler(const gchar *log_domain,
 
 QGtk3Theme::QGtk3Theme()
 {
+    // Ensure gtk uses the same windowing system, but let it
+    // fallback in case GDK_BACKEND environment variable
+    // filters the preferred one out
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland")))
+        gdk_set_allowed_backends("wayland,x11");
+    else if (QGuiApplication::platformName() == QLatin1String("xcb"))
+        gdk_set_allowed_backends("x11,wayland");
+
     // gtk_init will reset the Xlib error handler, and that causes
     // Qt applications to quit on X errors. Therefore, we need to manually restore it.
     int (*oldErrorHandler)(Display *, XErrorEvent *) = XSetErrorHandler(nullptr);
