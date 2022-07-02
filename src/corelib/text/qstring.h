@@ -270,7 +270,7 @@ public:
     { return qTokenize(*this, std::forward<Needle>(needle), flags...); }
 
     friend inline bool operator==(QLatin1StringView s1, QLatin1StringView s2) noexcept
-    { return s1.size() == s2.size() && (!s1.size() || !memcmp(s1.latin1(), s2.latin1(), s1.size())); }
+    { return QByteArrayView(s1) == QByteArrayView(s2); }
     friend inline bool operator!=(QLatin1StringView s1, QLatin1StringView s2) noexcept
     { return !(s1 == s2); }
     friend inline bool operator<(QLatin1StringView s1, QLatin1StringView s2) noexcept

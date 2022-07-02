@@ -300,7 +300,7 @@ public:
     [[nodiscard]] constexpr char last()  const { return back(); }
 
     friend inline bool operator==(QByteArrayView lhs, QByteArrayView rhs) noexcept
-    { return lhs.size() == rhs.size() && QtPrivate::compareMemory(lhs, rhs) == 0; }
+    { return lhs.size() == rhs.size() && (!lhs.size() || memcmp(lhs.data(), rhs.data(), lhs.size()) == 0); }
     friend inline bool operator!=(QByteArrayView lhs, QByteArrayView rhs) noexcept
     { return !(lhs == rhs); }
     friend inline bool operator< (QByteArrayView lhs, QByteArrayView rhs) noexcept
