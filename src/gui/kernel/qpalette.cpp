@@ -69,12 +69,25 @@ static_assert(bitPosition(QPalette::ColorGroup(QPalette::NColorGroups - 1),
 class QPalettePrivate
 {
 public:
-    QPalettePrivate() : ref(1), ser_no(qt_palette_count++), detach_no(0) { }
+    class Data : public QSharedData {
+    public:
+        Data() : ser_no(qt_palette_count++) { }
+
+        QBrush br[QPalette::NColorGroups][QPalette::NColorRoles];
+        const int ser_no;
+    };
+
+    QPalettePrivate(const QExplicitlySharedDataPointer<Data> &data)
+        : ref(1), detach_no(0), data(data)
+    { }
+    QPalettePrivate()
+        : QPalettePrivate(QExplicitlySharedDataPointer<Data>(new Data))
+    { }
+
     QAtomicInt ref;
-    QBrush br[QPalette::NColorGroups][QPalette::NColorRoles];
     QPalette::ResolveMask resolveMask = {0};
-    int ser_no;
     int detach_no;
+    QExplicitlySharedDataPointer<Data> data;
 };
 
 static QColor qt_mix_colors(QColor a, QColor b)
@@ -746,7 +759,7 @@ const QBrush &QPalette::brush(ColorGroup gr, ColorRole cr) const
             gr = Active;
         }
     }
-    return d->br[gr][cr];
+    return d->data->br[gr][cr];
 }
 
 /*!
@@ -784,11 +797,18 @@ void QPalette::setBrush(ColorGroup cg, ColorRole cr, const QBrush &b)
         cg = Active;
     }
 
-    if (d->br[cg][cr] != b) {
+    const auto newResolveMask = d->resolveMask | ResolveMask(1) << bitPosition(cg, cr);
+    const auto valueChanged = d->data->br[cg][cr] != b;
+
+    if (valueChanged) {
         detach();
-        d->br[cg][cr] = b;
-        d->resolveMask |= ResolveMask(1) << bitPosition(cg, cr);
+        d->data.detach();
+        d->data->br[cg][cr] = b;
+    } else if (d->resolveMask != newResolveMask) {
+        detach();
     }
+
+    d->resolveMask = newResolveMask;
 }
 
 /*!
@@ -829,11 +849,7 @@ bool QPalette::isBrushSet(ColorGroup cg, ColorRole cr) const
 void QPalette::detach()
 {
     if (d->ref.loadRelaxed() != 1) {
-        QPalettePrivate *x = new QPalettePrivate;
-        for(int grp = 0; grp < (int)NColorGroups; grp++) {
-            for(int role = 0; role < (int)NColorRoles; role++)
-                x->br[grp][role] = d->br[grp][role];
-        }
+        QPalettePrivate *x = new QPalettePrivate(d->data);
         x->resolveMask = d->resolveMask;
         if (!d->ref.deref())
             delete d;
@@ -865,11 +881,11 @@ void QPalette::detach()
 */
 bool QPalette::operator==(const QPalette &p) const
 {
-    if (isCopyOf(p))
+    if (isCopyOf(p) || d->data == p.d->data)
         return true;
     for(int grp = 0; grp < (int)NColorGroups; grp++) {
         for(int role = 0; role < (int)NColorRoles; role++) {
-            if (d->br[grp][role] != p.d->br[grp][role])
+            if (d->data->br[grp][role] != p.d->data->br[grp][role])
                 return false;
         }
     }
@@ -903,7 +919,7 @@ bool QPalette::isEqual(QPalette::ColorGroup group1, QPalette::ColorGroup group2)
     if (group1 == group2)
         return true;
     for(int role = 0; role < (int)NColorRoles; role++) {
-        if (d->br[group1][role] != d->br[group2][role])
+        if (d->data->br[group1][role] != d->data->br[group2][role])
                 return false;
     }
     return true;
@@ -918,7 +934,7 @@ bool QPalette::isEqual(QPalette::ColorGroup group1, QPalette::ColorGroup group2)
 */
 qint64 QPalette::cacheKey() const
 {
-    return (((qint64) d->ser_no) << 32) | ((qint64) (d->detach_no));
+    return (((qint64) d->data->ser_no) << 32) | ((qint64) (d->detach_no));
 }
 
 /*!
@@ -940,7 +956,8 @@ QPalette QPalette::resolve(const QPalette &other) const
     for (int role = 0; role < int(NColorRoles); ++role) {
         for (int grp = 0; grp < int(NColorGroups); ++grp) {
             if (!(d->resolveMask & (ResolveMask(1) << bitPosition(ColorGroup(grp), ColorRole(role))))) {
-                palette.d->br[grp][role] = other.d->br[grp][role];
+                palette.d->data.detach();
+                palette.d->data->br[grp][role] = other.d->data->br[grp][role];
             }
         }
     }
@@ -1003,7 +1020,7 @@ QDataStream &operator<<(QDataStream &s, const QPalette &p)
         if (s.version() == 1) {
             // Qt 1.x
             for (int i = 0; i < NumOldRoles; ++i)
-                s << p.d->br[grp][oldRoles[i]].color();
+                s << p.d->data->br[grp][oldRoles[i]].color();
         } else {
             int max = (int)QPalette::NColorRoles;
             if (s.version() <= QDataStream::Qt_2_1)
@@ -1013,7 +1030,7 @@ QDataStream &operator<<(QDataStream &s, const QPalette &p)
             else if (s.version() <= QDataStream::Qt_5_11)
                 max = QPalette::ToolTipText + 1;
             for (int r = 0; r < max; r++)
-                s << p.d->br[grp][r];
+                s << p.d->data->br[grp][r];
         }
     }
     return s;
