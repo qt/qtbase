@@ -190,9 +190,6 @@ void tst_QPalette::setBrush()
 
     const QPalette pp = p;
     QVERIFY(pp.isCopyOf(p));
-    // Setting the same brush won't detach
-    p.setBrush(QPalette::Disabled, QPalette::Button, Qt::green);
-    QVERIFY(pp.isCopyOf(p));
 }
 
 void tst_QPalette::isBrushSet()
@@ -217,7 +214,7 @@ void tst_QPalette::isBrushSet()
     QVERIFY(!p2.isBrushSet(QPalette::Active, QPalette::Dark));
     p2.setBrush(QPalette::Active, QPalette::Dark, p2.brush(QPalette::Active, QPalette::Dark));
     QVERIFY(!p3.isBrushSet(QPalette::Active, QPalette::Dark));
-    QVERIFY(!p2.isBrushSet(QPalette::Active, QPalette::Dark));
+    QVERIFY(p2.isBrushSet(QPalette::Active, QPalette::Dark));
 }
 
 void tst_QPalette::setAllPossibleBrushes()
