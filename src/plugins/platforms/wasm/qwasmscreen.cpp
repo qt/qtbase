@@ -11,10 +11,6 @@
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 
-#include <QtGui/private/qeglconvenience_p.h>
-#ifndef QT_NO_OPENGL
-# include <QtGui/private/qeglplatformcontext_p.h>
-#endif
 #include <qpa/qwindowsysteminterface.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtGui/qguiapplication.h>
