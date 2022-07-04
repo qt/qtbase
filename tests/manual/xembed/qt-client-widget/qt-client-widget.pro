@@ -1,5 +1,5 @@
 TEMPLATE = app
-TARGET= tst_manual_lineedits
+TARGET= qt-client-widget
 QT += widgets
 
 SOURCES += \
