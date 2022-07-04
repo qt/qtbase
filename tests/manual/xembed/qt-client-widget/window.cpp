@@ -7,6 +7,10 @@
 
 Window::Window()
 {
+    setAttribute(Qt::WA_NativeWindow);
+    setAttribute(Qt::WA_DontCreateNativeAncestors);
+    createWinId();
+
     QGroupBox *echoGroup = new QGroupBox(tr("Echo"));
 
     QLabel *echoLabel = new QLabel(tr("Mode:"));

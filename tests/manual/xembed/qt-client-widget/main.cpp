@@ -21,12 +21,12 @@ int main(int argc, char *argv[])
     }
 
     Window window;
-    window.show();
 
     QWindow *foreign = QWindow::fromWinId(winId);
     Q_ASSERT(foreign != 0);
 
     window.windowHandle()->setParent(foreign);
+    window.show();
 
     return app.exec();
 }
