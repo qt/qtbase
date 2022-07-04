@@ -52,8 +52,11 @@
 #undef signals
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
-#include <gdk/gdkx.h>
 #include <pango/pango.h>
+
+#if QT_CONFIG(xlib) && defined(GDK_WINDOWING_X11)
+#include <gdk/gdkx.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -130,12 +133,14 @@ bool QGtk3Dialog::show(Qt::WindowFlags flags, Qt::WindowModality modality, QWind
 
     GdkWindow *gdkWindow = gtk_widget_get_window(gtkWidget);
     if (parent) {
+#if QT_CONFIG(xlib) && defined(GDK_WINDOWING_X11)
         if (GDK_IS_X11_WINDOW(gdkWindow)) {
             GdkDisplay *gdkDisplay = gdk_window_get_display(gdkWindow);
             XSetTransientForHint(gdk_x11_display_get_xdisplay(gdkDisplay),
                                  gdk_x11_window_get_xid(gdkWindow),
                                  parent->winId());
         }
+#endif
     }
 
     if (modality != Qt::NonModal) {
