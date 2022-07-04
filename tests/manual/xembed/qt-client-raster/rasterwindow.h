@@ -19,10 +19,10 @@ public slots:
     void renderNow();
 
 protected:
-    bool event(QEvent *event);
+    bool event(QEvent *event) override;
 
-    void resizeEvent(QResizeEvent *event);
-    void exposeEvent(QExposeEvent *event);
+    void resizeEvent(QResizeEvent *event) override;
+    void exposeEvent(QExposeEvent *event) override;
 
 private:
     QBackingStore *m_backingStore;

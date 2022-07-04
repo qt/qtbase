@@ -1,13 +1,13 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-# Generated from xembed-widgets.pro.
+# Generated from qt-client-widget.pro.
 
 #####################################################################
-## tst_manual_lineedits Binary:
+## qt-client-widget Binary:
 #####################################################################
 
-qt_internal_add_manual_test(tst_manual_lineedits
+qt_internal_add_manual_test(qt-client-widget
     GUI
     SOURCES
         main.cpp
@@ -17,5 +17,5 @@ qt_internal_add_manual_test(tst_manual_lineedits
         Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:.:xembed-widgets.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:qt-client-widget.pro:<TRUE>:
 # TEMPLATE = "app"
