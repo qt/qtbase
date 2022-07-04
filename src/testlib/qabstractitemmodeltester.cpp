@@ -322,6 +322,7 @@ QAbstractItemModelTester::FailureReportingMode QAbstractItemModelTester::failure
     If \a value is false, it disables it.
 
     \since 6.4
+    \sa QAbstractItemModel::fetchMore()
 */
 void QAbstractItemModelTester::setUseFetchMore(bool value)
 {
