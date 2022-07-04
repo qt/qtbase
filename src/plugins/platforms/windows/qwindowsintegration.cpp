@@ -229,7 +229,7 @@ void QWindowsIntegrationPrivate::parseOptions(QWindowsIntegration *q, const QStr
             if (dpiAwareness == QtWindows::ProcessPerMonitorV2DpiAware) {
                 // DpiAwareV2 requires using new API
                 if (m_context.setProcessDpiV2Awareness()) {
-                    qCDebug(lcQpaWindows, "DpiAwareness: DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2");
+                    qCDebug(lcQpaWindow, "DpiAwareness: DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2");
                     dpiAwarenessSet = true;
                 } else {
                     // fallback to old API
@@ -239,7 +239,7 @@ void QWindowsIntegrationPrivate::parseOptions(QWindowsIntegration *q, const QStr
 
             if (!dpiAwarenessSet) {
                 m_context.setProcessDpiAwareness(dpiAwareness);
-                qCDebug(lcQpaWindows) << "DpiAwareness=" << dpiAwareness
+                qCDebug(lcQpaWindow) << "DpiAwareness=" << dpiAwareness
                     << "effective process DPI awareness=" << QWindowsContext::processDpiAwareness();
             }
         }
@@ -318,7 +318,7 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
 {
     if (window->type() == Qt::Desktop) {
         auto *result = new QWindowsDesktopWindow(window);
-        qCDebug(lcQpaWindows) << "Desktop window:" << window
+        qCDebug(lcQpaWindow) << "Desktop window:" << window
             << Qt::showbase << Qt::hex << result->winId() << Qt::noshowbase << Qt::dec << result->geometry();
         return result;
     }
@@ -336,7 +336,7 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
     QWindowsWindowData obtained =
         QWindowsWindowData::create(window, requested,
                                    QWindowsWindow::formatWindowTitle(window->title()));
-    qCDebug(lcQpaWindows).nospace()
+    qCDebug(lcQpaWindow).nospace()
         << __FUNCTION__ << ' ' << window
         << "\n    Requested: " << requested.geometry << " frame incl.="
         << QWindowsGeometryHint::positionIncludesFrame(window)
@@ -373,7 +373,7 @@ QPlatformWindow *QWindowsIntegration::createForeignWindow(QWindow *window, WId n
         screen = pScreen->screen();
     if (screen && screen != window->screen())
         window->setScreen(screen);
-    qCDebug(lcQpaWindows) << "Foreign window:" << window << Qt::showbase << Qt::hex
+    qCDebug(lcQpaWindow) << "Foreign window:" << window << Qt::showbase << Qt::hex
         << result->winId() << Qt::noshowbase << Qt::dec << obtainedGeometry << screen;
     return result;
 }

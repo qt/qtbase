@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-Q_LOGGING_CATEGORY(lcQpaWindows, "qt.qpa.windows")
+Q_LOGGING_CATEGORY(lcQpaWindow, "qt.qpa.window")
 Q_LOGGING_CATEGORY(lcQpaEvents, "qt.qpa.events")
 Q_LOGGING_CATEGORY(lcQpaGl, "qt.qpa.gl")
 Q_LOGGING_CATEGORY(lcQpaMime, "qt.qpa.mime")
@@ -372,11 +372,11 @@ int QWindowsContext::processDpiAwareness()
 
 void QWindowsContext::setProcessDpiAwareness(QtWindows::ProcessDpiAwareness dpiAwareness)
 {
-    qCDebug(lcQpaWindows) << __FUNCTION__ << dpiAwareness;
+    qCDebug(lcQpaWindow) << __FUNCTION__ << dpiAwareness;
     const HRESULT hr = SetProcessDpiAwareness(static_cast<PROCESS_DPI_AWARENESS>(dpiAwareness));
     // E_ACCESSDENIED means set externally (MSVC manifest or external app loading Qt plugin).
     // Silence warning in that case unless debug is enabled.
-    if (FAILED(hr) && (hr != E_ACCESSDENIED || lcQpaWindows().isDebugEnabled())) {
+    if (FAILED(hr) && (hr != E_ACCESSDENIED || lcQpaWindow().isDebugEnabled())) {
         qWarning().noquote().nospace() << "SetProcessDpiAwareness("
             << dpiAwareness << ") failed: " << QWindowsContext::comErrorString(hr)
             << ", using " << QWindowsContext::processDpiAwareness();
@@ -385,11 +385,11 @@ void QWindowsContext::setProcessDpiAwareness(QtWindows::ProcessDpiAwareness dpiA
 
 bool QWindowsContext::setProcessDpiV2Awareness()
 {
-    qCDebug(lcQpaWindows) << __FUNCTION__;
+    qCDebug(lcQpaWindow) << __FUNCTION__;
     const BOOL ok = SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     if (!ok) {
         const HRESULT errorCode = GetLastError();
-        qCWarning(lcQpaWindows).noquote().nospace() << "setProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2) failed: "
+        qCWarning(lcQpaWindow).noquote().nospace() << "setProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2) failed: "
             << QWindowsContext::comErrorString(errorCode);
         return false;
     }
@@ -591,7 +591,7 @@ QString QWindowsContext::registerWindowClass(QString cname,
                       qPrintable(cname));
 
     d->m_registeredWindowClassNames.insert(cname);
-    qCDebug(lcQpaWindows).nospace() << __FUNCTION__ << ' ' << cname
+    qCDebug(lcQpaWindow).nospace() << __FUNCTION__ << ' ' << cname
         << " style=0x" << Qt::hex << style << Qt::dec
         << " brush=" << brush << " icon=" << icon << " atom=" << atom;
     return cname;
@@ -1564,7 +1564,7 @@ extern "C" LRESULT QT_WIN_CALLBACK qWindowsWndProc(HWND hwnd, UINT message, WPAR
             marginsFromRects(ncCalcSizeFrame, rectFromNcCalcSize(message, wParam, lParam, 0));
         if (margins.left() >= 0) {
             if (platformWindow) {
-                qCDebug(lcQpaWindows) << __FUNCTION__ << "WM_NCCALCSIZE for" << hwnd << margins;
+                qCDebug(lcQpaWindow) << __FUNCTION__ << "WM_NCCALCSIZE for" << hwnd << margins;
                 platformWindow->setFullFrameMargins(margins);
             } else {
                 const QSharedPointer<QWindowCreationContext> ctx = QWindowsContext::instance()->windowCreationContext();

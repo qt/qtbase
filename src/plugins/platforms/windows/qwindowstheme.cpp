@@ -658,7 +658,7 @@ void QWindowsTheme::refreshFonts()
     NONCLIENTMETRICS ncm;
     auto &screenManager = QWindowsContext::instance()->screenManager();
     QWindowsContext::nonClientMetricsForScreen(&ncm, screenManager.screens().value(0));
-    qCDebug(lcQpaWindows) << __FUNCTION__ << ncm;
+    qCDebug(lcQpaWindow) << __FUNCTION__ << ncm;
     const QFont menuFont = QWindowsFontDatabase::LOGFONT_to_QFont(ncm.lfMenuFont);
     const QFont messageBoxFont = QWindowsFontDatabase::LOGFONT_to_QFont(ncm.lfMessageFont);
     const QFont statusFont = QWindowsFontDatabase::LOGFONT_to_QFont(ncm.lfStatusFont);
@@ -731,7 +731,7 @@ void QWindowsTheme::refreshIconPixmapSizes()
     int *availEnd = fileIconSizes + LargeFileIcon + 1;
 #endif // USE_IIMAGELIST
     m_fileIconSizes = QAbstractFileIconEngine::toSizeList(fileIconSizes, availEnd);
-    qCDebug(lcQpaWindows) << __FUNCTION__ << m_fileIconSizes;
+    qCDebug(lcQpaWindow) << __FUNCTION__ << m_fileIconSizes;
 }
 
 // Defined in qpixmap_win.cpp
