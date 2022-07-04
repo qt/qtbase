@@ -1924,7 +1924,7 @@ QStringConverter::QStringConverter(const char *name, Flags f)
 {
     auto e = encodingForName(name);
     if (e)
-        iface = encodingInterfaces + int(e.value());
+        iface = encodingInterfaces + int(*e);
 #if QT_CONFIG(icu)
     else
         iface = QStringConverterICU::make_icu_converter(&state, name);
