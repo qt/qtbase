@@ -20,3 +20,27 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E copy
             ${CMAKE_CURRENT_SOURCE_DIR}/../qtwasmtestlib/qtwasmtestlib.js
             ${CMAKE_CURRENT_BINARY_DIR}/qtwasmtestlib.js)
+
+qt_internal_add_manual_test(files_auto
+    SOURCES
+        files_main.cpp
+        ../qtwasmtestlib/qtwasmtestlib.cpp
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::CorePrivate
+        Qt::GuiPrivate
+)
+
+include_directories(../qtwasmtestlib/)
+
+add_custom_command(
+    TARGET files_auto POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+            ${CMAKE_CURRENT_SOURCE_DIR}/files_auto.html
+            ${CMAKE_CURRENT_BINARY_DIR}/files_auto.html)
+
+add_custom_command(
+    TARGET files_auto POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+            ${CMAKE_CURRENT_SOURCE_DIR}/../qtwasmtestlib/qtwasmtestlib.js
+            ${CMAKE_CURRENT_BINARY_DIR}/qtwasmtestlib.js)

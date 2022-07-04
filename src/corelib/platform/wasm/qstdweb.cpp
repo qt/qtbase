@@ -451,7 +451,8 @@ File FileList::operator[](int index) const
     return item(index);
 }
 
-emscripten::val FileList::val() {
+emscripten::val FileList::val() const
+{
     return m_fileList;
 }
 

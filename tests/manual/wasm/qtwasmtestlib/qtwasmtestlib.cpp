@@ -101,10 +101,22 @@ void runTestFunction(std::string name)
     QMetaObject::invokeMethod(g_testObject, name.c_str());
 }
 
+void failTest(std::string message)
+{
+    completeTestFunction(QtWasmTest::Fail, std::move(message));
+}
+
+void passTest()
+{
+    completeTestFunction(QtWasmTest::Pass, "");
+}
+
 EMSCRIPTEN_BINDINGS(qtwebtestrunner) {
     emscripten::function("cleanupTestCase", &cleanupTestCase);
     emscripten::function("getTestFunctions", &getTestFunctions);
     emscripten::function("runTestFunction", &runTestFunction);
+    emscripten::function("qtWasmFail", &failTest);
+    emscripten::function("qtWasmPass", &passTest);
 }
 
 //

@@ -91,7 +91,7 @@ namespace qstdweb {
         int length() const;
         File item(int index) const;
         File operator[](int index) const;
-        emscripten::val val();
+        emscripten::val val() const;
 
     private:
         emscripten::val m_fileList = emscripten::val::undefined();
@@ -183,6 +183,12 @@ namespace qstdweb {
 
         void all(std::vector<emscripten::val> promises, PromiseCallbacks callbacks);
     };
+
+    inline emscripten::val window()
+    {
+        static emscripten::val savedWindow = emscripten::val::global("window");
+        return savedWindow;
+    }
 }
 
 QT_END_NAMESPACE
