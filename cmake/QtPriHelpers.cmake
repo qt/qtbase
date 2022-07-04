@@ -11,7 +11,7 @@ function(qt_generate_qmake_libraries_pri_content module_name output_root_dir out
     set(implicit_include_dirs_regex "")
     foreach(dir ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
         qt_re_escape(regex "${dir}")
-        list(APPEND implicit_include_dirs_regex ${regex})
+        list(APPEND implicit_include_dirs_regex "^${regex}$")
     endforeach()
     list(JOIN implicit_include_dirs_regex "|" implicit_include_dirs_regex)
 
