@@ -117,18 +117,22 @@ static inline QRgba64 multiplyAlpha65535(QRgba64 rgba64, uint alpha65535)
 #endif
 }
 
+#if defined(__SSE2__) || defined(__ARM_NEON__)
 template<typename T>
 static inline T Q_DECL_VECTORCALL multiplyAlpha255(T rgba64, uint alpha255)
 {
-#if defined(__SSE2__) || defined(__ARM_NEON__)
     return multiplyAlpha65535(rgba64, alpha255 * 257);
+}
 #else
+template<typename T>
+static inline T multiplyAlpha255(T rgba64, uint alpha255)
+{
     return QRgba64::fromRgba64(qt_div_255(rgba64.red()   * alpha255),
                                qt_div_255(rgba64.green() * alpha255),
                                qt_div_255(rgba64.blue()  * alpha255),
                                qt_div_255(rgba64.alpha() * alpha255));
-#endif
 }
+#endif
 
 #if defined __SSE2__
 static inline __m128i Q_DECL_VECTORCALL interpolate255(__m128i x, uint alpha1, __m128i y, uint alpha2)
