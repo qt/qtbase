@@ -7,6 +7,8 @@ RasterWindow::RasterWindow(QWindow *parent)
     : QWindow(parent)
     , m_update_pending(false)
 {
+    winId();
+
     m_backingStore = new QBackingStore(this);
     create();
 
