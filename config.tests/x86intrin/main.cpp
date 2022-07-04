@@ -12,7 +12,9 @@ int test(int argc, char **argv)
 {
     unsigned randomvalue;
     _rdrand32_step(&randomvalue);               // RDRND (IVB)
+#ifndef __QNXNTO__  // buggy compiler is missing this intrinsic, but we allow it
     _rdseed32_step(&randomvalue);               // RDSEED (BDW)
+#endif
     unsigned mask = _blsmsk_u32(argc);          // BMI (HSW)
     int clz = _lzcnt_u32(mask);                 // LZCNT (HSW)
     int ctz = _tzcnt_u32(mask);                 // BMI (HSW)

@@ -173,6 +173,10 @@ QT_WARNING_DISABLE_INTEL(103)
 #ifdef Q_PROCESSOR_X86
 /* -- x86 intrinsic support -- */
 
+#  if defined(QT_COMPILER_SUPPORTS_RDSEED) && defined(Q_OS_QNX)
+// The compiler for QNX is missing the intrinsic
+#    undef QT_COMPILER_SUPPORTS_RDSEED
+#  endif
 #  if defined(Q_CC_MSVC) && (defined(_M_X64) || _M_IX86_FP >= 2)
 // MSVC doesn't define __SSE2__, so do it ourselves
 #    define __SSE__                         1
