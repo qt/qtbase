@@ -788,6 +788,8 @@
     code-bases working. If you want to use \c QRegExp further, see
     \l {Using the Qt5Compat module}.
 
+    \section1 QEvent and subclasses
+
     The QEvent class defined a copy constructor and an assignment operator,
     in spite of being a polymorphic class. Copying classes with virtual methods
     can result in slicing when assigning objects from different classes to each
