@@ -18,12 +18,12 @@ int main(int argc, char **argv)
     }
 
     RasterWindow window;
-    window.show();
 
     QWindow *foreign = QWindow::fromWinId(winId);
     Q_ASSERT(foreign != 0);
 
     window.setParent(foreign);
+    window.show();
 
     return app.exec();
 }
