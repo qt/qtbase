@@ -34,7 +34,7 @@ QIOSTheme::QIOSTheme()
     m_contentSizeCategoryObserver = QMacNotificationObserver(nil,
         UIContentSizeCategoryDidChangeNotification, [] {
         qCDebug(lcQpaFonts) << "Contents size category changed to" << UIApplication.sharedApplication.preferredContentSizeCategory;
-        QPlatformFontDatabase::handleAvailableFontsChanged();
+        QPlatformFontDatabase::repopulateFontDatabase();
     });
 }
 

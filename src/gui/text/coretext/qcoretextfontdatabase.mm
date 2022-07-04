@@ -79,7 +79,7 @@ QCoreTextFontDatabase::QCoreTextFontDatabase()
 #if defined(Q_OS_MACOS)
     m_fontSetObserver = QMacNotificationObserver(nil, NSFontSetChangedNotification, [] {
         qCDebug(lcQpaFonts) << "Fonts have changed";
-        handleAvailableFontsChanged();
+        QPlatformFontDatabase::repopulateFontDatabase();
     });
 #endif
 }
