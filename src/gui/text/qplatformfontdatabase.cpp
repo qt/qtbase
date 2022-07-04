@@ -618,13 +618,19 @@ void QPlatformFontDatabase::registerAliasToFontFamily(const QString &familyName,
 }
 
 /*!
-    Inform the Qt font database that the platform's available fonts have changed.
+    Requests that the platform font database should be repopulated.
 
     This will result in invalidating the entire font database.
 
+    The next time the font database is accessed it will be repopulated
+    via a call to QPlatformFontDatabase::populate().
+
+    Application fonts will not be removed, and will be automatically
+    populated when the font database is repopulated.
+
     \since 6.4
 */
-void QPlatformFontDatabase::handleAvailableFontsChanged()
+void QPlatformFontDatabase::repopulateFontDatabase()
 {
     QFontDatabasePrivate::instance()->invalidate();
 }

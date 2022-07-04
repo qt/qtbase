@@ -103,7 +103,7 @@ public:
     static void registerFontFamily(const QString &familyName);
     static void registerAliasToFontFamily(const QString &familyName, const QString &alias);
 
-    static void handleAvailableFontsChanged();
+    static void repopulateFontDatabase();
 
     static bool isFamilyPopulated(const QString &familyName);
 };
