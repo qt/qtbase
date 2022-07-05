@@ -562,6 +562,8 @@ qt_internal_extend_target(Core CONDITION APPLE
     LIBRARIES
         ${FWCoreFoundation}
         ${FWFoundation}
+    PUBLIC_LIBRARIES
+        ${FWIOKit}
 )
 
 qt_internal_extend_target(Core CONDITION MACOS
@@ -572,7 +574,6 @@ qt_internal_extend_target(Core CONDITION MACOS
         ${FWSecurity}
     PUBLIC_LIBRARIES
         ${FWDiskArbitration}
-        ${FWIOKit}
 )
 
 qt_internal_extend_target(Core CONDITION INTEGRITY
