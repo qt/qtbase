@@ -448,7 +448,7 @@ QPixmap QCocoaTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) const
     if (iconType != 0) {
         QPixmap pixmap;
         IconRef icon = nullptr;
-        GetIconRef(kOnSystemDisk, kSystemIconsCreator, iconType, &icon);
+        QT_IGNORE_DEPRECATIONS(GetIconRef(kOnSystemDisk, kSystemIconsCreator, iconType, &icon));
 
         if (icon) {
             pixmap = qt_mac_convert_iconref(icon, size.width(), size.height());
