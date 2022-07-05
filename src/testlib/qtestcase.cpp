@@ -468,6 +468,7 @@ class WatchDog;
 
 static QObject *currentTestObject = nullptr;
 static QString mainSourcePath;
+static bool inTestFunction = false;
 
 #if defined(Q_OS_MACOS)
 static IOPMAssertionID macPowerSavingDisabled = 0;
@@ -1120,6 +1121,7 @@ void TestMethods::invokeTestOnData(int index) const
         /* Benchmarking: for each accumulation iteration*/
         bool invokeOk;
         do {
+            QTest::inTestFunction = true;
             if (m_initMethod.isValid())
                 m_initMethod.invoke(QTest::currentTestObject, Qt::DirectConnection);
 
@@ -1141,6 +1143,7 @@ void TestMethods::invokeTestOnData(int index) const
                 invokeOk = false;
             }
 
+            QTest::inTestFunction = false;
             QTestResult::finishedCurrentTestData();
 
             if (!initQuit) {
@@ -3010,6 +3013,17 @@ const char *QTest::currentDataTag()
 bool QTest::currentTestFailed()
 {
     return QTestResult::currentTestFailed();
+}
+
+/*
+    Returns \c true during the run of the test-function and its set-up.
+
+    Used by the \c{QTRY_*} macros and \l QTestEventLoop to check whether to
+    return when QTest::currentTestFailed() is true.
+*/
+bool QTest::runningTest()
+{
+    return QTest::inTestFunction;
 }
 
 /*! \internal
