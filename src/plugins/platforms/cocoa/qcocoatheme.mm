@@ -452,7 +452,7 @@ QPixmap QCocoaTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) const
 
         if (icon) {
             pixmap = qt_mac_convert_iconref(icon, size.width(), size.height());
-            ReleaseIconRef(icon);
+            QT_IGNORE_DEPRECATIONS(ReleaseIconRef(icon));
         }
 
         return pixmap;
