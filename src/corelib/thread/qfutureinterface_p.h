@@ -29,7 +29,11 @@ QT_REQUIRE_CONFIG(future);
 
 QT_BEGIN_NAMESPACE
 
-class Q_AUTOTEST_EXPORT QFutureCallOutEvent : public QEvent
+// Although QFutureCallOutEvent and QFutureCallOutInterface are private,
+// for historical reasons they were used externally (in QtJambi, see
+// https://github.com/OmixVisualization/qtjambi), so we export them to
+// not break the pre-existing code.
+class Q_CORE_EXPORT QFutureCallOutEvent : public QEvent
 {
     Q_DECL_EVENT_COMMON(QFutureCallOutEvent)
 public:
