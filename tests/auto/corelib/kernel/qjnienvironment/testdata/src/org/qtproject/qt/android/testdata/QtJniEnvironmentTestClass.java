@@ -7,6 +7,9 @@ public class QtJniEnvironmentTestClass
 {
     private static native void callbackFromJava(String message);
     private static native void namedCallbackFromJava(String message);
+    private static native void memberCallbackFromJava(String message);
+    private static native void namedMemberCallbackFromJava(String message);
+    private static native void namespaceCallbackFromJava(String message);
     private static native void intCallbackFromJava(int value);
 
     public final int INT_FIELD = 123;
@@ -22,6 +25,21 @@ public class QtJniEnvironmentTestClass
     public static void namedAppendJavaToString(String message)
     {
         namedCallbackFromJava("From Java (named): " + message);
+    }
+
+    public static void memberAppendJavaToString(String message)
+    {
+        memberCallbackFromJava("From Java (member): " + message);
+    }
+
+    public static void namedMemberAppendJavaToString(String message)
+    {
+        namedMemberCallbackFromJava("From Java (named member): " + message);
+    }
+
+    public static void namespaceAppendJavaToString(String message)
+    {
+        namespaceCallbackFromJava("From Java (namespace): " + message);
     }
 
     public static void convertToInt(String message)

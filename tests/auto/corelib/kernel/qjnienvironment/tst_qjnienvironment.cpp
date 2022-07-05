@@ -115,6 +115,34 @@ static void callbackFromJavaNoCtor(JNIEnv *env, jobject /*thiz*/, jstring value)
 }
 Q_DECLARE_JNI_NATIVE_METHOD(callbackFromJavaNoCtor);
 
+class CallbackClass {
+public:
+    static void memberCallbackFromJava(JNIEnv *env, jobject /*thiz*/, jstring value)
+    {
+        Q_UNUSED(env)
+        registerNativesString = QJniObject(value).toString();
+    }
+    Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(memberCallbackFromJava)
+
+    static void tediouslyLongNamed_memberCallbackFromJava(JNIEnv *env, jobject /*thiz*/,
+                                                          jstring value)
+    {
+        Q_UNUSED(env)
+        registerNativesString = QJniObject(value).toString();
+    }
+    Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(tediouslyLongNamed_memberCallbackFromJava,
+                                                 namedMemberCallbackFromJava)
+};
+
+namespace CallbackNamespace {
+    static void namespaceCallbackFromJava(JNIEnv *env, jobject /*thiz*/, jstring value)
+    {
+        Q_UNUSED(env)
+        registerNativesString = QJniObject(value).toString();
+    }
+    Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(namespaceCallbackFromJava)
+}
+
 void tst_QJniEnvironment::registerNativeMethods()
 {
     QJniObject QtString = QJniObject::fromString(registerNativesString);
@@ -145,6 +173,49 @@ void tst_QJniEnvironment::registerNativeMethods()
                                             QtString.object<jstring>());
         QTest::qWait(200);
         QVERIFY(registerNativesString == QStringLiteral("From Java (named): Qt"));
+    }
+
+    // Static class member as callback
+    {
+        QVERIFY(env.registerNativeMethods(javaTestClass, {
+            Q_JNI_NATIVE_SCOPED_METHOD(memberCallbackFromJava, CallbackClass)
+        }));
+
+        QJniObject::callStaticMethod<void>(javaTestClass,
+                                           "memberAppendJavaToString",
+                                           "(Ljava/lang/String;)V",
+                                            QtString.object<jstring>());
+        QTest::qWait(200);
+        QVERIFY(registerNativesString == QStringLiteral("From Java (member): Qt"));
+    }
+
+    // Static named class member as callback
+    {
+        QVERIFY(env.registerNativeMethods(javaTestClass, {
+            Q_JNI_NATIVE_SCOPED_METHOD(tediouslyLongNamed_memberCallbackFromJava,
+                                       CallbackClass)
+        }));
+
+        QJniObject::callStaticMethod<void>(javaTestClass,
+                                           "namedMemberAppendJavaToString",
+                                           "(Ljava/lang/String;)V",
+                                            QtString.object<jstring>());
+        QTest::qWait(200);
+        QVERIFY(registerNativesString == QStringLiteral("From Java (named member): Qt"));
+    }
+
+    // Function generally just in namespace as callback
+    {
+        QVERIFY(env.registerNativeMethods(javaTestClass, {
+            Q_JNI_NATIVE_SCOPED_METHOD(namespaceCallbackFromJava, CallbackNamespace)
+        }));
+
+        QJniObject::callStaticMethod<void>(javaTestClass,
+                                           "namespaceAppendJavaToString",
+                                           "(Ljava/lang/String;)V",
+                                            QtString.object<jstring>());
+        QTest::qWait(200);
+        QVERIFY(registerNativesString == QStringLiteral("From Java (namespace): Qt"));
     }
 
     // No default constructor in class

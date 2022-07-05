@@ -367,6 +367,20 @@ static const JNINativeMethod Method##_method = {                \
 
 #define Q_JNI_NATIVE_METHOD(Method) QtJniMethods::Method##_method
 
+#define Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(...)                                        \
+    QT_OVERLOADED_MACRO(QT_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE, __VA_ARGS__)              \
+
+#define QT_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE_2(Method, Name)                            \
+    static inline constexpr auto Method##_signature = QtJniTypes::nativeMethodSignature(Method); \
+    static inline const JNINativeMethod Method##_method = {                                      \
+        #Name, Method##_signature.data(), reinterpret_cast<void *>(Method)                       \
+    };
+
+#define QT_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE_1(Method)                                  \
+    QT_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE_2(Method, Method)                              \
+
+#define Q_JNI_NATIVE_SCOPED_METHOD(Method, Scope) Scope::Method##_method
+
 QT_END_NAMESPACE
 
 #endif
