@@ -134,7 +134,7 @@ qt_internal_add_module(Core
         kernel/qmetatype.cpp kernel/qmetatype.h kernel/qmetatype_p.h
         kernel/qmimedata.cpp kernel/qmimedata.h
         kernel/qtmetamacros.h
-        kernel/qobject.cpp kernel/qobject.h kernel/qobject_p.h
+        kernel/qobject.cpp kernel/qobject.h kernel/qobject_p.h kernel/qobject_p_p.h
         kernel/qobject_impl.h
         kernel/qobjectcleanuphandler.cpp kernel/qobjectcleanuphandler.h
         kernel/qobjectdefs.h
@@ -333,7 +333,7 @@ endif()
 # We do this on purpose, because qobject.cpp contains a bunch of Q_GADGET, Q_NAMESPACE, etc
 # keywords and AUTOMOC gets confused about wanting to compile a qobject.moc file as well.
 # Instead use manual moc.
-set_source_files_properties(kernel/qobject.cpp kernel/qobject.h kernel/qobject_p.h
+set_source_files_properties(kernel/qobject.cpp kernel/qobject.h kernel/qobject_p.h kernel/qobject_p_p.h
                             PROPERTIES SKIP_AUTOMOC TRUE)
 
 qt_manual_moc(qobject_moc_files
