@@ -148,9 +148,10 @@ inline void useVerifyThrowsException() {}
 /* Ideally we would adapt qWaitFor(), or a variant on it, to implement roughly
  * what the following provides as QTRY_LOOP_IMPL(); however, for now, the
  * reporting of how much to increase the timeout to (if within a factor of two)
- * on failure and the check for QTest::currentTestFailed() go beyond
- * qWaitFor(). (We no longer care about the bug in MSVC < 2017 that precluded
- * using qWaitFor() in the implementation here, see QTBUG-59096.)
+ * on failure and the check for (QTest::runningTest() &&
+ * QTest::currentTestFailed()) go beyond qWaitFor(). (We no longer care about
+ * the bug in MSVC < 2017 that precluded using qWaitFor() in the implementation
+ * here, see QTBUG-59096.)
  */
 
 // NB: not do {...} while (0) wrapped, as qt_test_i is accessed after it
@@ -159,14 +160,14 @@ inline void useVerifyThrowsException() {}
         QTest::qWait(0); \
     } \
     int qt_test_i = 0; \
-    for (; qt_test_i < timeoutValue && !QTest::currentTestFailed() \
+    for (; qt_test_i < timeoutValue && !(QTest::runningTest() && QTest::currentTestFailed()) \
              && !(expr); qt_test_i += step) { \
         QTest::qWait(step); \
     }
 // Ends in a for-block, so doesn't want a following semicolon.
 
 #define QTRY_TIMEOUT_DEBUG_IMPL(expr, timeoutValue, step) \
-    if (!QTest::currentTestFailed() && !(expr)) { \
+    if (!(QTest::runningTest() && QTest::currentTestFailed()) && !(expr)) { \
         QTRY_LOOP_IMPL(expr, 2 * (timeoutValue), step) \
         if ((expr)) { \
             QFAIL(qPrintable(QTest::Internal::formatTryTimeoutDebugMessage(\
@@ -414,6 +415,7 @@ namespace QTest
     Q_TESTLIB_EXPORT const char *currentTestFunction();
     Q_TESTLIB_EXPORT const char *currentDataTag();
     Q_TESTLIB_EXPORT bool currentTestFailed();
+    Q_TESTLIB_EXPORT bool runningTest(); // Internal, for use by macros and QTestEventLoop.
 
     Q_TESTLIB_EXPORT Qt::Key asciiToKey(char ascii);
     Q_TESTLIB_EXPORT char keyToAscii(Qt::Key key);

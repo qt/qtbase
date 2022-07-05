@@ -60,7 +60,7 @@ inline void QTestEventLoop::enterLoopMSecs(int ms)
     Q_ASSERT(!loop);
     _timeout = false;
 
-    if (QTest::currentTestFailed())
+    if (QTest::runningTest() && QTest::currentTestFailed())
         return;
 
     QEventLoop l;
