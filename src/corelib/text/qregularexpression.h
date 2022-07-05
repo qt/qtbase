@@ -91,11 +91,20 @@ public:
                                   MatchType matchType       = NormalMatch,
                                   MatchOptions matchOptions = NoMatchOption) const;
 
+#if QT_DEPRECATED_SINCE(6, 8)
     [[nodiscard]]
+    QT_DEPRECATED_VERSION_X_6_8("Use matchView instead.")
     QRegularExpressionMatch match(QStringView subjectView,
                                   qsizetype offset          = 0,
                                   MatchType matchType       = NormalMatch,
                                   MatchOptions matchOptions = NoMatchOption) const;
+#endif
+
+    [[nodiscard]]
+    QRegularExpressionMatch matchView(QStringView subjectView,
+                                      qsizetype offset          = 0,
+                                      MatchType matchType       = NormalMatch,
+                                      MatchOptions matchOptions = NoMatchOption) const;
 
     [[nodiscard]]
     QRegularExpressionMatchIterator globalMatch(const QString &subject,
@@ -103,11 +112,20 @@ public:
                                                 MatchType matchType       = NormalMatch,
                                                 MatchOptions matchOptions = NoMatchOption) const;
 
+#if QT_DEPRECATED_SINCE(6, 8)
     [[nodiscard]]
+    QT_DEPRECATED_VERSION_X_6_8("Use globalMatchView instead.")
     QRegularExpressionMatchIterator globalMatch(QStringView subjectView,
                                                 qsizetype offset          = 0,
                                                 MatchType matchType       = NormalMatch,
                                                 MatchOptions matchOptions = NoMatchOption) const;
+#endif
+
+    [[nodiscard]]
+    QRegularExpressionMatchIterator globalMatchView(QStringView subjectView,
+                                                    qsizetype offset          = 0,
+                                                    MatchType matchType       = NormalMatch,
+                                                    MatchOptions matchOptions = NoMatchOption) const;
 
     void optimize() const;
 

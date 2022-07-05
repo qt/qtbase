@@ -7690,8 +7690,9 @@ QList<QStringView> QStringView::split(QChar sep, Qt::SplitBehavior behavior, Qt:
 
 #if QT_CONFIG(regularexpression)
 namespace {
-template<class ResultList, typename String>
+template<class ResultList, typename String, typename MatchingFunction>
 static ResultList splitString(const String &source, const QRegularExpression &re,
+                              MatchingFunction matchingFunction,
                               Qt::SplitBehavior behavior)
 {
     ResultList list;
@@ -7702,7 +7703,7 @@ static ResultList splitString(const String &source, const QRegularExpression &re
 
     qsizetype start = 0;
     qsizetype end = 0;
-    QRegularExpressionMatchIterator iterator = re.globalMatch(source);
+    QRegularExpressionMatchIterator iterator = (re.*matchingFunction)(source, 0, QRegularExpression::NormalMatch, QRegularExpression::NoMatchOption);
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
         end = match.capturedStart();
@@ -7747,7 +7748,15 @@ static ResultList splitString(const String &source, const QRegularExpression &re
 */
 QStringList QString::split(const QRegularExpression &re, Qt::SplitBehavior behavior) const
 {
-    return splitString<QStringList>(*this, re, behavior);
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    const auto matchingFunction = qOverload<const QString &, qsizetype, QRegularExpression::MatchType, QRegularExpression::MatchOptions>(&QRegularExpression::globalMatch);
+#else
+    const auto matchingFunction = &QRegularExpression::globalMatch;
+#endif
+    return splitString<QStringList>(*this,
+                                    re,
+                                    matchingFunction,
+                                    behavior);
 }
 
 /*!
@@ -7764,7 +7773,7 @@ QStringList QString::split(const QRegularExpression &re, Qt::SplitBehavior behav
 */
 QList<QStringView> QStringView::split(const QRegularExpression &re, Qt::SplitBehavior behavior) const
 {
-    return splitString<QList<QStringView>>(*this, re, behavior);
+    return splitString<QList<QStringView>>(*this, re, &QRegularExpression::globalMatchView, behavior);
 }
 
 #endif // QT_CONFIG(regularexpression)
@@ -10793,7 +10802,7 @@ qsizetype QtPrivate::indexOf(QStringView viewHaystack, const QString *stringHays
 
     QRegularExpressionMatch match = stringHaystack
                 ? re.match(*stringHaystack, from)
-                : re.match(viewHaystack, from);
+                : re.matchView(viewHaystack, from);
     if (match.hasMatch()) {
         const qsizetype ret = match.capturedStart();
         if (rmatch)
@@ -10819,7 +10828,7 @@ qsizetype QtPrivate::lastIndexOf(QStringView viewHaystack, const QString *string
     qsizetype endpos = (from < 0) ? (viewHaystack.size() + from + 1) : (from + 1);
     QRegularExpressionMatchIterator iterator = stringHaystack
             ? re.globalMatch(*stringHaystack)
-            : re.globalMatch(viewHaystack);
+            : re.globalMatchView(viewHaystack);
     qsizetype lastIndex = -1;
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
@@ -10849,7 +10858,7 @@ bool QtPrivate::contains(QStringView viewHaystack, const QString *stringHaystack
     }
     QRegularExpressionMatch m = stringHaystack
                 ? re.match(*stringHaystack)
-                : re.match(viewHaystack);
+                : re.matchView(viewHaystack);
     bool hasMatch = m.hasMatch();
     if (hasMatch && rmatch)
         *rmatch = std::move(m);
@@ -10871,7 +10880,7 @@ qsizetype QtPrivate::count(QStringView haystack, const QRegularExpression &re)
     qsizetype index = -1;
     qsizetype len = haystack.length();
     while (index <= len - 1) {
-        QRegularExpressionMatch match = re.match(haystack, index + 1);
+        QRegularExpressionMatch match = re.matchView(haystack, index + 1);
         if (!match.hasMatch())
             break;
         index = match.capturedStart();
