@@ -134,7 +134,7 @@ public:
     bool toBool(bool defaultValue = false) const
     { return concreteBool(*this, defaultValue); }
     int toInt(int defaultValue = 0) const
-    { return concreteInt(*this, defaultValue, true); }
+    { return int(concreteInt(*this, defaultValue, true)); }
     qint64 toInteger(qint64 defaultValue = 0) const
     { return concreteInt(*this, defaultValue, false); }
     double toDouble(double defaultValue = 0) const

@@ -127,6 +127,10 @@ function(qt_internal_add_headers_clean_target
             endif()
         endif()
 
+        if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang|IntelLLVM")
+            list(APPEND hcleanFLAGS -Wshorten-64-to-32)
+        endif()
+
         # Use strict mode C++20, with no GNU extensions (see -pedantic-errors above).
         list(APPEND hcleanFLAGS -std=c++2a)
 

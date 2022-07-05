@@ -127,7 +127,7 @@ inline QList<QPointF> QRawFont::advancesForGlyphIndexes(const QList<quint32> &gl
                                                         QRawFont::LayoutFlags layoutFlags) const
 {
     QList<QPointF> advances(glyphIndexes.size());
-    if (advancesForGlyphIndexes(glyphIndexes.constData(), advances.data(), glyphIndexes.size(), layoutFlags))
+    if (advancesForGlyphIndexes(glyphIndexes.constData(), advances.data(), int(glyphIndexes.size()), layoutFlags))
         return advances;
     return QList<QPointF>();
 }

@@ -97,7 +97,7 @@ public:
     bool wait(int timeout = 5000)
     {
         Q_ASSERT(!m_waiting);
-        const int origCount = count();
+        const qsizetype origCount = count();
         m_waiting = true;
         m_loop.enterLoopMSecs(timeout);
         m_waiting = false;
