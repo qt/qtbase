@@ -8,6 +8,7 @@
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformwindow.h>
 #include <qpa/qplatformwindow_p.h>
+#include <qpa/qplatformscreen_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -88,6 +89,15 @@ QOpenGLContext *QNativeInterface::QWGLContext::fromNative(HGLRC context, HWND wi
 
 QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QWindowsApplication);
 
+/*!
+    \class QNativeInterface::Private::QWindowsScreen
+    \since 6.5
+    \internal
+    \brief Native interface to QScreen, to be retrieved from QPlatformIntegration.
+    \inmodule QtGui
+    \ingroup native-interfaces
+*/
+QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QWindowsScreen);
 /*!
     \enum QNativeInterface::Private::QWindowsApplication::TouchWindowTouchType
 

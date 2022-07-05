@@ -775,6 +775,10 @@ void *QScreen::resolveInterface(const char *name, int revision) const
     QT_NATIVE_INTERFACE_RETURN_IF(QWebOSScreen, platformScreen);
 #endif
 
+#if defined(Q_OS_WIN32)
+    QT_NATIVE_INTERFACE_RETURN_IF(QWindowsScreen, platformScreen);
+#endif
+
     return nullptr;
 }
 

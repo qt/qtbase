@@ -10,6 +10,7 @@
 #include <QtCore/qpair.h>
 #include <QtCore/qscopedpointer.h>
 #include <qpa/qplatformscreen.h>
+#include <qpa/qplatformscreen_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -38,6 +39,7 @@ struct QWindowsScreenData
 };
 
 class QWindowsScreen : public QPlatformScreen
+                     , public QNativeInterface::Private::QWindowsScreen
 {
 public:
 #ifndef QT_NO_CURSOR
@@ -69,7 +71,7 @@ public:
 
     inline void handleChanges(const QWindowsScreenData &newData);
 
-    HMONITOR handle() const;
+    HMONITOR handle() const override;
 
 #ifndef QT_NO_CURSOR
     QPlatformCursor *cursor() const override { return m_cursor.data(); }

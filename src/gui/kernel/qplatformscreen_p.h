@@ -20,6 +20,10 @@
 #include <QtCore/qpointer.h>
 #include <QtCore/qnativeinterface.h>
 
+#if defined(Q_OS_WIN32)
+#include <qwindowdefs_win.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QScreen;
@@ -65,6 +69,14 @@ struct Q_GUI_EXPORT QWebOSScreen
     virtual void setLayerAlpha(int id, qreal alpha) = 0;
     virtual bool removeLayer(int id) = 0;
     virtual void addFlipListener(void (*callback)()) = 0;
+};
+#endif
+
+#if defined(Q_OS_WIN32) || defined(Q_CLANG_QDOC)
+struct Q_GUI_EXPORT QWindowsScreen
+{
+    QT_DECLARE_NATIVE_INTERFACE(QWindowsScreen, 1, QScreen)
+    virtual HMONITOR handle() const = 0;
 };
 #endif
 
