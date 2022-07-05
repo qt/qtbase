@@ -240,7 +240,6 @@ if(UIKIT)
         # TODO: Figure out if this ok or not (sounds ok to me).
         target_compile_definitions(PlatformCommonInternal INTERFACE QT_COMPILER_SUPPORTS_SSE2)
     endif()
-    qt_internal_apply_bitcode_flags(PlatformCommonInternal)
 endif()
 
 if(WASM AND QT_FEATURE_sse2)
