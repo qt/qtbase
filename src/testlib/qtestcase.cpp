@@ -3008,11 +3008,31 @@ const char *QTest::currentDataTag()
 }
 
 /*!
-    Returns \c true if the current test function failed, otherwise false.
+    Returns \c true if the current test function has failed, otherwise false.
+
+    \sa QTest::currentTestResolved()
 */
 bool QTest::currentTestFailed()
 {
     return QTestResult::currentTestFailed();
+}
+
+/*!
+    \since 6.5
+    Returns \c true if the current test function has failed or skipped.
+
+    This applies if the test has failed or exercised a skip. When it is true,
+    the test function should return early. In particular, the \c{QTRY_*} macros
+    and \l QTestEventLoop terminate their loops early if executed during the
+    test function (but not its cleanup()). After a test has called a helper
+    function that uses this module's macros, it can use this function to test
+    whether to return early.
+
+    \sa QTest::currentTestFailed()
+*/
+bool QTest::currentTestResolved()
+{
+    return QTestResult::currentTestFailed() || QTestResult::skipCurrentTest();
 }
 
 /*!
@@ -3021,7 +3041,7 @@ bool QTest::currentTestFailed()
     Returns \c true during the run of the test-function and its set-up.
 
     Used by the \c{QTRY_*} macros and \l QTestEventLoop to check whether to
-    return when QTest::currentTestFailed() is true.
+    return when QTest::currentTestResolved() is true.
 */
 bool QTest::runningTest()
 {
