@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 # Extracts the 3rdparty libraries for the module ${module_name}
 # and stores the information in cmake language in
 # ${output_root_dir}/$<CONFIG>/${output_file_name}.

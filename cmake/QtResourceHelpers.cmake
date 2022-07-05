@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 function(qt_internal_add_resource target resourceName)
     # Don't try to add resources when cross compiling, and the target is actually a host target
     # (like a tool).

@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 # Enable compiler warnings by default. All compilers except MSVC support -Wall -Wextra
 #
 # You can disable the warnings for specific targets (for instance containing 3rd party code)

@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 function(qt_update_precompiled_header target precompiled_header)
     if (precompiled_header AND BUILD_WITH_PCH)
         set_property(TARGET "${target}" APPEND PROPERTY "PRECOMPILE_HEADERS" "$<$<OR:$<COMPILE_LANGUAGE:CXX>,$<COMPILE_LANGUAGE:OBJCXX>>:${precompiled_header}>")

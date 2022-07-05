@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 if (MSVC)
     if (QT_64BIT)
         # SSE2 is mandatory on 64-bit mode, so skip the option. It triggers:

@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 # This script writes its arguments to the file determined by OUT_FILE.
 # Each argument appears on a separate line.
 # This is used for writing the config.opt file.

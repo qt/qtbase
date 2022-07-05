@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 # Initial autogen setup for a target to specify certain CMake properties which are common
 # to all autogen tools. Also enable AUTOMOC by default.
 function(qt_autogen_tools_initial_setup target)

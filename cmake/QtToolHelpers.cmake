@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 # This function is used to define a "Qt tool", such as moc, uic or rcc.
 #
 # USER_FACING can be passed to mark the tool as a program that is supposed to be

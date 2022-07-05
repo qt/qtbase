@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 # Add libraries to variable ${out_libs_var} in a way that duplicates
 # are added at the end. This ensures the library order needed for the
 # linker.

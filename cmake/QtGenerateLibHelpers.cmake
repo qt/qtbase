@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 # Given "/usr/lib/x86_64-linux-gnu/libcups.so"
 # Returns "cups" or an empty string if the file is not an absolute library path.
 # Aka it strips the "lib" prefix, the .so extension and the base path.

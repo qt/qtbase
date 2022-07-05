@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 function(__qt_internal_strip_target_directory_scope_token target out_var)
     # In CMake versions earlier than CMake 3.18, a subdirectory scope id is appended to the
     # target name if the target is referenced in a target_link_libraries command from a

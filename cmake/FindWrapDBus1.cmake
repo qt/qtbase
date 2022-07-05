@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 # DBus1 is buggy and breaks PKG_CONFIG environment.
 # Work around that:-/
 # See https://gitlab.freedesktop.org/dbus/dbus/issues/267 for more information

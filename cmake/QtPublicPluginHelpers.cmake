@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 # Gets the qt plugin type of the given plugin into out_var_plugin_type.
 # Also sets out_var_has_plugin_type to TRUE or FALSE depending on whether the plugin type was found.
 function(__qt_internal_plugin_get_plugin_type

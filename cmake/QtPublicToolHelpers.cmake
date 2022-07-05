@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 # The function returns location of the imported 'tool', returns an empty string if tool is not
 # imported.
 function(__qt_internal_get_tool_imported_location out_var tool)

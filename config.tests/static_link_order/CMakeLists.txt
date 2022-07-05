@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 # The test represents the order-related issue that we have with the ld linker.
 #
 # CMake versions < 3.21.0 produce the following linker line:

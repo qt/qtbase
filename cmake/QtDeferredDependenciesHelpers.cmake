@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 # Defers the connection 'dependent' -> 'dependency'
 #
 # The actual connection can be made by calling qt_internal_add_deferred_dependencies.

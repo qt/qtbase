@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 # Returns the minimum supported CMake version required to /build/ Qt as originally advertised by Qt.
 function(qt_internal_get_supported_min_cmake_version_for_building_qt out_var)
     if(NOT DEFINED BUILD_SHARED_LIBS)

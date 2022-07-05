@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 if(TARGET WrapSystemMd4c::WrapSystemMd4c)
     set(WrapSystemMd4c_FOUND TRUE)
     return()

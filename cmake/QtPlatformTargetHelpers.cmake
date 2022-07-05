@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 # Defines the public Qt::Platform target, which serves as a dependency for all internal Qt target
 # as well as user projects consuming Qt.
 function(qt_internal_setup_public_platform_target)

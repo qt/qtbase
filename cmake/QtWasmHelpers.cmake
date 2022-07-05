@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 
 # WARNING must keep in sync with wasm-emscripten/qmake.conf!
 function (qt_internal_setup_wasm_target_properties wasmTarget)

@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 # TODO: Revisit which of these tests makes sense to keep now that we depend on CMake 3.21 to
 # properly place object libraries object files on the link line.
 # See QTBUG-95601

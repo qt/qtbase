@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+
 add_library(painting_shared OBJECT)
 add_library(painting_shared::painting_shared ALIAS painting_shared)
 qt6_wrap_cpp(moc_files arthurwidgets.h hoverpoints.h) # no automoc for OBJECT libs:-/

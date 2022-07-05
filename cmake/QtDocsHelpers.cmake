@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 # This function adds a dependency between a doc-generating target like 'generate_docs_Gui'
 # and the necessary tool target like 'qdoc'.
 #

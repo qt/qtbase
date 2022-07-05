@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 ## Set a default build type if none was specified
 
 # Set the QT_IS_BUILDING_QT variable so we can verify whether we are building

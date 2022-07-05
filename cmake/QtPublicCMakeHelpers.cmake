@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 # copy_if_different works incorrect in Windows if file size if bigger than 2GB.
 # See https://gitlab.kitware.com/cmake/cmake/-/issues/23052 and QTBUG-99491 for details.
 function(_qt_internal_copy_file_if_different_command out_var src_file dst_file)

@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 function(qt_ensure_perl)
     find_program(HOST_PERL "perl" DOC "Perl binary")
     if (NOT HOST_PERL)

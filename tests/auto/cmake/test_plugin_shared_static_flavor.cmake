@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 _qt_internal_test_expect_pass(test_plugin_shared_static_flavor
                               TESTNAME test_plugin_flavor_static
                               BUILD_OPTIONS

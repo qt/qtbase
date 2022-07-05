@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 # Note that target_dep_list does not accept a list of values, but a var name that contains the
 # list of dependencies. See foreach block for reference.
 macro(_qt_internal_find_third_party_dependencies target target_dep_list)

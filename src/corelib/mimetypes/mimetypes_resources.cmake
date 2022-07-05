@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 # List of files that need to be packaged as resources.
 # This file exists solely because of unit tests that need access to this
 # information as well. This was previously handled by referencing a qrc

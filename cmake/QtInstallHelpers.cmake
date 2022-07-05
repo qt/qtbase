@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 # Wraps install() command. In a prefix build, simply passes along arguments to install().
 # In a non-prefix build, handles association of targets to export names, and also calls export().
 function(qt_install)

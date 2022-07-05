@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 qt_commandline_option(libproxy TYPE boolean)
 qt_commandline_option(openssl TYPE optionalString VALUES no yes linked runtime)
 qt_commandline_option(openssl-linked TYPE void NAME openssl VALUE linked)

@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+
 function(qt_print_feature_summary)
     if(QT_SUPERBUILD)
         qt_internal_set_message_log_level(message_log_level)
