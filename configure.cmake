@@ -889,7 +889,7 @@ qt_feature("system-zlib" PRIVATE
     LABEL "Using system zlib"
     CONDITION WrapZLIB_FOUND
 )
-qt_feature("zstd" PRIVATE
+qt_feature("zstd" PUBLIC
     LABEL "Zstandard support"
     CONDITION WrapZSTD_FOUND
 )
