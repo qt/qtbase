@@ -381,6 +381,9 @@ public:
         IsPointer = 0x800,
         IsQmlList =0x1000, // used in the QML engine to recognize QQmlListProperty<T> and list<T>
         IsConst = 0x2000,
+        // since 6.5:
+        NeedsCopyConstruction = 0x4000,
+        NeedsMoveConstruction = 0x8000,
     };
     Q_DECLARE_FLAGS(TypeFlags, TypeFlag)
 
@@ -1187,8 +1190,10 @@ namespace QtPrivate {
     struct QMetaTypeTypeFlags
     {
         enum { Flags = (QTypeInfo<T>::isRelocatable ? QMetaType::RelocatableType : 0)
-                     | (QTypeInfo<T>::isComplex ? QMetaType::NeedsConstruction : 0)
-                     | (QTypeInfo<T>::isComplex ? QMetaType::NeedsDestruction : 0)
+                     | (!std::is_trivially_default_constructible_v<T> ? QMetaType::NeedsConstruction : 0)
+                     | (!std::is_trivially_destructible_v<T> ? QMetaType::NeedsDestruction : 0)
+                     | (!std::is_trivially_copy_constructible_v<T> ? QMetaType::NeedsCopyConstruction : 0)
+                     | (!std::is_trivially_move_constructible_v<T> ? QMetaType::NeedsMoveConstruction : 0)
                      | (IsPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::PointerToQObject : 0)
                      | (IsSharedPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::SharedPointerToQObject : 0)
                      | (IsWeakPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::WeakPointerToQObject : 0)
@@ -2312,10 +2317,11 @@ class QMetaTypeForType
 {
 public:
     static constexpr decltype(typenameHelper<S>()) name = typenameHelper<S>();
+    static constexpr unsigned Flags = QMetaTypeTypeFlags<S>::Flags;
 
     static constexpr QMetaTypeInterface::DefaultCtrFn getDefaultCtr()
     {
-        if constexpr (std::is_default_constructible_v<S>) {
+        if constexpr (std::is_default_constructible_v<S> && !std::is_trivially_default_constructible_v<S>) {
             return [](const QMetaTypeInterface *, void *addr) { new (addr) S(); };
         } else {
             return nullptr;
@@ -2324,7 +2330,7 @@ public:
 
     static constexpr QMetaTypeInterface::CopyCtrFn getCopyCtr()
     {
-        if constexpr (std::is_copy_constructible_v<S>) {
+        if constexpr (std::is_copy_constructible_v<S> && !std::is_trivially_copy_constructible_v<S>) {
             return [](const QMetaTypeInterface *, void *addr, const void *other) {
                 new (addr) S(*reinterpret_cast<const S *>(other));
             };
@@ -2335,7 +2341,7 @@ public:
 
     static constexpr QMetaTypeInterface::MoveCtrFn getMoveCtr()
     {
-        if constexpr (std::is_move_constructible_v<S>) {
+        if constexpr (std::is_move_constructible_v<S> && !std::is_trivially_move_constructible_v<S>) {
             return [](const QMetaTypeInterface *, void *addr, void *other) {
                 new (addr) S(std::move(*reinterpret_cast<S *>(other)));
             };
@@ -2386,7 +2392,7 @@ struct QMetaTypeInterfaceWrapper
         /*.revision=*/ 0,
         /*.alignment=*/ alignof(T),
         /*.size=*/ sizeof(T),
-        /*.flags=*/ QMetaTypeTypeFlags<T>::Flags,
+        /*.flags=*/ QMetaTypeForType<T>::Flags,
         /*.typeId=*/ BuiltinMetaType<T>::value,
         /*.metaObjectFn=*/ MetaObjectForType<T>::metaObjectFunction,
         /*.name=*/ QMetaTypeForType<T>::getName(),

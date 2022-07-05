@@ -141,19 +141,50 @@ inline bool isDefaultConstructible(const QtPrivate::QMetaTypeInterface *iface) n
 
 inline bool isCopyConstructible(const QtPrivate::QMetaTypeInterface *iface) noexcept
 {
-    // ### broken
-    return checkMetaTypeFlagOrPointer(iface, iface->copyCtr, QMetaType::NeedsConstruction);
+    return checkMetaTypeFlagOrPointer(iface, iface->copyCtr, QMetaType::NeedsCopyConstruction);
 }
 
 inline bool isMoveConstructible(const QtPrivate::QMetaTypeInterface *iface) noexcept
 {
-    return iface->moveCtr;
+    return checkMetaTypeFlagOrPointer(iface, iface->moveCtr, QMetaType::NeedsMoveConstruction);
 }
 
 inline bool isDestructible(const QtPrivate::QMetaTypeInterface *iface) noexcept
 {
-    // ### broken
     return checkMetaTypeFlagOrPointer(iface, iface->dtor, QMetaType::NeedsDestruction);
+}
+
+inline void defaultConstruct(const QtPrivate::QMetaTypeInterface *iface, void *where)
+{
+    Q_ASSERT(isDefaultConstructible(iface));
+    if (iface->defaultCtr)
+        iface->defaultCtr(iface, where);
+    else
+        memset(where, 0, iface->size);
+}
+
+inline void copyConstruct(const QtPrivate::QMetaTypeInterface *iface, void *where, const void *copy)
+{
+    Q_ASSERT(isCopyConstructible(iface));
+    if (iface->copyCtr)
+        iface->copyCtr(iface, where, copy);
+    else
+        memcpy(where, copy, iface->size);
+}
+
+inline void construct(const QtPrivate::QMetaTypeInterface *iface, void *where, const void *copy)
+{
+    if (copy)
+        copyConstruct(iface, where, copy);
+    else
+        defaultConstruct(iface, where);
+}
+
+inline void destruct(const QtPrivate::QMetaTypeInterface *iface, void *where)
+{
+    Q_ASSERT(isDestructible(iface));
+    if (iface->dtor)
+        iface->dtor(iface, where);
 }
 
 const char *typedefNameForType(const QtPrivate::QMetaTypeInterface *type_d);

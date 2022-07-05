@@ -69,6 +69,8 @@ private slots:
     void alignOf();
     void flags_data();
     void flags();
+    void flags2_data();
+    void flags2();
     void flagsBinaryCompatibility6_0_data();
     void flagsBinaryCompatibility6_0();
     void construct_data();

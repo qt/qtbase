@@ -222,7 +222,8 @@ static void customConstruct(QVariant::Private *d, const void *copy)
         return;
     }
 
-    if (!isCopyConstructible(iface) || (!copy && !isDefaultConstructible(iface))) {
+    if (!isCopyConstructible(iface) || (!copy && !isDefaultConstructible(iface))
+            || !isDestructible(iface)) {
         *d = QVariant::Private();
         qWarning("QVariant: Provided metatype does not support "
                  "destruction, copy and default construction");

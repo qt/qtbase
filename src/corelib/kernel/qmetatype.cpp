@@ -414,7 +414,9 @@ const char *QtMetaTypePrivate::typedefNameForType(const QtPrivate::QMetaTypeInte
 
     The enum describes attributes of a type supported by QMetaType.
 
-    \value NeedsConstruction This type has non-trivial constructors. If the flag is not set instances can be safely initialized with memset to 0.
+    \value NeedsConstruction This type has a non-trivial default constructor. If the flag is not set, instances can be safely initialized with memset to 0.
+    \value NeedsCopyConstruction (since 6.5) This type has a non-trivial copy construtcor. If the flag is not set, instances can be copied with memcpy.
+    \value NeedsMoveConstruction (since 6.5) This type has a non-trivial move constructor. If the flag is not set, instances can be moved with memcpy.
     \value NeedsDestruction This type has a non-trivial destructor. If the flag is not set calls to the destructor are not necessary before discarding objects.
     \value RelocatableType An instance of a type having this attribute can be safely moved to a different memory location using memcpy.
     \omitvalue MovableType
@@ -429,6 +431,14 @@ const char *QtMetaTypePrivate::typedefNameForType(const QtPrivate::QMetaTypeInte
     \omitvalue PointerToGadget
     \omitvalue IsQmlList
     \value IsConst Indicates that values of this types are immutable; for instance because they are pointers to const objects.
+
+    \note Before Qt 6.5, both the NeedsConstruction and NeedsDestruction flags
+    were incorrectly set if the either copy construtor or destructor were
+    non-trivial (that is, if the type was not trivial).
+
+    Note that the Needs flags may be set but the meta type may not have a
+    publicly-accessible constructor of the relevant type or a
+    publicly-accessible destructor.
 */
 
 /*!
@@ -598,16 +608,17 @@ int QMetaType::registerHelper(const QtPrivate::QMetaTypeInterface *iface)
 */
 void *QMetaType::create(const void *copy) const
 {
-    if (d_ptr && (copy ? !!d_ptr->copyCtr : !!d_ptr->defaultCtr)) {
-        void *where =
+    if (copy ? !isCopyConstructible() : !isDefaultConstructible())
+        return nullptr;
+
+    void *where =
 #ifdef __STDCPP_DEFAULT_NEW_ALIGNMENT__
             d_ptr->alignment > __STDCPP_DEFAULT_NEW_ALIGNMENT__ ?
                 operator new(d_ptr->size, std::align_val_t(d_ptr->alignment)) :
 #endif
                 operator new(d_ptr->size);
-        return construct(where, copy);
-    }
-    return nullptr;
+    QtMetaTypePrivate::construct(d_ptr, where, copy);
+    return where;
 }
 
 /*!
@@ -621,9 +632,8 @@ void *QMetaType::create(const void *copy) const
 */
 void QMetaType::destroy(void *data) const
 {
-    if (d_ptr) {
-        if (d_ptr->dtor)
-            d_ptr->dtor(d_ptr, data);
+    if (data && isDestructible()) {
+        QtMetaTypePrivate::destruct(d_ptr, data);
         if (d_ptr->alignment > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
             operator delete(data, std::align_val_t(d_ptr->alignment));
         } else {
@@ -662,16 +672,11 @@ void *QMetaType::construct(void *where, const void *copy) const
 {
     if (!where)
         return nullptr;
-    if (d_ptr) {
-        if (copy && d_ptr->copyCtr) {
-            d_ptr->copyCtr(d_ptr, where, copy);
-            return where;
-        } else if (!copy && d_ptr->defaultCtr) {
-            d_ptr->defaultCtr(d_ptr, where);
-            return where;
-        }
-    }
-    return nullptr;
+    if (copy ? !isCopyConstructible() : !isDefaultConstructible())
+        return nullptr;
+
+    QtMetaTypePrivate::construct(d_ptr, where, copy);
+    return where;
 }
 
 /*!
@@ -687,12 +692,8 @@ void *QMetaType::construct(void *where, const void *copy) const
 */
 void QMetaType::destruct(void *data) const
 {
-    if (!data)
-        return;
-    if (d_ptr && d_ptr->dtor) {
-        d_ptr->dtor(d_ptr, data);
-        return;
-    }
+    if (data && isDestructible())
+        QtMetaTypePrivate::destruct(d_ptr, data);
 }
 
 static QPartialOrdering threeWayCompare(const void *ptr1, const void *ptr2)

@@ -397,13 +397,15 @@ protected:
                 ++failureCount;
                 qWarning() << "Wrong typeInfo returned for" << tp;
             }
+            if (info.flags() != (QMetaType::NeedsConstruction | QMetaType::NeedsDestruction |
+                                 QMetaType::NeedsCopyConstruction | QMetaType::NeedsMoveConstruction)) {
+                ++failureCount;
+                qWarning() << "Wrong typeInfo returned for" << tp << "got"
+                           << Qt::showbase << Qt::hex << info.flags();
+            }
             if (!info.isRegistered()) {
                 ++failureCount;
                 qWarning() << name << "is not a registered metatype";
-            }
-            if (QMetaType::typeFlags(tp) != (QMetaType::NeedsConstruction | QMetaType::NeedsDestruction)) {
-                ++failureCount;
-                qWarning() << "Wrong typeInfo returned for" << tp;
             }
             if (!QMetaType::isRegistered(tp)) {
                 ++failureCount;
@@ -981,7 +983,9 @@ template <typename T> void addFlagsRow(const char *name, int id = qMetaTypeId<T>
     QTest::newRow(name)
             << id
             << bool(QTypeInfo<T>::isRelocatable)
-            << bool(QTypeInfo<T>::isComplex)
+            << bool(!std::is_trivially_default_constructible_v<T>)
+            << bool(!std::is_trivially_copy_constructible_v<T>)
+            << bool(!std::is_trivially_destructible_v<T>)
             << bool(QtPrivate::IsPointerToTypeDerivedFromQObject<T>::Value)
             << bool(std::is_enum<T>::value)
             << false;
@@ -991,15 +995,17 @@ void tst_QMetaType::flags_data()
 {
     QTest::addColumn<int>("type");
     QTest::addColumn<bool>("isRelocatable");
-    QTest::addColumn<bool>("isComplex");
+    QTest::addColumn<bool>("needsConstruction");
+    QTest::addColumn<bool>("needsCopyConstruction");
+    QTest::addColumn<bool>("needsDestruction");
     QTest::addColumn<bool>("isPointerToQObject");
     QTest::addColumn<bool>("isEnum");
     QTest::addColumn<bool>("isQmlList");
 
     // invalid ids.
-    QTest::newRow("-1") << -1 << false << false << false << false << false;
-    QTest::newRow("-124125534") << -124125534 << false << false << false << false << false;
-    QTest::newRow("124125534") << 124125534 << false << false << false << false << false;
+    QTest::newRow("-1") << -1 << false << false << false << false << false << false << false;
+    QTest::newRow("-124125534") << -124125534 << false << false << false << false << false << false << false;
+    QTest::newRow("124125534") << 124125534 << false << false << false << false << false << false << false;
 
 #define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
     addFlagsRow<RealType>(#RealType, MetaTypeId);
@@ -1029,7 +1035,9 @@ void tst_QMetaType::flags()
 {
     QFETCH(int, type);
     QFETCH(bool, isRelocatable);
-    QFETCH(bool, isComplex);
+    QFETCH(bool, needsConstruction);
+    QFETCH(bool, needsCopyConstruction);
+    QFETCH(bool, needsDestruction);
     QFETCH(bool, isPointerToQObject);
     QFETCH(bool, isEnum);
     QFETCH(bool, isQmlList);
@@ -1037,12 +1045,90 @@ void tst_QMetaType::flags()
     ignoreInvalidMetaTypeWarning(type);
     QMetaType meta(type);
 
-    QCOMPARE(bool(meta.flags() & QMetaType::NeedsConstruction), isComplex);
-    QCOMPARE(bool(meta.flags() & QMetaType::NeedsDestruction), isComplex);
+    QCOMPARE(bool(meta.flags() & QMetaType::NeedsConstruction), needsConstruction);
+    QCOMPARE(bool(meta.flags() & QMetaType::NeedsCopyConstruction), needsCopyConstruction);
+    QCOMPARE(bool(meta.flags() & QMetaType::NeedsDestruction), needsDestruction);
     QCOMPARE(bool(meta.flags() & QMetaType::RelocatableType), isRelocatable);
     QCOMPARE(bool(meta.flags() & QMetaType::PointerToQObject), isPointerToQObject);
     QCOMPARE(bool(meta.flags() & QMetaType::IsEnumeration), isEnum);
     QCOMPARE(bool(meta.flags() & QMetaType::IsQmlList), isQmlList);
+}
+
+class NonDefaultConstructible
+{
+   NonDefaultConstructible(int) {}
+};
+
+struct MoveOnly
+{
+    MoveOnly() = default;
+    MoveOnly(const MoveOnly &) = delete;
+    MoveOnly(MoveOnly &&) = default;
+    MoveOnly &operator=(const MoveOnly &) = delete;
+    MoveOnly &operator=(MoveOnly &&) = default;
+};
+
+class Indestructible
+{
+protected:
+    ~Indestructible() {}
+};
+
+template <typename T> static void addFlags2Row(QMetaType metaType = QMetaType::fromType<T>())
+{
+    QTest::newRow(metaType.name() ? metaType.name() : "UnknownType")
+            << metaType
+            << std::is_default_constructible_v<T>
+            << std::is_copy_constructible_v<T>
+            << std::is_move_constructible_v<T>
+            << std::is_destructible_v<T>
+            << (QTypeTraits::has_operator_equal<T>::value || QTypeTraits::has_operator_less_than<T>::value)
+            << QTypeTraits::has_operator_less_than<T>::value;
+};
+
+void tst_QMetaType::flags2_data()
+{
+    QTest::addColumn<QMetaType>("type");
+    QTest::addColumn<bool>("isDefaultConstructible");
+    QTest::addColumn<bool>("isCopyConstructible");
+    QTest::addColumn<bool>("isMoveConstructible");
+    QTest::addColumn<bool>("isDestructible");
+    QTest::addColumn<bool>("isEqualityComparable");
+    QTest::addColumn<bool>("isOrdered");
+
+    addFlags2Row<void>(QMetaType());
+    addFlags2Row<void>();
+
+#define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
+    addFlags2Row<RealType>();
+    QT_FOR_EACH_STATIC_PRIMITIVE_NON_VOID_TYPE(ADD_METATYPE_TEST_ROW)
+    QT_FOR_EACH_STATIC_CORE_CLASS(ADD_METATYPE_TEST_ROW)
+    QT_FOR_EACH_STATIC_PRIMITIVE_POINTER(ADD_METATYPE_TEST_ROW)
+    QT_FOR_EACH_STATIC_CORE_POINTER(ADD_METATYPE_TEST_ROW)
+#undef ADD_METATYPE_TEST_ROW
+
+    addFlags2Row<NonDefaultConstructible>();
+    addFlags2Row<MoveOnly>();
+    addFlags2Row<QObject>();
+    addFlags2Row<Indestructible>();
+}
+
+void tst_QMetaType::flags2()
+{
+    QFETCH(QMetaType, type);
+    QFETCH(bool, isDefaultConstructible);
+    QFETCH(bool, isCopyConstructible);
+    QFETCH(bool, isMoveConstructible);
+    QFETCH(bool, isDestructible);
+    QFETCH(bool, isEqualityComparable);
+    QFETCH(bool, isOrdered);
+
+    QCOMPARE(type.isDefaultConstructible(), isDefaultConstructible);
+    QCOMPARE(type.isCopyConstructible(), isCopyConstructible);
+    QCOMPARE(type.isMoveConstructible(), isMoveConstructible);
+    QCOMPARE(type.isDestructible(), isDestructible);
+    QCOMPARE(type.isEqualityComparable(), isEqualityComparable);
+    QCOMPARE(type.isOrdered(), isOrdered);
 }
 
 void tst_QMetaType::flagsBinaryCompatibility6_0_data()
@@ -1092,14 +1178,12 @@ void tst_QMetaType::flagsBinaryCompatibility6_0()
 
     const auto currentFlags = QMetaType::typeFlags(id);
     auto expectedFlags = QMetaType::TypeFlags(flags);
-    if (!(currentFlags.testFlag(QMetaType::NeedsConstruction) && currentFlags.testFlag(QMetaType::NeedsDestruction))) {
-        if (expectedFlags.testFlag(QMetaType::NeedsConstruction) && expectedFlags.testFlag(QMetaType::NeedsDestruction)) {
-            // If type changed from RELOCATABLE to trivial, that's fine
-            expectedFlags.setFlag(QMetaType::NeedsConstruction, false);
-            expectedFlags.setFlag(QMetaType::NeedsDestruction, false);
-        }
-    }
-    quint32 mask_5_0 = 0x1fb; // Only compare the values that were already defined in 5.0
+
+    // Only compare the values that were already defined in 5.0.
+    // In 6.5, some types lost NeedsConstruction and NeedsDestruction, but
+    // that's acceptable if that's because they were trivial
+    quint32 mask_5_0 = 0x1ff & ~quint32(QMetaType::NeedsConstruction | QMetaType::NeedsDestruction
+                                        | QMetaType::RelocatableType);
 
     QCOMPARE(quint32(currentFlags) & mask_5_0, quint32(expectedFlags) & mask_5_0);
 }
