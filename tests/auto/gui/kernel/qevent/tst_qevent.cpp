@@ -8,12 +8,6 @@
 #include <QtGui/qevent.h>
 #include <QtCore/private/qfutureinterface_p.h>
 
-#ifdef QT_BUILD_INTERNAL
-# define ONLY_IF_INTERNAL_BUILD(...) __VA_ARGS__
-#else
-# define ONLY_IF_INTERNAL_BUILD(...)
-#endif
-
 #define FOR_EACH_CORE_EVENT(X) \
     /* qcoreevent.h */ \
     X(QEvent, (QEvent::None)) \
@@ -22,7 +16,7 @@
     X(QDynamicPropertyChangeEvent, ("size")) \
     X(QDeferredDeleteEvent, ()) \
     /* qfutureinterface_p.h */ \
-    ONLY_IF_INTERNAL_BUILD(X(QFutureCallOutEvent, ())) \
+    X(QFutureCallOutEvent, ()) \
     /* end */
 
 #define FOR_EACH_GUI_EVENT(X) \
