@@ -1113,7 +1113,7 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
 */
 
 /*! \fn template <typename T> T qAbs(const T &t)
-    \relates <QtGlobal>
+    \relates <QtNumeric>
 
     Compares \a t to the 0 of type T and returns the absolute
     value. Thus if T is \e {double}, then \a t is compared to
@@ -1125,7 +1125,7 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
 */
 
 /*! \fn int qRound(double d)
-    \relates <QtGlobal>
+    \relates <QtNumeric>
 
     Rounds \a d to the nearest integer.
 
@@ -1139,7 +1139,7 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
 */
 
 /*! \fn int qRound(float d)
-    \relates <QtGlobal>
+    \relates <QtNumeric>
 
     Rounds \a d to the nearest integer.
 
@@ -1153,7 +1153,7 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
 */
 
 /*! \fn qint64 qRound64(double d)
-    \relates <QtGlobal>
+    \relates <QtNumeric>
 
     Rounds \a d to the nearest 64-bit integer.
 
@@ -1167,7 +1167,7 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
 */
 
 /*! \fn qint64 qRound64(float d)
-    \relates <QtGlobal>
+    \relates <QtNumeric>
 
     Rounds \a d to the nearest 64-bit integer.
 
@@ -4468,7 +4468,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 
 /*!
  \fn bool qFuzzyCompare(double p1, double p2)
- \relates <QtGlobal>
+ \relates <QtNumeric>
  \since 4.4
  \threadsafe
 
@@ -4488,7 +4488,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 
 /*!
  \fn bool qFuzzyCompare(float p1, float p2)
- \relates <QtGlobal>
+ \relates <QtNumeric>
  \since 4.4
  \threadsafe
 
@@ -4501,7 +4501,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 
 /*!
  \fn bool qFuzzyIsNull(double d)
- \relates <QtGlobal>
+ \relates <QtNumeric>
  \since 4.4
  \threadsafe
 
@@ -4510,7 +4510,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 
 /*!
  \fn bool qFuzzyIsNull(float f)
- \relates <QtGlobal>
+ \relates <QtNumeric>
  \since 4.4
  \threadsafe
 

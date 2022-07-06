@@ -669,43 +669,6 @@ using qsizetype = QIntegerForSizeof<std::size_t>::Signed;
    Utility macros and inline functions
 */
 
-template <typename T>
-constexpr inline T qAbs(const T &t) { return t >= 0 ? t : -t; }
-
-// gcc < 10 doesn't have __has_builtin
-#if defined(Q_PROCESSOR_ARM_64) && (__has_builtin(__builtin_round) || defined(Q_CC_GNU)) && !defined(Q_CC_CLANG)
-// ARM64 has a single instruction that can do C++ rounding with conversion to integer.
-// Note current clang versions have non-constexpr __builtin_round, ### allow clang this path when they fix it.
-constexpr inline int qRound(double d)
-{ return int(__builtin_round(d)); }
-constexpr inline int qRound(float f)
-{ return int(__builtin_roundf(f)); }
-constexpr inline qint64 qRound64(double d)
-{ return qint64(__builtin_round(d)); }
-constexpr inline qint64 qRound64(float f)
-{ return qint64(__builtin_roundf(f)); }
-#elif defined(__SSE2__) && (__has_builtin(__builtin_copysign) || defined(Q_CC_GNU))
-// SSE has binary operations directly on floating point making copysign fast
-constexpr inline int qRound(double d)
-{ return int(d + __builtin_copysign(0.5, d)); }
-constexpr inline int qRound(float f)
-{ return int(f + __builtin_copysignf(0.5f, f)); }
-constexpr inline qint64 qRound64(double d)
-{ return qint64(d + __builtin_copysign(0.5, d)); }
-constexpr inline qint64 qRound64(float f)
-{ return qint64(f + __builtin_copysignf(0.5f, f)); }
-#else
-constexpr inline int qRound(double d)
-{ return d >= 0.0 ? int(d + 0.5) : int(d - 0.5); }
-constexpr inline int qRound(float d)
-{ return d >= 0.0f ? int(d + 0.5f) : int(d - 0.5f); }
-
-constexpr inline qint64 qRound64(double d)
-{ return d >= 0.0 ? qint64(d + 0.5) : qint64(d - 0.5); }
-constexpr inline qint64 qRound64(float d)
-{ return d >= 0.0f ? qint64(d + 0.5f) : qint64(d - 0.5f); }
-#endif
-
 #ifndef Q_FORWARD_DECLARE_OBJC_CLASS
 #  ifdef __OBJC__
 #    define Q_FORWARD_DECLARE_OBJC_CLASS(classname) @class classname
@@ -995,41 +958,6 @@ constexpr inline QTypeTraits::Promoted<T, U> qBound(const U &min, const T &val, 
     return qMax(min, qMin(max, val));
 }
 
-[[nodiscard]] constexpr bool qFuzzyCompare(double p1, double p2)
-{
-    return (qAbs(p1 - p2) * 1000000000000. <= qMin(qAbs(p1), qAbs(p2)));
-}
-
-[[nodiscard]] constexpr bool qFuzzyCompare(float p1, float p2)
-{
-    return (qAbs(p1 - p2) * 100000.f <= qMin(qAbs(p1), qAbs(p2)));
-}
-
-[[nodiscard]] constexpr bool qFuzzyIsNull(double d)
-{
-    return qAbs(d) <= 0.000000000001;
-}
-
-[[nodiscard]] constexpr bool qFuzzyIsNull(float f)
-{
-    return qAbs(f) <= 0.00001f;
-}
-
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_FLOAT_COMPARE
-
-[[nodiscard]] constexpr bool qIsNull(double d) noexcept
-{
-    return d == 0.0;
-}
-
-[[nodiscard]] constexpr bool qIsNull(float f) noexcept
-{
-    return f == 0.0f;
-}
-
-QT_WARNING_POP
-
 /*
    Compilers which follow outdated template instantiation rules
    require a class to have a comparison operator to exist when
@@ -1288,9 +1216,6 @@ Q_CORE_EXPORT bool qunsetenv(const char *varName);
 Q_CORE_EXPORT bool qEnvironmentVariableIsEmpty(const char *varName) noexcept;
 Q_CORE_EXPORT bool qEnvironmentVariableIsSet(const char *varName) noexcept;
 Q_CORE_EXPORT int  qEnvironmentVariableIntValue(const char *varName, bool *ok=nullptr) noexcept;
-
-inline int qIntCast(double f) { return int(f); }
-inline int qIntCast(float f) { return int(f); }
 
 #define QT_MODULE(x)
 
