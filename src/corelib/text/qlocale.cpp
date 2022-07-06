@@ -69,6 +69,20 @@ Q_GLOBAL_STATIC(QSystemLocaleSingleton, QSystemLocale_globalSystemLocale)
 Q_CONSTINIT static QLocaleData systemLocaleData = {};
 #endif
 
+static_assert(ascii_isspace(' '));
+static_assert(ascii_isspace('\t'));
+static_assert(ascii_isspace('\n'));
+static_assert(ascii_isspace('\v'));
+static_assert(ascii_isspace('\f'));
+static_assert(ascii_isspace('\r'));
+static_assert(!ascii_isspace('\0'));
+static_assert(!ascii_isspace('\a'));
+static_assert(!ascii_isspace('a'));
+static_assert(!ascii_isspace('\177'));
+static_assert(!ascii_isspace(uchar('\200')));
+static_assert(!ascii_isspace(uchar('\xA0')));
+static_assert(!ascii_isspace(uchar('\377')));
+
 /******************************************************************************
 ** Helpers for accessing Qt locale database
 */
