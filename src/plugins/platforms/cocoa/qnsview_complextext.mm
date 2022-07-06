@@ -148,9 +148,14 @@
     KeyEvent newlineEvent(m_currentlyInterpretedKeyEvent ?
         m_currentlyInterpretedKeyEvent : NSApp.currentEvent);
     newlineEvent.type = QEvent::KeyPress;
-    newlineEvent.key = Qt::Key_Return;
-    newlineEvent.text = QLatin1Char(kReturnCharCode);
-    newlineEvent.nativeVirtualKey = kVK_Return;
+
+    const bool isEnter = newlineEvent.modifiers & Qt::KeypadModifier;
+    newlineEvent.key = isEnter ? Qt::Key_Enter : Qt::Key_Return;
+    newlineEvent.text = isEnter ? QLatin1Char(kEnterCharCode)
+                                : QLatin1Char(kReturnCharCode);
+    newlineEvent.nativeVirtualKey = isEnter ? kVK_ANSI_KeypadEnter
+                                            : kVK_Return;
+
     qCDebug(lcQpaKeys) << "Inserting newline via" << newlineEvent;
     newlineEvent.sendWindowSystemEvent(m_platformWindow->window());
 }
