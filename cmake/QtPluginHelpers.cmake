@@ -117,7 +117,7 @@ function(qt_internal_add_plugin target)
         endif()
     endif()
 
-    qt_set_target_info_properties(${target} ${ARGN} TARGET_VERSION "${arg_VERSION}")
+    qt_set_target_info_properties(${target} ${ARGN})
 
     # Override the OUTPUT_NAME that qt6_add_plugin() set, we need to account for
     # QT_LIBINFIX, which is specific to building Qt.
