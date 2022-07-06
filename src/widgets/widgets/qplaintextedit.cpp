@@ -2206,6 +2206,8 @@ QVariant QPlainTextEdit::inputMethodQuery(Qt::InputMethodQuery query, QVariant a
 {
     Q_D(const QPlainTextEdit);
     switch (query) {
+    case Qt::ImEnabled:
+        return isEnabled();
     case Qt::ImHints:
     case Qt::ImInputItemClipRectangle:
         return QWidget::inputMethodQuery(query);
