@@ -124,8 +124,7 @@ public class CursorHandle implements ViewTreeObserver.OnPreDrawListener
         m_id = id;
         m_attr = attr;
         m_layout = layout;
-        DisplayMetrics metrics = new DisplayMetrics();
-        activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        DisplayMetrics metrics = activity.getResources().getDisplayMetrics();
         m_yShift = (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, 1f, metrics);
         tolerance = Math.min(1, (int)(m_yShift / 2f));
         m_lastX = m_lastY = -1 - tolerance;
