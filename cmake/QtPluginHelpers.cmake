@@ -117,7 +117,7 @@ function(qt_internal_add_plugin target)
         endif()
     endif()
 
-    qt_set_target_info_properties(${target} ${ARGN} TARGET_VERSION "${arg_VERSION}")
+    qt_set_target_info_properties(${target} ${ARGN})
 
     set_target_properties(${target} PROPERTIES
         _qt_package_version "${PROJECT_VERSION}"
