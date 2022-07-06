@@ -562,6 +562,7 @@ private slots:
 #if QT_CONFIG(regularexpression)
     void split_regularexpression_data();
     void split_regularexpression();
+    void regularexpression_lifetime();
 #endif
     void fromUtf16_data();
     void fromUtf16();
@@ -6238,6 +6239,45 @@ void tst_QString::split_regularexpression()
     QFETCH(QStringList, result);
     split_regexp<QStringList, QRegularExpression>(string, pattern, result);
     split_regexp<QList<QStringView>, QRegularExpression>(string, pattern, result);
+}
+
+// Test that rvalue strings (e.g. temporaries) are kept alive in
+// QRegularExpression-related APIs
+void tst_QString::regularexpression_lifetime()
+{
+    const auto getString = [] {
+        // deliberately heap-allocated
+        return QString(QLatin1String("the quick brown fox jumps over the lazy dog"));
+    };
+
+    QRegularExpression re("\\w{5}");
+
+    {
+        QString s = getString();
+        QRegularExpressionMatch match;
+        const bool contains = std::move(s).contains(re, &match);
+        s.fill('X'); // NOLINT(bugprone-use-after-move)
+        QVERIFY(contains);
+        QCOMPARE(match.capturedView(), u"quick");
+    }
+
+    {
+        QString s = getString();
+        QRegularExpressionMatch match;
+        const auto index = std::move(s).indexOf(re, 0, &match);
+        s.fill('X'); // NOLINT(bugprone-use-after-move)
+        QCOMPARE(index, 4);
+        QCOMPARE(match.capturedView(), u"quick");
+    }
+
+    {
+        QString s = getString();
+        QRegularExpressionMatch match;
+        const auto lastIndex = std::move(s).lastIndexOf(re, &match);
+        s.fill('X'); // NOLINT(bugprone-use-after-move)
+        QCOMPARE(lastIndex, 20);
+        QCOMPARE(match.capturedView(), u"jumps");
+    }
 }
 #endif
 

@@ -4602,7 +4602,7 @@ qsizetype QString::count(QStringView str, Qt::CaseSensitivity cs) const
 */
 qsizetype QString::indexOf(const QRegularExpression &re, qsizetype from, QRegularExpressionMatch *rmatch) const
 {
-    return QtPrivate::indexOf(QStringView(*this), re, from, rmatch);
+    return QtPrivate::indexOf(QStringView(*this), this, re, from, rmatch);
 }
 
 /*!
@@ -4636,7 +4636,7 @@ qsizetype QString::indexOf(const QRegularExpression &re, qsizetype from, QRegula
 */
 qsizetype QString::lastIndexOf(const QRegularExpression &re, qsizetype from, QRegularExpressionMatch *rmatch) const
 {
-    return QtPrivate::lastIndexOf(QStringView(*this), re, from, rmatch);
+    return QtPrivate::lastIndexOf(QStringView(*this), this, re, from, rmatch);
 }
 
 /*!
@@ -4675,7 +4675,7 @@ qsizetype QString::lastIndexOf(const QRegularExpression &re, qsizetype from, QRe
 
 bool QString::contains(const QRegularExpression &re, QRegularExpressionMatch *rmatch) const
 {
-    return QtPrivate::contains(QStringView(*this), re, rmatch);
+    return QtPrivate::contains(QStringView(*this), this, re, rmatch);
 }
 
 /*!
@@ -10614,14 +10614,16 @@ qsizetype QtPrivate::lastIndexOf(QLatin1String haystack, qsizetype from, QLatin1
 }
 
 #if QT_CONFIG(regularexpression)
-qsizetype QtPrivate::indexOf(QStringView haystack, const QRegularExpression &re, qsizetype from, QRegularExpressionMatch *rmatch)
+qsizetype QtPrivate::indexOf(QStringView viewHaystack, const QString *stringHaystack, const QRegularExpression &re, qsizetype from, QRegularExpressionMatch *rmatch)
 {
     if (!re.isValid()) {
         qWarning("QString(View)::indexOf: invalid QRegularExpression object");
         return -1;
     }
 
-    QRegularExpressionMatch match = re.match(haystack, from);
+    QRegularExpressionMatch match = stringHaystack
+                ? re.match(*stringHaystack, from)
+                : re.match(viewHaystack, from);
     if (match.hasMatch()) {
         const qsizetype ret = match.capturedStart();
         if (rmatch)
@@ -10632,15 +10634,22 @@ qsizetype QtPrivate::indexOf(QStringView haystack, const QRegularExpression &re,
     return -1;
 }
 
-qsizetype QtPrivate::lastIndexOf(QStringView haystack, const QRegularExpression &re, qsizetype from, QRegularExpressionMatch *rmatch)
+qsizetype QtPrivate::indexOf(QStringView haystack, const QRegularExpression &re, qsizetype from, QRegularExpressionMatch *rmatch)
+{
+    return indexOf(haystack, nullptr, re, from, rmatch);
+}
+
+qsizetype QtPrivate::lastIndexOf(QStringView viewHaystack, const QString *stringHaystack, const QRegularExpression &re, qsizetype from, QRegularExpressionMatch *rmatch)
 {
     if (!re.isValid()) {
         qWarning("QString(View)::lastIndexOf: invalid QRegularExpression object");
         return -1;
     }
 
-    qsizetype endpos = (from < 0) ? (haystack.size() + from + 1) : (from + 1);
-    QRegularExpressionMatchIterator iterator = re.globalMatch(haystack);
+    qsizetype endpos = (from < 0) ? (viewHaystack.size() + from + 1) : (from + 1);
+    QRegularExpressionMatchIterator iterator = stringHaystack
+            ? re.globalMatch(*stringHaystack)
+            : re.globalMatch(viewHaystack);
     qsizetype lastIndex = -1;
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
@@ -10657,17 +10666,29 @@ qsizetype QtPrivate::lastIndexOf(QStringView haystack, const QRegularExpression 
     return lastIndex;
 }
 
-bool QtPrivate::contains(QStringView haystack, const QRegularExpression &re, QRegularExpressionMatch *rmatch)
+qsizetype QtPrivate::lastIndexOf(QStringView haystack, const QRegularExpression &re, qsizetype from, QRegularExpressionMatch *rmatch)
+{
+    return lastIndexOf(haystack, nullptr, re, from, rmatch);
+}
+
+bool QtPrivate::contains(QStringView viewHaystack, const QString *stringHaystack, const QRegularExpression &re, QRegularExpressionMatch *rmatch)
 {
     if (!re.isValid()) {
         qWarning("QString(View)::contains: invalid QRegularExpression object");
         return false;
     }
-    QRegularExpressionMatch m = re.match(haystack);
+    QRegularExpressionMatch m = stringHaystack
+                ? re.match(*stringHaystack)
+                : re.match(viewHaystack);
     bool hasMatch = m.hasMatch();
     if (hasMatch && rmatch)
         *rmatch = std::move(m);
     return hasMatch;
+}
+
+bool QtPrivate::contains(QStringView haystack, const QRegularExpression &re, QRegularExpressionMatch *rmatch)
+{
+    return contains(haystack, nullptr, re, rmatch);
 }
 
 qsizetype QtPrivate::count(QStringView haystack, const QRegularExpression &re)
