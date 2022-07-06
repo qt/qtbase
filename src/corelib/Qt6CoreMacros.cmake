@@ -711,40 +711,32 @@ function(_qt_internal_handle_ios_launch_screen target)
     # Check if user provided a launch screen path via a variable.
     set(launch_screen "")
 
+    # Check if the project provided a launch screen path via a variable.
     # This variable is currently in Technical Preview.
     if(QT_IOS_LAUNCH_SCREEN)
         set(launch_screen "${QT_IOS_LAUNCH_SCREEN}")
     endif()
 
-    # Check if user provided a launch screen path via a target property.
-    if(NOT launch_screen)
-
-        # This property is currently in Technical Preview.
-        get_target_property(launch_screen_from_prop "${target}" QT_IOS_LAUNCH_SCREEN)
-        if(launch_screen_from_prop)
-            set(launch_screen "${launch_screen_from_prop}")
-        endif()
+    # Check if the project provided a launch screen path via a target property, it takes precedence
+    # over the variable.
+    # This property is currently in Technical Preview.
+    get_target_property(launch_screen_from_prop "${target}" QT_IOS_LAUNCH_SCREEN)
+    if(launch_screen_from_prop)
+        set(launch_screen "${launch_screen_from_prop}")
     endif()
 
-    # If user hasn't provided a launch screen path, use a copy of the one qmake uses.
-    # It needs to be a copy because configure_file can't handle all the escaped double quotes.
-    if(NOT launch_screen AND NOT QT_NO_SET_IOS_LAUNCH_SCREEN)
-        set(launch_screen "LaunchScreen.storyboard")
+    # If the project hasn't provided a launch screen file path, use a copy of the template
+    # that qmake uses.
+    # It needs to be a copy because configure_file can't handle all the escaped double quotes
+    # present in the qmake template file.
+    set(is_default_launch_screen FALSE)
+    if(NOT launch_screen AND NOT QT_NO_SET_DEFAULT_IOS_LAUNCH_SCREEN)
+        set(is_default_launch_screen TRUE)
         set(launch_screen
-            "${__qt_internal_cmake_ios_support_files_path}/${launch_screen}")
+            "${__qt_internal_cmake_ios_support_files_path}/LaunchScreen.storyboard")
     endif()
 
-    # Save the name of the launch screen in an internal cache var, so it is added as a
-    # UILaunchStoryboardName entry in the generated Info.plist.
-    # This is the only sensible but dirty way to set up a variable, so that CMake's internal
-    # configure_file call for Info.plist picks it up.
-    # Unfortunately CMake does not provide a way of setting a regular non-cache variable in a
-    # directory scope from within a nested function call.
-    # This means that the behavior below will only work if there's one single executable in the
-    # project.
-    # FIXME: Figure out if there's a better way of doing this.
-    #        Perhaps we should give up on using CMake's Info.plist mechanism and just call
-    #        configure_file ourselves.
+    # Check that the launch screen exists.
     if(launch_screen)
         if(NOT IS_ABSOLUTE "${launch_screen}")
             message(FATAL_ERROR
@@ -755,36 +747,62 @@ function(_qt_internal_handle_ios_launch_screen target)
             message(FATAL_ERROR
                 "Provided launch screen file does not exist: '${launch_screen}'")
         endif()
-
-        get_filename_component(launch_screen_name "${launch_screen}" NAME)
-        set(QT_INTERNAL_IOS_LAUNCH_SCREEN_PLIST_ENTRY "${launch_screen_name}" CACHE INTERNAL "")
     endif()
 
     if(launch_screen AND NOT QT_NO_ADD_IOS_LAUNCH_SCREEN_TO_BUNDLE)
-        # Configure the file and place it in the build dir.
-        set(launch_screen_in_path "${launch_screen}")
+        get_filename_component(launch_screen_name "${launch_screen}" NAME)
 
-        string(MAKE_C_IDENTIFIER "${target}" target_identifier)
-        set(launch_screen_out_dir
-            "${CMAKE_CURRENT_BINARY_DIR}/qt_story_boards/${target_identifier}")
+        # Make a copy of the default launch screen template for this target and replace the
+        # label inside the template with the target name.
+        if(is_default_launch_screen)
+            # Configure our default template and place it in the build dir.
+            set(launch_screen_in_path "${launch_screen}")
 
-        set(launch_screen_out_path
-            "${launch_screen_out_dir}/${launch_screen_name}")
+            string(MAKE_C_IDENTIFIER "${target}" target_identifier)
+            set(launch_screen_out_dir
+                "${CMAKE_CURRENT_BINARY_DIR}/.qt/launch_screen_storyboards/${target_identifier}")
 
-        file(MAKE_DIRECTORY "${launch_screen_out_dir}")
+            set(launch_screen_out_path
+                "${launch_screen_out_dir}/${launch_screen_name}")
 
-        set(QT_IOS_LAUNCH_SCREEN_TEXT "${target}")
-        configure_file(
-            "${launch_screen_in_path}"
-            "${launch_screen_out_path}"
-            @ONLY
-        )
+            file(MAKE_DIRECTORY "${launch_screen_out_dir}")
 
-        # Add it as a source file, otherwise CMake doesn't consider it a resource.
-        target_sources("${target}" PRIVATE "${launch_screen_out_path}")
+            # Replaces the value in the default template.
+            set(QT_IOS_LAUNCH_SCREEN_TEXT "${target}")
+            configure_file(
+                "${launch_screen_in_path}"
+                "${launch_screen_out_path}"
+                @ONLY
+            )
 
-        # Ensure Xcode copies the file to the app bundle.
-        set_property(TARGET "${target}" APPEND PROPERTY RESOURCE "${launch_screen_out_path}")
+            set(final_launch_screen_path "${launch_screen_out_path}")
+        else()
+            set(final_launch_screen_path "${launch_screen}")
+        endif()
+
+        # Add the launch screen storyboard file as a source file, otherwise CMake doesn't consider
+        # it as a resource file and MACOSX_PACKAGE_LOCATION processing will be skipped.
+        target_sources("${target}" PRIVATE "${final_launch_screen_path}")
+
+        # Ensure Xcode compiles the storyboard file and installs the compiled storyboard .nib files
+        # into the app bundle.
+        # We use target_sources and the MACOSX_PACKAGE_LOCATION source file property for that
+        # instead of the RESOURCE target property, becaues the latter could potentially end up
+        # needlessly installing the source storyboard file.
+        #
+        # We can't rely on policy CMP0118 since user project controls it.
+        set(scope_args)
+        if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
+            set(scope_args TARGET_DIRECTORY ${target})
+        endif()
+        set_source_files_properties("${final_launch_screen_path}" ${scope_args}
+            PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+
+        # Save the launch screen name, so its value is added as an UILaunchStoryboardName entry
+        # in the Qt generated Info.plist file.
+        set_target_properties("${target}" PROPERTIES
+                              _qt_ios_launch_screen_name "${launch_screen_name}"
+                              _qt_ios_launch_screen_path "${final_launch_screen_path}")
     endif()
 endfunction()
 
@@ -1118,6 +1136,44 @@ function(_qt_internal_set_xcode_bundle_display_name target)
     set(QT_INTERNAL_DOLLAR_VAR "$" CACHE STRING "")
 endfunction()
 
+function(_qt_internal_generate_ios_info_plist target)
+    # If the project already specifies a custom file, we don't override it.
+    get_target_property(existing_plist "${target}" MACOSX_BUNDLE_INFO_PLIST)
+    if(existing_plist)
+        return()
+    endif()
+
+    set(info_plist_in "${__qt_internal_cmake_ios_support_files_path}/Info.plist.app.in")
+
+    string(MAKE_C_IDENTIFIER "${target}" target_identifier)
+    set(info_plist_out_dir
+        "${CMAKE_CURRENT_BINARY_DIR}/.qt/info_plist/${target_identifier}")
+    set(info_plist_out "${info_plist_out_dir}/Info.plist")
+
+    # Check if we need to specify a custom launch screen storyboard entry.
+    get_target_property(launch_screen_name "${target}" _qt_ios_launch_screen_name)
+    if(launch_screen_name)
+        set(qt_ios_launch_screen_plist_entry "${launch_screen_name}")
+    endif()
+
+    # Call configure_file to substitute Qt-specific @FOO@ values, not ${FOO} values.
+    #
+    # The output file will be another template file to be fed to CMake via the
+    # MACOSX_BUNDLE_INFO_PLIST property. CMake will then call configure_file on it to provide
+    # content for regular entries like CFBundleName, etc.
+    #
+    # We require this extra configure_file call so we can create unique Info.plist files for each
+    # target in a project, while also providing a way to add Qt specific entries that CMake
+    # does not support out of the box (e.g. a launch screen name).
+    configure_file(
+        "${info_plist_in}"
+        "${info_plist_out}"
+        @ONLY
+    )
+
+    set_target_properties("${target}" PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${info_plist_out}")
+endfunction()
+
 function(_qt_internal_finalize_ios_app target)
     _qt_internal_set_xcode_development_team_id("${target}")
     _qt_internal_set_xcode_bundle_identifier("${target}")
@@ -1127,6 +1183,7 @@ function(_qt_internal_finalize_ios_app target)
 
     _qt_internal_handle_ios_launch_screen("${target}")
     _qt_internal_set_placeholder_apple_bundle_version("${target}")
+    _qt_internal_generate_ios_info_plist("${target}")
 endfunction()
 
 function(_qt_internal_finalize_macos_app target)
