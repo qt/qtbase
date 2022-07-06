@@ -81,8 +81,14 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaSelectionProvider::GetSelection(SAFEARRAY *
     QList<QAccessibleInterface *> selectedList;
     for (int i = 0; i < accessible->childCount(); ++i) {
         if (QAccessibleInterface *child = accessible->child(i)) {
-            if (child->state().selected) {
-                selectedList.append(child);
+            if (accessible->role() == QAccessible::PageTabList) {
+                if (child->role() == QAccessible::PageTab && child->state().focused) {
+                    selectedList.append(child);
+                }
+            } else {
+                if (child->state().selected) {
+                    selectedList.append(child);
+                }
             }
         }
     }
@@ -126,18 +132,23 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaSelectionProvider::get_IsSelectionRequired(
     if (!accessible)
         return UIA_E_ELEMENTNOTAVAILABLE;
 
-    // Initially returns false if none are selected. After the first selection, it may be required.
-    bool anySelected = false;
-    for (int i = 0; i < accessible->childCount(); ++i) {
-        if (QAccessibleInterface *child = accessible->child(i)) {
-            if (child->state().selected) {
-                anySelected = true;
-                break;
+    if (accessible->role() == QAccessible::PageTabList) {
+        *pRetVal = TRUE;
+    } else {
+
+        // Initially returns false if none are selected. After the first selection, it may be required.
+        bool anySelected = false;
+        for (int i = 0; i < accessible->childCount(); ++i) {
+            if (QAccessibleInterface *child = accessible->child(i)) {
+                if (child->state().selected) {
+                    anySelected = true;
+                    break;
+                }
             }
         }
-    }
 
-    *pRetVal = anySelected && !accessible->state().multiSelectable && !accessible->state().extSelectable;
+        *pRetVal = anySelected && !accessible->state().multiSelectable && !accessible->state().extSelectable;
+    }
     return S_OK;
 }
 
