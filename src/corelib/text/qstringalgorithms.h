@@ -69,14 +69,30 @@ namespace QtPrivate {
 [[nodiscard]] Q_CORE_EXPORT Q_DECL_PURE_FUNCTION qsizetype count(QLatin1StringView haystack, QChar needle, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
 
 #if QT_CONFIG(regularexpression)
+// ### Qt 7: unify these overloads;
+// remove the ones taking only a QStringView, export the others, adjust callers
+[[nodiscard]] qsizetype indexOf(QStringView viewHaystack,
+                                const QString *stringHaystack,
+                                const QRegularExpression &re,
+                                qsizetype from = 0,
+                                QRegularExpressionMatch *rmatch = nullptr);
 [[nodiscard]] Q_CORE_EXPORT qsizetype indexOf(QStringView haystack,
                                               const QRegularExpression &re,
                                               qsizetype from = 0,
                                               QRegularExpressionMatch *rmatch = nullptr);
+[[nodiscard]] qsizetype lastIndexOf(QStringView viewHaystack,
+                                    const QString *stringHaystack,
+                                    const QRegularExpression &re,
+                                    qsizetype from = -1,
+                                    QRegularExpressionMatch *rmatch = nullptr);
 [[nodiscard]] Q_CORE_EXPORT qsizetype lastIndexOf(QStringView haystack,
                                                   const QRegularExpression &re,
                                                   qsizetype from = -1,
                                                   QRegularExpressionMatch *rmatch = nullptr);
+[[nodiscard]] bool contains(QStringView viewHaystack,
+                            const QString *stringHaystack,
+                            const QRegularExpression &re,
+                            QRegularExpressionMatch *rmatch = nullptr);
 [[nodiscard]] Q_CORE_EXPORT bool contains(QStringView haystack,
                                           const QRegularExpression &re,
                                           QRegularExpressionMatch *rmatch = nullptr);
