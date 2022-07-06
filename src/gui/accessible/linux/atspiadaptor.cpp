@@ -414,6 +414,26 @@ QString AtSpiAdaptor::introspect(const QString &path) const
                 "  </interface>\n"
                 );
 
+    static const QLatin1StringView tableCellIntrospection(
+                "  <interface name=\"org.a11y.atspi.TableCell\">\n"
+                "    <property access=\"read\" name=\"ColumnSpan\" type=\"i\" />\n"
+                "    <property access=\"read\" name=\"Position\" type=\"(ii)\">\n"
+                "      <annotation name=\"org.qtproject.QtDBus.QtTypeName\" value=\"QPoint\"/>\n"
+                "    </property>\n"
+                "    <property access=\"read\" name=\"RowSpan\" type=\"i\" />\n"
+                "    <property access=\"read\" name=\"Table\" type=\"(so)\" >\n"
+                "      <annotation name=\"org.qtproject.QtDBus.QtTypeName\" value=\"QSpiObjectReference\"/>\n"
+                "    </property>\n"
+                "    <method name=\"GetRowColumnSpan\">\n"
+                "      <arg direction=\"out\" type=\"b\" />\n"
+                "      <arg direction=\"out\" name=\"row\" type=\"i\" />\n"
+                "      <arg direction=\"out\" name=\"col\" type=\"i\" />\n"
+                "      <arg direction=\"out\" name=\"row_extents\" type=\"i\" />\n"
+                "      <arg direction=\"out\" name=\"col_extents\" type=\"i\" />\n"
+                "    </method>\n"
+                "  </interface>\n"
+                );
+
     static const QLatin1StringView textIntrospection(
                 "  <interface name=\"org.a11y.atspi.Text\">\n"
                 "    <property access=\"read\" type=\"i\" name=\"CharacterCount\"/>\n"
@@ -575,6 +595,8 @@ QString AtSpiAdaptor::introspect(const QString &path) const
         xml.append(actionIntrospection);
     if (interfaces.contains(ATSPI_DBUS_INTERFACE_TABLE ""_L1))
         xml.append(tableIntrospection);
+    if (interfaces.contains(ATSPI_DBUS_INTERFACE_TABLE_CELL ""_L1))
+        xml.append(tableCellIntrospection);
     if (interfaces.contains(ATSPI_DBUS_INTERFACE_VALUE ""_L1))
         xml.append(valueIntrospection);
     if (path == QSPI_OBJECT_PATH_ROOT ""_L1)
@@ -1263,6 +1285,8 @@ bool AtSpiAdaptor::handleMessage(const QDBusMessage &message, const QDBusConnect
         return valueInterface(accessible, function, message, connection);
     if (interface == ATSPI_DBUS_INTERFACE_TABLE ""_L1)
         return tableInterface(accessible, function, message, connection);
+    if (interface == ATSPI_DBUS_INTERFACE_TABLE_CELL ""_L1)
+        return tableCellInterface(accessible, function, message, connection);
 
     qCDebug(lcAccessibilityAtspi) << "AtSpiAdaptor::handleMessage with unknown interface: " << message.path() << interface << function;
     return false;
@@ -1463,6 +1487,9 @@ QStringList AtSpiAdaptor::accessibleInterfaces(QAccessibleInterface *interface) 
 
     if (interface->tableInterface())
         ifaces << ATSPI_DBUS_INTERFACE_TABLE ""_L1;
+
+    if (interface->tableCellInterface())
+        ifaces << ATSPI_DBUS_INTERFACE_TABLE_CELL ""_L1;
 
     return ifaces;
 }
@@ -2443,6 +2470,41 @@ bool AtSpiAdaptor::tableInterface(QAccessibleInterface *interface, const QString
         qCDebug(lcAccessibilityAtspi) << "WARNING: AtSpiAdaptor::tableInterface does not implement " << function << message.path();
         return false;
     }
+    return true;
+}
+
+// Table cell interface
+bool AtSpiAdaptor::tableCellInterface(QAccessibleInterface *interface, const QString &function, const QDBusMessage &message, const QDBusConnection &connection)
+{
+    QAccessibleTableCellInterface* cellInterface = interface->tableCellInterface();
+    if (!cellInterface) {
+        qCWarning(lcAccessibilityAtspi) << "Could not find table cell interface for: " << message.path() << interface;
+        return false;
+    }
+
+    if (function == "GetColumnSpan"_L1) {
+        connection.send(message.createReply(QVariant::fromValue(QDBusVariant(
+            QVariant::fromValue(cellInterface->columnExtent())))));
+    } else if (function == "GetPosition"_L1) {
+        const int row = cellInterface->rowIndex();
+        const int column = cellInterface->columnIndex();
+        connection.send(message.createReply(QVariant::fromValue(QDBusVariant(
+            QVariant::fromValue(QPoint(row, column))))));
+    } else if (function == "GetRowSpan"_L1) {
+        connection.send(message.createReply(QVariant::fromValue(QDBusVariant(
+            QVariant::fromValue(cellInterface->rowExtent())))));
+    } else if (function == "GetRowColumnSpan"_L1) {
+        QVariantList list;
+        list << cellInterface->rowIndex() << cellInterface->columnIndex() << cellInterface->rowExtent() << cellInterface->columnExtent();
+        connection.send(message.createReply(list));
+    } else if (function == "GetTable"_L1) {
+        QSpiObjectReference ref;
+        QAccessibleInterface* table = cellInterface->table();
+        if (table && table->tableInterface())
+            ref = QSpiObjectReference(connection, QDBusObjectPath(pathForInterface(table)));
+        connection.send(message.createReply(QVariant::fromValue(QDBusVariant(QVariant::fromValue(ref)))));
+    }
+
     return true;
 }
 
