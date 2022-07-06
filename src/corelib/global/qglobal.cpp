@@ -861,43 +861,6 @@ using namespace Qt::StringLiterals;
     \snippet code/src_corelib_global_qglobal.cpp 12B
 */
 
-/*! \fn template <typename T> const T &qMin(const T &a, const T &b)
-    \relates <QtGlobal>
-
-    Returns the minimum of \a a and \a b.
-
-    Example:
-
-    \snippet code/src_corelib_global_qglobal.cpp 13
-
-    \sa qMax(), qBound()
-*/
-
-/*! \fn template <typename T> const T &qMax(const T &a, const T &b)
-    \relates <QtGlobal>
-
-    Returns the maximum of \a a and \a b.
-
-    Example:
-
-    \snippet code/src_corelib_global_qglobal.cpp 14
-
-    \sa qMin(), qBound()
-*/
-
-/*! \fn template <typename T> const T &qBound(const T &min, const T &val, const T &max)
-    \relates <QtGlobal>
-
-    Returns \a val bounded by \a min and \a max. This is equivalent
-    to qMax(\a min, qMin(\a val, \a max)).
-
-    Example:
-
-    \snippet code/src_corelib_global_qglobal.cpp 15
-
-    \sa qMin(), qMax()
-*/
-
 /*!
     \macro QT_VERSION_STR
     \relates <QtGlobal>

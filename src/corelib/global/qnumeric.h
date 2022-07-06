@@ -9,6 +9,7 @@
 #endif
 
 #include <QtCore/qglobal.h>
+
 #include <cmath>
 #include <limits>
 #include <type_traits>
@@ -356,14 +357,19 @@ constexpr inline qint64 qRound64(float d)
 { return d >= 0.0f ? qint64(d + 0.5f) : qint64(d - 0.5f); }
 #endif
 
+namespace QtPrivate {
+template <typename T>
+constexpr inline const T &min(const T &a, const T &b) { return (a < b) ? a : b; }
+}
+
 [[nodiscard]] constexpr bool qFuzzyCompare(double p1, double p2)
 {
-    return (qAbs(p1 - p2) * 1000000000000. <= qMin(qAbs(p1), qAbs(p2)));
+    return (qAbs(p1 - p2) * 1000000000000. <= QtPrivate::min(qAbs(p1), qAbs(p2)));
 }
 
 [[nodiscard]] constexpr bool qFuzzyCompare(float p1, float p2)
 {
-    return (qAbs(p1 - p2) * 100000.f <= qMin(qAbs(p1), qAbs(p2)));
+    return (qAbs(p1 - p2) * 100000.f <= QtPrivate::min(qAbs(p1), qAbs(p2)));
 }
 
 [[nodiscard]] constexpr bool qFuzzyIsNull(double d)

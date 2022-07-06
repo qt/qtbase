@@ -446,73 +446,6 @@ typedef void (*QFunctionPointer)();
 #  define Q_UNIMPLEMENTED() qWarning("Unimplemented code.")
 #endif
 
-namespace QTypeTraits {
-
-namespace detail {
-template<typename T, typename U,
-         typename = std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<U> &&
-                                     std::is_floating_point_v<T> == std::is_floating_point_v<U> &&
-                                     std::is_signed_v<T> == std::is_signed_v<U> &&
-                                     !std::is_same_v<T, bool> && !std::is_same_v<U, bool> &&
-                                     !std::is_same_v<T, char> && !std::is_same_v<U, char>>>
-struct Promoted
-{
-    using type = decltype(T() + U());
-};
-}
-
-template <typename T, typename U>
-using Promoted = typename detail::Promoted<T, U>::type;
-
-}
-
-template <typename T>
-constexpr inline const T &qMin(const T &a, const T &b) { return (a < b) ? a : b; }
-template <typename T>
-constexpr inline const T &qMax(const T &a, const T &b) { return (a < b) ? b : a; }
-template <typename T>
-constexpr inline const T &qBound(const T &min, const T &val, const T &max)
-{
-    Q_ASSERT(!(max < min));
-    return qMax(min, qMin(max, val));
-}
-template <typename T, typename U>
-constexpr inline QTypeTraits::Promoted<T, U> qMin(const T &a, const U &b)
-{
-    using P = QTypeTraits::Promoted<T, U>;
-    P _a = a;
-    P _b = b;
-    return (_a < _b) ? _a : _b;
-}
-template <typename T, typename U>
-constexpr inline QTypeTraits::Promoted<T, U> qMax(const T &a, const U &b)
-{
-    using P = QTypeTraits::Promoted<T, U>;
-    P _a = a;
-    P _b = b;
-    return (_a < _b) ? _b : _a;
-}
-template <typename T, typename U>
-constexpr inline QTypeTraits::Promoted<T, U> qBound(const T &min, const U &val, const T &max)
-{
-    Q_ASSERT(!(max < min));
-    return qMax(min, qMin(max, val));
-}
-template <typename T, typename U>
-constexpr inline QTypeTraits::Promoted<T, U> qBound(const T &min, const T &val, const U &max)
-{
-    using P = QTypeTraits::Promoted<T, U>;
-    Q_ASSERT(!(P(max) < P(min)));
-    return qMax(min, qMin(max, val));
-}
-template <typename T, typename U>
-constexpr inline QTypeTraits::Promoted<T, U> qBound(const U &min, const T &val, const T &max)
-{
-    using P = QTypeTraits::Promoted<T, U>;
-    Q_ASSERT(!(P(max) < P(min)));
-    return qMax(min, qMin(max, val));
-}
-
 /*
    Compilers which follow outdated template instantiation rules
    require a class to have a comparison operator to exist when
@@ -704,6 +637,7 @@ QT_END_NAMESPACE
 #include <QtCore/qenvironmentvariables.h>
 #include <QtCore/qforeach.h>
 #include <QtCore/qglobalstatic.h>
+#include <QtCore/qminmax.h>
 #include <QtCore/qnumeric.h>
 #include <QtCore/qoverload.h>
 #include <QtCore/qtdeprecationmarkers.h>
