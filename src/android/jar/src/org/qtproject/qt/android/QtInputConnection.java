@@ -5,6 +5,8 @@
 package org.qtproject.qt.android;
 
 import android.content.Context;
+import android.os.Build;
+import android.view.WindowMetrics;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.CompletionInfo;
 import android.view.inputmethod.ExtractedText;
@@ -58,9 +60,17 @@ class HideKeyboardRunnable implements Runnable {
         Activity activity = QtNative.activity();
         Rect r = new Rect();
         activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(r);
-        DisplayMetrics metrics = new DisplayMetrics();
-        activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        final int kbHeight = metrics.heightPixels - r.bottom;
+
+        int screenHeight = 0;
+        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            DisplayMetrics metrics = new DisplayMetrics();
+            activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+            screenHeight = metrics.heightPixels;
+        } else {
+            final WindowMetrics maximumWindowMetrics = activity.getWindowManager().getMaximumWindowMetrics();
+            screenHeight = maximumWindowMetrics.getBounds().height();
+        }
+        final int kbHeight = screenHeight - r.bottom;
         if (kbHeight < 100)
             QtNative.activityDelegate().setKeyboardVisibility(false, m_hideTimeStamp);
     }
