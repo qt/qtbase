@@ -10855,6 +10855,12 @@ void tst_QWidget::imEnabledNotImplemented()
     imEnabled = QApplication::inputMethod()->queryFocusObject(Qt::ImEnabled, QVariant());
     QVERIFY(imEnabled.isValid());
     QVERIFY(imEnabled.toBool());
+
+    // ...even if it's read-only
+    edit.setReadOnly(true);
+    imEnabled = QApplication::inputMethod()->queryFocusObject(Qt::ImEnabled, QVariant());
+    QVERIFY(imEnabled.isValid());
+    QVERIFY(imEnabled.toBool());
 }
 
 #ifdef QT_BUILD_INTERNAL
