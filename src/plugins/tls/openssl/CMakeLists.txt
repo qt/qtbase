@@ -48,12 +48,10 @@ qt_internal_extend_target(QTlsBackendOpenSSLPlugin CONDITION WIN32
         crypt32
 )
 
-qt_internal_extend_target(QTlsBackendOpenSSLPlugin CONDITION QT_FEATURE_openssl_linked
-    LIBRARIES
-        WrapOpenSSL::WrapOpenSSL
-)
-
-qt_internal_extend_target(QTlsBackendOpenSSLPlugin CONDITION NOT QT_FEATURE_openssl_linked
-    LIBRARIES
+if(QT_FEATURE_openssl_linked)
+    target_link_libraries(QTlsBackendOpenSSLPlugin PRIVATE WrapOpenSSL::WrapOpenSSL)
+else()
+    qt_internal_add_target_include_dirs_and_optionally_propagate(QTlsBackendOpenSSLPlugin
         WrapOpenSSLHeaders::WrapOpenSSLHeaders
-)
+    )
+endif()
