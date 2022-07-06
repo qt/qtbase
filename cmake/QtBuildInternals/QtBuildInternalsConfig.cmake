@@ -732,7 +732,7 @@ endfunction()
 # Mean to be called when configuring examples as part of the main build tree, as well as for CMake
 # tests (tests that call CMake to try and build CMake applications).
 macro(qt_internal_set_up_build_dir_package_paths)
-    list(APPEND CMAKE_PREFIX_PATH "${QT_BUILD_DIR}")
+    list(PREPEND CMAKE_PREFIX_PATH "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/cmake")
     # Make sure the CMake config files do not recreate the already-existing targets
     set(QT_NO_CREATE_TARGETS TRUE)
 endmacro()
@@ -814,15 +814,15 @@ macro(qt_examples_build_begin)
 
     # Examples that are built as part of the Qt build need to use the CMake config files from the
     # build dir, because they are not installed yet in a prefix build.
-    # Appending to CMAKE_PREFIX_PATH helps find the initial Qt6Config.cmake.
-    # Appending to QT_EXAMPLES_CMAKE_PREFIX_PATH helps find components of Qt6, because those
+    # Prepending to CMAKE_PREFIX_PATH helps find the initial Qt6Config.cmake.
+    # Prepending to QT_EXAMPLES_CMAKE_PREFIX_PATH helps find components of Qt6, because those
     # find_package calls use NO_DEFAULT_PATH, and thus CMAKE_PREFIX_PATH is ignored.
-    # Appending to CMAKE_FIND_ROOT_PATH ensures the components are found while cross-compiling
+    # Prepending to CMAKE_FIND_ROOT_PATH ensures the components are found while cross-compiling
     # without setting CMAKE_FIND_ROOT_PATH_MODE_PACKAGE to BOTH.
     if(NOT QT_IS_EXTERNAL_EXAMPLES_BUILD OR NOT __qt_all_examples_ported_to_external_projects)
         qt_internal_set_up_build_dir_package_paths()
-        list(APPEND CMAKE_FIND_ROOT_PATH "${QT_BUILD_DIR}")
-        list(APPEND QT_EXAMPLES_CMAKE_PREFIX_PATH "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/cmake")
+        list(PREPEND CMAKE_FIND_ROOT_PATH "${QT_BUILD_DIR}")
+        list(PREPEND QT_EXAMPLES_CMAKE_PREFIX_PATH "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/cmake")
     endif()
 
     # Because CMAKE_INSTALL_RPATH is empty by default in the repo project, examples need to have
