@@ -1,0 +1,17 @@
+<!doctype html>
+<script type="text/javascript" src="qtwasmtestlib.js"></script>
+<script type="text/javascript" src="sockify_sockets_auto.js"></script>
+<script>
+    window.onload = async () => {
+        runTestCase(document.getElementById("log"));
+    };
+</script>
+<p> Sockify tunneled sockets auto test.
+
+<p>This test requires running echo_server and <a href=https://github.com/novnc/websockify>websockify</a> (or equivalent) on the host:
+<pre>
+    /path/to/qtbase/tests/manual/wasm/network/echo_server/echo_server
+    websockify 1515 localhost:1516
+</pre>
+
+<div id="log"></div>
