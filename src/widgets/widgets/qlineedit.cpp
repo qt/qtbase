@@ -1811,6 +1811,8 @@ QVariant QLineEdit::inputMethodQuery(Qt::InputMethodQuery property, QVariant arg
 {
     Q_D(const QLineEdit);
     switch(property) {
+    case Qt::ImEnabled:
+        return isEnabled();
     case Qt::ImCursorRectangle:
         return d->cursorRect();
     case Qt::ImAnchorRectangle:

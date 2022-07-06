@@ -10274,7 +10274,9 @@ void QGraphicsTextItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 QVariant QGraphicsTextItem::inputMethodQuery(Qt::InputMethodQuery query) const
 {
     QVariant v;
-    if (query == Qt::ImHints)
+    if (query == Qt::ImEnabled)
+        return isEnabled();
+    else if (query == Qt::ImHints)
         v = int(inputMethodHints());
     else if (dd->control)
         v = dd->control->inputMethodQuery(query, QVariant());
