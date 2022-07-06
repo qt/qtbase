@@ -6,7 +6,9 @@ package org.qtproject.qt.android;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Rect;
 import android.os.Build;
+import android.util.Log;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.Display;
@@ -15,6 +17,9 @@ import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.graphics.Insets;
+import android.view.WindowMetrics;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 
 public class QtLayout extends ViewGroup
 {
@@ -62,17 +67,86 @@ public class QtLayout extends ViewGroup
         if (activity == null)
             return;
 
-        Display display = (Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
-                ? activity.getWindowManager().getDefaultDisplay()
-                : activity.getDisplay();
+        final WindowManager windowManager = activity.getWindowManager();
+        Display display;
 
-        DisplayMetrics realMetrics = new DisplayMetrics();
-        display.getRealMetrics(realMetrics);
+        int appWidth = 0;
+        int appHeight = 0;
 
-        DisplayMetrics appMetrics = new DisplayMetrics();
-        display.getMetrics(appMetrics);
+        int insetLeft = 0;
+        int insetTop = 0;
 
-        if ((realMetrics.widthPixels > realMetrics.heightPixels) != (w > h)) {
+        int maxWidth = 0;
+        int maxHeight = 0;
+
+        double xdpi = 0;
+        double ydpi = 0;
+        double scaledDensity = 0;
+        double density = 0;
+
+        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+             display = windowManager.getDefaultDisplay();
+
+             final DisplayMetrics appMetrics = new DisplayMetrics();
+             display.getMetrics(appMetrics);
+
+             appWidth = appMetrics.widthPixels;
+             appHeight = appMetrics.heightPixels;
+
+             final DisplayMetrics maxMetrics = new DisplayMetrics();
+             display.getRealMetrics(maxMetrics);
+
+             maxWidth = maxMetrics.widthPixels;
+             maxHeight = maxMetrics.heightPixels;
+
+             density = appMetrics.density;
+             xdpi = appMetrics.xdpi;
+             ydpi = appMetrics.ydpi;
+             scaledDensity = appMetrics.scaledDensity;
+
+             final WindowInsets rootInsets = getRootWindowInsets();
+             insetLeft = rootInsets.getSystemWindowInsetLeft();
+             insetTop = rootInsets.getSystemWindowInsetTop();
+        } else {
+            // after API 30 use getCurrentWindowMetrics for application metrics
+            // getMaximumWindowMetrics for the screen metrics
+            // resource configuration for density as best practice
+            // and the resource display metrics for the rest
+            display = activity.getDisplay();
+
+            final WindowMetrics appMetrics = windowManager.getCurrentWindowMetrics();
+
+            final WindowInsets windowInsets = appMetrics.getWindowInsets();
+            Insets insets = windowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.navigationBars()
+                     | WindowInsets.Type.displayCutout());
+
+            insetLeft = insets.left;
+            insetTop = insets.top;
+
+            int insetsWidth = insets.right + insets.left;
+            int insetsHeight = insets.top + insets.bottom;
+
+            appWidth = appMetrics.getBounds().width() - insetsWidth;
+            appHeight = appMetrics.getBounds().height() - insetsHeight;
+
+            final WindowMetrics maxMetrics = windowManager.getMaximumWindowMetrics();
+            maxWidth = maxMetrics.getBounds().width();
+            maxHeight = maxMetrics.getBounds().height();
+
+            final Resources resources = activity.getResources();
+            final Configuration configuration = resources.getConfiguration();
+            density = configuration.densityDpi / (float) DisplayMetrics.DENSITY_DEFAULT;
+
+            final DisplayMetrics displayMetrics = resources.getDisplayMetrics();
+            xdpi = displayMetrics.xdpi;
+            ydpi = displayMetrics.ydpi;
+            density = displayMetrics.density;
+            scaledDensity = displayMetrics.scaledDensity;
+        }
+
+        float refreshRate = display.getRefreshRate();
+
+        if ((appWidth > appHeight) != (w > h)) {
             // This is an intermediate state during display rotation.
             // The new size is still reported for old orientation, while
             // realMetrics contain sizes for new orientation. Setting
@@ -83,36 +157,19 @@ public class QtLayout extends ViewGroup
             return;
         }
 
-        WindowInsets rootInsets = getRootWindowInsets();
-
-        int insetLeft = 0;
-        int insetTop = 0;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            Insets insets = rootInsets.getInsets(WindowInsets.Type.systemBars());
-            insetLeft = insets.left;
-            insetTop = insets.top;
-        } else {
-            insetLeft = rootInsets.getSystemWindowInsetLeft();
-            insetTop = rootInsets.getSystemWindowInsetTop();
-        }
-
-        int appWidthPixels = appMetrics.widthPixels;
-        int appHeightPixels = appMetrics.heightPixels;
-
         final int flag =
             activity.getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN;
 
         if (flag == WindowManager.LayoutParams.FLAG_FULLSCREEN) {
             // immersive mode uses the whole screen
-            appWidthPixels = realMetrics.widthPixels;
-            appHeightPixels = realMetrics.heightPixels;
+            appWidth = maxWidth;
+            appHeight = maxHeight;
         }
 
-        QtNative.setApplicationDisplayMetrics(
-                realMetrics.widthPixels, realMetrics.heightPixels, insetLeft, insetTop,
-                appWidthPixels, appHeightPixels, appMetrics.xdpi, appMetrics.ydpi,
-                appMetrics.scaledDensity, appMetrics.density, display.getRefreshRate());
+        QtNative.setApplicationDisplayMetrics(maxWidth, maxHeight, insetLeft,
+                                              insetTop, appWidth, appHeight,
+                                              xdpi,ydpi,scaledDensity, density,
+                                              refreshRate);
 
         int newRotation = display.getRotation();
         if (m_ownDisplayRotation != m_activityDisplayRotation
