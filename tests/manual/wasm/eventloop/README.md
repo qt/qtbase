@@ -12,3 +12,4 @@ Contents
     main_noexec     Qt main() without QApplication::exec()
     dialog_exec     Shows how QDialog::exec() also does not return
     thread_exec     Shows how to use QThread::exec()
+    eventloop_auto  Event loop autotest (manually run)

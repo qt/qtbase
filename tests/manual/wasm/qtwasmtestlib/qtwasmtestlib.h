@@ -20,6 +20,7 @@ std::string formatMessage(std::string_view file,
                           std::string_view message);
 
 void completeTestFunction(TestResult result, std::string message);
+void completeTestFunction();
 void initTestCase(QObject *testObject, std::function<void ()> cleanup);
 template <typename App>
 void initTestCase(int argc,

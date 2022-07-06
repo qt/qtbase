@@ -45,13 +45,18 @@ void verify(bool condition, std::string_view conditionString, std::string_view f
 // thread-safe and call be called from any thread.
 void completeTestFunction(TestResult result, std::string message)
 {
-
     // Report test result to JavaScript test runner, on the main thread
     runOnMainThread([resultString = result == TestResult::Pass ? "PASS" : "FAIL", message](){
         EM_ASM({
             completeTestFunction(UTF8ToString($0), UTF8ToString($1), UTF8ToString($2));
         }, g_currentTestName.c_str(), resultString, message.c_str());
     });
+}
+
+// Completes the currently running test function with a Pass result.
+void completeTestFunction()
+{
+    completeTestFunction(TestResult::Pass, std::string());
 }
 
 //
