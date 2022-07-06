@@ -279,6 +279,17 @@ QFontEngineMulti *QPlatformFontDatabase::fontEngineMulti(QFontEngine *fontEngine
 /*!
     Returns the font engine that can be used to render the font described by
     the font definition, \a fontDef, in the specified \a script.
+
+    This function is called by QFontDatabase both for system fonts provided
+    by the platform font database, as well as for application fonts added by
+    the application developer.
+
+    The handle is the QPlatformFontDatabase specific handle passed when
+    registering the font family via QPlatformFontDatabase::registerFont.
+
+    The function is called for both fonts added via a filename as well
+    as fonts added from QByteArray data. Subclasses will need to handle
+    both cases via its platform specific handle.
 */
 QFontEngine *QPlatformFontDatabase::fontEngine(const QFontDef &fontDef, void *handle)
 {
@@ -288,6 +299,13 @@ QFontEngine *QPlatformFontDatabase::fontEngine(const QFontDef &fontDef, void *ha
     return nullptr;
 }
 
+/*!
+    Returns the font engine that will be used to back a QRawFont,
+    based on the given \fontData, \a pixelSize, and \a hintingPreference.
+
+    This function is called by QRawFont, and does not play a part in
+    the normal operations of QFontDatabase.
+*/
 QFontEngine *QPlatformFontDatabase::fontEngine(const QByteArray &fontData, qreal pixelSize,
                                                QFont::HintingPreference hintingPreference)
 {

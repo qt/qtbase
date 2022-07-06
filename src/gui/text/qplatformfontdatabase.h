@@ -72,13 +72,13 @@ public:
     virtual void populateFamily(const QString &familyName);
     virtual void invalidate();
 
-    virtual QFontEngineMulti *fontEngineMulti(QFontEngine *fontEngine, QChar::Script script);
-    virtual QFontEngine *fontEngine(const QFontDef &fontDef, void *handle);
     virtual QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const;
     virtual QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName, QFontDatabasePrivate::ApplicationFont *font = nullptr);
-    virtual void releaseHandle(void *handle);
 
+    virtual QFontEngine *fontEngine(const QFontDef &fontDef, void *handle);
     virtual QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference);
+    virtual QFontEngineMulti *fontEngineMulti(QFontEngine *fontEngine, QChar::Script script);
+    virtual void releaseHandle(void *handle);
 
     virtual QString fontDir() const;
 
