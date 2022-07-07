@@ -460,10 +460,12 @@ bool QFontDialog::eventFilter(QObject *o , QEvent *e)
 
 void QFontDialogPrivate::initHelper(QPlatformDialogHelper *h)
 {
-    QFontDialog *d = q_func();
-    QObject::connect(h, SIGNAL(currentFontChanged(QFont)), d, SIGNAL(currentFontChanged(QFont)));
-    QObject::connect(h, SIGNAL(fontSelected(QFont)), d, SIGNAL(fontSelected(QFont)));
-    static_cast<QPlatformFontDialogHelper *>(h)->setOptions(options);
+    Q_Q(QFontDialog);
+    auto *fontDialogHelper = static_cast<QPlatformFontDialogHelper *>(h);
+    fontDialogHelper->setOptions(options);
+    fontDialogHelper->setCurrentFont(q->currentFont());
+    QObject::connect(h, SIGNAL(currentFontChanged(QFont)), q, SIGNAL(currentFontChanged(QFont)));
+    QObject::connect(h, SIGNAL(fontSelected(QFont)), q, SIGNAL(fontSelected(QFont)));
 }
 
 void QFontDialogPrivate::helperPrepareShow(QPlatformDialogHelper *)
@@ -822,8 +824,11 @@ void QFontDialog::setCurrentFont(const QFont &font)
     d->strikeout->setChecked(font.strikeOut());
     d->underline->setChecked(font.underline());
     d->updateFamilies();
-    if (QPlatformFontDialogHelper *helper = d->platformFontDialogHelper())
-        helper->setCurrentFont(font);
+
+    if (d->nativeDialogInUse) {
+        if (QPlatformFontDialogHelper *helper = d->platformFontDialogHelper())
+            helper->setCurrentFont(font);
+    }
 }
 
 /*!
@@ -836,8 +841,11 @@ void QFontDialog::setCurrentFont(const QFont &font)
 QFont QFontDialog::currentFont() const
 {
     Q_D(const QFontDialog);
-    if (const QPlatformFontDialogHelper *helper = d->platformFontDialogHelper())
-        return helper->currentFont();
+
+    if (d->nativeDialogInUse) {
+        if (const QPlatformFontDialogHelper *helper = d->platformFontDialogHelper())
+            return helper->currentFont();
+    }
     return d->sampleEdit->font();
 }
 
