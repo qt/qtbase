@@ -29,8 +29,6 @@ public:
     constexpr QFixed() : val(0) {}
     constexpr QFixed(int i) : val(i * 64) {}
     constexpr QFixed(long i) : val(i * 64) {}
-    QFixed &operator=(int i) { val = i * 64; return *this; }
-    QFixed &operator=(long i) { val = i * 64; return *this; }
 
     constexpr static QFixed fromReal(qreal r) { return fromFixed((int)(r*qreal(64))); }
     constexpr static QFixed fromFixed(int fixed) { return QFixed(fixed,0); } // uses private ctor
@@ -107,7 +105,6 @@ public:
 
 private:
     constexpr QFixed(qreal i) : val((int)(i*qreal(64))) {}
-    QFixed &operator=(qreal i) { val = (int)(i*qreal(64)); return *this; }
     constexpr inline QFixed operator+(qreal i) const { return fromFixed((val + (int)(i*qreal(64)))); }
     inline QFixed &operator+=(qreal i) { val += (int)(i*64); return *this; }
     constexpr inline QFixed operator-(qreal i) const { return fromFixed((val - (int)(i*qreal(64)))); }
