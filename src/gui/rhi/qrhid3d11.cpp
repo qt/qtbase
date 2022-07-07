@@ -435,7 +435,7 @@ QRhiSwapChain *QRhiD3D11::createSwapChain()
     return new QD3D11SwapChain(this);
 }
 
-QRhiBuffer *QRhiD3D11::createBuffer(QRhiBuffer::Type type, QRhiBuffer::UsageFlags usage, int size)
+QRhiBuffer *QRhiD3D11::createBuffer(QRhiBuffer::Type type, QRhiBuffer::UsageFlags usage, quint32 size)
 {
     return new QD3D11Buffer(this, type, usage, size);
 }
@@ -1000,8 +1000,8 @@ void QRhiD3D11::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                 for (int i = 0; i < dynamicOffsetCount; ++i) {
                     const QRhiCommandBuffer::DynamicOffset &dynOfs(dynamicOffsets[i]);
                     const uint binding = uint(dynOfs.first);
-                    Q_ASSERT(aligned(dynOfs.second, quint32(256)) == dynOfs.second);
-                    const uint offsetInConstants = dynOfs.second / 16;
+                    Q_ASSERT(aligned(dynOfs.second, 256u) == dynOfs.second);
+                    const quint32 offsetInConstants = dynOfs.second / 16;
                     *p++ = binding;
                     *p++ = offsetInConstants;
                 }
@@ -1628,10 +1628,10 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             // since the ID3D11Buffer's size is rounded up to be a multiple of 256
             // while the data we have has the original size.
             D3D11_BOX box;
-            box.left = UINT(u.offset);
+            box.left = u.offset;
             box.top = box.front = 0;
             box.back = box.bottom = 1;
-            box.right = UINT(u.offset + u.data.size()); // no -1: right, bottom, back are exclusive, see D3D11_BOX doc
+            box.right = u.offset + u.data.size(); // no -1: right, bottom, back are exclusive, see D3D11_BOX doc
             cmd.args.updateSubRes.hasDstBox = true;
             cmd.args.updateSubRes.dstBox = box;
         } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::Read) {
@@ -1666,10 +1666,10 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
                 cmd.args.copySubRes.srcSubRes = 0;
                 cmd.args.copySubRes.hasSrcBox = true;
                 D3D11_BOX box;
-                box.left = UINT(u.offset);
+                box.left = u.offset;
                 box.top = box.front = 0;
                 box.back = box.bottom = 1;
-                box.right = UINT(u.offset + u.readSize);
+                box.right = u.offset + u.readSize;
                 cmd.args.copySubRes.srcBox = box;
 
                 activeBufferReadbacks.append(readback);
@@ -2165,7 +2165,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
         case QRhiShaderResourceBinding::UniformBuffer:
         {
             QD3D11Buffer *bufD = QRHI_RES(QD3D11Buffer, b->u.ubuf.buf);
-            Q_ASSERT(aligned(b->u.ubuf.offset, 256) == b->u.ubuf.offset);
+            Q_ASSERT(aligned(b->u.ubuf.offset, 256u) == b->u.ubuf.offset);
             bd.ubuf.id = bufD->m_id;
             bd.ubuf.generation = bufD->generation;
             // Dynamic ubuf offsets are not considered here, those are baked in
@@ -2174,11 +2174,11 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
             // Metal) are different in this respect since those do not store
             // per-srb vsubufoffsets etc. data so life's a bit easier for them.
             // But here we have to defer baking in the dynamic offset.
-            const uint offsetInConstants = uint(b->u.ubuf.offset) / 16;
+            const quint32 offsetInConstants = b->u.ubuf.offset / 16;
             // size must be 16 mult. (in constants, i.e. multiple of 256 bytes).
             // We can round up if needed since the buffers's actual size
             // (ByteWidth) is always a multiple of 256.
-            const uint sizeInConstants = uint(aligned(b->u.ubuf.maybeSize ? b->u.ubuf.maybeSize : bufD->m_size, 256) / 16);
+            const quint32 sizeInConstants = aligned(b->u.ubuf.maybeSize ? b->u.ubuf.maybeSize : bufD->m_size, 256u) / 16;
             if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
                 QPair<int, int> nativeBinding = mapBinding(b->binding, RBM_VERTEX, nativeResourceBindingMaps);
                 if (nativeBinding.first >= 0)
@@ -2378,7 +2378,7 @@ void QRhiD3D11::executeBufferHostWrites(QD3D11Buffer *bufD)
     D3D11_MAPPED_SUBRESOURCE mp;
     HRESULT hr = context->Map(bufD->buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mp);
     if (SUCCEEDED(hr)) {
-        memcpy(mp.pData, bufD->dynBuf, size_t(bufD->m_size));
+        memcpy(mp.pData, bufD->dynBuf, bufD->m_size);
         context->Unmap(bufD->buffer, 0);
     } else {
         qWarning("Failed to map buffer: %s", qPrintable(comErrorMessage(hr)));
@@ -2814,7 +2814,7 @@ void QRhiD3D11::executeCommandBuffer(QD3D11CommandBuffer *cbD, QD3D11SwapChain *
     }
 }
 
-QD3D11Buffer::QD3D11Buffer(QRhiImplementation *rhi, Type type, UsageFlags usage, int size)
+QD3D11Buffer::QD3D11Buffer(QRhiImplementation *rhi, Type type, UsageFlags usage, quint32 size)
     : QRhiBuffer(rhi, type, usage, size)
 {
 }
@@ -2874,12 +2874,12 @@ bool QD3D11Buffer::create()
         return false;
     }
 
-    const int nonZeroSize = m_size <= 0 ? 256 : m_size;
-    const int roundedSize = aligned(nonZeroSize, m_usage.testFlag(QRhiBuffer::UniformBuffer) ? 256 : 4);
+    const quint32 nonZeroSize = m_size <= 0 ? 256 : m_size;
+    const quint32 roundedSize = aligned(nonZeroSize, m_usage.testFlag(QRhiBuffer::UniformBuffer) ? 256u : 4u);
 
     D3D11_BUFFER_DESC desc;
     memset(&desc, 0, sizeof(desc));
-    desc.ByteWidth = UINT(roundedSize);
+    desc.ByteWidth = roundedSize;
     desc.Usage = m_type == Dynamic ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
     desc.BindFlags = toD3DBufferUsage(m_usage);
     desc.CPUAccessFlags = m_type == Dynamic ? D3D11_CPU_ACCESS_WRITE : 0;
@@ -2950,7 +2950,7 @@ ID3D11UnorderedAccessView *QD3D11Buffer::unorderedAccessView()
     desc.Format = DXGI_FORMAT_R32_TYPELESS;
     desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
     desc.Buffer.FirstElement = 0;
-    desc.Buffer.NumElements = UINT(aligned(m_size, 4) / 4);
+    desc.Buffer.NumElements = aligned(m_size, 4u) / 4;
     desc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_RAW;
 
     QRHI_RES_RHI(QRhiD3D11);

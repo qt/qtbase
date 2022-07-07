@@ -39,7 +39,7 @@ typedef void * QVkAllocator;
 
 struct QVkBuffer : public QRhiBuffer
 {
-    QVkBuffer(QRhiImplementation *rhi, Type type, UsageFlags usage, int size);
+    QVkBuffer(QRhiImplementation *rhi, Type type, UsageFlags usage, quint32 size);
     ~QVkBuffer();
     void destroy() override;
     bool create() override;
@@ -50,7 +50,7 @@ struct QVkBuffer : public QRhiBuffer
     VkBuffer buffers[QVK_FRAMES_IN_FLIGHT];
     QVkAlloc allocations[QVK_FRAMES_IN_FLIGHT];
     struct DynamicUpdate {
-        int offset;
+        quint32 offset;
         QRhiBufferData data;
     };
     QVarLengthArray<DynamicUpdate, 16> pendingDynamicUpdates[QVK_FRAMES_IN_FLIGHT];
@@ -640,7 +640,7 @@ public:
     QRhiShaderResourceBindings *createShaderResourceBindings() override;
     QRhiBuffer *createBuffer(QRhiBuffer::Type type,
                              QRhiBuffer::UsageFlags usage,
-                             int size) override;
+                             quint32 size) override;
     QRhiRenderBuffer *createRenderBuffer(QRhiRenderBuffer::Type type,
                                          const QSize &pixelSize,
                                          int sampleCount,
@@ -913,7 +913,7 @@ public:
     struct BufferReadback {
         int activeFrameSlot = -1;
         QRhiBufferReadbackResult *result;
-        int byteSize;
+        quint32 byteSize;
         VkBuffer stagingBuf;
         QVkAlloc stagingAlloc;
     };

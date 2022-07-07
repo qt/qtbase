@@ -328,8 +328,8 @@ public:
     bool isLayoutCompatible(const QRhiShaderResourceBinding &other) const;
 
     static QRhiShaderResourceBinding uniformBuffer(int binding, StageFlags stage, QRhiBuffer *buf);
-    static QRhiShaderResourceBinding uniformBuffer(int binding, StageFlags stage, QRhiBuffer *buf, int offset, int size);
-    static QRhiShaderResourceBinding uniformBufferWithDynamicOffset(int binding, StageFlags stage, QRhiBuffer *buf, int size);
+    static QRhiShaderResourceBinding uniformBuffer(int binding, StageFlags stage, QRhiBuffer *buf, quint32 offset, quint32 size);
+    static QRhiShaderResourceBinding uniformBufferWithDynamicOffset(int binding, StageFlags stage, QRhiBuffer *buf, quint32 size);
 
     static QRhiShaderResourceBinding sampledTexture(int binding, StageFlags stage, QRhiTexture *tex, QRhiSampler *sampler);
 
@@ -348,11 +348,11 @@ public:
     static QRhiShaderResourceBinding imageLoadStore(int binding, StageFlags stage, QRhiTexture *tex, int level);
 
     static QRhiShaderResourceBinding bufferLoad(int binding, StageFlags stage, QRhiBuffer *buf);
-    static QRhiShaderResourceBinding bufferLoad(int binding, StageFlags stage, QRhiBuffer *buf, int offset, int size);
+    static QRhiShaderResourceBinding bufferLoad(int binding, StageFlags stage, QRhiBuffer *buf, quint32 offset, quint32 size);
     static QRhiShaderResourceBinding bufferStore(int binding, StageFlags stage, QRhiBuffer *buf);
-    static QRhiShaderResourceBinding bufferStore(int binding, StageFlags stage, QRhiBuffer *buf, int offset, int size);
+    static QRhiShaderResourceBinding bufferStore(int binding, StageFlags stage, QRhiBuffer *buf, quint32 offset, quint32 size);
     static QRhiShaderResourceBinding bufferLoadStore(int binding, StageFlags stage, QRhiBuffer *buf);
-    static QRhiShaderResourceBinding bufferLoadStore(int binding, StageFlags stage, QRhiBuffer *buf, int offset, int size);
+    static QRhiShaderResourceBinding bufferLoadStore(int binding, StageFlags stage, QRhiBuffer *buf, quint32 offset, quint32 size);
 
     struct Data
     {
@@ -361,8 +361,8 @@ public:
         QRhiShaderResourceBinding::Type type;
         struct UniformBufferData {
             QRhiBuffer *buf;
-            int offset;
-            int maybeSize;
+            quint32 offset;
+            quint32 maybeSize;
             bool hasDynamicOffset;
         };
         static const int MAX_TEX_SAMPLER_ARRAY_SIZE = 16;
@@ -376,8 +376,8 @@ public:
         };
         struct StorageBufferData {
             QRhiBuffer *buf;
-            int offset;
-            int maybeSize;
+            quint32 offset;
+            quint32 maybeSize;
         };
         union {
             UniformBufferData ubuf;
@@ -512,7 +512,7 @@ class Q_GUI_EXPORT QRhiTextureSubresourceUploadDescription
 public:
     QRhiTextureSubresourceUploadDescription() = default;
     explicit QRhiTextureSubresourceUploadDescription(const QImage &image);
-    QRhiTextureSubresourceUploadDescription(const void *data, int size);
+    QRhiTextureSubresourceUploadDescription(const void *data, quint32 size);
     explicit QRhiTextureSubresourceUploadDescription(const QByteArray &data);
 
     QImage image() const { return m_image; }
@@ -723,8 +723,8 @@ public:
     UsageFlags usage() const { return m_usage; }
     void setUsage(UsageFlags u) { m_usage = u; }
 
-    int size() const { return m_size; }
-    void setSize(int sz) { m_size = sz; }
+    quint32 size() const { return m_size; }
+    void setSize(quint32 sz) { m_size = sz; }
 
     virtual bool create() = 0;
 
@@ -734,10 +734,10 @@ public:
     virtual void endFullDynamicBufferUpdateForCurrentFrame();
 
 protected:
-    QRhiBuffer(QRhiImplementation *rhi, Type type_, UsageFlags usage_, int size_);
+    QRhiBuffer(QRhiImplementation *rhi, Type type_, UsageFlags usage_, quint32 size_);
     Type m_type;
     UsageFlags m_usage;
-    int m_size;
+    quint32 m_size;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QRhiBuffer::UsageFlags)
@@ -1542,10 +1542,10 @@ public:
     void merge(QRhiResourceUpdateBatch *other);
     bool hasOptimalCapacity() const;
 
-    void updateDynamicBuffer(QRhiBuffer *buf, int offset, int size, const void *data);
-    void uploadStaticBuffer(QRhiBuffer *buf, int offset, int size, const void *data);
+    void updateDynamicBuffer(QRhiBuffer *buf, quint32 offset, quint32 size, const void *data);
+    void uploadStaticBuffer(QRhiBuffer *buf, quint32 offset, quint32 size, const void *data);
     void uploadStaticBuffer(QRhiBuffer *buf, const void *data);
-    void readBackBuffer(QRhiBuffer *buf, int offset, int size, QRhiBufferReadbackResult *result);
+    void readBackBuffer(QRhiBuffer *buf, quint32 offset, quint32 size, QRhiBufferReadbackResult *result);
     void uploadTexture(QRhiTexture *tex, const QRhiTextureUploadDescription &desc);
     void uploadTexture(QRhiTexture *tex, const QImage &image);
     void copyTexture(QRhiTexture *dst, QRhiTexture *src, const QRhiTextureCopyDescription &desc = QRhiTextureCopyDescription());
@@ -1719,7 +1719,7 @@ public:
 
     QRhiBuffer *newBuffer(QRhiBuffer::Type type,
                           QRhiBuffer::UsageFlags usage,
-                          int size);
+                          quint32 size);
 
     QRhiRenderBuffer *newRenderBuffer(QRhiRenderBuffer::Type type,
                                       const QSize &pixelSize,

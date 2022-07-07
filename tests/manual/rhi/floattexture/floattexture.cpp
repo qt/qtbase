@@ -242,7 +242,7 @@ void Window::customInit()
     qint32 flip = 1;
     d.initialUpdates->updateDynamicBuffer(d.ubuf, 64, 4, &flip);
 
-    QRhiTextureUploadDescription desc({ 0, 0, { floatData.constData(), int(floatData.size()) } });
+    QRhiTextureUploadDescription desc({ 0, 0, { floatData.constData(), quint32(floatData.size()) } });
     d.initialUpdates->uploadTexture(d.tex, desc);
 }
 

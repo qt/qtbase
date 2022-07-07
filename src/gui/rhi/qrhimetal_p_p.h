@@ -28,7 +28,7 @@ struct QMetalBufferData;
 
 struct QMetalBuffer : public QRhiBuffer
 {
-    QMetalBuffer(QRhiImplementation *rhi, Type type, UsageFlags usage, int size);
+    QMetalBuffer(QRhiImplementation *rhi, Type type, UsageFlags usage, quint32 size);
     ~QMetalBuffer();
     void destroy() override;
     bool create() override;
@@ -327,7 +327,7 @@ public:
     QRhiShaderResourceBindings *createShaderResourceBindings() override;
     QRhiBuffer *createBuffer(QRhiBuffer::Type type,
                              QRhiBuffer::UsageFlags usage,
-                             int size) override;
+                             quint32 size) override;
     QRhiRenderBuffer *createRenderBuffer(QRhiRenderBuffer::Type type,
                                          const QSize &pixelSize,
                                          int sampleCount,

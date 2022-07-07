@@ -982,7 +982,7 @@ QRhiSwapChain *QRhiGles2::createSwapChain()
     return new QGles2SwapChain(this);
 }
 
-QRhiBuffer *QRhiGles2::createBuffer(QRhiBuffer::Type type, QRhiBuffer::UsageFlags usage, int size)
+QRhiBuffer *QRhiGles2::createBuffer(QRhiBuffer::Type type, QRhiBuffer::UsageFlags usage, quint32 size)
 {
     return new QGles2Buffer(this, type, usage, size);
 }
@@ -4680,7 +4680,7 @@ void QRhiGles2::trySaveToPipelineCache(GLuint program, const QByteArray &cacheKe
     }
 }
 
-QGles2Buffer::QGles2Buffer(QRhiImplementation *rhi, Type type, UsageFlags usage, int size)
+QGles2Buffer::QGles2Buffer(QRhiImplementation *rhi, Type type, UsageFlags usage, quint32 size)
     : QRhiBuffer(rhi, type, usage, size)
 {
 }

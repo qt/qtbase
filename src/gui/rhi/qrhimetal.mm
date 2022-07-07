@@ -192,7 +192,7 @@ struct QMetalBufferData
     bool slotted;
     id<MTLBuffer> buf[QMTL_FRAMES_IN_FLIGHT];
     struct BufferUpdate {
-        int offset;
+        quint32 offset;
         QRhiBufferData data;
     };
     QVarLengthArray<BufferUpdate, 16> pendingUpdates[QMTL_FRAMES_IN_FLIGHT];
@@ -472,7 +472,7 @@ QRhiSwapChain *QRhiMetal::createSwapChain()
     return new QMetalSwapChain(this);
 }
 
-QRhiBuffer *QRhiMetal::createBuffer(QRhiBuffer::Type type, QRhiBuffer::UsageFlags usage, int size)
+QRhiBuffer *QRhiMetal::createBuffer(QRhiBuffer::Type type, QRhiBuffer::UsageFlags usage, quint32 size)
 {
     return new QMetalBuffer(this, type, usage, size);
 }
@@ -772,7 +772,7 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
         struct Buffer {
             int nativeBinding;
             id<MTLBuffer> mtlbuf;
-            uint offset;
+            quint32 offset;
         };
         struct Texture {
             int nativeBinding;
@@ -799,7 +799,7 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
         {
             QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, b->u.ubuf.buf);
             id<MTLBuffer> mtlbuf = bufD->d->buf[bufD->d->slotted ? currentFrameSlot : 0];
-            uint offset = uint(b->u.ubuf.offset);
+            quint32 offset = b->u.ubuf.offset;
             for (int i = 0; i < dynamicOffsetCount; ++i) {
                 const QRhiCommandBuffer::DynamicOffset &dynOfs(dynamicOffsets[i]);
                 if (dynOfs.first == b->binding) {
@@ -895,7 +895,7 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
         {
             QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, b->u.sbuf.buf);
             id<MTLBuffer> mtlbuf = bufD->d->buf[0];
-            uint offset = uint(b->u.sbuf.offset);
+            quint32 offset = b->u.sbuf.offset;
             if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
                 const int nativeBinding = mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Buffer);
                 if (nativeBinding >= 0)
@@ -1365,7 +1365,7 @@ void QRhiMetal::drawIndexed(QRhiCommandBuffer *cb, quint32 indexCount,
         return;
 
     const quint32 indexOffset = cbD->currentIndexOffset + firstIndex * (cbD->currentIndexFormat == QRhiCommandBuffer::IndexUInt16 ? 2 : 4);
-    Q_ASSERT(indexOffset == aligned<quint32>(indexOffset, 4));
+    Q_ASSERT(indexOffset == aligned(indexOffset, 4u));
 
     QMetalBuffer *ibufD = QRHI_RES(QMetalBuffer, cbD->currentIndexBuffer);
     id<MTLBuffer> mtlbuf = ibufD->d->buf[ibufD->d->slotted ? currentFrameSlot : 0];
@@ -1971,17 +1971,17 @@ void QRhiMetal::executeBufferHostWritesForSlot(QMetalBuffer *bufD, int slot)
         return;
 
     void *p = [bufD->d->buf[slot] contents];
-    int changeBegin = -1;
-    int changeEnd = -1;
+    quint32 changeBegin = UINT32_MAX;
+    quint32 changeEnd = 0;
     for (const QMetalBufferData::BufferUpdate &u : qAsConst(bufD->d->pendingUpdates[slot])) {
         memcpy(static_cast<char *>(p) + u.offset, u.data.constData(), size_t(u.data.size()));
-        if (changeBegin == -1 || u.offset < changeBegin)
+        if (u.offset < changeBegin)
             changeBegin = u.offset;
-        if (changeEnd == -1 || u.offset + u.data.size() > changeEnd)
+        if (u.offset + u.data.size() > changeEnd)
             changeEnd = u.offset + u.data.size();
     }
 #ifdef Q_OS_MACOS
-    if (changeBegin >= 0 && bufD->d->managed)
+    if (changeBegin < UINT32_MAX && changeBegin < changeEnd && bufD->d->managed)
         [bufD->d->buf[slot] didModifyRange: NSMakeRange(NSUInteger(changeBegin), NSUInteger(changeEnd - changeBegin))];
 #endif
 
@@ -2254,7 +2254,7 @@ void QRhiMetal::finishActiveReadbacks(bool forced)
         f();
 }
 
-QMetalBuffer::QMetalBuffer(QRhiImplementation *rhi, Type type, UsageFlags usage, int size)
+QMetalBuffer::QMetalBuffer(QRhiImplementation *rhi, Type type, UsageFlags usage, quint32 size)
     : QRhiBuffer(rhi, type, usage, size),
       d(new QMetalBufferData)
 {
@@ -2300,8 +2300,8 @@ bool QMetalBuffer::create()
         return false;
     }
 
-    const uint nonZeroSize = m_size <= 0 ? 256 : uint(m_size);
-    const uint roundedSize = m_usage.testFlag(QRhiBuffer::UniformBuffer) ? aligned<uint>(nonZeroSize, 256) : nonZeroSize;
+    const quint32 nonZeroSize = m_size <= 0 ? 256 : m_size;
+    const quint32 roundedSize = m_usage.testFlag(QRhiBuffer::UniformBuffer) ? aligned(nonZeroSize, 256u) : nonZeroSize;
 
     d->managed = false;
     MTLResourceOptions opts = MTLResourceStorageModeShared;

@@ -43,7 +43,7 @@ public:
     virtual QRhiShaderResourceBindings *createShaderResourceBindings() = 0;
     virtual QRhiBuffer *createBuffer(QRhiBuffer::Type type,
                                      QRhiBuffer::UsageFlags usage,
-                                     int size) = 0;
+                                     quint32 size) = 0;
     virtual QRhiRenderBuffer *createRenderBuffer(QRhiRenderBuffer::Type type,
                                                  const QSize &pixelSize,
                                                  int sampleCount,
@@ -288,10 +288,10 @@ struct QRhiBufferDataPrivate
     QRhiBufferDataPrivate() { }
     ~QRhiBufferDataPrivate() { delete[] largeData; }
     int ref = 1;
-    int size = 0;
-    int largeAlloc = 0;
+    quint32 size = 0;
+    quint32 largeAlloc = 0;
     char *largeData = nullptr;
-    static constexpr int SMALL_DATA_SIZE = 1024;
+    static constexpr quint32 SMALL_DATA_SIZE = 1024;
     char data[SMALL_DATA_SIZE];
 };
 
@@ -326,11 +326,11 @@ public:
     {
         return d->size <= QRhiBufferDataPrivate::SMALL_DATA_SIZE ? d->data : d->largeData;
     }
-    int size() const
+    quint32 size() const
     {
         return d->size;
     }
-    void assign(const char *s, int size)
+    void assign(const char *s, quint32 size)
     {
         if (!d) {
             d = new QRhiBufferDataPrivate;
@@ -367,12 +367,12 @@ public:
         };
         Type type;
         QRhiBuffer *buf;
-        int offset;
+        quint32 offset;
         QRhiBufferData data;
-        int readSize;
+        quint32 readSize;
         QRhiBufferReadbackResult *result;
 
-        static BufferOp dynamicUpdate(QRhiBuffer *buf, int offset, int size, const void *data)
+        static BufferOp dynamicUpdate(QRhiBuffer *buf, quint32 offset, quint32 size, const void *data)
         {
             BufferOp op = {};
             op.type = DynamicUpdate;
@@ -383,7 +383,7 @@ public:
             return op;
         }
 
-        static void changeToDynamicUpdate(BufferOp *op, QRhiBuffer *buf, int offset, int size, const void *data)
+        static void changeToDynamicUpdate(BufferOp *op, QRhiBuffer *buf, quint32 offset, quint32 size, const void *data)
         {
             op->type = DynamicUpdate;
             op->buf = buf;
@@ -392,7 +392,7 @@ public:
             op->data.assign(reinterpret_cast<const char *>(data), effectiveSize);
         }
 
-        static BufferOp staticUpload(QRhiBuffer *buf, int offset, int size, const void *data)
+        static BufferOp staticUpload(QRhiBuffer *buf, quint32 offset, quint32 size, const void *data)
         {
             BufferOp op = {};
             op.type = StaticUpload;
@@ -403,7 +403,7 @@ public:
             return op;
         }
 
-        static void changeToStaticUpload(BufferOp *op, QRhiBuffer *buf, int offset, int size, const void *data)
+        static void changeToStaticUpload(BufferOp *op, QRhiBuffer *buf, quint32 offset, quint32 size, const void *data)
         {
             op->type = StaticUpload;
             op->buf = buf;
@@ -412,7 +412,7 @@ public:
             op->data.assign(reinterpret_cast<const char *>(data), effectiveSize);
         }
 
-        static BufferOp read(QRhiBuffer *buf, int offset, int size, QRhiBufferReadbackResult *result)
+        static BufferOp read(QRhiBuffer *buf, quint32 offset, quint32 size, QRhiBufferReadbackResult *result)
         {
             BufferOp op = {};
             op.type = Read;

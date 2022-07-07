@@ -1767,7 +1767,7 @@ QRhiTextureSubresourceUploadDescription::QRhiTextureSubresourceUploadDescription
 
     \a data can safely be destroyed or changed once this function returns.
  */
-QRhiTextureSubresourceUploadDescription::QRhiTextureSubresourceUploadDescription(const void *data, int size)
+QRhiTextureSubresourceUploadDescription::QRhiTextureSubresourceUploadDescription(const void *data, quint32 size)
     : m_data(reinterpret_cast<const char *>(data), size)
 {
 }
@@ -2238,7 +2238,7 @@ quint64 QRhiResource::globalResourceId() const
 /*!
     \internal
  */
-QRhiBuffer::QRhiBuffer(QRhiImplementation *rhi, Type type_, UsageFlags usage_, int size_)
+QRhiBuffer::QRhiBuffer(QRhiImplementation *rhi, Type type_, UsageFlags usage_, quint32 size_)
     : QRhiResource(rhi),
       m_type(type_), m_usage(usage_), m_size(size_)
 {
@@ -3399,7 +3399,7 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBuffer(
     unexpected errors may occur.
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBuffer(
-        int binding, StageFlags stage, QRhiBuffer *buf, int offset, int size)
+        int binding, StageFlags stage, QRhiBuffer *buf, quint32 offset, quint32 size)
 {
     Q_ASSERT(size > 0);
     QRhiShaderResourceBinding b;
@@ -3436,7 +3436,7 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBuffer(
     unexpected errors may occur.
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBufferWithDynamicOffset(
-        int binding, StageFlags stage, QRhiBuffer *buf, int size)
+        int binding, StageFlags stage, QRhiBuffer *buf, quint32 size)
 {
     Q_ASSERT(size > 0);
     QRhiShaderResourceBinding b;
@@ -3762,7 +3762,7 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoad(
     resources present passed to QRhiCommandBuffer::setShaderResources().
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoad(
-        int binding, StageFlags stage, QRhiBuffer *buf, int offset, int size)
+        int binding, StageFlags stage, QRhiBuffer *buf, quint32 offset, quint32 size)
 {
     Q_ASSERT(size > 0);
     QRhiShaderResourceBinding b;
@@ -3818,7 +3818,7 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferStore(
     resources present passed to QRhiCommandBuffer::setShaderResources().
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferStore(
-        int binding, StageFlags stage, QRhiBuffer *buf, int offset, int size)
+        int binding, StageFlags stage, QRhiBuffer *buf, quint32 offset, quint32 size)
 {
     Q_ASSERT(size > 0);
     QRhiShaderResourceBinding b;
@@ -3874,7 +3874,7 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoadStore(
     resources present passed to QRhiCommandBuffer::setShaderResources().
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoadStore(
-        int binding, StageFlags stage, QRhiBuffer *buf, int offset, int size)
+        int binding, StageFlags stage, QRhiBuffer *buf, quint32 offset, quint32 size)
 {
     Q_ASSERT(size > 0);
     QRhiShaderResourceBinding b;
@@ -5760,7 +5760,7 @@ bool QRhiResourceUpdateBatch::hasOptimalCapacity() const
     multiple native underneath can be safely ignored when using the QRhi and
     QRhiResourceUpdateBatch.
  */
-void QRhiResourceUpdateBatch::updateDynamicBuffer(QRhiBuffer *buf, int offset, int size, const void *data)
+void QRhiResourceUpdateBatch::updateDynamicBuffer(QRhiBuffer *buf, quint32 offset, quint32 size, const void *data)
 {
     if (size > 0) {
         const int idx = d->activeBufferOpCount++;
@@ -5780,7 +5780,7 @@ void QRhiResourceUpdateBatch::updateDynamicBuffer(QRhiBuffer *buf, int offset, i
     are specified by \a data which must have at least \a size bytes available.
     \a data can safely be destroyed or changed once this function returns.
  */
-void QRhiResourceUpdateBatch::uploadStaticBuffer(QRhiBuffer *buf, int offset, int size, const void *data)
+void QRhiResourceUpdateBatch::uploadStaticBuffer(QRhiBuffer *buf, quint32 offset, quint32 size, const void *data)
 {
     if (size > 0) {
         const int idx = d->activeBufferOpCount++;
@@ -5830,7 +5830,7 @@ void QRhiResourceUpdateBatch::uploadStaticBuffer(QRhiBuffer *buf, const void *da
 
    \sa readBackTexture(), QRhi::isFeatureSupported(), QRhi::resourceLimit()
  */
-void QRhiResourceUpdateBatch::readBackBuffer(QRhiBuffer *buf, int offset, int size, QRhiBufferReadbackResult *result)
+void QRhiResourceUpdateBatch::readBackBuffer(QRhiBuffer *buf, quint32 offset, quint32 size, QRhiBufferReadbackResult *result)
 {
     const int idx = d->activeBufferOpCount++;
     if (idx < d->bufferOps.size())
@@ -7076,7 +7076,7 @@ QRhiShaderResourceBindings *QRhi::newShaderResourceBindings()
  */
 QRhiBuffer *QRhi::newBuffer(QRhiBuffer::Type type,
                             QRhiBuffer::UsageFlags usage,
-                            int size)
+                            quint32 size)
 {
     return d->createBuffer(type, usage, size);
 }

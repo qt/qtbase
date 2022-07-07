@@ -1051,7 +1051,7 @@ void tst_QRhi::resourceUpdateBatchRGBATextureUpload()
 
         QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
 
-        QRhiTextureUploadEntry upload(0, 0, { image.constBits(), int(image.sizeInBytes()) });
+        QRhiTextureUploadEntry upload(0, 0, { image.constBits(), quint32(image.sizeInBytes()) });
         QRhiTextureUploadDescription uploadDesc(upload);
         batch->uploadTexture(texture.data(), uploadDesc);
 
@@ -1139,8 +1139,8 @@ void tst_QRhi::resourceUpdateBatchRGBATextureUpload()
         // SourceTopLeft is not supported for non-QImage-based uploads.
         const QImage im = image.copy(QRect(greenRectPos, copySize));
         QRhiTextureSubresourceUploadDescription desc;
-        desc.setData(QByteArray::fromRawData(reinterpret_cast<const char *>(im.constBits()),
-                                             int(im.sizeInBytes())));
+        desc.setData(QByteArray::fromRawData(reinterpret_cast<const char *>(im.constBits()), im.sizeInBytes()));
+
         desc.setSourceSize(copySize);
         desc.setDestinationTopLeft(QPoint(gap, gap));
 

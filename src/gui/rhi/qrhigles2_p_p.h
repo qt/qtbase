@@ -30,7 +30,7 @@ class QOpenGLExtensions;
 
 struct QGles2Buffer : public QRhiBuffer
 {
-    QGles2Buffer(QRhiImplementation *rhi, Type type, UsageFlags usage, int size);
+    QGles2Buffer(QRhiImplementation *rhi, Type type, UsageFlags usage, quint32 size);
     ~QGles2Buffer();
     void destroy() override;
     bool create() override;
@@ -38,7 +38,7 @@ struct QGles2Buffer : public QRhiBuffer
     char *beginFullDynamicBufferUpdateForCurrentFrame() override;
     void endFullDynamicBufferUpdateForCurrentFrame() override;
 
-    int nonZeroSize = 0;
+    quint32 nonZeroSize = 0;
     GLuint buffer = 0;
     GLenum targetForDataOps;
     QByteArray data;
@@ -232,8 +232,8 @@ struct QGles2UniformDescription
     QShaderDescription::VariableType type;
     int glslLocation;
     int binding;
-    uint offset;
-    int size;
+    quint32 offset;
+    quint32 size;
     int arrayDim;
 };
 
@@ -717,7 +717,7 @@ public:
     QRhiShaderResourceBindings *createShaderResourceBindings() override;
     QRhiBuffer *createBuffer(QRhiBuffer::Type type,
                              QRhiBuffer::UsageFlags usage,
-                             int size) override;
+                             quint32 size) override;
     QRhiRenderBuffer *createRenderBuffer(QRhiRenderBuffer::Type type,
                                          const QSize &pixelSize,
                                          int sampleCount,

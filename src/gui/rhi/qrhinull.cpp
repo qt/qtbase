@@ -59,7 +59,7 @@ QRhiSwapChain *QRhiNull::createSwapChain()
     return new QNullSwapChain(this);
 }
 
-QRhiBuffer *QRhiNull::createBuffer(QRhiBuffer::Type type, QRhiBuffer::UsageFlags usage, int size)
+QRhiBuffer *QRhiNull::createBuffer(QRhiBuffer::Type type, QRhiBuffer::UsageFlags usage, quint32 size)
 {
     return new QNullBuffer(this, type, usage, size);
 }
@@ -550,7 +550,7 @@ void QRhiNull::endComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *re
         resourceUpdate(cb, resourceUpdates);
 }
 
-QNullBuffer::QNullBuffer(QRhiImplementation *rhi, Type type, UsageFlags usage, int size)
+QNullBuffer::QNullBuffer(QRhiImplementation *rhi, Type type, UsageFlags usage, quint32 size)
     : QRhiBuffer(rhi, type, usage, size)
 {
 }

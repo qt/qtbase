@@ -2668,8 +2668,8 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb, i
                 bd.ubuf.generation = bufD->generation;
                 VkDescriptorBufferInfo bufInfo;
                 bufInfo.buffer = bufD->m_type == QRhiBuffer::Dynamic ? bufD->buffers[frameSlot] : bufD->buffers[0];
-                bufInfo.offset = VkDeviceSize(b->u.ubuf.offset);
-                bufInfo.range = VkDeviceSize(b->u.ubuf.maybeSize ? b->u.ubuf.maybeSize : bufD->m_size);
+                bufInfo.offset = b->u.ubuf.offset;
+                bufInfo.range = b->u.ubuf.maybeSize ? b->u.ubuf.maybeSize : bufD->m_size;
                 // be nice and assert when we know the vulkan device would die a horrible death due to non-aligned reads
                 Q_ASSERT(aligned(bufInfo.offset, ubufAlign) == bufInfo.offset);
                 bufferInfoIndex = bufferInfos.count();
@@ -2764,8 +2764,8 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb, i
                 bd.sbuf.generation = bufD->generation;
                 VkDescriptorBufferInfo bufInfo;
                 bufInfo.buffer = bufD->m_type == QRhiBuffer::Dynamic ? bufD->buffers[frameSlot] : bufD->buffers[0];
-                bufInfo.offset = VkDeviceSize(b->u.ubuf.offset);
-                bufInfo.range = VkDeviceSize(b->u.ubuf.maybeSize ? b->u.ubuf.maybeSize : bufD->m_size);
+                bufInfo.offset = b->u.ubuf.offset;
+                bufInfo.range = b->u.ubuf.maybeSize ? b->u.ubuf.maybeSize : bufD->m_size;
                 bufferInfoIndex = bufferInfos.count();
                 bufferInfos.append(bufInfo);
             }
@@ -3089,7 +3089,7 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                 bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
                 // must cover the entire buffer - this way multiple, partial updates per frame
                 // are supported even when the staging buffer is reused (Static)
-                bufferInfo.size = VkDeviceSize(bufD->m_size);
+                bufferInfo.size = bufD->m_size;
                 bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
                 VmaAllocationCreateInfo allocInfo;
@@ -3102,7 +3102,7 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                 if (err == VK_SUCCESS) {
                     bufD->stagingAllocations[currentFrameSlot] = allocation;
                 } else {
-                    qWarning("Failed to create staging buffer of size %d: %d", bufD->m_size, err);
+                    qWarning("Failed to create staging buffer of size %u: %d", bufD->m_size, err);
                     continue;
                 }
             }
@@ -3114,18 +3114,18 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                 qWarning("Failed to map buffer: %d", err);
                 continue;
             }
-            memcpy(static_cast<uchar *>(p) + u.offset, u.data.constData(), size_t(u.data.size()));
+            memcpy(static_cast<uchar *>(p) + u.offset, u.data.constData(), u.data.size());
             vmaUnmapMemory(toVmaAllocator(allocator), a);
-            vmaFlushAllocation(toVmaAllocator(allocator), a, VkDeviceSize(u.offset), VkDeviceSize(u.data.size()));
+            vmaFlushAllocation(toVmaAllocator(allocator), a, u.offset, u.data.size());
 
             trackedBufferBarrier(cbD, bufD, 0,
                                  VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
 
             VkBufferCopy copyInfo;
             memset(&copyInfo, 0, sizeof(copyInfo));
-            copyInfo.srcOffset = VkDeviceSize(u.offset);
-            copyInfo.dstOffset = VkDeviceSize(u.offset);
-            copyInfo.size = VkDeviceSize(u.data.size());
+            copyInfo.srcOffset = u.offset;
+            copyInfo.dstOffset = u.offset;
+            copyInfo.size = u.data.size();
 
             QVkCommandBuffer::Command &cmd(cbD->commands.get());
             cmd.cmd = QVkCommandBuffer::Command::CopyBuffer;
@@ -3161,7 +3161,7 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                 VkResult err = vmaMapMemory(toVmaAllocator(allocator), a, &p);
                 if (err == VK_SUCCESS) {
                     u.result->data.resize(u.readSize);
-                    memcpy(u.result->data.data(), reinterpret_cast<char *>(p) + u.offset, size_t(u.readSize));
+                    memcpy(u.result->data.data(), reinterpret_cast<char *>(p) + u.offset, u.readSize);
                     vmaUnmapMemory(toVmaAllocator(allocator), a);
                 }
                 if (u.result->completed)
@@ -3181,7 +3181,7 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                 VkBufferCreateInfo bufferInfo;
                 memset(&bufferInfo, 0, sizeof(bufferInfo));
                 bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-                bufferInfo.size = VkDeviceSize(readback.byteSize);
+                bufferInfo.size = readback.byteSize;
                 bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
                 VmaAllocationCreateInfo allocInfo;
@@ -3201,8 +3201,8 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
 
                 VkBufferCopy copyInfo;
                 memset(&copyInfo, 0, sizeof(copyInfo));
-                copyInfo.srcOffset = VkDeviceSize(u.offset);
-                copyInfo.size = VkDeviceSize(u.readSize);
+                copyInfo.srcOffset = u.offset;
+                copyInfo.size = u.readSize;
 
                 QVkCommandBuffer::Command &cmd(cbD->commands.get());
                 cmd.cmd = QVkCommandBuffer::Command::CopyBuffer;
@@ -3573,18 +3573,18 @@ void QRhiVulkan::executeBufferHostWritesForSlot(QVkBuffer *bufD, int slot)
         qWarning("Failed to map buffer: %d", err);
         return;
     }
-    int changeBegin = -1;
-    int changeEnd = -1;
+    quint32 changeBegin = UINT32_MAX;
+    quint32 changeEnd = 0;
     for (const QVkBuffer::DynamicUpdate &u : qAsConst(bufD->pendingDynamicUpdates[slot])) {
-        memcpy(static_cast<char *>(p) + u.offset, u.data.constData(), size_t(u.data.size()));
-        if (changeBegin == -1 || u.offset < changeBegin)
+        memcpy(static_cast<char *>(p) + u.offset, u.data.constData(), u.data.size());
+        if (u.offset < changeBegin)
             changeBegin = u.offset;
-        if (changeEnd == -1 || u.offset + u.data.size() > changeEnd)
+        if (u.offset + u.data.size() > changeEnd)
             changeEnd = u.offset + u.data.size();
     }
     vmaUnmapMemory(toVmaAllocator(allocator), a);
-    if (changeBegin >= 0)
-        vmaFlushAllocation(toVmaAllocator(allocator), a, VkDeviceSize(changeBegin), VkDeviceSize(changeEnd - changeBegin));
+    if (changeBegin < UINT32_MAX && changeBegin < changeEnd)
+        vmaFlushAllocation(toVmaAllocator(allocator), a, changeBegin, changeEnd - changeBegin);
 
     bufD->pendingDynamicUpdates[slot].clear();
 }
@@ -3712,7 +3712,7 @@ void QRhiVulkan::finishActiveReadbacks(bool forced)
             VkResult err = vmaMapMemory(toVmaAllocator(allocator), a, &p);
             if (err == VK_SUCCESS && p) {
                 readback.result->data.resize(readback.byteSize);
-                memcpy(readback.result->data.data(), p, size_t(readback.byteSize));
+                memcpy(readback.result->data.data(), p, readback.byteSize);
                 vmaUnmapMemory(toVmaAllocator(allocator), a);
             } else {
                 qWarning("Failed to map buffer readback buffer of size %d: %d", readback.byteSize, err);
@@ -4159,7 +4159,7 @@ QRhiSwapChain *QRhiVulkan::createSwapChain()
     return new QVkSwapChain(this);
 }
 
-QRhiBuffer *QRhiVulkan::createBuffer(QRhiBuffer::Type type, QRhiBuffer::UsageFlags usage, int size)
+QRhiBuffer *QRhiVulkan::createBuffer(QRhiBuffer::Type type, QRhiBuffer::UsageFlags usage, quint32 size)
 {
     return new QVkBuffer(this, type, usage, size);
 }
@@ -5575,7 +5575,7 @@ static inline VkCompareOp toVkTextureCompareOp(QRhiSampler::CompareOp op)
     }
 }
 
-QVkBuffer::QVkBuffer(QRhiImplementation *rhi, Type type, UsageFlags usage, int size)
+QVkBuffer::QVkBuffer(QRhiImplementation *rhi, Type type, UsageFlags usage, quint32 size)
     : QRhiBuffer(rhi, type, usage, size)
 {
     for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i) {
@@ -5631,12 +5631,12 @@ bool QVkBuffer::create()
         return false;
     }
 
-    const int nonZeroSize = m_size <= 0 ? 256 : m_size;
+    const quint32 nonZeroSize = m_size <= 0 ? 256 : m_size;
 
     VkBufferCreateInfo bufferInfo;
     memset(&bufferInfo, 0, sizeof(bufferInfo));
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = uint32_t(nonZeroSize);
+    bufferInfo.size = nonZeroSize;
     bufferInfo.usage = toVkBufferUsage(m_usage);
 
     VmaAllocationCreateInfo allocInfo;
