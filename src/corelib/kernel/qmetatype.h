@@ -901,7 +901,12 @@ namespace QtPrivate
         static constexpr const QMetaObject *metaObjectFunction(const QMetaTypeInterface *) { return &T::staticMetaObject; }
     };
     template<typename T>
-    struct MetaObjectForType<T, typename std::enable_if<IsGadgetHelper<T>::IsGadgetOrDerivedFrom>::type>
+    struct MetaObjectForType<T, std::enable_if_t<
+        std::disjunction_v<
+            std::bool_constant<IsGadgetHelper<T>::IsGadgetOrDerivedFrom>,
+            std::is_base_of<QObject, T>
+        >
+    >>
     {
         static constexpr const QMetaObject *value() { return &T::staticMetaObject; }
         static constexpr const QMetaObject *metaObjectFunction(const QMetaTypeInterface *) { return &T::staticMetaObject; }
