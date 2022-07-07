@@ -264,12 +264,13 @@ QEventPoint *QPointerEvent::pointById(int id)
 }
 
 /*!
-    Returns \c true if every point in points() has an exclusiveGrabber().
+    Returns \c true if every point in points() has either an exclusiveGrabber()
+    or one or more passiveGrabbers().
 */
 bool QPointerEvent::allPointsGrabbed() const
 {
     for (const auto &p : points()) {
-        if (exclusiveGrabber(p) && passiveGrabbers(p).isEmpty())
+        if (!exclusiveGrabber(p) && passiveGrabbers(p).isEmpty())
             return false;
     }
     return true;
