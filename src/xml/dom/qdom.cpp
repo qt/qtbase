@@ -6206,9 +6206,9 @@ bool QDomDocument::setContent(QIODevice* dev, bool namespaceProcessing, QString 
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     if (!dev->isOpen()) {
         qWarning("QDomDocument called with unopened QIODevice. "
-                 "This will not be supported in future Qt versions");
+                 "This will not be supported in future Qt versions.");
         if (!dev->open(QIODevice::ReadOnly)) {
-            qWarning("QDomDocument::setContent: Failed to open device");
+            qWarning("QDomDocument::setContent: Failed to open device.");
             return false;
         }
     }
