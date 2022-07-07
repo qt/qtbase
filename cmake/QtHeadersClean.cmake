@@ -1,10 +1,10 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-# Add a custom ${module_include_name}_header_check target that builds each header in
+# Add a custom ${module_target}_headersclean_check target that builds each header in
 # ${module_headers} with a custom set of defines. This makes sure our public headers
 # are self-contained, and also compile with more strict compiler options.
-function(qt_internal_add_headers_clean_target
+function(qt_internal_add_headersclean_target
         module_target
         module_include_name
         module_headers)
@@ -188,7 +188,9 @@ function(qt_internal_add_headers_clean_target
                 -o${artifact_path}
                 IMPLICIT_DEPENDS CXX
                 VERBATIM
-                COMMAND_EXPAND_LISTS)
+                COMMAND_EXPAND_LISTS
+                DEPENDS "${input_path}"
+            )
             list(APPEND hclean_artifacts "${artifact_path}")
         endforeach()
 
@@ -221,17 +223,24 @@ function(qt_internal_add_headers_clean_target
                 -Fo${artifact_path} "${source_path}"
                 IMPLICIT_DEPENDS CXX
                 VERBATIM
-                COMMAND_EXPAND_LISTS)
+                COMMAND_EXPAND_LISTS
+                DEPENDS "${input_path}"
+            )
             list(APPEND hclean_artifacts "${artifact_path}")
         endforeach()
     else()
-        message(ERROR "CMAKE_CXX_COMPILER_ID \"${CMAKE_CXX_COMPILER_ID}\" is not supported for the headersclean check.")
+        message(FATAL_ERROR "CMAKE_CXX_COMPILER_ID \"${CMAKE_CXX_COMPILER_ID}\" is not supported"
+            " for the headersclean check.")
     endif()
 
-    add_custom_target(${module_include_name}_header_check
+    add_custom_target(${module_target}_headersclean_check
         COMMENT "headersclean: Checking headers in ${module_include_name}"
         DEPENDS ${hclean_artifacts}
         VERBATIM)
 
-    add_dependencies(${module_target} ${module_include_name}_header_check)
+    if(NOT TARGET headersclean_check)
+        add_custom_target(headersclean_check ALL)
+    endif()
+
+    add_dependencies(headersclean_check ${module_target}_headersclean_check)
 endfunction()

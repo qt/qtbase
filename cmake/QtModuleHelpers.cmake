@@ -819,7 +819,7 @@ set(QT_LIBINFIX \"${QT_LIBINFIX}\")")
     endif()
 
     if(QT_FEATURE_headersclean AND NOT arg_NO_MODULE_HEADERS)
-        qt_internal_add_headers_clean_target(
+        qt_internal_add_headersclean_target(
             ${target}
             "${module_include_name}"
             "${module_headers_clean}")
