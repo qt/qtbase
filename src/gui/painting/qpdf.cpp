@@ -1961,7 +1961,7 @@ void QPdfEnginePrivate::embedFont(QFontSubset *font)
         QByteArray cidSetStream(font->nGlyphs() / 8 + 1, 0);
         int byteCounter = 0;
         int bitCounter = 0;
-        for (int i = 0; i < font->nGlyphs(); ++i) {
+        for (qsizetype i = 0; i < font->nGlyphs(); ++i) {
             cidSetStream.data()[byteCounter] |= (1 << (7 - bitCounter));
 
             bitCounter++;
@@ -3081,7 +3081,7 @@ void QPdfEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &ti)
             x += .3*y;
         x /= stretch;
         char buf[5];
-        int g = font->addGlyph(glyphs[i]);
+        qsizetype g = font->addGlyph(glyphs[i]);
         *currentPage << x - last_x << last_y - y << "Td <"
                      << QPdf::toHex((ushort)g, buf) << "> Tj\n";
         last_x = x;
@@ -3101,7 +3101,7 @@ void QPdfEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &ti)
                 x += .3*y;
             x /= stretch;
             char buf[5];
-            int g = font->addGlyph(glyphs[i]);
+            qsizetype g = font->addGlyph(glyphs[i]);
             *currentPage << x - last_x << last_y - y << "Td <"
                         << QPdf::toHex((ushort)g, buf) << "> Tj\n";
             last_x = x;

@@ -44,7 +44,7 @@ public:
 
     static QByteArray glyphName(unsigned short unicode, bool symbol);
 
-    int addGlyph(uint index);
+    qsizetype addGlyph(uint index);
 #endif
     const uint object_id;
     bool noEmbed;
@@ -52,7 +52,7 @@ public:
     QList<uint> glyph_indices;
     mutable int downloaded_glyphs;
     mutable bool standard_font;
-    int nGlyphs() const { return glyph_indices.size(); }
+    qsizetype nGlyphs() const { return glyph_indices.size(); }
     mutable QFixed emSquare;
     mutable QList<QFixed> widths;
 };
