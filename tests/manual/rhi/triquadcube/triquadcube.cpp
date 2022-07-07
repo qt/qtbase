@@ -134,7 +134,7 @@ void Window::customInit()
     qDebug("MaxVertexOutputs: %d", m_r->resourceLimit(QRhi::MaxVertexOutputs));
 
     // With Vulkan at least we should see some details from the memory allocator.
-    qDebug() << m_r->graphicsMemoryAllocationStatistics();
+    qDebug() << m_r->statistics();
 
     // Every two seconds try printing an average of the gpu frame times.
     d.gpuFrameTimePrintTimer.start();
