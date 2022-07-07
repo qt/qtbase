@@ -28,14 +28,7 @@ qt_internal_add_tool(${target_name}
 ## Scopes:
 #####################################################################
 
-qt_internal_extend_target(${target_name} CONDITION QT_FEATURE_zstd AND NOT CMAKE_CROSSCOMPILING
-    DEFINES
-        QT_FEATURE_zstd=1
+qt_internal_extend_target(${target_name} CONDITION QT_FEATURE_zstd
     LIBRARIES
         WrapZSTD::WrapZSTD
-)
-
-qt_internal_extend_target(${target_name} CONDITION CMAKE_CROSSCOMPILING OR NOT QT_FEATURE_zstd
-    DEFINES
-        QT_FEATURE_zstd=-1
 )
