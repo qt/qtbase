@@ -116,7 +116,7 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
         return QString();           // signal with QDBusMessage argument?
 
     bool isScriptable = mm.isScriptable;
-    for (int j = 1; j < types.count(); ++j) {
+    for (qsizetype j = 1; j < types.count(); ++j) {
         // input parameter for a slot or output for a signal
         if (types.at(j) == QDBusMetaTypeId::message()) {
             isScriptable = true;
@@ -333,7 +333,7 @@ static std::deque<CustomType> s_customTypes;
 static void parseCmdLine(QStringList &arguments)
 {
     flags = 0;
-    for (int i = 0; i < arguments.count(); ++i) {
+    for (qsizetype i = 0; i < arguments.count(); ++i) {
         const QString arg = arguments.at(i);
 
         if (arg == "--help"_L1)
@@ -379,7 +379,7 @@ static void parseCmdLine(QStringList &arguments)
             } else {
                 const QByteArray arg = arguments.takeAt(i + 1).toUtf8();
                 // lastIndexOf because the C++ type could contain '=' while the DBus type can't
-                const int separator = arg.lastIndexOf('=');
+                const qsizetype separator = arg.lastIndexOf('=');
                 if (separator == -1) {
                     printf("-t expects a type=dbustype argument, but no '=' was found\n");
                     exit(1);
@@ -431,9 +431,7 @@ int main(int argc, char **argv)
 
     QList<ClassDef> classes;
 
-    for (int i = 0; i < args.count(); ++i) {
-        const QString arg = args.at(i);
-
+    for (const auto &arg: std::as_const(args)) {
         if (arg.startsWith(u'-'))
             continue;
 
