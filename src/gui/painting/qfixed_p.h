@@ -46,16 +46,16 @@ public:
 
     constexpr inline QFixed operator+(int i) const { return fromFixed(val + i * 64); }
     constexpr inline QFixed operator+(uint i) const { return fromFixed((val + (i<<6))); }
-    constexpr inline QFixed operator+(const QFixed &other) const { return fromFixed((val + other.val)); }
+    constexpr inline QFixed operator+(QFixed other) const { return fromFixed((val + other.val)); }
     inline QFixed &operator+=(int i) { val += i * 64; return *this; }
     inline QFixed &operator+=(uint i) { val += (i<<6); return *this; }
-    inline QFixed &operator+=(const QFixed &other) { val += other.val; return *this; }
+    inline QFixed &operator+=(QFixed other) { val += other.val; return *this; }
     constexpr inline QFixed operator-(int i) const { return fromFixed(val - i * 64); }
     constexpr inline QFixed operator-(uint i) const { return fromFixed((val - (i<<6))); }
-    constexpr inline QFixed operator-(const QFixed &other) const { return fromFixed((val - other.val)); }
+    constexpr inline QFixed operator-(QFixed other) const { return fromFixed((val - other.val)); }
     inline QFixed &operator-=(int i) { val -= i * 64; return *this; }
     inline QFixed &operator-=(uint i) { val -= (i<<6); return *this; }
-    inline QFixed &operator-=(const QFixed &other) { val -= other.val; return *this; }
+    inline QFixed &operator-=(QFixed other) { val -= other.val; return *this; }
     constexpr inline QFixed operator-() const { return fromFixed(-val); }
 
 #define REL_OP(op) \
@@ -72,7 +72,7 @@ public:
     constexpr inline bool operator!() const { return !val; }
 
     inline QFixed &operator/=(int x) { val /= x; return *this; }
-    inline QFixed &operator/=(const QFixed &o) {
+    inline QFixed &operator/=(QFixed o) {
         if (o.val == 0) {
             val = 0x7FFFFFFFL;
         } else {
@@ -93,7 +93,7 @@ public:
     inline QFixed operator>>(int d) const { QFixed f = *this; f.val >>= d; return f; }
     inline QFixed &operator*=(int i) { val *= i; return *this; }
     inline QFixed &operator*=(uint i) { val *= i; return *this; }
-    inline QFixed &operator*=(const QFixed &o) {
+    inline QFixed &operator*=(QFixed o) {
         bool neg = false;
         qint64 a = val;
         qint64 b = o.val;
@@ -106,7 +106,7 @@ public:
     }
     constexpr inline QFixed operator*(int i) const { return fromFixed(val * i); }
     constexpr inline QFixed operator*(uint i) const { return fromFixed(val * i); }
-    inline QFixed operator*(const QFixed &o) const { QFixed f = *this; return (f *= o); }
+    inline QFixed operator*(QFixed o) const { QFixed f = *this; return (f *= o); }
 
 private:
     constexpr QFixed(qreal i) : val((int)(i*qreal(64))) {}
@@ -124,19 +124,19 @@ Q_DECLARE_TYPEINFO(QFixed, Q_PRIMITIVE_TYPE);
 
 #define QFIXED_MAX (INT_MAX/256)
 
-constexpr inline int qRound(const QFixed &f) { return f.toInt(); }
-constexpr inline int qFloor(const QFixed &f) { return f.floor().truncate(); }
+constexpr inline int qRound(QFixed f) { return f.toInt(); }
+constexpr inline int qFloor(QFixed f) { return f.floor().truncate(); }
 
-constexpr inline QFixed operator*(int i, const QFixed &d) { return d*i; }
-constexpr inline QFixed operator+(int i, const QFixed &d) { return d+i; }
-constexpr inline QFixed operator-(int i, const QFixed &d) { return -(d-i); }
-constexpr inline QFixed operator*(uint i, const QFixed &d) { return d*i; }
-constexpr inline QFixed operator+(uint i, const QFixed &d) { return d+i; }
-constexpr inline QFixed operator-(uint i, const QFixed &d) { return -(d-i); }
-// constexpr inline QFixed operator*(qreal d, const QFixed &d2) { return d2*d; }
+constexpr inline QFixed operator*(int i, QFixed d) { return d*i; }
+constexpr inline QFixed operator+(int i, QFixed d) { return d+i; }
+constexpr inline QFixed operator-(int i, QFixed d) { return -(d-i); }
+constexpr inline QFixed operator*(uint i, QFixed d) { return d*i; }
+constexpr inline QFixed operator+(uint i, QFixed d) { return d+i; }
+constexpr inline QFixed operator-(uint i, QFixed d) { return -(d-i); }
+// constexpr inline QFixed operator*(qreal d, QFixed d2) { return d2*d; }
 
 #ifndef QT_NO_DEBUG_STREAM
-inline QDebug &operator<<(QDebug &dbg, const QFixed &f)
+inline QDebug &operator<<(QDebug &dbg, QFixed f)
 { return dbg << f.toReal(); }
 #endif
 
@@ -144,7 +144,7 @@ struct QFixedPoint {
     QFixed x;
     QFixed y;
     constexpr inline QFixedPoint() {}
-    constexpr inline QFixedPoint(const QFixed &_x, const QFixed &_y) : x(_x), y(_y) {}
+    constexpr inline QFixedPoint(QFixed _x, QFixed _y) : x(_x), y(_y) {}
     constexpr QPointF toPointF() const { return QPointF(x.toReal(), y.toReal()); }
     constexpr static QFixedPoint fromPointF(const QPointF &p) {
         return QFixedPoint(QFixed::fromReal(p.x()), QFixed::fromReal(p.y()));

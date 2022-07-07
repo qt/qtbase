@@ -147,7 +147,7 @@ public:
     virtual bool supportsHorizontalSubPixelPositions() const { return false; }
     virtual bool supportsVerticalSubPixelPositions() const { return false; }
     virtual QFixedPoint subPixelPositionFor(const QFixedPoint &position) const;
-    QFixed subPixelPositionForX(const QFixed &x) const
+    QFixed subPixelPositionForX(QFixed x) const
     {
         return subPixelPositionFor(QFixedPoint(x, 0)).x;
     }
