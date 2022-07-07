@@ -29,6 +29,7 @@ public:
     constexpr QFixed() : val(0) {}
     constexpr QFixed(int i) : val(i * 64) {}
     constexpr QFixed(long i) : val(i * 64) {}
+    constexpr QFixed(long long i) : val(i * 64) {}
 
     constexpr static QFixed fromReal(qreal r) { return fromFixed((int)(r*qreal(64))); }
     constexpr static QFixed fromFixed(int fixed) { return QFixed(fixed,0); } // uses private ctor
