@@ -131,7 +131,7 @@ public:
     };
 
     QRhiVertexInputBinding() = default;
-    QRhiVertexInputBinding(quint32 stride, Classification cls = PerVertex, int stepRate = 1);
+    QRhiVertexInputBinding(quint32 stride, Classification cls = PerVertex, quint32 stepRate = 1);
 
     quint32 stride() const { return m_stride; }
     void setStride(quint32 s) { m_stride = s; }
@@ -139,13 +139,13 @@ public:
     Classification classification() const { return m_classification; }
     void setClassification(Classification c) { m_classification = c; }
 
-    int instanceStepRate() const { return m_instanceStepRate; }
-    void setInstanceStepRate(int rate) { m_instanceStepRate = rate; }
+    quint32 instanceStepRate() const { return m_instanceStepRate; }
+    void setInstanceStepRate(quint32 rate) { m_instanceStepRate = rate; }
 
 private:
     quint32 m_stride = 0;
     Classification m_classification = PerVertex;
-    int m_instanceStepRate = 1;
+    quint32 m_instanceStepRate = 1;
 };
 
 Q_DECLARE_TYPEINFO(QRhiVertexInputBinding, Q_RELOCATABLE_TYPE);

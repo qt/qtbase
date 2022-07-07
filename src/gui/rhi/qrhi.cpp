@@ -1177,7 +1177,7 @@ QDebug operator<<(QDebug dbg, const QRhiScissor &s)
     \note \a stepRate other than 1 is only supported when
     QRhi::CustomInstanceStepRate is reported to be supported.
  */
-QRhiVertexInputBinding::QRhiVertexInputBinding(quint32 stride, Classification cls, int stepRate)
+QRhiVertexInputBinding::QRhiVertexInputBinding(quint32 stride, Classification cls, quint32 stepRate)
     : m_stride(stride),
       m_classification(cls),
       m_instanceStepRate(stepRate)

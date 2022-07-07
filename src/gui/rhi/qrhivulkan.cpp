@@ -6909,7 +6909,7 @@ bool QVkGraphicsPipeline::create()
         };
         if (it->classification() == QRhiVertexInputBinding::PerInstance && it->instanceStepRate() != 1) {
             if (rhiD->caps.vertexAttribDivisor) {
-                nonOneStepRates.append({ uint32_t(bindingIndex), uint32_t(it->instanceStepRate()) });
+                nonOneStepRates.append({ uint32_t(bindingIndex), it->instanceStepRate() });
             } else {
                 qWarning("QRhiVulkan: Instance step rates other than 1 not supported without "
                          "VK_EXT_vertex_attribute_divisor on the device and "

@@ -4425,7 +4425,7 @@ bool QD3D11GraphicsPipeline::create()
             const QRhiVertexInputBinding *inputBinding = m_vertexInputLayout.bindingAt(it->binding());
             if (inputBinding->classification() == QRhiVertexInputBinding::PerInstance) {
                 desc.InputSlotClass = D3D11_INPUT_PER_INSTANCE_DATA;
-                desc.InstanceDataStepRate = UINT(inputBinding->instanceStepRate());
+                desc.InstanceDataStepRate = inputBinding->instanceStepRate();
             } else {
                 desc.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
             }

@@ -2889,7 +2889,7 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                         f->glEnableVertexAttribArray(GLuint(locationIdx));
                     }
                     if (inputBinding->classification() == QRhiVertexInputBinding::PerInstance && caps.instancing) {
-                        f->glVertexAttribDivisor(GLuint(locationIdx), GLuint(inputBinding->instanceStepRate()));
+                        f->glVertexAttribDivisor(GLuint(locationIdx), inputBinding->instanceStepRate());
                         if (Q_LIKELY(locationIdx < CommandBufferExecTrackedState::TRACKED_ATTRIB_COUNT))
                             state.nonzeroAttribDivisor[locationIdx] = true;
                         else
