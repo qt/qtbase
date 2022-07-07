@@ -3008,8 +3008,14 @@ QRasterPaintEnginePrivate::getPenFunc(const QRectF &rect,
     return isUnclipped(rect, penWidth) ? data->unclipped_blend : data->blend;
 }
 
-static QPair<int, int> visibleGlyphRange(const QRectF &clip, QFontEngine *fontEngine,
-                                         glyph_t *glyphs, QFixedPoint *positions, int numGlyphs)
+struct VisibleGlyphRange
+{
+    int begin;
+    int end;
+};
+
+static VisibleGlyphRange visibleGlyphRange(const QRectF &clip, QFontEngine *fontEngine,
+                                           glyph_t *glyphs, QFixedPoint *positions, int numGlyphs)
 {
     QFixed clipLeft = QFixed::fromReal(clip.left() - 1);
     QFixed clipRight = QFixed::fromReal(clip.right() + 1);
@@ -3038,7 +3044,7 @@ static QPair<int, int> visibleGlyphRange(const QRectF &clip, QFontEngine *fontEn
             break;
         --last;
     }
-    return QPair<int, int>(first, last + 1);
+    return {first, last + 1};
 }
 
 /*!
@@ -3064,13 +3070,13 @@ void QRasterPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
         if (!invertible)
             return;
 
-        QPair<int, int> range = visibleGlyphRange(invMat.mapRect(clipBoundingRect()),
-                                                  textItem->fontEngine(), textItem->glyphs,
-                                                  textItem->glyphPositions, textItem->numGlyphs);
+        const auto range = visibleGlyphRange(invMat.mapRect(clipBoundingRect()),
+                                             textItem->fontEngine(), textItem->glyphs,
+                                             textItem->glyphPositions, textItem->numGlyphs);
         QStaticTextItem copy = *textItem;
-        copy.glyphs += range.first;
-        copy.glyphPositions += range.first;
-        copy.numGlyphs = range.second - range.first;
+        copy.glyphs += range.begin;
+        copy.glyphPositions += range.begin;
+        copy.numGlyphs = range.end - range.begin;
         QPaintEngineEx::drawStaticTextItem(&copy);
     } else {
         QPaintEngineEx::drawStaticTextItem(textItem);
@@ -3119,20 +3125,20 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
 
         ti.fontEngine->getGlyphPositions(ti.glyphs, QTransform::fromTranslate(p.x(), p.y()),
                                          ti.flags, glyphs, positions);
-        QPair<int, int> range = visibleGlyphRange(invMat.mapRect(clipBoundingRect()),
-                                                  ti.fontEngine, glyphs.data(), positions.data(),
-                                                  glyphs.size());
+        const auto range = visibleGlyphRange(invMat.mapRect(clipBoundingRect()),
+                                             ti.fontEngine, glyphs.data(), positions.data(),
+                                             glyphs.size());
 
-        if (range.first >= range.second)
+        if (range.begin >= range.end)
             return;
 
         QStaticTextItem staticTextItem;
         staticTextItem.color = s->pen.color();
         staticTextItem.font = s->font;
         staticTextItem.setFontEngine(ti.fontEngine);
-        staticTextItem.numGlyphs = range.second - range.first;
-        staticTextItem.glyphs = glyphs.data() + range.first;
-        staticTextItem.glyphPositions = positions.data() + range.first;
+        staticTextItem.numGlyphs = range.end - range.begin;
+        staticTextItem.glyphs = glyphs.data() + range.begin;
+        staticTextItem.glyphPositions = positions.data() + range.begin;
         QPaintEngineEx::drawStaticTextItem(&staticTextItem);
     } else {
         QPaintEngineEx::drawTextItem(p, ti);
