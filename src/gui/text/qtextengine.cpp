@@ -1211,9 +1211,9 @@ enum JustificationClass {
     Adds an inter character justification opportunity after the number or letter
     character and a space justification opportunity after the space character.
 */
-static inline void qt_getDefaultJustificationOpportunities(const ushort *string, int length, const QGlyphLayout &g, ushort *log_clusters, int spaceAs)
+static inline void qt_getDefaultJustificationOpportunities(const ushort *string, qsizetype length, const QGlyphLayout &g, ushort *log_clusters, int spaceAs)
 {
-    int str_pos = 0;
+    qsizetype str_pos = 0;
     while (str_pos < length) {
         int glyph_pos = log_clusters[str_pos];
 
@@ -1245,7 +1245,7 @@ static inline void qt_getDefaultJustificationOpportunities(const ushort *string,
     }
 }
 
-static inline void qt_getJustificationOpportunities(const ushort *string, int length, const QScriptItem &si, const QGlyphLayout &g, ushort *log_clusters)
+static inline void qt_getJustificationOpportunities(const ushort *string, qsizetype length, const QScriptItem &si, const QGlyphLayout &g, ushort *log_clusters)
 {
     Q_ASSERT(length > 0 && g.numGlyphs > 0);
 
