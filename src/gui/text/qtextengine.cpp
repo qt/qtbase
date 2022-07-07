@@ -2933,7 +2933,7 @@ static QString stringMidRetainingBidiCC(const QString &string,
     return prefix + ellidePrefix + QStringView{string}.mid(midStart, midLength) + ellideSuffix + suffix;
 }
 
-QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int flags, int from, int count) const
+QString QTextEngine::elidedText(Qt::TextElideMode mode, QFixed width, int flags, int from, int count) const
 {
 //    qDebug() << "elidedText; available width" << width.toReal() << "text width:" << this->width(0, layoutData->string.length()).toReal();
 

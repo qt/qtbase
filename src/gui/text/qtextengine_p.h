@@ -586,7 +586,7 @@ private:
 public:
     bool atWordSeparator(int position) const;
 
-    QString elidedText(Qt::TextElideMode mode, const QFixed &width, int flags = 0, int from = 0, int count = -1) const;
+    QString elidedText(Qt::TextElideMode mode, QFixed width, int flags = 0, int from = 0, int count = -1) const;
 
     void shapeLine(const QScriptLine &line);
     QFixed leadingSpaceWidth(const QScriptLine &line);

@@ -545,7 +545,7 @@ public:
                      QTextLayoutStruct *layoutStruct, int layoutFrom, int layoutTo, const QTextBlockFormat *previousBlockFormat);
     void layoutFlow(QTextFrame::Iterator it, QTextLayoutStruct *layoutStruct, int layoutFrom, int layoutTo, QFixed width = 0);
 
-    void floatMargins(const QFixed &y, const QTextLayoutStruct *layoutStruct, QFixed *left, QFixed *right) const;
+    void floatMargins(QFixed y, const QTextLayoutStruct *layoutStruct, QFixed *left, QFixed *right) const;
     QFixed findY(QFixed yFrom, const QTextLayoutStruct *layoutStruct, QFixed requiredWidth) const;
 
     QList<QCheckPoint> checkPoints;
@@ -3631,7 +3631,7 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
     }
 }
 
-void QTextDocumentLayoutPrivate::floatMargins(const QFixed &y, const QTextLayoutStruct *layoutStruct,
+void QTextDocumentLayoutPrivate::floatMargins(QFixed y, const QTextLayoutStruct *layoutStruct,
                                               QFixed *left, QFixed *right) const
 {
 //     qDebug() << "floatMargins y=" << y;
