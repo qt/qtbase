@@ -90,7 +90,7 @@ QByteArray QFontSubset::widthArray() const
 
     QFixed defWidth = widths[0];
     //qDebug("defWidth=%d, scale=%f", defWidth.toInt(), scale.toReal());
-    for (int i = 0; i < nGlyphs(); ++i) {
+    for (qsizetype i = 0; i < nGlyphs(); ++i) {
         if (defWidth != widths[i])
             defWidth = 0;
     }
@@ -98,10 +98,10 @@ QByteArray QFontSubset::widthArray() const
         s << "/DW " << qRound(defWidth.toInt() * scale);
     } else {
         s << "/W [";
-        for (int g = 0; g < nGlyphs();) {
+        for (qsizetype g = 0; g < nGlyphs();) {
             QFixed w = widths[g];
-            int start = g;
-            int startLinear = 0;
+            qsizetype start = g;
+            qsizetype startLinear = 0;
             ++g;
             while (g < nGlyphs()) {
                 QFixed nw = widths[g];
@@ -119,11 +119,11 @@ QByteArray QFontSubset::widthArray() const
             // qDebug("start=%x startLinear=%x g-1=%x",start,startLinear,g-1);
             if (g - startLinear < 10)
                 startLinear = 0;
-            int endnonlinear = startLinear ? startLinear : g;
+            qsizetype endnonlinear = startLinear ? startLinear : g;
             // qDebug("    startLinear=%x endnonlinear=%x", startLinear,endnonlinear);
             if (endnonlinear > start) {
                 s << start << '[';
-                for (int i = start; i < endnonlinear; ++i)
+                for (qsizetype i = start; i < endnonlinear; ++i)
                     s << qRound(widths[i].toInt() * scale);
                 s << "]\n";
             }
@@ -177,14 +177,14 @@ QByteArray QFontSubset::createToUnicodeMap() const
     QPdf::ByteStream s(&ranges);
 
     char buf[5];
-    for (int g = 1; g < nGlyphs(); ) {
+    for (qsizetype g = 1; g < nGlyphs(); ) {
         int uc0 = reverseMap.at(g);
         if (!uc0) {
             ++g;
             continue;
         }
-        int start = g;
-        int startLinear = 0;
+        qsizetype start = g;
+        qsizetype startLinear = 0;
         ++g;
         while (g < nGlyphs()) {
             int uc = reverseMap[g];
@@ -205,7 +205,7 @@ QByteArray QFontSubset::createToUnicodeMap() const
         // qDebug("start=%x startLinear=%x g-1=%x",start,startLinear,g-1);
         if (g - startLinear < 10)
             startLinear = 0;
-        int endnonlinear = startLinear ? startLinear : g;
+        qsizetype endnonlinear = startLinear ? startLinear : g;
         // qDebug("    startLinear=%x endnonlinear=%x", startLinear,endnonlinear);
         if (endnonlinear > start) {
             s << '<' << QPdf::toHex((ushort)start, buf) << "> <";
@@ -214,7 +214,7 @@ QByteArray QFontSubset::createToUnicodeMap() const
                 s << '<' << QPdf::toHex((ushort)reverseMap[start], buf) << ">\n";
             } else {
                 s << '[';
-                for (int i = start; i < endnonlinear; ++i) {
+                for (qsizetype i = start; i < endnonlinear; ++i) {
                     s << '<' << QPdf::toHex((ushort)reverseMap[i], buf) << "> ";
                 }
                 s << "]\n";
@@ -223,9 +223,9 @@ QByteArray QFontSubset::createToUnicodeMap() const
         }
         if (startLinear) {
             while (startLinear < g) {
-                int len = g - startLinear;
-                int uc_start = reverseMap[startLinear];
-                int uc_end = uc_start + len - 1;
+                qsizetype len = g - startLinear;
+                qsizetype uc_start = reverseMap[startLinear];
+                qsizetype uc_end = uc_start + len - 1;
                 if ((uc_end >> 8) != (uc_start >> 8))
                     len = 256 - (uc_start & 0xff);
                 s << '<' << QPdf::toHex((ushort)startLinear, buf) << "> <";
@@ -248,14 +248,14 @@ QByteArray QFontSubset::createToUnicodeMap() const
     return touc;
 }
 
-int QFontSubset::addGlyph(uint index)
+qsizetype QFontSubset::addGlyph(uint index)
 {
     qsizetype idx = glyph_indices.indexOf(index);
     if (idx < 0) {
         idx = glyph_indices.size();
         glyph_indices.append(index);
     }
-    return (int)idx;
+    return idx;
 }
 
 #endif // QT_NO_PDF
@@ -1147,12 +1147,12 @@ QByteArray QFontSubset::toTruetype() const
     font.maxp.maxCompositeContours = 0;
     font.maxp.maxComponentElements = 0;
     font.maxp.maxComponentDepth = 0;
-    const int numGlyphs = nGlyphs();
-    font.maxp.numGlyphs = numGlyphs;
+    const qsizetype numGlyphs = nGlyphs();
+    font.maxp.numGlyphs = quint16(numGlyphs);
     QList<QTtfGlyph> glyphs;
     glyphs.reserve(numGlyphs);
 
-    for (int i = 0; i < numGlyphs; ++i) {
+    for (qsizetype i = 0; i < numGlyphs; ++i) {
         glyph_t g = glyph_indices.at(i);
         QPainterPath path;
         glyph_metrics_t metric;
