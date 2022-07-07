@@ -1180,4 +1180,27 @@
 #  undef QT_COMPILER_SUPPORTS_MIPS_DSPR2
 #endif
 
+// Compiler version check
+#if defined(__cplusplus) && (__cplusplus < 201703L)
+#  ifdef Q_CC_MSVC
+#    error "Qt requires a C++17 compiler, and a suitable value for __cplusplus. On MSVC, you must pass the /Zc:__cplusplus option to the compiler."
+#  else
+#    error "Qt requires a C++17 compiler"
+#  endif
+#endif // __cplusplus
+
+#if defined(__cplusplus) && defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
+#  if Q_CC_MSVC < 1927
+     // Check below only works with 16.7 or newer
+#    error "Qt requires at least Visual Studio 2019 version 16.7 (VC++ version 14.27). Please upgrade."
+#  endif
+
+// On MSVC we require /permissive- set by user code. Check that we are
+// under its rules -- for instance, check that std::nullptr_t->bool is
+// not an implicit conversion, as per
+// https://docs.microsoft.com/en-us/cpp/overview/cpp-conformance-improvements?view=msvc-160#nullptr_t-is-only-convertible-to-bool-as-a-direct-initialization
+static_assert(!std::is_convertible_v<std::nullptr_t, bool>,
+              "On MSVC you must pass the /permissive- option to the compiler.");
+#endif
+
 #endif // QCOMPILERDETECTION_H
