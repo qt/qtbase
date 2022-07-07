@@ -58,12 +58,17 @@ public:
     inline QFixed &operator-=(const QFixed &other) { val -= other.val; return *this; }
     constexpr inline QFixed operator-() const { return fromFixed(-val); }
 
-    constexpr inline bool operator==(const QFixed &other) const { return val == other.val; }
-    constexpr inline bool operator!=(const QFixed &other) const { return val != other.val; }
-    constexpr inline bool operator<(const QFixed &other) const { return val < other.val; }
-    constexpr inline bool operator>(const QFixed &other) const { return val > other.val; }
-    constexpr inline bool operator<=(const QFixed &other) const { return val <= other.val; }
-    constexpr inline bool operator>=(const QFixed &other) const { return val >= other.val; }
+#define REL_OP(op) \
+    friend constexpr bool operator op(QFixed lhs, QFixed rhs) noexcept \
+    { return lhs.val op rhs.val; }
+    REL_OP(==)
+    REL_OP(!=)
+    REL_OP(< )
+    REL_OP(> )
+    REL_OP(<=)
+    REL_OP(>=)
+#undef REL_OP
+
     constexpr inline bool operator!() const { return !val; }
 
     inline QFixed &operator/=(int x) { val /= x; return *this; }
@@ -129,19 +134,6 @@ constexpr inline QFixed operator*(uint i, const QFixed &d) { return d*i; }
 constexpr inline QFixed operator+(uint i, const QFixed &d) { return d+i; }
 constexpr inline QFixed operator-(uint i, const QFixed &d) { return -(d-i); }
 // constexpr inline QFixed operator*(qreal d, const QFixed &d2) { return d2*d; }
-
-constexpr inline bool operator==(const QFixed &f, int i) { return f.value() == i * 64; }
-constexpr inline bool operator==(int i, const QFixed &f) { return f.value() == i * 64; }
-constexpr inline bool operator!=(const QFixed &f, int i) { return f.value() != i * 64; }
-constexpr inline bool operator!=(int i, const QFixed &f) { return f.value() != i * 64; }
-constexpr inline bool operator<=(const QFixed &f, int i) { return f.value() <= i * 64; }
-constexpr inline bool operator<=(int i, const QFixed &f) { return i * 64 <= f.value(); }
-constexpr inline bool operator>=(const QFixed &f, int i) { return f.value() >= i * 64; }
-constexpr inline bool operator>=(int i, const QFixed &f) { return i * 64 >= f.value(); }
-constexpr inline bool operator<(const QFixed &f, int i) { return f.value() < i * 64; }
-constexpr inline bool operator<(int i, const QFixed &f) { return i * 64 < f.value(); }
-constexpr inline bool operator>(const QFixed &f, int i) { return f.value() > i * 64; }
-constexpr inline bool operator>(int i, const QFixed &f) { return i * 64 > f.value(); }
 
 #ifndef QT_NO_DEBUG_STREAM
 inline QDebug &operator<<(QDebug &dbg, const QFixed &f)
