@@ -1231,6 +1231,14 @@ QJniObject QJniObject::callStaticObjectMethod(jclass clazz, jmethodID methodId, 
 */
 
 /*!
+    \fn template <typename Klass, typename T> auto QJniObject::getStaticField(const char *fieldName)
+
+    Retrieves the value from the static field \a fieldName for the class \c Klass.
+
+    \c Klass needs to be a C++ type with a registered type mapping to a Java type.
+*/
+
+/*!
     \fn template <typename T> void QJniObject::setStaticField(const char *className, const char *fieldName, T value)
 
     Sets the static field \a fieldName of the class \a className to \a value.
@@ -1240,6 +1248,14 @@ QJniObject QJniObject::callStaticObjectMethod(jclass clazz, jmethodID methodId, 
     \fn template <typename T> void QJniObject::setStaticField(jclass clazz, const char *fieldName, T value)
 
     Sets the static field \a fieldName of the class \a clazz to \a value.
+*/
+
+/*!
+    \fn template <typename Klass, typename T> auto QJniObject::setStaticField(const char *fieldName, T value)
+
+    Sets the static field \a fieldName of the class \c Klass to \a value.
+
+    \c Klass needs to be a C++ type with a registered type mapping to a Java type.
 */
 
 /*!
