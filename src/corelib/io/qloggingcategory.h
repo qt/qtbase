@@ -108,7 +108,7 @@ template <> const bool QLoggingCategoryMacroHolder<QtWarningMsg>::IsOutputEnable
     __VA_ARGS__ const QLoggingCategory &name();
 
 #define Q_DECLARE_LOGGING_CATEGORY(name) \
-    Q_DECLARE_EXPORTED_LOGGING_CATEGORY(name)
+    Q_DECLARE_EXPORTED_LOGGING_CATEGORY(name, /* prevent zero variadic arguments */ )
 
 #define Q_LOGGING_CATEGORY(name, ...) \
     const QLoggingCategory &name() \
