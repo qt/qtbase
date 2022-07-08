@@ -2832,16 +2832,14 @@ QString QSysInfo::productType()
 
     Typical returned values are (note: list not exhaustive):
     \list
-        \li "2016.09" (Amazon Linux AMI 2016.09)
-        \li "7.1" (Android Nougat)
-        \li "25" (Fedora 25)
-        \li "10.1" (iOS 10.1)
-        \li "10.12" (macOS Sierra)
-        \li "10.0" (tvOS 10)
-        \li "16.10" (Ubuntu 16.10)
-        \li "3.1" (watchOS 3.1)
-        \li "10" (Windows 10)
-        \li "Server 2016" (Windows Server 2016)
+        \li "12" (Android 12)
+        \li "36" (Fedora 36)
+        \li "15.5" (iOS 15.5)
+        \li "12.4" (macOS Monterey)
+        \li "22.04" (Ubuntu 22.04)
+        \li "8.6" (watchOS 8.6)
+        \li "11" (Windows 11)
+        \li "Server 2022" (Windows Server 2022)
     \endlist
 
     On Linux systems, it will try to determine the distribution version and will
