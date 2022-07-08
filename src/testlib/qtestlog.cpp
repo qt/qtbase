@@ -59,6 +59,7 @@
 #include <QtCore/qatomic.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/QElapsedTimer>
+#include <QtCore/qmutex.h>
 #include <QtCore/QVariant>
 #include <QtCore/qvector.h>
 #if QT_CONFIG(regularexpression)
@@ -167,6 +168,7 @@ namespace QTest {
     };
 
     static IgnoreResultList *ignoreResultList = nullptr;
+    static QBasicMutex mutex;
 
     Q_GLOBAL_STATIC(QVector<QAbstractTestLogger *>, loggers)
 
@@ -178,6 +180,8 @@ namespace QTest {
 
     static bool handleIgnoredMessage(QtMsgType type, const QString &message)
     {
+        const QMutexLocker mutexLocker(&QTest::mutex);
+
         if (!ignoreResultList)
             return false;
         IgnoreResultList *last = nullptr;
@@ -268,6 +272,7 @@ void QTestLog::enterTestData(QTestData *data)
 
 int QTestLog::unhandledIgnoreMessages()
 {
+    const QMutexLocker mutexLocker(&QTest::mutex);
     int i = 0;
     QTest::IgnoreResultList *list = QTest::ignoreResultList;
     while (list) {
@@ -288,6 +293,7 @@ void QTestLog::leaveTestFunction()
 
 void QTestLog::printUnhandledIgnoreMessages()
 {
+    const QMutexLocker mutexLocker(&QTest::mutex);
     QString message;
     QTest::IgnoreResultList *list = QTest::ignoreResultList;
     while (list) {
@@ -307,6 +313,7 @@ void QTestLog::printUnhandledIgnoreMessages()
 
 void QTestLog::clearIgnoreMessages()
 {
+    const QMutexLocker mutexLocker(&QTest::mutex);
     QTest::IgnoreResultList::clearList(QTest::ignoreResultList);
 }
 
@@ -538,6 +545,7 @@ void QTestLog::ignoreMessage(QtMsgType type, const char *msg)
 {
     QTEST_ASSERT(msg);
 
+    const QMutexLocker mutexLocker(&QTest::mutex);
     QTest::IgnoreResultList::append(QTest::ignoreResultList, type, QString::fromUtf8(msg));
 }
 
@@ -546,6 +554,7 @@ void QTestLog::ignoreMessage(QtMsgType type, const QRegularExpression &expressio
 {
     QTEST_ASSERT(expression.isValid());
 
+    const QMutexLocker mutexLocker(&QTest::mutex);
     QTest::IgnoreResultList::append(QTest::ignoreResultList, type, QVariant(expression));
 }
 #endif // QT_CONFIG(regularexpression)
