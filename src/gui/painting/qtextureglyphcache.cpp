@@ -57,14 +57,14 @@ int QTextureGlyphCache::calculateSubPixelPositionCount(glyph_t glyph) const
 }
 
 bool QTextureGlyphCache::populate(QFontEngine *fontEngine,
-                                  int numGlyphs,
+                                  qsizetype numGlyphs,
                                   const glyph_t *glyphs,
                                   const QFixedPoint *positions,
                                   QPainter::RenderHints renderHints,
                                   bool includeGlyphCacheScale)
 {
 #ifdef CACHE_DEBUG
-    printf("Populating with %d glyphs\n", numGlyphs);
+    printf("Populating with %lld glyphs\n", static_cast<long long>(numGlyphs));
     qDebug() << " -> current transformation: " << m_transform;
 #endif
 
@@ -79,7 +79,7 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine,
         if (!supportsSubPixelPositions) {
             fontEngine->m_subPixelPositionCount = 1;
         } else {
-            int i = 0;
+            qsizetype i = 0;
             while (fontEngine->m_subPixelPositionCount == 0 && i < numGlyphs)
                 fontEngine->m_subPixelPositionCount = calculateSubPixelPositionCount(glyphs[i++]);
         }
@@ -97,7 +97,7 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine,
     int rowHeight = 0;
 
     // check each glyph for its metrics and get the required rowHeight.
-    for (int i=0; i < numGlyphs; ++i) {
+    for (qsizetype i = 0; i < numGlyphs; ++i) {
         const glyph_t glyph = glyphs[i];
 
         QFixedPoint subPixelPosition;
