@@ -75,7 +75,7 @@ public:
     };
 
     bool populate(QFontEngine *fontEngine,
-                  int numGlyphs,
+                  qsizetype numGlyphs,
                   const glyph_t *glyphs,
                   const QFixedPoint *positions,
                   QPainter::RenderHints renderHints = QPainter::RenderHints(),
