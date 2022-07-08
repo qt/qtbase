@@ -16,7 +16,9 @@
 //
 
 #include <QtGui/private/qtguiglobal_p.h>
+
 #include "QtCore/qbytearray.h"
+#include "QtCore/qtypeinfo.h"
 
 #include <stdlib.h>
 
@@ -43,6 +45,7 @@ public:
 
     ~QDataBuffer()
     {
+        static_assert(!QTypeInfo<Type>::isComplex);
         if (buffer)
             free(buffer);
     }
