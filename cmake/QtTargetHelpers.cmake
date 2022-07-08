@@ -850,7 +850,7 @@ endfunction()
 # To achieve that, consumers of ${target} will only get the include directories of ${dep_target}
 # if the latter package and target exists.
 #
-# A find_package(dep_target) dependency is added to ${target}'s ModuleDependencies.cmake file.
+# A find_package(dep_target) dependency is added to ${target}'s *Dependencies.cmake file.
 #
 # We use target_include_directories(PRIVATE) instead of target_link_libraries(PRIVATE) because the
 # latter would propagate a mandatory LINK_ONLY dependency on the ${dep_target} in a static Qt build.
