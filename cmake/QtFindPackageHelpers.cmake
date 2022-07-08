@@ -284,6 +284,8 @@ endfunction()
 # Needed to record a dependency on the package that provides WrapVulkanHeaders::WrapVulkanHeaders.
 # The package version, components, whether the package is optional, etc, are queried from the
 # ${dep_target} target properties.
+# Usually these are set at the qt_find_package() call site of a configure.cmake file e.g. using
+# Qt's MARK_OPTIONAL option.
 function(qt_record_extra_third_party_dependency main_target_name dep_target)
     if(NOT TARGET "${main_target_name}")
         qt_get_tool_target_name(main_target_name "${main_target_name}")
