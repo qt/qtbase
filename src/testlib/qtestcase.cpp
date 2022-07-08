@@ -2964,7 +2964,7 @@ const char *QTest::currentTestFunction()
 
 /*!
     Returns the name of the current test data. If the test doesn't
-    have any assigned testdata, the function returns 0.
+    have any assigned testdata, the function returns \nullptr.
 */
 const char *QTest::currentDataTag()
 {
