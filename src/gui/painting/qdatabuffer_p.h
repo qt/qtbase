@@ -26,7 +26,7 @@ template <typename Type> class QDataBuffer
 {
     Q_DISABLE_COPY_MOVE(QDataBuffer)
 public:
-    QDataBuffer(int res)
+    explicit QDataBuffer(qsizetype res)
     {
         capacity = res;
         if (res) {
@@ -51,11 +51,11 @@ public:
 
     inline bool isEmpty() const { return siz==0; }
 
-    inline int size() const { return siz; }
+    qsizetype size() const { return siz; }
     inline Type *data() const { return buffer; }
 
-    inline Type &at(int i) { Q_ASSERT(i >= 0 && i < siz); return buffer[i]; }
-    inline const Type &at(int i) const { Q_ASSERT(i >= 0 && i < siz); return buffer[i]; }
+    Type &at(qsizetype i) { Q_ASSERT(i >= 0 && i < siz); return buffer[i]; }
+    const Type &at(qsizetype i) const { Q_ASSERT(i >= 0 && i < siz); return buffer[i]; }
     inline Type &last() { Q_ASSERT(!isEmpty()); return buffer[siz-1]; }
     inline const Type &last() const { Q_ASSERT(!isEmpty()); return buffer[siz-1]; }
     inline Type &first() { Q_ASSERT(!isEmpty()); return buffer[0]; }
@@ -72,12 +72,12 @@ public:
         --siz;
     }
 
-    inline void resize(int size) {
+    void resize(qsizetype size) {
         reserve(size);
         siz = size;
     }
 
-    inline void reserve(int size) {
+    void reserve(qsizetype size) {
         if (size > capacity) {
             if (capacity == 0)
                 capacity = 1;
@@ -88,7 +88,7 @@ public:
         }
     }
 
-    inline void shrink(int size) {
+    void shrink(qsizetype size) {
         capacity = size;
         if (size) {
             buffer = (Type*) realloc(static_cast<void*>(buffer), capacity * sizeof(Type));
@@ -108,8 +108,8 @@ public:
     inline QDataBuffer &operator<<(const Type &t) { add(t); return *this; }
 
 private:
-    int capacity;
-    int siz;
+    qsizetype capacity;
+    qsizetype siz;
     Type *buffer;
 };
 
