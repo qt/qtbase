@@ -296,6 +296,13 @@ function(qt_internal_create_plugin_depends_file target)
     unset(optional_public_depends)
     set(target_deps_seen "")
 
+
+    # Extra 3rd party targets who's packages should be considered dependencies.
+    get_target_property(extra_third_party_deps "${target}" _qt_extra_third_party_dep_targets)
+    if(NOT extra_third_party_deps)
+        set(extra_third_party_deps "")
+    endif()
+
     qt_collect_third_party_deps(${target})
 
     qt_internal_remove_qt_dependency_duplicates(target_deps "${target_deps}")
