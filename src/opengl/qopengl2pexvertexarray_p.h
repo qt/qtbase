@@ -77,6 +77,7 @@ public:
     operator QPointF() {return QPointF(x,y);}
     operator QPointF() const {return QPointF(x,y);}
 };
+Q_DECLARE_TYPEINFO(QOpenGLPoint, Q_PRIMITIVE_TYPE);
 
 struct QOpenGLRect
 {
@@ -93,6 +94,7 @@ struct QOpenGLRect
 
     operator QRectF() const {return QRectF(left, top, right-left, bottom-top);}
 };
+Q_DECLARE_TYPEINFO(QOpenGLRect, Q_PRIMITIVE_TYPE);
 
 class QOpenGL2PEXVertexArray
 {

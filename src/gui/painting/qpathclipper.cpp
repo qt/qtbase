@@ -99,6 +99,7 @@ struct QIntersection
 
     QPointF pos;
 };
+Q_DECLARE_TYPEINFO(QIntersection, Q_PRIMITIVE_TYPE);
 
 class QIntersectionFinder
 {

@@ -115,6 +115,7 @@ public:
     qreal x;
     qreal y;
 };
+Q_DECLARE_TYPEINFO(QPathVertex, Q_PRIMITIVE_TYPE);
 
 class QPathEdge
 {
@@ -158,6 +159,7 @@ public:
 private:
     int m_next[2][2] = { { -1, -1 }, { -1, -1 } };
 };
+Q_DECLARE_TYPEINFO(QPathEdge, Q_PRIMITIVE_TYPE);
 
 class QPathSegments
 {
@@ -171,6 +173,7 @@ public:
             return t < o.t;
         }
     };
+    friend class QTypeInfo<Intersection>;
 
     struct Segment {
         Segment(int pathId, int vertexA, int vertexB)
@@ -192,6 +195,7 @@ public:
 
         QRectF bounds;
     };
+    friend class QTypeInfo<Segment>;
 
 
     QPathSegments(int reserve);
@@ -223,6 +227,8 @@ private:
 
     int m_pathId;
 };
+Q_DECLARE_TYPEINFO(QPathSegments::Intersection, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(QPathSegments::Segment, Q_PRIMITIVE_TYPE);
 
 class Q_AUTOTEST_EXPORT QWingedEdge
 {

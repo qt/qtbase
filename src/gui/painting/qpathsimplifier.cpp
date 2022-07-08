@@ -339,6 +339,7 @@ private:
         Type type;
         Element *element;
     };
+    friend class QTypeInfo<Event>;
 
     typedef QRBTree<Element *>::Node RBNode;
     typedef BoundingVolumeHierarchy::Node BVHNode;
@@ -376,6 +377,10 @@ private:
     QRBTree<Element *> m_elementList;
     uint m_hints;
 };
+
+} // unnamed namespace
+
+Q_DECLARE_TYPEINFO(PathSimplifier::Event, Q_PRIMITIVE_TYPE);
 
 inline PathSimplifier::BoundingVolumeHierarchy::BoundingVolumeHierarchy()
     : root(nullptr)
@@ -1649,9 +1654,6 @@ void PathSimplifier::sortEvents(Event *events, int count)
         }
     }
 }
-
-} // end anonymous namespace
-
 
 void qSimplifyPath(const QVectorPath &path, QDataBuffer<QPoint> &vertices,
                    QDataBuffer<quint32> &indices, const QTransform &matrix)
