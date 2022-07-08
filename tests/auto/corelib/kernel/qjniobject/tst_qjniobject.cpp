@@ -9,6 +9,7 @@
 #include <QtTest>
 
 static const char testClassName[] = "org/qtproject/qt/android/testdatapackage/QtJniObjectTestClass";
+Q_DECLARE_JNI_CLASS(QtJniObjectTestClass, testClassName)
 
 static const jbyte A_BYTE_VALUE = 127;
 static const jshort A_SHORT_VALUE = 32767;
@@ -1035,6 +1036,12 @@ void setStaticField(const char *fieldName, T testValue)
 
     T res = QJniObject::getStaticField<T>(testClassName, fieldName);
     QCOMPARE(res, testValue);
+
+    // use template overload to reset to default
+    T defaultValue = {};
+    QJniObject::setStaticField<QtJniTypes::QtJniObjectTestClass, T>(fieldName, defaultValue);
+    res = QJniObject::getStaticField<QtJniTypes::QtJniObjectTestClass, T>(fieldName);
+    QCOMPARE(res, defaultValue);
 }
 
 void tst_QJniObject::setStaticIntField()

@@ -258,6 +258,12 @@ public:
         }
     }
 
+    template <typename Klass, typename T>
+    static auto getStaticField(const char *fieldName)
+    {
+        return getStaticField<T>(QtJniTypes::className<Klass>(), fieldName);
+    }
+
     template <typename T>
     QJniObject getObjectField(const char *fieldName) const
     {
@@ -378,6 +384,12 @@ public:
             setStaticFieldForType<T>(env.jniEnv(), clazz, id, value);
             env.checkAndClearExceptions();
         }
+    }
+
+    template <typename Klass, typename T>
+    static void setStaticField(const char *fieldName, T value)
+    {
+        setStaticField(QtJniTypes::className<Klass>(), fieldName, value);
     }
 
     static QJniObject fromString(const QString &string);
