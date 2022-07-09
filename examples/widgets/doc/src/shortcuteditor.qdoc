@@ -1,0 +1,230 @@
+// Copyright (C) 2022 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \example widgets/shortcuteditor
+    \title Shortcut Editor Example
+    \ingroup examples-widgets
+    \brief The Shortcut Editor example shows how to create a basic, read-write
+    hierarchical model to use with Qt's standard view and QKeySequenceEdit
+    classes. For a description of Model/View Programming, see the \l{Model/View
+    Programming} overview.
+
+    \image shortcuteditor-example.png
+
+    Qt's model/view architecture provides a standard way for views to
+    manipulate information in a data source, using an abstract model
+    of the data to simplify and standardize the way it is accessed.
+    The shortcut editor model represents the actions as a tree of items, and
+    allow views to access this data via an
+    \l{Model/View Programming#Models}{index-based} system. More generally,
+    models can be used to represent data in the form of a tree structure
+    by allowing each item to act as a parent to a table of child items.
+
+    \section1 Design and Concepts
+
+    The data structure that we use to represent the structure of the data takes
+    the form of a tree built from ShortcutEditorModelItem objects. Each
+    ShortcutEditorModelItem represents an item in a tree view, and contains
+    two columns of data.
+
+    \table
+    \row \li \inlineimage treemodel-structure.png
+    \li \b{Shortcut Editor Structure}
+
+    The data is stored internally in the model using ShortcutEditorModelItem
+    objects that are linked together in a pointer-based tree structure.
+    Generally, each ShortcutEditorModelItem has a parent item, and can have a
+    number of child items. However, the root item in the tree structure has no
+    parent item and it is never referenced outside the model.
+
+    Each ShortcutEditorModelItem contains information about its place in the
+    tree structure; it can return its parent item and its row number. Having
+    this information readily available makes implementing the model easier.
+
+    Since each item in a tree view usually contains several columns of data
+    (a name and a shortcut in this example), it is natural to store this
+    information in each item. For simplicity, we will use a list of QVariant
+    objects to store the data for each column in the item.
+    \endtable
+
+    The use of a pointer-based tree structure means that, when passing a
+    model index to a view, we can record the address of the corresponding
+    item in the index (see QAbstractItemModel::createIndex()) and retrieve
+    it later with QModelIndex::internalPointer(). This makes writing the
+    model easier and ensures that all model indexes that refer to the same
+    item have the same internal data pointer.
+
+    With the appropriate data structure in place, we can create a tree model
+    with a minimal amount of extra code to supply model indexes and data to
+    other components.
+
+    \section1 ShortcutEditorModelItem Class Definition
+
+    The ShortcutEditorModelItem class is defined as follows:
+
+    The class is a basic C++ class. It does not inherit from QObject or
+    provide signals and slots. It is used to hold a list of QVariants,
+    containing column data, and information about its position in the tree
+    structure. The functions provide the following features:
+
+    \list
+    \li The \c appendChildItem() is used to add data when the model is first
+       constructed and is not used during normal use.
+    \li The \c child() and \c childCount() functions allow the model to obtain
+       information about any child items.
+    \li Information about the number of columns associated with the item is
+       provided by \c columnCount(), and the data in each column can be
+       obtained with the data() function.
+    \li The \c row() and \c parent() functions are used to obtain the item's
+       row number and parent item.
+    \endlist
+
+    The parent item and column data are stored in the \c parentItem and
+    \c itemData private member variables. The \c childItems variable contains
+    a list of pointers to the item's own child items.
+
+    \section1 ShortcutEditorModel Class Definition
+
+    The \c ShortcutEditorModel class is defined as follows:
+
+    \snippet widgets/shortcuteditor/shortcuteditormodel.h 0
+
+    This class is similar to most other subclasses of QAbstractItemModel that
+    provide read-write models. Only the form of the constructor and the
+    \c setupModelData() function are specific to this model. In addition, we
+    provide a destructor to clean up when the model is destroyed.
+
+    \section1 ShortcutEditorModel Class Implementation
+
+    The constructor takes an argument containing the data that the model will
+    share with views and delegates:
+
+    \snippet widgets/shortcuteditor/shortcuteditormodel.cpp 0
+
+    It is up to the constructor to create a root item for the model. This
+    item only contains vertical header data for convenience. We also use it
+    to reference the internal data structure that contains the model data,
+    and it is used to represent an imaginary parent of top-level items in
+    the model.
+
+    The model's internal data structure is populated with items by the
+    \c setupModelData() function. We will examine this function separately
+    at the end of this document.
+
+    The destructor ensures that the root item and all of its descendants
+    are deleted when the model is destroyed:
+
+    \snippet widgets/shortcuteditor/shortcuteditormodel.cpp 1
+
+    Since we cannot add data to the model after it is constructed and set
+    up, this simplifies the way that the internal tree of items is managed.
+
+    Models must implement an \c index() function to provide indexes for
+    views and delegates to use when accessing data. Indexes are created
+    for other components when they are referenced by their row and column
+    numbers, and their parent model index. If an invalid model
+    index is specified as the parent, it is up to the model to return an
+    index that corresponds to a top-level item in the model.
+
+    When supplied with a model index, we first check whether it is valid.
+    If it is not, we assume that a top-level item is being referred to;
+    otherwise, we obtain the data pointer from the model index with its
+    \l{QModelIndex::internalPointer()}{internalPointer()} function and use
+    it to reference a \c TreeItem object. Note that all the model indexes
+    that we construct will contain a pointer to an existing \c TreeItem,
+    so we can guarantee that any valid model indexes that we receive will
+    contain a valid data pointer.
+
+    \snippet widgets/shortcuteditor/shortcuteditormodel.cpp 2
+
+    Since the row and column arguments to this function refer to a
+    child item of the corresponding parent item, we obtain the item using
+    the \c TreeItem::child() function. The
+    \l{QAbstractItemModel::createIndex()}{createIndex()} function is used
+    to create a model index to be returned. We specify the row and column
+    numbers, and a pointer to the item itself. The model index can be used
+    later to obtain the item's data.
+
+    The way that the \c TreeItem objects are defined makes writing the
+    \c parent() function easy:
+
+    \snippet widgets/shortcuteditor/shortcuteditormodel.cpp 3
+
+    We only need to ensure that we never return a model index corresponding
+    to the root item. To be consistent with the way that the \c index()
+    function is implemented, we return an invalid model index for the
+    parent of any top-level items in the model.
+
+    When creating a model index to return, we must specify the row and
+    column numbers of the parent item within its own parent. We can
+    easily discover the row number with the \c TreeItem::row() function,
+    but we follow a convention of specifying 0 as the column number of
+    the parent. The model index is created with
+    \l{QAbstractItemModel::createIndex()}{createIndex()} in the same way
+    as in the \c index() function.
+
+    The \c rowCount() function simply returns the number of child items
+    for the \c TreeItem that corresponds to a given model index, or the
+    number of top-level items if an invalid index is specified:
+
+    \snippet widgets/shortcuteditor/shortcuteditormodel.cpp 4
+
+    Since each item manages its own column data, the \c columnCount()
+    function has to call the item's own \c columnCount() function to
+    determine how many columns are present for a given model index.
+    As with the \c rowCount() function, if an invalid model index is
+    specified, the number of columns returned is determined from the
+    root item:
+
+    \snippet widgets/shortcuteditor/shortcuteditormodel.cpp 5
+
+    Data is obtained from the model via \c data(). Since the item manages
+    its own columns, we need to use the column number to retrieve the data
+    with the \c TreeItem::data() function:
+
+    \snippet widgets/shortcuteditor/shortcuteditormodel.cpp 6
+
+    Note that we only support the \l{Qt::ItemDataRole}{DisplayRole}
+    in this implementation, and we also return invalid QVariant objects for
+    invalid model indexes.
+
+    We use the \c flags() function to ensure that views know that the
+    model is read-only:
+
+    \snippet widgets/shortcuteditor/shortcuteditormodel.cpp 7
+
+    The \c headerData() function returns data that we conveniently stored
+    in the root item:
+
+    \snippet widgets/shortcuteditor/shortcuteditormodel.cpp 8
+
+    This information could have been supplied in a different way: either
+    specified in the constructor, or hard coded into the \c headerData()
+    function.
+
+    \snippet widgets/shortcuteditor/shortcuteditormodel.cpp 9
+
+    TODO
+
+    \snippet widgets/shortcuteditor/shortcuteditormodel.cpp 10
+
+    TODO
+
+    \snippet widgets/shortcuteditor/shortcuteditormodel.cpp 11
+
+    TODO
+
+    \section1 Setting Up the Data in the Model
+
+    We use the \c setupModelData() function to set up the initial data in
+    the model. This function retrieves the registered actions text and creates
+    item objects that record both the data and the overall model structure.
+    Naturally, this function works in a way that is very specific to
+    this model. We provide the following description of its behavior,
+    and refer the reader to the example code itself for more information.
+
+    To ensure that the model works correctly, it is only necessary to
+    create instances of ShortcutEditorModelItem with the correct data and
+    parent item.
+*/
