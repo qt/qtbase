@@ -63,6 +63,11 @@ Window::Window()
 
     accessLineEdit = new QLineEdit;
 
+    QGroupBox *testGroup = new QGroupBox(tr("Test"));
+
+    QLabel *testLabel = new QLabel(tr("Drag and Drop:"));
+    textEdit = new QTextEdit;
+
     connect(echoComboBox, SIGNAL(activated(int)),
             this, SLOT(echoChanged(int)));
     connect(validatorComboBox, SIGNAL(activated(int)),
@@ -104,12 +109,18 @@ Window::Window()
     accessLayout->addWidget(accessLineEdit, 1, 0, 1, 2);
     accessGroup->setLayout(accessLayout);
 
+    QGridLayout *testLayout = new QGridLayout;
+    testLayout->addWidget(testLabel, 0, 0);
+    testLayout->addWidget(textEdit, 1, 0, 1, 2);
+    testGroup->setLayout(testLayout);
+
     QGridLayout *layout = new QGridLayout;
     layout->addWidget(echoGroup, 0, 0);
     layout->addWidget(validatorGroup, 1, 0);
     layout->addWidget(alignmentGroup, 2, 0);
     layout->addWidget(inputMaskGroup, 0, 1);
     layout->addWidget(accessGroup, 1, 1);
+    layout->addWidget(testGroup, 2, 1);
     setLayout(layout);
 
     setWindowTitle(tr("Line Edits"));

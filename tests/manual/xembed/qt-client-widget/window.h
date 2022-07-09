@@ -9,6 +9,7 @@
 QT_BEGIN_NAMESPACE
 class QComboBox;
 class QLineEdit;
+class QTextEdit;
 QT_END_NAMESPACE
 
 class Window : public QWidget
@@ -31,6 +32,7 @@ private:
     QLineEdit *alignmentLineEdit;
     QLineEdit *inputMaskLineEdit;
     QLineEdit *accessLineEdit;
+    QTextEdit *textEdit;
 };
 
 #endif
