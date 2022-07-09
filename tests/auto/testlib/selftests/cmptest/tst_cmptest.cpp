@@ -114,6 +114,7 @@ private slots:
     void compare_pointerfuncs();
     void compare_tostring();
     void compare_tostring_data();
+    void compare_unknown();
     void compareQObjects();
     void compareQStringLists();
     void compareQStringLists_data();
@@ -321,6 +322,14 @@ void tst_Cmptest::compare_tostring()
     QFETCH(QVariant, expected);
 
     QCOMPARE(actual, expected);
+}
+
+void tst_Cmptest::compare_unknown()
+{
+    std::string a("a");
+    std::string b("b");
+
+    QCOMPARE(a, b);
 }
 
 void tst_Cmptest::compareQStringLists_data()

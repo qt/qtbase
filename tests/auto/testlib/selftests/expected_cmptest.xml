@@ -111,6 +111,14 @@
     </Incident>
     <Duration msecs="0"/>
   </TestFunction>
+  <TestFunction name="compare_unknown">
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+      <Description><![CDATA[Compared values are not the same
+   Actual   : a
+   Expected : b]]></Description>
+    </Incident>
+    <Duration msecs="0"/>
+  </TestFunction>
   <TestFunction name="compareQObjects">
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
       <Description><![CDATA[Compared QObject pointers are not the same

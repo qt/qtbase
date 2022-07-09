@@ -437,17 +437,6 @@ namespace QTest
     Q_TESTLIB_EXPORT QTestData &newRow(const char *dataTag);
     Q_TESTLIB_EXPORT QTestData &addRow(const char *format, ...) Q_ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    // kept after adding implementation of <T1, T2> out of paranoia:
-    template <typename T>
-    inline bool qCompare(T const &t1, T const &t2, const char *actual, const char *expected,
-                        const char *file, int line)
-    {
-        return compare_helper(t1 == t2, "Compared values are not the same",
-                              toString(t1), toString(t2), actual, expected, file, line);
-    }
-#endif
-
     Q_TESTLIB_EXPORT bool qCompare(qfloat16 const &t1, qfloat16 const &t2,
                     const char *actual, const char *expected, const char *file, int line);
 
