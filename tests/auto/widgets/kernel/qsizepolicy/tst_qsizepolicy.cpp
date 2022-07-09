@@ -1,13 +1,14 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#include <QTest>
 #include <qsizepolicy.h>
 
 Q_DECLARE_METATYPE(Qt::Orientations)
 Q_DECLARE_METATYPE(QSizePolicy)
 Q_DECLARE_METATYPE(QSizePolicy::Policy)
 Q_DECLARE_METATYPE(QSizePolicy::ControlType)
+
+#include <QTest>
 
 class tst_QSizePolicy : public QObject
 {

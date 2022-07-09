@@ -9,11 +9,13 @@
 
 static const int minResolution = 100; // the minimum resolution for the tests
 
+QT_BEGIN_NAMESPACE
 QDebug operator<<(QDebug s, const QElapsedTimer &t)
 {
     s.nospace() << "(" << t.msecsSinceReference() << ")";
     return s.space();
 }
+QT_END_NAMESPACE
 
 class tst_QElapsedTimer : public QObject
 {
