@@ -55,6 +55,10 @@ FAIL!  : tst_Cmptest::compare_unknown() Compared values are not the same
    Actual   : a
    Expected : b
    Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
+FAIL!  : tst_Cmptest::compare_textFromDebug() Compared values are not the same
+   Actual   (a): QDebug stream: 0
+   Expected (b): QDebug stream: 1
+   Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
 FAIL!  : tst_Cmptest::compareQObjects() Compared QObject pointers are not the same
    Actual   (&object1): QObject/"object1"
    Expected (&object2): QObject/"object2"
@@ -197,5 +201,5 @@ FAIL!  : tst_Cmptest::tryVerify2() 'opaqueFunc() < 2' returned FALSE. (42)
    Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
 PASS   : tst_Cmptest::verifyExplicitOperatorBool()
 PASS   : tst_Cmptest::cleanupTestCase()
-Totals: 21 passed, 47 failed, 0 skipped, 0 blacklisted, 0ms
+Totals: 21 passed, 48 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_Cmptest *********

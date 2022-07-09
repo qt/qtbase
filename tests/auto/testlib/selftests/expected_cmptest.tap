@@ -148,7 +148,19 @@ not ok 19 - compare_unknown()
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 20 - compareQObjects()
+not ok 20 - compare_textFromDebug()
+  ---
+  type: QCOMPARE
+  message: Compared values are not the same
+  wanted: QDebug stream: 1 (b)
+  found: QDebug stream: 0 (a)
+  expected: QDebug stream: 1 (b)
+  actual: QDebug stream: 0 (a)
+  at: tst_Cmptest::compare_textFromDebug() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
+  line: 0
+  ...
+not ok 21 - compareQObjects()
   ---
   type: QCOMPARE
   message: Compared QObject pointers are not the same
@@ -160,9 +172,9 @@ not ok 20 - compareQObjects()
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-ok 21 - compareQStringLists(empty lists)
-ok 22 - compareQStringLists(equal lists)
-not ok 23 - compareQStringLists(last item different)
+ok 22 - compareQStringLists(empty lists)
+ok 23 - compareQStringLists(equal lists)
+not ok 24 - compareQStringLists(last item different)
   ---
   type: QCOMPARE
   message: Compared lists differ at index 2.
@@ -174,7 +186,7 @@ not ok 23 - compareQStringLists(last item different)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 24 - compareQStringLists(second-last item different)
+not ok 25 - compareQStringLists(second-last item different)
   ---
   type: QCOMPARE
   message: Compared lists differ at index 2.
@@ -186,7 +198,7 @@ not ok 24 - compareQStringLists(second-last item different)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 25 - compareQStringLists(prefix)
+not ok 26 - compareQStringLists(prefix)
   ---
   # Compared lists have different sizes.
    Actual   (opA) size: 2
@@ -195,7 +207,7 @@ not ok 25 - compareQStringLists(prefix)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 26 - compareQStringLists(short list second)
+not ok 27 - compareQStringLists(short list second)
   ---
   # Compared lists have different sizes.
    Actual   (opA) size: 12
@@ -204,7 +216,7 @@ not ok 26 - compareQStringLists(short list second)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 27 - compareQStringLists(short list first)
+not ok 28 - compareQStringLists(short list first)
   ---
   # Compared lists have different sizes.
    Actual   (opA) size: 1
@@ -213,8 +225,8 @@ not ok 27 - compareQStringLists(short list first)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-ok 28 - compareQListInt(match)
-not ok 29 - compareQListInt(size mismatch)
+ok 29 - compareQListInt(match)
+not ok 30 - compareQListInt(size mismatch)
   ---
   # Compared lists have different sizes.
    Actual   (actual) size: 2
@@ -223,7 +235,7 @@ not ok 29 - compareQListInt(size mismatch)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 30 - compareQListInt(value mismatch)
+not ok 31 - compareQListInt(value mismatch)
   ---
   type: QCOMPARE
   message: Compared lists differ at index 2.
@@ -235,8 +247,8 @@ not ok 30 - compareQListInt(value mismatch)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-ok 31 - compareQListIntToArray(match)
-not ok 32 - compareQListIntToArray(size mismatch)
+ok 32 - compareQListIntToArray(match)
+not ok 33 - compareQListIntToArray(size mismatch)
   ---
   # Compared lists have different sizes.
    Actual   (actual) size: 2
@@ -245,7 +257,7 @@ not ok 32 - compareQListIntToArray(size mismatch)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 33 - compareQListIntToArray(value mismatch)
+not ok 34 - compareQListIntToArray(value mismatch)
   ---
   type: QCOMPARE
   message: Compared lists differ at index 2.
@@ -257,8 +269,8 @@ not ok 33 - compareQListIntToArray(value mismatch)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-ok 34 - compareQListIntToInitializerList(match)
-not ok 35 - compareQListIntToInitializerList(size mismatch)
+ok 35 - compareQListIntToInitializerList(match)
+not ok 36 - compareQListIntToInitializerList(size mismatch)
   ---
   # Compared lists have different sizes.
    Actual   (actual) size: 2
@@ -267,7 +279,7 @@ not ok 35 - compareQListIntToInitializerList(size mismatch)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 36 - compareQListIntToInitializerList(value mismatch)
+not ok 37 - compareQListIntToInitializerList(value mismatch)
   ---
   type: QCOMPARE
   message: Compared lists differ at index 2.
@@ -279,7 +291,7 @@ not ok 36 - compareQListIntToInitializerList(value mismatch)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 37 - compareQListDouble()
+not ok 38 - compareQListDouble()
   ---
   type: QCOMPARE
   message: Compared lists differ at index 0.
@@ -291,8 +303,8 @@ not ok 37 - compareQListDouble()
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-ok 38 - compareQColor(Qt::yellow vs "yellow")
-not ok 39 - compareQColor(Qt::yellow vs Qt::green)
+ok 39 - compareQColor(Qt::yellow vs "yellow")
+not ok 40 - compareQColor(Qt::yellow vs Qt::green)
   ---
   type: QCOMPARE
   message: Compared values are not the same
@@ -304,7 +316,7 @@ not ok 39 - compareQColor(Qt::yellow vs Qt::green)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 40 - compareQColor(0x88ff0000 vs 0xffff0000)
+not ok 41 - compareQColor(0x88ff0000 vs 0xffff0000)
   ---
   type: QCOMPARE
   message: Compared values are not the same
@@ -316,8 +328,8 @@ not ok 40 - compareQColor(0x88ff0000 vs 0xffff0000)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-ok 41 - compareQPixmaps(both null)
-not ok 42 - compareQPixmaps(one null)
+ok 42 - compareQPixmaps(both null)
+not ok 43 - compareQPixmaps(one null)
   ---
   type: QCOMPARE
   message: Compared QPixmaps differ.
@@ -329,7 +341,7 @@ not ok 42 - compareQPixmaps(one null)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 43 - compareQPixmaps(other null)
+not ok 44 - compareQPixmaps(other null)
   ---
   type: QCOMPARE
   message: Compared QPixmaps differ.
@@ -341,8 +353,8 @@ not ok 43 - compareQPixmaps(other null)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-ok 44 - compareQPixmaps(equal)
-not ok 45 - compareQPixmaps(different size)
+ok 45 - compareQPixmaps(equal)
+not ok 46 - compareQPixmaps(different size)
   ---
   type: QCOMPARE
   message: Compared QPixmaps differ in size.
@@ -354,14 +366,14 @@ not ok 45 - compareQPixmaps(different size)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 46 - compareQPixmaps(different pixels)
+not ok 47 - compareQPixmaps(different pixels)
   ---
   # Compared values are not the same
   at: tst_Cmptest::compareQPixmaps() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 47 - compareQPixmaps(different dpr)
+not ok 48 - compareQPixmaps(different dpr)
   ---
   type: QCOMPARE
   message: Compared QPixmaps differ in device pixel ratio.
@@ -373,8 +385,8 @@ not ok 47 - compareQPixmaps(different dpr)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-ok 48 - compareQImages(both null)
-not ok 49 - compareQImages(one null)
+ok 49 - compareQImages(both null)
+not ok 50 - compareQImages(one null)
   ---
   type: QCOMPARE
   message: Compared QImages differ.
@@ -386,7 +398,7 @@ not ok 49 - compareQImages(one null)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 50 - compareQImages(other null)
+not ok 51 - compareQImages(other null)
   ---
   type: QCOMPARE
   message: Compared QImages differ.
@@ -398,8 +410,8 @@ not ok 50 - compareQImages(other null)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-ok 51 - compareQImages(equal)
-not ok 52 - compareQImages(different size)
+ok 52 - compareQImages(equal)
+not ok 53 - compareQImages(different size)
   ---
   type: QCOMPARE
   message: Compared QImages differ in size.
@@ -411,7 +423,7 @@ not ok 52 - compareQImages(different size)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 53 - compareQImages(different format)
+not ok 54 - compareQImages(different format)
   ---
   type: QCOMPARE
   message: Compared QImages differ in format.
@@ -423,14 +435,14 @@ not ok 53 - compareQImages(different format)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 54 - compareQImages(different pixels)
+not ok 55 - compareQImages(different pixels)
   ---
   # Compared values are not the same
   at: tst_Cmptest::compareQImages() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 55 - compareQImages(different dpr)
+not ok 56 - compareQImages(different dpr)
   ---
   type: QCOMPARE
   message: Compared QImages differ in device pixel ratio.
@@ -442,8 +454,8 @@ not ok 55 - compareQImages(different dpr)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-ok 56 - compareQRegion(equal-empty)
-not ok 57 - compareQRegion(1-empty)
+ok 57 - compareQRegion(equal-empty)
+not ok 58 - compareQRegion(1-empty)
   ---
   type: QCOMPARE
   message: Compared values are not the same
@@ -455,8 +467,8 @@ not ok 57 - compareQRegion(1-empty)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-ok 58 - compareQRegion(equal)
-not ok 59 - compareQRegion(different lists)
+ok 59 - compareQRegion(equal)
+not ok 60 - compareQRegion(different lists)
   ---
   type: QCOMPARE
   message: Compared values are not the same
@@ -468,7 +480,7 @@ not ok 59 - compareQRegion(different lists)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 60 - compareQVector2D()
+not ok 61 - compareQVector2D()
   ---
   type: QCOMPARE
   message: Compared values are not the same
@@ -480,7 +492,7 @@ not ok 60 - compareQVector2D()
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 61 - compareQVector3D()
+not ok 62 - compareQVector3D()
   ---
   type: QCOMPARE
   message: Compared values are not the same
@@ -492,7 +504,7 @@ not ok 61 - compareQVector3D()
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 62 - compareQVector4D()
+not ok 63 - compareQVector4D()
   ---
   type: QCOMPARE
   message: Compared values are not the same
@@ -504,7 +516,7 @@ not ok 62 - compareQVector4D()
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 63 - verify()
+not ok 64 - verify()
   ---
   type: QVERIFY
   message: Verification failed
@@ -516,7 +528,7 @@ not ok 63 - verify()
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 64 - verify2()
+not ok 65 - verify2()
   ---
   type: QVERIFY
   message: 42
@@ -528,7 +540,7 @@ not ok 64 - verify2()
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 65 - tryVerify()
+not ok 66 - tryVerify()
   ---
   type: QVERIFY
   message: Verification failed
@@ -540,7 +552,7 @@ not ok 65 - tryVerify()
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 66 - tryVerify2()
+not ok 67 - tryVerify2()
   ---
   type: QVERIFY
   message: 42
@@ -552,9 +564,9 @@ not ok 66 - tryVerify2()
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-ok 67 - verifyExplicitOperatorBool()
-ok 68 - cleanupTestCase()
-1..68
-# tests 68
+ok 68 - verifyExplicitOperatorBool()
+ok 69 - cleanupTestCase()
+1..69
+# tests 69
 # pass 21
-# fail 47
+# fail 48

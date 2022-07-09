@@ -115,6 +115,7 @@ private slots:
     void compare_tostring();
     void compare_tostring_data();
     void compare_unknown();
+    void compare_textFromDebug();
     void compareQObjects();
     void compareQStringLists();
     void compareQStringLists_data();
@@ -324,10 +325,36 @@ void tst_Cmptest::compare_tostring()
     QCOMPARE(actual, expected);
 }
 
+struct UnknownType
+{
+    int value;
+    bool operator==(const UnknownType &rhs) const { return value == rhs.value; }
+};
+
 void tst_Cmptest::compare_unknown()
 {
-    std::string a("a");
-    std::string b("b");
+    UnknownType a{1};
+    UnknownType b{2};
+
+    QCOMPARE(a, b);
+}
+
+struct CustomType
+{
+    int value;
+    bool operator==(const CustomType &rhs) const { return value == rhs.value; }
+};
+
+QDebug operator<<(QDebug dbg, const CustomType &val)
+{
+    dbg << "QDebug stream: " << val.value;
+    return dbg;
+}
+
+void tst_Cmptest::compare_textFromDebug()
+{
+    CustomType a{0};
+    CustomType b{1};
 
     QCOMPARE(a, b);
 }

@@ -3156,7 +3156,6 @@ void tst_QGraphicsGridLayout::heightForWidthWithSpanning()
     QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(200, -1)), QSizeF(200, 100));
 }
 
-Q_DECLARE_METATYPE(QSizePolicy::Policy)
 void tst_QGraphicsGridLayout::spanningItem2x2_data()
 {
     QTest::addColumn<QSizePolicy::Policy>("sizePolicy");
