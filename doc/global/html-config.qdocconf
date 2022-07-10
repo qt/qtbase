@@ -18,7 +18,8 @@ HTML.extraimages += template/images/arrow_bc.png \
 
 #specify which files in the output directory should be packed into the qch file.
 #these files are assumed to be in each module's output directory."qtquick/images/ico_out.png" for example.
-qhp.extraFiles +=   images/arrow_bc.png \
+{qhp.extraFiles,DocBook.extraFiles} += \
+                    images/arrow_bc.png \
                     images/home.png \
                     images/ico_out.png \
                     images/ico_note.png \
@@ -29,3 +30,4 @@ qhp.extraFiles +=   images/arrow_bc.png \
                     images/bullet_sq.png \
                     images/bgrContent.png \
                     images/logo.png
+

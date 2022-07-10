@@ -31,6 +31,16 @@ qhp.extraFiles +=   style/offline.css \
                     images/bullet_sq.png \
                     images/bgrContent.png
 
+DocBook.extraimages += \
+                    images/ico_out.png \
+                    images/ico_note.png \
+                    images/ico_note_attention.png \
+                    images/btn_prev.png \
+                    images/btn_next.png \
+                    images/bullet_dn.png \
+                    images/bullet_sq.png \
+                    images/bgrContent.png
+
 # By default, include override definitions for a simplified template/CSS,
 # suited for rendering HTML with QTextBrowser. Comment out this line to
 # select the standard CSS.
