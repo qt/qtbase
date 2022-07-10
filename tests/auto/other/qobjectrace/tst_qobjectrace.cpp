@@ -1,4 +1,4 @@
-// Copyright (C) 2016 The Qt Company Ltd.
+// Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 
@@ -21,12 +21,20 @@ struct Functor
 class tst_QObjectRace: public QObject
 {
     Q_OBJECT
+public:
+    tst_QObjectRace()
+        : ThreadCount(QThread::idealThreadCount())
+    {}
+
 private slots:
     void moveToThreadRace();
     void destroyRace();
     void blockingQueuedDestroyRace();
     void disconnectRace();
     void disconnectRace2();
+
+private:
+    const int ThreadCount;
 };
 
 class RaceObject : public QObject
@@ -110,8 +118,7 @@ void tst_QObjectRace::moveToThreadRace()
 {
     RaceObject *object = new RaceObject;
 
-    enum { ThreadCount = 6 };
-    RaceThread *threads[ThreadCount];
+    QVarLengthArray<RaceThread *, 16> threads(ThreadCount);
     for (int i = 0; i < ThreadCount; ++i) {
         threads[i] = new RaceThread;
         threads[i]->setObject(object);
@@ -241,10 +248,10 @@ void tst_QObjectRace::destroyRace()
     if (QTestPrivate::isRunningArmOnX86())
         QSKIP("Test is too slow to run on emulator");
 
-    enum { ThreadCount = 10, ObjectCountPerThread = 2777,
-           ObjectCount = ThreadCount * ObjectCountPerThread };
+    constexpr int ObjectCountPerThread = 2777;
+    const int ObjectCount = ThreadCount * ObjectCountPerThread;
 
-    MyObject *objects[ObjectCount];
+    QVarLengthArray<MyObject *, ObjectCountPerThread * 10> objects(ObjectCount);
     for (int i = 0; i < ObjectCount; ++i)
         objects[i] = new MyObject;
 
@@ -261,10 +268,10 @@ void tst_QObjectRace::destroyRace()
                 objects[((i+5)*79) % ObjectCount],  Functor() );
     }
 
-    DestroyThread *threads[ThreadCount];
+    QVarLengthArray<DestroyThread *, 16> threads(ThreadCount);
     for (int i = 0; i < ThreadCount; ++i) {
         threads[i] = new DestroyThread;
-        threads[i]->setObjects(objects + i*ObjectCountPerThread, ObjectCountPerThread);
+        threads[i]->setObjects(objects.data() + i*ObjectCountPerThread, ObjectCountPerThread);
     }
 
     for (int i = 0; i < ThreadCount; ++i)
@@ -477,7 +484,7 @@ public:
 
 void tst_QObjectRace::disconnectRace()
 {
-    enum { ThreadCount = 20, TimeLimit = 3000 };
+    enum { TimeLimit = 3000 };
 
     QCOMPARE(countedStructObjectsCount.loadRelaxed(), 0u);
 
@@ -487,7 +494,7 @@ void tst_QObjectRace::disconnectRace()
         senderThread->start();
         sender->moveToThread(senderThread.data());
 
-        DisconnectRaceThread *threads[ThreadCount];
+        QVarLengthArray<DisconnectRaceThread *, 16> threads(ThreadCount);
         for (int i = 0; i < ThreadCount; ++i) {
             threads[i] = new DisconnectRaceThread(sender.data(), !(i % 10));
             threads[i]->start();
@@ -513,7 +520,7 @@ void tst_QObjectRace::disconnectRace()
         senderThread->start();
         sender->moveToThread(senderThread.data());
 
-        DeleteReceiverRaceReceiverThread *threads[ThreadCount];
+        QVarLengthArray<DeleteReceiverRaceReceiverThread *, 16> threads(ThreadCount);
         for (int i = 0; i < ThreadCount; ++i) {
             threads[i] = new DeleteReceiverRaceReceiverThread(sender.data());
             threads[i]->start();
