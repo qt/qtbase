@@ -16,6 +16,7 @@ static const char usage1[] =
 "Usage: ";
 static const char usage2[] =" [KEYWORD] [ARGUMENTS]\n\n"
 "Keywords: ls  FILES             list file information\n"
+"          find FILES            list file information recursively\n"
 "          stat FILES            print detailed file information\n"
 "          mv  SOURCE TARGET     rename files using QFile::rename\n"
 "          cp  SOURCE TARGET     copy files using QFile::copy\n"
@@ -69,7 +70,7 @@ static inline std::string permissions(const QFileInfo &fi)
     return result;
 }
 
-static int ls(int argCount, const char **args, bool recursive = false)
+static int ls(int argCount, const char **args, int depth = 0, int maxDepth = 1)
 {
     for (int i = 0 ; i < argCount; ++i) {
         const QFileInfo fi(QString::fromLocal8Bit(args[i]));
@@ -88,13 +89,13 @@ static int ls(int argCount, const char **args, bool recursive = false)
 
         std::cout << std::endl;
 
-        if (recursive && fi.isDir()) {
-            QDir dir(fi.fileName());
+        if (depth < maxDepth && fi.isDir()) {
+            QDir dir(fi.absoluteFilePath());
             const QStringList entries = dir.entryList(QDir::AllEntries | QDir::NoDotAndDotDot);
             for (const QString &s : entries) {
-                QByteArray encoded = QFile::encodeName(s);
+                QByteArray encoded = QFile::encodeName(dir.filePath(s));
                 const char *ptr = encoded.constData();
-                ls(1, &ptr, false);
+                ls(1, &ptr, depth + 1, maxDepth);
             }
         }
     }
@@ -185,7 +186,10 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
     Q_UNUSED(a);
     if (argc >= 3 && !qstrcmp(argv[1], "ls"))
-        return ls(argc -2, const_cast<const char **>(argv + 2), true);
+        return ls(argc -2, const_cast<const char **>(argv + 2));
+
+    if (argc >= 3 && !qstrcmp(argv[1], "find"))
+        return ls(argc -2, const_cast<const char **>(argv + 2), 0, std::numeric_limits<int>::max());
 
     if (argc >= 3 && !qstrcmp(argv[1], "stat"))
         return stat(argc -2, argv + 2);
