@@ -6,8 +6,8 @@
     <property name="QtBuild" value=""/>
   </properties>
   <testcase name="initTestCase" classname="tst_FailCleanup" time="@TEST_DURATION@"/>
-  <testcase name="aTestFunction" classname="tst_FailCleanup" time="@TEST_DURATION@"/>
-  <testcase name="cleanupTestCase" classname="tst_FailCleanup" time="@TEST_DURATION@">
-    <failure type="fail" message="&apos;false&apos; returned FALSE. (Fail inside cleanupTestCase)"/>
+  <testcase name="aTestFunction" classname="tst_FailCleanup" time="@TEST_DURATION@">
+    <failure type="fail" message="&apos;false&apos; returned FALSE. (Fail inside cleanup)"/>
   </testcase>
+  <testcase name="cleanupTestCase" classname="tst_FailCleanup" time="@TEST_DURATION@"/>
 </testsuite>

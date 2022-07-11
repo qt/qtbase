@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCase name="tst_SkipCleanupTestCase">
   <Environment>
     <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
     <QtBuild/>
@@ -8,13 +10,14 @@
     <Duration msecs="0"/>
   </TestFunction>
   <TestFunction name="aTestFunction">
-    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/failcleanup/tst_failcleanup.cpp" line="0">
-      <Description><![CDATA['false' returned FALSE. (Fail inside cleanup)]]></Description>
-    </Incident>
-    <Duration msecs="0"/>
-  </TestFunction>
-  <TestFunction name="cleanupTestCase">
     <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
   </TestFunction>
+  <TestFunction name="cleanupTestCase">
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/skipcleanuptestcase/tst_skipcleanuptestcase.cpp" line="0">
+      <Description><![CDATA[Skip inside cleanupTestCase.]]></Description>
+    </Incident>
+    <Duration msecs="0"/>
+  </TestFunction>
   <Duration msecs="0"/>
+</TestCase>

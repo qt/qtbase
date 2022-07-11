@@ -32,14 +32,15 @@ TESTS = ['assert', 'badxml', 'benchlibcallgrind', 'benchlibcounting',
          'benchlibwalltime', 'blacklisted', 'cmptest', 'commandlinedata',
          'counting', 'crashes', 'datatable', 'datetime', 'deleteLater',
          'deleteLater_noApp', 'differentexec', 'exceptionthrow', 'expectfail',
-         "extendedcompare", 'failcleanup', 'faildatatype', 'failfetchtype', 'failinit',
-         'failinitdata', 'fetchbogus', 'findtestdata', 'float', 'globaldata',
-         'longstring', 'maxwarnings', 'mouse', 'multiexec', 'pairdiagnostics', 'pass',
+         "extendedcompare", 'failcleanup', 'failcleanuptestcase',
+         'faildatatype', 'failfetchtype', 'failinit', 'failinitdata',
+         'fetchbogus', 'findtestdata', 'float', 'globaldata', 'longstring',
+         'maxwarnings', 'mouse', 'multiexec', 'pairdiagnostics', 'pass',
          'printdatatags', 'printdatatagswithglobaltags', 'qexecstringlist',
          'signaldumper', 'silent', 'singleskip', 'skip', 'skipcleanup',
-         'skipinit', 'skipinitdata', 'sleep', 'strcmp', 'subtest', 'testlib',
-         'tuplediagnostics', 'verbose1', 'verbose2', 'verifyexceptionthrown',
-         'warnings', 'watchdog', 'junit', 'keyboard']
+         'skipcleanuptestcase', 'skipinit', 'skipinitdata', 'sleep', 'strcmp',
+         'subtest', 'testlib', 'tuplediagnostics', 'verbose1', 'verbose2',
+         'verifyexceptionthrown', 'warnings', 'watchdog', 'junit', 'keyboard']
 
 
 class Fail (Exception): pass

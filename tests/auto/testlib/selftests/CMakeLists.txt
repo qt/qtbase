@@ -60,6 +60,7 @@ set(subprograms
     expectfail
     extendedcompare
     failcleanup
+    failcleanuptestcase
     faildatatype
     failfetchtype
     failinit
@@ -82,6 +83,7 @@ set(subprograms
     singleskip
     skip
     skipcleanup
+    skipcleanuptestcase
     skipinit
     skipinitdata
     sleep

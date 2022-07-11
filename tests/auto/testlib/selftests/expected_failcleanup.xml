@@ -10,13 +10,13 @@
     <Duration msecs="0"/>
   </TestFunction>
   <TestFunction name="aTestFunction">
-    <Incident type="pass" file="" line="0" />
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/failcleanup/tst_failcleanup.cpp" line="0">
+      <Description><![CDATA['false' returned FALSE. (Fail inside cleanup)]]></Description>
+    </Incident>
     <Duration msecs="0"/>
   </TestFunction>
   <TestFunction name="cleanupTestCase">
-    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/failcleanup/tst_failcleanup.cpp" line="0">
-      <Description><![CDATA['false' returned FALSE. (Fail inside cleanupTestCase)]]></Description>
-    </Incident>
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
   </TestFunction>
   <Duration msecs="0"/>
