@@ -704,7 +704,7 @@ void tst_QTextFormat::dataStreamCompatibility()
         QVERIFY(properties.contains(QTextFormat::FontFamilies));
         QVERIFY(!properties.contains(QTextFormat::OldFontLetterSpacingType));
         QVERIFY(!properties.contains(QTextFormat::OldFontStretch));
-        QVERIFY(!properties.contains(QTextFormat::FontFamily));
+        QVERIFY(!properties.contains(QTextFormat::OldFontFamily));
     }
 
     QByteArray memory;
@@ -735,7 +735,7 @@ void tst_QTextFormat::dataStreamCompatibility()
                 QVERIFY(properties.contains(QTextFormat::FontFamilies));
                 QVERIFY(!properties.contains(QTextFormat::OldFontLetterSpacingType));
                 QVERIFY(!properties.contains(QTextFormat::OldFontStretch));
-                QVERIFY(!properties.contains(QTextFormat::FontFamily));
+                QVERIFY(!properties.contains(QTextFormat::OldFontFamily));
             }
         }
 
@@ -755,7 +755,7 @@ void tst_QTextFormat::dataStreamCompatibility()
             QVERIFY(properties.contains(QTextFormat::FontFamilies));
             QVERIFY(!properties.contains(QTextFormat::OldFontLetterSpacingType));
             QVERIFY(!properties.contains(QTextFormat::OldFontStretch));
-            QVERIFY(!properties.contains(QTextFormat::FontFamily));
+            QVERIFY(!properties.contains(QTextFormat::OldFontFamily));
         }
     }
 
@@ -788,7 +788,7 @@ void tst_QTextFormat::dataStreamCompatibility()
                 QVERIFY(properties.contains(QTextFormat::FontFamilies));
                 QVERIFY(!properties.contains(QTextFormat::OldFontLetterSpacingType));
                 QVERIFY(!properties.contains(QTextFormat::OldFontStretch));
-                QVERIFY(!properties.contains(QTextFormat::FontFamily));
+                QVERIFY(!properties.contains(QTextFormat::OldFontFamily));
             }
         }
 
@@ -810,7 +810,7 @@ void tst_QTextFormat::dataStreamCompatibility()
             QVERIFY(!properties.contains(QTextFormat::FontFamilies));
             QVERIFY(properties.contains(QTextFormat::OldFontLetterSpacingType));
             QVERIFY(properties.contains(QTextFormat::OldFontStretch));
-            QVERIFY(properties.contains(QTextFormat::FontFamily));
+            QVERIFY(properties.contains(QTextFormat::OldFontFamily));
         }
     }
 
