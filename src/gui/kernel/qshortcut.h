@@ -206,7 +206,7 @@ public:
     bool autoRepeat() const;
 
 #if QT_DEPRECATED_SINCE(6,0)
-    Q_DECL_DEPRECATED int id() const;
+    QT_DEPRECATED_VERSION_6_0 int id() const;
 #endif
 
     void setWhatsThis(const QString &text);
@@ -217,6 +217,7 @@ public:
     QWidget *parentWidget() const;
 #else
     template<typename T = QWidget*>
+    QT_DEPRECATED_VERSION_X_6_0("Use parent() and qobject_cast instead")
     inline T parentWidget() const
     { return static_cast<T>(QObject::parent()); }
 #endif
