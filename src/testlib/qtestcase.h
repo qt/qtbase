@@ -159,23 +159,25 @@ inline void useVerifyThrowsException() {}
         QTest::qWait(0); \
     } \
     int qt_test_i = 0; \
-    for (; qt_test_i < timeoutValue && !(expr); qt_test_i += step) { \
+    for (; qt_test_i < timeoutValue && !QTest::currentTestFailed() \
+             && !(expr); qt_test_i += step) { \
         QTest::qWait(step); \
     }
 
-#define QTRY_TIMEOUT_DEBUG_IMPL(expr, timeoutValue, step)\
-    if (!(expr)) { \
+#define QTRY_TIMEOUT_DEBUG_IMPL(expr, timeoutValue, step) \
+    if (!QTest::currentTestFailed() && !(expr)) { \
         QTRY_LOOP_IMPL((expr), 2 * (timeoutValue), step);   \
         if (expr) { \
-            QFAIL(qPrintable(QTest::Internal::formatTryTimeoutDebugMessage(u8"" #expr, timeoutValue, timeoutValue + qt_test_i))); \
+            QFAIL(qPrintable(QTest::Internal::formatTryTimeoutDebugMessage(\
+                                 u8"" #expr, timeoutValue, timeoutValue + qt_test_i))); \
         } \
     }
 
 #define QTRY_IMPL(expr, timeout)\
     const int qt_test_step = timeout < 350 ? timeout / 7 + 1 : 50; \
     const int qt_test_timeoutValue = timeout; \
-    { QTRY_LOOP_IMPL(QTest::currentTestFailed() || (expr), qt_test_timeoutValue, qt_test_step); } \
-    QTRY_TIMEOUT_DEBUG_IMPL(QTest::currentTestFailed() || (expr), qt_test_timeoutValue, qt_test_step)
+    { QTRY_LOOP_IMPL((expr), qt_test_timeoutValue, qt_test_step); } \
+    QTRY_TIMEOUT_DEBUG_IMPL((expr), qt_test_timeoutValue, qt_test_step)
 
 // Will try to wait for the expression to become true while allowing event processing
 #define QTRY_VERIFY_WITH_TIMEOUT(expr, timeout) \
