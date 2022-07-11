@@ -1,0 +1,41 @@
+<Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QtBuild/>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="pass" file="" line="0" />
+    <Duration msecs="0"/>
+</TestFunction>
+<TestFunction name="fail">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/eventloop/tst_eventloop.cpp" line="0">
+    <Description><![CDATA[Failing test should still clean up]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/eventloop/tst_eventloop.cpp" line="0">
+    <Description><![CDATA['loop.timeout()' returned FALSE. (QTestEventLoop exited prematurely in cleanup())]]></Description>
+</Incident>
+    <Duration msecs="0"/>
+</TestFunction>
+<TestFunction name="skip">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/eventloop/tst_eventloop.cpp" line="0">
+    <Description><![CDATA['!std::exchange(m_inTestFunction, true)' returned FALSE. (Earlier test failed to clean up)]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/eventloop/tst_eventloop.cpp" line="0">
+    <Description><![CDATA['loop.timeout()' returned FALSE. (QTestEventLoop exited prematurely in cleanup())]]></Description>
+</Incident>
+    <Duration msecs="0"/>
+</TestFunction>
+<TestFunction name="pass">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/eventloop/tst_eventloop.cpp" line="0">
+    <Description><![CDATA['!std::exchange(m_inTestFunction, true)' returned FALSE. (Earlier test failed to clean up)]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/eventloop/tst_eventloop.cpp" line="0">
+    <Description><![CDATA['loop.timeout()' returned FALSE. (QTestEventLoop exited prematurely in cleanup())]]></Description>
+</Incident>
+    <Duration msecs="0"/>
+</TestFunction>
+<TestFunction name="cleanupTestCase">
+<Incident type="pass" file="" line="0" />
+    <Duration msecs="0"/>
+</TestFunction>
+<Duration msecs="0"/>

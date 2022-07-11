@@ -1,0 +1,18 @@
+********* Start testing of tst_EventLoop *********
+Config: Using QtTest library
+PASS   : tst_EventLoop::initTestCase()
+FAIL!  : tst_EventLoop::fail() Failing test should still clean up
+   Loc: [qtbase/tests/auto/testlib/selftests/eventloop/tst_eventloop.cpp(0)]
+FAIL!  : tst_EventLoop::fail() 'loop.timeout()' returned FALSE. (QTestEventLoop exited prematurely in cleanup())
+   Loc: [qtbase/tests/auto/testlib/selftests/eventloop/tst_eventloop.cpp(0)]
+FAIL!  : tst_EventLoop::skip() '!std::exchange(m_inTestFunction, true)' returned FALSE. (Earlier test failed to clean up)
+   Loc: [qtbase/tests/auto/testlib/selftests/eventloop/tst_eventloop.cpp(0)]
+FAIL!  : tst_EventLoop::skip() 'loop.timeout()' returned FALSE. (QTestEventLoop exited prematurely in cleanup())
+   Loc: [qtbase/tests/auto/testlib/selftests/eventloop/tst_eventloop.cpp(0)]
+FAIL!  : tst_EventLoop::pass() '!std::exchange(m_inTestFunction, true)' returned FALSE. (Earlier test failed to clean up)
+   Loc: [qtbase/tests/auto/testlib/selftests/eventloop/tst_eventloop.cpp(0)]
+FAIL!  : tst_EventLoop::pass() 'loop.timeout()' returned FALSE. (QTestEventLoop exited prematurely in cleanup())
+   Loc: [qtbase/tests/auto/testlib/selftests/eventloop/tst_eventloop.cpp(0)]
+PASS   : tst_EventLoop::cleanupTestCase()
+Totals: 2 passed, 6 failed, 0 skipped, 0 blacklisted, 0ms
+********* Finished testing of tst_EventLoop *********

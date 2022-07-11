@@ -1,0 +1,75 @@
+TAP version 13
+# tst_EventLoop
+ok 1 - initTestCase()
+not ok 2 - fail()
+  ---
+  # Failing test should still clean up
+  at: tst_EventLoop::fail() (qtbase/tests/auto/testlib/selftests/eventloop/tst_eventloop.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/eventloop/tst_eventloop.cpp
+  line: 0
+  ...
+not ok 3 - fail()
+  ---
+  type: QVERIFY
+  message: )
+  wanted: true (loop.timeout())
+  found: false (loop.timeout())
+  expected: true (loop.timeout())
+  actual: false (loop.timeout())
+  at: tst_EventLoop::fail() (qtbase/tests/auto/testlib/selftests/eventloop/tst_eventloop.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/eventloop/tst_eventloop.cpp
+  line: 0
+  ...
+not ok 4 - skip()
+  ---
+  type: QVERIFY
+  message: Earlier test failed to clean up
+  wanted: true (!std::exchange(m_inTestFunction, true))
+  found: false (!std::exchange(m_inTestFunction, true))
+  expected: true (!std::exchange(m_inTestFunction, true))
+  actual: false (!std::exchange(m_inTestFunction, true))
+  at: tst_EventLoop::skip() (qtbase/tests/auto/testlib/selftests/eventloop/tst_eventloop.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/eventloop/tst_eventloop.cpp
+  line: 0
+  ...
+not ok 5 - skip()
+  ---
+  type: QVERIFY
+  message: )
+  wanted: true (loop.timeout())
+  found: false (loop.timeout())
+  expected: true (loop.timeout())
+  actual: false (loop.timeout())
+  at: tst_EventLoop::skip() (qtbase/tests/auto/testlib/selftests/eventloop/tst_eventloop.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/eventloop/tst_eventloop.cpp
+  line: 0
+  ...
+not ok 6 - pass()
+  ---
+  type: QVERIFY
+  message: Earlier test failed to clean up
+  wanted: true (!std::exchange(m_inTestFunction, true))
+  found: false (!std::exchange(m_inTestFunction, true))
+  expected: true (!std::exchange(m_inTestFunction, true))
+  actual: false (!std::exchange(m_inTestFunction, true))
+  at: tst_EventLoop::pass() (qtbase/tests/auto/testlib/selftests/eventloop/tst_eventloop.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/eventloop/tst_eventloop.cpp
+  line: 0
+  ...
+not ok 7 - pass()
+  ---
+  type: QVERIFY
+  message: )
+  wanted: true (loop.timeout())
+  found: false (loop.timeout())
+  expected: true (loop.timeout())
+  actual: false (loop.timeout())
+  at: tst_EventLoop::pass() (qtbase/tests/auto/testlib/selftests/eventloop/tst_eventloop.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/eventloop/tst_eventloop.cpp
+  line: 0
+  ...
+ok 8 - cleanupTestCase()
+1..8
+# tests 8
+# pass 2
+# fail 6
