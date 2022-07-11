@@ -4127,10 +4127,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
     bool isMouse = false;
     switch (type) {
     case QEvent::Expose:
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-        dbg << "QExposeEvent(" << static_cast<const QExposeEvent *>(e)->region() << ')';
-QT_WARNING_POP
+        dbg << "QExposeEvent()";
         break;
     case QEvent::Paint:
         dbg << "QPaintEvent(" << static_cast<const QPaintEvent *>(e)->region() << ')';
