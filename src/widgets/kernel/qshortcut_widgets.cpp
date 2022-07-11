@@ -117,7 +117,7 @@ bool qWidgetShortcutContextMatcher(QObject *object, Qt::ShortcutContext context)
     auto w = qobject_cast<QWidget *>(object);
     if (!w) {
         if (auto s = qobject_cast<QShortcut *>(object))
-            w = s->parentWidget();
+            w = qobject_cast<QWidget *>(s->parent());
     }
 
     if (!w) {
