@@ -79,10 +79,10 @@ QWindowsPixmapCursorCacheKey::QWindowsPixmapCursorCacheKey(const QCursor &c)
     : bitmapCacheKey(c.pixmap().cacheKey()), maskCacheKey(0)
 {
     if (!bitmapCacheKey) {
-        Q_ASSERT(!c.bitmap(Qt::ReturnByValue).isNull());
-        Q_ASSERT(!c.mask(Qt::ReturnByValue).isNull());
-        bitmapCacheKey = c.bitmap(Qt::ReturnByValue).cacheKey();
-        maskCacheKey = c.mask(Qt::ReturnByValue).cacheKey();
+        Q_ASSERT(!c.bitmap().isNull());
+        Q_ASSERT(!c.mask().isNull());
+        bitmapCacheKey = c.bitmap().cacheKey();
+        maskCacheKey = c.mask().cacheKey();
     }
 }
 
@@ -167,9 +167,9 @@ static HCURSOR createBitmapCursor(const QImage &bbits, const QImage &mbits,
 // Create a cursor from image and mask of the format QImage::Format_Mono.
 static HCURSOR createBitmapCursor(const QCursor &cursor, qreal scaleFactor = 1)
 {
-    Q_ASSERT(cursor.shape() == Qt::BitmapCursor && !cursor.bitmap(Qt::ReturnByValue).isNull());
-    QImage bbits = cursor.bitmap(Qt::ReturnByValue).toImage();
-    QImage mbits = cursor.mask(Qt::ReturnByValue).toImage();
+    Q_ASSERT(cursor.shape() == Qt::BitmapCursor && !cursor.bitmap().isNull());
+    QImage bbits = cursor.bitmap().toImage();
+    QImage mbits = cursor.mask().toImage();
     scaleFactor /= bbits.devicePixelRatio();
     if (!qFuzzyCompare(scaleFactor, 1)) {
         const QSize scaledSize = (QSizeF(bbits.size()) * scaleFactor).toSize();

@@ -1228,15 +1228,15 @@ void tst_QDataStream::readQCursor(QDataStream *s)
     QCOMPARE(d5.hotSpot(), test.hotSpot());
 
     // Comparing non-null QBitmaps will fail. Upcast them first to pass.
-    QCOMPARE(d5.bitmap(Qt::ReturnByValue).isNull(), test.bitmap(Qt::ReturnByValue).isNull());
+    QCOMPARE(d5.bitmap().isNull(), test.bitmap().isNull());
     QCOMPARE(
-        static_cast<QPixmap>(d5.bitmap(Qt::ReturnByValue)),
-        static_cast<QPixmap>(test.bitmap(Qt::ReturnByValue))
+        static_cast<QPixmap>(d5.bitmap()),
+        static_cast<QPixmap>(test.bitmap())
     );
-    QCOMPARE(d5.mask(Qt::ReturnByValue).isNull(), test.mask(Qt::ReturnByValue).isNull());
+    QCOMPARE(d5.mask().isNull(), test.mask().isNull());
     QCOMPARE(
-        static_cast<QPixmap>(d5.mask(Qt::ReturnByValue)),
-        static_cast<QPixmap>(test.mask(Qt::ReturnByValue))
+        static_cast<QPixmap>(d5.mask()),
+        static_cast<QPixmap>(test.mask())
     );
 }
 #endif
