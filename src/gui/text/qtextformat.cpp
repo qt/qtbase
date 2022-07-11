@@ -461,7 +461,7 @@ Q_GUI_EXPORT QDataStream &operator<<(QDataStream &stream, const QTextFormat &fmt
 
         it = properties.find(QTextFormat::FontFamilies);
         if (it != properties.end()) {
-            properties[QTextFormat::FontFamily] = QVariant(it.value().toStringList().first());
+            properties[QTextFormat::OldFontFamily] = QVariant(it.value().toStringList().first());
             properties.erase(it);
         }
     }
@@ -489,7 +489,7 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
             key = QTextFormat::FontStretch;
         else if (key == QTextFormat::OldTextUnderlineColor)
             key = QTextFormat::TextUnderlineColor;
-        else if (key == QTextFormat::FontFamily)
+        else if (key == QTextFormat::OldFontFamily)
             key = QTextFormat::FontFamilies;
         fmt.d->insertProperty(key, it.value());
     }
@@ -611,6 +611,7 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
     Character properties
 
     \value FontFamily e{This property has been deprecated.} Use QTextFormat::FontFamilies instead.
+    \omitvalue OldFontFamily
     \value FontFamilies
     \value FontStyleName
     \value FontPointSize
