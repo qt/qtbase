@@ -4430,6 +4430,7 @@ QTouchEvent::QTouchEvent(QEvent::Type eventType,
     }
 }
 
+#if QT_DEPRECATED_SINCE(6, 0)
 /*!
     \deprecated [6.0] Use another constructor.
 
@@ -4449,6 +4450,7 @@ QTouchEvent::QTouchEvent(QEvent::Type eventType,
     for (QEventPoint &point : m_points)
         QMutableEventPoint::setDevice(point, device);
 }
+#endif // QT_DEPRECATED_SINCE(6, 0)
 
 Q_IMPL_EVENT_COMMON(QTouchEvent)
 

@@ -717,8 +717,10 @@ void QSurfaceFormat::setColorSpace(const QColorSpace &colorSpace)
     }
 }
 
+#if QT_DEPRECATED_SINCE(6, 0)
 /*!
     \overload
+    \deprecated [6.0] Use setColorSpace(QColorSpace) instead.
 
     Sets the colorspace to one of the predefined values.
 
@@ -737,6 +739,7 @@ void QSurfaceFormat::setColorSpace(ColorSpace colorSpace)
         break;
     }
 }
+#endif // QT_DEPRECATED_SINCE(6, 0)
 
 /*!
     \return the color space.
