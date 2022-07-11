@@ -179,6 +179,7 @@ QPointingDevice::QPointingDevice(QPointingDevicePrivate &d, QObject *parent)
 {
 }
 
+#if QT_DEPRECATED_SINCE(6, 0)
 /*!
     \internal
     \deprecated [6.0] Please use the constructor rather than setters.
@@ -229,6 +230,7 @@ void QPointingDevice::setMaximumTouchPoints(int c)
     Q_D(QPointingDevice);
     d->maximumTouchPoints = c;
 }
+#endif // QT_DEPRECATED_SINCE(6, 0)
 
 /*!
     Returns the pointer type.
