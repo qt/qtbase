@@ -1046,11 +1046,8 @@ void QWidgetWindow::handleExposeEvent(QExposeEvent *event)
         m_widget->setAttribute(Qt::WA_Mapped);
         for (QWidget *p = m_widget->parentWidget(); p && !p->testAttribute(Qt::WA_Mapped); p = p->parentWidget())
             p->setAttribute(Qt::WA_Mapped);
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-        if (!event->region().isNull())
-            wPriv->syncBackingStore(event->region());
-QT_WARNING_POP
+        if (!event->m_region.isNull())
+            wPriv->syncBackingStore(event->m_region);
     } else {
         m_widget->setAttribute(Qt::WA_Mapped, false);
     }
