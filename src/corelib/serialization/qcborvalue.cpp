@@ -1504,14 +1504,18 @@ static inline QCborContainerPrivate *createContainerFromCbor(QCborStreamReader &
     }
 
     reader.enterContainer();
-    if (reader.lastError() != QCborError::NoError)
+    if (reader.lastError() != QCborError::NoError) {
+        d->elements.clear();
         return d;
+    }
 
     while (reader.hasNext() && reader.lastError() == QCborError::NoError)
         d->decodeValueFromCbor(reader, remainingRecursionDepth - 1);
 
     if (reader.lastError() == QCborError::NoError)
         reader.leaveContainer();
+    else
+        d->elements.squeeze();
 
     return d;
 }
