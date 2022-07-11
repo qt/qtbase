@@ -56,6 +56,7 @@ set(subprograms
     deleteLater
     deleteLater_noApp
     differentexec
+    eventloop
     exceptionthrow
     expectfail
     extendedcompare
