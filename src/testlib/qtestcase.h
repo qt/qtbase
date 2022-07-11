@@ -167,7 +167,7 @@ inline void useVerifyThrowsException() {}
 
 #define QTRY_TIMEOUT_DEBUG_IMPL(expr, timeoutValue, step) \
     if (!QTest::currentTestFailed() && !(expr)) { \
-        QTRY_LOOP_IMPL((expr), 2 * (timeoutValue), step) \
+        QTRY_LOOP_IMPL(expr, 2 * (timeoutValue), step) \
         if (expr) { \
             QFAIL(qPrintable(QTest::Internal::formatTryTimeoutDebugMessage(\
                                  u8"" #expr, timeoutValue, timeoutValue + qt_test_i))); \
@@ -177,36 +177,36 @@ inline void useVerifyThrowsException() {}
 #define QTRY_IMPL(expr, timeout)\
     const int qt_test_step = timeout < 350 ? timeout / 7 + 1 : 50; \
     const int qt_test_timeoutValue = timeout; \
-    { QTRY_LOOP_IMPL((expr), qt_test_timeoutValue, qt_test_step) } \
-    QTRY_TIMEOUT_DEBUG_IMPL((expr), qt_test_timeoutValue, qt_test_step)
+    { QTRY_LOOP_IMPL(expr, qt_test_timeoutValue, qt_test_step) } \
+    QTRY_TIMEOUT_DEBUG_IMPL(expr, qt_test_timeoutValue, qt_test_step)
 // Ends with an if-block, so doesn't want a following semicolon.
 
 // Will try to wait for the expression to become true while allowing event processing
 #define QTRY_VERIFY_WITH_TIMEOUT(expr, timeout) \
 do { \
-    QTRY_IMPL((expr), timeout) \
+    QTRY_IMPL(expr, timeout) \
     QVERIFY(expr); \
 } while (false)
 
-#define QTRY_VERIFY(expr) QTRY_VERIFY_WITH_TIMEOUT((expr), 5000)
+#define QTRY_VERIFY(expr) QTRY_VERIFY_WITH_TIMEOUT(expr, 5000)
 
 // Will try to wait for the expression to become true while allowing event processing
 #define QTRY_VERIFY2_WITH_TIMEOUT(expr, messageExpression, timeout) \
 do { \
-    QTRY_IMPL((expr), timeout) \
+    QTRY_IMPL(expr, timeout) \
     QVERIFY2(expr, messageExpression); \
 } while (false)
 
-#define QTRY_VERIFY2(expr, messageExpression) QTRY_VERIFY2_WITH_TIMEOUT((expr), (messageExpression), 5000)
+#define QTRY_VERIFY2(expr, messageExpression) QTRY_VERIFY2_WITH_TIMEOUT(expr, messageExpression, 5000)
 
 // Will try to wait for the comparison to become successful while allowing event processing
 #define QTRY_COMPARE_WITH_TIMEOUT(expr, expected, timeout) \
 do { \
-    QTRY_IMPL(((expr) == (expected)), timeout) \
-    QCOMPARE((expr), expected); \
+    QTRY_IMPL((expr) == (expected), timeout) \
+    QCOMPARE(expr, expected); \
 } while (false)
 
-#define QTRY_COMPARE(expr, expected) QTRY_COMPARE_WITH_TIMEOUT((expr), expected, 5000)
+#define QTRY_COMPARE(expr, expected) QTRY_COMPARE_WITH_TIMEOUT(expr, expected, 5000)
 
 #define QTRY_COMPARE_OP_WITH_TIMEOUT_IMPL(left, right, op, opId, timeout) \
 do { \
