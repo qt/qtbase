@@ -19,6 +19,19 @@ QT_BEGIN_NAMESPACE
     \brief The QPlatformServices provides the backend for desktop-related functionality.
 */
 
+/*!
+    \enum QPlatformServices::Capability
+
+    Capabilities are used to determine a specific platform service's availability.
+
+    \value ColorPickingFromScreen The platform natively supports color picking from screen.
+    This capability indicates that the platform supports "opaque" color picking, where the
+    platform implements a complete user experience for color picking and outputs a color.
+    This is in contrast to the application implementing the color picking user experience
+    (taking care of showing a cross hair, instructing the platform integration to obtain
+    the color at a given pixel, etc.). The related service function is pickColor().
+ */
+
 QPlatformServices::QPlatformServices()
 { }
 
@@ -49,5 +62,16 @@ QByteArray QPlatformServices::desktopEnvironment() const
     return QByteArray("UNKNOWN");
 }
 
+QPlatformServiceColorPicker *QPlatformServices::colorPicker(QWindow *parent)
+{
+    Q_UNUSED(parent);
+    return nullptr;
+}
+
+bool QPlatformServices::hasCapability(Capability capability) const
+{
+    Q_UNUSED(capability)
+    return false;
+}
 
 QT_END_NAMESPACE

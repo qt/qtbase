@@ -14,15 +14,31 @@
 //
 
 #include <QtGui/qtguiglobal.h>
+#include <QtCore/qobject.h>
 
 QT_BEGIN_NAMESPACE
 
 class QUrl;
+class QWindow;
+
+class Q_GUI_EXPORT QPlatformServiceColorPicker : public QObject
+{
+    Q_OBJECT
+public:
+    using QObject::QObject;
+    virtual void pickColor() = 0;
+Q_SIGNALS:
+    void colorPicked(const QColor &color);
+};
 
 class Q_GUI_EXPORT QPlatformServices
 {
 public:
     Q_DISABLE_COPY_MOVE(QPlatformServices)
+
+    enum Capability {
+        ColorPicking,
+    };
 
     QPlatformServices();
     virtual ~QPlatformServices() { }
@@ -31,6 +47,10 @@ public:
     virtual bool openDocument(const QUrl &url);
 
     virtual QByteArray desktopEnvironment() const;
+
+    virtual bool hasCapability(Capability capability) const;
+
+    virtual QPlatformServiceColorPicker *colorPicker(QWindow *parent = nullptr);
 };
 
 QT_END_NAMESPACE

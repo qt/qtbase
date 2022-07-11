@@ -26,18 +26,21 @@ class QWindow;
 class Q_GUI_EXPORT QGenericUnixServices : public QPlatformServices
 {
 public:
-    QGenericUnixServices() {}
+    QGenericUnixServices();
 
     QByteArray desktopEnvironment() const override;
 
+    bool hasCapability(Capability capability) const override;
     bool openUrl(const QUrl &url) override;
     bool openDocument(const QUrl &url) override;
+    QPlatformServiceColorPicker *colorPicker(QWindow *parent = nullptr) override;
 
     virtual QString portalWindowIdentifier(QWindow *window);
 
 private:
     QString m_webBrowser;
     QString m_documentLauncher;
+    bool m_hasScreenshotPortalWithColorPicking = false;
 };
 
 QT_END_NAMESPACE

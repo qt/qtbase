@@ -257,7 +257,131 @@ static inline QDBusMessage xdgDesktopPortalSendEmail(const QUrl &url, const QStr
 
     return QDBusConnection::sessionBus().call(message);
 }
+
+namespace {
+struct XDGDesktopColor
+{
+    double r = 0;
+    double g = 0;
+    double b = 0;
+
+    QColor toQColor() const
+    {
+        constexpr auto rgbMax = 255;
+        return { static_cast<int>(r * rgbMax), static_cast<int>(g * rgbMax),
+                 static_cast<int>(b * rgbMax) };
+    }
+};
+
+const QDBusArgument &operator>>(const QDBusArgument &argument, XDGDesktopColor &myStruct)
+{
+    argument.beginStructure();
+    argument >> myStruct.r >> myStruct.g >> myStruct.b;
+    argument.endStructure();
+    return argument;
+}
+
+class XdgDesktopPortalColorPicker : public QPlatformServiceColorPicker
+{
+    Q_OBJECT
+public:
+    XdgDesktopPortalColorPicker(const QString &parentWindowId, QWindow *parent)
+        : QPlatformServiceColorPicker(parent), m_parentWindowId(parentWindowId)
+    {
+    }
+
+    void pickColor() override
+    {
+        // DBus signature:
+        // PickColor (IN   s      parent_window,
+        //            IN   a{sv}  options
+        //            OUT  o      handle)
+        // Options:
+        // handle_token (s) -  A string that will be used as the last element of the @handle.
+
+        QDBusMessage message = QDBusMessage::createMethodCall(
+                "org.freedesktop.portal.Desktop"_L1, "/org/freedesktop/portal/desktop"_L1,
+                "org.freedesktop.portal.Screenshot"_L1, "PickColor"_L1);
+        message << m_parentWindowId << QVariantMap();
+
+        QDBusPendingCall pendingCall = QDBusConnection::sessionBus().asyncCall(message);
+        auto watcher = new QDBusPendingCallWatcher(pendingCall, this);
+        connect(watcher, &QDBusPendingCallWatcher::finished, this,
+                [this](QDBusPendingCallWatcher *watcher) {
+                    watcher->deleteLater();
+                    QDBusPendingReply<QDBusObjectPath> reply = *watcher;
+                    if (reply.isError()) {
+                        qWarning("DBus call to pick color failed: %s",
+                                 qPrintable(reply.error().message()));
+                        Q_EMIT colorPicked({});
+                    } else {
+                        QDBusConnection::sessionBus().connect(
+                                "org.freedesktop.portal.Desktop"_L1, reply.value().path(),
+                                "org.freedesktop.portal.Request"_L1, "Response"_L1, this,
+                                // clang-format off
+                                SLOT(gotColorResponse(uint,QVariantMap))
+                                // clang-format on
+                        );
+                    }
+                });
+    }
+
+private Q_SLOTS:
+    void gotColorResponse(uint result, const QVariantMap &map)
+    {
+        if (result != 0)
+            return;
+        XDGDesktopColor color{};
+        map.value(u"color"_s).value<QDBusArgument>() >> color;
+        Q_EMIT colorPicked(color.toQColor());
+        deleteLater();
+    }
+
+private:
+    const QString m_parentWindowId;
+};
+} // namespace
+
 #endif // QT_CONFIG(dbus)
+
+QGenericUnixServices::QGenericUnixServices()
+{
+#if QT_CONFIG(dbus)
+    QDBusMessage message = QDBusMessage::createMethodCall(
+            "org.freedesktop.portal.Desktop"_L1, "/org/freedesktop/portal/desktop"_L1,
+            "org.freedesktop.DBus.Properties"_L1, "Get"_L1);
+    message << "org.freedesktop.portal.Screenshot"_L1
+            << "version"_L1;
+
+    QDBusPendingCall pendingCall = QDBusConnection::sessionBus().asyncCall(message);
+    auto watcher = new QDBusPendingCallWatcher(pendingCall);
+    QObject::connect(watcher, &QDBusPendingCallWatcher::finished, watcher,
+                     [this](QDBusPendingCallWatcher *watcher) {
+                         watcher->deleteLater();
+                         QDBusPendingReply<QVariant> reply = *watcher;
+                         if (!reply.isError() && reply.value().toUInt() >= 2)
+                             m_hasScreenshotPortalWithColorPicking = true;
+                     });
+
+#endif
+}
+
+QPlatformServiceColorPicker *QGenericUnixServices::colorPicker(QWindow *parent)
+{
+#if QT_CONFIG(dbus)
+    // Make double sure that we are in a wayland environment. In particular check
+    // WAYLAND_DISPLAY so also XWayland apps benefit from portal-based color picking.
+    // Outside wayland we'll rather rely on other means than the XDG desktop portal.
+    if (!qEnvironmentVariableIsEmpty("WAYLAND_DISPLAY")
+        || QGuiApplication::platformName().startsWith("wayland"_L1)) {
+        return new XdgDesktopPortalColorPicker(portalWindowIdentifier(parent), parent);
+    }
+    return nullptr;
+#else
+    Q_UNUSED(parent);
+    return nullptr;
+#endif
+}
 
 QByteArray QGenericUnixServices::desktopEnvironment() const
 {
@@ -322,6 +446,8 @@ bool QGenericUnixServices::openDocument(const QUrl &url)
 }
 
 #else
+QGenericUnixServices::QGenericUnixServices() = default;
+
 QByteArray QGenericUnixServices::desktopEnvironment() const
 {
     return QByteArrayLiteral("UNKNOWN");
@@ -341,6 +467,12 @@ bool QGenericUnixServices::openDocument(const QUrl &url)
     return false;
 }
 
+QPlatformServiceColorPicker *QGenericUnixServices::colorPicker(QWindow *parent)
+{
+    Q_UNUSED(parent);
+    return nullptr;
+}
+
 #endif // QT_NO_MULTIPROCESS
 
 QString QGenericUnixServices::portalWindowIdentifier(QWindow *window)
@@ -351,4 +483,15 @@ QString QGenericUnixServices::portalWindowIdentifier(QWindow *window)
     return QString();
 }
 
+bool QGenericUnixServices::hasCapability(Capability capability) const
+{
+    switch (capability) {
+    case Capability::ColorPicking:
+        return m_hasScreenshotPortalWithColorPicking;
+    }
+    return false;
+}
+
 QT_END_NAMESPACE
+
+#include "qgenericunixservices.moc"
