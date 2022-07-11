@@ -520,6 +520,7 @@ public:
 
 protected:
     QRegion m_region;
+    friend class QWidgetWindow;
 };
 
 class Q_GUI_EXPORT QPlatformSurfaceEvent : public QEvent
