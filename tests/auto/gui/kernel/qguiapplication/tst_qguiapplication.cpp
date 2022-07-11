@@ -544,26 +544,35 @@ void tst_QGuiApplication::palette()
     // The default application palette is not resolved
     QVERIFY(!QGuiApplication::palette().resolveMask());
 
+    // TODO: add event processing instead of the signal
+#if QT_DEPRECATED_SINCE(6, 0)
     QSignalSpy signalSpy(&app, SIGNAL(paletteChanged(QPalette)));
+#endif
 
     QPalette oldPalette = QGuiApplication::palette();
     QPalette newPalette = QPalette(Qt::red);
 
     QGuiApplication::setPalette(newPalette);
     QVERIFY(palettesMatch(QGuiApplication::palette(), newPalette));
+#if QT_DEPRECATED_SINCE(6, 0)
     QCOMPARE(signalSpy.count(), 1);
+#endif
     QVERIFY(palettesMatch(signalSpy.at(0).at(0).value<QPalette>(), newPalette));
     QCOMPARE(QGuiApplication::palette(), QPalette());
 
     QGuiApplication::setPalette(oldPalette);
     QVERIFY(palettesMatch(QGuiApplication::palette(), oldPalette));
+#if QT_DEPRECATED_SINCE(6, 0)
     QCOMPARE(signalSpy.count(), 2);
+#endif
     QVERIFY(palettesMatch(signalSpy.at(1).at(0).value<QPalette>(), oldPalette));
     QCOMPARE(QGuiApplication::palette(), QPalette());
 
     QGuiApplication::setPalette(oldPalette);
     QVERIFY(palettesMatch(QGuiApplication::palette(), oldPalette));
+#if QT_DEPRECATED_SINCE(6, 0)
     QCOMPARE(signalSpy.count(), 2);
+#endif
     QCOMPARE(QGuiApplication::palette(), QPalette());
 }
 

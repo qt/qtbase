@@ -3416,6 +3416,7 @@ QPalette QGuiApplicationPrivate::basePalette() const
 
 void QGuiApplicationPrivate::handlePaletteChanged(const char *className)
 {
+#if QT_DEPRECATED_SINCE(6, 0)
     if (!className) {
         Q_ASSERT(app_pal);
 QT_WARNING_PUSH
@@ -3423,6 +3424,9 @@ QT_WARNING_DISABLE_DEPRECATED
         emit qGuiApp->paletteChanged(*QGuiApplicationPrivate::app_pal);
 QT_WARNING_POP
     }
+#else
+    Q_UNUSED(className);
+#endif // QT_DEPRECATED_SINCE(6, 0)
 
     if (is_app_running && !is_app_closing) {
         QEvent event(QEvent::ApplicationPaletteChange);
@@ -3481,10 +3485,14 @@ void QGuiApplication::setFont(const QFont &font)
     if (emitChange && qGuiApp) {
         auto font = *QGuiApplicationPrivate::app_font;
         locker.unlock();
+#if QT_DEPRECATED_SINCE(6, 0)
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
         emit qGuiApp->fontChanged(font);
 QT_WARNING_POP
+#else
+        Q_UNUSED(font);
+#endif // QT_DEPRECATED_SINCE(6, 0)
         QEvent event(QEvent::ApplicationFontChange);
         QGuiApplication::sendEvent(qGuiApp, &event);
     }
