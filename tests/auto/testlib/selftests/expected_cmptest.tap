@@ -516,7 +516,23 @@ not ok 63 - compareQVector4D()
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 64 - verify()
+not ok 64 - tryCompare()
+  ---
+  type: QCOMPARE
+  message: Compared values are not the same
+  wanted: DeferredFlag(false) (DeferredFlag())
+  found: DeferredFlag(true) (c)
+  expected: DeferredFlag(false) (DeferredFlag())
+  actual: DeferredFlag(true) (c)
+  at: tst_Cmptest::tryCompare() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
+  line: 0
+  extensions:
+    messages:
+    - severity: info
+      message: Should now time out and fail
+  ...
+not ok 65 - verify()
   ---
   type: QVERIFY
   message: Verification failed
@@ -528,7 +544,7 @@ not ok 64 - verify()
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 65 - verify2()
+not ok 66 - verify2()
   ---
   type: QVERIFY
   message: 42
@@ -540,33 +556,37 @@ not ok 65 - verify2()
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-not ok 66 - tryVerify()
+not ok 67 - tryVerify()
   ---
   type: QVERIFY
   message: Verification failed
-  wanted: true (opaqueFunc() < 2)
-  found: false (opaqueFunc() < 2)
-  expected: true (opaqueFunc() < 2)
-  actual: false (opaqueFunc() < 2)
+  wanted: true (!c)
+  found: false (!c)
+  expected: true (!c)
+  actual: false (!c)
   at: tst_Cmptest::tryVerify() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
+  extensions:
+    messages:
+    - severity: info
+      message: Should now time out and fail
   ...
-not ok 67 - tryVerify2()
+not ok 68 - tryVerify2()
   ---
   type: QVERIFY
-  message: 42
-  wanted: true (opaqueFunc() < 2)
-  found: false (opaqueFunc() < 2)
-  expected: true (opaqueFunc() < 2)
-  actual: false (opaqueFunc() < 2)
+  message: Should time out and fail
+  wanted: true (!c)
+  found: false (!c)
+  expected: true (!c)
+  actual: false (!c)
   at: tst_Cmptest::tryVerify2() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0
   ...
-ok 68 - verifyExplicitOperatorBool()
-ok 69 - cleanupTestCase()
-1..69
-# tests 69
+ok 69 - verifyExplicitOperatorBool()
+ok 70 - cleanupTestCase()
+1..70
+# tests 70
 # pass 21
-# fail 48
+# fail 49

@@ -377,6 +377,17 @@
     </Incident>
     <Duration msecs="0"/>
   </TestFunction>
+  <TestFunction name="tryCompare">
+  <Message type="qinfo" file="" line="0">
+    <Description><![CDATA[Should now time out and fail]]></Description>
+  </Message>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+      <Description><![CDATA[Compared values are not the same
+   Actual   (c)             : DeferredFlag(true)
+   Expected (DeferredFlag()): DeferredFlag(false)]]></Description>
+    </Incident>
+    <Duration msecs="0"/>
+  </TestFunction>
   <TestFunction name="verify">
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
       <Description><![CDATA['opaqueFunc() < 2' returned FALSE. ()]]></Description>
@@ -390,14 +401,17 @@
     <Duration msecs="0"/>
   </TestFunction>
   <TestFunction name="tryVerify">
+  <Message type="qinfo" file="" line="0">
+    <Description><![CDATA[Should now time out and fail]]></Description>
+  </Message>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
-      <Description><![CDATA['opaqueFunc() < 2' returned FALSE. ()]]></Description>
+      <Description><![CDATA['!c' returned FALSE. ()]]></Description>
     </Incident>
     <Duration msecs="0"/>
   </TestFunction>
   <TestFunction name="tryVerify2">
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
-      <Description><![CDATA['opaqueFunc() < 2' returned FALSE. (42)]]></Description>
+      <Description><![CDATA['!c' returned FALSE. (Should time out and fail)]]></Description>
     </Incident>
     <Duration msecs="0"/>
   </TestFunction>
