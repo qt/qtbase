@@ -13,6 +13,25 @@ get_filename_component(QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX
                        ${CMAKE_CURRENT_LIST_DIR}/../@qt_path_from_cmake_config_dir_to_prefix@
                        ABSOLUTE)
 
+# Stores in out_var the new install/staging prefix for this build.
+#
+# new_prefix: the new prefix for this repository
+# orig_prefix: the prefix that was used when qtbase was configured
+#
+# On Windows hosts, this function makes sure that we use exactly the original prefix if it points to
+# the same directory as the new one. This is needed for the case where the original prefix is passed
+# without drive letter to support installing with DESTDIR set.
+function(qt_internal_new_prefix out_var new_prefix orig_prefix)
+    if(CMAKE_HOST_WIN32)
+        get_filename_component(real_new_prefix "${new_prefix}" REALPATH)
+        get_filename_component(real_orig_prefix "${orig_prefix}" REALPATH)
+        if(real_new_prefix STREQUAL real_orig_prefix)
+            set(new_prefix "${orig_prefix}")
+        endif()
+    endif()
+    set(${out_var} "${new_prefix}" PARENT_SCOPE)
+endfunction()
+
 # If no explicit CMAKE_INSTALL_PREFIX is provided, force set the original Qt installation prefix,
 # so that further modules / repositories are  installed into same original location.
 # This means by default when configuring qtsvg / qtdeclarative, they will be installed the regular
@@ -25,32 +44,26 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND
         NOT QT_BUILD_INTERNALS_NO_FORCE_SET_INSTALL_PREFIX
         AND NOT QT_SUPERBUILD)
     set(qtbi_orig_prefix "@CMAKE_INSTALL_PREFIX@")
-    set(qtbi_new_prefix "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
     set(qtbi_orig_staging_prefix "@CMAKE_STAGING_PREFIX@")
-    if(CMAKE_HOST_WIN32)
-        # Make sure we use exactly the original prefix if it points to the same directory as the new
-        # one. This is needed for the case where the original prefix is passed without drive letter
-        # to support installing with DESTDIR set.
-        get_filename_component(qtbi_real_orig_prefix "${qtbi_orig_prefix}" REALPATH)
-        get_filename_component(qtbi_real_new_prefix "${qtbi_new_prefix}" REALPATH)
-        if(qtbi_real_orig_prefix STREQUAL qtbi_real_new_prefix)
-            set(qtbi_new_prefix "${qtbi_orig_prefix}")
-        endif()
-    endif()
+    qt_internal_new_prefix(qtbi_new_prefix
+        "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}"
+        "${qtbi_orig_prefix}")
     if(NOT qtbi_orig_staging_prefix STREQUAL ""
             AND "${CMAKE_STAGING_PREFIX}" STREQUAL ""
             AND NOT QT_BUILD_INTERNALS_NO_FORCE_SET_STAGING_PREFIX)
-        set(CMAKE_STAGING_PREFIX "${qtbi_new_prefix}" CACHE PATH
+        qt_internal_new_prefix(qtbi_new_staging_prefix
+            "${qtbi_new_prefix}"
+            "${qtbi_orig_staging_prefix}")
+        set(CMAKE_STAGING_PREFIX "${qtbi_new_staging_prefix}" CACHE PATH
             "Staging path prefix, prepended onto install directories on the host machine." FORCE)
         set(qtbi_new_prefix "${qtbi_orig_prefix}")
     endif()
     set(CMAKE_INSTALL_PREFIX "${qtbi_new_prefix}" CACHE PATH
         "Install path prefix, prepended onto install directories." FORCE)
     unset(qtbi_orig_prefix)
-    unset(qtbi_real_orig_prefix)
     unset(qtbi_new_prefix)
-    unset(qtbi_real_new_prefix)
     unset(qtbi_orig_staging_prefix)
+    unset(qtbi_new_staging_prefix)
 endif()
 
 # Propagate developer builds to other modules via BuildInternals package.
