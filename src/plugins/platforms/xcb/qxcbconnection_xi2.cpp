@@ -685,7 +685,7 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
 {
     auto *xiEvent = reinterpret_cast<qt_xcb_input_device_event_t *>(event);
     setTime(xiEvent->time);
-    if (m_xiSlavePointerIds.contains(xiEvent->deviceid)) {
+    if (m_xiSlavePointerIds.contains(xiEvent->deviceid) && xiEvent->event_type != XCB_INPUT_PROPERTY) {
         if (!m_duringSystemMoveResize)
             return;
         if (xiEvent->event == XCB_NONE)
@@ -1546,11 +1546,10 @@ bool QXcbConnection::xi2HandleTabletEvent(const void *event, TabletData *tabletD
                         }
                         // TODO maybe have a hash of tabletData->deviceId to device data so we can
                         // look up the tablet name here, and distinguish multiple tablets
-                        if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
-                            qCDebug(lcQpaXInputDevices, "XI2 proximity change on tablet %d %s (USB %x): last tool: %x id %x current tool: %x id %x %s",
-                                    tabletData->deviceId, qPrintable(tabletData->name), ptr[_WACSER_USB_ID],
-                                    ptr[_WACSER_LAST_TOOL_SERIAL], ptr[_WACSER_LAST_TOOL_ID],
-                                    ptr[_WACSER_TOOL_SERIAL], ptr[_WACSER_TOOL_ID], toolName(tabletData->tool));
+                        qCDebug(lcQpaXInputDevices, "XI2 proximity change on tablet %d %s (USB %x): last tool: %x id %x current tool: %x id %x %s",
+                                tabletData->deviceId, qPrintable(tabletData->name), ptr[_WACSER_USB_ID],
+                                ptr[_WACSER_LAST_TOOL_SERIAL], ptr[_WACSER_LAST_TOOL_ID],
+                                ptr[_WACSER_TOOL_SERIAL], ptr[_WACSER_TOOL_ID], toolName(tabletData->tool));
                     }
                 }
             }
