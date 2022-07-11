@@ -1,12 +1,12 @@
 #####################################################################
-## failcleanup Binary:
+## failcleanuptestcase Binary:
 #####################################################################
 
-qt_internal_add_executable(failcleanup
+qt_internal_add_executable(failcleanuptestcase
     NO_INSTALL
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     SOURCES
-        tst_failcleanup.cpp
+        tst_failcleanuptestcase.cpp
     PUBLIC_LIBRARIES
         Qt::Test
 )
@@ -14,4 +14,4 @@ qt_internal_add_executable(failcleanup
 ## Scopes:
 #####################################################################
 
-qt_internal_apply_testlib_coverage_options(failcleanup)
+qt_internal_apply_testlib_coverage_options(failcleanuptestcase)

@@ -6,8 +6,8 @@
     <property name="QtBuild" value=""/>
   </properties>
   <testcase name="initTestCase" classname="tst_SkipCleanup" time="@TEST_DURATION@"/>
-  <testcase name="aTestFunction" classname="tst_SkipCleanup" time="@TEST_DURATION@"/>
-  <testcase name="cleanupTestCase" classname="tst_SkipCleanup" time="@TEST_DURATION@">
-    <skipped message="Skip inside cleanupTestCase."/>
+  <testcase name="aTestFunction" classname="tst_SkipCleanup" time="@TEST_DURATION@">
+    <skipped message="Skip inside cleanup."/>
   </testcase>
+  <testcase name="cleanupTestCase" classname="tst_SkipCleanup" time="@TEST_DURATION@"/>
 </testsuite>

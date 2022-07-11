@@ -8,7 +8,7 @@ class tst_SkipCleanup: public QObject
 Q_OBJECT
 private slots:
     void aTestFunction() const;
-    void cleanupTestCase() const;
+    void cleanup() const;
 };
 
 void tst_SkipCleanup::aTestFunction() const
@@ -16,9 +16,9 @@ void tst_SkipCleanup::aTestFunction() const
     QVERIFY(true);
 }
 
-void tst_SkipCleanup::cleanupTestCase() const
+void tst_SkipCleanup::cleanup() const
 {
-    QSKIP("Skip inside cleanupTestCase.");
+    QSKIP("Skip inside cleanup.");
 }
 
 QTEST_APPLESS_MAIN(tst_SkipCleanup)

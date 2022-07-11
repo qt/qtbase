@@ -1,8 +1,8 @@
 ********* Start testing of tst_FailCleanup *********
 Config: Using QtTest library
 PASS   : tst_FailCleanup::initTestCase()
-PASS   : tst_FailCleanup::aTestFunction()
-FAIL!  : tst_FailCleanup::cleanupTestCase() 'false' returned FALSE. (Fail inside cleanupTestCase)
+FAIL!  : tst_FailCleanup::aTestFunction() 'false' returned FALSE. (Fail inside cleanup)
    Loc: [qtbase/tests/auto/testlib/selftests/failcleanup/tst_failcleanup.cpp(0)]
+PASS   : tst_FailCleanup::cleanupTestCase()
 Totals: 2 passed, 1 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_FailCleanup *********

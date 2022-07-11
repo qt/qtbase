@@ -1,19 +1,19 @@
 TAP version 13
 # tst_FailCleanup
 ok 1 - initTestCase()
-ok 2 - aTestFunction()
-not ok 3 - cleanupTestCase()
+not ok 2 - aTestFunction()
   ---
   type: QVERIFY
-  message: Fail inside cleanupTestCase
+  message: Fail inside cleanup
   wanted: true (false)
   found: false (false)
   expected: true (false)
   actual: false (false)
-  at: tst_FailCleanup::cleanupTestCase() (qtbase/tests/auto/testlib/selftests/failcleanup/tst_failcleanup.cpp:0)
+  at: tst_FailCleanup::aTestFunction() (qtbase/tests/auto/testlib/selftests/failcleanup/tst_failcleanup.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/failcleanup/tst_failcleanup.cpp
   line: 0
   ...
+ok 3 - cleanupTestCase()
 1..3
 # tests 3
 # pass 2

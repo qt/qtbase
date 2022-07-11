@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite name="tst_FailCleanupTestCase" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="3" failures="1" errors="0" skipped="0" time="@TEST_DURATION@">
+  <properties>
+    <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtBuild" value=""/>
+  </properties>
+  <testcase name="initTestCase" classname="tst_FailCleanupTestCase" time="@TEST_DURATION@"/>
+  <testcase name="aTestFunction" classname="tst_FailCleanupTestCase" time="@TEST_DURATION@"/>
+  <testcase name="cleanupTestCase" classname="tst_FailCleanupTestCase" time="@TEST_DURATION@">
+    <failure type="fail" message="&apos;false&apos; returned FALSE. (Fail inside cleanupTestCase)"/>
+  </testcase>
+</testsuite>

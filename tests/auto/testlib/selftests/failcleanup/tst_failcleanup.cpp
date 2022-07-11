@@ -8,7 +8,7 @@ class tst_FailCleanup: public QObject
 Q_OBJECT
 private slots:
     void aTestFunction() const;
-    void cleanupTestCase() const;
+    void cleanup() const;
 };
 
 void tst_FailCleanup::aTestFunction() const
@@ -16,9 +16,9 @@ void tst_FailCleanup::aTestFunction() const
     QVERIFY(true);
 }
 
-void tst_FailCleanup::cleanupTestCase() const
+void tst_FailCleanup::cleanup() const
 {
-    QVERIFY2(false, "Fail inside cleanupTestCase");
+    QVERIFY2(false, "Fail inside cleanup");
 }
 
 QTEST_APPLESS_MAIN(tst_FailCleanup)
