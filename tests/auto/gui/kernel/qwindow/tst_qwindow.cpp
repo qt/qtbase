@@ -287,13 +287,6 @@ public:
         m_received[event->type()]++;
         m_order << event->type();
         switch (event->type()) {
-        case QEvent::Expose:
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-            m_exposeRegion = static_cast<QExposeEvent *>(event)->region();
-QT_WARNING_POP
-            break;
-
         case QEvent::PlatformSurface:
             m_surfaceventType = static_cast<QPlatformSurfaceEvent *>(event)->surfaceEventType();
             break;
@@ -323,11 +316,6 @@ QT_WARNING_POP
         return m_order.indexOf(type);
     }
 
-    QRegion exposeRegion() const
-    {
-        return m_exposeRegion;
-    }
-
     QPlatformSurfaceEvent::SurfaceEventType surfaceEventType() const
     {
         return m_surfaceventType;
@@ -339,7 +327,6 @@ QT_WARNING_POP
 private:
     QHash<QEvent::Type, int> m_received;
     QList<QEvent::Type> m_order;
-    QRegion m_exposeRegion;
     QPlatformSurfaceEvent::SurfaceEventType m_surfaceventType;
 };
 
@@ -796,16 +783,6 @@ void tst_QWindow::isExposed()
 
     QTRY_VERIFY(window.received(QEvent::Expose) > 0);
     QTRY_VERIFY(window.isExposed());
-
-#ifndef Q_OS_WIN
-    // This is a top-level window so assuming it is completely exposed, the
-    // expose region must be (0, 0), (width, height). If this is not the case,
-    // the platform plugin is sending expose events with a region in an
-    // incorrect coordinate system.
-    QRect r = window.exposeRegion().boundingRect();
-    r = QRect(window.mapToGlobal(r.topLeft()), r.size());
-    QCOMPARE(r, window.geometry());
-#endif
 
     window.hide();
 

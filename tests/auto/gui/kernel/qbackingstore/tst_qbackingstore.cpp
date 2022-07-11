@@ -239,7 +239,7 @@ public:
         backingStore.resize(size());
     }
 
-    void exposeEvent(QExposeEvent *event) override
+    void paintEvent(QPaintEvent *event) override
     {
         QRect rect(QPoint(), size());
 
@@ -251,10 +251,7 @@ public:
 
         backingStore.endPaint();
 
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
         backingStore.flush(event->region().boundingRect());
-QT_WARNING_POP
     }
 
 private:
