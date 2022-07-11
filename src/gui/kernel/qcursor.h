@@ -98,7 +98,9 @@ public:
     void setShape(Qt::CursorShape newShape);
 
 #if QT_DEPRECATED_SINCE(6, 0)
+    QT_DEPRECATED_VERSION_X_6_0("Use the overload without argument instead.")
     QBitmap bitmap(Qt::ReturnByValueConstant) const { return bitmap(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use the overload without argument instead.")
     QBitmap mask(Qt::ReturnByValueConstant) const { return mask(); }
 #endif // QT_DEPRECATED_SINCE(6, 0)
     QBitmap bitmap() const;

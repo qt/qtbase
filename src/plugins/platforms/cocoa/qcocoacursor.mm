@@ -274,7 +274,7 @@ NSCursor *QCocoaCursor::createCursorData(QCursor *cursor)
     switch (cursor->shape()) {
     case Qt::BitmapCursor: {
         if (cursor->pixmap().isNull())
-            return createCursorFromBitmap(cursor->bitmap(Qt::ReturnByValue), cursor->mask(Qt::ReturnByValue), hotspot);
+            return createCursorFromBitmap(cursor->bitmap(), cursor->mask(), hotspot);
         else
             return createCursorFromPixmap(cursor->pixmap(), hotspot);
         break; }
