@@ -39,13 +39,16 @@ private slots:
 //! [0]
         QPainter painter;
         painter.begin(&printer);
-        double xscale = printer.pageRect().width() / double(myWidget->width());
-        double yscale = printer.pageRect().height() / double(myWidget->height());
+        const auto pageLayout = printer.pageLayout();
+        const auto pageRect = pageLayout.paintRectPixels(printer.resolution());
+        const auto paperRect = pageLayout.fullRectPixels(printer.resolution());
+        double xscale = pageRect.width() / double(myWidget->width());
+        double yscale = pageRect.height() / double(myWidget->height());
         double scale = qMin(xscale, yscale);
-        painter.translate(printer.paperRect().x() + printer.pageRect().width()/2,
-                           printer.paperRect().y() + printer.pageRect().height()/2);
+        painter.translate(pageRect.x() + paperRect.width() / 2.,
+                          pageRect.y() + paperRect.height() / 2.);
         painter.scale(scale, scale);
-        painter.translate(-width()/2, -height()/2);
+        painter.translate(-myWidget->width() / 2., -myWidget->height() / 2.);
 
         myWidget->render(&painter);
 //! [0]
@@ -62,9 +65,8 @@ private slots:
         dialog.setWindowTitle(tr("Print Document"));
         if (editor->textCursor().hasSelection())
             dialog.addEnabledOption(QAbstractPrintDialog::PrintSelection);
-        if (dialog.exec() != QDialog::Accepted) {
+        if (dialog.exec() != QDialog::Accepted)
             return;
-        }
 //! [1]
         editor->print(&printer);
     #endif
