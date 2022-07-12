@@ -503,7 +503,7 @@ function(qt_internal_add_module target)
             COMMAND ${CMAKE_COMMAND} -E touch "${timestamp_file}"
             DEPENDS "$<TARGET_PROPERTY:${target},_qt_module_timestamp_dependencies>"
             VERBATIM)
-        add_custom_target(${target}_timestamp ALL DEPENDS "${timestamp_file}")
+        add_custom_target(${target}_pri_dep_timestamp ALL DEPENDS "${timestamp_file}")
     endif()
 
     set(defines_for_extend_target "")
