@@ -360,6 +360,14 @@ bool QOpenGLContext::create()
     return isValid();
 }
 
+QOpenGLContextPrivate::~QOpenGLContextPrivate()
+{
+    //do not delete the QOpenGLContext handle here as it is deleted in
+    //QWidgetPrivate::deleteTLSysExtra()
+
+    delete versionFunctions;
+}
+
 void QOpenGLContextPrivate::adopt(QPlatformOpenGLContext *context)
 {
     Q_Q(QOpenGLContext);
@@ -995,6 +1003,9 @@ QOpenGLContextGroup *QOpenGLContextGroup::currentContextGroup()
     return current ? current->shareGroup() : nullptr;
 }
 
+QOpenGLContextGroupPrivate::~QOpenGLContextGroupPrivate()
+    = default;
+
 void QOpenGLContextGroupPrivate::addContext(QOpenGLContext *ctx)
 {
     const auto locker = qt_scoped_lock(m_mutex);
@@ -1136,6 +1147,10 @@ void QOpenGLSharedResource::free()
     \inmodule QtGui
 
 */
+
+QOpenGLSharedResourceGuard::~QOpenGLSharedResourceGuard()
+    = default;
+
 void QOpenGLSharedResourceGuard::freeResource(QOpenGLContext *context)
 {
     if (m_id) {
@@ -1234,6 +1249,9 @@ void QOpenGLMultiGroupSharedResource::cleanup(QOpenGLContextGroup *group, QOpenG
     Q_ASSERT(m_groups.contains(group));
     m_groups.removeOne(group);
 }
+
+QOpenGLContextVersionFunctionHelper::~QOpenGLContextVersionFunctionHelper()
+    = default;
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, const QOpenGLContext *ctx)
