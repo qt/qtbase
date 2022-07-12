@@ -2912,13 +2912,13 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
 
         case QEventPoint::State::Released:
             if (Q_UNLIKELY(!window.isNull() && window != mut.window()))
-                qCWarning(lcPtrDispatch) << "delivering touch release to same window" << mut.window() << "not" << window.data();
+                qCDebug(lcPtrDispatch) << "delivering touch release to same window" << mut.window() << "not" << window.data();
             window = mut.window();
             break;
 
         default: // update or stationary
             if (Q_UNLIKELY(!window.isNull() && window != mut.window()))
-                qCWarning(lcPtrDispatch) << "delivering touch update to same window" << mut.window() << "not" << window.data();
+                qCDebug(lcPtrDispatch) << "delivering touch update to same window" << mut.window() << "not" << window.data();
             window = mut.window();
             break;
         }
