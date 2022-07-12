@@ -119,7 +119,7 @@ else()
     set(@INSTALL_CMAKE_NAMESPACE@@target@_FOUND FALSE)
     if(NOT DEFINED @INSTALL_CMAKE_NAMESPACE@@target@_NOT_FOUND_MESSAGE)
         set(@INSTALL_CMAKE_NAMESPACE@@target@_NOT_FOUND_MESSAGE
-            "Target \"@QT_CMAKE_EXPORT_NAMESPACE@::@target@\" was not found. ${@INSTALL_CMAKE_NAMESPACE@@target@_extra_not_found_message}")
+            "Target \"@QT_CMAKE_EXPORT_NAMESPACE@::@target@\" was not found.")
 
         if(QT_NO_CREATE_TARGETS)
             string(APPEND @INSTALL_CMAKE_NAMESPACE@@target@_NOT_FOUND_MESSAGE
