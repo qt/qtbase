@@ -29,9 +29,15 @@ public:
     QOpenGLBuffer();
     explicit QOpenGLBuffer(QOpenGLBuffer::Type type);
     QOpenGLBuffer(const QOpenGLBuffer &other);
+    QOpenGLBuffer(QOpenGLBuffer &&other) noexcept
+        : d_ptr{std::exchange(other.d_ptr, nullptr)} {}
     ~QOpenGLBuffer();
 
     QOpenGLBuffer &operator=(const QOpenGLBuffer &other);
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QOpenGLBuffer)
+
+    void swap(QOpenGLBuffer &other) noexcept
+    { return qt_ptr_swap(d_ptr, other.d_ptr); }
 
     enum UsagePattern
     {
@@ -98,6 +104,7 @@ private:
 
     Q_DECLARE_PRIVATE(QOpenGLBuffer)
 };
+Q_DECLARE_SHARED(QOpenGLBuffer)
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QOpenGLBuffer::RangeAccessFlags)
 

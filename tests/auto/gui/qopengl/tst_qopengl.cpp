@@ -1588,6 +1588,13 @@ void tst_QOpenGL::bufferCreate()
     buf.allocate(128);
     QCOMPARE(buf.size(), 128);
 
+    {
+        QOpenGLBuffer moved = std::move(buf);
+        QCOMPARE_EQ(moved.isCreated(), true);
+        QCOMPARE_EQ(moved.size(), 128);
+        buf = std::move(moved);
+    }
+
     buf.release();
 
     buf.destroy();

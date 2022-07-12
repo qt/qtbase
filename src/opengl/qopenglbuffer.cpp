@@ -166,7 +166,7 @@ QOpenGLBuffer::QOpenGLBuffer(const QOpenGLBuffer &other)
 */
 QOpenGLBuffer::~QOpenGLBuffer()
 {
-    if (!d_ptr->ref.deref()) {
+    if (d_ptr && !d_ptr->ref.deref()) {
         destroy();
         delete d_ptr;
     }
@@ -182,7 +182,7 @@ QOpenGLBuffer &QOpenGLBuffer::operator=(const QOpenGLBuffer &other)
 {
     if (d_ptr != other.d_ptr) {
         other.d_ptr->ref.ref();
-        if (!d_ptr->ref.deref()) {
+        if (d_ptr && !d_ptr->ref.deref()) {
             destroy();
             delete d_ptr;
         }
@@ -190,6 +190,36 @@ QOpenGLBuffer &QOpenGLBuffer::operator=(const QOpenGLBuffer &other)
     }
     return *this;
 }
+
+/*!
+    \fn QOpenGLBuffer::QOpenGLBuffer(QOpenGLBuffer &&other)
+    \since 6.5
+
+    Move-constructs a new QOpenGLBuffer from \a other.
+
+    \note The moved-from object \a other is placed in a partially-formed state,
+    in which the only valid operations are destruction and assignment of a new
+    value.
+*/
+
+/*!
+    \fn QOpenGLBuffer &QOpenGLBuffer::operator=(QOpenGLBuffer &&other)
+    \since 6.5
+
+    Move-assigns \a other to this QOpenGLBuffer instance.
+
+    \note The moved-from object \a other is placed in a partially-formed state,
+    in which the only valid operations are destruction and assignment of a new
+    value.
+*/
+
+/*!
+    \fn QOpenGLBuffer::swap(QOpenGLBuffer &other)
+    \since 6.5
+
+    Swaps buffer \a other with this buffer. This operation is very fast and
+    never fails.
+*/
 
 /*!
     Returns the type of buffer represented by this object.
