@@ -74,6 +74,7 @@ public:
         , m_func(func)
     {
     }
+    ~QOpenGLSharedResourceGuard() override;
 
     GLuint id() const { return m_id; }
 
@@ -99,6 +100,7 @@ public:
         , m_refs(0)
     {
     }
+    ~QOpenGLContextGroupPrivate() override;
 
     void addContext(QOpenGLContext *ctx);
     void removeContext(QOpenGLContext *ctx);
@@ -160,7 +162,7 @@ class QOpenGLVertexArrayObjectHelper;
 class Q_GUI_EXPORT QOpenGLContextVersionFunctionHelper
 {
 public:
-    virtual ~QOpenGLContextVersionFunctionHelper() {}
+    virtual ~QOpenGLContextVersionFunctionHelper();
 };
 
 class Q_GUI_EXPORT QOpenGLContextPrivate : public QObjectPrivate
@@ -190,13 +192,7 @@ public:
         requestedFormat = QSurfaceFormat::defaultFormat();
     }
 
-    ~QOpenGLContextPrivate()
-    {
-        //do not delete the QOpenGLContext handle here as it is deleted in
-        //QWidgetPrivate::deleteTLSysExtra()
-
-        delete versionFunctions;
-    }
+    ~QOpenGLContextPrivate() override;
 
     void adopt(QPlatformOpenGLContext *);
 
