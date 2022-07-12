@@ -41,7 +41,7 @@ qt_internal_add_module(Test
         qtestaccessible.h
         qtestassert.h
         qtestblacklist.cpp qtestblacklist_p.h
-        qtestcase.cpp qtestcase.h
+        qtestcase.cpp qtestcase.h qtestcase_p.h
         qtestcoreelement_p.h
         qtestdata.cpp qtestdata.h
         qtestelement.cpp qtestelement_p.h
@@ -74,6 +74,7 @@ qt_internal_add_module(Test
     PRIVATE_MODULE_INTERFACE
         Qt::CorePrivate
     GENERATE_CPP_EXPORTS
+    GENERATE_PRIVATE_CPP_EXPORTS
 )
 
 #### Keys ignored in scope 1:.:.:testlib.pro:<TRUE>:
@@ -88,6 +89,11 @@ qt_internal_add_module(Test
 qt_internal_extend_target(Test CONDITION QT_FEATURE_itemmodeltester
     SOURCES
         qabstractitemmodeltester.cpp qabstractitemmodeltester.h
+)
+
+qt_internal_extend_target(Test CONDITION QT_FEATURE_batch_test_support
+    SOURCES
+        qtestregistry.cpp qtestregistry_p.h
 )
 
 qt_internal_extend_target(Test CONDITION QT_FEATURE_valgrind

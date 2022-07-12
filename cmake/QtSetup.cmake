@@ -225,6 +225,18 @@ if(QT_BUILD_STANDALONE_TESTS)
 endif()
 set(BUILD_TESTING ${QT_BUILD_TESTS} CACHE INTERNAL "")
 
+set(_qt_batch_tests OFF)
+if(INPUT_batch_tests)
+    set(_qt_batch_tests ON)
+endif()
+option(QT_BUILD_TESTS_BATCHED "Link all tests into a single binary." ${_qt_batch_tests})
+
+if(QT_BUILD_TESTS AND QT_BUILD_TESTS_BATCHED AND CMAKE_VERSION VERSION_LESS "3.18")
+    message(FATAL_ERROR
+        "Test batching requires at least CMake 3.18, due to requiring per-source "
+        "TARGET_DIRECTORY assignments.")
+endif()
+
 # QT_BUILD_TOOLS_WHEN_CROSSCOMPILING -> QT_FORCE_BUILD_TOOLS
 # pre-6.4 compatibility flag (remove sometime in the future)
 if(CMAKE_CROSSCOMPILING AND QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)

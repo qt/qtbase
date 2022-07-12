@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include <QtTest/qtestcase.h>
+#include <QtTest/private/qtestcase_p.h>
 #include <QtTest/qtestassert.h>
 
 #include <QtCore/qbytearray.h>
@@ -33,6 +34,9 @@
 #include <QtTest/private/qtestresult_p.h>
 #include <QtTest/private/qsignaldumper_p.h>
 #include <QtTest/private/qbenchmark_p.h>
+#if QT_CONFIG(batch_test_support)
+#include <QtTest/private/qtestregistry_p.h>
+#endif  // QT_CONFIG(batch_test_support)
 #include <QtTest/private/cycle_p.h>
 #include <QtTest/private/qtestblacklist_p.h>
 #if defined(HAVE_XCTEST)
@@ -2387,6 +2391,32 @@ void QTest::qCleanup()
     IOPMAssertionRelease(macPowerSavingDisabled);
 #endif
 }
+
+#if QT_CONFIG(batch_test_support) || defined(Q_QDOC)
+/*!
+    Registers the test \a name, with entry function \a entryFunction, in a
+    central test case registry for the current binary.
+
+    The \a name will be listed when running the batch test binary with no
+    parameters. Running the test binary with the argv[1] of \a name will result
+    in \a entryFunction being called.
+*/
+void QTest::qRegisterTestCase(const QString &name, TestEntryFunction entryFunction)
+{
+    QTest::TestRegistry::instance()->registerTest(name, entryFunction);
+}
+
+QList<QString> QTest::qGetTestCaseNames()
+{
+    return QTest::TestRegistry::instance()->getAllTestNames();
+}
+
+QTest::TestEntryFunction QTest::qGetTestCaseEntryFunction(const QString& name)
+{
+    return QTest::TestRegistry::instance()->getTestEntryFunction(name);
+}
+
+#endif  // QT_CONFIG(batch_test_support)
 
 /*!
   \overload

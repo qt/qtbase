@@ -374,6 +374,11 @@ namespace QTest
     Q_TESTLIB_EXPORT int qExec(QObject *testObject, int argc = 0, char **argv = nullptr);
     Q_TESTLIB_EXPORT int qExec(QObject *testObject, const QStringList &arguments);
 
+#if QT_CONFIG(batch_test_support) || defined(Q_QDOC)
+    using TestEntryFunction = int (*)(int, char **);
+    Q_TESTLIB_EXPORT void qRegisterTestCase(const QString &name, TestEntryFunction entryFunction);
+#endif  // QT_CONFIG(batch_test_support)
+
     Q_TESTLIB_EXPORT void setMainSourcePath(const char *file, const char *builddir = nullptr);
 
     Q_TESTLIB_EXPORT bool qVerify(bool statement, const char *statementStr, const char *description,

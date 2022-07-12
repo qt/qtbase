@@ -2,6 +2,14 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 function(qt_internal_add_resource target resourceName)
+    if(NOT TARGET "${target}")
+        qt_internal_is_in_test_batch(in_batch ${target})
+        if(NOT in_batch)
+            message(FATAL_ERROR "Trying to add resource to a non-existing target \"${target}\".")
+        endif()
+        qt_internal_test_batch_target_name(target)
+    endif()
+
     # Don't try to add resources when cross compiling, and the target is actually a host target
     # (like a tool).
     qt_is_imported_target("${target}" is_imported)

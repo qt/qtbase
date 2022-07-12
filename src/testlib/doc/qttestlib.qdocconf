@@ -48,6 +48,8 @@ excludedirs += ../../../examples/widgets/doc
 
 imagedirs   += images
 
+defines     += QT_FEATURE_batch_test_support
+
 # Add a thumbnail for examples that do not have images
 manifestmeta.thumbnail.names = "QtTestLib/Chapter *"
 

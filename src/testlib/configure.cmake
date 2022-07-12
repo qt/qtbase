@@ -32,6 +32,13 @@ qt_feature("valgrind" PUBLIC
     PURPOSE "Profiling support with callgrind."
     CONDITION ( LINUX OR APPLE ) AND QT_FEATURE_process AND QT_FEATURE_regularexpression
 )
+qt_feature("batch_test_support" PUBLIC
+    LABEL "Batch tests"
+    PURPOSE "Allows merging of all tests into a single executable on demand"
+    AUTODETECT QT_BUILD_TESTS_BATCHED
+    ENABLE INPUT_batch_tests STREQUAL 'yes'
+)
 qt_configure_add_summary_section(NAME "Qt Testlib")
 qt_configure_add_summary_entry(ARGS "itemmodeltester")
+qt_configure_add_summary_entry(ARGS "batch_test_support")
 qt_configure_end_summary_section() # end of "Qt Testlib" section

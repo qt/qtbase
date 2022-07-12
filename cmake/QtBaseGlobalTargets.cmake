@@ -286,6 +286,7 @@ qt_copy_or_install(FILES
                    cmake/QtWriteArgsFile.cmake
                    cmake/modulecppexports.h.in
                    cmake/modulecppexports_p.h.in
+                   cmake/qbatchedtestrunner.in.cpp
     DESTINATION "${__GlobalConfig_install_dir}"
 )
 
