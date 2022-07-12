@@ -3010,6 +3010,11 @@
 */
 
 /*!
+    \enum Qt::Disambiguated_t
+    \internal
+*/
+
+/*!
     \enum Qt::CoordinateSystem
     \since 4.6
 
