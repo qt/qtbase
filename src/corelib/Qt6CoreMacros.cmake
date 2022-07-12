@@ -1174,12 +1174,32 @@ function(_qt_internal_generate_ios_info_plist target)
     set_target_properties("${target}" PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${info_plist_out}")
 endfunction()
 
+function(_qt_internal_set_xcode_bitcode_enablement target)
+    if(CMAKE_XCODE_ATTRIBUTE_ENABLE_BITCODE
+        OR QT_NO_SET_XCODE_ENABLE_BITCODE)
+        return()
+    endif()
+
+    get_target_property(existing_bitcode_enablement
+        "${target}" XCODE_ATTRIBUTE_ENABLE_BITCODE)
+    if(NOT existing_bitcode_enablement MATCHES "-NOTFOUND")
+        return()
+    endif()
+
+    # Disable bitcode to match Xcode 14's new default
+    set_target_properties("${target}"
+        PROPERTIES
+        XCODE_ATTRIBUTE_ENABLE_BITCODE
+        "NO")
+endfunction()
+
 function(_qt_internal_finalize_ios_app target)
     _qt_internal_set_xcode_development_team_id("${target}")
     _qt_internal_set_xcode_bundle_identifier("${target}")
     _qt_internal_set_xcode_targeted_device_family("${target}")
     _qt_internal_set_xcode_code_sign_style("${target}")
     _qt_internal_set_xcode_bundle_display_name("${target}")
+    _qt_internal_set_xcode_bitcode_enablement("${target}")
 
     _qt_internal_handle_ios_launch_screen("${target}")
     _qt_internal_set_placeholder_apple_bundle_version("${target}")
