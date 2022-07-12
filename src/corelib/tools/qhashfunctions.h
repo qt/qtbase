@@ -150,7 +150,8 @@ Q_CORE_EXPORT Q_DECL_PURE_FUNCTION size_t qHash(const QByteArray &key, size_t se
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION size_t qHash(const QByteArrayView &key, size_t seed = 0) noexcept;
 #else
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION size_t qHash(QByteArrayView key, size_t seed = 0) noexcept;
-inline Q_DECL_PURE_FUNCTION size_t qHash(const QByteArray &key, size_t seed = 0 QT6_ONLY(, int = 0)) noexcept
+inline Q_DECL_PURE_FUNCTION size_t qHash(const QByteArray &key, size_t seed = 0
+        QT6_DECL_NEW_OVERLOAD_TAIL) noexcept
 { return qHash(qToByteArrayViewIgnoringNull(key), seed); }
 #endif
 

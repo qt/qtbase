@@ -1576,6 +1576,11 @@ namespace Qt {
     };
     inline constexpr Initialization Uninitialized = Initialization::Uninitialized;
 
+    struct Disambiguated_t {
+        explicit Disambiguated_t() = default;
+    };
+    inline constexpr Disambiguated_t Disambiguated{};
+
     enum CoordinateSystem {
         DeviceCoordinates,
         LogicalCoordinates
