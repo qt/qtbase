@@ -52,8 +52,8 @@ function(qt_process_qlalr consuming_target input_file_list flags)
             "${absolute_input_file}")
 
         set(cpp_file "${parser}.cpp")
-        set(private_file "${parser}_p.h")
-        set(decl_file "${decl}")
+        set(private_file "${CMAKE_CURRENT_BINARY_DIR}/${parser}_p.h")
+        set(decl_file "${CMAKE_CURRENT_BINARY_DIR}/${decl}")
         set(impl_file "${impl}")
         add_custom_command(
             OUTPUT ${cpp_file} ${private_file} ${decl_file} ${impl_file}
@@ -62,6 +62,7 @@ function(qt_process_qlalr consuming_target input_file_list flags)
             MAIN_DEPENDENCY ${input_file}
             VERBATIM
         )
-        target_sources(${consuming_target} PRIVATE ${cpp_file} ${impl_file})
+        target_sources(${consuming_target} PRIVATE ${cpp_file} ${impl_file}
+            ${private_file} ${decl_file})
     endforeach()
 endfunction()
