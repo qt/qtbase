@@ -188,8 +188,11 @@ static inline unsigned parseOptions(const QStringList &paramList,
             options |= QWindowsIntegration::DontUseWMPointer;
         } else if (param == u"reverse") {
             options |= QWindowsIntegration::RtlEnabled;
+        } else if (param == u"darkmode=0") {
+            *darkModeHandling = {};
         } else if (param == u"darkmode=1") {
             darkModeHandling->setFlag(DarkModeHandlingFlag::DarkModeWindowFrames);
+            darkModeHandling->setFlag(DarkModeHandlingFlag::DarkModeStyle, false);
         } else if (param == u"darkmode=2") {
             darkModeHandling->setFlag(DarkModeHandlingFlag::DarkModeWindowFrames);
             darkModeHandling->setFlag(DarkModeHandlingFlag::DarkModeStyle);
@@ -209,7 +212,8 @@ void QWindowsIntegrationPrivate::parseOptions(QWindowsIntegration *q, const QStr
     QtWindows::ProcessDpiAwareness dpiAwareness = QtWindows::ProcessPerMonitorV2DpiAware;
 
     int tabletAbsoluteRange = -1;
-    DarkModeHandling darkModeHandling;
+    DarkModeHandling darkModeHandling = DarkModeHandlingFlag::DarkModeWindowFrames
+                                      | DarkModeHandlingFlag::DarkModeStyle;
     m_options = ::parseOptions(paramList, &tabletAbsoluteRange, &dpiAwareness, &darkModeHandling);
     q->setDarkModeHandling(darkModeHandling);
     QWindowsFontDatabase::setFontOptions(m_options);
