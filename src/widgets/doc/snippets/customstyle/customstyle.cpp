@@ -47,7 +47,7 @@ void CustomStyle::drawPrimitive(PrimitiveElement element, const QStyleOption *op
         }
         painter->drawPolygon(points);
     } else {
-    QProxyStyle::drawPrimitive(element, option, painter, widget);
+        QProxyStyle::drawPrimitive(element, option, painter, widget);
 //! [2] //! [3]
     }
 //! [3] //! [4]
