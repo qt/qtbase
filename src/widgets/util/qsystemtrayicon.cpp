@@ -701,7 +701,6 @@ void QSystemTrayIconPrivate::addPlatformMenu(QMenu *menu) const
     // be higher than 3 levels.
     const auto actions = menu->actions();
     for (QAction *action : actions) {
-        QList<QWidget *> associatedWidgets = action->associatedWidgets();
         if (action->menu())
             addPlatformMenu(action->menu());
     }
