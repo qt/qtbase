@@ -54,9 +54,6 @@ macro(_qt_internal_find_tool_dependencies target target_dep_list)
         if(${CMAKE_FIND_PACKAGE_NAME}_FIND_QUIETLY)
             list(APPEND __qt_${target}_find_package_args QUIET)
         endif()
-        if(${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED)
-            list(APPEND __qt_${target}_find_package_args REQUIRED)
-        endif()
         find_package(${__qt_${target}_pkg}
             ${__qt_${target}_version}
             ${__qt_${target}_find_package_args}

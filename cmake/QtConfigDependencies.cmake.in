@@ -5,6 +5,10 @@ set(__qt_third_party_deps "@third_party_deps@")
 
 @third_party_extra@
 
+# Don't propagate REQUIRED so we don't immediately FATAL_ERROR, rather let the find_dependency calls
+# set _NOT_FOUND_MESSAGE which will be displayed by the includer of the Dependencies file.
+set(${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED FALSE)
+
 _qt_internal_find_third_party_dependencies(Platform __qt_third_party_deps)
 
 set(@INSTALL_CMAKE_NAMESPACE@_FOUND TRUE)
