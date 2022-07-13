@@ -80,7 +80,7 @@ endmacro()
 # Please note the target_dep_list accepts not the actual list values but the list names that
 # contain preformed dependencies. See foreach block for reference.
 # The same applies for find_dependency_path_list.
-macro(_qt_internal_find_dependencies target_dep_list find_dependency_path_list)
+macro(_qt_internal_find_qt_dependencies target_dep_list find_dependency_path_list)
     foreach(__qt_target_dep IN LISTS ${target_dep_list})
         list(GET __qt_target_dep 0 __qt_pkg)
         list(GET __qt_target_dep 1 __qt_version)
@@ -101,4 +101,13 @@ macro(_qt_internal_find_dependencies target_dep_list find_dependency_path_list)
             )
         endif()
     endforeach()
+endmacro()
+
+
+# TODO: Remove once a dependency update completes and most developers have the Dependencies.cmake
+# files updated in their builds.
+# The name is too generic, it doesn't look for any kind of dependencies but only Qt package
+# dependencies.
+macro(_qt_internal_find_dependencies target_dep_list find_dependency_path_list)
+    _qt_internal_find_qt_dependencies("${target_dep_list}" "${find_dependency_path_list}")
 endmacro()
