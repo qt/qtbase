@@ -2735,6 +2735,8 @@ void QGuiApplicationPrivate::processTabletEvent(QWindowSystemInterfacePrivate::T
         QWindowSystemInterfacePrivate::MouseEvent mouseEvent(window, e->timestamp, e->local,
             e->global, e->buttons, e->modifiers, button, mouseType, Qt::MouseEventNotSynthesized, false, device);
         mouseEvent.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
+        qCDebug(lcPtrDispatch) << "synthesizing mouse from tablet event" << mouseType
+                               << e->local << button << e->buttons << e->modifiers;
         processMouseEvent(&mouseEvent);
     }
 #else
