@@ -50,6 +50,8 @@ excludedirs += snippets
 
 excludefiles += ../../../examples/widgets/tools/customcompleter/doc/src/customcompleter.qdoc
 
+defines += QT_BUILD_CORE_LIB
+
 # Included in qttestlib.qdocconf instead
 excludefiles += ../kernel/qtestsupport_core.cpp
 
