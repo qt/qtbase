@@ -61,6 +61,10 @@ macro(_qt_internal_find_tool_dependencies target target_dep_list)
                 ${_qt_additional_packages_prefix_paths}
         )
         if (NOT ${__qt_${target}_pkg}_FOUND)
+            set(${CMAKE_FIND_PACKAGE_NAME}_FOUND FALSE)
+            set(${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE
+"${CMAKE_FIND_PACKAGE_NAME} could not be found because dependency \
+${__qt_${target}_pkg} could not be found.")
             if(NOT "${QT_HOST_PATH}" STREQUAL "")
                  set(CMAKE_PREFIX_PATH ${BACKUP_${target}_CMAKE_PREFIX_PATH})
                  set(CMAKE_FIND_ROOT_PATH ${BACKUP_${target}_CMAKE_FIND_ROOT_PATH})
