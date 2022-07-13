@@ -58,6 +58,8 @@ macro(_qt_internal_find_tool_dependencies target target_dep_list)
             ${__qt_${target}_version}
             ${__qt_${target}_find_package_args}
             PATHS
+                "${CMAKE_CURRENT_LIST_DIR}/.."
+                "${_qt_cmake_dir}"
                 ${_qt_additional_packages_prefix_paths}
         )
         if (NOT ${__qt_${target}_pkg}_FOUND)
