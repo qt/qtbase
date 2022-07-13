@@ -1108,6 +1108,21 @@ function(_qt_internal_set_xcode_code_sign_style target)
     endif()
 endfunction()
 
+# Workaround for https://gitlab.kitware.com/cmake/cmake/-/issues/15183
+function(_qt_internal_set_xcode_install_path target)
+    if(NOT CMAKE_XCODE_ATTRIBUTE_INSTALL_PATH
+            AND NOT QT_NO_SET_XCODE_INSTALL_PATH)
+        get_target_property(existing_install_path
+            "${target}" XCODE_ATTRIBUTE_INSTALL_PATH)
+        if(NOT existing_install_path)
+            set_target_properties("${target}"
+                                  PROPERTIES
+                                  XCODE_ATTRIBUTE_INSTALL_PATH
+                                  "$(inherited)")
+        endif()
+    endif()
+endfunction()
+
 function(_qt_internal_set_xcode_bundle_display_name target)
     # We want the value of CFBundleDisplayName to be ${PRODUCT_NAME}, but we can't put that
     # into the Info.plist.in template file directly, because the implicit configure_file(Info.plist)
@@ -1144,6 +1159,7 @@ function(_qt_internal_finalize_ios_app target)
     _qt_internal_set_xcode_code_sign_style("${target}")
     _qt_internal_set_xcode_bundle_display_name("${target}")
     _qt_internal_set_xcode_bitcode_enablement("${target}")
+    _qt_internal_set_xcode_install_path("${target}")
 
     _qt_internal_handle_ios_launch_screen("${target}")
     _qt_internal_set_placeholder_apple_bundle_version("${target}")
@@ -1163,6 +1179,8 @@ function(_qt_internal_finalize_macos_app target)
     list(APPEND install_rpath "@executable_path/../Frameworks")
     list(REMOVE_DUPLICATES install_rpath)
     set_property(TARGET ${target} PROPERTY INSTALL_RPATH "${install_rpath}")
+
+    _qt_internal_set_xcode_install_path("${target}")
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
