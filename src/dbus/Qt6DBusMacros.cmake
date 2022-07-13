@@ -10,7 +10,7 @@ function(qt6_add_dbus_interface _sources _interface _basename)
     get_filename_component(_infile ${_interface} ABSOLUTE)
     set(_header "${CMAKE_CURRENT_BINARY_DIR}/${_basename}.h")
     set(_impl   "${CMAKE_CURRENT_BINARY_DIR}/${_basename}.cpp")
-    set(_moc    "${CMAKE_CURRENT_BINARY_DIR}/${_basename}.moc")
+    set(_moc    "${CMAKE_CURRENT_BINARY_DIR}/moc_${_basename}.cpp")
 
     get_source_file_property(_nonamespace ${_interface} NO_NAMESPACE)
     if(_nonamespace)
@@ -42,7 +42,7 @@ function(qt6_add_dbus_interface _sources _interface _basename)
 
     qt6_generate_moc("${_header}" "${_moc}")
 
-    list(APPEND ${_sources} "${_impl}" "${_header}" "${_moc}")
+    list(APPEND ${_sources} "${_impl}" "${_header}")
     macro_add_file_dependencies("${_impl}" "${_moc}")
     set(${_sources} ${${_sources}} PARENT_SCOPE)
 endfunction()
@@ -156,7 +156,7 @@ function(qt6_add_dbus_adaptor _sources _xml_file _include) # _optionalParentClas
     set(_optionalClassName "${ARGV5}")
     set(_header "${CMAKE_CURRENT_BINARY_DIR}/${_basename}.h")
     set(_impl   "${CMAKE_CURRENT_BINARY_DIR}/${_basename}.cpp")
-    set(_moc    "${CMAKE_CURRENT_BINARY_DIR}/${_basename}.moc")
+    set(_moc    "${CMAKE_CURRENT_BINARY_DIR}/moc_${_basename}.cpp")
 
     if(_optionalClassName)
         add_custom_command(OUTPUT "${_impl}" "${_header}"
@@ -179,7 +179,7 @@ function(qt6_add_dbus_adaptor _sources _xml_file _include) # _optionalParentClas
     )
     macro_add_file_dependencies("${_impl}" "${_moc}")
 
-    list(APPEND ${_sources} "${_impl}" "${_header}" "${_moc}")
+    list(APPEND ${_sources} "${_impl}" "${_header}")
     set(${_sources} ${${_sources}} PARENT_SCOPE)
 endfunction()
 

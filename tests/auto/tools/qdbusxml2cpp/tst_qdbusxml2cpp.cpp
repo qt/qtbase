@@ -23,6 +23,8 @@ private slots:
     void includeStyle();
     void missingAnnotation_data();
     void missingAnnotation();
+    void includeMoc_data();
+    void includeMoc();
 };
 
 struct BasicTypeList {
@@ -59,20 +61,21 @@ static QString stripHeader(QString output)
     return output.remove(header);
 }
 
-static void runTool(QProcess &process, const QByteArray &data)
+static void runTool(QProcess &process, const QByteArray &data,
+                    const QStringList &flags)
 {
     // test both interface and adaptor generation
     QFETCH_GLOBAL(QString, commandLineArg);
 
     // Run the tool
     const QString binpath = QLibraryInfo::path(QLibraryInfo::BinariesPath);
-    QStringList arguments = { commandLineArg, "-", "-N" };
+    QStringList arguments = { commandLineArg };
+    arguments += flags;
     process.setArguments(arguments);
     process.setProgram(binpath + QLatin1String("/qdbusxml2cpp"));
     process.start(QIODevice::Text | QIODevice::ReadWrite);
     QVERIFY2(process.waitForStarted(), qPrintable(process.errorString()));
 
-    // feed it our XML data
     static const char xmlHeader[] =
             "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
             DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE // \n is included
@@ -95,6 +98,33 @@ static void runTool(QProcess &process, const QByteArray &data)
     process.closeWriteChannel();
     QVERIFY2(process.waitForFinished(), qPrintable(process.errorString()));
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+}
+
+static void checkOneFile(const QString &fileName, const QByteArray &expected)
+{
+    QFile file(fileName);
+    QVERIFY(file.exists());
+    const auto guard = QScopeGuard([&](){ QFile::remove(fileName); });
+
+    QVERIFY(file.open(QFile::Text | QFile::ReadOnly));
+    QByteArray text = file.readAll();
+    QVERIFY(text.contains(expected));
+}
+
+static void checkTwoFiles(const QString &headerName, const QString &sourceName, const QByteArray &expected)
+{
+    QFile headerFile(headerName);
+    QFile sourceFile(sourceName);
+
+    QVERIFY(headerFile.exists());
+    const auto headerGuard = QScopeGuard([&](){ QFile::remove(headerName); });
+
+    QVERIFY(sourceFile.exists());
+    const auto sourceGuard = QScopeGuard([&](){ QFile::remove(sourceName); });
+
+    QVERIFY(sourceFile.open(QFile::Text | QFile::ReadOnly));
+    QByteArray text = sourceFile.readAll();
+    QVERIFY(text.contains(expected));
 }
 
 void tst_qdbusxml2cpp::initTestCase_data()
@@ -242,7 +272,8 @@ void tst_qdbusxml2cpp::process()
 
     QFETCH_GLOBAL(int, outputMode);
     QProcess process;
-    runTool(process, xmlSnippet.toLatin1());
+    QStringList flags = {"-", "-N"};
+    runTool(process, xmlSnippet.toLatin1(), flags);
     if (QTest::currentTestFailed()) return;
 
     QByteArray errOutput = process.readAllStandardError();
@@ -271,34 +302,15 @@ void tst_qdbusxml2cpp::includeStyle()
 {
     QFETCH(bool, isGlobal);
     QFETCH(QByteArray, expected);
-    QFETCH_GLOBAL(QString, commandLineArg);
 
-    // feed it our XML data
-    static const char xml[] =
-            "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
-            DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE // \n is included
-            "<node>\n"
-            "  <interface name=\"local.name.is.not.important\">\n"
-            "  </interface>\n"
-            "</node>\n";
-
-    // Run the tool
-    const QString binpath = QLibraryInfo::path(QLibraryInfo::BinariesPath);
-    const QString command = binpath + QLatin1String("/qdbusxml2cpp");
     QProcess process;
-    process.start(command, QStringList() << commandLineArg << "-" << "-N" << (isGlobal ? "-I" : "-i") << "test.hpp");
-    QVERIFY2(process.waitForStarted(), qPrintable(process.errorString()));
+    QStringList flags = {"-", "-N", (isGlobal ? "-I" : "-i"), "test.hpp"};
 
-    process.write(xml, int(sizeof xml) - 1);
-    while (process.bytesToWrite())
-        QVERIFY2(process.waitForBytesWritten(), qPrintable(process.errorString()));
-
-    process.closeWriteChannel();
-    QVERIFY2(process.waitForFinished(), qPrintable(process.errorString()));
+    runTool(process,QByteArray{},flags);
+    QCOMPARE(process.exitCode(), 0);
 
     QByteArray errOutput = process.readAllStandardError();
     QVERIFY2(errOutput.isEmpty(), errOutput);
-    QCOMPARE(process.exitCode(), 0);
 
     QByteArray fullOutput = process.readAll();
     QVERIFY(!fullOutput.isEmpty());
@@ -342,7 +354,8 @@ void tst_qdbusxml2cpp::missingAnnotation()
 
     QString type = "(ii)";
     QProcess process;
-    runTool(process, xmlSnippet.arg(type).toLatin1());
+    QStringList flags = {"-", "-N"};
+    runTool(process, xmlSnippet.arg(type).toLatin1(),flags);
     if (QTest::currentTestFailed()) return;
 
     // it must have failed
@@ -356,6 +369,54 @@ void tst_qdbusxml2cpp::missingAnnotation()
 You should add <annotation name="%2" value="<type>"/> to the XML description for 'name')";
     expected = expected.arg(type, annotationName);
     QCOMPARE(errOutput, expected);
+}
+
+void tst_qdbusxml2cpp::includeMoc_data()
+{
+    QTest::addColumn<QString>("filenames");
+    QTest::addColumn<QByteArray>("expected");
+    QTest::addColumn<QByteArray>("warning");
+
+    QTest::newRow("combined-h") << "foo.h" << QByteArray("#include \"foo.moc\"") << QByteArray("");
+    QTest::newRow("combined-cpp") << "foo.cpp" << QByteArray("#include \"foo.moc\"") << QByteArray("");
+    QTest::newRow("combined-cc") << "foo.cc" << QByteArray("#include \"foo.moc\"") << QByteArray("");
+    QTest::newRow("without extension") << "foo" << QByteArray("#include \"moc_foo.cpp\"") << QByteArray("");
+    QTest::newRow("cpp-only") << ":foo.cpp" << QByteArray("#include \"moc_foo.cpp\"")
+                              << QByteArray("warning: no header name is provided, assuming it to be \"foo.h\"");
+    QTest::newRow("header-and-cpp") << "foo_h.h:foo.cpp" << QByteArray("#include \"moc_foo_h.cpp\"") << QByteArray("");
+}
+
+void tst_qdbusxml2cpp::includeMoc()
+{
+    QFETCH(QString, filenames);
+    QFETCH(QByteArray, expected);
+    QFETCH(QByteArray, warning);
+
+    QProcess process;
+    QStringList flags = {filenames, "--moc"};
+    runTool(process,QByteArray{},flags);
+    QByteArray errOutput = process.readAllStandardError();
+    QVERIFY(errOutput.startsWith(warning));
+    QCOMPARE(process.exitCode(), 0);
+
+    QStringList parts = filenames.split(u':');
+    QFileInfo first{parts.first()};
+
+    if ((parts.size() == 1) && (!first.suffix().isEmpty())) {
+        checkOneFile(parts.first(), expected);
+    } else if ((parts.size() == 1) && (first.suffix().isEmpty())) {
+        QString headerName{parts.first()};
+        headerName += ".h";
+        QString sourceName{parts.first()};
+        sourceName += ".cpp";
+
+        checkTwoFiles(headerName, sourceName, expected);
+    } else if ((parts.size() == 2) && (parts.first().isEmpty())) {
+        checkOneFile(parts.last(), expected);
+    }
+    else if ((parts.size() == 2) && !parts.first().isEmpty() && !parts.last().isEmpty()) {
+        checkTwoFiles(parts.first(), parts.last(), expected);
+    }
 }
 
 QTEST_MAIN(tst_qdbusxml2cpp)

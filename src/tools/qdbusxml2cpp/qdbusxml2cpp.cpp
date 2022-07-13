@@ -85,16 +85,32 @@ static void cleanInterfaces(QDBusIntrospection::Interfaces &interfaces)
     }
 }
 
+static bool isSupportedSuffix(QStringView suffix)
+{
+    const QLatin1StringView candidates[] = {
+        "h"_L1,
+        "cpp"_L1,
+        "cc"_L1
+    };
+
+    for (auto candidate : candidates)
+        if (suffix == candidate)
+            return true;
+
+    return false;
+}
+
 // produce a header name from the file name
 static QString header(const QString &name)
 {
     QStringList parts = name.split(u':');
-    QString retval = parts.first();
+    QString retval = parts.front();
 
     if (retval.isEmpty() || retval == "-"_L1)
         return retval;
 
-    if (!retval.endsWith(".h"_L1) && !retval.endsWith(".cpp"_L1) && !retval.endsWith(".cc"_L1))
+    QFileInfo header{retval};
+    if (!isSupportedSuffix(header.suffix()))
         retval.append(".h"_L1);
 
     return retval;
@@ -104,12 +120,13 @@ static QString header(const QString &name)
 static QString cpp(const QString &name)
 {
     QStringList parts = name.split(u':');
-    QString retval = parts.last();
+    QString retval = parts.back();
 
     if (retval.isEmpty() || retval == "-"_L1)
         return retval;
 
-    if (!retval.endsWith(".h"_L1) && !retval.endsWith(".cpp"_L1) && !retval.endsWith(".cc"_L1))
+    QFileInfo source{retval};
+    if (!isSupportedSuffix(source.suffix()))
         retval.append(".cpp"_L1);
 
     return retval;
@@ -118,12 +135,47 @@ static QString cpp(const QString &name)
 // produce a moc name from the file name
 static QString moc(const QString &name)
 {
-    QString retval = header(name);
-    if (retval.isEmpty())
-        return retval;
+    QString retval;
+    const QStringList fileNames = name.split(u':');
 
-    retval.truncate(retval.length() - 1); // drop the h in .h
-    retval += "moc"_L1;
+    if (fileNames.size() == 1) {
+        QFileInfo fi{fileNames.front()};
+        if (isSupportedSuffix(fi.suffix())) {
+            // Generates a file that contains the header and the implementation: include "filename.moc"
+            retval += fi.baseName();
+            retval += ".moc"_L1;
+        } else {
+            // Separate source and header files are generated: include "moc_filename.cpp"
+            retval += "moc_"_L1;
+            retval += fi.baseName();
+            retval += ".cpp"_L1;
+        }
+    } else {
+        QString headerName = fileNames.front();
+        QString sourceName = fileNames.back();
+
+        if (sourceName.isEmpty() || sourceName == "-"_L1) {
+            // If only a header is generated, don't include anything
+        } else if (headerName.isEmpty() || headerName == "-"_L1) {
+            // If only source file is generated: include "moc_sourcename.cpp"
+            QFileInfo source{sourceName};
+
+            retval += "moc_"_L1;
+            retval += source.baseName();
+            retval += ".cpp"_L1;
+
+            fprintf(stderr, "warning: no header name is provided, assuming it to be \"%s\"\n",
+                    qPrintable(source.baseName() + ".h"_L1));
+        } else {
+            // Both source and header generated: include "moc_headername.cpp"
+            QFileInfo header{headerName};
+
+            retval += "moc_"_L1;
+            retval += header.baseName();
+            retval += ".cpp"_L1;
+        }
+    }
+
     return retval;
 }
 
