@@ -296,7 +296,7 @@ QVulkanInstance::~QVulkanInstance()
 */
 
 /*!
-    \fn size_t qHash(const QVulkanLayer &key, size_t seed)
+    \fn size_t qHash(const QVulkanLayer &key, size_t seed = 0)
     \since 5.10
     \relates QVulkanLayer
 
@@ -340,7 +340,7 @@ QVulkanInstance::~QVulkanInstance()
 */
 
 /*!
-    \fn size_t qHash(const QVulkanExtension &key, size_t seed)
+    \fn size_t qHash(const QVulkanExtension &key, size_t seed = 0)
     \since 5.10
     \relates QVulkanExtension
 

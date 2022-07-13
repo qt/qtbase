@@ -1415,7 +1415,7 @@ uint qt_hash(QStringView key, uint chained) noexcept
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
-/*! \fn size_t qHash(float key, size_t seed) noexcept
+/*! \fn size_t qHash(float key, size_t seed = 0) noexcept
     \relates QHash
     \since 5.3
 

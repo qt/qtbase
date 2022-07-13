@@ -160,7 +160,7 @@ bool QSslEllipticCurve::isTlsNamedCurve() const noexcept
 */
 
 /*!
-    \fn size_t qHash(QSslEllipticCurve curve, size_t seed)
+    \fn size_t qHash(QSslEllipticCurve curve, size_t seed = 0)
     \since 5.5
     \relates QHash
 

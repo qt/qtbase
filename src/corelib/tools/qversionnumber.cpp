@@ -525,7 +525,6 @@ QDebug operator<<(QDebug debug, const QVersionNumber &version)
 #endif
 
 /*!
-    \fn size_t qHash(const QVersionNumber &key, size_t seed)
     \relates QHash
     \since 5.6
 
@@ -723,7 +722,6 @@ QDebug operator<<(QDebug debug, const QTypeRevision &revision)
 #endif
 
 /*!
-    \fn size_t qHash(const QTypeRevision &key, size_t seed)
     \relates QHash
     \since 6.0
 
