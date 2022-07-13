@@ -201,8 +201,6 @@ bool QOcspResponse::isEqual(const QOcspResponse &other) const
 }
 
 /*!
-    \fn size_t qHash(const QOcspResponse &response, size_t seed)
-
     Returns the hash value for the \a response, using \a seed to seed the calculation.
 
     \since 5.13
