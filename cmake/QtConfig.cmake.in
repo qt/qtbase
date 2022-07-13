@@ -235,11 +235,11 @@ foreach(module ${@INSTALL_CMAKE_NAMESPACE@_FIND_COMPONENTS})
 
         if(@INSTALL_CMAKE_NAMESPACE@_FIND_REQUIRED_${module})
             set(_Qt_NOTFOUND_MESSAGE
-                "${_Qt_NOTFOUND_MESSAGE}Failed to find Qt component \"${module}\". ${_qt_component_not_found_msg}")
+                "${_Qt_NOTFOUND_MESSAGE}Failed to find required Qt component \"${module}\". ${_qt_component_not_found_msg}")
             break()
         elseif(NOT @INSTALL_CMAKE_NAMESPACE@_FIND_QUIETLY)
             message(WARNING
-                "Failed to find Qt component \"${module}\". ${_qt_component_not_found_msg}")
+                "Failed to find optional Qt component \"${module}\". ${_qt_component_not_found_msg}")
         endif()
 
         unset(_qt_expected_component_config_path)
