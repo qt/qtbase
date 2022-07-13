@@ -2832,7 +2832,7 @@ void QMainWindowLayout::hover(QLayoutItem *hoverTarget,
                         QDockAreaLayoutItem(parentLayout->takeAt(parentLayout->indexOf(dropTo))));
 
                     dropTo->setParent(floatingTabs);
-                    qCDebug(lcQpaDockWidgets) << "Wrapping" << w << "into floating tabs" << floatingTabs;
+                    qCDebug(lcQpaDockWidgets) << "Wrapping" << widget << "into floating tabs" << floatingTabs;
                     w = floatingTabs;
                 }
 
