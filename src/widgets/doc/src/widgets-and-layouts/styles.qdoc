@@ -756,7 +756,7 @@
             \li Set if the widget has focus (see
                QWidget::hasFocus())
         \row
-            \li \c State_KeyobordFocusChange
+            \li \c State_KeyboardFocusChange
             \li Set when the user changes focus with the keyboard
                (see Qt::WA_KeyboardFocusChange)
         \row
@@ -864,7 +864,7 @@
             \li Button is not flat and not pressed down
     \endtable
 
-    Other members of QStyleOptionButton is:
+    Other members of QStyleOptionButton are:
 
     \table 90%
         \header
@@ -917,7 +917,7 @@
     \endtable
 
     See \l{Push Buttons} for a table over other members in the
-    QStyleOptionButtonClass.
+    QStyleOptionButton class.
 
     \section3 Tabs
 
@@ -945,7 +945,7 @@
     \image javastyle/tab.png
 
     The dotted lines indicate that the QTabWidget contains a tab bar,
-    but does not draw it itself. QTabBar only draws its base line
+    but does not draw the tab bar itself. QTabBar only draws its base line
     when not part of a tab widget, and it keeps two tool
     buttons that scroll the bar when all tabs do not fit; see \l{Tool
     Buttons} for their element tree. Also note that since the buttons
