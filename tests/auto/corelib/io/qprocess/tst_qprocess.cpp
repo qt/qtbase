@@ -23,6 +23,8 @@
 #  include <private/qcore_unix_p.h>
 #endif
 
+#include <QtTest/private/qemulationdetector_p.h>
+
 #include <stdlib.h>
 
 typedef void (QProcess::*QProcessErrorSignal)(QProcess::ProcessError);
@@ -1223,6 +1225,9 @@ void tst_QProcess::processInAThread()
 
 void tst_QProcess::processesInMultipleThreads()
 {
+    if (QTestPrivate::isRunningArmOnX86())
+        QSKIP("Test is too slow to run on emulator");
+
 #if defined(Q_OS_QNX)
     QSKIP("QNX: Large amount of threads is unstable and do not finish in given time");
 #endif

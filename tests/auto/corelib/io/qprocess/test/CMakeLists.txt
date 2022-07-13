@@ -9,6 +9,7 @@ qt_internal_add_test(tst_qprocess
     PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::Network
+        Qt::TestPrivate
 )
 
 ## Build assorted sub-programs called from the test:
