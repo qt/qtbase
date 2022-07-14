@@ -28,6 +28,7 @@ qt_add_resources(<TARGET> <RESOURCE_NAME>
                   [PREFIX <PATH>]
                   [LANG <LANGUAGE>]
                   [BASE <PATH>]
+                  [BIG_RESOURCES]
                   [OUTPUT_TARGETS <VARIABLE_NAME>]
                   [FILES ...] [OPTIONS ...])
 \endcode
@@ -68,6 +69,16 @@ example, if \c BASE is \c{"assets"} and \c FILES is
 
 Alias settings for files need to be set via the \c QT_RESOURCE_ALIAS source file
 property.
+
+\c BIG_RESOURCES can be specified to enable support for big resources. This
+directly generates object files (\c .o, \c .obj) instead of C++ source code.
+This allows embedding bigger resources, without having to compile generated C++
+sources, which can be too time consuming and memory intensive.
+
+Note that \c BIG_RESOURCES is not compatible with iOS due to restrictions of
+CMake's Xcode project generator. See
+\l{https://bugreports.qt.io/browse/QTBUG-103497}{QTBUG-103497} for details.
+Also, \c BIG_RESOURCES only works reliably from CMake 3.17 onwards.
 
 When using this command with static libraries, one or more special targets will
 be generated. Should you wish to perform additional processing on these targets,

@@ -439,24 +439,56 @@ function(qt6_add_big_resources outfiles )
         add_custom_command(OUTPUT ${tmpoutfile}
                            COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::rcc ${rcc_options} --name ${outfilename} --pass 1 --output ${tmpoutfile} ${infile}
                            DEPENDS ${infile} ${_rc_depends} "${out_depends}" ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
+                           COMMENT "Running rcc pass 1 for resource ${outfilename}"
                            VERBATIM)
         add_custom_target(big_resources_${outfilename} ALL DEPENDS ${tmpoutfile})
-        add_library(rcc_object_${outfilename} OBJECT ${tmpoutfile})
-        _qt_internal_set_up_static_runtime_library(rcc_object_${outfilename})
-        target_compile_definitions(rcc_object_${outfilename} PUBLIC "$<TARGET_PROPERTY:Qt6::Core,INTERFACE_COMPILE_DEFINITIONS>")
-        set_target_properties(rcc_object_${outfilename} PROPERTIES AUTOMOC OFF)
-        set_target_properties(rcc_object_${outfilename} PROPERTIES AUTOUIC OFF)
+        _qt_internal_add_rcc_pass2(
+            RESOURCE_NAME ${outfilename}
+            RCC_OPTIONS ${rcc_options}
+            OBJECT_LIB rcc_object_${outfilename}
+            QRC_FILE ${infile}
+            PASS1_OUTPUT_FILE ${tmpoutfile}
+            OUT_OBJECT_FILE ${outfile}
+        )
         add_dependencies(rcc_object_${outfilename} big_resources_${outfilename})
-        # The modification of TARGET_OBJECTS needs the following change in cmake
-        # https://gitlab.kitware.com/cmake/cmake/commit/93c89bc75ceee599ba7c08b8fe1ac5104942054f
-        add_custom_command(OUTPUT ${outfile}
-                           COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
-                           ARGS ${rcc_options} --name ${outfilename} --pass 2 --temp $<TARGET_OBJECTS:rcc_object_${outfilename}> --output ${outfile} ${infile}
-                           DEPENDS rcc_object_${outfilename} $<TARGET_OBJECTS:rcc_object_${outfilename}> ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
-                           VERBATIM)
-       list(APPEND ${outfiles} ${outfile})
+        list(APPEND ${outfiles} ${outfile})
     endforeach()
     set(${outfiles} ${${outfiles}} PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_add_rcc_pass2)
+    set(options)
+    set(oneValueArgs
+        RESOURCE_NAME
+        OBJECT_LIB
+        QRC_FILE
+        PASS1_OUTPUT_FILE
+        OUT_OBJECT_FILE
+    )
+    set(multiValueArgs
+        RCC_OPTIONS
+    )
+    cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    add_library(${arg_OBJECT_LIB} OBJECT ${arg_PASS1_OUTPUT_FILE})
+    _qt_internal_set_up_static_runtime_library(${arg_OBJECT_LIB})
+    target_compile_definitions(${arg_OBJECT_LIB} PUBLIC
+        "$<TARGET_PROPERTY:Qt6::Core,INTERFACE_COMPILE_DEFINITIONS>")
+    set_target_properties(${arg_OBJECT_LIB} PROPERTIES
+        AUTOMOC OFF
+        AUTOUIC OFF)
+    # The modification of TARGET_OBJECTS needs the following change in cmake
+    # https://gitlab.kitware.com/cmake/cmake/commit/93c89bc75ceee599ba7c08b8fe1ac5104942054f
+    add_custom_command(
+        OUTPUT ${arg_OUT_OBJECT_FILE}
+        COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
+                ${arg_RCC_OPTIONS} --name ${arg_RESOURCE_NAME} --pass 2
+                --temp $<TARGET_OBJECTS:${arg_OBJECT_LIB}>
+                --output ${arg_OUT_OBJECT_FILE} ${arg_QRC_FILE}
+        DEPENDS ${arg_OBJECT_LIB} $<TARGET_OBJECTS:${arg_OBJECT_LIB}>
+                ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
+        COMMENT "Running rcc pass 2 for resource ${arg_RESOURCE_NAME}"
+        VERBATIM)
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
@@ -1963,6 +1995,113 @@ function(__qt_get_relative_resource_path_for_file output_alias file)
     set(${output_alias} ${alias} PARENT_SCOPE)
 endfunction()
 
+# Performs linking and propagation of the specified objects via the target's usage requirements.
+# The objects may be given as generator expression.
+#
+# Arguments:
+# EXTRA_CONDITIONS
+#   Conditions to be checked before linking the object files to the end-point executable.
+# EXTRA_TARGET_LINK_LIBRARIES_CONDITIONS
+#   Conditions for the target_link_libraries call.
+# EXTRA_TARGET_SOURCES_CONDITIONS
+#   Conditions for the target_sources call.
+function(__qt_internal_propagate_object_files target objects)
+    set(options "")
+    set(single_args "")
+    set(extra_conditions_args
+        EXTRA_CONDITIONS
+        EXTRA_TARGET_LINK_LIBRARIES_CONDITIONS
+        EXTRA_TARGET_SOURCES_CONDITIONS
+    )
+    set(multi_args ${extra_conditions_args})
+    cmake_parse_arguments(arg "${options}" "${single_args}" "${multi_args}" ${ARGN})
+
+    # Collect additional conditions.
+    foreach(arg IN LISTS extra_conditions_args)
+        string(TOLOWER "${arg}" lcvar)
+        if(arg_${arg})
+            list(JOIN arg_${arg} "," ${lcvar})
+        else()
+            set(${lcvar} "$<BOOL:TRUE>")
+        endif()
+    endforeach()
+
+    # Do not litter the static libraries
+    set(not_static_condition
+        "$<NOT:$<STREQUAL:$<TARGET_PROPERTY:TYPE>,STATIC_LIBRARY>>"
+    )
+
+    # Check if link order matters for the Platform.
+    set(platform_link_order_property
+        "$<TARGET_PROPERTY:${QT_CMAKE_EXPORT_NAMESPACE}::Platform,_qt_link_order_matters>"
+    )
+    set(platform_link_order_condition
+        "$<BOOL:${platform_link_order_property}>"
+    )
+
+    # Check if link options are propagated according to CMP0099
+    # In user builds the _qt_cmp0099_policy_check is set to FALSE or $<TARGET_POLICY:CMP0099>
+    # depending on the used CMake version.
+    # See __qt_internal_check_cmp0099_available for details.
+    set(cmp0099_policy_check_property
+        "$<TARGET_PROPERTY:${QT_CMAKE_EXPORT_NAMESPACE}::Platform,_qt_cmp0099_policy_check>"
+    )
+    set(link_objects_using_link_options_condition
+        "$<BOOL:$<GENEX_EVAL:${cmp0099_policy_check_property}>>"
+    )
+
+    # Collect link conditions for the target_sources call.
+    string(JOIN "" target_sources_genex
+        "$<"
+            "$<AND:"
+                "${not_static_condition},"
+                "${platform_link_order_condition},"
+                "$<NOT:${link_objects_using_link_options_condition}>,"
+                "${extra_target_sources_conditions},"
+                "${extra_conditions}"
+            ">"
+        ":${objects}>"
+    )
+    target_sources(${target} INTERFACE
+        "${target_sources_genex}"
+    )
+
+    # Collect link conditions for the target_link_options call.
+    string(JOIN "" target_link_options_genex
+        "$<"
+            "$<AND:"
+                "${not_static_condition},"
+                "${platform_link_order_condition},"
+                "${link_objects_using_link_options_condition},"
+                "${extra_conditions}"
+            ">"
+        ":${objects}>"
+    )
+    # target_link_options works well since CMake 3.17 which has policy CMP0099 set to NEW for the
+    # minimum required CMake version greater than or equal to 3.17. The default is OLD. See
+    # https://cmake.org/cmake/help/git-master/policy/CMP0099.html for details.
+    # This provides yet another way of linking object libraries if user sets the policy to NEW
+    # before calling find_package(Qt...).
+    target_link_options(${target} INTERFACE
+        "${target_link_options_genex}"
+    )
+
+    # Collect link conditions for the target_link_libraries call.
+    string(JOIN "" target_link_libraries_genex
+        "$<"
+            "$<AND:"
+                "${not_static_condition},"
+                "$<NOT:${platform_link_order_condition}>,"
+                "${extra_target_link_libraries_conditions},"
+                "${extra_conditions}"
+            ">"
+        ":${objects}>"
+    )
+    target_link_libraries(${target} INTERFACE
+        "${target_link_libraries_genex}"
+    )
+endfunction()
+
 # Performs linking and propagation of the object library via the target's usage requirements.
 # Arguments:
 # NO_LINK_OBJECT_LIBRARY_REQUIREMENTS_TO_TARGET skip linking of ${object_library} to ${target}, only
@@ -2007,89 +2146,13 @@ function(__qt_internal_propagate_object_library target object_library)
         "$<NOT:$<BOOL:$<TARGET_PROPERTY:_qt_object_libraries_finalizer_mode>>>"
     )
 
-    # Collect object library specific conditions.
-    if(arg_EXTRA_CONDITIONS)
-        list(JOIN arg_EXTRA_CONDITIONS "," extra_conditions)
-    else()
-        set(extra_conditions "$<BOOL:TRUE>")
-    endif()
-
-    # Do not litter the static libraries
-    set(not_static_condition
-        "$<NOT:$<STREQUAL:$<TARGET_PROPERTY:TYPE>,STATIC_LIBRARY>>"
-    )
-
-    # Check if link order matters for the Platform.
-    set(platform_link_order_property
-        "$<TARGET_PROPERTY:${QT_CMAKE_EXPORT_NAMESPACE}::Platform,_qt_link_order_matters>"
-    )
-    set(platform_link_order_condition
-        "$<BOOL:${platform_link_order_property}>"
-    )
-
-    # Check if link options are propagated according to CMP0099
-    # In user builds the _qt_cmp0099_policy_check is set to FALSE or $<TARGET_POLICY:CMP0099>
-    # depending on the used CMake version.
-    # See __qt_internal_check_cmp0099_available for details.
-    set(cmp0099_policy_check_property
-        "$<TARGET_PROPERTY:${QT_CMAKE_EXPORT_NAMESPACE}::Platform,_qt_cmp0099_policy_check>"
-    )
-    set(link_objects_using_link_options_condition
-        "$<BOOL:$<GENEX_EVAL:${cmp0099_policy_check_property}>>"
-    )
-
     # Use TARGET_NAME to have the correct namespaced name in the exports.
     set(objects "$<TARGET_OBJECTS:$<TARGET_NAME:${object_library}>>")
 
-    # Collect link conditions for the target_sources call.
-    string(JOIN "" target_sources_genex
-        "$<"
-            "$<AND:"
-                "${not_finalizer_mode_condition},"
-                "${not_static_condition},"
-                "${platform_link_order_condition},"
-                "$<NOT:${link_objects_using_link_options_condition}>,"
-                "${extra_conditions}"
-            ">"
-        ":${objects}>"
-    )
-    target_sources(${target} INTERFACE
-        "${target_sources_genex}"
-    )
-
-    # Collect link conditions for the target_link_options call.
-    string(JOIN "" target_link_options_genex
-        "$<"
-            "$<AND:"
-                "${not_static_condition},"
-                "${platform_link_order_condition},"
-                "${link_objects_using_link_options_condition},"
-                "${extra_conditions}"
-            ">"
-        ":${objects}>"
-    )
-    # target_link_options works well since CMake 3.17 which has policy CMP0099 set to NEW for the
-    # minimum required CMake version greater than or equal to 3.17. The default is OLD. See
-    # https://cmake.org/cmake/help/git-master/policy/CMP0099.html for details.
-    # This provides yet another way of linking object libraries if user sets the policy to NEW
-    # before calling find_package(Qt...).
-    target_link_options(${target} INTERFACE
-        "${target_link_options_genex}"
-    )
-
-    # Collect link conditions for the target_link_libraries call.
-    string(JOIN "" target_link_libraries_genex
-        "$<"
-            "$<AND:"
-                "${not_finalizer_mode_condition},"
-                "${not_static_condition},"
-                "$<NOT:${platform_link_order_condition}>,"
-                "${extra_conditions}"
-            ">"
-        ":${objects}>"
-    )
-    target_link_libraries(${target} INTERFACE
-        "${target_link_libraries_genex}"
+    __qt_internal_propagate_object_files(${target} ${objects}
+        EXTRA_CONDITIONS ${arg_EXTRA_CONDITIONS}
+        EXTRA_TARGET_SOURCES_CONDITIONS ${not_finalizer_mode_condition}
+        EXTRA_TARGET_LINK_LIBRARIES_CONDITIONS ${not_finalizer_mode_condition}
     )
 
     if(NOT arg_NO_LINK_OBJECT_LIBRARY_REQUIREMENTS_TO_TARGET)
@@ -2199,11 +2262,32 @@ endfunction()
 # targets pass a value to the OUTPUT_TARGETS parameter.
 #
 function(_qt_internal_process_resource target resourceName)
-
-    cmake_parse_arguments(rcc "" "PREFIX;LANG;BASE;OUTPUT_TARGETS;DESTINATION" "FILES;OPTIONS" ${ARGN})
+    cmake_parse_arguments(rcc "BIG_RESOURCES"
+        "PREFIX;LANG;BASE;OUTPUT_TARGETS;DESTINATION" "FILES;OPTIONS" ${ARGN})
 
     if("${rcc_OPTIONS}" MATCHES "-binary")
         set(isBinary TRUE)
+        if(arg_BIG_RESOURCES)
+            message(FATAL_ERROR "BIG_RESOURCES cannot be used together with the -binary option.")
+        endif()
+    endif()
+
+    if(arg_BIG_RESOURCES AND CMAKE_GENERATOR STREQUAL "Xcode" AND IOS)
+        message(WARNING
+            "Due to CMake limitations, the BIG_RESOURCES option can't be used when building "
+            "for iOS. "
+            "See https://bugreports.qt.io/browse/QTBUG-103497 for details. "
+            "Falling back to using regular resources. "
+        )
+        set(arg_BIG_RESOURCES OFF)
+    endif()
+
+    if(arg_BIG_RESOURCES AND CMAKE_VERSION VERSION_LESS "3.17")
+        message(WARNING
+            "The BIG_RESOURCES option does not work reliably with CMake < 3.17. "
+            "Consider upgrading to a more recent CMake version or disable the BIG_RESOURCES "
+            "option for older CMake versions."
+        )
     endif()
 
     string(REPLACE "/" "_" resourceName ${resourceName})
@@ -2305,9 +2389,10 @@ function(_qt_internal_process_resource target resourceName)
     configure_file("${template_file}" "${generatedResourceFile}")
 
     set(rccArgs --name "${resourceName}" "${generatedResourceFile}")
+    set(rccArgsAllPasses "")
 
     if(rcc_OPTIONS)
-        list(APPEND rccArgs ${rcc_OPTIONS})
+        list(APPEND rccArgsAllPasses ${rcc_OPTIONS})
     endif()
 
     # When cross-building, we use host tools to generate target code. If the host rcc was compiled
@@ -2317,7 +2402,7 @@ function(_qt_internal_process_resource target resourceName)
     # If the target does not support zstd (feature is disabled), tell rcc not to generate
     # zstd related code.
     if(NOT QT_FEATURE_zstd)
-        list(APPEND rccArgs "--no-zstd")
+        list(APPEND rccArgsAllPasses "--no-zstd")
     endif()
 
     set_property(SOURCE "${generatedResourceFile}" PROPERTY SKIP_AUTOGEN ON)
@@ -2334,51 +2419,90 @@ function(_qt_internal_process_resource target resourceName)
                 set(generatedOutfile "${rcc_DESTINATION}.rcc")
             endif()
         endif()
+    elseif(rcc_BIG_RESOURCES)
+        set(generatedOutfile "${CMAKE_CURRENT_BINARY_DIR}/.rcc/qrc_${resourceName}_tmp.cpp")
     else()
         set(generatedOutfile "${CMAKE_CURRENT_BINARY_DIR}/.rcc/qrc_${resourceName}.cpp")
+    endif()
+
+    set(pass_msg)
+    if(rcc_BIG_RESOURCES)
+        list(PREPEND rccArgs --pass 1)
+        set(pass_msg " pass 1")
     endif()
 
     list(PREPEND rccArgs --output "${generatedOutfile}")
 
     # Process .qrc file:
     add_custom_command(OUTPUT "${generatedOutfile}"
-                       COMMAND "${QT_CMAKE_EXPORT_NAMESPACE}::rcc" ${rccArgs}
+                       COMMAND "${QT_CMAKE_EXPORT_NAMESPACE}::rcc" ${rccArgs} ${rccArgsAllPasses}
                        DEPENDS
                         ${resource_dependencies}
                         ${generatedResourceFile}
                         "${QT_CMAKE_EXPORT_NAMESPACE}::rcc"
-                       COMMENT "Running rcc for resource ${resourceName}"
+                       COMMENT "Running rcc${pass_msg} for resource ${resourceName}"
                        VERBATIM)
 
-    set(output_targets "")
     if(isBinary)
         # Add generated .rcc target to 'all' set
         add_custom_target(binary_resource_${resourceName} ALL DEPENDS "${generatedOutfile}")
-    else()
-        # We can't rely on policy CMP0118 since user project controls it.
-        # We also want SKIP_AUTOGEN known in the target's scope, where we can.
-        set(scope_args)
-        if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
-            set(scope_args TARGET_DIRECTORY ${target})
-        endif()
-        set_source_files_properties(${generatedOutfile} ${scope_args} PROPERTIES
-            SKIP_AUTOGEN TRUE
-            GENERATED TRUE
-            SKIP_UNITY_BUILD_INCLUSION TRUE
-            SKIP_PRECOMPILE_HEADERS TRUE
-        )
-        get_target_property(target_source_dir ${target} SOURCE_DIR)
-        if(NOT target_source_dir STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-            # We have to create a separate target in this scope that depends on
-            # the generated file, otherwise the original target won't have the
-            # required dependencies in place to ensure correct build order.
-            add_custom_target(${target}_${resourceName} DEPENDS ${generatedOutfile})
-            add_dependencies(${target} ${target}_${resourceName})
-        endif()
-        set_property(TARGET ${target} APPEND PROPERTY _qt_generated_qrc_files "${generatedResourceFile}")
-
-        __qt_propagate_generated_resource(${target} ${resourceName} "${generatedOutfile}" output_targets)
+        return()
     endif()
+
+    # We can't rely on policy CMP0118 since user project controls it.
+    # We also want SKIP_AUTOGEN known in the target's scope, where we can.
+    set(scope_args)
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
+        set(scope_args TARGET_DIRECTORY ${target})
+    endif()
+    set_source_files_properties(${generatedOutfile} ${scope_args} PROPERTIES
+        SKIP_AUTOGEN TRUE
+        GENERATED TRUE
+        SKIP_UNITY_BUILD_INCLUSION TRUE
+        SKIP_PRECOMPILE_HEADERS TRUE
+    )
+
+    get_target_property(target_source_dir ${target} SOURCE_DIR)
+    if(NOT target_source_dir STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+        # We have to create a separate target in this scope that depends on
+        # the generated file, otherwise the original target won't have the
+        # required dependencies in place to ensure correct build order.
+        add_custom_target(${target}_${resourceName} DEPENDS ${generatedOutfile})
+        add_dependencies(${target} ${target}_${resourceName})
+    endif()
+
+    if(rcc_BIG_RESOURCES)
+        set(pass1OutputFile ${generatedOutfile})
+        set(generatedOutfile
+            "${CMAKE_CURRENT_BINARY_DIR}/.rcc/qrc_${resourceName}${CMAKE_CXX_OUTPUT_EXTENSION}")
+        _qt_internal_add_rcc_pass2(
+            RESOURCE_NAME ${resourceName}
+            RCC_OPTIONS ${rccArgsAllPasses}
+            OBJECT_LIB ${target}_${resourceName}_obj
+            QRC_FILE ${generatedResourceFile}
+            PASS1_OUTPUT_FILE ${pass1OutputFile}
+            OUT_OBJECT_FILE ${generatedOutfile}
+        )
+        get_target_property(type ${target} TYPE)
+        if(type STREQUAL STATIC_LIBRARY)
+            # Create a custom target to trigger the generation of ${generatedOutfile}
+            set(pass2_target ${target}_${resourceName}_pass2)
+            add_custom_target(${pass2_target} DEPENDS ${generatedOutfile})
+            add_dependencies(${target} ${pass2_target})
+
+            # Propagate the object files to the target.
+            __qt_internal_propagate_object_files(${target} "${generatedOutfile}")
+        else()
+            target_sources(${target} PRIVATE ${generatedOutfile})
+        endif()
+    else()
+        __qt_propagate_generated_resource(${target} ${resourceName} "${generatedOutfile}"
+            output_targets)
+    endif()
+
+    set_property(TARGET ${target}
+        APPEND PROPERTY _qt_generated_qrc_files "${generatedResourceFile}")
+
     if (rcc_OUTPUT_TARGETS)
         set(${rcc_OUTPUT_TARGETS} "${output_targets}" PARENT_SCOPE)
     endif()
