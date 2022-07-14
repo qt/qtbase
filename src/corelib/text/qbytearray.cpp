@@ -4327,7 +4327,7 @@ QByteArray::FromBase64Result QByteArray::fromBase64Encoding(QByteArray &&base64,
                                                     base64.size(),
                                                     base64.data(), // in-place
                                                     options);
-        base64.truncate(int(base64result.decodedLength));
+        base64.truncate(base64result.decodedLength);
         return { std::move(base64), base64result.status };
     }
 
@@ -4343,7 +4343,7 @@ QByteArray::FromBase64Result QByteArray::fromBase64Encoding(const QByteArray &ba
                                                 base64Size,
                                                 const_cast<char *>(result.constData()),
                                                 options);
-    result.truncate(int(base64result.decodedLength));
+    result.truncate(base64result.decodedLength);
     return { std::move(result), base64result.status };
 }
 
