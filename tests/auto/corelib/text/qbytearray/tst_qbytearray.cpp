@@ -51,8 +51,8 @@ private slots:
     void swap();
     void qChecksum_data();
     void qChecksum();
-    void qCompress_data();
 #ifndef QT_NO_COMPRESS
+    void qCompress_data();
     void qCompress();
     void qUncompressCorruptedData_data();
     void qUncompressCorruptedData();
@@ -259,6 +259,7 @@ void tst_QByteArray::qChecksum()
     QCOMPARE(::qChecksum(QByteArrayView(data.constData(), len), standard), static_cast<quint16>(checksum));
 }
 
+#ifndef QT_NO_COMPRESS
 void tst_QByteArray::qCompress_data()
 {
     QTest::addColumn<QByteArray>("ba");
@@ -285,7 +286,6 @@ void tst_QByteArray::qCompress_data()
     QTest::newRow( "04" ) << file.readAll();
 }
 
-#ifndef QT_NO_COMPRESS
 void tst_QByteArray::qCompress()
 {
     QFETCH( QByteArray, ba );
