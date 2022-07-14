@@ -848,7 +848,15 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
 
 static inline bool shouldApplyDarkFrame(const QWindow *w)
 {
-    return w->isTopLevel() && !w->flags().testFlag(Qt::FramelessWindowHint);
+    if (!w->isTopLevel() || w->flags().testFlag(Qt::FramelessWindowHint))
+        return false;
+    if (QWindowsIntegration::instance()->darkModeHandling().testFlag(QWindowsApplication::DarkModeStyle))
+        return true;
+    // if the application supports a dark border, and the palette is dark (window background color
+    // is darker than the text), then turn dark-border support on, otherwise use a light border.
+    const QPalette defaultPalette;
+    return defaultPalette.color(QPalette::WindowText).lightness()
+         > defaultPalette.color(QPalette::Window).lightness();
 }
 
 QWindowsWindowData

@@ -1103,13 +1103,13 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
             if (darkMode != QWindowsContextPrivate::m_darkMode) {
                 QWindowsContextPrivate::m_darkMode = darkMode;
                 auto integration = QWindowsIntegration::instance();
-                if (integration->darkModeHandling().testFlag(QWindowsApplication::DarkModeWindowFrames)) {
-                    for (QWindowsWindow *w : d->m_windows)
-                        w->setDarkBorder(QWindowsContextPrivate::m_darkMode);
-                }
                 if (integration->darkModeHandling().testFlag(QWindowsApplication::DarkModeStyle)) {
                     QWindowsTheme::instance()->refresh();
                     QWindowSystemInterface::handleThemeChange();
+                }
+                if (integration->darkModeHandling().testFlag(QWindowsApplication::DarkModeWindowFrames)) {
+                    for (QWindowsWindow *w : d->m_windows)
+                        w->setDarkBorder(QWindowsContextPrivate::m_darkMode);
                 }
             }
         }
