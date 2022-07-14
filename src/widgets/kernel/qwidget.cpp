@@ -1398,6 +1398,8 @@ void QWidgetPrivate::createTLSysExtra()
 #endif
         if (isTipLabel || isAlphaWidget || q->inherits("QRollEffect"))
             qt_window_private(extra->topextra->window)->setAutomaticPositionAndResizeEnabled(false);
+
+        updateIsTranslucent();
     }
 
 }
