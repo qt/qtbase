@@ -146,39 +146,6 @@ private:
     void blit(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, const QOpenGLTexture *texture, QRect targetGeometry);
 
     void drawWindowDecorations(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, QWasmWindow *window);
-    void drwPanelButton();
-
-    QScopedPointer<QOpenGLContext> m_context;
-    QScopedPointer<QOpenGLTextureBlitter> m_blitter;
-
-    QHash<QWasmWindow *, QWasmCompositedWindow> m_compositedWindows;
-    QList<QWasmWindow *> m_windowStack;
-    QRegion m_globalDamage; // damage caused by expose, window close, etc.
-    bool m_needComposit;
-    bool m_inFlush;
-    bool m_inResize;
-    bool m_isEnabled;
-    QSize m_targetSize;
-    qreal m_targetDevicePixelRatio;
-    QMap<QWasmWindow *, UpdateRequestDeliveryType> m_requestUpdateWindows;
-    bool m_requestUpdateAllWindows = false;
-    int m_requestAnimationFrameId = -1;
-    bool m_inDeliverUpdateRequest = false;
-
-    QPointer<QWindow> draggedWindow;
-    QPointer<QWindow> pressedWindow;
-    QPointer<QWindow> lastWindow;
-    Qt::MouseButtons pressedButtons;
-
-    QWasmCompositor::ResizeMode resizeMode;
-    QPoint resizePoint;
-    QRect resizeStartRect;
-    QPointingDevice *touchDevice;
-
-    QMap <int, QPointF> pressedTouchIds;
-
-    QCursor overriddenCursor;
-    bool isCursorOverridden = false;
 
     static QPalette makeWindowPalette();
 
@@ -195,10 +162,41 @@ private:
 
     static int touchCallback(int eventType, const EmscriptenTouchEvent *ev, void *userData);
 
-    QWasmEventTranslator *eventTranslator;
+    QScopedPointer<QOpenGLContext> m_context;
+    QScopedPointer<QOpenGLTextureBlitter> m_blitter;
 
-    bool mouseInCanvas;
-    QPointer<QWindow> windowUnderMouse;
+    QHash<QWasmWindow *, QWasmCompositedWindow> m_compositedWindows;
+    QList<QWasmWindow *> m_windowStack;
+    QRegion m_globalDamage; // damage caused by expose, window close, etc.
+    bool m_needComposit = false;
+    bool m_inFlush = false;
+    bool m_inResize = false;
+    bool m_isEnabled = true;
+    QSize m_targetSize;
+    qreal m_targetDevicePixelRatio = 1;
+    QMap<QWasmWindow *, UpdateRequestDeliveryType> m_requestUpdateWindows;
+    bool m_requestUpdateAllWindows = false;
+    int m_requestAnimationFrameId = -1;
+    bool m_inDeliverUpdateRequest = false;
+
+    QPointer<QWindow> m_windowBeingManipulated;
+    QPointer<QWindow> m_pressedWindow;
+    QPointer<QWindow> m_lastMouseTargetWindow;
+    Qt::MouseButtons m_pressedButtons = Qt::NoButton;
+
+    ResizeMode m_resizeMode = ResizeNone;
+    QPoint m_resizePoint;
+    QRect m_resizeStartRect;
+    std::unique_ptr<QPointingDevice> m_touchDevice;
+
+    QMap <int, QPointF> m_pressedTouchIds;
+
+    bool m_isResizeCursorDisplayed = false;
+
+    std::unique_ptr<QWasmEventTranslator> m_eventTranslator;
+
+    bool m_mouseInCanvas = false;
+    QPointer<QWindow> m_windowUnderMouse;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWasmCompositor::SubControls)
 
