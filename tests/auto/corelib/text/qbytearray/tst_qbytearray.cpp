@@ -37,6 +37,9 @@
 
 #include "../shared/test_number_shared.h"
 
+#include <stdexcept>
+#include <string_view>
+
 class tst_QByteArray : public QObject
 {
     Q_OBJECT
@@ -65,6 +68,7 @@ private slots:
     void split();
     void base64_data();
     void base64();
+    void base64_2GiB();
     void fromBase64_data();
     void fromBase64();
     void qvsnprintf();
@@ -597,6 +601,42 @@ void tst_QByteArray::base64()
     base64urlnoequals.replace('=', "");
     arr64 = rawdata.toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals);
     QCOMPARE(arr64, base64urlnoequals);
+}
+
+void tst_QByteArray::base64_2GiB()
+{
+    if constexpr (sizeof(qsizetype) > sizeof(int)) {
+        try {
+            constexpr qint64 GiB = 1024 * 1024 * 1024;
+            static_assert((2 * GiB + 1) % 3 == 0);
+            const char inputChar = '\0';    // all-NULs encode as
+            const char outputChar = 'A';    // all-'A's
+            const qint64 inputSize = 2 * GiB + 1;
+            const qint64 outputSize = inputSize / 3 * 4;
+            const auto sv = [](const QByteArray &ba) {
+                    return std::string_view{ba.data(), size_t(ba.size())};
+                };
+            QByteArray output;
+            {
+                const QByteArray input(inputSize, inputChar);
+                output = input.toBase64();
+                QCOMPARE(output.size(), outputSize);
+                QCOMPARE(sv(output).find_first_not_of(outputChar),
+                         std::string_view::npos);
+            }
+            {
+                auto r = QByteArray::fromBase64Encoding(output);
+                QCOMPARE(r.decodingStatus, QByteArray::Base64DecodingStatus::Ok);
+                QCOMPARE(r.decoded.size(), inputSize);
+                QCOMPARE(sv(r.decoded).find_first_not_of(inputChar),
+                         std::string_view::npos);
+            }
+        } catch (const std::bad_alloc &) {
+            QSKIP("Could not allocate enough RAM.");
+        }
+    } else {
+        QSKIP("This is a 64-bit only test");
+    }
 }
 
 //different from the previous test as the input are invalid
