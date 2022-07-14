@@ -1229,17 +1229,22 @@ function(_qt_internal_set_xcode_bitcode_enablement target)
         "NO")
 endfunction()
 
-function(_qt_internal_finalize_ios_app target)
+function(_qt_internal_finalize_apple_app target)
+    # Shared between macOS and iOS apps
     _qt_internal_set_xcode_development_team_id("${target}")
     _qt_internal_set_xcode_bundle_identifier("${target}")
-    _qt_internal_set_xcode_targeted_device_family("${target}")
     _qt_internal_set_xcode_code_sign_style("${target}")
     _qt_internal_set_xcode_bundle_display_name("${target}")
-    _qt_internal_set_xcode_bitcode_enablement("${target}")
     _qt_internal_set_xcode_install_path("${target}")
-
-    _qt_internal_handle_ios_launch_screen("${target}")
     _qt_internal_set_placeholder_apple_bundle_version("${target}")
+endfunction()
+
+function(_qt_internal_finalize_ios_app target)
+    _qt_internal_finalize_apple_app("${target}")
+
+    _qt_internal_set_xcode_targeted_device_family("${target}")
+    _qt_internal_set_xcode_bitcode_enablement("${target}")
+    _qt_internal_handle_ios_launch_screen("${target}")
     _qt_internal_generate_ios_info_plist("${target}")
 endfunction()
 
@@ -1249,6 +1254,8 @@ function(_qt_internal_finalize_macos_app target)
         return()
     endif()
 
+    _qt_internal_finalize_apple_app("${target}")
+
     # Make sure the install rpath has at least the minimum needed if the app
     # has any non-static frameworks. We can't rigorously know if the app will
     # have any, even with a static Qt, so always add this. If there are no
@@ -1257,8 +1264,6 @@ function(_qt_internal_finalize_macos_app target)
     list(APPEND install_rpath "@executable_path/../Frameworks")
     list(REMOVE_DUPLICATES install_rpath)
     set_property(TARGET ${target} PROPERTY INSTALL_RPATH "${install_rpath}")
-
-    _qt_internal_set_xcode_install_path("${target}")
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
