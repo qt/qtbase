@@ -150,7 +150,7 @@ QByteArray verifyZeroTermination(const QByteArray &ba)
     if (!baDataPtr->isMutable())
         return ba;
 
-    int baSize = ba.size();
+    qsizetype baSize = ba.size();
     char baTerminator = ba.constData()[baSize];
     if ('\0' != baTerminator)
         return QString::fromUtf8(
