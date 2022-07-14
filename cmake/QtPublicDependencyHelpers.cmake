@@ -83,19 +83,19 @@ endmacro()
 # Please note the target_dep_list accepts not the actual list values but the list names that
 # contain preformed dependencies. See foreach block for reference.
 # The same applies for find_dependency_path_list.
-macro(_qt_internal_find_qt_dependencies target_dep_list find_dependency_path_list)
-    foreach(__qt_target_dep IN LISTS ${target_dep_list})
-        list(GET __qt_target_dep 0 __qt_pkg)
-        list(GET __qt_target_dep 1 __qt_version)
+macro(_qt_internal_find_qt_dependencies target target_dep_list find_dependency_path_list)
+    foreach(__qt_${target}_target_dep IN LISTS ${target_dep_list})
+        list(GET __qt_${target}_target_dep 0 __qt_${target}_pkg)
+        list(GET __qt_${target}_target_dep 1 __qt_${target}_version)
 
-        if (NOT ${__qt_pkg}_FOUND)
-            set(__qt_pkg_names ${__qt_pkg})
-            if(__qt_pkg MATCHES "(.*)Private$")
-                set(__qt_pkg_names "${CMAKE_MATCH_1};${__qt_pkg}")
+        if (NOT ${__qt_${target}_pkg}_FOUND)
+            set(__qt_${target}_pkg_names ${__qt_${target}_pkg})
+            if(__qt_${target}_pkg MATCHES "(.*)Private$")
+                set(__qt_${target}_pkg_names "${CMAKE_MATCH_1};${__qt_${target}_pkg}")
             endif()
-            find_dependency(${__qt_pkg} ${__qt_version}
+            find_dependency(${__qt_${target}_pkg} ${__qt_${target}_version}
                 NAMES
-                    ${__qt_pkg_names}
+                    ${__qt_${target}_pkg_names}
                 PATHS
                     ${${find_dependency_path_list}}
                     ${_qt_additional_packages_prefix_paths}
@@ -112,5 +112,30 @@ endmacro()
 # The name is too generic, it doesn't look for any kind of dependencies but only Qt package
 # dependencies.
 macro(_qt_internal_find_dependencies target_dep_list find_dependency_path_list)
-    _qt_internal_find_qt_dependencies("${target_dep_list}" "${find_dependency_path_list}")
+    _qt_internal_find_qt_dependencies("none" "${target_dep_list}" "${find_dependency_path_list}")
+endmacro()
+
+# If a dependency package was not found, provide some hints in the error message on how to debug
+# the issue.
+# pkg_name_var should be the variable name that contains the package that was not found.
+# e.g. __qt_Core_pkg
+# message_out_var should contain the variable name of the  original "not found" message, and it
+# will have the hints appended to it as a string. e.g. ${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE
+#
+# The function should not be called in Dependencies.cmake files directly, because find_dependency
+# returns out of the included file.
+macro(_qt_internal_suggest_dependency_debugging pkg_name_var message_out_var)
+    if(${pkg_name_var}
+        AND NOT ${CMAKE_FIND_PACKAGE_NAME}_FOUND
+        AND ${message_out_var})
+        if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.23")
+            string(APPEND ${message_out_var}
+                "\nConfiguring with --debug-find-pkg=${${pkg_name_var}} might reveal \
+details why the package was not found.")
+        elseif(CMAKE_VERSION VERSION_GREATER_EQUAL "3.17")
+            string(APPEND ${message_out_var}
+                "\nConfiguring with -DCMAKE_FIND_DEBUG_MODE=TRUE might reveal \
+details why the package was not found.")
+        endif()
+    endif()
 endmacro()

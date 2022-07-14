@@ -12,6 +12,7 @@ endif()
 # note: target_deps example: "Qt6Core\;5.12.0;Qt6Gui\;5.12.0"
 set(__qt_@target@_target_deps "@target_deps@")
 set(__qt_@target@_find_dependency_paths "@find_dependency_paths@")
-_qt_internal_find_qt_dependencies(__qt_@target@_target_deps __qt_@target@_find_dependency_paths)
+_qt_internal_find_qt_dependencies("@target@" __qt_@target@_target_deps
+                                  __qt_@target@_find_dependency_paths)
 
 set(@target@_FOUND TRUE)

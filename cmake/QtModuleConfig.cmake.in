@@ -14,6 +14,8 @@ get_filename_component(_import_prefix "${_import_prefix}" REALPATH)
 # Find required dependencies, if any.
 if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@Dependencies.cmake")
     include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@Dependencies.cmake")
+    _qt_internal_suggest_dependency_debugging(
+        __qt_@target@_pkg ${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE)
 endif()
 
 # If *ConfigDependencies.cmake exists, the variable value will be defined there.
