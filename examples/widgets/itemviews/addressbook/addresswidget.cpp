@@ -110,10 +110,12 @@ void AddressWidget::removeEntry()
 //! [1]
 void AddressWidget::setupTabs()
 {
-    const auto groups = { "ABC", "DEF", "GHI", "JKL", "MNO", "PQR", "STU", "VW", "XYZ" };
+    using namespace Qt::StringLiterals;
+    const auto groups = { "ABC"_L1, "DEF"_L1, "GHI"_L1, "JKL"_L1, "MNO"_L1, "PQR"_L1,
+                          "STU"_L1, "VW"_L1, "XYZ"_L1 };
 
-    for (const QString &str : groups) {
-        const auto regExp = QRegularExpression(QString("^[%1].*").arg(str),
+    for (QLatin1StringView str : groups) {
+        const auto regExp = QRegularExpression(QLatin1StringView("^[%1].*").arg(str),
                                                QRegularExpression::CaseInsensitiveOption);
 
         auto proxyModel = new QSortFilterProxyModel(this);
