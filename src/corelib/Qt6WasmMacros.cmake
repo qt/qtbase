@@ -57,3 +57,21 @@ function(_qt_internal_wasm_add_target_helpers target)
     endif()
 endfunction()
 
+function(_qt_internal_add_wasm_extra_exported_methods target)
+    get_target_property(wasm_extra_exported_methods "${target}" QT_WASM_EXTRA_EXPORTED_METHODS)
+
+    if(NOT wasm_extra_exported_methods)
+        set(wasm_extra_exported_methods ${QT_WASM_EXTRA_EXPORTED_METHODS})
+    endif()
+
+    if(wasm_extra_exported_methods)
+        target_link_options("${target}" PRIVATE
+        "SHELL:-s EXPORTED_RUNTIME_METHODS=UTF16ToString,stringToUTF16,${wasm_extra_exported_methods}"
+        )
+    else()
+        # an errant dangling comma will break this
+        target_link_options("${target}" PRIVATE
+            "SHELL:-s EXPORTED_RUNTIME_METHODS=UTF16ToString,stringToUTF16"
+        )
+    endif()
+endfunction()

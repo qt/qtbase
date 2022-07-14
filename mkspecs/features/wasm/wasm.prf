@@ -7,6 +7,14 @@ isEmpty(DESTDIR): DESTDIR = $$OUT_PWD
 exists($$QMAKE_QT_CONFIG) {
 ## this may be subject to change
 
+    ## qmake puts a space if done otherwise
+    !isEmpty(QT_WASM_EXTRA_EXPORTED_METHODS): {
+        EXPORTED_METHODS = UTF16ToString,stringToUTF16,$$QT_WASM_EXTRA_EXPORTED_METHODS
+    } else {
+         EXPORTED_METHODS = UTF16ToString,stringToUTF16
+    }
+    EMCC_LFLAGS += -s EXPORTED_RUNTIME_METHODS=$$EXPORTED_METHODS
+
     qtConfig(thread) {
 
         EMCC_LFLAGS += -pthread
