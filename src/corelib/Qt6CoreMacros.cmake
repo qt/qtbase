@@ -1021,8 +1021,30 @@ function(_qt_internal_set_placeholder_apple_bundle_version target)
        NOT bundle_short_version AND
        NOT QT_NO_SET_XCODE_BUNDLE_VERSION
     )
-        set(bundle_version "0.0.1")
-        set(bundle_short_version "0.0.1")
+        get_target_property(version "${target}" VERSION)
+        if(NOT version)
+            set(version "${PROJECT_VERSION}")
+            if(NOT version)
+                set(version "1.0.0")
+            endif()
+        endif()
+
+        # Use x.y for short version and x.y.z for full version
+        # Any versions longer than this will fail App Store
+        # submission.
+        string(REPLACE "." ";" version_list ${version})
+        list(LENGTH version_list version_list_length)
+        list(GET version_list 0 version_major)
+        set(bundle_short_version "${version_major}")
+        if(version_list_length GREATER 1)
+            list(GET version_list 1 version_minor)
+            string(APPEND bundle_short_version ".${version_minor}")
+        endif()
+        set(bundle_version "${bundle_short_version}")
+        if(version_list_length GREATER 2)
+            list(GET version_list 2 version_patch)
+            string(APPEND bundle_version ".${version_patch}")
+        endif()
 
         if(NOT CMAKE_XCODE_ATTRIBUTE_MARKETING_VERSION
             AND NOT QT_NO_SET_XCODE_ATTRIBUTE_MARKETING_VERSION
