@@ -360,20 +360,21 @@ void QEglFSKmsGbmScreen::flip()
         if (d.screen != this) {
             d.screen->ensureModeSet(fb->fb);
             d.cloneFlipPending = true;
+            QKmsOutput &destOutput(d.screen->output());
 
             if (device()->hasAtomicSupport()) {
 #if QT_CONFIG(drm_atomic)
                 drmModeAtomicReq *request = device()->threadLocalAtomicRequest();
                 if (request) {
-                    drmModeAtomicAddProperty(request, d.screen->output().eglfs_plane->id,
-                                                      d.screen->output().eglfs_plane->framebufferPropertyId, fb->fb);
-                    drmModeAtomicAddProperty(request, d.screen->output().eglfs_plane->id,
-                                                      d.screen->output().eglfs_plane->crtcPropertyId, op.crtc_id);
+                    drmModeAtomicAddProperty(request, destOutput.eglfs_plane->id,
+                                                      destOutput.eglfs_plane->framebufferPropertyId, fb->fb);
+                    drmModeAtomicAddProperty(request, destOutput.eglfs_plane->id,
+                                                      destOutput.eglfs_plane->crtcPropertyId, destOutput.crtc_id);
                 }
 #endif
             } else {
                 int ret = drmModePageFlip(fd,
-                                          d.screen->output().crtc_id,
+                                          destOutput.crtc_id,
                                           fb->fb,
                                           DRM_MODE_PAGE_FLIP_EVENT,
                                           d.screen);
