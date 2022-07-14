@@ -650,6 +650,7 @@ function(_qt_internal_finalize_executable target)
 
     if(EMSCRIPTEN)
         _qt_internal_wasm_add_target_helpers("${target}")
+        _qt_internal_add_wasm_extra_exported_methods("${target}")
     endif()
     if(IOS)
         _qt_internal_finalize_ios_app("${target}")

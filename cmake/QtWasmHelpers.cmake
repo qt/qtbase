@@ -7,7 +7,6 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
 
     target_link_options("${wasmTarget}" INTERFACE
     "SHELL:-s ERROR_ON_UNDEFINED_SYMBOLS=1"
-    "SHELL:-s EXPORTED_RUNTIME_METHODS=UTF16ToString,stringToUTF16"
     "SHELL:-s MAX_WEBGL_VERSION=2"
     "SHELL:-s FETCH=1"
     "SHELL:-s WASM_BIGINT=1")
@@ -80,3 +79,9 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
         target_compile_definitions("${wasmTarget}" INTERFACE QT_HAVE_EMSCRIPTEN_ASYNCIFY)
     endif()
 endfunction()
+
+function(qt_internal_wasm_add_finalizers target)
+    qt_add_list_file_finalizer(_qt_internal_add_wasm_extra_exported_methods ${target})
+endfunction()
+
+
