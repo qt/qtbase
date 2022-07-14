@@ -743,6 +743,7 @@ QMouseEvent::QMouseEvent(QEvent::Type type, const QPointF &localPos, const QPoin
 Q_IMPL_EVENT_COMMON(QMouseEvent)
 
 /*!
+    \fn Qt::MouseEventSource QMouseEvent::source() const
     \since 5.3
     \deprecated [6.0] Use pointingDevice() instead.
 
@@ -771,12 +772,13 @@ Q_IMPL_EVENT_COMMON(QMouseEvent)
     decide how to react to this event. But it's even better to react to the
     original event rather than handling only mouse events.
 */
-#if QT_DEPRECATED_SINCE(6, 0)
+// Note: the docs mention 6.0 as a deprecation version. That is correct and
+// intended, because we want our users to stop using it! Internally we will
+// deprecate it when we port our code away from using it.
 Qt::MouseEventSource QMouseEvent::source() const
 {
     return Qt::MouseEventSource(m_source);
 }
-#endif
 
 /*!
     \since 5.3

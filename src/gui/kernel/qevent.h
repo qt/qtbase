@@ -233,8 +233,8 @@ public:
     QPointF windowPos() const { return scenePosition(); }
     QT_DEPRECATED_VERSION_X_6_0("Use globalPosition()")
     QPointF screenPos() const { return globalPosition(); }
-    Qt::MouseEventSource source() const;
 #endif // QT_DEPRECATED_SINCE(6, 0)
+    Qt::MouseEventSource source() const;
     Qt::MouseEventFlags flags() const;
 };
 
