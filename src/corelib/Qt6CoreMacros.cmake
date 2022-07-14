@@ -1001,10 +1001,30 @@ function(_qt_internal_set_placeholder_apple_bundle_version target)
        NOT bundle_version AND
        NOT bundle_short_version AND
        NOT QT_NO_SET_XCODE_BUNDLE_VERSION
-     )
-         set(bundle_version "0.0.1")
-         set(bundle_short_version "0.0.1")
-         set_target_properties("${target}"
+    )
+        set(bundle_version "0.0.1")
+        set(bundle_short_version "0.0.1")
+
+        if(NOT CMAKE_XCODE_ATTRIBUTE_MARKETING_VERSION
+            AND NOT QT_NO_SET_XCODE_ATTRIBUTE_MARKETING_VERSION
+            AND NOT CMAKE_XCODE_ATTRIBUTE_CURRENT_PROJECT_VERSION
+            AND NOT QT_NO_SET_XCODE_ATTRIBUTE_CURRENT_PROJECT_VERSION)
+            get_target_property(marketing_version "${target}"
+                XCODE_ATTRIBUTE_MARKETING_VERSION)
+            get_target_property(current_project_version "${target}"
+                XCODE_ATTRIBUTE_CURRENT_PROJECT_VERSION)
+            if(NOT marketing_version AND NOT current_project_version)
+                set_target_properties("${target}"
+                    PROPERTIES
+                        XCODE_ATTRIBUTE_CURRENT_PROJECT_VERSION "${bundle_version}"
+                        XCODE_ATTRIBUTE_MARKETING_VERSION "${bundle_short_version}"
+                )
+                set(bundle_version "$(CURRENT_PROJECT_VERSION)")
+                set(bundle_short_version "$(MARKETING_VERSION)")
+            endif()
+        endif()
+
+        set_target_properties("${target}"
                                PROPERTIES
                                MACOSX_BUNDLE_BUNDLE_VERSION "${bundle_version}"
                                MACOSX_BUNDLE_SHORT_VERSION_STRING "${bundle_short_version}"
