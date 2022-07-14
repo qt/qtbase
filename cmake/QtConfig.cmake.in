@@ -151,7 +151,7 @@ include(CMakeFindDependencyMacro)
 if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@Dependencies.cmake")
     include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@Dependencies.cmake")
 
-    _qt_internal_suggest_dependency_debugging(
+    _qt_internal_suggest_dependency_debugging(@INSTALL_CMAKE_NAMESPACE@
         __qt_@INSTALL_CMAKE_NAMESPACE@_pkg ${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE)
 
     if(NOT @INSTALL_CMAKE_NAMESPACE@_FOUND)
@@ -190,6 +190,8 @@ foreach(module ${@INSTALL_CMAKE_NAMESPACE@_FIND_COMPONENTS})
         list(PREPEND CMAKE_FIND_ROOT_PATH "${QT_HOST_PATH}"
             ${_qt_additional_host_packages_root_paths})
     endif()
+
+    _qt_internal_save_find_package_context_for_debugging(@INSTALL_CMAKE_NAMESPACE@${module})
 
     find_package(@INSTALL_CMAKE_NAMESPACE@${module}
         ${@INSTALL_CMAKE_NAMESPACE@_FIND_VERSION}
@@ -242,7 +244,8 @@ foreach(module ${@INSTALL_CMAKE_NAMESPACE@_FIND_COMPONENTS})
             set(_Qt_NOTFOUND_MESSAGE
                 "${_Qt_NOTFOUND_MESSAGE}Failed to find required Qt component \"${module}\". ${_qt_component_not_found_msg}")
             set(_qt_full_component_name "@INSTALL_CMAKE_NAMESPACE@${module}")
-            _qt_internal_suggest_dependency_debugging(_qt_full_component_name _Qt_NOTFOUND_MESSAGE)
+            _qt_internal_suggest_dependency_debugging(${_qt_full_component_name}
+                _qt_full_component_name _Qt_NOTFOUND_MESSAGE)
             unset(_qt_full_component_name)
             break()
         elseif(NOT @INSTALL_CMAKE_NAMESPACE@_FIND_QUIETLY)
