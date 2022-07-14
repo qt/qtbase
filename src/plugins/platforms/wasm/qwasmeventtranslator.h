@@ -33,7 +33,18 @@ public:
     QFlags<Qt::KeyboardModifier> translateKeyboardEventModifier(const EmscriptenKeyboardEvent *keyEvent);
     QFlags<Qt::KeyboardModifier> translateMouseEventModifier(const EmscriptenMouseEvent *mouseEvent);
     QFlags<Qt::KeyboardModifier> translateTouchEventModifier(const EmscriptenTouchEvent *touchEvent);
-    static Qt::MouseButton translateMouseButton(unsigned short button);
+    static constexpr Qt::MouseButton translateMouseButton(unsigned short button) {
+        switch (button) {
+            case 0:
+                return Qt::LeftButton;
+            case 1:
+                return Qt::MiddleButton;
+            case 2:
+                return Qt::RightButton;
+            default:
+                return Qt::NoButton;
+        }
+    }
     static QCursor cursorForMode(QWasmCompositor::ResizeMode mode);
 
     QString getKeyText(const EmscriptenKeyboardEvent *keyEvent, Qt::Key key);

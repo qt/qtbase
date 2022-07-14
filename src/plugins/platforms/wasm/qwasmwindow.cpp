@@ -229,8 +229,7 @@ QRegion QWasmWindow::resizeRegion() const
 
 bool QWasmWindow::isPointOnTitle(QPoint point) const
 {
-    bool ok = titleGeometry().contains(point);
-    return ok;
+    return hasTitleBar() ? titleGeometry().contains(point) : false;
 }
 
 bool QWasmWindow::isPointOnResizeRegion(QPoint point) const

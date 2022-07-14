@@ -238,18 +238,6 @@ Qt::Key QWasmEventTranslator::translateEmscriptKey(const EmscriptenKeyboardEvent
     return qtKey;
 }
 
-Qt::MouseButton QWasmEventTranslator::translateMouseButton(unsigned short button)
-{
-    if (button == 0)
-        return Qt::LeftButton;
-    else if (button == 1)
-        return Qt::MiddleButton;
-    else if (button == 2)
-        return Qt::RightButton;
-
-    return Qt::NoButton;
-}
-
 struct KeyMapping { Qt::Key from, to; };
 
 constexpr KeyMapping tildeKeyTable[] = { // ~

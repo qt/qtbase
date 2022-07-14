@@ -123,10 +123,10 @@ void QWasmCursor::setWasmCursor(QScreen *screen, const QByteArray &name)
     canvasStyle.set("cursor", val(name.constData()));
 }
 
-void QWasmCursor::setOverrideWasmCursor(QCursor *windowCursor, QScreen *screen)
+void QWasmCursor::setOverrideWasmCursor(const QCursor &windowCursor, QScreen *screen)
 {
     QWasmCursor *wCursor = static_cast<QWasmCursor *>(QWasmScreen::get(screen)->cursor());
-    wCursor->setWasmCursor(screen, wCursor->cursorShapeToHtml(windowCursor->shape()));
+    wCursor->setWasmCursor(screen, wCursor->cursorShapeToHtml(windowCursor.shape()));
 }
 
 void QWasmCursor::clearOverrideWasmCursor(QScreen *screen)
