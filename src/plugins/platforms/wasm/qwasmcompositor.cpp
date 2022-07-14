@@ -1073,7 +1073,7 @@ bool QWasmCompositor::processMouse(int eventType, const EmscriptenMouseEvent *mo
             }
         }
 
-        if (m_windowBeingManipulated && isTargetWindowResizable) {
+        if (m_windowBeingManipulated) {
             if (m_resizeMode == QWasmCompositor::ResizeNone) {
                 m_windowBeingManipulated->setPosition(
                     m_windowBeingManipulated->position() + QPoint(mouseEvent->movementX, mouseEvent->movementY));
