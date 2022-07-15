@@ -188,9 +188,9 @@ qt_config_compiler_supports_flag_test(optimize_debug
     FLAG "-Og"
 )
 
-qt_config_compile_test(no_extern_direct_access
-    LABEL "-mno-direct-extern-access support"
-    PROJECT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/direct_extern_access"
+qt_config_compile_test(no_direct_extern_access
+    LABEL "-mno-direct-extern-access / -fno-direct-access-external-data support"
+    PROJECT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/no_direct_extern_access"
 )
 
 qt_config_linker_supports_flag_test(enable_new_dtags
@@ -701,12 +701,12 @@ qt_feature("reduce_exports" PRIVATE
 )
 qt_feature_definition("reduce_exports" "QT_VISIBILITY_AVAILABLE")
 qt_feature_config("reduce_exports" QMAKE_PUBLIC_QT_CONFIG)
-qt_feature("no_extern_direct_access" PRIVATE
+qt_feature("no_direct_extern_access" PRIVATE
     LABEL "Use protected visibility and -mno-direct-extern-access"
-    CONDITION NOT WIN32 AND TEST_no_extern_direct_access
+    CONDITION NOT WIN32 AND TEST_no_direct_extern_access
 )
-qt_feature_definition("no_extern_direct_access" "QT_USE_PROTECTED_VISIBILITY")
-qt_feature_config("no_extern_direct_access" QMAKE_PUBLIC_QT_CONFIG)
+qt_feature_definition("no_direct_extern_access" "QT_USE_PROTECTED_VISIBILITY")
+qt_feature_config("no_direct_extern_access" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("reduce_relocations" PUBLIC
     LABEL "Reduce amount of relocations"
     CONDITION NOT WIN32 AND TEST_reduce_relocations

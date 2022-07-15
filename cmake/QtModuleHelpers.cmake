@@ -204,7 +204,7 @@ function(qt_internal_add_module target)
         qt_internal_get_framework_info(fw ${target})
     endif()
 
-    if(NOT QT_FEATURE_no_extern_direct_access AND QT_FEATURE_reduce_relocations AND
+    if(NOT QT_FEATURE_no_direct_extern_access AND QT_FEATURE_reduce_relocations AND
             UNIX AND NOT is_interface_lib)
         # On x86 and x86-64 systems with ELF binaries (especially Linux), due to
         # a new optimization in GCC 5.x in combination with a recent version of
