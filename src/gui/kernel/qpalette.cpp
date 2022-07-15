@@ -946,7 +946,7 @@ QPalette QPalette::resolve(const QPalette &other) const
     if ((*this == other && d->resolveMask == other.d->resolveMask)
         || d->resolveMask == 0) {
         QPalette o = other;
-        o.d->resolveMask = d->resolveMask;
+        o.setResolveMask(d->resolveMask);
         return o;
     }
 
