@@ -1191,14 +1191,13 @@ QAction::MenuRole QAction::menuRole() const
 
 /*!
     \fn QMenu *QAction::menu() const
-    \deprecated Use QMenu::menuInAction instead.
 
     Returns the menu contained by this action.
 
     In widget applications, actions that contain menus can be used to create menu
     items with submenus, or inserted into toolbars to create buttons with popup menus.
 
-    \sa QMenu::addAction()
+    \sa QMenu::addAction(), QMenu::menuInAction()
 */
 QObject* QAction::menuObject() const
 {
@@ -1208,7 +1207,6 @@ QObject* QAction::menuObject() const
 
 /*!
     \fn void QAction::setMenu(QMenu *menu)
-    \deprecated
 
     Sets the menu contained by this action to the specified \a menu.
 */

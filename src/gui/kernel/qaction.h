@@ -20,10 +20,10 @@ QT_BEGIN_NAMESPACE
 class QActionEvent;
 class QActionGroup;
 class QActionPrivate;
+class QMenu;
 #if QT_DEPRECATED_SINCE(6,0)
 class QWidget;
 class QGraphicsWidget;
-class QMenu;
 #endif
 
 class Q_GUI_EXPORT QAction : public QObject
@@ -175,7 +175,6 @@ public:
     void setMenuRole(MenuRole menuRole);
     MenuRole menuRole() const;
 
-#if QT_DEPRECATED_SINCE(6,0)
 #ifdef Q_CLANG_QDOC
     QMenu *menu() const;
     void setMenu(QMenu *menu);
@@ -190,7 +189,6 @@ public:
     {
         setMenuObject(m);
     }
-#endif
 #endif
 
     void setIconVisibleInMenu(bool visible);
