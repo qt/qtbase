@@ -3484,13 +3484,13 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
 
             case 'z':
                 used = true;
-                repeat = (repeat >= 3) ? 3 : 1;
+                repeat = qMin(repeat, 3);
 
                 // note: the millisecond component is treated like the decimal part of the seconds
                 // so ms == 2 is always printed as "002", but ms == 200 can be either "2" or "200"
                 result.append(locale.d->m_data->longLongToString(time.msec(), -1, 10, 3,
                                                                  QLocaleData::ZeroPadded));
-                if (repeat == 1) {
+                if (repeat != 3) {
                     if (result.endsWith(locale.zeroDigit()))
                         result.chop(1);
                     if (result.endsWith(locale.zeroDigit()))

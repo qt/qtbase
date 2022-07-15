@@ -1098,10 +1098,11 @@ void tst_QDateTime::toString_strformat()
 {
     // Most tests are in QLocale, just test that the api works.
     QDate testDate(2013, 1, 1);
-    QTime testTime(1, 2, 3);
+    QTime testTime(1, 2, 3, 456);
     QDateTime testDateTime(testDate, testTime, Qt::UTC);
     QCOMPARE(testDate.toString("yyyy-MM-dd"), QString("2013-01-01"));
     QCOMPARE(testTime.toString("hh:mm:ss"), QString("01:02:03"));
+    QCOMPARE(testTime.toString("hh:mm:ss.zz"), QString("01:02:03.456"));
     QCOMPARE(testDateTime.toString("yyyy-MM-dd hh:mm:ss t"), QString("2013-01-01 01:02:03 UTC"));
     // TODO QTBUG-95966: find better ways to use repeated 't'
     QCOMPARE(testDateTime.toString("yyyy-MM-dd hh:mm:ss tt"), QString("2013-01-01 01:02:03 UTCUTC"));

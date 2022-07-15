@@ -1147,6 +1147,13 @@ QString QDate::toString(Qt::DateFormat format) const
     \note Day and month names are given in English (C locale). To get localized
     month and day names, use QLocale::system().toString().
 
+    \note If a format character is repeated more times than the longest
+    expression in the table above using it, this part of the format will be read
+    as several expressions with no separator between them; the longest above,
+    possibly repeated as many times as there are copies of it, ending with a
+    residue that may be a shorter expression. Thus \c{'MMMMMMMMMM'} for a date
+    in May will contribute \c{"MayMay05"} to the output.
+
     \sa fromString(), QDateTime::toString(), QTime::toString(), QLocale::toString()
 
 */
@@ -1611,6 +1618,14 @@ QDate QDate::fromString(QStringView string, Qt::DateFormat format)
 
     \snippet code/src_corelib_time_qdatetime.cpp 3
 
+    \note If a format character is repeated more times than the longest
+    expression in the table above using it, this part of the format will be read
+    as several expressions with no separator between them; the longest above,
+    possibly repeated as many times as there are copies of it, ending with a
+    residue that may be a shorter expression. Thus \c{'MMMMMMMMMM'} would match
+    \c{"MayMay05"} and set the month to May. Likewise, \c{'MMMMMM'} would match
+    \c{"May08"} and find it inconsistent, leading to an invalid date.
+
     \sa toString(), QDateTime::fromString(), QTime::fromString(),
         QLocale::toDate()
 */
@@ -1912,12 +1927,14 @@ QString QTime::toString(Qt::DateFormat format) const
     \row \li mm \li The minute with a leading zero (00 to 59)
     \row \li s \li The whole second, without any leading zero (0 to 59)
     \row \li ss \li The whole second, with a leading zero where applicable (00 to 59)
-    \row \li z \li The fractional part of the second, to go after a decimal
-                point, without trailing zeroes (0 to 999).  Thus "\c{s.z}"
-                reports the seconds to full available (millisecond) precision
-                without trailing zeroes.
-    \row \li zzz \li The fractional part of the second, to millisecond
-                precision, including trailing zeroes where applicable (000 to 999).
+    \row \li z or zz
+         \li The fractional part of the second, to go after a decimal point,
+             without trailing zeroes.  Thus "\c{s.z}" reports the seconds to
+             full available (millisecond) precision without trailing zeroes (0
+             to 999).
+    \row \li zzz
+         \li The fractional part of the second, to millisecond precision,
+             including trailing zeroes where applicable (000 to 999).
     \row \li AP or A
          \li Use AM/PM display. \c A/AP will be replaced by 'AM' or 'PM'. In
              localized forms (only relevant to \l{QLocale::toString()}), the
@@ -1960,8 +1977,16 @@ QString QTime::toString(Qt::DateFormat format) const
     \note To get localized forms of AM or PM (the AP, ap, A, a, aP or Ap
     formats), use QLocale::system().toString().
 
+    \note If a format character is repeated more times than the longest
+    expression in the table above using it, this part of the format will be read
+    as several expressions with no separator between them; the longest above,
+    possibly repeated as many times as there are copies of it, ending with a
+    residue that may be a shorter expression. Thus \c{'HHHHH'} for the time
+    08:00 will contribute \c{"08088"} to the output.
+
     \sa fromString(), QDate::toString(), QDateTime::toString(), QLocale::toString()
 */
+// ### Qt 7 The 't' format specifiers should be specific to QDateTime (compare fromString).
 QString QTime::toString(QStringView format) const
 {
     return QLocale::c().toString(*this, format);
@@ -2341,6 +2366,15 @@ QTime QTime::fromString(QStringView string, Qt::DateFormat format)
 
     \note If localized forms of am or pm (the AP, ap, Ap, aP, A or a formats)
     are to be recognized, use QLocale::system().toTime().
+
+    \note If a format character is repeated more times than the longest
+    expression in the table above using it, this part of the format will be read
+    as several expressions with no separator between them; the longest above,
+    possibly repeated as many times as there are copies of it, ending with a
+    residue that may be a shorter expression. Thus \c{'HHHHH'} would match
+    \c{"08088"} or \c{"080808"} and set the hour to 8; if the time string
+    contained "070809" it would "match" but produce an inconsistent result,
+    leading to an invalid time.
 
     \sa toString(), QDateTime::fromString(), QDate::fromString(),
         QLocale::toTime(), QLocale::toDateTime()
@@ -5060,6 +5094,15 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
     \note Day and month names as well as AM/PM indicators must be given in
     English (C locale).  If localized month and day names or localized forms of
     AM/PM are to be recognized, use QLocale::system().toDateTime().
+
+    \note If a format character is repeated more times than the longest
+    expression in the table above using it, this part of the format will be read
+    as several expressions with no separator between them; the longest above,
+    possibly repeated as many times as there are copies of it, ending with a
+    residue that may be a shorter expression. Thus \c{'tttttt'} would match
+    \c{"Europe/BerlinEurope/Berlin"} and set the zone to Berlin time; if the
+    date-time string contained "Europe/BerlinZ" it would "match" but produce an
+    inconsistent result, leading to an invalid date-time.
 
     \sa toString(), QDate::fromString(), QTime::fromString(),
     QLocale::toDateTime()
