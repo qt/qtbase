@@ -1,15 +1,13 @@
-# Generated from qmetaobject.pro.
-
-#####################################################################
-## tst_qmetaobject Test:
-#####################################################################
+set(tst_qmetaobject_SOURCES
+    tst_qmetaobject.cpp
+    forwarddeclared.h
+    forwarddeclared.cpp
+)
 
 qt_internal_add_test(tst_qmetaobject
     SOURCES
-        tst_qmetaobject.cpp
+        ${tst_qmetaobject_SOURCES}
     PUBLIC_LIBRARIES
         Qt::CorePrivate
 )
 
-## Scopes:
-#####################################################################

@@ -12,6 +12,8 @@
 
 Q_DECLARE_METATYPE(const QMetaObject *)
 
+#include "forwarddeclared.h"
+
 struct MyStruct
 {
     int i;
@@ -215,8 +217,7 @@ namespace MyNamespace {
             int m_value2 = 0;
             int m_value3 = 0;
     };
-}
-
+} // namespace MyNamespace
 
 class tst_QMetaObject : public QObject
 {
@@ -435,8 +436,6 @@ void tst_QMetaObject::connectSlotsByName()
     QCOMPARE(obj2.invokeCount2, 1);
 }
 
-struct MyUnregisteredType { };
-
 static int countedStructObjectsCount = 0;
 struct CountedStruct
 {
@@ -488,8 +487,8 @@ public slots:
     void moveToThread(QThread *t)
     { QObject::moveToThread(t); }
 
-    void slotWithUnregisteredParameterType(MyUnregisteredType);
-    void slotWithOneUnregisteredParameterType(QString a1, MyUnregisteredType a2);
+    void slotWithUnregisteredParameterType(const MyForwardDeclaredType &);
+    void slotWithOneUnregisteredParameterType(QString a1, const MyForwardDeclaredType &a2);
 
     CountedStruct throwingSlot(const CountedStruct &, CountedStruct s2) {
 #ifndef QT_NO_EXCEPTIONS
@@ -584,10 +583,10 @@ void QtTestObject::testSender()
     slotResult = QString::asprintf("%p", sender());
 }
 
-void QtTestObject::slotWithUnregisteredParameterType(MyUnregisteredType)
+void QtTestObject::slotWithUnregisteredParameterType(const MyForwardDeclaredType &)
 { slotResult = "slotWithUnregisteredReturnType"; }
 
-void QtTestObject::slotWithOneUnregisteredParameterType(QString a1, MyUnregisteredType)
+void QtTestObject::slotWithOneUnregisteredParameterType(QString a1, const MyForwardDeclaredType &)
 { slotResult = "slotWithUnregisteredReturnType-" + a1; }
 
 void QtTestObject::staticFunction0()
@@ -864,19 +863,19 @@ void tst_QMetaObject::invokeQueuedMetaMember()
 
     obj.slotResult.clear();
     {
-        MyUnregisteredType t;
-        QTest::ignoreMessage(QtWarningMsg, "QMetaMethod::invoke: Unable to handle unregistered datatype 'MyUnregisteredType'");
-        QVERIFY(!QMetaObject::invokeMethod(&obj, "slotWithUnregisteredParameterType", Qt::QueuedConnection, Q_ARG(MyUnregisteredType, t)));
+        const MyForwardDeclaredType &t = getForwardDeclaredType();
+        QTest::ignoreMessage(QtWarningMsg, "QMetaMethod::invoke: Unable to handle unregistered datatype 'MyForwardDeclaredType'");
+        QVERIFY(!QMetaObject::invokeMethod(&obj, "slotWithUnregisteredParameterType", Qt::QueuedConnection, Q_ARG(MyForwardDeclaredType, t)));
         QVERIFY(obj.slotResult.isEmpty());
     }
 
     obj.slotResult.clear();
     {
         QString a1("Cannot happen");
-        MyUnregisteredType t;
-        QTest::ignoreMessage(QtWarningMsg, "QMetaMethod::invoke: Unable to handle unregistered datatype 'MyUnregisteredType'");
+        const MyForwardDeclaredType &t = getForwardDeclaredType();
+        QTest::ignoreMessage(QtWarningMsg, "QMetaMethod::invoke: Unable to handle unregistered datatype 'MyForwardDeclaredType'");
         QVERIFY(!QMetaObject::invokeMethod(&obj, "slotWithOneUnregisteredParameterType", Qt::QueuedConnection,
-                                           Q_ARG(QString, a1), Q_ARG(MyUnregisteredType, t)));
+                                           Q_ARG(QString, a1), Q_ARG(MyForwardDeclaredType, t)));
         QVERIFY(obj.slotResult.isEmpty());
     }
 }
