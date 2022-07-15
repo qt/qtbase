@@ -185,6 +185,7 @@ public:
     inline QList<QByteArray> parameterNames() const;
     inline QByteArray tag() const;
     inline int ownMethodIndex() const;
+    inline int ownConstructorIndex() const;
 
     // shadows the public function
     enum class InvokeFailReason : int {
@@ -194,6 +195,8 @@ public:
         DeadLockDetected = -2,
         CallViaVirtualFailed = -3,  // no warning
         ConstructorCallOnObject = -4,
+        ConstructorCallWithoutResult = -5,
+        ConstructorCallFailed = -6, // no warning
 
         CouldNotQueueParameter = -0x1000,
 
@@ -212,6 +215,8 @@ public:
 private:
     QMetaMethodPrivate();
 };
+
+enum { MaximumParamCount = 11 }; // up to 10 arguments + 1 return value
 
 /*!
     \since 4.5
@@ -243,48 +248,42 @@ QObject *QMetaObject::newInstance(QGenericArgument val0,
         return nullptr;
     }
 
-    QByteArray constructorName = className();
-    {
-        int idx = constructorName.lastIndexOf(':');
-        if (idx != -1)
-            constructorName.remove(0, idx+1); // remove qualified part
-    }
-    QVarLengthArray<char, 512> sig;
-    sig.append(constructorName.constData(), constructorName.length());
-    sig.append('(');
+    QObject *returnValue = nullptr;
+    QMetaType returnValueMetaType = QMetaType::fromType<decltype(returnValue)>();
 
-    enum { MaximumParamCount = 10 };
-    const char *typeNames[] = {val0.name(), val1.name(), val2.name(), val3.name(), val4.name(),
-                               val5.name(), val6.name(), val7.name(), val8.name(), val9.name()};
+    const char *typeNames[] = {
+        returnValueMetaType.name(),
+        val0.name(), val1.name(), val2.name(), val3.name(), val4.name(),
+        val5.name(), val6.name(), val7.name(), val8.name(), val9.name()
+    };
+    const void *parameters[] = {
+        &returnValue,
+        val0.data(), val1.data(), val2.data(), val3.data(), val4.data(),
+        val5.data(), val6.data(), val7.data(), val8.data(), val9.data()
+    };
 
     int paramCount;
-    for (paramCount = 0; paramCount < MaximumParamCount; ++paramCount) {
+    for (paramCount = 1; paramCount < MaximumParamCount; ++paramCount) {
         int len = int(qstrlen(typeNames[paramCount]));
         if (len <= 0)
             break;
-        sig.append(typeNames[paramCount], len);
-        sig.append(',');
     }
-    if (paramCount == 0)
-        sig.append(')'); // no parameters
-    else
-        sig[sig.size() - 1] = ')';
-    sig.append('\0');
 
-    int idx = indexOfConstructor(sig.constData());
-    if (idx < 0) {
-        QByteArray norm = QMetaObject::normalizedSignature(sig.constData());
-        idx = indexOfConstructor(norm.constData());
+    // find the constructor
+    auto priv = QMetaObjectPrivate::get(this);
+    for (int i = 0; i < priv->constructorCount; ++i) {
+        QMetaMethod m = QMetaMethod::fromRelativeConstructorIndex(this, i);
+
+        // attempt to call
+        QMetaMethodPrivate::InvokeFailReason r =
+                QMetaMethodPrivate::invokeImpl(m, nullptr, Qt::DirectConnection, paramCount,
+                                               parameters, typeNames);
+        if (r == QMetaMethodPrivate::InvokeFailReason::None)
+            return returnValue;
+        if (int(r) < 0)
+            return nullptr;
     }
-    if (idx < 0)
-        return nullptr;
 
-    QObject *returnValue = nullptr;
-    void *param[] = {&returnValue, val0.data(), val1.data(), val2.data(), val3.data(), val4.data(),
-                     val5.data(), val6.data(), val7.data(), val8.data(), val9.data()};
-
-    if (static_metacall(CreateInstance, idx, param) >= 0)
-        return nullptr;
     return returnValue;
 }
 
@@ -1341,8 +1340,6 @@ QByteArray QMetaObject::normalizedSignature(const char *method)
     return result;
 }
 
-enum { MaximumParamCount = 11 }; // up to 10 arguments + 1 return value
-
 /*
     Returns the signatures of all methods whose name matches \a nonExistentMember,
     or an empty QByteArray if there are no matches.
@@ -1877,8 +1874,16 @@ QByteArray QMetaMethodPrivate::tag() const
 
 int QMetaMethodPrivate::ownMethodIndex() const
 {
-    // recompute the methodIndex by reversing the arithmetic in QMetaObject::property()
+    // recompute the methodIndex by reversing the arithmetic in QMetaObject::method()
+    Q_ASSERT(methodType() != Constructor);
     return ( data.d - mobj->d.data - priv(mobj->d.data)->methodData)/Data::Size;
+}
+
+int QMetaMethodPrivate::ownConstructorIndex() const
+{
+    // recompute the methodIndex by reversing the arithmetic in QMetaObject::constructor()
+    Q_ASSERT(methodType() == Constructor);
+    return ( data.d - mobj->d.data - priv(mobj->d.data)->constructorData)/Data::Size;
 }
 
 /*!
@@ -2410,14 +2415,28 @@ auto QMetaMethodPrivate::invokeImpl(QMetaMethod self, void *target,
             return InvokeFailReason(int(InvokeFailReason::FormalParameterMismatch) + i - 1);
     }
 
-    // regular type - check return type
-    if (parameters[0]) {
-        if (self.methodType() == Constructor) {
+    // handle constructors first
+    if (self.methodType() == Constructor) {
+        if (object) {
             qWarning("QMetaMethod::invokeMethod: cannot call constructor %s on object %p",
                      self.methodSignature().constData(), object);
             return InvokeFailReason::ConstructorCallOnObject;
         }
 
+        if (!parameters[0]) {
+            qWarning("QMetaMethod::invokeMethod: constructor call to %s must assign a return type",
+                     self.methodSignature().constData());
+            return InvokeFailReason::ConstructorCallWithoutResult;
+        }
+
+        int idx = priv->ownConstructorIndex();
+        if (priv->mobj->static_metacall(QMetaObject::CreateInstance, idx, param) >= 0)
+            return InvokeFailReason::ConstructorCallFailed;
+        return {};
+    }
+
+    // regular type - check return type
+    if (parameters[0]) {
         if (!checkTypesAreCompatible(0)) {
             qWarning("QMetaMethod::invokeMethod: return type mismatch for method %s::%s:"
                      " cannot convert from %s to %s during invocation",
