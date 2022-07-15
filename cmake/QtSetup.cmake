@@ -254,25 +254,10 @@ unset(_qt_build_examples_as_external)
 option(QT_BUILD_MANUAL_TESTS "Build Qt manual tests" OFF)
 option(QT_BUILD_MINIMAL_STATIC_TESTS "Build minimal subset of tests for static Qt builds" OFF)
 
-## Find host tools (if non native):
+## Path used to find host tools, either when cross-compiling or just when using the tools from
+## a different host build.
 set(QT_HOST_PATH "$ENV{QT_HOST_PATH}" CACHE PATH
     "Installed Qt host directory path, used for cross compiling.")
-
-if (CMAKE_CROSSCOMPILING)
-    if(NOT IS_DIRECTORY "${QT_HOST_PATH}")
-        message(FATAL_ERROR "You need to set QT_HOST_PATH to cross compile Qt.")
-    endif()
-endif()
-
-if(NOT "${QT_HOST_PATH}" STREQUAL "")
-    find_package(${INSTALL_CMAKE_NAMESPACE}HostInfo
-                 CONFIG
-                 REQUIRED
-                 PATHS "${QT_HOST_PATH}"
-                       "${QT_HOST_PATH_CMAKE_DIR}"
-                 NO_CMAKE_FIND_ROOT_PATH
-                 NO_DEFAULT_PATH)
-endif()
 
 ## Android platform settings
 if(ANDROID)

@@ -23,16 +23,6 @@ else()
                              QT_VERSION_PATCH @PROJECT_VERSION_PATCH@)
 endif()
 
-if(NOT "${QT_HOST_PATH}" STREQUAL "")
-    find_package(Qt@PROJECT_VERSION_MAJOR@HostInfo
-                 CONFIG
-                 REQUIRED
-                 PATHS "${QT_HOST_PATH}"
-                       "${QT_HOST_PATH_CMAKE_DIR}"
-                 NO_CMAKE_FIND_ROOT_PATH
-                 NO_DEFAULT_PATH)
-endif()
-
 get_filename_component(_qt_import_prefix "${CMAKE_CURRENT_LIST_FILE}" PATH)
 get_filename_component(_qt_import_prefix "${_qt_import_prefix}" REALPATH)
 list(APPEND CMAKE_MODULE_PATH "${_qt_import_prefix}")
