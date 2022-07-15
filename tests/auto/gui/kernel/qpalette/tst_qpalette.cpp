@@ -102,9 +102,16 @@ void tst_QPalette::resolve()
     // ensure the resolve mask is full
     for (int r = 0; r < QPalette::NColorRoles; ++r)
         p3.setBrush(QPalette::All, QPalette::ColorRole(r), Qt::red);
+    const QPalette::ResolveMask fullMask = p3.resolveMask();
 
     QPalette p3ResolvedToP1 = p3.resolve(p1);
     QVERIFY(p3ResolvedToP1.isCopyOf(p3));
+
+    QPalette p4;
+    QCOMPARE(p4.resolveMask(), QPalette::ResolveMask{});
+    // resolve must detach even if p4 has no mask
+    p4 = p4.resolve(p3);
+    QCOMPARE(p3.resolveMask(), fullMask);
 }
 
 
