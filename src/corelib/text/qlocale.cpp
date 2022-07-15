@@ -31,6 +31,9 @@ QT_WARNING_DISABLE_GCC("-Wfree-nonheap-object") // false positive tracking
 #include "qvariant.h"
 #include "qvarlengtharray.h"
 #include "qstringbuilder.h"
+#if QT_CONFIG(timezone)
+#   include "qtimezone.h"
+#endif
 #include "private/qnumeric_p.h"
 #include "private/qtools_p.h"
 #include <cmath>
@@ -3520,13 +3523,36 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
                 }
                 break;
 
-            case 't':
+            case 't': {
                 used = true;
-                repeat = 1;
-                // If we have a QDateTime use the time spec otherwise use the current system tzname
-                result.append(formatDate ? datetime.timeZoneAbbreviation()
-                                         : QDateTime::currentDateTime().timeZoneAbbreviation());
+                repeat = qMin(repeat, 4);
+                // If we don't have a date-time, use the current system time:
+                const QDateTime when = formatDate ? datetime : QDateTime::currentDateTime();
+                QString text;
+                switch (repeat) {
+#if QT_CONFIG(timezone)
+                case 4:
+                    text = when.timeZone().displayName(when, QTimeZone::LongName);
+                    break;
+#endif // timezone
+                case 3:
+                case 2:
+                    text = when.toOffsetFromUtc(when.offsetFromUtc()).timeZoneAbbreviation();
+                    // If the offset is UTC that'll be a Qt::UTC, otherwise Qt::OffsetFromUTC.
+                    Q_ASSERT(text.startsWith("UTC"_L1));
+                    // The Qt::UTC case omits the zero offset, which we want:
+                    text = text.size() == 3 ? u"+00:00"_s : text.sliced(3);
+                    if (repeat == 2) // +hhmm format, rather than +hh:mm format
+                        text = text.remove(u':');
+                    break;
+                default:
+                    text = when.timeZoneAbbreviation();
+                    break;
+                }
+                if (!text.isEmpty())
+                    result.append(text);
                 break;
+            }
 
             default:
                 break;

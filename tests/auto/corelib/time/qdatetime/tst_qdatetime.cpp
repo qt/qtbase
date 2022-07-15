@@ -1104,8 +1104,9 @@ void tst_QDateTime::toString_strformat()
     QCOMPARE(testTime.toString("hh:mm:ss"), QString("01:02:03"));
     QCOMPARE(testTime.toString("hh:mm:ss.zz"), QString("01:02:03.456"));
     QCOMPARE(testDateTime.toString("yyyy-MM-dd hh:mm:ss t"), QString("2013-01-01 01:02:03 UTC"));
-    // TODO QTBUG-95966: find better ways to use repeated 't'
-    QCOMPARE(testDateTime.toString("yyyy-MM-dd hh:mm:ss tt"), QString("2013-01-01 01:02:03 UTCUTC"));
+    QCOMPARE(testDateTime.toString("yyyy-MM-dd hh:mm:ss tt"), QString("2013-01-01 01:02:03 +0000"));
+    QCOMPARE(testDateTime.toString("yyyy-MM-dd hh:mm:ss ttt"), QString("2013-01-01 01:02:03 +00:00"));
+    QCOMPARE(testDateTime.toString("yyyy-MM-dd hh:mm:ss tttt"), QString("2013-01-01 01:02:03 UTC"));
 }
 #endif // datestring
 

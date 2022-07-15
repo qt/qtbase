@@ -1952,7 +1952,24 @@ QString QTime::toString(Qt::DateFormat format) const
              \l{QLocale::toString()}), the locale-appropriate text (returned by
              \l{QLocale::amText()} or \l{QLocale::pmText()}) is used without
              change of case.
-    \row \li t \li The timezone (for example "CEST")
+    \row \li t
+         \li The timezone abbreviation (for example "CEST"). Note that time zone
+             abbreviations are not unique. In particular, \l toString() cannot
+             parse this.
+    \row \li tt
+         \li The timezone's offset from UTC with no colon between the hours and
+             minutes (for example "+0200").
+    \row \li ttt
+         \li The timezone's offset from UTC with a colon between the hours and
+             minutes (for example "+02:00").
+    \row \li tttt
+         \li The timezone name (for example "Europe/Berlin"). Note that this
+             gives no indication of whether the date-time was in daylight-saving
+             time or standard time, which may lead to ambiguity if the date-time
+             falls in an hour repeated by a transition between the two. The name
+             used is the one provided by \l QTimeZone::displayName() with the \l
+             QTimeZone::LongName type. This may depend on the operating system
+             in use.
     \endtable
 
     Any non-empty sequence of characters enclosed in single quotes will be
