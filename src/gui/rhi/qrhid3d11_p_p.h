@@ -22,6 +22,7 @@
 
 #include <d3d11_1.h>
 #include <dxgi1_6.h>
+#include <dcomp.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -551,6 +552,8 @@ struct QD3D11SwapChain : public QRhiSwapChain
     ID3D11Query *timestampDisjointQuery[BUFFER_COUNT];
     ID3D11Query *timestampQuery[BUFFER_COUNT * 2];
     UINT swapInterval = 1;
+    IDCompositionTarget *dcompTarget = nullptr;
+    IDCompositionVisual *dcompVisual = nullptr;
 };
 
 class QRhiD3D11 : public QRhiImplementation
@@ -681,6 +684,7 @@ public:
     void clearShaderCache();
     QByteArray compileHlslShaderSource(const QShader &shader, QShader::Variant shaderVariant, uint flags,
                                        QString *error, QShaderKey *usedShaderKey);
+    bool ensureDirectCompositionDevice();
 
     QRhi::Flags rhiFlags;
     bool debugLayer = false;
@@ -692,7 +696,7 @@ public:
     ID3DUserDefinedAnnotation *annotations = nullptr;
     IDXGIAdapter1 *activeAdapter = nullptr;
     IDXGIFactory1 *dxgiFactory = nullptr;
-    bool supportsFlipSwapchain = false;
+    IDCompositionDevice *dcompDevice = nullptr;
     bool supportsAllowTearing = false;
     bool forceFlipDiscard = false;
     bool deviceLost = false;

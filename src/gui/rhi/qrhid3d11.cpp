@@ -149,17 +149,6 @@ static IDXGIFactory1 *createDXGIFactory2()
     return result;
 }
 
-static IDXGIFactory1 *createDXGIFactory1()
-{
-    IDXGIFactory1 *result = nullptr;
-    const HRESULT hr = CreateDXGIFactory1(__uuidof(IDXGIFactory1), reinterpret_cast<void **>(&result));
-    if (FAILED(hr)) {
-        qWarning("CreateDXGIFactory1() failed to create DXGI factory: %s", qPrintable(comErrorMessage(hr)));
-        result = nullptr;
-    }
-    return result;
-}
-
 bool QRhiD3D11::create(QRhi::Flags flags)
 {
     rhiFlags = flags;
@@ -169,40 +158,32 @@ bool QRhiD3D11::create(QRhi::Flags flags)
         devFlags |= D3D11_CREATE_DEVICE_DEBUG;
 
     dxgiFactory = createDXGIFactory2();
-    if (dxgiFactory != nullptr) {
-        supportsFlipSwapchain = !qEnvironmentVariableIntValue("QT_D3D_NO_FLIP");
-    } else {
-        dxgiFactory = createDXGIFactory1();
-        supportsFlipSwapchain = false;
-    }
-
-    if (dxgiFactory == nullptr)
+    if (!dxgiFactory)
         return false;
 
+    // For a FLIP_* swapchain Present(0, 0) is not necessarily
+    // sufficient to get non-blocking behavior, try using ALLOW_TEARING
+    // when available.
     supportsAllowTearing = false;
-    forceFlipDiscard = false;
-    if (supportsFlipSwapchain) {
-        // For a FLIP_* swapchain Present(0, 0) is not necessarily
-        // sufficient to get non-blocking behavior, try using ALLOW_TEARING
-        // when available.
-        IDXGIFactory5 *factory5 = nullptr;
-        if (SUCCEEDED(dxgiFactory->QueryInterface(__uuidof(IDXGIFactory5), reinterpret_cast<void **>(&factory5)))) {
-            BOOL allowTearing = false;
-            if (SUCCEEDED(factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing))))
-                supportsAllowTearing = allowTearing;
-            factory5->Release();
-        }
-        // if we default to FLIP_SEQUENTIAL, have a way to request FLIP_DISCARD
-        forceFlipDiscard = qEnvironmentVariableIntValue("QT_D3D_FLIP_DISCARD");
+    IDXGIFactory5 *factory5 = nullptr;
+    if (SUCCEEDED(dxgiFactory->QueryInterface(__uuidof(IDXGIFactory5), reinterpret_cast<void **>(&factory5)))) {
+        BOOL allowTearing = false;
+        if (SUCCEEDED(factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing))))
+            supportsAllowTearing = allowTearing;
+        factory5->Release();
     }
 
-    qCDebug(QRHI_LOG_INFO, "FLIP_* swapchain supported = %s, ALLOW_TEARING supported = %s",
-            supportsFlipSwapchain ? "true" : "false",
+    // if we default to FLIP_SEQUENTIAL, have a way to request FLIP_DISCARD
+    forceFlipDiscard = qEnvironmentVariableIntValue("QT_D3D_FLIP_DISCARD");
+
+    if (qEnvironmentVariableIntValue("QT_D3D_NO_FLIP"))
+        qWarning("Non-FLIP swapchains are no longer supported, QT_D3D_NO_FLIP is now ignored");
+
+    qCDebug(QRHI_LOG_INFO, "FLIP_* swapchain supported = true, ALLOW_TEARING supported = %s",
             supportsAllowTearing ? "true" : "false");
 
     qCDebug(QRHI_LOG_INFO, "Default swap effect: %s",
-            supportsFlipSwapchain ? (forceFlipDiscard ? "FLIP_DISCARD" : "FLIP_SEQUENTIAL")
-                                  : "DISCARD");
+            forceFlipDiscard ? "FLIP_DISCARD" : "FLIP_SEQUENTIAL");
 
     if (!importedDeviceAndContext) {
         IDXGIAdapter1 *adapter;
@@ -379,6 +360,11 @@ void QRhiD3D11::destroy()
             dev->Release();
             dev = nullptr;
         }
+    }
+
+    if (dcompDevice) {
+        dcompDevice->Release();
+        dcompDevice = nullptr;
     }
 
     if (activeAdapter) {
@@ -1326,6 +1312,9 @@ QRhi::FrameOpResult QRhiD3D11::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
             qWarning("Failed to present: %s", qPrintable(comErrorMessage(hr)));
             return QRhi::FrameOpError;
         }
+
+        if (dcompDevice && swapChainD->dcompTarget && swapChainD->dcompVisual)
+            dcompDevice->Commit();
 
         // move on to the next buffer
         swapChainD->currentFrameSlot = (swapChainD->currentFrameSlot + 1) % QD3D11SwapChain::BUFFER_COUNT;
@@ -4603,6 +4592,16 @@ void QD3D11SwapChain::destroy()
     swapChain->Release();
     swapChain = nullptr;
 
+    if (dcompVisual) {
+        dcompVisual->Release();
+        dcompVisual = nullptr;
+    }
+
+    if (dcompTarget) {
+        dcompTarget->Release();
+        dcompTarget = nullptr;
+    }
+
     QRHI_RES_RHI(QRhiD3D11);
     if (rhiD)
         rhiD->unregisterResource(this);
@@ -4740,6 +4739,22 @@ bool QD3D11SwapChain::newColorBuffer(const QSize &size, DXGI_FORMAT format, DXGI
 static const DXGI_FORMAT DEFAULT_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
 static const DXGI_FORMAT DEFAULT_SRGB_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 
+bool QRhiD3D11::ensureDirectCompositionDevice()
+{
+    if (dcompDevice)
+        return true;
+
+    qCDebug(QRHI_LOG_INFO, "Creating Direct Composition device (needed for semi-transparent windows)");
+
+    HRESULT hr = DCompositionCreateDevice(nullptr, __uuidof(IDCompositionDevice), reinterpret_cast<void **>(&dcompDevice));
+    if (FAILED(hr)) {
+        qWarning("Failed to Direct Composition device: %s", qPrintable(comErrorMessage(hr)));
+        return false;
+    }
+
+    return true;
+}
+
 bool QD3D11SwapChain::createOrResize()
 {
     // Can be called multiple times due to window resizes - that is not the
@@ -4759,16 +4774,29 @@ bool QD3D11SwapChain::createOrResize()
     if (pixelSize.isEmpty())
         return false;
 
-    QRHI_RES_RHI(QRhiD3D11);
-    bool useFlipModel = rhiD->supportsFlipSwapchain;
+    HWND hwnd = reinterpret_cast<HWND>(window->winId());
+    HRESULT hr;
 
-    // Take a shortcut for alpha: whatever the platform plugin does to enable
-    // transparency for our QWindow will be sufficient on the legacy (DISCARD)
-    // path. For FLIP_* we'd need to use DirectComposition (create a
-    // IDCompositionDevice/Target/Visual), avoid that for now. (this though
-    // means HDR and semi-transparent windows cannot be combined)
+    QRHI_RES_RHI(QRhiD3D11);
+
     if (m_flags.testFlag(SurfaceHasPreMulAlpha) || m_flags.testFlag(SurfaceHasNonPreMulAlpha)) {
-        useFlipModel = false;
+        if (rhiD->ensureDirectCompositionDevice()) {
+            if (!dcompTarget) {
+                hr = rhiD->dcompDevice->CreateTargetForHwnd(hwnd, true, &dcompTarget);
+                if (FAILED(hr)) {
+                    qWarning("Failed to create Direct Compsition target for the window: %s",
+                             qPrintable(comErrorMessage(hr)));
+                }
+            }
+            if (dcompTarget && !dcompVisual) {
+                hr = rhiD->dcompDevice->CreateVisual(&dcompVisual);
+                if (FAILED(hr)) {
+                    qWarning("Failed to create DirectComposition visual: %s",
+                             qPrintable(comErrorMessage(hr)));
+                }
+            }
+        }
+        // simple consistency check
         if (window->requestedFormat().alphaBufferSize() <= 0)
             qWarning("Swapchain says surface has alpha but the window has no alphaBufferSize set. "
                      "This may lead to problems.");
@@ -4781,128 +4809,131 @@ bool QD3D11SwapChain::createOrResize()
     // ALLOW_TEARING, and ALLOW_TEARING is not compatible with it at all so the
     // flag must not be set then. Whereas for flip we should use it, if
     // supported, to get better results for 'unthrottled' presentation.
-    if (swapInterval == 0 && useFlipModel && rhiD->supportsAllowTearing)
+    if (swapInterval == 0 && rhiD->supportsAllowTearing)
         swapChainFlags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
     if (!swapChain) {
-        HWND hwnd = reinterpret_cast<HWND>(window->winId());
         sampleDesc = rhiD->effectiveSampleCount(m_sampleCount);
         colorFormat = DEFAULT_FORMAT;
         srgbAdjustedColorFormat = m_flags.testFlag(sRGB) ? DEFAULT_SRGB_FORMAT : DEFAULT_FORMAT;
 
-        HRESULT hr;
-        if (useFlipModel) {
-            DXGI_COLOR_SPACE_TYPE hdrColorSpace = DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709; // SDR
-            DXGI_OUTPUT_DESC1 hdrOutputDesc;
-            if (outputDesc1ForWindow(m_window, rhiD->activeAdapter, &hdrOutputDesc) && m_format != SDR) {
-                // https://docs.microsoft.com/en-us/windows/win32/direct3darticles/high-dynamic-range
-                if (hdrOutputDesc.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020) {
-                    switch (m_format) {
-                    case HDRExtendedSrgbLinear:
-                        colorFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
-                        hdrColorSpace = DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709;
-                        srgbAdjustedColorFormat = colorFormat;
-                        break;
-                    case HDR10:
-                        colorFormat = DXGI_FORMAT_R10G10B10A2_UNORM;
-                        hdrColorSpace = DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020;
-                        srgbAdjustedColorFormat = colorFormat;
-                        break;
-                    default:
-                        break;
-                    }
-                } else {
-                    // This happens also when Use HDR is set to Off in the Windows
-                    // Display settings. Show a helpful warning, but continue with the
-                    // default non-HDR format.
-                    qWarning("The output associated with the window is not HDR capable "
-                             "(or Use HDR is Off in the Display Settings), ignoring HDR format request");
+        DXGI_COLOR_SPACE_TYPE hdrColorSpace = DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709; // SDR
+        DXGI_OUTPUT_DESC1 hdrOutputDesc;
+        if (outputDesc1ForWindow(m_window, rhiD->activeAdapter, &hdrOutputDesc) && m_format != SDR) {
+            // https://docs.microsoft.com/en-us/windows/win32/direct3darticles/high-dynamic-range
+            if (hdrOutputDesc.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020) {
+                switch (m_format) {
+                case HDRExtendedSrgbLinear:
+                    colorFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+                    hdrColorSpace = DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709;
+                    srgbAdjustedColorFormat = colorFormat;
+                    break;
+                case HDR10:
+                    colorFormat = DXGI_FORMAT_R10G10B10A2_UNORM;
+                    hdrColorSpace = DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020;
+                    srgbAdjustedColorFormat = colorFormat;
+                    break;
+                default:
+                    break;
                 }
-            }
-
-            // We use a FLIP model swapchain which implies a buffer count of 2
-            // (as opposed to the old DISCARD with back buffer count == 1).
-            // This makes no difference for the rest of the stuff except that
-            // automatic MSAA is unsupported and needs to be implemented via a
-            // custom multisample render target and an explicit resolve.
-
-            DXGI_SWAP_CHAIN_DESC1 desc;
-            memset(&desc, 0, sizeof(desc));
-            desc.Width = UINT(pixelSize.width());
-            desc.Height = UINT(pixelSize.height());
-            desc.Format = colorFormat;
-            desc.SampleDesc.Count = 1;
-            desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-            desc.BufferCount = BUFFER_COUNT;
-
-            // Normally we'd want FLIP_DISCARD, but that comes with the default
-            // SCALING_STRETCH, as SCALING_NONE is documented to be only
-            // available for FLIP_SEQUENTIAl. The problem with stretch is that
-            // Qt Quick and similar apps typically running in resizable windows
-            // will not like how that looks in practice: the content will
-            // appear to be "jumping" around during a window resize. So choose
-            // sequential/none by default.
-            if (rhiD->forceFlipDiscard) {
-                desc.Scaling = DXGI_SCALING_STRETCH;
-                desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
             } else {
-                desc.Scaling = DXGI_SCALING_NONE;
-                desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+                // This happens also when Use HDR is set to Off in the Windows
+                // Display settings. Show a helpful warning, but continue with the
+                // default non-HDR format.
+                qWarning("The output associated with the window is not HDR capable "
+                         "(or Use HDR is Off in the Display Settings), ignoring HDR format request");
             }
+        }
 
-            // Do not bother with AlphaMode, if won't work unless we go through
-            // DirectComposition. Instead, we just take the other (DISCARD)
-            // path for now when alpha is requested.
-            desc.Flags = swapChainFlags;
+        // We use a FLIP model swapchain which implies a buffer count of 2
+        // (as opposed to the old DISCARD with back buffer count == 1).
+        // This makes no difference for the rest of the stuff except that
+        // automatic MSAA is unsupported and needs to be implemented via a
+        // custom multisample render target and an explicit resolve.
 
-            IDXGIFactory2 *fac = static_cast<IDXGIFactory2 *>(rhiD->dxgiFactory);
-            IDXGISwapChain1 *sc1;
+        DXGI_SWAP_CHAIN_DESC1 desc;
+        memset(&desc, 0, sizeof(desc));
+        desc.Width = UINT(pixelSize.width());
+        desc.Height = UINT(pixelSize.height());
+        desc.Format = colorFormat;
+        desc.SampleDesc.Count = 1;
+        desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+        desc.BufferCount = BUFFER_COUNT;
+        desc.Flags = swapChainFlags;
+
+        // Normally we'd want FLIP_DISCARD, but that comes with the default
+        // SCALING_STRETCH, as SCALING_NONE is documented to be only
+        // available for FLIP_SEQUENTIAL. The problem with stretch is that
+        // Qt Quick and similar apps typically running in resizable windows
+        // will not like how that looks in practice: the content will
+        // appear to be "jumping" around during a window resize. So choose
+        // sequential/none by default.
+        if (rhiD->forceFlipDiscard) {
+            desc.Scaling = DXGI_SCALING_STRETCH;
+            desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+        } else {
+            desc.Scaling = DXGI_SCALING_NONE;
+            desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+        }
+
+        if (dcompVisual) {
+            // With DirectComposition setting AlphaMode to STRAIGHT fails the
+            // swapchain creation, whereas the result seems to be identical
+            // with any of the other values, including IGNORE. (?)
+            desc.AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED;
+
+            // DirectComposition has its own limitations, cannot use
+            // SCALING_NONE. So with semi-transparency requested we are forced
+            // to SCALING_STRETCH.
+            desc.Scaling = DXGI_SCALING_STRETCH;
+        }
+
+        IDXGIFactory2 *fac = static_cast<IDXGIFactory2 *>(rhiD->dxgiFactory);
+        IDXGISwapChain1 *sc1;
+
+        if (dcompVisual)
+            hr = fac->CreateSwapChainForComposition(rhiD->dev, &desc, nullptr, &sc1);
+        else
             hr = fac->CreateSwapChainForHwnd(rhiD->dev, hwnd, &desc, nullptr, nullptr, &sc1);
 
-            // If failed and we tried a HDR format, then try with SDR. This
-            // matches other backends, such as Vulkan where if the format is
-            // not supported, the default one is used instead.
-            if (FAILED(hr) && m_format != SDR) {
-                colorFormat = DEFAULT_FORMAT;
-                desc.Format = DEFAULT_FORMAT;
+        // If failed and we tried a HDR format, then try with SDR. This
+        // matches other backends, such as Vulkan where if the format is
+        // not supported, the default one is used instead.
+        if (FAILED(hr) && m_format != SDR) {
+            colorFormat = DEFAULT_FORMAT;
+            desc.Format = DEFAULT_FORMAT;
+            if (dcompVisual)
+                hr = fac->CreateSwapChainForComposition(rhiD->dev, &desc, nullptr, &sc1);
+            else
                 hr = fac->CreateSwapChainForHwnd(rhiD->dev, hwnd, &desc, nullptr, nullptr, &sc1);
-            }
+        }
 
-            if (SUCCEEDED(hr)) {
-                swapChain = sc1;
-                if (m_format != SDR) {
-                    IDXGISwapChain3 *sc3 = nullptr;
-                    if (SUCCEEDED(sc1->QueryInterface(__uuidof(IDXGISwapChain3), reinterpret_cast<void **>(&sc3)))) {
-                        hr = sc3->SetColorSpace1(hdrColorSpace);
-                        if (FAILED(hr))
-                            qWarning("Failed to set color space on swapchain: %s", qPrintable(comErrorMessage(hr)));
-                        sc3->Release();
-                    } else {
-                        qWarning("IDXGISwapChain3 not available, HDR swapchain will not work as expected");
-                    }
+        if (SUCCEEDED(hr)) {
+            swapChain = sc1;
+            if (m_format != SDR) {
+                IDXGISwapChain3 *sc3 = nullptr;
+                if (SUCCEEDED(sc1->QueryInterface(__uuidof(IDXGISwapChain3), reinterpret_cast<void **>(&sc3)))) {
+                    hr = sc3->SetColorSpace1(hdrColorSpace);
+                    if (FAILED(hr))
+                        qWarning("Failed to set color space on swapchain: %s", qPrintable(comErrorMessage(hr)));
+                    sc3->Release();
+                } else {
+                    qWarning("IDXGISwapChain3 not available, HDR swapchain will not work as expected");
                 }
             }
-        } else {
-            // Fallback: use DISCARD mode. Regardless, keep on using our manual
-            // resolve for symmetry with the FLIP_* code path when MSAA is
-            // requested. This has no HDR support.
-
-            DXGI_SWAP_CHAIN_DESC desc;
-            memset(&desc, 0, sizeof(desc));
-            desc.BufferDesc.Width = UINT(pixelSize.width());
-            desc.BufferDesc.Height = UINT(pixelSize.height());
-            desc.BufferDesc.RefreshRate.Numerator = 60;
-            desc.BufferDesc.RefreshRate.Denominator = 1;
-            desc.BufferDesc.Format = colorFormat;
-            desc.SampleDesc.Count = 1;
-            desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-            desc.BufferCount = 1;
-            desc.OutputWindow = hwnd;
-            desc.Windowed = true;
-            desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-            desc.Flags = swapChainFlags;
-
-            hr = rhiD->dxgiFactory->CreateSwapChain(rhiD->dev, &desc, &swapChain);
+            if (dcompVisual) {
+                hr = dcompVisual->SetContent(sc1);
+                if (SUCCEEDED(hr)) {
+                    hr = dcompTarget->SetRoot(dcompVisual);
+                    if (FAILED(hr)) {
+                        qWarning("Failed to associate Direct Composition visual with the target: %s",
+                                 qPrintable(comErrorMessage(hr)));
+                    }
+                } else {
+                    qWarning("Failed to set content for Direct Composition visual: %s",
+                             qPrintable(comErrorMessage(hr)));
+                }
+            }
         }
         if (FAILED(hr)) {
             qWarning("Failed to create D3D11 swapchain: %s", qPrintable(comErrorMessage(hr)));
@@ -4911,9 +4942,9 @@ bool QD3D11SwapChain::createOrResize()
         rhiD->dxgiFactory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
     } else {
         releaseBuffers();
-        const UINT count = useFlipModel ? BUFFER_COUNT : 1;
-        HRESULT hr = swapChain->ResizeBuffers(count, UINT(pixelSize.width()), UINT(pixelSize.height()),
-                                              colorFormat, swapChainFlags);
+        // flip model -> buffer count is the real buffer count, not 1 like with the legacy modes
+        hr = swapChain->ResizeBuffers(UINT(BUFFER_COUNT), UINT(pixelSize.width()), UINT(pixelSize.height()),
+                                      colorFormat, swapChainFlags);
         if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET) {
             qWarning("Device loss detected in ResizeBuffers()");
             rhiD->deviceLost = true;
@@ -4938,7 +4969,7 @@ bool QD3D11SwapChain::createOrResize()
     // swapchain."
 
     // So just query index 0 once (per resize) and be done with it.
-    HRESULT hr = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void **>(&backBufferTex));
+    hr = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void **>(&backBufferTex));
     if (FAILED(hr)) {
         qWarning("Failed to query swapchain backbuffer: %s", qPrintable(comErrorMessage(hr)));
         return false;
@@ -4997,7 +5028,7 @@ bool QD3D11SwapChain::createOrResize()
         for (int i = 0; i < BUFFER_COUNT; ++i) {
             if (!timestampDisjointQuery[i]) {
                 queryDesc.Query = D3D11_QUERY_TIMESTAMP_DISJOINT;
-                HRESULT hr = rhiD->dev->CreateQuery(&queryDesc, &timestampDisjointQuery[i]);
+                hr = rhiD->dev->CreateQuery(&queryDesc, &timestampDisjointQuery[i]);
                 if (FAILED(hr)) {
                     qWarning("Failed to create timestamp disjoint query: %s", qPrintable(comErrorMessage(hr)));
                     break;
@@ -5007,7 +5038,7 @@ bool QD3D11SwapChain::createOrResize()
             for (int j = 0; j < 2; ++j) {
                 const int idx = BUFFER_COUNT * i + j; // one pair per buffer (frame)
                 if (!timestampQuery[idx]) {
-                    HRESULT hr = rhiD->dev->CreateQuery(&queryDesc, &timestampQuery[idx]);
+                    hr = rhiD->dev->CreateQuery(&queryDesc, &timestampQuery[idx]);
                     if (FAILED(hr)) {
                         qWarning("Failed to create timestamp query: %s", qPrintable(comErrorMessage(hr)));
                         break;

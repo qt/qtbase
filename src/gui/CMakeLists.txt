@@ -424,6 +424,7 @@ qt_internal_extend_target(Gui CONDITION WIN32
         d3d11
         dxgi
         dxguid
+        dcomp
 )
 
 #### Keys ignored in scope 7:.:.:gui.pro:WIN32:
