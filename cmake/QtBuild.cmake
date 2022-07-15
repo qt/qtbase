@@ -552,6 +552,14 @@ include(QtPublicFindPackageHelpers)
 include(QtPublicDependencyHelpers)
 include(QtPublicToolHelpers)
 
+if(CMAKE_CROSSCOMPILING)
+    if(NOT IS_DIRECTORY "${QT_HOST_PATH}")
+        message(FATAL_ERROR "You need to set QT_HOST_PATH to cross compile Qt.")
+    endif()
+endif()
+
+_qt_internal_find_host_info_package()
+
 # TODO: This block provides support for old variables. It should be removed once
 #       we remove all references to these variables in other Qt module repos.
 #       Prefer to use the provided commands to retrieve the relevant things instead.

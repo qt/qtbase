@@ -191,3 +191,15 @@ macro(_qt_internal_save_find_package_context_for_debugging infix)
         set(_qt_${infix}_qt_cmake_dir "${_qt_cmake_dir}")
     endif()
 endmacro()
+
+macro(_qt_internal_find_host_info_package)
+    if(NOT "${QT_HOST_PATH}" STREQUAL "")
+        find_package(Qt6HostInfo
+                     CONFIG
+                     REQUIRED
+                     PATHS "${QT_HOST_PATH}"
+                           "${QT_HOST_PATH_CMAKE_DIR}"
+                     NO_CMAKE_FIND_ROOT_PATH
+                     NO_DEFAULT_PATH)
+    endif()
+endmacro()
