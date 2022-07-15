@@ -530,6 +530,8 @@ void tst_QTextMarkdownWriter::rewriteDocument_data()
     QTest::addColumn<QString>("inputFile");
 
     QTest::newRow("block quotes") << "blockquotes.md";
+    QTest::newRow("block quotes with lists") << "blockquotesWithLists.md";
+    // QTest::newRow("list item with block quote") << "listItemWithBlockquote.md"; // not supported for now
     QTest::newRow("example") << "example.md";
     QTest::newRow("list items after headings") << "headingsAndLists.md";
     QTest::newRow("word wrap") << "wordWrap.md";
@@ -629,6 +631,8 @@ void tst_QTextMarkdownWriter::fromHtml()
     }
 #endif
 
+    output = output.trimmed();
+    expectedOutput = expectedOutput.trimmed();
     if (output != expectedOutput && (isMainFontFixed() || isFixedFontProportional()))
         QEXPECT_FAIL("", "fixed main font or proportional fixed font (QTBUG-103484)", Continue);
     QCOMPARE(output, expectedOutput);

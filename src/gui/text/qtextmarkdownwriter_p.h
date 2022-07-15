@@ -43,6 +43,7 @@ private:
     };
 
     ListInfo listInfo(QTextList *list);
+    void setLinePrefixForBlockQuote(int level);
 
 private:
     QTextStream &m_stream;
@@ -53,6 +54,7 @@ private:
     int m_wrappedLineIndent = 0;
     int m_lastListIndent = 1;
     bool m_doubleNewlineWritten = false;
+    bool m_linePrefixWritten = false;
     bool m_indentedCodeBlock = false;
     bool m_fencedCodeBlock = false;
 };
