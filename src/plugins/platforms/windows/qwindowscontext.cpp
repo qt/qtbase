@@ -1098,13 +1098,14 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         if ((wParam == 0) && (lParam != 0) // lParam sometimes may be NULL.
             && (wcscmp(reinterpret_cast<LPCWSTR>(lParam), L"ImmersiveColorSet") == 0)) {
             const bool darkMode = QWindowsTheme::queryDarkMode();
-            if (darkMode != QWindowsContextPrivate::m_darkMode) {
-                QWindowsContextPrivate::m_darkMode = darkMode;
-                auto integration = QWindowsIntegration::instance();
-                if (integration->darkModeHandling().testFlag(QWindowsApplication::DarkModeStyle)) {
-                    QWindowsTheme::instance()->refresh();
-                    QWindowSystemInterface::handleThemeChange();
-                }
+            const bool darkModeChanged = darkMode != QWindowsContextPrivate::m_darkMode;
+            QWindowsContextPrivate::m_darkMode = darkMode;
+            auto integration = QWindowsIntegration::instance();
+            if (integration->darkModeHandling().testFlag(QWindowsApplication::DarkModeStyle)) {
+                QWindowsTheme::instance()->refresh();
+                QWindowSystemInterface::handleThemeChange();
+            }
+            if (darkModeChanged) {
                 if (integration->darkModeHandling().testFlag(QWindowsApplication::DarkModeWindowFrames)) {
                     for (QWindowsWindow *w : d->m_windows)
                         w->setDarkBorder(QWindowsContextPrivate::m_darkMode);
