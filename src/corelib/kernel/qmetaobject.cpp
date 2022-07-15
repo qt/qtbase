@@ -1340,31 +1340,22 @@ QByteArray QMetaObject::normalizedSignature(const char *method)
     return result;
 }
 
-/*
-    Returns the signatures of all methods whose name matches \a nonExistentMember,
-    or an empty QByteArray if there are no matches.
-*/
-static inline QByteArray findMethodCandidates(const QMetaObject *metaObject, const char *nonExistentMember)
+Q_DECL_COLD_FUNCTION static inline bool
+printMethodNotFoundWarning(const QMetaObject *meta, QLatin1StringView name, qsizetype paramCount,
+                           const char *const *names)
 {
+    // now find the candidates we couldn't use
     QByteArray candidateMessage;
-    // Prevent full string comparison in every iteration.
-    const QByteArray memberByteArray = nonExistentMember;
-    for (int i = 0; i < metaObject->methodCount(); ++i) {
-        const QMetaMethod method = metaObject->method(i);
-        if (method.name() == memberByteArray)
+    for (int i = 0; i < meta->methodCount(); ++i) {
+        const QMetaMethod method = meta->method(i);
+        if (method.name() == QByteArrayView(name))
             candidateMessage += "    " + method.methodSignature() + '\n';
     }
     if (!candidateMessage.isEmpty()) {
         candidateMessage.prepend("\nCandidates are:\n");
         candidateMessage.chop(1);
     }
-    return candidateMessage;
-}
 
-Q_DECL_COLD_FUNCTION static inline bool
-printMethodNotFoundWarning(const QMetaObject *meta, QLatin1StringView name, qsizetype paramCount,
-                           const char *const *names)
-{
     QVarLengthArray<char, 512> sig;
     sig.append(name.data(), name.size());
     sig.append('(');
@@ -1379,8 +1370,7 @@ printMethodNotFoundWarning(const QMetaObject *meta, QLatin1StringView name, qsiz
     sig.append('\0');
 
     qWarning("QMetaObject::invokeMethod: No such method %s::%s%s",
-             meta->className(), sig.constData(),
-             findMethodCandidates(meta, name.data()).constData());
+             meta->className(), sig.constData(), candidateMessage.constData());
     return false;
 }
 
