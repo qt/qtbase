@@ -12,6 +12,8 @@
 #include <QtGui/qinputdevice.h>
 #include <QHash>
 #include <QCursor>
+#include "qwasmevent.h"
+#include "qwasmplatform.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -26,25 +28,7 @@ public:
     explicit QWasmEventTranslator();
     ~QWasmEventTranslator();
 
-    template <typename Event>
-    QFlags<Qt::KeyboardModifier> translatKeyModifier(const Event *event);
-
     static Qt::Key translateEmscriptKey(const EmscriptenKeyboardEvent *emscriptKey);
-    QFlags<Qt::KeyboardModifier> translateKeyboardEventModifier(const EmscriptenKeyboardEvent *keyEvent);
-    QFlags<Qt::KeyboardModifier> translateMouseEventModifier(const EmscriptenMouseEvent *mouseEvent);
-    QFlags<Qt::KeyboardModifier> translateTouchEventModifier(const EmscriptenTouchEvent *touchEvent);
-    static constexpr Qt::MouseButton translateMouseButton(unsigned short button) {
-        switch (button) {
-            case 0:
-                return Qt::LeftButton;
-            case 1:
-                return Qt::MiddleButton;
-            case 2:
-                return Qt::RightButton;
-            default:
-                return Qt::NoButton;
-        }
-    }
     static QCursor cursorForMode(QWasmCompositor::ResizeMode mode);
 
     QString getKeyText(const EmscriptenKeyboardEvent *keyEvent, Qt::Key key);

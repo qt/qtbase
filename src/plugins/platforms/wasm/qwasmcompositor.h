@@ -11,6 +11,7 @@
 #include <QtGui/qpalette.h>
 #include <QtGui/qpainter.h>
 #include <QtGui/qinputdevice.h>
+#include <QtCore/private/qstdweb_p.h>
 
 #include <QPointer>
 #include <QPointingDevice>
@@ -21,6 +22,7 @@
 
 QT_BEGIN_NAMESPACE
 
+struct PointerEvent;
 class QWasmWindow;
 class QWasmScreen;
 class QOpenGLContext;
@@ -69,16 +71,23 @@ public:
     };
     Q_DECLARE_FLAGS(StateFlags, QWasmStateFlag)
 
+    enum ResizeDimension {
+        Left = 1,
+        Right = 1 << 1,
+        Top = 1 << 2,
+        Bottom = 1 << 3
+    };
+
     enum ResizeMode {
         ResizeNone,
-        ResizeTopLeft,
-        ResizeTop,
-        ResizeTopRight,
-        ResizeRight,
-        ResizeBottomRight,
-        ResizeBottom,
-        ResizeBottomLeft,
-        ResizeLeft
+        ResizeTopLeft = Top | Left,
+        ResizeTop = Top,
+        ResizeTopRight = Top | Right,
+        ResizeRight = Right,
+        ResizeBottomRight = Bottom | Right,
+        ResizeBottom = Bottom,
+        ResizeBottomLeft = Bottom | Left,
+        ResizeLeft = Left
     };
 
     struct QWasmTitleBarOptions {
@@ -125,11 +134,9 @@ public:
     void deliverUpdateRequests();
     void deliverUpdateRequest(QWasmWindow *window, UpdateRequestDeliveryType updateType);
     void handleBackingStoreFlush();
-    bool processMouse(int eventType, const EmscriptenMouseEvent *mouseEvent);
     bool processKeyboard(int eventType, const EmscriptenKeyboardEvent *keyEvent);
     bool processWheel(int eventType, const EmscriptenWheelEvent *wheelEvent);
     int handleTouch(int eventType, const EmscriptenTouchEvent *touchEvent);
-    void resizeWindow(QWindow *window, QWasmCompositor::ResizeMode mode, QRect startRect, QPoint amount);
 
     bool processMouseEnter(const EmscriptenMouseEvent *mouseEvent);
     bool processMouseLeave();
@@ -140,6 +147,47 @@ private slots:
     void frame();
 
 private:
+    class WindowManipulation {
+    public:
+        enum class Operation {
+            None,
+            Move,
+            Resize,
+        };
+
+        WindowManipulation(QWasmScreen* screen);
+
+        void onPointerDown(const PointerEvent& event, QWindow* windowAtPoint);
+        void onPointerMove(const PointerEvent& event);
+        void onPointerUp(const PointerEvent& event);
+
+        Operation operation() const;
+
+    private:
+        struct ResizeState {
+            ResizeMode m_resizeMode;
+            QPoint m_originInScreenCoords;
+            QRect m_initialWindowBounds;
+            const QPoint m_minShrink;
+            const QPoint m_maxGrow;
+        };
+        struct MoveState {
+            QPoint m_lastPointInScreenCoords;
+        };
+        struct OperationState
+        {
+            int pointerId;
+            QPointer<QWindow> window;
+            std::variant<ResizeState, MoveState> operationSpecific;
+        };
+
+        void resizeWindow(const QPoint& amount);
+
+        QWasmScreen *m_screen;
+
+        std::unique_ptr<OperationState> m_state;
+    };
+
     void notifyTopWindowChanged(QWasmWindow *window);
     void drawWindow(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, QWasmWindow *window);
     void drawWindowContent(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, QWasmWindow *window);
@@ -156,11 +204,14 @@ private:
                                     int alignment, const QPixmap &pixmap) const;
 
     static int keyboard_cb(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData);
-    static int mouse_cb(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData);
     static int focus_cb(int eventType, const EmscriptenFocusEvent *focusEvent, void *userData);
     static int wheel_cb(int eventType, const EmscriptenWheelEvent *wheelEvent, void *userData);
 
+    bool processPointer(const PointerEvent& event);
+
     static int touchCallback(int eventType, const EmscriptenTouchEvent *ev, void *userData);
+
+    WindowManipulation m_windowManipulation;
 
     QScopedPointer<QOpenGLContext> m_context;
     QScopedPointer<QOpenGLTextureBlitter> m_blitter;
@@ -170,7 +221,6 @@ private:
     QRegion m_globalDamage; // damage caused by expose, window close, etc.
     bool m_needComposit = false;
     bool m_inFlush = false;
-    bool m_inResize = false;
     bool m_isEnabled = true;
     QSize m_targetSize;
     qreal m_targetDevicePixelRatio = 1;
@@ -179,14 +229,15 @@ private:
     int m_requestAnimationFrameId = -1;
     bool m_inDeliverUpdateRequest = false;
 
-    QPointer<QWindow> m_windowBeingManipulated;
     QPointer<QWindow> m_pressedWindow;
     QPointer<QWindow> m_lastMouseTargetWindow;
-    Qt::MouseButtons m_pressedButtons = Qt::NoButton;
 
-    ResizeMode m_resizeMode = ResizeNone;
-    QPoint m_resizePoint;
-    QRect m_resizeStartRect;
+    std::unique_ptr<qstdweb::EventCallback> m_pointerDownCallback;
+    std::unique_ptr<qstdweb::EventCallback> m_pointerMoveCallback;
+    std::unique_ptr<qstdweb::EventCallback> m_pointerUpCallback;
+    std::unique_ptr<qstdweb::EventCallback> m_pointerLeaveCallback;
+    std::unique_ptr<qstdweb::EventCallback> m_pointerEnterCallback;
+
     std::unique_ptr<QPointingDevice> m_touchDevice;
 
     QMap <int, QPointF> m_pressedTouchIds;

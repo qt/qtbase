@@ -7,6 +7,7 @@
 #include "qwasmeventtranslator.h"
 #include "qwasmeventdispatcher.h"
 #include "qwasmclipboard.h"
+#include "qwasmevent.h"
 
 #include <QtOpenGL/qopengltexture.h>
 
@@ -58,6 +59,7 @@ EMSCRIPTEN_BINDINGS(qtMouseModule) {
 
 QWasmCompositor::QWasmCompositor(QWasmScreen *screen)
     : QObject(screen)
+    , m_windowManipulation(screen)
     , m_blitter(new QOpenGLTextureBlitter)
     , m_eventTranslator(std::make_unique<QWasmEventTranslator>())
 {
@@ -86,12 +88,6 @@ void QWasmCompositor::deregisterEventHandlers()
     QByteArray canvasSelector = screen()->canvasTargetId().toUtf8();
     emscripten_set_keydown_callback(canvasSelector.constData(), 0, 0, NULL);
     emscripten_set_keyup_callback(canvasSelector.constData(),  0, 0, NULL);
-
-    emscripten_set_mousedown_callback(canvasSelector.constData(), 0, 0, NULL);
-    emscripten_set_mouseup_callback(canvasSelector.constData(),  0, 0, NULL);
-    emscripten_set_mousemove_callback(canvasSelector.constData(),  0, 0, NULL);
-    emscripten_set_mouseenter_callback(canvasSelector.constData(),  0, 0, NULL);
-    emscripten_set_mouseleave_callback(canvasSelector.constData(),  0, 0, NULL);
 
     emscripten_set_focus_callback(canvasSelector.constData(),  0, 0, NULL);
 
@@ -133,9 +129,7 @@ void QWasmCompositor::initEventHandlers()
 {
     QByteArray canvasSelector = screen()->canvasTargetId().toUtf8();
 
-    m_eventTranslator->g_usePlatformMacSpecifics
-    = (QWasmIntegration::get()->platform == QWasmIntegration::MacOSPlatform);
-    if (QWasmIntegration::get()->platform == QWasmIntegration::MacOSPlatform) {
+    if (platform() == Platform::MacOS) {
         if (!emscripten::val::global("window")["safari"].isUndefined()) {
             val canvas = screen()->canvas();
             canvas.call<void>("addEventListener",
@@ -149,11 +143,17 @@ void QWasmCompositor::initEventHandlers()
     emscripten_set_keydown_callback(canvasSelector.constData(), (void *)this, UseCapture, &keyboard_cb);
     emscripten_set_keyup_callback(canvasSelector.constData(), (void *)this, UseCapture, &keyboard_cb);
 
-    emscripten_set_mousedown_callback(canvasSelector.constData(), (void *)this, UseCapture, &mouse_cb);
-    emscripten_set_mouseup_callback(canvasSelector.constData(), (void *)this, UseCapture, &mouse_cb);
-    emscripten_set_mousemove_callback(canvasSelector.constData(), (void *)this, UseCapture, &mouse_cb);
-    emscripten_set_mouseenter_callback(canvasSelector.constData(), (void *)this, UseCapture, &mouse_cb);
-    emscripten_set_mouseleave_callback(canvasSelector.constData(), (void *)this, UseCapture, &mouse_cb);
+    val canvas = screen()->canvas();
+    const auto callback = std::function([this](emscripten::val event) {
+        if (processPointer(*PointerEvent::fromWeb(event)))
+            event.call<void>("preventDefault");
+    });
+
+    m_pointerDownCallback = std::make_unique<qstdweb::EventCallback>(canvas, "pointerdown", callback);
+    m_pointerMoveCallback = std::make_unique<qstdweb::EventCallback>(canvas, "pointermove", callback);
+    m_pointerUpCallback = std::make_unique<qstdweb::EventCallback>(canvas, "pointerup", callback);
+    m_pointerEnterCallback = std::make_unique<qstdweb::EventCallback>(canvas, "pointerenter", callback);
+    m_pointerLeaveCallback = std::make_unique<qstdweb::EventCallback>(canvas, "pointerleave", callback);
 
     emscripten_set_focus_callback(canvasSelector.constData(), (void *)this, UseCapture, &focus_cb);
 
@@ -164,7 +164,6 @@ void QWasmCompositor::initEventHandlers()
     emscripten_set_touchmove_callback(canvasSelector.constData(), (void *)this, UseCapture, &touchCallback);
     emscripten_set_touchcancel_callback(canvasSelector.constData(), (void *)this, UseCapture, &touchCallback);
 
-    val canvas = screen()->canvas();
     canvas.call<void>("addEventListener",
         std::string("drop"),
         val::module_property("qtDrop"), val(true));
@@ -859,60 +858,27 @@ void QWasmCompositor::frame()
         m_context->swapBuffers(someWindow->window());
 }
 
-void QWasmCompositor::resizeWindow(QWindow *window, QWasmCompositor::ResizeMode mode,
-                  QRect startRect, QPoint amount)
+void QWasmCompositor::WindowManipulation::resizeWindow(const QPoint& amount)
 {
-    if (mode == QWasmCompositor::ResizeNone)
-        return;
+    const auto& minShrink = std::get<ResizeState>(m_state->operationSpecific).m_minShrink;
+    const auto& maxGrow = std::get<ResizeState>(m_state->operationSpecific).m_maxGrow;
+    const auto& resizeMode = std::get<ResizeState>(m_state->operationSpecific).m_resizeMode;
 
-    bool top = mode == QWasmCompositor::ResizeTopLeft ||
-               mode == QWasmCompositor::ResizeTop ||
-               mode == QWasmCompositor::ResizeTopRight;
+    const QPoint cappedGrowVector(
+        std::min(maxGrow.x(), std::max(minShrink.x(),
+            (resizeMode & Left) ? -amount.x() : (resizeMode & Right) ? amount.x() : 0)),
+        std::min(maxGrow.y(), std::max(minShrink.y(),
+            (resizeMode & Top) ? -amount.y() : (resizeMode & Bottom) ? amount.y() : 0)));
 
-    bool bottom = mode == QWasmCompositor::ResizeBottomLeft ||
-                  mode == QWasmCompositor::ResizeBottom ||
-                  mode == QWasmCompositor::ResizeBottomRight;
-
-    bool left = mode == QWasmCompositor::ResizeLeft ||
-                mode == QWasmCompositor::ResizeTopLeft ||
-                mode == QWasmCompositor::ResizeBottomLeft;
-
-    bool right = mode == QWasmCompositor::ResizeRight ||
-                 mode == QWasmCompositor::ResizeTopRight ||
-                 mode == QWasmCompositor::ResizeBottomRight;
-
-    int x1 = startRect.left();
-    int y1 = startRect.top();
-    int x2 = startRect.right();
-    int y2 = startRect.bottom();
-
-    if (left)
-        x1 += amount.x();
-    if (top)
-        y1 += amount.y();
-    if (right)
-        x2 += amount.x();
-    if (bottom)
-        y2 += amount.y();
-
-    int w = x2-x1;
-    int h = y2-y1;
-
-    if (w < window->minimumWidth()) {
-        if (left)
-            x1 -= window->minimumWidth() - w;
-
-        w = window->minimumWidth();
-    }
-
-    if (h < window->minimumHeight()) {
-        if (top)
-            y1 -= window->minimumHeight() - h;
-
-        h = window->minimumHeight();
-    }
-
-    window->setGeometry(x1, y1, w, h);
+    const auto& initialBounds =
+        std::get<ResizeState>(m_state->operationSpecific).m_initialWindowBounds;
+    m_state->window->setGeometry(
+        initialBounds.adjusted(
+            (resizeMode & Left) ? -cappedGrowVector.x() : 0,
+            (resizeMode & Top) ? -cappedGrowVector.y() : 0,
+            (resizeMode & Right) ? cappedGrowVector.x() : 0,
+            (resizeMode & Bottom) ? cappedGrowVector.y() : 0
+    ));
 }
 
 void QWasmCompositor::notifyTopWindowChanged(QWasmWindow *window)
@@ -945,12 +911,6 @@ int QWasmCompositor::keyboard_cb(int eventType, const EmscriptenKeyboardEvent *k
     return static_cast<int>(wasmCompositor->processKeyboard(eventType, keyEvent));
 }
 
-int QWasmCompositor::mouse_cb(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
-{
-    QWasmCompositor *compositor = (QWasmCompositor*)userData;
-    return static_cast<int>(compositor->processMouse(eventType, mouseEvent));
-}
-
 int QWasmCompositor::focus_cb(int eventType, const EmscriptenFocusEvent *focusEvent, void *userData)
 {
     Q_UNUSED(eventType)
@@ -972,19 +932,18 @@ int QWasmCompositor::touchCallback(int eventType, const EmscriptenTouchEvent *to
     return static_cast<int>(compositor->handleTouch(eventType, touchEvent));
 }
 
-bool QWasmCompositor::processMouse(int eventType, const EmscriptenMouseEvent *mouseEvent)
+bool QWasmCompositor::processPointer(const PointerEvent& event)
 {
-    const Qt::MouseButton button = QWasmEventTranslator::translateMouseButton(mouseEvent->button);
+    if (event.pointerType != PointerType::Mouse)
+        return false;
 
-    const QPoint targetPointInCanvasCoords(mouseEvent->targetX, mouseEvent->targetY);
-    const QPoint targetPointInScreenCoords = screen()->geometry().topLeft() + targetPointInCanvasCoords;
+    const QPoint targetPointInScreenCoords = screen()->geometry().topLeft() + event.point;
 
     QEvent::Type buttonEventType = QEvent::None;
-    Qt::KeyboardModifiers modifiers = m_eventTranslator->translateMouseEventModifier(mouseEvent);
 
     QWindow *const targetWindow = ([this, &targetPointInScreenCoords]() -> QWindow * {
         auto *targetWindow =
-            m_resizeMode == QWasmCompositor::ResizeNone ?
+            m_windowManipulation.operation() == WindowManipulation::Operation::None ?
                 screen()->compositor()->windowAt(targetPointInScreenCoords, 5) : nullptr;
 
         return targetWindow ? targetWindow : m_lastMouseTargetWindow.get();
@@ -1006,57 +965,41 @@ bool QWasmCompositor::processMouse(int eventType, const EmscriptenMouseEvent *mo
     Qt::WindowStates windowState = targetWindow->windowState();
     const bool isTargetWindowResizable = !windowState.testFlag(Qt::WindowMaximized) && !windowState.testFlag(Qt::WindowFullScreen);
 
-    switch (eventType) {
-    case EMSCRIPTEN_EVENT_MOUSEDOWN:
+    switch (event.type) {
+    case EventType::PointerDown:
     {
         buttonEventType = QEvent::MouseButtonPress;
-        m_pressedButtons.setFlag(button);
-
         if (targetWindow)
             targetWindow->requestActivate();
 
         m_pressedWindow = targetWindow;
 
-        if (isTargetWindowResizable && button == Qt::MouseButton::LeftButton && !isTargetWindowBlocked) {
-            if (wasmTargetWindow->isPointOnTitle(targetPointInScreenCoords)) {
-                m_windowBeingManipulated = targetWindow;
-            } else if (wasmTargetWindow->isPointOnResizeRegion(targetPointInScreenCoords)) {
-                m_windowBeingManipulated = targetWindow;
-                m_resizeMode = wasmTargetWindow->resizeModeAtPoint(targetPointInScreenCoords);
-                m_resizePoint = targetPointInScreenCoords;
-                m_resizeStartRect = targetWindow->geometry();
-            }
-        }
+        m_windowManipulation.onPointerDown(event, targetWindow);
 
-        wasmTargetWindow->injectMousePressed(pointInTargetWindowCoords, targetPointInScreenCoords, button, modifiers);
+        wasmTargetWindow->injectMousePressed(pointInTargetWindowCoords, targetPointInScreenCoords, event.mouseButton, event.modifiers);
         break;
     }
-    case EMSCRIPTEN_EVENT_MOUSEUP:
+    case EventType::PointerUp:
     {
         buttonEventType = QEvent::MouseButtonRelease;
 
-        m_pressedButtons.setFlag(button, false);
-
-        if (m_windowBeingManipulated && m_pressedButtons.testFlag(Qt::NoButton)) {
-            m_windowBeingManipulated = nullptr;
-            m_resizeMode = QWasmCompositor::ResizeNone;
-        }
+        m_windowManipulation.onPointerUp(event);
 
         if (m_pressedWindow) {
             // Always deliver the released event to the same window that was pressed
-            AsWasmWindow(m_pressedWindow)->injectMouseReleased(pointInTargetWindowCoords, targetPointInScreenCoords, button, modifiers);
-            if (button == Qt::MouseButton::LeftButton)
+            AsWasmWindow(m_pressedWindow)->injectMouseReleased(pointInTargetWindowCoords, targetPointInScreenCoords, event.mouseButton, event.modifiers);
+            if (event.mouseButton == Qt::MouseButton::LeftButton)
                 m_pressedWindow = nullptr;
         } else {
-            wasmTargetWindow->injectMouseReleased(pointInTargetWindowCoords, targetPointInScreenCoords, button, modifiers);
+            wasmTargetWindow->injectMouseReleased(pointInTargetWindowCoords, targetPointInScreenCoords, event.mouseButton, event.modifiers);
         }
         break;
     }
-    case EMSCRIPTEN_EVENT_MOUSEMOVE:
+    case EventType::PointerMove:
     {
         buttonEventType = QEvent::MouseMove;
 
-        if (wasmTargetWindow && m_pressedButtons.testFlag(Qt::NoButton)) {
+        if (wasmTargetWindow && event.mouseButtons.testFlag(Qt::NoButton)) {
             const bool isOnResizeRegion = wasmTargetWindow->isPointOnResizeRegion(targetPointInScreenCoords);
 
             if (isTargetWindowResizable && isOnResizeRegion && !isTargetWindowBlocked) {
@@ -1073,34 +1016,26 @@ bool QWasmCompositor::processMouse(int eventType, const EmscriptenMouseEvent *mo
             }
         }
 
-        if (m_windowBeingManipulated) {
-            if (m_resizeMode == QWasmCompositor::ResizeNone) {
-                m_windowBeingManipulated->setPosition(
-                    m_windowBeingManipulated->position() + QPoint(mouseEvent->movementX, mouseEvent->movementY));
-            } else {
-                const QPoint delta = targetPointInCanvasCoords - m_resizePoint;
-                resizeWindow(m_windowBeingManipulated, m_resizeMode, m_resizeStartRect, delta);
-            }
-        }
+        m_windowManipulation.onPointerMove(event);
         break;
     }
-    case EMSCRIPTEN_EVENT_MOUSEENTER:
-        processMouseEnter(mouseEvent);
+    case EventType::PointerEnter:
+        processMouseEnter(nullptr);
         break;
-    case EMSCRIPTEN_EVENT_MOUSELEAVE:
+    case EventType::PointerLeave:
         processMouseLeave();
         break;
     default:
         break;
     };
 
-    if (!pointerIsWithinTargetWindowBounds && m_pressedButtons.testFlag(Qt::NoButton)) {
+    if (!pointerIsWithinTargetWindowBounds && event.mouseButtons.testFlag(Qt::NoButton)) {
         leaveWindow(m_lastMouseTargetWindow);
     }
 
     bool shouldDeliverEvent = pointerIsWithinTargetWindowBounds;
     QWindow *eventTarget = targetWindow;
-    if (!eventTarget && buttonEventType == QEvent::MouseButtonRelease) {
+    if (!eventTarget && event.type == EventType::PointerUp) {
         eventTarget = m_lastMouseTargetWindow;
         m_lastMouseTargetWindow = nullptr;
         shouldDeliverEvent = true;
@@ -1109,11 +1044,120 @@ bool QWasmCompositor::processMouse(int eventType, const EmscriptenMouseEvent *mo
         eventTarget != nullptr && shouldDeliverEvent &&
         QWindowSystemInterface::handleMouseEvent<QWindowSystemInterface::SynchronousDelivery>(
             eventTarget, QWasmIntegration::getTimestamp(), pointInTargetWindowCoords, targetPointInScreenCoords,
-            m_pressedButtons, button, buttonEventType, modifiers);
+            event.mouseButtons, event.mouseButton, buttonEventType, event.modifiers);
 
-    if (!eventAccepted && buttonEventType == QEvent::MouseButtonPress)
+    if (!eventAccepted && event.type == EventType::PointerDown)
         QGuiApplicationPrivate::instance()->closeAllPopups();
     return eventAccepted;
+}
+
+QWasmCompositor::WindowManipulation::WindowManipulation(QWasmScreen *screen)
+    : m_screen(screen)
+{
+    Q_ASSERT(!!screen);
+}
+
+QWasmCompositor::WindowManipulation::Operation QWasmCompositor::WindowManipulation::operation() const
+{
+    if (!m_state)
+        return Operation::None;
+
+    return std::holds_alternative<MoveState>(m_state->operationSpecific)
+        ? Operation::Move : Operation::Resize;
+}
+
+void QWasmCompositor::WindowManipulation::onPointerDown(
+    const PointerEvent& event, QWindow* windowAtPoint)
+{
+    // Only one operation at a time.
+    if (operation() != Operation::None)
+        return;
+
+    if (event.mouseButton != Qt::MouseButton::LeftButton)
+        return;
+
+    const bool isTargetWindowResizable =
+        !windowAtPoint->windowStates().testFlag(Qt::WindowMaximized) &&
+        !windowAtPoint->windowStates().testFlag(Qt::WindowFullScreen);
+    if (!isTargetWindowResizable)
+        return;
+
+    const bool isTargetWindowBlocked =
+        QGuiApplicationPrivate::instance()->isWindowBlocked(windowAtPoint);
+    if (isTargetWindowBlocked)
+        return;
+
+    const auto pointInScreenCoords = m_screen->geometry().topLeft() + event.point;
+
+    std::unique_ptr<std::variant<ResizeState, MoveState>> operationSpecific;
+    if (AsWasmWindow(windowAtPoint)->isPointOnTitle(pointInScreenCoords)) {
+        operationSpecific = std::make_unique<std::variant<ResizeState, MoveState>>(MoveState {
+            .m_lastPointInScreenCoords = pointInScreenCoords
+        });
+    } else if (AsWasmWindow(windowAtPoint)->isPointOnResizeRegion(pointInScreenCoords)) {
+        operationSpecific = std::make_unique<std::variant<ResizeState, MoveState>>(ResizeState {
+            .m_resizeMode = AsWasmWindow(windowAtPoint)->resizeModeAtPoint(pointInScreenCoords),
+            .m_originInScreenCoords = pointInScreenCoords,
+            .m_initialWindowBounds = windowAtPoint->geometry(),
+            .m_minShrink = QPoint(windowAtPoint->minimumWidth() - windowAtPoint->geometry().width(),
+                                windowAtPoint->minimumHeight() - windowAtPoint->geometry().height()),
+            .m_maxGrow = QPoint(
+                        windowAtPoint->maximumWidth() - windowAtPoint->geometry().width(),
+                        windowAtPoint->maximumHeight() - windowAtPoint->geometry().height()),
+        });
+    } else {
+        return;
+    }
+
+    m_state.reset(new OperationState{
+        .pointerId = event.pointerId,
+        .window = windowAtPoint,
+        .operationSpecific = std::move(*operationSpecific),
+    });
+
+    m_screen->canvas().call<void>("setPointerCapture", event.pointerId);
+}
+
+void QWasmCompositor::WindowManipulation::onPointerMove(
+    const PointerEvent& event)
+{
+    if (operation() == Operation::None || event.pointerId != m_state->pointerId)
+        return;
+
+    const auto pointInScreenCoords = m_screen->geometry().topLeft() + event.point;
+
+    switch (operation()) {
+        case Operation::Move: {
+            const QPoint targetPointClippedToScreen(
+                std::max(m_screen->geometry().left(), std::min(m_screen->geometry().right(), pointInScreenCoords.x())),
+                std::max(m_screen->geometry().top(), std::min(m_screen->geometry().bottom(), pointInScreenCoords.y())));
+
+            const QPoint difference = targetPointClippedToScreen -
+                std::get<MoveState>(m_state->operationSpecific).m_lastPointInScreenCoords;
+
+            std::get<MoveState>(m_state->operationSpecific).m_lastPointInScreenCoords = targetPointClippedToScreen;
+
+            m_state->window->setPosition(m_state->window->position() + difference);
+            break;
+        }
+        case Operation::Resize: {
+            resizeWindow(pointInScreenCoords -
+                std::get<ResizeState>(m_state->operationSpecific).m_originInScreenCoords);
+            break;
+        }
+        case Operation::None:
+            Q_ASSERT(0);
+            break;
+    }
+}
+
+void QWasmCompositor::WindowManipulation::onPointerUp(const PointerEvent& event)
+{
+    if (operation() == Operation::None || event.mouseButtons != 0 || event.pointerId != m_state->pointerId)
+        return;
+
+    m_state.reset();
+    m_screen->canvas().call<void>("releasePointerCapture", event.pointerId);
 }
 
 bool QWasmCompositor::processKeyboard(int eventType, const EmscriptenKeyboardEvent *keyEvent)
@@ -1139,7 +1183,7 @@ bool QWasmCompositor::processKeyboard(int eventType, const EmscriptenKeyboardEve
     if (keyType == QEvent::None)
         return 0;
 
-    QFlags<Qt::KeyboardModifier> modifiers = m_eventTranslator->translateKeyboardEventModifier(keyEvent);
+    QFlags<Qt::KeyboardModifier> modifiers = KeyboardModifier::getForEvent(*keyEvent);
 
     // Clipboard fallback path: cut/copy/paste are handled by clipboard event
     // handlers if direct clipboard access is not available.
@@ -1180,7 +1224,7 @@ bool QWasmCompositor::processWheel(int eventType, const EmscriptenWheelEvent *wh
 {
     Q_UNUSED(eventType);
 
-    EmscriptenMouseEvent mouseEvent = wheelEvent->mouse;
+    const EmscriptenMouseEvent* mouseEvent = &wheelEvent->mouse;
 
     int scrollFactor = 0;
     switch (wheelEvent->deltaMode) {
@@ -1197,8 +1241,8 @@ bool QWasmCompositor::processWheel(int eventType, const EmscriptenWheelEvent *wh
 
     scrollFactor = -scrollFactor; // Web scroll deltas are inverted from Qt deltas.
 
-    Qt::KeyboardModifiers modifiers = m_eventTranslator->translateMouseEventModifier(&mouseEvent);
-    QPoint targetPointInCanvasCoords(mouseEvent.targetX, mouseEvent.targetY);
+    Qt::KeyboardModifiers modifiers = KeyboardModifier::getForEvent(*mouseEvent);
+    QPoint targetPointInCanvasCoords(mouseEvent->targetX, mouseEvent->targetY);
     QPoint targetPointInScreenCoords = screen()->geometry().topLeft() + targetPointInCanvasCoords;
 
     QWindow *targetWindow = screen()->compositor()->windowAt(targetPointInScreenCoords, 5);
@@ -1287,7 +1331,7 @@ int QWasmCompositor::handleTouch(int eventType, const EmscriptenTouchEvent *touc
         touchPointList.append(touchPoint);
     }
 
-    QFlags<Qt::KeyboardModifier> keyModifier = m_eventTranslator->translateTouchEventModifier(touchEvent);
+    QFlags<Qt::KeyboardModifier> keyModifier = KeyboardModifier::getForEvent(*touchEvent);
 
     bool accepted = false;
 

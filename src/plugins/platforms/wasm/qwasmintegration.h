@@ -39,15 +39,6 @@ class QWasmIntegration : public QObject, public QPlatformIntegration
 {
     Q_OBJECT
 public:
-    enum Platform {
-        GenericPlatform,
-        MacOSPlatform,
-        WindowsPlatform,
-        LinuxPlatform,
-        AndroidPlatform,
-        iPhonePlatform
-    };
-
     QWasmIntegration();
     ~QWasmIntegration();
 
@@ -85,7 +76,6 @@ public:
     void removeBackingStore(QWindow* window);
     static quint64 getTimestamp();
 
-    Platform platform;
     int touchPoints;
 
 private:

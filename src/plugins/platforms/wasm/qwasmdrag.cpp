@@ -64,8 +64,7 @@ static void dropEvent(val event)
     if (wasmDrag->m_mimeData)
         delete wasmDrag->m_mimeData;
     wasmDrag->m_mimeData = new QMimeData;
-    int button = event["button"].as<int>();
-    wasmDrag->m_qButton = QWasmEventTranslator::translateMouseButton(button);
+    wasmDrag->m_qButton = MouseEvent::buttonFromWeb(event["button"].as<int>());
 
     wasmDrag->m_keyModifiers = Qt::NoModifier;
     if (event["altKey"].as<bool>())

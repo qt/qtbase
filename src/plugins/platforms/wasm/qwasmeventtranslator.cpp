@@ -160,54 +160,6 @@ QWasmEventTranslator::~QWasmEventTranslator()
 {
 }
 
-template <typename Event>
-QFlags<Qt::KeyboardModifier> QWasmEventTranslator::translatKeyModifier(const Event *event)
-{
-    // macOS CTRL <-> META switching. We most likely want to enable
-    // the existing switching code in QtGui, but for now do it here.
-
-    QFlags<Qt::KeyboardModifier> keyModifier = Qt::NoModifier;
-    if (event->shiftKey)
-        keyModifier |= Qt::ShiftModifier;
-    if (event->ctrlKey) {
-        if (g_usePlatformMacSpecifics)
-            keyModifier |= Qt::MetaModifier;
-        else
-            keyModifier |= Qt::ControlModifier;
-    }
-    if (event->altKey)
-        keyModifier |= Qt::AltModifier;
-    if (event->metaKey) {
-        if (g_usePlatformMacSpecifics)
-            keyModifier |= Qt::ControlModifier;
-        else
-            keyModifier |= Qt::MetaModifier;
-    }
-
-    return keyModifier;
-}
-
-QFlags<Qt::KeyboardModifier> QWasmEventTranslator::translateKeyboardEventModifier(const EmscriptenKeyboardEvent *event)
-{
-    QFlags<Qt::KeyboardModifier> keyModifier = translatKeyModifier(event);
-
-    if (event->location == DOM_KEY_LOCATION_NUMPAD) {
-        keyModifier |= Qt::KeypadModifier;
-    }
-
-    return keyModifier;
-}
-
-QFlags<Qt::KeyboardModifier> QWasmEventTranslator::translateMouseEventModifier(const EmscriptenMouseEvent *mouseEvent)
-{
-    return translatKeyModifier(mouseEvent);
-}
-
-QFlags<Qt::KeyboardModifier> QWasmEventTranslator::translateTouchEventModifier(const EmscriptenTouchEvent *touchEvent)
-{
-    return translatKeyModifier(touchEvent);
-}
-
 Qt::Key QWasmEventTranslator::translateEmscriptKey(const EmscriptenKeyboardEvent *emscriptKey)
 {
     Qt::Key qtKey = Qt::Key_unknown;
