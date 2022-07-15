@@ -226,7 +226,7 @@ QPolygonF calcLines(const QStyleOptionSlider *dial)
 
 void drawDial(const QStyleOptionSlider *option, QPainter *painter)
 {
-    QPalette pal = option->palette;
+    const QPalette pal = option->palette;
     QColor buttonColor = pal.button().color();
     const int width = option->rect.width();
     const int height = option->rect.height();
@@ -240,7 +240,11 @@ void drawDial(const QStyleOptionSlider *option, QPainter *painter)
 
     // Draw notches
     if (option->subControls & QStyle::SC_DialTickmarks) {
-        painter->setPen(option->palette.dark().color().darker(120));
+        const bool inverted = pal.window().color().lightness() < pal.text().color().lightness()
+                           && pal.light().color().lightness() > pal.dark().color().lightness();
+        const QColor notchColor = inverted ? pal.light().color().lighter(120)
+                                           : pal.dark().color().darker(120);
+        painter->setPen(notchColor);
         painter->drawLines(QStyleHelper::calcLines(option));
     }
 
