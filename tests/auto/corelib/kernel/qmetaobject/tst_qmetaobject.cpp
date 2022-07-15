@@ -1736,9 +1736,13 @@ void tst_QMetaObject::metaMethod()
     QVERIFY(index > 0);
     method = QtTestObject::staticMetaObject.method(index);
     //wrong args
+    QTest::ignoreMessage(QtWarningMsg, "QMetaMethod::invoke: too few arguments (5) in call to QtTestObject::sl5(QString,QString,QString,QString,QString)");
     QVERIFY(!method.invoke(&obj, Q_ARG(QString, "1"), Q_ARG(QString, "2"), Q_ARG(QString, "3"), Q_ARG(QString, "4")));
     //QVERIFY(!method.invoke(&obj, Q_ARG(QString, "1"), Q_ARG(QString, "2"), Q_ARG(QString, "3"), Q_ARG(QString, "4"), Q_ARG(QString, "5"), Q_ARG(QString, "6")));
     //QVERIFY(!method.invoke(&obj, Q_ARG(QString, "1"), Q_ARG(QString, "2"), Q_ARG(QString, "3"), Q_ARG(QString, "4"), Q_ARG(int, 5)));
+    QTest::ignoreMessage(QtWarningMsg, "QMetaMethod::invokeMethod: return type mismatch for method "
+                                       "QtTestObject::sl5(QString,QString,QString,QString,QString): "
+                                       "cannot convert from void to QString during invocation");
     QVERIFY(!method.invoke(&obj, Q_RETURN_ARG(QString, ret), Q_ARG(QString, "1"), Q_ARG(QString, "2"), Q_ARG(QString, "3"), Q_ARG(QString, "4"), Q_ARG(QString, "5")));
 
     //wrong object

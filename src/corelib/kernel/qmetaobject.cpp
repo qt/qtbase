@@ -186,6 +186,29 @@ public:
     inline QByteArray tag() const;
     inline int ownMethodIndex() const;
 
+    // shadows the public function
+    enum class InvokeFailReason : int {
+        // negative values mean a match was found but the invocation failed
+        // (and a warning has been printed)
+        ReturnTypeMismatch = -1,
+        DeadLockDetected = -2,
+        CallViaVirtualFailed = -3,  // no warning
+        ConstructorCallOnObject = -4,
+
+        CouldNotQueueParameter = -0x1000,
+
+        // zero is success
+        None = 0,
+
+        // positive values mean the parameters did not match
+        TooFewArguments,
+        FormalParameterMismatch = 0x1000,
+    };
+
+    static InvokeFailReason
+    invokeImpl(QMetaMethod self, void *target, Qt::ConnectionType, qsizetype paramCount,
+               const void *const *parameters, const char *const *typeNames);
+
 private:
     QMetaMethodPrivate();
 };
@@ -2275,23 +2298,6 @@ bool QMetaMethod::invoke(QObject *object,
     if (!object || !mobj)
         return false;
 
-    Q_ASSERT(mobj->cast(object));
-
-    // check return type
-    if (returnValue.data()) {
-        const char *retType = typeName();
-        if (qstrcmp(returnValue.name(), retType) != 0) {
-            // normalize the return value as well
-            QByteArray normalized = QMetaObject::normalizedType(returnValue.name());
-            if (qstrcmp(normalized.constData(), retType) != 0) {
-                // String comparison failed, try compare the metatype.
-                int t = returnType();
-                if (t == QMetaType::UnknownType || t != QMetaType::fromName(normalized).id())
-                    return false;
-            }
-        }
-    }
-
     // check argument count (we don't allow invoking a method if given too few arguments)
     const char *typeNames[] = {
         returnValue.name(),
@@ -2306,13 +2312,105 @@ bool QMetaMethod::invoke(QObject *object,
         val8.name(),
         val9.name()
     };
+    void *param[] = {
+        returnValue.data(),
+        val0.data(),
+        val1.data(),
+        val2.data(),
+        val3.data(),
+        val4.data(),
+        val5.data(),
+        val6.data(),
+        val7.data(),
+        val8.data(),
+        val9.data()
+    };
+
     int paramCount;
     for (paramCount = 1; paramCount < MaximumParamCount; ++paramCount) {
         if (qstrlen(typeNames[paramCount]) <= 0)
             break;
     }
-    if (paramCount <= QMetaMethodPrivate::get(this)->parameterCount())
-        return false;
+
+    QMetaMethodPrivate::InvokeFailReason r =
+            QMetaMethodPrivate::invokeImpl(*this, object, connectionType, paramCount, param, typeNames);
+
+    if (Q_LIKELY(r == QMetaMethodPrivate::InvokeFailReason::None))
+        return true;
+
+    if (int(r) >= int(QMetaMethodPrivate::InvokeFailReason::FormalParameterMismatch)) {
+        int n = int(r) - int(QMetaMethodPrivate::InvokeFailReason::FormalParameterMismatch);
+        qWarning("QMetaMethod::invoke: cannot convert formal parameter %d from %s in call to %s::%s",
+                 n, typeNames[n + 1], mobj->className(), methodSignature().constData());
+    }
+    if (r == QMetaMethodPrivate::InvokeFailReason::TooFewArguments) {
+        qWarning("QMetaMethod::invoke: too few arguments (%d) in call to %s::%s",
+                 int(paramCount), mobj->className(), methodSignature().constData());
+    }
+    return false;
+}
+
+auto QMetaMethodPrivate::invokeImpl(QMetaMethod self, void *target,
+                                    Qt::ConnectionType connectionType,
+                                    qsizetype paramCount, const void *const *parameters,
+                                    const char *const *typeNames) -> InvokeFailReason
+{
+    auto object = static_cast<QObject *>(target);
+    auto priv = QMetaMethodPrivate::get(&self);
+    auto param = const_cast<void **>(parameters);
+
+    Q_ASSERT(priv->mobj);
+    Q_ASSERT(self.methodType() == Constructor || object);
+    Q_ASSERT(self.methodType() == Constructor || priv->mobj->cast(object));
+    Q_ASSERT(paramCount >= 1);  // includes the return type
+    Q_ASSERT(parameters);
+    Q_ASSERT(typeNames);
+
+    if ((paramCount - 1) < priv->data.argc())
+        return InvokeFailReason::TooFewArguments;
+
+    // 0 is the return type, 1 is the first formal parameter
+    auto checkTypesAreCompatible = [=](int idx) {
+        uint typeInfo = priv->parameterTypeInfo(idx - 1);
+        QLatin1StringView userTypeName(typeNames[idx]);
+
+        if ((typeInfo & IsUnresolvedType) == 0) {
+            // this is a built-in type
+            return int(typeInfo) == QMetaType::fromName(userTypeName).id();
+        }
+
+        // compare strings
+        QLatin1StringView methodTypeName = stringDataView(priv->mobj, typeInfo & TypeNameIndexMask);
+        if (methodTypeName == userTypeName)
+            return true;
+
+        // maybe the user type needs normalization
+        QByteArray normalized = normalizeTypeInternal(userTypeName.begin(), userTypeName.end());
+        return methodTypeName == QLatin1StringView(normalized);
+    };
+
+    // check formal parameters first (overload set)
+    for (qsizetype i = 1; i < paramCount; ++i) {
+        if (!checkTypesAreCompatible(i))
+            return InvokeFailReason(int(InvokeFailReason::FormalParameterMismatch) + i - 1);
+    }
+
+    // regular type - check return type
+    if (parameters[0]) {
+        if (self.methodType() == Constructor) {
+            qWarning("QMetaMethod::invokeMethod: cannot call constructor %s on object %p",
+                     self.methodSignature().constData(), object);
+            return InvokeFailReason::ConstructorCallOnObject;
+        }
+
+        if (!checkTypesAreCompatible(0)) {
+            qWarning("QMetaMethod::invokeMethod: return type mismatch for method %s::%s:"
+                     " cannot convert from %s to %s during invocation",
+                     priv->mobj->className(), priv->methodSignature().constData(),
+                     priv->rawReturnTypeName(), typeNames[0]);
+            return InvokeFailReason::ReturnTypeMismatch;
+        }
+    }
 
     Qt::HANDLE currentThreadId = QThread::currentThreadId();
     QThread *objectThread = object->thread();
@@ -2334,69 +2432,49 @@ bool QMetaMethod::invoke(QObject *object,
 #endif
 
     // invoke!
-    void *param[] = {
-        returnValue.data(),
-        val0.data(),
-        val1.data(),
-        val2.data(),
-        val3.data(),
-        val4.data(),
-        val5.data(),
-        val6.data(),
-        val7.data(),
-        val8.data(),
-        val9.data()
-    };
-    int idx_relative = QMetaMethodPrivate::get(this)->ownMethodIndex();
-    int idx_offset =  mobj->methodOffset();
-    Q_ASSERT(QMetaObjectPrivate::get(mobj)->revision >= 6);
-    QObjectPrivate::StaticMetaCallFunction callFunction = mobj->d.static_metacall;
+    int idx_relative = priv->ownMethodIndex();
+    int idx_offset = priv->mobj->methodOffset();
+    QObjectPrivate::StaticMetaCallFunction callFunction = priv->mobj->d.static_metacall;
 
     if (connectionType == Qt::DirectConnection) {
-        if (callFunction) {
+        if (callFunction)
             callFunction(object, QMetaObject::InvokeMetaMethod, idx_relative, param);
-            return true;
-        } else {
-            return QMetaObject::metacall(object, QMetaObject::InvokeMetaMethod, idx_relative + idx_offset, param) < 0;
-        }
+        else if (QMetaObject::metacall(object, QMetaObject::InvokeMetaMethod, idx_relative + idx_offset, param) >= 0)
+            return InvokeFailReason::CallViaVirtualFailed;
     } else if (connectionType == Qt::QueuedConnection) {
-        if (returnValue.data()) {
+        if (parameters[0]) {
             qWarning("QMetaMethod::invoke: Unable to invoke methods with return values in "
                      "queued connections");
-            return false;
+            return InvokeFailReason::CouldNotQueueParameter;
         }
 
         auto event = std::make_unique<QMetaCallEvent>(idx_offset, idx_relative, callFunction, nullptr, -1, paramCount);
         QMetaType *types = event->types();
         void **args = event->args();
 
-        int argIndex = 0;
+        // fill in the meta types first
         for (int i = 1; i < paramCount; ++i) {
-            types[i] = QMetaType::fromName(typeNames[i]);
-            if (!types[i].isValid() && param[i]) {
-                // Try to register the type and try again before reporting an error.
-                void *argv[] = { &types[i], &argIndex };
-                QMetaObject::metacall(object, QMetaObject::RegisterMethodArgumentMetaType,
-                                      idx_relative + idx_offset, argv);
-                if (!types[i].isValid()) {
-                    qWarning("QMetaMethod::invoke: Unable to handle unregistered datatype '%s'",
-                            typeNames[i]);
-                    return false;
-                }
-            }
-            if (types[i].isValid()) {
-                args[i] = QMetaType(types[i]).create(param[i]);
-                ++argIndex;
+            types[i] = priv->parameterMetaType(i - 1);
+            if (!types[i].iface())
+                types[i] = QMetaType::fromName(typeNames[i]);
+            if (!types[i].iface()) {
+                qWarning("QMetaMethod::invoke: Unable to handle unregistered datatype '%s'",
+                         typeNames[i]);
+                return InvokeFailReason(int(InvokeFailReason::CouldNotQueueParameter) - i);
             }
         }
+
+        // now create copies of our parameters using those meta types
+        for (int i = 1; i < paramCount; ++i)
+            args[i] = types[i].create(parameters[i]);
 
         QCoreApplication::postEvent(object, event.release());
     } else { // blocking queued connection
 #if QT_CONFIG(thread)
         if (receiverInSameThread) {
-            qWarning("QMetaMethod::invoke: Dead lock detected in "
-                        "BlockingQueuedConnection: Receiver is %s(%p)",
-                        mobj->className(), object);
+            qWarning("QMetaMethod::invoke: Dead lock detected in BlockingQueuedConnection: "
+                     "Receiver is %s(%p)", priv->mobj->className(), object);
+            return InvokeFailReason::DeadLockDetected;
         }
 
         QSemaphore semaphore;
@@ -2405,7 +2483,7 @@ bool QMetaMethod::invoke(QObject *object,
         semaphore.acquire();
 #endif // QT_CONFIG(thread)
     }
-    return true;
+    return {};
 }
 
 /*! \fn bool QMetaMethod::invoke(QObject *object,
