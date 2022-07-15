@@ -54,14 +54,14 @@ QT_BEGIN_NAMESPACE
 
     The QSurfaceFormat for the context is specified in \l format. The
     constructor sets this to QSurfaceFormat::defaultFormat() so applications
-    that use QSurfaceFormat::setDefaultFormat() do not need to set the format
-    again.
+    that call QSurfaceFormat::setDefaultFormat() with the appropriate settings
+    before the constructor runs will not need to change value of \l format.
 
-    \note The depth and stencil buffer sizes are set automatically to 24 and 8
-    when no size was explicitly set for these buffers in \l format. As there
-    are possible adjustments to \l format, applications can use
-    adjustedFormat() to query the effective format that is passed to
-    QOpenGLContext::setFormat() internally.
+    \note Remember to set the depth and stencil buffer sizes to 24 and 8 when
+    the renderer relies on depth or stencil testing, either in the global
+    default QSurfaceFormat, or, alternatively, separately in all the involved
+    QSurfaceFormat instances: in \l format, the format argument passed to
+    newFallbackSurface(), and on any QWindow that is used with the QRhi.
 
     A QSurface has to be specified in \l fallbackSurface. In order to prevent
     mistakes in threaded situations, this is never created automatically by the
@@ -447,27 +447,11 @@ QRhiGles2InitParams::QRhiGles2InitParams()
 }
 
 /*!
-    \return the QSurfaceFormat that will be set on the QOpenGLContext before
-    calling QOpenGLContext::create(). This format is based on \a format, but
-    may be adjusted. Applicable only when QRhi creates the context.
-    Applications are advised to set this format on their QWindow in order to
-    avoid potential BAD_MATCH failures.
- */
-QSurfaceFormat QRhiGles2InitParams::adjustedFormat(const QSurfaceFormat &format)
-{
-    QSurfaceFormat fmt = format;
-
-    if (fmt.depthBufferSize() == -1)
-        fmt.setDepthBufferSize(24);
-    if (fmt.stencilBufferSize() == -1)
-        fmt.setStencilBufferSize(8);
-
-    return fmt;
-}
-
-/*!
     \return a new QOffscreenSurface that can be used with a QRhi by passing it
     via a QRhiGles2InitParams.
+
+    When \a format is not specified, its default value is the global default
+    format settable via QSurfaceFormat::setDefaultFormat().
 
     \a format is adjusted as appropriate in order to avoid having problems
     afterwards due to an incompatible context and surface.
@@ -480,7 +464,7 @@ QSurfaceFormat QRhiGles2InitParams::adjustedFormat(const QSurfaceFormat &format)
  */
 QOffscreenSurface *QRhiGles2InitParams::newFallbackSurface(const QSurfaceFormat &format)
 {
-    QSurfaceFormat fmt = adjustedFormat(format);
+    QSurfaceFormat fmt = format;
 
     // To resolve all fields in the format as much as possible, create a context.
     // This may be heavy, but allows avoiding BAD_MATCH on some systems.
@@ -501,7 +485,7 @@ QOffscreenSurface *QRhiGles2InitParams::newFallbackSurface(const QSurfaceFormat 
 QRhiGles2::QRhiGles2(QRhiGles2InitParams *params, QRhiGles2NativeHandles *importDevice)
     : ofr(this)
 {
-    requestedFormat = QRhiGles2InitParams::adjustedFormat(params->format);
+    requestedFormat = params->format;
     fallbackSurface = params->fallbackSurface;
     maybeWindow = params->window; // may be null
     maybeShareContext = params->shareContext; // may be null

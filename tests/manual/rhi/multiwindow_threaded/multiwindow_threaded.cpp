@@ -692,6 +692,10 @@ int main(int argc, char **argv)
     qDebug("Selected graphics API is %s", qPrintable(graphicsApiName()));
     qDebug("This is a multi-api example, use command line arguments to override:\n%s", qPrintable(cmdLineParser.helpText()));
 
+    QSurfaceFormat fmt;
+    fmt.setDepthBufferSize(24);
+    QSurfaceFormat::setDefaultFormat(fmt);
+
 #if QT_CONFIG(vulkan)
     instance = new QVulkanInstance;
     if (graphicsApi == Vulkan) {

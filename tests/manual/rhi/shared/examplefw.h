@@ -135,10 +135,7 @@ Window::Window()
     // Tell the platform plugin what we want.
     switch (graphicsApi) {
     case OpenGL:
-#if QT_CONFIG(opengl)
         setSurfaceType(OpenGLSurface);
-        setFormat(QRhiGles2InitParams::adjustedFormat());
-#endif
         break;
     case Vulkan:
         setSurfaceType(VulkanSurface);

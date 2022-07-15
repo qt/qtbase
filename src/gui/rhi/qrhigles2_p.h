@@ -35,7 +35,6 @@ struct Q_GUI_EXPORT QRhiGles2InitParams : public QRhiInitParams
     QOpenGLContext *shareContext = nullptr;
 
     static QOffscreenSurface *newFallbackSurface(const QSurfaceFormat &format = QSurfaceFormat::defaultFormat());
-    static QSurfaceFormat adjustedFormat(const QSurfaceFormat &format = QSurfaceFormat::defaultFormat());
 };
 
 struct Q_GUI_EXPORT QRhiGles2NativeHandles : public QRhiNativeHandles

@@ -268,17 +268,15 @@ Window::Window(const QString &title, const QColor &bgColor, int axis, bool noVSy
     switch (graphicsApi) {
     case OpenGL:
     {
-#if QT_CONFIG(opengl)
         setSurfaceType(OpenGLSurface);
-        QSurfaceFormat fmt = QRhiGles2InitParams::adjustedFormat(); // default + depth/stencil
-        fmt.setSwapInterval(noVSync ? 0 : 1); // + swap interval
+        QSurfaceFormat fmt = QSurfaceFormat::defaultFormat();
+        fmt.setSwapInterval(noVSync ? 0 : 1);
         setFormat(fmt);
-#endif
     }
         break;
     case Vulkan:
-#if QT_CONFIG(vulkan)
         setSurfaceType(VulkanSurface);
+#if QT_CONFIG(vulkan)
         setVulkanInstance(r.instance);
 #endif
         break;
@@ -510,6 +508,10 @@ int main(int argc, char **argv)
 
     qDebug("Selected graphics API is %s", qPrintable(graphicsApiName()));
     qDebug("This is a multi-api example, use command line arguments to override:\n%s", qPrintable(cmdLineParser.helpText()));
+
+    QSurfaceFormat fmt;
+    fmt.setDepthBufferSize(24);
+    QSurfaceFormat::setDefaultFormat(fmt);
 
 #if QT_CONFIG(vulkan)
     r.instance = new QVulkanInstance;

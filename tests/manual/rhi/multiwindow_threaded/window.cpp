@@ -16,14 +16,11 @@ Window::Window(const QString &title, GraphicsApi api)
 {
     switch (api) {
     case OpenGL:
-#if QT_CONFIG(opengl)
         setSurfaceType(OpenGLSurface);
-        setFormat(QRhiGles2InitParams::adjustedFormat());
-#endif
         break;
     case Vulkan:
-#if QT_CONFIG(vulkan)
         setSurfaceType(VulkanSurface);
+#if QT_CONFIG(vulkan)
         setVulkanInstance(instance);
 #endif
         break;
