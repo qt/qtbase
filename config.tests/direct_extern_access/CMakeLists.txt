@@ -5,5 +5,9 @@ project(direct_extern_access LANGUAGES CXX)
 
 add_library(no_extern_access_lib SHARED lib.cpp)
 add_executable(no_extern_access_main main.cpp)
-target_compile_options(no_extern_access_lib PUBLIC "-mno-direct-extern-access")
+
+target_compile_options(no_extern_access_lib PRIVATE "-Werror")
+target_compile_options(no_extern_access_lib PUBLIC "$<$<CXX_COMPILER_ID:GNU>:-mno-direct-extern-access>")
+target_compile_options(no_extern_access_lib PUBLIC "$<$<CXX_COMPILER_ID:Clang>:-fno-direct-access-external-data>")
+
 target_link_libraries(no_extern_access_main no_extern_access_lib)

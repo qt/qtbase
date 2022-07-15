@@ -12,5 +12,6 @@
 struct LIB_API S
 {
     virtual ~S();
-    virtual void f();
+    virtual void *f();
+    static void *ptr;
 };
