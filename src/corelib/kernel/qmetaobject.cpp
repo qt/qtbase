@@ -1361,6 +1361,29 @@ static inline QByteArray findMethodCandidates(const QMetaObject *metaObject, con
     return candidateMessage;
 }
 
+Q_DECL_COLD_FUNCTION static inline bool
+printMethodNotFoundWarning(const QMetaObject *meta, QLatin1StringView name, qsizetype paramCount,
+                           const char *const *names)
+{
+    QVarLengthArray<char, 512> sig;
+    sig.append(name.data(), name.size());
+    sig.append('(');
+    for (qsizetype i = 1; i < paramCount; ++i) {
+        sig.append(names[i], qstrlen(names[i]));
+        sig.append(',');
+    }
+    if (paramCount == 1)
+        sig.append(')'); // no parameters
+    else
+        sig[sig.size() - 1] = ')';
+    sig.append('\0');
+
+    qWarning("QMetaObject::invokeMethod: No such method %s::%s%s",
+             meta->className(), sig.constData(),
+             findMethodCandidates(meta, name.data()).constData());
+    return false;
+}
+
 /*!
     \threadsafe
 
@@ -1483,26 +1506,7 @@ bool QMetaObject::invokeMethod(QObject *obj,
     }
 
     // This method doesn't belong to us; print out a nice warning with candidates.
-    QVarLengthArray<char, 512> sig;
-    int len = int(qstrlen(member));
-    if (len <= 0)
-        return false;
-    sig.append(member, len);
-    sig.append('(');
-    for (qsizetype i = 1; i < paramCount; ++i) {
-        sig.append(typeNames[i], qstrlen(typeNames[i]));
-        sig.append(',');
-    }
-    if (paramCount == 1)
-        sig.append(')'); // no parameters
-    else
-        sig[sig.size() - 1] = ')';
-    sig.append('\0');
-
-    meta = obj->metaObject();
-    qWarning("QMetaObject::invokeMethod: No such method %s::%s%s",
-             meta->className(), sig.constData(), findMethodCandidates(meta, member).constData());
-    return false;
+    return printMethodNotFoundWarning(obj->metaObject(), name, paramCount, typeNames);
 }
 
 bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *slot, Qt::ConnectionType type, void *ret)
