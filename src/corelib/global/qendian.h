@@ -319,8 +319,8 @@ public:
     QLEInteger &operator ^=(T i);
     QLEInteger &operator ++();
     QLEInteger &operator --();
-    QLEInteger &operator ++(int);
-    QLEInteger &operator --(int);
+    QLEInteger operator ++(int);
+    QLEInteger operator --(int);
 
     static constexpr QLEInteger max();
     static constexpr QLEInteger min();
@@ -346,8 +346,8 @@ public:
     QBEInteger &operator ^=(T i);
     QBEInteger &operator ++();
     QBEInteger &operator --();
-    QBEInteger &operator ++(int);
-    QBEInteger &operator --(int);
+    QBEInteger operator ++(int);
+    QBEInteger operator --(int);
 
     static constexpr QBEInteger max();
     static constexpr QBEInteger min();
