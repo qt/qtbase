@@ -59,7 +59,7 @@ qaxserver {
 !force_import_plugins:!contains(TEMPLATE, ".*app"):!if(contains(TEMPLATE, ".*lib"):dll): \
     CONFIG -= import_plugins
 unix {
-    contains(QT_CONFIG, no_extern_direct_access): CONFIG += mno_extern_direct_access
+    contains(QT_CONFIG, no_direct_extern_access): CONFIG += no_direct_extern_access
     else:contains(QT_CONFIG, reduce_relocations):!contains(TEMPLATE, .*lib): {
         QMAKE_CFLAGS += $$QMAKE_CFLAGS_PIC
         QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_PIC
