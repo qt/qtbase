@@ -11,9 +11,6 @@ Window::Window(QRhi::Implementation graphicsApi)
     switch (graphicsApi) {
     case QRhi::OpenGLES2:
         setSurfaceType(OpenGLSurface);
-#if QT_CONFIG(opengl)
-        setFormat(QRhiGles2InitParams::adjustedFormat());
-#endif
         break;
     case QRhi::Vulkan:
         setSurfaceType(VulkanSurface);

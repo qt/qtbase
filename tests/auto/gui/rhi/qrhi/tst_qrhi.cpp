@@ -165,6 +165,12 @@ private:
 void tst_QRhi::initTestCase()
 {
 #ifdef TST_GL
+    QSurfaceFormat fmt;
+    fmt.setDepthBufferSize(24);
+    fmt.setStencilBufferSize(8);
+    QSurfaceFormat::setDefaultFormat(fmt);
+
+    initParams.gl.format = QSurfaceFormat::defaultFormat();
     fallbackSurface = QRhiGles2InitParams::newFallbackSurface();
     initParams.gl.fallbackSurface = fallbackSurface;
 #endif
@@ -710,7 +716,6 @@ void tst_QRhi::nativeHandlesImportOpenGL()
 #ifdef TST_GL
     QRhiGles2NativeHandles h;
     QScopedPointer<QOpenGLContext> ctx(new QOpenGLContext);
-    ctx->setFormat(QRhiGles2InitParams::adjustedFormat());
     if (!ctx->create())
         QSKIP("No OpenGL context, skipping OpenGL-specific test");
     h.context = ctx.data();
@@ -3269,7 +3274,6 @@ void tst_QRhi::setWindowType(QWindow *window, QRhi::Implementation impl)
     switch (impl) {
 #ifdef TST_GL
     case QRhi::OpenGLES2:
-        window->setFormat(QRhiGles2InitParams::adjustedFormat());
         window->setSurfaceType(QSurface::OpenGLSurface);
         break;
 #endif
