@@ -856,6 +856,9 @@ namespace QtPrivate
         };
     };
 
+    template <typename T>
+    using IsRealGadget = std::bool_constant<IsGadgetHelper<T>::IsRealGadget>;
+
     template<typename T, typename Enable = void>
     struct IsPointerToGadgetHelper { enum { IsRealGadget = false, IsGadgetOrDerivedFrom = false }; };
 
@@ -1103,7 +1106,7 @@ namespace QtPrivate
 
 template <typename T, int =
     QtPrivate::IsPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::PointerToQObject :
-    QtPrivate::IsGadgetHelper<T>::IsRealGadget             ? QMetaType::IsGadget :
+    QtPrivate::IsRealGadget<T>::value                      ? QMetaType::IsGadget :
     QtPrivate::IsPointerToGadgetHelper<T>::IsRealGadget    ? QMetaType::PointerToGadget :
     QtPrivate::IsQEnumHelper<T>::Value                     ? QMetaType::IsEnumeration : 0>
 struct QMetaTypeIdQObject
