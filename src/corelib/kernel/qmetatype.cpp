@@ -1596,7 +1596,7 @@ Q_GLOBAL_STATIC(QMetaTypeMutableViewRegistry, customTypesMutableViewRegistry)
 */
 
 /*!
-    \fn template<typename From, typename To> static bool registerConverter(To(From::*function)() const)
+    \fn template<typename From, typename To> static bool QMetaType::registerConverter(To(From::*function)() const)
     \since 5.2
     \overload
     Registers a method \a function like To From::function() const as converter from type From
@@ -1606,25 +1606,25 @@ Q_GLOBAL_STATIC(QMetaTypeMutableViewRegistry, customTypesMutableViewRegistry)
 */
 
 /*!
-    \fn template<typename From, typename To> static bool registerConverter(To(From::*function)(bool*) const)
+    \fn template<typename From, typename To> static bool QMetaType::registerConverter(To(From::*function)(bool*) const)
     \since 5.2
     \overload
     Registers a method \a function like To From::function(bool *ok) const as converter from type From
     to type To in the meta type system. Returns \c true if the registration succeeded, otherwise false.
 
-    The \a ok pointer can be used by the function to indicate whether the conversion succeeded.
+    The \c ok pointer can be used by the function to indicate whether the conversion succeeded.
     \snippet qmetatype/registerConverters.cpp memberOk
 
 */
 
 /*!
-    \fn template<typename From, typename To, typename UnaryFunction> static bool registerConverter(UnaryFunction function)
+    \fn template<typename From, typename To, typename UnaryFunction> static bool QMetaType::registerConverter(UnaryFunction function)
     \since 5.2
     \overload
     Registers a unary function object \a function as converter from type From
     to type To in the meta type system. Returns \c true if the registration succeeded, otherwise false.
 
-    \a function must take an instance of type \a From and return an instance of \a To. It can be a function
+    \a function must take an instance of type \c From and return an instance of \c To. It can be a function
     pointer, a lambda or a functor object.
     \snippet qmetatype/registerConverters.cpp unaryfunc
 */
@@ -1647,7 +1647,7 @@ bool QMetaType::registerConverterFunction(const ConverterFunction &f, QMetaType 
 }
 
 /*!
-    \fn template<typename From, typename To> static bool registerMutableView(To(From::*function)())
+    \fn template<typename From, typename To> static bool QMetaType::registerMutableView(To(From::*function)())
     \since 6.0
     \overload
     Registers a method \a function like \c {To From::function()} as mutable view of type \c {To} on
@@ -1656,7 +1656,7 @@ bool QMetaType::registerConverterFunction(const ConverterFunction &f, QMetaType 
 */
 
 /*!
-    \fn template<typename From, typename To, typename UnaryFunction> static bool registerMutableView(UnaryFunction function)
+    \fn template<typename From, typename To, typename UnaryFunction> static bool QMetaType::registerMutableView(UnaryFunction function)
     \since 6.0
     \overload
     Registers a unary function object \a function as mutable view of type To on type From
