@@ -480,7 +480,7 @@ QIODevice *QXmlStreamReader::device() const
 void QXmlStreamReader::addData(QAnyStringView data)
 {
     Q_D(QXmlStreamReader);
-    data.visit([=](auto data) {
+    data.visit([this, d](auto data) {
         if constexpr (std::is_same_v<decltype(data), QStringView>) {
             d->lockEncoding = true;
             if (!d->decoder.isValid())
