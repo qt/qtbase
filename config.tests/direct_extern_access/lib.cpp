@@ -6,5 +6,6 @@
 #define BUILD
 #include "lib.h"
 
+void *S::ptr = nullptr;
 S::~S() { }
-void S::f() { }
+void *S::f() { return ptr; }
