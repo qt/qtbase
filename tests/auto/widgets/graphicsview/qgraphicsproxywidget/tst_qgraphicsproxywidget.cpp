@@ -3556,7 +3556,7 @@ void tst_QGraphicsProxyWidget::mapToGlobal() // QTBUG-41135
     QCOMPARE(embeddedWidget->mapFromGlobal(embeddedCenterGlobal), embeddedCenter);
     // This should be equivalent to the view center give or take rounding
     // errors due to odd window margins
-    const int Tolerance = qCeil(3 * view.devicePixelRatio());
+    const int Tolerance = qCeil(4 * view.devicePixelRatio());
     const QPoint viewCenter = view.geometry().center();
     QVERIFY2((viewCenter - embeddedCenterGlobal).manhattanLength() <= Tolerance,
              msgPointMismatch(embeddedCenterGlobal, viewCenter).constData());
