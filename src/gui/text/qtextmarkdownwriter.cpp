@@ -125,17 +125,22 @@ void QTextMarkdownWriter::writeFrame(const QTextFrame *frame)
             // suppress needless blank lines, when there will be a big change in block format
             bool nextIsDifferent = false;
             bool ending = false;
+            int blockQuoteIndent = 0;
+            int nextBlockQuoteIndent = 0;
             {
                 QTextFrame::iterator next = iterator;
                 ++next;
+                QTextBlockFormat format = iterator.currentBlock().blockFormat();
+                QTextBlockFormat nextFormat = next.currentBlock().blockFormat();
+                blockQuoteIndent = format.intProperty(QTextFormat::BlockQuoteLevel);
+                nextBlockQuoteIndent = nextFormat.intProperty(QTextFormat::BlockQuoteLevel);
                 if (next.atEnd()) {
                     nextIsDifferent = true;
                     ending = true;
                 } else {
-                    QTextBlockFormat format = iterator.currentBlock().blockFormat();
-                    QTextBlockFormat nextFormat = next.currentBlock().blockFormat();
                     if (nextFormat.indent() != format.indent() ||
-                            nextFormat.property(QTextFormat::BlockCodeLanguage) != format.property(QTextFormat::BlockCodeLanguage))
+                        nextFormat.property(QTextFormat::BlockCodeLanguage) !=
+                                format.property(QTextFormat::BlockCodeLanguage))
                         nextIsDifferent = true;
                 }
             }
@@ -152,8 +157,10 @@ void QTextMarkdownWriter::writeFrame(const QTextFrame *frame)
                     tableRow = cell.row();
                 }
             } else if (!block.textList()) {
-                if (lastWasList)
+                if (lastWasList) {
                     m_stream << qtmw_Newline;
+                    m_linePrefixWritten = false;
+                }
             }
             int endingCol = writeBlock(block, !table, table && tableRow == 0,
                                        nextIsDifferent && !block.textList());
@@ -177,8 +184,16 @@ void QTextMarkdownWriter::writeFrame(const QTextFrame *frame)
             } else if (endingCol > 0) {
                 if (block.textList() || block.blockFormat().hasProperty(QTextFormat::BlockCodeLanguage)) {
                     m_stream << qtmw_Newline;
+                    if (block.textList()) {
+                        m_stream << m_linePrefix;
+                        m_linePrefixWritten = true;
+                    }
                 } else {
-                    m_stream << qtmw_Newline << qtmw_Newline;
+                    m_stream << qtmw_Newline;
+                    if (nextBlockQuoteIndent < blockQuoteIndent)
+                        setLinePrefixForBlockQuote(nextBlockQuoteIndent);
+                    m_stream << m_linePrefix;
+                    m_stream << qtmw_Newline;
                     m_doubleNewlineWritten = true;
                 }
             }
@@ -222,6 +237,16 @@ QTextMarkdownWriter::ListInfo QTextMarkdownWriter::listInfo(QTextList *list)
         return info;
     }
     return m_listInfo.value(list);
+}
+
+void QTextMarkdownWriter::setLinePrefixForBlockQuote(int level)
+{
+    m_linePrefix.clear();
+    if (level > 0) {
+        m_linePrefix.reserve(level * 2);
+        for (int i = 0; i < level; ++i)
+            m_linePrefix += u"> ";
+    }
 }
 
 static int nearestWordWrapIndex(const QString &s, int before)
@@ -349,10 +374,20 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
     const bool codeBlock = blockFmt.hasProperty(QTextFormat::BlockCodeFence) ||
             blockFmt.stringProperty(QTextFormat::BlockCodeLanguage).size() > 0 ||
             blockFmt.nonBreakableLines();
+    const int blockQuoteLevel = blockFmt.intProperty(QTextFormat::BlockQuoteLevel);
     if (m_fencedCodeBlock && !codeBlock) {
         m_stream << m_linePrefix << m_codeBlockFence << qtmw_Newline;
         m_fencedCodeBlock = false;
         m_codeBlockFence.clear();
+        m_linePrefixWritten = m_linePrefix.size() > 0;
+    }
+    m_linePrefix.clear();
+    if (!blockFmt.headingLevel() && blockQuoteLevel > 0) {
+        setLinePrefixForBlockQuote(blockQuoteLevel);
+        if (!m_linePrefixWritten) {
+            m_stream << m_linePrefix;
+            m_linePrefixWritten = true;
+        }
     }
     if (block.textList()) { // it's a list-item
         auto fmt = block.textList()->format();
@@ -429,31 +464,25 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
             if (blockFmt.hasProperty(QTextFormat::BlockIndent))
                 m_codeBlockFence = QString(m_wrappedLineIndent, qtmw_Space) + m_codeBlockFence;
             // A block quote can contain an indented code block, but not vice-versa.
-            m_stream << m_linePrefix << m_codeBlockFence
-                     << blockFmt.stringProperty(QTextFormat::BlockCodeLanguage) << qtmw_Newline;
+            m_stream << m_codeBlockFence << blockFmt.stringProperty(QTextFormat::BlockCodeLanguage)
+                     << qtmw_Newline << m_linePrefix;
             m_fencedCodeBlock = true;
         }
         wrap = false;
     } else if (!blockFmt.indent()) {
         m_wrappedLineIndent = 0;
-        m_linePrefix.clear();
-        if (blockFmt.hasProperty(QTextFormat::BlockQuoteLevel)) {
-            int level = blockFmt.intProperty(QTextFormat::BlockQuoteLevel);
-            QString quoteMarker = QStringLiteral("> ");
-            m_linePrefix.reserve(level * 2);
-            for (int i = 0; i < level; ++i)
-                m_linePrefix += quoteMarker;
-        }
         if (blockFmt.hasProperty(QTextFormat::BlockCodeLanguage)) {
             // A block quote can contain an indented code block, but not vice-versa.
             m_linePrefix += QString(4, qtmw_Space);
             m_indentedCodeBlock = true;
         }
+        if (!m_linePrefixWritten) {
+            m_stream << m_linePrefix;
+            m_linePrefixWritten = true;
+        }
     }
     if (blockFmt.headingLevel())
         m_stream << QByteArray(blockFmt.headingLevel(), '#') << ' ';
-    else
-        m_stream << m_linePrefix;
 
     QString wrapIndentString = m_linePrefix + QString(m_wrappedLineIndent, qtmw_Space);
     // It would be convenient if QTextStream had a lineCharPos() accessor,
@@ -597,6 +626,10 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
                     i = j + 1;
                 }
             } else {
+                if (!m_linePrefixWritten && col == wrapIndentString.size()) {
+                    m_stream << m_linePrefix;
+                    col += m_linePrefix.size();
+                }
                 m_stream << markers << fragmentText;
                 col += markers.size() + fragmentText.size();
             }
@@ -628,6 +661,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
     }
     if (missedBlankCodeBlockLine)
         m_stream << qtmw_Newline;
+    m_linePrefixWritten = false;
     return col;
 }
 
