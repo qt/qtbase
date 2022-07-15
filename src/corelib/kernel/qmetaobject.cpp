@@ -1357,20 +1357,17 @@ printMethodNotFoundWarning(const QMetaObject *meta, QLatin1StringView name, qsiz
     }
 
     QVarLengthArray<char, 512> sig;
-    sig.append(name.data(), name.size());
-    sig.append('(');
     for (qsizetype i = 1; i < paramCount; ++i) {
         sig.append(names[i], qstrlen(names[i]));
         sig.append(',');
     }
-    if (paramCount == 1)
-        sig.append(')'); // no parameters
-    else
-        sig[sig.size() - 1] = ')';
-    sig.append('\0');
+    if (paramCount != 1)
+        sig.resize(sig.size() - 1);
 
-    qWarning("QMetaObject::invokeMethod: No such method %s::%s%s",
-             meta->className(), sig.constData(), candidateMessage.constData());
+    qWarning("QMetaObject::invokeMethod: No such method %s::%.*s(%.*s)%.*s",
+             meta->className(), int(name.size()), name.constData(),
+             int(sig.size()), sig.constData(),
+             int(candidateMessage.size()), candidateMessage.constData());
     return false;
 }
 
