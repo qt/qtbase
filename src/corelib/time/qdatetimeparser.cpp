@@ -567,10 +567,8 @@ bool QDateTimeParser::parseFormat(QStringView newFormat)
                 break;
             case 't':
                 if (parserType == QMetaType::QDateTime) {
-                    // TODO (in qlocale.cpp's serialization, too) QTBUG-95966:
-                    // decide what different lengths of 't' format should do,
-                    // instead of repetition !
-                    const SectionNode sn = { TimeZoneSection, i - add, 1, 0 };
+                    const SectionNode sn
+                        = { TimeZoneSection, i - add, countRepeat(newFormat, i, 4), 0 };
                     newSectionNodes.append(sn);
                     appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                     i += sn.count - 1;
@@ -830,7 +828,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
     case TimeZoneSection:
         result = findTimeZone(sectionTextRef, defaultValue,
                               absoluteMax(sectionIndex),
-                              absoluteMin(sectionIndex));
+                              absoluteMin(sectionIndex), sn.count);
         break;
     case MonthSection:
     case DayOfWeekSectionShort:
@@ -1697,12 +1695,17 @@ int QDateTimeParser::findDay(const QString &str1, int startDay, int sectionIndex
 
   Return's .value is UTC offset in seconds.
   The caller must verify that the offset is within a valid range.
+  The mode is 1 for permissive parsing, 2 and 3 for strict offset-only format
+  (no UTC prefix) with no colon for 2 and a colon for 3.
  */
-QDateTimeParser::ParsedSection QDateTimeParser::findUtcOffset(QStringView str) const
+QDateTimeParser::ParsedSection QDateTimeParser::findUtcOffset(QStringView str, int mode) const
 {
+    Q_ASSERT(mode > 0 && mode < 4);
     const bool startsWithUtc = str.startsWith("UTC"_L1);
-    // Get rid of UTC prefix if it exists
+    // Deal with UTC prefix if present:
     if (startsWithUtc) {
+        if (mode != 1)
+            return ParsedSection();
         str = str.sliced(3);
         if (str.isEmpty())
             return ParsedSection(Acceptable, 0, 3);
@@ -1736,6 +1739,8 @@ QDateTimeParser::ParsedSection QDateTimeParser::findUtcOffset(QStringView str) c
         i = hoursLength;
         hasColon = false;
     }
+    if (mode == (hasColon ? 2 : 3))
+        return ParsedSection();
     str.truncate(i);  // The rest of the string is not part of the UTC offset
 
     bool isInt = false;
@@ -1820,17 +1825,26 @@ QDateTimeParser::findTimeZoneName(QStringView str, const QDateTime &when) const
 
   Return's .value is zone's offset, zone time - UTC time, in seconds.
   See QTimeZonePrivate::isValidId() for the format of zone names.
- */
+
+  The mode is the number of 't' characters in the field specifier:
+  * 1: any recognized format
+  * 2: only the simple offset format, without colon
+  * 3: only the simple offset format, with colon
+  * 4: only a zone name
+*/
 QDateTimeParser::ParsedSection
 QDateTimeParser::findTimeZone(QStringView str, const QDateTime &when,
-                              int maxVal, int minVal) const
+                              int maxVal, int minVal, int mode) const
 {
+    Q_ASSERT(mode > 0 && mode <= 4);
     // Short-cut Zulu suffix when it's all there is (rather than a prefix match):
-    if (str == u'Z')
+    if (mode == 1 && str == u'Z')
         return ParsedSection(Acceptable, 0, 1);
 
-    ParsedSection section = findUtcOffset(str);
-    if (section.used <= 0)  // if nothing used, try time zone parsing
+    ParsedSection section;
+    if (mode != 4)
+        section = findUtcOffset(str, mode);
+    if (mode != 2 && mode != 3 && section.used <= 0)  // if nothing used, try time zone parsing
         section = findTimeZoneName(str, when);
     // It can be a well formed time zone specifier, but with value out of range
     if (section.state == Acceptable && (section.value < minVal || section.value > maxVal))
@@ -1838,11 +1852,13 @@ QDateTimeParser::findTimeZone(QStringView str, const QDateTime &when,
     if (section.used > 0)
         return section;
 
-    // Check if string is UTC or alias to UTC, after all other options
-    if (str.startsWith("UTC"_L1))
-        return ParsedSection(Acceptable, 0, 3);
-    if (str.startsWith(u'Z'))
-        return ParsedSection(Acceptable, 0, 1);
+    if (mode == 1) {
+        // Check if string is UTC or alias to UTC, after all other options
+        if (str.startsWith("UTC"_L1))
+            return ParsedSection(Acceptable, 0, 3);
+        if (str.startsWith(u'Z'))
+            return ParsedSection(Acceptable, 0, 1);
+    }
 
     return ParsedSection();
 }

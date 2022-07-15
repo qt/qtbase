@@ -173,10 +173,10 @@ private:
                   int year, QString *monthName = nullptr, int *used = nullptr) const;
     int findDay(const QString &str1, int intDaystart, int sectionIndex,
                 QString *dayName = nullptr, int *used = nullptr) const;
-    ParsedSection findUtcOffset(QStringView str) const;
+    ParsedSection findUtcOffset(QStringView str, int mode) const;
     ParsedSection findTimeZoneName(QStringView str, const QDateTime &when) const;
     ParsedSection findTimeZone(QStringView str, const QDateTime &when,
-                               int maxVal, int minVal) const;
+                               int maxVal, int minVal, int mode) const;
     // Implemented in qlocaltime.cpp:
     static int startsWithLocalTimeZone(const QStringView name);
 

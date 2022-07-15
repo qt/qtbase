@@ -5045,7 +5045,18 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
 
     \table
     \header \li Expression \li Output
-    \row \li t \li the timezone (for example "CEST")
+    \row \li t
+         \li the timezone (offset, name, "Z" or offset with "UTC" prefix)
+    \row \li tt
+         \li the timezone in offset format with no colon between hours and
+             minutes (for example "+0200")
+    \row \li ttt
+         \li the timezone in offset format with a colon between hours and
+             minutes (for example "+02:00")
+    \row \li tttt
+         \li the timezone name (for example "Europe/Berlin").  The name
+             recognized are those known to \l QTimeZone, which may depend on the
+             operating system in use.
     \endtable
 
     If no 't' format specifier is present, the system's local time-zone is used.

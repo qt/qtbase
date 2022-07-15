@@ -2937,6 +2937,17 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("integer overflow found by fuzzer")
             << QStringLiteral("EEE1200000MUB") << QStringLiteral("t")
             << QDateTime();
+
+    // Rich time-zone specifiers (QTBUG-95966):
+    QTest::newRow("timezone-tt-with-offset:+0300")
+        << QString("2008-10-13 +0300 11.50") << QString("yyyy-MM-dd tt hh.mm")
+        << QDateTime(QDate(2008, 10, 13), QTime(11, 50), Qt::OffsetFromUTC, 10800);
+    QTest::newRow("timezone-ttt-with-offset:+03:00")
+        << QString("2008-10-13 +03:00 11.50") << QString("yyyy-MM-dd ttt hh.mm")
+        << QDateTime(QDate(2008, 10, 13), QTime(11, 50), Qt::OffsetFromUTC, 10800);
+    QTest::newRow("timezone-tttt-with-offset:+03:00")
+        << QString("2008-10-13 +03:00 11.50") << QString("yyyy-MM-dd tttt hh.mm")
+        << QDateTime(); // Offset not valid when zone name expected.
 }
 
 void tst_QDateTime::fromStringStringFormat()
@@ -2978,14 +2989,23 @@ void tst_QDateTime::fromStringStringFormat_localTimeZone_data()
     QTimeZone etcGmtWithOffset("Etc/GMT+3");
     if (etcGmtWithOffset.isValid()) {
         lacksRows = false;
-        QTest::newRow("local-timezone-with-offset:Etc/GMT+3") << QByteArrayLiteral("GMT")
+        QTest::newRow("local-timezone-t-with-zone:Etc/GMT+3")
+            << QByteArrayLiteral("GMT")
             << QString("2008-10-13 Etc/GMT+3 11.50") << QString("yyyy-MM-dd t hh.mm")
             << QDateTime(QDate(2008, 10, 13), QTime(11, 50), etcGmtWithOffset);
-        // TODO QTBUG-95966: find better ways to use repeated 't'
-        QTest::newRow("double-timezone-with-offset:Etc/GMT+3") << QByteArrayLiteral("GMT")
-            << QString("2008-10-13 Etc/GMT+3Etc/GMT+3 11.50") << QString("yyyy-MM-dd tt hh.mm")
+        QTest::newRow("local-timezone-tttt-with-zone:Etc/GMT+3")
+            << QByteArrayLiteral("GMT")
+            << QString("2008-10-13 Etc/GMT+3 11.50") << QString("yyyy-MM-dd tttt hh.mm")
             << QDateTime(QDate(2008, 10, 13), QTime(11, 50), etcGmtWithOffset);
     }
+    QTest::newRow("local-timezone-tt-with-zone:Etc/GMT+3")
+        << QByteArrayLiteral("GMT")
+        << QString("2008-10-13 Etc/GMT+3 11.50") << QString("yyyy-MM-dd tt hh.mm")
+        << QDateTime(); // Zone name not valid when offset expected
+    QTest::newRow("local-timezone-ttt-with-zone:Etc/GMT+3")
+        << QByteArrayLiteral("GMT")
+        << QString("2008-10-13 Etc/GMT+3 11.50") << QString("yyyy-MM-dd ttt hh.mm")
+        << QDateTime(); // Zone name not valid when offset expected
     QTimeZone gmtWithOffset("GMT-2");
     if (gmtWithOffset.isValid()) {
         lacksRows = false;
