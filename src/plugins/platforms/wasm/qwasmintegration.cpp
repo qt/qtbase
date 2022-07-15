@@ -86,22 +86,6 @@ QWasmIntegration::QWasmIntegration()
     s_instance = this;
 
    touchPoints = emscripten::val::global("navigator")["maxTouchPoints"].as<int>();
-    // The Platform Detect: expand coverage as needed
-    platform = GenericPlatform;
-    emscripten::val rawPlatform = emscripten::val::global("navigator")["platform"];
-
-    if (rawPlatform.call<bool>("includes", emscripten::val("Mac")))
-        platform = MacOSPlatform;
-    if (rawPlatform.call<bool>("includes", emscripten::val("iPhone")))
-        platform = iPhonePlatform;
-    if (rawPlatform.call<bool>("includes", emscripten::val("Win32")))
-        platform = WindowsPlatform;
-    if (rawPlatform.call<bool>("includes", emscripten::val("Linux"))) {
-        platform = LinuxPlatform;
-        emscripten::val uAgent = emscripten::val::global("navigator")["userAgent"];
-        if (uAgent.call<bool>("includes", emscripten::val("Android")))
-            platform = AndroidPlatform;
-    }
 
     // Create screens for container elements. Each container element can be a div element (preferred),
     // or a canvas element (legacy). Qt versions prior to 6.x read the "qtCanvasElements" module property,

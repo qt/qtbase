@@ -50,7 +50,7 @@ QWasmInputContext::QWasmInputContext()
     m_inputElement.set("style", "position:absolute;left:-1000px;top:-1000px"); // offscreen
     m_inputElement.set("contentaediable","true");
 
-    if (QWasmIntegration::get()->platform == QWasmIntegration::AndroidPlatform) {
+    if (platform() == Platform::Android) {
         emscripten::val body = document["body"];
         body.call<void>("appendChild", m_inputElement);
 
@@ -65,8 +65,7 @@ QWasmInputContext::QWasmInputContext()
                                         &androidKeyboardCallback);
 
     }
-    if (QWasmIntegration::get()->platform == QWasmIntegration::MacOSPlatform ||
-        QWasmIntegration::get()->platform == QWasmIntegration::iPhonePlatform)
+    if (platform() == Platform::MacOS || platform() == Platform::iPhone)
      {
         auto callback = [=](emscripten::val) {
             m_inputElement["parentElement"].call<void>("removeChild", m_inputElement);
@@ -81,7 +80,7 @@ QWasmInputContext::QWasmInputContext()
 
 QWasmInputContext::~QWasmInputContext()
 {
-    if (QWasmIntegration::get()->platform == QWasmIntegration::AndroidPlatform)
+    if (platform() == Platform::Android)
         emscripten_set_keydown_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 0, NULL);
 }
 
@@ -107,7 +106,7 @@ void QWasmInputContext::update(Qt::InputMethodQueries queries)
 
 void QWasmInputContext::showInputPanel()
 {
-    if (QWasmIntegration::get()->platform == QWasmIntegration::WindowsPlatform
+    if (platform() == Platform::Windows
         && inputPanelIsOpen) // call this only once for win32
         return;
     // this is called each time the keyboard is touched
@@ -119,9 +118,9 @@ void QWasmInputContext::showInputPanel()
     // captured by the keyboard event handler installed on the
     // canvas.
 
-    if (QWasmIntegration::get()->platform == QWasmIntegration::MacOSPlatform // keep for compatibility
-     || QWasmIntegration::get()->platform == QWasmIntegration::iPhonePlatform
-     || QWasmIntegration::get()->platform == QWasmIntegration::WindowsPlatform) {
+    if (platform() == Platform::MacOS // keep for compatibility
+     || platform() == Platform::iPhone
+     || platform() == Platform::Windows) {
         emscripten::val canvas = focusCanvas();
         if (canvas == emscripten::val::undefined())
             return;

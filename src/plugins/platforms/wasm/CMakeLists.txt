@@ -15,12 +15,14 @@ qt_internal_add_plugin(QWasmIntegrationPlugin
         qwasmclipboard.cpp qwasmclipboard.h
         qwasmcompositor.cpp qwasmcompositor.h
         qwasmcursor.cpp qwasmcursor.h
+        qwasmevent.cpp qwasmevent.h
         qwasmeventdispatcher.cpp qwasmeventdispatcher.h
         qwasmeventtranslator.cpp qwasmeventtranslator.h
         qwasmfontdatabase.cpp qwasmfontdatabase.h
         qwasmintegration.cpp qwasmintegration.h
         qwasmoffscreensurface.cpp qwasmoffscreensurface.h
         qwasmopenglcontext.cpp qwasmopenglcontext.h
+        qwasmplatform.cpp qwasmplatform.h
         qwasmscreen.cpp qwasmscreen.h
         qwasmservices.cpp qwasmservices.h
         qwasmstring.cpp qwasmstring.h
