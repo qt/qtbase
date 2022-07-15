@@ -727,9 +727,19 @@ void tst_qmessagehandler::qMessagePattern_data()
     QSKIP("These test cases don't work with static Qt builds");
 #else
 #ifndef QT_NO_DEBUG
-    QTest::newRow("backtrace") << "[%{backtrace}] %{message}" << true << (QList<QByteArray>()
-            // MyClass::qt_static_metacall is explicitly marked as hidden in the Q_OBJECT macro
-            << "[MyClass::myFunction|MyClass::mySlot1|?" BACKTRACE_HELPER_NAME "?|" QT_NAMESPACE_STR "QMetaMethod::invoke|" QT_NAMESPACE_STR "QMetaObject::invokeMethod] from_a_function 34");
+    QList<QByteArray> expectedBacktrace = {
+        // MyClass::qt_static_metacall is explicitly marked as hidden in the
+        // Q_OBJECT macro hence the ?helper? frame
+        "[MyClass::myFunction|MyClass::mySlot1|?" BACKTRACE_HELPER_NAME "?|",
+
+        // QMetaObject::invokeMethod calls internal function
+        // (QMetaMethodPrivate::invokeImpl, at the tims of this writing), which
+        // will usually show only as ?libQt6Core.so? or equivalent, so we skip
+
+        // end of backtrace, actual message
+        "|" QT_NAMESPACE_STR "QMetaObject::invokeMethod] from_a_function 34"
+    };
+    QTest::newRow("backtrace") << "[%{backtrace}] %{message}" << true << expectedBacktrace;
 #endif
 
     QTest::newRow("backtrace depth,separator") << "[%{backtrace depth=2 separator=\"\n\"}] %{message}" << true << (QList<QByteArray>()

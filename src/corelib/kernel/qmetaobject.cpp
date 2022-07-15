@@ -1450,23 +1450,50 @@ bool QMetaObject::invokeMethod(QObject *obj,
     if (!obj)
         return false;
 
+    const char *typeNames[] = {ret.name(), val0.name(), val1.name(), val2.name(), val3.name(),
+                               val4.name(), val5.name(), val6.name(), val7.name(), val8.name(),
+                               val9.name()};
+    const void *parameters[] = {ret.data(), val0.data(), val1.data(), val2.data(), val3.data(),
+                                val4.data(), val5.data(), val6.data(), val7.data(), val8.data(),
+                                val9.data()};
+    int paramCount;
+    for (paramCount = 1; paramCount < MaximumParamCount; ++paramCount) {
+        if (qstrlen(typeNames[paramCount]) <= 0)
+            break;
+    }
+
+    // find the method
+    QLatin1StringView name(member);
+    if (name.isEmpty())
+        return false;
+
+    const QMetaObject *meta = obj->metaObject();
+    for ( ; meta; meta = meta->superClass()) {
+        auto priv = QMetaObjectPrivate::get(meta);
+        for (int i = 0; i < priv->methodCount; ++i) {
+            QMetaMethod m = QMetaMethod::fromRelativeMethodIndex(meta, i);
+            if (m.parameterCount() > (paramCount - 1))
+                continue;
+            if (name != stringDataView(meta, m.data.name()))
+                continue;
+
+            // attempt to call
+            QMetaMethodPrivate::InvokeFailReason r =
+                    QMetaMethodPrivate::invokeImpl(m, obj, type, paramCount, parameters, typeNames);
+            if (int(r) <= 0)
+                return r == QMetaMethodPrivate::InvokeFailReason::None;
+        }
+    }
+
+    // This method doesn't belong to us; print out a nice warning with candidates.
     QVarLengthArray<char, 512> sig;
     int len = int(qstrlen(member));
     if (len <= 0)
         return false;
     sig.append(member, len);
     sig.append('(');
-
-    const char *typeNames[] = {ret.name(), val0.name(), val1.name(), val2.name(), val3.name(),
-                               val4.name(), val5.name(), val6.name(), val7.name(), val8.name(),
-                               val9.name()};
-
-    int paramCount;
-    for (paramCount = 1; paramCount < MaximumParamCount; ++paramCount) {
-        len = int(qstrlen(typeNames[paramCount]));
-        if (len <= 0)
-            break;
-        sig.append(typeNames[paramCount], len);
+    for (qsizetype i = 1; i < paramCount; ++i) {
+        sig.append(typeNames[i], qstrlen(typeNames[i]));
         sig.append(',');
     }
     if (paramCount == 1)
@@ -1475,22 +1502,10 @@ bool QMetaObject::invokeMethod(QObject *obj,
         sig[sig.size() - 1] = ')';
     sig.append('\0');
 
-    const QMetaObject *meta = obj->metaObject();
-    int idx = meta->indexOfMethod(sig.constData());
-    if (idx < 0) {
-        QByteArray norm = QMetaObject::normalizedSignature(sig.constData());
-        idx = meta->indexOfMethod(norm.constData());
-    }
-
-    if (idx < 0 || idx >= meta->methodCount()) {
-        // This method doesn't belong to us; print out a nice warning with candidates.
-        qWarning("QMetaObject::invokeMethod: No such method %s::%s%s",
-                 meta->className(), sig.constData(), findMethodCandidates(meta, member).constData());
-        return false;
-    }
-    QMetaMethod method = meta->method(idx);
-    return method.invoke(obj, type, ret,
-                         val0, val1, val2, val3, val4, val5, val6, val7, val8, val9);
+    meta = obj->metaObject();
+    qWarning("QMetaObject::invokeMethod: No such method %s::%s%s",
+             meta->className(), sig.constData(), findMethodCandidates(meta, member).constData());
+    return false;
 }
 
 bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *slot, Qt::ConnectionType type, void *ret)
