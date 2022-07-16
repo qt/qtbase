@@ -831,6 +831,20 @@ QT_FOR_EACH_AUTOMATIC_TEMPLATE_SMART_POINTER(QT_FORWARD_DECLARE_SHARED_POINTER_T
 
 namespace QtPrivate
 {
+    namespace detail {
+    template<typename T, typename ODR_VIOLATION_PREVENTER>
+    struct is_complete_helper
+    {
+        template<typename U>
+        static auto check(U *) -> std::integral_constant<bool, sizeof(U) != 0>;
+        static auto check(...) -> std::false_type;
+        using type = decltype(check(static_cast<T *>(nullptr)));
+    };
+    } // namespace detail
+
+    template <typename T, typename ODR_VIOLATION_PREVENTER>
+    struct is_complete : detail::is_complete_helper<T, ODR_VIOLATION_PREVENTER>::type {};
+
     template<typename T>
     struct IsPointerToTypeDerivedFromQObject
     {
@@ -2464,27 +2478,12 @@ QT_FOR_EACH_STATIC_CORE_POINTER(QT_METATYPE_DECLARE_EXTERN_TEMPLATE_ITER)
 QT_FOR_EACH_STATIC_CORE_TEMPLATE(QT_METATYPE_DECLARE_EXTERN_TEMPLATE_ITER)
 #undef QT_METATYPE_DECLARE_EXTERN_TEMPLATE_ITER
 #endif
-
 template<typename T>
 constexpr const QMetaTypeInterface *qMetaTypeInterfaceForType()
 {
     using Ty = std::remove_cv_t<std::remove_reference_t<T>>;
     return &QMetaTypeInterfaceWrapper<Ty>::metaType;
 }
-
-namespace detail {
-template<typename T, typename ODR_VIOLATION_PREVENTER>
-struct is_complete_helper
-{
-    template<typename U>
-    static auto check(U *) -> std::integral_constant<bool, sizeof(U) != 0>;
-    static auto check(...) -> std::false_type;
-    using type = decltype(check(static_cast<T *>(nullptr)));
-};
-} // namespace detail
-
-template <typename T, typename ODR_VIOLATION_PREVENTER>
-struct is_complete : detail::is_complete_helper<T, ODR_VIOLATION_PREVENTER>::type {};
 
 template<typename T>
 struct qRemovePointerLike
