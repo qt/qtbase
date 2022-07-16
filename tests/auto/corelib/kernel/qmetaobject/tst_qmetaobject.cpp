@@ -687,6 +687,11 @@ void tst_QMetaObject::invokeMetaMember()
     QVERIFY(QMetaObject::invokeMethod(&obj, "testReference", QGenericArgument("QString&", &refStr)));
     QCOMPARE(obj.slotResult, QString("testReference:whatever"));
     QCOMPARE(refStr, QString("gotcha"));
+    obj.slotResult.clear();
+    refStr = "whatever";
+    QVERIFY(QMetaObject::invokeMethod(&obj, "testReference", Q_ARG(QString&, refStr)));
+    QCOMPARE(obj.slotResult, QString("testReference:whatever"));
+    QCOMPARE(refStr, QString("gotcha"));
 
     qint64 ll1 = -1;
     quint64 ll2 = 0;
@@ -915,6 +920,11 @@ void tst_QMetaObject::invokeQueuedMetaMember()
                          "Candidates are:\n    testReference(QString&)");
     QVERIFY(!QMetaObject::invokeMethod(&obj, "testReference", Qt::QueuedConnection, Q_ARG(QString, exp)));
 
+    QString refStr = "whatever";
+    QTest::ignoreMessage(QtWarningMsg, "QMetaMethod::invoke: Unable to handle unregistered datatype 'QString&'");
+    QVERIFY(!QMetaObject::invokeMethod(&obj, "testReference", Qt::QueuedConnection, Q_ARG(QString&, refStr)));
+    QCOMPARE(refStr, "whatever");
+
     obj.slotResult.clear();
     {
         const MyForwardDeclaredType &t = getForwardDeclaredType();
@@ -1044,6 +1054,11 @@ void tst_QMetaObject::invokeBlockingQueuedMetaMember()
 
     QString refStr("whatever");
     QVERIFY(QMetaObject::invokeMethod(&obj, "testReference", Qt::BlockingQueuedConnection, QGenericArgument("QString&", &refStr)));
+    QCOMPARE(obj.slotResult, QString("testReference:whatever"));
+    QCOMPARE(refStr, QString("gotcha"));
+    obj.slotResult.clear();
+    refStr = "whatever";
+    QVERIFY(QMetaObject::invokeMethod(&obj, "testReference", Qt::BlockingQueuedConnection, Q_ARG(QString&, refStr)));
     QCOMPARE(obj.slotResult, QString("testReference:whatever"));
     QCOMPARE(refStr, QString("gotcha"));
 
