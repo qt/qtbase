@@ -141,7 +141,7 @@ public:
     {
         auto h = QtPrivate::invokeMethodHelper(r, std::forward<Args>(arguments)...);
         return invokeImpl(*this, obj, c, h.parameterCount(), h.parameters.data(),
-                          h.typeNames.data());
+                          h.typeNames.data(), h.metaTypes.data());
     }
 
     template <typename... Args> QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
@@ -167,7 +167,7 @@ public:
     {
         auto h = QtPrivate::invokeMethodHelper(r, std::forward<Args>(arguments)...);
         return invokeImpl(*this, gadget, Qt::ConnectionType(-1), h.parameterCount(),
-                          h.parameters.data(), h.typeNames.data());
+                          h.parameters.data(), h.typeNames.data(), h.metaTypes.data());
     }
 
     template <typename... Args> QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
@@ -190,7 +190,8 @@ public:
 
 private:
     static bool invokeImpl(QMetaMethod self, void *target, Qt::ConnectionType, qsizetype paramCount,
-                           const void *const *parameters, const char *const *typeNames);
+                           const void *const *parameters, const char *const *typeNames,
+                           const QtPrivate::QMetaTypeInterface *const *metaTypes);
     static QMetaMethod fromSignalImpl(const QMetaObject *, void **);
     static QMetaMethod fromRelativeMethodIndex(const QMetaObject *mobj, int index);
     static QMetaMethod fromRelativeConstructorIndex(const QMetaObject *mobj, int index);

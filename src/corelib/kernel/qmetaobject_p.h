@@ -160,7 +160,8 @@ public:
     // shadows the public function
     static InvokeFailReason Q_CORE_EXPORT
     invokeImpl(QMetaMethod self, void *target, Qt::ConnectionType, qsizetype paramCount,
-               const void *const *parameters, const char *const *typeNames);
+               const void *const *parameters, const char *const *typeNames,
+               const QtPrivate::QMetaTypeInterface *const *metaTypes);
 };
 
 struct QMetaObjectPrivate

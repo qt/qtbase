@@ -31,14 +31,6 @@ Q_DECLARE_METATYPE(const QMetaObject *)
 #  define Q_NO_ARG
 #endif
 
-#ifdef QEASINGCURVE_H
-#  error "Please make sure qeasingcurve.h is not #include'd here! " \
-    "We need QEasingCurve to be only forward-declared."
-#endif
-QT_BEGIN_NAMESPACE
-class QEasingCurve;
-QT_END_NAMESPACE
-
 struct MyStruct
 {
     int i;
@@ -519,7 +511,6 @@ public slots:
     qint64 sl14();
     qlonglong *sl15(qlonglong *);
     MyForwardDeclaredType *sl16(MyForwardDeclaredType *);
-    void sl17(const QEasingCurve &curve);
 
     void overloadedSlot();
     void overloadedSlot(int, int);
@@ -636,8 +627,6 @@ MyForwardDeclaredType *QtTestObject::sl16(MyForwardDeclaredType *ptr)
     slotResult += "null";
     return getForwardDeclaredPointer();
 }
-void QtTestObject::sl17(const QEasingCurve &)
-{ slotResult = "sl17"; }
 
 void QtTestObject::overloadedSlot()
 { slotResult = "overloadedSlot"; }
@@ -819,11 +808,8 @@ void tst_QMetaObject::invokeMetaMember()
     QCOMPARE(forwardPtr, getForwardDeclaredPointer());
     QCOMPARE(obj.slotResult, QString("sl16:null"));
 
-    // forward-declared builtin
-    obj.slotResult.clear();
-    QVERIFY(QMetaObject::invokeMethod(&obj, "sl17", Q_ARG(QEasingCurve, getEasingCurve())));
-    QCOMPARE(obj.slotResult, "sl17");
-
+#ifndef QT_NO_DATA_RELOCATION // this doesn't work with the new API on Windows
+#endif
     // test overloads
     QVERIFY(QMetaObject::invokeMethod(&obj, "overloadedSlot" Q_NO_ARG));
     QCOMPARE(obj.slotResult, QString("overloadedSlot"));
@@ -990,11 +976,6 @@ void tst_QMetaObject::invokeMetaMemberNoMacros()
     QCOMPARE(forwardPtr, getForwardDeclaredPointer());
     QCOMPARE(obj.slotResult, QString("sl16:null"));
 
-    // forward-declared builtin
-    obj.slotResult.clear();
-    QVERIFY(QMetaObject::invokeMethod(&obj, "sl17", getEasingCurve()));
-    QCOMPARE(obj.slotResult, "sl17");
-
     // test overloads
     QVERIFY(QMetaObject::invokeMethod(&obj, "overloadedSlot"));
     QCOMPARE(obj.slotResult, QString("overloadedSlot"));
@@ -1131,12 +1112,14 @@ void tst_QMetaObject::invokeQueuedMetaMember()
     qApp->processEvents(QEventLoop::AllEvents);
     QCOMPARE(obj.slotResult, QString("sl15"));
 
-    // forward-declared builtin
+    // since Qt 6.5, this works even for pointers to forward-declared types
     obj.slotResult.clear();
-    QVERIFY(QMetaObject::invokeMethod(&obj, "sl17", Qt::QueuedConnection, Q_ARG(QEasingCurve, getEasingCurve())));
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl16", Qt::QueuedConnection, Q_ARG(MyForwardDeclaredType*, getForwardDeclaredPointer())));
     qApp->processEvents(QEventLoop::AllEvents);
-    QCOMPARE(obj.slotResult, "sl17");
+    QCOMPARE(obj.slotResult, QString("sl16:notnull"));
 
+#ifndef QT_NO_DATA_RELOCATION // this doesn't work with the new API on Windows
+#endif
     // test overloads
     QVERIFY(QMetaObject::invokeMethod(&obj, "overloadedSlot", Qt::QueuedConnection Q_NO_ARG));
     qApp->processEvents(QEventLoop::AllEvents);
@@ -1184,6 +1167,7 @@ void tst_QMetaObject::invokeQueuedMetaMember()
     QVERIFY(!QMetaObject::invokeMethod(&obj, "testReference", Qt::QueuedConnection, Q_ARG(QString&, refStr)));
     QCOMPARE(refStr, "whatever");
 
+#ifdef USE_COMPAT_Q_ARG     // this doesn't compile with the new API
     obj.slotResult.clear();
     {
         const MyForwardDeclaredType &t = getForwardDeclaredType();
@@ -1201,12 +1185,7 @@ void tst_QMetaObject::invokeQueuedMetaMember()
                                            Q_ARG(QString, a1), Q_ARG(MyForwardDeclaredType, t)));
         QVERIFY(obj.slotResult.isEmpty());
     }
-
-    obj.slotResult.clear();
-    QTest::ignoreMessage(QtWarningMsg, "QMetaMethod::invoke: Unable to handle unregistered datatype 'MyForwardDeclaredType*'");
-    QVERIFY(!QMetaObject::invokeMethod(&obj, "sl16", Qt::QueuedConnection, Q_ARG(MyForwardDeclaredType*, getForwardDeclaredPointer())));
-    qApp->processEvents(QEventLoop::AllEvents);
-    QVERIFY(obj.slotResult.isEmpty());
+#endif
 }
 
 // this is a copy-paste-adapt of the above
@@ -1241,11 +1220,10 @@ void tst_QMetaObject::invokeQueuedMetaMemberNoMacro()
     qApp->processEvents(QEventLoop::AllEvents);
     QCOMPARE(obj.slotResult, QString("sl15"));
 
-    // forward-declared builtin
     obj.slotResult.clear();
-    QVERIFY(QMetaObject::invokeMethod(&obj, "sl17", Qt::QueuedConnection, getEasingCurve()));
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl16", Qt::QueuedConnection, getForwardDeclaredPointer()));
     qApp->processEvents(QEventLoop::AllEvents);
-    QCOMPARE(obj.slotResult, "sl17");
+    QCOMPARE(obj.slotResult, QString("sl16:notnull"));
 
     // test overloads
     QVERIFY(QMetaObject::invokeMethod(&obj, "overloadedSlot", Qt::QueuedConnection));
@@ -1297,6 +1275,7 @@ void tst_QMetaObject::invokeQueuedMetaMemberNoMacro()
 //    QVERIFY(!QMetaObject::invokeMethod(&obj, "testReference", Qt::QueuedConnection, Q_ARG(QString&, refStr)));
 //    QCOMPARE(refStr, "whatever");
 
+#if 0       // this won't even compile any more
     obj.slotResult.clear();
     {
         const MyForwardDeclaredType &t = getForwardDeclaredType();
@@ -1314,12 +1293,7 @@ void tst_QMetaObject::invokeQueuedMetaMemberNoMacro()
                                            a1, t));
         QVERIFY(obj.slotResult.isEmpty());
     }
-
-    obj.slotResult.clear();
-    QTest::ignoreMessage(QtWarningMsg, "QMetaMethod::invoke: Unable to handle unregistered datatype 'MyForwardDeclaredType*'");
-    QVERIFY(!QMetaObject::invokeMethod(&obj, "sl16", Qt::QueuedConnection, getForwardDeclaredPointer()));
-    qApp->processEvents(QEventLoop::AllEvents);
-    QVERIFY(obj.slotResult.isEmpty());
+#endif
 }
 
 void tst_QMetaObject::invokeQueuedPointer()
@@ -1505,11 +1479,8 @@ void tst_QMetaObject::invokeBlockingQueuedMetaMember()
     QCOMPARE(forwardPtr, getForwardDeclaredPointer());
     QCOMPARE(obj.slotResult, QString("sl16:null"));
 
-    // forward-declared builtin
-    obj.slotResult.clear();
-    QVERIFY(QMetaObject::invokeMethod(&obj, "sl17", Qt::BlockingQueuedConnection, Q_ARG(QEasingCurve, getEasingCurve())));
-    QCOMPARE(obj.slotResult, "sl17");
-
+#ifndef QT_NO_DATA_RELOCATION // this doesn't work with the new API on Windows
+#endif
     // test overloads
     QVERIFY(QMetaObject::invokeMethod(&obj, "overloadedSlot", Qt::BlockingQueuedConnection Q_NO_ARG));
     QCOMPARE(obj.slotResult, QString("overloadedSlot"));
@@ -1680,11 +1651,6 @@ void tst_QMetaObject::invokeBlockingQueuedMetaMemberNoMacros()
                                       forwardPtr));
     QCOMPARE(forwardPtr, getForwardDeclaredPointer());
     QCOMPARE(obj.slotResult, QString("sl16:null"));
-
-    // forward-declared builtin
-    obj.slotResult.clear();
-    QVERIFY(QMetaObject::invokeMethod(&obj, "sl17", Qt::BlockingQueuedConnection, getEasingCurve()));
-    QCOMPARE(obj.slotResult, "sl17");
 
     // test overloads
     QVERIFY(QMetaObject::invokeMethod(&obj, "overloadedSlot", Qt::BlockingQueuedConnection));
@@ -1965,6 +1931,12 @@ void tst_QMetaObject::invokeTypedefTypes()
     QCOMPARE(spy.count(), 0);
     CustomString arg("hello");
     QVERIFY(QMetaObject::invokeMethod(&obj, "sig_custom", Q_ARG(CustomString, arg)));
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.at(0).count(), 1);
+    QCOMPARE(spy.at(0).at(0), QVariant(arg));
+
+    spy.clear();
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sig_custom", arg));
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.at(0).count(), 1);
     QCOMPARE(spy.at(0).at(0), QVariant(arg));
@@ -2809,7 +2781,4 @@ void tst_QMetaObject::notifySignalsInParentClass()
 }
 
 QTEST_MAIN(tst_QMetaObject)
-
-static_assert(!QtPrivate::is_complete<QEasingCurve, void>::value,
-    "QEasingCurve must only be forward-declared at this point");
 #include "tst_qmetaobject.moc"

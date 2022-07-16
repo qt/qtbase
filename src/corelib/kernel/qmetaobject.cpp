@@ -241,11 +241,12 @@ QObject *QMetaObject::newInstance(QGenericArgument val0,
             break;
     }
 
-    return newInstanceImpl(this, paramCount, parameters, typeNames);
+    return newInstanceImpl(this, paramCount, parameters, typeNames, nullptr);
 }
 
 QObject *QMetaObject::newInstanceImpl(const QMetaObject *mobj, qsizetype paramCount,
-                                      const void **parameters, const char **typeNames)
+                                      const void **parameters, const char **typeNames,
+                                      const QtPrivate::QMetaTypeInterface **metaTypes)
 {
     if (!mobj->inherits(&QObject::staticMetaObject)) {
         qWarning("QMetaObject::newInstance: type %s does not inherit QObject", mobj->className());
@@ -262,6 +263,8 @@ QT_WARNING_DISABLE_GCC("-Wdangling-pointer")
     QMetaType returnValueMetaType = QMetaType::fromType<decltype(returnValue)>();
     parameters[0] = &returnValue;
     typeNames[0] = returnValueMetaType.name();
+    if (metaTypes)
+        metaTypes[0] = returnValueMetaType.iface();
 
 QT_WARNING_POP
 
@@ -275,7 +278,7 @@ QT_WARNING_POP
         // attempt to call
         QMetaMethodPrivate::InvokeFailReason r =
                 QMetaMethodPrivate::invokeImpl(m, nullptr, Qt::DirectConnection, paramCount,
-                                               parameters, typeNames);
+                                               parameters, typeNames, metaTypes);
         if (r == QMetaMethodPrivate::InvokeFailReason::None)
             return returnValue;
         if (int(r) < 0)
@@ -1346,7 +1349,8 @@ QByteArray QMetaObject::normalizedSignature(const char *method)
 
 Q_DECL_COLD_FUNCTION static inline bool
 printMethodNotFoundWarning(const QMetaObject *meta, QLatin1StringView name, qsizetype paramCount,
-                           const char *const *names)
+                           const char *const *names,
+                           const QtPrivate::QMetaTypeInterface * const *metaTypes)
 {
     // now find the candidates we couldn't use
     QByteArray candidateMessage;
@@ -1362,7 +1366,10 @@ printMethodNotFoundWarning(const QMetaObject *meta, QLatin1StringView name, qsiz
 
     QVarLengthArray<char, 512> sig;
     for (qsizetype i = 1; i < paramCount; ++i) {
-        sig.append(names[i], qstrlen(names[i]));
+        if (names[i])
+            sig.append(names[i], qstrlen(names[i]));
+        else
+            sig.append(metaTypes[i]->name, qstrlen(metaTypes[i]->name));
         sig.append(',');
     }
     if (paramCount != 1)
@@ -1472,12 +1479,13 @@ bool QMetaObject::invokeMethod(QObject *obj,
         if (qstrlen(typeNames[paramCount]) <= 0)
             break;
     }
-    return invokeMethodImpl(obj, member, type, paramCount, parameters, typeNames);
+    return invokeMethodImpl(obj, member, type, paramCount, parameters, typeNames, nullptr);
 }
 
 bool QMetaObject::invokeMethodImpl(QObject *obj, const char *member, Qt::ConnectionType type,
                                    qsizetype paramCount, const void * const *parameters,
-                                   const char * const *typeNames)
+                                   const char * const *typeNames,
+                                   const QtPrivate::QMetaTypeInterface * const *metaTypes)
 {
     if (!obj)
         return false;
@@ -1503,14 +1511,15 @@ bool QMetaObject::invokeMethodImpl(QObject *obj, const char *member, Qt::Connect
 
             // attempt to call
             QMetaMethodPrivate::InvokeFailReason r =
-                    QMetaMethodPrivate::invokeImpl(m, obj, type, paramCount, parameters, typeNames);
+                    QMetaMethodPrivate::invokeImpl(m, obj, type, paramCount, parameters,
+                                                   typeNames, metaTypes);
             if (int(r) <= 0)
                 return r == QMetaMethodPrivate::InvokeFailReason::None;
         }
     }
 
     // This method doesn't belong to us; print out a nice warning with candidates.
-    return printMethodNotFoundWarning(obj->metaObject(), name, paramCount, typeNames);
+    return printMethodNotFoundWarning(obj->metaObject(), name, paramCount, typeNames, metaTypes);
 }
 
 bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *slot, Qt::ConnectionType type, void *ret)
@@ -2410,25 +2419,27 @@ bool QMetaMethod::invoke(QObject *object,
         if (qstrlen(typeNames[paramCount]) <= 0)
             break;
     }
-    return invokeImpl(*this, object, connectionType, paramCount, param, typeNames);
+    return invokeImpl(*this, object, connectionType, paramCount, param, typeNames, nullptr);
 }
 
 bool QMetaMethod::invokeImpl(QMetaMethod self, void *target, Qt::ConnectionType connectionType,
                              qsizetype paramCount, const void *const *parameters,
-                             const char *const *typeNames)
+                             const char *const *typeNames,
+                             const QtPrivate::QMetaTypeInterface *const *metaTypes)
 {
     if (!target || !self.mobj)
         return false;
     QMetaMethodPrivate::InvokeFailReason r =
-            QMetaMethodPrivate::invokeImpl(self, target, connectionType, paramCount, parameters, typeNames);
-
+            QMetaMethodPrivate::invokeImpl(self, target, connectionType, paramCount, parameters,
+                                           typeNames, metaTypes);
     if (Q_LIKELY(r == QMetaMethodPrivate::InvokeFailReason::None))
         return true;
 
     if (int(r) >= int(QMetaMethodPrivate::InvokeFailReason::FormalParameterMismatch)) {
         int n = int(r) - int(QMetaMethodPrivate::InvokeFailReason::FormalParameterMismatch);
         qWarning("QMetaMethod::invoke: cannot convert formal parameter %d from %s in call to %s::%s",
-                 n, typeNames[n + 1], self.mobj->className(), self.methodSignature().constData());
+                 n, typeNames[n + 1] ? typeNames[n + 1] : metaTypes[n + 1]->name,
+                 self.mobj->className(), self.methodSignature().constData());
     }
     if (r == QMetaMethodPrivate::InvokeFailReason::TooFewArguments) {
         qWarning("QMetaMethod::invoke: too few arguments (%d) in call to %s::%s",
@@ -2440,10 +2451,13 @@ bool QMetaMethod::invokeImpl(QMetaMethod self, void *target, Qt::ConnectionType 
 auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
                                     Qt::ConnectionType connectionType,
                                     qsizetype paramCount, const void *const *parameters,
-                                    const char *const *typeNames) -> InvokeFailReason
+                                    const char *const *typeNames,
+                                    const QtPrivate::QMetaTypeInterface *const *metaTypes) -> InvokeFailReason
 {
     auto object = static_cast<QObject *>(target);
     auto priv = QMetaMethodPrivate::get(&self);
+    constexpr bool MetaTypesAreOptional = QT_VERSION < QT_VERSION_CHECK(7, 0, 0);
+    auto methodMetaTypes = priv->parameterMetaTypeInterfaces();
     auto param = const_cast<void **>(parameters);
 
     Q_ASSERT(priv->mobj);
@@ -2453,6 +2467,7 @@ auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
     Q_ASSERT(paramCount >= 1);  // includes the return type
     Q_ASSERT(parameters);
     Q_ASSERT(typeNames);
+    Q_ASSERT(MetaTypesAreOptional || metaTypes);
 
     if ((paramCount - 1) < qsizetype(priv->data.argc()))
         return InvokeFailReason::TooFewArguments;
@@ -2460,22 +2475,44 @@ auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
     // 0 is the return type, 1 is the first formal parameter
     auto checkTypesAreCompatible = [=](int idx) {
         uint typeInfo = priv->parameterTypeInfo(idx - 1);
-        QLatin1StringView userTypeName(typeNames[idx]);
+        QLatin1StringView userTypeName(typeNames[idx] ? typeNames[idx] : metaTypes[idx]->name);
 
         if ((typeInfo & IsUnresolvedType) == 0) {
             // this is a built-in type
-            return int(typeInfo) == QMetaType::fromName(userTypeName).id();
+            if (MetaTypesAreOptional && !metaTypes)
+                return int(typeInfo) == QMetaType::fromName(userTypeName).id();
+            return int(typeInfo) == metaTypes[idx]->typeId;
         }
 
-        // compare strings
         QLatin1StringView methodTypeName = stringDataView(priv->mobj, typeInfo & TypeNameIndexMask);
-        if (methodTypeName == userTypeName)
+        if ((MetaTypesAreOptional && !metaTypes) || !metaTypes[idx]) {
+            // compatibility call, compare strings
+            if (methodTypeName == userTypeName)
+                return true;
+
+            // maybe the user type needs normalization
+            QByteArray normalized = normalizeTypeInternal(userTypeName.begin(), userTypeName.end());
+            return methodTypeName == QLatin1StringView(normalized);
+        }
+
+        QMetaType userType(metaTypes[idx]);
+        Q_ASSERT(userType.isValid());
+        if (QMetaType(methodMetaTypes[idx - 1]) == userType)
             return true;
 
-        // maybe the user type needs normalization
-        QByteArray normalized = normalizeTypeInternal(userTypeName.begin(), userTypeName.end());
-        return methodTypeName == QLatin1StringView(normalized);
+        // if the parameter type was NOT only forward-declared, it MUST have
+        // matched
+        if (methodMetaTypes[idx - 1])
+            return false;
+
+        // resolve from the name moc stored for us
+        QMetaType resolved = QMetaType::fromName(methodTypeName);
+        return resolved == userType;
     };
+
+    // force all types to be registered, just in case
+    for (qsizetype i = 0; metaTypes && i < paramCount; ++i)
+        QMetaType(metaTypes[i]).registerType();
 
     // check formal parameters first (overload set)
     for (qsizetype i = 1; i < paramCount; ++i) {
@@ -2497,6 +2534,14 @@ auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
             return InvokeFailReason::ConstructorCallWithoutResult;
         }
 
+        if (!MetaTypesAreOptional || metaTypes) {
+            if (metaTypes[0]->typeId != QMetaType::QObjectStar) {
+                qWarning("QMetaMethod::invokeMethod: cannot convert QObject* to %s on constructor call %s",
+                         metaTypes[0]->name, self.methodSignature().constData());
+                return InvokeFailReason::ReturnTypeMismatch;
+            }
+        }
+
         int idx = priv->ownConstructorMethodIndex();
         if (priv->mobj->static_metacall(QMetaObject::CreateInstance, idx, param) >= 0)
             return InvokeFailReason::ConstructorCallFailed;
@@ -2506,10 +2551,11 @@ auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
     // regular type - check return type
     if (parameters[0]) {
         if (!checkTypesAreCompatible(0)) {
+            const char *retType = typeNames[0] ? typeNames[0] : metaTypes[0]->name;
             qWarning("QMetaMethod::invokeMethod: return type mismatch for method %s::%s:"
                      " cannot convert from %s to %s during invocation",
                      priv->mobj->className(), priv->methodSignature().constData(),
-                     priv->rawReturnTypeName(), typeNames[0]);
+                     priv->rawReturnTypeName(), retType);
             return InvokeFailReason::ReturnTypeMismatch;
         }
     }
@@ -2561,8 +2607,12 @@ auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
 
         // fill in the meta types first
         for (int i = 1; i < paramCount; ++i) {
-            types[i] = priv->parameterMetaType(i - 1);
+            types[i] = QMetaType(methodMetaTypes[i - 1]);
+            if (!types[i].iface() && (!MetaTypesAreOptional || metaTypes))
+                types[i] = QMetaType(metaTypes[i]);
             if (!types[i].iface())
+                types[i] = priv->parameterMetaType(i - 1);
+            if (!types[i].iface() && typeNames[i])
                 types[i] = QMetaType::fromName(typeNames[i]);
             if (!types[i].iface()) {
                 qWarning("QMetaMethod::invoke: Unable to handle unregistered datatype '%s'",

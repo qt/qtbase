@@ -70,7 +70,7 @@ class QMetaClassInfo;
 
 namespace QtPrivate {
 class QMetaTypeInterface;
-template<typename T> constexpr auto typenameHelper();
+template<typename T> constexpr const QMetaTypeInterface *qMetaTypeInterfaceForType();
 }
 
 struct QMethodRawArguments
@@ -130,12 +130,14 @@ public:
 
 struct QMetaMethodArgument
 {
+    const QtPrivate::QMetaTypeInterface *metaType;
     const char *name;
     const void *data;
 };
 
 struct QMetaMethodReturnArgument
 {
+    const QtPrivate::QMetaTypeInterface *metaType;
     const char *name;
     void *data;
 };
@@ -154,62 +156,70 @@ template <typename T, typename... Args> using IfNotOldStyleArgs = T;
 
 template <typename T> inline QMetaMethodArgument argument(const char *name, const T &t)
 {
-    return { name, std::addressof(t) };
+    if constexpr ((std::is_lvalue_reference_v<T> && std::is_const_v<std::remove_reference_t<T>>) ||
+            !std::is_reference_v<T>) {
+        return { qMetaTypeInterfaceForType<T>(), name, std::addressof(t) };
+    } else {
+        return { nullptr, name, std::addressof(t) };
+    }
 }
 
 template <typename T> inline QMetaMethodReturnArgument returnArgument(const char *name, T &t)
 {
-    return { name, std::addressof(t) };
+    return { qMetaTypeInterfaceForType<T>(), name, std::addressof(t) };
 }
 
 template <typename T> inline const char *typenameHelper(const T &)
 {
-    // duplicated from the QMetaTypeInterface, FIXME
-    static constexpr auto name = QtPrivate::typenameHelper<T>();
-    return name.data();
+    return nullptr;
 }
 template <typename T> inline const void *dataHelper(const T &t)
 {
     return std::addressof(t);
+}
+template <typename T> inline const QMetaTypeInterface *metaTypeHelper(const T &)
+{
+    return qMetaTypeInterfaceForType<T>();
 }
 
 inline const char *typenameHelper(QMetaMethodArgument a)
 { return a.name; }
 inline const void *dataHelper(QMetaMethodArgument a)
 { return a.data; }
+inline const QMetaTypeInterface *metaTypeHelper(QMetaMethodArgument a)
+{ return a.metaType; }
 
 inline const char *typenameHelper(const char *) = delete;
 template <typename T> inline const void *dataHelper(const char *) = delete;
+inline const QMetaTypeInterface *metaTypeHelper(const char *) = delete;
 inline const char *typenameHelper(const char16_t *) = delete;
 template <typename T> inline const void *dataHelper(const char16_t *) = delete;
+inline const QMetaTypeInterface *metaTypeHelper(const char16_t *) = delete;
 
 } // namespace QtPrivate::Invoke
 
-template <typename... Args> inline auto invokeMethodHelper(QMetaMethodReturnArgument r, Args &&... arguments)
+template <typename... Args> inline auto invokeMethodHelper(QMetaMethodReturnArgument r, const Args &... arguments)
 {
     std::array params = { const_cast<const void *>(r.data), Invoke::dataHelper(arguments)... };
     std::array names = { r.name, Invoke::typenameHelper(arguments)... };
+    std::array types = { r.metaType, Invoke::metaTypeHelper(arguments)... };
+    static_assert(params.size() == types.size());
     static_assert(params.size() == names.size());
 
     struct R {
         decltype(params) parameters;
         decltype(names) typeNames;
+        decltype(types) metaTypes;
         constexpr qsizetype parameterCount() const { return qsizetype(parameters.size()); }
     };
-    return R { params, names };
+    return R { params, names, types };
 }
 } // namespace QtPrivate
 
 template <typename T> inline QMetaMethodReturnArgument qReturnArg(T &&) = delete;
 template <typename T> inline QMetaMethodReturnArgument qReturnArg(T &data)
 {
-    if constexpr (std::is_same_v<T, const char *>) {
-        // need to go around the = delete above
-        return QtPrivate::Invoke::returnArgument("const char *", data);
-    } else {
-        const char *name = QtPrivate::Invoke::typenameHelper(data);
-        return QtPrivate::Invoke::returnArgument(name, data);
-    }
+    return QtPrivate::Invoke::returnArgument(nullptr, data);
 }
 
 struct Q_CORE_EXPORT QMetaObject
@@ -351,7 +361,7 @@ struct Q_CORE_EXPORT QMetaObject
     {
         auto h = QtPrivate::invokeMethodHelper(r, std::forward<Args>(arguments)...);
         return invokeMethodImpl(obj, member, c, h.parameterCount(), h.parameters.data(),
-                h.typeNames.data());
+                                h.typeNames.data(), h.metaTypes.data());
     }
 
     template <typename... Args> static
@@ -476,7 +486,8 @@ struct Q_CORE_EXPORT QMetaObject
     newInstance(Args &&... arguments) const
     {
         auto h = QtPrivate::invokeMethodHelper(QMetaMethodReturnArgument{}, std::forward<Args>(arguments)...);
-        return newInstanceImpl(this, h.parameterCount(), h.parameters.data(), h.typeNames.data());
+        return newInstanceImpl(this, h.parameterCount(), h.parameters.data(),
+                               h.typeNames.data(), h.metaTypes.data());
     }
 
     enum Call {
@@ -538,10 +549,12 @@ struct Q_CORE_EXPORT QMetaObject
 
 private:
     static bool invokeMethodImpl(QObject *object, const char *member, Qt::ConnectionType type,
-                                 qsizetype parameterCount, const void *const *parameters, const char *const *names);
+                                 qsizetype parameterCount, const void *const *parameters, const char *const *names,
+                                 const QtPrivate::QMetaTypeInterface * const *metaTypes);
     static bool invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *slot, Qt::ConnectionType type, void *ret);
     static QObject *newInstanceImpl(const QMetaObject *mobj, qsizetype parameterCount,
-                                    const void **parameters, const char **typeNames);
+                                    const void **parameters, const char **typeNames,
+                                    const QtPrivate::QMetaTypeInterface **metaTypes);
     friend class QTimer;
 };
 
