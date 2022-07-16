@@ -778,6 +778,9 @@ void tst_QMetaObject::invokeMetaMember()
     QTest::ignoreMessage(QtWarningMsg, "QMetaObject::invokeMethod: No such method QtTestObject::sl1(QString,QString,QString)\n"
                          "Candidates are:\n    sl1(QString)");
     QVERIFY(!QMetaObject::invokeMethod(&obj, "sl1", Q_ARG(QString, "arg"), Q_ARG(QString, "arg"), Q_ARG(QString, "arg")));
+    QTest::ignoreMessage(QtWarningMsg, "QMetaObject::invokeMethod: No such method QtTestObject::testReference(QString)\n"
+                         "Candidates are:\n    testReference(QString&)");
+    QVERIFY(!QMetaObject::invokeMethod(&obj, "testReference", Q_ARG(QString, exp)));
 
     //should not have changed since last test.
     QCOMPARE(exp, QString("yessir"));
@@ -907,6 +910,10 @@ void tst_QMetaObject::invokeQueuedMetaMember()
                                       Q_ARG(quint64, ll2)));
     qApp->processEvents(QEventLoop::AllEvents);
     QCOMPARE(obj.slotResult, QString("testLongLong:-1,0"));
+
+    QTest::ignoreMessage(QtWarningMsg, "QMetaObject::invokeMethod: No such method QtTestObject::testReference(QString)\n"
+                         "Candidates are:\n    testReference(QString&)");
+    QVERIFY(!QMetaObject::invokeMethod(&obj, "testReference", Qt::QueuedConnection, Q_ARG(QString, exp)));
 
     obj.slotResult.clear();
     {
@@ -1131,6 +1138,9 @@ void tst_QMetaObject::invokeBlockingQueuedMetaMember()
     QTest::ignoreMessage(QtWarningMsg, "QMetaObject::invokeMethod: No such method QtTestObject::sl1(QString,QString,QString)\n"
                          "Candidates are:\n    sl1(QString)");
     QVERIFY(!QMetaObject::invokeMethod(&obj, "sl1", Qt::BlockingQueuedConnection, Q_ARG(QString, "arg"), Q_ARG(QString, "arg"), Q_ARG(QString, "arg")));
+    QTest::ignoreMessage(QtWarningMsg, "QMetaObject::invokeMethod: No such method QtTestObject::testReference(QString)\n"
+                         "Candidates are:\n    testReference(QString&)");
+    QVERIFY(!QMetaObject::invokeMethod(&obj, "testReference", Qt::BlockingQueuedConnection, Q_ARG(QString, exp)));
 
     //should not have changed since last test.
     QCOMPARE(exp, QString("yessir"));
