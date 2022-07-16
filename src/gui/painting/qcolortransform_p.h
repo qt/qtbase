@@ -35,7 +35,6 @@ public:
 
     void updateLutsIn() const;
     void updateLutsOut() const;
-    bool simpleGammaCorrection() const;
     bool isIdentity() const;
 
     Q_GUI_EXPORT void prepare();
