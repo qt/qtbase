@@ -16,15 +16,15 @@
 // We mean it.
 //
 
-#include <QtCore/private/qglobal_p.h>
-#include "QtCore/qstring.h"
-#include "QtCore/qvarlengtharray.h"
-#include "QtCore/qvariant.h"
-#include "QtCore/qnumeric.h"
-#include <QtCore/qcalendar.h>
-#include <QtCore/qcontainerfwd.h>
-
 #include "qlocale.h"
+
+#include <QtCore/private/qglobal_p.h>
+#include <QtCore/qcalendar.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qnumeric.h>
+#include <QtCore/qstring.h>
+#include <QtCore/qvariant.h>
+#include <QtCore/qvarlengtharray.h>
 
 #include <limits>
 #include <cmath>
