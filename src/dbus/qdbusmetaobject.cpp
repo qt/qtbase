@@ -477,8 +477,8 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
                     // Output parameters are references; type id not available
                     typeName = QMetaType(type).name();
                     typeName.append('&');
+                    type = QMetaType::UnknownType;
                 }
-                Q_ASSERT(type != QMetaType::UnknownType);
                 int typeInfo;
                 if (!typeName.isEmpty())
                     typeInfo = IsUnresolvedType | strings.enter(typeName);

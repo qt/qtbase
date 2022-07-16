@@ -843,7 +843,11 @@ namespace QtPrivate
     } // namespace detail
 
     template <typename T, typename ODR_VIOLATION_PREVENTER>
-    struct is_complete : detail::is_complete_helper<T, ODR_VIOLATION_PREVENTER>::type {};
+    struct is_complete : detail::is_complete_helper<std::remove_reference_t<T>, ODR_VIOLATION_PREVENTER>::type {};
+
+    template <typename T> struct MetatypeDecay              { using type = T; };
+    template <typename T> struct MetatypeDecay<const T>     { using type = T; };
+    template <typename T> struct MetatypeDecay<const T &>   { using type = T; };
 
     template<typename T>
     struct IsPointerToTypeDerivedFromQObject
@@ -2478,12 +2482,6 @@ QT_FOR_EACH_STATIC_CORE_POINTER(QT_METATYPE_DECLARE_EXTERN_TEMPLATE_ITER)
 QT_FOR_EACH_STATIC_CORE_TEMPLATE(QT_METATYPE_DECLARE_EXTERN_TEMPLATE_ITER)
 #undef QT_METATYPE_DECLARE_EXTERN_TEMPLATE_ITER
 #endif
-template<typename T>
-constexpr const QMetaTypeInterface *qMetaTypeInterfaceForType()
-{
-    using Ty = std::remove_cv_t<std::remove_reference_t<T>>;
-    return &QMetaTypeInterfaceWrapper<Ty>::metaType;
-}
 
 template<typename T>
 struct qRemovePointerLike
@@ -2510,14 +2508,26 @@ struct TypeAndForceComplete
     using ForceComplete = ForceComplete_;
 };
 
+template<typename T>
+constexpr const QMetaTypeInterface *qMetaTypeInterfaceForType()
+{
+    using Ty = typename MetatypeDecay<T>::type;
+    return &QMetaTypeInterfaceWrapper<Ty>::metaType;
+}
+
 template<typename Unique, typename TypeCompletePair>
 constexpr const QMetaTypeInterface *qTryMetaTypeInterfaceForType()
 {
     using T = typename TypeCompletePair::type;
     using ForceComplete = typename TypeCompletePair::ForceComplete;
-    using Ty = std::remove_cv_t<std::remove_reference_t<T>>;
+    using Ty = typename MetatypeDecay<T>::type;
     using Tz = qRemovePointerLike_t<Ty>;
-    if constexpr (!is_complete<Tz, Unique>::value && !ForceComplete::value) {
+
+    if constexpr (ForceComplete::value) {
+        return &QMetaTypeInterfaceWrapper<Ty>::metaType;
+    } else if constexpr (std::is_reference_v<Tz>) {
+        return nullptr;
+    } else if constexpr (!is_complete<Tz, Unique>::value) {
         return nullptr;
     } else {
         return &QMetaTypeInterfaceWrapper<Ty>::metaType;
