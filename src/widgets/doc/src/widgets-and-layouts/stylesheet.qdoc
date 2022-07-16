@@ -3114,7 +3114,7 @@
 
     \row
         \li \c :alternate \target alternate-ps
-        \li This state is set for every alternate row whe painting the row of
+        \li This state is set for every alternate row when painting the row of
            a QAbstractItemView when QAbstractItemView::alternatingRowColors()
            is  set to true.
 

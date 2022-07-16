@@ -84,7 +84,7 @@ public:
                         const char *actual, const char *expected,
                         const char *file, int line);
     static bool compare(bool success, const char *failureMsg,
-                        const char *actual, const char *expeceted,
+                        const char *actual, const char *expected,
                         const char *file, int line);
     static void setCurrentGlobalTestData(QTestData *data);
     static void setCurrentTestData(QTestData *data);

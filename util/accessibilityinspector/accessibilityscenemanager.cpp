@@ -334,7 +334,7 @@ void AccessibilitySceneManager::populateAccessibilityTreeScene(QAccessibleInterf
     m_treeItemHeight = 60;
     m_treeItemVerticalPadding = 30;
 
-    // We want to draw the accessibility hiearchy as a vertical
+    // We want to draw the accessibility hierarchy as a vertical
     // tree, growing from the root node at the top.
 
     // First, figure out the number of levels and the width of each level:

@@ -219,7 +219,7 @@
 */
 
 /*!
-    \fn template <class T> void QSet<T>::setSharable(bool sharable)
+    \fn template <class T> void QSet<T>::setSharable(bool shareable)
     \internal
 */
 

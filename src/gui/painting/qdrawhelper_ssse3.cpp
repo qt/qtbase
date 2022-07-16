@@ -10,7 +10,7 @@
 
 QT_BEGIN_NAMESPACE
 
-/* The instruction palignr uses direct arguments, so we have to generate the code fo the different
+/* The instruction palignr uses direct arguments, so we have to generate the code for the different
    shift (4, 8, 12). Checking the alignment inside the loop is unfortunately way too slow.
  */
 #define BLENDING_LOOP(palignrOffset, length)\

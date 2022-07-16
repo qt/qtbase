@@ -332,7 +332,7 @@ LEAF_MIPS32R2(symbol)                                   \
                                r11 = 0, r12 = 0, r13 = 0, \
                                r14 = 0
     .if (\stack_offset < 0) || (\stack_offset - (\stack_offset/4)*4)
-    .error "Stack offset must be pozitive and multiple of 4."
+    .error "Stack offset must be positive and multiple of 4."
     .endif
     lw              \r1, 0(sp)
     .if \r2 != 0

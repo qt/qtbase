@@ -447,7 +447,7 @@ void QWasmCompositor::deliverUpdateRequests()
     bool requestUpdateAllWindows = m_requestUpdateAllWindows;
     m_requestUpdateAllWindows = false;
 
-    // Update window content, either all windows or a spesific set of windows. Use the correct update
+    // Update window content, either all windows or a specific set of windows. Use the correct update
     // type: QWindow subclasses expect that requested and delivered updateRequests matches exactly.
     m_inDeliverUpdateRequest = true;
     if (requestUpdateAllWindows) {

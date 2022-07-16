@@ -483,7 +483,7 @@ void QProcessPrivate::Channel::clear()
     \endlist
 
     To avoid platform-dependent behavior or any issues with how the current
-    application was launched, it is adviseable to always pass an absolute path
+    application was launched, it is advisable to always pass an absolute path
     to the executable to be launched. For auxiliary binaries shipped with the
     application, one can construct such a path starting with
     QCoreApplication::applicationDirPath(). Similarly, to explicitly run an

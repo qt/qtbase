@@ -2947,7 +2947,7 @@ static QByteArray createPropertyInfo()
         out.chop(1);
     out += "\n";
     // Then write the contents of the unique blocks, at the anticipated indices.
-    // Each unique block is a list of UnicodeData::propertyIndex values, whch
+    // Each unique block is a list of UnicodeData::propertyIndex values, which
     // are indices into the uc_properties table.
     for (int i = 0; i < uniqueBlocks.size(); ++i) {
         if (out.endsWith(' '))

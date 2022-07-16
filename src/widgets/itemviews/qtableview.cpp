@@ -38,7 +38,7 @@ void QSpanCollection::addSpan(QSpanCollection::Span *span)
         //there is no spans that starts with the row in the index, so create a sublist for it.
         SubIndex sub_index;
         if (it_y != index.end()) {
-            //the previouslist is the list of spans that sarts _before_ the row of the span.
+            //the previous list is the list of spans that starts _before_ the row of the span.
             // and which may intersect this row.
             const SubIndex previousList = it_y.value();
             for (Span *s : previousList) {

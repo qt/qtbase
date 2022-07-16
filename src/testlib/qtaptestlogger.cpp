@@ -46,7 +46,7 @@ using namespace Qt::StringLiterals;
     keys at its level) followed by a colon introduces a mapping entry; the key
     may be either a simple word or a quoted string (within which numeric escapes
     may be used to indicate unicode characters). The value associated with a
-    given key, or the entry in a list, can appar after the key-colon or dasy
+    given key, or the entry in a list, can appear after the key-colon or dasy
     either on the same line or on a succession of subsequent lines at higher
     indent. Thus
 

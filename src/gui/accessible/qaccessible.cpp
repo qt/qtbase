@@ -120,7 +120,7 @@ Q_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
     \value collapsed               The object is collapsed, e.g. a closed listview item, or an iconified window.
     \value defaultButton           The object represents the default button in a dialog.
     \value defunct                 The object no longer exists.
-    \value editable                The object has a text carret (and often implements the text interface).
+    \value editable                The object has a text caret (and often implements the text interface).
     \value expandable              The object is expandable, mostly used for cells in a tree view.
     \value expanded                The object is expanded, currently its children are visible.
     \value extSelectable           The object supports extended selection.

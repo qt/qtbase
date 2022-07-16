@@ -17,7 +17,7 @@
   then select an image file to load. Once the first process has loaded
   and displayed the image, in the second process, press the button to
   read the same image from shared memory. The second process displays
-  the same image loaded from its new loaction in shared memory.
+  the same image loaded from its new location in shared memory.
 */
 
 /*!

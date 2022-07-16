@@ -14,7 +14,7 @@ import argparse
 
 # This script implements a web server which serves the content of the current
 # working directory using the http and secure https protocols. The server is
-# intented to be used as a development server.
+# intended to be used as a development server.
 #
 # Https certificates are generated using the 'mkcert' utility. You should generate
 # a certificate authority first, see the mkcert documentation at
@@ -42,7 +42,7 @@ def main():
     )
     parser.add_argument(
         "--all",
-        help="Start web server which binds to all local interfaces, instead of locahost only",
+        help="Start web server which binds to all local interfaces, instead of localhost only",
         action="store_true",
     )
     parser.add_argument(

@@ -69,7 +69,7 @@ contains(TEMPLATE, subdirs) {
 
         # Add makefile targets for each exclusive build that will aggregate all targets
         # that include the exclusive build. This matches the targets in the SUBDIR files
-        # so that you can recursivly build a single exclusive build.
+        # so that you can recursively build a single exclusive build.
         !build_pass:count(builds, 1, >) {
             for(build, builds) {
                 $${build}.depends += $$eval($${key}.target)

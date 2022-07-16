@@ -360,8 +360,8 @@ bool QLinuxMediaDevice::CaptureSubDevice::queueBuffer(int dmabufFd, const QSize 
     memset(planes, 0, sizeof(planes));
     for (uint i = 0; i < numPlanes; i++) {
         buffer.m.planes[i].m.fd = dmabufFd;
-        buffer.m.planes[i].length = static_cast<uint>(bufferSize.width() * bufferSize.height() * 4); //TODO: don't harcode bpp
-        buffer.m.planes[i].bytesused = static_cast<uint>(bufferSize.width() * bufferSize.height() * 4); //TODO: don't harcode bpp
+        buffer.m.planes[i].length = static_cast<uint>(bufferSize.width() * bufferSize.height() * 4); //TODO: don't hardcode bpp
+        buffer.m.planes[i].bytesused = static_cast<uint>(bufferSize.width() * bufferSize.height() * 4); //TODO: don't hardcode bpp
     }
 
     if (ioctl(m_subdevFd, VIDIOC_QBUF, &buffer) == -1) {

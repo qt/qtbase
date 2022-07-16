@@ -1277,8 +1277,8 @@ QPrinter::PrinterState QPrinter::printerState() const
     Returns the supported paper sizes for this printer.
 
     The values will be either a value that matches an entry in the
-    QPrinter::PaperSource enum or a driver spesific value. The driver
-    spesific values are greater than the constant DMBIN_USER declared
+    QPrinter::PaperSource enum or a driver specific value. The driver
+    specific values are greater than the constant DMBIN_USER declared
     in wingdi.h.
 
     \warning This function is only available in windows.

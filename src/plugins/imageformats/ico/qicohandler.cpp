@@ -31,7 +31,7 @@ typedef struct
 {
     quint8  bWidth;               // Width of the image
     quint8  bHeight;              // Height of the image (actual height, not times 2)
-    quint8  bColorCount;          // Number of colors in image (0 if >=8bpp) [ not ture ]
+    quint8  bColorCount;          // Number of colors in image (0 if >=8bpp) [ not true ]
     quint8  bReserved;            // Reserved
     quint16_le wPlanes;              // Color Planes
     quint16_le wBitCount;            // Bits per pixel

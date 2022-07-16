@@ -556,7 +556,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
       << "\t" << writeSettings("objectVersion", QString::number(pbVersion), SettingsNoQuote) << ";\n"
       << "\tobjects = {\n";
 
-    //MAKE QMAKE equivelant
+    //MAKE QMAKE equivalent
     if (!project->isActiveConfig("no_autoqmake")) {
         QString mkfile = pbx_dir + Option::dir_sep + "qt_makeqmake.mak";
         QFile mkf(mkfile);

@@ -596,7 +596,7 @@ bool QPicture::exec(QPainter *painter, QDataStream &s, int nrecords)
 
             // the text layout direction is not used here because it's already
             // aligned when QPicturePaintEngine::drawTextItem() serializes the
-            // drawText() call, therefore ul is unsed in this context
+            // drawText() call, therefore ul is unused in this context
 
             if (d->formatMajor >= 9) {
                 s >> dbl;

@@ -29,7 +29,7 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
 {
     private static final String TAG = "Qt A11Y";
 
-    // Qt uses the upper half of the unsiged integers
+    // Qt uses the upper half of the unsigned integers
     // all low positive ints should be fine.
     public static final int INVALID_ID = 333; // half evil
 

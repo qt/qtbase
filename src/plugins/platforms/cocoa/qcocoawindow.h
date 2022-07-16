@@ -251,7 +251,7 @@ public: // for QNSView
               return upper < right.upper;
         }
     };
-    QHash<quintptr, BorderRange> m_contentBorderAreas; // identifier -> uppper/lower
+    QHash<quintptr, BorderRange> m_contentBorderAreas; // identifier -> upper/lower
     QHash<quintptr, bool> m_enabledContentBorderAreas; // identifier -> enabled state (true/false)
 
 #if QT_CONFIG(vulkan)

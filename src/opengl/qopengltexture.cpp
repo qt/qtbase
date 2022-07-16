@@ -2145,7 +2145,7 @@ QOpenGLTexture *QOpenGLTexturePrivate::createTextureView(QOpenGLTexture::Target 
 
 /*!
     \enum QOpenGLTexture::TextureUnitReset
-    This enum defines options ot control texture unit activation.
+    This enum defines options of control texture unit activation.
 
     \value ResetTextureUnit The previous active texture unit will be reset
     \value DontResetTextureUnit The previous active texture unit will not be rest

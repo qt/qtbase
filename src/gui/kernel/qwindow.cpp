@@ -1146,7 +1146,7 @@ bool QWindow::startSystemMove()
     window in and out, or to make it semitransparent.
 
     A value of 1.0 or above is treated as fully opaque, whereas a value of 0.0 or below
-    is treated as fully transparent. Values inbetween represent varying levels of
+    is treated as fully transparent. Values in between represent varying levels of
     translucency between the two extremes.
 
     The default value is 1.0.
@@ -2755,7 +2755,7 @@ QPointF QWindow::mapToGlobal(const QPointF &pos) const
 
     // The normal pos + windowGlobalPos calculation may give a point which is outside
     // screen geometry for windows which span multiple screens, due to the way QHighDpiScaling
-    // creates gaps between screens in the the device indendent cooordinate system.
+    // creates gaps between screens in the device independent coordinate system.
     //
     // Map the position (and the window's global position) to native coordinates, perform
     // the addition, and then map back to device independent coordinates.

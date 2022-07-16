@@ -80,7 +80,7 @@ QT_BEGIN_NAMESPACE
     otherwise they return false. These classification functions are
     isNull() (returns \c true if the character is '\\0'), isPrint()
     (true if the character is any sort of printable character,
-    including whitespace), isPunct() (any sort of punctation),
+    including whitespace), isPunct() (any sort of punctuation),
     isMark() (Unicode Mark), isLetter() (a letter), isNumber() (any
     sort of numeric character, not just 0-9), isLetterOrNumber(), and
     isDigit() (decimal digits). All of these are wrappers around

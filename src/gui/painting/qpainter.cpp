@@ -6370,7 +6370,7 @@ QRectF QPainter::boundingRect(const QRectF &r, const QString &text, const QTextO
     output on 2x displays.
 
     The \a position offset is always in the painter coordinate system,
-    indepentent of display devicePixelRatio.
+    independent of display devicePixelRatio.
 
     \sa drawPixmap()
 */

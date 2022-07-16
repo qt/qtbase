@@ -835,7 +835,7 @@ QString QCommonStylePrivate::calculateElidedText(const QString &text, const QTex
 
     // In AlignVCenter mode when more than one line is displayed and the height only allows
     // some of the lines it makes no sense to display those. From a users perspective it makes
-    // more sense to see the start of the text instead something inbetween.
+    // more sense to see the start of the text instead something in between.
     const bool vAlignmentOptimization = paintStartPosition && valign.testFlag(Qt::AlignVCenter);
 
     int lastVisibleLine = -1;

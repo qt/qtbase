@@ -28,7 +28,7 @@ public:
     };
     enum XMLType {
         tNothing,           // No XML output, and not state change
-        tRaw,               // Raw text (no formating)
+        tRaw,               // Raw text (no formatting)
         tDeclaration,       // <?xml version="x.x" encoding="xxx"?>
         tTag,               // <tagname attribute1="value"
         tTagValue,          // <tagname>value</tagname>
@@ -36,7 +36,7 @@ public:
         tCloseTag,          // Closes an open tag
         tAttribute,         //  attribute2="value">
         tAttributeTag,      //  attribute on the same line as a tag
-        tData,              // Tag data (formating done)
+        tData,              // Tag data (formatting done)
         tImport,            // <import "type"="path" />
         tComment,           // <!-- Comment -->
         tCDATA              // <![CDATA[ ... ]]>

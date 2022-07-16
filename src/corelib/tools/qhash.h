@@ -373,7 +373,7 @@ struct Span {
         Q_ASSERT(nextFree == allocated);
         // the hash table should always be between 25 and 50% full
         // this implies that we on average have between 32 and 64 entries
-        // in here. More exactly, we have a binominal distribution of the amount of
+        // in here. More exactly, we have a binomial distribution of the amount of
         // occupied entries.
         // For a 25% filled table, the average is 32 entries, with a 95% chance that we have between
         // 23 and 41 entries.

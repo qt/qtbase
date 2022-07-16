@@ -37,7 +37,7 @@ int main(int argc, char **argv)
         QUrl fileUrl;
         if (fileName.startsWith(":")) { // detect resources.
             QString name = fileName;
-            name.remove(0, 2); // reomve ":/"
+            name.remove(0, 2); // remove ":/"
             fileUrl.setUrl(QLatin1String("qrc:/") + name);
         } else {
             fileUrl = QUrl::fromLocalFile(fileName);

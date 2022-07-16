@@ -513,7 +513,7 @@
     \internal
 */
 
-/*! \fn template <typename T> void QList<T>::setSharable(bool sharable)
+/*! \fn template <typename T> void QList<T>::setSharable(bool shareable)
 
     \internal
 */

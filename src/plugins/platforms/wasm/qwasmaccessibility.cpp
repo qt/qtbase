@@ -60,8 +60,8 @@ emscripten::val QWasmAccessibility::createHtmlElement(QAccessibleInterface *ifac
     // to the global document. TODO: Does using the correct document actually matter?
     emscripten::val document = container.isUndefined() ? emscripten::val::global("document") : getDocument(container);
 
-    // Translate the Qt a11y elemen role into html element type + ARIA role.
-    // Here we can either create <div> elements with a spesific ARIA role,
+    // Translate the Qt a11y element role into html element type + ARIA role.
+    // Here we can either create <div> elements with a specific ARIA role,
     // or create e.g. <button> elements which should have built-in accessibility.
     emscripten::val element = [iface, document] {
 

@@ -149,7 +149,7 @@
 
     We now set up the QTableWidget object, \c formatsTable. Its
     horizontal header is set using a QStringList object, \c labels. The number
-    of columms are set to two and the table is not editable. Also, the
+    of columns are set to two and the table is not editable. Also, the
     \c{formatTable}'s horizontal header is formatted to ensure that its second
     column stretches to occupy additional space available.
 

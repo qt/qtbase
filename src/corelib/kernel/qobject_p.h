@@ -148,7 +148,7 @@ public:
     bool maybeSignalConnected(uint signalIndex) const;
     inline bool isDeclarativeSignalConnected(uint signalIdx) const;
 
-    // To allow abitrary objects to call connectNotify()/disconnectNotify() without making
+    // To allow arbitrary objects to call connectNotify()/disconnectNotify() without making
     // the API public in QObject. This is used by QQmlNotifierEndpoint.
     inline void connectNotify(const QMetaMethod &signal);
     inline void disconnectNotify(const QMetaMethod &signal);

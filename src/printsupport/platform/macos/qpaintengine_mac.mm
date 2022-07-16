@@ -94,7 +94,7 @@ static bool drawGradientNatively(const QGradient *gradient)
     return gradient->spread() == QGradient::PadSpread;
 }
 
-// gradiant callback
+// gradient callback
 static void qt_mac_color_gradient_function(void *info, const CGFloat *in, CGFloat *out)
 {
     QBrush *brush = static_cast<QBrush *>(info);

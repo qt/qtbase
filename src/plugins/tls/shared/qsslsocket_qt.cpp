@@ -162,8 +162,8 @@ static QByteArray _q_PKCS12_shroudedKeyBag(const QSslKey &key, const QString &pa
     QByteArray plain;
     QDataStream plainStream(&plain, QIODevice::WriteOnly);
     _q_PKCS12_key(key).write(plainStream);
-    QByteArray crypted = QSslKeyPrivate::encrypt(QTlsPrivate::Cipher::DesEde3Cbc,
-                                                 plain, cKey, cIv);
+    QByteArray encrypted = QSslKeyPrivate::encrypt(QTlsPrivate::Cipher::DesEde3Cbc,
+                                                   plain, cKey, cIv);
 
     QList<QAsn1Element> items;
     items << QAsn1Element::fromObjectId("1.2.840.113549.1.12.10.1.2");
@@ -177,7 +177,7 @@ static QByteArray _q_PKCS12_shroudedKeyBag(const QSslKey &key, const QString &pa
     paramItems << QAsn1Element::fromInteger(iterations);
     algoItems << QAsn1Element::fromVector(paramItems);
     keyItems << QAsn1Element::fromVector(algoItems);
-    keyItems << QAsn1Element(QAsn1Element::OctetStringType, crypted);
+    keyItems << QAsn1Element(QAsn1Element::OctetStringType, encrypted);
     items << wrap(QAsn1Element::Context0Type,
                   QAsn1Element::fromVector(keyItems));
 

@@ -527,7 +527,7 @@ static bool calculateUnixPriority(int priority, int *sched_policy, int *sched_pr
     // thread needs to use priorities in that range.
     int priority_norm = 10;
     // _sched_info::priority_priv isn't documented.  You'd think that it's the start of the
-    // privileged priority range but it's actually the end of the unpriviledged range.
+    // privileged priority range but it's actually the end of the unprivileged range.
     struct _sched_info info;
     if (SchedInfo_r(0, *sched_policy, &info) != EOK)
         return false;

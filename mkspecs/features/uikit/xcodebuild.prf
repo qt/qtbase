@@ -2,7 +2,7 @@
 # For Qt applications we want Xcode project files as the generated output,
 # but since qmake doesn't handle the transition between makefiles and Xcode
 # project files (which happens when using subdirs), we can't just override
-# MAKEFILE_GENERATOR. Instead, we generate the Xcode project by spawing a
+# MAKEFILE_GENERATOR. Instead, we generate the Xcode project by spawning a
 # child qmake process with -spec macx-xcode and let the top level qmake
 # process generate a wrapper makefile that forwards everything to xcodebuild.
 

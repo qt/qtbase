@@ -45,7 +45,7 @@
     \snippet tools/completer/fsmodel.cpp 0
 
     As mentioned earlier, the \c data() function is reimplemented in order to
-    get it to return the entire file parth for the display role. For example,
+    get it to return the entire file path for the display role. For example,
     with a QFileSystemModel, you will see "Program Files" in the view. However, with
     \c FileSystemModel, you will see "C:\\Program Files".
 

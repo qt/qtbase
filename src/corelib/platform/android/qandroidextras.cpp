@@ -1158,7 +1158,7 @@ requestPermissionsInternal(const QStringList &permissions)
 QFuture<QtAndroidPrivate::PermissionResult>
 QtAndroidPrivate::requestPermission(const QString &permission)
 {
-    // avoid the uneccessary call and response to an empty permission string
+    // avoid the unnecessary call and response to an empty permission string
     if (permission.size() > 0)
         return requestPermissionsInternal({permission});
 

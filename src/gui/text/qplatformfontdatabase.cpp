@@ -25,7 +25,7 @@ void qt_registerFont(const QString &familyname, const QString &stylename,
                      const QString &foundryname, int weight,
                      QFont::Style style, int stretch, bool antialiased,
                      bool scalable, int pixelSize, bool fixedPitch,
-                     const QSupportedWritingSystems &writingSystems, void *hanlde);
+                     const QSupportedWritingSystems &writingSystems, void *handle);
 
 void qt_registerFontFamily(const QString &familyName);
 void qt_registerAliasToFontFamily(const QString &familyName, const QString &alias);

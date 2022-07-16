@@ -1496,7 +1496,7 @@ QRhi::FrameOpResult QRhiMetal::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
 
     const bool needsPresent = !flags.testFlag(QRhi::SkipPresent);
     if (needsPresent) {
-        // beginFrame-endFrame without a render pass inbetween means there is no
+        // beginFrame-endFrame without a render pass in between means there is no
         // drawable, handle this gracefully because presentDrawable does not like
         // null arguments.
         if (id<CAMetalDrawable> drawable = swapChainD->d->curDrawable) {

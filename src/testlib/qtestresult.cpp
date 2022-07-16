@@ -525,10 +525,10 @@ bool QTestResult::compare(bool success, const char *failureMsg,
 // Simplified version of compare() that does not take the values, because they
 // can't be converted to strings (or the user didn't want to do that).
 bool QTestResult::compare(bool success, const char *failureMsg,
-                          const char *actual, const char *expeceted,
+                          const char *actual, const char *expected,
                           const char *file, int line)
 {
-    return compareHelper(success, failureMsg, actual, expeceted, file, line);
+    return compareHelper(success, failureMsg, actual, expected, file, line);
 }
 
 void QTestResult::addFailure(const char *message, const char *file, int line)

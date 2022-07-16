@@ -403,7 +403,7 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
                     const QString vcproj = projectName + project->first("VCPROJ_EXTENSION");
                     QString vcprojDir = Option::output_dir;
 
-                    // If file doesn't exsist, then maybe the users configuration
+                    // If file doesn't exist, then maybe the users configuration
                     // doesn't allow it to be created. Skip to next...
                     if (!exists(vcprojDir + Option::dir_sep + vcproj)) {
                         warn_msg(WarnLogic, "Ignored (not found) '%s'", QString(vcprojDir + Option::dir_sep + vcproj).toLatin1().constData());

@@ -399,7 +399,7 @@ static QStringList get_colornames()
     getCmyk() functions. Using the RGB color model, the color
     components can in addition be accessed with rgb().
 
-    There are several related non-members: QRgb is a typdef for an
+    There are several related non-members: QRgb is a typedef for an
     unsigned int representing the RGB value triplet (r, g, b). Note
     that it also can hold a value for the alpha-channel (for more
     information, see the \l {QColor#Alpha-Blended

@@ -527,7 +527,7 @@ int QImageIOHandler::nextImageDelay() const
 
     This is a convenience method for the reading function in subclasses. Image
     format handlers must reject loading an image if the required allocation
-    would exceeed the current allocation limit. This function checks the
+    would exceed the current allocation limit. This function checks the
     parameters and limit, and does the allocation if it is valid and required.
     Upon successful return, \a image will be a valid, detached QImage of the
     given \a size and \a format.

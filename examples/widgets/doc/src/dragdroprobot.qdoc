@@ -73,7 +73,7 @@
     when a Drag and Drop element is dragged into the robot part's area.
 
     The handler implementation determines whether or not this item as a whole
-    can accept the mime data assiciated with the incoming drag object. \c
+    can accept the mime data associated with the incoming drag object. \c
     RobotPart provides a base behavior for all parts that accepts color drops.
     So if the incoming drag object contains a color, the event is accepted, we
     set \c dragOver to \c true and call update() to help provide positive

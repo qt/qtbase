@@ -10,7 +10,7 @@
 # * Inherited is removed
 # * East Asian scripts (chapter 11) are renamed to: SimplifiedChinese,
 #   TraditionalChinese, Japanese, Korean, Vietnamese
-# * Additiona Modern scripts (chapter 12) are removed
+# * Additional Modern scripts (chapter 12) are removed
 # * Archaic scripts (chapter 13) are removed
 
 grep -Ev "(^[[:space:]]*#|^$)" data/Scripts.txt \

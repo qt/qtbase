@@ -320,7 +320,7 @@ Q_LOGGING_CATEGORY(lcQpaInputEvents, "qt.qpa.input.events")
 
 - (BOOL)isActiveWindow
 {
-    // Normally this is determined exclusivly by being firstResponder, but
+    // Normally this is determined exclusively by being firstResponder, but
     // since we employ a separate first responder for text input we need to
     // handle both cases as this view being the active Qt window.
 

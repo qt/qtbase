@@ -502,7 +502,7 @@ void QWidget::setAutoFillBackground(bool enabled)
             QWidget::event().
         \li  focusInEvent() is called when the widget gains keyboard focus
             (assuming you have called setFocusPolicy()). Well-behaved widgets
-            indicate that they own the keyboard focus in a clear but discreet
+            indicate that they own the keyboard focus in a clear but discrete
             way.
         \li  focusOutEvent() is called when the widget loses keyboard focus.
     \endlist

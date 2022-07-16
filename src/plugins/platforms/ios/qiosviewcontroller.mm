@@ -429,7 +429,7 @@
 
 #ifndef Q_OS_TVOS
 
-    // -------------- Status bar style and visbility ---------------
+    // -------------- Status bar style and visibility ---------------
 
     UIStatusBarStyle oldStatusBarStyle = self.preferredStatusBarStyle;
     if (focusWindow->flags() & Qt::MaximizeUsingFullscreenGeometryHint)

@@ -87,7 +87,7 @@ void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen, co
     // hence: Q_PI/14. Lower divisors will give more detail at the
     // direct cost of performance.
 
-    // simplfy pens that are thin in device size (2px wide or less)
+    // simplify pens that are thin in device size (2px wide or less)
     if (realWidth < 2.5 && (cosmetic || m_inv_scale == 1)) {
         if (m_cap_style == Qt::RoundCap)
             m_cap_style = Qt::SquareCap;

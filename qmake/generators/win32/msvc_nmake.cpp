@@ -481,7 +481,7 @@ void NmakeMakefileGenerator::writeLinkCommand(QTextStream &t, const QString &ext
 
 void NmakeMakefileGenerator::writeResponseFileFiles(QTextStream &t, const ProStringList &files)
 {
-    // Add line breaks in file lists in reponse files to work around LNK1170.
+    // Add line breaks in file lists in response files to work around LNK1170.
     // The actual line length limit is 131070, but let's use a smaller limit
     // in case other tools are similarly hampered.
     const int maxLineLength = 1000;

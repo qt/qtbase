@@ -2273,7 +2273,7 @@ QString MakefileGenerator::buildArgs(bool withExtra)
 }
 
 //could get stored argv, but then it would have more options than are
-//probably necesary this will try to guess the bare minimum..
+//probably necessary this will try to guess the bare minimum..
 QString MakefileGenerator::fullBuildArgs()
 {
     QString ret;

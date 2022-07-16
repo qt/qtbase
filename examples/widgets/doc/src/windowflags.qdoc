@@ -69,7 +69,7 @@
     button and a stretchable space in a separate layout to make the
     button appear in the \c WindowFlag widget's right bottom corner.
 
-    Finally, we add the button's layout and the two goup boxes to a
+    Finally, we add the button's layout and the two group boxes to a
     QVBoxLayout, set the window title and refresh the preview window
     using the \c updatePreview() slot.
 

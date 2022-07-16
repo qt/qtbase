@@ -250,7 +250,7 @@ instructions:
 
 
   # With MSVC we need setup the environment before every subprocess call, the group below creates a script that
-  # does it. It is enough to prepand it to every call (it is safe to add it even on other OSes)
+  # does it. It is enough to prepend it to every call (it is safe to add it even on other OSes)
   - type: Group
     instructions:
     - type: WriteFile

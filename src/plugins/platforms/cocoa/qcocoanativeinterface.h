@@ -59,7 +59,7 @@ private:
     // Set the size for a unified toolbar content border area.
     // Multiple callers can register areas and the platform plugin
     // will extend the "unified" area to cover them.
-    static void registerContentBorderArea(QWindow *window, quintptr identifer, int upper, int lower);
+    static void registerContentBorderArea(QWindow *window, quintptr identifier, int upper, int lower);
 
     // Enables or disiables a content border area.
     static void setContentBorderAreaEnabled(QWindow *window, quintptr identifier, bool enable);

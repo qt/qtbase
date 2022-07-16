@@ -8551,7 +8551,7 @@ QVariant QGraphicsRectItem::extension(const QVariant &variant) const
     \ingroup graphicsview-api
     \inmodule QtWidgets
 
-    QGraphicsEllipseItem respresents an ellipse with a fill and an outline,
+    QGraphicsEllipseItem represents an ellipse with a fill and an outline,
     and you can also use it for ellipse segments (see startAngle(),
     spanAngle()).
 

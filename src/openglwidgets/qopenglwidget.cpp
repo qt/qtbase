@@ -240,7 +240,7 @@ QT_BEGIN_NAMESPACE
   QOpenGLWidget instances that belong to different windows.
 
   This means that all QOpenGLWidgets in the same window can access each other's
-  sharable resources, like textures, and there is no need for an extra "global
+  shareable resources, like textures, and there is no need for an extra "global
   share" context.
 
   To set up sharing between QOpenGLWidget instances belonging to different
@@ -322,7 +322,7 @@ QT_BEGIN_NAMESPACE
 
   Proper cleanup is especially important due to context sharing. Even though
   each QOpenGLWidget's associated context is destroyed together with the
-  QOpenGLWidget, the sharable resources in that context, like textures, will
+  QOpenGLWidget, the shareable resources in that context, like textures, will
   stay valid until the top-level window, in which the QOpenGLWidget lived, is
   destroyed. Additionally, settings like Qt::AA_ShareOpenGLContexts and some Qt
   modules may trigger an even wider scope for sharing contexts, potentially

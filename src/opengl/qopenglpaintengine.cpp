@@ -260,7 +260,7 @@ void QOpenGL2PaintEngineExPrivate::updateBrushTexture()
         updateTexture(QT_BRUSH_TEXTURE_UNIT, textureImage, GL_REPEAT, filterMode, ForceUpdate);
     }
     else if (style >= Qt::LinearGradientPattern && style <= Qt::ConicalGradientPattern) {
-        // Gradiant brush: All the gradiants use the same texture
+        // Gradient brush: All the gradients use the same texture
 
         const QGradient *gradient = currentBrush.gradient();
 

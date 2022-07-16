@@ -115,7 +115,7 @@ void QContiguousCacheData::freeData(QContiguousCacheData *data)
     \internal
 */
 
-/*! \fn template<typename T> void QContiguousCache<T>::setSharable(bool sharable)
+/*! \fn template<typename T> void QContiguousCache<T>::setSharable(bool shareable)
     \internal
 */
 

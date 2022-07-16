@@ -2359,7 +2359,7 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
 
         QString cmd, cmd_name, out;
         QStringList deps, inputs;
-        // Variabel replacement of output name
+        // Variable replacement of output name
         out = Option::fixPathToTargetOS(Project->replaceExtraCompilerVariables(
                 tmp_out, inFile, QString(), MakefileGenerator::NoShell), false);
 

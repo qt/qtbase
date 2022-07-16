@@ -52,7 +52,7 @@ public:
             m_pool->free(m_thunkId);
         }
 
-        // The id of the underlaying thunk set
+        // The id of the underlying thunk set
         int id() const { return m_thunkId; }
 
         // Binds the corresponding thunk set to the js promise 'target'.

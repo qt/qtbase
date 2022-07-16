@@ -228,7 +228,7 @@ static void fallback_fill(quint32 *ptr, qsizetype left) noexcept
 
     *end++ = foldPointer(quintptr(&seed));          // 1: variable in this library/executable's .data
     *end++ = foldPointer(quintptr(&scratch));       // 2: variable in the stack
-    *end++ = foldPointer(quintptr(&errno));         // 3: veriable either in libc or thread-specific
+    *end++ = foldPointer(quintptr(&errno));         // 3: variable either in libc or thread-specific
     *end++ = foldPointer(quintptr(reinterpret_cast<void*>(strerror)));   // 4: function in libc (and unlikely to be a macro)
 
 #ifndef QT_BOOTSTRAPPED

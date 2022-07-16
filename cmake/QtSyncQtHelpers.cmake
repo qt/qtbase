@@ -54,7 +54,7 @@ function(qt_install_injections target build_dir install_dir)
     # examples:
     #  SYNCQT.INJECTIONS = src/corelib/global/qconfig.h:qconfig.h:QtConfig src/corelib/global/qconfig_p.h:5.12.0/QtCore/private/qconfig_p.h
     #  SYNCQT.INJECTIONS = src/gui/vulkan/qvulkanfunctions.h:^qvulkanfunctions.h:QVulkanFunctions:QVulkanDeviceFunctions src/gui/vulkan/qvulkanfunctions_p.h:^5.12.0/QtGui/private/qvulkanfunctions_p.h
-    # The are 3 parts to the assignment, divded by colons ':'.
+    # The are 3 parts to the assignment, divided by colons ':'.
     # The first part contains a path to a generated file in a build folder.
     # The second part contains the file name that the forwarding header should have, which points
     # to the file in the first part.

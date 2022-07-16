@@ -58,7 +58,7 @@ Backend Helper Classes
 
 Every OpenGL function is categorised by which version it was introduced with and
 whether it is part of the Core Profile and is deemed part of the core specification
-or whther it is only part of the Compatibility profile and has been marked as
+or whether it is only part of the Compatibility profile and has been marked as
 deprecated.
 
 Glgen creates a backend helper class containing function pointers to match each
@@ -79,7 +79,7 @@ group where the contexts have different versions or even profiles. We therefore 
 the backend instances at the QOpenGLContext level using a simple reference counting
 scheme.
 
-When the frontend version functions objects are intialized they check to see if
+When the frontend version functions objects are initialized they check to see if
 the associated context already has suitable backend objects available. If so they use
 them, otherwise they will create backend objects and associate them with the context.
 
@@ -127,7 +127,7 @@ then it bypasses the above checks. However, the same checks are applied in the
 initializeOpenGLFunctions() method and the result can once again be checked.
 
 This approach allows maximum flexibility but ensure's safety in that once the user
-posesses a functions object that has been successfully initialized they can rely upon its
+possesses a functions object that has been successfully initialized they can rely upon its
 member functions being successfully resolved.
 
 

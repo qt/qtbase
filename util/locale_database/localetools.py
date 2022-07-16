@@ -140,7 +140,7 @@ class Transcriber:
 
 
 class SourceFileEditor (Transcriber):
-    """Transcriber with transcription of code around a gnerated block.
+    """Transcriber with transcription of code around a generated block.
 
     We have a common pattern of source files with a generated part
     embedded in a context that's not touched by the regeneration

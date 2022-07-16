@@ -77,7 +77,7 @@ namespace {
     {
         IconCache()
         {
-            // ### note: won't readd if QApplication is re-created!
+            // ### note: won't re-add if QApplication is re-created!
             qAddPostRoutine(qt_cleanup_icon_cache);
         }
     };

@@ -261,8 +261,8 @@ QSpiAccessibleBridge *QSpiAccessibleBridge::instance()
 
 RoleNames QSpiAccessibleBridge::namesForRole(QAccessible::Role role)
 {
-    auto brigde = QSpiAccessibleBridge::instance();
-    return brigde ? brigde->spiRoleNames().value(role) : RoleNames();
+    auto bridge = QSpiAccessibleBridge::instance();
+    return bridge ? bridge->spiRoleNames().value(role) : RoleNames();
 }
 
 QT_END_NAMESPACE

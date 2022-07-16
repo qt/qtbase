@@ -407,7 +407,7 @@ sub make_path {
 #          copy, forces header to be a copy of iheader
 #          timestamp, the requested modification time if copying
 #
-# Purpose: Syncronizes header to iheader
+# Purpose: Synchronizes header to iheader
 # Returns: 1 if successful, else 0.
 ######################################################################
 sub syncHeader {
@@ -482,7 +482,7 @@ sub fixPaths {
 #
 # Purpose: Get the contents of a file.
 # Returns: String with contents of the file, or empty string if file
-#          doens't exist.
+#          doesn't exist.
 # Warning: Dies if it does exist but script cannot get read access.
 ######################################################################
 sub fileContents {

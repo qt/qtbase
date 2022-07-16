@@ -272,7 +272,7 @@ void QTabBar::initStyleOption(QStyleOptionTab *option, int tabIndex) const
     tab:
 
     \list
-    \li tabSizeHint() calcuates the size of a tab.
+    \li tabSizeHint() calculates the size of a tab.
     \li tabInserted() notifies that a new tab was added.
     \li tabRemoved() notifies that a tab was removed.
     \li tabLayoutChange() notifies that the tabs have been re-laid out.
