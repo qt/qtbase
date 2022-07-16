@@ -266,6 +266,8 @@ public:
     QList<QVariant> value4;
     QVariantList value5;
 
+    tst_QMetaObject();
+
 private slots:
     void connectSlotsByName();
     void invokeMetaMember();
@@ -402,6 +404,11 @@ private slots:
 
 #define FUNCTION(x) "QMetaObject::" x ": "
 
+tst_QMetaObject::tst_QMetaObject()
+{
+    qRegisterMetaType<qlonglong *>();
+}
+
 void tst_QMetaObject::connectSlotsByName()
 {
     CTestObject obj;
@@ -478,6 +485,8 @@ public slots:
     const char *sl12();
     QList<QString> sl13(QList<QString> l1);
     qint64 sl14();
+    qlonglong *sl15(qlonglong *);
+    MyForwardDeclaredType *sl16(MyForwardDeclaredType *);
     void testSender();
 
     void testReference(QString &str);
@@ -571,6 +580,18 @@ QList<QString> QtTestObject::sl13(QList<QString> l1)
 { slotResult = "sl13"; return l1; }
 qint64 QtTestObject::sl14()
 { slotResult = "sl14"; return Q_INT64_C(123456789)*123456789; }
+qlonglong *QtTestObject::sl15(qlonglong *ptr)
+{ slotResult = "sl15"; return ptr; }
+MyForwardDeclaredType *QtTestObject::sl16(MyForwardDeclaredType *ptr)
+{
+    slotResult = "sl16:";
+    if (ptr) {
+        slotResult += "notnull";
+        return nullptr;
+    }
+    slotResult += "null";
+    return getForwardDeclaredPointer();
+}
 
 void QtTestObject::testReference(QString &str)
 { slotResult = "testReference:" + str; str = "gotcha"; }
@@ -716,6 +737,25 @@ void tst_QMetaObject::invokeMetaMember()
     QCOMPARE(return64, Q_INT64_C(123456789)*123456789);
     QCOMPARE(obj.slotResult, QString("sl14"));
 
+    // pointers
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl15", Q_ARG(qlonglong*, &return64)));
+    QCOMPARE(obj.slotResult, QString("sl15"));
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl16", Q_ARG(MyForwardDeclaredType*, getForwardDeclaredPointer())));
+    QCOMPARE(obj.slotResult, QString("sl16:notnull"));
+
+    obj.slotResult.clear();
+    qint64 *return64Ptr;
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl15", Q_RETURN_ARG(qlonglong*, return64Ptr), Q_ARG(qlonglong*, &return64)));
+    QCOMPARE(return64Ptr, &return64);
+    QCOMPARE(obj.slotResult, QString("sl15"));
+
+    obj.slotResult.clear();
+    MyForwardDeclaredType *forwardPtr;
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl16", Q_RETURN_ARG(MyForwardDeclaredType*, forwardPtr),
+                                      Q_ARG(MyForwardDeclaredType*, nullptr)));
+    QCOMPARE(forwardPtr, getForwardDeclaredPointer());
+    QCOMPARE(obj.slotResult, QString("sl16:null"));
+
     //test signals
     QVERIFY(QMetaObject::invokeMethod(&obj, "sig0"));
     QCOMPARE(obj.slotResult, QString("sl0"));
@@ -834,6 +874,13 @@ void tst_QMetaObject::invokeQueuedMetaMember()
     qApp->processEvents(QEventLoop::AllEvents);
     QCOMPARE(obj.slotResult, QString("sl9:123456789"));
 
+    // pointers
+    qint64 return64;
+    obj.slotResult.clear();
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl15", Qt::QueuedConnection, Q_ARG(qlonglong*, &return64)));
+    qApp->processEvents(QEventLoop::AllEvents);
+    QCOMPARE(obj.slotResult, QString("sl15"));
+
     // signals
 
     obj.slotResult.clear();
@@ -878,6 +925,12 @@ void tst_QMetaObject::invokeQueuedMetaMember()
                                            Q_ARG(QString, a1), Q_ARG(MyForwardDeclaredType, t)));
         QVERIFY(obj.slotResult.isEmpty());
     }
+
+    obj.slotResult.clear();
+    QTest::ignoreMessage(QtWarningMsg, "QMetaMethod::invoke: Unable to handle unregistered datatype 'MyForwardDeclaredType*'");
+    QVERIFY(!QMetaObject::invokeMethod(&obj, "sl16", Qt::QueuedConnection, Q_ARG(MyForwardDeclaredType*, getForwardDeclaredPointer())));
+    qApp->processEvents(QEventLoop::AllEvents);
+    QVERIFY(obj.slotResult.isEmpty());
 }
 
 void tst_QMetaObject::invokeQueuedPointer()
@@ -1029,6 +1082,32 @@ void tst_QMetaObject::invokeBlockingQueuedMetaMember()
                                       Q_ARG(QList<QString>, argument)));
     QCOMPARE(returnValue, argument);
     QCOMPARE(obj.slotResult, QString("sl13"));
+
+    // return qint64
+    qint64 return64;
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl14", Qt::BlockingQueuedConnection,
+                                      Q_RETURN_ARG(qint64, return64)));
+    QCOMPARE(return64, Q_INT64_C(123456789)*123456789);
+    QCOMPARE(obj.slotResult, QString("sl14"));
+
+    // pointers
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl15", Qt::BlockingQueuedConnection, Q_ARG(qlonglong*, &return64)));
+    QCOMPARE(obj.slotResult, QString("sl15"));
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl16", Qt::BlockingQueuedConnection, Q_ARG(MyForwardDeclaredType*, getForwardDeclaredPointer())));
+    QCOMPARE(obj.slotResult, QString("sl16:notnull"));
+
+    obj.slotResult.clear();
+    qint64 *return64Ptr;
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl15", Qt::BlockingQueuedConnection, Q_RETURN_ARG(qlonglong*, return64Ptr), Q_ARG(qlonglong*, &return64)));
+    QCOMPARE(return64Ptr, &return64);
+    QCOMPARE(obj.slotResult, QString("sl15"));
+
+    obj.slotResult.clear();
+    MyForwardDeclaredType *forwardPtr;
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl16", Qt::BlockingQueuedConnection, Q_RETURN_ARG(MyForwardDeclaredType*, forwardPtr),
+                                      Q_ARG(MyForwardDeclaredType*, nullptr)));
+    QCOMPARE(forwardPtr, getForwardDeclaredPointer());
+    QCOMPARE(obj.slotResult, QString("sl16:null"));
 
     //test signals
     QVERIFY(QMetaObject::invokeMethod(&obj, "sig0", Qt::BlockingQueuedConnection));

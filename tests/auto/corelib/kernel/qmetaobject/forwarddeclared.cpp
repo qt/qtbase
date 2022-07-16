@@ -4,9 +4,14 @@
 #include "forwarddeclared.h"
 
 struct MyForwardDeclaredType { };
-static const MyForwardDeclaredType t;
+static MyForwardDeclaredType t;
 
 const MyForwardDeclaredType &getForwardDeclaredType() noexcept
 {
     return t;
+}
+
+MyForwardDeclaredType *getForwardDeclaredPointer() noexcept
+{
+    return &t;
 }

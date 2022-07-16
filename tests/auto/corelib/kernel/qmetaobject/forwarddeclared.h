@@ -7,5 +7,6 @@
 struct MyForwardDeclaredType;      // and ONLY forward-declared
 
 const MyForwardDeclaredType &getForwardDeclaredType() noexcept;
+MyForwardDeclaredType *getForwardDeclaredPointer() noexcept;
 
 #endif // FORWARDDECLARED_H
