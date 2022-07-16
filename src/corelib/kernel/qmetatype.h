@@ -849,6 +849,16 @@ namespace QtPrivate
     template <typename T> struct MetatypeDecay<const T>     { using type = T; };
     template <typename T> struct MetatypeDecay<const T &>   { using type = T; };
 
+    template <typename T> struct IsPointerDeclaredOpaque  :
+            std::disjunction<std::is_member_pointer<T>,
+                             std::is_function<std::remove_pointer_t<T>>>
+    {};
+    template <> struct IsPointerDeclaredOpaque<void *>      : std::true_type {};
+    template <> struct IsPointerDeclaredOpaque<const void *> : std::true_type {};
+
+    // Note: this does not check that T = U* isn't pointing to a
+    // forward-declared type. You may want to combine with
+    // checkTypeIsSuitableForMetaType().
     template<typename T>
     struct IsPointerToTypeDerivedFromQObject
     {
@@ -883,7 +893,6 @@ namespace QtPrivate
         static yes_type checkType(const QObject* );
 #endif
         static no_type checkType(...);
-        static_assert(sizeof(T), "Type argument of Q_PROPERTY or Q_DECLARE_METATYPE(T*) must be fully defined");
         enum { Value = sizeof(checkType(static_cast<T*>(nullptr))) == sizeof(yes_type) };
     };
 
@@ -1146,6 +1155,22 @@ namespace QtPrivate
         static bool registerConverter() { return false; }
     };
 #endif
+
+    template <typename X> static constexpr bool checkTypeIsSuitableForMetaType()
+    {
+        using T = typename MetatypeDecay<X>::type;
+        static_assert(is_complete<T, void>::value || std::is_void_v<T>,
+                "Meta Types must be fully defined");
+        static_assert(!std::is_reference_v<T>,
+                "Meta Types cannot be non-const references or rvalue references.");
+        if constexpr (std::is_pointer_v<T> && !IsPointerDeclaredOpaque<T>::value) {
+            using Pointed = std::remove_pointer_t<T>;
+            static_assert(is_complete<Pointed, void>::value,
+                    "Pointer Meta Types must either point to fully-defined types "
+                    "or be declared with Q_DECLARE_OPAQUE_POINTER(T *)");
+        }
+        return true;
+    }
 
     Q_CORE_EXPORT bool isBuiltinType(const QByteArray &type);
 } // namespace QtPrivate
@@ -1444,11 +1469,8 @@ struct QMetaTypeIdQObject<T, QMetaType::IsEnumeration>
 
 #define Q_DECLARE_OPAQUE_POINTER(POINTER)                               \
     QT_BEGIN_NAMESPACE namespace QtPrivate {                            \
-        template <>                                                     \
-        struct IsPointerToTypeDerivedFromQObject<POINTER >              \
-        {                                                               \
-            enum { Value = false };                                     \
-        };                                                              \
+    template <> struct IsPointerDeclaredOpaque<POINTER>                 \
+        : std::true_type {};                                            \
     } QT_END_NAMESPACE                                                  \
     /**/
 
@@ -1460,6 +1482,7 @@ struct QMetaTypeIdQObject<T, QMetaType::IsEnumeration>
     struct QMetaTypeId< TYPE >                                          \
     {                                                                   \
         enum { Defined = 1 };                                           \
+        static_assert(QtPrivate::checkTypeIsSuitableForMetaType<TYPE>());   \
         static int qt_metatype_id()                                     \
             {                                                           \
                 Q_CONSTINIT static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
@@ -2511,6 +2534,7 @@ struct TypeAndForceComplete
 template<typename T>
 constexpr const QMetaTypeInterface *qMetaTypeInterfaceForType()
 {
+    // don't check the type is suitable here
     using Ty = typename MetatypeDecay<T>::type;
     return &QMetaTypeInterfaceWrapper<Ty>::metaType;
 }
@@ -2523,13 +2547,18 @@ constexpr const QMetaTypeInterface *qTryMetaTypeInterfaceForType()
     using Ty = typename MetatypeDecay<T>::type;
     using Tz = qRemovePointerLike_t<Ty>;
 
-    if constexpr (ForceComplete::value) {
+    if constexpr (std::is_void_v<Ty>) {
+        // early out to avoid expanding the rest of the templates
+        return &QMetaTypeInterfaceWrapper<void>::metaType;
+    } else if constexpr (ForceComplete::value) {
+        checkTypeIsSuitableForMetaType<Ty>();
         return &QMetaTypeInterfaceWrapper<Ty>::metaType;
     } else if constexpr (std::is_reference_v<Tz>) {
         return nullptr;
     } else if constexpr (!is_complete<Tz, Unique>::value) {
         return nullptr;
     } else {
+        // don't check the type is suitable here
         return &QMetaTypeInterfaceWrapper<Ty>::metaType;
     }
 }
@@ -2539,6 +2568,7 @@ constexpr const QMetaTypeInterface *qTryMetaTypeInterfaceForType()
 template<typename T>
 constexpr QMetaType QMetaType::fromType()
 {
+    QtPrivate::checkTypeIsSuitableForMetaType<T>();
     return QMetaType(QtPrivate::qMetaTypeInterfaceForType<T>());
 }
 
