@@ -181,6 +181,8 @@ public:
     inline uint parameterTypeInfo(int index) const;
     inline int parameterType(int index) const;
     inline void getParameterTypes(int *types) const;
+    inline const QtPrivate::QMetaTypeInterface *returnMetaTypeInterface() const;
+    inline const QtPrivate::QMetaTypeInterface *const *parameterMetaTypeInterfaces() const;
     inline QByteArray parameterTypeName(int index) const;
     inline QList<QByteArray> parameterTypes() const;
     inline QList<QByteArray> parameterNames() const;
@@ -593,19 +595,25 @@ bool QMetaObjectPrivate::methodMatch(const QMetaObject *m, const QMetaMethod &me
                         const QArgumentType *types)
 {
     const QMetaMethod::Data &data = method.data;
-    if (data.argc() != uint(argc))
+    auto priv = QMetaMethodPrivate::get(&method);
+    if (priv->parameterCount() != argc)
         return false;
 
     if (stringData(m, data.name()) != name)
         return false;
 
+    const QtPrivate::QMetaTypeInterface * const *ifaces = priv->parameterMetaTypeInterfaces();
     int paramsIndex = data.parameters() + 1;
     for (int i = 0; i < argc; ++i) {
         uint typeInfo = m->d.data[paramsIndex + i];
-        if (types[i].type()) {
-            if (types[i].type() != typeFromTypeInfo(m, typeInfo))
+        if (int id = types[i].type()) {
+            if (id == QMetaType(ifaces[i]).id())
+                continue;
+            if (id != typeFromTypeInfo(m, typeInfo))
                 return false;
         } else {
+            if (types[i].name() == QMetaType(ifaces[i]).name())
+                continue;
             if (types[i].name() != typeNameFromTypeInfo(m, typeInfo))
                 return false;
         }
@@ -1800,6 +1808,21 @@ int QMetaMethodPrivate::parameterCount() const
     return data.argc();
 }
 
+static inline void
+checkMethodMetaTypeConsistency(const QtPrivate::QMetaTypeInterface *iface, uint typeInfo)
+{
+    QMetaType mt(iface);
+    if (iface) {
+        if ((typeInfo & IsUnresolvedType) == 0)
+            Q_ASSERT(mt.id() == int(typeInfo & TypeNameIndexMask));
+        Q_ASSERT(mt.name());
+    } else {
+        // prior to Qt 6.5, the meta object did not record interfaces for void
+        // (obviously only the return type may be void)
+        Q_ASSERT(typeInfo & IsUnresolvedType || typeInfo == QMetaType::Void);
+    }
+}
+
 int QMetaMethodPrivate::parametersDataIndex() const
 {
     Q_ASSERT(priv(mobj->d.data)->revision >= 7);
@@ -1810,6 +1833,29 @@ uint QMetaMethodPrivate::parameterTypeInfo(int index) const
 {
     Q_ASSERT(priv(mobj->d.data)->revision >= 7);
     return mobj->d.data[parametersDataIndex() + index];
+}
+
+const QtPrivate::QMetaTypeInterface *QMetaMethodPrivate::returnMetaTypeInterface() const
+{
+    Q_ASSERT(priv(mobj->d.data)->revision >= 7);
+    if (methodType() == QMetaMethod::Constructor)
+        return nullptr;         // constructors don't have return types
+
+    const QtPrivate::QMetaTypeInterface *iface =  mobj->d.metaTypes[data.metaTypeOffset()];
+    checkMethodMetaTypeConsistency(iface, parameterTypeInfo(-1));
+    return iface;
+}
+
+const QtPrivate::QMetaTypeInterface * const *QMetaMethodPrivate::parameterMetaTypeInterfaces() const
+{
+    Q_ASSERT(priv(mobj->d.data)->revision >= 7);
+    int offset = (methodType() == QMetaMethod::Constructor ? 0 : 1);
+    const auto ifaces = &mobj->d.metaTypes[data.metaTypeOffset() + offset];
+
+    for (int i = 0; i < parameterCount(); ++i)
+        checkMethodMetaTypeConsistency(ifaces[i], parameterTypeInfo(i));
+
+    return ifaces;
 }
 
 int QMetaMethodPrivate::parameterType(int index) const
