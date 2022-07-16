@@ -150,6 +150,7 @@ private:
     static QMetaMethod fromRelativeMethodIndex(const QMetaObject *mobj, int index);
     static QMetaMethod fromRelativeConstructorIndex(const QMetaObject *mobj, int index);
 
+protected:
     struct Data {
         enum { Size = 6 };
 
@@ -169,7 +170,6 @@ private:
 
     const QMetaObject *mobj;
     Data data;
-    friend class QMetaMethodPrivate;
     friend struct QMetaObject;
     friend struct QMetaObjectPrivate;
     friend class QObject;

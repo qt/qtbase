@@ -164,6 +164,7 @@ static inline int typeFromTypeInfo(const QMetaObject *mo, uint typeInfo)
     return QMetaType::fromName(rawStringData(mo, typeInfo & TypeNameIndexMask)).id();
 }
 
+namespace {
 class QMetaMethodPrivate : public QMetaMethod
 {
 public:
@@ -215,6 +216,7 @@ public:
 private:
     QMetaMethodPrivate();
 };
+} // unnamed namespace
 
 enum { MaximumParamCount = 11 }; // up to 10 arguments + 1 return value
 

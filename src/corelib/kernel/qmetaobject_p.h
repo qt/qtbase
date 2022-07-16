@@ -131,7 +131,7 @@ Q_DECLARE_TYPEINFO(QArgumentType, Q_RELOCATABLE_TYPE);
 
 typedef QVarLengthArray<QArgumentType, 10> QArgumentTypeArray;
 
-class QMetaMethodPrivate;
+namespace { class QMetaMethodPrivate; }
 
 struct QMetaObjectPrivate
 {
