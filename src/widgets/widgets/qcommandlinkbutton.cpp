@@ -171,7 +171,7 @@ bool QCommandLinkButtonPrivate::usingVistaStyle() const
     Q_Q(const QCommandLinkButton);
     //### This is a hack to detect if we are indeed running Vista style themed and not in classic
     // When we add api to query for this, we should change this implementation to use it.
-    return q->style()->inherits("QWindowsVistaStyle")
+    return q->property("_qt_usingVistaStyle").toBool()
         && q->style()->pixelMetric(QStyle::PM_ButtonShiftHorizontal, nullptr) == 0;
 }
 
@@ -339,9 +339,9 @@ void QCommandLinkButton::paintEvent(QPaintEvent *)
     //Draw title
     QColor textColor = palette().buttonText().color();
     if (isEnabled() && d->usingVistaStyle()) {
-        textColor = QColor(21, 28, 85);
+        textColor = option.palette.buttonText().color();
         if (underMouse() && !isDown())
-            textColor = QColor(7, 64, 229);
+            textColor = option.palette.brightText().color();
         //A simple text color transition
         d->currentColor = d->mergedColors(textColor, d->currentColor, 60);
         option.palette.setColor(QPalette::ButtonText, d->currentColor);
