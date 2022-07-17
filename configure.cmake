@@ -640,7 +640,7 @@ else()
     unset(__qt_uc_config)
 endif()
 qt_feature("ltcg"
-    LABEL "Using LTCG"
+    LABEL "Using Link Time Optimization (LTO/LTCG)"
     AUTODETECT ON
     CONDITION __qt_ltcg_detected
 )
@@ -983,7 +983,7 @@ qt_feature("relocatable" PRIVATE
     CONDITION QT_FEATURE_dlopen OR WIN32 OR NOT QT_FEATURE_shared
 )
 qt_feature("intelcet" PRIVATE
-    LABEL "Using Intel Control-flow Enforcement Technology (CET)"
+    LABEL "Using Control-flow Enforcement Technology (CET)"
     CONDITION ( INPUT_intelcet STREQUAL yes ) OR TEST_intelcet
 )
 qt_configure_add_summary_build_type_and_config()
