@@ -272,11 +272,8 @@ endif()
 
 if(QT_FEATURE_intelcet)
     if(MSVC)
-        target_compile_options(PlatformCommonInternal INTERFACE
-            -guard:ehcont
-        )
         target_link_options(PlatformCommonInternal INTERFACE
-            -guard:ehcont -CETCOMPAT
+            -CETCOMPAT
         )
     else()
         target_compile_options(PlatformCommonInternal INTERFACE
