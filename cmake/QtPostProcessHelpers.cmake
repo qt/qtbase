@@ -369,7 +369,9 @@ function(qt_internal_create_qt6_dependencies_file)
 endif()")
     endif()
 
-    if(third_party_deps)
+    _qt_internal_determine_if_host_info_package_needed(platform_requires_host_info_package)
+
+    if(third_party_deps OR platform_requires_host_info_package)
         # Setup build and install paths.
         set(path_suffix "${INSTALL_CMAKE_NAMESPACE}")
 

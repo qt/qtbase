@@ -192,8 +192,16 @@ macro(_qt_internal_save_find_package_context_for_debugging infix)
     endif()
 endmacro()
 
-macro(_qt_internal_find_host_info_package)
+function(_qt_internal_determine_if_host_info_package_needed out_var)
+    set(needed FALSE)
     if(NOT "${QT_HOST_PATH}" STREQUAL "")
+        set(needed TRUE)
+    endif()
+    set(${out_var} "${needed}" PARENT_SCOPE)
+endfunction()
+
+macro(_qt_internal_find_host_info_package platform_requires_host_info)
+    if(${platform_requires_host_info})
         find_package(Qt6HostInfo
                      CONFIG
                      REQUIRED

@@ -1,6 +1,7 @@
 set(@INSTALL_CMAKE_NAMESPACE@_FOUND FALSE)
 
-_qt_internal_find_host_info_package()
+set(__qt_platform_requires_host_info_package "@platform_requires_host_info_package@")
+_qt_internal_find_host_info_package(${__qt_platform_requires_host_info_package})
 
 # note: _third_party_deps example: "ICU\\;FALSE\\;1.0\\;i18n uc data;ZLIB\\;FALSE\\;\\;"
 set(__qt_third_party_deps "@third_party_deps@")
