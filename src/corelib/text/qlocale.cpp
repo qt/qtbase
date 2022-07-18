@@ -681,10 +681,9 @@ qsizetype qt_repeatCount(QStringView s)
 
 Q_CONSTINIT static const QLocaleData *default_data = nullptr;
 
-static const QLocaleData *const c_data = locale_data;
 static QLocalePrivate *c_private()
 {
-    static QLocalePrivate c_locale(c_data, 0, QLocale::OmitGroupSeparator, 1);
+    static QLocalePrivate c_locale(locale_data, 0, QLocale::OmitGroupSeparator, 1);
     return &c_locale;
 }
 
@@ -815,7 +814,7 @@ static uint defaultIndex()
 const QLocaleData *QLocaleData::c()
 {
     Q_ASSERT(locale_index[QLocale::C] == 0);
-    return c_data;
+    return locale_data;
 }
 
 #ifndef QT_NO_DATASTREAM
