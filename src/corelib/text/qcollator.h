@@ -67,7 +67,11 @@ public:
 
     int compare(const QString &s1, const QString &s2) const
     { return compare(QStringView(s1), QStringView(s2)); }
+#if QT_CORE_REMOVED_SINCE(6, 4) && QT_POINTER_SIZE != 4
     int compare(const QChar *s1, int len1, const QChar *s2, int len2) const
+    { return compare(QStringView(s1, len1), QStringView(s2, len2)); }
+#endif
+    int compare(const QChar *s1, qsizetype len1, const QChar *s2, qsizetype len2) const
     { return compare(QStringView(s1, len1), QStringView(s2, len2)); }
 
     bool operator()(const QString &s1, const QString &s2) const

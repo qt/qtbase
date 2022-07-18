@@ -169,6 +169,8 @@ QCalendar::QCalendar(QStringView name)
 QCalendar::QCalendar(QLatin1StringView name)
     : QCalendar(QAnyStringView{name}) {}
 
+#include "qcollator.h" // inline function compare(ptr, n, ptr, n) (for MSVC)
+
 #if QT_CONFIG(future)
 
 #include "qfutureinterface.h"
