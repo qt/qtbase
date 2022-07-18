@@ -249,7 +249,7 @@ QTextBoundaryFinder::QTextBoundaryFinder(BoundaryType type, QStringView string, 
     , attributes(nullptr)
 {
     if (!sv.isEmpty()) {
-        if (buffer && (uint)bufferSize >= (sv.size() + 1) * sizeof(QCharAttributes)) {
+        if (buffer && bufferSize / int(sizeof(QCharAttributes)) >= sv.size() + 1) {
             attributes = reinterpret_cast<QCharAttributes *>(buffer);
             freeBuffer = false;
         } else {
