@@ -12,6 +12,8 @@
 
 #include "QtCore/private/qgregoriancalendar_p.h" // for yearSharingWeekDays()
 
+#include <q20algorithm.h>
+
 #ifdef Q_OS_WIN
 #   include <qt_windows.h>
 #   include <time.h>
@@ -888,8 +890,14 @@ struct WindowsToISOListElt {
     char iso_name[6];
 };
 
-/* NOTE: This array should be sorted by the first column! */
-static const WindowsToISOListElt windows_to_iso_list[] = {
+namespace {
+struct ByWindowsCode {
+    constexpr bool operator()(WindowsToISOListElt lhs, WindowsToISOListElt rhs) const noexcept
+    { return lhs.windows_code < rhs.windows_code; }
+};
+} // unnamed namespace
+
+static constexpr WindowsToISOListElt windows_to_iso_list[] = {
     { 0x0401, "ar_SA" },
     { 0x0402, "bg\0  " },
     { 0x0403, "ca\0  " },
@@ -1002,6 +1010,9 @@ static const WindowsToISOListElt windows_to_iso_list[] = {
 
 static const int windows_to_iso_count
     = sizeof(windows_to_iso_list)/sizeof(WindowsToISOListElt);
+
+static_assert(q20::is_sorted(std::begin(windows_to_iso_list), std::end(windows_to_iso_list),
+                             ByWindowsCode{}));
 
 static const char *winLangCodeToIsoName(int code)
 {
