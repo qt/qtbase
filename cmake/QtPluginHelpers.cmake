@@ -355,8 +355,9 @@ function(qt_internal_add_plugin target)
     endforeach()
 
     qt_register_target_dependencies("${target}" "${arg_PUBLIC_LIBRARIES}" "${qt_libs_private}")
-    if (NOT BUILD_SHARED_LIBS)
 
+    get_target_property(target_type "${target}" TYPE)
+    if(target_type STREQUAL STATIC_LIBRARY)
         # There's no point in generating pri files for qml plugins. We didn't do it in Qt5 times.
         if(NOT plugin_type_escaped STREQUAL "qml_plugin")
             qt_generate_plugin_pri_file("${target}" pri_file)
@@ -462,8 +463,9 @@ function(qt_finalize_plugin target)
         _qt_internal_generate_win32_rc_file("${target}")
     endif()
 
-    # Generate .prl files for plugins of static Qt builds.
-    if(NOT BUILD_SHARED_LIBS)
+    # Generate .prl files for static plugins.
+    get_target_property(target_type "${target}" TYPE)
+    if(target_type STREQUAL STATIC_LIBRARY)
         if(arg_INSTALL_PATH)
             qt_generate_prl_file(${target} "${arg_INSTALL_PATH}")
         endif()
