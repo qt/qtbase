@@ -892,6 +892,10 @@ struct WindowsToISOListElt {
 
 namespace {
 struct ByWindowsCode {
+    constexpr bool operator()(int lhs, WindowsToISOListElt rhs) const noexcept
+    { return lhs < int(rhs.windows_code); }
+    constexpr bool operator()(WindowsToISOListElt lhs, int rhs) const noexcept
+    { return int(lhs.windows_code) < rhs; }
     constexpr bool operator()(WindowsToISOListElt lhs, WindowsToISOListElt rhs) const noexcept
     { return lhs.windows_code < rhs.windows_code; }
 };
@@ -1008,9 +1012,6 @@ static constexpr WindowsToISOListElt windows_to_iso_list[] = {
     { 0x500a, "es_PR" }
 };
 
-static const int windows_to_iso_count
-    = sizeof(windows_to_iso_list)/sizeof(WindowsToISOListElt);
-
 static_assert(q20::is_sorted(std::begin(windows_to_iso_list), std::end(windows_to_iso_list),
                              ByWindowsCode{}));
 
@@ -1023,21 +1024,12 @@ static const char *winLangCodeToIsoName(int code)
     if (cmp == 0)
         return windows_to_iso_list[0].iso_name;
 
-    int begin = 0;
-    int end = windows_to_iso_count;
-
-    while (end - begin > 1) {
-        uint mid = (begin + end)/2;
-
-        const WindowsToISOListElt *elt = windows_to_iso_list + mid;
-        int cmp = code - elt->windows_code;
-        if (cmp < 0)
-            end = mid;
-        else if (cmp > 0)
-            begin = mid;
-        else
-            return elt->iso_name;
-    }
+    const auto it = std::lower_bound(std::begin(windows_to_iso_list),
+                                     std::end(windows_to_iso_list),
+                                     code,
+                                     ByWindowsCode{});
+    if (it != std::end(windows_to_iso_list) && !ByWindowsCode{}(code, *it))
+        return it->iso_name;
 
     return 0;
 
