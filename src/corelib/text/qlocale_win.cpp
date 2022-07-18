@@ -1044,8 +1044,8 @@ static QString winIso639LangName(LCID id)
     if (!lang_code.isEmpty()) {
         const char *endptr;
         bool ok;
-        QByteArray latin1_lang_code = std::move(lang_code).toLatin1();
-        int i = qstrtoull(latin1_lang_code, &endptr, 16, &ok);
+        const QByteArray latin1 = std::move(lang_code).toLatin1();
+        const auto i = qstrtoull(latin1.data(), &endptr, 16, &ok);
         if (ok && *endptr == '\0') {
             switch (i) {
                 case 0x814:
