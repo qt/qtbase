@@ -263,11 +263,15 @@ function(__qt_internal_collect_plugin_libraries plugin_targets out_var)
     set(plugins_to_link "")
 
     foreach(plugin_target ${plugin_targets})
+        set(plugin_target_versioned "${QT_CMAKE_EXPORT_NAMESPACE}::${plugin_target}")
+        get_target_property(type "${plugin_target_versioned}" TYPE)
+        if(NOT type STREQUAL STATIC_LIBRARY)
+            continue()
+        endif()
+
         __qt_internal_get_static_plugin_condition_genex(
             "${plugin_target}"
             plugin_condition)
-
-        set(plugin_target_versioned "${QT_CMAKE_EXPORT_NAMESPACE}::${plugin_target}")
 
         list(APPEND plugins_to_link "$<${plugin_condition}:${plugin_target_versioned}>")
     endforeach()
@@ -282,6 +286,12 @@ function(__qt_internal_collect_plugin_init_libraries plugin_targets out_var)
     set(plugin_inits_to_link "")
 
     foreach(plugin_target ${plugin_targets})
+        set(plugin_target_versioned "${QT_CMAKE_EXPORT_NAMESPACE}::${plugin_target}")
+        get_target_property(type "${plugin_target_versioned}" TYPE)
+        if(NOT type STREQUAL STATIC_LIBRARY)
+            continue()
+        endif()
+
         __qt_internal_get_static_plugin_condition_genex(
             "${plugin_target}"
             plugin_condition)
@@ -376,11 +386,6 @@ endfunction()
 
 # Main logic of finalizer mode.
 function(__qt_internal_apply_plugin_imports_finalizer_mode target)
-    # Nothing to do in a shared build.
-    if(QT6_IS_SHARED_LIBS_BUILD)
-        return()
-    endif()
-
     # Process a target only once.
     get_target_property(processed ${target} _qt_plugin_finalizer_imports_processed)
     if(processed)
@@ -461,8 +466,10 @@ function(__qt_internal_include_plugin_packages target)
 
         list(APPEND "QT_ALL_PLUGINS_FOUND_BY_FIND_PACKAGE_${__plugin_type}" "${plugin_target}")
 
-        # Auto-linkage should be set up only for static library builds.
-        if(NOT QT6_IS_SHARED_LIBS_BUILD)
+        # Auto-linkage should be set up only for static plugins.
+        set(plugin_target_versioned "${QT_CMAKE_EXPORT_NAMESPACE}::${plugin_target}")
+        get_target_property(type "${plugin_target_versioned}" TYPE)
+        if(type STREQUAL STATIC_LIBRARY)
             __qt_internal_add_static_plugin_linkage("${plugin_target}" "${_module_target}")
             __qt_internal_add_static_plugin_import_macro(
                 "${plugin_target}" ${_module_target} "${target}")
