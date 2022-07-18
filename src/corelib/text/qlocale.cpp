@@ -681,7 +681,7 @@ QString qt_readEscapedFormatString(QStringView format, int *idx)
     qt_repeatCount(u"aab"); // == 2
     \endcode
 */
-int qt_repeatCount(QStringView s)
+qsizetype qt_repeatCount(QStringView s)
 {
     if (s.isEmpty())
         return 0;
@@ -689,7 +689,7 @@ int qt_repeatCount(QStringView s)
     qsizetype j = 1;
     while (j < s.size() && s.at(j) == c)
         ++j;
-    return int(j);
+    return j;
 }
 
 static const QLocaleData *default_data = nullptr;
@@ -3358,7 +3358,7 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
         }
 
         const QChar c = format.at(i);
-        int repeat = qt_repeatCount(format.mid(i));
+        qsizetype repeat = qt_repeatCount(format.mid(i));
         bool used = false;
         if (formatDate) {
             switch (c.unicode()) {
