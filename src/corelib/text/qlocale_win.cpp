@@ -701,7 +701,7 @@ QString QSystemLocalePrivate::winToQtFormat(QStringView sys_fmt)
         }
 
         QChar c = sys_fmt.at(i);
-        int repeat = qt_repeatCount(sys_fmt.mid(i));
+        qsizetype repeat = qt_repeatCount(sys_fmt.mid(i));
 
         switch (c.unicode()) {
             // Date
