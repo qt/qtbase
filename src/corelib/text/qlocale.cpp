@@ -568,9 +568,9 @@ QLocaleId QLocaleId::fromName(const QString &name)
     return { langId, QLocalePrivate::codeToScript(script), QLocalePrivate::codeToTerritory(land) };
 }
 
-QString qt_readEscapedFormatString(QStringView format, int *idx)
+QString qt_readEscapedFormatString(QStringView format, qsizetype *idx)
 {
-    int &i = *idx;
+    qsizetype &i = *idx;
 
     Q_ASSERT(format.at(i) == QLatin1Char('\''));
     ++i;
@@ -2028,7 +2028,7 @@ QString QLocale::toString(QDate date, FormatType format) const
 
 static bool timeFormatContainsAP(QStringView format)
 {
-    int i = 0;
+    qsizetype i = 0;
     while (i < format.size()) {
         if (format.at(i).unicode() == '\'') {
             qt_readEscapedFormatString(format, &i);
@@ -3239,7 +3239,7 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
         day = parts.day;
     }
 
-    int i = 0;
+    qsizetype i = 0;
     while (i < format.size()) {
         if (format.at(i).unicode() == '\'') {
             result.append(qt_readEscapedFormatString(format, &i));

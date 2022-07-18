@@ -688,7 +688,7 @@ void QSystemLocalePrivate::update()
 QString QSystemLocalePrivate::winToQtFormat(QStringView sys_fmt)
 {
     QString result;
-    int i = 0;
+    qsizetype i = 0;
 
     while (i < sys_fmt.size()) {
         if (sys_fmt.at(i).unicode() == QLatin1Char('\'')) {

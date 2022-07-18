@@ -180,7 +180,7 @@ static QVariant macTimeToString(QTime time, bool short_format)
 static QVariant macToQtFormat(QStringView sys_fmt)
 {
     QString result;
-    int i = 0;
+    qsizetype i = 0;
 
     while (i < sys_fmt.size()) {
         if (sys_fmt.at(i).unicode() == '\'') {
