@@ -19,6 +19,8 @@
 #include <qbytearray.h>
 #include <QtCore/qlist.h>
 
+#include <climits>
+
 QT_BEGIN_NAMESPACE
 
 // this class handles a list of QByteArrays. It is a variant of QRingBuffer
@@ -120,8 +122,15 @@ public:
     inline QByteArray read(qint64 amount)
     {
         amount = qMin(byteAmount(), amount);
+        if constexpr (sizeof(qsizetype) == sizeof(int)) { // 32-bit
+            // While we cannot overall have more than INT_MAX memory allocated,
+            // the QByteArrays we hold may be shared copies of each other,
+            // causing byteAmount() to exceed INT_MAX.
+            if (amount > INT_MAX)
+                qBadAlloc(); // what resize() would do if it saw past the truncation
+        }
         QByteArray byteData;
-        byteData.resize(amount);
+        byteData.resize(qsizetype(amount));
         read(byteData.data(), byteData.size());
         return byteData;
     }
