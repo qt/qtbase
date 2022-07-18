@@ -1019,7 +1019,7 @@ static const char *winLangCodeToIsoName(int code)
 {
     int cmp = code - windows_to_iso_list[0].windows_code;
     if (cmp < 0)
-        return 0;
+        return nullptr;
 
     if (cmp == 0)
         return windows_to_iso_list[0].iso_name;
@@ -1031,7 +1031,7 @@ static const char *winLangCodeToIsoName(int code)
     if (it != std::end(windows_to_iso_list) && !ByWindowsCode{}(code, *it))
         return it->iso_name;
 
-    return 0;
+    return nullptr;
 
 }
 
