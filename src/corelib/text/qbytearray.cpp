@@ -2625,7 +2625,7 @@ qsizetype QtPrivate::count(QByteArrayView haystack, QByteArrayView needle) noexc
 
 qsizetype QByteArray::count(char ch) const
 {
-    return static_cast<int>(countCharHelper(*this, ch));
+    return countCharHelper(*this, ch);
 }
 
 #if QT_DEPRECATED_SINCE(6, 4)
