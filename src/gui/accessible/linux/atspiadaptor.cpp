@@ -1523,11 +1523,12 @@ bool AtSpiAdaptor::inheritsQAction(QObject *object)
 // Component
 static QAccessibleInterface * getWindow(QAccessibleInterface * interface)
 {
-    if (interface->role() == QAccessible::Window)
+    if (interface->role() == QAccessible::Dialog || interface->role() == QAccessible::Window)
         return interface;
 
     QAccessibleInterface * parent = interface->parent();
-    while (parent && parent->role() != QAccessible::Window)
+    while (parent && parent->role() != QAccessible::Dialog
+            && parent->role() != QAccessible::Window)
         parent = parent->parent();
 
     return parent;
