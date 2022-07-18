@@ -558,7 +558,8 @@ if(CMAKE_CROSSCOMPILING)
     endif()
 endif()
 
-_qt_internal_find_host_info_package()
+_qt_internal_determine_if_host_info_package_needed(__qt_build_requires_host_info_package)
+_qt_internal_find_host_info_package("${__qt_build_requires_host_info_package}")
 
 # TODO: This block provides support for old variables. It should be removed once
 #       we remove all references to these variables in other Qt module repos.
