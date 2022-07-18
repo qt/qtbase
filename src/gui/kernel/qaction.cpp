@@ -514,14 +514,14 @@ QList<QObject*> QAction::associatedObjects() const
 
 /*!
     \fn QWidget *QAction::parentWidget() const
-    \deprecated Use parent() with qobject_cast() instead.
+    \deprecated [6.0] Use parent() with qobject_cast() instead.
 
     Returns the parent widget.
 */
 
 /*!
     \fn QList<QWidget*> QAction::associatedWidgets() const
-    \deprecated Use associatedObjects() with qobject_cast() instead.
+    \deprecated [6.0] Use associatedObjects() with qobject_cast() instead.
 
     Returns a list of widgets this action has been added to.
 
@@ -530,7 +530,7 @@ QList<QObject*> QAction::associatedObjects() const
 
 /*!
     \fn QList<QWidget*> QAction::associatedGraphicsWidgets() const
-    \deprecated Use associatedObjects() with qobject_cast() instead.
+    \deprecated [6.0] Use associatedObjects() with qobject_cast() instead.
 
     Returns a list of graphics widgets this action has been added to.
 
