@@ -4,13 +4,6 @@
 #ifndef QSTRINGVIEW_H
 #define QSTRINGVIEW_H
 
-/*
-    Obsolete.
-*/
-#ifndef QT_STRINGVIEW_LEVEL
-#  define QT_STRINGVIEW_LEVEL 1
-#endif
-
 #include <QtCore/qchar.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qstringliteral.h>
