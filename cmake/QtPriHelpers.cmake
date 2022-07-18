@@ -613,6 +613,13 @@ function(qt_generate_plugin_pri_file target pri_file_var)
     list(REMOVE_DUPLICATES plugin_deps)
     list(JOIN plugin_deps " " plugin_deps)
 
+    list(APPEND module_config v2)
+    get_target_property(target_type ${target} TYPE)
+    if(target_type STREQUAL "STATIC_LIBRARY")
+       list(APPEND module_config staticlib)
+    endif()
+    list(JOIN module_config " " module_config)
+
     qt_path_join(pri_target_path ${QT_BUILD_DIR} ${INSTALL_MKSPECSDIR}/modules)
     qt_path_join(pri_file "${pri_target_path}" "qt_plugin_${plugin_name}.pri")
     qt_configure_file(OUTPUT "${pri_file}"
@@ -620,6 +627,7 @@ function(qt_generate_plugin_pri_file target pri_file_var)
 QT_PLUGIN.${plugin_name}.EXTENDS = ${plugin_extends}
 QT_PLUGIN.${plugin_name}.DEPENDS = ${plugin_deps}
 QT_PLUGIN.${plugin_name}.CLASS_NAME = ${plugin_class_name}
+QT_PLUGIN.${plugin_name}.module_config = ${module_config}
 QT_PLUGINS += ${plugin_name}
 ")
     set(${pri_file_var} "${pri_file}" PARENT_SCOPE)
