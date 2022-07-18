@@ -4695,7 +4695,7 @@ void tst_QLineEdit::sideWidgets()
 
 template <class T> T *findAssociatedWidget(const QAction *a)
 {
-    foreach (QWidget *w, a->associatedWidgets()) {
+    foreach (QObject *w, a->associatedObjects()) {
         if (T *result = qobject_cast<T *>(w))
             return result;
     }

@@ -251,13 +251,21 @@ void QMenuPrivate::syncPlatformMenu()
     platformMenu->setEnabled(q->isEnabled());
 }
 
+static QWidget *getParentWidget(const QAction *action)
+{
+    auto result = action->parent();
+    while (result && !qobject_cast<QWidget *>(result))
+        result = result->parent();
+    return static_cast<QWidget *>(result);
+}
+
 void QMenuPrivate::copyActionToPlatformItem(const QAction *action, QPlatformMenuItem *item)
 {
     item->setText(action->text());
     item->setIsSeparator(action->isSeparator());
     if (action->isIconVisibleInMenu()) {
         item->setIcon(action->icon());
-        if (QWidget *w = action->parentWidget()) {
+        if (QWidget *w = getParentWidget(action)) {
             QStyleOption opt;
             opt.initFrom(w);
             item->setIconSize(w->style()->pixelMetric(QStyle::PM_SmallIconSize, &opt, w));
