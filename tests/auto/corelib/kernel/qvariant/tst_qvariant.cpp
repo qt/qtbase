@@ -287,6 +287,9 @@ private slots:
     void moveOperations();
     void equalsWithoutMetaObject();
 
+    void constructFromIncompatibleMetaType_data();
+    void constructFromIncompatibleMetaType();
+
 private:
     void dataStream_data(QDataStream::Version version);
     void loadQVariantFromDataStream(QDataStream::Version version);
@@ -5105,6 +5108,50 @@ void tst_QVariant::equalsWithoutMetaObject()
     // Shouldn't crash
     QVERIFY(noMetaObjectVariant != qobjectVariant);
     QVERIFY(qobjectVariant != noMetaObjectVariant);
+}
+
+class NonDefaultConstructible
+{
+   NonDefaultConstructible(int ) {}
+};
+
+struct Indestructible
+{
+    Indestructible() {}
+    Indestructible(const Indestructible &) {}
+    Indestructible &operator=(const Indestructible &) { return *this; }
+private:
+    ~Indestructible() {}
+};
+
+void tst_QVariant::constructFromIncompatibleMetaType_data()
+{
+    QTest::addColumn<QMetaType>("type");
+    auto addRow = [](QMetaType meta) {
+        QTest::newRow(meta.name()) << meta;
+    };
+    addRow(QMetaType::fromType<void>());
+    addRow(QMetaType::fromType<NonDefaultConstructible>());
+    addRow(QMetaType::fromType<QObject>());
+    addRow(QMetaType::fromType<Indestructible>());
+}
+
+void tst_QVariant::constructFromIncompatibleMetaType()
+{
+   QFETCH(QMetaType, type);
+   // in that case, we run into a different condition (size == 0), and do not warn
+   if (QTest::currentDataTag() != QLatin1String("void"))
+      QTest::ignoreMessage(
+            QtWarningMsg,
+            "QVariant: Provided metatype does not support destruction, copy and default construction");
+   QVariant var(type, nullptr);
+   QVERIFY(!var.isValid());
+   QVERIFY(!var.metaType().isValid());
+
+   QVariant regular(1.0);
+   QVERIFY(!var.canView(type));
+   QVERIFY(!var.canConvert(type));
+   QVERIFY(!QVariant(regular).convert(type));
 }
 
 QTEST_MAIN(tst_QVariant)
