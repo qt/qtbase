@@ -40,6 +40,7 @@
 /*!
     \page qtconcurrentfilter.html
     \title Concurrent Filter and Filter-Reduce
+    \brief Selecting values from a sequence and combining them, all in parallel.
     \ingroup thread
 
     The QtConcurrent::filter(), QtConcurrent::filtered() and
