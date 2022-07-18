@@ -229,7 +229,7 @@ public:
     }
 
     // the number of QByteArrays
-    inline int bufferCount() const
+    qsizetype bufferCount() const
     {
         return buffers.length();
     }
@@ -247,7 +247,7 @@ public:
             return buffers.first().size() - firstPos;
     }
 
-    inline QByteArray& operator[](int i)
+    QByteArray &operator[](qsizetype i)
     {
         if (i == 0)
             squeezeFirst();
@@ -256,7 +256,7 @@ public:
     }
 
     inline bool canReadLine() const {
-        int i = 0;
+        qsizetype i = 0;
         if (i < buffers.length()) {
             if (buffers.at(i).indexOf('\n', firstPos) != -1)
                 return true;
