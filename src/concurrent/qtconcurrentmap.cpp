@@ -144,6 +144,7 @@
 /*!
     \page qtconcurrentmap.html
     \title Concurrent Map and Map-Reduce
+    \brief Transforming values from a sequence and combining them, all in parallel.
     \ingroup thread
 
     The QtConcurrent::map(), QtConcurrent::mapped() and
