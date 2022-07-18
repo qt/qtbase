@@ -10,6 +10,7 @@
 #include <qelapsedtimer.h>
 #include <qmutex.h>
 #include <qthread.h>
+#include <qvarlengtharray.h>
 #include <qwaitcondition.h>
 #include <private/qvolatile_p.h>
 
@@ -1300,12 +1301,13 @@ QAtomicInt MoreStressTestThread::errorCount = 0;
 
 void tst_QMutex::moreStress()
 {
-    MoreStressTestThread threads[threadCount];
-    for (int i = 0; i < threadCount; ++i)
-        threads[i].start();
+    QVarLengthArray<MoreStressTestThread, threadCount> threads(qMin(QThread::idealThreadCount(),
+                                                                    int(threadCount)));
+    for (auto &thread : threads)
+        thread.start();
     QVERIFY(threads[0].wait(one_minute + 10000));
-    for (int i = 1; i < threadCount; ++i)
-        QVERIFY(threads[i].wait(10000));
+    for (auto &thread : threads)
+        QVERIFY(thread.wait(10000));
     qDebug("locked %d times", MoreStressTestThread::lockCount.loadRelaxed());
     QCOMPARE(MoreStressTestThread::errorCount.loadRelaxed(), 0);
 }
