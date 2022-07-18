@@ -1160,7 +1160,7 @@ QString QLocale::createSeparatedList(const QStringList &list) const
     }
 #endif
 
-    const int size = list.size();
+    const qsizetype size = list.size();
     if (size < 1)
         return QString();
 
@@ -1175,7 +1175,7 @@ QString QLocale::createSeparatedList(const QStringList &list) const
     QStringView formatMid = d->m_data->midListPattern().viewData(list_pattern_part_data);
     QStringView formatEnd = d->m_data->endListPattern().viewData(list_pattern_part_data);
     QString result = formatStart.arg(list.at(0), list.at(1));
-    for (int i = 2; i < size - 1; ++i)
+    for (qsizetype i = 2; i < size - 1; ++i)
         result = formatMid.arg(result, list.at(i));
     result = formatEnd.arg(result, list.at(size - 1));
     return result;
