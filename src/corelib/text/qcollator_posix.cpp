@@ -50,8 +50,8 @@ int QCollator::compare(QStringView s1, QStringView s2) const
 
     if (d->isC())
         return s1.compare(s2, caseSensitivity());
-    if (d->dirty)
-        d->init();
+
+    d->ensureInitialized();
 
     QVarLengthArray<wchar_t> array1, array2;
     stringToWCharArray(array1, s1);
@@ -61,8 +61,7 @@ int QCollator::compare(QStringView s1, QStringView s2) const
 
 QCollatorSortKey QCollator::sortKey(const QString &string) const
 {
-    if (d->dirty)
-        d->init();
+    d->ensureInitialized();
 
     QVarLengthArray<wchar_t> original;
     stringToWCharArray(original, string);

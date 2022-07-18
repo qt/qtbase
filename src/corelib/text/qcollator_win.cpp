@@ -57,8 +57,7 @@ int QCollator::compare(QStringView s1, QStringView s2) const
     if (d->isC())
         return s1.compare(s2, d->caseSensitivity);
 
-    if (d->dirty)
-        d->init();
+    d->ensureInitialized();
 
     //* from Windows documentation *
     // Returns one of the following values if successful. To maintain the C
@@ -92,8 +91,8 @@ int QCollator::compare(QStringView s1, QStringView s2) const
 
 QCollatorSortKey QCollator::sortKey(const QString &string) const
 {
-    if (d->dirty)
-        d->init();
+    d->ensureInitialized();
+
     if (d->isC())
         return QCollatorSortKey(new QCollatorSortKeyPrivate(string));
 
