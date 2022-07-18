@@ -611,7 +611,7 @@ void QEventDispatcherCoreFoundation::invalidateTimer()
     m_runLoopTimer = 0;
 }
 
+QT_END_NAMESPACE
+
 #include "qeventdispatcher_cf.moc"
 #include "moc_qeventdispatcher_cf_p.cpp"
-
-QT_END_NAMESPACE
