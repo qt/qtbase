@@ -194,7 +194,11 @@ endmacro()
 
 function(_qt_internal_determine_if_host_info_package_needed out_var)
     set(needed FALSE)
-    if(NOT "${QT_HOST_PATH}" STREQUAL "")
+
+    # If a QT_HOST_PATH is provided when configuring qtbase, we assume it's a cross build
+    # and thus we require the QT_HOST_PATH to be provided also when using the cross-built Qt.
+    # This tells the QtConfigDependencies file to do appropriate requirement checks.
+    if(NOT "${QT_HOST_PATH}" STREQUAL "" AND NOT QT_NO_REQUIRE_HOST_PATH_CHECK)
         set(needed TRUE)
     endif()
     set(${out_var} "${needed}" PARENT_SCOPE)
@@ -209,5 +213,75 @@ macro(_qt_internal_find_host_info_package platform_requires_host_info)
                            "${QT_HOST_PATH_CMAKE_DIR}"
                      NO_CMAKE_FIND_ROOT_PATH
                      NO_DEFAULT_PATH)
+    endif()
+endmacro()
+
+macro(_qt_internal_setup_qt_host_path
+        host_path_required
+        initial_qt_host_path
+        initial_qt_host_path_cmake_dir
+    )
+    # Set up QT_HOST_PATH and do sanity checks.
+    # A host path is required when cross-compiling but optional when doing a native build.
+    # Requiredness can be overridden via variable.
+    if(DEFINED QT_REQUIRE_HOST_PATH_CHECK)
+        set(_qt_platform_host_path_required "${QT_REQUIRE_HOST_PATH_CHECK}")
+    else()
+        set(_qt_platform_host_path_required "${host_path_required}")
+    endif()
+
+    if(_qt_platform_host_path_required)
+        # QT_HOST_PATH precedence:
+        # - cache variable / command line option
+        # - environment variable
+        # - initial QT_HOST_PATH when qtbase was configured (and the directory exists)
+        if(NOT DEFINED QT_HOST_PATH)
+            if(DEFINED ENV{QT_HOST_PATH})
+                set(QT_HOST_PATH "$ENV{QT_HOST_PATH}" CACHE PATH "")
+            elseif(NOT "${initial_qt_host_path}" STREQUAL "" AND EXISTS "${initial_qt_host_path}")
+                set(QT_HOST_PATH "${initial_qt_host_path}" CACHE PATH "")
+            endif()
+        endif()
+
+        if(NOT QT_HOST_PATH STREQUAL "")
+            get_filename_component(_qt_platform_host_path_absolute "${QT_HOST_PATH}" ABSOLUTE)
+        endif()
+
+        if("${QT_HOST_PATH}" STREQUAL "" OR NOT EXISTS "${_qt_platform_host_path_absolute}")
+            message(FATAL_ERROR
+                "To use a cross-compiled Qt, please set the QT_HOST_PATH cache variable to the "
+                "location of your host Qt installation.")
+        endif()
+
+        # QT_HOST_PATH_CMAKE_DIR is needed to work around the rerooting issue when looking for host
+        # tools. See REROOT_PATH_ISSUE_MARKER.
+        # Prefer initially configured path if none was explicitly set.
+        if(NOT DEFINED QT_HOST_PATH_CMAKE_DIR)
+            if(NOT "${initial_qt_host_path_cmake_dir}" STREQUAL ""
+                  AND EXISTS "${initial_qt_host_path_cmake_dir}")
+                set(QT_HOST_PATH_CMAKE_DIR "${initial_qt_host_path_cmake_dir}" CACHE PATH "")
+            else()
+                # First try to auto-compute the location instead of requiring to set
+                # QT_HOST_PATH_CMAKE_DIR explicitly.
+                set(__qt_candidate_host_path_cmake_dir "${QT_HOST_PATH}/lib/cmake")
+                if(__qt_candidate_host_path_cmake_dir
+                        AND EXISTS "${__qt_candidate_host_path_cmake_dir}")
+                    set(QT_HOST_PATH_CMAKE_DIR
+                        "${__qt_candidate_host_path_cmake_dir}" CACHE PATH "")
+                endif()
+            endif()
+        endif()
+
+        if(NOT QT_HOST_PATH_CMAKE_DIR STREQUAL "")
+            get_filename_component(_qt_platform_host_path_cmake_dir_absolute
+                                   "${QT_HOST_PATH_CMAKE_DIR}" ABSOLUTE)
+        endif()
+
+        if("${QT_HOST_PATH_CMAKE_DIR}" STREQUAL ""
+                OR NOT EXISTS "${_qt_platform_host_path_cmake_dir_absolute}")
+            message(FATAL_ERROR
+                "To use a cross-compiled Qt, please set the QT_HOST_PATH_CMAKE_DIR cache variable "
+                "to the location of your host Qt installation lib/cmake directory.")
+        endif()
     endif()
 endmacro()
