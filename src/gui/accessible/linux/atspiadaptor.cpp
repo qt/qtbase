@@ -1583,7 +1583,7 @@ static QRect getRelativeRect(QAccessibleInterface *interface)
         wr = window->rect();
 
         cr.setX(cr.x() - wr.x());
-        cr.setY(cr.x() - wr.y());
+        cr.setY(cr.y() - wr.y());
     }
     return cr;
 }
