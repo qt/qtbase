@@ -2960,9 +2960,9 @@ void tst_QDateTime::fromStringStringFormat_localTimeZone_data()
     QTest::addColumn<QString>("string");
     QTest::addColumn<QString>("format");
     QTest::addColumn<QDateTime>("expected");
-    bool lacksRows = true;
 
 #if QT_CONFIG(timezone)
+    bool lacksRows = true;
     // Note that the localTimeZone needn't match the zone used in the string and
     // expected date-time; indeed, having them different is probably best.
     // Both zones need to be valid; GMT always is, so is a safe one to use for
@@ -3005,9 +3005,11 @@ void tst_QDateTime::fromStringStringFormat_localTimeZone_data()
             << QString("210506000000Z") << QString("yyMMddHHmmsst")
             << QDateTime(QDate(1921, 5, 6), QTime(0, 0), Qt::UTC);
     }
-#endif
     if (lacksRows)
         QSKIP("Testcases all use zones unsupported on this platform");
+#else
+    QSKIP("Test only possible with timezone support enabled");
+#endif
 }
 
 void tst_QDateTime::fromStringStringFormat_localTimeZone()
