@@ -74,6 +74,12 @@ public:
         collator = NoCollator;
     }
 
+    void ensureInitialized()
+    {
+        if (dirty)
+            init();
+    }
+
     // Implemented by each back-end, in its own way:
     void init();
     void cleanup();

@@ -78,8 +78,7 @@ int QCollator::compare(QStringView s1, QStringView s2) const
     if (!s2.size())
         return +1;
 
-    if (d->dirty)
-        d->init();
+    d->ensureInitialized();
 
     if (d->collator) {
         return ucol_strcoll(d->collator,
@@ -92,8 +91,8 @@ int QCollator::compare(QStringView s1, QStringView s2) const
 
 QCollatorSortKey QCollator::sortKey(const QString &string) const
 {
-    if (d->dirty)
-        d->init();
+    d->ensureInitialized();
+
     if (d->isC())
         return QCollatorSortKey(new QCollatorSortKeyPrivate(string.toUtf8()));
 

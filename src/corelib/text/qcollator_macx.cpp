@@ -63,8 +63,8 @@ int QCollator::compare(QStringView s1, QStringView s2) const
     if (!s2.size())
         return +1;
 
-    if (d->dirty)
-        d->init();
+    d->ensureInitialized();
+
     if (!d->collator)
         return s1.compare(s2, caseSensitivity());
 
@@ -82,8 +82,8 @@ int QCollator::compare(QStringView s1, QStringView s2) const
 
 QCollatorSortKey QCollator::sortKey(const QString &string) const
 {
-    if (d->dirty)
-        d->init();
+    d->ensureInitialized();
+
     if (!d->collator) {
         // What should (or even *can*) we do here ? (See init()'s comment.)
         qWarning("QCollator doesn't support sort keys for the C locale on Darwin");

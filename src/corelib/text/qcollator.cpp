@@ -97,8 +97,7 @@ QCollator::QCollator(const QCollator &other)
 {
     if (d) {
         // Ensure clean, lest both copies try to init() at the same time:
-        if (d->dirty)
-            d->init();
+        d->ensureInitialized();
         d->ref.ref();
     }
 }
@@ -123,8 +122,7 @@ QCollator &QCollator::operator=(const QCollator &other)
         d = other.d;
         if (d) {
             // Ensure clean, lest both copies try to init() at the same time:
-            if (d->dirty)
-                d->init();
+            d->ensureInitialized();
             d->ref.ref();
         }
     }
