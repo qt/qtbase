@@ -704,6 +704,7 @@ qt_feature_config("reduce_exports" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("no_direct_extern_access" PRIVATE
     LABEL "Use protected visibility and -mno-direct-extern-access"
     CONDITION NOT WIN32 AND TEST_no_direct_extern_access
+    AUTODETECT OFF
 )
 qt_feature_definition("no_direct_extern_access" "QT_USE_PROTECTED_VISIBILITY")
 qt_feature_config("no_direct_extern_access" QMAKE_PUBLIC_QT_CONFIG)
