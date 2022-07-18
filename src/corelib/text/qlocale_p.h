@@ -476,7 +476,7 @@ inline char QLocaleData::numericToCLocale(QStringView in) const
 
 // Also used to merely skip over an escape in a format string, advancint idx to
 // point after it (so not [[nodiscard]]):
-QString qt_readEscapedFormatString(QStringView format, int *idx);
+QString qt_readEscapedFormatString(QStringView format, qsizetype *idx);
 [[nodiscard]] bool qt_splitLocaleName(QStringView name, QStringView *lang = nullptr,
                                       QStringView *script = nullptr, QStringView *cntry = nullptr);
 [[nodiscard]] qsizetype qt_repeatCount(QStringView s);
