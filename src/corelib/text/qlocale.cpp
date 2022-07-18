@@ -532,13 +532,13 @@ qsizetype QLocaleData::findLocaleIndex(QLocaleId lid)
     return locale_index[fallback];
 }
 
-static QStringView findTag(QStringView name)
+static QStringView findTag(QStringView name) noexcept
 {
-    const QString separators = QStringLiteral("_-.@");
-    int i = 0;
-    while (i < name.size() && !separators.contains(name[i]))
-        i++;
-    return name.first(i);
+    const std::u16string_view v(name.utf16(), size_t(name.size()));
+    const auto i = v.find_first_of(u"_-.@");
+    if (i == std::string_view::npos)
+        return name;
+    return name.first(qsizetype(i));
 }
 
 static bool validTag(QStringView tag)
