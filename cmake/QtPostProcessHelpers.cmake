@@ -371,6 +371,14 @@ endif()")
 
     _qt_internal_determine_if_host_info_package_needed(platform_requires_host_info_package)
 
+    if(platform_requires_host_info_package)
+        # TODO: Figure out how to make the initial QT_HOST_PATH var relocatable in relation
+        # to the target CMAKE_INSTALL_DIR, if at all possible to do so in a reliable way.
+        get_filename_component(qt_host_path_absolute "${QT_HOST_PATH}" ABSOLUTE)
+        get_filename_component(qt_host_path_cmake_dir_absolute
+            "${Qt${PROJECT_VERSION_MAJOR}HostInfo_DIR}/.." ABSOLUTE)
+    endif()
+
     if(third_party_deps OR platform_requires_host_info_package)
         # Setup build and install paths.
         set(path_suffix "${INSTALL_CMAKE_NAMESPACE}")

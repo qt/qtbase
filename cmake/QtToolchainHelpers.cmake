@@ -2,21 +2,6 @@
 # as well as CMake application projects.
 # Expects various global variables to be set.
 function(qt_internal_create_toolchain_file)
-    set(qt_host_path_required FALSE)
-
-    if(NOT "${QT_HOST_PATH}" STREQUAL "")
-        # If a QT_HOST_PATH is provided when configuring qtbase, we assume it's a cross build
-        # and thus we require the QT_HOST_PATH to be provided also when using the cross-built Qt.
-        # This tells the Qt toolchain file to do appropriate requirement checks.
-        set(qt_host_path_required TRUE)
-
-        # TODO: Figure out how to make the initial QT_HOST_PATH var relocatable in relation
-        # to the target CMAKE_INSTALL_DIR, if at all possible to do so in a reliable way.
-        get_filename_component(qt_host_path_absolute "${QT_HOST_PATH}" ABSOLUTE)
-        get_filename_component(qt_host_path_cmake_dir_absolute
-            "${Qt${PROJECT_VERSION_MAJOR}HostInfo_DIR}/.." ABSOLUTE)
-    endif()
-
     if(CMAKE_TOOLCHAIN_FILE)
         file(TO_CMAKE_PATH "${CMAKE_TOOLCHAIN_FILE}" __qt_chainload_toolchain_file)
         set(init_original_toolchain_file
