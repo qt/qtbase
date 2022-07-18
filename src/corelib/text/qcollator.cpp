@@ -318,7 +318,7 @@ bool QCollator::ignorePunctuation() const
 */
 
 /*!
-    \fn int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) const
+    \fn int QCollator::compare(const QChar *s1, qsizetype len1, const QChar *s2, qsizetype len2) const
     \overload
     \since 5.2
 
@@ -327,6 +327,9 @@ bool QCollator::ignorePunctuation() const
 
     Returns an integer less than, equal to, or greater than zero depending on
     whether \a s1 sorts before, with or after \a s2.
+
+    \note In Qt versions prior to 6.4, the length arguments were of type
+    \c{int}, not \c{qsizetype}.
 */
 #endif // QT_STRINGVIEW_LEVEL < 2
 
