@@ -81,6 +81,7 @@ int QCollator::compare(QStringView s1, QStringView s2) const
     d->ensureInitialized();
 
     if (d->collator) {
+        // truncating sizes (QTBUG-105038)
         return ucol_strcoll(d->collator,
                             reinterpret_cast<const UChar *>(s1.data()), s1.size(),
                             reinterpret_cast<const UChar *>(s2.data()), s2.size());
@@ -98,6 +99,7 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
 
     if (d->collator) {
         QByteArray result(16 + string.size() + (string.size() >> 2), Qt::Uninitialized);
+        // truncating sizes (QTBUG-105038)
         int size = ucol_getSortKey(d->collator, (const UChar *)string.constData(),
                                    string.size(), (uint8_t *)result.data(), result.size());
         if (size > result.size()) {

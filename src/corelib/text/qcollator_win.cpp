@@ -96,6 +96,7 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
     if (d->isC())
         return QCollatorSortKey(new QCollatorSortKeyPrivate(string));
 
+    // truncating sizes (QTBUG-105038)
     int size = LCMapStringW(d->localeID, LCMAP_SORTKEY | d->collator,
                            reinterpret_cast<const wchar_t*>(string.constData()), string.size(),
                            0, 0);
