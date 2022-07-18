@@ -119,6 +119,7 @@ public:
         QWidget, QMenu, and QGraphicsWidget can be expected to be fully defined.
     */
     template<typename T = QWidget*>
+    QT_DEPRECATED_VERSION_X_6_0("Use parent() with qobject_cast() instead")
     T parentWidget() const
     {
         auto result = parent();
@@ -128,6 +129,7 @@ public:
     }
 
     template<typename T = QWidget*>
+    QT_DEPRECATED_VERSION_X_6_0("Use associatedObjects() with qobject_cast() instead")
     QList<T> associatedWidgets() const
     {
         QList<T> result;
@@ -137,6 +139,7 @@ public:
         return result;
     }
     template<typename T = QGraphicsWidget*>
+    QT_DEPRECATED_VERSION_X_6_0("Use associatedObjects() with qobject_cast() instead")
     QList<T> associatedGraphicsWidgets() const
     {
         QList<T> result;
