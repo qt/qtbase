@@ -564,6 +564,17 @@ namespace enumerations {
     enum Test { a = 0 };
 }
 
+static void ignoreInvalidMetaTypeWarning(int typeId)
+{
+    if (typeId < 0 || typeId > QMetaType::User + 500 ||
+            (typeId > QMetaType::LastCoreType && typeId < QMetaType::FirstGuiType) ||
+            (typeId > QMetaType::LastGuiType && typeId < QMetaType::FirstWidgetsType) ||
+            (typeId > QMetaType::LastWidgetsType && typeId < QMetaType::User)) {
+        QTest::ignoreMessage(QtWarningMsg, "Trying to construct an instance of an invalid type, type id: "
+                             + QByteArray::number(typeId));
+    }
+}
+
 void tst_QMetaType::typeName_data()
 {
     QTest::addColumn<int>("aType");
@@ -612,6 +623,7 @@ void tst_QMetaType::typeName()
     if (aType >= QMetaType::FirstWidgetsType)
         QSKIP("The test doesn't link against QtWidgets.");
 
+    ignoreInvalidMetaTypeWarning(aType);
     const char *rawname = QMetaType::typeName(aType);
     QString name = QString::fromLatin1(rawname);
 
@@ -619,6 +631,7 @@ void tst_QMetaType::typeName()
     QCOMPARE(name.toLatin1(), QMetaObject::normalizedType(name.toLatin1().constData()));
     QCOMPARE(rawname == nullptr, aTypeName.isNull());
 
+    ignoreInvalidMetaTypeWarning(aType);
     QMetaType mt(aType);
     if (mt.isValid()) { // Gui type are not valid
         QCOMPARE(QString::fromLatin1(QMetaType(aType).name()), aTypeName);
@@ -1018,6 +1031,7 @@ void tst_QMetaType::flags()
     QFETCH(bool, isEnum);
     QFETCH(bool, isQmlList);
 
+    ignoreInvalidMetaTypeWarning(type);
     QMetaType meta(type);
 
     QCOMPARE(bool(meta.flags() & QMetaType::NeedsConstruction), isComplex);
@@ -1463,7 +1477,7 @@ void tst_QMetaType::isRegistered_data()
     // unknown types
     QTest::newRow("-1") << -1 << false;
     QTest::newRow("-42") << -42 << false;
-    QTest::newRow("IsRegisteredDummyType + 1") << (dummyTypeId + 1) << false;
+    QTest::newRow("IsRegisteredDummyType + 1000") << (dummyTypeId + 1000) << false;
     QTest::newRow("QMetaType::UnknownType") << int(QMetaType::UnknownType) << false;
 }
 
@@ -1516,6 +1530,7 @@ void tst_QMetaType::isRegisteredStaticLess()
 {
     QFETCH(int, typeId);
     QFETCH(bool, registered);
+    ignoreInvalidMetaTypeWarning(typeId);
     QCOMPARE(QMetaType(typeId).isRegistered(), registered);
 }
 
