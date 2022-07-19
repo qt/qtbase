@@ -1469,7 +1469,7 @@ QString QMYSQLDriver::formatValue(const QSqlField &field, bool trimStrings) cons
                 QVarLengthArray<char, 512> buffer(ba.size() * 2 + 1);
                 auto escapedSize = mysql_real_escape_string(d->mysql, buffer.data(), ba.data(), ba.size());
                 r.reserve(escapedSize + 3);
-                r = u'\'' + QString::fromUtf8(buffer) + u'\'';
+                r = u'\'' + QString::fromUtf8(buffer.data(), escapedSize) + u'\'';
                 break;
             } else {
                 qWarning("QMYSQLDriver::formatValue: Database not open");
