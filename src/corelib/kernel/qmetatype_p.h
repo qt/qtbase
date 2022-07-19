@@ -116,6 +116,48 @@ template<> struct TypeDefinition<QQuaternion> { static const bool IsAvailable = 
 template<> struct TypeDefinition<QIcon> { static const bool IsAvailable = false; };
 #endif
 
+inline bool isVoid(const QtPrivate::QMetaTypeInterface *iface)
+{
+    // void is special because it can't be constructed, copied or destroyed,
+    // but iface->flags doesn't set Needs{Construction,Destruction}.
+    return iface->typeId.loadRelaxed() == QMetaType::Void;
+}
+
+template <typename FPointer>
+inline bool checkMetaTypeFlagOrPointer(const QtPrivate::QMetaTypeInterface *iface, FPointer ptr, QMetaType::TypeFlag Flag)
+{
+    // helper to the isXxxConstructible & isDestructible functions below: a
+    // meta type has the trait if the trait is trivial or we have the pointer
+    // to perform the operation
+    Q_ASSERT(!isVoid(iface));
+    Q_ASSERT(iface->size);
+    return ptr != nullptr || (iface->flags & Flag) == 0;
+}
+
+inline bool isDefaultConstructible(const QtPrivate::QMetaTypeInterface *iface) noexcept
+{
+    return checkMetaTypeFlagOrPointer(iface, iface->defaultCtr, QMetaType::NeedsConstruction);
+}
+
+inline bool isCopyConstructible(const QtPrivate::QMetaTypeInterface *iface) noexcept
+{
+    // ### broken
+    return checkMetaTypeFlagOrPointer(iface, iface->copyCtr, QMetaType::NeedsConstruction);
+}
+
+inline bool isMoveConstructible(const QtPrivate::QMetaTypeInterface *iface) noexcept
+{
+    return iface->moveCtr;
+}
+
+inline bool isDestructible(const QtPrivate::QMetaTypeInterface *iface) noexcept
+{
+    // ### broken
+    return checkMetaTypeFlagOrPointer(iface, iface->dtor, QMetaType::NeedsDestruction);
+}
+
+const char *typedefNameForType(const QtPrivate::QMetaTypeInterface *type_d);
+
 template<typename T>
 static const QT_PREPEND_NAMESPACE(QtPrivate::QMetaTypeInterface) *getInterfaceFromType()
 {
@@ -129,7 +171,6 @@ static const QT_PREPEND_NAMESPACE(QtPrivate::QMetaTypeInterface) *getInterfaceFr
     case QMetaType::MetaTypeName:                                                                  \
         return QtMetaTypePrivate::getInterfaceFromType<RealName>();
 
-const char *typedefNameForType(const QtPrivate::QMetaTypeInterface *type_d);
 } //namespace QtMetaTypePrivate
 
 QT_END_NAMESPACE

@@ -455,6 +455,10 @@ public:
     QPartialOrdering compare(const void *lhs, const void *rhs) const;
     bool equals(const void *lhs, const void *rhs) const;
 
+    bool isDefaultConstructible() const noexcept { return d_ptr && isDefaultConstructible(d_ptr); }
+    bool isCopyConstructible() const noexcept { return d_ptr && isCopyConstructible(d_ptr); }
+    bool isMoveConstructible() const noexcept { return d_ptr && isMoveConstructible(d_ptr); }
+    bool isDestructible() const noexcept { return d_ptr && isDestructible(d_ptr); }
     bool isEqualityComparable() const;
     bool isOrdered() const;
 
@@ -722,6 +726,11 @@ public:
     const QtPrivate::QMetaTypeInterface *iface() const { return d_ptr; }
 
 private:
+    static bool isDefaultConstructible(const QtPrivate::QMetaTypeInterface *) noexcept Q_DECL_PURE_FUNCTION;
+    static bool isCopyConstructible(const QtPrivate::QMetaTypeInterface *) noexcept Q_DECL_PURE_FUNCTION;
+    static bool isMoveConstructible(const QtPrivate::QMetaTypeInterface *) noexcept Q_DECL_PURE_FUNCTION;
+    static bool isDestructible(const QtPrivate::QMetaTypeInterface *) noexcept Q_DECL_PURE_FUNCTION;
+
 #if QT_CORE_REMOVED_SINCE(6, 5)
     int idHelper() const;
 #endif

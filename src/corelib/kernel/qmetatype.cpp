@@ -65,6 +65,8 @@ QT_BEGIN_NAMESPACE
 
 QT_IMPL_METATYPE_EXTERN_TAGGED(QtMetaTypePrivate::QPairVariantInterfaceImpl, QPairVariantInterfaceImpl)
 
+using QtMetaTypePrivate::isVoid;
+
 namespace {
 
 struct QMetaTypeCustomRegistry
@@ -554,9 +556,13 @@ int QMetaType::registerHelper(const QtPrivate::QMetaTypeInterface *iface)
     \fn constexpr TypeFlags QMetaType::flags() const
     \since 5.0
 
-    Returns flags of the type for which this QMetaType instance was constructed.
+    Returns flags of the type for which this QMetaType instance was
+    constructed. To inspect specific type traits, prefer using one of the "is-"
+    functions rather than the flags directly.
 
-    \sa QMetaType::TypeFlags, QMetaType::flags()
+    \sa QMetaType::TypeFlags, QMetaType::flags(), isDefaultConstructible(),
+        isCopyConstructible(), isMoveConstructible(), isDestructible(),
+        isEqualityComparable(), isOrdered()
 */
 
 /*!
@@ -775,6 +781,68 @@ bool QMetaType::equals(const void *lhs, const void *rhs) const
             return true;
     }
     return false;
+}
+
+/*!
+    \fn bool QMetaType::isDefaultConstructible() const noexcept
+    \since 6.5
+
+    Returns true if this type can be default-constructed. If it can be, then
+    construct() and create() can be used with a \c{copy} parameter that is
+    null.
+
+    \sa flags(), isCopyConstructible(), isMoveConstructible(), isDestructible()
+ */
+
+/*!
+    \fn bool QMetaType::isCopyConstructible() const noexcept
+    \since 6.5
+
+    Returns true if this type can be copy-constructed. If it can be, then
+    construct() and create() can be used with a \c{copy} parameter that is
+    not null.
+
+    \sa flags(), isDefaultConstructible(), isMoveConstructible(), isDestructible()
+ */
+
+/*!
+    \fn bool QMetaType::isMoveConstructible() const noexcept
+    \since 6.5
+
+    Returns true if this type can be move-constructed. QMetaType currently does
+    not have an API to make use of this trait.
+
+    \sa flags(), isDefaultConstructible(), isCopyConstructible(), isDestructible()
+ */
+
+/*!
+    \fn bool QMetaType::isDestructible() const noexcept
+    \since 6.5
+
+    Returns true if this type can be destroyed. If it can be, then destroy()
+    and destruct() can be called.
+
+    \sa flags(), isDefaultConstructible(), isCopyConstructible(), isMoveConstructible()
+ */
+
+bool QMetaType::isDefaultConstructible(const QtPrivate::QMetaTypeInterface *iface) noexcept
+{
+    return !isVoid(iface) && QtMetaTypePrivate::isDefaultConstructible(iface);
+}
+
+bool QMetaType::isCopyConstructible(const QtPrivate::QMetaTypeInterface *iface) noexcept
+{
+    return !isVoid(iface) && QtMetaTypePrivate::isCopyConstructible(iface);
+}
+
+bool QMetaType::isMoveConstructible(const QtPrivate::QMetaTypeInterface *iface) noexcept
+{
+    return !isVoid(iface) && QtMetaTypePrivate::isMoveConstructible(iface);
+}
+
+bool QMetaType::isDestructible(const QtPrivate::QMetaTypeInterface *iface) noexcept
+{
+    return !isVoid(iface) && QtMetaTypePrivate::isDestructible(iface);
 }
 
 /*!
