@@ -318,6 +318,15 @@ struct TypeAlignment
     enum { Value = alignof(T) };
 };
 
+template <typename T> void addFlagsRow(const char *name, int id = qMetaTypeId<T>())
+{
+    QTest::newRow(name)
+            << id
+            << bool(QTypeInfo<T>::isRelocatable)
+            << bool(QTypeInfo<T>::isComplex);
+}
+
+
 void tst_QGuiMetaType::flags_data()
 {
     QTest::addColumn<int>("type");
@@ -325,7 +334,7 @@ void tst_QGuiMetaType::flags_data()
     QTest::addColumn<bool>("isComplex");
 
 #define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
-    QTest::newRow(#RealType) << MetaTypeId << bool(QTypeInfo<RealType>::isRelocatable) << bool(QTypeInfo<RealType>::isComplex);
+    addFlagsRow<RealType>(#RealType, MetaTypeId);
 QT_FOR_EACH_STATIC_GUI_CLASS(ADD_METATYPE_TEST_ROW)
 #undef ADD_METATYPE_TEST_ROW
 }
