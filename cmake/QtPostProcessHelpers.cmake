@@ -80,11 +80,6 @@ function(qt_internal_remove_qt_dependency_duplicates out_deps deps)
         if(dep)
             list(FIND ${out_deps} "${dep}" dep_seen)
 
-            # If the library depends on the Private and non-Private targets,
-            # we only need to 'find_dependency' for one of them.
-            if(dep_seen EQUAL -1 AND "${dep}" MATCHES "(.+)Private\;(.+)")
-                list(FIND ${out_deps} "${CMAKE_MATCH_1};${CMAKE_MATCH_2}" dep_seen)
-            endif()
             if(dep_seen EQUAL -1)
                 list(LENGTH dep len)
                 if(NOT (len EQUAL 2))

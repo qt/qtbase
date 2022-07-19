@@ -378,6 +378,41 @@ function(qt_internal_get_package_version_of_target target package_version_out_va
     set(${package_version_out_var} "${package_version}" PARENT_SCOPE)
 endfunction()
 
+# Get the CMake package name that contains / exported the Qt module target.
+function(qt_internal_get_package_name_of_target target package_name_out_var)
+    qt_internal_is_lib_part_of_qt6_package("${target}" is_part_of_qt6)
+
+    if(is_part_of_qt6)
+        set(package_name "${INSTALL_CMAKE_NAMESPACE}")
+    else()
+        # Get the package name from the module's target property.
+        # If not set, fallback to a name based on the target name.
+        #
+        # TODO: Remove fallback once sufficient time has passed, aka all developers updated
+        # their builds not to contain stale FooDependencies.cmakes files without the
+        # _qt_package_name property.
+        set(package_name "")
+        set(package_name_default "${INSTALL_CMAKE_NAMESPACE}${target}")
+        set(target_namespaced "${QT_CMAKE_EXPORT_NAMESPACE}::${target}")
+        if(TARGET "${target_namespaced}")
+            get_target_property(package_name_from_prop "${target_namespaced}" _qt_package_name)
+            if(package_name_from_prop)
+                set(package_name "${package_name_from_prop}")
+            endif()
+        endif()
+        if(NOT package_name)
+            message(WARNING
+                "Could not find target ${target_namespaced} to query its package name. "
+                "Defaulting to package name ${package_name_default}. Consider re-arranging the "
+                "project structure to ensure the target exists by this point."
+            )
+            set(package_name "${package_name_default}")
+        endif()
+    endif()
+
+    set(${package_name_out_var} "${package_name}" PARENT_SCOPE)
+endfunction()
+
 # This function stores the list of Qt targets a library depend on,
 # along with their version info, for usage in ${target}Depends.cmake file
 function(qt_register_target_dependencies target public_libs private_libs)
@@ -409,14 +444,9 @@ function(qt_register_target_dependencies target public_libs private_libs)
     foreach(lib IN LISTS lib_list)
         if ("${lib}" MATCHES "^Qt::(.*)")
             set(lib "${CMAKE_MATCH_1}")
-            qt_internal_is_lib_part_of_qt6_package("${lib}" is_part_of_qt6)
-
+            qt_internal_get_package_name_of_target("${lib}" package_name)
             qt_internal_get_package_version_of_target("${lib}" package_version)
-            if (is_part_of_qt6)
-                list(APPEND target_deps "Qt6\;${package_version}")
-            else()
-                list(APPEND target_deps "${INSTALL_CMAKE_NAMESPACE}${lib}\;${package_version}")
-            endif()
+            list(APPEND target_deps "${package_name}\;${package_version}")
         endif()
     endforeach()
 
@@ -436,8 +466,9 @@ function(qt_register_target_dependencies target public_libs private_libs)
                 qt_internal_is_lib_part_of_qt6_package("${lib}" is_part_of_qt6)
                 get_target_property(lib_type "${lib_namespaced}" TYPE)
                 if(NOT lib_type STREQUAL "STATIC_LIBRARY" AND NOT is_part_of_qt6)
+                    qt_internal_get_package_name_of_target("${lib}" package_name)
                     qt_internal_get_package_version_of_target("${lib}" package_version)
-                    list(APPEND target_deps "${INSTALL_CMAKE_NAMESPACE}${lib}\;${package_version}")
+                    list(APPEND target_deps "${package_name}\;${package_version}")
                 endif()
             endif()
         endforeach()

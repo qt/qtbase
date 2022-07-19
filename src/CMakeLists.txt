@@ -58,11 +58,13 @@ endif()
 if (QT_FEATURE_xml)
     add_subdirectory(xml)
 endif()
-add_subdirectory(tools)
 
 if (QT_FEATURE_dbus)
     add_subdirectory(dbus)
 endif()
+
+add_subdirectory(tools)
+
 if(QT_FEATURE_gui)
     add_subdirectory(gui)
 

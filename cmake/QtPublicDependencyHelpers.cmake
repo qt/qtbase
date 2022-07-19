@@ -94,6 +94,10 @@ macro(_qt_internal_find_qt_dependencies target target_dep_list find_dependency_p
         list(GET __qt_${target}_target_dep 1 __qt_${target}_version)
 
         if (NOT ${__qt_${target}_pkg}_FOUND)
+
+            # TODO: Remove Private handling once sufficient time has passed, aka all developers
+            # updated their builds not to contain stale FooDependencies.cmake files without the
+            # _qt_package_name property.
             set(__qt_${target}_pkg_names ${__qt_${target}_pkg})
             if(__qt_${target}_pkg MATCHES "(.*)Private$")
                 set(__qt_${target}_pkg_names "${CMAKE_MATCH_1};${__qt_${target}_pkg}")
