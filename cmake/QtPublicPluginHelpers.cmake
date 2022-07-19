@@ -411,44 +411,50 @@ endfunction()
 
 # Include CMake plugin packages that belong to the Qt module ${target} and initialize automatic
 # linkage of the plugins in static builds.
-function(__qt_internal_include_plugin_packages target)
-    set(_module_target "${QT_CMAKE_EXPORT_NAMESPACE}::${target}")
-    set(_qt_plugins "")
+# The variables inside the macro have to be named unique to the module because an included Plugin
+# file might look up another module dependency that calls the same macro before the first one
+# has finished processing, which can silently override the values if the variables are not unique.
+macro(__qt_internal_include_plugin_packages target)
+    set(__qt_${target}_plugin_module_target "${QT_CMAKE_EXPORT_NAMESPACE}::${target}")
+    set(__qt_${target}_plugins "")
 
     # Properties can't be set on aliased targets, so make sure to unalias the target. This is needed
     # when Qt examples are built as part of the Qt build itself.
-    get_target_property(_aliased_target ${_module_target} ALIASED_TARGET)
+    get_target_property(_aliased_target ${__qt_${target}_plugin_module_target} ALIASED_TARGET)
     if(_aliased_target)
-        set(_module_target ${_aliased_target})
+        set(__qt_${target}_plugin_module_target ${_aliased_target})
     endif()
 
     # Include all PluginConfig.cmake files and update the _qt_plugins and QT_PLUGINS property of
     # the module. The underscored version is the one we will use going forward to have compatibility
     # with INTERFACE libraries. QT_PLUGINS is now deprecated and only kept so that we don't break
     # existing projects using it (like CMake itself).
-    file(GLOB _qt_plugin_config_files
+    file(GLOB __qt_${target}_plugin_config_files
         "${CMAKE_CURRENT_LIST_DIR}/${QT_CMAKE_EXPORT_NAMESPACE}*PluginConfig.cmake")
-    foreach(_config_file ${_qt_plugin_config_files})
+    foreach(__qt_${target}_plugin_config_file ${__qt_${target}_plugin_config_files})
         string(REGEX REPLACE
             "^.*/${QT_CMAKE_EXPORT_NAMESPACE}(.*Plugin)Config.cmake$"
             "\\1"
-            _qt_plugin "${_config_file}")
-        include("${_config_file}")
-        if(TARGET "${QT_CMAKE_EXPORT_NAMESPACE}::${_qt_plugin}")
-            list(APPEND _qt_plugins ${_qt_plugin})
+            __qt_${target}_qt_plugin "${__qt_${target}_plugin_config_file}")
+        include("${__qt_${target}_plugin_config_file}")
+        if(TARGET "${QT_CMAKE_EXPORT_NAMESPACE}::${__qt_${target}_qt_plugin}")
+            list(APPEND __qt_${target}_plugins ${__qt_${target}_qt_plugin})
         endif()
     endforeach()
-    set_property(TARGET ${_module_target} PROPERTY _qt_plugins ${_qt_plugins})
+    set_property(TARGET ${__qt_${target}_plugin_module_target}
+                 PROPERTY _qt_plugins ${__qt_${target}_plugins})
 
     # TODO: Deprecated. Remove in Qt 7.
-    set_property(TARGET ${_module_target} PROPERTY QT_PLUGINS ${_qt_plugins})
+    set_property(TARGET ${__qt_${target}_plugin_module_target}
+                 PROPERTY QT_PLUGINS ${__qt_${target}_plugins})
 
-    get_target_property(_have_added_plugins_already ${_module_target} __qt_internal_plugins_added)
-    if(_have_added_plugins_already)
+    get_target_property(__qt_${target}_have_added_plugins_already
+        ${__qt_${target}_plugin_module_target} __qt_internal_plugins_added)
+    if(__qt_${target}_have_added_plugins_already)
         return()
     endif()
 
-    foreach(plugin_target ${_qt_plugins})
+    foreach(plugin_target ${__qt_${target}_plugins})
         __qt_internal_plugin_get_plugin_type("${plugin_target}" __has_plugin_type __plugin_type)
         if(NOT __has_plugin_type)
             continue()
@@ -463,16 +469,13 @@ function(__qt_internal_include_plugin_packages target)
 
         # Auto-linkage should be set up only for static library builds.
         if(NOT QT6_IS_SHARED_LIBS_BUILD)
-            __qt_internal_add_static_plugin_linkage("${plugin_target}" "${_module_target}")
+            __qt_internal_add_static_plugin_linkage(
+                "${plugin_target}" "${__qt_${target}_plugin_module_target}")
             __qt_internal_add_static_plugin_import_macro(
-                "${plugin_target}" ${_module_target} "${target}")
+                "${plugin_target}" ${__qt_${target}_plugin_module_target} "${target}")
         endif()
     endforeach()
 
-    set("QT_ALL_PLUGINS_FOUND_BY_FIND_PACKAGE_${__plugin_type}"
-        "${QT_ALL_PLUGINS_FOUND_BY_FIND_PACKAGE_${__plugin_type}}"
-        PARENT_SCOPE
-    )
-
-    set_target_properties(${_module_target} PROPERTIES __qt_internal_plugins_added TRUE)
-endfunction()
+    set_target_properties(
+        ${__qt_${target}_plugin_module_target} PROPERTIES __qt_internal_plugins_added TRUE)
+endmacro()
