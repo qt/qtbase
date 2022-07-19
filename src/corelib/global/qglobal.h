@@ -423,6 +423,90 @@ typedef double qreal;
 #define QT_DEPRECATED_VERSION_5(minor)      QT_DEPRECATED_VERSION_5_##minor
 #define QT_DEPRECATED_VERSION(major, minor) QT_DEPRECATED_VERSION_##major##_##minor
 
+/*
+    QT_IF_DEPRECATED_SINCE(major, minor, whenTrue, whenFalse) expands to
+    \a whenTrue if the specified (\a major, \a minor) version is less than or
+    equal to the deprecation version defined by QT_DISABLE_DEPRECATED_BEFORE,
+    and to \a whenFalse otherwise.
+
+    Currently used for QT_INLINE_SINCE(maj, min), but can also be helpful for
+    other macros of that kind.
+
+    The implementation uses QT_DEPRECATED_SINCE(maj, min) to define a bunch of
+    helper QT_IF_DEPRECATED_SINCE_X_Y macros, which expand to \a whenTrue or
+    \a whenFalse depending on the value of QT_DEPRECATED_SINCE.
+
+    If you need to use QT_IF_DEPRECATED_SINCE() for a (major, minor) version,
+    that is not yet covered by the list below, you need to copy the definition
+    and change the major and minor versions accordingly. For example, for
+    version (X, Y), you will need to add
+
+    \code
+    #if QT_DEPRECATED_SINCE(X, Y)
+    # define QT_IF_DEPRECATED_SINCE_X_Y(whenTrue, whenFalse) whenFalse
+    #else
+    # define QT_IF_DEPRECATED_SINCE_X_Y(whenTrue, whenFalse) whenTrue
+    #endif
+    \endcode
+*/
+
+#define QT_IF_DEPRECATED_SINCE(major, minor, whenTrue, whenFalse) \
+    QT_IF_DEPRECATED_SINCE_ ## major ## _ ## minor(whenTrue, whenFalse)
+
+#if QT_DEPRECATED_SINCE(6, 0)
+# define QT_IF_DEPRECATED_SINCE_6_0(whenTrue, whenFalse) whenFalse
+#else
+# define QT_IF_DEPRECATED_SINCE_6_0(whenTrue, whenFalse) whenTrue
+#endif
+
+#if QT_DEPRECATED_SINCE(6, 1)
+# define QT_IF_DEPRECATED_SINCE_6_1(whenTrue, whenFalse) whenFalse
+#else
+# define QT_IF_DEPRECATED_SINCE_6_1(whenTrue, whenFalse) whenTrue
+#endif
+
+#if QT_DEPRECATED_SINCE(6, 2)
+# define QT_IF_DEPRECATED_SINCE_6_2(whenTrue, whenFalse) whenFalse
+#else
+# define QT_IF_DEPRECATED_SINCE_6_2(whenTrue, whenFalse) whenTrue
+#endif
+
+#if QT_DEPRECATED_SINCE(6, 3)
+# define QT_IF_DEPRECATED_SINCE_6_3(whenTrue, whenFalse) whenFalse
+#else
+# define QT_IF_DEPRECATED_SINCE_6_3(whenTrue, whenFalse) whenTrue
+#endif
+
+#if QT_DEPRECATED_SINCE(6, 4)
+# define QT_IF_DEPRECATED_SINCE_6_4(whenTrue, whenFalse) whenFalse
+#else
+# define QT_IF_DEPRECATED_SINCE_6_4(whenTrue, whenFalse) whenTrue
+#endif
+
+#if QT_DEPRECATED_SINCE(6, 5)
+# define QT_IF_DEPRECATED_SINCE_6_5(whenTrue, whenFalse) whenFalse
+#else
+# define QT_IF_DEPRECATED_SINCE_6_5(whenTrue, whenFalse) whenTrue
+#endif
+
+#if QT_DEPRECATED_SINCE(6, 6)
+# define QT_IF_DEPRECATED_SINCE_6_6(whenTrue, whenFalse) whenFalse
+#else
+# define QT_IF_DEPRECATED_SINCE_6_6(whenTrue, whenFalse) whenTrue
+#endif
+
+#if QT_DEPRECATED_SINCE(6, 7)
+# define QT_IF_DEPRECATED_SINCE_6_7(whenTrue, whenFalse) whenFalse
+#else
+# define QT_IF_DEPRECATED_SINCE_6_7(whenTrue, whenFalse) whenTrue
+#endif
+
+#if QT_DEPRECATED_SINCE(6, 8)
+# define QT_IF_DEPRECATED_SINCE_6_8(whenTrue, whenFalse) whenFalse
+#else
+# define QT_IF_DEPRECATED_SINCE_6_8(whenTrue, whenFalse) whenTrue
+#endif
+
 #ifdef __cplusplus
 // A tag to help mark stuff deprecated (cf. QStringViewLiteral)
 namespace QtPrivate {
