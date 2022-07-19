@@ -215,33 +215,33 @@ static qreal qConvertToRealNumber(const QVariant::Private *d, bool *ok)
 // the type of d has already been set, but other field are not set
 static void customConstruct(QVariant::Private *d, const void *copy)
 {
+    using namespace QtMetaTypePrivate;
     const QtPrivate::QMetaTypeInterface *iface = d->typeInterface();
     if (!(iface && iface->size)) {
         *d = QVariant::Private();
         return;
     }
-    if (!iface->copyCtr || (!copy && !iface->defaultCtr)) {
-        // QVariant requires type to be copy and default constructible
+
+    if (!isCopyConstructible(iface) || (!copy && !isDefaultConstructible(iface))) {
         *d = QVariant::Private();
         qWarning("QVariant: Provided metatype does not support "
                  "destruction, copy and default construction");
         return;
     }
 
+    void *dst;
     if (QVariant::Private::canUseInternalSpace(iface)) {
-        if (copy)
-            iface->copyCtr(iface, &d->data, copy);
-        else
-            iface->defaultCtr(iface, &d->data);
         d->is_shared = false;
+        dst = &d->data;
     } else {
         d->data.shared = QVariant::PrivateShared::create(iface);
-        if (copy)
-            iface->copyCtr(iface, d->data.shared->data(), copy);
-        else
-            iface->defaultCtr(iface, d->data.shared->data());
         d->is_shared = true;
+        dst = d->data.shared->data();
     }
+
+    // now ask QMetaType to construct for us
+    QMetaType(iface).construct(dst, copy);
+
     // need to check for nullptr_t here, as this can get called by fromValue(nullptr). fromValue() uses
     // std::addressof(value) which in this case returns the address of the nullptr object.
     d->is_null = !copy || QMetaType(iface) == QMetaType::fromType<std::nullptr_t>();
@@ -249,15 +249,12 @@ static void customConstruct(QVariant::Private *d, const void *copy)
 
 static void customClear(QVariant::Private *d)
 {
-    auto iface = reinterpret_cast<QtPrivate::QMetaTypeInterface *>(d->packedType << 2);
-    if (!iface)
+    if (!d->typeInterface())
         return;
     if (!d->is_shared) {
-        if (iface->dtor)
-            iface->dtor(iface, &d->data);
+        d->type().destruct(d->data.data);
     } else {
-        if (iface->dtor)
-            iface->dtor(iface, d->data.shared->data());
+        d->type().destruct(d->data.shared->data());
         QVariant::PrivateShared::free(d->data.shared);
     }
 }
@@ -499,11 +496,9 @@ QVariant::QVariant(const QVariant &p)
     if (d.is_shared) {
         d.data.shared->ref.ref();
     } else if (const QtPrivate::QMetaTypeInterface *iface = d.typeInterface()) {
-        auto other = p.constData();
-        if (other)
-            iface->copyCtr(iface, &d.data, other);
-        else
-            iface->defaultCtr(iface, &d.data);
+        // ask QMetaType to copy for us
+        Q_ASSERT(d.canUseInternalSpace(iface));
+        d.type().construct(d.data.data, p.constData());
     }
 }
 
@@ -990,14 +985,7 @@ QVariant &QVariant::operator=(const QVariant &variant)
         d = variant.d;
     } else {
         d = variant.d;
-        const QtPrivate::QMetaTypeInterface *iface = d.typeInterface();
-        const void *other = variant.constData();
-        if (iface) {
-            if (other)
-                iface->copyCtr(iface, &d, other);
-            else
-                iface->defaultCtr(iface, &d);
-        }
+        d.type().construct(d.data.data, variant.constData());
     }
 
     return *this;
