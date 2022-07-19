@@ -468,6 +468,8 @@ const char *QtMetaTypePrivate::typedefNameForType(const QtPrivate::QMetaTypeInte
 
     Returns \c true if this QMetaType object contains valid
     information about a type, false otherwise.
+
+    \sa isRegistered()
 */
 bool QMetaType::isValid() const
 {
@@ -478,12 +480,15 @@ bool QMetaType::isValid() const
     \fn bool QMetaType::isRegistered() const
     \since 5.0
 
-    Returns \c true if this QMetaType object contains valid
-    information about a type, false otherwise.
+    Returns \c true if this QMetaType object has been registered with the Qt
+    global metatype registry. Registration allows the type to be found by its
+    name (using QMetaType::fromName()) or by its ID (using the constructor).
+
+    \sa qRegisterMetaType(), isValid()
 */
 bool QMetaType::isRegistered() const
 {
-    return d_ptr;
+    return d_ptr && d_ptr->typeId.loadRelaxed();
 }
 
 /*!

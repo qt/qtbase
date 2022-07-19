@@ -861,6 +861,7 @@ void tst_QMetaType::sizeOf()
 {
     QFETCH(int, type);
     QFETCH(size_t, size);
+    ignoreInvalidMetaTypeWarning(type);
     QCOMPARE(size_t(QMetaType::sizeOf(type)), size);
 }
 
@@ -873,6 +874,7 @@ void tst_QMetaType::sizeOfStaticLess()
 {
     QFETCH(int, type);
     QFETCH(size_t, size);
+    ignoreInvalidMetaTypeWarning(type);
     QCOMPARE(size_t(QMetaType(type).sizeOf()), size);
 }
 
@@ -909,6 +911,7 @@ void tst_QMetaType::alignOf()
 {
     QFETCH(int, type);
     QFETCH(size_t, size);
+    ignoreInvalidMetaTypeWarning(type);
     QCOMPARE(size_t(QMetaType(type).alignOf()), size);
 }
 
@@ -1532,6 +1535,12 @@ void tst_QMetaType::isRegisteredStaticLess()
     QFETCH(bool, registered);
     ignoreInvalidMetaTypeWarning(typeId);
     QCOMPARE(QMetaType(typeId).isRegistered(), registered);
+}
+
+struct NotARegisteredType {};
+void tst_QMetaType::isNotRegistered()
+{
+    QVERIFY(!QMetaType::fromType<NotARegisteredType>().isRegistered());
 }
 
 typedef QHash<int, uint> IntUIntHash;
