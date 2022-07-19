@@ -128,23 +128,23 @@ function(qt_internal_add_global_definition definition)
 endfunction()
 
 add_library(PlatformCommonInternal INTERFACE)
-add_library(Qt::PlatformCommonInternal ALIAS PlatformCommonInternal)
+qt_internal_add_target_aliases(PlatformCommonInternal)
 target_link_libraries(PlatformCommonInternal INTERFACE Platform)
 
 add_library(PlatformModuleInternal INTERFACE)
-add_library(Qt::PlatformModuleInternal ALIAS PlatformModuleInternal)
+qt_internal_add_target_aliases(PlatformModuleInternal)
 target_link_libraries(PlatformModuleInternal INTERFACE PlatformCommonInternal)
 
 add_library(PlatformPluginInternal INTERFACE)
-add_library(Qt::PlatformPluginInternal ALIAS PlatformPluginInternal)
+qt_internal_add_target_aliases(PlatformPluginInternal)
 target_link_libraries(PlatformPluginInternal INTERFACE PlatformCommonInternal)
 
 add_library(PlatformAppInternal INTERFACE)
-add_library(Qt::PlatformAppInternal ALIAS PlatformAppInternal)
+qt_internal_add_target_aliases(PlatformAppInternal)
 target_link_libraries(PlatformAppInternal INTERFACE PlatformCommonInternal)
 
 add_library(PlatformToolInternal INTERFACE)
-add_library(Qt::PlatformToolInternal ALIAS PlatformToolInternal)
+qt_internal_add_target_aliases(PlatformToolInternal)
 target_link_libraries(PlatformToolInternal INTERFACE PlatformAppInternal)
 
 qt_internal_add_global_definition(QT_NO_JAVA_STYLE_ITERATORS)
