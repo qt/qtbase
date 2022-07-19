@@ -960,80 +960,72 @@ Q_DECLARE_METATYPE(QPairPP)
 enum FlagsDataEnum {};
 Q_DECLARE_METATYPE(FlagsDataEnum);
 
+template <typename T> void addFlagsRow(const char *name, int id = qMetaTypeId<T>())
+{
+    QTest::newRow(name)
+            << id
+            << bool(QTypeInfo<T>::isRelocatable)
+            << bool(QTypeInfo<T>::isComplex)
+            << bool(QtPrivate::IsPointerToTypeDerivedFromQObject<T>::Value)
+            << bool(std::is_enum<T>::value)
+            << false;
+}
+
 void tst_QMetaType::flags_data()
 {
     QTest::addColumn<int>("type");
-    QTest::addColumn<bool>("isMovable");
+    QTest::addColumn<bool>("isRelocatable");
     QTest::addColumn<bool>("isComplex");
     QTest::addColumn<bool>("isPointerToQObject");
     QTest::addColumn<bool>("isEnum");
     QTest::addColumn<bool>("isQmlList");
 
-#define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
-    QTest::newRow(#RealType) << MetaTypeId \
-        << bool(QTypeInfo<RealType>::isRelocatable) \
-        << bool(QTypeInfo<RealType>::isComplex) \
-        << bool(QtPrivate::IsPointerToTypeDerivedFromQObject<RealType>::Value) \
-        << bool(std::is_enum<RealType>::value) \
-        << false;
-QT_FOR_EACH_STATIC_CORE_CLASS(ADD_METATYPE_TEST_ROW)
-QT_FOR_EACH_STATIC_PRIMITIVE_POINTER(ADD_METATYPE_TEST_ROW)
-QT_FOR_EACH_STATIC_CORE_POINTER(ADD_METATYPE_TEST_ROW)
-#undef ADD_METATYPE_TEST_ROW
-    QTest::newRow("TestSpace::Foo") << ::qMetaTypeId<TestSpace::Foo>() << false << true << false << false << false;
-    QTest::newRow("Whity<double>") << ::qMetaTypeId<Whity<double> >() << true << true << false << false << false;
-    QTest::newRow("CustomMovable") << ::qMetaTypeId<CustomMovable>() << true << true << false << false << false;
-    QTest::newRow("CustomObject*") << ::qMetaTypeId<CustomObject*>() << true << false << true << false << false;
-    QTest::newRow("CustomMultiInheritanceObject*") << ::qMetaTypeId<CustomMultiInheritanceObject*>() << true << false << true << false << false;
-    QTest::newRow("QPair<C,C>") << ::qMetaTypeId<QPair<C,C> >() << false << true  << false << false << false;
-    QTest::newRow("QPair<C,M>") << ::qMetaTypeId<QPair<C,M> >() << false << true  << false << false << false;
-    QTest::newRow("QPair<C,P>") << ::qMetaTypeId<QPair<C,P> >() << false << true  << false << false << false;
-    QTest::newRow("QPair<M,C>") << ::qMetaTypeId<QPair<M,C> >() << false << true  << false << false << false;
-    QTest::newRow("QPair<M,M>") << ::qMetaTypeId<QPair<M,M> >() << true  << true  << false << false << false;
-    QTest::newRow("QPair<M,P>") << ::qMetaTypeId<QPair<M,P> >() << true  << true  << false << false << false;
-    QTest::newRow("QPair<P,C>") << ::qMetaTypeId<QPair<P,C> >() << false << true  << false << false << false;
-    QTest::newRow("QPair<P,M>") << ::qMetaTypeId<QPair<P,M> >() << true  << true  << false << false << false;
-    QTest::newRow("QPair<P,P>") << ::qMetaTypeId<QPair<P,P> >() << true  << false << false << false << false;
-    QTest::newRow("FlagsDataEnum") << ::qMetaTypeId<FlagsDataEnum>() << true << false << false << true << false;
-
     // invalid ids.
     QTest::newRow("-1") << -1 << false << false << false << false << false;
     QTest::newRow("-124125534") << -124125534 << false << false << false << false << false;
     QTest::newRow("124125534") << 124125534 << false << false << false << false << false;
+
+#define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
+    addFlagsRow<RealType>(#RealType, MetaTypeId);
+QT_FOR_EACH_STATIC_PRIMITIVE_NON_VOID_TYPE(ADD_METATYPE_TEST_ROW)
+QT_FOR_EACH_STATIC_CORE_CLASS(ADD_METATYPE_TEST_ROW)
+QT_FOR_EACH_STATIC_PRIMITIVE_POINTER(ADD_METATYPE_TEST_ROW)
+QT_FOR_EACH_STATIC_CORE_POINTER(ADD_METATYPE_TEST_ROW)
+#undef ADD_METATYPE_TEST_ROW
+    addFlagsRow<TestSpace::Foo>("TestSpace::Foo");
+    addFlagsRow<Whity<double> >("Whity<double> ");
+    addFlagsRow<CustomMovable>("CustomMovable");
+    addFlagsRow<CustomObject*>("CustomObject*");
+    addFlagsRow<CustomMultiInheritanceObject*>("CustomMultiInheritanceObject*");
+    addFlagsRow<QPair<C,C> >("QPair<C,C>");
+    addFlagsRow<QPair<C,M> >("QPair<C,M>");
+    addFlagsRow<QPair<C,P> >("QPair<C,P>");
+    addFlagsRow<QPair<M,C> >("QPair<M,C>");
+    addFlagsRow<QPair<M,M> >("QPair<M,M>");
+    addFlagsRow<QPair<M,P> >("QPair<M,P>");
+    addFlagsRow<QPair<P,C> >("QPair<P,C>");
+    addFlagsRow<QPair<P,M> >("QPair<P,M>");
+    addFlagsRow<QPair<P,P> >("QPair<P,P>");
+    addFlagsRow<FlagsDataEnum>("FlagsDataEnum");
 }
 
 void tst_QMetaType::flags()
 {
     QFETCH(int, type);
-    QFETCH(bool, isMovable);
+    QFETCH(bool, isRelocatable);
     QFETCH(bool, isComplex);
     QFETCH(bool, isPointerToQObject);
     QFETCH(bool, isEnum);
     QFETCH(bool, isQmlList);
 
-    QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::NeedsConstruction), isComplex);
-    QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::NeedsDestruction), isComplex);
-    QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::RelocatableType), isMovable);
-    QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::PointerToQObject), isPointerToQObject);
-    QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::IsEnumeration), isEnum);
-    QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::IsQmlList), isQmlList);
-}
+    QMetaType meta(type);
 
-void tst_QMetaType::flagsStaticLess_data()
-{
-    flags_data();
-}
-
-void tst_QMetaType::flagsStaticLess()
-{
-    QFETCH(int, type);
-    QFETCH(bool, isMovable);
-    QFETCH(bool, isComplex);
-
-    int flags = QMetaType(type).flags();
-    QCOMPARE(bool(flags & QMetaType::NeedsConstruction), isComplex);
-    QCOMPARE(bool(flags & QMetaType::NeedsDestruction), isComplex);
-    QCOMPARE(bool(flags & QMetaType::RelocatableType), isMovable);
+    QCOMPARE(bool(meta.flags() & QMetaType::NeedsConstruction), isComplex);
+    QCOMPARE(bool(meta.flags() & QMetaType::NeedsDestruction), isComplex);
+    QCOMPARE(bool(meta.flags() & QMetaType::RelocatableType), isRelocatable);
+    QCOMPARE(bool(meta.flags() & QMetaType::PointerToQObject), isPointerToQObject);
+    QCOMPARE(bool(meta.flags() & QMetaType::IsEnumeration), isEnum);
+    QCOMPARE(bool(meta.flags() & QMetaType::IsQmlList), isQmlList);
 }
 
 void tst_QMetaType::flagsBinaryCompatibility6_0_data()
