@@ -183,17 +183,19 @@ foreach(module ${@INSTALL_CMAKE_NAMESPACE@_FIND_COMPONENTS})
 
     _qt_internal_save_find_package_context_for_debugging(@INSTALL_CMAKE_NAMESPACE@${module})
 
-    find_package(@INSTALL_CMAKE_NAMESPACE@${module}
-        ${@INSTALL_CMAKE_NAMESPACE@_FIND_VERSION}
-        ${_@INSTALL_CMAKE_NAMESPACE@_FIND_PARTS_QUIET}
-        PATHS
-            ${_qt_cmake_dir}
-            ${_qt_additional_packages_prefix_paths}
-            ${QT_EXAMPLES_CMAKE_PREFIX_PATH}
-            ${__qt_find_package_host_qt_path}
-            ${_qt_additional_host_packages_prefix_paths}
-        ${__qt_use_no_default_path_for_qt_packages}
-    )
+    if(NOT @INSTALL_CMAKE_NAMESPACE@${module}_FOUND)
+        find_package(@INSTALL_CMAKE_NAMESPACE@${module}
+            ${@INSTALL_CMAKE_NAMESPACE@_FIND_VERSION}
+            ${_@INSTALL_CMAKE_NAMESPACE@_FIND_PARTS_QUIET}
+            PATHS
+                ${_qt_cmake_dir}
+                ${_qt_additional_packages_prefix_paths}
+                ${QT_EXAMPLES_CMAKE_PREFIX_PATH}
+                ${__qt_find_package_host_qt_path}
+                ${_qt_additional_host_packages_prefix_paths}
+            ${__qt_use_no_default_path_for_qt_packages}
+        )
+    endif()
 
     if(NOT "${__qt_find_package_host_qt_path}" STREQUAL "")
         set(CMAKE_PREFIX_PATH "${__qt_backup_cmake_prefix_path}")
