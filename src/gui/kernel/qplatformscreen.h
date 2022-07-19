@@ -135,7 +135,7 @@ protected:
     QScopedPointer<QPlatformScreenPrivate> d_ptr;
 
 private:
-    friend QScreen;
+    friend class QScreenPrivate;
 };
 
 // Qt doesn't currently support running with no platform screen
