@@ -104,12 +104,21 @@ function(qt_internal_add_executable name)
          ${arg_INCLUDE_DIRECTORIES}
     )
 
+    if(arg_PUBLIC_LIBRARIES)
+        message(WARNING
+            "qt_internal_add_executable's PUBLIC_LIBRARIES option is deprecated, and will be "
+            "removed in a future Qt version. Use the LIBRARIES option instead.")
+    endif()
+
     qt_internal_extend_target("${name}"
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES ${private_includes}
         DEFINES ${arg_DEFINES}
-        LIBRARIES ${arg_LIBRARIES} Qt::PlatformCommonInternal
-        PUBLIC_LIBRARIES ${extra_libraries} ${arg_PUBLIC_LIBRARIES}
+        LIBRARIES
+            ${arg_LIBRARIES}
+            ${arg_PUBLIC_LIBRARIES}
+            Qt::PlatformCommonInternal
+            ${extra_libraries}
         DBUS_ADAPTOR_SOURCES "${arg_DBUS_ADAPTOR_SOURCES}"
         DBUS_ADAPTOR_FLAGS "${arg_DBUS_ADAPTOR_FLAGS}"
         DBUS_INTERFACE_SOURCES "${arg_DBUS_INTERFACE_SOURCES}"

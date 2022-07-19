@@ -5,7 +5,7 @@ function(qt_internal_add_app target)
         "qt_internal_add_app"
         "NO_INSTALL;INSTALL_VERSIONED_LINK;EXCEPTIONS"
         "${__default_target_info_args};INSTALL_DIR"
-        "${__default_private_args}"
+        "${__default_private_args};PUBLIC_LIBRARIES"
         ${ARGN})
 
     set(exceptions "")
@@ -26,6 +26,12 @@ function(qt_internal_add_app target)
         set(no_install NO_INSTALL)
     endif()
 
+    if(arg_PUBLIC_LIBRARIES)
+        message(WARNING
+            "qt_internal_add_app's PUBLIC_LIBRARIES option is deprecated, and will be removed in "
+            "a future Qt version. Use the LIBRARIES option instead.")
+    endif()
+
     qt_internal_add_executable("${target}"
         QT_APP
         DELAY_RC
@@ -39,7 +45,10 @@ function(qt_internal_add_app target)
             ${arg_INCLUDE_DIRECTORIES}
         DEFINES
             ${arg_DEFINES}
-        LIBRARIES ${arg_LIBRARIES} Qt::PlatformAppInternal
+        LIBRARIES
+            ${arg_LIBRARIES}
+            ${arg_PUBLIC_LIBRARIES}
+            Qt::PlatformAppInternal
         COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
         LINK_OPTIONS ${arg_LINK_OPTIONS}
         MOC_OPTIONS ${arg_MOC_OPTIONS}

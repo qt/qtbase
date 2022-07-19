@@ -240,6 +240,12 @@ function(qt_internal_add_test name)
         set(version_arg VERSION "${arg_VERSION}")
     endif()
 
+    if(arg_PUBLIC_LIBRARIES)
+        message(WARNING
+            "qt_internal_add_test's PUBLIC_LIBRARIES option is deprecated, and will be "
+            "removed in a future Qt version. Use the LIBRARIES option instead.")
+    endif()
+
     # Handle cases where we have a qml test without source files
     if (arg_SOURCES)
         set(private_includes
@@ -260,8 +266,11 @@ function(qt_internal_add_test name)
                 ${private_includes}
             DEFINES
                 ${arg_DEFINES}
-            PUBLIC_LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::Core ${QT_CMAKE_EXPORT_NAMESPACE}::Test ${arg_PUBLIC_LIBRARIES}
-            LIBRARIES ${arg_LIBRARIES}
+            LIBRARIES
+                ${arg_LIBRARIES}
+                ${arg_PUBLIC_LIBRARIES}
+                ${QT_CMAKE_EXPORT_NAMESPACE}::Core
+                ${QT_CMAKE_EXPORT_NAMESPACE}::Test
             COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
             LINK_OPTIONS ${arg_LINK_OPTIONS}
             MOC_OPTIONS ${arg_MOC_OPTIONS}
@@ -284,7 +293,7 @@ function(qt_internal_add_test name)
 
         # QMLTest specifics
         qt_internal_extend_target("${name}" CONDITION arg_QMLTEST
-            PUBLIC_LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::QuickTest
+            LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::QuickTest
         )
 
         qt_internal_extend_target("${name}" CONDITION arg_QMLTEST AND NOT ANDROID
@@ -299,7 +308,7 @@ function(qt_internal_add_test name)
 
         # Android requires Qt::Gui so add it by default for tests
         qt_internal_extend_target("${name}" CONDITION ANDROID
-            PUBLIC_LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::Gui
+            LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::Gui
         )
     endif()
 

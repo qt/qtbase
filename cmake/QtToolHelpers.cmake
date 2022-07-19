@@ -43,6 +43,7 @@ function(qt_internal_add_tool target_name)
     set(multi_value_keywords
         EXTRA_CMAKE_FILES
         EXTRA_CMAKE_INCLUDES
+        PUBLIC_LIBRARIES
         ${__default_private_args})
     qt_parse_all_arguments(arg "qt_internal_add_tool" "${option_keywords}"
                                "${one_value_keywords}"
@@ -194,6 +195,12 @@ function(qt_internal_add_tool target_name)
 
     set(output_dir "${QT_BUILD_DIR}/${install_dir}")
 
+    if(arg_PUBLIC_LIBRARIES)
+        message(WARNING
+            "qt_internal_add_tool's PUBLIC_LIBRARIES option is deprecated, and will be "
+            "removed in a future Qt version. Use the LIBRARIES option instead.")
+    endif()
+
     qt_internal_add_executable("${target_name}"
         OUTPUT_DIRECTORY "${output_dir}"
         ${exceptions}
@@ -205,7 +212,10 @@ function(qt_internal_add_tool target_name)
             QT_USE_QSTRINGBUILDER
             ${arg_DEFINES}
         ${corelib}
-        LIBRARIES ${arg_LIBRARIES} Qt::PlatformToolInternal
+        LIBRARIES
+            ${arg_LIBRARIES}
+            ${arg_PUBLIC_LIBRARIES}
+            Qt::PlatformToolInternal
         COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
         LINK_OPTIONS ${arg_LINK_OPTIONS}
         MOC_OPTIONS ${arg_MOC_OPTIONS}
