@@ -16,7 +16,7 @@ class PrintView : public QTableView
 public:
     PrintView();
 
-public Q_SLOTS:
+public slots:
     void print(QPrinter *printer);
 };
 

@@ -14,13 +14,13 @@ public:
     Car();
     QRectF boundingRect() const;
 
-public Q_SLOTS:
+public slots:
     void accelerate();
     void decelerate();
     void turnLeft();
     void turnRight();
 
-Q_SIGNALS:
+signals:
     void crashed();
 
 protected:
