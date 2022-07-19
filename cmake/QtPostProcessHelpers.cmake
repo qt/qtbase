@@ -450,9 +450,9 @@ if (__qt_qml_plugins_config_file_list AND NOT QT_SKIP_AUTO_QML_PLUGIN_INCLUSION)
     foreach(__qt_qml_plugin_config_file \${__qt_qml_plugins_config_file_list})
         include(\${__qt_qml_plugin_config_file})
 
-        # Temporarily unset any failure markers.
+        # Temporarily unset any failure markers and mark the Qml package as found.
         unset(\${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE)
-        unset(\${CMAKE_FIND_PACKAGE_NAME}_FOUND)
+        set(\${CMAKE_FIND_PACKAGE_NAME}_FOUND TRUE)
     endforeach()
 
     # For the second round of inclusions, check and bail out early if there are errors.
