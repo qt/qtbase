@@ -95,7 +95,9 @@ function(qt_internal_add_module target)
         ${ARGN}
     )
 
+    set(is_internal_module FALSE)
     if(arg_INTERNAL_MODULE)
+        set(is_internal_module TRUE)
         set(arg_INTERNAL_MODULE "INTERNAL_MODULE")
         set(arg_NO_PRIVATE_MODULE TRUE)
         # Assume the interface name of the internal module should be the module name without the
@@ -154,10 +156,31 @@ function(qt_internal_add_module target)
     set_target_properties(${target} PROPERTIES
         _qt_module_interface_name "${arg_MODULE_INTERFACE_NAME}"
         _qt_package_version "${PROJECT_VERSION}"
+        _qt_package_name "${INSTALL_CMAKE_NAMESPACE}${target}"
     )
-    set_property(TARGET ${target}
-                 APPEND PROPERTY
-                 EXPORT_PROPERTIES "_qt_module_interface_name;_qt_package_version")
+    set(export_properties
+        "_qt_module_interface_name"
+        "_qt_package_version"
+        "_qt_package_name"
+    )
+    if(NOT is_internal_module)
+        set_target_properties(${target} PROPERTIES
+            _qt_is_public_module TRUE
+        )
+        list(APPEND export_properties
+            "_qt_is_public_module"
+        )
+        if(NOT ${arg_NO_PRIVATE_MODULE})
+            set_target_properties(${target} PROPERTIES
+                _qt_private_module_target_name "${target}Private"
+            )
+            list(APPEND export_properties
+                "_qt_private_module_target_name"
+            )
+        endif()
+    endif()
+
+    set_property(TARGET ${target} APPEND PROPERTY EXPORT_PROPERTIES "${export_properties}")
 
     qt_internal_module_info(module "${target}")
     qt_internal_add_qt_repo_known_module("${target}")
@@ -243,10 +266,19 @@ function(qt_internal_add_module target)
         set_target_properties(${target_private} PROPERTIES
             _qt_config_module_name ${arg_CONFIG_MODULE_NAME}_private
             _qt_package_version "${PROJECT_VERSION}"
+            _qt_package_name "${INSTALL_CMAKE_NAMESPACE}${target}"
+            _qt_is_private_module TRUE
+            _qt_public_module_target_name "${target}"
+        )
+        set(export_properties
+            "_qt_config_module_name"
+            "_qt_package_version"
+            "_qt_package_name"
+            "_qt_is_private_module"
+            "_qt_public_module_target_name"
         )
         set_property(TARGET "${target_private}" APPEND PROPERTY
-                     EXPORT_PROPERTIES "_qt_config_module_name;_qt_package_version"
-        )
+                     EXPORT_PROPERTIES "${export_properties}")
     endif()
 
     if(NOT arg_HEADER_MODULE)
