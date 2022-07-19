@@ -1424,20 +1424,27 @@ void tst_QMetaType::typedefs()
     QCOMPARE(QMetaType::type("WhityDouble"), ::qMetaTypeId<WhityDouble>());
 }
 
+struct RegisterTypeType {};
+
 void tst_QMetaType::registerType()
 {
     // Built-in
     QCOMPARE(qRegisterMetaType<QString>("QString"), int(QMetaType::QString));
     QCOMPARE(qRegisterMetaType<QString>("QString"), int(QMetaType::QString));
+    qRegisterMetaType(QMetaType::fromType<QString>());
 
     // Custom
     int fooId = qRegisterMetaType<TestSpace::Foo>("TestSpace::Foo");
     QVERIFY(fooId >= int(QMetaType::User));
     QCOMPARE(qRegisterMetaType<TestSpace::Foo>("TestSpace::Foo"), fooId);
+    qRegisterMetaType(QMetaType::fromType<TestSpace::Foo>());
 
     int movableId = qRegisterMetaType<CustomMovable>("CustomMovable");
     QVERIFY(movableId >= int(QMetaType::User));
     QCOMPARE(qRegisterMetaType<CustomMovable>("CustomMovable"), movableId);
+    qRegisterMetaType(QMetaType::fromType<CustomMovable>());
+
+    // Aliases are deprecated
 
     // Alias to built-in
     typedef QString MyString;
@@ -1460,6 +1467,23 @@ void tst_QMetaType::registerType()
     QCOMPARE(qRegisterMetaType<MyFoo>("MyFoo"), fooId);
 
     QCOMPARE(QMetaType::type("MyFoo"), fooId);
+
+    // this portion of the test can only be run once
+    static bool typeWasRegistered = false;
+    if (!typeWasRegistered) {
+        QMetaType mt = QMetaType::fromType<RegisterTypeType>();
+        QVERIFY(mt.isValid());
+        QCOMPARE_NE(mt.name(), nullptr);
+
+        QVERIFY(!mt.isRegistered());
+        QVERIFY(!QMetaType::fromName(mt.name()).isValid());
+
+        QCOMPARE_GT(qRegisterMetaType(mt), 0);
+        typeWasRegistered = true;
+
+        QVERIFY(mt.isRegistered());
+        QVERIFY(QMetaType::fromName(mt.name()).isValid());
+    }
 }
 
 class IsRegisteredDummyType { };

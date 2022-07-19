@@ -495,19 +495,28 @@ bool QMetaType::isRegistered() const
     \fn int QMetaType::id() const
     \since 5.13
 
-    Returns id type hold by this QMetatype instance.
+    Returns id type held by this QMetatype instance.
 */
 
 /*!
+    \fn void QMetaType::registerType() const
+    \since 6.5
+
+    Registers this QMetaType with the type registry so it can be found by name,
+    using QMetaType::fromName().
+
+    \sa qRegisterMetaType()
+ */
+/*!
     \internal
-    The slowpath of id(). Precondition: d_ptr != nullptr
-*/
-int QMetaType::idHelper() const
+    Out-of-line path for registerType() and slow path id().
+ */
+int QMetaType::registerHelper(const QtPrivate::QMetaTypeInterface *iface)
 {
-    Q_ASSERT(d_ptr);
+    Q_ASSERT(iface);
     auto reg = customTypeRegistry();
     if (reg) {
-        return reg->registerCustomType(d_ptr);
+        return reg->registerCustomType(iface);
     }
     return 0;
 }
@@ -2890,6 +2899,7 @@ QMetaType QMetaType::fromName(QByteArrayView typeName)
 /*!
     \fn int qRegisterMetaType(const char *typeName)
     \relates QMetaType
+    \obsolete
     \threadsafe
 
     Registers the type name \a typeName for the type \c{T}. Returns
@@ -2926,8 +2936,7 @@ QMetaType QMetaType::fromName(QByteArrayView typeName)
     \threadsafe
     \since 4.2
 
-    Call this function to register the type \c T. \c T must be declared with
-    Q_DECLARE_METATYPE(). Returns the meta type Id.
+    Call this function to register the type \c T. Returns the meta type Id.
 
     Example:
 
@@ -2938,20 +2947,43 @@ QMetaType QMetaType::fromName(QByteArrayView typeName)
     pointed to type is fully defined. Use Q_DECLARE_OPAQUE_POINTER() to be able
     to register pointers to forward declared types.
 
-    After a type has been registered, you can create and destroy
-    objects of that type dynamically at run-time.
+    To use the type \c T in QMetaType, QVariant, or with the
+    QObject::property() API, registration is not necessary.
 
-    To use the type \c T in QVariant, using Q_DECLARE_METATYPE() is
-    sufficient. To use the type \c T in queued signal and slot connections,
-    \c{qRegisterMetaType<T>()} must be called before the first connection
-    is established.
+    To use the type \c T in queued signal and slot connections,
+    \c{qRegisterMetaType<T>()} must be called before the first connection is
+    established. That is typically done in the constructor of the class that
+    uses \c T, or in the \c{main()} function.
 
-    Also, to use type \c T with the QObject::property() API,
-    \c{qRegisterMetaType<T>()} must be called before it is used, typically
-    in the constructor of the class that uses \c T, or in the \c{main()}
-    function.
+    After a type has been registered, it can be found by its name using
+    QMetaType::fromName().
 
     \sa Q_DECLARE_METATYPE()
+ */
+
+/*!
+    \fn int qRegisterMetaType(QMetaType meta)
+    \relates QMetaType
+    \threadsafe
+    \since 6.5
+
+    Registers the meta type \a meta and returns its type Id.
+
+    This function requires that \c{T} is a fully defined type at the point
+    where the function is called. For pointer types, it also requires that the
+    pointed to type is fully defined. Use Q_DECLARE_OPAQUE_POINTER() to be able
+    to register pointers to forward declared types.
+
+    To use the type \c T in QMetaType, QVariant, or with the
+    QObject::property() API, registration is not necessary.
+
+    To use the type \c T in queued signal and slot connections,
+    \c{qRegisterMetaType<T>()} must be called before the first connection is
+    established. That is typically done in the constructor of the class that
+    uses \c T, or in the \c{main()} function.
+
+    After a type has been registered, it can be found by its name using
+    QMetaType::fromName().
  */
 
 /*!

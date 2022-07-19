@@ -283,6 +283,14 @@ QT_WARNING_POP
 
 #if QT_CORE_REMOVED_SINCE(6, 5)
 
+#include "qmetatype.h"
+
+int QMetaType::idHelper() const
+{
+    Q_ASSERT(d_ptr);
+    return registerHelper(d_ptr);
+}
+
 #include "qxmlstream.h"
 
 QXmlStreamReader::QXmlStreamReader(const QByteArray &data)

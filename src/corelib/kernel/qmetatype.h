@@ -426,6 +426,11 @@ public:
 
     bool isValid() const;
     bool isRegistered() const;
+    void registerType() const
+    {
+        // "register" is a reserved keyword
+        registerHelper();
+    }
 #if QT_CORE_REMOVED_SINCE(6, 1) || defined(Q_QDOC)
     int id() const;
 #else
@@ -434,12 +439,7 @@ public:
     int id(int = 0) const
     {
         // keep in sync with the version in removed_api.cpp
-        if (d_ptr) {
-            if (int id = d_ptr->typeId.loadRelaxed())
-                return id;
-            return idHelper();
-        }
-        return 0;
+        return registerHelper();
     }
 #endif
     constexpr qsizetype sizeOf() const;
@@ -722,7 +722,23 @@ public:
     const QtPrivate::QMetaTypeInterface *iface() const { return d_ptr; }
 
 private:
+#if QT_CORE_REMOVED_SINCE(6, 5)
     int idHelper() const;
+#endif
+    static int registerHelper(const QtPrivate::QMetaTypeInterface *iface);
+    int registerHelper() const
+    {
+        // keep in sync with the QMetaType::id() version in removed_api.cpp
+        if (d_ptr) {
+            if (int id = d_ptr->typeId.loadRelaxed())
+                return id;
+            return registerHelper(d_ptr);
+        }
+        return 0;
+    }
+
+    friend int qRegisterMetaType(QMetaType meta);
+
     friend class QVariant;
     const QtPrivate::QMetaTypeInterface *d_ptr = nullptr;
 };
@@ -1285,6 +1301,9 @@ template <typename T>
 inline constexpr int qMetaTypeId()
 {
     if constexpr (bool(QMetaTypeId2<T>::IsBuiltIn)) {
+        // this has the same result as the below code, but avoids asking the
+        // compiler to load a global variable whose value we know at compile
+        // time
         return QMetaTypeId2<T>::MetaType;
     } else {
         return QMetaType::fromType<T>().id();
@@ -1296,6 +1315,11 @@ inline constexpr int qRegisterMetaType()
 {
     int id = qMetaTypeId<T>();
     return id;
+}
+
+inline int qRegisterMetaType(QMetaType meta)
+{
+    return meta.registerHelper();
 }
 
 #ifndef QT_NO_QOBJECT
