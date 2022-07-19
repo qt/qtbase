@@ -8,7 +8,6 @@
 
 #ifndef QT_NO_OPENGL
 
-#include <QtCore/qscopedpointer.h>
 #include <QtGui/qopengl.h>
 
 QT_BEGIN_NAMESPACE
