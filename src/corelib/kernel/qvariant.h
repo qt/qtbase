@@ -457,7 +457,7 @@ public:
         static constexpr size_t MaxInternalSize = 3*sizeof(void *);
         template<typename T>
         static constexpr bool CanUseInternalSpace = (QTypeInfo<T>::isRelocatable && sizeof(T) <= MaxInternalSize && alignof(T) <= alignof(double));
-        static constexpr bool canUseInternalSpace(QtPrivate::QMetaTypeInterface *type)
+        static constexpr bool canUseInternalSpace(const QtPrivate::QMetaTypeInterface *type)
         {
             Q_ASSERT(type);
             return QMetaType::TypeFlags(type->flags) & QMetaType::RelocatableType &&
@@ -497,14 +497,14 @@ public:
         void set(const T &t)
         { *static_cast<T *>(CanUseInternalSpace<T> ? &data.data : data.shared->data()) = t; }
 
-        inline QMetaType type() const
+        inline const QtPrivate::QMetaTypeInterface* typeInterface() const
         {
-            return QMetaType(reinterpret_cast<QtPrivate::QMetaTypeInterface *>(packedType << 2));
+            return reinterpret_cast<const QtPrivate::QMetaTypeInterface *>(packedType << 2);
         }
 
-        inline QtPrivate::QMetaTypeInterface * typeInterface() const
+        inline QMetaType type() const
         {
-            return reinterpret_cast<QtPrivate::QMetaTypeInterface *>(packedType << 2);
+            return QMetaType(typeInterface());
         }
 
         inline int typeId() const

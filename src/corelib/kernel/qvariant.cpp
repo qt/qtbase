@@ -248,7 +248,7 @@ static qreal qConvertToRealNumber(const QVariant::Private *d, bool *ok)
 // the type of d has already been set, but other field are not set
 static void customConstruct(QVariant::Private *d, const void *copy)
 {
-    QtPrivate::QMetaTypeInterface *iface = d->typeInterface();
+    const QtPrivate::QMetaTypeInterface *iface = d->typeInterface();
     if (!(iface && iface->size)) {
         *d = QVariant::Private();
         return;
@@ -527,11 +527,8 @@ QVariant::QVariant(const QVariant &p)
 {
     if (d.is_shared) {
         d.data.shared->ref.ref();
-        return;
-    }
-    QtPrivate::QMetaTypeInterface *iface = d.typeInterface();
-    auto other = p.constData();
-    if (iface) {
+    } else if (const QtPrivate::QMetaTypeInterface *iface = d.typeInterface()) {
+        auto other = p.constData();
         if (other)
             iface->copyCtr(iface, &d.data, other);
         else
@@ -1019,7 +1016,7 @@ QVariant &QVariant::operator=(const QVariant &variant)
         d = variant.d;
     } else {
         d = variant.d;
-        QtPrivate::QMetaTypeInterface *iface = d.typeInterface();
+        const QtPrivate::QMetaTypeInterface *iface = d.typeInterface();
         const void *other = variant.constData();
         if (iface) {
             if (other)
