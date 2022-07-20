@@ -950,10 +950,10 @@ static void qt_to_latin1_internal(uchar *dst, const char16_t *src, qsizetype len
     // 1) neon has unsigned comparison
     // 2) packing is done to 64 bits (8 x 8bits component).
     if (length >= 16) {
-        const int chunkCount = length >> 3; // divided by 8
+        const qsizetype chunkCount = length >> 3; // divided by 8
         const uint16x8_t questionMark = vdupq_n_u16('?'); // set
         const uint16x8_t thresholdMask = vdupq_n_u16(0xff); // set
-        for (int i = 0; i < chunkCount; ++i) {
+        for (qsizetype i = 0; i < chunkCount; ++i) {
             uint16x8_t chunk = vld1q_u16((uint16_t *)src); // load
             src += 8;
 
