@@ -281,9 +281,9 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         // Inadequate for various cases of a language that's written in more
         // than one script in the same country, e.g. Sindhi in India.
         // However, can clients of the UILanguage query cope if we include script ?
-        for (int i = 0; i < lst.size(); ++i) {
+        for (const QString &e : std::as_const(lst)) {
             QStringView lang, cntry;
-            if (qt_splitLocaleName(lst.at(i), &lang, nullptr, &cntry)) {
+            if (qt_splitLocaleName(e, &lang, nullptr, &cntry)) {
                 d->uiLanguages.append(
                     cntry.size() ? lang % QLatin1Char('-') % cntry : lang.toString());
             }
