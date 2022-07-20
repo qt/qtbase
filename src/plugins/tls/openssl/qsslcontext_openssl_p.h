@@ -37,7 +37,8 @@ public:
                                                                bool allowRootCertOnDemandLoading);
     static std::shared_ptr<QSslContext> sharedFromPrivateConfiguration(QSslSocket::SslMode mode, QSslConfigurationPrivate *privConfiguration,
                                                                       bool allowRootCertOnDemandLoading);
-    static long setupOpenSslOptions(QSsl::SslProtocol protocol, QSsl::SslOptions sslOptions);
+
+    static qssloptions setupOpenSslOptions(QSsl::SslProtocol protocol, QSsl::SslOptions sslOptions);
 
     QSslError::SslError error() const;
     QString errorString() const;
