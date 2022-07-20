@@ -1051,7 +1051,11 @@
  * The workaround: declare such functions as function templates.
  * (Obviously a function template does not need this marker.)
 */
-#define QT_POST_CXX17_API_IN_EXPORTED_CLASS template <typename = void>
+#ifndef Q_CLANG_QDOC
+#  define QT_POST_CXX17_API_IN_EXPORTED_CLASS template <typename = void>
+#else
+#  define QT_POST_CXX17_API_IN_EXPORTED_CLASS
+#endif
 
 /*
  * Warning/diagnostic handling
