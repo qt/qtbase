@@ -6751,6 +6751,12 @@ QDomComment QDomNode::toComment() const
     return QDomComment();
 }
 
+/*!
+    \variable QDomNode::impl
+    \internal
+    Pointer to private data structure.
+*/
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_DOM
