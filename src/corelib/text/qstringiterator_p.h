@@ -78,7 +78,7 @@ public:
     {
     }
 
-    inline explicit QStringIterator(const QChar *begin, int idx, const QChar *end)
+    explicit QStringIterator(const QChar *begin, qsizetype idx, const QChar *end)
         : i(begin),
           pos(begin + idx),
           e(end)
@@ -90,9 +90,9 @@ public:
         return pos;
     }
 
-    inline int index() const
+    qsizetype index() const
     {
-        return int(pos - i);
+        return pos - i;
     }
 
     inline void setPosition(QString::const_iterator position)
