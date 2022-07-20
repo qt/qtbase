@@ -65,7 +65,8 @@ enum StrayCharacterMode {
 // API note: this function can't process a number with more than 2.1 billion digits
 [[nodiscard]] double qt_asciiToDouble(const char *num, qsizetype numLen, bool &ok, int &processed,
                                       StrayCharacterMode strayCharMode = TrailingJunkProhibited);
-void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, char *buf, int bufSize,
+void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision,
+                      char *buf, qsizetype bufSize,
                       bool &sign, int &length, int &decpt);
 
 [[nodiscard]] QString qulltoBasicLatin(qulonglong l, int base, bool negative);
