@@ -10896,19 +10896,19 @@ qsizetype QtPrivate::count(QStringView haystack, const QRegularExpression &re)
 QString QString::toHtmlEscaped() const
 {
     QString rich;
-    const int len = length();
+    const qsizetype len = length();
     rich.reserve(qsizetype(len * 1.1));
-    for (int i = 0; i < len; ++i) {
-        if (at(i) == u'<')
+    for (QChar ch : *this) {
+        if (ch == u'<')
             rich += "&lt;"_L1;
-        else if (at(i) == u'>')
+        else if (ch == u'>')
             rich += "&gt;"_L1;
-        else if (at(i) == u'&')
+        else if (ch == u'&')
             rich += "&amp;"_L1;
-        else if (at(i) == u'"')
+        else if (ch == u'"')
             rich += "&quot;"_L1;
         else
-            rich += at(i);
+            rich += ch;
     }
     rich.squeeze();
     return rich;
