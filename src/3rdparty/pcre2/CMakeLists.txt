@@ -7,6 +7,7 @@
 qt_internal_add_3rdparty_library(BundledPcre2
     QMAKE_LIB_NAME pcre2
     STATIC
+    SKIP_AUTOMOC
     SOURCES
         src/config.h
         src/pcre2.h

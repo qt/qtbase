@@ -1,5 +1,6 @@
 qt_internal_add_3rdparty_library(BundledZLIB
     STATIC
+    SKIP_AUTOMOC
     SOURCES
         src/adler32.c
         src/compress.c
