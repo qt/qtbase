@@ -37,8 +37,6 @@ static constexpr TerritoryLanguage ImperialMeasurementSystems[] = {
     { QLocale::Hawaiian, QLocale::UnitedStates, QLocale::ImperialUSSystem },
     { QLocale::English, QLocale::UnitedKingdom, QLocale::ImperialUKSystem }
 };
-static constexpr int ImperialMeasurementSystemsCount =
-    sizeof(ImperialMeasurementSystems)/sizeof(ImperialMeasurementSystems[0]);
 
 /*
   Storage for alpha codes with length of up to 4 allowing efficient comparison.
