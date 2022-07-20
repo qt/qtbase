@@ -61,6 +61,7 @@ endif ()
 qt_internal_add_3rdparty_library(BundledFreetype
     QMAKE_LIB_NAME freetype
     STATIC
+    SKIP_AUTOMOC
     INSTALL
     SOURCES
         ${BASE_SRCS}

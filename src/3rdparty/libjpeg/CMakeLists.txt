@@ -1,6 +1,7 @@
 qt_internal_add_3rdparty_library(BundledLibjpeg
     QMAKE_LIB_NAME libjpeg
     STATIC
+    SKIP_AUTOMOC
     INSTALL
     SOURCES
         src/jaricom.c
