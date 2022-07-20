@@ -208,6 +208,7 @@ private:
     static int wheel_cb(int eventType, const EmscriptenWheelEvent *wheelEvent, void *userData);
 
     bool processPointer(const PointerEvent& event);
+    bool deliverEventToTarget(const PointerEvent& event, QWindow *eventTarget);
 
     static int touchCallback(int eventType, const EmscriptenTouchEvent *ev, void *userData);
 

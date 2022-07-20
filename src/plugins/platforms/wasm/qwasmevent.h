@@ -8,6 +8,7 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qnamespace.h>
+#include <QtGui/qevent.h>
 
 #include <QPoint>
 
@@ -27,6 +28,11 @@ enum class EventType {
 enum class PointerType {
     Mouse,
     Other,
+};
+
+enum class WindowArea {
+    NonClient,
+    Client,
 };
 
 namespace KeyboardModifier {
@@ -129,7 +135,24 @@ struct Q_CORE_EXPORT MouseEvent : public Event
     static constexpr Qt::MouseButtons buttonsFromWeb(unsigned short webButtons) {
         // Coincidentally, Qt and web bitfields match.
         return Qt::MouseButtons::fromInt(webButtons);
-}
+    }
+
+    static constexpr QEvent::Type mouseEventTypeFromEventType(
+        EventType eventType, WindowArea windowArea) {
+        switch (eventType) {
+            case EventType::PointerDown :
+                return windowArea == WindowArea::Client ?
+                    QEvent::MouseButtonPress : QEvent::NonClientAreaMouseButtonPress;
+            case EventType::PointerUp :
+                return windowArea == WindowArea::Client ?
+                    QEvent::MouseButtonRelease : QEvent::NonClientAreaMouseButtonRelease;
+            case EventType::PointerMove :
+                return windowArea == WindowArea::Client ?
+                    QEvent::MouseMove : QEvent::NonClientAreaMouseMove;
+            default:
+                return QEvent::None;
+        }
+    }
 };
 
 struct Q_CORE_EXPORT PointerEvent : public MouseEvent
