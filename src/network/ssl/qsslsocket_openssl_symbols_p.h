@@ -245,7 +245,14 @@ Q_AUTOTEST_EXPORT void q_OPENSSL_sk_push(OPENSSL_STACK *st, void *data);
 Q_AUTOTEST_EXPORT void q_OPENSSL_sk_free(OPENSSL_STACK *a);
 Q_AUTOTEST_EXPORT void * q_OPENSSL_sk_value(OPENSSL_STACK *a, int b);
 int q_SSL_session_reused(SSL *a);
-unsigned long q_SSL_CTX_set_options(SSL_CTX *ctx, unsigned long op);
+
+#if OPENSSL_VERSION_MAJOR < 3
+using qssloptions = unsigned long;
+#else
+using qssloptions = uint64_t;
+#endif // OPENSSL_VERSION_MAJOR
+
+qssloptions q_SSL_CTX_set_options(SSL_CTX *ctx, qssloptions op);
 int q_OPENSSL_init_ssl(uint64_t opts, const OPENSSL_INIT_SETTINGS *settings);
 size_t q_SSL_get_client_random(SSL *a, unsigned char *out, size_t outlen);
 size_t q_SSL_SESSION_get_master_key(const SSL_SESSION *session, unsigned char *out, size_t outlen);
