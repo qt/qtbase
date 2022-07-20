@@ -395,7 +395,7 @@ void QtAndroidPrivate::releaseAndroidDeadlockProtector()
 
 QT_END_NAMESPACE
 
-Q_CORE_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
 {
     Q_UNUSED(reserved);
 
