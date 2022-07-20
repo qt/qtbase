@@ -212,23 +212,41 @@ static qreal qConvertToRealNumber(const QVariant::Private *d, bool *ok)
     }
 }
 
-// the type of d has already been set, but other field are not set
-static void customConstruct(QVariant::Private *d, const void *copy)
+static bool isValidMetaTypeForVariant(const QtPrivate::QMetaTypeInterface *iface, const void *copy)
 {
     using namespace QtMetaTypePrivate;
-    const QtPrivate::QMetaTypeInterface *iface = d->typeInterface();
-    if (!(iface && iface->size)) {
-        *d = QVariant::Private();
-        return;
+    if (!iface || iface->size == 0)
+        return false;
+
+    Q_ASSERT(!isVoid(iface));  // only void should have size 0
+    if (!isCopyConstructible(iface) || !isDestructible(iface)) {
+        // all meta types must be copyable (because QVariant is) and
+        // destructible (because QVariant owns it)
+        qWarning("QVariant: Provided metatype for '%s' does not support destruction and "
+                 "copy construction", iface->name);
+        return false;
+    }
+    if (!copy && !isDefaultConstructible(iface)) {
+        // non-default-constructible types are acceptable, but not if you're
+        // asking us to construct from nothing
+        qWarning("QVariant: Cannot create type '%s' without a default constructor", iface->name);
+        return false;
     }
 
-    if (!isCopyConstructible(iface) || (!copy && !isDefaultConstructible(iface))
-            || !isDestructible(iface)) {
-        *d = QVariant::Private();
-        qWarning("QVariant: Provided metatype does not support "
-                 "destruction, copy and default construction");
-        return;
-    }
+    return true;
+}
+
+// the type of d has already been set, but other field are not set
+static void customConstruct(const QtPrivate::QMetaTypeInterface *iface, QVariant::Private *d,
+                            const void *copy)
+{
+    using namespace QtMetaTypePrivate;
+    Q_ASSERT(iface);
+    Q_ASSERT(iface->size);
+    Q_ASSERT(!isVoid(iface));
+    Q_ASSERT(isCopyConstructible(iface));
+    Q_ASSERT(isDestructible(iface));
+    Q_ASSERT(copy || isDefaultConstructible(iface));
 
     void *dst;
     if (QVariant::Private::canUseInternalSpace(iface)) {
@@ -463,8 +481,7 @@ void QVariant::create(int type, const void *copy)
 */
 void QVariant::create(QMetaType type, const void *copy)
 {
-    d = Private(type);
-    customConstruct(&d, copy);
+    *this = QVariant(type, copy);
 }
 
 /*!
@@ -785,7 +802,10 @@ QVariant::QVariant(const QVariant &p)
 */
 QVariant::QVariant(QMetaType type, const void *copy) : d(type)
 {
-    customConstruct(&d, copy);
+    if (isValidMetaTypeForVariant(type.iface(), copy))
+        customConstruct(type.iface(), &d, copy);
+    else
+        d = {};
 }
 
 QVariant::QVariant(int val)
@@ -1011,8 +1031,9 @@ void QVariant::detach()
     if (!d.is_shared || d.data.shared->ref.loadRelaxed() == 1)
         return;
 
+    Q_ASSERT(isValidMetaTypeForVariant(d.typeInterface(), constData()));
     Private dd(d.type());
-    customConstruct(&dd, constData());
+    customConstruct(d.typeInterface(), &dd, constData());
     if (!d.data.shared->ref.deref())
         customClear(&d);
     d.data.shared = dd.data.shared;

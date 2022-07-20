@@ -5149,10 +5149,16 @@ void tst_QVariant::constructFromIncompatibleMetaType()
 {
    QFETCH(QMetaType, type);
    // in that case, we run into a different condition (size == 0), and do not warn
-   if (QTest::currentDataTag() != QLatin1String("void"))
+   if (type == QMetaType::fromType<NonDefaultConstructible>()) {
+       QTest::ignoreMessage(QtWarningMsg,
+                            "QVariant: Cannot create type 'NonDefaultConstructible' without a "
+                            "default constructor");
+   } else if (type != QMetaType::fromType<void>()) {
       QTest::ignoreMessage(
             QtWarningMsg,
-            "QVariant: Provided metatype does not support destruction, copy and default construction");
+            "QVariant: Provided metatype for '" + QByteArray(type.name()) +
+            "' does not support destruction and copy construction");
+   }
    QVariant var(type, nullptr);
    QVERIFY(!var.isValid());
    QVERIFY(!var.metaType().isValid());
