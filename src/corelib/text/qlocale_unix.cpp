@@ -244,9 +244,9 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         else
             lst = languages.split(u':');
 
-        for (int i = 0; i < lst.size(); ++i) {
+        for (const QString &e : std::as_const(lst)) {
             QStringView language, script, territory;
-            if (qt_splitLocaleName(lst.at(i), &language, &script, &territory)) {
+            if (qt_splitLocaleName(e, &language, &script, &territory)) {
                 QString joined = language.isEmpty() ? u"und"_s : language.toString();
                 if (!script.isEmpty())
                     joined += u'-' + script;

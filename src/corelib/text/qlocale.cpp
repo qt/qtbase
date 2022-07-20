@@ -3104,10 +3104,10 @@ Qt::DayOfWeek QLocale::firstDayOfWeek() const
 
 QLocale::MeasurementSystem QLocalePrivate::measurementSystem() const
 {
-    for (int i = 0; i < ImperialMeasurementSystemsCount; ++i) {
-        if (ImperialMeasurementSystems[i].languageId == m_data->m_language_id
-            && ImperialMeasurementSystems[i].territoryId == m_data->m_territory_id) {
-            return ImperialMeasurementSystems[i].system;
+    for (const auto &system : ImperialMeasurementSystems) {
+        if (system.languageId == m_data->m_language_id
+            && system.territoryId == m_data->m_territory_id) {
+            return system.system;
         }
     }
     return QLocale::MetricSystem;
@@ -3574,8 +3574,8 @@ QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
             const char32_t zeroUcs4 = QChar::surrogateToUcs4(zero.at(0), zero.at(1));
             QString converted;
             converted.reserve(2 * digits.size());
-            for (int i = 0; i < digits.length(); ++i) {
-                const char32_t digit = unicodeForDigit(digits.at(i).unicode() - '0', zeroUcs4);
+            for (QChar ch : std::as_const(digits)) {
+                const char32_t digit = unicodeForDigit(ch.unicode() - '0', zeroUcs4);
                 Q_ASSERT(QChar::requiresSurrogates(digit));
                 converted.append(QChar::highSurrogate(digit));
                 converted.append(QChar::lowSurrogate(digit));
