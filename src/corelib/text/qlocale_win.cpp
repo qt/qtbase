@@ -224,7 +224,7 @@ QString QSystemLocalePrivate::substituteDigits(QString &&string)
             break;
         Q_ASSERT(z > '9');
         ushort *const qch = reinterpret_cast<ushort *>(string.data());
-        for (int i = 0, stop = string.size(); i < stop; ++i) {
+        for (qsizetype i = 0, stop = string.size(); i < stop; ++i) {
             ushort &ch = qch[i];
             if (ch >= '0' && ch <= '9')
                 ch = unicodeForDigit(ch - '0', z);
@@ -434,7 +434,7 @@ QString QSystemLocalePrivate::yearFix(int year, int fakeYear, QString &&formatte
         if (formatted.contains(yearUsed))
             return std::move(formatted).replace(yearUsed, sign + trueYear);
 
-        const int twoDigits = 2 * zero.size();
+        const qsizetype twoDigits = 2 * zero.size();
         tail = QStringView{yearUsed}.last(twoDigits);
         if (formatted.contains(tail)) {
             if (matchTwo)
