@@ -625,9 +625,9 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
     case UILanguages: {
         QStringList result;
         QCFType<CFArrayRef> languages = CFLocaleCopyPreferredLanguages();
-        const int cnt = CFArrayGetCount(languages);
+        const CFIndex cnt = CFArrayGetCount(languages);
         result.reserve(cnt);
-        for (int i = 0; i < cnt; ++i) {
+        for (CFIndex i = 0; i < cnt; ++i) {
             const QString lang = QString::fromCFString(
                 static_cast<CFStringRef>(CFArrayGetValueAtIndex(languages, i)));
             result.append(lang);
