@@ -493,8 +493,8 @@ const char16_t *QtPrivate::qustrchr(QStringView str, char16_t c) noexcept
     }
 
     return UnrollTailLoop<3>::exec(e - n, e,
-                                   [=](int i) { return n[i] == c; },
-                                   [=](int i) { return n + i; });
+                                   [=](qsizetype i) { return n[i] == c; },
+                                   [=](qsizetype i) { return n + i; });
 #  endif
 #elif defined(__ARM_NEON__)
     const uint16x8_t vmask = { 1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7 };
@@ -812,7 +812,7 @@ Q_CORE_EXPORT void qt_from_latin1(char16_t *dst, const char *str, size_t size) n
     dst += offset;
     str += offset;
 #  if !defined(__OPTIMIZE_SIZE__)
-    return UnrollTailLoop<7>::exec(int(size), [=](int i) { dst[i] = (uchar)str[i]; });
+    return UnrollTailLoop<7>::exec(qsizetype(size), [=](qsizetype i) { dst[i] = (uchar)str[i]; });
 #  endif
 #endif
 #if defined(__mips_dsp)
@@ -939,7 +939,7 @@ static void qt_to_latin1_internal(uchar *dst, const char16_t *src, qsizetype len
     src += offset;
 
 #  if !defined(__OPTIMIZE_SIZE__)
-    return UnrollTailLoop<3>::exec(length, [=](int i) {
+    return UnrollTailLoop<3>::exec(length, [=](qsizetype i) {
         if (Checked)
             dst[i] = (src[i]>0xff) ? '?' : (uchar) src[i];
         else
