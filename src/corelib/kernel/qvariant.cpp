@@ -256,6 +256,8 @@ static void customConstruct(const QtPrivate::QMetaTypeInterface *iface, QVariant
     if (QVariant::Private::canUseInternalSpace(iface)) {
         d->is_shared = false;
         dst = &d->data;
+        if (!copy && !iface->defaultCtr)
+            return;     // trivial default constructor, we've already memset
     } else {
         d->data.shared = QVariant::PrivateShared::create(iface);
         d->is_shared = true;
@@ -263,17 +265,18 @@ static void customConstruct(const QtPrivate::QMetaTypeInterface *iface, QVariant
     }
 
     // now ask QMetaType to construct for us
-    QMetaType(iface).construct(dst, copy);
+    construct(iface, dst, copy);
 }
 
 static void customClear(QVariant::Private *d)
 {
-    if (!d->typeInterface())
+    const QtPrivate::QMetaTypeInterface *iface = d->typeInterface();
+    if (!iface)
         return;
     if (!d->is_shared) {
-        d->type().destruct(d->data.data);
+        QtMetaTypePrivate::destruct(iface, d->data.data);
     } else {
-        d->type().destruct(d->data.shared->data());
+        QtMetaTypePrivate::destruct(iface, d->data.shared->data());
         QVariant::PrivateShared::free(d->data.shared);
     }
 }
