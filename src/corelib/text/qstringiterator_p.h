@@ -166,7 +166,7 @@ public:
 
         const QChar uc = *pos++;
         if (Q_UNLIKELY(uc.isSurrogate())) {
-            if (Q_LIKELY(uc.isHighSurrogate() && pos < e && pos->isLowSurrogate()))
+            if (Q_LIKELY(uc.isHighSurrogate() && hasNext() && pos->isLowSurrogate()))
                 return QChar::surrogateToUcs4(uc, *pos++);
             return invalidAs;
         }
@@ -241,7 +241,7 @@ public:
 
         const QChar uc = *--pos;
         if (Q_UNLIKELY(uc.isSurrogate())) {
-            if (Q_LIKELY(uc.isLowSurrogate() && pos > i && pos[-1].isHighSurrogate()))
+            if (Q_LIKELY(uc.isLowSurrogate() && hasPrevious() && pos[-1].isHighSurrogate()))
                 return QChar::surrogateToUcs4(*--pos, uc);
             return invalidAs;
         }
