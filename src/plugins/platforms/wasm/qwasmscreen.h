@@ -53,6 +53,8 @@ public:
     QWindow *topWindow() const;
     QWindow *topLevelAt(const QPoint &p) const override;
 
+    QPoint translateAndClipGlobalPoint(const QPoint &p) const;
+
     void invalidateSize();
     void updateQScreenAndCanvasRenderSize();
     void installCanvasResizeObserver();

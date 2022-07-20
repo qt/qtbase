@@ -939,8 +939,6 @@ bool QWasmCompositor::processPointer(const PointerEvent& event)
 
     const QPoint targetPointInScreenCoords = screen()->geometry().topLeft() + event.point;
 
-    QEvent::Type buttonEventType = QEvent::None;
-
     QWindow *const targetWindow = ([this, &targetPointInScreenCoords]() -> QWindow * {
         auto *targetWindow =
             m_windowManipulation.operation() == WindowManipulation::Operation::None ?
@@ -968,7 +966,6 @@ bool QWasmCompositor::processPointer(const PointerEvent& event)
     switch (event.type) {
     case EventType::PointerDown:
     {
-        buttonEventType = QEvent::MouseButtonPress;
         if (targetWindow)
             targetWindow->requestActivate();
 
@@ -981,8 +978,6 @@ bool QWasmCompositor::processPointer(const PointerEvent& event)
     }
     case EventType::PointerUp:
     {
-        buttonEventType = QEvent::MouseButtonRelease;
-
         m_windowManipulation.onPointerUp(event);
 
         if (m_pressedWindow) {
@@ -997,8 +992,6 @@ bool QWasmCompositor::processPointer(const PointerEvent& event)
     }
     case EventType::PointerMove:
     {
-        buttonEventType = QEvent::MouseMove;
-
         if (wasmTargetWindow && event.mouseButtons.testFlag(Qt::NoButton)) {
             const bool isOnResizeRegion = wasmTargetWindow->isPointOnResizeRegion(targetPointInScreenCoords);
 
@@ -1033,22 +1026,49 @@ bool QWasmCompositor::processPointer(const PointerEvent& event)
         leaveWindow(m_lastMouseTargetWindow);
     }
 
-    bool shouldDeliverEvent = pointerIsWithinTargetWindowBounds;
-    QWindow *eventTarget = targetWindow;
-    if (!eventTarget && event.type == EventType::PointerUp) {
-        eventTarget = m_lastMouseTargetWindow;
-        m_lastMouseTargetWindow = nullptr;
-        shouldDeliverEvent = true;
-    }
-    const bool eventAccepted =
-        eventTarget != nullptr && shouldDeliverEvent &&
-        QWindowSystemInterface::handleMouseEvent<QWindowSystemInterface::SynchronousDelivery>(
-            eventTarget, QWasmIntegration::getTimestamp(), pointInTargetWindowCoords, targetPointInScreenCoords,
-            event.mouseButtons, event.mouseButton, buttonEventType, event.modifiers);
-
+    const bool eventAccepted = deliverEventToTarget(event, targetWindow);
     if (!eventAccepted && event.type == EventType::PointerDown)
         QGuiApplicationPrivate::instance()->closeAllPopups();
     return eventAccepted;
+}
+
+bool QWasmCompositor::deliverEventToTarget(const PointerEvent &event, QWindow *eventTarget)
+{
+    const QPoint pointInScreenCoords = screen()->geometry().topLeft() + event.point;
+    const QPoint targetPointClippedToScreen(
+            std::max(screen()->geometry().left(),
+                     std::min(screen()->geometry().right(), pointInScreenCoords.x())),
+            std::max(screen()->geometry().top(),
+                     std::min(screen()->geometry().bottom(), pointInScreenCoords.y())));
+
+    bool deliveringToPreviouslyClickedWindow = false;
+
+    if (!eventTarget) {
+        if (event.type != EventType::PointerUp || !m_lastMouseTargetWindow)
+            return false;
+
+        eventTarget = m_lastMouseTargetWindow;
+        m_lastMouseTargetWindow = nullptr;
+        deliveringToPreviouslyClickedWindow = true;
+    }
+
+    WindowArea windowArea = WindowArea::Client;
+    if (!eventTarget->geometry().contains(targetPointClippedToScreen)
+        && !deliveringToPreviouslyClickedWindow) {
+        if (!eventTarget->frameGeometry().contains(targetPointClippedToScreen))
+            return false;
+        windowArea = WindowArea::NonClient;
+    }
+
+    const QEvent::Type eventType =
+        MouseEvent::mouseEventTypeFromEventType(event.type, windowArea);
+
+    return eventType != QEvent::None &&
+           QWindowSystemInterface::handleMouseEvent<QWindowSystemInterface::SynchronousDelivery>(
+               eventTarget, QWasmIntegration::getTimestamp(),
+               eventTarget->mapFromGlobal(targetPointClippedToScreen),
+               targetPointClippedToScreen, event.mouseButtons, event.mouseButton,
+               eventType, event.modifiers);
 }
 
 QWasmCompositor::WindowManipulation::WindowManipulation(QWasmScreen *screen)
@@ -1124,14 +1144,10 @@ void QWasmCompositor::WindowManipulation::onPointerMove(
     if (operation() == Operation::None || event.pointerId != m_state->pointerId)
         return;
 
-    const auto pointInScreenCoords = m_screen->geometry().topLeft() + event.point;
-
     switch (operation()) {
         case Operation::Move: {
-            const QPoint targetPointClippedToScreen(
-                std::max(m_screen->geometry().left(), std::min(m_screen->geometry().right(), pointInScreenCoords.x())),
-                std::max(m_screen->geometry().top(), std::min(m_screen->geometry().bottom(), pointInScreenCoords.y())));
-
+            const QPoint targetPointClippedToScreen =
+                    m_screen->translateAndClipGlobalPoint(event.point);
             const QPoint difference = targetPointClippedToScreen -
                 std::get<MoveState>(m_state->operationSpecific).m_lastPointInScreenCoords;
 
@@ -1141,6 +1157,7 @@ void QWasmCompositor::WindowManipulation::onPointerMove(
             break;
         }
         case Operation::Resize: {
+            const auto pointInScreenCoords = m_screen->geometry().topLeft() + event.point;
             resizeWindow(pointInScreenCoords -
                 std::get<ResizeState>(m_state->operationSpecific).m_originInScreenCoords);
             break;
