@@ -6720,9 +6720,9 @@ QString QString::asprintf(const char *cformat, ...)
     return s;
 }
 
-static void append_utf8(QString &qs, const char *cs, int len)
+static void append_utf8(QString &qs, const char *cs, qsizetype len)
 {
-    const int oldSize = qs.size();
+    const qsizetype oldSize = qs.size();
     qs.resize(oldSize + len);
     const QChar *newEnd = QUtf8::convertToUnicode(qs.data() + oldSize, QByteArrayView(cs, len));
     qs.resize(newEnd - qs.constData());
