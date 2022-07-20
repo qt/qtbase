@@ -11,7 +11,7 @@ qt_internal_add_tool(${target_name}
     TOOLS_TARGET Gui # special case
     SOURCES
         qvkgen.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core # special case
 )
 qt_internal_return_unless_building_tools()

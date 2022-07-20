@@ -20,7 +20,7 @@ qt_internal_add_tool(${target_name}
         recognizer.cpp recognizer.h
     DEFINES
         QT_NO_FOREACH
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core # special case
 )
 qt_internal_return_unless_building_tools()

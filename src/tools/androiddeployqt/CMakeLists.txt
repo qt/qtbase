@@ -14,7 +14,7 @@ qt_internal_add_tool(${target_name}
         QT_NO_CAST_FROM_ASCII
         QT_NO_CAST_TO_ASCII
         QT_NO_FOREACH
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core # special case
     INCLUDE_DIRECTORIES
         ../shared

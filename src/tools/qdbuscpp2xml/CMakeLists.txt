@@ -26,7 +26,7 @@ qt_internal_add_tool(${target_name}
     INCLUDE_DIRECTORIES
         ../moc
         ../moc/../../3rdparty/tinycbor/src
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::DBusPrivate
     # COMPILE_OPTIONS  # special case
