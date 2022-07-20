@@ -68,6 +68,18 @@ QT_IMPL_METATYPE_EXTERN_TAGGED(QtMetaTypePrivate::QPairVariantInterfaceImpl, QPa
 using QtMetaTypePrivate::isInterfaceFor;
 
 namespace {
+struct QMetaTypeDeleter
+{
+    const QtPrivate::QMetaTypeInterface *iface;
+    void operator()(void *data)
+    {
+        if (iface->alignment > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
+            operator delete(data, std::align_val_t(iface->alignment));
+        } else {
+            operator delete(data);
+        }
+    }
+};
 
 struct QMetaTypeCustomRegistry
 {
@@ -611,14 +623,14 @@ void *QMetaType::create(const void *copy) const
     if (copy ? !isCopyConstructible() : !isDefaultConstructible())
         return nullptr;
 
-    void *where =
-#ifdef __STDCPP_DEFAULT_NEW_ALIGNMENT__
-            d_ptr->alignment > __STDCPP_DEFAULT_NEW_ALIGNMENT__ ?
-                operator new(d_ptr->size, std::align_val_t(d_ptr->alignment)) :
-#endif
-                operator new(d_ptr->size);
-    QtMetaTypePrivate::construct(d_ptr, where, copy);
-    return where;
+    std::unique_ptr<void, QMetaTypeDeleter> where(nullptr, {d_ptr});
+    if (d_ptr->alignment > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
+        where.reset(operator new(d_ptr->size, std::align_val_t(d_ptr->alignment)));
+    else
+        where.reset(operator new(d_ptr->size));
+
+    QtMetaTypePrivate::construct(d_ptr, where.get(), copy);
+    return where.release();
 }
 
 /*!
@@ -634,11 +646,7 @@ void QMetaType::destroy(void *data) const
 {
     if (data && isDestructible()) {
         QtMetaTypePrivate::destruct(d_ptr, data);
-        if (d_ptr->alignment > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-            operator delete(data, std::align_val_t(d_ptr->alignment));
-        } else {
-            operator delete(data);
-        }
+        QMetaTypeDeleter{d_ptr}(data);
     }
 }
 
