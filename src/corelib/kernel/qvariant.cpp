@@ -218,7 +218,7 @@ static bool isValidMetaTypeForVariant(const QtPrivate::QMetaTypeInterface *iface
     if (!iface || iface->size == 0)
         return false;
 
-    Q_ASSERT(!isVoid(iface));  // only void should have size 0
+    Q_ASSERT(!isInterfaceFor<void>(iface));  // only void should have size 0
     if (!isCopyConstructible(iface) || !isDestructible(iface)) {
         // all meta types must be copyable (because QVariant is) and
         // destructible (because QVariant owns it)
@@ -243,10 +243,14 @@ static void customConstruct(const QtPrivate::QMetaTypeInterface *iface, QVariant
     using namespace QtMetaTypePrivate;
     Q_ASSERT(iface);
     Q_ASSERT(iface->size);
-    Q_ASSERT(!isVoid(iface));
+    Q_ASSERT(!isInterfaceFor<void>(iface));
     Q_ASSERT(isCopyConstructible(iface));
     Q_ASSERT(isDestructible(iface));
     Q_ASSERT(copy || isDefaultConstructible(iface));
+
+    // need to check for nullptr_t here, as this can get called by fromValue(nullptr). fromValue() uses
+    // std::addressof(value) which in this case returns the address of the nullptr object.
+    d->is_null = !copy || isInterfaceFor<std::nullptr_t>(iface);
 
     void *dst;
     if (QVariant::Private::canUseInternalSpace(iface)) {
@@ -260,10 +264,6 @@ static void customConstruct(const QtPrivate::QMetaTypeInterface *iface, QVariant
 
     // now ask QMetaType to construct for us
     QMetaType(iface).construct(dst, copy);
-
-    // need to check for nullptr_t here, as this can get called by fromValue(nullptr). fromValue() uses
-    // std::addressof(value) which in this case returns the address of the nullptr object.
-    d->is_null = !copy || QMetaType(iface) == QMetaType::fromType<std::nullptr_t>();
 }
 
 static void customClear(QVariant::Private *d)

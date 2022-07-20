@@ -116,11 +116,12 @@ template<> struct TypeDefinition<QQuaternion> { static const bool IsAvailable = 
 template<> struct TypeDefinition<QIcon> { static const bool IsAvailable = false; };
 #endif
 
-inline bool isVoid(const QtPrivate::QMetaTypeInterface *iface)
+template <typename T> inline bool isInterfaceFor(const QtPrivate::QMetaTypeInterface *iface)
 {
-    // void is special because it can't be constructed, copied or destroyed,
-    // but iface->flags doesn't set Needs{Construction,Destruction}.
-    return iface->typeId.loadRelaxed() == QMetaType::Void;
+    // typeId for built-in types are fixed and require no registration
+    static_assert(QMetaTypeId2<T>::IsBuiltIn, "This function only works for built-in types");
+    static constexpr int typeId = QtPrivate::BuiltinMetaType<T>::value;
+    return iface->typeId.loadRelaxed() == typeId;
 }
 
 template <typename FPointer>
@@ -129,7 +130,7 @@ inline bool checkMetaTypeFlagOrPointer(const QtPrivate::QMetaTypeInterface *ifac
     // helper to the isXxxConstructible & isDestructible functions below: a
     // meta type has the trait if the trait is trivial or we have the pointer
     // to perform the operation
-    Q_ASSERT(!isVoid(iface));
+    Q_ASSERT(!isInterfaceFor<void>(iface));
     Q_ASSERT(iface->size);
     return ptr != nullptr || (iface->flags & Flag) == 0;
 }

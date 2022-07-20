@@ -65,7 +65,7 @@ QT_BEGIN_NAMESPACE
 
 QT_IMPL_METATYPE_EXTERN_TAGGED(QtMetaTypePrivate::QPairVariantInterfaceImpl, QPairVariantInterfaceImpl)
 
-using QtMetaTypePrivate::isVoid;
+using QtMetaTypePrivate::isInterfaceFor;
 
 namespace {
 
@@ -828,22 +828,22 @@ bool QMetaType::equals(const void *lhs, const void *rhs) const
 
 bool QMetaType::isDefaultConstructible(const QtPrivate::QMetaTypeInterface *iface) noexcept
 {
-    return !isVoid(iface) && QtMetaTypePrivate::isDefaultConstructible(iface);
+    return !isInterfaceFor<void>(iface) && QtMetaTypePrivate::isDefaultConstructible(iface);
 }
 
 bool QMetaType::isCopyConstructible(const QtPrivate::QMetaTypeInterface *iface) noexcept
 {
-    return !isVoid(iface) && QtMetaTypePrivate::isCopyConstructible(iface);
+    return !isInterfaceFor<void>(iface) && QtMetaTypePrivate::isCopyConstructible(iface);
 }
 
 bool QMetaType::isMoveConstructible(const QtPrivate::QMetaTypeInterface *iface) noexcept
 {
-    return !isVoid(iface) && QtMetaTypePrivate::isMoveConstructible(iface);
+    return !isInterfaceFor<void>(iface) && QtMetaTypePrivate::isMoveConstructible(iface);
 }
 
 bool QMetaType::isDestructible(const QtPrivate::QMetaTypeInterface *iface) noexcept
 {
-    return !isVoid(iface) && QtMetaTypePrivate::isDestructible(iface);
+    return !isInterfaceFor<void>(iface) && QtMetaTypePrivate::isDestructible(iface);
 }
 
 /*!
