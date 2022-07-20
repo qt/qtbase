@@ -7941,7 +7941,7 @@ struct ArgEscapeData
     int occurrences;           // number of occurrences of the lowest escape sequence number
     int locale_occurrences;    // number of occurrences of the lowest escape sequence number that
                                // contain 'L'
-    int escape_len;            // total length of escape sequences which will be replaced
+    qsizetype escape_len;      // total length of escape sequences which will be replaced
 };
 
 static ArgEscapeData findArgEscapes(QStringView s)
