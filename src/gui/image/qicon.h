@@ -93,8 +93,6 @@ public:
     static QString fallbackThemeName();
     static void setFallbackThemeName(const QString &name);
 
-    Q_DUMMY_COMPARISON_OPERATOR(QIcon)
-
 private:
     QIconPrivate *d;
 #if !defined(QT_NO_DATASTREAM)
