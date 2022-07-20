@@ -3541,7 +3541,7 @@ QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
         width = 0;
 
     int decpt;
-    int bufSize = 1;
+    qsizetype bufSize = 1;
     if (precision == QLocale::FloatingPointShortest)
         bufSize += std::numeric_limits<double>::max_digits10;
     else if (form == DFDecimal && qIsFinite(d))

@@ -39,7 +39,8 @@ QT_BEGIN_NAMESPACE
 
 QT_CLOCALE_HOLDER
 
-void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, char *buf, int bufSize,
+void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision,
+                      char *buf, qsizetype bufSize,
                       bool &sign, int &length, int &decpt)
 {
     if (bufSize == 0) {
@@ -93,7 +94,12 @@ void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, cha
     } else {
         mode = double_conversion::DoubleToStringConverter::FIXED;
     }
-    double_conversion::DoubleToStringConverter::DoubleToAscii(d, mode, precision, buf, bufSize,
+    // libDoubleConversion is limited to 32-bit lengths. It's ok to cap the buffer size,
+    // though, because the library will never write 2GiB of chars as output
+    // (the length out-parameter is just an int, too).
+    const auto boundedBufferSize = static_cast<int>((std::min)(bufSize, qsizetype(INT_MAX)));
+    double_conversion::DoubleToStringConverter::DoubleToAscii(d, mode, precision, buf,
+                                                              boundedBufferSize,
                                                               &sign, &length, &decpt);
 #else // QT_NO_DOUBLECONVERSION || QT_BOOTSTRAPPED
 
@@ -595,7 +601,7 @@ QString qdtoa(qreal d, int *decpt, int *sign)
     int length = 0;
 
     // Some versions of libdouble-conversion like an extra digit, probably for '\0'
-    constexpr int digits = std::numeric_limits<double>::max_digits10 + 1;
+    constexpr qsizetype digits = std::numeric_limits<double>::max_digits10 + 1;
     char result[digits];
     qt_doubleToAscii(d, QLocaleData::DFSignificantDigits, QLocale::FloatingPointShortest,
                      result, digits, nonNullSign, length, nonNullDecpt);
