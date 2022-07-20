@@ -8521,7 +8521,7 @@ static inline char16_t to_unicode(const char c) { return QLatin1Char{c}.unicode(
 template <typename Char>
 static int getEscape(const Char *uc, qsizetype *pos, qsizetype len, int maxNumber = 999)
 {
-    int i = *pos;
+    qsizetype i = *pos;
     ++i;
     if (i < len && uc[i] == u'L')
         ++i;
