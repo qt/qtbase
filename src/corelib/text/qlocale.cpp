@@ -177,7 +177,7 @@ QLocale::Script QLocalePrivate::codeToScript(QStringView code) noexcept
     unsigned char c3 = code[3].toLower().toLatin1();
 
     const unsigned char *c = script_code_list;
-    for (int i = 0; i < QLocale::LastScript; ++i, c += 4) {
+    for (qsizetype i = 0; i < QLocale::LastScript; ++i, c += 4) {
         if (c0 == c[0] && c1 == c[1] && c2 == c[2] && c3 == c[3])
             return QLocale::Script(i);
     }
@@ -3580,7 +3580,7 @@ QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
             Q_ASSERT(!zero.at(0).isSurrogate());
             char16_t z = zero.at(0).unicode();
             char16_t *const value = reinterpret_cast<char16_t *>(digits.data());
-            for (int i = 0; i < digits.length(); ++i)
+            for (qsizetype i = 0; i < digits.size(); ++i)
                 value[i] = unicodeForDigit(value[i] - '0', z);
         }
 
@@ -3628,7 +3628,7 @@ QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
                     // Assume digitCount < 95, so we can ignore the 3-digit
                     // exponent case (we'll set useDecimal false anyway).
 
-                    const int digitCount = digits.length() / zero.size();
+                    const qsizetype digitCount = digits.size() / zero.size();
                     if (!mustMarkDecimal) {
                         // Decimal separator is skipped if at end; adjust if
                         // that happens for only one form:
@@ -3662,7 +3662,7 @@ QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
 
         // Pad with zeros. LeftAdjusted overrides ZeroPadded.
         if (flags & ZeroPadded && !(flags & LeftAdjusted)) {
-            for (int i = numStr.length() / zero.length() + prefix.size(); i < width; ++i)
+            for (qsizetype i = numStr.size() / zero.size() + prefix.size(); i < width; ++i)
                 numStr.prepend(zero);
         }
     }
@@ -3685,17 +3685,17 @@ QString QLocaleData::decimalForm(QString &&digits, int decpt, int precision,
         for (; decpt < 0; ++decpt)
             digits.prepend(zero);
     } else {
-        for (int i = digits.length() / digitWidth; i < decpt; ++i)
+        for (qsizetype i = digits.size() / digitWidth; i < decpt; ++i)
             digits.append(zero);
     }
 
     switch (pm) {
     case PMDecimalDigits:
-        for (int i = digits.length() / digitWidth - decpt; i < precision; ++i)
+        for (qsizetype i = digits.size() / digitWidth - decpt; i < precision; ++i)
             digits.append(zero);
         break;
     case  PMSignificantDigits:
-        for (int i = digits.length() / digitWidth; i < precision; ++i)
+        for (qsizetype i = digits.size() / digitWidth; i < precision; ++i)
             digits.append(zero);
         break;
     case PMChopTrailingZeros:
@@ -3708,7 +3708,7 @@ QString QLocaleData::decimalForm(QString &&digits, int decpt, int precision,
 
     if (groupDigits) {
         const QString group = groupSeparator();
-        int i = decpt - m_grouping_least;
+        qsizetype i = decpt - m_grouping_least;
         if (i >= m_grouping_top) {
             digits.insert(i * digitWidth, group);
             while ((i -= m_grouping_higher) >= m_grouping_top)
@@ -3733,11 +3733,11 @@ QString QLocaleData::exponentForm(QString &&digits, int decpt, int precision,
 
     switch (pm) {
     case PMDecimalDigits:
-        for (int i = digits.length() / digitWidth; i < precision + 1; ++i)
+        for (qsizetype i = digits.size() / digitWidth; i < precision + 1; ++i)
             digits.append(zero);
         break;
     case PMSignificantDigits:
-        for (int i = digits.length() / digitWidth; i < precision; ++i)
+        for (qsizetype i = digits.size() / digitWidth; i < precision; ++i)
             digits.append(zero);
         break;
     case PMChopTrailingZeros:
@@ -3811,11 +3811,11 @@ QString QLocaleData::applyIntegerFormatting(QString &&numStr, bool negative, int
 
     const QString prefix = signPrefix(negative, flags) + basePrefix;
     // Count how much of width we've used up.  Each digit counts as one
-    int usedWidth = digitCount + prefix.size();
+    qsizetype usedWidth = digitCount + prefix.size();
 
     if (base == 10 && flags & GroupDigits) {
         const QString group = groupSeparator();
-        int i = digitCount - m_grouping_least;
+        qsizetype i = digitCount - m_grouping_least;
         if (i >= m_grouping_top) {
             numStr.insert(i * digitWidth, group);
             ++usedWidth;
@@ -3831,7 +3831,7 @@ QString QLocaleData::applyIntegerFormatting(QString &&numStr, bool negative, int
     if (noPrecision)
         precision = 1;
 
-    for (int i = numStr.length(); i < precision; ++i) {
+    for (qsizetype i = numStr.size(); i < precision; ++i) {
         numStr.prepend(zero);
         usedWidth++;
     }
@@ -3839,7 +3839,7 @@ QString QLocaleData::applyIntegerFormatting(QString &&numStr, bool negative, int
     // LeftAdjusted overrides ZeroPadded; and sprintf() only pads when
     // precision is not specified in the format string.
     if (noPrecision && flags & ZeroPadded && !(flags & LeftAdjusted)) {
-        for (int i = usedWidth; i < width; ++i)
+        for (qsizetype i = usedWidth; i < width; ++i)
             numStr.prepend(zero);
     }
 
@@ -3868,11 +3868,11 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
     auto length = s.size();
     decltype(length) idx = 0;
 
-    int digitsInGroup = 0;
-    int decpt_idx = -1;
-    int last_separator_idx = -1;
-    int start_of_digits_idx = -1;
-    int exponent_idx = -1;
+    qsizetype digitsInGroup = 0;
+    qsizetype decpt_idx = -1;
+    qsizetype last_separator_idx = -1;
+    qsizetype start_of_digits_idx = -1;
+    qsizetype exponent_idx = -1;
 
     while (idx < length) {
         const QStringView in = QStringView(uc + idx, uc[idx].isHighSurrogate() ? 2 : 1);
@@ -4219,7 +4219,7 @@ QString QLocale::currencySymbol(QLocale::CurrencySymbolFormat format) const
     case CurrencyIsoCode: {
         const char *code = d->m_data->m_currency_iso_code;
         if (auto len = qstrnlen(code, 3))
-            return QString::fromLatin1(code, int(len));
+            return QString::fromLatin1(code, qsizetype(len));
         break;
     }
     }
@@ -4416,12 +4416,12 @@ QStringList QLocale::uiLanguages() const
     {
         locales.append(*this);
     }
-    for (int i = locales.size(); i-- > 0; ) {
+    for (qsizetype i = locales.size(); i-- > 0; ) {
         const QLocale &locale = locales.at(i);
         const auto data = locale.d->m_data;
         QLocaleId id = data->id();
 
-        int j;
+        qsizetype j;
         QByteArray prior;
         if (isSystem && i < uiLanguages.size()) {
             // Adding likely-adjusted forms to system locale's list.

@@ -292,11 +292,11 @@ public:
         {
             return { reinterpret_cast<const QChar *>(table + offset), size };
         }
-        [[nodiscard]] QString getListEntry(const char16_t *table, int index) const
+        [[nodiscard]] QString getListEntry(const char16_t *table, qsizetype index) const
         {
             return listEntry(table, index).getData(table);
         }
-        [[nodiscard]] QStringView viewListEntry(const char16_t *table, int index) const
+        [[nodiscard]] QStringView viewListEntry(const char16_t *table, qsizetype index) const
         {
             return listEntry(table, index).viewData(table);
         }
@@ -309,7 +309,7 @@ public:
             return 0;
         }
     private:
-        [[nodiscard]] DataRange listEntry(const char16_t *table, int index) const
+        [[nodiscard]] DataRange listEntry(const char16_t *table, qsizetype index) const
         {
             const char16_t separator = ';';
             quint16 i = 0;
