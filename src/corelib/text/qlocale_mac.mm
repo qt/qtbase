@@ -128,13 +128,13 @@ static QString macZeroDigit()
     return QString::fromCFString(value);
 }
 
-static QString zeroPad(QString &&number, int minDigits, const QString &zero)
+static QString zeroPad(QString &&number, qsizetype minDigits, const QString &zero)
 {
     // Need to pad with zeros, possibly after a sign.
-    int insert = -1, digits = 0;
+    qsizetype insert = -1, digits = 0;
     auto it = QStringIterator(number);
     while (it.hasNext()) {
-        int here = it.index();
+        qsizetype here = it.index();
         if (QChar::isDigit(it.next())) {
             if (insert < 0)
                 insert = here;
@@ -154,10 +154,10 @@ static QString trimTwoDigits(QString &&number)
     // Retain any sign, but remove all but the last two digits.
     // We know number has at least four digits - it came from fourDigitYear().
     // Note that each digit might be a surrogate pair.
-    int first = -1, prev = -1, last = -1;
+    qsizetype first = -1, prev = -1, last = -1;
     auto it = QStringIterator(number);
     while (it.hasNext()) {
-        int here = it.index();
+        qsizetype here = it.index();
         if (QChar::isDigit(it.next())) {
             if (first == -1)
                 last = first = here;
