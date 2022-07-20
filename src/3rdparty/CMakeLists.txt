@@ -21,16 +21,6 @@ if(QT_FEATURE_gui AND QT_FEATURE_harfbuzz AND NOT QT_FEATURE_system_harfbuzz)
 endif()
 qt_install_3rdparty_library_wrap_config_extra_file(BundledHarfbuzz)
 
-if(QT_FEATURE_regularexpression AND NOT QT_FEATURE_system_pcre2)
-    add_subdirectory(pcre2)
-endif()
-qt_install_3rdparty_library_wrap_config_extra_file(BundledPcre2)
-
-if(NOT QT_FEATURE_system_zlib)
-    add_subdirectory(zlib)
-endif()
-qt_install_3rdparty_library_wrap_config_extra_file(BundledZLIB)
-
 if (ANDROID)
     add_subdirectory(gradle)
 endif()

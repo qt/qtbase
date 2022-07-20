@@ -12,8 +12,6 @@ if(QT_FEATURE_gui)
     qt_feature_evaluate_features("${CMAKE_CURRENT_SOURCE_DIR}/gui/configure.cmake")
 endif()
 
-add_subdirectory(3rdparty)
-
 function(find_or_build_bootstrap_names)
     if (QT_WILL_BUILD_TOOLS)
         add_subdirectory(tools/bootstrap)  # bootstrap library
@@ -28,7 +26,23 @@ find_or_build_bootstrap_names()
 
 add_subdirectory(entrypoint)
 
+# These 3rd party libraries need to be built before corelib, because corelib
+# does qt_find_package for them.
+if(QT_FEATURE_regularexpression AND NOT QT_FEATURE_system_pcre2)
+    add_subdirectory(3rdparty/pcre2)
+endif()
+qt_install_3rdparty_library_wrap_config_extra_file(BundledPcre2)
+
+if(NOT QT_FEATURE_system_zlib)
+    add_subdirectory(3rdparty/zlib)
+endif()
+qt_install_3rdparty_library_wrap_config_extra_file(BundledZLIB)
+
 add_subdirectory(corelib)
+
+# Needs to be after corelib, because some of them reference Core.
+add_subdirectory(3rdparty)
+
 if (QT_FEATURE_concurrent)
     add_subdirectory(concurrent)
 endif()
