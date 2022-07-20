@@ -46,6 +46,8 @@ QT_WARNING_DISABLE_GCC("-Wfree-nonheap-object") // false positive tracking
 #include "private/qgregoriancalendar_p.h"
 #include "qcalendar.h"
 
+#include <q20iterator.h>
+
 QT_BEGIN_NAMESPACE
 
 QT_IMPL_METATYPE_EXTERN_TAGGED(QList<Qt::DayOfWeek>, QList_Qt__DayOfWeek)
@@ -461,9 +463,9 @@ QByteArray QLocalePrivate::bcp47Name(char separator) const
     return m_data->id().withLikelySubtagsRemoved().name(separator);
 }
 
-static int findLocaleIndexById(const QLocaleId &localeId)
+static qsizetype findLocaleIndexById(const QLocaleId &localeId)
 {
-    quint16 idx = locale_index[localeId.language_id];
+    qsizetype idx = locale_index[localeId.language_id];
     // If there are no locales for specified language (so we we've got the
     // default language, which has no associated script or country), give up:
     if (localeId.language_id && idx == 0)
@@ -480,14 +482,14 @@ static int findLocaleIndexById(const QLocaleId &localeId)
     return -1;
 }
 
-int QLocaleData::findLocaleIndex(QLocaleId lid)
+qsizetype QLocaleData::findLocaleIndex(QLocaleId lid)
 {
     QLocaleId localeId = lid;
     QLocaleId likelyId = localeId.withLikelySubtagsAdded();
     const ushort fallback = likelyId.language_id;
 
     // Try a straight match with the likely data:
-    int index = findLocaleIndexById(likelyId);
+    qsizetype index = findLocaleIndexById(likelyId);
     if (index >= 0)
         return index;
     QVarLengthArray<QLocaleId, 6> tried;
@@ -795,7 +797,7 @@ static const QLocaleData *defaultData()
     return default_data;
 }
 
-static uint defaultIndex()
+static qsizetype defaultIndex()
 {
     const QLocaleData *const data = defaultData();
 #ifndef QT_NO_SYSTEMLOCALE
@@ -833,7 +835,7 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
 }
 #endif // QT_NO_DATASTREAM
 
-static const int locale_data_size = sizeof(locale_data)/sizeof(QLocaleData) - 1;
+static constexpr qsizetype locale_data_size = q20::ssize(locale_data) - 1; // trailing guard
 
 Q_CONSTINIT QBasicAtomicInt QLocalePrivate::s_generation = Q_BASIC_ATOMIC_INITIALIZER(0);
 Q_GLOBAL_STATIC(QSharedDataPointer<QLocalePrivate>, defaultLocalePrivate,
@@ -843,8 +845,8 @@ static QLocalePrivate *localePrivateByName(QStringView name)
 {
     if (name == u"C")
         return c_private();
-    const int index = QLocaleData::findLocaleIndex(QLocaleId::fromName(name));
-    Q_ASSERT(index >= 0 && size_t(index) < std::size(locale_data) - 1);
+    const qsizetype index = QLocaleData::findLocaleIndex(QLocaleId::fromName(name));
+    Q_ASSERT(index >= 0 && index < locale_data_size);
     return new QLocalePrivate(locale_data + index, index,
                               locale_data[index].m_language_id == QLocale::C
                               ? QLocale::OmitGroupSeparator : QLocale::DefaultNumberOptions);
@@ -856,8 +858,8 @@ static QLocalePrivate *findLocalePrivate(QLocale::Language language, QLocale::Sc
     if (language == QLocale::C)
         return c_private();
 
-    int index = QLocaleData::findLocaleIndex(QLocaleId { language, script, territory });
-    Q_ASSERT(index >= 0 && size_t(index) < std::size(locale_data) - 1);
+    qsizetype index = QLocaleData::findLocaleIndex(QLocaleId { language, script, territory });
+    Q_ASSERT(index >= 0 && index < locale_data_size);
     const QLocaleData *data = locale_data + index;
 
     QLocale::NumberOptions numberOptions = QLocale::DefaultNumberOptions;

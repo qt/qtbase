@@ -101,7 +101,7 @@ public:
     virtual QVariant query(QueryType type, QVariant in = QVariant()) const;
 
     virtual QLocale fallbackLocale() const;
-    inline uint fallbackLocaleIndex() const;
+    inline qsizetype fallbackLocaleIndex() const;
 private:
     QSystemLocale(bool);
     friend class QSystemLocaleSingleton;
@@ -161,7 +161,7 @@ struct QLocaleData
 public:
     // Having an index for each locale enables us to have diverse sources of
     // data, e.g. calendar locales, as well as the main CLDR-derived data.
-    [[nodiscard]] static int findLocaleIndex(QLocaleId localeId);
+    [[nodiscard]] static qsizetype findLocaleIndex(QLocaleId localeId);
     [[nodiscard]] static const QLocaleData *c();
 
     enum DoubleForm {
@@ -372,7 +372,7 @@ public:
 class QLocalePrivate
 {
 public:
-    constexpr QLocalePrivate(const QLocaleData *data, const uint index,
+    constexpr QLocalePrivate(const QLocaleData *data, qsizetype index,
                              QLocale::NumberOptions numberOptions = QLocale::DefaultNumberOptions,
                              int refs = 0)
         : m_data(data), ref Q_BASIC_ATOMIC_INITIALIZER(refs),
@@ -410,14 +410,14 @@ public:
     // System locale has an m_data all its own; all others have m_data = locale_data + m_index
     const QLocaleData *const m_data;
     QBasicAtomicInt ref;
-    const uint m_index;
+    const qsizetype m_index;
     QLocale::NumberOptions m_numberOptions;
 
     static QBasicAtomicInt s_generation;
 };
 
 #ifndef QT_NO_SYSTEMLOCALE
-uint QSystemLocale::fallbackLocaleIndex() const { return fallbackLocale().d->m_index; }
+qsizetype QSystemLocale::fallbackLocaleIndex() const { return fallbackLocale().d->m_index; }
 #endif
 
 template <>
