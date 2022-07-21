@@ -817,7 +817,7 @@ void tst_QMetaType::createCopy()
             switch (type) {
             case QMetaType::UnknownType:
                 return []() {
-                    char buf[1];
+                    char buf[1] = {};
                     QCOMPARE(QMetaType().create(&buf), nullptr);
                 };
 #define RETURN_CREATE_COPY_FUNCTION(MetaTypeName, MetaTypeId, RealType) \
@@ -1412,7 +1412,7 @@ void tst_QMetaType::constructCopy()
             switch (type) {
             case QMetaType::UnknownType:
                 return []() {
-                    char buf[1], buf2[1];
+                    char buf[1], buf2[1] = {};
                     QCOMPARE(QMetaType().construct(&buf, &buf2), nullptr);
                 };
 #define RETURN_CONSTRUCT_COPY_FUNCTION(MetaTypeName, MetaTypeId, RealType) \
