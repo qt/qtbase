@@ -342,10 +342,9 @@ bool QSqlTableModel::select()
 
     d->clearCache();
 
-    QSqlQuery qu(query, d->db);
-    setQuery(qu);
+    setQuery(query, d->db);
 
-    if (!qu.isActive() || lastError().isValid()) {
+    if (!d->query.isActive() || lastError().isValid()) {
         // something went wrong - revert to non-select state
         d->initRecordAndPrimaryIndex();
         endResetModel();
@@ -579,18 +578,6 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
 bool QSqlTableModel::clearItemData(const QModelIndex &index)
 {
     return setData(index, QVariant(), Qt::EditRole);
-}
-
-/*!
-    This function simply calls QSqlQueryModel::setQuery(\a query).
-    You should normally not call it on a QSqlTableModel. Instead, use
-    setTable(), setSort(), setFilter(), etc., to set up the query.
-
-    \sa selectStatement()
-*/
-void QSqlTableModel::setQuery(const QSqlQuery &query)
-{
-    QT_IGNORE_DEPRECATIONS(QSqlQueryModel::setQuery(query);)
 }
 
 /*!

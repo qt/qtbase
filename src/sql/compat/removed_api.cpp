@@ -27,6 +27,13 @@ QSqlQuery QSqlQueryModel::query() const
     QT_IGNORE_DEPRECATIONS(return query(QT6_CALL_NEW_OVERLOAD);)
 }
 
+#include "qsqltablemodel.h"
+
+void QSqlTableModel::setQuery(const QSqlQuery &query)
+{
+    QT_IGNORE_DEPRECATIONS(QSqlQueryModel::setQuery(query);)
+}
+
 #endif // QT_CONFIG(sqlmodel)
 
 // #include <qotherheader.h>

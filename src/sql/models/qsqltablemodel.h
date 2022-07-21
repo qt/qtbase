@@ -99,7 +99,9 @@ protected:
     virtual QString selectStatement() const;
 
     void setPrimaryKey(const QSqlIndex &key);
+#if QT_SQL_REMOVED_SINCE(6, 5)
     void setQuery(const QSqlQuery &query);
+#endif
     QModelIndex indexInQuery(const QModelIndex &item) const override;
     QSqlRecord primaryValues(int row) const;
 };
