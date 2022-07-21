@@ -76,7 +76,7 @@ from the build directory \n")
     list(JOIN msg "\n" msg)
 
     if(NOT QT_INTERNAL_BUILD_INSTRUCTIONS_SHOWN)
-        message(STATUS "${msg}")
+        qt_configure_print_build_instructions_helper("${msg}")
     endif()
 
     set(QT_INTERNAL_BUILD_INSTRUCTIONS_SHOWN "TRUE" CACHE STRING "" FORCE)
@@ -89,6 +89,13 @@ function(qt_configure_print_summary_helper summary_reports force_show)
         set(CMAKE_MESSAGE_LOG_LEVEL "STATUS")
     endif()
     message(STATUS "Configure summary:\n${__qt_configure_reports}")
+endfunction()
+
+function(qt_configure_print_build_instructions_helper msg)
+    # We want to ensure build instructions are always shown the first time, regardless of the
+    # current log level.
+    set(CMAKE_MESSAGE_LOG_LEVEL "STATUS")
+    message(STATUS "${msg}")
 endfunction()
 
 function(qt_configure_print_summary)
