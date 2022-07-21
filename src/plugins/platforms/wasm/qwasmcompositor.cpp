@@ -233,22 +233,14 @@ int QWasmCompositor::windowCount() const
 
 QWindow *QWasmCompositor::windowAt(QPoint targetPointInScreenCoords, int padding) const
 {
-    int index = m_windowStack.count() - 1;
-    // qDebug() << "window at" << "point" << p << "window count" << index;
+    const auto found = std::find_if(m_windowStack.rbegin(), m_windowStack.rend(),
+        [this, padding, &targetPointInScreenCoords](const QWasmWindow* window) {
+            const QRect geometry = window->windowFrameGeometry()
+                                    .adjusted(-padding, -padding, padding, padding);
 
-    while (index >= 0) {
-        const QWasmWindow *window = m_windowStack.at(index);
-        //qDebug() << "windwAt testing" << compositedWindow.window <<
-
-        QRect geometry = window->windowFrameGeometry()
-                         .adjusted(-padding, -padding, padding, padding);
-
-        if (m_windowVisibility[window] && geometry.contains(targetPointInScreenCoords))
-            return m_windowStack.at(index)->window();
-        --index;
-    }
-
-    return 0;
+            return m_windowVisibility[window] && geometry.contains(targetPointInScreenCoords);
+        });
+    return found != m_windowStack.rend() ? (*found)->window() : nullptr;
 }
 
 QWindow *QWasmCompositor::keyWindow() const
