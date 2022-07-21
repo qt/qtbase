@@ -230,6 +230,16 @@ public:
         MediaVolume,
         MediaVolumeMuted,
         LineEditClearButton,
+        DialogYesToAllButton,
+        DialogNoToAllButton,
+        DialogSaveAllButton,
+        DialogAbortButton,
+        DialogRetryButton,
+        DialogIgnoreButton,
+        RestoreDefaultsButton,
+        TabCloseButton,
+        NStandardPixmap, // assertion value for sync with QStyle::StandardPixmap
+
         // do not add any values below/greater than this
         CustomBase = 0xf0000000
     };

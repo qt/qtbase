@@ -376,6 +376,9 @@ QStyle::QStyle(QStylePrivate &dd)
 {
   Q_D(QStyle);
   d->proxyStyle = this;
+  Q_STATIC_ASSERT_X(int(StandardPixmap::NStandardPixmap) ==
+                    int(QPlatformTheme::StandardPixmap::NStandardPixmap),
+                    "StandardPixmap in QPlatformTheme and QStyle out of sync");
 }
 
 /*!
@@ -2084,6 +2087,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value [since 5.14] SP_DialogIgnoreButton Icon for a standard Ignore button in a QDialogButtonBox.
     \value [since 5.14] SP_RestoreDefaultsButton Icon for a standard RestoreDefaults button in a QDialogButtonBox.
     \value [since 6.3] SP_TabCloseButton Icon for the close button in the tab of a QTabBar.
+    \omitvalue NStandardPixmap
     \value SP_CustomBase  Base value for custom standard pixmaps;
     custom values must be greater than this value.
 
