@@ -784,11 +784,9 @@ QColor::QColor(Spec spec) noexcept
     }
 }
 
-#if QT_DEPRECATED_SINCE(6, 6)
+// ### Qt 7: remove those after deprecating them for the last Qt 6 LTS release
 /*!
     \fn QColor::QColor(const QString &name)
-
-    \deprecated [6.6] Use fromString() instead.
 
     Constructs a named color in the same way as setNamedColor() using
     the given \a name.
@@ -801,8 +799,6 @@ QColor::QColor(Spec spec) noexcept
 /*!
     \fn QColor::QColor(const char *name)
 
-    \deprecated [6.6] Use fromString() instead.
-
     Constructs a named color in the same way as setNamedColor() using
     the given \a name.
 
@@ -813,8 +809,6 @@ QColor::QColor(Spec spec) noexcept
 /*!
     \fn QColor::QColor(QLatin1StringView name)
 
-    \deprecated [6.6] Use fromString() instead.
-
     Constructs a named color in the same way as setNamedColor() using
     the given \a name.
 
@@ -822,7 +816,6 @@ QColor::QColor(Spec spec) noexcept
     \since 5.8
     \sa setNamedColor(), name(), isValid()
 */
-#endif // QT_DEPRECATED_SINCE(6, 6)
 
 /*!
     \fn bool QColor::isValid() const
