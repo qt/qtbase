@@ -47,16 +47,10 @@ public:
              0) {}
     QColor(QRgb rgb) noexcept;
     QColor(QRgba64 rgba64) noexcept;
-#if QT_DEPRECATED_SINCE(6, 6)
-    QT_DEPRECATED_VERSION_X_6_6("Use QColor::fromString() instead.")
     inline QColor(const QString& name);
-    QT_DEPRECATED_VERSION_X_6_6("Use QColor::fromString() instead.")
     explicit inline QColor(QStringView name);
-    QT_DEPRECATED_VERSION_X_6_6("Use QColor::fromString() instead.")
     inline QColor(const char *aname);
-    QT_DEPRECATED_VERSION_X_6_6("Use QColor::fromString() instead.")
     inline QColor(QLatin1StringView name);
-#endif
     QColor(Spec spec) noexcept;
 
     static QColor fromString(QAnyStringView name) noexcept;
