@@ -36,14 +36,6 @@ using namespace emscripten;
 
 Q_GUI_EXPORT int qt_defaultDpiX();
 
-QWasmCompositedWindow::QWasmCompositedWindow()
-    : window(nullptr)
-    , parentWindow(nullptr)
-    , flushPending(false)
-    , visible(false)
-{
-}
-
 bool g_scrollingInvertedFromDevice = false;
 
 static void mouseWheelEvent(emscripten::val event)
@@ -176,32 +168,19 @@ void QWasmCompositor::setEnabled(bool enabled)
     m_isEnabled = enabled;
 }
 
-void QWasmCompositor::addWindow(QWasmWindow *window, QWasmWindow *parentWindow)
+void QWasmCompositor::addWindow(QWasmWindow *window)
 {
-    QWasmCompositedWindow compositedWindow;
-    compositedWindow.window = window;
-    compositedWindow.parentWindow = parentWindow;
-    m_compositedWindows.insert(window, compositedWindow);
+    m_windowVisibility.insert(window, false);
 
-    if (parentWindow == 0)
-        m_windowStack.append(window);
-    else
-        m_compositedWindows[parentWindow].childWindows.append(window);
+    m_windowStack.append(window);
 
     notifyTopWindowChanged(window);
 }
 
 void QWasmCompositor::removeWindow(QWasmWindow *window)
 {
-    QWasmWindow *platformWindow = m_compositedWindows[window].parentWindow;
-
-    if (platformWindow) {
-        QWasmWindow *parentWindow = window;
-        m_compositedWindows[parentWindow].childWindows.removeAll(window);
-    }
-
     m_windowStack.removeAll(window);
-    m_compositedWindows.remove(window);
+    m_windowVisibility.remove(window);
     m_requestUpdateWindows.remove(window);
 
     if (!m_windowStack.isEmpty() && !QGuiApplication::focusWindow()) {
@@ -213,27 +192,22 @@ void QWasmCompositor::removeWindow(QWasmWindow *window)
 
 void QWasmCompositor::setVisible(QWasmWindow *window, bool visible)
 {
-    QWasmCompositedWindow &compositedWindow = m_compositedWindows[window];
-    if (compositedWindow.visible == visible)
+    const bool wasVisible = m_windowVisibility[window];
+    if (wasVisible == visible)
         return;
 
-    compositedWindow.visible = visible;
-    compositedWindow.flushPending = true;
-    if (visible)
-        compositedWindow.damage = compositedWindow.window->geometry();
-    else
-        m_globalDamage = compositedWindow.window->geometry(); // repaint previously covered area.
+    m_windowVisibility[window] = visible;
+    if (!visible)
+        m_globalDamage = window->window()->geometry(); // repaint previously covered area.
 
     requestUpdateWindow(window, QWasmCompositor::ExposeEventDelivery);
 }
 
 void QWasmCompositor::raise(QWasmWindow *window)
 {
-    if (m_compositedWindows.size() <= 1)
+    if (m_windowStack.size() <= 1)
         return;
 
-    QWasmCompositedWindow &compositedWindow = m_compositedWindows[window];
-    compositedWindow.damage = compositedWindow.window->geometry();
     m_windowStack.removeAll(window);
     m_windowStack.append(window);
 
@@ -242,22 +216,14 @@ void QWasmCompositor::raise(QWasmWindow *window)
 
 void QWasmCompositor::lower(QWasmWindow *window)
 {
-    if (m_compositedWindows.size() <= 1)
+    if (m_windowStack.size() <= 1)
         return;
 
     m_windowStack.removeAll(window);
     m_windowStack.prepend(window);
-    QWasmCompositedWindow &compositedWindow = m_compositedWindows[window];
-    m_globalDamage = compositedWindow.window->geometry(); // repaint previously covered area.
+    m_globalDamage = window->window()->geometry(); // repaint previously covered area.
 
     notifyTopWindowChanged(window);
-}
-
-void QWasmCompositor::setParent(QWasmWindow *window, QWasmWindow *parent)
-{
-    m_compositedWindows[window].parentWindow = parent;
-
-    requestUpdate();
 }
 
 int QWasmCompositor::windowCount() const
@@ -271,13 +237,13 @@ QWindow *QWasmCompositor::windowAt(QPoint targetPointInScreenCoords, int padding
     // qDebug() << "window at" << "point" << p << "window count" << index;
 
     while (index >= 0) {
-        const QWasmCompositedWindow &compositedWindow = m_compositedWindows[m_windowStack.at(index)];
+        const QWasmWindow *window = m_windowStack.at(index);
         //qDebug() << "windwAt testing" << compositedWindow.window <<
 
-        QRect geometry = compositedWindow.window->windowFrameGeometry()
+        QRect geometry = window->windowFrameGeometry()
                          .adjusted(-padding, -padding, padding, padding);
 
-        if (compositedWindow.visible && geometry.contains(targetPointInScreenCoords))
+        if (m_windowVisibility[window] && geometry.contains(targetPointInScreenCoords))
             return m_windowStack.at(index)->window();
         --index;
     }
@@ -844,12 +810,8 @@ void QWasmCompositor::frame()
     m_blitter->setRedBlueSwizzle(true);
 
     for (QWasmWindow *window : qAsConst(m_windowStack)) {
-        QWasmCompositedWindow &compositedWindow = m_compositedWindows[window];
-
-        if (!compositedWindow.visible)
-            continue;
-
-        drawWindow(m_blitter.data(), screen(), window);
+        if (m_windowVisibility[window])
+            drawWindow(m_blitter.data(), screen(), window);
     }
 
     m_blitter->release();
