@@ -29,19 +29,6 @@ class QOpenGLContext;
 class QOpenGLTexture;
 class QWasmEventTranslator;
 
-class QWasmCompositedWindow
-{
-public:
-    QWasmCompositedWindow();
-
-    QWasmWindow *window;
-    QWasmWindow *parentWindow;
-    QRegion damage;
-    bool flushPending;
-    bool visible;
-    QList<QWasmWindow *> childWindows;
-};
-
 class QWasmCompositor : public QObject
 {
     Q_OBJECT
@@ -108,13 +95,12 @@ public:
 
     void setEnabled(bool enabled);
 
-    void addWindow(QWasmWindow *window, QWasmWindow *parentWindow = nullptr);
+    void addWindow(QWasmWindow *window);
     void removeWindow(QWasmWindow *window);
 
     void setVisible(QWasmWindow *window, bool visible);
     void raise(QWasmWindow *window);
     void lower(QWasmWindow *window);
-    void setParent(QWasmWindow *window, QWasmWindow *parent);
 
     int windowCount() const;
 
@@ -217,7 +203,7 @@ private:
     QScopedPointer<QOpenGLContext> m_context;
     QScopedPointer<QOpenGLTextureBlitter> m_blitter;
 
-    QHash<QWasmWindow *, QWasmCompositedWindow> m_compositedWindows;
+    QHash<const QWasmWindow *, bool> m_windowVisibility;
     QList<QWasmWindow *> m_windowStack;
     QRegion m_globalDamage; // damage caused by expose, window close, etc.
     bool m_needComposit = false;
