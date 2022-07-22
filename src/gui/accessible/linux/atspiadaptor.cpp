@@ -917,8 +917,17 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
     }
     case QAccessible::NameChanged: {
         if (sendObject || sendObject_property_change || sendObject_property_change_accessible_name) {
-            QString path = pathForInterface(event->accessibleInterface());
-            QVariantList args = packDBusSignalArguments("accessible-name"_L1, 0, 0, variantForPath(path));
+            QAccessibleInterface *iface = event->accessibleInterface();
+            if (!iface) {
+                qCDebug(lcAccessibilityAtspi,
+                        "NameChanged event from invalid accessible.");
+                return;
+            }
+
+            QString path = pathForInterface(iface);
+            QVariantList args = packDBusSignalArguments(
+                "accessible-name"_L1, 0, 0,
+                QVariant::fromValue(QDBusVariant(iface->text(QAccessible::Name))));
             sendDBusSignal(path, ATSPI_DBUS_INTERFACE_EVENT_OBJECT ""_L1,
                            "PropertyChange"_L1, args);
         }
@@ -926,8 +935,17 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
     }
     case QAccessible::DescriptionChanged: {
         if (sendObject || sendObject_property_change || sendObject_property_change_accessible_description) {
-            QString path = pathForInterface(event->accessibleInterface());
-            QVariantList args = packDBusSignalArguments("accessible-description"_L1, 0, 0, variantForPath(path));
+            QAccessibleInterface *iface = event->accessibleInterface();
+            if (!iface) {
+                qCDebug(lcAccessibilityAtspi,
+                        "DescriptionChanged event from invalid accessible.");
+                return;
+            }
+
+            QString path = pathForInterface(iface);
+            QVariantList args = packDBusSignalArguments(
+                "accessible-description"_L1, 0, 0,
+                QVariant::fromValue(QDBusVariant(iface->text(QAccessible::Description))));
             sendDBusSignal(path, ATSPI_DBUS_INTERFACE_EVENT_OBJECT ""_L1,
                            "PropertyChange"_L1, args);
         }
