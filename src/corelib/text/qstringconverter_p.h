@@ -79,7 +79,7 @@ struct QUtf8BaseTraits
     static uchar peekByte(const uchar *ptr, qsizetype n = 0)
     { return ptr[n]; }
 
-    static uchar peekByte(const char8_t *ptr, int n = 0)
+    static uchar peekByte(const char8_t *ptr, qsizetype n = 0)
     { return ptr[n]; }
 
     static qptrdiff availableBytes(const uchar *ptr, const uchar *end)
@@ -91,7 +91,7 @@ struct QUtf8BaseTraits
     static void advanceByte(const uchar *&ptr, qsizetype n = 1)
     { ptr += n; }
 
-    static void advanceByte(const char8_t *&ptr, int n = 1)
+    static void advanceByte(const char8_t *&ptr, qsizetype n = 1)
     { ptr += n; }
 
     static void appendUtf16(char16_t *&ptr, char16_t uc)
