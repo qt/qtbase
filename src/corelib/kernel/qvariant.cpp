@@ -625,13 +625,13 @@ QVariant::QVariant(const QVariant &p)
 */
 
 /*!
-  \fn QVariant::QVariant(QDate val)
+  \fn QVariant::QVariant(QDate val) noexcept
 
     Constructs a new variant with a date value, \a val.
 */
 
 /*!
-  \fn QVariant::QVariant(QTime val)
+  \fn QVariant::QVariant(QTime val) noexcept
 
     Constructs a new variant with a time value, \a val.
 */
@@ -651,7 +651,7 @@ QVariant::QVariant(const QVariant &p)
 
 /*!
     \since 5.0
-    \fn QVariant::QVariant(const QUuid &val)
+    \fn QVariant::QVariant(QUuid val) noexcept
 
     Constructs a new variant with an uuid value, \a val.
 */
@@ -711,49 +711,49 @@ QVariant::QVariant(const QVariant &p)
 */
 
 /*!
-  \fn QVariant::QVariant(const QPoint &val)
+  \fn QVariant::QVariant(QPoint val) noexcept
 
   Constructs a new variant with a point value of \a val.
  */
 
 /*!
-  \fn QVariant::QVariant(const QPointF &val)
+  \fn QVariant::QVariant(QPointF val) noexcept
 
   Constructs a new variant with a point value of \a val.
  */
 
 /*!
-  \fn QVariant::QVariant(const QRectF &val)
+  \fn QVariant::QVariant(QRectF val)
 
   Constructs a new variant with a rect value of \a val.
  */
 
 /*!
-  \fn QVariant::QVariant(const QLineF &val)
+  \fn QVariant::QVariant(QLineF val) noexcept
 
   Constructs a new variant with a line value of \a val.
  */
 
 /*!
-  \fn QVariant::QVariant(const QLine &val)
+  \fn QVariant::QVariant(QLine val) noexcept
 
   Constructs a new variant with a line value of \a val.
  */
 
 /*!
-  \fn QVariant::QVariant(const QRect &val)
+  \fn QVariant::QVariant(QRect val) noexcept
 
   Constructs a new variant with a rect value of \a val.
  */
 
 /*!
-  \fn QVariant::QVariant(const QSize &val)
+  \fn QVariant::QVariant(QSize val) noexcept
 
   Constructs a new variant with a size value of \a val.
  */
 
 /*!
-  \fn QVariant::QVariant(const QSizeF &val)
+  \fn QVariant::QVariant(QSizeF val) noexcept
 
   Constructs a new variant with a size value of \a val.
  */
@@ -765,44 +765,44 @@ QVariant::QVariant(const QVariant &p)
  */
 
 /*!
-  \fn QVariant::QVariant(int val)
+  \fn QVariant::QVariant(int val) noexcept
 
     Constructs a new variant with an integer value, \a val.
 */
 
 /*!
-  \fn QVariant::QVariant(uint val)
+  \fn QVariant::QVariant(uint val) noexcept
 
     Constructs a new variant with an unsigned integer value, \a val.
 */
 
 /*!
-  \fn QVariant::QVariant(qlonglong val)
+  \fn QVariant::QVariant(qlonglong val) noexcept
 
     Constructs a new variant with a long long integer value, \a val.
 */
 
 /*!
-  \fn QVariant::QVariant(qulonglong val)
+  \fn QVariant::QVariant(qulonglong val) noexcept
 
     Constructs a new variant with an unsigned long long integer value, \a val.
 */
 
 
 /*!
-  \fn QVariant::QVariant(bool val)
+  \fn QVariant::QVariant(bool val) noexcept
 
     Constructs a new variant with a boolean value, \a val.
 */
 
 /*!
-  \fn QVariant::QVariant(double val)
+  \fn QVariant::QVariant(double val) noexcept
 
     Constructs a new variant with a floating point value, \a val.
 */
 
 /*!
-  \fn QVariant::QVariant(float val)
+  \fn QVariant::QVariant(float val) noexcept
 
     Constructs a new variant with a floating point value, \a val.
     \since 4.6
@@ -815,7 +815,7 @@ QVariant::QVariant(const QVariant &p)
 */
 
 /*!
-  \fn QVariant::QVariant(QChar c)
+  \fn QVariant::QVariant(QChar c) noexcept
 
   Constructs a new variant with a char value, \a c.
 */
@@ -867,22 +867,22 @@ QVariant::QVariant(QMetaType type, const void *copy) : d(type.iface())
         d = {};
 }
 
-QVariant::QVariant(int val) : d(std::piecewise_construct_t{}, val) {}
-QVariant::QVariant(uint val) : d(std::piecewise_construct_t{}, val) {}
-QVariant::QVariant(qlonglong val) : d(std::piecewise_construct_t{}, val) {}
-QVariant::QVariant(qulonglong val) : d(std::piecewise_construct_t{}, val) {}
-QVariant::QVariant(bool val) : d(std::piecewise_construct_t{}, val) {}
-QVariant::QVariant(double val) : d(std::piecewise_construct_t{}, val) {}
-QVariant::QVariant(float val) : d(std::piecewise_construct_t{}, val) {}
+QVariant::QVariant(int val) noexcept : d(std::piecewise_construct_t{}, val) {}
+QVariant::QVariant(uint val) noexcept : d(std::piecewise_construct_t{}, val) {}
+QVariant::QVariant(qlonglong val) noexcept : d(std::piecewise_construct_t{}, val) {}
+QVariant::QVariant(qulonglong val) noexcept : d(std::piecewise_construct_t{}, val) {}
+QVariant::QVariant(bool val) noexcept : d(std::piecewise_construct_t{}, val) {}
+QVariant::QVariant(double val) noexcept : d(std::piecewise_construct_t{}, val) {}
+QVariant::QVariant(float val) noexcept : d(std::piecewise_construct_t{}, val) {}
 
 QVariant::QVariant(const QByteArray &val) : d(std::piecewise_construct_t{}, val) {}
 QVariant::QVariant(const QBitArray &val) : d(std::piecewise_construct_t{}, val) {}
 QVariant::QVariant(const QString &val) : d(std::piecewise_construct_t{}, val) {}
-QVariant::QVariant(QChar val) : d(std::piecewise_construct_t{}, val) {}
+QVariant::QVariant(QChar val) noexcept : d(std::piecewise_construct_t{}, val) {}
 QVariant::QVariant(const QStringList &val) : d(std::piecewise_construct_t{}, val) {}
 
-QVariant::QVariant(QDate val) : d(std::piecewise_construct_t{}, val) {}
-QVariant::QVariant(QTime val) : d(std::piecewise_construct_t{}, val) {}
+QVariant::QVariant(QDate val) noexcept : d(std::piecewise_construct_t{}, val) {}
+QVariant::QVariant(QTime val) noexcept : d(std::piecewise_construct_t{}, val) {}
 QVariant::QVariant(const QDateTime &val) : d(std::piecewise_construct_t{}, val) {}
 
 QVariant::QVariant(const QList<QVariant> &list) : d(std::piecewise_construct_t{}, list) {}
@@ -895,14 +895,16 @@ QVariant::QVariant(QLatin1StringView val) : QVariant(QString(val)) {}
 QVariant::QVariant(const QEasingCurve &val) : d(std::piecewise_construct_t{}, val) {}
 #endif
 #ifndef QT_NO_GEOM_VARIANT
-QVariant::QVariant(const QPoint &pt) : d(std::piecewise_construct_t{}, pt) {}
-QVariant::QVariant(const QPointF &pt) : d(std::piecewise_construct_t{}, pt) {}
-QVariant::QVariant(const QRect &r) : d(std::piecewise_construct_t{}, r) {}
-QVariant::QVariant(const QRectF &r) : d(std::piecewise_construct_t{}, r) {}
-QVariant::QVariant(const QLine &l) : d(std::piecewise_construct_t{}, l) {}
-QVariant::QVariant(const QLineF &l) : d(std::piecewise_construct_t{}, l) {}
-QVariant::QVariant(const QSize &s) : d(std::piecewise_construct_t{}, s) {}
-QVariant::QVariant(const QSizeF &s) : d(std::piecewise_construct_t{}, s) {}
+QVariant::QVariant(QPoint pt) noexcept : d(std::piecewise_construct_t{}, pt) {}
+QVariant::QVariant(QPointF pt) noexcept : d(std::piecewise_construct_t{}, pt) {}
+QVariant::QVariant(QRect r) noexcept : d(std::piecewise_construct_t{}, r) {}
+QVariant::QVariant(QRectF r) noexcept(sizeof(qreal) * 4 <= Private::MaxInternalSize)
+    : d(std::piecewise_construct_t{}, r) {}
+QVariant::QVariant(QLine l) noexcept : d(std::piecewise_construct_t{}, l) {}
+QVariant::QVariant(QLineF l) noexcept(sizeof(qreal) * 4 <= Private::MaxInternalSize)
+    : d(std::piecewise_construct_t{}, l) {}
+QVariant::QVariant(QSize s) noexcept : d(std::piecewise_construct_t{}, s) {}
+QVariant::QVariant(QSizeF s) noexcept : d(std::piecewise_construct_t{}, s) {}
 #endif
 #ifndef QT_BOOTSTRAPPED
 QVariant::QVariant(const QUrl &u) : d(std::piecewise_construct_t{}, u) {}
@@ -911,7 +913,7 @@ QVariant::QVariant(const QLocale &l) : d(std::piecewise_construct_t{}, l) {}
 #if QT_CONFIG(regularexpression)
 QVariant::QVariant(const QRegularExpression &re) : d(std::piecewise_construct_t{}, re) {}
 #endif // QT_CONFIG(regularexpression)
-QVariant::QVariant(const QUuid &uuid) : d(std::piecewise_construct_t{}, uuid) {}
+QVariant::QVariant(QUuid uuid) noexcept : d(std::piecewise_construct_t{}, uuid) {}
 #ifndef QT_BOOTSTRAPPED
 QVariant::QVariant(const QJsonValue &jsonValue) : d(std::piecewise_construct_t{}, jsonValue) {}
 QVariant::QVariant(const QJsonObject &jsonObject) : d(std::piecewise_construct_t{}, jsonObject) {}

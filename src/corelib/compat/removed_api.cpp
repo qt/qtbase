@@ -293,6 +293,26 @@ int QMetaType::idHelper() const
     return registerHelper(d_ptr);
 }
 
+#include "qvariant.h"
+
+// these implementations aren't as efficient as they used to be prior to
+// replacement, but there's no way to call the ambiguous overload
+QVariant::QVariant(const QUuid &uuid) : QVariant(QVariant::fromValue(uuid)) {}
+#ifndef QT_NO_GEOM_VARIANT
+#include "qline.h"
+#include "qpoint.h"
+#include "qrect.h"
+#include "qsize.h"
+QVariant::QVariant(const QPoint &pt) : QVariant(QVariant::fromValue(pt)) {}
+QVariant::QVariant(const QPointF &pt) : QVariant(QVariant::fromValue(pt)) {}
+QVariant::QVariant(const QRect &r) : QVariant(QVariant::fromValue(r)) {}
+QVariant::QVariant(const QRectF &r) : QVariant(QVariant::fromValue(r)) {}
+QVariant::QVariant(const QLine &l) : QVariant(QVariant::fromValue(l)) {}
+QVariant::QVariant(const QLineF &l) : QVariant(QVariant::fromValue(l)) {}
+QVariant::QVariant(const QSize &s) : QVariant(QVariant::fromValue(s)) {}
+QVariant::QVariant(const QSizeF &s) : QVariant(QVariant::fromValue(s)) {}
+#endif
+
 #include "qxmlstream.h"
 
 QXmlStreamReader::QXmlStreamReader(const QByteArray &data)

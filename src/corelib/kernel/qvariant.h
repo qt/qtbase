@@ -196,13 +196,13 @@ public:
     explicit QVariant(QMetaType type, const void *copy = nullptr);
     QVariant(const QVariant &other);
 
-    QVariant(int i);
-    QVariant(uint ui);
-    QVariant(qlonglong ll);
-    QVariant(qulonglong ull);
-    QVariant(bool b);
-    QVariant(double d);
-    QVariant(float f);
+    QVariant(int i) noexcept;
+    QVariant(uint ui) noexcept;
+    QVariant(qlonglong ll) noexcept;
+    QVariant(qulonglong ull) noexcept;
+    QVariant(bool b) noexcept;
+    QVariant(double d) noexcept;
+    QVariant(float f) noexcept;
 #ifndef QT_NO_CAST_FROM_ASCII
     QT_ASCII_CAST_WARN QVariant(const char *str)
         : QVariant(QString::fromUtf8(str))
@@ -214,22 +214,22 @@ public:
     QVariant(const QString &string);
     QVariant(QLatin1StringView string);
     QVariant(const QStringList &stringlist);
-    QVariant(QChar qchar);
-    QVariant(QDate date);
-    QVariant(QTime time);
+    QVariant(QChar qchar) noexcept;
+    QVariant(QDate date) noexcept;
+    QVariant(QTime time) noexcept;
     QVariant(const QDateTime &datetime);
     QVariant(const QList<QVariant> &list);
     QVariant(const QMap<QString, QVariant> &map);
     QVariant(const QHash<QString, QVariant> &hash);
 #ifndef QT_NO_GEOM_VARIANT
-    QVariant(const QSize &size);
-    QVariant(const QSizeF &size);
-    QVariant(const QPoint &pt);
-    QVariant(const QPointF &pt);
-    QVariant(const QLine &line);
-    QVariant(const QLineF &line);
-    QVariant(const QRect &rect);
-    QVariant(const QRectF &rect);
+    QVariant(QSize size) noexcept;
+    QVariant(QSizeF size) noexcept;
+    QVariant(QPoint pt) noexcept;
+    QVariant(QPointF pt) noexcept;
+    QVariant(QLine line) noexcept;
+    QVariant(QLineF line) noexcept(sizeof(qreal) * 4 <= Private::MaxInternalSize);
+    QVariant(QRect rect) noexcept;
+    QVariant(QRectF rect) noexcept(sizeof(qreal) * 4 <= Private::MaxInternalSize);
 #endif
     QVariant(const QLocale &locale);
 #if QT_CONFIG(regularexpression)
@@ -238,7 +238,7 @@ public:
 #if QT_CONFIG(easingcurve)
     QVariant(const QEasingCurve &easing);
 #endif
-    QVariant(const QUuid &uuid);
+    QVariant(QUuid uuid) noexcept;
 #ifndef QT_BOOTSTRAPPED
     QVariant(const QUrl &url);
     QVariant(const QJsonValue &jsonValue);
@@ -257,6 +257,18 @@ public:
     QVariant(T) = delete;
 #else
     QVariant(const volatile void *) = delete;
+#endif
+
+#if QT_CORE_REMOVED_SINCE(6, 5)
+    QVariant(const QSize &size);
+    QVariant(const QSizeF &size);
+    QVariant(const QPoint &pt);
+    QVariant(const QPointF &pt);
+    QVariant(const QLine &line);
+    QVariant(const QLineF &line);
+    QVariant(const QRect &rect);
+    QVariant(const QRectF &rect);
+    QVariant(const QUuid &uuid);
 #endif
 
     QVariant& operator=(const QVariant &other);
