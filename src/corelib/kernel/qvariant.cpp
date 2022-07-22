@@ -580,7 +580,7 @@ QVariant::QVariant(const QVariant &p)
 }
 
 /*!
-  \fn QVariant::QVariant(const QString &val)
+  \fn QVariant::QVariant(const QString &val) noexcept
 
     Constructs a new variant with a string value, \a val.
 */
@@ -607,19 +607,19 @@ QVariant::QVariant(const QVariant &p)
 */
 
 /*!
-  \fn QVariant::QVariant(const QStringList &val)
+  \fn QVariant::QVariant(const QStringList &val) noexcept
 
     Constructs a new variant with a string list value, \a val.
 */
 
 /*!
-  \fn QVariant::QVariant(const QMap<QString, QVariant> &val)
+  \fn QVariant::QVariant(const QMap<QString, QVariant> &val) noexcept
 
     Constructs a new variant with a map of \l {QVariant}s, \a val.
 */
 
 /*!
-  \fn QVariant::QVariant(const QHash<QString, QVariant> &val)
+  \fn QVariant::QVariant(const QHash<QString, QVariant> &val) noexcept
 
     Constructs a new variant with a hash of \l {QVariant}s, \a val.
 */
@@ -637,7 +637,7 @@ QVariant::QVariant(const QVariant &p)
 */
 
 /*!
-  \fn QVariant::QVariant(const QDateTime &val)
+  \fn QVariant::QVariant(const QDateTime &val) noexcept
 
     Constructs a new variant with a date/time value, \a val.
 */
@@ -658,7 +658,7 @@ QVariant::QVariant(const QVariant &p)
 
 /*!
     \since 5.0
-    \fn QVariant::QVariant(const QModelIndex &val)
+    \fn QVariant::QVariant(const QModelIndex &val) noexcept
 
     Constructs a new variant with a QModelIndex value, \a val.
 */
@@ -699,7 +699,7 @@ QVariant::QVariant(const QVariant &p)
 */
 
 /*!
-  \fn QVariant::QVariant(const QByteArray &val)
+  \fn QVariant::QVariant(const QByteArray &val) noexcept
 
     Constructs a new variant with a bytearray value, \a val.
 */
@@ -809,7 +809,7 @@ QVariant::QVariant(const QVariant &p)
 */
 
 /*!
-    \fn QVariant::QVariant(const QList<QVariant> &val)
+    \fn QVariant::QVariant(const QList<QVariant> &val) noexcept
 
     Constructs a new variant with a list value, \a val.
 */
@@ -875,19 +875,19 @@ QVariant::QVariant(bool val) noexcept : d(std::piecewise_construct_t{}, val) {}
 QVariant::QVariant(double val) noexcept : d(std::piecewise_construct_t{}, val) {}
 QVariant::QVariant(float val) noexcept : d(std::piecewise_construct_t{}, val) {}
 
-QVariant::QVariant(const QByteArray &val) : d(std::piecewise_construct_t{}, val) {}
+QVariant::QVariant(const QByteArray &val) noexcept : d(std::piecewise_construct_t{}, val) {}
 QVariant::QVariant(const QBitArray &val) : d(std::piecewise_construct_t{}, val) {}
-QVariant::QVariant(const QString &val) : d(std::piecewise_construct_t{}, val) {}
+QVariant::QVariant(const QString &val) noexcept : d(std::piecewise_construct_t{}, val) {}
 QVariant::QVariant(QChar val) noexcept : d(std::piecewise_construct_t{}, val) {}
-QVariant::QVariant(const QStringList &val) : d(std::piecewise_construct_t{}, val) {}
+QVariant::QVariant(const QStringList &val) noexcept : d(std::piecewise_construct_t{}, val) {}
 
 QVariant::QVariant(QDate val) noexcept : d(std::piecewise_construct_t{}, val) {}
 QVariant::QVariant(QTime val) noexcept : d(std::piecewise_construct_t{}, val) {}
-QVariant::QVariant(const QDateTime &val) : d(std::piecewise_construct_t{}, val) {}
+QVariant::QVariant(const QDateTime &val) noexcept : d(std::piecewise_construct_t{}, val) {}
 
-QVariant::QVariant(const QList<QVariant> &list) : d(std::piecewise_construct_t{}, list) {}
-QVariant::QVariant(const QMap<QString, QVariant> &map) : d(std::piecewise_construct_t{}, map) {}
-QVariant::QVariant(const QHash<QString, QVariant> &hash) : d(std::piecewise_construct_t{}, hash) {}
+QVariant::QVariant(const QList<QVariant> &list) noexcept : d(std::piecewise_construct_t{}, list) {}
+QVariant::QVariant(const QMap<QString, QVariant> &map) noexcept : d(std::piecewise_construct_t{}, map) {}
+QVariant::QVariant(const QHash<QString, QVariant> &hash) noexcept : d(std::piecewise_construct_t{}, hash) {}
 
 QVariant::QVariant(QLatin1StringView val) : QVariant(QString(val)) {}
 
@@ -921,7 +921,7 @@ QVariant::QVariant(const QJsonArray &jsonArray) : d(std::piecewise_construct_t{}
 QVariant::QVariant(const QJsonDocument &jsonDocument) : d(std::piecewise_construct_t{}, jsonDocument) {}
 #endif // QT_BOOTSTRAPPED
 #if QT_CONFIG(itemmodel)
-QVariant::QVariant(const QModelIndex &modelIndex) : d(std::piecewise_construct_t{}, modelIndex) {}
+QVariant::QVariant(const QModelIndex &modelIndex) noexcept : d(std::piecewise_construct_t{}, modelIndex) {}
 QVariant::QVariant(const QPersistentModelIndex &modelIndex) : d(std::piecewise_construct_t{}, modelIndex) {}
 #endif
 

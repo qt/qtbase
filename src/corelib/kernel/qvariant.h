@@ -209,18 +209,18 @@ public:
     {}
 #endif
 
-    QVariant(const QByteArray &bytearray);
+    QVariant(const QByteArray &bytearray) noexcept;
     QVariant(const QBitArray &bitarray);
-    QVariant(const QString &string);
+    QVariant(const QString &string) noexcept;
     QVariant(QLatin1StringView string);
-    QVariant(const QStringList &stringlist);
+    QVariant(const QStringList &stringlist) noexcept;
     QVariant(QChar qchar) noexcept;
     QVariant(QDate date) noexcept;
     QVariant(QTime time) noexcept;
-    QVariant(const QDateTime &datetime);
-    QVariant(const QList<QVariant> &list);
-    QVariant(const QMap<QString, QVariant> &map);
-    QVariant(const QHash<QString, QVariant> &hash);
+    QVariant(const QDateTime &datetime) noexcept;
+    QVariant(const QList<QVariant> &list) noexcept;
+    QVariant(const QMap<QString, QVariant> &map) noexcept;
+    QVariant(const QHash<QString, QVariant> &hash) noexcept;
 #ifndef QT_NO_GEOM_VARIANT
     QVariant(QSize size) noexcept;
     QVariant(QSizeF size) noexcept;
@@ -247,7 +247,7 @@ public:
     QVariant(const QJsonDocument &jsonDocument);
 #endif // QT_BOOTSTRAPPED
 #if QT_CONFIG(itemmodel)
-    QVariant(const QModelIndex &modelIndex);
+    QVariant(const QModelIndex &modelIndex) noexcept;
     QVariant(const QPersistentModelIndex &modelIndex);
 #endif
 #if !defined(Q_CC_GHS)
