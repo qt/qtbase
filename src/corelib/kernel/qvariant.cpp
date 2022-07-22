@@ -36,7 +36,6 @@
 #include "qjsondocument.h"
 #include "qbytearraylist.h"
 #endif
-#include "private/qvariant_p.h"
 #include "private/qlocale_p.h"
 #include "qmetatype_p.h"
 #include <qmetaobject.h>

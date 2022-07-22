@@ -6,7 +6,6 @@
 #include "qsizepolicy.h"
 #include "qwidget.h"
 
-#include "private/qvariant_p.h"
 #include <private/qmetatype_p.h>
 
 QT_BEGIN_NAMESPACE

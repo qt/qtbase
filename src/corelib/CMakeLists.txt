@@ -151,7 +151,7 @@ qt_internal_add_module(Core
         kernel/qtestsupport_core.cpp kernel/qtestsupport_core.h
         kernel/qtimer.cpp kernel/qtimer.h
         kernel/qtranslator.cpp kernel/qtranslator.h kernel/qtranslator_p.h
-        kernel/qvariant.cpp kernel/qvariant.h kernel/qvariant_p.h
+        kernel/qvariant.cpp kernel/qvariant.h
         kernel/qvariantmap.h kernel/qvarianthash.h kernel/qvariantlist.h
         plugin/qfactoryinterface.cpp plugin/qfactoryinterface.h
         plugin/qfactoryloader.cpp plugin/qfactoryloader_p.h

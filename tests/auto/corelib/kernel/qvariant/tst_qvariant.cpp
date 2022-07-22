@@ -9,7 +9,6 @@
 #include <QSet>
 
 #include <qvariant.h>
-#include <QtCore/private/qvariant_p.h>
 #include <qbitarray.h>
 #include <qbytearraylist.h>
 #include <qdatetime.h>
