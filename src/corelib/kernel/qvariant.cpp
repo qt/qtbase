@@ -281,6 +281,20 @@ static void customClear(QVariant::Private *d)
     }
 }
 
+static QVariant::Private clonePrivate(const QVariant::Private &other)
+{
+    QVariant::Private d = other;
+    if (d.is_shared) {
+        d.data.shared->ref.ref();
+    } else if (const QtPrivate::QMetaTypeInterface *iface = d.typeInterface()) {
+        Q_ASSERT(d.canUseInternalSpace(iface));
+
+        // if not trivially copyable, ask to copy
+        if (iface->copyCtr)
+            QtMetaTypePrivate::copyConstruct(iface, d.data.data, other.data.data);
+    }
+    return d;
+}
 
 } // anonymous used to hide QVariant handlers
 
@@ -512,15 +526,8 @@ QVariant::~QVariant()
 */
 
 QVariant::QVariant(const QVariant &p)
-    : d(p.d)
+    : d(clonePrivate(p.d))
 {
-    if (d.is_shared) {
-        d.data.shared->ref.ref();
-    } else if (const QtPrivate::QMetaTypeInterface *iface = d.typeInterface()) {
-        // ask QMetaType to copy for us
-        Q_ASSERT(d.canUseInternalSpace(iface));
-        d.type().construct(d.data.data, p.constData());
-    }
 }
 
 /*!
@@ -1004,14 +1011,7 @@ QVariant &QVariant::operator=(const QVariant &variant)
         return *this;
 
     clear();
-    if (variant.d.is_shared) {
-        variant.d.data.shared->ref.ref();
-        d = variant.d;
-    } else {
-        d = variant.d;
-        d.type().construct(d.data.data, variant.constData());
-    }
-
+    d = clonePrivate(variant.d);
     return *this;
 }
 
