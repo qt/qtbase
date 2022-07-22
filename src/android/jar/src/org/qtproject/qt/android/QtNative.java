@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.Semaphore;
 import java.util.HashMap;
@@ -37,6 +38,8 @@ import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.InputDevice;
+import android.view.Display;
+import android.hardware.display.DisplayManager;
 import android.database.Cursor;
 import android.provider.DocumentsContract;
 
@@ -590,6 +593,18 @@ public class QtNative
                 view.setVisibility(visible ? View.VISIBLE : View.GONE);
             }
         });
+    }
+
+    public static List<Display> getAvailableDisplays()
+    {
+        Context context = getContext();
+        DisplayManager displayManager =
+                (DisplayManager)context.getSystemService(Context.DISPLAY_SERVICE);
+        if (displayManager != null) {
+            Display[] displays = displayManager.getDisplays();
+            return Arrays.asList(displays);
+        }
+        return new ArrayList<Display>();
     }
 
     public static boolean startApplication(String params, String mainLib) throws Exception

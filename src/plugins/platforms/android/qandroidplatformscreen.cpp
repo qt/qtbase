@@ -52,11 +52,17 @@ private:
 # define PROFILE_SCOPE
 #endif
 
-QAndroidPlatformScreen::QAndroidPlatformScreen()
+Q_DECLARE_JNI_CLASS(Display, "android/view/Display")
+
+Q_DECLARE_JNI_TYPE(DisplayMode, "Landroid/view/Display$Mode;")
+
+QAndroidPlatformScreen::QAndroidPlatformScreen(const QJniObject &displayObject)
     : QObject(), QPlatformScreen()
 {
     m_availableGeometry = QAndroidPlatformIntegration::m_defaultAvailableGeometry;
     m_size = QAndroidPlatformIntegration::m_defaultScreenSize;
+    m_physicalSize = QAndroidPlatformIntegration::m_defaultPhysicalSize;
+
     // Raster only apps should set QT_ANDROID_RASTER_IMAGE_DEPTH to 16
     // is way much faster than 32
     if (qEnvironmentVariableIntValue("QT_ANDROID_RASTER_IMAGE_DEPTH") == 16) {
@@ -66,54 +72,52 @@ QAndroidPlatformScreen::QAndroidPlatformScreen()
         m_format = QImage::Format_ARGB32_Premultiplied;
         m_depth = 32;
     }
-    m_physicalSize = QAndroidPlatformIntegration::m_defaultPhysicalSize;
-    connect(qGuiApp, &QGuiApplication::applicationStateChanged, this, &QAndroidPlatformScreen::applicationStateChanged);
 
-    QJniObject activity(QtAndroid::activity());
-    if (!activity.isValid())
-        return;
-    QJniObject display;
-    if (QNativeInterface::QAndroidApplication::sdkVersion() < 30) {
-        display = activity.callObjectMethod("getWindowManager", "()Landroid/view/WindowManager;")
-                          .callObjectMethod("getDefaultDisplay", "()Landroid/view/Display;");
-    } else {
-        display = activity.callObjectMethod("getDisplay", "()Landroid/view/Display;");
-    }
-    if (!display.isValid())
+    connect(qGuiApp, &QGuiApplication::applicationStateChanged, this,
+            &QAndroidPlatformScreen::applicationStateChanged);
+
+    if (!displayObject.isValid())
         return;
 
-    m_name = display.callObjectMethod("getName", "()Ljava/lang/String;").toString();
-    m_refreshRate = display.callMethod<jfloat>("getRefreshRate");
+    m_size = QSize(displayObject.callMethod<jint>("getWidth"), displayObject.callMethod<jint>("getHeight"));
+    m_name = displayObject.callObjectMethod<jstring>("getName").toString();
+    m_refreshRate = displayObject.callMethod<jfloat>("getRefreshRate");
 
-    if (QNativeInterface::QAndroidApplication::sdkVersion() < 23) {
-        m_modes << Mode { .size = m_physicalSize.toSize(), .refreshRate = m_refreshRate };
-        return;
+    if (QNativeInterface::QAndroidApplication::sdkVersion() >= 23) {
+        const QJniObject currentMode = displayObject.callObjectMethod<QtJniTypes::DisplayMode>("getMode");
+        const jint currentModeId = currentMode.callMethod<jint>("getModeId");
+
+        const QJniObject supportedModes = displayObject.callObjectMethod<QtJniTypes::DisplayMode[]>(
+            "getSupportedModes");
+        const auto modeArray = jobjectArray(supportedModes.object());
+
+        QJniEnvironment env;
+        const auto size = env->GetArrayLength(modeArray);
+        for (jsize i = 0; i < size; ++i) {
+            const auto mode = QJniObject::fromLocalRef(env->GetObjectArrayElement(modeArray, i));
+            const int physicalWidth = mode.callMethod<jint>("getPhysicalWidth");
+            const int physicalHeight = mode.callMethod<jint>("getPhysicalHeight");
+
+            if (currentModeId == mode.callMethod<jint>("getModeId")) {
+                m_currentMode = i;
+                m_physicalSize = QSize {
+                    physicalWidth,
+                    physicalHeight
+                };
+            }
+
+            m_modes << QPlatformScreen::Mode {
+                .size = QSize { physicalWidth, physicalHeight },
+                .refreshRate = mode.callMethod<jfloat>("getRefreshRate")
+            };
+        }
     }
-
-    QJniEnvironment env;
-    const jint currentMode = display.callObjectMethod("getMode", "()Landroid/view/Display$Mode;")
-                                    .callMethod<jint>("getModeId");
-    const auto modes = display.callObjectMethod("getSupportedModes",
-                                                "()[Landroid/view/Display$Mode;");
-    const auto modesArray = jobjectArray(modes.object());
-    const auto sz = env->GetArrayLength(modesArray);
-    for (jsize i = 0; i < sz; ++i) {
-        auto mode = QJniObject::fromLocalRef(env->GetObjectArrayElement(modesArray, i));
-        if (currentMode == mode.callMethod<jint>("getModeId"))
-            m_currentMode = m_modes.size();
-        m_modes << Mode { .size = QSize { mode.callMethod<jint>("getPhysicalHeight"),
-                                          mode.callMethod<jint>("getPhysicalWidth") },
-                          .refreshRate = mode.callMethod<jfloat>("getRefreshRate") };
-    }
-
-    if (m_modes.isEmpty())
-        m_modes << Mode { .size = m_physicalSize.toSize(), .refreshRate = m_refreshRate };
 }
 
 QAndroidPlatformScreen::~QAndroidPlatformScreen()
 {
-    if (m_id != -1) {
-        QtAndroid::destroySurface(m_id);
+    if (m_surfaceId != -1) {
+        QtAndroid::destroySurface(m_surfaceId);
         m_surfaceWaitCondition.wakeOne();
         releaseSurface();
     }
@@ -304,9 +308,9 @@ void QAndroidPlatformScreen::setAvailableGeometry(const QRect &rect)
         }
     }
 
-    if (m_id != -1) {
+    if (m_surfaceId != -1) {
         releaseSurface();
-        QtAndroid::setSurfaceGeometry(m_id, rect);
+        QtAndroid::setSurfaceGeometry(m_surfaceId, rect);
     }
 }
 
@@ -317,8 +321,8 @@ void QAndroidPlatformScreen::applicationStateChanged(Qt::ApplicationState state)
 
     if (state <=  Qt::ApplicationHidden) {
         lockSurface();
-        QtAndroid::destroySurface(m_id);
-        m_id = -1;
+        QtAndroid::destroySurface(m_surfaceId);
+        m_surfaceId = -1;
         releaseSurface();
         unlockSurface();
     }
@@ -361,17 +365,17 @@ void QAndroidPlatformScreen::doRedraw(QImage* screenGrabImage)
     }
     if (!hasVisibleRasterWindows) {
         lockSurface();
-        if (m_id != -1) {
-            QtAndroid::destroySurface(m_id);
+        if (m_surfaceId != -1) {
+            QtAndroid::destroySurface(m_surfaceId);
             releaseSurface();
-            m_id = -1;
+            m_surfaceId = -1;
         }
         unlockSurface();
         return;
     }
     QMutexLocker lock(&m_surfaceMutex);
-    if (m_id == -1 && m_rasterSurfaces) {
-        m_id = QtAndroid::createSurface(this, geometry(), true, m_depth);
+    if (m_surfaceId == -1 && m_rasterSurfaces) {
+        m_surfaceId = QtAndroid::createSurface(this, geometry(), true, m_depth);
         AndroidDeadlockProtector protector;
         if (!protector.acquire())
             return;

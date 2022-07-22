@@ -56,6 +56,11 @@ Qt::ScreenOrientation QAndroidPlatformIntegration::m_nativeOrientation = Qt::Pri
 bool QAndroidPlatformIntegration::m_showPasswordEnabled = false;
 static bool m_running = false;
 
+Q_DECLARE_JNI_CLASS(QtNative, "org/qtproject/qt/android/QtNative")
+Q_DECLARE_JNI_CLASS(Display, "android/view/Display")
+
+Q_DECLARE_JNI_TYPE(List, "Ljava/util/List;")
+
 void *QAndroidPlatformNativeInterface::nativeResourceForIntegration(const QByteArray &resource)
 {
     if (resource=="JavaVM")
@@ -163,10 +168,33 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
     if (Q_UNLIKELY(!eglBindAPI(EGL_OPENGL_ES_API)))
         qFatal("Could not bind GL_ES API");
 
-    m_primaryScreen = new QAndroidPlatformScreen();
-    QWindowSystemInterface::handleScreenAdded(m_primaryScreen);
-    m_primaryScreen->setSizeParameters(m_defaultPhysicalSize, m_defaultScreenSize,
-                                       m_defaultAvailableGeometry);
+    static const int primaryDisplayId = QJniObject::getStaticField<jint>(
+        QtJniTypes::className<QtJniTypes::Display>(), "DEFAULT_DISPLAY");
+
+    const QJniObject nativeDisplaysList = QJniObject::callStaticObjectMethod<QtJniTypes::List>(
+                QtJniTypes::className<QtJniTypes::QtNative>(),
+                "getAvailableDisplays");
+
+    const int numberOfAvailableDisplays = nativeDisplaysList.callMethod<jint>("size");
+    for (int i = 0; i < numberOfAvailableDisplays; ++i) {
+        const QJniObject display =
+                nativeDisplaysList.callObjectMethod<jobject, jint>("get", jint(i));
+
+        const bool isPrimary = (primaryDisplayId == display.callMethod<jint>("getDisplayId"));
+        auto screen = new QAndroidPlatformScreen(display);
+
+        if (isPrimary)
+            m_primaryScreen = screen;
+
+        QWindowSystemInterface::handleScreenAdded(screen, isPrimary);
+    }
+
+    if (numberOfAvailableDisplays == 0) {
+        // If no displays are found, add a dummy display
+        auto defaultScreen = new QAndroidPlatformScreen(QJniObject {});
+        m_primaryScreen = defaultScreen;
+        QWindowSystemInterface::handleScreenAdded(defaultScreen, true);
+    }
 
     m_mainThread = QThread::currentThread();
 

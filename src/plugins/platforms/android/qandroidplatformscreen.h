@@ -24,7 +24,7 @@ class QAndroidPlatformScreen: public QObject, public QPlatformScreen, public And
 {
     Q_OBJECT
 public:
-    QAndroidPlatformScreen();
+    QAndroidPlatformScreen(const QJniObject &displayObject);
     ~QAndroidPlatformScreen();
 
     QRect geometry() const override { return QRect(QPoint(), m_size); }
@@ -38,7 +38,6 @@ public:
     int currentMode() const override { return m_currentMode; }
     int preferredMode() const override { return m_currentMode; }
     qreal refreshRate() const override { return m_refreshRate; }
-
     inline QWindow *topWindow() const;
     QWindow *topLevelAt(const QPoint & p) const override;
 
@@ -94,7 +93,7 @@ private slots:
     void doRedraw(QImage *screenGrabImage = nullptr);
 
 private:
-    int m_id = -1;
+    int m_surfaceId = -1;
     QAtomicInt m_rasterSurfaces = 0;
     ANativeWindow* m_nativeSurface = nullptr;
     QWaitCondition m_surfaceWaitCondition;
