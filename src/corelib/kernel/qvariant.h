@@ -445,7 +445,8 @@ public:
         quintptr is_null : 1;
         quintptr packedType : sizeof(QMetaType) * 8 - 2;
 
-        Private() noexcept : is_shared(false), is_null(true), packedType(0) {}
+        constexpr Private() noexcept : is_shared(false), is_null(true), packedType(0) {}
+        template <typename T> explicit Private(std::piecewise_construct_t, const T &t);
         explicit Private(QMetaType type) noexcept : is_shared(false), is_null(false)
         {
             quintptr mt = quintptr(type.d_ptr);
@@ -464,9 +465,6 @@ public:
         template<typename T>
         const T &get() const
         { return *static_cast<const T *>(CanUseInternalSpace<T> ? &data.data : data.shared->data()); }
-        template<typename T>
-        void set(const T &t)
-        { *static_cast<T *>(CanUseInternalSpace<T> ? &data.data : data.shared->data()) = t; }
 
         inline const QtPrivate::QMetaTypeInterface* typeInterface() const
         {

@@ -298,6 +298,22 @@ static QVariant::Private clonePrivate(const QVariant::Private &other)
 
 } // anonymous used to hide QVariant handlers
 
+template <typename T> inline
+QVariant::Private::Private(std::piecewise_construct_t, const T &t)
+    : is_shared(!CanUseInternalSpace<T>), is_null(std::is_same_v<T, std::nullptr_t>)
+{
+    const QtPrivate::QMetaTypeInterface *iface = QtPrivate::qMetaTypeInterfaceForType<T>();
+    Q_ASSERT((quintptr(iface) & 0x3) == 0);
+    packedType = quintptr(iface) >> 2;
+
+    if constexpr (CanUseInternalSpace<T>) {
+        new (data.data) T(t);
+    } else {
+        data.shared = QVariant::PrivateShared::create(QtPrivate::qMetaTypeInterfaceForType<T>());
+        new (data.shared->data()) T(t);
+    }
+}
+
 /*!
     \class QVariant
     \inmodule QtCore
@@ -818,133 +834,60 @@ QVariant::QVariant(QMetaType type, const void *copy) : d(type)
         d = {};
 }
 
-QVariant::QVariant(int val)
-    : d(QMetaType::fromType<int>())
-{ d.set(val); }
-QVariant::QVariant(uint val)
-    : d(QMetaType::fromType<uint>())
-{ d.set(val); }
-QVariant::QVariant(qlonglong val)
-    : d(QMetaType::fromType<qlonglong>())
-{ d.set(val); }
-QVariant::QVariant(qulonglong val)
-    : d(QMetaType::fromType<qulonglong>())
-{ d.set(val); }
-QVariant::QVariant(bool val)
-    : d(QMetaType::fromType<bool>())
-{ d.set(val); }
-QVariant::QVariant(double val)
-    : d(QMetaType::fromType<double>())
-{ d.set(val); }
-QVariant::QVariant(float val)
-    : d(QMetaType::fromType<float>())
-{ d.set(val); }
+QVariant::QVariant(int val) : d(std::piecewise_construct_t{}, val) {}
+QVariant::QVariant(uint val) : d(std::piecewise_construct_t{}, val) {}
+QVariant::QVariant(qlonglong val) : d(std::piecewise_construct_t{}, val) {}
+QVariant::QVariant(qulonglong val) : d(std::piecewise_construct_t{}, val) {}
+QVariant::QVariant(bool val) : d(std::piecewise_construct_t{}, val) {}
+QVariant::QVariant(double val) : d(std::piecewise_construct_t{}, val) {}
+QVariant::QVariant(float val) : d(std::piecewise_construct_t{}, val) {}
 
-QVariant::QVariant(const QByteArray &val)
-    : d(QMetaType::fromType<QByteArray>())
-{ v_construct<QByteArray>(&d, val); }
-QVariant::QVariant(const QBitArray &val)
-    : d(QMetaType::fromType<QBitArray>())
-{ v_construct<QBitArray>(&d, val);  }
-QVariant::QVariant(const QString &val)
-    : d(QMetaType::fromType<QString>())
-{ v_construct<QString>(&d, val);  }
-QVariant::QVariant(QChar val)
-    : d(QMetaType::fromType<QChar>())
-{ v_construct<QChar>(&d, val);  }
-QVariant::QVariant(QLatin1StringView val)
-    : d(QMetaType::fromType<QString>())
-{ v_construct<QString>(&d, val); }
-QVariant::QVariant(const QStringList &val)
-    : d(QMetaType::fromType<QStringList>())
-{ v_construct<QStringList>(&d, val); }
+QVariant::QVariant(const QByteArray &val) : d(std::piecewise_construct_t{}, val) {}
+QVariant::QVariant(const QBitArray &val) : d(std::piecewise_construct_t{}, val) {}
+QVariant::QVariant(const QString &val) : d(std::piecewise_construct_t{}, val) {}
+QVariant::QVariant(QChar val) : d(std::piecewise_construct_t{}, val) {}
+QVariant::QVariant(const QStringList &val) : d(std::piecewise_construct_t{}, val) {}
 
-QVariant::QVariant(QDate val)
-    : d(QMetaType::fromType<QDate>())
-{ v_construct<QDate>(&d, val); }
-QVariant::QVariant(QTime val)
-    : d(QMetaType::fromType<QTime>())
-{ v_construct<QTime>(&d, val); }
-QVariant::QVariant(const QDateTime &val)
-    : d(QMetaType::fromType<QDateTime>())
-{ v_construct<QDateTime>(&d, val); }
+QVariant::QVariant(QDate val) : d(std::piecewise_construct_t{}, val) {}
+QVariant::QVariant(QTime val) : d(std::piecewise_construct_t{}, val) {}
+QVariant::QVariant(const QDateTime &val) : d(std::piecewise_construct_t{}, val) {}
+
+QVariant::QVariant(const QList<QVariant> &list) : d(std::piecewise_construct_t{}, list) {}
+QVariant::QVariant(const QMap<QString, QVariant> &map) : d(std::piecewise_construct_t{}, map) {}
+QVariant::QVariant(const QHash<QString, QVariant> &hash) : d(std::piecewise_construct_t{}, hash) {}
+
+QVariant::QVariant(QLatin1StringView val) : QVariant(QString(val)) {}
+
 #if QT_CONFIG(easingcurve)
-QVariant::QVariant(const QEasingCurve &val)
-    : d(QMetaType::fromType<QEasingCurve>())
-{ v_construct<QEasingCurve>(&d, val); }
+QVariant::QVariant(const QEasingCurve &val) : d(std::piecewise_construct_t{}, val) {}
 #endif
-QVariant::QVariant(const QList<QVariant> &list)
-    : d(QMetaType::fromType<QList<QVariant>>())
-{ v_construct<QVariantList>(&d, list); }
-QVariant::QVariant(const QMap<QString, QVariant> &map)
-    : d(QMetaType::fromType<QMap<QString, QVariant>>())
-{ v_construct<QVariantMap>(&d, map); }
-QVariant::QVariant(const QHash<QString, QVariant> &hash)
-    : d(QMetaType::fromType<QHash<QString, QVariant>>())
-{ v_construct<QVariantHash>(&d, hash); }
 #ifndef QT_NO_GEOM_VARIANT
-QVariant::QVariant(const QPoint &pt)
-    : d(QMetaType::fromType<QPoint>())
-{ v_construct<QPoint>(&d, pt); }
-QVariant::QVariant(const QPointF &pt)
-    : d(QMetaType::fromType<QPointF>())
-{ v_construct<QPointF>(&d, pt); }
-QVariant::QVariant(const QRectF &r)
-    : d(QMetaType::fromType<QRectF>())
-{ v_construct<QRectF>(&d, r); }
-QVariant::QVariant(const QLineF &l)
-    : d(QMetaType::fromType<QLineF>())
-{ v_construct<QLineF>(&d, l); }
-QVariant::QVariant(const QLine &l)
-    : d(QMetaType::fromType<QLine>())
-{ v_construct<QLine>(&d, l); }
-QVariant::QVariant(const QRect &r)
-    : d(QMetaType::fromType<QRect>())
-{ v_construct<QRect>(&d, r); }
-QVariant::QVariant(const QSize &s)
-    : d(QMetaType::fromType<QSize>())
-{ v_construct<QSize>(&d, s); }
-QVariant::QVariant(const QSizeF &s)
-    : d(QMetaType::fromType<QSizeF>())
-{ v_construct<QSizeF>(&d, s); }
+QVariant::QVariant(const QPoint &pt) : d(std::piecewise_construct_t{}, pt) {}
+QVariant::QVariant(const QPointF &pt) : d(std::piecewise_construct_t{}, pt) {}
+QVariant::QVariant(const QRect &r) : d(std::piecewise_construct_t{}, r) {}
+QVariant::QVariant(const QRectF &r) : d(std::piecewise_construct_t{}, r) {}
+QVariant::QVariant(const QLine &l) : d(std::piecewise_construct_t{}, l) {}
+QVariant::QVariant(const QLineF &l) : d(std::piecewise_construct_t{}, l) {}
+QVariant::QVariant(const QSize &s) : d(std::piecewise_construct_t{}, s) {}
+QVariant::QVariant(const QSizeF &s) : d(std::piecewise_construct_t{}, s) {}
 #endif
 #ifndef QT_BOOTSTRAPPED
-QVariant::QVariant(const QUrl &u)
-    : d(QMetaType::fromType<QUrl>())
-{ v_construct<QUrl>(&d, u); }
+QVariant::QVariant(const QUrl &u) : d(std::piecewise_construct_t{}, u) {}
 #endif
-QVariant::QVariant(const QLocale &l)
-    : d(QMetaType::fromType<QLocale>())
-{ v_construct<QLocale>(&d, l); }
+QVariant::QVariant(const QLocale &l) : d(std::piecewise_construct_t{}, l) {}
 #if QT_CONFIG(regularexpression)
-QVariant::QVariant(const QRegularExpression &re)
-    : d(QMetaType::fromType<QRegularExpression>())
-{ v_construct<QRegularExpression>(&d, re); }
+QVariant::QVariant(const QRegularExpression &re) : d(std::piecewise_construct_t{}, re) {}
 #endif // QT_CONFIG(regularexpression)
-QVariant::QVariant(const QUuid &uuid)
-    : d(QMetaType::fromType<QUuid>())
-{ v_construct<QUuid>(&d, uuid); }
+QVariant::QVariant(const QUuid &uuid) : d(std::piecewise_construct_t{}, uuid) {}
 #ifndef QT_BOOTSTRAPPED
-QVariant::QVariant(const QJsonValue &jsonValue)
-    : d(QMetaType::fromType<QJsonValue>())
-{ v_construct<QJsonValue>(&d, jsonValue); }
-QVariant::QVariant(const QJsonObject &jsonObject)
-    : d(QMetaType::fromType<QJsonObject>())
-{ v_construct<QJsonObject>(&d, jsonObject); }
-QVariant::QVariant(const QJsonArray &jsonArray)
-    : d(QMetaType::fromType<QJsonArray>())
-{ v_construct<QJsonArray>(&d, jsonArray); }
-QVariant::QVariant(const QJsonDocument &jsonDocument)
-    : d(QMetaType::fromType<QJsonDocument>())
-{ v_construct<QJsonDocument>(&d, jsonDocument); }
+QVariant::QVariant(const QJsonValue &jsonValue) : d(std::piecewise_construct_t{}, jsonValue) {}
+QVariant::QVariant(const QJsonObject &jsonObject) : d(std::piecewise_construct_t{}, jsonObject) {}
+QVariant::QVariant(const QJsonArray &jsonArray) : d(std::piecewise_construct_t{}, jsonArray) {}
+QVariant::QVariant(const QJsonDocument &jsonDocument) : d(std::piecewise_construct_t{}, jsonDocument) {}
 #endif // QT_BOOTSTRAPPED
 #if QT_CONFIG(itemmodel)
-QVariant::QVariant(const QModelIndex &modelIndex)
-    : d(QMetaType::fromType<QModelIndex>())
-{ v_construct<QModelIndex>(&d, modelIndex); }
-QVariant::QVariant(const QPersistentModelIndex &modelIndex)
-    : d(QMetaType::fromType<QPersistentModelIndex>())
-{ v_construct<QPersistentModelIndex>(&d, modelIndex); }
+QVariant::QVariant(const QModelIndex &modelIndex) : d(std::piecewise_construct_t{}, modelIndex) {}
+QVariant::QVariant(const QPersistentModelIndex &modelIndex) : d(std::piecewise_construct_t{}, modelIndex) {}
 #endif
 
 /*! \fn QVariant::Type QVariant::type() const
