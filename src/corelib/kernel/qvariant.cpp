@@ -253,7 +253,7 @@ static void customConstruct(QVariant::Private *d, const void *copy)
         *d = QVariant::Private();
         return;
     }
-    if (!(iface->copyCtr && iface->defaultCtr)) {
+    if (!iface->copyCtr || (!copy && !iface->defaultCtr)) {
         // QVariant requires type to be copy and default constructible
         *d = QVariant::Private();
         qWarning("QVariant: Provided metatype does not support "

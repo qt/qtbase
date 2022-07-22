@@ -312,6 +312,7 @@ private slots:
 
     void constructFromIncompatibleMetaType_data();
     void constructFromIncompatibleMetaType();
+    void copyNonDefaultConstructible();
 
 private:
     void dataStream_data(QDataStream::Version version);
@@ -5133,10 +5134,18 @@ void tst_QVariant::equalsWithoutMetaObject()
     QVERIFY(qobjectVariant != noMetaObjectVariant);
 }
 
-class NonDefaultConstructible
+struct NonDefaultConstructible
 {
-   NonDefaultConstructible(int ) {}
+   NonDefaultConstructible(int i) :i(i) {}
+   int i;
+   friend bool operator==(NonDefaultConstructible l, NonDefaultConstructible r)
+   { return l.i == r.i; }
 };
+
+template <> char *QTest::toString<NonDefaultConstructible>(const NonDefaultConstructible &ndc)
+{
+    return qstrdup('{' + QByteArray::number(ndc.i) + '}');
+}
 
 struct Indestructible
 {
@@ -5175,6 +5184,24 @@ void tst_QVariant::constructFromIncompatibleMetaType()
    QVERIFY(!var.canView(type));
    QVERIFY(!var.canConvert(type));
    QVERIFY(!QVariant(regular).convert(type));
+}
+
+void tst_QVariant::copyNonDefaultConstructible()
+{
+    NonDefaultConstructible ndc(42);
+    QVariant var(QMetaType::fromType<NonDefaultConstructible>(), &ndc);
+    QVERIFY(var.isDetached());
+    QCOMPARE(var.metaType(), QMetaType::fromType<NonDefaultConstructible>());
+    QVERIFY(var.constData() != &ndc);
+
+    // qvariant_cast<T> and QVariant::value<T> don't compile
+    QCOMPARE(*static_cast<const NonDefaultConstructible *>(var.constData()), ndc);
+
+    QVariant var2 = var;
+    var2.detach();      // force another copy
+    QVERIFY(var2.isDetached());
+    QVERIFY(var2.constData() != var.constData());
+    QCOMPARE(var2, var);
 }
 
 QTEST_MAIN(tst_QVariant)
