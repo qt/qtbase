@@ -298,6 +298,12 @@ static QVariant::Private clonePrivate(const QVariant::Private &other)
 
 } // anonymous used to hide QVariant handlers
 
+inline QVariant::Private::Private(const QtPrivate::QMetaTypeInterface *iface) noexcept
+    : is_shared(false), is_null(false), packedType(quintptr(iface) >> 2)
+{
+    Q_ASSERT((quintptr(iface) & 0x3) == 0);
+}
+
 template <typename T> inline
 QVariant::Private::Private(std::piecewise_construct_t, const T &t)
     : is_shared(!CanUseInternalSpace<T>), is_null(std::is_same_v<T, std::nullptr_t>)
@@ -826,7 +832,7 @@ QVariant::QVariant(const QVariant &p)
 
     \sa QVariant::fromValue(), QMetaType::Type
 */
-QVariant::QVariant(QMetaType type, const void *copy) : d(type)
+QVariant::QVariant(QMetaType type, const void *copy) : d(type.iface())
 {
     if (isValidMetaTypeForVariant(type.iface(), copy))
         customConstruct(type.iface(), &d, copy);
@@ -978,7 +984,7 @@ void QVariant::detach()
         return;
 
     Q_ASSERT(isValidMetaTypeForVariant(d.typeInterface(), constData()));
-    Private dd(d.type());
+    Private dd(d.typeInterface());
     customConstruct(d.typeInterface(), &dd, constData());
     if (!d.data.shared->ref.deref())
         customClear(&d);

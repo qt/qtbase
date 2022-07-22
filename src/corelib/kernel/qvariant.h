@@ -446,14 +446,8 @@ public:
         quintptr packedType : sizeof(QMetaType) * 8 - 2;
 
         constexpr Private() noexcept : is_shared(false), is_null(true), packedType(0) {}
+        explicit Private(const QtPrivate::QMetaTypeInterface *iface) noexcept;
         template <typename T> explicit Private(std::piecewise_construct_t, const T &t);
-        explicit Private(QMetaType type) noexcept : is_shared(false), is_null(false)
-        {
-            quintptr mt = quintptr(type.d_ptr);
-            Q_ASSERT((mt & 0x3) == 0);
-            packedType = mt >> 2;
-        }
-        explicit Private(int type) noexcept : Private(QMetaType(type)) {}
 
         const void *storage() const
         { return is_shared ? data.shared->data() : &data.data; }
