@@ -452,9 +452,6 @@ public:
         const void *storage() const
         { return is_shared ? data.shared->data() : &data.data; }
 
-        const void *internalStorage() const
-        { Q_ASSERT(is_shared); return &data.data; }
-
         // determine internal storage at compile time
         template<typename T>
         const T &get() const
