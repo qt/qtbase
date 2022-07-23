@@ -302,7 +302,7 @@ class Q_CORE_EXPORT QVariant
     QT_DEPRECATED_VERSION_X_6_0("Use typeId() or metaType().")
     Type type() const
     {
-        int type = d.typeId();
+        int type = d.type().id();
         return type >= QMetaType::User ? UserType : static_cast<Type>(type);
     }
     QT_DEPRECATED_VERSION_6_0
@@ -468,11 +468,6 @@ public:
         inline QMetaType type() const
         {
             return QMetaType(typeInterface());
-        }
-
-        inline int typeId() const
-        {
-            return type().id();
         }
     };
  public:

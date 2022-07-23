@@ -63,7 +63,7 @@ namespace { // anonymous used to hide QVariant handlers
  */
 static qlonglong qMetaTypeNumber(const QVariant::Private *d)
 {
-    switch (d->typeId()) {
+    switch (d->type().id()) {
     case QMetaType::Int:
         return d->get<int>();
     case QMetaType::LongLong:
@@ -93,7 +93,7 @@ static qlonglong qMetaTypeNumber(const QVariant::Private *d)
 
 static qulonglong qMetaTypeUNumber(const QVariant::Private *d)
 {
-    switch (d->typeId()) {
+    switch (d->type().id()) {
     case QMetaType::UInt:
         return d->get<unsigned int>();
     case QMetaType::ULongLong:
@@ -113,7 +113,7 @@ static qlonglong qConvertToNumber(const QVariant::Private *d, bool *ok, bool all
 {
     *ok = true;
 
-    switch (uint(d->typeId())) {
+    switch (uint(d->type().id())) {
     case QMetaType::QString: {
         const QString &s = d->get<QString>();
         qlonglong l = s.toLongLong(ok);
@@ -167,7 +167,7 @@ static qlonglong qConvertToNumber(const QVariant::Private *d, bool *ok, bool all
 
     QMetaType typeInfo = d->type();
     if (typeInfo.flags() & QMetaType::IsEnumeration
-        || d->typeId() == QMetaType::QCborSimpleType) {
+        || d->type().id() == QMetaType::QCborSimpleType) {
         switch (typeInfo.sizeOf()) {
         case 1:
             return d->get<signed char>();
@@ -187,7 +187,7 @@ static qlonglong qConvertToNumber(const QVariant::Private *d, bool *ok, bool all
 static qreal qConvertToRealNumber(const QVariant::Private *d, bool *ok)
 {
     *ok = true;
-    switch (uint(d->typeId())) {
+    switch (uint(d->type().id())) {
     case QMetaType::QString:
         return d->get<QString>().toDouble(ok);
     case QMetaType::Double:
@@ -1176,7 +1176,7 @@ void QVariant::load(QDataStream &s)
     void *data = const_cast<void *>(constData());
     if (!d.type().load(s, data)) {
         s.setStatus(QDataStream::ReadCorruptData);
-        qWarning("QVariant::load: unable to load type %d.", d.typeId());
+        qWarning("QVariant::load: unable to load type %d.", d.type().id());
     }
 }
 
@@ -1188,7 +1188,7 @@ void QVariant::load(QDataStream &s)
 */
 void QVariant::save(QDataStream &s) const
 {
-    quint32 typeId = d.typeId();
+    quint32 typeId = d.type().id();
     bool saveAsUserType = false;
     if (typeId >= QMetaType::User) {
         typeId = QMetaType::User;
@@ -1267,7 +1267,7 @@ void QVariant::save(QDataStream &s) const
 
     if (!d.type().save(s, constData())) {
         qWarning("QVariant::save: unable to save type '%s' (type id: %d).\n",
-                 d.type().name(), d.typeId());
+                 d.type().name(), d.type().id());
         Q_ASSERT_X(false, "QVariant::save", "Invalid type to save");
     }
 }
@@ -1992,7 +1992,7 @@ bool QVariant::convert(QMetaType targetType)
         return false;
 
     // Fail if the value is not initialized or was forced null by a previous failed convert.
-    if (oldValue.d.is_null && oldValue.d.typeId() != QMetaType::Nullptr)
+    if (oldValue.d.is_null && oldValue.d.type().id() != QMetaType::Nullptr)
         return false;
 
     bool ok = QMetaType::convert(oldValue.d.type(), oldValue.constData(), targetType, data());
@@ -2236,7 +2236,7 @@ static std::optional<int> integralCompare(uint promotedType, const QVariant::Pri
 
 static std::optional<int> numericCompare(const QVariant::Private *d1, const QVariant::Private *d2)
 {
-    uint promotedType = numericTypePromotion(d1->typeId(), d2->typeId());
+    uint promotedType = numericTypePromotion(d1->type().id(), d2->type().id());
     if (promotedType != QMetaType::QReal)
         return integralCompare(promotedType, d1, d2);
     // qreal comparisons
@@ -2257,7 +2257,7 @@ static std::optional<int> numericCompare(const QVariant::Private *d1, const QVar
 
 static bool numericEquals(const QVariant::Private *d1, const QVariant::Private *d2)
 {
-    uint promotedType = numericTypePromotion(d1->typeId(), d2->typeId());
+    uint promotedType = numericTypePromotion(d1->type().id(), d2->type().id());
     if (promotedType != QMetaType::QReal)
         return integralEquals(promotedType, d1, d2);
 
@@ -2308,7 +2308,7 @@ bool QVariant::equals(const QVariant &v) const
 
     if (metatype != v.metaType()) {
         // try numeric comparisons, with C++ type promotion rules (no conversion)
-        if (qIsNumericType(metatype.id()) && qIsNumericType(v.d.typeId()))
+        if (qIsNumericType(metatype.id()) && qIsNumericType(v.d.type().id()))
             return numericEquals(&d, &v.d);
 #ifndef QT_BOOTSTRAPPED
         // if both types are related pointers to QObjects, check if they point to the same object
@@ -2364,7 +2364,7 @@ QPartialOrdering QVariant::compare(const QVariant &lhs, const QVariant &rhs)
     QMetaType t = lhs.d.type();
     if (t != rhs.d.type()) {
         // try numeric comparisons, with C++ type promotion rules (no conversion)
-        if (qIsNumericType(lhs.d.typeId()) && qIsNumericType(rhs.d.typeId()))
+        if (qIsNumericType(lhs.d.type().id()) && qIsNumericType(rhs.d.type().id()))
             return convertOptionalToPartialOrdering(numericCompare(&lhs.d, &rhs.d));
 #ifndef QT_BOOTSTRAPPED
         if (canConvertMetaObject(lhs.metaType(), rhs.metaType()))
@@ -2426,7 +2426,7 @@ bool QVariant::isNull() const
 QDebug QVariant::qdebugHelper(QDebug dbg) const
 {
     QDebugStateSaver saver(dbg);
-    const uint typeId = d.typeId();
+    const uint typeId = d.type().id();
     dbg.nospace() << "QVariant(";
     if (typeId != QMetaType::UnknownType) {
         dbg << d.type().name() << ", ";
