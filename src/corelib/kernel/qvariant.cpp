@@ -298,6 +298,33 @@ static QVariant::Private clonePrivate(const QVariant::Private &other)
 
 } // anonymous used to hide QVariant handlers
 
+inline QVariant::PrivateShared *
+QVariant::PrivateShared::create(const QtPrivate::QMetaTypeInterface *type)
+{
+    Q_ASSERT(type);
+    size_t size = type->size;
+    size_t align = type->alignment;
+
+    size += sizeof(PrivateShared);
+    if (align > sizeof(PrivateShared)) {
+        // The alignment is larger than the alignment we can guarantee for the pointer
+        // directly following PrivateShared, so we need to allocate some additional
+        // memory to be able to fit the object into the available memory with suitable
+        // alignment.
+        size += align - sizeof(PrivateShared);
+    }
+    void *data = operator new(size);
+    auto *ps = new (data) QVariant::PrivateShared();
+    ps->offset = int(((quintptr(ps) + sizeof(PrivateShared) + align - 1) & ~(align - 1)) - quintptr(ps));
+    return ps;
+}
+
+inline void QVariant::PrivateShared::free(PrivateShared *p)
+{
+    p->~PrivateShared();
+    operator delete(p);
+}
+
 inline QVariant::Private::Private(const QtPrivate::QMetaTypeInterface *iface) noexcept
     : is_shared(false), is_null(false), packedType(quintptr(iface) >> 2)
 {

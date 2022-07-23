@@ -390,30 +390,8 @@ public:
     private:
         inline PrivateShared() : ref(1) { }
     public:
-        static PrivateShared *create(const QtPrivate::QMetaTypeInterface *type)
-        {
-            Q_ASSERT(type);
-            size_t size = type->size;
-            size_t align = type->alignment;
-
-            size += sizeof(PrivateShared);
-            if (align > sizeof(PrivateShared)) {
-                // The alignment is larger than the alignment we can guarantee for the pointer
-                // directly following PrivateShared, so we need to allocate some additional
-                // memory to be able to fit the object into the available memory with suitable
-                // alignment.
-                size += align - sizeof(PrivateShared);
-            }
-            void *data = operator new(size);
-            auto *ps = new (data) QVariant::PrivateShared();
-            ps->offset = int(((quintptr(ps) + sizeof(PrivateShared) + align - 1) & ~(align - 1)) - quintptr(ps));
-            return ps;
-        }
-        static void free(PrivateShared *p)
-        {
-            p->~PrivateShared();
-            operator delete(p);
-        }
+        static PrivateShared *create(const QtPrivate::QMetaTypeInterface *type);
+        static void free(PrivateShared *p);
 
         alignas(8) QAtomicInt ref;
         int offset;
