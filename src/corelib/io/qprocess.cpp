@@ -1378,6 +1378,9 @@ void QProcess::setStandardInputFile(const QString &fileName)
     Calling setStandardOutputFile() after the process has started has
     no effect.
 
+    If \a fileName is an empty string, it stops redirecting the standard
+    output. This is useful for restoring the standard output after redirection.
+
     \sa setStandardInputFile(), setStandardErrorFile(),
         setStandardOutputProcess()
 */
