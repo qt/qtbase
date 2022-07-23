@@ -51,6 +51,7 @@ class QVariant;
 template<typename T>
 inline T qvariant_cast(const QVariant &);
 
+template<> constexpr inline bool qIsRelocatable<QVariant> = true;
 class Q_CORE_EXPORT QVariant
 {
     struct CborValueStandIn { qint64 n; void *c; int t; };
@@ -429,8 +430,9 @@ public:
 
     template<typename T>
 #ifndef Q_CLANG_QDOC
-    static inline auto fromValue(const T &value) ->
-    std::enable_if_t<std::is_copy_constructible_v<T>, QVariant>
+    static inline auto fromValue(const T &value)
+        noexcept(std::is_nothrow_copy_constructible_v<T> && Private::CanUseInternalSpace<T>)
+        -> std::enable_if_t<std::is_copy_constructible_v<T> && std::is_destructible_v<T>, QVariant>
 #else
     static inline QVariant fromValue(const T &value)
 #endif
@@ -517,7 +519,7 @@ inline QVariant QVariant::fromValue(const QVariant &value)
 }
 
 template<>
-inline QVariant QVariant::fromValue(const std::monostate &)
+inline QVariant QVariant::fromValue(const std::monostate &) noexcept
 {
     return QVariant();
 }
@@ -556,7 +558,8 @@ QT_WARNING_POP
 inline bool QVariant::isDetached() const
 { return !d.is_shared || d.data.shared->ref.loadRelaxed() == 1; }
 
-Q_DECLARE_SHARED(QVariant)
+inline void swap(QVariant &value1, QVariant &value2) noexcept
+{ value1.swap(value2); }
 
 #ifndef QT_MOC
 
