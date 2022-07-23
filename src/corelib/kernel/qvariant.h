@@ -61,7 +61,7 @@ public:
     private:
         inline PrivateShared() : ref(1) { }
     public:
-        static PrivateShared *create(const QtPrivate::QMetaTypeInterface *type);
+        static PrivateShared *create(size_t size, size_t align);
         static void free(PrivateShared *p);
 
         alignas(8) QAtomicInt ref;

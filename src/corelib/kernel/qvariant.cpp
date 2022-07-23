@@ -236,7 +236,7 @@ static bool isValidMetaTypeForVariant(const QtPrivate::QMetaTypeInterface *iface
 }
 
 template <typename F> static QVariant::PrivateShared *
-customConstructShared(const QtPrivate::QMetaTypeInterface *iface, F &&construct)
+customConstructShared(size_t size, size_t align, F &&construct)
 {
     struct Deleter {
         void operator()(QVariant::PrivateShared *p) const
@@ -245,7 +245,7 @@ customConstructShared(const QtPrivate::QMetaTypeInterface *iface, F &&construct)
 
     // this is exception-safe
     std::unique_ptr<QVariant::PrivateShared, Deleter> ptr;
-    ptr.reset(QVariant::PrivateShared::create(iface));
+    ptr.reset(QVariant::PrivateShared::create(size, align));
     construct(ptr->data());
     return ptr.release();
 }
@@ -273,7 +273,7 @@ static void customConstruct(const QtPrivate::QMetaTypeInterface *iface, QVariant
             return;     // trivial default constructor, we've already memset
         construct(iface, d->data.data, copy);
     } else {
-        d->data.shared = customConstructShared(iface, [=](void *where) {
+        d->data.shared = customConstructShared(iface->size, iface->alignment, [=](void *where) {
             construct(iface, where, copy);
         });
         d->is_shared = true;
@@ -310,13 +310,8 @@ static QVariant::Private clonePrivate(const QVariant::Private &other)
 
 } // anonymous used to hide QVariant handlers
 
-inline QVariant::PrivateShared *
-QVariant::PrivateShared::create(const QtPrivate::QMetaTypeInterface *type)
+inline QVariant::PrivateShared *QVariant::PrivateShared::create(size_t size, size_t align)
 {
-    Q_ASSERT(type);
-    size_t size = type->size;
-    size_t align = type->alignment;
-
     size += sizeof(PrivateShared);
     if (align > sizeof(PrivateShared)) {
         // The alignment is larger than the alignment we can guarantee for the pointer
@@ -362,7 +357,7 @@ QVariant::Private::Private(std::piecewise_construct_t, const T &t)
         new (data.data) T(t);
     } else {
         static_assert(!isNothrowQVariantConstructible); // we allocate memory, even if T doesn't
-        data.shared = customConstructShared(iface, [=](void *where) {
+        data.shared = customConstructShared(sizeof(T), alignof(T), [=](void *where) {
             new (where) T(t);
         });
     }
