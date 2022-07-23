@@ -56,7 +56,65 @@ inline T qvariant_cast(const QVariant &);
 
 class Q_CORE_EXPORT QVariant
 {
- public:
+public:
+    struct PrivateShared
+    {
+    private:
+        inline PrivateShared() : ref(1) { }
+    public:
+        static PrivateShared *create(const QtPrivate::QMetaTypeInterface *type);
+        static void free(PrivateShared *p);
+
+        alignas(8) QAtomicInt ref;
+        int offset;
+
+        const void *data() const { return reinterpret_cast<const uchar *>(this) + offset; }
+        void *data() { return reinterpret_cast<uchar *>(this) + offset; }
+    };
+    struct Private
+    {
+        static constexpr size_t MaxInternalSize =  3 *sizeof(void *);
+        template<typename T> static constexpr bool CanUseInternalSpace =
+                (QTypeInfo<T>::isRelocatable && sizeof(T) <= MaxInternalSize && alignof(T) <= alignof(double));
+        static constexpr bool canUseInternalSpace(const QtPrivate::QMetaTypeInterface *type)
+        {
+            Q_ASSERT(type);
+            return QMetaType::TypeFlags(type->flags) & QMetaType::RelocatableType &&
+                   size_t(type->size) <= MaxInternalSize && size_t(type->alignment) <= alignof(double);
+        }
+
+        union
+        {
+            uchar data[MaxInternalSize] = {};
+            PrivateShared *shared;
+            double _forAlignment; // we want an 8byte alignment on 32bit systems as well
+        } data;
+        quintptr is_shared : 1;
+        quintptr is_null : 1;
+        quintptr packedType : sizeof(QMetaType) * 8 - 2;
+
+        constexpr Private() noexcept : is_shared(false), is_null(true), packedType(0) {}
+        explicit Private(const QtPrivate::QMetaTypeInterface *iface) noexcept;
+        template <typename T> explicit Private(std::piecewise_construct_t, const T &t);
+
+        const void *storage() const
+        { return is_shared ? data.shared->data() : &data.data; }
+
+        // determine internal storage at compile time
+        template<typename T> const T &get() const
+        { return *static_cast<const T *>(CanUseInternalSpace<T> ? &data.data : data.shared->data()); }
+
+        inline const QtPrivate::QMetaTypeInterface *typeInterface() const
+        {
+            return reinterpret_cast<const QtPrivate::QMetaTypeInterface *>(packedType << 2);
+        }
+
+        inline QMetaType type() const
+        {
+            return QMetaType(typeInterface());
+        }
+    };
+
 #if QT_DEPRECATED_SINCE(6, 0)
     enum QT_DEPRECATED_VERSION_X_6_0("Use QMetaType::Type instead.") Type
     {
@@ -384,68 +442,6 @@ class Q_CORE_EXPORT QVariant
     bool canView() const
     { return canView(QMetaType::fromType<T>()); }
 
-public:
-    struct PrivateShared
-    {
-    private:
-        inline PrivateShared() : ref(1) { }
-    public:
-        static PrivateShared *create(const QtPrivate::QMetaTypeInterface *type);
-        static void free(PrivateShared *p);
-
-        alignas(8) QAtomicInt ref;
-        int offset;
-
-        const void *data() const
-        { return reinterpret_cast<const unsigned char *>(this) + offset; }
-        void *data()
-        { return reinterpret_cast<unsigned char *>(this) + offset; }
-    };
-    struct Private
-    {
-        static constexpr size_t MaxInternalSize = 3*sizeof(void *);
-        template<typename T>
-        static constexpr bool CanUseInternalSpace = (QTypeInfo<T>::isRelocatable && sizeof(T) <= MaxInternalSize && alignof(T) <= alignof(double));
-        static constexpr bool canUseInternalSpace(const QtPrivate::QMetaTypeInterface *type)
-        {
-            Q_ASSERT(type);
-            return QMetaType::TypeFlags(type->flags) & QMetaType::RelocatableType &&
-                   size_t(type->size) <= MaxInternalSize && size_t(type->alignment) <= alignof(double);
-        }
-
-        union
-        {
-            uchar data[MaxInternalSize] = {};
-            PrivateShared *shared;
-            double _forAlignment; // we want an 8byte alignment on 32bit systems as well
-        } data;
-        quintptr is_shared : 1;
-        quintptr is_null : 1;
-        quintptr packedType : sizeof(QMetaType) * 8 - 2;
-
-        constexpr Private() noexcept : is_shared(false), is_null(true), packedType(0) {}
-        explicit Private(const QtPrivate::QMetaTypeInterface *iface) noexcept;
-        template <typename T> explicit Private(std::piecewise_construct_t, const T &t);
-
-        const void *storage() const
-        { return is_shared ? data.shared->data() : &data.data; }
-
-        // determine internal storage at compile time
-        template<typename T>
-        const T &get() const
-        { return *static_cast<const T *>(CanUseInternalSpace<T> ? &data.data : data.shared->data()); }
-
-        inline const QtPrivate::QMetaTypeInterface* typeInterface() const
-        {
-            return reinterpret_cast<const QtPrivate::QMetaTypeInterface *>(packedType << 2);
-        }
-
-        inline QMetaType type() const
-        {
-            return QMetaType(typeInterface());
-        }
-    };
- public:
     static QPartialOrdering compare(const QVariant &lhs, const QVariant &rhs);
 
 private:
