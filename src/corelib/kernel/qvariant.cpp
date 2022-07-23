@@ -235,6 +235,21 @@ static bool isValidMetaTypeForVariant(const QtPrivate::QMetaTypeInterface *iface
     return true;
 }
 
+template <typename F> static QVariant::PrivateShared *
+customConstructShared(const QtPrivate::QMetaTypeInterface *iface, F &&construct)
+{
+    struct Deleter {
+        void operator()(QVariant::PrivateShared *p) const
+        { QVariant::PrivateShared::free(p); }
+    };
+
+    // this is exception-safe
+    std::unique_ptr<QVariant::PrivateShared, Deleter> ptr;
+    ptr.reset(QVariant::PrivateShared::create(iface));
+    construct(ptr->data());
+    return ptr.release();
+}
+
 // the type of d has already been set, but other field are not set
 static void customConstruct(const QtPrivate::QMetaTypeInterface *iface, QVariant::Private *d,
                             const void *copy)
@@ -252,20 +267,17 @@ static void customConstruct(const QtPrivate::QMetaTypeInterface *iface, QVariant
     // ### Qt 7: remove nullptr_t special casing
     d->is_null = !copy QT6_ONLY(|| isInterfaceFor<std::nullptr_t>(iface));
 
-    void *dst;
     if (QVariant::Private::canUseInternalSpace(iface)) {
         d->is_shared = false;
-        dst = &d->data;
         if (!copy && !iface->defaultCtr)
             return;     // trivial default constructor, we've already memset
+        construct(iface, d->data.data, copy);
     } else {
-        d->data.shared = QVariant::PrivateShared::create(iface);
+        d->data.shared = customConstructShared(iface, [=](void *where) {
+            construct(iface, where, copy);
+        });
         d->is_shared = true;
-        dst = d->data.shared->data();
     }
-
-    // now ask QMetaType to construct for us
-    construct(iface, dst, copy);
 }
 
 static void customClear(QVariant::Private *d)
@@ -350,8 +362,9 @@ QVariant::Private::Private(std::piecewise_construct_t, const T &t)
         new (data.data) T(t);
     } else {
         static_assert(!isNothrowQVariantConstructible); // we allocate memory, even if T doesn't
-        data.shared = QVariant::PrivateShared::create(QtPrivate::qMetaTypeInterfaceForType<T>());
-        new (data.shared->data()) T(t);
+        data.shared = customConstructShared(iface, [=](void *where) {
+            new (where) T(t);
+        });
     }
 }
 
