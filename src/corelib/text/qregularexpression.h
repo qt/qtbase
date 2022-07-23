@@ -50,10 +50,10 @@ public:
 
     QRegularExpression();
     explicit QRegularExpression(const QString &pattern, PatternOptions options = NoPatternOption);
-    QRegularExpression(const QRegularExpression &re);
+    QRegularExpression(const QRegularExpression &re) noexcept;
     QRegularExpression(QRegularExpression &&re) = default;
     ~QRegularExpression();
-    QRegularExpression &operator=(const QRegularExpression &re);
+    QRegularExpression &operator=(const QRegularExpression &re) noexcept;
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QRegularExpression)
 
     void swap(QRegularExpression &other) noexcept { d.swap(other.d); }

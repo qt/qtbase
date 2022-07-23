@@ -139,12 +139,12 @@ public:
     // make sure const char* doesn't go call the bool constructor
     QCborValue(const void *) = delete;
 
-    QCborValue(const QCborValue &other);
+    QCborValue(const QCborValue &other) noexcept;
     QCborValue(QCborValue &&other) noexcept
         : n(other.n), container(qExchange(other.container, nullptr)), t(qExchange(other.t, Undefined))
     {
     }
-    QCborValue &operator=(const QCborValue &other);
+    QCborValue &operator=(const QCborValue &other) noexcept;
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QCborValue)
 
     void swap(QCborValue &other) noexcept

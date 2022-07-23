@@ -1354,10 +1354,7 @@ QRegularExpression::QRegularExpression(const QString &pattern, PatternOptions op
 
     \sa operator=()
 */
-QRegularExpression::QRegularExpression(const QRegularExpression &re)
-    : d(re.d)
-{
-}
+QRegularExpression::QRegularExpression(const QRegularExpression &re) noexcept = default;
 
 /*!
     \fn QRegularExpression::QRegularExpression(QRegularExpression &&re)
@@ -1386,11 +1383,7 @@ QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QRegularExpressionPrivate)
     Assigns the regular expression \a re to this object, and returns a reference
     to the copy. Both the pattern and the pattern options are copied.
 */
-QRegularExpression &QRegularExpression::operator=(const QRegularExpression &re)
-{
-    d = re.d;
-    return *this;
-}
+QRegularExpression &QRegularExpression::operator=(const QRegularExpression &re) noexcept = default;
 
 /*!
     \fn void QRegularExpression::swap(QRegularExpression &other)

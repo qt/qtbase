@@ -247,15 +247,12 @@ QJsonValue::~QJsonValue() = default;
 /*!
     Creates a copy of \a other.
  */
-QJsonValue::QJsonValue(const QJsonValue &other)
-    : value(other.value)
-{
-}
+QJsonValue::QJsonValue(const QJsonValue &other) noexcept = default;
 
 /*!
     Assigns the value stored in \a other to this object.
  */
-QJsonValue &QJsonValue::operator =(const QJsonValue &other)
+QJsonValue &QJsonValue::operator =(const QJsonValue &other) noexcept
 {
     QJsonValue copy(other);
     swap(copy);

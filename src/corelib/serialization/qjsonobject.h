@@ -25,8 +25,8 @@ public:
 
     ~QJsonObject();
 
-    QJsonObject(const QJsonObject &other);
-    QJsonObject &operator =(const QJsonObject &other);
+    QJsonObject(const QJsonObject &other) noexcept;
+    QJsonObject &operator =(const QJsonObject &other) noexcept;
 
     QJsonObject(QJsonObject &&other) noexcept;
 

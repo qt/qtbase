@@ -896,9 +896,9 @@ public:
     explicit QLocale(QStringView name);
     QLocale(Language language, Territory territory);
     QLocale(Language language, Script script = AnyScript, Territory territory = AnyTerritory);
-    QLocale(const QLocale &other);
+    QLocale(const QLocale &other) noexcept;
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QLocale)
-    QLocale &operator=(const QLocale &other);
+    QLocale &operator=(const QLocale &other) noexcept;
     ~QLocale();
 
     void swap(QLocale &other) noexcept { d.swap(other.d); }

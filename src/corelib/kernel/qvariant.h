@@ -56,6 +56,7 @@ inline T qvariant_cast(const QVariant &);
 
 class Q_CORE_EXPORT QVariant
 {
+    struct CborValueStandIn { qint64 n; void *c; int t; };
 public:
     struct PrivateShared
     {
@@ -206,7 +207,7 @@ public:
     QVariant(float f) noexcept;
 
     QVariant(const QByteArray &bytearray) noexcept;
-    QVariant(const QBitArray &bitarray);
+    QVariant(const QBitArray &bitarray) noexcept;
     QVariant(const QString &string) noexcept;
     QVariant(const QStringList &stringlist) noexcept;
     QVariant(QChar qchar) noexcept;
@@ -226,19 +227,19 @@ public:
     QVariant(QRect rect) noexcept(Private::FitsInInternalSize<sizeof(int) * 4>);
     QVariant(QRectF rect) noexcept(Private::FitsInInternalSize<sizeof(qreal) * 4>);
 #endif
-    QVariant(const QLocale &locale);
+    QVariant(const QLocale &locale) noexcept;
 #if QT_CONFIG(regularexpression)
-    QVariant(const QRegularExpression &re);
+    QVariant(const QRegularExpression &re) noexcept;
 #endif // QT_CONFIG(regularexpression)
 #if QT_CONFIG(easingcurve)
     QVariant(const QEasingCurve &easing);
 #endif
     QVariant(QUuid uuid) noexcept(Private::FitsInInternalSize<16>);
 #ifndef QT_BOOTSTRAPPED
-    QVariant(const QUrl &url);
-    QVariant(const QJsonValue &jsonValue);
-    QVariant(const QJsonObject &jsonObject);
-    QVariant(const QJsonArray &jsonArray);
+    QVariant(const QUrl &url) noexcept;
+    QVariant(const QJsonValue &jsonValue) noexcept(Private::FitsInInternalSize<sizeof(CborValueStandIn)>);
+    QVariant(const QJsonObject &jsonObject) noexcept;
+    QVariant(const QJsonArray &jsonArray) noexcept;
     QVariant(const QJsonDocument &jsonDocument);
 #endif // QT_BOOTSTRAPPED
 #if QT_CONFIG(itemmodel)

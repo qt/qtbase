@@ -1837,7 +1837,7 @@ QUrl::QUrl() : d(nullptr)
 /*!
     Constructs a copy of \a other.
 */
-QUrl::QUrl(const QUrl &other) : d(other.d)
+QUrl::QUrl(const QUrl &other) noexcept : d(other.d)
 {
     if (d)
         d->ref.ref();
@@ -3227,7 +3227,7 @@ bool QUrl::operator !=(const QUrl &url) const
 /*!
     Assigns the specified \a url to this object.
 */
-QUrl &QUrl::operator =(const QUrl &url)
+QUrl &QUrl::operator =(const QUrl &url) noexcept
 {
     if (!d) {
         if (url.d) {

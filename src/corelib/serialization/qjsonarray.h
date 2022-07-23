@@ -23,8 +23,8 @@ public:
 
     ~QJsonArray();
 
-    QJsonArray(const QJsonArray &other);
-    QJsonArray &operator =(const QJsonArray &other);
+    QJsonArray(const QJsonArray &other) noexcept;
+    QJsonArray &operator =(const QJsonArray &other) noexcept;
 
     QJsonArray(QJsonArray &&other) noexcept;
 

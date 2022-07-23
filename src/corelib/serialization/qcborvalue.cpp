@@ -1805,7 +1805,7 @@ QCborValue::QCborValue(QCborTag tag, const QCborValue &tv)
 /*!
     Copies the contents of \a other into this object.
  */
-QCborValue::QCborValue(const QCborValue &other)
+QCborValue::QCborValue(const QCborValue &other) noexcept
     : n(other.n), container(other.container), t(other.t)
 {
     if (container)
@@ -1899,7 +1899,7 @@ void QCborValue::dispose()
 /*!
     Replaces the contents of this QCborObject with a copy of \a other.
  */
-QCborValue &QCborValue::operator=(const QCborValue &other)
+QCborValue &QCborValue::operator=(const QCborValue &other) noexcept
 {
     n = other.n;
     assignContainer(container, other.container);

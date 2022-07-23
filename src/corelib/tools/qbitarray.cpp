@@ -453,7 +453,7 @@ quint32 QBitArray::toUInt32(QSysInfo::Endian endianness, bool *ok) const noexcep
     \overload
 */
 
-/*! \fn QBitArray::QBitArray(const QBitArray &other)
+/*! \fn QBitArray::QBitArray(const QBitArray &other) noexcept
 
     Constructs a copy of \a other.
 
@@ -465,7 +465,7 @@ quint32 QBitArray::toUInt32(QSysInfo::Endian endianness, bool *ok) const noexcep
     \sa operator=()
 */
 
-/*! \fn QBitArray &QBitArray::operator=(const QBitArray &other)
+/*! \fn QBitArray &QBitArray::operator=(const QBitArray &other) noexcept
 
     Assigns \a other to this bit array and returns a reference to
     this bit array.

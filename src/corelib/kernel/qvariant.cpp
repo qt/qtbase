@@ -335,13 +335,21 @@ template <typename T> inline
 QVariant::Private::Private(std::piecewise_construct_t, const T &t)
     : is_shared(!CanUseInternalSpace<T>), is_null(std::is_same_v<T, std::nullptr_t>)
 {
+    // confirm noexceptness
+    static constexpr bool isNothrowQVariantConstructible = noexcept(QVariant(t));
+    static constexpr bool isNothrowCopyConstructible = std::is_nothrow_copy_constructible_v<T>;
+    static constexpr bool isNothrowCopyAssignable = std::is_nothrow_copy_assignable_v<T>;
+
     const QtPrivate::QMetaTypeInterface *iface = QtPrivate::qMetaTypeInterfaceForType<T>();
     Q_ASSERT((quintptr(iface) & 0x3) == 0);
     packedType = quintptr(iface) >> 2;
 
     if constexpr (CanUseInternalSpace<T>) {
+        static_assert(isNothrowQVariantConstructible == isNothrowCopyConstructible);
+        static_assert(isNothrowQVariantConstructible == isNothrowCopyAssignable);
         new (data.data) T(t);
     } else {
+        static_assert(!isNothrowQVariantConstructible); // we allocate memory, even if T doesn't
         data.shared = QVariant::PrivateShared::create(QtPrivate::qMetaTypeInterfaceForType<T>());
         new (data.shared->data()) T(t);
     }
@@ -705,7 +713,7 @@ QVariant::QVariant(const QVariant &p)
 */
 
 /*!
-  \fn QVariant::QVariant(const QBitArray &val)
+  \fn QVariant::QVariant(const QBitArray &val) noexcept
 
     Constructs a new variant with a bitarray value, \a val.
 */
@@ -759,7 +767,7 @@ QVariant::QVariant(const QVariant &p)
  */
 
 /*!
-  \fn QVariant::QVariant(const QUrl &val)
+  \fn QVariant::QVariant(const QUrl &val) noexcept
 
   Constructs a new variant with a url value of \a val.
  */
@@ -821,13 +829,13 @@ QVariant::QVariant(const QVariant &p)
 */
 
 /*!
-  \fn QVariant::QVariant(const QLocale &l)
+  \fn QVariant::QVariant(const QLocale &l) noexcept
 
   Constructs a new variant with a locale value, \a l.
 */
 
 /*!
-  \fn QVariant::QVariant(const QRegularExpression &re)
+  \fn QVariant::QVariant(const QRegularExpression &re) noexcept
 
   \since 5.0
 
@@ -876,7 +884,7 @@ QVariant::QVariant(double val) noexcept : d(std::piecewise_construct_t{}, val) {
 QVariant::QVariant(float val) noexcept : d(std::piecewise_construct_t{}, val) {}
 
 QVariant::QVariant(const QByteArray &val) noexcept : d(std::piecewise_construct_t{}, val) {}
-QVariant::QVariant(const QBitArray &val) : d(std::piecewise_construct_t{}, val) {}
+QVariant::QVariant(const QBitArray &val) noexcept : d(std::piecewise_construct_t{}, val) {}
 QVariant::QVariant(const QString &val) noexcept : d(std::piecewise_construct_t{}, val) {}
 QVariant::QVariant(QChar val) noexcept : d(std::piecewise_construct_t{}, val) {}
 QVariant::QVariant(const QStringList &val) noexcept : d(std::piecewise_construct_t{}, val) {}
@@ -913,17 +921,19 @@ QVariant::QVariant(QSizeF s) noexcept(Private::FitsInInternalSize<sizeof(qreal) 
     : d(std::piecewise_construct_t{}, s) {}
 #endif
 #ifndef QT_BOOTSTRAPPED
-QVariant::QVariant(const QUrl &u) : d(std::piecewise_construct_t{}, u) {}
+QVariant::QVariant(const QUrl &u) noexcept : d(std::piecewise_construct_t{}, u) {}
 #endif
-QVariant::QVariant(const QLocale &l) : d(std::piecewise_construct_t{}, l) {}
+QVariant::QVariant(const QLocale &l) noexcept : d(std::piecewise_construct_t{}, l) {}
 #if QT_CONFIG(regularexpression)
-QVariant::QVariant(const QRegularExpression &re) : d(std::piecewise_construct_t{}, re) {}
+QVariant::QVariant(const QRegularExpression &re) noexcept : d(std::piecewise_construct_t{}, re) {}
 #endif // QT_CONFIG(regularexpression)
 QVariant::QVariant(QUuid uuid) noexcept(Private::FitsInInternalSize<16>) : d(std::piecewise_construct_t{}, uuid) {}
 #ifndef QT_BOOTSTRAPPED
-QVariant::QVariant(const QJsonValue &jsonValue) : d(std::piecewise_construct_t{}, jsonValue) {}
-QVariant::QVariant(const QJsonObject &jsonObject) : d(std::piecewise_construct_t{}, jsonObject) {}
-QVariant::QVariant(const QJsonArray &jsonArray) : d(std::piecewise_construct_t{}, jsonArray) {}
+QVariant::QVariant(const QJsonValue &jsonValue) noexcept(Private::FitsInInternalSize<sizeof(CborValueStandIn)>)
+    : d(std::piecewise_construct_t{}, jsonValue)
+{ static_assert(sizeof(CborValueStandIn) == sizeof(QJsonValue)); }
+QVariant::QVariant(const QJsonObject &jsonObject) noexcept : d(std::piecewise_construct_t{}, jsonObject) {}
+QVariant::QVariant(const QJsonArray &jsonArray) noexcept : d(std::piecewise_construct_t{}, jsonArray) {}
 QVariant::QVariant(const QJsonDocument &jsonDocument) : d(std::piecewise_construct_t{}, jsonDocument) {}
 #endif // QT_BOOTSTRAPPED
 #if QT_CONFIG(itemmodel)

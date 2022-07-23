@@ -122,11 +122,13 @@ QJsonObject::QJsonObject(std::initializer_list<QPair<QString, QJsonValue> > args
     Since QJsonObject is implicitly shared, the copy is shallow
     as long as the object does not get modified.
  */
-QJsonObject::QJsonObject(const QJsonObject &other)
-{
-    o = other.o;
-}
+QJsonObject::QJsonObject(const QJsonObject &other) noexcept = default;
 
+/*!
+    \since 5.10
+
+    Move-constructs a QJsonObject from \a other.
+*/
 QJsonObject::QJsonObject(QJsonObject &&other) noexcept
     : o(other.o)
 {
@@ -136,18 +138,8 @@ QJsonObject::QJsonObject(QJsonObject &&other) noexcept
 /*!
     Assigns \a other to this object.
  */
-QJsonObject &QJsonObject::operator =(const QJsonObject &other)
-{
-    o = other.o;
-    return *this;
-}
+QJsonObject &QJsonObject::operator =(const QJsonObject &other) noexcept = default;
 
-/*!
-    \fn QJsonObject::QJsonObject(QJsonObject &&other)
-    \since 5.10
-
-    Move-constructs a QJsonObject from \a other.
-*/
 
 /*!
     \fn QJsonObject &QJsonObject::operator =(QJsonObject &&other)

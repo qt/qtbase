@@ -51,8 +51,8 @@ public:
 
     ~QJsonValue();
 
-    QJsonValue(const QJsonValue &other);
-    QJsonValue &operator =(const QJsonValue &other);
+    QJsonValue(const QJsonValue &other) noexcept;
+    QJsonValue &operator =(const QJsonValue &other) noexcept;
 
     QJsonValue(QJsonValue &&other) noexcept;
 

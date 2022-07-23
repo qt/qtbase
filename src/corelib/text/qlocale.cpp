@@ -1072,10 +1072,7 @@ QLocale::QLocale(Language language, Script script, Territory territory)
     Constructs a QLocale object as a copy of \a other.
 */
 
-QLocale::QLocale(const QLocale &other)
-{
-    d = other.d;
-}
+QLocale::QLocale(const QLocale &other) noexcept = default;
 
 /*!
     Destructor
@@ -1090,11 +1087,7 @@ QLocale::~QLocale()
     to this QLocale object.
 */
 
-QLocale &QLocale::operator=(const QLocale &other)
-{
-    d = other.d;
-    return *this;
-}
+QLocale &QLocale::operator=(const QLocale &other) noexcept = default;
 
 /*!
     \internal

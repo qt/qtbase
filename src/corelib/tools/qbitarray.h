@@ -21,8 +21,8 @@ class Q_CORE_EXPORT QBitArray
 public:
     inline QBitArray() noexcept {}
     explicit QBitArray(qsizetype size, bool val = false);
-    QBitArray(const QBitArray &other) : d(other.d) {}
-    inline QBitArray &operator=(const QBitArray &other) { d = other.d; return *this; }
+    QBitArray(const QBitArray &other) noexcept : d(other.d) {}
+    inline QBitArray &operator=(const QBitArray &other) noexcept { d = other.d; return *this; }
     inline QBitArray(QBitArray &&other) noexcept : d(std::move(other.d)) {}
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QBitArray)
 

@@ -138,11 +138,13 @@ QJsonArray::QJsonArray(std::initializer_list<QJsonValue> args)
     Since QJsonArray is implicitly shared, the copy is shallow
     as long as the object doesn't get modified.
  */
-QJsonArray::QJsonArray(const QJsonArray &other)
-{
-    a = other.a;
-}
+QJsonArray::QJsonArray(const QJsonArray &other) noexcept = default;
 
+/*!
+    \since 5.10
+
+    Move-constructs a QJsonArray from \a other.
+*/
 QJsonArray::QJsonArray(QJsonArray &&other) noexcept
     : a(other.a)
 {
@@ -152,18 +154,7 @@ QJsonArray::QJsonArray(QJsonArray &&other) noexcept
 /*!
     Assigns \a other to this array.
  */
-QJsonArray &QJsonArray::operator =(const QJsonArray &other)
-{
-    a = other.a;
-    return *this;
-}
-
-/*!
-    \fn QJsonArray::QJsonArray(QJsonArray &&other)
-    \since 5.10
-
-    Move-constructs a QJsonArray from \a other.
-*/
+QJsonArray &QJsonArray::operator =(const QJsonArray &other) noexcept = default;
 
 /*!
     \fn QJsonArray &QJsonArray::operator =(QJsonArray &&other)
