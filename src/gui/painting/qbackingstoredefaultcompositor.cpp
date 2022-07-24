@@ -71,9 +71,7 @@ QRhiTexture *QBackingStoreDefaultCompositor::toTexture(const QImage &sourceImage
         Q_FALLTHROUGH();
     case QImage::Format_RGB32:
     case QImage::Format_ARGB32:
-#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
         *flags |= QPlatformBackingStore::TextureSwizzle;
-#endif
         break;
     case QImage::Format_RGBA8888_Premultiplied:
         *flags |= QPlatformBackingStore::TexturePremultiplied;
@@ -378,14 +376,14 @@ void QBackingStoreDefaultCompositor::updatePerQuadData(PerQuadData *d, QRhiTextu
 }
 
 void QBackingStoreDefaultCompositor::updateUniforms(PerQuadData *d, QRhiResourceUpdateBatch *resourceUpdates,
-                                                    const QMatrix4x4 &target, const QMatrix3x3 &source, bool needsRedBlueSwap)
+                                                    const QMatrix4x4 &target, const QMatrix3x3 &source, UpdateUniformOption option)
 {
     resourceUpdates->updateDynamicBuffer(d->ubuf, 0, 64, target.constData());
     updateMatrix3x3(resourceUpdates, d->ubuf, source);
     float opacity = 1.0f;
     resourceUpdates->updateDynamicBuffer(d->ubuf, 112, 4, &opacity);
-    qint32 swapRedBlue = needsRedBlueSwap ? 1 : 0;
-    resourceUpdates->updateDynamicBuffer(d->ubuf, 116, 4, &swapRedBlue);
+    qint32 textureSwizzle = static_cast<qint32>(option);
+    resourceUpdates->updateDynamicBuffer(d->ubuf, 116, 4, &textureSwizzle);
 }
 
 void QBackingStoreDefaultCompositor::ensureResources(QRhiSwapChain *swapchain, QRhiResourceUpdateBatch *resourceUpdates)
@@ -491,7 +489,11 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
 
     ensureResources(swapchain, resourceUpdates);
 
-    const bool needsRedBlueSwap = (flags & QPlatformBackingStore::TextureSwizzle) != 0;
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+    const UpdateUniformOption uniformOption = (flags & QPlatformBackingStore::TextureSwizzle) != 0? NeedsRedBlueSwap : NoOption;
+#else
+    const UpdateUniformOption uniformOption = (flags & QPlatformBackingStore::TextureSwizzle) != 0? NeedsAlphaRotate : NoOption;
+#endif
     const bool premultiplied = (flags & QPlatformBackingStore::TexturePremultiplied) != 0;
     SourceTransformOrigin origin = SourceTransformOrigin::TopLeft;
     if (flags & QPlatformBackingStore::TextureFlip)
@@ -512,7 +514,7 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
         QMatrix4x4 target; // identity
         if (invertTargetY)
             target.data()[5] = -1.0f;
-        updateUniforms(&m_widgetQuadData, resourceUpdates, target, source, needsRedBlueSwap);
+        updateUniforms(&m_widgetQuadData, resourceUpdates, target, source, uniformOption);
     }
 
     const int textureWidgetCount = textures->count();
@@ -538,7 +540,7 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
                 m_textureQuadData[i] = createPerQuadData(t);
             else
                 updatePerQuadData(&m_textureQuadData[i], t);
-            updateUniforms(&m_textureQuadData[i], resourceUpdates, target, source, false);
+            updateUniforms(&m_textureQuadData[i], resourceUpdates, target, source, NoOption);
         } else {
             m_textureQuadData[i].reset();
         }

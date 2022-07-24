@@ -7,7 +7,7 @@ layout(std140, binding = 0) uniform buf {
     mat4 vertexTransform;
     mat3 textureTransform;
     float opacity;
-    int swapRedBlue;
+    int textureSwizzle;
 };
 
 layout(binding = 1) uniform sampler2D textureSampler;
@@ -16,8 +16,10 @@ void main()
 {
     vec4 tmpFragColor = texture(textureSampler, v_texcoord);
     tmpFragColor.a *= opacity;
-    if (swapRedBlue == 0)
+    if (textureSwizzle == 0)
         fragColor = tmpFragColor;
+    else if(textureSwizzle == 2)
+        fragColor.argb = tmpFragColor;
     else
-        fragColor = tmpFragColor.bgra;
+        fragColor.bgra = tmpFragColor;
 }
