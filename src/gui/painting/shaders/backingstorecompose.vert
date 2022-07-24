@@ -9,7 +9,7 @@ layout(std140, binding = 0) uniform buf {
     mat4 vertexTransform;
     mat3 textureTransform;
     float opacity;
-    int swapRedBlue;
+    int textureSwizzle;
 };
 
 void main()

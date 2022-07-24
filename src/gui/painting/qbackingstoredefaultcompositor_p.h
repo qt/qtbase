@@ -44,6 +44,12 @@ public:
                                              bool translucentBackground);
 
 private:
+    enum UpdateUniformOption {
+      NoOption = 0x00,
+      NeedsRedBlueSwap = 0x01,
+      NeedsAlphaRotate = 0x02,
+    };
+
     void ensureResources(QRhiSwapChain *swapchain, QRhiResourceUpdateBatch *resourceUpdates);
     QRhiTexture *toTexture(const QImage &image,
                            QRhi *rhi,
@@ -80,7 +86,7 @@ private:
     PerQuadData createPerQuadData(QRhiTexture *texture);
     void updatePerQuadData(PerQuadData *d, QRhiTexture *texture);
     void updateUniforms(PerQuadData *d, QRhiResourceUpdateBatch *resourceUpdates,
-                        const QMatrix4x4 &target, const QMatrix3x3 &source, bool needsRedBlueSwap);
+                        const QMatrix4x4 &target, const QMatrix3x3 &source, UpdateUniformOption option);
 };
 
 QT_END_NAMESPACE
