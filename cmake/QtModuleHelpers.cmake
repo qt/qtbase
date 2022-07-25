@@ -396,19 +396,7 @@ function(qt_internal_add_module target)
     if(NOT arg_HEADER_MODULE)
         # Plugin types associated to a module
         if(NOT "x${arg_PLUGIN_TYPES}" STREQUAL "x")
-            # Reset the variable containing the list of plugins for the given plugin type
-            foreach(plugin_type ${arg_PLUGIN_TYPES})
-                qt_get_sanitized_plugin_type("${plugin_type}" plugin_type)
-                set_property(TARGET "${target}" APPEND PROPERTY MODULE_PLUGIN_TYPES "${plugin_type}")
-                qt_internal_add_qt_repo_known_plugin_types("${plugin_type}")
-            endforeach()
-
-            # Save the non-sanitized plugin type values for qmake consumption via .pri files.
-            set_property(TARGET "${target}"
-                         PROPERTY QMAKE_MODULE_PLUGIN_TYPES "${arg_PLUGIN_TYPES}")
-
-            # Export the plugin types.
-            set_property(TARGET ${target} APPEND PROPERTY EXPORT_PROPERTIES MODULE_PLUGIN_TYPES)
+            qt_internal_add_plugin_types("${target}" "${arg_PLUGIN_TYPES}")
         endif()
     endif()
 

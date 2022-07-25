@@ -91,6 +91,10 @@ function(qt_internal_extend_target target)
             set_property (TARGET "${target}" APPEND PROPERTY
                 AUTOMOC_MOC_OPTIONS "${arg_MOC_OPTIONS}"
             )
+            # Plugin types associated to a module
+            if(NOT "x${arg_PLUGIN_TYPES}" STREQUAL "x")
+                qt_internal_add_plugin_types("${target}" "${arg_PLUGIN_TYPES}")
+            endif()
         endif()
 
         # When computing the private library dependencies, we need to check not only the known
