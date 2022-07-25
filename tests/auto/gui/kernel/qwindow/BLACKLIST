@@ -1,9 +1,4 @@
 [positioning]
-opensuse-leap
-[positioning:default]
-linux
-macos ci
-[positioning:fake]
 macos ci
 [modalWithChildWindow]
 # QTBUG-69160

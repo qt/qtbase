@@ -517,9 +517,8 @@ void tst_QWindow::positioning()
     QCOMPARE(window.geometry(), geometry);
     //  explicitly use non-fullscreen show. show() can be fullscreen on some platforms
     window.showNormal();
-    QCoreApplication::processEvents();
 
-    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    QVERIFY(QTest::qWaitForWindowActive(&window));
 
     QMargins originalMargins = window.frameMargins();
 
