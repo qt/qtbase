@@ -2977,7 +2977,9 @@ bool QTest::currentTestFailed()
     return QTestResult::currentTestFailed();
 }
 
-/*
+/*!
+    \internal
+    \since 6.4
     Returns \c true during the run of the test-function and its set-up.
 
     Used by the \c{QTRY_*} macros and \l QTestEventLoop to check whether to
