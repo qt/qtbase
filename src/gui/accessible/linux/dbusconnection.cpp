@@ -40,7 +40,7 @@ DBusConnection::DBusConnection(QObject *parent)
     if (!addressEnv.isEmpty()) {
         // Only connect on next loop run, connections to our enabled signal are
         // only established after the ctor returns.
-        metaObject()->invokeMethod(
+        QMetaObject::invokeMethod(
                 this,
                 [this, addressEnv] {
                     m_enabled = true;
