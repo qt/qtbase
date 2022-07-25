@@ -594,7 +594,7 @@ void tst_QWidget::getSetCheck()
 #if defined (Q_OS_WIN)
     obj1.setWindowFlags(Qt::FramelessWindowHint | Qt::WindowSystemMenuHint);
     const HWND handle = reinterpret_cast<HWND>(obj1.winId());   // explicitly create window handle
-    QVERIFY(GetWindowLong(handle, GWL_STYLE) & LONG(WS_POPUP));
+    QVERIFY(GetWindowLongPtr(handle, GWL_STYLE) & LONG_PTR(WS_POPUP));
 #endif
 }
 

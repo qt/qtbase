@@ -299,7 +299,7 @@ bool QNetworkConnectionEvents::stopMonitoring()
 
 QNetworkConnectionMonitorPrivate::QNetworkConnectionMonitorPrivate()
 {
-    auto hr = CoInitialize(nullptr);
+    auto hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
     if (FAILED(hr)) {
         qCDebug(lcNetMon) << "Failed to initialize COM:" << errorStringFromHResult(hr);
         comInitFailed = true;

@@ -679,7 +679,7 @@ static QString readLink(const QFileSystemEntry &link)
 
     if (hres == CO_E_NOTINITIALIZED) { // COM was not initialized
         neededCoInit = true;
-        CoInitialize(nullptr);
+        CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
         hres = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_IShellLink,
                                 (LPVOID *)&psl);
     }
@@ -1668,7 +1668,7 @@ bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSy
     bool neededCoInit = false;
     if (hres == CO_E_NOTINITIALIZED) { // COM was not initialized
         neededCoInit = true;
-        CoInitialize(nullptr);
+        CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
         hres = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_IShellLink,
                                 reinterpret_cast<void **>(&psl));
     }
@@ -1762,7 +1762,7 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
     // we need the "display name" of the file, so can't use nativeAbsoluteFilePath
     const QString sourcePath = QDir::toNativeSeparators(absoluteName(source).filePath());
 
-    CoInitialize(nullptr);
+    CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
     IFileOperation *pfo = nullptr;
     IShellItem *deleteItem = nullptr;
     FileOperationProgressSink *sink = nullptr;
