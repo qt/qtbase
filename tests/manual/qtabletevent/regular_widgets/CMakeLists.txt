@@ -8,7 +8,7 @@ qt_internal_add_manual_test(regular_widgets
     GUI
     SOURCES
         main.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate

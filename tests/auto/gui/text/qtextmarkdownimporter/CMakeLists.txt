@@ -13,7 +13,7 @@ list(APPEND test_data "data/fuzz20580.md")
 qt_internal_add_test(tst_qtextmarkdownimporter
     SOURCES
         tst_qtextmarkdownimporter.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate

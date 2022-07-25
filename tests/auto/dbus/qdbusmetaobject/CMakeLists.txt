@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qdbusmetaobject
     SOURCES
         tst_qdbusmetaobject.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::DBusPrivate
 )

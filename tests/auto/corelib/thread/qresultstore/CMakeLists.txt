@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qresultstore
     SOURCES
         tst_qresultstore.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
 )

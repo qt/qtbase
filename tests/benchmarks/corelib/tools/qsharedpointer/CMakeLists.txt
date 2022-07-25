@@ -3,7 +3,7 @@ qt_internal_add_benchmark(tst_bench_shared_ptr
         tst_bench_shared_ptr.cpp
     INCLUDE_DIRECTORIES
         .
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::Test
 )

@@ -9,6 +9,6 @@ qt_internal_add_test(tst_qpagesize
         tst_qpagesize.cpp
     DEFINES
         QT_USE_USING_NAMESPACE
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )

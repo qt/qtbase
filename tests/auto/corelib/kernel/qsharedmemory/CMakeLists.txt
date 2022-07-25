@@ -6,7 +6,7 @@ if(QT_FEATURE_sharedmemory)
     qt_internal_add_test(tst_qsharedmemory
         SOURCES
             tst_qsharedmemory.cpp
-        PUBLIC_LIBRARIES
+        LIBRARIES
             Qt::CorePrivate
     )
 
@@ -14,7 +14,7 @@ if(QT_FEATURE_sharedmemory)
     #####################################################################
 
     qt_internal_extend_target(tst_qsharedmemory CONDITION LINUX
-        PUBLIC_LIBRARIES
+        LIBRARIES
             rt
     )
     add_subdirectory(producerconsumer)

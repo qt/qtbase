@@ -78,7 +78,7 @@ qt_internal_add_test(tst_moc
     EXCEPTIONS
 )
 
-qt_internal_extend_target(tst_moc PUBLIC_LIBRARIES Qt::CorePrivate)
+qt_internal_extend_target(tst_moc LIBRARIES Qt::CorePrivate)
 
 qt_internal_extend_target(tst_moc CONDITION CMAKE_CROSSCOMPILING
     DEFINES
@@ -102,22 +102,22 @@ qt_internal_extend_target(tst_moc CONDITION CLANG OR GCC
 )
 
 qt_internal_extend_target(tst_moc CONDITION TARGET Qt::DBus
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::DBus
 )
 
 qt_internal_extend_target(tst_moc CONDITION TARGET Qt::Concurrent
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Concurrent
 )
 
 qt_internal_extend_target(tst_moc CONDITION TARGET Qt::Network
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
 )
 
 qt_internal_extend_target(tst_moc CONDITION TARGET Qt::Sql
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Sql
 )
 

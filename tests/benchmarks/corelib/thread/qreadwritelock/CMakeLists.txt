@@ -5,7 +5,7 @@
 qt_internal_add_benchmark(tst_bench_qreadwritelock
     SOURCES
         tst_bench_qreadwritelock.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Test
 )

@@ -16,7 +16,7 @@ list(APPEND test_data "resources/file1.ext1")
 qt_internal_add_test(tst_qfile
     SOURCES
         tst_qfile.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::TestPrivate
     TESTDATA ${test_data}
@@ -59,7 +59,7 @@ qt_internal_add_resource(tst_qfile "copy-fallback"
 #####################################################################
 
 qt_internal_extend_target(tst_qfile CONDITION TARGET Qt::Network
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
 )
 
@@ -74,7 +74,7 @@ qt_internal_extend_target(tst_qfile CONDITION CONFIG___contains___builtin_testda
 )
 
 qt_internal_extend_target(tst_qfile CONDITION WIN32
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ole32
         uuid
 )

@@ -8,7 +8,7 @@ qt_internal_add_manual_test(qheaderview
     GUI
     SOURCES
         qheaderviewtest1.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qfreelist
     SOURCES
         tst_qfreelist.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
 )
 

@@ -9,7 +9,7 @@ qt_internal_add_manual_test(wheelevent
     SOURCES
         main.cpp
         window.cpp window.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate

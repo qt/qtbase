@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qrandomgenerator
     SOURCES
         tst_qrandomgenerator.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
 )

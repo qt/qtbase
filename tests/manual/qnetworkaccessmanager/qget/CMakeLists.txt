@@ -9,7 +9,7 @@ qt_internal_add_manual_test(qget
         downloadmanager.cpp
         qget.cpp qget.h
         transferitem.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
 )
 

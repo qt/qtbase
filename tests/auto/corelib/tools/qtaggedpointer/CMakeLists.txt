@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qtaggedpointer
     SOURCES
         tst_qtaggedpointer.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
 )

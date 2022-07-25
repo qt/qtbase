@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qgraphicslinearlayout
     SOURCES
         tst_qgraphicslinearlayout.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

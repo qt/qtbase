@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qdbuscontext
     SOURCES
         tst_qdbuscontext.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::DBus
 )

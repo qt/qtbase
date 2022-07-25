@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qasn1element
     SOURCES
         tst_qasn1element.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
         Qt::NetworkPrivate
 )

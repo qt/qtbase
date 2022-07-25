@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qpainterpathstroker
     SOURCES
         tst_qpainterpathstroker.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )

@@ -8,7 +8,7 @@ qt_internal_add_test(tst_qdbuscpp2xml
     SOURCES
         test1.h
         tst_qdbuscpp2xml.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::DBus
 )
 

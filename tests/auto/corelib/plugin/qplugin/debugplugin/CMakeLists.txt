@@ -9,7 +9,7 @@ qt_internal_add_cmake_library(debugplugin
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../plugins"
     SOURCES
         main.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
 )
 

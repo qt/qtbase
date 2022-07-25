@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qsqldriver
     SOURCES
         tst_qsqldriver.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Sql
         Qt::SqlPrivate

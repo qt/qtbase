@@ -9,7 +9,7 @@ qt_internal_add_manual_test(triangulator
     SOURCES
         main.cpp
         triviswidget.cpp triviswidget.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
         Qt::Widgets

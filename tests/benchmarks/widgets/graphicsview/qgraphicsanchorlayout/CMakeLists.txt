@@ -7,7 +7,7 @@
 qt_internal_add_benchmark(tst_bench_qgraphicsanchorlayout
     SOURCES
         tst_qgraphicsanchorlayout.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Test
         Qt::Widgets

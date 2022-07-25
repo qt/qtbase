@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qitemview
     SOURCES
         tst_qitemview.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

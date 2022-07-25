@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qtconcurrentrun
     SOURCES
         tst_qtconcurrentrun.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Concurrent
 )
 

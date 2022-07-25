@@ -2,7 +2,7 @@ qt_internal_add_manual_test(tex3d
     GUI
     SOURCES
         tex3d.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
 )

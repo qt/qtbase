@@ -7,7 +7,7 @@
 qt_internal_add_benchmark(tst_bench_qsqlrecord
     SOURCES
         tst_bench_qsqlrecord.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Sql
         Qt::SqlPrivate

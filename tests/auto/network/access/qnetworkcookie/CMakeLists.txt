@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qnetworkcookie
     SOURCES
         tst_qnetworkcookie.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
 )

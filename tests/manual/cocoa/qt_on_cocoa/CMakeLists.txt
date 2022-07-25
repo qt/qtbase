@@ -11,7 +11,7 @@ qt_internal_add_manual_test(qt_on_cocoa
         rasterwindow.cpp rasterwindow.h
     DEFINES
         QT_DISABLE_DEPRECATED_BEFORE=0
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ${FWAppKit}
         Qt::Gui
         Qt::Quick

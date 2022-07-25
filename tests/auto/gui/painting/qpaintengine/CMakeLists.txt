@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qpaintengine
     SOURCES
         tst_qpaintengine.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )

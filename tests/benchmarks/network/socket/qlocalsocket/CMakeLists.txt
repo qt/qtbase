@@ -5,7 +5,7 @@
 qt_internal_add_benchmark(tst_bench_qlocalsocket
     SOURCES
         tst_qlocalsocket.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
         Qt::Test
 )

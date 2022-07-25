@@ -9,7 +9,7 @@ qt_internal_add_executable(multiexec
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES
         tst_multiexec.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Test
 )
 

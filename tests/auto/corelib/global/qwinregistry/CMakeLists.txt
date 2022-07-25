@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qwinregistry
     SOURCES
         tst_qwinregistry.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
 )

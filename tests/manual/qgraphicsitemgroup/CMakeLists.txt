@@ -10,7 +10,7 @@ qt_internal_add_manual_test(qgraphicsitemgroup
         customitem.cpp customitem.h
         main.cpp
         widget.cpp widget.h widget.ui
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
     ENABLE_AUTOGEN_TOOLS

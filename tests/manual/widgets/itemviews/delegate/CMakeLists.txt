@@ -8,7 +8,7 @@ qt_internal_add_manual_test(delegate
     GUI
     SOURCES
         example.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

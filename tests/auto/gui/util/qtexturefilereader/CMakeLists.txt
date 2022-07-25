@@ -18,7 +18,7 @@ set(qtexturefilereader_resource_files
 qt_internal_add_test(tst_qtexturefilereader
     SOURCES
         tst_qtexturefilereader.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
     TESTDATA ${qtexturefilereader_resource_files}

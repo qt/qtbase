@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qdbusconnection_delayed
     SOURCES
         tst_qdbusconnection_delayed.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::DBus
 )

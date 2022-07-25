@@ -6,7 +6,7 @@ qt_internal_add_test(tst_qprocess
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../"
     SOURCES
         ../tst_qprocess.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Network
         Qt::TestPrivate

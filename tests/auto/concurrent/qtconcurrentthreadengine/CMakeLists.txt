@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qtconcurrentthreadengine
     SOURCES
         tst_qtconcurrentthreadengine.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Concurrent
 )

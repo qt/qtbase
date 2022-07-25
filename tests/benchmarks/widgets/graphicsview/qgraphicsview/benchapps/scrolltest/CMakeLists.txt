@@ -8,6 +8,6 @@ qt_internal_add_benchmark(scrolltest
     GUI
     SOURCES
         main.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )

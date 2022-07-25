@@ -9,7 +9,7 @@ qt_internal_add_executable(warnings
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES
         tst_warnings.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Test
 )
 

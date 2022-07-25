@@ -9,7 +9,7 @@ qt_internal_add_executable(maxwarnings
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES
         maxwarnings.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Test
 )
 

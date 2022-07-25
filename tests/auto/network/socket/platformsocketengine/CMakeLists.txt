@@ -11,7 +11,7 @@ endif()
 qt_internal_add_test(tst_platformsocketengine
     SOURCES
         tst_platformsocketengine.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
     QT_TEST_SERVER_LIST "cyrus" # special case
@@ -25,6 +25,6 @@ qt_internal_add_test(tst_platformsocketengine
 #####################################################################
 
 qt_internal_extend_target(tst_platformsocketengine CONDITION WIN32
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ws2_32
 )

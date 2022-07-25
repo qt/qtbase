@@ -9,7 +9,7 @@ qt_internal_add_manual_test(hellominimalcrossgfxtriangle
         hellowindow.cpp hellowindow.h
         main.cpp
         window.cpp window.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
 )

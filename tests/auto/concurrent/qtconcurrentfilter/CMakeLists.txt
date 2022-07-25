@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qtconcurrentfilter
     SOURCES
         tst_qtconcurrentfilter.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Concurrent
 )

@@ -8,7 +8,7 @@ qt_internal_add_test(tst_qlocalsocket
     DEFINES
         QLOCALSERVER_DEBUG
         QLOCALSOCKET_DEBUG
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
 )
 add_dependencies(tst_qlocalsocket socketprocess)

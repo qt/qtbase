@@ -9,7 +9,7 @@ qt_internal_add_executable(crashes
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES
         tst_crashes.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Test
 )
 

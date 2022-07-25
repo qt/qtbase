@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qdbuspendingcall
     SOURCES
         tst_qdbuspendingcall.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::DBus
 )

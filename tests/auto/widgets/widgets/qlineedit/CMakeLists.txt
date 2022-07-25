@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qlineedit
     SOURCES
         tst_qlineedit.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
@@ -20,6 +20,6 @@ qt_internal_add_test(tst_qlineedit
 #####################################################################
 
 qt_internal_extend_target(tst_qlineedit CONDITION MACOS
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ${FWAppKit}
 )

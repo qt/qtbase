@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qabstractprintdialog
     SOURCES
         tst_qabstractprintdialog.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::PrintSupport
         Qt::Widgets

@@ -9,6 +9,6 @@ qt_internal_add_test(tst_qmatrixnxn
         tst_qmatrixnxn.cpp
     DEFINES
         QT_DISABLE_DEPRECATED_BEFORE=0
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )

@@ -7,7 +7,7 @@
 qt_internal_add_manual_test(offscreen
     SOURCES
         offscreen.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
 )

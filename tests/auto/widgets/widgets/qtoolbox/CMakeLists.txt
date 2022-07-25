@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qtoolbox
     SOURCES
         tst_qtoolbox.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

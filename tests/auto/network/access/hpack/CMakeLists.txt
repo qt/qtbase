@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_hpack
     SOURCES
         tst_hpack.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Network
         Qt::NetworkPrivate

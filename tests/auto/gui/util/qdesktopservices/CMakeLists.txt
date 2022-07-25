@@ -9,6 +9,6 @@ qt_internal_add_test(tst_qdesktopservices
         tst_qdesktopservices.cpp
     DEFINES
         # QT_DISABLE_DEPRECATED_BEFORE=0 # special case
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )

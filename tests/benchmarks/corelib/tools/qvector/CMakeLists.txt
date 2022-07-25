@@ -10,7 +10,7 @@ qt_internal_add_benchmark(tst_bench_qvector
         outofline.cpp
     INCLUDE_DIRECTORIES
         .
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Test
 )

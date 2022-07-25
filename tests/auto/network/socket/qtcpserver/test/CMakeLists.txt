@@ -8,7 +8,7 @@ qt_internal_add_test(tst_qtcpserver
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../" # special case
     SOURCES
         ../tst_qtcpserver.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
     QT_TEST_SERVER_LIST "danted" "cyrus" "squid" "ftp-proxy" # special case
 )
@@ -24,7 +24,7 @@ add_dependencies(tst_qtcpserver
 #####################################################################
 
 qt_internal_extend_target(tst_qtcpserver CONDITION WIN32
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ws2_32
 )
 

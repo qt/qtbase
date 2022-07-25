@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qbytedatabuffer
     SOURCES
         tst_qbytedatabuffer.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
 )

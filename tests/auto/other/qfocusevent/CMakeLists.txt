@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qfocusevent
     SOURCES
         tst_qfocusevent.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
         Qt::Widgets

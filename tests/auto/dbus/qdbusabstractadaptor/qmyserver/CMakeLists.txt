@@ -10,6 +10,6 @@ qt_internal_add_executable(qmyserver
     SOURCES
         ../myobject.h
         qmyserver.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::DBus
 )

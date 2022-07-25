@@ -9,7 +9,7 @@ qt_internal_add_manual_test(tst_inputmethodhints
     SOURCES
         inputmethodhints.cpp inputmethodhints.h inputmethodhints.ui
         main.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
     ENABLE_AUTOGEN_TOOLS

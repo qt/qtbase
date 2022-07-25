@@ -10,7 +10,7 @@ qt_internal_add_manual_test(tableview-span-navigation
         main.cpp
     INCLUDE_DIRECTORIES
         .
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

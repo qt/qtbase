@@ -8,7 +8,7 @@ qt_internal_add_manual_test(noninstanced
     GUI
     SOURCES
         noninstanced.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
 )

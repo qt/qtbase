@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qtexttable
     SOURCES
         tst_qtexttable.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
 )
@@ -16,6 +16,6 @@ qt_internal_add_test(tst_qtexttable
 #####################################################################
 
 qt_internal_extend_target(tst_qtexttable CONDITION TARGET Qt::Widgets
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Widgets
 )

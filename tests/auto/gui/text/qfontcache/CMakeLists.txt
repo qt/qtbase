@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qfontcache
     SOURCES
         tst_qfontcache.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate

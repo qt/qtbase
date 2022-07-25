@@ -7,7 +7,7 @@
 qt_internal_add_manual_test(nativetext
     SOURCES
         main.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
@@ -18,7 +18,7 @@ qt_internal_add_manual_test(nativetext
 #####################################################################
 
 qt_internal_extend_target(nativetext CONDITION APPLE
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ${FWAppKit}
         ${FWCoreGraphics}
         ${FWFoundation}

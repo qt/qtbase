@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qpushbutton
     SOURCES
         tst_qpushbutton.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
         Qt::Widgets

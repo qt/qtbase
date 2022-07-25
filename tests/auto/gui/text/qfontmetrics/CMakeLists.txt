@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qfontmetrics
     SOURCES
         tst_qfontmetrics.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate

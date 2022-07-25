@@ -9,7 +9,7 @@ qt_internal_add_test(tst_qshortcut
         tst_qshortcut.cpp
     INCLUDE_DIRECTORIES
         ..
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
         Qt::Widgets

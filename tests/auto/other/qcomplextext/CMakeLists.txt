@@ -10,7 +10,7 @@ list(APPEND test_data "data")
 qt_internal_add_test(tst_qcomplextext
     SOURCES
         tst_qcomplextext.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate

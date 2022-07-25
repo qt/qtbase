@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qopenglwindow
     SOURCES
         tst_qopenglwindow.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate

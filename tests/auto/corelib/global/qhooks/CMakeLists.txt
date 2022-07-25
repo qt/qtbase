@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qhooks
     SOURCES
         tst_qhooks.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
 )

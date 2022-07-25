@@ -7,7 +7,7 @@ add_executable(testSoftExit)
 qt_internal_extend_target(testSoftExit CONDITION WIN32
     SOURCES
         main_win.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         user32
 )
 

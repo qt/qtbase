@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qfiledialog2
     SOURCES
         tst_qfiledialog2.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate

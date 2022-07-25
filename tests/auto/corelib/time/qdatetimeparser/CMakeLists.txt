@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qdatetimeparser
     SOURCES
         tst_qdatetimeparser.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
 )

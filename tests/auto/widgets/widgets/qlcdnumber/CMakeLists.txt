@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qlcdnumber
     SOURCES
         tst_qlcdnumber.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

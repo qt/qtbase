@@ -9,7 +9,7 @@ qt_internal_add_benchmark(tst_bench_qgraphicsview
         chiptester/chip.cpp chiptester/chip.h
         chiptester/chiptester.cpp chiptester/chiptester.h
         tst_qgraphicsview.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Test
         Qt::Widgets
@@ -50,6 +50,6 @@ qt_internal_add_resource(tst_bench_qgraphicsview "images"
 #####################################################################
 
 qt_internal_extend_target(tst_bench_qgraphicsview CONDITION TARGET Qt::OpenGL
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::OpenGL
 )

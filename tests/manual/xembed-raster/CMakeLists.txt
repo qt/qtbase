@@ -9,7 +9,7 @@ qt_internal_add_manual_test(tst_manual_rasterwindow
     SOURCES
         main.cpp
         rasterwindow.cpp rasterwindow.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )
 

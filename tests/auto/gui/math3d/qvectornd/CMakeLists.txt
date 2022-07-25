@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qvectornd
     SOURCES
         tst_qvectornd.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )

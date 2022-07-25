@@ -13,7 +13,7 @@ set(testfont_resource_files
 qt_internal_add_test(tst_qfont
     SOURCES
         tst_qfont.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
@@ -26,6 +26,6 @@ qt_internal_add_test(tst_qfont
 #####################################################################
 
 qt_internal_extend_target(tst_qfont CONDITION TARGET Qt::Widgets
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Widgets
 )

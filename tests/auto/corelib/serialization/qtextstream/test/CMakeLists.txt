@@ -15,7 +15,7 @@ qt_internal_add_test(tst_qtextstream
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../"
     SOURCES
         ../tst_qtextstream.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
         Qt::TestPrivate
     TESTDATA ${test_data}

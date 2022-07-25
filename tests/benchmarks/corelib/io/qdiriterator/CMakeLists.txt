@@ -6,7 +6,7 @@ qt_internal_add_benchmark(tst_bench_qdiriterator
     SOURCES
         tst_bench_qdiriterator.cpp
         qfilesystemiterator.cpp qfilesystemiterator.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Test
 )
 

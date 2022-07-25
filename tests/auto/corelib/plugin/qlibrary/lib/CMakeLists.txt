@@ -10,7 +10,7 @@ qt_internal_add_cmake_library(mylib
     #OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../" # special case
     SOURCES
         mylib.c
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
 )
 

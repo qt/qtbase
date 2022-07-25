@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qcompleter
     SOURCES
         tst_qcompleter.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::TestPrivate
         Qt::Widgets

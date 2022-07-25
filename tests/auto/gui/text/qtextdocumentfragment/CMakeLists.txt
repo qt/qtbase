@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qtextdocumentfragment
     SOURCES
         tst_qtextdocumentfragment.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate

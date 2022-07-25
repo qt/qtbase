@@ -8,7 +8,7 @@ qt_internal_add_manual_test(appicon
     GUI
     SOURCES
         main.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

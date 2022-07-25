@@ -10,7 +10,7 @@ qt_internal_add_test(tst_qt_poll
         tst_qt_poll.cpp
     INCLUDE_DIRECTORIES
         ../../../src/corelib/kernel
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Network
 )

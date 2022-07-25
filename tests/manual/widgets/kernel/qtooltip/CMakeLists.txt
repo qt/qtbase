@@ -7,7 +7,7 @@
 qt_internal_add_manual_test(qtooltip
     SOURCES
         main.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Test
         Qt::Widgets

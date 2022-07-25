@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qactiongroup
     SOURCES
         tst_qactiongroup.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

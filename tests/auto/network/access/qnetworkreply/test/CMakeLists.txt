@@ -23,7 +23,7 @@ qt_internal_add_test(tst_qnetworkreply
         ../tst_qnetworkreply.cpp
         ../data/gzip.rcc.cpp
         ../data/zstandard.rcc.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
     TESTDATA ${test_data}

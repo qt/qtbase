@@ -11,7 +11,7 @@ endif()
 qt_internal_add_test(tst_qsslsocket_onDemandCertificates_member
     SOURCES
         tst_qsslsocket_onDemandCertificates_member.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
     QT_TEST_SERVER_LIST "squid" "danted" # special case

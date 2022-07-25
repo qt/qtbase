@@ -9,7 +9,7 @@ qt_internal_add_manual_test(qtabbar
     SOURCES
         main.cpp
         tabbarform.cpp tabbarform.h tabbarform.ui
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
     ENABLE_AUTOGEN_TOOLS

@@ -9,7 +9,7 @@ qt_internal_add_manual_test(qtbug-8933
     SOURCES
         main.cpp
         widget.cpp widget.h widget.ui
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
     ENABLE_AUTOGEN_TOOLS

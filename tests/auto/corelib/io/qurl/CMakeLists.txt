@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qurl
     SOURCES
         tst_qurl.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Concurrent
         Qt::TestPrivate
 )

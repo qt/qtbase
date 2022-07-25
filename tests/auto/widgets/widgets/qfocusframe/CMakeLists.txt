@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qfocusframe
     SOURCES
         tst_qfocusframe.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

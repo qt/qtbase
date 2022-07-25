@@ -5,6 +5,6 @@
 qt_internal_add_benchmark(tst_bench_qrect
     SOURCES
         tst_bench_qrect.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Test
 )

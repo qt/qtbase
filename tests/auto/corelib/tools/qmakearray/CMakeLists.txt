@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qmakearray
     SOURCES
         tst_qmakearray.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
 )

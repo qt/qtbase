@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qpainterpath
     SOURCES
         tst_qpainterpath.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )

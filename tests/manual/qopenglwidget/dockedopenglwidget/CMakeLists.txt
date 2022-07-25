@@ -8,7 +8,7 @@ qt_internal_add_manual_test(dockedopenglwidget
         mainwidget.cpp mainwidget.h
         mainwindow.cpp mainwindow.h
         mainwindow.ui
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate

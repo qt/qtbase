@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qabstractscrollarea
     SOURCES
         tst_qabstractscrollarea.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

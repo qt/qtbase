@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qsslerror
     SOURCES
         tst_qsslerror.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
 )
 

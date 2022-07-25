@@ -2,7 +2,7 @@ qt_internal_add_manual_test(dialog_exec
     GUI
     SOURCES
         main.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::Gui
         Qt::Widgets

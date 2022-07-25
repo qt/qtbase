@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qnetworkaccessmanager
     SOURCES
         tst_qnetworkaccessmanager.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
 )

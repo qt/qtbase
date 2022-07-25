@@ -15,7 +15,7 @@ qt_internal_add_test(tst_qguivariant
         tst_qguivariant.cpp
     INCLUDE_DIRECTORIES
         ../../../../other/qvariant_common
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
     TESTDATA ${qguivariant_resource_files}
     BUILTIN_TESTDATA

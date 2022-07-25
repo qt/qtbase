@@ -12,7 +12,7 @@ qt_internal_add_manual_test(triquadcube
         triangleoncuberenderer.cpp triangleoncuberenderer.h
         trianglerenderer.cpp trianglerenderer.h
         triquadcube.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
 )

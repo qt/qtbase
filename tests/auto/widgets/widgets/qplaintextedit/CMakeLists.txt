@@ -9,7 +9,7 @@ qt_internal_add_test(tst_qplaintextedit
         tst_qplaintextedit.cpp
     INCLUDE_DIRECTORIES
         ..
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
         Qt::Widgets
@@ -20,6 +20,6 @@ qt_internal_add_test(tst_qplaintextedit
 #####################################################################
 
 qt_internal_extend_target(tst_qplaintextedit CONDITION MACOS
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ${FWAppKit}
 )

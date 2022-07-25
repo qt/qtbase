@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qstringapisymmetry
     SOURCES
         tst_qstringapisymmetry.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
 )
 

@@ -12,7 +12,7 @@ qt_internal_add_test(tst_qmimedatabase-xml
     SOURCES
         ../tst_qmimedatabase.h
         tst_qmimedatabase-xml.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Concurrent
 )
 

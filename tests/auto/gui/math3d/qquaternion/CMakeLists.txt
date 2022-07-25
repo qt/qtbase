@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qquaternion
     SOURCES
         tst_qquaternion.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )

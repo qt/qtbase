@@ -9,7 +9,7 @@ qt_internal_add_executable(stressTest
     SOURCES
         Test.cpp Test.h
         main.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
         Qt::Test
 )

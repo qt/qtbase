@@ -7,7 +7,7 @@
 qt_internal_add_benchmark(tst_bench_qtransform
     SOURCES
         tst_qtransform.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Test
 )

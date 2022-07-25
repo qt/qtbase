@@ -11,7 +11,7 @@ endif()
 qt_internal_add_test(tst_qsocketnotifier
     SOURCES
         tst_qsocketnotifier.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Network
         Qt::NetworkPrivate
@@ -24,6 +24,6 @@ qt_internal_add_test(tst_qsocketnotifier
 #####################################################################
 
 qt_internal_extend_target(tst_qsocketnotifier CONDITION WIN32
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ws2_32
 )

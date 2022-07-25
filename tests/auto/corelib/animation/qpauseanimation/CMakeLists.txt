@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qpauseanimation
     SOURCES
         tst_qpauseanimation.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
 )

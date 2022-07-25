@@ -9,7 +9,7 @@ qt_internal_add_manual_test(clipboard
     SOURCES
         main.cpp
         mainwindow.cpp mainwindow.h mainwindow.ui
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::Gui
         Qt::Widgets
@@ -32,7 +32,7 @@ qt_internal_add_resource(clipboard "data"
 #####################################################################
 
 qt_internal_extend_target(clipboard CONDITION (QT_MAJOR_VERSION GREATER 4)
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Widgets
 )
 

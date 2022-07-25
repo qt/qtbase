@@ -11,7 +11,7 @@ endif()
 qt_internal_add_test(tst_qhostinfo
     SOURCES
         tst_qhostinfo.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
 )
@@ -23,6 +23,6 @@ qt_internal_add_test(tst_qhostinfo
 #####################################################################
 
 qt_internal_extend_target(tst_qhostinfo CONDITION WIN32
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ws2_32
 )

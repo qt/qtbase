@@ -12,7 +12,7 @@ qt_internal_add_executable(paster
     ${args} # special case
     SOURCES
         main.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )
 

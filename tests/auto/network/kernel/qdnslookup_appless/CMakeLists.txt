@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qdnslookup_appless
     SOURCES
         tst_qdnslookup_appless.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
 )

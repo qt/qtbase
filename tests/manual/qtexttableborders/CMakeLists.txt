@@ -9,7 +9,7 @@ qt_internal_add_manual_test(qtexttableborders
     SOURCES
         main.cpp
         widget.cpp widget.h widget.ui
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::PrintSupport
         Qt::Widgets

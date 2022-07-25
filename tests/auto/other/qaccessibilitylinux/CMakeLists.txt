@@ -15,7 +15,7 @@ qt_internal_add_test(tst_qaccessibilitylinux
         tst_qaccessibilitylinux.cpp
     DBUS_INTERFACE_SOURCES
         ../../../../src/platformsupport/linuxaccessibility/dbusxml/Bus.xml
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::DBus
         Qt::Gui
         Qt::GuiPrivate

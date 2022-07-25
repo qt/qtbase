@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qtooltip
     SOURCES
         tst_qtooltip.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

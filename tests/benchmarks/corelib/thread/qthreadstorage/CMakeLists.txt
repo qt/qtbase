@@ -5,6 +5,6 @@
 qt_internal_add_benchmark(tst_bench_qthreadstorage
     SOURCES
         tst_bench_qthreadstorage.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Test
 )

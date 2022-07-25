@@ -12,7 +12,7 @@ qt_internal_add_test(tst_qurlinternal
     SOURCES
         tst_qurlinternal.cpp
         utf8data.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
 )
 

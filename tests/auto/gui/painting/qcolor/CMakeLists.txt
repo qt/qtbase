@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qcolor
     SOURCES
         tst_qcolor.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate

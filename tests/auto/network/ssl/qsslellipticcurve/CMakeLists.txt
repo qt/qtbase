@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qsslellipticcurve
     SOURCES
         tst_qsslellipticcurve.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
 )

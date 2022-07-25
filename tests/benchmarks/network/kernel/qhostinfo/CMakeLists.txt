@@ -7,7 +7,7 @@
 qt_internal_add_benchmark(tst_bench_qhostinfo
     SOURCES
         main.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Network
         Qt::NetworkPrivate

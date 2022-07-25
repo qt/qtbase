@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qgraphicstransform
     SOURCES
         tst_qgraphicstransform.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

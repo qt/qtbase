@@ -13,7 +13,7 @@ endif()
 qt_internal_add_manual_test(qnetconmonitor
     SOURCES
         tst_qnetconmonitor.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::NetworkPrivate
         Qt::Test
 )

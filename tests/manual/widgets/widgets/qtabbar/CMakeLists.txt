@@ -6,7 +6,7 @@
 
 qt_internal_add_manual_test(qtabbar
     GUI
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )
 

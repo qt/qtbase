@@ -11,7 +11,7 @@ qt_internal_add_manual_test(BigMenuCreator
         mainwindow.cpp mainwindow.h mainwindow.ui
     DEFINES
         QT_DEPRECATED_WARNINGS
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
     ENABLE_AUTOGEN_TOOLS

@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qinputdevice
     SOURCES
         tst_qinputdevice.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
 )

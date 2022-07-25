@@ -7,7 +7,7 @@
 qt_internal_add_manual_test(windowtransparency
     SOURCES
         windowtransparency.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qboxlayout
     SOURCES
         tst_qboxlayout.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::TestPrivate
         Qt::Widgets

@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qringbuffer
     SOURCES
         tst_qringbuffer.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
 )

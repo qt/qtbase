@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qpixelformat
     SOURCES
         tst_qpixelformat.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )

@@ -28,7 +28,7 @@ qt_internal_add_test(tst_qguiapplication
         QT_QGUIAPPLICATIONTEST=1
     INCLUDE_DIRECTORIES
         ../../../corelib/kernel/qcoreapplication
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
     TESTDATA ${tst_qguiapplication_resource_files}

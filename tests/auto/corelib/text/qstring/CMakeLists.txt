@@ -9,7 +9,7 @@ qt_internal_add_test(tst_qstring
         tst_qstring.cpp
     DEFINES
         QT_DISABLE_DEPRECATED_BEFORE=0
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
 )
 
@@ -24,6 +24,6 @@ qt_internal_extend_target(tst_qstring CONDITION NOT QT_FEATURE_doubleconversion 
 qt_internal_extend_target(tst_qstring CONDITION APPLE
     SOURCES
         tst_qstring_mac.mm
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ${FWFoundation}
 )

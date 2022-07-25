@@ -7,7 +7,7 @@
 qt_internal_add_manual_test(tst_manual_styles
     SOURCES
         main.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Widgets
 )
 

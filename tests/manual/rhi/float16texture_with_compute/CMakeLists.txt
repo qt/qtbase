@@ -8,7 +8,7 @@ qt_internal_add_manual_test(float16texture_with_compute
     GUI
     SOURCES
         float16texture_with_compute.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
 )

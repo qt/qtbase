@@ -10,7 +10,7 @@ list(APPEND test_data "tst_qtemporaryfile.cpp")
 qt_internal_add_test(tst_qtemporaryfile
     SOURCES
         tst_qtemporaryfile.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::TestPrivate
     TESTDATA ${test_data}
 )

@@ -12,7 +12,7 @@ qt_internal_add_test(tst_qaccessibility
     SOURCES
         accessiblewidgets.h
         tst_qaccessibility.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
@@ -27,12 +27,12 @@ qt_internal_add_test(tst_qaccessibility
 #####################################################################
 
 qt_internal_extend_target(tst_qaccessibility CONDITION UNIX AND NOT APPLE AND NOT HAIKU AND NOT INTEGRITY
-    PUBLIC_LIBRARIES
+    LIBRARIES
         m
 )
 
 qt_internal_extend_target(tst_qaccessibility CONDITION WIN32
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ole32
         oleacc
         oleaut32

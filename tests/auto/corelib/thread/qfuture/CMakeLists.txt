@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qfuture
     SOURCES
         tst_qfuture.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
 )
 

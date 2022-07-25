@@ -12,7 +12,7 @@ qt_internal_add_manual_test(qlayout
         main.cpp
         mainwindow.cpp mainwindow.h
         vbwidget.cpp vbwidget.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

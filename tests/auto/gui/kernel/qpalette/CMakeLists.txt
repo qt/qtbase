@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qpalette
     SOURCES
         tst_qpalette.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )

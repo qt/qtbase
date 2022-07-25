@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qhsts
     SOURCES
         tst_qhsts.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Network
         Qt::NetworkPrivate

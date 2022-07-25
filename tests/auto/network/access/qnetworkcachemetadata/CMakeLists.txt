@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qnetworkcachemetadata
     SOURCES
         tst_qnetworkcachemetadata.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
 )

@@ -44,7 +44,7 @@ qt_internal_add_test(tst_qgraphicsscene
         tst_qgraphicsscene.cpp
     DEFINES
         QT_NO_CAST_TO_ASCII
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
@@ -58,6 +58,6 @@ qt_internal_add_test(tst_qgraphicsscene
 #####################################################################
 
 qt_internal_extend_target(tst_qgraphicsscene CONDITION WIN32
-    PUBLIC_LIBRARIES
+    LIBRARIES
         user32
 )

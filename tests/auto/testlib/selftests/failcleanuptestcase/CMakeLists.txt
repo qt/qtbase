@@ -7,7 +7,7 @@ qt_internal_add_executable(failcleanuptestcase
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     SOURCES
         tst_failcleanuptestcase.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Test
 )
 

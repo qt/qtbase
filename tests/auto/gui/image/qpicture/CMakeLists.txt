@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qpicture
     SOURCES
         tst_qpicture.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )

@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qfileinfo
     SOURCES
         tst_qfileinfo.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
 )
 
@@ -41,7 +41,7 @@ qt_internal_add_resource(tst_qfileinfo "testdata"
 #####################################################################
 
 qt_internal_extend_target(tst_qfileinfo CONDITION WIN32
-    PUBLIC_LIBRARIES
+    LIBRARIES
         advapi32
         netapi32
 )

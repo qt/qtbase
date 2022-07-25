@@ -16,7 +16,7 @@ qt_internal_add_manual_test(qlocale
         miscellaneous.cpp miscellaneous.h
         numberformats.cpp numberformats.h
         window.cpp window.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

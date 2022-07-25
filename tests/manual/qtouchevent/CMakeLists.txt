@@ -9,7 +9,7 @@ qt_internal_add_manual_test(qtouchevent
         form.ui
         main.cpp
         touchwidget.cpp touchwidget.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Test
         Qt::Widgets

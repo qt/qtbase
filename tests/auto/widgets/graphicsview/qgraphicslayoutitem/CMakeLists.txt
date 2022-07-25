@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qgraphicslayoutitem
     SOURCES
         tst_qgraphicslayoutitem.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

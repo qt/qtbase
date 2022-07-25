@@ -5,7 +5,7 @@
 qt_internal_add_test(tst_qunicodetools
     SOURCES
         tst_qunicodetools.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
 )
 

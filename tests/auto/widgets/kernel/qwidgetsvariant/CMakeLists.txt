@@ -9,7 +9,7 @@ qt_internal_add_test(tst_qwidgetsvariant
         tst_qwidgetsvariant.cpp
     INCLUDE_DIRECTORIES
         ../../../other/qvariant_common
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

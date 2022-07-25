@@ -10,7 +10,7 @@ qt_internal_add_manual_test(tst_network_stresstest
         tst_network_stresstest.cpp
     DEFINES
         QT_DISABLE_DEPRECATED_BEFORE=0
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
         Qt::Test

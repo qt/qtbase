@@ -14,7 +14,7 @@ qt_internal_add_manual_test(windowchildgeometry
         QT_DISABLE_DEPRECATED_BEFORE=0
     INCLUDE_DIRECTORIES
         ../windowflags
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

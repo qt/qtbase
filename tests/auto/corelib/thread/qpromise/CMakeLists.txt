@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qpromise
     SOURCES
         tst_qpromise.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
 )

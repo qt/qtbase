@@ -10,7 +10,7 @@ qt_internal_add_manual_test(windowmodality
         dialog.ui
         main.cpp
         widget.ui
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::PrintSupport
         Qt::Widgets

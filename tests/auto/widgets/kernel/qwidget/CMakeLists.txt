@@ -15,7 +15,7 @@ set(qwidget_resource_files
 qt_internal_add_test(tst_qwidget
     SOURCES
         tst_qwidget.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
@@ -40,13 +40,13 @@ qt_internal_extend_target(tst_qwidget CONDITION AIX
 qt_internal_extend_target(tst_qwidget CONDITION APPLE
     SOURCES
         tst_qwidget_mac_helpers.mm
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ${FWAppKit}
         ${FWSecurity}
 )
 
 qt_internal_extend_target(tst_qwidget CONDITION WIN32
-    PUBLIC_LIBRARIES
+    LIBRARIES
         gdi32
         user32
 )

@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qssldiffiehellmanparameters
     SOURCES
         tst_qssldiffiehellmanparameters.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
 )

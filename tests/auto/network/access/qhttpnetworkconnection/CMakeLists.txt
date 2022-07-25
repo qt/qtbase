@@ -11,7 +11,7 @@ endif()
 qt_internal_add_test(tst_qhttpnetworkconnection
     SOURCES
         tst_qhttpnetworkconnection.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
     QT_TEST_SERVER_LIST "apache2" # special case

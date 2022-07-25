@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qgroupbox
     SOURCES
         tst_qgroupbox.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
         Qt::Widgets

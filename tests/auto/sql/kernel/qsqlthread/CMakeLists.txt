@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qsqlthread
     SOURCES
         tst_qsqlthread.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Sql
         Qt::SqlPrivate

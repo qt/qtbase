@@ -17,7 +17,7 @@ set(json_resource_files
 qt_internal_add_test(tst_json
     SOURCES
         tst_qtjson.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
     TESTDATA ${json_resource_files}
 )

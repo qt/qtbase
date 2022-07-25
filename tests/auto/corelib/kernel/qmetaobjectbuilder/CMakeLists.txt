@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qmetaobjectbuilder
     SOURCES
         tst_qmetaobjectbuilder.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
 )

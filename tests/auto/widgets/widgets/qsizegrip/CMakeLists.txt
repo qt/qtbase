@@ -9,7 +9,7 @@ qt_internal_add_test(tst_qsizegrip
         tst_qsizegrip.cpp
     INCLUDE_DIRECTORIES
         .
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

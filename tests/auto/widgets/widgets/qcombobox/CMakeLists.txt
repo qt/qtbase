@@ -13,7 +13,7 @@ qt_internal_add_test(tst_qcombobox
         tst_qcombobox.cpp
     DEFINES
         QTEST_QPA_MOUSE_HANDLING
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate

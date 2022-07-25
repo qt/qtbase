@@ -9,7 +9,7 @@ qt_internal_add_test(tst_qprinterinfo
         tst_qprinterinfo.cpp
     DEFINES
         QT_USE_USING_NAMESPACE
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::PrintSupport
 )

@@ -8,7 +8,7 @@ qt_internal_add_manual_test(msaatexture
     GUI
     SOURCES
         msaatexture.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
 )

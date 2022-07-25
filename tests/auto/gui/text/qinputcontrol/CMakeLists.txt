@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qinputcontrol
     SOURCES
         tst_qinputcontrol.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
 )

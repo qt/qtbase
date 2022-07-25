@@ -8,7 +8,7 @@ qt_internal_add_manual_test(testtable2
     GUI
     SOURCES
         testtable2.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

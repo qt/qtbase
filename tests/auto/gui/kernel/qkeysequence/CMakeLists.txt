@@ -13,7 +13,7 @@ set(qkeysequence_resource_files
 qt_internal_add_test(tst_qkeysequence
     SOURCES
         tst_qkeysequence.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate

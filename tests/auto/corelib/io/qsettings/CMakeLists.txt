@@ -22,7 +22,7 @@ qt_internal_add_test(tst_qsettings
         tst_qsettings.cpp
     INCLUDE_DIRECTORIES
         ../../kernel/qmetatype
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
     TESTDATA ${qsettings_resource_files}
@@ -34,11 +34,11 @@ qt_internal_add_test(tst_qsettings
 #####################################################################
 
 qt_internal_extend_target(tst_qsettings CONDITION MSVC
-    PUBLIC_LIBRARIES
+    LIBRARIES
         advapi32
 )
 
 qt_internal_extend_target(tst_qsettings CONDITION APPLE
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ${FWCoreFoundation}
 )

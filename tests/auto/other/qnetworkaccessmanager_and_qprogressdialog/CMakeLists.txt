@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qnetworkaccessmanager_and_qprogressdialog
     SOURCES
         tst_qnetworkaccessmanager_and_qprogressdialog.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Network
         Qt::Widgets

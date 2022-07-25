@@ -9,7 +9,7 @@ qt_internal_add_test(tst_qgraphicsitemanimation
         tst_qgraphicsitemanimation.cpp
     DEFINES
         QT_NO_CAST_TO_ASCII
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

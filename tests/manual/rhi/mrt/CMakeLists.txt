@@ -8,7 +8,7 @@ qt_internal_add_manual_test(mrt
     GUI
     SOURCES
         mrt.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
 )

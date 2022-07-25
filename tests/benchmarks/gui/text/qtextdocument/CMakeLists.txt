@@ -7,7 +7,7 @@
 qt_internal_add_benchmark(tst_bench_QTextDocument
     SOURCES
         main.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
         Qt::Test

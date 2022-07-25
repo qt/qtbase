@@ -8,7 +8,7 @@ qt_internal_add_test(tst_http2
     SOURCES
         http2srv.cpp http2srv.h
         tst_http2.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Network
         Qt::NetworkPrivate

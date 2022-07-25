@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_manual_qsslsocket
     SOURCES
         main.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
 )

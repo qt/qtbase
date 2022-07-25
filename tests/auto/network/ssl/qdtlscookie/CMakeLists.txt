@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qdtlscookie
     SOURCES
         tst_qdtlscookie.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::NetworkPrivate
 )
 

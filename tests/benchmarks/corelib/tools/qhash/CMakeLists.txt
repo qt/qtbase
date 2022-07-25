@@ -8,6 +8,6 @@ qt_internal_add_benchmark(tst_bench_qhash
         outofline.cpp
     INCLUDE_DIRECTORIES
         .
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Test
 )

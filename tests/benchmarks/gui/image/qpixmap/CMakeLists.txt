@@ -7,7 +7,7 @@
 qt_internal_add_benchmark(tst_bench_qpixmap
     SOURCES
         tst_qpixmap.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
         Qt::Test

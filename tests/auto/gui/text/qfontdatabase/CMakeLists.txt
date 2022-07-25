@@ -10,7 +10,7 @@ list(APPEND test_data "LED_REAL.TTF")
 qt_internal_add_test(tst_qfontdatabase
     SOURCES
         tst_qfontdatabase.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate

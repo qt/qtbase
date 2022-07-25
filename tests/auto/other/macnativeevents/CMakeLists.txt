@@ -17,7 +17,7 @@ qt_internal_add_test(tst_macnativeevents
         tst_macnativeevents.cpp
     DEFINES
         QT_DISABLE_DEPRECATED_BEFORE=0
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ${FWAppKit}
         Qt::Gui
         Qt::Widgets

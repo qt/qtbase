@@ -12,7 +12,7 @@ qt_internal_add_test(tst_qdecompresshelper
         zstandard.rcc.cpp
     DEFINES
         SRC_DIR=${CMAKE_CURRENT_SOURCE_DIR} # special case
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::NetworkPrivate
 )
 

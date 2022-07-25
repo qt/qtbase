@@ -32,7 +32,7 @@ list(APPEND test_data ${test_data_glob})
 qt_internal_add_test(tst_qsslcertificate
     SOURCES
         tst_qsslcertificate.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
     TESTDATA ${test_data}
 )

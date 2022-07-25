@@ -12,7 +12,7 @@ qt_internal_add_manual_test(windowgeometry
         main.cpp
     INCLUDE_DIRECTORIES
         ../windowflags
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

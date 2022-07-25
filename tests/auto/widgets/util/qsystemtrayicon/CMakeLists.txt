@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qsystemtrayicon
     SOURCES
         tst_qsystemtrayicon.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

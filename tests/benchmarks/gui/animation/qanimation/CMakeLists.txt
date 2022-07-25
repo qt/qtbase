@@ -10,7 +10,7 @@ qt_internal_add_benchmark(tst_bench_qanimation
         dummyobject.cpp dummyobject.h
         main.cpp
         rectanimation.cpp rectanimation.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Test
         Qt::Widgets

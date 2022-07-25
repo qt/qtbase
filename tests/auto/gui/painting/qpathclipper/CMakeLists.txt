@@ -14,7 +14,7 @@ qt_internal_add_test(tst_qpathclipper
         tst_qpathclipper.cpp
     INCLUDE_DIRECTORIES
         .
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
 )
@@ -26,6 +26,6 @@ qt_internal_add_test(tst_qpathclipper
 #####################################################################
 
 qt_internal_extend_target(tst_qpathclipper CONDITION UNIX AND NOT APPLE AND NOT HAIKU AND NOT INTEGRITY
-    PUBLIC_LIBRARIES
+    LIBRARIES
         m
 )

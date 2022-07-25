@@ -9,7 +9,7 @@ qt_internal_add_manual_test(qopenglcontext
     SOURCES
         main.cpp
         qopenglcontextwindow.cpp qopenglcontextwindow.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::EglSupportPrivate
         Qt::Gui
         Qt::GuiPrivate

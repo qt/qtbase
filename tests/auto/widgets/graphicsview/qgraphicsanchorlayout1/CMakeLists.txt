@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qgraphicsanchorlayout1
     SOURCES
         tst_qgraphicsanchorlayout1.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate

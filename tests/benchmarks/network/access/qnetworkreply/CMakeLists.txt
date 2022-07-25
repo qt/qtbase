@@ -7,7 +7,7 @@
 qt_internal_add_benchmark(tst_bench_qnetworkreply
     SOURCES
         tst_qnetworkreply.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Network
         Qt::NetworkPrivate

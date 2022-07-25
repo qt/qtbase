@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qstackedlayout
     SOURCES
         tst_qstackedlayout.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

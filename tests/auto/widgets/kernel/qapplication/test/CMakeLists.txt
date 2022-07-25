@@ -11,7 +11,7 @@ list(APPEND test_data "../modal")
 qt_internal_add_test(tst_qapplication # special case
     SOURCES
         ../tst_qapplication.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate

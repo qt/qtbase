@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_gui_variant_no_application
     SOURCES
         main.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )

@@ -10,7 +10,7 @@ list(APPEND test_data "parser.json" "testdata/publicsuffix/public_suffix_list.da
 qt_internal_add_test(tst_qnetworkcookiejar
     SOURCES
         tst_qnetworkcookiejar.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Network
         Qt::NetworkPrivate

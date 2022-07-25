@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qfilesystemmodel
     SOURCES
         tst_qfilesystemmodel.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::Widgets

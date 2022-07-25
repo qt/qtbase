@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qdbusmetatype
     SOURCES
         tst_qdbusmetatype.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::DBus
 )

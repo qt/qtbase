@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qtreewidgetitemiterator
     SOURCES
         tst_qtreewidgetitemiterator.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

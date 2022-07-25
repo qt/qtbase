@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qpolygon
     SOURCES
         tst_qpolygon.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )
 
@@ -15,6 +15,6 @@ qt_internal_add_test(tst_qpolygon
 #####################################################################
 
 qt_internal_extend_target(tst_qpolygon CONDITION UNIX AND NOT APPLE AND NOT HAIKU AND NOT INTEGRITY
-    PUBLIC_LIBRARIES
+    LIBRARIES
         m
 )

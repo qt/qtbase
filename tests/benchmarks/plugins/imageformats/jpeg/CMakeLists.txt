@@ -7,7 +7,7 @@
 qt_internal_add_benchmark(jpeg
     SOURCES
         jpeg.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Test
 )

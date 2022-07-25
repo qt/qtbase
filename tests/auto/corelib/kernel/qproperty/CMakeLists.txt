@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qproperty
     SOURCES
         tst_qproperty.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
 )

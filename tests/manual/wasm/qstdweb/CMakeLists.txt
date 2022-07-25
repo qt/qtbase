@@ -2,7 +2,7 @@ qt_internal_add_manual_test(promise_auto
     SOURCES
         promise_main.cpp
         ../qtwasmtestlib/qtwasmtestlib.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::CorePrivate
 )

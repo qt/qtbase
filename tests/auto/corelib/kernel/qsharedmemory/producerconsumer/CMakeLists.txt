@@ -7,6 +7,6 @@
 qt_internal_add_test_helper(producerconsumer_helper
     SOURCES
         main.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Test
 )

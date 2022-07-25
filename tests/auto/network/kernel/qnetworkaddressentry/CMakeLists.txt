@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qnetworkaddressentry
     SOURCES
         tst_qnetworkaddressentry.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
 )

@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qpixmapfilter
     SOURCES
         tst_qpixmapfilter.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
         Qt::Widgets

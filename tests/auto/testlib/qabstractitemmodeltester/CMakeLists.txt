@@ -10,7 +10,7 @@ qt_internal_add_test(tst_qabstractitemmodeltester
         tst_qabstractitemmodeltester.cpp
     INCLUDE_DIRECTORIES
         ../../other/qabstractitemmodelutils
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

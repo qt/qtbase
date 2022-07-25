@@ -13,7 +13,7 @@ set(resources_resource_files
 qt_internal_add_test(tst_qstylesheetstyle
     SOURCES
         tst_qstylesheetstyle.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
         Qt::TestPrivate

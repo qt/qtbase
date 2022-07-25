@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qtextodfwriter
     SOURCES
         tst_qtextodfwriter.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate

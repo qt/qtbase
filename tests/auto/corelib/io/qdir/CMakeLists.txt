@@ -16,7 +16,7 @@ list(APPEND test_data "tst_qdir.cpp")
 qt_internal_add_test(tst_qdir
     SOURCES
         tst_qdir.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
     TESTDATA ${test_data}
 )

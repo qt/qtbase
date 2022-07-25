@@ -58,7 +58,7 @@ set(qfileselector_resource_files
 qt_internal_add_test(tst_qfileselectors
     SOURCES
         tst_qfileselector.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
     TESTDATA ${qfileselector_resource_files}
     BUILTIN_TESTDATA

@@ -11,7 +11,7 @@ qt_internal_add_benchmark(chip
         main.cpp
         mainwindow.cpp mainwindow.h
         view.cpp view.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )
 
@@ -43,6 +43,6 @@ qt_internal_add_resource(chip "images"
 #####################################################################
 
 qt_internal_extend_target(chip CONDITION TARGET Qt::OpenGL
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::OpenGL
 )

@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qsqltablemodel
     SOURCES
         tst_qsqltablemodel.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Sql
         Qt::SqlPrivate

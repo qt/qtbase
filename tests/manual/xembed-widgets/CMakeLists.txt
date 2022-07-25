@@ -9,7 +9,7 @@ qt_internal_add_manual_test(tst_manual_lineedits
     SOURCES
         main.cpp
         window.cpp window.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

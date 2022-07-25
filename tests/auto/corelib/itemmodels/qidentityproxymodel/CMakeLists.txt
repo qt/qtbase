@@ -10,6 +10,6 @@ qt_internal_add_test(tst_qidentityproxymodel
         tst_qidentityproxymodel.cpp
     INCLUDE_DIRECTORIES
         ../../../other/qabstractitemmodelutils
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )

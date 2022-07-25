@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qdial
     SOURCES
         tst_qdial.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

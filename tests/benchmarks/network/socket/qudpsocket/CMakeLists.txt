@@ -7,7 +7,7 @@
 qt_internal_add_benchmark(tst_bench_qudpsocket
     SOURCES
         tst_qudpsocket.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
         Qt::Test
 )

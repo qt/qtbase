@@ -15,7 +15,7 @@ list(APPEND test_data "umlaut.xml")
 qt_internal_add_test(tst_qdom
     SOURCES
         tst_qdom.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Xml
     TESTDATA ${test_data}
 )

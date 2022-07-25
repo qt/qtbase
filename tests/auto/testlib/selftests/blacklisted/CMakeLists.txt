@@ -9,7 +9,7 @@ qt_internal_add_executable(blacklisted
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES
         tst_blacklisted.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::TestPrivate
 )
 

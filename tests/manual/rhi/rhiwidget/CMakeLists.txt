@@ -4,7 +4,7 @@ qt_internal_add_manual_test(rhiwidget
         examplewidget.cpp examplewidget.h
         rhiwidget.cpp rhiwidget.h rhiwidget_p.h
         main.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
         Qt::Widgets

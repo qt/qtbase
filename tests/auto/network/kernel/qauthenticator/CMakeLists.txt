@@ -11,7 +11,7 @@ endif()
 qt_internal_add_test(tst_qauthenticator
     SOURCES
         tst_qauthenticator.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::NetworkPrivate
 )
 

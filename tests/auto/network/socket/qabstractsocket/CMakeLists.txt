@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qabstractsocket
     SOURCES
         tst_qabstractsocket.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
 )

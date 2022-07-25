@@ -17,7 +17,7 @@ set(testdata_resource_files
 qt_internal_add_test(tst_qrawfont
     SOURCES
         tst_qrawfont.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate

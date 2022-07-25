@@ -10,6 +10,6 @@ qt_internal_add_test(tst_qdbusconnection_no_app
         tst_qdbusconnection_no_app.cpp
     DEFINES
         tst_QDBusConnection=tst_QDBusConnection_NoApplication
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::DBus
 )

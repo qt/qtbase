@@ -7,7 +7,7 @@
 qt_internal_add_manual_test(qcursorhighdpi
     SOURCES
         main.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
@@ -21,6 +21,6 @@ qt_internal_add_manual_test(qcursorhighdpi
 #####################################################################
 
 qt_internal_extend_target(qcursorhighdpi CONDITION WIN32
-    PUBLIC_LIBRARIES
+    LIBRARIES
         user32
 )

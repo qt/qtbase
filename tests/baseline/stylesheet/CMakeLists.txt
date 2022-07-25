@@ -11,7 +11,7 @@ qt_internal_add_test(tst_baseline_stylesheet
         tst_baseline_stylesheet.cpp
     INCLUDE_DIRECTORIES
         ../shared
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
         Qt::Network

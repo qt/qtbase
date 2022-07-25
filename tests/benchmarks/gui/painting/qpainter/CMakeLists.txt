@@ -7,7 +7,7 @@
 qt_internal_add_benchmark(tst_bench_qpainter
     SOURCES
         tst_qpainter.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
         Qt::Test

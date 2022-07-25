@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qpassworddigestor
     SOURCES
         tst_qpassworddigestor.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
 )

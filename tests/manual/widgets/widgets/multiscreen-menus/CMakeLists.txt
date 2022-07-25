@@ -9,7 +9,7 @@ qt_internal_add_manual_test(multiscreen-menus
     SOURCES
         main.cpp
         mainwindow.cpp mainwindow.h mainwindow.ui
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
     ENABLE_AUTOGEN_TOOLS

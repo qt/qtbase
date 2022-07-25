@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qnetworkproxyfactory
     SOURCES
         tst_qnetworkproxyfactory.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::NetworkPrivate
 )

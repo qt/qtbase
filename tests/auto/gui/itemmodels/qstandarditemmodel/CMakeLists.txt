@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qstandarditemmodel
     SOURCES
         tst_qstandarditemmodel.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate

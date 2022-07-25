@@ -8,7 +8,7 @@ qt_internal_add_manual_test(computebuffer
     GUI
     SOURCES
         computebuffer.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
 )

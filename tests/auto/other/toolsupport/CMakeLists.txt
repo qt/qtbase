@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_toolsupport
     SOURCES
         tst_toolsupport.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
 )

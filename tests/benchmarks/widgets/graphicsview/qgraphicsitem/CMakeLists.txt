@@ -7,7 +7,7 @@
 qt_internal_add_benchmark(tst_bench_qgraphicsitem
     SOURCES
         tst_qgraphicsitem.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Test
         Qt::Widgets

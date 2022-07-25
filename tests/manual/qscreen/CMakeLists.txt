@@ -9,7 +9,7 @@ qt_internal_add_manual_test(qscreen
         main.cpp
         propertyfield.cpp propertyfield.h
         propertywatcher.cpp propertywatcher.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

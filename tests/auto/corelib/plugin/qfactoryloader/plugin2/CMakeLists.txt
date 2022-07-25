@@ -10,7 +10,7 @@ qt_internal_add_cmake_library(tst_qfactoryloader_plugin2
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../bin"
     SOURCES
         plugin2.cpp plugin2.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
 )
 

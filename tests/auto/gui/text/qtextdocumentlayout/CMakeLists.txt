@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qtextdocumentlayout
     SOURCES
         tst_qtextdocumentlayout.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )
 
@@ -15,6 +15,6 @@ qt_internal_add_test(tst_qtextdocumentlayout
 #####################################################################
 
 qt_internal_extend_target(tst_qtextdocumentlayout CONDITION TARGET Qt::Widgets
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Widgets
 )

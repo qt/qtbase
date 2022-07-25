@@ -2,7 +2,7 @@ qt_internal_add_manual_test(tessellation
     GUI
     SOURCES
         tessellation.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
 )

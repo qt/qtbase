@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_languagechange
     SOURCES
         tst_languagechange.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate

@@ -8,7 +8,7 @@ qt_internal_add_test(tst_qclipboard
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../"
     SOURCES
         ../tst_qclipboard.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
 )
@@ -17,7 +17,7 @@ qt_internal_add_test(tst_qclipboard
 #####################################################################
 
 qt_internal_extend_target(tst_qclipboard CONDITION MACOS
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ${FWAppKit}
 )
 

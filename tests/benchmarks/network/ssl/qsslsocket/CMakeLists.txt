@@ -7,7 +7,7 @@
 qt_internal_add_benchmark(tst_bench_qsslsocket
     SOURCES
         tst_qsslsocket.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
         Qt::Test
 )

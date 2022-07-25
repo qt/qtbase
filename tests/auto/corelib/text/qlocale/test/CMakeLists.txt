@@ -6,7 +6,7 @@ qt_internal_add_test(tst_qlocale
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../"
     SOURCES
         ../tst_qlocale.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
 )
 
@@ -14,7 +14,7 @@ qt_internal_add_test(tst_qlocale
 #####################################################################
 
 qt_internal_extend_target(tst_qlocale CONDITION embedded
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )
 

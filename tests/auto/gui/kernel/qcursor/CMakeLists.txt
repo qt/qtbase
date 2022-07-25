@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qcursor
     SOURCES
         tst_qcursor.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )

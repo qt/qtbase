@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qthread
     SOURCES
         tst_qthread.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::TestPrivate
 )
 

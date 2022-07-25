@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qscreen_xrandr
     SOURCES
         tst_qscreen_xrandr.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate

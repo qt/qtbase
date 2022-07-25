@@ -26,7 +26,7 @@ list(APPEND test_data "task217400.png")
 qt_internal_add_test(tst_qpainter
     SOURCES
         tst_qpainter.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
@@ -37,7 +37,7 @@ qt_internal_add_test(tst_qpainter
 #####################################################################
 
 qt_internal_extend_target(tst_qpainter CONDITION TARGET Qt::Widgets
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Widgets
         Qt::WidgetsPrivate
 )

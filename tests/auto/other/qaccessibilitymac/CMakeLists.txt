@@ -12,7 +12,7 @@ qt_internal_add_test(tst_qaccessibilitymac
     SOURCES
         tst_qaccessibilitymac.cpp
         tst_qaccessibilitymac_helpers.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )
@@ -26,7 +26,7 @@ qt_internal_add_test(tst_qaccessibilitymac
 qt_internal_extend_target(tst_qaccessibilitymac CONDITION APPLE
     SOURCES
         tst_qaccessibilitymac_helpers.mm
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ${FWAppKit}
         ${FWApplicationServices}
         ${FWSecurity}

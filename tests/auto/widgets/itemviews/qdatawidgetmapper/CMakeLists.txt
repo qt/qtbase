@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qdatawidgetmapper
     SOURCES
         tst_qdatawidgetmapper.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

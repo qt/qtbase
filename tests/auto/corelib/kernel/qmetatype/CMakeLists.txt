@@ -15,7 +15,7 @@ qt_internal_add_test(tst_qmetatype
         QT_DISABLE_DEPRECATED_BEFORE=0
     INCLUDE_DIRECTORIES
         ../../../other/qvariant_common
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
     TESTDATA ${test_data}

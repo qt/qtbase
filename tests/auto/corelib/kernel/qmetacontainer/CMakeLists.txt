@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qmetacontainer
     SOURCES
         tst_qmetacontainer.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
 )

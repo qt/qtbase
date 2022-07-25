@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qflatmap
     SOURCES
         tst_qflatmap.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
 )

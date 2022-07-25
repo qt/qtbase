@@ -10,7 +10,7 @@ qt_internal_add_benchmark(tst_bench_lancebench
         tst_lancebench.cpp
     INCLUDE_DIRECTORIES
         ../../../../baseline/shared
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
         Qt::Test
@@ -69,6 +69,6 @@ qt_internal_add_resource(tst_bench_lancebench "images"
 #####################################################################
 
 qt_internal_extend_target(tst_bench_lancebench CONDITION QT_FEATURE_opengl
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::OpenGL
 )

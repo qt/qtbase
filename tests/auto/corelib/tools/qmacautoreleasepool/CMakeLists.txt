@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qmacautoreleasepool
     SOURCES
         tst_qmacautoreleasepool.mm
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ${FWFoundation}
 )

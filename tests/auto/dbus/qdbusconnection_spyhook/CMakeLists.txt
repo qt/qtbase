@@ -10,6 +10,6 @@ qt_internal_add_test(tst_qdbusconnection_spyhook
         tst_qdbusconnection_spyhook.cpp
     DEFINES
         tst_QDBusConnection=tst_QDBusConnection_SpyHook
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::DBus
 )

@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qsslcipher
     SOURCES
         tst_qsslcipher.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
 )
 

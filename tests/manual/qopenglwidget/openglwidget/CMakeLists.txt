@@ -9,7 +9,7 @@ qt_internal_add_manual_test(openglwidget
     SOURCES
         main.cpp
         openglwidget.cpp openglwidget.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate

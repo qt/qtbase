@@ -11,7 +11,7 @@ qt_internal_add_manual_test(qopengltextureblitter
         qopengltextureblitwindow.cpp qopengltextureblitwindow.h
     INCLUDE_DIRECTORIES
         .
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
         Qt::OpenGL # special case

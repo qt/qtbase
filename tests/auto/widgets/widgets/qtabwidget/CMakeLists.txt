@@ -9,7 +9,7 @@ qt_internal_add_test(tst_qtabwidget
         tst_qtabwidget.cpp
     INCLUDE_DIRECTORIES
         ..
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
         Qt::WidgetsPrivate
@@ -19,6 +19,6 @@ qt_internal_add_test(tst_qtabwidget
 #####################################################################
 
 qt_internal_extend_target(tst_qtabwidget CONDITION WIN32
-    PUBLIC_LIBRARIES
+    LIBRARIES
         user32
 )

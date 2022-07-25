@@ -8,7 +8,7 @@ qt_internal_add_executable(qfileopeneventexternal
     GUI
     SOURCES
         qfileopeneventexternal.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )
 

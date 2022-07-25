@@ -9,7 +9,7 @@ qt_internal_add_manual_test(tst_manual_scrollarea
     SOURCES
         ../shared/shared.h
         main.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

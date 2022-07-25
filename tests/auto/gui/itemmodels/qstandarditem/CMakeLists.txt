@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qstandarditem
     SOURCES
         tst_qstandarditem.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )

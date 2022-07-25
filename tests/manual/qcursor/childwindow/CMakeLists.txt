@@ -10,7 +10,7 @@ qt_internal_add_manual_test(childwindow
         main.cpp
     INCLUDE_DIRECTORIES
         .
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )
 

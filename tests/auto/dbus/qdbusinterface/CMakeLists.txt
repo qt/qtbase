@@ -14,7 +14,7 @@ qt_internal_add_test(tst_qdbusinterface
     LIBRARIES
         Qt::CorePrivate
         Qt::DBusPrivate
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::DBus
 )
@@ -29,7 +29,7 @@ qt_internal_add_test(tst_qdbusinterface
 qt_internal_extend_target(tst_qdbusinterface CONDITION QT_FEATURE_dbus_linked
     DEFINES
         QT_LINKED_LIBDBUS
-    PUBLIC_LIBRARIES
+    LIBRARIES
         dbus-1
 )
 

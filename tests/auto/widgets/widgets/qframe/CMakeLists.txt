@@ -14,7 +14,7 @@ qt_internal_add_test(tst_qframe
     LOWDPI # special case
     SOURCES
         tst_qframe.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
     TESTDATA ${test_data}

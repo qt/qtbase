@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qfuturewatcher
     SOURCES
         tst_qfuturewatcher.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Concurrent
         Qt::CorePrivate
 )

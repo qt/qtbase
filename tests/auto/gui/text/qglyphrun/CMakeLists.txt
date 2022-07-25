@@ -15,7 +15,7 @@ set(testdata_resource_files
 qt_internal_add_test(tst_qglyphrun
     SOURCES
         tst_qglyphrun.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
     TESTDATA ${testdata_resource_files}
     BUILTIN_TESTDATA

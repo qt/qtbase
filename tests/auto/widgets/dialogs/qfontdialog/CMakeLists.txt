@@ -19,7 +19,7 @@ set(testfonts_resource_files
 qt_internal_add_test(tst_qfontdialog
     SOURCES
         tst_qfontdialog.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate

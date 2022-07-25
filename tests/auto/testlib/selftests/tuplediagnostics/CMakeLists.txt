@@ -9,7 +9,7 @@ qt_internal_add_executable(tuplediagnostics
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES
         tst_tuplediagnostics.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Test
 )
 

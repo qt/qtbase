@@ -8,6 +8,6 @@ qt_internal_add_executable(qdir
     GUI
     DEFINES
         QT_DISABLE_DEPRECATED_BEFORE=0
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )

@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qmacstyle
     SOURCES
         tst_qmacstyle.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::WidgetsPrivate
 )

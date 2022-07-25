@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qabstractitemview
     SOURCES
         tst_qabstractitemview.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
         Qt::TestPrivate

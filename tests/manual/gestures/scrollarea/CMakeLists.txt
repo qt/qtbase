@@ -9,7 +9,7 @@ qt_internal_add_manual_test(scrollarea
     SOURCES
         main.cpp
         mousepangesturerecognizer.cpp mousepangesturerecognizer.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

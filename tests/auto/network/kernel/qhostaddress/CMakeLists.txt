@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qhostaddress
     SOURCES
         tst_qhostaddress.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::NetworkPrivate
 )
 
@@ -15,6 +15,6 @@ qt_internal_add_test(tst_qhostaddress
 #####################################################################
 
 qt_internal_extend_target(tst_qhostaddress CONDITION WIN32
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ws2_32
 )

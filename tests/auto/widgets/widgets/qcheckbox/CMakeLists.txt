@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qcheckbox
     SOURCES
         tst_qcheckbox.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

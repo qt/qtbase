@@ -11,7 +11,7 @@ qt_internal_add_manual_test(tst_manual_windowflags
         controls.cpp controls.h
         main.cpp
         previewwindow.cpp previewwindow.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qmessagebox
     SOURCES
         tst_qmessagebox.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate

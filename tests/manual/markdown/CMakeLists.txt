@@ -10,7 +10,7 @@ qt_internal_add_manual_test(html2md
         html2md.cpp
     INCLUDE_DIRECTORIES
         .
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )
 

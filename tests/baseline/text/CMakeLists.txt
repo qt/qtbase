@@ -8,7 +8,7 @@ qt_internal_add_test(tst_baseline_text
         tst_baseline_text.cpp
     INCLUDE_DIRECTORIES
         ../shared
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
         Qt::Network

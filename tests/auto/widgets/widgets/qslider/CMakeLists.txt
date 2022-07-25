@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qslider
     SOURCES
         tst_qslider.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

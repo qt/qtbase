@@ -2,7 +2,7 @@ qt_internal_add_manual_test(a11y_basic_widgets
     GUI
     SOURCES
         main.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::Gui
         Qt::Widgets

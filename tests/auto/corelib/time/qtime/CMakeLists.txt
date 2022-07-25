@@ -10,6 +10,6 @@ qt_internal_add_test(tst_qtime
     DEFINES
         QT_NO_FOREACH
         QT_NO_KEYWORDS
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
 )

@@ -12,6 +12,6 @@ qt_internal_add_test(tst_qabstractitemmodel
         QT_DISABLE_DEPRECATED_BEFORE=0
     INCLUDE_DIRECTORIES
         ../../../other/qabstractitemmodelutils
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )

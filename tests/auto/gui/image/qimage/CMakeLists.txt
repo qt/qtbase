@@ -13,7 +13,7 @@ list(APPEND test_data ${test_data_glob})
 qt_internal_add_test(tst_qimage
     SOURCES
         tst_qimage.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
@@ -21,12 +21,12 @@ qt_internal_add_test(tst_qimage
 )
 
 qt_internal_extend_target(tst_qimage CONDITION WIN32
-    PUBLIC_LIBRARIES
+    LIBRARIES
         gdi32
         user32
 )
 
 qt_internal_extend_target(tst_qimage CONDITION APPLE
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ${FWCoreGraphics}
 )

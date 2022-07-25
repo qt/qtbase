@@ -13,7 +13,7 @@ file(GLOB_RECURSE test_data
 qt_internal_add_test(tst_qzip
     SOURCES
         tst_qzip.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
     TESTDATA ${test_data}

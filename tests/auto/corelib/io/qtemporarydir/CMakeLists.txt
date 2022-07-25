@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qtemporarydir
     SOURCES
         tst_qtemporarydir.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::TestPrivate
 )
 

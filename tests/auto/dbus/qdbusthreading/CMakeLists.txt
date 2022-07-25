@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qdbusthreading
     SOURCES
         tst_qdbusthreading.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::DBus
 )

@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qloggingcategory
     SOURCES
         tst_qloggingcategory.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
 )
 

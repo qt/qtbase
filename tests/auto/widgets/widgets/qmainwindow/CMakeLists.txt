@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qmainwindow
     SOURCES
         tst_qmainwindow.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
         Qt::WidgetsPrivate

@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qaction
     SOURCES
         tst_qaction.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate

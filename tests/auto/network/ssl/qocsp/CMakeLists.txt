@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qocsp
     SOURCES
         tst_qocsp.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
         Qt::NetworkPrivate
 )

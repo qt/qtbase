@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qevent
     SOURCES
         tst_qevent.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::CorePrivate
 )

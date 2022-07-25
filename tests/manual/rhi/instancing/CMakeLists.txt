@@ -8,7 +8,7 @@ qt_internal_add_manual_test(instancing
     GUI
     SOURCES
         instancing.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
 )

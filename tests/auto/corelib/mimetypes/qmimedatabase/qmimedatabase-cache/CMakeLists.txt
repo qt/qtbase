@@ -12,7 +12,7 @@ qt_internal_add_test(tst_qmimedatabase-cache
     SOURCES
         ../tst_qmimedatabase.h
         tst_qmimedatabase-cache.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Concurrent
 )
 

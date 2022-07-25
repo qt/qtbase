@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qfloat16
     SOURCES
         tst_qfloat16.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::TestPrivate
 )

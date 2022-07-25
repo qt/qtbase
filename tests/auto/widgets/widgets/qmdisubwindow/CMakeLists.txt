@@ -12,7 +12,7 @@ qt_internal_add_test(tst_qmdisubwindow
         QT_NO_CAST_TO_ASCII
     INCLUDE_DIRECTORIES
         .
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
         Qt::WidgetsPrivate

@@ -12,7 +12,7 @@ qt_internal_add_test(tst_qmdiarea
         QT_NO_CAST_TO_ASCII
     INCLUDE_DIRECTORIES
         .
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
         Qt::Widgets
@@ -22,11 +22,11 @@ qt_internal_add_test(tst_qmdiarea
 #####################################################################
 
 qt_internal_extend_target(tst_qmdiarea CONDITION TARGET Qt::OpenGL
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::OpenGL
 )
 
 qt_internal_extend_target(tst_qmdiarea CONDITION APPLE
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ${FWSecurity}
 )

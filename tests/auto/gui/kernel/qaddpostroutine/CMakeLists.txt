@@ -7,6 +7,6 @@
 qt_internal_add_test(tst_qaddpostroutine
     SOURCES
         tst_qaddpostroutine.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
 )

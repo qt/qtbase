@@ -13,7 +13,7 @@ file(GLOB_RECURSE qrhi_resource_files
 qt_internal_add_test(tst_qrhi
     SOURCES
         tst_qrhi.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
     TESTDATA ${qrhi_resource_files}

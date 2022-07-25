@@ -10,6 +10,6 @@ qt_internal_add_executable(qpinger
     SOURCES
         ../interface.cpp ../interface.h
         qpinger.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::DBus
 )

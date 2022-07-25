@@ -14,7 +14,7 @@ qt_internal_add_manual_test(dialogs
         messageboxpanel.cpp messageboxpanel.h
         utils.cpp utils.h
         wizardpanel.cpp wizardpanel.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )
@@ -26,7 +26,7 @@ qt_internal_add_manual_test(dialogs
 #####################################################################
 
 qt_internal_extend_target(dialogs CONDITION TARGET Qt::PrintSupport
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::PrintSupport
 )
 

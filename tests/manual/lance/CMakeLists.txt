@@ -13,7 +13,7 @@ qt_internal_add_manual_test(lance
     INCLUDE_DIRECTORIES
         .
         ../../baseline/shared
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
@@ -82,6 +82,6 @@ qt_internal_add_resource(lance "images"
 #####################################################################
 
 qt_internal_extend_target(lance CONDITION TARGET Qt::OpenGL
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::OpenGL
 )

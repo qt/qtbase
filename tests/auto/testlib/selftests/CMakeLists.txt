@@ -18,7 +18,7 @@ qt_internal_add_test(tst_selftests
     SOURCES
         tst_selftests.cpp
         catch.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::TestPrivate
     TESTDATA ${qmake_expected_files_resource_files}
     BUILTIN_TESTDATA

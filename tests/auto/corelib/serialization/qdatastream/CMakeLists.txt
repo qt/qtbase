@@ -11,7 +11,7 @@ list(APPEND test_data "typedef.q5")
 qt_internal_add_test(tst_qdatastream
     SOURCES
         tst_qdatastream.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
     TESTDATA ${test_data}
 )

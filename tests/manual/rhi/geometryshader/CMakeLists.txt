@@ -2,7 +2,7 @@ qt_internal_add_manual_test(geometryshader
     GUI
     SOURCES
         geometryshader.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
 )

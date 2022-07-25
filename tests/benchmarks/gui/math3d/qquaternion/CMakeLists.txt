@@ -7,7 +7,7 @@
 qt_internal_add_benchmark(tst_bench_qquaternion
     SOURCES
         tst_qquaternion.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Test
 )

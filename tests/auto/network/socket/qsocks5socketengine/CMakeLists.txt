@@ -11,7 +11,7 @@ endif()
 qt_internal_add_test(tst_qsocks5socketengine
     SOURCES
         tst_qsocks5socketengine.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
     QT_TEST_SERVER_LIST "danted" "apache2" "cyrus" # special case
@@ -28,6 +28,6 @@ qt_internal_add_test(tst_qsocks5socketengine
 # QT_TEST_SERVER_LIST = "danted" "apache2" "cyrus"
 
 qt_internal_extend_target(tst_qsocks5socketengine CONDITION WIN32
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ws2_32
 )

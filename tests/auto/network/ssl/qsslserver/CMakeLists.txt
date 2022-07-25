@@ -12,7 +12,7 @@ list(APPEND test_data "certs")
 qt_internal_add_test(tst_qsslserver
     SOURCES
         tst_qsslserver.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
     TESTDATA ${test_data}

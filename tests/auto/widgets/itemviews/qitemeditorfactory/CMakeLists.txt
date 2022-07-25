@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qitemeditorfactory
     SOURCES
         tst_qitemeditorfactory.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
 )

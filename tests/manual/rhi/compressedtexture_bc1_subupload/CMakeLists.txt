@@ -8,7 +8,7 @@ qt_internal_add_manual_test(compressedtexture_bc1_subupload
     GUI
     SOURCES
         compressedtexture_bc1_subupload.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
 )

@@ -9,7 +9,7 @@ qt_internal_add_benchmark(qtimer_vs_qmetaobject
         tst_qtimer_vs_qmetaobject.cpp
     INCLUDE_DIRECTORIES
         .
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Test
 )
 

@@ -7,7 +7,7 @@
 qt_internal_add_test(tst_qguitimer
     SOURCES
         ../../../corelib/kernel/qtimer/tst_qtimer.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Gui
 )
