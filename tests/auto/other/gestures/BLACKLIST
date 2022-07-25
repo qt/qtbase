@@ -45,10 +45,6 @@ ubuntu-18.04
 ubuntu-20.04
 [conflictingGesturesInGraphicsView]
 ubuntu-20.04
-[customGesture]
-opensuse-leap
-# QTBUG-67254
-opensuse-42.3
 [graphicsItemTreeGesture]
 ubuntu-18.04
 ubuntu-20.04

@@ -337,7 +337,7 @@ void tst_Gestures::customGesture()
     GestureWidget widget;
     widget.grabGesture(CustomGesture::GestureType, Qt::DontStartGestureOnChildren);
     widget.show();
-    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    QVERIFY(QTest::qWaitForWindowActive(&widget));
 
     CustomEvent event;
     event.hotSpot = widget.mapToGlobal(QPoint(5,5));
