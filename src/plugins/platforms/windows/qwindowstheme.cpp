@@ -983,7 +983,7 @@ QPixmap QWindowsFileIconEngine::filePixmap(const QSize &size, QIcon::Mode, QIcon
 {
     /* We don't use the variable, but by storing it statically, we
      * ensure CoInitialize is only called once. */
-    static HRESULT comInit = CoInitialize(nullptr);
+    static HRESULT comInit = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
     Q_UNUSED(comInit);
 
     static QCache<QString, FakePointer<int> > dirIconEntryCache(1000);

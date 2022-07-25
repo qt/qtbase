@@ -475,15 +475,15 @@ static bool shouldShowMaximizeButton(const QWindow *w, Qt::WindowFlags flags)
 // Qt::WindowTransparentForInput (in combination with WS_EX_TRANSPARENT).
 bool QWindowsWindow::setWindowLayered(HWND hwnd, Qt::WindowFlags flags, bool hasAlpha, qreal opacity)
 {
-    const LONG exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+    const LONG_PTR exStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
     const bool needsLayered = (flags & Qt::WindowTransparentForInput)
         || (hasAlpha && (flags & Qt::FramelessWindowHint)) || opacity < 1.0;
     const bool isLayered = (exStyle & WS_EX_LAYERED);
     if (needsLayered != isLayered) {
         if (needsLayered) {
-            SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
+            SetWindowLongPtr(hwnd, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
         } else {
-            SetWindowLong(hwnd, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
+            SetWindowLongPtr(hwnd, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
         }
     }
     return needsLayered;
@@ -1084,8 +1084,8 @@ QMargins QWindowsGeometryHint::frame(const QWindow *w, HWND hwnd)
 {
     if (!w->isTopLevel() || w->flags().testFlag(Qt::FramelessWindowHint))
         return {};
-    return frame(w, hwnd, DWORD(GetWindowLongPtrW(hwnd, GWL_STYLE)),
-                 DWORD(GetWindowLongPtrW(hwnd, GWL_EXSTYLE)));
+    return frame(w, hwnd, DWORD(GetWindowLongPtr(hwnd, GWL_STYLE)),
+                 DWORD(GetWindowLongPtr(hwnd, GWL_EXSTYLE)));
 }
 
 // For newly created windows.
@@ -1207,7 +1207,7 @@ bool QWindowsGeometryHint::positionIncludesFrame(const QWindow *w)
 
 bool QWindowsBaseWindow::isRtlLayout(HWND hwnd)
 {
-    return (GetWindowLongPtrW(hwnd, GWL_EXSTYLE) & WS_EX_LAYOUTRTL) != 0;
+    return (GetWindowLongPtr(hwnd, GWL_EXSTYLE) & WS_EX_LAYOUTRTL) != 0;
 }
 
 QWindowsBaseWindow *QWindowsBaseWindow::baseWindowOf(const QWindow *w)
@@ -2310,7 +2310,7 @@ bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
         return true;
     }
     // QTBUG-75455: Suppress WM_PAINT sent to invisible windows when setting WS_EX_LAYERED
-    if (!window()->isVisible() && (GetWindowLong(hwnd, GWL_EXSTYLE) & WS_EX_LAYERED) != 0)
+    if (!window()->isVisible() && (GetWindowLongPtr(hwnd, GWL_EXSTYLE) & WS_EX_LAYERED) != 0)
         return false;
     // Ignore invalid update bounding rectangles
     if (!GetUpdateRect(m_data.hwnd, 0, FALSE))

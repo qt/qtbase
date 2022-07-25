@@ -99,11 +99,7 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
     if (dispatcher->filterNativeEvent(QByteArrayLiteral("windows_dispatcher_MSG"), &msg, &result))
         return result;
 
-#ifdef GWLP_USERDATA
     auto q = reinterpret_cast<QEventDispatcherWin32 *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-#else
-    auto q = reinterpret_cast<QEventDispatcherWin32 *>(GetWindowLong(hwnd, GWL_USERDATA));
-#endif
     QEventDispatcherWin32Private *d = nullptr;
     if (q != nullptr)
         d = q->d_func();
@@ -289,11 +285,7 @@ static HWND qt_create_internal_window(const QEventDispatcherWin32 *eventDispatch
         return 0;
     }
 
-#ifdef GWLP_USERDATA
     SetWindowLongPtr(wnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(eventDispatcher));
-#else
-    SetWindowLong(wnd, GWL_USERDATA, reinterpret_cast<LONG>(eventDispatcher));
-#endif
 
     return wnd;
 }

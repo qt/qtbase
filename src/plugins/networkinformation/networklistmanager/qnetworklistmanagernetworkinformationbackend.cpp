@@ -121,7 +121,7 @@ public:
 
 QNetworkListManagerNetworkInformationBackend::QNetworkListManagerNetworkInformationBackend()
 {
-    auto hr = CoInitialize(nullptr);
+    auto hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
     if (FAILED(hr)) {
         qCWarning(lcNetInfoNLM) << "Failed to initialize COM:" << errorStringFromHResult(hr);
         comInitFailed = true;
@@ -178,7 +178,7 @@ bool QNetworkListManagerNetworkInformationBackend::start()
     Q_ASSERT(!monitoring);
 
     if (comInitFailed) {
-        auto hr = CoInitialize(nullptr);
+        auto hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
         if (FAILED(hr)) {
             qCWarning(lcNetInfoNLM) << "Failed to initialize COM:" << errorStringFromHResult(hr);
             comInitFailed = true;
