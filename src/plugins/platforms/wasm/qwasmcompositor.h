@@ -4,6 +4,8 @@
 #ifndef QWASMCOMPOSITOR_H
 #define QWASMCOMPOSITOR_H
 
+#include "qwasmwindowstack.h"
+
 #include <QtGui/qregion.h>
 #include <qpa/qplatformwindow.h>
 
@@ -174,12 +176,14 @@ private:
         std::unique_ptr<OperationState> m_state;
     };
 
-    void notifyTopWindowChanged(QWasmWindow *window);
-    void drawWindow(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, QWasmWindow *window);
-    void drawWindowContent(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, QWasmWindow *window);
+    void onTopWindowChanged(QWasmWindow *window);
+    void drawWindow(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, const QWasmWindow *window);
+    void drawWindowContent(QOpenGLTextureBlitter *blitter, QWasmScreen *screen,
+                           const QWasmWindow *window);
     void blit(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, const QOpenGLTexture *texture, QRect targetGeometry);
 
-    void drawWindowDecorations(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, QWasmWindow *window);
+    void drawWindowDecorations(QOpenGLTextureBlitter *blitter, QWasmScreen *screen,
+                               const QWasmWindow *window);
 
     static QPalette makeWindowPalette();
 
@@ -199,12 +203,12 @@ private:
     static int touchCallback(int eventType, const EmscriptenTouchEvent *ev, void *userData);
 
     WindowManipulation m_windowManipulation;
+    QWasmWasmWindowStack m_windowStack;
 
     QScopedPointer<QOpenGLContext> m_context;
     QScopedPointer<QOpenGLTextureBlitter> m_blitter;
 
     QHash<const QWasmWindow *, bool> m_windowVisibility;
-    QList<QWasmWindow *> m_windowStack;
     QRegion m_globalDamage; // damage caused by expose, window close, etc.
     bool m_needComposit = false;
     bool m_inFlush = false;

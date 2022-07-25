@@ -27,7 +27,8 @@
 #include <emscripten/bind.h>
 
 namespace {
-QWasmWindow *AsWasmWindow(QWindow *window) {
+QWasmWindow *asWasmWindow(QWindow *window)
+{
     return static_cast<QWasmWindow*>(window->handle());
 }
 }  // namespace
@@ -50,10 +51,11 @@ EMSCRIPTEN_BINDINGS(qtMouseModule) {
 }
 
 QWasmCompositor::QWasmCompositor(QWasmScreen *screen)
-    : QObject(screen)
-    , m_windowManipulation(screen)
-    , m_blitter(new QOpenGLTextureBlitter)
-    , m_eventTranslator(std::make_unique<QWasmEventTranslator>())
+    : QObject(screen),
+      m_windowManipulation(screen),
+      m_windowStack(std::bind(&QWasmCompositor::onTopWindowChanged, this, std::placeholders::_1)),
+      m_blitter(new QOpenGLTextureBlitter),
+      m_eventTranslator(std::make_unique<QWasmEventTranslator>())
 {
     m_touchDevice = std::make_unique<QPointingDevice>(
             "touchscreen", 1, QInputDevice::DeviceType::TouchScreen,
@@ -171,23 +173,14 @@ void QWasmCompositor::setEnabled(bool enabled)
 void QWasmCompositor::addWindow(QWasmWindow *window)
 {
     m_windowVisibility.insert(window, false);
-
-    m_windowStack.append(window);
-
-    notifyTopWindowChanged(window);
+    m_windowStack.pushWindow(window);
 }
 
 void QWasmCompositor::removeWindow(QWasmWindow *window)
 {
-    m_windowStack.removeAll(window);
     m_windowVisibility.remove(window);
     m_requestUpdateWindows.remove(window);
-
-    if (!m_windowStack.isEmpty() && !QGuiApplication::focusWindow()) {
-        auto m_lastMouseTargetWindow = m_windowStack.last();
-        m_lastMouseTargetWindow->requestActivateWindow();
-        notifyTopWindowChanged(m_lastMouseTargetWindow);
-    }
+    m_windowStack.removeWindow(window);
 }
 
 void QWasmCompositor::setVisible(QWasmWindow *window, bool visible)
@@ -205,47 +198,36 @@ void QWasmCompositor::setVisible(QWasmWindow *window, bool visible)
 
 void QWasmCompositor::raise(QWasmWindow *window)
 {
-    if (m_windowStack.size() <= 1)
-        return;
-
-    m_windowStack.removeAll(window);
-    m_windowStack.append(window);
-
-    notifyTopWindowChanged(window);
+    m_windowStack.raise(window);
 }
 
 void QWasmCompositor::lower(QWasmWindow *window)
 {
-    if (m_windowStack.size() <= 1)
-        return;
-
-    m_windowStack.removeAll(window);
-    m_windowStack.prepend(window);
     m_globalDamage = window->window()->geometry(); // repaint previously covered area.
-
-    notifyTopWindowChanged(window);
+    m_windowStack.lower(window);
 }
 
 int QWasmCompositor::windowCount() const
 {
-    return m_windowStack.count();
+    return m_windowStack.size();
 }
 
 QWindow *QWasmCompositor::windowAt(QPoint targetPointInScreenCoords, int padding) const
 {
-    const auto found = std::find_if(m_windowStack.rbegin(), m_windowStack.rend(),
-        [this, padding, &targetPointInScreenCoords](const QWasmWindow* window) {
-            const QRect geometry = window->windowFrameGeometry()
-                                    .adjusted(-padding, -padding, padding, padding);
+    const auto found = std::find_if(
+            m_windowStack.begin(), m_windowStack.end(),
+            [this, padding, &targetPointInScreenCoords](const QWasmWindow *window) {
+                const QRect geometry = window->windowFrameGeometry().adjusted(-padding, -padding,
+                                                                              padding, padding);
 
-            return m_windowVisibility[window] && geometry.contains(targetPointInScreenCoords);
-        });
-    return found != m_windowStack.rend() ? (*found)->window() : nullptr;
+                return m_windowVisibility[window] && geometry.contains(targetPointInScreenCoords);
+            });
+    return found != m_windowStack.end() ? (*found)->window() : nullptr;
 }
 
 QWindow *QWasmCompositor::keyWindow() const
 {
-    return m_windowStack.at(m_windowStack.count() - 1)->window();
+    return m_windowStack.topWindow() ? m_windowStack.topWindow()->window() : nullptr;
 }
 
 void QWasmCompositor::blit(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, const QOpenGLTexture *texture, QRect targetGeometry)
@@ -267,7 +249,8 @@ void QWasmCompositor::blit(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, 
     blitter->blit(texture->textureId(), m, QOpenGLTextureBlitter::OriginTopLeft);
 }
 
-void QWasmCompositor::drawWindowContent(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, QWasmWindow *window)
+void QWasmCompositor::drawWindowContent(QOpenGLTextureBlitter *blitter, QWasmScreen *screen,
+                                        const QWasmWindow *window)
 {
     QWasmBackingStore *backingStore = window->backingStore();
     if (!backingStore)
@@ -498,7 +481,8 @@ QWasmCompositor::QWasmTitleBarOptions QWasmCompositor::makeTitleBarOptions(const
     return titleBarOptions;
 }
 
-void QWasmCompositor::drawWindowDecorations(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, QWasmWindow *window)
+void QWasmCompositor::drawWindowDecorations(QOpenGLTextureBlitter *blitter, QWasmScreen *screen,
+                                            const QWasmWindow *window)
 {
     int width = window->windowFrameGeometry().width();
     int height = window->windowFrameGeometry().height();
@@ -753,7 +737,8 @@ void QWasmCompositor::drawShadePanel(QWasmTitleBarOptions options, QPainter *pai
 
 }
 
-void QWasmCompositor::drawWindow(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, QWasmWindow *window)
+void QWasmCompositor::drawWindow(QOpenGLTextureBlitter *blitter, QWasmScreen *screen,
+                                 const QWasmWindow *window)
 {
     if (window->window()->type() != Qt::Popup && !(window->m_windowState & Qt::WindowFullScreen))
         drawWindowDecorations(blitter, screen, window);
@@ -767,9 +752,9 @@ void QWasmCompositor::frame()
 
     QWasmWindow *someWindow = nullptr;
 
-    for (QWasmWindow *window : qAsConst(m_windowStack)) {
+    for (QWasmWindow *window : m_windowStack) {
         if (window->window()->surfaceClass() == QSurface::Window
-                && qt_window_private(static_cast<QWindow *>(window->window()))->receivedExpose) {
+            && qt_window_private(window->window())->receivedExpose) {
             someWindow = window;
             break;
         }
@@ -801,10 +786,10 @@ void QWasmCompositor::frame()
     m_blitter->bind();
     m_blitter->setRedBlueSwizzle(true);
 
-    for (QWasmWindow *window : qAsConst(m_windowStack)) {
+    std::for_each(m_windowStack.rbegin(), m_windowStack.rend(), [this](const QWasmWindow *window) {
         if (m_windowVisibility[window])
             drawWindow(m_blitter.data(), screen(), window);
-    }
+    });
 
     m_blitter->release();
 
@@ -835,14 +820,18 @@ void QWasmCompositor::WindowManipulation::resizeWindow(const QPoint& amount)
     ));
 }
 
-void QWasmCompositor::notifyTopWindowChanged(QWasmWindow *window)
+void QWasmCompositor::onTopWindowChanged(QWasmWindow *window)
 {
+    if (!QGuiApplication::focusWindow())
+        window->requestActivateWindow();
+
     QWindow *modalWindow;
-    bool isTargetWindowBlocked = QGuiApplicationPrivate::instance()->isWindowBlocked(window->window(), &modalWindow);
+    const bool isTargetWindowBlocked =
+            QGuiApplicationPrivate::instance()->isWindowBlocked(window->window(), &modalWindow);
 
     if (isTargetWindowBlocked) {
         modalWindow->requestActivate();
-        raise(AsWasmWindow(modalWindow));
+        raise(asWasmWindow(modalWindow));
         return;
     }
 
@@ -913,7 +902,7 @@ bool QWasmCompositor::processPointer(const PointerEvent& event)
         m_windowUnderMouse = targetWindow;
     }
 
-    QWasmWindow *wasmTargetWindow = AsWasmWindow(targetWindow);
+    QWasmWindow *wasmTargetWindow = asWasmWindow(targetWindow);
     Qt::WindowStates windowState = targetWindow->windowState();
     const bool isTargetWindowResizable = !windowState.testFlag(Qt::WindowMaximized) && !windowState.testFlag(Qt::WindowFullScreen);
 
@@ -936,7 +925,9 @@ bool QWasmCompositor::processPointer(const PointerEvent& event)
 
         if (m_pressedWindow) {
             // Always deliver the released event to the same window that was pressed
-            AsWasmWindow(m_pressedWindow)->injectMouseReleased(pointInTargetWindowCoords, targetPointInScreenCoords, event.mouseButton, event.modifiers);
+            asWasmWindow(m_pressedWindow)
+                    ->injectMouseReleased(pointInTargetWindowCoords, targetPointInScreenCoords,
+                                          event.mouseButton, event.modifiers);
             if (event.mouseButton == Qt::MouseButton::LeftButton)
                 m_pressedWindow = nullptr;
         } else {
@@ -1064,20 +1055,21 @@ void QWasmCompositor::WindowManipulation::onPointerDown(
     const auto pointInScreenCoords = m_screen->geometry().topLeft() + event.point;
 
     std::unique_ptr<std::variant<ResizeState, MoveState>> operationSpecific;
-    if (AsWasmWindow(windowAtPoint)->isPointOnTitle(pointInScreenCoords)) {
+    if (asWasmWindow(windowAtPoint)->isPointOnTitle(pointInScreenCoords)) {
         operationSpecific = std::make_unique<std::variant<ResizeState, MoveState>>(MoveState {
             .m_lastPointInScreenCoords = pointInScreenCoords
         });
-    } else if (AsWasmWindow(windowAtPoint)->isPointOnResizeRegion(pointInScreenCoords)) {
-        operationSpecific = std::make_unique<std::variant<ResizeState, MoveState>>(ResizeState {
-            .m_resizeMode = AsWasmWindow(windowAtPoint)->resizeModeAtPoint(pointInScreenCoords),
-            .m_originInScreenCoords = pointInScreenCoords,
-            .m_initialWindowBounds = windowAtPoint->geometry(),
-            .m_minShrink = QPoint(windowAtPoint->minimumWidth() - windowAtPoint->geometry().width(),
-                                windowAtPoint->minimumHeight() - windowAtPoint->geometry().height()),
-            .m_maxGrow = QPoint(
-                        windowAtPoint->maximumWidth() - windowAtPoint->geometry().width(),
-                        windowAtPoint->maximumHeight() - windowAtPoint->geometry().height()),
+    } else if (asWasmWindow(windowAtPoint)->isPointOnResizeRegion(pointInScreenCoords)) {
+        operationSpecific = std::make_unique<std::variant<ResizeState, MoveState>>(ResizeState{
+                .m_resizeMode = asWasmWindow(windowAtPoint)->resizeModeAtPoint(pointInScreenCoords),
+                .m_originInScreenCoords = pointInScreenCoords,
+                .m_initialWindowBounds = windowAtPoint->geometry(),
+                .m_minShrink =
+                        QPoint(windowAtPoint->minimumWidth() - windowAtPoint->geometry().width(),
+                               windowAtPoint->minimumHeight() - windowAtPoint->geometry().height()),
+                .m_maxGrow =
+                        QPoint(windowAtPoint->maximumWidth() - windowAtPoint->geometry().width(),
+                               windowAtPoint->maximumHeight() - windowAtPoint->geometry().height()),
         });
     } else {
         return;
@@ -1204,7 +1196,7 @@ int QWasmCompositor::handleTouch(int eventType, const EmscriptenTouchEvent *touc
 {
     QList<QWindowSystemInterface::TouchPoint> touchPointList;
     touchPointList.reserve(touchEvent->numTouches);
-    QWindow *targetWindow;
+    QWindow *targetWindow = nullptr;
 
     for (int i = 0; i < touchEvent->numTouches; i++) {
 
