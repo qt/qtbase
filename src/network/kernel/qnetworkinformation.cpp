@@ -662,6 +662,7 @@ bool QNetworkInformation::loadBackendByName(QStringView backend)
     return loadedBackend && loadedBackend->backendName().compare(backend, Qt::CaseInsensitive) == 0;
 }
 
+#if QT_DEPRECATED_SINCE(6,4)
 /*!
     \deprecated [6.4] Use loadBackendByName() instead.
 
@@ -671,6 +672,7 @@ bool QNetworkInformation::load(QStringView backend)
 {
     return loadBackendByName(backend);
 }
+#endif // QT_DEPRECATED_SINCE(6,4)
 
 /*!
     Load a backend which supports \a features.
@@ -686,6 +688,7 @@ bool QNetworkInformation::loadBackendByFeatures(Features features)
     return loadedBackend && loadedBackend->supports(features);
 }
 
+#if QT_DEPRECATED_SINCE(6,4)
 /*!
     \deprecated [6.4] Use loadBackendByFeatures() instead.
 
@@ -695,6 +698,7 @@ bool QNetworkInformation::load(Features features)
 {
     return loadBackendByFeatures(features);
 }
+#endif // QT_DEPRECATED_SINCE(6,4)
 
 /*!
     Returns a list of the names of all currently available backends.
