@@ -435,6 +435,8 @@ public:
     static inline QVariant fromValue(const T &value)
 #endif
     {
+        if constexpr (std::is_null_pointer_v<T>)
+            return QVariant(QMetaType::fromType<std::nullptr_t>());
         return QVariant(QMetaType::fromType<T>(), std::addressof(value));
     }
 

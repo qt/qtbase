@@ -250,7 +250,8 @@ static void customConstruct(const QtPrivate::QMetaTypeInterface *iface, QVariant
 
     // need to check for nullptr_t here, as this can get called by fromValue(nullptr). fromValue() uses
     // std::addressof(value) which in this case returns the address of the nullptr object.
-    d->is_null = !copy || isInterfaceFor<std::nullptr_t>(iface);
+    // ### Qt 7: remove nullptr_t special casing
+    d->is_null = !copy QT6_ONLY(|| isInterfaceFor<std::nullptr_t>(iface));
 
     void *dst;
     if (QVariant::Private::canUseInternalSpace(iface)) {
