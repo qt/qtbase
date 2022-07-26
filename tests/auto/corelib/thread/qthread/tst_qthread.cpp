@@ -82,6 +82,7 @@ private slots:
 
     void exitAndStart();
     void exitAndExec();
+    void quitDuringNestedProcessEvents();
 
     void connectThreadFinishedSignalToObjectDeleteLaterSlot();
     void wait2();
@@ -1108,6 +1109,41 @@ void tst_QThread::exitAndExec()
     QTRY_VERIFY(thread.wait(10));
     QCOMPARE(sync2.m_prop, 89);
     QCOMPARE(sync1.m_prop, 89);
+}
+
+void tst_QThread::quitDuringNestedProcessEvents()
+{
+    // QTBUG-105207: quit() while a slot is running, then the slot calls
+    // processEvents(), which resets the dispatcher's interrupt flag.
+    // The outer processEvents() must not then block forever.
+    QThread thread;
+    QObject context;
+    context.moveToThread(&thread);
+    QLatch slotRunning(1);
+    QLatch quitCalled(1);
+    bool slotDone = false;
+    QMetaObject::invokeMethod(
+            &context,
+            [&] {
+                slotRunning.countDown();
+                quitCalled.wait();
+                QCoreApplication::processEvents();
+                slotDone = true;
+            },
+            Qt::QueuedConnection);
+    thread.start();
+    slotRunning.wait();
+    thread.quit();
+    quitCalled.countDown();
+    const bool finished = thread.wait(5000);
+    if (!finished) {
+        // Only reached without the fix: the first quit()'s wakeup was consumed by
+        // the nested processEvents(). Wake up the stuck thread, so ~QThread doesn't abort.
+        thread.quit();
+        thread.wait();
+    }
+    QVERIFY(slotDone);
+    QVERIFY(finished);
 }
 
 void tst_QThread::connectThreadFinishedSignalToObjectDeleteLaterSlot()

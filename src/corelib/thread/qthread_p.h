@@ -359,7 +359,7 @@ public:
     bool canWaitLocked()
     {
         QMutexLocker locker(&postEventList.mutex);
-        return canWait;
+        return canWait && !quitNow;
     }
 
     void clearEvents();
