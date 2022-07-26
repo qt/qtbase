@@ -253,6 +253,12 @@ if(@INSTALL_CMAKE_NAMESPACE@_FIND_COMPONENTS AND _Qt_NOTFOUND_MESSAGE)
     unset(_Qt_NOTFOUND_MESSAGE)
 endif()
 
+if(@INSTALL_CMAKE_NAMESPACE@_FOUND
+    AND COMMAND _qt_internal_override_example_install_dir_to_dot
+    AND NOT _qt_internal_example_dir_set_to_dot)
+    _qt_internal_override_example_install_dir_to_dot()
+endif()
+
 __qt_internal_defer_promote_targets_in_dir_scope_to_global()
 if(CMAKE_VERSION VERSION_LESS 3.21)
     __qt_internal_check_link_order_matters()
