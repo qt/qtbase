@@ -118,6 +118,8 @@ private slots:
 
     void qpropertyAlias();
     void scheduleNotify();
+
+    void notifyAfterAllDepsGone();
 };
 
 void tst_QProperty::functorBinding()
@@ -1943,6 +1945,28 @@ void tst_QProperty::scheduleNotify()
     p.setBinding(b);
     QCOMPARE(notifications, 1);
     QCOMPARE(p.value(), 0);
+}
+
+void tst_QProperty::notifyAfterAllDepsGone()
+{
+    bool b = true;
+    QProperty<int> iprop;
+    QProperty<int> jprop(42);
+    iprop.setBinding([&](){
+        if (b)
+            return jprop.value();
+        return 13;
+    });
+    int changeCounter = 0;
+    auto keepAlive = iprop.onValueChanged([&](){ changeCounter++; });
+    QCOMPARE(iprop.value(), 42);
+    jprop = 44;
+    QCOMPARE(iprop.value(), 44);
+    QCOMPARE(changeCounter, 1);
+    b = false;
+    jprop = 43;
+    QCOMPARE(iprop.value(), 13);
+    QCOMPARE(changeCounter, 2);
 }
 
 QTEST_MAIN(tst_QProperty);

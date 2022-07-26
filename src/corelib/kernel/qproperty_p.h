@@ -57,12 +57,41 @@
 #include <qscopedpointer.h>
 #include <qscopedvaluerollback.h>
 #include <vector>
+#include <QtCore/QVarLengthArray>
 
 QT_BEGIN_NAMESPACE
 
 namespace QtPrivate {
     Q_CORE_EXPORT bool isAnyBindingEvaluating();
 }
+
+
+/*!
+    \internal
+    Similar to \c QPropertyBindingPrivatePtr, but stores a
+    \c QPropertyObserver * linking to the QPropertyBindingPrivate*
+    instead of the QPropertyBindingPrivate* itself
+ */
+struct QBindingObserverPtr
+{
+private:
+    QPropertyObserver *d = nullptr;
+public:
+    QBindingObserverPtr() = default;
+    Q_DISABLE_COPY(QBindingObserverPtr);
+    void swap(QBindingObserverPtr &other) noexcept
+    { qt_ptr_swap(d, other.d); }
+    QBindingObserverPtr(QBindingObserverPtr &&other) : d(std::exchange(other.d, nullptr)) {}
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QBindingObserverPtr);
+
+
+    inline QBindingObserverPtr(QPropertyObserver *observer);
+    inline ~QBindingObserverPtr();
+    inline QPropertyBindingPrivate *binding() const;
+    inline QPropertyObserver *operator ->();
+};
+
+using PendingBindingObserverList = QVarLengthArray<QBindingObserverPtr>;
 
 // Keep all classes related to QProperty in one compilation unit. Performance of this code is crucial and
 // we need to allow the compiler to inline where it makes sense.
@@ -141,18 +170,28 @@ struct QPropertyObserverPointer
     void setBindingToNotify_unsafe(QPropertyBindingPrivate *binding);
     void setChangeHandler(QPropertyObserver::ChangeHandler changeHandler);
 
+    enum class Notify {Everything, OnlyChangeHandlers};
+
+    template<Notify notifyPolicy = Notify::Everything>
     void notify(QUntypedPropertyData *propertyDataPtr);
+    void notifyOnlyChangeHandler(QUntypedPropertyData *propertyDataPtr);
 #ifndef QT_NO_DEBUG
     void noSelfDependencies(QPropertyBindingPrivate *binding);
 #else
     void noSelfDependencies(QPropertyBindingPrivate *) {}
 #endif
-    void evaluateBindings(QBindingStatus *status);
+    void evaluateBindings(PendingBindingObserverList &bindingObservers, QBindingStatus *status);
     void observeProperty(QPropertyBindingDataPointer property);
 
     explicit operator bool() const { return ptr != nullptr; }
 
     QPropertyObserverPointer nextObserver() const { return {ptr->next.data()}; }
+
+    QPropertyBindingPrivate *binding() const
+    {
+        Q_ASSERT(ptr->next.tag() == QPropertyObserver::ObserverNotifiesBinding);
+        return ptr->binding;
+    };
 
 private:
     void unlink_common()
@@ -370,10 +409,21 @@ public:
 
     void unlinkAndDeref();
 
-    void evaluateRecursive(QBindingStatus *status = nullptr);
-    void Q_ALWAYS_INLINE evaluateRecursive_inline(QBindingStatus *status);
+    void evaluateRecursive(PendingBindingObserverList &bindingObservers, QBindingStatus *status = nullptr);
+
+    // ### TODO: remove as soon as declarative no longer needs this overload
+    void evaluateRecursive()
+    {
+        PendingBindingObserverList bindingObservers;
+        evaluateRecursive(bindingObservers);
+    }
+
+    void Q_ALWAYS_INLINE evaluateRecursive_inline(PendingBindingObserverList &bindingObservers, QBindingStatus *status);
 
     void notifyRecursive();
+    void notifyNonRecursive(const PendingBindingObserverList &bindingObservers);
+    enum NotificationState : bool { Delayed, Sent };
+    NotificationState notifyNonRecursive();
 
     static QPropertyBindingPrivate *get(const QUntypedPropertyBinding &binding)
     { return static_cast<QPropertyBindingPrivate *>(binding.d.data()); }
@@ -615,11 +665,14 @@ public:
                 QPropertyBindingDataPointer d{bd};
                 if (QPropertyObserverPointer observer = d.firstObserver()) {
                     if (!inBindingWrapper(storage)) {
-                        if (bd->notifyObserver_helper(this, observer, storage)
+                        PendingBindingObserverList bindingObservers;
+                        if (bd->notifyObserver_helper(this, storage, observer, bindingObservers)
                                 == QtPrivate::QPropertyBindingData::Evaluated) {
                             // evaluateBindings() can trash the observers. We need to re-fetch here.
                             if (QPropertyObserverPointer observer = d.firstObserver())
-                                observer.notify(this);
+                                observer.notifyOnlyChangeHandler(this);
+                            for (auto&& bindingObserver: bindingObservers)
+                                bindingObserver.binding()->notifyNonRecursive();
                         }
                     }
                 }
@@ -776,7 +829,7 @@ struct QUntypedBindablePrivate
     }
 };
 
-inline void QPropertyBindingPrivate::evaluateRecursive_inline(QBindingStatus *status)
+inline void QPropertyBindingPrivate::evaluateRecursive_inline(PendingBindingObserverList &bindingObservers, QBindingStatus *status)
 {
     if (updating) {
         error = QPropertyBindingError(QPropertyBindingError::BindingLoop);
@@ -815,9 +868,10 @@ inline void QPropertyBindingPrivate::evaluateRecursive_inline(QBindingStatus *st
         return;
 
     firstObserver.noSelfDependencies(this);
-    firstObserver.evaluateBindings(status);
+    firstObserver.evaluateBindings(bindingObservers, status);
 }
 
+template<QPropertyObserverPointer::Notify notifyPolicy>
 inline void QPropertyObserverPointer::notify(QUntypedPropertyData *propertyDataPtr)
 {
     auto observer = const_cast<QPropertyObserver*>(ptr);
@@ -857,10 +911,12 @@ inline void QPropertyObserverPointer::notify(QUntypedPropertyData *propertyDataP
         }
         case QPropertyObserver::ObserverNotifiesBinding:
         {
-            auto bindingToNotify =  observer->binding;
-            QPropertyObserverNodeProtector protector(observer);
-            bindingToNotify->notifyRecursive();
-            next = protector.next();
+            if constexpr (notifyPolicy == Notify::Everything) {
+                auto bindingToNotify =  observer->binding;
+                QPropertyObserverNodeProtector protector(observer);
+                bindingToNotify->notifyRecursive();
+                next = protector.next();
+            }
             break;
         }
         case QPropertyObserver::ObserverIsPlaceholder:
@@ -874,11 +930,28 @@ inline void QPropertyObserverPointer::notify(QUntypedPropertyData *propertyDataP
     }
 }
 
+inline void QPropertyObserverPointer::notifyOnlyChangeHandler(QUntypedPropertyData *propertyDataPtr)
+{
+    notify<Notify::OnlyChangeHandlers>(propertyDataPtr);
+}
+
 inline QPropertyObserverNodeProtector::~QPropertyObserverNodeProtector()
 {
     QPropertyObserverPointer d{static_cast<QPropertyObserver *>(&m_placeHolder)};
     d.unlink_fast();
 }
+
+QBindingObserverPtr::QBindingObserverPtr(QPropertyObserver *observer) : d(observer)
+{
+    Q_ASSERT(d);
+    QPropertyObserverPointer{d}.binding()->addRef();
+}
+
+QBindingObserverPtr::~QBindingObserverPtr() { if (d)  QPropertyObserverPointer{d}.binding()->deref(); }
+
+QPropertyBindingPrivate *QBindingObserverPtr::binding() const { return QPropertyObserverPointer{d}.binding(); }
+
+QPropertyObserver *QBindingObserverPtr::operator->() { return d; }
 
 QT_END_NAMESPACE
 

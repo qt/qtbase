@@ -54,6 +54,7 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qtaggedpointer.h>
 #include <QtCore/qmetatype.h>
+#include <QtCore/qcontainerfwd.h>
 
 #include <functional>
 
@@ -63,6 +64,9 @@ class QBindingStorage;
 
 template<typename Class, typename T, auto Offset, auto Setter, auto Signal, auto Getter>
 class QObjectCompatProperty;
+
+struct QBindingObserverPtr;
+using PendingBindingObserverList = QVarLengthArray<QBindingObserverPtr>;
 
 namespace QtPrivate {
 // QPropertyBindingPrivatePtr operates on a RefCountingMixin solely so that we can inline
@@ -151,6 +155,7 @@ private:
 class QUntypedPropertyBinding;
 class QPropertyBindingPrivate;
 struct QPropertyBindingDataPointer;
+class QPropertyObserver;
 struct QPropertyObserverPointer;
 
 class QUntypedPropertyData
@@ -344,8 +349,9 @@ private:
 
     enum NotificationResult { Delayed, Evaluated };
     NotificationResult notifyObserver_helper(
-            QUntypedPropertyData *propertyDataPtr, QPropertyObserverPointer observer,
-            QBindingStorage *storage) const;
+            QUntypedPropertyData *propertyDataPtr, QBindingStorage *storage,
+            QPropertyObserverPointer observer,
+            PendingBindingObserverList &bindingObservers) const;
 };
 
 template <typename T, typename Tag>
