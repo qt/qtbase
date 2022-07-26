@@ -118,11 +118,12 @@ struct QPropertyDelayedNotifications
         Change notifications are sent later with notify (following the logic of separating
         binding updates and notifications used in non-deferred updates).
      */
-    void evaluateBindings(int index, QBindingStatus *status) {
+     [[nodiscard]] PendingBindingObserverList evaluateBindings(int index, QBindingStatus *status) {
+        PendingBindingObserverList bindingObservers;
         auto *delayed = delayedProperties + index;
         auto *bindingData = delayed->originalBindingData;
         if (!bindingData)
-            return;
+            return bindingObservers;
 
         bindingData->d_ptr = delayed->d_ptr;
         Q_ASSERT(!(bindingData->d_ptr & QPropertyBindingData::DelayedNotificationBit));
@@ -134,7 +135,8 @@ struct QPropertyDelayedNotifications
         QPropertyBindingDataPointer bindingDataPointer{bindingData};
         QPropertyObserverPointer observer = bindingDataPointer.firstObserver();
         if (observer)
-            observer.evaluateBindings(status);
+            observer.evaluateBindings(bindingObservers, status);
+        return bindingObservers;
     }
 
     /*!
@@ -216,8 +218,11 @@ void Qt::endPropertyUpdateGroup()
     // update all delayed properties
     auto start = data;
     while (data) {
-        for (int i = 0; i < data->used; ++i)
-            data->evaluateBindings(i, status);
+        for (int i = 0; i < data->used; ++i) {
+            PendingBindingObserverList bindingObserves = data->evaluateBindings(i, status);
+            Q_UNUSED(bindingObserves);
+            // ### TODO: Use bindingObservers for notify
+        }
         data = data->next;
     }
     // notify all delayed properties
@@ -271,11 +276,11 @@ void QPropertyBindingPrivate::unlinkAndDeref()
         destroyAndFreeMemory(this);
 }
 
-void QPropertyBindingPrivate::evaluateRecursive(QBindingStatus *status)
+void QPropertyBindingPrivate::evaluateRecursive(PendingBindingObserverList &bindingObservers, QBindingStatus *status)
 {
     if (!status)
         status = &bindingStatus;
-    return evaluateRecursive_inline(status);
+    return evaluateRecursive_inline(bindingObservers, status);
 }
 
 void QPropertyBindingPrivate::notifyRecursive()
@@ -292,6 +297,31 @@ void QPropertyBindingPrivate::notifyRecursive()
     if (hasStaticObserver)
         staticObserverCallback(propertyDataPtr);
     updating = false;
+}
+
+void QPropertyBindingPrivate::notifyNonRecursive(const PendingBindingObserverList &bindingObservers)
+{
+    notifyNonRecursive();
+    for (auto &&bindingObserver: bindingObservers) {
+        bindingObserver.binding()->notifyNonRecursive();
+    }
+}
+
+QPropertyBindingPrivate::NotificationState QPropertyBindingPrivate::notifyNonRecursive()
+{
+    if (!pendingNotify)
+        return Delayed;
+    pendingNotify = false;
+    Q_ASSERT(!updating);
+    updating = true;
+    if (firstObserver) {
+        firstObserver.noSelfDependencies(this);
+        firstObserver.notifyOnlyChangeHandler(propertyDataPtr);
+    }
+    if (hasStaticObserver)
+        staticObserverCallback(propertyDataPtr);
+    updating = false;
+    return Sent;
 }
 
 /*!
@@ -461,8 +491,9 @@ QUntypedPropertyBinding QPropertyBindingData::setBinding(const QUntypedPropertyB
             newBindingRaw->prependObserver(observer);
         newBindingRaw->setStaticObserver(staticObserverCallback, guardCallback);
 
-        newBindingRaw->evaluateRecursive();
-        newBindingRaw->notifyRecursive();
+        PendingBindingObserverList bindingObservers;
+        newBindingRaw->evaluateRecursive(bindingObservers);
+        newBindingRaw->notifyNonRecursive(bindingObservers);
     } else if (observer) {
         d.setObservers(observer.ptr);
     } else {
@@ -565,18 +596,23 @@ void QPropertyBindingData::notifyObservers(QUntypedPropertyData *propertyDataPtr
         return;
     QPropertyBindingDataPointer d{this};
 
+    PendingBindingObserverList bindingObservers;
     if (QPropertyObserverPointer observer = d.firstObserver()) {
-        if (notifyObserver_helper(propertyDataPtr, observer, storage) == Evaluated) {
+        if (notifyObserver_helper(propertyDataPtr, storage, observer, bindingObservers) == Evaluated) {
             // evaluateBindings() can trash the observers. We need to re-fetch here.
             if (QPropertyObserverPointer observer = d.firstObserver())
-                observer.notify(propertyDataPtr);
+                observer.notifyOnlyChangeHandler(propertyDataPtr);
+            for (auto &&bindingObserver: bindingObservers)
+                bindingObserver.binding()->notifyNonRecursive();
         }
     }
 }
 
-QPropertyBindingData::NotificationResult QPropertyBindingData::notifyObserver_helper(
-        QUntypedPropertyData *propertyDataPtr, QPropertyObserverPointer observer,
-        QBindingStorage *storage) const
+QPropertyBindingData::NotificationResult QPropertyBindingData::notifyObserver_helper
+(
+            QUntypedPropertyData *propertyDataPtr, QBindingStorage *storage,
+            QPropertyObserverPointer observer,
+            PendingBindingObserverList &bindingObservers) const
 {
 #ifdef QT_HAS_FAST_CURRENT_THREAD_ID
     QBindingStatus *status = storage ? storage->bindingStatus : nullptr;
@@ -591,7 +627,7 @@ QPropertyBindingData::NotificationResult QPropertyBindingData::notifyObserver_he
         return Delayed;
     }
 
-    observer.evaluateBindings(status);
+    observer.evaluateBindings(bindingObservers, status);
     return Evaluated;
 }
 
@@ -724,7 +760,7 @@ void QPropertyObserverPointer::noSelfDependencies(QPropertyBindingPrivate *bindi
 }
 #endif
 
-void QPropertyObserverPointer::evaluateBindings(QBindingStatus *status)
+void QPropertyObserverPointer::evaluateBindings(PendingBindingObserverList &bindingObservers, QBindingStatus *status)
 {
     Q_ASSERT(status);
     auto observer = const_cast<QPropertyObserver*>(ptr);
@@ -733,9 +769,10 @@ void QPropertyObserverPointer::evaluateBindings(QBindingStatus *status)
         QPropertyObserver *next = observer->next.data();
 
         if (QPropertyObserver::ObserverTag(observer->next.tag()) == QPropertyObserver::ObserverNotifiesBinding) {
+            bindingObservers.push_back(observer);
             auto bindingToEvaluate = observer->binding;
             QPropertyObserverNodeProtector protector(observer);
-            bindingToEvaluate->evaluateRecursive_inline(status);
+            bindingToEvaluate->evaluateRecursive_inline(bindingObservers, status);
             next = protector.next();
         }
 
