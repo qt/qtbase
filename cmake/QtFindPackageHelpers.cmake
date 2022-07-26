@@ -309,7 +309,9 @@ function(qt_internal_is_lib_part_of_qt6_package lib out_var)
             OR lib STREQUAL "GlobalConfigPrivate"
             OR lib STREQUAL "PlatformModuleInternal"
             OR lib STREQUAL "PlatformPluginInternal"
-            OR lib STREQUAL "PlatformToolInternal")
+            OR lib STREQUAL "PlatformToolInternal"
+            OR lib STREQUAL "PlatformCommonInternal"
+    )
         set(${out_var} "TRUE" PARENT_SCOPE)
     else()
         set(${out_var} "FALSE" PARENT_SCOPE)
