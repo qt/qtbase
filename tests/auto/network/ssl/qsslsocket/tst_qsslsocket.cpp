@@ -1096,8 +1096,6 @@ void tst_QSslSocket::connectToHostEncrypted()
         return;
 
     QSslSocketPtr socket = newSocket();
-    if (isTestingSchannel) // old certificate not supported with TLS 1.2
-        socket->setProtocol(Test::TlsV1_1);
 
     this->socket = socket.data();
     auto config = socket->sslConfiguration();
@@ -1135,8 +1133,6 @@ void tst_QSslSocket::connectToHostEncryptedWithVerificationPeerName()
         return;
 
     QSslSocketPtr socket = newSocket();
-    if (isTestingSchannel) // old certificate not supported with TLS 1.2
-        socket->setProtocol(Test::TlsV1_1);
 
     this->socket = socket.data();
 
@@ -1900,8 +1896,6 @@ void tst_QSslSocket::setSslConfiguration()
     QSslSocketPtr socket = newSocket();
     QFETCH(QSslConfiguration, configuration);
     socket->setSslConfiguration(configuration);
-    if (isTestingSchannel) // old certificate not supported with TLS 1.2
-        socket->setProtocol(Test::TlsV1_1);
 
     this->socket = socket.data();
     socket->connectToHostEncrypted(QtNetworkSettings::httpServerName(), 443);
@@ -2629,8 +2623,6 @@ void tst_QSslSocket::verifyMode()
         return;
 
     QSslSocket socket;
-    if (isTestingSchannel) // old certificate not supported with TLS 1.2
-        socket.setProtocol(Test::TlsV1_1);
 
     QCOMPARE(socket.peerVerifyMode(), QSslSocket::AutoVerifyPeer);
     socket.setPeerVerifyMode(QSslSocket::VerifyNone);
@@ -2971,8 +2963,6 @@ void tst_QSslSocket::abortOnSslErrors()
 void tst_QSslSocket::readFromClosedSocket()
 {
     QSslSocketPtr socket = newSocket();
-    if (isTestingSchannel) // old certificate not supported with TLS 1.2
-        socket->setProtocol(Test::TlsV1_1);
 
     socket->ignoreSslErrors();
     socket->connectToHostEncrypted(QtNetworkSettings::httpServerName(), 443);
