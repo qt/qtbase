@@ -493,6 +493,9 @@ static bool isPlatformWayland()
 
 void tst_QWindow::positioning()
 {
+#ifdef Q_OS_ANDROID
+    QSKIP("Fails on Android. QTBUG-105201");
+#endif
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(
                 QPlatformIntegration::NonFullScreenWindows)) {
         QSKIP("This platform does not support non-fullscreen windows");
