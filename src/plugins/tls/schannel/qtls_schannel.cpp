@@ -139,7 +139,6 @@ QList<QSslCipher> defaultCiphers()
 {
     // Previously the code was in QSslSocketBackendPrivate.
     QList<QSslCipher> ciphers;
-    // @temp (I hope), stolen from qsslsocket_winrt.cpp
     const QString protocolStrings[] = { QStringLiteral("TLSv1"), QStringLiteral("TLSv1.1"),
                                         QStringLiteral("TLSv1.2"), QStringLiteral("TLSv1.3") };
 QT_WARNING_PUSH
