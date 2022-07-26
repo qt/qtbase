@@ -2664,6 +2664,7 @@ macro(_qt_internal_override_example_install_dir_to_dot)
     # to CMAKE_INSTALL_PREFIX.
     if(QT_INTERNAL_SET_EXAMPLE_INSTALL_DIR_TO_DOT)
         set(INSTALL_EXAMPLEDIR ".")
+        set(_qt_internal_example_dir_set_to_dot TRUE)
     endif()
 endmacro()
 
