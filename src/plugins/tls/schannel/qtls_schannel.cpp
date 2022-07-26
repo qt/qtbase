@@ -679,6 +679,10 @@ qint64 checkIncompleteData(const SecBuffer &secBuffer)
     return 0;
 }
 
+DWORD defaultCredsFlag()
+{
+    return qEnvironmentVariableIsSet("QT_SCH_DEFAULT_CREDS") ? 0 : SCH_CRED_NO_DEFAULT_CREDS;
+}
 } // anonymous namespace
 
 
@@ -854,8 +858,7 @@ bool TlsCryptographSchannel::acquireCredentialsHandle()
             0,
             nullptr,
             0,
-            SCH_CRED_REVOCATION_CHECK_CHAIN_EXCLUDE_ROOT
-                    | SCH_CRED_NO_DEFAULT_CREDS,
+            SCH_CRED_REVOCATION_CHECK_CHAIN_EXCLUDE_ROOT | defaultCredsFlag(),
             1,
             &tlsParameters
         };
@@ -879,8 +882,7 @@ bool TlsCryptographSchannel::acquireCredentialsHandle()
             0, // dwMinimumCipherStrength (0 = system default)
             0, // dwMaximumCipherStrength (0 = system default)
             0, // dwSessionLifespan (0 = schannel default, 10 hours)
-            SCH_CRED_REVOCATION_CHECK_CHAIN_EXCLUDE_ROOT
-                    | SCH_CRED_NO_DEFAULT_CREDS, // dwFlags
+            SCH_CRED_REVOCATION_CHECK_CHAIN_EXCLUDE_ROOT | defaultCredsFlag(), // dwFlags
             0 // dwCredFormat (must be 0)
         };
         credentials = cred;
