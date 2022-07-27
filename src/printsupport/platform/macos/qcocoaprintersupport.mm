@@ -94,8 +94,8 @@ QPlatformPrinterSupport *QCocoaPrinterSupportPlugin::create(const QString &key)
     return new QCocoaPrinterSupport();
 }
 
-#include "qcocoaprintersupport.moc"
-
 QT_END_NAMESPACE
+
+#include "qcocoaprintersupport.moc"
 
 #endif  //QT_NO_PRINTER

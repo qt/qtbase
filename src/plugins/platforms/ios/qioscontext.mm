@@ -332,6 +332,6 @@ bool QIOSContext::isSharing() const
     return m_sharedContext;
 }
 
-#include "moc_qioscontext.cpp"
-
 QT_END_NAMESPACE
+
+#include "moc_qioscontext.cpp"

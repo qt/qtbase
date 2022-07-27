@@ -530,6 +530,6 @@ UIWindow *QIOSScreen::uiWindow() const
     return m_uiWindow;
 }
 
-#include "moc_qiosscreen.cpp"
-
 QT_END_NAMESPACE
+
+#include "moc_qiosscreen.cpp"

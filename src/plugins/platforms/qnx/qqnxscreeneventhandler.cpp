@@ -746,6 +746,6 @@ void QQnxScreenEventHandler::timerEvent(QTimerEvent *event)
     }
 }
 
-#include "moc_qqnxscreeneventhandler.cpp"
-
 QT_END_NAMESPACE
+
+#include "moc_qqnxscreeneventhandler.cpp"

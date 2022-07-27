@@ -793,9 +793,9 @@ QDebug operator<<(QDebug debug, const QCocoaScreen *screen)
 }
 #endif // !QT_NO_DEBUG_STREAM
 
-#include "qcocoascreen.moc"
-
 QT_END_NAMESPACE
+
+#include "qcocoascreen.moc"
 
 @implementation NSScreen (QtExtras)
 

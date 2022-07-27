@@ -10,15 +10,15 @@
 
 #ifndef QT_NO_PRINTER
 
-QT_BEGIN_NAMESPACE
-
-using namespace Qt::StringLiterals;
-
 #if defined(Q_OS_MACOS)
 Q_IMPORT_PLUGIN(QCocoaPrinterSupportPlugin)
 #elif defined(Q_OS_WIN)
 Q_IMPORT_PLUGIN(QWindowsPrinterSupportPlugin)
 #endif
+
+QT_BEGIN_NAMESPACE
+
+using namespace Qt::StringLiterals;
 
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     (QPlatformPrinterSupportFactoryInterface_iid, "/printsupport"_L1, Qt::CaseInsensitive))

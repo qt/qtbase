@@ -68,8 +68,8 @@ void QCocoaClipboard::handleApplicationStateChanged(Qt::ApplicationState state)
         emitChanged(QClipboard::FindBuffer);
 }
 
-#include "moc_qcocoaclipboard.cpp"
-
 QT_END_NAMESPACE
+
+#include "moc_qcocoaclipboard.cpp"
 
 #endif // QT_NO_CLIPBOARD
