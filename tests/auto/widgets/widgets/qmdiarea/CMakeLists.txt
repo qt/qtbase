@@ -10,8 +10,6 @@ qt_internal_add_test(tst_qmdiarea
     DEFINES
         QT_NO_CAST_FROM_ASCII
         QT_NO_CAST_TO_ASCII
-    INCLUDE_DIRECTORIES
-        .
     LIBRARIES
         Qt::Gui
         Qt::GuiPrivate

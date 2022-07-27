@@ -9,7 +9,6 @@ qt_internal_add_executable(generate
     SOURCES
         main.cpp
     INCLUDE_DIRECTORIES
-        .
         /usr/include/freetype2
     LIBRARIES
         Qt::CorePrivate
