@@ -8222,7 +8222,7 @@ void tst_QGraphicsItem::sorting()
     view.setFrameStyle(0);
     view.show();
     if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation)) {
-        qApp->setActiveWindow(&view);
+        view.window()->activateWindow();
         QVERIFY(QTest::qWaitForWindowActive(&view));
     }
     QVERIFY(QTest::qWaitForWindowExposed(&view));
