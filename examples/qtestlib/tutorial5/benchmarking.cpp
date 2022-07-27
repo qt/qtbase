@@ -33,8 +33,8 @@ void TestBenchmark::simple()
 void TestBenchmark::multiple_data()
 {
     QTest::addColumn<bool>("useLocaleCompare");
-    QTest::newRow("locale aware compare") << true;
-    QTest::newRow("standard compare") << false;
+    QTest::newRow("locale-aware-compare") << true;
+    QTest::newRow("standard-compare") << false;
 }
 //! [1]
 
@@ -66,9 +66,8 @@ void TestBenchmark::series_data()
     QTest::addColumn<int>("stringSize");
 
     for (int i = 1; i < 10000; i += 2000) {
-        QByteArray size = QByteArray::number(i);
-        QTest::newRow(("locale aware compare--" + size).constData()) << true << i;
-        QTest::newRow(("standard compare--" + size).constData()) << false << i;
+        QTest::addRow("locale-aware-compare:%d", i) << true << i;
+        QTest::addRow("standard-compare:%d", i) << false << i;
     }
 }
 //! [4]

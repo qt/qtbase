@@ -56,8 +56,8 @@ void TestQString::toInt_data()
     QTest::addColumn<QString>("aString");
     QTest::addColumn<int>("expected");
 
-    QTest::newRow("positive value") << "42" << 42;
-    QTest::newRow("negative value") << "-42" << -42;
+    QTest::newRow("positive+value") << "42" << 42;
+    QTest::newRow("negative-value") << "-42" << -42;
     QTest::newRow("zero") << "0" << 0;
 }
 //! [3]
@@ -135,8 +135,8 @@ dir.mkdir("");
 void MyTestClass::addSingleStringRows()
 {
     QTest::addColumn<QString>("aString");
-    QTest::newRow("just hello") << QString("hello");
-    QTest::newRow("a null string") << QString();
+    QTest::newRow("just.hello") << QString("hello");
+    QTest::newRow("a.null.string") << QString();
 }
 //! [20]
 

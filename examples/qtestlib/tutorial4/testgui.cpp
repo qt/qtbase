@@ -28,7 +28,7 @@ void TestGui::testGui_data()
     QTestEventList list2;
     list2.addKeyClick('a');
     list2.addKeyClick(Qt::Key_Backspace);
-    QTest::newRow("there and back again") << list2 << "";
+    QTest::newRow("there+back-again") << list2 << "";
 }
 //! [1]
 
