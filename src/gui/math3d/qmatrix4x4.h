@@ -154,7 +154,13 @@ public:
     friend Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QMatrix4x4 &m);
 #endif
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    void projectedRotate(float angle, float x, float y, float z, float distanceToPlane);
+    // ### Qt7: Remove
     void projectedRotate(float angle, float x, float y, float z);
+#else
+    void projectedRotate(float angle, float x, float y, float z, float distanceToPlane = 1024.0);
+#endif
 
     // When matrices are multiplied, the flag bits are or-ed together.
     // Note that the ordering of the bit values matters. (ident < t < s < r2d < r < p)

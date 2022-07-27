@@ -84,8 +84,17 @@ public:
     QTransform &translate(qreal dx, qreal dy);
     QTransform &scale(qreal sx, qreal sy);
     QTransform &shear(qreal sh, qreal sv);
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    QTransform &rotate(qreal a, Qt::Axis axis, qreal distanceToPlane);
+    // ### Qt7: Remove
     QTransform &rotate(qreal a, Qt::Axis axis = Qt::ZAxis);
+    QTransform &rotateRadians(qreal a, Qt::Axis axis, qreal distanceToPlane);
+    // ### Qt7: Remove
     QTransform &rotateRadians(qreal a, Qt::Axis axis = Qt::ZAxis);
+#else
+    QTransform &rotate(qreal a, Qt::Axis axis = Qt::ZAxis, qreal distanceToPlane = 1024.0f);
+    QTransform &rotateRadians(qreal a, Qt::Axis axis = Qt::ZAxis, qreal distanceToPlane = 1024.0f);
+#endif
 
     static bool squareToQuad(const QPolygonF &square, QTransform &result);
     static bool quadToSquare(const QPolygonF &quad, QTransform &result);

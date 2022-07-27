@@ -100,6 +100,7 @@ private slots:
 
     void rotate4x4_data();
     void rotate4x4();
+    void projectedRotate();
 
     void normalMatrix_data();
     void normalMatrix();
@@ -2381,6 +2382,22 @@ void tst_QMatrixNxN::rotate4x4()
         QVERIFY(qFuzzyCompare(vq.y(), v1y));
         QVERIFY(qFuzzyCompare(vq.z(), v1z));
     }
+}
+
+void tst_QMatrixNxN::projectedRotate()
+{
+    QMatrix4x4 m1, m2;
+    const QPointF origin(1000, 1000);
+
+    m1.translate(origin.x(), origin.y());
+    m1.projectedRotate(60, 0, 1, 0, 0);
+    m1.translate(-origin.x(), -origin.y());
+
+    m2.translate(origin.x(), origin.y());
+    m2.rotate(60, 0, 1, 0);
+    m2.translate(-origin.x(), -origin.y());
+
+    QCOMPARE(m1.toTransform(), m2.toTransform());
 }
 
 static bool isSame(const QMatrix3x3& m1, const Matrix3& m2)

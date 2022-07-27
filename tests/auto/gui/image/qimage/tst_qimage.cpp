@@ -4,6 +4,7 @@
 
 #include <QTest>
 #include <QBuffer>
+#include <QMatrix4x4>
 
 #include <qimage.h>
 #include <qimagereader.h>
@@ -67,6 +68,7 @@ private slots:
 
     void rotate_data();
     void rotate();
+    void rotateBigImage();
 
     void copy();
 
@@ -1210,6 +1212,23 @@ void tst_QImage::rotate()
     dest = dest.convertToFormat(format);
 
     QCOMPARE(original, dest);
+}
+
+void tst_QImage::rotateBigImage()
+{
+    // QTBUG-105088
+    QImage big_image(3840, 2160, QImage::Format_ARGB32_Premultiplied);
+    QTransform t;
+    t.translate(big_image.width() / 2.0, big_image.height() / 2.0);
+    t.rotate(-89, Qt::YAxis, big_image.width());
+    t.translate(-big_image.width() / 2.0, -big_image.height() / 2.0);
+    QVERIFY(!big_image.transformed(t).isNull());
+
+    QMatrix4x4 m;
+    m.translate(big_image.width() / 2.0, big_image.height() / 2.0);
+    m.projectedRotate(89, 0, 1, 0, big_image.width());
+    m.translate(-big_image.width() / 2.0, -big_image.height() / 2.0);
+    QVERIFY(!big_image.transformed(m.toTransform()).isNull());
 }
 
 void tst_QImage::copy()

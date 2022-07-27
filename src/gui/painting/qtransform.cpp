@@ -533,28 +533,33 @@ QTransform & QTransform::shear(qreal sh, qreal sv)
     return *this;
 }
 
-const qreal inv_dist_to_plane = 1. / 1024.;
-
 /*!
-    \fn QTransform &QTransform::rotate(qreal angle, Qt::Axis axis)
+    \since 6.5
 
-    Rotates the coordinate system counterclockwise by the given \a angle
-    about the specified \a axis and returns a reference to the matrix.
+    Rotates the coordinate system counterclockwise by the given angle \a a
+    about the specified \a axis at distance \a distanceToPlane from the
+    screen and returns a reference to the matrix.
 
+//! [transform-rotate-note]
     Note that if you apply a QTransform to a point defined in widget
     coordinates, the direction of the rotation will be clockwise
     because the y-axis points downwards.
 
     The angle is specified in degrees.
+//! [transform-rotate-note]
+
+    If \a distanceToPlane is zero, it will be ignored. This is suitable
+    for implementing orthographic projections where the z coordinate should
+    be dropped rather than projected.
 
     \sa setMatrix()
 */
-QTransform & QTransform::rotate(qreal a, Qt::Axis axis)
+QTransform & QTransform::rotate(qreal a, Qt::Axis axis, qreal distanceToPlane)
 {
     if (a == 0)
         return *this;
 #ifndef QT_NO_DEBUG
-    if (qIsNaN(a)) {
+    if (qIsNaN(a) || qIsNaN(distanceToPlane)) {
         nanWarning("rotate");
         return *this;
     }
@@ -617,13 +622,16 @@ QTransform & QTransform::rotate(qreal a, Qt::Axis axis)
         if (m_dirty < TxRotate)
             m_dirty = TxRotate;
     } else {
+        if (!qIsNull(distanceToPlane))
+            sina /= distanceToPlane;
+
         QTransform result;
         if (axis == Qt::YAxis) {
             result.m_matrix[0][0] = cosa;
-            result.m_matrix[0][2] = -sina * inv_dist_to_plane;
+            result.m_matrix[0][2] = -sina;
         } else {
             result.m_matrix[1][1] = cosa;
-            result.m_matrix[1][2] = -sina * inv_dist_to_plane;
+            result.m_matrix[1][2] = -sina;
         }
         result.m_type = TxProject;
         *this = result * *this;
@@ -632,24 +640,49 @@ QTransform & QTransform::rotate(qreal a, Qt::Axis axis)
     return *this;
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 /*!
-    \fn QTransform & QTransform::rotateRadians(qreal angle, Qt::Axis axis)
+    \overload
 
-    Rotates the coordinate system counterclockwise by the given \a angle
-    about the specified \a axis and returns a reference to the matrix.
+    Rotates the coordinate system counterclockwise by the given angle \a a
+    about the specified \a axis at distance 1024.0 from the screen and
+    returns a reference to the matrix.
 
+    \include qtransform.cpp transform-rotate-note
+
+    \sa setMatrix
+*/
+QTransform &QTransform::rotate(qreal a, Qt::Axis axis)
+{
+    return rotate(a, axis, 1024.0);
+}
+#endif
+
+/*!
+    \since 6.5
+
+    Rotates the coordinate system counterclockwise by the given angle \a a
+    about the specified \a axis at distance \a distanceToPlane from the
+    screen and returns a reference to the matrix.
+
+//! [transform-rotate-radians-note]
     Note that if you apply a QTransform to a point defined in widget
     coordinates, the direction of the rotation will be clockwise
     because the y-axis points downwards.
 
     The angle is specified in radians.
+//! [transform-rotate-radians-note]
+
+    If \a distanceToPlane is zero, it will be ignored. This is suitable
+    for implementing orthographic projections where the z coordinate should
+    be dropped rather than projected.
 
     \sa setMatrix()
 */
-QTransform & QTransform::rotateRadians(qreal a, Qt::Axis axis)
+QTransform & QTransform::rotateRadians(qreal a, Qt::Axis axis, qreal distanceToPlane)
 {
 #ifndef QT_NO_DEBUG
-    if (qIsNaN(a)) {
+    if (qIsNaN(a) || qIsNaN(distanceToPlane)) {
         nanWarning("rotateRadians");
         return *this;
     }
@@ -700,19 +733,40 @@ QTransform & QTransform::rotateRadians(qreal a, Qt::Axis axis)
         if (m_dirty < TxRotate)
             m_dirty = TxRotate;
     } else {
+        if (!qIsNull(distanceToPlane))
+            sina /= distanceToPlane;
+
         QTransform result;
         if (axis == Qt::YAxis) {
             result.m_matrix[0][0] = cosa;
-            result.m_matrix[0][2] = -sina * inv_dist_to_plane;
+            result.m_matrix[0][2] = -sina;
         } else {
             result.m_matrix[1][1] = cosa;
-            result.m_matrix[1][2] = -sina * inv_dist_to_plane;
+            result.m_matrix[1][2] = -sina;
         }
         result.m_type = TxProject;
         *this = result * *this;
     }
     return *this;
 }
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+/*!
+    \overload
+
+    Rotates the coordinate system counterclockwise by the given angle \a a
+    about the specified \a axis at distance 1024.0 from the screen and
+    returns a reference to the matrix.
+
+    \include qtransform.cpp transform-rotate-radians-note
+
+    \sa setMatrix()
+*/
+QTransform &QTransform::rotateRadians(qreal a, Qt::Axis axis)
+{
+    return rotateRadians(a, axis, 1024.0);
+}
+#endif
 
 /*!
     \fn bool QTransform::operator==(const QTransform &matrix) const
