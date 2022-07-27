@@ -203,6 +203,12 @@ function(qt_internal_add_plugin target)
         endif()
         get_target_property(is_imported_qt_module ${qt_module_target} IMPORTED)
 
+        if(NOT is_imported_qt_module)
+            # This QT_PLUGINS assignment is only used by QtPostProcessHelpers to decide if a
+            # QtModulePlugins.cmake file should be generated.
+            set_property(TARGET "${qt_module_target}" APPEND PROPERTY QT_PLUGINS "${target}")
+        endif()
+
         set(plugin_target_versioned "${QT_CMAKE_EXPORT_NAMESPACE}::${target}")
         get_target_property(type "${plugin_target_versioned}" TYPE)
         if(type STREQUAL STATIC_LIBRARY)
@@ -213,10 +219,6 @@ function(qt_internal_add_plugin target)
             # is handled instead by the complicated genex logic in QtModulePlugins.cmake.in.
             set(is_plugin_and_module_in_same_project FALSE)
             if(NOT is_imported_qt_module)
-                # This QT_PLUGINS assignment is only used by QtPostProcessHelpers to decide if a
-                # QtModulePlugins.cmake file should be generated (which only happens in static builds).
-                set_property(TARGET "${qt_module_target}" APPEND PROPERTY QT_PLUGINS "${target}")
-
                 get_target_property(module_source_dir ${qt_module_target} SOURCE_DIR)
                 get_directory_property(module_project_name
                     DIRECTORY ${module_source_dir}
