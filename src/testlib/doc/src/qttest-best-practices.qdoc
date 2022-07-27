@@ -198,11 +198,20 @@
     attempt to run a slot that is not implemented. In the second case, the
     test will not attempt to run a test slot even though it should.
 
-    If an entire test program is inapplicable for a specific platform or
-    unless a particular feature is enabled, the best approach is to use the
-    parent directory's \c .pro file to avoid building the test. For example,
-    if the \c tests/auto/gui/someclass test is not valid for \macOS, add the
-    following line to \c tests/auto/gui.pro:
+    If an entire test program is inapplicable for a specific platform or unless
+    a particular feature is enabled, the best approach is to use the parent
+    directory's build configuration to avoid building the test. For example, if
+    the \c tests/auto/gui/someclass test is not valid for \macOS, wrap its
+    inclusion as a subdirectory in \c{tests/auto/gui/CMakeLists.txt} in a
+    platform check:
+
+    \badcode
+    if(NOT APPLE)
+        add_subdirectory(someclass)
+    endif
+    \endcode
+
+    or, if using \c qmake, add the following line to \c tests/auto/gui.pro:
 
     \badcode
     mac*: SUBDIRS -= someclass
