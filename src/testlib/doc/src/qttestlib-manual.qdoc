@@ -938,7 +938,7 @@
 
     \snippet tutorial5/benchmarking.cpp 2
 
-    The "if (useLocaleCompare)" switch is placed outside the QBENCHMARK
+    The \c{if (useLocaleCompare)} switch is placed outside the QBENCHMARK
     macro to avoid measuring its overhead. Each benchmark test function
     can have one active QBENCHMARK macro.
 
@@ -977,7 +977,7 @@
     the execution of the test without adding a failure to the test log.
     It can be used to skip tests that are certain to fail. The text in
     the QSKIP \a description parameter is appended to the test log,
-    and explains why the test was not carried out.
+    and should explain why the test was not carried out.
 
     QSKIP can be used to skip testing when the implementation is not yet
     complete or not supported on a certain platform. When there are known
