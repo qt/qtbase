@@ -32,6 +32,7 @@ struct Tracepoint
             QtByteArray,
             QtUrl,
             QtRect,
+            QtSize,
             Unknown
         };
 
