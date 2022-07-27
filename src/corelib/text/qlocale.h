@@ -856,6 +856,7 @@ public:
     Q_ENUM(MeasurementSystem)
 
     enum FormatType { LongFormat, ShortFormat, NarrowFormat };
+    Q_ENUM(FormatType)
     enum NumberOption {
         DefaultNumberOptions = 0x0,
         OmitGroupSeparator = 0x01,
