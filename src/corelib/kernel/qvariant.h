@@ -73,9 +73,10 @@ public:
     };
     struct Private
     {
-        static constexpr size_t MaxInternalSize =  3 *sizeof(void *);
+        static constexpr size_t MaxInternalSize = 3 * sizeof(void *);
+        template <size_t S> static constexpr bool FitsInInternalSize = S <= MaxInternalSize;
         template<typename T> static constexpr bool CanUseInternalSpace =
-                (QTypeInfo<T>::isRelocatable && sizeof(T) <= MaxInternalSize && alignof(T) <= alignof(double));
+                (QTypeInfo<T>::isRelocatable && FitsInInternalSize<sizeof(T)> && alignof(T) <= alignof(double));
         static constexpr bool canUseInternalSpace(const QtPrivate::QMetaTypeInterface *type)
         {
             Q_ASSERT(type);
@@ -203,16 +204,10 @@ public:
     QVariant(bool b) noexcept;
     QVariant(double d) noexcept;
     QVariant(float f) noexcept;
-#ifndef QT_NO_CAST_FROM_ASCII
-    QT_ASCII_CAST_WARN QVariant(const char *str)
-        : QVariant(QString::fromUtf8(str))
-    {}
-#endif
 
     QVariant(const QByteArray &bytearray) noexcept;
     QVariant(const QBitArray &bitarray);
     QVariant(const QString &string) noexcept;
-    QVariant(QLatin1StringView string);
     QVariant(const QStringList &stringlist) noexcept;
     QVariant(QChar qchar) noexcept;
     QVariant(QDate date) noexcept;
@@ -223,13 +218,13 @@ public:
     QVariant(const QHash<QString, QVariant> &hash) noexcept;
 #ifndef QT_NO_GEOM_VARIANT
     QVariant(QSize size) noexcept;
-    QVariant(QSizeF size) noexcept;
+    QVariant(QSizeF size) noexcept(Private::FitsInInternalSize<sizeof(qreal) * 2>);
     QVariant(QPoint pt) noexcept;
-    QVariant(QPointF pt) noexcept;
-    QVariant(QLine line) noexcept;
-    QVariant(QLineF line) noexcept(sizeof(qreal) * 4 <= Private::MaxInternalSize);
-    QVariant(QRect rect) noexcept;
-    QVariant(QRectF rect) noexcept(sizeof(qreal) * 4 <= Private::MaxInternalSize);
+    QVariant(QPointF pt) noexcept(Private::FitsInInternalSize<sizeof(qreal) * 2>);
+    QVariant(QLine line) noexcept(Private::FitsInInternalSize<sizeof(int) * 4>);
+    QVariant(QLineF line) noexcept(Private::FitsInInternalSize<sizeof(qreal) * 4>);
+    QVariant(QRect rect) noexcept(Private::FitsInInternalSize<sizeof(int) * 4>);
+    QVariant(QRectF rect) noexcept(Private::FitsInInternalSize<sizeof(qreal) * 4>);
 #endif
     QVariant(const QLocale &locale);
 #if QT_CONFIG(regularexpression)
@@ -238,7 +233,7 @@ public:
 #if QT_CONFIG(easingcurve)
     QVariant(const QEasingCurve &easing);
 #endif
-    QVariant(QUuid uuid) noexcept;
+    QVariant(QUuid uuid) noexcept(Private::FitsInInternalSize<16>);
 #ifndef QT_BOOTSTRAPPED
     QVariant(const QUrl &url);
     QVariant(const QJsonValue &jsonValue);
@@ -247,9 +242,17 @@ public:
     QVariant(const QJsonDocument &jsonDocument);
 #endif // QT_BOOTSTRAPPED
 #if QT_CONFIG(itemmodel)
-    QVariant(const QModelIndex &modelIndex) noexcept;
+    QVariant(const QModelIndex &modelIndex) noexcept(Private::FitsInInternalSize<8 + 2 * sizeof(quintptr)>);
     QVariant(const QPersistentModelIndex &modelIndex);
 #endif
+
+#ifndef QT_NO_CAST_FROM_ASCII
+    QT_ASCII_CAST_WARN QVariant(const char *str) noexcept(false)
+        : QVariant(QString::fromUtf8(str))
+    {}
+#endif
+    QVariant(QLatin1StringView string) noexcept(false); // converts to QString
+
 #if !defined(Q_CC_GHS)
     // GHS has an ICE with this code; use the simplified version below
     template <typename T,

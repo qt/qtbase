@@ -895,16 +895,22 @@ QVariant::QVariant(QLatin1StringView val) : QVariant(QString(val)) {}
 QVariant::QVariant(const QEasingCurve &val) : d(std::piecewise_construct_t{}, val) {}
 #endif
 #ifndef QT_NO_GEOM_VARIANT
-QVariant::QVariant(QPoint pt) noexcept : d(std::piecewise_construct_t{}, pt) {}
-QVariant::QVariant(QPointF pt) noexcept : d(std::piecewise_construct_t{}, pt) {}
-QVariant::QVariant(QRect r) noexcept : d(std::piecewise_construct_t{}, r) {}
-QVariant::QVariant(QRectF r) noexcept(sizeof(qreal) * 4 <= Private::MaxInternalSize)
+QVariant::QVariant(QPoint pt) noexcept
+    : d(std::piecewise_construct_t{}, pt) {}
+QVariant::QVariant(QPointF pt) noexcept(Private::FitsInInternalSize<sizeof(qreal) * 2>)
+    : d(std::piecewise_construct_t{}, pt) {}
+QVariant::QVariant(QRect r) noexcept(Private::FitsInInternalSize<sizeof(int) * 4>)
     : d(std::piecewise_construct_t{}, r) {}
-QVariant::QVariant(QLine l) noexcept : d(std::piecewise_construct_t{}, l) {}
-QVariant::QVariant(QLineF l) noexcept(sizeof(qreal) * 4 <= Private::MaxInternalSize)
+QVariant::QVariant(QRectF r) noexcept(Private::FitsInInternalSize<sizeof(qreal) * 4>)
+    : d(std::piecewise_construct_t{}, r) {}
+QVariant::QVariant(QLine l) noexcept(Private::FitsInInternalSize<sizeof(int) * 4>)
     : d(std::piecewise_construct_t{}, l) {}
-QVariant::QVariant(QSize s) noexcept : d(std::piecewise_construct_t{}, s) {}
-QVariant::QVariant(QSizeF s) noexcept : d(std::piecewise_construct_t{}, s) {}
+QVariant::QVariant(QLineF l) noexcept(Private::FitsInInternalSize<sizeof(qreal) * 4>)
+    : d(std::piecewise_construct_t{}, l) {}
+QVariant::QVariant(QSize s) noexcept
+    : d(std::piecewise_construct_t{}, s) {}
+QVariant::QVariant(QSizeF s) noexcept(Private::FitsInInternalSize<sizeof(qreal) * 2>)
+    : d(std::piecewise_construct_t{}, s) {}
 #endif
 #ifndef QT_BOOTSTRAPPED
 QVariant::QVariant(const QUrl &u) : d(std::piecewise_construct_t{}, u) {}
@@ -913,7 +919,7 @@ QVariant::QVariant(const QLocale &l) : d(std::piecewise_construct_t{}, l) {}
 #if QT_CONFIG(regularexpression)
 QVariant::QVariant(const QRegularExpression &re) : d(std::piecewise_construct_t{}, re) {}
 #endif // QT_CONFIG(regularexpression)
-QVariant::QVariant(QUuid uuid) noexcept : d(std::piecewise_construct_t{}, uuid) {}
+QVariant::QVariant(QUuid uuid) noexcept(Private::FitsInInternalSize<16>) : d(std::piecewise_construct_t{}, uuid) {}
 #ifndef QT_BOOTSTRAPPED
 QVariant::QVariant(const QJsonValue &jsonValue) : d(std::piecewise_construct_t{}, jsonValue) {}
 QVariant::QVariant(const QJsonObject &jsonObject) : d(std::piecewise_construct_t{}, jsonObject) {}
@@ -921,7 +927,8 @@ QVariant::QVariant(const QJsonArray &jsonArray) : d(std::piecewise_construct_t{}
 QVariant::QVariant(const QJsonDocument &jsonDocument) : d(std::piecewise_construct_t{}, jsonDocument) {}
 #endif // QT_BOOTSTRAPPED
 #if QT_CONFIG(itemmodel)
-QVariant::QVariant(const QModelIndex &modelIndex) noexcept : d(std::piecewise_construct_t{}, modelIndex) {}
+QVariant::QVariant(const QModelIndex &modelIndex) noexcept(Private::FitsInInternalSize<8 + 2 * sizeof(quintptr)>)
+    : d(std::piecewise_construct_t{}, modelIndex) {}
 QVariant::QVariant(const QPersistentModelIndex &modelIndex) : d(std::piecewise_construct_t{}, modelIndex) {}
 #endif
 
