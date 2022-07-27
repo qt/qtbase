@@ -4624,11 +4624,14 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
 
     case PE_PanelLineEdit:
         if (const QStyleOptionFrame *frm = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
-            if (QWidget *container = containerWidget(w); container != w) {
-                QRenderRule containerRule = renderRule(container, opt);
-                if (!containerRule.hasNativeBorder() || !containerRule.baseStyleCanDraw())
-                    return;
-                rule = containerRule;
+            // Fall back to container widget's render rule
+            if (w) {
+                if (QWidget *container = containerWidget(w); container != w) {
+                    QRenderRule containerRule = renderRule(container, opt);
+                    if (!containerRule.hasNativeBorder() || !containerRule.baseStyleCanDraw())
+                        return;
+                    rule = containerRule;
+                }
             }
 
             if (rule.hasNativeBorder()) {
