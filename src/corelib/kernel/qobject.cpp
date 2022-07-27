@@ -2415,7 +2415,7 @@ public:
     { return std::find(locations.begin(), locations.end(), method) != locations.end(); }
 };
 
-Q_THREAD_LOCAL_CONSTINIT static thread_local FlaggedDebugSignatures flaggedSignatures = {};
+Q_CONSTINIT static thread_local FlaggedDebugSignatures flaggedSignatures = {};
 } // unnamed namespace
 
 const char *qFlagLocation(const char *method)
