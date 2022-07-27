@@ -671,7 +671,7 @@
         \li result
     \row
         \li 0
-        \li all lower
+        \li all-lower
         \li "hello"
         \li HELLO
     \row
@@ -681,7 +681,7 @@
         \li HELLO
     \row
         \li 2
-        \li all upper
+        \li all-upper
         \li "HELLO"
         \li HELLO
     \endtable

@@ -108,7 +108,11 @@
     Do not simply number the test-case, or use bug-tracking identifiers. Someone
     reading the test output will have no idea what the numbers or identifiers
     mean. You can add a comment on the test-row that mentions the bug-tracking
-    identifier, when relevant.
+    identifier, when relevant. It's best to avoid spacing characters and
+    characters that may be significant to command-line shells on which you may
+    want to run tests. This makes it easier to specify the test and tag on \l{Qt
+    Test Command Line Arguments}{the command-line} to your test program - for
+    example, to limit a test run to just one test-case.
 
     \section2 Write Self-contained Test Functions
 

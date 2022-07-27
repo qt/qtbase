@@ -13,8 +13,8 @@ void tst_Skip::test_data()
 {
 //! [1]
     QTest::addColumn<bool>("bool");
-    QTest::newRow("local 1") << false;
-    QTest::newRow("local 2") << true;
+    QTest::newRow("local.1") << false;
+    QTest::newRow("local.2") << true;
 
     QSKIP("skipping all");
 //! [1]

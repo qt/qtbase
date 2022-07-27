@@ -54,9 +54,9 @@ Totals: 3 passed, 0 failed, 0 skipped
 ********* Start testing of TestQString *********
 Config: Using QtTest library %VERSION%, Qt %VERSION%
 PASS   : TestQString::initTestCase()
-PASS   : TestQString::toUpper(all lower)
+PASS   : TestQString::toUpper(all-lower)
 PASS   : TestQString::toUpper(mixed)
-PASS   : TestQString::toUpper(all upper)
+PASS   : TestQString::toUpper(all-upper)
 PASS   : TestQString::cleanupTestCase()
 Totals: 5 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of TestQString *********
@@ -77,7 +77,7 @@ Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 20ms
 Config: Using QtTest library %VERSION%, Qt %VERSION%
 PASS   : TestGui::initTestCase()
 PASS   : TestGui::testGui(char)
-PASS   : TestGui::testGui(there and back again)
+PASS   : TestGui::testGui(there+back-again)
 PASS   : TestGui::cleanupTestCase()
 Totals: 4 passed, 0 failed, 0 skipped, 0 blacklisted, 18ms
 ********* Finished testing of TestGui *********
@@ -90,12 +90,12 @@ PASS   : TestBenchmark::initTestCase()
 PASS   : TestBenchmark::simple()
 RESULT : TestBenchmark::simple():
      0.00030 msecs per iteration (total: 79, iterations: 262144)
-PASS   : TestBenchmark::multiple(locale aware compare)
-RESULT : TestBenchmark::multiple():"locale aware compare":
+PASS   : TestBenchmark::multiple(locale-aware-compare)
+RESULT : TestBenchmark::multiple():"locale-aware-compare":
      0.00029 msecs per iteration (total: 78, iterations: 262144)
 .....
-PASS   : TestBenchmark::series(locale aware compare--8001)
-RESULT : TestBenchmark::series():"locale aware compare--8001":
+PASS   : TestBenchmark::series(locale-aware-compare:8001)
+RESULT : TestBenchmark::series():"locale-aware-compare:8001":
      0.039 msecs per iteration (total: 81, iterations: 2048)
 Totals: 15 passed, 0 failed, 0 skipped, 0 blacklisted, 3971ms
 ********* Finished testing of TestBenchmark *********
