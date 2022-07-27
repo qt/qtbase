@@ -6,6 +6,7 @@
 #define QFOREACH_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qtdeprecationmarkers.h>
 
 QT_BEGIN_NAMESPACE
 

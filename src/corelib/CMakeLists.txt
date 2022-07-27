@@ -68,6 +68,7 @@ qt_internal_add_module(Core
         global/qrandom.cpp global/qrandom.h global/qrandom_p.h
         global/qsysinfo.h
         global/qsystemdetection.h
+        global/qtdeprecationmarkers.h
         global/qtnamespacemacros.h
         global/qtrace_p.h
         global/qtranslation.h
