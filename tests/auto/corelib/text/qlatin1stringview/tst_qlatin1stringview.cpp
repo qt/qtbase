@@ -31,6 +31,8 @@ private Q_SLOTS:
     void relationalOperators_data();
     void relationalOperators();
     void count();
+    void indexOf_data();
+    void indexOf();
 };
 
 void tst_QLatin1StringView::constExpr()
@@ -408,6 +410,108 @@ void tst_QLatin1StringView::count()
 
     using namespace Qt::Literals::StringLiterals;
     QCOMPARE("a\0b"_L1.count(QChar::SpecialCharacter::LineSeparator), 0);
+}
+
+void tst_QLatin1StringView::indexOf_data()
+{
+    using namespace Qt::Literals::StringLiterals;
+
+    QTest::addColumn<QLatin1StringView>("needle");
+    QTest::addColumn<QLatin1StringView>("haystack");
+    QTest::addColumn<int>("from");
+    QTest::addColumn<int>("indexCaseSensitive");
+    QTest::addColumn<int>("indexCaseInsensitive");
+
+    // Should never trigger Boyer Moore algorithm
+    QTest::newRow("Single letter match start")
+            << QLatin1StringView("A") << QLatin1StringView("ABCDEF") << 0 << 0 << 0;
+    QTest::newRow("Single letter match second letter")
+            << QLatin1StringView("B") << QLatin1StringView("ABCDEF") << 0 << 1 << 1;
+    QTest::newRow("Single letter mismatch")
+            << QLatin1StringView("G") << QLatin1StringView("ABCDEF") << 0 << -1 << -1;
+    QTest::newRow("Single letter case sensitive start")
+            << QLatin1StringView("a") << QLatin1StringView("ABCDEF") << 0 << -1 << 0;
+    QTest::newRow("Single letter case sensitive end")
+            << QLatin1StringView("f") << QLatin1StringView("ABCDEF") << 0 << -1 << 5;
+    QTest::newRow("Single letter different match depending on case")
+            << QLatin1StringView("a") << QLatin1StringView("ABCabc") << 0 << 3 << 0;
+    QTest::newRow("Single letter different match depending on case from 2")
+            << QLatin1StringView("a") << QLatin1StringView("ABCABCabc") << 2 << 6 << 3;
+    QTest::newRow("Single letter negative from")
+            << QLatin1StringView("a") << QLatin1StringView("abcabc") << -3 << 3 << 3;
+    QTest::newRow("Single letter non-ASCII") // searching for "ø" in "Øø"
+            << "\xf8"_L1
+            << "\xd8\xf8"_L1 << 0 << 1 << 0;
+    QTest::newRow("Single uppercase letter")
+            << QLatin1StringView("A") << QLatin1StringView("aA") << 0 << 1 << 0;
+
+    // Might trigger Boyer Moore algorithm
+    QTest::newRow("Small match start")
+            << QLatin1StringView("ABC") << QLatin1StringView("ABCDEF") << 0 << 0 << 0;
+    QTest::newRow("Small match second letter")
+            << QLatin1StringView("BCD") << QLatin1StringView("ABCDEF") << 0 << 1 << 1;
+    QTest::newRow("Small mismatch")
+            << QLatin1StringView("EFG") << QLatin1StringView("ABCDEF") << 0 << -1 << -1;
+    QTest::newRow("Small case sensitive start")
+            << QLatin1StringView("abc") << QLatin1StringView("ABCDEF") << 0 << -1 << 0;
+    QTest::newRow("Small case sensitive end")
+            << QLatin1StringView("DEF") << QLatin1StringView("abcdef") << 0 << -1 << 3;
+    QTest::newRow("Small different match depending on case")
+            << QLatin1StringView("abcabc") << QLatin1StringView("!!ABCabcabcABC") << 0 << 5 << 2;
+    QTest::newRow("Small different match depending on case from 2")
+            << QLatin1StringView("abcabc") << QLatin1StringView("ABCABCabcabcABC") << 2 << 6 << 3;
+    QTest::newRow("Small negative from") << QLatin1StringView("negative")
+                                         << QLatin1StringView("negativenegative") << -8 << 8 << 8;
+    QTest::newRow("Small non-ASCII") // searching for "løve" in "LØVEløve"
+            << "l\xf8ve"_L1
+            << "L\xd8VEl\xf8ve"_L1 << 0 << 4 << 0;
+    QTest::newRow("Small skip test")
+            << QLatin1StringView("ABBB") << QLatin1StringView("ABABBB") << 0 << 2 << 2;
+    QTest::newRow("Small uppercase needle")
+            << QLatin1StringView("ABCDEF") << QLatin1StringView("abcdefABCDEF") << 0 << 6 << 0;
+
+    // Should trigger Boyer Moore algorithm
+    QTest::newRow("Medium match start")
+            << QLatin1StringView("ABCDEFGHIJKLMNOP")
+            << QLatin1StringView("ABCDEFGHIJKLMNOPQRSTUVWXYZ") << 0 << 0 << 0;
+    QTest::newRow("Medium match second letter")
+            << QLatin1StringView("BCDEFGHIJKLMNOPQ")
+            << QLatin1StringView("ABCDEFGHIJKLMNOPQRSTUVWXYZ") << 0 << 1 << 1;
+    QTest::newRow("Medium mismatch")
+            << QLatin1StringView("PONMLKJIHGFEDCBA")
+            << QLatin1StringView("ABCDEFGHIJKLMNOPQRSTUVWXYZ") << 0 << -1 << -1;
+    QTest::newRow("Medium case sensitive start")
+            << QLatin1StringView("abcdefghijklmnopq")
+            << QLatin1StringView("ABCDEFGHIJKLMNOPQRSTUVWXYZ") << 0 << -1 << 0;
+    QTest::newRow("Medium case sensitive second letter")
+            << QLatin1StringView("BCDEFGHIJKLMNOPQR")
+            << QLatin1StringView("abcdefghijklmnopqrstuvxyz") << 0 << -1 << 1;
+    QTest::newRow("Medium different match depending on case")
+            << QLatin1StringView("testingtesting")
+            << QLatin1StringView("TESTINGtestingtestingTESTING") << 0 << 7 << 0;
+    QTest::newRow("Medium different match depending on case from 2")
+            << QLatin1StringView("testingtesting")
+            << QLatin1StringView("TESTINGTESTINGtestingtestingTESTING") << 2 << 14 << 7;
+    QTest::newRow("Medium negative from")
+            << QLatin1StringView("abcdefghijklmnop")
+            << QLatin1StringView("abcdefghijklmnopabcdefghijklmnop") << -16 << 16 << 16;
+    QTest::newRow("Medium non-ASCII") // searching for "dampfschiffahrtsgesellschaftskapitän"
+            << "dampfschiffahrtsgesellschaftskapit\xe4n"_L1
+            << "DAMPFSCHIFFAHRTSGESELLSCHAFTSKAPIT\xc4Ndampfschiffahrtsgesellschaftskapit\xe4n"_L1
+            << 0 << 36 << 0;
+    QTest::newRow("Medium skip test") << QLatin1StringView("ABBBBBBBBBBBBBBB")
+                                      << QLatin1StringView("ABABBBBBBBBBBBBBBB") << 0 << 2 << 2;
+}
+
+void tst_QLatin1StringView::indexOf()
+{
+    QFETCH(QLatin1StringView, needle);
+    QFETCH(QLatin1StringView, haystack);
+    QFETCH(int, from);
+    QFETCH(int, indexCaseSensitive);
+    QFETCH(int, indexCaseInsensitive);
+    QCOMPARE(haystack.indexOf(needle, from, Qt::CaseSensitive), (qsizetype)indexCaseSensitive);
+    QCOMPARE(haystack.indexOf(needle, from, Qt::CaseInsensitive), (qsizetype)indexCaseInsensitive);
 }
 
 QTEST_APPLESS_MAIN(tst_QLatin1StringView)

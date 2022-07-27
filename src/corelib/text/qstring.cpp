@@ -1385,6 +1385,71 @@ static int latin1nicmp(const char *lhsChar, qsizetype lSize, const char *rhsChar
     }
     return lencmp(lSize, rSize);
 }
+
+namespace {
+
+template<Qt::CaseSensitivity cs>
+inline uchar latin1_fold(const uchar c)
+{
+    return c;
+}
+
+template<>
+inline uchar latin1_fold<Qt::CaseSensitivity::CaseInsensitive>(const uchar c)
+{
+    return latin1Lower[c];
+}
+
+template<Qt::CaseSensitivity cs>
+inline void bm_latin1_init_skiptable(const uchar *cc, qsizetype len, uchar *skiptable)
+{
+    int l = int(qMin(len, qsizetype(255)));
+    memset(skiptable, l, 256 * sizeof(uchar));
+    cc += len - l;
+    while (l--)
+        skiptable[latin1_fold<cs>(*cc++)] = l;
+}
+
+template<Qt::CaseSensitivity cs>
+inline qsizetype bm_latin1_find(const uchar *cc, qsizetype l, qsizetype index, const uchar *puc,
+                                qsizetype pl, const uchar *skiptable)
+{
+    if (pl == 0)
+        return index > l ? -1 : index;
+    const qsizetype pl_minus_one = pl - 1;
+
+    const uchar *current = cc + index + pl_minus_one;
+    const uchar *end = cc + l;
+
+    while (current < end) {
+        qsizetype skip = skiptable[latin1_fold<cs>(*current)];
+        if (!skip) {
+            // possible match
+            while (skip < pl) {
+                if (latin1_fold<cs>(*(current - skip)) != latin1_fold<cs>(puc[pl_minus_one - skip]))
+                    break;
+                skip++;
+            }
+            if (skip > pl_minus_one) // we have a match
+                return (current - cc) - skip + 1;
+
+            // in case we don't have a match we are a bit inefficient as we only skip by one
+            // when we have the non matching char in the string.
+            if (skiptable[latin1_fold<cs>(*(current - skip))] == pl)
+                skip = pl - skip;
+            else
+                skip = 1;
+        }
+        if (current > end - skip)
+            break;
+        current += skip;
+    }
+
+    return -1; // not found
+}
+
+}
+
 bool QtPrivate::equalStrings(QStringView lhs, QStringView rhs) noexcept
 {
     return ucstreq(lhs.utf16(), lhs.size(), rhs.utf16(), rhs.size());
@@ -10752,28 +10817,12 @@ qsizetype QtPrivate::findString(QLatin1StringView haystack, qsizetype from, QLat
         }
         return -1;
     }
-
-#ifdef __cpp_lib_boyer_moore_searcher
-    const auto ciHasher = [](char a) { return latin1Lower[uchar(a)]; };
-    const auto ciEqual = [](char a, char b) {
-        return latin1Lower[uchar(a)] == latin1Lower[uchar(b)];
-    };
-    const auto it =
-            std::search(haystack.begin() + from, haystack.end(),
-                        std::boyer_moore_searcher(needle.begin(), needle.end(), ciHasher, ciEqual));
-    return it == haystack.end() ? -1 : std::distance(haystack.begin(), it);
-#else
-    QVarLengthArray<char16_t> h(adjustedSize);
-    const auto begin = haystack.end() - adjustedSize;
-    qt_from_latin1(h.data(), begin, adjustedSize);
-    QVarLengthArray<char16_t> n(needle.size());
-    qt_from_latin1(n.data(), needle.latin1(), needle.size());
-    qsizetype res = QtPrivate::findString(QStringView(h.constData(), h.size()), 0,
-                                          QStringView(n.constData(), n.size()), cs);
-    if (res == -1)
-        return -1;
-    return res + std::distance(haystack.begin(), begin);
-#endif
+    uchar skiptable[256];
+    bm_latin1_init_skiptable<Qt::CaseSensitivity::CaseInsensitive>(
+            reinterpret_cast<const unsigned char *>(needle.begin()), needle.size(), skiptable);
+    return bm_latin1_find<Qt::CaseSensitivity::CaseInsensitive>(
+            reinterpret_cast<const unsigned char *>(haystack.begin()), haystack.size(), from,
+            reinterpret_cast<const unsigned char *>(needle.begin()), needle.size(), skiptable);
 }
 
 qsizetype QtPrivate::lastIndexOf(QStringView haystack, qsizetype from, QStringView needle, Qt::CaseSensitivity cs) noexcept
