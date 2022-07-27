@@ -5,6 +5,5 @@
 #define PANIC_H
 
 void panic(const char *fmt, ...);
-void justified_worry(const char *fmt, ...);
 
 #endif // PANIC_H

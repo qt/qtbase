@@ -66,8 +66,7 @@ static void writeCtfMacro(QTextStream &stream, const Tracepoint::Field &field)
                << "ctf_integer(int, height, " << name << ".height()) ";
         return;
     case Tracepoint::Field::Unknown:
-        justified_worry("Cannot deduce CTF type for '%s %s'", qPrintable(paramType),
-                        qPrintable(name));
+        panic("Cannot deduce CTF type for '%s %s", qPrintable(paramType), qPrintable(name));
         break;
     }
 }

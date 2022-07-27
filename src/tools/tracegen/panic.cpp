@@ -21,16 +21,3 @@ void panic(const char *fmt, ...)
 
     exit(EXIT_FAILURE);
 }
-
-void justified_worry(const char *fmt, ...)
-{
-    va_list ap;
-
-    fprintf(stderr, "tracegen: warning: ");
-
-    va_start(ap, fmt);
-    vfprintf(stderr, fmt, ap);
-    va_end(ap);
-
-    fputc('\n', stderr);
-}
