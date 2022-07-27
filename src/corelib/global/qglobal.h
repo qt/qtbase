@@ -22,14 +22,7 @@
 #  include <stddef.h>
 #endif
 
-/*
-   QT_VERSION is (major << 16) | (minor << 8) | patch.
-*/
-#define QT_VERSION      QT_VERSION_CHECK(QT_VERSION_MAJOR, QT_VERSION_MINOR, QT_VERSION_PATCH)
-/*
-   can be used like #if (QT_VERSION >= QT_VERSION_CHECK(6, 4, 0))
-*/
-#define QT_VERSION_CHECK(major, minor, patch) ((major<<16)|(minor<<8)|(patch))
+#include <QtCore/qtversionchecks.h>
 
 #ifdef QT_BOOTSTRAPPED
 #include <QtCore/qconfig-bootstrapped.h>

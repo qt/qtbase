@@ -71,6 +71,7 @@ qt_internal_add_module(Core
         global/qtnamespacemacros.h
         global/qtrace_p.h
         global/qtranslation.h
+        global/qtversionchecks.h
         global/qtypeinfo.h
         global/qvolatile_p.h
         global/q20algorithm.h
