@@ -371,6 +371,6 @@ QDebug operator<<(QDebug debug, const QIOSWindow *window)
 }
 #endif // !QT_NO_DEBUG_STREAM
 
-#include "moc_qioswindow.cpp"
-
 QT_END_NAMESPACE
+
+#include "moc_qioswindow.cpp"

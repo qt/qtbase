@@ -287,6 +287,6 @@ void *QIOSIntegration::nativeResourceForWindow(const QByteArray &resource, QWind
 
 // ---------------------------------------------------------
 
-#include "moc_qiosintegration.cpp"
-
 QT_END_NAMESPACE
+
+#include "moc_qiosintegration.cpp"

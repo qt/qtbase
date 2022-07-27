@@ -69,8 +69,8 @@ QPlatformPrinterSupport *QWindowsPrinterSupportPlugin::create(const QString &key
     return nullptr;
 }
 
-#include "qwindowsprintersupport.moc"
-
 QT_END_NAMESPACE
+
+#include "qwindowsprintersupport.moc"
 
 #endif // QT_NO_PRINTER

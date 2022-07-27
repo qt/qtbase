@@ -1953,6 +1953,6 @@ QDebug operator<<(QDebug debug, const QCocoaWindow *window)
 }
 #endif // !QT_NO_DEBUG_STREAM
 
-#include "moc_qcocoawindow.cpp"
-
 QT_END_NAMESPACE
+
+#include "moc_qcocoawindow.cpp"

@@ -559,6 +559,6 @@ QImage *QCALayerBackingStore::GraphicsBuffer::asImage()
     return &m_image;
 }
 
-#include "moc_qcocoabackingstore.cpp"
-
 QT_END_NAMESPACE
+
+#include "moc_qcocoabackingstore.cpp"
