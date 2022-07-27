@@ -1074,7 +1074,7 @@ bool readInputFile(Options *options)
                     options->rootPaths.push_back(path.toString());
             }
         } else {
-            options->rootPaths.push_back(options->inputFileName);
+            options->rootPaths.push_back(QFileInfo(options->inputFileName).absolutePath());
         }
     }
 
