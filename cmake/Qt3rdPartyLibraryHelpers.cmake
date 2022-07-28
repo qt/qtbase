@@ -165,11 +165,20 @@ function(qt_internal_add_3rdparty_library target)
     set_target_properties(${target} PROPERTIES
         _qt_module_interface_name "${target}"
         _qt_package_version "${PROJECT_VERSION}"
+        _qt_package_name "${INSTALL_CMAKE_NAMESPACE}${target}"
+        _qt_module_is_3rdparty_library TRUE
+    )
+
+    set(export_properties
+        "_qt_module_interface_name"
+        "_qt_package_version"
+        "_qt_package_name"
+        "_qt_module_is_3rdparty_library"
     )
 
     set_property(TARGET ${target}
                  APPEND PROPERTY
-                 EXPORT_PROPERTIES "_qt_module_interface_name;_qt_package_version")
+                 EXPORT_PROPERTIES "${export_properties}")
 
     qt_internal_add_qt_repo_known_module(${target})
     qt_internal_add_target_aliases(${target})
@@ -183,7 +192,6 @@ function(qt_internal_add_3rdparty_library target)
         ARCHIVE_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
         VERSION ${PROJECT_VERSION}
         SOVERSION ${PROJECT_VERSION_MAJOR}
-        _qt_module_is_3rdparty_library TRUE
         _qt_module_skip_depends_include TRUE
     )
     set_property(TARGET "${target}"
