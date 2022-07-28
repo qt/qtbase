@@ -24,30 +24,27 @@
 
 QT_BEGIN_NAMESPACE
 
-
 class QBitArray;
 class QDataStream;
 class QDate;
 class QDateTime;
-#if QT_CONFIG(easingcurve)
 class QEasingCurve;
-#endif
 class QLine;
 class QLineF;
 class QLocale;
-class QTransform;
-class QTime;
+class QModelIndex;
+class QPersistentModelIndex;
 class QPoint;
 class QPointF;
-class QSize;
-class QSizeF;
 class QRect;
 class QRectF;
-#if QT_CONFIG(regularexpression)
 class QRegularExpression;
-#endif // QT_CONFIG(regularexpression)
+class QSize;
+class QSizeF;
 class QTextFormat;
 class QTextLength;
+class QTime;
+class QTransform;
 class QUrl;
 class QVariant;
 
@@ -198,6 +195,7 @@ public:
     explicit QVariant(QMetaType type, const void *copy = nullptr);
     QVariant(const QVariant &other);
 
+    // primitives
     QVariant(int i) noexcept;
     QVariant(uint ui) noexcept;
     QVariant(qlonglong ll) noexcept;
@@ -206,17 +204,29 @@ public:
     QVariant(double d) noexcept;
     QVariant(float f) noexcept;
 
-    QVariant(const QByteArray &bytearray) noexcept;
-    QVariant(const QBitArray &bitarray) noexcept;
-    QVariant(const QString &string) noexcept;
-    QVariant(const QStringList &stringlist) noexcept;
+    // trivial, trivially-copyable or COW
     QVariant(QChar qchar) noexcept;
     QVariant(QDate date) noexcept;
     QVariant(QTime time) noexcept;
+    QVariant(const QBitArray &bitarray) noexcept;
+    QVariant(const QByteArray &bytearray) noexcept;
     QVariant(const QDateTime &datetime) noexcept;
-    QVariant(const QList<QVariant> &list) noexcept;
-    QVariant(const QMap<QString, QVariant> &map) noexcept;
     QVariant(const QHash<QString, QVariant> &hash) noexcept;
+    QVariant(const QJsonArray &jsonArray) noexcept;
+    QVariant(const QJsonObject &jsonObject) noexcept;
+    QVariant(const QList<QVariant> &list) noexcept;
+    QVariant(const QLocale &locale) noexcept;
+    QVariant(const QMap<QString, QVariant> &map) noexcept;
+    QVariant(const QRegularExpression &re) noexcept;
+    QVariant(const QString &string) noexcept;
+    QVariant(const QStringList &stringlist) noexcept;
+    QVariant(const QUrl &url) noexcept;
+
+    // conditionally noexcept trivial or trivially-copyable
+    // (most of these are noexcept on 64-bit)
+    QVariant(const QJsonValue &jsonValue) noexcept(Private::FitsInInternalSize<sizeof(CborValueStandIn)>);
+    QVariant(const QModelIndex &modelIndex) noexcept(Private::FitsInInternalSize<8 + 2 * sizeof(quintptr)>);
+    QVariant(QUuid uuid) noexcept(Private::FitsInInternalSize<16>);
 #ifndef QT_NO_GEOM_VARIANT
     QVariant(QSize size) noexcept;
     QVariant(QSizeF size) noexcept(Private::FitsInInternalSize<sizeof(qreal) * 2>);
@@ -227,25 +237,11 @@ public:
     QVariant(QRect rect) noexcept(Private::FitsInInternalSize<sizeof(int) * 4>);
     QVariant(QRectF rect) noexcept(Private::FitsInInternalSize<sizeof(qreal) * 4>);
 #endif
-    QVariant(const QLocale &locale) noexcept;
-#if QT_CONFIG(regularexpression)
-    QVariant(const QRegularExpression &re) noexcept;
-#endif // QT_CONFIG(regularexpression)
-#if QT_CONFIG(easingcurve)
-    QVariant(const QEasingCurve &easing);
-#endif
-    QVariant(QUuid uuid) noexcept(Private::FitsInInternalSize<16>);
-#ifndef QT_BOOTSTRAPPED
-    QVariant(const QUrl &url) noexcept;
-    QVariant(const QJsonValue &jsonValue) noexcept(Private::FitsInInternalSize<sizeof(CborValueStandIn)>);
-    QVariant(const QJsonObject &jsonObject) noexcept;
-    QVariant(const QJsonArray &jsonArray) noexcept;
-    QVariant(const QJsonDocument &jsonDocument);
-#endif // QT_BOOTSTRAPPED
-#if QT_CONFIG(itemmodel)
-    QVariant(const QModelIndex &modelIndex) noexcept(Private::FitsInInternalSize<8 + 2 * sizeof(quintptr)>);
-    QVariant(const QPersistentModelIndex &modelIndex);
-#endif
+
+    // not noexcept
+    QVariant(const QEasingCurve &easing) noexcept(false);
+    QVariant(const QJsonDocument &jsonDocument) noexcept(false);
+    QVariant(const QPersistentModelIndex &modelIndex) noexcept(false);
 
 #ifndef QT_NO_CAST_FROM_ASCII
     QT_ASCII_CAST_WARN QVariant(const char *str) noexcept(false)
