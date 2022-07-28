@@ -123,6 +123,7 @@ static Tracepoint::Field::BackendType backendType(QString rawType)
         { "signed_long_long",       Tracepoint::Field::Integer },
         { "signed_long_long_int",   Tracepoint::Field::Integer },
         { "unsigned_long_long",     Tracepoint::Field::Integer },
+        { "qint64",                 Tracepoint::Field::Integer },
         { "char",                   Tracepoint::Field::Integer },
         { "intptr_t",               Tracepoint::Field::IntegerHex },
         { "uintptr_t",              Tracepoint::Field::IntegerHex },
