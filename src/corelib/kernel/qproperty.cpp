@@ -276,7 +276,7 @@ void QPropertyBindingPrivate::unlinkAndDeref()
         destroyAndFreeMemory(this);
 }
 
-void QPropertyBindingPrivate::evaluateRecursive(PendingBindingObserverList &bindingObservers, QBindingStatus *status)
+bool QPropertyBindingPrivate::evaluateRecursive(PendingBindingObserverList &bindingObservers, QBindingStatus *status)
 {
     if (!status)
         status = &bindingStatus;
@@ -769,10 +769,11 @@ void QPropertyObserverPointer::evaluateBindings(PendingBindingObserverList &bind
         QPropertyObserver *next = observer->next.data();
 
         if (QPropertyObserver::ObserverTag(observer->next.tag()) == QPropertyObserver::ObserverNotifiesBinding) {
-            bindingObservers.push_back(observer);
             auto bindingToEvaluate = observer->binding;
             QPropertyObserverNodeProtector protector(observer);
-            bindingToEvaluate->evaluateRecursive_inline(bindingObservers, status);
+            QBindingObserverPtr bindingObserver(observer); // binding must not be gone after evaluateRecursive_inline
+            if (bindingToEvaluate->evaluateRecursive_inline(bindingObservers, status))
+                bindingObservers.push_back(std::move(bindingObserver));
             next = protector.next();
         }
 

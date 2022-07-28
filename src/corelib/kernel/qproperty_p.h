@@ -360,7 +360,7 @@ public:
 
     void unlinkAndDeref();
 
-    void evaluateRecursive(PendingBindingObserverList &bindingObservers, QBindingStatus *status = nullptr);
+    bool evaluateRecursive(PendingBindingObserverList &bindingObservers, QBindingStatus *status = nullptr);
 
     // ### TODO: remove as soon as declarative no longer needs this overload
     void evaluateRecursive()
@@ -369,7 +369,7 @@ public:
         evaluateRecursive(bindingObservers);
     }
 
-    void Q_ALWAYS_INLINE evaluateRecursive_inline(PendingBindingObserverList &bindingObservers, QBindingStatus *status);
+    bool Q_ALWAYS_INLINE evaluateRecursive_inline(PendingBindingObserverList &bindingObservers, QBindingStatus *status);
 
     void notifyRecursive();
     void notifyNonRecursive(const PendingBindingObserverList &bindingObservers);
@@ -780,13 +780,13 @@ struct QUntypedBindablePrivate
     }
 };
 
-inline void QPropertyBindingPrivate::evaluateRecursive_inline(PendingBindingObserverList &bindingObservers, QBindingStatus *status)
+inline bool QPropertyBindingPrivate::evaluateRecursive_inline(PendingBindingObserverList &bindingObservers, QBindingStatus *status)
 {
     if (updating) {
         error = QPropertyBindingError(QPropertyBindingError::BindingLoop);
         if (isQQmlPropertyBinding)
             errorCallBack(this);
-        return;
+        return false;
     }
 
     /*
@@ -816,10 +816,11 @@ inline void QPropertyBindingPrivate::evaluateRecursive_inline(PendingBindingObse
     // If there was not, we must not clear it, as that only should happen in notifyRecursive
     pendingNotify = pendingNotify || changed;
     if (!changed || !firstObserver)
-        return;
+        return changed;
 
     firstObserver.noSelfDependencies(this);
     firstObserver.evaluateBindings(bindingObservers, status);
+    return true;
 }
 
 template<QPropertyObserverPointer::Notify notifyPolicy>
