@@ -1227,13 +1227,6 @@ Q_CORE_EXPORT int  qEnvironmentVariableIntValue(const char *varName, bool *ok=nu
 
 #define QT_MODULE(x)
 
-#if defined(QT_BOOTSTRAPPED) || defined(QT_USE_PROTECTED_VISIBILITY) || !defined(__ELF__) || defined(__PIC__)
-// this is fine
-#elif defined(QT_REDUCE_RELOCATIONS)
-#  error "You must build your code with position independent code if Qt was built with -reduce-relocations. "\
-         "Compile your code with -fPIC (and not with -fPIE)."
-#endif
-
 // This macro can be used to calculate member offsets for types with a non standard layout.
 // It uses the fact that offsetof() is allowed to support those types since C++17 as an optional
 // feature. All our compilers do support this, but some issue a warning, so we wrap the offsetof()

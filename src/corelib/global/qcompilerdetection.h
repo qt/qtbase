@@ -1203,4 +1203,11 @@ static_assert(!std::is_convertible_v<std::nullptr_t, bool>,
               "On MSVC you must pass the /permissive- option to the compiler.");
 #endif
 
+#if defined(QT_BOOTSTRAPPED) || defined(QT_USE_PROTECTED_VISIBILITY) || !defined(__ELF__) || defined(__PIC__)
+// this is fine
+#elif defined(QT_REDUCE_RELOCATIONS)
+#  error "You must build your code with position independent code if Qt was configured with -reduce-relocations. "\
+         "Compile your code with -fPIC (and not with -fPIE)."
+#endif
+
 #endif // QCOMPILERDETECTION_H
