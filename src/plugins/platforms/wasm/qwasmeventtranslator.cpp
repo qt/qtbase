@@ -244,12 +244,12 @@ static Qt::Key find(const KeyMapping (&map)[N], Qt::Key key) noexcept
     return find_impl(map, map + N, key);
 }
 
-Qt::Key QWasmEventTranslator::translateDeadKey(Qt::Key deadKey, Qt::Key accentBaseKey, bool is_mac)
+Qt::Key QWasmEventTranslator::translateDeadKey(Qt::Key deadKey, Qt::Key accentBaseKey)
 {
     Qt::Key wasmKey = Qt::Key_unknown;
 
     if (deadKey == Qt::Key_QuoteLeft ) {
-        if (is_mac) { // ` macOS: Key_Dead_Grave
+        if (platform() == Platform::MacOS) { // ` macOS: Key_Dead_Grave
             wasmKey = find(graveKeyTable, accentBaseKey);
         } else {
             wasmKey = find(diaeresisKeyTable, accentBaseKey);
