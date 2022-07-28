@@ -1213,62 +1213,6 @@ template <typename Ptr> inline auto qGetPtrHelper(Ptr &ptr) noexcept -> decltype
 #define Q_D(Class) Class##Private * const d = d_func()
 #define Q_Q(Class) Class * const q = q_func()
 
-#ifdef Q_QDOC
-// Just for documentation generation
-template<typename T>
-auto qOverload(T functionPointer);
-template<typename T>
-auto qConstOverload(T memberFunctionPointer);
-template<typename T>
-auto qNonConstOverload(T memberFunctionPointer);
-#else
-template <typename... Args>
-struct QNonConstOverload
-{
-    template <typename R, typename T>
-    constexpr auto operator()(R (T::*ptr)(Args...)) const noexcept -> decltype(ptr)
-    { return ptr; }
-
-    template <typename R, typename T>
-    static constexpr auto of(R (T::*ptr)(Args...)) noexcept -> decltype(ptr)
-    { return ptr; }
-};
-
-template <typename... Args>
-struct QConstOverload
-{
-    template <typename R, typename T>
-    constexpr auto operator()(R (T::*ptr)(Args...) const) const noexcept -> decltype(ptr)
-    { return ptr; }
-
-    template <typename R, typename T>
-    static constexpr auto of(R (T::*ptr)(Args...) const) noexcept -> decltype(ptr)
-    { return ptr; }
-};
-
-template <typename... Args>
-struct QOverload : QConstOverload<Args...>, QNonConstOverload<Args...>
-{
-    using QConstOverload<Args...>::of;
-    using QConstOverload<Args...>::operator();
-    using QNonConstOverload<Args...>::of;
-    using QNonConstOverload<Args...>::operator();
-
-    template <typename R>
-    constexpr auto operator()(R (*ptr)(Args...)) const noexcept -> decltype(ptr)
-    { return ptr; }
-
-    template <typename R>
-    static constexpr auto of(R (*ptr)(Args...)) noexcept -> decltype(ptr)
-    { return ptr; }
-};
-
-template <typename... Args> constexpr inline QOverload<Args...> qOverload = {};
-template <typename... Args> constexpr inline QConstOverload<Args...> qConstOverload = {};
-template <typename... Args> constexpr inline QNonConstOverload<Args...> qNonConstOverload = {};
-#endif
-
-
 class QByteArray;
 Q_CORE_EXPORT QByteArray qgetenv(const char *varName);
 // need it as two functions because QString is only forward-declared here
@@ -1289,13 +1233,6 @@ Q_CORE_EXPORT int  qEnvironmentVariableIntValue(const char *varName, bool *ok=nu
 #  error "You must build your code with position independent code if Qt was built with -reduce-relocations. "\
          "Compile your code with -fPIC (and not with -fPIE)."
 #endif
-
-#define QT_VA_ARGS_CHOOSE(_1, _2, _3, _4, _5, _6, _7, _8, _9, N, ...) N
-#define QT_VA_ARGS_EXPAND(...) __VA_ARGS__ // Needed for MSVC
-#define QT_VA_ARGS_COUNT(...) QT_VA_ARGS_EXPAND(QT_VA_ARGS_CHOOSE(__VA_ARGS__, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0))
-#define QT_OVERLOADED_MACRO_EXPAND(MACRO, ARGC) MACRO##_##ARGC
-#define QT_OVERLOADED_MACRO_IMP(MACRO, ARGC) QT_OVERLOADED_MACRO_EXPAND(MACRO, ARGC)
-#define QT_OVERLOADED_MACRO(MACRO, ...) QT_VA_ARGS_EXPAND(QT_OVERLOADED_MACRO_IMP(MACRO, QT_VA_ARGS_COUNT(__VA_ARGS__))(__VA_ARGS__))
 
 // This macro can be used to calculate member offsets for types with a non standard layout.
 // It uses the fact that offsetof() is allowed to support those types since C++17 as an optional
@@ -1322,6 +1259,7 @@ QT_END_NAMESPACE
 #include <QtCore/qforeach.h>
 #include <QtCore/qglobalstatic.h>
 #include <QtCore/qnumeric.h>
+#include <QtCore/qoverload.h>
 #include <QtCore/qtranslation.h>
 #include <QtCore/qversiontagging.h>
 

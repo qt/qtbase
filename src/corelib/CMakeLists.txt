@@ -62,6 +62,7 @@ qt_internal_add_module(Core
         global/qnativeinterface.h global/qnativeinterface_p.h
         global/qnumeric.cpp global/qnumeric.h global/qnumeric_p.h
         global/qoperatingsystemversion.cpp global/qoperatingsystemversion.h global/qoperatingsystemversion_p.h
+        global/qoverload.h
         global/qprocessordetection.h
         global/qrandom.cpp global/qrandom.h global/qrandom_p.h
         global/qsysinfo.h
