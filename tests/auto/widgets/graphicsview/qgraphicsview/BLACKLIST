@@ -1,19 +1,7 @@
 [cursor2]
-ubuntu-16.04
-[sendEvent]
-ubuntu-16.04
-opensuse-42.3
-[resizeAnchor]
-opensuse-leap
-rhel-7.6
-ubuntu
-[update2]
-opensuse-42.3
-[itemsInRect_cosmeticAdjust]
-# QTBUG-66815
-ubuntu-16.04
-[fitInView]
 osx
+[resizeAnchor]
+rhel
 # QTBUG-87397
 [itemsAtPoint]
 android
