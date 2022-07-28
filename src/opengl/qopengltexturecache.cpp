@@ -123,7 +123,7 @@ GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, const QImage &i
 
 GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, qint64 key, const QImage &image, QOpenGLTextureUploader::BindOptions options)
 {
-    Q_TRACE_SCOPE(QOpenGLTextureCache_bindTexture, context, key, image, options);
+    Q_TRACE_SCOPE(QOpenGLTextureCache_bindTexture, context, key, image.bits(), options);
 
     GLuint id;
     QOpenGLFunctions *funcs = context->functions();
