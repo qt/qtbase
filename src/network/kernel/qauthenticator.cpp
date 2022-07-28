@@ -638,9 +638,11 @@ QByteArray QAuthenticatorPrivate::calculateResponse(const QByteArray &requestMet
         } else {
             QByteArray phase3Token;
 #if QT_CONFIG(sspi) // SSPI
-            phase3Token = qSspiContinue(this, method, host, QByteArray::fromBase64(challenge));
+            if (sspiWindowsHandles)
+                phase3Token = qSspiContinue(this, method, host, QByteArray::fromBase64(challenge));
 #elif QT_CONFIG(gssapi) // GSSAPI
-            phase3Token = qGssapiContinue(this, QByteArray::fromBase64(challenge));
+            if (gssApiHandles)
+                phase3Token = qGssapiContinue(this, QByteArray::fromBase64(challenge));
 #endif
             if (!phase3Token.isEmpty()) {
                 response = phase3Token.toBase64();
@@ -1595,7 +1597,8 @@ static QByteArray qSspiStartup(QAuthenticatorPrivate *ctx, QAuthenticatorPrivate
 
     if (!ctx->sspiWindowsHandles)
         ctx->sspiWindowsHandles.reset(new QSSPIWindowsHandles);
-    memset(&ctx->sspiWindowsHandles->credHandle, 0, sizeof(CredHandle));
+    SecInvalidateHandle(&ctx->sspiWindowsHandles->credHandle);
+    SecInvalidateHandle(&ctx->sspiWindowsHandles->ctxHandle);
 
     SEC_WINNT_AUTH_IDENTITY auth;
     auth.Flags = SEC_WINNT_AUTH_IDENTITY_UNICODE;
