@@ -849,12 +849,6 @@ private:
 
 #endif // Q_OS_DARWIN
 
-/*
-   Data stream functions are provided by many classes (defined in qdatastream.h)
-*/
-
-class QDataStream;
-
 inline void qt_noop(void) {}
 
 /* These wrap try/catch so we can switch off exceptions later.
