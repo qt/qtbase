@@ -17,6 +17,7 @@
 #include <QtTest/qtestevent.h>
 #include <QtTest/qtestmouse.h>
 #include <QtTest/qtesttouch.h>
+#include <QtTest/qtestwheel.h>
 #include <QtTest/qtestkeyboard.h>
 
 #include <QtGui/qcolor.h>

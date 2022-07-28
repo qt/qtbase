@@ -55,6 +55,7 @@ qt_internal_add_module(Test
         qtestsystem.h
         qtesttable.cpp qtesttable_p.h
         qtesttouch.h
+        qtestwheel.h
         qttestglobal.h
         qxmltestlogger.cpp qxmltestlogger_p.h
     DEFINES

@@ -1363,6 +1363,17 @@
     moving the mouse pointer.
 */
 
+/*! \fn void QTest::wheelEvent(QWindow *window, QPointF pos, QPoint angleDelta, QPoint pixelDelta = QPoint(0, 0), Qt::KeyboardModifiers stateKey = Qt::NoModifier, Qt::ScrollPhase phase = Qt::NoScrollPhase)
+    \since 6.8
+
+    Simulates a wheel event within \a window at position \a pos in local
+    window coordinates. \a angleDelta contains the wheel rotation angle.
+    A positive value means forward rotation, and a negative one means backward.
+    \a pixelDelta contains the scrolling distance in pixels on screen. This value can be null.
+    The keyboard states at the time of the event are specified by \a stateKey.
+    The scrolling phase of the event is specified by \a phase.
+*/
+
 /*!
     \fn template <typename T1, typename T2> char *QTest::toString(const std::pair<T1, T2> &pair)
     \overload
