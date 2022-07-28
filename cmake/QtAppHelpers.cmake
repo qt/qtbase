@@ -3,10 +3,15 @@
 function(qt_internal_add_app target)
     qt_parse_all_arguments(arg
         "qt_internal_add_app"
-        "NO_INSTALL;INSTALL_VERSIONED_LINK"
+        "NO_INSTALL;INSTALL_VERSIONED_LINK;EXCEPTIONS"
         "${__default_target_info_args};INSTALL_DIR"
         "${__default_private_args}"
         ${ARGN})
+
+    set(exceptions "")
+    if(arg_EXCEPTIONS)
+        set(exceptions EXCEPTIONS)
+    endif()
 
     if(DEFINED arg_INSTALL_DIR)
         set(forward_install_dir INSTALL_DIRECTORY ${arg_INSTALL_DIR})
@@ -26,6 +31,7 @@ function(qt_internal_add_app target)
         DELAY_RC
         DELAY_TARGET_INFO
         OUTPUT_DIRECTORY "${output_directory}"
+        ${exceptions}
         ${no_install}
         ${forward_install_dir}
         SOURCES ${arg_SOURCES}
