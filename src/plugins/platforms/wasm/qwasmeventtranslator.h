@@ -41,7 +41,7 @@ public:
 Q_SIGNALS:
     void getWindowAt(const QPoint &point, QWindow **window);
 private:
-    static Qt::Key translateDeadKey(Qt::Key deadKey, Qt::Key accentBaseKey, bool is_mac = false);
+    static Qt::Key translateDeadKey(Qt::Key deadKey, Qt::Key accentBaseKey);
 
 private:
     static quint64 getTimestamp();
