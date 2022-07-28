@@ -1,0 +1,206 @@
+// Copyright (C) 2022 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \macro QT_TR_NOOP(sourceText)
+    \relates <QTranslation>
+
+    Marks the UTF-8 encoded string literal \a sourceText for delayed
+    translation in the current context (class).
+
+    The macro tells lupdate to collect the string, and expands to
+    \a sourceText itself.
+
+    Example:
+
+    \snippet code/src_corelib_global_qglobal.cpp 34
+
+    The macro QT_TR_NOOP_UTF8() is identical and obsolete; this applies
+    to all other _UTF8 macros as well.
+
+    \sa QT_TRANSLATE_NOOP(), {Internationalization with Qt}
+*/
+
+/*!
+    \macro QT_TRANSLATE_NOOP(context, sourceText)
+    \relates <QTranslation>
+
+    Marks the UTF-8 encoded string literal \a sourceText for delayed
+    translation in the given \a context. The \a context is typically
+    a class name and also needs to be specified as a string literal.
+
+    The macro tells lupdate to collect the string, and expands to
+    \a sourceText itself.
+
+    Example:
+
+    \snippet code/src_corelib_global_qglobal.cpp 35
+
+    \sa QT_TR_NOOP(), QT_TRANSLATE_NOOP3(), {Internationalization with Qt}
+*/
+
+/*!
+    \macro QT_TRANSLATE_NOOP3(context, sourceText, disambiguation)
+    \relates <QTranslation>
+    \since 4.4
+
+    Marks the UTF-8 encoded string literal \a sourceText for delayed
+    translation in the given \a context with the given \a disambiguation.
+    The \a context is typically a class and also needs to be specified
+    as a string literal. The string literal \a disambiguation should be
+    a short semantic tag to tell apart otherwise identical strings.
+
+    The macro tells lupdate to collect the string, and expands to an
+    anonymous struct of the two string literals passed as \a sourceText
+    and \a disambiguation.
+
+    Example:
+
+    \snippet code/src_corelib_global_qglobal.cpp 36
+
+    \sa QT_TR_NOOP(), QT_TRANSLATE_NOOP(), {Internationalization with Qt}
+*/
+
+/*!
+    \macro QT_TR_N_NOOP(sourceText)
+    \relates <QTranslation>
+    \since 5.12
+
+    Marks the UTF-8 encoded string literal \a sourceText for numerator
+    dependent delayed translation in the current context (class).
+
+    The macro tells lupdate to collect the string, and expands to
+    \a sourceText itself.
+
+    The macro expands to \a sourceText.
+
+    Example:
+
+    \snippet code/src_corelib_global_qglobal.cpp qttrnnoop
+
+    \sa QT_TR_NOOP, {Internationalization with Qt}
+*/
+
+/*!
+    \macro QT_TRANSLATE_N_NOOP(context, sourceText)
+    \relates <QTranslation>
+    \since 5.12
+
+    Marks the UTF-8 encoded string literal \a sourceText for numerator
+    dependent delayed translation in the given \a context.
+    The \a context is typically a class name and also needs to be
+    specified as a string literal.
+
+    The macro tells lupdate to collect the string, and expands to
+    \a sourceText itself.
+
+    Example:
+
+    \snippet code/src_corelib_global_qglobal.cpp qttranslatennoop
+
+    \sa QT_TRANSLATE_NOOP(), QT_TRANSLATE_N_NOOP3(),
+    {Internationalization with Qt}
+*/
+
+/*!
+    \macro QT_TRANSLATE_N_NOOP3(context, sourceText, comment)
+    \relates <QTranslation>
+    \since 5.12
+
+    Marks the UTF-8 encoded string literal \a sourceText for numerator
+    dependent delayed translation in the given \a context with the given
+    \a comment.
+    The \a context is typically a class and also needs to be specified
+    as a string literal. The string literal \a comment should be
+    a short semantic tag to tell apart otherwise identical strings.
+
+    The macro tells lupdate to collect the string, and expands to an
+    anonymous struct of the two string literals passed as \a sourceText
+    and \a comment.
+
+    Example:
+
+    \snippet code/src_corelib_global_qglobal.cpp qttranslatennoop3
+
+    \sa QT_TR_NOOP(), QT_TRANSLATE_NOOP(), QT_TRANSLATE_NOOP3(),
+    {Internationalization with Qt}
+*/
+
+/*!
+    \fn QString qtTrId(const char *id, int n = -1)
+    \relates <QTranslation>
+    \reentrant
+    \since 4.6
+
+    \brief The qtTrId function finds and returns a translated string.
+
+    Returns a translated string identified by \a id.
+    If no matching string is found, the id itself is returned. This
+    should not happen under normal conditions.
+
+    If \a n >= 0, all occurrences of \c %n in the resulting string
+    are replaced with a decimal representation of \a n. In addition,
+    depending on \a n's value, the translation text may vary.
+
+    Meta data and comments can be passed as documented for QObject::tr().
+    In addition, it is possible to supply a source string template like that:
+
+    \tt{//% <C string>}
+
+    or
+
+    \tt{\\begincomment% <C string> \\endcomment}
+
+    Example:
+
+    \snippet code/src_corelib_global_qglobal.cpp qttrid
+
+    Creating QM files suitable for use with this function requires passing
+    the \c -idbased option to the \c lrelease tool.
+
+    \warning This method is reentrant only if all translators are
+    installed \e before calling this method. Installing or removing
+    translators while performing translations is not supported. Doing
+    so will probably result in crashes or other undesirable behavior.
+
+    \sa QObject::tr(), QCoreApplication::translate(), {Internationalization with Qt}
+*/
+
+/*!
+    \macro QT_TRID_NOOP(id)
+    \relates <QTranslation>
+    \since 4.6
+
+    \brief The QT_TRID_NOOP macro marks an id for dynamic translation.
+
+    The only purpose of this macro is to provide an anchor for attaching
+    meta data like to qtTrId().
+
+    The macro expands to \a id.
+
+    Example:
+
+    \snippet code/src_corelib_global_qglobal.cpp qttrid_noop
+
+    \sa qtTrId(), {Internationalization with Qt}
+*/
+
+/*!
+    \macro QT_TRID_N_NOOP(id)
+    \relates <QTranslation>
+    \since 6.3
+
+    \brief The QT_TRID_N_NOOP macro marks an id for numerator
+    dependent dynamic translation.
+
+    The only purpose of this macro is to provide an anchor for attaching
+    meta data like to qtTrId().
+
+    The macro expands to \a id.
+
+    Example:
+
+    \snippet code/src_corelib_global_qglobal.cpp qttrid_n_noop
+
+    \sa qtTrId(), {Internationalization with Qt}
+*/

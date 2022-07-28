@@ -1213,30 +1213,6 @@ template <typename Ptr> inline auto qGetPtrHelper(Ptr &ptr) noexcept -> decltype
 #define Q_D(Class) Class##Private * const d = d_func()
 #define Q_Q(Class) Class * const q = q_func()
 
-#define QT_TR_NOOP(x) x
-#define QT_TR_NOOP_UTF8(x) x
-#define QT_TRANSLATE_NOOP(scope, x) x
-#define QT_TRANSLATE_NOOP_UTF8(scope, x) x
-#define QT_TRANSLATE_NOOP3(scope, x, comment) {x, comment}
-#define QT_TRANSLATE_NOOP3_UTF8(scope, x, comment) {x, comment}
-
-#ifndef QT_NO_TRANSLATION
-
-#define QT_TR_N_NOOP(x) x
-#define QT_TRANSLATE_N_NOOP(scope, x) x
-#define QT_TRANSLATE_N_NOOP3(scope, x, comment) {x, comment}
-
-// Defined in qcoreapplication.cpp
-// The better name qTrId() is reserved for an upcoming function which would
-// return a much more powerful QStringFormatter instead of a QString.
-Q_CORE_EXPORT QString qtTrId(const char *id, int n = -1);
-
-#define QT_TRID_NOOP(id) id
-#define QT_TRID_N_NOOP(id) id
-
-#endif // QT_NO_TRANSLATION
-
-
 #ifdef Q_QDOC
 // Just for documentation generation
 template<typename T>
@@ -1343,10 +1319,11 @@ QT_END_NAMESPACE
 #include <QtCore/qflags.h>
 
 #include <QtCore/qatomic.h>
+#include <QtCore/qforeach.h>
 #include <QtCore/qglobalstatic.h>
 #include <QtCore/qnumeric.h>
+#include <QtCore/qtranslation.h>
 #include <QtCore/qversiontagging.h>
-#include <QtCore/qforeach.h>
 
 #endif /* __cplusplus */
 #endif /* !__ASSEMBLER__ */
