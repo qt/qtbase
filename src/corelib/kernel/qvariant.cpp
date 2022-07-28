@@ -1759,14 +1759,14 @@ QBitArray QVariant::toBitArray() const
 }
 
 template <typename T>
-inline T qNumVariantToHelper(const QVariant::Private &d, bool *ok, const T& val)
+inline T qNumVariantToHelper(const QVariant::Private &d, bool *ok)
 {
     QMetaType t = QMetaType::fromType<T>();
     if (ok)
         *ok = true;
 
     if (d.type() == t)
-        return val;
+        return d.get<T>();
 
     T ret = 0;
     bool success = QMetaType::convert(d.type(), d.storage(), t, &ret);
@@ -1794,7 +1794,7 @@ inline T qNumVariantToHelper(const QVariant::Private &d, bool *ok, const T& val)
 */
 int QVariant::toInt(bool *ok) const
 {
-    return qNumVariantToHelper<int>(d, ok, d.get<int>());
+    return qNumVariantToHelper<int>(d, ok);
 }
 
 /*!
@@ -1816,7 +1816,7 @@ int QVariant::toInt(bool *ok) const
 */
 uint QVariant::toUInt(bool *ok) const
 {
-    return qNumVariantToHelper<uint>(d, ok, d.get<unsigned int>());
+    return qNumVariantToHelper<uint>(d, ok);
 }
 
 /*!
@@ -1833,7 +1833,7 @@ uint QVariant::toUInt(bool *ok) const
 */
 qlonglong QVariant::toLongLong(bool *ok) const
 {
-    return qNumVariantToHelper<qlonglong>(d, ok, d.get<qlonglong>());
+    return qNumVariantToHelper<qlonglong>(d, ok);
 }
 
 /*!
@@ -1850,7 +1850,7 @@ qlonglong QVariant::toLongLong(bool *ok) const
 */
 qulonglong QVariant::toULongLong(bool *ok) const
 {
-    return qNumVariantToHelper<qulonglong>(d, ok, d.get<qulonglong>());
+    return qNumVariantToHelper<qulonglong>(d, ok);
 }
 
 /*!
@@ -1890,7 +1890,7 @@ bool QVariant::toBool() const
 */
 double QVariant::toDouble(bool *ok) const
 {
-    return qNumVariantToHelper<double>(d, ok, d.get<double>());
+    return qNumVariantToHelper<double>(d, ok);
 }
 
 /*!
@@ -1909,7 +1909,7 @@ double QVariant::toDouble(bool *ok) const
 */
 float QVariant::toFloat(bool *ok) const
 {
-    return qNumVariantToHelper<float>(d, ok, d.get<float>());
+    return qNumVariantToHelper<float>(d, ok);
 }
 
 /*!
@@ -1928,7 +1928,7 @@ float QVariant::toFloat(bool *ok) const
 */
 qreal QVariant::toReal(bool *ok) const
 {
-    return qNumVariantToHelper<qreal>(d, ok, d.get<qreal>());
+    return qNumVariantToHelper<qreal>(d, ok);
 }
 
 /*!
