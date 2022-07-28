@@ -1,0 +1,30 @@
+// Copyright (C) 2022 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+
+#ifndef QENVIRONMENTVARIABLES_H
+#define QENVIRONMENTVARIABLES_H
+
+#include <QtCore/qglobal.h>
+
+#if 0
+#pragma qt_class(QEnvironmentVariables)
+#pragma qt_sync_stop_processing
+#endif
+
+QT_BEGIN_NAMESPACE
+
+class QByteArray;
+Q_CORE_EXPORT QByteArray qgetenv(const char *varName);
+// need it as two functions because QString is only forward-declared here
+Q_CORE_EXPORT QString qEnvironmentVariable(const char *varName);
+Q_CORE_EXPORT QString qEnvironmentVariable(const char *varName, const QString &defaultValue);
+Q_CORE_EXPORT bool qputenv(const char *varName, const QByteArray &value);
+Q_CORE_EXPORT bool qunsetenv(const char *varName);
+
+Q_CORE_EXPORT bool qEnvironmentVariableIsEmpty(const char *varName) noexcept;
+Q_CORE_EXPORT bool qEnvironmentVariableIsSet(const char *varName) noexcept;
+Q_CORE_EXPORT int  qEnvironmentVariableIntValue(const char *varName, bool *ok=nullptr) noexcept;
+
+QT_END_NAMESPACE
+
+#endif /* QENVIRONMENTVARIABLES_H */

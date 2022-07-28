@@ -12,6 +12,7 @@ qt_add_library(Bootstrap STATIC)
 qt_internal_extend_target(Bootstrap
     SOURCES
         ../../corelib/global/qendian.cpp
+        ../../corelib/global/qenvironmentvariables.cpp
         ../../corelib/global/qfloat16.cpp
         ../../corelib/global/qglobal.cpp
         ../../corelib/global/qlogging.cpp

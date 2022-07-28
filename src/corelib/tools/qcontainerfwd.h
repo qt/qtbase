@@ -30,6 +30,7 @@ template <typename T> class QList;
 #ifndef Q_CLANG_QDOC
 template<typename T> using QVector = QList<T>;
 using QStringList = QList<QString>;
+class QByteArray;
 using QByteArrayList = QList<QByteArray>;
 #else
 template<typename T> class QVector;

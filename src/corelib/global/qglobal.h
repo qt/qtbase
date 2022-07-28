@@ -1213,18 +1213,6 @@ template <typename Ptr> inline auto qGetPtrHelper(Ptr &ptr) noexcept -> decltype
 #define Q_D(Class) Class##Private * const d = d_func()
 #define Q_Q(Class) Class * const q = q_func()
 
-class QByteArray;
-Q_CORE_EXPORT QByteArray qgetenv(const char *varName);
-// need it as two functions because QString is only forward-declared here
-Q_CORE_EXPORT QString qEnvironmentVariable(const char *varName);
-Q_CORE_EXPORT QString qEnvironmentVariable(const char *varName, const QString &defaultValue);
-Q_CORE_EXPORT bool qputenv(const char *varName, const QByteArray& value);
-Q_CORE_EXPORT bool qunsetenv(const char *varName);
-
-Q_CORE_EXPORT bool qEnvironmentVariableIsEmpty(const char *varName) noexcept;
-Q_CORE_EXPORT bool qEnvironmentVariableIsSet(const char *varName) noexcept;
-Q_CORE_EXPORT int  qEnvironmentVariableIntValue(const char *varName, bool *ok=nullptr) noexcept;
-
 #define QT_MODULE(x)
 
 // This macro can be used to calculate member offsets for types with a non standard layout.
@@ -1249,6 +1237,7 @@ QT_END_NAMESPACE
 #include <QtCore/qflags.h>
 
 #include <QtCore/qatomic.h>
+#include <QtCore/qenvironmentvariables.h>
 #include <QtCore/qforeach.h>
 #include <QtCore/qglobalstatic.h>
 #include <QtCore/qnumeric.h>
