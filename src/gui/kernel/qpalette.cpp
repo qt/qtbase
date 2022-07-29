@@ -96,6 +96,34 @@ static QColor qt_mix_colors(QColor a, QColor b)
                   (a.blue() + b.blue()) / 2, (a.alpha() + b.alpha()) / 2);
 }
 
+/*!
+    \internal
+
+    Derive undefined \l PlaceholderText colors from \l Text colors.
+    Unless already set, PlaceholderText colors will be derived from their Text pendents.
+    Colors of existing PlaceHolderText brushes will not be replaced.
+
+    \a alpha represents the dim factor as a percentage. By default, a PlaceHolderText color
+    becomes a 50% more transparent version of the corresponding Text color.
+*/
+static void qt_placeholder_from_text(QPalette &pal, int alpha = 50)
+{
+    if (alpha < 0 or alpha > 100)
+        return;
+
+    for (int cg = 0; cg < int(QPalette::NColorGroups); ++cg) {
+        const QPalette::ColorGroup group = QPalette::ColorGroup(cg);
+
+        // skip if the brush has been set already
+        if (!pal.isBrushSet(group, QPalette::PlaceholderText)) {
+            QColor c = pal.color(group, QPalette::Text);
+            const int a = (c.alpha() * alpha) / 100;
+            c.setAlpha(a);
+            pal.setColor(group, QPalette::PlaceholderText, c);
+        }
+    }
+}
+
 static void qt_palette_from_color(QPalette &pal, const QColor &button)
 {
     int h, s, v;
@@ -118,6 +146,8 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
     pal.setColorGroup(QPalette::Disabled, buttonBrushDark, buttonBrush, buttonBrushLight150,
                       buttonBrushDark, buttonBrushDark150, buttonBrushDark,
                       whiteBrush, buttonBrush, buttonBrush);
+
+    qt_placeholder_from_text(pal);
 }
 
 /*!
@@ -605,6 +635,8 @@ QPalette::QPalette(const QBrush &windowText, const QBrush &button,
     init();
     setColorGroup(All, windowText, button, light, dark, mid, text, bright_text,
                   base, window);
+
+    qt_placeholder_from_text(*this);
 }
 
 
@@ -660,6 +692,8 @@ QPalette::QPalette(const QColor &button, const QColor &window)
     setColorGroup(Disabled, disabledForeground, buttonBrush, buttonBrushLight150,
                   buttonBrushDark, buttonBrushDark150, disabledForeground,
                   whiteBrush, baseBrush, windowBrush);
+
+    qt_placeholder_from_text(*this);
 }
 
 /*!
