@@ -246,7 +246,9 @@ void QOpenGLCompositor::addWindow(QOpenGLCompositorWindow *window)
 {
     if (!m_windows.contains(window)) {
         m_windows.append(window);
-        emit topWindowChanged(window);
+        ensureCorrectZOrder();
+        if (window == m_windows.constLast())
+            emit topWindowChanged(window);
     }
 }
 
@@ -259,9 +261,17 @@ void QOpenGLCompositor::removeWindow(QOpenGLCompositorWindow *window)
 
 void QOpenGLCompositor::moveToTop(QOpenGLCompositorWindow *window)
 {
+    if (!m_windows.isEmpty() && window == m_windows.constLast()) {
+        // Already on top
+        return;
+    }
+
     m_windows.removeOne(window);
     m_windows.append(window);
-    emit topWindowChanged(window);
+    ensureCorrectZOrder();
+
+    if (window == m_windows.constLast())
+        emit topWindowChanged(window);
 }
 
 void QOpenGLCompositor::changeWindowIndex(QOpenGLCompositorWindow *window, int newIdx)
@@ -269,9 +279,47 @@ void QOpenGLCompositor::changeWindowIndex(QOpenGLCompositorWindow *window, int n
     int idx = m_windows.indexOf(window);
     if (idx != -1 && idx != newIdx) {
         m_windows.move(idx, newIdx);
-        if (newIdx == m_windows.size() - 1)
+        ensureCorrectZOrder();
+        if (window == m_windows.constLast())
             emit topWindowChanged(m_windows.last());
     }
+}
+
+void QOpenGLCompositor::ensureCorrectZOrder()
+{
+    const auto originalOrder = m_windows;
+
+    std::sort(m_windows.begin(), m_windows.end(),
+              [this, &originalOrder](QOpenGLCompositorWindow *cw1, QOpenGLCompositorWindow *cw2) {
+                  QWindow *w1 = cw1->sourceWindow();
+                  QWindow *w2 = cw2->sourceWindow();
+
+                  // Case #1: The main window needs to have less z-order. It can never be in
+                  // front of our tool windows, popups etc, because it's fullscreen!
+                  if (w1 == m_targetWindow || w2 == m_targetWindow)
+                      return w1 == m_targetWindow;
+
+                  // Case #2:
+                  if (w2->isAncestorOf(w1)) {
+                      // w1 is transient child of w2. W1 goes in front then.
+                      return false;
+                  }
+
+                  if (w1->isAncestorOf(w2)) {
+                      // Or the other way around
+                      return true;
+                  }
+
+                  // Case #3: One of the window is a Tool, that goes to front, as done in other QPAs
+                  const bool isTool1 = (w1->flags() & Qt::Tool) == Qt::Tool;
+                  const bool isTool2 = (w2->flags() & Qt::Tool) == Qt::Tool;
+                  if (isTool1 != isTool2) {
+                      return !isTool1;
+                  }
+
+                  // Case #4: Just preserve original sorting:
+                  return originalOrder.indexOf(cw1) < originalOrder.indexOf(cw2);
+              });
 }
 
 QT_END_NAMESPACE
