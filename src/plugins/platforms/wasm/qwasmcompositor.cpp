@@ -1154,7 +1154,6 @@ bool QWasmCompositor::processKeyboard(int eventType, const EmscriptenKeyboardEve
             break;
         case EMSCRIPTEN_EVENT_KEYUP: // up
             keyType = QEvent::KeyRelease;
-            m_eventTranslator->setStickyDeadKey(keyEvent);
             break;
         default:
             break;

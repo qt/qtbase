@@ -24,30 +24,18 @@ class QWasmEventTranslator : public QObject
     Q_OBJECT
 
 public:
-
     explicit QWasmEventTranslator();
     ~QWasmEventTranslator();
 
-    static Qt::Key translateEmscriptKey(const EmscriptenKeyboardEvent *emscriptKey);
     static QCursor cursorForMode(QWasmCompositor::ResizeMode mode);
 
     QString getKeyText(const EmscriptenKeyboardEvent *keyEvent, Qt::Key key);
     Qt::Key getKey(const EmscriptenKeyboardEvent *keyEvent);
-    void setStickyDeadKey(const EmscriptenKeyboardEvent *keyEvent);
-
-    void setIsMac(bool is_mac) {g_usePlatformMacSpecifics = is_mac;};
-    bool g_usePlatformMacSpecifics = false;
-
-Q_SIGNALS:
-    void getWindowAt(const QPoint &point, QWindow **window);
-private:
-    static Qt::Key translateDeadKey(Qt::Key deadKey, Qt::Key accentBaseKey);
 
 private:
     static quint64 getTimestamp();
 
     Qt::Key m_emDeadKey = Qt::Key_unknown;
-    bool m_emStickyDeadKey = false;
 
 };
 

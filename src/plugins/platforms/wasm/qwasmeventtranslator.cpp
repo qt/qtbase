@@ -28,41 +28,47 @@ QT_BEGIN_NAMESPACE
 
 using namespace emscripten;
 
-typedef struct emkb2qt {
+namespace {
+constexpr std::string_view WebDeadKeyValue = "Dead";
+
+struct Emkb2QtData
+{
+    static constexpr char StringTerminator = '\0';
+
     const char *em;
     unsigned int qt;
 
-    constexpr bool operator <=(const emkb2qt &that) const noexcept
+    constexpr bool operator<=(const Emkb2QtData &that) const noexcept
     {
         return !(strcmp(that) > 0);
     }
 
-    bool operator <(const emkb2qt &that) const noexcept
+    bool operator<(const Emkb2QtData &that) const noexcept { return ::strcmp(em, that.em) < 0; }
+
+    constexpr bool operator==(const Emkb2QtData &that) const noexcept { return strcmp(that) == 0; }
+
+    constexpr int strcmp(const Emkb2QtData &that, const int i = 0) const
     {
-         return ::strcmp(em, that.em) < 0;
+        return em[i] == StringTerminator && that.em[i] == StringTerminator ? 0
+                : em[i] == StringTerminator                                ? -1
+                : that.em[i] == StringTerminator                           ? 1
+                : em[i] < that.em[i]                                       ? -1
+                : em[i] > that.em[i]                                       ? 1
+                                                                           : strcmp(that, i + 1);
     }
-    constexpr int strcmp(const emkb2qt &that, const int i = 0) const
-     {
-         return em[i] == 0 && that.em[i] == 0 ? 0
-             : em[i] == 0 ? -1
-                 : that.em[i] == 0 ? 1
-                     : em[i] < that.em[i] ? -1
-                         : em[i] > that.em[i] ? 1
-                             : strcmp(that, i + 1);
-     }
-} emkb2qt_t;
+};
 
 template<unsigned int Qt, char ... EmChar>
 struct Emkb2Qt
 {
     static constexpr const char storage[sizeof ... (EmChar) + 1] = {EmChar..., '\0'};
-    using Type = emkb2qt_t;
+    using Type = Emkb2QtData;
     static constexpr Type data() noexcept { return Type{storage, Qt}; }
 };
 
 template<unsigned int Qt, char ... EmChar> constexpr char Emkb2Qt<Qt, EmChar...>::storage[];
 
-static constexpr const auto KeyTbl = qMakeArray(
+static constexpr const auto WebToQtKeyCodeMappings = qMakeArray(
     QSortedData<
         Emkb2Qt< Qt::Key_Escape,        'E','s','c','a','p','e' >,
         Emkb2Qt< Qt::Key_Tab,           'T','a','b' >,
@@ -120,7 +126,7 @@ static constexpr const auto KeyTbl = qMakeArray(
             >::Data{}
         );
 
-static constexpr const auto DeadKeyShiftTbl = qMakeArray(
+static constexpr const auto WebToQtKeyCodeMappingsWithShift = qMakeArray(
     QSortedData<
        // shifted
         Emkb2Qt< Qt::Key_Agrave,        '\xc3','\x80' >,
@@ -152,42 +158,33 @@ static constexpr const auto DeadKeyShiftTbl = qMakeArray(
     >::Data{}
 );
 
-QWasmEventTranslator::QWasmEventTranslator() : QObject()
+std::optional<Qt::Key> findMappingByBisection(const char *toFind)
 {
+    const Emkb2QtData searchKey{ toFind, 0 };
+    const auto it = std::lower_bound(WebToQtKeyCodeMappings.cbegin(), WebToQtKeyCodeMappings.cend(),
+                                     searchKey);
+    return it != WebToQtKeyCodeMappings.cend() && searchKey == *it ? static_cast<Qt::Key>(it->qt)
+                                                                   : std::optional<Qt::Key>();
 }
 
-QWasmEventTranslator::~QWasmEventTranslator()
+bool isDeadKeyEvent(const EmscriptenKeyboardEvent *emKeyEvent)
 {
+    return qstrncmp(emKeyEvent->key, WebDeadKeyValue.data(), WebDeadKeyValue.size()) == 0;
 }
 
-Qt::Key QWasmEventTranslator::translateEmscriptKey(const EmscriptenKeyboardEvent *emscriptKey)
+Qt::Key translateEmscriptKey(const EmscriptenKeyboardEvent *emscriptKey)
 {
-    Qt::Key qtKey = Qt::Key_unknown;
-
-    if (qstrncmp(emscriptKey->key, "Dead", 4) == 0 ) {
-        emkb2qt_t searchKey1{emscriptKey->code, 0};
-        for (auto it1 = KeyTbl.cbegin(); it1 != KeyTbl.end(); ++it1)
-            if (it1 != KeyTbl.end() && (qstrcmp(searchKey1.em, it1->em) == 0)) {
-                qtKey = static_cast<Qt::Key>(it1->qt);
-            }
+    if (isDeadKeyEvent(emscriptKey)) {
+        if (auto mapping = findMappingByBisection(emscriptKey->code))
+            return *mapping;
     }
-    if (qtKey == Qt::Key_unknown) {
-        emkb2qt_t searchKey{emscriptKey->key, 0};
-        // search key
-        auto it1 = std::lower_bound(KeyTbl.cbegin(), KeyTbl.cend(), searchKey);
-        if (it1 != KeyTbl.end() && !(searchKey < *it1)) {
-            qtKey = static_cast<Qt::Key>(it1->qt);
-        }
-    }
+    if (auto mapping = findMappingByBisection(emscriptKey->key))
+        return *mapping;
 
-    if (qtKey == Qt::Key_unknown) {
-        // cast to unicode key
-        QString str = QString::fromUtf8(emscriptKey->key).toUpper();
-        QStringIterator i(str);
-        qtKey = static_cast<Qt::Key>(i.next(0));
-    }
-
-    return qtKey;
+    // cast to unicode key
+    QString str = QString::fromUtf8(emscriptKey->key).toUpper();
+    QStringIterator i(str);
+    return static_cast<Qt::Key>(i.next(0));
 }
 
 struct KeyMapping { Qt::Key from, to; };
@@ -244,45 +241,44 @@ static Qt::Key find(const KeyMapping (&map)[N], Qt::Key key) noexcept
     return find_impl(map, map + N, key);
 }
 
-Qt::Key QWasmEventTranslator::translateDeadKey(Qt::Key deadKey, Qt::Key accentBaseKey)
+Qt::Key translateBaseKeyUsingDeadKey(Qt::Key accentBaseKey, Qt::Key deadKey)
 {
-    Qt::Key wasmKey = Qt::Key_unknown;
-
-    if (deadKey == Qt::Key_QuoteLeft ) {
-        if (platform() == Platform::MacOS) { // ` macOS: Key_Dead_Grave
-            wasmKey = find(graveKeyTable, accentBaseKey);
-        } else {
-            wasmKey = find(diaeresisKeyTable, accentBaseKey);
-        }
-        return wasmKey;
-    }
-
     switch (deadKey) {
-    //    case Qt::Key_QuoteLeft:
+    case Qt::Key_QuoteLeft: {
+        // ` macOS: Key_Dead_Grave
+        return platform() == Platform::MacOS ? find(graveKeyTable, accentBaseKey)
+                                             : find(diaeresisKeyTable, accentBaseKey);
+    }
     case Qt::Key_O: // ´ Key_Dead_Grave
-        wasmKey = find(graveKeyTable, accentBaseKey);
-        break;
+        return find(graveKeyTable, accentBaseKey);
     case Qt::Key_E: // ´ Key_Dead_Acute
-        wasmKey = find(acuteKeyTable, accentBaseKey);
-        break;
+        return find(acuteKeyTable, accentBaseKey);
     case Qt::Key_AsciiTilde:
-    case Qt::Key_N:// Key_Dead_Tilde
-        wasmKey = find(tildeKeyTable, accentBaseKey);
-        break;
-    case Qt::Key_U:// ¨ Key_Dead_Diaeresis
-        wasmKey = find(diaeresisKeyTable, accentBaseKey);
-        break;
-    case Qt::Key_I:// macOS Key_Dead_Circumflex
-    case Qt::Key_6:// linux
-    case Qt::Key_Apostrophe:// linux
-        wasmKey = find(circumflexKeyTable, accentBaseKey);
-        break;
+    case Qt::Key_N: // Key_Dead_Tilde
+        return find(tildeKeyTable, accentBaseKey);
+    case Qt::Key_U: // ¨ Key_Dead_Diaeresis
+        return find(diaeresisKeyTable, accentBaseKey);
+    case Qt::Key_I: // macOS Key_Dead_Circumflex
+    case Qt::Key_6: // linux
+    case Qt::Key_Apostrophe: // linux
+        return find(circumflexKeyTable, accentBaseKey);
     default:
-        break;
-
+        return Qt::Key_unknown;
     };
-    return wasmKey;
 }
+
+template<class T>
+std::optional<QString> findKeyTextByKeyId(const T &mappingArray, Qt::Key qtKey)
+{
+    const auto it = std::find_if(mappingArray.cbegin(), mappingArray.cend(),
+                                 [qtKey](const Emkb2QtData &data) { return data.qt == qtKey; });
+    return it != mappingArray.cend() ? it->em : std::optional<QString>();
+}
+} // namespace
+
+QWasmEventTranslator::QWasmEventTranslator() = default;
+
+QWasmEventTranslator::~QWasmEventTranslator() = default;
 
 QCursor QWasmEventTranslator::cursorForMode(QWasmCompositor::ResizeMode m)
 {
@@ -307,59 +303,32 @@ QCursor QWasmEventTranslator::cursorForMode(QWasmCompositor::ResizeMode m)
 
 QString QWasmEventTranslator::getKeyText(const EmscriptenKeyboardEvent *keyEvent, Qt::Key qtKey)
 {
-    QString keyText;
-
     if (m_emDeadKey != Qt::Key_unknown) {
-        Qt::Key transformedKey = translateDeadKey(m_emDeadKey, qtKey);
+        const Qt::Key translatedKey = translateBaseKeyUsingDeadKey(qtKey, m_emDeadKey);
+        if (translatedKey != Qt::Key_unknown)
+            qtKey = translatedKey;
 
-        if (transformedKey != Qt::Key_unknown)
-            qtKey = transformedKey;
-
-        if (keyEvent->shiftKey == 0) {
-            for (auto it = KeyTbl.cbegin(); it != KeyTbl.end(); ++it) {
-                if (it != KeyTbl.end() && (qtKey == static_cast<Qt::Key>(it->qt))) {
-                    keyText = it->em;
-                    m_emDeadKey = Qt::Key_unknown;
-                    break;
-                }
-            }
-        } else {
-            for (auto it = DeadKeyShiftTbl.cbegin(); it != DeadKeyShiftTbl.end(); ++it) {
-                if (it != DeadKeyShiftTbl.end() && (qtKey == static_cast<Qt::Key>(it->qt))) {
-                    keyText = it->em;
-                    m_emDeadKey = Qt::Key_unknown;
-                    break;
-                }
-            }
+        if (auto text = keyEvent->shiftKey
+                    ? findKeyTextByKeyId(WebToQtKeyCodeMappingsWithShift, qtKey)
+                    : findKeyTextByKeyId(WebToQtKeyCodeMappings, qtKey)) {
+            m_emDeadKey = Qt::Key_unknown;
+            return *text;
         }
     }
-    if (keyText.isEmpty())
-        keyText = QString::fromUtf8(keyEvent->key);
-    return keyText;
+    return QString::fromUtf8(keyEvent->key);
 }
 
 Qt::Key QWasmEventTranslator::getKey(const EmscriptenKeyboardEvent *keyEvent)
 {
     Qt::Key qtKey = translateEmscriptKey(keyEvent);
 
-    if (qstrncmp(keyEvent->key, "Dead", 4) == 0 || qtKey == Qt::Key_AltGr) {
-        qtKey = translateEmscriptKey(keyEvent);
-        m_emStickyDeadKey = true;
-        if (keyEvent->shiftKey == 1 && qtKey == Qt::Key_QuoteLeft)
+    if (isDeadKeyEvent(keyEvent) || qtKey == Qt::Key_AltGr) {
+        if (keyEvent->shiftKey && qtKey == Qt::Key_QuoteLeft)
             qtKey = Qt::Key_AsciiTilde;
         m_emDeadKey = qtKey;
     }
 
     return qtKey;
-}
-
-void QWasmEventTranslator::setStickyDeadKey(const EmscriptenKeyboardEvent *keyEvent)
-{
-    Qt::Key qtKey = translateEmscriptKey(keyEvent);
-
-    if (m_emStickyDeadKey && qtKey != Qt::Key_Alt) {
-        m_emStickyDeadKey = false;
-    }
 }
 
 QT_END_NAMESPACE
