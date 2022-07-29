@@ -621,11 +621,6 @@ template<> class QTypeInfo<A> : public QTypeInfoMerger<A, B, C, D> {};
     ... qOverload<int, const QString &>(&Foo::overloadedFunction)
 //! [52]
 
-//! [53]
-    ... QOverload<>::of(&Foo::overloadedFunction)
-    ... QOverload<int, const QString &>::of(&Foo::overloadedFunction)
-//! [53]
-
 //! [54]
     struct Foo {
         void overloadedFunction(int, const QString &);

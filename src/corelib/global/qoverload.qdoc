@@ -14,16 +14,6 @@
     If a member function is also const-overloaded \l qConstOverload and
     \l qNonConstOverload need to be used.
 
-    qOverload() requires C++14 enabled. In C++11-only code, the helper
-    classes QOverload, QConstOverload, and QNonConstOverload can be used directly:
-
-    \snippet code/src_corelib_global_qglobal.cpp 53
-
-    \note Qt detects the necessary C++14 compiler support by way of the feature
-    test recommendations from
-    \l{https://isocpp.org/std/standing-documents/sd-6-sg10-feature-test-recommendations}
-    {C++ Committee's Standing Document 6}.
-
     \sa qConstOverload(), qNonConstOverload(), {Differences between String-Based
     and Functor-Based Connections}
 */
