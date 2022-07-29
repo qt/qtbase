@@ -74,6 +74,7 @@ private:
 
     void renderAll(QOpenGLFramebufferObject *fbo);
     void render(QOpenGLCompositorWindow *window);
+    void ensureCorrectZOrder();
 
     QOpenGLContext *m_context;
     QWindow *m_targetWindow;
