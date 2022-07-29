@@ -1157,30 +1157,34 @@ void Generator::generateStaticMetacall()
         }
 
     }
-    if (!cdef->signalList.isEmpty()) {
-        Q_ASSERT(needElse); // if there is signal, there was method.
+    if (!methodList.isEmpty()) {
+        Q_ASSERT(needElse); // there was method.
         fprintf(out, " else if (_c == QMetaObject::IndexOfMethod) {\n");
         fprintf(out, "        int *result = reinterpret_cast<int *>(_a[0]);\n");
         bool anythingUsed = false;
-        for (int methodindex = 0; methodindex < cdef->signalList.size(); ++methodindex) {
-            const FunctionDef &f = cdef->signalList.at(methodindex);
+        for (int methodindex = 0; methodindex < methodList.size(); ++methodindex) {
+            const FunctionDef &f = methodList.at(methodindex);
             if (f.wasCloned || !f.inPrivateClass.isEmpty() || f.isStatic)
                 continue;
             anythingUsed = true;
             fprintf(out, "        {\n");
             fprintf(out, "            using _t = %s (%s::*)(",f.type.rawName.constData() , cdef->classname.constData());
 
-            int argsCount = f.arguments.count();
-            for (int j = 0; j < argsCount; ++j) {
-                const ArgumentDef &a = f.arguments.at(j);
-                if (j)
-                    fprintf(out, ", ");
-                fprintf(out, "%s", QByteArray(a.type.name + ' ' + a.rightType).constData());
-            }
-            if (f.isPrivateSignal) {
-                if (argsCount > 0)
-                    fprintf(out, ", ");
-                fprintf(out, "%s", "QPrivateSignal");
+            if (f.isRawSlot) {
+                fprintf(out, "QMethodRawArguments");
+            } else {
+                int argsCount = f.arguments.count();
+                for (int j = 0; j < argsCount; ++j) {
+                    const ArgumentDef &a = f.arguments.at(j);
+                    if (j)
+                        fprintf(out, ", ");
+                    fprintf(out, "%s", QByteArray(a.type.name + ' ' + a.rightType).constData());
+                }
+                if (f.isPrivateSignal) {
+                    if (argsCount > 0)
+                        fprintf(out, ", ");
+                    fprintf(out, "%s", "QPrivateSignal");
+                }
             }
             if (f.isConst)
                 fprintf(out, ") const;\n");

@@ -138,14 +138,48 @@ public:
     template <typename PointerToMemberFunction>
     static inline QMetaMethod fromSignal(PointerToMemberFunction signal)
     {
-        typedef QtPrivate::FunctionPointer<PointerToMemberFunction> SignalType;
-        static_assert(QtPrivate::HasQ_OBJECT_Macro<typename SignalType::Object>::Value,
-                      "No Q_OBJECT in the class with the signal");
-        return fromSignalImpl(&SignalType::Object::staticMetaObject,
-                              reinterpret_cast<void **>(&signal));
+        QMetaMethod method = from(signal);
+        if (method.methodType() == Signal)
+        {
+            return method;
+        }
+        return QMetaMethod();
+    }
+
+    template <typename PointerToMemberFunction>
+    static inline QMetaMethod fromSlot(PointerToMemberFunction slot)
+    {
+        QMetaMethod method = from(slot);
+        if (method.methodType() == Slot)
+        {
+            return method;
+        }
+        return QMetaMethod();
+    }
+
+    template <typename PointerToMemberFunction>
+    static inline QMetaMethod fromInvokable(PointerToMemberFunction invokable)
+    {
+        QMetaMethod method = from(invokable);
+        if (method.methodType() == Method)
+        {
+            return method;
+        }
+        return QMetaMethod();
+    }
+
+    template <typename PointerToMemberFunction>
+    static inline QMetaMethod from(PointerToMemberFunction func)
+    {
+        typedef QtPrivate::FunctionPointer<PointerToMemberFunction> ClassType;
+        static_assert(QtPrivate::HasQ_OBJECT_Macro<typename ClassType::Object>::Value,
+                      "No Q_OBJECT in the class with the func");
+        return fromSignalImpl(&ClassType::Object::staticMetaObject,
+                              reinterpret_cast<void **>(&func));
     }
 
 private:
+    // ### Qt 7: rename fromSignalImpl to fromImpl
     static QMetaMethod fromSignalImpl(const QMetaObject *, void **);
     static QMetaMethod fromRelativeMethodIndex(const QMetaObject *mobj, int index);
     static QMetaMethod fromRelativeConstructorIndex(const QMetaObject *mobj, int index);
