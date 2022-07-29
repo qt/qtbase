@@ -362,13 +362,6 @@ public:
 
     bool evaluateRecursive(PendingBindingObserverList &bindingObservers, QBindingStatus *status = nullptr);
 
-    // ### TODO: remove as soon as declarative no longer needs this overload
-    void evaluateRecursive()
-    {
-        PendingBindingObserverList bindingObservers;
-        evaluateRecursive(bindingObservers);
-    }
-
     bool Q_ALWAYS_INLINE evaluateRecursive_inline(PendingBindingObserverList &bindingObservers, QBindingStatus *status);
 
     void notifyRecursive();
