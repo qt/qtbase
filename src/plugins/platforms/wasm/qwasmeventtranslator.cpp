@@ -134,8 +134,10 @@ static constexpr const auto DeadKeyShiftTbl = qMakeArray(
         Emkb2Qt< Qt::Key_Eacute,        '\xc3','\x89' >,
         Emkb2Qt< Qt::Key_Ecircumflex,   '\xc3','\x8a' >,
         Emkb2Qt< Qt::Key_Ediaeresis,    '\xc3','\x8b' >,
+        Emkb2Qt< Qt::Key_Iacute,        '\xc3','\x8d' >,
         Emkb2Qt< Qt::Key_Icircumflex,   '\xc3','\x8e' >,
         Emkb2Qt< Qt::Key_Idiaeresis,    '\xc3','\x8f' >,
+        Emkb2Qt< Qt::Key_Igrave,        '\xc3','\x8c' >,
         Emkb2Qt< Qt::Key_Ocircumflex,   '\xc3','\x94' >,
         Emkb2Qt< Qt::Key_Odiaeresis,    '\xc3','\x96' >,
         Emkb2Qt< Qt::Key_Ograve,        '\xc3','\x92' >,
@@ -148,7 +150,8 @@ static constexpr const auto DeadKeyShiftTbl = qMakeArray(
         Emkb2Qt< Qt::Key_Uacute,        '\xc3','\x9a' >,
         Emkb2Qt< Qt::Key_Ntilde,        '\xc3','\x91' >,
         Emkb2Qt< Qt::Key_Ccedilla,      '\xc3','\x87' >,
-        Emkb2Qt< Qt::Key_ydiaeresis,    '\xc3','\x8f' >
+        Emkb2Qt< Qt::Key_ydiaeresis,    '\xc3','\x8f' >,
+        Emkb2Qt< Qt::Key_Yacute,        '\xc3','\x9d' >
     >::Data{}
 );
 
