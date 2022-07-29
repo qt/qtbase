@@ -1929,12 +1929,15 @@ QString QTime::toString(Qt::DateFormat format) const
     \row \li ss \li The whole second, with a leading zero where applicable (00 to 59)
     \row \li z or zz
          \li The fractional part of the second, to go after a decimal point,
-             without trailing zeroes.  Thus "\c{s.z}" reports the seconds to
-             full available (millisecond) precision without trailing zeroes (0
-             to 999).
+             without trailing zeroes. Thus \c{"s.z"} reports the seconds to full
+             available (millisecond) precision without trailing zeroes (0 to
+             999). For example, \c{"s.z"} would produce \c{"0.25"} for a time a
+             quarter second into a minute.
     \row \li zzz
          \li The fractional part of the second, to millisecond precision,
-             including trailing zeroes where applicable (000 to 999).
+             including trailing zeroes where applicable (000 to 999). For
+             example, \c{"ss.zzz"} would produce \c{"00.250"} for a time a
+             quarter second into a minute.
     \row \li AP or A
          \li Use AM/PM display. \c A/AP will be replaced by 'AM' or 'PM'. In
              localized forms (only relevant to \l{QLocale::toString()}), the
@@ -2332,12 +2335,20 @@ QTime QTime::fromString(QStringView string, Qt::DateFormat format)
     \row \li mm \li The minute with a leading zero (00 to 59)
     \row \li s \li The whole second, without any leading zero (0 to 59)
     \row \li ss \li The whole second, with a leading zero where applicable (00 to 59)
-    \row \li z \li The fractional part of the second, to go after a decimal
-                point, without trailing zeroes (0 to 999).  Thus "\c{s.z}"
-                reports the seconds to full available (millisecond) precision
-                without trailing zeroes.
-    \row \li zzz \li The fractional part of the second, to millisecond
-                precision, including trailing zeroes where applicable (000 to 999).
+    \row \li z or zz
+         \li The fractional part of the second, as would usually follow a
+             decimal point, without requiring trailing zeroes (0 to 999). Thus
+             \c{"s.z"} matches the seconds with up to three digits of fractional
+             part supplying millisecond precision, without needing trailing
+             zeroes. For example, \c{"s.z"} would recognize either \c{"00.250"}
+             or \c{"0.25"} as representing a time a quarter second into its
+             minute.
+    \row \li zzz
+         \li Three digit fractional part of the second, to millisecond
+             precision, including trailing zeroes where applicable (000 to 999).
+             For example, \c{"ss.zzz"} would reject \c{"0.25"} but recognize
+             \c{"00.250"} as representing a time a quarter second into its
+             minute.
     \row \li AP, A, ap, a, aP or Ap
          \li Either 'AM' indicating a time before 12:00 or 'PM' for later times,
              matched case-insensitively.

@@ -2752,9 +2752,15 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("data15")
         << QString("Thu January 2004") << QString("ddd MMMM yyyy")
         << QDate(2004, 1, 1).startOfDay();
-    QTest::newRow("data16") << QString("2005-06-28T07:57:30.001Z")
-                            << QString("yyyy-MM-ddThh:mm:ss.zt")
-                            << QDateTime(QDate(2005, 06, 28), QTime(07, 57, 30, 1), Qt::UTC);
+    QTest::newRow("zulu-time-with-z-centisec")
+        << QString("2005-06-28T07:57:30.01Z") << QString("yyyy-MM-ddThh:mm:ss.zt")
+        << QDateTime(QDate(2005, 06, 28), QTime(07, 57, 30, 10), Qt::UTC);
+    QTest::newRow("zulu-time-with-zz-decisec")
+        << QString("2005-06-28T07:57:30.1Z") << QString("yyyy-MM-ddThh:mm:ss.zzt")
+        << QDateTime(QDate(2005, 06, 28), QTime(07, 57, 30, 100), Qt::UTC);
+    QTest::newRow("zulu-time-with-zzz-centisec")
+        << QString("2005-06-28T07:57:30.01Z") << QString("yyyy-MM-ddThh:mm:ss.zzzt")
+        << QDateTime(); // Invalid because too few digits for zzz
     QTest::newRow("utc-time-spec-as:UTC+0")
         << QString("2005-06-28T07:57:30.001UTC+0") << QString("yyyy-MM-ddThh:mm:ss.zt")
         << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 30, 1), Qt::UTC);

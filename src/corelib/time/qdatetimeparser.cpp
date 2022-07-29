@@ -501,10 +501,11 @@ bool QDateTimeParser::parseFormat(QStringView newFormat)
 
             case 'z':
                 if (parserType != QMetaType::QDate) {
-                    const SectionNode sn = { MSecSection, i - add, countRepeat(newFormat, i, 3) < 3 ? 1 : 3, 0 };
+                    const int repeat = countRepeat(newFormat, i, 3);
+                    const SectionNode sn = { MSecSection, i - add, repeat < 3 ? 1 : 3, 0 };
                     newSectionNodes.append(sn);
                     appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
-                    i += sn.count - 1;
+                    i += repeat - 1;
                     index = i + 1;
                     newDisplay |= MSecSection;
                 }
