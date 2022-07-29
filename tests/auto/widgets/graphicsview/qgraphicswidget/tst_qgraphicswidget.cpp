@@ -3098,9 +3098,7 @@ void tst_QGraphicsWidget::initialShow()
     dummyView->setWindowFlags(Qt::X11BypassWindowManagerHint);
     EventSpy paintSpy(dummyView->viewport(), QEvent::Paint);
     dummyView->show();
-    qApp->setActiveWindow(dummyView.data());
-    if (!QTest::qWaitForWindowActive(dummyView.data()))
-        QSKIP("Graphics view failed to show (possibly due to Qt::X11BypassWindowManagerHint");
+    QVERIFY(QTest::qWaitForWindowExposed(dummyView.data()));
     const int expectedRepaintCount = paintSpy.count();
     dummyView.reset();
 
@@ -3113,8 +3111,7 @@ void tst_QGraphicsWidget::initialShow()
     QGraphicsView view(&scene);
     view.setWindowFlags(view.windowFlags()|Qt::X11BypassWindowManagerHint);
     view.show();
-    qApp->setActiveWindow(&view);
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QTRY_COMPARE(widget->repaints, expectedRepaintCount);
 }
