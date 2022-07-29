@@ -1878,7 +1878,7 @@ void tst_QSqlTableModel::submitAllOnInvalidTable()
     model.setEditStrategy(QSqlTableModel::OnManualSubmit);
 
     // setTable returns a void, so the error can only be caught by
-    // manually checking lastError(). ### Qt5: This should be changed!
+    // manually checking lastError(). ### Qt 7: This should be changed!
     model.setTable(qTableName("invalidTable", __FILE__, db));
     QCOMPARE(model.lastError().type(), QSqlError::StatementError);
 

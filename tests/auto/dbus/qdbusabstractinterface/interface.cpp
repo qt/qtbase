@@ -9,7 +9,7 @@ Interface::Interface()
 }
 
 // Export the sleep function
-// TODO QT5: remove this class, QThread::msleep is now public
+// ### Qt 7: remove this class, QThread::msleep is now public
 class FriendlySleepyThread : public QThread {
 public:
     using QThread::msleep;

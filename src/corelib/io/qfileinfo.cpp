@@ -399,7 +399,7 @@ QFileInfo::~QFileInfo()
 bool QFileInfo::operator==(const QFileInfo &fileinfo) const
 {
     Q_D(const QFileInfo);
-    // ### Qt 5: understand long and short file names on Windows
+    // ### Qt 7: understand long and short file names on Windows
     // ### (GetFullPathName()).
     if (fileinfo.d_ptr == d_ptr)
         return true;
