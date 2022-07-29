@@ -395,7 +395,7 @@ inline QMatrix4x4& QMatrix4x4::operator-=(const QMatrix4x4& other)
 
 inline QMatrix4x4& QMatrix4x4::operator*=(const QMatrix4x4& o)
 {
-    const QMatrix4x4 other = o; // prevent aliasing when &o == this ### Qt 6: take o by value
+    const QMatrix4x4 other = o; // prevent aliasing when &o == this ### Qt 7: take o by value
     flagBits |= other.flagBits;
 
     if (flagBits.toInt() < Rotation2D) {

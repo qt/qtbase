@@ -706,7 +706,7 @@ static int drivePrefixLength(const QString &path)
 
 static bool treatAsAbsolute(const QString &path)
 {
-    // ### Qt 6: be consistent about absolute paths
+    // ### Qt 7: be consistent about absolute paths
 
     // QFileInfo will use the right FS-engine for virtual file-systems
     // (e.g. resource paths).  Unfortunately, for real file-systems, it relies

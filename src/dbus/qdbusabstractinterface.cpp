@@ -25,7 +25,7 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 
 namespace {
-// ### Qt6: change to a regular QEvent (customEvent)
+// ### Qt 7: change to a regular QEvent (customEvent)
 // We need to use a QMetaCallEvent here because we can't override customEvent() in
 // Qt 5. Since QDBusAbstractInterface is meant to be derived from, the vtables of
 // classes in generated code will have a pointer to QObject::customEvent instead

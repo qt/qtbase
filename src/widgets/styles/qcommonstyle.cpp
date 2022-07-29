@@ -5327,7 +5327,7 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         break;
 #endif
     case SH_Widget_Animate:
-    // TODO Qt6: move this code in the SH_Widget_Animation_Duration case
+    // ### Qt 7: move this code in the SH_Widget_Animation_Duration case
     // and replace false with 0 and true with 200.
 #if QT_CONFIG(treeview)
         if (qobject_cast<const QTreeView*>(widget)) {

@@ -3976,7 +3976,7 @@ void tst_QImage::wideImage()
     painter.setCompositionMode(QPainter::CompositionMode_Source);
     painter.drawImage(0, 0, i2);
 
-    // Qt6: Test that it actually works on 64bit architectures.
+    // ### Qt 7: Test that it actually works on 64bit architectures.
 }
 
 void tst_QImage::largeFillScale()
