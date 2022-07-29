@@ -1140,63 +1140,28 @@ void QWasmCompositor::WindowManipulation::onPointerUp(const PointerEvent& event)
     m_screen->canvas().call<void>("releasePointerCapture", event.pointerId);
 }
 
-bool QWasmCompositor::processKeyboard(int eventType, const EmscriptenKeyboardEvent *keyEvent)
+bool QWasmCompositor::processKeyboard(int eventType, const EmscriptenKeyboardEvent *emKeyEvent)
 {
-    Qt::Key qtKey;
-    QString keyText;
-    QEvent::Type keyType = QEvent::None;
-    switch (eventType) {
-        case EMSCRIPTEN_EVENT_KEYPRESS:
-        case EMSCRIPTEN_EVENT_KEYDOWN: // down
-            keyType = QEvent::KeyPress;
-            qtKey = m_eventTranslator->getKey(keyEvent);
-            keyText = m_eventTranslator->getKeyText(keyEvent, qtKey);
-            break;
-        case EMSCRIPTEN_EVENT_KEYUP: // up
-            keyType = QEvent::KeyRelease;
-            break;
-        default:
-            break;
-    };
+    Q_ASSERT(eventType == EMSCRIPTEN_EVENT_KEYDOWN || eventType == EMSCRIPTEN_EVENT_KEYUP);
 
-    if (keyType == QEvent::None)
-        return 0;
+    auto translatedEvent = m_eventTranslator->translateKeyEvent(eventType, emKeyEvent);
 
-    QFlags<Qt::KeyboardModifier> modifiers = KeyboardModifier::getForEvent(*keyEvent);
+    const QFlags<Qt::KeyboardModifier> modifiers = KeyboardModifier::getForEvent(*emKeyEvent);
 
-    // Clipboard fallback path: cut/copy/paste are handled by clipboard event
-    // handlers if direct clipboard access is not available.
-    if (!QWasmIntegration::get()->getWasmClipboard()->hasClipboardApi && modifiers & Qt::ControlModifier &&
-        (qtKey == Qt::Key_X || qtKey == Qt::Key_C || qtKey == Qt::Key_V)) {
-        if (qtKey == Qt::Key_V) {
-            QWasmIntegration::get()->getWasmClipboard()->isPaste = true;
-        }
-        return false;
+    // Clipboard path: cut/copy/paste are handled by clipboard event or direct clipboard access.
+    if (translatedEvent.type == QEvent::KeyPress && modifiers.testFlag(Qt::ControlModifier)
+        && (translatedEvent.key == Qt::Key_X || translatedEvent.key == Qt::Key_V
+            || translatedEvent.key == Qt::Key_C)) {
+        QWasmIntegration::get()->getWasmClipboard()->isPaste = translatedEvent.key == Qt::Key_V;
+        return false; // continue on to event
     }
 
-    bool accepted = false;
-
-    if (keyType == QEvent::KeyPress &&
-        modifiers.testFlag(Qt::ControlModifier)
-        && qtKey == Qt::Key_V) {
-        QWasmIntegration::get()->getWasmClipboard()->isPaste = true;
-        accepted = false; // continue on to event
-    } else {
-        if (keyText.isEmpty())
-            keyText = QString(keyEvent->key);
-        if (keyText.size() > 1)
-            keyText.clear();
-        accepted = QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
-                0, keyType, qtKey, modifiers, keyText);
-    }
-    if (keyType == QEvent::KeyPress &&
-        modifiers.testFlag(Qt::ControlModifier)
-        && qtKey == Qt::Key_C) {
-        QWasmIntegration::get()->getWasmClipboard()->isPaste = false;
-        accepted = false; // continue on to event
-    }
-
-    return accepted;
+    if (translatedEvent.text.isEmpty())
+        translatedEvent.text = QString(emKeyEvent->key);
+    if (translatedEvent.text.size() > 1)
+        translatedEvent.text.clear();
+    return QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
+            0, translatedEvent.type, translatedEvent.key, modifiers, translatedEvent.text);
 }
 
 bool QWasmCompositor::processWheel(int eventType, const EmscriptenWheelEvent *wheelEvent)

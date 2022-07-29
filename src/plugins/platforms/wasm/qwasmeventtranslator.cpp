@@ -301,34 +301,57 @@ QCursor QWasmEventTranslator::cursorForMode(QWasmCompositor::ResizeMode m)
     return Qt::ArrowCursor;
 }
 
-QString QWasmEventTranslator::getKeyText(const EmscriptenKeyboardEvent *keyEvent, Qt::Key qtKey)
+QWasmEventTranslator::TranslatedEvent
+QWasmEventTranslator::translateKeyEvent(int emEventType, const EmscriptenKeyboardEvent *keyEvent)
 {
-    if (m_emDeadKey != Qt::Key_unknown) {
-        const Qt::Key translatedKey = translateBaseKeyUsingDeadKey(qtKey, m_emDeadKey);
+    TranslatedEvent ret;
+    switch (emEventType) {
+    case EMSCRIPTEN_EVENT_KEYDOWN:
+        ret.type = QEvent::KeyPress;
+        break;
+    case EMSCRIPTEN_EVENT_KEYUP:
+        ret.type = QEvent::KeyRelease;
+        break;
+    default:
+        // Should not be reached - do not call with this event type.
+        Q_ASSERT(false);
+        break;
+    };
+
+    ret.key = translateEmscriptKey(keyEvent);
+
+    if (isDeadKeyEvent(keyEvent) || ret.key == Qt::Key_AltGr) {
+        if (keyEvent->shiftKey && ret.key == Qt::Key_QuoteLeft)
+            ret.key = Qt::Key_AsciiTilde;
+        m_emDeadKey = ret.key;
+    }
+
+    if (m_emDeadKey != Qt::Key_unknown
+        && (m_keyModifiedByDeadKeyOnPress == Qt::Key_unknown
+            || ret.key == m_keyModifiedByDeadKeyOnPress)) {
+        const Qt::Key baseKey = ret.key;
+        const Qt::Key translatedKey = translateBaseKeyUsingDeadKey(baseKey, m_emDeadKey);
         if (translatedKey != Qt::Key_unknown)
-            qtKey = translatedKey;
+            ret.key = translatedKey;
 
         if (auto text = keyEvent->shiftKey
-                    ? findKeyTextByKeyId(WebToQtKeyCodeMappingsWithShift, qtKey)
-                    : findKeyTextByKeyId(WebToQtKeyCodeMappings, qtKey)) {
-            m_emDeadKey = Qt::Key_unknown;
-            return *text;
+                    ? findKeyTextByKeyId(WebToQtKeyCodeMappingsWithShift, ret.key)
+                    : findKeyTextByKeyId(WebToQtKeyCodeMappings, ret.key)) {
+            if (ret.type == QEvent::KeyPress) {
+                Q_ASSERT(m_keyModifiedByDeadKeyOnPress == Qt::Key_unknown);
+                m_keyModifiedByDeadKeyOnPress = baseKey;
+            } else {
+                Q_ASSERT(ret.type == QEvent::KeyRelease);
+                Q_ASSERT(m_keyModifiedByDeadKeyOnPress == baseKey);
+                m_keyModifiedByDeadKeyOnPress = Qt::Key_unknown;
+                m_emDeadKey = Qt::Key_unknown;
+            }
+            ret.text = *text;
+            return ret;
         }
     }
-    return QString::fromUtf8(keyEvent->key);
-}
-
-Qt::Key QWasmEventTranslator::getKey(const EmscriptenKeyboardEvent *keyEvent)
-{
-    Qt::Key qtKey = translateEmscriptKey(keyEvent);
-
-    if (isDeadKeyEvent(keyEvent) || qtKey == Qt::Key_AltGr) {
-        if (keyEvent->shiftKey && qtKey == Qt::Key_QuoteLeft)
-            qtKey = Qt::Key_AsciiTilde;
-        m_emDeadKey = qtKey;
-    }
-
-    return qtKey;
+    ret.text = QString::fromUtf8(keyEvent->key);
+    return ret;
 }
 
 QT_END_NAMESPACE

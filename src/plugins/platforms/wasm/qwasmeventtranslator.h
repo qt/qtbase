@@ -24,19 +24,24 @@ class QWasmEventTranslator : public QObject
     Q_OBJECT
 
 public:
+    struct TranslatedEvent
+    {
+        QEvent::Type type;
+        Qt::Key key;
+        QString text;
+    };
     explicit QWasmEventTranslator();
     ~QWasmEventTranslator();
 
     static QCursor cursorForMode(QWasmCompositor::ResizeMode mode);
 
-    QString getKeyText(const EmscriptenKeyboardEvent *keyEvent, Qt::Key key);
-    Qt::Key getKey(const EmscriptenKeyboardEvent *keyEvent);
+    TranslatedEvent translateKeyEvent(int emEventType, const EmscriptenKeyboardEvent *keyEvent);
 
 private:
     static quint64 getTimestamp();
 
     Qt::Key m_emDeadKey = Qt::Key_unknown;
-
+    Qt::Key m_keyModifiedByDeadKeyOnPress = Qt::Key_unknown;
 };
 
 QT_END_NAMESPACE
