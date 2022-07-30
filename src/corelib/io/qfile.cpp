@@ -226,6 +226,15 @@ QFile::QFile(QObject *parent)
 }
 /*!
     Constructs a new file object to represent the file with the given \a name.
+
+//! [qfile-explicit-constructor-note]
+    \note In versions up to and including Qt 6.8, this constructor is
+    implicit, for backward compatibility. Starting from Qt 6.9 this
+    constructor is unconditionally \c{explicit}. Users can force this
+    constructor to be \c{explicit} even in earlier versions of Qt by
+    defining the \c{QT_EXPLICIT_QFILE_CONSTRUCTION_FROM_PATH} macro
+    before including any Qt header.
+//! [qfile-explicit-constructor-note]
 */
 QFile::QFile(const QString &name)
     : QFileDevice(*new QFilePrivate, nullptr)
@@ -1145,6 +1154,8 @@ qint64 QFile::size() const
     \since 6.0
 
     Constructs a new file object to represent the file with the given \a name.
+
+    \include qfile.cpp qfile-explicit-constructor-note
 */
 /*!
     \fn QFile::QFile(const std::filesystem::path &name, QObject *parent)

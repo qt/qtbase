@@ -54,6 +54,13 @@ using ForceFilesystemPath = typename std::enable_if_t<std::is_same_v<std::filesy
 class QTemporaryFile;
 class QFilePrivate;
 
+// ### Qt 7: remove this, and make constructors always explicit.
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)) || defined(QT_EXPLICIT_QFILE_CONSTRUCTION_FROM_PATH)
+#  define QFILE_MAYBE_EXPLICIT explicit
+#else
+#  define QFILE_MAYBE_EXPLICIT Q_IMPLICIT
+#endif
+
 class Q_CORE_EXPORT QFile : public QFileDevice
 {
 #ifndef QT_NO_QOBJECT
@@ -63,12 +70,12 @@ class Q_CORE_EXPORT QFile : public QFileDevice
 
 public:
     QFile();
-    QFile(const QString &name);
+    QFILE_MAYBE_EXPLICIT QFile(const QString &name);
 #ifdef Q_QDOC
-    QFile(const std::filesystem::path &name);
+    QFILE_MAYBE_EXPLICIT QFile(const std::filesystem::path &name);
 #elif QT_CONFIG(cxx17_filesystem)
     template<typename T, QtPrivate::ForceFilesystemPath<T> = 0>
-    QFile(const T &name) : QFile(QtPrivate::fromFilesystemPath(name))
+    QFILE_MAYBE_EXPLICIT QFile(const T &name) : QFile(QtPrivate::fromFilesystemPath(name))
     {
     }
 #endif // QT_CONFIG(cxx17_filesystem)
