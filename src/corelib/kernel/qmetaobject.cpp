@@ -6,6 +6,7 @@
 #include "qmetatype.h"
 #include "qobject.h"
 #include "qmetaobject_p.h"
+#include "qmetatype_p.h"
 
 #include <qcoreapplication.h>
 #include <qcoreevent.h>
@@ -405,7 +406,7 @@ QMetaType QMetaObject::metaType() const
          data:QMetaType(prop0), ..., QMetaType(propPropCount-1), QMetaType(class),...
          */
         auto iface = this->d.metaTypes[d->propertyCount];
-        if (iface == QtPrivate::qMetaTypeInterfaceForType<void>())
+        if (iface && QtMetaTypePrivate::isInterfaceFor<void>(iface))
             return QMetaType(); // return invalid meta-type for namespaces
         if (iface)
             return QMetaType(iface);
