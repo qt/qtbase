@@ -2547,9 +2547,9 @@ constexpr const QMetaTypeInterface *qTryMetaTypeInterfaceForType()
     using Ty = typename MetatypeDecay<T>::type;
     using Tz = qRemovePointerLike_t<Ty>;
 
-    if constexpr (std::is_void_v<Ty>) {
+    if constexpr (std::is_void_v<Tz>) {
         // early out to avoid expanding the rest of the templates
-        return &QMetaTypeInterfaceWrapper<void>::metaType;
+        return &QMetaTypeInterfaceWrapper<Ty>::metaType;
     } else if constexpr (ForceComplete::value) {
         checkTypeIsSuitableForMetaType<Ty>();
         return &QMetaTypeInterfaceWrapper<Ty>::metaType;

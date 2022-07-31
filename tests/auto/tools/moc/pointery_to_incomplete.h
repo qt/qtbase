@@ -14,10 +14,14 @@ class FwdClass;
 class TestPointeeCanBeIncomplete : public QObject
 {
     Q_OBJECT
-public:
+public slots:
     void setProp1(QPointer<FwdClass>) {}
     void setProp2(QSharedPointer<FwdClass>) {}
     void setProp3(const QWeakPointer<FwdClass> &) {}
+    void setProp4(FwdClass *) {}
+    void setProp5(const FwdClass *) {}
+    void setProp6(void *) {}
+    void setProp7(const void *) {}
 };
 
 #endif // POINTERY_TO_INCOMPLETE_H

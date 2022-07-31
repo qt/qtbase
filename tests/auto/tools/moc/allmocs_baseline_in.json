@@ -1671,6 +1671,78 @@
                 "className": "TestPointeeCanBeIncomplete",
                 "object": true,
                 "qualifiedClassName": "TestPointeeCanBeIncomplete",
+                "slots": [
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "type": "QPointer<FwdClass>"
+                            }
+                        ],
+                        "name": "setProp1",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "type": "QSharedPointer<FwdClass>"
+                            }
+                        ],
+                        "name": "setProp2",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "type": "QWeakPointer<FwdClass>"
+                            }
+                        ],
+                        "name": "setProp3",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "type": "FwdClass*"
+                            }
+                        ],
+                        "name": "setProp4",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "type": "const FwdClass*"
+                            }
+                        ],
+                        "name": "setProp5",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "type": "void*"
+                            }
+                        ],
+                        "name": "setProp6",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "type": "const void*"
+                            }
+                        ],
+                        "name": "setProp7",
+                        "returnType": "void"
+                    }
+                ],
                 "superClasses": [
                     {
                         "access": "public",
