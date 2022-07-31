@@ -465,6 +465,8 @@ public:
     QtTestObject();
     QtTestObject(const QString &s) : slotResult(s) {}
     Q_INVOKABLE QtTestObject(QObject *parent);
+    Q_INVOKABLE QtTestObject(QObject *parent, int, int);
+    Q_INVOKABLE QtTestObject(QObject *parent, int);
 
 public slots:
     void sl0();
@@ -487,10 +489,13 @@ public slots:
     qint64 sl14();
     qlonglong *sl15(qlonglong *);
     MyForwardDeclaredType *sl16(MyForwardDeclaredType *);
+
+    void overloadedSlot();
+    void overloadedSlot(int, int);
+    void overloadedSlot(int);
+
     void testSender();
-
     void testReference(QString &str);
-
     void testLongLong(qint64 ll1, quint64 ll2);
 
     void moveToThread(QThread *t)
@@ -548,6 +553,14 @@ QtTestObject::QtTestObject(QObject *parent)
 {
 }
 
+QtTestObject::QtTestObject(QObject *parent, int, int)
+    : QObject(parent)
+{ slotResult = "ii"; }
+
+QtTestObject::QtTestObject(QObject *parent, int)
+    : QObject(parent)
+{ slotResult = "i"; }
+
 void QtTestObject::sl0() { slotResult = "sl0"; };
 QString QtTestObject::sl1(QString s1) { slotResult = "sl1:" + s1; return "yessir"; }
 void QtTestObject::sl2(QString s1, QString s2) { slotResult = "sl2:" + s1 + s2; }
@@ -592,6 +605,15 @@ MyForwardDeclaredType *QtTestObject::sl16(MyForwardDeclaredType *ptr)
     slotResult += "null";
     return getForwardDeclaredPointer();
 }
+
+void QtTestObject::overloadedSlot()
+{ slotResult = "overloadedSlot"; }
+
+void QtTestObject::overloadedSlot(int x, int y)
+{ slotResult = "overloadedSlot:" + QString::number(x) + ',' + QString::number(y); }
+
+void QtTestObject::overloadedSlot(int x)
+{ slotResult = "overloadedSlot:" + QString::number(x); }
 
 void QtTestObject::testReference(QString &str)
 { slotResult = "testReference:" + str; str = "gotcha"; }
@@ -761,6 +783,14 @@ void tst_QMetaObject::invokeMetaMember()
     QCOMPARE(forwardPtr, getForwardDeclaredPointer());
     QCOMPARE(obj.slotResult, QString("sl16:null"));
 
+    // test overloads
+    QVERIFY(QMetaObject::invokeMethod(&obj, "overloadedSlot"));
+    QCOMPARE(obj.slotResult, QString("overloadedSlot"));
+    QVERIFY(QMetaObject::invokeMethod(&obj, "overloadedSlot", Q_ARG(int, 1)));
+    QCOMPARE(obj.slotResult, QString("overloadedSlot:1"));
+    QVERIFY(QMetaObject::invokeMethod(&obj, "overloadedSlot", Q_ARG(int, 1), Q_ARG(int, 42)));
+    QCOMPARE(obj.slotResult, QString("overloadedSlot:1,42"));
+
     //test signals
     QVERIFY(QMetaObject::invokeMethod(&obj, "sig0"));
     QCOMPARE(obj.slotResult, QString("sl0"));
@@ -888,6 +918,17 @@ void tst_QMetaObject::invokeQueuedMetaMember()
     QVERIFY(QMetaObject::invokeMethod(&obj, "sl15", Qt::QueuedConnection, Q_ARG(qlonglong*, &return64)));
     qApp->processEvents(QEventLoop::AllEvents);
     QCOMPARE(obj.slotResult, QString("sl15"));
+
+    // test overloads
+    QVERIFY(QMetaObject::invokeMethod(&obj, "overloadedSlot", Qt::QueuedConnection));
+    qApp->processEvents(QEventLoop::AllEvents);
+    QCOMPARE(obj.slotResult, QString("overloadedSlot"));
+    QVERIFY(QMetaObject::invokeMethod(&obj, "overloadedSlot", Qt::QueuedConnection, Q_ARG(int, 1)));
+    qApp->processEvents(QEventLoop::AllEvents);
+    QCOMPARE(obj.slotResult, QString("overloadedSlot:1"));
+    QVERIFY(QMetaObject::invokeMethod(&obj, "overloadedSlot", Qt::QueuedConnection, Q_ARG(int, 1), Q_ARG(int, 42)));
+    qApp->processEvents(QEventLoop::AllEvents);
+    QCOMPARE(obj.slotResult, QString("overloadedSlot:1,42"));
 
     // signals
 
@@ -1131,6 +1172,14 @@ void tst_QMetaObject::invokeBlockingQueuedMetaMember()
     QCOMPARE(forwardPtr, getForwardDeclaredPointer());
     QCOMPARE(obj.slotResult, QString("sl16:null"));
 
+    // test overloads
+    QVERIFY(QMetaObject::invokeMethod(&obj, "overloadedSlot", Qt::BlockingQueuedConnection));
+    QCOMPARE(obj.slotResult, QString("overloadedSlot"));
+    QVERIFY(QMetaObject::invokeMethod(&obj, "overloadedSlot", Qt::BlockingQueuedConnection, Q_ARG(int, 1)));
+    QCOMPARE(obj.slotResult, QString("overloadedSlot:1"));
+    QVERIFY(QMetaObject::invokeMethod(&obj, "overloadedSlot", Qt::BlockingQueuedConnection, Q_ARG(int, 1), Q_ARG(int, 42)));
+    QCOMPARE(obj.slotResult, QString("overloadedSlot:1,42"));
+
     //test signals
     QVERIFY(QMetaObject::invokeMethod(&obj, "sig0", Qt::BlockingQueuedConnection));
     QCOMPARE(obj.slotResult, QString("sl0"));
@@ -1333,6 +1382,24 @@ void tst_QMetaObject::invokeMetaConstructor()
         QCOMPARE(MyGadget::staticMetaObject.constructorCount(), 1);
         QTest::ignoreMessage(QtWarningMsg, "QMetaObject::newInstance: type MyGadget does not inherit QObject");
         QVERIFY(!MyGadget::staticMetaObject.newInstance());
+    }
+
+    // overloaded constructors
+    QObject parent;
+    {
+        QObject *obj = mo->newInstance(Q_ARG(QObject*, &parent));
+        QVERIFY(obj);
+        QCOMPARE(static_cast<QtTestObject*>(obj)->slotResult, "");
+    }
+    {
+        QObject *obj = mo->newInstance(Q_ARG(QObject*, &parent), Q_ARG(int, 1));
+        QVERIFY(obj);
+        QCOMPARE(static_cast<QtTestObject*>(obj)->slotResult, "i");
+    }
+    {
+        QObject *obj = mo->newInstance(Q_ARG(QObject*, &parent), Q_ARG(int, 1), Q_ARG(int, 42));
+        QVERIFY(obj);
+        QCOMPARE(static_cast<QtTestObject*>(obj)->slotResult, "ii");
     }
 }
 

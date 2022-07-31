@@ -277,6 +277,8 @@ QObject *QMetaObject::newInstance(QGenericArgument val0,
     auto priv = QMetaObjectPrivate::get(this);
     for (int i = 0; i < priv->constructorCount; ++i) {
         QMetaMethod m = QMetaMethod::fromRelativeConstructorIndex(this, i);
+        if (m.parameterCount() != (paramCount - 1))
+            continue;
 
         // attempt to call
         QMetaMethodPrivate::InvokeFailReason r =
@@ -1489,7 +1491,7 @@ bool QMetaObject::invokeMethod(QObject *obj,
         auto priv = QMetaObjectPrivate::get(meta);
         for (int i = 0; i < priv->methodCount; ++i) {
             QMetaMethod m = QMetaMethod::fromRelativeMethodIndex(meta, i);
-            if (m.parameterCount() > (paramCount - 1))
+            if (m.parameterCount() != (paramCount - 1))
                 continue;
             if (name != stringDataView(meta, m.data.name()))
                 continue;
