@@ -292,7 +292,7 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
                 // the expected and actual values to the loggers (yet).
                 static const QRegularExpression verifyRegex(
                             u"^'(?<actualexpression>.*)' returned "
-                            "(?<actual>\\w+).+\\((?<message>.*)\\)$"_s);
+                            "(?<actual>\\w+)\\. \\((?<message>.*)\\)$"_s);
 
                 static const QRegularExpression compareRegex(
                             u"^(?<message>.*)\n"

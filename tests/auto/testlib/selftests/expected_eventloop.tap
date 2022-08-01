@@ -11,7 +11,7 @@ not ok 2 - fail()
 not ok 2 - fail()
   ---
   type: QVERIFY
-  message: )
+  message: QTestEventLoop exited prematurely in cleanup()
   wanted: true (loop.timeout())
   found: false (loop.timeout())
   expected: true (loop.timeout())
@@ -35,7 +35,7 @@ not ok 3 - skip()
 not ok 3 - skip()
   ---
   type: QVERIFY
-  message: )
+  message: QTestEventLoop exited prematurely in cleanup()
   wanted: true (loop.timeout())
   found: false (loop.timeout())
   expected: true (loop.timeout())
@@ -59,7 +59,7 @@ not ok 4 - pass()
 not ok 4 - pass()
   ---
   type: QVERIFY
-  message: )
+  message: QTestEventLoop exited prematurely in cleanup()
   wanted: true (loop.timeout())
   found: false (loop.timeout())
   expected: true (loop.timeout())
