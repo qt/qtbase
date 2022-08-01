@@ -54,6 +54,8 @@ public:
 
     void handleCursorMove(const QPoint &pos);
 
+    QWindow *topLevelAt(const QPoint &point) const override;
+
 private:
     void setPrimarySurface(EGLSurface surface);
 
