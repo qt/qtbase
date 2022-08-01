@@ -605,4 +605,13 @@ void QWasmWindow::requestActivateWindow()
     QPlatformWindow::requestActivateWindow();
 }
 
+bool QWasmWindow::setMouseGrabEnabled(bool grab)
+{
+    if (grab)
+        m_compositor->setCapture(this);
+    else
+        m_compositor->releaseCapture();
+    return true;
+}
+
 QT_END_NAMESPACE

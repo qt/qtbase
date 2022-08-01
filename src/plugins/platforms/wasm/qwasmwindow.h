@@ -65,7 +65,7 @@ public:
     void setWindowState(Qt::WindowStates state) override;
     void applyWindowState();
     bool setKeyboardGrabEnabled(bool) override { return false; }
-    bool setMouseGrabEnabled(bool) override { return false; }
+    bool setMouseGrabEnabled(bool grab) final;
 
     void drawTitleBar(QPainter *painter) const;
 
