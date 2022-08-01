@@ -4,10 +4,14 @@
 #ifndef QOVERLOAD_H
 #define QOVERLOAD_H
 
+#include <QtCore/qtnamespacemacros.h>
+
 #if 0
 #pragma qt_class(QOverload)
 #pragma qt_sync_stop_processing
 #endif
+
+QT_BEGIN_NAMESPACE
 
 #ifdef Q_QDOC
 // Just for documentation generation
@@ -71,5 +75,7 @@ template <typename... Args> constexpr inline QNonConstOverload<Args...> qNonCons
 #define QT_OVERLOADED_MACRO_EXPAND(MACRO, ARGC) MACRO##_##ARGC
 #define QT_OVERLOADED_MACRO_IMP(MACRO, ARGC) QT_OVERLOADED_MACRO_EXPAND(MACRO, ARGC)
 #define QT_OVERLOADED_MACRO(MACRO, ...) QT_VA_ARGS_EXPAND(QT_OVERLOADED_MACRO_IMP(MACRO, QT_VA_ARGS_COUNT(__VA_ARGS__))(__VA_ARGS__))
+
+QT_END_NAMESPACE
 
 #endif /* QOVERLOAD_H */
