@@ -65,6 +65,11 @@ struct QBindingStatus
     QPropertyDelayedNotifications *groupUpdateData = nullptr;
 };
 
+namespace QtPrivate {
+struct QBindingStatusAccessToken;
+Q_AUTOTEST_EXPORT QBindingStatus *getBindingStatus(QBindingStatusAccessToken);
+}
+
 
 struct QBindingStorageData;
 class Q_CORE_EXPORT QBindingStorage
@@ -81,6 +86,8 @@ public:
     ~QBindingStorage();
 
     bool isEmpty() { return !d; }
+
+    const QBindingStatus *status(QtPrivate::QBindingStatusAccessToken) const;
 
     void registerDependency(const QUntypedPropertyData *data) const
     {
@@ -104,6 +111,7 @@ public:
         return bindingData_helper(data, create);
     }
 private:
+    void reinitAfterThreadMove();
     void clear();
     void registerDependency_helper(const QUntypedPropertyData *data) const;
     // ### Unused, but keep for BC
