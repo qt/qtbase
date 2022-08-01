@@ -60,6 +60,19 @@ Q_CORE_EXPORT void qBadAlloc();
 template <typename T>
 inline T *q_check_ptr(T *p) { Q_CHECK_PTR(p); return p; }
 
+// Q_UNREACHABLE_IMPL() and Q_ASSUME_IMPL() used below are defined in qcompilerdetection.h
+#define Q_UNREACHABLE() \
+    do {\
+        Q_ASSERT_X(false, "Q_UNREACHABLE()", "Q_UNREACHABLE was reached");\
+        Q_UNREACHABLE_IMPL();\
+    } while (false)
+
+#define Q_ASSUME(Expr) \
+    [] (bool valueOfExpression) {\
+        Q_ASSERT_X(valueOfExpression, "Q_ASSUME()", "Assumption in Q_ASSUME(\"" #Expr "\") was not correct");\
+        Q_ASSUME_IMPL(valueOfExpression);\
+    }(Expr)
+
 QT_END_NAMESPACE
 
 #endif // QASSERT_H

@@ -1129,18 +1129,6 @@
 #define qMove(x) (x)
 #endif
 
-#define Q_UNREACHABLE() \
-    do {\
-        Q_ASSERT_X(false, "Q_UNREACHABLE()", "Q_UNREACHABLE was reached");\
-        Q_UNREACHABLE_IMPL();\
-    } while (false)
-
-#define Q_ASSUME(Expr) \
-    [] (bool valueOfExpression) {\
-        Q_ASSERT_X(valueOfExpression, "Q_ASSUME()", "Assumption in Q_ASSUME(\"" #Expr "\") was not correct");\
-        Q_ASSUME_IMPL(valueOfExpression);\
-    }(Expr)
-
 #if defined(__cplusplus)
 #if __has_cpp_attribute(clang::fallthrough)
 #    define Q_FALLTHROUGH() [[clang::fallthrough]]
