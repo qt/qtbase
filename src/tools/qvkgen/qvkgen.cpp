@@ -12,7 +12,8 @@
 static const QStringList VERSIONS = {
     QStringLiteral("VK_VERSION_1_0"), // must be the first and always present
     QStringLiteral("VK_VERSION_1_1"),
-    QStringLiteral("VK_VERSION_1_2")
+    QStringLiteral("VK_VERSION_1_2"),
+    QStringLiteral("VK_VERSION_1_3")
 };
 
 class VkSpecParser
