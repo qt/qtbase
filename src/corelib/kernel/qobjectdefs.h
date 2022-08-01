@@ -59,8 +59,8 @@ Q_CORE_EXPORT const char *qFlagLocation(const char *method);
 # endif
 #endif // QT_NO_META_MACROS
 
-#define Q_ARG(type, data) QArgument<type >(#type, data)
-#define Q_RETURN_ARG(type, data) QReturnArgument<type >(#type, data)
+#define Q_ARG(Type, data)           QtPrivate::Invoke::argument<Type>(QT_STRINGIFY(Type), data)
+#define Q_RETURN_ARG(Type, data)    QtPrivate::Invoke::returnArgument<Type>(QT_STRINGIFY(Type), data)
 
 class QObject;
 class QMetaMethod;
@@ -70,6 +70,7 @@ class QMetaClassInfo;
 
 namespace QtPrivate {
 class QMetaTypeInterface;
+template<typename T> constexpr auto typenameHelper();
 }
 
 struct QMethodRawArguments
@@ -77,6 +78,7 @@ struct QMethodRawArguments
     void **arguments;
 };
 
+#if QT_VERSION <= QT_VERSION_CHECK(7, 0, 0)
 class Q_CORE_EXPORT QGenericArgument
 {
 public:
@@ -124,6 +126,91 @@ public:
         : QGenericReturnArgument(aName, static_cast<void *>(&aData))
         {}
 };
+#endif
+
+struct QMetaMethodArgument
+{
+    const char *name;
+    const void *data;
+};
+
+struct QMetaMethodReturnArgument
+{
+    const char *name;
+    void *data;
+};
+
+namespace QtPrivate {
+namespace Invoke {
+#if QT_VERSION <= QT_VERSION_CHECK(7, 0, 0)
+template <typename... Args> struct AreOldStyleArgs :
+        std::disjunction<std::is_base_of<QGenericArgument, Args>...>
+{};
+template <typename T, typename... Args> using IfNotOldStyleArgs =
+    std::enable_if_t<!AreOldStyleArgs<Args...>::value, T>;
+#else
+template <typename T, typename... Args> using IfNotOldStyleArgs = T;
+#endif
+
+template <typename T> inline QMetaMethodArgument argument(const char *name, const T &t)
+{
+    return { name, std::addressof(t) };
+}
+
+template <typename T> inline QMetaMethodReturnArgument returnArgument(const char *name, T &t)
+{
+    return { name, std::addressof(t) };
+}
+
+template <typename T> inline const char *typenameHelper(const T &)
+{
+    // duplicated from the QMetaTypeInterface, FIXME
+    static constexpr auto name = QtPrivate::typenameHelper<T>();
+    return name.data();
+}
+template <typename T> inline const void *dataHelper(const T &t)
+{
+    return std::addressof(t);
+}
+
+inline const char *typenameHelper(QMetaMethodArgument a)
+{ return a.name; }
+inline const void *dataHelper(QMetaMethodArgument a)
+{ return a.data; }
+
+inline const char *typenameHelper(const char *) = delete;
+template <typename T> inline const void *dataHelper(const char *) = delete;
+inline const char *typenameHelper(const char16_t *) = delete;
+template <typename T> inline const void *dataHelper(const char16_t *) = delete;
+
+} // namespace QtPrivate::Invoke
+
+template <typename... Args> inline auto invokeMethodHelper(QMetaMethodReturnArgument r, Args &&... arguments)
+{
+    std::array params = { const_cast<const void *>(r.data), Invoke::dataHelper(arguments)... };
+    std::array names = { r.name, Invoke::typenameHelper(arguments)... };
+    static_assert(params.size() == names.size());
+
+    struct R {
+        decltype(params) parameters;
+        decltype(names) typeNames;
+        constexpr qsizetype parameterCount() const { return qsizetype(parameters.size()); }
+    };
+    return R { params, names };
+}
+} // namespace QtPrivate
+
+template <typename T> inline QMetaMethodReturnArgument qReturnArg(T &&) = delete;
+template <typename T> inline QMetaMethodReturnArgument qReturnArg(T &data)
+{
+    if constexpr (std::is_same_v<T, const char *>) {
+        // need to go around the = delete above
+        return QtPrivate::Invoke::returnArgument("const char *", data);
+    } else {
+        const char *name = QtPrivate::Invoke::typenameHelper(data);
+        return QtPrivate::Invoke::returnArgument(name, data);
+    }
+}
 
 struct Q_CORE_EXPORT QMetaObject
 {
@@ -191,6 +278,7 @@ struct Q_CORE_EXPORT QMetaObject
     static void activate(QObject *sender, const QMetaObject *, int local_signal_index, void **argv);
     static void activate(QObject *sender, int signal_offset, int local_signal_index, void **argv);
 
+#if QT_VERSION <= QT_VERSION_CHECK(7, 0, 0)
     static bool invokeMethod(QObject *obj, const char *member,
                              Qt::ConnectionType,
                              QGenericReturnArgument ret,
@@ -224,7 +312,7 @@ struct Q_CORE_EXPORT QMetaObject
 
     static inline bool invokeMethod(QObject *obj, const char *member,
                              Qt::ConnectionType type,
-                             QGenericArgument val0 = QGenericArgument(nullptr),
+                             QGenericArgument val0,
                              QGenericArgument val1 = QGenericArgument(),
                              QGenericArgument val2 = QGenericArgument(),
                              QGenericArgument val3 = QGenericArgument(),
@@ -240,7 +328,7 @@ struct Q_CORE_EXPORT QMetaObject
     }
 
     static inline bool invokeMethod(QObject *obj, const char *member,
-                             QGenericArgument val0 = QGenericArgument(nullptr),
+                             QGenericArgument val0,
                              QGenericArgument val1 = QGenericArgument(),
                              QGenericArgument val2 = QGenericArgument(),
                              QGenericArgument val3 = QGenericArgument(),
@@ -253,6 +341,41 @@ struct Q_CORE_EXPORT QMetaObject
     {
         return invokeMethod(obj, member, Qt::AutoConnection, QGenericReturnArgument(), val0,
                 val1, val2, val3, val4, val5, val6, val7, val8, val9);
+    }
+#endif // Qt < 7.0
+
+    template <typename... Args> static
+    QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
+    invokeMethod(QObject *obj, const char *member, Qt::ConnectionType c,
+                 QMetaMethodReturnArgument r, Args &&... arguments)
+    {
+        auto h = QtPrivate::invokeMethodHelper(r, std::forward<Args>(arguments)...);
+        return invokeMethodImpl(obj, member, c, h.parameterCount(), h.parameters.data(),
+                h.typeNames.data());
+    }
+
+    template <typename... Args> static
+    QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
+    invokeMethod(QObject *obj, const char *member, Qt::ConnectionType c, Args &&... arguments)
+    {
+        QMetaMethodReturnArgument r = {};
+        return invokeMethod(obj, member, c, r, std::forward<Args>(arguments)...);
+    }
+
+    template <typename... Args> static
+    QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
+    invokeMethod(QObject *obj, const char *member, QMetaMethodReturnArgument r,
+                 Args &&... arguments)
+    {
+        return invokeMethod(obj, member, Qt::AutoConnection, r, std::forward<Args>(arguments)...);
+    }
+
+    template <typename... Args> static
+    QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
+    invokeMethod(QObject *obj, const char *member, Args &&... arguments)
+    {
+        QMetaMethodReturnArgument r = {};
+        return invokeMethod(obj, member, Qt::AutoConnection, r, std::forward<Args>(arguments)...);
     }
 
 #ifdef Q_CLANG_QDOC
@@ -336,7 +459,8 @@ struct Q_CORE_EXPORT QMetaObject
 
 #endif
 
-    QObject *newInstance(QGenericArgument val0 = QGenericArgument(nullptr),
+#if QT_VERSION <= QT_VERSION_CHECK(7, 0, 0)
+    QObject *newInstance(QGenericArgument val0,
                          QGenericArgument val1 = QGenericArgument(),
                          QGenericArgument val2 = QGenericArgument(),
                          QGenericArgument val3 = QGenericArgument(),
@@ -346,6 +470,14 @@ struct Q_CORE_EXPORT QMetaObject
                          QGenericArgument val7 = QGenericArgument(),
                          QGenericArgument val8 = QGenericArgument(),
                          QGenericArgument val9 = QGenericArgument()) const;
+#endif
+
+    template <typename... Args> QtPrivate::Invoke::IfNotOldStyleArgs<QObject *, Args...>
+    newInstance(Args &&... arguments) const
+    {
+        auto h = QtPrivate::invokeMethodHelper(QMetaMethodReturnArgument{}, std::forward<Args>(arguments)...);
+        return newInstanceImpl(this, h.parameterCount(), h.parameters.data(), h.typeNames.data());
+    }
 
     enum Call {
         InvokeMetaMethod,
@@ -405,7 +537,11 @@ struct Q_CORE_EXPORT QMetaObject
     } d;
 
 private:
+    static bool invokeMethodImpl(QObject *object, const char *member, Qt::ConnectionType type,
+                                 qsizetype parameterCount, const void *const *parameters, const char *const *names);
     static bool invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *slot, Qt::ConnectionType type, void *ret);
+    static QObject *newInstanceImpl(const QMetaObject *mobj, qsizetype parameterCount,
+                                    const void **parameters, const char **typeNames);
     friend class QTimer;
 };
 

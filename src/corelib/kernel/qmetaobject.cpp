@@ -223,22 +223,13 @@ QObject *QMetaObject::newInstance(QGenericArgument val0,
                                   QGenericArgument val8,
                                   QGenericArgument val9) const
 {
-    if (!inherits(&QObject::staticMetaObject))
-    {
-        qWarning("QMetaObject::newInstance: type %s does not inherit QObject", className());
-        return nullptr;
-    }
-
-    QObject *returnValue = nullptr;
-    QMetaType returnValueMetaType = QMetaType::fromType<decltype(returnValue)>();
-
     const char *typeNames[] = {
-        returnValueMetaType.name(),
+        nullptr,
         val0.name(), val1.name(), val2.name(), val3.name(), val4.name(),
         val5.name(), val6.name(), val7.name(), val8.name(), val9.name()
     };
     const void *parameters[] = {
-        &returnValue,
+        nullptr,
         val0.data(), val1.data(), val2.data(), val3.data(), val4.data(),
         val5.data(), val6.data(), val7.data(), val8.data(), val9.data()
     };
@@ -250,10 +241,34 @@ QObject *QMetaObject::newInstance(QGenericArgument val0,
             break;
     }
 
+    return newInstanceImpl(this, paramCount, parameters, typeNames);
+}
+
+QObject *QMetaObject::newInstanceImpl(const QMetaObject *mobj, qsizetype paramCount,
+                                      const void **parameters, const char **typeNames)
+{
+    if (!mobj->inherits(&QObject::staticMetaObject)) {
+        qWarning("QMetaObject::newInstance: type %s does not inherit QObject", mobj->className());
+        return nullptr;
+    }
+
+QT_WARNING_PUSH
+#if Q_CC_GNU >= 1200
+QT_WARNING_DISABLE_GCC("-Wdangling-pointer")
+#endif
+
+    // set the return type
+    QObject *returnValue = nullptr;
+    QMetaType returnValueMetaType = QMetaType::fromType<decltype(returnValue)>();
+    parameters[0] = &returnValue;
+    typeNames[0] = returnValueMetaType.name();
+
+QT_WARNING_POP
+
     // find the constructor
-    auto priv = QMetaObjectPrivate::get(this);
+    auto priv = QMetaObjectPrivate::get(mobj);
     for (int i = 0; i < priv->constructorCount; ++i) {
-        QMetaMethod m = QMetaMethod::fromRelativeConstructorIndex(this, i);
+        QMetaMethod m = QMetaMethod::fromRelativeConstructorIndex(mobj, i);
         if (m.parameterCount() != (paramCount - 1))
             continue;
 
@@ -1457,6 +1472,19 @@ bool QMetaObject::invokeMethod(QObject *obj,
         if (qstrlen(typeNames[paramCount]) <= 0)
             break;
     }
+    return invokeMethodImpl(obj, member, type, paramCount, parameters, typeNames);
+}
+
+bool QMetaObject::invokeMethodImpl(QObject *obj, const char *member, Qt::ConnectionType type,
+                                   qsizetype paramCount, const void * const *parameters,
+                                   const char * const *typeNames)
+{
+    if (!obj)
+        return false;
+
+    Q_ASSERT(paramCount >= 1);  // includes the return type
+    Q_ASSERT(parameters);
+    Q_ASSERT(typeNames);
 
     // find the method
     QLatin1StringView name(member);
@@ -2382,9 +2410,17 @@ bool QMetaMethod::invoke(QObject *object,
         if (qstrlen(typeNames[paramCount]) <= 0)
             break;
     }
+    return invokeImpl(*this, object, connectionType, paramCount, param, typeNames);
+}
 
+bool QMetaMethod::invokeImpl(QMetaMethod self, void *target, Qt::ConnectionType connectionType,
+                             qsizetype paramCount, const void *const *parameters,
+                             const char *const *typeNames)
+{
+    if (!target || !self.mobj)
+        return false;
     QMetaMethodPrivate::InvokeFailReason r =
-            QMetaMethodPrivate::invokeImpl(*this, object, connectionType, paramCount, param, typeNames);
+            QMetaMethodPrivate::invokeImpl(self, target, connectionType, paramCount, parameters, typeNames);
 
     if (Q_LIKELY(r == QMetaMethodPrivate::InvokeFailReason::None))
         return true;
@@ -2392,11 +2428,11 @@ bool QMetaMethod::invoke(QObject *object,
     if (int(r) >= int(QMetaMethodPrivate::InvokeFailReason::FormalParameterMismatch)) {
         int n = int(r) - int(QMetaMethodPrivate::InvokeFailReason::FormalParameterMismatch);
         qWarning("QMetaMethod::invoke: cannot convert formal parameter %d from %s in call to %s::%s",
-                 n, typeNames[n + 1], mobj->className(), methodSignature().constData());
+                 n, typeNames[n + 1], self.mobj->className(), self.methodSignature().constData());
     }
     if (r == QMetaMethodPrivate::InvokeFailReason::TooFewArguments) {
         qWarning("QMetaMethod::invoke: too few arguments (%d) in call to %s::%s",
-                 int(paramCount), mobj->className(), methodSignature().constData());
+                 int(paramCount), self.mobj->className(), self.methodSignature().constData());
     }
     return false;
 }
@@ -2412,7 +2448,8 @@ auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
 
     Q_ASSERT(priv->mobj);
     Q_ASSERT(self.methodType() == Constructor || object);
-    Q_ASSERT(self.methodType() == Constructor || priv->mobj->cast(object));
+    Q_ASSERT(self.methodType() == Constructor || connectionType == Qt::ConnectionType(-1) ||
+             priv->mobj->cast(object));
     Q_ASSERT(paramCount >= 1);  // includes the return type
     Q_ASSERT(parameters);
     Q_ASSERT(typeNames);
@@ -2477,18 +2514,23 @@ auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
         }
     }
 
-    Qt::HANDLE currentThreadId = QThread::currentThreadId();
-    QThread *objectThread = object->thread();
-    bool receiverInSameThread = false;
-    if (objectThread)
-        receiverInSameThread = currentThreadId == QThreadData::get2(objectThread)->threadId.loadRelaxed();
+    Qt::HANDLE currentThreadId = nullptr;
+    QThread *objectThread = nullptr;
+    auto receiverInSameThread = [&]() {
+        if (!currentThreadId) {
+            currentThreadId = QThread::currentThreadId();
+            objectThread = object->thread();
+        }
+        if (objectThread)
+            return currentThreadId == QThreadData::get2(objectThread)->threadId.loadRelaxed();
+        return false;
+    };
 
     // check connection type
-    if (connectionType == Qt::AutoConnection) {
-        connectionType = receiverInSameThread
-                         ? Qt::DirectConnection
-                         : Qt::QueuedConnection;
-    }
+    if (connectionType == Qt::AutoConnection)
+        connectionType = receiverInSameThread() ? Qt::DirectConnection : Qt::QueuedConnection;
+    else if (connectionType == Qt::ConnectionType(-1))
+        connectionType = Qt::DirectConnection;
 
 #if !QT_CONFIG(thread)
     if (connectionType == Qt::BlockingQueuedConnection) {
@@ -2536,7 +2578,7 @@ auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
         QCoreApplication::postEvent(object, event.release());
     } else { // blocking queued connection
 #if QT_CONFIG(thread)
-        if (receiverInSameThread) {
+        if (receiverInSameThread()) {
             qWarning("QMetaMethod::invoke: Dead lock detected in BlockingQueuedConnection: "
                      "Receiver is %s(%p)", priv->mobj->className(), object);
             return InvokeFailReason::DeadLockDetected;

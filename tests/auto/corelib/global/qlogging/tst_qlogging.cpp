@@ -732,12 +732,12 @@ void tst_qmessagehandler::qMessagePattern_data()
         // Q_OBJECT macro hence the ?helper? frame
         "[MyClass::myFunction|MyClass::mySlot1|?" BACKTRACE_HELPER_NAME "?|",
 
-        // QMetaObject::invokeMethod calls internal function
+        // QMetaObject::invokeMethodImpl calls internal function
         // (QMetaMethodPrivate::invokeImpl, at the tims of this writing), which
         // will usually show only as ?libQt6Core.so? or equivalent, so we skip
 
         // end of backtrace, actual message
-        "|" QT_NAMESPACE_STR "QMetaObject::invokeMethod] from_a_function 34"
+        "|" QT_NAMESPACE_STR "QMetaObject::invokeMethodImpl] from_a_function 34"
     };
     QTest::newRow("backtrace") << "[%{backtrace}] %{message}" << true << expectedBacktrace;
 #endif
