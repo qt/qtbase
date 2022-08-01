@@ -3036,36 +3036,6 @@ QByteArray QSysInfo::bootUniqueId()
 */
 
 /*!
-    \macro void Q_CHECK_PTR(void *pointer)
-    \relates <QtGlobal>
-
-    If \a pointer is \nullptr, prints a message containing the source
-    code's file name and line number, saying that the program ran out
-    of memory and aborts program execution. It throws \c std::bad_alloc instead
-    if exceptions are enabled.
-
-    Q_CHECK_PTR does nothing if \c QT_NO_DEBUG and \c QT_NO_EXCEPTIONS were
-    defined during compilation. Therefore you must not use Q_CHECK_PTR to check
-    for successful memory allocations because the check will be disabled in
-    some cases.
-
-    Example:
-
-    \snippet code/src_corelib_global_qglobal.cpp 21
-
-    \sa qWarning(), {Debugging Techniques}
-*/
-
-/*!
-    \fn template <typename T> T *q_check_ptr(T *p)
-    \relates <QtGlobal>
-
-    Uses Q_CHECK_PTR on \a p, then returns \a p.
-
-    This can be used as an inline version of Q_CHECK_PTR.
-*/
-
-/*!
     \macro const char* Q_FUNC_INFO()
     \relates <QtGlobal>
 
@@ -3083,36 +3053,6 @@ QByteArray QSysInfo::bootUniqueId()
 
     If this macro is used outside a function, the behavior is undefined.
 */
-
-/*!
-    \internal
-    The Q_CHECK_PTR macro calls this function if an allocation check
-    fails.
-*/
-void qt_check_pointer(const char *n, int l) noexcept
-{
-    // make separate printing calls so that the first one may flush;
-    // the second one could want to allocate memory (fputs prints a
-    // newline and stderr auto-flushes).
-    fputs("Out of memory", stderr);
-    fprintf(stderr, "  in %s, line %d\n", n, l);
-
-    std::terminate();
-}
-
-/*
-   \internal
-   Allows you to throw an exception without including <new>
-   Called internally from Q_CHECK_PTR on certain OS combinations
-*/
-void qBadAlloc()
-{
-#ifndef QT_NO_EXCEPTIONS
-    throw std::bad_alloc();
-#else
-    std::terminate();
-#endif
-}
 
 /*
    \internal

@@ -637,23 +637,6 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include <QtCore/qassert.h>
 QT_END_INCLUDE_NAMESPACE
 
-Q_NORETURN Q_CORE_EXPORT void qt_check_pointer(const char *, int) noexcept;
-Q_NORETURN Q_DECL_COLD_FUNCTION
-Q_CORE_EXPORT void qBadAlloc();
-
-#ifdef QT_NO_EXCEPTIONS
-#  if defined(QT_NO_DEBUG) && !defined(QT_FORCE_ASSERTS)
-#    define Q_CHECK_PTR(p) qt_noop()
-#  else
-#    define Q_CHECK_PTR(p) do {if (!(p)) qt_check_pointer(__FILE__,__LINE__);} while (false)
-#  endif
-#else
-#  define Q_CHECK_PTR(p) do { if (!(p)) qBadAlloc(); } while (false)
-#endif
-
-template <typename T>
-inline T *q_check_ptr(T *p) { Q_CHECK_PTR(p); return p; }
-
 #if 0
 #pragma qt_class(QFunctionPointer)
 #endif
