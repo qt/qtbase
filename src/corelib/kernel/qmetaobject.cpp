@@ -2428,7 +2428,7 @@ auto QMetaMethodPrivate::invokeImpl(QMetaMethod self, void *target,
     Q_ASSERT(parameters);
     Q_ASSERT(typeNames);
 
-    if ((paramCount - 1) < priv->data.argc())
+    if ((paramCount - 1) < qsizetype(priv->data.argc()))
         return InvokeFailReason::TooFewArguments;
 
     // 0 is the return type, 1 is the first formal parameter
