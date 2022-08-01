@@ -177,7 +177,7 @@
 ##teamcity[testFailed name='verify()' message='Failure! |[Loc: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)|]' details='|'opaqueFunc() < 2|' returned FALSE. ()' flowId='tst_Cmptest']
 ##teamcity[testFinished name='verify()' flowId='tst_Cmptest']
 ##teamcity[testStarted name='verify2()' flowId='tst_Cmptest']
-##teamcity[testFailed name='verify2()' message='Failure! |[Loc: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)|]' details='|'opaqueFunc() < 2|' returned FALSE. (42)' flowId='tst_Cmptest']
+##teamcity[testFailed name='verify2()' message='Failure! |[Loc: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)|]' details='|'opaqueFunc() < 2|' returned FALSE. (42 >= 2 (as expected, in fact))' flowId='tst_Cmptest']
 ##teamcity[testFinished name='verify2()' flowId='tst_Cmptest']
 ##teamcity[testStarted name='tryVerify()' flowId='tst_Cmptest']
 ##teamcity[testFailed name='tryVerify()' message='Failure! |[Loc: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)|]' details='|'!c|' returned FALSE. ()' flowId='tst_Cmptest']

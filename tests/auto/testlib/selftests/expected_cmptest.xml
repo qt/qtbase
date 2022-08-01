@@ -398,7 +398,7 @@
   </TestFunction>
   <TestFunction name="verify2">
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
-      <Description><![CDATA['opaqueFunc() < 2' returned FALSE. (42)]]></Description>
+      <Description><![CDATA['opaqueFunc() < 2' returned FALSE. (42 >= 2 (as expected, in fact))]]></Description>
     </Incident>
     <Duration msecs="0"/>
   </TestFunction>

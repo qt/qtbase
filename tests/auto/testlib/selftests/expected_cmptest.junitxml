@@ -295,7 +295,7 @@
     <failure type="fail" message="&apos;opaqueFunc() &lt; 2&apos; returned FALSE. ()"/>
   </testcase>
   <testcase name="verify2" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="&apos;opaqueFunc() &lt; 2&apos; returned FALSE. (42)"/>
+    <failure type="fail" message="&apos;opaqueFunc() &lt; 2&apos; returned FALSE. (42 &gt;= 2 (as expected, in fact))"/>
   </testcase>
   <testcase name="tryVerify" classname="tst_Cmptest" time="@TEST_DURATION@">
     <failure type="fail" message="&apos;!c&apos; returned FALSE. ()"/>

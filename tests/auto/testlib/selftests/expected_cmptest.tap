@@ -547,7 +547,7 @@ not ok 65 - verify()
 not ok 66 - verify2()
   ---
   type: QVERIFY
-  message: 42
+  message: as expected, in fact)
   wanted: true (opaqueFunc() < 2)
   found: false (opaqueFunc() < 2)
   expected: true (opaqueFunc() < 2)

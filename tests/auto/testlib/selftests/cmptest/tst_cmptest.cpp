@@ -12,6 +12,7 @@
 #include <QtGui/QVector3D>
 #include <QtGui/QVector4D>
 #endif
+using namespace Qt::StringLiterals;
 
 /* XPM test data for QPixmap, QImage tests (use drag cursors as example) */
 
@@ -647,7 +648,10 @@ void tst_Cmptest::verify()
 void tst_Cmptest::verify2()
 {
     QVERIFY2(opaqueFunc() > 2, QByteArray::number(opaqueFunc()).constData());
-    QVERIFY2(opaqueFunc() < 2, QByteArray::number(opaqueFunc()).constData());
+    QVERIFY2(opaqueFunc() < 2,
+             // Message with parenthetical part, to catch mis-parses of the
+             // resulting message:
+             u"%1 >= 2 (as expected, in fact)"_s.arg(opaqueFunc()).toUtf8().constData());
 }
 
 class DeferredFlag : public QObject // Can't be const.

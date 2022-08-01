@@ -198,7 +198,7 @@ FAIL!  : tst_Cmptest::tryCompare() Compared values are not the same
    Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
 FAIL!  : tst_Cmptest::verify() 'opaqueFunc() < 2' returned FALSE. ()
    Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
-FAIL!  : tst_Cmptest::verify2() 'opaqueFunc() < 2' returned FALSE. (42)
+FAIL!  : tst_Cmptest::verify2() 'opaqueFunc() < 2' returned FALSE. (42 >= 2 (as expected, in fact))
    Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
 QINFO  : tst_Cmptest::tryVerify() Should now time out and fail
 FAIL!  : tst_Cmptest::tryVerify() '!c' returned FALSE. ()
