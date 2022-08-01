@@ -69,6 +69,9 @@ QAbstractNativeEventFilter::~QAbstractNativeEventFilter()
     \b {Linux example}
     \snippet code/src_corelib_kernel_qabstractnativeeventfilter.cpp 0
 
+    \b {Windows example}
+    \snippet code/src_corelib_kernel_qabstractnativeeventfilter_win.cpp 0
+
     \b {macOS example}
 
     mycocoaeventfilter.h:
