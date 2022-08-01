@@ -3486,23 +3486,26 @@ void QFileDialogPrivate::_q_showContextMenu(const QPoint &position)
     QModelIndex index = view->indexAt(position);
     index = mapToSource(index.sibling(index.row(), 0));
 
-    QMenu menu(view);
+    QMenu *menu = new QMenu(view);
+    menu->setAttribute(Qt::WA_DeleteOnClose);
+
     if (index.isValid()) {
         // file context menu
         const bool ro = model && model->isReadOnly();
         QFile::Permissions p(index.parent().data(QFileSystemModel::FilePermissions).toInt());
         renameAction->setEnabled(!ro && p & QFile::WriteUser);
-        menu.addAction(renameAction);
+        menu->addAction(renameAction);
         deleteAction->setEnabled(!ro && p & QFile::WriteUser);
-        menu.addAction(deleteAction);
-        menu.addSeparator();
+        menu->addAction(deleteAction);
+        menu->addSeparator();
     }
-    menu.addAction(showHiddenAction);
+    menu->addAction(showHiddenAction);
     if (qFileDialogUi->newFolderButton->isVisible()) {
         newFolderAction->setEnabled(qFileDialogUi->newFolderButton->isEnabled());
-        menu.addAction(newFolderAction);
+        menu->addAction(newFolderAction);
     }
-    menu.exec(view->viewport()->mapToGlobal(position));
+    menu->popup(view->viewport()->mapToGlobal(position));
+
 #endif // QT_CONFIG(menu)
 }
 
