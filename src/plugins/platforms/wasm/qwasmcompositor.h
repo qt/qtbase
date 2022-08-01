@@ -123,6 +123,8 @@ public:
     bool processKeyboard(int eventType, const EmscriptenKeyboardEvent *keyEvent);
     bool processWheel(int eventType, const EmscriptenWheelEvent *wheelEvent);
     int handleTouch(int eventType, const EmscriptenTouchEvent *touchEvent);
+    void setCapture(QWasmWindow *window);
+    void releaseCapture();
 
     bool processMouseEnter(const EmscriptenMouseEvent *mouseEvent);
     bool processMouseLeave();
@@ -218,6 +220,7 @@ private:
 
     QPointer<QWindow> m_pressedWindow;
     QPointer<QWindow> m_lastMouseTargetWindow;
+    QPointer<QWindow> m_mouseCaptureWindow;
 
     std::unique_ptr<qstdweb::EventCallback> m_pointerDownCallback;
     std::unique_ptr<qstdweb::EventCallback> m_pointerMoveCallback;

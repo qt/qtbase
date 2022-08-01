@@ -901,9 +901,10 @@ bool QWasmCompositor::processPointer(const PointerEvent& event)
     const QPoint targetPointInScreenCoords = screen()->geometry().topLeft() + event.point;
 
     QWindow *const targetWindow = ([this, &targetPointInScreenCoords]() -> QWindow * {
-        auto *targetWindow =
-            m_windowManipulation.operation() == WindowManipulation::Operation::None ?
-                screen()->compositor()->windowAt(targetPointInScreenCoords, 5) : nullptr;
+        auto *targetWindow = m_mouseCaptureWindow != nullptr ? m_mouseCaptureWindow.get()
+                : m_windowManipulation.operation() == WindowManipulation::Operation::None
+                ? screen()->compositor()->windowAt(targetPointInScreenCoords, 5)
+                : nullptr;
 
         return targetWindow ? targetWindow : m_lastMouseTargetWindow.get();
     })();
@@ -997,6 +998,8 @@ bool QWasmCompositor::processPointer(const PointerEvent& event)
 
 bool QWasmCompositor::deliverEventToTarget(const PointerEvent &event, QWindow *eventTarget)
 {
+    Q_ASSERT(!m_mouseCaptureWindow || m_mouseCaptureWindow.get() == eventTarget);
+
     const QPoint pointInScreenCoords = screen()->geometry().topLeft() + event.point;
     const QPoint targetPointClippedToScreen(
             std::max(screen()->geometry().left(),
@@ -1016,8 +1019,8 @@ bool QWasmCompositor::deliverEventToTarget(const PointerEvent &event, QWindow *e
     }
 
     WindowArea windowArea = WindowArea::Client;
-    if (!eventTarget->geometry().contains(targetPointClippedToScreen)
-        && !deliveringToPreviouslyClickedWindow) {
+    if (!deliveringToPreviouslyClickedWindow && !m_mouseCaptureWindow
+        && !eventTarget->geometry().contains(targetPointClippedToScreen)) {
         if (!eventTarget->frameGeometry().contains(targetPointClippedToScreen))
             return false;
         windowArea = WindowArea::NonClient;
@@ -1286,6 +1289,17 @@ int QWasmCompositor::handleTouch(int eventType, const EmscriptenTouchEvent *touc
                 targetWindow, QWasmIntegration::getTimestamp(), m_touchDevice.get(), touchPointList, keyModifier);
 
     return static_cast<int>(accepted);
+}
+
+void QWasmCompositor::setCapture(QWasmWindow *window)
+{
+    Q_ASSERT(std::find(m_windowStack.begin(), m_windowStack.end(), window) != m_windowStack.end());
+    m_mouseCaptureWindow = window->window();
+}
+
+void QWasmCompositor::releaseCapture()
+{
+    m_mouseCaptureWindow = nullptr;
 }
 
 void QWasmCompositor::leaveWindow(QWindow *window)
