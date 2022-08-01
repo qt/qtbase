@@ -1804,7 +1804,7 @@ bool AtSpiAdaptor::textInterface(QAccessibleInterface *interface, const QString 
         uint coordType = message.arguments().at(2).toUInt();
         if (coordType == ATSPI_COORD_TYPE_WINDOW) {
             QWindow *win = interface->window();
-            point -= QPoint(win->x(), win->y());
+            point += QPoint(win->x(), win->y());
         }
         int offset = interface->textInterface()->offsetAtPoint(point);
         sendReply(connection, message, offset);
