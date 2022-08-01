@@ -27,6 +27,7 @@ template <typename T> class QSet;
 template <typename T> class QStack;
 template <typename T, qsizetype Prealloc = 256> class QVarLengthArray;
 template <typename T> class QList;
+class QString;
 #ifndef Q_CLANG_QDOC
 template<typename T> using QVector = QList<T>;
 using QStringList = QList<QString>;

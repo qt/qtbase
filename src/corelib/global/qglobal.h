@@ -633,10 +633,6 @@ Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qSharedBuild() noexcept;
 #  define QT_DEBUG
 #endif
 
-class QString;
-Q_DECL_COLD_FUNCTION
-Q_CORE_EXPORT QString qt_error_string(int errorCode = -1);
-
 #ifndef Q_CC_MSVC
 Q_NORETURN
 #endif

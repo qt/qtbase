@@ -172,5 +172,8 @@ Q_CORE_EXPORT void qSetMessagePattern(const QString &messagePattern);
 Q_CORE_EXPORT QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context,
                                         const QString &buf);
 
+Q_DECL_COLD_FUNCTION
+Q_CORE_EXPORT QString qt_error_string(int errorCode = -1);
+
 QT_END_NAMESPACE
 #endif // QLOGGING_H
