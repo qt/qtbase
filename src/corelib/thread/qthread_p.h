@@ -159,6 +159,7 @@ public:
     explicit BindingStatusOrList(List *list) noexcept : data(encodeList(list)) {}
 
     QBindingStatus *addObjectUnlessAlreadyStatus(QObject *object);
+    void removeObject(QObject *object);
     void setStatusAndClearList(QBindingStatus *status) noexcept;
 
 
@@ -288,6 +289,7 @@ public:
        if that one has been set in the meantime
     */
     QBindingStatus *addObjectWithPendingBindingStatusChange(QObject *obj);
+    void removeObjectWithPendingBindingStatusChange(QObject *obj);
 
     // manipulating m_statusOrPendingObjects requires mutex to be locked
     QtPrivate::BindingStatusOrList m_statusOrPendingObjects = {};
@@ -314,6 +316,7 @@ public:
 
     QBindingStatus* bindingStatus() { return m_bindingStatus; }
     QBindingStatus *addObjectWithPendingBindingStatusChange(QObject *) { return nullptr; }
+    void removeObjectWithPendingBindingStatusChange(QObject *) {}
 
     static void setCurrentThread(QThread *) { }
     static QThread *threadForId(int) { return QThread::currentThread(); }

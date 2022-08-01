@@ -115,6 +115,8 @@ private slots:
 
     void create();
     void threadIdReuse();
+
+    void bindingListCleanupAfterDelete();
 };
 
 enum { one_minute = 60 * 1000, five_minutes = 5 * one_minute };
@@ -1699,6 +1701,18 @@ void tst_QThread::threadIdReuse()
     if (!threadIdReused) {
         QSKIP("Thread ID was not reused");
     }
+}
+
+void tst_QThread::bindingListCleanupAfterDelete()
+{
+    QThread t;
+    auto optr = std::make_unique<QObject>();
+    optr->moveToThread(&t);
+    auto threadPriv =  static_cast<QThreadPrivate *>(QObjectPrivate::get(&t));
+    auto list = threadPriv->m_statusOrPendingObjects.list();
+    QVERIFY(list);
+    optr.reset();
+    QVERIFY(list->empty());
 }
 
 QTEST_MAIN(tst_QThread)

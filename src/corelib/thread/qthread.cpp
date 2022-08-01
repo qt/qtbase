@@ -598,11 +598,33 @@ QBindingStatus *QtPrivate::BindingStatusOrList::addObjectUnlessAlreadyStatus(QOb
     return nullptr;
 }
 
+/*!
+    \internal
+    If BindingStatusOrList is a list, remove \a object from it
+ */
+void QtPrivate::BindingStatusOrList::removeObject(QObject *object)
+{
+    List *objectList = list();
+    if (!objectList)
+        return;
+    auto it = std::remove(objectList->begin(), objectList->end(), object);
+    objectList->erase(it, objectList->end());
+}
+
 QBindingStatus *QThreadPrivate::addObjectWithPendingBindingStatusChange(QObject *obj)
 {
     QMutexLocker lock(&mutex);
     return m_statusOrPendingObjects.addObjectUnlessAlreadyStatus(obj);
 }
+
+void QThreadPrivate::removeObjectWithPendingBindingStatusChange(QObject *obj)
+{
+    if (m_statusOrPendingObjects.bindingStatus())
+        return;
+    QMutexLocker lock(&mutex);
+    m_statusOrPendingObjects.removeObject(obj);
+}
+
 
 /*!
     \threadsafe
