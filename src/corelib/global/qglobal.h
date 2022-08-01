@@ -983,7 +983,7 @@ Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qSharedBuild() noexcept;
 */
 #ifndef qUtf16Printable
 #  define qUtf16Printable(string) \
-    static_cast<const wchar_t*>(static_cast<const void*>(QString(string).utf16()))
+    static_cast<const wchar_t*>(static_cast<const void*>(QtPrivate::asString(string).utf16()))
 #endif
 
 class QString;
