@@ -69,3 +69,11 @@ if (node.hasAttribute(QStringLiteral(u"http-contents-length"))) //...
 //! [11]
 if (attribute.name() == "http-contents-length"_L1) //...
 //! [11]
+
+//! [qUtf8Printable]
+qWarning("%s: %s", qUtf8Printable(key), qUtf8Printable(value));
+//! [qUtf8Printable]
+
+//! [qUtf16Printable]
+qWarning("%ls: %ls", qUtf16Printable(key), qUtf16Printable(value));
+//! [qUtf16Printable]

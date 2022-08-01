@@ -633,24 +633,6 @@ Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qSharedBuild() noexcept;
 #  define QT_DEBUG
 #endif
 
-// QtPrivate::asString defined in qstring.h
-#ifndef qPrintable
-#  define qPrintable(string) QtPrivate::asString(string).toLocal8Bit().constData()
-#endif
-
-#ifndef qUtf8Printable
-#  define qUtf8Printable(string) QtPrivate::asString(string).toUtf8().constData()
-#endif
-
-/*
-    Wrap QString::utf16() with enough casts to allow passing it
-    to QString::asprintf("%ls") without warnings.
-*/
-#ifndef qUtf16Printable
-#  define qUtf16Printable(string) \
-    static_cast<const wchar_t*>(static_cast<const void*>(QtPrivate::asString(string).utf16()))
-#endif
-
 class QString;
 Q_DECL_COLD_FUNCTION
 Q_CORE_EXPORT QString qt_error_string(int errorCode = -1);

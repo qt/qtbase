@@ -3495,67 +3495,6 @@ void qAbort()
 */
 
 /*!
-    \macro const char *qPrintable(const QString &str)
-    \relates <QtGlobal>
-
-    Returns \a str as a \c{const char *}. This is equivalent to
-    \a{str}.toLocal8Bit().constData().
-
-    The char pointer will be invalid after the statement in which
-    qPrintable() is used. This is because the array returned by
-    QString::toLocal8Bit() will fall out of scope.
-
-    \note qDebug(), qInfo(), qWarning(), qCritical(), qFatal() expect
-    %s arguments to be UTF-8 encoded, while qPrintable() converts to
-    local 8-bit encoding. Therefore qUtf8Printable() should be used
-    for logging strings instead of qPrintable().
-
-    \sa qUtf8Printable()
-*/
-
-/*!
-    \macro const char *qUtf8Printable(const QString &str)
-    \relates <QtGlobal>
-    \since 5.4
-
-    Returns \a str as a \c{const char *}. This is equivalent to
-    \a{str}.toUtf8().constData().
-
-    The char pointer will be invalid after the statement in which
-    qUtf8Printable() is used. This is because the array returned by
-    QString::toUtf8() will fall out of scope.
-
-    Example:
-
-    \snippet code/src_corelib_global_qglobal.cpp 37
-
-    \sa qPrintable(), qDebug(), qInfo(), qWarning(), qCritical(), qFatal()
-*/
-
-/*!
-    \macro const wchar_t *qUtf16Printable(const QString &str)
-    \relates <QtGlobal>
-    \since 5.7
-
-    Returns \a str as a \c{const ushort *}, but cast to a \c{const wchar_t *}
-    to avoid warnings. This is equivalent to \a{str}.utf16() plus some casting.
-
-    The only useful thing you can do with the return value of this macro is to
-    pass it to QString::asprintf() for use in a \c{%ls} conversion. In particular,
-    the return value is \e{not} a valid \c{const wchar_t*}!
-
-    In general, the pointer will be invalid after the statement in which
-    qUtf16Printable() is used. This is because the pointer may have been
-    obtained from a temporary expression, which will fall out of scope.
-
-    Example:
-
-    \snippet code/src_corelib_global_qglobal.cpp qUtf16Printable
-
-    \sa qPrintable(), qDebug(), qInfo(), qWarning(), qCritical(), qFatal()
-*/
-
-/*!
     \macro Q_DECLARE_TYPEINFO(Type, Flags)
     \relates <QtGlobal>
 
