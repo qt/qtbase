@@ -212,4 +212,22 @@ QPixmap QEglFSScreen::grabWindow(WId wid, int x, int y, int width, int height) c
     return QPixmap();
 }
 
+QWindow *QEglFSScreen::topLevelAt(const QPoint &point) const
+{
+#ifndef QT_NO_OPENGL
+    QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
+    const QList<QOpenGLCompositorWindow *> windows = compositor->windows();
+    const int windowCount = windows.size();
+
+    // Higher z-order is at the end of the list
+    for (int i = windowCount - 1; i >= 0; i--) {
+        QWindow *window = windows[i]->sourceWindow();
+        if (window->isVisible() && window->geometry().contains(point))
+            return window;
+    }
+#endif
+
+    return QPlatformScreen::topLevelAt(point);
+}
+
 QT_END_NAMESPACE
