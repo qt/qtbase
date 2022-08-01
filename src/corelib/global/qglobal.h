@@ -633,33 +633,9 @@ Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qSharedBuild() noexcept;
 #  define QT_DEBUG
 #endif
 
-#ifndef Q_CC_MSVC
-Q_NORETURN
-#endif
-Q_DECL_COLD_FUNCTION
-Q_CORE_EXPORT void qt_assert(const char *assertion, const char *file, int line) noexcept;
-
-#if !defined(Q_ASSERT)
-#  if defined(QT_NO_DEBUG) && !defined(QT_FORCE_ASSERTS)
-#    define Q_ASSERT(cond) static_cast<void>(false && (cond))
-#  else
-#    define Q_ASSERT(cond) ((cond) ? static_cast<void>(0) : qt_assert(#cond, __FILE__, __LINE__))
-#  endif
-#endif
-
-#ifndef Q_CC_MSVC
-Q_NORETURN
-#endif
-Q_DECL_COLD_FUNCTION
-Q_CORE_EXPORT void qt_assert_x(const char *where, const char *what, const char *file, int line) noexcept;
-
-#if !defined(Q_ASSERT_X)
-#  if defined(QT_NO_DEBUG) && !defined(QT_FORCE_ASSERTS)
-#    define Q_ASSERT_X(cond, where, what) static_cast<void>(false && (cond))
-#  else
-#    define Q_ASSERT_X(cond, where, what) ((cond) ? static_cast<void>(0) : qt_assert_x(where, what, __FILE__, __LINE__))
-#  endif
-#endif
+QT_BEGIN_INCLUDE_NAMESPACE
+#include <QtCore/qassert.h>
+QT_END_INCLUDE_NAMESPACE
 
 Q_NORETURN Q_CORE_EXPORT void qt_check_pointer(const char *, int) noexcept;
 Q_NORETURN Q_DECL_COLD_FUNCTION

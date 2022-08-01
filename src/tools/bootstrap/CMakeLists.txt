@@ -14,6 +14,7 @@ qt_add_library(Bootstrap STATIC)
 # special case end
 qt_internal_extend_target(Bootstrap
     SOURCES
+        ../../corelib/global/qassert.cpp
         ../../corelib/global/qendian.cpp
         ../../corelib/global/qenvironmentvariables.cpp
         ../../corelib/global/qfloat16.cpp

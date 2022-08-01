@@ -47,6 +47,7 @@ qt_internal_add_module(Core
         # Keep the rest alphabetical
         compat/removed_api.cpp
         global/archdetect.cpp
+        global/qassert.cpp global/qassert.h
         global/qcompare_impl.h
         global/qcompare.h
         global/qcompilerdetection.h
