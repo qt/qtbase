@@ -331,7 +331,7 @@ public abstract class QtLoader {
                     }
                 }
 
-                if (!(new File(stylePath)).exists() && !extractOption.equals("none")) {
+                if (!extractOption.equals("none")) {
                     loaderParams.putString(EXTRACT_STYLE_KEY, stylePath);
                     loaderParams.putBoolean(EXTRACT_STYLE_MINIMAL_KEY, extractOption.equals("minimal"));
                 }
