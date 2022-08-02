@@ -583,24 +583,22 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         devInfo.enabledExtensionCount = uint32_t(requestedDevExts.count());
         devInfo.ppEnabledExtensionNames = requestedDevExts.constData();
 
+        // Enable all 1.0 core features that are reported as supported, except
+        // robustness because that potentially affects performance.
+        //
+        // Enabling all features mainly serves third-party renderers that may
+        // use the VkDevice created here. For the record, the backend here
+        // optionally relies on the following features, meaning just for our
+        // (QRhi/Quick/Quick 3D) purposes it would be sufficient to
+        // enable-if-supported only the following:
+        //
+        // wideLines, largePoints, fillModeNonSolid,
+        // tessellationShader, geometryShader
+        // textureCompressionETC2, textureCompressionASTC_LDR, textureCompressionBC
+
         VkPhysicalDeviceFeatures features;
-        memset(&features, 0, sizeof(features));
-        if (physDevFeatures.wideLines)
-            features.wideLines = VK_TRUE;
-        if (physDevFeatures.largePoints)
-            features.largePoints = VK_TRUE;
-        if (physDevFeatures.tessellationShader)
-            features.tessellationShader = VK_TRUE;
-        if (physDevFeatures.textureCompressionETC2)
-            features.textureCompressionETC2 = VK_TRUE;
-        if (physDevFeatures.textureCompressionASTC_LDR)
-            features.textureCompressionASTC_LDR = VK_TRUE;
-        if (physDevFeatures.textureCompressionBC)
-            features.textureCompressionBC = VK_TRUE;
-        if (physDevFeatures.geometryShader)
-            features.geometryShader = VK_TRUE;
-        if (physDevFeatures.fillModeNonSolid)
-            features.fillModeNonSolid = VK_TRUE;
+        memcpy(&features, &physDevFeatures, sizeof(features));
+        features.robustBufferAccess = VK_FALSE;
         devInfo.pEnabledFeatures = &features;
 
         VkResult err = f->vkCreateDevice(physDev, &devInfo, nullptr, &dev);
