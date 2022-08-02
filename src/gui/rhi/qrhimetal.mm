@@ -4169,8 +4169,7 @@ QSize QMetalSwapChain::surfacePixelSize()
 bool QMetalSwapChain::isFormatSupported(Format f)
 {
 #ifdef Q_OS_MACOS
-    if (@available(macOS 10.12, /*iOS 10.0,*/ *))
-        return f == SDR || f == HDRExtendedSrgbLinear;
+    return f == SDR || f == HDRExtendedSrgbLinear;
 #endif
     return f == SDR;
 }
@@ -4204,11 +4203,9 @@ void QMetalSwapChain::chooseFormats()
     samples = rhiD->effectiveSampleCount(m_sampleCount);
     // pick a format that is allowed for CAMetalLayer.pixelFormat
     if (m_format == HDRExtendedSrgbLinear) {
-        if (@available(macOS 10.12, /*iOS 10.0,*/ *)) {
-            d->colorFormat = MTLPixelFormatRGBA16Float;
-            d->rhiColorFormat = QRhiTexture::RGBA16F;
-            return;
-        }
+        d->colorFormat = MTLPixelFormatRGBA16Float;
+        d->rhiColorFormat = QRhiTexture::RGBA16F;
+        return;
     }
     d->colorFormat = m_flags.testFlag(sRGB) ? MTLPixelFormatBGRA8Unorm_sRGB : MTLPixelFormatBGRA8Unorm;
     d->rhiColorFormat = QRhiTexture::BGRA8;
@@ -4242,11 +4239,10 @@ bool QMetalSwapChain::createOrResize()
     if (d->colorFormat != d->layer.pixelFormat)
         d->layer.pixelFormat = d->colorFormat;
 #ifdef Q_OS_MACOS
-    if (@available(macOS 10.12, /*iOS 10.0,*/ *)) { // Can't enable this on iOS until wantsExtendedDynamicRangeContent is available
-        if (m_format == HDRExtendedSrgbLinear) {
-            d->layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceExtendedLinearSRGB);
-            d->layer.wantsExtendedDynamicRangeContent = YES;
-        }
+    // Can't enable this on iOS until wantsExtendedDynamicRangeContent is available
+    if (m_format == HDRExtendedSrgbLinear) {
+        d->layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceExtendedLinearSRGB);
+        d->layer.wantsExtendedDynamicRangeContent = YES;
     }
 #endif
 

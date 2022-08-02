@@ -712,15 +712,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
 + (Class)layerClass
 {
-#ifdef TARGET_IPHONE_SIMULATOR
-    if (@available(ios 13.0, *))
-#endif
-
     return [CAMetalLayer class];
-
-#ifdef TARGET_IPHONE_SIMULATOR
-    return nil;
-#endif
 }
 
 @end

@@ -62,14 +62,9 @@ static QPalette *qt_mac_createSystemPalette()
     // System palette initialization:
     QBrush br = qt_mac_toQBrush([NSColor selectedControlColor]);
     palette->setBrush(QPalette::Active, QPalette::Highlight, br);
-    if (__builtin_available(macOS 10.14, *)) {
-        const auto inactiveHighlight = qt_mac_toQBrush([NSColor unemphasizedSelectedContentBackgroundColor]);
-        palette->setBrush(QPalette::Inactive, QPalette::Highlight, inactiveHighlight);
-        palette->setBrush(QPalette::Disabled, QPalette::Highlight, inactiveHighlight);
-    } else {
-        palette->setBrush(QPalette::Inactive, QPalette::Highlight, br);
-        palette->setBrush(QPalette::Disabled, QPalette::Highlight, br);
-    }
+    const auto inactiveHighlight = qt_mac_toQBrush([NSColor unemphasizedSelectedContentBackgroundColor]);
+    palette->setBrush(QPalette::Inactive, QPalette::Highlight, inactiveHighlight);
+    palette->setBrush(QPalette::Disabled, QPalette::Highlight, inactiveHighlight);
 
     palette->setBrush(QPalette::Shadow, qt_mac_toQColor([NSColor shadowColor]));
 
@@ -154,17 +149,8 @@ static QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
         }
         if (mac_widget_colors[i].paletteRole == QPlatformTheme::MenuPalette
                 || mac_widget_colors[i].paletteRole == QPlatformTheme::MenuBarPalette) {
-            NSColor *selectedMenuItemColor = nil;
-            if (__builtin_available(macOS 10.14, *)) {
-                // Cheap approximation for NSVisualEffectView (see deprecation note for selectedMenuItemTextColor)
-                selectedMenuItemColor = [[NSColor controlAccentColor] highlightWithLevel:0.3];
-            } else {
-                // selectedMenuItemColor would presumably be the correct color to use as the background
-                // for selected menu items. But that color is always blue, and doesn't follow the
-                // appearance color in system preferences. So we therefore deliberately choose to use
-                // keyboardFocusIndicatorColor instead, which appears to have the same color value.
-                selectedMenuItemColor = [NSColor keyboardFocusIndicatorColor];
-            }
+            // Cheap approximation for NSVisualEffectView (see deprecation note for selectedMenuItemTextColor)
+            auto selectedMenuItemColor = [[NSColor controlAccentColor] highlightWithLevel:0.3];
             pal.setBrush(QPalette::Highlight, qt_mac_toQColor(selectedMenuItemColor));
             qc = qt_mac_toQColor([NSColor labelColor]);
             pal.setBrush(QPalette::ButtonText, qc);
@@ -185,17 +171,10 @@ static QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
         } else if (mac_widget_colors[i].paletteRole == QPlatformTheme::ItemViewPalette) {
             NSArray<NSColor *> *baseColors = nil;
             NSColor *activeHighlightColor = nil;
-            if (__builtin_available(macOS 10.14, *)) {
-                baseColors = [NSColor alternatingContentBackgroundColors];
-                activeHighlightColor = [NSColor selectedContentBackgroundColor];
-                pal.setBrush(QPalette::Inactive, QPalette::HighlightedText,
-                             qt_mac_toQBrush([NSColor unemphasizedSelectedTextColor]));
-            } else {
-                baseColors = [NSColor controlAlternatingRowBackgroundColors];
-                activeHighlightColor = [NSColor alternateSelectedControlColor];
-                pal.setBrush(QPalette::Inactive, QPalette::HighlightedText,
-                             pal.brush(QPalette::Active, QPalette::Text));
-            }
+            baseColors = [NSColor alternatingContentBackgroundColors];
+            activeHighlightColor = [NSColor selectedContentBackgroundColor];
+            pal.setBrush(QPalette::Inactive, QPalette::HighlightedText,
+                         qt_mac_toQBrush([NSColor unemphasizedSelectedTextColor]));
             pal.setBrush(QPalette::Base, qt_mac_toQBrush(baseColors[0]));
             pal.setBrush(QPalette::AlternateBase, qt_mac_toQBrush(baseColors[1]));
             pal.setBrush(QPalette::Active, QPalette::Highlight,
@@ -231,9 +210,7 @@ QCocoaTheme::QCocoaTheme()
 {
     if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave) {
         m_appearanceObserver = QMacKeyValueObserver(NSApp, @"effectiveAppearance", [this] {
-            if (__builtin_available(macOS 10.14, *))
-                NSAppearance.currentAppearance = NSApp.effectiveAppearance;
-
+            NSAppearance.currentAppearance = NSApp.effectiveAppearance;
             handleSystemThemeChange();
         });
     }
