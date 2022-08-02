@@ -1404,6 +1404,7 @@ public class QtNative
     public static native void handleOrientationChanged(int newRotation, int nativeOrientation);
     public static native void handleRefreshRateChanged(float refreshRate);
     // screen methods
+    public static native void handleUiDarkModeChanged(int newUiMode);
 
     // pointer methods
     public static native void mouseDown(int winId, int x, int y);

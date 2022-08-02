@@ -488,6 +488,15 @@ void QAndroidPlatformIntegration::setScreenSize(int width, int height)
         QMetaObject::invokeMethod(m_primaryScreen, "setSize", Qt::AutoConnection, Q_ARG(QSize, QSize(width, height)));
 }
 
+QPlatformTheme::Appearance QAndroidPlatformIntegration::m_appearance = QPlatformTheme::Appearance::Light;
+
+void QAndroidPlatformIntegration::setAppearance(QPlatformTheme::Appearance newAppearance)
+{
+    if (m_appearance == newAppearance)
+        return;
+    m_appearance = newAppearance;
+}
+
 void QAndroidPlatformIntegration::setScreenSizeParameters(const QSize &physicalSize,
                                                           const QSize &screenSize,
                                                           const QRect &availableGeometry)

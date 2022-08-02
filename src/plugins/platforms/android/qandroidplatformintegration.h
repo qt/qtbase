@@ -13,6 +13,7 @@
 #include <qpa/qplatformnativeinterface.h>
 #include <qpa/qplatformopenglcontext.h>
 #include <qpa/qplatformoffscreensurface.h>
+#include <qpa/qplatformtheme.h>
 
 #include <EGL/egl.h>
 #include <memory>
@@ -103,6 +104,8 @@ public:
 
     void flushPendingUpdates();
 
+    static void setAppearance(QPlatformTheme::Appearance newAppearance);
+    static QPlatformTheme::Appearance appearance() { return m_appearance; }
 #if QT_CONFIG(vulkan)
     QPlatformVulkanInstance *createPlatformVulkanInstance(QVulkanInstance *instance) const override;
 #endif
@@ -114,6 +117,8 @@ private:
     QAndroidPlatformScreen *m_primaryScreen;
 
     QThread *m_mainThread;
+
+    static QPlatformTheme::Appearance m_appearance;
 
     static QRect m_defaultAvailableGeometry;
     static QSize m_defaultPhysicalSize;

@@ -849,6 +849,8 @@ public class QtActivityDelegate
         QtNative.handleOrientationChanged(rotation, m_nativeOrientation);
         m_currentRotation = rotation;
 
+        handleUiModeChange(m_activity.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK);
+
         float refreshRate = (Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
                 ? m_activity.getWindowManager().getDefaultDisplay().getRefreshRate()
                 : m_activity.getDisplay().getRefreshRate();
@@ -969,6 +971,18 @@ public class QtActivityDelegate
             updateFullScreen();
     }
 
+    private void handleUiModeChange(int uiMode)
+    {
+        switch (uiMode) {
+            case Configuration.UI_MODE_NIGHT_NO:
+                QtNative.handleUiDarkModeChanged(0);
+                break;
+            case Configuration.UI_MODE_NIGHT_YES:
+                QtNative.handleUiDarkModeChanged(1);
+                break;
+        }
+    }
+
     public void onConfigurationChanged(Configuration configuration)
     {
         try {
@@ -976,6 +990,7 @@ public class QtActivityDelegate
         } catch (Exception e) {
             e.printStackTrace();
         }
+        handleUiModeChange(configuration.uiMode & Configuration.UI_MODE_NIGHT_MASK);
     }
 
     public void onDestroy()
