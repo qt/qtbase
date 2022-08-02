@@ -36,23 +36,25 @@ QVulkanInstance *QVulkanDefaultInstance::instance()
     s_vulkanInstance = new QVulkanInstance;
 
     // With a Vulkan implementation >= 1.1 we can check what
-    // vkEnumerateInstanceVersion() says and request 1.2 or 1.1 based on the
-    // result. To prevent future surprises, be conservative and ignore any > 1.2
+    // vkEnumerateInstanceVersion() says and request 1.3/1.2/1.1 based on the
+    // result. To prevent future surprises, be conservative and ignore any > 1.3
     // versions for now. For 1.0 implementations nothing will be requested, the
     // default 0 in VkApplicationInfo means 1.0.
     //
     // Vulkan 1.0 is actually sufficient for 99% of Qt Quick (3D)'s
-    // functionality. In addition, Vulkan implementations tend to enable 1.1 and 1.2
+    // functionality. In addition, Vulkan implementations tend to enable 1.1+
     // functionality regardless of the VkInstance API request. However, the
     // validation layer seems to take this fairly seriously, so we should be
-    // prepared for using 1.1 and 1.2 features in a fully correct manner. This also
-    // helps custom Vulkan code in applications, which is not under out control; it
-    // is ideal if Vulkan 1.1 and 1.2 are usable without requiring such applications
-    // to create their own QVulkanInstance just to be able to make an appropriate
-    // setApiVersion() call on it.
+    // prepared for using 1.1+ features in a fully correct manner. This also
+    // helps custom Vulkan code in applications, which is not under out
+    // control; it is ideal if Vulkan 1.1+ versions are usable without
+    // requiring such applications to create their own QVulkanInstance just to
+    // be able to make an appropriate setApiVersion() call on it.
 
     const QVersionNumber supportedVersion = s_vulkanInstance->supportedApiVersion();
-    if (supportedVersion >= QVersionNumber(1, 2))
+    if (supportedVersion >= QVersionNumber(1, 3))
+        s_vulkanInstance->setApiVersion(QVersionNumber(1, 3));
+    else if (supportedVersion >= QVersionNumber(1, 2))
         s_vulkanInstance->setApiVersion(QVersionNumber(1, 2));
     else if (supportedVersion >= QVersionNumber(1, 1))
         s_vulkanInstance->setApiVersion(QVersionNumber(1, 2));
