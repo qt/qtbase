@@ -219,7 +219,6 @@ QCocoaScreen::~QCocoaScreen()
          dispatch_release(m_displayLinkSource);
 }
 
-#if QT_MACOS_DEPLOYMENT_TARGET_BELOW(__MAC_10_15)
 static QString displayName(CGDirectDisplayID displayID)
 {
     QIOType<io_iterator_t> iterator;
@@ -251,7 +250,6 @@ static QString displayName(CGDirectDisplayID displayID)
 
     return QString();
 }
-#endif
 
 void QCocoaScreen::update(CGDirectDisplayID displayId)
 {
