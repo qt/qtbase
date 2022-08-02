@@ -1209,7 +1209,15 @@ function(qt_make_features_available target)
             endif()
             foreach(feature IN ITEMS ${features})
                 if (DEFINED "QT_FEATURE_${feature}" AND NOT "${QT_FEATURE_${feature}}" STREQUAL "${value}")
-                    message(FATAL_ERROR "Feature ${feature} is already defined to be \"${QT_FEATURE_${feature}}\" and should now be set to \"${value}\" when importing features from ${target}.")
+                    message(WARNING
+                        "This project was initially configured with the Qt feature \"${feature}\" "
+                        "set to \"${QT_FEATURE_${feature}}\". While loading the "
+                        "\"${target}\" package, the value of the feature "
+                        "has changed to \"${value}\". That might cause a project rebuild due to "
+                        "updated C++ headers. \n"
+                        "In case of build issues, consider removing the CMakeCache.txt file and "
+                        "reconfiguring the project."
+                    )
                 endif()
                 set(QT_FEATURE_${feature} "${value}" CACHE INTERNAL "Qt feature: ${feature} (from target ${target})")
             endforeach()
