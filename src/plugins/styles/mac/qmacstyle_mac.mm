@@ -421,7 +421,6 @@ class AppearanceSync {
 public:
     AppearanceSync()
     {
-#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
         if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave
             && !isDarkMode()) {
             auto requiredAppearanceName = NSApplication.sharedApplication.effectiveAppearance.name;
@@ -430,7 +429,6 @@ public:
                 NSAppearance.currentAppearance = [NSAppearance appearanceNamed:requiredAppearanceName];
             }
         }
-#endif // QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
     }
 
     ~AppearanceSync()
@@ -2102,7 +2100,6 @@ QMacStyle::QMacStyle()
                 QCoreApplication::sendEvent(o, &event);
     });
 
-#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
     Q_D(QMacStyle);
     // FIXME: Tie this logic into theme change, or even polish/unpolish
     if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave) {
@@ -2113,7 +2110,6 @@ QMacStyle::QMacStyle()
             d->cocoaControls.clear();
         });
     }
-#endif
 }
 
 QMacStyle::~QMacStyle()

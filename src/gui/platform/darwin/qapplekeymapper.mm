@@ -637,7 +637,6 @@ QList<int> QAppleKeyMapper::possibleKeys(const QKeyEvent *event) const
 API_AVAILABLE(ios(13.4)) Qt::Key QAppleKeyMapper::fromUIKitKey(NSString *keyCode)
 {
     static QHash<NSString *, Qt::Key> uiKitKeys = {
-#if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_13_4)
         { UIKeyInputF1, Qt::Key_F1 },
         { UIKeyInputF2, Qt::Key_F2 },
         { UIKeyInputF3, Qt::Key_F3 },
@@ -654,7 +653,6 @@ API_AVAILABLE(ios(13.4)) Qt::Key QAppleKeyMapper::fromUIKitKey(NSString *keyCode
         { UIKeyInputEnd, Qt::Key_End },
         { UIKeyInputPageUp, Qt::Key_PageUp },
         { UIKeyInputPageDown, Qt::Key_PageDown },
-#endif
         { UIKeyInputEscape, Qt::Key_Escape },
         { UIKeyInputUpArrow, Qt::Key_Up },
         { UIKeyInputDownArrow, Qt::Key_Down },
