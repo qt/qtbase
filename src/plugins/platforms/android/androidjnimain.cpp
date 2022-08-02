@@ -752,6 +752,12 @@ static void handleRefreshRateChanged(JNIEnv */*env*/, jclass /*cls*/, jfloat ref
         m_androidPlatformIntegration->setRefreshRate(refreshRate);
 }
 
+static void handleUiDarkModeChanged(JNIEnv */*env*/, jobject /*thiz*/, jint newUiMode)
+{
+    QAndroidPlatformIntegration::setAppearance(
+        (newUiMode == 1 ) ? QPlatformTheme::Appearance::Dark : QPlatformTheme::Appearance::Light);
+}
+
 static void onActivityResult(JNIEnv */*env*/, jclass /*cls*/,
                              jint requestCode,
                              jint resultCode,
@@ -781,6 +787,7 @@ static JNINativeMethod methods[] = {
     { "setSurface", "(ILjava/lang/Object;II)V", (void *)setSurface },
     { "updateWindow", "()V", (void *)updateWindow },
     { "updateApplicationState", "(I)V", (void *)updateApplicationState },
+    { "handleUiDarkModeChanged", "(I)V", (void *)handleUiDarkModeChanged },
     { "handleOrientationChanged", "(II)V", (void *)handleOrientationChanged },
     { "onActivityResult", "(IILandroid/content/Intent;)V", (void *)onActivityResult },
     { "onNewIntent", "(Landroid/content/Intent;)V", (void *)onNewIntent },
