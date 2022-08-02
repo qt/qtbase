@@ -175,11 +175,15 @@ Q_DECLARE_LOGGING_CATEGORY(lcGuiVk)
 
   When it comes to device features, QVulkanWindow enables all Vulkan 1.0
   features that are reported as supported from vkGetPhysicalDeviceFeatures().
-  This is always not sufficient, and therefore full control over the
-  VkPhysicalDeviceFeatures used for device creation is possible too by
-  registering a callback function with setEnabledFeaturesModifier(). When set,
-  the callback function is invoked, letting it alter the
-  VkPhysicalDeviceFeatures, instead of enabling only the 1.0 features.
+  As an exception to this rule, \c robustBufferAccess is never enabled. Use the
+  callback mechanism described below, if enabling that feature is desired.
+
+  Just enabling the 1.0 core features is not always sufficient, and therefore
+  full control over the VkPhysicalDeviceFeatures used for device creation is
+  possible too by registering a callback function with
+  setEnabledFeaturesModifier(). When set, the callback function is invoked,
+  letting it alter the VkPhysicalDeviceFeatures, instead of enabling only the
+  1.0 core features.
 
   \sa QVulkanInstance, QWindow
  */
@@ -703,8 +707,10 @@ void QVulkanWindowPrivate::init()
     if (enabledFeaturesModifier) {
         enabledFeaturesModifier(features);
     } else {
-        // Enable all 1.0 features.
+        // Enable all supported 1.0 core features, except ones that likely
+        // involve a performance penalty.
         f->vkGetPhysicalDeviceFeatures(physDev, &features);
+        features.robustBufferAccess = VK_FALSE;
     }
     devInfo.pEnabledFeatures = &features;
 
@@ -1614,10 +1620,13 @@ void QVulkanWindow::setQueueCreateInfoModifier(const QueueCreateInfoModifier &mo
     VkPhysicalDeviceFeatures that is passed in when creating a Vulkan device
     object.
 
-    By default QVulkanWindow enables all Vulkan 1.0 features the physical
-    device reports as supported. That is not always sufficient when working
-    with Vulkan 1.1 or 1.2 features and extensions. Hence this callback
-    mechanism.
+    By default QVulkanWindow enables all Vulkan 1.0 core features that the
+    physical device reports as supported, with certain exceptions. In
+    praticular, \c robustBufferAccess is always disabled in order to avoid
+    unexpected performance hits.
+
+    This however is not always sufficient when working with Vulkan 1.1 or 1.2
+    features and extensions. Hence this callback mechanism.
 
     The VkPhysicalDeviceFeatures reference passed in is all zeroed out at the
     point when the function is invoked. It is up to the function to change
