@@ -392,6 +392,11 @@ void QAndroidPlatformTheme::showPlatformMenuBar()
     QtAndroidMenu::openOptionsMenu();
 }
 
+QPlatformTheme::Appearance QAndroidPlatformTheme::appearance() const
+{
+    return QAndroidPlatformIntegration::appearance();
+}
+
 static inline int paletteType(QPlatformTheme::Palette type)
 {
     switch (type) {
