@@ -46,13 +46,13 @@ public:
     Q_DISABLE_COPY(QBindingObserverPtr);
     void swap(QBindingObserverPtr &other) noexcept
     { qt_ptr_swap(d, other.d); }
-    QBindingObserverPtr(QBindingObserverPtr &&other) : d(std::exchange(other.d, nullptr)) {}
+    QBindingObserverPtr(QBindingObserverPtr &&other) noexcept : d(std::exchange(other.d, nullptr)) {}
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QBindingObserverPtr);
 
 
-    inline QBindingObserverPtr(QPropertyObserver *observer);
+    inline QBindingObserverPtr(QPropertyObserver *observer) noexcept;
     inline ~QBindingObserverPtr();
-    inline QPropertyBindingPrivate *binding() const;
+    inline QPropertyBindingPrivate *binding() const noexcept;
     inline QPropertyObserver *operator ->();
 };
 
@@ -893,7 +893,7 @@ inline QPropertyObserverNodeProtector::~QPropertyObserverNodeProtector()
     d.unlink_fast();
 }
 
-QBindingObserverPtr::QBindingObserverPtr(QPropertyObserver *observer) : d(observer)
+QBindingObserverPtr::QBindingObserverPtr(QPropertyObserver *observer) noexcept : d(observer)
 {
     Q_ASSERT(d);
     QPropertyObserverPointer{d}.binding()->addRef();
@@ -901,7 +901,7 @@ QBindingObserverPtr::QBindingObserverPtr(QPropertyObserver *observer) : d(observ
 
 QBindingObserverPtr::~QBindingObserverPtr() { if (d)  QPropertyObserverPointer{d}.binding()->deref(); }
 
-QPropertyBindingPrivate *QBindingObserverPtr::binding() const { return QPropertyObserverPointer{d}.binding(); }
+QPropertyBindingPrivate *QBindingObserverPtr::binding() const noexcept { return QPropertyObserverPointer{d}.binding(); }
 
 QPropertyObserver *QBindingObserverPtr::operator->() { return d; }
 
