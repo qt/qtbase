@@ -466,7 +466,7 @@ QStringList QAndroidPlatformIntegration::themeNames() const
 QPlatformTheme *QAndroidPlatformIntegration::createPlatformTheme(const QString &name) const
 {
     if (androidThemeName == name)
-        return new QAndroidPlatformTheme(m_androidPlatformNativeInterface);
+        return QAndroidPlatformTheme::instance(m_androidPlatformNativeInterface);
 
     return 0;
 }
@@ -529,6 +529,9 @@ void QAndroidPlatformIntegration::setAppearance(QPlatformTheme::Appearance newAp
     if (m_appearance == newAppearance)
         return;
     m_appearance = newAppearance;
+
+    QMetaObject::invokeMethod(qGuiApp,
+                    [] () { QAndroidPlatformTheme::instance()->updateAppearance();});
 }
 
 void QAndroidPlatformIntegration::setScreenSizeParameters(const QSize &physicalSize,

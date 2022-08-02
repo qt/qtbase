@@ -97,8 +97,14 @@ public class QtActivity extends Activity
     public QtActivity()
     {
         m_loader = new QtActivityLoader(this);
-        QT_ANDROID_THEMES = new String[] {"Theme_Holo_Light"};
-        QT_ANDROID_DEFAULT_THEME = "Theme_Holo_Light";
+
+        if (Build.VERSION.SDK_INT < 29) {
+            QT_ANDROID_THEMES = new String[] {"Theme_Holo_Light"};
+            QT_ANDROID_DEFAULT_THEME = "Theme_Holo_Light";
+        } else {
+            QT_ANDROID_THEMES = new String[] {"Theme_DeviceDefault_DayNight"};
+            QT_ANDROID_DEFAULT_THEME = "Theme_DeviceDefault_DayNight";
+        }
     }
 
 

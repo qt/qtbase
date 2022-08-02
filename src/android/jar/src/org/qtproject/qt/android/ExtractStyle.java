@@ -70,6 +70,7 @@ import android.graphics.drawable.ScaleDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.graphics.drawable.VectorDrawable;
 import android.os.Build;
+import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
@@ -170,6 +171,42 @@ public class ExtractStyle {
     };
     Context m_context;
     private final HashMap<String, DrawableCache> m_drawableCache = new HashMap<>();
+
+    private static final String EXTRACT_STYLE_KEY = "extract.android.style";
+    private static final String EXTRACT_STYLE_MINIMAL_KEY = "extract.android.style.option";
+
+    private static boolean m_missingNormalStyle = false;
+    private static boolean m_missingDarkStyle = false;
+    private static String  m_stylePath = null;
+    private static boolean m_extractMinimal = false;
+
+    public static void setup(Bundle loaderParams) {
+        if (loaderParams.containsKey(EXTRACT_STYLE_KEY)) {
+            m_stylePath = loaderParams.getString(EXTRACT_STYLE_KEY);
+
+            boolean darkModeFileMissing = !(new File(m_stylePath + "darkUiMode/style.json").exists());
+            m_missingDarkStyle = Build.VERSION.SDK_INT > 28 && darkModeFileMissing;
+
+            m_missingNormalStyle = !(new File(m_stylePath + "style.json").exists());
+
+            m_extractMinimal = loaderParams.containsKey(EXTRACT_STYLE_MINIMAL_KEY) &&
+                               loaderParams.getBoolean(EXTRACT_STYLE_MINIMAL_KEY);
+        }
+    }
+
+    public static void runIfNeeded(Context context, boolean extractDarkMode) {
+        if (m_stylePath == null)
+            return;
+        if (extractDarkMode) {
+            if (m_missingDarkStyle) {
+                new ExtractStyle(context, m_stylePath + "darkUiMode/", m_extractMinimal);
+                m_missingDarkStyle = false;
+            }
+        } else if (m_missingNormalStyle) {
+            new ExtractStyle(context, m_stylePath, m_extractMinimal);
+            m_missingNormalStyle = false;
+        }
+    }
 
     public ExtractStyle(Context context, String extractPath, boolean minimal) {
         m_minimal = minimal;
