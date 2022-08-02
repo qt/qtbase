@@ -1849,13 +1849,9 @@ NSView *QMacStylePrivate::cocoaControl(CocoaControl widget) const
         || widget.size == QStyleHelper::SizeDefault)
         return nil;
 
-    if (widget.type == Box) {
-        if (__builtin_available(macOS 10.14, *)) {
-            if (isDarkMode()) {
-                // See render code in drawPrimitive(PE_FrameTabWidget)
-                widget.type = Box_Dark;
-            }
-        }
+    if (widget.type == Box && isDarkMode()) {
+        // See render code in drawPrimitive(PE_FrameTabWidget)
+        widget.type = Box_Dark;
     }
 
     NSView *bv = cocoaControls.value(widget, nil);
