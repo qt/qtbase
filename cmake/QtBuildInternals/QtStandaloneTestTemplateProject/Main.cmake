@@ -12,6 +12,10 @@ foreach(file ${config_files})
     include("${file}")
 endforeach()
 
+# Set language standards after finding Core, because that's when the relevant
+# feature variables are available.
+qt_set_language_standards()
+
 # Just before adding the test, change the local (non-cache) install prefix to something other than
 # the Qt install prefix, so that tests don't try to install and pollute the Qt install prefix.
 # Needs to be called after qt_get_standalone_tests_confg_files_path().
