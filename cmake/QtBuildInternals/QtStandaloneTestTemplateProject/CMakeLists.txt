@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(qt_single_test VERSION 6.0.0 LANGUAGES C CXX ASM)
 
-find_package(Qt6 REQUIRED COMPONENTS BuildInternals)
+find_package(Qt6 REQUIRED COMPONENTS BuildInternals Core)
 
 include(${CMAKE_CURRENT_LIST_DIR}/Main.cmake)
 
