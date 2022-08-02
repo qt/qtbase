@@ -558,7 +558,6 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     case UIPressTypeMenu: return Qt::Key_Menu;
     case UIPressTypePlayPause: return Qt::Key_MediaTogglePlayPause;
     }
-#if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_13_4)
     if (@available(ios 13.4, *)) {
         NSString *charactersIgnoringModifiers = press.key.charactersIgnoringModifiers;
         Qt::Key key = QAppleKeyMapper::fromUIKitKey(charactersIgnoringModifiers);
@@ -567,7 +566,6 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
         return QAppleKeyMapper::fromNSString(qtModifiers, press.key.characters,
                                              charactersIgnoringModifiers, text);
     }
-#endif
     return Qt::Key_unknown;
 }
 
@@ -580,10 +578,8 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     bool handled = false;
     for (UIPress* press in presses) {
         Qt::KeyboardModifiers qtModifiers = Qt::NoModifier;
-#if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_13_4)
         if (@available(ios 13.4, *))
             qtModifiers = QAppleKeyMapper::fromUIKitModifiers(press.key.modifierFlags);
-#endif
         QString text;
         int key = [self mapPressTypeToKey:press withModifiers:qtModifiers text:text];
         if (key == Qt::Key_unknown)
