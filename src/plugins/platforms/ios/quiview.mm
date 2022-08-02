@@ -789,15 +789,7 @@ Q_LOGGING_CATEGORY(lcQpaInputEvents, "qt.qpa.input.events")
 
 + (Class)layerClass
 {
-#ifdef TARGET_IPHONE_SIMULATOR
-    if (@available(ios 13.0, *))
-#endif
-
     return [CAMetalLayer class];
-
-#ifdef TARGET_IPHONE_SIMULATOR
-    return nil;
-#endif
 }
 
 @end

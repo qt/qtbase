@@ -320,32 +320,30 @@ void TlsCryptographSecureTransport::continueHandshake()
     // (and send it during handshake) and then receive what our peer has sent to us.
     // And here we can finally try to find a match (if any).
     const auto &configuration = q->sslConfiguration();
-    if (__builtin_available(macOS 10.13, iOS 11.0, tvOS 11.0, watchOS 4.0, *)) {
-        const auto &requestedProtocols = configuration.allowedNextProtocols();
-        if (const int requestedCount = requestedProtocols.size()) {
-            QTlsBackend::setAlpnStatus(d, QSslConfiguration::NextProtocolNegotiationNone);
-            QTlsBackend::setNegotiatedProtocol(d, {});
+    const auto &requestedProtocols = configuration.allowedNextProtocols();
+    if (const int requestedCount = requestedProtocols.size()) {
+        QTlsBackend::setAlpnStatus(d, QSslConfiguration::NextProtocolNegotiationNone);
+        QTlsBackend::setNegotiatedProtocol(d, {});
 
-            QCFType<CFArrayRef> cfArray;
-            const OSStatus result = SSLCopyALPNProtocols(context, &cfArray);
-            if (result == errSecSuccess && cfArray && CFArrayGetCount(cfArray)) {
-                const int size = CFArrayGetCount(cfArray);
-                QList<QString> peerProtocols(size);
-                for (int i = 0; i < size; ++i)
-                    peerProtocols[i] = QString::fromCFString((CFStringRef)CFArrayGetValueAtIndex(cfArray, i));
+        QCFType<CFArrayRef> cfArray;
+        const OSStatus result = SSLCopyALPNProtocols(context, &cfArray);
+        if (result == errSecSuccess && cfArray && CFArrayGetCount(cfArray)) {
+            const int size = CFArrayGetCount(cfArray);
+            QList<QString> peerProtocols(size);
+            for (int i = 0; i < size; ++i)
+                peerProtocols[i] = QString::fromCFString((CFStringRef)CFArrayGetValueAtIndex(cfArray, i));
 
-                for (int i = 0; i < requestedCount; ++i) {
-                    const auto requestedName = QString::fromLatin1(requestedProtocols[i]);
-                    for (int j = 0; j < size; ++j) {
-                        if (requestedName == peerProtocols[j]) {
-                            QTlsBackend::setNegotiatedProtocol(d, requestedName.toLatin1());
-                            QTlsBackend::setAlpnStatus(d, QSslConfiguration::NextProtocolNegotiationNegotiated);
-                            break;
-                        }
-                    }
-                    if (configuration.nextProtocolNegotiationStatus() == QSslConfiguration::NextProtocolNegotiationNegotiated)
+            for (int i = 0; i < requestedCount; ++i) {
+                const auto requestedName = QString::fromLatin1(requestedProtocols[i]);
+                for (int j = 0; j < size; ++j) {
+                    if (requestedName == peerProtocols[j]) {
+                        QTlsBackend::setNegotiatedProtocol(d, requestedName.toLatin1());
+                        QTlsBackend::setAlpnStatus(d, QSslConfiguration::NextProtocolNegotiationNegotiated);
                         break;
+                    }
                 }
+                if (configuration.nextProtocolNegotiationStatus() == QSslConfiguration::NextProtocolNegotiationNegotiated)
+                    break;
             }
         }
     }
@@ -692,32 +690,30 @@ bool TlsCryptographSecureTransport::initSslContext()
         return false;
     }
 
-    if (__builtin_available(macOS 10.13, iOS 11.0, tvOS 11.0, watchOS 4.0, *)) {
-        const auto protocolNames = configuration.allowedNextProtocols();
-        QCFType<CFMutableArrayRef> cfNames(CFArrayCreateMutable(nullptr, 0, &kCFTypeArrayCallBacks));
-        if (cfNames) {
-            for (const QByteArray &name : protocolNames) {
-                if (name.size() > 255) {
-                    qCWarning(lcSecureTransport) << "TLS ALPN extension" << name
-                                                 << "is too long and will be ignored.";
-                    continue;
-                } else if (name.isEmpty()) {
-                    continue;
-                }
-                QCFString cfName(QString::fromLatin1(name).toCFString());
-                CFArrayAppendValue(cfNames, cfName);
+    const auto protocolNames = configuration.allowedNextProtocols();
+    QCFType<CFMutableArrayRef> cfNames(CFArrayCreateMutable(nullptr, 0, &kCFTypeArrayCallBacks));
+    if (cfNames) {
+        for (const QByteArray &name : protocolNames) {
+            if (name.size() > 255) {
+                qCWarning(lcSecureTransport) << "TLS ALPN extension" << name
+                                             << "is too long and will be ignored.";
+                continue;
+            } else if (name.isEmpty()) {
+                continue;
             }
-
-            if (CFArrayGetCount(cfNames)) {
-                // Up to the application layer to check that negotiation
-                // failed, and handle this non-TLS error, we do not handle
-                // the result of this call as an error:
-                if (SSLSetALPNProtocols(context, cfNames) != errSecSuccess)
-                    qCWarning(lcSecureTransport) << "SSLSetALPNProtocols failed - too long protocol names?";
-            }
-        } else {
-            qCWarning(lcSecureTransport) << "failed to allocate ALPN names array";
+            QCFString cfName(QString::fromLatin1(name).toCFString());
+            CFArrayAppendValue(cfNames, cfName);
         }
+
+        if (CFArrayGetCount(cfNames)) {
+            // Up to the application layer to check that negotiation
+            // failed, and handle this non-TLS error, we do not handle
+            // the result of this call as an error:
+            if (SSLSetALPNProtocols(context, cfNames) != errSecSuccess)
+                qCWarning(lcSecureTransport) << "SSLSetALPNProtocols failed - too long protocol names?";
+        }
+    } else {
+        qCWarning(lcSecureTransport) << "failed to allocate ALPN names array";
     }
 
     if (mode == QSslSocket::SslClientMode) {
