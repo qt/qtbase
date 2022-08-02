@@ -33,18 +33,6 @@
 
 #include <CoreServices/CoreServices.h>
 
-#if !QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
-@interface NSColor (MojaveForwardDeclarations)
-@property (class, strong, readonly) NSColor *selectedContentBackgroundColor NS_AVAILABLE_MAC(10_14);
-@property (class, strong, readonly) NSColor *unemphasizedSelectedTextBackgroundColor NS_AVAILABLE_MAC(10_14);
-@property (class, strong, readonly) NSColor *unemphasizedSelectedTextColor NS_AVAILABLE_MAC(10_14);
-@property (class, strong, readonly) NSColor *unemphasizedSelectedContentBackgroundColor NS_AVAILABLE_MAC(10_14);
-@property (class, strong, readonly) NSArray<NSColor *> *alternatingContentBackgroundColors NS_AVAILABLE_MAC(10_14);
-// Missing from non-Mojave SDKs, even if introduced in 10.10
-@property (class, strong, readonly) NSColor *linkColor NS_AVAILABLE_MAC(10_10);
-@end
-#endif
-
 QT_BEGIN_NAMESPACE
 
 static QPalette *qt_mac_createSystemPalette()
@@ -241,7 +229,6 @@ const char *QCocoaTheme::name = "cocoa";
 QCocoaTheme::QCocoaTheme()
     : m_systemPalette(nullptr)
 {
-#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
     if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave) {
         m_appearanceObserver = QMacKeyValueObserver(NSApp, @"effectiveAppearance", [this] {
             if (__builtin_available(macOS 10.14, *))
@@ -250,7 +237,6 @@ QCocoaTheme::QCocoaTheme()
             handleSystemThemeChange();
         });
     }
-#endif
 
     m_systemColorObserver = QMacNotificationObserver(nil,
         NSSystemColorsDidChangeNotification, [this] {

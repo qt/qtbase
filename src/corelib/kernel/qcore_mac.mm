@@ -335,13 +335,11 @@ QDebug operator<<(QDebug debug, const QCFString &string)
 #ifdef Q_OS_MACOS
 bool qt_mac_applicationIsInDarkMode()
 {
-#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
     if (__builtin_available(macOS 10.14, *)) {
         auto appearance = [NSApp.effectiveAppearance bestMatchFromAppearancesWithNames:
                 @[ NSAppearanceNameAqua, NSAppearanceNameDarkAqua ]];
         return [appearance isEqualToString:NSAppearanceNameDarkAqua];
     }
-#endif
     return false;
 }
 
@@ -711,11 +709,9 @@ QMacVersion::VersionTuple QMacVersion::versionsForImage(const mach_header *machH
             || loadCommand->cmd == LC_VERSION_MIN_TVOS || loadCommand->cmd == LC_VERSION_MIN_WATCHOS) {
             auto versionCommand = reinterpret_cast<version_min_command *>(loadCommand);
             return makeVersionTuple(versionCommand->version, versionCommand->sdk, osForLoadCommand(loadCommand->cmd));
-#if QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_13, __IPHONE_11_0, __TVOS_11_0, __WATCHOS_4_0)
         } else if (loadCommand->cmd == LC_BUILD_VERSION) {
             auto versionCommand = reinterpret_cast<build_version_command *>(loadCommand);
             return makeVersionTuple(versionCommand->minos, versionCommand->sdk, osForPlatform(versionCommand->platform));
-#endif
         }
         commandCursor += loadCommand->cmdsize;
     }
