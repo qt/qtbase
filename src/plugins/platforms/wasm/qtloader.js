@@ -544,27 +544,27 @@ function QtLoader(config)
 
     function addCanvasElement(element) {
         if (publicAPI.status == "Running")
-            self.module.qtAddCanvasElement(element);
+            self.module.qtAddContainerElement(element);
         else
             console.log("Error: addCanvasElement can only be called in the Running state");
     }
 
     function removeCanvasElement(element) {
         if (publicAPI.status == "Running")
-            self.module.qtRemoveCanvasElement(element);
+            self.module.qtRemoveContainerElement(element);
         else
             console.log("Error: removeCanvasElement can only be called in the Running state");
     }
 
     function resizeCanvasElement(element) {
         if (publicAPI.status == "Running")
-            self.module.qtResizeCanvasElement(element);
+            self.module.qtResizeContainerElement(element);
     }
 
     function setFontDpi(dpi) {
         self.qtFontDpi = dpi;
         if (publicAPI.status == "Running")
-            self.qtSetFontDpi(dpi);
+            self.qtUpdateDpi();
     }
 
     function fontDpi() {
