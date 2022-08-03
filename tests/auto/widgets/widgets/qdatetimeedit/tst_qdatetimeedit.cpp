@@ -506,8 +506,7 @@ void tst_QDateTimeEdit::constructor_qdate()
     {
         QDateEdit dte(parameter);
         dte.show();
-        QEXPECT_FAIL("normal", "QTBUG-105322: constructors use wrong spec", Continue);
-        QEXPECT_FAIL("invalid", "Constructor neglects default replacement of invalid", Continue);
+        QEXPECT_FAIL("", "QTBUG-105322: constructors use wrong spec", Continue);
         if (QByteArrayView(QTest::currentDataTag()) == "invalid")
             QCOMPARE(dte.date(), QDate(2000, 1, 1));
         else
