@@ -397,7 +397,7 @@ static inline void qYieldCpu()
 {
 #if defined(Q_PROCESSOR_X86)
     _mm_pause();
-#elif defined(Q_PROCESSOR_ARM)
+#elif defined(Q_PROCESSOR_ARM) && Q_PROCESSOR_ARM >= 7 /* yield was added in ARMv7 */
 #  if __has_builtin(__builtin_arm_yield) /* e.g. Clang */
     __builtin_arm_yield();
 #  elif defined(Q_OS_INTEGRITY) || \
