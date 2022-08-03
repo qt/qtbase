@@ -281,15 +281,17 @@ function(qt_build_internals_add_toplevel_targets)
             set(qt_repo_target_name "${qt_repo_targets_name}_${qt_repo_target_basename}")
             message(DEBUG "${qt_repo_target_name} depends on ${qt_repo_targets}")
             add_custom_target("${qt_repo_target_name}"
-                                DEPENDS ${qt_repo_targets}
-                                COMMENT "Building everything in ${qt_repo_targets_name}/${qt_repo_target_basename}")
+                COMMENT "Building everything in ${qt_repo_targets_name}/${qt_repo_target_basename}")
+            add_dependencies("${qt_repo_target_name}" ${qt_repo_targets})
             list(APPEND qt_repo_target_all "${qt_repo_target_name}")
         endif()
     endforeach()
     if (qt_repo_target_all)
+        # Note qt_repo_targets_name is different from qt_repo_target_name that is used above.
         add_custom_target("${qt_repo_targets_name}"
-                            DEPENDS ${qt_repo_target_all}
                             COMMENT "Building everything in ${qt_repo_targets_name}")
+        add_dependencies("${qt_repo_targets_name}" ${qt_repo_target_all})
+        message(DEBUG "${qt_repo_targets_name} depends on ${qt_repo_target_all}")
     endif()
 endfunction()
 
