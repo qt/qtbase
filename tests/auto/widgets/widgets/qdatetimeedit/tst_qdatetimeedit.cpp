@@ -536,7 +536,6 @@ void tst_QDateTimeEdit::constructor_qdate()
     {
         QDateEdit dte(parameter);
         dte.show();
-        QEXPECT_FAIL("", "QTBUG-105322: constructors use wrong spec", Continue);
         QCOMPARE(dte.date(), displayDateTime.date());
         QCOMPARE(dte.minimumDate(), minimumDate);
         QCOMPARE(dte.minimumTime(), minimumTime);
@@ -588,7 +587,6 @@ void tst_QDateTimeEdit::constructor_qtime()
     {
         QTimeEdit dte(parameter);
         dte.show();
-        QEXPECT_FAIL("", "QTBUG-105322: constructors use wrong spec", Abort);
         QCOMPARE(dte.time(), displayDateTime.time());
         QCOMPARE(dte.minimumDate(), minimumDate);
         QCOMPARE(dte.minimumTime(), minimumTime);
