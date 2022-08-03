@@ -957,7 +957,7 @@ void QDateTimeEdit::setDisplayFormat(const QString &format)
             }
         } else if (dateShown && !timeShown) {
             setTimeRange(QDATETIMEEDIT_TIME_MIN, QDATETIMEEDIT_TIME_MAX);
-            d->value = QDateTime(d->value.toDate(), QTime(), d->spec);
+            d->value = d->value.toDate().startOfDay(d->spec);
         }
         d->updateEdit();
         d->_q_editorCursorPositionChanged(-1, 0);
