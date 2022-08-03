@@ -1126,6 +1126,32 @@ function(_qt_internal_set_xcode_bitcode_enablement target)
         "NO")
 endfunction()
 
+function(_qt_internal_set_ios_simulator_arch target)
+    if(CMAKE_XCODE_ATTRIBUTE_ARCHS
+        OR QT_NO_SET_XCODE_ARCHS)
+        return()
+    endif()
+
+    get_target_property(existing_archs
+        "${target}" XCODE_ATTRIBUTE_ARCHS)
+    if(NOT existing_archs MATCHES "-NOTFOUND")
+        return()
+    endif()
+
+    if(NOT x86_64 IN_LIST QT_OSX_ARCHITECTURES)
+        return()
+    endif()
+
+    if(CMAKE_OSX_ARCHITECTURES AND NOT x86_64 IN_LIST CMAKE_OSX_ARCHITECTURES)
+        return()
+    endif()
+
+    set_target_properties("${target}"
+        PROPERTIES
+        "XCODE_ATTRIBUTE_ARCHS[sdk=iphonesimulator*]"
+        "x86_64")
+endfunction()
+
 function(_qt_internal_finalize_ios_app target)
     _qt_internal_set_xcode_development_team_id("${target}")
     _qt_internal_set_xcode_bundle_identifier("${target}")
@@ -1136,6 +1162,7 @@ function(_qt_internal_finalize_ios_app target)
 
     _qt_internal_handle_ios_launch_screen("${target}")
     _qt_internal_set_placeholder_apple_bundle_version("${target}")
+    _qt_internal_set_ios_simulator_arch("${target}")
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
