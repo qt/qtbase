@@ -68,7 +68,7 @@ Qt sets the following manifest configuration by default:
         default values are \c anyDensity, \c largeScreens,
         \c normalScreens, and \c smallScreens.
 \row
-    \li {1, 8} \l {Android: App Manifest <application>}{<application>}
+    \li {1, 7} \l {Android: App Manifest <application>}{<application>}
     \li android:name
     \li The application class name. Default value is
         \c {org.qtproject.qt.android.bindings.QtApplication}.
