@@ -5,6 +5,7 @@
 #define WINDOW_H
 
 #include <QWidget>
+#include <QGridLayout>
 
 QT_BEGIN_NAMESPACE
 class QCheckBox;
@@ -26,6 +27,7 @@ public:
 
 private:
     void createControls(const QString &title);
+    void resizeEvent(QResizeEvent *e);
 
     SlidersGroup *horizontalSliders;
     SlidersGroup *verticalSliders;
@@ -41,6 +43,8 @@ private:
     QSpinBox *maximumSpinBox;
     QSpinBox *valueSpinBox;
     QComboBox *orientationCombo;
+    QGridLayout *layout;
+    double oldAspectRatio;
 };
 //! [0]
 
