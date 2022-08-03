@@ -508,6 +508,24 @@ endif()
 
         set(properties_retrieved TRUE)
 
+        get_target_property(is_configure_time_target ${target} _qt_internal_configure_time_target)
+        if(is_configure_time_target)
+            get_target_property(configure_time_target_install_location ${target}
+                _qt_internal_configure_time_target_install_location)
+            if(configure_time_target_install_location)
+                string(APPEND content "
+# Import configure-time executable ${full_target}
+if(NOT TARGET ${full_target})
+    add_executable(${full_target} IMPORTED)
+    set_property(TARGET ${full_target} APPEND PROPERTY IMPORTED_CONFIGURATIONS ${default_cfg})
+    set_target_properties(${full_target} PROPERTIES IMPORTED_LOCATION_${uc_default_cfg}
+        \"$\\{PACKAGE_PREFIX_DIR}/${configure_time_target_install_location}\")
+    set_property(TARGET ${full_target} PROPERTY IMPORTED_GLOBAL TRUE)
+endif()
+\n")
+            endif()
+        endif()
+
         # Non-prefix debug-and-release builds: add check for the existence of the debug binary of
         # the target.  It is not built by default.
         if(NOT QT_WILL_INSTALL AND QT_FEATURE_debug_and_release)
@@ -521,7 +539,7 @@ if(NOT EXISTS \"$\\{_qt_imported_location}\")
     list(REMOVE_ITEM _qt_imported_configs DEBUG)
     set_property(TARGET ${full_target} PROPERTY IMPORTED_CONFIGURATIONS $\\{_qt_imported_configs})
     set_property(TARGET ${full_target} PROPERTY IMPORTED_LOCATION_DEBUG)
-endif()\n\n")
+endif()\n")
             endif()
         endif()
 

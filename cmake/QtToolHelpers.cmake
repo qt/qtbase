@@ -605,3 +605,45 @@ function(qt_internal_find_tool out_var target_name tools_target)
     endif()
     set(${out_var} "TRUE" PARENT_SCOPE)
 endfunction()
+
+# This function adds an internal tool that should be compiled at configure time.
+#     TOOLS_TARGET
+#         Specifies the module this tool belongs to. The Qt6${TOOLS_TARGET}Tools module
+#         will then expose targets for this tool. Ignored if NO_INSTALL is set.
+function(qt_internal_add_configure_time_tool target_name)
+    set(one_value_args INSTALL_DIRECTORY TOOLS_TARGET)
+    set(multi_value_args)
+    set(option_args NO_INSTALL)
+    cmake_parse_arguments(arg "${option_args}" "${one_value_args}" "${multi_value_args}" ${ARGN})
+
+    qt_internal_find_tool(will_build_tools ${target_name} "${arg_TOOLS_TARGET}")
+    if(NOT will_build_tools)
+        return()
+    endif()
+
+    qt_tool_target_to_name(name ${target_name})
+    set(extra_args "")
+    if(arg_NO_INSTALL OR NOT arg_TOOLS_TARGET)
+        list(APPEND extra_args "NO_INSTALL")
+    else()
+        set(install_dir "${INSTALL_BINDIR}")
+        if(arg_INSTALL_DIRECTORY)
+            set(install_dir "${arg_INSTALL_DIRECTORY}")
+        endif()
+        set(extra_args "INSTALL_DIRECTORY" "${install_dir}")
+    endif()
+
+    qt_internal_add_configure_time_executable(${target_name}
+        OUTPUT_NAME ${name}
+        ${extra_args}
+        ${arg_UNPARSED_ARGUMENTS}
+    )
+
+    if(NOT arg_NO_INSTALL AND arg_TOOLS_TARGET)
+        qt_internal_add_targets_to_additional_targets_export_file(
+            TARGETS ${target_name}
+            TARGET_EXPORT_NAMES ${QT_CMAKE_EXPORT_NAMESPACE}::${name}
+            EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${arg_TOOLS_TARGET}Tools
+        )
+    endif()
+endfunction()

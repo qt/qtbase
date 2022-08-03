@@ -295,3 +295,166 @@ Q_IMPORT_PLUGIN($<JOIN:${class_names},)\nQ_IMPORT_PLUGIN(>)
     endforeach()
 
 endfunction()
+
+# This function compiles the target at configure time the very first time and creates the custom
+# ${target}_build that re-runs compilation at build time if necessary. The resulting executable is
+# imported under the provided target name. This function should only be used to compile tiny
+# executables with system dependencies only.
+# One-value Arguments:
+#     CMAKELISTS_TEMPLATE
+#         The CMakeLists.txt templated that is used to configure the project
+#         for an executable. By default the predefined template from the Qt installation is used.
+#     INSTALL_DIRECTORY
+#         installation directory of the executable. Ignored if NO_INSTALL is set.
+#     OUTPUT_NAME
+#         the output name of an executable
+#     CONFIG
+#         the name of configuration that tool needs to be build with.
+# Multi-value Arguments:
+#     PACKAGES
+#         list of system packages are required to successfully build the project.
+#     INCLUDES
+#         list of include directories are required to successfully build the project.
+#     DEFINES
+#         list of definitions are required to successfully build the project.
+#     COMPILE_OPTIONS
+#         list of compiler options are required to successfully build the project.
+#     LINK_OPTIONS
+#         list of linker options are required to successfully build the project.
+#     SOURCES
+#         list of project sources.
+#     CMAKE_FLAGS
+#         specify flags of the form -DVAR:TYPE=VALUE to be passed to the cmake command-line used to
+#         drive the test build.
+# Options:
+#     WIN32
+#         reflects the corresponding add_executable argument.
+#     MACOSX_BUNDLE
+#         reflects the corresponding add_executable argument.
+#     NO_INSTALL
+#         avoids installing the tool.
+function(qt_internal_add_configure_time_executable target)
+    set(one_value_args
+        CMAKELISTS_TEMPLATE
+        INSTALL_DIRECTORY
+        OUTPUT_NAME
+        CONFIG
+    )
+    set(multi_value_args
+        PACKAGES
+        INCLUDES
+        DEFINES
+        COMPILE_OPTIONS
+        LINK_OPTIONS
+        SOURCES
+        CMAKE_FLAGS
+    )
+    set(option_args WIN32 MACOSX_BUNDLE NO_INSTALL)
+    cmake_parse_arguments(arg "${option_args}" "${one_value_args}" "${multi_value_args}" ${ARGN})
+
+    set(target_binary_dir "${CMAKE_CURRENT_BINARY_DIR}/configure_time_bins")
+    if(arg_CONFIG)
+        set(CMAKE_TRY_COMPILE_CONFIGURATION "${arg_CONFIG}")
+    endif()
+
+    get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
+    if(is_multi_config AND CMAKE_TRY_COMPILE_CONFIGURATION)
+        set(configuration_path "${CMAKE_TRY_COMPILE_CONFIGURATION}/")
+        set(config_build_arg "--config" "${CMAKE_TRY_COMPILE_CONFIGURATION}")
+    endif()
+
+    set(configure_time_target "${target}")
+    if(arg_OUTPUT_NAME)
+        set(configure_time_target "${arg_OUTPUT_NAME}")
+    endif()
+    set(target_binary "${configure_time_target}${CMAKE_EXECUTABLE_SUFFIX}")
+    set(target_binary_path
+        "${target_binary_dir}/${configuration_path}${target_binary}")
+    get_filename_component(target_binary_path "${target_binary_path}" ABSOLUTE)
+
+    if(NOT DEFINED arg_SOURCES)
+        message(FATAL_ERROR "No SOURCES given to target: ${target}")
+    endif()
+    set(sources "${arg_SOURCES}")
+
+    # Timestamp file is required because CMake ignores 'add_custom_command' if we use only the
+    # binary file as the OUTPUT.
+    set(timestamp_file "${target_binary_path}_timestamp")
+    add_custom_command(OUTPUT "${target_binary_path}" "${timestamp_file}"
+        COMMAND
+            ${CMAKE_COMMAND} --build "${target_binary_dir}" ${config_build_arg}
+        COMMAND
+            ${CMAKE_COMMAND} -E touch "${timestamp_file}"
+        DEPENDS
+            ${sources}
+        COMMENT
+            "Compiling ${target}"
+        VERBATIM
+    )
+
+    add_custom_target(${target}_build ALL
+        DEPENDS
+            "${target_binary_path}"
+            "${timestamp_file}"
+    )
+
+    if(NOT EXISTS "${target_binary_path}")
+        foreach(arg IN LISTS multi_value_args)
+            string(TOLOWER "${arg}" template_arg_name)
+            set(${template_arg_name} "")
+            if(DEFINED arg_${arg})
+                set(${template_arg_name} "${arg_${arg}}")
+            endif()
+        endforeach()
+
+        foreach(arg IN LISTS option_args)
+            string(TOLOWER "${arg}" template_arg_name)
+            set(${template_arg_name} "")
+            if(arg_${arg})
+                set(${template_arg_name} "${arg}")
+            endif()
+        endforeach()
+
+        file(MAKE_DIRECTORY "${target_binary_dir}")
+        set(template "${QT_CMAKE_DIR}/QtConfigureTimeExecutableCMakeLists.txt.in")
+        if(DEFINED arg_CMAKELISTS_TEMPLATE)
+            set(template "${arg_CMAKELISTS_TEMPLATE}")
+        endif()
+
+        set(cmake_flags_arg)
+        if(arg_CMAKE_FLAGS)
+            set(cmake_flags_arg CMAKE_FLAGS ${arg_CMAKE_FLAGS})
+        endif()
+        configure_file("${template}" "${target_binary_dir}/CMakeLists.txt" @ONLY)
+        try_compile(result
+            "${target_binary_dir}"
+            "${target_binary_dir}"
+            ${target}
+            ${cmake_flags_arg}
+            OUTPUT_VARIABLE try_compile_output
+        )
+
+        if(NOT result)
+            message(FATAL_ERROR "Unable to build ${target}: ${try_compile_output}")
+        endif()
+    endif()
+
+    add_executable(${target} IMPORTED GLOBAL)
+    add_executable(${QT_CMAKE_EXPORT_NAMESPACE}::${target} ALIAS ${target})
+    set_target_properties(${target} PROPERTIES
+        _qt_internal_configure_time_target TRUE
+        IMPORTED_LOCATION "${target_binary_path}")
+
+    if(NOT arg_NO_INSTALL)
+        set(install_dir "${INSTALL_BINDIR}")
+        if(arg_INSTALL_DIRECTORY)
+            set(install_dir "${arg_INSTALL_DIRECTORY}")
+        endif()
+        set_target_properties(${target} PROPERTIES
+            _qt_internal_configure_time_target_install_location
+                "${install_dir}/${target_binary}"
+        )
+        qt_path_join(target_install_dir ${QT_INSTALL_DIR} ${install_dir})
+        qt_copy_or_install(PROGRAMS "${target_binary_path}" DESTINATION "${target_install_dir}")
+    endif()
+endfunction()
