@@ -32,6 +32,8 @@ private slots:
     void setContent();
     void setContentOverloads();
     void parseOptions();
+    void spacingOnlyNodes_data() const;
+    void spacingOnlyNodes() const;
     void parseResult();
     void toString_01_data();
     void toString_01();
@@ -290,6 +292,65 @@ void tst_QDom::parseOptions()
         QCOMPARE(nestedElement.prefix(), "ns");
         QCOMPARE(nestedElement.namespaceURI(), "http://example.com/");
     }
+}
+
+void tst_QDom::spacingOnlyNodes_data() const
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<QString>("expected");
+    QTest::addColumn<QDomDocument::ParseOption>("options");
+
+    QTest::newRow("spacing-only-remove")
+            << u"<a> \t \n \r</a>"_s
+            << u"<a/>"_s
+            << QDomDocument::ParseOption::Default;
+    // \r is translated to \n, see https://www.w3.org/TR/xml11/#sec-line-ends
+    QTest::newRow("spacing-only-preserve")
+            << u"<a> \t \n \r</a>"_s
+            << u"<a> \t \n \n</a>"_s
+            << QDomDocument::ParseOption::PreserveSpacingOnlyNodes;
+    QTest::newRow("mixed-text-remove")
+            << u"<a> abc \t \n \r</a>"_s
+            << u"<a> abc \t \n \n</a>"_s
+            << QDomDocument::ParseOption::Default;
+    QTest::newRow("mixed-text-preserve")
+            << u"<a> abc \t \n \r</a>"_s
+            << u"<a> abc \t \n \n</a>"_s
+            << QDomDocument::ParseOption::PreserveSpacingOnlyNodes;
+
+    // QDomDocument treats all chacarcters below as spaces (see QTBUG-105348)
+    static constexpr char16_t spaces[] = {
+        QChar::Space, QChar::Tabulation, QChar::LineFeed,
+        QChar::CarriageReturn, QChar::Nbsp,
+        0x2002, // EN SPACE
+        0x2003, // EM SPACE
+        0x2009  // THIN SPACE
+    };
+
+    for (char16_t space : spaces) {
+        QTest::addRow("spacing-remove-u%04x", space)
+                << u"<a>"_s + space + u"</a>"_s
+                << u"<a/>"_s
+                << QDomDocument::ParseOption::Default;
+
+        // \r is translated to \n, see https://www.w3.org/TR/xml11/#sec-line-ends
+        char16_t expected = (space == QChar::CarriageReturn) ? char16_t(QChar::LineFeed) : space;
+        QTest::addRow("spacing-preserve-u%04x", space)
+                << u"<a>"_s + space + u"</a>"_s
+                << u"<a>"_s + expected + u"</a>"_s
+                << QDomDocument::ParseOption::PreserveSpacingOnlyNodes;
+    }
+}
+
+void tst_QDom::spacingOnlyNodes() const
+{
+    QFETCH(QString, input);
+    QFETCH(QString, expected);
+    QFETCH(QDomDocument::ParseOption, options);
+
+    QDomDocument doc;
+    QVERIFY(doc.setContent(input, options));
+    QCOMPARE(doc.toString(-1), expected);
 }
 
 void tst_QDom::parseResult()

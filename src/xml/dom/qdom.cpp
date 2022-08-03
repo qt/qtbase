@@ -6221,6 +6221,8 @@ bool QDomDocument::setContent(QXmlStreamReader *reader, bool namespaceProcessing
 
     \value Default No parse options are set.
     \value UseNamespaceProcessing Namespace processing is enabled.
+    \value PreserveSpacingOnlyNodes Text nodes containing only spacing
+           characters are preserved.
 
     \sa setContent()
 */
@@ -6307,7 +6309,9 @@ bool QDomDocument::setContent(QXmlStreamReader *reader, bool namespaceProcessing
     string if the element or attribute has no prefix.
 
     Text nodes consisting only of whitespace are stripped and won't
-    appear in the QDomDocument.
+    appear in the QDomDocument. Since Qt 6.5, one can pass
+    QDomDocument::ParseOption::PreserveSpacingOnlyNodes as a parse
+    option, to specify that spacing-only text nodes must be preserved.
 
     \include qdom.cpp entity-refs
 

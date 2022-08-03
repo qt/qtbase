@@ -349,13 +349,14 @@ bool QDomParser::parseBody()
             }
             break;
         case QXmlStreamReader::Characters:
-            if (!reader->isWhitespace()) { // Skip the content consisting of only whitespaces
-                if (reader->isCDATA() || !reader->text().trimmed().isEmpty()) {
-                    if (!domBuilder.characters(reader->text().toString(), reader->isCDATA())) {
-                        domBuilder.fatalError(QDomParser::tr(
-                                "Error occurred while processing the element content"));
-                        return false;
-                    }
+            // Skip the content if it contains only spacing characters,
+            // unless it's CDATA or PreserveSpacingOnlyNodes was specified.
+            if (reader->isCDATA() || domBuilder.preserveSpacingOnlyNodes()
+                || !(reader->isWhitespace() || reader->text().trimmed().isEmpty())) {
+                if (!domBuilder.characters(reader->text().toString(), reader->isCDATA())) {
+                    domBuilder.fatalError(
+                            QDomParser::tr("Error occurred while processing the element content"));
+                    return false;
                 }
             }
             break;

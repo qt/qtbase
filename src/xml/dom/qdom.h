@@ -268,6 +268,7 @@ public:
     enum class ParseOption {
         Default = 0x00,
         UseNamespaceProcessing = 0x01,
+        PreserveSpacingOnlyNodes = 0x02,
     };
     Q_DECLARE_FLAGS(ParseOptions, ParseOption)
 

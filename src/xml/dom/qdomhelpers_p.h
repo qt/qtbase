@@ -56,6 +56,9 @@ public:
     void fatalError(const QString &message);
     QDomDocument::ParseResult result() const { return parseResult; }
 
+    bool preserveSpacingOnlyNodes() const
+    { return parseOptions & QDomDocument::ParseOption::PreserveSpacingOnlyNodes; }
+
 private:
     QString dtdInternalSubset(const QString &dtd);
 
