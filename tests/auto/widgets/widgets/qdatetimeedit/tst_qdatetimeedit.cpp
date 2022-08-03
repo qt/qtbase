@@ -524,13 +524,26 @@ void tst_QDateTimeEdit::constructor_qdate()
 
     testWidget->hide();
 
-    QDateTimeEdit dte(parameter);
-    dte.show();
-    QCOMPARE(dte.dateTime(), displayDateTime);
-    QCOMPARE(dte.minimumDate(), minimumDate);
-    QCOMPARE(dte.minimumTime(), minimumTime);
-    QCOMPARE(dte.maximumDate(), maximumDate);
-    QCOMPARE(dte.maximumTime(), maximumTime);
+    {
+        QDateTimeEdit dte(parameter);
+        dte.show();
+        QCOMPARE(dte.dateTime(), displayDateTime);
+        QCOMPARE(dte.minimumDate(), minimumDate);
+        QCOMPARE(dte.minimumTime(), minimumTime);
+        QCOMPARE(dte.maximumDate(), maximumDate);
+        QCOMPARE(dte.maximumTime(), maximumTime);
+    }
+    {
+        QDateEdit dte(parameter);
+        dte.show();
+        QEXPECT_FAIL("normal", "QTBUG-105322: constructors use wrong spec", Continue);
+        QEXPECT_FAIL("invalid", "Constructor neglects default replacement of invalid", Continue);
+        QCOMPARE(dte.date(), displayDateTime.date());
+        QCOMPARE(dte.minimumDate(), minimumDate);
+        QCOMPARE(dte.minimumTime(), minimumTime);
+        QCOMPARE(dte.maximumDate(), maximumDate);
+        QCOMPARE(dte.maximumTime(), maximumTime);
+    }
 }
 
 void tst_QDateTimeEdit::constructor_qtime_data()
@@ -564,13 +577,25 @@ void tst_QDateTimeEdit::constructor_qtime()
 
     testWidget->hide();
 
-    QDateTimeEdit dte(parameter);
-    dte.show();
-    QCOMPARE(dte.dateTime(), displayDateTime);
-    QCOMPARE(dte.minimumDate(), minimumDate);
-    QCOMPARE(dte.minimumTime(), minimumTime);
-    QCOMPARE(dte.maximumDate(), maximumDate);
-    QCOMPARE(dte.maximumTime(), maximumTime);
+    {
+        QDateTimeEdit dte(parameter);
+        dte.show();
+        QCOMPARE(dte.dateTime(), displayDateTime);
+        QCOMPARE(dte.minimumDate(), minimumDate);
+        QCOMPARE(dte.minimumTime(), minimumTime);
+        QCOMPARE(dte.maximumDate(), maximumDate);
+        QCOMPARE(dte.maximumTime(), maximumTime);
+    }
+    {
+        QTimeEdit dte(parameter);
+        dte.show();
+        QEXPECT_FAIL("", "QTBUG-105322: constructors use wrong spec", Abort);
+        QCOMPARE(dte.time(), displayDateTime.time());
+        QCOMPARE(dte.minimumDate(), minimumDate);
+        QCOMPARE(dte.minimumTime(), minimumTime);
+        QCOMPARE(dte.maximumDate(), maximumDate);
+        QCOMPARE(dte.maximumTime(), maximumTime);
+    }
 }
 
 void tst_QDateTimeEdit::minimumDate_data()
