@@ -94,7 +94,9 @@ private:
 
     // component helper functions
     static QRect getExtents(QAccessibleInterface *interface, uint coordType);
-    static QRect translateRectToWindowCoordinates(QAccessibleInterface *interface, const QRect &rect);
+    static bool isValidCoordType(uint coordType);
+    static QRect translateFromScreenCoordinates(QAccessibleInterface *interface, const QRect &rect, uint targetCoordType);
+    static QPoint translateToScreenCoordinates(QAccessibleInterface *interface, const QPoint &pos, uint fromCoordType);
 
     // action helper functions
     QSpiActionArray getActions(QAccessibleInterface *interface) const;

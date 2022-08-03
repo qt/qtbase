@@ -28,6 +28,11 @@
     It sends notifications coming from Qt via dbus and listens to incoming dbus requests.
 */
 
+// ATSPI_COORD_TYPE_PARENT was added in at-spi 2.30, define here for older versions
+#if ATSPI_COORD_TYPE_COUNT < 3
+#define ATSPI_COORD_TYPE_PARENT 2
+#endif
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -1534,23 +1539,6 @@ static QAccessibleInterface * getWindow(QAccessibleInterface * interface)
     return parent;
 }
 
-static QRect getRelativeRect(QAccessibleInterface *interface)
-{
-    QAccessibleInterface * window;
-    QRect wr, cr;
-
-    cr = interface->rect();
-
-    window = getWindow(interface);
-    if (window) {
-        wr = window->rect();
-
-        cr.setX(cr.x() - wr.x());
-        cr.setY(cr.y() - wr.y());
-    }
-    return cr;
-}
-
 bool AtSpiAdaptor::componentInterface(QAccessibleInterface *interface, const QString &function, const QDBusMessage &message, const QDBusConnection &connection)
 {
     if (function == "Contains"_L1) {
@@ -1558,28 +1546,22 @@ bool AtSpiAdaptor::componentInterface(QAccessibleInterface *interface, const QSt
         int x = message.arguments().at(0).toInt();
         int y = message.arguments().at(1).toInt();
         uint coordType = message.arguments().at(2).toUInt();
-        if (coordType == ATSPI_COORD_TYPE_SCREEN)
-            ret = interface->rect().contains(x, y);
-        else
-            ret = getRelativeRect(interface).contains(x, y);
+        if (!isValidCoordType(coordType))
+            return false;
+        ret = getExtents(interface, coordType).contains(x, y);
         sendReply(connection, message, ret);
     } else if (function == "GetAccessibleAtPoint"_L1) {
-        int x = message.arguments().at(0).toInt();
-        int y = message.arguments().at(1).toInt();
+        QPoint point(message.arguments().at(0).toInt(), message.arguments().at(1).toInt());
         uint coordType = message.arguments().at(2).toUInt();
-        if (coordType == ATSPI_COORD_TYPE_WINDOW) {
-            QWindow * window = interface->window();
-            if (window) {
-                x += window->position().x();
-                y += window->position().y();
-            }
-        }
+        if (!isValidCoordType(coordType))
+            return false;
+        QPoint screenPos = translateToScreenCoordinates(interface, point, coordType);
 
-        QAccessibleInterface * childInterface(interface->childAt(x, y));
+        QAccessibleInterface * childInterface(interface->childAt(screenPos.x(), screenPos.y()));
         QAccessibleInterface * iface = nullptr;
         while (childInterface) {
             iface = childInterface;
-            childInterface = iface->childAt(x, y);
+            childInterface = iface->childAt(screenPos.x(), screenPos.y());
         }
         if (iface) {
             QString path = pathForInterface(iface);
@@ -1593,6 +1575,8 @@ bool AtSpiAdaptor::componentInterface(QAccessibleInterface *interface, const QSt
         sendReply(connection, message, (double) 1.0);
     } else if (function == "GetExtents"_L1) {
         uint coordType = message.arguments().at(0).toUInt();
+        if (!isValidCoordType(coordType))
+            return false;
         sendReply(connection, message, QVariant::fromValue(getExtents(interface, coordType)));
     } else if (function == "GetLayer"_L1) {
         sendReply(connection, message, QVariant::fromValue((uint)1));
@@ -1600,11 +1584,9 @@ bool AtSpiAdaptor::componentInterface(QAccessibleInterface *interface, const QSt
         sendReply(connection, message, QVariant::fromValue((short)0));
     } else if (function == "GetPosition"_L1) {
         uint coordType = message.arguments().at(0).toUInt();
-        QRect rect;
-        if (coordType == ATSPI_COORD_TYPE_SCREEN)
-            rect = interface->rect();
-        else
-            rect = getRelativeRect(interface);
+        if (!isValidCoordType(coordType))
+            return false;
+        QRect rect = getExtents(interface, coordType);
         QVariantList pos;
         pos << rect.x() << rect.y();
         connection.send(message.createReply(pos));
@@ -1649,7 +1631,7 @@ bool AtSpiAdaptor::componentInterface(QAccessibleInterface *interface, const QSt
 
 QRect AtSpiAdaptor::getExtents(QAccessibleInterface *interface, uint coordType)
 {
-    return (coordType == ATSPI_COORD_TYPE_SCREEN) ? interface->rect() : getRelativeRect(interface);
+    return translateFromScreenCoordinates(interface, interface->rect(), coordType);
 }
 
 // Action interface
@@ -1802,11 +1784,10 @@ bool AtSpiAdaptor::textInterface(QAccessibleInterface *interface, const QString 
         Q_ASSERT(!message.signature().isEmpty());
         QPoint point(message.arguments().at(0).toInt(), message.arguments().at(1).toInt());
         uint coordType = message.arguments().at(2).toUInt();
-        if (coordType == ATSPI_COORD_TYPE_WINDOW) {
-            QWindow *win = interface->window();
-            point += QPoint(win->x(), win->y());
-        }
-        int offset = interface->textInterface()->offsetAtPoint(point);
+        if (!isValidCoordType(coordType))
+            return false;
+        QPoint screenPos = translateToScreenCoordinates(interface, point, coordType);
+        int offset = interface->textInterface()->offsetAtPoint(screenPos);
         sendReply(connection, message, offset);
     } else if (function == "GetRangeExtents"_L1) {
         int startOffset = message.arguments().at(0).toInt();
@@ -2053,10 +2034,7 @@ QVariantList AtSpiAdaptor::getAttributeValue(QAccessibleInterface *interface, in
 QList<QVariant> AtSpiAdaptor::getCharacterExtents(QAccessibleInterface *interface, int offset, uint coordType) const
 {
     QRect rect = interface->textInterface()->characterRect(offset);
-
-    if (coordType == ATSPI_COORD_TYPE_WINDOW)
-        rect = translateRectToWindowCoordinates(interface, rect);
-
+    rect = translateFromScreenCoordinates(interface, rect, coordType);
     return QList<QVariant>() << rect.x() << rect.y() << rect.width() << rect.height();
 }
 
@@ -2074,22 +2052,52 @@ QList<QVariant> AtSpiAdaptor::getRangeExtents(QAccessibleInterface *interface,
     for (int i=startOffset + 1; i <= endOffset; i++)
         rect = rect | textInterface->characterRect(i);
 
-    // relative to window
-    if (coordType == ATSPI_COORD_TYPE_WINDOW)
-        rect = translateRectToWindowCoordinates(interface, rect);
-
+    rect = translateFromScreenCoordinates(interface, rect, coordType);
     return QList<QVariant>() << rect.x() << rect.y() << rect.width() << rect.height();
 }
 
-QRect AtSpiAdaptor::translateRectToWindowCoordinates(QAccessibleInterface *interface, const QRect &rect)
+bool AtSpiAdaptor::isValidCoordType(uint coordType)
 {
-    QAccessibleInterface * window = getWindow(interface);
-    if (window)
-        return rect.translated(-window->rect().x(), -window->rect().y());
+    if (coordType == ATSPI_COORD_TYPE_SCREEN || coordType == ATSPI_COORD_TYPE_WINDOW || coordType == ATSPI_COORD_TYPE_PARENT)
+        return true;
+
+    qCWarning(lcAccessibilityAtspi) << "unknown value" << coordType << "for AT-SPI coord type";
+    return false;
+}
+
+QRect AtSpiAdaptor::translateFromScreenCoordinates(QAccessibleInterface *interface, const QRect &screenRect, uint targetCoordType)
+{
+    Q_ASSERT(isValidCoordType(targetCoordType));
+
+    QAccessibleInterface *upper = nullptr;
+    if (targetCoordType == ATSPI_COORD_TYPE_WINDOW)
+        upper = getWindow(interface);
+    else if (targetCoordType == ATSPI_COORD_TYPE_PARENT)
+        upper = interface->parent();
+
+    QRect rect = screenRect;
+    if (upper)
+        rect.translate(-upper->rect().x(), -upper->rect().y());
 
     return rect;
 }
 
+QPoint AtSpiAdaptor::translateToScreenCoordinates(QAccessibleInterface *interface, const QPoint &pos, uint fromCoordType)
+{
+    Q_ASSERT(isValidCoordType(fromCoordType));
+
+    QAccessibleInterface *upper = nullptr;
+    if (fromCoordType == ATSPI_COORD_TYPE_WINDOW)
+        upper = getWindow(interface);
+    else if (fromCoordType == ATSPI_COORD_TYPE_PARENT)
+        upper = interface->parent();
+
+    QPoint screenPos = pos;
+    if (upper)
+        screenPos += upper->rect().topLeft();
+
+    return screenPos;
+}
 
 // Editable Text interface
 static QString textForRange(QAccessibleInterface *accessible, int startOffset, int endOffset)
