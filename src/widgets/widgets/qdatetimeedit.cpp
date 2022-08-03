@@ -2480,7 +2480,7 @@ void QDateTimeEditPrivate::init(const QVariant &var)
     Q_Q(QDateTimeEdit);
     switch (var.userType()) {
     case QMetaType::QDate:
-        value = var.toDate().startOfDay();
+        value = var.toDate().startOfDay(spec);
         updateTimeSpec();
         q->setDisplayFormat(defaultDateFormat);
         if (sectionNodes.isEmpty()) // ### safeguard for broken locale
@@ -2494,7 +2494,7 @@ void QDateTimeEditPrivate::init(const QVariant &var)
             q->setDisplayFormat("dd/MM/yyyy hh:mm:ss"_L1);
         break;
     case QMetaType::QTime:
-        value = QDateTime(QDATETIMEEDIT_DATE_INITIAL, var.toTime());
+        value = QDateTime(QDATETIMEEDIT_DATE_INITIAL, var.toTime(), spec);
         updateTimeSpec();
         q->setDisplayFormat(defaultTimeFormat);
         if (sectionNodes.isEmpty()) // ### safeguard for broken locale
