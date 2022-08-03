@@ -1425,21 +1425,45 @@ bool QRhiVulkan::recreateSwapChain(QRhiSwapChain *swapChain)
         ? VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR
         : surfaceCaps.currentTransform;
 
+    // This looks odd but matches how platforms work in practice.
+    //
+    // On Windows with NVIDIA for example, the only supportedCompositeAlpha
+    // value reported is OPAQUE, nothing else. Yet transparency works
+    // regardless, as long as the native window is set up correctly, so that's
+    // not something we need to handle here.
+    //
+    // On Linux with Intel and Mesa and running on xcb reports, on one
+    // particular system, INHERIT+PRE_MULTIPLIED. Tranparency works, regardless,
+    // presumably due to setting INHERIT.
+    //
+    // On the same setup with Wayland instead of xcb we see
+    // OPAQUE+PRE_MULTIPLIED reported. Here transparency won't work unless
+    // PRE_MULTIPLIED is set.
+    //
+    // Therefore our rules are:
+    //   - Prefer INHERIT over OPAQUE.
+    //   - Then based on the request, try the requested alpha mode, but if
+    //     that's not reported as supported, try also the other (PRE/POST,
+    //     POST/PRE) as that is better than nothing. This is not different from
+    //     some other backends, e.g. D3D11 with DirectComposition there is also
+    //     no control over being straight or pre-multiplied. Whereas with
+    //     WGL/GLX/EGL we never had that sort of control.
+
     VkCompositeAlphaFlagBitsKHR compositeAlpha =
         (surfaceCaps.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR)
         ? VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR
         : VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 
-    if (swapChainD->m_flags.testFlag(QRhiSwapChain::SurfaceHasPreMulAlpha)
-            && (surfaceCaps.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR))
-    {
-        compositeAlpha = VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR;
-    }
-
-    if (swapChainD->m_flags.testFlag(QRhiSwapChain::SurfaceHasNonPreMulAlpha)
-            && (surfaceCaps.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR))
-    {
-        compositeAlpha = VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR;
+    if (swapChainD->m_flags.testFlag(QRhiSwapChain::SurfaceHasPreMulAlpha)) {
+        if (surfaceCaps.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR)
+            compositeAlpha = VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR;
+        else if (surfaceCaps.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR)
+            compositeAlpha = VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR;
+    } else if (swapChainD->m_flags.testFlag(QRhiSwapChain::SurfaceHasNonPreMulAlpha)) {
+        if (surfaceCaps.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR)
+            compositeAlpha = VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR;
+        else if (surfaceCaps.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR)
+            compositeAlpha = VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR;
     }
 
     VkImageUsageFlags usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
