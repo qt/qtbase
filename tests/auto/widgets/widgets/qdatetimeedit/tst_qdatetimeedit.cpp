@@ -456,121 +456,76 @@ void tst_QDateTimeEdit::constructor_qwidget()
 void tst_QDateTimeEdit::constructor_qdatetime_data()
 {
     QTest::addColumn<QDateTime>("parameter");
-    QTest::addColumn<QDateTime>("displayDateTime");
-    QTest::addColumn<QDate>("minimumDate");
-    QTest::addColumn<QTime>("minimumTime");
-    QTest::addColumn<QDate>("maximumDate");
-    QTest::addColumn<QTime>("maximumTime");
 
-    QTest::newRow("normal") << QDateTime(QDate(2004, 6, 16), QTime(13, 46, 32, 764))
-                            << QDateTime(QDate(2004, 6, 16), QTime(13, 46, 32, 764))
-                            << QDate(1752, 9, 14) << QTime(0, 0, 0, 0)
-                            << QDate(9999, 12, 31) << QTime(23, 59, 59, 999);
-
-    QTest::newRow("invalid") << QDateTime(QDate(9999, 99, 99), QTime(13, 46, 32, 764))
-                             << QDateTime(QDate(2000, 1, 1), QTime(0, 0, 0, 0))
-                             << QDate(1752, 9, 14) << QTime(0, 0, 0, 0)
-                             << QDate(9999, 12, 31) << QTime(23, 59, 59, 999);
+    QTest::newRow("normal") << QDateTime(QDate(2004, 6, 16), QTime(13, 46, 32, 764));
+    QTest::newRow("invalid") << QDateTime(QDate(9999, 99, 99), QTime(13, 46, 32, 764));
 }
 
 void tst_QDateTimeEdit::constructor_qdatetime()
 {
     QFETCH(QDateTime, parameter);
-    QFETCH(QDateTime, displayDateTime);
-    QFETCH(QDate, minimumDate);
-    QFETCH(QTime, minimumTime);
-    QFETCH(QDate, maximumDate);
-    QFETCH(QTime, maximumTime);
-
     testWidget->hide();
 
     QDateTimeEdit dte(parameter);
     dte.show();
-    QCOMPARE(dte.dateTime(), displayDateTime);
-    QCOMPARE(dte.minimumDate(), minimumDate);
-    QCOMPARE(dte.minimumTime(), minimumTime);
-    QCOMPARE(dte.maximumDate(), maximumDate);
-    QCOMPARE(dte.maximumTime(), maximumTime);
+    if (QByteArrayView(QTest::currentDataTag()) == "invalid")
+        QCOMPARE(dte.dateTime(), QDateTime(QDate(2000, 1, 1), QTime(0, 0)));
+    else
+        QCOMPARE(dte.dateTime(), parameter);
+    QCOMPARE(dte.minimumDate(), QDate(1752, 9, 14));
+    QCOMPARE(dte.minimumTime(), QTime(0, 0));
+    QCOMPARE(dte.maximumDate(), QDate(9999, 12, 31));
+    QCOMPARE(dte.maximumTime(), QTime(23, 59, 59, 999));
 }
 
 void tst_QDateTimeEdit::constructor_qdate_data()
 {
     QTest::addColumn<QDate>("parameter");
-    QTest::addColumn<QDateTime>("displayDateTime");
-    QTest::addColumn<QDate>("minimumDate");
-    QTest::addColumn<QTime>("minimumTime");
-    QTest::addColumn<QDate>("maximumDate");
-    QTest::addColumn<QTime>("maximumTime");
 
-    QTest::newRow("normal") << QDate(2004, 6, 16)
-                            << QDateTime(QDate(2004, 6, 16), QTime(0, 0, 0, 0))
-                            << QDate(1752, 9, 14) << QTime(0, 0, 0, 0)
-                            << QDate(9999, 12, 31) << QTime(23, 59, 59, 999);
-
-    QTest::newRow("invalid") << QDate(9999, 99, 99)
-                             << QDateTime(QDate(2000, 1, 1), QTime(0, 0, 0, 0))
-                             << QDate(1752, 9, 14) << QTime(0, 0, 0, 0)
-                             << QDate(9999, 12, 31) << QTime(23, 59, 59, 999);
+    QTest::newRow("normal") << QDate(2004, 6, 16);
+    QTest::newRow("invalid") << QDate(9999, 99, 99);
 }
 
 void tst_QDateTimeEdit::constructor_qdate()
 {
     QFETCH(QDate, parameter);
-    QFETCH(QDateTime, displayDateTime);
-    QFETCH(QDate, minimumDate);
-    QFETCH(QTime, minimumTime);
-    QFETCH(QDate, maximumDate);
-    QFETCH(QTime, maximumTime);
-
     testWidget->hide();
 
     QDateTimeEdit dte(parameter);
     dte.show();
-    QCOMPARE(dte.dateTime(), displayDateTime);
-    QCOMPARE(dte.minimumDate(), minimumDate);
-    QCOMPARE(dte.minimumTime(), minimumTime);
-    QCOMPARE(dte.maximumDate(), maximumDate);
-    QCOMPARE(dte.maximumTime(), maximumTime);
+    if (QByteArrayView(QTest::currentDataTag()) == "invalid")
+        QCOMPARE(dte.dateTime(), QDateTime(QDate(2000, 1, 1), QTime(0, 0)));
+    else
+        QCOMPARE(dte.dateTime(), QDateTime(parameter, QTime(0, 0)));
+    QCOMPARE(dte.minimumDate(), QDate(1752, 9, 14));
+    QCOMPARE(dte.minimumTime(), QTime(0, 0));
+    QCOMPARE(dte.maximumDate(), QDate(9999, 12, 31));
+    QCOMPARE(dte.maximumTime(), QTime(23, 59, 59, 999));
 }
 
 void tst_QDateTimeEdit::constructor_qtime_data()
 {
     QTest::addColumn<QTime>("parameter");
-    QTest::addColumn<QDateTime>("displayDateTime");
-    QTest::addColumn<QDate>("minimumDate");
-    QTest::addColumn<QTime>("minimumTime");
-    QTest::addColumn<QDate>("maximumDate");
-    QTest::addColumn<QTime>("maximumTime");
 
-    QTest::newRow("normal") << QTime(13, 46, 32, 764)
-                            << QDateTime(QDate(2000, 1, 1), QTime(13, 46, 32, 764))
-                            << QDate(2000, 1, 1) << QTime(0, 0, 0, 0)
-                            << QDate(2000, 1, 1) << QTime(23, 59, 59, 999);
-
-    QTest::newRow("invalid") << QTime(99, 99, 99, 5000)
-                             << QDateTime(QDate(2000, 1, 1), QTime(0, 0, 0, 0))
-                             << QDate(2000, 1, 1) << QTime(0, 0, 0, 0)
-                             << QDate(2000, 1, 1) << QTime(23, 59, 59, 999);
+    QTest::newRow("normal") << QTime(13, 46, 32, 764);
+    QTest::newRow("invalid") << QTime(99, 99, 99, 5000);
 }
 
 void tst_QDateTimeEdit::constructor_qtime()
 {
     QFETCH(QTime, parameter);
-    QFETCH(QDateTime, displayDateTime);
-    QFETCH(QDate, minimumDate);
-    QFETCH(QTime, minimumTime);
-    QFETCH(QDate, maximumDate);
-    QFETCH(QTime, maximumTime);
-
     testWidget->hide();
 
     QDateTimeEdit dte(parameter);
     dte.show();
-    QCOMPARE(dte.dateTime(), displayDateTime);
-    QCOMPARE(dte.minimumDate(), minimumDate);
-    QCOMPARE(dte.minimumTime(), minimumTime);
-    QCOMPARE(dte.maximumDate(), maximumDate);
-    QCOMPARE(dte.maximumTime(), maximumTime);
+    if (QByteArrayView(QTest::currentDataTag()) == "invalid")
+        QCOMPARE(dte.dateTime(), QDateTime(QDate(2000, 1, 1), QTime(0, 0)));
+    else
+        QCOMPARE(dte.dateTime(), QDateTime(QDate(2000, 1, 1), parameter));
+    QCOMPARE(dte.minimumDate(), QDate(2000, 1, 1));
+    QCOMPARE(dte.minimumTime(), QTime(0, 0));
+    QCOMPARE(dte.maximumDate(), QDate(2000, 1, 1));
+    QCOMPARE(dte.maximumTime(), QTime(23, 59, 59, 999));
 }
 
 void tst_QDateTimeEdit::minimumDate_data()
