@@ -149,8 +149,10 @@ static QSet<QByteArray> keywords()
             << "msvc-2015"
 #  elif _MSC_VER <= 1916
             << "msvc-2017"
-#  else
+#  elif _MSC_VER <= 1929
             << "msvc-2019"
+#  else
+            << "msvc-2022"
 #  endif
 #endif
 
