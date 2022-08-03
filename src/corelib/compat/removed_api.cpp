@@ -285,6 +285,13 @@ QT_WARNING_POP
 
 #if QT_CORE_REMOVED_SINCE(6, 5)
 
+#include "qenvironmentvariables.h"
+
+bool qputenv(const char *varName, const QByteArray &value)
+{
+    return qputenv(varName, qToByteArrayViewIgnoringNull(value));
+}
+
 #include "qmetatype.h"
 
 int QMetaType::idHelper() const

@@ -5,6 +5,7 @@
 #define QENVIRONMENTVARIABLES_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qtdeprecationmarkers.h>
 
 #if 0
 #pragma qt_class(QEnvironmentVariables)
@@ -14,11 +15,16 @@
 QT_BEGIN_NAMESPACE
 
 class QByteArray;
+class QByteArrayView;
+
 Q_CORE_EXPORT QByteArray qgetenv(const char *varName);
 // need it as two functions because QString is only forward-declared here
 Q_CORE_EXPORT QString qEnvironmentVariable(const char *varName);
 Q_CORE_EXPORT QString qEnvironmentVariable(const char *varName, const QString &defaultValue);
+#if QT_CORE_REMOVED_SINCE(6, 5)
 Q_CORE_EXPORT bool qputenv(const char *varName, const QByteArray &value);
+#endif
+Q_CORE_EXPORT bool qputenv(const char *varName, QByteArrayView value);
 Q_CORE_EXPORT bool qunsetenv(const char *varName);
 
 Q_CORE_EXPORT bool qEnvironmentVariableIsEmpty(const char *varName) noexcept;

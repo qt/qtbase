@@ -174,7 +174,7 @@ QString tst_QPrinterInfo::getOutputFromCommand(const QStringList &command)
 {
     // Forces the ouptut from the command to be in English
     const QByteArray origSoftwareEnv = qgetenv("SOFTWARE");
-    qputenv("SOFTWARE", QByteArray());
+    qputenv("SOFTWARE", nullptr);
     QString output = getOutputFromCommandInternal(command);
     qputenv("SOFTWARE", origSoftwareEnv);
     return output;

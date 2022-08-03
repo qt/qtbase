@@ -153,7 +153,7 @@ private:
         { reset(zone); }
         void reset(const QByteArray &zone)
         {
-            qputenv("TZ", zone.constData());
+            qputenv("TZ", zone);
             qTzSet();
         }
         ~TimeZoneRollback()
@@ -161,7 +161,7 @@ private:
             if (prior.isNull())
                 qunsetenv("TZ");
             else
-                qputenv("TZ", prior.constData());
+                qputenv("TZ", prior);
             qTzSet();
         }
     };

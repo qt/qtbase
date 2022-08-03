@@ -124,7 +124,7 @@ struct QXcbSoftwareOpenGLEnforcer {
         }
 
         if (forceSoftwareOpenGL)
-            qputenv("LIBGL_ALWAYS_SOFTWARE", QByteArrayLiteral("1"));
+            qputenv("LIBGL_ALWAYS_SOFTWARE", "1");
     }
 
     ~QXcbSoftwareOpenGLEnforcer() {

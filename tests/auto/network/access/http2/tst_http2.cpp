@@ -238,7 +238,7 @@ void tst_Http2::singleRequest()
     // we have to use TLS sockets (== private key) and thus suppress a
     // keychain UI asking for permission to use a private key.
     // Our CI has this, but somebody testing locally - will have a problem.
-    qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", QByteArray("1"));
+    qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", "1");
     auto envRollback = qScopeGuard([](){
         qunsetenv("QT_SSL_USE_TEMPORARY_KEYCHAIN");
     });
@@ -630,7 +630,7 @@ void tst_Http2::connectToHost()
     // we have to use TLS sockets (== private key) and thus suppress a
     // keychain UI asking for permission to use a private key.
     // Our CI has this, but somebody testing locally - will have a problem.
-    qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", QByteArray("1"));
+    qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", "1");
     auto envRollback = qScopeGuard([](){
         qunsetenv("QT_SSL_USE_TEMPORARY_KEYCHAIN");
     });
@@ -728,7 +728,7 @@ void tst_Http2::maxFrameSize()
     // we have to use TLS sockets (== private key) and thus suppress a
     // keychain UI asking for permission to use a private key.
     // Our CI has this, but somebody testing locally - will have a problem.
-    qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", QByteArray("1"));
+    qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", "1");
     auto envRollback = qScopeGuard([](){
         qunsetenv("QT_SSL_USE_TEMPORARY_KEYCHAIN");
     });
@@ -893,7 +893,7 @@ void tst_Http2::moreActivitySignals()
     // we have to use TLS sockets (== private key) and thus suppress a
     // keychain UI asking for permission to use a private key.
     // Our CI has this, but somebody testing locally - will have a problem.
-    qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", QByteArray("1"));
+    qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", "1");
     auto envRollback = qScopeGuard([]() { qunsetenv("QT_SSL_USE_TEMPORARY_KEYCHAIN"); });
 #endif
 
@@ -1004,7 +1004,7 @@ void tst_Http2::contentEncoding()
     // we have to use TLS sockets (== private key) and thus suppress a
     // keychain UI asking for permission to use a private key.
     // Our CI has this, but somebody testing locally - will have a problem.
-    qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", QByteArray("1"));
+    qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", "1");
     auto envRollback = qScopeGuard([]() { qunsetenv("QT_SSL_USE_TEMPORARY_KEYCHAIN"); });
 #endif
 

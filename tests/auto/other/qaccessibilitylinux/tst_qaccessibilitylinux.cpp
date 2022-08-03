@@ -55,7 +55,7 @@ class tst_QAccessibilityLinux : public QObject
 public:
     tst_QAccessibilityLinux() : m_window(0), root(0), rootApplication(0), mainWindow(0)
     {
-        qputenv("QT_LINUX_ACCESSIBILITY_ALWAYS_ON", QByteArrayLiteral("1"));
+        qputenv("QT_LINUX_ACCESSIBILITY_ALWAYS_ON", "1");
         dbus = new DBusConnection();
     }
     ~tst_QAccessibilityLinux()

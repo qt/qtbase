@@ -243,6 +243,7 @@ bool qEnvironmentVariableIsSet(const char *varName) noexcept
 }
 
 /*!
+    \fn bool qputenv(const char *varName, QByteArrayView value)
     \relates <QEnvironmentVariables>
 
     This function sets the \a value of the environment variable named
@@ -258,30 +259,30 @@ bool qEnvironmentVariableIsSet(const char *varName) noexcept
     uses the replacement function in VC, and calls the standard C
     library's implementation on all other platforms.
 
+    \note In Qt versions prior to 6.5, the \a value argument was QByteArray,
+    not QByteArrayView.
+
     \sa qgetenv(), qEnvironmentVariable()
 */
-bool qputenv(const char *varName, const QByteArray &value)
+bool qputenv(const char *varName, QByteArrayView raw)
 {
-    // protect against non-NUL-terminated QByteArrays:
-    if (!const_cast<QByteArray&>(value).data_ptr()->isMutable()) {
-        QByteArray copy(value);
-        copy.reserve(copy.size() + 1); // ensures NUL termination (and isMutable() even for size==0
-                                       // (unlike detach()) to avoid infinite recursion)
-        return qputenv(varName, copy);
-    }
+    auto protect = [](const char *str) { return str ? str : ""; };
+
+    std::string value{protect(raw.data()), size_t(raw.size())}; // NUL-terminates w/SSO
 
 #if defined(Q_CC_MSVC)
     const auto locker = qt_scoped_lock(environmentMutex);
-    return _putenv_s(varName, value.constData()) == 0;
+    return _putenv_s(varName, value.data()) == 0;
 #elif (defined(_POSIX_VERSION) && (_POSIX_VERSION-0) >= 200112L) || defined(Q_OS_HAIKU)
     // POSIX.1-2001 has setenv
     const auto locker = qt_scoped_lock(environmentMutex);
-    return setenv(varName, value.constData(), true) == 0;
+    return setenv(varName, value.data(), true) == 0;
 #else
-    QByteArray buffer(varName);
+    std::string buffer;
+    buffer += protect(varName);
     buffer += '=';
     buffer += value;
-    char *envVar = qstrdup(buffer.constData());
+    char *envVar = qstrdup(buffer.data());
     int result = [&] {
         const auto locker = qt_scoped_lock(environmentMutex);
         return putenv(envVar);

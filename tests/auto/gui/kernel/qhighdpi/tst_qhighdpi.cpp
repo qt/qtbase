@@ -270,7 +270,7 @@ void tst_QHighDpi::screenDpiChange()
 void tst_QHighDpi::environment_QT_SCALE_FACTOR()
 {
     qreal factor = 3.1415;
-    qputenv("QT_SCALE_FACTOR", QByteArray::number(factor));
+    qputenv("QT_SCALE_FACTOR", std::to_string(factor));
 
     QList<qreal> dpiValues { 96, 144, 192 };
     std::unique_ptr<QGuiApplication> app(createStandardOffscreenApp(dpiValues));

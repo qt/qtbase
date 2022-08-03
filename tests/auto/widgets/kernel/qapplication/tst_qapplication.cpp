@@ -1119,7 +1119,7 @@ void tst_QApplication::libraryPaths_qt_plugin_path_2()
             << QCoreApplication::applicationDirPath();
         QVERIFY(isPathListIncluded(QCoreApplication::libraryPaths(), expected));
 
-        qputenv("QT_PLUGIN_PATH", QByteArray());
+        qputenv("QT_PLUGIN_PATH", nullptr);
     }
 }
 #endif

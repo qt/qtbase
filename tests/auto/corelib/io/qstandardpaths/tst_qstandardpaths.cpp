@@ -64,10 +64,10 @@ private:
         qputenv("XDG_DATA_DIRS", QFile::encodeName(m_globalAppDir));
     }
     void setDefaultLocations() {
-        qputenv("XDG_CONFIG_HOME", QByteArray());
-        qputenv("XDG_CONFIG_DIRS", QByteArray());
-        qputenv("XDG_DATA_HOME", QByteArray());
-        qputenv("XDG_DATA_DIRS", QByteArray());
+        qputenv("XDG_CONFIG_HOME", nullptr);
+        qputenv("XDG_CONFIG_DIRS", nullptr);
+        qputenv("XDG_DATA_HOME", nullptr);
+        qputenv("XDG_DATA_DIRS", nullptr);
     }
 #endif
 

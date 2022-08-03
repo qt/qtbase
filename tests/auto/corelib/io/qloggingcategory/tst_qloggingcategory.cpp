@@ -181,7 +181,7 @@ private slots:
     void initTestCase()
     {
         qputenv("XDG_CONFIG_DIRS", "/does/not/exist");
-        qputenv("QT_MESSAGE_PATTERN", QByteArray("%{category}: %{type},%{message}"));
+        qputenv("QT_MESSAGE_PATTERN", "%{category}: %{type},%{message}");
         oldMessageHandler = qInstallMessageHandler(myCustomMessageHandler);
         // Create configuration
         _config = new Configuration();
