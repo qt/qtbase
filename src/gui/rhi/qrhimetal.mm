@@ -241,6 +241,7 @@ struct QMetalCommandBufferData
     int currentFirstVertexBinding;
     QRhiBatchedBindings<id<MTLBuffer> > currentVertexInputsBuffers;
     QRhiBatchedBindings<NSUInteger> currentVertexInputOffsets;
+    id<MTLDepthStencilState> currentDepthStencilState;
 };
 
 struct QMetalRenderTargetData
@@ -1051,7 +1052,11 @@ void QRhiMetal::setGraphicsPipeline(QRhiCommandBuffer *cb, QRhiGraphicsPipeline 
         cbD->currentPipelineGeneration = psD->generation;
 
         [cbD->d->currentRenderPassEncoder setRenderPipelineState: psD->d->ps];
-        [cbD->d->currentRenderPassEncoder setDepthStencilState: psD->d->ds];
+
+        if (cbD->d->currentDepthStencilState != psD->d->ds) {
+            [cbD->d->currentRenderPassEncoder setDepthStencilState: psD->d->ds];
+            cbD->d->currentDepthStencilState = psD->d->ds;
+        }
 
         if (cbD->currentCullMode == -1 || psD->d->cullMode != uint(cbD->currentCullMode)) {
             [cbD->d->currentRenderPassEncoder setCullMode: psD->d->cullMode];
@@ -3952,6 +3957,7 @@ void QMetalCommandBuffer::resetPerPassCachedState()
     currentFrontFaceWinding = -1;
     currentDepthBiasValues = { 0.0f, 0.0f };
 
+    d->currentDepthStencilState = nil;
     d->currentFirstVertexBinding = -1;
     d->currentVertexInputsBuffers.clear();
     d->currentVertexInputOffsets.clear();
