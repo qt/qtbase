@@ -1041,6 +1041,41 @@ function(qt_internal_add_example_external_project subdir)
         endforeach()
     endif()
 
+    # When cross-compiling for a qemu target in our CI, we source an environment script
+    # that sets environment variables like CC and CXX. These are parsed by CMake on initial
+    # configuration to populate the cache vars CMAKE_${lang}_COMPILER.
+    # If the environment variable specified not only the compiler path, but also a list of flags
+    # to pass to the compiler, CMake parses those out into a separate CMAKE_${lang}_COMPILER_ARG1
+    # cache variable. In such a case, we want to ensure that the external project also sees those
+    # flags.
+    # Unfortunately we can't do that by simply forwarding CMAKE_${lang}_COMPILER_ARG1 to the EP
+    # because it breaks the compiler identification try_compile call, it simply doesn't consider
+    # the cache var. From what I could gather, it's a limitation of try_compile and the list
+    # of variables it considers for forwarding.
+    # To fix this case, we ensure not to pass either cache variable, and let the external project
+    # and its compiler identification try_compile project pick up the compiler and the flags
+    # from the environment variables instead.
+    foreach(lang_as_env_var CC CXX OBJC OBJCXX)
+        if(lang_as_env_var STREQUAL "CC")
+            set(lang_as_cache_var "C")
+        else()
+            set(lang_as_cache_var "${lang_as_env_var}")
+        endif()
+        set(lang_env_value "$ENV{${lang_as_env_var}}")
+        if(lang_env_value
+                AND CMAKE_${lang_as_cache_var}_COMPILER
+                AND CMAKE_${lang_as_cache_var}_COMPILER_ARG1)
+            # The compiler environment variable is set and specifies a list of extra flags, don't
+            # forward the compiler cache vars and rely on the environment variable to be picked up
+            # instead.
+        else()
+            list(APPEND vars_to_pass_if_defined "CMAKE_${lang_as_cache_var}_COMPILER:STRING")
+        endif()
+    endforeach()
+    unset(lang_as_env_var)
+    unset(lang_as_cache_var)
+    unset(lang_env_value)
+
     list(APPEND vars_to_pass_if_defined
         CMAKE_BUILD_TYPE:STRING
         CMAKE_CONFIGURATION_TYPES:STRING
@@ -1053,13 +1088,9 @@ function(qt_internal_add_example_external_project subdir)
         CMAKE_OSX_DEPLOYMENT_TARGET:STRING
         CMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED:BOOL
         CMAKE_XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH:BOOL
-        CMAKE_C_COMPILER:STRING
         CMAKE_C_COMPILER_LAUNCHER:STRING
-        CMAKE_CXX_COMPILER:STRING
         CMAKE_CXX_COMPILER_LAUNCHER:STRING
-        CMAKE_OBJC_COMPILER:STRING
         CMAKE_OBJC_COMPILER_LAUNCHER:STRING
-        CMAKE_OBJCXX_COMPILER:STRING
         CMAKE_OBJCXX_COMPILER_LAUNCHER:STRING
     )
 
