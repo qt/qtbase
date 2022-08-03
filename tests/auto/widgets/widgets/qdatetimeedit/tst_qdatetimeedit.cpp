@@ -491,16 +491,32 @@ void tst_QDateTimeEdit::constructor_qdate()
     QFETCH(QDate, parameter);
     testWidget->hide();
 
-    QDateTimeEdit dte(parameter);
-    dte.show();
-    if (QByteArrayView(QTest::currentDataTag()) == "invalid")
-        QCOMPARE(dte.dateTime(), QDateTime(QDate(2000, 1, 1), QTime(0, 0)));
-    else
-        QCOMPARE(dte.dateTime(), QDateTime(parameter, QTime(0, 0)));
-    QCOMPARE(dte.minimumDate(), QDate(1752, 9, 14));
-    QCOMPARE(dte.minimumTime(), QTime(0, 0));
-    QCOMPARE(dte.maximumDate(), QDate(9999, 12, 31));
-    QCOMPARE(dte.maximumTime(), QTime(23, 59, 59, 999));
+    {
+        QDateTimeEdit dte(parameter);
+        dte.show();
+        if (QByteArrayView(QTest::currentDataTag()) == "invalid")
+            QCOMPARE(dte.dateTime(), QDateTime(QDate(2000, 1, 1), QTime(0, 0)));
+        else
+            QCOMPARE(dte.dateTime(), QDateTime(parameter, QTime(0, 0)));
+        QCOMPARE(dte.minimumDate(), QDate(1752, 9, 14));
+        QCOMPARE(dte.minimumTime(), QTime(0, 0));
+        QCOMPARE(dte.maximumDate(), QDate(9999, 12, 31));
+        QCOMPARE(dte.maximumTime(), QTime(23, 59, 59, 999));
+    }
+    {
+        QDateEdit dte(parameter);
+        dte.show();
+        QEXPECT_FAIL("normal", "QTBUG-105322: constructors use wrong spec", Continue);
+        QEXPECT_FAIL("invalid", "Constructor neglects default replacement of invalid", Continue);
+        if (QByteArrayView(QTest::currentDataTag()) == "invalid")
+            QCOMPARE(dte.date(), QDate(2000, 1, 1));
+        else
+            QCOMPARE(dte.date(), parameter);
+        QCOMPARE(dte.minimumDate(), QDate(1752, 9, 14));
+        QCOMPARE(dte.minimumTime(), QTime(0, 0));
+        QCOMPARE(dte.maximumDate(), QDate(9999, 12, 31));
+        QCOMPARE(dte.maximumTime(), QTime(23, 59, 59, 999));
+    }
 }
 
 void tst_QDateTimeEdit::constructor_qtime_data()
@@ -516,16 +532,31 @@ void tst_QDateTimeEdit::constructor_qtime()
     QFETCH(QTime, parameter);
     testWidget->hide();
 
-    QDateTimeEdit dte(parameter);
-    dte.show();
-    if (QByteArrayView(QTest::currentDataTag()) == "invalid")
-        QCOMPARE(dte.dateTime(), QDateTime(QDate(2000, 1, 1), QTime(0, 0)));
-    else
-        QCOMPARE(dte.dateTime(), QDateTime(QDate(2000, 1, 1), parameter));
-    QCOMPARE(dte.minimumDate(), QDate(2000, 1, 1));
-    QCOMPARE(dte.minimumTime(), QTime(0, 0));
-    QCOMPARE(dte.maximumDate(), QDate(2000, 1, 1));
-    QCOMPARE(dte.maximumTime(), QTime(23, 59, 59, 999));
+    {
+        QDateTimeEdit dte(parameter);
+        dte.show();
+        if (QByteArrayView(QTest::currentDataTag()) == "invalid")
+            QCOMPARE(dte.dateTime(), QDateTime(QDate(2000, 1, 1), QTime(0, 0)));
+        else
+            QCOMPARE(dte.dateTime(), QDateTime(QDate(2000, 1, 1), parameter));
+        QCOMPARE(dte.minimumDate(), QDate(2000, 1, 1));
+        QCOMPARE(dte.minimumTime(), QTime(0, 0));
+        QCOMPARE(dte.maximumDate(), QDate(2000, 1, 1));
+        QCOMPARE(dte.maximumTime(), QTime(23, 59, 59, 999));
+    }
+    {
+        QTimeEdit dte(parameter);
+        dte.show();
+        QEXPECT_FAIL("", "QTBUG-105322: constructors use wrong spec", Abort);
+        if (QByteArrayView(QTest::currentDataTag()) == "invalid")
+            QCOMPARE(dte.time(), QTime(0, 0));
+        else
+            QCOMPARE(dte.time(), parameter);
+        QCOMPARE(dte.minimumDate(), QDate(2000, 1, 1));
+        QCOMPARE(dte.minimumTime(), QTime(0, 0));
+        QCOMPARE(dte.maximumDate(), QDate(2000, 1, 1));
+        QCOMPARE(dte.maximumTime(), QTime(23, 59, 59, 999));
+    }
 }
 
 void tst_QDateTimeEdit::minimumDate_data()
