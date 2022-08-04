@@ -305,6 +305,7 @@ qt_internal_add_module(Core
         tools/qcontiguouscache.cpp tools/qcontiguouscache.h
         tools/qcryptographichash.cpp tools/qcryptographichash.h
         tools/qduplicatetracker_p.h
+        tools/qenumindexedarray_p.h
         tools/qflatmap_p.h
         tools/qfreelist.cpp tools/qfreelist_p.h
         tools/qfunctionaltools_impl.cpp tools/qfunctionaltools_impl.h
