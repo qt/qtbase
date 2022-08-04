@@ -1095,7 +1095,7 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
 */
 
 /*! \typedef QFunctionPointer
-    \relates <QtGlobal>
+    \relates <QFunctionPointer>
 
     This is a typedef for \c{void (*)()}, a pointer to a function that takes
     no arguments and returns void.
