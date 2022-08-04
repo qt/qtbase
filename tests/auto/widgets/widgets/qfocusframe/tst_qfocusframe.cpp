@@ -95,7 +95,7 @@ void tst_QFocusFrame::focusFrameInsideScrollview()
 
     window.show();
     QFocusFrame *focusFrame = nullptr;
-    QTRY_VERIFY(focusFrame = window.findChild<QFocusFrame *>());
+    QTRY_VERIFY((focusFrame = window.findChild<QFocusFrame *>()));
     const QPoint initialOffset = focusFrame->widget()->mapToGlobal(QPoint()) - focusFrame->mapToGlobal(QPoint());
 
     tableView.scrollTo(itemModel->index(40, 0));
