@@ -531,10 +531,11 @@ public:
     in the German locale, "1,234" will be accepted as the fractional number
     1.234. In Arabic locales, QDoubleValidator will accept Arabic digits.
 
-    \note The QLocale::NumberOptions set on the locale() also affect the
-    way the number is interpreted. For example, since QLocale::RejectGroupSeparator
-    is not set by default, the validator will accept group separators. It is thus
-    recommended to use QLocale::toDouble() to obtain the numeric value.
+    \note The QLocale::NumberOptions set on the locale() also affect the way the
+    number is interpreted. For example, since QLocale::RejectGroupSeparator is
+    not set by default (except on the \c "C" locale), the validator will accept
+    group separators. If the string passes validation, pass it to
+    locale().toDouble() to obtain its numeric value.
 
     \sa QIntValidator, QRegularExpressionValidator, QLocale::toDouble(), {Line Edits Example}
 */
@@ -544,10 +545,23 @@ public:
     \since 4.3
     This enum defines the allowed notations for entering a double.
 
-    \value StandardNotation      The string is written as a standard number
-                                 (i.e. 0.015).
-    \value ScientificNotation    The string is written in scientific
-                                 form. It may have an exponent part(i.e. 1.5E-2).
+    \value StandardNotation The string is written in the standard format, a
+                            whole number part optionally followed by a separator
+                            and fractional part, for example \c{"0.015"}.
+
+    \value ScientificNotation The string is written in scientific form, which
+                              optionally appends an exponent part to the
+                              standard format, for example \c{"1.5E-2"}.
+
+    The whole number part may, as usual, include a sign. This, along with the
+    separators for fractional part, exponent and any digit-grouping, depend on
+    locale. QDoubleValidator doesn't check the placement (which would also
+    depend on locale) of any digit-grouping separators it finds, but it will
+    reject input that contains them if \l QLocale::RejectGroupSeparator is set
+    in \c locale().numberOptions().
+
+    \sa QLocale::numberOptions(), QLocale::decimalPoint(),
+        QLocale::exponential(), QLocale::negativeSign()
 */
 
 /*!
@@ -589,14 +603,14 @@ QDoubleValidator::~QDoubleValidator()
 /*!
     \fn QValidator::State QDoubleValidator::validate(QString &input, int &pos) const
 
-    Returns \l Acceptable if the string \a input contains a double
-    that is within the valid range and is in the correct format.
+    Returns \l Acceptable if the string \a input is in the correct format and
+    contains a double within the valid range.
 
-    Returns \l Intermediate if \a input contains a double that is
-    outside the range or is in the wrong format; e.g. is empty.
+    Returns \l Intermediate if \a input is in the wrong format or contains a
+    double outside the range.
 
-    Returns \l Invalid if the \a input is not a double or with too many
-    digits after the decimal point.
+    Returns \l Invalid if the \a input doesn't represent a double or has too
+    many digits after the decimal point.
 
     Note: If the valid range consists of just positive doubles (e.g. 0.0 to 100.0)
     and \a input is a negative double then \l Invalid is returned. If notation()
