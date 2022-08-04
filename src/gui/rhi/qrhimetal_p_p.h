@@ -454,6 +454,8 @@ public:
         int maxTextureSize = 4096;
         bool baseVertexAndInstance = true;
         QVector<int> supportedSampleCounts;
+        bool isAppleGPU = false;
+        int maxThreadGroupSize = 512;
     } caps;
 
     QRhiMetalData *d = nullptr;
