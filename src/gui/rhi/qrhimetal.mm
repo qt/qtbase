@@ -133,7 +133,8 @@ struct QRhiMetalData
             Texture,
             Sampler,
             StagingBuffer,
-            Pipeline
+            GraphicsPipeline,
+            ComputePipeline
         };
         Type type;
         int lastActiveFrameSlot; // -1 if not used otherwise 0..FRAMES_IN_FLIGHT-1
@@ -158,7 +159,10 @@ struct QRhiMetalData
             struct {
                 id<MTLRenderPipelineState> pipelineState;
                 id<MTLDepthStencilState> depthStencilState;
-            } pipeline;
+            } graphicsPipeline;
+            struct {
+                id<MTLComputePipelineState> pipelineState;
+            } computePipeline;
         };
     };
     QVector<DeferredReleaseEntry> releaseQueue;
@@ -2226,9 +2230,12 @@ void QRhiMetal::executeDeferredReleases(bool forced)
             case QRhiMetalData::DeferredReleaseEntry::StagingBuffer:
                 [e.stagingBuffer.buffer release];
                 break;
-            case QRhiMetalData::DeferredReleaseEntry::Pipeline:
-                [e.pipeline.depthStencilState release];
-                [e.pipeline.pipelineState release];
+            case QRhiMetalData::DeferredReleaseEntry::GraphicsPipeline:
+                [e.graphicsPipeline.depthStencilState release];
+                [e.graphicsPipeline.pipelineState release];
+                break;
+            case QRhiMetalData::DeferredReleaseEntry::ComputePipeline:
+                [e.computePipeline.pipelineState release];
                 break;
             default:
                 break;
@@ -3293,18 +3300,22 @@ void QMetalGraphicsPipeline::destroy()
     d->vs.destroy();
     d->fs.destroy();
 
+    if (!d->ps)
+        return;
+
     QRhiMetalData::DeferredReleaseEntry e;
-    e.type = QRhiMetalData::DeferredReleaseEntry::Pipeline;
+    e.type = QRhiMetalData::DeferredReleaseEntry::GraphicsPipeline;
     e.lastActiveFrameSlot = lastActiveFrameSlot;
-    e.pipeline.depthStencilState = d->ds;
-    e.pipeline.pipelineState = d->ps;
+    e.graphicsPipeline.depthStencilState = d->ds;
+    e.graphicsPipeline.pipelineState = d->ps;
     d->ds = nil;
     d->ps = nil;
 
     QRHI_RES_RHI(QRhiMetal);
-    if (rhiD)
+    if (rhiD) {
         rhiD->d->releaseQueue.append(e);
         rhiD->unregisterResource(this);
+    }
 }
 
 static inline MTLVertexFormat toMetalAttributeFormat(QRhiVertexInputAttribute::Format format)
@@ -3810,12 +3821,17 @@ void QMetalComputePipeline::destroy()
     if (!d->ps)
         return;
 
-    [d->ps release];
+    QRhiMetalData::DeferredReleaseEntry e;
+    e.type = QRhiMetalData::DeferredReleaseEntry::ComputePipeline;
+    e.lastActiveFrameSlot = lastActiveFrameSlot;
+    e.computePipeline.pipelineState = d->ps;
     d->ps = nil;
 
     QRHI_RES_RHI(QRhiMetal);
-    if (rhiD)
+    if (rhiD) {
+        rhiD->d->releaseQueue.append(e);
         rhiD->unregisterResource(this);
+    }
 }
 
 bool QMetalComputePipeline::create()
