@@ -143,6 +143,7 @@ void tst_QDoubleValidator::validate_data()
     QTest::newRow("data56") << "C" << 1229.0 << 1231.0 << -1 << QString("123E+") << ITM << INV;
     QTest::newRow("data57") << "C" << 1229.0 << 1231.0 << -1 << QString("123E+1") << ACC << INV;
     QTest::newRow("data58") << "C" << 0.0 << 100.0 << -1 << QString("0.0") << ACC << ACC;
+    QTest::newRow("overlong") << "C" << 0.0 << 99.9 << 2 << QString("1234.0") << ITM << INV;
 
     QTest::newRow("data_de0")  << "de" << 0.0 << 100.0 << 1 << QString("50,0") << ACC << ACC;
     QTest::newRow("data_de1")  << "de" << 00.0 << 100.0 << 1 << QString("500,0") << ITM << ITM;
