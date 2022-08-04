@@ -1053,6 +1053,9 @@ Q_CORE_EXPORT void qBadAlloc();
 template <typename T>
 inline T *q_check_ptr(T *p) { Q_CHECK_PTR(p); return p; }
 
+#if 0
+#pragma qt_class(QFunctionPointer)
+#endif
 typedef void (*QFunctionPointer)();
 
 #if !defined(Q_UNIMPLEMENTED)
