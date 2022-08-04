@@ -403,12 +403,16 @@ bool QRhiMetal::create(QRhi::Flags flags)
 #if defined(Q_OS_MACOS)
     caps.maxTextureSize = 16384;
     caps.baseVertexAndInstance = true;
+    if (@available(macOS 10.15, *))
+        caps.isAppleGPU = [d->dev supportsFamily:MTLGPUFamilyApple7];
+    caps.maxThreadGroupSize = 1024;
 #elif defined(Q_OS_TVOS)
     if ([d->dev supportsFeatureSet: MTLFeatureSet(30003)]) // MTLFeatureSet_tvOS_GPUFamily2_v1
         caps.maxTextureSize = 16384;
     else
         caps.maxTextureSize = 8192;
     caps.baseVertexAndInstance = false;
+    caps.isAppleGPU = true;
 #elif defined(Q_OS_IOS)
     // welcome to feature set hell
     if ([d->dev supportsFeatureSet: MTLFeatureSet(16)] // MTLFeatureSet_iOS_GPUFamily5_v1
@@ -425,6 +429,11 @@ bool QRhiMetal::create(QRhi::Flags flags)
     } else {
         caps.maxTextureSize = 4096;
         caps.baseVertexAndInstance = false;
+    }
+    caps.isAppleGPU = true;
+    if (@available(iOS 13, *)) {
+        if ([d->dev supportsFamily:MTLGPUFamilyApple4])
+            caps.maxThreadGroupSize = 1024;
     }
 #endif
 
@@ -525,15 +534,31 @@ bool QRhiMetal::isTextureFormatSupported(QRhiTexture::Format format, QRhiTexture
 {
     Q_UNUSED(flags);
 
+    bool supportsFamilyMac2 = false; // needed for BC* formats
+    bool supportsFamilyApple3 = false;
+
 #ifdef Q_OS_MACOS
-    if (format >= QRhiTexture::ETC2_RGB8 && format <= QRhiTexture::ETC2_RGBA8)
-        return false;
-    if (format >= QRhiTexture::ASTC_4x4 && format <= QRhiTexture::ASTC_12x12)
-        return false;
+    supportsFamilyMac2 = true;
+    if (caps.isAppleGPU)
+        supportsFamilyApple3 = true;
 #else
-    if (format >= QRhiTexture::BC1 && format <= QRhiTexture::BC7)
-        return false;
+    supportsFamilyApple3 = true;
 #endif
+
+    // BC5 is not available for any Apple hardare
+    if (format == QRhiTexture::BC5)
+        return false;
+
+    if (!supportsFamilyApple3) {
+        if (format >= QRhiTexture::ETC2_RGB8 && format <= QRhiTexture::ETC2_RGBA8)
+            return false;
+        if (format >= QRhiTexture::ASTC_4x4 && format <= QRhiTexture::ASTC_12x12)
+            return false;
+    }
+
+    if (!supportsFamilyMac2)
+        if (format >= QRhiTexture::BC1 && format <= QRhiTexture::BC7)
+            return false;
 
     return true;
 }
@@ -639,11 +664,7 @@ int QRhiMetal::resourceLimit(QRhi::ResourceLimit limit) const
     case QRhi::MaxThreadGroupY:
         Q_FALLTHROUGH();
     case QRhi::MaxThreadGroupZ:
-#if defined(Q_OS_MACOS)
-        return 1024;
-#else
-        return 512;
-#endif
+        return caps.maxThreadGroupSize;
     case QRhi::TextureArraySizeMax:
         return 2048;
     case QRhi::MaxUniformBufferRange:
@@ -2326,8 +2347,10 @@ bool QMetalBuffer::create()
 
     d->managed = false;
     MTLResourceOptions opts = MTLResourceStorageModeShared;
+
+    QRHI_RES_RHI(QRhiMetal);
 #ifdef Q_OS_MACOS
-    if (m_type != Dynamic) {
+    if (!rhiD->caps.isAppleGPU && m_type != Dynamic) {
         opts = MTLResourceStorageModeManaged;
         d->managed = true;
     }
@@ -2339,7 +2362,6 @@ bool QMetalBuffer::create()
     // same buffer is still in flight.
     d->slotted = !m_usage.testFlag(QRhiBuffer::StorageBuffer); // except for SSBOs written in the shader
 
-    QRHI_RES_RHI(QRhiMetal);
     for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i) {
         if (i == 0 || d->slotted) {
             d->buf[i] = [rhiD->d->dev newBufferWithLength: roundedSize options: opts];
@@ -2402,11 +2424,12 @@ void QMetalBuffer::endFullDynamicBufferUpdateForCurrentFrame()
 #endif
 }
 
-static inline MTLPixelFormat toMetalTextureFormat(QRhiTexture::Format format, QRhiTexture::Flags flags, const QRhiMetalData *d)
+static inline MTLPixelFormat toMetalTextureFormat(QRhiTexture::Format format, QRhiTexture::Flags flags, const QRhiMetal *d)
 {
 #ifndef Q_OS_MACOS
     Q_UNUSED(d);
 #endif
+
     const bool srgb = flags.testFlag(QRhiTexture::sRGB);
     switch (format) {
     case QRhiTexture::RGBA8:
@@ -2448,9 +2471,9 @@ static inline MTLPixelFormat toMetalTextureFormat(QRhiTexture::Format format, QR
     case QRhiTexture::D16:
         return MTLPixelFormatDepth16Unorm;
     case QRhiTexture::D24:
-        return [d->dev isDepth24Stencil8PixelFormatSupported] ? MTLPixelFormatDepth24Unorm_Stencil8 : MTLPixelFormatDepth32Float;
+        return [d->d->dev isDepth24Stencil8PixelFormatSupported] ? MTLPixelFormatDepth24Unorm_Stencil8 : MTLPixelFormatDepth32Float;
     case QRhiTexture::D24S8:
-        return [d->dev isDepth24Stencil8PixelFormatSupported] ? MTLPixelFormatDepth24Unorm_Stencil8 : MTLPixelFormatDepth32Float_Stencil8;
+        return [d->d->dev isDepth24Stencil8PixelFormatSupported] ? MTLPixelFormatDepth24Unorm_Stencil8 : MTLPixelFormatDepth32Float_Stencil8;
 #else
     case QRhiTexture::D16:
         return MTLPixelFormatDepth32Float;
@@ -2473,7 +2496,7 @@ static inline MTLPixelFormat toMetalTextureFormat(QRhiTexture::Format format, QR
         return MTLPixelFormatBC4_RUnorm;
     case QRhiTexture::BC5:
         qWarning("QRhiMetal does not support BC5");
-        return MTLPixelFormatRGBA8Unorm;
+        return MTLPixelFormatInvalid;
     case QRhiTexture::BC6H:
         return MTLPixelFormatBC6H_RGBUfloat;
     case QRhiTexture::BC7:
@@ -2487,7 +2510,7 @@ static inline MTLPixelFormat toMetalTextureFormat(QRhiTexture::Format format, QR
     case QRhiTexture::BC6H:
     case QRhiTexture::BC7:
         qWarning("QRhiMetal: BCx compression not supported on this platform");
-        return MTLPixelFormatRGBA8Unorm;
+        return MTLPixelFormatInvalid;
 #endif
 
 #ifndef Q_OS_MACOS
@@ -2528,32 +2551,129 @@ static inline MTLPixelFormat toMetalTextureFormat(QRhiTexture::Format format, QR
         return srgb ? MTLPixelFormatASTC_12x12_sRGB : MTLPixelFormatASTC_12x12_LDR;
 #else
     case QRhiTexture::ETC2_RGB8:
-    case QRhiTexture::ETC2_RGB8A1:
-    case QRhiTexture::ETC2_RGBA8:
+        if (d->caps.isAppleGPU) {
+            if (@available(macOS 11.0, *))
+                return srgb ? MTLPixelFormatETC2_RGB8_sRGB : MTLPixelFormatETC2_RGB8;
+        }
         qWarning("QRhiMetal: ETC2 compression not supported on this platform");
-        return MTLPixelFormatRGBA8Unorm;
-
+        return MTLPixelFormatInvalid;
+    case QRhiTexture::ETC2_RGB8A1:
+        if (d->caps.isAppleGPU) {
+            if (@available(macOS 11.0, *))
+                return srgb ? MTLPixelFormatETC2_RGB8A1_sRGB : MTLPixelFormatETC2_RGB8A1;
+        }
+        qWarning("QRhiMetal: ETC2 compression not supported on this platform");
+        return MTLPixelFormatInvalid;
+    case QRhiTexture::ETC2_RGBA8:
+        if (d->caps.isAppleGPU) {
+            if (@available(macOS 11.0, *))
+                return srgb ? MTLPixelFormatEAC_RGBA8_sRGB : MTLPixelFormatEAC_RGBA8;
+        }
+        qWarning("QRhiMetal: ETC2 compression not supported on this platform");
+        return MTLPixelFormatInvalid;
     case QRhiTexture::ASTC_4x4:
-    case QRhiTexture::ASTC_5x4:
-    case QRhiTexture::ASTC_5x5:
-    case QRhiTexture::ASTC_6x5:
-    case QRhiTexture::ASTC_6x6:
-    case QRhiTexture::ASTC_8x5:
-    case QRhiTexture::ASTC_8x6:
-    case QRhiTexture::ASTC_8x8:
-    case QRhiTexture::ASTC_10x5:
-    case QRhiTexture::ASTC_10x6:
-    case QRhiTexture::ASTC_10x8:
-    case QRhiTexture::ASTC_10x10:
-    case QRhiTexture::ASTC_12x10:
-    case QRhiTexture::ASTC_12x12:
+        if (d->caps.isAppleGPU) {
+            if (@available(macOS 11.0, *))
+                return srgb ? MTLPixelFormatASTC_4x4_sRGB : MTLPixelFormatASTC_4x4_LDR;
+        }
         qWarning("QRhiMetal: ASTC compression not supported on this platform");
-        return MTLPixelFormatRGBA8Unorm;
+        return MTLPixelFormatInvalid;
+    case QRhiTexture::ASTC_5x4:
+        if (d->caps.isAppleGPU) {
+            if (@available(macOS 11.0, *))
+                return srgb ? MTLPixelFormatASTC_5x4_sRGB : MTLPixelFormatASTC_5x4_LDR;
+        }
+        qWarning("QRhiMetal: ASTC compression not supported on this platform");
+        return MTLPixelFormatInvalid;
+    case QRhiTexture::ASTC_5x5:
+        if (d->caps.isAppleGPU) {
+            if (@available(macOS 11.0, *))
+                return srgb ? MTLPixelFormatASTC_5x5_sRGB : MTLPixelFormatASTC_5x5_LDR;
+        }
+        qWarning("QRhiMetal: ASTC compression not supported on this platform");
+        return MTLPixelFormatInvalid;
+    case QRhiTexture::ASTC_6x5:
+        if (d->caps.isAppleGPU) {
+            if (@available(macOS 11.0, *))
+                return srgb ? MTLPixelFormatASTC_6x5_sRGB : MTLPixelFormatASTC_6x5_LDR;
+        }
+        qWarning("QRhiMetal: ASTC compression not supported on this platform");
+        return MTLPixelFormatInvalid;
+    case QRhiTexture::ASTC_6x6:
+        if (d->caps.isAppleGPU) {
+            if (@available(macOS 11.0, *))
+                return srgb ? MTLPixelFormatASTC_6x6_sRGB : MTLPixelFormatASTC_6x6_LDR;
+        }
+        qWarning("QRhiMetal: ASTC compression not supported on this platform");
+        return MTLPixelFormatInvalid;
+    case QRhiTexture::ASTC_8x5:
+        if (d->caps.isAppleGPU) {
+            if (@available(macOS 11.0, *))
+                return srgb ? MTLPixelFormatASTC_8x5_sRGB : MTLPixelFormatASTC_8x5_LDR;
+        }
+        qWarning("QRhiMetal: ASTC compression not supported on this platform");
+        return MTLPixelFormatInvalid;
+    case QRhiTexture::ASTC_8x6:
+        if (d->caps.isAppleGPU) {
+            if (@available(macOS 11.0, *))
+                return srgb ? MTLPixelFormatASTC_8x6_sRGB : MTLPixelFormatASTC_8x6_LDR;
+        }
+        qWarning("QRhiMetal: ASTC compression not supported on this platform");
+        return MTLPixelFormatInvalid;
+    case QRhiTexture::ASTC_8x8:
+        if (d->caps.isAppleGPU) {
+            if (@available(macOS 11.0, *))
+                return srgb ? MTLPixelFormatASTC_8x8_sRGB : MTLPixelFormatASTC_8x8_LDR;
+        }
+        qWarning("QRhiMetal: ASTC compression not supported on this platform");
+        return MTLPixelFormatInvalid;
+    case QRhiTexture::ASTC_10x5:
+        if (d->caps.isAppleGPU) {
+            if (@available(macOS 11.0, *))
+                return srgb ? MTLPixelFormatASTC_10x5_sRGB : MTLPixelFormatASTC_10x5_LDR;
+        }
+        qWarning("QRhiMetal: ASTC compression not supported on this platform");
+        return MTLPixelFormatInvalid;
+    case QRhiTexture::ASTC_10x6:
+        if (d->caps.isAppleGPU) {
+            if (@available(macOS 11.0, *))
+                return srgb ? MTLPixelFormatASTC_10x6_sRGB : MTLPixelFormatASTC_10x6_LDR;
+        }
+        qWarning("QRhiMetal: ASTC compression not supported on this platform");
+        return MTLPixelFormatInvalid;
+    case QRhiTexture::ASTC_10x8:
+        if (d->caps.isAppleGPU) {
+            if (@available(macOS 11.0, *))
+                return srgb ? MTLPixelFormatASTC_10x8_sRGB : MTLPixelFormatASTC_10x8_LDR;
+        }
+        qWarning("QRhiMetal: ASTC compression not supported on this platform");
+        return MTLPixelFormatInvalid;
+    case QRhiTexture::ASTC_10x10:
+        if (d->caps.isAppleGPU) {
+            if (@available(macOS 11.0, *))
+                return srgb ? MTLPixelFormatASTC_10x10_sRGB : MTLPixelFormatASTC_10x10_LDR;
+        }
+        qWarning("QRhiMetal: ASTC compression not supported on this platform");
+        return MTLPixelFormatInvalid;
+    case QRhiTexture::ASTC_12x10:
+        if (d->caps.isAppleGPU) {
+            if (@available(macOS 11.0, *))
+                return srgb ? MTLPixelFormatASTC_12x10_sRGB : MTLPixelFormatASTC_12x10_LDR;
+        }
+        qWarning("QRhiMetal: ASTC compression not supported on this platform");
+        return MTLPixelFormatInvalid;
+    case QRhiTexture::ASTC_12x12:
+        if (d->caps.isAppleGPU) {
+            if (@available(macOS 11.0, *))
+                return srgb ? MTLPixelFormatASTC_12x12_sRGB : MTLPixelFormatASTC_12x12_LDR;
+        }
+        qWarning("QRhiMetal: ASTC compression not supported on this platform");
+        return MTLPixelFormatInvalid;
 #endif
 
     default:
         Q_UNREACHABLE();
-        return MTLPixelFormatRGBA8Unorm;
+        return MTLPixelFormatInvalid;
     }
 }
 
@@ -2613,9 +2733,18 @@ bool QMetalRenderBuffer::create()
     switch (m_type) {
     case DepthStencil:
 #ifdef Q_OS_MACOS
-        desc.storageMode = MTLStorageModePrivate;
-        d->format = rhiD->d->dev.depth24Stencil8PixelFormatSupported
-                ? MTLPixelFormatDepth24Unorm_Stencil8 : MTLPixelFormatDepth32Float_Stencil8;
+        if (rhiD->caps.isAppleGPU) {
+            if (@available(macOS 11.0, *)) {
+                desc.storageMode = MTLStorageModeMemoryless;
+                d->format = MTLPixelFormatDepth32Float_Stencil8;
+            } else {
+                Q_UNREACHABLE();
+            }
+        } else {
+            desc.storageMode = MTLStorageModePrivate;
+            d->format = rhiD->d->dev.depth24Stencil8PixelFormatSupported
+                    ? MTLPixelFormatDepth24Unorm_Stencil8 : MTLPixelFormatDepth32Float_Stencil8;
+        }
 #else
         desc.storageMode = MTLStorageModeMemoryless;
         d->format = MTLPixelFormatDepth32Float_Stencil8;
@@ -2625,7 +2754,7 @@ bool QMetalRenderBuffer::create()
     case Color:
         desc.storageMode = MTLStorageModePrivate;
         if (m_backingFormatHint != QRhiTexture::UnknownFormat)
-            d->format = toMetalTextureFormat(m_backingFormatHint, {}, rhiD->d);
+            d->format = toMetalTextureFormat(m_backingFormatHint, {}, rhiD);
         else
             d->format = MTLPixelFormatRGBA8Unorm;
         desc.pixelFormat = d->format;
@@ -2714,7 +2843,7 @@ bool QMetalTexture::prepareCreate(QSize *adjustedSize)
     const bool hasMipMaps = m_flags.testFlag(MipMapped);
 
     QRHI_RES_RHI(QRhiMetal);
-    d->format = toMetalTextureFormat(m_format, m_flags, rhiD->d);
+    d->format = toMetalTextureFormat(m_format, m_flags, rhiD);
     mipLevelCount = hasMipMaps ? rhiD->q->mipLevelsForSize(size) : 1;
     samples = rhiD->effectiveSampleCount(m_sampleCount);
     if (samples > 1) {
@@ -3749,7 +3878,7 @@ bool QMetalGraphicsPipeline::create()
         // validation blows up otherwise.
         MTLPixelFormat fmt = MTLPixelFormat(rpD->dsFormat);
         rpDesc.depthAttachmentPixelFormat = fmt;
-#ifdef Q_OS_MACOS
+#if defined(Q_OS_MACOS)
         if (fmt != MTLPixelFormatDepth16Unorm && fmt != MTLPixelFormatDepth32Float)
 #else
         if (fmt != MTLPixelFormatDepth32Float)
