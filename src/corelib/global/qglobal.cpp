@@ -926,7 +926,7 @@ Q_STATIC_ASSERT((std::is_same<qsizetype, qptrdiff>::value));
 */
 
 /*! \typedef QFunctionPointer
-    \relates <QtGlobal>
+    \relates <QFunctionPointer>
 
     This is a typedef for \c{void (*)()}, a pointer to a function that takes
     no arguments and returns void.
