@@ -3391,7 +3391,7 @@ QByteArray qgetenv(const char *varName)
     getenv_s(&requiredSize, 0, 0, varName);
     if (requiredSize == 0)
         return buffer;
-    buffer.resize(int(requiredSize));
+    buffer.resize(qsizetype(requiredSize));
     getenv_s(&requiredSize, buffer.data(), requiredSize, varName);
     // requiredSize includes the terminating null, which we don't want.
     Q_ASSERT(buffer.endsWith('\0'));
@@ -3452,15 +3452,14 @@ QString qEnvironmentVariable(const char *varName, const QString &defaultValue)
 {
 #if defined(Q_OS_WIN)
     const auto locker = qt_scoped_lock(environmentMutex);
-    QVarLengthArray<wchar_t, 32> wname(int(strlen(varName)) + 1);
-    for (int i = 0; i < wname.size(); ++i) // wname.size() is correct: will copy terminating null
+    QVarLengthArray<wchar_t, 32> wname(qsizetype(strlen(varName)) + 1);
+    for (qsizetype i = 0; i < wname.size(); ++i) // wname.size() is correct: will copy terminating null
         wname[i] = uchar(varName[i]);
     size_t requiredSize = 0;
-    QString buffer;
     _wgetenv_s(&requiredSize, 0, 0, wname.data());
     if (requiredSize == 0)
         return defaultValue;
-    buffer.resize(int(requiredSize));
+    QString buffer(qsizetype(requiredSize), Qt::Uninitialized);
     _wgetenv_s(&requiredSize, reinterpret_cast<wchar_t *>(buffer.data()), requiredSize,
                wname.data());
     // requiredSize includes the terminating null, which we don't want.
