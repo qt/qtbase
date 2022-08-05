@@ -256,11 +256,16 @@ elseif(QT6_INSTALL_BINS)
 endif()
 
 # Test building and installing a few dummy Qt modules and plugins.
-_qt_internal_test_expect_pass(mockplugins
-    BINARY "${CMAKE_COMMAND}"
-    BINARY_ARGS
-    "-DQT_BUILD_DIR=${CMAKE_CURRENT_BINARY_DIR}/mockplugins"
-    -P "${qt_install_prefix}/${qt_install_bin_dir}/qt-cmake-private-install.cmake")
+set(mockplugins_test_args "")
+if(NOT QT_FEATURE_no_prefix)
+    list(APPEND mockplugins_test_args
+        BINARY "${CMAKE_COMMAND}"
+        BINARY_ARGS
+        "-DQT_BUILD_DIR=${CMAKE_CURRENT_BINARY_DIR}/mockplugins"
+        -P "${qt_install_prefix}/${qt_install_bin_dir}/qt-cmake-private-install.cmake"
+    )
+endif()
+_qt_internal_test_expect_pass(mockplugins ${mockplugins_test_args})
 set_tests_properties(mockplugins PROPERTIES FIXTURES_SETUP build_mockplugins)
 
 # Test importing the plugins built in the project above.
