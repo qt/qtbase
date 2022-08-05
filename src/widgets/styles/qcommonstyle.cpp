@@ -78,12 +78,16 @@
 #include <private/qstyleanimation_p.h>
 #endif
 
+#include <qloggingcategory.h>
+
 #include <limits.h>
 
 #include <private/qtextengine_p.h>
 #include <private/qstylehelper_p.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcCommonStyle, "qt.widgets.commonstyle");
 
 using namespace Qt::StringLiterals;
 
@@ -1104,7 +1108,7 @@ void QCommonStylePrivate::viewItemLayout(const QStyleOptionViewItem *opt,  QRect
         }
         break; }
     default:
-        qWarning("doLayout: decoration position is invalid");
+        qCWarning(lcCommonStyle, "doLayout: decoration position is invalid");
         decoration = *pixmapRect;
         break;
     }
@@ -3875,7 +3879,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
         break;
 #endif // QT_CONFIG(mdiarea)
     default:
-        qWarning("QCommonStyle::drawComplexControl: Control %d not handled", cc);
+        qCWarning(lcCommonStyle, "QCommonStyle::drawComplexControl: Control %d not handled", cc);
     }
 }
 
@@ -4011,7 +4015,7 @@ QStyle::SubControl QCommonStyle::hitTestComplexControl(ComplexControl cc, const 
         }
         break;
     default:
-        qWarning("QCommonStyle::hitTestComplexControl: Case %d not handled", cc);
+        qCWarning(lcCommonStyle, "QCommonStyle::hitTestComplexControl: Case %d not handled", cc);
     }
     return sc;
 }
@@ -4450,7 +4454,7 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
     }
 #endif // QT_CONFIG(mdiarea)
      default:
-        qWarning("QCommonStyle::subControlRect: Case %d not handled", cc);
+        qCWarning(lcCommonStyle, "QCommonStyle::subControlRect: Case %d not handled", cc);
     }
 #if !QT_CONFIG(slider) && !QT_CONFIG(spinbox) && !QT_CONFIG(toolbutton) && !QT_CONFIG(groupbox)
     Q_UNUSED(widget);
