@@ -115,7 +115,7 @@ public:
     \row    \li \l Qt::AccessibleDescriptionRole \li QString
     \row    \li \l Qt::AccessibleTextRole \li QString
     \endomit
-    \row    \li \l Qt::BackgroundRole \li QBrush (\since 4.2)
+    \row    \li \l Qt::BackgroundRole \li QBrush \since 4.2
     \row    \li \l Qt::CheckStateRole \li Qt::CheckState
     \row    \li \l Qt::DecorationRole \li QIcon, QPixmap, QImage and QColor
     \row    \li \l Qt::DisplayRole \li QString and types with a string representation
@@ -126,7 +126,7 @@ public:
     \row    \li \l Qt::StatusTipRole \li
     \endomit
     \row    \li \l Qt::TextAlignmentRole \li Qt::Alignment
-    \row    \li \l Qt::ForegroundRole \li QBrush (\since 4.2)
+    \row    \li \l Qt::ForegroundRole \li QBrush \since 4.2
     \omit
     \row    \li \l Qt::ToolTipRole
     \row    \li \l Qt::WhatsThisRole
