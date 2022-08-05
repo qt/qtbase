@@ -133,6 +133,10 @@ private slots:
     void dontShowCompleterOnRoot();
     void nameFilterParsing_data();
     void nameFilterParsing();
+#if QT_CONFIG(settings)
+    void settingsCompatibility_data();
+    void settingsCompatibility();
+#endif
 
 private:
     void cleanupSettingsFile();
@@ -473,6 +477,47 @@ void tst_QFileDialog2::task180459_lastDirectory()
     delete dlg;
 }
 
+#if QT_CONFIG(settings)
+void tst_QFileDialog2::settingsCompatibility_data()
+{
+    QTest::addColumn<QString>("qtVersion");
+    QTest::addColumn<QDataStream::Version>("dsVersion");
+    QTest::newRow("6.2.3") << "6.2.3" << QDataStream::Qt_6_0;
+    QTest::newRow("6.5") << "6.5" << QDataStream::Qt_5_0;
+    QTest::newRow("15.5.2") << "5.15.2" << QDataStream::Qt_5_15;
+    QTest::newRow("15.5.9") << "5.15.9" << QDataStream::Qt_5_15;
+}
+
+void tst_QFileDialog2::settingsCompatibility()
+{
+    static const QByteArray ba32 = QByteArrayLiteral("\x00\x00\x00\xFF\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\xF7\x00\x00\x00\x04\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00""d\xFF\xFF\xFF\xFF\x00\x00\x00\x81\x00\x00\x00\x00\x00\x00\x00\x04\x00\x00\x01\t\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00>\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00""B\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00n\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x03\xE8\x00\xFF\xFF\xFF\xFF\x00\x00\x00\x00");
+    static const QByteArray ba64 = QByteArrayLiteral("\x00\x00\x00\xFF\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\xF7\x00\x00\x00\x04\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00""d\xFF\xFF\xFF\xFF\x00\x00\x00\x81\x00\x00\x00\x00\x00\x00\x00\x04\x00\x00\x01\t\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00>\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00""B\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00n\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x03\xE8\x00\xFF\xFF\xFF\xFF\x00\x00\x00\x00");
+    QFETCH(QString, qtVersion);
+    QFETCH(QDataStream::Version, dsVersion);
+    // Create a header view, convert template to target format and store it in settings
+    {
+        QSettings settings(QSettings::UserScope, "QtProject");
+        settings.beginGroup("FileDialog");
+        settings.setValue("sidebarWidth", 93); // random value
+        settings.setValue("shortcuts", QStringList({settings.fileName(), "/tmp"}));
+        settings.setValue("qtVersion", qtVersion);
+        settings.setValue("treeViewHeader", dsVersion < QDataStream::Qt_6_0 ? ba32 : ba64);
+        settings.endGroup();
+    }
+    // Create a file dialog, read settings write them back
+    {
+        QFileDialog fd;
+    }
+    // Read back settings and compare byte array
+    QSettings settings(QSettings::UserScope, "QtProject");
+    settings.beginGroup("FileDialog");
+    const QByteArray savedState = settings.value("treeViewHeader").toByteArray();
+    if (QT_VERSION_MAJOR == 6 && QT_VERSION_MINOR == 2)
+        QCOMPARE(savedState, ba64);
+    else
+        QCOMPARE(savedState, ba32);
+}
+#endif
 
 
 class FilterDirModel : public QSortFilterProxyModel

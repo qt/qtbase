@@ -1797,21 +1797,27 @@ bool QHeaderView::restoreState(const QByteArray &state)
     Q_D(QHeaderView);
     if (state.isEmpty())
         return false;
-    QByteArray data = state;
-    QDataStream stream(&data, QIODevice::ReadOnly);
-    int marker;
-    int ver;
-    stream >> marker;
-    stream >> ver;
-    if (stream.status() != QDataStream::Ok
-        || marker != QHeaderViewPrivate::VersionMarker
-        || ver != 0) // current version is 0
-        return false;
 
-    if (d->read(stream)) {
-        emit sortIndicatorChanged(d->sortIndicatorSection, d->sortIndicatorOrder );
-        d->viewport->update();
-        return true;
+    for (const auto dataStreamVersion : {QDataStream::Qt_5_0, QDataStream::Qt_6_0}) {
+
+        QByteArray data = state;
+        QDataStream stream(&data, QIODevice::ReadOnly);
+        stream.setVersion(dataStreamVersion);
+        int marker;
+        int ver;
+        stream >> marker;
+        stream >> ver;
+        if (stream.status() != QDataStream::Ok
+        || marker != QHeaderViewPrivate::VersionMarker
+        || ver != 0) { // current version is 0
+            return false;
+        }
+
+        if (d->read(stream)) {
+            emit sortIndicatorChanged(d->sortIndicatorSection, d->sortIndicatorOrder );
+            d->viewport->update();
+            return true;
+        }
     }
     return false;
 }
@@ -4164,6 +4170,15 @@ bool QHeaderViewPrivate::read(QDataStream &in)
     in >> align;
 
     in >> global;
+
+    // Check parameter consistency
+    // Global orientation out of bounds?
+    if (global < 0 || global > QHeaderView::ResizeToContents)
+        return false;
+
+    // Alignment out of bounds?
+    if (align < 0 || align > Qt::AlignVertical_Mask)
+        return false;
 
     in >> sectionItemsIn;
     // In Qt4 we had a vector of spans where one span could hold information on more sections.
