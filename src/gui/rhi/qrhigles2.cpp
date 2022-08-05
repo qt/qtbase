@@ -1944,6 +1944,12 @@ QRhi::FrameOpResult QRhiGles2::endOffscreenFrame(QRhi::EndFrameFlags flags)
 
     executeCommandBuffer(&ofr.cbWrapper);
 
+    // Just as endFrame() does a flush when skipping the swapBuffers(), do it
+    // here as well. This has the added benefit of playing nice when rendering
+    // to a texture from a context and then consuming that texture from
+    // another, sharing context.
+    f->glFlush();
+
     return QRhi::FrameOpSuccess;
 }
 
@@ -1965,6 +1971,12 @@ QRhi::FrameOpResult QRhiGles2::finish()
             executeCommandBuffer(&currentSwapChain->cb);
             currentSwapChain->cb.resetCommands();
         }
+        // Do an actual glFinish(). May seem superfluous, but this is what
+        // matches most other backends e.g. Vulkan/Metal that do a heavyweight
+        // wait-for-idle blocking in their finish(). More importantly, this
+        // allows clients simply call finish() in threaded or shared context
+        // situations where one explicitly needs to do a glFlush or Finish.
+        f->glFinish();
     }
     return QRhi::FrameOpSuccess;
 }
