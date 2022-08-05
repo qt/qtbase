@@ -243,13 +243,35 @@ Q_CORE_EXPORT void qFloatFromFloat16(float *, const qfloat16 *, qsizetype length
     // https://wg21.link/p1467 - disabled until tested
     using namespace std;
     return sqrt(f);
-#endif
+#elif QFLOAT16_IS_NATIVE && defined(__HAVE_FLOAT16) && __HAVE_FLOAT16
+    // This C library (glibc) has sqrtf16().
+    return sqrtf16(f);
+#else
+    bool mathUpdatesErrno = true;
+#  if defined(__NO_MATH_ERRNO__) || defined(_M_FP_FAST)
+    mathUpdatesErrno = false;
+#  elif defined(math_errhandling)
+    mathUpdatesErrno = (math_errhandling & MATH_ERRNO);
+#  endif
+
+    // We don't need to set errno to EDOM if (f >= 0 && f != -0 && !isnan(f))
+    // (or if we don't care about errno in the first place). We can merge the
+    // NaN check with by negating and inverting: !(0 > f), and leaving zero to
+    // sqrtf().
+    if (!mathUpdatesErrno || !(0 > f)) {
+#  if defined(__AVX512FP16__)
+        __m128h v = _mm_set_sh(f);
+        v = _mm_sqrt_sh(v, v);
+        return _mm_cvtsh_h(v);
+#  endif
+    }
 
     // WG14's N2601 does not provide a way to tell which types an
     // implementation supports, so we assume it doesn't and fall back to FP32
     float f32 = float(f);
     f32 = sqrtf(f32);
     return qfloat16::NearestFloat(f32);
+#endif
 }
 
 // The remainder of these utility functions complement qglobal.h
