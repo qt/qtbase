@@ -110,6 +110,15 @@
 
     \snippet resource-system/application.pro 1
 
+    This creates a resource of several \c{.png} files, that are addressable
+    like this: \c{":/images/copy.png"}.
+
+    If the directory layout of the files you want to embed into the resource
+    doesn't match the expectations of the application, you can specify
+    \c{resources.base}. \c base is a path prefix that denotes the root point of
+    the file's alias. In the example above, if \c{resources.base} is set to
+    \c{"images"}, then \c{copy.png} is addressable as \c{":/copy.png"}.
+
     \section1 Runtime API
 
     Qt API that deals with iterating and reading files has built-in support for
