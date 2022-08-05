@@ -3465,17 +3465,18 @@ QByteArray qgetenv(const char *varName)
 QString qEnvironmentVariable(const char *varName, const QString &defaultValue)
 {
 #if defined(Q_OS_WIN)
-    const auto locker = qt_scoped_lock(environmentMutex);
     QVarLengthArray<wchar_t, 32> wname(qsizetype(strlen(varName)) + 1);
     for (qsizetype i = 0; i < wname.size(); ++i) // wname.size() is correct: will copy terminating null
         wname[i] = uchar(varName[i]);
     size_t requiredSize = 0;
+    auto locker = qt_unique_lock(environmentMutex);
     _wgetenv_s(&requiredSize, 0, 0, wname.data());
     if (requiredSize == 0)
         return defaultValue;
     QString buffer(qsizetype(requiredSize), Qt::Uninitialized);
     _wgetenv_s(&requiredSize, reinterpret_cast<wchar_t *>(buffer.data()), requiredSize,
                wname.data());
+    locker.unlock();
     // requiredSize includes the terminating null, which we don't want.
     Q_ASSERT(buffer.endsWith(QChar(u'\0')));
     buffer.chop(1);
@@ -3618,18 +3619,22 @@ bool qEnvironmentVariableIsSet(const char *varName) noexcept
 */
 bool qputenv(const char *varName, const QByteArray &value)
 {
-    const auto locker = qt_scoped_lock(environmentMutex);
 #if defined(Q_CC_MSVC)
+    const auto locker = qt_scoped_lock(environmentMutex);
     return _putenv_s(varName, value.constData()) == 0;
 #elif (defined(_POSIX_VERSION) && (_POSIX_VERSION-0) >= 200112L) || defined(Q_OS_HAIKU)
     // POSIX.1-2001 has setenv
+    const auto locker = qt_scoped_lock(environmentMutex);
     return setenv(varName, value.constData(), true) == 0;
 #else
     QByteArray buffer(varName);
     buffer += '=';
     buffer += value;
     char *envVar = qstrdup(buffer.constData());
-    int result = putenv(envVar);
+    int result = [&] {
+        const auto locker = qt_scoped_lock(environmentMutex);
+        return putenv(envVar);
+    }();
     if (result != 0) // error. we have to delete the string.
         delete[] envVar;
     return result == 0;
@@ -3649,16 +3654,18 @@ bool qputenv(const char *varName, const QByteArray &value)
 */
 bool qunsetenv(const char *varName)
 {
-    const auto locker = qt_scoped_lock(environmentMutex);
 #if defined(Q_CC_MSVC)
+    const auto locker = qt_scoped_lock(environmentMutex);
     return _putenv_s(varName, "") == 0;
 #elif (defined(_POSIX_VERSION) && (_POSIX_VERSION-0) >= 200112L) || defined(Q_OS_BSD4) || defined(Q_OS_HAIKU)
     // POSIX.1-2001, BSD and Haiku have unsetenv
+    const auto locker = qt_scoped_lock(environmentMutex);
     return unsetenv(varName) == 0;
 #elif defined(Q_CC_MINGW)
     // On mingw, putenv("var=") removes "var" from the environment
     QByteArray buffer(varName);
     buffer += '=';
+    const auto locker = qt_scoped_lock(environmentMutex);
     return putenv(buffer.constData()) == 0;
 #else
     // Fallback to putenv("var=") which will insert an empty var into the
@@ -3666,6 +3673,7 @@ bool qunsetenv(const char *varName)
     QByteArray buffer(varName);
     buffer += '=';
     char *envVar = qstrdup(buffer.constData());
+    const auto locker = qt_scoped_lock(environmentMutex);
     return putenv(envVar) == 0;
 #endif
 }
