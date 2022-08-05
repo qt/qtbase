@@ -712,11 +712,20 @@ void QIOSInputContext::reset()
     // Instead, we choose to recreate the text responder as a brute-force solution
     // until we have better knowledge of what is going on (or implement the new
     // UITextInteraction protocol).
+    const auto oldResponder = m_textResponder;
     [m_textResponder reset];
     [m_textResponder autorelease];
     m_textResponder = nullptr;
 
     update(Qt::ImQueryAll);
+
+    // If update() didn't end up creating a new text responder, oldResponder will still be
+    // the first responder. In that case we need to resign it, so that the input panel hides.
+    // (the input panel will apparently not hide if the first responder is only released).
+    if ([oldResponder isFirstResponder]) {
+        qImDebug("IM not enabled, resigning autoreleased text responder as first responder");
+        [oldResponder resignFirstResponder];
+    }
 }
 
 /*!
