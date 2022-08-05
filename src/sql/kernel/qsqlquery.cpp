@@ -1081,8 +1081,8 @@ bool QSqlQuery::exec()
 
   To bind NULL values, a null QVariant of the relevant type has to be
   added to the bound QVariantList; for example, \c
-  {QVariant(QMetaType::QString)} should be used if you are using
-  strings.
+  {QVariant(QMetaType::fromType<QString>())} should be used if you are
+  using strings.
 
   \note Every bound QVariantList must contain the same amount of
   variants.
