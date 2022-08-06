@@ -3632,6 +3632,14 @@ bool qEnvironmentVariableIsSet(const char *varName) noexcept
 */
 bool qputenv(const char *varName, const QByteArray &value)
 {
+    // protect against non-NUL-terminated QByteArrays:
+    if (!const_cast<QByteArray&>(value).data_ptr()->isMutable()) {
+        QByteArray copy(value);
+        copy.reserve(copy.size() + 1); // ensures NUL termination (and isMutable() even for size==0
+                                       // (unlike detach()) to avoid infinite recursion)
+        return qputenv(varName, copy);
+    }
+
     const auto locker = qt_scoped_lock(environmentMutex);
 #if defined(Q_CC_MSVC)
     return _putenv_s(varName, value.constData()) == 0;
