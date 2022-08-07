@@ -1279,7 +1279,7 @@ void QObject::setObjectName(QAnyStringView name)
 
     d->extraData->objectName.removeBindingUnlessInWrapper();
 
-    if (d->extraData->objectName.value() != name) {
+    if (d->extraData->objectName != name) {
         d->extraData->objectName.setValueBypassingBindings(name.toString());
         d->extraData->objectName.notify(); // also emits a signal
     }

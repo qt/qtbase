@@ -452,15 +452,6 @@ QString &operator+=(QString &a, const QStringBuilder<A, B> &b)
     return a;
 }
 
-//
-// inline QAnyStringView members requiring QStringBuilder:
-//
-
-template <typename A, typename B>
-QAnyStringView::QAnyStringView(const QStringBuilder<A, B> &expr,
-                               typename QConcatenable<QStringBuilder<A, B>>::ConvertTo &&capacity)
-    : QAnyStringView(capacity = expr) {}
-
 QT_END_NAMESPACE
 
 #endif // QSTRINGBUILDER_H

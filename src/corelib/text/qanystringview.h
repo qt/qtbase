@@ -1,3 +1,4 @@
+// Copyright (C) 2022 The Qt Company Ltd.
 // Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 #ifndef QANYSTRINGVIEW_H
@@ -9,14 +10,22 @@
 #ifdef __cpp_impl_three_way_comparison
 #include <compare>
 #endif
+#include <QtCore/q20functional.h>
 #include <limits>
 
 class tst_QAnyStringView;
 
 QT_BEGIN_NAMESPACE
 
-template <typename, typename> class QStringBuilder;
-template <typename> struct QConcatenable;
+namespace QtPrivate {
+
+template <typename Tag, typename Result>
+struct wrapped { using type = Result; };
+
+template <typename Tag, typename Result>
+using wrapped_t = typename wrapped<Tag, Result>::type;
+
+} // namespace QtPrivate
 
 class QAnyStringView
 {
@@ -41,6 +50,19 @@ private:
     using if_compatible_container = std::enable_if_t<std::disjunction_v<
         QtPrivate::IsContainerCompatibleWithQStringView<T>,
         QtPrivate::IsContainerCompatibleWithQUtf8StringView<T>
+    >, bool>;
+
+    template <typename QStringOrQByteArray, typename T>
+    using if_convertible_to = std::enable_if_t<std::conjunction_v<
+        // need to exclude a bunch of stuff, because we take by universal reference:
+        std::negation<std::disjunction<
+            std::is_same<q20::remove_cvref_t<T>, QAnyStringView>, // don't make a copy/move ctor
+            std::is_pointer<std::decay_t<T>>, // const char*, etc
+            std::is_same<q20::remove_cvref_t<T>, QByteArray>,
+            std::is_same<q20::remove_cvref_t<T>, QString>
+        >>,
+        // this is what we're really after:
+        std::is_convertible<T, QStringOrQByteArray>
     >, bool>;
 
     // confirm we don't make an accidental copy constructor:
@@ -155,14 +177,19 @@ public:
     inline QAnyStringView(const QString &str) noexcept;
     inline constexpr QAnyStringView(QLatin1StringView str) noexcept;
 
-    // defined in qstringbuilder.h
-    template <typename A, typename B>
-    inline QAnyStringView(const QStringBuilder<A, B> &expr,
-                          typename QConcatenable<QStringBuilder<A, B>>::ConvertTo &&capacity = {});
-
     template <typename Container, if_compatible_container<Container> = true>
     constexpr QAnyStringView(const Container &c) noexcept
         : QAnyStringView(std::data(c), lengthHelperContainer(c)) {}
+
+    template <typename Container, if_convertible_to<QString, Container> = true>
+    constexpr QAnyStringView(Container &&c, QtPrivate::wrapped_t<Container, QString> &&capacity = {})
+            //noexcept(std::is_nothrow_constructible_v<QString, Container>)
+        : QAnyStringView(capacity = std::forward<Container>(c)) {}
+
+    template <typename Container, if_convertible_to<QByteArray, Container> = true>
+    constexpr QAnyStringView(Container &&c, QtPrivate::wrapped_t<Container, QByteArray> &&capacity = {})
+            //noexcept(std::is_nothrow_constructible_v<QByteArray, Container>)
+        : QAnyStringView(capacity = std::forward<Container>(c)) {}
 
     template <typename Char, if_compatible_char<Char> = true>
     constexpr QAnyStringView(const Char &c) noexcept
