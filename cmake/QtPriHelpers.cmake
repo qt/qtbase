@@ -625,14 +625,15 @@ function(qt_generate_plugin_pri_file target)
 
     qt_path_join(pri_target_path ${QT_BUILD_DIR} ${INSTALL_MKSPECSDIR}/modules)
     qt_path_join(pri_file "${pri_target_path}" "qt_plugin_${plugin_name}.pri")
-    qt_configure_file(OUTPUT "${pri_file}"
-                      CONTENT "QT_PLUGIN.${plugin_name}.TYPE = ${qmake_plugin_type}
+
+    set(content "QT_PLUGIN.${plugin_name}.TYPE = ${qmake_plugin_type}
 QT_PLUGIN.${plugin_name}.EXTENDS = ${plugin_extends}
 QT_PLUGIN.${plugin_name}.DEPENDS = ${plugin_deps}
 QT_PLUGIN.${plugin_name}.CLASS_NAME = ${plugin_class_name}
 QT_PLUGIN.${plugin_name}.module_config = ${module_config}
-QT_PLUGINS += ${plugin_name}
-")
+QT_PLUGINS += ${plugin_name}"
+)
+    file(GENERATE OUTPUT "${pri_file}" CONTENT "${content}")
 
     qt_install(FILES "${pri_file}" DESTINATION "${INSTALL_MKSPECSDIR}/modules")
 endfunction()
