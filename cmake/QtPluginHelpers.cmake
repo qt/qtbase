@@ -363,11 +363,6 @@ function(qt_internal_add_plugin target)
 
     get_target_property(target_type "${target}" TYPE)
     if(target_type STREQUAL STATIC_LIBRARY)
-        # There's no point in generating pri files for qml plugins. We didn't do it in Qt5 times.
-        if(NOT plugin_type_escaped STREQUAL "qml_plugin")
-            qt_generate_plugin_pri_file("${target}" pri_file)
-        endif()
-
         if(qt_module_target)
             qt_internal_link_internal_platform_for_object_library("${plugin_init_target}")
         endif()
@@ -417,9 +412,6 @@ function(qt_internal_add_plugin target)
             DESTINATION "${config_install_dir}"
             COMPONENT Devel
         )
-        if(pri_file)
-            qt_install(FILES "${pri_file}" DESTINATION "${INSTALL_MKSPECSDIR}/modules")
-        endif()
 
         # Make the export name of plugins be consistent with modules, so that
         # qt_add_resource adds its additional targets to the same export set in a static Qt build.
@@ -468,11 +460,21 @@ function(qt_finalize_plugin target)
         _qt_internal_generate_win32_rc_file("${target}")
     endif()
 
-    # Generate .prl files for static plugins.
+    # Generate .prl and .pri files for static plugins.
     get_target_property(target_type "${target}" TYPE)
     if(target_type STREQUAL STATIC_LIBRARY)
         if(arg_INSTALL_PATH)
             qt_generate_prl_file(${target} "${arg_INSTALL_PATH}")
+        endif()
+
+        # There's no point in generating pri files for qml plugins.
+        # We didn't do it in Qt5 times.
+        get_target_property(plugin_type "${target}" QT_PLUGIN_TYPE)
+        if(NOT plugin_type STREQUAL "qml_plugin")
+            qt_generate_plugin_pri_file("${target}" pri_file)
+            if(pri_file)
+                qt_install(FILES "${pri_file}" DESTINATION "${INSTALL_MKSPECSDIR}/modules")
+            endif()
         endif()
     endif()
 endfunction()
