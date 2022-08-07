@@ -594,7 +594,7 @@ endfunction()
 #   - generic
 #   - platform, if the plugin is not the default QPA plugin
 # Otherwise, this variable is empty.
-function(qt_generate_plugin_pri_file target pri_file_var)
+function(qt_generate_plugin_pri_file target)
     get_target_property(plugin_name ${target} OUTPUT_NAME)
     get_target_property(plugin_type ${target} QT_PLUGIN_TYPE)
     get_target_property(qmake_plugin_type ${target} QT_QMAKE_PLUGIN_TYPE)
@@ -633,7 +633,8 @@ QT_PLUGIN.${plugin_name}.CLASS_NAME = ${plugin_class_name}
 QT_PLUGIN.${plugin_name}.module_config = ${module_config}
 QT_PLUGINS += ${plugin_name}
 ")
-    set(${pri_file_var} "${pri_file}" PARENT_SCOPE)
+
+    qt_install(FILES "${pri_file}" DESTINATION "${INSTALL_MKSPECSDIR}/modules")
 endfunction()
 
 # Creates mkspecs/qconfig.pri which contains public global features among other things.
