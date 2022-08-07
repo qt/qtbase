@@ -600,6 +600,15 @@ function(qt_generate_plugin_pri_file target)
     get_target_property(qmake_plugin_type ${target} QT_QMAKE_PLUGIN_TYPE)
     get_target_property(default_plugin ${target} QT_DEFAULT_PLUGIN)
     get_target_property(plugin_class_name ${target} QT_PLUGIN_CLASS_NAME)
+    get_target_property(plugin_pri_extra_content ${target} QT_PLUGIN_PRI_EXTRA_CONTENT)
+
+    foreach(var plugin_pri_extra_content)
+        if(${var} STREQUAL "${var}-NOTFOUND")
+            set(${var} "")
+        else()
+            string(REPLACE ";" "\n" ${var} "${${var}}")
+        endif()
+    endforeach()
 
     set(plugin_extends "")
     if(NOT default_plugin)
@@ -631,8 +640,10 @@ QT_PLUGIN.${plugin_name}.EXTENDS = ${plugin_extends}
 QT_PLUGIN.${plugin_name}.DEPENDS = ${plugin_deps}
 QT_PLUGIN.${plugin_name}.CLASS_NAME = ${plugin_class_name}
 QT_PLUGIN.${plugin_name}.module_config = ${module_config}
-QT_PLUGINS += ${plugin_name}"
+QT_PLUGINS += ${plugin_name}
+${plugin_pri_extra_content}"
 )
+
     file(GENERATE OUTPUT "${pri_file}" CONTENT "${content}")
 
     qt_install(FILES "${pri_file}" DESTINATION "${INSTALL_MKSPECSDIR}/modules")
