@@ -62,7 +62,6 @@ private:
 
     void handleApplicationExec();
     void handleDialogExec();
-    void pollForNativeEvents();
     bool wait(int timeout = -1);
     bool wakeEventDispatcherThread();
     static void callProcessEvents(void *eventDispatcher);
