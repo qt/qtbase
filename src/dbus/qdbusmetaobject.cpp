@@ -70,11 +70,11 @@ private:
     void parseSignals();
     void parseProperties();
 
-    static int aggregateParameterCount(const QMap<QByteArray, Method> &map);
+    static qsizetype aggregateParameterCount(const QMap<QByteArray, Method> &map);
 };
 
-static const int intsPerProperty = 2;
-static const int intsPerMethod = 2;
+static const qsizetype intsPerProperty = 2;
+static const qsizetype intsPerMethod = 2;
 
 struct QDBusMetaObjectPrivate : public QMetaObjectPrivate
 {
@@ -221,7 +221,7 @@ void QDBusMetaObjectGenerator::parseMethods()
         bool ok = true;
 
         // build the input argument list
-        for (int i = 0; i < m.inputArgs.count(); ++i) {
+        for (qsizetype i = 0; i < m.inputArgs.count(); ++i) {
             const QDBusIntrospection::Argument &arg = m.inputArgs.at(i);
 
             Type type = findType(arg.type.toLatin1(), m.annotations, "In", i);
@@ -240,7 +240,7 @@ void QDBusMetaObjectGenerator::parseMethods()
         if (!ok) continue;
 
         // build the output argument list:
-        for (int i = 0; i < m.outputArgs.count(); ++i) {
+        for (qsizetype i = 0; i < m.outputArgs.count(); ++i) {
             const QDBusIntrospection::Argument &arg = m.outputArgs.at(i);
 
             Type type = findType(arg.type.toLatin1(), m.annotations, "Out", i);
@@ -297,7 +297,7 @@ void QDBusMetaObjectGenerator::parseSignals()
         bool ok = true;
 
         // build the output argument list
-        for (int i = 0; i < s.outputArgs.count(); ++i) {
+        for (qsizetype i = 0; i < s.outputArgs.count(); ++i) {
             const QDBusIntrospection::Argument &arg = s.outputArgs.at(i);
 
             Type type = findType(arg.type.toLatin1(), s.annotations, "Out", i);
@@ -360,9 +360,9 @@ void QDBusMetaObjectGenerator::parseProperties()
 // Returns the sum of all parameters (including return type) for the given
 // \a map of methods. This is needed for calculating the size of the methods'
 // parameter type/name meta-data.
-int QDBusMetaObjectGenerator::aggregateParameterCount(const QMap<QByteArray, Method> &map)
+qsizetype QDBusMetaObjectGenerator::aggregateParameterCount(const QMap<QByteArray, Method> &map)
 {
-    int sum = 0;
+    qsizetype sum = 0;
     QMap<QByteArray, Method>::const_iterator it;
     for (it = map.constBegin(); it != map.constEnd(); ++it) {
         const Method &m = it.value();
@@ -384,7 +384,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     QVarLengthArray<int> idata;
     idata.resize(sizeof(QDBusMetaObjectPrivate) / sizeof(int));
 
-    int methodParametersDataSize =
+    qsizetype methodParametersDataSize =
             ((aggregateParameterCount(signals_)
              + aggregateParameterCount(methods)) * 2) // types and parameter names
             - signals_.count() // return "parameters" don't have names
@@ -396,10 +396,11 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     header->className = 0;
     header->classInfoCount = 0;
     header->classInfoData = 0;
-    header->methodCount = signals_.count() + methods.count();
-    header->methodData = idata.size();
-    header->propertyCount = properties.count();
-    header->propertyData = header->methodData + header->methodCount * QMetaObjectPrivate::IntsPerMethod + methodParametersDataSize;
+    header->methodCount = int(signals_.count() + methods.count());
+    header->methodData = int(idata.size());
+    header->propertyCount = int(properties.count());
+    header->propertyData = int(header->methodData + header->methodCount *
+                               QMetaObjectPrivate::IntsPerMethod + methodParametersDataSize);
     header->enumeratorCount = 0;
     header->enumeratorData = 0;
     header->constructorCount = 0;
@@ -407,10 +408,11 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     header->flags = RequiresVariantMetaObject;
     header->signalCount = signals_.count();
     // These are specific to QDBusMetaObject:
-    header->propertyDBusData = header->propertyData + header->propertyCount * QMetaObjectPrivate::IntsPerProperty;
-    header->methodDBusData = header->propertyDBusData + header->propertyCount * intsPerProperty;
+    header->propertyDBusData = int(header->propertyData + header->propertyCount
+                                   * QMetaObjectPrivate::IntsPerProperty);
+    header->methodDBusData = int(header->propertyDBusData + header->propertyCount * intsPerProperty);
 
-    int data_size = idata.size() +
+    qsizetype data_size = idata.size() +
                     (header->methodCount * (QMetaObjectPrivate::IntsPerMethod+intsPerMethod)) + methodParametersDataSize +
                     (header->propertyCount * (QMetaObjectPrivate::IntsPerProperty+intsPerProperty));
     for (const Method &mm : qAsConst(signals_))
@@ -421,17 +423,17 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
 
     QMetaStringTable strings(className.toLatin1());
 
-    int offset = header->methodData;
-    int parametersOffset = offset + header->methodCount * QMetaObjectPrivate::IntsPerMethod;
-    int signatureOffset = header->methodDBusData;
-    int typeidOffset = header->methodDBusData + header->methodCount * intsPerMethod;
+    qsizetype offset = header->methodData;
+    qsizetype parametersOffset = offset + header->methodCount * QMetaObjectPrivate::IntsPerMethod;
+    qsizetype signatureOffset = header->methodDBusData;
+    qsizetype typeidOffset = header->methodDBusData + header->methodCount * intsPerMethod;
     idata[typeidOffset++] = 0;                           // eod
 
-    int totalMetaTypeCount = properties.count();
+    qsizetype totalMetaTypeCount = properties.count();
     ++totalMetaTypeCount; // + 1 for metatype of dynamic metaobject
     for (const auto& methodContainer: {signals_, methods}) {
         for (const auto& method: methodContainer) {
-            int argc = method.inputTypes.size() + qMax(qsizetype(0), method.outputTypes.size() - 1);
+            qsizetype argc = method.inputTypes.size() + qMax(qsizetype(0), method.outputTypes.size() - 1);
             totalMetaTypeCount += argc + 1;
         }
     }
@@ -439,7 +441,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     int propertyId = 0;
 
     // add each method:
-    int currentMethodMetaTypeOffset = properties.count() + 1;
+    qsizetype currentMethodMetaTypeOffset = properties.count() + 1;
     for (int x = 0; x < 2; ++x) {
         // Signals must be added before other methods, to match moc.
         QMap<QByteArray, Method> &map = (x == 0) ? signals_ : methods;
@@ -447,7 +449,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
              it != map.constEnd(); ++it) {
             const Method &mm = it.value();
 
-            int argc = mm.inputTypes.size() + qMax(qsizetype(0), mm.outputTypes.size() - 1);
+            qsizetype argc = mm.inputTypes.size() + qMax(qsizetype(0), mm.outputTypes.size() - 1);
 
             idata[offset++] = strings.enter(mm.name);
             idata[offset++] = argc;
@@ -457,7 +459,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
             idata[offset++] = currentMethodMetaTypeOffset;
 
             // Parameter types
-            for (int i = -1; i < argc; ++i) {
+            for (qsizetype i = -1; i < argc; ++i) {
                 int type;
                 QByteArray typeName;
                 if (i < 0) { // Return type
@@ -488,7 +490,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
                 idata[parametersOffset++] = typeInfo;
             }
             // Parameter names
-            for (int i = 0; i < argc; ++i)
+            for (qsizetype i = 0; i < argc; ++i)
                 idata[parametersOffset++] = strings.enter(mm.parameterNames.at(i));
 
             idata[signatureOffset++] = typeidOffset;
