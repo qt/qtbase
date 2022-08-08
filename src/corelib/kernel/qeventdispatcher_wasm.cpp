@@ -76,17 +76,6 @@ bool qt_asyncify_resume()
     return true;
 }
 
-// Yields control to the browser, so that it can process events. Must
-// be called on the main thread. Returns false immediately if Qt has
-// already suspended the main thread. Returns true after yielding.
-bool qt_asyncify_yield()
-{
-    if (g_is_asyncify_suspended)
-        return false;
-    emscripten_sleep(0);
-    return true;
-}
-
 #endif // QT_HAVE_EMSCRIPTEN_ASYNCIFY
 
 Q_CONSTINIT QEventDispatcherWasm *QEventDispatcherWasm::g_mainThreadEventDispatcher = nullptr;
@@ -197,9 +186,6 @@ bool QEventDispatcherWasm::processEvents(QEventLoop::ProcessEventsFlags flags)
         else if (flags & QEventLoop::ApplicationExec)
             handleApplicationExec();
     }
-
-    if (!(flags & QEventLoop::ExcludeUserInputEvents))
-        pollForNativeEvents();
 
     hasPendingEvents = qGlobalPostedEventsCount() > 0;
 
@@ -384,21 +370,6 @@ void QEventDispatcherWasm::handleDialogExec()
     emscripten_sleep(1); // This call never returns
 #endif
     // For the asyncify case we do nothing here and wait for events in wait()
-}
-
-void QEventDispatcherWasm::pollForNativeEvents()
-{
-    // Secondary thread event dispatchers do not support native events
-    if (isSecondaryThreadEventDispatcher())
-        return;
-
-#if HAVE_EMSCRIPTEN_ASYNCIFY
-    // Asyncify allows us to yield to the browser and have it process native events -
-    // but this will fail if we are recursing and are already in a yield.
-    bool didYield = qt_asyncify_yield();
-    if (!didYield)
-        qWarning("QEventDispatcherWasm::processEvents() did not asyncify process native events");
-#endif
 }
 
 // Blocks/suspends the calling thread. This is possible in two cases:
