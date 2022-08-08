@@ -62,6 +62,12 @@ elseif(CMAKE_CONFIGURATION_TYPES)
         message(STATUS
             "Default build configuration set to '${CMAKE_NINJA_MULTI_DEFAULT_BUILD_TYPE}'.")
     endif()
+    if(CMAKE_GENERATOR STREQUAL "Ninja")
+        message(FATAL_ERROR
+            "It's not possible to build multiple configurations with the single config Ninja "
+            "generator. Consider configuring with -G\"Ninja Multi-Config\" instead of -GNinja."
+        )
+    endif()
 else()
     message(STATUS "CMAKE_BUILD_TYPE was set to: '${CMAKE_BUILD_TYPE}'")
 endif()
