@@ -3435,6 +3435,9 @@ void tst_QImage::exifInvalidData()
 
 void tst_QImage::exifReadComments()
 {
+#ifdef QT_NO_IMAGEIO_TEXT_LOADING
+    QSKIP("Reading text from image file is configured off");
+#endif
     QImage image;
     QVERIFY(image.load(m_prefix + "jpeg_exif_utf8_comment.jpg"));
     QVERIFY(!image.isNull());
