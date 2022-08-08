@@ -2451,6 +2451,14 @@ static QTime msecsToTime(qint64 msecs)
     return QTime::fromMSecsSinceStartOfDay(QRoundingDown::qMod(msecs, MSECS_PER_DAY));
 }
 
+// True if combining days with millis overflows; otherwise, stores result in *sumMillis
+// The inputs should not have opposite signs.
+static inline bool daysAndMillisOverflow(qint64 days, qint64 millisInDay, qint64 *sumMillis)
+{
+    return mul_overflow(days, std::integral_constant<qint64, MSECS_PER_DAY>(), sumMillis)
+        || add_overflow(*sumMillis, millisInDay, sumMillis);
+}
+
 // Converts a date/time value into msecs
 static qint64 timeToMSecs(QDate date, QTime time)
 {
@@ -2460,8 +2468,7 @@ static qint64 timeToMSecs(QDate date, QTime time)
         ++days;
         dayms -= MSECS_PER_DAY;
     }
-    if (mul_overflow(days, std::integral_constant<qint64, MSECS_PER_DAY>(), &msecs)
-        || add_overflow(msecs, dayms, &msecs)) {
+    if (daysAndMillisOverflow(days, dayms, &msecs)) {
         using Bound = std::numeric_limits<qint64>;
         return days < 0 ? Bound::min() : Bound::max();
     }
@@ -2584,13 +2591,11 @@ static auto millisToWithinRange(qint64 millis)
         qint64 shifted = 0;
         bool good = false;
     } result;
-    qint64 jd = msecsToJulianDay(millis), fakeJd, diffMillis;
+    qint64 jd = msecsToJulianDay(millis), fakeJd;
     auto ymd = QGregorianCalendar::partsFromJulian(jd);
     result.good = QGregorianCalendar::julianFromParts(systemTimeYearMatching(ymd.year),
                                                       ymd.month, ymd.day, &fakeJd)
-        && !mul_overflow(fakeJd - jd, std::integral_constant<qint64, MSECS_PER_DAY>(),
-                         &diffMillis)
-        && !add_overflow(diffMillis, millis, &result.shifted);
+        && !daysAndMillisOverflow(fakeJd - jd, millis, &result.shifted);
     return result;
 }
 
@@ -2951,8 +2956,7 @@ static void setDateTime(QDateTimeData &d, QDate date, QTime time)
 
     // Check in representable range:
     qint64 msecs = 0;
-    if (mul_overflow(days, std::integral_constant<qint64, MSECS_PER_DAY>(), &msecs)
-        || add_overflow(msecs, qint64(ds), &msecs)) {
+    if (daysAndMillisOverflow(days, qint64(ds), &msecs)) {
         newStatus = QDateTimePrivate::StatusFlags{};
         msecs = 0;
     }

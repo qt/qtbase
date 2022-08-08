@@ -283,6 +283,24 @@ int getUtcOffset(qint64 atMSecsSinceEpoch)
 }
 #endif // QT_BOOTSTRAPPED
 
+#define IC(N) std::integral_constant<qint64, N>()
+
+// True if combining day and seconds overflows qint64; otherwise, sets *epochSeconds
+inline bool daysAndSecondsOverflow(qint64 julianDay, qint64 daySeconds, qint64 *epochSeconds)
+{
+    return mul_overflow(julianDay - JULIAN_DAY_FOR_EPOCH, IC(SECS_PER_DAY), epochSeconds)
+        || add_overflow(*epochSeconds, daySeconds, epochSeconds);
+}
+
+// True if combining seconds and millis overflows; otherwise sets *epochMillis
+inline bool secondsAndMillisOverflow(qint64 epochSeconds, qint64 millis, qint64 *epochMillis)
+{
+    return mul_overflow(epochSeconds, IC(MSECS_PER_SEC), epochMillis)
+        || add_overflow(*epochMillis, millis, epochMillis);
+}
+
+#undef IC
+
 // Calls the platform variant of localtime() for the given utcMillis, and
 // returns the local milliseconds, offset from UTC and DST status.
 QDateTimePrivate::ZoneState utcToLocal(qint64 utcMillis)
@@ -306,13 +324,8 @@ QDateTimePrivate::ZoneState utcToLocal(qint64 utcMillis)
     const qint64 daySeconds = tmSecsWithinDay(local);
     Q_ASSERT(0 <= daySeconds && daySeconds < SECS_PER_DAY);
     qint64 localSeconds, localMillis;
-    if (Q_UNLIKELY(
-            mul_overflow(jd - JULIAN_DAY_FOR_EPOCH, std::integral_constant<qint64, SECS_PER_DAY>(),
-                         &localSeconds)
-            || add_overflow(localSeconds, daySeconds, &localSeconds)
-            || mul_overflow(localSeconds, std::integral_constant<qint64, MSECS_PER_SEC>(),
-                            &localMillis)
-            || add_overflow(localMillis, qint64(msec), &localMillis))) {
+    if (Q_UNLIKELY(daysAndSecondsOverflow(jd, daySeconds, &localSeconds)
+                   || secondsAndMillisOverflow(localSeconds, qint64(msec), &localMillis))) {
         return {utcMillis};
     }
     const auto dst
@@ -362,11 +375,9 @@ QDateTimePrivate::ZoneState mapLocalTime(qint64 local, QDateTimePrivate::Dayligh
         daySecs -= SECS_PER_DAY;
     }
     qint64 localSecs;
-    if (Q_UNLIKELY(mul_overflow(jd - JULIAN_DAY_FOR_EPOCH,
-                                std::integral_constant<qint64, SECS_PER_DAY>(), &localSecs)
-                   || add_overflow(localSecs, daySecs, &localSecs))) {
+    if (Q_UNLIKELY(daysAndSecondsOverflow(jd, daySecs, &localSecs)))
         return {local, offset, dst, false};
-    }
+
     offset = localSecs - utcSecs;
 
     if (localSecs < 0 && millis > 0) {
@@ -374,9 +385,7 @@ QDateTimePrivate::ZoneState mapLocalTime(qint64 local, QDateTimePrivate::Dayligh
         millis -= MSECS_PER_SEC;
     }
     qint64 revised;
-    const bool overflow =
-        mul_overflow(localSecs, std::integral_constant<qint64, MSECS_PER_SEC>(), &revised)
-        || add_overflow(revised, millis, &revised);
+    const bool overflow = secondsAndMillisOverflow(localSecs, millis, &revised);
     return {overflow ? local : revised, offset, dst, !overflow};
 }
 
