@@ -3069,9 +3069,8 @@ class T2;
 
 void tst_Collections::forwardDeclared()
 {
-#define COMMA ,
-#define TEST(type) do { \
-        using C = type; \
+#define TEST(...) do { \
+        using C = __VA_ARGS__; \
         C *x = nullptr; \
         C::iterator i; \
         C::const_iterator j; \
@@ -3080,16 +3079,15 @@ void tst_Collections::forwardDeclared()
         Q_UNUSED(j); \
     } while (false)
 
-    TEST(QHash<Key1 COMMA T1>);
-    TEST(QMap<Key1 COMMA T1>);
-    TEST(QMultiMap<Key1 COMMA T1>);
+    TEST(QHash<Key1, T1>);
+    TEST(QMap<Key1, T1>);
+    TEST(QMultiMap<Key1, T1>);
     TEST(QList<T1>);
     TEST(QVector<T1>);
     TEST(QStack<T1>);
     TEST(QQueue<T1>);
     TEST(QSet<T1>);
 #undef TEST
-#undef COMMA
 
     {
         using C = QPair<T1, T2>;

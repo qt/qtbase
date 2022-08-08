@@ -14,7 +14,6 @@
 #  define HAVE_FALLBACK_ENGINE
 #endif
 
-#define COMMA   ,
 #define QVERIFY_3TIMES(statement)    \
     do {\
         if (!static_cast<bool>(statement))\
@@ -165,8 +164,8 @@ QT_WARNING_POP
     QRandomGenerator64 systemRng64 = *system64;
     systemRng64 = *system64;
 
-    static_assert(std::is_same<decltype(rng64.generate()) COMMA quint64>::value);
-    static_assert(std::is_same<decltype(system64->generate()) COMMA quint64>::value);
+    static_assert(std::is_same_v<decltype(rng64.generate()), quint64>);
+    static_assert(std::is_same_v<decltype(system64->generate()), quint64>);
 }
 
 void tst_QRandomGenerator::knownSequence()
@@ -895,18 +894,20 @@ void tst_QRandomGenerator::stdGenerateCanonical()
 {
     QFETCH(uint, control);
     RandomGenerator rng(control);
+    auto generate_canonical = [&rng]() {
+        return std::generate_canonical<qreal, 32>(rng);
+    };
 
     for (int i = 0; i < 4; ++i) {
         QVERIFY_3TIMES([&] {
-            qreal value = std::generate_canonical<qreal COMMA 32>(rng);
+            qreal value = generate_canonical();
             return value > 0 && value < 1 && value != RandomValueFP;
         }());
     }
 
     // and should hopefully be different from repeated calls
     for (int i = 0; i < 4; ++i)
-        QVERIFY_3TIMES(std::generate_canonical<qreal COMMA 32>(rng) !=
-                std::generate_canonical<qreal COMMA 32>(rng));
+        QVERIFY_3TIMES(generate_canonical() != generate_canonical());
 }
 
 void tst_QRandomGenerator::stdUniformRealDistribution_data()
