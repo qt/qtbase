@@ -675,6 +675,7 @@ bool QNetworkInformation::load(QStringView backend)
 #endif // QT_DEPRECATED_SINCE(6,4)
 
 /*!
+    \since 6.4
     Load a backend which supports \a features.
 
     Returns \c true if it managed to load the requested backend or
