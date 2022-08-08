@@ -20,15 +20,12 @@ Q_GLOBAL_STATIC(AndroidConnectivityManagerInstance, androidConnManagerInstance)
 static const char networkInformationClass[] =
         "org/qtproject/qt/android/networkinformation/QtAndroidNetworkInformation";
 
-Q_DECLARE_JNI_TYPE(AndroidConnectivity,
-                   "Lorg/qtproject/qt/android/networkinformation/QtAndroidNetworkInformation$AndroidConnectivity;");
-static void networkConnectivityChanged(JNIEnv *env, jobject obj,
-                                       QtJniTypes::AndroidConnectivity enumValue)
+static void networkConnectivityChanged(JNIEnv *env, jobject obj, jint enumValue)
 {
     Q_UNUSED(env);
     Q_UNUSED(obj);
-    const jint value = QJniObject(enumValue).callMethod<jint>("ordinal");
-    const auto connectivity = static_cast<AndroidConnectivityManager::AndroidConnectivity>(value);
+    const auto connectivity =
+            static_cast<AndroidConnectivityManager::AndroidConnectivity>(enumValue);
     Q_EMIT androidConnManagerInstance->connManager->connectivityChanged(connectivity);
 }
 Q_DECLARE_JNI_NATIVE_METHOD(networkConnectivityChanged)
@@ -42,14 +39,11 @@ static void genericInfoChanged(JNIEnv *env, jobject obj, jboolean captivePortal,
 }
 Q_DECLARE_JNI_NATIVE_METHOD(genericInfoChanged)
 
-Q_DECLARE_JNI_TYPE(Transport,
-                   "Lorg/qtproject/qt/android/networkinformation/QtAndroidNetworkInformation$Transport;");
-static void transportMediumChanged(JNIEnv *env, jobject obj, QtJniTypes::Transport enumValue)
+static void transportMediumChanged(JNIEnv *env, jobject obj, jint enumValue)
 {
     Q_UNUSED(env);
     Q_UNUSED(obj);
-    const jint value = QJniObject(enumValue).callMethod<jint>("ordinal");
-    const auto transport = static_cast<AndroidConnectivityManager::AndroidTransport>(value);
+    const auto transport = static_cast<AndroidConnectivityManager::AndroidTransport>(enumValue);
     emit androidConnManagerInstance->connManager->transportMediumChanged(transport);
 }
 Q_DECLARE_JNI_NATIVE_METHOD(transportMediumChanged)

@@ -15,9 +15,9 @@ import android.os.Build;
 public class QtAndroidNetworkInformation {
     private static final String LOG_TAG = "QtAndroidNetworkInformation";
 
-    private static native void networkConnectivityChanged(AndroidConnectivity connectivity);
+    private static native void networkConnectivityChanged(int connectivity);
     private static native void genericInfoChanged(boolean captivePortal, boolean metered);
-    private static native void transportMediumChanged(Transport transportMedium);
+    private static native void transportMediumChanged(int transportMedium);
 
     private static QtNetworkInformationCallback m_callback = null;
     private static final Object m_lock = new Object();
@@ -96,14 +96,14 @@ public class QtAndroidNetworkInformation {
         private void setState(AndroidConnectivity s) {
             if (previousState != s) {
                 previousState = s;
-                networkConnectivityChanged(s);
+                networkConnectivityChanged(s.ordinal());
             }
         }
 
         private void setTransportMedium(Transport t) {
             if (previousTransport != t) {
                 previousTransport = t;
-                transportMediumChanged(t);
+                transportMediumChanged(t.ordinal());
             }
         }
 
