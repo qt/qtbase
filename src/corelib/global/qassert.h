@@ -14,6 +14,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#if defined(__cplusplus)
+
 #ifndef Q_CC_MSVC
 Q_NORETURN
 #endif
@@ -72,6 +74,29 @@ inline T *q_check_ptr(T *p) { Q_CHECK_PTR(p); return p; }
         Q_ASSERT_X(valueOfExpression, "Q_ASSUME()", "Assumption in Q_ASSUME(\"" #Expr "\") was not correct");\
         Q_ASSUME_IMPL(valueOfExpression);\
     }(Expr)
+
+// Don't use these in C++ mode, use static_assert directly.
+// These are here only to keep old code compiling.
+#  define Q_STATIC_ASSERT(Condition) static_assert(bool(Condition), #Condition)
+#  define Q_STATIC_ASSERT_X(Condition, Message) static_assert(bool(Condition), Message)
+
+#elif defined(Q_COMPILER_STATIC_ASSERT)
+// C11 mode - using the _S version in case <assert.h> doesn't do the right thing
+#  define Q_STATIC_ASSERT(Condition) _Static_assert(!!(Condition), #Condition)
+#  define Q_STATIC_ASSERT_X(Condition, Message) _Static_assert(!!(Condition), Message)
+#else
+// C89 & C99 version
+#  define Q_STATIC_ASSERT_PRIVATE_JOIN(A, B) Q_STATIC_ASSERT_PRIVATE_JOIN_IMPL(A, B)
+#  define Q_STATIC_ASSERT_PRIVATE_JOIN_IMPL(A, B) A ## B
+#  ifdef __COUNTER__
+#  define Q_STATIC_ASSERT(Condition) \
+    typedef char Q_STATIC_ASSERT_PRIVATE_JOIN(q_static_assert_result, __COUNTER__) [(Condition) ? 1 : -1];
+#  else
+#  define Q_STATIC_ASSERT(Condition) \
+    typedef char Q_STATIC_ASSERT_PRIVATE_JOIN(q_static_assert_result, __LINE__) [(Condition) ? 1 : -1];
+#  endif /* __COUNTER__ */
+#  define Q_STATIC_ASSERT_X(Condition, Message) Q_STATIC_ASSERT(Condition)
+#endif // __cplusplus
 
 QT_END_NAMESPACE
 
