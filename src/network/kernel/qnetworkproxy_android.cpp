@@ -24,11 +24,13 @@ Q_GLOBAL_STATIC(ProxyInfoObject, proxyInfoInstance)
 
 static const char networkClass[] = "org/qtproject/qt/android/network/QtNetwork";
 
+Q_DECLARE_JNI_TYPE(ProxyInfo, "Landroid/net/ProxyInfo;")
+Q_DECLARE_JNI_TYPE(JStringArray, "[Ljava/lang/String;")
+
 ProxyInfoObject::ProxyInfoObject()
 {
     QJniObject::callStaticMethod<void>(networkClass,
                                        "registerReceiver",
-                                       "(Landroid/content/Context;)V",
                                        QAndroidApplication::context());
 }
 
@@ -36,7 +38,6 @@ ProxyInfoObject::~ProxyInfoObject()
 {
     QJniObject::callStaticMethod<void>(networkClass,
                                        "unregisterReceiver",
-                                       "(Landroid/content/Context;)V",
                                        QAndroidApplication::context());
 }
 
@@ -46,13 +47,11 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
     if (!proxyInfoInstance)
         return proxyList;
 
-    QJniObject proxyInfo = QJniObject::callStaticObjectMethod(networkClass,
-                                      "getProxyInfo",
-                                      "(Landroid/content/Context;)Landroid/net/ProxyInfo;",
-                                      QAndroidApplication::context());
+    QJniObject proxyInfo = QJniObject::callStaticObjectMethod<QtJniTypes::ProxyInfo>(
+            networkClass, "getProxyInfo", QAndroidApplication::context());
     if (proxyInfo.isValid()) {
-        QJniObject exclusionList = proxyInfo.callObjectMethod("getExclusionList",
-                                                              "()[Ljava/lang/String;");
+        QJniObject exclusionList =
+                proxyInfo.callObjectMethod<QtJniTypes::JStringArray>("getExclusionList");
         bool exclude = false;
         if (exclusionList.isValid()) {
             jobjectArray listObject = exclusionList.object<jobjectArray>();
