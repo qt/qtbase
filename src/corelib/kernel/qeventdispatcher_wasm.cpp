@@ -26,13 +26,15 @@ Q_LOGGING_CATEGORY(lcEventDispatcherTimers, "qt.eventdispatcher.timers");
 #define LOCK_GUARD(M)
 #endif
 
-#ifdef QT_HAVE_EMSCRIPTEN_ASYNCIFY
-
 // Emscripten asyncify currently supports one level of suspend -
 // recursion is not permitted. We track the suspend state here
 // on order to fail (more) gracefully, but we can of course only
 // track Qts own usage of asyncify.
 static bool g_is_asyncify_suspended = false;
+
+EM_JS(bool, qt_have_asyncify_js, (), {
+    return typeof Asyncify != "undefined";
+});
 
 EM_JS(void, qt_asyncify_suspend_js, (), {
     let sleepFn = (wakeUp) => {
@@ -51,6 +53,15 @@ EM_JS(void, qt_asyncify_resume_js, (), {
     // https://github.com/emscripten-core/emscripten/issues/10515
     setTimeout(wakeUp);
 });
+
+// Returns true if asyncify is available.
+bool qt_have_asyncify()
+{
+    static bool have_asyncify = []{
+        return qt_have_asyncify_js();
+    }();
+    return have_asyncify;
+}
 
 // Suspends the main thread until qt_asyncify_resume() is called. Returns
 // false immediately if Qt has already suspended the main thread (recursive
@@ -75,8 +86,6 @@ bool qt_asyncify_resume()
     qt_asyncify_resume_js();
     return true;
 }
-
-#endif // QT_HAVE_EMSCRIPTEN_ASYNCIFY
 
 Q_CONSTINIT QEventDispatcherWasm *QEventDispatcherWasm::g_mainThreadEventDispatcher = nullptr;
 #if QT_CONFIG(thread)
@@ -359,16 +368,15 @@ void QEventDispatcherWasm::handleApplicationExec()
 
 void QEventDispatcherWasm::handleDialogExec()
 {
-#ifndef QT_HAVE_EMSCRIPTEN_ASYNCIFY
-    qWarning() << "Warning: dialog exec() is not supported on Qt for WebAssembly in this"
-               << "configuration. Please use show() instead, or enable experimental support"
-               << "for asyncify.\n"
-               << "When using exec() (without asyncify) the dialog will show, the user can interact"
-               << "with it and the appropriate signals will be emitted on close. However, the"
-               << "exec() call never returns, stack content at the time of the exec() call"
-               << "is leaked, and the exec() call may interfere with input event processing";
-    emscripten_sleep(1); // This call never returns
-#endif
+    if (!qt_have_asyncify()) {
+        qWarning() << "Warning: dialog exec() is not supported on Qt for WebAssembly in this"
+                   << "configuration. Please use show() instead, or enable experimental support"
+                   << "for asyncify.\n"
+                   << "When using exec() (without asyncify) the dialog will show, the user can interact"
+                   << "exec() call never returns, stack content at the time of the exec() call"
+                   << "is leaked, and the exec() call may interfere with input event processing";
+        emscripten_sleep(1); // This call never returns
+    }
     // For the asyncify case we do nothing here and wait for events in wait()
 }
 
@@ -393,20 +401,20 @@ bool QEventDispatcherWasm::wait(int timeout)
 #endif
     Q_ASSERT(emscripten_is_main_runtime_thread());
     Q_ASSERT(isMainThreadEventDispatcher());
-#ifdef QT_HAVE_EMSCRIPTEN_ASYNCIFY
-    if (timeout > 0)
-        qWarning() << "QEventDispatcherWasm asyncify wait with timeout is not supported; timeout will be ignored"; // FIXME
+    if (qt_have_asyncify()) {
+        if (timeout > 0)
+            qWarning() << "QEventDispatcherWasm asyncify wait with timeout is not supported; timeout will be ignored"; // FIXME
 
-    bool didSuspend = qt_asyncify_suspend();
-    if (!didSuspend) {
-        qWarning("QEventDispatcherWasm: current thread is already suspended; could not asyncify wait for events");
-        return false;
+        bool didSuspend = qt_asyncify_suspend();
+        if (!didSuspend) {
+            qWarning("QEventDispatcherWasm: current thread is already suspended; could not asyncify wait for events");
+            return false;
+        }
+        return true;
+    } else {
+        qWarning("QEventLoop::WaitForMoreEvents is not supported on the main thread without asyncify");
+        Q_UNUSED(timeout);
     }
-    return true;
-#else
-    qWarning("QEventLoop::WaitForMoreEvents is not supported on the main thread without asyncify");
-    Q_UNUSED(timeout);
-#endif
     return false;
 }
 
@@ -424,12 +432,10 @@ bool QEventDispatcherWasm::wakeEventDispatcherThread()
     }
 #endif
     Q_ASSERT(isMainThreadEventDispatcher());
-#ifdef QT_HAVE_EMSCRIPTEN_ASYNCIFY
     if (g_is_asyncify_suspended) {
         runOnMainThread([]{ qt_asyncify_resume(); });
         return true;
     }
-#endif
     return false;
 }
 
