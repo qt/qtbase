@@ -41,14 +41,14 @@ private:
         QVarLengthArray<int, 4> inputTypes;
         QVarLengthArray<int, 4> outputTypes;
         QByteArray rawReturnType;
-        int flags;
+        quint32 flags;
     };
 
     struct Property {
         QByteArray typeName;
         QByteArray signature;
         int type;
-        int flags;
+        quint32 flags;
     };
     struct Type {
         int id;
@@ -381,8 +381,8 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     if (className.isEmpty())
         className = "QDBusInterface"_L1;
 
-    QVarLengthArray<int> idata;
-    idata.resize(sizeof(QDBusMetaObjectPrivate) / sizeof(int));
+    QVarLengthArray<uint> idata;
+    idata.resize(sizeof(QDBusMetaObjectPrivate) / sizeof(uint));
 
     qsizetype methodParametersDataSize =
             ((aggregateParameterCount(signals_)
@@ -495,12 +495,12 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
 
             idata[signatureOffset++] = typeidOffset;
             idata[typeidOffset++] = mm.inputTypes.count();
-            memcpy(idata.data() + typeidOffset, mm.inputTypes.data(), mm.inputTypes.count() * sizeof(int));
+            memcpy(idata.data() + typeidOffset, mm.inputTypes.data(), mm.inputTypes.count() * sizeof(uint));
             typeidOffset += mm.inputTypes.count();
 
             idata[signatureOffset++] = typeidOffset;
             idata[typeidOffset++] = mm.outputTypes.count();
-            memcpy(idata.data() + typeidOffset, mm.outputTypes.data(), mm.outputTypes.count() * sizeof(int));
+            memcpy(idata.data() + typeidOffset, mm.outputTypes.data(), mm.outputTypes.count() * sizeof(uint));
             typeidOffset += mm.outputTypes.count();
         }
     }
@@ -540,7 +540,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     strings.writeBlob(string_data);
 
     uint *uint_data = new uint[idata.size()];
-    memcpy(uint_data, idata.data(), idata.size() * sizeof(int));
+    memcpy(uint_data, idata.data(), idata.size() * sizeof(uint));
 
     // put the metaobject together
     obj->d.data = uint_data;
