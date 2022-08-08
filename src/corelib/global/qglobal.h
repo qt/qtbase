@@ -119,7 +119,7 @@
 # define QT6_IMPL_NEW_OVERLOAD QT6_ONLY(Qt::Disambiguated_t)
 # define QT6_IMPL_NEW_OVERLOAD_TAIL QT6_ONLY(, QT6_IMPL_NEW_OVERLOAD)
 # define QT6_CALL_NEW_OVERLOAD QT6_ONLY(Qt::Disambiguated)
-# define QT6_CALL_NEW_OVERLOAD_TAIL QT6_ONLY(, QT_CALL_NEW_OVERLOAD)
+# define QT6_CALL_NEW_OVERLOAD_TAIL QT6_ONLY(, QT6_CALL_NEW_OVERLOAD)
 #endif
 
 /* These two macros makes it possible to turn the builtin line expander into a
