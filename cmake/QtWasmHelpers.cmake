@@ -72,9 +72,13 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
         set(QT_CFLAGS_OPTIMIZE_DEBUG "-Os" CACHE STRING INTERNAL FORCE)
         set(QT_FEATURE_optimize_debug ON CACHE BOOL INTERNAL FORCE)
 
-        target_link_options("${wasmTarget}" INTERFACE "SHELL:-s ASYNCIFY" "-Os" "-s" "ASYNCIFY_IMPORTS=[qt_asyncify_suspend_js, qt_asyncify_resume_js]")
+        target_link_options("${wasmTarget}" INTERFACE "SHELL:-s ASYNCIFY" "-Os")
         target_compile_definitions("${wasmTarget}" INTERFACE QT_HAVE_EMSCRIPTEN_ASYNCIFY)
     endif()
+
+    #  Set ASYNCIFY_IMPORTS unconditionally in order to support enabling asyncify at link time.
+    target_link_options("${wasmTarget}" INTERFACE "SHELL:-sASYNCIFY_IMPORTS=qt_asyncify_suspend_js,qt_asyncify_resume_js")
+
 endfunction()
 
 function(qt_internal_wasm_add_finalizers target)
