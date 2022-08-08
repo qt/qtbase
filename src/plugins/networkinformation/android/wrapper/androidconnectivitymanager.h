@@ -33,7 +33,7 @@ public:
     static AndroidConnectivityManager *getInstance();
     ~AndroidConnectivityManager();
 
-    inline bool isValid() const { return m_connectivityManager.isValid(); }
+    inline bool isValid() const;
 
 Q_SIGNALS:
     void connectivityChanged(AndroidConnectivity connectivity);
@@ -44,8 +44,7 @@ Q_SIGNALS:
 private:
     friend struct AndroidConnectivityManagerInstance;
     AndroidConnectivityManager();
-    bool registerNatives();
-    QJniObject m_connectivityManager;
+    bool registerNatives() const;
 
     Q_DISABLE_COPY_MOVE(AndroidConnectivityManager);
 };

@@ -55,11 +55,6 @@ AndroidConnectivityManager::AndroidConnectivityManager()
     if (!registerNatives())
         return;
 
-    m_connectivityManager = QJniObject::callStaticObjectMethod<QtJniTypes::ConnectivityManager>(
-            networkInformationClass, "getConnectivityManager", QAndroidApplication::context());
-    if (!m_connectivityManager.isValid())
-        return;
-
     QJniObject::callStaticMethod<void>(networkInformationClass, "registerReceiver",
                                        QAndroidApplication::context());
 }
@@ -73,15 +68,20 @@ AndroidConnectivityManager *AndroidConnectivityManager::getInstance()
             : nullptr;
 }
 
+bool AndroidConnectivityManager::isValid() const
+{
+    return registerNatives();
+}
+
 AndroidConnectivityManager::~AndroidConnectivityManager()
 {
     QJniObject::callStaticMethod<void>(networkInformationClass, "unregisterReceiver",
                                        QAndroidApplication::context());
 }
 
-bool AndroidConnectivityManager::registerNatives()
+bool AndroidConnectivityManager::registerNatives() const
 {
-    static bool registered = []() {
+    static const bool registered = []() {
         QJniEnvironment env;
         return env.registerNativeMethods(networkInformationClass, {
             Q_JNI_NATIVE_METHOD(networkConnectivityChanged),
