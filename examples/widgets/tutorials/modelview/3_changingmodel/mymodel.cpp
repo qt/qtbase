@@ -91,9 +91,9 @@ QVariant MyModel::data(const QModelIndex &index, int role) const
 //! [quoting mymodel_b ]
 void MyModel::timerHit()
 {
-    //we identify the top left cell
+    // we identify the top left cell
     QModelIndex topLeft = createIndex(0,0);
-    //emit a signal to make the view reread identified data
+    // emit a signal to make the view reread identified data
     emit dataChanged(topLeft, topLeft, {Qt::DisplayRole});
 }
 //! [quoting mymodel_b ]

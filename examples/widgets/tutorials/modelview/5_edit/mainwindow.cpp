@@ -58,15 +58,10 @@ MainWindow::MainWindow(QWidget *parent)
     , tableView(new QTableView(this))
 {
     setCentralWidget(tableView);
-    MyModel *myModel = new MyModel(this);
+    auto *myModel = new MyModel(this);
     tableView->setModel(myModel);
 
-    //transfer changes to the model to the window title
+    // transfer changes to the model to the window title
     connect(myModel, &MyModel::editCompleted,
-            this, &MainWindow::showWindowTitle);
-}
-
-void MainWindow::showWindowTitle(const QString &title)
-{
-    setWindowTitle(title);
+            this, &QWidget::setWindowTitle);
 }

@@ -61,20 +61,20 @@ MainWindow::MainWindow(QWidget *parent)
     , standardModel(new QStandardItemModel(this))
 {
     setCentralWidget(treeView);
-    QStandardItem *rootNode = standardModel->invisibleRootItem();
+    auto *rootNode = standardModel->invisibleRootItem();
 
 
-    //defining a couple of items
-    QStandardItem *americaItem = new QStandardItem("America");
-    QStandardItem *mexicoItem =  new QStandardItem("Canada");
-    QStandardItem *usaItem =     new QStandardItem("USA");
-    QStandardItem *bostonItem =  new QStandardItem("Boston");
-    QStandardItem *europeItem =  new QStandardItem("Europe");
-    QStandardItem *italyItem =   new QStandardItem("Italy");
-    QStandardItem *romeItem =    new QStandardItem("Rome");
-    QStandardItem *veronaItem =  new QStandardItem("Verona");
+    // defining a couple of items
+    auto *americaItem = new QStandardItem("America");
+    auto *mexicoItem =  new QStandardItem("Canada");
+    auto *usaItem =     new QStandardItem("USA");
+    auto *bostonItem =  new QStandardItem("Boston");
+    auto *europeItem =  new QStandardItem("Europe");
+    auto *italyItem =   new QStandardItem("Italy");
+    auto *romeItem =    new QStandardItem("Rome");
+    auto *veronaItem =  new QStandardItem("Verona");
 
-    //building up the hierarchy
+    // building up the hierarchy
     rootNode->    appendRow(americaItem);
     rootNode->    appendRow(europeItem);
     americaItem-> appendRow(mexicoItem);
@@ -84,11 +84,11 @@ MainWindow::MainWindow(QWidget *parent)
     italyItem->   appendRow(romeItem);
     italyItem->   appendRow(veronaItem);
 
-    //register the model
+    // register the model
     treeView->setModel(standardModel);
     treeView->expandAll();
 
-    //selection changes shall trigger a slot
+    // selection changes shall trigger a slot
     QItemSelectionModel *selectionModel = treeView->selectionModel();
     connect(selectionModel, &QItemSelectionModel::selectionChanged,
             this, &MainWindow::selectionChangedSlot);
@@ -100,13 +100,13 @@ MainWindow::MainWindow(QWidget *parent)
 //! [quoting modelview_b]
 void MainWindow::selectionChangedSlot(const QItemSelection & /*newSelection*/, const QItemSelection & /*oldSelection*/)
 {
-    //get the text of the selected item
+    // get the text of the selected item
     const QModelIndex index = treeView->selectionModel()->currentIndex();
     QString selectedText = index.data(Qt::DisplayRole).toString();
-    //find out the hierarchy level of the selected item
+    // find out the hierarchy level of the selected item
     int hierarchyLevel = 1;
     QModelIndex seekRoot = index;
-    while (seekRoot.parent() != QModelIndex()) {
+    while (seekRoot.parent().isValid()) {
         seekRoot = seekRoot.parent();
         hierarchyLevel++;
     }
