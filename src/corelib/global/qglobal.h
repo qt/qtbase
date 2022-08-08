@@ -194,10 +194,6 @@ static_assert(!std::is_convertible_v<std::nullptr_t, bool>,
 
 # include <QtCore/qtnamespacemacros.h>
 
-#if defined(Q_OS_DARWIN) && !defined(QT_LARGEFILE_SUPPORT)
-#  define QT_LARGEFILE_SUPPORT 64
-#endif
-
 #ifndef __ASSEMBLER__
 QT_BEGIN_NAMESPACE
 
