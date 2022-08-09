@@ -189,7 +189,7 @@ public:
     inline QList<QByteArray> parameterNames() const;
     inline QByteArray tag() const;
     inline int ownMethodIndex() const;
-    inline int ownConstructorIndex() const;
+    inline int ownConstructorMethodIndex() const;
 
     // shadows the public function
     enum class InvokeFailReason : int {
@@ -1917,11 +1917,10 @@ QByteArray QMetaMethodPrivate::tag() const
 int QMetaMethodPrivate::ownMethodIndex() const
 {
     // recompute the methodIndex by reversing the arithmetic in QMetaObject::method()
-    Q_ASSERT(methodType() != Constructor);
     return ( data.d - mobj->d.data - priv(mobj->d.data)->methodData)/Data::Size;
 }
 
-int QMetaMethodPrivate::ownConstructorIndex() const
+int QMetaMethodPrivate::ownConstructorMethodIndex() const
 {
     // recompute the methodIndex by reversing the arithmetic in QMetaObject::constructor()
     Q_ASSERT(methodType() == Constructor);
@@ -2471,7 +2470,7 @@ auto QMetaMethodPrivate::invokeImpl(QMetaMethod self, void *target,
             return InvokeFailReason::ConstructorCallWithoutResult;
         }
 
-        int idx = priv->ownConstructorIndex();
+        int idx = priv->ownConstructorMethodIndex();
         if (priv->mobj->static_metacall(QMetaObject::CreateInstance, idx, param) >= 0)
             return InvokeFailReason::ConstructorCallFailed;
         return {};

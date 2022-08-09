@@ -32,6 +32,9 @@ private slots:
     void parameterTypeName();
 
     void isConst();
+
+    void methodIndexes_data();
+    void methodIndexes();
 };
 
 struct CustomType { };
@@ -862,6 +865,42 @@ void tst_QMetaMethod::isConst()
     }
 }
 
+void tst_QMetaMethod::methodIndexes_data()
+{
+    QTest::addColumn<QByteArray>("signature");
+    QTest::addColumn<QMetaMethod::MethodType>("methodType");
+
+    QTest::newRow("constructor1") << QByteArray("MethodTestObject()") << QMetaMethod::Constructor;
+    QTest::newRow("constructor5") << QByteArray("MethodTestObject(CustomUnregisteredType)")
+                                  << QMetaMethod::Constructor;
+    QTest::newRow("method0") << QByteArray("voidInvokable()") << QMetaMethod::Method;
+    QTest::newRow("method6") << QByteArray("boolInvokable()") << QMetaMethod::Method;
+}
+
+void tst_QMetaMethod::methodIndexes()
+{
+    QFETCH(QByteArray, signature);
+    QFETCH(QMetaMethod::MethodType, methodType);
+
+    const bool isConstructor = methodType == QMetaMethod::Constructor;
+
+    // roundtrip: index = QMetaObject::indexOfConstructor/Method()
+    //            <-> method = QMetaObject::constructor/method()
+    //            <-> indexThatShouldBeEqualToAboveIndex = QMetaMethod::methodIndex()
+
+    const QMetaObject *mo = &MethodTestObject::staticMetaObject;
+    const int index =
+            isConstructor ? mo->indexOfConstructor(signature) : mo->indexOfMethod(signature);
+    QVERIFY(index != -1);
+
+    QMetaMethod methodFromMetaObject =
+            mo->method(index); // should work on all methods (constructors, signals, ...)
+    const int absoluteMethodIndex =
+            methodFromMetaObject
+                    .methodIndex(); // should work on all methods (constructors, signals, ...)
+
+    QCOMPARE(absoluteMethodIndex, index);
+}
 
 QTEST_MAIN(tst_QMetaMethod)
 #include "tst_qmetamethod.moc"
