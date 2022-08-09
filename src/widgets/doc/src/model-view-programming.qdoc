@@ -473,11 +473,13 @@
     \snippet simplemodel-use/main.cpp 0
 
     In this case, we start by setting up a default QFileSystemModel. We connect
-    it to a lambda, in which we will obtain a parent index using a specific
+    its signal \c directoryLoaded(QString) to a lambda, in which we will
+    obtain a parent index for the directory using a specific
     implementation of \l{QFileSystemModel::}{index()} provided by that model.
-    In the lambda, we count the number of rows in the model using the
-     \l{QFileSystemModel::}{rowCount()} function. Finally, we set the root path
-    of the QFileSystemModel so it starts loading data and triggers the lambda.
+
+    In the lambda, we determine the number of rows in the model using the
+     \l{QFileSystemModel::}{rowCount()} function.
+
 
     For simplicity, we are only interested in the items in the first column
     of the model. We examine each row in turn, obtaining a model index for
@@ -497,6 +499,9 @@
     \snippet simplemodel-use/main.cpp 2
     \codeline
     \snippet simplemodel-use/main.cpp 3
+
+    Finally, we set the root path of the QFileSystemModel so it starts
+    loading data and triggers the lambda.
 
     The above example demonstrates the basic principles used to retrieve
     data from a model:
