@@ -7,6 +7,7 @@
 qt_internal_add_module(Sql
     PLUGIN_TYPES sqldrivers
     SOURCES
+        compat/removed_api.cpp
         kernel/qsqlcachedresult.cpp kernel/qsqlcachedresult_p.h
         kernel/qsqldatabase.cpp kernel/qsqldatabase.h
         kernel/qsqldriver.cpp kernel/qsqldriver.h kernel/qsqldriver_p.h
@@ -29,6 +30,8 @@ qt_internal_add_module(Sql
         Qt::Core
     PRIVATE_MODULE_INTERFACE
         Qt::CorePrivate
+    NO_PCH_SOURCES
+        "compat/removed_api.cpp"
     PRECOMPILED_HEADER
         "../corelib/global/qt_pch.h"
     GENERATE_CPP_EXPORTS
