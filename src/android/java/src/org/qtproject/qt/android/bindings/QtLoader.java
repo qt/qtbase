@@ -396,7 +396,7 @@ public abstract class QtLoader {
                 }
 
                 if (appParams != null)
-                    loaderParams.putString(APPLICATION_PARAMETERS_KEY, appParams.replace(' ', '\t').trim());
+                    loaderParams.putString(APPLICATION_PARAMETERS_KEY, appParams);
 
                 loadApplication(loaderParams);
                 return;
