@@ -12,7 +12,7 @@
     </signal>
     <signal name="complexSignal">
        <arg name="" type="(s)"/>
-       <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="RegisteredType"/>
+       <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="RegisteredType"/>
     </signal>
     <method name="voidMethod" />
     <method name="sleepMethod">

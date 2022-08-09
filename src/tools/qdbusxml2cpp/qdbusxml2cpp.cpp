@@ -175,12 +175,9 @@ static QString classNameForInterface(const QString &interface, ClassType classTy
     return retval;
 }
 
-// ### Qt6 Remove the two isSignal ifs
-// They are only here because before signal arguments where previously searched as "In" so to maintain compatibility
-// we first search for "Out" and if not found we search for "In"
 static QByteArray qtTypeName(const QString &where, const QString &signature,
                              const QDBusIntrospection::Annotations &annotations, qsizetype paramId = -1,
-                             const char *direction = "Out", bool isSignal = false)
+                             const char *direction = "Out")
 {
     int type = QDBusMetaType::signatureToMetaType(signature.toLatin1()).id();
     if (type == QMetaType::UnknownType) {
@@ -197,17 +194,12 @@ static QByteArray qtTypeName(const QString &where, const QString &signature,
         qttype = annotations.value(oldAnnotationName);
 
         if (qttype.isEmpty()) {
-            if (!isSignal || qstrcmp(direction, "Out") == 0) {
-                fprintf(stderr, "%s: Got unknown type `%s' processing '%s'\n",
-                        PROGRAMNAME, qPrintable(signature), qPrintable(inputFile));
-                fprintf(stderr,
-                        "You should add <annotation name=\"%s\" value=\"<type>\"/> to the XML "
-                        "description for '%s'\n",
-                        qPrintable(annotationName), qPrintable(where));
-            }
-
-            if (isSignal)
-                return qtTypeName(where, signature, annotations, paramId, "In", isSignal);
+            fprintf(stderr, "%s: Got unknown type `%s' processing '%s'\n",
+                    PROGRAMNAME, qPrintable(signature), qPrintable(inputFile));
+            fprintf(stderr,
+                    "You should add <annotation name=\"%s\" value=\"<type>\"/> to the XML "
+                    "description for '%s'\n",
+                    qPrintable(annotationName), qPrintable(where));
 
             exit(1);
         }
@@ -318,7 +310,7 @@ static void writeSignalArgList(QTextStream &ts, const QStringList &argNames,
     for (qsizetype i = 0; i < outputArgs.size(); ++i) {
         const QDBusIntrospection::Argument &arg = outputArgs.at(i);
         QString type = constRefArg(
-                qtTypeName(arg.name, arg.type, annotations, i, "Out", true /* isSignal */));
+                qtTypeName(arg.name, arg.type, annotations, i, "Out"));
 
         if (!first)
             ts << ", ";

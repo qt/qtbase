@@ -21,6 +21,8 @@ private slots:
     void process();
     void includeStyle_data();
     void includeStyle();
+    void missingAnnotation_data();
+    void missingAnnotation();
 };
 
 struct BasicTypeList {
@@ -55,6 +57,44 @@ static QString stripHeader(QString output)
 {
     static QRegularExpression header("^.*?(?=\\Rclass)", QRegularExpression::DotMatchesEverythingOption);
     return output.remove(header);
+}
+
+static void runTool(QProcess &process, const QByteArray &data)
+{
+    // test both interface and adaptor generation
+    QFETCH_GLOBAL(QString, commandLineArg);
+
+    // Run the tool
+    const QString binpath = QLibraryInfo::path(QLibraryInfo::BinariesPath);
+    QStringList arguments = { commandLineArg, "-", "-N" };
+    process.setArguments(arguments);
+    process.setProgram(binpath + QLatin1String("/qdbusxml2cpp"));
+    process.start(QIODevice::Text | QIODevice::ReadWrite);
+    QVERIFY2(process.waitForStarted(), qPrintable(process.errorString()));
+
+    // feed it our XML data
+    static const char xmlHeader[] =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
+            DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE // \n is included
+            "<node>\n"
+            "  <interface name=\"local.name.is.not.important\">\n"
+            "    <!-- begin data -->\n";
+    static const char xmlFooter[] = "\n"
+            "    <!-- end data -->\n"
+            "  </interface>\n"
+            "</node>\n";
+
+    process.write(xmlHeader, sizeof(xmlHeader) - 1);
+    process.write(data);
+    process.write(xmlFooter, sizeof(xmlFooter) - 1);
+
+    while (process.bytesToWrite())
+        QVERIFY2(process.waitForBytesWritten(), qPrintable(process.errorString()));
+    //    fprintf(stderr, "%s%s%s", xmlHeader, xmlSnippet.toLatin1().constData(), xmlFooter);
+
+    process.closeWriteChannel();
+    QVERIFY2(process.waitForFinished(), qPrintable(process.errorString()));
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
 }
 
 void tst_qdbusxml2cpp::initTestCase_data()
@@ -181,6 +221,15 @@ void tst_qdbusxml2cpp::process_data()
                    .arg(basicTypeList[i].dbusType)
                 << rx << rx;
     }
+
+    QRegularExpression rx(R"(Q_SIGNALS:.*\b\Qvoid Signal(const QVariantMap &map);\E)",
+                          QRegularExpression::DotMatchesEverythingOption);
+    QTest::newRow("signal-complex")
+            << R"(<signal name="Signal">
+                    <arg type="a{sv}" name="map"/>
+                    <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariantMap"/>"
+                  </signal>)"
+            << rx << rx;
 }
 
 void tst_qdbusxml2cpp::process()
@@ -191,38 +240,10 @@ void tst_qdbusxml2cpp::process()
     QVERIFY2(interfaceSearch.isValid(), qPrintable(interfaceSearch.errorString()));
     QVERIFY2(adaptorSearch.isValid(), qPrintable(adaptorSearch.errorString()));
 
-    // test both interface and adaptor generation
     QFETCH_GLOBAL(int, outputMode);
-    QFETCH_GLOBAL(QString, commandLineArg);
-
-    // Run the tool
-    const QString binpath = QLibraryInfo::path(QLibraryInfo::BinariesPath);
-    const QString command = binpath + QLatin1String("/qdbusxml2cpp");
     QProcess process;
-    process.start(command, QStringList() << commandLineArg << "-" << "-N");
-    QVERIFY2(process.waitForStarted(), qPrintable(process.errorString()));
-
-    // feed it our XML data
-    static const char xmlHeader[] =
-            "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
-            DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE // \n is included
-            "<node>\n"
-            "  <interface name=\"local.name.is.not.important\">\n"
-            "    <!-- begin data -->\n";
-    static const char xmlFooter[] = "\n"
-            "    <!-- end data -->\n"
-            "  </interface>\n"
-            "</node>\n";
-
-    process.write(xmlHeader, int(sizeof xmlHeader) - 1);
-    process.write(xmlSnippet.toLatin1());
-    process.write(xmlFooter, int(sizeof xmlFooter) - 1);
-    while (process.bytesToWrite())
-        QVERIFY2(process.waitForBytesWritten(), qPrintable(process.errorString()));
-    //    fprintf(stderr, "%s%s%s", xmlHeader, xmlSnippet.toLatin1().constData(), xmlFooter);
-
-    process.closeWriteChannel();
-    QVERIFY2(process.waitForFinished(), qPrintable(process.errorString()));
+    runTool(process, xmlSnippet.toLatin1());
+    if (QTest::currentTestFailed()) return;
 
     QByteArray errOutput = process.readAllStandardError();
     QVERIFY2(errOutput.isEmpty(), errOutput);
@@ -282,6 +303,59 @@ void tst_qdbusxml2cpp::includeStyle()
     QByteArray fullOutput = process.readAll();
     QVERIFY(!fullOutput.isEmpty());
     QVERIFY(fullOutput.contains(expected));
+}
+
+void tst_qdbusxml2cpp::missingAnnotation_data()
+{
+    QTest::addColumn<QString>("xmlSnippet");
+    QTest::addColumn<QString>("annotationName");
+
+    QTest::newRow("property")
+            << R"(<property type="%1" name="name" access="readwrite"/>)"
+            << "org.qtproject.QtDBus.QtTypeName";
+    QTest::newRow("method-in")
+            << R"(<method name="Method">
+                    <arg type="%1" name="name" direction="in"/>
+                  </method>)"
+            << "org.qtproject.QtDBus.QtTypeName.In0";
+    QTest::newRow("method-out")
+            << R"(<method name="Method">
+                    <arg type="%1" name="name" direction="out"/>
+                  </method>)"
+            << "org.qtproject.QtDBus.QtTypeName.Out0";
+    QTest::newRow("signal")
+            << R"(<signal name="Signal">
+                    <arg type="%1" name="name"/>
+                  </signal>)"
+            << "org.qtproject.QtDBus.QtTypeName.Out0";
+    QTest::newRow("signal-out")
+            << R"(<signal name="Signal">
+                    <arg type="%1" name="name" direction="out"/>
+                  </signal>)"
+            << "org.qtproject.QtDBus.QtTypeName.Out0";
+}
+
+void tst_qdbusxml2cpp::missingAnnotation()
+{
+    QFETCH(QString, xmlSnippet);
+    QFETCH(QString, annotationName);
+
+    QString type = "(ii)";
+    QProcess process;
+    runTool(process, xmlSnippet.arg(type).toLatin1());
+    if (QTest::currentTestFailed()) return;
+
+    // it must have failed
+    QString errOutput = QString::fromLatin1(process.readAllStandardError().trimmed());
+    QCOMPARE(process.exitCode(), 1);
+    QCOMPARE(process.readAllStandardOutput(), QByteArray());
+    QVERIFY(!errOutput.isEmpty());
+
+    // check it did suggest the right annotation
+    QString expected = R"(qdbusxml2cpp: Got unknown type `%1' processing ''
+You should add <annotation name="%2" value="<type>"/> to the XML description for 'name')";
+    expected = expected.arg(type, annotationName);
+    QCOMPARE(errOutput, expected);
 }
 
 QTEST_MAIN(tst_qdbusxml2cpp)
