@@ -187,6 +187,25 @@ public:
     void installDebugOutputFilter(DebugFilter filter);
     void removeDebugOutputFilter(DebugFilter filter);
 
+    enum DebugMessageSeverityFlag {
+        VerboseSeverity = 0x01,
+        InfoSeverity = 0x02,
+        WarningSeverity = 0x04,
+        ErrorSeverity = 0x08
+    };
+    Q_DECLARE_FLAGS(DebugMessageSeverityFlags, DebugMessageSeverityFlag)
+
+    enum DebugMessageTypeFlag {
+        GeneralMessage = 0x01,
+        ValidationMessage = 0x02,
+        PerformanceMessage = 0x04
+    };
+    Q_DECLARE_FLAGS(DebugMessageTypeFlags, DebugMessageTypeFlag)
+
+    typedef bool (*DebugUtilsFilter)(DebugMessageSeverityFlags severity, DebugMessageTypeFlags type, const void *callbackData);
+    void installDebugOutputFilter(DebugUtilsFilter filter);
+    void removeDebugOutputFilter(DebugUtilsFilter filter);
+
 private:
     friend class QVulkanInstancePrivate;
     QScopedPointer<QVulkanInstancePrivate> d_ptr;
@@ -194,6 +213,8 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QVulkanInstance::Flags)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QVulkanInstance::DebugMessageTypeFlags)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QVulkanInstance::DebugMessageSeverityFlags)
 
 QT_END_NAMESPACE
 

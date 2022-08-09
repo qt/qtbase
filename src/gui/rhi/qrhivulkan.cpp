@@ -300,7 +300,6 @@ QByteArrayList QRhiVulkanInitParams::preferredExtensionsForImportedDevice()
 {
     return {
         QByteArrayLiteral("VK_KHR_swapchain"),
-        QByteArrayLiteral("VK_EXT_debug_marker"),
         QByteArrayLiteral("VK_EXT_vertex_attribute_divisor")
     };
 }
@@ -328,20 +327,19 @@ QRhiVulkan::QRhiVulkan(QRhiVulkanInitParams *params, QRhiVulkanNativeHandles *im
     }
 }
 
-static bool qvk_debug_filter(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object,
-                             size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage)
+static bool qvk_debug_filter(QVulkanInstance::DebugMessageSeverityFlags severity,
+                             QVulkanInstance::DebugMessageTypeFlags type,
+                             const void *callbackData)
 {
-    Q_UNUSED(flags);
-    Q_UNUSED(objectType);
-    Q_UNUSED(object);
-    Q_UNUSED(location);
-    Q_UNUSED(messageCode);
-    Q_UNUSED(pLayerPrefix);
+    Q_UNUSED(severity);
+    Q_UNUSED(type);
+#ifdef VK_EXT_debug_utils
+    const VkDebugUtilsMessengerCallbackDataEXT *d = static_cast<const VkDebugUtilsMessengerCallbackDataEXT *>(callbackData);
 
     // Filter out certain misleading validation layer messages, as per
     // VulkanMemoryAllocator documentation.
-    if (strstr(pMessage, "Mapping an image with layout")
-        && strstr(pMessage, "can result in undefined behavior if this memory is used by the device"))
+    if (strstr(d->pMessage, "Mapping an image with layout")
+        && strstr(d->pMessage, "can result in undefined behavior if this memory is used by the device"))
     {
         return true;
     }
@@ -352,9 +350,11 @@ static bool qvk_debug_filter(VkDebugReportFlagsEXT flags, VkDebugReportObjectTyp
     // then move on to another pool. If there is a real error, a qWarning
     // message is shown by allocateDescriptorSet(), so the validation warning
     // does not have any value and is just noise.
-    if (strstr(pMessage, "VUID-VkDescriptorSetAllocateInfo-descriptorPool-00307"))
+    if (strstr(d->pMessage, "VUID-VkDescriptorSetAllocateInfo-descriptorPool-00307"))
         return true;
-
+#else
+    Q_UNUSED(callbackData);
+#endif
     return false;
 }
 
@@ -394,6 +394,7 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         for (const char *ext : inst->extensions())
             qCDebug(QRHI_LOG_INFO, "  %s", ext);
     }
+    caps.debugUtils = inst->extensions().contains(QByteArrayLiteral("VK_EXT_debug_utils"));
 
     QList<VkQueueFamilyProperties> queueFamilyProps;
     auto queryQueueFamilyProps = [this, &queueFamilyProps] {
@@ -550,12 +551,6 @@ bool QRhiVulkan::create(QRhi::Flags flags)
 
         QList<const char *> requestedDevExts;
         requestedDevExts.append("VK_KHR_swapchain");
-
-        caps.debugMarkers = false;
-        if (devExts.contains(VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
-            requestedDevExts.append(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
-            caps.debugMarkers = true;
-        }
 
         caps.vertexAttribDivisor = false;
         if (devExts.contains(VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME)) {
@@ -770,12 +765,14 @@ bool QRhiVulkan::create(QRhi::Flags flags)
     timestampQueryPoolMap.resize(QVK_MAX_ACTIVE_TIMESTAMP_PAIRS); // 1 bit per pair
     timestampQueryPoolMap.fill(false);
 
-    if (caps.debugMarkers) {
-        vkCmdDebugMarkerBegin = reinterpret_cast<PFN_vkCmdDebugMarkerBeginEXT>(f->vkGetDeviceProcAddr(dev, "vkCmdDebugMarkerBeginEXT"));
-        vkCmdDebugMarkerEnd = reinterpret_cast<PFN_vkCmdDebugMarkerEndEXT>(f->vkGetDeviceProcAddr(dev, "vkCmdDebugMarkerEndEXT"));
-        vkCmdDebugMarkerInsert = reinterpret_cast<PFN_vkCmdDebugMarkerInsertEXT>(f->vkGetDeviceProcAddr(dev, "vkCmdDebugMarkerInsertEXT"));
-        vkDebugMarkerSetObjectName = reinterpret_cast<PFN_vkDebugMarkerSetObjectNameEXT>(f->vkGetDeviceProcAddr(dev, "vkDebugMarkerSetObjectNameEXT"));
+#ifdef VK_EXT_debug_utils
+    if (caps.debugUtils) {
+        vkSetDebugUtilsObjectNameEXT = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(f->vkGetDeviceProcAddr(dev, "vkSetDebugUtilsObjectNameEXT"));
+        vkCmdBeginDebugUtilsLabelEXT = reinterpret_cast<PFN_vkCmdBeginDebugUtilsLabelEXT>(f->vkGetDeviceProcAddr(dev, "vkCmdBeginDebugUtilsLabelEXT"));
+        vkCmdEndDebugUtilsLabelEXT = reinterpret_cast<PFN_vkCmdEndDebugUtilsLabelEXT>(f->vkGetDeviceProcAddr(dev, "vkCmdEndDebugUtilsLabelEXT"));
+        vkCmdInsertDebugUtilsLabelEXT = reinterpret_cast<PFN_vkCmdInsertDebugUtilsLabelEXT>(f->vkGetDeviceProcAddr(dev, "vkCmdInsertDebugUtilsLabelEXT"));
     }
+#endif
 
     deviceLost = false;
 
@@ -3914,17 +3911,23 @@ void QRhiVulkan::recordPrimaryCommandBuffer(QVkCommandBuffer *cbD)
                                  cmd.args.drawIndexed.firstInstance);
             break;
         case QVkCommandBuffer::Command::DebugMarkerBegin:
-            cmd.args.debugMarkerBegin.marker.pMarkerName =
-                    cbD->pools.debugMarkerData[cmd.args.debugMarkerBegin.markerNameIndex].constData();
-            vkCmdDebugMarkerBegin(cbD->cb, &cmd.args.debugMarkerBegin.marker);
+#ifdef VK_EXT_debug_utils
+            cmd.args.debugMarkerBegin.label.pLabelName =
+                    cbD->pools.debugMarkerData[cmd.args.debugMarkerBegin.labelNameIndex].constData();
+            vkCmdBeginDebugUtilsLabelEXT(cbD->cb, &cmd.args.debugMarkerBegin.label);
+#endif
             break;
         case QVkCommandBuffer::Command::DebugMarkerEnd:
-            vkCmdDebugMarkerEnd(cbD->cb);
+#ifdef VK_EXT_debug_utils
+            vkCmdEndDebugUtilsLabelEXT(cbD->cb);
+#endif
             break;
         case QVkCommandBuffer::Command::DebugMarkerInsert:
-            cmd.args.debugMarkerInsert.marker.pMarkerName =
-                    cbD->pools.debugMarkerData[cmd.args.debugMarkerInsert.markerNameIndex].constData();
-            vkCmdDebugMarkerInsert(cbD->cb, &cmd.args.debugMarkerInsert.marker);
+#ifdef VK_EXT_debug_utils
+            cmd.args.debugMarkerInsert.label.pLabelName =
+                    cbD->pools.debugMarkerData[cmd.args.debugMarkerInsert.labelNameIndex].constData();
+            vkCmdInsertDebugUtilsLabelEXT(cbD->cb, &cmd.args.debugMarkerInsert.label);
+#endif
             break;
         case QVkCommandBuffer::Command::TransitionPassResources:
             recordTransitionPassResources(cbD, cbD->passResTrackers[cmd.args.transitionResources.trackerIndex]);
@@ -4251,7 +4254,7 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::MultisampleRenderBuffer:
         return true;
     case QRhi::DebugMarkers:
-        return caps.debugMarkers;
+        return caps.debugUtils;
     case QRhi::Timestamps:
         return timestampValidBits != 0;
     case QRhi::Instancing:
@@ -5046,58 +5049,72 @@ void QRhiVulkan::drawIndexed(QRhiCommandBuffer *cb, quint32 indexCount,
 
 void QRhiVulkan::debugMarkBegin(QRhiCommandBuffer *cb, const QByteArray &name)
 {
-    if (!debugMarkers || !caps.debugMarkers)
+#ifdef VK_EXT_debug_utils
+    if (!debugMarkers || !caps.debugUtils)
         return;
 
-    VkDebugMarkerMarkerInfoEXT marker = {};
-    marker.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT;
+    VkDebugUtilsLabelEXT label = {};
+    label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
 
     QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
     if (cbD->recordingPass != QVkCommandBuffer::NoPass && cbD->passUsesSecondaryCb) {
-        marker.pMarkerName = name.constData();
-        vkCmdDebugMarkerBegin(cbD->activeSecondaryCbStack.last(), &marker);
+        label.pLabelName = name.constData();
+        vkCmdBeginDebugUtilsLabelEXT(cbD->activeSecondaryCbStack.last(), &label);
     } else {
         QVkCommandBuffer::Command &cmd(cbD->commands.get());
         cmd.cmd = QVkCommandBuffer::Command::DebugMarkerBegin;
-        cmd.args.debugMarkerBegin.marker = marker;
-        cmd.args.debugMarkerBegin.markerNameIndex = cbD->pools.debugMarkerData.count();
+        cmd.args.debugMarkerBegin.label = label;
+        cmd.args.debugMarkerBegin.labelNameIndex = cbD->pools.debugMarkerData.count();
         cbD->pools.debugMarkerData.append(name);
     }
+#else
+    Q_UNUSED(cb);
+    Q_UNUSED(name);
+#endif
 }
 
 void QRhiVulkan::debugMarkEnd(QRhiCommandBuffer *cb)
 {
-    if (!debugMarkers || !caps.debugMarkers)
+#ifdef VK_EXT_debug_utils
+    if (!debugMarkers || !caps.debugUtils)
         return;
 
     QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
     if (cbD->recordingPass != QVkCommandBuffer::NoPass && cbD->passUsesSecondaryCb) {
-        vkCmdDebugMarkerEnd(cbD->activeSecondaryCbStack.last());
+        vkCmdEndDebugUtilsLabelEXT(cbD->activeSecondaryCbStack.last());
     } else {
         QVkCommandBuffer::Command &cmd(cbD->commands.get());
         cmd.cmd = QVkCommandBuffer::Command::DebugMarkerEnd;
     }
+#else
+    Q_UNUSED(cb);
+#endif
 }
 
 void QRhiVulkan::debugMarkMsg(QRhiCommandBuffer *cb, const QByteArray &msg)
 {
-    if (!debugMarkers || !caps.debugMarkers)
+#ifdef VK_EXT_debug_utils
+    if (!debugMarkers || !caps.debugUtils)
         return;
 
-    VkDebugMarkerMarkerInfoEXT marker = {};
-    marker.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT;
+    VkDebugUtilsLabelEXT label = {};
+    label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
 
     QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
     if (cbD->recordingPass != QVkCommandBuffer::NoPass && cbD->passUsesSecondaryCb) {
-        marker.pMarkerName = msg.constData();
-        vkCmdDebugMarkerInsert(cbD->activeSecondaryCbStack.last(), &marker);
+        label.pLabelName = msg.constData();
+        vkCmdInsertDebugUtilsLabelEXT(cbD->activeSecondaryCbStack.last(), &label);
     } else {
         QVkCommandBuffer::Command &cmd(cbD->commands.get());
         cmd.cmd = QVkCommandBuffer::Command::DebugMarkerInsert;
-        cmd.args.debugMarkerInsert.marker = marker;
-        cmd.args.debugMarkerInsert.markerNameIndex = cbD->pools.debugMarkerData.count();
+        cmd.args.debugMarkerInsert.label = label;
+        cmd.args.debugMarkerInsert.labelNameIndex = cbD->pools.debugMarkerData.count();
         cbD->pools.debugMarkerData.append(msg);
     }
+#else
+    Q_UNUSED(cb);
+    Q_UNUSED(msg);
+#endif
 }
 
 const QRhiNativeHandles *QRhiVulkan::nativeHandles(QRhiCommandBuffer *cb)
@@ -5178,22 +5195,29 @@ void QRhiVulkan::endExternal(QRhiCommandBuffer *cb)
     cbD->resetCachedState();
 }
 
-void QRhiVulkan::setObjectName(uint64_t object, VkDebugReportObjectTypeEXT type, const QByteArray &name, int slot)
+void QRhiVulkan::setObjectName(uint64_t object, VkObjectType type, const QByteArray &name, int slot)
 {
-    if (!debugMarkers || !caps.debugMarkers || name.isEmpty())
+#ifdef VK_EXT_debug_utils
+    if (!debugMarkers || !caps.debugUtils || name.isEmpty())
         return;
 
-    VkDebugMarkerObjectNameInfoEXT nameInfo = {};
-    nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT;
+    VkDebugUtilsObjectNameInfoEXT nameInfo = {};
+    nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
     nameInfo.objectType = type;
-    nameInfo.object = object;
+    nameInfo.objectHandle = object;
     QByteArray decoratedName = name;
     if (slot >= 0) {
         decoratedName += '/';
         decoratedName += QByteArray::number(slot);
     }
     nameInfo.pObjectName = decoratedName.constData();
-    vkDebugMarkerSetObjectName(dev, &nameInfo);
+    vkSetDebugUtilsObjectNameEXT(dev, &nameInfo);
+#else
+    Q_UNUSED(object);
+    Q_UNUSED(type);
+    Q_UNUSED(name);
+    Q_UNUSED(slot);
+#endif
 }
 
 static inline VkBufferUsageFlagBits toVkBufferUsage(QRhiBuffer::UsageFlags usage)
@@ -5681,7 +5705,7 @@ bool QVkBuffer::create()
             if (err != VK_SUCCESS)
                 break;
             allocations[i] = allocation;
-            rhiD->setObjectName(uint64_t(buffers[i]), VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT, m_objectName,
+            rhiD->setObjectName(uint64_t(buffers[i]), VK_OBJECT_TYPE_BUFFER, m_objectName,
                                 m_type == Dynamic ? i : -1);
         }
     }
@@ -5831,7 +5855,7 @@ bool QVkRenderBuffer::create()
         {
             return false;
         }
-        rhiD->setObjectName(uint64_t(image), VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT, m_objectName);
+        rhiD->setObjectName(uint64_t(image), VK_OBJECT_TYPE_IMAGE, m_objectName);
         break;
     default:
         Q_UNREACHABLE();
@@ -6095,7 +6119,7 @@ bool QVkTexture::create()
     if (!finishCreate())
         return false;
 
-    rhiD->setObjectName(uint64_t(image), VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT, m_objectName);
+    rhiD->setObjectName(uint64_t(image), VK_OBJECT_TYPE_IMAGE, m_objectName);
 
     owns = true;
     rhiD->registerResource(this);

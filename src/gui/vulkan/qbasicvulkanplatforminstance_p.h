@@ -40,17 +40,19 @@ public:
     PFN_vkVoidFunction getInstanceProcAddr(const char *name) override;
     bool supportsPresent(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, QWindow *window) override;
     void setDebugFilters(const QList<QVulkanInstance::DebugFilter> &filters) override;
+    void setDebugUtilsFilters(const QList<QVulkanInstance::DebugUtilsFilter> &filters) override;
 
     void destroySurface(VkSurfaceKHR surface) const;
     const QList<QVulkanInstance::DebugFilter> *debugFilters() const { return &m_debugFilters; }
+    const QList<QVulkanInstance::DebugUtilsFilter> *debugUtilsFilters() const { return &m_debugUtilsFilters; }
 
 protected:
     void loadVulkanLibrary(const QString &defaultLibraryName, int defaultLibraryVersion = -1);
     void init(QLibrary *lib);
     void initInstance(QVulkanInstance *instance, const QByteArrayList &extraExts);
 
-    VkInstance m_vkInst;
-    PFN_vkGetInstanceProcAddr m_vkGetInstanceProcAddr;
+    VkInstance m_vkInst = VK_NULL_HANDLE;
+    PFN_vkGetInstanceProcAddr m_vkGetInstanceProcAddr = nullptr;
     PFN_vkGetPhysicalDeviceSurfaceSupportKHR m_getPhysDevSurfaceSupport;
     PFN_vkDestroySurfaceKHR m_destroySurface;
 
@@ -59,8 +61,8 @@ private:
 
     std::unique_ptr<QLibrary> m_vulkanLib;
 
-    bool m_ownsVkInst;
-    VkResult m_errorCode;
+    bool m_ownsVkInst = false;
+    VkResult m_errorCode = VK_SUCCESS;
     QVulkanInfoVector<QVulkanLayer> m_supportedLayers;
     QVulkanInfoVector<QVulkanExtension> m_supportedExtensions;
     QVersionNumber m_supportedApiVersion;
@@ -73,9 +75,12 @@ private:
 
     PFN_vkDestroyInstance m_vkDestroyInstance;
 
-    VkDebugReportCallbackEXT m_debugCallback;
-    PFN_vkDestroyDebugReportCallbackEXT m_vkDestroyDebugReportCallbackEXT;
+#ifdef VK_EXT_debug_utils
+    VkDebugUtilsMessengerEXT m_debugMessenger = VK_NULL_HANDLE;
+    PFN_vkDestroyDebugUtilsMessengerEXT m_vkDestroyDebugUtilsMessengerEXT;
+#endif
     QList<QVulkanInstance::DebugFilter> m_debugFilters;
+    QList<QVulkanInstance::DebugUtilsFilter> m_debugUtilsFilters;
 };
 
 QT_END_NAMESPACE

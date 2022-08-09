@@ -49,7 +49,8 @@ public:
     VkResult errorCode;
     QScopedPointer<QVulkanFunctions> funcs;
     QHash<VkDevice, QVulkanDeviceFunctions *> deviceFuncs;
-    QList<QVulkanInstance::DebugFilter> debugFilters;
+    QList<QVulkanInstance::DebugFilter> debugFilters; // legacy filters based on VK_EXT_debug_report
+    QList<QVulkanInstance::DebugUtilsFilter> debugUtilsFilters; // the modern version based on VK_EXT_debug_utils
 };
 
 QT_END_NAMESPACE

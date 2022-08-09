@@ -26,11 +26,6 @@ Q_LOGGING_CATEGORY(lcPlatVk, "qt.vulkan")
  */
 
 QBasicPlatformVulkanInstance::QBasicPlatformVulkanInstance()
-    : m_vkInst(VK_NULL_HANDLE),
-      m_vkGetInstanceProcAddr(nullptr),
-      m_ownsVkInst(false),
-      m_errorCode(VK_SUCCESS),
-      m_debugCallback(VK_NULL_HANDLE)
 {
 }
 
@@ -39,8 +34,10 @@ QBasicPlatformVulkanInstance::~QBasicPlatformVulkanInstance()
     if (!m_vkInst)
         return;
 
-    if (m_debugCallback && m_vkDestroyDebugReportCallbackEXT)
-        m_vkDestroyDebugReportCallbackEXT(m_vkInst, m_debugCallback, nullptr);
+#ifdef VK_EXT_debug_utils
+    if (m_debugMessenger)
+        m_vkDestroyDebugUtilsMessengerEXT(m_vkInst, m_debugMessenger, nullptr);
+#endif
 
     if (m_ownsVkInst)
         m_vkDestroyInstance(m_vkInst, nullptr);
@@ -208,8 +205,7 @@ void QBasicPlatformVulkanInstance::initInstance(QVulkanInstance *instance, const
     m_enabledExtensions = instance->extensions();
 
     if (!m_vkInst) {
-        VkApplicationInfo appInfo;
-        memset(&appInfo, 0, sizeof(appInfo));
+        VkApplicationInfo appInfo = {};
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         QByteArray appName = QCoreApplication::applicationName().toUtf8();
         appInfo.pApplicationName = appName.constData();
@@ -221,7 +217,7 @@ void QBasicPlatformVulkanInstance::initInstance(QVulkanInstance *instance, const
         }
 
         if (!flags.testFlag(QVulkanInstance::NoDebugOutputRedirect))
-            m_enabledExtensions.append("VK_EXT_debug_report");
+            m_enabledExtensions.append("VK_EXT_debug_utils");
 
         m_enabledExtensions.append("VK_KHR_surface");
 
@@ -259,8 +255,7 @@ void QBasicPlatformVulkanInstance::initInstance(QVulkanInstance *instance, const
         }
         qDebug(lcPlatVk) << "Enabling Vulkan instance extensions:" << m_enabledExtensions;
 
-        VkInstanceCreateInfo instInfo;
-        memset(&instInfo, 0, sizeof(instInfo));
+        VkInstanceCreateInfo instInfo = {};
         instInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         instInfo.pApplicationInfo = &appInfo;
 
@@ -365,55 +360,93 @@ void QBasicPlatformVulkanInstance::setDebugFilters(const QList<QVulkanInstance::
     m_debugFilters = filters;
 }
 
+void QBasicPlatformVulkanInstance::setDebugUtilsFilters(const QList<QVulkanInstance::DebugUtilsFilter> &filters)
+{
+    m_debugUtilsFilters = filters;
+}
+
 void QBasicPlatformVulkanInstance::destroySurface(VkSurfaceKHR surface) const
 {
     if (m_destroySurface && surface)
         m_destroySurface(m_vkInst, surface, nullptr);
 }
 
-static VKAPI_ATTR VkBool32 VKAPI_CALL defaultDebugCallbackFunc(VkDebugReportFlagsEXT flags,
-                                                               VkDebugReportObjectTypeEXT objectType,
-                                                               uint64_t object,
-                                                               size_t location,
-                                                               int32_t messageCode,
-                                                               const char *pLayerPrefix,
-                                                               const char *pMessage,
+#ifdef VK_EXT_debug_utils
+static VKAPI_ATTR VkBool32 VKAPI_CALL defaultDebugCallbackFunc(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+                                                               VkDebugUtilsMessageTypeFlagsEXT messageType,
+                                                               const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
                                                                void *pUserData)
 {
     QBasicPlatformVulkanInstance *self = static_cast<QBasicPlatformVulkanInstance *>(pUserData);
+
+    // legacy filters
     for (QVulkanInstance::DebugFilter filter : *self->debugFilters()) {
-        if (filter(flags, objectType, object, location, messageCode, pLayerPrefix, pMessage))
+        // As per docs in qvulkaninstance.cpp we pass object, messageCode,
+        // pMessage to the callback with the legacy signature.
+        uint64_t object = 0;
+        if (pCallbackData->objectCount > 0)
+            object = pCallbackData->pObjects[0].objectHandle;
+        if (filter(0, VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT, object, 0,
+                   pCallbackData->messageIdNumber, "", pCallbackData->pMessage))
+        {
+            return VK_FALSE;
+        }
+    }
+
+    // filters with new signature
+    for (QVulkanInstance::DebugUtilsFilter filter : *self->debugUtilsFilters()) {
+        QVulkanInstance::DebugMessageSeverityFlags severity;
+        if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
+            severity |= QVulkanInstance::VerboseSeverity;
+        if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
+            severity |= QVulkanInstance::InfoSeverity;
+        if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+            severity |= QVulkanInstance::WarningSeverity;
+        if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+            severity |= QVulkanInstance::ErrorSeverity;
+        QVulkanInstance::DebugMessageTypeFlags type;
+        if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT)
+            type |= QVulkanInstance::GeneralMessage;
+        if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT)
+            type |= QVulkanInstance::ValidationMessage;
+        if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT)
+            type |= QVulkanInstance::PerformanceMessage;
+        if (filter(severity, type, pCallbackData))
             return VK_FALSE;
     }
 
     // not categorized, just route to plain old qDebug
-    qDebug("vkDebug: %s: %d: %s", pLayerPrefix, messageCode, pMessage);
+    qDebug("vkDebug: %s", pCallbackData->pMessage);
 
     return VK_FALSE;
 }
+#endif
 
 void QBasicPlatformVulkanInstance::setupDebugOutput()
 {
-    if (!m_enabledExtensions.contains("VK_EXT_debug_report"))
+#ifdef VK_EXT_debug_utils
+    if (!m_enabledExtensions.contains("VK_EXT_debug_utils"))
         return;
 
-    PFN_vkCreateDebugReportCallbackEXT createDebugReportCallback = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(
-                m_vkGetInstanceProcAddr(m_vkInst, "vkCreateDebugReportCallbackEXT"));
-    m_vkDestroyDebugReportCallbackEXT = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(
-                m_vkGetInstanceProcAddr(m_vkInst, "vkDestroyDebugReportCallbackEXT"));
+    PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
+                m_vkGetInstanceProcAddr(m_vkInst, "vkCreateDebugUtilsMessengerEXT"));
 
-    VkDebugReportCallbackCreateInfoEXT dbgCallbackInfo;
-    memset(&dbgCallbackInfo, 0, sizeof(dbgCallbackInfo));
-    dbgCallbackInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
-    dbgCallbackInfo.flags =  VK_DEBUG_REPORT_ERROR_BIT_EXT
-            | VK_DEBUG_REPORT_WARNING_BIT_EXT
-            | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
-    dbgCallbackInfo.pfnCallback = defaultDebugCallbackFunc;
-    dbgCallbackInfo.pUserData = this;
+    m_vkDestroyDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(
+                m_vkGetInstanceProcAddr(m_vkInst, "vkDestroyDebugUtilsMessengerEXT"));
 
-    VkResult err = createDebugReportCallback(m_vkInst, &dbgCallbackInfo, nullptr, &m_debugCallback);
+    VkDebugUtilsMessengerCreateInfoEXT messengerInfo = {};
+    messengerInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    messengerInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
+            | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    messengerInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
+            | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
+            | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+    messengerInfo.pfnUserCallback = defaultDebugCallbackFunc;
+    messengerInfo.pUserData = this;
+    VkResult err = vkCreateDebugUtilsMessengerEXT(m_vkInst, &messengerInfo, nullptr, &m_debugMessenger);
     if (err != VK_SUCCESS)
         qWarning("Failed to create debug report callback: %d", err);
+#endif
 }
 
 QT_END_NAMESPACE

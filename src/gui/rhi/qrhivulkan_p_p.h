@@ -499,14 +499,18 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
                 uint32_t firstInstance;
             } drawIndexed;
             struct {
-                VkDebugMarkerMarkerInfoEXT marker;
-                int markerNameIndex;
+#ifdef VK_EXT_debug_utils
+                VkDebugUtilsLabelEXT label;
+                int labelNameIndex;
+#endif
             } debugMarkerBegin;
             struct {
             } debugMarkerEnd;
             struct {
-                VkDebugMarkerMarkerInfoEXT marker;
-                int markerNameIndex;
+#ifdef VK_EXT_debug_utils
+                VkDebugUtilsLabelEXT label;
+                int labelNameIndex;
+#endif
             } debugMarkerInsert;
             struct {
                 int trackerIndex;
@@ -795,7 +799,7 @@ public:
     void executeDeferredReleases(bool forced = false);
     void finishActiveReadbacks(bool forced = false);
 
-    void setObjectName(uint64_t object, VkDebugReportObjectTypeEXT type, const QByteArray &name, int slot = -1);
+    void setObjectName(uint64_t object, VkObjectType type, const QByteArray &name, int slot = -1);
     void trackedBufferBarrier(QVkCommandBuffer *cbD, QVkBuffer *bufD, int slot,
                               VkAccessFlags access, VkPipelineStageFlags stage);
     void trackedImageBarrier(QVkCommandBuffer *cbD, QVkTexture *texD,
@@ -833,10 +837,12 @@ public:
     bool deviceLost = false;
     bool releaseCachedResourcesCalledBeforeFrameStart = false;
 
-    PFN_vkCmdDebugMarkerBeginEXT vkCmdDebugMarkerBegin = nullptr;
-    PFN_vkCmdDebugMarkerEndEXT vkCmdDebugMarkerEnd = nullptr;
-    PFN_vkCmdDebugMarkerInsertEXT vkCmdDebugMarkerInsert = nullptr;
-    PFN_vkDebugMarkerSetObjectNameEXT vkDebugMarkerSetObjectName = nullptr;
+#ifdef VK_EXT_debug_utils
+    PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT = nullptr;
+    PFN_vkCmdBeginDebugUtilsLabelEXT vkCmdBeginDebugUtilsLabelEXT = nullptr;
+    PFN_vkCmdEndDebugUtilsLabelEXT vkCmdEndDebugUtilsLabelEXT = nullptr;
+    PFN_vkCmdInsertDebugUtilsLabelEXT vkCmdInsertDebugUtilsLabelEXT = nullptr;
+#endif
 
     PFN_vkCreateSwapchainKHR vkCreateSwapchainKHR = nullptr;
     PFN_vkDestroySwapchainKHR vkDestroySwapchainKHR;
@@ -850,7 +856,7 @@ public:
     struct {
         bool compute = false;
         bool wideLines = false;
-        bool debugMarkers = false;
+        bool debugUtils = false;
         bool vertexAttribDivisor = false;
         bool texture3DSliceAs2D = false;
         bool tessellation = false;
