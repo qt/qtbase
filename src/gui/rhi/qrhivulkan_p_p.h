@@ -857,6 +857,8 @@ public:
         bool vulkan11OrHigher = false;
         bool geometryShader = false;
         bool nonFillPolygonMode = false;
+        bool vulkan12OrHigher = false;
+        bool vulkan13OrHigher = false;
     } caps;
 
     VkPipelineCache pipelineCache = VK_NULL_HANDLE;
