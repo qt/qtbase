@@ -254,13 +254,13 @@ bool QtFontFamily::matchesFamilyName(const QString &familyName) const
     return equalsCaseInsensitive(name, familyName) || aliases.contains(familyName, Qt::CaseInsensitive);
 }
 
-void QtFontFamily::ensurePopulated()
+bool QtFontFamily::ensurePopulated()
 {
     if (populated)
-        return;
+        return true;
 
     QGuiApplicationPrivate::platformIntegration()->fontDatabase()->populateFamily(name);
-    Q_ASSERT_X(populated, Q_FUNC_INFO, qPrintable(name));
+    return populated;
 }
 
 void QFontDatabasePrivate::clearFamilies()
@@ -329,8 +329,10 @@ QtFontFamily *QFontDatabasePrivate::family(const QString &f, FamilyRequestFlags 
         fam = families[pos];
     }
 
-    if (fam && (flags & EnsurePopulated))
-        fam->ensurePopulated();
+    if (fam && (flags & EnsurePopulated)) {
+        if (!fam->ensurePopulated())
+            return nullptr;
+    }
 
     return fam;
 }
@@ -1047,7 +1049,8 @@ int QFontDatabasePrivate::match(int script, const QFontDef &request, const QStri
 
         if (!matchFamilyName(family_name, test.family))
             continue;
-        test.family->ensurePopulated();
+        if (!test.family->ensurePopulated())
+            continue;
 
         // Check if family is supported in the script we want
         if (writingSystem != QFontDatabase::Any && !familySupportsWritingSystem(test.family, writingSystem))
@@ -1351,7 +1354,8 @@ QList<QFontDatabase::WritingSystem> QFontDatabase::writingSystems()
 
     for (int i = 0; i < d->count; ++i) {
         QtFontFamily *family = d->families[i];
-        family->ensurePopulated();
+        if (!family->ensurePopulated())
+            continue;
 
         if (family->count == 0)
             continue;
@@ -1423,7 +1427,8 @@ QStringList QFontDatabase::families(WritingSystem writingSystem)
         if (f->populated && f->count == 0)
             continue;
         if (writingSystem != Any) {
-            f->ensurePopulated();
+            if (!f->ensurePopulated())
+                continue;
             if (f->writingSystems[writingSystem] != QtFontFamily::Supported)
                 continue;
         }
@@ -1571,8 +1576,8 @@ bool QFontDatabase::isSmoothlyScalable(const QString &family, const QString &sty
         for (int i = 0; i < d->count; i++) {
             if (d->families[i]->matchesFamilyName(familyName)) {
                 f = d->families[i];
-                f->ensurePopulated();
-                break;
+                if (f->ensurePopulated())
+                    break;
             }
         }
     }
@@ -2592,8 +2597,8 @@ Q_GUI_EXPORT QStringList qt_sort_families_by_writing_system(QChar::Script script
         for (int x = 0; x < db->count; ++x) {
             if (Q_UNLIKELY(matchFamilyName(family, db->families[x]))) {
                 testFamily = db->families[x];
-                testFamily->ensurePopulated();
-                break;
+                if (testFamily->ensurePopulated())
+                    break;
             }
         }
 

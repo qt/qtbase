@@ -174,7 +174,7 @@ struct Q_GUI_EXPORT QtFontFamily
     bool matchesFamilyName(const QString &familyName) const;
     QtFontFoundry *foundry(const QString &f, bool = false);
 
-    void ensurePopulated();
+    bool ensurePopulated();
 };
 
 class Q_GUI_EXPORT QFontDatabasePrivate
