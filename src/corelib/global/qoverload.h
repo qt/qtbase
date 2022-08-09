@@ -4,7 +4,7 @@
 #ifndef QOVERLOAD_H
 #define QOVERLOAD_H
 
-#include <QtCore/qtnamespacemacros.h>
+#include <QtCore/qtconfigmacros.h>
 
 #if 0
 #pragma qt_class(QOverload)

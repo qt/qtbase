@@ -4,8 +4,8 @@
 #ifndef QTDEPRECATIONMARKERS_H
 #define QTDEPRECATIONMARKERS_H
 
+#include <QtCore/qtconfigmacros.h>
 #include <QtCore/qtversionchecks.h>
-#include <QtCore/qtnamespacemacros.h>
 
 QT_BEGIN_NAMESPACE
 

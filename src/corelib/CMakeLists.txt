@@ -76,7 +76,6 @@ qt_internal_add_module(Core
         global/qsystemdetection.h
         global/qtconfigmacros.h
         global/qtdeprecationmarkers.h
-        global/qtnamespacemacros.h
         global/qtrace_p.h
         global/qtranslation.h
         global/qtversionchecks.h
