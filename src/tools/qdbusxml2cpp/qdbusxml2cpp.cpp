@@ -564,7 +564,7 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
                 hs << "QDBusPendingReply<";
                 for (int i = 0; i < method.outputArgs.count(); ++i)
                     hs << (i > 0 ? ", " : "")
-                       << templateArg(qtTypeName(method.name, method.outputArgs.at(i).type,
+                       << templateArg(qtTypeName(method.outputArgs.at(i).name, method.outputArgs.at(i).type,
                                                  method.annotations, i, "Out"));
                 hs << "> ";
             }
@@ -598,7 +598,7 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
             if (method.outputArgs.count() > 1) {
                 // generate the old-form QDBusReply methods with multiple incoming parameters
                 hs << "    inline " << (isDeprecated ? "Q_DECL_DEPRECATED " : "") << "QDBusReply<"
-                   << templateArg(qtTypeName(method.name, method.outputArgs.first().type,
+                   << templateArg(qtTypeName(method.outputArgs.first().name, method.outputArgs.first().type,
                                              method.annotations, 0, "Out"))
                    << "> ";
                 hs << method.name << "(";
@@ -628,7 +628,7 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
                 // yes, starting from 1
                 for (int i = 1; i < method.outputArgs.count(); ++i)
                     hs << "            " << argNames.at(argPos++) << " = qdbus_cast<"
-                       << templateArg(qtTypeName(method.name, method.outputArgs.at(i).type,
+                       << templateArg(qtTypeName(method.outputArgs.at(i).name, method.outputArgs.at(i).type,
                                                  method.annotations, i, "Out"))
                        << ">(reply.arguments().at(" << i << "));" << Qt::endl;
                 hs << "        }" << Qt::endl
@@ -899,7 +899,7 @@ static void writeAdaptor(const QString &filename, const QDBusIntrospection::Inte
                 hs << "void ";
                 cs << "void ";
             } else {
-                returnType = qtTypeName(method.name, method.outputArgs.first().type,
+                returnType = qtTypeName(method.outputArgs.first().name, method.outputArgs.first().type,
                                         method.annotations, 0, "Out");
                 hs << returnType << " ";
                 cs << returnType << " ";
@@ -935,13 +935,13 @@ static void writeAdaptor(const QString &filename, const QDBusIntrospection::Inte
 
                 if (!method.outputArgs.isEmpty())
                     cs << ", Q_RETURN_ARG("
-                       << qtTypeName(method.name, method.outputArgs.at(0).type, method.annotations,
+                       << qtTypeName(method.outputArgs.at(0).name, method.outputArgs.at(0).type, method.annotations,
                                      0, "Out")
                        << ", " << argNames.at(method.inputArgs.count()) << ")";
 
                 for (int i = 0; i < method.inputArgs.count(); ++i)
                     cs << ", Q_ARG("
-                       << qtTypeName(method.name, method.inputArgs.at(i).type, method.annotations,
+                       << qtTypeName(method.inputArgs.at(i).name, method.inputArgs.at(i).type, method.annotations,
                                      i, "In")
                        << ", " << argNames.at(i) << ")";
 
