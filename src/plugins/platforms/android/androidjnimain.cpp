@@ -63,6 +63,7 @@
 #include <QtCore/qbasicatomic.h>
 #include <QtCore/qjnienvironment.h>
 #include <QtCore/qjniobject.h>
+#include <QtCore/qprocess.h>
 #include <QtCore/qresource.h>
 #include <QtCore/qthread.h>
 #include <QtGui/private/qguiapplication_p.h>
@@ -481,11 +482,11 @@ static jboolean startQtAndroidPlugin(JNIEnv *env, jobject /*object*/, jstring pa
     m_mainLibraryHnd = nullptr;
 
     const char *nativeString = env->GetStringUTFChars(paramsString, 0);
-    QByteArray string = nativeString;
+    const QStringList argsList = QProcess::splitCommand(QString::fromUtf8(nativeString));
     env->ReleaseStringUTFChars(paramsString, nativeString);
 
-    for (auto str : string.split('\t'))
-        m_applicationParams.append(str.split(' '));
+    for (const QString &arg : argsList)
+        m_applicationParams.append(arg.toUtf8());
 
     // Go home
     QDir::setCurrent(QDir::homePath());
