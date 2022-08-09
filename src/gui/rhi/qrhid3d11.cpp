@@ -1633,8 +1633,7 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
                 readback.result = u.result;
                 readback.byteSize = u.readSize;
 
-                D3D11_BUFFER_DESC desc;
-                memset(&desc, 0, sizeof(desc));
+                D3D11_BUFFER_DESC desc = {};
                 desc.ByteWidth = readback.byteSize;
                 desc.Usage = D3D11_USAGE_STAGING;
                 desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
@@ -1758,8 +1757,7 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             quint32 bpl = 0;
             textureFormatInfo(format, pixelSize, &bpl, &byteSize, nullptr);
 
-            D3D11_TEXTURE2D_DESC desc;
-            memset(&desc, 0, sizeof(desc));
+            D3D11_TEXTURE2D_DESC desc = {};
             desc.Width = UINT(pixelSize.width());
             desc.Height = UINT(pixelSize.height());
             desc.MipLevels = 1;
@@ -1785,8 +1783,7 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             cmd.args.copySubRes.src = src;
             cmd.args.copySubRes.srcSubRes = subres;
             if (is3D) {
-                D3D11_BOX srcBox;
-                memset(&srcBox, 0, sizeof(srcBox));
+                D3D11_BOX srcBox = {};
                 srcBox.front = UINT(u.rb.layer());
                 srcBox.right = desc.Width; // exclusive
                 srcBox.bottom = desc.Height;
@@ -2866,8 +2863,7 @@ bool QD3D11Buffer::create()
     const quint32 nonZeroSize = m_size <= 0 ? 256 : m_size;
     const quint32 roundedSize = aligned(nonZeroSize, m_usage.testFlag(QRhiBuffer::UniformBuffer) ? 256u : 4u);
 
-    D3D11_BUFFER_DESC desc;
-    memset(&desc, 0, sizeof(desc));
+    D3D11_BUFFER_DESC desc = {};
     desc.ByteWidth = roundedSize;
     desc.Usage = m_type == Dynamic ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
     desc.BindFlags = toD3DBufferUsage(m_usage);
@@ -2934,8 +2930,7 @@ ID3D11UnorderedAccessView *QD3D11Buffer::unorderedAccessView()
         return uav;
 
     // SPIRV-Cross generated HLSL uses RWByteAddressBuffer
-    D3D11_UNORDERED_ACCESS_VIEW_DESC desc;
-    memset(&desc, 0, sizeof(desc));
+    D3D11_UNORDERED_ACCESS_VIEW_DESC desc = {};
     desc.Format = DXGI_FORMAT_R32_TYPELESS;
     desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
     desc.Buffer.FirstElement = 0;
@@ -2998,8 +2993,7 @@ bool QD3D11RenderBuffer::create()
     QRHI_RES_RHI(QRhiD3D11);
     sampleDesc = rhiD->effectiveSampleCount(m_sampleCount);
 
-    D3D11_TEXTURE2D_DESC desc;
-    memset(&desc, 0, sizeof(desc));
+    D3D11_TEXTURE2D_DESC desc = {};
     desc.Width = UINT(m_pixelSize.width());
     desc.Height = UINT(m_pixelSize.height());
     desc.MipLevels = 1;
@@ -3017,8 +3011,7 @@ bool QD3D11RenderBuffer::create()
             qWarning("Failed to create color renderbuffer: %s", qPrintable(comErrorMessage(hr)));
             return false;
         }
-        D3D11_RENDER_TARGET_VIEW_DESC rtvDesc;
-        memset(&rtvDesc, 0, sizeof(rtvDesc));
+        D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
         rtvDesc.Format = dxgiFormat;
         rtvDesc.ViewDimension = desc.SampleDesc.Count > 1 ? D3D11_RTV_DIMENSION_TEXTURE2DMS
                                                           : D3D11_RTV_DIMENSION_TEXTURE2D;
@@ -3036,8 +3029,7 @@ bool QD3D11RenderBuffer::create()
             qWarning("Failed to create depth-stencil buffer: %s", qPrintable(comErrorMessage(hr)));
             return false;
         }
-        D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
-        memset(&dsvDesc, 0, sizeof(dsvDesc));
+        D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
         dsvDesc.Format = dxgiFormat;
         dsvDesc.ViewDimension = desc.SampleDesc.Count > 1 ? D3D11_DSV_DIMENSION_TEXTURE2DMS
                                                           : D3D11_DSV_DIMENSION_TEXTURE2D;
@@ -3216,8 +3208,7 @@ bool QD3D11Texture::finishCreate()
     const bool is3D = m_flags.testFlag(ThreeDimensional);
     const bool isArray = m_flags.testFlag(TextureArray);
 
-    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
-    memset(&srvDesc, 0, sizeof(srvDesc));
+    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
     srvDesc.Format = isDepth ? toD3DDepthTextureSRVFormat(m_format) : dxgiFormat;
     if (isCube) {
         srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
@@ -3299,8 +3290,7 @@ bool QD3D11Texture::create()
 
     QRHI_RES_RHI(QRhiD3D11);
     if (!is3D) {
-        D3D11_TEXTURE2D_DESC desc;
-        memset(&desc, 0, sizeof(desc));
+        D3D11_TEXTURE2D_DESC desc = {};
         desc.Width = UINT(size.width());
         desc.Height = UINT(size.height());
         desc.MipLevels = mipLevelCount;
@@ -3319,8 +3309,7 @@ bool QD3D11Texture::create()
         if (!m_objectName.isEmpty())
             tex->SetPrivateData(WKPDID_D3DDebugObjectName, UINT(m_objectName.size()), m_objectName.constData());
     } else {
-        D3D11_TEXTURE3D_DESC desc;
-        memset(&desc, 0, sizeof(desc));
+        D3D11_TEXTURE3D_DESC desc = {};
         desc.Width = UINT(size.width());
         desc.Height = UINT(size.height());
         desc.Depth = UINT(m_depth);
@@ -3382,8 +3371,7 @@ ID3D11UnorderedAccessView *QD3D11Texture::unorderedAccessViewForLevel(int level)
     const bool isCube = m_flags.testFlag(CubeMap);
     const bool isArray = m_flags.testFlag(TextureArray);
     const bool is3D = m_flags.testFlag(ThreeDimensional);
-    D3D11_UNORDERED_ACCESS_VIEW_DESC desc;
-    memset(&desc, 0, sizeof(desc));
+    D3D11_UNORDERED_ACCESS_VIEW_DESC desc = {};
     desc.Format = dxgiFormat;
     if (isCube) {
         desc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2DARRAY;
@@ -3516,8 +3504,7 @@ bool QD3D11Sampler::create()
     if (samplerState)
         destroy();
 
-    D3D11_SAMPLER_DESC desc;
-    memset(&desc, 0, sizeof(desc));
+    D3D11_SAMPLER_DESC desc = {};
     desc.Filter = toD3DFilter(m_minFilter, m_magFilter, m_mipmapMode);
     if (m_compareOp != Never)
         desc.Filter = D3D11_FILTER(desc.Filter | 0x80);
@@ -3671,8 +3658,7 @@ bool QD3D11TextureRenderTarget::create()
         Q_ASSERT(texture || rb);
         if (texture) {
             QD3D11Texture *texD = QRHI_RES(QD3D11Texture, texture);
-            D3D11_RENDER_TARGET_VIEW_DESC rtvDesc;
-            memset(&rtvDesc, 0, sizeof(rtvDesc));
+            D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
             rtvDesc.Format = toD3DTextureFormat(texD->format(), texD->flags());
             if (texD->flags().testFlag(QRhiTexture::CubeMap)) {
                 rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
@@ -3729,8 +3715,7 @@ bool QD3D11TextureRenderTarget::create()
         if (m_desc.depthTexture()) {
             ownsDsv = true;
             QD3D11Texture *depthTexD = QRHI_RES(QD3D11Texture, m_desc.depthTexture());
-            D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
-            memset(&dsvDesc, 0, sizeof(dsvDesc));
+            D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
             dsvDesc.Format = toD3DDepthTextureDSVFormat(depthTexD->format());
             dsvDesc.ViewDimension = depthTexD->sampleDesc.Count > 1 ? D3D11_DSV_DIMENSION_TEXTURE2DMS
                                                                     : D3D11_DSV_DIMENSION_TEXTURE2D;
@@ -4247,8 +4232,7 @@ bool QD3D11GraphicsPipeline::create()
     if (!rhiD->sanityCheckGraphicsPipeline(this))
         return false;
 
-    D3D11_RASTERIZER_DESC rastDesc;
-    memset(&rastDesc, 0, sizeof(rastDesc));
+    D3D11_RASTERIZER_DESC rastDesc = {};
     rastDesc.FillMode = toD3DFillMode(m_polygonMode);
     rastDesc.CullMode = toD3DCullMode(m_cullMode);
     rastDesc.FrontCounterClockwise = m_frontFace == CCW;
@@ -4263,8 +4247,7 @@ bool QD3D11GraphicsPipeline::create()
         return false;
     }
 
-    D3D11_DEPTH_STENCIL_DESC dsDesc;
-    memset(&dsDesc, 0, sizeof(dsDesc));
+    D3D11_DEPTH_STENCIL_DESC dsDesc = {};
     dsDesc.DepthEnable = m_depthTest;
     dsDesc.DepthWriteMask = m_depthWrite ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
     dsDesc.DepthFunc = toD3DCompareOp(m_depthOp);
@@ -4287,13 +4270,11 @@ bool QD3D11GraphicsPipeline::create()
         return false;
     }
 
-    D3D11_BLEND_DESC blendDesc;
-    memset(&blendDesc, 0, sizeof(blendDesc));
+    D3D11_BLEND_DESC blendDesc = {};
     blendDesc.IndependentBlendEnable = m_targetBlends.count() > 1;
     for (int i = 0, ie = m_targetBlends.count(); i != ie; ++i) {
         const QRhiGraphicsPipeline::TargetBlend &b(m_targetBlends[i]);
-        D3D11_RENDER_TARGET_BLEND_DESC blend;
-        memset(&blend, 0, sizeof(blend));
+        D3D11_RENDER_TARGET_BLEND_DESC blend = {};
         blend.BlendEnable = b.enable;
         blend.SrcBlend = toD3DBlendFactor(b.srcColor, true);
         blend.DestBlend = toD3DBlendFactor(b.dstColor, true);
@@ -4305,8 +4286,7 @@ bool QD3D11GraphicsPipeline::create()
         blendDesc.RenderTarget[i] = blend;
     }
     if (m_targetBlends.isEmpty()) {
-        D3D11_RENDER_TARGET_BLEND_DESC blend;
-        memset(&blend, 0, sizeof(blend));
+        D3D11_RENDER_TARGET_BLEND_DESC blend = {};
         blend.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
         blendDesc.RenderTarget[0] = blend;
     }
@@ -4390,8 +4370,7 @@ bool QD3D11GraphicsPipeline::create()
         for (auto it = m_vertexInputLayout.cbeginAttributes(), itEnd = m_vertexInputLayout.cendAttributes();
              it != itEnd; ++it)
         {
-            D3D11_INPUT_ELEMENT_DESC desc;
-            memset(&desc, 0, sizeof(desc));
+            D3D11_INPUT_ELEMENT_DESC desc = {};
             // The output from SPIRV-Cross uses TEXCOORD<location> as the
             // semantic, except for matrices that are unrolled into consecutive
             // vec2/3/4s attributes and need TEXCOORD<location>_ as
@@ -4703,8 +4682,7 @@ QRhiRenderPassDescriptor *QD3D11SwapChain::newCompatibleRenderPassDescriptor()
 bool QD3D11SwapChain::newColorBuffer(const QSize &size, DXGI_FORMAT format, DXGI_SAMPLE_DESC sampleDesc,
                                      ID3D11Texture2D **tex, ID3D11RenderTargetView **rtv) const
 {
-    D3D11_TEXTURE2D_DESC desc;
-    memset(&desc, 0, sizeof(desc));
+    D3D11_TEXTURE2D_DESC desc = {};
     desc.Width = UINT(size.width());
     desc.Height = UINT(size.height());
     desc.MipLevels = 1;
@@ -4721,8 +4699,7 @@ bool QD3D11SwapChain::newColorBuffer(const QSize &size, DXGI_FORMAT format, DXGI
         return false;
     }
 
-    D3D11_RENDER_TARGET_VIEW_DESC rtvDesc;
-    memset(&rtvDesc, 0, sizeof(rtvDesc));
+    D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
     rtvDesc.Format = format;
     rtvDesc.ViewDimension = sampleDesc.Count > 1 ? D3D11_RTV_DIMENSION_TEXTURE2DMS : D3D11_RTV_DIMENSION_TEXTURE2D;
     hr = rhiD->dev->CreateRenderTargetView(*tex, &rtvDesc, rtv);
@@ -4851,8 +4828,7 @@ bool QD3D11SwapChain::createOrResize()
         // automatic MSAA is unsupported and needs to be implemented via a
         // custom multisample render target and an explicit resolve.
 
-        DXGI_SWAP_CHAIN_DESC1 desc;
-        memset(&desc, 0, sizeof(desc));
+        DXGI_SWAP_CHAIN_DESC1 desc = {};
         desc.Width = UINT(pixelSize.width());
         desc.Height = UINT(pixelSize.height());
         desc.Format = colorFormat;
@@ -4974,8 +4950,7 @@ bool QD3D11SwapChain::createOrResize()
         qWarning("Failed to query swapchain backbuffer: %s", qPrintable(comErrorMessage(hr)));
         return false;
     }
-    D3D11_RENDER_TARGET_VIEW_DESC rtvDesc;
-    memset(&rtvDesc, 0, sizeof(rtvDesc));
+    D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
     rtvDesc.Format = srgbAdjustedColorFormat;
     rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
     hr = rhiD->dev->CreateRenderTargetView(backBufferTex, &rtvDesc, &backBufferRtv);
@@ -5023,8 +4998,7 @@ bool QD3D11SwapChain::createOrResize()
     rtD->d.dsAttCount = m_depthStencil ? 1 : 0;
 
     if (rhiD->hasGpuFrameTimeCallback()) {
-        D3D11_QUERY_DESC queryDesc;
-        memset(&queryDesc, 0, sizeof(queryDesc));
+        D3D11_QUERY_DESC queryDesc = {};
         for (int i = 0; i < BUFFER_COUNT; ++i) {
             if (!timestampDisjointQuery[i]) {
                 queryDesc.Query = D3D11_QUERY_TIMESTAMP_DISJOINT;
