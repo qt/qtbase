@@ -47,6 +47,7 @@ qt_internal_add_module(Core
         global/qcompare_impl.h
         global/qcompare.h
         global/qcompilerdetection.h
+        global/qtconfigmacros.h
         global/qcontainerinfo.h
         global/qendian.cpp global/qendian.h global/qendian_p.h
         global/qflags.h

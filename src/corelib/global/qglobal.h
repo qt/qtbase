@@ -192,7 +192,7 @@ static_assert(!std::is_convertible_v<std::nullptr_t, bool>,
 #  define Q_STATIC_ASSERT_X(Condition, Message) Q_STATIC_ASSERT(Condition)
 #endif
 
-# include <QtCore/qtnamespacemacros.h>
+# include <QtCore/qtconfigmacros.h>
 
 #ifndef __ASSEMBLER__
 QT_BEGIN_NAMESPACE
