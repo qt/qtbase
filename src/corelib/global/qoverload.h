@@ -8,7 +8,6 @@
 
 #if 0
 #pragma qt_class(QOverload)
-#pragma qt_sync_stop_processing
 #endif
 
 QT_BEGIN_NAMESPACE
