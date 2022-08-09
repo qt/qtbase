@@ -67,7 +67,6 @@ qt_internal_add_module(Core
         global/qsysinfo.h
         global/qsystemdetection.h
         global/qtconfigmacros.h
-        global/qtnamespacemacros.h
         global/qtrace_p.h
         global/qtypeinfo.h
         global/qvolatile_p.h
