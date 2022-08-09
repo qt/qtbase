@@ -388,10 +388,6 @@ bool QRhiVulkan::create(QRhi::Flags flags)
 
     f = inst->functions();
 
-    caps.vulkan11OrHigher = inst->apiVersion() >= QVersionNumber(1, 1);
-    caps.vulkan12OrHigher = inst->apiVersion() >= QVersionNumber(1, 2);
-    caps.vulkan13OrHigher = inst->apiVersion() >= QVersionNumber(1, 3);
-
     rhiFlags = flags;
 
     QList<VkQueueFamilyProperties> queueFamilyProps;
@@ -471,6 +467,21 @@ bool QRhiVulkan::create(QRhi::Flags flags)
                 physDevProperties.vendorID,
                 physDevProperties.deviceID,
                 physDevProperties.deviceType);
+    }
+
+    caps.apiVersion = inst->apiVersion();
+
+    // Check the physical device API version against the instance API version,
+    // they do not have to match, which means whatever version was set in the
+    // QVulkanInstance may not be legally used with a given device if the
+    // physical device has a lower version.
+    const QVersionNumber physDevApiVersion(VK_VERSION_MAJOR(physDevProperties.apiVersion),
+                                           VK_VERSION_MINOR(physDevProperties.apiVersion)); // patch version left out intentionally
+    if (physDevApiVersion < caps.apiVersion) {
+        qCDebug(QRHI_LOG_INFO) << "Instance has api version" << caps.apiVersion
+                               << "whereas the chosen physical device has" << physDevApiVersion
+                               << "- restricting to the latter";
+        caps.apiVersion = physDevApiVersion;
     }
 
     driverInfoStruct.deviceName = QByteArray(physDevProperties.deviceName);
@@ -611,11 +622,11 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         features13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
 #endif
 
-        if (caps.vulkan12OrHigher) {
+        if (caps.apiVersion >= QVersionNumber(1, 2)) {
             physDevFeatures2.pNext = &features11;
             features11.pNext = &features12;
 #ifdef VK_VERSION_1_3
-            if (caps.vulkan13OrHigher)
+            if (caps.apiVersion >= QVersionNumber(1, 3))
                 features12.pNext = &features13;
 #endif
             f->vkGetPhysicalDeviceFeatures2(physDev, &physDevFeatures2);
@@ -694,7 +705,7 @@ bool QRhiVulkan::create(QRhi::Flags flags)
 
     caps.wideLines = physDevFeatures.wideLines;
 
-    caps.texture3DSliceAs2D = caps.vulkan11OrHigher;
+    caps.texture3DSliceAs2D = caps.apiVersion >= QVersionNumber(1, 1);
 
     caps.tessellation = physDevFeatures.tessellationShader;
     caps.geometryShader = physDevFeatures.geometryShader;
@@ -7047,7 +7058,7 @@ bool QVkGraphicsPipeline::create()
         // still have it working with both APIs. This requires Vulkan 1.1 (or
         // VK_KHR_maintenance2 but don't bother with that).
 #ifdef VK_VERSION_1_1
-        if (rhiD->caps.vulkan11OrHigher) {
+        if (rhiD->caps.apiVersion >= QVersionNumber(1, 1)) {
             memset(&originInfo, 0, sizeof(originInfo));
             originInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO;
             originInfo.domainOrigin = VK_TESSELLATION_DOMAIN_ORIGIN_LOWER_LEFT;

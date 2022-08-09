@@ -854,11 +854,9 @@ public:
         bool vertexAttribDivisor = false;
         bool texture3DSliceAs2D = false;
         bool tessellation = false;
-        bool vulkan11OrHigher = false;
         bool geometryShader = false;
         bool nonFillPolygonMode = false;
-        bool vulkan12OrHigher = false;
-        bool vulkan13OrHigher = false;
+        QVersionNumber apiVersion;
     } caps;
 
     VkPipelineCache pipelineCache = VK_NULL_HANDLE;
