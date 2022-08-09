@@ -785,7 +785,7 @@ void QXcbDrag::handle_xdnd_position(QPlatformWindow *w, const xcb_client_message
     QPoint p((e->data.data32[2] & 0xffff0000) >> 16, e->data.data32[2] & 0x0000ffff);
     Q_ASSERT(w);
     QRect geometry = w->geometry();
-    p -= geometry.topLeft();
+    p -= w->isEmbedded() ? w->mapToGlobal(geometry.topLeft()) : geometry.topLeft();
 
     if (!w || !w->window() || (w->window()->type() == Qt::Desktop))
         return;
