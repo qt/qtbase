@@ -46,7 +46,10 @@ public:
 #endif
     void setQuery(QSqlQuery &&query);
     void setQuery(const QString &query, const QSqlDatabase &db = QSqlDatabase());
+#if QT_SQL_REMOVED_SINCE(6, 5)
     QSqlQuery query() const;
+#endif
+    const QSqlQuery &query(QT6_DECL_NEW_OVERLOAD) const;
 
     virtual void clear();
 

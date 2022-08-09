@@ -17,6 +17,18 @@ QT_USE_NAMESPACE
 
 #if QT_SQL_REMOVED_SINCE(6, 5)
 
+#if QT_CONFIG(sqlmodel)
+
+#include "qsqlquerymodel.h"
+#include "qsqlquery.h"
+
+QSqlQuery QSqlQueryModel::query() const
+{
+    QT_IGNORE_DEPRECATIONS(return query(QT6_CALL_NEW_OVERLOAD);)
+}
+
+#endif // QT_CONFIG(sqlmodel)
+
 // #include <qotherheader.h>
 // // implement removed functions from qotherheader.h
 // order sections alphabetically to reduce chances of merge conflicts

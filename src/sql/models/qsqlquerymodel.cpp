@@ -522,18 +522,15 @@ bool QSqlQueryModel::setHeaderData(int section, Qt::Orientation orientation,
 }
 
 /*!
-    Returns the QSqlQuery associated with this model.
+    Returns a reference to the const QSqlQuery object associated with this model.
 
     \sa setQuery()
 */
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-QSqlQuery QSqlQueryModel::query() const
+const QSqlQuery &QSqlQueryModel::query(QT6_IMPL_NEW_OVERLOAD) const
 {
     Q_D(const QSqlQueryModel);
     return d->query;
 }
-QT_WARNING_POP
 
 /*!
     Returns information about the last error that occurred on the
