@@ -384,11 +384,16 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         return false;
     }
 
-    globalVulkanInstance = inst; // assume this will not change during the lifetime of the entire application
-
-    f = inst->functions();
-
     rhiFlags = flags;
+    qCDebug(QRHI_LOG_INFO, "Initializing QRhi Vulkan backend %p with flags %d", this, int(rhiFlags));
+
+    globalVulkanInstance = inst; // used for function resolving in vkmemalloc callbacks
+    f = inst->functions();
+    if (QRHI_LOG_INFO().isEnabled(QtDebugMsg)) {
+        qCDebug(QRHI_LOG_INFO, "Enabled instance extensions:");
+        for (const char *ext : inst->extensions())
+            qCDebug(QRHI_LOG_INFO, "  %s", ext);
+    }
 
     QList<VkQueueFamilyProperties> queueFamilyProps;
     auto queryQueueFamilyProps = [this, &queueFamilyProps] {
