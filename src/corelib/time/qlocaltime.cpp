@@ -348,11 +348,13 @@ QString localTimeAbbbreviationAt(qint64 local, QDateTimePrivate::DaylightStatus 
 
 QDateTimePrivate::ZoneState mapLocalTime(qint64 local, QDateTimePrivate::DaylightStatus dst)
 {
-    const qint64 localDays = QRoundingDown::qDiv(local, MSECS_PER_DAY);
-    qint64 millis = local - localDays * MSECS_PER_DAY;
-    Q_ASSERT(0 <= millis && millis < MSECS_PER_DAY); // Definition of QRD::qDiv.
-    struct tm tmLocal = timeToTm(localDays, int(millis / MSECS_PER_SEC), dst);
-    millis %= MSECS_PER_SEC;
+    qint64 localSecs = local / MSECS_PER_SEC;
+    qint64 millis = local - localSecs * MSECS_PER_SEC; // 0 or with same sign as local
+    const qint64 localDays = QRoundingDown::qDiv(localSecs, SECS_PER_DAY);
+    qint64 daySecs = localSecs - localDays * SECS_PER_DAY;
+    Q_ASSERT(0 <= daySecs && daySecs < SECS_PER_DAY); // Definition of QRD::qDiv.
+
+    struct tm tmLocal = timeToTm(localDays, daySecs, dst);
     time_t utcSecs;
     if (!callMkTime(&tmLocal, &utcSecs))
         return {local};
@@ -368,22 +370,21 @@ QDateTimePrivate::ZoneState mapLocalTime(qint64 local, QDateTimePrivate::Dayligh
                        &jd))) {
         return {local, offset, dst, false};
     }
-    qint64 daySecs = tmSecsWithinDay(tmLocal);
+    daySecs = tmSecsWithinDay(tmLocal);
     Q_ASSERT(0 <= daySecs && daySecs < SECS_PER_DAY);
     if (daySecs > 0 && jd < JULIAN_DAY_FOR_EPOCH) {
         ++jd;
         daySecs -= SECS_PER_DAY;
     }
-    qint64 localSecs;
     if (Q_UNLIKELY(daysAndSecondsOverflow(jd, daySecs, &localSecs)))
         return {local, offset, dst, false};
 
     offset = localSecs - utcSecs;
 
-    if (localSecs < 0 && millis > 0) {
-        ++localSecs;
-        millis -= MSECS_PER_SEC;
-    }
+    // The only way localSecs and millis can now have opposite sign is for
+    // resolution of the local time to have kicked us across the epoch, in which
+    // case there's no danger of overflow. So if overflow is in danger of
+    // happening, we're already doing the best we can to avoid it.
     qint64 revised;
     const bool overflow = secondsAndMillisOverflow(localSecs, millis, &revised);
     return {overflow ? local : revised, offset, dst, !overflow};
