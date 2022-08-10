@@ -514,10 +514,7 @@ function(qt_internal_add_module target)
     endif()
     list(APPEND ${public_headers_list} ${arg_PUBLIC_INCLUDE_DIRECTORIES})
 
-    set(header_module)
     if(arg_HEADER_MODULE)
-        set(header_module "HEADER_MODULE")
-
         # Provide a *_timestamp target that can be used to trigger the build of custom_commands.
         set(timestamp_file "${CMAKE_CURRENT_BINARY_DIR}/timestamp")
         add_custom_command(OUTPUT "${timestamp_file}"
@@ -849,7 +846,7 @@ set(QT_LIBINFIX \"${QT_LIBINFIX}\")")
     endif()
 
     qt_describe_module(${target})
-    qt_add_list_file_finalizer(qt_finalize_module ${target} ${arg_INTERNAL_MODULE} ${arg_NO_PRIVATE_MODULE} ${header_module})
+    qt_add_list_file_finalizer(qt_finalize_module ${target} ${arg_INTERNAL_MODULE} ${arg_NO_PRIVATE_MODULE})
 endfunction()
 
 function(qt_finalize_module target)
