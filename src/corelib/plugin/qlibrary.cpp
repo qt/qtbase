@@ -776,9 +776,11 @@ bool QLibrary::load()
         return false;
     if (d.tag() == Loaded)
         return d->pHnd.loadRelaxed();
-    else
+    if (d->load()) {
         d.setTag(Loaded);
-    return d->load();
+        return true;
+    }
+    return false;
 }
 
 /*!

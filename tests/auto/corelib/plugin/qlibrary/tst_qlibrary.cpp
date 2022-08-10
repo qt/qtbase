@@ -90,10 +90,14 @@ private slots:
     void unload_data();
     void unload();
     void unload_after_implicit_load();
+    void setFilenameAfterFailedLoad();
+    void loadAfterFailedLoad();
     void isLibrary_data();
     void isLibrary();
     void version_data();
     void version();
+    void setFileNameAndVersionAfterFailedLoad_data() { version_data(); }
+    void setFileNameAndVersionAfterFailedLoad();
     void errorString_data();
     void errorString();
     void loadHints();
@@ -270,6 +274,76 @@ void tst_QLibrary::unload_after_implicit_load()
     QVERIFY(library.isLoaded());
     QVERIFY(library.unload());
     QCOMPARE(library.isLoaded(), false);
+}
+
+void tst_QLibrary::setFilenameAfterFailedLoad()
+{
+#if defined(Q_OS_WIN) || defined(Q_OS_ANDROID)
+    QSKIP("### FIXME: The helper libraries are currently messed up in the CMakeLists.txt");
+#endif
+
+    QLibrary library(directory + "/nolib");
+    QVERIFY(!library.load());
+    QVERIFY(!library.isLoaded());
+    QVERIFY(!library.load());
+    QVERIFY(!library.isLoaded());
+
+    library.setFileName(directory + "/mylib");
+    QVERIFY(library.load());
+    QVERIFY(library.isLoaded());
+    auto p = (VersionFunction)library.resolve("mylibversion");
+    QVERIFY(p);
+    QCOMPARE(p(), 2);
+    library.unload();
+}
+
+void tst_QLibrary::setFileNameAndVersionAfterFailedLoad()
+{
+    QLibrary library(directory + "/nolib");
+    QVERIFY(!library.load());
+    QVERIFY(!library.isLoaded());
+    QVERIFY(!library.load());
+    QVERIFY(!library.isLoaded());
+
+#if !defined(Q_OS_AIX) && !defined(Q_OS_WIN)
+    QFETCH(QString, lib);
+    QFETCH(int, loadversion);
+    QFETCH(int, resultversion);
+
+    library.setFileNameAndVersion(directory + '/' + lib, loadversion);
+    QVERIFY(library.load());
+    QVERIFY(library.isLoaded());
+    auto p = (VersionFunction)library.resolve("mylibversion");
+    QVERIFY(p);
+    QCOMPARE(p(), resultversion);
+    library.unload();
+#endif
+}
+
+void tst_QLibrary::loadAfterFailedLoad()
+{
+#if defined(Q_OS_WIN) || defined(Q_OS_ANDROID)
+    QSKIP("### FIXME: The helper libraries are currently messed up in the CMakeLists.txt");
+#endif
+
+    QTemporaryDir dir;
+    QLibrary library(dir.path() + "/mylib");
+    QVERIFY(!library.load());
+    QVERIFY(!library.isLoaded());
+    QVERIFY(!library.load());
+    QVERIFY(!library.isLoaded());
+
+    // now copy the actual lib file into our dir
+    QString actualLib = PREFIX "mylib" SUFFIX;
+    QVERIFY(QFile::copy(directory + '/' + actualLib, dir.filePath(actualLib)));
+
+    // try again, must succeed now
+    QVERIFY(library.load());
+    QVERIFY(library.isLoaded());
+    auto p = (VersionFunction)library.resolve("mylibversion");
+    QVERIFY(p);
+    QCOMPARE(p(), 2);
+    library.unload();
 }
 
 void tst_QLibrary::resolve_data()
