@@ -62,14 +62,19 @@ function(qt_internal_extend_target target)
         # CMake versions less than 3.19 don't support adding the source files to the PRIVATE scope
         # of the INTERFACE libraries. These PRIVATE sources are only needed by IDEs to display
         # them in a project tree, so to avoid build issues and appearing the sources in
-        # INTERFACE_SOURCES property of INTERFACE_LIBRARY let's simply exclude them for
-        # compatibility with CMake versions less than 3.19.
+        # INTERFACE_SOURCES property of INTERFACE_LIBRARY. Collect them inside the
+        # _qt_internal_target_sources property, since they can be useful in the source processing
+        # functions. The property itself is not exported and should only be used in the Qt internal
+        # build tree.
         if(NOT is_interface_lib OR CMAKE_VERSION VERSION_GREATER_EQUAL "3.19")
             target_sources("${target}" PRIVATE ${arg_SOURCES} ${dbus_sources})
             if (arg_COMPILE_FLAGS)
                 set_source_files_properties(${arg_SOURCES} PROPERTIES
                     COMPILE_FLAGS "${arg_COMPILE_FLAGS}")
             endif()
+        else()
+            set_property(TARGET ${target} APPEND PROPERTY
+                _qt_internal_target_sources ${arg_SOURCES} ${dbus_sources})
         endif()
 
         set(public_visibility_option "PUBLIC")
@@ -906,4 +911,26 @@ function(qt_internal_add_repo_local_defines target)
     if(DEFINED QT_EXTRA_INTERNAL_TARGET_DEFINES)
         target_compile_definitions("${target}" PRIVATE ${QT_EXTRA_INTERNAL_TARGET_DEFINES})
     endif()
+endfunction()
+
+# The function returns the value of the target's SOURCES property. The function takes into account
+# the limitation of the CMake version less than 3.19, that restricts to add non-interface sources
+# to an interface target.
+# Note: The function works correctly only if qt_internal_extend_target is used when adding source
+# files.
+function(qt_internal_get_target_sources out_var target)
+    qt_internal_get_target_sources_property(sources_property)
+    get_target_property(${out_var} ${target} ${sources_property})
+    set(${out_var} "${${out_var}}" PARENT_SCOPE)
+endfunction()
+
+# The function distinguishes what property supposed to store target sources, based on target TYPE
+# and the CMake version.
+function(qt_internal_get_target_sources_property out_var)
+    set(${out_var} "SOURCES")
+    get_target_property(target_type ${target} TYPE)
+    if(CMAKE_VERSION VERSION_LESS "3.19" AND target_type STREQUAL "INTERFACE_LIBRARY")
+        set(${out_var} "_qt_internal_target_sources")
+    endif()
+    set(${out_var} "${${out_var}}" PARENT_SCOPE)
 endfunction()
