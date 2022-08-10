@@ -105,14 +105,13 @@ endfunction()
 
 function(qt_internal_create_module_depends_file target)
     get_target_property(target_type "${target}" TYPE)
+    set(is_interface_lib FALSE)
     if(target_type STREQUAL "INTERFACE_LIBRARY")
-        set(arg_HEADER_MODULE ON)
-    else()
-        set(arg_HEADER_MODULE OFF)
+        set(is_interface_lib TRUE)
     endif()
 
     set(depends "")
-    if(target_type STREQUAL "STATIC_LIBRARY" AND NOT arg_HEADER_MODULE)
+    if(target_type STREQUAL "STATIC_LIBRARY")
         get_target_property(depends "${target}" LINK_LIBRARIES)
     endif()
 
@@ -129,7 +128,7 @@ function(qt_internal_create_module_depends_file target)
     set(target_deps_seen "")
     set(qt_module_dependencies "")
 
-    if(NOT arg_HEADER_MODULE)
+    if(NOT is_interface_lib)
         get_target_property(extra_depends "${target}" QT_EXTRA_PACKAGE_DEPENDENCIES)
     endif()
     if(NOT extra_depends MATCHES "-NOTFOUND$")
@@ -161,7 +160,7 @@ function(qt_internal_create_module_depends_file target)
 
     # Extra QtFooModuleTools packages to be added as dependencies to
     # QtModuleDependencies.cmake. Needed for QtWaylandCompositor / QtWaylandClient.
-    if(NOT arg_HEADER_MODULE)
+    if(NOT is_interface_lib)
         get_target_property(extra_tools_package_dependencies "${target}"
                             QT_EXTRA_TOOLS_PACKAGE_DEPENDENCIES)
         if(extra_tools_package_dependencies)
