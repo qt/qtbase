@@ -2288,10 +2288,10 @@ bool AtSpiAdaptor::tableInterface(QAccessibleInterface *interface, const QString
         QAccessibleInterface * captionInterface= interface->tableInterface()->caption();
         if (captionInterface) {
             QSpiObjectReference ref = QSpiObjectReference(connection, QDBusObjectPath(pathForInterface(captionInterface)));
-            sendReply(connection, message, QVariant::fromValue(ref));
+            sendReply(connection, message, QVariant::fromValue(QDBusVariant(QVariant::fromValue(ref))));
         } else {
-            sendReply(connection, message, QVariant::fromValue(
-                          QSpiObjectReference(connection, QDBusObjectPath(ATSPI_DBUS_PATH_NULL))));
+            sendReply(connection, message, QVariant::fromValue(QDBusVariant(QVariant::fromValue(
+                          QSpiObjectReference(connection, QDBusObjectPath(ATSPI_DBUS_PATH_NULL))))));
         }
     } else if (function == QLatin1String("GetNColumns")) {
         connection.send(message.createReply(QVariant::fromValue(QDBusVariant(
