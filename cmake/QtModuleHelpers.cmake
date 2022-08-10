@@ -545,7 +545,6 @@ function(qt_internal_add_module target)
     qt_internal_add_repo_local_defines("${target}")
 
     qt_internal_extend_target("${target}"
-        ${header_module}
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
             ${private_includes}

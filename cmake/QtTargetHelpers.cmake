@@ -13,7 +13,7 @@ function(qt_internal_extend_target target)
     if (NOT TARGET "${target}")
         message(FATAL_ERROR "Trying to extend non-existing target \"${target}\".")
     endif()
-    qt_parse_all_arguments(arg "qt_extend_target" "HEADER_MODULE" "PRECOMPILED_HEADER"
+    qt_parse_all_arguments(arg "qt_extend_target" "" "PRECOMPILED_HEADER"
         "CONDITION;${__default_public_args};${__default_private_args};${__default_private_module_args};COMPILE_FLAGS;NO_PCH_SOURCES" ${ARGN})
     if ("x${arg_CONDITION}" STREQUAL x)
         set(arg_CONDITION ON)
@@ -37,9 +37,13 @@ function(qt_internal_extend_target target)
 
         get_target_property(target_type ${target} TYPE)
         set(is_library FALSE)
+        set(is_interface_lib FALSE)
         if (${target_type} STREQUAL "STATIC_LIBRARY" OR ${target_type} STREQUAL "SHARED_LIBRARY")
             set(is_library TRUE)
+        elseif(target_type STREQUAL "INTERFACE_LIBRARY")
+            set(is_interface_lib TRUE)
         endif()
+
         foreach(lib ${arg_PUBLIC_LIBRARIES} ${arg_LIBRARIES})
             # Automatically generate PCH for 'target' using public dependencies.
             # But only if 'target' is a library/module that does not specify its own PCH file.
@@ -58,9 +62,9 @@ function(qt_internal_extend_target target)
         # CMake versions less than 3.19 don't support adding the source files to the PRIVATE scope
         # of the INTERFACE libraries. These PRIVATE sources are only needed by IDEs to display
         # them in a project tree, so to avoid build issues and appearing the sources in
-        # INTERFACE_SOURCES property of HEADER_MODULE let's simply exclude them for compatibility
-        # with CMake versions less than 3.19.
-        if(NOT arg_HEADER_MODULE OR CMAKE_VERSION VERSION_GREATER_EQUAL "3.19")
+        # INTERFACE_SOURCES property of INTERFACE_LIBRARY let's simply exclude them for
+        # compatibility with CMake versions less than 3.19.
+        if(NOT is_interface_lib OR CMAKE_VERSION VERSION_GREATER_EQUAL "3.19")
             target_sources("${target}" PRIVATE ${arg_SOURCES} ${dbus_sources})
             if (arg_COMPILE_FLAGS)
                 set_source_files_properties(${arg_SOURCES} PROPERTIES
@@ -70,7 +74,7 @@ function(qt_internal_extend_target target)
 
         set(public_visibility_option "PUBLIC")
         set(private_visibility_option "PRIVATE")
-        if(arg_HEADER_MODULE)
+        if(is_interface_lib)
             set(public_visibility_option "INTERFACE")
             set(private_visibility_option "INTERFACE")
         endif()
@@ -90,7 +94,7 @@ function(qt_internal_extend_target target)
                             ${public_visibility_option} ${arg_PUBLIC_LINK_OPTIONS}
                             ${private_visibility_option} ${arg_LINK_OPTIONS})
 
-        if(NOT arg_HEADER_MODULE)
+        if(NOT is_interface_lib)
             set_property (TARGET "${target}" APPEND PROPERTY
                 AUTOMOC_MOC_OPTIONS "${arg_MOC_OPTIONS}"
             )
