@@ -82,9 +82,8 @@ enum QLibraryOperation {
 private slots:
     void initTestCase();
 
-    void load();
     void load_data();
-    void library_data();
+    void load();
     void resolve_data();
     void resolve();
     void unload_data();
@@ -268,11 +267,6 @@ void tst_QLibrary::resolve()
         QVERIFY( func == 0 );
     }
     library.unload();
-}
-
-void tst_QLibrary::library_data()
-{
-    QTest::addColumn<QString>("lib");
 }
 
 void tst_QLibrary::isLibrary_data()
