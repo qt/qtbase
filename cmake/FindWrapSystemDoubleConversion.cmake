@@ -28,14 +28,19 @@ if(NOT __double_conversion_found)
 
     find_path(DOUBLE_CONVERSION_INCLUDE_DIR
         NAMES
-            double-conversion.h
-        PATH_SUFFIXES
-            double-conversion
+            double-conversion/double-conversion.h
     )
-    find_library(DOUBLE_CONVERSION_LIBRARY NAMES double-conversion)
+
+    find_library(DOUBLE_CONVERSION_LIBRARY_RELEASE NAMES double-conversion)
+
+    # We assume a possible debug build of this library to be named with a d suffix.
+    # Adjust accordingly if a different naming scheme is established.
+    find_library(DOUBLE_CONVERSION_LIBRARY_DEBUG NAMES double-conversiond)
+
     include(SelectLibraryConfigurations)
     select_library_configurations(DOUBLE_CONVERSION)
     mark_as_advanced(DOUBLE_CONVERSION_INCLUDE_DIR DOUBLE_CONVERSION_LIBRARY)
+    set(DOUBLE_CONVERSION_INCLUDE_DIRS "${DOUBLE_CONVERSION_INCLUDE_DIR}")
 
     if(DOUBLE_CONVERSION_LIBRARIES AND DOUBLE_CONVERSION_INCLUDE_DIRS)
         set(__double_conversion_found TRUE)
