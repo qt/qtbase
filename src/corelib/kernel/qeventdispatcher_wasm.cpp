@@ -369,12 +369,8 @@ void QEventDispatcherWasm::handleApplicationExec()
 void QEventDispatcherWasm::handleDialogExec()
 {
     if (!qt_have_asyncify()) {
-        qWarning() << "Warning: dialog exec() is not supported on Qt for WebAssembly in this"
-                   << "configuration. Please use show() instead, or enable experimental support"
-                   << "for asyncify.\n"
-                   << "When using exec() (without asyncify) the dialog will show, the user can interact"
-                   << "exec() call never returns, stack content at the time of the exec() call"
-                   << "is leaked, and the exec() call may interfere with input event processing";
+        qWarning() << "Warning: exec() is not supported on Qt for WebAssembly in this configuration. Please build"
+                   << "with asyncify support, or use an asynchronous API like QDialog::open()";
         emscripten_sleep(1); // This call never returns
     }
     // For the asyncify case we do nothing here and wait for events in wait()
