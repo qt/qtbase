@@ -60,13 +60,6 @@ using namespace Qt::StringLiterals;
 
 #ifndef QT_NO_SYSTEMLOCALE
 Q_CONSTINIT static QSystemLocale *_systemLocale = nullptr;
-class QSystemLocaleSingleton: public QSystemLocale
-{
-public:
-    QSystemLocaleSingleton() : QSystemLocale(true) {}
-};
-
-Q_GLOBAL_STATIC(QSystemLocaleSingleton, QSystemLocale_globalSystemLocale)
 Q_CONSTINIT static QLocaleData systemLocaleData = {};
 #endif
 
@@ -723,12 +716,6 @@ QSystemLocale::QSystemLocale() : next(_systemLocale)
 
 /*!
     \internal
-*/
-QSystemLocale::QSystemLocale(bool)
-{ }
-
-/*!
-    \internal
     Deletes the object.
 */
 QSystemLocale::~QSystemLocale()
@@ -750,7 +737,12 @@ static const QSystemLocale *systemLocale()
 {
     if (_systemLocale)
         return _systemLocale;
-    return QSystemLocale_globalSystemLocale();
+
+    // As this is only ever instantiated with _systemLocale null, it is
+    // necessarily the ->next-most in any chain that may subsequently develop;
+    // and it won't be destructed until exit()-time.
+    static QSystemLocale globalInstance;
+    return &globalInstance;
 }
 
 static void updateSystemPrivate()
