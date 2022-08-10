@@ -3258,9 +3258,6 @@ private:
 
 void tst_QLocale::systemLocale_data()
 {
-#ifdef Q_OS_ANDROID
-    QSKIP("Android already has a QSystemLocale installed, we can't override it");
-#endif
     // Test uses MySystemLocale, so is platform-independent.
     QTest::addColumn<QString>("name");
     QTest::addColumn<QLocale::Language>("language");

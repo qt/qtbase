@@ -695,18 +695,28 @@ static QLocalePrivate *c_private()
 */
 
 /*!
-  Constructs a QSystemLocale object.
+    \internal
+    Constructs a QSystemLocale object.
 
-  The constructor will automatically install this object as the system locale,
-  if there's not one active.  It also resets the flag that'll prompt
-  QLocale::system() to re-initialize its data, so that instantiating a
-  QSystemLocale transiently (doesn't install the transient as system locale if
-  there was one already and) triggers an update to the system locale's data.
+    The constructor will automatically install this object as the system locale.
+    It and the destructor maintain a stack of system locales, with the
+    most-recently-created instance (that hasn't yet been deleted) used as the
+    system locale. This is only intended as a way to let a platform plugin
+    install its own system locale, overriding what might otherwise be provided
+    for its class of platform (as Android does, differing from Linux), and to
+    let tests transiently over-ride the system or plugin-supplied one. As such,
+    there should not be diverse threads creating and destroying QSystemLocale
+    instances concurrently, so no attempt is made at thread-safety in managing
+    the stack.
+
+    This constructor also resets the flag that'll prompt QLocale::system() to
+    re-initialize its data, so that instantiating a QSystemLocale (even
+    transiently) triggers a refresh of the system locale's data. This is
+    exploited by some test code.
 */
-QSystemLocale::QSystemLocale()
+QSystemLocale::QSystemLocale() : next(_systemLocale)
 {
-    if (!_systemLocale)
-        _systemLocale = this;
+    _systemLocale = this;
 
     systemLocaleData.m_language_id = 0;
 }
@@ -718,14 +728,21 @@ QSystemLocale::QSystemLocale(bool)
 { }
 
 /*!
-  Deletes the object.
+    \internal
+    Deletes the object.
 */
 QSystemLocale::~QSystemLocale()
 {
     if (_systemLocale == this) {
-        _systemLocale = nullptr;
+        _systemLocale = next;
 
+        // Change to system locale => force refresh.
         systemLocaleData.m_language_id = 0;
+    } else {
+        for (QSystemLocale *p = _systemLocale; p; p = p->next) {
+            if (p->next == this)
+                p->next = next;
+        }
     }
 }
 
