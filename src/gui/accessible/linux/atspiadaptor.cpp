@@ -167,6 +167,9 @@ QString AtSpiAdaptor::introspect(const QString &path) const
                 "      <arg direction=\"out\" type=\"(so)\"/>\n"
                 "      <annotation value=\"QSpiObjectReference\" name=\"org.qtproject.QtDBus.QtTypeName.Out0\"/>\n"
                 "    </method>\n"
+                "    <method name=\"GetAccessibleId\">\n"
+                "      <arg direction=\"out\" type=\"s\"/>\n"
+                "    </method>\n"
                 "  </interface>\n"
                 );
 
@@ -1467,6 +1470,26 @@ void AtSpiAdaptor::registerApplication()
     delete registry;
 }
 
+namespace {
+QString accessibleIdForAccessible(QAccessibleInterface *accessible)
+{
+    QString result;
+    while (accessible) {
+        if (!result.isEmpty())
+            result.prepend(u'.');
+        if (auto obj = accessible->object()) {
+            const QString name = obj->objectName();
+            if (!name.isEmpty())
+                result.prepend(name);
+            else
+                result.prepend(QString::fromUtf8(obj->metaObject()->className()));
+        }
+        accessible = accessible->parent();
+    }
+    return result;
+}
+} // namespace
+
 // Accessible
 bool AtSpiAdaptor::accessibleInterface(QAccessibleInterface *interface, const QString &function, const QDBusMessage &message, const QDBusConnection &connection)
 {
@@ -1553,6 +1576,9 @@ bool AtSpiAdaptor::accessibleInterface(QAccessibleInterface *interface, const QS
             children << ref;
         }
         connection.send(message.createReply(QVariant::fromValue(children)));
+    } else if (function == "GetAccessibleId"_L1) {
+        sendReply(connection, message,
+                  QVariant::fromValue(QDBusVariant(accessibleIdForAccessible(interface))));
     } else {
         qCDebug(lcAccessibilityAtspi) << "WARNING: AtSpiAdaptor::accessibleInterface does not implement " << function << message.path();
         return false;

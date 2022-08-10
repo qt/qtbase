@@ -154,6 +154,7 @@ void tst_QAccessibilityLinux::initTestCase()
     QVERIFY(!address.isEmpty());
 
     m_window = new AccessibleTestWindow();
+    m_window->setObjectName("mainWindow"_L1);
     m_window->show();
 
     QVERIFY(QTest::qWaitForWindowExposed(m_window));
@@ -211,7 +212,10 @@ bool hasState(QDBusInterface *interface, AtspiStateType state)
 void tst_QAccessibilityLinux::testLabel()
 {
     QLabel *l = new QLabel(m_window);
+    l->setObjectName("theObjectName"_L1);
     l->setText("Hello A11y");
+    m_window->addWidget(l);
+    auto a11yEmpty = new QLabel(m_window);
     m_window->addWidget(l);
 
     // Application
@@ -224,6 +228,8 @@ void tst_QAccessibilityLinux::testLabel()
     QCOMPARE(getChildren(labelInterface).count(), 0);
     QCOMPARE(labelInterface->call(QDBus::Block, "GetRoleName").arguments().first().toString(), QLatin1String("label"));
     QCOMPARE(labelInterface->call(QDBus::Block, "GetRole").arguments().first().toUInt(), 29u);
+    QCOMPARE(labelInterface->call(QDBus::Block, "GetAccessibleId").arguments().first().toString(),
+             "mainWindow.theObjectName"_L1);
     QCOMPARE(getParent(labelInterface), mainWindow->path());
     QVERIFY(!hasState(labelInterface, ATSPI_STATE_EDITABLE));
     QVERIFY(hasState(labelInterface, ATSPI_STATE_READ_ONLY));
@@ -231,7 +237,12 @@ void tst_QAccessibilityLinux::testLabel()
     l->setText("New text");
     QCOMPARE(labelInterface->property("Name").toString(), l->text());
 
+    auto *a11yEmptyInterface = getInterface(children.at(1), "org.a11y.atspi.Accessible");
+    QCOMPARE(a11yEmptyInterface->call(QDBus::Block, "GetAccessibleId").arguments().first().toString(),
+             "mainWindow.QLabel"_L1);
+
     m_window->clearChildren();
+    delete a11yEmptyInterface;
     delete labelInterface;
 }
 
