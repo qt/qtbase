@@ -81,6 +81,7 @@ private:
     QVulkanInstance *m_instance;
     VkPhysicalDevice m_physDev = VK_NULL_HANDLE;
     PFN_vkEnumeratePhysicalDevices m_enumeratePhysicalDevices = nullptr;
+    PFN_vkGetPhysicalDeviceSurfaceSupportKHR m_getPhysicalDeviceSurfaceSupportKHR = nullptr;
 #if VK_KHR_display
     PFN_vkGetPhysicalDeviceDisplayPropertiesKHR m_getPhysicalDeviceDisplayPropertiesKHR = nullptr;
     PFN_vkGetDisplayModePropertiesKHR m_getDisplayModePropertiesKHR = nullptr;

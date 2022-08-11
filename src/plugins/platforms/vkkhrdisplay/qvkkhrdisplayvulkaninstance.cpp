@@ -81,6 +81,9 @@ void QVkKhrDisplayVulkanInstance::createOrAdoptInstance()
     m_enumeratePhysicalDevices = (PFN_vkEnumeratePhysicalDevices)
         m_vkGetInstanceProcAddr(m_vkInst, "vkEnumeratePhysicalDevices");
 
+    m_getPhysicalDeviceSurfaceSupportKHR = reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceSupportKHR>(
+        m_vkGetInstanceProcAddr(m_vkInst, "vkGetPhysicalDeviceSurfaceSupportKHR"));
+
     // Use for first physical device, unless overridden by QT_VK_PHYSICAL_DEVICE_INDEX.
     // This behavior matches what the Vulkan backend of QRhi would do.
 
@@ -116,10 +119,14 @@ bool QVkKhrDisplayVulkanInstance::supportsPresent(VkPhysicalDevice physicalDevic
                                                   uint32_t queueFamilyIndex,
                                                   QWindow *window)
 {
-    Q_UNUSED(physicalDevice);
-    Q_UNUSED(queueFamilyIndex);
-    Q_UNUSED(window);
-    return true;
+    if (!m_getPhysicalDeviceSurfaceSupportKHR)
+        return true;
+
+    VkSurfaceKHR surface = QVulkanInstance::surfaceForWindow(window);
+    VkBool32 supported = false;
+    m_getPhysicalDeviceSurfaceSupportKHR(physicalDevice, queueFamilyIndex, surface, &supported);
+
+    return supported;
 }
 
 bool QVkKhrDisplayVulkanInstance::chooseDisplay()
