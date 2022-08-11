@@ -47,13 +47,6 @@ inline void qt_noop(void) {}
 #include <QtCore/qassert.h>
 #include <QtCore/qtypes.h>
 
-#if defined (__ELF__)
-#  define Q_OF_ELF
-#endif
-#if defined (__MACH__) && defined (__APPLE__)
-#  define Q_OF_MACH_O
-#endif
-
 /*
    Avoid "unused parameter" warnings
 */
