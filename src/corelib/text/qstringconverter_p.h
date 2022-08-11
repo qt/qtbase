@@ -306,6 +306,7 @@ struct Q_CORE_EXPORT QLocal8Bit
     static int checkUtf8();
     static bool isUtf8()
     {
+        Q_CONSTINIT
         static QBasicAtomicInteger<qint8> result = { 0 };
         int r = result.loadRelaxed();
         if (r == 0) {
