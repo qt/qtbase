@@ -3,11 +3,14 @@
 
 #include "qunicodetools_p.h"
 
+#include "qmutex.h"
 #include "qunicodetables_p.h"
 #include "qvarlengtharray.h"
 #if QT_CONFIG(library)
 #include "qlibrary.h"
 #endif
+
+#include <mutex>
 
 #include <limits.h>
 
@@ -1405,11 +1408,15 @@ Q_CONSTINIT static th_next_cell_def th_next_cell = nullptr;
 
 static int init_libthai() {
 #if QT_CONFIG(library)
-    Q_CONSTINIT static bool initialized = false;
-    if (!initialized && (!th_brk || !th_next_cell)) {
-        th_brk = reinterpret_cast<th_brk_def>(QLibrary::resolve("thai"_L1, static_cast<int>(LIBTHAI_MAJOR), "th_brk"));
-        th_next_cell = (th_next_cell_def)QLibrary::resolve("thai"_L1, LIBTHAI_MAJOR, "th_next_cell");
-        initialized = true;
+    Q_CONSTINIT static QBasicAtomicInt initialized = Q_BASIC_ATOMIC_INITIALIZER(false);
+    Q_CONSTINIT static QBasicMutex mutex;
+    if (!initialized.loadAcquire()) {
+        const auto locker = std::scoped_lock(mutex);
+        if (!initialized.loadAcquire()) {
+            th_brk = reinterpret_cast<th_brk_def>(QLibrary::resolve("thai"_L1, LIBTHAI_MAJOR, "th_brk"));
+            th_next_cell = (th_next_cell_def)QLibrary::resolve("thai"_L1, LIBTHAI_MAJOR, "th_next_cell");
+            initialized.storeRelease(true);
+        }
     }
     if (th_brk && th_next_cell)
         return 1;
