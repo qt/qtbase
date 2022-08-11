@@ -497,7 +497,7 @@
 */
 
 /*!
-    \fn int QUtf8StringView::length() const
+    \fn QUtf8StringView::length() const
 
     Same as size().
 

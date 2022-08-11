@@ -5643,7 +5643,7 @@ QString QString::fromUtf8(QByteArrayView ba)
     host byte order is assumed.
 
     This function is slow compared to the other Unicode conversions.
-    Use QString(const QChar *, int) or QString(const QChar *) if possible.
+    Use QString(const QChar *, qsizetype) or QString(const QChar *) if possible.
 
     QString makes a deep copy of the Unicode data.
 
