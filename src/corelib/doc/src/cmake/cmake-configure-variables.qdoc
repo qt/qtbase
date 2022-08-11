@@ -156,6 +156,31 @@ Each variable can be used to specify the path to Qt for Android for the correspo
 */
 
 /*!
+\page cmake-variable-QT_ANDROID_SIGN_AAB.html
+\ingroup cmake-variables-qtcore
+
+\title QT_ANDROID_SIGN_AAB
+\target cmake-variable-QT_ANDROID_SIGN_AAB
+
+\summary {Sign the .aab package with the specified keystore, alias and store password.}
+\cmakevariablesince 6.4
+\preliminarycmakevariable
+\cmakevariableandroidonly
+
+Sign the resulting package. The path of the keystore file, the alias of the key and passwords
+have to be specified by additional environment variables:
+\badcode
+    QT_ANDROID_KEYSTORE_PATH
+    QT_ANDROID_KEYSTORE_ALIAS
+    QT_ANDROID_KEYSTORE_STORE_PASS
+    QT_ANDROID_KEYSTORE_KEY_PASS
+\endcode
+Mentioned variables are used internally by \l{androiddeployqt}.
+
+\sa{androiddeployqt}
+*/
+
+/*!
 \page cmake-variable-QT_ANDROID_SIGN_APK.html
 \ingroup cmake-variables-qtcore
 

@@ -391,8 +391,13 @@ function(qt6_android_add_apk_target target)
         COMMENT "Copying ${target} binary to apk folder"
     )
 
+    set(sign_apk "")
     if(QT_ANDROID_SIGN_APK)
         set(sign_apk "--sign")
+    endif()
+    set(sign_aab "")
+    if(QT_ANDROID_SIGN_AAB)
+        set(sign_aab "--sign")
     endif()
 
     set(extra_args "")
@@ -463,6 +468,7 @@ function(qt6_android_add_apk_target target)
             --output ${apk_final_dir}
             --apk ${apk_final_file_path}
             --aab
+            ${sign_aab}
             ${extra_args}
         COMMENT "Creating AAB for ${target}"
     )
