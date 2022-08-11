@@ -14,6 +14,8 @@
 #ifndef QCOMPILERDETECTION_H
 #define QCOMPILERDETECTION_H
 
+#include <QtCore/qprocessordetection.h>
+
 /*
    The compiler, must be one of: (Q_CC_x)
 
@@ -1202,5 +1204,77 @@ static_assert(!std::is_convertible_v<std::nullptr_t, bool>,
 #  error "You must build your code with position independent code if Qt was configured with -reduce-relocations. "\
          "Compile your code with -fPIC (and not with -fPIE)."
 #endif
+
+#ifdef Q_PROCESSOR_X86_32
+#  if defined(Q_CC_GNU)
+#    define QT_FASTCALL __attribute__((regparm(3)))
+#  elif defined(Q_CC_MSVC)
+#    define QT_FASTCALL __fastcall
+#  else
+#    define QT_FASTCALL
+#  endif
+#else
+#  define QT_FASTCALL
+#endif
+
+// enable gcc warnings for printf-style functions
+#if defined(Q_CC_GNU) && !defined(__INSURE__)
+#  if defined(Q_CC_MINGW) && !defined(Q_CC_CLANG)
+#    define Q_ATTRIBUTE_FORMAT_PRINTF(A, B) \
+         __attribute__((format(gnu_printf, (A), (B))))
+#  else
+#    define Q_ATTRIBUTE_FORMAT_PRINTF(A, B) \
+         __attribute__((format(printf, (A), (B))))
+#  endif
+#else
+#  define Q_ATTRIBUTE_FORMAT_PRINTF(A, B)
+#endif
+
+#ifdef Q_CC_MSVC
+#  define Q_NEVER_INLINE __declspec(noinline)
+#  define Q_ALWAYS_INLINE __forceinline
+#elif defined(Q_CC_GNU)
+#  define Q_NEVER_INLINE __attribute__((noinline))
+#  define Q_ALWAYS_INLINE inline __attribute__((always_inline))
+#else
+#  define Q_NEVER_INLINE
+#  define Q_ALWAYS_INLINE inline
+#endif
+
+//defines the type for the WNDPROC on windows
+//the alignment needs to be forced for sse2 to not crash with mingw
+#if defined(Q_OS_WIN)
+#  if defined(Q_CC_MINGW) && defined(Q_PROCESSOR_X86_32)
+#    define QT_ENSURE_STACK_ALIGNED_FOR_SSE __attribute__ ((force_align_arg_pointer))
+#  else
+#    define QT_ENSURE_STACK_ALIGNED_FOR_SSE
+#  endif
+#  define QT_WIN_CALLBACK CALLBACK QT_ENSURE_STACK_ALIGNED_FOR_SSE
+#endif
+
+#ifdef __cpp_conditional_explicit
+#define Q_IMPLICIT explicit(false)
+#else
+#define Q_IMPLICIT
+#endif
+
+#if defined(__cplusplus)
+
+#ifdef __cpp_constinit
+# if defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
+   // https://developercommunity.visualstudio.com/t/C:-constinit-for-an-optional-fails-if-/1406069
+#  define Q_CONSTINIT
+# else
+#  define Q_CONSTINIT constinit
+# endif
+#elif defined(__has_cpp_attribute) && __has_cpp_attribute(clang::require_constant_initialization)
+# define Q_CONSTINIT [[clang::require_constant_initialization]]
+#elif defined(Q_CC_GNU_ONLY) && Q_CC_GNU >= 1000
+# define Q_CONSTINIT __constinit
+#else
+# define Q_CONSTINIT
+#endif
+
+#endif // __cplusplus
 
 #endif // QCOMPILERDETECTION_H
