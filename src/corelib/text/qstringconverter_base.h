@@ -129,7 +129,7 @@ protected:
         : iface(nullptr)
     {}
     constexpr explicit QStringConverter(Encoding encoding, Flags f)
-        : iface(&encodingInterfaces[int(encoding)]), state(f)
+        : iface(&encodingInterfaces[qsizetype(encoding)]), state(f)
     {}
     constexpr explicit QStringConverter(const Interface *i) noexcept
         : iface(i)
