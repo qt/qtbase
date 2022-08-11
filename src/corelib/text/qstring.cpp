@@ -7938,9 +7938,9 @@ static void checkArgEscape(QStringView s)
 struct ArgEscapeData
 {
     int min_escape;            // lowest escape sequence number
-    int occurrences;           // number of occurrences of the lowest escape sequence number
-    int locale_occurrences;    // number of occurrences of the lowest escape sequence number that
-                               // contain 'L'
+    qsizetype occurrences;     // number of occurrences of the lowest escape sequence number
+    qsizetype locale_occurrences; // number of occurrences of the lowest escape sequence number that
+                                  // contain 'L'
     qsizetype escape_len;      // total length of escape sequences which will be replaced
 };
 
@@ -8033,7 +8033,7 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, qsizetyp
     QString result(result_len, Qt::Uninitialized);
     QChar *rc = const_cast<QChar *>(result.unicode());
     QChar *const result_end = rc + result_len;
-    int repl_cnt = 0;
+    qsizetype repl_cnt = 0;
 
     const QChar *c = s.begin();
     const QChar *const uc_end = s.end();
