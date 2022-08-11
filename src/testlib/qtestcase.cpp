@@ -358,7 +358,9 @@ static void printTestRunTime()
 {
     const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
     const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
-    writeToStderr("\n         Function time: ", asyncSafeToString(msecsFunctionTime),
+    const char *const name = QTest::currentTestFunction();
+    writeToStderr("\n         ", name ? name : "[Non-test]",
+                  " function time: ", asyncSafeToString(msecsFunctionTime),
                   "ms, total time: ", asyncSafeToString(msecsTotalTime), "ms\n");
 }
 
@@ -1878,12 +1880,14 @@ private:
         const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
         const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
         const void *exceptionAddress = exInfo->ExceptionRecord->ExceptionAddress;
-        fprintf(stderr, "A crash occurred in %s.\n"
-                        "Function time: %dms Total time: %dms\n\n"
+        fprintf(stderr, "A crash occurred in %s.\n", appName);
+        if (const char *name = QTest::currentTestFunction())
+            fprintf(stderr, "While testing %s\n", name);
+        fprintf(stderr, "Function time: %dms Total time: %dms\n\n"
                         "Exception address: 0x%p\n"
                         "Exception code   : 0x%lx\n",
-                appName, msecsFunctionTime, msecsTotalTime,
-                exceptionAddress, exInfo->ExceptionRecord->ExceptionCode);
+                msecsFunctionTime, msecsTotalTime, exceptionAddress,
+                exInfo->ExceptionRecord->ExceptionCode);
 
         DebugSymbolResolver resolver(GetCurrentProcess());
         if (resolver.isValid()) {
