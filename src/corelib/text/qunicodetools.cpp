@@ -1266,12 +1266,12 @@ static inline Form form(unsigned short uc) {
 static qsizetype indic_nextSyllableBoundary(QChar::Script script, const char16_t *s, qsizetype start, qsizetype end, bool *invalid)
 {
     *invalid = false;
-    IDEBUG("indic_nextSyllableBoundary: start=%d, end=%d", int(start), int(end));
+    IDEBUG("indic_nextSyllableBoundary: start=%lld, end=%lld", qlonglong(start), qlonglong(end));
     const char16_t *uc = s+start;
 
     qsizetype pos = 0;
     Form state = form(uc[pos]);
-    IDEBUG("state[%d]=%d (uc=%4x)", int(pos), state, uc[pos]);
+    IDEBUG("state[%lld]=%d (uc=%4x)", qlonglong(pos), state, uc[pos]);
     pos++;
 
     if (state != Consonant && state != IndependentVowel) {
@@ -1282,7 +1282,7 @@ static qsizetype indic_nextSyllableBoundary(QChar::Script script, const char16_t
 
     while (pos < end - start) {
         Form newState = form(uc[pos]);
-        IDEBUG("state[%d]=%d (uc=%4x)", int(pos), newState, uc[pos]);
+        IDEBUG("state[%lld]=%d (uc=%4x)", qlonglong(pos), newState, uc[pos]);
         switch (newState) {
         case Control:
             newState = state;
@@ -1833,7 +1833,7 @@ static qsizetype myanmar_nextSyllableBoundary(const char16_t *s, qsizetype start
         if (pos == start)
             *invalid = (bool)(charClass & Mymr_CF_DOTTED_CIRCLE);
 
-        MMDEBUG("state[%d]=%d class=%8x (uc=%4x)", int(pos - start), state, charClass, *uc);
+        MMDEBUG("state[%lld]=%d class=%8x (uc=%4x)", qlonglong(pos - start), state, charClass, *uc);
 
         if (state < 0) {
             if (state < -1)
@@ -2168,7 +2168,7 @@ static qsizetype khmer_nextSyllableBoundary(const char16_t *s, qsizetype start, 
         }
         state = khmerStateTable[state][charClass & CF_CLASS_MASK];
 
-        KHDEBUG("state[%d]=%d class=%8lx (uc=%4x)", int(pos - start), state,
+        KHDEBUG("state[%lld]=%d class=%8lx (uc=%4x)", qlonglong(pos - start), state,
                 charClass, *uc );
 
         if (state < 0) {
