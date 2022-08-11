@@ -1,5 +1,0 @@
-********* Start testing of tst_Crashes *********
-Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
-PASS   : tst_Crashes::initTestCase()
-Received signal 11 (SIGSEGV), code 1, for address 0x0000000000000004
-         Function time: ms, total time: ms
