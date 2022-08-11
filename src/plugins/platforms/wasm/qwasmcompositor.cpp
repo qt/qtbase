@@ -739,23 +739,27 @@ void QWasmCompositor::WindowManipulation::resizeWindow(const QPoint& amount)
 {
     const auto& minShrink = std::get<ResizeState>(m_state->operationSpecific).m_minShrink;
     const auto& maxGrow = std::get<ResizeState>(m_state->operationSpecific).m_maxGrow;
-    const auto& resizeMode = std::get<ResizeState>(m_state->operationSpecific).m_resizeMode;
+    const auto &resizeEdges = std::get<ResizeState>(m_state->operationSpecific).m_resizeEdges;
 
     const QPoint cappedGrowVector(
-        std::min(maxGrow.x(), std::max(minShrink.x(),
-            (resizeMode & Left) ? -amount.x() : (resizeMode & Right) ? amount.x() : 0)),
-        std::min(maxGrow.y(), std::max(minShrink.y(),
-            (resizeMode & Top) ? -amount.y() : (resizeMode & Bottom) ? amount.y() : 0)));
+            std::min(maxGrow.x(),
+                     std::max(minShrink.x(),
+                              (resizeEdges & Qt::Edge::LeftEdge)            ? -amount.x()
+                                      : (resizeEdges & Qt::Edge::RightEdge) ? amount.x()
+                                                                            : 0)),
+            std::min(maxGrow.y(),
+                     std::max(minShrink.y(),
+                              (resizeEdges & Qt::Edge::TopEdge)              ? -amount.y()
+                                      : (resizeEdges & Qt::Edge::BottomEdge) ? amount.y()
+                                                                             : 0)));
 
     const auto& initialBounds =
         std::get<ResizeState>(m_state->operationSpecific).m_initialWindowBounds;
-    m_state->window->setGeometry(
-        initialBounds.adjusted(
-            (resizeMode & Left) ? -cappedGrowVector.x() : 0,
-            (resizeMode & Top) ? -cappedGrowVector.y() : 0,
-            (resizeMode & Right) ? cappedGrowVector.x() : 0,
-            (resizeMode & Bottom) ? cappedGrowVector.y() : 0
-    ));
+    m_state->window->setGeometry(initialBounds.adjusted(
+            (resizeEdges & Qt::Edge::LeftEdge) ? -cappedGrowVector.x() : 0,
+            (resizeEdges & Qt::Edge::TopEdge) ? -cappedGrowVector.y() : 0,
+            (resizeEdges & Qt::Edge::RightEdge) ? cappedGrowVector.x() : 0,
+            (resizeEdges & Qt::Edge::BottomEdge) ? cappedGrowVector.y() : 0));
 }
 
 void QWasmCompositor::onTopWindowChanged()
@@ -866,8 +870,8 @@ bool QWasmCompositor::processPointer(const PointerEvent& event)
             const bool isOnResizeRegion = wasmTargetWindow->isPointOnResizeRegion(targetPointInScreenCoords);
 
             if (isTargetWindowResizable && isOnResizeRegion && !isTargetWindowBlocked) {
-                const QCursor resizingCursor = QWasmEventTranslator::cursorForMode(
-                    wasmTargetWindow->resizeModeAtPoint(targetPointInScreenCoords));
+                const QCursor resizingCursor = QWasmEventTranslator::cursorForEdges(
+                        wasmTargetWindow->resizeEdgesAtPoint(targetPointInScreenCoords));
 
                 if (resizingCursor != targetWindow->cursor()) {
                     m_isResizeCursorDisplayed = true;
@@ -988,7 +992,8 @@ void QWasmCompositor::WindowManipulation::onPointerDown(
         });
     } else if (asWasmWindow(windowAtPoint)->isPointOnResizeRegion(pointInScreenCoords)) {
         operationSpecific = std::make_unique<std::variant<ResizeState, MoveState>>(ResizeState{
-                .m_resizeMode = asWasmWindow(windowAtPoint)->resizeModeAtPoint(pointInScreenCoords),
+                .m_resizeEdges =
+                        asWasmWindow(windowAtPoint)->resizeEdgesAtPoint(pointInScreenCoords),
                 .m_originInScreenCoords = pointInScreenCoords,
                 .m_initialWindowBounds = windowAtPoint->geometry(),
                 .m_minShrink =

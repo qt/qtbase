@@ -245,45 +245,24 @@ bool QWasmWindow::isPointOnResizeRegion(QPoint point) const
             && resizeRegion().contains(point);
 }
 
-QWasmCompositor::ResizeMode QWasmWindow::resizeModeAtPoint(QPoint point) const
+Qt::Edges QWasmWindow::resizeEdgesAtPoint(QPoint point) const
 {
-    QPoint p1 = window()->frameGeometry().topLeft() - QPoint(5, 5);
-    QPoint p2 = window()->frameGeometry().bottomRight() + QPoint(5, 5);
-    int corner = 20;
+    const QPoint topLeft = window()->frameGeometry().topLeft() - QPoint(5, 5);
+    const QPoint bottomRight = window()->frameGeometry().bottomRight() + QPoint(5, 5);
+    const int gripAreaWidth = std::min(20, (bottomRight.y() - topLeft.y()) / 2);
 
-    QRect top(p1, QPoint(p2.x(), p1.y() + corner));
-    QRect middle(QPoint(p1.x(), p1.y() + corner), QPoint(p2.x(), p2.y() - corner));
-    QRect bottom(QPoint(p1.x(), p2.y() - corner), p2);
+    const QRect top(topLeft, QPoint(bottomRight.x(), topLeft.y() + gripAreaWidth));
+    const QRect bottom(QPoint(topLeft.x(), bottomRight.y() - gripAreaWidth), bottomRight);
+    const QRect left(topLeft, QPoint(topLeft.x() + gripAreaWidth, bottomRight.y()));
+    const QRect right(QPoint(bottomRight.x() - gripAreaWidth, topLeft.y()), bottomRight);
 
-    QRect left(p1, QPoint(p1.x() + corner, p2.y()));
-    QRect center(QPoint(p1.x() + corner, p1.y()), QPoint(p2.x() - corner, p2.y()));
-    QRect right(QPoint(p2.x() - corner, p1.y()), p2);
+    Q_ASSERT(!top.intersects(bottom));
+    Q_ASSERT(!left.intersects(right));
 
-    if (top.contains(point)) {
-        // Top
-        if (left.contains(point))
-            return QWasmCompositor::ResizeTopLeft;
-        if (center.contains(point))
-            return QWasmCompositor::ResizeTop;
-        if (right.contains(point))
-            return QWasmCompositor::ResizeTopRight;
-    } else if (middle.contains(point)) {
-        // Middle
-        if (left.contains(point))
-            return QWasmCompositor::ResizeLeft;
-        if (right.contains(point))
-            return QWasmCompositor::ResizeRight;
-    } else if (bottom.contains(point)) {
-        // Bottom
-        if (left.contains(point))
-            return QWasmCompositor::ResizeBottomLeft;
-        if (center.contains(point))
-            return QWasmCompositor::ResizeBottom;
-        if (right.contains(point))
-            return QWasmCompositor::ResizeBottomRight;
-    }
-
-    return QWasmCompositor::ResizeNone;
+    Qt::Edges edges(top.contains(point) ? Qt::Edge::TopEdge : Qt::Edge(0));
+    edges |= bottom.contains(point) ? Qt::Edge::BottomEdge : Qt::Edge(0);
+    edges |= left.contains(point) ? Qt::Edge::LeftEdge : Qt::Edge(0);
+    return edges | (right.contains(point) ? Qt::Edge::RightEdge : Qt::Edge(0));
 }
 
 QRect getSubControlRect(const QWasmWindow *window, QWasmCompositor::SubControls subControl)

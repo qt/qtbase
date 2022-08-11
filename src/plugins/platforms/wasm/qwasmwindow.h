@@ -53,7 +53,7 @@ public:
     QRegion resizeRegion() const;
     bool isPointOnTitle(QPoint point) const;
     bool isPointOnResizeRegion(QPoint point) const;
-    QWasmCompositor::ResizeMode resizeModeAtPoint(QPoint point) const;
+    Qt::Edges resizeEdgesAtPoint(QPoint point) const;
     QRect maxButtonRect() const;
     QRect minButtonRect() const;
     QRect closeButtonRect() const;

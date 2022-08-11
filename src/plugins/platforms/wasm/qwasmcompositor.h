@@ -60,25 +60,6 @@ public:
     };
     Q_DECLARE_FLAGS(StateFlags, QWasmStateFlag)
 
-    enum ResizeDimension {
-        Left = 1,
-        Right = 1 << 1,
-        Top = 1 << 2,
-        Bottom = 1 << 3
-    };
-
-    enum ResizeMode {
-        ResizeNone,
-        ResizeTopLeft = Top | Left,
-        ResizeTop = Top,
-        ResizeTopRight = Top | Right,
-        ResizeRight = Right,
-        ResizeBottomRight = Bottom | Right,
-        ResizeBottom = Bottom,
-        ResizeBottomLeft = Bottom | Left,
-        ResizeLeft = Left
-    };
-
     struct QWasmTitleBarOptions {
         QRect rect;
         Qt::WindowFlags flags;
@@ -153,7 +134,7 @@ private:
 
     private:
         struct ResizeState {
-            ResizeMode m_resizeMode;
+            Qt::Edges m_resizeEdges;
             QPoint m_originInScreenCoords;
             QRect m_initialWindowBounds;
             const QPoint m_minShrink;

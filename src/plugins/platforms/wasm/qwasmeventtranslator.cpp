@@ -283,23 +283,25 @@ QWasmEventTranslator::QWasmEventTranslator() = default;
 
 QWasmEventTranslator::~QWasmEventTranslator() = default;
 
-QCursor QWasmEventTranslator::cursorForMode(QWasmCompositor::ResizeMode m)
+QCursor QWasmEventTranslator::cursorForEdges(Qt::Edges edges)
 {
-    switch (m) {
-    case QWasmCompositor::ResizeTopLeft:
-    case QWasmCompositor::ResizeBottomRight:
+    switch (edges) {
+    case Qt::Edge::LeftEdge | Qt::Edge::TopEdge:
+    case Qt::Edge::RightEdge | Qt::Edge::BottomEdge:
         return Qt::SizeFDiagCursor;
-    case QWasmCompositor::ResizeBottomLeft:
-    case QWasmCompositor::ResizeTopRight:
+    case Qt::Edge::LeftEdge | Qt::Edge::BottomEdge:
+    case Qt::Edge::RightEdge | Qt::Edge::TopEdge:
         return Qt::SizeBDiagCursor;
-    case QWasmCompositor::ResizeTop:
-    case QWasmCompositor::ResizeBottom:
+    case Qt::Edge::TopEdge:
+    case Qt::Edge::BottomEdge:
         return Qt::SizeVerCursor;
-    case QWasmCompositor::ResizeLeft:
-    case QWasmCompositor::ResizeRight:
+    case Qt::Edge::LeftEdge:
+    case Qt::Edge::RightEdge:
         return Qt::SizeHorCursor;
-    case QWasmCompositor::ResizeNone:
+    case Qt::Edge(0):
         return Qt::ArrowCursor;
+    default:
+        Q_ASSERT(false); // Bad edges
     }
     return Qt::ArrowCursor;
 }
