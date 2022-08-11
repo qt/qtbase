@@ -316,13 +316,6 @@ Q_NORETURN Q_DECL_COLD_FUNCTION Q_CORE_EXPORT void qTerminate() noexcept;
 
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qSharedBuild() noexcept;
 
-#ifndef Q_OUTOFLINE_TEMPLATE
-#  define Q_OUTOFLINE_TEMPLATE
-#endif
-#ifndef Q_INLINE_TEMPLATE
-#  define Q_INLINE_TEMPLATE inline
-#endif
-
 /*
    Debugging and error handling
 */

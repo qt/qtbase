@@ -1275,6 +1275,13 @@ static_assert(!std::is_convertible_v<std::nullptr_t, bool>,
 # define Q_CONSTINIT
 #endif
 
+#ifndef Q_OUTOFLINE_TEMPLATE
+#  define Q_OUTOFLINE_TEMPLATE
+#endif
+#ifndef Q_INLINE_TEMPLATE
+#  define Q_INLINE_TEMPLATE inline
+#endif
+
 #endif // __cplusplus
 
 #endif // QCOMPILERDETECTION_H
