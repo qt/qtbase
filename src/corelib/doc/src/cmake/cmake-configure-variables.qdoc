@@ -98,11 +98,11 @@ supplied by the Qt installer, with the corresponding naming of the directories.
 The typical directory structure looks as below:
 \badcode
 /path/to/Qt/6.x.x
-    android_armv7
-    android_arm64_v8a
-    android_x86
-    android_x86_64
-    ...
+    android_armv7
+    android_arm64_v8a
+    android_x86
+    android_x86_64
+    ...
 \endcode
 The auto-detected paths can be customized using one of \c{QT_PATH_ANDROID_ABI_<ABI>} variables.
 
@@ -348,4 +348,23 @@ via \l{add_subdirectory()}, \l{FetchContent_MakeAvailable()} or other similar
 methods provided by CMake.
 
 \sa {qt6_standard_project_setup}{qt_standard_project_setup()}
+*/
+
+/*!
+\page cmake-variable-QT_IOS_LAUNCH_SCREEN.html
+\ingroup cmake-variables-qtcore
+
+\title QT_IOS_LAUNCH_SCREEN
+\target cmake-variable-QT_IOS_LAUNCH_SCREEN
+
+\summary {Path to iOS launch screen storyboard used by all targets}
+
+\cmakevariablesince 6.4
+\preliminarycmakevariable
+\cmakevariableiosonly
+
+Specifies the path to an iOS launch screen storyboard file that will be used
+by all targets within a project.
+
+\sa {Launch Screens and Launch Images}
 */

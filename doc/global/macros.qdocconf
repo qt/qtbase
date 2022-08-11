@@ -85,3 +85,6 @@ macro.cmakevariableandroidonly = "\\note This variable is used only if targeting
 macro.versionlessCMakeCommandsNote = "If \\l{Versionless commands}{versionless commands} are disabled, use \\c{\1} instead. It supports the same set of arguments as this command."
 
 macro.cmakepropertywebassemblyonly = "\\note This property is used only if targeting the WebAssembly platform."
+
+macro.cmakepropertyiosonly = "\\note This property is used only if targeting iOS."
+macro.cmakevariableiosonly = "\\note This variable is used only if targeting iOS."
