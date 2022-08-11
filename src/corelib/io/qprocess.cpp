@@ -483,7 +483,7 @@ void QProcessPrivate::Channel::clear()
     \endlist
 
     To avoid platform-dependent behavior or any issues with how the current
-    application was launched, it is adviseable to always pass an absolute path
+    application was launched, it is advisable to always pass an absolute path
     to the executable to be launched. For auxiliary binaries shipped with the
     application, one can construct such a path starting with
     QCoreApplication::applicationDirPath(). Similarly, to explicitly run an
@@ -506,6 +506,42 @@ void QProcessPrivate::Channel::clear()
     "/bin/sh" with two arguments: "-c" and a string with the command-line to be
     run. For Windows, due to the non-standard way \c{cmd.exe} parses its
     command-line, use setNativeArguments() (for example, "/c dir d:").
+
+    \section1 Environment variables
+
+    The QProcess API offers methods to manipulate the environment variables
+    that the child process will see. By default, the child process will have a
+    copy of the current process environment variables that exist at the time
+    the start() function is called. This means that any modifications performed
+    using qputenv() prior to that call will be reflected in the child process'
+    environment. Note that QProcess makes no attempt to prevent race conditions
+    with qputenv() happening in other threads, so it is recommended to avoid
+    qputenv() after the application's initial start up.
+
+    The environment for a specific child can be modified using the
+    processEnvironment() and setProcessEnvironment() functions, which use the
+    \l QProcessEnvironment class. By default, processEnvironment() will return
+    an object for which QProcessEnvironment::inheritsFromParent() is true.
+    Setting an environment that does not inherit from the parent will cause
+    QProcess to use exactly that environment for the child when it is started.
+
+    The normal scenario starts from the current environment by calling
+    QProcessEnvironment::systemEnvironment() and then proceeds to adding,
+    changing, or removing specific variables. The resulting variable roster can
+    then be applied to a QProcess with setProcessEnvironment().
+
+    It is possible to remove all variables from the environment or to start
+    from an empty environment, using the QProcessEnvironment() default
+    constructor. This is not advisable outside of controlled and
+    system-specific conditions, as there may be system variables that are set
+    in the current process environment and are required for proper execution
+    of the child process.
+
+    On Windows, QProcess will copy the current process' \c "PATH" and \c
+    "SystemRoot" environment variables if they were unset. It is not possible
+    to unset them completely, but it is possible to set them to empty values.
+    Setting \c "PATH" to empty on Windows will likely cause the child process
+    to fail to start.
 
     \section1 Communicating via Channels
 
@@ -1716,7 +1752,8 @@ QStringList QProcess::environment() const
 
     Note how, on Windows, environment variable names are case-insensitive.
 
-    \sa processEnvironment(), QProcessEnvironment::systemEnvironment(), setEnvironment()
+    \sa processEnvironment(), QProcessEnvironment::systemEnvironment(),
+        {Environment variables}
 */
 void QProcess::setProcessEnvironment(const QProcessEnvironment &environment)
 {
@@ -1726,12 +1763,12 @@ void QProcess::setProcessEnvironment(const QProcessEnvironment &environment)
 
 /*!
     \since 4.6
-    Returns the environment that QProcess will pass to its child
-    process, or an empty object if no environment has been set using
-    setEnvironment() or setProcessEnvironment(). If no environment has
-    been set, the environment of the calling process will be used.
+    Returns the environment that QProcess will pass to its child process. If no
+    environment has been set using setProcessEnvironment(), this method returns
+    an object indicating the environment will be inherited from the parent.
 
-    \sa setProcessEnvironment(), setEnvironment(), QProcessEnvironment::isEmpty()
+    \sa setProcessEnvironment(), QProcessEnvironment::inheritsFromParent(),
+        {Environment variables}
 */
 QProcessEnvironment QProcess::processEnvironment() const
 {
