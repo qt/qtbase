@@ -1990,7 +1990,7 @@ const char *QStringConverter::name() const noexcept
 */
 std::optional<QStringConverter::Encoding> QStringConverter::encodingForName(const char *name) noexcept
 {
-    for (int i = 0; i < LastEncoding + 1; ++i) {
+    for (qsizetype i = 0; i < LastEncoding + 1; ++i) {
         if (nameMatch(encodingInterfaces[i].name, name))
             return QStringConverter::Encoding(i);
     }
@@ -2058,7 +2058,7 @@ static QByteArray parseHtmlMetaForEncoding(QByteArrayView data)
     if (pos != -1) {
         pos = charsetSearcher.indexIn(header, pos);
         if (pos != -1) {
-            pos += int(qstrlen("charset="));
+            pos += qstrlen("charset=");
             if (pos < header.size() && (header.at(pos) == '\"' || header.at(pos) == '\''))
                 ++pos;
 
