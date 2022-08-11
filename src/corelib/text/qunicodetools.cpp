@@ -1451,7 +1451,7 @@ static void thaiAssignAttributes(const char16_t *string, qsizetype len, QCharAtt
     char *cstr = s;
     int *break_positions = nullptr;
     int brp[128];
-    int brp_size = 0;
+    size_t brp_size = 0;
     qsizetype numbreaks, i;
     struct thcell_t tis_cell;
 
@@ -1473,7 +1473,7 @@ static void thaiAssignAttributes(const char16_t *string, qsizetype len, QCharAtt
     if (len > 128) {
         break_positions = static_cast<int *>(malloc (sizeof(int) * len));
         memset (break_positions, 0, sizeof(int) * len);
-        brp_size = len;
+        brp_size = size_t(len);
     }
     else {
         break_positions = brp;
