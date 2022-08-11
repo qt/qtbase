@@ -70,7 +70,7 @@ QT_BEGIN_NAMESPACE
     When used as an interface type, QStringView allows a single function to accept
     a wide variety of UTF-16 string data sources. One function accepting QStringView
     thus replaces three function overloads (taking QString and
-    \c{(const QChar*, int)}), while at the same time enabling even more string data
+    \c{(const QChar*, qsizetype)}), while at the same time enabling even more string data
     sources to be passed to the function, such as \c{u"Hello World"}, a \c char16_t
     string literal.
 
@@ -523,7 +523,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn int QStringView::length() const
+    \fn QStringView::length() const
 
     Same as size().
 
