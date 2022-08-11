@@ -819,46 +819,6 @@ static inline int mapBinding(int binding,
     return -1;
 }
 
-static inline bool areBufferBatchesEqual(const QRhiBatchedBindings<id<MTLBuffer> >::Batch &batch1,
-                                         const QRhiBatchedBindings<NSUInteger>::Batch &offsetBatch1,
-                                         const QRhiBatchedBindings<id<MTLBuffer> >::Batch &batch2,
-                                         const QRhiBatchedBindings<NSUInteger>::Batch &offsetBatch2)
-{
-    if (batch1.startBinding != batch2.startBinding)
-        return false;
-    if (batch1.resources.count() != batch2.resources.count())
-        return false;
-    if (batch1 != batch2)
-        return false;
-    if (offsetBatch1 != offsetBatch2)
-        return false;
-    return true;
-}
-
-static inline bool areTextureBatchesEqual(const QRhiBatchedBindings<id<MTLTexture> >::Batch &batch1,
-                                          const QRhiBatchedBindings<id<MTLTexture> >::Batch &batch2)
-{
-    if (batch1.startBinding != batch2.startBinding)
-        return false;
-    if (batch1.resources.count() != batch2.resources.count())
-        return false;
-    if (batch1 != batch2)
-        return false;
-    return true;
-};
-
-static inline bool areSamplerBatchesEqual(const QRhiBatchedBindings<id<MTLSamplerState> >::Batch &batch1,
-                                          const QRhiBatchedBindings<id<MTLSamplerState> >::Batch &batch2)
-{
-    if (batch1.startBinding != batch2.startBinding)
-        return false;
-    if (batch1.resources.count() != batch2.resources.count())
-        return false;
-    if (batch1 != batch2)
-        return false;
-    return true;
-};
-
 void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD,
                                               QMetalCommandBuffer *cbD,
                                               int dynamicOffsetCount,
@@ -1022,12 +982,11 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
             const auto &bufferBatch(bindingData.res[stage].bufferBatches.batches[i]);
             const auto &offsetBatch(bindingData.res[stage].bufferOffsetBatches.batches[i]);
             // skip setting Buffer binding if the current state is already correct
-            if (cbD->d->currentShaderResourceBindingState.res[stage].bufferBatches.batches.count() > i &&
-                cbD->d->currentShaderResourceBindingState.res[stage].bufferOffsetBatches.batches.count() > i &&
-                areBufferBatchesEqual(bufferBatch,
-                                      offsetBatch,
-                                      cbD->d->currentShaderResourceBindingState.res[stage].bufferBatches.batches[i],
-                                      cbD->d->currentShaderResourceBindingState.res[stage].bufferOffsetBatches.batches[i])) {
+            if (cbD->d->currentShaderResourceBindingState.res[stage].bufferBatches.batches.count() > i
+                    && cbD->d->currentShaderResourceBindingState.res[stage].bufferOffsetBatches.batches.count() > i
+                    && bufferBatch == cbD->d->currentShaderResourceBindingState.res[stage].bufferBatches.batches[i]
+                    && offsetBatch == cbD->d->currentShaderResourceBindingState.res[stage].bufferOffsetBatches.batches[i])
+            {
                 continue;
             }
             switch (stage) {
@@ -1075,8 +1034,9 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
         for (int i = 0, ie = bindingData.res[stage].textureBatches.batches.count(); i != ie; ++i) {
             const auto &batch(bindingData.res[stage].textureBatches.batches[i]);
             // skip setting Texture binding if the current state is already correct
-            if (cbD->d->currentShaderResourceBindingState.res[stage].textureBatches.batches.count() > i &&
-                areTextureBatchesEqual(batch, cbD->d->currentShaderResourceBindingState.res[stage].textureBatches.batches[i])) {
+            if (cbD->d->currentShaderResourceBindingState.res[stage].textureBatches.batches.count() > i
+                    && batch == cbD->d->currentShaderResourceBindingState.res[stage].textureBatches.batches[i])
+            {
                 continue;
             }
             switch (stage) {
@@ -1101,8 +1061,9 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
         for (int i = 0, ie = bindingData.res[stage].samplerBatches.batches.count(); i != ie; ++i) {
             const auto &batch(bindingData.res[stage].samplerBatches.batches[i]);
             // skip setting Sampler State if the current state is already correct
-            if (cbD->d->currentShaderResourceBindingState.res[stage].samplerBatches.batches.count() > i &&
-                areSamplerBatchesEqual(batch, cbD->d->currentShaderResourceBindingState.res[stage].samplerBatches.batches[i])) {
+            if (cbD->d->currentShaderResourceBindingState.res[stage].samplerBatches.batches.count() > i
+                && batch == cbD->d->currentShaderResourceBindingState.res[stage].samplerBatches.batches[i])
+            {
                 continue;
             }
             switch (stage) {
