@@ -1445,7 +1445,7 @@ static void thaiAssignAttributes(const char16_t *string, qsizetype len, QCharAtt
     int *break_positions = nullptr;
     int brp[128];
     int brp_size = 0;
-    qsizetype numbreaks, i, j, cell_length;
+    qsizetype numbreaks, i;
     struct thcell_t tis_cell;
 
     if (!init_libthai())
@@ -1494,11 +1494,12 @@ static void thaiAssignAttributes(const char16_t *string, qsizetype len, QCharAtt
     /* manage grapheme boundaries */
     i = 0;
     while (i < len) {
-        cell_length = static_cast<uint>(th_next_cell(reinterpret_cast<const unsigned char *>(cstr) + i, len - i, &tis_cell, true));
+        size_t cell_length = th_next_cell(reinterpret_cast<const unsigned char *>(cstr) + i,
+                                          size_t(len - i), &tis_cell, true);
 
 
         attributes[i].graphemeBoundary = true;
-        for (j = 1; j < cell_length; j++)
+        for (size_t j = 1; j < cell_length; ++j)
             attributes[i + j].graphemeBoundary = false;
 
         i += cell_length;
