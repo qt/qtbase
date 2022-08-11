@@ -2349,7 +2349,7 @@ void QFileDialog::getOpenFileContent(const QString &nameFilter, const std::funct
 #else
     QFileDialog *dialog = new QFileDialog();
     dialog->setFileMode(QFileDialog::ExistingFile);
-    dialog->selectNameFilter(nameFilter);
+    dialog->setNameFilter(nameFilter);
 
     auto fileSelected = [=](const QString &fileName) {
         QByteArray fileContent;
