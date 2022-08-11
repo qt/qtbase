@@ -481,3 +481,22 @@ QT_WASM_INITIAL_MEMORY must be a multiple of 65536 bytes.
 
 For more information, see \l{https://github.com/emscripten-core/emscripten/blob/main/src/settings.js}{Emscripten compiler settings}.
 */
+
+/*!
+\page cmake-target-property-QT_IOS_LAUNCH_SCREEN.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_IOS_LAUNCH_SCREEN
+\target cmake-target-property-QT_IOS_LAUNCH_SCREEN
+
+\summary {Path to iOS launch screen storyboard}
+
+\cmakepropertysince 6.4
+\preliminarycmakeproperty
+\cmakepropertyiosonly
+
+Specifies the path to an iOS launch screen storyboard file.
+
+\sa {Launch Screens and Launch Images}
+*/
