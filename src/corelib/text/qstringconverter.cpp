@@ -1238,7 +1238,7 @@ static QString convertToUnicodeCharByChar(QByteArrayView in, QStringConverter::S
     QString s;
     while ((next = CharNextExA(CP_ACP, mb, 0)) != mb) {
         wchar_t wc[2] ={0};
-        int charlength = next - mb;
+        int charlength = int(next - mb); // always just a few bytes
         int len = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED|MB_ERR_INVALID_CHARS, mb, charlength, wc, 2);
         if (len>0) {
             s.append(QChar(wc[0]));
