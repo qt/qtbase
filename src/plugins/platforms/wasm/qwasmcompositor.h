@@ -189,7 +189,6 @@ private:
 
     void drawFrameWindow(QWasmFrameOptions options, QPainter *painter);
     void drawTitlebarWindow(QWasmTitleBarOptions options, QPainter *painter);
-    void drawShadePanel(QWasmTitleBarOptions options, QPainter *painter);
     void drawItemPixmap(QPainter *painter, const QRect &rect,
                                     int alignment, const QPixmap &pixmap) const;
 
