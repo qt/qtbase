@@ -19,11 +19,10 @@ public:
     enum TitleBarControl {
         SC_None = 0x00000000,
         SC_TitleBarSysMenu = 0x00000001,
-        SC_TitleBarMinButton = 0x00000002,
-        SC_TitleBarMaxButton = 0x00000004,
-        SC_TitleBarCloseButton = 0x00000008,
-        SC_TitleBarNormalButton = 0x00000010,
-        SC_TitleBarLabel = 0x00000100
+        SC_TitleBarMaxButton = 0x00000002,
+        SC_TitleBarCloseButton = 0x00000004,
+        SC_TitleBarNormalButton = 0x00000008,
+        SC_TitleBarLabel = 0x00000010
     };
     Q_DECLARE_FLAGS(TitleBarControls, TitleBarControl);
 

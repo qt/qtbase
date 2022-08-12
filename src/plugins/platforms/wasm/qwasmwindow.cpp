@@ -223,8 +223,6 @@ void QWasmWindow::injectMousePressed(const QPoint &local, const QPoint &global,
     const auto options = makeTitleBarOptions();
     if (getTitleBarControlRect(options, SC_TitleBarMaxButton).contains(pointInFrameCoords))
         m_activeControl = SC_TitleBarMaxButton;
-    else if (getTitleBarControlRect(options, SC_TitleBarMinButton).contains(pointInFrameCoords))
-        m_activeControl = SC_TitleBarMinButton;
     else if (getTitleBarControlRect(options, SC_TitleBarCloseButton).contains(pointInFrameCoords))
         m_activeControl = SC_TitleBarCloseButton;
     else if (getTitleBarControlRect(options, SC_TitleBarNormalButton).contains(pointInFrameCoords))
@@ -359,9 +357,7 @@ QRect QWasmWindow::getTitleBarControlRect(const TitleBarOptions &tb, TitleBarCon
         }
         break;
     case SC_TitleBarNormalButton:
-        if (isMinimized && (tb.flags & Qt::WindowMinimizeButtonHint)) {
-            offset += delta;
-        } else if (isMaximized && (tb.flags & Qt::WindowMaximizeButtonHint)) {
+        if (isMaximized && (tb.flags & Qt::WindowMaximizeButtonHint)) {
             ret.adjust(0, 0, -delta * 2, 0);
             offset += (delta + delta);
         }
@@ -395,7 +391,6 @@ QRegion QWasmWindow::titleControlRegion() const
     QRegion result;
     const auto options = makeTitleBarOptions();
     result += getTitleBarControlRect(options, SC_TitleBarCloseButton);
-    result += getTitleBarControlRect(options, SC_TitleBarMinButton);
     result += getTitleBarControlRect(options, SC_TitleBarMaxButton);
     result += getTitleBarControlRect(options, SC_TitleBarSysMenu);
 
