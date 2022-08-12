@@ -1,0 +1,59 @@
+// Copyright (C) 2022 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \macro Q_DISABLE_COPY(Class)
+    \relates QtClassHelperMacros
+
+    Disables the use of copy constructors and assignment operators
+    for the given \a Class.
+
+    Instances of subclasses of QObject should not be thought of as
+    values that can be copied or assigned, but as unique identities.
+    This means that when you create your own subclass of QObject
+    (director or indirect), you should \e not give it a copy constructor
+    or an assignment operator.  However, it may not enough to simply
+    omit them from your class, because, if you mistakenly write some code
+    that requires a copy constructor or an assignment operator (it's easy
+    to do), your compiler will thoughtfully create it for you. You must
+    do more.
+
+    The curious user will have seen that the Qt classes derived
+    from QObject typically include this macro in a private section:
+
+    \snippet code/src_corelib_global_qglobal.cpp 43
+
+    It declares a copy constructor and an assignment operator in the
+    private section, so that if you use them by mistake, the compiler
+    will report an error.
+
+    \snippet code/src_corelib_global_qglobal.cpp 44
+
+    But even this might not catch absolutely every case. You might be
+    tempted to do something like this:
+
+    \snippet code/src_corelib_global_qglobal.cpp 45
+
+    First of all, don't do that. Most compilers will generate code that
+    uses the copy constructor, so the privacy violation error will be
+    reported, but your C++ compiler is not required to generate code for
+    this statement in a specific way. It could generate code using
+    \e{neither} the copy constructor \e{nor} the assignment operator we
+    made private. In that case, no error would be reported, but your
+    application would probably crash when you called a member function
+    of \c{w}.
+
+    \sa Q_DISABLE_COPY_MOVE
+*/
+
+/*!
+    \macro Q_DISABLE_COPY_MOVE(Class)
+    \relates QtClassHelperMacros
+
+    A convenience macro that disables the use of copy constructors, assignment
+    operators, move constructors and move assignment operators for the given
+    \a Class.
+
+    \sa Q_DISABLE_COPY
+    \since 5.13
+*/

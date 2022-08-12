@@ -143,23 +143,6 @@ template<typename T> class QFlags;
 template<typename T>
 Q_DECLARE_TYPEINFO_BODY(QFlags<T>, Q_PRIMITIVE_TYPE);
 
-/*
-   Specialize a shared type with:
-
-     Q_DECLARE_SHARED(type)
-
-   where 'type' is the name of the type to specialize.  NOTE: shared
-   types must define a member-swap, and be defined in the same
-   namespace as Qt for this to work.
-*/
-
-#define Q_DECLARE_SHARED_IMPL(TYPE, FLAGS) \
-Q_DECLARE_TYPEINFO(TYPE, FLAGS); \
-inline void swap(TYPE &value1, TYPE &value2) \
-    noexcept(noexcept(value1.swap(value2))) \
-{ value1.swap(value2); }
-#define Q_DECLARE_SHARED(TYPE) Q_DECLARE_SHARED_IMPL(TYPE, Q_RELOCATABLE_TYPE)
-
 namespace QTypeTraits
 {
 
