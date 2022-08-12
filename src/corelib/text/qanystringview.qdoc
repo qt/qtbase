@@ -45,6 +45,11 @@
     Like elsewhere in Qt, QAnyStringView assumes \c char data is encoded
     in UTF-8, unless it is presented as a QLatin1StringView.
 
+    Since Qt 6.4, however, UTF-8 string literals that are pure US-ASCII are
+    automatically stored as Latin-1. This is a compile-time check with no
+    runtime overhead. The feature requires compiling in C++20, or with a recent
+    GCC.
+
     QAnyStringViews should be passed by value, not by reference-to-const:
     \snippet code/src_corelib_text_qanystringview.cpp 0
 
