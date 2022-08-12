@@ -98,8 +98,18 @@ function(qt_internal_create_wrapper_scripts)
     set(__qt_cmake_standalone_test_bin_name "qt-cmake-standalone-test")
     set(__qt_cmake_standalone_test_bin_path
         "${INSTALL_BINDIR}/${__qt_cmake_standalone_test_bin_name}")
-    set(__qt_cmake_private_path
-        "${QT_STAGING_PREFIX}/${INSTALL_BINDIR}/qt-cmake-private")
+
+    # Configuring a standalone test on iOS should use the Xcode generator, but qt-cmake-private uses
+    # the generator that was used to build Qt itself (e.g. Ninja).
+    # Use qt-cmake instead, which does use the Xcode generator since Qt 6.2.5, 6.3.1, 6.4.
+    if(IOS)
+        set(__qt_cmake_private_path
+            "${QT_STAGING_PREFIX}/${INSTALL_BINDIR}/qt-cmake")
+    else()
+        set(__qt_cmake_private_path
+            "${QT_STAGING_PREFIX}/${INSTALL_BINDIR}/qt-cmake-private")
+    endif()
+
     set(__qt_cmake_standalone_test_path
         "${__build_internals_install_dir}/${__build_internals_standalone_test_template_dir}")
 
