@@ -68,6 +68,8 @@ function(qt_internal_add_benchmark target)
     if (TARGET benchmark)
         add_dependencies("benchmark" "${target}_benchmark")
     endif()
+
+    qt_internal_add_test_finalizers("${target}")
 endfunction()
 
 # Simple wrapper around qt_internal_add_executable for manual tests which insure that
@@ -113,6 +115,7 @@ function(qt_internal_add_manual_test target)
     # Disable the QT_NO_NARROWING_CONVERSIONS_IN_CONNECT define for manual tests
     qt_internal_undefine_global_definition(${target} QT_NO_NARROWING_CONVERSIONS_IN_CONNECT)
 
+    qt_internal_add_test_finalizers("${target}")
 endfunction()
 
 # This function will configure the fixture for the network tests that require docker network services
@@ -493,6 +496,7 @@ function(qt_internal_add_test name)
         endif()
     endif()
 
+    qt_internal_add_test_finalizers("${name}")
 endfunction()
 
 # This function adds test with specified NAME and wraps given test COMMAND with standalone cmake
@@ -755,4 +759,15 @@ function(qt_internal_collect_command_environment out_path out_plugin_path)
     list(JOIN plugin_paths "${QT_PATH_SEPARATOR}" plugin_paths_joined)
     string(REPLACE ";" "\;" plugin_paths_joined "${plugin_paths_joined}")
     set(${out_plugin_path} "${plugin_paths_joined}" PARENT_SCOPE)
+endfunction()
+
+function(qt_internal_add_test_finalizers target)
+    # It might not be safe to run all the finalizers of _qt_internal_finalize_executable
+    # within the context of a Qt build (not a user project) when targeting a host build.
+    # At least one issue is missing qmlimportscanner at configure time.
+    # For now, we limit it to iOS, where it was tested to work, an we know that host tools
+    # should already be built and available.
+    if(IOS)
+        qt_add_list_file_finalizer(_qt_internal_finalize_executable "${target}")
+    endif()
 endfunction()
