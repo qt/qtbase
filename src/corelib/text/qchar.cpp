@@ -1365,7 +1365,7 @@ static const QChar * QT_FASTCALL decompositionHelper(
 {
     if (ucs4 >= Hangul_SBase && ucs4 < Hangul_SBase + Hangul_SCount) {
         // compute Hangul syllable decomposition as per UAX #15
-        const uint SIndex = ucs4 - Hangul_SBase;
+        const char32_t SIndex = ucs4 - Hangul_SBase;
         buffer[0] = QChar(Hangul_LBase + SIndex / Hangul_NCount); // L
         buffer[1] = QChar(Hangul_VBase + (SIndex % Hangul_NCount) / Hangul_TCount); // V
         buffer[2] = QChar(Hangul_TBase + SIndex % Hangul_TCount); // T
@@ -1861,26 +1861,26 @@ struct UCS2SurrogatePair {
 
 inline bool operator<(const UCS2SurrogatePair &ligature1, const UCS2SurrogatePair &ligature2)
 { return QChar::surrogateToUcs4(ligature1.p1.u1, ligature1.p1.u2) < QChar::surrogateToUcs4(ligature2.p1.u1, ligature2.p1.u2); }
-inline bool operator<(uint u1, const UCS2SurrogatePair &ligature)
+inline bool operator<(char32_t u1, const UCS2SurrogatePair &ligature)
 { return u1 < QChar::surrogateToUcs4(ligature.p1.u1, ligature.p1.u2); }
-inline bool operator<(const UCS2SurrogatePair &ligature, uint u1)
+inline bool operator<(const UCS2SurrogatePair &ligature, char32_t u1)
 { return QChar::surrogateToUcs4(ligature.p1.u1, ligature.p1.u2) < u1; }
 
-static uint inline ligatureHelper(uint u1, uint u2)
+static char32_t inline ligatureHelper(char32_t u1, char32_t u2)
 {
     if (u1 >= Hangul_LBase && u1 < Hangul_SBase + Hangul_SCount) {
         // compute Hangul syllable composition as per UAX #15
         // hangul L-V pair
-        const uint LIndex = u1 - Hangul_LBase;
+        const char32_t LIndex = u1 - Hangul_LBase;
         if (LIndex < Hangul_LCount) {
-            const uint VIndex = u2 - Hangul_VBase;
+            const char32_t VIndex = u2 - Hangul_VBase;
             if (VIndex < Hangul_VCount)
                 return Hangul_SBase + (LIndex * Hangul_VCount + VIndex) * Hangul_TCount;
         }
         // hangul LV-T pair
-        const uint SIndex = u1 - Hangul_SBase;
+        const char32_t SIndex = u1 - Hangul_SBase;
         if (SIndex < Hangul_SCount && (SIndex % Hangul_TCount) == 0) {
-            const uint TIndex = u2 - Hangul_TBase;
+            const char32_t TIndex = u2 - Hangul_TBase;
             if (TIndex < Hangul_TCount && TIndex)
                 return u1 + TIndex;
         }
@@ -1913,7 +1913,7 @@ static void composeHelper(QString *str, QChar::UnicodeVersion version, qsizetype
     if (from < 0 || s.length() - from < 2)
         return;
 
-    uint stcode = 0; // starter code point
+    char32_t stcode = 0; // starter code point
     qsizetype starter = -1; // starter position
     qsizetype next = -1; // to prevent i == next
     int lastCombining = 255; // to prevent combining > lastCombining
@@ -1942,7 +1942,7 @@ static void composeHelper(QString *str, QChar::UnicodeVersion version, qsizetype
         int combining = p->combiningClass;
         if ((i == next || combining > lastCombining) && starter >= from) {
             // allowed to form ligature with S
-            uint ligature = ligatureHelper(stcode, uc);
+            char32_t ligature = ligatureHelper(stcode, uc);
             if (ligature) {
                 stcode = ligature;
                 QChar *d = s.data();
