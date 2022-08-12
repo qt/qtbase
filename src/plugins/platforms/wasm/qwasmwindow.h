@@ -78,6 +78,8 @@ private:
 
     struct TitleBarOptions
     {
+        bool hasControl(TitleBarControl control) const;
+
         QRect rect;
         Qt::WindowFlags flags;
         int state;
@@ -88,13 +90,17 @@ private:
     };
 
     TitleBarOptions makeTitleBarOptions() const;
-    QRect getTitleBarControlRect(const TitleBarOptions &tb, TitleBarControl control) const;
+    std::optional<QRect> getTitleBarControlRect(const TitleBarOptions &tb,
+                                                TitleBarControl control) const;
+    std::optional<QRect> getTitleBarControlRectLeftToRight(const TitleBarOptions &tb,
+                                                           TitleBarControl control) const;
     QRegion titleControlRegion() const;
     QRegion titleGeometry() const;
     int borderWidth() const;
     int titleHeight() const;
     QRegion resizeRegion() const;
     TitleBarControl activeTitleBarControl() const;
+    std::optional<TitleBarControl> titleBarHitTest(const QPoint &globalPoint) const;
 
     QWindow *m_window = nullptr;
     QWasmCompositor *m_compositor = nullptr;
