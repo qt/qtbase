@@ -18,21 +18,29 @@ private slots:
     void pass();
 };
 
-class DeferredFlag
+class DeferredFlag : public QObject // Can't be const.
 {
+    Q_OBJECT
     bool m_flag;
 public:
+    // A boolean that either starts out true or decays to true after 50 ms.
+    // However, that decay will only happen when the event loop is run.
     explicit DeferredFlag(bool initial = false) : m_flag(initial)
     {
         if (!initial)
-            QTimer::singleShot(50, [this] { m_flag = true; });
+            QTimer::singleShot(50, this, &DeferredFlag::onTimeOut);
     }
     explicit operator bool() const { return m_flag; }
     bool operator!() const { return !m_flag; }
-    friend bool operator==(DeferredFlag a, DeferredFlag b) { return bool(a) == bool(b); }
+    friend bool operator==(const DeferredFlag &a, const DeferredFlag &b)
+    {
+        return bool(a) == bool(b);
+    }
+public slots:
+    void onTimeOut() { m_flag = true; }
 };
 
-char *toString(DeferredFlag val)
+char *toString(const DeferredFlag &val)
 {
     return qstrdup(bool(val) ? "DeferredFlag(true)" : "DeferredFlag(false)");
 }
