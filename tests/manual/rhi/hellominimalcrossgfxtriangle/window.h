@@ -16,6 +16,7 @@
 #endif
 #ifdef Q_OS_WIN
 #include <QtGui/private/qrhid3d11_p.h>
+#include <QtGui/private/qrhid3d12_p.h>
 #endif
 #if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
 #include <QtGui/private/qrhimetal_p.h>

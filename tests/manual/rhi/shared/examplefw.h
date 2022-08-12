@@ -29,6 +29,7 @@
 
 #ifdef Q_OS_WIN
 #include <QtGui/private/qrhid3d11_p.h>
+#include <QtGui/private/qrhid3d12_p.h>
 #endif
 
 #if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
@@ -50,6 +51,7 @@ enum GraphicsApi
     OpenGL,
     Vulkan,
     D3D11,
+    D3D12,
     Metal
 };
 
@@ -66,6 +68,8 @@ QString graphicsApiName()
         return QLatin1String("Vulkan");
     case D3D11:
         return QLatin1String("Direct3D 11");
+    case D3D12:
+        return QLatin1String("Direct3D 12");
     case Metal:
         return QLatin1String("Metal");
     default:
@@ -141,6 +145,7 @@ Window::Window()
         setSurfaceType(VulkanSurface);
         break;
     case D3D11:
+    case D3D12:
         setSurfaceType(Direct3DSurface);
         break;
     case Metal:
@@ -243,6 +248,12 @@ void Window::init()
             params.repeatDeviceKill = true;
         }
         m_r = QRhi::create(QRhi::D3D11, &params, rhiFlags);
+    } else if (graphicsApi == D3D12) {
+        QRhiD3D12InitParams params;
+        if (debugLayer)
+            qDebug("Enabling D3D12 debug layer");
+        params.enableDebugLayer = debugLayer;
+        m_r = QRhi::create(QRhi::D3D12, &params, rhiFlags);
     }
 #endif
 
@@ -390,8 +401,10 @@ int main(int argc, char **argv)
     cmdLineParser.addOption(glOption);
     QCommandLineOption vkOption({ "v", "vulkan" }, QLatin1String("Vulkan"));
     cmdLineParser.addOption(vkOption);
-    QCommandLineOption d3dOption({ "d", "d3d11" }, QLatin1String("Direct3D 11"));
-    cmdLineParser.addOption(d3dOption);
+    QCommandLineOption d3d11Option({ "d", "d3d11" }, QLatin1String("Direct3D 11"));
+    cmdLineParser.addOption(d3d11Option);
+    QCommandLineOption d3d12Option({ "D", "d3d12" }, QLatin1String("Direct3D 12"));
+    cmdLineParser.addOption(d3d12Option);
     QCommandLineOption mtlOption({ "m", "metal" }, QLatin1String("Metal"));
     cmdLineParser.addOption(mtlOption);
     // Testing cleanup both with QWindow::close() (hitting X or Alt-F4) and
@@ -421,8 +434,10 @@ int main(int argc, char **argv)
         graphicsApi = OpenGL;
     if (cmdLineParser.isSet(vkOption))
         graphicsApi = Vulkan;
-    if (cmdLineParser.isSet(d3dOption))
+    if (cmdLineParser.isSet(d3d11Option))
         graphicsApi = D3D11;
+    if (cmdLineParser.isSet(d3d12Option))
+        graphicsApi = D3D12;
     if (cmdLineParser.isSet(mtlOption))
         graphicsApi = Metal;
 

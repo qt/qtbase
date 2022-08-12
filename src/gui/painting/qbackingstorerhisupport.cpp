@@ -13,6 +13,7 @@
 
 #ifdef Q_OS_WIN
 #include <QtGui/private/qrhid3d11_p.h>
+#include <QtGui/private/qrhid3d12_p.h>
 #endif
 
 #if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
@@ -79,10 +80,16 @@ bool QBackingStoreRhiSupport::create()
 #endif
 
 #ifdef Q_OS_WIN
-    if (!rhi && m_config.api() == QPlatformBackingStoreRhiConfig::D3D11) {
-        QRhiD3D11InitParams params;
-        params.enableDebugLayer = m_config.isDebugLayerEnabled();
-        rhi = QRhi::create(QRhi::D3D11, &params, flags);
+    if (!rhi) {
+        if (m_config.api() == QPlatformBackingStoreRhiConfig::D3D11) {
+            QRhiD3D11InitParams params;
+            params.enableDebugLayer = m_config.isDebugLayerEnabled();
+            rhi = QRhi::create(QRhi::D3D11, &params, flags);
+        } else if (m_config.api() == QPlatformBackingStoreRhiConfig::D3D12) {
+            QRhiD3D12InitParams params;
+            params.enableDebugLayer = m_config.isDebugLayerEnabled();
+            rhi = QRhi::create(QRhi::D3D12, &params, flags);
+        }
     }
 #endif
 
@@ -195,6 +202,7 @@ QSurface::SurfaceType QBackingStoreRhiSupport::surfaceTypeForConfig(const QPlatf
     QSurface::SurfaceType type = QSurface::RasterSurface;
     switch (config.api()) {
     case QPlatformBackingStoreRhiConfig::D3D11:
+    case QPlatformBackingStoreRhiConfig::D3D12:
         type = QSurface::Direct3DSurface;
         break;
     case QPlatformBackingStoreRhiConfig::Vulkan:
@@ -223,6 +231,8 @@ QRhi::Implementation QBackingStoreRhiSupport::apiToRhiBackend(QPlatformBackingSt
         return QRhi::Vulkan;
     case QPlatformBackingStoreRhiConfig::D3D11:
         return QRhi::D3D11;
+    case QPlatformBackingStoreRhiConfig::D3D12:
+        return QRhi::D3D12;
     case QPlatformBackingStoreRhiConfig::Null:
         return QRhi::Null;
     default:
@@ -264,6 +274,8 @@ bool QBackingStoreRhiSupport::checkForceRhi(QPlatformBackingStoreRhiConfig *outC
 #ifdef Q_OS_WIN
                 if (backend == QStringLiteral("d3d11") || backend == QStringLiteral("d3d"))
                     config.setApi(QPlatformBackingStoreRhiConfig::D3D11);
+                if (backend == QStringLiteral("d3d12"))
+                    config.setApi(QPlatformBackingStoreRhiConfig::D3D12);
 #endif
 #if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
                 if (backend == QStringLiteral("metal"))

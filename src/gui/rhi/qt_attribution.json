@@ -1,0 +1,16 @@
+[
+    {
+        "Id": "rhi-miniengine-d3d12-mipmap",
+        "Name": "Mipmap generator for D3D12",
+        "QDocModule": "qtgui",
+        "Description": "Compute shader for mipmap generation from MiniEngine in DirectX-Graphics-Samples",
+        "QtUsage": "Compute shader for mipmap generation with Direct 3D 12",
+
+        "Homepage": "https://github.com/microsoft/DirectX-Graphics-Samples",
+        "Version": "0aa79bad78992da0b6a8279ddb9002c1753cb849",
+        "License": "MIT License",
+        "LicenseId": "MIT",
+        "LicenseFile": "MiniEngine_LICENSE.txt",
+        "Copyright": "Copyright (c) 2015 Microsoft"
+    }
+]

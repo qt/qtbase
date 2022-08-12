@@ -269,6 +269,7 @@ qt_internal_add_module(Gui
         QT_QPA_DEFAULT_PLATFORM_NAME="${QT_QPA_DEFAULT_PLATFORM}"
     INCLUDE_DIRECTORIES
         ../3rdparty/VulkanMemoryAllocator
+        ../3rdparty/D3D12MemoryAllocator
     LIBRARIES
         Qt::CorePrivate
     PUBLIC_LIBRARIES
@@ -402,6 +403,11 @@ qt_internal_extend_target(Gui CONDITION WIN32
         rhi/qrhid3d11.cpp rhi/qrhid3d11_p.h
         rhi/qrhid3d11_p_p.h
         rhi/vs_test_p.h
+        rhi/qrhid3d12.cpp rhi/qrhid3d12_p.h
+        rhi/qrhid3d12_p_p.h
+        rhi/cs_mipmap_p.h
+        ../3rdparty/D3D12MemoryAllocator/D3D12MemAlloc.h
+        ../3rdparty/D3D12MemoryAllocator/D3D12MemAlloc.cpp
         text/windows/qwindowsfontdatabase.cpp text/windows/qwindowsfontdatabase_p.h
         text/windows/qwindowsfontdatabasebase.cpp text/windows/qwindowsfontdatabasebase_p.h
         text/windows/qwindowsfontengine.cpp text/windows/qwindowsfontengine_p.h
@@ -417,6 +423,7 @@ qt_internal_extend_target(Gui CONDITION WIN32
         dxgi
         dxguid
         dcomp
+        d3d12
 )
 
 if(QT_FEATURE_egl)

@@ -818,7 +818,7 @@ public:
 
     struct NativeTexture {
         quint64 object;
-        int layout;
+        int layout; // or state
     };
 
     QRhiResource::Type resourceType() const override;
@@ -1545,11 +1545,7 @@ struct Q_GUI_EXPORT QRhiReadbackResult
     QByteArray data;
 };
 
-struct Q_GUI_EXPORT QRhiBufferReadbackResult
-{
-    std::function<void()> completed = nullptr;
-    QByteArray data;
-};
+using QRhiBufferReadbackResult = QRhiReadbackResult;
 
 class Q_GUI_EXPORT QRhiResourceUpdateBatch
 {
@@ -1605,10 +1601,13 @@ Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiDriverInfo &);
 struct Q_GUI_EXPORT QRhiStats
 {
     qint64 totalPipelineCreationTime = 0;
+    // Vulkan or D3D12 memory allocator statistics
     quint32 blockCount = 0;
     quint32 allocCount = 0;
     quint64 usedBytes = 0;
     quint64 unusedBytes = 0;
+    // D3D12 only, from IDXGIAdapter3::QueryVideoMemoryInfo(), incl. all resources
+    quint64 totalUsageBytes = 0;
 };
 
 Q_DECLARE_TYPEINFO(QRhiStats, Q_RELOCATABLE_TYPE);
@@ -1629,7 +1628,8 @@ public:
         Vulkan,
         OpenGLES2,
         D3D11,
-        Metal
+        Metal,
+        D3D12
     };
 
     enum Flag {

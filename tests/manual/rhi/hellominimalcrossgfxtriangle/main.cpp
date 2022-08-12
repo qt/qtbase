@@ -20,6 +20,8 @@ QString graphicsApiName(QRhi::Implementation graphicsApi)
         return QLatin1String("Vulkan");
     case QRhi::D3D11:
         return QLatin1String("Direct3D 11");
+    case QRhi::D3D12:
+        return QLatin1String("Direct3D 12");
     case QRhi::Metal:
         return QLatin1String("Metal");
     default:
@@ -51,8 +53,10 @@ int main(int argc, char **argv)
     cmdLineParser.addOption(glOption);
     QCommandLineOption vkOption({ "v", "vulkan" }, QLatin1String("Vulkan"));
     cmdLineParser.addOption(vkOption);
-    QCommandLineOption d3dOption({ "d", "d3d11" }, QLatin1String("Direct3D 11"));
-    cmdLineParser.addOption(d3dOption);
+    QCommandLineOption d3d11Option({ "d", "d3d11" }, QLatin1String("Direct3D 11"));
+    cmdLineParser.addOption(d3d11Option);
+    QCommandLineOption d3d12Option({ "D", "d3d12" }, QLatin1String("Direct3D 12"));
+    cmdLineParser.addOption(d3d12Option);
     QCommandLineOption mtlOption({ "m", "metal" }, QLatin1String("Metal"));
     cmdLineParser.addOption(mtlOption);
 
@@ -63,8 +67,10 @@ int main(int argc, char **argv)
         graphicsApi = QRhi::OpenGLES2;
     if (cmdLineParser.isSet(vkOption))
         graphicsApi = QRhi::Vulkan;
-    if (cmdLineParser.isSet(d3dOption))
+    if (cmdLineParser.isSet(d3d11Option))
         graphicsApi = QRhi::D3D11;
+    if (cmdLineParser.isSet(d3d12Option))
+        graphicsApi = QRhi::D3D12;
     if (cmdLineParser.isSet(mtlOption))
         graphicsApi = QRhi::Metal;
 

@@ -14,6 +14,7 @@
 #endif
 #ifdef Q_OS_WIN
 #include "qrhid3d11_p_p.h"
+#include "qrhid3d12_p_p.h"
 #endif
 #if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
 #include "qrhimetal_p_p.h"
@@ -404,6 +405,7 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     \value Vulkan
     \value OpenGLES2
     \value D3D11
+    \value D3D12
     \value Metal
  */
 
@@ -587,7 +589,7 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
 
     \value TriangleFanTopology Indicates that QRhiGraphicsPipeline::setTopology()
     supports QRhiGraphicsPipeline::TriangleFan. In practice this feature will be
-    unsupported with Metal and Direct 3D 11.
+    unsupported with Metal and Direct 3D 11/12.
 
     \value ReadBackNonUniformBuffer Indicates that
     \l{QRhiResourceUpdateBatch::readBackBuffer()}{reading buffer contents} is
@@ -3564,6 +3566,14 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBufferWithDynamicOff
     together with another, layout compatible QRhiShaderResourceBindings with
     resources present passed to QRhiCommandBuffer::setShaderResources().
 
+    \note A shader may not be able to consume more than 16 textures/samplers,
+    depending on the underlying graphics API. This hard limit must be kept in
+    mind in renderer design. This does not apply to texture arrays which
+    consume a single binding point (shader register) and can contain 256-2048
+    textures, depending on the underlying graphics API. Arrays of textures (see
+    sampledTextures()) are however no different in this regard than using the
+    same number of individual textures.
+
     \sa sampledTextures()
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::sampledTexture(
@@ -3649,6 +3659,14 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::sampledTextures(
     Vulkan-compatible GLSL code separate textures are declared as \c texture2D
     as opposed to \c sampler2D: \c{layout(binding = 1) uniform texture2D tex;}
 
+    \note A shader may not be able to consume more than 16 textures, depending
+    on the underlying graphics API. This hard limit must be kept in mind in
+    renderer design. This does not apply to texture arrays which consume a
+    single binding point (shader register) and can contain 256-2048 textures,
+    depending on the underlying graphics API. Arrays of textures (see
+    sampledTextures()) are however no different in this regard than using the
+    same number of individual textures.
+
     \sa textures(), sampler()
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::texture(int binding, StageFlags stage, QRhiTexture *tex)
@@ -3720,6 +3738,10 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::textures(int binding, Stage
     With both a \c texture2D and \c sampler present, they can be used together
     to sample the texture: \c{fragColor = texture(sampler2D(tex, samp),
     texcoord);}.
+
+    \note A shader may not be able to consume more than 16 samplers, depending
+    on the underlying graphics API. This hard limit must be kept in mind in
+    renderer design.
 
     \sa texture()
  */
@@ -5579,6 +5601,15 @@ QRhi *QRhi::create(Implementation impl, QRhiInitParams *params, Flags flags, QRh
         qWarning("This platform has no Metal support");
         break;
 #endif
+    case D3D12:
+#ifdef Q_OS_WIN
+        r->d = new QRhiD3D12(static_cast<QRhiD3D12InitParams *>(params),
+                             static_cast<QRhiD3D12NativeHandles *>(importDevice));
+        break;
+#else
+        qWarning("This platform has no Direct3D 12 support");
+        break;
+#endif
     }
 
     if (r->d) {
@@ -5704,6 +5735,8 @@ const char *QRhi::backendName(Implementation impl)
         return "D3D11";
     case QRhi::Metal:
         return "Metal";
+    case QRhi::D3D12:
+        return "D3D12";
     }
 
     Q_UNREACHABLE_RETURN("Unknown");
@@ -7219,6 +7252,7 @@ QDebug operator<<(QDebug dbg, const QRhiStats &info)
                   << " allocCount=" << info.allocCount
                   << " usedBytes=" << info.usedBytes
                   << " unusedBytes=" << info.unusedBytes
+                  << " totalUsageBytes=" << info.totalUsageBytes
                   << ')';
     return dbg;
 }
@@ -7236,6 +7270,15 @@ QDebug operator<<(QDebug dbg, const QRhiStats &info)
     With Vulkan in particular, the values are valid always, and are queried
     from the underlying memory allocator library. This gives an insight into
     the memory requirements of the active buffers and textures.
+
+    The same is true for Direct 3D 12. In addition to the memory allocator
+    library's statistics, here the result also includes a \c totalUsageBytes
+    field which reports the total size including additional resources that are
+    not under the memory allocator library's control (swapchain buffers,
+    descriptor heaps, etc.), as reported by DXGI.
+
+    The values correspond to all types of memory used, combined. (i.e. video +
+    system in case of a discreet GPU)
 
     Additional data, such as the total time in milliseconds spent in graphics
     and compute pipeline creation (which usually involves shader compilation or

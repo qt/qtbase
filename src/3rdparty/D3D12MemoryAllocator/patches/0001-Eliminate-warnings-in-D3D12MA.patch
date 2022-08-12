@@ -1,0 +1,91 @@
+From d83bc556c26b13e1a243c71628f75ef624de05bf Mon Sep 17 00:00:00 2001
+From: Laszlo Agocs <laszlo.agocs@qt.io>
+Date: Sat, 21 Jan 2023 20:07:00 +0100
+Subject: [PATCH] Eliminate warnings in D3D12MA
+
+Change-Id: If703c50cc1239248b94967edb4047868aaf07f1a
+---
+ .../D3D12MemoryAllocator/D3D12MemAlloc.cpp    | 23 ++++++++++++++++++-
+ .../D3D12MemoryAllocator/D3D12MemAlloc.h      |  6 ++---
+ 2 files changed, 25 insertions(+), 4 deletions(-)
+
+diff --git a/src/3rdparty/D3D12MemoryAllocator/D3D12MemAlloc.cpp b/src/3rdparty/D3D12MemoryAllocator/D3D12MemAlloc.cpp
+index fe1856927f..f041ec13d8 100644
+--- a/src/3rdparty/D3D12MemoryAllocator/D3D12MemAlloc.cpp
++++ b/src/3rdparty/D3D12MemoryAllocator/D3D12MemAlloc.cpp
+@@ -132,6 +132,18 @@ especially to test compatibility with D3D12_RESOURCE_HEAP_TIER_1 on modern GPUs.
+     #define D3D12MA_CREATE_NOT_ZEROED_AVAILABLE 1
+ #endif
+ 
++#if defined(__clang__) || defined(__GNUC__)
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wunused-parameter"
++#pragma GCC diagnostic ignored "-Wunused-variable"
++#pragma GCC diagnostic ignored "-Wsign-compare"
++#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
++#pragma GCC diagnostic ignored "-Wswitch"
++#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
++#pragma GCC diagnostic ignored "-Wunused-function"
++#pragma GCC diagnostic ignored "-Wnonnull-compare"
++#endif
++
+ namespace D3D12MA
+ {
+ static constexpr UINT HEAP_TYPE_COUNT = 4;
+@@ -7581,12 +7593,14 @@ void AllocatorPimpl::BuildStatsString(WCHAR** ppStatsString, BOOL detailedMap)
+                         json.WriteString(L"HEAP_FLAG_ALLOW_DISPLAY");
+                     if (flags & D3D12_HEAP_FLAG_SHARED_CROSS_ADAPTER)
+                         json.WriteString(L"HEAP_FLAG_CROSS_ADAPTER");
++#ifdef __ID3D12Device8_INTERFACE_DEFINED__
+                     if (flags & D3D12_HEAP_FLAG_HARDWARE_PROTECTED)
+                         json.WriteString(L"HEAP_FLAG_HARDWARE_PROTECTED");
+                     if (flags & D3D12_HEAP_FLAG_ALLOW_WRITE_WATCH)
+                         json.WriteString(L"HEAP_FLAG_ALLOW_WRITE_WATCH");
+                     if (flags & D3D12_HEAP_FLAG_ALLOW_SHADER_ATOMICS)
+                         json.WriteString(L"HEAP_FLAG_ALLOW_SHADER_ATOMICS");
++#endif
+ #ifdef __ID3D12Device8_INTERFACE_DEFINED__
+                     if (flags & D3D12_HEAP_FLAG_CREATE_NOT_RESIDENT)
+                         json.WriteString(L"HEAP_FLAG_CREATE_NOT_RESIDENT");
+@@ -7607,9 +7621,12 @@ void AllocatorPimpl::BuildStatsString(WCHAR** ppStatsString, BOOL detailedMap)
+                         | D3D12_HEAP_FLAG_SHARED_CROSS_ADAPTER
+                         | D3D12_HEAP_FLAG_DENY_RT_DS_TEXTURES
+                         | D3D12_HEAP_FLAG_DENY_NON_RT_DS_TEXTURES
++#ifdef __ID3D12Device8_INTERFACE_DEFINED__
+                         | D3D12_HEAP_FLAG_HARDWARE_PROTECTED
+                         | D3D12_HEAP_FLAG_ALLOW_WRITE_WATCH
+-                        | D3D12_HEAP_FLAG_ALLOW_SHADER_ATOMICS);
++                        | D3D12_HEAP_FLAG_ALLOW_SHADER_ATOMICS
++#endif
++                    );
+ #ifdef __ID3D12Device8_INTERFACE_DEFINED__
+                     flags &= ~(D3D12_HEAP_FLAG_CREATE_NOT_RESIDENT
+                         | D3D12_HEAP_FLAG_CREATE_NOT_ZEROED);
+@@ -10539,3 +10556,7 @@ VirtualBlock::~VirtualBlock()
+ #endif // _D3D12MA_VIRTUAL_BLOCK_FUNCTIONS
+ #endif // _D3D12MA_PUBLIC_INTERFACE
+ } // namespace D3D12MA
++
++#if defined(__clang__) || defined(__GNUC__)
++#pragma GCC diagnostic pop
++#endif
+diff --git a/src/3rdparty/D3D12MemoryAllocator/D3D12MemAlloc.h b/src/3rdparty/D3D12MemoryAllocator/D3D12MemAlloc.h
+index 4ab7be318e..d80dcb1e89 100644
+--- a/src/3rdparty/D3D12MemoryAllocator/D3D12MemAlloc.h
++++ b/src/3rdparty/D3D12MemoryAllocator/D3D12MemAlloc.h
+@@ -151,9 +151,9 @@ class D3D12MA_API IUnknownImpl : public IUnknown
+ {
+ public:
+     virtual ~IUnknownImpl() = default;
+-    virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject);
+-    virtual ULONG STDMETHODCALLTYPE AddRef();
+-    virtual ULONG STDMETHODCALLTYPE Release();
++    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) override;
++    ULONG STDMETHODCALLTYPE AddRef() override;
++    ULONG STDMETHODCALLTYPE Release() override;
+ protected:
+     virtual void ReleaseThis() { delete this; }
+ private:
+-- 
+2.33.0.windows.2
+

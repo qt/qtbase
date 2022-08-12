@@ -1,0 +1,16 @@
+[
+    {
+        "Id": "D3D12MemoryAllocator",
+        "Name": "D3D12 Memory Allocator",
+        "QDocModule": "qtgui",
+        "Description": "D3D12 Memory Allocator",
+        "QtUsage": "Memory management for the D3D12 backend of QRhi.",
+
+        "Homepage": "https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator",
+        "Version": "f128d39b7a95b4235bd228d231646278dc6c24b2",
+        "License": "MIT License",
+        "LicenseId": "MIT",
+        "LicenseFile": "LICENSE.txt",
+        "Copyright": "Copyright (c) 2019-2022 Advanced Micro Devices, Inc. All rights reserved."
+    }
+]
