@@ -168,9 +168,22 @@ function(qt_internal_add_tool target_name)
     endif()
 
     if(NOT QT_WILL_BUILD_TOOLS)
-        message(FATAL_ERROR "The tool \"${full_name}\" was not found in the "
-                           "${tools_package_name} package. "
-                           "Package found: ${${tools_package_name}_FOUND}")
+        if(${${tools_package_name}_FOUND})
+            set(pkg_found_msg "")
+            string(APPEND pkg_found_msg
+                "the ${tools_package_name} package, but the package did not contain the tool. "
+                "Make sure that the host module ${arg_TOOLS_TARGET} was built with all features "
+                "enabled (no explicitly disabled tools).")
+        else()
+            set(pkg_found_msg "")
+            string(APPEND pkg_found_msg
+                "the ${tools_package_name} package, but the package could not be found. "
+                "Make sure you have built and installed the host ${arg_TOOLS_TARGET} module, "
+                "which will ensure the creation of the ${tools_package_name} package.")
+        endif()
+        message(FATAL_ERROR
+            "Failed to find the host tool \"${full_name}\". It is part of "
+            ${pkg_found_msg})
     else()
         message(STATUS "Tool '${full_name}' will be built from source.")
     endif()
