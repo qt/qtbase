@@ -27,6 +27,8 @@ macro(qt_internal_get_internal_add_module_keywords option_args single_args multi
         CONFIGURE_FILE_PATH
         CPP_EXPORT_HEADER_BASE_NAME
         EXTERNAL_HEADERS_DIR
+        PRIVATE_HEADER_FILTERS
+        QPA_HEADER_FILTERS
         ${__default_target_info_args}
     )
     set(${multi_args}
@@ -40,6 +42,24 @@ macro(qt_internal_get_internal_add_module_keywords option_args single_args multi
         ${__default_private_module_args}
     )
 endmacro()
+
+# The function helps to wrap module include paths with the header existence check.
+function(qt_internal_append_include_directories_with_headers_check target list_to_append type)
+    string(TOLOWER "${type}" type)
+    string(JOIN "" has_headers_check
+        "$<BOOL:"
+            "$<TARGET_PROPERTY:"
+                "$<TARGET_NAME:${target}>,"
+                "_qt_module_has_${type}_headers"
+            ">"
+        ">"
+    )
+    foreach(directory IN LISTS ARGN)
+        list(APPEND ${list_to_append}
+            "$<${has_headers_check}:${directory}>")
+    endforeach()
+    set(${list_to_append} "${${list_to_append}}" PARENT_SCOPE)
+endfunction()
 
 # This is the main entry function for creating a Qt module, that typically
 # consists of a library, public header files, private header files and configurable
@@ -83,7 +103,14 @@ endmacro()
 #     A module directory with non qt headers (like 3rdparty) to be installed.
 #     Note this option overrides install headers used as PUBLIC_HEADER by cmake install(TARGET)
 #     otherwise set by syncqt.
-
+#
+#   PRIVATE_HEADER_FILTERS
+#     The regular expressions that filter private header files out of target sources.
+#     The value must use the following format 'regex1|regex2|regex3'.
+#
+#   QPA_HEADER_FILTERS
+#     The regular expressions that filter QPA header files out of target sources.
+#     The value must use the following format 'regex1|regex2|regex3'.
 function(qt_internal_add_module target)
     qt_internal_get_internal_add_module_keywords(
         module_option_args
@@ -198,6 +225,12 @@ function(qt_internal_add_module target)
 
     set(module_config_header "qt${arg_CONFIG_MODULE_NAME}-config.h")
     set(module_config_private_header "qt${arg_CONFIG_MODULE_NAME}-config_p.h")
+    # qt<module>-config.h/-config_p.h header files are not marked as GENERATED automatically
+    # for old CMake versions. Set the property explicitly here.
+    set_source_files_properties("${module_config_header}" "${module_config_private_header}"
+        PROPERTIES
+            GENERATED TRUE
+    )
 
     # Module define needs to take into account the config module name.
     string(TOUPPER "${arg_CONFIG_MODULE_NAME}" module_define_infix)
@@ -374,13 +407,6 @@ function(qt_internal_add_module target)
         ### FIXME: Can we replace headers.pri?
         qt_read_headers_pri("${module_build_interface_include_dir}" "module_headers")
 
-        if(arg_EXTERNAL_HEADERS)
-            set(module_headers_public ${arg_EXTERNAL_HEADERS})
-        endif()
-
-        set_property(TARGET ${target} APPEND PROPERTY
-            _qt_module_timestamp_dependencies "${module_headers_public}")
-
         # We should not generate export headers if module is defined as pure STATIC.
         # Static libraries don't need to export their symbols, and corner cases when sources are
         # also used in shared libraries, should be handled manually.
@@ -401,28 +427,42 @@ function(qt_internal_add_module target)
 
         set(module_depends_header
             "${module_build_interface_include_dir}/${module_include_name}Depends")
-        if(is_framework)
-            if(NOT is_interface_lib)
-                qt_copy_framework_headers(${target}
-                    PUBLIC "${module_headers_public};${module_depends_header}"
-                    PRIVATE "${module_headers_private}"
-                    QPA "${module_headers_qpa}"
-                )
-            endif()
-        else()
-            set_property(TARGET ${target} APPEND PROPERTY PUBLIC_HEADER "${module_headers_public}")
-            set_property(TARGET ${target} APPEND PROPERTY PUBLIC_HEADER ${module_depends_header})
-            set_property(TARGET ${target} APPEND PROPERTY PRIVATE_HEADER "${module_headers_private}")
-        endif()
-        if (NOT ${arg_HEADER_MODULE})
+        if(NOT ${arg_HEADER_MODULE})
+            set(module_header "${module_build_interface_include_dir}/${module_include_name}")
             set_property(TARGET "${target}" PROPERTY MODULE_HEADER
-                "${module_build_interface_include_dir}/${module_include_name}")
+                    "${module_header}")
         endif()
 
-        if(module_headers_qpa)
-            qt_install(
-                FILES ${module_headers_qpa}
-                DESTINATION "${module_install_interface_qpa_include_dir}")
+        set(qpa_filter_regex "")
+        if(arg_QPA_HEADER_FILTERS)
+            set(qpa_filter_regex "${arg_QPA_HEADER_FILTERS}")
+        endif()
+        set_target_properties(${target}
+            PROPERTIES _qt_module_qpa_headers_filter_regex "${qpa_filter_regex}")
+
+        set(private_filter_regex ".+_p(ch)?\\.h")
+        if(arg_PRIVATE_HEADER_FILTERS)
+            set(private_filter_regex "${private_filter_regex}|${arg_PRIVATE_HEADER_FILTERS}")
+        endif()
+        set_target_properties(${target}
+            PROPERTIES _qt_module_private_headers_filter_regex "${private_filter_regex}")
+
+        # If EXTERNAL_HEADERS_DIR is set we install the specified directory and keep the structure
+        # without taking into the account the CMake source tree and syncqt outputs.
+        if(arg_EXTERNAL_HEADERS_DIR)
+            qt_install(DIRECTORY "${arg_EXTERNAL_HEADERS_DIR}/"
+                DESTINATION "${module_install_interface_include_dir}"
+            )
+        else()
+            if(arg_EXTERNAL_HEADERS)
+                set(module_headers_public "${arg_EXTERNAL_HEADERS}")
+            endif()
+            qt_internal_install_module_headers(${target}
+                PUBLIC
+                    ${module_headers_public}
+                    "${module_depends_header}"
+                    "${module_header}"
+            )
         endif()
     endif()
 
@@ -461,15 +501,15 @@ function(qt_internal_add_module target)
     # Make sure to create such paths for both the the BUILD_INTERFACE and the INSTALL_INTERFACE.
     #
     # Only add syncqt headers if they exist.
-    # This handles cases like QmlDevToolsPrivate which do not have their own headers, but borrow them
-    # from another module.
+    # This handles cases like QmlDevToolsPrivate which do not have their own headers, but borrow
+    # them from another module.
     if(NOT arg_NO_SYNC_QT AND NOT arg_NO_MODULE_HEADERS)
         # Don't include private headers unless they exist, aka syncqt created them.
-        if(module_headers_private)
-            list(APPEND private_includes
-                "$<BUILD_INTERFACE:${module_build_interface_versioned_include_dir}>"
-                "$<BUILD_INTERFACE:${module_build_interface_versioned_inner_include_dir}>")
-        endif()
+        qt_internal_append_include_directories_with_headers_check(${target}
+            private_includes PRIVATE
+            "$<BUILD_INTERFACE:${module_build_interface_versioned_include_dir}>"
+            "$<BUILD_INTERFACE:${module_build_interface_versioned_inner_include_dir}>"
+        )
 
         list(APPEND public_includes
                     # For the syncqt headers
@@ -541,8 +581,13 @@ function(qt_internal_add_module target)
 
     qt_internal_add_repo_local_defines("${target}")
 
+    if(NOT arg_EXTERNAL_HEADERS)
+        set(arg_EXTERNAL_HEADERS "")
+    endif()
     qt_internal_extend_target("${target}"
-        SOURCES ${arg_SOURCES}
+        SOURCES
+            ${arg_SOURCES}
+            ${arg_EXTERNAL_HEADERS}
         INCLUDE_DIRECTORIES
             ${private_includes}
         PUBLIC_INCLUDE_DIRECTORIES
@@ -729,14 +774,6 @@ set(QT_LIBINFIX \"${QT_LIBINFIX}\")")
         list(APPEND exported_targets ${target_private})
     endif()
     set(export_name "${INSTALL_CMAKE_NAMESPACE}${target}Targets")
-    if(arg_EXTERNAL_HEADERS_DIR)
-        qt_install(DIRECTORY "${arg_EXTERNAL_HEADERS_DIR}/"
-            DESTINATION "${module_install_interface_include_dir}"
-        )
-        unset(public_header_destination)
-    else()
-        set(public_header_destination PUBLIC_HEADER DESTINATION "${module_install_interface_include_dir}")
-    endif()
 
     qt_install(TARGETS ${exported_targets}
         EXPORT ${export_name}
@@ -744,9 +781,7 @@ set(QT_LIBINFIX \"${QT_LIBINFIX}\")")
         LIBRARY DESTINATION ${INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${INSTALL_LIBDIR}
         FRAMEWORK DESTINATION ${INSTALL_LIBDIR}
-        PRIVATE_HEADER DESTINATION "${module_install_interface_private_include_dir}"
-        ${public_header_destination}
-        )
+    )
 
     if(BUILD_SHARED_LIBS)
         qt_apply_rpaths(TARGET "${target}" INSTALL_PATH "${INSTALL_LIBDIR}" RELATIVE_RPATH)
@@ -786,7 +821,7 @@ set(QT_LIBINFIX \"${QT_LIBINFIX}\")")
 
     # Handle cases like QmlDevToolsPrivate which do not have their own headers, but rather borrow them
     # from another module.
-    if(NOT arg_NO_SYNC_QT)
+    if(NOT arg_NO_SYNC_QT AND NOT arg_NO_MODULE_HEADERS)
         list(APPEND interface_includes "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>")
 
         # syncqt.pl does not create a private header directory like 'include/6.0/QtFoo' unless
@@ -794,23 +829,27 @@ set(QT_LIBINFIX \"${QT_LIBINFIX}\")")
         # need to make sure not to add such include paths unless the directory exists, otherwise
         # consumers of the module will fail at CMake generation time stating that
         # INTERFACE_INCLUDE_DIRECTORIES contains a non-existent path.
-        if(NOT arg_NO_MODULE_HEADERS
-                AND EXISTS "${module_build_interface_versioned_inner_include_dir}")
-            list(APPEND interface_includes
-                "$<BUILD_INTERFACE:${module_build_interface_versioned_include_dir}>"
-                "$<BUILD_INTERFACE:${module_build_interface_versioned_inner_include_dir}>")
+        qt_internal_append_include_directories_with_headers_check(${target}
+            interface_includes PRIVATE
+            "$<BUILD_INTERFACE:${module_build_interface_versioned_include_dir}>"
+            "$<BUILD_INTERFACE:${module_build_interface_versioned_inner_include_dir}>"
+        )
 
-            if(is_framework)
-                set(fw_install_private_header_dir "${INSTALL_LIBDIR}/${fw_private_header_dir}")
-                set(fw_install_private_module_header_dir "${INSTALL_LIBDIR}/${fw_private_module_header_dir}")
-                list(APPEND interface_includes
-                            "$<INSTALL_INTERFACE:${fw_install_private_header_dir}>"
-                            "$<INSTALL_INTERFACE:${fw_install_private_module_header_dir}>")
-            else()
-                list(APPEND interface_includes
-                    "$<INSTALL_INTERFACE:${module_install_interface_versioned_include_dir}>"
-                    "$<INSTALL_INTERFACE:${module_install_interface_versioned_inner_include_dir}>")
-            endif()
+        if(is_framework)
+            set(fw_install_private_header_dir "${INSTALL_LIBDIR}/${fw_private_header_dir}")
+            set(fw_install_private_module_header_dir
+                "${INSTALL_LIBDIR}/${fw_private_module_header_dir}")
+            qt_internal_append_include_directories_with_headers_check(${target}
+                interface_includes PRIVATE
+                "$<INSTALL_INTERFACE:${fw_install_private_header_dir}>"
+                "$<INSTALL_INTERFACE:${fw_install_private_module_header_dir}>"
+            )
+        else()
+            qt_internal_append_include_directories_with_headers_check(${target}
+                interface_includes PRIVATE
+                "$<INSTALL_INTERFACE:${module_install_interface_versioned_include_dir}>"
+                "$<INSTALL_INTERFACE:${module_install_interface_versioned_inner_include_dir}>"
+            )
         endif()
     endif()
 
@@ -850,6 +889,18 @@ set(QT_LIBINFIX \"${QT_LIBINFIX}\")")
 endfunction()
 
 function(qt_finalize_module target)
+    qt_internal_collect_module_headers(module_headers ${target})
+    set_property(TARGET ${target} APPEND PROPERTY
+        _qt_module_timestamp_dependencies "${module_headers_public}")
+
+    # qt_internal_install_module_headers needs to be called before
+    # qt_finalize_framework_headers_copy, because the last uses the QT_COPIED_FRAMEWORK_HEADERS
+    # property which supposed to be updated inside every qt_internal_install_module_headers call.
+    qt_internal_install_module_headers(${target}
+        PRIVATE ${module_headers_private}
+        QPA ${module_headers_qpa}
+    )
+
     qt_finalize_framework_headers_copy(${target})
     qt_generate_prl_file(${target} "${INSTALL_LIBDIR}")
     qt_generate_module_pri_file("${target}" ${ARGN})
@@ -1092,4 +1143,100 @@ function(qt_internal_generate_cpp_global_exports target module_define_infix)
                 DESTINATION "${module_install_interface_private_include_dir}")
         endif()
     endif()
+endfunction()
+
+function(qt_internal_install_module_headers target)
+    set(options)
+    set(one_value_args)
+    set(multi_value_args PUBLIC PRIVATE QPA)
+    cmake_parse_arguments(arg "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
+
+    qt_internal_module_info(module ${target})
+
+    get_target_property(target_type ${target} TYPE)
+    set(is_interface_lib FALSE)
+    if(target_type STREQUAL "INTERFACE_LIBRARY")
+        set(is_interface_lib TRUE)
+    else()
+        get_target_property(is_framework ${target} FRAMEWORK)
+    endif()
+
+
+    foreach(header_type IN LISTS multi_value_args)
+        if(NOT arg_${header_type})
+            set(arg_${header_type} "")
+        endif()
+    endforeach()
+
+    if(is_framework)
+        qt_copy_framework_headers(${target}
+            PUBLIC ${arg_PUBLIC}
+            PRIVATE ${arg_PRIVATE}
+            QPA ${arg_QPA}
+        )
+    else()
+        if(arg_PUBLIC)
+            qt_install(FILES ${arg_PUBLIC}
+                 DESTINATION "${module_install_interface_include_dir}")
+        endif()
+        if(arg_PRIVATE)
+            qt_install(FILES ${arg_PRIVATE}
+                 DESTINATION "${module_install_interface_private_include_dir}")
+        endif()
+    endif()
+
+    if(arg_QPA)
+        qt_install(FILES ${arg_QPA} DESTINATION "${module_install_interface_qpa_include_dir}")
+    endif()
+endfunction()
+
+function(qt_internal_collect_module_headers out_var target)
+    set(${out_var}_public "")
+    set(${out_var}_private "")
+    set(${out_var}_qpa "")
+
+    qt_internal_get_target_sources(sources ${target})
+
+    get_target_property(public_filter ${target} _qt_module_public_headers_filter_regex)
+    get_target_property(private_filter ${target} _qt_module_private_headers_filter_regex)
+    get_target_property(qpa_filter ${target} _qt_module_qpa_headers_filter_regex)
+
+    foreach(file IN LISTS sources)
+        if(NOT IS_ABSOLUTE)
+            get_filename_component(file "${file}" ABSOLUTE)
+        endif()
+        get_filename_component(file_name "${file}" NAME)
+        if(NOT file_name MATCHES ".+\\.h$")
+            continue()
+        endif()
+        if(qpa_filter AND file MATCHES "${qpa_filter}")
+            list(APPEND ${out_var}_qpa "${file}")
+        elseif(private_filter AND file MATCHES "${private_filter}")
+            list(APPEND ${out_var}_private "${file}")
+        elseif(NOT public_filter OR file MATCHES "${public_filter}")
+            list(APPEND ${out_var}_public "${file}")
+        endif()
+    endforeach()
+
+    set(header_types public private qpa)
+    set(has_header_types_properties "")
+    foreach(header_type IN LISTS header_types)
+        get_target_property(current_propety_value ${target} _qt_module_has_${header_type}_headers)
+        if(${out_var}_${header_type})
+            list(APPEND has_header_types_properties
+                    _qt_module_has_${header_type}_headers TRUE)
+        endif()
+
+        set(${out_var}_${header_type} "${${out_var}_${header_type}}" PARENT_SCOPE)
+    endforeach()
+
+    if(has_header_types_properties)
+        set_target_properties(${target} PROPERTIES ${has_header_types_properties})
+    endif()
+    set_property(TARGET ${target} APPEND PROPERTY
+        EXPORT_PROPERTIES
+            _qt_module_has_public_headers
+            _qt_module_has_private_headers
+            _qt_module_has_qpa_headers
+    )
 endfunction()

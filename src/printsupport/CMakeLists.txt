@@ -40,6 +40,8 @@ qt_internal_add_module(PrintSupport
         Qt::GuiPrivate
         Qt::WidgetsPrivate
     GENERATE_CPP_EXPORTS
+    QPA_HEADER_FILTERS
+        "(^|/)qplatform.+\\.h$"
 )
 
 #### Keys ignored in scope 1:.:.:printsupport.pro:<TRUE>:

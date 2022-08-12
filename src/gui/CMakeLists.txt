@@ -275,6 +275,8 @@ qt_internal_add_module(Gui
     PRECOMPILED_HEADER
         "kernel/qt_gui_pch.h"
     GENERATE_CPP_EXPORTS
+    QPA_HEADER_FILTERS
+        "(^|/)qplatform.+\\.h$|(^|/)qwindowsystem.+\\.h$"
 )
 
 # Resources:
