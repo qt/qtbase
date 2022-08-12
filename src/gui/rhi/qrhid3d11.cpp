@@ -537,9 +537,9 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::TextureArrays:
         return true;
     case QRhi::Tessellation:
-        return false;
+        return true;
     case QRhi::GeometryShader:
-        return false;
+        return true;
     case QRhi::TextureArrayRange:
         return true;
     case QRhi::NonFillPolygonMode:
@@ -840,10 +840,13 @@ void QRhiD3D11::setGraphicsPipeline(QRhiCommandBuffer *cb, QRhiGraphicsPipeline 
     }
 }
 
-static const int RBM_SUPPORTED_STAGES = 3;
+static const int RBM_SUPPORTED_STAGES = 6;
 static const int RBM_VERTEX = 0;
-static const int RBM_FRAGMENT = 1;
-static const int RBM_COMPUTE = 2;
+static const int RBM_HULL = 1;
+static const int RBM_DOMAIN = 2;
+static const int RBM_GEOMETRY = 3;
+static const int RBM_FRAGMENT = 4;
+static const int RBM_COMPUTE = 5;
 
 void QRhiD3D11::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBindings *srb,
                                    int dynamicOffsetCount,
@@ -952,6 +955,9 @@ void QRhiD3D11::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         memset(resBindMaps, 0, sizeof(resBindMaps));
         if (gfxPsD) {
             resBindMaps[RBM_VERTEX] = &gfxPsD->vs.nativeResourceBindingMap;
+            resBindMaps[RBM_HULL] = &gfxPsD->hs.nativeResourceBindingMap;
+            resBindMaps[RBM_DOMAIN] = &gfxPsD->ds.nativeResourceBindingMap;
+            resBindMaps[RBM_GEOMETRY] = &gfxPsD->gs.nativeResourceBindingMap;
             resBindMaps[RBM_FRAGMENT] = &gfxPsD->fs.nativeResourceBindingMap;
         } else {
             resBindMaps[RBM_COMPUTE] = &compPsD->cs.nativeResourceBindingMap;
@@ -2077,7 +2083,7 @@ static inline QPair<int, int> mapBinding(int binding,
 {
     const QShader::NativeResourceBindingMap *map = nativeResourceBindingMaps[stageIndex];
     if (!map || map->isEmpty())
-        return { binding, binding }; // old QShader versions do not have this map, assume 1:1 mapping then
+        return { binding, binding }; // assume 1:1 mapping
 
     auto it = map->constFind(binding);
     if (it != map->cend())
@@ -2092,31 +2098,21 @@ static inline QPair<int, int> mapBinding(int binding,
 void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
                                              const QShader::NativeResourceBindingMap *nativeResourceBindingMaps[])
 {
-    srbD->vsubufs.clear();
-    srbD->vsubuforigbindings.clear();
-    srbD->vsubufoffsets.clear();
-    srbD->vsubufsizes.clear();
+    srbD->vsUniformBufferBatches.clear();
+    srbD->hsUniformBufferBatches.clear();
+    srbD->dsUniformBufferBatches.clear();
+    srbD->gsUniformBufferBatches.clear();
+    srbD->fsUniformBufferBatches.clear();
+    srbD->csUniformBufferBatches.clear();
 
-    srbD->fsubufs.clear();
-    srbD->fsubuforigbindings.clear();
-    srbD->fsubufoffsets.clear();
-    srbD->fsubufsizes.clear();
+    srbD->vsSamplerBatches.clear();
+    srbD->hsSamplerBatches.clear();
+    srbD->dsSamplerBatches.clear();
+    srbD->gsSamplerBatches.clear();
+    srbD->fsSamplerBatches.clear();
+    srbD->csSamplerBatches.clear();
 
-    srbD->csubufs.clear();
-    srbD->csubuforigbindings.clear();
-    srbD->csubufoffsets.clear();
-    srbD->csubufsizes.clear();
-
-    srbD->vssamplers.clear();
-    srbD->vsshaderresources.clear();
-
-    srbD->fssamplers.clear();
-    srbD->fsshaderresources.clear();
-
-    srbD->cssamplers.clear();
-    srbD->csshaderresources.clear();
-
-    srbD->csUAVs.clear();
+    srbD->csUavBatches.clear();
 
     struct Stage {
         struct Buffer {
@@ -2142,6 +2138,30 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
         QVarLengthArray<Texture, 8> textures;
         QVarLengthArray<Sampler, 8> samplers;
         QVarLengthArray<Uav, 8> uavs;
+        void buildBufferBatches(QD3D11ShaderResourceBindings::StageUniformBufferBatches &batches) const
+        {
+            for (const Buffer &buf : buffers) {
+                batches.ubufs.feed(buf.breg, buf.buffer);
+                batches.ubuforigbindings.feed(buf.breg, UINT(buf.binding));
+                batches.ubufoffsets.feed(buf.breg, buf.offsetInConstants);
+                batches.ubufsizes.feed(buf.breg, buf.sizeInConstants);
+            }
+            batches.finish();
+        }
+        void buildSamplerBatches(QD3D11ShaderResourceBindings::StageSamplerBatches &batches) const
+        {
+            for (const Texture &t : textures)
+                batches.shaderresources.feed(t.treg, t.srv);
+            for (const Sampler &s : samplers)
+                batches.samplers.feed(s.sreg, s.sampler);
+            batches.finish();
+        }
+        void buildUavBatches(QD3D11ShaderResourceBindings::StageUavBatches &batches) const
+        {
+            for (const Stage::Uav &u : uavs)
+                batches.uavs.feed(u.ureg, u.uav);
+            batches.finish();
+        }
     } res[RBM_SUPPORTED_STAGES];
 
     for (int i = 0, ie = srbD->sortedBindings.count(); i != ie; ++i) {
@@ -2170,6 +2190,21 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
                 if (nativeBinding.first >= 0)
                     res[RBM_VERTEX].buffers.append({ b->binding, nativeBinding.first, bufD->buffer, offsetInConstants, sizeInConstants });
             }
+            if (b->stage.testFlag(QRhiShaderResourceBinding::TessellationControlStage)) {
+                QPair<int, int> nativeBinding = mapBinding(b->binding, RBM_HULL, nativeResourceBindingMaps);
+                if (nativeBinding.first >= 0)
+                    res[RBM_HULL].buffers.append({ b->binding, nativeBinding.first, bufD->buffer, offsetInConstants, sizeInConstants });
+            }
+            if (b->stage.testFlag(QRhiShaderResourceBinding::TessellationEvaluationStage)) {
+                QPair<int, int> nativeBinding = mapBinding(b->binding, RBM_DOMAIN, nativeResourceBindingMaps);
+                if (nativeBinding.first >= 0)
+                    res[RBM_DOMAIN].buffers.append({ b->binding, nativeBinding.first, bufD->buffer, offsetInConstants, sizeInConstants });
+            }
+            if (b->stage.testFlag(QRhiShaderResourceBinding::GeometryStage)) {
+                QPair<int, int> nativeBinding = mapBinding(b->binding, RBM_GEOMETRY, nativeResourceBindingMaps);
+                if (nativeBinding.first >= 0)
+                    res[RBM_GEOMETRY].buffers.append({ b->binding, nativeBinding.first, bufD->buffer, offsetInConstants, sizeInConstants });
+            }
             if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
                 QPair<int, int> nativeBinding = mapBinding(b->binding, RBM_FRAGMENT, nativeResourceBindingMaps);
                 if (nativeBinding.first >= 0)
@@ -2189,6 +2224,9 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
             const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->u.stex;
             bd.stex.count = data->count;
             const QPair<int, int> nativeBindingVert = mapBinding(b->binding, RBM_VERTEX, nativeResourceBindingMaps);
+            const QPair<int, int> nativeBindingHull = mapBinding(b->binding, RBM_HULL, nativeResourceBindingMaps);
+            const QPair<int, int> nativeBindingDomain = mapBinding(b->binding, RBM_DOMAIN, nativeResourceBindingMaps);
+            const QPair<int, int> nativeBindingGeom = mapBinding(b->binding, RBM_GEOMETRY, nativeResourceBindingMaps);
             const QPair<int, int> nativeBindingFrag = mapBinding(b->binding, RBM_FRAGMENT, nativeResourceBindingMaps);
             const QPair<int, int> nativeBindingComp = mapBinding(b->binding, RBM_COMPUTE, nativeResourceBindingMaps);
             // if SPIR-V binding b is mapped to tN and sN in HLSL, and it
@@ -2201,11 +2239,11 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
                 bd.stex.d[elem].texGeneration = texD ? texD->generation : 0;
                 bd.stex.d[elem].samplerId = samplerD ? samplerD->m_id : 0;
                 bd.stex.d[elem].samplerGeneration = samplerD ? samplerD->generation : 0;
+                // Must handle all three cases (combined, separate, separate):
+                //   first = texture binding, second = sampler binding
+                //   first = texture binding
+                //   first = sampler binding
                 if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
-                    // Must handle all three cases (combined, separate, separate):
-                    //   first = texture binding, second = sampler binding
-                    //   first = texture binding
-                    //   first = sampler binding
                     const int samplerBinding = texD && samplerD ? nativeBindingVert.second
                                                                 : (samplerD ? nativeBindingVert.first : -1);
                     if (nativeBindingVert.first >= 0 && texD)
@@ -2213,9 +2251,33 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
                     if (samplerBinding >= 0)
                         res[RBM_VERTEX].samplers.append({ samplerBinding + elem, samplerD->samplerState });
                 }
+                if (b->stage.testFlag(QRhiShaderResourceBinding::TessellationControlStage)) {
+                    const int samplerBinding = texD && samplerD ? nativeBindingHull.second
+                                                                : (samplerD ? nativeBindingHull.first : -1);
+                    if (nativeBindingHull.first >= 0 && texD)
+                        res[RBM_HULL].textures.append({ nativeBindingHull.first + elem, texD->srv });
+                    if (samplerBinding >= 0)
+                        res[RBM_HULL].samplers.append({ samplerBinding + elem, samplerD->samplerState });
+                }
+                if (b->stage.testFlag(QRhiShaderResourceBinding::TessellationEvaluationStage)) {
+                    const int samplerBinding = texD && samplerD ? nativeBindingDomain.second
+                                                                : (samplerD ? nativeBindingDomain.first : -1);
+                    if (nativeBindingDomain.first >= 0 && texD)
+                        res[RBM_DOMAIN].textures.append({ nativeBindingDomain.first + elem, texD->srv });
+                    if (samplerBinding >= 0)
+                        res[RBM_DOMAIN].samplers.append({ samplerBinding + elem, samplerD->samplerState });
+                }
+                if (b->stage.testFlag(QRhiShaderResourceBinding::GeometryStage)) {
+                    const int samplerBinding = texD && samplerD ? nativeBindingGeom.second
+                                                                : (samplerD ? nativeBindingGeom.first : -1);
+                    if (nativeBindingGeom.first >= 0 && texD)
+                        res[RBM_GEOMETRY].textures.append({ nativeBindingGeom.first + elem, texD->srv });
+                    if (samplerBinding >= 0)
+                        res[RBM_GEOMETRY].samplers.append({ samplerBinding + elem, samplerD->samplerState });
+                }
                 if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
                     const int samplerBinding = texD && samplerD ? nativeBindingFrag.second
-                                                                : (samplerD ? nativeBindingVert.first : -1);
+                                                                : (samplerD ? nativeBindingFrag.first : -1);
                     if (nativeBindingFrag.first >= 0 && texD)
                         res[RBM_FRAGMENT].textures.append({ nativeBindingFrag.first + elem, texD->srv });
                     if (samplerBinding >= 0)
@@ -2223,7 +2285,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
                 }
                 if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
                     const int samplerBinding = texD && samplerD ? nativeBindingComp.second
-                                                                : (samplerD ? nativeBindingVert.first : -1);
+                                                                : (samplerD ? nativeBindingComp.first : -1);
                     if (nativeBindingComp.first >= 0 && texD)
                         res[RBM_COMPUTE].textures.append({ nativeBindingComp.first + elem, texD->srv });
                     if (samplerBinding >= 0)
@@ -2295,63 +2357,21 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
         });
     }
 
-    for (const Stage::Buffer &buf : qAsConst(res[RBM_VERTEX].buffers)) {
-        srbD->vsubufs.feed(buf.breg, buf.buffer);
-        srbD->vsubuforigbindings.feed(buf.breg, UINT(buf.binding));
-        srbD->vsubufoffsets.feed(buf.breg, buf.offsetInConstants);
-        srbD->vsubufsizes.feed(buf.breg, buf.sizeInConstants);
-    }
-    srbD->vsubufsPresent = srbD->vsubufs.finish();
-    srbD->vsubuforigbindings.finish();
-    srbD->vsubufoffsets.finish();
-    srbD->vsubufsizes.finish();
+    res[RBM_VERTEX].buildBufferBatches(srbD->vsUniformBufferBatches);
+    res[RBM_HULL].buildBufferBatches(srbD->hsUniformBufferBatches);
+    res[RBM_DOMAIN].buildBufferBatches(srbD->dsUniformBufferBatches);
+    res[RBM_GEOMETRY].buildBufferBatches(srbD->gsUniformBufferBatches);
+    res[RBM_FRAGMENT].buildBufferBatches(srbD->fsUniformBufferBatches);
+    res[RBM_COMPUTE].buildBufferBatches(srbD->csUniformBufferBatches);
 
-    for (const Stage::Buffer &buf : qAsConst(res[RBM_FRAGMENT].buffers)) {
-        srbD->fsubufs.feed(buf.breg, buf.buffer);
-        srbD->fsubuforigbindings.feed(buf.breg, UINT(buf.binding));
-        srbD->fsubufoffsets.feed(buf.breg, buf.offsetInConstants);
-        srbD->fsubufsizes.feed(buf.breg, buf.sizeInConstants);
-    }
-    srbD->fsubufsPresent = srbD->fsubufs.finish();
-    srbD->fsubuforigbindings.finish();
-    srbD->fsubufoffsets.finish();
-    srbD->fsubufsizes.finish();
+    res[RBM_VERTEX].buildSamplerBatches(srbD->vsSamplerBatches);
+    res[RBM_HULL].buildSamplerBatches(srbD->hsSamplerBatches);
+    res[RBM_DOMAIN].buildSamplerBatches(srbD->dsSamplerBatches);
+    res[RBM_GEOMETRY].buildSamplerBatches(srbD->gsSamplerBatches);
+    res[RBM_FRAGMENT].buildSamplerBatches(srbD->fsSamplerBatches);
+    res[RBM_COMPUTE].buildSamplerBatches(srbD->csSamplerBatches);
 
-    for (const Stage::Buffer &buf : qAsConst(res[RBM_COMPUTE].buffers)) {
-        srbD->csubufs.feed(buf.breg, buf.buffer);
-        srbD->csubuforigbindings.feed(buf.breg, UINT(buf.binding));
-        srbD->csubufoffsets.feed(buf.breg, buf.offsetInConstants);
-        srbD->csubufsizes.feed(buf.breg, buf.sizeInConstants);
-    }
-    srbD->csubufsPresent = srbD->csubufs.finish();
-    srbD->csubuforigbindings.finish();
-    srbD->csubufoffsets.finish();
-    srbD->csubufsizes.finish();
-
-    for (const Stage::Texture &t : qAsConst(res[RBM_VERTEX].textures))
-        srbD->vsshaderresources.feed(t.treg, t.srv);
-    for (const Stage::Sampler &s : qAsConst(res[RBM_VERTEX].samplers))
-        srbD->vssamplers.feed(s.sreg, s.sampler);
-    srbD->vssamplersPresent = srbD->vssamplers.finish();
-    srbD->vsshaderresources.finish();
-
-    for (const Stage::Texture &t : qAsConst(res[RBM_FRAGMENT].textures))
-        srbD->fsshaderresources.feed(t.treg, t.srv);
-    for (const Stage::Sampler &s : qAsConst(res[RBM_FRAGMENT].samplers))
-        srbD->fssamplers.feed(s.sreg, s.sampler);
-    srbD->fssamplersPresent = srbD->fssamplers.finish();
-    srbD->fsshaderresources.finish();
-
-    for (const Stage::Texture &t : qAsConst(res[RBM_COMPUTE].textures))
-        srbD->csshaderresources.feed(t.treg, t.srv);
-    for (const Stage::Sampler &s : qAsConst(res[RBM_COMPUTE].samplers))
-        srbD->cssamplers.feed(s.sreg, s.sampler);
-    srbD->cssamplersPresent = srbD->cssamplers.finish();
-    srbD->csshaderresources.finish();
-
-    for (const Stage::Uav &u : qAsConst(res[RBM_COMPUTE].uavs))
-        srbD->csUAVs.feed(u.ureg, u.uav);
-    srbD->csUAVsPresent = srbD->csUAVs.finish();
+    res[RBM_COMPUTE].buildUavBatches(srbD->csUavBatches);
 }
 
 void QRhiD3D11::executeBufferHostWrites(QD3D11Buffer *bufD)
@@ -2373,8 +2393,8 @@ void QRhiD3D11::executeBufferHostWrites(QD3D11Buffer *bufD)
 
 static void applyDynamicOffsets(UINT *offsets,
                                 int batchIndex,
-                                QRhiBatchedBindings<UINT> *originalBindings,
-                                QRhiBatchedBindings<UINT> *staticOffsets,
+                                const QRhiBatchedBindings<UINT> *originalBindings,
+                                const QRhiBatchedBindings<UINT> *staticOffsets,
                                 const uint *dynOfsPairs, int dynOfsPairCount)
 {
     const int count = staticOffsets->batches[batchIndex].resources.count();
@@ -2405,162 +2425,92 @@ static inline uint clampedResourceCount(uint startSlot, int countSlots, uint max
     return countSlots;
 }
 
+#define SETUBUFBATCH(stagePrefixL, stagePrefixU) \
+    if (srbD->stagePrefixL##UniformBufferBatches.present) { \
+        const QD3D11ShaderResourceBindings::StageUniformBufferBatches &batches(srbD->stagePrefixL##UniformBufferBatches); \
+        for (int i = 0, ie = batches.ubufs.batches.count(); i != ie; ++i) { \
+            const uint count = clampedResourceCount(batches.ubufs.batches[i].startBinding, \
+                                                    batches.ubufs.batches[i].resources.count(), \
+                                                    D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT, \
+                                                    #stagePrefixU " cbuf"); \
+            if (count) { \
+                if (!dynOfsPairCount) { \
+                    context->stagePrefixU##SetConstantBuffers1(batches.ubufs.batches[i].startBinding, \
+                                                   count, \
+                                                   batches.ubufs.batches[i].resources.constData(), \
+                                                   batches.ubufoffsets.batches[i].resources.constData(), \
+                                                   batches.ubufsizes.batches[i].resources.constData()); \
+                } else { \
+                    applyDynamicOffsets(offsets, i, \
+                                        &batches.ubuforigbindings, &batches.ubufoffsets, \
+                                        dynOfsPairs, dynOfsPairCount); \
+                    context->stagePrefixU##SetConstantBuffers1(batches.ubufs.batches[i].startBinding, \
+                                                   count, \
+                                                   batches.ubufs.batches[i].resources.constData(), \
+                                                   offsets, \
+                                                   batches.ubufsizes.batches[i].resources.constData()); \
+                } \
+            } \
+        } \
+    }
+
+#define SETSAMPLERBATCH(stagePrefixL, stagePrefixU) \
+    if (srbD->stagePrefixL##SamplerBatches.present) { \
+        for (const auto &batch : srbD->stagePrefixL##SamplerBatches.samplers.batches) { \
+            const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(), \
+                                                    D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT, #stagePrefixU " sampler"); \
+            if (count) \
+                context->stagePrefixU##SetSamplers(batch.startBinding, count, batch.resources.constData()); \
+        } \
+        for (const auto &batch : srbD->stagePrefixL##SamplerBatches.shaderresources.batches) { \
+            const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(), \
+                                                    D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT, #stagePrefixU " SRV"); \
+            if (count) { \
+                context->stagePrefixU##SetShaderResources(batch.startBinding, count, batch.resources.constData()); \
+                contextState.stagePrefixL##HighestActiveSrvBinding = qMax(contextState.stagePrefixL##HighestActiveSrvBinding, \
+                                                              int(batch.startBinding + count) - 1); \
+            } \
+        } \
+    }
+
+#define SETUAVBATCH(stagePrefixL, stagePrefixU) \
+    if (srbD->stagePrefixL##UavBatches.present) { \
+        for (const auto &batch : srbD->stagePrefixL##UavBatches.uavs.batches) { \
+            const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(), \
+                                                    D3D11_1_UAV_SLOT_COUNT, #stagePrefixU " UAV"); \
+            if (count) { \
+                context->stagePrefixU##SetUnorderedAccessViews(batch.startBinding, \
+                                                   count, \
+                                                   batch.resources.constData(), \
+                                                   nullptr); \
+                contextState.stagePrefixL##HighestActiveUavBinding = qMax(contextState.stagePrefixL##HighestActiveUavBinding, \
+                                                              int(batch.startBinding + count) - 1); \
+            } \
+        } \
+    }
+
 void QRhiD3D11::bindShaderResources(QD3D11ShaderResourceBindings *srbD,
                                     const uint *dynOfsPairs, int dynOfsPairCount,
                                     bool offsetOnlyChange)
 {
     UINT offsets[QD3D11CommandBuffer::MAX_DYNAMIC_OFFSET_COUNT];
 
-    if (srbD->vsubufsPresent) {
-        for (int i = 0, ie = srbD->vsubufs.batches.count(); i != ie; ++i) {
-            const uint count = clampedResourceCount(srbD->vsubufs.batches[i].startBinding,
-                                                    srbD->vsubufs.batches[i].resources.count(),
-                                                    D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT,
-                                                    "VS cbuf");
-            if (count) {
-                if (!dynOfsPairCount) {
-                    context->VSSetConstantBuffers1(srbD->vsubufs.batches[i].startBinding,
-                                                   count,
-                                                   srbD->vsubufs.batches[i].resources.constData(),
-                                                   srbD->vsubufoffsets.batches[i].resources.constData(),
-                                                   srbD->vsubufsizes.batches[i].resources.constData());
-                } else {
-                    applyDynamicOffsets(offsets, i, &srbD->vsubuforigbindings, &srbD->vsubufoffsets,
-                                        dynOfsPairs, dynOfsPairCount);
-                    context->VSSetConstantBuffers1(srbD->vsubufs.batches[i].startBinding,
-                                                   count,
-                                                   srbD->vsubufs.batches[i].resources.constData(),
-                                                   offsets,
-                                                   srbD->vsubufsizes.batches[i].resources.constData());
-                }
-            }
-        }
-    }
-
-    if (srbD->fsubufsPresent) {
-        for (int i = 0, ie = srbD->fsubufs.batches.count(); i != ie; ++i) {
-            const uint count = clampedResourceCount(srbD->fsubufs.batches[i].startBinding,
-                                                    srbD->fsubufs.batches[i].resources.count(),
-                                                    D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT,
-                                                    "PS cbuf");
-            if (count) {
-                if (!dynOfsPairCount) {
-                    context->PSSetConstantBuffers1(srbD->fsubufs.batches[i].startBinding,
-                                                   count,
-                                                   srbD->fsubufs.batches[i].resources.constData(),
-                                                   srbD->fsubufoffsets.batches[i].resources.constData(),
-                                                   srbD->fsubufsizes.batches[i].resources.constData());
-                } else {
-                    applyDynamicOffsets(offsets, i, &srbD->fsubuforigbindings, &srbD->fsubufoffsets,
-                                        dynOfsPairs, dynOfsPairCount);
-                    context->PSSetConstantBuffers1(srbD->fsubufs.batches[i].startBinding,
-                                                   count,
-                                                   srbD->fsubufs.batches[i].resources.constData(),
-                                                   offsets,
-                                                   srbD->fsubufsizes.batches[i].resources.constData());
-                }
-            }
-        }
-    }
-
-    if (srbD->csubufsPresent) {
-        for (int i = 0, ie = srbD->csubufs.batches.count(); i != ie; ++i) {
-            const uint count = clampedResourceCount(srbD->csubufs.batches[i].startBinding,
-                                                    srbD->csubufs.batches[i].resources.count(),
-                                                    D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT,
-                                                    "CS cbuf");
-            if (count) {
-                if (!dynOfsPairCount) {
-                    context->CSSetConstantBuffers1(srbD->csubufs.batches[i].startBinding,
-                                                   count,
-                                                   srbD->csubufs.batches[i].resources.constData(),
-                                                   srbD->csubufoffsets.batches[i].resources.constData(),
-                                                   srbD->csubufsizes.batches[i].resources.constData());
-                } else {
-                    applyDynamicOffsets(offsets, i, &srbD->csubuforigbindings, &srbD->csubufoffsets,
-                                        dynOfsPairs, dynOfsPairCount);
-                    context->CSSetConstantBuffers1(srbD->csubufs.batches[i].startBinding,
-                                                   count,
-                                                   srbD->csubufs.batches[i].resources.constData(),
-                                                   offsets,
-                                                   srbD->csubufsizes.batches[i].resources.constData());
-                }
-            }
-        }
-    }
+    SETUBUFBATCH(vs, VS)
+    SETUBUFBATCH(hs, HS)
+    SETUBUFBATCH(ds, DS)
+    SETUBUFBATCH(gs, GS)
+    SETUBUFBATCH(fs, PS)
+    SETUBUFBATCH(cs, CS)
 
     if (!offsetOnlyChange) {
-        if (srbD->vssamplersPresent) {
-            for (const auto &batch : srbD->vssamplers.batches) {
-                const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
-                                                        D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT, "VS sampler");
-                if (count)
-                    context->VSSetSamplers(batch.startBinding, count, batch.resources.constData());
-            }
+        SETSAMPLERBATCH(vs, VS)
+        SETSAMPLERBATCH(hs, HS)
+        SETSAMPLERBATCH(ds, DS)
+        SETSAMPLERBATCH(gs, GS)
+        SETSAMPLERBATCH(fs, PS)
+        SETSAMPLERBATCH(cs, CS)
 
-            for (const auto &batch : srbD->vsshaderresources.batches) {
-                const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
-                                                        D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT, "VS SRV");
-                if (count) {
-                    context->VSSetShaderResources(batch.startBinding, count, batch.resources.constData());
-                    contextState.vsHighestActiveSrvBinding = qMax(contextState.vsHighestActiveSrvBinding,
-                                                                int(batch.startBinding + count) - 1);
-                }
-            }
-        }
-
-        if (srbD->fssamplersPresent) {
-            for (const auto &batch : srbD->fssamplers.batches) {
-                const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
-                                                        D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT, "PS sampler");
-                if (count)
-                    context->PSSetSamplers(batch.startBinding, count, batch.resources.constData());
-            }
-
-            for (const auto &batch : srbD->fsshaderresources.batches) {
-                const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
-                                                        D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT, "PS SRV");
-                if (count) {
-                    context->PSSetShaderResources(batch.startBinding, count, batch.resources.constData());
-                    contextState.fsHighestActiveSrvBinding = qMax(contextState.fsHighestActiveSrvBinding,
-                                                                int(batch.startBinding + count) - 1);
-                }
-            }
-        }
-
-        if (srbD->cssamplersPresent) {
-            for (const auto &batch : srbD->cssamplers.batches) {
-                const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
-                                                        D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT, "CS sampler");
-                if (count)
-                    context->CSSetSamplers(batch.startBinding, count, batch.resources.constData());
-            }
-
-            for (const auto &batch : srbD->csshaderresources.batches) {
-                const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
-                                                        D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT, "CS SRV");
-                if (count) {
-                    context->CSSetShaderResources(batch.startBinding, count, batch.resources.constData());
-                    contextState.csHighestActiveSrvBinding = qMax(contextState.csHighestActiveSrvBinding,
-                                                                  int(batch.startBinding + count) - 1);
-                }
-            }
-        }
-
-        if (srbD->csUAVsPresent) {
-            for (const auto &batch : srbD->csUAVs.batches) {
-                const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
-                                                        D3D11_1_UAV_SLOT_COUNT, "CS UAV");
-                if (count) {
-                    context->CSSetUnorderedAccessViews(batch.startBinding,
-                                                       count,
-                                                       batch.resources.constData(),
-                                                       nullptr);
-                    contextState.csHighestActiveUavBinding = qMax(contextState.csHighestActiveUavBinding,
-                                                                  int(batch.startBinding + count) - 1);
-                }
-            }
-        }
+        SETUAVBATCH(cs, CS)
     }
 }
 
@@ -2589,6 +2539,9 @@ void QRhiD3D11::resetShaderResources()
     }
 
     int nullsrvCount = qMax(contextState.vsHighestActiveSrvBinding, contextState.fsHighestActiveSrvBinding);
+    nullsrvCount = qMax(nullsrvCount, contextState.hsHighestActiveSrvBinding);
+    nullsrvCount = qMax(nullsrvCount, contextState.dsHighestActiveSrvBinding);
+    nullsrvCount = qMax(nullsrvCount, contextState.gsHighestActiveSrvBinding);
     nullsrvCount = qMax(nullsrvCount, contextState.csHighestActiveSrvBinding);
     nullsrvCount += 1;
     if (nullsrvCount > 0) {
@@ -2599,6 +2552,18 @@ void QRhiD3D11::resetShaderResources()
         if (contextState.vsHighestActiveSrvBinding >= 0) {
             context->VSSetShaderResources(0, UINT(contextState.vsHighestActiveSrvBinding + 1), nullsrvs.constData());
             contextState.vsHighestActiveSrvBinding = -1;
+        }
+        if (contextState.hsHighestActiveSrvBinding >= 0) {
+            context->HSSetShaderResources(0, UINT(contextState.hsHighestActiveSrvBinding + 1), nullsrvs.constData());
+            contextState.hsHighestActiveSrvBinding = -1;
+        }
+        if (contextState.dsHighestActiveSrvBinding >= 0) {
+            context->DSSetShaderResources(0, UINT(contextState.dsHighestActiveSrvBinding + 1), nullsrvs.constData());
+            contextState.dsHighestActiveSrvBinding = -1;
+        }
+        if (contextState.gsHighestActiveSrvBinding >= 0) {
+            context->GSSetShaderResources(0, UINT(contextState.gsHighestActiveSrvBinding + 1), nullsrvs.constData());
+            contextState.gsHighestActiveSrvBinding = -1;
         }
         if (contextState.fsHighestActiveSrvBinding >= 0) {
             context->PSSetShaderResources(0, UINT(contextState.fsHighestActiveSrvBinding + 1), nullsrvs.constData());
@@ -2621,10 +2586,27 @@ void QRhiD3D11::resetShaderResources()
     }
 }
 
+#define SETSHADER(StageL, StageU) \
+    if (psD->StageL.shader) { \
+        context->StageU##SetShader(psD->StageL.shader, nullptr, 0); \
+        currentShaderMask |= StageU##MaskBit; \
+    } else if (currentShaderMask & StageU##MaskBit) { \
+        context->StageU##SetShader(nullptr, nullptr, 0); \
+        currentShaderMask &= ~StageU##MaskBit; \
+    }
+
 void QRhiD3D11::executeCommandBuffer(QD3D11CommandBuffer *cbD, QD3D11SwapChain *timestampSwapChain)
 {
     quint32 stencilRef = 0;
     float blendConstants[] = { 1, 1, 1, 1 };
+    enum ActiveShaderMask {
+        VSMaskBit = 0x01,
+        HSMaskBit = 0x02,
+        DSMaskBit = 0x04,
+        GSMaskBit = 0x08,
+        PSMaskBit = 0x10
+    };
+    int currentShaderMask = 0xFF;
 
     if (timestampSwapChain) {
         const int currentFrameSlot = timestampSwapChain->currentFrameSlot;
@@ -2713,8 +2695,11 @@ void QRhiD3D11::executeCommandBuffer(QD3D11CommandBuffer *cbD, QD3D11SwapChain *
         case QD3D11CommandBuffer::Command::BindGraphicsPipeline:
         {
             QD3D11GraphicsPipeline *psD = cmd.args.bindGraphicsPipeline.ps;
-            context->VSSetShader(psD->vs.shader, nullptr, 0);
-            context->PSSetShader(psD->fs.shader, nullptr, 0);
+            SETSHADER(vs, VS)
+            SETSHADER(hs, HS)
+            SETSHADER(ds, DS)
+            SETSHADER(gs, GS)
+            SETSHADER(fs, PS)
             context->IASetPrimitiveTopology(psD->d3dTopology);
             context->IASetInputLayout(psD->inputLayout); // may be null, that's ok
             context->OMSetDepthStencilState(psD->dsState, stencilRef);
@@ -3853,6 +3838,16 @@ QD3D11GraphicsPipeline::~QD3D11GraphicsPipeline()
     destroy();
 }
 
+template<typename T>
+inline void releasePipelineShader(T &s)
+{
+    if (s.shader) {
+        s.shader->Release();
+        s.shader = nullptr;
+    }
+    s.nativeResourceBindingMap.clear();
+}
+
 void QD3D11GraphicsPipeline::destroy()
 {
     if (!dsState)
@@ -3876,17 +3871,11 @@ void QD3D11GraphicsPipeline::destroy()
         rastState = nullptr;
     }
 
-    if (vs.shader) {
-        vs.shader->Release();
-        vs.shader = nullptr;
-    }
-    vs.nativeResourceBindingMap.clear();
-
-    if (fs.shader) {
-        fs.shader->Release();
-        fs.shader = nullptr;
-    }
-    fs.nativeResourceBindingMap.clear();
+    releasePipelineShader(vs);
+    releasePipelineShader(hs);
+    releasePipelineShader(ds);
+    releasePipelineShader(gs);
+    releasePipelineShader(fs);
 
     QRHI_RES_RHI(QRhiD3D11);
     if (rhiD)
@@ -4010,7 +3999,7 @@ static inline DXGI_FORMAT toD3DAttributeFormat(QRhiVertexInputAttribute::Format 
     }
 }
 
-static inline D3D11_PRIMITIVE_TOPOLOGY toD3DTopology(QRhiGraphicsPipeline::Topology t)
+static inline D3D11_PRIMITIVE_TOPOLOGY toD3DTopology(QRhiGraphicsPipeline::Topology t, int patchControlPointCount)
 {
     switch (t) {
     case QRhiGraphicsPipeline::Triangles:
@@ -4023,6 +4012,9 @@ static inline D3D11_PRIMITIVE_TOPOLOGY toD3DTopology(QRhiGraphicsPipeline::Topol
         return D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP;
     case QRhiGraphicsPipeline::Points:
         return D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
+    case QRhiGraphicsPipeline::Patches:
+        Q_ASSERT(patchControlPointCount >= 1 && patchControlPointCount <= 32);
+        return D3D11_PRIMITIVE_TOPOLOGY(D3D11_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST + (patchControlPointCount - 1));
     default:
         Q_UNREACHABLE();
         return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -4307,6 +4299,21 @@ bool QD3D11GraphicsPipeline::create()
                 vsByteCode = cacheIt->bytecode;
                 vs.nativeResourceBindingMap = cacheIt->nativeResourceBindingMap;
                 break;
+            case QRhiShaderStage::TessellationControl:
+                hs.shader = static_cast<ID3D11HullShader *>(cacheIt->s);
+                hs.shader->AddRef();
+                hs.nativeResourceBindingMap = cacheIt->nativeResourceBindingMap;
+                break;
+            case QRhiShaderStage::TessellationEvaluation:
+                ds.shader = static_cast<ID3D11DomainShader *>(cacheIt->s);
+                ds.shader->AddRef();
+                ds.nativeResourceBindingMap = cacheIt->nativeResourceBindingMap;
+                break;
+            case QRhiShaderStage::Geometry:
+                gs.shader = static_cast<ID3D11GeometryShader *>(cacheIt->s);
+                gs.shader->AddRef();
+                gs.nativeResourceBindingMap = cacheIt->nativeResourceBindingMap;
+                break;
             case QRhiShaderStage::Fragment:
                 fs.shader = static_cast<ID3D11PixelShader *>(cacheIt->s);
                 fs.shader->AddRef();
@@ -4346,6 +4353,36 @@ bool QD3D11GraphicsPipeline::create()
                 rhiD->m_shaderCache.insert(shaderStage, QRhiD3D11::Shader(vs.shader, bytecode, vs.nativeResourceBindingMap));
                 vs.shader->AddRef();
                 break;
+            case QRhiShaderStage::TessellationControl:
+                hr = rhiD->dev->CreateHullShader(bytecode.constData(), SIZE_T(bytecode.size()), nullptr, &hs.shader);
+                if (FAILED(hr)) {
+                    qWarning("Failed to create hull shader: %s", qPrintable(comErrorMessage(hr)));
+                    return false;
+                }
+                hs.nativeResourceBindingMap = shaderStage.shader().nativeResourceBindingMap(shaderKey);
+                rhiD->m_shaderCache.insert(shaderStage, QRhiD3D11::Shader(hs.shader, bytecode, hs.nativeResourceBindingMap));
+                hs.shader->AddRef();
+                break;
+            case QRhiShaderStage::TessellationEvaluation:
+                hr = rhiD->dev->CreateDomainShader(bytecode.constData(), SIZE_T(bytecode.size()), nullptr, &ds.shader);
+                if (FAILED(hr)) {
+                    qWarning("Failed to create domain shader: %s", qPrintable(comErrorMessage(hr)));
+                    return false;
+                }
+                ds.nativeResourceBindingMap = shaderStage.shader().nativeResourceBindingMap(shaderKey);
+                rhiD->m_shaderCache.insert(shaderStage, QRhiD3D11::Shader(ds.shader, bytecode, ds.nativeResourceBindingMap));
+                ds.shader->AddRef();
+                break;
+            case QRhiShaderStage::Geometry:
+                hr = rhiD->dev->CreateGeometryShader(bytecode.constData(), SIZE_T(bytecode.size()), nullptr, &gs.shader);
+                if (FAILED(hr)) {
+                    qWarning("Failed to create geometry shader: %s", qPrintable(comErrorMessage(hr)));
+                    return false;
+                }
+                gs.nativeResourceBindingMap = shaderStage.shader().nativeResourceBindingMap(shaderKey);
+                rhiD->m_shaderCache.insert(shaderStage, QRhiD3D11::Shader(gs.shader, bytecode, gs.nativeResourceBindingMap));
+                gs.shader->AddRef();
+                break;
             case QRhiShaderStage::Fragment:
                 hr = rhiD->dev->CreatePixelShader(bytecode.constData(), SIZE_T(bytecode.size()), nullptr, &fs.shader);
                 if (FAILED(hr)) {
@@ -4362,7 +4399,7 @@ bool QD3D11GraphicsPipeline::create()
         }
     }
 
-    d3dTopology = toD3DTopology(m_topology);
+    d3dTopology = toD3DTopology(m_topology, m_patchControlPointCount);
 
     if (!vsByteCode.isEmpty()) {
         QByteArrayList matrixSliceSemantics;

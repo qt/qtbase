@@ -221,39 +221,66 @@ struct QD3D11ShaderResourceBindings : public QRhiShaderResourceBindings
     };
     QVarLengthArray<BoundResourceData, 8> boundResourceData;
 
-    bool vsubufsPresent = false;
-    bool fsubufsPresent = false;
-    bool csubufsPresent = false;
-    bool vssamplersPresent = false;
-    bool fssamplersPresent = false;
-    bool cssamplersPresent = false;
-    bool csUAVsPresent = false;
+    struct StageUniformBufferBatches {
+        bool present = false;
+        QRhiBatchedBindings<ID3D11Buffer *> ubufs;
+        QRhiBatchedBindings<UINT> ubuforigbindings;
+        QRhiBatchedBindings<UINT> ubufoffsets;
+        QRhiBatchedBindings<UINT> ubufsizes;
+        void finish() {
+            present = ubufs.finish();
+            ubuforigbindings.finish();
+            ubufoffsets.finish();
+            ubufsizes.finish();
+        }
+        void clear() {
+            ubufs.clear();
+            ubuforigbindings.clear();
+            ubufoffsets.clear();
+            ubufsizes.clear();
+        }
+    };
 
-    QRhiBatchedBindings<ID3D11Buffer *> vsubufs;
-    QRhiBatchedBindings<UINT> vsubuforigbindings;
-    QRhiBatchedBindings<UINT> vsubufoffsets;
-    QRhiBatchedBindings<UINT> vsubufsizes;
+    struct StageSamplerBatches {
+        bool present = false;
+        QRhiBatchedBindings<ID3D11SamplerState *> samplers;
+        QRhiBatchedBindings<ID3D11ShaderResourceView *> shaderresources;
+        void finish() {
+            present = samplers.finish();
+            shaderresources.finish();
+        }
+        void clear() {
+            samplers.clear();
+            shaderresources.clear();
+        }
+    };
 
-    QRhiBatchedBindings<ID3D11Buffer *> fsubufs;
-    QRhiBatchedBindings<UINT> fsubuforigbindings;
-    QRhiBatchedBindings<UINT> fsubufoffsets;
-    QRhiBatchedBindings<UINT> fsubufsizes;
+    struct StageUavBatches {
+        bool present = false;
+        QRhiBatchedBindings<ID3D11UnorderedAccessView *> uavs;
+        void finish() {
+            present = uavs.finish();
+        }
+        void clear() {
+            uavs.clear();
+        }
+    };
 
-    QRhiBatchedBindings<ID3D11Buffer *> csubufs;
-    QRhiBatchedBindings<UINT> csubuforigbindings;
-    QRhiBatchedBindings<UINT> csubufoffsets;
-    QRhiBatchedBindings<UINT> csubufsizes;
+    StageUniformBufferBatches vsUniformBufferBatches;
+    StageUniformBufferBatches hsUniformBufferBatches;
+    StageUniformBufferBatches dsUniformBufferBatches;
+    StageUniformBufferBatches gsUniformBufferBatches;
+    StageUniformBufferBatches fsUniformBufferBatches;
+    StageUniformBufferBatches csUniformBufferBatches;
 
-    QRhiBatchedBindings<ID3D11SamplerState *> vssamplers;
-    QRhiBatchedBindings<ID3D11ShaderResourceView *> vsshaderresources;
+    StageSamplerBatches vsSamplerBatches;
+    StageSamplerBatches hsSamplerBatches;
+    StageSamplerBatches dsSamplerBatches;
+    StageSamplerBatches gsSamplerBatches;
+    StageSamplerBatches fsSamplerBatches;
+    StageSamplerBatches csSamplerBatches;
 
-    QRhiBatchedBindings<ID3D11SamplerState *> fssamplers;
-    QRhiBatchedBindings<ID3D11ShaderResourceView *> fsshaderresources;
-
-    QRhiBatchedBindings<ID3D11SamplerState *> cssamplers;
-    QRhiBatchedBindings<ID3D11ShaderResourceView *> csshaderresources;
-
-    QRhiBatchedBindings<ID3D11UnorderedAccessView *> csUAVs;
+    StageUavBatches csUavBatches;
 
     friend class QRhiD3D11;
 };
@@ -273,6 +300,18 @@ struct QD3D11GraphicsPipeline : public QRhiGraphicsPipeline
         ID3D11VertexShader *shader = nullptr;
         QShader::NativeResourceBindingMap nativeResourceBindingMap;
     } vs;
+    struct {
+        ID3D11HullShader *shader = nullptr;
+        QShader::NativeResourceBindingMap nativeResourceBindingMap;
+    } hs;
+    struct {
+        ID3D11DomainShader *shader = nullptr;
+        QShader::NativeResourceBindingMap nativeResourceBindingMap;
+    } ds;
+    struct {
+        ID3D11GeometryShader *shader = nullptr;
+        QShader::NativeResourceBindingMap nativeResourceBindingMap;
+    } gs;
     struct {
         ID3D11PixelShader *shader = nullptr;
         QShader::NativeResourceBindingMap nativeResourceBindingMap;
@@ -707,6 +746,9 @@ public:
         int vsHighestActiveVertexBufferBinding = -1;
         bool vsHasIndexBufferBound = false;
         int vsHighestActiveSrvBinding = -1;
+        int hsHighestActiveSrvBinding = -1;
+        int dsHighestActiveSrvBinding = -1;
+        int gsHighestActiveSrvBinding = -1;
         int fsHighestActiveSrvBinding = -1;
         int csHighestActiveSrvBinding = -1;
         int csHighestActiveUavBinding = -1;

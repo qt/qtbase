@@ -677,23 +677,27 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     can be set via
     \l{QRhiGraphicsPipeline::setPatchControlPointCount()}{setPatchControlPointCount()},
     and shaders for tessellation control and evaluation can be specified in the
-    QRhiShaderStage list. \b{Tessellation is considered an experimental feature
-    in QRhi and can only be expected to be supported with Vulkan, OpenGL and
-    OpenGL ES for the time being}, assuming the implementation reports it as
-    supported at run time. Tessellation shaders have portability issues between
-    APIs (for example, translating GLSL/SPIR-V to HLSL is problematic due to
-    the way hull shaders are structured, whereas Metal uses a somewhat
-    different tessellation pipeline than others), and therefore no guarantees
-    can be given for a universal solution for now.
+    QRhiShaderStage list. Tessellation is considered an experimental feature in
+    QRhi and can only be expected to be supported with Vulkan, OpenGL (ES), and
+    Direct 3D, assuming the implementation reports it as supported at run time.
+    Tessellation shaders have portability issues between APIs (for example,
+    translating GLSL/SPIR-V to HLSL is problematic due to the way hull shaders
+    are structured, whereas Metal uses a somewhat different tessellation
+    pipeline than others), and therefore no guarantees can be given for a
+    universal solution for now. (for Direct 3D in particular, handwritten HLSL
+    hull and domain shaders must be injected into each QShader since qsb cannot
+    generate these from SPIR-V)
 
     \value GeometryShader Indicates that the geometry shader stage is
     supported. When supported, a geometry shader can be specified in the
-    QRhiShaderStage list. \b{Geometry Shaders are considered an experimental
+    QRhiShaderStage list. Geometry Shaders are considered an experimental
     feature in QRhi and can only be expected to be supported with Vulkan,
-    OpenGL (3.2+) and OpenGL ES (3.2+) for the time being}, assuming the
-    implementation reports it as supported at run time. Geometry shaders have
-    portability issues between APIs, and therefore no guarantees can be given
-    for a universal solution for now.
+    Direct 3D, OpenGL (3.2+) and OpenGL ES (3.2+), assuming the implementation
+    reports it as supported at run time. Geometry shaders have portability
+    issues between APIs, and therefore no guarantees can be given for a
+    universal solution for now. (for Direct 3D in particular, a handwritten
+    HLSL geometry shader must be injected into each QShader since qsb cannot
+    generate this from SPIR-V)
 
     \value TextureArrayRange Indicates that for
     \l{QRhi::newTextureArray()}{texture arrays} it is possible to specify a
