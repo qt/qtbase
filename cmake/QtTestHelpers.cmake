@@ -33,6 +33,10 @@ function(qt_internal_add_benchmark target)
         ${exec_args}
     )
 
+    # Benchmarks on iOS must be app bundles.
+    if(IOS)
+        set_target_properties(${target} PROPERTIES MACOSX_BUNDLE TRUE)
+    endif()
 
     qt_internal_add_repo_local_defines(${target})
 
@@ -97,6 +101,11 @@ function(qt_internal_add_manual_test target)
         OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}" # avoid polluting bin directory
         ${exec_args}
     )
+
+    # Tests on iOS must be app bundles.
+    if(IOS)
+        set_target_properties(${target} PROPERTIES MACOSX_BUNDLE TRUE)
+    endif()
 
     # Disable the QT_NO_NARROWING_CONVERSIONS_IN_CONNECT define for manual tests
     qt_internal_undefine_global_definition(${target} QT_NO_NARROWING_CONVERSIONS_IN_CONNECT)
@@ -281,6 +290,11 @@ function(qt_internal_add_test name)
         # The same goes for WIN32_EXECUTABLE, but because it will detach from the console window
         # and not print anything.
         set_property(TARGET "${name}" PROPERTY WIN32_EXECUTABLE FALSE)
+
+        # Tests on iOS must be app bundles.
+        if(IOS)
+            set_target_properties(${name} PROPERTIES MACOSX_BUNDLE TRUE)
+        endif()
 
         # QMLTest specifics
         qt_internal_extend_target("${name}" CONDITION arg_QMLTEST
