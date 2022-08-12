@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include "qwasmcompositor.h"
-#include "qwasmstylepixmaps_p.h"
 #include "qwasmwindow.h"
 #include "qwasmeventtranslator.h"
 #include "qwasmeventdispatcher.h"
@@ -16,7 +15,6 @@
 #include <QtGui/qopenglfunctions.h>
 #include <QtGui/qoffscreensurface.h>
 #include <QtGui/qpainter.h>
-#include <private/qpixmapcache_p.h>
 
 #include <private/qguiapplication_p.h>
 
@@ -264,85 +262,6 @@ void QWasmCompositor::drawWindowContent(QOpenGLTextureBlitter *blitter, QWasmScr
     blit(blitter, screen, texture, windowCanvasGeometry);
 }
 
-QPalette QWasmCompositor::makeWindowPalette()
-{
-    QPalette palette;
-    palette.setColor(QPalette::Active, QPalette::Highlight,
-                     palette.color(QPalette::Active, QPalette::Highlight));
-    palette.setColor(QPalette::Active, QPalette::Base,
-                     palette.color(QPalette::Active, QPalette::Highlight));
-    palette.setColor(QPalette::Inactive, QPalette::Highlight,
-                     palette.color(QPalette::Inactive, QPalette::Dark));
-    palette.setColor(QPalette::Inactive, QPalette::Base,
-                     palette.color(QPalette::Inactive, QPalette::Dark));
-    palette.setColor(QPalette::Inactive, QPalette::HighlightedText,
-                     palette.color(QPalette::Inactive, QPalette::Window));
-
-    return palette;
-}
-
-QRect QWasmCompositor::titlebarRect(QWasmTitleBarOptions tb, QWasmCompositor::SubControls subcontrol)
-{
-    QRect ret;
-    const int controlMargin = 2;
-    const int controlHeight = tb.rect.height() - controlMargin *2;
-    const int delta = controlHeight + controlMargin;
-    int offset = 0;
-
-    bool isMinimized = tb.state & Qt::WindowMinimized;
-    bool isMaximized = tb.state & Qt::WindowMaximized;
-
-    ret = tb.rect;
-    switch (subcontrol) {
-    case SC_TitleBarLabel:
-        if (tb.flags & Qt::WindowSystemMenuHint)
-            ret.adjust(delta, 0, -delta, 0);
-        break;
-    case SC_TitleBarCloseButton:
-        if (tb.flags & Qt::WindowSystemMenuHint) {
-            ret.adjust(0, 0, -delta, 0);
-            offset += delta;
-        }
-        break;
-    case SC_TitleBarMaxButton:
-        if (!isMaximized && tb.flags & Qt::WindowMaximizeButtonHint) {
-            ret.adjust(0, 0, -delta*2, 0);
-            offset += (delta +delta);
-        }
-        break;
-    case SC_TitleBarNormalButton:
-        if (isMinimized && (tb.flags & Qt::WindowMinimizeButtonHint)) {
-            offset += delta;
-        } else if (isMaximized && (tb.flags & Qt::WindowMaximizeButtonHint)) {
-            ret.adjust(0, 0, -delta*2, 0);
-            offset += (delta +delta);
-        }
-        break;
-    case SC_TitleBarSysMenu:
-        if (tb.flags & Qt::WindowSystemMenuHint) {
-            ret.setRect(tb.rect.left() + controlMargin, tb.rect.top() + controlMargin,
-                        controlHeight, controlHeight);
-        }
-        break;
-    default:
-        break;
-    };
-
-    if (subcontrol != SC_TitleBarLabel && subcontrol != SC_TitleBarSysMenu) {
-        ret.setRect(tb.rect.right() - offset, tb.rect.top() + controlMargin,
-                    controlHeight, controlHeight);
-    }
-
-    if (qApp->layoutDirection() == Qt::LeftToRight)
-        return ret;
-
-    QRect rect = ret;
-    rect.translate(2 * (tb.rect.right() - ret.right()) +
-                   ret.width() - tb.rect.width(), 0);
-
-    return rect;
-}
-
 void QWasmCompositor::requestUpdateAllWindows()
 {
     m_requestUpdateAllWindows = true;
@@ -439,51 +358,6 @@ int dpiScaled(qreal value)
     return value * (qreal(qt_defaultDpiX()) / 96.0);
 }
 
-QWasmCompositor::QWasmTitleBarOptions QWasmCompositor::makeTitleBarOptions(const QWasmWindow *window)
-{
-    int width = window->windowFrameGeometry().width();
-    int border = window->borderWidth();
-
-    QWasmTitleBarOptions titleBarOptions;
-
-    titleBarOptions.rect = QRect(border, border, width - 2 * border, window->titleHeight());
-    titleBarOptions.flags = window->window()->flags();
-    titleBarOptions.state = window->window()->windowState();
-
-    bool isMaximized = titleBarOptions.state & Qt::WindowMaximized; // this gets reset when maximized
-
-    if (titleBarOptions.flags & (Qt::WindowTitleHint))
-        titleBarOptions.subControls |= SC_TitleBarLabel;
-    if (titleBarOptions.flags & Qt::WindowMaximizeButtonHint) {
-        if (isMaximized)
-            titleBarOptions.subControls |= SC_TitleBarNormalButton;
-        else
-            titleBarOptions.subControls |= SC_TitleBarMaxButton;
-    }
-    if (titleBarOptions.flags & Qt::WindowSystemMenuHint) {
-        titleBarOptions.subControls |= SC_TitleBarCloseButton;
-        titleBarOptions.subControls |= SC_TitleBarSysMenu;
-    }
-
-
-    titleBarOptions.palette = QWasmCompositor::makeWindowPalette();
-
-    if (window->window()->isActive())
-        titleBarOptions.palette.setCurrentColorGroup(QPalette::Active);
-    else
-        titleBarOptions.palette.setCurrentColorGroup(QPalette::Inactive);
-
-    if (window->activeSubControl() != QWasmCompositor::SC_None)
-        titleBarOptions.subControls = window->activeSubControl();
-
-    if (!window->window()->title().isEmpty())
-        titleBarOptions.titleBarOptionsString = window->window()->title();
-
-    titleBarOptions.windowIcon = window->window()->icon();
-
-    return titleBarOptions;
-}
-
 void QWasmCompositor::drawWindowDecorations(QOpenGLTextureBlitter *blitter, QWasmScreen *screen,
                                             const QWasmWindow *window)
 {
@@ -496,9 +370,7 @@ void QWasmCompositor::drawWindowDecorations(QOpenGLTextureBlitter *blitter, QWas
     QPainter painter(&image);
     painter.fillRect(QRect(0, 0, width, height), painter.background());
 
-    QWasmTitleBarOptions titleBarOptions = makeTitleBarOptions(window);
-
-    drawTitlebarWindow(titleBarOptions, &painter);
+    window->drawTitleBar(&painter);
 
     QWasmFrameOptions frameOptions;
     frameOptions.rect = QRect(0, 0, width, height);
@@ -570,109 +442,6 @@ void QWasmCompositor::drawFrameWindow(QWasmFrameOptions options, QPainter *paint
             painter->fillRect(QRect(x+2, y+2, w-4, h-4), *fill);
     }
     painter->setPen(oldPen);
-}
-
-//from commonstyle.cpp
-static QPixmap cachedPixmapFromXPM(const char * const *xpm)
-{
-    QPixmap result;
-    const QString tag = QString::asprintf("xpm:0x%p", static_cast<const void*>(xpm));
-    if (!QPixmapCache::find(tag, &result)) {
-        result = QPixmap(xpm);
-        QPixmapCache::insert(tag, result);
-    }
-    return result;
-}
-
-void QWasmCompositor::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
-                                      const QPixmap &pixmap) const
-{
-    qreal scale = pixmap.devicePixelRatio();
-    QSize size =  pixmap.size() / scale;
-    int x = rect.x();
-    int y = rect.y();
-    int w = size.width();
-    int h = size.height();
-    if ((alignment & Qt::AlignVCenter) == Qt::AlignVCenter)
-        y += rect.size().height()/2 - h/2;
-    else if ((alignment & Qt::AlignBottom) == Qt::AlignBottom)
-        y += rect.size().height() - h;
-    if ((alignment & Qt::AlignRight) == Qt::AlignRight)
-        x += rect.size().width() - w;
-    else if ((alignment & Qt::AlignHCenter) == Qt::AlignHCenter)
-        x += rect.size().width()/2 - w/2;
-
-    QRect aligned = QRect(x, y, w, h);
-    QRect inter = aligned.intersected(rect);
-
-    painter->drawPixmap(inter.x(), inter.y(), pixmap, inter.x() - aligned.x(),
-                        inter.y() - aligned.y(), inter.width() * scale, inter.height() *scale);
-}
-
-
-void QWasmCompositor::drawTitlebarWindow(QWasmTitleBarOptions tb, QPainter *painter)
-{
-    QRect ir;
-    if (tb.subControls.testFlag(SC_TitleBarLabel)) {
-        QColor left = tb.palette.highlight().color();
-        QColor right = tb.palette.base().color();
-
-        QBrush fillBrush(left);
-        if (left != right) {
-            QPoint p1(tb.rect.x(), tb.rect.top() + tb.rect.height()/2);
-            QPoint p2(tb.rect.right(), tb.rect.top() + tb.rect.height()/2);
-            QLinearGradient lg(p1, p2);
-            lg.setColorAt(0, left);
-            lg.setColorAt(1, right);
-            fillBrush = lg;
-        }
-
-        painter->fillRect(tb.rect, fillBrush);
-        ir = titlebarRect(tb, SC_TitleBarLabel);
-        painter->setPen(tb.palette.highlightedText().color());
-        painter->drawText(ir.x() + 2, ir.y(), ir.width() - 2, ir.height(),
-                          Qt::AlignLeft | Qt::AlignVCenter | Qt::TextSingleLine, tb.titleBarOptionsString);
-    } // SC_TitleBarLabel
-
-    QPixmap pixmap;
-
-    if (tb.subControls.testFlag(SC_TitleBarCloseButton)
-            && tb.flags & Qt::WindowSystemMenuHint) {
-        ir = titlebarRect(tb, SC_TitleBarCloseButton);
-        pixmap = cachedPixmapFromXPM(qt_close_xpm).scaled(QSize(10, 10));
-        drawItemPixmap(painter, ir, Qt::AlignCenter, pixmap);
-    } //SC_TitleBarCloseButton
-
-    if (tb.subControls.testFlag(SC_TitleBarMaxButton)
-            && tb.flags & Qt::WindowMaximizeButtonHint
-            && !(tb.state & Qt::WindowMaximized)) {
-        ir = titlebarRect(tb, SC_TitleBarMaxButton);
-        pixmap = cachedPixmapFromXPM(qt_maximize_xpm).scaled(QSize(10, 10));
-        drawItemPixmap(painter, ir, Qt::AlignCenter, pixmap);
-    } //SC_TitleBarMaxButton
-
-    bool drawNormalButton = (tb.subControls & SC_TitleBarNormalButton)
-            && (((tb.flags & Qt::WindowMinimizeButtonHint)
-                 && (tb.flags & Qt::WindowMinimized))
-                || ((tb.flags & Qt::WindowMaximizeButtonHint)
-                    && (tb.flags & Qt::WindowMaximized)));
-
-    if (drawNormalButton) {
-        ir = titlebarRect(tb, SC_TitleBarNormalButton);
-        pixmap = cachedPixmapFromXPM(qt_normalizeup_xpm).scaled( QSize(10, 10));
-
-        drawItemPixmap(painter, ir, Qt::AlignCenter, pixmap);
-    } // SC_TitleBarNormalButton
-
-    if (tb.subControls & SC_TitleBarSysMenu && tb.flags & Qt::WindowSystemMenuHint) {
-        ir = titlebarRect(tb, SC_TitleBarSysMenu);
-        if (!tb.windowIcon.isNull()) {
-            tb.windowIcon.paint(painter, ir, Qt::AlignCenter);
-        } else {
-            pixmap = cachedPixmapFromXPM(qt_menu_xpm).scaled(QSize(10, 10));
-            drawItemPixmap(painter, ir, Qt::AlignCenter, pixmap);
-        }
-    }
 }
 
 void QWasmCompositor::drawWindow(QOpenGLTextureBlitter *blitter, QWasmScreen *screen,

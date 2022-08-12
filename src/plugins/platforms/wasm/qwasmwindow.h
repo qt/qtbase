@@ -16,6 +16,17 @@ QT_BEGIN_NAMESPACE
 class QWasmWindow : public QPlatformWindow
 {
 public:
+    enum TitleBarControl {
+        SC_None = 0x00000000,
+        SC_TitleBarSysMenu = 0x00000001,
+        SC_TitleBarMinButton = 0x00000002,
+        SC_TitleBarMaxButton = 0x00000004,
+        SC_TitleBarCloseButton = 0x00000008,
+        SC_TitleBarNormalButton = 0x00000010,
+        SC_TitleBarLabel = 0x00000100
+    };
+    Q_DECLARE_FLAGS(TitleBarControls, TitleBarControl);
+
     QWasmWindow(QWindow *w, QWasmCompositor *compositor, QWasmBackingStore *backingStore);
     ~QWasmWindow();
     void destroy();
@@ -47,41 +58,53 @@ public:
     void injectMouseReleased(const QPoint &local, const QPoint &global,
                             Qt::MouseButton button, Qt::KeyboardModifiers mods);
 
-    int titleHeight() const;
-    int borderWidth() const;
-    QRegion titleGeometry() const;
-    QRegion resizeRegion() const;
     bool isPointOnTitle(QPoint point) const;
     bool isPointOnResizeRegion(QPoint point) const;
+
     Qt::Edges resizeEdgesAtPoint(QPoint point) const;
-    QRect maxButtonRect() const;
-    QRect minButtonRect() const;
-    QRect closeButtonRect() const;
-    QRect sysMenuRect() const;
-    QRect normButtonRect() const;
-    QRegion titleControlRegion() const;
-    QWasmCompositor::SubControls activeSubControl() const;
 
     void setWindowState(Qt::WindowStates state) override;
     void applyWindowState();
     bool setKeyboardGrabEnabled(bool) override { return false; }
     bool setMouseGrabEnabled(bool) override { return false; }
 
+    void drawTitleBar(QPainter *painter) const;
+
 protected:
     void invalidate();
     bool hasTitleBar() const;
 
-protected:
+private:
     friend class QWasmScreen;
 
-    QWindow* m_window = nullptr;
+    struct TitleBarOptions
+    {
+        QRect rect;
+        Qt::WindowFlags flags;
+        int state;
+        QPalette palette;
+        QString titleBarOptionsString;
+        TitleBarControls subControls;
+        QIcon windowIcon;
+    };
+
+    TitleBarOptions makeTitleBarOptions() const;
+    QRect getTitleBarControlRect(const TitleBarOptions &tb, TitleBarControl control) const;
+    QRegion titleControlRegion() const;
+    QRegion titleGeometry() const;
+    int borderWidth() const;
+    int titleHeight() const;
+    QRegion resizeRegion() const;
+    TitleBarControl activeTitleBarControl() const;
+
+    QWindow *m_window = nullptr;
     QWasmCompositor *m_compositor = nullptr;
     QWasmBackingStore *m_backingStore = nullptr;
     QRect m_normalGeometry {0, 0, 0 ,0};
 
     Qt::WindowStates m_windowState = Qt::WindowNoState;
     Qt::WindowStates m_previousWindowState = Qt::WindowNoState;
-    QWasmCompositor::SubControls m_activeControl = QWasmCompositor::SC_None;
+    TitleBarControl m_activeControl = SC_None;
     WId m_winid = 0;
     bool m_hasTitle = false;
     bool m_needsCompositor = false;
@@ -90,5 +113,7 @@ protected:
     friend class QWasmEventTranslator;
     bool windowIsPopupType(Qt::WindowFlags flags) const;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QWasmWindow::TitleBarControls);
 QT_END_NAMESPACE
 #endif // QWASMWINDOW_H

@@ -41,17 +41,6 @@ public:
     void deregisterEventHandlers();
     void destroy();
 
-    enum QWasmSubControl {
-        SC_None =                  0x00000000,
-        SC_TitleBarSysMenu =       0x00000001,
-        SC_TitleBarMinButton =     0x00000002,
-        SC_TitleBarMaxButton =     0x00000004,
-        SC_TitleBarCloseButton =   0x00000008,
-        SC_TitleBarNormalButton =  0x00000010,
-        SC_TitleBarLabel =         0x00000100
-    };
-    Q_DECLARE_FLAGS(SubControls, QWasmSubControl)
-
     enum QWasmStateFlag {
         State_None =               0x00000000,
         State_Enabled =            0x00000001,
@@ -59,16 +48,6 @@ public:
         State_Sunken =             0x00000004
     };
     Q_DECLARE_FLAGS(StateFlags, QWasmStateFlag)
-
-    struct QWasmTitleBarOptions {
-        QRect rect;
-        Qt::WindowFlags flags;
-        int state;
-        QPalette palette;
-        QString titleBarOptionsString;
-        QWasmCompositor::SubControls subControls;
-        QIcon windowIcon;
-    };
 
     struct QWasmFrameOptions {
         QRect rect;
@@ -89,9 +68,6 @@ public:
 
     QWindow *windowAt(QPoint globalPoint, int padding = 0) const;
     QWindow *keyWindow() const;
-
-    static QWasmTitleBarOptions makeTitleBarOptions(const QWasmWindow *window);
-    static QRect titlebarRect(QWasmTitleBarOptions tb, QWasmCompositor::SubControls subcontrol);
 
     QWasmScreen *screen();
     QOpenGLContext *context();
@@ -166,12 +142,7 @@ private:
     void drawWindowDecorations(QOpenGLTextureBlitter *blitter, QWasmScreen *screen,
                                const QWasmWindow *window);
 
-    static QPalette makeWindowPalette();
-
     void drawFrameWindow(QWasmFrameOptions options, QPainter *painter);
-    void drawTitlebarWindow(QWasmTitleBarOptions options, QPainter *painter);
-    void drawItemPixmap(QPainter *painter, const QRect &rect,
-                                    int alignment, const QPixmap &pixmap) const;
 
     static int keyboard_cb(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData);
     static int focus_cb(int eventType, const EmscriptenFocusEvent *focusEvent, void *userData);
@@ -220,7 +191,6 @@ private:
     bool m_mouseInCanvas = false;
     QPointer<QWindow> m_windowUnderMouse;
 };
-Q_DECLARE_OPERATORS_FOR_FLAGS(QWasmCompositor::SubControls)
 
 QT_END_NAMESPACE
 

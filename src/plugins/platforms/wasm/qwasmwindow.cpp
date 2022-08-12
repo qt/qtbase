@@ -6,9 +6,11 @@
 #include <QtGui/private/qopenglcontext_p.h>
 #include <QtGui/private/qwindow_p.h>
 #include <QtGui/qopenglcontext.h>
+#include <private/qpixmapcache_p.h>
 
 #include "qwasmwindow.h"
 #include "qwasmscreen.h"
+#include "qwasmstylepixmaps_p.h"
 #include "qwasmcompositor.h"
 #include "qwasmeventdispatcher.h"
 
@@ -18,6 +20,61 @@
 QT_BEGIN_NAMESPACE
 
 Q_GUI_EXPORT int qt_defaultDpiX();
+
+namespace {
+// from commonstyle.cpp
+static QPixmap cachedPixmapFromXPM(const char *const *xpm)
+{
+    QPixmap result;
+    const QString tag = QString::asprintf("xpm:0x%p", static_cast<const void *>(xpm));
+    if (!QPixmapCache::find(tag, &result)) {
+        result = QPixmap(xpm);
+        QPixmapCache::insert(tag, result);
+    }
+    return result;
+}
+
+QPalette makePalette()
+{
+    QPalette palette;
+    palette.setColor(QPalette::Active, QPalette::Highlight,
+                     palette.color(QPalette::Active, QPalette::Highlight));
+    palette.setColor(QPalette::Active, QPalette::Base,
+                     palette.color(QPalette::Active, QPalette::Highlight));
+    palette.setColor(QPalette::Inactive, QPalette::Highlight,
+                     palette.color(QPalette::Inactive, QPalette::Dark));
+    palette.setColor(QPalette::Inactive, QPalette::Base,
+                     palette.color(QPalette::Inactive, QPalette::Dark));
+    palette.setColor(QPalette::Inactive, QPalette::HighlightedText,
+                     palette.color(QPalette::Inactive, QPalette::Window));
+
+    return palette;
+}
+
+void drawItemPixmap(QPainter *painter, const QRect &rect, int alignment, const QPixmap &pixmap)
+{
+    qreal scale = pixmap.devicePixelRatio();
+    QSize size = pixmap.size() / scale;
+    int x = rect.x();
+    int y = rect.y();
+    int w = size.width();
+    int h = size.height();
+    if ((alignment & Qt::AlignVCenter) == Qt::AlignVCenter)
+        y += rect.size().height() / 2 - h / 2;
+    else if ((alignment & Qt::AlignBottom) == Qt::AlignBottom)
+        y += rect.size().height() - h;
+    if ((alignment & Qt::AlignRight) == Qt::AlignRight)
+        x += rect.size().width() - w;
+    else if ((alignment & Qt::AlignHCenter) == Qt::AlignHCenter)
+        x += rect.size().width() / 2 - w / 2;
+
+    QRect aligned = QRect(x, y, w, h);
+    QRect inter = aligned.intersected(rect);
+
+    painter->drawPixmap(inter.x(), inter.y(), pixmap, inter.x() - aligned.x(),
+                        inter.y() - aligned.y(), inter.width() * scale, inter.height() * scale);
+}
+}
 
 QWasmWindow::QWasmWindow(QWindow *w, QWasmCompositor *compositor, QWasmBackingStore *backingStore)
     : QPlatformWindow(w),
@@ -162,14 +219,16 @@ void QWasmWindow::injectMousePressed(const QPoint &local, const QPoint &global,
     if (!hasTitleBar() || button != Qt::LeftButton)
         return;
 
-    if (maxButtonRect().contains(global))
-        m_activeControl = QWasmCompositor::SC_TitleBarMaxButton;
-    else if (minButtonRect().contains(global))
-        m_activeControl = QWasmCompositor::SC_TitleBarMinButton;
-    else if (closeButtonRect().contains(global))
-        m_activeControl = QWasmCompositor::SC_TitleBarCloseButton;
-    else if (normButtonRect().contains(global))
-        m_activeControl = QWasmCompositor::SC_TitleBarNormalButton;
+    const auto pointInFrameCoords = global - windowFrameGeometry().topLeft();
+    const auto options = makeTitleBarOptions();
+    if (getTitleBarControlRect(options, SC_TitleBarMaxButton).contains(pointInFrameCoords))
+        m_activeControl = SC_TitleBarMaxButton;
+    else if (getTitleBarControlRect(options, SC_TitleBarMinButton).contains(pointInFrameCoords))
+        m_activeControl = SC_TitleBarMinButton;
+    else if (getTitleBarControlRect(options, SC_TitleBarCloseButton).contains(pointInFrameCoords))
+        m_activeControl = SC_TitleBarCloseButton;
+    else if (getTitleBarControlRect(options, SC_TitleBarNormalButton).contains(pointInFrameCoords))
+        m_activeControl = SC_TitleBarNormalButton;
 
     invalidate();
 }
@@ -183,20 +242,25 @@ void QWasmWindow::injectMouseReleased(const QPoint &local, const QPoint &global,
     if (!hasTitleBar() || button != Qt::LeftButton)
         return;
 
-    if (closeButtonRect().contains(global) && m_activeControl == QWasmCompositor::SC_TitleBarCloseButton) {
+    const auto pointInFrameCoords = global - windowFrameGeometry().topLeft();
+    const auto options = makeTitleBarOptions();
+    if (getTitleBarControlRect(options, SC_TitleBarCloseButton).contains(pointInFrameCoords)
+        && m_activeControl == SC_TitleBarCloseButton) {
         window()->close();
         return;
     }
 
-    if (maxButtonRect().contains(global) && m_activeControl == QWasmCompositor::SC_TitleBarMaxButton) {
+    if (getTitleBarControlRect(options, SC_TitleBarMaxButton).contains(pointInFrameCoords)
+        && m_activeControl == SC_TitleBarMaxButton) {
         window()->setWindowState(Qt::WindowMaximized);
     }
 
-    if (normButtonRect().contains(global) && m_activeControl == QWasmCompositor::SC_TitleBarNormalButton) {
+    if (getTitleBarControlRect(options, SC_TitleBarNormalButton).contains(pointInFrameCoords)
+        && m_activeControl == SC_TitleBarNormalButton) {
         window()->setWindowState(Qt::WindowNoState);
     }
 
-    m_activeControl = QWasmCompositor::SC_None;
+    m_activeControl = SC_None;
 
     invalidate();
 }
@@ -265,48 +329,75 @@ Qt::Edges QWasmWindow::resizeEdgesAtPoint(QPoint point) const
     return edges | (right.contains(point) ? Qt::Edge::RightEdge : Qt::Edge(0));
 }
 
-QRect getSubControlRect(const QWasmWindow *window, QWasmCompositor::SubControls subControl)
+QRect QWasmWindow::getTitleBarControlRect(const TitleBarOptions &tb, TitleBarControl control) const
 {
-    QWasmCompositor::QWasmTitleBarOptions options = QWasmCompositor::makeTitleBarOptions(window);
+    QRect ret;
+    const int controlMargin = 2;
+    const int controlHeight = tb.rect.height() - controlMargin * 2;
+    const int delta = controlHeight + controlMargin;
+    int offset = 0;
 
-    QRect r = QWasmCompositor::titlebarRect(options, subControl);
-    r.translate(window->window()->frameGeometry().x(), window->window()->frameGeometry().y());
+    bool isMinimized = tb.state & Qt::WindowMinimized;
+    bool isMaximized = tb.state & Qt::WindowMaximized;
 
-    return r;
-}
+    ret = tb.rect;
+    switch (control) {
+    case SC_TitleBarLabel:
+        if (tb.flags & Qt::WindowSystemMenuHint)
+            ret.adjust(delta, 0, -delta, 0);
+        break;
+    case SC_TitleBarCloseButton:
+        if (tb.flags & Qt::WindowSystemMenuHint) {
+            ret.adjust(0, 0, -delta, 0);
+            offset += delta;
+        }
+        break;
+    case SC_TitleBarMaxButton:
+        if (!isMaximized && tb.flags & Qt::WindowMaximizeButtonHint) {
+            ret.adjust(0, 0, -delta * 2, 0);
+            offset += (delta + delta);
+        }
+        break;
+    case SC_TitleBarNormalButton:
+        if (isMinimized && (tb.flags & Qt::WindowMinimizeButtonHint)) {
+            offset += delta;
+        } else if (isMaximized && (tb.flags & Qt::WindowMaximizeButtonHint)) {
+            ret.adjust(0, 0, -delta * 2, 0);
+            offset += (delta + delta);
+        }
+        break;
+    case SC_TitleBarSysMenu:
+        if (tb.flags & Qt::WindowSystemMenuHint) {
+            ret.setRect(tb.rect.left() + controlMargin, tb.rect.top() + controlMargin,
+                        controlHeight, controlHeight);
+        }
+        break;
+    default:
+        break;
+    };
 
-QRect QWasmWindow::maxButtonRect() const
-{
-    return getSubControlRect(this, QWasmCompositor::SC_TitleBarMaxButton);
-}
+    if (control != SC_TitleBarLabel && control != SC_TitleBarSysMenu) {
+        ret.setRect(tb.rect.right() - offset, tb.rect.top() + controlMargin, controlHeight,
+                    controlHeight);
+    }
 
-QRect QWasmWindow::minButtonRect() const
-{
-    return getSubControlRect(this, QWasmCompositor::SC_TitleBarMinButton);
-}
+    if (qApp->layoutDirection() == Qt::LeftToRight)
+        return ret;
 
-QRect QWasmWindow::closeButtonRect() const
-{
-    return getSubControlRect(this, QWasmCompositor::SC_TitleBarCloseButton);
-}
+    QRect rect = ret;
+    rect.translate(2 * (tb.rect.right() - ret.right()) + ret.width() - tb.rect.width(), 0);
 
-QRect QWasmWindow::normButtonRect() const
-{
-    return getSubControlRect(this, QWasmCompositor::SC_TitleBarNormalButton);
-}
-
-QRect QWasmWindow::sysMenuRect() const
-{
-    return getSubControlRect(this, QWasmCompositor::SC_TitleBarSysMenu);
+    return rect;
 }
 
 QRegion QWasmWindow::titleControlRegion() const
 {
     QRegion result;
-    result += closeButtonRect();
-    result += minButtonRect();
-    result += maxButtonRect();
-    result += sysMenuRect();
+    const auto options = makeTitleBarOptions();
+    result += getTitleBarControlRect(options, SC_TitleBarCloseButton);
+    result += getTitleBarControlRect(options, SC_TitleBarMinButton);
+    result += getTitleBarControlRect(options, SC_TitleBarMaxButton);
+    result += getTitleBarControlRect(options, SC_TitleBarSysMenu);
 
     return result;
 }
@@ -316,7 +407,7 @@ void QWasmWindow::invalidate()
     m_compositor->requestUpdateWindow(this);
 }
 
-QWasmCompositor::SubControls QWasmWindow::activeSubControl() const
+QWasmWindow::TitleBarControl QWasmWindow::activeTitleBarControl() const
 {
     return m_activeControl;
 }
@@ -364,6 +455,114 @@ void QWasmWindow::applyWindowState()
 
     QWindowSystemInterface::handleWindowStateChanged(window(), m_windowState, m_previousWindowState);
     setGeometry(newGeom);
+}
+
+void QWasmWindow::drawTitleBar(QPainter *painter) const
+{
+    const auto tb = makeTitleBarOptions();
+    QRect ir;
+    if (tb.subControls.testFlag(SC_TitleBarLabel)) {
+        QColor left = tb.palette.highlight().color();
+        QColor right = tb.palette.base().color();
+
+        QBrush fillBrush(left);
+        if (left != right) {
+            QPoint p1(tb.rect.x(), tb.rect.top() + tb.rect.height() / 2);
+            QPoint p2(tb.rect.right(), tb.rect.top() + tb.rect.height() / 2);
+            QLinearGradient lg(p1, p2);
+            lg.setColorAt(0, left);
+            lg.setColorAt(1, right);
+            fillBrush = lg;
+        }
+
+        painter->fillRect(tb.rect, fillBrush);
+        ir = getTitleBarControlRect(tb, SC_TitleBarLabel);
+        painter->setPen(tb.palette.highlightedText().color());
+        painter->drawText(ir.x() + 2, ir.y(), ir.width() - 2, ir.height(),
+                          Qt::AlignLeft | Qt::AlignVCenter | Qt::TextSingleLine,
+                          tb.titleBarOptionsString);
+    } // SC_TitleBarLabel
+
+    QPixmap pixmap;
+
+    if (tb.subControls.testFlag(SC_TitleBarCloseButton) && tb.flags & Qt::WindowSystemMenuHint) {
+        ir = getTitleBarControlRect(tb, SC_TitleBarCloseButton);
+        pixmap = cachedPixmapFromXPM(qt_close_xpm).scaled(QSize(10, 10));
+        drawItemPixmap(painter, ir, Qt::AlignCenter, pixmap);
+    } // SC_TitleBarCloseButton
+
+    if (tb.subControls.testFlag(SC_TitleBarMaxButton) && tb.flags & Qt::WindowMaximizeButtonHint
+        && !(tb.state & Qt::WindowMaximized)) {
+        ir = getTitleBarControlRect(tb, SC_TitleBarMaxButton);
+        pixmap = cachedPixmapFromXPM(qt_maximize_xpm).scaled(QSize(10, 10));
+        drawItemPixmap(painter, ir, Qt::AlignCenter, pixmap);
+    } // SC_TitleBarMaxButton
+
+    bool drawNormalButton = (tb.subControls & SC_TitleBarNormalButton)
+            && (((tb.flags & Qt::WindowMinimizeButtonHint) && (tb.flags & Qt::WindowMinimized))
+                || ((tb.flags & Qt::WindowMaximizeButtonHint) && (tb.flags & Qt::WindowMaximized)));
+
+    if (drawNormalButton) {
+        ir = getTitleBarControlRect(tb, SC_TitleBarNormalButton);
+        pixmap = cachedPixmapFromXPM(qt_normalizeup_xpm).scaled(QSize(10, 10));
+
+        drawItemPixmap(painter, ir, Qt::AlignCenter, pixmap);
+    } // SC_TitleBarNormalButton
+
+    if (tb.subControls & SC_TitleBarSysMenu && tb.flags & Qt::WindowSystemMenuHint) {
+        ir = getTitleBarControlRect(tb, SC_TitleBarSysMenu);
+        if (!tb.windowIcon.isNull()) {
+            tb.windowIcon.paint(painter, ir, Qt::AlignCenter);
+        } else {
+            pixmap = cachedPixmapFromXPM(qt_menu_xpm).scaled(QSize(10, 10));
+            drawItemPixmap(painter, ir, Qt::AlignCenter, pixmap);
+        }
+    }
+}
+
+QWasmWindow::TitleBarOptions QWasmWindow::makeTitleBarOptions() const
+{
+    int width = windowFrameGeometry().width();
+    int border = borderWidth();
+
+    TitleBarOptions titleBarOptions;
+
+    titleBarOptions.rect = QRect(border, border, width - 2 * border, titleHeight());
+    titleBarOptions.flags = window()->flags();
+    titleBarOptions.state = window()->windowState();
+
+    bool isMaximized =
+            titleBarOptions.state & Qt::WindowMaximized; // this gets reset when maximized
+
+    if (titleBarOptions.flags & (Qt::WindowTitleHint))
+        titleBarOptions.subControls |= SC_TitleBarLabel;
+    if (titleBarOptions.flags & Qt::WindowMaximizeButtonHint) {
+        if (isMaximized)
+            titleBarOptions.subControls |= SC_TitleBarNormalButton;
+        else
+            titleBarOptions.subControls |= SC_TitleBarMaxButton;
+    }
+    if (titleBarOptions.flags & Qt::WindowSystemMenuHint) {
+        titleBarOptions.subControls |= SC_TitleBarCloseButton;
+        titleBarOptions.subControls |= SC_TitleBarSysMenu;
+    }
+
+    titleBarOptions.palette = makePalette();
+
+    if (window()->isActive())
+        titleBarOptions.palette.setCurrentColorGroup(QPalette::Active);
+    else
+        titleBarOptions.palette.setCurrentColorGroup(QPalette::Inactive);
+
+    if (activeTitleBarControl() != SC_None)
+        titleBarOptions.subControls = activeTitleBarControl();
+
+    if (!window()->title().isEmpty())
+        titleBarOptions.titleBarOptionsString = window()->title();
+
+    titleBarOptions.windowIcon = window()->icon();
+
+    return titleBarOptions;
 }
 
 QRect QWasmWindow::normalGeometry() const
