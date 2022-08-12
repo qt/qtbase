@@ -4579,12 +4579,10 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 /*!
     \macro Q_DECL_CONSTEXPR
     \relates <QtGlobal>
+    \deprecated [6.4] Use the \c constexpr keyword instead.
 
     This macro can be used to declare variable that should be constructed at compile-time,
     or an inline function that can be computed at compile-time.
-
-    It expands to "constexpr" if your compiler supports that C++11 keyword, or to nothing
-    otherwise.
 
     \sa Q_DECL_RELAXED_CONSTEXPR
 */
@@ -4592,12 +4590,10 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 /*!
     \macro Q_DECL_RELAXED_CONSTEXPR
     \relates <QtGlobal>
+    \deprecated [6.4] Use the \c constexpr keyword instead.
 
     This macro can be used to declare an inline function that can be computed
     at compile-time according to the relaxed rules from C++14.
-
-    It expands to "constexpr" if your compiler supports C++14 relaxed constant
-    expressions, or to nothing otherwise.
 
     \sa Q_DECL_CONSTEXPR
 */
@@ -4792,17 +4788,11 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     \macro Q_DECL_NOTHROW
     \relates <QtGlobal>
     \since 5.0
+    \deprecated [6.4] Use the \c noexcept keyword instead.
 
     This macro marks a function as never throwing, under no
     circumstances. If the function does nevertheless throw, the
     behaviour is undefined.
-
-    The macro expands to either "throw()", if that has some benefit on
-    the compiler, or to C++11 noexcept, if available, or to nothing
-    otherwise.
-
-    If you need C++11 noexcept semantics, don't use this macro, use
-    Q_DECL_NOEXCEPT/Q_DECL_NOEXCEPT_EXPR instead.
 
     \sa Q_DECL_NOEXCEPT, Q_DECL_NOEXCEPT_EXPR()
 */
@@ -4841,20 +4831,12 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     \macro Q_DECL_NOEXCEPT
     \relates <QtGlobal>
     \since 5.0
+    \deprecated [6.4] Use the \c noexcept keyword instead.
 
     This macro marks a function as never throwing. If the function
     does nevertheless throw, the behaviour is defined:
     std::terminate() is called.
 
-    The macro expands to C++11 noexcept, if available, or to nothing
-    otherwise.
-
-    If you need the operator version of C++11 noexcept, use
-    Q_DECL_NOEXCEPT_EXPR(x).
-
-    If you don't need C++11 noexcept semantics, e.g. because your
-    function can't possibly throw, don't use this macro, use
-    Q_DECL_NOTHROW instead.
 
     \sa Q_DECL_NOTHROW, Q_DECL_NOEXCEPT_EXPR()
 */
@@ -4863,20 +4845,12 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     \macro Q_DECL_NOEXCEPT_EXPR(x)
     \relates <QtGlobal>
     \since 5.0
+    \deprecated [6.4] Use the \c noexcept keyword instead.
 
     This macro marks a function as non-throwing if \a x is \c true. If
     the function does nevertheless throw, the behaviour is defined:
     std::terminate() is called.
 
-    The macro expands to C++11 noexcept(x), if available, or to
-    nothing otherwise.
-
-    If you need the always-true version of C++11 noexcept, use
-    Q_DECL_NOEXCEPT.
-
-    If you don't need C++11 noexcept semantics, e.g. because your
-    function can't possibly throw, don't use this macro, use
-    Q_DECL_NOTHROW instead.
 
     \sa Q_DECL_NOTHROW, Q_DECL_NOEXCEPT
 */
