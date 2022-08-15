@@ -16,6 +16,12 @@
 #include <QtGui/QPainter>
 #include <QLabel>
 
+#ifdef QT_BUILD_INTERNAL
+QT_BEGIN_NAMESPACE
+Q_LOGGING_CATEGORY(lcQpaDockWidgets, "qt.widgets.dockwidgets");
+QT_END_NAMESPACE
+#endif
+
 bool hasFeature(QDockWidget *dockwidget, QDockWidget::DockWidgetFeature feature)
 { return (dockwidget->features() & feature) == feature; }
 
