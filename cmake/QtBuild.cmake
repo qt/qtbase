@@ -557,6 +557,7 @@ include(QtPublicTargetHelpers)
 include(QtPublicWalkLibsHelpers)
 include(QtPublicFindPackageHelpers)
 include(QtPublicDependencyHelpers)
+include(QtPublicTestHelpers)
 include(QtPublicToolHelpers)
 
 if(CMAKE_CROSSCOMPILING)
