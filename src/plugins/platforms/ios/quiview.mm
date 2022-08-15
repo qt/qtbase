@@ -59,6 +59,32 @@
 
 Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
+namespace {
+inline ulong getTimeStamp(UIEvent *event)
+{
+#if TARGET_OS_SIMULATOR == 1
+    // We currently build Qt for simulator using X86_64, even on ARM based macs.
+    // This results in the simulator running on ARM, while the app is running
+    // inside it using Rosetta. And with this combination, the event.timestamp, which is
+    // documented to be in seconds, looks to be something else, and is not progressing
+    // in sync with a normal clock.
+    // Sending out mouse events with a timestamp that doesn't follow normal clock time
+    // will cause problems for mouse-, and pointer handlers that uses them to e.g calculate
+    // the time between a press and release, and to decide if the user is performing a tap
+    // or a drag.
+    // For that reason, we choose to ignore UIEvent.timestamp under the mentioned condition, and
+    // instead rely on NSProcessInfo. Note that if we force the whole simulator to use Rosetta
+    // (and not only the Qt app), the timestamps will progress normally.
+#if defined(Q_PROCESSOR_ARM)
+    #warning The timestamp work-around for x86_64 can (probably) be removed when building for ARM
+#endif
+    return ulong(NSProcessInfo.processInfo.systemUptime * 1000);
+#endif
+
+    return ulong(event.timestamp * 1000);
+}
+}
+
 @implementation QUIView {
     QHash<NSUInteger, QWindowSystemInterface::TouchPoint> m_activeTouches;
     UITouch *m_activePencilTouch;
@@ -506,17 +532,17 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
             topLevel->requestActivateWindow();
     }
 
-    [self handleTouches:touches withEvent:event withState:QEventPoint::State::Pressed withTimestamp:ulong(event.timestamp * 1000)];
+    [self handleTouches:touches withEvent:event withState:QEventPoint::State::Pressed withTimestamp:getTimeStamp(event)];
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    [self handleTouches:touches withEvent:event withState:QEventPoint::State::Updated withTimestamp:ulong(event.timestamp * 1000)];
+    [self handleTouches:touches withEvent:event withState:QEventPoint::State::Updated withTimestamp:getTimeStamp(event)];
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    [self handleTouches:touches withEvent:event withState:QEventPoint::State::Released withTimestamp:ulong(event.timestamp * 1000)];
+    [self handleTouches:touches withEvent:event withState:QEventPoint::State::Released withTimestamp:getTimeStamp(event)];
 
     // Remove ended touch points from the active set:
 #ifndef Q_OS_TVOS
@@ -572,7 +598,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     m_nextTouchId = 0;
     m_activePencilTouch = nil;
 
-    NSTimeInterval timestamp = event ? event.timestamp : [[NSProcessInfo processInfo] systemUptime];
+    ulong timestamp = event ? getTimeStamp(event) : ([[NSProcessInfo processInfo] systemUptime] * 1000);
 
     QIOSIntegration *iosIntegration = static_cast<QIOSIntegration *>(QGuiApplicationPrivate::platformIntegration());
 
@@ -580,7 +606,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     // event loop in response to the touch event (a dialog e.g.), which will deadlock
     // the UIKit event delivery system (QTBUG-98651).
     QWindowSystemInterface::handleTouchCancelEvent<QWindowSystemInterface::AsynchronousDelivery>(
-        self.platformWindow->window(), ulong(timestamp * 1000), iosIntegration->touchDevice());
+        self.platformWindow->window(), timestamp, iosIntegration->touchDevice());
 }
 
 - (int)mapPressTypeToKey:(UIPress*)press withModifiers:(Qt::KeyboardModifiers)qtModifiers text:(QString &)text
