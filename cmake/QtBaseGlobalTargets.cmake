@@ -327,6 +327,7 @@ set(__public_cmake_helpers
     cmake/QtPublicFinalizerHelpers.cmake
     cmake/QtPublicPluginHelpers.cmake
     cmake/QtPublicTargetHelpers.cmake
+    cmake/QtPublicTestHelpers.cmake
     cmake/QtPublicToolHelpers.cmake
     cmake/QtPublicWalkLibsHelpers.cmake
     cmake/QtPublicFindPackageHelpers.cmake

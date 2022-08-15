@@ -47,7 +47,7 @@ function(qt_internal_add_benchmark target)
 
     # Add a ${target}_benchmark generator target, to run single benchmark more easily.
     set(benchmark_wrapper_file "${arg_OUTPUT_DIRECTORY}/${target}Wrapper$<CONFIG>.cmake")
-    qt_internal_create_command_script(COMMAND "$<TARGET_FILE:${target}>"
+    _qt_internal_create_command_script(COMMAND "$<TARGET_FILE:${target}>"
                                       OUTPUT_FILE "${benchmark_wrapper_file}"
                                       ENVIRONMENT "PATH" "${benchmark_env_path}"
                                                   "QT_PLUGIN_PATH" "${benchmark_env_plugin_path}"
@@ -495,7 +495,7 @@ endfunction()
 # directly by 'cmake -P path/to/scriptWrapper.cmake', COMMAND will be executed in specified
 # WORKING_DIRECTORY with arguments specified in ARGS.
 #
-# See also qt_internal_create_command_script for details.
+# See also _qt_internal_create_command_script for details.
 function(qt_internal_create_test_script)
     #This style of parsing keeps ';' in ENVIRONMENT variables
     cmake_parse_arguments(PARSE_ARGV 0 arg
@@ -556,7 +556,7 @@ for this function. Will be ignored")
         endif()
     endif()
 
-    qt_internal_create_command_script(COMMAND "${crosscompiling_emulator} \${env_test_runner} \
+    _qt_internal_create_command_script(COMMAND "${crosscompiling_emulator} \${env_test_runner} \
 \"${executable_file}\" \${env_test_args} ${command_args}"
                                       OUTPUT_FILE "${arg_OUTPUT_FILE}"
                                       WORKING_DIRECTORY "${arg_WORKING_DIRECTORY}"
@@ -568,99 +568,7 @@ for this function. Will be ignored")
     )
 endfunction()
 
-# This function wraps COMMAND with cmake script, that makes possible standalone run with external
-# arguments.
-#
-# Generated wrapper will be written to OUTPUT_FILE.
-# If WORKING_DIRECTORY is not set COMMAND will be executed in CMAKE_CURRENT_BINARY_DIR.
-# Variables from ENVIRONMENT will be set before COMMAND execution.
-# PRE_RUN and POST_RUN arguments may contain extra cmake code that supposed to be executed before
-# and after COMMAND, respectively. Both arguments accept a list of cmake script language
-# constructions. Each item of the list will be concantinated into single string with '\n' sepatator.
-function(qt_internal_create_command_script)
-    #This style of parsing keeps ';' in ENVIRONMENT variables
-    cmake_parse_arguments(PARSE_ARGV 0 arg
-                          ""
-                          "OUTPUT_FILE;WORKING_DIRECTORY"
-                          "COMMAND;ENVIRONMENT;PRE_RUN;POST_RUN"
-    )
 
-    if(NOT arg_COMMAND)
-        message(FATAL_ERROR "qt_internal_create_command_script: COMMAND is not specified")
-    endif()
-
-    if(NOT arg_OUTPUT_FILE)
-        message(FATAL_ERROR "qt_internal_create_command_script: Wrapper OUTPUT_FILE\
-is not specified")
-    endif()
-
-    if(NOT arg_WORKING_DIRECTORY AND NOT QNX)
-        set(arg_WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
-    endif()
-
-    set(environment_extras)
-    set(skipNext false)
-    if(arg_ENVIRONMENT)
-        list(LENGTH arg_ENVIRONMENT length)
-        math(EXPR length "${length} - 1")
-        foreach(envIdx RANGE ${length})
-            if(skipNext)
-                set(skipNext FALSE)
-                continue()
-            endif()
-
-            set(envVariable "")
-            set(envValue "")
-
-            list(GET arg_ENVIRONMENT ${envIdx} envVariable)
-            math(EXPR envIdx "${envIdx} + 1")
-            if (envIdx LESS_EQUAL ${length})
-                list(GET arg_ENVIRONMENT ${envIdx} envValue)
-            endif()
-
-            if(NOT "${envVariable}" STREQUAL "")
-                set(environment_extras "${environment_extras}\nset(ENV{${envVariable}} \
-\"${envValue}\")")
-            endif()
-            set(skipNext TRUE)
-        endforeach()
-    endif()
-
-    #Escaping environment variables before expand them by file GENERATE
-    string(REPLACE "\\" "\\\\" environment_extras "${environment_extras}")
-
-    if(WIN32)
-        # It's necessary to call actual test inside 'cmd.exe', because 'execute_process' uses
-        # SW_HIDE to avoid showing a console window, it affects other GUI as well.
-        # See https://gitlab.kitware.com/cmake/cmake/-/issues/17690 for details.
-        set(extra_runner "cmd /c")
-    endif()
-
-    if(arg_PRE_RUN)
-        string(JOIN "\n" pre_run ${arg_PRE_RUN})
-    endif()
-
-    if(arg_POST_RUN)
-        string(JOIN "\n" post_run ${arg_POST_RUN})
-    endif()
-
-    file(GENERATE OUTPUT "${arg_OUTPUT_FILE}" CONTENT
-"#!${CMAKE_COMMAND} -P
-# Qt generated command wrapper
-
-${environment_extras}
-${pre_run}
-execute_process(COMMAND ${extra_runner} ${arg_COMMAND}
-                WORKING_DIRECTORY \"${arg_WORKING_DIRECTORY}\"
-                RESULT_VARIABLE result
-)
-${post_run}
-if(NOT result EQUAL 0)
-    string(JOIN \" \" full_command ${arg_COMMAND})
-    message(FATAL_ERROR \"\${full_command} execution failed with exit code \${result}.\")
-endif()"
-    )
-endfunction()
 
 # This function creates an executable for use as a helper program with tests. Some
 # tests launch separate programs to test certain input/output behavior.
