@@ -241,9 +241,8 @@ bool QWasmWindow::isPointOnTitle(QPoint point) const
 
 bool QWasmWindow::isPointOnResizeRegion(QPoint point) const
 {
-    if (window()->flags().testFlag(Qt::Popup))
-        return false;
-    return resizeRegion().contains(point);
+    return (window()->maximumSize().isEmpty() || window()->minimumSize() != window()->maximumSize())
+            && resizeRegion().contains(point);
 }
 
 QWasmCompositor::ResizeMode QWasmWindow::resizeModeAtPoint(QPoint point) const
