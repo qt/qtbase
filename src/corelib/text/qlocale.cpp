@@ -4427,18 +4427,19 @@ QString QLocale::formattedDataSize(qint64 bytes, int precision, DataSizeFormats 
 QStringList QLocale::uiLanguages() const
 {
     QStringList uiLanguages;
-    QList<QLocale> locales;
+    QList<QLocaleId> localeIds;
 #ifdef QT_NO_SYSTEMLOCALE
     constexpr bool isSystem = false;
 #else
     const bool isSystem = d->m_data == &systemLocaleData;
     if (isSystem) {
         uiLanguages = systemLocale()->query(QSystemLocale::UILanguages).toStringList();
-        // ... but we need to include likely-adjusted forms of each of those, too:
+        // ... but we need to include likely-adjusted forms of each of those, too.
+        // For now, collect up locale Ids representing the entries, for later processing:
         for (const auto &entry : std::as_const(uiLanguages))
-            locales.append(QLocale(entry));
-        if (locales.isEmpty())
-            locales.append(systemLocale()->fallbackLocale());
+            localeIds.append(QLocaleId::fromName(entry));
+        if (localeIds.isEmpty())
+            localeIds.append(systemLocale()->fallbackLocale().d->m_data->id());
         // If the system locale (isn't C and) didn't include itself in the list,
         // or as fallback, presume to know better than it and put its name
         // first. (Known issue, QTBUG-104930, on some macOS versions when in
@@ -4453,20 +4454,17 @@ QStringList QLocale::uiLanguages() const
                 return QLocaleId::fromName(entry).withLikelySubtagsRemoved() == mine;
             };
             if (std::none_of(uiLanguages.constBegin(), uiLanguages.constEnd(), isMine)) {
-                locales.prepend(*this);
+                localeIds.prepend(d->m_data->id());
                 uiLanguages.prepend(name);
             }
         }
     } else
 #endif
     {
-        locales.append(*this);
+        localeIds.append(d->m_data->id());
     }
-    for (qsizetype i = locales.size(); i-- > 0; ) {
-        const QLocale &locale = locales.at(i);
-        const auto data = locale.d->m_data;
-        QLocaleId id = data->id();
-
+    for (qsizetype i = localeIds.size(); i-- > 0; ) {
+        QLocaleId id = localeIds.at(i);
         qsizetype j;
         QByteArray prior;
         if (isSystem && i < uiLanguages.size()) {
@@ -4477,35 +4475,49 @@ QStringList QLocale::uiLanguages() const
             j = i + 1;
         } else if (id.language_id == C) {
             // Attempt no likely sub-tag amendments to C:
-            uiLanguages.append(locale.name());
+            uiLanguages.append(QString::fromLatin1(id.name()));
             continue;
         } else {
             // Plain locale or empty system uiLanguages; just append.
-            const QString name = locale.bcp47Name();
-            uiLanguages.append(name);
-            prior = name.toLatin1();
+            prior = id.name();
+            uiLanguages.append(QString::fromLatin1(prior));
             j = uiLanguages.size();
         }
 
         const QLocaleId max = id.withLikelySubtagsAdded();
         const QLocaleId min = max.withLikelySubtagsRemoved();
-        id.script_id = 0; // For re-use as script-less variant.
 
         // Include minimal version (last) unless it's what our locale is derived from:
-        if (min.name() != prior)
-            uiLanguages.insert(j, QString::fromLatin1(min.name()));
+        if (auto name = min.name(); name != prior)
+            uiLanguages.insert(j, QString::fromLatin1(name));
         else if (!isSystem)
             --j; // bcp47Name() matches min(): put more specific forms *before* it.
 
-        // Include scriptless version if likely-equivalent and distinct:
-        if (data->m_script_id && id != min && id.name() != prior
-            && id.withLikelySubtagsAdded() == max) {
-            uiLanguages.insert(j, QString::fromLatin1(id.name()));
+        if (id.script_id) {
+            // Include scriptless version if likely-equivalent and distinct:
+            id.script_id = 0;
+            if (id != min && id.withLikelySubtagsAdded() == max) {
+                if (auto name = id.name(); name != prior)
+                    uiLanguages.insert(j, QString::fromLatin1(name));
+            }
+        }
+
+        if (!id.territory_id) {
+            Q_ASSERT(!min.territory_id);
+            Q_ASSERT(!id.script_id); // because we just cleared it.
+            // Include version with territory if it likely-equivalent and distinct:
+            id.territory_id = max.territory_id;
+            if (id != max && id.withLikelySubtagsAdded() == max) {
+                if (auto name = id.name(); name != prior)
+                    uiLanguages.insert(j, QString::fromLatin1(name));
+            }
         }
 
         // Include version with all likely sub-tags (first) if distinct from the rest:
-        if (max != min && max != id && max.name() != prior)
-            uiLanguages.insert(j, QString::fromLatin1(max.name()));
+        if (max != min && max != id) {
+            if (auto name = max.name(); name != prior)
+                uiLanguages.insert(j, QString::fromLatin1(name));
+        }
     }
     return uiLanguages;
 }

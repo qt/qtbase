@@ -122,8 +122,10 @@ private slots:
     void bcp47Name_data();
     void bcp47Name();
 
+#ifdef QT_BUILD_INTERNAL
     void systemLocale_data();
     void systemLocale();
+#endif
 
 #ifndef QT_NO_SYSTEMLOCALE
     void systemLocaleDayAndMonthNames_data();
@@ -2939,18 +2941,22 @@ void tst_QLocale::uiLanguages_data()
         << QLocale(QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China)
         << QStringList{QString("zh-Hans-CN"), QString("zh-CN"), QString("zh")};
 
-    // TODO: test actual system backends correctly handle locales with
-    // script-specificity (script listed first is the default, in CLDR v40):
-    // az_{Latn,Cyrl}_AZ, bs_{Latn,Cyrl}_BA, sr_{Cyrl,Latn}_{BA,RS,XK,UZ},
-    // sr_{Latn,Cyrl}_ME, ff_{Latn,Adlm}_{BF,CM,GH,GM,GN,GW,LR,MR,NE,NG,SL,SN},
-    // shi_{Tfng,Latn}_MA, vai_{Vaii,Latn}_LR, zh_{Hant,Hans}_{MO,HK}
+    // We presently map und (or any other unrecognized language) to C, ignoring
+    // what a sub-tag lookup would surely find us.
+    QTest::newRow("und_US") << QLocale("und_US") << QStringList{QString("C")};
+    QTest::newRow("und_Latn") << QLocale("und_Latn") << QStringList{QString("C")};
 }
 
 void tst_QLocale::uiLanguages()
 {
+    // Compare systemLocale(), which tests the same for a stub system locale.
     QFETCH(const QLocale, locale);
     QFETCH(const QStringList, all);
+    auto reporter = qScopeGuard([&locale]() {
+        qDebug("\n\t%s", qPrintable(locale.uiLanguages().join(u"\n\t")));
+    });
     QCOMPARE(locale.uiLanguages(), all);
+    reporter.dismiss();
 }
 
 void tst_QLocale::weekendDays()
@@ -3229,19 +3235,31 @@ void tst_QLocale::bcp47Name()
     QCOMPARE(QLocale(QLatin1String(QTest::currentDataTag())).bcp47Name(), expect);
 }
 
+#ifdef QT_BUILD_INTERNAL
 class MySystemLocale : public QSystemLocale
 {
 public:
-    MySystemLocale(const QString &locale) : m_name(locale), m_locale(locale)
+    MySystemLocale(const QString &locale)
+    : m_name(locale), m_id(QLocaleId::fromName(locale)), m_locale(locale)
     {
     }
 
     QVariant query(QueryType type, QVariant /*in*/) const override
     {
-        if (type == UILanguages) {
+        switch (type) {
+        case UILanguages:
             if (m_name == u"en-DE") // QTBUG-104930: simulate macOS's list not including m_name.
                 return QVariant(QStringList{QStringLiteral("en-GB"), QStringLiteral("de-DE")});
             return QVariant(QStringList{m_name});
+        case LanguageId:
+            return m_id.language_id;
+        case TerritoryId:
+            return m_id.territory_id;
+        case ScriptId:
+            return m_id.script_id;
+
+        default:
+            break;
         }
         return QVariant();
     }
@@ -3253,6 +3271,7 @@ public:
 
 private:
     const QString m_name;
+    const QLocaleId m_id;
     const QLocale m_locale;
 };
 
@@ -3266,6 +3285,13 @@ void tst_QLocale::systemLocale_data()
     QTest::addRow("catalan")
         << QString("ca") << QLocale::Catalan
         << QStringList{QStringLiteral("ca"), QStringLiteral("ca-Latn-ES"), QStringLiteral("ca-ES")};
+    QTest::addRow("catalan-spain")
+        << QString("ca-ES") << QLocale::Catalan
+        << QStringList{QStringLiteral("ca-ES"), QStringLiteral("ca-Latn-ES"), QStringLiteral("ca")};
+    QTest::addRow("catalan-latin")
+        << QString("ca-Latn") << QLocale::Catalan
+        << QStringList{QStringLiteral("ca-Latn"), QStringLiteral("ca-Latn-ES"),
+                       QStringLiteral("ca-ES"), QStringLiteral("ca")};
     QTest::addRow("ukrainian")
         << QString("uk") << QLocale::Ukrainian
         << QStringList{QStringLiteral("uk"), QStringLiteral("uk-Cyrl-UA"), QStringLiteral("uk-UA")};
@@ -3278,16 +3304,55 @@ void tst_QLocale::systemLocale_data()
     QTest::addRow("german")
         << QString("de") << QLocale::German
         << QStringList{QStringLiteral("de"), QStringLiteral("de-Latn-DE"), QStringLiteral("de-DE")};
+    QTest::addRow("german-britain")
+        << QString("de-GB") << QLocale::German
+        << QStringList{QStringLiteral("de-GB"), QStringLiteral("de-Latn-GB")};
     QTest::addRow("chinese-min")
         << QString("zh") << QLocale::Chinese
         << QStringList{QStringLiteral("zh"), QStringLiteral("zh-Hans-CN"), QStringLiteral("zh-CN")};
     QTest::addRow("chinese-full")
         << QString("zh-Hans-CN") << QLocale::Chinese
         << QStringList{QStringLiteral("zh-Hans-CN"), QStringLiteral("zh-CN"), QStringLiteral("zh")};
+
+    // For C, it should preserve what the system gave us but only add "C", never anything more:
+    QTest::addRow("C") << QString("C") << QLocale::C << QStringList{QStringLiteral("C")};
+    QTest::addRow("C-Latn")
+        << QString("C-Latn") << QLocale::C
+        << QStringList{QStringLiteral("C-Latn"), QStringLiteral("C")};
+    QTest::addRow("C-US")
+        << QString("C-US") << QLocale::C
+        << QStringList{QStringLiteral("C-US"), QStringLiteral("C")};
+    QTest::addRow("C-Latn-US")
+        << QString("C-Latn-US") << QLocale::C
+        << QStringList{QStringLiteral("C-Latn-US"), QStringLiteral("C")};
+    QTest::addRow("C-Hans")
+        << QString("C-Hans") << QLocale::C
+        << QStringList{QStringLiteral("C-Hans"), QStringLiteral("C")};
+    QTest::addRow("C-CN")
+        << QString("C-CN") << QLocale::C
+        << QStringList{QStringLiteral("C-CN"), QStringLiteral("C")};
+    QTest::addRow("C-Hans-CN")
+        << QString("C-Hans-CN") << QLocale::C
+        << QStringList{QStringLiteral("C-Hans-CN"), QStringLiteral("C")};
+
+    QTest::newRow("und-US")
+        << QString("und-US") << QLocale::C
+        << QStringList{QStringLiteral("und-US"), QStringLiteral("C")};
+
+    QTest::newRow("und-Latn")
+        << QString("und-Latn") << QLocale::C
+        << QStringList{QStringLiteral("und-Latn"), QStringLiteral("C")};
+
+    // TODO: test actual system backends correctly handle locales with
+    // script-specificity (script listed first is the default, in CLDR v40):
+    // az_{Latn,Cyrl}_AZ, bs_{Latn,Cyrl}_BA, sr_{Cyrl,Latn}_{BA,RS,XK,UZ},
+    // sr_{Latn,Cyrl}_ME, ff_{Latn,Adlm}_{BF,CM,GH,GM,GN,GW,LR,MR,NE,NG,SL,SN},
+    // shi_{Tfng,Latn}_MA, vai_{Vaii,Latn}_LR, zh_{Hant,Hans}_{MO,HK}
 }
 
 void tst_QLocale::systemLocale()
 {
+    // Compare uiLanguages(), which tests this for CLDR-derived locales.
     QLocale originalLocale;
     QLocale originalSystemLocale = QLocale::system();
 
@@ -3306,9 +3371,11 @@ void tst_QLocale::systemLocale()
         reporter.dismiss();
     }
 
+    // Verify MySystemLocale tidy-up restored prior state:
     QCOMPARE(QLocale(), originalLocale);
     QCOMPARE(QLocale::system(), originalSystemLocale);
 }
+#endif // QT_BUILD_INTERNAL
 
 #ifndef QT_NO_SYSTEMLOCALE
 
