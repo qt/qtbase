@@ -17,6 +17,8 @@
 # include <QOpenGLContext>
 # include <QOpenGLFunctions>
 # include <QtGui/private/qrhigles2_p.h>
+# include <QtGui/private/qguiapplication_p.h>
+# include <qpa/qplatformintegration.h>
 # define TST_GL
 #endif
 
@@ -49,7 +51,6 @@ private slots:
     void cleanupTestCase();
 
     void rhiTestData();
-    void rhiTestDataOpenGL();
     void create_data();
     void create();
     void nativeHandles_data();
@@ -121,9 +122,7 @@ private slots:
 
     void pipelineCache_data();
     void pipelineCache();
-    void textureImportOpenGL_data();
     void textureImportOpenGL();
-    void renderbufferImportOpenGL_data();
     void renderbufferImportOpenGL();
     void threeDimTexture_data();
     void threeDimTexture();
@@ -178,7 +177,7 @@ void tst_QRhi::initTestCase()
     if (supportedVersion >= QVersionNumber(1, 2))
         vulkanInstance.setApiVersion(QVersionNumber(1, 2));
     else if (supportedVersion >= QVersionNumber(1, 1))
-        vulkanInstance.setApiVersion(QVersionNumber(1, 2));
+        vulkanInstance.setApiVersion(QVersionNumber(1, 1));
     vulkanInstance.setLayers({ "VK_LAYER_KHRONOS_validation" });
     vulkanInstance.setExtensions(QRhiVulkanInitParams::preferredInstanceExtensions());
     vulkanInstance.create();
@@ -209,7 +208,8 @@ void tst_QRhi::rhiTestData()
     QTest::newRow("Null") << QRhi::Null << static_cast<QRhiInitParams *>(&initParams.null);
 #endif
 #ifdef TST_GL
-    QTest::newRow("OpenGL") << QRhi::OpenGLES2 << static_cast<QRhiInitParams *>(&initParams.gl);
+    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
+        QTest::newRow("OpenGL") << QRhi::OpenGLES2 << static_cast<QRhiInitParams *>(&initParams.gl);
 #endif
 #ifdef TST_VK
     if (vulkanInstance.isValid())
@@ -220,16 +220,6 @@ void tst_QRhi::rhiTestData()
 #endif
 #ifdef TST_MTL
     QTest::newRow("Metal") << QRhi::Metal << static_cast<QRhiInitParams *>(&initParams.mtl);
-#endif
-}
-
-void tst_QRhi::rhiTestDataOpenGL()
-{
-    QTest::addColumn<QRhi::Implementation>("impl");
-    QTest::addColumn<QRhiInitParams *>("initParams");
-
-#ifdef TST_GL
-    QTest::newRow("OpenGL") << QRhi::OpenGLES2 << static_cast<QRhiInitParams *>(&initParams.gl);
 #endif
 }
 
@@ -4383,21 +4373,13 @@ void tst_QRhi::pipelineCache()
     }
 }
 
-void tst_QRhi::textureImportOpenGL_data()
-{
-    rhiTestDataOpenGL();
-}
-
 void tst_QRhi::textureImportOpenGL()
 {
-    QFETCH(QRhi::Implementation, impl);
-    if (impl != QRhi::OpenGLES2)
+#ifdef TST_GL
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
         QSKIP("Skipping OpenGL-dependent test");
 
-#ifdef TST_GL
-    QFETCH(QRhiInitParams *, initParams);
-
-    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    QScopedPointer<QRhi> rhi(QRhi::create(QRhi::OpenGLES2, &initParams.gl, QRhi::Flags(), nullptr));
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing native texture");
 
@@ -4437,21 +4419,13 @@ void tst_QRhi::textureImportOpenGL()
 #endif
 }
 
-void tst_QRhi::renderbufferImportOpenGL_data()
-{
-    rhiTestDataOpenGL();
-}
-
 void tst_QRhi::renderbufferImportOpenGL()
 {
-    QFETCH(QRhi::Implementation, impl);
-    if (impl != QRhi::OpenGLES2)
+#ifdef TST_GL
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
         QSKIP("Skipping OpenGL-dependent test");
 
-#ifdef TST_GL
-    QFETCH(QRhiInitParams *, initParams);
-
-    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    QScopedPointer<QRhi> rhi(QRhi::create(QRhi::OpenGLES2, &initParams.gl, QRhi::Flags(), nullptr));
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing native texture");
 
