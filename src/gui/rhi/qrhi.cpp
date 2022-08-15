@@ -3654,6 +3654,13 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::sampler(int binding, StageF
    pipelines. Such a pipeline must then always be used together with another,
    layout compatible QRhiShaderResourceBindings with resources present passed
    to QRhiCommandBuffer::setShaderResources().
+
+   \note Image load/store is only guaranteed to be available within a compute
+   pipeline. While some backends may support using these resources in a
+   graphics pipeline as well, this is not universally supported, and even when
+   it is, unexpected problems may arise when it comes to barriers and
+   synchronization. Therefore, avoid using such resources with shaders other
+   than compute.
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::imageLoad(
         int binding, StageFlags stage, QRhiTexture *tex, int level)
@@ -3682,6 +3689,13 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::imageLoad(
    pipelines. Such a pipeline must then always be used together with another,
    layout compatible QRhiShaderResourceBindings with resources present passed
    to QRhiCommandBuffer::setShaderResources().
+
+   \note Image load/store is only guaranteed to be available within a compute
+   pipeline. While some backends may support using these resources in a
+   graphics pipeline as well, this is not universally supported, and even when
+   it is, unexpected problems may arise when it comes to barriers and
+   synchronization. Therefore, avoid using such resources with shaders other
+   than compute.
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::imageStore(
         int binding, StageFlags stage, QRhiTexture *tex, int level)
@@ -3710,6 +3724,13 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::imageStore(
    pipelines. Such a pipeline must then always be used together with another,
    layout compatible QRhiShaderResourceBindings with resources present passed
    to QRhiCommandBuffer::setShaderResources().
+
+   \note Image load/store is only guaranteed to be available within a compute
+   pipeline. While some backends may support using these resources in a
+   graphics pipeline as well, this is not universally supported, and even when
+   it is, unexpected problems may arise when it comes to barriers and
+   synchronization. Therefore, avoid using such resources with shaders other
+   than compute.
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::imageLoadStore(
         int binding, StageFlags stage, QRhiTexture *tex, int level)
@@ -3736,6 +3757,13 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::imageLoadStore(
     suitable for creating pipelines. Such a pipeline must then always be used
     together with another, layout compatible QRhiShaderResourceBindings with
     resources present passed to QRhiCommandBuffer::setShaderResources().
+
+    \note Buffer load/store is only guaranteed to be available within a compute
+    pipeline. While some backends may support using these resources in a
+    graphics pipeline as well, this is not universally supported, and even when
+    it is, unexpected problems may arise when it comes to barriers and
+    synchronization. Therefore, avoid using such resources with shaders other
+    than compute.
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoad(
         int binding, StageFlags stage, QRhiBuffer *buf)
@@ -3764,6 +3792,13 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoad(
     suitable for creating pipelines. Such a pipeline must then always be used
     together with another, layout compatible QRhiShaderResourceBindings with
     resources present passed to QRhiCommandBuffer::setShaderResources().
+
+    \note Buffer load/store is only guaranteed to be available within a compute
+    pipeline. While some backends may support using these resources in a
+    graphics pipeline as well, this is not universally supported, and even when
+    it is, unexpected problems may arise when it comes to barriers and
+    synchronization. Therefore, avoid using such resources with shaders other
+    than compute.
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoad(
         int binding, StageFlags stage, QRhiBuffer *buf, quint32 offset, quint32 size)
@@ -3792,6 +3827,13 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoad(
     suitable for creating pipelines. Such a pipeline must then always be used
     together with another, layout compatible QRhiShaderResourceBindings with
     resources present passed to QRhiCommandBuffer::setShaderResources().
+
+    \note Buffer load/store is only guaranteed to be available within a compute
+    pipeline. While some backends may support using these resources in a
+    graphics pipeline as well, this is not universally supported, and even when
+    it is, unexpected problems may arise when it comes to barriers and
+    synchronization. Therefore, avoid using such resources with shaders other
+    than compute.
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferStore(
         int binding, StageFlags stage, QRhiBuffer *buf)
@@ -3820,6 +3862,13 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferStore(
     suitable for creating pipelines. Such a pipeline must then always be used
     together with another, layout compatible QRhiShaderResourceBindings with
     resources present passed to QRhiCommandBuffer::setShaderResources().
+
+    \note Buffer load/store is only guaranteed to be available within a compute
+    pipeline. While some backends may support using these resources in a
+    graphics pipeline as well, this is not universally supported, and even when
+    it is, unexpected problems may arise when it comes to barriers and
+    synchronization. Therefore, avoid using such resources with shaders other
+    than compute.
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferStore(
         int binding, StageFlags stage, QRhiBuffer *buf, quint32 offset, quint32 size)
@@ -3848,6 +3897,13 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferStore(
     suitable for creating pipelines. Such a pipeline must then always be used
     together with another, layout compatible QRhiShaderResourceBindings with
     resources present passed to QRhiCommandBuffer::setShaderResources().
+
+    \note Buffer load/store is only guaranteed to be available within a compute
+    pipeline. While some backends may support using these resources in a
+    graphics pipeline as well, this is not universally supported, and even when
+    it is, unexpected problems may arise when it comes to barriers and
+    synchronization. Therefore, avoid using such resources with shaders other
+    than compute.
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoadStore(
         int binding, StageFlags stage, QRhiBuffer *buf)
@@ -3876,6 +3932,13 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoadStore(
     suitable for creating pipelines. Such a pipeline must then always be used
     together with another, layout compatible QRhiShaderResourceBindings with
     resources present passed to QRhiCommandBuffer::setShaderResources().
+
+    \note Buffer load/store is only guaranteed to be available within a compute
+    pipeline. While some backends may support using these resources in a
+    graphics pipeline as well, this is not universally supported, and even when
+    it is, unexpected problems may arise when it comes to barriers and
+    synchronization. Therefore, avoid using such resources with shaders other
+    than compute.
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoadStore(
         int binding, StageFlags stage, QRhiBuffer *buf, quint32 offset, quint32 size)
