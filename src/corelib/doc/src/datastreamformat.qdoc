@@ -7,7 +7,7 @@
     \brief List of data types that can be serialized by QDataStream.
 
     The \l QDataStream class allows you to serialize the Qt data types
-    listed in this section as of \l{QDataStream::setVersion()}{version 18}.
+    listed in this section.
 
     It is always best to cast integers to a Qt integer type, such as
     \l{qint16} or \l{quint32}, when reading and writing. This ensures that
