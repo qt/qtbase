@@ -33,10 +33,16 @@ function(qt_internal_add_benchmark target)
         set(arg_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
     endif()
 
+    qt_internal_library_deprecation_level(deprecation_define)
+
     qt_internal_add_executable(${target}
         NO_INSTALL # we don't install benchmarks
         OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}" # avoid polluting bin directory
         ${exec_args}
+    )
+    qt_internal_extend_target(${target}
+        DEFINES
+            ${deprecation_define}
     )
 
     # Benchmarks on iOS must be app bundles.
@@ -111,10 +117,16 @@ function(qt_internal_add_manual_test target)
         set(arg_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
     endif()
 
+    qt_internal_library_deprecation_level(deprecation_define)
+
     qt_internal_add_executable(${target}
         NO_INSTALL # we don't install benchmarks
         OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}" # avoid polluting bin directory
         ${exec_args}
+    )
+    qt_internal_extend_target(${target}
+        DEFINES
+            ${deprecation_define}
     )
 
     # Tests on iOS must be app bundles.
@@ -327,13 +339,17 @@ function(qt_internal_add_test_to_batch batch_name name)
     list(PREPEND batched_test_list ${name})
     set_property(GLOBAL PROPERTY _qt_batched_test_list_property ${batched_test_list})
 
+    qt_internal_library_deprecation_level(deprecation_define)
+
     # Merge the current test with the rest of the batch
     qt_internal_extend_target(${target}
         INCLUDE_DIRECTORIES ${arg_INCLUDE_DIRECTORIES}
         PUBLIC_LIBRARIES ${arg_PUBLIC_LIBRARIES}
         LIBRARIES ${arg_LIBRARIES}
         SOURCES ${arg_SOURCES}
-        DEFINES ${arg_DEFINES}
+        DEFINES
+            ${arg_DEFINES}
+            ${deprecation_define}
         COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
         COMPILE_FLAGS ${arg_COMPILE_FLAGS}
         LINK_OPTIONS ${arg_LINK_OPTIONS}
@@ -426,6 +442,8 @@ function(qt_internal_add_test name)
         list(APPEND private_includes ${arg_INCLUDE_DIRECTORIES})
 
         qt_internal_prepare_test_target_flags(version_arg exceptions_text gui_text ${ARGN})
+        qt_internal_library_deprecation_level(deprecation_define)
+
         qt_internal_add_executable("${name}"
             ${exceptions_text}
             ${gui_text}
@@ -437,6 +455,7 @@ function(qt_internal_add_test name)
                 ${private_includes}
             DEFINES
                 ${arg_DEFINES}
+                ${deprecation_define}
             LIBRARIES
                 ${arg_LIBRARIES}
                 ${arg_PUBLIC_LIBRARIES}
