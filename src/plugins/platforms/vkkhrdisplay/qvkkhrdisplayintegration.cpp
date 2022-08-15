@@ -219,7 +219,11 @@ QPlatformWindow *QVkKhrDisplayIntegration::createPlatformWindow(QWindow *window)
 {
     if (window->surfaceType() != QSurface::VulkanSurface) {
         qWarning("vkkhrdisplay platform plugin only supports QWindow with surfaceType == VulkanSurface");
-        return nullptr;
+        // Assume VulkanSurface, better than crashing. Consider e.g. an autotest
+        // creating a default QWindow just to have something to be used with
+        // QRhi's Null backend.  Continuing to set up a Vulkan window (even
+        // though the request was Raster or something) is better than failing to
+        // create a platform window, and may even be sufficient in some cases.
     }
 
     QVkKhrDisplayWindow *w = new QVkKhrDisplayWindow(window);
