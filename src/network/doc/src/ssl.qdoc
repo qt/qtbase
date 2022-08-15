@@ -13,13 +13,14 @@
     the \l{OpenSSL Toolkit}, or any appropriate TLS plugin to perform encryption
     and protocol handling.
 
-    From Qt version 5.15 onwards, the officially supported version for OpenSSL
+    From Qt version 5.15 onward, the officially supported version for OpenSSL
     is 1.1.1 or later.
 
     \annotatedlist ssl
 
+    For Android applications see \l{Adding OpeSSL Support for Android}.
 
-    \section1 Enabling and Disabling SSL Support
+    \section1 Enabling and Disabling SSL Support when Building Qt from Source
 
     When building Qt from source, Qt builds plugins for native TLS libraries
     that are supported for the operating system you are building for. For
