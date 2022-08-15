@@ -13,6 +13,7 @@ namespace QtWasmTest {
 enum TestResult {
     Pass,
     Fail,
+    Skip,
 };
 
 std::string formatMessage(std::string_view file,

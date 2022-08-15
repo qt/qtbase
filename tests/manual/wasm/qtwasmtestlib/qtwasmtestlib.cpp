@@ -45,8 +45,22 @@ void verify(bool condition, std::string_view conditionString, std::string_view f
 // thread-safe and call be called from any thread.
 void completeTestFunction(TestResult result, std::string message)
 {
+    auto resultString = [](TestResult result) {
+        switch (result) {
+        case TestResult::Pass:
+            return "PASS";
+        break;
+        case TestResult::Fail:
+            return "FAIL";
+        break;
+        case TestResult::Skip:
+            return "SKIP";
+        break;
+        }
+    };
+
     // Report test result to JavaScript test runner, on the main thread
-    runOnMainThread([resultString = result == TestResult::Pass ? "PASS" : "FAIL", message](){
+    runOnMainThread([resultString = resultString(result), message](){
         EM_ASM({
             completeTestFunction(UTF8ToString($0), UTF8ToString($1), UTF8ToString($2));
         }, g_currentTestName.c_str(), resultString, message.c_str());
@@ -97,7 +111,6 @@ std::string getTestFunctions()
 void runTestFunction(std::string name)
 {
     g_currentTestName = name;
-    QMetaObject::invokeMethod(g_testObject, "init");
     QMetaObject::invokeMethod(g_testObject, name.c_str());
 }
 

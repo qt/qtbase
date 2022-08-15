@@ -156,8 +156,18 @@ function testFunctionStarted(name) {
 }
 
 function testFunctionCompleted(status) {
-    const color = status.startsWith("PASS") ? "green" : status.startsWith("FAIL") ? "red" : "black";
-    let line = `<span style='color: ${color};'>${status}</text><br>`;
+
+    const color = (status) => {
+        if (status.startsWith("PASS"))
+            return "green";
+        if (status.startsWith("FAIL"))
+            return "red";
+        if (status.startsWith("SKIP"))
+            return "tan";
+        return "black";
+    };
+
+    const line = `<span style='color: ${color(status)};'>${status}</text><br>`;
     g_htmlLogElement.innerHTML += line;
 }
 
