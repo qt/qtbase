@@ -208,9 +208,11 @@ macx-xcode {
             contains(VALID_SIMULATOR_ARCHS, $$arch) {
                 sdk = $$simulator.sdk
                 version_identifier = $$simulator.deployment_identifier
+                platform_identifier = $$simulator.sdk
             } else {
                 sdk = $$device.sdk
                 version_identifier = $$device.deployment_identifier
+                platform_identifier = $$device.sdk
             }
 
             version_min_flags = \
@@ -237,9 +239,11 @@ macx-xcode {
     } else {
         simulator {
             version_identifier = $$simulator.deployment_identifier
+            platform_identifier = $$simulator.sdk
             sysroot_path  = $$xcodeSDKInfo(Path, $$simulator.sdk)
         } else {
             version_identifier = $$device.deployment_identifier
+            platform_identifier = $$device.sdk
             sysroot_path  = $$xcodeSDKInfo(Path, $$device.sdk)
         }
         version_min_flag = -m$${version_identifier}-version-min=$$deployment_target

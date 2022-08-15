@@ -68,7 +68,7 @@
             $$asset_catalog_app_icon_arg \
             $$asset_catalog_launch_image_arg \
             --output-partial-info-plist $$shell_quote($$asset_catalog_compiler.target) \
-            --platform $${version_identifier} \
+            --platform $${platform_identifier} \
             --minimum-deployment-target $${deployment_target} \
             --compile $$shell_quote($$QMAKE_ASSET_CATALOGS_BUILD_PATH)
 
