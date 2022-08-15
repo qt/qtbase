@@ -46,6 +46,8 @@ qt_internal_add_module(EglFSDeviceIntegrationPrivate
         Qt::FbSupportPrivate
         Qt::GuiPrivate
         EGL::EGL # special case
+    HEADER_SYNC_SOURCE_DIRECTORY
+        "${CMAKE_CURRENT_SOURCE_DIR}/api"
 )
 
 #### Keys ignored in scope 2:.:.:eglfsdeviceintegration.pro:<TRUE>:

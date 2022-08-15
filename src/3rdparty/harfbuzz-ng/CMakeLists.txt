@@ -70,6 +70,8 @@ qt_internal_add_3rdparty_library(BundledHarfbuzz
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/harfbuzz>
 )
 
+qt_internal_add_sync_header_dependencies(BundledHarfbuzz Core)
+
 # GHS compiler doesn't support the __restrict keyword
 if(INTEGRITY)
     target_compile_definitions(BundledHarfbuzz PRIVATE __restrict=)

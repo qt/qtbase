@@ -29,6 +29,7 @@ macro(qt_internal_get_internal_add_module_keywords option_args single_args multi
         EXTERNAL_HEADERS_DIR
         PRIVATE_HEADER_FILTERS
         QPA_HEADER_FILTERS
+        HEADER_SYNC_SOURCE_DIRECTORY
         ${__default_target_info_args}
     )
     set(${multi_args}
@@ -111,6 +112,12 @@ endfunction()
 #   QPA_HEADER_FILTERS
 #     The regular expressions that filter QPA header files out of target sources.
 #     The value must use the following format 'regex1|regex2|regex3'.
+#
+#   HEADER_SYNC_SOURCE_DIRECTORY
+#     The source directory for header sync procedure. Header files outside this directory will be
+#     ignored by syncqt. The specifying this directory allows to skip the parsing of the whole
+#     CMAKE_CURRENT_SOURCE_DIR for the header files that needs to be synced and only parse the
+#     single subdirectory, that meanwhile can be outside the CMAKE_CURRENT_SOURCE_DIR tree.
 function(qt_internal_add_module target)
     qt_internal_get_internal_add_module_keywords(
         module_option_args
@@ -382,13 +389,18 @@ function(qt_internal_add_module target)
     else()
         set_property(TARGET ${target} APPEND PROPERTY EXPORT_PROPERTIES _qt_module_include_name)
         set_target_properties("${target}" PROPERTIES
-            _qt_module_include_name "${module_include_name}")
+            _qt_module_include_name "${module_include_name}"
+            _qt_module_has_headers ON
+        )
 
-        # Use QT_BUILD_DIR for the syncqt call.
-        # So we either write the generated files into the qtbase non-prefix build root, or the
-        # module specific build root.
+        # Need to call qt_ensure_sync_qt to install syncqt.pl script.
         qt_ensure_sync_qt()
-        set(syncqt_full_command "${HOST_PERL}" -w "${QT_SYNCQT}"
+        # Repo uses old perl script to sync files.
+        if(NOT QT_USE_SYNCQT_CPP)
+            # Use QT_BUILD_DIR for the syncqt call.
+            # So we either write the generated files into the qtbase non-prefix build root, or the
+            # module specific build root.
+            set(syncqt_full_command "${HOST_PERL}" -w "${QT_SYNCQT}"
                                  -quiet
                                  -check-includes
                                  -module "${module_include_name}"
@@ -396,18 +408,24 @@ function(qt_internal_add_module target)
                                  -outdir "${QT_BUILD_DIR}"
                                  -builddir "${PROJECT_BINARY_DIR}"
                                  "${PROJECT_SOURCE_DIR}")
-        message(STATUS "Running syncqt for module: '${module_include_name}' ")
-        execute_process(COMMAND ${syncqt_full_command} RESULT_VARIABLE syncqt_ret)
-        if(NOT syncqt_ret EQUAL 0)
-            message(FATAL_ERROR "Failed to run syncqt, return code: ${syncqt_ret}")
+            message(STATUS "Running syncqt for module: '${module_include_name}' ")
+            execute_process(COMMAND ${syncqt_full_command} RESULT_VARIABLE syncqt_ret)
+            if(NOT syncqt_ret EQUAL 0)
+                message(FATAL_ERROR "Failed to run syncqt, return code: ${syncqt_ret}")
+            endif()
+
+            ### FIXME: Can we replace headers.pri?
+            qt_read_headers_pri("${module_build_interface_include_dir}" "module_headers")
+            set_property(TARGET ${target} APPEND PROPERTY
+                _qt_module_timestamp_dependencies "${module_headers_generated}")
+        else()
+            set(sync_source_directory "${CMAKE_CURRENT_SOURCE_DIR}")
+            if(arg_HEADER_SYNC_SOURCE_DIRECTORY)
+                set(sync_source_directory "${arg_HEADER_SYNC_SOURCE_DIRECTORY}")
+            endif()
+            set_target_properties(${target} PROPERTIES
+                _qt_sync_source_directory "${sync_source_directory}")
         endif()
-
-        set_target_properties("${target}" PROPERTIES
-            _qt_module_has_headers ON)
-
-        ### FIXME: Can we replace headers.pri?
-        qt_read_headers_pri("${module_build_interface_include_dir}" "module_headers")
-
         # We should not generate export headers if module is defined as pure STATIC.
         # Static libraries don't need to export their symbols, and corner cases when sources are
         # also used in shared libraries, should be handled manually.
@@ -428,6 +446,9 @@ function(qt_internal_add_module target)
 
         set(module_depends_header
             "${module_build_interface_include_dir}/${module_include_name}Depends")
+        set_source_files_properties("${module_depends_header}" PROPERTIES GENERATED TRUE)
+        set_target_properties(${target} PROPERTIES _qt_module_depends_header
+            "${module_depends_header}")
         if(NOT ${arg_HEADER_MODULE})
             set(module_header "${module_build_interface_include_dir}/${module_include_name}")
             set_property(TARGET "${target}" PROPERTY MODULE_HEADER
@@ -455,15 +476,17 @@ function(qt_internal_add_module target)
                 DESTINATION "${module_install_interface_include_dir}"
             )
         else()
-            if(arg_EXTERNAL_HEADERS)
-                set(module_headers_public "${arg_EXTERNAL_HEADERS}")
+            if(NOT QT_USE_SYNCQT_CPP)
+                if(arg_EXTERNAL_HEADERS)
+                    set(module_headers_public "${arg_EXTERNAL_HEADERS}")
+                endif()
+                qt_internal_install_module_headers(${target}
+                    PUBLIC
+                        ${module_headers_public}
+                        "${module_depends_header}"
+                        "${module_header}"
+                )
             endif()
-            qt_internal_install_module_headers(${target}
-                PUBLIC
-                    ${module_headers_public}
-                    "${module_depends_header}"
-                    "${module_header}"
-            )
         endif()
     endif()
 
@@ -650,7 +673,7 @@ function(qt_internal_add_module target)
         )
     endif()
 
-    if(NOT arg_HEADER_MODULE)
+    if(NOT arg_HEADER_MODULE AND NOT QT_USE_SYNCQT_CPP)
         if(DEFINED module_headers_private)
             qt_internal_add_linker_version_script("${target}" PRIVATE_HEADERS ${module_headers_private} ${module_headers_qpa})
         else()
@@ -671,7 +694,7 @@ function(qt_internal_add_module target)
         string(APPEND final_injections "${extra_library_injections} ")
     endif()
 
-    if(final_injections)
+    if(final_injections AND NOT QT_USE_SYNCQT_CPP)
         qt_install_injections(${target} "${QT_BUILD_DIR}" "${QT_INSTALL_DIR}" ${final_injections})
     endif()
 
@@ -853,10 +876,9 @@ set(QT_LIBINFIX \"${QT_LIBINFIX}\")")
         endif()
     endif()
 
-    if(QT_FEATURE_headersclean AND NOT arg_NO_MODULE_HEADERS)
+    if(QT_FEATURE_headersclean AND NOT arg_NO_MODULE_HEADERS AND NOT QT_USE_SYNCQT_CPP)
         qt_internal_add_headersclean_target(
             ${target}
-            "${module_include_name}"
             "${module_headers_clean}")
     endif()
 
@@ -890,16 +912,29 @@ endfunction()
 
 function(qt_finalize_module target)
     qt_internal_collect_module_headers(module_headers ${target})
-    set_property(TARGET ${target} APPEND PROPERTY
-        _qt_module_timestamp_dependencies "${module_headers_public}")
 
     # qt_internal_install_module_headers needs to be called before
     # qt_finalize_framework_headers_copy, because the last uses the QT_COPIED_FRAMEWORK_HEADERS
-    # property which supposed to be updated inside every qt_internal_install_module_headers call.
-    qt_internal_install_module_headers(${target}
-        PRIVATE ${module_headers_private}
-        QPA ${module_headers_qpa}
-    )
+    # property which supposed to be updated inside every qt_internal_install_module_headers
+    # call.
+    if(QT_USE_SYNCQT_CPP)
+        if(QT_FEATURE_headersclean)
+            qt_internal_add_headersclean_target(${target} "${module_headers_public}")
+        endif()
+        qt_internal_target_sync_headers(${target} "${module_headers_all}"
+            "${module_headers_generated}")
+        get_target_property(module_depends_header ${target} _qt_module_depends_header)
+        qt_internal_install_module_headers(${target}
+            PUBLIC ${module_headers_public} "${module_depends_header}"
+            PRIVATE ${module_headers_private}
+            QPA ${module_headers_qpa}
+        )
+    else()
+        qt_internal_install_module_headers(${target}
+            PRIVATE ${module_headers_private}
+            QPA ${module_headers_qpa}
+        )
+    endif()
 
     qt_finalize_framework_headers_copy(${target})
     qt_generate_prl_file(${target} "${INSTALL_LIBDIR}")
@@ -1098,6 +1133,13 @@ function(qt_internal_generate_cpp_global_exports target module_define_infix)
 
     set(${out_public_header} "${generated_header_path}" PARENT_SCOPE)
     target_sources(${target} PRIVATE "${generated_header_path}")
+    set_source_files_properties("${generated_header_path}" PROPERTIES GENERATED TRUE)
+    if(NOT QT_USE_SYNCQT_CPP)
+        qt_internal_install_module_headers(${target}
+            PUBLIC
+                "${generated_header_path}"
+        )
+    endif()
 
     if(arg_GENERATE_PRIVATE_CPP_EXPORTS)
         set(generated_private_header_path
@@ -1110,35 +1152,7 @@ function(qt_internal_generate_cpp_global_exports target module_define_infix)
 
         set(${out_private_header} "${generated_private_header_path}" PARENT_SCOPE)
         target_sources(${target} PRIVATE "${generated_private_header_path}")
-    endif()
-
-    get_target_property(is_framework ${target} FRAMEWORK)
-
-    get_target_property(target_type ${target} TYPE)
-    set(is_interface_lib 0)
-    if(target_type STREQUAL "INTERFACE_LIBRARY")
-        set(is_interface_lib 1)
-    endif()
-
-    set_property(TARGET ${target} APPEND PROPERTY
-        _qt_module_timestamp_dependencies "${generated_header_path}")
-
-    if(is_framework)
-        if(NOT is_interface_lib)
-            qt_copy_framework_headers(${target} PUBLIC "${generated_header_path}")
-
-            if(arg_GENERATE_PRIVATE_CPP_EXPORTS)
-                qt_copy_framework_headers(${target} PRIVATE "${generated_private_header_path}")
-            endif()
-        endif()
-    else()
-        qt_install(FILES "${generated_header_path}"
-            DESTINATION "${module_install_interface_include_dir}")
-
-        if(arg_GENERATE_PRIVATE_CPP_EXPORTS)
-            qt_install(FILES "${generated_private_header_path}"
-                DESTINATION "${module_install_interface_private_include_dir}")
-        endif()
+        set_source_files_properties("${generated_private_header_path}" PROPERTIES GENERATED TRUE)
     endif()
 endfunction()
 
@@ -1180,10 +1194,9 @@ function(qt_internal_install_module_headers target)
             qt_install(FILES ${arg_PRIVATE}
                  DESTINATION "${module_install_interface_private_include_dir}")
         endif()
-    endif()
-
-    if(arg_QPA)
-        qt_install(FILES ${arg_QPA} DESTINATION "${module_install_interface_qpa_include_dir}")
+        if(arg_QPA)
+            qt_install(FILES ${arg_QPA} DESTINATION "${module_install_interface_qpa_include_dir}")
+        endif()
     endif()
 endfunction()
 
@@ -1191,6 +1204,7 @@ function(qt_internal_collect_module_headers out_var target)
     set(${out_var}_public "")
     set(${out_var}_private "")
     set(${out_var}_qpa "")
+    set(${out_var}_all "")
 
     qt_internal_get_target_sources(sources ${target})
 
@@ -1203,6 +1217,7 @@ function(qt_internal_collect_module_headers out_var target)
         if(NOT file_name MATCHES ".+\\.h$")
             continue()
         endif()
+        get_source_file_property(is_generated "${file_path}" GENERATED)
         get_filename_component(file_path "${file_path}" ABSOLUTE)
         get_filename_component(file_path "${file_path}" REALPATH)
         list(APPEND ${out_var}_all "${file_path}")
@@ -1212,6 +1227,9 @@ function(qt_internal_collect_module_headers out_var target)
             list(APPEND ${out_var}_private "${file_path}")
         elseif(NOT public_filter OR file_name MATCHES "${public_filter}")
             list(APPEND ${out_var}_public "${file_path}")
+        endif()
+        if(is_generated)
+            list(APPEND ${out_var}_generated "${file_path}")
         endif()
     endforeach()
 
@@ -1226,6 +1244,8 @@ function(qt_internal_collect_module_headers out_var target)
 
         set(${out_var}_${header_type} "${${out_var}_${header_type}}" PARENT_SCOPE)
     endforeach()
+    set(${out_var}_all "${${out_var}_all}" PARENT_SCOPE)
+    set(${out_var}_generated "${${out_var}_generated}" PARENT_SCOPE)
 
     if(has_header_types_properties)
         set_target_properties(${target} PROPERTIES ${has_header_types_properties})

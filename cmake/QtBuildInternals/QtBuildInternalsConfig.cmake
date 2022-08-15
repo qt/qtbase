@@ -419,6 +419,10 @@ macro(qt_build_repo_begin)
         add_dependencies(install_docs install_html_docs install_qch_docs)
     endif()
 
+    if(NOT TARGET sync_headers)
+        add_custom_target(sync_headers)
+    endif()
+
     # Add global qt_plugins, qpa_plugins and qpa_default_plugins convenience custom targets.
     # Internal executables will add a dependency on the qpa_default_plugins target,
     # so that building and running a test ensures it won't fail at runtime due to a missing qpa
@@ -474,6 +478,10 @@ macro(qt_build_repo_begin)
     if(NOT TARGET benchmark)
         add_custom_target(benchmark)
     endif()
+
+    if(QT_INTERNAL_SYNCED_MODULES)
+        set_property(GLOBAL PROPERTY _qt_synced_modules ${QT_INTERNAL_SYNCED_MODULES})
+    endif()
 endmacro()
 
 macro(qt_build_repo_end)
@@ -509,6 +517,12 @@ macro(qt_build_repo_end)
 
     if(NOT QT_SUPERBUILD)
         qt_print_build_instructions()
+    endif()
+
+    get_property(synced_modules GLOBAL PROPERTY _qt_synced_modules)
+    if(synced_modules)
+        set(QT_INTERNAL_SYNCED_MODULES ${synced_modules} CACHE INTERNAL
+            "List of the synced modules. Prevents running syncqt.cpp after the first configuring.")
     endif()
 endmacro()
 

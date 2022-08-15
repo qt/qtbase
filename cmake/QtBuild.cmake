@@ -228,6 +228,15 @@ if(NOT QT_MKSPECS_DIR)
     set(QT_MKSPECS_DIR "${QT_MKSPECS_DIR}" CACHE INTERNAL "")
 endif()
 
+# macOS versions 10.14 and less don't have the implementation of std::filesystem API.
+if(CMAKE_HOST_APPLE AND CMAKE_HOST_SYSTEM_VERSION VERSION_LESS "19.0.0")
+    message(FATAL_ERROR "macOS versions less than 10.15 are not supported for building Qt.")
+endif()
+
+if(NOT DEFINED QT_USE_SYNCQT_CPP)
+    set(QT_USE_SYNCQT_CPP FALSE)
+endif()
+
 # the default RPATH to be used when installing, but only if it's not a system directory
 list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBDIR}" isSystemDir)
 if("${isSystemDir}" STREQUAL "-1")

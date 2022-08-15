@@ -377,10 +377,15 @@ endif()
 # additional json files.
 qt6_extract_metatypes(Core ${core_metatype_args})
 
-set_property(TARGET Core APPEND PROPERTY
-    PUBLIC_HEADER "${CMAKE_CURRENT_BINARY_DIR}/global/qconfig.h")
-set_property(TARGET Core APPEND PROPERTY
-    PRIVATE_HEADER "${CMAKE_CURRENT_BINARY_DIR}/global/qconfig_p.h")
+target_sources(Core PRIVATE
+    "${CMAKE_CURRENT_BINARY_DIR}/global/qconfig.h"
+    "${CMAKE_CURRENT_BINARY_DIR}/global/qconfig_p.h"
+)
+set_source_files_properties(
+    "${CMAKE_CURRENT_BINARY_DIR}/global/qconfig.h"
+    "${CMAKE_CURRENT_BINARY_DIR}/global/qconfig_p.h"
+    PROPERTIES GENERATED TRUE
+)
 
 # Find ELF interpreter and define a macro for that:
 if ((LINUX OR HURD) AND NOT CMAKE_CROSSCOMPILING AND BUILD_SHARED_LIBS)

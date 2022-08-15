@@ -109,6 +109,8 @@ if(WIN32)
         target_compile_definitions(EntryPointPrivate INTERFACE QT_NEEDS_QMAIN)
         qt_internal_extend_target(EntryPointImplementation DEFINES QT_NEEDS_QMAIN)
     endif()
+
+    qt_internal_add_sync_header_dependencies(EntryPointImplementation Core)
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "iOS")

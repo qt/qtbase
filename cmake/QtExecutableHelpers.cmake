@@ -429,7 +429,7 @@ function(qt_internal_add_configure_time_executable target)
 
         set(cmake_flags_arg)
         if(arg_CMAKE_FLAGS)
-            set(cmake_flags_arg CMAKE_FLAGS ${arg_CMAKE_FLAGS})
+            set(cmake_flags_arg CMAKE_FLAGS "${arg_CMAKE_FLAGS}")
         endif()
         configure_file("${template}" "${target_binary_dir}/CMakeLists.txt" @ONLY)
         try_compile(result

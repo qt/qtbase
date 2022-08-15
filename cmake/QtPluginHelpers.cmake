@@ -276,6 +276,8 @@ function(qt_internal_add_plugin target)
                 )
             endif()
         endif()
+
+        qt_internal_add_autogen_sync_header_dependencies(${target} ${qt_module_target})
     endif()
 
     # Change the configuration file install location for qml plugins into the Qml package location.

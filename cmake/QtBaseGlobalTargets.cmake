@@ -247,6 +247,7 @@ qt_copy_or_install(FILES
                    cmake/QtLalrHelpers.cmake
                    cmake/QtModuleConfig.cmake.in
                    cmake/QtModuleDependencies.cmake.in
+                   cmake/QtModuleHeadersCheck.cmake
                    cmake/QtModuleHelpers.cmake
                    cmake/QtModuleToolsConfig.cmake.in
                    cmake/QtModuleToolsDependencies.cmake.in

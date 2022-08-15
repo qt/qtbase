@@ -4,6 +4,7 @@
 qt_internal_add_module(MockPlugins3
     PLUGIN_TYPES mockauxplugin
     SOURCES
+        qmockauxplugin.h
         fake.cpp
     LIBRARIES
         Qt::CorePrivate

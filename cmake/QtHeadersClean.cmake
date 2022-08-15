@@ -4,26 +4,18 @@
 # Add a custom ${module_target}_headersclean_check target that builds each header in
 # ${module_headers} with a custom set of defines. This makes sure our public headers
 # are self-contained, and also compile with more strict compiler options.
-function(qt_internal_add_headersclean_target
-        module_target
-        module_include_name
-        module_headers)
-    # module_headers is a list of strings of the form
-    #  <headerfile>[:feature]
-    set(hclean_headers "")
-    foreach(entry ${module_headers})
-        string(REPLACE ":" ";" entry_list ${entry})
-        list(LENGTH entry_list entry_list_length)
-        list(GET entry_list 0 entry_path)
+function(qt_internal_add_headersclean_target module_target module_headers)
+    get_target_property(has_headers ${module_target} _qt_module_has_headers)
+    if(NOT has_headers)
+        return()
+    endif()
 
-        if (${entry_list_length} EQUAL 2)
-            list(GET entry_list 1 entry_feature)
-            if (NOT QT_FEATURE_${entry_feature})
-                message(STATUS "headersclean: Ignoring header ${entry_path} because of missing feature ${entry_feature}")
-                continue()
-            endif()
+    set(hclean_headers "")
+    foreach(header IN LISTS module_headers)
+        get_filename_component(header_name "${header}" NAME)
+        if(header_name MATCHES "^q[^_]+\\.h$" AND NOT header_name MATCHES ".*(global|exports)\\.h")
+            list(APPEND hclean_headers "${header}")
         endif()
-        list(APPEND hclean_headers ${entry_path})
     endforeach()
 
     # Make sure that the header compiles with our strict options
@@ -52,6 +44,12 @@ function(qt_internal_add_headersclean_target
     set(includes_exist_genex "$<BOOL:${target_includes_genex}>")
     set(target_includes_joined_genex
         "$<${includes_exist_genex}:-I$<JOIN:${target_includes_genex},;-I>>")
+
+    get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
+    if(is_multi_config)
+        list(GET CMAKE_CONFIGURATION_TYPES 0 first_config_type)
+        set(config_suffix "$<$<NOT:$<CONFIG:${first_config_type}>>:-$<CONFIG>>")
+    endif()
 
     # qmake doesn't seem to add the defines that are set by the header_only_module when checking the
     # the cleanliness of the module's header files.
@@ -165,35 +163,23 @@ function(qt_internal_add_headersclean_target
             endforeach()
         endif()
 
-        foreach(header ${hclean_headers})
-            get_filename_component(input_path "${header}" ABSOLUTE)
-            set(artifact_path "header_check/${header}.o")
-            get_filename_component(artifact_directory "${artifact_path}" DIRECTORY)
-            set(comment_header_path "${CMAKE_CURRENT_SOURCE_DIR}/${header}")
-            file(RELATIVE_PATH comment_header_path "${PROJECT_SOURCE_DIR}" "${comment_header_path}")
+        set(compiler_command_line
+            "${compiler_to_run}" "-c" "${cxx_flags}"
+            "${target_compile_flags_joined_genex}"
+            "${target_defines_joined_genex}"
+            "${hcleanFLAGS}"
+            "${target_includes_joined_genex}"
+            "${framework_includes}"
+            "${hcleanDEFS}"
 
-            add_custom_command(
-                OUTPUT "${artifact_path}"
-                COMMENT "headersclean: Checking header ${comment_header_path}"
-                COMMAND ${CMAKE_COMMAND} -E make_directory "${artifact_directory}"
-                COMMAND
-                ${compiler_to_run} -c ${cxx_flags}
-                "${target_compile_flags_joined_genex}"
-                "${target_defines_joined_genex}"
-                ${hcleanFLAGS}
-                "${target_includes_joined_genex}"
-                ${framework_includes}
-                ${hcleanDEFS}
-                -xc++ "${input_path}"
-                -o${artifact_path}
-                IMPLICIT_DEPENDS CXX
-                VERBATIM
-                COMMAND_EXPAND_LISTS
-                DEPENDS "${input_path}"
-            )
-            list(APPEND hclean_artifacts "${artifact_path}")
-        endforeach()
-
+        )
+        string(JOIN " " compiler_command_line_variables
+            "-xc++"
+            "\${INPUT_HEADER_FILE}"
+            "-o"
+            "\${OUTPUT_ARTIFACT}"
+        )
+        set(input_header_path_type ABSOLUTE)
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
         # -Za would enable strict standards behavior, but we can't add it because
         # <windows.h> and <GL.h> violate the standards.
@@ -202,36 +188,86 @@ function(qt_internal_add_headersclean_target
         # cl.exe needs a source path
         get_filename_component(source_path "${QT_MKSPECS_DIR}/features/data/dummy.cpp" REALPATH)
 
-        foreach(header ${hclean_headers})
-            # We need realpath here to make sure path starts with drive letter
-            get_filename_component(input_path "${header}" REALPATH)
-            set(artifact_path "header_${header}.o")
-            set(comment_header_path "${CMAKE_CURRENT_SOURCE_DIR}/${header}")
-            file(RELATIVE_PATH comment_header_path "${PROJECT_SOURCE_DIR}" "${comment_header_path}")
+        set(compiler_command_line
+            "${compiler_to_run}" "-nologo" "-c" "${CMAKE_CXX_FLAGS}"
+            "${target_compile_flags_joined_genex}"
+            "${target_defines_joined_genex}"
+            "${hcleanFLAGS}"
+            "${target_includes_joined_genex}"
+            "${hcleanDEFS}"
+        )
+        string(JOIN " " compiler_command_line_variables
+            "-FI"
+            "\${INPUT_HEADER_FILE}"
+            "-Fo\${OUTPUT_ARTIFACT}"
+            "${source_path}"
+        )
 
-            add_custom_command(
-                OUTPUT "${artifact_path}"
-                COMMENT "headersclean: Checking header ${comment_header_path}"
-                COMMAND
-                ${compiler_to_run} -nologo -c ${CMAKE_CXX_FLAGS}
-                "${target_compile_flags_joined_genex}"
-                "${target_defines_joined_genex}"
-                ${hcleanFLAGS}
-                "${target_includes_joined_genex}"
-                ${hcleanDEFS}
-                -FI "${input_path}"
-                -Fo${artifact_path} "${source_path}"
-                IMPLICIT_DEPENDS CXX
-                VERBATIM
-                COMMAND_EXPAND_LISTS
-                DEPENDS "${input_path}"
-            )
-            list(APPEND hclean_artifacts "${artifact_path}")
-        endforeach()
+        set(input_header_path_type REALPATH)
     else()
         message(FATAL_ERROR "CMAKE_CXX_COMPILER_ID \"${CMAKE_CXX_COMPILER_ID}\" is not supported"
             " for the headersclean check.")
     endif()
+
+    get_target_property(module_include_name ${target} _qt_module_include_name)
+
+    unset(header_check_exceptions)
+    if(QT_USE_SYNCQT_CPP)
+        set(header_check_exceptions
+            "${CMAKE_CURRENT_BINARY_DIR}/${module_include_name}_header_check_exceptions")
+    endif()
+    set(headers_check_parameters
+        "${CMAKE_CURRENT_BINARY_DIR}/${module_target}HeadersCheckParameters${config_suffix}.cmake")
+    string(JOIN "\n" headers_check_parameters_content
+        "set(HEADER_CHECK_EXCEPTIONS"
+        "    \"${header_check_exceptions}\")"
+        "set(HEADER_CHECK_COMPILER_COMMAND_LINE"
+        "    \[\[$<JOIN:${compiler_command_line},\]\]\n    \[\[>\]\]\n"
+        "    ${compiler_command_line_variables}"
+        ")"
+    )
+    file(GENERATE OUTPUT "${headers_check_parameters}"
+        CONTENT "${headers_check_parameters_content}")
+
+    set(sync_headers_dep "")
+    if(QT_USE_SYNCQT_CPP)
+        set(sync_headers_dep "sync_headers")
+    endif()
+
+    foreach(header ${hclean_headers})
+        # We need realpath here to make sure path starts with drive letter
+        get_filename_component(input_path "${header}" ${input_header_path_type})
+
+        get_filename_component(input_file_name ${input_path} NAME)
+        set(artifact_path "${CMAKE_CURRENT_BINARY_DIR}/header_check/${input_file_name}.o")
+
+        if(input_path MATCHES "${CMAKE_BINARY_DIR}")
+            set(input_base_dir "${CMAKE_BINARY_DIR}")
+        elseif(input_path MATCHES "${CMAKE_SOURCE_DIR}")
+            set(input_base_dir "${CMAKE_SOURCE_DIR}")
+        endif()
+        file(RELATIVE_PATH comment_header_path "${input_base_dir}" "${input_path}")
+
+        add_custom_command(
+            OUTPUT "${artifact_path}"
+            COMMENT "headersclean: Checking header ${comment_header_path}"
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/header_check"
+            COMMAND ${CMAKE_COMMAND}
+                -DINPUT_HEADER_FILE=${input_path}
+                -DOUTPUT_ARTIFACT=${artifact_path}
+                -DPARAMETERS=${headers_check_parameters}
+                -P "${QT_CMAKE_DIR}/QtModuleHeadersCheck.cmake"
+            IMPLICIT_DEPENDS CXX
+            VERBATIM
+            COMMAND_EXPAND_LISTS
+            DEPENDS
+                ${headers_check_parameters}
+                ${sync_headers_dep}
+                ${input_path}
+                ${header_check_exceptions}
+        )
+        list(APPEND hclean_artifacts "${artifact_path}")
+    endforeach()
 
     add_custom_target(${module_target}_headersclean_check
         COMMENT "headersclean: Checking headers in ${module_include_name}"

@@ -634,10 +634,11 @@ function(qt_internal_add_configure_time_tool target_name)
         set(extra_args "INSTALL_DIRECTORY" "${install_dir}")
     endif()
 
+    string(REPLACE "\\\;" "\\\\\\\;" unparsed_arguments "${arg_UNPARSED_ARGUMENTS}")
     qt_internal_add_configure_time_executable(${target_name}
         OUTPUT_NAME ${name}
         ${extra_args}
-        ${arg_UNPARSED_ARGUMENTS}
+        ${unparsed_arguments}
     )
 
     if(NOT arg_NO_INSTALL AND arg_TOOLS_TARGET)

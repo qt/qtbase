@@ -15,6 +15,8 @@ if(QT_FEATURE_gui)
     qt_feature_evaluate_features("${CMAKE_CURRENT_SOURCE_DIR}/gui/configure.cmake")
 endif()
 
+add_subdirectory(tools/syncqt)
+
 function(find_or_build_bootstrap_names)
     if (QT_WILL_BUILD_TOOLS)
         add_subdirectory(tools/bootstrap)  # bootstrap library

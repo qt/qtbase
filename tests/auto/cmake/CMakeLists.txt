@@ -145,6 +145,12 @@ if(IOS)
     return()
 endif()
 
+set(is_qt_build_platform TRUE)
+# macOS versions less than 10.15 are not supported for building Qt.
+if(CMAKE_HOST_APPLE AND CMAKE_HOST_SYSTEM_VERSION VERSION_LESS "19.0.0")
+    set(is_qt_build_platform FALSE)
+endif()
+
 _qt_internal_test_expect_pass(test_umbrella_config)
 _qt_internal_test_expect_pass(test_wrap_cpp_and_resources)
 if (NOT NO_WIDGETS)
@@ -274,21 +280,23 @@ elseif(QT6_INSTALL_BINS)
 endif()
 
 # Test building and installing a few dummy Qt modules and plugins.
-set(mockplugins_test_args "")
-if(NOT QT_FEATURE_no_prefix)
-    list(APPEND mockplugins_test_args
-        BINARY "${CMAKE_COMMAND}"
-        BINARY_ARGS
-        "-DQT_BUILD_DIR=${CMAKE_CURRENT_BINARY_DIR}/mockplugins"
-        -P "${qt_install_prefix}/${qt_install_bin_dir}/qt-cmake-private-install.cmake"
-    )
-endif()
-_qt_internal_test_expect_pass(mockplugins ${mockplugins_test_args})
-set_tests_properties(mockplugins PROPERTIES FIXTURES_SETUP build_mockplugins)
+if(is_qt_build_platform)
+    set(mockplugins_test_args "")
+     if(NOT QT_FEATURE_no_prefix)
+        list(APPEND mockplugins_test_args
+            BINARY "${CMAKE_COMMAND}"
+            BINARY_ARGS
+            "-DQT_BUILD_DIR=${CMAKE_CURRENT_BINARY_DIR}/mockplugins"
+            -P "${qt_install_prefix}/${qt_install_bin_dir}/qt-cmake-private-install.cmake"
+        )
+    endif()
+    _qt_internal_test_expect_pass(mockplugins ${mockplugins_test_args})
+    set_tests_properties(mockplugins PROPERTIES FIXTURES_SETUP build_mockplugins)
 
-# Test importing the plugins built in the project above.
-_qt_internal_test_expect_pass(test_import_plugins BINARY ${CMAKE_CTEST_COMMAND} BINARY_ARGS -V)
-set_tests_properties(test_import_plugins PROPERTIES FIXTURES_REQUIRED build_mockplugins)
+    # Test importing the plugins built in the project above.
+    _qt_internal_test_expect_pass(test_import_plugins BINARY ${CMAKE_CTEST_COMMAND} BINARY_ARGS -V)
+    set_tests_properties(test_import_plugins PROPERTIES FIXTURES_REQUIRED build_mockplugins)
+endif()
 
 _qt_internal_test_expect_pass(test_versionless_targets)
 
@@ -307,11 +315,13 @@ include(test_plugin_shared_static_flavor.cmake)
 _qt_internal_test_expect_pass(tst_qaddpreroutine
                               BINARY tst_qaddpreroutine)
 
-_qt_internal_test_expect_pass(test_static_resources
-                              BINARY "${CMAKE_CTEST_COMMAND}"
-                              BINARY_ARGS "-V")
+if(is_qt_build_platform)
+    _qt_internal_test_expect_pass(test_static_resources
+                                BINARY "${CMAKE_CTEST_COMMAND}"
+                                BINARY_ARGS "-V")
 
-_qt_internal_test_expect_pass(test_generating_cpp_exports)
+    _qt_internal_test_expect_pass(test_generating_cpp_exports)
+endif()
 
 _qt_internal_test_expect_pass(test_qt_extract_metatypes)
 

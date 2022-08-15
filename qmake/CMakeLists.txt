@@ -15,6 +15,9 @@ qt_add_library(QtLibraryInfo OBJECT
     propertyprinter.cpp propertyprinter.h
     qmakelibraryinfo.cpp qmakelibraryinfo.h
 )
+
+qt_internal_add_sync_header_dependencies(QtLibraryInfo Core)
+
 set_target_properties(QtLibraryInfo PROPERTIES
     COMPILE_OPTIONS $<TARGET_PROPERTY:Qt::Core,INTERFACE_COMPILE_OPTIONS>
     COMPILE_DEFINITIONS $<TARGET_PROPERTY:Qt::Core,INTERFACE_COMPILE_DEFINITIONS>

@@ -11,6 +11,9 @@
 # The bootstrap library has a few manual tweaks compared to other
 # libraries.
 qt_add_library(Bootstrap STATIC)
+
+qt_internal_add_sync_header_dependencies(Bootstrap Core)
+
 # special case end
 qt_internal_extend_target(Bootstrap
     SOURCES
@@ -104,6 +107,7 @@ qt_internal_extend_target(Bootstrap
         ../../3rdparty/tinycbor/src
     PUBLIC_INCLUDE_DIRECTORIES  # special case
         $<TARGET_PROPERTY:Core,INCLUDE_DIRECTORIES> # special case
+        ../../corelib/global
     PUBLIC_LIBRARIES  # special case
         Qt::Platform # special case
 )

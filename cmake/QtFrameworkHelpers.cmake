@@ -97,6 +97,19 @@ function(qt_copy_framework_headers target)
         QT_COPIED_FRAMEWORK_HEADERS "${out_files}")
 endfunction()
 
+function(qt_internal_generate_fake_framework_header target)
+    # Hack to create the "Headers" symlink in the framework:
+    # Create a fake header file and copy it into the framework by marking it as PUBLIC_HEADER.
+    # CMake now takes care of creating the symlink.
+    set(fake_header "${CMAKE_CURRENT_BINARY_DIR}/${target}_fake_header.h")
+    qt_internal_get_main_cmake_configuration(main_config)
+    file(GENERATE OUTPUT "${fake_header}" CONTENT "// ignore this file\n"
+        CONDITION "$<CONFIG:${main_config}>")
+    target_sources(${target} PRIVATE "${fake_header}")
+    set_source_files_properties("${fake_header}" PROPERTIES GENERATED ON)
+    set_property(TARGET ${target} APPEND PROPERTY PUBLIC_HEADER "${fake_header}")
+endfunction()
+
 function(qt_finalize_framework_headers_copy target)
     get_target_property(target_type ${target} TYPE)
     if(${target_type} STREQUAL "INTERFACE_LIBRARY")
@@ -108,17 +121,7 @@ function(qt_finalize_framework_headers_copy target)
     endif()
     get_target_property(headers ${target} QT_COPIED_FRAMEWORK_HEADERS)
     if(headers)
-        # Hack to create the "Headers" symlink in the framework:
-        # Create a fake header file and copy it into the framework by marking it as PUBLIC_HEADER.
-        # CMake now takes care of creating the symlink.
-        set(fake_header ${target}_fake_header.h)
-        qt_internal_get_main_cmake_configuration(main_config)
-        file(GENERATE OUTPUT ${fake_header} CONTENT "// ignore this file\n"
-             CONDITION "$<CONFIG:${main_config}>")
-        string(PREPEND fake_header "${CMAKE_CURRENT_BINARY_DIR}/")
-        target_sources(${target} PRIVATE ${fake_header})
-        set_source_files_properties(${fake_header} PROPERTIES GENERATED ON)
-        set_property(TARGET ${target} APPEND PROPERTY PUBLIC_HEADER ${fake_header})
+        qt_internal_generate_fake_framework_header(${target})
 
         # Add a target, e.g. Core_framework_headers, that triggers the header copy.
         add_custom_target(${target}_framework_headers DEPENDS ${headers})
