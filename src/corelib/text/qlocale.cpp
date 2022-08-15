@@ -1313,16 +1313,21 @@ QLocale::Country QLocale::country() const
 #endif
 
 /*!
-    Returns the language and country of this locale as a
-    string of the form "language_country", where
-    language is a lowercase, two-letter ISO 639 language code,
-    and country is an uppercase, two- or three-letter ISO 3166 country code.
+    \brief The short name of this locale.
 
-    Note that even if QLocale object was constructed with an explicit script,
-    name() will not contain it for compatibility reasons. Use \l bcp47Name() instead
-    if you need a full locale name.
+    Returns the language and territory of this locale as a string of the form
+    "language_territory", where language is a lowercase, two-letter ISO 639
+    language code, and territory is an uppercase, two- or three-letter ISO 3166
+    territory code. If the locale has no specified territory, only the language
+    name is returned.
 
-    \sa QLocale(), language(), script(), territory(), bcp47Name()
+    Even if the QLocale object was constructed with an explicit script, name()
+    will not contain it for compatibility reasons. Use \l bcp47Name() instead if
+    you need a full locale name, or construct the string you want to identify a
+    locale by from those returned by passing its \l language() to \l
+    languageToCode() and similar for the script and territory.
+
+    \sa QLocale(), language(), script(), territory(), bcp47Name(), uiLanguages()
 */
 
 QString QLocale::name() const
@@ -1370,16 +1375,22 @@ T toIntegral_helper(const QLocalePrivate *d, QStringView str, bool *ok)
 /*!
     \since 4.8
 
-    Returns the dash-separated language, script and country (and possibly other
-    BCP47 fields) of this locale as a string.
+    \brief Returns the BCP47 field names joined with dashes.
 
-    Unlike the uiLanguages() the returned value of the bcp47Name() represents
-    the locale name of the QLocale data but not the language the user-interface
-    should be in.
+    This combines as many of language, script and territory (and possibly other
+    BCP47 fields) for this locale as are needed to uniquely specify it. Note
+    that fields may be omitted if the Unicode consortium's \l {Matching
+    combinations of language, script and territory}{Likely Subtag Rules} imply
+    the omitted fields when given those retained. See \l name() for how to
+    construct a string from individual fields, if some other format is needed.
+
+    Unlike uiLanguages(), the value returned by bcp47Name() represents the
+    locale name of the QLocale data; this need not be the language the
+    user-interface should be in.
 
     This function tries to conform the locale name to BCP47.
 
-    \sa language(), territory(), script(), uiLanguages()
+    \sa name(), language(), territory(), script(), uiLanguages()
 */
 QString QLocale::bcp47Name() const
 {
@@ -4382,17 +4393,17 @@ QString QLocale::formattedDataSize(qint64 bytes, int precision, DataSizeFormats 
 
 /*!
     \since 4.8
+    \brief List of locale names for use in selecting translations
 
-    Returns an ordered list of locale names for translation purposes in
-    preference order (like "en-Latn-US", "en-US", "en").
-
-    The return value represents locale names that the user expects to see the
-    UI translation in.
+    Each entry in the returned list is the dash-joined name of a locale,
+    suitable to the user's preferences for what to translate the UI into. For
+    example, if the user has configured their system to use English as used in
+    the USA, the list would be "en-Latn-US", "en-US", "en". The order of entries
+    is the order in which to check for translations; earlier items in the list
+    are to be preferred over later ones.
 
     Most likely you do not need to use this function directly, but just pass the
     QLocale object to the QTranslator::load() function.
-
-    Earlier items in the list are to be preferred over later ones.
 
     \sa QTranslator, bcp47Name()
 */
