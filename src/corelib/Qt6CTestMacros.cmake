@@ -439,6 +439,137 @@ macro(_qt_internal_test_expect_pass _dir)
     unset(__expect_pass_build_dir)
 endmacro()
 
+# Checks if a qmake project can be built successfully. Arguments:
+#
+# TESTNAME: a custom test name to use instead of the one derived from the source directory name.
+#           the name also applies to the generated build directory.
+#
+# QMAKE_OPTIONS: a list of variable assignments to pass to the qmake invocation.
+#                e.g. CONFIG+=debug
+#
+# BUILD_ENVIRONMENT: a list of environment assignments to use when invoking the build tool
+function(_qt_internal_add_qmake_test dir_name)
+    set(test_option_args
+    )
+    set(test_single_args
+      TESTNAME
+    )
+    set(test_multi_args
+        QMAKE_OPTIONS
+        BUILD_ENVIRONMENT
+    )
+
+    # PARSE_ARGV parsing keeps ';' in ENVIRONMENT variables
+    cmake_parse_arguments(PARSE_ARGV 1 arg
+        "${test_option_args}"
+        "${test_single_args}"
+        "${test_multi_args}"
+    )
+
+    if(arg_TESTNAME)
+        set(testname "${arg_TESTNAME}")
+    else()
+        string(REGEX REPLACE "[/)(]" "_" testname "${dir_name}")
+    endif()
+
+    set(source_dir "${CMAKE_CURRENT_SOURCE_DIR}/${dir_name}")
+    if(arg_TESTNAME)
+        set(build_dir "${CMAKE_CURRENT_BINARY_DIR}/${arg_TESTNAME}")
+    else()
+        set(build_dir "${CMAKE_CURRENT_BINARY_DIR}/${dir_name}")
+    endif()
+
+    # Find the qmake binary or the wrapper qmake script when cross-compiling..
+    if(QtBase_BINARY_DIR AND NOT QT_BUILD_STANDALONE_TESTS)
+        set(qmake_dir "${QtBase_BINARY_DIR}/${INSTALL_BINDIR}")
+    else()
+        set(qmake_dir "${QT6_INSTALL_PREFIX}/${QT6_INSTALL_BINS}")
+    endif()
+
+    set(qmake_path "${qmake_dir}/qmake${CMAKE_EXECUTABLE_SUFFIX}")
+
+    set(qmake_args
+        "${source_dir}"
+        ${arg_QMAKE_OPTIONS}
+    )
+
+    # Try to choose an appropriate build tool.
+    if(ENV{QT_QMAKE_TEST_BUILD_TOOL})
+        set(build_tool "$ENV{QT_QMAKE_TEST_BUILD_TOOL}")
+    elseif(MSVC)
+        set(build_tool "nmake")
+    elseif(MINGW)
+        set(build_tool "mingw32-make")
+    else()
+        set(build_tool "make")
+    endif()
+
+    set(build_tool_args "")
+    if(ENV{QT_QMAKE_TEST_BUILD_TOOL_OPTIONS})
+        set(build_tool_args "$ENV{QT_QMAKE_TEST_BUILD_TOOL_OPTIONS}")
+    endif()
+
+    # Remove any stale build dir, and create a new one on each test rerun.
+    add_test(${testname}_remove_build_dir
+        ${CMAKE_COMMAND} -E remove_directory "${build_dir}"
+    )
+    set_tests_properties(${testname}_remove_build_dir PROPERTIES
+        FIXTURES_SETUP "${testname}_ensure_clean_build_dir"
+    )
+
+    add_test(${testname}_create_build_dir
+        ${CMAKE_COMMAND} -E make_directory "${build_dir}"
+    )
+    set_tests_properties(${testname}_create_build_dir PROPERTIES
+        FIXTURES_SETUP "${testname}_ensure_clean_build_dir"
+    )
+
+    set_tests_properties(${testname}_create_build_dir
+                         PROPERTIES DEPENDS ${testname}_remove_build_dir)
+
+    # Add test to call qmake.
+    #
+    # We can't use the add_test(NAME) signature to set a working directory, because that breaks
+    # when calling ctest without a -C <config> using multi-config generators, and the CI calls
+    # ctest without -C, and we use Xcode when configuring tests for iOS, which is multi-config.
+    # The plain add_test signature does not have this issue.
+    # Work around this by using a wrapper script that sets a working directory and use the plain
+    # signature.
+    # Somewhat related issue https://gitlab.kitware.com/cmake/cmake/-/issues/20283
+    set(qmake_wrapper_file "${CMAKE_CURRENT_BINARY_DIR}/run_qmake_${testname}.cmake")
+    _qt_internal_create_command_script(
+        COMMAND "${qmake_path}" ${qmake_args}
+        COMMAND_ECHO STDOUT
+        OUTPUT_FILE "${qmake_wrapper_file}"
+        WORKING_DIRECTORY "${build_dir}"
+    )
+
+    add_test(${testname}_qmake "${CMAKE_COMMAND}" "-P" "${qmake_wrapper_file}")
+
+    set_tests_properties(${testname}_qmake PROPERTIES
+        DEPENDS ${testname}_create_build_dir
+        FIXTURES_REQUIRED "${testname}_ensure_clean_build_dir"
+        FIXTURES_SETUP "${testname}_configure_project"
+    )
+
+    # Add test to build the generated qmake project.
+    set(build_tool_wrapper_file "${CMAKE_CURRENT_BINARY_DIR}/run_build_${testname}.cmake")
+    _qt_internal_create_command_script(
+        COMMAND "${build_tool}" ${build_tool_args}
+        COMMAND_ECHO STDOUT
+        OUTPUT_FILE "${build_tool_wrapper_file}"
+        WORKING_DIRECTORY "${build_dir}"
+        ENVIRONMENT ${arg_BUILD_ENVIRONMENT}
+    )
+
+    add_test(${testname} "${CMAKE_COMMAND}" "-P" "${build_tool_wrapper_file}")
+
+    set_tests_properties(${testname} PROPERTIES
+        DEPENDS ${testname}_qmake
+        FIXTURES_REQUIRED "${testname}_ensure_clean_build_dir;${testname}_configure_project"
+    )
+endfunction()
+
 # Checks if the build of the test project fails.
 # This test passes if the test project fails either at the
 # configuring or build steps.
