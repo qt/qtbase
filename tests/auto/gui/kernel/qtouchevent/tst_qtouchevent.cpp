@@ -343,9 +343,11 @@ void tst_QTouchEvent::state()
     QVERIFY(!touchEvent3.isBeginEvent());
     QVERIFY(!touchEvent3.isUpdateEvent());
     QVERIFY(touchEvent3.isEndEvent());
+#if QT_DEPRECATED_SINCE(6, 0)
     QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED // test Qt 5 compatibility wrappers
     QCOMPARE(touchEvent3.touchPoints(), touchEvent3.points());
     QT_WARNING_POP
+#endif
 }
 
 void tst_QTouchEvent::touchDisabledByDefault()

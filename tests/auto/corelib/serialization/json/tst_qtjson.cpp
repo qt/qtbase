@@ -1669,7 +1669,8 @@ void tst_QtJson::fromVariantHash()
 
 void tst_QtJson::toVariantMap()
 {
-    QCOMPARE(QMetaType::Type(QJsonValue(QJsonObject()).toVariant().type()), QMetaType::QVariantMap); // QTBUG-32524
+    QCOMPARE(QMetaType::Type(QJsonValue(QJsonObject()).toVariant().typeId()),
+             QMetaType::QVariantMap); // QTBUG-32524
 
     QJsonObject object;
     QVariantMap map = object.toVariantMap();
@@ -1689,7 +1690,7 @@ void tst_QtJson::toVariantMap()
     QCOMPARE(map.size(), 3);
     QCOMPARE(map.value("Key"), QVariant(QString("Value")));
     QCOMPARE(map.value("null"), QVariant::fromValue(nullptr));
-    QCOMPARE(map.value("Array").type(), QVariant::List);
+    QCOMPARE(map.value("Array").typeId(), QMetaType::QVariantList);
     QVariantList list = map.value("Array").toList();
     QCOMPARE(list.size(), 4);
     QCOMPARE(list.at(0), QVariant(true));
@@ -1718,7 +1719,7 @@ void tst_QtJson::toVariantHash()
     QCOMPARE(hash.size(), 3);
     QCOMPARE(hash.value("Key"), QVariant(QString("Value")));
     QCOMPARE(hash.value("null"), QVariant::fromValue(nullptr));
-    QCOMPARE(hash.value("Array").type(), QVariant::List);
+    QCOMPARE(hash.value("Array").typeId(), QMetaType::QVariantList);
     QVariantList list = hash.value("Array").toList();
     QCOMPARE(list.size(), 4);
     QCOMPARE(list.at(0), QVariant(true));
@@ -1729,7 +1730,8 @@ void tst_QtJson::toVariantHash()
 
 void tst_QtJson::toVariantList()
 {
-    QCOMPARE(QMetaType::Type(QJsonValue(QJsonArray()).toVariant().type()), QMetaType::QVariantList); // QTBUG-32524
+    QCOMPARE(QMetaType::Type(QJsonValue(QJsonArray()).toVariant().typeId()),
+             QMetaType::QVariantList); // QTBUG-32524
 
     QJsonArray array;
     QVariantList list = array.toVariantList();
@@ -1749,7 +1751,7 @@ void tst_QtJson::toVariantList()
     QCOMPARE(list.size(), 3);
     QCOMPARE(list[0], QVariant(QString("Value")));
     QCOMPARE(list[1], QVariant::fromValue(nullptr));
-    QCOMPARE(list[2].type(), QVariant::List);
+    QCOMPARE(list[2].typeId(), QMetaType::QVariantList);
     QVariantList vlist = list[2].toList();
     QCOMPARE(vlist.size(), 4);
     QCOMPARE(vlist.at(0), QVariant(true));

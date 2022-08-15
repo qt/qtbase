@@ -1489,16 +1489,8 @@ void tst_QSqlQuery::forwardOnly()
 
     QCOMPARE(q.at(), QSql::AfterLastRow);
 
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    QSqlQuery q2 = q;
-QT_WARNING_POP
-
-    QVERIFY(q2.isForwardOnly());
-
     QVERIFY_SQL(q, exec(QLatin1String("select * from %1 order by id").arg(qtest)));
     QVERIFY(q.isForwardOnly());
-    QVERIFY(q2.isForwardOnly());
     QCOMPARE(q.at(), QSql::BeforeFirstRow);
 
     QVERIFY_SQL(q, seek(3));
@@ -4025,8 +4017,6 @@ void tst_QSqlQuery::QTBUG_21884()
 */
 void tst_QSqlQuery::QTBUG_16967()
 {
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
     QSqlQuery q2;
     QFETCH(QString, dbName);
     {
@@ -4039,7 +4029,7 @@ QT_WARNING_DISABLE_DEPRECATED
         QSqlDatabase db = QSqlDatabase::database(dbName);
         CHECK_DATABASE(db);
         QSqlQuery q(db);
-        q2 = q;
+        q2 = QSqlQuery(q.lastQuery(), db);
         q.prepare("CREATE TABLE t1 (id INTEGER PRIMARY KEY, str TEXT);");
         db.close();
         QCOMPARE(db.lastError().type(), QSqlError::NoError);
@@ -4048,7 +4038,7 @@ QT_WARNING_DISABLE_DEPRECATED
         QSqlDatabase db = QSqlDatabase::database(dbName);
         CHECK_DATABASE(db);
         QSqlQuery q(db);
-        q2 = q;
+        q2 = QSqlQuery(q.lastQuery(), db);
         q2.prepare("CREATE TABLE t1 (id INTEGER PRIMARY KEY, str TEXT);");
         q2.exec();
         db.close();
@@ -4058,7 +4048,7 @@ QT_WARNING_DISABLE_DEPRECATED
         QSqlDatabase db = QSqlDatabase::database(dbName);
         CHECK_DATABASE(db);
         QSqlQuery q(db);
-        q2 = q;
+        q2 = QSqlQuery(q.lastQuery(), db);
         q.exec("INSERT INTO t1 (id, str) VALUES(1, \"test1\");");
         db.close();
         QCOMPARE(db.lastError().type(), QSqlError::NoError);
@@ -4067,12 +4057,11 @@ QT_WARNING_DISABLE_DEPRECATED
         QSqlDatabase db = QSqlDatabase::database(dbName);
         CHECK_DATABASE(db);
         QSqlQuery q(db);
-        q2 = q;
+        q2 = QSqlQuery(q.lastQuery(), db);
         q.exec("SELECT * FROM t1;");
         db.close();
         QCOMPARE(db.lastError().type(), QSqlError::NoError);
     }
-QT_WARNING_POP
 }
 
 /* In SQLite, when a boolean value is bound to a placeholder, it should be

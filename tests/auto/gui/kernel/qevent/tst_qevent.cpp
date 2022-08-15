@@ -42,10 +42,7 @@
     X(QIconDragEvent, ()) \
     X(QShowEvent, ()) \
     X(QHideEvent, ()) \
-    QT_WARNING_PUSH \
-    QT_WARNING_DISABLE_DEPRECATED \
-    X(QContextMenuEvent, (QContextMenuEvent::Reason::Keyboard, {})) \
-    QT_WARNING_POP \
+    X(QContextMenuEvent, (QContextMenuEvent::Reason::Keyboard, {}, {})) \
     X(QInputMethodEvent, ()) \
     X(QInputMethodQueryEvent, ({})) \
     X(QDropEvent, ({}, {}, {}, {}, {})) \
