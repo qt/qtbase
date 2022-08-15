@@ -543,10 +543,8 @@ QWasmWindow::TitleBarOptions QWasmWindow::makeTitleBarOptions() const
 
     titleBarOptions.palette = makePalette();
 
-    if (window()->isActive())
-        titleBarOptions.palette.setCurrentColorGroup(QPalette::Active);
-    else
-        titleBarOptions.palette.setCurrentColorGroup(QPalette::Inactive);
+    titleBarOptions.palette.setCurrentColorGroup(
+            QGuiApplication::focusWindow() == window() ? QPalette::Active : QPalette::Inactive);
 
     if (activeTitleBarControl() != SC_None)
         titleBarOptions.subControls = activeTitleBarControl();
