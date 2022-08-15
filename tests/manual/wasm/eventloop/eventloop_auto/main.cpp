@@ -10,7 +10,13 @@
 
 #include <qtwasmtestlib.h>
 
+#include "emscripten.h"
+
 const int timerTimeout = 10;
+
+EM_JS(bool, have_asyncify, (), {
+    return typeof Asyncify != "undefined";
+});
 
 class WasmEventDispatcherTest: public QObject
 {
@@ -27,16 +33,14 @@ private slots:
     void timerSecondaryThread();
 #endif
 
-#ifdef QT_HAVE_EMSCRIPTEN_ASYNCIFY
     void postEventAsyncify();
     void timerAsyncify();
     void postEventAsyncifyLoop();
-#endif
 
 private:
 // Disabled test function: Asyncify wait on pthread_join is not supported,
 // see https://github.com/emscripten-core/emscripten/issues/9910
-#if QT_CONFIG(thread) && defined(QT_HAVE_EMSCRIPTEN_ASYNCIFY)
+#if QT_CONFIG(thread)
     void threadAsyncifyWait();
 #endif
 };
@@ -235,11 +239,14 @@ void WasmEventDispatcherTest::timerSecondaryThread()
 
 #endif
 
-#ifdef QT_HAVE_EMSCRIPTEN_ASYNCIFY
-
 // Post an event to the main thread and asyncify wait for it
 void WasmEventDispatcherTest::postEventAsyncify()
 {
+    if (!have_asyncify()) {
+        QtWasmTest::completeTestFunction(QtWasmTest::TestResult::Skip, "requires asyncify");
+        return;
+    }
+
     QEventLoop loop;
     QCoreApplication::postEvent(EventTarget::create([&loop](){
         loop.quit();
@@ -252,6 +259,11 @@ void WasmEventDispatcherTest::postEventAsyncify()
 // Create a timer on the main thread and asyncify wait for it
 void WasmEventDispatcherTest::timerAsyncify()
 {
+    if (!have_asyncify()) {
+        QtWasmTest::completeTestFunction(QtWasmTest::TestResult::Skip, "requires asyncify");
+        return;
+    }
+
     QEventLoop loop;
     QTimer::singleShot(timerTimeout, [&loop](){
         loop.quit();
@@ -264,6 +276,11 @@ void WasmEventDispatcherTest::timerAsyncify()
 // Asyncify wait in a loop
 void WasmEventDispatcherTest::postEventAsyncifyLoop()
 {
+    if (!have_asyncify()) {
+        QtWasmTest::completeTestFunction(QtWasmTest::TestResult::Skip, "requires asyncify");
+        return;
+    }
+
     for (int i = 0; i < 10; ++i) {
         QEventLoop loop;
         QCoreApplication::postEvent(EventTarget::create([&loop]() {
@@ -279,6 +296,9 @@ void WasmEventDispatcherTest::postEventAsyncifyLoop()
 // Asyncify wait for QThread::wait() / pthread_join()
 void WasmEventDispatcherTest::threadAsyncifyWait()
 {
+    if (!have_asyncify())
+        QtWasmTest::completeTestFunction(QtWasmTest::TestResult::Skip, "requires asyncify");
+
     const int threadCount = 15;
 
     QVector<QThread *> threads;
@@ -299,8 +319,6 @@ void WasmEventDispatcherTest::threadAsyncifyWait()
     QtWasmTest::completeTestFunction();
 }
 #endif
-
-#endif // QT_HAVE_EMSCRIPTEN_ASYNCIFY
 
 int main(int argc, char **argv)
 {
