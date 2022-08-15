@@ -55,7 +55,7 @@ QVulkanInstance *QVulkanDefaultInstance::instance()
     if (supportedVersion >= QVersionNumber(1, 2))
         s_vulkanInstance->setApiVersion(QVersionNumber(1, 2));
     else if (supportedVersion >= QVersionNumber(1, 1))
-        s_vulkanInstance->setApiVersion(QVersionNumber(1, 2));
+        s_vulkanInstance->setApiVersion(QVersionNumber(1, 1));
     qCDebug(lcGuiVk) << "QVulkanDefaultInstance: Creating Vulkan instance"
                      << "Requesting Vulkan API" << s_vulkanInstance->apiVersion()
                      << "Instance-level version was reported as" << supportedVersion;
