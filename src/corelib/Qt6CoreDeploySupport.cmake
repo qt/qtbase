@@ -105,6 +105,108 @@ if(NOT __QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     endfunction()
 endif()
 
+# Copied from QtCMakeHelpers.cmake
+function(_qt_internal_re_escape out_var str)
+    string(REGEX REPLACE "([][+.*()^])" "\\\\\\1" regex "${str}")
+    set(${out_var} ${regex} PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_generic_deployqt)
+    set(no_value_options
+        VERBOSE
+    )
+    set(single_value_options
+        EXECUTABLE
+        LIB_DIR
+        PLUGINS_DIR
+    )
+    set(multi_value_options
+        ADDITIONAL_EXECUTABLES
+        ADDITIONAL_LIBRARIES
+        ADDITIONAL_MODULES
+    )
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+        "${no_value_options}" "${single_value_options}" "${multi_value_options}"
+    )
+
+    if(arg_VERBOSE OR __QT_DEPLOY_VERBOSE)
+        set(verbose TRUE)
+    endif()
+
+    # Make input file paths absolute
+    foreach(var IN ITEMS EXECUTABLE ADDITIONAL_EXECUTABLES ADDITIONAL_LIBRARIES ADDITIONAL_MODULES)
+        string(PREPEND var arg_)
+        set(abspaths "")
+        foreach(path IN LISTS ${var})
+            get_filename_component(abspath "${path}" REALPATH BASE_DIR "${QT_DEPLOY_PREFIX}")
+            list(APPEND abspaths "${abspath}")
+        endforeach()
+        set(${var} "${abspaths}")
+    endforeach()
+
+    # We need to get the runtime dependencies of plugins too.
+    list(APPEND arg_ADDITIONAL_MODULES ${__QT_DEPLOY_PLUGINS})
+
+    set(file_args "")
+    if(arg_EXECUTABLE OR arg_ADDITIONAL_EXECUTABLES)
+        list(APPEND file_args EXECUTABLES ${arg_EXECUTABLE} ${arg_ADDITIONAL_EXECUTABLES})
+    endif()
+    if(arg_ADDITIONAL_LIBRARIES)
+        list(APPEND file_args LIBRARIES ${arg_ADDITIONAL_LIBRARIES})
+    endif()
+    if(arg_ADDITIONAL_MODULES)
+        list(APPEND file_args MODULES ${arg_ADDITIONAL_MODULES})
+    endif()
+
+    # Compile a list of regular expressions that represent the Qt installation prefixes.
+    set(prefix_regexes)
+    foreach(path IN LISTS __QT_DEPLOY_QT_INSTALL_PREFIX
+            __QT_DEPLOY_QT_ADDITIONAL_PACKAGES_PREFIX_PATH)
+        _qt_internal_re_escape(path_rex "${path}")
+        list(APPEND prefix_regexes "^${path_rex}")
+    endforeach()
+
+    # Get the runtime dependencies recursively, restricted to Qt's installation prefix.
+    file(GET_RUNTIME_DEPENDENCIES
+        ${file_args}
+        POST_INCLUDE_REGEXES ${prefix_regexes}
+        POST_EXCLUDE_REGEXES ".*"
+        RESOLVED_DEPENDENCIES_VAR resolved
+        UNRESOLVED_DEPENDENCIES_VAR unresolved
+        CONFLICTING_DEPENDENCIES_PREFIX conflicting
+    )
+    if(verbose)
+        message("file(GET_RUNTIME_DEPENDENCIES ${file_args})")
+        foreach(file IN LISTS resolved)
+            message("    resolved: ${file}")
+        endforeach()
+        foreach(file IN LISTS unresolved)
+            message("    unresolved: ${file}")
+        endforeach()
+        foreach(file IN LISTS conflicting_FILENAMES)
+            message("    conflicting: ${file}")
+            message("    with ${conflicting_${file}}")
+        endforeach()
+    endif()
+
+    # Deploy the Qt libraries.
+    file(INSTALL ${resolved}
+        DESTINATION "${QT_DEPLOY_PREFIX}/${arg_LIB_DIR}"
+        FOLLOW_SYMLINK_CHAIN
+    )
+
+    # Deploy the Qt plugins.
+    foreach(file_path IN LISTS __QT_DEPLOY_PLUGINS)
+        file(RELATIVE_PATH destination
+            "${__QT_DEPLOY_QT_INSTALL_PREFIX}/${__QT_DEPLOY_QT_INSTALL_PLUGINS}"
+            "${file_path}"
+        )
+        get_filename_component(destination "${destination}" DIRECTORY)
+        string(PREPEND destination "${QT_DEPLOY_PREFIX}/${arg_PLUGINS_DIR}/")
+        file(INSTALL ${file_path} DESTINATION ${destination})
+    endforeach()
+endfunction()
+
 # This function is currently in Technical Preview.
 # Its signature and behavior might change.
 function(qt6_deploy_runtime_dependencies)
@@ -202,6 +304,8 @@ function(qt6_deploy_runtime_dependencies)
             list(APPEND tool_options --verbose 2)
         elseif(__QT_DEPLOY_SYSTEM_NAME STREQUAL Darwin)
             list(APPEND tool_options -verbose=3)
+        else()
+            list(APPEND tool_options VERBOSE)
         endif()
     endif()
 
@@ -228,10 +332,28 @@ function(qt6_deploy_runtime_dependencies)
     # for debugging purposes. It may be removed at any time without warning.
     list(APPEND tool_options ${__qt_deploy_tool_extra_options})
 
+    if(__QT_DEPLOY_TOOL STREQUAL "GRD")
+        message(STATUS "Running generic Qt deploy tool on ${arg_EXECUTABLE}")
+
+        # Forward the ADDITIONAL_* arguments.
+        foreach(file_type EXECUTABLES LIBRARIES MODULES)
+            if("${arg_ADDITIONAL_${file_type}}" STREQUAL "")
+                continue()
+            endif()
+            list(APPEND tool_options ADDITIONAL_${file_type} ${arg_ADDITIONAL_${file_type}})
+        endforeach()
+
+        _qt_internal_generic_deployqt(
+            EXECUTABLE "${arg_EXECUTABLE}"
+            LIB_DIR "${arg_LIB_DIR}"
+            PLUGINS_DIR "${arg_PLUGINS_DIR}"
+            ${tool_options}
+        )
+        return()
+    endif()
+
     # Both windeployqt and macdeployqt don't differentiate between the different
     # types of binaries, so we merge the lists and treat them all the same.
-    # A purely CMake-based implementation would need to treat them differently
-    # because of how file(GET_RUNTIME_DEPENDENCIES) works.
     set(additional_binaries
         ${arg_ADDITIONAL_EXECUTABLES}
         ${arg_ADDITIONAL_LIBRARIES}

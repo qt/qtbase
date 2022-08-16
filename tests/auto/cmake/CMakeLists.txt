@@ -328,7 +328,8 @@ set(deploy_args
 # other platforms, because there is no support for runtime dependency deployment
 # on those platforms.
 # With static builds the runtime dependencies are just skipped, but the test should still pass.
-if((WIN32 OR (APPLE AND NOT IOS)))
+if(WIN32 OR (APPLE AND NOT IOS)
+        OR (UNIX AND NOT APPLE AND NOT ANDROID AND NOT CMAKE_CROSSCOMPILING))
     _qt_internal_test_expect_pass(${deploy_args})
 else()
     _qt_internal_test_expect_fail(${deploy_args})

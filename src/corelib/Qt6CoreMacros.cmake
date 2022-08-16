@@ -2437,6 +2437,8 @@ function(_qt_internal_setup_deploy_support)
         set(safe_target_file
             "$<TARGET_FILE:$<IF:${have_deploy_tool},${target_if_exists},${target}>>")
         set(__QT_DEPLOY_TOOL "$<IF:${have_deploy_tool},${safe_target_file},${fallback}>")
+    elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT CMAKE_CROSSCOMPILING)
+        set(__QT_DEPLOY_TOOL "GRD")
     else()
         # Android is handled as a build target, not via this install-based approach.
         # Therefore, we don't consider androiddeployqt here.
@@ -2480,6 +2482,10 @@ set(__QT_DEPLOY_GENERATOR_IS_MULTI_CONFIG \"${is_multi_config}\")
 set(__QT_DEPLOY_ACTIVE_CONFIG \"$<CONFIG>\")
 set(__QT_NO_CREATE_VERSIONLESS_FUNCTIONS \"${QT_NO_CREATE_VERSIONLESS_FUNCTIONS}\")
 set(__QT_DEFAULT_MAJOR_VERSION \"${QT_DEFAULT_MAJOR_VERSION}\")
+set(__QT_DEPLOY_QT_ADDITIONAL_PACKAGES_PREFIX_PATH \"${QT_ADDITIONAL_PACKAGES_PREFIX_PATH}\")
+set(__QT_DEPLOY_QT_INSTALL_PREFIX \"${QT6_INSTALL_PREFIX}\")
+set(__QT_DEPLOY_QT_INSTALL_PLUGINS \"${QT6_INSTALL_PLUGINS}\")
+set(__QT_DEPLOY_PLUGINS \"\")
 
 # Define the CMake commands to be made available during deployment.
 set(__qt_deploy_support_files
@@ -2593,6 +2599,21 @@ function(qt6_generate_deploy_script)
         message(FATAL_ERROR "CONTENT must be specified")
     endif()
 
+    # Check whether manual finalization is needed.
+    if(CMAKE_VERSION VERSION_LESS "3.19")
+        get_target_property(is_immediately_finalized ${arg_TARGET} _qt_is_immediately_finalized)
+        if(is_immediately_finalized)
+            message(WARNING
+                "Deployment of plugins for target '${arg_TARGET}' will not work. "
+                "Either, upgrade CMake to version 3.19 or newer, or call "
+                "qt_finalize_target(${arg_TARGET}) after generating the deployment script."
+            )
+        endif()
+    endif()
+
+    # Mark the target as "to be deployed".
+    set_property(TARGET ${arg_TARGET} PROPERTY _qt_marked_for_deployment ON)
+
     # Create a file name that will be unique for this target and the combination
     # of arguments passed to this command. This allows the project to call us
     # multiple times with different arguments for the same target (e.g. to
@@ -2610,12 +2631,15 @@ function(qt6_generate_deploy_script)
     set(file_name "${deploy_impl_dir}/deploy_${target_id}_${short_hash}")
     get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
     if(is_multi_config)
-        string(APPEND file_name "-$<CONFIG>")
+        set(config_infix "-$<CONFIG>")
+    else()
+        set(config_infix "")
     endif()
-    string(APPEND file_name ".cmake")
+    string(APPEND file_name "${config_infix}.cmake")
     set(${arg_FILENAME_VARIABLE} "${file_name}" PARENT_SCOPE)
 
     set(boiler_plate "include(${QT_DEPLOY_SUPPORT})
+include(\"\${CMAKE_CURRENT_LIST_DIR}/${arg_TARGET}-plugins${config_infix}.cmake\" OPTIONAL)
 ")
     list(TRANSFORM arg_CONTENT REPLACE "\\$" "\$")
     file(GENERATE OUTPUT ${file_name} CONTENT "${boiler_plate}${arg_CONTENT}")
@@ -2694,7 +2718,17 @@ qt6_deploy_runtime_dependencies(
 qt6_deploy_runtime_dependencies(
     EXECUTABLE $<TARGET_FILE:${arg_TARGET}>
     GENERATE_QT_CONF
-)")
+)
+")
+
+    elseif(UNIX AND NOT APPLE AND NOT ANDROID AND QT6_IS_SHARED_LIBS_BUILD)
+        qt6_generate_deploy_script(${generate_args}
+            CONTENT "
+qt6_deploy_runtime_dependencies(
+    EXECUTABLE $<TARGET_FILE:${arg_TARGET}>
+    GENERATE_QT_CONF
+)
+")
 
     elseif(NOT arg_NO_UNSUPPORTED_PLATFORM_ERROR AND NOT QT_INTERNAL_NO_UNSUPPORTED_PLATFORM_ERROR)
         # Currently we don't deploy runtime dependencies if cross-compiling or using a static Qt.

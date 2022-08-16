@@ -12,7 +12,12 @@ qt6_standard_project_setup()
 function(create_test_executable target)
     cmake_parse_arguments(arg "" "" "" ${ARGN})
 
-    qt_add_executable(${target} main.cpp)
+    if(CMAKE_VERSION VERSION_LESS "3.19")
+        qt_add_executable(${target} MANUAL_FINALIZATION main.cpp)
+    else()
+        qt_add_executable(${target} main.cpp)
+    endif()
+
     set_target_properties(${target} PROPERTIES
         # We explicitly don't set WIN32_EXECUTABLE to ensure we see errors from stderr when
         # something fails and not having to use DebugView.
@@ -34,10 +39,16 @@ function(create_test_executable target)
     )
     install(SCRIPT ${deploy_script})
 
+    if(CMAKE_VERSION VERSION_LESS "3.19")
+        qt_finalize_target(${target})
+    endif()
+
     if(APPLE AND NOT IOS)
         set(installed_app_location "${CMAKE_INSTALL_PREFIX}/${target}.app/Contents/MacOS/${target}")
     elseif(WIN32)
         set(installed_app_location "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/${target}.exe")
+    elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT CMAKE_CROSSCOMPILING)
+        set(installed_app_location "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/${target}")
     endif()
 
     # There's no nice way to get the location of an installed binary, so we need to construct
