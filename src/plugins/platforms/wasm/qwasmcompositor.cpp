@@ -546,7 +546,7 @@ void QWasmCompositor::drawWindowDecorations(QOpenGLTextureBlitter *blitter, QWas
     int height = window->windowFrameGeometry().height();
     qreal dpr = window->devicePixelRatio();
 
-    QImage image(QSize(width * dpr, height * dpr), QImage::Format_RGB32);
+    QImage image(QSize(width * dpr, height * dpr), QImage::Format_ARGB32_Premultiplied);
     image.setDevicePixelRatio(dpr);
     QPainter painter(&image);
     painter.fillRect(QRect(0, 0, width, height), painter.background());
@@ -567,12 +567,19 @@ void QWasmCompositor::drawWindowDecorations(QOpenGLTextureBlitter *blitter, QWas
     texture.setMinificationFilter(QOpenGLTexture::Nearest);
     texture.setMagnificationFilter(QOpenGLTexture::Nearest);
     texture.setWrapMode(QOpenGLTexture::ClampToEdge);
-    texture.setData(image, QOpenGLTexture::DontGenerateMipMaps);
+    texture.setFormat(QOpenGLTexture::RGBAFormat);
+    texture.setSize(image.width(), image.height());
+    texture.setMipLevels(1);
+    texture.allocateStorage(QOpenGLTexture::RGBA, QOpenGLTexture::UInt8);
+
+    QOpenGLPixelTransferOptions uploadOptions;
+    uploadOptions.setAlignment(1);
+
     texture.create();
     texture.bind();
 
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image.width(), image.height(), GL_RGBA, GL_UNSIGNED_BYTE,
-                    image.constScanLine(0));
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image.width(), image.height(), GL_RGBA,
+                    GL_UNSIGNED_BYTE, image.constScanLine(0));
 
     QRect windowCanvasGeometry = window->windowFrameGeometry().translated(-screen->geometry().topLeft());
     blit(blitter, screen, &texture, windowCanvasGeometry);
