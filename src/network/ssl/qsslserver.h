@@ -33,6 +33,9 @@ public:
     void setSslConfiguration(const QSslConfiguration &sslConfiguration);
     QSslConfiguration sslConfiguration() const;
 
+    void setHandshakeTimeout(int timeout);
+    int handshakeTimeout() const;
+
 Q_SIGNALS:
     void sslErrors(QSslSocket *socket, const QList<QSslError> &errors);
     void peerVerifyError(QSslSocket *socket, const QSslError &error);
