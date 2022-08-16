@@ -115,6 +115,14 @@ private slots:
     void typesWithInaccessibleDTors();
     void voidIsNotUnknown();
     void typeNameNormalization();
+
+    // Tests for deprecated APIs
+#if QT_DEPRECATED_SINCE(6, 0)
+    void testDeprecatedGetters_data() { type_data(); }
+    void testDeprecatedGetters();
+    void testDeprecatedLoadSave_data() { saveAndLoadBuiltin_data(); }
+    void testDeprecatedLoadSave();
+#endif
 };
 
 template <typename T>
@@ -262,7 +270,7 @@ Q_DECLARE_METATYPE(CustomMovable);
         const QVariant v = QVariant::fromValue(t); \
         QByteArray tn = createTypeName(#CONTAINER "<", #__VA_ARGS__); \
         const int expectedType = ::qMetaTypeId<CONTAINER< __VA_ARGS__ > >(); \
-        const int type = QMetaType::type(tn); \
+        const int type = QMetaType::fromName(tn).id(); \
         QCOMPARE(type, expectedType); \
         QCOMPARE((QMetaType::fromType<CONTAINER< __VA_ARGS__ >>().id()), expectedType); \
     }

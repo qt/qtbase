@@ -43,8 +43,6 @@ qt_internal_add_test(tst_qmetatype
     SOURCES
         tst_qmetatype.h tst_qmetatype.cpp tst_qmetatype2.cpp
         tst_qmetatype3.cpp
-    DEFINES
-        QT_DISABLE_DEPRECATED_UP_TO=0
     INCLUDE_DIRECTORIES
         ../../../other/qvariant_common
     LIBRARIES

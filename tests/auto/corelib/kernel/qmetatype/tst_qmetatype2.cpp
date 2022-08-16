@@ -252,7 +252,7 @@ void tst_QMetaType::convertCustomType()
 
     QFETCH(CustomConvertibleType, testCustom);
     v = QVariant::fromValue(testCustom);
-    QVERIFY(v.canConvert(::qMetaTypeId<CustomConvertibleType2>()));
+    QVERIFY(v.canConvert(QMetaType(::qMetaTypeId<CustomConvertibleType2>())));
     QCOMPARE(v.value<CustomConvertibleType2>().m_foo, testCustom.m_foo);
 
     QFETCH(DerivedGadgetType, testDerived);
@@ -600,6 +600,68 @@ void tst_QMetaType::typeNameNormalization()
         QCOMPARE(type.name(), QMetaObject::normalizedType(type.name()));
     }
 }
+
+#if QT_DEPRECATED_SINCE(6, 0)
+void tst_QMetaType::testDeprecatedGetters()
+{
+    QFETCH(int, aType);
+    QFETCH(QByteArray, aTypeName);
+
+    if (aType >= QMetaType::FirstWidgetsType)
+        QSKIP("The test doesn't link against QtWidgets.");
+
+    // QMetaType::type("name") -> QMetaType::fromName("name").id()
+    QT_IGNORE_DEPRECATIONS(QCOMPARE(QMetaType::type(aTypeName),
+                                    QMetaType::fromName(aTypeName).id());)
+    // QMetaType::typeName(int) -> QMetaType(int).name()
+    QT_IGNORE_DEPRECATIONS(QCOMPARE(QLatin1String(QMetaType::typeName(aType)),
+                                    QLatin1String(QMetaType(aType).name()));)
+    // QMetaType::typeFlags(int) -> QMetaType(int).flags()
+    QT_IGNORE_DEPRECATIONS(QCOMPARE(QMetaType::typeFlags(aType),
+                                    QMetaType(aType).flags());)
+    // QMetaType::metaObjectForType(int) -> QMetaType(int).metaObject()
+    QT_IGNORE_DEPRECATIONS(QCOMPARE(QMetaType::metaObjectForType(aType),
+                                    QMetaType(aType).metaObject());)
+}
+
+void tst_QMetaType::testDeprecatedLoadSave()
+{
+    QFETCH(int, type);
+    QFETCH(bool, isStreamable);
+
+    if (!isStreamable)
+        return;
+
+    QMetaType metaType(type);
+    void *value = metaType.create();
+    auto cleanup = qScopeGuard([&metaType, value]() {
+        metaType.destroy(value);
+    });
+
+    QByteArray ba;
+    QDataStream stream(&ba, QIODevice::ReadWrite);
+
+    // Write using deprecated API
+    QT_IGNORE_DEPRECATIONS(QVERIFY(QMetaType::save(stream, type, value));)
+    QCOMPARE(stream.status(), QDataStream::Ok);
+
+    // Read using non-deprecated API
+    stream.device()->seek(0);
+    QVERIFY(metaType.load(stream, value));
+    QCOMPARE(stream.status(), QDataStream::Ok);
+
+    // Write using non-deprecated API
+    stream.device()->seek(0);
+    ba.clear();
+    QVERIFY(metaType.save(stream, value));
+    QCOMPARE(stream.status(), QDataStream::Ok);
+
+    // Read using deprecated API
+    stream.device()->seek(0);
+    QT_IGNORE_DEPRECATIONS(QVERIFY(QMetaType::load(stream, type, value));)
+    QCOMPARE(stream.status(), QDataStream::Ok);
+}
+#endif // QT_DEPRECATED_SINCE(6, 0)
 
 // Compile-time test, it should be possible to register function pointer types
 class Undefined;
