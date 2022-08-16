@@ -232,18 +232,6 @@ private:
    If you can't live with those constraints, don't use these macros.
    Use the QT_NO_EXCEPTIONS macro to protect your code instead.
 */
-
-#if !defined(QT_NO_EXCEPTIONS)
-#  if !defined(Q_MOC_RUN)
-#    if (defined(Q_CC_CLANG) && !__has_feature(cxx_exceptions)) || \
-        (defined(Q_CC_GNU) && !defined(__EXCEPTIONS))
-#      define QT_NO_EXCEPTIONS
-#    endif
-#  elif defined(QT_BOOTSTRAPPED)
-#    define QT_NO_EXCEPTIONS
-#  endif
-#endif
-
 Q_NORETURN Q_DECL_COLD_FUNCTION Q_CORE_EXPORT void qTerminate() noexcept;
 #ifdef QT_NO_EXCEPTIONS
 #  define QT_TRY if (true)

@@ -1313,6 +1313,17 @@ QT_WARNING_DISABLE_MSVC(4530) /* C++ exception handler used, but unwind semantic
 #  endif
 #endif
 
+#if !defined(QT_NO_EXCEPTIONS)
+#  if !defined(Q_MOC_RUN)
+#    if (defined(Q_CC_CLANG) && !__has_feature(cxx_exceptions)) || \
+        (defined(Q_CC_GNU) && !defined(__EXCEPTIONS))
+#      define QT_NO_EXCEPTIONS
+#    endif
+#  elif defined(QT_BOOTSTRAPPED)
+#    define QT_NO_EXCEPTIONS
+#  endif
+#endif
+
 #endif // __cplusplus
 
 #endif // QCOMPILERDETECTION_H
