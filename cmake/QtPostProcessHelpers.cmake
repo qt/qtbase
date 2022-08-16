@@ -685,6 +685,11 @@ endif()\n")
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
                 "set(QT_EXTRA_RPATHS \"${QT_EXTRA_RPATHS}\" CACHE STRING \"\")\n")
         endif()
+        if(DEFINED QT_DISABLE_DEPRECATED_UP_TO)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+                "set(QT_DISABLE_DEPRECATED_UP_TO \"${QT_DISABLE_DEPRECATED_UP_TO}\""
+                " CACHE STRING \"\")\n")
+        endif()
 
         # Save pkg-config feature value to be able to query it internally as soon as BuildInternals
         # package is loaded. This is to avoid any pkg-config package from being found when

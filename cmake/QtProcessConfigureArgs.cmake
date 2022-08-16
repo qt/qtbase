@@ -43,6 +43,12 @@ function(warn_in_per_repo_build arg)
     endif()
 endfunction()
 
+function(is_valid_qt_hex_version arg version)
+    if(NOT version MATCHES "^0x[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]$")
+        message(FATAL_ERROR "Incorrect version ${version} specified for ${arg}")
+    endif()
+endfunction()
+
 if("${MODULE_ROOT}" STREQUAL "")
     # If MODULE_ROOT is not set, assume that we want to build qtbase or top-level.
     get_filename_component(MODULE_ROOT ".." ABSOLUTE BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
@@ -125,6 +131,10 @@ while(NOT "${configure_args}" STREQUAL "")
         set(cmake_file_api FALSE)
     elseif(arg STREQUAL "-verbose")
         list(APPEND cmake_args "--log-level=STATUS")
+    elseif(arg STREQUAL "-disable-deprecated-up-to")
+        list(POP_FRONT configure_args version)
+        is_valid_qt_hex_version("${arg}" "${version}")
+        push("-DQT_DISABLE_DEPRECATED_UP_TO=${version}")
     elseif(arg STREQUAL "--")
         # Everything after this argument will be passed to CMake verbatim.
         list(APPEND cmake_args "${configure_args}")

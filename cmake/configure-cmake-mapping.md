@@ -169,3 +169,4 @@ The following table describes the mapping of configure options to CMake argument
 | -libjpeg                              | -DFEATURE_libjpeg=ON                              |                                                                 |
 | -sql-<driver>                         | -DFEATURE_sql_<driver>=ON                         |                                                                 |
 | -sqlite [qt/system]                   | -DFEATURE_system_sqlite=OFF/ON                    |                                                                 |
+| -disable-deprecated-up-to <hex_version> | -DQT_DISABLE_DEPRECATED_UP_TO=<hex_version>     |                                                                 |

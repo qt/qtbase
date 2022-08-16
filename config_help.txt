@@ -141,6 +141,16 @@ Build options:
 
   -warnings-are-errors . Treat warnings as errors [no; yes if -developer-build]
 
+  -disable-deprecated-up-to <version>
+                         Set the QT_DISABLE_DEPRECATED_UP_TO value to <version>.
+                         QT_DISABLE_DEPRECATED_UP_TO is used to remove
+                         deprecated methods from both API and ABI.
+                         <version> is a hex value, for example 0x060500 can be
+                         used to remove all code deprecated in Qt 6.5.0 or
+                         earlier releases.
+                         By default <version> is set to 0x040000 and 0x050000 on
+                         Windows, and non-Windows respectively.
+
 Build environment:
 
   -sysroot <dir> ....... Set <dir> as the target sysroot

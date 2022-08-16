@@ -183,13 +183,17 @@ function(qt_internal_library_deprecation_level result)
     # QT_DISABLE_DEPRECATED_UP_TO controls which version we use as a cut-off
     # compiling in to the library. E.g. if it is set to QT_VERSION then no
     # code which was deprecated before QT_VERSION will be compiled in.
-    if(WIN32)
-        # On Windows, due to the way DLLs work, we need to export all functions,
-        # including the inlines
-        list(APPEND deprecations "QT_DISABLE_DEPRECATED_UP_TO=0x040800")
+    if (NOT DEFINED QT_DISABLE_DEPRECATED_UP_TO)
+        if(WIN32)
+            # On Windows, due to the way DLLs work, we need to export all functions,
+            # including the inlines
+            list(APPEND deprecations "QT_DISABLE_DEPRECATED_UP_TO=0x040800")
+        else()
+            # On other platforms, Qt's own compilation does need to compile the Qt 5.0 API
+            list(APPEND deprecations "QT_DISABLE_DEPRECATED_UP_TO=0x050000")
+        endif()
     else()
-        # On other platforms, Qt's own compilation goes needs to compile the Qt 5.0 API
-        list(APPEND deprecations "QT_DISABLE_DEPRECATED_UP_TO=0x050000")
+        list(APPEND deprecations "QT_DISABLE_DEPRECATED_UP_TO=${QT_DISABLE_DEPRECATED_UP_TO}")
     endif()
     # QT_WARN_DEPRECATED_UP_TO controls the upper-bound of deprecation
     # warnings that are emitted. E.g. if it is set to 0x060500 then all use of
