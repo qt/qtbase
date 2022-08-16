@@ -41,13 +41,13 @@ public:
                     const char *file = nullptr, int line = 0) override;
 
 private:
-    QString currTestFuncName;
-    QString pendingMessages;
-    QString flowID;
+    QTestCharBuffer currTestFuncName;
+    QTestCharBuffer pendingMessages;
+    QTestCharBuffer flowID;
 
-    QString tcEscapedString(const QString &str) const;
-    QString escapedTestFuncName() const;
-    void addPendingMessage(const char *type, const QString &msg, const char *file, int line);
+    void tcEscapedString(QTestCharBuffer *buf, const char *str) const;
+    void escapedTestFuncName(QTestCharBuffer *buf) const;
+    void addPendingMessage(const char *type, const char *msg, const char *file, int line);
 };
 
 QT_END_NAMESPACE

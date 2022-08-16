@@ -7,6 +7,8 @@
 #include <QtTest/private/qtestlog_p.h>
 #include <QtTest/private/qteamcitylogger_p.h>
 #include <QtCore/qbytearray.h>
+
+#include <cctype>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -83,16 +85,20 @@ void QTeamCityLogger::startLogging()
 {
     QAbstractTestLogger::startLogging();
 
-    flowID = tcEscapedString(QString::fromUtf8(QTestResult::currentTestObjectName()));
+    tcEscapedString(&flowID, QTestResult::currentTestObjectName());
 
-    QString str = "##teamcity[testSuiteStarted name='%1' flowId='%1']\n"_L1.arg(flowID);
-    outputString(qPrintable(str));
+    QTestCharBuffer buf;
+    QTest::qt_asprintf(&buf, "##teamcity[testSuiteStarted name='%s' flowId='%s']\n",
+                       flowID.constData(), flowID.constData());
+    outputString(buf.constData());
 }
 
 void QTeamCityLogger::stopLogging()
 {
-    QString str = "##teamcity[testSuiteFinished name='%1' flowId='%1']\n"_L1.arg(flowID);
-    outputString(qPrintable(str));
+    QTestCharBuffer buf;
+    QTest::qt_asprintf(&buf, "##teamcity[testSuiteFinished name='%s' flowId='%s']\n",
+                       flowID.constData(), flowID.constData());
+    outputString(buf.constData());
 
     QAbstractTestLogger::stopLogging();
 }
@@ -114,56 +120,66 @@ void QTeamCityLogger::addIncident(IncidentTypes type, const char *description,
     if ((type == Pass || type == XFail || type == BlacklistedPass || type == BlacklistedXFail) && QTestLog::verboseLevel() < 0)
         return;
 
-    QString buf;
+    QTestCharBuffer buf;
+    QTestCharBuffer tmpFuncName;
+    escapedTestFuncName(&tmpFuncName);
 
-    QString tmpFuncName = escapedTestFuncName();
+    if (qstrcmp(tmpFuncName.constData(), currTestFuncName.constData()) != 0) {
+        QTest::qt_asprintf(&buf, "##teamcity[testStarted name='%s' flowId='%s']\n",
+                           tmpFuncName.constData(), flowID.constData());
+        outputString(buf.constData());
 
-    if (tmpFuncName != currTestFuncName) {
-        buf = "##teamcity[testStarted name='%1' flowId='%2']\n"_L1.arg(tmpFuncName, flowID);
-        outputString(qPrintable(buf));
+        currTestFuncName.clear();
+        QTestPrivate::appendCharBuffer(&currTestFuncName, tmpFuncName);
     }
 
-    currTestFuncName = tmpFuncName;
-
     if (type == QAbstractTestLogger::XFail) {
-        addPendingMessage(QTest::incidentType2String(type), QString::fromUtf8(description), file, line);
+        addPendingMessage(QTest::incidentType2String(type), description, file, line);
         return;
     }
 
-    QString detailedText = tcEscapedString(QString::fromUtf8(description));
+    QTestCharBuffer detailedText;
+    tcEscapedString(&detailedText, description);
 
     // Test failed
     if (type == Fail || type == XPass) {
-        QString messageText(u"Failure!"_s);
-
+        QTestCharBuffer messageText;
         if (file)
-            messageText += " |[Loc: %1(%2)|]"_L1.arg(QString::fromUtf8(file)).arg(line);
+            QTest::qt_asprintf(&messageText, "Failure! |[Loc: %s(%d)|]", file, line);
+        else
+            QTest::qt_asprintf(&messageText, "Failure!");
 
-        buf = "##teamcity[testFailed name='%1' message='%2' details='%3' flowId='%4']\n"_L1
-                        .arg(tmpFuncName, messageText, detailedText, flowID);
+        QTest::qt_asprintf(&buf, "##teamcity[testFailed name='%s' message='%s' details='%s'"
+                           " flowId='%s']\n", tmpFuncName.constData(), messageText.constData(),
+                           detailedText.constData(), flowID.constData());
 
-        outputString(qPrintable(buf));
+        outputString(buf.constData());
     } else if (type == Skip) {
-        if (file)
-            detailedText.append(" |[Loc: %1(%2)|]"_L1.arg(QString::fromUtf8(file)).arg(line));
+        if (file) {
+            QTestCharBuffer detail;
+            QTest::qt_asprintf(&detail, " |[Loc: %s(%d)|]", file, line);
+            QTestPrivate::appendCharBuffer(&detailedText, detail);
+        }
 
-        buf = "##teamcity[testIgnored name='%1' message='%2' flowId='%3']\n"_L1
-                .arg(escapedTestFuncName(), detailedText, flowID);
+        QTest::qt_asprintf(&buf, "##teamcity[testIgnored name='%s' message='%s' flowId='%s']\n",
+                           currTestFuncName.constData(), detailedText.constData(),
+                           flowID.constData());
 
-        outputString(qPrintable(buf));
+        outputString(buf.constData());
     }
 
     if (!pendingMessages.isEmpty()) {
-        buf = "##teamcity[testStdOut name='%1' out='%2' flowId='%3']\n"_L1
-                .arg(tmpFuncName, pendingMessages, flowID);
+        QTest::qt_asprintf(&buf, "##teamcity[testStdOut name='%s' out='%s' flowId='%s']\n",
+                           tmpFuncName.constData(), pendingMessages.constData(),
+                           flowID.constData());
 
-        outputString(qPrintable(buf));
-
+        outputString(buf.constData());
         pendingMessages.clear();
     }
 
-    buf = "##teamcity[testFinished name='%1' flowId='%2']\n"_L1.arg(tmpFuncName, flowID);
-    outputString(qPrintable(buf));
+    QTest::qt_asprintf(&buf, "##teamcity[testFinished name='%s' flowId='%s']\n",
+                       tmpFuncName.constData(), flowID.constData());
+    outputString(buf.constData());
 }
 
 void QTeamCityLogger::addBenchmarkResult(const QBenchmarkResult &)
@@ -178,68 +194,91 @@ void QTeamCityLogger::addMessage(MessageTypes type, const QString &message,
     if (type != QFatal && QTestLog::verboseLevel() < 0)
         return;
 
-    QString escapedMessage = tcEscapedString(message);
-    addPendingMessage(QTest::messageType2String(type), escapedMessage, file, line);
+    QTestCharBuffer escapedMessage;
+    tcEscapedString(&escapedMessage, qUtf8Printable(message));
+    addPendingMessage(QTest::messageType2String(type), escapedMessage.constData(), file, line);
 }
 
-QString QTeamCityLogger::tcEscapedString(const QString &str) const
+void QTeamCityLogger::tcEscapedString(QTestCharBuffer *buf, const char *str) const
 {
-    QString formattedString;
+    {
+        size_t size = qstrlen(str) + 1;
+        for (const char *p = str; *p; ++p) {
+            if (strchr("\n\r|[]'", *p))
+                ++size;
+        }
+        Q_ASSERT(size <= size_t(INT_MAX));
+        buf->resize(int(size));
+    }
 
-    for (QChar ch : str) {
-        switch (ch.toLatin1()) {
+    bool swallowSpace = true;
+    char *p = buf->data();
+    for (; *str; ++str) {
+        char ch = *str;
+        switch (ch) {
         case '\n':
-            formattedString.append("|n"_L1);
+            p++[0] = '|';
+            ch = 'n';
+            swallowSpace = false;
             break;
         case '\r':
-            formattedString.append("|r"_L1);
+            p++[0] = '|';
+            ch = 'r';
+            swallowSpace = false;
             break;
         case '|':
-            formattedString.append("||"_L1);
-            break;
         case '[':
-            formattedString.append("|["_L1);
-            break;
         case ']':
-            formattedString.append("|]"_L1);
-            break;
         case '\'':
-            formattedString.append("|'"_L1);
+            p++[0] = '|';
+            swallowSpace = false;
             break;
         default:
-            formattedString.append(ch);
+            if (std::isspace(ch)) {
+                if (swallowSpace)
+                    continue;
+                swallowSpace = true;
+                ch = ' ';
+            } else {
+                swallowSpace = false;
+            }
+            break;
         }
+        p++[0] = ch;
     }
-
-    return std::move(formattedString).simplified();
+    Q_ASSERT(p < buf->data() + buf->size());
+    if (swallowSpace && p > buf->data()) {
+        Q_ASSERT(p[-1] == ' ');
+        --p;
+    }
+    Q_ASSERT(p == buf->data() || !std::isspace(p[-1]));
+    *p = '\0';
 }
 
-QString QTeamCityLogger::escapedTestFuncName() const
+void QTeamCityLogger::escapedTestFuncName(QTestCharBuffer *buf) const
 {
-    const char *fn = QTestResult::currentTestFunction() ? QTestResult::currentTestFunction()
-                                                        : "UnknownTestFunc";
-    const char *tag = QTestResult::currentDataTag() ? QTestResult::currentDataTag() : "";
+    QTestCharBuffer fn, tag;
+    const char *raw = QTestResult::currentTestFunction();
+    tcEscapedString(&fn, raw ? raw : "UnknownTestFunc");
+    raw = QTestResult::currentDataTag();
+    if (raw)
+        tcEscapedString(&tag, raw);
 
-    return tcEscapedString(QString::asprintf("%s(%s)", fn, tag));
+    QTest::qt_asprintf(buf, "%s(%s)", fn.constData(), tag.constData());
 }
 
-void QTeamCityLogger::addPendingMessage(const char *type, const QString &msg, const char *file, int line)
+void QTeamCityLogger::addPendingMessage(const char *type, const char *msg,
+                                        const char *file, int line)
 {
-    QString pendMessage;
+    const char *pad = pendingMessages.isEmpty() ? "" : "|n";
 
-    if (!pendingMessages.isEmpty())
-        pendMessage += "|n"_L1;
+    QTestCharBuffer newMessage;
+    if (file)
+        QTest::qt_asprintf(&newMessage, "%s%s |[Loc: %s(%d)|]: %s", pad, type, file, line, msg);
+    else
+        QTest::qt_asprintf(&newMessage, "%s%s: %s", pad, type, msg);
 
-    if (file) {
-        pendMessage += "%1 |[Loc: %2(%3)|]: %4"_L1
-                .arg(QString::fromUtf8(type), QString::fromUtf8(file),
-                     QString::number(line), msg);
-
-    } else {
-        pendMessage += "%1: %2"_L1.arg(QString::fromUtf8(type), msg);
-    }
-
-    pendingMessages.append(pendMessage);
+    QTestPrivate::appendCharBuffer(&pendingMessages, newMessage);
 }
 
 QT_END_NAMESPACE
