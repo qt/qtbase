@@ -56,6 +56,7 @@ public:
 #endif
 
     virtual void configureCreatedSocket();
+    virtual int totalPendingConnections() const;
 
     // from QAbstractSocketEngineReceiver
     void readNotification() override;
