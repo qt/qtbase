@@ -1481,8 +1481,7 @@ void tst_QObject::customTypes()
         QCOMPARE(checker.received.value(), t1.value());
         checker.received = t0;
 
-        int idx = qRegisterMetaType<CustomType>("CustomType");
-        QCOMPARE(QMetaType::type("CustomType"), idx);
+        qRegisterMetaType<CustomType>();
 
         checker.disconnect();
         connect(&checker, SIGNAL(signal1(CustomType)), &checker, SLOT(slot1(CustomType)),
@@ -1495,11 +1494,6 @@ void tst_QObject::customTypes()
         QCoreApplication::processEvents();
         QCOMPARE(checker.received.value(), t2.value());
         QCOMPARE(instanceCount, 4);
-
-        QVERIFY(QMetaType::isRegistered(idx));
-        QCOMPARE(qRegisterMetaType<CustomType>("CustomType"), idx);
-        QCOMPARE(QMetaType::type("CustomType"), idx);
-        QVERIFY(QMetaType::isRegistered(idx));
     }
     QCOMPARE(instanceCount, 3);
 }
@@ -1508,13 +1502,15 @@ void tst_QObject::streamCustomTypes()
 {
     QByteArray ba;
 
-    int idx = qRegisterMetaType<CustomType>("CustomType");
+    qRegisterMetaType<CustomType>();
+
+    QMetaType metaType = QMetaType::fromType<CustomType>();
 
     {
         CustomType t1(1, 2, 3);
         QCOMPARE(instanceCount, 1);
         QDataStream stream(&ba, (QIODevice::OpenMode)QIODevice::WriteOnly);
-        QMetaType::save(stream, idx, &t1);
+        metaType.save(stream, &t1);
     }
 
     QCOMPARE(instanceCount, 0);
@@ -1523,7 +1519,7 @@ void tst_QObject::streamCustomTypes()
         CustomType t2;
         QCOMPARE(instanceCount, 1);
         QDataStream stream(&ba, (QIODevice::OpenMode)QIODevice::ReadOnly);
-        QMetaType::load(stream, idx, &t2);
+        metaType.load(stream, &t2);
         QCOMPARE(instanceCount, 1);
         QCOMPARE(t2.i1, 1);
         QCOMPARE(t2.i2, 2);
@@ -1959,7 +1955,7 @@ void tst_QObject::property()
 
     const int idx = mo->indexOfProperty("variant");
     QVERIFY(idx != -1);
-    QCOMPARE(QMetaType::Type(mo->property(idx).type()), QMetaType::QVariant);
+    QCOMPARE(mo->property(idx).userType(), QMetaType::QVariant);
     QCOMPARE(object.property("variant"), QVariant());
     QVariant variant1(42);
     QVariant variant2("string");
@@ -1978,7 +1974,7 @@ void tst_QObject::property()
     QVERIFY(!property.isEnumType());
     QCOMPARE(property.typeName(), "CustomType*");
     qRegisterMetaType<CustomType*>();
-    QCOMPARE(property.type(), QVariant::UserType);
+    QCOMPARE_GE(property.typeId(), QMetaType::User);
     QCOMPARE(property.userType(), qMetaTypeId<CustomType*>());
 
     CustomType *customPointer = nullptr;
@@ -1993,7 +1989,7 @@ void tst_QObject::property()
     property = mo->property(mo->indexOfProperty("custom"));
     QVERIFY(property.isWritable());
     QCOMPARE(property.typeName(), "CustomType*");
-    QCOMPARE(property.type(), QVariant::UserType);
+    QCOMPARE_GE(property.typeId(), QMetaType::User);
     QCOMPARE(property.userType(), qMetaTypeId<CustomType*>());
 
     QVERIFY(object.setProperty("custom", customVariant));
@@ -2023,13 +2019,13 @@ void tst_QObject::property()
     QCOMPARE(object.property("priority").toInt(), 0);
 
     // now it's registered, so it works as expected
-    int priorityMetaTypeId = qRegisterMetaType<PropertyObject::Priority>("PropertyObject::Priority");
+    int priorityMetaTypeId = qRegisterMetaType<PropertyObject::Priority>();
 
     QVERIFY(mo->indexOfProperty("priority") != -1);
     property = mo->property(mo->indexOfProperty("priority"));
     QVERIFY(property.isEnumType());
     QCOMPARE(property.typeName(), "PropertyObject::Priority");
-    QCOMPARE(property.type(), QVariant::UserType);
+    QCOMPARE_GE(property.typeId(), QMetaType::User);
     QCOMPARE(property.userType(), priorityMetaTypeId);
 
     var = object.property("priority");
@@ -2052,7 +2048,7 @@ void tst_QObject::property()
     object.setProperty("priority", var);
     QCOMPARE(qvariant_cast<PropertyObject::Priority>(object.property("priority")), PropertyObject::High);
 
-    qRegisterMetaType<CustomString>("CustomString");
+    qRegisterMetaType<CustomString>();
     QVERIFY(mo->indexOfProperty("customString") != -1);
     QCOMPARE(object.property("customString").toString(), QString());
     object.setCustomString("String1");
@@ -2891,7 +2887,7 @@ void tst_QObject::floatProperty()
     QVERIFY(idx > 0);
     QMetaProperty prop = obj.metaObject()->property(idx);
     QVERIFY(prop.isValid());
-    QCOMPARE(int(prop.type()), QMetaType::type("float"));
+    QCOMPARE(prop.typeId(), QMetaType::fromType<float>().id());
     QVERIFY(!prop.write(&obj, QVariant("Hello")));
     QVERIFY(prop.write(&obj, QVariant::fromValue(128.0f)));
     QVariant v = prop.read(&obj);
@@ -2906,7 +2902,7 @@ void tst_QObject::qrealProperty()
     QVERIFY(idx > 0);
     QMetaProperty prop = obj.metaObject()->property(idx);
     QVERIFY(prop.isValid());
-    QCOMPARE(int(prop.type()), QMetaType::type("qreal"));
+    QCOMPARE(prop.typeId(), QMetaType::fromType<qreal>().id());
     QVERIFY(!prop.write(&obj, QVariant("Hello")));
 
     QVERIFY(prop.write(&obj, QVariant::fromValue(128.0f)));
@@ -2957,7 +2953,7 @@ void tst_QObject::dynamicProperties()
     QVERIFY(!obj.setProperty("myuserproperty", "Hello"));
     QCOMPARE(obj.changedDynamicProperties.count(), 1);
 
-    QCOMPARE(obj.property("myuserproperty").type(), QVariant::String);
+    QCOMPARE(obj.property("myuserproperty").typeId(), QMetaType::QString);
     QCOMPARE(obj.property("myuserproperty").toString(), QString("Hello"));
 
     QCOMPARE(obj.dynamicPropertyNames().count(), 1);
@@ -2968,7 +2964,7 @@ void tst_QObject::dynamicProperties()
     QVERIFY(!obj.setProperty("myuserproperty", QByteArray("Hello")));
     QCOMPARE(obj.changedDynamicProperties.count(), 1);
     QCOMPARE(obj.changedDynamicProperties.first(), QByteArray("myuserproperty"));
-    QCOMPARE(obj.property("myuserproperty").type(), QVariant::ByteArray);
+    QCOMPARE(obj.property("myuserproperty").typeId(), QMetaType::QByteArray);
     QCOMPARE(obj.property("myuserproperty").toString(), QByteArray("Hello"));
 
     // unset the property
@@ -4702,8 +4698,7 @@ void tst_QObject::customTypesPointer()
 
         checker.disconnect();
 
-        int idx = qRegisterMetaType<CustomType>("CustomType");
-        QCOMPARE(QMetaType::type("CustomType"), idx);
+        qRegisterMetaType<CustomType>();
 
         connect(&checker, &QCustomTypeChecker::signal1, &checker, &QCustomTypeChecker::slot1,
                 Qt::QueuedConnection);
@@ -4715,11 +4710,6 @@ void tst_QObject::customTypesPointer()
         QCoreApplication::processEvents();
         QCOMPARE(checker.received.value(), t2.value());
         QCOMPARE(instanceCount, 4);
-
-        QVERIFY(QMetaType::isRegistered(idx));
-        QCOMPARE(qRegisterMetaType<CustomType>("CustomType"), idx);
-        QCOMPARE(QMetaType::type("CustomType"), idx);
-        QVERIFY(QMetaType::isRegistered(idx));
 
         // Test auto registered type  (QList<CustomType>)
         QList<CustomType> list;
