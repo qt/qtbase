@@ -60,6 +60,8 @@
 #include <QtGui/private/qfontengine_ft_p.h>
 #endif
 
+#include <QtGui/qpa/qwindowsysteminterface.h>
+
 QT_BEGIN_NAMESPACE
 
 QT_IMPL_METATYPE_EXTERN_TAGGED(QCFType<CGFontRef>, QCFType_CGFontRef)
@@ -229,7 +231,12 @@ void QCoreTextFontDatabase::populateFamily(const QString &familyName)
 
 void QCoreTextFontDatabase::invalidate()
 {
+    qCDebug(lcQpaFonts) << "Invalidating font database";
     m_hasPopulatedAliases = false;
+
+    qDeleteAll(m_themeFonts);
+    m_themeFonts.clear();
+    QWindowSystemInterface::handleThemeChange<QWindowSystemInterface::SynchronousDelivery>(nullptr);
 }
 
 struct FontDescription {
