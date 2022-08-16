@@ -241,39 +241,39 @@ void QSslServer::incomingConnection(qintptr socket)
     pSslSocket->setSslConfiguration(sslConfiguration());
 
     if (Q_LIKELY(pSslSocket->setSocketDescriptor(socket))) {
-        connect(pSslSocket, &QSslSocket::peerVerifyError,
+        connect(pSslSocket, &QSslSocket::peerVerifyError, this,
                 [this, pSslSocket](const QSslError &error) {
                     Q_EMIT peerVerifyError(pSslSocket, error);
                 });
-        connect(pSslSocket, &QSslSocket::sslErrors,
+        connect(pSslSocket, &QSslSocket::sslErrors, this,
                 [this, pSslSocket](const QList<QSslError> &errors) {
                     Q_EMIT sslErrors(pSslSocket, errors);
                 });
-        connect(pSslSocket, &QAbstractSocket::errorOccurred,
+        connect(pSslSocket, &QAbstractSocket::errorOccurred, this,
                 [this, pSslSocket](QAbstractSocket::SocketError error) {
                     Q_EMIT errorOccurred(pSslSocket, error);
                     if (!pSslSocket->isEncrypted())
                         pSslSocket->deleteLater();
                 });
-        connect(pSslSocket, &QSslSocket::encrypted, [this, pSslSocket]() {
-            pSslSocket->disconnect();
+        connect(pSslSocket, &QSslSocket::encrypted, this, [this, pSslSocket]() {
+            pSslSocket->disconnect(this);
             addPendingConnection(pSslSocket);
         });
-        connect(pSslSocket, &QSslSocket::preSharedKeyAuthenticationRequired,
+        connect(pSslSocket, &QSslSocket::preSharedKeyAuthenticationRequired, this,
                 [this, pSslSocket](QSslPreSharedKeyAuthenticator *authenticator) {
                     Q_EMIT preSharedKeyAuthenticationRequired(pSslSocket, authenticator);
                 });
-        connect(pSslSocket, &QSslSocket::alertSent,
+        connect(pSslSocket, &QSslSocket::alertSent, this,
                 [this, pSslSocket](QSsl::AlertLevel level, QSsl::AlertType type,
                                    const QString &description) {
                     Q_EMIT alertSent(pSslSocket, level, type, description);
                 });
-        connect(pSslSocket, &QSslSocket::alertReceived,
+        connect(pSslSocket, &QSslSocket::alertReceived, this,
                 [this, pSslSocket](QSsl::AlertLevel level, QSsl::AlertType type,
                                    const QString &description) {
                     Q_EMIT alertReceived(pSslSocket, level, type, description);
                 });
-        connect(pSslSocket, &QSslSocket::handshakeInterruptedOnError,
+        connect(pSslSocket, &QSslSocket::handshakeInterruptedOnError, this,
                 [this, pSslSocket](const QSslError &error) {
                     Q_EMIT handshakeInterruptedOnError(pSslSocket, error);
                 });
