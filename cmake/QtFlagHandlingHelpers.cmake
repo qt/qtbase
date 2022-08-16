@@ -191,10 +191,10 @@ function(qt_internal_library_deprecation_level result)
         # On other platforms, Qt's own compilation goes needs to compile the Qt 5.0 API
         list(APPEND deprecations "QT_DISABLE_DEPRECATED_UP_TO=0x050000")
     endif()
-    # QT_DEPRECATED_WARNINGS_SINCE controls the upper-bound of deprecation
-    # warnings that are emitted. E.g. if it is set to 7.0 then all deprecations
-    # during the 6.* lifetime will be warned about in Qt builds.
-    list(APPEND deprecations "QT_DEPRECATED_WARNINGS_SINCE=0x070000")
+    # QT_WARN_DEPRECATED_UP_TO controls the upper-bound of deprecation
+    # warnings that are emitted. E.g. if it is set to 0x060500 then all use of
+    # things deprecated in or before 6.5.0 will be warned against.
+    list(APPEND deprecations "QT_WARN_DEPRECATED_UP_TO=0x070000")
     set("${result}" "${deprecations}" PARENT_SCOPE)
 endfunction()
 
