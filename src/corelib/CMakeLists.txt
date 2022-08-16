@@ -51,7 +51,6 @@ qt_internal_add_module(Core
         global/qcompare_impl.h
         global/qcompare.h
         global/qcompilerdetection.h
-        global/qtconfigmacros.h
         global/qcontainerinfo.h
         global/qendian.cpp global/qendian.h global/qendian_p.h
         global/qenvironmentvariables.cpp global/qenvironmentvariables.h
@@ -74,6 +73,7 @@ qt_internal_add_module(Core
         global/qrandom.cpp global/qrandom.h global/qrandom_p.h
         global/qsysinfo.h
         global/qsystemdetection.h
+        global/qtconfigmacros.h
         global/qtdeprecationmarkers.h
         global/qtnamespacemacros.h
         global/qtrace_p.h
