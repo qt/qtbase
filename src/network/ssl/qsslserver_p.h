@@ -19,6 +19,7 @@
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 
 #include <QtCore/qhash.h>
+#include <QtCore/qtimer.h>
 
 #include <QtNetwork/QSslConfiguration>
 #include <QtNetwork/private/qtcpserver_p.h>
@@ -28,6 +29,7 @@ QT_BEGIN_NAMESPACE
 
 class Q_NETWORK_EXPORT QSslServerPrivate : public QTcpServerPrivate
 {
+    static constexpr int DefaultHandshakeTimeout = 5'000; // 5 seconds
 public:
     Q_DECLARE_PUBLIC(QSslServer)
 
@@ -35,13 +37,18 @@ public:
     void checkClientHelloAndContinue();
     void initializeHandshakeProcess(QSslSocket *socket);
     void removeSocketData(quintptr socket);
+    void handleHandshakeTimedOut(QSslSocket *socket);
 
     struct SocketData {
         QMetaObject::Connection readyReadConnection;
         QMetaObject::Connection destroyedConnection;
+        std::shared_ptr<QTimer> timeoutTimer; // shared_ptr because QHash demands copying
 
-        SocketData(QMetaObject::Connection readyRead, QMetaObject::Connection destroyed)
-            : readyReadConnection(readyRead), destroyedConnection(destroyed)
+        SocketData(QMetaObject::Connection readyRead, QMetaObject::Connection destroyed,
+                   std::shared_ptr<QTimer> &&timer)
+            : readyReadConnection(readyRead),
+              destroyedConnection(destroyed),
+              timeoutTimer(std::move(timer))
         {
         }
 
@@ -54,6 +61,7 @@ public:
     QHash<quintptr, SocketData> socketData;
 
     QSslConfiguration sslConfiguration;
+    int handshakeTimeout = DefaultHandshakeTimeout;
 };
 
 

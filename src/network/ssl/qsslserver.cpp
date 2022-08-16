@@ -228,6 +228,42 @@ QSslConfiguration QSslServer::sslConfiguration() const
 }
 
 /*!
+    Sets the \a timeout to use for all incoming handshakes, in milliseconds.
+
+    This is relevant in the scenario where a client, whether malicious or
+    accidental, connects to the server but makes no attempt at communicating or
+    initiating a handshake. QSslServer will then automatically end the
+    connection after \a timeout milliseconds have elapsed.
+
+    By default the timeout is 5000 milliseconds (5 seconds).
+
+    \note The underlying TLS framework may have their own timeout logic now or
+    in the future, this function does not affect that.
+
+    \note The \a timeout passed to this function will only apply to \e{new}
+    connections. If a client is already connected it will use the timeout which
+    was set when it connected.
+
+    \sa handshakeTimeout()
+*/
+void QSslServer::setHandshakeTimeout(int timeout)
+{
+    Q_D(QSslServer);
+    d->handshakeTimeout = timeout;
+}
+
+/*!
+    Returns the currently configured handshake timeout.
+
+    \sa setHandshakeTimeout()
+*/
+int QSslServer::handshakeTimeout() const
+{
+    const Q_D(QSslServer);
+    return d->handshakeTimeout;
+}
+
+/*!
     Called when a new connection is established.
 
     Converts \a socket to a QSslSocket.
@@ -296,7 +332,11 @@ void QSslServerPrivate::initializeHandshakeProcess(QSslSocket *socket)
                 // QObject dtor, but we only use the pointer value!
                 removeSocketData(quintptr(obj));
             });
-    socketData.emplace(quintptr(socket), readyRead, destroyed);
+    auto it = socketData.emplace(quintptr(socket), readyRead, destroyed, std::make_shared<QTimer>());
+    it->timeoutTimer->setSingleShot(true);
+    it->timeoutTimer->callOnTimeout([this, socket]() { handleHandshakeTimedOut(socket); });
+    it->timeoutTimer->setInterval(handshakeTimeout);
+    it->timeoutTimer->start();
 }
 
 // This function may be called while in the socket's QObject dtor, __never__ use
@@ -335,8 +375,21 @@ void QSslServerPrivate::checkClientHelloAndContinue()
         return;
     }
 
+    // Be nice and restart the timeout timer since some progress was made
+    if (foundData)
+        it->timeoutTimer->start();
+
     socket->startServerEncryption();
     Q_EMIT q->startedEncryptionHandshake(socket);
+}
+
+void QSslServerPrivate::handleHandshakeTimedOut(QSslSocket *socket)
+{
+    Q_Q(QSslServer);
+    removeSocketData(quintptr(socket));
+    socket->disconnectFromHost();
+    Q_EMIT q->errorOccurred(socket, QAbstractSocket::SocketTimeoutError);
+    socket->deleteLater();
 }
 
 QT_END_NAMESPACE

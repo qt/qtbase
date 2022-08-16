@@ -24,6 +24,7 @@ private slots:
     void testPreSharedKeyAuthenticationRequired();
 #endif
     void plaintextClient();
+    void quietClient();
 
 private:
     QString testDataDir;
@@ -457,6 +458,33 @@ void tst_QSslServer::plaintextClient()
     // ... and quickly get disconnected:
     QTRY_COMPARE_GT(socketDisconnectedSpy.count(), 0);
     QCOMPARE(socket.state(), QAbstractSocket::SocketState::UnconnectedState);
+}
+
+void tst_QSslServer::quietClient()
+{
+    QSslConfiguration serverConfiguration = selfSignedServerQSslConfiguration();
+    SslServerSpy server(serverConfiguration);
+    server.server.setHandshakeTimeout(1'000);
+    QVERIFY(server.server.listen());
+
+    quint16 serverPeerPort = 0;
+    auto grabServerPeerPort = [&serverPeerPort](QSslSocket *socket) {
+        serverPeerPort = socket->peerPort();
+    };
+    QObject::connect(&server.server, &QSslServer::errorOccurred, &server.server,
+                     grabServerPeerPort);
+
+    QTcpSocket socket;
+    QSignalSpy socketDisconnectedSpy(&socket, &QTcpSocket::disconnected);
+    socket.connectToHost(QHostAddress::LocalHost, server.server.serverPort());
+    quint16 clientLocalPort = socket.localPort();
+    QVERIFY(socket.waitForConnected());
+    // Disconnects after overlong break:
+    QVERIFY(socketDisconnectedSpy.wait(5'000));
+    QCOMPARE(socket.state(), QAbstractSocket::SocketState::UnconnectedState);
+
+    QCOMPARE_GT(server.errorOccurredSpy.size(), 0);
+    QCOMPARE(serverPeerPort, clientLocalPort);
 }
 
 QTEST_MAIN(tst_QSslServer)
