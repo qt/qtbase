@@ -19,7 +19,7 @@ qt_internal_add_test(tst_macnativeevents
         qnativeevents_mac.cpp
         tst_macnativeevents.cpp
     DEFINES
-        QT_DISABLE_DEPRECATED_BEFORE=0
+        QT_DISABLE_DEPRECATED_UP_TO=0
     LIBRARIES
         ${FWAppKit}
         Qt::Gui

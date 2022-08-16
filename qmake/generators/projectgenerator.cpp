@@ -321,7 +321,7 @@ ProjectGenerator::writeMakefile(QTextStream &t)
              "# Please consult the documentation of the deprecated API in order to know\n"
              "# how to port your code away from it.\n"
              "# You can also select to disable deprecated APIs only up to a certain version of Qt.\n"
-             "#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0\n\n";
+             "#DEFINES += QT_DISABLE_DEPRECATED_UP_TO=0x060000 # disables all APIs deprecated in Qt 6.0.0 and earlier\n\n";
 
         t << "# Input" << "\n";
         t << getWritableVar("HEADERS")

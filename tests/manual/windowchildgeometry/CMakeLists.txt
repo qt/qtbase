@@ -14,7 +14,7 @@ qt_internal_add_manual_test(windowchildgeometry
         controllerwidget.cpp controllerwidget.h
         main.cpp
     DEFINES
-        QT_DISABLE_DEPRECATED_BEFORE=0
+        QT_DISABLE_DEPRECATED_UP_TO=0
     INCLUDE_DIRECTORIES
         ../windowflags
     LIBRARIES

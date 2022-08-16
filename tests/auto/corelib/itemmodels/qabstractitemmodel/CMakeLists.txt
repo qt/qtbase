@@ -12,7 +12,7 @@ qt_internal_add_test(tst_qabstractitemmodel
         ../../../other/qabstractitemmodelutils/dynamictreemodel.cpp ../../../other/qabstractitemmodelutils/dynamictreemodel.h
         tst_qabstractitemmodel.cpp
     DEFINES
-        QT_DISABLE_DEPRECATED_BEFORE=0
+        QT_DISABLE_DEPRECATED_UP_TO=0
     INCLUDE_DIRECTORIES
         ../../../other/qabstractitemmodelutils
     LIBRARIES

@@ -21,12 +21,12 @@ set_target_properties(qlogging_helper PROPERTIES CXX_VISIBILITY_PRESET default)
 qt_internal_add_test(tst_qlogging SOURCES tst_qlogging.cpp
     DEFINES
         QT_MESSAGELOGCONTEXT
-        QT_DISABLE_DEPRECATED_BEFORE=0
+        QT_DISABLE_DEPRECATED_UP_TO=0
         HELPER_BINARY="${CMAKE_CURRENT_BINARY_DIR}/qlogging_helper"
 )
 
 qt_internal_add_test(tst_qmessagelogger SOURCES tst_qmessagelogger.cpp
     DEFINES
         QT_MESSAGELOGCONTEXT
-        QT_DISABLE_DEPRECATED_BEFORE=0
+        QT_DISABLE_DEPRECATED_UP_TO=0
 )

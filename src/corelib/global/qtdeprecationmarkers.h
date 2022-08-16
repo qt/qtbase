@@ -36,16 +36,21 @@ QT_BEGIN_NAMESPACE
 #  define Q_DECL_ENUMERATOR_DEPRECATED
 #endif
 
+// If the deprecated macro is defined, use its value
+#if !defined(QT_DISABLE_DEPRECATED_UP_TO) && defined(QT_DISABLE_DEPRECATED_BEFORE)
+#  define QT_DISABLE_DEPRECATED_UP_TO QT_DISABLE_DEPRECATED_BEFORE
+#endif
+
 #ifndef QT_DEPRECATED_WARNINGS_SINCE
-# ifdef QT_DISABLE_DEPRECATED_BEFORE
-#  define QT_DEPRECATED_WARNINGS_SINCE QT_DISABLE_DEPRECATED_BEFORE
+# ifdef QT_DISABLE_DEPRECATED_UP_TO
+#  define QT_DEPRECATED_WARNINGS_SINCE QT_DISABLE_DEPRECATED_UP_TO
 # else
 #  define QT_DEPRECATED_WARNINGS_SINCE QT_VERSION
 # endif
 #endif
 
-#ifndef QT_DISABLE_DEPRECATED_BEFORE
-#define QT_DISABLE_DEPRECATED_BEFORE QT_VERSION_CHECK(5, 0, 0)
+#ifndef QT_DISABLE_DEPRECATED_UP_TO
+#define QT_DISABLE_DEPRECATED_UP_TO QT_VERSION_CHECK(5, 0, 0)
 #endif
 
 /*
@@ -61,7 +66,7 @@ QT_BEGIN_NAMESPACE
 
 */
 #ifdef QT_DEPRECATED
-#define QT_DEPRECATED_SINCE(major, minor) (QT_VERSION_CHECK(major, minor, 0) > QT_DISABLE_DEPRECATED_BEFORE)
+#define QT_DEPRECATED_SINCE(major, minor) (QT_VERSION_CHECK(major, minor, 0) > QT_DISABLE_DEPRECATED_UP_TO)
 #else
 #define QT_DEPRECATED_SINCE(major, minor) 0
 #endif
@@ -186,7 +191,7 @@ QT_BEGIN_NAMESPACE
 /*
     QT_IF_DEPRECATED_SINCE(major, minor, whenTrue, whenFalse) expands to
     \a whenTrue if the specified (\a major, \a minor) version is less than or
-    equal to the deprecation version defined by QT_DISABLE_DEPRECATED_BEFORE,
+    equal to the deprecation version defined by QT_DISABLE_DEPRECATED_UP_TO,
     and to \a whenFalse otherwise.
 
     Currently used for QT_INLINE_SINCE(maj, min), but can also be helpful for

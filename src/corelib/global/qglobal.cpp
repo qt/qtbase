@@ -1527,23 +1527,33 @@ bool qSharedBuild() noexcept
 */
 
 /*!
-  \macro QT_DISABLE_DEPRECATED_BEFORE
-  \relates <QtGlobal>
+    \macro QT_DISABLE_DEPRECATED_BEFORE
+    \relates <QtGlobal>
+    \deprecated [6.5] Use QT_DISABLE_DEPRECATED_UP_TO instead
 
-  This macro can be defined in the project file to disable functions deprecated in
-  a specified version of Qt or any earlier version. The default version number is 5.0,
-  meaning that functions deprecated in or before Qt 5.0 will not be included.
-
-  For instance, when preparing to upgrade to Qt 6.3, setting
-  \c{QT_DISABLE_DEPRECATED_BEFORE=0x0602ff} will disable functions deprecated in
-  Qt 6.2 and earlier, making it easy to find changes worth making before the
-  upgrade. In any release, set \c{QT_DISABLE_DEPRECATED_BEFORE=0x000000} to
-  enable all functions, including the ones deprecated in Qt 5.0 (although most
-  of those have by now been removed entirely).
-
-  \sa QT_DEPRECATED_WARNINGS
+    \sa QT_DISABLE_DEPRECATED_UP_TO
 */
 
+/*!
+    \macro QT_DISABLE_DEPRECATED_UP_TO
+    \relates <QtGlobal>
+
+    This macro can be defined in the project file to disable functions
+    deprecated in a specified version of Qt or any earlier version. The default
+    version number is 5.0, meaning that functions deprecated in or before
+    Qt 5.0 will not be included.
+
+    For instance, when preparing to upgrade to Qt 6.3, after eliminating all
+    deprecation warnings, you can set \c{QT_DISABLE_DEPRECATED_UP_TO=0x060300}
+    to exclude from your builds the Qt APIs you no longer use. In your own
+    project's build configuration, this will ensure that anyone adding new calls
+    to the deprecated APIs will know about it right away. If you also build Qt
+    for yourself, including this define in your build configuration for Qt will
+    make your binaries smaller by leaving out even the implementation of the
+    deprecated APIs.
+
+    \sa QT_DEPRECATED_WARNINGS, QT_DISABLE_DEPRECATED_BEFORE
+*/
 
 /*!
   \macro QT_DEPRECATED_WARNINGS
