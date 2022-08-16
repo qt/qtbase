@@ -6,6 +6,13 @@ use strict;
 my $syntax = "findclasslist.pl\n" .
              "Replaces each \@FILE:filename\@ in stdin with the classes found in that file\n";
 
+# Match a struct or class declaration at the top-level, but not a forward
+# declaration
+my $classmatch = qr/^(?:struct|class)(?:\s+Q_\w*_EXPORT)?\s+(\w+)(\s*;$)?/;
+
+# Match an exported namespace
+my $nsmatch = qr/^namespace\s+Q_\w+_EXPORT\s+(\w+)/;
+
 $\ = $/;
 while (<STDIN>) {
     chomp;
@@ -24,9 +31,10 @@ while (<STDIN>) {
             next if $1 eq "ignore" or $1 eq "ignore-next";
         }
 
-        # Match a struct or class declaration, but not a forward declaration
-        $line =~ /^(?:struct|class|namespace) (?:Q_.*_EXPORT)? (\w+)(?!;)/ or next;
-        print $comment if $comment;
+        $line =~ s,\s*(//.*)?$,,;  # remove // comments and trailing space
+        next unless $line =~ $nsmatch or $line =~ $classmatch;
+        next if $2 ne "";       # forward declaration
+
         printf "    *%d%s*;\n", length $1, $1;
         $comment = 0;
     }
