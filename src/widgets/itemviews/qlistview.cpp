@@ -572,6 +572,8 @@ void QListView::scrollTo(const QModelIndex &index, ScrollHint hint)
         return;
 
     const QRect rect = visualRect(index);
+    if (!rect.isValid())
+        return;
     if (hint == EnsureVisible && d->viewport->rect().contains(rect)) {
         d->viewport->update(rect);
         return;
@@ -2930,6 +2932,8 @@ bool QIconModeViewBase::filterDropEvent(QDropEvent *e)
     dd->stopAutoScroll();
     draggedItems.clear();
     dd->emitIndexesMoved(indexes);
+    // do not delete item on internal move, see filterStartDrag()
+    dd->dropEventMoved = true;
     e->accept(); // we have handled the event
     // if the size has not grown, we need to check if it has shrinked
     if (contentsSize != contents) {

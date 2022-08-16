@@ -1120,13 +1120,13 @@ static bool addFontToDatabase(QString familyName,
                                         style, stretch, antialias, scalable, size, fixed, writingSystems, createFontFile(faceName));
 
     // add fonts windows can generate for us:
-    if (weight <= QFont::DemiBold)
+    if (weight <= QFont::DemiBold && styleName.isEmpty())
         QPlatformFontDatabase::registerFont(familyName, QString(), foundryName, QFont::Bold,
                                             style, stretch, antialias, scalable, size, fixed, writingSystems, createFontFile(faceName));
-    if (style != QFont::StyleItalic)
+    if (style != QFont::StyleItalic && styleName.isEmpty())
         QPlatformFontDatabase::registerFont(familyName, QString(), foundryName, weight,
                                             QFont::StyleItalic, stretch, antialias, scalable, size, fixed, writingSystems, createFontFile(faceName));
-    if (weight <= QFont::DemiBold && style != QFont::StyleItalic)
+    if (weight <= QFont::DemiBold && style != QFont::StyleItalic && styleName.isEmpty())
         QPlatformFontDatabase::registerFont(familyName, QString(), foundryName, QFont::Bold,
                                             QFont::StyleItalic, stretch, antialias, scalable, size, fixed, writingSystems, createFontFile(faceName));
 

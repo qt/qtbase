@@ -3640,6 +3640,8 @@ bool QUrl::operator <(const QUrl &url) const
 /*!
     Returns \c true if this URL and the given \a url are equal;
     otherwise returns \c false.
+
+    \sa matches()
 */
 bool QUrl::operator ==(const QUrl &url) const
 {
@@ -3747,6 +3749,8 @@ bool QUrl::matches(const QUrl &url, FormattingOptions options) const
 /*!
     Returns \c true if this URL and the given \a url are not equal;
     otherwise returns \c false.
+
+    \sa matches()
 */
 bool QUrl::operator !=(const QUrl &url) const
 {

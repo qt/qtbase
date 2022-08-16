@@ -97,8 +97,7 @@
 #include "private/qapplication_p.h"
 #include "private/qshortcutmap_p.h"
 #include <qkeysequence.h>
-#define ACCEL_KEY(k) ((!QCoreApplication::testAttribute(Qt::AA_DontShowShortcutsInContextMenus) \
-                       && QGuiApplication::styleHints()->showShortcutsInContextMenus()) \
+#define ACCEL_KEY(k) (!QCoreApplication::testAttribute(Qt::AA_DontShowShortcutsInContextMenus) \
                       && !QGuiApplicationPrivate::instance()->shortcutMap.hasShortcutForKeySequence(k) ? \
                       QLatin1Char('\t') + QKeySequence(k).toString(QKeySequence::NativeText) : QString())
 
@@ -1281,7 +1280,7 @@ void QWidgetTextControlPrivate::keyPressEvent(QKeyEvent *e)
     // example)
     repaintSelection();
 
-    if (e->key() == Qt::Key_Backspace && !(e->modifiers() & ~Qt::ShiftModifier)) {
+    if (e->key() == Qt::Key_Backspace && !(e->modifiers() & ~(Qt::ShiftModifier | Qt::GroupSwitchModifier))) {
         QTextBlockFormat blockFmt = cursor.blockFormat();
         QTextList *list = cursor.currentList();
         if (list && cursor.atBlockStart() && !cursor.hasSelection()) {

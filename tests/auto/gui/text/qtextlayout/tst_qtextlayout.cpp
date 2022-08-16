@@ -1909,6 +1909,20 @@ void tst_QTextLayout::longText()
         QFontMetricsF fm(layout.font());
         QVERIFY(layout.maximumWidth() - fm.horizontalAdvance(' ') <= QFIXED_MAX);
     }
+
+    {
+        QTextLayout layout(QString("AAAAAAAA").repeated(200000));
+        layout.setCacheEnabled(true);
+        layout.beginLayout();
+        forever {
+            QTextLine line = layout.createLine();
+            if (!line.isValid())
+                break;
+        }
+        layout.endLayout();
+        QFontMetricsF fm(layout.font());
+        QVERIFY(layout.maximumWidth() - fm.horizontalAdvance('A') <= QFIXED_MAX);
+    }
 }
 
 void tst_QTextLayout::widthOfTabs()

@@ -564,6 +564,11 @@ void QXcbWindow::setGeometry(const QRect &rect)
 {
     QPlatformWindow::setGeometry(rect);
 
+    if (shouldDeferTask(Task::SetGeometry)) {
+        m_deferredGeometry = rect;
+        return;
+    }
+
     propagateSizeHints();
 
     QXcbScreen *currentScreen = xcbScreen();
@@ -688,6 +693,9 @@ void QXcbWindow::setVisible(bool visible)
 
 void QXcbWindow::show()
 {
+    if (shouldDeferTask(Task::Map))
+        return;
+
     if (window()->isTopLevel()) {
 
         // update WM_NORMAL_HINTS
@@ -738,6 +746,10 @@ void QXcbWindow::show()
 
 void QXcbWindow::hide()
 {
+    if (shouldDeferTask(Task::Unmap))
+        return;
+
+    m_wmStateValid = false;
     xcb_unmap_window(xcb_connection(), m_window);
 
     // send synthetic UnmapNotify event according to icccm 4.1.4
@@ -897,6 +909,9 @@ QXcbWindow::NetWmStates QXcbWindow::netWmStates()
 
 void QXcbWindow::setWindowFlags(Qt::WindowFlags flags)
 {
+    if (shouldDeferTask(Task::SetWindowFlags))
+        return;
+
     Qt::WindowType type = static_cast<Qt::WindowType>(int(flags & Qt::WindowType_Mask));
 
     if (type == Qt::ToolTip)
@@ -926,6 +941,8 @@ void QXcbWindow::setWindowFlags(Qt::WindowFlags flags)
 
     setTransparentForMouseEvents(flags & Qt::WindowTransparentForInput);
     updateDoesNotAcceptFocus(flags & Qt::WindowDoesNotAcceptFocus);
+
+    m_isWmManagedWindow = !(flags & Qt::X11BypassWindowManagerHint);
 }
 
 void QXcbWindow::setMotifWmHints(Qt::WindowFlags flags)
@@ -1123,6 +1140,9 @@ void QXcbWindow::setNetWmStateOnUnmappedWindow()
 void QXcbWindow::setWindowState(Qt::WindowStates state)
 {
     if (state == m_windowState)
+        return;
+
+    if (shouldDeferTask(Task::SetWindowState))
         return;
 
     // unset old state
@@ -1874,6 +1894,10 @@ void QXcbWindow::handleUnmapNotifyEvent(const xcb_unmap_notify_event_t *event)
     if (event->window == m_window) {
         m_mapped = false;
         QWindowSystemInterface::handleExposeEvent(window(), QRegion());
+        if (!m_isWmManagedWindow) {
+            m_wmStateValid = true;
+            handleDeferredTasks();
+        }
     }
 }
 
@@ -2188,30 +2212,98 @@ void QXcbWindow::handleLeaveNotifyEvent(const xcb_leave_notify_event_t *event)
     handleLeaveNotifyEvent(event->root_x, event->root_y, event->mode, event->detail, event->time);
 }
 
+bool QXcbWindow::shouldDeferTask(Task task)
+{
+    if (m_wmStateValid)
+        return false;
+
+    m_deferredTasks.append(task);
+    return true;
+}
+
+void QXcbWindow::handleDeferredTasks()
+{
+    Q_ASSERT(m_wmStateValid == true);
+    if (m_deferredTasks.isEmpty())
+        return;
+
+    bool map = false;
+    bool unmap = false;
+
+    QVector<Task> tasks;
+    for (auto taskIt = m_deferredTasks.rbegin(); taskIt != m_deferredTasks.rend(); ++taskIt) {
+        if (!tasks.contains(*taskIt))
+            tasks.prepend(*taskIt);
+    }
+
+    for (Task task : tasks) {
+        switch (task) {
+        case Task::Map:
+            map = true;
+            unmap = false;
+            break;
+        case Task::Unmap:
+            unmap = true;
+            map = false;
+            break;
+        case Task::SetGeometry:
+            setGeometry(m_deferredGeometry);
+            break;
+        case Task::SetWindowFlags:
+            setWindowFlags(window()->flags());
+            break;
+        case Task::SetWindowState:
+            setWindowState(window()->windowState());
+            break;
+        }
+    }
+    m_deferredTasks.clear();
+
+    if (map) {
+        Q_ASSERT(unmap == false);
+        show();
+    }
+    if (unmap) {
+        Q_ASSERT(map == false);
+        hide();
+    }
+}
+
 void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *event)
 {
     connection()->setTime(event->time);
 
-    const bool propertyDeleted = event->state == XCB_PROPERTY_DELETE;
-
-    if (event->atom == atom(QXcbAtom::_NET_WM_STATE) || event->atom == atom(QXcbAtom::WM_STATE)) {
-        if (propertyDeleted)
+    const bool wmStateChanged = event->atom == atom(QXcbAtom::WM_STATE);
+    const bool netWmStateChanged = event->atom == atom(QXcbAtom::_NET_WM_STATE);
+    if (netWmStateChanged || wmStateChanged) {
+        if (wmStateChanged && !m_wmStateValid && m_isWmManagedWindow) {
+            // ICCCM 4.1.4
+            // Clients that want to re-use a client window (e.g. by mapping it again)
+            // after withdrawing it must wait for the withdrawal to be complete before
+            // proceeding. The preferred method for doing this is for clients to wait for
+            // a window manager to update or remove the WM_STATE property.
+            m_wmStateValid = true;
+            handleDeferredTasks();
+        }
+        if (event->state == XCB_PROPERTY_DELETE)
             return;
 
-        Qt::WindowStates newState = Qt::WindowNoState;
-
-        if (event->atom == atom(QXcbAtom::WM_STATE)) { // WM_STATE: Quick check for 'Minimize'.
+        if (wmStateChanged) {
             auto reply = Q_XCB_REPLY(xcb_get_property, xcb_connection(),
                                      0, m_window, atom(QXcbAtom::WM_STATE),
                                      XCB_ATOM_ANY, 0, 1024);
             if (reply && reply->format == 32 && reply->type == atom(QXcbAtom::WM_STATE)) {
-                const quint32 *data = (const quint32 *)xcb_get_property_value(reply.get());
-                if (reply->length != 0)
-                    m_minimized = (data[0] == XCB_ICCCM_WM_STATE_ICONIC
-                                   || (data[0] == XCB_ICCCM_WM_STATE_WITHDRAWN && m_minimized));
+                auto data = static_cast<const quint32 *>(xcb_get_property_value(reply.get()));
+                if (reply->length != 0) {
+                    const bool changedToWithdrawn = data[0] == XCB_ICCCM_WM_STATE_WITHDRAWN;
+                    const bool changedToIconic = data[0] == XCB_ICCCM_WM_STATE_ICONIC;
+                    m_minimized = changedToIconic || (changedToWithdrawn && m_minimized);
+                }
             }
         }
 
+        // _NET_WM_STATE handling
+        Qt::WindowStates newState = Qt::WindowNoState;
         const NetWmStates states = netWmStates();
         // _NET_WM_STATE_HIDDEN should be set by the Window Manager to indicate that a window would
         // not be visible on the screen if its desktop/viewport were active and its coordinates were
@@ -2233,7 +2325,6 @@ void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *ev
             if ((m_windowState & Qt::WindowMinimized) && connection()->mouseGrabber() == this)
                 connection()->setMouseGrabber(nullptr);
         }
-        return;
     } else if (event->atom == atom(QXcbAtom::_NET_FRAME_EXTENTS)) {
         m_dirtyFrameMargins = true;
     }

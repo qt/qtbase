@@ -645,7 +645,7 @@ void QHttpSocketEngine::slotSocketReadNotification()
             d->socket->readAll();
             //We're done with the reply and need to reset it for the next connection
             delete d->reply;
-            d->reply = new QHttpNetworkReply;
+            d->reply = new QHttpNetworkReply(QUrl(), this);
         }
 
         if (priv->phase == QAuthenticatorPrivate::Done)

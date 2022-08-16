@@ -201,7 +201,7 @@ inline void QFutureInterface<T>::reportResult(const T *result, int index)
     if (store.filterMode()) {
         const int resultCountBefore = store.count();
         store.addResult<T>(index, result);
-        this->reportResultsReady(resultCountBefore, resultCountBefore + store.count());
+        this->reportResultsReady(resultCountBefore, store.count());
     } else {
         const int insertIndex = store.addResult<T>(index, result);
         this->reportResultsReady(insertIndex, insertIndex + 1);

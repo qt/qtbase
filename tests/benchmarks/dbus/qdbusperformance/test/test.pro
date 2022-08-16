@@ -1,3 +1,4 @@
+CONFIG += benchmark
 SOURCES += ../tst_qdbusperformance.cpp
 HEADERS += ../serverobject.h
 TARGET = ../tst_qdbusperformance

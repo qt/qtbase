@@ -1948,7 +1948,7 @@ void QTreeView::mouseDoubleClickEvent(QMouseEvent *event)
         if (!style()->styleHint(QStyle::SH_ItemView_ActivateItemOnSingleClick, nullptr, this))
             emit activated(persistent);
 
-        d->pressedIndex = QModelIndex();
+        d->releaseFromDoubleClick = true;
         d->executePostedLayout(); // we need to make sure viewItems is updated
         if (d->itemsExpandable
             && d->expandsOnDoubleClick
@@ -2665,7 +2665,10 @@ QSize QTreeView::viewportSizeHint() const
   \since 4.2
   Expands all expandable items.
 
-  \warning: if the model contains a large number of items,
+  \note This function will not try to \l{QAbstractItemModel::fetchMore}{fetch more}
+  data.
+
+  \warning If the model contains a large number of items,
   this function will take some time to execute.
 
   \sa collapseAll(), expand(), collapse(), setExpanded()
@@ -2687,7 +2690,10 @@ void QTreeView::expandAll()
   A \a depth of -1 will expand all children, a \a depth of 0 will
   only expand the given \a index.
 
-  \warning: if the model contains a large number of items,
+  \note This function will not try to \l{QAbstractItemModel::fetchMore}{fetch more}
+  data.
+
+  \warning If the model contains a large number of items,
   this function will take some time to execute.
 
   \sa expandAll()
@@ -2751,6 +2757,9 @@ void QTreeView::collapseAll()
 /*!
   \since 4.3
   Expands all expandable items to the given \a depth.
+
+  \note This function will not try to \l{QAbstractItemModel::fetchMore}{fetch more}
+  data.
 
   \sa expandAll(), collapseAll(), expand(), collapse(), setExpanded()
 */

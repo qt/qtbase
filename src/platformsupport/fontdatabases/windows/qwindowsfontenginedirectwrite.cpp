@@ -502,6 +502,7 @@ QT_WARNING_POP
 void QWindowsFontEngineDirectWrite::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nglyphs,
                                              QPainterPath *path, QTextItem::RenderFlags flags)
 {
+    Q_UNUSED(flags);
     QVarLengthArray<UINT16> glyphIndices(nglyphs);
     QVarLengthArray<DWRITE_GLYPH_OFFSET> glyphOffsets(nglyphs);
     QVarLengthArray<FLOAT> glyphAdvances(nglyphs);
@@ -521,7 +522,7 @@ void QWindowsFontEngineDirectWrite::addGlyphsToPath(glyph_t *glyphs, QFixedPoint
                 glyphOffsets.data(),
                 nglyphs,
                 false,
-                flags & QTextItem::RightToLeft,
+                false,
                 &geometrySink
                 );
 

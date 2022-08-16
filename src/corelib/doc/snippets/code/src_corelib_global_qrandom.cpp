@@ -127,5 +127,5 @@
 //! [15]
 
 //! [16]
-    qint64 value = QRandomGenerator64::generate() & std::numeric_limits<qint64>::max();
+    qint64 value = QRandomGenerator64::global()->generate() & std::numeric_limits<qint64>::max();
 //! [16]

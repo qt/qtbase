@@ -44,8 +44,3 @@ extern "C" JNIEXPORT jintArray JNICALL Java_org_qtproject_qt5_android_ExtractSty
 {
     return 0;
 }
-
-extern "C" JNIEXPORT jintArray JNICALL Java_org_qtproject_qt5_android_ExtractStyle_extractChunkInfo20(JNIEnv *, jobject, jbyteArray)
-{
-    return 0;
-}

@@ -829,13 +829,9 @@ QFile::link(const QString &fileName, const QString &linkName)
 }
 
 /*!
-    Copies the file currently specified by fileName() to a file called
-    \a newName.  Returns \c true if successful; otherwise returns \c false.
+    Copies the file named fileName() to \a newName.
 
-    Note that if a file with the name \a newName already exists,
-    copy() returns \c false (i.e. QFile will not overwrite it).
-
-    The source file is closed before it is copied.
+    \include qfile-copy.qdocinc
 
     \sa setFileName()
 */
@@ -941,11 +937,9 @@ QFile::copy(const QString &newName)
 /*!
     \overload
 
-    Copies the file \a fileName to \a newName. Returns \c true if successful;
-    otherwise returns \c false.
+    Copies the file named \a fileName to \a newName.
 
-    If a file with the name \a newName already exists, copy() returns \c false
-    (i.e., QFile will not overwrite it).
+    \include qfile-copy.qdocinc
 
     \sa rename()
 */

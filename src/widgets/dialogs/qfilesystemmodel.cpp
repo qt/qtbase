@@ -726,6 +726,9 @@ QVariant QFileSystemModel::data(const QModelIndex &index, int role) const
 
     switch (role) {
     case Qt::EditRole:
+        if (index.column() == 0)
+            return d->name(index);
+        Q_FALLTHROUGH();
     case Qt::DisplayRole:
         switch (index.column()) {
         case 0: return d->displayName(index);

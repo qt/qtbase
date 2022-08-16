@@ -71,6 +71,7 @@
 #include <qtcore_tracepoints_p.h>
 
 #include <new>
+#include <mutex>
 
 #include <ctype.h>
 #include <limits.h>
@@ -390,8 +391,14 @@ void QObjectPrivate::ConnectionData::removeConnection(QObjectPrivate::Connection
 
     Q_ASSERT(c != orphaned.loadRelaxed());
     // add c to orphanedConnections
-    c->nextInOrphanList = orphaned.loadRelaxed();
-    orphaned.storeRelaxed(c);
+    Connection *o = nullptr;
+    /* No ABA issue here: When adding a node, we only care about the list head, it doesn't
+     * matter if the tail changes.
+     */
+    do {
+        o = orphaned.loadRelaxed();
+        c->nextInOrphanList = o;
+    } while (!orphaned.testAndSetRelease(o, c));
 
 #ifndef QT_NO_DEBUG
     found = false;
@@ -406,21 +413,32 @@ void QObjectPrivate::ConnectionData::removeConnection(QObjectPrivate::Connection
 
 }
 
-void QObjectPrivate::ConnectionData::cleanOrphanedConnectionsImpl(QObject *sender)
+void QObjectPrivate::ConnectionData::cleanOrphanedConnectionsImpl(QObject *sender, LockPolicy lockPolicy)
 {
+    QBasicMutex *senderMutex = signalSlotLock(sender);
     ConnectionOrSignalVector *c = nullptr;
     {
-        QBasicMutexLocker l(signalSlotLock(sender));
+        std::unique_lock<QBasicMutex> lock(*senderMutex, std::defer_lock_t{});
+        if (lockPolicy == NeedToLock)
+            lock.lock();
         if (ref.loadAcquire() > 1)
             return;
 
         // Since ref == 1, no activate() is in process since we locked the mutex. That implies,
         // that nothing can reference the orphaned connection objects anymore and they can
         // be safely deleted
-        c = orphaned.loadRelaxed();
-        orphaned.storeRelaxed(nullptr);
+        c = orphaned.fetchAndStoreRelaxed(nullptr);
     }
-    deleteOrphaned(c);
+    if (c) {
+        // Deleting c might run arbitrary user code, so we must not hold the lock
+        if (lockPolicy == AlreadyLockedAndTemporarilyReleasingLock) {
+            senderMutex->unlock();
+            deleteOrphaned(c);
+            senderMutex->lock();
+        } else {
+            deleteOrphaned(c);
+        }
+    }
 }
 
 void QObjectPrivate::ConnectionData::deleteOrphaned(QObjectPrivate::ConnectionOrSignalVector *o)
@@ -1022,7 +1040,7 @@ QObject::~QObject()
 
                 QBasicMutex *m = signalSlotLock(c->receiver.loadRelaxed());
                 bool needToUnlock = QOrderedMutexLocker::relock(signalSlotMutex, m);
-                if (c->receiver.loadAcquire()) {
+                if (c == connectionList.first.loadAcquire() && c->receiver.loadAcquire()) {
                     cd->removeConnection(c);
                     Q_ASSERT(connectionList.first.loadRelaxed() != c);
                 }
@@ -1060,14 +1078,29 @@ QObject::~QObject()
             }
 
             senderData->removeConnection(node);
+            /*
+              When we unlock, another thread has the chance to delete/modify sender data.
+              Thus we need to call cleanOrphanedConnections before unlocking. We use the
+              variant of the function which assumes that the lock is already held to avoid
+              a deadlock.
+              We need to hold m, the sender lock. Considering that we might execute arbitrary user
+              code, we should already release the signalSlotMutex here – unless they are the same.
+            */
+            const bool locksAreTheSame = signalSlotMutex == m;
+            if (!locksAreTheSame)
+                locker.unlock();
+            senderData->cleanOrphanedConnections(
+                        sender,
+                        QObjectPrivate::ConnectionData::AlreadyLockedAndTemporarilyReleasingLock
+                        );
             if (needToUnlock)
                 m->unlock();
 
-            if (slotObj) {
+            if (locksAreTheSame) // otherwise already unlocked
                 locker.unlock();
+            if (slotObj)
                 slotObj->destroyIfLastRef();
-                locker.relock();
-            }
+            locker.relock();
         }
 
         // invalidate all connections on the object and make sure
@@ -5106,12 +5139,18 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
         connections = QObjectPrivate::get(c->sender)->connections.loadRelaxed();
         Q_ASSERT(connections);
         connections->removeConnection(c);
+
+        c->sender->disconnectNotify(QMetaObjectPrivate::signal(c->sender->metaObject(), c->signal_index));
+        // We must not hold the receiver mutex, else we risk dead-locking; we also only need the sender mutex
+        // It is however vital to hold the senderMutex before calling cleanOrphanedConnections, as otherwise
+        // another thread might modify/delete the connection
+        if (receiverMutex != senderMutex) {
+            receiverMutex->unlock();
+        }
+        connections->cleanOrphanedConnections(c->sender, QObjectPrivate::ConnectionData::AlreadyLockedAndTemporarilyReleasingLock);
+        senderMutex->unlock();  // now both sender and receiver mutex have been manually unlocked
+        locker.dismiss(); // so we dismiss the QOrderedMutexLocker
     }
-
-    connections->cleanOrphanedConnections(c->sender);
-
-    c->sender->disconnectNotify(QMetaObjectPrivate::signal(c->sender->metaObject(),
-                                                           c->signal_index));
 
     const_cast<QMetaObject::Connection &>(connection).d_ptr = nullptr;
     c->deref(); // has been removed from the QMetaObject::Connection object

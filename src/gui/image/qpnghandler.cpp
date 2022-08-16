@@ -649,10 +649,10 @@ bool QPngHandlerPrivate::readPngHeader()
             }
             if (primaries.areValid()) {
                 colorSpace = QColorSpace(primaries.whitePoint, primaries.redPoint, primaries.greenPoint, primaries.bluePoint,
-                                         QColorSpace::TransferFunction::Gamma, fileGamma);
+                                         QColorSpace::TransferFunction::Gamma, 1.0f / fileGamma);
             } else {
                 colorSpace = QColorSpace(QColorSpace::Primaries::SRgb,
-                                         QColorSpace::TransferFunction::Gamma, fileGamma);
+                                         QColorSpace::TransferFunction::Gamma, 1.0f / fileGamma);
             }
             colorSpaceState = GammaChrm;
         }

@@ -246,6 +246,7 @@
 @implementation QIOSViewController {
     BOOL m_updatingProperties;
     QMetaObject::Connection m_focusWindowChangeConnection;
+    QMetaObject::Connection m_appStateChangedConnection;
 }
 
 #ifndef Q_OS_TVOS
@@ -274,7 +275,7 @@
         });
 
         QIOSApplicationState *applicationState = &QIOSIntegration::instance()->applicationState;
-        QObject::connect(applicationState, &QIOSApplicationState::applicationStateDidChange,
+        m_appStateChangedConnection = QObject::connect(applicationState, &QIOSApplicationState::applicationStateDidChange,
             [self](Qt::ApplicationState oldState, Qt::ApplicationState newState) {
                 if (oldState == Qt::ApplicationSuspended && newState != Qt::ApplicationSuspended) {
                     // We may have ignored an earlier layout because the application was suspended,
@@ -294,6 +295,7 @@
 - (void)dealloc
 {
     QObject::disconnect(m_focusWindowChangeConnection);
+    QObject::disconnect(m_appStateChangedConnection);
     [super dealloc];
 }
 

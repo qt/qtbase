@@ -64,11 +64,18 @@ QT_BEGIN_NAMESPACE
 template <typename T, size_t Prealloc = 32>
 class QDuplicateTracker {
 #ifdef __cpp_lib_memory_resource
-    char buffer[Prealloc * sizeof(T)];
+    struct node_guesstimate { void *next; size_t hash; T value; };
+    static constexpr size_t bufferSize(size_t N) {
+        return N * sizeof(void*) // bucket list
+                + N * sizeof(node_guesstimate); // nodes
+    }
+
+    char buffer[bufferSize(Prealloc)];
     std::pmr::monotonic_buffer_resource res{buffer, sizeof buffer};
-    std::pmr::unordered_set<T> set{&res};
+    std::pmr::unordered_set<T> set{Prealloc, &res};
 #else
-    QSet<T> set;
+    static QSet<T> makeQSet() { QSet<T> r; r.reserve(Prealloc); return r; }
+    QSet<T> set = makeQSet();
     int setSize = 0;
 #endif
     Q_DISABLE_COPY_MOVE(QDuplicateTracker);

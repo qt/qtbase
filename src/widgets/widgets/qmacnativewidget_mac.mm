@@ -47,6 +47,7 @@
 
 /*!
     \class QMacNativeWidget
+    \obsolete Use QWidget::winId() instead.
     \since 4.5
     \brief The QMacNativeWidget class provides a widget for \macos that provides
     a way to put Qt widgets into Cocoa hierarchies.

@@ -750,7 +750,7 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
         QColorVector whitePoint;
         if (!parseXyzData(data, tagIndex[Tag::wtpt], whitePoint))
             return false;
-        if (!qFuzzyCompare(whitePoint.y, 1.0f) || (1.0f + whitePoint.z - whitePoint.x) == 0.0f) {
+        if (!qFuzzyCompare(whitePoint.y, 1.0f) || (1.0f + whitePoint.z + whitePoint.x) == 0.0f) {
             qCWarning(lcIcc) << "fromIccProfile: Invalid ICC profile - gray white-point not normalized";
             return false;
         }

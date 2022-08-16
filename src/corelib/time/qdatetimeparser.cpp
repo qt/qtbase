@@ -1385,21 +1385,34 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
 
     // If hour wasn't specified, check the default we're using exists on the
     // given date (which might be a spring-forward, skipping an hour).
-    if (parserType == QMetaType::QDateTime && !(isSet & HourSectionMask) && !when.isValid()) {
-        qint64 msecs = when.toMSecsSinceEpoch();
-        // Fortunately, that gets a useful answer, even though when is invalid ...
-        const QDateTime replace =
+    if (!(isSet & HourSectionMask) && !when.isValid()) {
+        switch (parserType) {
+        case QMetaType::QDateTime: {
+            qint64 msecs = when.toMSecsSinceEpoch();
+            // Fortunately, that gets a useful answer, even though when is invalid ...
+            const QDateTime replace =
 #if QT_CONFIG(timezone)
-            tspec == Qt::TimeZone
-            ? QDateTime::fromMSecsSinceEpoch(msecs, timeZone) :
+                tspec == Qt::TimeZone ? QDateTime::fromMSecsSinceEpoch(msecs, timeZone) :
 #endif
-            QDateTime::fromMSecsSinceEpoch(msecs, tspec, zoneOffset);
-        const QTime tick = replace.time();
-        if (replace.date() == date
-            && (!(isSet & MinuteSection) || tick.minute() == minute)
-            && (!(isSet & SecondSection) || tick.second() == second)
-            && (!(isSet & MSecSection)   || tick.msec() == msec)) {
-            return StateNode(replace, state, padding, conflicts);
+                QDateTime::fromMSecsSinceEpoch(msecs, tspec, zoneOffset);
+            const QTime tick = replace.time();
+            if (replace.date() == date
+                && (!(isSet & MinuteSection) || tick.minute() == minute)
+                && (!(isSet & SecondSection) || tick.second() == second)
+                && (!(isSet & MSecSection)   || tick.msec() == msec)) {
+                return StateNode(replace, state, padding, conflicts);
+            }
+        } break;
+        case QMetaType::QDate:
+            // Don't care about time, so just use start of day (and ignore spec):
+            return StateNode(date.startOfDay(Qt::UTC), state, padding, conflicts);
+            break;
+        case QMetaType::QTime:
+            // Don't care about date or spec, so pick a safe spec:
+            return StateNode(QDateTime(date, time, Qt::UTC), state, padding, conflicts);
+        default:
+            Q_UNREACHABLE();
+            return StateNode();
         }
     }
 

@@ -385,6 +385,7 @@ public:
     Qt::KeyboardModifiers pressedModifiers;
     QPoint pressedPosition;
     bool pressedAlreadySelected;
+    bool releaseFromDoubleClick;
 
     //forces the next mouseMoveEvent to send the viewportEntered signal
     //if the mouse is over the viewport and not over an item

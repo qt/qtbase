@@ -45,6 +45,7 @@
 #include "qcocoacursor.h"
 
 #include <qpa/qplatformintegration.h>
+#include <QtCore/private/qcore_mac_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -96,8 +97,8 @@ private:
     static void updateScreens();
     static void cleanupScreens();
 
-    static bool updateScreensIfNeeded();
-    static NSArray *s_screenConfigurationBeforeUpdate;
+    static QMacNotificationObserver s_screenParameterObserver;
+    static CGDisplayReconfigurationCallBack s_displayReconfigurationCallBack;
 
     static void add(CGDirectDisplayID displayId);
     QCocoaScreen(CGDirectDisplayID displayId);

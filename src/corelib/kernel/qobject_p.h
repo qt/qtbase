@@ -268,7 +268,10 @@ public:
 
         ~ConnectionData()
         {
-            deleteOrphaned(orphaned.loadRelaxed());
+            Q_ASSERT(ref.loadRelaxed() == 0);
+            auto *c = orphaned.fetchAndStoreRelaxed(nullptr);
+            if (c)
+                deleteOrphaned(c);
             SignalVector *v = signalVector.loadRelaxed();
             if (v)
                 free(v);
@@ -277,12 +280,19 @@ public:
         // must be called on the senders connection data
         // assumes the senders and receivers lock are held
         void removeConnection(Connection *c);
-        void cleanOrphanedConnections(QObject *sender)
+        enum LockPolicy {
+            NeedToLock,
+            // Beware that we need to temporarily release the lock
+            // and thus calling code must carefully consider whether
+            // invariants still hold.
+            AlreadyLockedAndTemporarilyReleasingLock
+        };
+        void cleanOrphanedConnections(QObject *sender, LockPolicy lockPolicy = NeedToLock)
         {
             if (orphaned.loadRelaxed() && ref.loadAcquire() == 1)
-                cleanOrphanedConnectionsImpl(sender);
+                cleanOrphanedConnectionsImpl(sender, lockPolicy);
         }
-        void cleanOrphanedConnectionsImpl(QObject *sender);
+        void cleanOrphanedConnectionsImpl(QObject *sender, LockPolicy lockPolicy);
 
         ConnectionList &connectionsForSignal(int signal)
         {
@@ -307,8 +317,14 @@ public:
 
             signalVector.storeRelaxed(newVector);
             if (vector) {
-                vector->nextInOrphanList = orphaned.loadRelaxed();
-                orphaned.storeRelaxed(ConnectionOrSignalVector::fromSignalVector(vector));
+                Connection *o = nullptr;
+                /* No ABA issue here: When adding a node, we only care about the list head, it doesn't
+                 * matter if the tail changes.
+                 */
+                do {
+                    o = orphaned.loadRelaxed();
+                    vector->nextInOrphanList = o;
+                } while (!orphaned.testAndSetRelease(o, ConnectionOrSignalVector::fromSignalVector(vector)));
             }
         }
         int signalVectorCount() const {

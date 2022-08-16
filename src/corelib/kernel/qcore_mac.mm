@@ -386,8 +386,8 @@ bool qt_apple_isSandboxed()
 {
     static bool isSandboxed = []() {
         QCFType<SecStaticCodeRef> staticCode = nullptr;
-        NSURL *bundleUrl = [[NSBundle mainBundle] bundleURL];
-        if (SecStaticCodeCreateWithPath((__bridge CFURLRef)bundleUrl,
+        NSURL *executableUrl = NSBundle.mainBundle.executableURL;
+        if (SecStaticCodeCreateWithPath((__bridge CFURLRef)executableUrl,
             kSecCSDefaultFlags, &staticCode) != errSecSuccess)
             return false;
 

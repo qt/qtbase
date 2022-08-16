@@ -95,6 +95,11 @@ public:
 
     bool shouldHideWithText() const;
     void setHideWithText(bool hide);
+    bool needsSpace() const {
+        if (m_fadingOut)
+            return false;
+        return isVisibleTo(parentWidget());
+    }
 #endif
 
 protected:
@@ -118,7 +123,7 @@ private:
 
 #if QT_CONFIG(animation)
     bool m_hideWithText = false;
-    bool m_wasHidden = false;
+    bool m_fadingOut = false;
 #endif
 
 };

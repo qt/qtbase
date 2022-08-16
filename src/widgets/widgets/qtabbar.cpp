@@ -407,10 +407,12 @@ void QTabBarPrivate::init()
 {
     Q_Q(QTabBar);
     leftB = new QToolButton(q);
+    leftB->setObjectName(QStringLiteral("ScrollLeftButton"));
     leftB->setAutoRepeat(true);
     QObject::connect(leftB, SIGNAL(clicked()), q, SLOT(_q_scrollTabs()));
     leftB->hide();
     rightB = new QToolButton(q);
+    rightB->setObjectName(QStringLiteral("ScrollRightButton"));
     rightB->setAutoRepeat(true);
     QObject::connect(rightB, SIGNAL(clicked()), q, SLOT(_q_scrollTabs()));
     rightB->hide();
@@ -831,21 +833,24 @@ void QTabBarPrivate::_q_scrollTabs()
     Q_Q(QTabBar);
     const QObject *sender = q->sender();
     const bool horizontal = !verticalTabs(shape);
-    const QRect scrollRect = normalizedScrollRect();
+    const QRect scrollRect = normalizedScrollRect().translated(scrollOffset, 0);
+
     int i = -1;
 
     if (sender == leftB) {
         for (i = tabList.count() - 1; i >= 0; --i) {
             int start = horizontal ? tabList.at(i).rect.left() : tabList.at(i).rect.top();
-            if (start < scrollRect.left() + scrollOffset) {
+            if (start < scrollRect.left()) {
                 makeVisible(i);
                 return;
             }
         }
     } else if (sender == rightB) {
         for (i = 0; i < tabList.count(); ++i) {
-            int end = horizontal ? tabList.at(i).rect.right() : tabList.at(i).rect.bottom();
-            if (end > scrollRect.right() + scrollOffset) {
+            const auto tabRect = tabList.at(i).rect;
+            int start = horizontal ? tabRect.left() : tabRect.top();
+            int end = horizontal ? tabRect.right() : tabRect.bottom();
+            if (end > scrollRect.right() && start > scrollOffset) {
                 makeVisible(i);
                 return;
             }

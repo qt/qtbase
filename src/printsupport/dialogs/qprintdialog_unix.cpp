@@ -1184,6 +1184,8 @@ void QUnixPrintWidgetPrivate::updateWidget()
             widget.printers->insertSeparator(widget.printers->count());
         widget.printers->addItem(QPrintDialog::tr("Print to File (PDF)"));
         filePrintersAdded = true;
+        if (widget.printers->count() == 1)
+            _q_printerChanged(0);
     }
     if (!printToFile && filePrintersAdded) {
         widget.printers->removeItem(widget.printers->count()-1);

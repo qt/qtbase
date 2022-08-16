@@ -91,7 +91,6 @@ public:
     ThreadEngineBase();
     virtual ~ThreadEngineBase();
     void startSingleThreaded();
-    void startBlocking();
     void startThread();
     bool isCanceled();
     void waitForResume();
@@ -141,15 +140,6 @@ public:
     T *startSingleThreaded()
     {
         ThreadEngineBase::startSingleThreaded();
-        return result();
-    }
-
-    // Runs the user algorithm using multiple threads.
-    // This function blocks until the algorithm is finished,
-    // and then returns the result.
-    T *startBlocking()
-    {
-        ThreadEngineBase::startBlocking();
         return result();
     }
 
@@ -233,13 +223,6 @@ class ThreadEngineStarter : public ThreadEngineStarterBase<T>
 public:
     ThreadEngineStarter(TypedThreadEngine *eng)
         : Base(eng) { }
-
-    T startBlocking()
-    {
-        T t = *this->threadEngine->startBlocking();
-        delete this->threadEngine;
-        return t;
-    }
 };
 
 // Full template specialization where T is void.
@@ -249,12 +232,6 @@ class ThreadEngineStarter<void> : public ThreadEngineStarterBase<void>
 public:
     ThreadEngineStarter(ThreadEngine<void> *_threadEngine)
         : ThreadEngineStarterBase<void>(_threadEngine) {}
-
-    void startBlocking()
-    {
-        this->threadEngine->startBlocking();
-        delete this->threadEngine;
-    }
 };
 
 //! [qtconcurrentthreadengine-1]

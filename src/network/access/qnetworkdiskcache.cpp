@@ -271,14 +271,12 @@ void QNetworkDiskCachePrivate::storeItem(QCacheItem *cacheItem)
     Q_ASSERT(!fileName.isEmpty());
 
     if (QFile::exists(fileName)) {
-        if (!QFile::remove(fileName)) {
+        if (!removeFile(fileName)) {
             qWarning() << "QNetworkDiskCache: couldn't remove the cache file " << fileName;
             return;
         }
     }
 
-    if (currentCacheSize > 0)
-        currentCacheSize += 1024 + cacheItem->size();
     currentCacheSize = q->expire();
     if (!cacheItem->file) {
         QString templateName = tmpCacheFileName();

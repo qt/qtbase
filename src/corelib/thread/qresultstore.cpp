@@ -185,6 +185,7 @@ int ResultStoreBase::addResult(int index, const void *result)
 int ResultStoreBase::addResults(int index, const void *results, int vectorSize, int totalCount)
 {
     if (m_filterMode == false || vectorSize == totalCount) {
+        Q_ASSERT(vectorSize != 0);
         ResultItem resultItem(results, vectorSize);
         return insertResultItem(index, resultItem);
     } else {

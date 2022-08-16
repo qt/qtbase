@@ -50,6 +50,7 @@
 #include <qvariant.h>
 
 #include <algorithm>
+#include <array>
 
 QT_BEGIN_NAMESPACE
 
@@ -1056,15 +1057,23 @@ bool qt_read_xpm_image_or_array(QIODevice *device, const char * const * source, 
     return read_xpm_body(device, source, index, state, cpp, ncols, w, h, image);
 }
 
-static const char* xpm_color_name(int cpp, int index)
+namespace {
+template <size_t N>
+struct CharBuffer : std::array<char, N>
 {
-    static char returnable[5];
+    CharBuffer() {} // avoid value-initializing the whole array
+};
+}
+
+static const char* xpm_color_name(int cpp, int index, CharBuffer<5> && returnable = {})
+{
     static const char code[] = ".#abcdefghijklmnopqrstuvwxyzABCD"
                                "EFGHIJKLMNOPQRSTUVWXYZ0123456789";
     // cpp is limited to 4 and index is limited to 64^cpp
     if (cpp > 1) {
         if (cpp > 2) {
             if (cpp > 3) {
+                returnable[4] = '\0';
                 returnable[3] = code[index % 64];
                 index /= 64;
             } else
@@ -1084,7 +1093,7 @@ static const char* xpm_color_name(int cpp, int index)
         returnable[1] = '\0';
     returnable[0] = code[index];
 
-    return returnable;
+    return returnable.data();
 }
 
 
@@ -1121,8 +1130,11 @@ static bool write_xpm_image(const QImage &sourceImage, QIODevice *device, const 
         ++cpp;
         // limit to 4 characters per pixel
         // 64^4 colors is enough for a 4096x4096 image
-         if (cpp > 4)
-            break;
+         if (cpp > 4) {
+             qWarning("Qt does not support writing XPM images with more than "
+                      "64^4 colors (requested: %d colors).", ncolors);
+             return false;
+         }
     }
 
     // write header
@@ -1150,16 +1162,7 @@ static bool write_xpm_image(const QImage &sourceImage, QIODevice *device, const 
         const QRgb *yp = reinterpret_cast<const QRgb *>(image.constScanLine(y));
         for(x=0; x<w; x++) {
             int color = (int)(*(yp + x));
-            const QByteArray chars(xpm_color_name(cpp, colorMap[color]));
-            line.append(chars[0]);
-            if (cpp > 1) {
-                line.append(chars[1]);
-                if (cpp > 2) {
-                    line.append(chars[2]);
-                    if (cpp > 3)
-                        line.append(chars[3]);
-                }
-            }
+            line.append(xpm_color_name(cpp, colorMap[color]));
         }
         s << ',' << Qt::endl << '\"' << line << '\"';
     }

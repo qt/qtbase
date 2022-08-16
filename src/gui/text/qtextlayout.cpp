@@ -1173,10 +1173,17 @@ void QTextLayout::draw(QPainter *p, const QPointF &pos, const QVector<FormatRang
                 QRectF fullLineRect(tl.rect());
                 fullLineRect.translate(position);
                 fullLineRect.setRight(QFIXED_MAX);
-                if (!selectionEndInLine)
-                    region.addRect(clipIfValid(QRectF(lineRect.topRight(), fullLineRect.bottomRight()), clip));
-                if (!selectionStartInLine)
-                    region.addRect(clipIfValid(QRectF(fullLineRect.topLeft(), lineRect.bottomLeft()), clip));
+
+                const bool rightToLeft = d->isRightToLeft();
+
+                if (!selectionEndInLine) {
+                    region.addRect(clipIfValid(rightToLeft ? QRectF(fullLineRect.topLeft(), lineRect.bottomLeft())
+                                                           : QRectF(lineRect.topRight(), fullLineRect.bottomRight()), clip));
+                }
+                if (!selectionStartInLine) {
+                    region.addRect(clipIfValid(rightToLeft ? QRectF(lineRect.topRight(), fullLineRect.bottomRight())
+                                                           : QRectF(fullLineRect.topLeft(), lineRect.bottomLeft()), clip));
+                }
             } else if (!selectionEndInLine
                 && isLastLineInBlock
                 &&!(d->option.flags() & QTextOption::ShowLineAndParagraphSeparators)) {
@@ -1980,7 +1987,8 @@ void QTextLine::layout_helper(int maxGlyphs)
 
                 if (lbh.currentPosition >= eng->layoutData->string.length()
                     || isBreakableSpace
-                    || attributes[lbh.currentPosition].lineBreak) {
+                    || attributes[lbh.currentPosition].lineBreak
+                    || lbh.tmpData.textWidth >= QFIXED_MAX) {
                     sb_or_ws = true;
                     break;
                 } else if (attributes[lbh.currentPosition].graphemeBoundary) {

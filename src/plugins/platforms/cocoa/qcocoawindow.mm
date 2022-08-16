@@ -522,7 +522,12 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
     NSUInteger styleMask = (frameless || !resizable) ? NSWindowStyleMaskBorderless : NSWindowStyleMaskResizable;
 
     if (frameless) {
-        // No further customizations for frameless since there are no window decorations.
+        // Frameless windows do not display the traffic lights buttons for
+        // e.g. minimize, however StyleMaskMiniaturizable is required to allow
+        // programatic minimize. However, for framless tool windows (e.g. dock windows)
+        // we don't want that, as it breaks translucency.
+        if (type != Qt::Tool)
+            styleMask |= NSWindowStyleMaskMiniaturizable;
     } else if (flags & Qt::CustomizeWindowHint) {
         if (flags & Qt::WindowTitleHint)
             styleMask |= NSWindowStyleMaskTitled;
@@ -1265,11 +1270,15 @@ void QCocoaWindow::windowDidChangeScreen()
         return;
 
     // Note: When a window is resized to 0x0 Cocoa will report the window's screen as nil
-    auto *currentScreen = QCocoaScreen::get(m_view.window.screen);
-    auto *previousScreen = static_cast<QCocoaScreen*>(screen());
+    NSScreen *nsScreen = m_view.window.screen;
 
-    Q_ASSERT_X(!m_view.window.screen || currentScreen,
-        "QCocoaWindow", "Failed to get QCocoaScreen for NSScreen");
+    qCDebug(lcQpaWindow) << window() << "did change" << nsScreen;
+    QCocoaScreen::updateScreens();
+
+    auto *previousScreen = static_cast<QCocoaScreen*>(screen());
+    auto *currentScreen = QCocoaScreen::get(nsScreen);
+
+    qCDebug(lcQpaWindow) << "Screen changed for" << window() << "from" << previousScreen << "to" << currentScreen;
 
     // Note: The previous screen may be the same as the current screen, either because
     // a) the screen was just reconfigured, which still results in AppKit sending an
@@ -1282,7 +1291,6 @@ void QCocoaWindow::windowDidChangeScreen()
     // device-pixel ratio may have changed, and needs to be delivered to all
     // windows, both top level and child windows.
 
-    qCDebug(lcQpaWindow) << "Screen changed for" << window() << "from" << previousScreen << "to" << currentScreen;
     QWindowSystemInterface::handleWindowScreenChanged<QWindowSystemInterface::SynchronousDelivery>(
         window(), currentScreen ? currentScreen->screen() : nullptr);
 
@@ -1307,10 +1315,19 @@ void QCocoaWindow::windowWillClose()
 bool QCocoaWindow::windowShouldClose()
 {
     qCDebug(lcQpaWindow) << "QCocoaWindow::windowShouldClose" << window();
+
     // This callback should technically only determine if the window
     // should (be allowed to) close, but since our QPA API to determine
     // that also involves actually closing the window we do both at the
     // same time, instead of doing the latter in windowWillClose.
+
+    // If the window is closed, we will release and deallocate the NSWindow.
+    // But frames higher up in the stack might still expect the window to
+    // be alive, since the windowShouldClose: callback is technically only
+    // supposed to answer YES or NO. To ensure the window is still alive
+    // we put an autorelease in the closest pool (typically the runloop).
+    [[m_view.window retain] autorelease];
+
     return QWindowSystemInterface::handleCloseEvent<QWindowSystemInterface::SynchronousDelivery>(window());
 }
 

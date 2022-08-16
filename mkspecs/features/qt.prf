@@ -215,13 +215,32 @@ for(ever) {
                 # Linking frameworks by absolute path does not work.
                 LIBS$$var_sfx += -framework $$framework
             } else {
-                lib = $$MODULE_MODULE$$qtPlatformTargetSuffix()
+                candidates = $$MODULE_MODULE$$qtPlatformTargetSuffix()
+                darwin: candidates *= $$MODULE_MODULE
                 win32|contains(MODULE_CONFIG, staticlib) {
-                    lib = $$MODULE_LIBS/$$QMAKE_PREFIX_STATICLIB$${lib}.$$QMAKE_EXTENSION_STATICLIB
-                    PRE_TARGETDEPS += $$lib
+                    lib_prefix = $$MODULE_LIBS/$$QMAKE_PREFIX_STATICLIB
+                    lib_suffix = $$QMAKE_EXTENSION_STATICLIB
+                    add_lib_to_pretargetdeps = true
                 } else {
-                    lib = $$MODULE_LIBS/$$QMAKE_PREFIX_SHLIB$${lib}.$$QMAKE_EXTENSION_SHLIB
+                    lib_prefix = $$MODULE_LIBS/$$QMAKE_PREFIX_SHLIB
+                    lib_suffix = $$QMAKE_EXTENSION_SHLIB
+                    add_lib_to_pretargetdeps = false
                 }
+                lib_missing = true
+                lib_fallback =
+                for(lib_base, candidates) {
+                    lib = $${lib_prefix}$${lib_base}.$${lib_suffix}
+                    isEmpty(lib_fallback): \
+                        lib_fallback = $$lib
+                    exists($$lib) {
+                        lib_missing = false
+                        break()
+                    }
+                }
+                $$lib_missing: \
+                    lib = $$lib_fallback
+                $$add_lib_to_pretargetdeps: \
+                    PRE_TARGETDEPS += $$lib
                 LIBS$$var_sfx += $$lib
             }
         }

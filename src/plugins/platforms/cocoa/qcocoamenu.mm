@@ -290,31 +290,26 @@ void QCocoaMenu::syncSeparatorsCollapsible(bool enable)
     QMacAutoReleasePool pool;
     if (enable) {
         bool previousIsSeparator = true; // setting to true kills all the separators placed at the top.
-        NSMenuItem *previousItem = nil;
+        NSMenuItem *lastVisibleItem = nil;
 
         for (NSMenuItem *item in m_nativeMenu.itemArray) {
             if (item.separatorItem) {
                 // hide item if previous was a separator, or if it's explicitly hidden
-                bool itemVisible = !previousIsSeparator;
-                if (auto *cocoaItem = qt_objc_cast<QCocoaNSMenuItem *>(item).platformMenuItem) {
-                    cocoaItem->setVisible(!previousIsSeparator && cocoaItem->isVisible());
-                    itemVisible = cocoaItem->isVisible();
-                }
-                item.hidden = !itemVisible;
+                bool hideItem = previousIsSeparator;
+                if (auto *cocoaItem = qt_objc_cast<QCocoaNSMenuItem *>(item).platformMenuItem)
+                    hideItem = previousIsSeparator || !cocoaItem->isVisible();
+                item.hidden = hideItem;
             }
 
             if (!item.hidden) {
-                previousItem = item;
-                previousIsSeparator = previousItem.separatorItem;
+                lastVisibleItem = item;
+                previousIsSeparator = lastVisibleItem.separatorItem;
             }
         }
 
         // We now need to check the final item since we don't want any separators at the end of the list.
-        if (previousItem && previousIsSeparator) {
-            if (auto *cocoaItem = qt_objc_cast<QCocoaNSMenuItem *>(previousItem).platformMenuItem)
-                cocoaItem->setVisible(false);
-            previousItem.hidden = YES;
-        }
+        if (lastVisibleItem && lastVisibleItem.separatorItem)
+            lastVisibleItem.hidden = YES;
     } else {
         for (auto *item : qAsConst(m_menuItems)) {
             if (!item->isSeparator())

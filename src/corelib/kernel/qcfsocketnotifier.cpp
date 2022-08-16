@@ -48,7 +48,7 @@ QT_BEGIN_NAMESPACE
     Socket Notifiers
  *************************************************************************/
 void qt_mac_socket_callback(CFSocketRef s, CFSocketCallBackType callbackType, CFDataRef,
-                            const void *, void *info)
+                            const void *data, void *info)
 {
 
     QCFSocketNotifier *cfSocketNotifier = static_cast<QCFSocketNotifier *>(info);
@@ -61,7 +61,15 @@ void qt_mac_socket_callback(CFSocketRef s, CFSocketCallBackType callbackType, CF
     // notification after we've successfully disabled the CFSocket, but our Qt
     // notifier is now gone. The upshot is we have to check the notifier
     // every time.
-    if (callbackType == kCFSocketReadCallBack) {
+    if (callbackType == kCFSocketConnectCallBack) {
+        // The data pointer will be non-null on connection error
+        if (data) {
+            if (socketInfo->readNotifier)
+                QCoreApplication::sendEvent(socketInfo->readNotifier, &notifierEvent);
+            if (socketInfo->writeNotifier)
+                QCoreApplication::sendEvent(socketInfo->writeNotifier, &notifierEvent);
+        }
+    } else if (callbackType == kCFSocketReadCallBack) {
         if (socketInfo->readNotifier && socketInfo->readEnabled) {
             socketInfo->readEnabled = false;
             QCoreApplication::sendEvent(socketInfo->readNotifier, &notifierEvent);
@@ -152,7 +160,7 @@ void QCFSocketNotifier::registerSocketNotifier(QSocketNotifier *notifier)
 
         // Create CFSocket, specify that we want both read and write callbacks (the callbacks
         // are enabled/disabled later on).
-        const int callbackTypes = kCFSocketReadCallBack | kCFSocketWriteCallBack;
+        const int callbackTypes = kCFSocketConnectCallBack | kCFSocketReadCallBack | kCFSocketWriteCallBack;
         CFSocketContext context = {0, this, 0, 0, 0};
         socketInfo->socket = CFSocketCreateWithNative(kCFAllocatorDefault, nativeSocket, callbackTypes, qt_mac_socket_callback, &context);
         if (CFSocketIsValid(socketInfo->socket) == false) {

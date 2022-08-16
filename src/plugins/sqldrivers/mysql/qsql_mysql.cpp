@@ -158,6 +158,20 @@ static inline QVariant qDateTimeFromString(QString &val)
 #endif
 }
 
+// check if this client and server version of MySQL/MariaDB support prepared statements
+static inline bool checkPreparedQueries(MYSQL *mysql)
+{
+    std::unique_ptr<MYSQL_STMT, decltype(&mysql_stmt_close)> stmt(mysql_stmt_init(mysql), &mysql_stmt_close);
+    if (!stmt)
+        return false;
+
+    static const char dummyQuery[] = "SELECT ? + ?";
+    if (mysql_stmt_prepare(stmt.get(), dummyQuery, sizeof(dummyQuery) - 1))
+        return false;
+
+    return mysql_stmt_param_count(stmt.get()) == 2;
+}
+
 class QMYSQLResultPrivate;
 
 class QMYSQLResult : public QSqlResult
@@ -1371,8 +1385,7 @@ bool QMYSQLDriver::open(const QString& db,
     }
 #endif  // MYSQL_VERSION_ID >= 50007
 
-    d->preparedQuerysEnabled = mysql_get_client_version() >= 40108
-                        && mysql_get_server_version(d->mysql) >= 40100;
+    d->preparedQuerysEnabled = checkPreparedQueries(d->mysql);
 
 #if QT_CONFIG(thread)
     mysql_thread_init();

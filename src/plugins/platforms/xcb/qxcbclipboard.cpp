@@ -835,6 +835,8 @@ QByteArray QXcbClipboard::clipboardReadIncrementalProperty(xcb_window_t win, xcb
         alloc_error = buf.size() != nbytes+1;
     }
 
+    QElapsedTimer timer;
+    timer.start();
     for (;;) {
         connection()->flush();
         xcb_generic_event_t *ge = waitForClipboardEvent(win, XCB_PROPERTY_NOTIFY);
@@ -870,9 +872,11 @@ QByteArray QXcbClipboard::clipboardReadIncrementalProperty(xcb_window_t win, xcb
                 tmp_buf.resize(0);
                 offset += length;
             }
-        } else {
-            break;
         }
+
+        const auto elapsed = timer.elapsed();
+        if (elapsed > clipboard_timeout)
+            break;
     }
 
     // timed out ... create a new requestor window, otherwise the requestor

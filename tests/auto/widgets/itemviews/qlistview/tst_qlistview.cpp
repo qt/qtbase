@@ -169,6 +169,8 @@ private slots:
     void itemAlignment();
     void internalDragDropMove_data();
     void internalDragDropMove();
+    void scrollOnRemove_data();
+    void scrollOnRemove();
 };
 
 // Testing get/set functions
@@ -2550,6 +2552,7 @@ void tst_QListView::internalDragDropMove_data()
                                      | Qt::ItemIsEditable
                                      | Qt::ItemIsDragEnabled;
 
+    const QStringList unchanged = QStringList{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
     const QStringList reordered = QStringList{"0", "2", "3", "4", "5", "6", "7", "8", "9", "1"};
     const QStringList replaced = QStringList{"0", "2", "3", "4", "1", "6", "7", "8", "9"};
 
@@ -2564,7 +2567,8 @@ void tst_QListView::internalDragDropMove_data()
                 << Qt::MoveAction
                 << defaultFlags
                 << modelMoves
-                << reordered;
+                // listview in IconMode doesn't change the model
+                << ((viewMode == QListView::IconMode && !modelMoves) ? unchanged : reordered);
 
             QTest::newRow((rowName + ", only move").constData())
                 << viewMode
@@ -2573,7 +2577,8 @@ void tst_QListView::internalDragDropMove_data()
                 << Qt::MoveAction
                 << defaultFlags
                 << modelMoves
-                << reordered;
+                // listview in IconMode doesn't change the model
+                << ((viewMode == QListView::IconMode && !modelMoves) ? unchanged : reordered);
 
             QTest::newRow((rowName + ", replace item").constData())
                 << viewMode
@@ -2716,6 +2721,73 @@ void tst_QListView::internalDragDropMove()
         const QStringList actualSelected = getSelectedTexts();
         QTRY_COMPARE(actualSelected, expectedSelected);
     }
+}
+
+
+void tst_QListView::scrollOnRemove_data()
+{
+    QTest::addColumn<QListView::ViewMode>("viewMode");
+    QTest::addColumn<QAbstractItemView::SelectionMode>("selectionMode");
+
+    const QMetaObject &mo = QListView::staticMetaObject;
+    const auto viewModeEnum = mo.enumerator(mo.indexOfEnumerator("ViewMode"));
+    const auto selectionModeEnum = mo.enumerator(mo.indexOfEnumerator("SelectionMode"));
+    for (auto viewMode : { QListView::ListMode, QListView::IconMode }) {
+        const char *viewModeName = viewModeEnum.valueToKey(viewMode);
+        for (int index = 0; index < selectionModeEnum.keyCount(); ++index) {
+            const auto selectionMode = QAbstractItemView::SelectionMode(selectionModeEnum.value(index));
+            const char *selectionModeName = selectionModeEnum.valueToKey(selectionMode);
+            QTest::addRow("%s, %s", viewModeName, selectionModeName) << viewMode << selectionMode;
+        }
+    }
+}
+
+void tst_QListView::scrollOnRemove()
+{
+    QFETCH(QListView::ViewMode, viewMode);
+    QFETCH(QAbstractItemView::SelectionMode, selectionMode);
+
+    QPixmap pixmap;
+    if (viewMode == QListView::IconMode) {
+        pixmap = QPixmap(25, 25);
+        pixmap.fill(Qt::red);
+    }
+
+    QStandardItemModel model;
+    for (int i = 0; i < 50; ++i) {
+        QStandardItem *item = new QStandardItem(QString::number(i));
+        item->setIcon(pixmap);
+        model.appendRow(item);
+    }
+
+    QWidget widget;
+    QListView view(&widget);
+    view.setFixedSize(100, 100);
+    view.setAutoScroll(true);
+    if (viewMode == QListView::IconMode)
+        view.setWrapping(true);
+    view.setModel(&model);
+    view.setSelectionMode(selectionMode);
+    view.setViewMode(viewMode);
+
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+
+    QCOMPARE(view.verticalScrollBar()->value(), 0);
+    const QModelIndex item25 = model.index(25, 0);
+    view.scrollTo(item25);
+    QTRY_VERIFY(view.verticalScrollBar()->value() > 0); // layout and scrolling are delayed
+    const int item25Position = view.verticalScrollBar()->value();
+    // selecting a fully visible item shouldn't scroll
+    view.selectionModel()->setCurrentIndex(item25, QItemSelectionModel::SelectCurrent);
+    QTRY_COMPARE(view.verticalScrollBar()->value(), item25Position);
+
+    // removing the selected item might scroll if another item is selected
+    model.removeRow(25);
+
+    // if nothing is selected now, then the view should not have scrolled
+    if (!view.selectionModel()->selectedIndexes().count())
+        QTRY_COMPARE(view.verticalScrollBar()->value(), item25Position);
 }
 
 

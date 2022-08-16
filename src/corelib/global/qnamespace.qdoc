@@ -117,7 +117,9 @@
     \value AA_DontShowShortcutsInContextMenus Actions with the Shortcut property
            won't be shown in any shortcut menus unless specifically set by the
            QAction::shortcutVisibleInContextMenu property. This value was added
-           in Qt 5.10.
+           in Qt 5.10, and defaults to the preference reported by the implementation
+           of QPlatformIntegration::styleHint. To override the platform integration,
+           set this attribute after QCoreApplication has been instantiated.
 
     \value AA_NativeWindows Ensures that widgets have native windows.
 
@@ -2912,6 +2914,11 @@
            the search reaches the last item in the model, it begins again at
            the first item and continues until all items have been examined.
     \value MatchRecursive          Searches the entire hierarchy.
+
+    \note Qt::MatchExactly, Qt::MatchContains, Qt::MatchStartsWith,
+          Qt::MatchEndsWith, Qt::MatchRegularExpression, Qt::MatchWildcard, and
+          Qt::MatchFixedString are mutually exclusive. The behavior achieved by
+          setting several of them in a Qt::MatchFlags argument is undefined.
 
     \sa QString::compare(), QRegExp, QRegularExpression
 */

@@ -18,7 +18,11 @@ LIBS           = -L../plugins
 macx-xcode {
     LIBS += -lpnp_basictools$($${QMAKE_XCODE_LIBRARY_SUFFIX_SETTING})
 } else {
-    LIBS += -lpnp_basictools
+    android {
+        LIBS += -lpnp_basictools_$${QT_ARCH}
+    } else {
+        LIBS += -lpnp_basictools
+    }
     if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {
         mac:LIBS = $$member(LIBS, 0) $$member(LIBS, 1)_debug
         win32:LIBS = $$member(LIBS, 0) $$member(LIBS, 1)d

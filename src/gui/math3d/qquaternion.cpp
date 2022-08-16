@@ -534,7 +534,11 @@ void QQuaternion::getEulerAngles(float *pitch, float *yaw, float *roll) const
         zw /= lengthSquared;
     }
 
-    *pitch = std::asin(-2.0f * (yz - xw));
+    const float sinp = -2.0f * (yz - xw);
+    if (std::abs(sinp) >= 1.0f)
+        *pitch = std::copysign(M_PI_2, sinp);
+    else
+        *pitch = std::asin(sinp);
     if (*pitch < M_PI_2) {
         if (*pitch > -M_PI_2) {
             *yaw = std::atan2(2.0f * (xz + yw), 1.0f - 2.0f * (xx + yy));

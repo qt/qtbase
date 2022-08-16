@@ -126,7 +126,8 @@ public:
 
 void tst_QtConcurrentIterateKernel::instantiate()
 {
-    startThreadEngine(new PrintFor(0, 40)).startBlocking();
+    auto future = startThreadEngine(new PrintFor(0, 40)).startAsynchronously();
+    future.waitForFinished();
     QCOMPARE(iterations.loadRelaxed(), 40);
 }
 
@@ -165,8 +166,10 @@ void tst_QtConcurrentIterateKernel::stresstest()
     const int times = 50;
     for (int i = 0; i < times; ++i) {
         counter.storeRelaxed(0);
-        CountFor f(0, iterations);
-        f.startBlocking();
+        // ThreadEngine will delete f when it finishes
+        auto f = new CountFor(0, iterations);
+        auto future = f->startAsynchronously();
+        future.waitForFinished();
         QCOMPARE(counter.loadRelaxed(), iterations);
     }
 }
@@ -174,8 +177,11 @@ void tst_QtConcurrentIterateKernel::stresstest()
 void tst_QtConcurrentIterateKernel::noIterations()
 {
     const int times = 20000;
-    for (int i = 0; i < times; ++i)
-        startThreadEngine(new IterateKernel<TestIterator, void>(0, 0)).startBlocking();
+    for (int i = 0; i < times; ++i) {
+        auto future = startThreadEngine(new IterateKernel<TestIterator, void>(0, 0))
+                              .startAsynchronously();
+        future.waitForFinished();
+    }
 }
 
 QMutex threadsMutex;
@@ -230,8 +236,10 @@ void tst_QtConcurrentIterateKernel::throttling()
 
     threads.clear();
 
-    ThrottleFor f(0, totalIterations);
-    f.startBlocking();
+    // ThreadEngine will delete f when it finishes
+    auto f = new ThrottleFor(0, totalIterations);
+    auto future = f->startAsynchronously();
+    future.waitForFinished();
 
     QCOMPARE(iterations.loadRelaxed(), totalIterations);
 

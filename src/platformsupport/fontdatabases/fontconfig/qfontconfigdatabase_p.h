@@ -61,6 +61,7 @@ class QFontEngineFT;
 class QFontconfigDatabase : public QFreeTypeFontDatabase
 {
 public:
+    ~QFontconfigDatabase() override;
     void populateFontDatabase() override;
     void invalidate() override;
     QFontEngineMulti *fontEngineMulti(QFontEngine *fontEngine, QChar::Script script) override;

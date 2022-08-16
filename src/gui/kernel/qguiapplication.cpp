@@ -1316,7 +1316,10 @@ static void init_platform(const QString &pluginNamesWithArguments, const QString
     }
 #endif
 
-    fontSmoothingGamma = QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::FontSmoothingGamma).toReal();
+    const auto platformIntegration = QGuiApplicationPrivate::platformIntegration();
+    fontSmoothingGamma = platformIntegration->styleHint(QPlatformIntegration::FontSmoothingGamma).toReal();
+    QCoreApplication::setAttribute(Qt::AA_DontShowShortcutsInContextMenus,
+        !platformIntegration->styleHint(QPlatformIntegration::ShowShortcutsInContextMenus).toBool());
 }
 
 static void init_plugins(const QList<QByteArray> &pluginList)
@@ -2156,7 +2159,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
             processMouseEvent(e); // the original mouse event
             return;
         }
-        if (mouseMove && !positionChanged) {
+        if (type == QEvent::MouseMove && !positionChanged) {
             // On Windows, and possibly other platforms, a touchpad can send a mouse move
             // that does not change position, between a press and a release. This may
             // confuse applications, so we always filter out these mouse events for

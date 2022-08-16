@@ -47,8 +47,12 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QApplication>
+#include <QMath>
+#include <QPainter>
+#include <QVBoxLayout>
+#include <QWidget>
 
-#include <QtGui>
 #include <cmath>
 
 class SimpleTransformation : public QWidget
@@ -103,18 +107,15 @@ class BasicOperations : public QWidget
 //! [2]
 void BasicOperations::paintEvent(QPaintEvent *)
 {
-    double pi = 3.14;
-
-    double a    = pi/180 * 45.0;
+    const double a = qDegreesToRadians(45.0);
     double sina = sin(a);
     double cosa = cos(a);
 
-    QTransform translationTransform(1, 0, 0, 1, 50.0, 50.0);
-    QTransform rotationTransform(cosa, sina, -sina, cosa, 0, 0);
-    QTransform scalingTransform(0.5, 0, 0, 1.0, 0, 0);
+    QTransform scale(0.5, 0, 0, 1.0, 0, 0);
+    QTransform rotate(cosa, sina, -sina, cosa, 0, 0);
+    QTransform translate(1, 0, 0, 1, 50.0, 50.0);
 
-    QTransform transform;
-    transform = scalingTransform * rotationTransform * translationTransform;
+    QTransform transform = scale * rotate * translate;
 
     QPainter painter(this);
     painter.setPen(QPen(Qt::blue, 1, Qt::DashLine));

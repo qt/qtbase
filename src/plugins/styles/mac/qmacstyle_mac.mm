@@ -1163,6 +1163,8 @@ static QStyleHelper::WidgetSizePolicy qt_aqua_guess_size(const QWidget *widg, QS
 
 void QMacStylePrivate::drawFocusRing(QPainter *p, const QRectF &targetRect, int hMargin, int vMargin, const CocoaControl &cw) const
 {
+    const bool isBigSurOrAbove = QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSBigSur;
+
     QPainterPath focusRingPath;
     focusRingPath.setFillRule(Qt::OddEvenFill);
 
@@ -1212,7 +1214,6 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRectF &targetRect, int 
     }
     case Button_PullDown:
     case Button_PushButton: {
-        const bool isBigSurOrAbove = QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSBigSur;
         QRectF focusRect;
         auto *pb = static_cast<NSButton *>(cocoaControl(cw));
         const QRectF frameRect = cw.adjustedControlFrame(targetRect.adjusted(hMargin, vMargin, -hMargin, -vMargin));
@@ -1243,11 +1244,16 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRectF &targetRect, int 
     }
     case Button_PopupButton:
     case SegmentedControl_Single: {
+        QRectF focusRect = targetRect;
+        if (isBigSurOrAbove)
+            focusRect.translate(0, -1.5);
+        else if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSCatalina)
+            focusRect.adjust(0, 0, 0, -1);
         const qreal innerRadius = 4;
         const qreal outerRadius = innerRadius + focusRingWidth;
-        hOffset = targetRect.left();
-        vOffset = targetRect.top();
-        const auto innerRect = targetRect.translated(-targetRect.topLeft());
+        hOffset = focusRect.left();
+        vOffset = focusRect.top();
+        const auto innerRect = focusRect.translated(-focusRect.topLeft());
         const auto outerRect = innerRect.adjusted(-hMargin, -vMargin, hMargin, vMargin);
         focusRingPath.addRoundedRect(innerRect, innerRadius, innerRadius);
         focusRingPath.addRoundedRect(outerRect, outerRadius, outerRadius);

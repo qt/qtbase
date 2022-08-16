@@ -415,15 +415,15 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &inPen)
             clipRect = xf.inverted().mapRect(QRectF(d->exDeviceRect));
         }
         // Check to avoid generating unwieldy amount of dashes that will not be visible anyway
-        QRectF extentRect = cpRect & clipRect;
+        qreal pw = pen.widthF() ? pen.widthF() : 1;
+        QRectF extentRect = cpRect.adjusted(-pw, -pw, pw, pw) & clipRect;
         qreal extent = qMax(extentRect.width(), extentRect.height());
         qreal patternLength = 0;
         const QVector<qreal> pattern = pen.dashPattern();
         const int patternSize = qMin(pattern.size(), 32);
         for (int i = 0; i < patternSize; i++)
             patternLength += qMax(pattern.at(i), qreal(0));
-        if (pen.widthF())
-            patternLength *= pen.widthF();
+        patternLength *= pw;
         if (qFuzzyIsNull(patternLength)) {
             pen.setStyle(Qt::NoPen);
         } else if (extent / patternLength > 10000) {

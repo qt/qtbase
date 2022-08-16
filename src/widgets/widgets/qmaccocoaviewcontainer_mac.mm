@@ -48,6 +48,7 @@
 
 /*!
     \class QMacCocoaViewContainer
+    \obsolete Use QWidget::createWindowContainer() and QWindow::fromWinId() instead.
     \since 4.5
 
     \brief The QMacCocoaViewContainer class provides a widget for \macos that can be used to wrap arbitrary

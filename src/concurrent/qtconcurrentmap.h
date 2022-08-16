@@ -143,14 +143,16 @@ QFuture<typename QtPrivate::MapResultType<void, MapFunctor>::ResultType> mapped(
 template <typename Sequence, typename MapFunctor>
 void blockingMap(Sequence &sequence, MapFunctor map)
 {
-    startMap(sequence.begin(), sequence.end(), QtPrivate::createFunctionWrapper(map)).startBlocking();
+    QFuture<void> future = startMap(sequence.begin(), sequence.end(), QtPrivate::createFunctionWrapper(map));
+    future.waitForFinished();
 }
 
 // blockingMap() for iterator ranges
 template <typename Iterator, typename MapFunctor>
 void blockingMap(Iterator begin, Iterator end, MapFunctor map)
 {
-    startMap(begin, end, QtPrivate::createFunctionWrapper(map)).startBlocking();
+    QFuture<void> future = startMap(begin, end, QtPrivate::createFunctionWrapper(map));
+    future.waitForFinished();
 }
 
 // blockingMappedReduced() for sequences
@@ -160,12 +162,13 @@ ResultType blockingMappedReduced(const Sequence &sequence,
                                  ReduceFunctor reduce,
                                  ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
 {
-    return QtConcurrent::startMappedReduced<typename QtPrivate::MapResultType<void, MapFunctor>::ResultType, ResultType>
+    QFuture<ResultType> future =
+    QtConcurrent::startMappedReduced<typename QtPrivate::MapResultType<void, MapFunctor>::ResultType, ResultType>
         (sequence,
          QtPrivate::createFunctionWrapper(map),
          QtPrivate::createFunctionWrapper(reduce),
-         options)
-        .startBlocking();
+         options);
+    return future.result();
 }
 
 template <typename MapFunctor, typename ReduceFunctor, typename Sequence>
@@ -174,12 +177,13 @@ typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType blockingMappedRe
                                  ReduceFunctor reduce,
                                  ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
 {
-    return QtConcurrent::startMappedReduced<typename QtPrivate::MapResultType<void, MapFunctor>::ResultType, typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>
+    QFuture<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType> future =
+    QtConcurrent::startMappedReduced<typename QtPrivate::MapResultType<void, MapFunctor>::ResultType, typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>
         (sequence,
          QtPrivate::createFunctionWrapper(map),
          QtPrivate::createFunctionWrapper(reduce),
-         options)
-        .startBlocking();
+         options);
+    return future.result();
 }
 
 // blockingMappedReduced() for iterator ranges
@@ -190,12 +194,13 @@ ResultType blockingMappedReduced(Iterator begin,
                                  ReduceFunctor reduce,
                                  QtConcurrent::ReduceOptions options = QtConcurrent::ReduceOptions(QtConcurrent::UnorderedReduce | QtConcurrent::SequentialReduce))
 {
-    return QtConcurrent::startMappedReduced<typename QtPrivate::MapResultType<void, MapFunctor>::ResultType, ResultType>
+    QFuture<ResultType> future =
+    QtConcurrent::startMappedReduced<typename QtPrivate::MapResultType<void, MapFunctor>::ResultType, ResultType>
         (begin, end,
          QtPrivate::createFunctionWrapper(map),
          QtPrivate::createFunctionWrapper(reduce),
-         options)
-        .startBlocking();
+         options);
+    return future.result();
 }
 
 template <typename Iterator, typename MapFunctor, typename ReduceFunctor>
@@ -205,12 +210,13 @@ typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType blockingMappedRe
                                  ReduceFunctor reduce,
                                  QtConcurrent::ReduceOptions options = QtConcurrent::ReduceOptions(QtConcurrent::UnorderedReduce | QtConcurrent::SequentialReduce))
 {
-    return QtConcurrent::startMappedReduced<typename QtPrivate::MapResultType<void, MapFunctor>::ResultType, typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>
+    QFuture<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType> future =
+    QtConcurrent::startMappedReduced<typename QtPrivate::MapResultType<void, MapFunctor>::ResultType, typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>
         (begin, end,
          QtPrivate::createFunctionWrapper(map),
          QtPrivate::createFunctionWrapper(reduce),
-         options)
-        .startBlocking();
+         options);
+    return future.result();
 }
 
 // mapped() for sequences with a different putput sequence type.

@@ -1296,5 +1296,6 @@ QTextDocumentFragment QTextDocumentFragment::fromHtml(const QString &html, const
     return res;
 }
 
-QT_END_NAMESPACE
 #endif // QT_NO_TEXTHTMLPARSER
+
+QT_END_NAMESPACE

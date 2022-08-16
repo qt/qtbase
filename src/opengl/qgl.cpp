@@ -493,7 +493,8 @@ QSurfaceFormat QGLFormat::toSurfaceFormat(const QGLFormat &format)
         retFormat.setSamples(format.samples() == -1 ? 4 : format.samples());
     if (format.stencil())
         retFormat.setStencilBufferSize(format.stencilBufferSize() == -1 ? 1 : format.stencilBufferSize());
-    retFormat.setSwapInterval(format.swapInterval());
+    if (format.swapInterval() >= 0)
+        retFormat.setSwapInterval(format.swapInterval());
     retFormat.setStereo(format.stereo());
     retFormat.setMajorVersion(format.majorVersion());
     retFormat.setMinorVersion(format.minorVersion());

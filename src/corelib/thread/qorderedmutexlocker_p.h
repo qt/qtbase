@@ -74,6 +74,28 @@ public:
     {
         relock();
     }
+
+    Q_DISABLE_COPY(QOrderedMutexLocker)
+
+    void swap(QOrderedMutexLocker &other) noexcept
+    {
+        qSwap(this->mtx1, other.mtx1);
+        qSwap(this->mtx2, other.mtx2);
+        qSwap(this->locked, other.locked);
+    }
+
+    QOrderedMutexLocker  &operator=(QOrderedMutexLocker &&other) noexcept {
+        QOrderedMutexLocker moved(std::move(other));
+        swap(moved);
+        return *this;
+    }
+
+    QOrderedMutexLocker(QOrderedMutexLocker &&other) noexcept
+        : mtx1(std::exchange(other.mtx1, nullptr))
+        , mtx2(std::exchange(other.mtx2, nullptr))
+        , locked(std::exchange(other.locked, false))
+    {}
+
     ~QOrderedMutexLocker()
     {
         unlock();
@@ -86,6 +108,21 @@ public:
             if (mtx2) mtx2->lock();
             locked = true;
         }
+    }
+
+    /*!
+        \internal
+        Can be called if the mutexes have been unlocked manually, and sets the
+        state of the QOrderedMutexLocker to unlocked.
+        The caller is expected to have unlocked both of them if they
+        are not the same. Calling this method when the QOrderedMutexLocker is
+        unlocked or when the provided mutexes have not actually been unlocked is
+        UB.
+     */
+    void dismiss()
+    {
+        Q_ASSERT(locked);
+        locked = false;
     }
 
     void unlock()
@@ -153,11 +190,15 @@ private:
 class QOrderedMutexLocker
 {
 public:
+    Q_DISABLE_COPY(QOrderedMutexLocker)
     QOrderedMutexLocker(QBasicMutex *, QBasicMutex *) {}
+    QOrderedMutexLocker(QOrderedMutexLocker &&) = default;
+    QOrderedMutexLocker& operator=(QOrderedMutexLocker &&other) = default;
     ~QOrderedMutexLocker() {}
 
     void relock() {}
     void unlock() {}
+    void dismiss() {}
 
     static bool relock(QBasicMutex *, QBasicMutex *) { return false; }
 };

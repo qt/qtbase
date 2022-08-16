@@ -46,3 +46,20 @@ index 583c26f9bd..2ab9b70d73 100644
  #    define PNG_ABORT() ExitProcess(0)
  #  else
  #    define PNG_ABORT() abort()
+diff --git a/src/3rdparty/libpng/pngrutil.c b/src/3rdparty/libpng/pngrutil.c
+index d5fa08c397..4db3de990b 100644
+--- a/src/3rdparty/libpng/pngrutil.c
++++ b/src/3rdparty/libpng/pngrutil.c
+@@ -2087,10 +2087,8 @@ png_handle_eXIf(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
+       }
+    }
+ 
+-   if (png_crc_finish(png_ptr, 0) != 0)
+-      return;
+-
+-   png_set_eXIf_1(png_ptr, info_ptr, length, info_ptr->eXIf_buf);
++   if (png_crc_finish(png_ptr, 0) == 0)
++      png_set_eXIf_1(png_ptr, info_ptr, length, info_ptr->eXIf_buf);
+ 
+    png_free(png_ptr, info_ptr->eXIf_buf);
+    info_ptr->eXIf_buf = NULL;

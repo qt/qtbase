@@ -246,7 +246,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     return iface->text(QAccessible::Name).toNSString();
 }
 
-- (BOOL) accessibilityEnabledAttribute {
+- (BOOL) isAccessibilityEnabled {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
     if (!iface || !iface->isValid())
         return false;

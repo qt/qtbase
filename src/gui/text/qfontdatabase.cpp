@@ -414,6 +414,25 @@ void QtFontFamily::ensurePopulated()
     Q_ASSERT_X(populated, Q_FUNC_INFO, qPrintable(name));
 }
 
+/*!
+    \internal
+
+    Tests if the given family \a family supports writing system \a writingSystem,
+    including the special case for Han script mapping to several subsequent writing systems
+*/
+static bool familySupportsWritingSystem(QtFontFamily *family, size_t writingSystem)
+{
+    Q_ASSERT(family != nullptr);
+    Q_ASSERT(writingSystem != QFontDatabase::Any && writingSystem < QFontDatabase::WritingSystemsCount);
+
+    size_t ws = writingSystem;
+    do {
+        if ((family->writingSystems[ws] & QtFontFamily::Supported) != 0)
+            return true;
+    } while (writingSystem >= QFontDatabase::SimplifiedChinese && writingSystem <= QFontDatabase::Japanese && ++ws <= QFontDatabase::Japanese);
+
+    return false;
+}
 
 struct FallbacksCacheKey {
     QString family;
@@ -828,7 +847,7 @@ QStringList QPlatformFontDatabase::fallbacksForFamily(const QString &family, QFo
 
         f->ensurePopulated();
 
-        if (writingSystem > QFontDatabase::Any && f->writingSystems[writingSystem] != QtFontFamily::Supported)
+        if (writingSystem > QFontDatabase::Any && !familySupportsWritingSystem(f, writingSystem))
             continue;
 
         for (int j = 0; j < f->count; ++j) {
@@ -1273,8 +1292,10 @@ static int match(int script, const QFontDef &request,
         test.family->ensurePopulated();
 
         // Check if family is supported in the script we want
-        if (writingSystem != QFontDatabase::Any && !(test.family->writingSystems[writingSystem] & QtFontFamily::Supported))
+        if (writingSystem != QFontDatabase::Any
+                && !familySupportsWritingSystem(test.family, writingSystem)) {
             continue;
+        }
 
         // as we know the script is supported, we can be sure
         // to find a matching font here.
@@ -2895,10 +2916,8 @@ Q_GUI_EXPORT QStringList qt_sort_families_by_writing_system(QChar::Script script
         }
 
         uint order = i;
-        if (testFamily == nullptr
-              || (testFamily->writingSystems[writingSystem] & QtFontFamily::Supported) == 0) {
+        if (testFamily == nullptr || !familySupportsWritingSystem(testFamily, writingSystem))
             order |= 1u << 31;
-        }
 
         supported.insert(order, family);
     }

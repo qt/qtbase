@@ -980,6 +980,25 @@ void tst_QChar::normalization_manual()
         QVERIFY(decomposed.normalized(QString::NormalizationForm_KD) == decomposed);
         QVERIFY(decomposed.normalized(QString::NormalizationForm_KC) == composed);
     }
+    // QTBUG-71894 - erratum fixed in Unicode 4.1.0; SCount bounds are < not <=
+    {
+        // Hangul compose, test 0x11a7:
+        const QChar c[] = { QChar(0xae30), QChar(0x11a7), {} };
+        const QChar d[] = { QChar(0x1100), QChar(0x1175), QChar(0x11a7), {} };
+        const QString composed(c, 2);
+        const QString decomposed(d, 3);
+
+        QCOMPARE(decomposed.normalized(QString::NormalizationForm_C), composed);
+    }
+    {
+        // Hangul compose, test 0x11c3:
+        const QChar c[] = { QChar(0xae30), QChar(0x11c3), {} };
+        const QChar d[] = { QChar(0x1100), QChar(0x1175), QChar(0x11c3), {} };
+        const QString composed(c, 2);
+        const QString decomposed(d, 3);
+
+        QCOMPARE(decomposed.normalized(QString::NormalizationForm_C), composed);
+    }
 }
 
 void tst_QChar::normalizationCorrections()

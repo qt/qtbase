@@ -536,6 +536,11 @@ static void populateFromPattern(FcPattern *pattern)
 
 }
 
+QFontconfigDatabase::~QFontconfigDatabase()
+{
+    FcConfigDestroy(FcConfigGetCurrent());
+}
+
 void QFontconfigDatabase::populateFontDatabase()
 {
     FcInit();

@@ -94,6 +94,7 @@ private slots:
     void nestedExceptions();
 #endif
     void nonGlobalThreadPool();
+    void resultsReadyAt();
 };
 
 void tst_QFuture::resultStore()
@@ -626,6 +627,26 @@ void tst_QFuture::futureInterface()
 
         VoidResult a;
         a.run().waitForFinished();
+    }
+
+    {
+        QFutureInterface<int> fi;
+        fi.reportStarted();
+        fi.reportResults(QVector<int> {});
+        fi.reportFinished();
+
+        QVERIFY(fi.results().empty());
+    }
+
+    {
+        QFutureInterface<int> fi;
+        fi.reportStarted();
+        QVector<int> values = { 1, 2, 3 };
+        fi.reportResults(values);
+        fi.reportResults(QVector<int> {});
+        fi.reportFinished();
+
+        QCOMPARE(fi.results(), values.toList());
     }
 }
 
@@ -1555,6 +1576,64 @@ void tst_QFuture::nonGlobalThreadPool()
         QVERIFY(future.isFinished());
         QCOMPARE(future.result(), Answer);
     }
+}
+
+void tst_QFuture::resultsReadyAt()
+{
+    QFutureInterface<int> iface;
+    QFutureWatcher<int> watcher;
+    watcher.setFuture(iface.future());
+
+    QTestEventLoop eventProcessor;
+    connect(&watcher, &QFutureWatcher<int>::finished, &eventProcessor, &QTestEventLoop::exitLoop);
+
+    const int nExpectedResults = 4;
+    int reported = 0;
+    int taken = 0;
+    connect(&watcher, &QFutureWatcher<int>::resultsReadyAt,
+            [&iface, &reported, &taken](int begin, int end)
+    {
+        auto future = iface.future();
+        QVERIFY(end - begin > 0);
+        for (int i = begin; i < end; ++i, ++reported) {
+            QVERIFY(future.isResultReadyAt(i));
+            taken |= 1 << i;
+        }
+    });
+
+    auto report = [&iface](int index)
+    {
+        int dummyResult = 0b101010;
+        iface.reportResult(&dummyResult, index);
+    };
+
+    const QSignalSpy readyCounter(&watcher, &QFutureWatcher<int>::resultsReadyAt);
+    QTimer::singleShot(0, [&iface, &report]{
+        // With filter mode == true, the result may go into the pending results.
+        // Reporting it as ready will allow an application to try and access the
+        // result, crashing on invalid (store.end()) iterator dereferenced.
+        iface.setFilterMode(true);
+        iface.reportStarted();
+        report(0);
+        report(1);
+        // This one - should not be reported (it goes into pending):
+        report(3);
+        // Let's close the 'gap' and make them all ready:
+        report(-1);
+        iface.reportFinished();
+    });
+
+    // Run event loop, QCoreApplication::postEvent is in use
+    // in QFutureInterface:
+    eventProcessor.enterLoopMSecs(2000);
+    QVERIFY(!eventProcessor.timeout());
+    if (QTest::currentTestFailed()) // Failed in our lambda observing 'ready at'
+        return;
+
+    QCOMPARE(reported, nExpectedResults);
+    QCOMPARE(nExpectedResults, iface.future().resultCount());
+    QCOMPARE(readyCounter.count(), 3);
+    QCOMPARE(taken, 0b1111);
 }
 
 QTEST_MAIN(tst_QFuture)
