@@ -10,11 +10,13 @@
 # PRE_RUN and POST_RUN arguments may contain extra cmake code that supposed to be executed before
 # and after COMMAND, respectively. Both arguments accept a list of cmake script language
 # constructions. Each item of the list will be concantinated into single string with '\n' separator.
+# COMMAND_ECHO option takes a value like it does for execute_process, and passes that value to
+# execute_process.
 function(_qt_internal_create_command_script)
     #This style of parsing keeps ';' in ENVIRONMENT variables
     cmake_parse_arguments(PARSE_ARGV 0 arg
                           ""
-                          "OUTPUT_FILE;WORKING_DIRECTORY"
+                          "OUTPUT_FILE;WORKING_DIRECTORY;COMMAND_ECHO"
                           "COMMAND;ENVIRONMENT;PRE_RUN;POST_RUN"
     )
 
@@ -77,6 +79,11 @@ is not specified")
         string(JOIN "\n" post_run ${arg_POST_RUN})
     endif()
 
+    set(command_echo "")
+    if(arg_COMMAND_ECHO)
+        set(command_echo "COMMAND_ECHO ${arg_COMMAND_ECHO}")
+    endif()
+
     file(GENERATE OUTPUT "${arg_OUTPUT_FILE}" CONTENT
 "#!${CMAKE_COMMAND} -P
 # Qt generated command wrapper
@@ -85,6 +92,7 @@ ${environment_extras}
 ${pre_run}
 execute_process(COMMAND ${extra_runner} ${arg_COMMAND}
                 WORKING_DIRECTORY \"${arg_WORKING_DIRECTORY}\"
+                ${command_echo}
                 RESULT_VARIABLE result
 )
 ${post_run}
