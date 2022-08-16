@@ -23,6 +23,7 @@ private slots:
     void testHandshakeInterruptedOnError();
     void testPreSharedKeyAuthenticationRequired();
 #endif
+    void plaintextClient();
 
 private:
     QString testDataDir;
@@ -435,6 +436,28 @@ void tst_QSslServer::testPreSharedKeyAuthenticationRequired()
 }
 
 #endif
+
+void tst_QSslServer::plaintextClient()
+{
+    QSslConfiguration serverConfiguration = selfSignedServerQSslConfiguration();
+    SslServerSpy server(serverConfiguration);
+    QVERIFY(server.server.listen());
+
+    QTcpSocket socket;
+    QSignalSpy socketDisconnectedSpy(&socket, &QTcpSocket::disconnected);
+    socket.connectToHost(QHostAddress::LocalHost, server.server.serverPort());
+    QVERIFY(socket.waitForConnected());
+    QTest::qWait(100);
+    // No disconnect from short break...:
+    QCOMPARE(socket.state(), QAbstractSocket::SocketState::ConnectedState);
+
+    // ... but we write some plaintext data...:
+    socket.write("Hello World!");
+    socket.waitForBytesWritten();
+    // ... and quickly get disconnected:
+    QTRY_COMPARE_GT(socketDisconnectedSpy.count(), 0);
+    QCOMPARE(socket.state(), QAbstractSocket::SocketState::UnconnectedState);
+}
 
 QTEST_MAIN(tst_QSslServer)
 

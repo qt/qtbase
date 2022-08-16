@@ -16,8 +16,13 @@
 // We mean it.
 //
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
+
+#include <QtCore/qhash.h>
+
 #include <QtNetwork/QSslConfiguration>
 #include <QtNetwork/private/qtcpserver_p.h>
+#include <utility>
 
 QT_BEGIN_NAMESPACE
 
@@ -27,6 +32,26 @@ public:
     Q_DECLARE_PUBLIC(QSslServer)
 
     QSslServerPrivate();
+    void checkClientHelloAndContinue();
+    void initializeHandshakeProcess(QSslSocket *socket);
+    void removeSocketData(quintptr socket);
+
+    struct SocketData {
+        QMetaObject::Connection readyReadConnection;
+        QMetaObject::Connection destroyedConnection;
+
+        SocketData(QMetaObject::Connection readyRead, QMetaObject::Connection destroyed)
+            : readyReadConnection(readyRead), destroyedConnection(destroyed)
+        {
+        }
+
+        void disconnectSignals()
+        {
+            QObject::disconnect(std::exchange(readyReadConnection, {}));
+            QObject::disconnect(std::exchange(destroyedConnection, {}));
+        }
+    };
+    QHash<quintptr, SocketData> socketData;
 
     QSslConfiguration sslConfiguration;
 };

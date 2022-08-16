@@ -256,6 +256,8 @@ void QSslServer::incomingConnection(qintptr socket)
                         pSslSocket->deleteLater();
                 });
         connect(pSslSocket, &QSslSocket::encrypted, this, [this, pSslSocket]() {
+            Q_D(QSslServer);
+            d->removeSocketData(quintptr(pSslSocket));
             pSslSocket->disconnect(this);
             addPendingConnection(pSslSocket);
         });
@@ -278,10 +280,63 @@ void QSslServer::incomingConnection(qintptr socket)
                     Q_EMIT handshakeInterruptedOnError(pSslSocket, error);
                 });
 
-        Q_EMIT startedEncryptionHandshake(pSslSocket);
-
-        pSslSocket->startServerEncryption();
+        d_func()->initializeHandshakeProcess(pSslSocket);
     }
+}
+
+void QSslServerPrivate::initializeHandshakeProcess(QSslSocket *socket)
+{
+    Q_Q(QSslServer);
+    QMetaObject::Connection readyRead = QObject::connect(
+            socket, &QSslSocket::readyRead, q, [this]() { checkClientHelloAndContinue(); });
+
+    QMetaObject::Connection destroyed =
+            QObject::connect(socket, &QSslSocket::destroyed, q, [this](QObject *obj) {
+                // This cast is not safe to use since the socket is inside the
+                // QObject dtor, but we only use the pointer value!
+                removeSocketData(quintptr(obj));
+            });
+    socketData.emplace(quintptr(socket), readyRead, destroyed);
+}
+
+// This function may be called while in the socket's QObject dtor, __never__ use
+// the socket for anything other than a lookup!
+void QSslServerPrivate::removeSocketData(quintptr socket)
+{
+    auto it = socketData.find(socket);
+    if (it != socketData.end()) {
+        it->disconnectSignals();
+        socketData.erase(it);
+    }
+}
+
+void QSslServerPrivate::checkClientHelloAndContinue()
+{
+    Q_Q(QSslServer);
+    QSslSocket *socket = qobject_cast<QSslSocket *>(q->sender());
+    if (Q_UNLIKELY(!socket) || socket->bytesAvailable() <= 0)
+        return;
+
+    char byte = '\0';
+    if (socket->peek(&byte, 1) != 1) {
+        socket->deleteLater();
+        return;
+    }
+
+    auto it = socketData.find(quintptr(socket));
+    const bool foundData = it != socketData.end();
+    if (foundData && it->readyReadConnection)
+        QObject::disconnect(std::exchange(it->readyReadConnection, {}));
+
+    constexpr char CLIENT_HELLO = 0x16;
+    if (byte != CLIENT_HELLO) {
+        socket->disconnectFromHost();
+        socket->deleteLater();
+        return;
+    }
+
+    socket->startServerEncryption();
+    Q_EMIT q->startedEncryptionHandshake(socket);
 }
 
 QT_END_NAMESPACE
