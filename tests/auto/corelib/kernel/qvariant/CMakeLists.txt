@@ -16,8 +16,6 @@ set(qvariant_resource_files
 qt_internal_add_test(tst_qvariant
     SOURCES
         tst_qvariant.cpp
-    DEFINES
-        QT_DISABLE_DEPRECATED_UP_TO=0
     INCLUDE_DIRECTORIES
         ../../../other/qvariant_common
     LIBRARIES
