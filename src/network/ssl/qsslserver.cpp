@@ -350,6 +350,12 @@ void QSslServerPrivate::removeSocketData(quintptr socket)
     }
 }
 
+int QSslServerPrivate::totalPendingConnections() const
+{
+    // max pending connections is int, so this cannot exceed that
+    return QTcpServerPrivate::totalPendingConnections() + int(socketData.size());
+}
+
 void QSslServerPrivate::checkClientHelloAndContinue()
 {
     Q_Q(QSslServer);

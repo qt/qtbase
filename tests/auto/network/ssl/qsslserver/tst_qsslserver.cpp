@@ -25,6 +25,7 @@ private slots:
 #endif
     void plaintextClient();
     void quietClient();
+    void manyQuietClients();
 
 private:
     QString testDataDir;
@@ -485,6 +486,34 @@ void tst_QSslServer::quietClient()
 
     QCOMPARE_GT(server.errorOccurredSpy.size(), 0);
     QCOMPARE(serverPeerPort, clientLocalPort);
+}
+
+void tst_QSslServer::manyQuietClients()
+{
+    QSslConfiguration serverConfiguration = selfSignedServerQSslConfiguration();
+    SslServerSpy server(serverConfiguration);
+    constexpr qsizetype ExpectedConnections = 5;
+    server.server.setMaxPendingConnections(ExpectedConnections);
+    QVERIFY(server.server.listen());
+
+    // Connect one socket encrypted so we have a socket in the regular queue
+    QSslSocket tlsSocket;
+    QObject::connect(&tlsSocket, &QSslSocket::sslErrors, &tlsSocket,
+                     qOverload<const QList<QSslError> &>(&QSslSocket::ignoreSslErrors));
+    tlsSocket.connectToHostEncrypted("127.0.0.1", server.server.serverPort());
+
+    // Then we connect a bunch of TCP sockets who will not send any data at all
+    std::array<QTcpSocket, size_t(ExpectedConnections) * 4> sockets;
+    for (QTcpSocket &socket : sockets)
+        socket.connectToHost(QHostAddress::LocalHost, server.server.serverPort());
+    QTest::qWait(500); // some leeway to let connections try to connect...
+
+    // I happen to know the sockets are all children of the server, so let's see
+    // how many are created:
+    qsizetype connectedCount = server.server.findChildren<QSslSocket *>().size();
+    QCOMPARE(connectedCount, ExpectedConnections);
+    // 1 socket is ready and pending
+    QCOMPARE(server.pendingConnectionAvailableSpy.size(), 1);
 }
 
 QTEST_MAIN(tst_QSslServer)

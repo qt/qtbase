@@ -172,7 +172,7 @@ void QTcpServerPrivate::readNotification()
 {
     Q_Q(QTcpServer);
     for (;;) {
-        if (pendingConnections.count() >= maxConnections) {
+        if (totalPendingConnections() >= maxConnections) {
 #if defined (QTCPSERVER_DEBUG)
             qDebug("QTcpServerPrivate::_q_processIncomingConnection() too many connections");
 #endif
@@ -203,6 +203,20 @@ void QTcpServerPrivate::readNotification()
         if (!that || !q->isListening())
             return;
     }
+}
+
+/*!
+    \internal
+    Return the amount of sockets currently in queue for the server.
+    This is to make maxPendingConnections work properly with servers that don't
+    necessarily have 'ready-to-go' sockets as soon as they connect,
+    e.g. QSslServer.
+    By default we just return pendingConnections.size(), which is equivalent to
+    what it did before.
+*/
+int QTcpServerPrivate::totalPendingConnections() const
+{
+    return int(pendingConnections.size());
 }
 
 /*!

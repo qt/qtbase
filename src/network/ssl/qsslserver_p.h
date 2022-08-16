@@ -38,6 +38,7 @@ public:
     void initializeHandshakeProcess(QSslSocket *socket);
     void removeSocketData(quintptr socket);
     void handleHandshakeTimedOut(QSslSocket *socket);
+    int totalPendingConnections() const override;
 
     struct SocketData {
         QMetaObject::Connection readyReadConnection;
