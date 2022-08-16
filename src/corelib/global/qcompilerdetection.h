@@ -1121,6 +1121,20 @@
     QT_WARNING_POP
 #endif
 
+// The body must be a statement:
+#define Q_CAST_IGNORE_ALIGN(body) QT_WARNING_PUSH QT_WARNING_DISABLE_GCC("-Wcast-align") body QT_WARNING_POP
+
+// This macro can be used to calculate member offsets for types with a non standard layout.
+// It uses the fact that offsetof() is allowed to support those types since C++17 as an optional
+// feature. All our compilers do support this, but some issue a warning, so we wrap the offsetof()
+// call in a macro that disables the compiler warning.
+#define Q_OFFSETOF(Class, member) \
+    []() -> size_t { \
+        QT_WARNING_PUSH QT_WARNING_DISABLE_INVALID_OFFSETOF \
+        return offsetof(Class, member); \
+        QT_WARNING_POP \
+    }()
+
 /*
    Proper for-scoping in MIPSpro CC
 */
