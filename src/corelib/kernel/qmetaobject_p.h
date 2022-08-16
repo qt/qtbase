@@ -132,6 +132,36 @@ Q_DECLARE_TYPEINFO(QArgumentType, Q_RELOCATABLE_TYPE);
 typedef QVarLengthArray<QArgumentType, 10> QArgumentTypeArray;
 
 namespace { class QMetaMethodPrivate; }
+class QMetaMethodInvoker : public QMetaMethod
+{
+    QMetaMethodInvoker() = delete;
+
+public:
+    enum class InvokeFailReason : int {
+        // negative values mean a match was found but the invocation failed
+        // (and a warning has been printed)
+        ReturnTypeMismatch = -1,
+        DeadLockDetected = -2,
+        CallViaVirtualFailed = -3,  // no warning
+        ConstructorCallOnObject = -4,
+        ConstructorCallWithoutResult = -5,
+        ConstructorCallFailed = -6, // no warning
+
+        CouldNotQueueParameter = -0x1000,
+
+        // zero is success
+        None = 0,
+
+        // positive values mean the parameters did not match
+        TooFewArguments,
+        FormalParameterMismatch = 0x1000,
+    };
+
+    // shadows the public function
+    static InvokeFailReason Q_CORE_EXPORT
+    invokeImpl(QMetaMethod self, void *target, Qt::ConnectionType, qsizetype paramCount,
+               const void *const *parameters, const char *const *typeNames);
+};
 
 struct QMetaObjectPrivate
 {

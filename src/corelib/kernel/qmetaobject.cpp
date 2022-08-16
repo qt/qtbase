@@ -166,7 +166,7 @@ static inline int typeFromTypeInfo(const QMetaObject *mo, uint typeInfo)
 }
 
 namespace {
-class QMetaMethodPrivate : public QMetaMethod
+class QMetaMethodPrivate : public QMetaMethodInvoker
 {
 public:
     static const QMetaMethodPrivate *get(const QMetaMethod *q)
@@ -190,31 +190,6 @@ public:
     inline QByteArray tag() const;
     inline int ownMethodIndex() const;
     inline int ownConstructorMethodIndex() const;
-
-    // shadows the public function
-    enum class InvokeFailReason : int {
-        // negative values mean a match was found but the invocation failed
-        // (and a warning has been printed)
-        ReturnTypeMismatch = -1,
-        DeadLockDetected = -2,
-        CallViaVirtualFailed = -3,  // no warning
-        ConstructorCallOnObject = -4,
-        ConstructorCallWithoutResult = -5,
-        ConstructorCallFailed = -6, // no warning
-
-        CouldNotQueueParameter = -0x1000,
-
-        // zero is success
-        None = 0,
-
-        // positive values mean the parameters did not match
-        TooFewArguments,
-        FormalParameterMismatch = 0x1000,
-    };
-
-    static InvokeFailReason
-    invokeImpl(QMetaMethod self, void *target, Qt::ConnectionType, qsizetype paramCount,
-               const void *const *parameters, const char *const *typeNames);
 
 private:
     QMetaMethodPrivate();
@@ -2411,7 +2386,7 @@ bool QMetaMethod::invoke(QObject *object,
     return false;
 }
 
-auto QMetaMethodPrivate::invokeImpl(QMetaMethod self, void *target,
+auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
                                     Qt::ConnectionType connectionType,
                                     qsizetype paramCount, const void *const *parameters,
                                     const char *const *typeNames) -> InvokeFailReason
