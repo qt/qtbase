@@ -444,7 +444,7 @@ inline void QObjectPrivate::checkForIncompatibleLibraryVersion(int version) cons
 
 inline bool QObjectPrivate::isDeclarativeSignalConnected(uint signal_index) const
 {
-    return declarativeData && QAbstractDeclarativeData::isSignalConnected
+    return !isDeletingChildren && declarativeData && QAbstractDeclarativeData::isSignalConnected
             && QAbstractDeclarativeData::isSignalConnected(declarativeData, q_func(), signal_index);
 }
 

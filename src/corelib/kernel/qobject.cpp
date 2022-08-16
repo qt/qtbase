@@ -1010,7 +1010,7 @@ QObject::~QObject()
         emit destroyed(this);
     }
 
-    if (d->declarativeData) {
+    if (!d->isDeletingChildren && d->declarativeData) {
         if (static_cast<QAbstractDeclarativeDataImpl*>(d->declarativeData)->ownedByQml1) {
             if (QAbstractDeclarativeData::destroyed_qml1)
                 QAbstractDeclarativeData::destroyed_qml1(d->declarativeData, this);
@@ -2622,7 +2622,7 @@ int QObject::receivers(const char *signal) const
         if (!d->isSignalConnected(signal_index))
             return receivers;
 
-        if (d->declarativeData && QAbstractDeclarativeData::receivers) {
+        if (!d->isDeletingChildren && d->declarativeData && QAbstractDeclarativeData::receivers) {
             receivers += QAbstractDeclarativeData::receivers(d->declarativeData, this,
                                                              signal_index);
         }
