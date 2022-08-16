@@ -22,11 +22,6 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include <exception> // For std::terminate
-#ifndef QT_NO_EXCEPTIONS
-#include <new> // For std::bad_alloc
-#endif
-
 #include <errno.h>
 #if defined(Q_CC_MSVC)
 #  include <crtdbg.h>
@@ -2639,16 +2634,6 @@ QByteArray QSysInfo::bootUniqueId()
 
     If this macro is used outside a function, the behavior is undefined.
 */
-
-/*
-   \internal
-   Allows you to call std::terminate() without including <exception>.
-   Called internally from QT_TERMINATE_ON_EXCEPTION
-*/
-Q_NORETURN void qTerminate() noexcept
-{
-    std::terminate();
-}
 
 /*
     Dijkstra's bisection algorithm to find the square root of an integer.
