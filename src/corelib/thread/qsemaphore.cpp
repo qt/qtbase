@@ -161,7 +161,7 @@ futexSemaphoreTryAcquire_loop(QBasicAtomicInteger<quintptr> &u, quintptr curValu
             if constexpr (futexHasWaiterCount) {
                 Q_ASSERT(n > 1);
                 ptr = futexHigh32(&u);
-                curValue >>= 32;
+                curValue = quint64(curValue) >> 32;
             }
         }
 
@@ -213,7 +213,8 @@ template <bool IsTimed> bool futexSemaphoreTryAcquire(QBasicAtomicInteger<quintp
     if constexpr (futexHasWaiterCount) {
         // We don't use the fetched value from above so futexWait() fails if
         // it changed after the testAndSetOrdered above.
-        if (((curValue >> 32) & 0x7fffffffU) == 0x7fffffffU) {
+        quint32 waiterCount = (quint64(curValue) >> 32) & 0x7fffffffU;
+        if (waiterCount == 0x7fffffffU) {
             qCritical() << "Waiter count overflow in QSemaphore";
             return false;
         }
