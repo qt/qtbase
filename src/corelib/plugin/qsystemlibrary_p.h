@@ -28,15 +28,11 @@ public:
     explicit QSystemLibrary(const QString &libraryName)
     {
         m_libraryName = libraryName;
-        m_handle = nullptr;
-        m_didLoad = false;
     }
 
     explicit QSystemLibrary(const wchar_t *libraryName)
     {
         m_libraryName = QString::fromWCharArray(libraryName);
-        m_handle = nullptr;
-        m_didLoad = false;
     }
 
     bool load(bool onlySystemDirectory = true)
@@ -66,10 +62,11 @@ public:
     }
 
     static Q_CORE_EXPORT HINSTANCE load(const wchar_t *lpFileName, bool onlySystemDirectory = true);
+
 private:
-    HINSTANCE m_handle;
-    QString m_libraryName;
-    bool m_didLoad;
+    HINSTANCE m_handle = nullptr;
+    QString m_libraryName = {};
+    bool m_didLoad = false;
 };
 
 QT_END_NAMESPACE
