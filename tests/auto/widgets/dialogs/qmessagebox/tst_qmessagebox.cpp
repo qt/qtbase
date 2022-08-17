@@ -416,6 +416,8 @@ QT_WARNING_DISABLE_DEPRECATED
     QCOMPARE(ret, int(QMessageBox::Yes));
     QVERIFY(closeHelper.done());
 
+#if QT_DEPRECATED_SINCE(6, 2)
+    // The overloads below are valid only before 6.2
     closeHelper.start(Qt::Key_Enter);
     ret = QMessageBox::information(nullptr, "title", "text", QMessageBox::Yes, QMessageBox::No | QMessageBox::Default);
     QCOMPARE(ret, int(QMessageBox::No));
@@ -448,22 +450,21 @@ QT_WARNING_DISABLE_DEPRECATED
         QCOMPARE(ret, 1);
         QVERIFY(closeHelper.done());
     }
+#endif // QT_DEPRECATED_SINCE(6, 2)
 QT_WARNING_POP
 }
 
 void tst_QMessageBox::instanceSourceCompat()
 {
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-     QMessageBox mb("Application name here",
-                    "Saving the file will overwrite the original file on the disk.\n"
-                    "Do you really want to save?",
-                    QMessageBox::Information,
-                    QMessageBox::Yes | QMessageBox::Default,
-                    QMessageBox::No,
-                    QMessageBox::Cancel | QMessageBox::Escape);
-    mb.setButtonText(QMessageBox::Yes, "Save");
-    mb.setButtonText(QMessageBox::No, "Discard");
+    QMessageBox mb(QMessageBox::Information,
+                   "Application name here",
+                   "Saving the file will overwrite the original file on the disk.\n"
+                   "Do you really want to save?",
+                   QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+    mb.setDefaultButton(QMessageBox::Yes);
+    mb.setEscapeButton(QMessageBox::Cancel);
+    mb.button(QMessageBox::Yes)->setText("Save");
+    mb.button(QMessageBox::No)->setText("Discard");
     mb.addButton("&Revert", QMessageBox::RejectRole);
     mb.addButton("&Zoo", QMessageBox::ActionRole);
 
@@ -479,7 +480,6 @@ QT_WARNING_DISABLE_DEPRECATED
     closeHelper.start(QKeyCombination(Qt::ALT | Qt::Key_Z).toCombined(), &mb);
     QCOMPARE(mb.exec(), 1);
 #endif
-QT_WARNING_POP
 }
 
 void tst_QMessageBox::detailsText()
@@ -557,6 +557,7 @@ void tst_QMessageBox::incorrectDefaultButton()
     QMessageBox::question(nullptr, "", "I've been hit!",QFlag(QMessageBox::Ok | QMessageBox::Cancel),QMessageBox::Save);
     QVERIFY(closeHelper.done());
 
+#if QT_DEPRECATED_SINCE(6, 2)
     closeHelper.start(Qt::Key_Escape);
     QTest::ignoreMessage(QtWarningMsg, "QDialogButtonBox::createButton: Invalid ButtonRole, button not added");
     QTest::ignoreMessage(QtWarningMsg, "QDialogButtonBox::createButton: Invalid ButtonRole, button not added");
@@ -566,6 +567,7 @@ QT_WARNING_DISABLE_DEPRECATED
     QMessageBox::question(nullptr, "", "I've been hit!",QMessageBox::Ok | QMessageBox::Cancel,QMessageBox::Save | QMessageBox::Cancel,QMessageBox::Ok);
 QT_WARNING_POP
     QVERIFY(closeHelper.done());
+#endif
 }
 
 void tst_QMessageBox::updateSize()
