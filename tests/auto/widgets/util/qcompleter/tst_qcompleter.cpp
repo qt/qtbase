@@ -151,6 +151,16 @@ tst_QCompleter::~tst_QCompleter()
     delete completer;
 }
 
+#ifdef Q_OS_ANDROID
+static QString androidHomePath()
+{
+    const auto homePaths = QStandardPaths::standardLocations(QStandardPaths::HomeLocation);
+    QDir dir = homePaths.isEmpty() ? QDir() : homePaths.first();
+    dir.cdUp();
+    return dir.path();
+}
+#endif
+
 void tst_QCompleter::setSourceModel(ModelType type)
 {
     QTreeWidgetItem *parent, *child;
@@ -203,7 +213,13 @@ void tst_QCompleter::setSourceModel(ModelType type)
         completer->setCsvCompletion(false);
         {
             auto m = new QFileSystemModel(completer);
+#ifdef Q_OS_ANDROID
+            // Android 11 and above doesn't allow accessing root filesystem as before,
+            // so let's opt int for the app's home.
+            m->setRootPath(androidHomePath());
+#else
             m->setRootPath("/");
+#endif
             completer->setModel(m);
         }
         completer->setCompletionColumn(0);
@@ -590,7 +606,9 @@ void tst_QCompleter::fileSystemModel_data()
 //        QTest::newRow("(/d)") << "/d" << "" << "Developer" << "/Developer";
 #elif defined(Q_OS_ANDROID)
         QTest::newRow("()") << "" << "" << "/" << "/";
-        QTest::newRow("(/et)") << "/et" << "" << "etc" << "/etc";
+        const QString androidDir = androidHomePath();
+        const QString tag = QStringLiteral("%1/fil").arg(androidDir);
+        QTest::newRow(tag.toUtf8().data()) << tag << "" << "files" << androidDir + "/files";
 #else
         QTest::newRow("()") << "" << "" << "/" << "/";
 #if !defined(Q_OS_AIX) && !defined(Q_OS_HPUX) && !defined(Q_OS_QNX)
