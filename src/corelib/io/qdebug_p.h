@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 
 namespace QtDebugUtils {
 
-Q_CORE_EXPORT QByteArray toPrintable(const char *data, int len, int maxSize);
+Q_CORE_EXPORT QByteArray toPrintable(const char *data, qint64 len, qsizetype maxSize);
 
 // inline helpers for formatting basic classes.
 
