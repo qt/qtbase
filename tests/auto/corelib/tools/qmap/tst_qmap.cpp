@@ -60,6 +60,13 @@ private slots:
     void eraseValidIteratorOnSharedMap();
     void removeElementsInMap();
     void toStdMap();
+
+    // Tests for deprecated APIs.
+#if QT_DEPRECATED_SINCE(6, 0)
+    void deprecatedInsertMulti();
+    void deprecatedIteratorApis();
+    void deprecatedInsert();
+#endif // QT_DEPRECATED_SINCE(6, 0)
 };
 
 struct IdentityTracker {
@@ -867,7 +874,7 @@ void tst_QMap::constFind()
 
     for (i = 3; i < 10; ++i) {
         compareString = testString.arg(i);
-        map.insertMulti(4, compareString);
+        map.insert(4, compareString);
     }
 
     QMultiMap<int, QString>::const_iterator it = map.constFind(4);
@@ -973,7 +980,7 @@ void tst_QMap::lowerUpperBound()
 
     map.insert(3, "three");
     map.insert(7, "seven");
-    map.insertMulti(7, "seven_2");
+    map.insert(7, "seven_2");
 
     QCOMPARE(map.upperBound(0).key(), 1);
     QCOMPARE(map.upperBound(1).key(), 3);
@@ -1104,29 +1111,6 @@ void tst_QMap::iterators()
             QVERIFY(stlIt.value() == testString.arg(i));
     QCOMPARE(i, 100);
 
-    // Same but exercising deprecated APIs
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    stlIt = map.begin();
-    QCOMPARE(stlIt.value(), QLatin1String("Teststring 1"));
-
-    stlIt += 5;
-    QCOMPARE(stlIt.value(), QLatin1String("Teststring 6"));
-
-    stlIt++;
-    QCOMPARE(stlIt.value(), QLatin1String("Teststring 7"));
-
-    stlIt = stlIt - 3;
-    QCOMPARE(stlIt.value(), QLatin1String("Teststring 4"));
-
-    stlIt--;
-    QCOMPARE(stlIt.value(), QLatin1String("Teststring 3"));
-
-    for(stlIt = map.begin(), i = 1; stlIt != map.end(); ++stlIt, ++i)
-            QVERIFY(stlIt.value() == testString.arg(i));
-    QCOMPARE(i, 100);
-QT_WARNING_POP
-
     //STL-Style const-iterators
 
     QMap<int, QString>::const_iterator cstlIt = map.constBegin();
@@ -1147,29 +1131,6 @@ QT_WARNING_POP
     for(cstlIt = map.constBegin(), i = 1; cstlIt != map.constEnd(); ++cstlIt, ++i)
             QVERIFY(cstlIt.value() == testString.arg(i));
     QCOMPARE(i, 100);
-
-    // Same but exercising deprecated APIs
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    cstlIt = map.constBegin();
-    QCOMPARE(cstlIt.value(), QLatin1String("Teststring 1"));
-
-    cstlIt += 5;
-    QCOMPARE(cstlIt.value(), QLatin1String("Teststring 6"));
-
-    cstlIt++;
-    QCOMPARE(cstlIt.value(), QLatin1String("Teststring 7"));
-
-    cstlIt = cstlIt - 3;
-    QCOMPARE(cstlIt.value(), QLatin1String("Teststring 4"));
-
-    cstlIt--;
-    QCOMPARE(cstlIt.value(), QLatin1String("Teststring 3"));
-
-    for(cstlIt = map.constBegin(), i = 1; cstlIt != map.constEnd(); ++cstlIt, ++i)
-            QVERIFY(cstlIt.value() == testString.arg(i));
-    QCOMPARE(i, 100);
-QT_WARNING_POP
 
     //Java-Style iterators
 
@@ -1823,7 +1784,7 @@ void tst_QMap::equal_range()
     QCOMPARE(cresult.first, cmap.find(2));
     QCOMPARE(cresult.second, cmap.find(4));
 
-    map.insertMulti(1, "another one");
+    map.insert(1, "another one");
 
     result = map.equal_range(1);
     QCOMPARE(result.first, map.find(1));
@@ -1919,7 +1880,10 @@ void testDetachWhenInsert()
         dest.insert(3, 3);
         Map<int, int> destCopy = dest;
 
-        dest.insert(source);
+        if constexpr (std::is_same_v<decltype(dest), QMap<int, int>>)
+            dest.insert(source); // QMap
+        else
+            dest.unite(source); // QMultiMap
 
         QCOMPARE(source, referenceSource);
         QCOMPARE(dest, referenceDestination);
@@ -1939,7 +1903,10 @@ void testDetachWhenInsert()
         dest.insert(3, 3);
         Map<int, int> destCopy = dest;
 
-        dest.insert(source);
+        if constexpr (std::is_same_v<decltype(dest), QMap<int, int>>)
+            dest.insert(source); // QMap
+        else
+            dest.unite(source); // QMultiMap
 
         QCOMPARE(source, referenceSource);
         QCOMPARE(sourceCopy, referenceSource);
@@ -1959,7 +1926,10 @@ void testDetachWhenInsert()
         dest.insert(3, 3);
         Map<int, int> destCopy = dest;
 
-        dest.insert(source);
+        if constexpr (std::is_same_v<decltype(dest), QMap<int, int>>)
+            dest.insert(source); // QMap
+        else
+            dest.unite(source); // QMultiMap
 
         QCOMPARE(dest, referenceDestination);
         QCOMPARE(destCopy.count(), 1); // unchanged
@@ -1977,7 +1947,10 @@ void testDetachWhenInsert()
         dest.insert(3, 3);
         Map<int, int> destCopy = dest;
 
-        dest.insert(std::move(source));
+        if constexpr (std::is_same_v<decltype(dest), QMap<int, int>>)
+            dest.insert(std::move(source)); // QMap
+        else
+            dest.unite(std::move(source)); // QMultiMap
 
         QCOMPARE(sourceCopy, referenceSource);
 
@@ -2249,48 +2222,48 @@ void tst_QMap::testInsertMultiWithHint()
 {
     QMultiMap<int, int> map;
 
-    map.insertMulti(map.end(), 64, 65);
+    map.insert(map.end(), 64, 65);
     map.insert(128, 129);
     map.insert(256, 257);
     sanityCheckTree(map, __LINE__);
 
-    map.insertMulti(map.end(), 512, 513);
-    map.insertMulti(map.end(), 512, 513 * 2);
+    map.insert(map.end(), 512, 513);
+    map.insert(map.end(), 512, 513 * 2);
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 5);
-    map.insertMulti(map.end(), 256, 258); // wrong hint
+    map.insert(map.end(), 256, 258); // wrong hint
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 6);
 
-    QMultiMap<int, int>::iterator i = map.insertMulti(map.constBegin(), 256, 259); // wrong hint
+    QMultiMap<int, int>::iterator i = map.insert(map.constBegin(), 256, 259); // wrong hint
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 7);
 
-    QMultiMap<int, int>::iterator j = map.insertMulti(map.constBegin(), 69, 66);
+    QMultiMap<int, int>::iterator j = map.insert(map.constBegin(), 69, 66);
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 8);
 
-    j = map.insertMulti(j, 68, 259);
+    j = map.insert(j, 68, 259);
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 9);
 
-    j = map.insertMulti(j, 67, 67);
+    j = map.insert(j, 67, 67);
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 10);
 
-    i = map.insertMulti(i, 256, 259);
+    i = map.insert(i, 256, 259);
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 11);
 
-    i = map.insertMulti(i, 256, 260);
+    i = map.insert(i, 256, 260);
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 12);
 
-    map.insertMulti(i, 64, 67);
+    map.insert(i, 64, 67);
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 13);
 
-    map.insertMulti(map.constBegin(), 20, 20);
+    map.insert(map.constBegin(), 20, 20);
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 14);
 }
@@ -2299,9 +2272,9 @@ void tst_QMap::eraseValidIteratorOnSharedMap()
 {
     QMultiMap<int, int> a, b;
     a.insert(10, 10);
-    a.insertMulti(10, 40);
-    a.insertMulti(10, 25);
-    a.insertMulti(10, 30);
+    a.insert(10, 40);
+    a.insert(10, 25);
+    a.insert(10, 30);
     a.insert(20, 20);
 
     QMultiMap<int, int>::iterator i = a.begin();
@@ -2326,8 +2299,8 @@ void tst_QMap::eraseValidIteratorOnSharedMap()
     // Border cases
     QMultiMap <QString, QString> ms1, ms2, ms3;
     ms1.insert("foo", "bar");
-    ms1.insertMulti("foo", "quux");
-    ms1.insertMulti("foo", "bar");
+    ms1.insert("foo", "quux");
+    ms1.insert("foo", "bar");
 
     QMultiMap <QString, QString>::iterator si = ms1.begin();
     ms2 = ms1;
@@ -2575,6 +2548,73 @@ void tst_QMap::toStdMap()
         {1, "value0"}, {1, "value1"}, {2, "value2"}, {3, "value3"} };
     toStdMapTestMethod<QMultiMap<int, QString>>(expectedMultiMap);
 }
+
+#if QT_DEPRECATED_SINCE(6, 0)
+void tst_QMap::deprecatedInsertMulti()
+{
+    QMultiMap<int, QString> referenceMap;
+    referenceMap.insert(1, "value1");
+    referenceMap.insert(2, "value2");
+    referenceMap.insert(3, "value3");
+    referenceMap.insert(1, "value1_2");
+    referenceMap.insert(referenceMap.find(2), 2, "value2_2");
+    referenceMap.insert(referenceMap.end(), 1, "value1_3");
+
+    QMultiMap<int, QString> deprecatedMap;
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
+    deprecatedMap.insertMulti(1, "value1");
+    deprecatedMap.insertMulti(2, "value2");
+    deprecatedMap.insertMulti(3, "value3");
+    deprecatedMap.insertMulti(1, "value1_2");
+    deprecatedMap.insertMulti(deprecatedMap.find(2), 2, "value2_2");
+    deprecatedMap.insertMulti(deprecatedMap.end(), 1, "value1_3");
+QT_WARNING_POP
+
+    QCOMPARE(deprecatedMap, referenceMap);
+}
+
+void tst_QMap::deprecatedIteratorApis()
+{
+    QMap<int, QString> map;
+    QString testString = "Teststring %1";
+    for (int i = 1; i < 100; ++i)
+        map.insert(i, testString.arg(i));
+
+    auto it = map.begin();
+    QCOMPARE(it.value(), QLatin1String("Teststring 1"));
+    QT_IGNORE_DEPRECATIONS(it += 5;)
+    QCOMPARE(it.value(), QLatin1String("Teststring 6"));
+    QT_IGNORE_DEPRECATIONS(it = it - 3;)
+    QCOMPARE(it.value(), QLatin1String("Teststring 3"));
+
+    auto cit = map.constBegin();
+    QCOMPARE(cit.value(), QLatin1String("Teststring 1"));
+    QT_IGNORE_DEPRECATIONS(cit += 5;)
+    QCOMPARE(cit.value(), QLatin1String("Teststring 6"));
+    QT_IGNORE_DEPRECATIONS(cit = cit - 3;)
+    QCOMPARE(cit.value(), QLatin1String("Teststring 3"));
+}
+
+void tst_QMap::deprecatedInsert()
+{
+    QMultiMap<int, QString> refMap;
+    refMap.insert(1, "value1");
+    refMap.insert(2, "value2");
+    refMap.insert(3, "value3");
+
+    QMultiMap<int, QString> depMap = refMap;
+
+    QMultiMap<int, QString> otherMap;
+    otherMap.insert(1, "value1_2");
+    otherMap.insert(3, "value3_2");
+    otherMap.insert(4, "value4");
+
+    refMap.unite(otherMap);
+    QT_IGNORE_DEPRECATIONS(depMap.insert(otherMap);)
+
+    QCOMPARE(refMap, depMap);
+}
+#endif // QT_DEPRECATED_SINCE(6, 0)
 
 QTEST_APPLESS_MAIN(tst_QMap)
 #include "tst_qmap.moc"
