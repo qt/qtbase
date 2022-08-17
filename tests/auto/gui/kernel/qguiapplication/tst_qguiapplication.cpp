@@ -532,16 +532,16 @@ void tst_QGuiApplication::palette()
     QVERIFY(palettesMatch(QGuiApplication::palette(), newPalette));
 #if QT_DEPRECATED_SINCE(6, 0)
     QCOMPARE(signalSpy.count(), 1);
-#endif
     QVERIFY(palettesMatch(signalSpy.at(0).at(0).value<QPalette>(), newPalette));
+#endif
     QCOMPARE(QGuiApplication::palette(), QPalette());
 
     QGuiApplication::setPalette(oldPalette);
     QVERIFY(palettesMatch(QGuiApplication::palette(), oldPalette));
 #if QT_DEPRECATED_SINCE(6, 0)
     QCOMPARE(signalSpy.count(), 2);
-#endif
     QVERIFY(palettesMatch(signalSpy.at(1).at(0).value<QPalette>(), oldPalette));
+#endif
     QCOMPARE(QGuiApplication::palette(), QPalette());
 
     QGuiApplication::setPalette(oldPalette);
@@ -557,24 +557,32 @@ void tst_QGuiApplication::font()
     int argc = 1;
     char *argv[] = { const_cast<char*>("tst_qguiapplication") };
     QGuiApplication app(argc, argv);
+#if QT_DEPRECATED_SINCE(6, 0)
     QSignalSpy signalSpy(&app, SIGNAL(fontChanged(QFont)));
+#endif
 
     QFont oldFont = QGuiApplication::font();
     QFont newFont = QFont("BogusFont", 33);
 
     QGuiApplication::setFont(newFont);
     QCOMPARE(QGuiApplication::font(), newFont);
+#if QT_DEPRECATED_SINCE(6, 0)
     QCOMPARE(signalSpy.count(), 1);
     QCOMPARE(signalSpy.at(0).at(0), QVariant(newFont));
+#endif
 
     QGuiApplication::setFont(oldFont);
     QCOMPARE(QGuiApplication::font(), oldFont);
+#if QT_DEPRECATED_SINCE(6, 0)
     QCOMPARE(signalSpy.count(), 2);
     QCOMPARE(signalSpy.at(1).at(0), QVariant(oldFont));
+#endif
 
     QGuiApplication::setFont(oldFont);
     QCOMPARE(QGuiApplication::font(), oldFont);
+#if QT_DEPRECATED_SINCE(6, 0)
     QCOMPARE(signalSpy.count(), 2);
+#endif
 }
 
 class BlockableWindow : public QWindow
