@@ -80,10 +80,10 @@ HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirect
         }
         fullPathAttempt.append(fileName);
         HINSTANCE inst = ::LoadLibrary(reinterpret_cast<const wchar_t *>(fullPathAttempt.utf16()));
-        if (inst != 0)
+        if (inst != nullptr)
             return inst;
     }
-    return 0;
+    return nullptr;
 }
 
 QT_END_NAMESPACE
