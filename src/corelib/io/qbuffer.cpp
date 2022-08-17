@@ -267,8 +267,6 @@ void QBuffer::setData(const QByteArray &data)
 }
 
 /*!
-    \fn void QBuffer::setData(const char *data, qsizetype size)
-
     \overload
 
     Sets the contents of the internal buffer to be the first \a size
@@ -277,6 +275,16 @@ void QBuffer::setData(const QByteArray &data)
     \note In Qt versions prior to 6.5, this function took the length as
     an \c{int} parameter, potentially truncating sizes.
 */
+void QBuffer::setData(const char *data, qsizetype size)
+{
+    Q_D(QBuffer);
+    if (isOpen()) {
+        qWarning("QBuffer::setData: Buffer is open");
+        return;
+    }
+    d->buf->replace(qsizetype(0), d->buf->size(), // ### QByteArray lacks assign(ptr, n)
+                    data, size);
+}
 
 /*!
    \reimp
