@@ -133,6 +133,11 @@ private slots:
     void properties();
     void metaTypes();
 
+    // Tests for deprecated APIs
+#if QT_DEPRECATED_SINCE(6, 1)
+    void deprecatedMultiplications();
+#endif
+
 private:
     static void setMatrix(QMatrix2x2& m, const float *values);
     static void setMatrixDirect(QMatrix2x2& m, const float *values);
@@ -1970,12 +1975,7 @@ void tst_QMatrixNxN::scale4x4()
     }
 
     QVector3D v1(2.0f, 3.0f, -4.0f);
-    QVector3D v2 = m1 * v1;
-    QCOMPARE(v2.x(), (float)(2.0f * x));
-    QCOMPARE(v2.y(), (float)(3.0f * y));
-    QCOMPARE(v2.z(), (float)(-4.0f * z));
-
-    v2 = v1 * m1;
+    QVector3D v2 = m1.map(v1);
     QCOMPARE(v2.x(), (float)(2.0f * x));
     QCOMPARE(v2.y(), (float)(3.0f * y));
     QCOMPARE(v2.z(), (float)(-4.0f * z));
@@ -1994,7 +1994,7 @@ void tst_QMatrixNxN::scale4x4()
     QCOMPARE(v4.w(), (float)34.0f);
 
     QPoint p1(2, 3);
-    QPoint p2 = m1 * p1;
+    QPoint p2 = m1.map(p1);
     QCOMPARE(p2.x(), (int)(2.0f * x));
     QCOMPARE(p2.y(), (int)(3.0f * y));
 
@@ -2003,7 +2003,7 @@ void tst_QMatrixNxN::scale4x4()
     QCOMPARE(p2.y(), (int)(3.0f * y));
 
     QPointF p3(2.0f, 3.0f);
-    QPointF p4 = m1 * p3;
+    QPointF p4 = m1.map(p3);
     QCOMPARE(p4.x(), (float)(2.0f * x));
     QCOMPARE(p4.y(), (float)(3.0f * y));
 
@@ -2116,7 +2116,7 @@ void tst_QMatrixNxN::translate4x4()
     }
 
     QVector3D v1(2.0f, 3.0f, -4.0f);
-    QVector3D v2 = m1 * v1;
+    QVector3D v2 = m1.map(v1);
     QCOMPARE(v2.x(), (float)(2.0f + x));
     QCOMPARE(v2.y(), (float)(3.0f + y));
     QCOMPARE(v2.z(), (float)(-4.0f + z));
@@ -2136,12 +2136,12 @@ void tst_QMatrixNxN::translate4x4()
     QCOMPARE(v6.w(), (float)34.0f);
 
     QPoint p1(2, 3);
-    QPoint p2 = m1 * p1;
+    QPoint p2 = m1.map(p1);
     QCOMPARE(p2.x(), (int)(2.0f + x));
     QCOMPARE(p2.y(), (int)(3.0f + y));
 
     QPointF p3(2.0f, 3.0f);
-    QPointF p4 = m1 * p3;
+    QPointF p4 = m1.map(p3);
     QCOMPARE(p4.x(), (float)(2.0f + x));
     QCOMPARE(p4.y(), (float)(3.0f + y));
 
@@ -2346,7 +2346,7 @@ void tst_QMatrixNxN::rotate4x4()
     p1z /= p1w;
 
     QVector3D v1(2.0f, 3.0f, -4.0f);
-    QVector3D v2 = m1 * v1;
+    QVector3D v2 = m1.map(v1);
     QVERIFY(qFuzzyCompare(v2.x(), v1x));
     QVERIFY(qFuzzyCompare(v2.y(), v1y));
     QVERIFY(qFuzzyCompare(v2.z(), v1z));
@@ -2366,12 +2366,12 @@ void tst_QMatrixNxN::rotate4x4()
     QVERIFY(qFuzzyCompare(v6.w(), v5w));
 
     QPoint p1(2, 3);
-    QPoint p2 = m1 * p1;
+    QPoint p2 = m1.map(p1);
     QCOMPARE(p2.x(), qRound(p1x));
     QCOMPARE(p2.y(), qRound(p1y));
 
     QPointF p3(2.0f, 3.0f);
-    QPointF p4 = m1 * p3;
+    QPointF p4 = m1.map(p3);
     QVERIFY(qFuzzyCompare(float(p4.x()), p1x));
     QVERIFY(qFuzzyCompare(float(p4.y()), p1y));
 
@@ -2621,11 +2621,11 @@ void tst_QMatrixNxN::ortho()
 {
     QMatrix4x4 m1;
     m1.ortho(QRect(0, 0, 300, 150));
-    QPointF p1 = m1 * QPointF(0, 0);
-    QPointF p2 = m1 * QPointF(300, 0);
-    QPointF p3 = m1 * QPointF(0, 150);
-    QPointF p4 = m1 * QPointF(300, 150);
-    QVector3D p5 = m1 * QVector3D(300, 150, 1);
+    QPointF p1 = m1.map(QPointF(0, 0));
+    QPointF p2 = m1.map(QPointF(300, 0));
+    QPointF p3 = m1.map(QPointF(0, 150));
+    QPointF p4 = m1.map(QPointF(300, 150));
+    QVector3D p5 = m1.map(QVector3D(300, 150, 1));
     QVERIFY(qFuzzyCompare(float(p1.x()), -1.0f));
     QVERIFY(qFuzzyCompare(float(p1.y()), 1.0f));
     QVERIFY(qFuzzyCompare(float(p2.x()), 1.0f));
@@ -2640,11 +2640,11 @@ void tst_QMatrixNxN::ortho()
 
     QMatrix4x4 m2;
     m2.ortho(QRectF(0, 0, 300, 150));
-    p1 = m2 * QPointF(0, 0);
-    p2 = m2 * QPointF(300, 0);
-    p3 = m2 * QPointF(0, 150);
-    p4 = m2 * QPointF(300, 150);
-    p5 = m2 * QVector3D(300, 150, 1);
+    p1 = m2.map(QPointF(0, 0));
+    p2 = m2.map(QPointF(300, 0));
+    p3 = m2.map(QPointF(0, 150));
+    p4 = m2.map(QPointF(300, 150));
+    p5 = m2.map(QVector3D(300, 150, 1));
     QVERIFY(qFuzzyCompare(float(p1.x()), -1.0f));
     QVERIFY(qFuzzyCompare(float(p1.y()), 1.0f));
     QVERIFY(qFuzzyCompare(float(p2.x()), 1.0f));
@@ -2659,11 +2659,11 @@ void tst_QMatrixNxN::ortho()
 
     QMatrix4x4 m3;
     m3.ortho(0, 300, 150, 0, -1, 1);
-    p1 = m3 * QPointF(0, 0);
-    p2 = m3 * QPointF(300, 0);
-    p3 = m3 * QPointF(0, 150);
-    p4 = m3 * QPointF(300, 150);
-    p5 = m3 * QVector3D(300, 150, 1);
+    p1 = m3.map(QPointF(0, 0));
+    p2 = m3.map(QPointF(300, 0));
+    p3 = m3.map(QPointF(0, 150));
+    p4 = m3.map(QPointF(300, 150));
+    p5 = m3.map(QVector3D(300, 150, 1));
     QVERIFY(qFuzzyCompare(float(p1.x()), -1.0f));
     QVERIFY(qFuzzyCompare(float(p1.y()), 1.0f));
     QVERIFY(qFuzzyCompare(float(p2.x()), 1.0f));
@@ -2678,11 +2678,11 @@ void tst_QMatrixNxN::ortho()
 
     QMatrix4x4 m4;
     m4.ortho(0, 300, 150, 0, -2, 3);
-    p1 = m4 * QPointF(0, 0);
-    p2 = m4 * QPointF(300, 0);
-    p3 = m4 * QPointF(0, 150);
-    p4 = m4 * QPointF(300, 150);
-    p5 = m4 * QVector3D(300, 150, 1);
+    p1 = m4.map(QPointF(0, 0));
+    p2 = m4.map(QPointF(300, 0));
+    p3 = m4.map(QPointF(0, 150));
+    p4 = m4.map(QPointF(300, 150));
+    p5 = m4.map(QVector3D(300, 150, 1));
     QVERIFY(qFuzzyCompare(float(p1.x()), -1.0f));
     QVERIFY(qFuzzyCompare(float(p1.y()), 1.0f));
     QVERIFY(qFuzzyCompare(float(p2.x()), 1.0f));
@@ -2710,11 +2710,11 @@ void tst_QMatrixNxN::frustum()
 {
     QMatrix4x4 m1;
     m1.frustum(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
-    QVector3D p1 = m1 * QVector3D(-1.0f, -1.0f, 1.0f);
-    QVector3D p2 = m1 * QVector3D(1.0f, -1.0f, 1.0f);
-    QVector3D p3 = m1 * QVector3D(-1.0f, 1.0f, 1.0f);
-    QVector3D p4 = m1 * QVector3D(1.0f, 1.0f, 1.0f);
-    QVector3D p5 = m1 * QVector3D(0.0f, 0.0f, 2.0f);
+    QVector3D p1 = m1.map(QVector3D(-1.0f, -1.0f, 1.0f));
+    QVector3D p2 = m1.map(QVector3D(1.0f, -1.0f, 1.0f));
+    QVector3D p3 = m1.map(QVector3D(-1.0f, 1.0f, 1.0f));
+    QVector3D p4 = m1.map(QVector3D(1.0f, 1.0f, 1.0f));
+    QVector3D p5 = m1.map(QVector3D(0.0f, 0.0f, 2.0f));
     QVERIFY(qFuzzyCompare(p1.x(), -1.0f));
     QVERIFY(qFuzzyCompare(p1.y(), -1.0f));
     QVERIFY(qFuzzyCompare(p1.z(), -1.0f));
@@ -2746,11 +2746,11 @@ void tst_QMatrixNxN::perspective()
 {
     QMatrix4x4 m1;
     m1.perspective(45.0f, 1.0f, -1.0f, 1.0f);
-    QVector3D p1 = m1 * QVector3D(-1.0f, -1.0f, 1.0f);
-    QVector3D p2 = m1 * QVector3D(1.0f, -1.0f, 1.0f);
-    QVector3D p3 = m1 * QVector3D(-1.0f, 1.0f, 1.0f);
-    QVector3D p4 = m1 * QVector3D(1.0f, 1.0f, 1.0f);
-    QVector3D p5 = m1 * QVector3D(0.0f, 0.0f, 2.0f);
+    QVector3D p1 = m1.map(QVector3D(-1.0f, -1.0f, 1.0f));
+    QVector3D p2 = m1.map(QVector3D(1.0f, -1.0f, 1.0f));
+    QVector3D p3 = m1.map(QVector3D(-1.0f, 1.0f, 1.0f));
+    QVector3D p4 = m1.map(QVector3D(1.0f, 1.0f, 1.0f));
+    QVector3D p5 = m1.map(QVector3D(0.0f, 0.0f, 2.0f));
     QVERIFY(qFuzzyCompare(p1.x(), 2.41421f));
     QVERIFY(qFuzzyCompare(p1.y(), 2.41421f));
     QVERIFY(qFuzzyCompare(p1.z(), -1.0f));
@@ -2816,25 +2816,25 @@ void tst_QMatrixNxN::flipCoordinates()
 {
     QMatrix4x4 m1;
     m1.flipCoordinates();
-    QVector3D p1 = m1 * QVector3D(2, 3, 4);
+    QVector3D p1 = m1.map(QVector3D(2, 3, 4));
     QVERIFY(p1 == QVector3D(2, -3, -4));
 
     QMatrix4x4 m2;
     m2.scale(2.0f, 3.0f, 1.0f);
     m2.flipCoordinates();
-    QVector3D p2 = m2 * QVector3D(2, 3, 4);
+    QVector3D p2 = m2.map(QVector3D(2, 3, 4));
     QVERIFY(p2 == QVector3D(4, -9, -4));
 
     QMatrix4x4 m3;
     m3.translate(2.0f, 3.0f, 1.0f);
     m3.flipCoordinates();
-    QVector3D p3 = m3 * QVector3D(2, 3, 4);
+    QVector3D p3 = m3.map(QVector3D(2, 3, 4));
     QVERIFY(p3 == QVector3D(4, 0, -3));
 
     QMatrix4x4 m4;
     m4.rotate(90.0f, 0.0f, 0.0f, 1.0f);
     m4.flipCoordinates();
-    QVector3D p4 = m4 * QVector3D(2, 3, 4);
+    QVector3D p4 = m4.map(QVector3D(2, 3, 4));
     QVERIFY(p4 == QVector3D(3, 2, -4));
 }
 
@@ -3036,7 +3036,7 @@ void tst_QMatrixNxN::convertQTransform()
     QCOMPARE(p1.y(), 150.0 + 2.0);
 
     QMatrix4x4 m2(m1);
-    QPointF p2 = m2 * QPointF(100.0, 150.0);
+    QPointF p2 = m2.map(QPointF(100.0, 150.0));
     QCOMPARE((double)p2.x(), 100.0 - 3.5);
     QCOMPARE((double)p2.y(), 150.0 + 2.0);
     QCOMPARE(m1, m2.toTransform());
@@ -3048,7 +3048,7 @@ void tst_QMatrixNxN::convertQTransform()
     QCOMPARE(p3.y(), -2.0 * 150.0);
 
     QMatrix4x4 m4(m3);
-    QPointF p4 = m4 * QPointF(100.0, 150.0);
+    QPointF p4 = m4.map(QPointF(100.0, 150.0));
     QCOMPARE((double)p4.x(), 1.5 * 100.0);
     QCOMPARE((double)p4.y(), -2.0 * 150.0);
     QCOMPARE(m3, m4.toTransform());
@@ -3058,7 +3058,7 @@ void tst_QMatrixNxN::convertQTransform()
     QPointF p5 = m5.map(QPointF(100.0, 150.0));
 
     QMatrix4x4 m6(m5);
-    QPointF p6 = m6 * QPointF(100.0, 150.0);
+    QPointF p6 = m6.map(QPointF(100.0, 150.0));
     QVERIFY(qFuzzyCompare(float(p5.x()), float(p6.x())));
     QVERIFY(qFuzzyCompare(float(p5.y()), float(p6.y())));
 
@@ -3308,15 +3308,67 @@ void tst_QMatrixNxN::properties()
 
 void tst_QMatrixNxN::metaTypes()
 {
-    QCOMPARE(QMetaType::type("QMatrix4x4"), int(QMetaType::QMatrix4x4));
+    QCOMPARE(QMetaType::fromName("QMatrix4x4").id(), int(QMetaType::QMatrix4x4));
 
-    QCOMPARE(QByteArray(QMetaType::typeName(QMetaType::QMatrix4x4)),
+    QCOMPARE(QByteArray(QMetaType(QMetaType::QMatrix4x4).name()),
              QByteArray("QMatrix4x4"));
 
     QVERIFY(QMetaType::isRegistered(QMetaType::QMatrix4x4));
 
     QCOMPARE(qMetaTypeId<QMatrix4x4>(), int(QMetaType::QMatrix4x4));
 }
+
+#if QT_DEPRECATED_SINCE(6, 1)
+void tst_QMatrixNxN::deprecatedMultiplications()
+{
+    QMatrix4x4 m;
+    m.scale(1.0f, 2.0f, 3.0f);
+    // QMatrix4x4 and QVector3D
+    {
+        QVector3D v(4.0f, 5.0f, 6.0f);
+        {
+            // QMatrix4x4 * QVector3D
+            QT_IGNORE_DEPRECATIONS(const QVector3D v1 = m * v;)
+            const QVector3D v2 = m.map(v);
+
+            QCOMPARE(v1.x(), v2.x());
+            QCOMPARE(v1.y(), v2.y());
+            QCOMPARE(v1.z(), v2.z());
+        }
+        {
+            // QVector3D * QMatrix4x4
+            QT_IGNORE_DEPRECATIONS(const QVector3D v1 = v * m;)
+
+            QVector4D v4(v, 1.0);
+            const QVector4D v2 = v4 * m;
+
+            QCOMPARE(v1.x(), v2.x());
+            QCOMPARE(v1.y(), v2.y());
+            QCOMPARE(v1.z(), v2.z());
+        }
+    }
+    {
+        // QMatrix4x4 * QPoint
+        const QPoint p(4, 5);
+
+        QT_IGNORE_DEPRECATIONS(const QPoint p1 = m * p;)
+        const QPoint p2 = m.map(p);
+
+        QCOMPARE(p1.x(), p2.x());
+        QCOMPARE(p1.y(), p2.y());
+    }
+    {
+        // QMatrix4x4 * QPointF
+        const QPointF p(4.0f, 5.0f);
+
+        QT_IGNORE_DEPRECATIONS(const QPointF p1 = m * p;)
+        const QPointF p2 = m.map(p);
+
+        QCOMPARE(p1.x(), p2.x());
+        QCOMPARE(p1.y(), p2.y());
+    }
+}
+#endif // QT_DEPRECATED_SINCE(6, 1)
 
 QTEST_APPLESS_MAIN(tst_QMatrixNxN)
 
