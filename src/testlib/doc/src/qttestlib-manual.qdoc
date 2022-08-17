@@ -224,7 +224,7 @@
     \li \c -o \e{filename,format} \br
     Writes output to the specified file, in the specified format (one
     of \c txt, \c csv, \c junitxml, \c xml, \c lightxml, \c teamcity
-    or \c tap).  The special filename \c - may be used to log to
+    or \c tap).  Use the special filename \c{-} (hyphen) to log to
     standard output.
     \li \c -o \e filename \br
     Writes output to the specified file.
