@@ -320,7 +320,7 @@ void QDebug::putString(const QChar *begin, size_t length)
     if (stream->noQuotes) {
         // no quotes, write the string directly too (no pretty-printing)
         // this respects the QTextStream state, though
-        stream->ts.d_ptr->putString(begin, int(length));
+        stream->ts.d_ptr->putString(begin, qsizetype(length));
     } else {
         // we'll reset the QTextStream formatting mechanisms, so save the state
         QDebugStateSaver saver(*this);
@@ -338,7 +338,8 @@ void QDebug::putByteArray(const char *begin, size_t length, Latin1Content conten
     if (stream->noQuotes) {
         // no quotes, write the string directly too (no pretty-printing)
         // this respects the QTextStream state, though
-        QString string = content == ContainsLatin1 ? QString::fromLatin1(begin, int(length)) : QString::fromUtf8(begin, int(length));
+        QString string = content == ContainsLatin1 ? QString::fromLatin1(begin, qsizetype(length))
+                                                   : QString::fromUtf8(begin, qsizetype(length));
         stream->ts.d_ptr->putString(string);
     } else {
         // we'll reset the QTextStream formatting mechanisms, so save the state
