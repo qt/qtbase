@@ -60,15 +60,16 @@ using QtMiscUtils::fromHex;
 
 /*
     Returns a human readable representation of the first \a maxSize
-    characters in \a data.
+    characters in \a data. The size, \a len, is a 64-bit quantity to
+    avoid truncation due to implicit conversions in callers.
 */
-QByteArray QtDebugUtils::toPrintable(const char *data, int len, int maxSize)
+QByteArray QtDebugUtils::toPrintable(const char *data, qint64 len, qsizetype maxSize)
 {
     if (!data)
         return "(null)";
 
     QByteArray out;
-    for (int i = 0; i < qMin(len, maxSize); ++i) {
+    for (qsizetype i = 0; i < qMin(len, maxSize); ++i) {
         char c = data[i];
         if (isprint(c)) {
             out += c;
