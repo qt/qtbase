@@ -401,7 +401,7 @@ void qt_QMetaEnum_flagDebugOperator(QDebug &debug, size_t sizeofT, Int value)
     debug.resetFormat();
     debug.nospace() << "QFlags(" << Qt::hex << Qt::showbase;
     bool needSeparator = false;
-    for (uint i = 0; i < sizeofT * 8; ++i) {
+    for (size_t i = 0; i < sizeofT * 8; ++i) {
         if (value & (Int(1) << i)) {
             if (needSeparator)
                 debug << '|';

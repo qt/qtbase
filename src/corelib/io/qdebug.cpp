@@ -275,7 +275,7 @@ static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, si
         }
 
         // print as an escape sequence (maybe, see below for surrogate pairs)
-        int buflen = 2;
+        qsizetype buflen = 2;
         ushort buf[sizeof "\\U12345678" - 1];
         buf[0] = '\\';
 
