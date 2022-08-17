@@ -63,7 +63,7 @@ Q_CORE_EXPORT bool qDecodeDataUrl(const QUrl &uri, QString &mimeType, QByteArray
     QByteArray data = QByteArray::fromPercentEncoding(uri.url(QUrl::FullyEncoded | QUrl::RemoveScheme).toLatin1());
 
     // parse it:
-    int pos = data.indexOf(',');
+    const qsizetype pos = data.indexOf(',');
     if (pos != -1) {
         payload = data.mid(pos + 1);
         data.truncate(pos);
@@ -76,7 +76,7 @@ Q_CORE_EXPORT bool qDecodeDataUrl(const QUrl &uri, QString &mimeType, QByteArray
         }
 
         if (QLatin1String{data}.startsWith(QLatin1String("charset"), Qt::CaseInsensitive)) {
-            int i = 7;      // strlen("charset")
+            qsizetype i = 7;      // strlen("charset")
             while (data.at(i) == ' ')
                 ++i;
             if (data.at(i) == '=')
