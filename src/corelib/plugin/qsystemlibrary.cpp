@@ -59,20 +59,20 @@ static QString qSystemDirectory()
 
 HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirectory /* = true */)
 {
+    if (onlySystemDirectory)
+        return ::LoadLibraryExW(libraryName, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+
     QStringList searchOrder;
 
 #if !defined(QT_BOOTSTRAPPED)
-    if (!onlySystemDirectory)
-        searchOrder << QFileInfo(qAppFileName()).path();
+    searchOrder << QFileInfo(qAppFileName()).path();
 #endif
     searchOrder << qSystemDirectory();
 
-    if (!onlySystemDirectory) {
-        const QString PATH(QLatin1StringView(qgetenv("PATH")));
-        searchOrder << PATH.split(u';', Qt::SkipEmptyParts);
-    }
-    QString fileName = QString::fromWCharArray(libraryName);
-    fileName.append(".dll"_L1);
+    const QString PATH(QLatin1StringView(qgetenv("PATH")));
+    searchOrder << PATH.split(u';', Qt::SkipEmptyParts);
+
+    const QString fileName = QString::fromWCharArray(libraryName);
 
     // Start looking in the order specified
     for (int i = 0; i < searchOrder.count(); ++i) {
