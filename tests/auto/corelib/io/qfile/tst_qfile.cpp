@@ -2638,6 +2638,10 @@ void tst_QFile::unixPipe_data()
 
 void tst_QFile::unixPipe()
 {
+#ifdef Q_OS_ANDROID
+    if (QNativeInterface::QAndroidApplication::sdkVersion() >= 31)
+        QSKIP("Crashes on Android 12 (QTBUG-105736)");
+#endif
     int pipes[2] = { -1, -1 };
     QVERIFY2(pipe(pipes) == 0, qPrintable(qt_error_string()));
     unixPipe_helper(pipes);
@@ -2647,6 +2651,10 @@ void tst_QFile::unixPipe()
 
 void tst_QFile::socketPair()
 {
+#ifdef Q_OS_ANDROID
+    if (QNativeInterface::QAndroidApplication::sdkVersion() >= 31)
+        QSKIP("Crashes on Android 12 (QTBUG-105736)");
+#endif
     int pipes[2] = { -1, -1 };
     QVERIFY2(socketpair(AF_UNIX, SOCK_STREAM, 0, pipes) == 0, qPrintable(qt_error_string()));
     unixPipe_helper(pipes);
