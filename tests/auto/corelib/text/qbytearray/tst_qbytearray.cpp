@@ -581,6 +581,9 @@ void tst_QByteArray::base64()
 
 void tst_QByteArray::base64_2GiB()
 {
+#ifdef Q_OS_ANDROID
+    QSKIP("Android kills the test when using too much memory");
+#endif
     if constexpr (sizeof(qsizetype) > sizeof(int)) {
         try {
             constexpr qint64 GiB = 1024 * 1024 * 1024;
