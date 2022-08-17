@@ -267,12 +267,15 @@ void QBuffer::setData(const QByteArray &data)
 }
 
 /*!
-    \fn void QBuffer::setData(const char *data, int size)
+    \fn void QBuffer::setData(const char *data, qsizetype size)
 
     \overload
 
     Sets the contents of the internal buffer to be the first \a size
     bytes of \a data.
+
+    \note In Qt versions prior to 6.5, this function took the length as
+    an \c{int} parameter, potentially truncating sizes.
 */
 
 /*!

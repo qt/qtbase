@@ -285,6 +285,8 @@ QT_WARNING_POP
 
 #if QT_CORE_REMOVED_SINCE(6, 5)
 
+#include "qbuffer.h" // inline removed API
+
 #include "qenvironmentvariables.h"
 
 bool qputenv(const char *varName, const QByteArray &value)
