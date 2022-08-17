@@ -8,4 +8,3 @@ LIBS += -framework AppKit
 QT += gui widgets quick
 
 QT += quick
-DEFINES += QT_DISABLE_DEPRECATED_UP_TO=0

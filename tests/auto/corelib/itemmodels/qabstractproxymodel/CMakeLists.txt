@@ -10,8 +10,6 @@
 qt_internal_add_test(tst_qabstractproxymodel
     SOURCES
         tst_qabstractproxymodel.cpp
-    DEFINES
-        QT_DISABLE_DEPRECATED_UP_TO=0
     LIBRARIES
         Qt::Gui
         Qt::TestPrivate

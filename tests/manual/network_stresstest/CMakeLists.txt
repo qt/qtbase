@@ -11,8 +11,6 @@ qt_internal_add_manual_test(tst_network_stresstest
     SOURCES
         minihttpserver.cpp minihttpserver.h
         tst_network_stresstest.cpp
-    DEFINES
-        QT_DISABLE_DEPRECATED_UP_TO=0
     LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate

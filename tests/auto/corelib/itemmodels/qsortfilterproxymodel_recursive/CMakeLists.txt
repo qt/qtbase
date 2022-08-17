@@ -10,8 +10,6 @@
 qt_internal_add_test(tst_qsfpm_recursive
     SOURCES
         tst_qsortfilterproxymodel_recursive.cpp
-    DEFINES
-        QT_DISABLE_DEPRECATED_UP_TO=0
     LIBRARIES
         Qt::Gui
 )
