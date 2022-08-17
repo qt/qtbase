@@ -84,11 +84,16 @@ void QWasmWindow::setGeometry(const QRect &rect)
         if (r.y() < yMin)
             r.moveTop(yMin);
     }
-    if (!m_windowState.testFlag(Qt::WindowFullScreen) && !m_windowState.testFlag(Qt::WindowMaximized))
+    bool shouldInvalidate = true;
+    if (!m_windowState.testFlag(Qt::WindowFullScreen)
+        && !m_windowState.testFlag(Qt::WindowMaximized)) {
+        shouldInvalidate = m_normalGeometry.size() != r.size();
         m_normalGeometry = r;
+    }
     QPlatformWindow::setGeometry(r);
     QWindowSystemInterface::handleGeometryChange(window(), r);
-    invalidate();
+    if (shouldInvalidate)
+        invalidate();
 }
 
 void QWasmWindow::setVisible(bool visible)
