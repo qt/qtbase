@@ -962,6 +962,8 @@ bool QWasmCompositor::processPointer(const PointerEvent& event)
         }
 
         m_windowManipulation.onPointerMove(event);
+        if (m_windowManipulation.operation() != WindowManipulation::Operation::None)
+            requestUpdate();
         break;
     }
     case EventType::PointerEnter:
