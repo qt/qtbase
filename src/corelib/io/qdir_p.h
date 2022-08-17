@@ -44,7 +44,7 @@ public:
     void initFileEngine();
     void initFileLists(const QDir &dir) const;
 
-    static void sortFileList(QDir::SortFlags, QFileInfoList &, QStringList *, QFileInfoList *);
+    static void sortFileList(QDir::SortFlags, const QFileInfoList &, QStringList *, QFileInfoList *);
 
     static inline QChar getFilterSepChar(const QString &nameFilter);
 
