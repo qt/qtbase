@@ -156,7 +156,7 @@ void QWasmWindow::setGeometry(const QRect &rect)
     if (shouldInvalidate)
         invalidate();
     else
-        m_compositor->requestUpdate();
+        m_compositor->requestUpdateWindow(this);
 }
 
 void QWasmWindow::setVisible(bool visible)

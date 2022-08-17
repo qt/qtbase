@@ -32,23 +32,14 @@ class QOpenGLContext;
 class QOpenGLTexture;
 class QWasmEventTranslator;
 
-class QWasmCompositor : public QObject
+class QWasmCompositor final : public QObject
 {
     Q_OBJECT
 public:
     QWasmCompositor(QWasmScreen *screen);
-    ~QWasmCompositor();
-    void initEventHandlers();
-    void deregisterEventHandlers();
-    void destroy();
+    ~QWasmCompositor() final;
 
-    enum QWasmStateFlag {
-        State_None =               0x00000000,
-        State_Enabled =            0x00000001,
-        State_Raised =             0x00000002,
-        State_Sunken =             0x00000004
-    };
-    Q_DECLARE_FLAGS(StateFlags, QWasmStateFlag)
+    void initEventHandlers();
 
     struct QWasmFrameOptions {
         QRect rect;
@@ -66,8 +57,6 @@ public:
     void raise(QWasmWindow *window);
     void lower(QWasmWindow *window);
 
-    int windowCount() const;
-
     QWindow *windowAt(QPoint globalPoint, int padding = 0) const;
     QWindow *keyWindow() const;
 
@@ -77,20 +66,11 @@ public:
     enum UpdateRequestDeliveryType { ExposeEventDelivery, UpdateRequestDelivery };
     void requestUpdateAllWindows();
     void requestUpdateWindow(QWasmWindow *window, UpdateRequestDeliveryType updateType = ExposeEventDelivery);
-    void requestUpdate();
-    void deliverUpdateRequests();
-    void deliverUpdateRequest(QWasmWindow *window, UpdateRequestDeliveryType updateType);
-    void handleBackingStoreFlush();
-    bool processKeyboard(int eventType, const EmscriptenKeyboardEvent *keyEvent);
-    bool processWheel(int eventType, const EmscriptenWheelEvent *wheelEvent);
-    int handleTouch(int eventType, const EmscriptenTouchEvent *touchEvent);
+
     void setCapture(QWasmWindow *window);
     void releaseCapture();
 
-    bool processMouseEnter(const EmscriptenMouseEvent *mouseEvent);
-    bool processMouseLeave();
-    void enterWindow(QWindow* window, const QPoint &localPoint, const QPoint &globalPoint);
-    void leaveWindow(QWindow* window);
+    void handleBackingStoreFlush();
 
 private slots:
     void frame();
@@ -146,6 +126,13 @@ private:
     };
 
     void onTopWindowChanged();
+    void deregisterEventHandlers();
+    void destroy();
+
+    void requestUpdate();
+    void deliverUpdateRequests();
+    void deliverUpdateRequest(QWasmWindow *window, UpdateRequestDeliveryType updateType);
+
     void drawWindow(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, const QWasmWindow *window);
     void drawWindowContent(QOpenGLTextureBlitter *blitter, QWasmScreen *screen,
                            const QWasmWindow *window);
@@ -165,6 +152,15 @@ private:
 
     static int touchCallback(int eventType, const EmscriptenTouchEvent *ev, void *userData);
 
+    bool processKeyboard(int eventType, const EmscriptenKeyboardEvent *keyEvent);
+    bool processWheel(int eventType, const EmscriptenWheelEvent *wheelEvent);
+    bool processMouseEnter(const EmscriptenMouseEvent *mouseEvent);
+    bool processMouseLeave();
+    bool processTouch(int eventType, const EmscriptenTouchEvent *touchEvent);
+
+    void enterWindow(QWindow *window, const QPoint &localPoint, const QPoint &globalPoint);
+    void leaveWindow(QWindow *window);
+
     WindowManipulation m_windowManipulation;
     QWasmWasmWindowStack m_windowStack;
 
@@ -172,9 +168,6 @@ private:
     QScopedPointer<QOpenGLTextureBlitter> m_blitter;
 
     QHash<const QWasmWindow *, bool> m_windowVisibility;
-    QRegion m_globalDamage; // damage caused by expose, window close, etc.
-    bool m_needComposit = false;
-    bool m_inFlush = false;
     bool m_isEnabled = true;
     QSize m_targetSize;
     qreal m_targetDevicePixelRatio = 1;

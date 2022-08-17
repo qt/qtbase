@@ -311,6 +311,7 @@ void QWasmIntegration::removeScreen(const emscripten::val &element)
         return;
     }
     it->second->deleteScreen();
+    m_screens.erase(it);
 }
 
 void QWasmIntegration::resizeScreen(const emscripten::val &element)

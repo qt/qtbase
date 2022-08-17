@@ -199,8 +199,6 @@ void QWasmCompositor::setVisible(QWasmWindow *window, bool visible)
         return;
 
     m_windowVisibility[window] = visible;
-    if (!visible)
-        m_globalDamage = window->window()->geometry(); // repaint previously covered area.
 
     requestUpdateWindow(window, QWasmCompositor::ExposeEventDelivery);
 }
@@ -212,13 +210,7 @@ void QWasmCompositor::raise(QWasmWindow *window)
 
 void QWasmCompositor::lower(QWasmWindow *window)
 {
-    m_globalDamage = window->window()->geometry(); // repaint previously covered area.
     m_windowStack.lower(window);
-}
-
-int QWasmCompositor::windowCount() const
-{
-    return m_windowStack.size();
 }
 
 QWindow *QWasmCompositor::windowAt(QPoint targetPointInScreenCoords, int padding) const
@@ -578,7 +570,7 @@ int QWasmCompositor::wheel_cb(int eventType, const EmscriptenWheelEvent *wheelEv
 int QWasmCompositor::touchCallback(int eventType, const EmscriptenTouchEvent *touchEvent, void *userData)
 {
     auto compositor = reinterpret_cast<QWasmCompositor*>(userData);
-    return static_cast<int>(compositor->handleTouch(eventType, touchEvent));
+    return static_cast<int>(compositor->processTouch(eventType, touchEvent));
 }
 
 bool QWasmCompositor::processPointer(const PointerEvent& event)
@@ -936,7 +928,7 @@ bool QWasmCompositor::processWheel(int eventType, const EmscriptenWheelEvent *wh
     return accepted;
 }
 
-int QWasmCompositor::handleTouch(int eventType, const EmscriptenTouchEvent *touchEvent)
+bool QWasmCompositor::processTouch(int eventType, const EmscriptenTouchEvent *touchEvent)
 {
     QList<QWindowSystemInterface::TouchPoint> touchPointList;
     touchPointList.reserve(touchEvent->numTouches);
