@@ -292,7 +292,7 @@ inline QDebugIfHasDebugStream<T> operator<<(QDebug debug, const QContiguousCache
 {
     const QDebugStateSaver saver(debug);
     debug.nospace() << "QContiguousCache(";
-    for (int i = cache.firstIndex(); i <= cache.lastIndex(); ++i) {
+    for (qsizetype i = cache.firstIndex(); i <= cache.lastIndex(); ++i) {
         debug << cache[i];
         if (i != cache.lastIndex())
             debug << ", ";
