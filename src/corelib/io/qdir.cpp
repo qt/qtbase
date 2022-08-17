@@ -121,16 +121,8 @@ QDirPrivate::QDirPrivate(const QString &path, const QStringList &nameFilters_, Q
 {
     setPath(path.isEmpty() ? QString::fromLatin1(".") : path);
 
-    bool empty = nameFilters.isEmpty();
-    if (!empty) {
-        empty = true;
-        for (int i = 0; i < nameFilters.size(); ++i) {
-            if (!nameFilters.at(i).isEmpty()) {
-                empty = false;
-                break;
-            }
-        }
-    }
+    auto isEmpty = [](const auto &e) { return e.isEmpty(); };
+    const bool empty = std::all_of(nameFilters.cbegin(), nameFilters.cend(), isEmpty);
     if (empty)
         nameFilters = QStringList(QString::fromLatin1("*"));
 }
