@@ -44,15 +44,17 @@ extern QString qAppFileName();
 
 static QString qSystemDirectory()
 {
-    QVarLengthArray<wchar_t, MAX_PATH> fullPath;
-
-    UINT retLen = ::GetSystemDirectory(fullPath.data(), MAX_PATH);
-    if (retLen > MAX_PATH) {
-        fullPath.resize(retLen);
-        retLen = ::GetSystemDirectory(fullPath.data(), retLen);
-    }
-    // in some rare cases retLen might be 0
-    return QString::fromWCharArray(fullPath.constData(), int(retLen));
+    static const QString result = []() -> QString {
+        QVarLengthArray<wchar_t, MAX_PATH> fullPath = {};
+        UINT retLen = ::GetSystemDirectoryW(fullPath.data(), MAX_PATH);
+        if (retLen > MAX_PATH) {
+            fullPath.resize(retLen);
+            retLen = ::GetSystemDirectoryW(fullPath.data(), retLen);
+        }
+        // in some rare cases retLen might be 0
+        return QString::fromWCharArray(fullPath.constData(), int(retLen));
+    }();
+    return result;
 }
 
 HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirectory /* = true */)
