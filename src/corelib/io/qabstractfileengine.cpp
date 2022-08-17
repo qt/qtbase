@@ -433,7 +433,7 @@ bool QAbstractFileEngine::seek(qint64 pos)
     Returns \c true if the file is a sequential access device; returns
     false if the file is a direct access device.
 
-    Operations involving size() and seek(int) are not valid on
+    Operations involving size() and seek(qint64) are not valid on
     sequential devices.
 */
 bool QAbstractFileEngine::isSequential() const
