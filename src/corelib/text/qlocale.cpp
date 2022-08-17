@@ -4419,6 +4419,24 @@ QStringList QLocale::uiLanguages() const
             locales.append(QLocale(entry));
         if (locales.isEmpty())
             locales.append(systemLocale()->fallbackLocale());
+        // If the system locale (isn't C and) didn't include itself in the list,
+        // or as fallback, presume to know better than it and put its name
+        // first. (Known issue, QTBUG-104930, on some macOS versions when in
+        // locale en_DE.) Our translation system might have a translation for a
+        // locale the platform doesn't believe in.
+        const QString name = bcp47Name();
+        if (!name.isEmpty() && language() != C && !uiLanguages.contains(name)) {
+            // That uses contains(name) as a cheap pre-test, but there may be an
+            // entry that matches this on purging likely subtags.
+            const QLocaleId mine = d->m_data->id().withLikelySubtagsRemoved();
+            const auto isMine = [mine](const QString &entry) {
+                return QLocaleId::fromName(entry).withLikelySubtagsRemoved() == mine;
+            };
+            if (std::none_of(uiLanguages.constBegin(), uiLanguages.constEnd(), isMine)) {
+                locales.prepend(*this);
+                uiLanguages.prepend(name);
+            }
+        }
     } else
 #endif
     {
