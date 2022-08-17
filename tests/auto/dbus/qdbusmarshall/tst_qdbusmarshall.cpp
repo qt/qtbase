@@ -713,14 +713,14 @@ void tst_QDBusMarshall::sendArgument_data()
                                      << QVariant::fromValue(QVariant::fromValue(QDBusVariant(1)));
 
     arg = QDBusArgument();
-    arg.beginArray(QVariant::Int);
+    arg.beginArray(QMetaType::Int);
     arg << 1 << 2 << 3 << -4;
     arg.endArray();
     QTest::newRow("array-of-int") << QVariant::fromValue(arg) << "ai" << int(QDBusArgument::ArrayType)
                                   << QVariant::fromValue(arg);
 
     arg = QDBusArgument();
-    arg.beginMap(QVariant::Int, QVariant::UInt);
+    arg.beginMap(QMetaType::Int, QMetaType::UInt);
     arg.beginMapEntry();
     arg << 1 << 2U;
     arg.endMapEntry();

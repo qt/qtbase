@@ -864,7 +864,7 @@ void tst_QDBusAbstractInterface::getStringSignal()
 
     QCOMPARE(s.size(), 1);
     QCOMPARE(s[0].size(), 1);
-    QCOMPARE(s[0][0].userType(), int(QVariant::String));
+    QCOMPARE(s[0][0].userType(), int(QMetaType::QString));
     QCOMPARE(s[0][0].toString(), expectedValue);
 }
 
@@ -946,7 +946,7 @@ void tst_QDBusAbstractInterface::getStringSignalPeer()
 
     QCOMPARE(s.size(), 1);
     QCOMPARE(s[0].size(), 1);
-    QCOMPARE(s[0][0].userType(), int(QVariant::String));
+    QCOMPARE(s[0][0].userType(), int(QMetaType::QString));
     QCOMPARE(s[0][0].toString(), expectedValue);
 }
 

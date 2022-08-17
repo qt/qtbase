@@ -377,7 +377,7 @@ bool compareToArgument(const QDBusArgument &arg, const QVariant &v2)
     // try to demarshall the arg according to v2
     switch (v2.userType())
     {
-    case QVariant::Bool:
+    case QMetaType::Bool:
         return compare<bool>(arg, v2);
     case QMetaType::UChar:
         return compare<uchar>(arg, v2);
@@ -385,45 +385,45 @@ bool compareToArgument(const QDBusArgument &arg, const QVariant &v2)
         return compare<short>(arg, v2);
     case QMetaType::UShort:
         return compare<ushort>(arg, v2);
-    case QVariant::Int:
+    case QMetaType::Int:
         return compare<int>(arg, v2);
-    case QVariant::UInt:
+    case QMetaType::UInt:
         return compare<uint>(arg, v2);
-    case QVariant::LongLong:
+    case QMetaType::LongLong:
         return compare<qlonglong>(arg, v2);
-    case QVariant::ULongLong:
+    case QMetaType::ULongLong:
         return compare<qulonglong>(arg, v2);
-    case QVariant::Double:
+    case QMetaType::Double:
         return compare<double>(arg, v2);
-    case QVariant::String:
+    case QMetaType::QString:
         return compare<QString>(arg, v2);
-    case QVariant::ByteArray:
+    case QMetaType::QByteArray:
         return compare<QByteArray>(arg, v2);
-    case QVariant::List:
+    case QMetaType::QVariantList:
         return compare<QVariantList>(arg, v2);
-    case QVariant::Map:
+    case QMetaType::QVariantMap:
         return compare<QVariantMap>(arg, v2);
-    case QVariant::Point:
+    case QMetaType::QPoint:
         return compare<QPoint>(arg, v2);
-    case QVariant::PointF:
+    case QMetaType::QPointF:
         return compare<QPointF>(arg, v2);
-    case QVariant::Size:
+    case QMetaType::QSize:
         return compare<QSize>(arg, v2);
-    case QVariant::SizeF:
+    case QMetaType::QSizeF:
         return compare<QSizeF>(arg, v2);
-    case QVariant::Line:
+    case QMetaType::QLine:
         return compare<QLine>(arg, v2);
-    case QVariant::LineF:
+    case QMetaType::QLineF:
         return compare<QLineF>(arg, v2);
-    case QVariant::Rect:
+    case QMetaType::QRect:
         return compare<QRect>(arg, v2);
-    case QVariant::RectF:
+    case QMetaType::QRectF:
         return compare<QRectF>(arg, v2);
-    case QVariant::Date:
+    case QMetaType::QDate:
         return compare<QDate>(arg, v2);
-    case QVariant::Time:
+    case QMetaType::QTime:
         return compare<QTime>(arg, v2);
-    case QVariant::DateTime:
+    case QMetaType::QDateTime:
         return compare<QDateTime>(arg, v2);
     default:
         int id = v2.userType();
@@ -524,16 +524,16 @@ template<> bool compare(const QVariant &v1, const QVariant &v2)
         return false;
 
     int id = v1.userType();
-    if (id == QVariant::List)
+    if (id == QMetaType::QVariantList)
         return compare(v1.toList(), v2.toList());
 
-    else if (id == QVariant::Map)
+    else if (id == QMetaType::QVariantMap)
         return compare(v1.toMap(), v2.toMap());
 
-    else if (id == QVariant::String)
+    else if (id == QMetaType::QString)
         return compare(v1.toString(), v2.toString());
 
-    else if (id == QVariant::ByteArray)
+    else if (id == QMetaType::QByteArray)
         return compare(v1.toByteArray(), v2.toByteArray());
 
     else if (id == QMetaType::UChar)
@@ -638,7 +638,7 @@ template<> bool compare(const QVariant &v1, const QVariant &v2)
     else if (id == qMetaTypeId<MyStruct>()) // (is)
             return qvariant_cast<MyStruct>(v1) == qvariant_cast<MyStruct>(v2);
 
-    else if (id < int(QVariant::UserType)) // yes, v1.type()
+    else if (id < int(QMetaType::User)) // yes, v1.type()
         // QVariant can compare
         return v1 == v2;
 

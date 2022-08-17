@@ -1009,7 +1009,7 @@ void tst_QDBusInterface::propertyRead()
 
     QVariant v = iface.property("prop1");
     QVERIFY(v.isValid());
-    QCOMPARE(v.userType(), int(QVariant::Int));
+    QCOMPARE(v.userType(), int(QMetaType::Int));
     QCOMPARE(v.toInt(), arg);
     QCOMPARE(MyObject::callCount, 1);
 }
@@ -1072,7 +1072,7 @@ void tst_QDBusInterface::propertyReadPeer()
 
     QVariant v = iface.property("prop1");
     QVERIFY(v.isValid());
-    QCOMPARE(v.userType(), int(QVariant::Int));
+    QCOMPARE(v.userType(), int(QMetaType::Int));
     QCOMPARE(v.toInt(), arg);
     QCOMPARE(callCountPeer(), 1);
 }
