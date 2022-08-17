@@ -164,7 +164,7 @@ bool QHttpSocketEngine::listen(int backlog)
     return false;
 }
 
-int QHttpSocketEngine::accept()
+qintptr QHttpSocketEngine::accept()
 {
     qWarning("Operation is not supported");
     setError(QAbstractSocket::UnsupportedSocketOperationError, "Unsupported socket operation"_L1);
