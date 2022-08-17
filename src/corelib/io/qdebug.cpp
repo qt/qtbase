@@ -203,7 +203,7 @@ static inline bool isPrintable(uchar c)
 { return c >= ' ' && c < 0x7f; }
 
 template <typename Char>
-static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, int length, bool isUnicode = true)
+static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, size_t length, bool isUnicode = true)
 {
     QChar quote(u'"');
     d->write(&quote, 1);
@@ -223,7 +223,7 @@ static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, in
 
         if (sizeof(Char) == sizeof(QChar)) {
             // Surrogate characters are category Cs (Other_Surrogate), so isPrintable = false for them
-            int runLength = 0;
+            qsizetype runLength = 0;
             while (p + runLength != end &&
                    isPrintable(p[runLength]) && p[runLength] != '\\' && p[runLength] != '"')
                 ++runLength;
@@ -325,7 +325,7 @@ void QDebug::putString(const QChar *begin, size_t length)
         // we'll reset the QTextStream formatting mechanisms, so save the state
         QDebugStateSaver saver(*this);
         stream->ts.d_ptr->params.reset();
-        putEscapedString(stream->ts.d_ptr.data(), reinterpret_cast<const ushort *>(begin), int(length));
+        putEscapedString(stream->ts.d_ptr.data(), reinterpret_cast<const ushort *>(begin), length);
     }
 }
 
@@ -345,7 +345,7 @@ void QDebug::putByteArray(const char *begin, size_t length, Latin1Content conten
         QDebugStateSaver saver(*this);
         stream->ts.d_ptr->params.reset();
         putEscapedString(stream->ts.d_ptr.data(), reinterpret_cast<const uchar *>(begin),
-                         int(length), content == ContainsLatin1);
+                         length, content == ContainsLatin1);
     }
 }
 
