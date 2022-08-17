@@ -773,10 +773,10 @@ bool QNativeSocketEnginePrivate::nativeListen(int backlog)
     return true;
 }
 
-int QNativeSocketEnginePrivate::nativeAccept()
+qintptr QNativeSocketEnginePrivate::nativeAccept()
 {
-    int acceptedDescriptor = WSAAccept(socketDescriptor, 0,0,0,0);
-    if (acceptedDescriptor == -1) {
+    SOCKET acceptedDescriptor = WSAAccept(socketDescriptor, 0,0,0,0);
+    if (acceptedDescriptor == INVALID_SOCKET) {
         int err = WSAGetLastError();
         switch (err) {
         case WSAEACCES:
@@ -810,7 +810,7 @@ int QNativeSocketEnginePrivate::nativeAccept()
             setError(QAbstractSocket::UnknownSocketError, UnknownSocketErrorString);
             break;
         }
-    } else if (acceptedDescriptor != -1 && QAbstractEventDispatcher::instance()) {
+    } else if (acceptedDescriptor != INVALID_SOCKET && QAbstractEventDispatcher::instance()) {
         // Because of WSAAsyncSelect() WSAAccept returns a non blocking socket
         // with the same attributes as the listening socket including the current
         // WSAAsyncSelect(). To be able to change the socket to blocking mode the
@@ -820,9 +820,9 @@ int QNativeSocketEnginePrivate::nativeAccept()
         n.setEnabled(false);
     }
 #if defined (QNATIVESOCKETENGINE_DEBUG)
-    qDebug("QNativeSocketEnginePrivate::nativeAccept() == %i", acceptedDescriptor);
+    qDebug("QNativeSocketEnginePrivate::nativeAccept() == %lld", qint64(acceptedDescriptor));
 #endif
-    return acceptedDescriptor;
+    return qintptr(acceptedDescriptor);
 }
 
 static bool multicastMembershipHelper(QNativeSocketEnginePrivate *d,
