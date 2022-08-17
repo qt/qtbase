@@ -139,7 +139,7 @@ public:
     bool connectToHostByName(const QString &name, quint16 port) override;
     bool bind(const QHostAddress &address, quint16 port) override;
     bool listen(int backlog) override;
-    int accept() override;
+    qintptr accept() override;
     void close() override;
 
     qint64 bytesAvailable() const override;
@@ -261,7 +261,7 @@ public:
     bool nativeConnect(const QHostAddress &address, quint16 port);
     bool nativeBind(const QHostAddress &address, quint16 port);
     bool nativeListen(int backlog);
-    int nativeAccept();
+    qintptr nativeAccept();
 #ifndef QT_NO_NETWORKINTERFACE
     bool nativeJoinMulticastGroup(const QHostAddress &groupAddress,
                                   const QNetworkInterface &iface);
