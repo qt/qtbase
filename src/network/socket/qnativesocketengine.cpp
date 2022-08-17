@@ -715,7 +715,7 @@ bool QNativeSocketEngine::listen()
 
     \sa bind(), listen()
 */
-int QNativeSocketEngine::accept()
+qintptr QNativeSocketEngine::accept()
 {
     Q_D(QNativeSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::accept(), -1);
@@ -1291,7 +1291,7 @@ bool QReadNotifier::event(QEvent *e)
 class QWriteNotifier : public QSocketNotifier
 {
 public:
-    QWriteNotifier(int fd, QNativeSocketEngine *parent)
+    QWriteNotifier(qintptr fd, QNativeSocketEngine *parent)
         : QSocketNotifier(fd, QSocketNotifier::Write, parent) { engine = parent; }
 
 protected:
@@ -1315,7 +1315,7 @@ bool QWriteNotifier::event(QEvent *e)
 class QExceptionNotifier : public QSocketNotifier
 {
 public:
-    QExceptionNotifier(int fd, QNativeSocketEngine *parent)
+    QExceptionNotifier(qintptr fd, QNativeSocketEngine *parent)
         : QSocketNotifier(fd, QSocketNotifier::Exception, parent) { engine = parent; }
 
 protected:

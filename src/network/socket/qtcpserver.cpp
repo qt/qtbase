@@ -205,7 +205,7 @@ void QTcpServerPrivate::readNotification()
             return;
         }
 
-        int descriptor = socketEngine->accept();
+        qintptr descriptor = socketEngine->accept();
         if (descriptor == -1) {
             if (socketEngine->error() != QAbstractSocket::TemporaryError) {
                 q->pauseAccepting();
