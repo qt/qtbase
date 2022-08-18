@@ -106,7 +106,9 @@ private:
     QString getAttributeValue(QAccessibleInterface *, int offset, const QString &attributeName) const;
     QList<QVariant> getCharacterExtents(QAccessibleInterface *, int offset, uint coordType) const;
     QList<QVariant> getRangeExtents(QAccessibleInterface *, int startOffset, int endOffset, uint coordType) const;
-    QAccessible::TextBoundaryType qAccessibleBoundaryType(int atspiTextBoundaryType) const;
+    static QAccessible::TextBoundaryType qAccessibleBoundaryTypeFromAtspiBoundaryType(int atspiTextBoundaryType);
+    static bool isValidAtspiTextGranularity(uint coordType);
+    static QAccessible::TextBoundaryType qAccessibleBoundaryTypeFromAtspiTextGranularity(uint atspiTextGranularity);
     static bool inheritsQAction(QObject *object);
 
     // private vars

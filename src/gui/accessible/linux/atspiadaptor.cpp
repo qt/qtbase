@@ -438,6 +438,13 @@ QString AtSpiAdaptor::introspect(const QString &path) const
                 "  <interface name=\"org.a11y.atspi.Text\">\n"
                 "    <property access=\"read\" type=\"i\" name=\"CharacterCount\"/>\n"
                 "    <property access=\"read\" type=\"i\" name=\"CaretOffset\"/>\n"
+                "    <method name=\"GetStringAtOffset\">\n"
+                "      <arg direction=\"in\" name=\"offset\" type=\"i\"/>\n"
+                "      <arg direction=\"in\" name=\"granularity\" type=\"u\"/>\n"
+                "      <arg direction=\"out\" type=\"s\"/>\n"
+                "      <arg direction=\"out\" name=\"startOffset\" type=\"i\"/>\n"
+                "      <arg direction=\"out\" name=\"endOffset\" type=\"i\"/>\n"
+                "    </method>\n"
                 "    <method name=\"GetText\">\n"
                 "      <arg direction=\"in\" type=\"i\" name=\"startOffset\"/>\n"
                 "      <arg direction=\"in\" type=\"i\" name=\"endOffset\"/>\n"
@@ -1836,6 +1843,16 @@ bool AtSpiAdaptor::textInterface(QAccessibleInterface *interface, const QString 
         QVariantList sel;
         sel << start << end;
         connection.send(message.createReply(sel));
+    } else if (function == "GetStringAtOffset"_L1) {
+        int offset = message.arguments().at(0).toInt();
+        uint granularity = message.arguments().at(1).toUInt();
+        if (!isValidAtspiTextGranularity(granularity))
+            return false;
+        int startOffset, endOffset;
+        QString text = interface->textInterface()->textAtOffset(offset, qAccessibleBoundaryTypeFromAtspiTextGranularity(granularity), &startOffset, &endOffset);
+        QVariantList ret;
+        ret << text << startOffset << endOffset;
+        connection.send(message.createReply(ret));
     } else if (function == "GetText"_L1) {
         int startOffset = message.arguments().at(0).toInt();
         int endOffset = message.arguments().at(1).toInt();
@@ -1846,7 +1863,7 @@ bool AtSpiAdaptor::textInterface(QAccessibleInterface *interface, const QString 
         int offset = message.arguments().at(0).toInt();
         int type = message.arguments().at(1).toUInt();
         int startOffset, endOffset;
-        QString text = interface->textInterface()->textAfterOffset(offset, qAccessibleBoundaryType(type), &startOffset, &endOffset);
+        QString text = interface->textInterface()->textAfterOffset(offset, qAccessibleBoundaryTypeFromAtspiBoundaryType(type), &startOffset, &endOffset);
         QVariantList ret;
         ret << text << startOffset << endOffset;
         connection.send(message.createReply(ret));
@@ -1854,7 +1871,7 @@ bool AtSpiAdaptor::textInterface(QAccessibleInterface *interface, const QString 
         int offset = message.arguments().at(0).toInt();
         int type = message.arguments().at(1).toUInt();
         int startOffset, endOffset;
-        QString text = interface->textInterface()->textAtOffset(offset, qAccessibleBoundaryType(type), &startOffset, &endOffset);
+        QString text = interface->textInterface()->textAtOffset(offset, qAccessibleBoundaryTypeFromAtspiBoundaryType(type), &startOffset, &endOffset);
         QVariantList ret;
         ret << text << startOffset << endOffset;
         connection.send(message.createReply(ret));
@@ -1862,7 +1879,7 @@ bool AtSpiAdaptor::textInterface(QAccessibleInterface *interface, const QString 
         int offset = message.arguments().at(0).toInt();
         int type = message.arguments().at(1).toUInt();
         int startOffset, endOffset;
-        QString text = interface->textInterface()->textBeforeOffset(offset, qAccessibleBoundaryType(type), &startOffset, &endOffset);
+        QString text = interface->textInterface()->textBeforeOffset(offset, qAccessibleBoundaryTypeFromAtspiBoundaryType(type), &startOffset, &endOffset);
         QVariantList ret;
         ret << text << startOffset << endOffset;
         connection.send(message.createReply(ret));
@@ -1894,7 +1911,7 @@ bool AtSpiAdaptor::textInterface(QAccessibleInterface *interface, const QString 
     return true;
 }
 
-QAccessible::TextBoundaryType AtSpiAdaptor::qAccessibleBoundaryType(int atspiTextBoundaryType) const
+QAccessible::TextBoundaryType AtSpiAdaptor::qAccessibleBoundaryTypeFromAtspiBoundaryType(int atspiTextBoundaryType)
 {
     switch (atspiTextBoundaryType) {
     case ATSPI_TEXT_BOUNDARY_CHAR:
@@ -1910,6 +1927,38 @@ QAccessible::TextBoundaryType AtSpiAdaptor::qAccessibleBoundaryType(int atspiTex
         return QAccessible::LineBoundary;
     }
     Q_ASSERT_X(0, "", "Requested invalid boundary type.");
+    return QAccessible::CharBoundary;
+}
+
+bool AtSpiAdaptor::isValidAtspiTextGranularity(uint atspiTextGranularity)
+{
+    if (atspiTextGranularity == ATSPI_TEXT_GRANULARITY_CHAR
+            || atspiTextGranularity == ATSPI_TEXT_GRANULARITY_WORD
+            || atspiTextGranularity == ATSPI_TEXT_GRANULARITY_SENTENCE
+            || atspiTextGranularity == ATSPI_TEXT_GRANULARITY_LINE
+            || atspiTextGranularity == ATSPI_TEXT_GRANULARITY_PARAGRAPH)
+        return true;
+
+    qCWarning(lcAccessibilityAtspi) << "Unknown value" << atspiTextGranularity << "for AT-SPI text granularity type";
+    return false;
+}
+
+QAccessible::TextBoundaryType AtSpiAdaptor::qAccessibleBoundaryTypeFromAtspiTextGranularity(uint atspiTextGranularity)
+{
+    Q_ASSERT(isValidAtspiTextGranularity(atspiTextGranularity));
+
+    switch (atspiTextGranularity) {
+    case ATSPI_TEXT_GRANULARITY_CHAR:
+        return QAccessible::CharBoundary;
+    case ATSPI_TEXT_GRANULARITY_WORD:
+        return QAccessible::WordBoundary;
+    case ATSPI_TEXT_GRANULARITY_SENTENCE:
+        return QAccessible::SentenceBoundary;
+    case ATSPI_TEXT_GRANULARITY_LINE:
+        return QAccessible::LineBoundary;
+    case ATSPI_TEXT_GRANULARITY_PARAGRAPH:
+        return QAccessible::ParagraphBoundary;
+    }
     return QAccessible::CharBoundary;
 }
 
