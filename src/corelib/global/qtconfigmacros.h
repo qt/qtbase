@@ -4,6 +4,13 @@
 #ifndef QTCONFIGMACROS_H
 #define QTCONFIGMACROS_H
 
+#ifdef QT_BOOTSTRAPPED
+#include <QtCore/qconfig-bootstrapped.h>
+#else
+#include <QtCore/qconfig.h>
+#include <QtCore/qtcore-config.h>
+#endif
+
 /*
    The Qt modules' export macros.
    The options are:
@@ -29,6 +36,19 @@
 #  ifndef QT_SHARED
 #    define QT_SHARED
 #  endif
+#endif
+
+/*
+   No, this is not an evil backdoor. QT_BUILD_INTERNAL just exports more symbols
+   for Qt's internal unit tests. If you want slower loading times and more
+   symbols that can vanish from version to version, feel free to define QT_BUILD_INTERNAL.
+*/
+#if defined(QT_BUILD_INTERNAL) && defined(QT_BUILDING_QT) && defined(QT_SHARED)
+#    define Q_AUTOTEST_EXPORT Q_DECL_EXPORT
+#elif defined(QT_BUILD_INTERNAL) && defined(QT_SHARED)
+#    define Q_AUTOTEST_EXPORT Q_DECL_IMPORT
+#else
+#    define Q_AUTOTEST_EXPORT
 #endif
 
 /*
