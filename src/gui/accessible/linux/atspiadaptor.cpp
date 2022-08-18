@@ -1190,9 +1190,6 @@ void AtSpiAdaptor::childrenChanged(QAccessibleInterface *interface) const
 
 void AtSpiAdaptor::notifyAboutCreation(QAccessibleInterface *interface) const
 {
-//    // say hello to d-bus
-//    cache->emitAddAccessible(accessible->getCacheItem());
-
     // notify about the new child of our parent
     QAccessibleInterface * parent = interface->parent();
     if (!parent) {
