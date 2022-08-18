@@ -13,7 +13,9 @@
 #  include <QProcess>
 #endif
 #include <QScopedArrayPointer>
+#if QT_CONFIG(timezone)
 #include <QTimeZone>
+#endif
 
 #include <private/qlocale_p.h>
 #include <private/qlocale_tools_p.h>
