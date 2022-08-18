@@ -294,7 +294,7 @@ bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInf
         return false;
 
     // filter . and ..?
-    const int fileNameSize = fileName.size();
+    const qsizetype fileNameSize = fileName.size();
     const bool dotOrDotDot = fileName[0] == u'.'
                              && ((fileNameSize == 1)
                                  ||(fileNameSize == 2 && fileName[1] == u'.'));
