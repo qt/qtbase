@@ -715,7 +715,7 @@ static int drivePrefixLength(const QString &path)
     } else if (path.startsWith(QLatin1String("//"))) {
         // UNC path; use its //server/share part as "drive" - it's as sane a
         // thing as we can do.
-        for (int i = 2; i-- > 0; ) { // Scan two "path fragments":
+        for (int i = 0 ; i < 2 ; ++i) { // Scan two "path fragments":
             while (drive < size && path.at(drive).unicode() == '/')
                 drive++;
             if (drive >= size) {
