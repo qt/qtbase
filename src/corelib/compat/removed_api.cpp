@@ -299,6 +299,20 @@ void QBasicTimer::start(int msec, Qt::TimerType timerType, QObject *obj)
 
 #include "qbuffer.h" // inline removed API
 
+#include "qdir.h"
+
+uint QDir::count() const
+{
+    return uint(count(QT6_CALL_NEW_OVERLOAD));
+}
+
+#if QT_POINTER_SIZE != 4
+QString QDir::operator[](int i) const
+{
+    return operator[](qsizetype{i});
+}
+#endif
+
 #include "qenvironmentvariables.h"
 
 bool qputenv(const char *varName, const QByteArray &value)

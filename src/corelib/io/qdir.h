@@ -146,10 +146,16 @@ public:
     SortFlags sorting() const;
     void setSorting(SortFlags sort);
 
+#if QT_CORE_REMOVED_SINCE(6, 5)
     uint count() const;
+#endif
+    qsizetype count(QT6_DECL_NEW_OVERLOAD) const;
     bool isEmpty(Filters filters = Filters(AllEntries | NoDotAndDotDot)) const;
 
+#if QT_CORE_REMOVED_SINCE(6, 5) && QT_POINTER_SIZE != 4
     QString operator[](int) const;
+#endif
+    QString operator[](qsizetype) const;
 
     static QStringList nameFiltersFromString(const QString &nameFilter);
 

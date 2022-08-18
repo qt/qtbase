@@ -1262,9 +1262,12 @@ void QDir::setSorting(SortFlags sort)
 
     Equivalent to entryList().count().
 
+    \note In Qt versions prior to 6.5, this function returned \c{uint}, not
+    \c{qsizetype}.
+
     \sa operator[](), entryList()
 */
-uint QDir::count() const
+qsizetype QDir::count(QT6_IMPL_NEW_OVERLOAD) const
 {
     const QDirPrivate* d = d_ptr.constData();
     d->initFileLists(*this);
@@ -1276,9 +1279,11 @@ uint QDir::count() const
     names. Equivalent to entryList().at(index).
     \a pos must be a valid index position in the list (i.e., 0 <= pos < count()).
 
+    \note In Qt versions prior to 6.5, \a pos was an \c{int}, not \c{qsizetype}.
+
     \sa count(), entryList()
 */
-QString QDir::operator[](int pos) const
+QString QDir::operator[](qsizetype pos) const
 {
     const QDirPrivate* d = d_ptr.constData();
     d->initFileLists(*this);
