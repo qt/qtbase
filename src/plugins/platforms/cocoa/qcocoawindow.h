@@ -215,6 +215,10 @@ public: // for QNSView
     void handleWindowStateChanged(HandleFlags flags = NoHandleFlags);
     void handleExposeEvent(const QRegion &region);
 
+    static void closeAllPopups();
+    static void setupPopupMonitor();
+    static void removePopupMonitor();
+
     NSView *m_view;
     QCocoaNSWindow *m_nsWindow;
 
@@ -253,6 +257,9 @@ public: // for QNSView
     };
     QHash<quintptr, BorderRange> m_contentBorderAreas; // identifier -> uppper/lower
     QHash<quintptr, bool> m_enabledContentBorderAreas; // identifier -> enabled state (true/false)
+
+    static inline id s_globalMouseMonitor = 0;
+    static inline id s_applicationActivationObserver = 0;
 
 #if QT_CONFIG(vulkan)
     VkSurfaceKHR m_vulkanSurface = nullptr;
