@@ -2040,9 +2040,12 @@ void qErrnoWarning(int code, const char *msg, ...)
     \row \li \c{%{backtrace [depth=N] [separator="..."]}} \li A backtrace with the number of frames
         specified by the optional \c depth parameter (defaults to 5), and separated by the optional
         \c separator parameter (defaults to "|").
+
         This expansion is available only on some platforms (currently only platfoms using glibc).
         Names are only known for exported functions. If you want to see the name of every function
-        in your application, use \c{QMAKE_LFLAGS += -rdynamic}.
+        in your application, make sure your application is compiled and linked with \c{-rdynamic},
+        or an equivalent of it.
+
         When reading backtraces, take into account that frames might be missing due to inlining or
         tail call optimization.
     \endtable
