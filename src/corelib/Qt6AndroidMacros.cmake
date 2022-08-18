@@ -604,6 +604,7 @@ function(_qt_internal_collect_apk_dependencies)
     get_property(apk_targets GLOBAL PROPERTY _qt_apk_targets)
 
     _qt_internal_collect_buildsystem_shared_libraries(libs "${CMAKE_SOURCE_DIR}")
+    list(REMOVE_DUPLICATES libs)
 
     if(NOT TARGET qt_internal_plugins)
         add_custom_target(qt_internal_plugins)
