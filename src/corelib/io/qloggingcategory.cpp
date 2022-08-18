@@ -621,8 +621,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
     with a specific name. The implicitly-defined QLoggingCategory object is
     created on first use, in a thread-safe manner.
 
-    This macro must be used outside of a class or method. It is only defined
-    if variadic macros are supported.
+    This macro must be used outside of a class or method.
 */
 
 QT_END_NAMESPACE
