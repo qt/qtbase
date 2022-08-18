@@ -49,4 +49,5 @@ function:
 \snippet cmake-macros/examples.cmake qt_finalize_project_manual
 
 \sa {cmake-variable-QT_NO_COLLECT_BUILD_TREE_APK_DEPS}{QT_NO_COLLECT_BUILD_TREE_APK_DEPS}
+\sa {cmake-variable-QT_NO_COLLECT_IMPORTED_TARGET_APK_DEPS}{QT_NO_COLLECT_IMPORTED_TARGET_APK_DEPS}
 */

@@ -225,6 +225,33 @@ resolving dependencies between libraries.
 Set \c QT_NO_COLLECT_BUILD_TREE_APK_DEPS to \c TRUE to disable this behavior.
 
 \sa {qt6_finalize_project}{qt_finalize_project()}
+\sa {cmake-variable-QT_NO_COLLECT_IMPORTED_TARGET_APK_DEPS}{QT_NO_COLLECT_IMPORTED_TARGET_APK_DEPS}
+*/
+
+/*!
+\page cmake-variable-QT_NO_COLLECT_IMPORTED_TARGET_APK_DEPS.html
+\ingroup cmake-variables-qtcore
+
+\title QT_NO_COLLECT_IMPORTED_TARGET_APK_DEPS
+\target cmake-variable-QT_NO_COLLECT_IMPORTED_TARGET_APK_DEPS
+
+\summary {Prevents collecting of imported targets during Android deployment.}
+
+\cmakevariablesince 6.5
+\preliminarycmakevariable
+\cmakevariableandroidonly
+
+When using CMake version 3.21 or later, the build system collects the locations of
+imported shared library targets that might be relevant for deployment.
+The collected targets are those that are reachable from the the directory scope
+of the currently processed executable target. That includes the target's source directory
+scope and its parents.
+The collected locations are passed to \l androiddeployqt for deployment consideration when
+resolving dependencies between libraries.
+Set \c QT_NO_COLLECT_IMPORTED_TARGET_APK_DEPS to \c TRUE to disable this behavior.
+
+\sa {qt6_finalize_project}{qt_finalize_project()}
+\sa {cmake-variable-QT_NO_COLLECT_BUILD_TREE_APK_DEPS}{QT_NO_COLLECT_BUILD_TREE_APK_DEPS}
 */
 
 /*!
