@@ -482,6 +482,7 @@ QString AtSpiAdaptor::introspect(const QString &path) const
                 "    </method>\n"
                 "    <method name=\"GetNSelections\">\n"
                 "      <arg direction=\"out\" type=\"i\"/>\n"
+                "    </method>\n"
                 "    <method name=\"GetSelection\">\n"
                 "      <arg direction=\"in\" type=\"i\" name=\"selectionNum\"/>\n"
                 "      <arg direction=\"out\" type=\"i\" name=\"startOffset\"/>\n"
