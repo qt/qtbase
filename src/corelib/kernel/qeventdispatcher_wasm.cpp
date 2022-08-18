@@ -32,6 +32,8 @@ Q_LOGGING_CATEGORY(lcEventDispatcherTimers, "qt.eventdispatcher.timers");
 // track Qts own usage of asyncify.
 static bool g_is_asyncify_suspended = false;
 
+#if defined(QT_STATIC)
+
 EM_JS(bool, qt_have_asyncify_js, (), {
     return typeof Asyncify != "undefined";
 });
@@ -53,6 +55,27 @@ EM_JS(void, qt_asyncify_resume_js, (), {
     // https://github.com/emscripten-core/emscripten/issues/10515
     setTimeout(wakeUp);
 });
+
+#else
+
+// EM_JS is not supported for side modules; disable asyncify
+
+bool qt_have_asyncify_js()
+{
+    return false;
+}
+
+void qt_asyncify_suspend_js()
+{
+    Q_UNREACHABLE();
+}
+
+void qt_asyncify_resume_js()
+{
+    Q_UNREACHABLE();
+}
+
+#endif // defined(QT_STATIC)
 
 // Returns true if asyncify is available.
 bool qt_have_asyncify()
