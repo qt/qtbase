@@ -451,9 +451,6 @@ QString AtSpiAdaptor::introspect(const QString &path) const
                 "      <arg direction=\"in\" type=\"i\" name=\"offset\"/>\n"
                 "      <arg direction=\"in\" type=\"s\" name=\"attributeName\"/>\n"
                 "      <arg direction=\"out\" type=\"s\"/>\n"
-                "      <arg direction=\"out\" type=\"i\" name=\"startOffset\"/>\n"
-                "      <arg direction=\"out\" type=\"i\" name=\"endOffset\"/>\n"
-                "      <arg direction=\"out\" type=\"b\" name=\"defined\"/>\n"
                 "    </method>\n"
                 "    <method name=\"GetAttributes\">\n"
                 "      <arg direction=\"in\" type=\"i\" name=\"offset\"/>\n"
@@ -1761,7 +1758,7 @@ bool AtSpiAdaptor::textInterface(QAccessibleInterface *interface, const QString 
     } else if (function == "GetAttributeValue"_L1) {
         int offset = message.arguments().at(0).toInt();
         QString attributeName = message.arguments().at(1).toString();
-        connection.send(message.createReply(getAttributeValue(interface, offset, attributeName)));
+        connection.send(message.createReply(QVariant(getAttributeValue(interface, offset, attributeName))));
     } else if (function == "GetAttributes"_L1) {
         int offset = message.arguments().at(0).toInt();
         connection.send(message.createReply(getAttributes(interface, offset, true)));
@@ -2027,9 +2024,8 @@ QVariantList AtSpiAdaptor::getAttributes(QAccessibleInterface *interface, int of
     return list;
 }
 
-QVariantList AtSpiAdaptor::getAttributeValue(QAccessibleInterface *interface, int offset, const QString &attributeName) const
+QString AtSpiAdaptor::getAttributeValue(QAccessibleInterface *interface, int offset, const QString &attributeName) const
 {
-    QString mapped;
     QString joined;
     QSpiAttributeSet map;
     int startOffset;
@@ -2044,11 +2040,7 @@ QVariantList AtSpiAdaptor::getAttributeValue(QAccessibleInterface *interface, in
         if (!attribute.isNull())
             map[attribute.name] = attribute.value;
     }
-    mapped = map[attributeName];
-    const bool defined = !mapped.isEmpty();
-    QVariantList list;
-    list << mapped << startOffset << endOffset << defined;
-    return list;
+    return map[attributeName];
 }
 
 QList<QVariant> AtSpiAdaptor::getCharacterExtents(QAccessibleInterface *interface, int offset, uint coordType) const
