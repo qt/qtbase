@@ -103,7 +103,6 @@ qt_internal_add_module(Core
         kernel/qcoreapplication_platform.h
         kernel/qcorecmdlineargs_p.h
         kernel/qcoreevent.cpp kernel/qcoreevent.h
-        kernel/qcoreglobaldata.cpp kernel/qcoreglobaldata_p.h
         kernel/qdeadlinetimer.cpp kernel/qdeadlinetimer.h kernel/qdeadlinetimer_p.h
         kernel/qelapsedtimer.cpp kernel/qelapsedtimer.h
         kernel/qeventloop.cpp kernel/qeventloop.h

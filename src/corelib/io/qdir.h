@@ -148,6 +148,7 @@ public:
     { return QtPrivate::toFilesystemPath(canonicalPath()); }
 #endif // QT_CONFIG(cxx17_filesystem)
 
+#ifndef QT_BOOTSTRAPPED
     static void setSearchPaths(const QString &prefix, const QStringList &searchPaths);
     static void addSearchPath(const QString &prefix, const QString &path);
 #ifdef Q_CLANG_QDOC
@@ -160,6 +161,7 @@ public:
     }
 #endif // QT_CONFIG(cxx17_filesystem)
     static QStringList searchPaths(const QString &prefix);
+#endif // QT_BOOTSTRAPPED
 
     QString dirName() const;
     QString filePath(const QString &fileName) const;

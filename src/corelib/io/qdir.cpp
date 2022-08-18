@@ -57,8 +57,8 @@
 #include "qfilesystemengine_p.h"
 #include <qstringbuilder.h>
 
-#ifdef QT_BUILD_CORE_LIB
-#  include "private/qcoreglobaldata_p.h"
+#ifndef QT_BOOTSTRAPPED
+# include "qreadwritelock.h"
 #endif
 
 #include <algorithm>
@@ -1056,7 +1056,17 @@ void QDir::setNameFilters(const QStringList &nameFilters)
     d->nameFilters = nameFilters;
 }
 
-#ifdef QT_BUILD_CORE_LIB
+#ifndef QT_BOOTSTRAPPED
+
+namespace {
+struct DirSearchPaths {
+    mutable QReadWriteLock mutex;
+    QHash<QString, QStringList> paths;
+};
+}
+
+Q_GLOBAL_STATIC(DirSearchPaths, dirSearchPaths)
+
 /*!
     \since 4.3
 
@@ -1091,12 +1101,12 @@ void QDir::setSearchPaths(const QString &prefix, const QStringList &searchPaths)
         }
     }
 
-    QWriteLocker lock(&QCoreGlobalData::instance()->dirSearchPathsLock);
-    QMap<QString, QStringList> &paths = QCoreGlobalData::instance()->dirSearchPaths;
+    DirSearchPaths &conf = *dirSearchPaths;
+    const QWriteLocker lock(&conf.mutex);
     if (searchPaths.isEmpty()) {
-        paths.remove(prefix);
+        conf.paths.remove(prefix);
     } else {
-        paths.insert(prefix, searchPaths);
+        conf.paths.insert(prefix, searchPaths);
     }
 }
 
@@ -1112,8 +1122,9 @@ void QDir::addSearchPath(const QString &prefix, const QString &path)
     if (path.isEmpty())
         return;
 
-    QWriteLocker lock(&QCoreGlobalData::instance()->dirSearchPathsLock);
-    QCoreGlobalData::instance()->dirSearchPaths[prefix] += path;
+    DirSearchPaths &conf = *dirSearchPaths;
+    const QWriteLocker lock(&conf.mutex);
+    conf.paths[prefix] += path;
 }
 
 /*!
@@ -1125,11 +1136,15 @@ void QDir::addSearchPath(const QString &prefix, const QString &path)
 */
 QStringList QDir::searchPaths(const QString &prefix)
 {
-    QReadLocker lock(&QCoreGlobalData::instance()->dirSearchPathsLock);
-    return QCoreGlobalData::instance()->dirSearchPaths.value(prefix);
+    if (!dirSearchPaths.exists())
+        return QStringList();
+
+    const DirSearchPaths &conf = *dirSearchPaths;
+    const QReadLocker lock(&conf.mutex);
+    return conf.paths.value(prefix);
 }
 
-#endif // QT_BUILD_CORE_LIB
+#endif // QT_BOOTSTRAPPED
 
 /*!
     Returns the value set by setFilter()
