@@ -55,7 +55,9 @@
 #include <QtSql/private/qsqlcachedresult_p.h>
 #include <QtSql/private/qsqldriver_p.h>
 #include <qstringlist.h>
+#if QT_CONFIG(timezone)
 #include <qtimezone.h>
+#endif
 #include <qvariant.h>
 #include <qvarlengtharray.h>
 

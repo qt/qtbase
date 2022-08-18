@@ -29,7 +29,9 @@
 
 #include <private/qglobal_p.h> // for the icu feature test
 #include <QTest>
+#if QT_CONFIG(timezone)
 #include <QTimeZone>
+#endif
 #include <qdatetime.h>
 #include <qlocale.h>
 
