@@ -21,35 +21,29 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-#ifdef QIODEVICE_DEBUG
-void debugBinaryString(const QByteArray &input)
+[[maybe_unused]]
+static void debugBinaryString(const char *input, qint64 maxlen)
 {
     QByteArray tmp;
-    int startOffset = 0;
-    for (int i = 0; i < input.size(); ++i) {
+    qlonglong startOffset = 0;
+    for (qint64 i = 0; i < maxlen; ++i) {
         tmp += input[i];
 
-        if ((i % 16) == 15 || i == (input.size() - 1)) {
-            printf("\n%15d:", startOffset);
+        if ((i % 16) == 15 || i == (maxlen - 1)) {
+            printf("\n%15lld:", startOffset);
             startOffset += tmp.size();
 
-            for (int j = 0; j < tmp.size(); ++j)
+            for (qsizetype j = 0; j < tmp.size(); ++j)
                 printf(" %02x", int(uchar(tmp[j])));
-            for (int j = tmp.size(); j < 16 + 1; ++j)
+            for (qsizetype j = tmp.size(); j < 16 + 1; ++j)
                 printf("   ");
-            for (int j = 0; j < tmp.size(); ++j)
+            for (qsizetype j = 0; j < tmp.size(); ++j)
                 printf("%c", isprint(int(uchar(tmp[j]))) ? tmp[j] : '.');
             tmp.clear();
         }
     }
     printf("\n\n");
 }
-
-void debugBinaryString(const char *data, qint64 maxlen)
-{
-    debugBinaryString(QByteArray(data, maxlen));
-}
-#endif
 
 #define Q_VOID
 
@@ -1334,7 +1328,7 @@ qint64 QIODevice::readLine(char *data, qint64 maxSize)
 #if defined QIODEVICE_DEBUG
     printf("%p \treturning %lld, d->pos = %lld, d->buffer.size() = %lld, size() = %lld\n",
            this, readBytes, d->pos, d->buffer.size(), size());
-    debugBinaryString(data, qsizetype(readBytes));
+    debugBinaryString(data, readBytes);
 #endif
 
     return readBytes;
@@ -1378,7 +1372,7 @@ qint64 QIODevicePrivate::readLine(char *data, qint64 maxSize)
 #if defined QIODEVICE_DEBUG
         printf("%p \tread from buffer: %lld bytes, last character read: %hhx\n", q,
                readSoFar, data[readSoFar - 1]);
-        debugBinaryString(data, qsizetype(readSoFar));
+        debugBinaryString(data, readSoFar);
 #endif
         if (data[readSoFar - 1] == '\n') {
             if (openMode & QIODevice::Text) {
@@ -1405,7 +1399,7 @@ qint64 QIODevicePrivate::readLine(char *data, qint64 maxSize)
     printf("%p \tread from readLineData: %lld bytes, readSoFar = %lld bytes\n", q,
            readBytes, readSoFar);
     if (readBytes > 0) {
-        debugBinaryString(data, qsizetype(readSoFar + readBytes));
+        debugBinaryString(data, readSoFar + readBytes);
     }
 #endif
     if (readBytes < 0) {
