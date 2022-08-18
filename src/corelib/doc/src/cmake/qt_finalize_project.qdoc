@@ -8,7 +8,7 @@
 \title qt_finalize_project
 \target qt6_finalize_project
 
-\summary {Handles various common platform-specific tasks associated with Qt project.}
+\summary {Handles various common platform-specific tasks associated with a Qt project.}
 \preliminarycmakecommand
 
 \include cmake-find-package-core.qdocinc
@@ -26,13 +26,17 @@ qt_finalize_project()
 \section1 Description
 
 Some targets that are created using Qt commands require additional actions
-at the end of CMake configuring phase. Depending on the platform the function
-typically walks through the build tree, resolves dependencies between targets
-created by the user, and applies extra deployment steps.
+at the end of CMake configuring phase.
+Depending on the platform, the function typically:
+\list
+    \li Walks the build tree.
+    \li Resolves dependencies.
+    \li Applies any extra deployment steps.
+\endlist
 
-With CMake versions 3.19 and higher, you don't need to call this command since
+With CMake version 3.19 or later, you don't need to call this command since
 it consists of sub-commands that are ordinarily invoked at the end of
-\c CMAKE_SOURCE_DIR scope.
+\c CMAKE_SOURCE_DIR directory scope processing.
 
 \include cmake-android-qt-finalize-project-warning.cmake
 
