@@ -56,13 +56,13 @@ enum {
 };
 
 // Return the length of the root part of an absolute path, for use by cleanPath(), cd().
-static int rootLength(const QString &name, bool allowUncPaths)
+static qsizetype rootLength(QStringView name, bool allowUncPaths)
 {
-    const int len = name.length();
+    const qsizetype len = name.size();
     // starts with double slash
     if (allowUncPaths && name.startsWith("//"_L1)) {
         // Server name '//server/path' is part of the prefix.
-        const int nextSlash = name.indexOf(u'/', 2);
+        const qsizetype nextSlash = name.indexOf(u'/', 2);
         return nextSlash >= 0 ? nextSlash + 1 : len;
     }
 #if defined(Q_OS_WIN)
@@ -123,7 +123,7 @@ bool QDirPrivate::exists() const
 inline QChar QDirPrivate::getFilterSepChar(const QString &nameFilter)
 {
     QChar sep(u';');
-    int i = nameFilter.indexOf(sep, 0);
+    qsizetype i = nameFilter.indexOf(sep, 0);
     if (i == -1 && nameFilter.indexOf(u' ', 0) != -1)
         sep = QChar(u' ');
     return sep;
@@ -279,7 +279,7 @@ inline void QDirPrivate::sortFileList(QDir::SortFlags sort, const QFileInfoList 
                                       QStringList *names, QFileInfoList *infos)
 {
     // names and infos are always empty lists or 0 here
-    int n = l.size();
+    qsizetype n = l.size();
     if (n > 0) {
         if (n == 1 || (sort & QDir::SortByMask) == QDir::Unsorted) {
             if (infos)
@@ -290,16 +290,16 @@ inline void QDirPrivate::sortFileList(QDir::SortFlags sort, const QFileInfoList 
             }
         } else {
             QScopedArrayPointer<QDirSortItem> si(new QDirSortItem[n]);
-            for (int i = 0; i < n; ++i)
+            for (qsizetype i = 0; i < n; ++i)
                 si[i].item = l.at(i);
             std::sort(si.data(), si.data() + n, QDirSortItemComparator(sort));
             // put them back in the list(s)
             if (infos) {
-                for (int i = 0; i < n; ++i)
+                for (qsizetype i = 0; i < n; ++i)
                     infos->append(si[i].item);
             }
             if (names) {
-                for (int i = 0; i < n; ++i)
+                for (qsizetype i = 0; i < n; ++i)
                     names->append(si[i].item.fileName());
             }
         }
@@ -666,11 +666,11 @@ QString QDir::dirName() const
 
 
 #ifdef Q_OS_WIN
-static int drivePrefixLength(const QString &path)
+static qsizetype drivePrefixLength(QStringView path)
 {
     // Used to extract path's drive for use as prefix for an "absolute except for drive" path
-    const int size = path.length();
-    int drive = 2; // length of drive prefix
+    const qsizetype size = path.size();
+    qsizetype drive = 2; // length of drive prefix
     if (size > 1 && path.at(1).unicode() == ':') {
         if (Q_UNLIKELY(!path.at(0).isLetter()))
             return 0;
@@ -682,7 +682,7 @@ static int drivePrefixLength(const QString &path)
                 drive++;
             if (drive >= size) {
                 qWarning("Base directory starts with neither a drive nor a UNC share: %s",
-                         qUtf8Printable(QDir::toNativeSeparators(path)));
+                         qUtf8Printable(QDir::toNativeSeparators(path.toString())));
                 return 0;
             }
             while (drive < size && path.at(drive).unicode() != '/')
@@ -732,7 +732,7 @@ QString QDir::filePath(const QString &fileName) const
 #ifdef Q_OS_WIN
     if (fileName.startsWith(u'/') || fileName.startsWith(u'\\')) {
         // Handle the "absolute except for drive" case (i.e. \blah not c:\blah):
-        const int drive = drivePrefixLength(ret);
+        const qsizetype drive = drivePrefixLength(ret);
         return drive > 0 ? QStringView{ret}.left(drive) % fileName : fileName;
     }
 #endif // Q_OS_WIN
@@ -764,7 +764,7 @@ QString QDir::absoluteFilePath(const QString &fileName) const
     // Handle the "absolute except for drive" case (i.e. \blah not c:\blah):
     if (fileName.startsWith(u'/') || fileName.startsWith(u'\\')) {
         // Combine absoluteDirPath's drive with fileName
-        const int drive = drivePrefixLength(absoluteDirPath);
+        const qsizetype drive = drivePrefixLength(absoluteDirPath);
         if (Q_LIKELY(drive))
             return QStringView{absoluteDirPath}.left(drive) % fileName;
 
@@ -874,7 +874,7 @@ QString QDir::relativeFilePath(const QString &fileName) const
 QString QDir::toNativeSeparators(const QString &pathName)
 {
 #if defined(Q_OS_WIN)
-    int i = pathName.indexOf(u'/');
+    qsizetype i = pathName.indexOf(u'/');
     if (i != -1) {
         QString n(pathName);
 
@@ -2133,7 +2133,7 @@ QString qt_normalizePathSegments(const QString &name, QDirPrivate::PathNormaliza
 {
     const bool allowUncPaths = flags.testAnyFlag(QDirPrivate::AllowUncPaths);
     const bool isRemote = flags.testAnyFlag(QDirPrivate::RemotePath);
-    const int len = name.length();
+    const qsizetype len = name.size();
 
     if (ok)
         *ok = false;
@@ -2141,15 +2141,15 @@ QString qt_normalizePathSegments(const QString &name, QDirPrivate::PathNormaliza
     if (len == 0)
         return name;
 
-    int i = len - 1;
+    qsizetype i = len - 1;
     QVarLengthArray<char16_t> outVector(len);
-    int used = len;
+    qsizetype used = len;
     char16_t *out = outVector.data();
     const ushort *p = reinterpret_cast<const ushort *>(name.data());
     const ushort *prefix = p;
-    int up = 0;
+    qsizetype up = 0;
 
-    const int prefixLength = rootLength(name, allowUncPaths);
+    const qsizetype prefixLength = rootLength(name, allowUncPaths);
     p += prefixLength;
     i -= prefixLength;
 
@@ -2160,10 +2160,10 @@ QString qt_normalizePathSegments(const QString &name, QDirPrivate::PathNormaliza
         --i;
     }
 
-    auto isDot = [](const ushort *p, int i) {
+    auto isDot = [](const ushort *p, qsizetype i) {
         return i > 1 && p[i - 1] == '.' && p[i - 2] == '/';
     };
-    auto isDotDot = [](const ushort *p, int i) {
+    auto isDotDot = [](const ushort *p, qsizetype i) {
         return i > 2 && p[i - 1] == '.' && p[i - 2] == '.' && p[i - 3] == '/';
     };
 
@@ -2266,7 +2266,7 @@ QString qt_normalizePathSegments(const QString &name, QDirPrivate::PathNormaliza
             // string only consists of a prefix followed by one or more slashes. Just skip the slash.
             ++used;
         }
-        for (int i = prefixLength - 1; i >= 0; --i)
+        for (qsizetype i = prefixLength - 1; i >= 0; --i)
             out[--used] = prefix[i];
     } else {
         if (isEmpty) {
