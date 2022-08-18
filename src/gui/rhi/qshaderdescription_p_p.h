@@ -27,7 +27,6 @@ struct Q_GUI_EXPORT QShaderDescriptionPrivate
     QShaderDescriptionPrivate()
         : ref(1)
     {
-        localSize[0] = localSize[1] = localSize[2] = 0;
     }
 
     QShaderDescriptionPrivate(const QShaderDescriptionPrivate &other)
@@ -41,7 +40,13 @@ struct Q_GUI_EXPORT QShaderDescriptionPrivate
           separateImages(other.separateImages),
           separateSamplers(other.separateSamplers),
           storageImages(other.storageImages),
-          localSize(other.localSize)
+          inBuiltins(other.inBuiltins),
+          outBuiltins(other.outBuiltins),
+          localSize(other.localSize),
+          tessOutVertCount(other.tessOutVertCount),
+          tessMode(other.tessMode),
+          tessWind(other.tessWind),
+          tessPart(other.tessPart)
     {
     }
 
@@ -62,7 +67,13 @@ struct Q_GUI_EXPORT QShaderDescriptionPrivate
     QList<QShaderDescription::InOutVariable> separateImages;
     QList<QShaderDescription::InOutVariable> separateSamplers;
     QList<QShaderDescription::InOutVariable> storageImages;
-    std::array<uint, 3> localSize;
+    QList<QShaderDescription::BuiltinVariable> inBuiltins;
+    QList<QShaderDescription::BuiltinVariable> outBuiltins;
+    std::array<uint, 3> localSize = {};
+    uint tessOutVertCount = 0;
+    QShaderDescription::TessellationMode tessMode = QShaderDescription::UnknownTessellationMode;
+    QShaderDescription::TessellationWindingOrder tessWind = QShaderDescription::UnknownTessellationWindingOrder;
+    QShaderDescription::TessellationPartitioning tessPart = QShaderDescription::UnknownTessellationPartitioning;
 };
 
 QT_END_NAMESPACE

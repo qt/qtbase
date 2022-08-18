@@ -9,9 +9,13 @@ static const float tri[] = {
     0.5f, -0.5f, 0.0f,    0.0f, 1.0f, 0.0f,
 };
 
+static const bool INDEXED = false;
+static const quint32 indices[] = { 0, 1, 2 };
+
 struct {
     QVector<QRhiResource *> releasePool;
     QRhiBuffer *vbuf = nullptr;
+    QRhiBuffer *ibuf = nullptr;
     QRhiBuffer *ubuf = nullptr;
     QRhiShaderResourceBindings *srb = nullptr;
     QRhiGraphicsPipeline *ps = nullptr;
@@ -28,6 +32,12 @@ void Window::customInit()
     d.vbuf = m_r->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(tri));
     d.vbuf->create();
     d.releasePool << d.vbuf;
+
+    if (INDEXED) {
+        d.ibuf = m_r->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::IndexBuffer, sizeof(indices));
+        d.ibuf->create();
+        d.releasePool << d.ibuf;
+    }
 
     d.ubuf = m_r->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 64 + 4 + 4);
     d.ubuf->create();
@@ -71,8 +81,12 @@ void Window::customInit()
 
     d.initialUpdates = m_r->nextResourceUpdateBatch();
     d.initialUpdates->uploadStaticBuffer(d.vbuf, tri);
+
     const float amplitude = 0.5f;
     d.initialUpdates->updateDynamicBuffer(d.ubuf, 68, 4, &amplitude);
+
+    if (INDEXED)
+        d.initialUpdates->uploadStaticBuffer(d.ibuf, indices);
 }
 
 void Window::customRelease()
@@ -96,14 +110,20 @@ void Window::customRender()
         u->updateDynamicBuffer(d.ubuf, 0, 64, d.winProj.constData());
     }
     u->updateDynamicBuffer(d.ubuf, 64, 4, &d.time);
-    d.time += 0.1f;
+    d.time += 0.01f;
 
     cb->beginPass(m_sc->currentFrameRenderTarget(), m_clearColor, { 1.0f, 0 }, u);
     cb->setGraphicsPipeline(d.ps);
     cb->setViewport({ 0, 0, float(outputSizeInPixels.width()), float(outputSizeInPixels.height()) });
     cb->setShaderResources();
     QRhiCommandBuffer::VertexInput vbufBinding(d.vbuf, 0);
-    cb->setVertexInput(0, 1, &vbufBinding);
-    cb->draw(3);
+    if (INDEXED) {
+        cb->setVertexInput(0, 1, &vbufBinding, d.ibuf, 0, QRhiCommandBuffer::IndexUInt32);
+        cb->drawIndexed(3);
+    } else {
+        cb->setVertexInput(0, 1, &vbufBinding);
+        cb->draw(3);
+    }
+
     cb->endPass();
 }

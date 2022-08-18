@@ -217,6 +217,9 @@ public:
         return accumulatedPipelineCreationTime;
     }
 
+    QRhiVertexInputAttribute::Format shaderDescVariableFormatToVertexInputFormat(QShaderDescription::VariableType type) const;
+    quint32 byteSizePerVertexForVertexInputFormat(QRhiVertexInputAttribute::Format format) const;
+
     QRhi *q;
 
     static const int MAX_SHADER_CACHE_ENTRIES = 128;

@@ -167,7 +167,31 @@ QT_BEGIN_NAMESPACE
     Describes what kind of shader code an entry contains.
 
     \value StandardShader The normal, unmodified version of the shader code.
+
     \value BatchableVertexShader Vertex shader rewritten to be suitable for Qt Quick scenegraph batching.
+
+    \value UInt16IndexedVertexAsComputeShader A vertex shader meant to be used
+    in a Metal pipeline with tessellation in combination with indexed draw
+    calls sourcing index data from a uint16 index buffer. To support the Metal
+    tessellation pipeline, the vertex shader is translated to a compute shader
+    that may be dependent on the index buffer usage in the draw calls (e.g. if
+    the shader is using gl_VertexIndex), hence the need for three dedicated
+    variants.
+
+    \value UInt32IndexedVertexAsComputeShader A vertex shader meant to be used
+    in a Metal pipeline with tessellation in combination with indexed draw
+    calls sourcing index data from a uint32 index buffer. To support the Metal
+    tessellation pipeline, the vertex shader is translated to a compute shader
+    that may be dependent on the index buffer usage in the draw calls (e.g. if
+    the shader is using gl_VertexIndex), hence the need for three dedicated
+    variants.
+
+    \value NonIndexedVertexAsComputeShader A vertex shader meant to be used in
+    a Metal pipeline with tessellation in combination with non-indexed draw
+    calls. To support the Metal tessellation pipeline, the vertex shader is
+    translated to a compute shader that may be dependent on the index buffer
+    usage in the draw calls (e.g. if the shader is using gl_VertexIndex), hence
+    the need for three dedicated variants.
  */
 
 /*!
@@ -367,6 +391,19 @@ QByteArray QShader::serialized() const
             ds << listIt->samplerBinding;
         }
     }
+    ds << int(d->nativeShaderInfoMap.count());
+    for (auto it = d->nativeShaderInfoMap.cbegin(), itEnd = d->nativeShaderInfoMap.cend(); it != itEnd; ++it) {
+        const QShaderKey &k(it.key());
+        writeShaderKey(&ds, k);
+        ds << it->flags;
+        ds << int(it->extraBufferBindings.count());
+        for (auto mapIt = it->extraBufferBindings.cbegin(), mapItEnd = it->extraBufferBindings.cend();
+             mapIt != mapItEnd; ++mapIt)
+        {
+            ds << mapIt.key();
+            ds << mapIt.value();
+        }
+    }
 
     return qCompress(buf.buffer());
 }
@@ -407,6 +444,7 @@ QShader QShader::fromSerialized(const QByteArray &data)
     ds >> intVal;
     d->qsbVersion = intVal;
     if (d->qsbVersion != QShaderPrivate::QSB_VERSION
+            && d->qsbVersion != QShaderPrivate::QSB_VERSION_WITHOUT_NATIVE_SHADER_INFO
             && d->qsbVersion != QShaderPrivate::QSB_VERSION_WITHOUT_SEPARATE_IMAGES_AND_SAMPLERS
             && d->qsbVersion != QShaderPrivate::QSB_VERSION_WITHOUT_VAR_ARRAYDIMS
             && d->qsbVersion != QShaderPrivate::QSB_VERSION_WITH_CBOR
@@ -481,6 +519,26 @@ QShader QShader::fromSerialized(const QByteArray &data)
                 list.append({ combinedSamplerName, textureBinding, samplerBinding });
             }
             d->combinedImageMap.insert(k, list);
+        }
+    }
+
+    if (d->qsbVersion > QShaderPrivate::QSB_VERSION_WITHOUT_NATIVE_SHADER_INFO) {
+        ds >> count;
+        for (int i = 0; i < count; ++i) {
+            QShaderKey k;
+            readShaderKey(&ds, &k);
+            int flags;
+            ds >> flags;
+            QMap<int, int> extraBufferBindings;
+            int mapSize;
+            ds >> mapSize;
+            for (int b = 0; b < mapSize; ++b) {
+                int k, v;
+                ds >> k;
+                ds >> v;
+                extraBufferBindings.insert(k, v);
+            }
+            d->nativeShaderInfoMap.insert(k, { flags, extraBufferBindings });
         }
     }
 
@@ -711,7 +769,7 @@ QDebug operator<<(QDebug dbg, const QShaderVersion &v)
 /*!
     \typedef QShader::NativeResourceBindingMap
 
-    Synonym for QHash<int, QPair<int, int>>.
+    Synonym for QMap<int, QPair<int, int>>.
 
     The resource binding model QRhi assumes is based on SPIR-V. This means that
     uniform buffers, storage buffers, combined image samplers, and storage
@@ -837,6 +895,64 @@ void QShader::removeSeparateToCombinedImageSamplerMappingList(const QShaderKey &
 
     detach();
     d->combinedImageMap.erase(it);
+}
+
+/*!
+    \struct QShader::NativeShaderInfo
+
+    Describes information about the native shader code, if applicable. This
+    becomes relevant with certain shader languages for certain shader stages,
+    in case the translation from SPIR-V involves the introduction of
+    additional, "magic" inputs, outputs, or resources in the generated shader.
+    Such additions may be dependent on the original source code (i.e. the usage
+    of various GLSL language constructs or built-ins), and therefore it needs
+    to be indicated in a dynamic manner if certain features got added to the
+    generated shader code.
+
+    As an example, consider a tessellation control shader with a per-patch (not
+    per-vertex) output variable. This is translated to a Metal compute shader
+    outputting (among others) into an spvPatchOut buffer. But this buffer would
+    not be present at all if per-patch output variables were not used. The fact
+    that the shader code relies on such a buffer present can be indicated by
+    the data in this struct.
+ */
+
+/*!
+    \return the native shader info struct for \a key, or an empty object if
+    there is no data available for \a key, for example because such a mapping
+    is not applicable for the shading language or the shader stage.
+ */
+QShader::NativeShaderInfo QShader::nativeShaderInfo(const QShaderKey &key) const
+{
+    auto it = d->nativeShaderInfoMap.constFind(key);
+    if (it == d->nativeShaderInfoMap.cend())
+        return {};
+
+    return it.value();
+}
+
+/*!
+    Stores the given native shader \a info associated with \a key.
+
+    \sa nativeShaderInfo()
+ */
+void QShader::setNativeShaderInfo(const QShaderKey &key, const NativeShaderInfo &info)
+{
+    detach();
+    d->nativeShaderInfoMap[key] = info;
+}
+
+/*!
+    Removes the native shader information for \a key.
+ */
+void QShader::removeNativeShaderInfo(const QShaderKey &key)
+{
+    auto it = d->nativeShaderInfoMap.find(key);
+    if (it == d->nativeShaderInfoMap.end())
+        return;
+
+    detach();
+    d->nativeShaderInfoMap.erase(it);
 }
 
 QT_END_NAMESPACE

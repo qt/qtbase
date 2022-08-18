@@ -136,6 +136,9 @@ private slots:
     void renderToRgb10Texture_data();
     void renderToRgb10Texture();
 
+    void tessellation_data();
+    void tessellation();
+
 private:
     void setWindowType(QWindow *window, QRhi::Implementation impl);
 
@@ -4897,6 +4900,166 @@ void tst_QRhi::renderToRgb10Texture()
     }
     QCOMPARE(redCount + blueCount, texture->pixelSize().width());
     QVERIFY(redCount > blueCount); // 1742 > 178
+}
+
+void tst_QRhi::tessellation_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::tessellation()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+
+    if (!rhi->isFeatureSupported(QRhi::Tessellation)) {
+        // From a Vulkan or Metal implementation we expect tessellation to work,
+        // even though it is optional (as per spec) for Vulkan.
+        QVERIFY(rhi->backend() != QRhi::Vulkan);
+        QVERIFY(rhi->backend() != QRhi::Metal);
+        QSKIP("Tessellation is not supported with this graphics API, skipping test");
+    }
+
+    if (rhi->backend() == QRhi::D3D11)
+        QSKIP("Skipping tessellation test on D3D for now, test assets not prepared for HLSL yet");
+
+    QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, QSize(1280, 720), 1,
+                                                        QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+    QVERIFY(texture->create());
+
+    QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ texture.data() }));
+    QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(rt->create());
+
+    static const float triangleVertices[] = {
+        0.0f, 0.5f, 0.0f,     0.0f, 0.0f, 1.0f,
+        -0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 0.0f,
+        0.5f, -0.5f, 0.0f,    0.0f, 1.0f, 0.0f,
+    };
+
+    QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
+    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(triangleVertices)));
+    QVERIFY(vbuf->create());
+    u->uploadStaticBuffer(vbuf.data(), triangleVertices);
+
+    QScopedPointer<QRhiBuffer> ubuf(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 64));
+    QVERIFY(ubuf->create());
+
+    // Use the 3D API specific correction matrix that flips Y, so we can use
+    // the OpenGL-targeted vertex data and the tessellation winding order of
+    // counter-clockwise to get uniform results.
+    QMatrix4x4 mvp = rhi->clipSpaceCorrMatrix();
+    u->updateDynamicBuffer(ubuf.data(), 0, 64, mvp.constData());
+
+    QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    srb->setBindings({
+                         QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::TessellationEvaluationStage, ubuf.data()),
+                     });
+    QVERIFY(srb->create());
+
+    QScopedPointer<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+
+    pipeline->setTopology(QRhiGraphicsPipeline::Patches);
+    pipeline->setPatchControlPointCount(3);
+
+    pipeline->setShaderStages({
+        { QRhiShaderStage::Vertex, loadShader(":/data/simpletess.vert.qsb") },
+        { QRhiShaderStage::TessellationControl, loadShader(":/data/simpletess.tesc.qsb") },
+        { QRhiShaderStage::TessellationEvaluation, loadShader(":/data/simpletess.tese.qsb") },
+        { QRhiShaderStage::Fragment, loadShader(":/data/simpletess.frag.qsb") }
+    });
+
+    pipeline->setCullMode(QRhiGraphicsPipeline::Back); // to ensure the winding order is correct
+
+    // won't get the wireframe with OpenGL ES
+    if (rhi->isFeatureSupported(QRhi::NonFillPolygonMode))
+        pipeline->setPolygonMode(QRhiGraphicsPipeline::Line);
+
+    QRhiVertexInputLayout inputLayout;
+    inputLayout.setBindings({
+        { 6 * sizeof(float) }
+    });
+    inputLayout.setAttributes({
+        { 0, 0, QRhiVertexInputAttribute::Float3, 0 },
+        { 0, 1, QRhiVertexInputAttribute::Float3, 3 * sizeof(float) }
+    });
+
+    pipeline->setVertexInputLayout(inputLayout);
+    pipeline->setShaderResourceBindings(srb.data());
+    pipeline->setRenderPassDescriptor(rpDesc.data());
+
+    QVERIFY(pipeline->create());
+
+    QRhiCommandBuffer *cb = nullptr;
+    QCOMPARE(rhi->beginOffscreenFrame(&cb), QRhi::FrameOpSuccess);
+
+    cb->beginPass(rt.data(), Qt::black, { 1.0f, 0 }, u);
+    cb->setGraphicsPipeline(pipeline.data());
+    cb->setViewport({ 0, 0, float(rt->pixelSize().width()), float(rt->pixelSize().height()) });
+    cb->setShaderResources();
+    QRhiCommandBuffer::VertexInput vbufBinding(vbuf.data(), 0);
+    cb->setVertexInput(0, 1, &vbufBinding);
+    cb->draw(3);
+
+    QRhiReadbackResult readResult;
+    QImage result;
+    readResult.completed = [&readResult, &result] {
+        result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                        readResult.pixelSize.width(), readResult.pixelSize.height(),
+                        QImage::Format_RGBA8888);
+    };
+    QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+    readbackBatch->readBackTexture({ texture.data() }, &readResult);
+    cb->endPass(readbackBatch);
+
+    rhi->endOffscreenFrame();
+
+    if (rhi->isYUpInFramebuffer()) // we used clipSpaceCorrMatrix so this is different from many other tests
+        result = std::move(result).mirrored();
+
+    QCOMPARE(result.size(), rt->pixelSize());
+
+    // cannot check rendering results with Null, because there is no rendering there
+    if (impl == QRhi::Null)
+        return;
+
+    int redCount = 0, greenCount = 0, blueCount = 0;
+    for (int y = 0; y < result.height(); ++y) {
+        const quint32 *p = reinterpret_cast<const quint32 *>(result.constScanLine(y));
+        int x = result.width() - 1;
+        while (x-- >= 0) {
+            const QRgb c(*p++);
+            const int red = qRed(c);
+            const int green = qGreen(c);
+            const int blue = qBlue(c);
+            // just count the color components that are above a certain threshold
+            if (red > 240)
+                ++redCount;
+            if (green > 240)
+                ++greenCount;
+            if (blue > 240)
+                ++blueCount;
+        }
+    }
+
+    // Line drawing can be different between the 3D APIs. What we will check if
+    // the number of strong-enough r/g/b components above a certain threshold.
+    // That is good enough to ensure that something got rendered, i.e. that
+    // tessellation is not completely broken.
+    //
+    // For the record the actual values are something like:
+    // OpenGL (NVIDIA, Windows) 59 82 82
+    // Metal (Intel, macOS 12.5) 59 79 79
+    // Vulkan (NVIDIA, Windows) 71 85 85
+
+    QVERIFY(redCount > 50);
+    QVERIFY(blueCount > 50);
+    QVERIFY(greenCount > 50);
 }
 
 #include <tst_qrhi.moc>

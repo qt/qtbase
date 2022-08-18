@@ -30,7 +30,7 @@ PixelInput main(Input input, float3 uvwCoord : SV_DomainLocation, const OutputPa
 
     float3 vertexPosition = uvwCoord.x * patch[0].position + uvwCoord.y * patch[1].position + uvwCoord.z * patch[2].position;
     output.position = mul(float4(vertexPosition, 1.0f), mvp);
-    output.position.x += sin(time + output.position.y) * amplitude;
+    output.position.x += sin(time + vertexPosition.y) * amplitude;
 
     output.color = uvwCoord.x * patch[0].color + uvwCoord.y * patch[1].color + uvwCoord.z * patch[2].color;
 

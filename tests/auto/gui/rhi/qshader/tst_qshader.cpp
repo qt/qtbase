@@ -25,6 +25,7 @@ private slots:
     void loadV4();
     void manualShaderPackCreation();
     void loadV6WithSeparateImagesAndSamplers();
+    void loadV7();
 };
 
 static QShader getShader(const QString &name)
@@ -588,6 +589,88 @@ void tst_QShader::loadV6WithSeparateImagesAndSamplers()
          auto list = s.separateToCombinedImageSamplerMappingList(key);
          QCOMPARE(list.count(), 2);
     }
+}
+
+void tst_QShader::loadV7()
+{
+    QShader vert = getShader(QLatin1String(":/data/metal_enabled_tessellation_v7.vert.qsb"));
+    QVERIFY(vert.isValid());
+    QCOMPARE(QShaderPrivate::get(&vert)->qsbVersion, 7);
+    QCOMPARE(vert.availableShaders().count(), 8);
+
+    QCOMPARE(vert.description().inputVariables().count(), 2);
+    QCOMPARE(vert.description().outputBuiltinVariables().count(), 1);
+    QCOMPARE(vert.description().outputBuiltinVariables()[0].type, QShaderDescription::PositionBuiltin);
+    QCOMPARE(vert.description().outputVariables().count(), 1);
+    QCOMPARE(vert.description().outputVariables()[0].name, QByteArrayLiteral("v_color"));
+
+    QVERIFY(vert.availableShaders().contains(QShaderKey(QShader::MslShader, QShaderVersion(12))));
+    QVERIFY(!vert.shader(QShaderKey(QShader::MslShader, QShaderVersion(12), QShader::NonIndexedVertexAsComputeShader)).shader().isEmpty());
+    QVERIFY(!vert.shader(QShaderKey(QShader::MslShader, QShaderVersion(12), QShader::UInt16IndexedVertexAsComputeShader)).shader().isEmpty());
+    QVERIFY(!vert.shader(QShaderKey(QShader::MslShader, QShaderVersion(12), QShader::UInt32IndexedVertexAsComputeShader)).shader().isEmpty());
+
+    QShader tesc = getShader(QLatin1String(":/data/metal_enabled_tessellation_v7.tesc.qsb"));
+    QVERIFY(tesc.isValid());
+    QCOMPARE(QShaderPrivate::get(&tesc)->qsbVersion, 7);
+    QCOMPARE(tesc.availableShaders().count(), 5);
+    QCOMPARE(tesc.description().tessellationOutputVertexCount(), 3);
+
+    QCOMPARE(tesc.description().inputBuiltinVariables().count(), 2);
+    QCOMPARE(tesc.description().outputBuiltinVariables().count(), 3);
+    // builtins must be sorted based on the type
+    QCOMPARE(tesc.description().inputBuiltinVariables()[0].type, QShaderDescription::PositionBuiltin);
+    QCOMPARE(tesc.description().inputBuiltinVariables()[1].type, QShaderDescription::InvocationIdBuiltin);
+    QCOMPARE(tesc.description().outputBuiltinVariables()[0].type, QShaderDescription::PositionBuiltin);
+    QCOMPARE(tesc.description().outputBuiltinVariables()[1].type, QShaderDescription::TessLevelOuterBuiltin);
+    QCOMPARE(tesc.description().outputBuiltinVariables()[2].type, QShaderDescription::TessLevelInnerBuiltin);
+
+    QCOMPARE(tesc.description().outputVariables().count(), 3);
+    for (const QShaderDescription::InOutVariable &v : tesc.description().outputVariables()) {
+        switch (v.location) {
+        case 0:
+            QCOMPARE(v.name, QByteArrayLiteral("outColor"));
+            QCOMPARE(v.type, QShaderDescription::Vec3);
+            QCOMPARE(v.perPatch, false);
+            break;
+        case 1:
+            QCOMPARE(v.name, QByteArrayLiteral("stuff"));
+            QCOMPARE(v.type, QShaderDescription::Vec3);
+            QCOMPARE(v.perPatch, true);
+            break;
+        case 2:
+            QCOMPARE(v.name, QByteArrayLiteral("more_stuff"));
+            QCOMPARE(v.type, QShaderDescription::Float);
+            QCOMPARE(v.perPatch, true);
+            break;
+        default:
+            QFAIL(qPrintable(QStringLiteral("Bad location: %1").arg(v.location)));
+            break;
+        }
+    }
+
+    QVERIFY(!tesc.shader(QShaderKey(QShader::MslShader, QShaderVersion(12))).shader().isEmpty());
+    QCOMPARE(tesc.nativeShaderInfo(QShaderKey(QShader::SpirvShader, QShaderVersion(100))).extraBufferBindings.count(), 0);
+    QCOMPARE(tesc.nativeShaderInfo(QShaderKey(QShader::MslShader, QShaderVersion(12))).extraBufferBindings.count(), 5);
+
+    QShader tese = getShader(QLatin1String(":/data/metal_enabled_tessellation_v7.tese.qsb"));
+    QVERIFY(tese.isValid());
+    QCOMPARE(QShaderPrivate::get(&tese)->qsbVersion, 7);
+    QCOMPARE(tese.availableShaders().count(), 5);
+    QCOMPARE(tese.description().tessellationMode(), QShaderDescription::TrianglesTessellationMode);
+    QCOMPARE(tese.description().tessellationWindingOrder(), QShaderDescription::CcwTessellationWindingOrder);
+    QCOMPARE(tese.description().tessellationPartitioning(), QShaderDescription::FractionalOddTessellationPartitioning);
+
+    QCOMPARE(tese.description().inputBuiltinVariables()[0].type, QShaderDescription::PositionBuiltin);
+    QCOMPARE(tese.description().inputBuiltinVariables()[1].type, QShaderDescription::TessLevelOuterBuiltin);
+    QCOMPARE(tese.description().inputBuiltinVariables()[2].type, QShaderDescription::TessLevelInnerBuiltin);
+    QCOMPARE(tese.description().inputBuiltinVariables()[3].type, QShaderDescription::TessCoordBuiltin);
+
+    QCOMPARE(tese.nativeResourceBindingMap(QShaderKey(QShader::MslShader, QShaderVersion(12))).count(), 1);
+    QCOMPARE(tese.nativeResourceBindingMap(QShaderKey(QShader::MslShader, QShaderVersion(12))).value(0), qMakePair(0, -1));
+
+    QShader frag = getShader(QLatin1String(":/data/metal_enabled_tessellation_v7.frag.qsb"));
+    QVERIFY(frag.isValid());
+    QCOMPARE(QShaderPrivate::get(&frag)->qsbVersion, 7);
 }
 
 #include <tst_qshader.moc>

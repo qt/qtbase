@@ -677,16 +677,17 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     can be set via
     \l{QRhiGraphicsPipeline::setPatchControlPointCount()}{setPatchControlPointCount()},
     and shaders for tessellation control and evaluation can be specified in the
-    QRhiShaderStage list. Tessellation is considered an experimental feature in
-    QRhi and can only be expected to be supported with Vulkan, OpenGL (ES), and
-    Direct 3D, assuming the implementation reports it as supported at run time.
-    Tessellation shaders have portability issues between APIs (for example,
-    translating GLSL/SPIR-V to HLSL is problematic due to the way hull shaders
-    are structured, whereas Metal uses a somewhat different tessellation
-    pipeline than others), and therefore no guarantees can be given for a
-    universal solution for now. (for Direct 3D in particular, handwritten HLSL
-    hull and domain shaders must be injected into each QShader since qsb cannot
-    generate these from SPIR-V)
+    QRhiShaderStage list. Tessellation shaders have portability issues between
+    APIs (for example, translating GLSL/SPIR-V to HLSL is problematic due to
+    the way hull shaders are structured, whereas Metal uses a somewhat
+    different tessellation pipeline than others), and therefore unexpected
+    issues may still arise, even though basic functionality is implemented
+    across all the underlying APIs. For Direct 3D in particular, handwritten
+    HLSL hull and domain shaders must be injected into each QShader for the
+    tessellation control and evaluation stages, respectively, since qsb cannot
+    generate these from SPIR-V. Note that isoline tessellation should be
+    avoided as it will not be supported by all backends. The maximum patch
+    control point count portable between backends is 32.
 
     \value GeometryShader Indicates that the geometry shader stage is
     supported. When supported, a geometry shader can be specified in the
@@ -695,9 +696,9 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     Direct 3D, OpenGL (3.2+) and OpenGL ES (3.2+), assuming the implementation
     reports it as supported at run time. Geometry shaders have portability
     issues between APIs, and therefore no guarantees can be given for a
-    universal solution for now. (for Direct 3D in particular, a handwritten
-    HLSL geometry shader must be injected into each QShader since qsb cannot
-    generate this from SPIR-V)
+    universal solution. They will never be supported with Metal. Whereas with
+    Direct 3D a handwritten HLSL geometry shader must be injected into each
+    QShader for the geometry stage since qsb cannot generate this from SPIR-V.
 
     \value TextureArrayRange Indicates that for
     \l{QRhi::newTextureArray()}{texture arrays} it is possible to specify a
@@ -1402,6 +1403,85 @@ QDebug operator<<(QDebug dbg, const QRhiVertexInputAttribute &a)
     return dbg;
 }
 #endif
+
+QRhiVertexInputAttribute::Format QRhiImplementation::shaderDescVariableFormatToVertexInputFormat(QShaderDescription::VariableType type) const
+{
+    switch (type) {
+    case QShaderDescription::Vec4:
+        return QRhiVertexInputAttribute::Float4;
+    case QShaderDescription::Vec3:
+        return QRhiVertexInputAttribute::Float3;
+    case QShaderDescription::Vec2:
+        return QRhiVertexInputAttribute::Float2;
+    case QShaderDescription::Float:
+        return QRhiVertexInputAttribute::Float;
+
+    case QShaderDescription::Int4:
+        return QRhiVertexInputAttribute::SInt4;
+    case QShaderDescription::Int3:
+        return QRhiVertexInputAttribute::SInt3;
+    case QShaderDescription::Int2:
+        return QRhiVertexInputAttribute::SInt2;
+    case QShaderDescription::Int:
+        return QRhiVertexInputAttribute::SInt;
+
+    case QShaderDescription::Uint4:
+        return QRhiVertexInputAttribute::UInt4;
+    case QShaderDescription::Uint3:
+        return QRhiVertexInputAttribute::UInt3;
+    case QShaderDescription::Uint2:
+        return QRhiVertexInputAttribute::UInt2;
+    case QShaderDescription::Uint:
+        return QRhiVertexInputAttribute::UInt;
+
+    default:
+        Q_UNREACHABLE();
+        return QRhiVertexInputAttribute::Float;
+    }
+}
+
+quint32 QRhiImplementation::byteSizePerVertexForVertexInputFormat(QRhiVertexInputAttribute::Format format) const
+{
+    switch (format) {
+    case QRhiVertexInputAttribute::Float4:
+        return 4 * sizeof(float);
+    case QRhiVertexInputAttribute::Float3:
+        return 4 * sizeof(float); // vec3 still takes 16 bytes
+    case QRhiVertexInputAttribute::Float2:
+        return 2 * sizeof(float);
+    case QRhiVertexInputAttribute::Float:
+        return sizeof(float);
+
+    case QRhiVertexInputAttribute::UNormByte4:
+        return 4 * sizeof(quint8);
+    case QRhiVertexInputAttribute::UNormByte2:
+        return 2 * sizeof(quint8);
+    case QRhiVertexInputAttribute::UNormByte:
+        return sizeof(quint8);
+
+    case QRhiVertexInputAttribute::UInt4:
+        return 4 * sizeof(quint32);
+    case QRhiVertexInputAttribute::UInt3:
+        return 4 * sizeof(quint32); // ivec3 still takes 16 bytes
+    case QRhiVertexInputAttribute::UInt2:
+        return 2 * sizeof(quint32);
+    case QRhiVertexInputAttribute::UInt:
+        return sizeof(quint32);
+
+    case QRhiVertexInputAttribute::SInt4:
+        return 4 * sizeof(qint32);
+    case QRhiVertexInputAttribute::SInt3:
+        return 4 * sizeof(qint32); // uvec3 still takes 16 bytes
+    case QRhiVertexInputAttribute::SInt2:
+        return 2 * sizeof(qint32);
+    case QRhiVertexInputAttribute::SInt:
+        return sizeof(qint32);
+
+    default:
+        Q_UNREACHABLE();
+        return 1;
+    }
+}
 
 /*!
     \class QRhiVertexInputLayout

@@ -17,6 +17,7 @@
 
 #include <QtGui/qtguiglobal.h>
 #include <QtCore/qhash.h>
+#include <QtCore/qmap.h>
 #include <private/qshaderdescription_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -102,7 +103,10 @@ public:
 
     enum Variant {
         StandardShader = 0,
-        BatchableVertexShader
+        BatchableVertexShader,
+        UInt16IndexedVertexAsComputeShader,
+        UInt32IndexedVertexAsComputeShader,
+        NonIndexedVertexAsComputeShader
     };
 
     QShader();
@@ -127,7 +131,7 @@ public:
     QByteArray serialized() const;
     static QShader fromSerialized(const QByteArray &data);
 
-    using NativeResourceBindingMap = QHash<int, QPair<int, int> >; // binding -> native_binding[, native_binding]
+    using NativeResourceBindingMap = QMap<int, QPair<int, int> >; // binding -> native_binding[, native_binding]
     NativeResourceBindingMap nativeResourceBindingMap(const QShaderKey &key) const;
     void setResourceBindingMap(const QShaderKey &key, const NativeResourceBindingMap &map);
     void removeResourceBindingMap(const QShaderKey &key);
@@ -142,6 +146,14 @@ public:
     void setSeparateToCombinedImageSamplerMappingList(const QShaderKey &key,
                                                       const SeparateToCombinedImageSamplerMappingList &list);
     void removeSeparateToCombinedImageSamplerMappingList(const QShaderKey &key);
+
+    struct NativeShaderInfo {
+        int flags = 0;
+        QMap<int, int> extraBufferBindings;
+    };
+    NativeShaderInfo nativeShaderInfo(const QShaderKey &key) const;
+    void setNativeShaderInfo(const QShaderKey &key, const NativeShaderInfo &info);
+    void removeNativeShaderInfo(const QShaderKey &key);
 
 private:
     QShaderPrivate *d;
