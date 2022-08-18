@@ -151,7 +151,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn template<class Container> QIterator<Container> &QIterator<Container>::operator++()
 
-    The prefix ++ operator (\c{++it}) advances the iterator to the
+    The prefix \c{++} operator (\c{++it}) advances the iterator to the
     next item in the container and returns an iterator to the new current
     item.
 
@@ -164,7 +164,7 @@ QT_BEGIN_NAMESPACE
     \fn template<class Container> QIterator<Container> QIterator<Container>::operator++(int)
     \overload
 
-    The postfix ++ operator (\c{it++}) advances the iterator to the
+    The postfix \c{++} operator (\c{it++}) advances the iterator to the
     next item in the container and returns an iterator to the previously
     current item.
 */
@@ -173,7 +173,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn template<class Container> QIterator<Container> &QIterator<Container>::operator--()
 
-    The prefix -- operator (\c{--it}) makes the preceding item
+    The prefix \c{--} operator (\c{--it}) makes the preceding item
     current and returns an iterator to the new current item.
 
     Calling this function on QSequentialIterable::begin() leads to undefined results.
@@ -189,7 +189,7 @@ QT_BEGIN_NAMESPACE
 
     \overload
 
-    The postfix -- operator (\c{it--}) makes the preceding item
+    The postfix \c{--} operator (\c{it--}) makes the preceding item
     current and returns an iterator to the previously current item.
 
     If the container in the QVariant does not support bi-directional iteration, calling this function
@@ -287,7 +287,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn template<class Container> QConstIterator<Container> &QConstIterator<Container>::operator++()
 
-    The prefix ++ operator (\c{++it}) advances the iterator to the
+    The prefix \c{++} operator (\c{++it}) advances the iterator to the
     next item in the container and returns an iterator to the new current
     item.
 
@@ -301,7 +301,7 @@ QT_BEGIN_NAMESPACE
 
     \overload
 
-    The postfix ++ operator (\c{it++}) advances the iterator to the
+    The postfix \c{++} operator (\c{it++}) advances the iterator to the
     next item in the container and returns an iterator to the previously
     current item.
 */
@@ -309,7 +309,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn template<class Container> QConstIterator<Container> &QConstIterator<Container>::operator--()
 
-    The prefix -- operator (\c{--it}) makes the preceding item
+    The prefix \c{--} operator (\c{--it}) makes the preceding item
     current and returns an iterator to the new current item.
 
     Calling this function on QIterable<Container>::begin() leads to undefined results.
@@ -325,7 +325,7 @@ QT_BEGIN_NAMESPACE
 
     \overload
 
-    The postfix -- operator (\c{it--}) makes the preceding item
+    The postfix \c{--} operator (\c{it--}) makes the preceding item
     current and returns an iterator to the previously current item.
 
     If the container in the QVariant does not support bi-directional iteration, calling this function
@@ -505,7 +505,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn template<class Iterator, typename IteratorCategory> QTaggedIterator<Iterator, IteratorCategory> &QTaggedIterator<Iterator, IteratorCategory>::operator++()
 
-    The prefix ++ operator (\c{++it}) advances the iterator to the
+    The prefix \c{++} operator (\c{++it}) advances the iterator to the
     next item in the container and returns an iterator to the new current
     item.
 
@@ -518,7 +518,7 @@ QT_BEGIN_NAMESPACE
     \fn template<class Iterator, typename IteratorCategory> QTaggedIterator<Iterator, IteratorCategory> QTaggedIterator<Iterator, IteratorCategory>::operator++(int)
     \overload
 
-    The postfix ++ operator (\c{it++}) advances the iterator to the
+    The postfix \c{++} operator (\c{it++}) advances the iterator to the
     next item in the container and returns an iterator to the previously
     current item.
 */
@@ -527,7 +527,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn template<class Iterator, typename IteratorCategory> QTaggedIterator<Iterator, IteratorCategory> &QTaggedIterator<Iterator, IteratorCategory>::operator--()
 
-    The prefix -- operator (\c{--it}) makes the preceding item
+    The prefix \c{--} operator (\c{--it}) makes the preceding item
     current and returns an iterator to the new current item.
 
     Calling this function on QSequentialIterable::begin() leads to undefined results.
@@ -542,7 +542,7 @@ QT_BEGIN_NAMESPACE
     \fn template<class Iterator, typename IteratorCategory> QTaggedIterator<Iterator, IteratorCategory> QTaggedIterator<Iterator, IteratorCategory>::operator--(int)
     \overload
 
-    The postfix -- operator (\c{it--}) makes the preceding item
+    The postfix \c{--} operator (\c{it--}) makes the preceding item
     current and returns an iterator to the previously current item.
 
     If the container in the QVariant does not support bi-directional iteration, calling this function

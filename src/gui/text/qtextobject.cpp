@@ -337,14 +337,14 @@ QTextFrameLayoutData::~QTextFrameLayoutData()
 /*!
     \fn QTextFrame::iterator QTextFrame::iterator::operator++(int)
 
-    The postfix ++ operator (\c{i++}) advances the iterator to the
+    The postfix \c{++} operator (\c{i++}) advances the iterator to the
     next item in the text frame, and returns an iterator to the old item.
 */
 
 /*!
     \fn QTextFrame::iterator QTextFrame::iterator::operator--(int)
 
-    The postfix -- operator (\c{i--}) makes the preceding item in the
+    The postfix \c{--} operator (\c{i--}) makes the preceding item in the
     current frame, and returns an iterator to the old item.
 */
 

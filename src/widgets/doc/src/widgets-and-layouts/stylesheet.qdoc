@@ -513,7 +513,7 @@
     the QObject::className() returns <namespace>::<classname>. This conflicts
     with the syntax for \l{Sub-Controls}. To overcome this problem,
     when using the Type Selector for widgets inside namespaces, we must
-    replace the "::" with "--". For example,
+    replace the \c{::} with \c{--}. For example,
 
     \snippet code/doc_src_stylesheet.cpp 27
 

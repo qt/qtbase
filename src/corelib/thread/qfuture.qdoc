@@ -614,7 +614,7 @@
 
 /*! \fn template <typename T> QFuture<T>::const_iterator &QFuture<T>::const_iterator::operator++()
 
-    The prefix ++ operator (\c{++it}) advances the iterator to the next result
+    The prefix \c{++} operator (\c{++it}) advances the iterator to the next result
     in the future and returns an iterator to the new current result.
 
     Calling this function on QFuture<T>::constEnd() leads to undefined results.
@@ -626,14 +626,14 @@
 
     \overload
 
-    The postfix ++ operator (\c{it++}) advances the iterator to the next
+    The postfix \c{++} operator (\c{it++}) advances the iterator to the next
     result in the future and returns an iterator to the previously current
     result.
 */
 
 /*! \fn template <typename T> QFuture<T>::const_iterator &QFuture<T>::const_iterator::operator--()
 
-    The prefix -- operator (\c{--it}) makes the preceding result current and
+    The prefix \c{--} operator (\c{--it}) makes the preceding result current and
     returns an iterator to the new current result.
 
     Calling this function on QFuture<T>::constBegin() leads to undefined results.
@@ -645,7 +645,7 @@
 
     \overload
 
-    The postfix -- operator (\c{it--}) makes the preceding result current and
+    The postfix \c{--} operator (\c{it--}) makes the preceding result current and
     returns an iterator to the previously current result.
 */
 

@@ -399,28 +399,28 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn template <typename T> QLEInteger &QLEInteger<T>::operator++()
 
-    Performs a prefix ++ (increment) on this QLEInteger and returns a reference to
+    Performs a prefix \c{++} (increment) on this QLEInteger and returns a reference to
     this object.
 */
 
 /*!
     \fn template <typename T> QLEInteger QLEInteger<T>::operator++(int)
 
-    Performs a postfix ++ (increment) on this QLEInteger and returns a reference to
+    Performs a postfix \c{++} (increment) on this QLEInteger and returns a reference to
     this object.
 */
 
 /*!
     \fn template <typename T> QLEInteger &QLEInteger<T>::operator--()
 
-    Performs a prefix -- (decrement) on this QLEInteger and returns a reference to
+    Performs a prefix \c{--} (decrement) on this QLEInteger and returns a reference to
     this object.
 */
 
 /*!
     \fn template <typename T> QLEInteger QLEInteger<T>::operator--(int)
 
-    Performs a postfix -- (decrement) on this QLEInteger and returns a reference to
+    Performs a postfix \c{--} (decrement) on this QLEInteger and returns a reference to
     this object.
 */
 
@@ -558,28 +558,28 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn template <typename T> QBEInteger &QBEInteger<T>::operator++()
 
-    Performs a prefix ++ (increment) on this QBEInteger and returns a reference to
+    Performs a prefix \c{++} (increment) on this QBEInteger and returns a reference to
     this object.
 */
 
 /*!
     \fn template <typename T> QBEInteger QBEInteger<T>::operator++(int)
 
-    Performs a postfix ++ (increment) on this QBEInteger and returns a reference to
+    Performs a postfix \c{++} (increment) on this QBEInteger and returns a reference to
     this object.
 */
 
 /*!
     \fn template <typename T> QBEInteger &QBEInteger<T>::operator--()
 
-    Performs a prefix -- (decrement) on this QBEInteger and returns a reference to
+    Performs a prefix \c{--} (decrement) on this QBEInteger and returns a reference to
     this object.
 */
 
 /*!
     \fn template <typename T> QBEInteger QBEInteger<T>::operator--(int)
 
-    Performs a postfix -- (decrement) on this QBEInteger and returns a reference to
+    Performs a postfix \c{--} (decrement) on this QBEInteger and returns a reference to
     this object.
 */
 

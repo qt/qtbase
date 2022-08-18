@@ -989,7 +989,7 @@
 
 /*! \fn template <class Key, class T> QMap<Key, T>::iterator &QMap<Key, T>::iterator::operator++()
 
-    The prefix ++ operator (\c{++i}) advances the iterator to the
+    The prefix \c{++} operator (\c{++i}) advances the iterator to the
     next item in the map and returns an iterator to the new current
     item.
 
@@ -1002,14 +1002,14 @@
 
     \overload
 
-    The postfix ++ operator (\c{i++}) advances the iterator to the
+    The postfix \c{++} operator (\c{i++}) advances the iterator to the
     next item in the map and returns an iterator to the previously
     current item.
 */
 
 /*! \fn template <class Key, class T> QMap<Key, T>::iterator &QMap<Key, T>::iterator::operator--()
 
-    The prefix -- operator (\c{--i}) makes the preceding item
+    The prefix \c{--} operator (\c{--i}) makes the preceding item
     current and returns an iterator pointing to the new current item.
 
     Calling this function on QMap::begin() leads to undefined
@@ -1022,7 +1022,7 @@
 
     \overload
 
-    The postfix -- operator (\c{i--}) makes the preceding item
+    The postfix \c{--} operator (\c{i--}) makes the preceding item
     current and returns an iterator pointing to the previously
     current item.
 */
@@ -1160,7 +1160,7 @@
 
 /*! \fn template <class Key, class T> QMap<Key, T>::const_iterator &QMap<Key, T>::const_iterator::operator++()
 
-    The prefix ++ operator (\c{++i}) advances the iterator to the
+    The prefix \c{++} operator (\c{++i}) advances the iterator to the
     next item in the map and returns an iterator to the new current
     item.
 
@@ -1173,14 +1173,14 @@
 
     \overload
 
-    The postfix ++ operator (\c{i++}) advances the iterator to the
+    The postfix \c{++} operator (\c{i++}) advances the iterator to the
     next item in the map and returns an iterator to the previously
     current item.
 */
 
 /*! \fn template <class Key, class T> QMap<Key, T>::const_iterator &QMap<Key, T>::const_iterator::operator--()
 
-    The prefix -- operator (\c{--i}) makes the preceding item
+    The prefix \c{--} operator (\c{--i}) makes the preceding item
     current and returns an iterator pointing to the new current item.
 
     Calling this function on QMap::begin() leads to undefined
@@ -1193,7 +1193,7 @@
 
     \overload
 
-    The postfix -- operator (\c{i--}) makes the preceding item
+    The postfix \c{--} operator (\c{i--}) makes the preceding item
     current and returns an iterator pointing to the previously
     current item.
 */
@@ -1301,7 +1301,7 @@
 /*!
     \fn template <class Key, class T> QMap<Key, T>::key_iterator &QMap<Key, T>::key_iterator::operator++()
 
-    The prefix ++ operator (\c{++i}) advances the iterator to the
+    The prefix \c{++} operator (\c{++i}) advances the iterator to the
     next item in the hash and returns an iterator to the new current
     item.
 
@@ -1314,14 +1314,14 @@
 
     \overload
 
-    The postfix ++ operator (\c{i++}) advances the iterator to the
+    The postfix \c{++} operator (\c{i++}) advances the iterator to the
     next item in the hash and returns an iterator to the previous
     item.
 */
 
 /*! \fn template <class Key, class T> QMap<Key, T>::key_iterator &QMap<Key, T>::key_iterator::operator--()
 
-    The prefix -- operator (\c{--i}) makes the preceding item
+    The prefix \c{--} operator (\c{--i}) makes the preceding item
     current and returns an iterator pointing to the new current item.
 
     Calling this function on QMap::keyBegin() leads to undefined
@@ -1334,7 +1334,7 @@
 
     \overload
 
-    The postfix -- operator (\c{i--}) makes the preceding item
+    The postfix \c{--} operator (\c{i--}) makes the preceding item
     current and returns an iterator pointing to the previous
     item.
 */

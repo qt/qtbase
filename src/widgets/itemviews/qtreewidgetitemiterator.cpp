@@ -132,7 +132,7 @@ QTreeWidgetItemIterator &QTreeWidgetItemIterator::operator=(const QTreeWidgetIte
 }
 
 /*!
-    The prefix ++ operator (++it) advances the iterator to the next matching item
+    The prefix \c{++} operator (\c{++it}) advances the iterator to the next matching item
     and returns a reference to the resulting iterator.
     Sets the current pointer to \nullptr if the current item is the last matching item.
 */
@@ -147,7 +147,7 @@ QTreeWidgetItemIterator &QTreeWidgetItemIterator::operator++()
 }
 
 /*!
-    The prefix -- operator (--it) advances the iterator to the previous matching item
+    The prefix \c{--} operator (\c{--it}) advances the iterator to the previous matching item
     and returns a reference to the resulting iterator.
     Sets the current pointer to \nullptr if the current item is the first matching item.
 */

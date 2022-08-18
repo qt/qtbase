@@ -3351,8 +3351,8 @@ void QXmlStreamWriter::writeCharacters(const QString &text)
 
 
 /*!  Writes \a text as XML comment, where \a text must not contain the
-     forbidden sequence "--" or end with "-". Note that XML does not
-     provide any way to escape "-" in a comment.
+     forbidden sequence \c{--} or end with \c{-}. Note that XML does not
+     provide any way to escape \c{-} in a comment.
  */
 void QXmlStreamWriter::writeComment(const QString &text)
 {

@@ -1349,7 +1349,7 @@ void QCborMap::detach(qsizetype reserved)
 /*!
     \fn QCborMap::Iterator &QCborMap::Iterator::operator++()
 
-    The prefix ++ operator, \c{++i}, advances the iterator to the next item in
+    The prefix \c{++} operator, \c{++i}, advances the iterator to the next item in
     the map and returns this iterator.
 
     Calling this function on QCborMap::end() leads to undefined results.
@@ -1361,14 +1361,14 @@ void QCborMap::detach(qsizetype reserved)
     \fn QCborMap::Iterator QCborMap::Iterator::operator++(int)
     \overload
 
-    The postfix ++ operator, \c{i++}, advances the iterator to the next item in
+    The postfix \c{++} operator, \c{i++}, advances the iterator to the next item in
     the map and returns an iterator to the previously current item.
 */
 
 /*!
     \fn QCborMap::Iterator QCborMap::Iterator::operator--()
 
-    The prefix -- operator, \c{--i}, makes the preceding item current and
+    The prefix \c{--} operator, \c{--i}, makes the preceding item current and
     returns this iterator.
 
     Calling this function on QCborMap::begin() leads to undefined results.
@@ -1380,7 +1380,7 @@ void QCborMap::detach(qsizetype reserved)
     \fn QCborMap::Iterator QCborMap::Iterator::operator--(int)
     \overload
 
-    The postfix -- operator, \c{i--}, makes the preceding item current and
+    The postfix \c{--} operator, \c{i--}, makes the preceding item current and
     returns an iterator pointing to the previously current item.
 */
 
@@ -1594,7 +1594,7 @@ void QCborMap::detach(qsizetype reserved)
 /*!
     \fn QCborMap::ConstIterator &QCborMap::ConstIterator::operator++()
 
-    The prefix ++ operator, \c{++i}, advances the iterator to the next item in
+    The prefix \c{++} operator, \c{++i}, advances the iterator to the next item in
     the map and returns this iterator.
 
     Calling this function on QCborMap::end() leads to undefined results.
@@ -1606,14 +1606,14 @@ void QCborMap::detach(qsizetype reserved)
     \fn QCborMap::ConstIterator QCborMap::ConstIterator::operator++(int)
     \overload
 
-    The postfix ++ operator, \c{i++}, advances the iterator to the next item in
+    The postfix \c{++} operator, \c{i++}, advances the iterator to the next item in
     the map and returns an iterator to the previously current item.
  */
 
 /*!
     \fn QCborMap::ConstIterator &QCborMap::ConstIterator::operator--()
 
-    The prefix -- operator, \c{--i}, makes the preceding item current and
+    The prefix \c{--} operator, \c{--i}, makes the preceding item current and
     returns this iterator.
 
     Calling this function on QCborMap::begin() leads to undefined results.
@@ -1625,7 +1625,7 @@ void QCborMap::detach(qsizetype reserved)
     \fn QCborMap::ConstIterator QCborMap::ConstIterator::operator--(int)
     \overload
 
-    The postfix -- operator, \c{i--}, makes the preceding item current and
+    The postfix \c{--} operator, \c{i--}, makes the preceding item current and
     returns an iterator pointing to the previously current item.
  */
 
