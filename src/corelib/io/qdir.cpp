@@ -285,8 +285,8 @@ inline void QDirPrivate::sortFileList(QDir::SortFlags sort, const QFileInfoList 
             if (infos)
                 *infos = l;
             if (names) {
-                for (int i = 0; i < n; ++i)
-                    names->append(l.at(i).fileName());
+                for (const QFileInfo &fi : l)
+                    names->append(fi.fileName());
             }
         } else {
             QScopedArrayPointer<QDirSortItem> si(new QDirSortItem[n]);
@@ -1057,8 +1057,8 @@ void QDir::setSearchPaths(const QString &prefix, const QStringList &searchPaths)
         return;
     }
 
-    for (int i = 0; i < prefix.length(); ++i) {
-        if (!prefix.at(i).isLetterOrNumber()) {
+    for (QChar ch : prefix) {
+        if (!ch.isLetterOrNumber()) {
             qWarning("QDir::setSearchPaths: Prefix can only contain letters or numbers");
             return;
         }
