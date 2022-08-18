@@ -643,6 +643,10 @@ static bool supportsInternalFboFormat(QOpenGLContext *ctx, int glFormat)
 
 void tst_QOpenGL::fboRenderingRGB30()
 {
+#ifdef Q_OS_ANDROID
+    if (QNativeInterface::QAndroidApplication::sdkVersion() >= 31)
+        QSKIP("Fails on Android 12 (QTBUG-105738)");
+#endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(__x86_64__)
     QSKIP("QTBUG-22617");
 #endif
