@@ -984,6 +984,10 @@ void tst_QPluginLoader::reloadPlugin()
 
 void tst_QPluginLoader::loadSectionTableStrippedElf()
 {
+#ifdef Q_OS_ANDROID
+    if (QNativeInterface::QAndroidApplication::sdkVersion() >= 24)
+        QSKIP("Android 7+ (API 24+) linker doesn't allow missing or bad section header");
+#endif
 #if !defined(QT_SHARED)
     QSKIP("This test requires a shared build of Qt, as QPluginLoader::setFileName is a no-op in static builds");
 #elif !defined(Q_OF_ELF)
