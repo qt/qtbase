@@ -971,11 +971,17 @@ function(_qt_internal_configure_android_multiabi_target target)
     endif()
 
     if(CMAKE_C_COMPILER_LAUNCHER)
-        list(APPEND extra_cmake_args "-DCMAKE_C_COMPILER_LAUNCHER=${CMAKE_C_COMPILER_LAUNCHER}")
+        list(JOIN CMAKE_C_COMPILER_LAUNCHER "$<SEMICOLON>"
+            compiler_launcher)
+        list(APPEND extra_cmake_args
+            "-DCMAKE_C_COMPILER_LAUNCHER=${compiler_launcher}")
     endif()
 
     if(CMAKE_CXX_COMPILER_LAUNCHER)
-        list(APPEND extra_cmake_args "-DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER}")
+        list(JOIN CMAKE_CXX_COMPILER_LAUNCHER "$<SEMICOLON>"
+            compiler_launcher)
+        list(APPEND extra_cmake_args
+            "-DCMAKE_CXX_COMPILER_LAUNCHER=${compiler_launcher}")
     endif()
 
     set(missing_qt_abi_toolchains "")
