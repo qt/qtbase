@@ -21,7 +21,7 @@ class QWasmWindow;
 // Access to the top element is facilitated by |topWindow|.
 // Changes to the top element are signaled via the |topWindowChangedCallback| supplied at
 // construction.
-Q_AUTOTEST_EXPORT class QWasmWindowStack
+class Q_AUTOTEST_EXPORT QWasmWindowStack
 {
 public:
     using TopWindowChangedCallbackType = std::function<void()>;
