@@ -1262,7 +1262,7 @@ void QCocoaWindow::windowDidResignKey()
 
     // Make sure popups are closed before we deliver activation changes, which are
     // otherwise ignored by QApplication.
-    QGuiApplicationPrivate::instance()->closeAllPopups();
+    closeAllPopups();
 
     // The current key window will be non-nil if another window became key. If that
     // window is a Qt window, we delay the window activation event until the didBecomeKey
@@ -1609,6 +1609,75 @@ void QCocoaWindow::requestActivateWindow()
     [m_view.window makeKeyWindow];
 }
 
+/*
+    Closes all popups, and removes observers and monitors.
+*/
+void QCocoaWindow::closeAllPopups()
+{
+    QGuiApplicationPrivate::instance()->closeAllPopups();
+
+    removePopupMonitor();
+}
+
+void QCocoaWindow::removePopupMonitor()
+{
+    if (s_globalMouseMonitor) {
+        [NSEvent removeMonitor:s_globalMouseMonitor];
+        s_globalMouseMonitor = nil;
+    }
+    if (s_applicationActivationObserver) {
+        [[[NSWorkspace sharedWorkspace] notificationCenter] removeObserver:s_applicationActivationObserver];
+        s_applicationActivationObserver = nil;
+    }
+}
+
+void QCocoaWindow::setupPopupMonitor()
+{
+    // we open a popup window while we are not active. None of our existing event
+    // handlers will get called if the user now clicks anywhere outside the application
+    // or activates another window. Use a global event monitor to watch for mouse
+    // presses, and close popups. We also want mouse tracking in the popup to work, so
+    // also watch for MouseMoved.
+    if (!s_globalMouseMonitor) {
+        // we only get LeftMouseDown events when we also set LeftMouseUp.
+        constexpr NSEventMask mouseButtonMask = NSEventTypeLeftMouseDown | NSEventTypeLeftMouseUp
+                                                | NSEventMaskRightMouseDown | NSEventMaskOtherMouseDown
+                                                | NSEventMaskMouseMoved;
+        s_globalMouseMonitor = [NSEvent addGlobalMonitorForEventsMatchingMask:mouseButtonMask
+                                        handler:^(NSEvent *e){
+            if (!QGuiApplicationPrivate::instance()->popupActive()) {
+                removePopupMonitor();
+                return;
+            }
+            const auto eventType = cocoaEvent2QtMouseEvent(e);
+            if (eventType == QEvent::MouseMove) {
+                if (s_windowUnderMouse) {
+                    QWindow *window = s_windowUnderMouse->window();
+                    const auto button = cocoaButton2QtButton(e);
+                    const auto buttons = currentlyPressedMouseButtons();
+                    const auto globalPoint = QCocoaScreen::mapFromNative(NSEvent.mouseLocation);
+                    const auto localPoint = window->mapFromGlobal(globalPoint.toPoint());
+                    QWindowSystemInterface::handleMouseEvent(window, localPoint, globalPoint,
+                                                             buttons, button, eventType);
+                }
+            } else {
+                closeAllPopups();
+            }
+        }];
+    }
+    // The activation observer also gets called when we become active because the user clicks
+    // into the popup. This should not close the popup, so QCocoaApplicationDelegate's
+    // applicationDidBecomeActive implementation removes this observer.
+    if (!s_applicationActivationObserver) {
+        s_applicationActivationObserver = [[[NSWorkspace sharedWorkspace] notificationCenter]
+                                            addObserverForName:NSWorkspaceDidActivateApplicationNotification
+                                                        object:nil queue:nil
+                                                    usingBlock:^(NSNotification *){
+            closeAllPopups();
+        }];
+    }
+}
+
 QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
 {
     QMacAutoReleasePool pool;
@@ -1714,6 +1783,8 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
         if ((type & Qt::Popup) == Qt::Popup) {
             nsWindow.hasShadow = YES;
             nsWindow.animationBehavior = NSWindowAnimationBehaviorUtilityWindow;
+            if (QGuiApplication::applicationState() != Qt::ApplicationActive)
+                setupPopupMonitor();
         }
     }
 

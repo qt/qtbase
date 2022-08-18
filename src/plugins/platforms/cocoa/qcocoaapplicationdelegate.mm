@@ -268,6 +268,11 @@ QT_USE_NAMESPACE
 
 - (void)applicationDidBecomeActive:(NSNotification *)notification
 {
+    if (QCocoaWindow::s_applicationActivationObserver) {
+        [[[NSWorkspace sharedWorkspace] notificationCenter] removeObserver:QCocoaWindow::s_applicationActivationObserver];
+        QCocoaWindow::s_applicationActivationObserver = nil;
+    }
+
     if ([reflectionDelegate respondsToSelector:_cmd])
         [reflectionDelegate applicationDidBecomeActive:notification];
 
