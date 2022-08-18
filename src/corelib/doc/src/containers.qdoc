@@ -333,28 +333,6 @@
     on Java's iterator classes.
     New code should should prefer \l{STL-Style Iterators}.
 
-    \section1 Container keywords
-
-    \target foreach
-    \section2 The foreach Keyword
-    \l{foreach-keyword}{The foreach keyword} is discouraged, new code should
-    prefer C++11 range-based loops.
-
-    \target forever
-    \section2 The forever keyword.
-    In addition to \c foreach, Qt also provides a \c forever
-    pseudo-keyword for infinite loops:
-
-    \snippet code/doc_src_containers.cpp 21
-
-    If you're worried about namespace pollution, you can disable
-    these macros by adding the following line to your \c .pro file:
-
-    \snippet code/doc_src_containers.cpp 22
-
-    \note The alternative macros Q_FOREACH and Q_FOREVER remain defined
-    regardless.
-
     \section1 Qt containers compared with std containers
 
     \table
@@ -410,7 +388,7 @@
 
     Qt includes other template classes that resemble containers in
     some respects. These classes don't provide iterators and cannot
-    be used with the \c foreach keyword.
+    be used with the \l foreach keyword.
 
     \list
     \li QCache<Key, T> provides a cache to store objects of a certain
