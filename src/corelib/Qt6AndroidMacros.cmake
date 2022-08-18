@@ -587,8 +587,8 @@ function(_qt_internal_collect_apk_dependencies_defer)
     endif()
 endfunction()
 
-# The function collects shared libraries from the build system tree, that might be dependencies for
-# the main apk targets.
+# The function collects project-built shared libraries that might be dependencies for
+# the main apk targets. It stores their locations in a global custom target property.
 function(_qt_internal_collect_apk_dependencies)
     # User opted-out the functionality
     if(QT_NO_COLLECT_BUILD_TREE_APK_DEPS)
@@ -631,8 +631,8 @@ function(_qt_internal_collect_apk_dependencies)
     )
 endfunction()
 
-# The function recursively goes through the project subfolders and collects targets that supposed to
-# be shared libraries of any kind.
+# This function recursively walks the current directory and its subdirectories to collect shared
+# library targets built in those directories.
 function(_qt_internal_collect_buildsystem_shared_libraries out_var subdir)
     set(result "")
     get_directory_property(buildsystem_targets DIRECTORY ${subdir} BUILDSYSTEM_TARGETS)
