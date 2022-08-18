@@ -82,11 +82,9 @@
     \snippet code/doc_src_qplugin.cpp 2
 
     Static plugins must also be included by the linker when your
-    application is built. For Qt's predefined plugins,
-    you can use the \c QTPLUGIN to add
-    the required plugins to your build. For example:
+    application is built. See \l{Static Plugins} for more information
+    on this.
 
-    \snippet code/doc_src_qplugin.pro 3
-    \sa {Static Plugins}, {How to Create Qt Plugins}, {qmake-getting-started}{Getting Started with qmake}
+    \sa {Static Plugins}, {How to Create Qt Plugins}
 
 */
