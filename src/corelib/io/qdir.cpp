@@ -58,7 +58,6 @@
 #include <qstringbuilder.h>
 
 #ifdef QT_BUILD_CORE_LIB
-#  include "qresource.h"
 #  include "private/qcoreglobaldata_p.h"
 #endif
 
