@@ -44,7 +44,6 @@ qt_internal_extend_target(Bootstrap
         ../../corelib/io/qstandardpaths.cpp
         ../../corelib/io/qtemporaryfile.cpp
         ../../corelib/kernel/qcoreapplication.cpp
-        ../../corelib/kernel/qcoreglobaldata.cpp
         ../../corelib/kernel/qiterable.cpp
         ../../corelib/kernel/qmetacontainer.cpp
         ../../corelib/kernel/qmetatype.cpp
