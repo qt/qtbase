@@ -49,6 +49,8 @@
 #include <QtGui/QGuiApplication>
 #include <QtCore/QDebug>
 
+#include <QtGui/private/qguiapplication_p.h>
+
 QT_BEGIN_NAMESPACE
 
 static QList<QCocoaMenuBar*> static_menubars;
@@ -56,6 +58,11 @@ static QList<QCocoaMenuBar*> static_menubars;
 QCocoaMenuBar::QCocoaMenuBar()
 {
     static_menubars.append(this);
+
+    // clicks into the menu bar should close all popup windows
+    static QMacNotificationObserver menuBarClickObserver(nil, NSMenuDidBeginTrackingNotification, ^{
+        QGuiApplicationPrivate::instance()->closeAllPopups();
+    });
 
     m_nativeMenu = [[NSMenu alloc] init];
 #ifdef QT_COCOA_ENABLE_MENU_DEBUG
