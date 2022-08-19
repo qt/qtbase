@@ -904,16 +904,31 @@ class QGlobalQHashSeedResetter
     int oldSeed;
 public:
     // not entirely correct (may lost changes made by another thread between the query
-    // of the old and the setting of the new seed), but qSetGlobalQHashSeed doesn't
+    // of the old and the setting of the new seed), but setHashSeed() can't
     // return the old value, so this is the best we can do:
     explicit QGlobalQHashSeedResetter(int newSeed)
-        : oldSeed(qGlobalQHashSeed())
+        : oldSeed(getHashSeed())
     {
-        qSetGlobalQHashSeed(newSeed);
+        setHashSeed(newSeed);
     }
     ~QGlobalQHashSeedResetter()
     {
-        qSetGlobalQHashSeed(oldSeed);
+        setHashSeed(oldSeed);
+    }
+
+private:
+    // The functions are implemented to replace the deprecated
+    // qGlobalQHashSeed() and qSetGlobalQHashSeed()
+    static int getHashSeed()
+    {
+        return int(QHashSeed::globalSeed() & INT_MAX);
+    }
+    static void setHashSeed(int seed)
+    {
+        if (seed == 0)
+            QHashSeed::setDeterministicGlobalSeed();
+        else
+            QHashSeed::resetRandomGlobalSeed();
     }
 };
 

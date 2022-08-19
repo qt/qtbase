@@ -1039,14 +1039,14 @@ void tst_QSet::qhash()
     //
     {
         // create some deterministic initial state:
-        qSetGlobalQHashSeed(0);
+        QHashSeed::setDeterministicGlobalSeed();
 
         QSet<int> s1;
         s1.reserve(4);
         s1 << 400 << 300 << 200 << 100;
 
         // also change the seed:
-        qSetGlobalQHashSeed(0x10101010);
+        QHashSeed::resetRandomGlobalSeed();
 
         QSet<int> s2;
         s2.reserve(100); // provoke different bucket counts
@@ -1087,7 +1087,7 @@ void tst_QSet::intersects()
     s1 << 200;
     QVERIFY(s1.intersects(s2));
 
-    qSetGlobalQHashSeed(0x10101010);
+    QHashSeed::resetRandomGlobalSeed();
     QSet<int> s3;
     s3 << 500;
     QVERIFY(!s1.intersects(s3));

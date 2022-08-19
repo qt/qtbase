@@ -88,7 +88,8 @@ QTEST_MAIN(tst_Text)
 
 int main(int argc, char *argv[])
 {
-    qSetGlobalQHashSeed(0);   // Avoid rendering variations caused by QHash randomization
+    // Avoid rendering variations caused by QHash randomization
+    QHashSeed::setDeterministicGlobalSeed();
 
     QBaselineTest::handleCmdLineArgs(&argc, &argv);
     return _realmain(argc, argv);

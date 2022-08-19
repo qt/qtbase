@@ -34,8 +34,8 @@ private slots:
 
 void tst_QDBusXmlParser::initTestCase()
 {
-    // Always initialize the hash seed to 0 to get reliable test results
-    qSetGlobalQHashSeed(0);
+    // Always initialize the hash seed with a known value to get reliable test results
+    QHashSeed::setDeterministicGlobalSeed();
 }
 
 void tst_QDBusXmlParser::parsing_data()
