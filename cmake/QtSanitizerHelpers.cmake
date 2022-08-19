@@ -1,5 +1,5 @@
 # Copyright (C) 2022 The Qt Company Ltd.
-# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+# SPDX-License-Identifier: BSD-3-Clause
 
 # Computes which sanitizer options should be set based on features evaluated in qtbase.
 # Sets ECM_ENABLE_SANITIZERS with those options in the function calling scope.

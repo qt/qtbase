@@ -1,5 +1,5 @@
 # Copyright (C) 2022 The Qt Company Ltd.
-# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+# SPDX-License-Identifier: BSD-3-Clause
 
 function(__qt_internal_get_supported_min_cmake_version_for_using_qt out_var)
     # This is recorded in Qt6ConfigExtras.cmake

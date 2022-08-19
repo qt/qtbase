@@ -1,5 +1,5 @@
 # Copyright (C) 2022 The Qt Company Ltd.
-# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+# SPDX-License-Identifier: BSD-3-Clause
 
 set(__GlobalConfig_path_suffix "${INSTALL_CMAKE_NAMESPACE}")
 qt_path_join(__GlobalConfig_build_dir ${QT_CONFIG_BUILD_DIR} ${__GlobalConfig_path_suffix})

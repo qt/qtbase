@@ -1,5 +1,5 @@
 # Copyright (C) 2022 The Qt Company Ltd.
-# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+# SPDX-License-Identifier: BSD-3-Clause
 
 # This function creates a CMake target for a generic console or GUI binary.
 # Please consider to use a more specific version target like the one created

@@ -1,5 +1,5 @@
 # Copyright (C) 2022 The Qt Company Ltd.
-# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+# SPDX-License-Identifier: BSD-3-Clause
 
 # qt_configure_file(OUTPUT output-file <INPUT input-file | CONTENT content>)
 # input-file is relative to ${CMAKE_CURRENT_SOURCE_DIR}

@@ -1,5 +1,5 @@
 # Copyright (C) 2022 The Qt Company Ltd.
-# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+# SPDX-License-Identifier: BSD-3-Clause
 
 # Note that these are only the keywords that are unique to qt_internal_add_plugin().
 # That function also supports the keywords defined by _qt_internal_get_add_plugin_keywords().

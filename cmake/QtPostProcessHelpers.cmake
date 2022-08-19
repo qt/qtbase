@@ -1,5 +1,5 @@
 # Copyright (C) 2022 The Qt Company Ltd.
-# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+# SPDX-License-Identifier: BSD-3-Clause
 
 function(qt_internal_write_depends_file target module_include_name)
     set(outfile "${QT_BUILD_DIR}/include/${module_include_name}/${module_include_name}Depends")
