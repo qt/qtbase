@@ -270,7 +270,7 @@ void tst_QDtls::configuration()
     QFETCH(const QSslSocket::SslMode, mode);
     QDtls dtls(mode);
     QCOMPARE(dtls.dtlsConfiguration(), config);
-    config.setProtocol(QSsl::DtlsV1_0OrLater);
+    config.setProtocol(QSsl::DtlsV1_2);
     config.setDtlsCookieVerificationEnabled(false);
     QCOMPARE(config.dtlsCookieVerificationEnabled(), false);
 
@@ -579,20 +579,28 @@ void tst_QDtls::protocolVersionMatching_data()
     QTest::addColumn<QSsl::SslProtocol>("clientProtocol");
     QTest::addColumn<bool>("works");
 
+#if QT_DEPRECATED_SINCE(6, 3)
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     QTest::addRow("DtlsV1_0 <-> DtlsV1_0") << QSsl::DtlsV1_0 << QSsl::DtlsV1_0 << true;
     QTest::addRow("DtlsV1_0OrLater <-> DtlsV1_0") << QSsl::DtlsV1_0OrLater << QSsl::DtlsV1_0 << true;
     QTest::addRow("DtlsV1_0 <-> DtlsV1_0OrLater") << QSsl::DtlsV1_0 << QSsl::DtlsV1_0OrLater << true;
     QTest::addRow("DtlsV1_0OrLater <-> DtlsV1_0OrLater") << QSsl::DtlsV1_0OrLater << QSsl::DtlsV1_0OrLater << true;
+QT_WARNING_POP
+#endif // QT_DEPRECATED_SINCE(6, 3)
 
     QTest::addRow("DtlsV1_2 <-> DtlsV1_2") << QSsl::DtlsV1_2 << QSsl::DtlsV1_2 << true;
     QTest::addRow("DtlsV1_2OrLater <-> DtlsV1_2") << QSsl::DtlsV1_2OrLater << QSsl::DtlsV1_2 << true;
     QTest::addRow("DtlsV1_2 <-> DtlsV1_2OrLater") << QSsl::DtlsV1_2 << QSsl::DtlsV1_2OrLater << true;
     QTest::addRow("DtlsV1_2OrLater <-> DtlsV1_2OrLater") << QSsl::DtlsV1_2OrLater << QSsl::DtlsV1_2OrLater << true;
 
+#if QT_DEPRECATED_SINCE(6, 3)
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     QTest::addRow("DtlsV1_0 <-> DtlsV1_2") << QSsl::DtlsV1_0 << QSsl::DtlsV1_2 << false;
     QTest::addRow("DtlsV1_0 <-> DtlsV1_2OrLater") << QSsl::DtlsV1_0 << QSsl::DtlsV1_2OrLater << false;
     QTest::addRow("DtlsV1_2 <-> DtlsV1_0") << QSsl::DtlsV1_2 << QSsl::DtlsV1_0 << false;
     QTest::addRow("DtlsV1_2OrLater <-> DtlsV1_0") << QSsl::DtlsV1_2OrLater << QSsl::DtlsV1_0 << false;
+QT_WARNING_POP
+#endif // QT_DEPRECATED_SINCE(6, 3)
 }
 
 void tst_QDtls::protocolVersionMatching()
