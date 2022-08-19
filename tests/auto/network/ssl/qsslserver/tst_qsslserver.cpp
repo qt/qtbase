@@ -25,7 +25,7 @@ private slots:
 #endif
     void plaintextClient();
     void quietClient();
-    void manyQuietClients();
+    void twoGoodAndManyBadClients();
 
 private:
     QString testDataDir;
@@ -488,22 +488,26 @@ void tst_QSslServer::quietClient()
     QCOMPARE(serverPeerPort, clientLocalPort);
 }
 
-void tst_QSslServer::manyQuietClients()
+void tst_QSslServer::twoGoodAndManyBadClients()
 {
     QSslConfiguration serverConfiguration = selfSignedServerQSslConfiguration();
     SslServerSpy server(serverConfiguration);
+    server.server.setHandshakeTimeout(750);
     constexpr qsizetype ExpectedConnections = 5;
     server.server.setMaxPendingConnections(ExpectedConnections);
     QVERIFY(server.server.listen());
 
+    auto connectGoodClient = [&server](QSslSocket *socket) {
+        QObject::connect(socket, &QSslSocket::sslErrors, socket,
+                         qOverload<const QList<QSslError> &>(&QSslSocket::ignoreSslErrors));
+        socket->connectToHostEncrypted("127.0.0.1", server.server.serverPort());
+    };
     // Connect one socket encrypted so we have a socket in the regular queue
     QSslSocket tlsSocket;
-    QObject::connect(&tlsSocket, &QSslSocket::sslErrors, &tlsSocket,
-                     qOverload<const QList<QSslError> &>(&QSslSocket::ignoreSslErrors));
-    tlsSocket.connectToHostEncrypted("127.0.0.1", server.server.serverPort());
+    connectGoodClient(&tlsSocket);
 
     // Then we connect a bunch of TCP sockets who will not send any data at all
-    std::array<QTcpSocket, size_t(ExpectedConnections) * 4> sockets;
+    std::array<QTcpSocket, size_t(ExpectedConnections) * 2> sockets;
     for (QTcpSocket &socket : sockets)
         socket.connectToHost(QHostAddress::LocalHost, server.server.serverPort());
     QTest::qWait(500); // some leeway to let connections try to connect...
@@ -514,6 +518,12 @@ void tst_QSslServer::manyQuietClients()
     QCOMPARE(connectedCount, ExpectedConnections);
     // 1 socket is ready and pending
     QCOMPARE(server.pendingConnectionAvailableSpy.size(), 1);
+
+    // Connect another client to make sure that the server is accepting connections again even after
+    // all the bad actors tried to connect:
+    QSslSocket goodClient;
+    connectGoodClient(&goodClient);
+    QTRY_COMPARE(server.pendingConnectionAvailableSpy.size(), 2);
 }
 
 QTEST_MAIN(tst_QSslServer)
