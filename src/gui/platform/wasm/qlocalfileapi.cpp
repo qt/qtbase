@@ -46,7 +46,7 @@ std::optional<Type> Type::fromQt(QStringView type)
     // Group 1 is treated as the description, whereas group 2 or 3 are treated as the filter list.
     static QRegularExpression regex(
             QString(QStringLiteral("(?:(?:([^(]*)\\(([^()]+)\\)[^)]*)|([^()]+))")));
-    const auto match = regex.match(type);
+    const auto match = regex.matchView(type);
 
     if (!match.hasMatch())
         return std::nullopt;
@@ -86,7 +86,7 @@ std::optional<Type::Accept> Type::Accept::fromQt(QStringView qtRepresentation)
     // The next group of non-empty characters.
     static QRegularExpression internalRegex(QString(QStringLiteral("([^\\s]+)\\s*")));
     int offset = 0;
-    auto internalMatch = internalRegex.match(qtRepresentation, offset);
+    auto internalMatch = internalRegex.matchView(qtRepresentation, offset);
     MimeType mimeType;
 
     while (internalMatch.hasMatch()) {
@@ -97,7 +97,7 @@ std::optional<Type::Accept> Type::Accept::fromQt(QStringView qtRepresentation)
 
         mimeType.addExtension(*webExtension);
 
-        internalMatch = internalRegex.match(qtRepresentation, internalMatch.capturedEnd());
+        internalMatch = internalRegex.matchView(qtRepresentation, internalMatch.capturedEnd());
     }
 
     accept.addMimeType(mimeType);
@@ -144,7 +144,7 @@ Type::Accept::MimeType::Extension::fromQt(QStringView qtRepresentation)
     // The web filter does not support wildcards.
     static QRegularExpression qtAcceptAllRegex(
             QRegularExpression::anchoredPattern(QString(QStringLiteral("[*]+|[*]+\\.[*]+"))));
-    if (qtAcceptAllRegex.match(qtRepresentation).hasMatch())
+    if (qtAcceptAllRegex.matchView(qtRepresentation).hasMatch())
         return std::nullopt;
 
     // Checks for correctness. The web filter only allows filename extensions and does not filter
@@ -153,7 +153,7 @@ Type::Accept::MimeType::Extension::fromQt(QStringView qtRepresentation)
     static QRegularExpression qtFilenameMatcherRegex(
             QRegularExpression::anchoredPattern(QString(QStringLiteral("(\\*?)(\\.[^*]+)"))));
 
-    auto extensionMatch = qtFilenameMatcherRegex.match(qtRepresentation);
+    auto extensionMatch = qtFilenameMatcherRegex.matchView(qtRepresentation);
     if (extensionMatch.hasMatch())
         return Extension(extensionMatch.capturedView(2));
 
