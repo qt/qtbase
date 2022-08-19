@@ -8,6 +8,7 @@
 
 #include <QtGui/qregion.h>
 #include <qpa/qplatformwindow.h>
+#include <QMap>
 
 #include <QtOpenGL/qopengltextureblitter.h>
 #include <QtGui/qpalette.h>

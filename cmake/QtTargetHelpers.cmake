@@ -530,6 +530,8 @@ endif()\n\n")
         if(target_type STREQUAL "SHARED_LIBRARY")
             if(WIN32)
                 set(write_implib TRUE)
+            elseif(WASM)
+                # Keep write_soname at FALSE
             else()
                 set(write_soname TRUE)
             endif()

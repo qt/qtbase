@@ -35,6 +35,10 @@ function(qt_auto_detect_wasm)
             __qt_internal_query_emsdk_version("${EMROOT_PATH}" TRUE CMAKE_EMSDK_REGEX_VERSION)
             set(EMCC_VERSION "${CMAKE_EMSDK_REGEX_VERSION}" CACHE STRING INTERNAL FORCE)
 
+            if(NOT DEFINED BUILD_SHARED_LIBS)
+                qt_internal_ensure_static_qt_config()
+            endif()
+
             # Find toolchain file
             if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
                 __qt_internal_get_emscripten_cmake_toolchain_file_path_from_emsdk_env(
@@ -48,8 +52,6 @@ function(qt_auto_detect_wasm)
             else()
                 __qt_internal_show_error_no_emscripten_toolchain_file_found_when_building_qt()
             endif()
-
-            qt_internal_ensure_static_qt_config()
 
             __qt_internal_get_emcc_recommended_version(recommended_version)
             set(QT_EMCC_RECOMMENDED_VERSION "${recommended_version}" CACHE STRING INTERNAL FORCE)

@@ -851,7 +851,7 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_opengles2
         opengl/qopengles2ext.h
 )
 
-qt_internal_extend_target(Gui CONDITION QT_FEATURE_egl AND QT_FEATURE_opengl
+qt_internal_extend_target(Gui CONDITION QT_FEATURE_egl AND QT_FEATURE_opengl AND NOT WASM
     SOURCES
         opengl/platform/egl/qeglpbuffer.cpp opengl/platform/egl/qeglpbuffer_p.h
         opengl/platform/egl/qeglplatformcontext.cpp opengl/platform/egl/qeglplatformcontext_p.h

@@ -6,7 +6,6 @@
 function (qt_internal_setup_wasm_target_properties wasmTarget)
 
     target_link_options("${wasmTarget}" INTERFACE
-    "SHELL:-s ERROR_ON_UNDEFINED_SYMBOLS=1"
     "SHELL:-s MAX_WEBGL_VERSION=2"
     "SHELL:-s FETCH=1"
     "SHELL:-s WASM_BIGINT=1")
@@ -82,6 +81,25 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
     #  Set ASYNCIFY_IMPORTS unconditionally in order to support enabling asyncify at link time.
     target_link_options("${wasmTarget}" INTERFACE "SHELL:-sASYNCIFY_IMPORTS=qt_asyncify_suspend_js,qt_asyncify_resume_js")
 
+    if(QT_FEATURE_shared)
+
+        set_property(GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS TRUE)
+
+        # plugins are SIDE_MODULE
+        target_compile_options("${wasmTarget}" INTERFACE
+        "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,MODULE_LIBRARY>:" -s SIDE_MODULE=1>)
+        target_link_options("${wasmTarget}" INTERFACE
+        "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,MODULE_LIBRARY>:" -s SIDE_MODULE=1>)
+
+        # shared libs are SIDE_MODULE
+        target_compile_options("${wasmTarget}" INTERFACE
+        "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>:" -s SIDE_MODULE=1>)
+        target_link_options("${wasmTarget}" INTERFACE
+        "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>:" -s SIDE_MODULE=1>)
+
+    else()
+        target_link_options("${wasmTarget}" INTERFACE "SHELL:-s ERROR_ON_UNDEFINED_SYMBOLS=1")
+    endif()
 endfunction()
 
 function(qt_internal_wasm_add_finalizers target)

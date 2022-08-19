@@ -9,6 +9,10 @@
 #    PRIVATE_CONTENT_FILE specifies the pre-cooked content of Qt_<version>_PRIVATE_API section.
 #       Requires the content file available at build time.
 function(qt_internal_add_linker_version_script target)
+    if(WASM)
+        return()
+    endif()
+
     qt_parse_all_arguments(arg "qt_internal_add_linker_version_script"
         ""
         "PRIVATE_CONTENT_FILE"
@@ -94,7 +98,7 @@ function(qt_internal_add_linker_version_script target)
 endfunction()
 
 function(qt_internal_add_link_flags_no_undefined target)
-    if (NOT QT_BUILD_SHARED_LIBS)
+    if (NOT QT_BUILD_SHARED_LIBS OR WASM)
         return()
     endif()
     if ((GCC OR CLANG) AND NOT MSVC)

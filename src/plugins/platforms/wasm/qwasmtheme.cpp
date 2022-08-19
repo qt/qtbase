@@ -4,6 +4,7 @@
 #include "qwasmtheme.h"
 #include <QtCore/qvariant.h>
 #include <QFontDatabase>
+#include <QList>
 
 QT_BEGIN_NAMESPACE
 
