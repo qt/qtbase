@@ -627,7 +627,8 @@ QStringList getBinaryDependencies(const QString executablePath,
 }
 
 // copies everything _inside_ sourcePath to destinationPath
-bool recursiveCopy(const QString &sourcePath, const QString &destinationPath)
+bool recursiveCopy(const QString &sourcePath, const QString &destinationPath,
+                   const QRegularExpression &ignoreRegExp = QRegularExpression())
 {
     if (!QDir(sourcePath).exists())
         return false;
@@ -636,7 +637,10 @@ bool recursiveCopy(const QString &sourcePath, const QString &destinationPath)
     LogNormal() << "copy:" << sourcePath << destinationPath;
 
     QStringList files = QDir(sourcePath).entryList(QStringList() << "*", QDir::Files | QDir::NoDotAndDotDot);
-    for (const QString &file : files) {
+    const bool hasValidRegExp = ignoreRegExp.isValid() && ignoreRegExp.pattern().length() > 0;
+    foreach (QString file, files) {
+        if (hasValidRegExp && ignoreRegExp.match(file).hasMatch())
+            continue;
         const QString fileSourcePath = sourcePath + "/" + file;
         const QString fileDestinationPath = destinationPath + "/" + file;
         copyFilePrintStatus(fileSourcePath, fileDestinationPath);
@@ -769,7 +773,9 @@ QString copyFramework(const FrameworkInfo &framework, const QString path)
     // Copy Resources/, Libraries/ and Helpers/
     const QString resourcesSourcePath = framework.frameworkPath + "/Resources";
     const QString resourcesDestinationPath = frameworkDestinationDirectory + "/Versions/" + framework.version + "/Resources";
-    recursiveCopy(resourcesSourcePath, resourcesDestinationPath);
+    // Ignore *.prl files that are in the Resources directory
+    recursiveCopy(resourcesSourcePath, resourcesDestinationPath,
+                  QRegularExpression("\\A(?:[^/]*\\.prl)\\z"));
     const QString librariesSourcePath = framework.frameworkPath + "/Libraries";
     const QString librariesDestinationPath = frameworkDestinationDirectory + "/Versions/" + framework.version + "/Libraries";
     bool createdLibraries = recursiveCopy(librariesSourcePath, librariesDestinationPath);
