@@ -55,7 +55,7 @@ QFontEngine *QFreeTypeFontDatabase::fontEngine(const QFontDef &fontDef, void *us
     faceId.filename = QFile::encodeName(fontfile->fileName);
     faceId.index = fontfile->indexValue;
 
-    return QFontEngineFT::create(fontDef, faceId);
+    return QFontEngineFT::create(fontDef, faceId, fontfile->data);
 }
 
 QFontEngine *QFreeTypeFontDatabase::fontEngine(const QByteArray &fontData, qreal pixelSize,
@@ -191,9 +191,11 @@ QStringList QFreeTypeFontDatabase::addTTFile(const QByteArray &fontData, const Q
         }
 
         QString family = QString::fromLatin1(face->family_name);
-        FontFile *fontFile = new FontFile;
-        fontFile->fileName = QFile::decodeName(file);
-        fontFile->indexValue = index;
+        FontFile *fontFile = new FontFile{
+            QFile::decodeName(file),
+            index,
+            fontData
+        };
 
         QString styleName = QString::fromLatin1(face->style_name);
 

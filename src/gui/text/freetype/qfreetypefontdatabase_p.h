@@ -26,6 +26,11 @@ struct FontFile
 {
     QString fileName;
     int indexValue;
+
+    // Note: The data may be implicitly shared throughout the
+    // font database and platform font database, so be careful
+    // to never detach when accessing this member!
+    const QByteArray data;
 };
 
 class Q_GUI_EXPORT QFreeTypeFontDatabase : public QPlatformFontDatabase
