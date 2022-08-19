@@ -768,14 +768,14 @@ QString copyFramework(const FrameworkInfo &framework, const QString path)
 
     // Copy Resources/, Libraries/ and Helpers/
     const QString resourcesSourcePath = framework.frameworkPath + "/Resources";
-    const QString resourcesDestianationPath = frameworkDestinationDirectory + "/Versions/" + framework.version + "/Resources";
-    recursiveCopy(resourcesSourcePath, resourcesDestianationPath);
+    const QString resourcesDestinationPath = frameworkDestinationDirectory + "/Versions/" + framework.version + "/Resources";
+    recursiveCopy(resourcesSourcePath, resourcesDestinationPath);
     const QString librariesSourcePath = framework.frameworkPath + "/Libraries";
-    const QString librariesDestianationPath = frameworkDestinationDirectory + "/Versions/" + framework.version + "/Libraries";
-    bool createdLibraries = recursiveCopy(librariesSourcePath, librariesDestianationPath);
+    const QString librariesDestinationPath = frameworkDestinationDirectory + "/Versions/" + framework.version + "/Libraries";
+    bool createdLibraries = recursiveCopy(librariesSourcePath, librariesDestinationPath);
     const QString helpersSourcePath = framework.frameworkPath + "/Helpers";
-    const QString helpersDestianationPath = frameworkDestinationDirectory + "/Versions/" + framework.version + "/Helpers";
-    bool createdHelpers = recursiveCopy(helpersSourcePath, helpersDestianationPath);
+    const QString helpersDestinationPath = frameworkDestinationDirectory + "/Versions/" + framework.version + "/Helpers";
+    bool createdHelpers = recursiveCopy(helpersSourcePath, helpersDestinationPath);
 
     // Create symlink structure. Links at the framework root point to Versions/Current/
     // which again points to the actual version:
