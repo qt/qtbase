@@ -229,8 +229,6 @@ constexpr std::underlying_type_t<Enum> qToUnderlying(Enum e) noexcept
     return static_cast<std::underlying_type_t<Enum>>(e);
 }
 
-#define QT_MODULE(x)
-
 QT_END_NAMESPACE
 
 // We need to keep QTypeInfo, QSysInfo, QFlags, qDebug & family in qglobal.h for compatibility with Qt 4.
