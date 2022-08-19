@@ -97,7 +97,8 @@ qt_internal_extend_target(XcbQpaPrivate CONDITION QT_FEATURE_xcb_sm
     SOURCES
         qxcbsessionmanager.cpp qxcbsessionmanager.h
     PUBLIC_LIBRARIES
-        ${X11_SM_LIB} ${X11_ICE_LIB}
+        X11::SM
+        X11::ICE
 )
 
 qt_internal_extend_target(XcbQpaPrivate CONDITION QT_FEATURE_vulkan
