@@ -223,7 +223,6 @@
               but it is not defined on older compilers like C Set 3.1 */
 #elif defined(__xlC__)
 #  define Q_CC_XLC
-#  define Q_FULL_TEMPLATE_INSTANTIATION
 #  if __xlC__ < 0x400
 #    error "Compiler not supported"
 #  elif __xlC__ >= 0x0600
