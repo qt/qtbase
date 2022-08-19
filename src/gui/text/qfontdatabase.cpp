@@ -280,6 +280,8 @@ void QFontDatabasePrivate::clearFamilies()
 
 void QFontDatabasePrivate::invalidate()
 {
+    qCDebug(lcFontDb) << "Invalidating font database";
+
     QFontCache::instance()->clear();
 
     fallbacksCache.clear();
@@ -564,6 +566,8 @@ void qt_registerFont(const QString &familyName, const QString &stylename,
 
 void qt_registerFontFamily(const QString &familyName)
 {
+    qCDebug(lcFontDb) << "Registering family" << familyName;
+
     // Create uninitialized/unpopulated family
     QFontDatabasePrivate::instance()->family(familyName, QFontDatabasePrivate::EnsureCreated);
 }
@@ -572,6 +576,8 @@ void qt_registerAliasToFontFamily(const QString &familyName, const QString &alia
 {
     if (alias.isEmpty())
         return;
+
+    qCDebug(lcFontDb) << "Registering alias" << alias << "to family" << familyName;
 
     auto *d = QFontDatabasePrivate::instance();
     QtFontFamily *f = d->family(familyName, QFontDatabasePrivate::RequestFamily);
@@ -1316,6 +1322,7 @@ QFontDatabasePrivate *QFontDatabasePrivate::ensureFontDatabase()
         // The font database may have been partially populated, but to ensure
         // we can answer queries for any platform- or user-provided family we
         // need to fully populate it now.
+        qCDebug(lcFontDb) << "Populating font database";
 
         if (Q_UNLIKELY(qGuiApp == nullptr || QGuiApplicationPrivate::platformIntegration() == nullptr))
             qFatal("QFontDatabase: Must construct a QGuiApplication before accessing QFontDatabase");
