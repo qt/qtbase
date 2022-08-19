@@ -184,6 +184,12 @@ bool QCocoaDrag::maybeDragMultipleItems()
     // contains a combined picture for all urls we drag.
     auto imageOrNil = dragImage;
     for (const auto &qtUrl : qtUrls) {
+        if (!qtUrl.isValid())
+            continue;
+
+        if (qtUrl.isRelative()) // NSPasteboardWriting rejects such items.
+            continue;
+
         NSURL *nsUrl = qtUrl.toNSURL();
         auto *newItem = [[[NSDraggingItem alloc] initWithPasteboardWriter:nsUrl] autorelease];
         const NSRect itemFrame = NSMakeRect(itemLocation.x, itemLocation.y,
