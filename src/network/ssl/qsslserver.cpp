@@ -396,6 +396,8 @@ void QSslServerPrivate::handleHandshakeTimedOut(QSslSocket *socket)
     socket->disconnectFromHost();
     Q_EMIT q->errorOccurred(socket, QAbstractSocket::SocketTimeoutError);
     socket->deleteLater();
+    if (!socketEngine->isReadNotificationEnabled() && totalPendingConnections() < maxConnections)
+        q->resumeAccepting();
 }
 
 QT_END_NAMESPACE
