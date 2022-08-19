@@ -2288,7 +2288,7 @@ bool AtSpiAdaptor::valueInterface(QAccessibleInterface *interface, const QString
         //Temporary fix
         //See https://bugzilla.gnome.org/show_bug.cgi?id=652596
         valueIface->setCurrentValue(value);
-        connection.send(message.createReply()); // FIXME is the reply needed?
+        connection.send(message.createReply());
     } else {
         QVariant value;
         if (function == "GetCurrentValue"_L1)
