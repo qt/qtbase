@@ -7,6 +7,7 @@
 #include <QVariant>
 #include <QtCore/qregularexpression.h>
 #include <QGuiApplication>
+#include <qpa/qwindowsysteminterface.h>
 
 #undef signals
 #include <gtk/gtk.h>
@@ -82,6 +83,25 @@ QGtk3Theme::QGtk3Theme()
 
     /* Use our custom log handler. */
     g_log_set_handler("Gtk", G_LOG_LEVEL_MESSAGE, gtkMessageHandler, nullptr);
+
+#define SETTING_CONNECT(setting) g_signal_connect(settings, "notify::" setting, G_CALLBACK(notifyThemeChanged), nullptr)
+    auto notifyThemeChanged = [] {
+        QWindowSystemInterface::handleThemeChange();
+    };
+
+    GtkSettings *settings = gtk_settings_get_default();
+    SETTING_CONNECT("gtk-cursor-blink-time");
+    SETTING_CONNECT("gtk-double-click-distance");
+    SETTING_CONNECT("gtk-double-click-time");
+    SETTING_CONNECT("gtk-long-press-time");
+    SETTING_CONNECT("gtk-entry-password-hint-timeout");
+    SETTING_CONNECT("gtk-dnd-drag-threshold");
+    SETTING_CONNECT("gtk-icon-theme-name");
+    SETTING_CONNECT("gtk-fallback-icon-theme");
+    SETTING_CONNECT("gtk-font-name");
+    SETTING_CONNECT("gtk-application-prefer-dark-theme");
+    SETTING_CONNECT("gtk-theme-name");
+#undef SETTING_CONNECT
 }
 
 static inline QVariant gtkGetLongPressTime()
