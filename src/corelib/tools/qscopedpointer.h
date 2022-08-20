@@ -201,12 +201,12 @@ public:
     {
     }
 
-    inline T &operator[](int i)
+    T &operator[](qsizetype i)
     {
         return this->d[i];
     }
 
-    inline const T &operator[](int i) const
+    const T &operator[](qsizetype i) const
     {
         return this->d[i];
     }

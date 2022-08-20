@@ -276,23 +276,29 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn template <typename T, typename Cleanup> T *QScopedArrayPointer<T, Cleanup>::operator[](int i)
+    \fn template <typename T, typename Cleanup> T *QScopedArrayPointer<T, Cleanup>::operator[](qsizetype i)
 
     Provides access to entry \a i of the scoped pointer's array of
     objects.
 
     If the contained pointer is \nullptr, behavior is undefined.
 
+    \note In Qt versions prior to 6.5, \a i was of type \c{int}, not
+    \c{qsizetype}, possibly causing truncation on 64-bit platforms.
+
     \sa isNull()
 */
 
 /*!
-    \fn template <typename T, typename Cleanup> T *QScopedArrayPointer<T, Cleanup>::operator[](int i) const
+    \fn template <typename T, typename Cleanup> T *QScopedArrayPointer<T, Cleanup>::operator[](qsizetype i) const
 
     Provides access to entry \a i of the scoped pointer's array of
     objects.
 
     If the contained pointer is \nullptr behavior is undefined.
+
+    \note In Qt versions prior to 6.5, \a i was of type \c{int}, not
+    \c{qsizetype}, possibly causing truncation on 64-bit platforms.
 
     \sa isNull()
 */
