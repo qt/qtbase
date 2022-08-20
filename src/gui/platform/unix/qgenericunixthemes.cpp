@@ -726,6 +726,8 @@ QVariant QGnomeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
     case QPlatformTheme::ButtonPressKeys:
         return QVariant::fromValue(
                 QList<Qt::Key>({ Qt::Key_Space, Qt::Key_Return, Qt::Key_Enter, Qt::Key_Select }));
+    case QPlatformTheme::PreselectFirstFileInDirectory:
+        return true;
     default:
         break;
     }

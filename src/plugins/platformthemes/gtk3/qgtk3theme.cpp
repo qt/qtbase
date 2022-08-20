@@ -116,8 +116,6 @@ QVariant QGtk3Theme::themeHint(QPlatformTheme::ThemeHint hint) const
         return QVariant(gtkSetting("gtk-icon-theme-name"));
     case QPlatformTheme::SystemIconFallbackThemeName:
         return QVariant(gtkSetting("gtk-fallback-icon-theme"));
-    case QPlatformTheme::PreselectFirstFileInDirectory:
-        return true;
     default:
         return QGnomeTheme::themeHint(hint);
     }
