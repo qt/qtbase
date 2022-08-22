@@ -158,13 +158,6 @@ noexcept(std::conjunction_v<std::is_nothrow_move_constructible<T>, std::is_nothr
     return old;
 }
 
-// like std::to_underlying
-template <typename Enum>
-constexpr std::underlying_type_t<Enum> qToUnderlying(Enum e) noexcept
-{
-    return static_cast<std::underlying_type_t<Enum>>(e);
-}
-
 QT_END_NAMESPACE
 
 // We need to keep QTypeInfo, QSysInfo, QFlags, qDebug & family in qglobal.h for compatibility with Qt 4.
@@ -188,6 +181,7 @@ QT_END_NAMESPACE
 #include <QtCore/qtdeprecationmarkers.h>
 #include <QtCore/qtranslation.h>
 #include <QtCore/qtresource.h>
+#include <QtCore/qtypetraits.h>
 #include <QtCore/qversiontagging.h>
 
 #endif /* __cplusplus */

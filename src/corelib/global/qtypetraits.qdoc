@@ -1,0 +1,11 @@
+// Copyright (C) 2022 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \fn template <typename Enum> std::underlying_type_t<Enum> qToUnderlying(Enum e)
+    \relates <QTypeTraits>
+    \since 6.2
+
+    Converts the enumerator \a e to the equivalent value expressed in its
+    enumeration's underlying type.
+*/

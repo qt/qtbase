@@ -2798,15 +2798,6 @@ void qAbort()
 */
 
 /*!
-    \fn template <typename Enum> std::underlying_type_t<Enum> qToUnderlying(Enum e)
-    \relates <QtGlobal>
-    \since 6.2
-
-    Converts the enumerator \a e to the equivalent value expressed in its
-    enumeration's underlying type.
-*/
-
-/*!
     \macro Q_LIKELY(expr)
     \relates <QtGlobal>
     \since 4.8
