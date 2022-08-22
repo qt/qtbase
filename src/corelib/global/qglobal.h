@@ -136,41 +136,6 @@ typedef void (*QFunctionPointer)();
 #  define Q_UNIMPLEMENTED() qWarning("Unimplemented code.")
 #endif
 
-QT_WARNING_PUSH
-// warning: noexcept-expression evaluates to 'false' because of a call to 'void swap(..., ...)'
-QT_WARNING_DISABLE_GCC("-Wnoexcept")
-
-namespace QtPrivate
-{
-namespace SwapExceptionTester { // insulate users from the "using std::swap" below
-    using std::swap; // import std::swap
-    template <typename T>
-    void checkSwap(T &t)
-        noexcept(noexcept(swap(t, t)));
-    // declared, but not implemented (only to be used in unevaluated contexts (noexcept operator))
-}
-} // namespace QtPrivate
-
-// Documented in ../tools/qalgorithm.qdoc
-template <typename T>
-constexpr void qSwap(T &value1, T &value2)
-    noexcept(noexcept(QtPrivate::SwapExceptionTester::checkSwap(value1)))
-{
-    using std::swap;
-    swap(value1, value2);
-}
-
-// pure compile-time micro-optimization for our own headers, so not documented:
-template <typename T>
-constexpr inline void qt_ptr_swap(T* &lhs, T* &rhs) noexcept
-{
-    T *tmp = lhs;
-    lhs = rhs;
-    rhs = tmp;
-}
-
-QT_WARNING_POP
-
 Q_CORE_EXPORT void *qMallocAligned(size_t size, size_t alignment) Q_ALLOC_SIZE(1);
 Q_CORE_EXPORT void *qReallocAligned(void *ptr, size_t size, size_t oldsize, size_t alignment) Q_ALLOC_SIZE(2);
 Q_CORE_EXPORT void qFreeAligned(void *ptr);
@@ -219,6 +184,7 @@ QT_END_NAMESPACE
 #include <QtCore/qminmax.h>
 #include <QtCore/qnumeric.h>
 #include <QtCore/qoverload.h>
+#include <QtCore/qswap.h>
 #include <QtCore/qtdeprecationmarkers.h>
 #include <QtCore/qtranslation.h>
 #include <QtCore/qtresource.h>

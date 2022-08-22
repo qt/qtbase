@@ -1,0 +1,14 @@
+// Copyright (C) 2022 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*! \fn template <typename T> void qSwap(T &var1, T &var2)
+    \relates <QtSwap>
+    \deprecated
+
+    Use \c std::swap instead.
+
+    Exchanges the values of variables \a var1 and \a var2.
+
+    Example:
+    \snippet code/doc_src_qalgorithms.cpp 0
+*/

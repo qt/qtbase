@@ -73,6 +73,7 @@ qt_internal_add_module(Core
         global/qoverload.h
         global/qprocessordetection.h
         global/qrandom.cpp global/qrandom.h global/qrandom_p.h
+        global/qswap.h
         global/qsysinfo.h
         global/qsystemdetection.h
         global/qtclasshelpermacros.h

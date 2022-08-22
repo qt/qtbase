@@ -109,18 +109,6 @@
     \sa {container classes}, <QtGlobal>
 */
 
-/*! \fn template <typename T> void qSwap(T &var1, T &var2)
-    \relates <QtAlgorithms>
-    \deprecated
-
-    Use \c std::swap instead.
-
-    Exchanges the values of variables \a var1 and \a var2.
-
-    Example:
-    \snippet code/doc_src_qalgorithms.cpp 0
-*/
-
 /*!
     \fn template <typename ForwardIterator> void qDeleteAll(ForwardIterator begin, ForwardIterator end)
     \relates <QtAlgorithms>
