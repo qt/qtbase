@@ -305,11 +305,10 @@ inline bool secondsAndMillisOverflow(qint64 epochSeconds, qint64 millis, qint64 
 // returns the local milliseconds, offset from UTC and DST status.
 QDateTimePrivate::ZoneState utcToLocal(qint64 utcMillis)
 {
-    const int signFix = utcMillis % MSECS_PER_SEC && utcMillis < 0 ? 1 : 0;
-    const time_t epochSeconds = utcMillis / MSECS_PER_SEC - signFix;
-    const int msec = utcMillis % MSECS_PER_SEC + signFix * MSECS_PER_SEC;
+    const time_t epochSeconds = QRoundingDown::qDiv(utcMillis, MSECS_PER_SEC);
+    const int msec = utcMillis - epochSeconds * MSECS_PER_SEC;
     Q_ASSERT(msec >= 0 && msec < MSECS_PER_SEC);
-    if (qint64(epochSeconds) * MSECS_PER_SEC + msec != utcMillis)
+    if (qint64(epochSeconds) * MSECS_PER_SEC + msec != utcMillis) // time_t range too narrow
         return {utcMillis};
 
     tm local;
