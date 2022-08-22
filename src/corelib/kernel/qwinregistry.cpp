@@ -2,15 +2,12 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qwinregistry_p.h"
-
 #include <QtCore/qvarlengtharray.h>
-
-#include <algorithm>
+#include <QtCore/qendian.h>
 
 QT_BEGIN_NAMESPACE
 
-QWinRegistryKey::QWinRegistryKey() :
-    m_key(nullptr)
+QWinRegistryKey::QWinRegistryKey()
 {
 }
 
@@ -19,8 +16,8 @@ QWinRegistryKey::QWinRegistryKey() :
 QWinRegistryKey::QWinRegistryKey(HKEY parentHandle, QStringView subKey,
                                  REGSAM permissions, REGSAM access)
 {
-    if (RegOpenKeyEx(parentHandle, reinterpret_cast<const wchar_t *>(subKey.utf16()),
-                     0, permissions | access, &m_key) != ERROR_SUCCESS) {
+    if (RegOpenKeyExW(parentHandle, reinterpret_cast<const wchar_t *>(subKey.utf16()),
+                      0, permissions | access, &m_key) != ERROR_SUCCESS) {
         m_key = nullptr;
     }
 }
@@ -38,45 +35,97 @@ void QWinRegistryKey::close()
     }
 }
 
+QVariant QWinRegistryKey::value(QStringView subKey) const
+{
+    Q_ASSERT(!subKey.isEmpty());
+
+    if (!isValid())
+        return {};
+
+    auto subKeyC = reinterpret_cast<const wchar_t *>(subKey.utf16());
+
+    // Get the size and type of the value.
+    DWORD dataType = REG_NONE;
+    DWORD dataSize = 0;
+    LONG ret = RegQueryValueExW(m_key, subKeyC, nullptr, &dataType, nullptr, &dataSize);
+    if (ret != ERROR_SUCCESS)
+        return {};
+
+    // Workaround for rare cases where the trailing '\0' is missing.
+    if (dataType == REG_SZ || dataType == REG_EXPAND_SZ)
+        dataSize += 2;
+    else if (dataType == REG_MULTI_SZ)
+        dataSize += 4;
+
+    // Get the value.
+    QVarLengthArray<unsigned char> data(dataSize);
+    std::fill(data.data(), data.data() + dataSize, 0u);
+
+    ret = RegQueryValueExW(m_key, subKeyC, nullptr, nullptr, data.data(), &dataSize);
+    if (ret != ERROR_SUCCESS)
+        return {};
+
+    switch (dataType) {
+        case REG_SZ:
+        case REG_EXPAND_SZ: {
+            if (dataSize > 0) {
+                return QString::fromWCharArray(
+                    reinterpret_cast<const wchar_t *>(data.constData()));
+            }
+            return QString();
+        }
+
+        case REG_MULTI_SZ: {
+            if (dataSize > 0) {
+                QStringList list = {};
+                int i = 0;
+                while (true) {
+                    const QString str = QString::fromWCharArray(
+                        reinterpret_cast<const wchar_t *>(data.constData()) + i);
+                    i += str.length() + 1;
+                    if (str.isEmpty())
+                        break;
+                    list.append(str);
+                }
+                return list;
+            }
+            return QStringList();
+        }
+
+        case REG_NONE: // No specific type, treat as binary data.
+        case REG_BINARY: {
+            if (dataSize > 0) {
+                return QString::fromWCharArray(
+                    reinterpret_cast<const wchar_t *>(data.constData()), data.size() / 2);
+            }
+            return QString();
+        }
+
+        case REG_DWORD: // Same as REG_DWORD_LITTLE_ENDIAN
+            return qFromLittleEndian<quint32>(data.constData());
+
+        case REG_DWORD_BIG_ENDIAN:
+            return qFromBigEndian<quint32>(data.constData());
+
+        case REG_QWORD: // Same as REG_QWORD_LITTLE_ENDIAN
+            return qFromLittleEndian<quint64>(data.constData());
+
+        default:
+            break;
+    }
+
+    return {};
+}
+
 QString QWinRegistryKey::stringValue(QStringView subKey) const
 {
-    QString result;
-    if (!isValid())
-        return result;
-    DWORD type;
-    DWORD size;
-    auto subKeyC = reinterpret_cast<const wchar_t *>(subKey.utf16());
-    if (RegQueryValueEx(m_key, subKeyC, nullptr, &type, nullptr, &size) != ERROR_SUCCESS
-        || (type != REG_SZ && type != REG_EXPAND_SZ) || size <= 2) {
-        return result;
-    }
-    // Reserve more for rare cases where trailing '\0' are missing in registry.
-    // Rely on 0-termination since strings of size 256 padded with 0 have been
-    // observed (QTBUG-84455).
-    size += 2;
-    QVarLengthArray<unsigned char> buffer(static_cast<int>(size));
-    std::fill(buffer.data(), buffer.data() + size, 0u);
-    if (RegQueryValueEx(m_key, subKeyC, nullptr, &type, buffer.data(), &size) == ERROR_SUCCESS)
-          result = QString::fromWCharArray(reinterpret_cast<const wchar_t *>(buffer.constData()));
-    return result;
+    return value<QString>(subKey).value_or(QString());
 }
 
 QPair<DWORD, bool> QWinRegistryKey::dwordValue(QStringView subKey) const
 {
-    if (!isValid())
-        return qMakePair(0, false);
-    DWORD type;
-    auto subKeyC = reinterpret_cast<const wchar_t *>(subKey.utf16());
-    if (RegQueryValueEx(m_key, subKeyC, nullptr, &type, nullptr, nullptr) != ERROR_SUCCESS
-        || type != REG_DWORD) {
-        return qMakePair(0, false);
-    }
-    DWORD value = 0;
-    DWORD size = sizeof(value);
-    const bool ok =
-        RegQueryValueEx(m_key, subKeyC, nullptr, nullptr,
-                        reinterpret_cast<unsigned char *>(&value), &size) == ERROR_SUCCESS;
-    return qMakePair(value, ok);
+    const std::optional<DWORD> val = value<DWORD>(subKey);
+    return qMakePair(val.value_or(0), val.has_value());
 }
 
 QT_END_NAMESPACE

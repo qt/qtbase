@@ -19,15 +19,15 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qstringview.h>
 #include <QtCore/qt_windows.h>
-#include <QtCore/private/qglobal_p.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 
 class Q_CORE_EXPORT QWinRegistryKey
 {
-public:
     Q_DISABLE_COPY(QWinRegistryKey)
 
+public:
     QWinRegistryKey();
     explicit QWinRegistryKey(HKEY parentHandle, QStringView subKey,
                              REGSAM permissions = KEY_READ, REGSAM access = 0);
@@ -38,15 +38,30 @@ public:
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QWinRegistryKey)
     void swap(QWinRegistryKey &other) noexcept { qSwap(m_key, other.m_key); }
 
-    bool isValid() const { return m_key != nullptr; }
-    operator HKEY() const { return m_key; }
+    [[nodiscard]] bool isValid() const { return m_key != nullptr; }
+
+    [[nodiscard]] HKEY handle() const { return m_key; }
+
+    operator HKEY() const { return handle(); }
+
     void close();
 
+    [[nodiscard]] QVariant value(QStringView subKey) const;
+    template<typename T>
+    [[nodiscard]] std::optional<T> value(QStringView subKey) const
+    {
+        const QVariant var = value(subKey);
+        if (var.isValid())
+            return qvariant_cast<T>(var);
+        return std::nullopt;
+    }
+
+    // ### TODO: Remove once all usages are migrated to new interface.
     QString stringValue(QStringView subKey) const;
     QPair<DWORD, bool> dwordValue(QStringView subKey) const;
 
 private:
-    HKEY m_key;
+    HKEY m_key = nullptr;
 };
 
 QT_END_NAMESPACE
