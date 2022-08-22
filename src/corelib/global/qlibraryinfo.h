@@ -15,7 +15,8 @@ class Q_CORE_EXPORT QLibraryInfo
 public:
     static const char *build() noexcept;
 
-    static bool isDebugBuild() noexcept Q_DECL_CONST_FUNCTION;
+    [[nodiscard]] static bool isDebugBuild() noexcept Q_DECL_CONST_FUNCTION;
+    [[nodiscard]] static bool isSharedBuild() noexcept Q_DECL_CONST_FUNCTION;
 
 #ifndef QT_BOOTSTRAPPED
     static QVersionNumber version() noexcept Q_DECL_CONST_FUNCTION;
@@ -53,7 +54,12 @@ private:
     QLibraryInfo();
 };
 
+#if QT_DEPRECATED_SINCE(6, 9)
+
+QT_DEPRECATED_VERSION_X_6_9("Use QLibraryInfo::isSharedBuild() instead.")
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qSharedBuild() noexcept;
+
+#endif
 
 QT_END_NAMESPACE
 

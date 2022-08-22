@@ -236,6 +236,19 @@ QLibraryInfo::isDebugBuild() noexcept
 }
 
 /*!
+    \since 6.5
+    Returns \c true if this is a shared (dynamic) build of Qt.
+*/
+bool QLibraryInfo::isSharedBuild() noexcept
+{
+#ifdef QT_SHARED
+    return true;
+#else
+    return false;
+#endif
+}
+
+/*!
     \since 5.8
     Returns the version of the Qt library.
 
@@ -646,14 +659,14 @@ QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
     \deprecated Use LibraryPath with QLibraryInfo::path() instead.
 */
 
+#if QT_DEPRECATED_SINCE(6, 9)
+
 bool qSharedBuild() noexcept
 {
-#ifdef QT_SHARED
-    return true;
-#else
-    return false;
-#endif
+    return QLibraryInfo::isSharedBuild();
 }
+
+#endif // QT_DEPRECATED_SINCE(6, 9)
 
 QT_END_NAMESPACE
 
