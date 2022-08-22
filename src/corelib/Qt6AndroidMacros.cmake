@@ -554,8 +554,8 @@ endfunction()
 
 # The function collects all known non-imported shared libraries that are created in the build tree.
 # It uses the CMake DEFER CALL feature if the CMAKE_VERSION is greater
-# than or equal to 3.18.
-# Note: Users that use cmake version less that 3.18 need to call qt_finalize_project
+# than or equal to 3.19.
+# Note: Users that use cmake version less that 3.19 need to call qt_finalize_project
 # in the end of a project's top-level CMakeLists.txt.
 function(_qt_internal_collect_apk_dependencies_defer)
     # User opted-out the functionality
@@ -569,13 +569,14 @@ function(_qt_internal_collect_apk_dependencies_defer)
     endif()
     set_property(GLOBAL PROPERTY _qt_is_collect_apk_dependencies_defer_called TRUE)
 
-    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.19")
         cmake_language(EVAL CODE "cmake_language(DEFER DIRECTORY \"${CMAKE_SOURCE_DIR}\"
             CALL _qt_internal_collect_apk_dependencies)")
     else()
         # User don't want to see the warning
         if(NOT QT_NO_WARN_BUILD_TREE_APK_DEPS)
-            message(WARNING "CMake version you use is less than 3.18. APK dependencies, that are a"
+            message(WARNING
+                    "The CMake version you use is less than 3.19. APK dependencies, that are a"
                     " part of the project tree, might not be collected correctly."
                     " Please call qt_finalize_project in the end of a project's top-level"
                     " CMakeLists.txt file to make sure that all the APK dependencies are"
