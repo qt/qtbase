@@ -61,6 +61,14 @@
 #define QT_CONFIG(feature) (1/QT_FEATURE_##feature == 1)
 #define QT_REQUIRE_CONFIG(feature) Q_STATIC_ASSERT_X(QT_FEATURE_##feature == 1, "Required feature " #feature " for file " __FILE__ " not available.")
 
+/* moc compats (signals/slots) */
+#ifndef QT_MOC_COMPAT
+#  define QT_MOC_COMPAT
+#else
+#  undef QT_MOC_COMPAT
+#  define QT_MOC_COMPAT
+#endif
+
 // valid for both C and C++
 #define QT_MANGLE_NAMESPACE0(x) x
 #define QT_MANGLE_NAMESPACE1(a, b) a##_##b
