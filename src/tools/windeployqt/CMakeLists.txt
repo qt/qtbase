@@ -28,8 +28,3 @@ qt_internal_extend_target(${target_name} CONDITION WIN32
     PUBLIC_LIBRARIES
         shlwapi
 )
-
-qt_internal_extend_target(${target_name} CONDITION QT_FEATURE_relocatable
-    DEFINES
-        QT_RELOCATABLE
-)

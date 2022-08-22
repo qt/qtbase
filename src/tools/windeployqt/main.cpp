@@ -22,6 +22,8 @@
 #define IMAGE_FILE_MACHINE_ARM64 0xaa64
 #endif
 
+#include <QtCore/private/qconfig_p.h>
+
 #include <algorithm>
 #include <iostream>
 #include <iterator>
@@ -1452,16 +1454,16 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
                 return result;
         }
 
+#if !QT_CONFIG(relocatable)
         if (options.patchQt  && !options.dryRun) {
             const QString qt6CoreName = QFileInfo(libraryPath(libraryLocation, "Qt6Core", qtLibInfix,
                                                               options.platform, result.isDebug)).fileName();
-#ifndef QT_RELOCATABLE
             if (!patchQtCore(targetPath + u'/' + qt6CoreName, errorMessage)) {
                 std::wcerr << "Warning: " << *errorMessage << '\n';
                 errorMessage->clear();
             }
-#endif
         }
+#endif // QT_CONFIG(relocatable)
     } // optLibraries
 
     // Update plugins
