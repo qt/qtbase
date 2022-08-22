@@ -1626,7 +1626,7 @@ int main(int argc, char **argv)
     const QByteArray qtBinPath = QFile::encodeName(QDir::toNativeSeparators(QCoreApplication::applicationDirPath()));
     QByteArray path = qgetenv("PATH");
     if (!path.contains(qtBinPath)) { // QTBUG-39177, ensure Qt is in the path so that qt.conf is taken into account.
-        path += ';';
+        path += QDir::listSeparator().toLatin1();
         path += qtBinPath;
         qputenv("PATH", path);
     }
