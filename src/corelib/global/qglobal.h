@@ -63,13 +63,6 @@ Q_CORE_EXPORT Q_DECL_CONST_FUNCTION const char *qVersion(void) Q_DECL_NOEXCEPT;
 
 #if defined(__cplusplus)
 
-#ifdef QT_ASCII_CAST_WARNINGS
-#  define QT_ASCII_CAST_WARN \
-    Q_DECL_DEPRECATED_X("Use fromUtf8, QStringLiteral, or QLatin1StringView")
-#else
-#  define QT_ASCII_CAST_WARN
-#endif
-
 /*
    Utility macros and inline functions
 */

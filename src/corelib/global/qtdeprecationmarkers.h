@@ -299,6 +299,13 @@ constexpr inline Deprecated_t Deprecated = {};
 }
 #endif
 
+#ifdef QT_ASCII_CAST_WARNINGS
+#  define QT_ASCII_CAST_WARN \
+    Q_DECL_DEPRECATED_X("Use fromUtf8, QStringLiteral, or QLatin1StringView")
+#else
+#  define QT_ASCII_CAST_WARN
+#endif
+
 QT_END_NAMESPACE
 
 #endif // QTDEPRECATIONMARKERS_H
