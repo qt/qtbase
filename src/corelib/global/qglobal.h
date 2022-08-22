@@ -109,14 +109,6 @@ private:
 
 #endif // Q_OS_DARWIN
 
-/*
-   Debugging and error handling
-*/
-
-#if !defined(QT_NO_DEBUG) && !defined(QT_DEBUG)
-#  define QT_DEBUG
-#endif
-
 #if 0
 #pragma qt_class(QFunctionPointer)
 #endif
