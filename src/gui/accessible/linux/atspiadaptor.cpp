@@ -557,6 +557,12 @@ QString AtSpiAdaptor::introspect(const QString &path) const
                 "      <arg direction=\"out\" type=\"a{ss}\"/>\n"
                 "      <annotation value=\"QSpiAttributeSet\" name=\"org.qtproject.QtDBus.QtTypeName.Out0\"/>\n"
                 "    </method>\n"
+                "    <method name=\"ScrollSubstringTo\">\n"
+                "      <arg direction=\"in\" name=\"startOffset\" type=\"i\"/>\n"
+                "      <arg direction=\"in\" name=\"endOffset\" type=\"i\"/>\n"
+                "      <arg direction=\"in\" name=\"type\" type=\"u\"/>\n"
+                "      <arg direction=\"out\" type=\"b\"/>\n"
+                "    </method>\n"
                 "  </interface>\n"
                 );
 
@@ -1867,6 +1873,13 @@ bool AtSpiAdaptor::textInterface(QAccessibleInterface *interface, const QString 
     } else if (function == "SetCaretOffset"_L1) {
         int offset = message.arguments().at(0).toInt();
         interface->textInterface()->setCursorPosition(offset);
+        sendReply(connection, message, true);
+    } else if (function == "ScrollSubstringTo"_L1) {
+        int startOffset = message.arguments().at(0).toInt();
+        int endOffset = message.arguments().at(1).toInt();
+        // ignore third parameter (scroll type), since QAccessibleTextInterface::scrollToSubstring doesn't have that
+        qCInfo(lcAccessibilityAtspi) << "AtSpiAdaptor::ScrollSubstringTo doesn'take take scroll type into account.";
+        interface->textInterface()->scrollToSubstring(startOffset, endOffset);
         sendReply(connection, message, true);
     } else if (function == "SetSelection"_L1) {
         int selectionNum = message.arguments().at(0).toInt();
