@@ -201,6 +201,7 @@ enum { MaximumParamCount = 11 }; // up to 10 arguments + 1 return value
 
 /*!
     \since 4.5
+    \obsolete [6.5] Please use the variadic overload of this function
 
     Constructs a new instance of this class. You can pass up to ten arguments
     (\a val0, \a val1, \a val2, \a val3, \a val4, \a val5, \a val6, \a val7,
@@ -243,6 +244,21 @@ QObject *QMetaObject::newInstance(QGenericArgument val0,
 
     return newInstanceImpl(this, paramCount, parameters, typeNames, nullptr);
 }
+
+/*!
+    \fn template <typename... Args> QObject *QMetaObject::newInstance(Args &&... arguments) const
+    \since 6.5
+
+    Constructs a new instance of this class and returns the new object, or
+    \nullptr if no suitable constructor is available. The types of the
+    arguments \a arguments will be used to find a matching constructor, and then
+    forwarded to it the same way signal-slot connections do.
+
+    Note that only constructors that are declared with the Q_INVOKABLE
+    modifier are made available through the meta-object system.
+
+    \sa constructor()
+*/
 
 QObject *QMetaObject::newInstanceImpl(const QMetaObject *mobj, qsizetype paramCount,
                                       const void **parameters, const char **typeNames,
@@ -1383,44 +1399,44 @@ printMethodNotFoundWarning(const QMetaObject *meta, QLatin1StringView name, qsiz
 }
 
 /*!
+    \fn template <typename... Args> bool QMetaObject::invokeMethod(QObject *obj, const char *member, Qt::ConnectionType type, QMetaMethodReturnArgument r, Args &&... args)
+    \fn template <typename... Args> bool QMetaObject::invokeMethod(QObject *obj, const char *member, QMetaMethodReturnArgument r, Args &&... args)
+    \fn template <typename... Args> bool QMetaObject::invokeMethod(QObject *obj, const char *member, Qt::ConnectionType type, Args &&... args)
+    \fn template <typename... Args> bool QMetaObject::invokeMethod(QObject *obj, const char *member, Args &&... args)
+    \since 6.5
     \threadsafe
 
     Invokes the \a member (a signal or a slot name) on the object \a
     obj. Returns \c true if the member could be invoked. Returns \c false
     if there is no such member or the parameters did not match.
 
-    The invocation can be either synchronous or asynchronous,
-    depending on \a type:
+    For the overloads with a QMetaMethodReturnArgument parameter, the return
+    value of the \a member function call is placed in \a ret. For the overloads
+    without such a member, the return value of the called function (if any)
+    will be discarded. QMetaMethodReturnArgument is an internal type you should
+    not use directly. Instead, use the qReturnArg() function.
+
+    The overloads with a Qt::ConnectionType \a type parameter allow explicitly
+    selecting whether the invocation will be synchronous or not:
 
     \list
-    \li If \a type is Qt::DirectConnection, the member will be invoked immediately.
+    \li If \a type is Qt::DirectConnection, the member will be invoked immediately
+       in the current thread.
 
-    \li If \a type is Qt::QueuedConnection,
-       a QEvent will be sent and the member is invoked as soon as the application
-       enters the main event loop.
+    \li If \a type is Qt::QueuedConnection, a QEvent will be sent and the
+       member is invoked as soon as the application enters the event loop in the
+       thread that the \a obj was created in or was moved to.
 
     \li If \a type is Qt::BlockingQueuedConnection, the method will be invoked in
        the same way as for Qt::QueuedConnection, except that the current thread
        will block until the event is delivered. Using this connection type to
        communicate between objects in the same thread will lead to deadlocks.
 
-    \li If \a type is Qt::AutoConnection, the member is invoked
-       synchronously if \a obj lives in the same thread as the
-       caller; otherwise it will invoke the member asynchronously.
+    \li If \a type is Qt::AutoConnection, the member is invoked synchronously
+        if \a obj lives in the same thread as the caller; otherwise it will invoke
+        the member asynchronously. This is the behavior of the overloads that do
+        not have the \a type parameter.
     \endlist
-
-    The return value of the \a member function call is placed in \a
-    ret. If the invocation is asynchronous, the return value cannot
-    be evaluated. You can pass up to ten arguments (\a val0, \a val1,
-    \a val2, \a val3, \a val4, \a val5, \a val6, \a val7, \a val8,
-    and \a val9) to the \a member function.
-
-    QGenericArgument and QGenericReturnArgument are internal
-    helper classes. Because signals and slots can be dynamically
-    invoked, you must enclose the arguments using the Q_ARG() and
-    Q_RETURN_ARG() macros. Q_ARG() takes a type name and a
-    const reference of that type; Q_RETURN_ARG() takes a type name
-    and a non-const reference.
 
     You only need to pass the name of the signal or slot to this function,
     not the entire signature. For example, to asynchronously invoke
@@ -1429,8 +1445,62 @@ printMethodNotFoundWarning(const QMetaObject *meta, QLatin1StringView name, qsiz
 
     \snippet code/src_corelib_kernel_qmetaobject.cpp 2
 
+    With asynchronous method invocations, the parameters must be copyable
+    types, because Qt needs to copy the arguments to store them in an event
+    behind the scenes. Since Qt 6.5, this function automatically registers the
+    types being used; however, as a side-effect, it is not possible to make
+    calls using types that are only forward-declared. Additionally, it is not
+    possible to make asynchronous calls that use references to
+    non-const-qualified types as parameters either.
+
+    To synchronously invoke the \c compute(QString, int, double) slot on
+    some arbitrary object \c obj retrieve its return value:
+
+    \snippet code/src_corelib_kernel_qmetaobject.cpp invokemethod-no-macro
+
+    If the "compute" slot does not take exactly one \l QString, one \c int, and
+    one \c double in the specified order, the call will fail. Note how it was
+    necessary to be explicit about the type of the QString, as the character
+    literal is not exactly the right type to match. If the method instead took
+    a \l QStringView, a \l qsizetype, and a \c float, the call would need to be
+    written as:
+
+    \snippet code/src_corelib_kernel_qmetaobject.cpp invokemethod-no-macro-other-types
+
+    The same call can be executed using the Q_ARG() and Q_RETURN_ARG() macros,
+    as in:
+
+    \snippet code/src_corelib_kernel_qmetaobject.cpp 4
+
+    The macros are kept for compatibility with Qt 6.4 and earlier versions, and
+    can be freely mixed with parameters that do not use the macro. They may be
+    necessary in rare situations when calling a method that used a typedef to
+    forward-declared type as a parameter or the return type.
+
+    \sa Q_ARG(), Q_RETURN_ARG(), QMetaMethod::invoke()
+*/
+
+/*!
+    \threadsafe
+    \overload
+    \obsolete [6.5] Please use the variadic overload of this function
+
+    Invokes the \a member (a signal or a slot name) on the object \a
+    obj. Returns \c true if the member could be invoked. Returns \c false
+    if there is no such member or the parameters did not match.
+
+    See the variadic invokeMethod() function for more information. This
+    function should behave the same way as that one, with the following
+    limitations:
+
+    \list
+    \li The number of parameters is limited to 10.
+    \li Parameter names may need to be an exact string match.
+    \li Meta types are not automatically registered.
+    \endlist
+
     With asynchronous method invocations, the parameters must be of
-    types that are known to Qt's meta-object system, because Qt needs
+    types that are already known to Qt's meta-object system, because Qt needs
     to copy the arguments to store them in an event behind the
     scenes. If you try to use a queued connection and get the error
     message
@@ -1439,14 +1509,6 @@ printMethodNotFoundWarning(const QMetaObject *meta, QLatin1StringView name, qsiz
 
     call qRegisterMetaType() to register the data type before you
     call invokeMethod().
-
-    To synchronously invoke the \c compute(QString, int, double) slot on
-    some arbitrary object \c obj retrieve its return value:
-
-    \snippet code/src_corelib_kernel_qmetaobject.cpp 4
-
-    If the "compute" slot does not take exactly one QString, one int
-    and one double in the specified order, the call will fail.
 
     \sa Q_ARG(), Q_RETURN_ARG(), qRegisterMetaType(), QMetaMethod::invoke()
 */
@@ -1583,6 +1645,7 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
                                        QGenericArgument val8 = QGenericArgument(),
                                        QGenericArgument val9 = QGenericArgument());
     \threadsafe
+    \obsolete [6.5] Please use the variadic overload of this function.
     \overload invokeMethod()
 
     This overload always invokes the member using the connection type Qt::AutoConnection.
@@ -1602,6 +1665,7 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
                                        QGenericArgument val9 = QGenericArgument())
 
     \threadsafe
+    \obsolete [6.5] Please use the variadic overload of this function.
     \overload invokeMethod()
 
     This overload can be used if the return value of the member is of no interest.
@@ -1621,6 +1685,7 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
                                        QGenericArgument val9 = QGenericArgument())
 
     \threadsafe
+    \obsolete [6.5] Please use the variadic overload of this function.
     \overload invokeMethod()
 
     This overload invokes the member using the connection type Qt::AutoConnection and
@@ -2302,42 +2367,98 @@ QMetaMethod QMetaMethod::fromSignalImpl(const QMetaObject *metaObject, void **si
 }
 
 /*!
+    \fn template <typename... Args> bool QMetaMethod::invoke(QObject *obj, Qt::ConnectionType type, QMetaMethodReturnArgument ret, Args &&... arguments) const
+    \fn template <typename... Args> bool QMetaMethod::invoke(QObject *obj, Qt::ConnectionType type, Args &&... arguments) const
+    \fn template <typename... Args> bool QMetaMethod::invoke(QObject *obj, QMetaMethodReturnArgument ret, Args &&... arguments) const
+    \fn template <typename... Args> bool QMetaMethod::invoke(QObject *obj, Args &&... arguments) const
+    \since 6.5
+
     Invokes this method on the object \a object. Returns \c true if the member could be invoked.
     Returns \c false if there is no such member or the parameters did not match.
 
-    The invocation can be either synchronous or asynchronous, depending on the
-    \a connectionType:
+    For the overloads with a QMetaMethodReturnArgument parameter, the return
+    value of the \a member function call is placed in \a ret. For the overloads
+    without such a member, the return value of the called function (if any)
+    will be discarded. QMetaMethodReturnArgument is an internal type you should
+    not use directly. Instead, use the qReturnArg() function.
+
+    The overloads with a Qt::ConnectionType \a type parameter allow explicitly
+    selecting whether the invocation will be synchronous or not:
 
     \list
-    \li If \a connectionType is Qt::DirectConnection, the member will be invoked immediately.
+    \li If \a type is Qt::DirectConnection, the member will be invoked immediately
+       in the current thread.
 
-    \li If \a connectionType is Qt::QueuedConnection,
-       a QEvent will be posted and the member is invoked as soon as the application
-       enters the main event loop.
+    \li If \a type is Qt::QueuedConnection, a QEvent will be sent and the
+       member is invoked as soon as the application enters the event loop in the
+       thread the \a obj was created in or was moved to.
 
-    \li If \a connectionType is Qt::AutoConnection, the member is invoked
-       synchronously if \a object lives in the same thread as the
-       caller; otherwise it will invoke the member asynchronously.
+    \li If \a type is Qt::BlockingQueuedConnection, the method will be invoked in
+       the same way as for Qt::QueuedConnection, except that the current thread
+       will block until the event is delivered. Using this connection type to
+       communicate between objects in the same thread will lead to deadlocks.
+
+    \li If \a type is Qt::AutoConnection, the member is invoked synchronously
+        if \a obj lives in the same thread as the caller; otherwise it will invoke
+        the member asynchronously. This is the behavior of the overloads that do
+        not have the \a type parameter.
     \endlist
-
-    The return value of this method call is placed in \a
-    returnValue. If the invocation is asynchronous, the return value cannot
-    be evaluated. You can pass up to ten arguments (\a val0, \a val1,
-    \a val2, \a val3, \a val4, \a val5, \a val6, \a val7, \a val8,
-    and \a val9) to this method call.
-
-    QGenericArgument and QGenericReturnArgument are internal
-    helper classes. Because signals and slots can be dynamically
-    invoked, you must enclose the arguments using the Q_ARG() and
-    Q_RETURN_ARG() macros. Q_ARG() takes a type name and a
-    const reference of that type; Q_RETURN_ARG() takes a type name
-    and a non-const reference.
 
     To asynchronously invoke the
     \l{QPushButton::animateClick()}{animateClick()} slot on a
     QPushButton:
 
     \snippet code/src_corelib_kernel_qmetaobject.cpp 6
+
+    With asynchronous method invocations, the parameters must be copyable
+    types, because Qt needs to copy the arguments to store them in an event
+    behind the scenes. Since Qt 6.5, this function automatically registers the
+    types being used; however, as a side-effect, it is not possible to make
+    calls using types that are only forward-declared. Additionally, it is not
+    possible to make asynchronous calls that use references to
+    non-const-qualified types as parameters either.
+
+    To synchronously invoke the \c compute(QString, int, double) slot on
+    some arbitrary object \c obj retrieve its return value:
+
+    \snippet code/src_corelib_kernel_qmetaobject.cpp invoke-no-macro
+
+    If the "compute" slot does not take exactly one \l QString, one \c int, and
+    one \c double in the specified order, the call will fail. Note how it was
+    necessary to be explicit about the type of the QString, as the character
+    literal is not exactly the right type to match. If the method instead took
+    a \l QByteArray, a \l qint64, and a \c{long double}, the call would need to be
+    written as:
+
+    \snippet code/src_corelib_kernel_qmetaobject.cpp invoke-no-macro-other-types
+
+    The same call can be executed using the Q_ARG() and Q_RETURN_ARG() macros,
+    as in:
+
+    \snippet code/src_corelib_kernel_qmetaobject.cpp 8
+
+    \warning this method will not test the validity of the arguments: \a object
+    must be an instance of the class of the QMetaObject of which this QMetaMethod
+    has been constructed with.
+
+    \sa Q_ARG(), Q_RETURN_ARG(), qRegisterMetaType(), QMetaObject::invokeMethod()
+*/
+
+/*!
+    \obsolete [6.5] Please use the variadic overload of this function
+
+    Invokes this method on the object \a object. Returns \c true if the member could be invoked.
+    Returns \c false if there is no such member or the parameters did not match.
+
+    See the variadic invokeMethod() function for more information. This
+    function should behave the same way as that one, with the following
+    limitations:
+
+    \list
+    \li The number of parameters is limited to 10.
+    \li Parameter names may need to be an exact string match.
+    \li Meta types are not automatically registered.
+    \endlist
 
     With asynchronous method invocations, the parameters must be of
     types that are known to Qt's meta-object system, because Qt needs
@@ -2350,22 +2471,9 @@ QMetaMethod QMetaMethod::fromSignalImpl(const QMetaObject *metaObject, void **si
     call qRegisterMetaType() to register the data type before you
     call QMetaMethod::invoke().
 
-    To synchronously invoke the \c compute(QString, int, double) slot on
-    some arbitrary object \c obj retrieve its return value:
-
-    \snippet code/src_corelib_kernel_qmetaobject.cpp 8
-
-    QMetaObject::normalizedSignature() is used here to ensure that the format
-    of the signature is what invoke() expects.  E.g. extra whitespace is
-    removed.
-
-    If the "compute" slot does not take exactly one QString, one int
-    and one double in the specified order, the call will fail.
-
-    \warning this method will not test the validity of the arguments: \a object
-    must be an instance of the class of the QMetaObject of which this QMetaMethod
-    has been constructed with.  The arguments must have the same type as the ones
-    expected by the method, else, the behaviour is undefined.
+    \warning In addition to the limitations of the variadic invoke() overload,
+    the arguments must have the same type as the ones expected by the method,
+    else, the behavior is undefined.
 
     \sa Q_ARG(), Q_RETURN_ARG(), qRegisterMetaType(), QMetaObject::invokeMethod()
 */
@@ -2655,6 +2763,7 @@ auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
                                  QGenericArgument val7 = QGenericArgument(),
                                  QGenericArgument val8 = QGenericArgument(),
                                  QGenericArgument val9 = QGenericArgument()) const
+    \obsolete [6.5] Please use the variadic overload of this function
     \overload invoke()
 
     This overload always invokes this method using the connection type Qt::AutoConnection.
@@ -2672,7 +2781,7 @@ auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
                                  QGenericArgument val7 = QGenericArgument(),
                                  QGenericArgument val8 = QGenericArgument(),
                                  QGenericArgument val9 = QGenericArgument()) const
-
+    \obsolete [6.5] Please use the variadic overload of this function
     \overload invoke()
 
     This overload can be used if the return value of the member is of no interest.
@@ -2690,7 +2799,7 @@ auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
                                  QGenericArgument val7 = QGenericArgument(),
                                  QGenericArgument val8 = QGenericArgument(),
                                  QGenericArgument val9 = QGenericArgument()) const
-
+    \obsolete [6.5] Please use the variadic overload of this function
     \overload invoke()
 
     This overload invokes this method using the
@@ -2698,7 +2807,9 @@ auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
 */
 
 /*!
-    \since 5.5
+    \fn template <typename... Args> bool QMetaMethod::invokeOnGadget(void *gadget, QMetaMethodReturnArgument ret, Args &&... arguments) const
+    \fn template <typename... Args> bool QMetaMethod::invokeOnGadget(void *gadget, Args &&... arguments) const
+    \since 6.5
 
     Invokes this method on a Q_GADGET. Returns \c true if the member could be invoked.
     Returns \c false if there is no such member or the parameters did not match.
@@ -2707,15 +2818,39 @@ auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
 
     The invocation is always synchronous.
 
-    The return value of this method call is placed in \a
-    returnValue. You can pass up to ten arguments (\a val0, \a val1,
-    \a val2, \a val3, \a val4, \a val5, \a val6, \a val7, \a val8,
-    and \a val9) to this method call.
+    For the overload with a QMetaMethodReturnArgument parameter, the return
+    value of the \a member function call is placed in \a ret. For the overload
+    without it, the return value of the called function (if any) will be
+    discarded. QMetaMethodReturnArgument is an internal type you should not use
+    directly. Instead, use the qReturnArg() function.
 
     \warning this method will not test the validity of the arguments: \a gadget
     must be an instance of the class of the QMetaObject of which this QMetaMethod
-    has been constructed with.  The arguments must have the same type as the ones
-    expected by the method, else, the behavior is undefined.
+    has been constructed with.
+
+    \sa Q_ARG(), Q_RETURN_ARG(), qRegisterMetaType(), QMetaObject::invokeMethod()
+*/
+
+/*!
+    \since 5.5
+    \obsolete [6.5] Please use the variadic overload of this function
+
+    Invokes this method on a Q_GADGET. Returns \c true if the member could be invoked.
+    Returns \c false if there is no such member or the parameters did not match.
+
+    See the variadic invokeMethod() function for more information. This
+    function should behave the same way as that one, with the following
+    limitations:
+
+    \list
+    \li The number of parameters is limited to 10.
+    \li Parameter names may need to be an exact string match.
+    \li Meta types are not automatically registered.
+    \endlist
+
+    \warning In addition to the limitations of the variadic invoke() overload,
+    the arguments must have the same type as the ones expected by the method,
+    else, the behavior is undefined.
 
     \sa Q_ARG(), Q_RETURN_ARG(), qRegisterMetaType(), QMetaObject::invokeMethod()
 */
@@ -2809,6 +2944,7 @@ bool QMetaMethod::invokeOnGadget(void *gadget,
                                          QGenericArgument val9 = QGenericArgument()) const
 
     \overload
+    \obsolete [6.5] Please use the variadic overload of this function
     \since 5.5
 
     This overload invokes this method for a \a gadget and ignores return values.

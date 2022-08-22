@@ -135,7 +135,12 @@ public:
     }
 #endif
 
-    template <typename... Args> QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
+    template <typename... Args>
+#ifdef Q_CLANG_QDOC
+    bool
+#else
+    QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
+#endif
     invoke(QObject *obj, Qt::ConnectionType c, QMetaMethodReturnArgument r,
            Args &&... arguments) const
     {
@@ -144,25 +149,45 @@ public:
                           h.typeNames.data(), h.metaTypes.data());
     }
 
-    template <typename... Args> QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
+    template <typename... Args>
+#ifdef Q_CLANG_QDOC
+    bool
+#else
+    QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
+#endif
     invoke(QObject *obj, Qt::ConnectionType c, Args &&... arguments) const
     {
         return invoke(obj, c, QMetaMethodReturnArgument{}, std::forward<Args>(arguments)...);
     }
 
-    template <typename... Args> QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
+    template <typename... Args>
+#ifdef Q_CLANG_QDOC
+    bool
+#else
+    QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
+#endif
     invoke(QObject *obj, QMetaMethodReturnArgument r, Args &&... arguments) const
     {
         return invoke(obj, Qt::AutoConnection, r, std::forward<Args>(arguments)...);
     }
 
-    template <typename... Args> QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
+    template <typename... Args>
+#ifdef Q_CLANG_QDOC
+    bool
+#else
+    QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
+#endif
     invoke(QObject *obj, Args &&... arguments) const
     {
         return invoke(obj, Qt::AutoConnection, std::forward<Args>(arguments)...);
     }
 
-    template <typename... Args> QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
+    template <typename... Args>
+#ifdef Q_CLANG_QDOC
+    bool
+#else
+    QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
+#endif
     invokeOnGadget(void *gadget, QMetaMethodReturnArgument r, Args &&... arguments) const
     {
         auto h = QtPrivate::invokeMethodHelper(r, std::forward<Args>(arguments)...);
@@ -170,7 +195,12 @@ public:
                           h.parameters.data(), h.typeNames.data(), h.metaTypes.data());
     }
 
-    template <typename... Args> QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
+    template <typename... Args>
+#ifdef Q_CLANG_QDOC
+    bool
+#else
+    QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
+#endif
     invokeOnGadget(void *gadget, Args &&... arguments) const
     {
         return invokeOnGadget(gadget, QMetaMethodReturnArgument{}, std::forward<Args>(arguments)...);

@@ -355,7 +355,11 @@ struct Q_CORE_EXPORT QMetaObject
 #endif // Qt < 7.0
 
     template <typename... Args> static
+#ifdef Q_CLANG_QDOC
+    bool
+#else
     QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
+#endif
     invokeMethod(QObject *obj, const char *member, Qt::ConnectionType c,
                  QMetaMethodReturnArgument r, Args &&... arguments)
     {
@@ -365,7 +369,11 @@ struct Q_CORE_EXPORT QMetaObject
     }
 
     template <typename... Args> static
+#ifdef Q_CLANG_QDOC
+    bool
+#else
     QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
+#endif
     invokeMethod(QObject *obj, const char *member, Qt::ConnectionType c, Args &&... arguments)
     {
         QMetaMethodReturnArgument r = {};
@@ -373,7 +381,11 @@ struct Q_CORE_EXPORT QMetaObject
     }
 
     template <typename... Args> static
+#ifdef Q_CLANG_QDOC
+    bool
+#else
     QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
+#endif
     invokeMethod(QObject *obj, const char *member, QMetaMethodReturnArgument r,
                  Args &&... arguments)
     {
@@ -381,7 +393,11 @@ struct Q_CORE_EXPORT QMetaObject
     }
 
     template <typename... Args> static
+#ifdef Q_CLANG_QDOC
+    bool
+#else
     QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
+#endif
     invokeMethod(QObject *obj, const char *member, Args &&... arguments)
     {
         QMetaMethodReturnArgument r = {};
@@ -482,7 +498,12 @@ struct Q_CORE_EXPORT QMetaObject
                          QGenericArgument val9 = QGenericArgument()) const;
 #endif
 
-    template <typename... Args> QtPrivate::Invoke::IfNotOldStyleArgs<QObject *, Args...>
+    template <typename... Args>
+#ifdef Q_CLANG_QDOC
+    QObject *
+#else
+    QtPrivate::Invoke::IfNotOldStyleArgs<QObject *, Args...>
+#endif
     newInstance(Args &&... arguments) const
     {
         auto h = QtPrivate::invokeMethodHelper(QMetaMethodReturnArgument{}, std::forward<Args>(arguments)...);

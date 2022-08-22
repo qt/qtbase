@@ -34,6 +34,21 @@ QMetaObject::invokeMethod(thread, "quit",
 QMetaObject::invokeMethod: Unable to handle unregistered datatype 'MyType'
 //! [3]
 
+//! [invokemethod-no-macro]
+QString retVal;
+QMetaObject::invokeMethod(obj, "compute", Qt::DirectConnection,
+                         qReturnArg(retVal),
+                         QString("sqrt"), 42, 9.7);
+//! [invokemethod-no-macro]
+
+
+//! [invokemethod-no-macro-other-types]
+QString retVal;
+QMetaObject::invokeMethod(obj, "compute", Qt::DirectConnection,
+                         qReturnArg(retVal),
+                         QStringView("sqrt"), qsizetype(42), 9.7f);
+//! [invokemethod-no-macro-other-types]
+
 
 //! [4]
 QString retVal;
@@ -82,6 +97,24 @@ method.invoke(pushButton, Qt::QueuedConnection);
 //! [7]
 QMetaMethod::invoke: Unable to handle unregistered datatype 'MyType'
 //! [7]
+
+//! [invoke-no-macro]
+QString retVal;
+QByteArray normalizedSignature = QMetaObject::normalizedSignature("compute(QString, int, double)");
+int methodIndex = obj->metaObject()->indexOfMethod(normalizedSignature);
+QMetaMethod method = obj->metaObject()->method(methodIndex);
+method.invoke(obj, Qt::DirectConnection, qReturnArg(retVal),
+              QString("sqrt"), 42, 9.7);
+//! [invoke-no-macro]
+
+//! [invoke-no-macro-other-types]
+QString retVal;
+QByteArray normalizedSignature = QMetaObject::normalizedSignature("compute(QByteArray, qint64, long double)");
+int methodIndex = obj->metaObject()->indexOfMethod(normalizedSignature);
+QMetaMethod method = obj->metaObject()->method(methodIndex);
+method.invoke(obj, Qt::DirectConnection, qReturnArg(retVal),
+              QByteArray("sqrt"), qint64(42), 9.7L);
+//! [invoke-no-macro-other-types]
 
 //! [8]
 QString retVal;
