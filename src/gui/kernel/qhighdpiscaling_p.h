@@ -344,6 +344,9 @@ public:
 
 namespace QHighDpi {
     template <typename T> inline
+    T scale(const T &value, ...) { return value; }
+
+    template <typename T> inline
     T toNative(const T &value, ...) { return value; }
     template <typename T> inline
     T fromNative(const T &value, ...) { return value; }
