@@ -391,7 +391,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
             - methods.count(); // ditto
 
     QDBusMetaObjectPrivate *header = reinterpret_cast<QDBusMetaObjectPrivate *>(idata.data());
-    static_assert(QMetaObjectPrivate::OutputRevision == 10, "QtDBus meta-object generator should generate the same version as moc");
+    static_assert(QMetaObjectPrivate::OutputRevision == 11, "QtDBus meta-object generator should generate the same version as moc");
     header->revision = QMetaObjectPrivate::OutputRevision;
     header->className = 0;
     header->classInfoCount = 0;
@@ -486,7 +486,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
                     typeInfo = IsUnresolvedType | strings.enter(typeName);
                 else
                     typeInfo = type;
-                metaTypes[currentMethodMetaTypeOffset++] = QMetaType (type);
+                metaTypes[currentMethodMetaTypeOffset++] = QMetaType(type);
                 idata[parametersOffset++] = typeInfo;
             }
             // Parameter names
