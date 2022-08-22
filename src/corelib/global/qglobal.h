@@ -136,10 +136,6 @@ typedef void (*QFunctionPointer)();
 #  define Q_UNIMPLEMENTED() qWarning("Unimplemented code.")
 #endif
 
-Q_CORE_EXPORT void *qMallocAligned(size_t size, size_t alignment) Q_ALLOC_SIZE(1);
-Q_CORE_EXPORT void *qReallocAligned(void *ptr, size_t size, size_t oldsize, size_t alignment) Q_ALLOC_SIZE(2);
-Q_CORE_EXPORT void qFreeAligned(void *ptr);
-
 
 // this adds const to non-const objects (like std::as_const)
 template <typename T>
@@ -174,6 +170,7 @@ QT_END_NAMESPACE
 #include <QtCore/qexceptionhandling.h>
 #include <QtCore/qforeach.h>
 #include <QtCore/qglobalstatic.h>
+#include <QtCore/qmalloc.h>
 #include <QtCore/qminmax.h>
 #include <QtCore/qnumeric.h>
 #include <QtCore/qoverload.h>
