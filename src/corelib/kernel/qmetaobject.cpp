@@ -192,6 +192,7 @@ public:
     inline int ownConstructorMethodIndex() const;
 
 private:
+    void checkMethodMetaTypeConsistency(const QtPrivate::QMetaTypeInterface *iface, int index) const;
     QMetaMethodPrivate();
 };
 } // unnamed namespace
@@ -1786,18 +1787,32 @@ int QMetaMethodPrivate::parameterCount() const
     return data.argc();
 }
 
-static inline void
-checkMethodMetaTypeConsistency(const QtPrivate::QMetaTypeInterface *iface, uint typeInfo)
+inline void
+QMetaMethodPrivate::checkMethodMetaTypeConsistency(const QtPrivate::QMetaTypeInterface *iface,
+                                                   int index) const
 {
+    uint typeInfo = parameterTypeInfo(index);
     QMetaType mt(iface);
     if (iface) {
         if ((typeInfo & IsUnresolvedType) == 0)
             Q_ASSERT(mt.id() == int(typeInfo & TypeNameIndexMask));
         Q_ASSERT(mt.name());
     } else {
-        // prior to Qt 6.5, the meta object did not record interfaces for void
-        // (obviously only the return type may be void)
-        Q_ASSERT(typeInfo & IsUnresolvedType || typeInfo == QMetaType::Void);
+        // The iface can only be null for a parameter if that parameter is a
+        // const-ref to a forward-declared type. Since primitive types are
+        // never incomplete, we can assert it's not one of them.
+
+#define ASSERT_NOT_PRIMITIVE_TYPE(TYPE, METATYPEID, NAME)           \
+        Q_ASSERT(typeInfo != QMetaType::TYPE);
+        QT_FOR_EACH_STATIC_PRIMITIVE_NON_VOID_TYPE(ASSERT_NOT_PRIMITIVE_TYPE)
+#undef ASSERT_NOT_PRIMITIVE_TYPE
+        Q_ASSERT(typeInfo != QMetaType::QObjectStar);
+
+        // Prior to Qt 6.4 we failed to record void and void*
+        if (priv(mobj->d.data)->revision >= 11) {
+            Q_ASSERT(typeInfo != QMetaType::Void);
+            Q_ASSERT(typeInfo != QMetaType::VoidStar);
+        }
     }
 }
 
@@ -1820,7 +1835,7 @@ const QtPrivate::QMetaTypeInterface *QMetaMethodPrivate::returnMetaTypeInterface
         return nullptr;         // constructors don't have return types
 
     const QtPrivate::QMetaTypeInterface *iface =  mobj->d.metaTypes[data.metaTypeOffset()];
-    checkMethodMetaTypeConsistency(iface, parameterTypeInfo(-1));
+    checkMethodMetaTypeConsistency(iface, -1);
     return iface;
 }
 
@@ -1831,7 +1846,7 @@ const QtPrivate::QMetaTypeInterface * const *QMetaMethodPrivate::parameterMetaTy
     const auto ifaces = &mobj->d.metaTypes[data.metaTypeOffset() + offset];
 
     for (int i = 0; i < parameterCount(); ++i)
-        checkMethodMetaTypeConsistency(ifaces[i], parameterTypeInfo(i));
+        checkMethodMetaTypeConsistency(ifaces[i], i);
 
     return ifaces;
 }

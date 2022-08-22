@@ -14,6 +14,14 @@ Q_DECLARE_METATYPE(const QMetaObject *)
 
 #include "forwarddeclared.h"
 
+#ifdef QEASINGCURVE_H
+#  error "Please make sure qeasingcurve.h is not #include'd here! " \
+    "We need QEasingCurve to be only forward-declared."
+#endif
+QT_BEGIN_NAMESPACE
+class QEasingCurve;
+QT_END_NAMESPACE
+
 struct MyStruct
 {
     int i;
@@ -489,6 +497,7 @@ public slots:
     qint64 sl14();
     qlonglong *sl15(qlonglong *);
     MyForwardDeclaredType *sl16(MyForwardDeclaredType *);
+    void sl17(const QEasingCurve &curve);
 
     void overloadedSlot();
     void overloadedSlot(int, int);
@@ -605,6 +614,8 @@ MyForwardDeclaredType *QtTestObject::sl16(MyForwardDeclaredType *ptr)
     slotResult += "null";
     return getForwardDeclaredPointer();
 }
+void QtTestObject::sl17(const QEasingCurve &)
+{ slotResult = "sl17"; }
 
 void QtTestObject::overloadedSlot()
 { slotResult = "overloadedSlot"; }
@@ -783,6 +794,11 @@ void tst_QMetaObject::invokeMetaMember()
     QCOMPARE(forwardPtr, getForwardDeclaredPointer());
     QCOMPARE(obj.slotResult, QString("sl16:null"));
 
+    // forward-declared builtin
+    obj.slotResult.clear();
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl17", Q_ARG(QEasingCurve, getEasingCurve())));
+    QCOMPARE(obj.slotResult, "sl17");
+
     // test overloads
     QVERIFY(QMetaObject::invokeMethod(&obj, "overloadedSlot"));
     QCOMPARE(obj.slotResult, QString("overloadedSlot"));
@@ -918,6 +934,12 @@ void tst_QMetaObject::invokeQueuedMetaMember()
     QVERIFY(QMetaObject::invokeMethod(&obj, "sl15", Qt::QueuedConnection, Q_ARG(qlonglong*, &return64)));
     qApp->processEvents(QEventLoop::AllEvents);
     QCOMPARE(obj.slotResult, QString("sl15"));
+
+    // forward-declared builtin
+    obj.slotResult.clear();
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl17", Qt::QueuedConnection, Q_ARG(QEasingCurve, getEasingCurve())));
+    qApp->processEvents(QEventLoop::AllEvents);
+    QCOMPARE(obj.slotResult, "sl17");
 
     // test overloads
     QVERIFY(QMetaObject::invokeMethod(&obj, "overloadedSlot", Qt::QueuedConnection));
@@ -1171,6 +1193,11 @@ void tst_QMetaObject::invokeBlockingQueuedMetaMember()
                                       Q_ARG(MyForwardDeclaredType*, nullptr)));
     QCOMPARE(forwardPtr, getForwardDeclaredPointer());
     QCOMPARE(obj.slotResult, QString("sl16:null"));
+
+    // forward-declared builtin
+    obj.slotResult.clear();
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl17", Qt::BlockingQueuedConnection, Q_ARG(QEasingCurve, getEasingCurve())));
+    QCOMPARE(obj.slotResult, "sl17");
 
     // test overloads
     QVERIFY(QMetaObject::invokeMethod(&obj, "overloadedSlot", Qt::BlockingQueuedConnection));
@@ -2183,4 +2210,7 @@ void tst_QMetaObject::notifySignalsInParentClass()
 }
 
 QTEST_MAIN(tst_QMetaObject)
+
+static_assert(!QtPrivate::is_complete<QEasingCurve, void>::value,
+    "QEasingCurve must only be forward-declared at this point");
 #include "tst_qmetaobject.moc"
