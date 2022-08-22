@@ -342,7 +342,49 @@ QPlatformThemePrivate::~QPlatformThemePrivate()
     delete systemPalette;
 }
 
-Q_GUI_EXPORT QPalette qt_fusionPalette();
+Q_GUI_EXPORT QPalette qt_fusionPalette()
+{
+    const bool darkAppearance = QGuiApplicationPrivate::platformTheme()->appearance()
+        == QPlatformTheme::Appearance::Dark;
+    const QColor windowText = darkAppearance ? QColor(240, 240, 240) : Qt::black;
+    const QColor backGround = darkAppearance ? QColor(50, 50, 50) : QColor(239, 239, 239);
+    const QColor light = backGround.lighter(150);
+    const QColor mid = (backGround.darker(130));
+    const QColor midLight = mid.lighter(110);
+    const QColor base = darkAppearance ? backGround.darker(140) : Qt::white;
+    const QColor disabledBase(backGround);
+    const QColor dark = backGround.darker(150);
+    const QColor darkDisabled = QColor(209, 209, 209).darker(110);
+    const QColor text = darkAppearance ? windowText : Qt::black;
+    const QColor hightlightedText = darkAppearance ? windowText : Qt::white;
+    const QColor disabledText = darkAppearance ? QColor(130, 130, 130) : QColor(190, 190, 190);
+    const QColor button = backGround;
+    const QColor shadow = dark.darker(135);
+    const QColor disabledShadow = shadow.lighter(150);
+    QColor placeholder = text;
+    placeholder.setAlpha(128);
+
+    QPalette fusionPalette(windowText, backGround, light, dark, mid, text, base);
+    fusionPalette.setBrush(QPalette::Midlight, midLight);
+    fusionPalette.setBrush(QPalette::Button, button);
+    fusionPalette.setBrush(QPalette::Shadow, shadow);
+    fusionPalette.setBrush(QPalette::HighlightedText, hightlightedText);
+
+    fusionPalette.setBrush(QPalette::Disabled, QPalette::Text, disabledText);
+    fusionPalette.setBrush(QPalette::Disabled, QPalette::WindowText, disabledText);
+    fusionPalette.setBrush(QPalette::Disabled, QPalette::ButtonText, disabledText);
+    fusionPalette.setBrush(QPalette::Disabled, QPalette::Base, disabledBase);
+    fusionPalette.setBrush(QPalette::Disabled, QPalette::Dark, darkDisabled);
+    fusionPalette.setBrush(QPalette::Disabled, QPalette::Shadow, disabledShadow);
+
+    fusionPalette.setBrush(QPalette::Active, QPalette::Highlight, QColor(48, 140, 198));
+    fusionPalette.setBrush(QPalette::Inactive, QPalette::Highlight, QColor(48, 140, 198));
+    fusionPalette.setBrush(QPalette::Disabled, QPalette::Highlight, QColor(145, 145, 145));
+
+    fusionPalette.setBrush(QPalette::PlaceholderText, placeholder);
+
+    return fusionPalette;
+}
 
 void QPlatformThemePrivate::initializeSystemPalette()
 {
