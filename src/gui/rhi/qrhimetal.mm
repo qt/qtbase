@@ -33,11 +33,11 @@ QT_BEGIN_NAMESPACE
 #endif
 
 // Note: we expect everything here pass the Metal API validation when running
-// in Debug mode in XCode. Some of the issues that break validation are not
-// obvious and not visible when running outside XCode.
-//
-// An exception is the nextDrawable Called Early blah blah warning, which is
-// plain and simply false.
+// in Debug mode in XCode (or with METAL_DEVICE_WRAPPER_TYPE=1). An exception
+// is the nextDrawable Called Early blah blah warning, which is plain and
+// simply false. This may not be present with newer XCode. There may also be
+// warnings about threading (e.g. about accessing view.layer), those are
+// expected for now.
 
 /*!
     \class QRhiMetalInitParams
@@ -52,10 +52,13 @@ QT_BEGIN_NAMESPACE
         rhi = QRhi::create(QRhi::Metal, &params);
     \endcode
 
-    \note Metal API validation cannot be enabled by the application. Instead,
-    run the debug build of the application in XCode. Generating a
-    \c{.xcodeproj} file via \c{qmake -spec macx-xcode} provides a convenient
-    way to enable this.
+    \note Metal API validation cannot be enabled programmatically by the QRhi.
+    Instead, either run the debug build of the application in XCode, by
+    generating a \c{.xcodeproj} file via \c{cmake -G Xcode}, or set the
+    environment variable \c{METAL_DEVICE_WRAPPER_TYPE=1}. The variable needs to
+    be set early on in the environment, perferably before starting the process;
+    attempting to set it at QRhi creation time is not functional in practice.
+    (too late probably)
 
     \note QRhiSwapChain can only target QWindow instances that have their
     surface type set to QSurface::MetalSurface.
