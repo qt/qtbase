@@ -108,7 +108,6 @@ function(qt_generate_prl_file target install_dir)
     # whose names we know, and can be used in add_custom_command.
     set(prl_step1_content
         "RCC_OBJECTS = ${rcc_objects}
-QMAKE_PRL_BUILD_DIR = ${CMAKE_CURRENT_BINARY_DIR}
 QMAKE_PRL_TARGET = $<TARGET_LINKER_FILE_NAME:${target}>
 QMAKE_PRL_TARGET_PATH_FOR_CMAKE = $<TARGET_LINKER_FILE:${target}>
 QMAKE_PRL_CONFIG = ${prl_config}
