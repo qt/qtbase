@@ -94,7 +94,7 @@ QStringList tst_QPrinterInfo::getPrintersFromSystem()
     QString output = getOutputFromCommand({ "lpstat", "-e" });
     QStringList list = output.split(QChar::fromLatin1('\n'));
 
-    QRegularExpression reg("^([.a-zA-Z0-9-_@]+)");
+    QRegularExpression reg("^([.a-zA-Z0-9-_@/]+)");
     QRegularExpressionMatch match;
     for (int c = 0; c < list.size(); ++c) {
         match = reg.match(list[c]);
