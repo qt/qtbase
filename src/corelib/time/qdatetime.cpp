@@ -2754,9 +2754,9 @@ mergeDaylightStatus(QDateTimePrivate::StatusFlags sf, QDateTimePrivate::Daylight
 static constexpr inline
 QDateTimePrivate::DaylightStatus extractDaylightStatus(QDateTimePrivate::StatusFlags status)
 {
-    if (status & QDateTimePrivate::SetToDaylightTime)
+    if (status.testFlag(QDateTimePrivate::SetToDaylightTime))
         return QDateTimePrivate::DaylightTime;
-    if (status & QDateTimePrivate::SetToStandardTime)
+    if (status.testFlag(QDateTimePrivate::SetToStandardTime))
         return QDateTimePrivate::StandardTime;
     return QDateTimePrivate::UnknownDaylightTime;
 }
@@ -2826,8 +2826,8 @@ static void refreshZonedDateTime(QDateTimeData &d, Qt::TimeSpec spec)
     int offsetFromUtc = 0;
 
     // If not valid date and time then is invalid
-    if (!(status & QDateTimePrivate::ValidDate) || !(status & QDateTimePrivate::ValidTime)) {
-        status &= ~QDateTimePrivate::ValidDateTime;
+    if (!status.testFlags(QDateTimePrivate::ValidDate | QDateTimePrivate::ValidTime)) {
+        status.setFlag(QDateTimePrivate::ValidDateTime, false);
     } else {
         // We have a valid date and time and a Qt::LocalTime or Qt::TimeZone that needs calculating
         // LocalTime and TimeZone might fall into a "missing" DST transition hour
@@ -2843,10 +2843,10 @@ static void refreshZonedDateTime(QDateTimeData &d, Qt::TimeSpec spec)
         if (state.valid && msecs == state.when)
             status = mergeDaylightStatus(status | QDateTimePrivate::ValidDateTime, state.dst);
         else // msecs changed or failed to convert (e.g. overflow)
-            status &= ~QDateTimePrivate::ValidDateTime;
+            status.setFlag(QDateTimePrivate::ValidDateTime, false);
     }
 
-    if (status & QDateTimePrivate::ShortData) {
+    if (status.testFlag(QDateTimePrivate::ShortData)) {
         d.data.status = status.toInt();
     } else {
         d->m_status = status;
@@ -2859,12 +2859,10 @@ static void refreshSimpleDateTime(QDateTimeData &d)
 {
     auto status = getStatus(d);
     Q_ASSERT(extractSpec(status) == Qt::UTC || extractSpec(status) == Qt::OffsetFromUTC);
-    if ((status & QDateTimePrivate::ValidDate) && (status & QDateTimePrivate::ValidTime))
-        status |= QDateTimePrivate::ValidDateTime;
-    else
-        status &= ~QDateTimePrivate::ValidDateTime;
+    status.setFlag(QDateTimePrivate::ValidDateTime,
+                   status.testFlags(QDateTimePrivate::ValidDate | QDateTimePrivate::ValidTime));
 
-    if (status & QDateTimePrivate::ShortData)
+    if (status.testFlag(QDateTimePrivate::ShortData))
         d.data.status = status.toInt();
     else
         d->m_status = status;
@@ -2873,8 +2871,7 @@ static void refreshSimpleDateTime(QDateTimeData &d)
 // Clean up and set status after assorted set-up or reworking:
 static void checkValidDateTime(QDateTimeData &d)
 {
-    auto status = getStatus(d);
-    auto spec = extractSpec(status);
+    auto spec = extractSpec(getStatus(d));
     switch (spec) {
     case Qt::OffsetFromUTC:
     case Qt::UTC:
@@ -3080,7 +3077,7 @@ inline bool QDateTime::Data::isShort() const
     bool b = quintptr(d) & QDateTimePrivate::ShortData;
 
     // sanity check:
-    Q_ASSERT(b || (d->m_status & QDateTimePrivate::ShortData) == 0);
+    Q_ASSERT(b || !d->m_status.testFlag(QDateTimePrivate::ShortData));
 
     // even if CanBeSmall = false, we have short data for a default-constructed
     // QDateTime object. But it's unlikely.
@@ -3420,9 +3417,8 @@ QDateTime &QDateTime::operator=(const QDateTime &other) noexcept
 
 bool QDateTime::isNull() const
 {
-    auto status = getStatus(d);
-    return !status.testFlag(QDateTimePrivate::ValidDate) &&
-            !status.testFlag(QDateTimePrivate::ValidTime);
+    // If date or time is invalid, we don't set date-time valid.
+    return !getStatus(d).testAnyFlag(QDateTimePrivate::ValidityMask);
 }
 
 /*!
@@ -3440,8 +3436,7 @@ bool QDateTime::isNull() const
 
 bool QDateTime::isValid() const
 {
-    auto status = getStatus(d);
-    return status.testFlag(QDateTimePrivate::ValidDateTime);
+    return getStatus(d).testFlag(QDateTimePrivate::ValidDateTime);
 }
 
 /*!
@@ -3452,10 +3447,7 @@ bool QDateTime::isValid() const
 
 QDate QDateTime::date() const
 {
-    auto status = getStatus(d);
-    if (!status.testFlag(QDateTimePrivate::ValidDate))
-        return QDate();
-    return msecsToDate(getMSecs(d));
+    return getStatus(d).testFlag(QDateTimePrivate::ValidDate) ? msecsToDate(getMSecs(d)) : QDate();
 }
 
 /*!
@@ -3466,10 +3458,7 @@ QDate QDateTime::date() const
 
 QTime QDateTime::time() const
 {
-    auto status = getStatus(d);
-    if (!status.testFlag(QDateTimePrivate::ValidTime))
-        return QTime();
-    return msecsToTime(getMSecs(d));
+    return getStatus(d).testFlag(QDateTimePrivate::ValidTime) ? msecsToTime(getMSecs(d)) : QTime();
 }
 
 /*!
@@ -3627,10 +3616,10 @@ bool QDateTime::isDaylightTime() const
         return d->m_timeZone.d->isDaylightTime(toMSecsSinceEpoch());
 #endif // timezone
     case Qt::LocalTime: {
-        auto status = extractDaylightStatus(getStatus(d));
-        if (status == QDateTimePrivate::UnknownDaylightTime)
-            status = QDateTimePrivate::localStateAtMillis(getMSecs(d), status).dst;
-        return status == QDateTimePrivate::DaylightTime;
+        auto dst = extractDaylightStatus(getStatus(d));
+        if (dst == QDateTimePrivate::UnknownDaylightTime)
+            dst = QDateTimePrivate::localStateAtMillis(getMSecs(d), dst).dst;
+        return dst == QDateTimePrivate::DaylightTime;
         }
     }
     return false;
@@ -3858,7 +3847,7 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
         } // else: zone unable to represent given UTC time (should only happen on overflow).
 #endif // timezone
     }
-    Q_ASSERT(!(status & QDateTimePrivate::ValidDateTime)
+    Q_ASSERT(!status.testFlag(QDateTimePrivate::ValidDateTime)
              || (state.offset >= -SECS_PER_DAY && state.offset <= SECS_PER_DAY));
 
     if (msecsCanBeSmall(state.when) && d.isShort()) {
@@ -4053,8 +4042,8 @@ static inline void massageAdjustedDateTime(QDateTimeData &d, QDate date, QTime t
       to coax it into doing the same (which it does by default on Unix).
     */
     auto status = getStatus(d);
-    Q_ASSERT((status & QDateTimePrivate::ValidDate) && (status & QDateTimePrivate::ValidTime)
-             && (status & QDateTimePrivate::ValidDateTime));
+    Q_ASSERT(status.testFlags(QDateTimePrivate::ValidDate | QDateTimePrivate::ValidTime
+                              | QDateTimePrivate::ValidDateTime));
     auto spec = extractSpec(status);
     if (spec == Qt::OffsetFromUTC || spec == Qt::UTC) {
         setDateTime(d, date, time);
@@ -4067,7 +4056,7 @@ static inline void massageAdjustedDateTime(QDateTimeData &d, QDate date, QTime t
     if (state.valid)
         status = mergeDaylightStatus(status | QDateTimePrivate::ValidDateTime, state.dst);
     else
-        status &= ~QDateTimePrivate::ValidDateTime;
+        status.setFlag(QDateTimePrivate::ValidDateTime, false);
 
     if (status & QDateTimePrivate::ShortData) {
         d.data.msecs = state.when;
