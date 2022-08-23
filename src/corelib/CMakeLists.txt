@@ -80,6 +80,7 @@ qt_internal_add_module(Core
         global/qtdeprecationmarkers.h
         global/qtrace_p.h
         global/qtranslation.h
+        global/qtresource.h
         global/qtversionchecks.h
         global/qtypeinfo.h
         global/qtypes.cpp global/qtypes.h

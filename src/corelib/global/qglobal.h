@@ -48,13 +48,6 @@ inline void qt_noop(void) {}
 #ifndef __ASSEMBLER__
 QT_BEGIN_NAMESPACE
 
-#define Q_INIT_RESOURCE(name) \
-    do { extern int QT_MANGLE_NAMESPACE(qInitResources_ ## name) ();       \
-        QT_MANGLE_NAMESPACE(qInitResources_ ## name) (); } while (false)
-#define Q_CLEANUP_RESOURCE(name) \
-    do { extern int QT_MANGLE_NAMESPACE(qCleanupResources_ ## name) ();    \
-        QT_MANGLE_NAMESPACE(qCleanupResources_ ## name) (); } while (false)
-
 /*
  * If we're compiling C++ code:
  *  - and this is a non-namespace build, declare qVersion as extern "C"
@@ -228,6 +221,7 @@ QT_END_NAMESPACE
 #include <QtCore/qoverload.h>
 #include <QtCore/qtdeprecationmarkers.h>
 #include <QtCore/qtranslation.h>
+#include <QtCore/qtresource.h>
 #include <QtCore/qversiontagging.h>
 
 #endif /* __cplusplus */
