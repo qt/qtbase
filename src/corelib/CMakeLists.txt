@@ -53,6 +53,7 @@ qt_internal_add_module(Core
         global/qcompilerdetection.h
         global/qconstructormacros.h
         global/qcontainerinfo.h
+        global/qdarwinhelpers.h
         global/qendian.cpp global/qendian.h global/qendian_p.h
         global/qenvironmentvariables.cpp global/qenvironmentvariables.h
         global/qexceptionhandling.cpp global/qexceptionhandling.h
