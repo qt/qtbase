@@ -136,6 +136,12 @@ void QStatusNotifierItemAdaptor::ContextMenu(int x, int y)
     emit m_trayIcon->activated(QPlatformSystemTrayIcon::Context);
 }
 
+void QStatusNotifierItemAdaptor::ProvideXdgActivationToken(const QString &token)
+{
+    qCDebug(qLcTray) << token;
+    qputenv("XDG_ACTIVATION_TOKEN", token.toUtf8());
+}
+
 void QStatusNotifierItemAdaptor::Scroll(int w, const QString &s)
 {
     qCDebug(qLcTray) << w << s;

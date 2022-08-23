@@ -73,6 +73,9 @@ class QStatusNotifierItemAdaptor: public QDBusAbstractAdaptor
 "    <property access=\"read\" type=\"(sa(iiay)ss)\" name=\"ToolTip\">\n"
 "      <annotation value=\"QXdgDBusToolTipStruct\" name=\"org.qtproject.QtDBus.QtTypeName\"/>\n"
 "    </property>\n"
+"    <method name=\"ProvideXdgActivationToken\">\n"
+"        <arg name=\"token\" type=\"s\" direction=\"in\"/>\n"
+"    </method>\n"
 "    <method name=\"ContextMenu\">\n"
 "      <arg direction=\"in\" type=\"i\" name=\"x\"/>\n"
 "      <arg direction=\"in\" type=\"i\" name=\"y\"/>\n"
@@ -150,6 +153,7 @@ public: // PROPERTIES
 public Q_SLOTS: // METHODS
     void Activate(int x, int y);
     void ContextMenu(int x, int y);
+    void ProvideXdgActivationToken(const QString &token);
     void Scroll(int delta, const QString &orientation);
     void SecondaryActivate(int x, int y);
 Q_SIGNALS: // SIGNALS
