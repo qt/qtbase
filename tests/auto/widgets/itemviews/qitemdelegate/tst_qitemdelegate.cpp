@@ -230,6 +230,8 @@ private slots:
     void dateTextForRole_data();
     void dateTextForRole();
 
+    void reuseEditor();
+
 private:
 #ifdef QT_BUILD_INTERNAL
     struct RoleDelegate : public QItemDelegate
@@ -1641,6 +1643,74 @@ void tst_QItemDelegate::dateTextForRole()
     CHECK(when.time());
 # undef CHECK
 #endif
+}
+
+void tst_QItemDelegate::reuseEditor()
+{
+    class ReusingDelegate: public QItemDelegate {
+    public:
+        using QItemDelegate::QItemDelegate;
+        ~ReusingDelegate()
+        {
+            cached->deleteLater();
+        }
+
+        QWidget* createEditor(QWidget* parent,
+                                const QStyleOptionViewItem&,
+                                const QModelIndex&) const override
+        {
+            auto *cb = new QComboBox(parent);
+            cb->addItem("One");
+            cb->addItem("Two");
+            cb->setEditable(true);
+            return cb;
+        }
+
+        void setEditorData(QWidget* editor, const QModelIndex& index)
+        const override
+        {
+            auto *cb = qobject_cast<QComboBox*>(editor);
+            cb->setCurrentText(index.data(Qt::DisplayRole).toString());
+        }
+
+        void setModelData(QWidget* editor,
+                          QAbstractItemModel* model,
+                          const QModelIndex& index) const override
+        {
+            auto *cb = qobject_cast<QComboBox*>(editor);
+            model->setData(index, cb->currentText(), Qt::DisplayRole);
+        }
+
+        void destroyEditor(QWidget* editor, const QModelIndex&) const override
+        {
+            auto *cb = qobject_cast<QComboBox*>(editor);
+            cb->setParent(nullptr); // How to completely detach the editor from treeview ?
+            cb->hide();
+            cb->setEnabled(false);
+            cached = cb;
+        }
+
+    private:
+        mutable QComboBox* cached = nullptr;
+    };
+
+    QStandardItemModel model;
+    model.appendRow(new QStandardItem("One"));
+    model.appendRow(new QStandardItem("Two"));
+
+    ReusingDelegate delegate;
+
+    QTreeView tree;
+    tree.setModel(&model);
+    tree.setItemDelegate(&delegate);
+
+    tree.show();
+    QVERIFY(QTest::qWaitForWindowActive(&tree));
+
+    tree.edit(model.index(0, 0));
+    QTRY_VERIFY(qobject_cast<QComboBox *>(tree.focusWidget()));
+
+    tree.close();
 }
 
 // ### _not_ covered:
