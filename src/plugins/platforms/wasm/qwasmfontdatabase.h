@@ -12,12 +12,15 @@ class QWasmFontDatabase : public QFreeTypeFontDatabase
 {
 public:
     void populateFontDatabase() override;
+    void populateFamily(const QString &familyName) override;
     QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) override;
     QStringList fallbacksForFamily(const QString &family, QFont::Style style,
                                    QFont::StyleHint styleHint,
                                    QChar::Script script) const override;
     void releaseHandle(void *handle) override;
     QFont defaultFont() const override;
+
+    static void notifyFontsChanged();
 };
 QT_END_NAMESPACE
 #endif
