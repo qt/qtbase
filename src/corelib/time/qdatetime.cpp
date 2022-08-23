@@ -4386,21 +4386,14 @@ qint64 QDateTime::msecsTo(const QDateTime &other) const
     Example:
     \snippet code/src_corelib_time_qdatetime.cpp 16
 
-    \sa timeSpec(), toTimeZone(), toOffsetFromUtc()
+    \sa timeSpec(), toUTC(), toLocalTime(), toOffsetFromUtc(), toTimeZone()
 */
 
 QDateTime QDateTime::toTimeSpec(Qt::TimeSpec spec) const
 {
-    if (getSpec(d) == spec && (spec == Qt::UTC || spec == Qt::LocalTime))
-        return *this;
-
-    if (!isValid()) {
-        QDateTime ret = *this;
-        ret.setTimeSpec(spec);
-        return ret;
-    }
-
-    return fromMSecsSinceEpoch(toMSecsSinceEpoch(), spec, 0);
+    if (spec == Qt::TimeZone) // No zone supplied, so treating as LocalTime.
+        qWarning("Use toTimeZone() rather than toTimeSpec(Qt::TimeZone)");
+    return spec == Qt::UTC || spec == Qt::OffsetFromUTC ? toUTC() : toLocalTime();
 }
 
 /*!
@@ -4413,13 +4406,12 @@ QDateTime QDateTime::toTimeSpec(Qt::TimeSpec spec) const
 
     If the \a offsetSeconds equals 0 then a UTC datetime will be returned
 
-    \sa setOffsetFromUtc(), offsetFromUtc(), toTimeSpec()
+    \sa setOffsetFromUtc(), offsetFromUtc(), toUTC(), toLocalTime(), toTimeZone(), toTimeSpec()
 */
 
 QDateTime QDateTime::toOffsetFromUtc(int offsetSeconds) const
 {
-    if (getSpec(d) == Qt::OffsetFromUTC
-            && d->m_offsetFromUtc == offsetSeconds)
+    if (getSpec(d) == Qt::OffsetFromUTC && d->m_offsetFromUtc == offsetSeconds)
         return *this;
 
     if (!isValid()) {
@@ -4437,7 +4429,7 @@ QDateTime QDateTime::toOffsetFromUtc(int offsetSeconds) const
 
     Returns a copy of this datetime converted to the given \a timeZone
 
-    \sa timeZone(), toTimeSpec()
+    \sa timeZone(), toUTC(), toLocalTime(), toOffsetFromUtc(), toTimeSpec()
 */
 
 QDateTime QDateTime::toTimeZone(const QTimeZone &timeZone) const
@@ -5138,8 +5130,21 @@ QDateTime QDateTime::fromString(const QString &string, QStringView format, QCale
 
     \snippet code/src_corelib_time_qdatetime.cpp 17
 
-    \sa toTimeSpec()
+    \sa toUTC(), toOffsetFromUtc(), toTimeZone(), toTimeSpec()
 */
+QDateTime QDateTime::toLocalTime() const
+{
+    if (getSpec(d) == Qt::LocalTime)
+        return *this;
+
+    if (!isValid()) {
+        QDateTime ret = *this;
+        ret.setTimeSpec(Qt::LocalTime);
+        return ret;
+    }
+
+    return fromMSecsSinceEpoch(toMSecsSinceEpoch());
+}
 
 /*!
     \fn QDateTime QDateTime::toUTC() const
@@ -5151,8 +5156,21 @@ QDateTime QDateTime::fromString(const QString &string, QStringView format, QCale
 
     \snippet code/src_corelib_time_qdatetime.cpp 18
 
-    \sa toTimeSpec()
+    \sa toLocalTime(), toOffsetFromUtc(), toTimeZone(), toTimeSpec()
 */
+QDateTime QDateTime::toUTC() const
+{
+    if (getSpec(d) == Qt::UTC)
+        return *this;
+
+    if (!isValid()) {
+        QDateTime ret = *this;
+        ret.setTimeSpec(Qt::UTC);
+        return ret;
+    }
+
+    return fromMSecsSinceEpoch(toMSecsSinceEpoch(), Qt::UTC);
+}
 
 /*****************************************************************************
   Date/time stream functions

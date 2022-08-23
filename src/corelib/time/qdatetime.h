@@ -355,8 +355,8 @@ public:
     }
 
     QDateTime toTimeSpec(Qt::TimeSpec spec) const;
-    inline QDateTime toLocalTime() const { return toTimeSpec(Qt::LocalTime); }
-    inline QDateTime toUTC() const { return toTimeSpec(Qt::UTC); }
+    QDateTime toLocalTime() const;
+    QDateTime toUTC() const;
     QDateTime toOffsetFromUtc(int offsetSeconds) const;
 #if QT_CONFIG(timezone)
     QDateTime toTimeZone(const QTimeZone &toZone) const;
