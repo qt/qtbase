@@ -3738,7 +3738,7 @@ void QDateTime::setTimeZone(const QTimeZone &toZone)
     this object is not valid. However, for all valid dates, this function
     returns a unique value.
 
-    \sa toSecsSinceEpoch(), setMSecsSinceEpoch()
+    \sa toSecsSinceEpoch(), setMSecsSinceEpoch(), fromMSecsSinceEpoch()
 */
 qint64 QDateTime::toMSecsSinceEpoch() const
 {
@@ -3790,7 +3790,7 @@ qint64 QDateTime::toMSecsSinceEpoch() const
     this object is not valid. However, for all valid dates, this function
     returns a unique value.
 
-    \sa toMSecsSinceEpoch(), setSecsSinceEpoch()
+    \sa toMSecsSinceEpoch(), fromSecsSinceEpoch(), setSecsSinceEpoch()
 */
 qint64 QDateTime::toSecsSinceEpoch() const
 {
@@ -3809,7 +3809,7 @@ qint64 QDateTime::toSecsSinceEpoch() const
     (\c{std::numeric_limits<qint64>::min()}) to \a msecs will result in
     undefined behavior.
 
-    \sa toMSecsSinceEpoch(), setSecsSinceEpoch()
+    \sa setSecsSinceEpoch(), toMSecsSinceEpoch(), fromMSecsSinceEpoch()
 */
 void QDateTime::setMSecsSinceEpoch(qint64 msecs)
 {
@@ -3870,7 +3870,7 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
     (Qt::UTC). On systems that do not support time zones this function
     will behave as if local time were Qt::UTC.
 
-    \sa toSecsSinceEpoch(), setMSecsSinceEpoch()
+    \sa setMSecsSinceEpoch(), toSecsSinceEpoch(), fromSecsSinceEpoch()
 */
 void QDateTime::setSecsSinceEpoch(qint64 secs)
 {
@@ -4792,7 +4792,7 @@ qint64 QDateTime::currentSecsSinceEpoch() noexcept
   If \a spec is Qt::TimeZone then the spec will be set to Qt::LocalTime,
   i.e. the current system time zone.
 
-  \sa toMSecsSinceEpoch(), setMSecsSinceEpoch()
+  \sa fromSecsSinceEpoch(), toMSecsSinceEpoch(), setMSecsSinceEpoch()
 */
 QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, Qt::TimeSpec spec, int offsetSeconds)
 {
@@ -4820,15 +4820,14 @@ QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, Qt::TimeSpec spec, int of
   If \a spec is Qt::TimeZone then the spec will be set to Qt::LocalTime,
   i.e. the current system time zone.
 
-  \sa toSecsSinceEpoch(), setSecsSinceEpoch()
+  \sa fromMSecsSinceEpoch(), toSecsSinceEpoch(), setSecsSinceEpoch()
 */
 QDateTime QDateTime::fromSecsSinceEpoch(qint64 secs, Qt::TimeSpec spec, int offsetSeconds)
 {
-    constexpr qint64 maxSeconds = std::numeric_limits<qint64>::max() / MSECS_PER_SEC;
-    constexpr qint64 minSeconds = std::numeric_limits<qint64>::min() / MSECS_PER_SEC;
-    if (secs > maxSeconds || secs < minSeconds)
-        return QDateTime(); // Would {und,ov}erflow
-    return fromMSecsSinceEpoch(secs * MSECS_PER_SEC, spec, offsetSeconds);
+    QDateTime dt;
+    QT_PREPEND_NAMESPACE(setTimeSpec(dt.d, spec, offsetSeconds));
+    dt.setSecsSinceEpoch(secs);
+    return dt;
 }
 
 #if QT_CONFIG(timezone)
@@ -4839,7 +4838,7 @@ QDateTime QDateTime::fromSecsSinceEpoch(qint64 secs, Qt::TimeSpec spec, int offs
     that have passed since 1970-01-01T00:00:00.000, Coordinated Universal
     Time (Qt::UTC) and with the given \a timeZone.
 
-    \sa fromSecsSinceEpoch()
+    \sa fromSecsSinceEpoch(), toMSecsSinceEpoch(), setMSecsSinceEpoch()
 */
 QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, const QTimeZone &timeZone)
 {
@@ -4857,15 +4856,15 @@ QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, const QTimeZone &timeZone
     that have passed since 1970-01-01T00:00:00.000, Coordinated Universal
     Time (Qt::UTC) and with the given \a timeZone.
 
-    \sa fromMSecsSinceEpoch()
+    \sa fromMSecsSinceEpoch(), toSecsSinceEpoch(), setSecsSinceEpoch()
 */
 QDateTime QDateTime::fromSecsSinceEpoch(qint64 secs, const QTimeZone &timeZone)
 {
-    constexpr qint64 maxSeconds = std::numeric_limits<qint64>::max() / MSECS_PER_SEC;
-    constexpr qint64 minSeconds = std::numeric_limits<qint64>::min() / MSECS_PER_SEC;
-    if (secs > maxSeconds || secs < minSeconds)
-        return QDateTime(); // Would {und,ov}erflow
-    return fromMSecsSinceEpoch(secs * MSECS_PER_SEC, timeZone);
+    QDateTime dt;
+    dt.setTimeZone(timeZone);
+    if (timeZone.isValid())
+        dt.setSecsSinceEpoch(secs);
+    return dt;
 }
 #endif
 
