@@ -70,28 +70,6 @@ Q_CORE_EXPORT Q_DECL_CONST_FUNCTION const char *qVersion(void) Q_DECL_NOEXCEPT;
 
 #if defined(__cplusplus)
 
-#ifndef Q_CONSTRUCTOR_FUNCTION
-# define Q_CONSTRUCTOR_FUNCTION0(AFUNC) \
-    namespace { \
-    static const struct AFUNC ## _ctor_class_ { \
-        inline AFUNC ## _ctor_class_() { AFUNC(); } \
-    } AFUNC ## _ctor_instance_; \
-    }
-
-# define Q_CONSTRUCTOR_FUNCTION(AFUNC) Q_CONSTRUCTOR_FUNCTION0(AFUNC)
-#endif
-
-#ifndef Q_DESTRUCTOR_FUNCTION
-# define Q_DESTRUCTOR_FUNCTION0(AFUNC) \
-    namespace { \
-    static const struct AFUNC ## _dtor_class_ { \
-        inline AFUNC ## _dtor_class_() { } \
-        inline ~ AFUNC ## _dtor_class_() { AFUNC(); } \
-    } AFUNC ## _dtor_instance_; \
-    }
-# define Q_DESTRUCTOR_FUNCTION(AFUNC) Q_DESTRUCTOR_FUNCTION0(AFUNC)
-#endif
-
 /* moc compats (signals/slots) */
 #ifndef QT_MOC_COMPAT
 #  define QT_MOC_COMPAT
@@ -240,6 +218,7 @@ QT_END_NAMESPACE
 #include <QtCore/qflags.h>
 
 #include <QtCore/qatomic.h>
+#include <QtCore/qconstructormacros.h>
 #include <QtCore/qenvironmentvariables.h>
 #include <QtCore/qexceptionhandling.h>
 #include <QtCore/qforeach.h>
