@@ -236,7 +236,7 @@ def run_test(arg_list: List[str], **kwargs):
 
 def unique_filename(test_basename: str) -> str:
     timestamp = round(time.time() * 1000)
-    return f"{test_basename}-{timestamp}.xml"
+    return f"{test_basename}-{timestamp}"
 
 # Returns tuple: (exit_code, xml_logfile)
 def run_full_test(test_basename, testargs: List[str], output_dir: str,
@@ -250,9 +250,11 @@ def run_full_test(test_basename, testargs: List[str], output_dir: str,
     # Append arguments to write log to qtestlib XML file,
     # and text to stdout.
     if not no_extra_args:
+        filename_base = unique_filename(test_basename)
         results_files.append(
-            os.path.join(output_dir, unique_filename(test_basename)))
+            os.path.join(output_dir, f"{filename_base}.xml"))
         output_testargs.extend(["-o", results_files[0] + ",xml"])
+        output_testargs.extend(["-o", f"{filename_base}.junit.xml,junitxml"])
         output_testargs.extend(["-o", "-,txt"])
 
     proc = run_test(testargs + specific_extra_args + output_testargs,
@@ -280,8 +282,10 @@ def rerun_failed_testcase(test_basename, testargs: List[str], output_dir: str,
     for i in range(max_repeats):
         # For the individual testcase re-runs, we log to file since Coin needs
         # to parse it. That is the reason we use unique filename every time.
+        filename_base = unique_filename(test_basename)
         output_args = [
-            "-o", os.path.join(output_dir, unique_filename(test_basename)) + ",xml",
+            "-o", os.path.join(output_dir, f"{filename_base}.xml") + ",xml",
+            "-o", os.path.join(output_dir, f"{filename_base}.junit.xml") + ",junitxml",
             "-o", "-,txt"]
         L.info("Re-running testcase: %s", failed_arg)
         if i < max_repeats - 1:
