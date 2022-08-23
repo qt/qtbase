@@ -3823,11 +3823,11 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
         if (spec == Qt::OffsetFromUTC)
             state.offset = d->m_offsetFromUtc;
         if (!state.offset || !add_overflow(msecs, state.offset * MSECS_PER_SEC, &state.when))
-            status |= QDateTimePrivate::ValidWhenMask;
+            status |= QDateTimePrivate::ValidityMask;
     } else if (spec == Qt::LocalTime) {
         state = QDateTimePrivate::expressUtcAsLocal(msecs);
         if (state.valid)
-            status = mergeDaylightStatus(status | QDateTimePrivate::ValidWhenMask, state.dst);
+            status = mergeDaylightStatus(status | QDateTimePrivate::ValidityMask, state.dst);
 #if QT_CONFIG(timezone)
     } else if (spec == Qt::TimeZone && (d.detach(), d->m_timeZone.isValid())) {
         const auto data = d->m_timeZone.d->data(msecs);
@@ -3836,7 +3836,7 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
             Q_ASSERT(state.offset >= -SECS_PER_DAY && state.offset <= SECS_PER_DAY);
             if (!state.offset
                 || !Q_UNLIKELY(add_overflow(msecs, state.offset * MSECS_PER_SEC, &state.when))) {
-                d->m_status = mergeDaylightStatus(status | QDateTimePrivate::ValidWhenMask,
+                d->m_status = mergeDaylightStatus(status | QDateTimePrivate::ValidityMask,
                                                   data.daylightTimeOffset
                                                   ? QDateTimePrivate::DaylightTime
                                                   : QDateTimePrivate::StandardTime);
@@ -3878,10 +3878,10 @@ void QDateTime::setSecsSinceEpoch(qint64 secs)
     if (!mul_overflow(secs, std::integral_constant<qint64, MSECS_PER_SEC>(), &msecs)) {
         setMSecsSinceEpoch(msecs);
     } else if (d.isShort()) {
-        d.data.status &= ~int(QDateTimePrivate::ValidWhenMask);
+        d.data.status &= ~int(QDateTimePrivate::ValidityMask);
     } else {
         d.detach();
-        d->m_status &= ~QDateTimePrivate::ValidWhenMask;
+        d->m_status &= ~QDateTimePrivate::ValidityMask;
     }
 }
 
@@ -4186,10 +4186,10 @@ QDateTime QDateTime::addMSecs(qint64 msecs) const
         if (!add_overflow(toMSecsSinceEpoch(), msecs, &msecs)) {
             dt.setMSecsSinceEpoch(msecs);
         } else if (dt.d.isShort()) {
-            dt.d.data.status &= ~int(QDateTimePrivate::ValidWhenMask);
+            dt.d.data.status &= ~int(QDateTimePrivate::ValidityMask);
         } else {
             dt.d.detach();
-            dt.d->m_status &= ~QDateTimePrivate::ValidWhenMask;
+            dt.d->m_status &= ~QDateTimePrivate::ValidityMask;
         }
         break;
     case Qt::UTC:
@@ -4197,10 +4197,10 @@ QDateTime QDateTime::addMSecs(qint64 msecs) const
         // No need to convert, just add on
         if (add_overflow(getMSecs(d), msecs, &msecs)) {
             if (dt.d.isShort()) {
-                dt.d.data.status &= ~int(QDateTimePrivate::ValidWhenMask);
+                dt.d.data.status &= ~int(QDateTimePrivate::ValidityMask);
             } else {
                 dt.d.detach();
-                dt.d->m_status &= ~QDateTimePrivate::ValidWhenMask;
+                dt.d->m_status &= ~QDateTimePrivate::ValidityMask;
             }
         } else if (d.isShort()) {
             // need to check if we need to enlarge first

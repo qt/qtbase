@@ -62,7 +62,6 @@ public:
         ValidDate           = 0x02,
         ValidTime           = 0x04,
         ValidDateTime       = 0x08,
-        ValidWhenMask       = ValidDate | ValidTime | ValidDateTime,
 
         TimeSpecMask        = 0x30,
 
