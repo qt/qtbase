@@ -23,8 +23,7 @@ class tst_QWasmWindowStack : public QObject
 
 public:
     tst_QWasmWindowStack()
-        : m_mockCallback(
-                std::bind(&tst_QWasmWindowStack::onTopWindowChanged, this, std::placeholders::_1))
+        : m_mockCallback(std::bind(&tst_QWasmWindowStack::onTopWindowChanged, this))
     {
     }
 
@@ -39,11 +38,11 @@ private slots:
     void removingTheRoot();
 
 private:
-    void onTopWindowChanged(QWasmWindow *topWindow)
+    void onTopWindowChanged()
     {
         ++m_topLevelChangedCallCount;
         if (m_onTopLevelChangedAction)
-            m_onTopLevelChangedAction(topWindow);
+            m_onTopLevelChangedAction();
     }
 
     void verifyTopWindowChangedCalled(int expected = 1)
@@ -76,19 +75,15 @@ void tst_QWasmWindowStack::insertion()
 {
     QWasmWasmWindowStack stack(m_mockCallback);
 
-    m_onTopLevelChangedAction = [this](QWasmWindow *topWindow) { QVERIFY(topWindow == &m_root); };
+    m_onTopLevelChangedAction = [this, &stack]() { QVERIFY(stack.topWindow() == &m_root); };
     stack.pushWindow(&m_root);
     verifyTopWindowChangedCalled();
 
-    m_onTopLevelChangedAction = [this](QWasmWindow *topWindow) {
-        QVERIFY(topWindow == &m_window1);
-    };
+    m_onTopLevelChangedAction = [this, &stack]() { QVERIFY(stack.topWindow() == &m_window1); };
     stack.pushWindow(&m_window1);
     verifyTopWindowChangedCalled();
 
-    m_onTopLevelChangedAction = [this](QWasmWindow *topWindow) {
-        QVERIFY(topWindow == &m_window2);
-    };
+    m_onTopLevelChangedAction = [this, &stack]() { QVERIFY(stack.topWindow() == &m_window2); };
     stack.pushWindow(&m_window2);
     verifyTopWindowChangedCalled();
 }
@@ -111,9 +106,7 @@ void tst_QWasmWindowStack::raisingTheRootIsImpossible()
 
     QCOMPARE(&m_window5, stack.topWindow());
 
-    m_onTopLevelChangedAction = [this](QWasmWindow *topWindow) {
-        QVERIFY(topWindow == &m_window2);
-    };
+    m_onTopLevelChangedAction = [this, &stack]() { QVERIFY(stack.topWindow() == &m_window2); };
     stack.raise(&m_window2);
     verifyTopWindowChangedCalled();
 }
@@ -133,9 +126,7 @@ void tst_QWasmWindowStack::raising()
 
     QCOMPARE(&m_window5, stack.topWindow());
 
-    m_onTopLevelChangedAction = [this](QWasmWindow *topWindow) {
-        QVERIFY(topWindow == &m_window1);
-    };
+    m_onTopLevelChangedAction = [this, &stack]() { QVERIFY(stack.topWindow() == &m_window1); };
     stack.raise(&m_window1);
     verifyTopWindowChangedCalled();
     QCOMPARE(&m_window1, stack.topWindow());
@@ -144,9 +135,7 @@ void tst_QWasmWindowStack::raising()
     verifyTopWindowChangedCalled(0);
     QCOMPARE(&m_window1, stack.topWindow());
 
-    m_onTopLevelChangedAction = [this](QWasmWindow *topWindow) {
-        QVERIFY(topWindow == &m_window3);
-    };
+    m_onTopLevelChangedAction = [this, &stack]() { QVERIFY(stack.topWindow() == &m_window3); };
     stack.raise(&m_window3);
     verifyTopWindowChangedCalled();
     QCOMPARE(&m_window3, stack.topWindow());
@@ -168,9 +157,7 @@ void tst_QWasmWindowStack::lowering()
 
     QCOMPARE(&m_window5, stack.topWindow());
 
-    m_onTopLevelChangedAction = [this](QWasmWindow *topWindow) {
-        QVERIFY(topWindow == &m_window4);
-    };
+    m_onTopLevelChangedAction = [this, &stack]() { QVERIFY(stack.topWindow() == &m_window4); };
     stack.lower(&m_window5);
     // Window order: 4 3 2 1 5 R
     verifyTopWindowChangedCalled();
@@ -201,9 +188,7 @@ void tst_QWasmWindowStack::removing()
 
     QCOMPARE(&m_window5, stack.topWindow());
 
-    m_onTopLevelChangedAction = [this](QWasmWindow *topWindow) {
-        QVERIFY(topWindow == &m_window4);
-    };
+    m_onTopLevelChangedAction = [this, &stack]() { QVERIFY(stack.topWindow() == &m_window4); };
     stack.removeWindow(&m_window5);
     // Window order: 4 3 2 1 R
     verifyTopWindowChangedCalled();
@@ -237,9 +222,7 @@ void tst_QWasmWindowStack::removingTheRoot()
     verifyTopWindowChangedCalled(0);
     QCOMPARE(&m_window3, stack.topWindow());
 
-    m_onTopLevelChangedAction = [this](QWasmWindow *topWindow) {
-        QVERIFY(topWindow == &m_window1);
-    };
+    m_onTopLevelChangedAction = [this, &stack]() { QVERIFY(stack.topWindow() == &m_window1); };
     // Check that the new bottom window is not treated specially as a root
     stack.raise(&m_window1);
     // Window order: 1 3 2
@@ -248,9 +231,7 @@ void tst_QWasmWindowStack::removingTheRoot()
     QVERIFY(std::equal(expectedWindowOrder.begin(), expectedWindowOrder.end(),
                        getWindowsFrontToBack(&stack).begin()));
 
-    m_onTopLevelChangedAction = [this](QWasmWindow *topWindow) {
-        QVERIFY(topWindow == &m_window3);
-    };
+    m_onTopLevelChangedAction = [this, &stack]() { QVERIFY(stack.topWindow() == &m_window3); };
     // Check that the new bottom window is not treated specially as a root
     stack.lower(&m_window1);
     // Window order: 3 2 1

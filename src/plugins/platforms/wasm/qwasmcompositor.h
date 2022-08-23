@@ -176,7 +176,7 @@ private:
         std::unique_ptr<OperationState> m_state;
     };
 
-    void onTopWindowChanged(QWasmWindow *window);
+    void onTopWindowChanged();
     void drawWindow(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, const QWasmWindow *window);
     void drawWindowContent(QOpenGLTextureBlitter *blitter, QWasmScreen *screen,
                            const QWasmWindow *window);

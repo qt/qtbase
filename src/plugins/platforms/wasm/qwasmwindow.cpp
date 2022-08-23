@@ -421,6 +421,12 @@ bool QWasmWindow::windowIsPopupType(Qt::WindowFlags flags) const
 
 void QWasmWindow::requestActivateWindow()
 {
+    QWindow *modalWindow;
+    if (QGuiApplicationPrivate::instance()->isWindowBlocked(window(), &modalWindow)) {
+        static_cast<QWasmWindow *>(modalWindow->handle())->requestActivateWindow();
+        return;
+    }
+
     if (window()->isTopLevel())
         raise();
     QPlatformWindow::requestActivateWindow();

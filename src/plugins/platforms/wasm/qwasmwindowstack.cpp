@@ -18,7 +18,7 @@ void QWasmWasmWindowStack::pushWindow(QWasmWindow *window)
 
     m_windowStack.push_back(window);
 
-    m_topWindowChangedCallback(window);
+    m_topWindowChangedCallback();
 }
 
 void QWasmWasmWindowStack::removeWindow(QWasmWindow *window)
@@ -34,7 +34,7 @@ void QWasmWasmWindowStack::removeWindow(QWasmWindow *window)
     m_windowStack.erase(it);
 
     if (removingTop)
-        m_topWindowChangedCallback(topWindow());
+        m_topWindowChangedCallback();
 }
 
 void QWasmWasmWindowStack::raise(QWasmWindow *window)
@@ -46,7 +46,7 @@ void QWasmWasmWindowStack::raise(QWasmWindow *window)
 
     auto it = std::find(regularWindowsBegin(), m_windowStack.end(), window);
     std::rotate(it, it + 1, m_windowStack.end());
-    m_topWindowChangedCallback(topWindow());
+    m_topWindowChangedCallback();
 }
 
 void QWasmWasmWindowStack::lower(QWasmWindow *window)
@@ -60,7 +60,7 @@ void QWasmWasmWindowStack::lower(QWasmWindow *window)
     auto it = std::find(regularWindowsBegin(), m_windowStack.end(), window);
     std::rotate(regularWindowsBegin(), it, it + 1);
     if (loweringTopWindow && topWindow() != window)
-        m_topWindowChangedCallback(topWindow());
+        m_topWindowChangedCallback();
 }
 
 QWasmWasmWindowStack::iterator QWasmWasmWindowStack::begin()

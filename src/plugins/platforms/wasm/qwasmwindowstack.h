@@ -24,7 +24,7 @@ class QWasmWindow;
 Q_AUTOTEST_EXPORT class QWasmWasmWindowStack
 {
 public:
-    using TopWindowChangedCallbackType = std::function<void(QWasmWindow *window)>;
+    using TopWindowChangedCallbackType = std::function<void()>;
 
     using StorageType = QList<QWasmWindow *>;
 

@@ -53,7 +53,7 @@ EMSCRIPTEN_BINDINGS(qtMouseModule) {
 QWasmCompositor::QWasmCompositor(QWasmScreen *screen)
     : QObject(screen),
       m_windowManipulation(screen),
-      m_windowStack(std::bind(&QWasmCompositor::onTopWindowChanged, this, std::placeholders::_1)),
+      m_windowStack(std::bind(&QWasmCompositor::onTopWindowChanged, this)),
       m_blitter(new QOpenGLTextureBlitter),
       m_eventTranslator(std::make_unique<QWasmEventTranslator>())
 {
@@ -174,6 +174,7 @@ void QWasmCompositor::addWindow(QWasmWindow *window)
 {
     m_windowVisibility.insert(window, false);
     m_windowStack.pushWindow(window);
+    m_windowStack.topWindow()->requestActivateWindow();
 }
 
 void QWasmCompositor::removeWindow(QWasmWindow *window)
@@ -181,6 +182,8 @@ void QWasmCompositor::removeWindow(QWasmWindow *window)
     m_windowVisibility.remove(window);
     m_requestUpdateWindows.remove(window);
     m_windowStack.removeWindow(window);
+    if (m_windowStack.topWindow())
+        m_windowStack.topWindow()->requestActivateWindow();
 }
 
 void QWasmCompositor::setVisible(QWasmWindow *window, bool visible)
@@ -755,21 +758,8 @@ void QWasmCompositor::WindowManipulation::resizeWindow(const QPoint& amount)
     ));
 }
 
-void QWasmCompositor::onTopWindowChanged(QWasmWindow *window)
+void QWasmCompositor::onTopWindowChanged()
 {
-    if (!QGuiApplication::focusWindow())
-        window->requestActivateWindow();
-
-    QWindow *modalWindow;
-    const bool isTargetWindowBlocked =
-            QGuiApplicationPrivate::instance()->isWindowBlocked(window->window(), &modalWindow);
-
-    if (isTargetWindowBlocked) {
-        modalWindow->requestActivate();
-        raise(asWasmWindow(modalWindow));
-        return;
-    }
-
     requestUpdate();
 }
 
