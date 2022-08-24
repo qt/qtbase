@@ -356,6 +356,7 @@ Q_GUI_EXPORT QPalette qt_fusionPalette()
     const QColor dark = backGround.darker(150);
     const QColor darkDisabled = QColor(209, 209, 209).darker(110);
     const QColor text = darkAppearance ? windowText : Qt::black;
+    const QColor highlight = QColor(48, 140, 198);
     const QColor hightlightedText = darkAppearance ? windowText : Qt::white;
     const QColor disabledText = darkAppearance ? QColor(130, 130, 130) : QColor(190, 190, 190);
     const QColor button = backGround;
@@ -377,11 +378,15 @@ Q_GUI_EXPORT QPalette qt_fusionPalette()
     fusionPalette.setBrush(QPalette::Disabled, QPalette::Dark, darkDisabled);
     fusionPalette.setBrush(QPalette::Disabled, QPalette::Shadow, disabledShadow);
 
-    fusionPalette.setBrush(QPalette::Active, QPalette::Highlight, QColor(48, 140, 198));
-    fusionPalette.setBrush(QPalette::Inactive, QPalette::Highlight, QColor(48, 140, 198));
+    fusionPalette.setBrush(QPalette::Active, QPalette::Highlight, highlight);
+    fusionPalette.setBrush(QPalette::Inactive, QPalette::Highlight, highlight);
     fusionPalette.setBrush(QPalette::Disabled, QPalette::Highlight, QColor(145, 145, 145));
 
     fusionPalette.setBrush(QPalette::PlaceholderText, placeholder);
+
+    // Use a more legible light blue on dark backgrounds than the default Qt::blue.
+    if (darkAppearance)
+        fusionPalette.setBrush(QPalette::Link, highlight);
 
     return fusionPalette;
 }
