@@ -77,13 +77,9 @@ endfunction()
 
 function(qt_internal_add_test_dependencies target)
     if(QT_BUILD_TESTS_BATCHED)
-        qt_internal_test_batch_target_name(target)
+        _qt_internal_test_batch_target_name(target)
     endif()
     add_dependencies(${target} ${ARGN})
-endfunction()
-
-function(qt_internal_test_batch_target_name out)
-    set(${out} "test_batch" PARENT_SCOPE)
 endfunction()
 
 # Simple wrapper around qt_internal_add_executable for manual tests which insure that
@@ -267,7 +263,7 @@ function(qt_internal_add_test_to_batch batch_name name)
         arg "${optional_args}" "${single_value_args}" "${multi_value_args}" ${ARGN})
     qt_internal_prepare_test_target_flags(version_arg exceptions_text gui_text ${ARGN})
 
-    qt_internal_test_batch_target_name(target)
+    _qt_internal_test_batch_target_name(target)
 
     # Lazy-init the test batch
     if(NOT TARGET ${target})
@@ -705,7 +701,7 @@ for this function. Will be ignored")
 
     set(executable_name ${arg_NAME})
     if(QT_BUILD_TESTS_BATCHED)
-        qt_internal_test_batch_target_name(executable_name)
+        _qt_internal_test_batch_target_name(executable_name)
     endif()
     add_test(NAME "${arg_NAME}" COMMAND "${CMAKE_COMMAND}" "-P" "${arg_OUTPUT_FILE}"
                 WORKING_DIRECTORY "${arg_WORKING_DIRECTORY}")

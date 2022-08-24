@@ -9,7 +9,7 @@ function(qt_internal_extend_target target)
         if(NOT in_batch)
             message(FATAL_ERROR "Trying to extend a non-existing target \"${target}\".")
         endif()
-        qt_internal_test_batch_target_name(target)
+        _qt_internal_test_batch_target_name(target)
     endif()
 
     # Don't try to extend_target when cross compiling an imported host target (like a tool).
@@ -893,7 +893,7 @@ function(qt_internal_undefine_global_definition target)
         if(NOT ${in_batch})
             message(FATAL_ERROR "${target} is not a target.")
         endif()
-        qt_internal_test_batch_target_name(target)
+        _qt_internal_test_batch_target_name(target)
     endif()
 
     if("${ARGN}" STREQUAL "")

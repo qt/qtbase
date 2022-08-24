@@ -102,3 +102,7 @@ if(NOT result EQUAL 0)
 endif()"
     )
 endfunction()
+
+function(_qt_internal_test_batch_target_name out)
+    set(${out} "test_batch" PARENT_SCOPE)
+endfunction()
