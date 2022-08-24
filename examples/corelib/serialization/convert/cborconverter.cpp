@@ -57,6 +57,7 @@ QT_END_NAMESPACE
 
 static QVariant convertCborValue(const QCborValue &value);
 
+//! [0]
 static QVariant convertCborMap(const QCborMap &map)
 {
     VariantOrderedMap result;
@@ -83,8 +84,9 @@ static QVariant convertCborValue(const QCborValue &value)
         return convertCborMap(value.toMap());
     return value.toVariant();
 }
-
+//! [0]
 enum TrimFloatingPoint { Double, Float, Float16 };
+//! [1]
 static QCborValue convertFromVariant(const QVariant &v, TrimFloatingPoint fpTrimming)
 {
     if (v.userType() == QMetaType::QVariantList) {
@@ -114,6 +116,7 @@ static QCborValue convertFromVariant(const QVariant &v, TrimFloatingPoint fpTrim
 
     return QCborValue::fromVariant(v);
 }
+//! [1]
 
 QString CborDiagnosticDumper::name()
 {
@@ -216,6 +219,7 @@ bool CborConverter::probeFile(QIODevice *f)
     return f->isReadable() && f->peek(3) == QByteArray("\xd9\xd9\xf7", 3);
 }
 
+//! [2]
 QVariant CborConverter::loadFile(QIODevice *f, Converter *&outputConverter)
 {
     const char *ptr = nullptr;
@@ -250,9 +254,11 @@ QVariant CborConverter::loadFile(QIODevice *f, Converter *&outputConverter)
         return contents.toVariant();
     return convertCborValue(contents);
 }
-
+//! [2]
+//! [3]
 void CborConverter::saveFile(QIODevice *f, const QVariant &contents, const QStringList &options)
 {
+    //! [3]
     bool useSignature = true;
     bool useIntegers = true;
     enum { Yes, No, Always } useFloat16 = Yes, useFloat = Yes;
@@ -311,7 +317,7 @@ void CborConverter::saveFile(QIODevice *f, const QVariant &contents, const QStri
                 qPrintable(s), optionHelp);
         exit(EXIT_FAILURE);
     }
-
+    //! [4]
     QCborValue v = convertFromVariant(contents,
                                       useFloat16 == Always ? Float16 : useFloat == Always ? Float : Double);
     QCborStreamWriter writer(f);
@@ -327,4 +333,4 @@ void CborConverter::saveFile(QIODevice *f, const QVariant &contents, const QStri
         opts |= QCborValue::UseFloat16;
     v.toCbor(writer, opts);
 }
-
+//! [4]

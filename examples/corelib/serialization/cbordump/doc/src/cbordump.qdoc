@@ -1,0 +1,52 @@
+// Copyright (C) 2022 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \example serialization/cbordump
+    \title Cbordump Example
+
+    \brief The Cbordump example demonstrates how to parse files in CBOR-format.
+
+    The Cbordump example reads from files or stdin content in CBOR-format and
+    dumps the decoded content to stdout. The cbordump utility can output in
+    CBOR diagnostic notation (which is similar to JSON), or it can have a
+    verbose output where each byte input is displayed with the encoding beside
+    it. This example shows how to use the QCborStreamReader class directly to
+    parse CBOR content.
+
+    \sa QCborStreamReader
+
+    \image cbordump.png
+
+    \section1 The Cbordumper Class
+
+    The Cbordumper class contains a QCborStreamReader object that is
+    initialized using the QFile object argument passed to the CborDumper
+    constructor. Based on the arguments the dump function calls either
+    dumpOne() or dumpOneDetailed() to dump the contents to stdout,
+
+    \snippet serialization/cbordump/main.cpp 0
+
+    \section2 The dumpOne() Function
+
+    The type() function of the QCborStreamReader is used in a switch statement
+    to print out for each type. If the type is an array or map, the content is
+    iterated upon, and for each entry the dumpOne() function is called
+    recursively with a higher indentation argument. If the type is a tag, it
+    is printed out and dumpOne() is called once without increasing the
+    indentation argument.
+
+    \section2 The dumpOneDetailed() Function
+
+    This function dumps out both the incoming bytes and the decoded contents
+    on the same line. It uses lambda functions to print out the bytes and
+    decoded content, but otherwise has a similar structure as dumpOne().
+
+    \section1 CborDescription
+
+    The tagDescriptions table, describing the CBOR-tags available, is
+    automatically generated from an XML-file available from the iana.org
+    website.
+
+    \sa {CBOR Support in Qt}
+    */

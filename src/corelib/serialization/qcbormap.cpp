@@ -46,7 +46,8 @@ using namespace QtCbor;
     stringified using a one-way method that the conversion back to QCborMap
     will not undo.
 
-    \sa QCborArray, QCborValue, QJsonDocument, QVariantMap
+    \sa QCborArray, QCborValue, QJsonDocument, QVariantMap, {Cbordump Example}
+    \sa {Convert Example}, {JSON Save Game Example}
  */
 
 /*!

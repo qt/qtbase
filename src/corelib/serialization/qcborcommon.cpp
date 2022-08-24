@@ -179,6 +179,7 @@ QDataStream &operator>>(QDataStream &ds, QCborSimpleType &st)
    validating a CBOR stream.
 
    \sa QCborStreamReader, QCborValue, QCborParserError
+   \sa {Cbordump Example}, {Convert Example}, {JSON Save Game Example}
  */
 
 /*!

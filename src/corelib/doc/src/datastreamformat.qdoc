@@ -67,5 +67,6 @@
     \li QVector4D
     \endlist
 
-    \sa {JSON Support in Qt}
+    \sa {JSON Support in Qt}, {CBOR Support in Qt}
+
 */

@@ -151,7 +151,8 @@ static_assert(int(QCborStreamReader::Invalid) == CborInvalidType);
    parsing from a QByteArray, or reparse(), if it is instead reading directly
    a the QIDOevice that now has more data available (see setDevice()).
 
-   \sa QCborStreamWriter, QCborValue, QXmlStreamReader
+   \sa QCborStreamWriter, QCborValue, QXmlStreamReader, {Cbordump Example}
+   \sa {Convert Example}, {JSON Save Game Example}
  */
 
 /*!
