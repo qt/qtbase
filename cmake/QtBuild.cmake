@@ -548,6 +548,7 @@ if(WASM)
 endif()
 
 # Helpers that are available in public projects and while building Qt itself.
+include(QtPublicAppleHelpers)
 include(QtPublicCMakeHelpers)
 include(QtPublicPluginHelpers)
 include(QtPublicTargetHelpers)

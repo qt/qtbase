@@ -322,6 +322,7 @@ set(__public_cmake_helpers
     cmake/QtCopyFileIfDifferent.cmake
     cmake/QtFeature.cmake
     cmake/QtFeatureCommon.cmake
+    cmake/QtPublicAppleHelpers.cmake
     cmake/QtPublicCMakeHelpers.cmake
     cmake/QtPublicCMakeVersionHelpers.cmake
     cmake/QtPublicFinalizerHelpers.cmake
