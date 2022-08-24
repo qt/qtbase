@@ -49,6 +49,7 @@
 #include <QtCore/qscopeguard.h>
 #include <QtCore/qsocketnotifier.h>
 #include <QtCore/private/qthread_p.h>
+#include <QtCore/private/qcore_mac_p.h>
 
 #include <qpa/qplatformwindow.h>
 #include <qpa/qplatformnativeinterface.h>

@@ -9,6 +9,7 @@
 #include <QtGui/qbitmap.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qdebug.h>
+#include <QtCore/private/qcore_mac_p.h>
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qevent.h>
 #include <QtCore/qurl.h>

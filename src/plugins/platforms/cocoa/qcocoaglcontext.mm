@@ -8,6 +8,8 @@
 #include "qcocoahelpers.h"
 #include "qcocoascreen.h"
 
+#include <QtCore/private/qcore_mac_p.h>
+
 #include <qdebug.h>
 #include <dlfcn.h>
 

@@ -8,6 +8,7 @@
 #include "qcocoahelpers.h"
 #include <QtGui/private/qcoregraphics_p.h>
 #include <QtCore/qsysinfo.h>
+#include <QtCore/private/qcore_mac_p.h>
 
 #include <vector>
 

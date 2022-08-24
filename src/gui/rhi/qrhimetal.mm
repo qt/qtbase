@@ -6,6 +6,8 @@
 #include <QWindow>
 #include <qmath.h>
 
+#include <QtCore/private/qcore_mac_p.h>
+
 #ifdef Q_OS_MACOS
 #include <AppKit/AppKit.h>
 #else

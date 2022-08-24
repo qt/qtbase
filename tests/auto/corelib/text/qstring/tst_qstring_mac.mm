@@ -4,6 +4,8 @@
 #include <QtCore/QString>
 #include <QTest>
 
+#include <QtCore/private/qcore_mac_p.h>
+
 #include <CoreFoundation/CoreFoundation.h>
 #include <Foundation/Foundation.h>
 

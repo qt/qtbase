@@ -13,6 +13,7 @@ qt_internal_add_manual_test(multiwindow_threaded
         multiwindow_threaded.cpp
         window.cpp window.h
     LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
         Qt::Widgets

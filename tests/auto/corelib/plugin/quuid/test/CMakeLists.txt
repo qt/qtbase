@@ -17,6 +17,7 @@ qt_internal_extend_target(tst_quuid CONDITION APPLE
     SOURCES
         ../tst_quuid_darwin.mm
     LIBRARIES
+        Qt::CorePrivate
         ${FWFoundation}
 )
 

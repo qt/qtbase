@@ -80,6 +80,10 @@
 
 #include <qtwidgets_tracepoints_p.h>
 
+#ifdef Q_OS_MACOS
+#include <QtCore/private/qcore_mac_p.h>
+#endif
+
 #include <algorithm>
 #include <iterator>
 

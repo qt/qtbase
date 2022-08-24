@@ -38,6 +38,10 @@
 #include <QtGui/private/qrhimetal_p.h>
 #endif
 
+#ifdef Q_OS_DARWIN
+#include <QtCore/private/qcore_mac_p.h>
+#endif
+
 #include "window.h"
 
 #include "../shared/cube.h"

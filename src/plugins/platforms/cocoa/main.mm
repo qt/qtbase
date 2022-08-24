@@ -8,6 +8,8 @@
 #include "qcocoaintegration.h"
 #include "qcocoatheme.h"
 
+#include <QtCore/private/qcore_mac_p.h>
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;

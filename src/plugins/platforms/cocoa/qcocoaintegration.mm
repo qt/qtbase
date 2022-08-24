@@ -30,6 +30,7 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtGui/qpointingdevice.h>
 
+#include <QtCore/private/qcore_mac_p.h>
 #include <QtGui/private/qcoregraphics_p.h>
 #include <QtGui/private/qopenglcontext_p.h>
 #include <QtGui/private/qrhibackingstore_p.h>

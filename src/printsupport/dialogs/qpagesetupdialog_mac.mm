@@ -13,6 +13,8 @@
 
 #include <QtPrintSupport/private/qprintengine_mac_p.h>
 
+#include <QtCore/private/qcore_mac_p.h>
+
 QT_USE_NAMESPACE
 
 @class QT_MANGLE_NAMESPACE(QCocoaPageLayoutDelegate);

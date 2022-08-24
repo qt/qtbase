@@ -3,6 +3,8 @@
 
 #include <QTest>
 
+#include <QtCore/private/qcore_mac_p.h>
+
 #include <Foundation/Foundation.h>
 
 class tst_QMacAutoreleasePool : public QObject

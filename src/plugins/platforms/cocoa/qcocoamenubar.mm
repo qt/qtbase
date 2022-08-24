@@ -13,6 +13,7 @@
 #include <QtGui/QGuiApplication>
 #include <QtCore/QDebug>
 
+#include <QtCore/private/qcore_mac_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 
 QT_BEGIN_NAMESPACE

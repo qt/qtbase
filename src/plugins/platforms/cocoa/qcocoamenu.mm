@@ -18,6 +18,8 @@
 #include "qcocoascreen.h"
 #include "qcocoaapplicationdelegate.h"
 
+#include <QtCore/private/qcore_mac_p.h>
+
 QT_BEGIN_NAMESPACE
 
 QCocoaMenu::QCocoaMenu() :

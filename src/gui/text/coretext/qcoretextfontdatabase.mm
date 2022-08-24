@@ -13,6 +13,7 @@
 #endif
 
 #include <QtCore/qelapsedtimer.h>
+#include <QtCore/private/qcore_mac_p.h>
 
 #include "qcoretextfontdatabase_p.h"
 #include "qfontengine_coretext_p.h"

@@ -16,6 +16,7 @@
 #include "qcocoamenuloader.h"
 #include <QtGui/private/qcoregraphics_p.h>
 #include <QtCore/qregularexpression.h>
+#include <QtCore/private/qcore_mac_p.h>
 #include <QtGui/private/qapplekeymapper_p.h>
 
 #include <QtCore/QDebug>

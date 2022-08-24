@@ -9,6 +9,7 @@
 #include "qcocoahelpers.h"
 
 #include <QtCore/qmath.h>
+#include <QtCore/private/qcore_mac_p.h>
 #include <QtGui/qpainter.h>
 
 #include <QuartzCore/CATransaction.h>

@@ -63,21 +63,6 @@ Q_CORE_EXPORT Q_DECL_CONST_FUNCTION const char *qVersion(void) Q_DECL_NOEXCEPT;
 
 #if defined(__cplusplus)
 
-#ifdef Q_OS_DARWIN
-
-// Implemented in qcore_mac_objc.mm
-class Q_CORE_EXPORT QMacAutoReleasePool
-{
-public:
-    QMacAutoReleasePool();
-    ~QMacAutoReleasePool();
-private:
-    Q_DISABLE_COPY(QMacAutoReleasePool)
-    void *pool;
-};
-
-#endif // Q_OS_DARWIN
-
 #if 0
 #pragma qt_class(QFunctionPointer)
 #endif

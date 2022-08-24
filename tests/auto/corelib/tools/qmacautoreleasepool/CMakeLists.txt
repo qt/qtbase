@@ -11,5 +11,6 @@ qt_internal_add_test(tst_qmacautoreleasepool
     SOURCES
         tst_qmacautoreleasepool.mm
     LIBRARIES
+        Qt::CorePrivate
         ${FWFoundation}
 )

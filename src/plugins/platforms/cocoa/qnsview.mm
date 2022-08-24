@@ -21,6 +21,7 @@
 #include <QtCore/QPointer>
 #include <QtCore/QSet>
 #include <QtCore/qsysinfo.h>
+#include <QtCore/private/qcore_mac_p.h>
 #include <QtGui/QAccessible>
 #include <QtGui/QImage>
 #include <private/qguiapplication_p.h>

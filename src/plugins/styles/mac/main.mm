@@ -4,6 +4,8 @@
 #include <QtWidgets/qstyleplugin.h>
 #include "qmacstyle_mac_p.h"
 
+#include <QtCore/private/qcore_mac_p.h>
+
 QT_BEGIN_NAMESPACE
 
 class QMacStylePlugin : public QStylePlugin

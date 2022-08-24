@@ -16,6 +16,7 @@
 
 #include <QtGui/private/qwindow_p.h>
 
+#include <QtCore/private/qcore_mac_p.h>
 #include <QtCore/private/qeventdispatcher_cf_p.h>
 
 QT_BEGIN_NAMESPACE

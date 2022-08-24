@@ -18,6 +18,7 @@
 #include <QtCore/qoperatingsystemversion.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qregularexpression.h>
+#include <QtCore/private/qcore_mac_p.h>
 
 #include <QtGui/qguiapplication.h>
 #include <QtGui/private/qguiapplication_p.h>
