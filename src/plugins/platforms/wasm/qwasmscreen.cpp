@@ -44,7 +44,7 @@ QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
         // Create the canvas (for the correct document) as a child of the container
         m_canvas = containerOrCanvas["ownerDocument"].call<emscripten::val>("createElement", std::string("canvas"));
         containerOrCanvas.call<void>("appendChild", m_canvas);
-        std::string screenId = std::string("qtcanvas_") + std::to_string(uint32_t(this));
+        std::string screenId = std::string("qtcanvas_") + std::to_string(uintptr_t(this));
         m_canvas.set("id", screenId);
 
         // Make the canvas occupy 100% of parent
@@ -168,7 +168,7 @@ std::string QWasmScreen::canvasSpecialHtmlTargetId() const
 {
     // Return a globally unique id for the canvas. We can choose any string,
     // as long as it starts with a "!".
-    return std::string("!qtcanvas_") + std::to_string(uint32_t(this));
+    return std::string("!qtcanvas_") + std::to_string(uintptr_t(this));
 }
 
 namespace {

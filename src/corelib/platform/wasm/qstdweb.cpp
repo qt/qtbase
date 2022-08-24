@@ -225,7 +225,7 @@ Uint8Array::Uint8Array(const ArrayBuffer &buffer, uint32_t offset, uint32_t leng
 
 // Constructs a Uint8Array which references an area on the heap.
 Uint8Array::Uint8Array(const char *buffer, uint32_t size)
-:m_uint8Array(Uint8Array::constructor_().new_(Uint8Array::heap().buffer().m_arrayBuffer, uint32_t(buffer), size))
+:m_uint8Array(Uint8Array::constructor_().new_(Uint8Array::heap().buffer().m_arrayBuffer, uintptr_t(buffer), size))
 {
 
 }
