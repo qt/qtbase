@@ -14,12 +14,25 @@ function(_qt_internal_wasm_add_target_helpers target)
             set(WASM_BUILD_DIR "${QT_BUILD_DIR}")
         endif()
 
-        configure_file("${WASM_BUILD_DIR}/plugins/platforms/wasm_shell.html"
-            "${target}.html")
-        configure_file("${WASM_BUILD_DIR}/plugins/platforms/qtloader.js"
-            qtloader.js COPYONLY)
-        configure_file("${WASM_BUILD_DIR}/plugins/platforms/qtlogo.svg"
-            qtlogo.svg COPYONLY)
+        _qt_internal_test_batch_target_name(test_batch_target_name)
+        if(QT_BUILD_TESTS_BATCHED AND target STREQUAL test_batch_target_name)
+            get_target_property(batch_output_dir ${target} RUNTIME_OUTPUT_DIRECTORY)
+            configure_file("${WASM_BUILD_DIR}/libexec/batchedtestrunner.html"
+                           "${batch_output_dir}/batchedtestrunner.html" COPYONLY)
+            configure_file("${WASM_BUILD_DIR}/libexec/batchedtestrunner.js"
+                           "${batch_output_dir}/batchedtestrunner.js" COPYONLY)
+            configure_file("${WASM_BUILD_DIR}/libexec/qwasmjsruntime.js"
+                           "${batch_output_dir}/qwasmjsruntime.js" COPYONLY)
+            configure_file("${WASM_BUILD_DIR}/libexec/util.js"
+                           "${batch_output_dir}/util.js" COPYONLY)
+        else()
+            configure_file("${WASM_BUILD_DIR}/plugins/platforms/wasm_shell.html"
+                           "${target}.html")
+            configure_file("${WASM_BUILD_DIR}/plugins/platforms/qtloader.js"
+                           qtloader.js COPYONLY)
+            configure_file("${WASM_BUILD_DIR}/plugins/platforms/qtlogo.svg"
+                           qtlogo.svg COPYONLY)
+        endif()
 
         if(QT_FEATURE_thread)
             set(POOL_SIZE 4)

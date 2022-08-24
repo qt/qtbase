@@ -39,11 +39,6 @@ function(qt_internal_add_executable name)
             PROPERTY EXCLUDE_FROM_ALL "$<NOT:$<CONFIG:${QT_MULTI_CONFIG_FIRST_CONFIG}>>")
     endif()
 
-    if(WASM)
-        qt_internal_wasm_add_finalizers("${name}")
-        _qt_internal_wasm_add_target_helpers("${name}")
-    endif()
-
     if (arg_VERSION)
         if(arg_VERSION MATCHES "[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+")
             # nothing to do
@@ -142,6 +137,11 @@ function(qt_internal_add_executable name)
     )
 
     qt_internal_set_exceptions_flags("${name}" ${arg_EXCEPTIONS})
+
+    if(WASM)
+        qt_internal_wasm_add_finalizers("${name}")
+        _qt_internal_wasm_add_target_helpers("${name}")
+    endif()
 
     # Check if target needs to be excluded from all target. Also affects qt_install.
     # Set by qt_exclude_tool_directories_from_default_target.

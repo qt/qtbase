@@ -164,3 +164,19 @@ qt_internal_apply_testlib_coverage_options(Test)
 if(QT_FEATURE_private_tests)
     add_subdirectory(doc/snippets/code)
 endif()
+
+if(QT_FEATURE_batch_test_support AND WASM)
+    set(wasm_support_libexec_files)
+    list(APPEND wasm_support_libexec_files
+         ${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/batchedtestrunner.html)
+    list(APPEND wasm_support_libexec_files
+         ${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/batchedtestrunner.js)
+    list(APPEND wasm_support_libexec_files
+         ${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/qwasmjsruntime.js)
+    list(APPEND wasm_support_libexec_files
+         ${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/util.js)
+
+    qt_path_join(libexec_dir ${QT_INSTALL_DIR} ${INSTALL_LIBEXECDIR})
+    qt_copy_or_install(FILES ${wasm_support_libexec_files}
+                       DESTINATION "${libexec_dir}")
+endif()
