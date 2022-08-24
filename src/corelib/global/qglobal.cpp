@@ -807,15 +807,6 @@ const char *qVersion() noexcept
     return QT_VERSION_STR;
 }
 
-bool qSharedBuild() noexcept
-{
-#ifdef QT_SHARED
-    return true;
-#else
-    return false;
-#endif
-}
-
 /*****************************************************************************
   System detection routines
  *****************************************************************************/

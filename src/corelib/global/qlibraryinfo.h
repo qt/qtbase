@@ -53,6 +53,8 @@ private:
     QLibraryInfo();
 };
 
+Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qSharedBuild() noexcept;
+
 QT_END_NAMESPACE
 
 #endif // QLIBRARYINFO_H

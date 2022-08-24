@@ -646,6 +646,15 @@ QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
     \deprecated Use LibraryPath with QLibraryInfo::path() instead.
 */
 
+bool qSharedBuild() noexcept
+{
+#ifdef QT_SHARED
+    return true;
+#else
+    return false;
+#endif
+}
+
 QT_END_NAMESPACE
 
 #if defined(Q_CC_GNU) && defined(ELF_INTERPRETER)

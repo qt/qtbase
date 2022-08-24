@@ -109,8 +109,6 @@ private:
 
 #endif // Q_OS_DARWIN
 
-Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qSharedBuild() noexcept;
-
 /*
    Debugging and error handling
 */
