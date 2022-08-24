@@ -46,3 +46,13 @@
     \externalpage https://www.lunarg.com/vulkan-sdk/
     \title LunarG Vulkan SDK
 */
+
+/*!
+    \externalpage https://developer.android.com/reference/androidx/core/content/FileProvider
+    \title Android: FileProvider
+*/
+
+/*!
+    \externalpage https://developer.android.com/training/secure-file-sharing/setup-sharing.html
+    \title Android: Setting up file sharing
+*/

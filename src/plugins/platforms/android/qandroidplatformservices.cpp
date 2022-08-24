@@ -35,6 +35,11 @@ QAndroidPlatformServices::QAndroidPlatformServices()
             Qt::QueuedConnection);
 }
 
+Q_DECLARE_JNI_TYPE(UriType, "Landroid/net/Uri;")
+Q_DECLARE_JNI_TYPE(FileType, "Ljava/io/File;")
+Q_DECLARE_JNI_CLASS(File, "java/io/File")
+Q_DECLARE_JNI_CLASS(FileProvider, "androidx/core/content/FileProvider");
+
 bool QAndroidPlatformServices::openUrl(const QUrl &theUrl)
 {
     QString mime;
@@ -55,13 +60,36 @@ bool QAndroidPlatformServices::openUrl(const QUrl &theUrl)
     if (url.scheme() == fileScheme)
         mime = QMimeDatabase().mimeTypeForUrl(url).name();
 
+    const QJniObject mimeString = QJniObject::fromString(mime);
+
     using namespace QNativeInterface;
-    QJniObject urlString = QJniObject::fromString(url.toString());
-    QJniObject mimeString = QJniObject::fromString(mime);
-    return QJniObject::callStaticMethod<jboolean>(
-            QtAndroid::applicationClass(), "openURL",
-            "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)Z",
-            QAndroidApplication::context(), urlString.object(), mimeString.object());
+
+    auto openUrl = [mimeString](const QJniObject &url) {
+        return QJniObject::callStaticMethod<jboolean>(QtAndroid::applicationClass(), "openURL",
+            QAndroidApplication::context(), url.object<jstring>(), mimeString.object<jstring>());
+    };
+
+    if (url.scheme() != fileScheme || QNativeInterface::QAndroidApplication::sdkVersion() < 24)
+        return openUrl(QJniObject::fromString(url.toString()));
+
+    // Use FileProvider for file scheme with sdk >= 24
+    const QJniObject context = QAndroidApplication::context();
+    const auto appId = context.callMethod<jstring>("getPackageName").toString();
+    const auto providerName = QJniObject::fromString(appId + ".qtprovider"_L1);
+
+    const auto urlPath = QJniObject::fromString(url.path());
+    const auto urlFile = QJniObject(QtJniTypes::className<QtJniTypes::File>(),
+                                    urlPath.object<jstring>());
+
+    const auto fileProviderUri = QJniObject::callStaticMethod<QtJniTypes::UriType>(
+            QtJniTypes::className<QtJniTypes::FileProvider>(), "getUriForFile",
+            QAndroidApplication::context(), providerName.object<jstring>(),
+            urlFile.object<QtJniTypes::FileType>());
+
+    if (fileProviderUri.isValid())
+        return openUrl(fileProviderUri.callMethod<jstring>("toString"));
+
+    return false;
 }
 
 bool QAndroidPlatformServices::openDocument(const QUrl &url)

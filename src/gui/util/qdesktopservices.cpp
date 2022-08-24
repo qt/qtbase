@@ -162,6 +162,13 @@ void QOpenUrlHandlerRegistry::handlerDestroyed(QObject *handler)
 
     \snippet code/src_gui_util_qdesktopservices.cpp 3
 
+    \note For Android Nougat (SDK 24) and above, URLs with a \c file scheme
+    are opened using \l {Android: FileProvider}{FileProvider} which tries to obtain
+    a shareable \c content scheme URI first. For that reason, Qt for Android defines
+    a file provider with the authority \c ${applicationId}.qtprovider, with \c applicationId
+    being the app's package name to avoid name conflicts. For more information, also see
+    \l {Android: Setting up file sharing}{Setting up file sharing}.
+
     \sa setUrlHandler()
 */
 bool QDesktopServices::openUrl(const QUrl &url)
