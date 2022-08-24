@@ -17,6 +17,8 @@
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <QtCore/qcalendar.h>
+#include <QtCore/qdatetime.h>
+#include <QtCore/qtimezone.h>
 #include "QtWidgets/qcalendarwidget.h"
 #include "QtWidgets/qspinbox.h"
 #include "QtWidgets/qtoolbutton.h"
@@ -34,7 +36,7 @@ class Q_AUTOTEST_EXPORT QDateTimeEditPrivate : public QAbstractSpinBoxPrivate, p
 {
     Q_DECLARE_PUBLIC(QDateTimeEdit)
 public:
-    QDateTimeEditPrivate(Qt::TimeSpec timeSpec = Qt::LocalTime);
+    QDateTimeEditPrivate(const QTimeZone &zone = QTimeZone::LocalTime);
 
     void init(const QVariant &var);
     void readLocaleSettings();
@@ -58,22 +60,8 @@ public:
 
     // Override QDateTimeParser:
     QString displayText() const override { return edit->text(); }
-    QDateTime getMinimum() const override
-    {
-        if (keyboardTracking)
-            return minimum.toDateTime();
-        if (spec != Qt::LocalTime)
-            return QDateTime(QDATETIMEEDIT_DATE_MIN.startOfDay(spec));
-        return QDateTimeParser::getMinimum();
-    }
-    QDateTime getMaximum() const override
-    {
-        if (keyboardTracking)
-            return maximum.toDateTime();
-        if (spec != Qt::LocalTime)
-            return QDateTime(QDATETIMEEDIT_DATE_MAX.endOfDay(spec));
-        return QDateTimeParser::getMaximum();
-    }
+    QDateTime getMinimum() const override;
+    QDateTime getMaximum() const override;
     QLocale locale() const override { return q_func()->locale(); }
     int cursorPosition() const override { return edit ? edit->cursorPosition() : -1; }
 
@@ -87,9 +75,10 @@ public:
 
     void updateCache(const QVariant &val, const QString &str) const;
 
-    QDateTime convertTimeSpec(const QDateTime &datetime);
-    void updateTimeSpec();
+    QDateTime convertTimeZone(const QDateTime &datetime);
+    void updateTimeZone();
     QString valueToText(const QVariant &var) const { return textFromValue(var); }
+    QDateTime dateTimeValue(QDate date, QTime time) const;
 
     void _q_resetButton();
     void updateArrow(QStyle::StateFlag state);
@@ -117,7 +106,7 @@ public:
     bool focusOnButton = false;
 #endif
 
-    Qt::TimeSpec spec;
+    QTimeZone timeZone;
 };
 
 

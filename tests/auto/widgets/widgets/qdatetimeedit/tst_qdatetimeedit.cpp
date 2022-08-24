@@ -1316,7 +1316,7 @@ void tst_QDateTimeEdit::editingRanged_data()
         << QDate(2010, 12, 30) << QTime()
         << QDate(2011, 1, 2) << QTime()
         << QString::fromLatin1("01012011")
-        << QDateTime(QDate(2011, 1, 1), QTime(), Qt::UTC);
+        << QDateTime(QDate(2011, 1, 1), QTime(), QTimeZone::UTC);
 }
 
 void tst_QDateTimeEdit::editingRanged()
@@ -3523,7 +3523,7 @@ void tst_QDateTimeEdit::timeSpec()
     QCOMPARE(edit.timeSpec(), Qt::LocalTime);
     const QDateTime utc = dt.toUTC();
     if (dt.time() != utc.time()) {
-        const QDateTime min(QDate(1999, 1, 1), QTime(1, 0, 0), Qt::LocalTime);
+        const QDateTime min(QDate(1999, 1, 1), QTime(1, 0));
         edit.setMinimumDateTime(min);
         QCOMPARE(edit.minimumTime(), min.time());
         if (useSetProperty) {
@@ -3553,51 +3553,31 @@ void tst_QDateTimeEdit::timeSpecBug()
 
 void tst_QDateTimeEdit::timeSpecInit()
 {
-    QDateTime utc(QDate(2000, 1, 1), QTime(12, 0, 0), Qt::UTC);
+    QDateTime utc(QDate(2000, 1, 1), QTime(12, 0), QTimeZone::UTC);
     QDateTimeEdit widget(utc);
     QCOMPARE(widget.dateTime(), utc);
 }
 
 void tst_QDateTimeEdit::setDateTime_data()
 {
+    QDateTime localNoon(QDate(2019, 12, 24), QTime(12, 0));
+    // TODO QTBUG-80417: port away from spec, to use QTimeZone instead.
     QTest::addColumn<Qt::TimeSpec>("spec");
-    QDateTime localNoon(QDate(2019, 12, 24), QTime(12, 0), Qt::LocalTime);
-#if 0 // Not yet supported
-    QTest::addColumn<int>("offset");
-    QTest::addColumn<QByteArray>("zoneName");
-
-    QTest::newRow("OffsetFromUTC/LocalTime")
-        << Qt::OffsetFromUTC << 7200 << ""
-        << localNoon << localNoon.toOffsetFromUtc(7200);
-#if QT_CONFIG(timezone)
-    QTest::newRow("TimeZone/LocalTime")
-        << Qt::TimeZone << 0 << "Europe/Berlin"
-        << localNoon << localNoon.toTimeZone(QTimeZone("Europe/Berlin"));
-#endif
-#endif // unsupported
     QTest::addColumn<QDateTime>("store");
     QTest::addColumn<QDateTime>("expect");
     QTest::newRow("LocalTime/LocalTime")
-        << Qt::LocalTime // << 0 << ""
-        << localNoon << localNoon;
+        << Qt::LocalTime << localNoon << localNoon;
     QTest::newRow("LocalTime/UTC")
-        << Qt::LocalTime // << 0 << ""
-        << localNoon.toUTC() << localNoon;
+        << Qt::LocalTime << localNoon.toUTC() << localNoon;
     QTest::newRow("UTC/LocalTime")
-        << Qt::UTC // << 0 << ""
-        << localNoon << localNoon.toUTC();
+        << Qt::UTC << localNoon << localNoon.toUTC();
     QTest::newRow("UTC/UTC")
-        << Qt::UTC // << 0 << ""
-        << localNoon.toUTC() << localNoon.toUTC();
+        << Qt::UTC << localNoon.toUTC() << localNoon.toUTC();
 }
 
 void tst_QDateTimeEdit::setDateTime()
 {
     QFETCH(const Qt::TimeSpec, spec);
-#if 0 // Not yet supported
-    QFETCH(const int, offset);
-    QFETCH(const QByteArray, zoneName);
-#endif // configuring the spec, when OffsetFromUTC or TimeZone
     QFETCH(const QDateTime, store);
     QFETCH(const QDateTime, expect);
     QDateTimeEdit editor;
@@ -3798,7 +3778,7 @@ void tst_QDateTimeEdit::focusNextPrevChild()
 void tst_QDateTimeEdit::taskQTBUG_12384_timeSpecShowTimeOnly()
 {
     QDateTime time = QDateTime::fromString("20100723 04:02:40", "yyyyMMdd hh:mm:ss");
-    time.setTimeSpec(Qt::UTC);
+    time.setTimeZone(QTimeZone::UTC);
 
     EditorDateEdit edit;
     edit.setDisplayFormat("hh:mm:ss");
