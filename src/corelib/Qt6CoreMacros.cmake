@@ -805,8 +805,11 @@ function(_qt_internal_handle_ios_launch_screen target)
 
         # Save the launch screen name, so its value is added as an UILaunchStoryboardName entry
         # in the Qt generated Info.plist file.
+        # Xcode expects an Info.plist storyboard entry without an extension.
+        get_filename_component(launch_screen_base_name "${launch_screen}" NAME_WE)
         set_target_properties("${target}" PROPERTIES
                               _qt_ios_launch_screen_name "${launch_screen_name}"
+                              _qt_ios_launch_screen_base_name "${launch_screen_base_name}"
                               _qt_ios_launch_screen_path "${final_launch_screen_path}")
     endif()
 endfunction()
@@ -1247,9 +1250,9 @@ function(_qt_internal_generate_ios_info_plist target)
     set(info_plist_out "${info_plist_out_dir}/Info.plist")
 
     # Check if we need to specify a custom launch screen storyboard entry.
-    get_target_property(launch_screen_name "${target}" _qt_ios_launch_screen_name)
-    if(launch_screen_name)
-        set(qt_ios_launch_screen_plist_entry "${launch_screen_name}")
+    get_target_property(launch_screen_base_name "${target}" _qt_ios_launch_screen_base_name)
+    if(launch_screen_base_name)
+        set(qt_ios_launch_screen_plist_entry "${launch_screen_base_name}")
     endif()
 
     # Call configure_file to substitute Qt-specific @FOO@ values, not ${FOO} values.
