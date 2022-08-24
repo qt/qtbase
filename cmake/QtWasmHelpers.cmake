@@ -12,6 +12,11 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
 
     target_link_libraries("${wasmTarget}" INTERFACE embind)
 
+    ## wasm64
+    if (WASM64)
+        target_compile_options("${wasmTarget}" INTERFACE "SHELL:-s MEMORY64=1" )
+        target_link_options("${wasmTarget}" INTERFACE   "SHELL:-s MEMORY64=1" -mwasm64)
+    endif()
     # Enable MODULARIZE and set EXPORT_NAME, which makes it possible to
     # create application instances using a global constructor function,
     # e.g. let app_instance = await createQtAppInstance().

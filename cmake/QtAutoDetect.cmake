@@ -21,7 +21,7 @@ endfunction()
 
 include("${CMAKE_CURRENT_LIST_DIR}/QtPublicWasmToolchainHelpers.cmake")
 function(qt_auto_detect_wasm)
-    if("${QT_QMAKE_TARGET_MKSPEC}" STREQUAL "wasm-emscripten")
+    if("${QT_QMAKE_TARGET_MKSPEC}" STREQUAL "wasm-emscripten" OR "${QT_QMAKE_TARGET_MKSPEC}" STREQUAL "wasm-emscripten-64")
         if (NOT DEFINED ENV{EMSDK})
             message(FATAL_ERROR
                 "Can't find an Emscripten SDK! Make sure the EMSDK environment variable is "

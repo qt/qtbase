@@ -341,6 +341,8 @@
 #  define Q_PROCESSOR_WORDSIZE 8
 #ifdef QT_COMPILER_SUPPORTS_SSE2
 #  define Q_PROCESSOR_X86 6   // enables SIMD support
+# define Q_PROCESSOR_X86_64 // wasm64
+#  define Q_PROCESSOR_WASM_64
 #endif
 
 #endif
