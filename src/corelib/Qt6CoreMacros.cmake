@@ -1199,6 +1199,20 @@ function(_qt_internal_set_xcode_bundle_display_name target)
     set(QT_INTERNAL_DOLLAR_VAR "$" CACHE STRING "")
 endfunction()
 
+# Adds ${PRODUCT_NAME} to the Info.plist file, which is then evaluated by Xcode itself.
+function(_qt_internal_set_xcode_bundle_name target)
+    if(QT_NO_SET_XCODE_BUNDLE_NAME)
+        return()
+    endif()
+
+    get_target_property(existing_bundle_name "${target}" MACOSX_BUNDLE_BUNDLE_NAME)
+    if(NOT MACOSX_BUNDLE_BUNDLE_NAME AND NOT existing_bundle_name)
+        set_target_properties("${target}"
+                              PROPERTIES
+                              MACOSX_BUNDLE_BUNDLE_NAME "\${PRODUCT_NAME}")
+    endif()
+endfunction()
+
 function(_qt_internal_set_xcode_bitcode_enablement target)
     if(CMAKE_XCODE_ATTRIBUTE_ENABLE_BITCODE
         OR QT_NO_SET_XCODE_ENABLE_BITCODE)
@@ -1287,6 +1301,7 @@ function(_qt_internal_finalize_apple_app target)
     _qt_internal_set_xcode_development_team_id("${target}")
     _qt_internal_set_xcode_bundle_identifier("${target}")
     _qt_internal_set_xcode_code_sign_style("${target}")
+    _qt_internal_set_xcode_bundle_name("${target}")
     _qt_internal_set_xcode_bundle_display_name("${target}")
     _qt_internal_set_xcode_install_path("${target}")
     _qt_internal_set_placeholder_apple_bundle_version("${target}")
