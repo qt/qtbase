@@ -282,6 +282,25 @@ Qt::LayoutDirection QTextInlineObject::textDirection() const
 */
 
 /*!
+    \enum QTextLayout::GlyphRunRetrievalFlag
+
+    GlyphRunRetrievalFlag specifies flags passed to the glyphRuns() functions to determine
+    which properties of the layout are returned in the QGlyphRun objects. Since each property
+    will consume memory and may require additional allocations, it is a good practice to only
+    request the properties you will need to access later.
+
+    \value RetrieveGlyphIndexes Retrieves the indexes in the font which correspond to the glyphs.
+    \value RetrieveGlyphPositions Retrieves the relative positions of the glyphs in the layout.
+    \value RetrieveStringIndexes Retrieves the indexes in the original string that correspond to
+           each of the glyphs.
+    \value RetrieveString Retrieves the original source string from the layout.
+    \value RetrieveAll Retrieves all available properties of the layout.
+    \omitvalue DefaultRetrievalFlags
+
+    \sa glyphRuns(), QTextLine::glyphRuns()
+*/
+
+/*!
     \fn QTextEngine *QTextLayout::engine() const
     \internal
 
@@ -961,7 +980,9 @@ static inline QRectF clipIfValid(const QRectF &rect, const QRectF &clip)
 }
 
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 /*!
+    \overload
     Returns the glyph indexes and positions for all glyphs corresponding to the \a length characters
     starting at the position \a from in this QTextLayout. This is an expensive function, and should
     not be called in a time sensitive context.
@@ -969,12 +990,44 @@ static inline QRectF clipIfValid(const QRectF &rect, const QRectF &clip)
     If \a from is less than zero, then the glyph run will begin at the first character in the
     layout. If \a length is less than zero, it will span the entire string from the start position.
 
+    \note This is equivalent to calling
+    glyphRuns(from,
+              length,
+              QTextLayout::GlyphRunRetrievalFlag::GlyphIndexes |
+                QTextLayout::GlyphRunRetrievalFlag::GlyphPositions).
+
     \since 4.8
 
     \sa draw(), QPainter::drawGlyphRun()
 */
-#if !defined(QT_NO_RAWFONT)
+#  if !defined(QT_NO_RAWFONT)
 QList<QGlyphRun> QTextLayout::glyphRuns(int from, int length) const
+{
+    return glyphRuns(from, length, QTextLayout::GlyphRunRetrievalFlag::DefaultRetrievalFlags);
+}
+#  endif
+#endif
+
+/*!
+    \overload
+    Returns the glyph indexes and positions for all glyphs corresponding to the \a length characters
+    starting at the position \a from in this QTextLayout. This is an expensive function, and should
+    not be called in a time sensitive context.
+
+    If \a from is less than zero, then the glyph run will begin at the first character in the
+    layout. If \a length is less than zero, it will span the entire string from the start position.
+
+    The \a retrievalFlags specifies which properties of the QGlyphRun will be retrieved from the
+    layout. To minimize allocations and memory consumption, this should be set to include only the
+    properties that you need to access later.
+
+    \since 6.5
+    \sa draw(), QPainter::drawGlyphRun()
+*/
+#if !defined(QT_NO_RAWFONT)
+QList<QGlyphRun> QTextLayout::glyphRuns(int from,
+                                        int length,
+                                        QTextLayout::GlyphRunRetrievalFlags retrievalFlags) const
 {
     if (from < 0)
         from = 0;
@@ -986,10 +1039,11 @@ QList<QGlyphRun> QTextLayout::glyphRuns(int from, int length) const
         if (d->lines.at(i).from > from + length)
             break;
         else if (d->lines.at(i).from + d->lines[i].length >= from) {
-            QList<QGlyphRun> glyphRuns = QTextLine(i, d).glyphRuns(from, length);
+            QList<QGlyphRun> glyphRuns = QTextLine(i, d).glyphRuns(from, length, retrievalFlags);
 
             for (int j = 0; j < glyphRuns.size(); j++) {
                 const QGlyphRun &glyphRun = glyphRuns.at(j);
+
                 QRawFont rawFont = glyphRun.rawFont();
 
                 QFontEngine *fontEngine = rawFont.d->fontEngine;
@@ -1002,14 +1056,17 @@ QList<QGlyphRun> QTextLayout::glyphRuns(int from, int length) const
                 } else {
                     QList<quint32> indexes = oldGlyphRun.glyphIndexes();
                     QList<QPointF> positions = oldGlyphRun.positions();
+                    QList<qsizetype> stringIndexes = oldGlyphRun.stringIndexes();
                     QRectF boundingRect = oldGlyphRun.boundingRect();
 
                     indexes += glyphRun.glyphIndexes();
                     positions += glyphRun.positions();
+                    stringIndexes += glyphRun.stringIndexes();
                     boundingRect = boundingRect.united(glyphRun.boundingRect());
 
                     oldGlyphRun.setGlyphIndexes(indexes);
                     oldGlyphRun.setPositions(positions);
+                    oldGlyphRun.setStringIndexes(stringIndexes);
                     oldGlyphRun.setBoundingRect(boundingRect);
                 }
             }
@@ -2186,9 +2243,11 @@ static void setPenAndDrawBackground(QPainter *p, const QPen &defaultPen, const Q
 
 #if !defined(QT_NO_RAWFONT)
 static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine,
+                                  const QString &text,
                                   const QGlyphLayout &glyphLayout,
                                   const QPointF &pos,
                                   const QGlyphRun::GlyphRunFlags &flags,
+                                  QTextLayout::GlyphRunRetrievalFlags retrievalFlags,
                                   QFixed selectionX,
                                   QFixed selectionWidth,
                                   int glyphsStart,
@@ -2204,14 +2263,15 @@ static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine,
     QGlyphRunPrivate *d = QGlyphRunPrivate::get(glyphRun);
 
     int rangeStart = textPosition;
-    while (*logClusters != glyphsStart && rangeStart < textPosition + textLength) {
-        ++logClusters;
+    int logClusterIndex = 0;
+    while (logClusters[logClusterIndex] != glyphsStart && rangeStart < textPosition + textLength) {
+        ++logClusterIndex;
         ++rangeStart;
     }
 
     int rangeEnd = rangeStart;
-    while (*logClusters != glyphsEnd && rangeEnd < textPosition + textLength) {
-        ++logClusters;
+    while (logClusters[logClusterIndex] != glyphsEnd && rangeEnd < textPosition + textLength) {
+        ++logClusterIndex;
         ++rangeEnd;
     }
 
@@ -2244,14 +2304,43 @@ static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine,
     qreal minY = 0;
     qreal maxY = 0;
     QList<quint32> glyphs;
-    glyphs.reserve(glyphsArray.size());
+    if (retrievalFlags & QTextLayout::RetrieveGlyphIndexes)
+        glyphs.reserve(glyphsArray.size());
     QList<QPointF> positions;
-    positions.reserve(glyphsArray.size());
-    for (int i=0; i<glyphsArray.size(); ++i) {
-        glyphs.append(glyphsArray.at(i) & 0xffffff);
+    if (retrievalFlags & QTextLayout::RetrieveGlyphPositions)
+        positions.reserve(glyphsArray.size());
+    QList<qsizetype> stringIndexes;
+    if (retrievalFlags & QTextLayout::RetrieveStringIndexes)
+        stringIndexes.reserve(glyphsArray.size());
+
+    int nextClusterIndex = 0;
+    int currentClusterIndex = 0;
+    for (int i = 0; i < glyphsArray.size(); ++i) {
+        const int glyphArrayIndex = i + glyphsStart;
+        // Search for the next cluster in the string (or the end of string if there are no
+        // more clusters)
+        if (retrievalFlags & QTextLayout::RetrieveStringIndexes) {
+            if (nextClusterIndex < textLength && logClusters[nextClusterIndex] == glyphArrayIndex) {
+                currentClusterIndex = nextClusterIndex; // Store current cluster
+                while (logClusters[nextClusterIndex] == glyphArrayIndex && nextClusterIndex < textLength)
+                    ++nextClusterIndex;
+            }
+
+            // We are now either at end of string (no more clusters) or we are not yet at the
+            // next cluster in glyph array. We fill in current cluster so that there is always one
+            // entry in stringIndexes for each glyph.
+            Q_ASSERT(nextClusterIndex == textLength || logClusters[nextClusterIndex] != glyphArrayIndex);
+            stringIndexes.append(textPosition + currentClusterIndex);
+        }
+
+        if (retrievalFlags & QTextLayout::RetrieveGlyphIndexes) {
+            glyph_t glyphIndex = glyphsArray.at(i) & 0xffffff;
+            glyphs.append(glyphIndex);
+        }
 
         QPointF position = positionsArray.at(i).toPointF() + pos;
-        positions.append(position);
+        if (retrievalFlags & QTextLayout::RetrieveGlyphPositions)
+            positions.append(position);
 
         if (i == 0) {
             maxY = minY = position.y();
@@ -2263,8 +2352,14 @@ static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine,
 
     qreal height = maxY + fontHeight - minY;
 
-    glyphRun.setGlyphIndexes(glyphs);
-    glyphRun.setPositions(positions);
+    if (retrievalFlags & QTextLayout::RetrieveGlyphIndexes)
+        glyphRun.setGlyphIndexes(glyphs);
+    if (retrievalFlags & QTextLayout::RetrieveGlyphPositions)
+        glyphRun.setPositions(positions);
+    if (retrievalFlags & QTextLayout::RetrieveStringIndexes)
+        glyphRun.setStringIndexes(stringIndexes);
+    if (retrievalFlags & QTextLayout::RetrieveString)
+        glyphRun.setSourceString(text);
     glyphRun.setFlags(flags);
     glyphRun.setRawFont(font);
 
@@ -2274,7 +2369,9 @@ static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine,
     return glyphRun;
 }
 
+#  if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 /*!
+    \overload
     Returns the glyph indexes and positions for all glyphs in this QTextLine for characters
     in the range defined by \a from and \a length. The \a from index is relative to the beginning
     of the text in the containing QTextLayout, and the range must be within the range of QTextLine
@@ -2283,11 +2380,42 @@ static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine,
     If \a from is negative, it will default to textStart(), and if \a length is negative it will
     default to the return value of textLength().
 
+    \note This is equivalent to calling
+    glyphRuns(from,
+              length,
+              QTextLayout::GlyphRunRetrievalFlag::GlyphIndexes |
+                QTextLayout::GlyphRunRetrievalFlag::GlyphPositions).
+
     \since 5.0
 
     \sa QTextLayout::glyphRuns()
 */
 QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
+{
+    return glyphRuns(from, length, QTextLayout::GlyphRunRetrievalFlag::DefaultRetrievalFlags);
+}
+#  endif
+
+/*!
+    Returns the glyph indexes and positions for all glyphs in this QTextLine for characters
+    in the range defined by \a from and \a length. The \a from index is relative to the beginning
+    of the text in the containing QTextLayout, and the range must be within the range of QTextLine
+    as given by functions textStart() and textLength().
+
+    The \a retrievalFlags specifies which properties of the QGlyphRun will be retrieved from the
+    layout. To minimize allocations and memory consumption, this should be set to include only the
+    properties that you need to access later.
+
+    If \a from is negative, it will default to textStart(), and if \a length is negative it will
+    default to the return value of textLength().
+
+    \since 6.5
+
+    \sa QTextLayout::glyphRuns()
+*/
+QList<QGlyphRun> QTextLine::glyphRuns(int from,
+                                      int length,
+                                      QTextLayout::GlyphRunRetrievalFlags retrievalFlags) const
 {
     const QScriptLine &line = eng->lines.at(index);
 
@@ -2405,9 +2533,11 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
                         subFlags |= QGlyphRun::SplitLigature;
 
                     glyphRuns.append(glyphRunWithInfo(multiFontEngine->engine(which),
+                                                      eng->text,
                                                       subLayout,
                                                       pos,
                                                       subFlags,
+                                                      retrievalFlags,
                                                       x,
                                                       width,
                                                       glyphsStart + start,
@@ -2435,9 +2565,11 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
                     subFlags |= QGlyphRun::SplitLigature;
 
                 QGlyphRun glyphRun = glyphRunWithInfo(multiFontEngine->engine(which),
+                                                      eng->text,
                                                       subLayout,
                                                       pos,
                                                       subFlags,
+                                                      retrievalFlags,
                                                       x,
                                                       width,
                                                       glyphsStart + start,
@@ -2451,9 +2583,11 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
                 if (startsInsideLigature || endsInsideLigature)
                     flags |= QGlyphRun::SplitLigature;
                 QGlyphRun glyphRun = glyphRunWithInfo(mainFontEngine,
+                                                      eng->text,
                                                       glyphLayout,
                                                       pos,
                                                       flags,
+                                                      retrievalFlags,
                                                       x,
                                                       width,
                                                       glyphsStart,

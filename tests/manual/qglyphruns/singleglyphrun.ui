@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SingleGlyphRun</class>
+ <widget class="QWidget" name="SingleGlyphRun">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>599</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <widget class="QTableWidget" name="twGlyphRun">
+     <column>
+      <property name="text">
+       <string>Glyph index</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Glyph position</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>String index</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Unicode</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Character</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Font glyph</string>
+      </property>
+     </column>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

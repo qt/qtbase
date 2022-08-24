@@ -69,6 +69,17 @@ class QTextOption;
 class Q_GUI_EXPORT QTextLayout
 {
 public:
+    enum GlyphRunRetrievalFlag {
+        RetrieveGlyphIndexes    = 0x1,
+        RetrieveGlyphPositions  = 0x2,
+        RetrieveStringIndexes   = 0x4,
+        RetrieveString          = 0x8,
+
+        DefaultRetrievalFlags   = RetrieveGlyphIndexes | RetrieveGlyphPositions,
+        RetrieveAll             = 0xffff
+    };
+    Q_DECLARE_FLAGS(GlyphRunRetrievalFlags, GlyphRunRetrievalFlag)
+
     // does itemization
     QTextLayout();
     QTextLayout(const QString& text);
@@ -148,7 +159,15 @@ public:
     qreal maximumWidth() const;
 
 #if !defined(QT_NO_RAWFONT)
+
+#  if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    QList<QGlyphRun> glyphRuns(int from, int length, GlyphRunRetrievalFlags flags) const;
     QList<QGlyphRun> glyphRuns(int from = -1, int length = -1) const;
+#  else
+    QList<QGlyphRun> glyphRuns(int from = -1,
+                               int length = -1,
+                               GlyphRunRetrievalFlags flags = GlyphRunRetrievalFlag::DefaultRetrievalFlags) const;
+#  endif
 #endif
 
     QTextEngine *engine() const { return d; }
@@ -166,7 +185,7 @@ private:
     QTextEngine *d;
 };
 Q_DECLARE_TYPEINFO(QTextLayout::FormatRange, Q_RELOCATABLE_TYPE);
-
+Q_DECLARE_OPERATORS_FOR_FLAGS(QTextLayout::GlyphRunRetrievalFlags)
 
 class Q_GUI_EXPORT QTextLine
 {
@@ -219,7 +238,14 @@ public:
     void draw(QPainter *painter, const QPointF &position) const;
 
 #if !defined(QT_NO_RAWFONT)
+#  if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    QList<QGlyphRun> glyphRuns(int from, int length, QTextLayout::GlyphRunRetrievalFlags flags) const;
     QList<QGlyphRun> glyphRuns(int from = -1, int length = -1) const;
+#  else
+    QList<QGlyphRun> glyphRuns(int from = -1,
+                               int length = -1,
+                               QTextLayout::GlyphRunRetrievalFlags flags = QTextLayout::GlyphRunRetrievalFlag::Default) const;
+#  endif
 #endif
 
 private:

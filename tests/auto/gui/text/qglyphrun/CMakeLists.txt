@@ -13,6 +13,7 @@ set_source_files_properties("../../../shared/resources/test.ttf"
 )
 set(testdata_resource_files
     "../../../shared/resources/test.ttf"
+    "Ligatures.otf"
 )
 
 qt_internal_add_test(tst_qglyphrun

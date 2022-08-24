@@ -74,6 +74,12 @@ public:
     void setBoundingRect(const QRectF &boundingRect);
     QRectF boundingRect() const;
 
+    QList<qsizetype> stringIndexes() const;
+    void setStringIndexes(const QList<qsizetype> &stringIndexes);
+
+    void setSourceString(const QString &sourceString);
+    QString sourceString() const;
+
     bool isEmpty() const;
 
 private:

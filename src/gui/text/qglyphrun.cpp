@@ -465,7 +465,72 @@ QRectF QGlyphRun::boundingRect() const
 */
 bool QGlyphRun::isEmpty() const
 {
-    return d->glyphIndexDataSize == 0;
+    return d->glyphIndexDataSize == 0
+            && d->glyphPositionDataSize == 0
+            && d->stringIndexes.isEmpty()
+            && d->sourceString.isEmpty();
+}
+
+/*!
+    Returns the string indexes corresponding to each glyph index, if the glyph run has been
+    constructed from a string and string indexes have been requested from the layout. In this case,
+    the length of the returned vector will correspond to the length of glyphIndexes(). In other
+    cases, it will be empty.
+
+    Since a single glyph may correspond to multiple characters in the source string, there may be
+    gaps in the list of string indexes. For instance, if the string "first" is processed by a font
+    which contains a ligature for the character pair "fi", then the five character string will
+    generate a glyph run consisting of only four glyphs. Then the glyph indexes may in this case be
+    (1, 2, 3, 4) (four arbitrary glyph indexes) whereas the string indexes would be (0, 2, 3, 4).
+    The glyphs are in the logical order of the string, thus it is implied that the first glyphs
+    spans characters 0 and 1 in this case.
+
+    Inversely, a single character may also generate multiple glyphs, in which case there will be
+    duplicate entries in the list of string indexes.
+
+    The string indexes correspond to the string, optionally available through sourceString().
+
+    \sa setStringIndexes(), sourceString(), QTextLayout::glyphRuns()
+*/
+QList<qsizetype> QGlyphRun::stringIndexes() const
+{
+    return d->stringIndexes;
+}
+
+/*!
+   Sets the list of string indexes corresponding to the glyph indexes to \a stringIndexes
+
+   See stringIndexes() for more details on the conventions of this list.
+
+   \sa sourceString()
+ */
+void QGlyphRun::setStringIndexes(const QList<qsizetype> &stringIndexes)
+{
+    detach();
+    d->stringIndexes = stringIndexes;
+}
+
+/*!
+    Returns the string corresponding to the glyph run, if the glyph run has been created from
+    a string and the string has been requested from the layout.
+
+    \sa setSourceString(), stringIndexes(), QTextLayout::glyphRuns()
+ */
+QString QGlyphRun::sourceString() const
+{
+    return d->sourceString;
+}
+
+/*!
+    Set the string corresponding to the glyph run to \a sourceString. If set, the indexes returned
+    by stringIndexes() should be indexes into this string.
+
+    \sa sourceString(), stringIndexes()
+ */
+void QGlyphRun::setSourceString(const QString &sourceString)
+{
+    detach();
+    d->sourceString = sourceString;
 }
 
 QT_END_NAMESPACE

@@ -42,8 +42,10 @@ public:
       : QSharedData(other)
       , glyphIndexes(other.glyphIndexes)
       , glyphPositions(other.glyphPositions)
+      , stringIndexes(other.stringIndexes)
       , rawFont(other.rawFont)
       , boundingRect(other.boundingRect)
+      , sourceString(other.sourceString)
       , flags(other.flags)
       , glyphIndexData(other.glyphIndexData)
       , glyphIndexDataSize(other.glyphIndexDataSize)
@@ -56,8 +58,10 @@ public:
 
     QList<quint32> glyphIndexes;
     QList<QPointF> glyphPositions;
+    QList<qsizetype> stringIndexes;
     QRawFont rawFont;
     QRectF boundingRect;
+    QString sourceString;
 
     QGlyphRun::GlyphRunFlags flags;
 
