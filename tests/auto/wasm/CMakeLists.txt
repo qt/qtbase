@@ -10,7 +10,6 @@ qt_internal_add_test(tst_localfileapi
         tst_localfileapi.cpp
     DEFINES
         QT_NO_FOREACH
-        QT_NO_KEYWORDS
     LIBRARIES
         Qt::GuiPrivate
         Qt::Core
