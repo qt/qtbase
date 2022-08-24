@@ -712,25 +712,6 @@ using namespace Qt::StringLiterals;
     \sa quint64, Q_INT64_C()
 */
 
-/*! \typedef qlonglong
-    \relates <QtGlobal>
-
-    Typedef for \c{long long int} (\c __int64 on Windows). This is
-    the same as \l qint64.
-
-    \sa qulonglong, qint64
-*/
-
-/*!
-    \typedef qulonglong
-    \relates <QtGlobal>
-
-    Typedef for \c{unsigned long long int} (\c{unsigned __int64} on
-    Windows). This is the same as \l quint64.
-
-    \sa quint64, qlonglong
-*/
-
 /*! \fn template <typename T> T qAbs(const T &t)
     \relates <QtNumeric>
 

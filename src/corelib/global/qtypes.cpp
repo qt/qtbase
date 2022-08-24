@@ -148,6 +148,25 @@ QT_BEGIN_NAMESPACE
     \sa qptrdiff, qint32, qint64
 */
 
+/*! \typedef qlonglong
+    \relates <QtTypes>
+
+    Typedef for \c{long long int} (\c __int64 on Windows). This is
+    the same as \l qint64.
+
+    \sa qulonglong, qint64
+*/
+
+/*!
+    \typedef qulonglong
+    \relates <QtTypes>
+
+    Typedef for \c{unsigned long long int} (\c{unsigned __int64} on
+    Windows). This is the same as \l quint64.
+
+    \sa quint64, qlonglong
+*/
+
 /*!
     \macro PRIdQINTPTR
     \macro PRIiQINTPTR
