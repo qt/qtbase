@@ -1,0 +1,78 @@
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \group cbor
+    \title CBOR Support in Qt
+    \ingroup qt-basic-concepts
+    \brief An overview of CBOR support in Qt.
+
+    \ingroup frameworks-technologies
+
+    \keyword CBOR
+
+    Qt provides support for dealing with CBOR data. CBOR is a binary format to
+    store data that has a superset of the types available in JSON, but is more
+    compact.
+
+    The CBOR support in Qt provides an easy to use C++ API to parse,
+    modify and save CBOR data.
+
+    More details about the CBOR data format can be found in \l {RFC 7049}.
+
+    \tableofcontents
+
+    \section1 Overview
+
+    CBOR is a format to store structured data. It has three groups of built-in types:
+
+    \list
+    \li Basic types: integers, floating point, boolean, null, etc.
+    \li String-like types: strings and byte arrays
+    \li Containers: arrays and maps
+    \endlist
+
+    In addition, CBOR can add a "tag" to extend the meaning of the type. The
+    container types can contain basic types, string-like types and containers.
+
+    \sa {Cbordump Example}, {Convert Example}, {JSON Save Game Example}
+
+    \section1 The CBOR Classes
+
+    \section2 The QCborValue Class
+
+    The QCborValue class represents any CBOR type. It also has a simple API for
+    reading and writing to QCborStreamReader and QCborStreamWriter objects, as
+    well as manipulating such objects in memory, with the help of QCborArray
+    and QCborMap. The CborValue API is simplified from the full CBOR data type
+    and always represents all integers as \l qint64 and all floating-point as
+    \c double. This means QCborValue is unable to represent CBOR integer values
+    outside of the range of \l qint64 (-2^63 to 2^63-1). When creating a CBOR
+    stream, QCborValue::toCbor() can be configured to attempt to write the
+    shorter single- and half-precision floating-point representations.
+
+    \section2 The QCborArray Class
+
+    The QCborArray class is used to hold an array of QCborValue objects. A
+    QCborValue object can contain a QCborArray object. It has functions for
+    converting to and from QVariantList, QStringList, QJsonArray.
+
+    \section2 The QCborMap Class
+
+    The QCborMap class is used to hold an map of QCborValue objects. A
+    QCborValue object can contain a QCborMap object. It has functions for
+    converting to and from QVariantMap, QVariantMap, and QJsonObject, but it
+    can have keys of any type, not just QString.
+
+    \section2 The QCborStreamReader Class
+
+    The QCborStreamReader class is a low level API for reading CBOR data from a
+    QIODevice, a QByteArray, or a pointer to memory. It has an API similar to
+    the QXmlStreamReader class.
+
+    \section2 The QCborStreamWriter Class
+
+    The QCborStreamWriter class is a low level API for writing CBOR data to a
+    QIODevice or a QByteArray. It has an API similar to the QXmlStreamWriter
+    class.
+*/

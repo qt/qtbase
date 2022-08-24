@@ -1,0 +1,80 @@
+// Copyright (C) 2022 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \example serialization/convert
+    \title Convert Example
+
+    \brief The Convert example demonstrates how to convert between different
+    serialization formats.
+
+    The Convert example converts between the serialization formats JSON, CBOR,
+    XML, QDataStream and text. It can also auto detect the format being used.
+    Not all formats support both input and output, and they have different
+    sets of which types they support. QDataStream and XML are the richest,
+    followed by CBOR, then JSON, and then the plain text one.
+
+    \image convert.png
+
+    \section1 The Converter Class
+
+    The Converter class is the abstract superclass for all the converters to
+    and from all the formats. They all convert to and from the QVariant class,
+    which is used to represent all the datastructures internally.
+    The name() function returns the name of the converter. The directions()
+    function is used to determine if a converter can be used for input, output,
+    or both. The outputOptions() and optionsHelp() functions are used to get
+    and query which options are used by the different converters. The
+    probeFile() function is used to determine if a file has the same file
+    format as the converter. The loadFile() function deserializes the given
+    file, while the saveFile() serializes to the given file.
+
+    \section1 The CborConverter Class
+
+    The CborConverter class shows how to serialize to and from the CBOR-format.
+    There is also a CborDiagnosticDumper class to output in CBOR diagnostic
+    notation. That is similar to JSON, but not exactly, because it allows
+    displaying the contents of a CBOR stream losslessly, while a conversion
+    to JSON is lossy.
+
+    The convertCborValue() function is used to convert a QCborValue to a
+    QVariant. It uses the helper functions convertCborMap() and
+    convertCborArray().
+    \snippet serialization/convert/cborconverter.cpp 0
+
+    A CBOR-file is read using loadFile() function.
+    \snippet serialization/convert/cborconverter.cpp 2
+
+    The convertFromVariant() function is used to convert a QVariant to a
+    QCborValue.
+    \snippet serialization/convert/cborconverter.cpp 1
+
+    A CBOR-file is written using the saveFile() function.
+    \snippet serialization/convert/cborconverter.cpp 3
+    \snippet serialization/convert/cborconverter.cpp 4
+
+    \sa {CBOR Support in Qt}
+
+    \section1 The DataStreamConverter Class
+
+    The DataStreamConverter class is used to serialize to and from the
+    QDataStream format. There is also the DataStreamDumper class for outputting
+    the data lossless in a non-standardized human readable format.
+
+    \section1 The JsonConverter Class
+
+    The JsonConverter class is used to serialize to and from the JSON-format.
+    \sa {JSON Support in Qt}
+
+    \section1 The XmlConverter Class
+
+    The XmlConverter class is used to serialize to and from the XML-format.
+
+    \section1 The TextConverter Class
+
+    The TextConverter class is used to serialize to and from a text format.
+
+    \section1 The NullConverter Class
+
+    The NullConverter class is an output serializer that does nothing.
+*/

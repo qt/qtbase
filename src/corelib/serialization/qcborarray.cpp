@@ -30,7 +30,8 @@ using namespace QtCbor;
     from those two, though there may be loss of information in some
     conversions.
 
-    \sa QCborValue, QCborMap, QJsonArray, QList
+    \sa QCborValue, QCborMap, QJsonArray, QList, {Cbordump Example},
+        {Convert Example}, {JSON Save Game Example}
  */
 
 /*!

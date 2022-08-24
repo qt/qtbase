@@ -189,7 +189,8 @@ Q_DECL_UNUSED static constexpr quint64 MaximumPreallocatedElementCount =
     aspects, its API is identical to QCborValue.
 
     \sa QCborArray, QCborMap, QCborStreamReader, QCborStreamWriter
-        QJsonValue, QJsonDocument
+    \sa QJsonValue, QJsonDocument, {Cbordump Example}, {Convert Example}
+    \sa {JSON Save Game Example}
  */
 
 /*!

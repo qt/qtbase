@@ -87,6 +87,7 @@ enum {
     Value64Bit              = 27
 };
 
+//! [0]
 struct CborDumper
 {
     enum DumpOption {
@@ -113,6 +114,7 @@ private:
     qint64 offset = 0;
     DumpOptions opts;
 };
+//! [0]
 Q_DECLARE_OPERATORS_FOR_FLAGS(CborDumper::DumpOptions)
 
 static int cborNumberSize(quint64 value)
