@@ -58,6 +58,8 @@ public:
 
     void beep() const override;
 
+    void setApplicationBadge(qint64 number) override;
+
     static QIOSIntegration *instance();
 
     // -- QPlatformNativeInterface --

@@ -438,6 +438,11 @@ void QCocoaIntegration::setApplicationIcon(const QIcon &icon) const
     NSApp.applicationIconImage = [NSImage imageFromQIcon:icon withSize:fallbackSize];
 }
 
+void QCocoaIntegration::setApplicationBadge(qint64 number)
+{
+    NSApp.dockTile.badgeLabel = number ? [NSString stringWithFormat:@"%" PRId64, number] : nil;
+}
+
 void QCocoaIntegration::beep() const
 {
     NSBeep();

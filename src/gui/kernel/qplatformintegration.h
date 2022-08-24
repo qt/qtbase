@@ -188,6 +188,7 @@ public:
     virtual QOpenGLContext::OpenGLModuleType openGLModuleType();
 #endif
     virtual void setApplicationIcon(const QIcon &icon) const;
+    virtual void setApplicationBadge(qint64 number);
 
     virtual void beep() const;
     virtual void quit() const;

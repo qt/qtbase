@@ -90,6 +90,7 @@ public:
     void clearToolbars();
 
     void setApplicationIcon(const QIcon &icon) const override;
+    void setApplicationBadge(qint64 number) override;
 
     void beep() const override;
     void quit() const override;

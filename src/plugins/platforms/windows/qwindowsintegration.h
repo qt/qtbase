@@ -91,6 +91,10 @@ public:
 
     void beep() const override;
 
+    void setApplicationBadge(qint64 number) override;
+    void setApplicationBadge(const QImage &image);
+    void updateApplicationBadge();
+
 #if QT_CONFIG(sessionmanager)
     QPlatformSessionManager *createPlatformSessionManager(const QString &id, const QString &key) const override;
 #endif
@@ -106,6 +110,8 @@ private:
     QScopedPointer<QWindowsIntegrationPrivate> d;
 
     static QWindowsIntegration *m_instance;
+
+    qint64 m_applicationBadgeNumber = 0;
 };
 
 QT_END_NAMESPACE

@@ -270,6 +270,11 @@ void QIOSIntegration::beep() const
 #endif
 }
 
+void QIOSIntegration::setApplicationBadge(qint64 number)
+{
+    UIApplication.sharedApplication.applicationIconBadgeNumber = number;
+}
+
 // ---------------------------------------------------------
 
 void *QIOSIntegration::nativeResourceForWindow(const QByteArray &resource, QWindow *window)

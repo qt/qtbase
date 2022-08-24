@@ -569,6 +569,20 @@ void QPlatformIntegration::setApplicationIcon(const QIcon &icon) const
     Q_UNUSED(icon);
 }
 
+/*!
+    \since 6.5
+
+    Should set the application's badge to \a number.
+
+    If the number is 0 the badge should be cleared.
+
+    \sa QGuiApplication::setBadge()
+*/
+void QPlatformIntegration::setApplicationBadge(qint64 number)
+{
+    Q_UNUSED(number);
+}
+
 #if QT_CONFIG(vulkan) || defined(Q_QDOC)
 
 /*!

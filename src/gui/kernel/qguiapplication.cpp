@@ -740,6 +740,29 @@ QString QGuiApplication::applicationDisplayName()
 }
 
 /*!
+    Sets the application's badge to \a number.
+
+    Useful for providing feedback to the user about the number
+    of unread messages or similar.
+
+    The badge will be overlaid on the application's icon in the Dock
+    on \macos, the home screen icon on iOS, or the task bar on Windows.
+
+    If the number is outside the range supported by the platform, the
+    number will be clamped to the supported range. If the number does
+    not fit within the badge, the number may be visually elided.
+
+    Setting the number to 0 will clear the badge.
+
+    \since 6.5
+    \sa applicationName
+*/
+void QGuiApplication::setBadgeNumber(qint64 number)
+{
+    QGuiApplicationPrivate::platformIntegration()->setApplicationBadge(number);
+}
+
+/*!
     \property QGuiApplication::desktopFileName
     \brief the base name of the desktop entry for this application
     \since 5.7

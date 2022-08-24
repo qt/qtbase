@@ -58,6 +58,8 @@ public:
     static void setApplicationDisplayName(const QString &name);
     static QString applicationDisplayName();
 
+    Q_SLOT void setBadgeNumber(qint64 number);
+
     static void setDesktopFileName(const QString &name);
     static QString desktopFileName();
 

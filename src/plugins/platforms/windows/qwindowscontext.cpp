@@ -1022,6 +1022,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
             const bool darkModeChanged = darkMode != QWindowsContextPrivate::m_darkMode;
             QWindowsContextPrivate::m_darkMode = darkMode;
             auto integration = QWindowsIntegration::instance();
+            integration->updateApplicationBadge();
             if (integration->darkModeHandling().testFlag(QWindowsApplication::DarkModeStyle)) {
                 QWindowsTheme::instance()->refresh();
                 QWindowSystemInterface::handleThemeChange();
@@ -1286,6 +1287,11 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         return true;
     }
 #endif // !defined(QT_NO_SESSIONMANAGER)
+    case QtWindows::TaskbarButtonCreated:
+        // Apply application badge if this is the first time we have a taskbar
+        // button, or after Explorer restart.
+        QWindowsIntegration::instance()->updateApplicationBadge();
+        break;
     default:
         break;
     }

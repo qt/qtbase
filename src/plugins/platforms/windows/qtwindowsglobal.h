@@ -107,6 +107,7 @@ enum WindowsEventType // Simplify event types
     PointerActivateWindowEvent = WindowEventFlag + 24,
     DpiScaledSizeEvent = WindowEventFlag + 25,
     DpiChangedAfterParentEvent = WindowEventFlag + 27,
+    TaskbarButtonCreated = WindowEventFlag + 28,
     MouseEvent = MouseEventFlag + 1,
     MouseWheelEvent = MouseEventFlag + 2,
     CursorEvent = MouseEventFlag + 3,
@@ -162,6 +163,14 @@ enum ProcessDpiAwareness
 
 inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamIn, LPARAM lParamIn)
 {
+    static const UINT WM_TASKBAR_BUTTON_CREATED = []{
+        UINT message = RegisterWindowMessage(L"TaskbarButtonCreated");
+        // In case the application is run elevated, allow the
+        // TaskbarButtonCreated message through.
+        ChangeWindowMessageFilter(message, MSGFLT_ADD);
+        return message;
+    }();
+
     switch (message) {
     case WM_PAINT:
     case WM_ERASEBKGND:
@@ -312,6 +321,8 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
         return QtWindows::NonClientPointerEvent;
     if (message >= WM_POINTERUPDATE && message <= WM_POINTERHWHEEL)
         return QtWindows::PointerEvent;
+    if (message == WM_TASKBAR_BUTTON_CREATED)
+        return QtWindows::TaskbarButtonCreated;
     return QtWindows::UnknownEvent;
 }
 
