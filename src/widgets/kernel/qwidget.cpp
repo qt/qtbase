@@ -10691,7 +10691,7 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
     QWidget *newtlw = window();
     if (oldtlw != newtlw) {
         QSurface::SurfaceType surfaceType = QSurface::RasterSurface;
-        if (q_evaluateRhiConfig(this, nullptr, &surfaceType)) {
+        if (q_evaluateRhiConfig(newtlw, nullptr, &surfaceType)) {
             newtlw->d_func()->usesRhiFlush = true;
             if (QWindow *w = newtlw->windowHandle()) {
                 if (w->surfaceType() != surfaceType) {
