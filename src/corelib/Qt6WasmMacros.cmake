@@ -3,6 +3,8 @@
 
 # Copy in Qt HTML/JS launch files for apps.
 function(_qt_internal_wasm_add_target_helpers target)
+
+    _qt_test_emscripten_version()
     get_target_property(targetType "${target}" TYPE)
     if("${targetType}" STREQUAL "EXECUTABLE")
 

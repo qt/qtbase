@@ -72,3 +72,28 @@ function(__qt_internal_show_error_no_emscripten_toolchain_file_found_when_using_
         "or provide a path to a valid emscripten installation via the EMSDK "
         "environment variable.")
 endfunction()
+
+function(__qt_internal_get_qt_build_emsdk_version out_var)
+    if(EXISTS "${QT6_INSTALL_PREFIX}/src/corelib/global/qconfig.h")
+        file(READ "${QT6_INSTALL_PREFIX}/src/corelib/global/qconfig.h" ver)
+    else()
+        file(READ "${QT6_INSTALL_PREFIX}/include/QtCore/qconfig.h" ver)
+    endif()
+    string(REGEX MATCH "#define QT_EMCC_VERSION.\"[0-9]+\\.[0-9]+\\.[0-9]+\"" emOutput ${ver})
+    string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" build_emcc_version "${emOutput}")
+    set(${out_var} "${build_emcc_version}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_test_emscripten_version)
+    __qt_internal_get_emcc_recommended_version(_recommended_emver)
+    __qt_internal_get_emroot_path_suffix_from_emsdk_env(emroot_path)
+    __qt_internal_query_emsdk_version("${emroot_path}" TRUE current_emsdk_ver)
+    __qt_internal_get_qt_build_emsdk_version(qt_build_emcc_version)
+
+    if(NOT "${qt_build_emcc_version}" STREQUAL "${current_emsdk_ver}")
+        message("Qt Wasm built with Emscripten version: ${qt_build_emcc_version}")
+        message("You are using Emscripten version: ${current_emsdk_ver}")
+        message("The recommended version of Emscripten for this Qt is: ${_recommended_emver}")
+        message("This may not work correctly")
+    endif()
+endfunction()
