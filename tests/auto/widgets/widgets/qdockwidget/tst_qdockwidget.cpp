@@ -41,11 +41,7 @@
 #include <QtGui/QPainter>
 #include <QLabel>
 
-#ifdef QT_BUILD_INTERNAL
-QT_BEGIN_NAMESPACE
-Q_LOGGING_CATEGORY(lcQpaDockWidgets, "qt.widgets.dockwidgets");
-QT_END_NAMESPACE
-#endif
+Q_LOGGING_CATEGORY(lcTestDockWidget, "qt.widgets.tests.qdockwidget")
 
 bool hasFeature(QDockWidget *dockwidget, QDockWidget::DockWidgetFeature feature)
 { return (dockwidget->features() & feature) == feature; }
@@ -1206,12 +1202,12 @@ void tst_QDockWidget::moveDockWidget(QDockWidget* dw, QPoint to, QPoint from) co
     // move and log
     const QPoint source = dw->mapFromGlobal(from);
     const QPoint target = dw->mapFromGlobal(to);
-    qCDebug(lcQpaDockWidgets) << "Move" << dw->objectName() << "from" << source;
-    qCDebug(lcQpaDockWidgets) << "Move" << dw->objectName() << "from" << from;
+    qCDebug(lcTestDockWidget) << "Move" << dw->objectName() << "from" << source;
+    qCDebug(lcTestDockWidget) << "Move" << dw->objectName() << "from" << from;
     QTest::mousePress(dw, Qt::LeftButton, Qt::KeyboardModifiers(), source);
     QTest::mouseMove(dw, target);
-    qCDebug(lcQpaDockWidgets) << "Move" << dw->objectName() << "to" << target;
-    qCDebug(lcQpaDockWidgets) << "Move" << dw->objectName() << "to" << to;
+    qCDebug(lcTestDockWidget) << "Move" << dw->objectName() << "to" << target;
+    qCDebug(lcTestDockWidget) << "Move" << dw->objectName() << "to" << to;
     QTest::mouseRelease(dw, Qt::LeftButton, Qt::KeyboardModifiers(), target);
     QTest::qWait(waitingTime);
 
@@ -1255,7 +1251,7 @@ void tst_QDockWidget::unplugAndResize(QMainWindow* mainWindow, QDockWidget* dw, 
     }
 
     // unplug and resize a dock Widget
-    qCDebug(lcQpaDockWidgets) << "*** unplug and resize" << dw->objectName();
+    qCDebug(lcTestDockWidget) << "*** unplug and resize" << dw->objectName();
     QPoint pos1 = dw->mapToGlobal(dw->rect().center());
     pos1.rx() += mx;
     pos1.ry() += my;
@@ -1263,10 +1259,10 @@ void tst_QDockWidget::unplugAndResize(QMainWindow* mainWindow, QDockWidget* dw, 
     //QTest::mousePress(dw, Qt::LeftButton, Qt::KeyboardModifiers(), dw->mapFromGlobal(pos1));
     QTRY_VERIFY(dw->isFloating());
 
-    qCDebug(lcQpaDockWidgets) << "Resizing" << dw->objectName() << "to" << size;
+    qCDebug(lcTestDockWidget) << "Resizing" << dw->objectName() << "to" << size;
     dw->setFixedSize(size);
     QTest::qWait(waitingTime);
-    qCDebug(lcQpaDockWidgets) << "Move" << dw->objectName() << "to its home" << dw->mapFromGlobal(home);
+    qCDebug(lcTestDockWidget) << "Move" << dw->objectName() << "to its home" << dw->mapFromGlobal(home);
     dw->move(home);
     //moveDockWidget(dw, home);
 }
@@ -1278,13 +1274,13 @@ bool tst_QDockWidget::checkFloatingTabs(QMainWindow* mainWindow, QPointer<QDockW
     // Check if mainWindow has a floatingTab child
     ftabs = mainWindow->findChild<QDockWidgetGroupWindow*>();
     if (ftabs.isNull()) {
-        qCDebug(lcQpaDockWidgets) << "MainWindow has no DockWidgetGroupWindow" << mainWindow;
+        qCDebug(lcTestDockWidget) << "MainWindow has no DockWidgetGroupWindow" << mainWindow;
         return false;
     }
 
     QTabBar* tab = ftabs->findChild<QTabBar*>();
     if (!tab) {
-        qCDebug(lcQpaDockWidgets) << "DockWidgetGroupWindow has no tab bar" << ftabs;
+        qCDebug(lcTestDockWidget) << "DockWidgetGroupWindow has no tab bar" << ftabs;
         return false;
     }
 
@@ -1293,24 +1289,24 @@ bool tst_QDockWidget::checkFloatingTabs(QMainWindow* mainWindow, QPointer<QDockW
     if (dwList.count() > 0)
     {
         if (dwList.count() != children.count()) {
-            qCDebug(lcQpaDockWidgets) << "Expected DockWidgetGroupWindow children:" << dwList.count()
+            qCDebug(lcTestDockWidget) << "Expected DockWidgetGroupWindow children:" << dwList.count()
                                       << "Children found:" << children.count();
 
-            qCDebug(lcQpaDockWidgets) << "Expected:" << dwList;
-            qCDebug(lcQpaDockWidgets) << "Found in" << ftabs << ":" << children.count();
+            qCDebug(lcTestDockWidget) << "Expected:" << dwList;
+            qCDebug(lcTestDockWidget) << "Found in" << ftabs << ":" << children.count();
             return false;
         }
 
         for (const QDockWidget* child : dwList) {
             if (!children.contains(child)) {
-                qCDebug(lcQpaDockWidgets) << "Expected child" << child << "not found in" << children;
+                qCDebug(lcTestDockWidget) << "Expected child" << child << "not found in" << children;
                 return false;
             }
         }
     }
 
     // Always select first tab position
-    qCDebug(lcQpaDockWidgets) << "click on first tab";
+    qCDebug(lcTestDockWidget) << "click on first tab";
     QTest::mouseClick(tab, Qt::LeftButton, Qt::KeyboardModifiers(), tab->tabRect(0).center());
     return true;
 }
@@ -1364,9 +1360,9 @@ void tst_QDockWidget::floatingTabs()
     unplugAndResize(mainWindow, d2, home2(mainWindow), size2(mainWindow));
 
     // Test plugging
-    qCDebug(lcQpaDockWidgets) << "*** move d1 dock over d2 dock ***";
-    qCDebug(lcQpaDockWidgets) << "**********(test plugging)*************";
-    qCDebug(lcQpaDockWidgets) << "Move d1 over d2";
+    qCDebug(lcTestDockWidget) << "*** move d1 dock over d2 dock ***";
+    qCDebug(lcTestDockWidget) << "**********(test plugging)*************";
+    qCDebug(lcTestDockWidget) << "Move d1 over d2";
     moveDockWidget(d1, d2->mapToGlobal(d2->rect().center()));
 
     // Both dock widgets must no longer be floating
@@ -1391,13 +1387,13 @@ void tst_QDockWidget::floatingTabs()
     // limitation: QTest cannot handle drag to unplug.
     // reason: Object under mouse mutates from QTabBar::tab to QDockWidget. QTest cannot handle that.
     // => click float button to unplug
-    qCDebug(lcQpaDockWidgets) << "*** test unplugging from floating dock ***";
+    qCDebug(lcTestDockWidget) << "*** test unplugging from floating dock ***";
 
     // QDockWidget must have a QAbstractButton with object name "qt_dockwidget_floatbutton"
     QAbstractButton* floatButton = d1->findChild<QAbstractButton*>("qt_dockwidget_floatbutton", Qt::FindDirectChildrenOnly);
     QTRY_VERIFY(floatButton != nullptr);
     QPoint pos1 = floatButton->rect().center();
-    qCDebug(lcQpaDockWidgets) << "unplug d1" << pos1;
+    qCDebug(lcTestDockWidget) << "unplug d1" << pos1;
     QTest::mouseClick(floatButton, Qt::LeftButton, Qt::KeyboardModifiers(), pos1);
     QTest::qWait(waitingTime);
 
@@ -1406,14 +1402,14 @@ void tst_QDockWidget::floatingTabs()
     QTRY_VERIFY(!d2->isFloating());
 
     // Plug back into dock areas
-    qCDebug(lcQpaDockWidgets) << "*** test plugging back to dock areas ***";
-    qCDebug(lcQpaDockWidgets) << "Move d1 to left dock";
+    qCDebug(lcTestDockWidget) << "*** test plugging back to dock areas ***";
+    qCDebug(lcTestDockWidget) << "Move d1 to left dock";
     //moveDockWidget(d1, d1->mapFrom(MainWindow, dockPoint(MainWindow, Qt::LeftDockWidgetArea)));
     moveDockWidget(d1, dockPoint(mainWindow, Qt::LeftDockWidgetArea));
-    qCDebug(lcQpaDockWidgets) << "Move d2 to right dock";
+    qCDebug(lcTestDockWidget) << "Move d2 to right dock";
     moveDockWidget(d2, dockPoint(mainWindow, Qt::RightDockWidgetArea));
 
-    qCDebug(lcQpaDockWidgets) << "Waiting" << waitBeforeClose << "ms before plugging back.";
+    qCDebug(lcTestDockWidget) << "Waiting" << waitBeforeClose << "ms before plugging back.";
     QTest::qWait(waitBeforeClose);
 
     // Both dock widgets must no longer be floating
@@ -1425,7 +1421,7 @@ void tst_QDockWidget::floatingTabs()
     QTRY_VERIFY(ftabs.isNull());
 
     // Check if paths are consistent
-    qCDebug(lcQpaDockWidgets) << "Checking path consistency" << layout->layoutState.indexOf(d1) << layout->layoutState.indexOf(d2);
+    qCDebug(lcTestDockWidget) << "Checking path consistency" << layout->layoutState.indexOf(d1) << layout->layoutState.indexOf(d2);
 
     // Path1 must be identical
     QTRY_VERIFY(path1 == layout->layoutState.indexOf(d1));
@@ -1458,14 +1454,14 @@ void tst_QDockWidget::hideAndShow()
     std::unique_ptr<QMainWindow> up_mainWindow(mainWindow);
 
     // Check hiding of docked widgets
-    qCDebug(lcQpaDockWidgets) << "Hiding mainWindow with plugged dock widgets" << mainWindow;
+    qCDebug(lcTestDockWidget) << "Hiding mainWindow with plugged dock widgets" << mainWindow;
     mainWindow->hide();
     QXCBVERIFY(!mainWindow->isVisible());
     QXCBVERIFY(!d1->isVisible());
     QXCBVERIFY(!d2->isVisible());
 
     // Check showing everything again
-    qCDebug(lcQpaDockWidgets) << "Showing mainWindow with plugged dock widgets" << mainWindow;
+    qCDebug(lcTestDockWidget) << "Showing mainWindow with plugged dock widgets" << mainWindow;
     mainWindow->show();
     QXCBVERIFY(QTest::qWaitForWindowActive(mainWindow));
     QXCBVERIFY(QTest::qWaitForWindowExposed(mainWindow));
@@ -1486,7 +1482,7 @@ void tst_QDockWidget::hideAndShow()
     unplugAndResize(mainWindow, d2, home2(mainWindow), size2(mainWindow));
 
      // Check hiding of undocked widgets
-    qCDebug(lcQpaDockWidgets) << "Hiding mainWindow with unplugged dock widgets" << mainWindow;
+    qCDebug(lcTestDockWidget) << "Hiding mainWindow with unplugged dock widgets" << mainWindow;
     mainWindow->hide();
     QTRY_VERIFY(!mainWindow->isVisible());
     QTRY_VERIFY(d1->isVisible());
@@ -1496,7 +1492,7 @@ void tst_QDockWidget::hideAndShow()
     QTRY_VERIFY(!d1->isVisible());
     QTRY_VERIFY(!d2->isVisible());
 
-    qCDebug(lcQpaDockWidgets) << "Waiting" << waitBeforeClose << "ms before closing.";
+    qCDebug(lcTestDockWidget) << "Waiting" << waitBeforeClose << "ms before closing.";
     QTest::qWait(waitBeforeClose);
 #else
     QSKIP("test requires -developer-build option");
@@ -1523,7 +1519,7 @@ void tst_QDockWidget::closeAndDelete()
     unplugAndResize(mainWindow, d2, home2(mainWindow), size2(mainWindow));
 
     // Create a floating tab and unplug it again
-    qCDebug(lcQpaDockWidgets) << "Move d1 over d2";
+    qCDebug(lcTestDockWidget) << "Move d1 over d2";
     moveDockWidget(d1, d2->mapToGlobal(d2->rect().center()));
 
     // Both dock widgets must no longer be floating
@@ -1550,7 +1546,7 @@ void tst_QDockWidget::closeAndDelete()
 
     // Fallback timer to report event loop still running
     QTimer::singleShot(100, this, [&eventLoopStopped] {
-        qCDebug(lcQpaDockWidgets) << "Last dock widget hasn't shout down event loop!";
+        qCDebug(lcTestDockWidget) << "Last dock widget hasn't shout down event loop!";
         eventLoopStopped = false;
         QApplication::quit();
     });
@@ -1560,7 +1556,7 @@ void tst_QDockWidget::closeAndDelete()
     QTRY_VERIFY(eventLoopStopped);
 
     // Check heap cleanup
-    qCDebug(lcQpaDockWidgets) << "Deleting mainWindow";
+    qCDebug(lcTestDockWidget) << "Deleting mainWindow";
     up_mainWindow.reset();
     QTRY_VERIFY(d1.isNull());
     QTRY_VERIFY(d2.isNull());
@@ -1613,23 +1609,23 @@ void tst_QDockWidget::dockPermissions()
     QTRY_VERIFY(mainWindow->findChild<QDockWidgetGroupWindow*>() == nullptr);
 
     // Test unpermitted dock areas with d2
-    qCDebug(lcQpaDockWidgets) << "*** move d2 to forbidden docks ***";
+    qCDebug(lcTestDockWidget) << "*** move d2 to forbidden docks ***";
 
     // Move d2 to non allowed dock areas and verify it remains floating
-    qCDebug(lcQpaDockWidgets) << "Move d2 to top dock";
+    qCDebug(lcTestDockWidget) << "Move d2 to top dock";
     moveDockWidget(d2, dockPoint(mainWindow, Qt::TopDockWidgetArea));
     QTRY_VERIFY(d2->isFloating());
 
-    qCDebug(lcQpaDockWidgets) << "Move d2 to left dock";
+    qCDebug(lcTestDockWidget) << "Move d2 to left dock";
     //moveDockWidget(d2, d2->mapFrom(MainWindow, dockPoint(MainWindow, Qt::LeftDockWidgetArea)));
     moveDockWidget(d2, dockPoint(mainWindow, Qt::LeftDockWidgetArea));
     QTRY_VERIFY(d2->isFloating());
 
-    qCDebug(lcQpaDockWidgets) << "Move d2 to bottom dock";
+    qCDebug(lcTestDockWidget) << "Move d2 to bottom dock";
     moveDockWidget(d2, dockPoint(mainWindow, Qt::BottomDockWidgetArea));
     QTRY_VERIFY(d2->isFloating());
 
-    qCDebug(lcQpaDockWidgets) << "Waiting" << waitBeforeClose << "ms before closing.";
+    qCDebug(lcTestDockWidget) << "Waiting" << waitBeforeClose << "ms before closing.";
     QTest::qWait(waitBeforeClose);
 #else
     QSKIP("test requires -developer-build option");
