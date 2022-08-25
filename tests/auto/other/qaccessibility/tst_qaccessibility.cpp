@@ -213,6 +213,7 @@ private slots:
     void treeTest();
     void tableTest();
 
+    void uniqueIdTest();
     void calendarWidgetTest();
     void dockWidgetTest();
     void comboBoxTest();
@@ -3385,6 +3386,25 @@ void tst_QAccessibility::tableTest()
     tvHolder.reset();
     QVERIFY(!QAccessible::accessibleInterface(id00));
     QTestAccessibility::clearEvents();
+}
+
+void tst_QAccessibility::uniqueIdTest()
+{
+    // Test that an ID isn't reassigned to another interface right away when an accessible interface
+    // that has just been created is removed from the cache and deleted before the next
+    // accessible interface is registered.
+    // For example for AT-SPI, that would result in the same object path being used, and thus
+    // data from the old and new interface can get confused due to caching.
+    QWidget widget1;
+    QAccessibleInterface *iface1 = QAccessible::queryAccessibleInterface(&widget1);
+    QAccessible::Id id1 = QAccessible::uniqueId(iface1);
+    QAccessible::deleteAccessibleInterface(id1);
+
+    QWidget widget2;
+    QAccessibleInterface *iface2 = QAccessible::queryAccessibleInterface(&widget2);
+    QAccessible::Id id2 = QAccessible::uniqueId(iface2);
+
+    QVERIFY(id1 != id2);
 }
 
 void tst_QAccessibility::calendarWidgetTest()
