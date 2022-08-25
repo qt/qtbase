@@ -540,7 +540,9 @@ private slots:
     void regularexpression_lifetime();
 #endif
     void fromUtf16_data();
+#if QT_DEPRECATED_SINCE(6, 0)
     void fromUtf16();
+#endif
     void fromUtf16_char16_data() { fromUtf16_data(); }
 
     void fromUtf16_char16();
@@ -6296,14 +6298,15 @@ void tst_QString::fromUtf16_data()
     QTest::newRow("str0-len") << QString("abcdefgh") << QString("abc") << 3;
 }
 
+#if QT_DEPRECATED_SINCE(6, 0)
 void tst_QString::fromUtf16()
 {
     QFETCH(QString, ucs2);
     QFETCH(QString, res);
     QFETCH(int, len);
-
-    QCOMPARE(QString::fromUtf16(ucs2.utf16(), len), res);
+    QT_IGNORE_DEPRECATIONS(QCOMPARE(QString::fromUtf16(ucs2.utf16(), len), res);)
 }
+#endif // QT_DEPRECATED_SINCE(6, 0)
 
 void tst_QString::fromUtf16_char16()
 {
@@ -6534,14 +6537,28 @@ void tst_QString::arg_fillChar()
         const QVariant &var = replaceValues.at(i);
         const int width = widths.at(i);
         const QChar fillChar = fillChars.at(i);
-        switch (var.type()) {
-        case QVariant::String: actual = actual.arg(var.toString(), width, fillChar); break;
-        case QVariant::Int: actual = actual.arg(var.toInt(), width, base, fillChar); break;
-        case QVariant::UInt: actual = actual.arg(var.toUInt(), width, base, fillChar); break;
-        case QVariant::Double: actual = actual.arg(var.toDouble(), width, fmt, prec, fillChar); break;
-        case QVariant::LongLong: actual = actual.arg(var.toLongLong(), width, base, fillChar); break;
-        case QVariant::ULongLong: actual = actual.arg(var.toULongLong(), width, base, fillChar); break;
-        default: QVERIFY(0); break;
+        switch (var.typeId()) {
+        case QMetaType::QString:
+            actual = actual.arg(var.toString(), width, fillChar);
+            break;
+        case QMetaType::Int:
+            actual = actual.arg(var.toInt(), width, base, fillChar);
+            break;
+        case QMetaType::UInt:
+            actual = actual.arg(var.toUInt(), width, base, fillChar);
+            break;
+        case QMetaType::Double:
+            actual = actual.arg(var.toDouble(), width, fmt, prec, fillChar);
+            break;
+        case QMetaType::LongLong:
+            actual = actual.arg(var.toLongLong(), width, base, fillChar);
+            break;
+        case QMetaType::ULongLong:
+            actual = actual.arg(var.toULongLong(), width, base, fillChar);
+            break;
+        default:
+            QVERIFY(0);
+            break;
         }
     }
 
@@ -7559,7 +7576,7 @@ void tst_QString::rawData()
     const QChar *dataConstPtr = s.constData();
     QVERIFY(dataConstPtr != constPtr);
 
-    const ushort *utf16Ptr = s.utf16();
+    const char16_t *char16Ptr = reinterpret_cast<const char16_t *>(s.utf16());
 
     QString s1 = s;
     QCOMPARE(s1.constData(), dataConstPtr);
@@ -7573,7 +7590,7 @@ void tst_QString::rawData()
     QCOMPARE(s1, "dbc");
 
     // utf pointer is valid while the string is not changed
-    QCOMPARE(QString::fromUtf16(utf16Ptr), s);
+    QCOMPARE(QString::fromUtf16(char16Ptr), s);
 }
 
 void tst_QString::clear()
