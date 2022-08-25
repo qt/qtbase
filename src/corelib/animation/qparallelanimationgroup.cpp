@@ -255,7 +255,7 @@ bool QParallelAnimationGroupPrivate::isUncontrolledAnimationFinished(QAbstractAn
     return uncontrolledFinishTime.value(anim, -1) >= 0;
 }
 
-void QParallelAnimationGroupPrivate::animationRemoved(int index, QAbstractAnimation *anim)
+void QParallelAnimationGroupPrivate::animationRemoved(qsizetype index, QAbstractAnimation *anim)
 {
     QAnimationGroupPrivate::animationRemoved(index, anim);
     disconnectUncontrolledAnimation(anim);

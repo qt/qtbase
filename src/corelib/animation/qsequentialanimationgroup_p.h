@@ -44,8 +44,8 @@ public:
     void setCurrentAnimation(int index, bool intermediate = false);
     void activateCurrentAnimation(bool intermediate = false);
 
-    void animationInsertedAt(int index) override;
-    void animationRemoved(int index, QAbstractAnimation *anim) override;
+    void animationInsertedAt(qsizetype index) override;
+    void animationRemoved(qsizetype index, QAbstractAnimation *anim) override;
 
     bool atEnd() const;
 

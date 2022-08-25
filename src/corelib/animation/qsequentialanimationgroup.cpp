@@ -472,7 +472,7 @@ void QSequentialAnimationGroupPrivate::_q_uncontrolledAnimationFinished()
     the group at index \a index.
     Note: We only support insertion after the current animation
 */
-void QSequentialAnimationGroupPrivate::animationInsertedAt(int index)
+void QSequentialAnimationGroupPrivate::animationInsertedAt(qsizetype index)
 {
     if (currentAnimation == nullptr) {
         setCurrentAnimation(0); // initialize the current animation
@@ -500,7 +500,7 @@ void QSequentialAnimationGroupPrivate::animationInsertedAt(int index)
     the group at index \a index. The animation is no more listed when this
     method is called.
 */
-void QSequentialAnimationGroupPrivate::animationRemoved(int index, QAbstractAnimation *anim)
+void QSequentialAnimationGroupPrivate::animationRemoved(qsizetype index, QAbstractAnimation *anim)
 {
     Q_Q(QSequentialAnimationGroup);
     QAnimationGroupPrivate::animationRemoved(index, anim);
@@ -511,7 +511,7 @@ void QSequentialAnimationGroupPrivate::animationRemoved(int index, QAbstractAnim
     if (actualDuration.size() > index)
         actualDuration.removeAt(index);
 
-    const int currentIndex = animations.indexOf(currentAnimation);
+    const qsizetype currentIndex = animations.indexOf(currentAnimation);
     if (currentIndex == -1) {
         //we're removing the current animation
 
@@ -529,7 +529,7 @@ void QSequentialAnimationGroupPrivate::animationRemoved(int index, QAbstractAnim
 
     // duration of the previous animations up to the current animation
     currentTime = 0;
-    for (int i = 0; i < currentAnimationIndex; ++i) {
+    for (qsizetype i = 0; i < currentAnimationIndex; ++i) {
         const int current = animationActualTotalDuration(i);
         currentTime += current;
     }
