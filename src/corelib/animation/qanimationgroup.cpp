@@ -186,7 +186,7 @@ void QAnimationGroup::removeAnimation(QAbstractAnimation *animation)
         qWarning("QAnimationGroup::remove: cannot remove null animation");
         return;
     }
-    int index = d->animations.indexOf(animation);
+    qsizetype index = d->animations.indexOf(animation);
     if (index == -1) {
         qWarning("QAnimationGroup::remove: animation is not part of this group");
         return;
@@ -261,7 +261,7 @@ void QAnimationGroupPrivate::clear(bool onDestruction)
     const QList<QAbstractAnimation *> animationsCopy = animations; // taking a copy
     animations.clear();
     // Clearing backwards so the indices doesn't change while we remove animations.
-    for (int i = animationsCopy.size() - 1; i >= 0; --i) {
+    for (qsizetype i = animationsCopy.size() - 1; i >= 0; --i) {
         QAbstractAnimation *animation = animationsCopy.at(i);
         animation->setParent(nullptr);
         QAbstractAnimationPrivate::get(animation)->group = nullptr;
@@ -275,7 +275,7 @@ void QAnimationGroupPrivate::clear(bool onDestruction)
     }
 }
 
-void QAnimationGroupPrivate::animationRemoved(int index, QAbstractAnimation *)
+void QAnimationGroupPrivate::animationRemoved(qsizetype index, QAbstractAnimation *)
 {
     Q_Q(QAnimationGroup);
     Q_UNUSED(index);

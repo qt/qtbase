@@ -34,8 +34,8 @@ public:
         isGroup = true;
     }
 
-    virtual void animationInsertedAt(int) { }
-    virtual void animationRemoved(int, QAbstractAnimation *);
+    virtual void animationInsertedAt(qsizetype) { }
+    virtual void animationRemoved(qsizetype, QAbstractAnimation *);
 
     void clear(bool onDestruction);
 
