@@ -36,6 +36,7 @@ class WebApi {
     #status = RunnerStatus.Running;
     #statusChangedEventPrivate;
     #testStatusChangedEventPrivate;
+    #errorDetails;
 
     onStatusChanged =
         new EventSource((privateInterface) => this.#statusChangedEventPrivate = privateInterface);
@@ -52,11 +53,13 @@ class WebApi {
             setTestResultData: (testName, testStatus, exitCode, textOutput) =>
                 this.#setTestResultData(testName, testStatus, exitCode, textOutput),
             setTestRunnerStatus: status => this.#setTestRunnerStatus(status),
+            setTestRunnerError: details => this.#setTestRunnerError(details),
         });
     }
 
     get results() { return this.#results; }
     get status() { return this.#status; }
+    get errorDetails() { return this.#errorDetails; }
 
     #registerTest(testName) { this.#results.set(testName, { status: TestStatus.Pending }); }
 
@@ -84,6 +87,12 @@ class WebApi {
         this.#status = status;
         this.#statusChangedEventPrivate.fireEvent(status);
     }
+
+    #setTestRunnerError(details) {
+        this.#status = RunnerStatus.Error;
+        this.#errorDetails = details;
+        this.#statusChangedEventPrivate.fireEvent(RunnerStatus.Error);
+    }
 }
 
 class BatchedTestRunner {
@@ -97,7 +106,7 @@ class BatchedTestRunner {
         this.#privateWebApi = privateWebApi;
     }
 
-    async #doRun(testName) {
+    async #doRun(testName, testOutputFormat) {
         const module = await this.#loader.loadEmscriptenModule(
             BatchedTestRunner.#TestBatchModuleName,
             () => { }
@@ -112,7 +121,7 @@ class BatchedTestRunner {
             try {
                 const LogToStdoutSpecialFilename = '-';
                 result = await module.exec({
-                    args: [testClassName, '-o', `${LogToStdoutSpecialFilename},xml`],
+                    args: [testClassName, '-o', `${LogToStdoutSpecialFilename},${testOutputFormat}`],
                 });
 
                 if (result.exitCode < 0)
@@ -127,13 +136,11 @@ class BatchedTestRunner {
             }
         }
 
-    async run(testName) {
-        try {
-            await this.#doRun(testName);
+    async run(testName, testOutputFormat) {
+
+        await this.#doRun(testName, testOutputFormat);
             this.#privateWebApi.setTestRunnerStatus(RunnerStatus.Completed);
-        } catch (e) {
-            this.#privateWebApi.setTestRunnerStatus(RunnerStatus.Error);
-        }
+
     }
 
     async #getTestClassNames(module) {
@@ -146,17 +153,27 @@ class BatchedTestRunner {
     window.qtTestRunner = new WebApi(privateApi => privateWebApi = privateApi);
 
     const parsed = parseQuery(location.search);
-    const testName = parsed['qtestname'];
-    if (typeof testName !== 'undefined' && (typeof testName !== 'string' || testName === '')) {
-        console.error('The testName parameter is incorrect');
-        return;
+    const testName = parsed.get('qtestname');
+    try {
+        if (typeof testName !== 'undefined' && (typeof testName !== 'string' || testName === ''))
+            throw new Error('The testName parameter is incorrect');
+
+        const testOutputFormat = (() => {
+            const format = parsed.get('qtestoutputformat') ?? 'txt';
+            console.log(format);
+            if (-1 === ['txt', 'xml', 'lightxml', 'junitxml', 'tap'].indexOf(format))
+                throw new Error(`Bad file format: ${format}`);
+            return format;
+        })();
+
+        const resourceLocator = new ResourceLocator('');
+        const testRunner = new BatchedTestRunner(
+            new ModuleLoader(new ResourceFetcher(resourceLocator), resourceLocator),
+            privateWebApi
+        );
+
+        testRunner.run(testName, testOutputFormat);
+    } catch (e) {
+        privateWebApi.setTestRunnerError(e.message);
     }
-
-    const resourceLocator = new ResourceLocator('');
-    const testRunner = new BatchedTestRunner(
-        new ModuleLoader(new ResourceFetcher(resourceLocator), resourceLocator),
-        privateWebApi
-    );
-
-    testRunner.run(testName);
 })();
