@@ -380,18 +380,17 @@ bool QTimerInfoList::timerWait(timespec &tm)
 }
 
 /*
-  Returns the timer's remaining time in milliseconds with the given timerId, or
-  null if there is nothing left. If the timer id is not found in the list, the
-  returned value will be -1. If the timer is overdue, the returned value will be 0.
+  Returns the timer's remaining time in milliseconds with the given timerId.
+  If the timer id is not found in the list, the returned value will be -1.
+  If the timer is overdue, the returned value will be 0.
 */
-int QTimerInfoList::timerRemainingTime(int timerId)
+qint64 QTimerInfoList::timerRemainingTime(int timerId)
 {
     timespec currentTime = updateCurrentTime();
     repairTimersIfNeeded();
     timespec tm = {0, 0};
 
-    for (int i = 0; i < count(); ++i) {
-        QTimerInfo *t = at(i);
+    for (const auto *t : *this) {
         if (t->id == timerId) {
             if (currentTime < t->timeout) {
                 // time to wait

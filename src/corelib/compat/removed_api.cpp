@@ -287,6 +287,18 @@ QT_WARNING_POP
 
 #include "qbuffer.h" // inline removed API
 
+#include "qbasictimer.h"
+
+void QBasicTimer::start(int msec, QObject *obj)
+{
+    start(qint64(msec), obj);
+}
+
+void QBasicTimer::start(int msec, Qt::TimerType timerType, QObject *obj)
+{
+    start(qint64(msec), timerType, obj);
+}
+
 #include "qenvironmentvariables.h"
 
 bool qputenv(const char *varName, const QByteArray &value)

@@ -102,7 +102,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QBasicTimer::start(int msec, QObject *object)
+    \fn void QBasicTimer::start(qint64 msec, QObject *object)
 
     Starts (or restarts) the timer with a \a msec milliseconds timeout. The
     timer will be a Qt::CoarseTimer. See Qt::TimerType for information on the
@@ -110,9 +110,12 @@ QT_BEGIN_NAMESPACE
 
     The given \a object will receive timer events.
 
+    \note In Qt versions prior to 6.5, \a msec was \c{int}, not
+    \c{qint64}.
+
     \sa stop(), isActive(), QObject::timerEvent(), Qt::CoarseTimer
  */
-void QBasicTimer::start(int msec, QObject *obj)
+void QBasicTimer::start(qint64 msec, QObject *obj)
 {
     start(msec, Qt::CoarseTimer, obj);
 }
@@ -126,9 +129,12 @@ void QBasicTimer::start(int msec, QObject *obj)
 
     \a obj will receive timer events.
 
+    \note In Qt versions prior to 6.5, \a msec was \c{int}, not
+    \c{qint64}.
+
     \sa stop(), isActive(), QObject::timerEvent(), Qt::TimerType
  */
-void QBasicTimer::start(int msec, Qt::TimerType timerType, QObject *obj)
+void QBasicTimer::start(qint64 msec, Qt::TimerType timerType, QObject *obj)
 {
     QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance();
     if (Q_UNLIKELY(msec < 0)) {

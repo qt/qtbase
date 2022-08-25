@@ -31,9 +31,12 @@ public:
 
     bool isActive() const noexcept { return id != 0; }
     int timerId() const noexcept { return id; }
-
+#if QT_CORE_REMOVED_SINCE(6, 5)
     void start(int msec, QObject *obj);
     void start(int msec, Qt::TimerType timerType, QObject *obj);
+#endif
+    void start(qint64 msec, QObject *obj);
+    void start(qint64 msec, Qt::TimerType timerType, QObject *obj);
     void stop();
 };
 Q_DECLARE_TYPEINFO(QBasicTimer, Q_RELOCATABLE_TYPE);

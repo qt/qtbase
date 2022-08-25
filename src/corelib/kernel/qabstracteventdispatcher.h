@@ -26,8 +26,7 @@ public:
         Qt::TimerType timerType;
 
         inline TimerInfo(int id, int i, Qt::TimerType t)
-            : timerId(id), interval(i), timerType(t)
-        { }
+            : timerId(id), interval(i), timerType(t) { }
     };
 
     explicit QAbstractEventDispatcher(QObject *parent = nullptr);

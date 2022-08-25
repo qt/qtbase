@@ -68,7 +68,7 @@ public:
     bool timerWait(timespec &);
     void timerInsert(QTimerInfo *);
 
-    int timerRemainingTime(int timerId);
+    qint64 timerRemainingTime(int timerId);
 
     void registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *object);
     bool unregisterTimer(int timerId);
