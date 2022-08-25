@@ -180,6 +180,28 @@ Each variable can be used to specify the path to Qt for Android for the correspo
 */
 
 /*!
+\page cmake-variable-QT_NO_COLLECT_BUILD_TREE_APK_DEPS.html
+\ingroup cmake-variables-qtcore
+
+\title QT_NO_COLLECT_BUILD_TREE_APK_DEPS
+\target cmake-variable-QT_NO_COLLECT_BUILD_TREE_APK_DEPS
+
+\summary {Prevents collecting of project-built shared library targets during Android deployment.}
+
+\cmakevariablesince 6.3
+\preliminarycmakevariable
+\cmakevariableandroidonly
+
+During project finalization, the build system collects the locations of
+all built shared library targets in the project.
+These locations are passed to \l androiddeployqt for deployment consideration when
+resolving dependencies between libraries.
+Set \c QT_NO_COLLECT_BUILD_TREE_APK_DEPS to \c TRUE to disable this behavior.
+
+\sa {qt6_finalize_project}{qt_finalize_project()}
+*/
+
+/*!
 \page cmake-variable-QT_HOST_PATH.html
 \ingroup cmake-variables-qtcore
 
