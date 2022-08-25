@@ -765,7 +765,14 @@ function(qt_internal_add_test_helper name)
 
     set(extra_args_to_pass)
     if(NOT arg_OVERRIDE_OUTPUT_DIRECTORY)
-        set(extra_args_to_pass OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/..")
+        if(QT_BUILD_TESTS_BATCHED)
+            _qt_internal_test_batch_target_name(test_batch_target_name)
+            get_target_property(
+                test_batch_output_dir ${test_batch_target_name} RUNTIME_OUTPUT_DIRECTORY)
+            set(extra_args_to_pass OUTPUT_DIRECTORY "${test_batch_output_dir}")
+        else()
+            set(extra_args_to_pass OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/..")
+        endif()
     endif()
 
     qt_internal_add_executable("${name}" NO_INSTALL ${extra_args_to_pass} ${forward_args})
