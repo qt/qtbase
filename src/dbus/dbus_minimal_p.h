@@ -15,6 +15,8 @@
 // We mean it.
 //
 
+// These structures are not ours, so ELFVERSION:stop
+
 extern "C" {
 
 // Equivalent to dbus-arch-deps.h (generated from dbus-arch-deps.h.in)

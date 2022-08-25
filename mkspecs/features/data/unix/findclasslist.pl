@@ -18,6 +18,12 @@ while (<STDIN>) {
     open HDR, "<$1" or die("Could not open header $1: $!");
     my $comment = "    /* $1 */";
     while (my $line = <HDR>) {
+        if ($line =~ /\bELFVERSION:(\S+)\b/) {
+            last if $1 eq "stop";
+            <HDR> if $1 eq "ignore-next"; # load next line
+            next if $1 eq "ignore" or $1 eq "ignore-next";
+        }
+
         # Match a struct or class declaration, but not a forward declaration
         $line =~ /^(?:struct|class|namespace) (?:Q_.*_EXPORT)? (\w+)(?!;)/ or next;
         print $comment if $comment;
