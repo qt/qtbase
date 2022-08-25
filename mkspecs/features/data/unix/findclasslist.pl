@@ -8,10 +8,10 @@ my $syntax = "findclasslist.pl\n" .
 
 # Match a struct or class declaration at the top-level, but not a forward
 # declaration
-my $classmatch = qr/^(?:struct|class)(?:\s+Q_\w*_EXPORT)?\s+(\w+)(\s*;$)?/;
+my $classmatch = qr/^(?:struct|class)(?:\s+Q_\w*_EXPORT)?\s+([\w:]+)(\s*;$)?/;
 
 # Match an exported namespace
-my $nsmatch = qr/^namespace\s+Q_\w+_EXPORT\s+(\w+)/;
+my $nsmatch = qr/^namespace\s+Q_\w+_EXPORT\s+([\w:]+)/;
 
 $\ = $/;
 while (<STDIN>) {
@@ -35,7 +35,11 @@ while (<STDIN>) {
         next unless $line =~ $nsmatch or $line =~ $classmatch;
         next if $2 ne "";       # forward declaration
 
-        printf "    *%d%s*;\n", length $1, $1;
+        # split the namespace-qualified or nested class identifiers
+        my $sym = ($1 =~ s/:$//r); # remove trailing :
+        my @sym = split /::/, $sym;
+        @sym = map { sprintf "%d%s", length $_, $_; } @sym;
+        printf "    *%s*;\n", join("", @sym);
         $comment = 0;
     }
     close HDR;
