@@ -37,6 +37,8 @@
 #define SECURITY_WIN32
 #include <security.h>
 
+#include <QtCore/private/qfunctions_win_p.h>
+
 #ifndef SPI_GETPLATFORMTYPE
 #define SPI_GETPLATFORMTYPE 257
 #endif
@@ -668,21 +670,16 @@ static QString readLink(const QFileSystemEntry &link)
 #if QT_CONFIG(fslibs)
     QString ret;
 
-    bool neededCoInit = false;
     IShellLink *psl;                            // pointer to IShellLink i/f
     WIN32_FIND_DATA wfd;
     wchar_t szGotPath[MAX_PATH];
+
+    QComHelper comHelper;
 
     // Get pointer to the IShellLink interface.
     HRESULT hres = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_IShellLink,
                                     (LPVOID *)&psl);
 
-    if (hres == CO_E_NOTINITIALIZED) { // COM was not initialized
-        neededCoInit = true;
-        CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-        hres = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_IShellLink,
-                                (LPVOID *)&psl);
-    }
     if (SUCCEEDED(hres)) {    // Get pointer to the IPersistFile interface.
         IPersistFile *ppf;
         hres = psl->QueryInterface(IID_IPersistFile, (LPVOID *)&ppf);
@@ -698,8 +695,6 @@ static QString readLink(const QFileSystemEntry &link)
         }
         psl->Release();
     }
-    if (neededCoInit)
-        CoUninitialize();
 
     return ret;
 #else
@@ -1661,17 +1656,10 @@ bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSy
                                    QSystemError &error)
 {
     bool ret = false;
+    QComHelper comHelper;
     IShellLink *psl = nullptr;
     HRESULT hres = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_IShellLink,
                                     reinterpret_cast<void **>(&psl));
-
-    bool neededCoInit = false;
-    if (hres == CO_E_NOTINITIALIZED) { // COM was not initialized
-        neededCoInit = true;
-        CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-        hres = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_IShellLink,
-                                reinterpret_cast<void **>(&psl));
-    }
 
     if (SUCCEEDED(hres)) {
         const auto name = QDir::toNativeSeparators(source.filePath());
@@ -1691,9 +1679,6 @@ bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSy
 
     if (!ret)
         error = QSystemError(::GetLastError(), QSystemError::NativeError);
-
-    if (neededCoInit)
-        CoUninitialize();
 
     return ret;
 }
@@ -1762,7 +1747,8 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
     // we need the "display name" of the file, so can't use nativeAbsoluteFilePath
     const QString sourcePath = QDir::toNativeSeparators(absoluteName(source).filePath());
 
-    CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+    QComHelper comHelper;
+
     IFileOperation *pfo = nullptr;
     IShellItem *deleteItem = nullptr;
     FileOperationProgressSink *sink = nullptr;
@@ -1775,7 +1761,6 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
             deleteItem->Release();
         if (pfo)
             pfo->Release();
-        CoUninitialize();
         if (!SUCCEEDED(hres))
             error = QSystemError(hres, QSystemError::NativeError);
     });

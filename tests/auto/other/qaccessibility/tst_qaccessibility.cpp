@@ -18,6 +18,7 @@
 #include <qpa/qplatformnativeinterface.h>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformaccessibility.h>
+#include <QtCore/private/qfunctions_win_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 
@@ -3846,14 +3847,14 @@ void tst_QAccessibility::bridgeTest()
     POINT pt{nativePos.x(), nativePos.y()};
 
     // Initialize COM stuff.
-    HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-    QVERIFY(SUCCEEDED(hr));
+    QComHelper comHelper;
+    QVERIFY(comHelper.isValid());
 
     // Get UI Automation interface.
     const GUID CLSID_CUIAutomation_test{0xff48dba4, 0x60ef, 0x4201,
                                         {0xaa,0x87, 0x54,0x10,0x3e,0xef,0x59,0x4e}};
     IUIAutomation *automation = nullptr;
-    hr = CoCreateInstance(CLSID_CUIAutomation_test, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&automation));
+    HRESULT hr = CoCreateInstance(CLSID_CUIAutomation_test, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&automation));
     QVERIFY(SUCCEEDED(hr));
 
     // Get button element from UI Automation using point.
@@ -3956,7 +3957,6 @@ void tst_QAccessibility::bridgeTest()
     controlWalker->Release();
     windowElement->Release();
     automation->Release();
-    CoUninitialize();
 
     QTestAccessibility::clearEvents();
 #endif

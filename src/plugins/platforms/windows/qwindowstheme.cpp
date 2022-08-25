@@ -43,6 +43,7 @@
 #include <private/qhighdpiscaling_p.h>
 #include <private/qsystemlibrary_p.h>
 #include <private/qwinregistry_p.h>
+#include <QtCore/private/qfunctions_win_p.h>
 
 #include <algorithm>
 
@@ -145,7 +146,7 @@ public:
 
     void run() override
     {
-        m_init = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+        QComHelper comHelper(COINIT_MULTITHREADED);
 
         QMutexLocker readyLocker(&m_readyMutex);
         while (!m_cancelled.loadRelaxed()) {
@@ -170,9 +171,6 @@ public:
                 m_doneMutex.unlock();
             }
         }
-
-        if (m_init != S_FALSE)
-            CoUninitialize();
     }
 
     bool runWithParams(QShGetFileInfoParams *params, qint64 timeOutMSecs)
@@ -195,7 +193,6 @@ public:
     }
 
 private:
-    HRESULT m_init;
     QShGetFileInfoParams *m_params;
     QAtomicInt m_cancelled;
     QWaitCondition m_readyCondition;
@@ -980,10 +977,7 @@ QString QWindowsFileIconEngine::cacheKey() const
 
 QPixmap QWindowsFileIconEngine::filePixmap(const QSize &size, QIcon::Mode, QIcon::State)
 {
-    /* We don't use the variable, but by storing it statically, we
-     * ensure CoInitialize is only called once. */
-    static HRESULT comInit = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-    Q_UNUSED(comInit);
+    QComHelper comHelper;
 
     static QCache<QString, FakePointer<int> > dirIconEntryCache(1000);
     static QMutex mx;

@@ -12,6 +12,7 @@
 #include <QtCore/qthread.h>
 
 #include <QtCore/private/qwinregistry_p.h>
+#include <QtCore/private/qfunctions_win_p.h>
 
 #include <shlobj.h>
 #include <shlwapi.h>
@@ -34,11 +35,10 @@ public:
 
     void run() override
     {
-        if (SUCCEEDED(CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE))) {
+        QComHelper comHelper;
+        if (comHelper.isValid())
             m_result = ShellExecute(nullptr, m_operation, m_file, m_parameters, nullptr,
                                     SW_SHOWNORMAL);
-            CoUninitialize();
-        }
     }
 
     HINSTANCE result() const { return m_result; }

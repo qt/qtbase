@@ -15,9 +15,33 @@
 // We mean it.
 //
 
+#include <QtCore/private/qglobal_p.h>
+
 #if defined(Q_OS_WIN)
 
+#if !defined(QT_BOOTSTRAPPED)
 #include <QtCore/private/qfunctions_winrt_p.h>
+#endif
+
+#include <QtCore/qt_windows.h>
+
+QT_BEGIN_NAMESPACE
+
+class Q_CORE_EXPORT QComHelper
+{
+    Q_DISABLE_COPY_MOVE(QComHelper)
+public:
+    QComHelper(COINIT concurrencyModel = COINIT_APARTMENTTHREADED);
+    ~QComHelper();
+
+    bool isValid() const { return SUCCEEDED(m_initResult); }
+    explicit operator bool() const { return isValid(); }
+
+private:
+    HRESULT m_initResult = E_FAIL;
+};
+
+QT_END_NAMESPACE
 
 #endif // Q_OS_WIN
 

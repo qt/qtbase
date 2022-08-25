@@ -8,6 +8,8 @@
 #include <QtCore/quuid.h>
 #include <QtCore/qmetaobject.h>
 
+#include <QtCore/private/qfunctions_win_p.h>
+
 #include <QtNetwork/qnetworkinterface.h>
 
 #include <objbase.h>
@@ -124,6 +126,8 @@ public:
     void setConnectivity(NLM_CONNECTIVITY newConnectivity);
 
 private:
+    QComHelper comHelper;
+
     ComPtr<QNetworkConnectionEvents> connectionEvents;
     // We can assume we have access to internet/subnet when this class is created because
     // connection has already been established to the peer:
@@ -136,7 +140,6 @@ private:
     bool sameSubnet = false;
     bool isLinkLocal = false;
     bool monitoring = false;
-    bool comInitFailed = false;
     bool remoteIsIPv6 = false;
 };
 
@@ -299,30 +302,25 @@ bool QNetworkConnectionEvents::stopMonitoring()
 
 QNetworkConnectionMonitorPrivate::QNetworkConnectionMonitorPrivate()
 {
-    auto hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-    if (FAILED(hr)) {
-        qCDebug(lcNetMon) << "Failed to initialize COM:" << errorStringFromHResult(hr);
-        comInitFailed = true;
+    if (!comHelper.isValid())
         return;
-    }
 
     connectionEvents = new QNetworkConnectionEvents(this);
 }
 
 QNetworkConnectionMonitorPrivate::~QNetworkConnectionMonitorPrivate()
 {
-    if (comInitFailed)
+    if (!comHelper.isValid())
         return;
     if (monitoring)
         stopMonitoring();
     connectionEvents.Reset();
-    CoUninitialize();
 }
 
 bool QNetworkConnectionMonitorPrivate::setTargets(const QHostAddress &local,
                                                   const QHostAddress &remote)
 {
-    if (comInitFailed)
+    if (!comHelper.isValid())
         return false;
 
     QNetworkInterface iface = getInterfaceFromHostAddress(local);

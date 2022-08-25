@@ -22,6 +22,7 @@
 #include <private/qabstractfileengine_p.h>
 #include <private/qfsfileengine_p.h>
 #include <private/qfilesystemengine_p.h>
+#include <QtCore/private/qfunctions_win_p.h>
 
 #include <QtTest/private/qemulationdetector_p.h>
 
@@ -1540,13 +1541,9 @@ static QString getWorkingDirectoryForLink(const QString &linkFileName)
     bool neededCoInit = false;
     QString ret;
 
+    QComHelper comHelper;
     IShellLink *psl;
     HRESULT hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (void **)&psl);
-    if (hres == CO_E_NOTINITIALIZED) { // COM was not initialized
-        neededCoInit = true;
-        CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-        hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (void **)&psl);
-    }
 
     if (SUCCEEDED(hres)) {    // Get pointer to the IPersistFile interface.
         IPersistFile *ppf;
@@ -1563,10 +1560,6 @@ static QString getWorkingDirectoryForLink(const QString &linkFileName)
             ppf->Release();
         }
         psl->Release();
-    }
-
-    if (neededCoInit) {
-        CoUninitialize();
     }
 
     return ret;
