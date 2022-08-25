@@ -1631,7 +1631,8 @@ void QApplication::aboutQt()
 bool QApplication::event(QEvent *e)
 {
     Q_D(QApplication);
-    if (e->type() == QEvent::Quit) {
+    switch (e->type()) {
+    case QEvent::Quit:
         // FIXME: This logic first tries to close all windows, and then
         // checks whether it was successful, but the conditions used in
         // closeAllWindows() differ from the verification logic below.
@@ -1651,7 +1652,7 @@ bool QApplication::event(QEvent *e)
         // closeAllWindows(). FIXME: Unify all this close magic through closeAllWindows.
         return QCoreApplication::event(e);
 #ifndef Q_OS_WIN
-    } else if (e->type() == QEvent::LocaleChange) {
+    case QEvent::LocaleChange: {
         // on Windows the event propagation is taken care by the
         // WM_SETTINGCHANGE event handler.
         const QWidgetList list = topLevelWidgets();
@@ -1661,8 +1662,10 @@ bool QApplication::event(QEvent *e)
                     w->d_func()->setLocale_helper(QLocale(), true);
             }
         }
+        break;
+    }
 #endif
-    } else if (e->type() == QEvent::Timer) {
+    case QEvent::Timer: {
         QTimerEvent *te = static_cast<QTimerEvent*>(e);
         Q_ASSERT(te != nullptr);
         if (te->timerId() == d->toolTipWakeUp.timerId()) {
@@ -1691,15 +1694,16 @@ bool QApplication::event(QEvent *e)
         } else if (te->timerId() == d->toolTipFallAsleep.timerId()) {
             d->toolTipFallAsleep.stop();
         }
+        break;
+    }
 #if QT_CONFIG(whatsthis)
-    } else if (e->type() == QEvent::EnterWhatsThisMode) {
+    case QEvent::EnterWhatsThisMode:
         QWhatsThis::enterWhatsThisMode();
         return true;
 #endif
-    }
-
-    if (e->type() == QEvent::LanguageChange || e->type() == QEvent::ApplicationFontChange ||
-        e->type() == QEvent::ApplicationPaletteChange) {
+    case QEvent::LanguageChange:
+    case QEvent::ApplicationFontChange:
+    case QEvent::ApplicationPaletteChange: {
         // QGuiApplication::event does not account for the cases where
         // there is a top level widget without a window handle. So they
         // need to have the event posted here
@@ -1708,6 +1712,10 @@ bool QApplication::event(QEvent *e)
             if (!w->windowHandle() && (w->windowType() != Qt::Desktop))
                 postEvent(w, new QEvent(e->type()));
         }
+        break;
+    }
+    default:
+        break;
     }
 
     return QGuiApplication::event(e);
