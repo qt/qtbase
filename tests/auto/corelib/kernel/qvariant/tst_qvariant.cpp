@@ -4738,6 +4738,11 @@ void tst_QVariant::metaEnums()
     METAENUMS_TEST(MetaEnumTest_Enum5_value);
     METAENUMS_TEST(MetaEnumTest_Enum6_value);
     METAENUMS_TEST(MetaEnumTest_Enum8_value);
+
+#undef METAENUMS_TEST
+
+    testVariantMeta(Qt::RichText, &ok, "RichText");
+    testVariantMeta(Qt::Alignment(Qt::AlignBottom), &ok, "AlignBottom");
 }
 
 void tst_QVariant::nullConvert()
