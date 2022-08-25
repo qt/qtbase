@@ -534,7 +534,7 @@ qt_internal_extend_target(Core CONDITION WIN32
         kernel/qcoreapplication_win.cpp
         kernel/qelapsedtimer_win.cpp
         kernel/qeventdispatcher_win.cpp kernel/qeventdispatcher_win_p.h
-        kernel/qfunctions_winrt_p.h
+        kernel/qfunctions_win_p.h kernel/qfunctions_winrt_p.h
         kernel/qsharedmemory_win.cpp
         kernel/qsystemsemaphore_win.cpp
         kernel/qwineventnotifier.cpp kernel/qwineventnotifier.h kernel/qwineventnotifier_p.h
