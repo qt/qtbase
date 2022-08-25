@@ -17,7 +17,7 @@
 
 #include <QtCore/private/qglobal_p.h>
 
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) || defined(Q_QDOC)
 
 #if !defined(QT_BOOTSTRAPPED)
 #include <QtCore/private/qfunctions_winrt_p.h>
@@ -40,6 +40,8 @@ public:
 private:
     HRESULT m_initResult = E_FAIL;
 };
+
+Q_CORE_EXPORT bool qt_win_hasPackageIdentity();
 
 QT_END_NAMESPACE
 
