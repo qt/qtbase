@@ -340,18 +340,12 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
 
             /*
               Neither is valid (e.g. in a spring-forward's gap) and
-              nextTran.atMSecsSinceEpoch < nextStart <= tran.atMSecsSinceEpoch, so
-              0 < tran.atMSecsSinceEpoch - nextTran.atMSecsSinceEpoch
-              = (nextTran.offsetFromUtc - tran.offsetFromUtc) * 1000
+              nextTran.atMSecsSinceEpoch < nextStart <= tran.atMSecsSinceEpoch;
+              swap their atMSecsSinceEpoch to give each a moment on its side of
+              the transition; and pick the reverse of what hint asked for:
             */
-            int dstStep = (nextTran.offsetFromUtc - tran.offsetFromUtc) * 1000;
-            Q_ASSERT(dstStep > 0); // How else could we get here ?
-            if (nextFirst) { // hint thought we needed nextTran, so use tran
-                tran.atMSecsSinceEpoch -= dstStep;
-                return tran;
-            }
-            nextTran.atMSecsSinceEpoch += dstStep;
-            return nextTran;
+            std::swap(tran.atMSecsSinceEpoch, nextTran.atMSecsSinceEpoch);
+            return nextFirst ? tran : nextTran;
         }
         // Before first transition, or system has transitions but not for this zone.
         // Try falling back to offsetFromUtc (works for before first transition, at least).
