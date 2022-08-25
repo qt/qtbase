@@ -1808,7 +1808,7 @@ function(_qt_internal_generate_win32_rc_file target)
     endif()
 
     if(MSVC)
-        set(extra_rc_flags "/nologo")
+        set(extra_rc_flags "/c65001 /nologo")
     else()
         set(extra_rc_flags)
     endif()
