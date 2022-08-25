@@ -904,9 +904,6 @@ bool QAbstractButton::event(QEvent *e)
         case QEvent::HoverEnter:
         case QEvent::HoverLeave:
         case QEvent::ContextMenu:
-#if QT_CONFIG(wheelevent)
-        case QEvent::Wheel:
-#endif
             return true;
         default:
             break;
