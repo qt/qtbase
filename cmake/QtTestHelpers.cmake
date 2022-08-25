@@ -380,7 +380,7 @@ function(qt_internal_add_test name)
     qt_internal_get_test_arg_definitions(optional_args single_value_args multi_value_args)
 
     qt_parse_all_arguments(arg "qt_add_test"
-        "${optional_args}"
+        "${optional_args};NO_BATCH"
         "${single_value_args}"
         "${multi_value_args}"
         ${ARGN}
@@ -404,7 +404,7 @@ function(qt_internal_add_test name)
             "removed in a future Qt version. Use the LIBRARIES option instead.")
     endif()
 
-    if(QT_BUILD_TESTS_BATCHED AND NOT arg_QMLTEST)
+    if(NOT arg_NO_BATCH AND QT_BUILD_TESTS_BATCHED AND NOT arg_QMLTEST)
         qt_internal_add_test_to_batch(name ${name} ${ARGN})
     elseif(arg_SOURCES)
         if(QT_BUILD_TESTS_BATCHED AND arg_QMLTEST)
