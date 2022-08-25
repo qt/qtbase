@@ -1312,8 +1312,20 @@ void QVariant::save(QDataStream &s) const
 
 /*!
     \since 4.4
+    \relates QVariant
 
     Reads a variant \a p from the stream \a s.
+
+    \note If the stream contains types that aren't the built-in ones (see \l
+    QMetaType::Type), those types must be registered using qRegisterMetaType()
+    or QMetaType::registerType() before the variant can be properly loaded. If
+    an unregistered type is found, QVariant will set the corrupt flag in the
+    stream, stop processing and print a warning. For example, for QList<int>
+    it would print the following:
+
+    \quotation
+    QVariant::load: unknown user type with name QList<int>
+    \endquotation
 
     \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
 */
@@ -1325,6 +1337,7 @@ QDataStream &operator>>(QDataStream &s, QVariant &p)
 
 /*!
     Writes a variant \a p to the stream \a s.
+    \relates QVariant
 
     \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
 */
@@ -2594,9 +2607,6 @@ QT_WARNING_POP
     Example:
 
     \snippet code/src_corelib_kernel_qvariant.cpp 7
-
-    \note If you are working with custom types, you should use
-    the Q_DECLARE_METATYPE() macro to register your custom type.
 
     \sa setValue(), value()
 */
