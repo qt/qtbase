@@ -22,8 +22,8 @@ while (<STDIN>) {
     }
 
     # Replace this line with the class list
+    my $fname = $1;
     open HDR, "<$1" or die("Could not open header $1: $!");
-    my $comment = "    /* $1 */";
     while (my $line = <HDR>) {
         if ($line =~ /\bELFVERSION:(\S+)\b/) {
             last if $1 eq "stop";
@@ -39,8 +39,8 @@ while (<STDIN>) {
         my $sym = ($1 =~ s/:$//r); # remove trailing :
         my @sym = split /::/, $sym;
         @sym = map { sprintf "%d%s", length $_, $_; } @sym;
-        printf "    *%s*;\n", join("", @sym);
-        $comment = 0;
+        $sym = sprintf "    *%s*;", join("", @sym);
+        printf "%-55s # %s:%d\n", $sym, $fname, $.;
     }
     close HDR;
 }
