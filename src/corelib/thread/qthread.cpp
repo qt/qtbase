@@ -979,6 +979,16 @@ bool QThread::isRunning() const
     return d->running;
 }
 
+void QThread::requestInterruption()
+{
+
+}
+
+bool QThread::isInterruptionRequested() const
+{
+    return false;
+}
+
 // No threads: so we can just use static variables
 Q_CONSTINIT static QThreadData *data = nullptr;
 
