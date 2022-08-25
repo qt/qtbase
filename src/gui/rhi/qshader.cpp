@@ -516,8 +516,8 @@ QShaderKey::QShaderKey(QShader::Source s,
 bool operator==(const QShader &lhs, const QShader &rhs) noexcept
 {
     return lhs.d->stage == rhs.d->stage
-            && lhs.d->shaders == rhs.d->shaders;
-    // do not bother with desc and bindings, if the shader code is the same, the description must match too
+            && lhs.d->shaders == rhs.d->shaders
+            && lhs.d->bindings == rhs.d->bindings;
 }
 
 /*!
