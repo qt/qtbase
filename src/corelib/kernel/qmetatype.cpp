@@ -1771,10 +1771,16 @@ static QMetaEnum metaEnumFromType(QMetaType t)
 {
     if (t.flags() & QMetaType::IsEnumeration) {
         if (const QMetaObject *metaObject = t.metaObject()) {
-            const QByteArray enumName = t.name();
-            const char *lastColon = std::strrchr(enumName, ':');
-            return metaObject->enumerator(metaObject->indexOfEnumerator(
-                    lastColon ? lastColon + 1 : enumName.constData()));
+            QByteArrayView qflagsNamePrefix = "QFlags<";
+            QByteArray enumName = t.name();
+            if (enumName.endsWith('>') && enumName.startsWith(qflagsNamePrefix)) {
+                // extract the template argument
+                enumName.chop(1);
+                enumName = enumName.sliced(qflagsNamePrefix.size());
+            }
+            if (qsizetype lastColon = enumName.lastIndexOf(':'); lastColon != -1)
+                enumName = enumName.sliced(lastColon + 1);
+            return metaObject->enumerator(metaObject->indexOfEnumerator(enumName));
         }
     }
     return QMetaEnum();
@@ -2424,7 +2430,7 @@ bool QMetaType::canConvert(QMetaType fromType, QMetaType toType)
             return true;
     }
     const ConverterFunction * const f =
-        customTypesConversionRegistry()->function(qMakePair(fromTypeId, toTypeId));
+        customTypesConversionRegistry()->function(std::make_pair(fromTypeId, toTypeId));
     if (f)
         return true;
 
