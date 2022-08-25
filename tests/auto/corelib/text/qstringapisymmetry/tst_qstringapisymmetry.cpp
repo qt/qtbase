@@ -2625,7 +2625,7 @@ void tst_QStringApiSymmetry::toNumberWithBases_data()
     QTest::addColumn<qint64>("result");
     QTest::addColumn<bool>("ok");
 
-    constexpr struct {
+    static constexpr struct {
         const char prefix[3];
         int base;
     } bases[] = {
