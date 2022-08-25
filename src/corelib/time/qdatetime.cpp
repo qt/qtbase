@@ -5209,9 +5209,7 @@ QDataStream &operator>>(QDataStream &in, QDate &date)
         // Older versions consider 0 an invalid jd.
         date.jd = (jd != 0 ? jd : QDate::nullJd());
     } else {
-        qint64 jd;
-        in >> jd;
-        date.jd = jd;
+        in >> date.jd;
     }
 
     return in;
