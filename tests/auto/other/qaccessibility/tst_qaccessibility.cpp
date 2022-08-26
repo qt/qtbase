@@ -163,6 +163,7 @@ public slots:
     void cleanup();
 private slots:
     void eventTest();
+    void eventWithChildTest();
     void customWidget();
     void deletedWidget();
     void subclassedWidget();
@@ -351,6 +352,33 @@ void tst_QAccessibility::eventTest()
     objectHolder.reset();
 
     QTestAccessibility::clearEvents();
+}
+
+void tst_QAccessibility::eventWithChildTest()
+{
+    // make sure that QAccessibleEvent created using either of the two QAccessibleEvent
+    // behaves the same when the same underlying QObject is used
+    QWidget widget;
+    QWidget childWidget(&widget);
+
+    // QAccessibleEvent constructor called with the QObject*
+    QAccessibleEvent event1(&widget, QAccessible::Focus);
+
+    // QAccessibleEvent constructor called with the QAccessibleInterface* for the same QObject*
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&widget);
+    QAccessibleEvent event2(iface, QAccessible::Focus);
+
+    QVERIFY(event1.accessibleInterface() != nullptr);
+    QVERIFY(event2.accessibleInterface() != nullptr);
+    QCOMPARE(event1.accessibleInterface(), event2.accessibleInterface());
+
+    // set same child for both
+    event1.setChild(0);
+    event2.setChild(0);
+
+    QVERIFY(event1.accessibleInterface() != nullptr);
+    QVERIFY(event2.accessibleInterface() != nullptr);
+    QCOMPARE(event1.accessibleInterface(), event2.accessibleInterface());
 }
 
 void tst_QAccessibility::customWidget()

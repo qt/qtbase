@@ -287,7 +287,7 @@ public:
     }
 
     inline QAccessibleEvent(QAccessibleInterface *iface, QAccessible::Event typ)
-        : m_type(typ), m_object(nullptr)
+        : m_type(typ)
     {
         Q_ASSERT(iface);
         Q_ASSERT(m_type != QAccessible::ValueChanged);
@@ -299,6 +299,7 @@ public:
         Q_ASSERT(m_type != QAccessible::TextUpdated);
         Q_ASSERT(m_type != QAccessible::TableModelChanged);
         m_uniqueId = QAccessible::uniqueId(iface);
+        m_object = iface->object();
     }
 
     virtual ~QAccessibleEvent();
