@@ -426,7 +426,7 @@ public:
     reference operator[](qsizetype i)
     {
         Q_ASSERT_X(size_t(i) < size_t(d->size), "QList::operator[]", "index out of range");
-        detach();
+        // don't detach() here, we detach in data below:
         return data()[i];
     }
     const_reference operator[](qsizetype i) const noexcept { return at(i); }
