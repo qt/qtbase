@@ -35,6 +35,8 @@ function(qt_internal_add_app target)
             "a future Qt version. Use the LIBRARIES option instead.")
     endif()
 
+    qt_internal_library_deprecation_level(deprecation_define)
+
     qt_internal_add_executable("${target}"
         QT_APP
         DELAY_RC
@@ -48,6 +50,7 @@ function(qt_internal_add_app target)
             ${arg_INCLUDE_DIRECTORIES}
         DEFINES
             ${arg_DEFINES}
+            ${deprecation_define}
         LIBRARIES
             ${arg_LIBRARIES}
             ${arg_PUBLIC_LIBRARIES}

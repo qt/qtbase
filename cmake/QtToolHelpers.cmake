@@ -217,6 +217,8 @@ function(qt_internal_add_tool target_name)
             "removed in a future Qt version. Use the LIBRARIES option instead.")
     endif()
 
+    qt_internal_library_deprecation_level(deprecation_define)
+
     qt_internal_add_executable("${target_name}"
         OUTPUT_DIRECTORY "${output_dir}"
         ${exceptions}
@@ -227,6 +229,7 @@ function(qt_internal_add_tool target_name)
         DEFINES
             QT_USE_QSTRINGBUILDER
             ${arg_DEFINES}
+            ${deprecation_define}
         ${corelib}
         LIBRARIES
             ${arg_LIBRARIES}
