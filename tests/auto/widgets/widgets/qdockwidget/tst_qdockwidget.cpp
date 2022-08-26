@@ -76,6 +76,9 @@ private slots:
     // test closing and deleting consistency
     void closeAndDelete();
 
+    // test save and restore consistency
+    void saveAndRestore();
+
 private:
     // helpers and consts for dockPermissions, hideAndShow, closeAndDelete
 #ifdef QT_BUILD_INTERNAL
@@ -1596,6 +1599,163 @@ void tst_QDockWidget::dockPermissions()
     QTest::qWait(waitBeforeClose);
 #else
     QSKIP("test requires -developer-build option");
+#endif // QT_BUILD_INTERNAL
+}
+
+/*!
+    \internal
+
+    This test checks consistency of QMainWindow::saveState() / QMainWindow::restoreState().
+    These methods (de)serialize dock widget properties via a QDataStream into a QByteArray.
+
+    If the logic of (de)serializing Qt datatypes and classes changes, old settings can fail
+    to restore properly without triggering warnings or assertions.
+
+    The test consists of two parts:
+    \list 1
+    \li Read properties from a hard coded byte array and check if it is deserialized correctly.
+    \li Serialize properties into a \a QByteArray and check if it is serialized correctly.
+    \endlist
+*/
+void tst_QDockWidget::saveAndRestore()
+{
+#ifdef Q_OS_WIN
+    QSKIP("Test skipped on Windows platforms");
+#endif // Q_OS_WIN
+#ifndef QT_BUILD_INTERNAL
+    QSKIP("test requires -developer-build option");
+#else
+
+    // Hard coded byte array for test initialization
+    const QByteArray testArray = QByteArrayLiteral(
+        "\x00\x00\x00\xFF\x00\x00\x00\x00\xFD\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x13\x00\x00\x05\xE8\xFC\x02\x00\x00\x00\x01\xFB\x00\x00\x00\x04\x00"
+        "D\x00"
+        "1\x03\x00\x00\x01\f\x00\x00\x00\x97\x00\x00\x02\x19\x00\x00\x01z\x00\x00\x00\x01\x00\x00\x00\x13\x00\x00\x05\xE8\xFC\x02\x00\x00\x00\x01\xFB\x00\x00\x00\x04\x00"
+        "D\x00"
+        "2\x03\x00\x00\x06L\x00\x00\x00\xFF\x00\x00\x01\f\x00\x00\x00\xE2\x00\x00\n\x80\x00\x00\x05\xE8\x00\x00\x00\x04\x00\x00\x00\x04\x00\x00\x00\b\x00\x00\x00\b\xFC\x00\x00\x00\x00"
+    );
+
+    QByteArray referenceArray;    // Copy of testArray, corrected for current screen limits
+    QPoint topLeft1;      // Top left point of dock widget d1
+    QPoint topLeft2;      // Top left point of dock widget d2
+    QSize widgetSize1;    // Size of dock widget d1
+    QSize widgetSize2;    // Size of dock widget d2
+    bool isFloating1;     // Floating status of dock widget d1
+    bool isFloating2;     // Floating status of dock widget d2
+
+    // Create a mainwindow with a central widget and two dock widgets.
+    // Import properties from hard coded byte array.
+    // Use a scope to delete objects from screen after test.
+    {
+        QPointer<QDockWidget> d1;
+        QPointer<QDockWidget> d2;
+        QPointer<QWidget> cent;
+        QMainWindow* mainWindow;
+        createTestWidgets(mainWindow, cent, d1, d2);
+
+        // Failure to restore properties might lead to inconsistencies and crash.
+        // To leave a clean environment when the test inexpectedly goes out of scope,
+        // => store main window pointer in a std::unique_ptr
+        std::unique_ptr<QMainWindow> up_mainWindow(mainWindow);
+
+        // Restore, wait for events to be processed
+        mainWindow->restoreState(testArray);
+        QVERIFY(QTest::qWaitForWindowExposed(d1));
+        QVERIFY(QTest::qWaitForWindowExposed(d2));
+
+        // Serialized dock widget positions and sizes might be overridden due
+        // screen size limitations => do not check them here.
+        // If the test fails between here and scope end, serialization format/sequence have changed
+        QTRY_VERIFY(d1->isFloating());
+        QTRY_VERIFY(d2->isFloating());
+
+        // Hide main window and save their floating status.
+        // Reason:
+        // - KDE window managers do not take control over dock widgets.
+        //   => They always close with the main window.
+        // - Some non KDE window managers do take control over dock widgets.
+        //   => They prevent them from closing with the main window (QTBUG-103474).
+        // If properties are restored correctly, closing behavior must be consistent
+        // throughout this test.
+        mainWindow->hide();
+        // FIXME: No method exists in 6.5 to wait for a window to be hidden.
+        // => wait and hope the best, replace with qWaitForWindowHidden once implemented.
+        QTest::qWait(200);
+        isFloating1 = d1->isFloating();
+        isFloating2 = d2->isFloating();
+    }
+
+    // Create a mainwindow with a central widget and two dock widgets.
+    // Assign different properties to each dock widgets.
+    // Write properties to a byte array.
+    // Remember position and size properties for comparison.
+    // Use a scope to delete objects from screen after test.
+    {
+        QPointer<QDockWidget> d1;
+        QPointer<QDockWidget> d2;
+        QPointer<QWidget> cent;
+        QMainWindow* mainWindow;
+        createTestWidgets(mainWindow, cent, d1, d2);
+        std::unique_ptr<QMainWindow> up_mainWindow(mainWindow);
+
+        // unplug, position and resize both dock widgets relative to screen size
+        unplugAndResize(mainWindow, d1, home1(mainWindow), size1(mainWindow));
+        unplugAndResize(mainWindow, d2, home2(mainWindow), size2(mainWindow));
+
+        topLeft1 = d1->pos();
+        topLeft2 = d2->pos();
+        widgetSize1 = d1->size();
+        widgetSize2 = d2->size();
+
+        // save properties, potentially corrected for screen limits
+        referenceArray = mainWindow->saveState();
+
+        // Check closing behavior consistency
+        mainWindow->hide();
+        QTRY_VERIFY(d1->isFloating());
+        QTRY_VERIFY(d2->isFloating());
+        QCOMPARE(d1->isFloating(), isFloating1);
+        QCOMPARE(d2->isFloating(), isFloating2);
+    }
+
+    // Create a new main window, central window and two dock widgets.
+    QPointer<QDockWidget> d1;
+    QPointer<QDockWidget> d2;
+    QPointer<QWidget> cent;
+    QMainWindow* mainWindow;
+    createTestWidgets(mainWindow, cent, d1, d2);
+
+    // Failure to restore properties might lead to inconsistencies and crash.
+    // To leave a clean environment when the test inexpectedly goes out of scope,
+    // - store main window pointer in a std::unique_ptr
+    std::unique_ptr<QMainWindow> up_mainWindow(mainWindow);
+
+    // Restore properties and wait for events to be processed
+    mainWindow->restoreState(referenceArray);
+    QVERIFY(QTest::qWaitForWindowExposed(d1));
+    QVERIFY(QTest::qWaitForWindowExposed(d2));
+
+    // Compare positions, sizes and floating status
+    // If the test fails in the following 12 lines,
+    // the de-serialization format/sequence have changed
+    QCOMPARE(topLeft1, d1->pos());
+    QCOMPARE(topLeft2, d2->pos());
+    QCOMPARE(widgetSize1, d1->size());
+    QCOMPARE(widgetSize2, d2->size());
+    QVERIFY(d1->isFloating());
+    QVERIFY(d2->isFloating());
+
+    // Serialize again to compare all remaining properties
+    const QByteArray comparisonArray = mainWindow->saveState();
+    QCOMPARE(comparisonArray, referenceArray);
+
+    // Check closing behavior consistency
+    mainWindow->hide();
+    QTRY_VERIFY(d1->isFloating());
+    QTRY_VERIFY(d2->isFloating());
+    QCOMPARE(d1->isFloating(), isFloating1);
+    QCOMPARE(d2->isFloating(), isFloating2);
+
 #endif // QT_BUILD_INTERNAL
 }
 
