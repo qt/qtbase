@@ -77,6 +77,9 @@
 #include <algorithm>
 
 QT_BEGIN_NAMESPACE
+#ifndef QT_NO_DBUS
+Q_LOGGING_CATEGORY(lcQpaThemeDBus, "qt.qpa.theme.dbus")
+#endif
 
 Q_DECLARE_LOGGING_CATEGORY(qLcTray)
 
@@ -132,7 +135,92 @@ static bool isDBusGlobalMenuAvailable()
     static bool dbusGlobalMenuAvailable = checkDBusGlobalMenuAvailable();
     return dbusGlobalMenuAvailable;
 }
-#endif
+
+/*!
+ * \internal
+ * The QGenericUnixThemeDBusListener class listens to the SettingChanged DBus signal
+ * and translates it into the QDbusSettingType enum.
+ * Upon construction, it logs success/failure of the DBus connection.
+ *
+ * The signal settingChanged delivers the normalized setting type and the new value as a string.
+ * It is emitted on known setting types only.
+ */
+
+class QGenericUnixThemeDBusListener : public QObject
+{
+    Q_OBJECT
+
+public:
+    QGenericUnixThemeDBusListener(const QString &service, const QString &path, const QString &interface, const QString &signal);
+
+    enum class SettingType {
+        KdeGlobalTheme,
+        KdeApplicationStyle,
+        Unknown
+    };
+    Q_ENUM(SettingType)
+
+    static SettingType toSettingType(const QString &location, const QString &key);
+
+private Q_SLOTS:
+    void onSettingChanged(const QString &location, const QString &key, const QDBusVariant &value);
+
+Q_SIGNALS:
+    void settingChanged(QGenericUnixThemeDBusListener::SettingType type, const QString &value);
+
+};
+
+QGenericUnixThemeDBusListener::QGenericUnixThemeDBusListener(const QString &service,
+                               const QString &path, const QString &interface, const QString &signal)
+{
+    QDBusConnection dbus = QDBusConnection::sessionBus();
+    const bool dBusRunning = dbus.isConnected();
+    bool dBusSignalConnected = false;
+#define LOG service << path << interface << signal;
+
+    if (dBusRunning) {
+        qRegisterMetaType<QDBusVariant>();
+        dBusSignalConnected = dbus.connect(service, path, interface, signal, this,
+                              SLOT(onSettingChanged(QString,QString,QDBusVariant)));
+    }
+
+    if (dBusSignalConnected) {
+        // Connection successful
+        qCDebug(lcQpaThemeDBus) << LOG;
+    } else {
+        if (dBusRunning) {
+            // DBus running, but connection failed
+            qCWarning(lcQpaThemeDBus) << "DBus connection failed:" << LOG;
+        } else {
+            // DBus not running
+            qCWarning(lcQpaThemeDBus) << "Session DBus not running.";
+        }
+        qCWarning(lcQpaThemeDBus) << "Application will not react to KDE setting changes.\n"
+                             << "Check your DBus installation.";
+    }
+#undef LOG
+}
+
+QGenericUnixThemeDBusListener::SettingType QGenericUnixThemeDBusListener::toSettingType(
+        const QString &location, const QString &key)
+{
+    if (location == QLatin1String("org.kde.kdeglobals.KDE")
+          && key == QLatin1String("widgetStyle"))
+        return SettingType::KdeApplicationStyle;
+    if (location == QLatin1String("org.kde.kdeglobals.General")
+          && key == QLatin1String("ColorScheme"))
+        return SettingType::KdeGlobalTheme;
+    return SettingType::Unknown;
+}
+
+void QGenericUnixThemeDBusListener::onSettingChanged(const QString &location, const QString &key, const QDBusVariant &value)
+{
+    const SettingType type = toSettingType(location, key);
+    if (type != SettingType::Unknown)
+        emit settingChanged(type, value.variant().toString());
+}
+
+#endif //QT_NO_DBUS
 
 class QGenericUnixThemePrivate : public QPlatformThemePrivate
 {
@@ -265,11 +353,9 @@ static QIcon xdgFileIcon(const QFileInfo &fileInfo)
 #if QT_CONFIG(settings)
 class QKdeThemePrivate : public QPlatformThemePrivate
 {
+
 public:
-    QKdeThemePrivate(const QStringList &kdeDirs, int kdeVersion)
-        : kdeDirs(kdeDirs)
-        , kdeVersion(kdeVersion)
-    { }
+    QKdeThemePrivate(const QStringList &kdeDirs, int kdeVersion);
 
     static QString kdeGlobals(const QString &kdeDir, int kdeVersion)
     {
@@ -300,7 +386,58 @@ public:
     int startDragDist = 10;
     int startDragTime = 500;
     int cursorBlinkRate = 1000;
+
+#ifndef QT_NO_DBUS
+private:
+    std::unique_ptr<QGenericUnixThemeDBusListener> dbus;
+    bool initDbus();
+    void settingChangedHandler(QGenericUnixThemeDBusListener::SettingType type, const QString &value);
+#endif // QT_NO_DBUS
 };
+
+#ifndef QT_NO_DBUS
+void QKdeThemePrivate::settingChangedHandler(QGenericUnixThemeDBusListener::SettingType type, const QString &value)
+{
+    switch (type) {
+    case QGenericUnixThemeDBusListener::SettingType::KdeGlobalTheme:
+        qCDebug(lcQpaThemeDBus) << "KDE global theme changed to:" << value;
+        break;
+    case QGenericUnixThemeDBusListener::SettingType::KdeApplicationStyle:
+        qCDebug(lcQpaThemeDBus) << "KDE application style changed to:" << value;
+        break;
+    case QGenericUnixThemeDBusListener::SettingType::Unknown:
+        Q_UNREACHABLE();
+    }
+
+    refresh();
+}
+
+bool QKdeThemePrivate::initDbus()
+{
+    const QLatin1String service("");
+    const QLatin1String path("/org/freedesktop/portal/desktop");
+    const QLatin1String interface("org.freedesktop.portal.Settings");
+    const QLatin1String signal("SettingChanged");
+
+    dbus.reset(new QGenericUnixThemeDBusListener(service, path, interface, signal));
+    Q_ASSERT(dbus);
+
+    // Wrap slot in a lambda to avoid inheriting QKdeThemePrivate from QObject
+    auto wrapper = [this](QGenericUnixThemeDBusListener::SettingType type, const QString &value) {
+        settingChangedHandler(type, value);
+    };
+
+    return QObject::connect(dbus.get(), &QGenericUnixThemeDBusListener::settingChanged, wrapper);
+}
+#endif // QT_NO_DBUS
+
+QKdeThemePrivate::QKdeThemePrivate(const QStringList &kdeDirs, int kdeVersion)
+    : kdeDirs(kdeDirs), kdeVersion(kdeVersion)
+{
+#ifndef QT_NO_DBUS
+    initDbus();
+#endif // QT_NO_DBUS
+}
 
 void QKdeThemePrivate::refresh()
 {
@@ -401,6 +538,8 @@ void QKdeThemePrivate::refresh()
 
     if (QFont *toolBarFont = kdeFont(readKdeSetting(QStringLiteral("toolBarFont"), kdeDirs, kdeVersion, kdeSettings)))
         resources.fonts[QPlatformTheme::ToolButtonFont] = toolBarFont;
+
+    QWindowSystemInterface::handleThemeChange(nullptr);
 
     qCDebug(lcQpaFonts) << "default fonts: system" << resources.fonts[QPlatformTheme::SystemFont]
                         << "fixed" << resources.fonts[QPlatformTheme::FixedFont];
@@ -884,3 +1023,7 @@ QStringList QGenericUnixTheme::themeNames()
 }
 
 QT_END_NAMESPACE
+
+#ifndef QT_NO_DBUS
+#include "qgenericunixthemes.moc"
+#endif // QT_NO_DBUS
