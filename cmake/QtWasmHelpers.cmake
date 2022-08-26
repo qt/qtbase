@@ -35,9 +35,9 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
     if (QT_FEATURE_thread)
         target_compile_options("${wasmTarget}" INTERFACE "SHELL:-pthread")
         target_link_options("${wasmTarget}" INTERFACE "SHELL:-pthread")
-    else()
-        target_link_options("${wasmTarget}" INTERFACE "SHELL:-s ALLOW_MEMORY_GROWTH=1")
     endif()
+
+    target_link_options("${wasmTarget}" INTERFACE "SHELL:-s ALLOW_MEMORY_GROWTH")
 
     # debug add_compile_options
     if ("QT_WASM_SOURCE_MAP=1" IN_LIST QT_QMAKE_DEVICE_OPTIONS)

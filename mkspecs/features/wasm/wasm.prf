@@ -29,29 +29,16 @@ exists($$QMAKE_QT_CONFIG) {
 
         message("Setting PTHREAD_POOL_SIZE to" $$POOL_SIZE)
         EMCC_LFLAGS += -s PTHREAD_POOL_SIZE=$$POOL_SIZE
-    } else {
-        EMCC_LFLAGS += -s ALLOW_MEMORY_GROWTH=1
     }
 
+    # Set memory options
+    EMCC_LFLAGS += -sALLOW_MEMORY_GROWTH
     isEmpty(QT_WASM_INITIAL_MEMORY) {
-        # Hardcode wasm memory size.
-
-        qtConfig(thread) {
-        # Pthreads and ALLOW_MEMORY_GROWTH can cause javascript wasm memory access to
-        # be slow. Instead, we specify the memory size
-        # at build time. Further, browsers limit the maximum initial memory size to 1GB.
-        # https://github.com/WebAssembly/design/issues/1271
-            INITIAL_MEMORY = 1GB
-        } else {
-            INITIAL_MEMORY = 50MB # emscripten default is 16MB, we need slightly more
-        }
+        INITIAL_MEMORY = 50MB # emscripten default is 16MB, we need slightly more
     } else {
-        # QT_WASM_INITIAL_MEMORY must be a multiple of 64KB (i.e. 65536)
         INITIAL_MEMORY = $$QT_WASM_INITIAL_MEMORY
-        message("Setting INITIAL_MEMORY to" $$INITIAL_MEMORY)
     }
     EMCC_LFLAGS += -s INITIAL_MEMORY=$$INITIAL_MEMORY
-    message("Setting INITIAL_MEMORY to" $$INITIAL_MEMORY)
 
     qtConfig(sse2) {
         QMAKE_CFLAGS += -O2 -msimd128 -msse -msse2
