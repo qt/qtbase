@@ -365,6 +365,17 @@ function(qt_internal_is_in_test_batch out name)
     endif()
 endfunction()
 
+function(qt_internal_get_batched_test_argument out testname)
+    if(WASM)
+        # Add a query string to the runner document, so that the script therein
+        # knows which test to run in response to launching the testcase by ctest.
+        set(${out} "--batched_test=${testname}" PARENT_SCOPE)
+    else()
+        # Simply add the test name in case of standard executables.
+        set(${out} "${testname}" PARENT_SCOPE)
+    endif()
+endfunction()
+
 # This function creates a CMake test target with the specified name for use with CTest.
 #
 # All tests are wrapped with cmake script that supports TESTARGS and TESTRUNNER environment
@@ -406,6 +417,7 @@ function(qt_internal_add_test name)
 
     if(NOT arg_NO_BATCH AND QT_BUILD_TESTS_BATCHED AND NOT arg_QMLTEST)
         qt_internal_add_test_to_batch(name ${name} ${ARGN})
+        set(setting_up_batched_test TRUE)
     elseif(arg_SOURCES)
         if(QT_BUILD_TESTS_BATCHED AND arg_QMLTEST)
             message(WARNING "QML tests won't be batched - unsupported (yet)")
@@ -474,6 +486,7 @@ function(qt_internal_add_test name)
         qt_internal_extend_target("${name}" CONDITION ANDROID
             LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::Gui
         )
+        set(setting_up_batched_test FALSE)
     endif()
 
     foreach(path IN LISTS arg_QML_IMPORTPATH)
@@ -505,8 +518,14 @@ function(qt_internal_add_test name)
         set(test_working_dir "")
         set(test_executable "${name}")
     elseif(WASM)
-        # Test script expects html file
-        set(test_executable "${name}.html")
+        # The test script expects an html file. In case of batched tests, the
+        # version specialized for running batches has to be supplied.
+        if(setting_up_batched_test)
+            get_target_property(batch_output_dir ${name} RUNTIME_OUTPUT_DIRECTORY)
+            set(test_executable "${batch_output_dir}/batchedtestrunner.html")
+        else()
+            set(test_executable "${name}.html")
+        endif()
 
         if(QT6_INSTALL_PREFIX)
             set(QT_WASM_TESTRUNNER "${QT6_INSTALL_PREFIX}/${INSTALL_LIBEXECDIR}/qt-wasmtestrunner.py")
@@ -530,6 +549,11 @@ function(qt_internal_add_test name)
             endif()
             set(test_executable "${name}")
         endif()
+    endif()
+
+    if(setting_up_batched_test)
+        qt_internal_get_batched_test_argument(batched_test_argument ${testname})
+        list(APPEND extra_test_args ${batched_test_argument})
     endif()
 
     qt_internal_collect_command_environment(test_env_path test_env_plugin_path)
