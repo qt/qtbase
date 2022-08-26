@@ -1067,7 +1067,18 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
         sendDBusSignal(path, ATSPI_DBUS_INTERFACE_EVENT_OBJECT ""_L1, "StateChanged"_L1, stateArgs);
         break;
     }
+    case QAccessible::SelectionWithin: {
+        QAccessibleInterface * iface = event->accessibleInterface();
+        if (!iface) {
+            qCWarning(lcAccessibilityAtspi) << "SelectionWithin event from invalid accessible.";
+            return;
+        }
 
+        QString path = pathForInterface(iface);
+        QVariantList args = packDBusSignalArguments(QString(), 0, 0, variantForPath(path));
+        sendDBusSignal(path, QLatin1String(ATSPI_DBUS_INTERFACE_EVENT_OBJECT), QLatin1String("SelectionChanged"), args);
+        break;
+    }
     case QAccessible::StateChanged: {
         if (sendObject || sendObject_state_changed || sendWindow || sendWindow_activate) {
             QAccessible::State stateChange = static_cast<QAccessibleStateChangeEvent*>(event)->changedStates();
@@ -1157,7 +1168,6 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
     case QAccessible::TextAttributeChanged:
     case QAccessible::TextColumnChanged:
     case QAccessible::VisibleDataChanged:
-    case QAccessible::SelectionWithin:
     case QAccessible::LocationChanged:
     case QAccessible::HelpChanged:
     case QAccessible::DefaultActionChanged:
