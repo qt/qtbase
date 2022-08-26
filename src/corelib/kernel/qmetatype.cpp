@@ -417,7 +417,8 @@ const char *QtMetaTypePrivate::typedefNameForType(const QtPrivate::QMetaTypeInte
     \omitvalue LastCoreType
     \omitvalue LastGuiType
 
-    Additional types can be registered using Q_DECLARE_METATYPE().
+    Additional types can be registered using qRegisterMetaType() or by calling
+    registerType().
 
     \sa type(), typeName()
 */
@@ -465,17 +466,19 @@ const char *QtMetaTypePrivate::typedefNameForType(const QtPrivate::QMetaTypeInte
     The class is used as a helper to marshall types in QVariant and
     in queued signals and slots connections. It associates a type
     name to a type so that it can be created and destructed
-    dynamically at run-time. Declare new types with Q_DECLARE_METATYPE()
-    to make them available to QVariant and other template-based functions.
-    Call qRegisterMetaType() to make types available to non-template based
-    functions, such as the queued signal and slot connections.
+    dynamically at run-time.
 
-    Any class or struct that has a public default
-    constructor, a public copy constructor, and a public destructor
-    can be registered.
+    Type names can be registered with QMetaType by using either
+    qRegisterMetaType() or registerType(). Registration is not required for
+    most operations; it's only required for operations that attempt to resolve
+    a type name in string form back to a QMetaType object or the type's ID.
+    Those include some old-style signal-slot connections using
+    QObject::connect(), reading user-types from \l QDataStream to \l QVariant,
+    or binding to other languages and IPC mechanisms, like QML, D-Bus,
+    JavaScript, etc.
 
-    The following code allocates and destructs an instance of
-    \c{MyClass}:
+    The following code allocates and destructs an instance of \c{MyClass} by
+    its name, which requires that \c{MyClass} have been previously registered:
 
     \snippet code/src_corelib_kernel_qmetatype.cpp 3
 
@@ -2775,9 +2778,6 @@ Q_CORE_EXPORT int qMetaTypeTypeInternal(const char *typeName)
     Returns \c true if the object is saved successfully; otherwise
     returns \c false.
 
-    The type must have been registered with Q_DECLARE_METATYPE()
-    beforehand.
-
     Normally, you should not need to call this function directly.
     Instead, use QVariant's \c operator<<(), which relies on save()
     to stream custom types.
@@ -2815,9 +2815,6 @@ bool QMetaType::save(QDataStream &stream, const void *data) const
     Reads the object of this type from the given \a stream into \a data.
     Returns \c true if the object is loaded successfully; otherwise
     returns \c false.
-
-    The type must have been registered with Q_DECLARE_METATYPE()
-    beforehand.
 
     Normally, you should not need to call this function directly.
     Instead, use QVariant's \c operator>>(), which relies on load()
