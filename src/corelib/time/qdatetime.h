@@ -266,6 +266,8 @@ class Q_CORE_EXPORT QDateTime
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
         quintptr status : 8;
 #endif
+        friend constexpr bool operator==(const ShortData &lhs, const ShortData &rhs)
+        { return lhs.status == rhs.status && lhs.msecs == rhs.msecs; }
     };
 
     union Data {

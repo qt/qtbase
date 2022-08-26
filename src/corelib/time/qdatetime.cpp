@@ -3016,7 +3016,7 @@ inline QDateTime::Data::Data(Qt::TimeSpec spec)
 }
 
 inline QDateTime::Data::Data(const Data &other) noexcept
-    : d(other.d)
+    : data(other.data)
 {
     if (!isShort()) {
         // check if we could shrink
@@ -3033,17 +3033,17 @@ inline QDateTime::Data::Data(const Data &other) noexcept
 }
 
 inline QDateTime::Data::Data(Data &&other) noexcept
-    : d(other.d)
+    : data(other.data)
 {
     // reset the other to a short state
     Data dummy;
     Q_ASSERT(dummy.isShort());
-    other.d = dummy.d;
+    other.data = dummy.data;
 }
 
 inline QDateTime::Data &QDateTime::Data::operator=(const Data &other) noexcept
 {
-    if (d == other.d)
+    if (isShort() ? data == other.data : d == other.d)
         return *this;
 
     auto x = d;
