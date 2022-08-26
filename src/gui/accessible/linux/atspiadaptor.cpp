@@ -1061,10 +1061,23 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
             qCWarning(lcAccessibilityAtspi) << "Selection event from invalid accessible.";
             return;
         }
+        // send event for change of selected state for the interface itself
         QString path = pathForInterface(iface);
         int selected = iface->state().selected ? 1 : 0;
         QVariantList stateArgs = packDBusSignalArguments("selected"_L1, selected, 0, variantForPath(path));
         sendDBusSignal(path, ATSPI_DBUS_INTERFACE_EVENT_OBJECT ""_L1, "StateChanged"_L1, stateArgs);
+
+        // send SelectionChanged event for the parent
+        QAccessibleInterface* parent = iface->parent();
+        if (!parent) {
+            qCDebug(lcAccessibilityAtspi) << "No valid parent in selection event.";
+            return;
+        }
+
+        QString parentPath = pathForInterface(parent);
+        QVariantList args = packDBusSignalArguments(QString(), 0, 0, variantForPath(parentPath));
+        sendDBusSignal(parentPath, QLatin1String(ATSPI_DBUS_INTERFACE_EVENT_OBJECT),
+                       QLatin1String("SelectionChanged"), args);
         break;
     }
     case QAccessible::SelectionWithin: {
