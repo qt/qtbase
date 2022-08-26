@@ -335,7 +335,6 @@ QRect QWasmWindow::getTitleBarControlRect(const TitleBarOptions &tb, TitleBarCon
     const int delta = controlHeight + controlMargin;
     int offset = 0;
 
-    bool isMinimized = tb.state & Qt::WindowMinimized;
     bool isMaximized = tb.state & Qt::WindowMaximized;
 
     ret = tb.rect;
