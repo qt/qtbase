@@ -68,7 +68,7 @@ public:
     {
         return QNetworkInformation::Features(QNetworkInformation::Feature::Reachability
                                              | QNetworkInformation::Feature::CaptivePortal
-#ifdef SUPPORTS_WINRT
+#if QT_CONFIG(cpp_winrt)
                                              | QNetworkInformation::Feature::TransportMedium
 #endif
                                              );

@@ -46,7 +46,7 @@
 
 #include <algorithm>
 
-#if QT_CONFIG(cpp_winrt) && !defined(Q_CC_CLANG)
+#if QT_CONFIG(cpp_winrt)
 #   include <winrt/base.h>
 // Workaround for Windows SDK bug.
 // See https://github.com/microsoft/Windows.UI.Composition-Win32-Samples/issues/47
@@ -56,8 +56,7 @@ namespace winrt::impl
     auto wait_for(Async const& async, Windows::Foundation::TimeSpan const& timeout);
 }
 #   include <winrt/Windows.UI.ViewManagement.h>
-#   define HAS_UISETTINGS 1
-#endif
+#endif // QT_CONFIG(cpp_winrt)
 
 #if defined(__IImageList_INTERFACE_DEFINED__) && defined(__IID_DEFINED__)
 #  define USE_IIMAGELIST
@@ -111,7 +110,7 @@ static inline QColor getSysColor(int index)
     return COLORREFToQColor(GetSysColor(index));
 }
 
-#if defined(HAS_UISETTINGS)
+#if QT_CONFIG(cpp_winrt)
 static constexpr QColor getSysColor(winrt::Windows::UI::Color &&color)
 {
     return QColor(color.R, color.G, color.B, color.A);
@@ -261,7 +260,7 @@ static void populateLightSystemBasePalette(QPalette &result)
     QColor textColor = getSysColor(COLOR_WINDOWTEXT);
     QColor accent = getSysColor(COLOR_HIGHLIGHT);
 
-#if defined(HAS_UISETTINGS)
+#if QT_CONFIG(cpp_winrt)
     if (QWindowsIntegration::instance()->darkModeHandling().testFlag(QWindowsApplication::DarkModeStyle)) {
         using namespace winrt::Windows::UI::ViewManagement;
         const auto settings = UISettings();
@@ -304,7 +303,7 @@ static void populateLightSystemBasePalette(QPalette &result)
 
 static void populateDarkSystemBasePalette(QPalette &result)
 {
-#if defined(HAS_UISETTINGS)
+#if QT_CONFIG(cpp_winrt)
     using namespace winrt::Windows::UI::ViewManagement;
     const auto settings = UISettings();
 
@@ -593,7 +592,7 @@ void QWindowsTheme::refreshPalettes()
     m_palettes[MenuPalette] = new QPalette(menuPalette(*m_palettes[SystemPalette], light));
     m_palettes[MenuBarPalette] = menuBarPalette(*m_palettes[MenuPalette], light);
     if (!light) {
-#if defined(HAS_UISETTINGS)
+#if QT_CONFIG(cpp_winrt)
         using namespace winrt::Windows::UI::ViewManagement;
         const auto settings = UISettings();
         const QColor accent = getSysColor(settings.GetColorValue(UIColorType::Accent));

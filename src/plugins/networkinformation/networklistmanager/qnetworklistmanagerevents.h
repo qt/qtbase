@@ -15,11 +15,7 @@
 #include <wrl/wrappers/corewrappers.h>
 #include <comdef.h>
 
-#if QT_CONFIG(cpp_winrt) && !defined(Q_CC_CLANG)
-#define SUPPORTS_WINRT 1
-#endif
-
-#ifdef SUPPORTS_WINRT
+#if QT_CONFIG(cpp_winrt)
 #include <winrt/base.h>
 #endif
 
@@ -69,7 +65,7 @@ private:
     ComPtr<INetworkListManager> networkListManager = nullptr;
     ComPtr<IConnectionPoint> connectionPoint = nullptr;
 
-#ifdef SUPPORTS_WINRT
+#if QT_CONFIG(cpp_winrt)
     void emitWinRTUpdates();
 
     winrt::event_token token;

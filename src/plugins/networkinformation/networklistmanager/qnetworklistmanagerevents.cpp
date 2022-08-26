@@ -3,7 +3,7 @@
 
 #include "qnetworklistmanagerevents.h"
 
-#ifdef SUPPORTS_WINRT
+#if QT_CONFIG(cpp_winrt)
 #include <winrt/base.h>
 // Workaround for Windows SDK bug.
 // See https://github.com/microsoft/Windows.UI.Composition-Win32-Samples/issues/47
@@ -14,7 +14,7 @@ namespace winrt::impl
 }
 
 #include <winrt/Windows.Networking.Connectivity.h>
-#endif
+#endif // QT_CONFIG(cpp_winrt)
 
 QT_BEGIN_NAMESPACE
 
@@ -99,7 +99,7 @@ bool QNetworkListManagerEvents::start()
     else
         emit connectivityChanged(connectivity);
 
-#ifdef SUPPORTS_WINRT
+#if QT_CONFIG(cpp_winrt)
     using namespace winrt::Windows::Networking::Connectivity;
     // Register for changes in the network and store a token to unregister later:
     token = NetworkInformation::NetworkStatusChanged(
@@ -125,7 +125,7 @@ bool QNetworkListManagerEvents::stop()
     }
     cookie = 0;
 
-#ifdef SUPPORTS_WINRT
+#if QT_CONFIG(cpp_winrt)
     using namespace winrt::Windows::Networking::Connectivity;
     // Pass the token we stored earlier to unregister:
     NetworkInformation::NetworkStatusChanged(token);
@@ -172,7 +172,7 @@ bool QNetworkListManagerEvents::checkBehindCaptivePortal()
     return false;
 }
 
-#ifdef SUPPORTS_WINRT
+#if QT_CONFIG(cpp_winrt)
 namespace {
 using namespace winrt::Windows::Networking::Connectivity;
 // NB: this isn't part of "network list manager", but sadly NLM doesn't have an
@@ -223,6 +223,6 @@ void QNetworkListManagerEvents::emitWinRTUpdates()
     emit transportMediumChanged(getTransportMedium(profile));
     emit isMeteredChanged(getMetered(profile));
 }
-#endif
+#endif // QT_CONFIG(cpp_winrt)
 
 QT_END_NAMESPACE
