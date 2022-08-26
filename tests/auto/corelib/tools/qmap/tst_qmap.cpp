@@ -447,7 +447,12 @@ void tst_QMap::beginEnd()
     // detach
     map2.insert( "2", "c" );
     QVERIFY( map.constBegin() == map.constBegin() );
-    QVERIFY( map.constBegin() != map2.constBegin() );
+
+    // comparing iterators between two different std::map is UB (and raises an
+    // assertion failure with MSVC debug-mode iterators), so we compare the
+    // elements' addresses.
+    QVERIFY(&map.constBegin().key() != &map2.constBegin().key());
+    QVERIFY(&map.constBegin().value() != &map2.constBegin().value());
 }
 
 void tst_QMap::firstLast()
