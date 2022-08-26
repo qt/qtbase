@@ -2837,30 +2837,11 @@ void QComboBox::hidePopup()
             }
         }
 
-        // Fade out.
-        bool needFade = style()->styleHint(QStyle::SH_Menu_FadeOutOnHide);
-        bool didFade = false;
-        if (needFade) {
-#if defined(Q_OS_MAC)
-            QPlatformNativeInterface *platformNativeInterface = QGuiApplication::platformNativeInterface();
-            int at = platformNativeInterface->metaObject()->indexOfMethod("fadeWindow()");
-            if (at != -1) {
-                QMetaMethod windowFade = platformNativeInterface->metaObject()->method(at);
-                windowFade.invoke(platformNativeInterface, Q_ARG(QWindow *, d->container->windowHandle()));
-                didFade = true;
-            }
-
-#endif // Q_OS_MAC
-            // Other platform implementations welcome :-)
-        }
         containerBlocker.unblock();
         viewBlocker.unblock();
         modelBlocker.unblock();
-
-        if (!didFade)
 #endif // QT_CONFIG(effects)
-            // Fade should implicitly hide as well ;-)
-            d->container->hide();
+        d->container->hide();
     }
 #ifdef QT_KEYPAD_NAVIGATION
     if (QApplicationPrivate::keypadNavigationEnabled() && isEditable() && hasFocus())
