@@ -96,6 +96,12 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
     else()
         target_link_options("${wasmTarget}" INTERFACE "SHELL:-s ERROR_ON_UNDEFINED_SYMBOLS=1")
     endif()
+
+    # Suppress warnings for known issues for developer builds
+    if(FEATURE_developer_build)
+        target_link_options("${wasmTarget}" INTERFACE "SHELL:-Wno-pthreads-mem-growth")
+    endif()
+
 endfunction()
 
 function(qt_internal_wasm_add_finalizers target)
