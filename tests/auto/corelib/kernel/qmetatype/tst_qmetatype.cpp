@@ -376,6 +376,7 @@ public:
 
 int Bar::failureCount = 0;
 
+#if QT_CONFIG(thread)
 class MetaTypeTorturer: public QThread
 {
     Q_OBJECT
@@ -485,6 +486,7 @@ void tst_QMetaType::threadSafety()
     QCOMPARE(t3.failureCount, 0);
     QCOMPARE(Bar::failureCount, 0);
 }
+#endif
 
 namespace TestSpace
 {

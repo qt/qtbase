@@ -45,7 +45,9 @@ private:
 
 private slots:
     void defined();
+#if QT_CONFIG(thread)
     void threadSafety();
+#endif
     void namespaces();
     void id();
     void qMetaTypeId();

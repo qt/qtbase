@@ -7,6 +7,10 @@
 ## tst_qtranslator Test:
 #####################################################################
 
+if (NOT QT_CONFIG_thread)
+    return()
+endif()
+
 qt_internal_add_test(tst_qtranslator
     SOURCES
         tst_qtranslator.cpp

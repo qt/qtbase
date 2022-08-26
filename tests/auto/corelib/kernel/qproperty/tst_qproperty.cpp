@@ -78,8 +78,10 @@ private slots:
     void compatPropertySignals();
 
     void noFakeDependencies();
+#if QT_CONFIG(thread)
     void threadSafety();
     void threadSafety2();
+#endif // QT_CONFIG(thread)
 
     void bindablePropertyWithInitialization();
     void noDoubleNotification();
@@ -1661,6 +1663,7 @@ void tst_QProperty::noFakeDependencies()
     QCOMPARE(old, bindingFunctionCalled);
 }
 
+#if QT_CONFIG(thread)
 struct ThreadSafetyTester : public QObject
 {
     Q_OBJECT
@@ -1780,6 +1783,7 @@ void tst_QProperty::threadSafety2()
     QCOMPARE(movedObj->objectName(), "test");
     QCOMPARE(movedObj->children().first()->objectName(), "child");
 }
+#endif // QT_CONFIG(thread)
 
 struct CustomType
 {

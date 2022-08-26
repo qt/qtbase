@@ -7,6 +7,10 @@
 ## tst_qpointer Test:
 #####################################################################
 
+if (NOT QT_FEATURE_thread)
+    return()
+endif()
+
 qt_internal_add_test(tst_qpointer
     SOURCES
         tst_qpointer.cpp
