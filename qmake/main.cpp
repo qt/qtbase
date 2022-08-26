@@ -423,7 +423,7 @@ bool qmake_setpwd(const QString &p)
 
 int runQMake(int argc, char **argv)
 {
-    qSetGlobalQHashSeed(0);
+    QHashSeed::setDeterministicGlobalSeed();
 
     // stderr is unbuffered by default, but stdout buffering depends on whether
     // there is a terminal attached. Buffering can make output from stderr and stdout

@@ -20,7 +20,7 @@ using namespace Qt::StringLiterals;
 
 int runUic(int argc, char *argv[])
 {
-    qSetGlobalQHashSeed(0);    // set the hash seed to 0
+    QHashSeed::setDeterministicGlobalSeed();
 
     QCoreApplication app(argc, argv);
     QCoreApplication::setApplicationVersion(QString::fromLatin1(QT_VERSION_STR));
