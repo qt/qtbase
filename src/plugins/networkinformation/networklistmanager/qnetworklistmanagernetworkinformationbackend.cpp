@@ -143,6 +143,7 @@ QNetworkListManagerNetworkInformationBackend::~QNetworkListManagerNetworkInforma
     if (comInitFailed)
         return;
     stop();
+    CoUninitialize();
 }
 
 void QNetworkListManagerNetworkInformationBackend::setConnectivity(NLM_CONNECTIVITY newConnectivity)
@@ -164,11 +165,8 @@ void QNetworkListManagerNetworkInformationBackend::checkCaptivePortal()
 
 bool QNetworkListManagerNetworkInformationBackend::event(QEvent *event)
 {
-    if (event->type() == QEvent::ThreadChange && monitoring) {
-        stop();
-        QMetaObject::invokeMethod(this, &QNetworkListManagerNetworkInformationBackend::start,
-                                  Qt::QueuedConnection);
-    }
+    if (event->type() == QEvent::ThreadChange)
+        qFatal("Moving QNetworkListManagerNetworkInformationBackend to different thread is not supported");
 
     return QObject::event(event);
 }
@@ -177,15 +175,9 @@ bool QNetworkListManagerNetworkInformationBackend::start()
 {
     Q_ASSERT(!monitoring);
 
-    if (comInitFailed) {
-        auto hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-        if (FAILED(hr)) {
-            qCWarning(lcNetInfoNLM) << "Failed to initialize COM:" << errorStringFromHResult(hr);
-            comInitFailed = true;
-            return false;
-        }
-        comInitFailed = false;
-    }
+    if (comInitFailed)
+        return false;
+
     if (!managerEvents)
         managerEvents = new QNetworkListManagerEvents();
 
@@ -203,9 +195,6 @@ void QNetworkListManagerNetworkInformationBackend::stop()
         monitoring = false;
         managerEvents.Reset();
     }
-
-    CoUninitialize();
-    comInitFailed = true; // we check this value in start() to see if we need to re-initialize
 }
 
 QT_END_NAMESPACE
