@@ -708,9 +708,8 @@ set(QT_LIBINFIX \"${QT_LIBINFIX}\")")
         qt_install(DIRECTORY "${arg_EXTERNAL_HEADERS_DIR}/"
             DESTINATION "${module_install_interface_include_dir}"
         )
-        unset(public_header_destination)
-    else()
-        set(public_header_destination PUBLIC_HEADER DESTINATION "${module_install_interface_include_dir}")
+        get_target_property(public_header_backup ${target} PUBLIC_HEADER)
+        set_property(TARGET ${target} PROPERTY PUBLIC_HEADER "")
     endif()
 
     qt_install(TARGETS ${exported_targets}
@@ -720,8 +719,12 @@ set(QT_LIBINFIX \"${QT_LIBINFIX}\")")
         ARCHIVE DESTINATION ${INSTALL_LIBDIR}
         FRAMEWORK DESTINATION ${INSTALL_LIBDIR}
         PRIVATE_HEADER DESTINATION "${module_install_interface_private_include_dir}"
-        ${public_header_destination}
-        )
+        PUBLIC_HEADER DESTINATION "${module_install_interface_include_dir}"
+    )
+    if(arg_EXTERNAL_HEADERS_DIR)
+        set_property(TARGET ${target} PROPERTY PUBLIC_HEADER ${public_header_backup})
+        unset(public_header_backup)
+    endif()
 
     if(BUILD_SHARED_LIBS)
         qt_apply_rpaths(TARGET "${target}" INSTALL_PATH "${INSTALL_LIBDIR}" RELATIVE_RPATH)
