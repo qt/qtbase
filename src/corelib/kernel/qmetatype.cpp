@@ -418,7 +418,7 @@ struct DefinedTypesFilter {
 
     If the type is a pointer type to a subclass of QObject, flags() contains
     QMetaType::PointerToQObject and this function returns the corresponding QMetaObject. This can
-    be used to in combinaison with QMetaObject::construct to create QObject of this type.
+    be used to in combination with QMetaObject::construct to create QObject of this type.
 
     If the type is a Q_GADGET, flags() contains QMetaType::IsGadget, and this function returns its
     QMetaObject.  This can be used to retrieve QMetaMethod and QMetaProperty and use them on a
