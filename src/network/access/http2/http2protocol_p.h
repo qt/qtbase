@@ -148,7 +148,8 @@ const quint32 lastValidStreamID((quint32(1) << 31) - 1); // HTTP/2, 5.1.1
 // HTTP/2 servers are not afraid to immediately set it to the possible max,
 // we do the same and split this window size between our concurrent streams.
 const qint32 maxSessionReceiveWindowSize((quint32(1) << 31) - 1);
-const qint32 qtDefaultStreamReceiveWindowSize = maxSessionReceiveWindowSize / maxConcurrentStreams;
+// Presumably, we never use up to 100 streams so let it be 10 simultaneous:
+const qint32 qtDefaultStreamReceiveWindowSize = maxSessionReceiveWindowSize / 10;
 
 struct Frame configurationToSettingsFrame(const QHttp2Configuration &configuration);
 QByteArray settingsFrameToBase64(const Frame &settingsFrame);

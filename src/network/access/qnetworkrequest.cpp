@@ -495,10 +495,9 @@ QNetworkRequest::QNetworkRequest()
     // Initial values proposed by RFC 7540 are quite draconian, but we
     // know about servers configured with this value as maximum possible,
     // rejecting our SETTINGS frame and sending us a GOAWAY frame with the
-    // flow control error set. Unless an application sets its own parameters,
-    // we don't send SETTINGS_INITIAL_WINDOW_SIZE, but increase
-    // (via WINDOW_UPDATE) the session window size. These are our 'defaults':
-    d->h2Configuration.setStreamReceiveWindowSize(Http2::defaultSessionWindowSize);
+    // flow control error set. If this causes a problem - the app should
+    // set a proper configuration. We'll use our defaults, as documented.
+    d->h2Configuration.setStreamReceiveWindowSize(Http2::qtDefaultStreamReceiveWindowSize);
     d->h2Configuration.setSessionReceiveWindowSize(Http2::maxSessionReceiveWindowSize);
     d->h2Configuration.setServerPushEnabled(false);
 #endif // QT_CONFIG(http)
@@ -873,7 +872,7 @@ void QNetworkRequest::setPeerVerifyName(const QString &peerName)
 
     \list
       \li Window size for connection-level flowcontrol is 2147483647 octets
-      \li Window size for stream-level flowcontrol is 21474836 octets
+      \li Window size for stream-level flowcontrol is 214748364 octets
       \li Max frame size is 16384
     \endlist
 
