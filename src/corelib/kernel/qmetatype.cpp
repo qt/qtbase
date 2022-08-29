@@ -1843,11 +1843,19 @@ static bool convertFromEnum(QMetaType fromType, const void *from, QMetaType toTy
 #ifndef QT_NO_QOBJECT
     QMetaEnum en = metaEnumFromType(fromType);
     if (en.isValid()) {
-        const char *key = en.valueToKey(ll);
-        if (toType.id() == QMetaType::QString)
-            *static_cast<QString *>(to) = QString::fromUtf8(key);
-        else
-            *static_cast<QByteArray *>(to) = key;
+        if (en.isFlag()) {
+            const QByteArray keys = en.valueToKeys(ll);
+            if (toType.id() == QMetaType::QString)
+                *static_cast<QString *>(to) = QString::fromUtf8(keys);
+            else
+                *static_cast<QByteArray *>(to) = keys;
+        } else {
+            const char *key = en.valueToKey(ll);
+            if (toType.id() == QMetaType::QString)
+                *static_cast<QString *>(to) = QString::fromUtf8(key);
+            else
+                *static_cast<QByteArray *>(to) = key;
+        }
         return true;
     }
 #endif
