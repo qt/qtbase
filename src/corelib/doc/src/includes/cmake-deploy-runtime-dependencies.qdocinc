@@ -23,13 +23,11 @@ endif()
 qt_add_executable(HelperApp helper.cpp)
 set(helper_app_path "\${QT_DEPLOY_BIN_DIR}/$<TARGET_FILE_NAME:HelperApp>")
 
-# The following script must only be executed at install time
-set(deploy_script "${CMAKE_CURRENT_BINARY_DIR}/deploy_MyApp.cmake")
-
-file(GENERATE OUTPUT ${deploy_script} CONTENT "
-# Including the file pointed to by QT_DEPLOY_SUPPORT ensures the generated
-# deployment script has access to qt_deploy_runtime_dependencies()
-include(\"${QT_DEPLOY_SUPPORT}\")
+# Generate a deployment script to be executed at install time
+qt_generate_deploy_script(
+    TARGET MyApp
+    FILENAME_VARIABLE deploy_script
+    CONTENT "
 qt_deploy_runtime_dependencies(
     EXECUTABLE \"${executable_path}\"
     ADDITIONAL_EXECUTABLES \"${helper_app_path}\"

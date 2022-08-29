@@ -2526,6 +2526,68 @@ endif()
 
 # This function is currently in Technical Preview.
 # Its signature and behavior might change.
+function(qt6_generate_deploy_script)
+    set(no_value_options "")
+    set(single_value_options
+        CONTENT
+        FILENAME_VARIABLE
+        NAME
+        TARGET
+    )
+    set(multi_value_options "")
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+        "${no_value_options}" "${single_value_options}" "${multi_value_options}"
+    )
+    if(arg_UNPARSED_ARGUMENTS)
+        message(FATAL_ERROR "Unexpected arguments: ${arg_UNPARSED_ARGUMENTS}")
+    endif()
+    if(NOT arg_FILENAME_VARIABLE)
+        message(FATAL_ERROR "FILENAME_VARIABLE must be specified")
+    endif()
+    if("${arg_CONTENT}" STREQUAL "")
+        message(FATAL_ERROR "CONTENT must be specified")
+    endif()
+
+    # Create a file name that will be unique for this target and the combination
+    # of arguments passed to this command. This allows the project to call us
+    # multiple times with different arguments for the same target (e.g. to
+    # create deployment scripts for different scenarios).
+    set(file_base_name "custom")
+    if(NOT "${arg_NAME}" STREQUAL "")
+        set(file_base_name "${arg_NAME}")
+    elseif(NOT "${arg_TARGET}" STREQUAL "")
+        set(file_base_name "${arg_TARGET}")
+    endif()
+    string(MAKE_C_IDENTIFIER "${file_base_name}" target_id)
+    string(SHA1 args_hash "${ARGV}")
+    string(SUBSTRING "${args_hash}" 0 10 short_hash)
+    _qt_internal_get_deploy_impl_dir(deploy_impl_dir)
+    set(file_name "${deploy_impl_dir}/deploy_${target_id}_${short_hash}")
+    get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
+    if(is_multi_config)
+        string(APPEND file_name "-$<CONFIG>")
+    endif()
+    string(APPEND file_name ".cmake")
+    set(${arg_FILENAME_VARIABLE} "${file_name}" PARENT_SCOPE)
+
+    set(boiler_plate "include(${QT_DEPLOY_SUPPORT})
+")
+    list(TRANSFORM arg_CONTENT REPLACE "\\$" "\$")
+    file(GENERATE OUTPUT ${file_name} CONTENT "${boiler_plate}${arg_CONTENT}")
+endfunction()
+
+if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
+    macro(qt_generate_deploy_script)
+        if(QT_DEFAULT_MAJOR_VERSION EQUAL 6)
+            qt6_generate_deploy_script(${ARGV})
+        else()
+            message(FATAL_ERROR "qt_generate_deploy_script() is only available in Qt 6.")
+        endif()
+    endmacro()
+endif()
+
+# This function is currently in Technical Preview.
+# Its signature and behavior might change.
 function(qt6_generate_deploy_app_script)
     # We use a TARGET keyword option instead of taking the target as the first
     # positional argument. This is to keep open the possibility of deploying
@@ -2554,26 +2616,16 @@ function(qt6_generate_deploy_app_script)
         message(FATAL_ERROR "FILENAME_VARIABLE must be specified")
     endif()
 
-    # Create a file name that will be unique for this target and the combination
-    # of arguments passed to this command. This allows the project to call us
-    # multiple times with different arguments for the same target (e.g. to
-    # create deployment scripts for different scenarios).
-    string(MAKE_C_IDENTIFIER "${arg_TARGET}" target_id)
-    string(SHA1 args_hash "${ARGV}")
-    string(SUBSTRING "${args_hash}" 0 10 short_hash)
-    _qt_internal_get_deploy_impl_dir(deploy_impl_dir)
-    set(file_name "${deploy_impl_dir}/deploy_${target_id}_${short_hash}")
-    get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
-    if(is_multi_config)
-        string(APPEND file_name "-$<CONFIG>")
-    endif()
-    set(${arg_FILENAME_VARIABLE} "${file_name}" PARENT_SCOPE)
-
     if(QT6_IS_SHARED_LIBS_BUILD)
         set(qt_build_type_string "shared Qt libs")
     else()
         set(qt_build_type_string "static Qt libs")
     endif()
+
+    set(generate_args
+        TARGET ${arg_TARGET}
+        FILENAME_VARIABLE file_name
+    )
 
     if(APPLE AND NOT IOS AND QT6_IS_SHARED_LIBS_BUILD)
         # TODO: Handle non-bundle applications if possible.
@@ -2584,16 +2636,16 @@ function(qt6_generate_deploy_app_script)
                 "on Apple platforms."
             )
         endif()
-        file(GENERATE OUTPUT "${file_name}" CONTENT "
-include(${QT_DEPLOY_SUPPORT})
+        qt6_generate_deploy_script(${generate_args}
+            CONTENT "
 qt6_deploy_runtime_dependencies(
     EXECUTABLE $<TARGET_FILE_NAME:${arg_TARGET}>.app
 )
 ")
 
     elseif(WIN32 AND QT6_IS_SHARED_LIBS_BUILD)
-        file(GENERATE OUTPUT "${file_name}" CONTENT "
-include(${QT_DEPLOY_SUPPORT})
+        qt6_generate_deploy_script(${generate_args}
+            CONTENT "
 qt6_deploy_runtime_dependencies(
     EXECUTABLE \${QT_DEPLOY_BIN_DIR}/$<TARGET_FILE_NAME:${arg_TARGET}>
     GENERATE_QT_CONF
@@ -2610,12 +2662,13 @@ qt6_deploy_runtime_dependencies(
             "this target platform (${CMAKE_SYSTEM_NAME}, ${qt_build_type_string})."
         )
     else()
-        file(GENERATE OUTPUT "${file_name}" CONTENT "
-include(${QT_DEPLOY_SUPPORT})
+        qt6_generate_deploy_script(${generate_args}
+            CONTENT "
 _qt_internal_show_skip_runtime_deploy_message(\"${qt_build_type_string}\")
 ")
     endif()
 
+    set(${arg_FILENAME_VARIABLE} "${file_name}" PARENT_SCOPE)
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)

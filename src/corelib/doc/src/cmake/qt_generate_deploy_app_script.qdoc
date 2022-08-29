@@ -59,7 +59,11 @@ For deploying a QML application, use
 \l{qt6_generate_deploy_qml_app_script}{qt_generate_deploy_qml_app_script()}
 instead.
 
+For generating a custom deployment script, use
+\l{qt6_generate_deploy_script}{qt_generate_deploy_script}.
+
 \sa {qt6_standard_project_setup}{qt_standard_project_setup()},
+    {qt6_generate_deploy_script}{qt_generate_deploy_script()},
     {qt6_generate_deploy_qml_app_script}{qt_generate_deploy_qml_app_script()}
 
 \section1 Example
