@@ -37,6 +37,7 @@ private slots:
     void searchPath_data();
     void searchPath();
     void doubleSlashInRoot();
+    void setLocale_data();
     void setLocale();
     void lastModified();
     void resourcesInStaticPlugins();
@@ -556,13 +557,22 @@ void tst_QResourceEngine::doubleSlashInRoot()
     QVERIFY(QFile::exists("://secondary_root/runtime_resource/search_file.txt"));
 }
 
+void tst_QResourceEngine::setLocale_data()
+{
+    QTest::addColumn<QString>("prefix");
+    QTest::newRow("built-in") << QString();
+    QTest::newRow("runtime") << "/runtime_resource/";
+}
+
 void tst_QResourceEngine::setLocale()
 {
+    QFETCH(QString, prefix);
     QLocale::setDefault(QLocale::c());
 
     // default constructed QResource gets the default locale
     QResource resource;
-    resource.setFileName("aliasdir/aliasdir.txt");
+    resource.setFileName(prefix + "aliasdir/aliasdir.txt");
+    QVERIFY(resource.isValid());
     QCOMPARE(resource.compressionAlgorithm(), QResource::NoCompression);
 
     // change the default locale and make sure it doesn't affect the resource
