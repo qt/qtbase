@@ -1495,8 +1495,7 @@ void tst_QLocale::fpExceptions()
 #    define _EM_INEXACT 0x00000001
 #  endif
     _clearfp();
-    unsigned int oldbits = _controlfp(0, 0);
-    _controlfp( 0 | _EM_INEXACT, _MCW_EM );
+    unsigned int oldbits = _controlfp(0 | _EM_INEXACT, _MCW_EM);
 #endif
 
 #ifdef QT_USE_FENV
@@ -1514,7 +1513,7 @@ void tst_QLocale::fpExceptions()
 
 #ifdef Q_OS_WIN
     _clearfp();
-    _controlfp(oldbits, 0xFFFFF);
+    _controlfp(oldbits, _MCW_EM);
 #endif
 
 #ifdef QT_USE_FENV
