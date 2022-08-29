@@ -4753,6 +4753,8 @@ void tst_QVariant::metaEnums()
 
     testVariantMeta(Qt::RichText, &ok, "RichText");
     testVariantMeta(Qt::Alignment(Qt::AlignBottom), &ok, "AlignBottom");
+    testVariantMeta(Qt::Alignment(Qt::AlignHCenter | Qt::AlignBottom), &ok,
+                    "AlignHCenter|AlignBottom");
 }
 
 void tst_QVariant::nullConvert()
