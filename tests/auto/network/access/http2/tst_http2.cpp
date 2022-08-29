@@ -92,6 +92,7 @@ public slots:
     void init();
 private slots:
     // Tests:
+    void defaultQnamHttp2Configuration();
     void singleRequest_data();
     void singleRequest();
     void multipleRequests();
@@ -229,6 +230,12 @@ tst_Http2::~tst_Http2()
 void tst_Http2::init()
 {
     manager.reset(new QNetworkAccessManager);
+}
+
+void tst_Http2::defaultQnamHttp2Configuration()
+{
+    // The configuration we also implicitly use in QNAM.
+    QCOMPARE(qt_defaultH2Configuration(), QNetworkRequest().http2Configuration());
 }
 
 void tst_Http2::singleRequest_data()
