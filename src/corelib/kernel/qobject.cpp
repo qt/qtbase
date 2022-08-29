@@ -5311,11 +5311,20 @@ bool QObjectPrivate::disconnect(const QObject *sender, int signal_index, const Q
 /*!
     \internal
     \threadsafe
+
+    Thread-safety warning: this function may be called from any thread and is
+    thread-safe, \b{so long as the sender is not being deleted}. At the time of
+    this writing, this function is called from QObject::disconnect() and from
+    the multiple places where a single-shot connection is activated; in both
+    cases, the construction of the user code is already such that the sender
+    object cannot be undergoing deletion in another thread.
 */
 inline bool QObjectPrivate::removeConnection(QObjectPrivate::Connection *c)
 {
     if (!c)
         return false;
+
+    // double-checked locking on this pointer
     QObject *receiver = c->receiver.loadRelaxed();
     if (!receiver)
         return false;
@@ -5336,7 +5345,6 @@ inline bool QObjectPrivate::removeConnection(QObjectPrivate::Connection *c)
         Q_ASSERT(connections);
         connections->removeConnection(c);
 
-        c->sender->disconnectNotify(QMetaObjectPrivate::signal(c->sender->metaObject(), c->signal_index));
         // We must not hold the receiver mutex, else we risk dead-locking; we also only need the sender mutex
         // It is however vital to hold the senderMutex before calling cleanOrphanedConnections, as otherwise
         // another thread might modify/delete the connection
@@ -5348,6 +5356,8 @@ inline bool QObjectPrivate::removeConnection(QObjectPrivate::Connection *c)
         locker.dismiss(); // so we dismiss the QOrderedMutexLocker
     }
 
+    // this is safe if the condition in the documentation is correct
+    c->sender->disconnectNotify(QMetaObjectPrivate::signal(c->sender->metaObject(), c->signal_index));
     return true;
 }
 
