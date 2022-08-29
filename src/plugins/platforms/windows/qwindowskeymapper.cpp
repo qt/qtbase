@@ -817,6 +817,12 @@ static void showSystemMenu(QWindow* w)
                                pos.x(), pos.y() + titleBarOffset,
                                topLevelHwnd,
                                nullptr);
+
+    // Remove the highlight of the restore menu item, otherwise when the user right-clicks
+    // on the title bar, the popuped system menu will also highlight the restore item, which
+    // is not appropriate, it should only be highlighted if the menu is brought up by keyboard.
+    HiliteMenuItem(topLevelHwnd, menu, SC_RESTORE, MF_BYCOMMAND | MFS_UNHILITE);
+
     if (ret)
         qWindowsWndProc(topLevelHwnd, WM_SYSCOMMAND, WPARAM(ret), 0);
 }
