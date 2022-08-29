@@ -344,8 +344,10 @@ QPlatformThemePrivate::~QPlatformThemePrivate()
 
 Q_GUI_EXPORT QPalette qt_fusionPalette()
 {
-    const bool darkAppearance = QGuiApplicationPrivate::platformTheme()->appearance()
-        == QPlatformTheme::Appearance::Dark;
+    auto theme = QGuiApplicationPrivate::platformTheme();
+    const bool darkAppearance = theme
+                              ? theme->appearance() == QPlatformTheme::Appearance::Dark
+                              : false;
     const QColor windowText = darkAppearance ? QColor(240, 240, 240) : Qt::black;
     const QColor backGround = darkAppearance ? QColor(50, 50, 50) : QColor(239, 239, 239);
     const QColor light = backGround.lighter(150);
