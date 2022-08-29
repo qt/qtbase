@@ -227,12 +227,16 @@ int runRcc(int argc, char *argv[])
 
     if (parser.isSet(compressionAlgoOption))
         library.setCompressionAlgorithm(RCCResourceLibrary::parseCompressionAlgorithm(parser.value(compressionAlgoOption), &errorMsg));
-    if (formatVersion < 3 && library.compressionAlgorithm() == RCCResourceLibrary::CompressionAlgorithm::Zstd)
-        errorMsg = "Zstandard compression requires format version 3 or higher"_L1;
-    if (parser.isSet(nocompressOption))
-        library.setCompressionAlgorithm(RCCResourceLibrary::CompressionAlgorithm::None);
     if (parser.isSet(noZstdOption))
         library.setNoZstd(true);
+    if (library.compressionAlgorithm() == RCCResourceLibrary::CompressionAlgorithm::Zstd) {
+        if (formatVersion < 3)
+            errorMsg = "Zstandard compression requires format version 3 or higher"_L1;
+        if (library.noZstd())
+            errorMsg = "--compression-algo=zstd and --no-zstd both specified."_L1;
+    }
+    if (parser.isSet(nocompressOption))
+        library.setCompressionAlgorithm(RCCResourceLibrary::CompressionAlgorithm::None);
     if (parser.isSet(compressOption) && errorMsg.isEmpty()) {
         int level = library.parseCompressionLevel(library.compressionAlgorithm(), parser.value(compressOption), &errorMsg);
         library.setCompressLevel(level);
