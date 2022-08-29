@@ -58,14 +58,6 @@ enum {
     CONSTANT_COMPRESSTHRESHOLD_DEFAULT = 70
 };
 
-#if QT_CONFIG(zstd) && QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-#  define CONSTANT_COMPRESSALGO_DEFAULT     RCCResourceLibrary::CompressionAlgorithm::Zstd
-#elif !defined(QT_NO_COMPRESS)
-#  define CONSTANT_COMPRESSALGO_DEFAULT     RCCResourceLibrary::CompressionAlgorithm::Zlib
-#else
-#  define CONSTANT_COMPRESSALGO_DEFAULT     RCCResourceLibrary::CompressionAlgorithm::None
-#endif
-
 void RCCResourceLibrary::write(const char *str, int len)
 {
     int n = m_out.size();
@@ -110,7 +102,7 @@ public:
                 QLocale::Language language = QLocale::C,
                 QLocale::Territory territory = QLocale::AnyTerritory,
                 uint flags = NoFlags,
-                RCCResourceLibrary::CompressionAlgorithm compressAlgo = CONSTANT_COMPRESSALGO_DEFAULT,
+                RCCResourceLibrary::CompressionAlgorithm compressAlgo = RCCResourceLibrary::CompressionAlgorithm::Best,
                 int compressLevel = CONSTANT_COMPRESSLEVEL_DEFAULT,
                 int compressThreshold = CONSTANT_COMPRESSTHRESHOLD_DEFAULT,
                 bool noZstd = false);
@@ -461,7 +453,7 @@ RCCResourceLibrary::RCCResourceLibrary(quint8 formatVersion)
   : m_root(nullptr),
     m_format(C_Code),
     m_verbose(false),
-    m_compressionAlgo(CONSTANT_COMPRESSALGO_DEFAULT),
+    m_compressionAlgo(CompressionAlgorithm::Best),
     m_compressLevel(CONSTANT_COMPRESSLEVEL_DEFAULT),
     m_compressThreshold(CONSTANT_COMPRESSTHRESHOLD_DEFAULT),
     m_treeOffset(0),
