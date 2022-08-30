@@ -30,27 +30,27 @@ if(WIN32)
     set_property(TARGET mylib PROPERTY PREFIX "")
 endif()
 
-
-if (MACOS)
-    add_custom_command(TARGET mylib POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            $<TARGET_FILE:mylib>
-            "${CMAKE_CURRENT_BINARY_DIR}/../"
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${CMAKE_CURRENT_BINARY_DIR}/*dylib"
-            "${CMAKE_CURRENT_BINARY_DIR}/../")
-elseif (UNIX)
-    if (NOT ANDROID)
+if(UNIX)
+    if(APPLE)
         add_custom_command(TARGET mylib POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            $<TARGET_FILE:mylib>
-            "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so.1.0.0"
+                $<TARGET_FILE:mylib>
+                "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.1.0.0.dylib"
             COMMAND ${CMAKE_COMMAND} -E create_symlink
-            "libmylib.so.1.0.0"
-            "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so.1"
+                "libmylib.1.0.0.dylib"
+                "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.1.dylib"
+            VERBATIM)
+    elseif(NOT ANDROID)
+        add_custom_command(TARGET mylib POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:mylib>
+                "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so.1.0.0"
             COMMAND ${CMAKE_COMMAND} -E create_symlink
-            "libmylib.so.1.0.0"
-            "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so1"
+                "libmylib.so.1.0.0"
+                "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so.1"
+            COMMAND ${CMAKE_COMMAND} -E create_symlink
+                "libmylib.so.1.0.0"
+                "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so1"
             VERBATIM)
     else()
         # Android does not use symlinks. Also, according to our conventions,
@@ -64,10 +64,10 @@ elseif (UNIX)
     endif()
 else() #Win32
     add_custom_command(TARGET mylib POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
             $<TARGET_FILE:mylib>
             "${CMAKE_CURRENT_BINARY_DIR}/../mylib.dll"
-            VERBATIM)
+        VERBATIM)
 endif()
 # special case end
 

@@ -42,8 +42,28 @@ if(WIN32)
     set_property(TARGET mylib2 PROPERTY PREFIX "")
 endif()
 
-if (UNIX)
-    if(NOT ANDROID)
+if(UNIX)
+    if(APPLE)
+        add_custom_command(TARGET mylib2 POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:mylib2>
+                "${CMAKE_CURRENT_BINARY_DIR}/../system.qt.test.mylib.so.dylib"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:mylib2>
+                "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.2.0.0.dylib"
+            COMMAND ${CMAKE_COMMAND} -E create_symlink
+                "libmylib.2.0.0.dylib"
+                "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.2.dylib"
+            COMMAND ${CMAKE_COMMAND} -E remove
+                "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.dylib"
+            COMMAND ${CMAKE_COMMAND} -E create_symlink
+                "libmylib.2.0.0.dylib"
+                "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.dylib"
+            COMMAND ${CMAKE_COMMAND} -E create_symlink
+                "libmylib.2.0.0.dylib"
+                "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so2.dylib"
+            VERBATIM)
+    elseif(NOT ANDROID)
         add_custom_command(TARGET mylib2 POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 $<TARGET_FILE:mylib2>
