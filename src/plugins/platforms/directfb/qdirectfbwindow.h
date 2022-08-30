@@ -15,19 +15,19 @@ class QDirectFbWindow : public QPlatformWindow
 {
 public:
     QDirectFbWindow(QWindow *tlw, QDirectFbInput *inputhandler);
-    ~QDirectFbWindow();
+    ~QDirectFbWindow() override;
 
-    void setGeometry(const QRect &rect);
-    void setOpacity(qreal level);
+    void setGeometry(const QRect &rect) override;
+    void setOpacity(qreal level) override;
 
-    void setVisible(bool visible);
+    void setVisible(bool visible) override;
 
-    void setWindowFlags(Qt::WindowFlags flags);
-    bool setKeyboardGrabEnabled(bool grab);
-    bool setMouseGrabEnabled(bool grab);
-    void raise();
-    void lower();
-    WId winId() const;
+    void setWindowFlags(Qt::WindowFlags flags) override;
+    bool setKeyboardGrabEnabled(bool grab) override;
+    bool setMouseGrabEnabled(bool grab) override;
+    void raise() override;
+    void lower() override;
+    WId winId() const override;
 
     virtual void createDirectFBWindow();
     IDirectFBWindow *dfbWindow() const;

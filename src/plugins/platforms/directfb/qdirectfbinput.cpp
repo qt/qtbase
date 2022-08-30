@@ -126,7 +126,7 @@ void QDirectFbInput::handleMouseEvents(const DFBEvent &event)
     long timestamp = (event.window.timestamp.tv_sec*1000) + (event.window.timestamp.tv_usec/1000);
 
     QWindow *tlw = m_tlwMap.value(event.window.window_id);
-    QWindowSystemInterface::handleMouseEvent(tlw, timestamp, p, globalPos, buttons);
+    QWindowSystemInterface::handleMouseEvent(tlw, timestamp, p, globalPos, buttons, Qt::NoButton, QEvent::None);
 }
 
 void QDirectFbInput::handleWheelEvent(const DFBEvent &event)
@@ -135,9 +135,12 @@ void QDirectFbInput::handleWheelEvent(const DFBEvent &event)
     QPoint globalPos(event.window.cx, event.window.cy);
     long timestamp = (event.window.timestamp.tv_sec*1000) + (event.window.timestamp.tv_usec/1000);
     QWindow *tlw = m_tlwMap.value(event.window.window_id);
-    QWindowSystemInterface::handleWheelEvent(tlw, timestamp, p, globalPos,
-                                          event.window.step*120,
-                                          Qt::Vertical);
+    QWindowSystemInterface::handleWheelEvent(tlw,
+                                             timestamp,
+                                             p,
+                                             globalPos,
+                                             QPoint(),
+                                             QPoint(0, event.window.step*120));
 }
 
 void QDirectFbInput::handleKeyEvents(const DFBEvent &event)

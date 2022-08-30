@@ -19,11 +19,20 @@ public:
     QDirectFbBlitter(const QSize &size, bool alpha);
     virtual ~QDirectFbBlitter();
 
-    virtual void fillRect(const QRectF &rect, const QColor &color);
-    virtual void drawPixmap(const QRectF &rect, const QPixmap &pixmap, const QRectF &subrect);
-    void alphaFillRect(const QRectF &rect, const QColor &color, QPainter::CompositionMode cmode);
-    void drawPixmapOpacity(const QRectF &rect, const QPixmap &pixmap, const QRectF &subrect, QPainter::CompositionMode cmode, qreal opacity);
-    virtual bool drawCachedGlyphs(const QPaintEngineState *state, QFontEngine::GlyphFormat glyphFormat, int numGlyphs, const glyph_t *glyphs, const QFixedPoint *positions, QFontEngine *fontEngine);
+    void fillRect(const QRectF &rect, const QColor &color) override;
+    void drawPixmap(const QRectF &rect, const QPixmap &pixmap, const QRectF &subrect) override;
+    void alphaFillRect(const QRectF &rect, const QColor &color, QPainter::CompositionMode cmode) override;
+    void drawPixmapOpacity(const QRectF &rect,
+                           const QPixmap &pixmap,
+                           const QRectF &subrect,
+                           QPainter::CompositionMode cmode,
+                           qreal opacity) override;
+    bool drawCachedGlyphs(const QPaintEngineState *state,
+                          QFontEngine::GlyphFormat glyphFormat,
+                          int numGlyphs,
+                          const glyph_t *glyphs,
+                          const QFixedPoint *positions,
+                          QFontEngine *fontEngine) override;
 
     IDirectFBSurface *dfbSurface() const;
 
@@ -32,8 +41,8 @@ public:
     static DFBSurfacePixelFormat selectPixmapFormat(bool withAlpha);
 
 protected:
-    virtual QImage *doLock();
-    virtual void doUnlock();
+    QImage *doLock() override;
+    void doUnlock() override;
 
     QDirectFBPointer<IDirectFBSurface> m_surface;
     QImage m_image;
@@ -50,12 +59,12 @@ private:
 class QDirectFbBlitterPlatformPixmap : public QBlittablePlatformPixmap
 {
 public:
-    QBlittable *createBlittable(const QSize &size, bool alpha) const;
+    QBlittable *createBlittable(const QSize &size, bool alpha) const override;
 
     QDirectFbBlitter *dfbBlitter() const;
 
-    virtual bool fromFile(const QString &filename, const char *format,
-                          Qt::ImageConversionFlags flags);
+    bool fromFile(const QString &filename, const char *format,
+                  Qt::ImageConversionFlags flags) override;
 
 private:
     bool fromDataBufferDescription(const DFBDataBufferDescription &);
@@ -83,7 +92,7 @@ public:
         : QImageTextureGlyphCache(format, matrix)
     {}
 
-    virtual void resizeTextureData(int width, int height);
+    void resizeTextureData(int width, int height) override;
 
     IDirectFBSurface *sourceSurface();
 

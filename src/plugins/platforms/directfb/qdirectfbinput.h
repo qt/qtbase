@@ -26,7 +26,7 @@ public:
     void stopInputEventLoop();
 
 protected:
-    void run();
+    void run() override;
 
 private:
     void handleEvents();

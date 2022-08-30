@@ -25,16 +25,16 @@ public:
 
     void connectToDirectFb();
 
-    bool hasCapability(Capability cap) const;
-    QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-    QAbstractEventDispatcher *createEventDispatcher() const;
+    bool hasCapability(Capability cap) const override;
+    QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const override;
+    QPlatformWindow *createPlatformWindow(QWindow *window) const override;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const override;
+    QAbstractEventDispatcher *createEventDispatcher() const override;
 
-    QPlatformFontDatabase *fontDatabase() const;
-    QPlatformServices *services() const;
-    QPlatformInputContext *inputContext() const { return m_inputContext; }
-    QPlatformNativeInterface *nativeInterface() const;
+    QPlatformFontDatabase *fontDatabase() const override;
+    QPlatformServices *services() const override;
+    QPlatformInputContext *inputContext() const override { return m_inputContext; }
+    QPlatformNativeInterface *nativeInterface() const override;
 
 protected:
     virtual void initializeDirectFB();

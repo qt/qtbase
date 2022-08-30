@@ -18,10 +18,10 @@ class QDirectFbBackingStore : public QPlatformBackingStore
 public:
     QDirectFbBackingStore(QWindow *window);
 
-    QPaintDevice *paintDevice();
-    void flush(QWindow *window, const QRegion &region, const QPoint &offset);
-    void resize (const QSize &size, const QRegion &staticContents);
-    bool scroll(const QRegion &area, int dx, int dy);
+    QPaintDevice *paintDevice() override;
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset) override;
+    void resize (const QSize &size, const QRegion &staticContents) override;
+    bool scroll(const QRegion &area, int dx, int dy) override;
 
     QImage toImage() const override;
 

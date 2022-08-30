@@ -19,7 +19,7 @@ class QDirectFBCursor : public QPlatformCursor
 public:
     QDirectFBCursor(QPlatformScreen *screen);
 #ifndef QT_NO_CURSOR
-    void changeCursor(QCursor *cursor, QWindow *window);
+    void changeCursor(QCursor *cursor, QWindow *window) override;
 #endif
 
 private:

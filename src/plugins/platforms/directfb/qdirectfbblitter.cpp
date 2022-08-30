@@ -216,7 +216,7 @@ bool QDirectFbBlitter::drawCachedGlyphs(const QPaintEngineState *state, QFontEng
     for (int i=0; i<numGlyphs; ++i) {
 
         QFixed subPixelPosition = fontEngine->subPixelPositionForX(positions[i].x);
-        QTextureGlyphCache::GlyphAndSubPixelPosition glyph(glyphs[i], subPixelPosition);
+        QTextureGlyphCache::GlyphAndSubPixelPosition glyph(glyphs[i], QFixedPoint(subPixelPosition, 0));
         const QTextureGlyphCache::Coord &c = cache->coords[glyph];
         if (c.isNull())
             continue;

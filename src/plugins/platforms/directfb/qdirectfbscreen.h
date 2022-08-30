@@ -19,11 +19,11 @@ class QDirectFbScreen : public QPlatformScreen
 public:
     QDirectFbScreen(int display);
 
-    QRect geometry() const { return m_geometry; }
-    int depth() const { return m_depth; }
-    QImage::Format format() const { return m_format; }
-    QSizeF physicalSize() const { return m_physicalSize; }
-    QPlatformCursor *cursor() const { return m_cursor.data(); }
+    QRect geometry() const override { return m_geometry; }
+    int depth() const override { return m_depth; }
+    QImage::Format format() const override { return m_format; }
+    QSizeF physicalSize() const override { return m_physicalSize; }
+    QPlatformCursor *cursor() const override { return m_cursor.data(); }
 
     // DirectFb helpers
     IDirectFBDisplayLayer *dfbLayer() const;
