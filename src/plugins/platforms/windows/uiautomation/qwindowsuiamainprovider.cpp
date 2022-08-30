@@ -103,6 +103,10 @@ void QWindowsUiaMainProvider::notifyStateChange(QAccessibleStateChangeEvent *eve
                 if (QWindowsUiaMainProvider *provider = providerForAccessible(accessible)) {
                     if (accessible->state().active) {
                         QWindowsUiaWrapper::instance()->raiseAutomationEvent(provider, UIA_Window_WindowOpenedEventId);
+                        if (QAccessibleInterface *focused = accessible->focusChild()) {
+                            if (QWindowsUiaMainProvider *focusedProvider = providerForAccessible(focused))
+                                QWindowsUiaWrapper::instance()->raiseAutomationEvent(focusedProvider, UIA_AutomationFocusChangedEventId);
+                        }
                     } else {
                         QWindowsUiaWrapper::instance()->raiseAutomationEvent(provider, UIA_Window_WindowClosedEventId);
                     }
