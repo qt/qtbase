@@ -11,9 +11,11 @@
 #include "qhttp2configuration.h"
 #include "private/http2protocol_p.h"
 #endif
-#include "QtCore/qshareddata.h"
-#include "QtCore/qlocale.h"
+
 #include "QtCore/qdatetime.h"
+#include "QtCore/qlocale.h"
+#include "QtCore/qshareddata.h"
+#include "QtCore/qtimezone.h"
 #include "QtCore/private/qtools_p.h"
 
 #include <ctype.h>
@@ -1081,7 +1083,7 @@ static QByteArray headerValue(QNetworkRequest::KnownHeaders header, const QVaria
         switch (value.userType()) {
             // Generate RFC 1123/822 dates:
         case QMetaType::QDate:
-            return QNetworkHeadersPrivate::toHttpDate(value.toDate().startOfDay(Qt::UTC));
+            return QNetworkHeadersPrivate::toHttpDate(value.toDate().startOfDay(QTimeZone::UTC));
         case QMetaType::QDateTime:
             return QNetworkHeadersPrivate::toHttpDate(value.toDateTime());
 
@@ -1522,7 +1524,7 @@ QDateTime QNetworkHeadersPrivate::fromHttpDate(const QByteArray &value)
 #endif // datestring
 
     if (dt.isValid())
-        dt.setTimeSpec(Qt::UTC);
+        dt.setTimeZone(QTimeZone::UTC);
     return dt;
 }
 

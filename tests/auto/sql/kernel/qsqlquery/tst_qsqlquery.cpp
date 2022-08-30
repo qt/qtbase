@@ -4,6 +4,9 @@
 #include <QTest>
 #include <QtSql/QtSql>
 
+#include <QtCore/QDateTime>
+#include <QtCore/QTimeZone>
+
 #include <numeric>
 
 #include "../qsqldatabase/tst_databases.h"
@@ -4730,10 +4733,10 @@ void tst_QSqlQuery::integralTypesMysql()
 
 void tst_QSqlQuery::QTBUG_57138()
 {
-    const QDateTime utc = QDateTime(QDate(2150, 1, 5), QTime(14, 0, 0, 123), Qt::UTC);
-    const QDateTime localtime = QDateTime(QDate(2150, 1, 5), QTime(14, 0, 0, 123), Qt::LocalTime);
-    const QDateTime tzoffset = QDateTime(QDate(2150, 1, 5), QTime(14, 0, 0, 123),
-                                         Qt::OffsetFromUTC, 3600);
+    const QDateTime utc(QDate(2150, 1, 5), QTime(14, 0, 0, 123), QTimeZone::UTC);
+    const QDateTime localtime(QDate(2150, 1, 5), QTime(14, 0, 0, 123));
+    const QDateTime tzoffset(QDate(2150, 1, 5), QTime(14, 0, 0, 123),
+                             QTimeZone::fromSecondsAheadOfUtc(3600));
 
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);

@@ -1,17 +1,19 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-
 #include <QTest>
 
 #include <QtNetwork/qtnetworkglobal.h>
+
+#include <QtCore/qdatetime.h>
+#include <QtCore/qtimezone.h>
+#include <QtCore/qscopeguard.h>
 #include <QtCore/qset.h>
 
 #include <qsslcertificate.h>
 #include <qsslkey.h>
 #include <qsslsocket.h>
 #include <qsslcertificateextension.h>
-#include <qscopeguard.h>
 
 #ifndef QT_NO_OPENSSL
 #include <openssl/opensslv.h>
@@ -808,8 +810,10 @@ void tst_QSslCertificate::certInfo()
     QCOMPARE(cert.digest(QCryptographicHash::Sha1),
              QByteArray::fromHex("B6:D1:51:82:E0:29:CA:59:96:38:BD:B6:F9:40:05:91:6D:49:09:60"));
 
-    QCOMPARE(cert.effectiveDate().toUTC(), QDateTime(QDate(2007, 4, 17), QTime(7,40,26), Qt::UTC));
-    QCOMPARE(cert.expiryDate().toUTC(), QDateTime(QDate(2007, 5, 17), QTime(7,40,26), Qt::UTC));
+    QCOMPARE(cert.effectiveDate().toUTC(),
+             QDateTime(QDate(2007, 4, 17), QTime(7,40,26), QTimeZone::UTC));
+    QCOMPARE(cert.expiryDate().toUTC(),
+             QDateTime(QDate(2007, 5, 17), QTime(7,40,26), QTimeZone::UTC));
     QVERIFY(cert.expiryDate() < QDateTime::currentDateTime());   // cert has expired
 
     QSslCertificate copy = cert;
@@ -933,9 +937,11 @@ void tst_QSslCertificate::largeExpirationDate() // QTBUG-12489
 
     const QSslCertificate &cert = certList.at(0);
     QVERIFY(!cert.isNull());
-    QCOMPARE(cert.effectiveDate().toUTC(), QDateTime(QDate(2010, 8, 4), QTime(9, 53, 41), Qt::UTC));
+    QCOMPARE(cert.effectiveDate().toUTC(),
+             QDateTime(QDate(2010, 8, 4), QTime(9, 53, 41), QTimeZone::UTC));
     // if the date is larger than 2049, then the generalized time format is used
-    QCOMPARE(cert.expiryDate().toUTC(), QDateTime(QDate(2051, 8, 29), QTime(9, 53, 41), Qt::UTC));
+    QCOMPARE(cert.expiryDate().toUTC(),
+             QDateTime(QDate(2051, 8, 29), QTime(9, 53, 41), QTimeZone::UTC));
 }
 
 void tst_QSslCertificate::blacklistedCertificates()

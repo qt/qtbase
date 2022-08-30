@@ -1,9 +1,12 @@
 // Copyright (C) 2014 Jeremy Lainé <jeremy.laine@m4x.org>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
+#include "private/qasn1element_p.h"
 
 #include <QTest>
-#include "private/qasn1element_p.h"
+
+#include <QtCore/QDateTime>
+#include <QtCore/QTimeZone>
 
 class tst_QAsn1Element : public QObject
 {
@@ -102,7 +105,7 @@ void tst_QAsn1Element::dateTime_data()
         << QDateTime();
     QTest::newRow("UTCTime - 070417074026Z")
         << QByteArray::fromHex("170d3037303431373037343032365a")
-        << QDateTime(QDate(2007, 4, 17), QTime(7, 40, 26), Qt::UTC);
+        << QDateTime(QDate(2007, 4, 17), QTime(7, 40, 26), QTimeZone::UTC);
     QTest::newRow("UTCTime - bad length")
         << QByteArray::fromHex("170c30373034313730373430325a")
         << QDateTime();
@@ -111,16 +114,16 @@ void tst_QAsn1Element::dateTime_data()
         << QDateTime();
     QTest::newRow("UTCTime - year 1950")
         << QByteArray::fromHex("170d3530313232343035353530305a")
-        << QDateTime(QDate(1950, 12, 24), QTime(5, 55), Qt::UTC);
+        << QDateTime(QDate(1950, 12, 24), QTime(5, 55), QTimeZone::UTC);
     QTest::newRow("UTCTime - year 1999")
         << QByteArray::fromHex("170d3939313232343035353530305a")
-        << QDateTime(QDate(1999, 12, 24), QTime(5, 55), Qt::UTC);
+        << QDateTime(QDate(1999, 12, 24), QTime(5, 55), QTimeZone::UTC);
     QTest::newRow("UTCTime - year 2000")
         << QByteArray::fromHex("170d3030313232343035353530305a")
-        << QDateTime(QDate(2000, 12, 24), QTime(5, 55), Qt::UTC);
+        << QDateTime(QDate(2000, 12, 24), QTime(5, 55), QTimeZone::UTC);
     QTest::newRow("UTCTime - year 2049")
         << QByteArray::fromHex("170d3439313232343035353530305a")
-        << QDateTime(QDate(2049, 12, 24), QTime(5, 55), Qt::UTC);
+        << QDateTime(QDate(2049, 12, 24), QTime(5, 55), QTimeZone::UTC);
     QTest::newRow("UTCTime - invalid year ('-9')")
         << QByteArray::fromHex("170d2d39313232343035353530305a")
         << QDateTime();
@@ -138,7 +141,7 @@ void tst_QAsn1Element::dateTime_data()
         << QDateTime();
     QTest::newRow("GeneralizedTime - 20510829095341Z")
         << QByteArray::fromHex("180f32303531303832393039353334315a")
-        << QDateTime(QDate(2051, 8, 29), QTime(9, 53, 41), Qt::UTC);
+        << QDateTime(QDate(2051, 8, 29), QTime(9, 53, 41), QTimeZone::UTC);
     QTest::newRow("GeneralizedTime - bad length")
         << QByteArray::fromHex("180e323035313038323930393533345a")
         << QDateTime();

@@ -6,14 +6,15 @@
 
 #include <qatomic.h>
 #include <qbytearray.h>
+#include <qdatetime.h>
+#include <qline.h>
 #include <qlist.h>
 #include <qmap.h>
 #include <qstring.h>
 #include <qstringlist.h>
-#include <qvariant.h>
-#include <qdatetime.h>
 #include <qrect.h>
-#include <qline.h>
+#include <qtimezone.h>
+#include <qvariant.h>
 
 #include "qdbusmetatype_p.h"
 #include "qdbusutil_p.h"
@@ -1169,12 +1170,33 @@ const QDBusArgument &operator>>(const QDBusArgument &a, QDateTime &dt)
     a >> date >> time >> timespec;
     a.endStructure();
 
-    dt = QDateTime(date, time, Qt::TimeSpec(timespec));
+    switch (Qt::TimeSpec(timespec)) {
+    case Qt::TimeZone:
+        qWarning("Restoring zoned date-time without zone info");
+        Q_FALLTHROUGH(); // Treat as local time.
+    case Qt::LocalTime:
+        dt = QDateTime(date, time);
+        break;
+    case Qt::OffsetFromUTC:
+        qWarning("Restoring date-time without its offset");
+        Q_FALLTHROUGH(); // Use zero offset
+    case Qt::UTC:
+        dt = QDateTime(date, time, QTimeZone::UTC);
+        break;
+    }
     return a;
 }
 
 QDBusArgument &operator<<(QDBusArgument &a, const QDateTime &dt)
 {
+    // TODO: Only viable for UTC and LocalTime
+    if (Q_UNLIKELY(dt.timeSpec() != Qt::UTC && dt.timeSpec() != Qt::LocalTime)) {
+        qWarning() << "Serializing a date-time with unsupported time-spec" << dt.timeSpec();
+        // Coerce to a supported timespec. When a time-zone is the current
+        // system zone, local time is suitable; so map all time-zones to local,
+        // plain offsets to UTC.
+        return a << (dt.timeSpec() == Qt::OffsetFromUTC ? dt.toUTC() : dt.toLocalTime());
+    }
     a.beginStructure();
     a << dt.date() << dt.time() << int(dt.timeSpec());
     a.endStructure();

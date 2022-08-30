@@ -12,12 +12,13 @@
 #include <QtNetwork/qsslsocket.h>
 #include <QtNetwork/qhostaddress.h>
 
-#include <QtCore/qvarlengtharray.h>
-#include <QtCore/qscopeguard.h>
-#include <QtCore/qdatetime.h>
-#include <QtCore/qiodevice.h>
 #include <QtCore/qendian.h>
+#include <QtCore/qdatetime.h>
 #include <QtCore/qhash.h>
+#include <QtCore/qiodevice.h>
+#include <QtCore/qscopeguard.h>
+#include <QtCore/qtimezone.h>
+#include <QtCore/qvarlengtharray.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -77,7 +78,7 @@ QDateTime dateTimeFromASN1(const ASN1_TIME *aTime)
     if (q_ASN1_TIME_to_tm(aTime, &lTime)) {
         QDate resDate(lTime.tm_year + 1900, lTime.tm_mon + 1, lTime.tm_mday);
         QTime resTime(lTime.tm_hour, lTime.tm_min, lTime.tm_sec);
-        result = QDateTime(resDate, resTime, Qt::UTC);
+        result = QDateTime(resDate, resTime, QTimeZone::UTC);
     }
 
     return result;

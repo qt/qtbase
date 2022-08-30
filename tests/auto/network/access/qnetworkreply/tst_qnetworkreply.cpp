@@ -16,20 +16,23 @@
 #include <QBuffer>
 #include <QMap>
 
-#include <QtCore/qlist.h>
-#include <QtCore/qset.h>
 #include <QtCore/QCryptographicHash>
 #include <QtCore/QDataStream>
-#include <QtCore/QUrl>
+#include <QtCore/QDateTime>
 #include <QtCore/QEventLoop>
 #include <QtCore/QElapsedTimer>
 #include <QtCore/QFile>
+#include <QtCore/QList>
 #include <QtCore/QRandomGenerator>
 #include <QtCore/QRegularExpression>
 #include <QtCore/QRegularExpressionMatch>
+#include <QtCore/QSet>
 #include <QtCore/QSharedPointer>
 #include <QtCore/QScopedPointer>
 #include <QtCore/QTemporaryFile>
+#include <QtCore/QTimeZone>
+#include <QtCore/QUrl>
+
 #include <QtNetwork/QTcpServer>
 #include <QtNetwork/QTcpSocket>
 #include <QtNetwork/QLocalSocket>
@@ -5482,7 +5485,7 @@ void tst_QNetworkReply::lastModifiedHeaderForHttp()
 
     QDateTime header = reply->header(QNetworkRequest::LastModifiedHeader).toDateTime();
     QDateTime realDate = QDateTime::fromString("2007-05-22T12:04:57", Qt::ISODate);
-    realDate.setTimeSpec(Qt::UTC);
+    realDate.setTimeZone(QTimeZone::UTC);
 
     QCOMPARE(header, realDate);
 }

@@ -7,12 +7,14 @@
 #include "qnetworkrequest.h"
 #include "qnetworkreply.h"
 #include "QtCore/qbytearray.h"
+#include "QtCore/qdatetime.h"
 #include "QtCore/qdebug.h"
 #include "QtCore/qlist.h"
 #include "QtCore/qlocale.h"
 #include <QtCore/qregularexpression.h>
 #include "QtCore/qstring.h"
 #include "QtCore/qstringlist.h"
+#include "QtCore/qtimezone.h"
 #include "QtCore/qurl.h"
 #include "QtNetwork/qhostaddress.h"
 #include "private/qobject_p.h"
@@ -906,11 +908,11 @@ static QDateTime parseDateString(const QByteArray &dateString)
     if (!date.isValid())
         date = QDate(day + y2k, month, year);
 
-    QDateTime dateTime(date, time, Qt::UTC);
+    QDateTime dateTime(date, time, QTimeZone::UTC);
 
-    if (zoneOffset != -1) {
+    if (zoneOffset != -1)
         dateTime = dateTime.addSecs(zoneOffset);
-    }
+
     if (!dateTime.isValid())
         return QDateTime();
     return dateTime;

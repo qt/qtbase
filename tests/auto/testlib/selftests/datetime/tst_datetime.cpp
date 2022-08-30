@@ -4,6 +4,7 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDateTime>
+#include <QtCore/QTimeZone>
 #include <QTest>
 
 /*!
@@ -21,8 +22,10 @@ private slots:
 
 void tst_DateTime::dateTime() const
 {
-    const QDateTime utc(QDate(2000, 5, 3), QTime(4, 3, 4), Qt::UTC);
-    const QDateTime local(QDate(2000, 5, 3), QTime(4, 3, 4), Qt::OffsetFromUTC, 120 /* 2 minutes */);
+    const auto twoMinutes = std::chrono::minutes{2};
+    const QDateTime utc(QDate(2000, 5, 3), QTime(4, 3, 4), QTimeZone::UTC);
+    const QDateTime local(QDate(2000, 5, 3), QTime(4, 3, 4),
+                          QTimeZone::fromDurationAheadOfUtc(twoMinutes));
 
     QCOMPARE(local, utc);
 }

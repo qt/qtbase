@@ -569,8 +569,8 @@ void tst_QDBusMarshall::sendComplex_data()
     QTest::newRow("empty-lldtmap") << QVariant::fromValue(lldtmap) << "a{x((iii)(iiii)i)}"
             << "[Argument: a{x((iii)(iiii)i)} {}]";
     lldtmap[0] = QDateTime();
-    lldtmap[1] = QDateTime(QDate(1970, 1, 1), QTime(0, 0, 1), Qt::UTC);
-    lldtmap[1150629776] = QDateTime(QDate(2006, 6, 18), QTime(11, 22, 56), Qt::UTC);
+    lldtmap[1] = QDateTime(QDate(1970, 1, 1), QTime(0, 0, 1), QTimeZone::UTC);
+    lldtmap[1150629776] = QDateTime(QDate(2006, 6, 18), QTime(11, 22, 56), QTimeZone::UTC);
     QTest::newRow("lldtmap") << QVariant::fromValue(lldtmap) << "a{x((iii)(iiii)i)}"
             << "[Argument: a{x((iii)(iiii)i)} {0 = [Argument: ((iii)(iiii)i) [Argument: (iii) 0, 0, 0], [Argument: (iiii) -1, -1, -1, -1], 0], 1 = [Argument: ((iii)(iiii)i) [Argument: (iii) 1970, 1, 1], [Argument: (iiii) 0, 0, 1, 0], 1], 1150629776 = [Argument: ((iii)(iiii)i) [Argument: (iii) 2006, 6, 18], [Argument: (iiii) 11, 22, 56, 0], 1]}]";
 

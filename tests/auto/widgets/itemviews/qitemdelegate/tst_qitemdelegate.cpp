@@ -5,6 +5,7 @@
 
 #include <QTest>
 #include <QTimeZone>
+#include <QDateTime>
 #include <QTimer>
 #include <QTestEventLoop>
 #include <QSignalSpy>
@@ -1592,12 +1593,12 @@ void tst_QItemDelegate::dateTextForRole_data()
     QDate date(2013, 12, 11);
     QTime time(10, 9, 8, 765);
     // Ensure we exercise every time-spec variant:
-    QTest::newRow("local") << QDateTime(date, time, Qt::LocalTime);
-    QTest::newRow("UTC") << QDateTime(date, time, Qt::UTC);
-#if QT_CONFIG(timezone)
+    QTest::newRow("local") << QDateTime(date, time);
+    QTest::newRow("UTC") << QDateTime(date, time, QTimeZone::UTC);
+#  if QT_CONFIG(timezone)
     QTest::newRow("zone") << QDateTime(date, time, QTimeZone("Europe/Dublin"));
-#endif
-    QTest::newRow("offset") << QDateTime(date, time, Qt::OffsetFromUTC, 36000);
+#  endif
+    QTest::newRow("offset") << QDateTime(date, time, QTimeZone::fromSecondsAheadOfUtc(36000));
 #endif
 }
 
