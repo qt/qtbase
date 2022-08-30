@@ -17,6 +17,8 @@ public:
     WindowActivationBehavior windowActivationBehavior() const override;
     void setWindowActivationBehavior(WindowActivationBehavior behavior) override;
 
+    void setHasBorderInFullScreenDefault(bool border) override;
+
     bool isTabletMode() const override;
 
     bool isWinTabEnabled() const override;

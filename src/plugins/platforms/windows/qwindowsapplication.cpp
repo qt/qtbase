@@ -7,6 +7,7 @@
 #include "qwindowsmime.h"
 #include "qwin10helpers.h"
 #include "qwindowsopengltester.h"
+#include "qwindowswindow.h"
 
 #include <QtCore/QVariant>
 
@@ -34,6 +35,11 @@ QWindowsApplication::WindowActivationBehavior QWindowsApplication::windowActivat
 void QWindowsApplication::setWindowActivationBehavior(WindowActivationBehavior behavior)
 {
     m_windowActivationBehavior = behavior;
+}
+
+void QWindowsApplication::setHasBorderInFullScreenDefault(bool border)
+{
+    QWindowsWindow::setHasBorderInFullScreenDefault(border);
 }
 
 bool QWindowsApplication::isTabletMode() const

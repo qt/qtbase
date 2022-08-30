@@ -364,6 +364,8 @@ struct Q_GUI_EXPORT QWindowsApplication
     virtual WindowActivationBehavior windowActivationBehavior() const = 0;
     virtual void setWindowActivationBehavior(WindowActivationBehavior behavior) = 0;
 
+    virtual void setHasBorderInFullScreenDefault(bool border) = 0;
+
     virtual bool isTabletMode() const = 0;
 
     virtual bool isWinTabEnabled() const = 0;
