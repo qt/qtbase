@@ -226,8 +226,8 @@ bool QDirSortItemComparator::operator()(const QDirSortItem &n1, const QDirSortIt
         // find timezones, which is incredibly expensive. As we aren't
         // presenting these to the user, we don't care (at all) about the
         // local timezone, so force them to UTC to avoid that conversion.
-        firstModified.setTimeSpec(Qt::UTC);
-        secondModified.setTimeSpec(Qt::UTC);
+        firstModified.setTimeZone(QTimeZone::UTC);
+        secondModified.setTimeZone(QTimeZone::UTC);
 
         r = firstModified.msecsTo(secondModified);
         break;

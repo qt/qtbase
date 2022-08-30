@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include <QTest>
+#include <QtCore/QDateTime>
 #include <QtCore/private/qfilesystemmetadata_p.h>
 
 class tst_QFileSystemMetaData : public QObject
@@ -42,14 +43,14 @@ void tst_QFileSystemMetaData::timeSinceEpoch()
     data.ftCreationTime = epochToFileTime(afterEpochUtc);
     meta.fillFromFindData(data);
     QCOMPARE(meta.birthTime().toUTC(),
-             QDateTime::fromMSecsSinceEpoch(afterEpochUtc * qint64(1000), Qt::UTC));
+             QDateTime::fromMSecsSinceEpoch(afterEpochUtc * qint64(1000), QTimeZone::UTC));
 #else
     QT_STATBUF data;
     memset(&data, 0, sizeof(data));
     data.st_ctime = afterEpochUtc;
     meta.fillFromStatBuf(data);
     QCOMPARE(meta.metadataChangeTime().toUTC(),
-             QDateTime::fromMSecsSinceEpoch(afterEpochUtc * qint64(1000), Qt::UTC));
+             QDateTime::fromMSecsSinceEpoch(afterEpochUtc * qint64(1000), QTimeZone::UTC));
 #endif
 }
 #else // i.e. no Q_AUTOTEST_EXPORT

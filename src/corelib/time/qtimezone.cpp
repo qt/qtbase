@@ -331,7 +331,7 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
     For example, for time zone "Europe/Berlin" the OffsetDate in standard and DST might be:
 
     \list
-    \li atUtc = QDateTime(QDate(2013, 1, 1), QTime(0, 0, 0), Qt::UTC)
+    \li atUtc = QDateTime(QDate(2013, 1, 1), QTime(0, 0), QTimeZone::UTC)
     \li offsetFromUtc = 3600
     \li standardTimeOffset = 3600
     \li daylightTimeOffset = 0
@@ -339,7 +339,7 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
     \endlist
 
     \list
-    \li atUtc = QDateTime(QDate(2013, 6, 1), QTime(0, 0, 0), Qt::UTC)
+    \li atUtc = QDateTime(QDate(2013, 6, 1), QTime(0, 0), QTimeZone::UTC)
     \li offsetFromUtc = 7200
     \li standardTimeOffset = 3600
     \li daylightTimeOffset = 3600
@@ -1584,7 +1584,7 @@ QDataStream &operator>>(QDataStream &ds, QTimeZone &tz)
         // zone, with the right offset, ignoring the other data:
         tz = QTimeZone(ianaId.toUtf8());
         if (!tz.isValid() || tz.hasDaylightTime()
-            || tz.offsetFromUtc(QDateTime::fromMSecsSinceEpoch(0, Qt::UTC)) != utcOffset) {
+            || tz.offsetFromUtc(QDateTime::fromMSecsSinceEpoch(0, QTimeZone::UTC)) != utcOffset) {
             // Construct a custom timezone using the saved values:
             tz = QTimeZone(ianaId.toUtf8(), utcOffset, name, abbreviation,
                            QLocale::Territory(territory), comment);

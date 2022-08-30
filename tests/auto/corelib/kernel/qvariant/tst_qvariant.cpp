@@ -29,6 +29,7 @@
 #include <QSequentialIterable>
 #include <QSet>
 #include <QStack>
+#include <QTimeZone>
 #include <QtNumeric>
 #include <QUrl>
 #include <QUuid>
@@ -1280,8 +1281,9 @@ void tst_QVariant::toDateTime_data()
         << QDateTime( QDate( 2002, 10, 10 ), QTime( 12, 34, 56 ) );
     QTest::newRow( "qdate" ) << QVariant( QDate( 2002, 10, 10 ) ) << QDateTime( QDate( 2002, 10, 10 ), QTime( 0, 0, 0 ) );
     QTest::newRow( "qstring" ) << QVariant( QString( "2002-10-10T12:34:56" ) ) << QDateTime( QDate( 2002, 10, 10 ), QTime( 12, 34, 56 ) );
-    QTest::newRow( "qstring-utc" ) << QVariant( QString( "2002-10-10T12:34:56Z" ) )
-                                   << QDateTime( QDate( 2002, 10, 10 ), QTime( 12, 34, 56 ), Qt::UTC );
+    QTest::newRow("qstring-utc")
+        << QVariant(QString("2002-10-10T12:34:56Z"))
+        << QDateTime(QDate(2002, 10, 10), QTime(12, 34, 56), QTimeZone::UTC);
     QTest::newRow( "qstring-with-ms" ) << QVariant( QString( "2002-10-10T12:34:56.789" ) )
                                        << QDateTime( QDate( 2002, 10, 10 ), QTime( 12, 34, 56, 789 ) );
 }

@@ -1822,7 +1822,7 @@ static inline QDateTime fileTimeToQDateTime(const FILETIME *time)
     FileTimeToSystemTime(time, &sTime);
     return QDateTime(QDate(sTime.wYear, sTime.wMonth, sTime.wDay),
                      QTime(sTime.wHour, sTime.wMinute, sTime.wSecond, sTime.wMilliseconds),
-                     Qt::UTC);
+                     QTimeZone::UTC);
 }
 
 QDateTime QFileSystemMetaData::birthTime() const

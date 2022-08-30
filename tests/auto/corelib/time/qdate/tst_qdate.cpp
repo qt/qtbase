@@ -2,14 +2,14 @@
 // Copyright (C) 2016 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#include <private/qglobal_p.h> // for the icu feature test
+#include <QDateTime>
 #include <QTest>
-#if QT_CONFIG(timezone)
-#include <QTimeZone>
-#endif
-#include <qdatetime.h>
-#include <qlocale.h>
+
+#include <QLocale>
 #include <QMap>
+#include <QTimeZone>
+
+#include <private/qglobal_p.h> // for the icu feature test
 
 class tst_QDate : public QObject
 {
@@ -527,7 +527,7 @@ void tst_QDate::startOfDay_endOfDay()
     QFETCH(QByteArray, zoneName);
     QFETCH(QTime, start);
     QFETCH(QTime, end);
-    const QTimeZone zone(zoneName);
+    const auto zone = QTimeZone(zoneName);
     QVERIFY(zone.isValid());
     const bool isSystem = QTimeZone::systemTimeZone() == zone;
     QDateTime front(date.startOfDay(zone)), back(date.endOfDay(zone));
@@ -546,13 +546,13 @@ void tst_QDate::startOfDay_endOfDay()
         }
         if (front.timeSpec() == Qt::LocalTime)
             break;
-        front = date.startOfDay(Qt::LocalTime);
-        back = date.endOfDay(Qt::LocalTime);
+        front = date.startOfDay();
+        back = date.endOfDay();
     } while (isSystem);
     if (end.isValid())
-        QCOMPARE(date.addDays(1).startOfDay(Qt::LocalTime).addMSecs(-1), back);
+        QCOMPARE(date.addDays(1).startOfDay().addMSecs(-1), back);
     if (start.isValid())
-        QCOMPARE(date.addDays(-1).endOfDay(Qt::LocalTime).addMSecs(1), front);
+        QCOMPARE(date.addDays(-1).endOfDay().addMSecs(1), front);
     if (!isSystem) {
         // These might fail if system zone coincides with zone; but only if it
         // did something similarly unusual on the date picked for this test.
@@ -572,12 +572,13 @@ void tst_QDate::startOfDay_endOfDay_fixed_data()
 {
     const qint64 kilo(1000);
     using Bounds = std::numeric_limits<qint64>;
+    const auto UTC = QTimeZone::UTC;
     const QDateTime
-        first(QDateTime::fromMSecsSinceEpoch(Bounds::min() + 1, Qt::UTC)),
-        start32sign(QDateTime::fromMSecsSinceEpoch(Q_INT64_C(-0x80000000) * kilo, Qt::UTC)),
-        end32sign(QDateTime::fromMSecsSinceEpoch(Q_INT64_C(0x80000000) * kilo, Qt::UTC)),
-        end32unsign(QDateTime::fromMSecsSinceEpoch(Q_INT64_C(0x100000000) * kilo, Qt::UTC)),
-        last(QDateTime::fromMSecsSinceEpoch(Bounds::max(), Qt::UTC));
+        first(QDateTime::fromMSecsSinceEpoch(Bounds::min() + 1, UTC)),
+        start32sign(QDateTime::fromMSecsSinceEpoch(Q_INT64_C(-0x80000000) * kilo, UTC)),
+        end32sign(QDateTime::fromMSecsSinceEpoch(Q_INT64_C(0x80000000) * kilo, UTC)),
+        end32unsign(QDateTime::fromMSecsSinceEpoch(Q_INT64_C(0x100000000) * kilo, UTC)),
+        last(QDateTime::fromMSecsSinceEpoch(Bounds::max(), UTC));
 
     const struct {
         const char *name;
@@ -605,28 +606,29 @@ void tst_QDate::startOfDay_endOfDay_fixed()
     const QTime early(0, 0), late(23, 59, 59, 999);
     QFETCH(QDate, date);
 
-    QDateTime start(date.startOfDay(Qt::UTC));
-    QDateTime end(date.endOfDay(Qt::UTC));
+    QDateTime start(date.startOfDay(QTimeZone::UTC));
+    QDateTime end(date.endOfDay(QTimeZone::UTC));
     QCOMPARE(start.date(), date);
     QCOMPARE(end.date(), date);
     QCOMPARE(start.time(), early);
     QCOMPARE(end.time(), late);
-    QCOMPARE(date.addDays(1).startOfDay(Qt::UTC).addMSecs(-1), end);
-    QCOMPARE(date.addDays(-1).endOfDay(Qt::UTC).addMSecs(1), start);
+    QCOMPARE(date.addDays(1).startOfDay(QTimeZone::UTC).addMSecs(-1), end);
+    QCOMPARE(date.addDays(-1).endOfDay(QTimeZone::UTC).addMSecs(1), start);
     for (int offset = -60 * 16; offset <= 60 * 16; offset += 65) {
-        start = date.startOfDay(Qt::OffsetFromUTC, offset);
-        end = date.endOfDay(Qt::OffsetFromUTC, offset);
+        const auto zone = QTimeZone::fromSecondsAheadOfUtc(offset);
+        start = date.startOfDay(zone);
+        end = date.endOfDay(zone);
         QCOMPARE(start.date(), date);
         QCOMPARE(end.date(), date);
         QCOMPARE(start.time(), early);
         QCOMPARE(end.time(), late);
-        QCOMPARE(date.addDays(1).startOfDay(Qt::OffsetFromUTC, offset).addMSecs(-1), end);
-        QCOMPARE(date.addDays(-1).endOfDay(Qt::OffsetFromUTC, offset).addMSecs(1), start);
+        QCOMPARE(date.addDays(1).startOfDay(zone).addMSecs(-1), end);
+        QCOMPARE(date.addDays(-1).endOfDay(zone).addMSecs(1), start);
     }
 
     // Minimal testing for LocalTime and TimeZone
-    QCOMPARE(date.startOfDay(Qt::LocalTime).date(), date);
-    QCOMPARE(date.endOfDay(Qt::LocalTime).date(), date);
+    QCOMPARE(date.startOfDay().date(), date);
+    QCOMPARE(date.endOfDay().date(), date);
 #if QT_CONFIG(timezone)
     const QTimeZone cet("Europe/Oslo");
     if (cet.isValid()) {
@@ -640,10 +642,11 @@ void tst_QDate::startOfDay_endOfDay_bounds()
 {
     // Check the days in which QDateTime's range starts and ends:
     using Bounds = std::numeric_limits<qint64>;
+    const auto UTC = QTimeZone::UTC;
     const QDateTime
-        first(QDateTime::fromMSecsSinceEpoch(Bounds::min(), Qt::UTC)),
-        last(QDateTime::fromMSecsSinceEpoch(Bounds::max(), Qt::UTC)),
-        epoch(QDateTime::fromMSecsSinceEpoch(0, Qt::UTC));
+        first(QDateTime::fromMSecsSinceEpoch(Bounds::min(), UTC)),
+        last(QDateTime::fromMSecsSinceEpoch(Bounds::max(), UTC)),
+        epoch(QDateTime::fromMSecsSinceEpoch(0, UTC));
     // First, check these *are* the start and end of QDateTime's range:
     QVERIFY(first.isValid());
     QVERIFY(last.isValid());
@@ -654,15 +657,15 @@ void tst_QDate::startOfDay_endOfDay_bounds()
     QVERIFY(!last.addMSecs(1).isValid() || last.addMSecs(1) < last);
 
     // Now test start/end methods with them:
-    QCOMPARE(first.date().endOfDay(Qt::UTC).time(), QTime(23, 59, 59, 999));
-    QCOMPARE(last.date().startOfDay(Qt::UTC).time(), QTime(0, 0));
-    QVERIFY(!first.date().startOfDay(Qt::UTC).isValid());
-    QVERIFY(!last.date().endOfDay(Qt::UTC).isValid());
+    QCOMPARE(first.date().endOfDay(UTC).time(), QTime(23, 59, 59, 999));
+    QCOMPARE(last.date().startOfDay(UTC).time(), QTime(0, 0));
+    QVERIFY(!first.date().startOfDay(UTC).isValid());
+    QVERIFY(!last.date().endOfDay(UTC).isValid());
 
     // Test for QTBUG-100873, shouldn't assert:
     const QDate qdteMin(1752, 9, 14); // Used by QDateTimeEdit
-    QCOMPARE(qdteMin.startOfDay(Qt::UTC).date(), qdteMin);
-    QCOMPARE(qdteMin.startOfDay(Qt::LocalTime).date(), qdteMin);
+    QCOMPARE(qdteMin.startOfDay(UTC).date(), qdteMin);
+    QCOMPARE(qdteMin.startOfDay().date(), qdteMin);
 #if QT_CONFIG(timezone)
     QCOMPARE(qdteMin.startOfDay(QTimeZone::systemTimeZone()).date(), qdteMin);
     QTimeZone berlin("Europe/Berlin");

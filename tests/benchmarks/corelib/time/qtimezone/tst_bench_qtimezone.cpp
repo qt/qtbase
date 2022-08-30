@@ -108,9 +108,9 @@ void tst_QTimeZone::transitionList()
 {
     QFETCH(QByteArray, name);
     const QTimeZone zone = name.isEmpty() ? QTimeZone::systemTimeZone() : QTimeZone(name);
-    const QDateTime early = QDate(1625, 6, 8).startOfDay(Qt::UTC); // Cassini's birth date
+    const QDateTime early = QDate(1625, 6, 8).startOfDay(QTimeZone::UTC); // Cassini's birth date
     const QDateTime late // End of 32-bit signed time_t
-        = QDateTime::fromSecsSinceEpoch(std::numeric_limits<qint32>::max(), Qt::UTC);
+        = QDateTime::fromSecsSinceEpoch(std::numeric_limits<qint32>::max(), QTimeZone::UTC);
     QTimeZone::OffsetDataList seq;
     QBENCHMARK {
         seq = zone.transitions(early, late);
@@ -122,7 +122,7 @@ void tst_QTimeZone::transitionsForward()
 {
     QFETCH(QByteArray, name);
     const QTimeZone zone = name.isEmpty() ? QTimeZone::systemTimeZone() : QTimeZone(name);
-    const QDateTime early = QDate(1625, 6, 8).startOfDay(Qt::UTC); // Cassini's birth date
+    const QDateTime early = QDate(1625, 6, 8).startOfDay(QTimeZone::UTC); // Cassini's birth date
     QBENCHMARK {
         QTimeZone::OffsetData tran = zone.nextTransition(early);
         while (tran.atUtc.isValid())
@@ -135,7 +135,7 @@ void tst_QTimeZone::transitionsReverse()
     QFETCH(QByteArray, name);
     const QTimeZone zone = name.isEmpty() ? QTimeZone::systemTimeZone() : QTimeZone(name);
     const QDateTime late // End of 32-bit signed time_t
-        = QDateTime::fromSecsSinceEpoch(std::numeric_limits<qint32>::max(), Qt::UTC);
+        = QDateTime::fromSecsSinceEpoch(std::numeric_limits<qint32>::max(), QTimeZone::UTC);
     QBENCHMARK {
         QTimeZone::OffsetData tran = zone.previousTransition(late);
         while (tran.atUtc.isValid())

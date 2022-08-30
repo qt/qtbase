@@ -13,9 +13,7 @@
 #  include <QProcess>
 #endif
 #include <QScopedArrayPointer>
-#if QT_CONFIG(timezone)
 #include <QTimeZone>
-#endif
 
 #include <private/qlocale_p.h>
 #include <private/qlocale_tools_p.h>
@@ -1935,26 +1933,26 @@ void tst_QLocale::formatTimeZone()
 {
     QLocale enUS("en_US");
 
-    QDateTime dt1(QDate(2013, 1, 1), QTime(1, 0, 0), Qt::OffsetFromUTC, 60 * 60);
+    QDateTime dt1(QDate(2013, 1, 1), QTime(1, 0), QTimeZone::fromSecondsAheadOfUtc(60 * 60));
     QCOMPARE(enUS.toString(dt1, "t"), QLatin1String("UTC+01:00"));
 
-    QDateTime dt2(QDate(2013, 1, 1), QTime(1, 0, 0), Qt::OffsetFromUTC, -60 * 60);
+    QDateTime dt2(QDate(2013, 1, 1), QTime(1, 0), QTimeZone::fromSecondsAheadOfUtc(-60 * 60));
     QCOMPARE(enUS.toString(dt2, "t"), QLatin1String("UTC-01:00"));
 
-    QDateTime dt3(QDate(2013, 1, 1), QTime(0, 0, 0), Qt::UTC);
+    QDateTime dt3(QDate(2013, 1, 1), QTime(0, 0), QTimeZone::UTC);
     QCOMPARE(enUS.toString(dt3, "t"), QLatin1String("UTC"));
 
     // LocalTime should vary
     if (europeanTimeZone) {
         // Time definitely in Standard Time
-        QDateTime dt4(QDate(2013, 1, 1), QTime(0, 0, 0), Qt::LocalTime);
+        QDateTime dt4 = QDate(2013, 1, 1).startOfDay();
 #ifdef Q_OS_WIN
         QEXPECT_FAIL("", "Windows only returns long name (QTBUG-32759)", Continue);
 #endif // Q_OS_WIN
         QCOMPARE(enUS.toString(dt4, "t"), QLatin1String("CET"));
 
         // Time definitely in Daylight Time
-        QDateTime dt5(QDate(2013, 6, 1), QTime(0, 0, 0), Qt::LocalTime);
+        QDateTime dt5 = QDate(2013, 6, 1).startOfDay();
 #ifdef Q_OS_WIN
         QEXPECT_FAIL("", "Windows only returns long name (QTBUG-32759)", Continue);
 #endif // Q_OS_WIN
@@ -2051,7 +2049,7 @@ void tst_QLocale::toDateTime_data()
         << u"ddd, d MMM yyyy HH:mm:ss t"_s << u"Sun, 29 Mar 2020 02:26:3 Z"_s << false;
 
     QTest::newRow("s-Z") // Same, but with a format that accepts the single digit:
-        << "C" << QDateTime(QDate(2020, 3, 29), QTime(2, 26, 3), Qt::UTC)
+        << "C" << QDateTime(QDate(2020, 3, 29), QTime(2, 26, 3), QTimeZone::UTC)
         << u"ddd, d MMM yyyy HH:mm:s t"_s << u"Sun, 29 Mar 2020 02:26:3 Z"_s << false;
 
     QTest::newRow("RFC-1123")

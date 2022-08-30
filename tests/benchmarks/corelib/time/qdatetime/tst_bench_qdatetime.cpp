@@ -390,7 +390,7 @@ void tst_QDateTime::equivalentUtc()
 {
     bool result = false;
     const QDateTime other = QDateTime::fromMSecsSinceEpoch(
-        qint64(JULIAN_DAY_2010 - JULIAN_DAY_1970) * MSECS_PER_DAY, Qt::UTC);
+        qint64(JULIAN_DAY_2010 - JULIAN_DAY_1970) * MSECS_PER_DAY, QTimeZone::UTC);
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
         for (const QDateTime &test : list)
@@ -416,7 +416,7 @@ void tst_QDateTime::lessThanUtc()
 {
     bool result = false;
     const QDateTime other = QDateTime::fromMSecsSinceEpoch(
-        qint64(JULIAN_DAY_2010 - JULIAN_DAY_1970) * MSECS_PER_DAY, Qt::UTC);
+        qint64(JULIAN_DAY_2010 - JULIAN_DAY_1970) * MSECS_PER_DAY, QTimeZone::UTC);
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
         for (const QDateTime &test : list)
@@ -500,7 +500,7 @@ void tst_QDateTime::fromMSecsSinceEpoch()
     const int end = JULIAN_DAY_2020 - JULIAN_DAY_1970;
     QBENCHMARK {
         for (int jd = start; jd < end; ++jd)
-            QDateTime::fromMSecsSinceEpoch(jd * MSECS_PER_DAY, Qt::LocalTime);
+            QDateTime::fromMSecsSinceEpoch(jd * MSECS_PER_DAY);
     }
 }
 
@@ -510,7 +510,7 @@ void tst_QDateTime::fromMSecsSinceEpochUtc()
     const int end = JULIAN_DAY_2020 - JULIAN_DAY_1970;
     QBENCHMARK {
         for (int jd = start; jd < end; ++jd)
-            QDateTime::fromMSecsSinceEpoch(jd * MSECS_PER_DAY, Qt::UTC);
+            QDateTime::fromMSecsSinceEpoch(jd * MSECS_PER_DAY, QTimeZone::UTC);
     }
 }
 

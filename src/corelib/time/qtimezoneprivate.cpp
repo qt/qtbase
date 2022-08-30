@@ -527,7 +527,7 @@ QTimeZone::OffsetData QTimeZonePrivate::toOffsetData(const QTimeZonePrivate::Dat
 {
     QTimeZone::OffsetData offsetData = invalidOffsetData();
     if (data.atMSecsSinceEpoch != invalidMSecs()) {
-        offsetData.atUtc = QDateTime::fromMSecsSinceEpoch(data.atMSecsSinceEpoch, Qt::UTC);
+        offsetData.atUtc = QDateTime::fromMSecsSinceEpoch(data.atMSecsSinceEpoch, QTimeZone::UTC);
         offsetData.offsetFromUtc = data.offsetFromUtc;
         offsetData.standardTimeOffset = data.standardTimeOffset;
         offsetData.daylightTimeOffset = data.daylightTimeOffset;

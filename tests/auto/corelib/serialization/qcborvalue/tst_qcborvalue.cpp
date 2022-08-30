@@ -3,10 +3,13 @@
 
 #include <QtCore/qcborvalue.h>
 #include <QTest>
+
 #include <QBuffer>
 #include <QCborStreamReader>
 #include <QCborStreamWriter>
+#include <QDateTime>
 #include <QtEndian>
+#include <QTimeZone>
 
 #include <QtCore/private/qbytearray_p.h>
 
@@ -389,7 +392,7 @@ void tst_QCborValue::extendedTypes_data()
     QTest::addColumn<QCborValue>("correctedTaggedValue");
     QCborValue v(QCborValue::Invalid);
     QDateTime dt = QDateTime::currentDateTimeUtc();
-    QDateTime dtTzOffset(dt.date(), dt.time(), Qt::OffsetFromUTC, dt.offsetFromUtc());
+    QDateTime dtTzOffset(dt.date(), dt.time(), QTimeZone::fromSecondsAheadOfUtc(dt.offsetFromUtc()));
     QUuid uuid = QUuid::createUuid();
 
     // non-correcting extended types (tagged value remains unchanged)
@@ -413,7 +416,7 @@ void tst_QCborValue::extendedTypes_data()
                           << QCborKnownTags::Uuid << QCborValue(uuid.toRfc4122()) << v;
 
     // correcting extended types
-    QDateTime dtNoMsecs = dt.fromSecsSinceEpoch(dt.toSecsSinceEpoch(), Qt::UTC);
+    QDateTime dtNoMsecs = dt.fromSecsSinceEpoch(dt.toSecsSinceEpoch(), QTimeZone::UTC);
     QUrl url("https://example.com/\xc2\xa9 ");
     QTest::newRow("UnixTime_t:Integer") << QCborValue(dtNoMsecs) << QCborKnownTags::UnixTime_t
                                         << QCborValue(dtNoMsecs.toSecsSinceEpoch())
@@ -424,10 +427,11 @@ void tst_QCborValue::extendedTypes_data()
     QTest::newRow("DateTime::JustDate") << QCborValue(QDateTime({2018, 1, 1}, {}))
                                         << QCborKnownTags::DateTimeString
                                         << QCborValue("2018-01-01") << QCborValue("2018-01-01T00:00:00.000");
-    QTest::newRow("DateTime::TzOffset") << QCborValue(QDateTime({2018, 1, 1}, {9, 0, 0}, Qt::UTC))
-                                        << QCborKnownTags::DateTimeString
-                                        << QCborValue("2018-01-01T09:00:00.000+00:00")
-                                        << QCborValue("2018-01-01T09:00:00.000Z");
+    QTest::newRow("DateTime::TzOffset")
+        << QCborValue(QDateTime({2018, 1, 1}, {9, 0}, QTimeZone::UTC))
+        << QCborKnownTags::DateTimeString
+        << QCborValue("2018-01-01T09:00:00.000+00:00")
+        << QCborValue("2018-01-01T09:00:00.000Z");
     QTest::newRow("Url:NotNormalized") << QCborValue(url) << QCborKnownTags::Url
                                        << QCborValue("HTTPS://EXAMPLE.COM/%c2%a9%20")
                                        << QCborValue(url.toString());
@@ -1797,7 +1801,8 @@ void tst_QCborValue::sorting()
     QCborValue vs2("Hello"), vs3("World"), vs1("foo");
     QCborValue va1(QCborValue::Array), va2(QCborArray{1}), va3(QCborArray{0, 0});
     QCborValue vm1(QCborValue::Map), vm2(QCborMap{{1, 0}}), vm3(QCborMap{{0, 0}, {1, 0}});
-    QCborValue vdt1(QDateTime::fromMSecsSinceEpoch(0, Qt::UTC)), vdt2(QDateTime::currentDateTimeUtc());
+    QCborValue vdt1(QDateTime::fromMSecsSinceEpoch(0, QTimeZone::UTC));
+    QCborValue vdt2(QDateTime::currentDateTimeUtc());
     QCborValue vtagged1(QCborKnownTags::PositiveBignum, QByteArray()),
             vtagged2(QCborKnownTags::PositiveBignum, 0.0),  // bignums are supposed to have byte arrays...
             vtagged3(QCborKnownTags::Signature, 0),
@@ -1954,15 +1959,16 @@ static void addCommonCborData()
     QTest::newRow("DateTime") << QCborValue(dt)             // this is UTC
                               << "\xc0\x78\x18" + dt.toString(Qt::ISODateWithMs).toLatin1()
                               << noxfrm;
-    QTest::newRow("DateTime-UTC") << QCborValue(QDateTime({2018, 1, 1}, {9, 0, 0}, Qt::UTC))
+    QTest::newRow("DateTime-UTC") << QCborValue(QDateTime({2018, 1, 1}, {9, 0}, QTimeZone::UTC))
                                   << raw("\xc0\x78\x18" "2018-01-01T09:00:00.000Z")
                                   << noxfrm;
-    QTest::newRow("DateTime-Local") << QCborValue(QDateTime({2018, 1, 1}, {9, 0, 0}, Qt::LocalTime))
+    QTest::newRow("DateTime-Local") << QCborValue(QDateTime({2018, 1, 1}, {9, 0}))
                                     << raw("\xc0\x77" "2018-01-01T09:00:00.000")
                                     << noxfrm;
-    QTest::newRow("DateTime+01:00") << QCborValue(QDateTime({2018, 1, 1}, {9, 0, 0}, Qt::OffsetFromUTC, 3600))
-                                    << raw("\xc0\x78\x1d" "2018-01-01T09:00:00.000+01:00")
-                                    << noxfrm;
+    QTest::newRow("DateTime+01:00")
+        << QCborValue(QDateTime({2018, 1, 1}, {9, 0}, QTimeZone::fromSecondsAheadOfUtc(3600)))
+        << raw("\xc0\x78\x1d" "2018-01-01T09:00:00.000+01:00")
+        << noxfrm;
     QTest::newRow("Url:Empty") << QCborValue(QUrl()) << raw("\xd8\x20\x60") << noxfrm;
     QTest::newRow("Url") << QCborValue(QUrl("HTTPS://example.com/{%30%31}?q=%3Ca+b%20%C2%A9%3E&%26"))
                          << raw("\xd8\x20\x78\x27" "https://example.com/{01}?q=<a+b \xC2\xA9>&%26")
@@ -2070,21 +2076,29 @@ void tst_QCborValue::fromCbor_data()
     QTest::newRow("String:Chunked:Empty") << QCborValue(QString())
                                     << raw("\x7f\xff");
 
-    QTest::newRow("DateTime:NoMilli") << QCborValue(QDateTime::fromSecsSinceEpoch(1515565477, Qt::UTC))
-                                      << raw("\xc0\x74" "2018-01-10T06:24:37Z");
+    QTest::newRow("DateTime:NoMilli")
+        << QCborValue(QDateTime::fromSecsSinceEpoch(1515565477, QTimeZone::UTC))
+        << raw("\xc0\x74" "2018-01-10T06:24:37Z");
     // date-only is only permitted local time
-    QTest::newRow("DateTime:NoTime:Local") << QCborValue(QDateTime(QDate(2020, 4, 15), QTime(0, 0), Qt::LocalTime))
-                                           << raw("\xc0\x6a" "2020-04-15");
-    QTest::newRow("DateTime:24:00:00") << QCborValue(QDateTime(QDate(2020, 4, 16), QTime(0, 0), Qt::UTC))
-                                       << raw("\xc0\x74" "2020-04-15T24:00:00Z");
-    QTest::newRow("DateTime:+00:00") << QCborValue(QDateTime::fromMSecsSinceEpoch(1515565477125, Qt::UTC))
-                                     << raw("\xc0\x78\x1d" "2018-01-10T06:24:37.125+00:00");
-    QTest::newRow("DateTime:+01:00") << QCborValue(QDateTime::fromMSecsSinceEpoch(1515565477125, Qt::OffsetFromUTC, 60*60))
-                                     << raw("\xc0\x78\x1d" "2018-01-10T07:24:37.125+01:00");
-    QTest::newRow("UnixTime_t:Integer") << QCborValue(QDateTime::fromSecsSinceEpoch(1515565477, Qt::UTC))
-                                        << raw("\xc1\x1a\x5a\x55\xb1\xa5");
-    QTest::newRow("UnixTime_t:Double") << QCborValue(QDateTime::fromMSecsSinceEpoch(1515565477125, Qt::UTC))
-                                       << raw("\xc1\xfb\x41\xd6\x95\x6c""\x69\x48\x00\x00");
+    QTest::newRow("DateTime:NoTime:Local")
+        << QCborValue(QDateTime(QDate(2020, 4, 15), QTime(0, 0)))
+        << raw("\xc0\x6a" "2020-04-15");
+    QTest::newRow("DateTime:24:00:00")
+        << QCborValue(QDateTime(QDate(2020, 4, 16), QTime(0, 0), QTimeZone::UTC))
+        << raw("\xc0\x74" "2020-04-15T24:00:00Z");
+    QTest::newRow("DateTime:+00:00")
+        << QCborValue(QDateTime::fromMSecsSinceEpoch(1515565477125, QTimeZone::UTC))
+        << raw("\xc0\x78\x1d" "2018-01-10T06:24:37.125+00:00");
+    QTest::newRow("DateTime:+01:00")
+        << QCborValue(QDateTime::fromMSecsSinceEpoch(1515565477125,
+                                                     QTimeZone::fromSecondsAheadOfUtc(60 * 60)))
+        << raw("\xc0\x78\x1d" "2018-01-10T07:24:37.125+01:00");
+    QTest::newRow("UnixTime_t:Integer")
+        << QCborValue(QDateTime::fromSecsSinceEpoch(1515565477, QTimeZone::UTC))
+        << raw("\xc1\x1a\x5a\x55\xb1\xa5");
+    QTest::newRow("UnixTime_t:Double")
+        << QCborValue(QDateTime::fromMSecsSinceEpoch(1515565477125, QTimeZone::UTC))
+        << raw("\xc1\xfb\x41\xd6\x95\x6c""\x69\x48\x00\x00");
 
     QTest::newRow("Url:NotNormalized") << QCborValue(QUrl("https://example.com/\xc2\xa9 "))
                                        << raw("\xd8\x20\x78\x1dHTTPS://EXAMPLE.COM/%c2%a9%20");
@@ -2291,7 +2305,7 @@ void tst_QCborValue::extendedTypeValidation_data()
     // representation, which means it can't represent dates before year 1 or
     // after year 9999.
     {
-        QDateTime dt(QDate(-1, 1, 1), QTime(0, 0), Qt::UTC);
+        QDateTime dt(QDate(-1, 1, 1), QTime(0, 0), QTimeZone::UTC);
         QTest::newRow("UnixTime_t:negative-year")
                 << encode(0xc1, 0x3b, quint64(-dt.toSecsSinceEpoch()) - 1)
                 << QCborValue(QCborKnownTags::UnixTime_t, dt.toSecsSinceEpoch());
@@ -2932,7 +2946,7 @@ void tst_QCborValue::debugOutput_data()
     QTest::addColumn<QCborValue>("v");
     QTest::addColumn<QString>("expected");
 
-    QDateTime dt(QDate(2020, 4, 18), QTime(13, 41, 22, 123), Qt::UTC);
+    QDateTime dt(QDate(2020, 4, 18), QTime(13, 41, 22, 123), QTimeZone::UTC);
     QBitArray bits = QBitArray::fromBits("\x79\x03", 11);
 
     QTest::newRow("Undefined") << QCborValue() << "QCborValue()";

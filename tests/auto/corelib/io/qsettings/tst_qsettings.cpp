@@ -1328,7 +1328,7 @@ void tst_QSettings::testVariantTypes()
     testValue("collectList", l4, QVariantList);
 
     QDateTime dt = QDateTime::currentDateTime();
-    dt.setOffsetFromUtc(3600);
+    dt.setTimeZone(QTimeZone::fromSecondsAheadOfUtc(3600));
     testValue("dateTime", dt, QDateTime);
 
 #if QT_CONFIG(shortcut)

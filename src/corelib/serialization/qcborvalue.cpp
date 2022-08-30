@@ -17,6 +17,8 @@
 
 #include <qendian.h>
 #include <qlocale.h>
+#include <qdatetime.h>
+#include <qtimezone.h>
 #include <private/qbytearray_p.h>
 #include <private/qnumeric_p.h>
 #include <private/qsimd_p.h>
@@ -798,7 +800,7 @@ static QCborValue::Type convertToExtendedType(QCborContainerPrivate *d)
                 ok = convertDoubleTo(round(e.fpvalue() * 1000), &msecs);
             }
             if (ok)
-                dt = QDateTime::fromMSecsSinceEpoch(msecs, Qt::UTC);
+                dt = QDateTime::fromMSecsSinceEpoch(msecs, QTimeZone::UTC);
         }
         if (dt.isValid()) {
             QByteArray text = dt.toString(Qt::ISODateWithMs).toLatin1();
