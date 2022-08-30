@@ -161,7 +161,7 @@ OtoolInfo findDependencyInfo(const QString &binaryPath)
 
     static const QRegularExpression regexp(QStringLiteral(
         "^\\t(.+) \\(compatibility version (\\d+\\.\\d+\\.\\d+), "
-        "current version (\\d+\\.\\d+\\.\\d+)(, weak)?\\)$"));
+        "current version (\\d+\\.\\d+\\.\\d+)(, weak|, reexport)?\\)$"));
 
     QString output = otool.readAllStandardOutput();
     QStringList outputLines = output.split("\n", Qt::SkipEmptyParts);
