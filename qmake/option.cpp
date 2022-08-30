@@ -12,6 +12,7 @@
 #include <stdarg.h>
 
 #include <qmakelibraryinfo.h>
+#include <qlibraryinfo.h>
 #include <private/qlibraryinfo_p.h>
 
 QT_BEGIN_NAMESPACE

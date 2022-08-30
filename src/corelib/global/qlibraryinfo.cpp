@@ -659,6 +659,21 @@ QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
     \deprecated Use LibraryPath with QLibraryInfo::path() instead.
 */
 
+/*!
+    \relates <QLibraryInfo>
+
+    Returns the version number of Qt at runtime as a string (for example,
+    "6.1.2"). This is the version of the Qt library in use at \e runtime,
+    which need not be the version the application was \e compiled with.
+
+    \sa QT_VERSION_STR, QLibraryInfo::version()
+*/
+
+const char *qVersion() noexcept
+{
+    return QT_VERSION_STR;
+}
+
 #if QT_DEPRECATED_SINCE(6, 9)
 
 bool qSharedBuild() noexcept

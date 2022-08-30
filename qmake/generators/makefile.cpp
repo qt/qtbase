@@ -16,6 +16,7 @@
 #include <qdebug.h>
 #include <qbuffer.h>
 #include <qdatetime.h>
+#include <qlibraryinfo.h>
 
 #if defined(Q_OS_UNIX)
 #include <unistd.h>

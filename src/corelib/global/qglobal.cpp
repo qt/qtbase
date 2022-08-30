@@ -792,21 +792,6 @@ using namespace Qt::StringLiterals;
     \sa qVersion(), QT_VERSION
 */
 
-/*!
-    \relates <QtGlobal>
-
-    Returns the version number of Qt at runtime as a string (for example,
-    "6.1.2"). This may be a different version than the version the application
-    was \e compiled with.
-
-    \sa QT_VERSION_STR, QLibraryInfo::version()
-*/
-
-const char *qVersion() noexcept
-{
-    return QT_VERSION_STR;
-}
-
 /*****************************************************************************
   System detection routines
  *****************************************************************************/

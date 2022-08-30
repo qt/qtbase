@@ -5,6 +5,7 @@
 
 #include <qdir.h>
 #include <qsettings.h>
+#include <qlibraryinfo.h>
 #include <qmakelibraryinfo.h>
 #include <qstringlist.h>
 #include <stdio.h>
