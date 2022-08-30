@@ -147,7 +147,6 @@ void QWasmWindow::setGeometry(const QRect &rect)
         shouldInvalidate = m_normalGeometry.size() != r.size();
         m_normalGeometry = r;
     }
-    QPlatformWindow::setGeometry(r);
     QWindowSystemInterface::handleGeometryChange(window(), r);
     if (shouldInvalidate)
         invalidate();
