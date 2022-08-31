@@ -43,7 +43,6 @@ public:
 
     static bool ensureLibraryLoaded();
     // Index used in SSL_get_ex_data to get the matching TlsCryptographerOpenSSL:
-    static bool s_libraryLoaded;
     static bool s_loadedCiphersAndCerts;
     static int s_indexForSSLExtraData;
 

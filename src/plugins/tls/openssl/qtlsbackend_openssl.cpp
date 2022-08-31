@@ -59,7 +59,6 @@ static void q_loadCiphersForConnection(SSL *connection, QList<QSslCipher> &ciphe
     }
 }
 
-bool QTlsBackendOpenSSL::s_libraryLoaded = false;
 bool QTlsBackendOpenSSL::s_loadedCiphersAndCerts = false;
 int QTlsBackendOpenSSL::s_indexForSSLExtraData = -1;
 
@@ -92,12 +91,10 @@ void QTlsBackendOpenSSL::clearErrorQueue()
 
 bool QTlsBackendOpenSSL::ensureLibraryLoaded()
 {
-    if (!q_resolveOpenSslSymbols())
-        return false;
+    static bool libraryLoaded = []() {
+        if (!q_resolveOpenSslSymbols())
+            return false;
 
-    const QMutexLocker locker(qt_opensslInitMutex());
-
-    if (!s_libraryLoaded) {
         // Initialize OpenSSL.
         if (q_OPENSSL_init_ssl(0, nullptr) != 1)
             return false;
@@ -119,10 +116,10 @@ bool QTlsBackendOpenSSL::ensureLibraryLoaded()
             return false;
         }
 
-        s_libraryLoaded = true;
-    }
+        return true;
+    }();
 
-    return true;
+    return libraryLoaded;
 }
 
 QString QTlsBackendOpenSSL::backendName() const
