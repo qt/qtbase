@@ -7,10 +7,12 @@
 #include "qtimezoneprivate_p.h"
 #include "qtimezoneprivate_data_p.h"
 
-#include <private/qnumeric_p.h>
-#include <private/qtools_p.h>
 #include <qdatastream.h>
 #include <qdebug.h>
+
+#include <private/qcalendarmath_p.h>
+#include <private/qnumeric_p.h>
+#include <private/qtools_p.h>
 
 #include <algorithm>
 
@@ -170,8 +172,16 @@ QTimeZonePrivate::Data QTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
 }
 
 // Private only method for use by QDateTime to convert local msecs to epoch msecs
-QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, int hint) const
+QDateTimePrivate::ZoneState QTimeZonePrivate::stateAtZoneTime(
+    qint64 forLocalMSecs, QDateTimePrivate::TransitionOptions resolve) const
 {
+    auto dataToState = [](QTimeZonePrivate::Data d) {
+        return QDateTimePrivate::ZoneState(d.atMSecsSinceEpoch + d.offsetFromUtc * 1000,
+                                           d.offsetFromUtc,
+                                           d.daylightTimeOffset ? QDateTimePrivate::DaylightTime
+                                                                : QDateTimePrivate::StandardTime);
+    };
+
     /*
       We need a UTC time at which to ask for the offset, in order to be able to
       add that offset to forLocalMSecs, to get the UTC time we need.
@@ -194,11 +204,24 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
         ? maxMSecs() : millis; // Necessarily >= forLocalMSecs
     // At most one of those was clipped to its boundary value:
     Q_ASSERT(recent < imminent && seventeenHoursInMSecs < imminent - recent + 1);
+
+    const Data past = data(recent), future = data(imminent);
+    // > 99% of the time, past and future will agree:
+    if (Q_LIKELY(past.offsetFromUtc == future.offsetFromUtc
+                 && past.standardTimeOffset == future.standardTimeOffset
+                 // Those two imply same daylightTimeOffset.
+                 && past.abbreviation == future.abbreviation)) {
+        Data data = future;
+        data.atMSecsSinceEpoch = forLocalMSecs - future.offsetFromUtc * 1000;
+        return dataToState(data);
+    }
+
     /*
       Offsets are Local - UTC, positive to the east of Greenwich, negative to
-      the west; DST offset always exceeds standard offset, when DST applies.
+      the west; DST offset normally exceeds standard offset, when DST applies.
       When we have offsets on either side of a transition, the lower one is
-      standard, the higher is DST.
+      standard, the higher is DST, unless we have data telling us it's the other
+      way round.
 
       Non-DST transitions (jurisdictions changing time-zone and time-zones
       changing their standard offset, typically) are described below as if they
@@ -210,63 +233,26 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
       and take the easy path; with transitions, tran and nextTran get the
       correct UTC time as atMSecsSinceEpoch so comparing to nextStart selects
       the right one.  In all other cases, the transition changes offset and the
-      reasoning that applies to DST applies just the same.  Aside from hinting,
-      the only thing that looks at DST-ness at all, other than inferred from
-      offset changes, is the case without transition data handling an invalid
-      time in the gap that a transition passed over.
+      reasoning that applies to DST applies just the same.
 
-      The handling of hint (see below) is apt to go wrong in non-DST
-      transitions.  There isn't really a great deal we can hope to do about that
-      without adding yet more unreliable complexity to the heuristics in use for
-      already obscure corner-cases.
-     */
-
-    /*
-      The hint (really a QDateTimePrivate::DaylightStatus) is > 0 if caller
-      thinks we're in DST, 0 if in standard.  A value of -2 means never-DST, so
-      should have been handled above; if it slips through, it's wrong but we
-      should probably treat it as standard anyway (never-DST means
-      always-standard, after all).  If the hint turns out to be wrong, fall back
-      on trying the other possibility: which makes it harmless to treat -1
-      (meaning unknown) as standard (i.e. try standard first, then try DST).  In
-      practice, away from a transition, the only difference hint makes is to
-      which candidate we try first: if the hint is wrong (or unknown and
-      standard fails), we'll try the other candidate and it'll work.
-
-      For the obscure (and invalid) case where forLocalMSecs falls in a
-      spring-forward's missing hour, a common case is that we started with a
-      date/time for which the hint was valid and adjusted it naively; for that
-      case, we should correct the adjustment by shunting across the transition
-      into where hint is wrong.  So half-way through the gap, arrived at from
-      the DST side, should be read as an hour earlier, in standard time; but, if
-      arrived at from the standard side, should be read as an hour later, in
-      DST.  (This shall be wrong in some cases; for example, when a country
-      changes its transition dates and changing a date/time by more than six
-      months lands it on a transition.  However, these cases are even more
-      obscure than those where the heuristic is good.)
+      The resolution of transitions, specified by \a resolve, may be lead astray
+      if (as happens on Windows) the backend has been obliged to guess whether a
+      transition is in fact a DST one or a change to standard offset; or to
+      guess that the higher-offset side is the DST one (the reverse of this is
+      true for Ireland, using negative DST). There's not much we can do about
+      that, though.
     */
-    const Data past = data(recent), future = data(imminent);
-    // > 99% of the time, past and future will agree:
-    if (Q_LIKELY(past.offsetFromUtc == future.offsetFromUtc
-                 && past.standardTimeOffset == future.standardTimeOffset
-                 // Those two imply same daylightTimeOffset.
-                 && past.abbreviation == future.abbreviation)) {
-        Data data = future;
-        data.atMSecsSinceEpoch = forLocalMSecs - future.offsetFromUtc * 1000;
-        return data;
-    }
-
     if (hasTransitions()) {
         /*
           We have transitions.
 
-          Each transition gives the offsets to use until the next; so we need the
-          most recent transition before the time forLocalMSecs describes.  If it
-          describes a time *in* a transition, we'll need both that transition and
-          the one before it.  So find one transition that's probably after (and not
-          much before, otherwise) and another that's definitely before, then work
-          out which one to use.  When both or neither work on forLocalMSecs, use
-          hint to disambiguate.
+          Each transition gives the offsets to use until the next; so we need
+          the most recent transition before the time forLocalMSecs describes. If
+          it describes a time *in* a transition, we'll need both that transition
+          and the one before it. So find one transition that's probably after
+          (and not much before, otherwise) and another that's definitely before,
+          then work out which one to use. When both or neither work on
+          forLocalMSecs, use resolve to disambiguate.
         */
 
         // Get a transition definitely before the local MSecs; usually all we need.
@@ -306,50 +292,75 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
             // If we know of no transition after it, the answer is easy:
             const qint64 nextStart = nextTran.atMSecsSinceEpoch;
             if (nextStart == invalidMSecs())
-                return tran;
+                return dataToState(tran); // Last valid transition.
 
             /*
               ... and nextTran is either after or only slightly before. We're
               going to interpret one as standard time, the other as DST
               (although the transition might in fact be a change in standard
-              offset, or a change in DST offset, e.g. to/from double-DST). Our
-              hint tells us which of those to use (defaulting to standard if no
-              hint): try it first; if that fails, try the other; if both fail,
-              life's tricky.
+              offset, or a change in DST offset, e.g. to/from double-DST).
+
+              Usually exactly one of those shall be relevant and we'll use it;
+              but if we're close to nextTran we may be in a transition, to be
+              settled according to resolve's rules.
             */
             // Work out the UTC value it would make sense to return if using nextTran:
             nextTran.atMSecsSinceEpoch = forLocalMSecs - nextTran.offsetFromUtc * 1000;
 
-            // If both or neither have zero DST, treat the one with lower offset as standard:
-            const bool nextIsDst = !nextTran.daylightTimeOffset == !tran.daylightTimeOffset
-                ? tran.offsetFromUtc < nextTran.offsetFromUtc : nextTran.daylightTimeOffset;
-            // If that agrees with hint > 0, our first guess is to use nextTran; else tran.
-            const bool nextFirst = nextIsDst == (hint > 0);
-            for (int i = 0; i < 2; i++) {
-                /*
-                  On the first pass, the case we consider is what hint told us to expect
-                  (except when hint was -1 and didn't actually tell us what to expect),
-                  so it's likely right.  We only get a second pass if the first failed,
-                  by which time the second case, that we're trying, is likely right.
-                */
-                if (nextFirst ? i == 0 : i) {
-                    if (nextStart <= nextTran.atMSecsSinceEpoch)
-                        return nextTran;
-                } else {
-                    // If next is invalid, nextFirst is false, to route us here first:
-                    if (nextStart > tran.atMSecsSinceEpoch)
-                        return tran;
-                }
-            }
+            bool fallBack = false;
+            if (nextStart > nextTran.atMSecsSinceEpoch) {
+                // If both UTC values are before nextTran's offset applies, use tran:
+                if (nextStart > tran.atMSecsSinceEpoch)
+                    return dataToState(tran);
 
-            /*
-              Neither is valid (e.g. in a spring-forward's gap) and
-              nextTran.atMSecsSinceEpoch < nextStart <= tran.atMSecsSinceEpoch;
-              swap their atMSecsSinceEpoch to give each a moment on its side of
-              the transition; and pick the reverse of what hint asked for:
-            */
-            std::swap(tran.atMSecsSinceEpoch, nextTran.atMSecsSinceEpoch);
-            return nextFirst ? tran : nextTran;
+                Q_ASSERT(tran.offsetFromUtc < nextTran.offsetFromUtc);
+                // We're in a spring-forward.
+            } else if (nextStart <= tran.atMSecsSinceEpoch) {
+                // Both UTC values say we should be using nextTran:
+                return dataToState(nextTran);
+            } else {
+                Q_ASSERT(nextTran.offsetFromUtc < tran.offsetFromUtc);
+                fallBack = true; // We're in a fall-back.
+            }
+            // (forLocalMSecs - nextStart) / 1000 lies between the two offsets.
+
+            // Apply resolve:
+            // Determine whether FlipForReverseDst affects the outcome:
+            const bool flipped
+                = resolve.testFlag(QDateTimePrivate::FlipForReverseDst)
+                && (fallBack ? !tran.daylightTimeOffset && nextTran.daylightTimeOffset
+                             : tran.daylightTimeOffset && !nextTran.daylightTimeOffset);
+
+            if (fallBack) {
+                if (resolve.testFlag(flipped
+                                     ? QDateTimePrivate::FoldUseBefore
+                                     : QDateTimePrivate::FoldUseAfter)) {
+                    return dataToState(nextTran);
+                }
+                if (resolve.testFlag(flipped
+                                     ? QDateTimePrivate::FoldUseAfter
+                                     : QDateTimePrivate::FoldUseBefore)) {
+                    return dataToState(tran);
+                }
+            } else {
+                /* Neither is valid (e.g. in a spring-forward's gap) and
+                   nextTran.atMSecsSinceEpoch < nextStart <= tran.atMSecsSinceEpoch.
+                   So swap their atMSecsSinceEpoch to give each a moment on the
+                   side of the transition that it describes, then select the one
+                   after or before according to the option set:
+                */
+                std::swap(tran.atMSecsSinceEpoch, nextTran.atMSecsSinceEpoch);
+                if (resolve.testFlag(flipped
+                                     ? QDateTimePrivate::GapUseBefore
+                                     : QDateTimePrivate::GapUseAfter))
+                    return dataToState(nextTran);
+                if (resolve.testFlag(flipped
+                                     ? QDateTimePrivate::GapUseAfter
+                                     : QDateTimePrivate::GapUseBefore))
+                    return dataToState(tran);
+            }
+            // Reject
+            return {forLocalMSecs};
         }
         // Before first transition, or system has transitions but not for this zone.
         // Try falling back to offsetFromUtc (works for before first transition, at least).
@@ -358,40 +369,54 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
     /* Bracket and refine to discover offset. */
     qint64 utcEpochMSecs;
 
+    // We don't have true data on DST-ness, so can't apply FlipForReverseDst.
     int early = past.offsetFromUtc;
     int late = future.offsetFromUtc;
     if (early == late || late == invalidSeconds()) {
         if (early == invalidSeconds()
             || qSubOverflow(forLocalMSecs, early * qint64(1000), &utcEpochMSecs)) {
-            return invalidData(); // Outside representable range
+            return {forLocalMSecs}; // Outside representable range
         }
     } else {
-        // Close to a DST transition: early > late is near a fall-back,
-        // early < late is near a spring-forward.
-        const int offsetInDst = qMax(early, late);
-        const int offsetInStd = qMin(early, late);
         // Candidate values for utcEpochMSecs (if forLocalMSecs is valid):
-        const qint64 forDst = forLocalMSecs - offsetInDst * 1000;
-        const qint64 forStd = forLocalMSecs - offsetInStd * 1000;
-        // Best guess at the answer:
-        const qint64 hinted = hint > 0 ? forDst : forStd;
-        if (offsetFromUtc(hinted) == (hint > 0 ? offsetInDst : offsetInStd)) {
-            utcEpochMSecs = hinted;
-        } else if (hint <= 0 && offsetFromUtc(forDst) == offsetInDst) {
-            utcEpochMSecs = forDst;
-        } else if (hint > 0 && offsetFromUtc(forStd) == offsetInStd) {
-            utcEpochMSecs = forStd;
+        const qint64 forEarly = forLocalMSecs - early * 1000;
+        const qint64 forLate = forLocalMSecs - late * 1000;
+        // If either of those doesn't have the offset we got it from, it's on
+        // the wrong side of the transition (and both may be, for a gap):
+        const bool earlyOk = offsetFromUtc(forEarly) == early;
+        const bool lateOk = offsetFromUtc(forLate) == late;
+
+        if (earlyOk) {
+            if (lateOk) {
+                Q_ASSERT(early > late);
+                // fall-back's repeated interval
+                if (resolve.testFlag(QDateTimePrivate::FoldUseBefore))
+                    utcEpochMSecs = forEarly;
+                else if (resolve.testFlag(QDateTimePrivate::FoldUseAfter))
+                    utcEpochMSecs = forLate;
+                else
+                    return {forLocalMSecs};
+            } else {
+                // Before and clear of the transition:
+                utcEpochMSecs = forEarly;
+            }
+        } else if (lateOk) {
+            // After and clear of the transition:
+            utcEpochMSecs = forLate;
         } else {
-            // Invalid forLocalMSecs: in spring-forward gap.
-            const int dstStep = (offsetInDst - offsetInStd) * 1000;
-            // That'll typically be the DST offset at imminent, but changes to
-            // standard time have zero DST offset both before and after.
-            Q_ASSERT(dstStep > 0); // There can't be a gap without it !
-            utcEpochMSecs = (hint > 0) ? forStd - dstStep : forDst + dstStep;
+            // forLate <= gap < forEarly
+            Q_ASSERT(late > early);
+            const int dstStep = (late - early) * 1000;
+            if (resolve.testFlag(QDateTimePrivate::GapUseBefore))
+                utcEpochMSecs = forEarly - dstStep;
+            else if (resolve.testFlag(QDateTimePrivate::GapUseAfter))
+                utcEpochMSecs = forLate + dstStep;
+            else
+                return {forLocalMSecs};
         }
     }
 
-    return data(utcEpochMSecs);
+    return dataToState(data(utcEpochMSecs));
 }
 
 bool QTimeZonePrivate::hasTransitions() const

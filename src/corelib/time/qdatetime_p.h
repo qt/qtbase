@@ -73,6 +73,22 @@ public:
     };
     Q_DECLARE_FLAGS(StatusFlags, StatusFlag)
 
+
+    enum TransitionOption {
+        // Handling of a spring-forward (or other gap):
+        GapUseBefore = 2,
+        GapUseAfter = 4,
+        // Handling of a fall-back (or other repeated period):
+        FoldUseBefore = 0x20,
+        FoldUseAfter = 0x40,
+        // Quirk for negative DST:
+        FlipForReverseDst = 0x400,
+
+        GapMask = GapUseBefore | GapUseAfter,
+        FoldMask = FoldUseBefore | FoldUseAfter,
+    };
+    Q_DECLARE_FLAGS(TransitionOptions, TransitionOption)
+
     enum {
         TimeSpecShift = 4,
     };
@@ -89,14 +105,16 @@ public:
             : when(w), offset(o), dst(d), valid(v) {}
     };
 
-    static QDateTime::Data create(QDate toDate, QTime toTime, const QTimeZone &timeZone);
+    static QDateTime::Data create(QDate toDate, QTime toTime, const QTimeZone &timeZone,
+                                  QDateTime::TransitionResolution resolve);
 #if QT_CONFIG(timezone)
-    static ZoneState zoneStateAtMillis(const QTimeZone &zone, qint64 millis, DaylightStatus dst);
+    static ZoneState zoneStateAtMillis(const QTimeZone &zone, qint64 millis,
+                                       TransitionOptions resolve);
 #endif // timezone
 
     static ZoneState expressUtcAsLocal(qint64 utcMSecs);
 
-    static ZoneState localStateAtMillis(qint64 millis, DaylightStatus dst);
+    static ZoneState localStateAtMillis(qint64 millis, TransitionOptions resolve);
     static QString localNameAtMillis(qint64 millis, DaylightStatus dst); // empty if unknown
 
     StatusFlags m_status = StatusFlag(Qt::LocalTime << TimeSpecShift);
@@ -106,6 +124,7 @@ public:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDateTimePrivate::StatusFlags)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QDateTimePrivate::TransitionOptions)
 
 namespace QtPrivate {
 namespace DateTimeConstants {

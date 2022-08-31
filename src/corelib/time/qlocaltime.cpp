@@ -274,12 +274,16 @@ MkTimeResult hopAcrossGap(const MkTimeResult &outside, const struct tm &base)
 
 Q_DECL_COLD_FUNCTION
 MkTimeResult resolveRejected(struct tm base, MkTimeResult result,
-                             QDateTimePrivate::DaylightStatus dst)
+                             QDateTimePrivate::TransitionOptions resolve)
 {
     // May result from a time outside the supported range of system time_t
     // functions, or from a gap (on a platform where mktime() rejects them).
     // QDateTime filters on times well outside the supported range, but may
     // pass values only slightly outside the range.
+
+    // The easy case - no need to find a resolution anyway:
+    if (!resolve.testAnyFlags(QDateTimePrivate::GapMask))
+        return {};
 
     constexpr time_t twoDaysInSeconds = 2 * 24 * 60 * 60;
     // Bracket base, one day each side (in case the zone skipped a whole day):
@@ -291,32 +295,15 @@ MkTimeResult resolveRejected(struct tm base, MkTimeResult result,
     // OK, looks like a gap.
     Q_ASSERT(twoDaysInSeconds + early.utcSecs > later.utcSecs);
     result.adjusted = true;
-    // When simply constructing a gap-time, dst is unknown and construction will
-    // leave us with a time outside the gap, so later calls to rediscover its
-    // offset won't hit the gap. So if we've hit a gap and think we know dst,
-    // it's because addDays() or similar has moved us from the side we think
-    // we're on, which means we should over-shoot and get the opposite DST.
 
-    // A gap is usually followed by DST - except for "negative DST", where
-    // early's tm_isdst is 1 and later's isn't.  Default to using 24h after
-    // early (which shall fall after the gap).
-    enum { AfterEarly, BeforeLater } choice = AfterEarly;
-    switch (dst) {
-    case QDateTimePrivate::UnknownDaylightTime:
-        break;
-    case QDateTimePrivate::StandardTime:
-        // Aiming for DST, so AfterEarly is OK, unless DST is reversed:
-        if (early.local.tm_isdst == 1 && later.local.tm_isdst != 1)
-            choice = BeforeLater;
-        break;
-    case QDateTimePrivate::DaylightTime:
-        // Aiming for standard, so only retain AfterEarly if DST is reversed:
-        if (early.local.tm_isdst != 1 || later.local.tm_isdst == 1)
-            choice = BeforeLater;
-        break;
+    // Extrapolate backwards from later if this option is set:
+    QDateTimePrivate::TransitionOption beforeLater = QDateTimePrivate::GapUseBefore;
+    if (resolve.testFlag(QDateTimePrivate::FlipForReverseDst)) {
+        // Reverse DST has DST before a gap and not after:
+        if (early.local.tm_isdst == 1 && !later.local.tm_isdst)
+            beforeLater = QDateTimePrivate::GapUseAfter;
     }
-
-    if (choice == BeforeLater) // Result will be before the gap:
+    if (resolve.testFlag(beforeLater)) // Result will be before the gap:
         result.utcSecs = later.utcSecs - secondsBetween(base, later.local);
     else // Result will be after the gap:
         result.utcSecs = early.utcSecs + secondsBetween(early.local, base);
@@ -328,7 +315,7 @@ MkTimeResult resolveRejected(struct tm base, MkTimeResult result,
 }
 
 Q_DECL_COLD_FUNCTION
-bool preferAlternative(QDateTimePrivate::DaylightStatus dst,
+bool preferAlternative(QDateTimePrivate::TransitionOptions resolve,
                        // is_dst flags of incumbent and an alternative:
                        int gotDst, int altDst,
                        // True precisely if alternative selects a later UTC time:
@@ -336,35 +323,31 @@ bool preferAlternative(QDateTimePrivate::DaylightStatus dst,
                        // True for a gap, false for a fold:
                        bool inGap)
 {
-    if (dst == QDateTimePrivate::UnknownDaylightTime)
-        return altIsLater; // Prefer later candidate
-
-    // gotDst and altDst are {-1: unknown, 0: standard, 1: daylight-saving}
-    // So gotDst ^ altDst is 1 precisely if exactly one candidate thinks it's DST.
-    if ((gotDst ^ altDst) != 1) {
-        // Both or neither think they're DST - pretend one is: around a gap, the
-        // later candidate is DST; around a fold, the earlier.
-        if (altIsLater == inGap) {
-            altDst = 1;
-            gotDst = 0;
-        } else {
-            gotDst = 1;
-            altDst = 0;
-        }
+    // If resolve has this option set, prefer the later candidate, else the earlier:
+    QDateTimePrivate::TransitionOption preferLater = inGap ? QDateTimePrivate::GapUseAfter
+                                                           : QDateTimePrivate::FoldUseAfter;
+    if (resolve.testFlag(QDateTimePrivate::FlipForReverseDst)) {
+        // gotDst and altDst are {-1: unknown, 0: standard, 1: daylight-saving}
+        // So gotDst ^ altDst is 1 precisely if exactly one candidate thinks it's DST.
+        if ((altDst ^ gotDst) == 1) {
+            // In this case, we can tell whether we have reversed DST: that's a
+            // gap with DST before it or a fold with DST after it.
+#if 1
+            const bool isReversed = (altDst == 1) != (altIsLater == inGap);
+#else // Pedagogic version of the same thing:
+            bool isReversed;
+            if (altIsLater == inGap) // alt is after a gap or before a fold, so summer-time
+                isReversed = altDst != 1; // flip if summer-time isn't DST
+            else // alt is before a gap or after a fold, so winter-time
+                isReversed = altDst == 1; // flip if winter-time is DST
+#endif
+            if (isReversed) {
+                preferLater = inGap ? QDateTimePrivate::GapUseBefore
+                                    : QDateTimePrivate::FoldUseBefore;
+            }
+        } // Otherwise, we can't tell, so assume not.
     }
-    // When we create a time in a gap, it comes here with UnknownDST, so has
-    // already been handled; so a gep only gets here if we've previously
-    // resolved a non-gap and are now adjusting into the gap. For setTime(),
-    // setDate() or setTimeZone() we've no strong reason to prefer either
-    // resolution, but addDays(), addSecs() and friends all want to overshoot
-    // the gap, to the side beyond where they started; that'll typically be the
-    // side with the *opposite* state to the one specified.
-
-    // If we want standard, switch to the alternative iff what we have is DST
-    if ((dst == QDateTimePrivate::StandardTime) != inGap)
-        return gotDst == 1;
-    // Otherwise we wanted DST, so switch iff alternative is DST
-    return altDst == 1;
+    return resolve.testFlag(preferLater) == altIsLater;
 }
 
 /*
@@ -372,12 +355,12 @@ bool preferAlternative(QDateTimePrivate::DaylightStatus dst,
 
     The local time is specified as a number of seconds since the epoch (so, in
     effect, a time_t, albeit delivered as qint64). If the specified local time
-    falls in a transition, dst determines what to do.
+    falls in a transition, resolve determines what to do.
 
     If the specified local time is outside what the system time_t APIs will
     handle, this fails.
 */
-MkTimeResult resolveLocalTime(qint64 local, QDateTimePrivate::DaylightStatus dst)
+MkTimeResult resolveLocalTime(qint64 local, QDateTimePrivate::TransitionOptions resolve)
 {
     const auto localDaySecs = QRoundingDown::qDivMod<SECS_PER_DAY>(local);
     struct tm base = timeToTm(localDaySecs.quotient, localDaySecs.remainder);
@@ -392,19 +375,23 @@ MkTimeResult resolveLocalTime(qint64 local, QDateTimePrivate::DaylightStatus dst
     // that we hit a gap, although we have to handle these cases differently:
     if (!result.good) {
         // Rejected. The tricky case: maybe mktime() doesn't resolve gaps.
-        return resolveRejected(base, result, dst);
+        return resolveRejected(base, result, resolve);
     } else if (result.local.tm_isdst < 0) {
         // Apparently success without knowledge of whether this is DST or not.
         // Should not happen, but that means our usual understanding of what the
         // system is up to has gone out the window. So just let it be.
     } else if (result.adjusted) {
         // Shunted out of a gap.
+        if (!resolve.testAnyFlags(QDateTimePrivate::GapMask)) {
+            result = {};
+            return result;
+        }
 
         // Try to obtain a matching point on the other side of the gap:
         const MkTimeResult flipped = hopAcrossGap(result, base);
         // Even if that failed, result may be the correct resolution
 
-        if (preferAlternative(dst, result.local.tm_isdst, flipped.local.tm_isdst,
+        if (preferAlternative(resolve, result.local.tm_isdst, flipped.local.tm_isdst,
                               flipped.utcSecs > result.utcSecs, true)) {
             // If hopAcrossGap() failed and we do need its answer, give up.
             if (!flipped.good || flipped.adjusted)
@@ -414,10 +401,11 @@ MkTimeResult resolveLocalTime(qint64 local, QDateTimePrivate::DaylightStatus dst
             result = flipped;
             result.adjusted = true;
         }
-    } else if (dst != QDateTimePrivate::UnknownDaylightTime
-               // We may not need to check whether we're in a transition:
-               // Does DST-ness match what we were asked for ?
-               && result.local.tm_isdst == (dst == QDateTimePrivate::StandardTime ? 0 : 1)) {
+    } else if (resolve.testFlag(QDateTimePrivate::FlipForReverseDst)
+               // In fold, DST counts as before and standard as after -
+               // we may not need to check whether we're in a transition:
+               && resolve.testFlag(result.local.tm_isdst ? QDateTimePrivate::FoldUseBefore
+                                                         : QDateTimePrivate::FoldUseAfter)) {
         // We prefer DST or standard and got what we wanted, so we're good.
         // As below, but we don't need to check, because we're on the side of
         // the transition that it would select as valid, if we were near one.
@@ -432,7 +420,13 @@ MkTimeResult resolveLocalTime(qint64 local, QDateTimePrivate::DaylightStatus dst
         const MkTimeResult flipped(copy);
         if (flipped.good && !flipped.adjusted) {
             // We're in a fall-back
-            if (preferAlternative(dst, result.local.tm_isdst, flipped.local.tm_isdst,
+            if (!resolve.testAnyFlags(QDateTimePrivate::FoldMask)) {
+                result = {};
+                return result;
+            }
+
+            // Work out which repeat to use:
+            if (preferAlternative(resolve, result.local.tm_isdst, flipped.local.tm_isdst,
                                   flipped.utcSecs > result.utcSecs, false)) {
                 result = flipped;
             }
@@ -563,9 +557,9 @@ QDateTimePrivate::ZoneState utcToLocal(qint64 utcMillis)
     return { localMillis, int(localSeconds - epochSeconds), dst };
 }
 
-QString localTimeAbbbreviationAt(qint64 local, QDateTimePrivate::DaylightStatus dst)
+QString localTimeAbbbreviationAt(qint64 local, QDateTimePrivate::TransitionOptions resolve)
 {
-    auto use = resolveLocalTime(QRoundingDown::qDiv<MSECS_PER_SEC>(local), dst);
+    auto use = resolveLocalTime(QRoundingDown::qDiv<MSECS_PER_SEC>(local), resolve);
     if (!use.good)
         return {};
 #ifdef HAVE_TM_ZONE
@@ -575,11 +569,11 @@ QString localTimeAbbbreviationAt(qint64 local, QDateTimePrivate::DaylightStatus 
     return qTzName(use.local.tm_isdst > 0 ? 1 : 0);
 }
 
-QDateTimePrivate::ZoneState mapLocalTime(qint64 local, QDateTimePrivate::DaylightStatus dst)
+QDateTimePrivate::ZoneState mapLocalTime(qint64 local, QDateTimePrivate::TransitionOptions resolve)
 {
     // Revised later to match what use.local tells us:
     qint64 localSecs = local / MSECS_PER_SEC;
-    auto use = resolveLocalTime(localSecs, dst);
+    auto use = resolveLocalTime(localSecs, resolve);
     if (!use.good)
         return {local};
 
@@ -588,8 +582,9 @@ QDateTimePrivate::ZoneState mapLocalTime(qint64 local, QDateTimePrivate::Dayligh
     Q_ASSERT(local < 0 ? (millis <= 0 && millis > -MSECS_PER_SEC)
                        : (millis >= 0 && millis < MSECS_PER_SEC));
 
-    // Revise our original hint-dst to what it resolved to:
-    dst = use.local.tm_isdst > 0 ? QDateTimePrivate::DaylightTime : QDateTimePrivate::StandardTime;
+    QDateTimePrivate::DaylightStatus dst =
+        use.local.tm_isdst > 0 ? QDateTimePrivate::DaylightTime : QDateTimePrivate::StandardTime;
+
 #ifdef HAVE_TM_GMTOFF
     const int offset = use.local.tm_gmtoff;
     localSecs = offset + use.utcSecs;

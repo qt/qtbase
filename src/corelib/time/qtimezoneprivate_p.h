@@ -20,6 +20,7 @@
 #include "qlist.h"
 #include "qtimezone.h"
 #include "private/qlocale_p.h"
+#include "private/qdatetime_p.h"
 
 #if QT_CONFIG(icu)
 #include <unicode/ucal.h>
@@ -84,7 +85,8 @@ public:
     virtual bool isDaylightTime(qint64 atMSecsSinceEpoch) const;
 
     virtual Data data(qint64 forMSecsSinceEpoch) const;
-    Data dataForLocalTime(qint64 forLocalMSecs, int hint) const;
+    QDateTimePrivate::ZoneState stateAtZoneTime(qint64 forLocalMSecs,
+                                                QDateTimePrivate::TransitionOptions resolve) const;
 
     virtual bool hasTransitions() const;
     virtual Data nextTransition(qint64 afterMSecsSinceEpoch) const;

@@ -798,11 +798,6 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
                          && m_text.at(offset) == u'-');
     const int negativeYearOffset = negate ? 1 : 0;
 
-    // If the fields we've read thus far imply a time in a spring-forward,
-    // coerce to a nearby valid time:
-    const QDateTime defaultValue = currentValue.isValid() ? currentValue
-        : QDateTime::fromMSecsSinceEpoch(currentValue.toMSecsSinceEpoch());
-
     QStringView sectionTextRef =
             QStringView { m_text }.mid(offset + negativeYearOffset, sectionmaxsize);
 
@@ -838,7 +833,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
             m_text.replace(offset, used, sectiontext.constData(), used);
         break; }
     case TimeZoneSection:
-        result = findTimeZone(sectionTextRef, defaultValue,
+        result = findTimeZone(sectionTextRef, currentValue,
                               absoluteMax(sectionIndex),
                               absoluteMin(sectionIndex), sn.count);
         break;
@@ -850,7 +845,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
             int num = 0, used = 0;
             if (sn.type == MonthSection) {
                 const QDate minDate = getMinimum().date();
-                const int year = defaultValue.date().year(calendar);
+                const int year = currentValue.date().year(calendar);
                 const int min = (year == minDate.year(calendar)) ? minDate.month(calendar) : 1;
                 num = findMonth(sectiontext.toLower(), min, sectionIndex, year, &sectiontext, &used);
             } else {
@@ -955,7 +950,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
                     }
 
                 } else if (unfilled && (fi & (FixedWidth | Numeric)) == (FixedWidth | Numeric)) {
-                    if (skipToNextSection(sectionIndex, defaultValue, digitsStr)) {
+                    if (skipToNextSection(sectionIndex, currentValue, digitsStr)) {
                         const int missingZeroes = sectionmaxsize - digitsStr.size();
                         result = ParsedSection(Acceptable, lastVal, sectionmaxsize, missingZeroes);
                         m_text.insert(offset, QString(missingZeroes, u'0'));
@@ -1432,31 +1427,40 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
     const QTime time(hour, minute, second, msec);
     const QDateTime when = QDateTime(date, time, timeZone);
 
-    // If hour wasn't specified, check the default we're using exists on the
-    // given date (which might be a spring-forward, skipping an hour).
-    if (!(isSet & HourSectionMask) && !when.isValid()) {
-        switch (parserType) {
-        case QMetaType::QDateTime: {
-            qint64 msecs = when.toMSecsSinceEpoch();
-            // Fortunately, that gets a useful answer, even though when is invalid ...
-            const QDateTime replace = QDateTime::fromMSecsSinceEpoch(msecs, timeZone);
-            const QTime tick = replace.time();
-            if (replace.date() == date
-                && (!(isSet & MinuteSection) || tick.minute() == minute)
-                && (!(isSet & SecondSection) || tick.second() == second)
-                && (!(isSet & MSecSection)   || tick.msec() == msec)) {
-                return StateNode(replace, state, padding, conflicts);
+    if (when.time() != time || when.date() != date) {
+        // In a spring-forward, if we hit the skipped hour, we may have been
+        // shunted out of it.
+
+        // If hour wasn't specified, so we're using our default, changing it may
+        // fix that.
+        if (!(isSet & HourSectionMask)) {
+            switch (parserType) {
+            case QMetaType::QDateTime: {
+                qint64 msecs = when.toMSecsSinceEpoch();
+                // Fortunately, that gets a useful answer, even though when is invalid ...
+                const QDateTime replace = QDateTime::fromMSecsSinceEpoch(msecs, timeZone);
+                const QTime tick = replace.time();
+                if (replace.date() == date
+                    && (!(isSet & MinuteSection) || tick.minute() == minute)
+                    && (!(isSet & SecondSection) || tick.second() == second)
+                    && (!(isSet & MSecSection)   || tick.msec() == msec)) {
+                    return StateNode(replace, state, padding, conflicts);
+                }
+            } break;
+            case QMetaType::QDate:
+                // Don't care about time, so just use start of day (and ignore spec):
+                return StateNode(date.startOfDay(QTimeZone::UTC),
+                                 state, padding, conflicts);
+                break;
+            case QMetaType::QTime:
+                // Don't care about date or representation, so pick a safe representation:
+                return StateNode(QDateTime(date, time, QTimeZone::UTC),
+                                 state, padding, conflicts);
+            default:
+                Q_UNREACHABLE_RETURN(StateNode());
             }
-        } break;
-        case QMetaType::QDate:
-            // Don't care about time, so just use start of day (and ignore spec):
-            return StateNode(date.startOfDay(QTimeZone::UTC), state, padding, conflicts);
-            break;
-        case QMetaType::QTime:
-            // Don't care about date or representation, so pick a safe representation:
-            return StateNode(QDateTime(date, time, QTimeZone::UTC), state, padding, conflicts);
-        default:
-            Q_UNREACHABLE_RETURN(StateNode());
+        } else if (state > Intermediate) {
+            state = Intermediate;
         }
     }
 
@@ -1607,12 +1611,8 @@ QDateTimeParser::parse(const QString &input, int position,
         }
     }
 
-    /*
-        We might have ended up with an invalid datetime: the non-existent hour
-        during dst changes, for instance.
-    */
-    if (!scan.value.isValid() && scan.state == Acceptable)
-        scan.state = Intermediate;
+    // An invalid time should only arise if we set the state to less than acceptable:
+    Q_ASSERT(scan.value.isValid() || scan.state != Acceptable);
 
     return scan;
 }
@@ -2233,7 +2233,7 @@ bool QDateTimeParser::fromString(const QString &t, QDateTime *datetime) const
     const StateNode tmp = parse(t, -1, defaultLocalTime, false);
     if (datetime)
         *datetime = tmp.value;
-    return tmp.state == Acceptable && !tmp.conflicts && tmp.value.isValid();
+    return tmp.state >= Intermediate && !tmp.conflicts && tmp.value.isValid();
 }
 
 QDateTime QDateTimeParser::getMinimum() const

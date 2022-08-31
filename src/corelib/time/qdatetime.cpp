@@ -853,7 +853,10 @@ static bool inDateTimeRange(qint64 jd, DaySide side)
 static QDateTime toEarliest(QDate day, const QTimeZone &zone)
 {
     Q_ASSERT(!zone.isUtcOrFixedOffset());
-    const auto moment = [=](QTime time) { return QDateTime(day, time, zone); };
+    // And the day starts in a gap. First find a moment not in that gap.
+    const auto moment = [=](QTime time) {
+        return QDateTime(day, time, zone, QDateTime::TransitionResolution::Reject);
+    };
     // Longest routine time-zone transition is 2 hours:
     QDateTime when = moment(QTime(2, 0));
     if (!when.isValid()) {
@@ -871,7 +874,8 @@ static QDateTime toEarliest(QDate day, const QTimeZone &zone)
     // Binary chop to the right minute
     while (high > low + 1) {
         const int mid = (high + low) / 2;
-        const QDateTime probe = moment(QTime(mid / 60, mid % 60));
+        const QDateTime probe = QDateTime(day, QTime(mid / 60, mid % 60), zone,
+                                          QDateTime::TransitionResolution::PreferBefore);
         if (probe.isValid() && probe.date() == day) {
             high = mid;
             when = probe;
@@ -933,24 +937,26 @@ QDateTime QDate::startOfDay(const QTimeZone &zone) const
     if (!inDateTimeRange(jd, DaySide::Start) || !zone.isValid())
         return QDateTime();
 
-    QDateTime when(*this, QTime(0, 0), zone);
-    if (Q_LIKELY(when.isValid()))
-        return when;
-
+    QDateTime when(*this, QTime(0, 0), zone,
+                   QDateTime::TransitionResolution::RelativeToBefore);
+    if (Q_UNLIKELY(!when.isValid() || when.date() != *this)) {
 #if QT_CONFIG(timezone)
-    // The start of the day must have fallen in a spring-forward's gap; find the spring-forward:
-    if (zone.timeSpec() == Qt::TimeZone && zone.hasTransitions()) {
-        QTimeZone::OffsetData tran
-            // There's unlikely to be another transition before noon tomorrow.
-            // However, the whole of today may have been skipped !
-            = zone.previousTransition(QDateTime(addDays(1), QTime(12, 0), zone));
-        const QDateTime &at = tran.atUtc.toTimeZone(zone);
-        if (at.isValid() && at.date() == *this)
-            return at;
-    }
+        // The start of the day must have fallen in a spring-forward's gap; find the spring-forward:
+        if (zone.timeSpec() == Qt::TimeZone && zone.hasTransitions()) {
+            QTimeZone::OffsetData tran
+                // There's unlikely to be another transition before noon tomorrow.
+                // However, the whole of today may have been skipped !
+                = zone.previousTransition(QDateTime(addDays(1), QTime(12, 0), zone));
+            const QDateTime &at = tran.atUtc.toTimeZone(zone);
+            if (at.isValid() && at.date() == *this)
+                return at;
+        }
 #endif
 
-    return toEarliest(*this, zone);
+        when = toEarliest(*this, zone);
+    }
+
+    return when;
 }
 
 /*!
@@ -1002,7 +1008,10 @@ QDateTime QDate::startOfDay(Qt::TimeSpec spec, int offsetSeconds) const
 static QDateTime toLatest(QDate day, const QTimeZone &zone)
 {
     Q_ASSERT(!zone.isUtcOrFixedOffset());
-    const auto moment = [=](QTime time) { return QDateTime(day, time, zone); };
+    // And the day ends in a gap. First find a moment not in that gap:
+    const auto moment = [=](QTime time) {
+        return QDateTime(day, time, zone, QDateTime::TransitionResolution::Reject);
+    };
     // Longest routine time-zone transition is 2 hours:
     QDateTime when = moment(QTime(21, 59, 59, 999));
     if (!when.isValid()) {
@@ -1020,7 +1029,8 @@ static QDateTime toLatest(QDate day, const QTimeZone &zone)
     // Binary chop to the right minute
     while (high > low + 1) {
         const int mid = (high + low) / 2;
-        const QDateTime probe = moment(QTime(mid / 60, mid % 60, 59, 999));
+        const QDateTime probe = QDateTime(day, QTime(mid / 60, mid % 60, 59, 999), zone,
+                                          QDateTime::TransitionResolution::PreferAfter);
         if (probe.isValid() && probe.date() == day) {
             low = mid;
             when = probe;
@@ -1083,24 +1093,25 @@ QDateTime QDate::endOfDay(const QTimeZone &zone) const
     if (!inDateTimeRange(jd, DaySide::End) || !zone.isValid())
         return QDateTime();
 
-    QDateTime when(*this, QTime(23, 59, 59, 999), zone);
-    if (Q_LIKELY(when.isValid()))
-        return when;
-
+    QDateTime when(*this, QTime(23, 59, 59, 999), zone,
+                   QDateTime::TransitionResolution::RelativeToAfter);
+    if (Q_UNLIKELY(!when.isValid() || when.date() != *this)) {
 #if QT_CONFIG(timezone)
-    // The end of the day must have fallen in a spring-forward's gap; find the spring-forward:
-    if (zone.timeSpec() == Qt::TimeZone && zone.hasTransitions()) {
-        QTimeZone::OffsetData tran
-            // It's unlikely there's been another transition since yesterday noon.
-            // However, the whole of today may have been skipped !
-            = zone.nextTransition(QDateTime(addDays(-1), QTime(12, 0), zone));
-        const QDateTime &at = tran.atUtc.toTimeZone(zone);
-        if (at.isValid() && at.date() == *this)
-            return at;
-    }
+        // The end of the day must have fallen in a spring-forward's gap; find the spring-forward:
+        if (zone.timeSpec() == Qt::TimeZone && zone.hasTransitions()) {
+            QTimeZone::OffsetData tran
+                // It's unlikely there's been another transition since yesterday noon.
+                // However, the whole of today may have been skipped !
+                = zone.nextTransition(QDateTime(addDays(-1), QTime(12, 0), zone));
+            const QDateTime &at = tran.atUtc.toTimeZone(zone);
+            if (at.isValid() && at.date() == *this)
+                return at;
+        }
 #endif
 
-    return toLatest(*this, zone);
+        when = toLatest(*this, zone);
+    }
+    return when;
 }
 
 /*!
@@ -2728,11 +2739,99 @@ static auto millisToWithinRange(qint64 millis)
     return result;
 }
 
+/*!
+    \internal
+    \enum QDateTimePrivate::TransitionOption
+
+    This enumeration is used to resolve datetime combinations which fall in \l
+    {Timezone transitions}. The transition is described as a "gap" if there are
+    time representations skipped over by the zone, as is common in the "spring
+    forward" transitions in many zones on entering daylight-saving time. The
+    transition is described as a "fold" if there are time representations
+    repeated in the zone, as in a "fall back" transition out of daylight-saving
+    time.
+
+    When the options specified do not determine a resolution for a datetime, it
+    is marked invalid.
+
+    The prepared option sets above are in fact composed from low-level atomic
+    options. For each of gap and fold you can chose between two candidate times,
+    one before or after the transition, based on the time requested; or you can
+    pick the moment of transition, or the start or end of the transition
+    interval. For a gap, the start and end of the interval are the moment of the
+    transition, but for a repeated interval the start of the first pass is the
+    start of the transition interval, the end of the second pass is the end of
+    the transition interval and the moment of the transition itself is both the
+    end of the first pass and the start of the second.
+
+    \value GapUseBefore For a time in a gap, use a time before the transition,
+                        as if stepping back from a later time.
+    \value GapUseAfter For a time in a gap, use a time after the transition, as
+                       if stepping forward from an earlier time.
+    \value FoldUseBefore For a repeated time, use the first candidate, which is
+                         before the transition.
+    \value FoldUseAfter For a repeated time, use the second candidate, which is
+                        after the transition.
+    \value FlipForReverseDst For "reversed" DST, this reverses the preceding
+                             four options (see below).
+
+    The last has no effect unless the "daylight-saving" time side of the
+    transition is known to have a lower offset from UTC than the standard time
+    side. (This is the "reversed" DST case of \l {Timezone transitions}.)  In
+    that case, if other options would select a time after the transition, a time
+    before is used instead, and vice versa. This effectively turns a preference
+    for the side with lower offset into a preference for the side that is
+    officially standard time, even if it has higher offset; and conversely a
+    preference for higher offset into a preference for daylight-saving time,
+    even if it has a lower offset. This option has no effect on a resolution
+    that selects the moment of transition or the start or end of the transition
+    interval.
+
+    The result of combining more than one of the \c GapUse* options is
+    undefined; likewise for the \c FoldUse*. Each of QDateTime's
+    TransitionResolution values, aside from Reject, maps to a combination that
+    incorporates one from each of these sets.
+*/
+
+constexpr static QDateTimePrivate::TransitionOptions
+toTransitionOptions(QDateTime::TransitionResolution res)
+{
+    switch (res) {
+    case QDateTime::TransitionResolution::RelativeToBefore:
+        return QDateTimePrivate::GapUseAfter | QDateTimePrivate::FoldUseBefore;
+    case QDateTime::TransitionResolution::RelativeToAfter:
+        return QDateTimePrivate::GapUseBefore | QDateTimePrivate::FoldUseAfter;
+    case QDateTime::TransitionResolution::PreferBefore:
+        return QDateTimePrivate::GapUseBefore | QDateTimePrivate::FoldUseBefore;
+    case QDateTime::TransitionResolution::PreferAfter:
+        return QDateTimePrivate::GapUseAfter | QDateTimePrivate::FoldUseAfter;
+    case QDateTime::TransitionResolution::PreferStandard:
+        return QDateTimePrivate::GapUseBefore
+            | QDateTimePrivate::FoldUseAfter
+            | QDateTimePrivate::FlipForReverseDst;
+    case QDateTime::TransitionResolution::PreferDaylightSaving:
+        return QDateTimePrivate::GapUseAfter
+            | QDateTimePrivate::FoldUseBefore
+            | QDateTimePrivate::FlipForReverseDst;
+    case QDateTime::TransitionResolution::Reject: break;
+    }
+    return {};
+}
+
+constexpr static QDateTimePrivate::TransitionOptions
+toTransitionOptions(QDateTimePrivate::DaylightStatus dst)
+{
+    return toTransitionOptions(dst == QDateTimePrivate::DaylightTime
+                               ? QDateTime::TransitionResolution::PreferDaylightSaving
+                               : QDateTime::TransitionResolution::PreferStandard);
+}
+
 QString QDateTimePrivate::localNameAtMillis(qint64 millis, DaylightStatus dst)
 {
+    const QDateTimePrivate::TransitionOptions resolve = toTransitionOptions(dst);
     QString abbreviation;
     if (millisInSystemRange(millis, MSECS_PER_DAY)) {
-        abbreviation = QLocalTime::localTimeAbbbreviationAt(millis, dst);
+        abbreviation = QLocalTime::localTimeAbbbreviationAt(millis, resolve);
         if (!abbreviation.isEmpty())
             return abbreviation;
     }
@@ -2742,7 +2841,7 @@ QString QDateTimePrivate::localNameAtMillis(qint64 millis, DaylightStatus dst)
     // Use the system zone:
     const auto sys = QTimeZone::systemTimeZone();
     if (sys.isValid()) {
-        ZoneState state = zoneStateAtMillis(sys, millis, dst);
+        ZoneState state = zoneStateAtMillis(sys, millis, resolve);
         if (state.valid)
             return sys.d->abbreviation(state.when - state.offset * MSECS_PER_SEC);
     }
@@ -2752,19 +2851,20 @@ QString QDateTimePrivate::localNameAtMillis(qint64 millis, DaylightStatus dst)
     // Use a time in the system range with the same day-of-week pattern to its year:
     auto fake = millisToWithinRange(millis);
     if (Q_LIKELY(fake.good))
-        return QLocalTime::localTimeAbbbreviationAt(fake.shifted, dst);
+        return QLocalTime::localTimeAbbbreviationAt(fake.shifted, resolve);
 
     // Overflow, apparently.
     return {};
 }
 
 // Determine the offset from UTC at the given local time as millis.
-QDateTimePrivate::ZoneState QDateTimePrivate::localStateAtMillis(qint64 millis, DaylightStatus dst)
+QDateTimePrivate::ZoneState QDateTimePrivate::localStateAtMillis(
+    qint64 millis, QDateTimePrivate::TransitionOptions resolve)
 {
     // First, if millis is within a day of the viable range, try mktime() in
     // case it does fall in the range and gets useful information:
     if (millisInSystemRange(millis, MSECS_PER_DAY)) {
-        auto result = QLocalTime::mapLocalTime(millis, dst);
+        auto result = QLocalTime::mapLocalTime(millis, resolve);
         if (result.valid)
             return result;
     }
@@ -2774,14 +2874,14 @@ QDateTimePrivate::ZoneState QDateTimePrivate::localStateAtMillis(qint64 millis, 
     // Use the system zone:
     const auto sys = QTimeZone::systemTimeZone();
     if (sys.isValid())
-        return zoneStateAtMillis(sys, millis, dst);
+        return zoneStateAtMillis(sys, millis, resolve);
 #endif // timezone
 
     // Kludge
     // Use a time in the system range with the same day-of-week pattern to its year:
     auto fake = millisToWithinRange(millis);
     if (Q_LIKELY(fake.good)) {
-        auto result = QLocalTime::mapLocalTime(fake.shifted, dst);
+        auto result = QLocalTime::mapLocalTime(fake.shifted, resolve);
         if (result.valid) {
             qint64 adjusted;
             if (Q_UNLIKELY(qAddOverflow(result.when, millis - fake.shifted, &adjusted))) {
@@ -2799,33 +2899,26 @@ QDateTimePrivate::ZoneState QDateTimePrivate::localStateAtMillis(qint64 millis, 
 }
 
 #if QT_CONFIG(timezone)
-// For a TimeZone and a time expressed in zone msecs encoding, possibly with a
-// hint to DST-ness, compute the actual DST-ness and offset, adjusting the time
-// if needed to escape a spring-forward.
-QDateTimePrivate::ZoneState QDateTimePrivate::zoneStateAtMillis(const QTimeZone &zone,
-                                                                qint64 millis, DaylightStatus dst)
+// For a TimeZone and a time expressed in zone msecs encoding, compute the
+// actual DST-ness and offset, adjusting the time if needed to escape a
+// spring-forward.
+QDateTimePrivate::ZoneState QDateTimePrivate::zoneStateAtMillis(
+    const QTimeZone &zone, qint64 millis, QDateTimePrivate::TransitionOptions resolve)
 {
     Q_ASSERT(zone.isValid());
     Q_ASSERT(zone.timeSpec() == Qt::TimeZone);
-    // Get the effective data from QTimeZone
-    QTimeZonePrivate::Data data = zone.d->dataForLocalTime(millis, int(dst));
-    if (data.offsetFromUtc == QTimeZonePrivate::invalidSeconds())
-        return {millis};
-    Q_ASSERT(zone.d->offsetFromUtc(data.atMSecsSinceEpoch) == data.offsetFromUtc);
-    return ZoneState(data.atMSecsSinceEpoch + data.offsetFromUtc * MSECS_PER_SEC,
-                     data.offsetFromUtc,
-                     data.daylightTimeOffset ? DaylightTime : StandardTime);
+    return zone.d->stateAtZoneTime(millis, resolve);
 }
 #endif // timezone
 
 static inline QDateTimePrivate::ZoneState stateAtMillis(const QTimeZone &zone, qint64 millis,
-                                                        QDateTimePrivate::DaylightStatus dst)
+                                                        QDateTimePrivate::TransitionOptions resolve)
 {
     if (zone.timeSpec() == Qt::LocalTime)
-        return QDateTimePrivate::localStateAtMillis(millis, dst);
+        return QDateTimePrivate::localStateAtMillis(millis, resolve);
 #if QT_CONFIG(timezone)
     if (zone.timeSpec() == Qt::TimeZone && zone.isValid())
-        return QDateTimePrivate::zoneStateAtMillis(zone, millis, dst);
+        return QDateTimePrivate::zoneStateAtMillis(zone, millis, resolve);
 #endif
     return {millis};
 }
@@ -2938,7 +3031,8 @@ static inline bool usesSameOffset(const QDateTimeData &a, const QDateTimeData &b
 }
 
 // Refresh the LocalTime or TimeZone validity and offset
-static void refreshZonedDateTime(QDateTimeData &d, const QTimeZone &zone)
+static void refreshZonedDateTime(QDateTimeData &d, const QTimeZone &zone,
+                                 QDateTimePrivate::TransitionOptions resolve)
 {
     Q_ASSERT(zone.timeSpec() == Qt::TimeZone || zone.timeSpec() == Qt::LocalTime);
     auto status = getStatus(d);
@@ -2958,27 +3052,19 @@ static void refreshZonedDateTime(QDateTimeData &d, const QTimeZone &zone)
     if (!status.testFlags(QDateTimePrivate::ValidDate | QDateTimePrivate::ValidTime)) {
         status.setFlag(QDateTimePrivate::ValidDateTime, false);
     } else {
-        // We have a valid date and time and a Qt::LocalTime or Qt::TimeZone that needs calculating
-        // LocalTime and TimeZone might fall into a "missing" DST transition hour
-        // Calling toEpochMSecs will adjust the returned date/time if it does
+        // We have a valid date and time and a Qt::LocalTime or Qt::TimeZone
+        // that might fall into a "missing" DST transition hour.
         qint64 msecs = getMSecs(d);
-        QDateTimePrivate::ZoneState state = stateAtMillis(zone, msecs,
-                                                          extractDaylightStatus(status));
-        // Save the offset to use in offsetFromUtc() &c., even if the next check
-        // marks invalid; this lets toMSecsSinceEpoch() give a useful fallback
-        // for times in spring-forward gaps.
-        offsetFromUtc = state.offset;
+        QDateTimePrivate::ZoneState state = stateAtMillis(zone, msecs, resolve);
         Q_ASSERT(!state.valid || (state.offset >= -SECS_PER_DAY && state.offset <= SECS_PER_DAY));
-        if (Q_LIKELY(state.valid && msecs == state.when)) {
-            status = mergeDaylightStatus(status | QDateTimePrivate::ValidDateTime, state.dst);
-        } else { // msecs changed: gap, or failed to convert (e.g. overflow)
+        if (state.dst == QDateTimePrivate::UnknownDaylightTime) { // Overflow
             status.setFlag(QDateTimePrivate::ValidDateTime, false);
-            if (state.valid) { // gap
-                /* Make sure our offset and msecs do produce the selected UTC
-                   secs, if queried. When d isn't short, we record offset, so
-                   need msecs to match; when d is short, consistency demands we
-                   also update msecs, which will at least mean we don't hit the
-                   gap again, if we ever recompute offset. */
+        } else if (state.valid) {
+            status = mergeDaylightStatus(status, state.dst);
+            offsetFromUtc = state.offset;
+            status.setFlag(QDateTimePrivate::ValidDateTime, true);
+            if (Q_UNLIKELY(msecs != state.when)) {
+                // Update msecs to the resolution:
                 if (status.testFlag(QDateTimePrivate::ShortData)) {
                     if (msecsCanBeSmall(state.when)) {
                         d.data.msecs = qintptr(state.when);
@@ -2991,6 +3077,8 @@ static void refreshZonedDateTime(QDateTimeData &d, const QTimeZone &zone)
                 if (!status.testFlag(QDateTimePrivate::ShortData))
                     d->m_msecs = state.when;
             }
+        } else {
+            status.setFlag(QDateTimePrivate::ValidDateTime, false);
         }
     }
 
@@ -3017,7 +3105,7 @@ static void refreshSimpleDateTime(QDateTimeData &d)
 }
 
 // Clean up and set status after assorted set-up or reworking:
-static void checkValidDateTime(QDateTimeData &d)
+static void checkValidDateTime(QDateTimeData &d, QDateTime::TransitionResolution resolve)
 {
     auto spec = extractSpec(getStatus(d));
     switch (spec) {
@@ -3030,12 +3118,13 @@ static void checkValidDateTime(QDateTimeData &d)
     case Qt::LocalTime:
         // For these, we need to check whether (the zone is valid and) the time
         // is valid for the zone. Expensive, but we have no other option.
-        refreshZonedDateTime(d, d.timeZone());
+        refreshZonedDateTime(d, d.timeZone(), toTransitionOptions(resolve));
         break;
     }
 }
 
-static void reviseTimeZone(QDateTimeData &d, QTimeZone zone)
+static void reviseTimeZone(QDateTimeData &d, QTimeZone zone,
+                           QDateTime::TransitionResolution resolve)
 {
     Qt::TimeSpec spec = zone.timeSpec();
     auto status = mergeSpec(getStatus(d), spec);
@@ -3074,7 +3163,7 @@ static void reviseTimeZone(QDateTimeData &d, QTimeZone zone)
     if (QTimeZone::isUtcOrFixedOffset(spec))
         refreshSimpleDateTime(d);
     else
-        refreshZonedDateTime(d, zone);
+        refreshZonedDateTime(d, zone, toTransitionOptions(resolve));
 }
 
 static void setDateTime(QDateTimeData &d, QDate date, QTime time)
@@ -3319,14 +3408,15 @@ inline QDateTimePrivate *QDateTime::Data::operator->()
  *****************************************************************************/
 
 Q_NEVER_INLINE
-QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime, const QTimeZone &zone)
+QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime, const QTimeZone &zone,
+                                         QDateTime::TransitionResolution resolve)
 {
     QDateTime::Data result(zone);
     setDateTime(result, toDate, toTime);
     if (zone.isUtcOrFixedOffset())
         refreshSimpleDateTime(result);
     else
-        refreshZonedDateTime(result, zone);
+        refreshZonedDateTime(result, zone, toTransitionOptions(resolve));
     return result;
 }
 
@@ -3356,17 +3446,17 @@ QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime, const QTime
     UTC of +3600 seconds is one hour ahead of UTC (usually written in ISO
     standard notation as "UTC+01:00"), with no daylight-saving
     complications. When using either local time or a specified time zone,
-    time-zone transitions (see \l {Daylight-Saving Time (DST)}{below}) are taken
-    into account. A QDateTime's timeSpec() will tell you which of the four types
-    of time representation is in use; its timeRepresentation() provides a full
-    representation of that time representation, as a QTimeZone.
+    time-zone transitions (see \l {Timezone transitions}{below}) are taken into
+    account. A QDateTime's timeSpec() will tell you which of the four types of
+    time representation is in use; its timeRepresentation() provides a full
+    description of that time representation, as a QTimeZone.
 
     A QDateTime object is typically created either by giving a date and time
     explicitly in the constructor, or by using a static function such as
     currentDateTime() or fromMSecsSinceEpoch(). The date and time can be changed
     with setDate() and setTime(). A datetime can also be set using the
     setMSecsSinceEpoch() function that takes the time, in milliseconds, since
-    the start, in UTC of the year 1970. The fromString() function returns a
+    the start, in UTC, of the year 1970. The fromString() function returns a
     QDateTime, given a string and a date format used to interpret the date
     within the string.
 
@@ -3400,9 +3490,9 @@ QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime, const QTime
     (whose \l {QTimeZone::timeSpec()}{timeSpec()} is \c {Qt::TimeZone}) to use
     that instead.
 
-    \note QDateTime does not account for leap seconds.
-
     \section1 Remarks
+
+    \note QDateTime does not account for leap seconds.
 
     \note All conversion to and from string formats is done using the C locale.
     For localized conversions, see QLocale.
@@ -3410,6 +3500,12 @@ QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime, const QTime
     \note There is no year 0 in the Gregorian calendar. Dates in that year are
     considered invalid. The year -1 is the year "1 before Christ" or "1 before
     common era." The day before 1 January 1 CE is 31 December 1 BCE.
+
+    \note Using local time (the default) or a specified time zone implies a need
+    to resolve any issues around \l {Timezone transitions}{transitions}. As a
+    result, operations on such QDateTime instances (notably including
+    constructing them) may be more expensive than the equivalent when using UTC
+    or a fixed offset from it.
 
     \section2 Range of Valid Dates
 
@@ -3440,23 +3536,67 @@ QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime, const QTime
     library will equipe QTimeZone with the same timezone database as is used on
     Unix.
 
-    \section2 Daylight-Saving Time (DST)
+    \section2 Timezone transitions
 
-    QDateTime takes into account transitions between Standard Time and
-    Daylight-Saving Time. For example, if the transition is at 2am and the clock
-    goes forward to 3am, then there is a "missing" hour from 02:00:00 to
-    02:59:59.999 which QDateTime considers to be invalid. Any date arithmetic
-    performed will take this missing hour into account and return a valid
-    result. For example, adding one second to 01:59:59 will get 03:00:00.
+    QDateTime takes into account timezone transitions, both the transitions
+    between Standard Time and Daylight-Saving Time (DST) and the transitions
+    that arise when a zone changes its standard offset. For example, if the
+    transition is at 2am and the clock goes forward to 3am, then there is a
+    "missing" hour from 02:00:00 to 02:59:59.999. Such a transition is known as
+    a "spring forward" and the times skipped over have no meaning. When a
+    transition goes the other way, known as a "fall back", a time interval is
+    repeated, first in the old zone (usually DST), then in the new zone (usually
+    Standard Time), so times in this interval are ambiguous.
+
+    Some zones use "reversed" DST, using standard time in summer and
+    daylight-saving time (with a lowered offset) in winter. For such zones, the
+    spring forward still happens in spring and skips an hour, but is a
+    transition \e{out of} daylight-saving time, while the fall back still
+    repeats an autumn hour but is a transition \e to daylight-saving time.
+
+    When converting from a UTC time (or a time at fixed offset from UTC), there
+    is always an unambiguous valid result in any timezone. However, when
+    combining a date and time to make a datetime, expressed with respect to
+    local time or a specific time-zone, the nominal result may fall in a
+    transition, making it either invalid or ambiguous. Methods where this
+    situation may arise take a \c resolve parameter: this is always ignored if
+    the requested datetime is valid and unambiguous. See \l TransitionResolution
+    for the options it lets you control. Prior to Qt 6.7, the equivalent of its
+    \l LegacyBehavior was selected.
+
+    For a spring forward's skipped interval, interpreting the requested time
+    with either offset yields an actual time at which the other offset was in
+    use; so passing \c TransitionResolution::RelativeToBefore for \c resolve
+    will actually result in a time after the transition, that would have had the
+    requested representation had the transition not happened. Likewise, \c
+    TransitionResolution::RelativeToAfter for \c resolve results in a time
+    before the transition, that would have had the requested representation, had
+    the transition happened earlier.
+
+    When QDateTime performs arithmetic, as with addDay() or addSecs(), it takes
+    care to produce a valid result. For example, on a day when there is a spring
+    forward from 02:00 to 03:00, adding one second to 01:59:59 will get
+    03:00:00. Adding one day to 02:30 on the preceding day will get 03:30 on the
+    day of the transition, while subtracting one day, by calling \c{addDay(-1)},
+    to 02:30 on the following day will get 01:30 on the day of the transition.
+    While addSecs() will deliver a time offset by the given number of seconds,
+    addDays() adjusts the date and only adjusts time if it would otherwise get
+    an invalid result. Applying \c{addDays(1)} to 03:00 on the day before the
+    spring-forward will simply get 03:00 on the day of the transition, even
+    though the latter is only 23 hours after the former; but \c{addSecs(24 * 60
+    * 60)} will get 04:00 on the day of the transition, since that's 24 hours
+    later. Typical transitions make some days 23 or 25 hours long.
 
     For datetimes that the system \c time_t can represent (from 1901-12-14 to
     2038-01-18 on systems with 32-bit \c time_t; for the full range QDateTime
     can represent if the type is 64-bit), the standard system APIs are used to
     determine local time's offset from UTC. For datetimes not handled by these
-    system APIs, QTimeZone::systemTimeZone() is used. In either case, the offset
-    information used depends on the system and may be incomplete or, for past
-    times, historically inaccurate. In any case, for future dates, the local
-    time zone's offsets and DST rules may change before that date comes around.
+    system APIs (potentially including some within the \c time_t range),
+    QTimeZone::systemTimeZone() is used, if available, or a best effort is made
+    to estimate. In any case, the offset information used depends on the system
+    and may be incomplete or, for past times, historically
+    inaccurate. Furthermore, for future dates, the local time zone's offsets and
+    DST rules may change before that date comes around.
 
     \section2 Offsets From UTC
 
@@ -3471,7 +3611,8 @@ QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime, const QTime
     which use a ±hh:mm format, effectively limiting the range to ± 99 hours and
     59 minutes and whole minutes only. Note that currently no time zone has an
     offset outside the range of ±14 hours and all known offsets are multiples of
-    five minutes.
+    five minutes. Historical time zones have a wider range and may have offsets
+    including seconds; these last cannot be faithfully represented in strings.
 
     \sa QDate, QTime, QDateTimeEdit, QTimeZone
 */
@@ -3494,6 +3635,148 @@ QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime, const QTime
     can support reaches 292 million years either side of 1970.
 
     \sa isValid(), QDate
+*/
+
+/*!
+    \since 6.7
+    \enum QDateTime::TransitionResolution
+
+    This enumeration is used to resolve datetime combinations which fall in \l
+    {Timezone transitions}.
+
+    When constructing a datetime, specified in terms of local time or a
+    time-zone that has daylight-saving time, or revising one with setDate(),
+    setTime() or setTimeZone(), the given parameters may imply a time
+    representation that either has no meaning or has two meanings in the
+    zone. Such time representations are described as being in the transition. In
+    either case, we can simply return an invalid datetime, to indicate that the
+    operation is ill-defined. In the ambiguous case, we can alternatively select
+    one of the two times that could be meant. When there is no meaning, we can
+    select a time either side of it that might plausibly have been meant.  For
+    example, when advancing from an earlier time, we can select the time after
+    the transition that is actually the specified amount of time after the
+    earlier time in question. The options specified here configure how such
+    selection is performed.
+
+    \value Reject
+           Treat any time in a transition as invalid. Either it really is, or it
+           is ambiguous.
+    \value RelativeToBefore
+           Selects a time as if stepping forward from a time before the
+           transition. This interprets the requested time using the offset in
+           effect before the transition and, if necessary, converts the result
+           to the offset in effect at the resulting time.
+    \value RelativeToAfter
+           Select a time as if stepping backward from a time after the
+           transition. This interprets the requested time using the offset in
+           effect after the transition and, if necessary, converts the result to
+           the offset in effect at the resulting time.
+    \value PreferBefore
+           Selects a time before the transition,
+    \value PreferAfter
+           Selects a time after the transition.
+    \value PreferStandard
+           Selects a time on the standard time side of the transition.
+    \value PreferDaylightSaving
+           Selects a time on the daylight-saving-time side of the transition.
+    \value LegacyBehavior
+           An alias for RelativeToBefore, which is used as default for
+           TransitionResolution parameters, as this most closely matches the
+           behavior prior to Qt 6.7.
+
+    For \l addDays(), \l addMonths() or \l addYears(), the behavior is and
+    (mostly) was to use \c RelativeToBefore if adding a positive adjustment and \c
+    RelativeToAfter if adding a negative adjustment.
+
+    \note In time zones where daylight-saving increases the offset from UTC in
+    summer (known as "positive DST"), PreferStandard is an alias for
+    RelativeToAfter and PreferDaylightSaving for RelativeToBefore. In time zones
+    where the daylight-saving mechanism is a decrease in offset from UTC in
+    winter (known as "negative DST"), the reverse applies, provided the
+    operating system reports - as it does on most platforms - whether a datetime
+    is in DST or standard time. For some platforms, where transition times are
+    unavailable even for Qt::TimeZone datetimes, QTimeZone is obliged to presume
+    that the side with lower offset from UTC is standard time, effectively
+    assuming positive DST.
+
+    The following tables illustrate how a QDateTime constructor resolves a
+    request for 02:30 on a day when local time has a transition between 02:00
+    and 03:00, with a nominal standard time LST and daylight-saving time LDT on
+    the two sides, in the various possible cases. The transition type may be to
+    skip an hour or repeat it. The type of transition and value of a parameter
+    \c resolve determine which actual time on the given date is selected. First,
+    the common case of positive daylight-saving, where:
+
+    \table
+    \header \li Before \li 02:00--03:00 \li After \li \c resolve \li selected
+    \row \li LST \li skip \li LDT \li RelativeToBefore \li 03:30 LDT
+    \row \li LST \li skip \li LDT \li RelativeToAfter \li 01:30 LST
+    \row \li LST \li skip \li LDT \li PreferBefore \li 01:30 LST
+    \row \li LST \li skip \li LDT \li PreferAfter \li 03:30 LDT
+    \row \li LST \li skip \li LDT \li PreferStandard \li 01:30 LST
+    \row \li LST \li skip \li LDT \li PreferDaylightSaving \li 03:30 LDT
+    \row \li LDT \li repeat \li LST \li RelativeToBefore \li 02:30 LDT
+    \row \li LDT \li repeat \li LST \li RelativeToAfter \li 02:30 LST
+    \row \li LDT \li repeat \li LST \li PreferBefore \li 02:30 LDT
+    \row \li LDT \li repeat \li LST \li PreferAfter \li 02:30 LST
+    \row \li LDT \li repeat \li LST \li PreferStandard \li 02:30 LST
+    \row \li LDT \li repeat \li LST \li PreferDaylightSaving \li 02:30 LDT
+    \endtable
+
+    Second, the case for negative daylight-saving, using LDT in winter and
+    skipping an hour to transition to LST in summer, then repeating an hour at
+    the transition back to winter:
+
+    \table
+    \row \li LDT \li skip \li LST \li RelativeToBefore \li 03:30 LST
+    \row \li LDT \li skip \li LST \li RelativeToAfter \li 01:30 LDT
+    \row \li LDT \li skip \li LST \li PreferBefore \li 01:30 LDT
+    \row \li LDT \li skip \li LST \li PreferAfter \li 03:30 LST
+    \row \li LDT \li skip \li LST \li PreferStandard \li 03:30 LST
+    \row \li LDT \li skip \li LST \li PreferDaylightSaving \li 01:30 LDT
+    \row \li LST \li repeat \li LDT \li RelativeToBefore \li 02:30 LST
+    \row \li LST \li repeat \li LDT \li RelativeToAfter \li 02:30 LDT
+    \row \li LST \li repeat \li LDT \li PreferBefore \li 02:30 LST
+    \row \li LST \li repeat \li LDT \li PreferAfter \li 02:30 LDT
+    \row \li LST \li repeat \li LDT \li PreferStandard \li 02:30 LST
+    \row \li LST \li repeat \li LDT \li PreferDaylightSaving \li 02:30 LDT
+    \endtable
+
+    Reject can be used to prompt relevant QDateTime APIs to return an invalid
+    datetime object so that your code can deal with transitions for itself, for
+    example by alerting a user to the fact that the datetime they have selected
+    is in a transition interval, to offer them the opportunity to resolve a
+    conflict or ambiguity. Code using this may well find the other options above
+    useful to determine relevant information to use in its own (or the user's)
+    resolution. If the start or end of the transition, or the moment of the
+    transition itself, is the right resolution, QTimeZone's transition APIs can
+    be used to obtain that information. You can determine whether the transition
+    is a repeated or skipped interval by using \l secsTo() to measure the actual
+    time between noon on the previous and following days. The result will be
+    less than 48 hours for a skipped interval (such as a spring-forward) and
+    more than 48 hours for a repeated interval (such as a fall-back).
+
+    \note When a resolution other than Reject is specified, a valid QDateTime
+    object is returned, if possible. If the requested date-time falls in a gap,
+    the returned date-time will not have the time() requested - or, in some
+    cases, the date(), if a whole day was skipped. You can thus detect when a
+    gap is hit by comparing date() and time() to what was requested.
+
+    \section2 Relation to other datetime software
+
+    The Python programming language's datetime APIs have a \c fold parameter
+    that corresponds to \c RelativeToBefore (\c{fold = True}) and \c
+    RelativeToAfter (\c{fold = False}).
+
+    The \c Temporal proposal to replace JavaScript's \c Date offers four options
+    for how to resolve a transition, as value for a \c disambiguation
+    parameter. Its \c{'reject'} raises an exception, which roughly corresponds
+    to \c Reject producing an invalid result. Its \c{'earlier'} and \c{'later'}
+    options correspond to \c PreferBefore and \c PreferAfter. Its
+    \c{'compatible'} option corresponds to \c RelativeToBefore (and Python's
+    \c{fold = True}).
+
+    \sa {Timezone transitions}, QDateTime::TransitionResolution
 */
 
 /*!
@@ -3534,7 +3817,8 @@ QDateTime::QDateTime() noexcept
     skipped over the given date and time, the result is invalid.
 */
 QDateTime::QDateTime(QDate date, QTime time, Qt::TimeSpec spec, int offsetSeconds)
-    : d(QDateTimePrivate::create(date, time, asTimeZone(spec, offsetSeconds, "QDateTime")))
+    : d(QDateTimePrivate::create(date, time, asTimeZone(spec, offsetSeconds, "QDateTime"),
+                                 TransitionResolution::LegacyBehavior))
 {
 }
 #endif // 6.9 deprecation
@@ -3546,24 +3830,36 @@ QDateTime::QDateTime(QDate date, QTime time, Qt::TimeSpec spec, int offsetSecond
     representation described by \a timeZone.
 
     If \a date is valid and \a time is not, the time will be set to midnight.
-    If \a timeZone is invalid then the datetime will be invalid.
+    If \a timeZone is invalid then the datetime will be invalid. If \a date and
+    \a time describe a moment close to a transition for \a timeZone, \a resolve
+    controls how that situation is resolved.
+
+//! [pre-resolve-note]
+    \note Prior to Qt 6.7, the version of this function lacked the \a resolve
+    parameter so had no way to resolve the ambiguities related to transitions.
+//! [pre-resolve-note]
 */
 
-QDateTime::QDateTime(QDate date, QTime time, const QTimeZone &timeZone)
-    : d(QDateTimePrivate::create(date, time, timeZone))
+QDateTime::QDateTime(QDate date, QTime time, const QTimeZone &timeZone, TransitionResolution resolve)
+    : d(QDateTimePrivate::create(date, time, timeZone, resolve))
 {
 }
 
 /*!
     \since 6.5
+    \overload
 
     Constructs a datetime with the given \a date and \a time, using local time.
 
-    If \a date is valid and \a time is not, midnight will be used as the time.
+    If \a date is valid and \a time is not, midnight will be used as the
+    time. If \a date and \a time describe a moment close to a transition for
+    local time, \a resolve controls how that situation is resolved.
+
+    \include qdatetime.cpp pre-resolve-note
 */
 
-QDateTime::QDateTime(QDate date, QTime time)
-    : d(QDateTimePrivate::create(date, time, QTimeZone::LocalTime))
+QDateTime::QDateTime(QDate date, QTime time, TransitionResolution resolve)
+    : d(QDateTimePrivate::create(date, time, QTimeZone::LocalTime, resolve))
 {
 }
 
@@ -3754,8 +4050,8 @@ int QDateTime::offsetFromUtc() const
     auto spec = extractSpec(status);
     if (spec == Qt::LocalTime) {
         // We didn't cache the value, so we need to calculate it:
-        auto dst = extractDaylightStatus(status);
-        return QDateTimePrivate::localStateAtMillis(getMSecs(d), dst).offset;
+        const auto resolve = toTransitionOptions(extractDaylightStatus(status));
+        return QDateTimePrivate::localStateAtMillis(getMSecs(d), resolve).offset;
     }
 
     Q_ASSERT(spec == Qt::UTC);
@@ -3840,8 +4136,10 @@ bool QDateTime::isDaylightTime() const
 #endif // timezone
     case Qt::LocalTime: {
         auto dst = extractDaylightStatus(getStatus(d));
-        if (dst == QDateTimePrivate::UnknownDaylightTime)
-            dst = QDateTimePrivate::localStateAtMillis(getMSecs(d), dst).dst;
+        if (dst == QDateTimePrivate::UnknownDaylightTime) {
+            dst = QDateTimePrivate::localStateAtMillis(
+                getMSecs(d), toTransitionOptions(TransitionResolution::LegacyBehavior)).dst;
+        }
         return dst == QDateTimePrivate::DaylightTime;
         }
     }
@@ -3849,16 +4147,24 @@ bool QDateTime::isDaylightTime() const
 }
 
 /*!
-    Sets the date part of this datetime to \a date. If no time is set yet, it
-    is set to midnight. If \a date is invalid, this QDateTime becomes invalid.
+    Sets the date part of this datetime to \a date.
+
+    If no time is set yet, it is set to midnight. If \a date is invalid, this
+    QDateTime becomes invalid.
+
+    If \a date and time() describe a moment close to a transition for this
+    datetime's time representation, \a resolve controls how that situation is
+    resolved.
+
+    \include qdatetime.cpp pre-resolve-note
 
     \sa date(), setTime(), setTimeZone()
 */
 
-void QDateTime::setDate(QDate date)
+void QDateTime::setDate(QDate date, TransitionResolution resolve)
 {
     setDateTime(d, date, time());
-    checkValidDateTime(d);
+    checkValidDateTime(d, resolve);
 }
 
 /*!
@@ -3871,13 +4177,19 @@ void QDateTime::setDate(QDate date)
         dt.setTime(QTime());
     \endcode
 
+    If date() and \a time describe a moment close to a transition for this
+    datetime's time representation, \a resolve controls how that situation is
+    resolved.
+
+    \include qdatetime.cpp pre-resolve-note
+
     \sa time(), setDate(), setTimeZone()
 */
 
-void QDateTime::setTime(QTime time)
+void QDateTime::setTime(QTime time, TransitionResolution resolve)
 {
     setDateTime(d, date(), time);
-    checkValidDateTime(d);
+    checkValidDateTime(d, resolve);
 }
 
 #if QT_DEPRECATED_SINCE(6, 9)
@@ -3901,7 +4213,8 @@ void QDateTime::setTime(QTime time)
 
 void QDateTime::setTimeSpec(Qt::TimeSpec spec)
 {
-    reviseTimeZone(d, asTimeZone(spec, 0, "QDateTime::setTimeSpec"));
+    reviseTimeZone(d, asTimeZone(spec, 0, "QDateTime::setTimeSpec"),
+                   TransitionResolution::LegacyBehavior);
 }
 
 /*!
@@ -3922,7 +4235,8 @@ void QDateTime::setTimeSpec(Qt::TimeSpec spec)
 
 void QDateTime::setOffsetFromUtc(int offsetSeconds)
 {
-    reviseTimeZone(d, QTimeZone::fromSecondsAheadOfUtc(offsetSeconds));
+    reviseTimeZone(d, QTimeZone::fromSecondsAheadOfUtc(offsetSeconds),
+                   TransitionResolution::Reject);
 }
 #endif // 6.9 deprecations
 
@@ -3938,12 +4252,17 @@ void QDateTime::setOffsetFromUtc(int offsetSeconds)
     If \a toZone is invalid then the datetime will be invalid. Otherwise, this
     datetime's timeSpec() after the call will match \c{toZone.timeSpec()}.
 
+    If date() and time() describe a moment close to a transition for \a toZone,
+    \a resolve controls how that situation is resolved.
+
+    \include qdatetime.cpp pre-resolve-note
+
     \sa timeRepresentation(), timeZone(), Qt::TimeSpec
 */
 
-void QDateTime::setTimeZone(const QTimeZone &toZone)
+void QDateTime::setTimeZone(const QTimeZone &toZone, TransitionResolution resolve)
 {
-    reviseTimeZone(d, toZone);
+    reviseTimeZone(d, toZone, resolve);
 }
 
 /*!
@@ -3983,8 +4302,8 @@ qint64 QDateTime::toMSecsSinceEpoch() const
     case Qt::LocalTime:
         if (status.testFlag(QDateTimePrivate::ShortData)) {
             // Short form has nowhere to cache the offset, so recompute.
-            auto dst = extractDaylightStatus(status);
-            auto state = QDateTimePrivate::localStateAtMillis(getMSecs(d), dst);
+            const auto resolve = toTransitionOptions(extractDaylightStatus(getStatus(d)));
+            const auto state = QDateTimePrivate::localStateAtMillis(getMSecs(d), resolve);
             return state.when - state.offset * MSECS_PER_SEC;
         }
         // Use the offset saved by refreshZonedDateTime() on creation.
@@ -4248,19 +4567,11 @@ QString QDateTime::toString(QStringView format, QCalendar cal) const
 }
 #endif // datestring
 
-static inline void massageAdjustedDateTime(QDateTimeData &d, QDate date, QTime time)
+static inline void massageAdjustedDateTime(QDateTimeData &d, QDate date, QTime time, bool forward)
 {
-    /*
-      If we have just adjusted to a day with a DST transition, our given time
-      may lie in the transition hour (either missing or duplicated).  For any
-      other time, telling mktime() or QTimeZone what we know about DST-ness, of
-      the time we adjusted from, will make no difference; it'll just tell us the
-      actual DST-ness of the given time. When landing in a transition that
-      repeats an hour, passing the prior DST-ness - when known - will get us the
-      indicated side of the duplicate (either local or zone). When landing in a
-      gap, the zone gives us the other side of the gap and mktime() is wrapped
-      to coax it into doing the same (which it does by default on Unix).
-    */
+    const QDateTimePrivate::TransitionOptions resolve = toTransitionOptions(
+        forward ? QDateTime::TransitionResolution::RelativeToBefore
+                : QDateTime::TransitionResolution::RelativeToAfter);
     auto status = getStatus(d);
     Q_ASSERT(status.testFlags(QDateTimePrivate::ValidDate | QDateTimePrivate::ValidTime
                               | QDateTimePrivate::ValidDateTime));
@@ -4270,13 +4581,13 @@ static inline void massageAdjustedDateTime(QDateTimeData &d, QDate date, QTime t
         refreshSimpleDateTime(d);
         return;
     }
-    auto dst = extractDaylightStatus(status);
     qint64 local = timeToMSecs(date, time);
-    const QDateTimePrivate::ZoneState state = stateAtMillis(d.timeZone(), local, dst);
-    if (state.valid)
-        status = mergeDaylightStatus(status | QDateTimePrivate::ValidDateTime, state.dst);
-    else
+    const QDateTimePrivate::ZoneState state = stateAtMillis(d.timeZone(), local, resolve);
+    Q_ASSERT(state.valid || state.dst == QDateTimePrivate::UnknownDaylightTime);
+    if (state.dst == QDateTimePrivate::UnknownDaylightTime)
         status.setFlag(QDateTimePrivate::ValidDateTime, false);
+    else
+        status = mergeDaylightStatus(status | QDateTimePrivate::ValidDateTime, state.dst);
 
     if (status & QDateTimePrivate::ShortData) {
         d.data.msecs = state.when;
@@ -4303,7 +4614,7 @@ static inline void massageAdjustedDateTime(QDateTimeData &d, QDate date, QTime t
     aiming between 2am and 3am will be adjusted to fall before 2am (if \c{ndays
     < 0}) or after 3am (otherwise).
 
-    \sa daysTo(), addMonths(), addYears(), addSecs()
+    \sa daysTo(), addMonths(), addYears(), addSecs(), {Timezone transitions}
 */
 
 QDateTime QDateTime::addDays(qint64 ndays) const
@@ -4313,7 +4624,7 @@ QDateTime QDateTime::addDays(qint64 ndays) const
 
     QDateTime dt(*this);
     QPair<QDate, QTime> p = getDateTime(d);
-    massageAdjustedDateTime(dt.d, p.first.addDays(ndays), p.second);
+    massageAdjustedDateTime(dt.d, p.first.addDays(ndays), p.second, ndays >= 0);
     return dt;
 }
 
@@ -4329,7 +4640,7 @@ QDateTime QDateTime::addDays(qint64 ndays) const
     aiming between 2am and 3am will be adjusted to fall before 2am (if
     \c{nmonths < 0}) or after 3am (otherwise).
 
-    \sa daysTo(), addDays(), addYears(), addSecs()
+    \sa daysTo(), addDays(), addYears(), addSecs(), {Timezone transitions}
 */
 
 QDateTime QDateTime::addMonths(int nmonths) const
@@ -4339,7 +4650,7 @@ QDateTime QDateTime::addMonths(int nmonths) const
 
     QDateTime dt(*this);
     QPair<QDate, QTime> p = getDateTime(d);
-    massageAdjustedDateTime(dt.d, p.first.addMonths(nmonths), p.second);
+    massageAdjustedDateTime(dt.d, p.first.addMonths(nmonths), p.second, nmonths >= 0);
     return dt;
 }
 
@@ -4355,7 +4666,7 @@ QDateTime QDateTime::addMonths(int nmonths) const
     aiming between 2am and 3am will be adjusted to fall before 2am (if \c{nyears
     < 0}) or after 3am (otherwise).
 
-    \sa daysTo(), addDays(), addMonths(), addSecs()
+    \sa daysTo(), addDays(), addMonths(), addSecs(), {Timezone transitions}
 */
 
 QDateTime QDateTime::addYears(int nyears) const
@@ -4365,7 +4676,7 @@ QDateTime QDateTime::addYears(int nyears) const
 
     QDateTime dt(*this);
     QPair<QDate, QTime> p = getDateTime(d);
-    massageAdjustedDateTime(dt.d, p.first.addYears(nyears), p.second);
+    massageAdjustedDateTime(dt.d, p.first.addYears(nyears), p.second, nyears >= 0);
     return dt;
 }
 
@@ -5109,7 +5420,7 @@ QDateTime QDateTime::fromSecsSinceEpoch(qint64 secs, Qt::TimeSpec spec, int offs
 QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, const QTimeZone &timeZone)
 {
     QDateTime dt;
-    reviseTimeZone(dt.d, timeZone);
+    reviseTimeZone(dt.d, timeZone, TransitionResolution::Reject);
     if (timeZone.isValid())
         dt.setMSecsSinceEpoch(msecs);
     return dt;
@@ -5141,7 +5452,7 @@ QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs)
 QDateTime QDateTime::fromSecsSinceEpoch(qint64 secs, const QTimeZone &timeZone)
 {
     QDateTime dt;
-    reviseTimeZone(dt.d, timeZone);
+    reviseTimeZone(dt.d, timeZone, TransitionResolution::Reject);
     if (timeZone.isValid())
         dt.setSecsSinceEpoch(secs);
     return dt;
@@ -5355,10 +5666,8 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
 
     If the format is not satisfied, an invalid QDateTime is returned.  If the
     format is satisfied but \a string represents an invalid datetime (e.g. in a
-    gap skipped by a time-zone transition), an invalid QDateTime is returned,
-    whose toMSecsSinceEpoch() represents a near-by datetime that is
-    valid. Passing that to fromMSecsSinceEpoch() will produce a valid datetime
-    that isn't faithfully represented by the string parsed.
+    gap skipped by a time-zone transition), an valid QDateTime is returned, that
+    represents a near-by datetime that is valid.
 
     The expressions that don't have leading zeroes (d, M, h, m, s, z) will be
     greedy. This means that they will use two digits (or three, for z) even if this will
@@ -5609,6 +5918,7 @@ QDataStream &operator>>(QDataStream &in, QDateTime &dateTime)
             in >> zone;
             break;
         }
+        // Note: no way to resolve transition ambiguity, when relevant; use default.
         dateTime = QDateTime(dt, tm, zone);
 
     } else if (in.version() == QDataStream::Qt_5_0) {

@@ -618,6 +618,19 @@ QStringView QXmlStreamAttributes::value(QLatin1StringView qualifiedName) const
 
 #if QT_CORE_REMOVED_SINCE(6, 7)
 
+#include "qdatetime.h"
+
+QDateTime::QDateTime(QDate date, QTime time, const QTimeZone &timeZone)
+    : QDateTime(date, time, timeZone, TransitionResolution::LegacyBehavior) {}
+QDateTime::QDateTime(QDate date, QTime time)
+    : QDateTime(date, time, TransitionResolution::LegacyBehavior) {}
+void QDateTime::setDate(QDate date) { setDate(date, TransitionResolution::LegacyBehavior); }
+void QDateTime::setTime(QTime time) { setTime(time, TransitionResolution::LegacyBehavior); }
+void QDateTime::setTimeZone(const QTimeZone &toZone)
+{
+    setTimeZone(toZone, TransitionResolution::LegacyBehavior);
+}
+
 #if defined(Q_OS_ANDROID)
 
 #include "qjniobject.h"

@@ -311,12 +311,31 @@ class Q_CORE_EXPORT QDateTime
 
 public:
     QDateTime() noexcept;
+
+    enum class TransitionResolution {
+        Reject = 0,
+        RelativeToBefore,
+        RelativeToAfter,
+        PreferBefore,
+        PreferAfter,
+        PreferStandard,
+        PreferDaylightSaving,
+        // Closest match to behavior prior to introducing TransitionResolution:
+        LegacyBehavior = RelativeToBefore
+    };
+
 #if QT_DEPRECATED_SINCE(6, 9)
     QT_DEPRECATED_VERSION_X_6_9("Pass QTimeZone instead")
     QDateTime(QDate date, QTime time, Qt::TimeSpec spec, int offsetSeconds = 0);
 #endif
+#if QT_CORE_REMOVED_SINCE(6, 7)
     QDateTime(QDate date, QTime time, const QTimeZone &timeZone);
     QDateTime(QDate date, QTime time);
+#endif
+    QDateTime(QDate date, QTime time, const QTimeZone &timeZone,
+              TransitionResolution resolve = TransitionResolution::LegacyBehavior);
+    QDateTime(QDate date, QTime time,
+              TransitionResolution resolve = TransitionResolution::LegacyBehavior);
     QDateTime(const QDateTime &other) noexcept;
     QDateTime(QDateTime &&other) noexcept;
     ~QDateTime();
@@ -343,15 +362,24 @@ public:
     qint64 toMSecsSinceEpoch() const;
     qint64 toSecsSinceEpoch() const;
 
+#if QT_CORE_REMOVED_SINCE(6, 7)
     void setDate(QDate date);
     void setTime(QTime time);
+#endif
+    void setDate(QDate date, TransitionResolution resolve = TransitionResolution::LegacyBehavior);
+    void setTime(QTime time, TransitionResolution resolve = TransitionResolution::LegacyBehavior);
+
 #if QT_DEPRECATED_SINCE(6, 9)
     QT_DEPRECATED_VERSION_X_6_9("Use setTimeZone() instead")
     void setTimeSpec(Qt::TimeSpec spec);
     QT_DEPRECATED_VERSION_X_6_9("Use setTimeZone() instead")
     void setOffsetFromUtc(int offsetSeconds);
 #endif
+#if QT_CORE_REMOVED_SINCE(6, 7)
     void setTimeZone(const QTimeZone &toZone);
+#endif
+    void setTimeZone(const QTimeZone &toZone,
+                     TransitionResolution resolve = TransitionResolution::LegacyBehavior);
     void setMSecsSinceEpoch(qint64 msecs);
     void setSecsSinceEpoch(qint64 secs);
 

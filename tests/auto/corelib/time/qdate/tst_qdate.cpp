@@ -627,14 +627,18 @@ void tst_QDate::startOfDay_endOfDay()
         QCOMPARE(front.date(), date);
         UNLESSKLUDGE(IgnoreStart) QCOMPARE(front.time(), start);
     } else UNLESSKLUDGE(IgnoreStart) {
+        auto report = qScopeGuard([front]() { qDebug() << "Start of day:" << front; });
         QVERIFY(!front.isValid());
+        report.dismiss();
     }
     if (end.isValid()) {
         QVERIFY(back.isValid());
         QCOMPARE(back.date(), date);
         UNLESSKLUDGE(IgnoreEnd) QCOMPARE(back.time(), end);
     } else UNLESSKLUDGE(IgnoreEnd) {
+        auto report = qScopeGuard([back]() { qDebug() << "End of day:" << back; });
         QVERIFY(!back.isValid());
+        report.dismiss();
     }
 #undef UNLESSKLUDGE
 }

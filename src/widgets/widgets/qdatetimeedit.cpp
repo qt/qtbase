@@ -1450,16 +1450,11 @@ void QDateTimeEdit::fixup(QString &input) const
     int copy = d->edit->cursorPosition();
 
     QDateTime value = d->validateAndInterpret(input, copy, state, true);
-    /*
-        String was valid, but the datetime still is not; use the time that
-        has the same distance from epoch.
-        CorrectToPreviousValue correction is handled by QAbstractSpinBox.
-    */
-    if (!value.isValid() && d->correctionMode == QAbstractSpinBox::CorrectToNearestValue) {
-        value = QDateTime::fromMSecsSinceEpoch(value.toMSecsSinceEpoch(),
-                                               value.timeRepresentation());
+    // CorrectToPreviousValue correction is handled by QAbstractSpinBox.
+    // The value might not match the input if the input represents a date-time
+    // skipped over by its time representation, such as a spring-forward.
+    if (d->correctionMode == QAbstractSpinBox::CorrectToNearestValue)
         input = textFromDateTime(value);
-    }
 }
 
 
@@ -1727,11 +1722,7 @@ QDateTime QDateTimeEditPrivate::convertTimeZone(const QDateTime &datetime)
 
 QDateTime QDateTimeEditPrivate::dateTimeValue(QDate date, QTime time) const
 {
-    QDateTime when = QDateTime(date, time, timeZone);
-    if (when.isValid())
-        return when;
-    // Hit a spring-forward gap
-    return QDateTime::fromMSecsSinceEpoch(when.toMSecsSinceEpoch(), timeZone);
+    return QDateTime(date, time, timeZone);
 }
 
 void QDateTimeEditPrivate::updateTimeZone()
@@ -2135,11 +2126,10 @@ QDateTime QDateTimeEditPrivate::stepBy(int sectionIndex, int steps, bool test) c
         true when date and time are valid, even if the date-time returned
         isn't), so use the time that has the same distance from epoch.
     */
-    if (setDigit(v, sectionIndex, val) && !v.isValid()) {
-        auto msecsSinceEpoch = v.toMSecsSinceEpoch();
+    if (setDigit(v, sectionIndex, val) && getDigit(v, sectionIndex) != val
+        && sn.type & HourSectionMask && steps < 0) {
         // decreasing from e.g 3am to 2am would get us back to 3am, but we want 1am
-        if (steps < 0 && sn.type & HourSectionMask)
-            msecsSinceEpoch -= 3600 * 1000;
+        auto msecsSinceEpoch = v.toMSecsSinceEpoch() - 3600 * 1000;
         v = QDateTime::fromMSecsSinceEpoch(msecsSinceEpoch, v.timeRepresentation());
     }
     // if this sets year or month it will make

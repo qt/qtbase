@@ -2286,15 +2286,14 @@ void tst_QDateTime::springForward()
     QFETCH(int, adjust);
 
     QDateTime direct = QDateTime(day.addDays(-step), time, zone).addDays(step);
-    if (direct.isValid()) { // mktime() may deem a time in the gap invalid
-        QCOMPARE(direct.date(), day);
-        QCOMPARE(direct.time().minute(), time.minute());
-        QCOMPARE(direct.time().second(), time.second());
-        const int off = step < 0 ? -1 : 1;
-        QCOMPARE(direct.time().hour() - time.hour(), off);
-        // adjust is the offset on the other side of the gap:
-        QCOMPARE(direct.offsetFromUtc(), (adjust + off * 60) * 60);
-    }
+    QVERIFY(direct.isValid());
+    QCOMPARE(direct.date(), day);
+    QCOMPARE(direct.time().minute(), time.minute());
+    QCOMPARE(direct.time().second(), time.second());
+    const int off = step < 0 ? -1 : 1;
+    QCOMPARE(direct.time().hour() - time.hour(), off);
+    // adjust is the offset on the other side of the gap:
+    QCOMPARE(direct.offsetFromUtc(), (adjust + off * 60) * 60);
 
     // Repeat, but getting there via .toTimeZone(). Apply adjust to datetime,
     // not time, as the time wraps round if the adjustment crosses midnight.
@@ -2303,12 +2302,8 @@ void tst_QDateTime::springForward()
     QCOMPARE(detour.time(), time);
     detour = detour.addDays(step);
     // Insist on consistency:
-    if (direct.isValid()) {
-        QCOMPARE(detour, direct);
-        QCOMPARE(detour.offsetFromUtc(), direct.offsetFromUtc());
-    } else {
-        QVERIFY(!detour.isValid());
-    }
+    QCOMPARE(detour, direct);
+    QCOMPARE(detour.offsetFromUtc(), direct.offsetFromUtc());
 }
 
 void tst_QDateTime::operator_eqeq_data()
@@ -3267,11 +3262,10 @@ void tst_QDateTime::fromStringStringFormat_localTimeZone_data()
     QTimeZone helsinki("Europe/Helsinki");
     if (helsinki.isValid()) {
         lacksRows = false;
-        // QTBUG-96861: QAsn1Element::toDateTime() tripped over an assert in
-        // QTimeZonePrivate::dataForLocalTime() on macOS and iOS.
-        // The first 20m 11s of 1921-05-01 were skipped, so the parser's attempt
-        // to construct a local time after scanning yyMM tripped up on the start
-        // of the day, when the zone backend lacked transition data.
+        // QTBUG-96861: QAsn1Element::toDateTime() tripped over an assert due to
+        // the first 20m 11s of 1921-05-01 being skipped, so the parser's
+        // attempt to construct a local time after scanning yyMM tripped up on
+        // the start of the day, when the zone backend lacked transition data.
         QTest::newRow("Helsinki-joins-EET")
             << QByteArrayLiteral("Europe/Helsinki")
             << QString("210506000000Z") << QString("yyMMddHHmmsst")
@@ -3702,12 +3696,23 @@ void tst_QDateTime::daylightTransitions() const
     QCOMPARE(before.time(), QTime(1, 59, 59, 999));
     QCOMPARE(before.toMSecsSinceEpoch(), spring2012 - 1);
 
-    QDateTime missing(QDate(2012, 3, 25), QTime(2, 0));
-    QVERIFY(!missing.isValid());
-    QCOMPARE(missing.date(), QDate(2012, 3, 25));
-    QCOMPARE(missing.time(), QTime(3, 0));
-    // datetimeparser relies on toMSecsSinceEpoch to still work:
-    QCOMPARE(missing.toMSecsSinceEpoch(), spring2012);
+    QDateTime entering(QDate(2012, 3, 25), QTime(2, 0),
+                       QDateTime::TransitionResolution::PreferBefore);
+    QVERIFY(entering.isValid());
+    QVERIFY(!entering.isDaylightTime());
+    QCOMPARE(entering.date(), QDate(2012, 3, 25));
+    QCOMPARE(entering.time(), QTime(1, 0));
+    // QDateTimeParser relies on toMSecsSinceEpoch() to still work:
+    QCOMPARE(entering.toMSecsSinceEpoch(), spring2012 - msecsOneHour);
+
+    QDateTime leaving(QDate(2012, 3, 25), QTime(2, 0),
+                      QDateTime::TransitionResolution::PreferAfter);
+    QVERIFY(leaving.isValid());
+    QVERIFY(leaving.isDaylightTime());
+    QCOMPARE(leaving.date(), QDate(2012, 3, 25));
+    QCOMPARE(leaving.time(), QTime(3, 0));
+    // QDateTimeParser relies on toMSecsSinceEpoch to still work:
+    QCOMPARE(leaving.toMSecsSinceEpoch(), spring2012);
 
     QDateTime after(QDate(2012, 3, 25), QTime(3, 0));
     QVERIFY(after.isValid());
@@ -3735,11 +3740,11 @@ void tst_QDateTime::daylightTransitions() const
     QVERIFY(utc.isValid());
     QCOMPARE(utc.date(), QDate(2012, 3, 25));
     QCOMPARE(utc.time(), QTime(2, 0));
-    utc.setTimeZone(QTimeZone::LocalTime);
-    QVERIFY(!utc.isValid());
+    utc.setTimeZone(QTimeZone::LocalTime); // Resolved to RelativeToBefore.
+    QVERIFY(utc.isValid());
     QCOMPARE(utc.date(), QDate(2012, 3, 25));
     QCOMPARE(utc.time(), QTime(3, 0));
-    utc.setTimeZone(UTC);
+    utc.setTimeZone(UTC); // Preserves the changed time().
     QVERIFY(utc.isValid());
     QCOMPARE(utc.date(), QDate(2012, 3, 25));
     QCOMPARE(utc.time(), QTime(3, 0));
@@ -3780,19 +3785,17 @@ void tst_QDateTime::daylightTransitions() const
 #undef CHECK_SPRING_FORWARD
 
     // Test for correct behviour for DaylightTime -> StandardTime transition, fall-back
-    // TODO (QTBUG-79923): Compare to results of direct QDateTime(date, time, fold)
-    // construction; see Prior/Post commented-out tests.
 
     QDateTime autumnMidnight = QDate(2012, 10, 28).startOfDay();
     QVERIFY(autumnMidnight.isValid());
-    // QCOMPARE(autumnMidnight, QDateTime(QDate(2012, 10, 28), QTime(2, 0), Prior));
     QCOMPARE(autumnMidnight.date(), QDate(2012, 10, 28));
     QCOMPARE(autumnMidnight.time(), QTime(0, 0));
     QCOMPARE(autumnMidnight.toMSecsSinceEpoch(), autumn2012 - 3 * msecsOneHour);
 
     QDateTime startFirst = autumnMidnight.addMSecs(2 * msecsOneHour);
     QVERIFY(startFirst.isValid());
-    // QCOMPARE(startFirst, QDateTime(QDate(2012, 10, 28), QTime(2, 0), Prior));
+    QCOMPARE(startFirst, QDateTime(QDate(2012, 10, 28), QTime(2, 0),
+                                   QDateTime::TransitionResolution::PreferBefore));
     QCOMPARE(startFirst.date(), QDate(2012, 10, 28));
     QCOMPARE(startFirst.time(), QTime(2, 0));
     QCOMPARE(startFirst.toMSecsSinceEpoch(), autumn2012 - msecsOneHour);
@@ -3800,7 +3803,9 @@ void tst_QDateTime::daylightTransitions() const
     // 1 msec before transition is 2:59:59.999 FirstOccurrence
     QDateTime endFirst = startFirst.addMSecs(msecsOneHour - 1);
     QVERIFY(endFirst.isValid());
-    // QCOMPARE(endFirst, QDateTime(QDate(2012, 10, 28), QTime(2, 59, 59, 999), Prior));
+    QCOMPARE(endFirst,
+             QDateTime(QDate(2012, 10, 28), QTime(2, 59, 59, 999),
+                       QDateTime::TransitionResolution::PreferBefore));
     QCOMPARE(endFirst.date(), QDate(2012, 10, 28));
     QCOMPARE(endFirst.time(), QTime(2, 59, 59, 999));
     QCOMPARE(endFirst.toMSecsSinceEpoch(), autumn2012 - 1);
@@ -3808,7 +3813,8 @@ void tst_QDateTime::daylightTransitions() const
     // At the transition, starting the second pass
     QDateTime startRepeat = endFirst.addMSecs(1);
     QVERIFY(startRepeat.isValid());
-    // QCOMPARE(startRepeat, QDateTime(QDate(2012, 10, 28), QTime(2, 0), Post));
+    QCOMPARE(startRepeat, QDateTime(QDate(2012, 10, 28), QTime(2, 0),
+                                    QDateTime::TransitionResolution::PreferAfter));
     QCOMPARE(startRepeat.date(), QDate(2012, 10, 28));
     QCOMPARE(startRepeat.time(), QTime(2, 0));
     QCOMPARE(startRepeat.toMSecsSinceEpoch(), autumn2012);
@@ -3816,7 +3822,9 @@ void tst_QDateTime::daylightTransitions() const
     // 59:59.999 after transition is 2:59:59.999 SecondOccurrence
     QDateTime endRepeat = endFirst.addMSecs(msecsOneHour);
     QVERIFY(endRepeat.isValid());
-    // QCOMPARE(endRepeat, QDateTime(QDate(2012, 10, 28), QTime(2, 59, 59, 999), Post));
+    QCOMPARE(endRepeat,
+             QDateTime(QDate(2012, 10, 28), QTime(2, 59, 59, 999),
+                       QDateTime::TransitionResolution::PreferAfter));
     QCOMPARE(endRepeat.date(), QDate(2012, 10, 28));
     QCOMPARE(endRepeat.time(), QTime(2, 59, 59, 999));
     QCOMPARE(endRepeat.toMSecsSinceEpoch(), autumn2012 + msecsOneHour - 1);
@@ -4209,20 +4217,20 @@ void tst_QDateTime::timeZones() const
     QCOMPARE(atGap.toMSecsSinceEpoch(), gapMSecs);
     // - Test transition hole, setting 02:00:00 is invalid
     QDateTime inGap = QDateTime(QDate(2013, 3, 31), QTime(2, 0), cet);
-    QVERIFY(!inGap.isValid());
+    QVERIFY(inGap.isValid());
     QCOMPARE(inGap.date(), QDate(2013, 3, 31));
     QCOMPARE(inGap.time(), QTime(3, 0));
     QCOMPARE(inGap.offsetFromUtc(), 7200);
-    // - Test transition hole, setting 02:59:59.999 is invalid
+    // - Test transition hole, 02:59:59.999 was skipped:
     inGap = QDateTime(QDate(2013, 3, 31), QTime(2, 59, 59, 999), cet);
-    QVERIFY(!inGap.isValid());
+    QVERIFY(inGap.isValid());
     QCOMPARE(inGap.date(), QDate(2013, 3, 31));
     QCOMPARE(inGap.time(), QTime(3, 59, 59, 999));
     QCOMPARE(inGap.offsetFromUtc(), 7200);
     // Test similar for local time, if it's CET:
     if (zoneIsCET) {
         inGap = QDateTime(QDate(2013, 3, 31), QTime(2, 30));
-        QVERIFY(!inGap.isValid());
+        QVERIFY(inGap.isValid());
         QCOMPARE(inGap.date(), QDate(2013, 3, 31));
         QCOMPARE(inGap.offsetFromUtc(), 7200);
         QCOMPARE(inGap.time(), QTime(3, 30));
@@ -4238,7 +4246,7 @@ void tst_QDateTime::timeZones() const
     if (QDateTime(QDate(longYear, 3, 24), QTime(12, 0), cet).msecsTo(
             QDateTime(QDate(longYear, 3, 31), QTime(12, 0), cet)) < millisInWeek) {
         inGap = QDateTime(QDate(longYear, 3, 27), QTime(2, 30), cet);
-        QVERIFY(!inGap.isValid());
+        QVERIFY(inGap.isValid());
         QCOMPARE(inGap.date(), QDate(longYear, 3, 27));
         QCOMPARE(inGap.time(), QTime(3, 30));
         QCOMPARE(inGap.offsetFromUtc(), 7200);
@@ -4248,7 +4256,7 @@ void tst_QDateTime::timeZones() const
     if (zoneIsCET && QDateTime(QDate(longYear, 3, 24), QTime(12, 0)).msecsTo(
             QDateTime(QDate(longYear, 3, 31), QTime(12, 0))) < millisInWeek) {
         inGap = QDateTime(QDate(longYear, 3, 27), QTime(2, 30));
-        QVERIFY(!inGap.isValid());
+        QVERIFY(inGap.isValid());
         QCOMPARE(inGap.date(), QDate(longYear, 3, 27));
         QCOMPARE(inGap.offsetFromUtc(), 7200);
         QCOMPARE(inGap.time(), QTime(3, 30));
