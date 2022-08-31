@@ -67,8 +67,8 @@ static void saveCoverageTool(const char * appname, bool testfailed, bool install
 #endif
 }
 
-static QElapsedTimer elapsedFunctionTime;
-static QElapsedTimer elapsedTotalTime;
+Q_CONSTINIT static QElapsedTimer elapsedFunctionTime;
+Q_CONSTINIT static QElapsedTimer elapsedTotalTime;
 
 #define FOREACH_TEST_LOGGER for (const auto &logger : qAsConst(*QTest::loggers()))
 

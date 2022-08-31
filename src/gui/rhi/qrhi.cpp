@@ -7638,7 +7638,7 @@ int QRhi::ubufAlignment() const
     return d->ubufAlignment();
 }
 
-static QBasicAtomicInteger<QRhiGlobalObjectIdGenerator::Type> counter = Q_BASIC_ATOMIC_INITIALIZER(0);
+Q_CONSTINIT static QBasicAtomicInteger<QRhiGlobalObjectIdGenerator::Type> counter = Q_BASIC_ATOMIC_INITIALIZER(0);
 
 QRhiGlobalObjectIdGenerator::Type QRhiGlobalObjectIdGenerator::newId()
 {

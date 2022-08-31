@@ -10,7 +10,7 @@ QT_BEGIN_NAMESPACE
 Q_LOGGING_CATEGORY(lcGuiVk, "qt.vulkan")
 
 static QVulkanInstance *s_vulkanInstance;
-static QVulkanDefaultInstance::Flags s_vulkanInstanceFlags;
+Q_CONSTINIT static QVulkanDefaultInstance::Flags s_vulkanInstanceFlags;
 
 QVulkanDefaultInstance::Flags QVulkanDefaultInstance::flags()
 {

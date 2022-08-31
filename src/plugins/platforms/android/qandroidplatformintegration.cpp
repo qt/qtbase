@@ -46,9 +46,9 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-QSize QAndroidPlatformIntegration::m_defaultScreenSize = QSize(320, 455);
-QRect QAndroidPlatformIntegration::m_defaultAvailableGeometry = QRect(0, 0, 320, 455);
-QSize QAndroidPlatformIntegration::m_defaultPhysicalSize = QSize(50, 71);
+Q_CONSTINIT QSize QAndroidPlatformIntegration::m_defaultScreenSize = QSize(320, 455);
+Q_CONSTINIT QRect QAndroidPlatformIntegration::m_defaultAvailableGeometry = QRect(0, 0, 320, 455);
+Q_CONSTINIT QSize QAndroidPlatformIntegration::m_defaultPhysicalSize = QSize(50, 71);
 
 Qt::ScreenOrientation QAndroidPlatformIntegration::m_orientation = Qt::PrimaryOrientation;
 Qt::ScreenOrientation QAndroidPlatformIntegration::m_nativeOrientation = Qt::PrimaryOrientation;

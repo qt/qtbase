@@ -67,7 +67,7 @@ using namespace Qt::StringLiterals;
 
 static int nextSerialNumCounter()
 {
-    static QBasicAtomicInt serial = Q_BASIC_ATOMIC_INITIALIZER(0);
+    Q_CONSTINIT static QBasicAtomicInt serial = Q_BASIC_ATOMIC_INITIALIZER(0);
     return 1 + serial.fetchAndAddRelaxed(1);
 }
 

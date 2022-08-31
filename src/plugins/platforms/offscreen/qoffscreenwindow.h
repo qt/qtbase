@@ -41,7 +41,7 @@ private:
     bool m_frameMarginsRequested;
     WId m_winId;
 
-    static QHash<WId, QOffscreenWindow *> m_windowForWinIdHash;
+    Q_CONSTINIT static QHash<WId, QOffscreenWindow *> m_windowForWinIdHash;
 };
 
 QT_END_NAMESPACE

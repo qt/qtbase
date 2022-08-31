@@ -202,7 +202,7 @@ bool QHostInfoResult::event(QEvent *event)
 
 static int nextId()
 {
-    static QBasicAtomicInt counter = Q_BASIC_ATOMIC_INITIALIZER(0);
+    Q_CONSTINIT static QBasicAtomicInt counter = Q_BASIC_ATOMIC_INITIALIZER(0);
     return 1 + counter.fetchAndAddRelaxed(1);
 }
 

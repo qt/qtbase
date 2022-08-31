@@ -18,7 +18,7 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 
 #ifdef QT_BUILD_INTERNAL
-static QBasicAtomicInt fetchedRoot = Q_BASIC_ATOMIC_INITIALIZER(false);
+Q_CONSTINIT static QBasicAtomicInt fetchedRoot = Q_BASIC_ATOMIC_INITIALIZER(false);
 Q_AUTOTEST_EXPORT void qt_test_resetFetchedRoot()
 {
     fetchedRoot.storeRelaxed(false);

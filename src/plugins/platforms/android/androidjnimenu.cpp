@@ -24,12 +24,12 @@ namespace QtAndroidMenu
 {
     static QList<QAndroidPlatformMenu *> pendingContextMenus;
     static QAndroidPlatformMenu *visibleMenu = nullptr;
-    static QRecursiveMutex visibleMenuMutex;
+    Q_CONSTINIT static QRecursiveMutex visibleMenuMutex;
 
     static QSet<QAndroidPlatformMenuBar *> menuBars;
     static QAndroidPlatformMenuBar *visibleMenuBar = nullptr;
     static QWindow *activeTopLevelWindow = nullptr;
-    static QRecursiveMutex menuBarMutex;
+    Q_CONSTINIT static QRecursiveMutex menuBarMutex;
 
     static jmethodID openContextMenuMethodID = 0;
 

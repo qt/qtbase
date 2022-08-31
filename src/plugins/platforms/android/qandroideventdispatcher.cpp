@@ -65,7 +65,7 @@ bool QAndroidEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags
 
 QAndroidEventDispatcherStopper *QAndroidEventDispatcherStopper::instance()
 {
-    static QAndroidEventDispatcherStopper androidEventDispatcherStopper;
+    Q_CONSTINIT static QAndroidEventDispatcherStopper androidEventDispatcherStopper;
     return &androidEventDispatcherStopper;
 }
 

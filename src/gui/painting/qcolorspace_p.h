@@ -103,7 +103,7 @@ public:
     QString userDescription;
     QByteArray iccProfile;
 
-    static QBasicMutex s_lutWriteLock;
+    Q_CONSTINIT static QBasicMutex s_lutWriteLock;
     struct LUT {
         LUT() = default;
         ~LUT() = default;

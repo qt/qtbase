@@ -980,7 +980,7 @@ QPixmap QWindowsFileIconEngine::filePixmap(const QSize &size, QIcon::Mode, QIcon
     QComHelper comHelper;
 
     static QCache<QString, FakePointer<int> > dirIconEntryCache(1000);
-    static QMutex mx;
+    Q_CONSTINIT static QMutex mx;
     static int defaultFolderIIcon = -1;
     const bool useDefaultFolderIcon = options() & QPlatformTheme::DontUseCustomDirectoryIcons;
 

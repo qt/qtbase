@@ -25,7 +25,7 @@ private:
     QEglFSX11Integration *m_integration;
 };
 
-static QBasicAtomicInt running;
+Q_CONSTINIT static QBasicAtomicInt running;
 
 void EventReader::run()
 {

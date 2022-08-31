@@ -417,7 +417,7 @@ bool QCocoaGLContext::setDrawable(QPlatformSurface *surface)
 // NSOpenGLContext is not re-entrant. Even when using separate contexts per thread,
 // view, and window, calls into the API will still deadlock. For more information
 // see https://openradar.appspot.com/37064579
-static QMutex s_reentrancyMutex;
+Q_CONSTINIT static QMutex s_reentrancyMutex;
 
 void QCocoaGLContext::update()
 {

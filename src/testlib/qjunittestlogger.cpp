@@ -45,7 +45,7 @@ QJUnitTestLogger::~QJUnitTestLogger()
 
 // We track test timing per test case, so we
 // need to maintain our own elapsed timer.
-static QElapsedTimer elapsedTestcaseTime;
+Q_CONSTINIT static QElapsedTimer elapsedTestcaseTime;
 static qreal elapsedTestCaseSeconds()
 {
     return elapsedTestcaseTime.nsecsElapsed() / 1e9;

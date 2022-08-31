@@ -31,7 +31,7 @@ void qt_create_tls()
 {
     if (qt_current_thread_data_tls_index != TLS_OUT_OF_INDEXES)
         return;
-    static QBasicMutex mutex;
+    Q_CONSTINIT static QBasicMutex mutex;
     QMutexLocker locker(&mutex);
     if (qt_current_thread_data_tls_index != TLS_OUT_OF_INDEXES)
         return;
@@ -101,7 +101,7 @@ void QAdoptedThread::init()
 
 static QList<HANDLE> qt_adopted_thread_handles;
 static QList<QThread *> qt_adopted_qthreads;
-static QBasicMutex qt_adopted_thread_watcher_mutex;
+Q_CONSTINIT static QBasicMutex qt_adopted_thread_watcher_mutex;
 static DWORD qt_adopted_thread_watcher_id = 0;
 static HANDLE qt_adopted_thread_wakeup = 0;
 

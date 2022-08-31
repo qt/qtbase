@@ -150,7 +150,7 @@ HRGN XPThemeData::mask(QWidget *widget)
 HWND QWindowsXPStylePrivate::m_vistaTreeViewHelper = nullptr;
 HTHEME QWindowsXPStylePrivate::m_themes[NThemes];
 bool QWindowsXPStylePrivate::use_xp = false;
-QBasicAtomicInt QWindowsXPStylePrivate::ref = Q_BASIC_ATOMIC_INITIALIZER(-1); // -1 based refcounting
+Q_CONSTINIT QBasicAtomicInt QWindowsXPStylePrivate::ref = Q_BASIC_ATOMIC_INITIALIZER(-1); // -1 based refcounting
 
 static void qt_add_rect(HRGN &winRegion, QRect r)
 {

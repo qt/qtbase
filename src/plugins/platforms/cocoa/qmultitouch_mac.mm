@@ -12,10 +12,10 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-QHash<qint64, QCocoaTouch*> QCocoaTouch::_currentTouches;
-QHash<quint64, QPointingDevice*> QCocoaTouch::_touchDevices;
-QPointF QCocoaTouch::_screenReferencePos;
-QPointF QCocoaTouch::_trackpadReferencePos;
+Q_CONSTINIT QHash<qint64, QCocoaTouch*> QCocoaTouch::_currentTouches;
+Q_CONSTINIT QHash<quint64, QPointingDevice*> QCocoaTouch::_touchDevices;
+Q_CONSTINIT QPointF QCocoaTouch::_screenReferencePos;
+Q_CONSTINIT QPointF QCocoaTouch::_trackpadReferencePos;
 int QCocoaTouch::_idAssignmentCount = 0;
 int QCocoaTouch::_touchCount = 0;
 bool QCocoaTouch::_updateInternalStateOnly = true;

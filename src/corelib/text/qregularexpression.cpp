@@ -954,7 +954,7 @@ struct PcreJitStackFree
             pcre2_jit_stack_free_16(stack);
     }
 };
-static thread_local std::unique_ptr<pcre2_jit_stack_16, PcreJitStackFree> jitStacks;
+Q_CONSTINIT static thread_local std::unique_ptr<pcre2_jit_stack_16, PcreJitStackFree> jitStacks;
 }
 
 /*!

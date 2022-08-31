@@ -835,7 +835,7 @@ static QString qCreateParamString(const QList<QVariant> &boundValues, const QSql
 
 QString qMakePreparedStmtId()
 {
-    static QBasicAtomicInt qPreparedStmtCount = Q_BASIC_ATOMIC_INITIALIZER(0);
+    Q_CONSTINIT static QBasicAtomicInt qPreparedStmtCount = Q_BASIC_ATOMIC_INITIALIZER(0);
     QString id = QStringLiteral("qpsqlpstmt_") + QString::number(qPreparedStmtCount.fetchAndAddRelaxed(1) + 1, 16);
     return id;
 }

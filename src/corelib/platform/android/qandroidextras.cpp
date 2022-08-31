@@ -442,7 +442,7 @@ QJniObject QAndroidServiceConnection::handle() const
  */
 
 
-static QBasicAtomicInteger<uint> nextUniqueActivityRequestCode = Q_BASIC_ATOMIC_INITIALIZER(0);
+Q_CONSTINIT static QBasicAtomicInteger<uint> nextUniqueActivityRequestCode = Q_BASIC_ATOMIC_INITIALIZER(0);
 
 // Get a unique activity request code.
 static int uniqueActivityRequestCode()
@@ -1016,11 +1016,11 @@ QtAndroidPrivate::PermissionResult resultFromAndroid(jint value)
 using PendingPermissionRequestsHash
             = QHash<int, QSharedPointer<QPromise<QtAndroidPrivate::PermissionResult>>>;
 Q_GLOBAL_STATIC(PendingPermissionRequestsHash, g_pendingPermissionRequests);
-static QBasicMutex g_pendingPermissionRequestsMutex;
+Q_CONSTINIT static QBasicMutex g_pendingPermissionRequestsMutex;
 
 static int nextRequestCode()
 {
-    static QBasicAtomicInt counter = Q_BASIC_ATOMIC_INITIALIZER(0);
+    Q_CONSTINIT static QBasicAtomicInt counter = Q_BASIC_ATOMIC_INITIALIZER(0);
     return counter.fetchAndAddRelaxed(1);
 }
 

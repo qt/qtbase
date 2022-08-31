@@ -26,12 +26,12 @@ using namespace Qt::StringLiterals;
 
 Q_LOGGING_CATEGORY(lcQpaInputDevices, "qt.qpa.input.devices")
 
-QElapsedTimer QWindowSystemInterfacePrivate::eventTime;
+Q_CONSTINIT QElapsedTimer QWindowSystemInterfacePrivate::eventTime;
 bool QWindowSystemInterfacePrivate::synchronousWindowSystemEvents = false;
 bool QWindowSystemInterfacePrivate::TabletEvent::platformSynthesizesMouse = true;
 QWaitCondition QWindowSystemInterfacePrivate::eventsFlushed;
-QMutex QWindowSystemInterfacePrivate::flushEventMutex;
-QAtomicInt QWindowSystemInterfacePrivate::eventAccepted;
+Q_CONSTINIT QMutex QWindowSystemInterfacePrivate::flushEventMutex;
+Q_CONSTINIT QAtomicInt QWindowSystemInterfacePrivate::eventAccepted;
 QWindowSystemEventHandler *QWindowSystemInterfacePrivate::eventHandler;
 QWindowSystemInterfacePrivate::WindowSystemEventList QWindowSystemInterfacePrivate::windowSystemEventQueue;
 

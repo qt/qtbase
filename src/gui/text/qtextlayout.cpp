@@ -1712,7 +1712,7 @@ namespace {
         }
     };
 
-const QFixed LineBreakHelper::RightBearingNotCalculated = QFixed(1);
+Q_CONSTINIT const QFixed LineBreakHelper::RightBearingNotCalculated = QFixed(1);
 
 inline bool LineBreakHelper::checkFullOtherwiseExtend(QScriptLine &line)
 {
@@ -2507,7 +2507,7 @@ void QTextLine::draw_internal(QPainter *p, const QPointF &origPos,
         return;
     }
 
-    static QRectF maxFixedRect(-QFIXED_MAX / 2, -QFIXED_MAX / 2, QFIXED_MAX, QFIXED_MAX);
+    Q_CONSTINIT static QRectF maxFixedRect(-QFIXED_MAX / 2, -QFIXED_MAX / 2, QFIXED_MAX, QFIXED_MAX);
     const bool xlateToFixedRange = !maxFixedRect.contains(origPos);
     QPointF pos;
     if (Q_LIKELY(!xlateToFixedRange))

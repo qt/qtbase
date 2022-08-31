@@ -36,7 +36,7 @@ public:
 
     inline static QTestEventLoop &instance()
     {
-        static QPointer<QTestEventLoop> testLoop;
+        Q_CONSTINIT static QPointer<QTestEventLoop> testLoop;
         if (testLoop.isNull())
             testLoop = new QTestEventLoop(QCoreApplication::instance());
         return *static_cast<QTestEventLoop *>(testLoop);

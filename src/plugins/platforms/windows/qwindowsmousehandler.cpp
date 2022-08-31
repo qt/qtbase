@@ -123,7 +123,7 @@ Qt::MouseButtons QWindowsMouseHandler::queryMouseButtons()
     return result;
 }
 
-static QPoint lastMouseMovePos;
+Q_CONSTINIT static QPoint lastMouseMovePos;
 
 namespace {
 struct MouseEvent {

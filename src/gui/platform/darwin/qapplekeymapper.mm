@@ -364,7 +364,7 @@ QChar QAppleKeyMapper::toCocoaKey(Qt::Key key)
     if (key == Qt::Key_Backspace)
         return QChar(NSBackspaceCharacter);
 
-    static QHash<Qt::Key, char16_t> reverseCocoaKeys;
+    Q_CONSTINIT static QHash<Qt::Key, char16_t> reverseCocoaKeys;
     if (reverseCocoaKeys.isEmpty()) {
         reverseCocoaKeys.reserve(cocoaKeys.size());
         for (auto it = cocoaKeys.begin(); it != cocoaKeys.end(); ++it)

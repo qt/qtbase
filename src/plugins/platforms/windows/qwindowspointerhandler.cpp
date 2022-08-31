@@ -774,7 +774,7 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window,
     // X11 and macOS.
     bool discardEvent = false;
     if (msg.message == WM_MOUSEMOVE) {
-        static QPoint lastMouseMovePos;
+        Q_CONSTINIT static QPoint lastMouseMovePos;
         if (msg.wParam == 0 && (m_windowUnderPointer.isNull() || globalPos == lastMouseMovePos))
             discardEvent = true;
         lastMouseMovePos = globalPos;

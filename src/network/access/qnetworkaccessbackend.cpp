@@ -36,7 +36,7 @@ public:
     static QBasicAtomicInt valid;
 };
 Q_GLOBAL_STATIC(QNetworkAccessBackendFactoryData, factoryData)
-QBasicAtomicInt QNetworkAccessBackendFactoryData::valid = Q_BASIC_ATOMIC_INITIALIZER(0);
+Q_CONSTINIT QBasicAtomicInt QNetworkAccessBackendFactoryData::valid = Q_BASIC_ATOMIC_INITIALIZER(0);
 
 class QNetworkAccessBackendPrivate : public QObjectPrivate
 {

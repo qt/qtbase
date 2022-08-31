@@ -69,7 +69,7 @@ static sem_t m_exitSemaphore, m_terminateSemaphore;
 
 QHash<int, AndroidSurfaceClient *> m_surfaces;
 
-static QBasicMutex m_surfacesMutex;
+Q_CONSTINIT static QBasicMutex m_surfacesMutex;
 
 
 static QAndroidPlatformIntegration *m_androidPlatformIntegration = nullptr;
@@ -88,7 +88,7 @@ static const char m_qtTag[] = "Qt";
 static const char m_classErrorMsg[] = "Can't find class \"%s\"";
 static const char m_methodErrorMsg[] = "Can't find method \"%s%s\"";
 
-static QBasicAtomicInt startQtAndroidPluginCalled = Q_BASIC_ATOMIC_INITIALIZER(0);
+Q_CONSTINIT static QBasicAtomicInt startQtAndroidPluginCalled = Q_BASIC_ATOMIC_INITIALIZER(0);
 
 namespace QtAndroid
 {

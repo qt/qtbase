@@ -20,7 +20,7 @@ static const char qtNativeClassName[] = "org/qtproject/qt/android/QtNative";
 typedef std::pair<std::function<QVariant()>, QSharedPointer<QPromise<QVariant>>> RunnablePair;
 typedef std::deque<RunnablePair> PendingRunnables;
 Q_GLOBAL_STATIC(PendingRunnables, g_pendingRunnables);
-static QBasicMutex g_pendingRunnablesMutex;
+Q_CONSTINIT static QBasicMutex g_pendingRunnablesMutex;
 #endif
 
 /*!

@@ -42,7 +42,7 @@ static QOpenGLContext *global_share_context = nullptr;
 
 #ifndef QT_NO_DEBUG
 QHash<QOpenGLContext *, bool> QOpenGLContextPrivate::makeCurrentTracker;
-QMutex QOpenGLContextPrivate::makeCurrentTrackerMutex;
+Q_CONSTINIT QMutex QOpenGLContextPrivate::makeCurrentTrackerMutex;
 #endif
 
 /*!

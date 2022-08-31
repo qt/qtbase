@@ -20,7 +20,7 @@ QT_BEGIN_NAMESPACE
 
 Q_CONSTINIT QBasicMutex QColorSpacePrivate::s_lutWriteLock;
 
-static QAtomicPointer<QColorSpacePrivate> s_predefinedColorspacePrivates[QColorSpace::ProPhotoRgb] = {};
+Q_CONSTINIT static QAtomicPointer<QColorSpacePrivate> s_predefinedColorspacePrivates[QColorSpace::ProPhotoRgb] = {};
 static void cleanupPredefinedColorspaces()
 {
     for (QAtomicPointer<QColorSpacePrivate> &ptr : s_predefinedColorspacePrivates) {

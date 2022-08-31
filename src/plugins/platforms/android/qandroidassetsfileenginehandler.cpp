@@ -161,7 +161,7 @@ private:
 };
 
 QCache<QString, QSharedPointer<FolderIterator>> FolderIterator::m_assetsCache(std::max(50, qEnvironmentVariableIntValue("QT_ANDROID_MAX_ASSETS_CACHE_SIZE")));
-QMutex FolderIterator::m_assetsCacheMutex;
+Q_CONSTINIT QMutex FolderIterator::m_assetsCacheMutex;
 
 class AndroidAbstractFileEngineIterator: public QAbstractFileEngineIterator
 {
@@ -379,7 +379,7 @@ private:
 };
 
 QCache<QString, QSharedPointer<AssetItem>> AndroidAbstractFileEngine::m_assetsInfoCache(std::max(200, qEnvironmentVariableIntValue("QT_ANDROID_MAX_FILEINFO_ASSETS_CACHE_SIZE")));
-QMutex AndroidAbstractFileEngine::m_assetsInfoCacheMutex;
+Q_CONSTINIT QMutex AndroidAbstractFileEngine::m_assetsInfoCacheMutex;
 
 AndroidAssetsFileEngineHandler::AndroidAssetsFileEngineHandler()
 {
