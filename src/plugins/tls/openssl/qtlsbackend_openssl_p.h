@@ -42,7 +42,6 @@ public:
     static void clearErrorQueue();
 
     // Index used in SSL_get_ex_data to get the matching TlsCryptographerOpenSSL:
-    static bool s_loadedCiphersAndCerts;
     static int s_indexForSSLExtraData;
 
     static QString msgErrorsDuringHandshake();
