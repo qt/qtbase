@@ -1058,38 +1058,22 @@ void tst_QSslCertificate::toText()
     QCOMPARE(certList.size(), 1);
     const QSslCertificate &cert = certList.at(0);
 
-    // Openssl's cert dump method changed slightly between 0.9.8, 1.0.0 and 1.01 versions, so we want it to match any output
-
-    QFile f098(testDataDir + "more-certificates/cert-large-expiration-date.txt.0.9.8");
-    QVERIFY(f098.open(QIODevice::ReadOnly | QFile::Text));
-    QByteArray txt098 = f098.readAll();
-
-    QFile f100(testDataDir + "more-certificates/cert-large-expiration-date.txt.1.0.0");
-    QVERIFY(f100.open(QIODevice::ReadOnly | QFile::Text));
-    QByteArray txt100 = f100.readAll();
-
-    QFile f101(testDataDir + "more-certificates/cert-large-expiration-date.txt.1.0.1");
-    QVERIFY(f101.open(QIODevice::ReadOnly | QFile::Text));
-    QByteArray txt101 = f101.readAll();
-
-    QFile f101c(testDataDir + "more-certificates/cert-large-expiration-date.txt.1.0.1c");
-    QVERIFY(f101c.open(QIODevice::ReadOnly | QFile::Text));
-    QByteArray txt101c = f101c.readAll();
-
+    // Openssl's cert dump method changed slightly between 1.1.1 and 3.0.5 versions, so we want it to match any output
     QFile f111(testDataDir + "more-certificates/cert-large-expiration-date.txt.1.1.1");
     QVERIFY(f111.open(QIODevice::ReadOnly | QFile::Text));
     QByteArray txt111 = f111.readAll();
+
+    QFile f305(testDataDir + "more-certificates/cert-large-expiration-date.txt.3.0.5");
+    QVERIFY(f305.open(QIODevice::ReadOnly | QFile::Text));
+    QByteArray txt305 = f305.readAll();
 
     QString txtcert = cert.toText();
 
 #ifdef QT_NO_OPENSSL
     QEXPECT_FAIL("", "QTBUG-40884: QSslCertificate::toText is not implemented on WinRT", Continue);
 #endif
-    QVERIFY(QString::fromLatin1(txt098) == txtcert ||
-            QString::fromLatin1(txt100) == txtcert ||
-            QString::fromLatin1(txt101) == txtcert ||
-            QString::fromLatin1(txt101c) == txtcert ||
-            QString::fromLatin1(txt111) == txtcert );
+    QVERIFY(QString::fromLatin1(txt111) == txtcert  ||
+            QString::fromLatin1(txt305) == txtcert);
 }
 
 void tst_QSslCertificate::multipleCommonNames()
