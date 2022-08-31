@@ -1203,7 +1203,7 @@ namespace QTest
     }
 }
 
-Q_GUI_EXPORT bool qt_handleTouchEvent(QWindow *window, const QPointingDevice *device,
+Q_GUI_EXPORT bool qt_handleTouchEventv2(QWindow *window, const QPointingDevice *device,
                                 const QList<QEventPoint> &points,
                                 Qt::KeyboardModifiers mods = Qt::NoModifier)
 {
@@ -1211,5 +1211,11 @@ Q_GUI_EXPORT bool qt_handleTouchEvent(QWindow *window, const QPointingDevice *de
         QWindowSystemInterfacePrivate::toNativeTouchPoints(points, window), mods);
 }
 
+Q_GUI_EXPORT void qt_handleTouchEvent(QWindow *window, const QPointingDevice *device,
+                                const QList<QEventPoint> &points,
+                                Qt::KeyboardModifiers mods = Qt::NoModifier)
+{
+    qt_handleTouchEventv2(window, device, points, mods);
+}
 
 QT_END_NAMESPACE
