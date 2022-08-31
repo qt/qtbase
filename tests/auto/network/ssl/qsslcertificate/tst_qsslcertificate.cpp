@@ -34,6 +34,7 @@
 #include <qsslcertificateextension.h>
 
 #ifndef QT_NO_OPENSSL
+#include <openssl/opensslv.h>
 #include <openssl/obj_mac.h>
 #endif
 
@@ -1466,6 +1467,10 @@ void tst_QSslCertificate::pkcs12()
         qWarning("SSL not supported, skipping test");
         return;
     }
+
+#if !defined(QT_NO_OPENSSL) && OPENSSL_VERSION_MAJOR >= 3
+    QSKIP("leaf.p12 is using RC2, which is disabled by default in OpenSSL v >= 3");
+#endif
 
     QFile f(testDataDir + QLatin1String("pkcs12/leaf.p12"));
     bool ok = f.open(QIODevice::ReadOnly);
