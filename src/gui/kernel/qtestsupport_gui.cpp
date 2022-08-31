@@ -99,7 +99,7 @@ bool QTouchEventSequence::commit(bool processEvents)
     QThread::msleep(1);
     bool ret = false;
     if (targetWindow)
-        ret = qt_handleTouchEvent(targetWindow, device, points.values());
+        ret = qt_handleTouchEventv2(targetWindow, device, points.values());
     if (processEvents)
         QCoreApplication::processEvents();
     previousPoints = points;

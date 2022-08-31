@@ -12,7 +12,11 @@ QT_BEGIN_NAMESPACE
 
 class QWindow;
 
-Q_GUI_EXPORT bool qt_handleTouchEvent(QWindow *w, const QPointingDevice *device,
+Q_GUI_EXPORT void qt_handleTouchEvent(QWindow *w, const QPointingDevice *device,
+                                const QList<QEventPoint> &points,
+                                Qt::KeyboardModifiers mods = Qt::NoModifier);
+
+Q_GUI_EXPORT bool qt_handleTouchEventv2(QWindow *w, const QPointingDevice *device,
                                 const QList<QEventPoint> &points,
                                 Qt::KeyboardModifiers mods = Qt::NoModifier);
 
