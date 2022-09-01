@@ -683,30 +683,23 @@ static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
                             jdouble xdpi, jdouble ydpi,
                             jdouble scaledDensity, jdouble density, jfloat refreshRate)
 {
-    // Android does not give us the correct screen size for immersive mode, but
-    // the surface does have the right size
-
-    widthPixels = qMax(widthPixels, desktopWidthPixels);
-    heightPixels = qMax(heightPixels, desktopHeightPixels);
-
     m_desktopWidthPixels = desktopWidthPixels;
     m_desktopHeightPixels = desktopHeightPixels;
     m_scaledDensity = scaledDensity;
     m_density = density;
 
+    const QSize screenSize(widthPixels, heightPixels);
+    // available geometry always starts from top left
+    const QRect availableGeometry(0, 0, desktopWidthPixels, desktopHeightPixels);
+    const QSize physicalSize(qRound(double(widthPixels) / xdpi * 25.4),
+                             qRound(double(heightPixels) / ydpi * 25.4));
+
     QMutexLocker lock(&m_platformMutex);
     if (!m_androidPlatformIntegration) {
-        QAndroidPlatformIntegration::setDefaultDisplayMetrics(desktopWidthPixels,
-                                                              desktopHeightPixels,
-                                                              qRound(double(widthPixels)  / xdpi * 25.4),
-                                                              qRound(double(heightPixels) / ydpi * 25.4),
-                                                              widthPixels,
-                                                              heightPixels);
+        QAndroidPlatformIntegration::setDefaultDisplayMetrics(
+                availableGeometry.width(), availableGeometry.height(), physicalSize.width(),
+                physicalSize.height(), screenSize.width(), screenSize.height());
     } else {
-        const QSize physicalSize(qRound(double(widthPixels) / xdpi * 25.4),
-                                 qRound(double(heightPixels) / ydpi * 25.4));
-        const QSize screenSize(widthPixels, heightPixels);
-        const QRect availableGeometry(0, 0, desktopWidthPixels, desktopHeightPixels);
         m_androidPlatformIntegration->setScreenSizeParameters(physicalSize, screenSize,
                                                               availableGeometry);
         m_androidPlatformIntegration->setRefreshRate(refreshRate);

@@ -48,6 +48,7 @@ import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 
 public class QtLayout extends ViewGroup
 {
@@ -91,16 +92,23 @@ public class QtLayout extends ViewGroup
     @Override
     protected void onSizeChanged (int w, int h, int oldw, int oldh)
     {
-        DisplayMetrics metrics = new DisplayMetrics();
-        Display display = (Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
-                ? ((Activity)getContext()).getWindowManager().getDefaultDisplay()
-                : ((Activity)getContext()).getDisplay();
-        display.getMetrics(metrics);
+        Activity activity = (Activity)getContext();
+        if (activity == null)
+            return;
 
-        if ((metrics.widthPixels > metrics.heightPixels) != (w > h)) {
+        Display display = (Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
+                ? activity.getWindowManager().getDefaultDisplay()
+                : activity.getDisplay();
+
+        DisplayMetrics realMetrics = new DisplayMetrics();
+        display.getRealMetrics(realMetrics);
+        DisplayMetrics appMetrics = new DisplayMetrics();
+        display.getMetrics(appMetrics);
+
+        if ((realMetrics.widthPixels > realMetrics.heightPixels) != (w > h)) {
             // This is an intermediate state during display rotation.
             // The new size is still reported for old orientation, while
-            // metrics contain sizes for new orientation. Setting
+            // realMetrics contain sizes for new orientation. Setting
             // such parameters will produce inconsistent results, so
             // we just skip them.
             // We will have another onSizeChanged() with normal values
@@ -108,9 +116,21 @@ public class QtLayout extends ViewGroup
             return;
         }
 
-        QtNative.setApplicationDisplayMetrics(metrics.widthPixels, metrics.heightPixels, w, h,
-                                              metrics.xdpi, metrics.ydpi, metrics.scaledDensity,
-                                              metrics.density, display.getRefreshRate());
+        int appWidthPixels = appMetrics.widthPixels;
+        int appHeightPixels = appMetrics.heightPixels;
+
+        final int flag =
+            activity.getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN;
+        if (flag == WindowManager.LayoutParams.FLAG_FULLSCREEN) {
+            // immersive mode uses the whole screen
+            appWidthPixels = realMetrics.widthPixels;
+            appHeightPixels = realMetrics.heightPixels;
+        }
+
+        QtNative.setApplicationDisplayMetrics(
+                realMetrics.widthPixels, realMetrics.heightPixels,
+                appWidthPixels, appHeightPixels, appMetrics.xdpi, appMetrics.ydpi,
+                appMetrics.scaledDensity, appMetrics.density, display.getRefreshRate());
 
         int newRotation = display.getRotation();
         if (m_ownDisplayRotation != m_activityDisplayRotation
@@ -121,8 +141,8 @@ public class QtLayout extends ViewGroup
             // orientation change now.
             QtNative.handleOrientationChanged(newRotation, m_nativeOrientation);
         }
-        m_ownDisplayRotation = newRotation;
 
+        m_ownDisplayRotation = newRotation;
         if (m_startApplicationRunnable != null) {
             m_startApplicationRunnable.run();
             m_startApplicationRunnable = null;
