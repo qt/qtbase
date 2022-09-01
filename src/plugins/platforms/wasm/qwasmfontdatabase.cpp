@@ -58,9 +58,9 @@ void QWasmFontDatabase::populateFontDatabase()
     if (fonts.isUndefined())
         return;
 
-    val navigator = val::global("navigator");
-
-    val permissions = navigator["permissions"];
+    val permissions = val::global("navigator")["permissions"];
+    if (permissions["request"].isUndefined())
+        return;
 
     val requestLocalFontsPermission = val::object();
     requestLocalFontsPermission.set("name", std::string("local-fonts"));
