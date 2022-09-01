@@ -285,8 +285,6 @@ QT_WARNING_POP
 
 #if QT_CORE_REMOVED_SINCE(6, 5)
 
-#include "qbuffer.h" // inline removed API
-
 #include "qbasictimer.h"
 
 void QBasicTimer::start(int msec, QObject *obj)
@@ -298,6 +296,8 @@ void QBasicTimer::start(int msec, Qt::TimerType timerType, QObject *obj)
 {
     start(qint64(msec), timerType, obj);
 }
+
+#include "qbuffer.h" // inline removed API
 
 #include "qenvironmentvariables.h"
 
