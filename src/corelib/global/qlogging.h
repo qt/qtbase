@@ -9,6 +9,7 @@
 #if 0
 // header is automatically included in qglobal.h
 #pragma qt_no_master_include
+#pragma qt_class(QtLogging)
 #endif
 
 QT_BEGIN_NAMESPACE

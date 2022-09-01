@@ -1396,7 +1396,7 @@ static QString formatBacktraceForLogMessage(const QMessagePattern::BacktracePara
 Q_GLOBAL_STATIC(QMessagePattern, qMessagePattern)
 
 /*!
-    \relates <QtGlobal>
+    \relates <QtLogging>
     \since 5.4
 
     Generates a formatted string out of the \a type, \a context, \a str arguments.
@@ -1959,7 +1959,7 @@ void qErrnoWarning(int code, const char *msg, ...)
 
 /*!
     \typedef QtMessageHandler
-    \relates <QtGlobal>
+    \relates <QtLogging>
     \since 5.0
 
     This is a typedef for a pointer to a function with the following
@@ -1972,7 +1972,7 @@ void qErrnoWarning(int code, const char *msg, ...)
 
 /*!
     \fn QtMessageHandler qInstallMessageHandler(QtMessageHandler handler)
-    \relates <QtGlobal>
+    \relates <QtLogging>
     \since 5.0
 
     Installs a Qt message \a handler which has been defined
@@ -2007,7 +2007,7 @@ void qErrnoWarning(int code, const char *msg, ...)
 
 /*!
     \fn void qSetMessagePattern(const QString &pattern)
-    \relates <QtGlobal>
+    \relates <QtLogging>
     \since 5.0
 
     \brief Changes the output of the default message handler.
@@ -2156,6 +2156,206 @@ QMessageLogContext &QMessageLogContext::copyContextFrom(const QMessageLogContext
 
     Constructs a QMessageLogContext with for file \a fileName at line
     \a lineNumber, in function \a functionName, and category \a categoryName.
+*/
+
+/*!
+    \macro qDebug(const char *message, ...)
+    \relates <QtLogging>
+    \threadsafe
+
+    Calls the message handler with the debug message \a message. If no
+    message handler has been installed, the message is printed to
+    stderr. Under Windows the message is sent to the console, if it is a
+    console application; otherwise, it is sent to the debugger. On QNX, the
+    message is sent to slogger2. This function does nothing if \c QT_NO_DEBUG_OUTPUT
+    was defined during compilation.
+
+    If you pass the function a format string and a list of arguments,
+    it works in similar way to the C printf() function. The format
+    should be a Latin-1 string.
+
+    Example:
+
+    \snippet code/src_corelib_global_qglobal.cpp 24
+
+    If you include \c <QtDebug>, a more convenient syntax is also
+    available:
+
+    \snippet code/src_corelib_global_qglobal.cpp 25
+
+    With this syntax, the function returns a QDebug object that is
+    configured to use the QtDebugMsg message type. It automatically
+    puts a single space between each item, and outputs a newline at
+    the end. It supports many C++ and Qt types.
+
+    To suppress the output at runtime, install your own message handler
+    with qInstallMessageHandler().
+
+    \sa qInfo(), qWarning(), qCritical(), qFatal(), qInstallMessageHandler(),
+        {Debugging Techniques}
+*/
+
+/*!
+    \macro qInfo(const char *message, ...)
+    \relates <QtLogging>
+    \threadsafe
+    \since 5.5
+
+    Calls the message handler with the informational message \a message. If no
+    message handler has been installed, the message is printed to
+    stderr. Under Windows, the message is sent to the console, if it is a
+    console application; otherwise, it is sent to the debugger. On QNX the
+    message is sent to slogger2. This function does nothing if \c QT_NO_INFO_OUTPUT
+    was defined during compilation.
+
+    If you pass the function a format string and a list of arguments,
+    it works in similar way to the C printf() function. The format
+    should be a Latin-1 string.
+
+    Example:
+
+    \snippet code/src_corelib_global_qglobal.cpp qInfo_printf
+
+    If you include \c <QtDebug>, a more convenient syntax is also
+    available:
+
+    \snippet code/src_corelib_global_qglobal.cpp qInfo_stream
+
+    With this syntax, the function returns a QDebug object that is
+    configured to use the QtInfoMsg message type. It automatically
+    puts a single space between each item, and outputs a newline at
+    the end. It supports many C++ and Qt types.
+
+    To suppress the output at runtime, install your own message handler
+    using qInstallMessageHandler().
+
+    \sa qDebug(), qWarning(), qCritical(), qFatal(), qInstallMessageHandler(),
+        {Debugging Techniques}
+*/
+
+/*!
+    \macro qWarning(const char *message, ...)
+    \relates <QtLogging>
+    \threadsafe
+
+    Calls the message handler with the warning message \a message. If no
+    message handler has been installed, the message is printed to
+    stderr. Under Windows, the message is sent to the debugger.
+    On QNX the message is sent to slogger2. This
+    function does nothing if \c QT_NO_WARNING_OUTPUT was defined
+    during compilation; it exits if at the nth warning corresponding to the
+    counter in environment variable \c QT_FATAL_WARNINGS. That is, if the
+    environment variable contains the value 1, it will exit on the 1st message;
+    if it contains the value 10, it will exit on the 10th message. Any
+    non-numeric value is equivalent to 1.
+
+    This function takes a format string and a list of arguments,
+    similar to the C printf() function. The format should be a Latin-1
+    string.
+
+    Example:
+    \snippet code/src_corelib_global_qglobal.cpp 26
+
+    If you include <QtDebug>, a more convenient syntax is
+    also available:
+
+    \snippet code/src_corelib_global_qglobal.cpp 27
+
+    This syntax inserts a space between each item, and
+    appends a newline at the end.
+
+    To suppress the output at runtime, install your own message handler
+    with qInstallMessageHandler().
+
+    \sa qDebug(), qInfo(), qCritical(), qFatal(), qInstallMessageHandler(),
+        {Debugging Techniques}
+*/
+
+/*!
+    \macro qCritical(const char *message, ...)
+    \relates <QtLogging>
+    \threadsafe
+
+    Calls the message handler with the critical message \a message. If no
+    message handler has been installed, the message is printed to
+    stderr. Under Windows, the message is sent to the debugger.
+    On QNX the message is sent to slogger2.
+
+    It exits if the environment variable QT_FATAL_CRITICALS is not empty.
+
+    This function takes a format string and a list of arguments,
+    similar to the C printf() function. The format should be a Latin-1
+    string.
+
+    Example:
+    \snippet code/src_corelib_global_qglobal.cpp 28
+
+    If you include <QtDebug>, a more convenient syntax is
+    also available:
+
+    \snippet code/src_corelib_global_qglobal.cpp 29
+
+    A space is inserted between the items, and a newline is
+    appended at the end.
+
+    To suppress the output at runtime, install your own message handler
+    with qInstallMessageHandler().
+
+    \sa qDebug(), qInfo(), qWarning(), qFatal(), qInstallMessageHandler(),
+        {Debugging Techniques}
+*/
+
+/*!
+    \macro qFatal(const char *message, ...)
+    \relates <QtLogging>
+
+    Calls the message handler with the fatal message \a message. If no
+    message handler has been installed, the message is printed to
+    stderr. Under Windows, the message is sent to the debugger.
+    On QNX the message is sent to slogger2.
+
+    If you are using the \b{default message handler} this function will
+    abort to create a core dump. On Windows, for debug builds,
+    this function will report a _CRT_ERROR enabling you to connect a debugger
+    to the application.
+
+    This function takes a format string and a list of arguments,
+    similar to the C printf() function.
+
+    Example:
+    \snippet code/src_corelib_global_qglobal.cpp 30
+
+    To suppress the output at runtime, install your own message handler
+    with qInstallMessageHandler().
+
+    \sa qDebug(), qInfo(), qWarning(), qCritical(), qInstallMessageHandler(),
+        {Debugging Techniques}
+*/
+
+/*!
+    \enum QtMsgType
+    \relates <QtLogging>
+
+    This enum describes the messages that can be sent to a message
+    handler (QtMessageHandler). You can use the enum to identify and
+    associate the various message types with the appropriate
+    actions.
+
+    \value QtDebugMsg
+           A message generated by the qDebug() function.
+    \value QtInfoMsg
+           A message generated by the qInfo() function.
+    \value QtWarningMsg
+           A message generated by the qWarning() function.
+    \value QtCriticalMsg
+           A message generated by the qCritical() function.
+    \value QtFatalMsg
+           A message generated by the qFatal() function.
+    \value QtSystemMsg
+
+    \c QtInfoMsg was added in Qt 5.5.
+
+    \sa QtMessageHandler, qInstallMessageHandler()
 */
 
 QT_END_NAMESPACE
