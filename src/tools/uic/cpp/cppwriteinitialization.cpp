@@ -864,7 +864,7 @@ void WriteInitialization::addButtonGroup(const DomWidget *buttonNode, const QStr
     const QString groupName = m_driver->findOrInsertButtonGroup(group);
     // Create on demand
     if (!m_buttonGroups.contains(groupName)) {
-        const QString className = "QButtonGroup"_L1;
+        const QString className = u"QButtonGroup"_s;
         m_output << m_indent;
         if (createGroupOnTheFly)
             m_output << className << " *";
@@ -1002,7 +1002,7 @@ static inline QString formLayoutRole(int column, int colspan)
 
 static QString layoutAddMethod(DomLayoutItem::Kind kind, const QString &layoutClass)
 {
-    const QString methodPrefix = layoutClass == "QFormLayout"_L1 ? "set"_L1 : "add"_L1;
+    const auto methodPrefix = layoutClass == "QFormLayout"_L1 ? "set"_L1 : "add"_L1;
     switch (kind) {
     case DomLayoutItem::Widget:
         return methodPrefix + "Widget"_L1;
@@ -1273,9 +1273,9 @@ void WriteInitialization::writeProperties(const QString &varName,
         } else if (propertyName == "orientation"_L1
                     && m_uic->customWidgetsInfo()->extends(className, "Line")) {
             // Line support
-            QString shape = "QFrame::HLine"_L1;
+            QString shape = u"QFrame::HLine"_s;
             if (p->elementEnum() == "Qt::Vertical"_L1)
-                shape = "QFrame::VLine"_L1;
+                shape = u"QFrame::VLine"_s;
 
             m_output << m_indent << varName << language::derefPointer << "setFrameShape("
                 << language::enumValue(shape) << ')' << language::eol;

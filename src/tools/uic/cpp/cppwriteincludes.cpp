@@ -90,7 +90,7 @@ void WriteIncludes::insertIncludeForClass(const QString &className, QString head
         // Quick check by class name to detect includehints provided for custom widgets.
         // Remove namespaces
         QString lowerClassName = className.toLower();
-        static const QString namespaceSeparator = "::"_L1;
+        static const auto namespaceSeparator = "::"_L1;
         const int namespaceIndex = lowerClassName.lastIndexOf(namespaceSeparator);
         if (namespaceIndex != -1)
             lowerClassName.remove(0, namespaceIndex + namespaceSeparator.size());

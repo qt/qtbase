@@ -146,7 +146,7 @@ void Uic::writeCopyrightHeaderPython(const DomUI *ui) const
 static double versionFromUiAttribute(QXmlStreamReader &reader)
 {
     const QXmlStreamAttributes attributes = reader.attributes();
-    const QString versionAttribute = "version"_L1;
+    const auto versionAttribute = "version"_L1;
     if (!attributes.hasAttribute(versionAttribute))
         return 4.0;
     const QStringView version = attributes.value(versionAttribute);
@@ -157,7 +157,7 @@ DomUI *Uic::parseUiFile(QXmlStreamReader &reader)
 {
     DomUI *ui = nullptr;
 
-    const QString uiElement = "ui"_L1;
+    const auto uiElement = "ui"_L1;
     while (!reader.atEnd()) {
         if (reader.readNext() == QXmlStreamReader::StartElement) {
             if (reader.name().compare(uiElement, Qt::CaseInsensitive) == 0
