@@ -481,6 +481,7 @@ public:
     };
     void tessellatedDraw(const TessDrawArgs &args);
 
+    QRhi::Flags rhiFlags;
     bool importedDevice = false;
     bool importedCmdQueue = false;
     QMetalSwapChain *currentSwapChain = nullptr;

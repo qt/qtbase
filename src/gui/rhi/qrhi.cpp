@@ -7052,6 +7052,11 @@ bool QRhi::isDeviceLost() const
 
     See EnablePipelineCacheDataSave for further details about this feature.
 
+    \note Minimize the number of calls to this function. Retrieving the blob is
+    not always a cheap operation, and therefore this function should only be
+    called at a low frequency, ideally only once e.g. when closing the
+    application.
+
     \sa setPipelineCacheData(), create(), isFeatureSupported()
  */
 QByteArray QRhi::pipelineCacheData()
@@ -7100,6 +7105,11 @@ QByteArray QRhi::pipelineCacheData()
     then reloading \a data are not predictable. Improved performance may not be
     visible at all in case other caching mechanisms outside of Qt's control are
     already active.
+
+    \note Minimize the number of calls to this function. Loading the blob is
+    not always a cheap operation, and therefore this function should only be
+    called at a low frequency, ideally only once e.g. when starting the
+    application.
 
     \sa pipelineCacheData(), isFeatureSupported()
  */

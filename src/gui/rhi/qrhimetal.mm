@@ -5,6 +5,10 @@
 #include <QtGui/private/qshader_p_p.h>
 #include <QGuiApplication>
 #include <QWindow>
+#include <QUrl>
+#include <QFile>
+#include <QTemporaryFile>
+#include <QFileInfo>
 #include <qmath.h>
 
 #include <QtCore/private/qcore_mac_p.h>
@@ -126,6 +130,7 @@ struct QRhiMetalData
 
     id<MTLDevice> dev = nil;
     id<MTLCommandQueue> cmdQueue = nil;
+    API_AVAILABLE(macosx(11.0), ios(14.0)) id<MTLBinaryArchive> binArch = nil;
 
     MTLRenderPassDescriptor *createDefaultRenderPass(bool hasDepthStencil,
                                                      const QColor &colorClearValue,
@@ -134,6 +139,11 @@ struct QRhiMetalData
     id<MTLLibrary> createMetalLib(const QShader &shader, QShader::Variant shaderVariant,
                                   QString *error, QByteArray *entryPoint, QShaderKey *activeKey);
     id<MTLFunction> createMSLShaderFunction(id<MTLLibrary> lib, const QByteArray &entryPoint);
+    bool setupBinaryArchive(NSURL *sourceFileUrl = nil);
+    void addRenderPipelineToBinaryArchive(MTLRenderPipelineDescriptor *rpDesc);
+    void trySeedingRenderPipelineFromBinaryArchive(MTLRenderPipelineDescriptor *rpDesc);
+    void addComputePipelineToBinaryArchive(MTLComputePipelineDescriptor *cpDesc);
+    void trySeedingComputePipelineFromBinaryArchive(MTLComputePipelineDescriptor *cpDesc);
 
     struct DeferredReleaseEntry {
         enum Type {
@@ -430,9 +440,28 @@ bool QRhiMetal::probe(QRhiMetalInitParams *params)
     return false;
 }
 
+bool QRhiMetalData::setupBinaryArchive(NSURL *sourceFileUrl)
+{
+    if (@available(macOS 11.0, iOS 14.0, *)) {
+        [binArch release];
+        MTLBinaryArchiveDescriptor *binArchDesc = [MTLBinaryArchiveDescriptor new];
+        binArchDesc.url = sourceFileUrl;
+        NSError *err = nil;
+        binArch = [dev newBinaryArchiveWithDescriptor: binArchDesc error: &err];
+        [binArchDesc release];
+        if (!binArch) {
+            const QString msg = QString::fromNSString(err.localizedDescription);
+            qWarning("newBinaryArchiveWithDescriptor failed: %s", qPrintable(msg));
+            return false;
+        }
+        return true;
+    }
+    return false;
+}
+
 bool QRhiMetal::create(QRhi::Flags flags)
 {
-    Q_UNUSED(flags);
+    rhiFlags = flags;
 
     if (importedDevice)
         [d->dev retain];
@@ -525,6 +554,9 @@ bool QRhiMetal::create(QRhi::Flags flags)
             caps.supportedSampleCounts.append(sampleCount);
     }
 
+    if (rhiFlags.testFlag(QRhi::EnablePipelineCacheDataSave))
+        d->setupBinaryArchive();
+
     nativeHandlesStruct.dev = (MTLDevice *) d->dev;
     nativeHandlesStruct.cmdQueue = (MTLCommandQueue *) d->cmdQueue;
 
@@ -542,6 +574,11 @@ void QRhiMetal::destroy()
 
     [d->captureScope release];
     d->captureScope = nil;
+
+    if (@available(macOS 11.0, iOS 14.0, *)) {
+        [d->binArch release];
+        d->binArch = nil;
+    }
 
     [d->cmdQueue release];
     if (!importedCmdQueue)
@@ -699,7 +736,12 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::ReadBackAnyTextureFormat:
         return true;
     case QRhi::PipelineCacheDataLoadSave:
-        return false;
+    {
+        if (@available(macOS 11.0, iOS 14.0, *))
+            return true;
+        else
+            return false;
+    }
     case QRhi::ImageDataStride:
         return true;
     case QRhi::RenderBufferImport:
@@ -797,14 +839,140 @@ bool QRhiMetal::isDeviceLost() const
     return false;
 }
 
+struct QMetalPipelineCacheDataHeader
+{
+    quint32 rhiId;
+    quint32 arch;
+    quint32 dataSize;
+    quint32 reserved;
+    quint64 deviceId;
+    quint64 vendorId;
+    char driver[224];
+};
+
 QByteArray QRhiMetal::pipelineCacheData()
 {
-    return QByteArray();
+    Q_STATIC_ASSERT(sizeof(QMetalPipelineCacheDataHeader) == 256);
+    QByteArray data;
+    if (@available(macOS 11.0, iOS 14.0, *)) {
+        if (!d->binArch || !rhiFlags.testFlag(QRhi::EnablePipelineCacheDataSave))
+            return data;
+
+        QTemporaryFile tmp;
+        if (!tmp.open()) {
+            qWarning("pipelineCacheData: Failed to create temporary file for Metal");
+            return data;
+        }
+        tmp.close(); // the file exists until the tmp dtor runs
+
+        const QString fn = QFileInfo(tmp.fileName()).absoluteFilePath();
+        NSURL *url = QUrl::fromLocalFile(fn).toNSURL();
+        NSError *err = nil;
+        if (![d->binArch serializeToURL: url error: &err]) {
+            const QString msg = QString::fromNSString(err.localizedDescription);
+            qWarning("Failed to serialize MTLBinaryArchive: %s", qPrintable(msg));
+            return data;
+        }
+
+        QFile f(fn);
+        if (!f.open(QIODevice::ReadOnly)) {
+            qWarning("pipelineCacheData: Failed to reopen temporary file");
+            return data;
+        }
+        const QByteArray blob = f.readAll();
+        f.close();
+
+        const size_t headerSize = sizeof(QMetalPipelineCacheDataHeader);
+        const quint32 dataSize = quint32(blob.size());
+
+        data.resize(headerSize + dataSize);
+
+        QMetalPipelineCacheDataHeader header = {};
+        header.rhiId = pipelineCacheRhiId();
+        header.arch = quint32(sizeof(void*));
+        header.dataSize = quint32(dataSize);
+        header.deviceId = driverInfoStruct.deviceId;
+        header.vendorId = driverInfoStruct.vendorId;
+
+        const size_t driverStrLen = qMin(sizeof(header.driver) - 1, size_t(driverInfoStruct.deviceName.length()));
+        if (driverStrLen)
+            memcpy(header.driver, driverInfoStruct.deviceName.constData(), driverStrLen);
+        header.driver[driverStrLen] = '\0';
+
+        memcpy(data.data(), &header, headerSize);
+        memcpy(data.data() + headerSize, blob.constData(), dataSize);
+    }
+    return data;
 }
 
 void QRhiMetal::setPipelineCacheData(const QByteArray &data)
 {
-    Q_UNUSED(data);
+    if (data.isEmpty())
+        return;
+
+    const size_t headerSize = sizeof(QMetalPipelineCacheDataHeader);
+    if (data.size() < qsizetype(headerSize)) {
+        qWarning("setPipelineCacheData: Invalid blob size (header incomplete)");
+        return;
+    }
+
+    const size_t dataOffset = headerSize;
+    QMetalPipelineCacheDataHeader header;
+    memcpy(&header, data.constData(), headerSize);
+
+    const quint32 rhiId = pipelineCacheRhiId();
+    if (header.rhiId != rhiId) {
+        qWarning("setPipelineCacheData: The data is for a different QRhi version or backend (%u, %u)",
+                 rhiId, header.rhiId);
+        return;
+    }
+
+    const quint32 arch = quint32(sizeof(void*));
+    if (header.arch != arch) {
+        qWarning("setPipelineCacheData: Architecture does not match (%u, %u)",
+                 arch, header.arch);
+        return;
+    }
+
+    if (header.deviceId != driverInfoStruct.deviceId) {
+        qWarning("setPipelineCacheData: Metal device ID does not match (%llu, %llu)",
+                 driverInfoStruct.deviceId, header.deviceId);
+        return;
+    }
+
+    if (header.vendorId != driverInfoStruct.vendorId) {
+        qWarning("setPipelineCacheData: Metal vendor ID does not match (%llu, %llu)",
+                 driverInfoStruct.vendorId, header.vendorId);
+        return;
+    }
+
+    const size_t driverStrLen = qMin(sizeof(header.driver) - 1, size_t(driverInfoStruct.deviceName.length()));
+    if (strncmp(header.driver, driverInfoStruct.deviceName.constData(), driverStrLen)) {
+        qWarning("setPipelineCacheData: Metal device name does not match");
+        return;
+    }
+
+    if (data.size() < qsizetype(dataOffset + header.dataSize)) {
+        qWarning("setPipelineCacheData: Invalid blob size (data incomplete)");
+        return;
+    }
+
+    if (@available(macOS 11.0, iOS 14.0, *)) {
+        const char *p = data.constData() + dataOffset;
+
+        QTemporaryFile tmp;
+        if (!tmp.open()) {
+            qWarning("pipelineCacheData: Failed to create temporary file for Metal");
+            return;
+        }
+        tmp.write(p, header.dataSize);
+        tmp.close(); // the file exists until the tmp dtor runs
+
+        const QString fn = QFileInfo(tmp.fileName()).absoluteFilePath();
+        NSURL *url = QUrl::fromLocalFile(fn).toNSURL();
+        if (d->setupBinaryArchive(url))
+            qCDebug(QRHI_LOG_INFO, "Created MTLBinaryArchive with initial data of %u bytes", header.dataSize);
+    }
 }
 
 QRhiRenderBuffer *QRhiMetal::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
@@ -4304,6 +4472,29 @@ void QMetalGraphicsPipelineData::setupVertexOrStageInputDescriptor(T *desc)
     }
 }
 
+void QRhiMetalData::trySeedingRenderPipelineFromBinaryArchive(MTLRenderPipelineDescriptor *rpDesc)
+{
+    if (@available(macOS 11.0, iOS 14.0, *)) {
+        if (binArch)  {
+            NSArray *binArchArray = [NSArray arrayWithObjects: binArch, nil];
+            rpDesc.binaryArchives = binArchArray;
+        }
+    }
+}
+
+void QRhiMetalData::addRenderPipelineToBinaryArchive(MTLRenderPipelineDescriptor *rpDesc)
+{
+    if (@available(macOS 11.0, iOS 14.0, *)) {
+        if (binArch)  {
+            NSError *err = nil;
+            if (![binArch addRenderPipelineFunctionsWithDescriptor: rpDesc error: &err]) {
+                const QString msg = QString::fromNSString(err.localizedDescription);
+                qWarning("Failed to collect render pipeline functions to binary archive: %s", qPrintable(msg));
+            }
+        }
+    }
+}
+
 bool QMetalGraphicsPipeline::createVertexFragmentPipeline()
 {
     QRHI_RES_RHI(QRhiMetal);
@@ -4391,6 +4582,12 @@ bool QMetalGraphicsPipeline::createVertexFragmentPipeline()
 
     QMetalRenderPassDescriptor *rpD = QRHI_RES(QMetalRenderPassDescriptor, m_renderPassDesc);
     setupAttachmentsInMetalRenderPassDescriptor(rpDesc, rpD);
+
+    rhiD->d->trySeedingRenderPipelineFromBinaryArchive(rpDesc);
+
+    if (rhiD->rhiFlags.testFlag(QRhi::EnablePipelineCacheDataSave))
+        rhiD->d->addRenderPipelineToBinaryArchive(rpDesc);
+
     NSError *err = nil;
     d->ps = [rhiD->d->dev newRenderPipelineStateWithDescriptor: rpDesc error: &err];
     [rpDesc release];
@@ -4459,11 +4656,17 @@ id<MTLComputePipelineState> QMetalGraphicsPipelineData::Tessellation::vsCompPipe
     }
     q->setupVertexOrStageInputDescriptor(cpDesc.stageInputDescriptor);
 
+    rhiD->d->trySeedingComputePipelineFromBinaryArchive(cpDesc);
+
+    if (rhiD->rhiFlags.testFlag(QRhi::EnablePipelineCacheDataSave))
+        rhiD->d->addComputePipelineToBinaryArchive(cpDesc);
+
     NSError *err = nil;
     id<MTLComputePipelineState> ps = [rhiD->d->dev newComputePipelineStateWithDescriptor: cpDesc
             options: MTLPipelineOptionNone
             reflection: nil
             error: &err];
+    [cpDesc release];
     if (!ps) {
         const QString msg = QString::fromNSString(err.localizedDescription);
         qWarning("Failed to create compute pipeline state: %s", qPrintable(msg));
@@ -4482,11 +4685,17 @@ id<MTLComputePipelineState> QMetalGraphicsPipelineData::Tessellation::tescCompPi
     MTLComputePipelineDescriptor *cpDesc = [MTLComputePipelineDescriptor new];
     cpDesc.computeFunction = compTesc.func;
 
+    rhiD->d->trySeedingComputePipelineFromBinaryArchive(cpDesc);
+
+    if (rhiD->rhiFlags.testFlag(QRhi::EnablePipelineCacheDataSave))
+        rhiD->d->addComputePipelineToBinaryArchive(cpDesc);
+
     NSError *err = nil;
     id<MTLComputePipelineState> ps = [rhiD->d->dev newComputePipelineStateWithDescriptor: cpDesc
             options: MTLPipelineOptionNone
             reflection: nil
             error: &err];
+    [cpDesc release];
     if (!ps) {
         const QString msg = QString::fromNSString(err.localizedDescription);
         qWarning("Failed to create compute pipeline state: %s", qPrintable(msg));
@@ -4664,6 +4873,11 @@ id<MTLRenderPipelineState> QMetalGraphicsPipelineData::Tessellation::teseFragRen
 
     QMetalRenderPassDescriptor *rpD = QRHI_RES(QMetalRenderPassDescriptor, pipeline->renderPassDescriptor());
     pipeline->setupAttachmentsInMetalRenderPassDescriptor(rpDesc, rpD);
+
+    rhiD->d->trySeedingRenderPipelineFromBinaryArchive(rpDesc);
+
+    if (rhiD->rhiFlags.testFlag(QRhi::EnablePipelineCacheDataSave))
+        rhiD->d->addRenderPipelineToBinaryArchive(rpDesc);
 
     NSError *err = nil;
     id<MTLRenderPipelineState> ps = [rhiD->d->dev newRenderPipelineStateWithDescriptor: rpDesc error: &err];
@@ -4981,6 +5195,29 @@ void QMetalComputePipeline::destroy()
     }
 }
 
+void QRhiMetalData::trySeedingComputePipelineFromBinaryArchive(MTLComputePipelineDescriptor *cpDesc)
+{
+    if (@available(macOS 11.0, iOS 14.0, *)) {
+        if (binArch)  {
+            NSArray *binArchArray = [NSArray arrayWithObjects: binArch, nil];
+            cpDesc.binaryArchives = binArchArray;
+        }
+    }
+}
+
+void QRhiMetalData::addComputePipelineToBinaryArchive(MTLComputePipelineDescriptor *cpDesc)
+{
+    if (@available(macOS 11.0, iOS 14.0, *)) {
+        if (binArch)  {
+            NSError *err = nil;
+            if (![binArch addComputePipelineFunctionsWithDescriptor: cpDesc error: &err]) {
+                const QString msg = QString::fromNSString(err.localizedDescription);
+                qWarning("Failed to collect compute pipeline functions to binary archive: %s", qPrintable(msg));
+            }
+        }
+    }
+}
+
 bool QMetalComputePipeline::create()
 {
     if (d->ps)
@@ -5027,8 +5264,20 @@ bool QMetalComputePipeline::create()
 
     d->localSize = MTLSizeMake(d->cs.localSize[0], d->cs.localSize[1], d->cs.localSize[2]);
 
+    MTLComputePipelineDescriptor *cpDesc = [MTLComputePipelineDescriptor new];
+    cpDesc.computeFunction = d->cs.func;
+
+    rhiD->d->trySeedingComputePipelineFromBinaryArchive(cpDesc);
+
+    if (rhiD->rhiFlags.testFlag(QRhi::EnablePipelineCacheDataSave))
+        rhiD->d->addComputePipelineToBinaryArchive(cpDesc);
+
     NSError *err = nil;
-    d->ps = [rhiD->d->dev newComputePipelineStateWithFunction: d->cs.func error: &err];
+    d->ps = [rhiD->d->dev newComputePipelineStateWithDescriptor: cpDesc
+            options: MTLPipelineOptionNone
+            reflection: nil
+            error: &err];
+    [cpDesc release];
     if (!d->ps) {
         const QString msg = QString::fromNSString(err.localizedDescription);
         qWarning("Failed to create compute pipeline state: %s", qPrintable(msg));
