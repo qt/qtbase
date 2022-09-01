@@ -120,7 +120,7 @@ void WriteDeclaration::acceptUI(DomUI *node)
 
 void WriteDeclaration::acceptWidget(DomWidget *node)
 {
-    QString className = "QWidget"_L1;
+    QString className = u"QWidget"_s;
     if (node->hasAttributeClass())
         className = node->attributeClass();
 
@@ -137,7 +137,7 @@ void WriteDeclaration::acceptSpacer(DomSpacer *node)
 
 void WriteDeclaration::acceptLayout(DomLayout *node)
 {
-    QString className = "QLayout"_L1;
+    QString className = u"QLayout"_s;
     if (node->hasAttributeClass())
         className = node->attributeClass();
 

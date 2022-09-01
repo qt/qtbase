@@ -669,7 +669,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
 
     const DomPropertyMap attributes = propertyMap(node->elementAttribute());
 
-    const QString pageDefaultString = "Page"_L1;
+    const QString pageDefaultString = u"Page"_s;
 
     if (cwi->extends(parentClass, "QMainWindow")) {
         if (cwi->extends(className, "QMenuBar")) {
@@ -781,10 +781,10 @@ void WriteInitialization::acceptWidget(DomWidget *node)
     };
 
     static const QStringList trees = {
-        "QTreeView"_L1, "QTreeWidget"_L1
+        u"QTreeView"_s, u"QTreeWidget"_s
     };
     static const QStringList tables = {
-        "QTableView"_L1, "QTableWidget"_L1
+        u"QTableView"_s, u"QTableWidget"_s
     };
 
     if (cwi->extendsOneOf(className, trees)) {
@@ -1237,8 +1237,8 @@ void WriteInitialization::writeProperties(const QString &varName,
             continue;
         }
         static const QStringList currentIndexWidgets = {
-            "QComboBox"_L1, "QStackedWidget"_L1,
-            "QTabWidget"_L1, "QToolBox"_L1
+            u"QComboBox"_s, u"QStackedWidget"_s,
+            u"QTabWidget"_s, u"QToolBox"_s
         };
         if (propertyName == "currentIndex"_L1 // set currentIndex later
             && (m_uic->customWidgetsInfo()->extendsOneOf(className, currentIndexWidgets))) {
@@ -1929,7 +1929,7 @@ QString WriteInitialization::writeBrushInitialization(const DomBrush *brush)
 
 void WriteInitialization::writeBrush(const DomBrush *brush, const QString &brushName)
 {
-    QString style = "SolidPattern"_L1;
+    QString style = u"SolidPattern"_s;
     if (brush->hasAttributeBrushStyle())
         style = brush->attributeBrushStyle();
 

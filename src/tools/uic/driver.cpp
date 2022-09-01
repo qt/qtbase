@@ -196,7 +196,7 @@ QString Driver::headerFileName() const
 QString Driver::headerFileName(const QString &fileName)
 {
     if (fileName.isEmpty())
-        return headerFileName("noname"_L1);
+        return headerFileName(u"noname"_s);
 
     QFileInfo info(fileName);
     QString baseName = info.baseName();

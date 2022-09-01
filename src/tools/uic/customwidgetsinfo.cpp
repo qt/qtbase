@@ -96,7 +96,7 @@ bool CustomWidgetsInfo::isAmbiguousSignal(const QString &className,
 QString CustomWidgetsInfo::realClassName(const QString &className) const
 {
     if (className == "Line"_L1)
-        return "QFrame"_L1;
+        return u"QFrame"_s;
 
     return className;
 }

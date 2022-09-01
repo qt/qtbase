@@ -58,9 +58,9 @@ QString self;
 QString eol;
 QString emptyString;
 
-QString cppQualifier = "::"_L1;
-QString cppTrue = "true"_L1;
-QString cppFalse = "false"_L1;
+QString cppQualifier = u"::"_s;
+QString cppTrue = u"true"_s;
+QString cppFalse = u"false"_s;
 
 QTextStream &operator<<(QTextStream &str, const qtConfig &c)
 {

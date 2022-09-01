@@ -291,9 +291,9 @@ void Uic::writeHeaderProtectionEnd()
 bool Uic::isButton(const QString &className) const
 {
     static const QStringList buttons = {
-        "QRadioButton"_L1, "QToolButton"_L1,
-        "QCheckBox"_L1, "QPushButton"_L1,
-        "QCommandLinkButton"_L1
+        u"QRadioButton"_s, u"QToolButton"_s,
+        u"QCheckBox"_s, u"QPushButton"_s,
+        u"QCommandLinkButton"_s
     };
     return customWidgetsInfo()->extendsOneOf(className, buttons);
 }
@@ -301,10 +301,10 @@ bool Uic::isButton(const QString &className) const
 bool Uic::isContainer(const QString &className) const
 {
     static const QStringList containers = {
-        "QStackedWidget"_L1, "QToolBox"_L1,
-        "QTabWidget"_L1, "QScrollArea"_L1,
-        "QMdiArea"_L1, "QWizard"_L1,
-        "QDockWidget"_L1
+        u"QStackedWidget"_s, u"QToolBox"_s,
+        u"QTabWidget"_s, u"QScrollArea"_s,
+        u"QMdiArea"_s, u"QWizard"_s,
+        u"QDockWidget"_s
     };
 
     return customWidgetsInfo()->extendsOneOf(className, containers);
@@ -313,7 +313,7 @@ bool Uic::isContainer(const QString &className) const
 bool Uic::isMenu(const QString &className) const
 {
     static const QStringList menus = {
-        "QMenu"_L1, "QPopupMenu"_L1
+        u"QMenu"_s, u"QPopupMenu"_s
     };
     return customWidgetsInfo()->extendsOneOf(className, menus);
 }
