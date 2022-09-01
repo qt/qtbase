@@ -318,6 +318,9 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
             return null;
         }
 
+        if (m_activityDelegate.getSurfaceCount() == 0)
+            return null;
+
         final AccessibilityEvent event = AccessibilityEvent.obtain(eventType);
 
         event.setEnabled(true);
@@ -380,9 +383,11 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
 // Spit out the entire hierarchy for debugging purposes
 //        dumpNodes(-1);
 
-        int[] ids = QtNativeAccessibility.childIdListForAccessibleObject(-1);
-        for (int i = 0; i < ids.length; ++i)
-            result.addChild(m_view, ids[i]);
+        if (m_activityDelegate.getSurfaceCount() != 0) {
+            int[] ids = QtNativeAccessibility.childIdListForAccessibleObject(-1);
+            for (int i = 0; i < ids.length; ++i)
+                result.addChild(m_view, ids[i]);
+        }
 
         // The offset values have changed, so we need to re-focus the
         // currently focused item, otherwise it will have an incorrect
@@ -410,8 +415,9 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         node.setClassName(m_view.getClass().getName() + DEFAULT_CLASS_NAME);
         node.setPackageName(m_view.getContext().getPackageName());
 
-        if (!QtNativeAccessibility.populateNode(virtualViewId, node))
+        if (m_activityDelegate.getSurfaceCount() == 0 || !QtNativeAccessibility.populateNode(virtualViewId, node)) {
             return node;
+        }
 
         // set only if valid, otherwise we return a node that is invalid and will crash when accessed
         node.setSource(m_view, virtualViewId);
@@ -461,7 +467,7 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         @Override
         public AccessibilityNodeInfo createAccessibilityNodeInfo(int virtualViewId)
         {
-            if (virtualViewId == View.NO_ID) {
+            if (virtualViewId == View.NO_ID || m_activityDelegate.getSurfaceCount() == 0) {
                 return getNodeForView();
             }
             return getNodeForVirtualViewId(virtualViewId);
