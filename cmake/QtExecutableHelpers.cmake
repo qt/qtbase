@@ -140,7 +140,6 @@ function(qt_internal_add_executable name)
 
     if(WASM)
         qt_internal_wasm_add_finalizers("${name}")
-        _qt_internal_wasm_add_target_helpers("${name}")
     endif()
 
     # Check if target needs to be excluded from all target. Also affects qt_install.

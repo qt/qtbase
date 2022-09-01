@@ -104,6 +104,7 @@ endfunction()
 
 function(qt_internal_wasm_add_finalizers target)
     qt_add_list_file_finalizer(_qt_internal_add_wasm_extra_exported_methods ${target})
+    qt_add_list_file_finalizer(_qt_internal_wasm_add_target_helpers ${target})
 endfunction()
 
 
