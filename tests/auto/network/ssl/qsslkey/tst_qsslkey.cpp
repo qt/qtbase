@@ -156,6 +156,7 @@ bool tst_QSslKey::fileContainsUnsupportedEllipticCurve(const QString &fileName) 
 
 bool tst_QSslKey::algorithmsSupported(const QString &fileName) const
 {
+#if QT_CONFIG(ssl)
     if (isSchannel && fileName.contains("RC2-64")) // Schannel treats RC2 as 128 bit
         return false;
 
@@ -164,10 +165,9 @@ bool tst_QSslKey::algorithmsSupported(const QString &fileName) const
         return !(fileName.contains(QRegularExpression("-aes\\d\\d\\d-")) || fileName.contains("pkcs8-pkcs12"));
     }
 
-#if OPENSSL_VERSION_MAJOR < 3
-    // If it's not built with OpenSSL or it's OpenSSL v < 3.
-    return true;
-#else
+    if (!isOpenSsl || QSslSocket::sslLibraryVersionNumber() >> 28 < 3)
+        return true;
+
     // OpenSSL v3 first introduced the notion of 'providers'. Many algorithms
     // were moved into the 'legacy' provider. While they are still supported in theory,
     // the 'legacy' provider is NOT loaded by default and we are not loading it either.
@@ -178,7 +178,10 @@ bool tst_QSslKey::algorithmsSupported(const QString &fileName) const
         return false;
 
     return !name.contains("-rc2-") && !name.contains("-rc4-");
-#endif
+#else
+    Q_UNUSED(fileName);
+    return false;
+#endif // QT_CONFIG(ssl)
 }
 
 
@@ -545,12 +548,12 @@ void tst_QSslKey::passphraseChecks_data()
     const QByteArray pass("123");
     const QByteArray aesPass("1234");
 
-#if OPENSSL_VERSION_MAJOR < 3
-    // DES and RC2 are not provided by default in OpenSSL v3.
-    // This part is for either non-OpenSSL build, or OpenSSL v < 3.x.
-    QTest::newRow("DES") << QString(testDataDir + "rsa-with-passphrase-des.pem") << pass;
-    QTest::newRow("RC2") << QString(testDataDir + "rsa-with-passphrase-rc2.pem") << pass;
-#endif // OPENSSL_VERSION_MAJOR
+    if (!isOpenSsl || QSslSocket::sslLibraryVersionNumber() >> 28 < 3) {
+        // DES and RC2 are not provided by default in OpenSSL v3.
+        // This part is for either non-OpenSSL build, or OpenSSL v < 3.x.
+        QTest::newRow("DES") << QString(testDataDir + "rsa-with-passphrase-des.pem") << pass;
+        QTest::newRow("RC2") << QString(testDataDir + "rsa-with-passphrase-rc2.pem") << pass;
+    }
 
     QTest::newRow("3DES") << QString(testDataDir + "rsa-with-passphrase-3des.pem") << pass;
 
