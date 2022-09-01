@@ -3623,6 +3623,7 @@ void tst_QSslSocket::verifyClientCertificate()
     }
 
     SslServer server;
+    server.protocol = QSsl::TlsV1_2;
     server.addCaCertificates = testDataDir + "certs/bogus-ca.crt";
     server.ignoreSslErrors = false;
     server.peerVerifyMode = peerVerifyMode;
