@@ -3613,6 +3613,10 @@ bool QDateTime::isDaylightTime() const
         break;
 #else
         Q_ASSERT(d->m_timeZone.isValid());
+        if (auto dst = extractDaylightStatus(getStatus(d));
+            dst != QDateTimePrivate::UnknownDaylightTime) {
+            return dst == QDateTimePrivate::DaylightTime;
+        }
         return d->m_timeZone.d->isDaylightTime(toMSecsSinceEpoch());
 #endif // timezone
     case Qt::LocalTime: {
