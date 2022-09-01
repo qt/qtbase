@@ -36,7 +36,7 @@ static inline char *wideToMulti(unsigned int codePage, const wchar_t *aw)
     return result;
 }
 
-extern "C" int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR /*cmdParamarg*/, int /* cmdShow */)
+static inline int qtEntryPoint()
 {
     int argc = 0;
     wchar_t **argvW = CommandLineToArgvW(GetCommandLineW(), &argc);
@@ -52,4 +52,14 @@ extern "C" int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR /*cmdParamarg*/, int
         delete [] argv[i];
     delete [] argv;
     return exitCode;
+}
+
+extern "C" int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+{
+    return qtEntryPoint();
+}
+
+extern "C" int WINAPI wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
+{
+    return qtEntryPoint();
 }
