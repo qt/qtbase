@@ -89,7 +89,7 @@ function(qt_internal_add_tool target_name)
         set(search_for_host_package TRUE)
     endif()
     if(search_for_host_package AND NOT imported_tool_target_already_found)
-        set(tools_package_name "Qt6${arg_TOOLS_TARGET}Tools")
+        set(tools_package_name "${INSTALL_CMAKE_NAMESPACE}${arg_TOOLS_TARGET}Tools")
         message(STATUS "Searching for tool '${full_name}' in package ${tools_package_name}.")
 
         # Create the tool targets, even if QT_NO_CREATE_TARGETS is set.
