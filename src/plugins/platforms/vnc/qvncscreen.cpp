@@ -147,9 +147,10 @@ void QVncScreen::disableClientCursor(QVncClient *client)
     if (clientCount == 0) {
         delete clientCursor;
         clientCursor = nullptr;
-    }
 
-    mCursor = new QFbCursor(this);
+        if (mCursor == nullptr)
+            mCursor = new QFbCursor(this);
+    }
 #else
     Q_UNUSED(client)
 #endif
