@@ -26,11 +26,7 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
         target_compile_options("${wasmTarget}" INTERFACE -O2 -msimd128 -msse -msse2)
     endif()
 
-    set(disable_exceptions_catching 1)
-    if (QT_FEATURE_exceptions)
-        set(disable_exceptions_catching 0)
-    endif()
-    target_link_options("${wasmTarget}" INTERFACE "SHELL:-s DISABLE_EXCEPTION_CATCHING=${disable_exceptions_catching}")
+    target_link_options("${wasmTarget}" INTERFACE "SHELL:-s DISABLE_EXCEPTION_CATCHING=1")
 
     if (QT_FEATURE_thread)
         target_compile_options("${wasmTarget}" INTERFACE "SHELL:-pthread")
