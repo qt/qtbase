@@ -164,7 +164,7 @@ namespace qstdweb {
     };
 
     namespace Promise {
-        void adoptPromise(emscripten::val promise, PromiseCallbacks callbacks);
+        void Q_CORE_EXPORT adoptPromise(emscripten::val promise, PromiseCallbacks callbacks);
 
         template<typename... Args>
         void make(emscripten::val target,
@@ -181,7 +181,7 @@ namespace qstdweb {
             adoptPromise(std::move(promiseObject), std::move(callbacks));
         }
 
-        void all(std::vector<emscripten::val> promises, PromiseCallbacks callbacks);
+        void Q_CORE_EXPORT all(std::vector<emscripten::val> promises, PromiseCallbacks callbacks);
     };
 
     inline emscripten::val window()
