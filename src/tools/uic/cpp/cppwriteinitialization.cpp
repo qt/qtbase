@@ -2047,7 +2047,8 @@ QString WriteInitialization::iconCall(const DomProperty *icon)
 
 QString WriteInitialization::pixCall(const DomProperty *p) const
 {
-    QString type, s;
+    QLatin1StringView type;
+    QString s;
     switch (p->kind()) {
     case DomProperty::IconSet:
         type = "QIcon"_L1;
@@ -2066,23 +2067,22 @@ QString WriteInitialization::pixCall(const DomProperty *p) const
     return pixCall(type, s);
 }
 
-QString WriteInitialization::pixCall(const QString &t, const QString &text) const
+QString WriteInitialization::pixCall(QLatin1StringView t, const QString &text) const
 {
-    QString type = t;
-    if (text.isEmpty()) {
-        type += "()"_L1;
-        return type;
-    }
+    if (text.isEmpty())
+        return t % "()"_L1;
 
-    QTextStream str(&type);
+    QString result;
+    QTextStream str(&result);
+    str << t;
     str << '(';
-    QString pixFunc = m_uic->pixmapFunction();
+    const QString pixFunc = m_uic->pixmapFunction();
     if (pixFunc.isEmpty())
         str << language::qstring(text, m_dindent);
     else
         str << pixFunc << '(' << language::charliteral(text, m_dindent) << ')';
     str << ')';
-    return type;
+    return result;
 }
 
 void WriteInitialization::initializeComboBox(DomWidget *w)

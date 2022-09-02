@@ -119,7 +119,7 @@ private:
 
     QString iconCall(const DomProperty *prop);
     QString pixCall(const DomProperty *prop) const;
-    QString pixCall(const QString &type, const QString &text) const;
+    QString pixCall(QLatin1StringView type, const QString &text) const;
     QString trCall(const QString &str, const QString &comment = QString(), const QString &id = QString()) const;
     QString trCall(DomString *str, const QString &defaultString = QString()) const;
     QString noTrCall(DomString *str, const QString &defaultString = QString()) const;
