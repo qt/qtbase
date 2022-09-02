@@ -22,7 +22,10 @@
 #include <private/qabstractfileengine_p.h>
 #include <private/qfsfileengine_p.h>
 #include <private/qfilesystemengine_p.h>
+
+#ifdef Q_OS_WIN
 #include <QtCore/private/qfunctions_win_p.h>
+#endif
 
 #include <QtTest/private/qemulationdetector_p.h>
 

@@ -18,7 +18,9 @@
 #include <qpa/qplatformnativeinterface.h>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformaccessibility.h>
+#ifdef Q_OS_WIN
 #include <QtCore/private/qfunctions_win_p.h>
+#endif
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 
