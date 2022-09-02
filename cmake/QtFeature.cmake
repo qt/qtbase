@@ -236,7 +236,7 @@ function(qt_feature_check_and_save_user_provided_value resultVar feature conditi
     if (DEFINED "FEATURE_${feature}")
         # Revisit new user provided value
         set(user_value "${FEATURE_${feature}}")
-        set(result "${user_value}")
+        string(TOUPPER "${user_value}" result)
 
         # If the build is marked as dirty and the user_value doesn't meet the new condition,
         # reset it to the computed one.
