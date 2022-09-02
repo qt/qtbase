@@ -178,6 +178,10 @@ if(QT_FEATURE_batch_test_support AND WASM)
     list(APPEND wasm_support_libexec_files
          ${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/qwasmtestmain.js)
     list(APPEND wasm_support_libexec_files
+         ${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/qtestoutputreporter.js)
+    list(APPEND wasm_support_libexec_files
+         ${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/qtestoutputreporter.css)
+    list(APPEND wasm_support_libexec_files
          ${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/util.js)
 
     qt_path_join(libexec_dir ${QT_INSTALL_DIR} ${INSTALL_LIBEXECDIR})

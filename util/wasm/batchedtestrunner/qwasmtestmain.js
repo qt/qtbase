@@ -9,6 +9,7 @@ import {
     ResourceLocator,
 } from './qwasmjsruntime.js';
 import { parseQuery } from './util.js';
+import { VisualOutputProducer, UI, ScannerFactory } from './qtestoutputreporter.js'
 
 (() => {
     const setPageTitle = (useEmrun, testName, isBatch) => {
@@ -23,6 +24,7 @@ import { parseQuery } from './util.js';
     }
 
     const parsed = parseQuery(location.search);
+    const outputInPage = parsed.get('qvisualoutput') !== undefined;
     const testName = parsed.get('qtestname');
     const isBatch = parsed.get('qbatchedtest') !== undefined;
     const useEmrun = parsed.get('quseemrun') !== undefined;
@@ -49,8 +51,16 @@ import { parseQuery } from './util.js';
 
     if (useEmrun) {
         const adapter = new EmrunAdapter(new EmrunCommunication(), testRunner, () => {
-            window.close();
+            if (!outputInPage)
+                window.close();
         });
+        adapter.run();
+    }
+    if (outputInPage) {
+        const scanner = ScannerFactory.createScannerForFormat(testOutputFormat);
+        const ui = new UI(document.querySelector('body'), !!scanner);
+        const adapter =
+            new VisualOutputProducer(ui.outputArea, ui.counters, scanner, testRunner);
         adapter.run();
     }
     setPageTitle(useEmrun, testName, isBatch);

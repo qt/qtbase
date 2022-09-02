@@ -1,0 +1,89 @@
+/*
+    Copyright (C) 2022 The Qt Company Ltd.
+    SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
+*/
+
+:root {
+    --good-color-light: chartreuse;
+    --bad-color-light: lightcoral;
+    --warning-color-light: orange;
+    --info-color-light: cornflowerblue;
+    --ignore-color-light: gray;
+    --good-color-dark: green;
+    --bad-color-dark: red;
+    --warning-color-dark: darkorange;
+    --info-color-dark: blue;
+    --ignore-color-dark: lightgray;
+}
+
+.zero {
+    display: none;
+}
+
+.light-background .good {
+    color: var(--good-color-dark);
+}
+
+.light-background .bad {
+    color: var(--bad-color-dark);
+}
+
+.light-background .warning {
+    color: var(--warning-color-dark);
+}
+
+.light-background .info {
+    color: var(--info-color-dark);
+}
+
+.light-background .ignore {
+    color: var(--ignore-color-dark);
+}
+
+.output-area {
+    font-family: monospace;
+}
+
+.output-line {
+    display: block;
+    white-space: pre-wrap;
+}
+
+.counter-box {
+    position: fixed;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.counter-box span {
+    padding-right: 10px;
+}
+
+.counter-box .pass {
+    background-color: var(--good-color-light);
+}
+
+.counter-box .fail {
+    background-color: var(--bad-color-light);
+}
+
+.counter-box .skip {
+    background-color: var(--info-color-light);
+}
+
+.counter-box .xfail {
+    background-color: var(--warning-color-light);
+}
+
+.counter-box .xpass {
+    background-color: var(--bad-color-light);
+}
+
+.counter-box .bpass,
+.counter-box .bfail,
+.counter-box .bxpass,
+.counter-box .bxfail,
+.counter-box .other {
+    background-color: var(--ignore-color-light);
+}

@@ -29,6 +29,8 @@ function(_qt_internal_wasm_add_target_helpers target)
         if(is_test)
             configure_file("${WASM_BUILD_DIR}/libexec/batchedtestrunner.html"
                            "${target_output_directory}/batchedtestrunner.html" COPYONLY)
+            configure_file("${WASM_BUILD_DIR}/libexec/qtestoutputreporter.css"
+                           "${target_output_directory}/qtestoutputreporter.css" COPYONLY)
             configure_file("${WASM_BUILD_DIR}/libexec/batchedtestrunner.js"
                            "${target_output_directory}/batchedtestrunner.js" COPYONLY)
             configure_file("${WASM_BUILD_DIR}/libexec/emrunadapter.js"
@@ -37,6 +39,8 @@ function(_qt_internal_wasm_add_target_helpers target)
                            "${target_output_directory}/qwasmjsruntime.js" COPYONLY)
             configure_file("${WASM_BUILD_DIR}/libexec/qwasmtestmain.js"
                            "${target_output_directory}/qwasmtestmain.js" COPYONLY)
+            configure_file("${WASM_BUILD_DIR}/libexec/qtestoutputreporter.js"
+                           "${target_output_directory}/qtestoutputreporter.js" COPYONLY)
             configure_file("${WASM_BUILD_DIR}/libexec/util.js"
                            "${target_output_directory}/util.js" COPYONLY)
         else()
