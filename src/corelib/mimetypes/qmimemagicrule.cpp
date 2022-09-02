@@ -12,31 +12,29 @@
 #include <QtCore/QDebug>
 #include <qendian.h>
 
+#include <private/qoffsetstringarray_p.h>
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
 // in the same order as Type!
-static const char magicRuleTypes_string[] =
-    "invalid\0"
-    "string\0"
-    "host16\0"
-    "host32\0"
-    "big16\0"
-    "big32\0"
-    "little16\0"
-    "little32\0"
-    "byte\0"
-    "\0";
-
-static const int magicRuleTypes_indices[] = {
-    0, 8, 15, 22, 29, 35, 41, 50, 59, 64, 0
-};
+static constexpr auto magicRuleTypes = qOffsetStringArray(
+    "invalid",
+    "string",
+    "host16",
+    "host32",
+    "big16",
+    "big32",
+    "little16",
+    "little32",
+    "byte"
+);
 
 QMimeMagicRule::Type QMimeMagicRule::type(const QByteArray &theTypeName)
 {
     for (int i = String; i <= Byte; ++i) {
-        if (theTypeName == magicRuleTypes_string + magicRuleTypes_indices[i])
+        if (theTypeName == magicRuleTypes.at(i))
             return Type(i);
     }
     return Invalid;
@@ -44,7 +42,7 @@ QMimeMagicRule::Type QMimeMagicRule::type(const QByteArray &theTypeName)
 
 QByteArray QMimeMagicRule::typeName(QMimeMagicRule::Type theType)
 {
-    return magicRuleTypes_string + magicRuleTypes_indices[theType];
+    return magicRuleTypes.at(theType);
 }
 
 bool QMimeMagicRule::operator==(const QMimeMagicRule &other) const
