@@ -798,11 +798,7 @@ static void showSystemMenu(QWindow* w)
     HiliteMenuItem(topLevelHwnd, menu, SC_RESTORE, MF_BYCOMMAND | MFS_HILITE);
 
     // Set bold on close menu item
-    MENUITEMINFO closeItem;
-    closeItem.cbSize = sizeof(MENUITEMINFO);
-    closeItem.fMask = MIIM_STATE;
-    closeItem.fState = MFS_DEFAULT;
-    SetMenuItemInfo(menu, SC_CLOSE, FALSE, &closeItem);
+    SetMenuDefaultItem(menu, SC_CLOSE, FALSE);
 
 #undef enabled
 #undef disabled
