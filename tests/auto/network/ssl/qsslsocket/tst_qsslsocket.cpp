@@ -44,6 +44,8 @@
 #include <QtNetwork/qtcpserver.h>
 #include <QtNetwork/qsslpresharedkeyauthenticator.h>
 
+#include <QtTest/private/qemulationdetector_p.h>
+
 #include <QTest>
 #include <QNetworkProxy>
 #include <QAuthenticator>
@@ -1681,11 +1683,28 @@ void tst_QSslSocket::serverCipherPreferences()
     if (setProxy)
         return;
 
-    // First using the default (server preference)
+    QSslCipher testedCiphers[2];
     {
+        // First using the default (server preference)
+        const auto supportedCiphers = QSslConfiguration::supportedCiphers();
+        int nSet = 0;
+        for (const auto &cipher : supportedCiphers) {
+            // Ciphersuites from TLS 1.2 and 1.3 are set separately,
+            // let's select 1.3 or above explicitly.
+            if (cipher.protocol() < QSsl::TlsV1_3)
+                continue;
+
+            testedCiphers[nSet++] = cipher;
+            if (nSet == 2)
+                break;
+        }
+
+        if (nSet != 2)
+            QSKIP("Failed to find two proper ciphersuites to test, bailing out.");
+
         SslServer server;
-        server.protocol = Test::TlsV1_0;
-        server.ciphers = {QSslCipher("AES128-SHA"), QSslCipher("AES256-SHA")};
+        server.protocol = QSsl::TlsV1_2OrLater;
+        server.ciphers = {testedCiphers[0], testedCiphers[1]};
         QVERIFY(server.listen());
 
         QEventLoop loop;
@@ -1695,8 +1714,8 @@ void tst_QSslSocket::serverCipherPreferences()
         socket = &client;
 
         auto sslConfig = socket->sslConfiguration();
-        sslConfig.setProtocol(Test::TlsV1_0OrLater);
-        sslConfig.setCiphers({QSslCipher("AES256-SHA"), QSslCipher("AES128-SHA")});
+        sslConfig.setProtocol(QSsl::TlsV1_2OrLater);
+        sslConfig.setCiphers({testedCiphers[1], testedCiphers[0]});
         socket->setSslConfiguration(sslConfig);
 
         // upon SSL wrong version error, errorOccurred will be triggered, not sslErrors
@@ -1709,17 +1728,19 @@ void tst_QSslSocket::serverCipherPreferences()
         loop.exec();
 
         QVERIFY(client.isEncrypted());
-        QCOMPARE(client.sessionCipher().name(), QString("AES128-SHA"));
+        QCOMPARE(client.sessionCipher().name(), testedCiphers[0].name());
     }
 
     {
+        if (QTestPrivate::isRunningArmOnX86())
+            QSKIP("This test is known to crash on QEMU emulation for no good reason.");
         // Now using the client preferences
         SslServer server;
         QSslConfiguration config = QSslConfiguration::defaultConfiguration();
         config.setSslOption(QSsl::SslOptionDisableServerCipherPreference, true);
         server.config = config;
-        server.protocol = Test::TlsV1_0OrLater;
-        server.ciphers = {QSslCipher("AES128-SHA"), QSslCipher("AES256-SHA")};
+        server.protocol = QSsl::TlsV1_2OrLater;
+        server.ciphers = {testedCiphers[0], testedCiphers[1]};
         QVERIFY(server.listen());
 
         QEventLoop loop;
@@ -1729,8 +1750,8 @@ void tst_QSslSocket::serverCipherPreferences()
         socket = &client;
 
         auto sslConfig = socket->sslConfiguration();
-        sslConfig.setProtocol(Test::TlsV1_0);
-        sslConfig.setCiphers({QSslCipher("AES256-SHA"), QSslCipher("AES128-SHA")});
+        sslConfig.setProtocol(QSsl::TlsV1_2OrLater);
+        sslConfig.setCiphers({testedCiphers[1], testedCiphers[0]});
         socket->setSslConfiguration(sslConfig);
 
         // upon SSL wrong version error, errorOccurred will be triggered, not sslErrors
@@ -1743,7 +1764,7 @@ void tst_QSslSocket::serverCipherPreferences()
         loop.exec();
 
         QVERIFY(client.isEncrypted());
-        QCOMPARE(client.sessionCipher().name(), QString("AES256-SHA"));
+        QCOMPARE(client.sessionCipher().name(), testedCiphers[1].name());
     }
 }
 
