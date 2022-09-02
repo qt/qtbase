@@ -17,6 +17,7 @@ qt_internal_add_test(tst_qsslsocket
     PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
+        Qt::TestPrivate
     TESTDATA ${test_data}
     QT_TEST_SERVER_LIST "squid" "danted" "cyrus" "apache2" "echo" # special case
 )
