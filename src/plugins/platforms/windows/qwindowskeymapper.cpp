@@ -782,7 +782,7 @@ static void showSystemMenu(QWindow* w)
 #define disabled (MF_BYCOMMAND | MF_GRAYED)
 
     EnableMenuItem(menu, SC_MINIMIZE, (topLevel->flags() & Qt::WindowMinimizeButtonHint) ? enabled : disabled);
-    bool maximized = IsZoomed(topLevelHwnd);
+    const bool maximized = IsZoomed(topLevelHwnd);
 
     EnableMenuItem(menu, SC_MAXIMIZE, !(topLevel->flags() & Qt::WindowMaximizeButtonHint) || maximized ? disabled : enabled);
 
