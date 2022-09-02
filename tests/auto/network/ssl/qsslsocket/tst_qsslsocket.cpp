@@ -1800,8 +1800,10 @@ void tst_QSslSocket::setLocalCertificateChain()
     }
 
     QCOMPARE(chain.size(), 2);
-    QCOMPARE(chain[0].serialNumber(), QByteArray("10:a0:ad:77:58:f6:6e:ae:46:93:a3:43:f9:59:8a:9e"));
-    QCOMPARE(chain[1].serialNumber(), QByteArray("3b:eb:99:c5:ea:d8:0b:5d:0b:97:5d:4f:06:75:4b:e1"));
+    QCOMPARE(chain[0].serialNumber(),
+             QByteArray("58:df:33:c1:9b:bc:c5:51:7a:00:86:64:43:94:41:e2:26:ef:3f:89"));
+    QCOMPARE(chain[1].serialNumber(),
+             QByteArray("11:72:34:bc:21:e6:ca:04:24:13:f8:35:48:84:a6:e9:de:96:22:15"));
 }
 
 void tst_QSslSocket::tlsConfiguration()
