@@ -781,16 +781,16 @@ static void showSystemMenu(QWindow* w)
 #define enabled (MF_BYCOMMAND | MF_ENABLED)
 #define disabled (MF_BYCOMMAND | MF_GRAYED)
 
-    EnableMenuItem(menu, SC_MINIMIZE, (topLevel->flags() & Qt::WindowMinimizeButtonHint)?enabled:disabled);
+    EnableMenuItem(menu, SC_MINIMIZE, (topLevel->flags() & Qt::WindowMinimizeButtonHint) ? enabled : disabled);
     bool maximized = IsZoomed(topLevelHwnd);
 
-    EnableMenuItem(menu, SC_MAXIMIZE, ! (topLevel->flags() & Qt::WindowMaximizeButtonHint) || maximized?disabled:enabled);
+    EnableMenuItem(menu, SC_MAXIMIZE, !(topLevel->flags() & Qt::WindowMaximizeButtonHint) || maximized ? disabled : enabled);
 
     // We should _not_ check with the setFixedSize(x,y) case here, since Windows is not able to check
     // this and our menu here would be out-of-sync with the menu produced by mouse-click on the
     // System Menu, or right-click on the title bar.
-    EnableMenuItem(menu, SC_SIZE, (topLevel->flags() & Qt::MSWindowsFixedSizeDialogHint) || maximized?disabled:enabled);
-    EnableMenuItem(menu, SC_MOVE, maximized?disabled:enabled);
+    EnableMenuItem(menu, SC_SIZE, (topLevel->flags() & Qt::MSWindowsFixedSizeDialogHint) || maximized ? disabled : enabled);
+    EnableMenuItem(menu, SC_MOVE, maximized ? disabled : enabled);
     EnableMenuItem(menu, SC_CLOSE, enabled);
 
     // Highlight the first entry in the menu, this is what native Win32 applications usually do.
@@ -810,10 +810,11 @@ static void showSystemMenu(QWindow* w)
 
 #undef enabled
 #undef disabled
+
     const QPoint pos = QHighDpi::toNativePixels(topLevel->geometry().topLeft(), topLevel);
     const int titleBarOffset = isSystemMenuOffsetNeeded(topLevel->flags()) ? getTitleBarHeight(topLevelHwnd) : 0;
     const int ret = TrackPopupMenuEx(menu,
-                               TPM_LEFTALIGN  | TPM_TOPALIGN | TPM_NONOTIFY | TPM_RETURNCMD,
+                               TPM_LEFTALIGN | TPM_TOPALIGN | TPM_NONOTIFY | TPM_RETURNCMD,
                                pos.x(), pos.y() + titleBarOffset,
                                topLevelHwnd,
                                nullptr);
