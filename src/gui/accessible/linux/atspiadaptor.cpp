@@ -2385,9 +2385,9 @@ bool AtSpiAdaptor::tableInterface(QAccessibleInterface *interface, const QString
     } else if (function == "GetRowHeader"_L1) {
         int row = message.arguments().at(0).toInt();
         QSpiObjectReference ref;
-        QAccessibleTableCellInterface *cell = interface->tableInterface()->cellAt(row, 0)->tableCellInterface();
-        if (cell) {
-            QList<QAccessibleInterface*> header = cell->rowHeaderCells();
+        QAccessibleInterface *cell = interface->tableInterface()->cellAt(row, 0);
+        if (cell && cell->tableCellInterface()) {
+            QList<QAccessibleInterface*> header = cell->tableCellInterface()->rowHeaderCells();
             if (header.size() > 0) {
                 ref = QSpiObjectReference(connection, QDBusObjectPath(pathForInterface(header.takeAt(0))));
             }
