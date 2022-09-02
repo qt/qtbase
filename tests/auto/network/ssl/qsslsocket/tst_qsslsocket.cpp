@@ -4373,13 +4373,17 @@ void tst_QSslSocket::oldErrorsOnSocketReuse()
     if (setProxy)
         return; // not relevant
     SslServer server;
+#ifdef QT_NO_OPENSSL
     server.protocol = QSsl::TlsV1_1;
+#endif
     server.m_certFile = testDataDir + "certs/fluke.cert";
     server.m_keyFile = testDataDir + "certs/fluke.key";
     QVERIFY(server.listen(QHostAddress::SpecialAddress::LocalHost));
 
     QSslSocket socket;
+#ifdef QT_NO_OPENSSL
     socket.setProtocol(QSsl::TlsV1_1);
+#endif
     QList<QSslError> errorList;
     auto connection = connect(&socket, QOverload<const QList<QSslError> &>::of(&QSslSocket::sslErrors),
         [&socket, &errorList](const QList<QSslError> &errors) {
