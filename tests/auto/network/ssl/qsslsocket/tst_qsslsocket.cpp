@@ -1557,24 +1557,18 @@ void tst_QSslSocket::protocolServerSide_data()
     QTest::addColumn<QSsl::SslProtocol>("clientProtocol");
     QTest::addColumn<bool>("works");
 
-    QTest::newRow("tls1.0-tls1.0") << Test::TlsV1_0 << Test::TlsV1_0 << true;
     QTest::newRow("any-any") << QSsl::AnyProtocol << QSsl::AnyProtocol << true;
     QTest::newRow("secure-secure") << QSsl::SecureProtocols << QSsl::SecureProtocols << true;
 
     QTest::newRow("tls1.0-secure") << Test::TlsV1_0 << QSsl::SecureProtocols << false;
-    QTest::newRow("tls1.0-any") << Test::TlsV1_0 << QSsl::AnyProtocol << true;
-
     QTest::newRow("secure-tls1.0") << QSsl::SecureProtocols << Test::TlsV1_0 << false;
     QTest::newRow("secure-any") << QSsl::SecureProtocols << QSsl::AnyProtocol << true;
 
-    QTest::newRow("tls1.0orlater-tls1.0") << Test::TlsV1_0OrLater << Test::TlsV1_0 << true;
-    QTest::newRow("tls1.0orlater-tls1.1") << Test::TlsV1_0OrLater << Test::TlsV1_1 << true;
     QTest::newRow("tls1.0orlater-tls1.2") << Test::TlsV1_0OrLater << QSsl::TlsV1_2 << true;
     if (supportsTls13())
         QTest::newRow("tls1.0orlater-tls1.3") << Test::TlsV1_0OrLater << QSsl::TlsV1_3 << true;
 
     QTest::newRow("tls1.1orlater-tls1.0") << Test::TlsV1_1OrLater << Test::TlsV1_0 << false;
-    QTest::newRow("tls1.1orlater-tls1.1") << Test::TlsV1_1OrLater << Test::TlsV1_1 << true;
     QTest::newRow("tls1.1orlater-tls1.2") << Test::TlsV1_1OrLater << QSsl::TlsV1_2 << true;
 
     if (supportsTls13())
@@ -1591,7 +1585,6 @@ void tst_QSslSocket::protocolServerSide_data()
         QTest::newRow("tls1.3orlater-tls1.3") << QSsl::TlsV1_3OrLater << QSsl::TlsV1_3 << true;
     }
 
-    QTest::newRow("any-tls1.0") << QSsl::AnyProtocol << Test::TlsV1_0 << true;
     QTest::newRow("any-secure") << QSsl::AnyProtocol << QSsl::SecureProtocols << true;
 }
 
