@@ -41,7 +41,6 @@ public:
     static void logAndClearErrorQueue();
     static void clearErrorQueue();
 
-    static bool ensureLibraryLoaded();
     // Index used in SSL_get_ex_data to get the matching TlsCryptographerOpenSSL:
     static bool s_loadedCiphersAndCerts;
     static int s_indexForSSLExtraData;
@@ -49,7 +48,7 @@ public:
     static QString msgErrorsDuringHandshake();
     static QSslCipher qt_OpenSSL_cipher_to_QSslCipher(const SSL_CIPHER *cipher);
 private:
-
+    static bool ensureLibraryLoaded();
     QString backendName() const override;
     bool isValid() const override;
     long tlsLibraryVersionNumber() const override;
