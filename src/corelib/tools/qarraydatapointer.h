@@ -92,7 +92,7 @@ public:
     {
         if (!deref()) {
             (*this)->destroyAll();
-            Data::deallocate(d);
+            free(d);
         }
     }
 
