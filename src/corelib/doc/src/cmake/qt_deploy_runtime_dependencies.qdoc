@@ -58,11 +58,10 @@ see \l{qt_deploy_qml_imports()} for that.
 
 The \c{EXECUTABLE} option must be provided.
 
-The \c{executable} argument should be a path to the executable file, relative to
-the base install location. For example, \c{bin/MyApp.exe}, or more dynamically
-\c{\${QT_DEPLOY_BIN_DIR}/$<TARGET_FILE_NAME:MyApp>}.
-Specifying raw target names not wrapped in a generator epxression like
-\c{<TARGET_FILE_NAME:>} is not supported.
+The \c{executable} argument should be the path to the executable file in the
+build directory. For example, \c{${CMAKE_CURRENT_BINARY_DIR}/MyApp.exe}, or more
+dynamically \c{$<TARGET_FILE:MyApp>}. Specifying raw target names not wrapped in
+a generator expression like \c{<TARGET_FILE:>} is not supported.
 
 For macOS app bundles, the \c{executable} argument should be a path to the
 bundle directory, relative to the base install location.

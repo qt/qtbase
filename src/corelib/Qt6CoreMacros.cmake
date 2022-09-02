@@ -2647,7 +2647,7 @@ qt6_deploy_runtime_dependencies(
         qt6_generate_deploy_script(${generate_args}
             CONTENT "
 qt6_deploy_runtime_dependencies(
-    EXECUTABLE \${QT_DEPLOY_BIN_DIR}/$<TARGET_FILE_NAME:${arg_TARGET}>
+    EXECUTABLE $<TARGET_FILE:${arg_TARGET}>
     GENERATE_QT_CONF
 )")
 
