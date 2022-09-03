@@ -168,7 +168,7 @@ inline void useVerifyThrowsException() {}
 #define QTRY_TIMEOUT_DEBUG_IMPL(expr, timeoutValue, step) \
     if (!QTest::currentTestFailed() && !(expr)) { \
         QTRY_LOOP_IMPL(expr, 2 * (timeoutValue), step) \
-        if (expr) { \
+        if ((expr)) { \
             QFAIL(qPrintable(QTest::Internal::formatTryTimeoutDebugMessage(\
                                  u8"" #expr, timeoutValue, timeoutValue + qt_test_i))); \
         } \
