@@ -354,7 +354,7 @@ void tst_QStringConverter::roundtrip_data()
     QTest::addColumn<QStringView>("utf16");
     QTest::addColumn<QStringConverter::Encoding>("code");
 
-    for (const auto code : codes) {
+    for (const auto &code : codes) {
         for (const TestString &s : testStrings) {
             // rules:
             // 1) don't pass the null character to the System codec
@@ -1806,7 +1806,7 @@ void tst_QStringConverter::roundtripBom_data()
     QTest::addColumn<QStringView>("utf16");
     QTest::addColumn<QStringConverter::Encoding>("code");
 
-    for (const auto code : codes) {
+    for (const auto &code : codes) {
         if (size_t(code.code) >= encodedBoms.size())
             break;
         if (code.limitation != FullUnicode)
