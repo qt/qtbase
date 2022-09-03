@@ -25,7 +25,7 @@ qt_internal_add_test(tst_qmetaobject_compat
         ${tst_qmetaobject_SOURCES}
     DEFINES
         USE_COMPAT_Q_ARG=1
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
     NO_BATCH
 )
