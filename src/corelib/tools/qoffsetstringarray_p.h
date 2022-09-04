@@ -125,7 +125,7 @@ template <size_t KL, size_t VL> struct StaticMapEntry
 };
 
 template <typename StringExtractor, typename... T>
-constexpr auto qOffsetStringArray(StringExtractor extractString, const T &... entries)
+constexpr auto makeOffsetStringArray(StringExtractor extractString, const T &... entries)
 {
     constexpr size_t Count = sizeof...(T);
     constexpr qsizetype StringLength = (sizeof(extractString(T{})) + ...);
@@ -147,7 +147,7 @@ template<int ... Nx>
 constexpr auto qOffsetStringArray(const char (&...strings)[Nx]) noexcept
 {
     auto extractString = [](const auto &s) -> decltype(auto) { return s; };
-    return QtPrivate::qOffsetStringArray(extractString, QtPrivate::StaticString(strings)...);
+    return QtPrivate::makeOffsetStringArray(extractString, QtPrivate::StaticString(strings)...);
 }
 
 QT_WARNING_POP
