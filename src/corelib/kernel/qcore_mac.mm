@@ -255,9 +255,9 @@ QMacAutoReleasePool::QMacAutoReleasePool()
 
 #ifdef QT_DEBUG
     void *poolFrame = nullptr;
-    void *frame;
-    if (backtrace_from_fp(__builtin_frame_address(0), &frame, 1))
-        poolFrame = frame;
+    void *frames[2];
+    if (backtrace_from_fp(__builtin_frame_address(0), frames, 2))
+        poolFrame = frames[1];
 
     if (poolFrame) {
         Dl_info info;
