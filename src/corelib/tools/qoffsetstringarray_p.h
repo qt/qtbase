@@ -141,7 +141,7 @@ constexpr auto makeOffsetStringArray(StringExtractor extractString, const T &...
     std::array staticString = QtPrivate::makeStaticString<StringLength>(extractString, entries...);
     return QOffsetStringArray(staticString, minifiedOffsetList);
 }
-}
+} // namespace QtPrivate
 
 template<int ... Nx>
 constexpr auto qOffsetStringArray(const char (&...strings)[Nx]) noexcept
