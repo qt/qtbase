@@ -495,6 +495,7 @@ void QEventDispatcherWasm::updateNativeTimer()
             if (m_timerId > 0) {
                 emscripten_clear_timeout(m_timerId);
                 m_timerId = 0;
+                m_timerTargetTime = 0;
             }
             return;
         }
