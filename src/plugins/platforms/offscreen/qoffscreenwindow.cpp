@@ -168,6 +168,6 @@ QOffscreenWindow *QOffscreenWindow::windowForWinId(WId id)
     return m_windowForWinIdHash.value(id, 0);
 }
 
-QHash<WId, QOffscreenWindow *> QOffscreenWindow::m_windowForWinIdHash;
+Q_CONSTINIT QHash<WId, QOffscreenWindow *> QOffscreenWindow::m_windowForWinIdHash;
 
 QT_END_NAMESPACE
