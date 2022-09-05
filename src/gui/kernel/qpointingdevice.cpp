@@ -465,6 +465,7 @@ void QPointingDevicePrivate::setExclusiveGrabber(const QPointerEvent *event, con
         qWarning() << "point is not in activePoints" << point;
         return;
     }
+    Q_ASSERT(persistentPoint->eventPoint.id() == point.id());
     if (persistentPoint->exclusiveGrabber == exclusiveGrabber)
         return;
     auto oldGrabber = persistentPoint->exclusiveGrabber;
