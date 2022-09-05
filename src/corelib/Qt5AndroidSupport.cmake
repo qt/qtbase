@@ -52,12 +52,6 @@ if (NOT ${PROJECT_NAME}-MultiAbiBuild)
       VERBATIM)
   endif()
 
-  if("${ANDROID_SDK_BUILD_TOOLS_REVISION}" STREQUAL "")
-    qt_internal_get_highest_android_sdk_build_tools_revision(
-      ANDROID_SDK_BUILD_TOOLS_REVISION
-      "${ANDROID_SDK}/build-tools")
-  endif()
-
   # Write the android_<project_name>_deployment_settings.json file
   file(WRITE ${CMAKE_BINARY_DIR}/android_deployment_settings.json.in
 [=[{
@@ -93,6 +87,12 @@ if (NOT ${PROJECT_NAME}-MultiAbiBuild)
 
   if(NOT ANDROID_SDK)
     get_filename_component(ANDROID_SDK ${ANDROID_NDK}/../ ABSOLUTE)
+  endif()
+
+  if("${ANDROID_SDK_BUILD_TOOLS_REVISION}" STREQUAL "")
+    qt_internal_get_highest_android_sdk_build_tools_revision(
+      ANDROID_SDK_BUILD_TOOLS_REVISION
+      "${ANDROID_SDK}/build-tools")
   endif()
 
   find_program(ANDROID_DEPLOY_QT androiddeployqt)
