@@ -483,9 +483,11 @@ static constexpr quint8 orderedHeaderNameIndexes[] = {
     171, // x-frame-options
 };
 static_assert(std::size(orderedHeaderNameIndexes) == size_t(headerNames.count()));
+#if !defined(Q_CC_GNU_ONLY) || Q_CC_GNU_ONLY >= 1000
 static_assert(q20::is_sorted(std::begin(orderedHeaderNameIndexes),
                              std::end(orderedHeaderNameIndexes),
                              ByIndirectHeaderName{}));
+#endif
 
 /*!
     \enum QHttpHeaders::WellKnownHeader

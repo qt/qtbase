@@ -141,21 +141,18 @@ template <typename Char, size_t N> struct StaticString
 template <typename Char, typename StringExtractor, typename... T>
 constexpr auto makeOffsetStringArray(StringExtractor extractString, const T &... entries)
 {
-    constexpr size_t Count = sizeof...(T);
     constexpr size_t StringLength = (sizeof(extractString(T{})) + ...) / sizeof(Char);
-    using MinifiedOffsetType = decltype(QtPrivate::minifyValue<StringLength>());
-
-    size_t offset = 0;
-    std::array fullOffsetList = { offset += (sizeof(extractString(T{})) / sizeof(Char))... };
+    using OffsetType = decltype(QtPrivate::minifyValue<StringLength>());
 
     // prepend the first offset (zero) pointing to the *start* of the first element
-    std::array<MinifiedOffsetType, Count + 1> minifiedOffsetList = {};
-    q20::transform(fullOffsetList.begin(), fullOffsetList.end(),
-                   minifiedOffsetList.begin() + 1,
-                   [] (auto e) { return MinifiedOffsetType(e); });
+    size_t offset = 0;
+    std::array offsetList = {
+        OffsetType(0),
+        OffsetType(offset += sizeof(extractString(T{})) / sizeof(Char))...
+    };
 
     std::array staticString = QtPrivate::makeStaticString<Char, StringLength>(extractString, entries...);
-    return QOffsetStringArray(staticString, minifiedOffsetList);
+    return QOffsetStringArray(staticString, offsetList);
 }
 } // namespace QtPrivate
 
